@@ -90,3 +90,20 @@ describe('a tap on an emoji', () => {
     ]);
   });
 });
+
+// A server from before replies and reactions (docs/SPEC_V3.md §21) sends a page without them; a
+// tap on an emoji then crashed the app (myReaction on undefined).
+describe('a page without replies and reactions', () => {
+  it('reads as no quote and no reactions in the DM and the room chat', () => {
+    expect(parseQuote(undefined)).toBeNull();
+    expect(parseDmReactions(undefined)).toEqual([]);
+    expect(parseReactionCounts(undefined)).toEqual([]);
+  });
+
+  it('takes a tap on an emoji over a missing list', () => {
+    expect(myReaction(undefined)).toBeNull();
+    expect(nextReaction(myReaction(undefined), '👍')).toBe('👍');
+    expect(withMyReaction(undefined, '👍')).toEqual([{ emoji: '👍', count: 1, mine: true }]);
+    expect(withMyReaction(undefined, null)).toEqual([]);
+  });
+});

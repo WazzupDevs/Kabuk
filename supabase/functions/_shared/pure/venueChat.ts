@@ -70,6 +70,22 @@ export type VenueChatMessage = {
   reactions: ReactionCount[];
 };
 
+// A message from venue-chat/page as the app keeps it. A server from before §21 sends neither
+// replyTo nor reactions; then the message has no quote and no reactions, instead of the app
+// failing on them.
+export function withVenueChatExtras(
+  message: Omit<VenueChatMessage, 'replyTo' | 'reactions'> & {
+    replyTo?: Quote | null;
+    reactions?: ReactionCount[] | null;
+  },
+): VenueChatMessage {
+  return {
+    ...message,
+    replyTo: message.replyTo ?? null,
+    reactions: Array.isArray(message.reactions) ? message.reactions : [],
+  };
+}
+
 // The name to show above a message.
 export function senderLabel(
   message: Pick<VenueChatMessage, 'senderAlias' | 'displayName'>,
