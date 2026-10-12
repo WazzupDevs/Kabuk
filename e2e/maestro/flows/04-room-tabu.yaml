@@ -107,9 +107,12 @@ appId: app.kabuk.mobile
     env:
       ACTION: chat-send
       BODY: '{"body":"Selam masa"}'
-- extendedWaitUntil:
-    visible: Selam masa
-    timeout: 15000
+# The game list sits above the messages; on a small screen the message is below the fold.
+- scrollUntilVisible:
+    element:
+      text: Selam masa
+    direction: DOWN
+    timeout: 20000
 - longPressOn: Selam masa
 - extendedWaitUntil:
     visible:
@@ -123,6 +126,12 @@ appId: app.kabuk.mobile
       ACTION: chat-reactions
       EXPECT_REACTION: ❤️
 - takeScreenshot: 16a-room-reaction
+# Back up to the game list for the proposal.
+- scrollUntilVisible:
+    element:
+      id: propose-tabu
+    direction: UP
+    timeout: 20000
 # The bot table proposes Sesli Tabu; the game starts when this table accepts.
 - runScript:
     file: ../scripts/bot.js
