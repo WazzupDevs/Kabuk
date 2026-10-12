@@ -242,3 +242,30 @@ appId: app.kabuk.mobile
       id: proposal-not-accepted
     timeout: 15000
 - takeScreenshot: 20c-not-accepted
+# docs/SPEC_V3.md §21: the bot table writes in the room chat; this table reacts with ❤️ (the second
+# of the six) and the bot sees it. Last in the flow: until now the room has no messages, so the
+# proposal steps above see the game list at the top of the screen.
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: chat-send
+      BODY: '{"body":"Selam masa"}'
+# The game list sits above the messages; on a small screen the message is below the fold.
+- scrollUntilVisible:
+    element:
+      text: Selam masa
+    direction: DOWN
+    timeout: 20000
+- longPressOn: Selam masa
+- extendedWaitUntil:
+    visible:
+      id: reaction-bar
+    timeout: 10000
+- tapOn:
+    id: react-1
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: chat-reactions
+      EXPECT_REACTION: ❤️
+- takeScreenshot: 20d-room-reaction
