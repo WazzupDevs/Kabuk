@@ -12,14 +12,14 @@ import { Alert, View } from 'react-native';
 import { Button } from '@/components/Button';
 import { Avatar } from '@/components/Avatar';
 import { ChatBubble, type Delivery, TypingBubble } from '@/components/ChatBubble';
-import { ChatScreen, DayLine, dayLabel } from '@/components/ChatScreen';
+import { ChatRow, ChatScreen, DayLine, dayLabel } from '@/components/ChatScreen';
 import { ChatTopBar } from '@/components/ChatTopBar';
 import { Composer } from '@/components/Composer';
 import { EmptyState } from '@/components/EmptyState';
 import { IconButton } from '@/components/IconButton';
 import { Sheet } from '@/components/Sheet';
 import { useHideTabBar } from '@/components/TabBar';
-import { toChatQuote, useReplyTarget } from '@/features/chat/messageExtras';
+import { quoteJump, toChatQuote, useReplyTarget } from '@/features/chat/messageExtras';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
 import {
@@ -218,36 +218,42 @@ export default function DmScreen() {
       ) : null}
       {runs.map(({ item: m, first, last, day }) => {
         const counts = parseDmReactions(m.reactions);
+        const quote = parseQuote(m.reply_to);
         return (
-          <View key={m.id} className={first ? 'mt-1.5 gap-2' : 'gap-2'}>
-            {day ? <DayLine label={dayLabel(day)} /> : null}
-            <ChatBubble
-              text={m.body}
-              mine={m.from_me}
-              quote={toChatQuote(parseQuote(m.reply_to), name)}
-              reactions={reactions.view(m.id, counts)}
-              onToggleReaction={(emoji) => reactions.pick(m.id, counts, emoji)}
-              onReact={(emoji) => reactions.pick(m.id, counts, emoji)}
-              onReply={() =>
-                reply.setTarget({
-                  id: m.id,
-                  quote: { name: m.from_me ? tr.chat.you : name, text: m.body },
-                })
-              }
-              first={first}
-              last={last}
-              time={tr.chat.time(m.created_at)}
-              delivery={m.from_me && isDelivery(m.status) ? m.status : undefined}
-              name={m.from_me ? undefined : name}
-              avatar={
-                m.from_me ? undefined : (
-                  <Avatar kind="profile" name={name} size="sm" photoUrl={photoUrl} />
-                )
-              }
-              // The photo opens the profile ("Profili gör" left the menu).
-              onPressSender={m.from_me ? undefined : openProfile}
-            />
-          </View>
+          <ChatRow key={m.id} id={m.id} className={first ? 'mt-1.5 gap-2' : 'gap-2'}>
+            {(jumpTo) => (
+              <>
+                {day ? <DayLine label={dayLabel(day)} /> : null}
+                <ChatBubble
+                  text={m.body}
+                  mine={m.from_me}
+                  quote={toChatQuote(quote, name)}
+                  onPressQuote={quoteJump(quote, jumpTo)}
+                  reactions={reactions.view(m.id, counts)}
+                  onToggleReaction={(emoji) => reactions.pick(m.id, counts, emoji)}
+                  onReact={(emoji) => reactions.pick(m.id, counts, emoji)}
+                  onReply={() =>
+                    reply.setTarget({
+                      id: m.id,
+                      quote: { name: m.from_me ? tr.chat.you : name, text: m.body },
+                    })
+                  }
+                  first={first}
+                  last={last}
+                  time={tr.chat.time(m.created_at)}
+                  delivery={m.from_me && isDelivery(m.status) ? m.status : undefined}
+                  name={m.from_me ? undefined : name}
+                  avatar={
+                    m.from_me ? undefined : (
+                      <Avatar kind="profile" name={name} size="sm" photoUrl={photoUrl} />
+                    )
+                  }
+                  // The photo opens the profile ("Profili gör" left the menu).
+                  onPressSender={m.from_me ? undefined : openProfile}
+                />
+              </>
+            )}
+          </ChatRow>
         );
       })}
       {outbox.map((m) => (

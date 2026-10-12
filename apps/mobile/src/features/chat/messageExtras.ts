@@ -22,6 +22,16 @@ export function toChatQuote(quote: Quote | null, otherName?: string): ChatQuote 
   return { name: quote.fromMe ? tr.chat.you : (quote.name ?? otherName ?? ''), text: quote.body };
 }
 
+// A tap on a quote goes to the answered message (ChatRow's jumpTo); none for a gone one.
+export function quoteJump(
+  quote: Quote | null,
+  jumpTo: (id: string) => void,
+): (() => void) | undefined {
+  if (!quote || quote.gone) return undefined;
+  const { id } = quote;
+  return () => jumpTo(id);
+}
+
 // The message being answered, over the message bar.
 export type ReplyTarget = { id: string; quote: ChatQuote };
 

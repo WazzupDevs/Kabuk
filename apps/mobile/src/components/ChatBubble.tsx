@@ -44,6 +44,8 @@ type Props = {
   // Aşama 8 · Saha (the data comes later): the message this one answers, shown inside the bubble;
   // the reactions under it; a swipe to the right to answer it; a long press for the six reactions.
   quote?: ChatQuote;
+  // A tap on the quote goes to the answered message (docs/SPEC_V3.md §21.1); none for a gone one.
+  onPressQuote?: () => void;
   reactions?: readonly ChatReaction[];
   onToggleReaction?: (emoji: string) => void;
   onReply?: () => void;
@@ -79,6 +81,7 @@ export function ChatBubble({
   time,
   delivery,
   quote,
+  onPressQuote,
   reactions,
   onToggleReaction,
   onReply,
@@ -102,10 +105,12 @@ export function ChatBubble({
       accessibilityActions={[
         ...(onReply ? [{ name: 'reply', label: tr.chat.reply }] : []),
         ...(onReact ? [{ name: 'react', label: tr.chat.react }] : []),
+        ...(onPressQuote ? [{ name: 'quote', label: tr.chat.goToQuote }] : []),
       ]}
       onAccessibilityAction={(e) => {
         if (e.nativeEvent.actionName === 'reply') onReply?.();
         if (e.nativeEvent.actionName === 'react') setPicking(true);
+        if (e.nativeEvent.actionName === 'quote') onPressQuote?.();
       }}
       onLongPress={onReact ? () => setPicking((p) => !p) : undefined}
       style={{ maxWidth: '100%' }}
@@ -123,7 +128,7 @@ export function ChatBubble({
           boxShadow: mine ? undefined : shape.shadow.raised,
         }}
       >
-        {quote ? <QuoteBlock quote={quote} mine={mine} /> : null}
+        {quote ? <QuoteBlock quote={quote} mine={mine} onPress={onPressQuote} /> : null}
         <Text color={fg}>{text}</Text>
       </View>
     </Pressable>
@@ -232,10 +237,22 @@ export function ChatBubble({
 }
 
 // The answered message inside a bubble: a bar on the left, the sender's name and one line of text.
-function QuoteBlock({ quote, mine }: { quote: ChatQuote; mine: boolean }) {
+function QuoteBlock({
+  quote,
+  mine,
+  onPress,
+}: {
+  quote: ChatQuote;
+  mine: boolean;
+  onPress?: () => void;
+}) {
   const { colors, shape } = useTheme();
   return (
-    <View
+    <Pressable
+      testID="chat-quote"
+      disabled={!onPress}
+      onPress={onPress}
+      accessibilityRole={onPress ? 'button' : undefined}
       style={{
         marginBottom: SPACING[1.5],
         paddingHorizontal: SPACING[2.5],
@@ -254,7 +271,7 @@ function QuoteBlock({ quote, mine }: { quote: ChatQuote; mine: boolean }) {
           {quote.text}
         </Text>
       ) : null}
-    </View>
+    </Pressable>
   );
 }
 

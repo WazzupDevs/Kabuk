@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import { type ReactNode, useRef, useState } from 'react';
+import { createContext, type ReactNode, useContext, useMemo, useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
+  type LayoutChangeEvent,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
   Pressable,
@@ -23,6 +24,37 @@ import { Text } from './Text';
 
 // How close to the end counts as "at the bottom" (a message's last line may sit under the edge).
 const BOTTOM_SLACK = SPACING[12];
+
+// Jumping to a message (docs/SPEC_V3.md §21.1: a tap on a quote): each row reports where it sits
+// in the stream; jumpTo scrolls there, and does nothing for a message the page has not loaded.
+export type ChatJump = {
+  row: (id: string) => (e: LayoutChangeEvent) => void;
+  jumpTo: (id: string) => boolean;
+};
+const ChatJumpContext = createContext<ChatJump | null>(null);
+
+export function useChatJump(): ChatJump | null {
+  return useContext(ChatJumpContext);
+}
+
+// One message's row in the stream: reports its place for jumpTo and hands jumpTo to its bubble
+// (a quote's tap). Outside a ChatScroll it is a plain View and jumpTo does nothing.
+export function ChatRow({
+  id,
+  className,
+  children,
+}: {
+  id: string;
+  className?: string;
+  children: (jumpTo: (id: string) => void) => ReactNode;
+}) {
+  const jump = useChatJump();
+  return (
+    <View className={className} onLayout={jump?.row(id)}>
+      {children((target) => void jump?.jumpTo(target))}
+    </View>
+  );
+}
 
 type ScrollProps = {
   children: ReactNode;
@@ -55,6 +87,19 @@ export function ChatScroll({
   const followed = useRef(newestKey);
   const [atBottom, setAtBottom] = useState(true);
   const [pending, setPending] = useState(0);
+  const rows = useRef(new Map<string, number>());
+  const jump = useMemo<ChatJump>(
+    () => ({
+      row: (id) => (e) => void rows.current.set(id, e.nativeEvent.layout.y),
+      jumpTo: (id) => {
+        const y = rows.current.get(id);
+        if (y === undefined) return false;
+        scroll.current?.scrollTo({ y: Math.max(0, y - SPACING[4]), animated: true });
+        return true;
+      },
+    }),
+    [],
+  );
 
   // A new message while the reader is up the stream: count it for the button.
   const [seenKey, setSeenKey] = useState(newestKey);
@@ -119,7 +164,7 @@ export function ChatScroll({
           if (opened.current && wasBottom) scroll.current?.scrollToEnd({ animated: false });
         }}
       >
-        {children}
+        <ChatJumpContext.Provider value={jump}>{children}</ChatJumpContext.Provider>
       </ScrollView>
       {pending > 0 ? (
         <View
