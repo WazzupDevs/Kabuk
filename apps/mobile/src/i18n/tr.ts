@@ -549,6 +549,7 @@ export const tr = {
     cancelReply: 'Yanıtı kaldır',
     // A reply whose message was deleted or cannot be seen (docs/SPEC_V3.md §21.1).
     quoteGone: 'Mesaj artık yok',
+    goToQuote: 'Yanıtlanan mesaja git',
     // The quoted message is the reader's own.
     you: 'Sen',
     quoteLabel: (name: string, text: string) => `${name} mesajına yanıt: ${text}`,

@@ -1493,7 +1493,7 @@ Ek kararlar: oyuncu sayısı yalnızca Sahtekar'da ve öneri/kabulle (§20.1); i
 
 ### 21.2 Tepki
 
-- **Hareket:** balona uzun basınca 6 sabit emojiden biri seçilir. Liste tek kaynaktır: `pure/reactions.ts` → `REACTIONS` (6 emoji, onaylı; tasarımın tepki çubuğu ve sunucu aynı listeyi okur). Başka emoji sunucuda reddedilir (400).
+- **Hareket:** balona uzun basınca 6 sabit emojiden biri seçilir. Liste tek kaynaktır: `pure/reactions.ts` → `REACTIONS = ['👍', '❤️', '😂', '😮', '🎉', '🔥']` (tasarımın listesi, onaylı; tepki çubuğu ve sunucu aynı listeyi okur). Başka emoji sunucuda reddedilir (400).
 - **Kural:** kişi başına mesaj başına tek tepki. Aynı emojiye yeniden basmak tepkiyi geri alır, başka emoji seçmek değiştirir. Kendi mesajına da tepki verilebilir (onaylı).
 - **Hız sınırı (yalnızca mekan sohbeti, onaylı):** hesap başına 10 saniyede en çok 10 tepki isteği (koyma, değiştirme, kaldırma). Aşılırsa mesajlardaki gibi `rate_limited` (429) döner; uygulama bunu sessizce yok sayar (balon eski hâlinde kalır, hata gösterilmez). Sayaç `venue_chat_reaction_rate`'te, mesaj sınırından (`venue_chat_rate`) ayrı tutulur. DM ve oda sohbetinde sınır yok.
 - **Kim "kişi":** DM'de hesap. Oda sohbetinde masa oturumu (odada her masa tek telefondur, gösterilen ad masa takma adıdır). Mekan sohbetinde hesap.
@@ -1535,7 +1535,7 @@ Ek kararlar: oyuncu sayısı yalnızca Sahtekar'da ve öneri/kabulle (§20.1); i
 
 ### 21.5 Kararlar (proje sahibi onayı)
 
-1. 6 sabit emoji uygun; liste `pure/reactions.ts` → `REACTIONS`.
+1. 6 sabit emoji: tasarımın listesi `👍 ❤️ 😂 😮 🎉 🔥` (`pure/reactions.ts` → `REACTIONS`); ilk taslaktaki `😢 👏` yerine `🎉 🔥`.
 2. Kendi mesajına tepki verilebilir.
 3. Mekan sohbetinde tepkiye hız sınırı: hesap başına 10 sn'de 10; aşılırsa `rate_limited`, arayüz sessizce yok sayar (§21.2).
 4. Oda sohbetinde tepki verenler masa takma adıyla görünür; oda bittiğinde oyun geçmişindeki oda sohbeti kapanır, tepki de görünmez kalır.
@@ -1547,4 +1547,4 @@ Ek kararlar: oyuncu sayısı yalnızca Sahtekar'da ve öneri/kabulle (§20.1); i
 - **Oda kanalı:** tepki yayını odanın sohbet kanalına, `messages:{room_id}`'ye gider (Postgres Changes'in geldiği kanal); istemci aynı abonelikte okur.
 - **Oda sohbetinde görünürlük:** misafir masa, odaya katılmadan önceki mesajı alıntılayamaz ve ona yapılmış yanıtı `{ gone: true }` görür (mesajların kendi politikası, `guest_joined_at`).
 - **Yeniden deneme:** `dm/react` ve `chat/react` `IDEMPOTENT_CALLS`'tadır. `venue-chat/react` değildir: her istek tepki sınırına sayılır, iki kez gönderilince durum (sayaç) aynı kalmaz.
-- **Alıntıya dokunma:** tasarımın `ChatBubble` alıntısı dokunmayı almıyor; "alıntıya dokununca mesaja kay" bu sürümde yok, bileşen desteklediğinde eklenir.
+- **Alıntıya dokunma:** alıntı dokunmayı alır (`ChatBubble` → `onPressQuote`, ekran okuyucuda "Yanıtlanan mesaja git"); liste alıntılanan mesaja kayar (`ChatRow` / `ChatScroll` → `jumpTo`). Mesaj yüklenmiş sayfada yoksa ya da alıntı "Mesaj artık yok" ise hiçbir şey olmaz.

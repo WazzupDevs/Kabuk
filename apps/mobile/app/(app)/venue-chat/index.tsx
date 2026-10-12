@@ -16,7 +16,7 @@ import { ActivityIndicator, Alert, View } from 'react-native';
 import { Avatar, AVATAR_SIZE } from '@/components/Avatar';
 import { Card } from '@/components/Card';
 import { ChatBubble } from '@/components/ChatBubble';
-import { ChatScreen, DayLine, dayLabel } from '@/components/ChatScreen';
+import { ChatRow, ChatScreen, DayLine, dayLabel } from '@/components/ChatScreen';
 import { ChatTopBar } from '@/components/ChatTopBar';
 import { Composer } from '@/components/Composer';
 import { EmptyState } from '@/components/EmptyState';
@@ -31,7 +31,7 @@ import { Toggle } from '@/components/Toggle';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
-import { toChatQuote, useReplyTarget } from '@/features/chat/messageExtras';
+import { quoteJump, toChatQuote, useReplyTarget } from '@/features/chat/messageExtras';
 import { useVenueChat, useVenueChatReactions, venueChatKeys } from '@/features/venueChat/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -209,37 +209,47 @@ export default function VenueChatScreen() {
         </View>
       ) : (
         runs.map(({ item: m, first, last, day }) => (
-          <View key={m.id} className={first ? 'mt-1.5 gap-2' : 'gap-2'}>
-            {day ? <DayLine label={dayLabel(day)} /> : null}
-            <ChatBubble
-              testID={m.fromMe ? 'venue-chat-mine' : 'venue-chat-theirs'}
-              text={m.body}
-              mine={m.fromMe}
-              quote={toChatQuote(m.replyTo)}
-              reactions={reactions.view(m.id, m.reactions)}
-              onToggleReaction={(emoji) => reactions.pick(m.id, m.reactions, emoji)}
-              onReact={(emoji) => reactions.pick(m.id, m.reactions, emoji)}
-              onReply={() =>
-                reply.setTarget({
-                  id: m.id,
-                  quote: { name: m.fromMe ? tr.chat.you : senderLabel(m), text: m.body },
-                })
-              }
-              first={first}
-              last={last}
-              time={tr.chat.time(m.createdAt)}
-              name={m.fromMe ? tr.venueChat.you : senderLabel(m)}
-              avatar={
-                m.fromMe ? undefined : m.profiled ? (
-                  <Avatar kind="profile" name={senderLabel(m)} photoUrl={m.photoUrl} size="sm" />
-                ) : (
-                  <Avatar kind="table" alias={senderLabel(m)} size="sm" />
-                )
-              }
-              tag={m.profiled ? <Tag label={tr.venueChat.profiled} variant="profiled" /> : null}
-              onPressSender={m.fromMe ? undefined : () => openSender(m)}
-            />
-          </View>
+          <ChatRow key={m.id} id={m.id} className={first ? 'mt-1.5 gap-2' : 'gap-2'}>
+            {(jumpTo) => (
+              <>
+                {day ? <DayLine label={dayLabel(day)} /> : null}
+                <ChatBubble
+                  testID={m.fromMe ? 'venue-chat-mine' : 'venue-chat-theirs'}
+                  text={m.body}
+                  mine={m.fromMe}
+                  quote={toChatQuote(m.replyTo)}
+                  onPressQuote={quoteJump(m.replyTo, jumpTo)}
+                  reactions={reactions.view(m.id, m.reactions)}
+                  onToggleReaction={(emoji) => reactions.pick(m.id, m.reactions, emoji)}
+                  onReact={(emoji) => reactions.pick(m.id, m.reactions, emoji)}
+                  onReply={() =>
+                    reply.setTarget({
+                      id: m.id,
+                      quote: { name: m.fromMe ? tr.chat.you : senderLabel(m), text: m.body },
+                    })
+                  }
+                  first={first}
+                  last={last}
+                  time={tr.chat.time(m.createdAt)}
+                  name={m.fromMe ? tr.venueChat.you : senderLabel(m)}
+                  avatar={
+                    m.fromMe ? undefined : m.profiled ? (
+                      <Avatar
+                        kind="profile"
+                        name={senderLabel(m)}
+                        photoUrl={m.photoUrl}
+                        size="sm"
+                      />
+                    ) : (
+                      <Avatar kind="table" alias={senderLabel(m)} size="sm" />
+                    )
+                  }
+                  tag={m.profiled ? <Tag label={tr.venueChat.profiled} variant="profiled" /> : null}
+                  onPressSender={m.fromMe ? undefined : () => openSender(m)}
+                />
+              </>
+            )}
+          </ChatRow>
         ))
       )}
 

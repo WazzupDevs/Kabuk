@@ -96,6 +96,10 @@ appId: app.kabuk.mobile
       EXPECT_DM: Harika
       EXPECT_REPLY: Okudum
 - takeScreenshot: 27h-dm-reply
+# A tap on the quote goes to the answered message.
+- tapOn:
+    id: chat-quote
+- assertVisible: Okudum
 - tapOn:
     id: chat-back
     optional: true

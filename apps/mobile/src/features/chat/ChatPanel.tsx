@@ -4,20 +4,19 @@ import { parseQuote, parseReactionCounts } from '@shared/messageExtras.ts';
 import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useReducer, useState } from 'react';
-import { View } from 'react-native';
 
 import { toRuns } from '@shared/chatRuns.ts';
 
 import { Avatar } from '@/components/Avatar';
 import { ChatBubble } from '@/components/ChatBubble';
-import { DayLine, dayLabel } from '@/components/ChatScreen';
+import { ChatRow, DayLine, dayLabel } from '@/components/ChatScreen';
 import { Composer } from '@/components/Composer';
 import { Text } from '@/components/Text';
 import { useRoomMemberProfile } from '@/features/profile/queries';
 import { tr } from '@/i18n/tr';
 import { ApiError, chatApi } from '@/lib/api';
 
-import { toChatQuote, useReactions, useReplyTarget } from './messageExtras';
+import { quoteJump, toChatQuote, useReactions, useReplyTarget } from './messageExtras';
 import { messagesKey, useMessages, useRoomChatExtras } from './useMessages';
 
 let nextLocalId = 0;
@@ -133,30 +132,38 @@ export function RoomMessages({
         const mine = m.session_id === sessionId;
         const extra = extras?.get(m.id);
         const counts = parseReactionCounts(extra?.reactions);
+        const quote = m.replied ? parseQuote(extra?.reply_to) : null;
         return (
-          <View key={m.id} className={first ? 'mt-1.5 gap-2' : 'gap-2'}>
-            {day ? <DayLine label={dayLabel(day)} /> : null}
-            <ChatBubble
-              text={m.body}
-              mine={mine}
-              quote={m.replied ? toChatQuote(parseQuote(extra?.reply_to)) : undefined}
-              reactions={chat.reactions.view(m.id, counts)}
-              onToggleReaction={(emoji) => chat.reactions.pick(m.id, counts, emoji)}
-              onReact={(emoji) => chat.reactions.pick(m.id, counts, emoji)}
-              onReply={() =>
-                chat.reply.setTarget({
-                  id: m.id,
-                  quote: { name: mine ? tr.chat.you : m.sender_alias, text: m.body },
-                })
-              }
-              first={first}
-              last={last}
-              time={tr.chat.time(m.created_at)}
-              name={mine ? undefined : m.sender_alias}
-              avatar={mine ? undefined : <Avatar kind="table" alias={m.sender_alias} size="sm" />}
-              onPressSender={mine ? undefined : openProfile}
-            />
-          </View>
+          <ChatRow key={m.id} id={m.id} className={first ? 'mt-1.5 gap-2' : 'gap-2'}>
+            {(jumpTo) => (
+              <>
+                {day ? <DayLine label={dayLabel(day)} /> : null}
+                <ChatBubble
+                  text={m.body}
+                  mine={mine}
+                  quote={toChatQuote(quote)}
+                  onPressQuote={quoteJump(quote, jumpTo)}
+                  reactions={chat.reactions.view(m.id, counts)}
+                  onToggleReaction={(emoji) => chat.reactions.pick(m.id, counts, emoji)}
+                  onReact={(emoji) => chat.reactions.pick(m.id, counts, emoji)}
+                  onReply={() =>
+                    chat.reply.setTarget({
+                      id: m.id,
+                      quote: { name: mine ? tr.chat.you : m.sender_alias, text: m.body },
+                    })
+                  }
+                  first={first}
+                  last={last}
+                  time={tr.chat.time(m.created_at)}
+                  name={mine ? undefined : m.sender_alias}
+                  avatar={
+                    mine ? undefined : <Avatar kind="table" alias={m.sender_alias} size="sm" />
+                  }
+                  onPressSender={mine ? undefined : openProfile}
+                />
+              </>
+            )}
+          </ChatRow>
         );
       })}
       {chat.outbox.map((m) => (
