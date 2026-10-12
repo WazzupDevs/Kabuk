@@ -111,6 +111,21 @@ pnpm supabase secrets list
 
 ## 4. Production build
 
+**Önce `version` 0.4.0.** Pilotun native modülleri (Firebase push, expo-audio, expo-haptics) bu build'le gelir; `runtimeVersion` `app.json` → `version` olduğu için sürüm build'den önce artar. Artmazsa 0.3.0 test APK'larına bu native kodu çağıran OTA'lar gider ve uygulama açılışta çöker. Test telefonları 0.3.0'da kaldığı sürece main 0.3.0'da durur; bu adım pilot build'inden hemen önce yapılır.
+
+1. `apps\mobile\app.json` → `"version": "0.3.0"` satırını `"version": "0.4.0"` yap.
+2. Ayrı bir PR'la main'e birleştir (`ci` yeşil). Sonra repo kökünde:
+
+   ```
+   git checkout main
+   git pull
+   findstr /C:"\"version\"" apps\mobile\app.json
+   ```
+
+   Çıktıda `"version": "0.4.0"` görünmeli. Görünmüyorsa build alma.
+
+3. Bundan sonra main'den alınan `preview` OTA'ları 0.3.0 test APK'larına gitmez; test telefonlarına 0.4.0 `preview` APK'sı kurulur (`CLAUDE.md` → "Test APK'sı").
+
 `apps\mobile` (EAS `production` ortamı; değerler bir kez, değişince tekrar):
 
 ```
