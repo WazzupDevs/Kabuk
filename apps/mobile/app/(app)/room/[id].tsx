@@ -154,6 +154,7 @@ export default function RoomScreen() {
       isOwner={isOwner}
       aliases={{ owner: r.owner_alias, guest: r.guest_alias ?? '' }}
       headcount={table.data?.headcount ?? 0}
+      roomHeadcount={r.owner_headcount + (r.guest_headcount ?? 0)}
       localGame={localGame}
       onLocalGame={setLocalGame}
     />

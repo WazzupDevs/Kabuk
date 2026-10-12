@@ -1,3 +1,4 @@
+import { gameAvailability, type PlayMode } from '@shared/gameCatalog.ts';
 import type { Concept } from '@shared/rooms.ts';
 import type { ReactNode } from 'react';
 import { Image, type ImageSourcePropType, Pressable, View } from 'react-native';
@@ -131,6 +132,20 @@ export function GameCard({
       )}
     </Pressable>
   );
+}
+
+// A card's faded state and reason from the game's own rule (pure/gameCatalog.ts): `players` is the
+// table's headcount on one phone, both tables' added up between two. Only how the card looks: the
+// server still answers not_enough_players on its own.
+export function gameCardState(
+  concept: Concept,
+  mode: PlayMode,
+  players: number,
+): { disabled: boolean; reason?: string } {
+  const availability = gameAvailability(concept, mode, players);
+  return availability.available
+    ? { disabled: false }
+    : { disabled: true, reason: tr.games.minPlayers(availability.minPlayers) };
 }
 
 const GAP = SPACING[1.5];

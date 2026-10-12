@@ -1,7 +1,7 @@
 import type { Concept } from '@shared/rooms.ts';
-import { IBRE_CONFIG, parseIbreState } from '@shared/ibre.ts';
-import { parseSahtekarState, SAHTEKAR } from '@shared/sahtekar.ts';
-import { parseSayState, SAY_CONFIG } from '@shared/sayChallenge.ts';
+import { parseIbreState } from '@shared/ibre.ts';
+import { parseSahtekarState } from '@shared/sahtekar.ts';
+import { parseSayState } from '@shared/sayChallenge.ts';
 import { parseBetweenGames, parseGameState, type TableSide } from '@shared/tabu.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
@@ -17,7 +17,7 @@ import { gamesApi, roomsApi } from '@/lib/api';
 
 import { IbreGame, RoundReveal } from './ibre/IbreGame';
 import { LocalIbre } from './ibre/LocalIbre';
-import { GAME_ORDER, GameCard, GameCell, GameGrid } from './GameCard';
+import { GAME_ORDER, GameCard, gameCardState, GameCell, GameGrid } from './GameCard';
 import { LocalTabu } from './LocalTabu';
 import { ProposalArea } from './ProposalArea';
 import { RematchButton } from './RematchButton';
@@ -28,14 +28,6 @@ import { LocalSay } from './say/LocalSay';
 import { SayGame } from './say/SayGame';
 import { SohbetCard } from './SohbetCard';
 import { VoiceTabu, VoiceTabuResult } from './VoiceTabu';
-
-// The fewest players a one-table game takes (the games' own rules).
-function soloMinPlayers(game: Concept): number {
-  if (game === 'sahtekar') return SAHTEKAR.minPlayers;
-  if (game === 'harf' || game === 'sarki') return SAY_CONFIG[game].minLocalPlayers;
-  if (game === 'ibre') return IBRE_CONFIG.minLocalPlayers;
-  return 1;
-}
 
 type Props = {
   roomId: string;
@@ -48,6 +40,8 @@ type Props = {
   aliases: Record<TableSide, string>;
   // The table's check-in headcount: the seats of one-table Sahtekar.
   headcount: number;
+  // Both tables' check-in headcounts added up: the proposal cards dim from it.
+  roomHeadcount: number;
   // A one-table game run on this phone (LocalTabu, LocalSahtekar); the room screen keeps it so it
   // can lay the running game out full screen.
   localGame: LocalGame | null;
@@ -90,6 +84,7 @@ export function GameArea({
   isOwner,
   aliases,
   headcount,
+  roomHeadcount,
   localGame,
   onLocalGame: setLocalGame,
 }: Props) {
@@ -292,7 +287,12 @@ export function GameArea({
         </Card>
       ) : null}
       {hasGuest ? (
-        <ProposalArea roomId={roomId} sessionId={sessionId} gameRunning={concept !== null} />
+        <ProposalArea
+          roomId={roomId}
+          sessionId={sessionId}
+          gameRunning={concept !== null}
+          players={roomHeadcount}
+        />
       ) : (
         // One table: the games as cards (canvas: Aşama 8 · Saha → Oyun listesi). A game the
         // headcount does not allow is faded with its reason.
@@ -306,16 +306,15 @@ export function GameArea({
             </View>
             <GameGrid>
               {GAME_ORDER.map((game) => {
-                const min = soloMinPlayers(game);
-                const short = headcount < min;
+                const card = gameCardState(game, 'onePhone', headcount);
                 return (
                   <GameCell key={game}>
                     <GameCard
                       concept={game}
                       testID={`solo-${game}`}
                       accessibilityLabel={tr.games.start(tr.concepts[game])}
-                      disabled={short || (game === 'sohbet' && startSohbet.isPending)}
-                      reason={short ? tr.games.minPlayers(min) : undefined}
+                      disabled={card.disabled || (game === 'sohbet' && startSohbet.isPending)}
+                      reason={card.reason}
                       onPress={() =>
                         game === 'sohbet' ? startSohbet.mutate() : setLocalGame(game)
                       }
