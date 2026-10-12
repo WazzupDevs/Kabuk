@@ -89,13 +89,14 @@ Repo kökü (bağlı proje: üretim):
 pnpm supabase migration list
 pnpm supabase db push --include-seed --dry-run
 pnpm supabase db push --include-seed
-pnpm supabase functions deploy account chat checkin dm friends ping profile reveal rooms safety sms sohbet tabu venue-chat
+pnpm functions:deploy
 pnpm supabase functions list
 pnpm supabase migration list
 ```
 
 - `--dry-run`: seed satırında `supabase/seeds/content-<id>.sql` görünmeli. `(hash update)` yazıyorsa seed çalışmaz: dosya elle değiştirilmiştir, `pnpm seed` ile yeniden üretip PR'la birleştir.
-- `functions list`: 14 fonksiyonun hepsi `ACTIVE`.
+- `functions:deploy`: `config.toml`'daki bütün fonksiyonları yayınlar; sonda yazdığı proje üretim ref'i olmalı, sayı `config.toml`'daki `[functions.*]` blok sayısı (şu an 18).
+- `functions list`: hepsi `ACTIVE`.
 - `migration list`: her satırda Local ve Remote aynı.
 
 Fonksiyon sırları (hesap silmede PostHog kişi silme; üretim PostHog projesi):

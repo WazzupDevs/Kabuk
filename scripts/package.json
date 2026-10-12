@@ -16,7 +16,8 @@
     "admin:set-birth-date": "node --experimental-strip-types admin-set-birth-date.ts",
     "apply-local-secrets": "node --experimental-strip-types apply-local-secrets.ts",
     "fetch:venues": "node --experimental-strip-types fetch-venues.ts",
-    "latency": "node --experimental-strip-types latency/measure.ts"
+    "latency": "node --experimental-strip-types latency/measure.ts",
+    "functions:deploy": "node --experimental-strip-types functions/deploy.ts"
   },
   "devDependencies": {
     "@types/node": "^22.18.0",
