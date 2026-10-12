@@ -21,16 +21,17 @@ import { roomsApi } from '@/lib/api';
 import { useNow } from '@/lib/useNow';
 import { TOUCH } from '@/theme/tokens';
 
-import { GAME_GLYPH, GAME_ORDER, GameCard, GameCell, GameGrid } from './GameCard';
+import { GAME_GLYPH, GAME_ORDER, GameCard, gameCardState, GameCell, GameGrid } from './GameCard';
 
 // How long "Öneri kabul edilmedi" stays on the proposer's screen.
 const NOT_ACCEPTED_MS = 6000;
 
-type Props = { roomId: string; sessionId: string; gameRunning: boolean };
+// players: both tables' check-in headcounts added up; a game they are too few for is faded.
+type Props = { roomId: string; sessionId: string; gameRunning: boolean; players: number };
 
 // "Oyun öner" in a two-table room (docs/SPEC_V3.md §5.3): one table proposes, the other accepts or
 // not. A decline and a timeout show the proposer the same text; the decline at once (S7).
-export function ProposalArea({ roomId, sessionId, gameRunning }: Props) {
+export function ProposalArea({ roomId, sessionId, gameRunning, players }: Props) {
   const queryClient = useQueryClient();
   const proposal = useGameProposal(roomId);
   const now = useNow(1000);
@@ -114,17 +115,21 @@ export function ProposalArea({ roomId, sessionId, gameRunning }: Props) {
             )}
           </View>
           <GameGrid>
-            {GAME_ORDER.filter((c) => CONCEPTS.includes(c)).map((concept) => (
-              <GameCell key={concept}>
-                <GameCard
-                  concept={concept}
-                  testID={`propose-${concept}`}
-                  accessibilityLabel={tr.games.propose(tr.concepts[concept])}
-                  onPress={() => propose.mutate(concept)}
-                  disabled={propose.isPending}
-                />
-              </GameCell>
-            ))}
+            {GAME_ORDER.filter((c) => CONCEPTS.includes(c)).map((concept) => {
+              const card = gameCardState(concept, 'twoTables', players);
+              return (
+                <GameCell key={concept}>
+                  <GameCard
+                    concept={concept}
+                    testID={`propose-${concept}`}
+                    accessibilityLabel={tr.games.propose(tr.concepts[concept])}
+                    onPress={() => propose.mutate(concept)}
+                    disabled={card.disabled || propose.isPending}
+                    reason={card.reason}
+                  />
+                </GameCell>
+              );
+            })}
           </GameGrid>
         </View>
       )}

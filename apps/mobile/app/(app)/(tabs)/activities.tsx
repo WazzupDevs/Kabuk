@@ -17,7 +17,7 @@ import { Text } from '@/components/Text';
 import { type RecentGame, useRecentGames } from '@/features/activities/useRecentGames';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { NotificationsBell } from '@/features/notifications/Bell';
-import { GAME_ORDER, GameCard, GameCell, GameGrid } from '@/features/games/GameCard';
+import { GAME_ORDER, GameCard, gameCardState, GameCell, GameGrid } from '@/features/games/GameCard';
 import { useCreateSolo } from '@/features/rooms/useCreateSolo';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -40,7 +40,10 @@ const INTENT_OF: Record<Game, Intent> = {
 // games as cards under "Tek telefonla" (the one-table room of the venue screen) and "İki masayla"
 // ("Bu oyunla oda kur"). A card opens the game's sheet: what it is, how it is played and the action,
 // or "Oynamak için mekana gir" away from a venue. Below, the caller's own recent games; the section
-// is left out when there are none. No new game or content.
+// is left out when there are none. No new game or content. At a venue, a "Tek telefonla" game the
+// table's headcount is too few for is faded with its reason (pure/gameCatalog.ts) and does not open;
+// "İki masayla" is never faded here: the other table, and so the total, is not known before a room.
+// The server checks the count anyway (not_enough_players).
 export default function ActivitiesScreen() {
   const table = useActiveTable();
   const now = useNow(30_000);
@@ -48,6 +51,11 @@ export default function ActivitiesScreen() {
   const solo = useCreateSolo();
   const recent = useRecentGames();
   const [open, setOpen] = useState<{ game: Game; mode: Mode } | null>(null);
+  const headcount = atVenue ? table.data?.headcount : undefined;
+  const cardState = (game: Game, mode: Mode) =>
+    mode === 'solo' && headcount !== undefined
+      ? gameCardState(game, 'onePhone', headcount)
+      : { disabled: false };
 
   const section = (mode: Mode) => (
     <View className="gap-2.5">
@@ -61,15 +69,20 @@ export default function ActivitiesScreen() {
       </View>
       <Card>
         <GameGrid>
-          {GAME_ORDER.map((game) => (
-            <GameCell key={game}>
-              <GameCard
-                concept={game}
-                testID={`activities-${mode}-card-${game}`}
-                onPress={() => setOpen({ game, mode })}
-              />
-            </GameCell>
-          ))}
+          {GAME_ORDER.map((game) => {
+            const card = cardState(game, mode);
+            return (
+              <GameCell key={game}>
+                <GameCard
+                  concept={game}
+                  testID={`activities-${mode}-card-${game}`}
+                  onPress={() => setOpen({ game, mode })}
+                  disabled={card.disabled}
+                  reason={card.reason}
+                />
+              </GameCell>
+            );
+          })}
         </GameGrid>
       </Card>
     </View>
