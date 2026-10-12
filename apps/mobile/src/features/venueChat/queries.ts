@@ -3,6 +3,7 @@ import {
   VENUE_CHAT_REACTION_BROADCAST,
   type VenueChatMessage,
   venueChatChannel,
+  withVenueChatExtras,
 } from '@shared/venueChat.ts';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
@@ -34,7 +35,7 @@ export function useVenueChat(venueId: string | undefined) {
     enabled: venueId !== undefined,
     queryFn: async (): Promise<VenueChatMessage[]> =>
       (await venueChatApi.page(venueId ?? '')).messages
-        .map((m) => ({ ...m, photoUrl: stablePhoto(m.photoUrl) }))
+        .map((m) => withVenueChatExtras({ ...m, photoUrl: stablePhoto(m.photoUrl) }))
         .reverse(),
   });
 }

@@ -64,8 +64,9 @@ export function parseReactionCounts(raw: unknown): ReactionCount[] {
   return out;
 }
 
-export function myReaction(list: readonly ReactionCount[]): Reaction | null {
-  return list.find((r) => r.mine)?.emoji ?? null;
+// A list the server did not send (one from before §21) counts as no reactions.
+export function myReaction(list: readonly ReactionCount[] | undefined): Reaction | null {
+  return list?.find((r) => r.mine)?.emoji ?? null;
 }
 
 // One reaction per person per message: the same emoji again takes it back, another one replaces
@@ -77,12 +78,12 @@ export function nextReaction(current: Reaction | null, picked: Reaction): Reacti
 // The list as it will be once the server takes the reader's new reaction (null: none), shown at
 // once. `alias` is the reader's table in the room chat, so its name moves with the reaction.
 export function withMyReaction(
-  list: readonly ReactionCount[],
+  list: readonly ReactionCount[] | undefined,
   next: Reaction | null,
   alias?: string,
 ): ReactionCount[] {
   const out: ReactionCount[] = [];
-  for (const r of list) {
+  for (const r of list ?? []) {
     if (!r.mine) {
       out.push(r);
       continue;

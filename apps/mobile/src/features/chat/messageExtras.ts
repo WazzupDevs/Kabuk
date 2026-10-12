@@ -43,7 +43,8 @@ export function useReplyTarget() {
 
 // The reader's reaction shows at once and stays until the page comes back from the server; a
 // failed one (the venue chat's limit included) quietly goes back to what the page says. `alias` is
-// the reader's table in the room chat, so its name moves with the reaction.
+// the reader's table in the room chat, so its name moves with the reaction. A missing list (a
+// server from before §21) is no reactions.
 export function useReactions(
   send: (messageId: string, emoji: Reaction | null) => Promise<unknown>,
   refresh: () => Promise<unknown>,
@@ -51,11 +52,11 @@ export function useReactions(
 ) {
   const [pending, setPending] = useState<Record<string, Reaction | null>>({});
   const view = useCallback(
-    (messageId: string, list: ReactionCount[]): ReactionCount[] =>
-      messageId in pending ? withMyReaction(list, pending[messageId] ?? null, alias) : list,
+    (messageId: string, list: readonly ReactionCount[] | undefined): readonly ReactionCount[] =>
+      messageId in pending ? withMyReaction(list, pending[messageId] ?? null, alias) : (list ?? []),
     [pending, alias],
   );
-  const pick = (messageId: string, list: ReactionCount[], emoji: string) => {
+  const pick = (messageId: string, list: readonly ReactionCount[] | undefined, emoji: string) => {
     if (!isReaction(emoji)) return;
     const next = nextReaction(myReaction(view(messageId, list)), emoji);
     setPending((p) => ({ ...p, [messageId]: next }));

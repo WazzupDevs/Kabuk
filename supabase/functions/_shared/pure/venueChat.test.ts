@@ -7,6 +7,7 @@ import {
   VENUE_CHAT,
   venueChatChannel,
   venueChatRate,
+  withVenueChatExtras,
 } from './venueChat.ts';
 
 describe('VENUE_CHAT rules', () => {
@@ -74,5 +75,32 @@ describe('labels and channels', () => {
 
   it('names the channel by venue', () => {
     expect(venueChatChannel('v1')).toBe('venue_chat:v1');
+  });
+});
+
+describe('withVenueChatExtras', () => {
+  const base = {
+    id: 'm1',
+    profiled: false,
+    senderAlias: 'Mor Kedi',
+    displayName: null,
+    photoUrl: null,
+    body: 'selam',
+    createdAt: '2026-10-12T10:00:00Z',
+    fromMe: false,
+  };
+
+  it('gives a message from a server before replies and reactions no quote and no reactions', () => {
+    expect(withVenueChatExtras(base)).toEqual({ ...base, replyTo: null, reactions: [] });
+  });
+
+  it('keeps what the server sent', () => {
+    const replyTo = { gone: true } as const;
+    const reactions = [{ emoji: '👍' as const, count: 1, mine: true }];
+    expect(withVenueChatExtras({ ...base, replyTo, reactions })).toEqual({
+      ...base,
+      replyTo,
+      reactions,
+    });
   });
 });
