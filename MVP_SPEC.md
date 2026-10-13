@@ -249,7 +249,7 @@ banned_phones     phone_hash (HMAC, sunucu gizli anahtarı) PK, created_at
 ### Realtime
 - **Tüm kanallar özeldir** (`private: true`). Kimin abone olabileceğine ve yayın yapabileceğine `realtime.messages` üzerindeki RLS politikaları karar verir (`private.realtime_topic_allowed`). Barındırılan projede public kanallar kapalıdır.
 - **Lobi:** Edge Function'lar `venue:{id}` kanalına veri içermeyen `lobby_changed` yayını yapar. İstemci bunu duyunca `venue_lobby` RPC'sini yeniden çağırır. Lobi verisi Realtime üzerinden taşınmaz. Kanala yalnızca mekanda aktif masası olanlar abone olur; yalnızca sunucu yayın yapar.
-- **Oda:** `rooms`, `messages` ve `game_events` için `room_id` filtreli Postgres Changes (RLS geçerli), ayrıca `presence:{room_id}` ile bağlantısı kopan masa tespit edilir. Oda kanallarına (`room:`, `messages:`, `game:`, `presence:`) yalnızca odanın iki masası abone olur ve yayın yapar.
+- **Oda:** `rooms`, `messages` ve `game_events` için `room_id` filtreli Postgres Changes (RLS geçerli), ayrıca `presence:{room_id}` ile bağlantısı kopan masa tespit edilir; "Diğer masanın bağlantısı koptu" notu ancak 15 sn kesintisiz kopukluktan sonra görünür, masa dönünce kalkar (`pure/presence.ts`). Oda kanallarına (`room:`, `messages:`, `game:`, `presence:`) yalnızca odanın iki masası abone olur ve yayın yapar.
 - **Katılma isteği:** Oda sahibine `session:{id}` kanalından veri içermeyen `join_request` yayını; kabulde istek sahibine `join_accepted`. Kanala yalnızca o masa abone olur, yalnızca sunucu yayın yapar. Red yayın üretmez. Uygulama öndeyken sistem bildirimi gösterilmez.
 
 ### Zamanlama

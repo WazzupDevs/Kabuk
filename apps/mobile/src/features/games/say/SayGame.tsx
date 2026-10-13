@@ -1,5 +1,5 @@
 import { SAY_CONFIG, type SayKind, type SayState } from '@shared/sayChallenge.ts';
-import { mayObject, turnSeconds } from '@shared/sayChallenge.ts';
+import { mayObject, objectionMsLeft, turnSeconds } from '@shared/sayChallenge.ts';
 import type { TableSide } from '@shared/tabu.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
@@ -103,7 +103,7 @@ export function SayRound({
             {canObject ? (
               <>
                 <ObjectionWindow
-                  remainingMs={(state.objectionEndsAt ?? now) - now}
+                  remainingMs={objectionMsLeft(state, now)}
                   totalMs={SAY_CONFIG[state.kind].objectionSeconds * 1000}
                   left={state.objectionsLeft[objector]}
                 />
