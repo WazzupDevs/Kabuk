@@ -134,11 +134,11 @@ export default function RoomScreen() {
   // table's own name.
   const otherAlias = isOwner ? r.guest_alias : r.owner_alias;
   const title = r.guest_alias && otherAlias ? tr.rooms.withOther(otherAlias) : r.owner_alias;
-  const topBar = (onClose?: () => void) => (
+  const topBar = (subtitle: string, onClose?: () => void) => (
     <RoomTopBar
       roomId={r.id}
       title={title}
-      subtitle={tr.rooms.roomEyebrow(concept)}
+      subtitle={subtitle}
       aliases={[r.owner_alias, ...(r.guest_alias ? [r.guest_alias] : [])]}
       guestSessionId={r.guest_session_id}
       hasOtherTable={hasOtherTable}
@@ -205,9 +205,10 @@ export default function RoomScreen() {
       setChatOpen(open);
       setSeen(new Set(others.map((m) => m.id)));
     };
+    const gameName = tr.concepts[concept ?? localGame ?? 'tabu'];
     return (
       <GameStage
-        title={tr.concepts[concept ?? localGame ?? 'tabu']}
+        title={gameName}
         unread={unread}
         chatOpen={chatOpen}
         onChat={toggleChat}
@@ -227,7 +228,7 @@ export default function RoomScreen() {
           <TimeUpOverlay
             visible={timeUp !== null}
             detail={timeUp?.detail}
-            brand={tr.games.gameBrand(tr.concepts[concept ?? localGame ?? 'tabu'])}
+            brand={tr.games.gameBrand(gameName)}
           />
         }
         ending={endGame.isPending}
@@ -236,7 +237,8 @@ export default function RoomScreen() {
         banner={hasOtherTable ? <OtherTableStatus roomId={r.id} isOwner={isOwner} slim /> : null}
         chat={
           <>
-            {topBar(() => toggleChat(false))}
+            {/* Only the game's name under the title: "· yüz yüze" split over two lines at 320 dp. */}
+            {topBar(gameName, () => toggleChat(false))}
             <ChatScroll
               startAtEnd
               newestKey={newest.key}
@@ -271,7 +273,7 @@ export default function RoomScreen() {
 
   return (
     <ChatScreen
-      top={topBar()}
+      top={topBar(tr.rooms.roomEyebrow(concept))}
       composer={<RoomComposer chat={chat} />}
       newestKey={newest.key}
       newestMine={newest.mine}
