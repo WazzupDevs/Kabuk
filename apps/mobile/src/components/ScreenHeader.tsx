@@ -53,7 +53,6 @@ export function ScreenHeader({
         <Text
           variant={title.length > LONG_TITLE ? 'title' : 'display'}
           accessibilityRole="header"
-          numberOfLines={2}
           className="flex-1"
         >
           {title}

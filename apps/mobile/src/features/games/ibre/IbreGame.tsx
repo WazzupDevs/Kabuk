@@ -8,7 +8,7 @@ import {
 import type { TableSide } from '@shared/tabu.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { View } from 'react-native';
+import { useWindowDimensions, View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { Text } from '@/components/Text';
@@ -18,24 +18,71 @@ import { tr } from '@/i18n/tr';
 import { gamesApi } from '@/lib/api';
 import { useNow } from '@/lib/useNow';
 
+import { useTheme } from '@/theme/ThemeProvider';
+import { SPACING, type TypeVariant } from '@/theme/tokens';
+
 import { ClockPill, TeamScore } from '../GameBits';
-import { TurnReady } from '../TurnReady';
-import { Dial, NeedleDial, NeedleReveal, SideChoice, TargetHold } from './Ibre';
+import { StageFit, useStageRoom } from '../GameStage';
+import { TURN_CIRCLE_MIN, TurnReady } from '../TurnReady';
+import { Dial, DialColumnContext, NeedleDial, NeedleReveal, SideChoice, TargetHold } from './Ibre';
 
 // The dials' widest; a phone narrower than this gets its own width (measured, not assumed).
 const DIAL_MAX = 360;
+// The narrowest a dial gets on a short screen; below it the middle scrolls instead.
+const DIAL_MIN = 120;
 
-// The dials take the width their column really has: measured on layout, then drawn.
-export function DialWidth({ children }: { children: (width: number) => ReactNode }) {
+// The dials take the width their column really has, and on a timed screen no more than the height
+// left lets them have (CLAUDE.md → Ekran davranışı). `dials` half dials are stacked in the block;
+// `outside` is the height of what else shares the middle (TurnReady, a line of text).
+export function DialWidth({
+  children,
+  dials = 1,
+  outside = 0,
+}: {
+  children: (width: number) => ReactNode;
+  dials?: number;
+  outside?: number;
+}) {
+  const room = useStageRoom();
   const [width, setWidth] = useState(0);
+  // The block's own height at the width it was drawn at: what it holds besides the half dials (the
+  // hubs, the ends, the target's number, the − / + row, a reveal's points) is measured, not guessed;
+  // narrower dials only ever make that taller, so the width settles in a step or two.
+  const [drawn, setDrawn] = useState<{ w: number; h: number } | null>(null);
+  let w = Math.min(width, DIAL_MAX);
+  if (room !== null) {
+    const besides = drawn ? drawn.h - (drawn.w / 2) * dials : 0;
+    w = Math.min(w, Math.max(DIAL_MIN, Math.floor(((room - outside - besides) / dials) * 2)));
+  }
   return (
     <View
       onLayout={(e) => setWidth(Math.min(DIAL_MAX, Math.floor(e.nativeEvent.layout.width)))}
       testID="ibre-dial-area"
     >
-      {width > 0 ? children(width) : null}
+      <DialColumnContext.Provider value={width}>
+        {w > 0 ? (
+          <View onLayout={(e) => setDrawn({ w, h: Math.ceil(e.nativeEvent.layout.height) })}>
+            {children(w)}
+          </View>
+        ) : null}
+      </DialColumnContext.Provider>
     </View>
   );
+}
+
+// Heights of what shares a timed screen's middle with the dials (DialWidth's `outside`); texts grow
+// with the font scale.
+export function useDialReserve() {
+  const { typography } = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const line = (variant: TypeVariant, lines = 1) =>
+    Math.ceil(typography[variant].lineHeight * Math.max(1, fontScale)) * lines;
+  return {
+    // TurnReady at its smallest (the circle, a line and a two-line hint), and the gap before it.
+    ready: SPACING[2] + TURN_CIRCLE_MIN + SPACING[3] * 2 + line('heading') + line('fine', 2),
+    // A text of `lines` lines, and the gap before it.
+    text: (lines: number, variant: TypeVariant = 'bodyStrong') => SPACING[2] + line(variant, lines),
+  };
 }
 
 // A round's reveal (canvas: İbrenin açılışı): the bands, the needle, the points and the side guess.
@@ -43,14 +90,17 @@ export function RoundReveal({
   reveal,
   guesser,
   brand,
+  outside,
 }: {
   reveal: IbreReveal;
   // The other table's alias, or Takım A / B.
   guesser: string;
   brand?: string;
+  // Height of what else shares the screen's middle (DialWidth).
+  outside?: number;
 }) {
   return (
-    <DialWidth>
+    <DialWidth outside={outside}>
       {(w) => (
         <NeedleReveal
           width={w}
@@ -149,6 +199,7 @@ export function IbreGame({ roomId, state, side, aliases }: Props) {
   });
   // This phone's needle and side guess, per round.
   const [needle, setNeedle] = useState<{ round: number; value: number }>({ round: 0, value: 50 });
+  const sizes = useDialReserve();
   const [picked, setPicked] = useState<{ round: number; side: IbreSide } | null>(null);
 
   // Once per clock: advance after readyEndsAt or endsAt.
@@ -190,11 +241,11 @@ export function IbreGame({ roomId, state, side, aliases }: Props) {
   if (state.turnPhase === 'ready') {
     const last = state.reveal;
     return (
-      <View className="gap-3">
+      <StageFit>
         {last ? (
-          <RoundReveal reveal={last} guesser={aliases[other(last.table)]} />
+          <RoundReveal reveal={last} guesser={aliases[other(last.table)]} outside={sizes.ready} />
         ) : (
-          <DialWidth>
+          <DialWidth outside={sizes.ready}>
             {(w) => (
               <Dial
                 width={w}
@@ -216,45 +267,30 @@ export function IbreGame({ roomId, state, side, aliases }: Props) {
           hint={tr.ibre.readyHint}
           waitingHint={tr.ibre.readyWaitingHint}
         />
-      </View>
+      </StageFit>
     );
   }
 
-  const header = <IbreHeader state={state} now={now} names={aliases} mine={side} />;
+  const header = (
+    <View className="gap-2.5">
+      <IbreHeader state={state} now={now} names={aliases} mine={side} />
+    </View>
+  );
+  const errorLine = error ? (
+    <Text variant="fine" tone="danger">
+      {errorMessage(error)}
+    </Text>
+  ) : null;
 
   if (state.turnPhase === 'running') {
-    return (
-      <View className="gap-3" testID="ibre-round">
-        {header}
-        {describing ? (
+    // The describing table: the hold-to-see dial over the needle's, "İbreyi onayla" at the bottom.
+    // The clue's rules are on the ready screen (readyHint), not under the clock.
+    return describing ? (
+      <StageFit
+        testID="ibre-round"
+        status={header}
+        actions={
           <>
-            <Text variant="fine" align="center">
-              {tr.ibre.clueHint}
-            </Text>
-            <DialWidth>
-              {(w) => (
-                <View className="gap-4">
-                  <TargetHold
-                    width={w}
-                    left={state.scale.left}
-                    right={state.scale.right}
-                    target={target?.round === round ? target.value : null}
-                    onHoldStart={() => {
-                      if (target?.round !== round && !ask.isPending) ask.mutate(round);
-                    }}
-                    onHoldEnd={() => undefined}
-                  />
-                  <NeedleDial
-                    width={w}
-                    left={state.scale.left}
-                    right={state.scale.right}
-                    value={value}
-                    onChange={(v) => setNeedle({ round, value: v })}
-                    disabled={lock.isPending}
-                  />
-                </View>
-              )}
-            </DialWidth>
             <Button
               testID="ibre-lock"
               size="lg"
@@ -266,77 +302,103 @@ export function IbreGame({ roomId, state, side, aliases }: Props) {
               loading={lock.isPending}
               disabled={lock.isPending}
             />
+            {errorLine}
           </>
-        ) : (
-          <>
-            <DialWidth>
-              {(w) => (
-                <Dial
-                  width={w}
-                  left={state.scale.left}
-                  right={state.scale.right}
-                  accessibilityLabel={tr.ibre.scale(state.scale.left, state.scale.right)}
-                />
-              )}
-            </DialWidth>
-            <Text variant="bodyStrong" align="center" accessibilityLiveRegion="polite">
-              {tr.ibre.otherClue(aliases[state.turnTable])}
-            </Text>
-          </>
-        )}
-        {error ? (
-          <Text variant="fine" tone="danger">
-            {errorMessage(error)}
-          </Text>
-        ) : null}
-      </View>
+        }
+      >
+        <DialWidth dials={2}>
+          {(w) => (
+            <View className="gap-2">
+              <TargetHold
+                width={w}
+                left={state.scale.left}
+                right={state.scale.right}
+                target={target?.round === round ? target.value : null}
+                onHoldStart={() => {
+                  if (target?.round !== round && !ask.isPending) ask.mutate(round);
+                }}
+                onHoldEnd={() => undefined}
+              />
+              <NeedleDial
+                width={w}
+                left={state.scale.left}
+                right={state.scale.right}
+                value={value}
+                onChange={(v) => setNeedle({ round, value: v })}
+                disabled={lock.isPending}
+              />
+            </View>
+          )}
+        </DialWidth>
+      </StageFit>
+    ) : (
+      <StageFit testID="ibre-round" status={header} actions={errorLine}>
+        <DialWidth outside={sizes.text(2)}>
+          {(w) => (
+            <Dial
+              width={w}
+              left={state.scale.left}
+              right={state.scale.right}
+              accessibilityLabel={tr.ibre.scale(state.scale.left, state.scale.right)}
+            />
+          )}
+        </DialWidth>
+        <Text variant="bodyStrong" align="center" accessibilityLiveRegion="polite">
+          {tr.ibre.otherClue(aliases[state.turnTable])}
+        </Text>
+      </StageFit>
     );
   }
 
-  // The other table's 15 seconds: the locked needle, "Solunda / Sağında".
+  // The other table's 15 seconds: the locked needle, "Solunda / Sağında" at the bottom.
   const mine = picked?.round === round ? picked.side : null;
   return (
-    <View className="gap-3" testID="ibre-side-phase">
-      {header}
+    <StageFit
+      testID="ibre-side-phase"
+      status={header}
+      actions={
+        <>
+          {describing ? (
+            <Text variant="bodyStrong" align="center" accessibilityLiveRegion="polite">
+              {tr.ibre.sideWaiting(aliases[other(side)])}
+            </Text>
+          ) : (
+            <>
+              <Text variant="bodyStrong" align="center">
+                {tr.ibre.sideTitle}
+              </Text>
+              <SideChoice
+                selected={mine}
+                onSelect={(s) => {
+                  setPicked({ round, side: s });
+                  choose.mutate({ round, side: s });
+                }}
+                disabled={choose.isPending || mine !== null}
+              />
+              <Text variant="fine" align="center">
+                {tr.ibre.sideHint(IBRE_CONFIG.sideSeconds)}
+              </Text>
+            </>
+          )}
+          {errorLine}
+        </>
+      }
+    >
       <DialWidth>
         {(w) => (
-          <NeedleDial
+          <Dial
             width={w}
             left={state.scale.left}
             right={state.scale.right}
-            value={state.needle ?? 50}
-            onChange={() => undefined}
-            disabled
+            needle={state.needle ?? 50}
+            accessibilityLabel={tr.ibre.needleLabel(
+              state.needle ?? 50,
+              state.scale.left,
+              state.scale.right,
+            )}
           />
         )}
       </DialWidth>
-      {describing ? (
-        <Text variant="bodyStrong" align="center" accessibilityLiveRegion="polite">
-          {tr.ibre.sideWaiting(aliases[other(side)])}
-        </Text>
-      ) : (
-        <>
-          <Text variant="bodyStrong" align="center">
-            {tr.ibre.sideTitle}
-          </Text>
-          <SideChoice
-            selected={mine}
-            onSelect={(s) => {
-              setPicked({ round, side: s });
-              choose.mutate({ round, side: s });
-            }}
-            disabled={choose.isPending || mine !== null}
-          />
-          <Text variant="fine" align="center">
-            {tr.ibre.sideHint(IBRE_CONFIG.sideSeconds)}
-          </Text>
-        </>
-      )}
-      {error ? (
-        <Text variant="fine" tone="danger">
-          {errorMessage(error)}
-        </Text>
-      ) : null}
-    </View>
+    </StageFit>
   );
 }

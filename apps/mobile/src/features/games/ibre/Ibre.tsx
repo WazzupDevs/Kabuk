@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from 'react';
+import { createContext, type ReactNode, useContext, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { Button } from '@/components/Button';
@@ -31,6 +31,10 @@ const KNOB = SPACING[10];
 // SPACING[6] in); its inner edge.
 const LABEL_RING = SPACING[6] + SPACING[6] / 2;
 
+// The width of the column the dials sit in (DialWidth): a dial narrower than its column lets its two
+// ends use the column's width, so a long end ("Kullanışsız") is never broken mid-word.
+export const DialColumnContext = createContext<number | null>(null);
+
 const clamp = (v: number) => Math.max(NEEDLE_MIN, Math.min(NEEDLE_MAX, Math.round(v)));
 // 0 → pointing left, 50 → up, 100 → right; degrees clockwise from up for RN's rotate.
 const turn = (value: number) => (value - 50) * 1.8;
@@ -52,6 +56,8 @@ type DialProps = {
   cover?: ReactNode;
   // The touch layer (drag).
   touch?: ReactNode;
+  // The two ends under the dial; off for the hold-to-see dial over the needle's (they repeat).
+  ends?: boolean;
   accessibilityLabel: string;
 };
 
@@ -67,6 +73,7 @@ export function Dial({
   children,
   cover,
   touch,
+  ends = true,
   accessibilityLabel,
 }: DialProps) {
   const { colors, shape } = useTheme();
@@ -74,6 +81,8 @@ export function Dial({
   // With the band numbers shown (the reveal), the needle stops short of their ring so it never
   // covers the number it points at; otherwise it reaches the rim.
   const needleTop = labels ? LABEL_RING + SPACING[2] : SPACING[3];
+  const column = useContext(DialColumnContext);
+  const spill = column !== null && column > width ? (column - width) / 2 : 0;
   return (
     <View className="gap-2 self-center" style={{ width }}>
       <View
@@ -180,14 +189,16 @@ export function Dial({
         {touch}
       </View>
       {/* Each end has half the row and wraps: long ends ran into each other at 320 dp. */}
-      <View className="flex-row gap-3">
-        <Text variant="bodyStrong" className="flex-1">
-          {left}
-        </Text>
-        <Text variant="bodyStrong" align="right" className="flex-1">
-          {right}
-        </Text>
-      </View>
+      {ends ? (
+        <View className="flex-row gap-3" style={{ marginHorizontal: -spill }}>
+          <Text variant="bodyStrong" className="flex-1">
+            {left}
+          </Text>
+          <Text variant="bodyStrong" align="right" className="flex-1">
+            {right}
+          </Text>
+        </View>
+      ) : null}
       {children}
     </View>
   );
@@ -316,6 +327,7 @@ export function TargetHold({
         right={right}
         target={shown ? target : null}
         labels={shown}
+        ends={false}
         accessibilityLabel={tr.ibre.scale(left, right)}
         cover={
           shown ? null : (
@@ -334,19 +346,30 @@ export function TargetHold({
                 borderColor: colors.border,
               }}
             >
-              <GameIcon name="needle" color={colors.onViolet} size={SPACING[11]} />
+              {/* Smaller on a small dial, so the line under it stays inside the cover. */}
+              <GameIcon
+                name="needle"
+                color={colors.onViolet}
+                size={Math.min(SPACING[11], Math.round(r * 0.4))}
+              />
               <Text variant="bodyStrong" tone="onViolet" align="center">
                 {holding ? tr.ibre.loading : tr.ibre.hold}
               </Text>
             </View>
           )
         }
-      />
-      {shown ? (
-        <View className="mt-2 items-center" testID="ibre-target">
+      >
+        {/* The target's number in the row the ends would take, kept while hidden so the needle's
+            dial below does not move when the hold starts. */}
+        <View
+          className="items-center"
+          testID={shown ? 'ibre-target' : undefined}
+          importantForAccessibility={shown ? 'auto' : 'no-hide-descendants'}
+          style={{ opacity: shown ? 1 : 0 }}
+        >
           <Text variant="title">{tr.ibre.target(target ?? 0)}</Text>
         </View>
-      ) : null}
+      </Dial>
     </Pressable>
   );
 }
@@ -536,7 +559,7 @@ export function NeedleReveal({
   brand?: string;
 }) {
   return (
-    <View testID="ibre-reveal" accessibilityLiveRegion="polite" className="items-center gap-4">
+    <View testID="ibre-reveal" accessibilityLiveRegion="polite" className="items-center gap-2">
       {clue ? (
         <Text variant="display" align="center">
           {clue}

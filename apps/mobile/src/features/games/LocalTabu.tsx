@@ -20,6 +20,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 
 import { ClockPill, TeamScore } from './GameBits';
 import { useGameSignals } from './gameSignals';
+import { StageFit } from './GameStage';
 import { TabuCardView } from './TabuCardView';
 import { useTurnFeedback } from './useTurnFeedback';
 
@@ -119,38 +120,46 @@ export function LocalTabu({ roomId }: { roomId: string }) {
     );
   }
 
+  // Clock and scores on top, the card in the middle, the buttons at the bottom (StageFit).
   return (
-    <View className="gap-3">
-      <View className="flex-row items-center justify-between">
-        <Text variant="eyebrow">{tr.games.round(localTurnNo(game), LOCAL_TABU_TURNS)}</Text>
-        <ClockPill seconds={secondsLeft} />
-      </View>
-      <Scores a={game.scores.A} b={game.scores.B} active={game.team} />
+    <StageFit
+      status={
+        <View className="gap-3">
+          <View className="flex-row items-center justify-between">
+            <Text variant="eyebrow">{tr.games.round(localTurnNo(game), LOCAL_TABU_TURNS)}</Text>
+            <ClockPill seconds={secondsLeft} />
+          </View>
+          <Scores a={game.scores.A} b={game.scores.B} active={game.team} />
+        </View>
+      }
+      actions={
+        <View className="flex-row gap-2">
+          <View className="flex-1">
+            <Button
+              variant="positive"
+              label={tr.games.correct}
+              onPress={() => dispatch({ type: 'correct' })}
+            />
+          </View>
+          <View className="flex-1">
+            <Button
+              variant="neutral"
+              label={tr.games.pass}
+              onPress={() => dispatch({ type: 'pass' })}
+            />
+          </View>
+          <View className="flex-1">
+            <Button
+              variant="danger"
+              label={tr.games.taboo}
+              onPress={() => dispatch({ type: 'taboo' })}
+            />
+          </View>
+        </View>
+      }
+    >
       {card ? <TabuCardView word={card.word} forbidden={card.forbidden} /> : null}
-      <View className="flex-row gap-2">
-        <View className="flex-1">
-          <Button
-            variant="positive"
-            label={tr.games.correct}
-            onPress={() => dispatch({ type: 'correct' })}
-          />
-        </View>
-        <View className="flex-1">
-          <Button
-            variant="neutral"
-            label={tr.games.pass}
-            onPress={() => dispatch({ type: 'pass' })}
-          />
-        </View>
-        <View className="flex-1">
-          <Button
-            variant="danger"
-            label={tr.games.taboo}
-            onPress={() => dispatch({ type: 'taboo' })}
-          />
-        </View>
-      </View>
-    </View>
+    </StageFit>
   );
 }
 

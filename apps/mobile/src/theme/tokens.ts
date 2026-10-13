@@ -134,6 +134,7 @@ export type TypeStyle = {
   size: number;
   lineHeight: number;
   letterSpacing?: number;
+  // In capitals, written by Text the Turkish way (upperTr in @shared/trText.ts), never by textTransform.
   uppercase?: boolean;
 };
 

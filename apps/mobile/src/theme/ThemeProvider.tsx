@@ -93,7 +93,8 @@ export function useTheme(): AppTheme {
 }
 
 // Text style of a type variant in the active theme. Custom fonts carry their weight, so no
-// fontWeight is set (Android does not pick a weight file from fontWeight).
+// fontWeight is set (Android does not pick a weight file from fontWeight). Capitals are not a
+// style: Text writes them the Turkish way (upperTr in @shared/trText.ts).
 export function typeStyle(theme: AppTheme, variant: TypeVariant): TextStyle {
   const t = theme.typography[variant];
   const family =
@@ -103,7 +104,6 @@ export function typeStyle(theme: AppTheme, variant: TypeVariant): TextStyle {
     fontSize: t.size,
     lineHeight: t.lineHeight,
     letterSpacing: t.letterSpacing,
-    textTransform: t.uppercase ? 'uppercase' : undefined,
   };
 }
 

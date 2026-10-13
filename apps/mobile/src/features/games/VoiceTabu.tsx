@@ -30,6 +30,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
 import { ClockPill, RoleNote, TeamScore } from './GameBits';
+import { StageFit } from './GameStage';
 import { TabuCardView } from './TabuCardView';
 import { tabuStats, TurnReady } from './TurnReady';
 import { useTurnFeedback } from './useTurnFeedback';
@@ -103,7 +104,7 @@ function ReadyTurn({
 
   const last = server.lastTurn;
   return (
-    <View className="gap-3">
+    <StageFit>
       <TurnReady
         testID="turn-ready"
         summary={
@@ -129,7 +130,7 @@ function ReadyTurn({
           {errorMessage(begin.error)}
         </Text>
       ) : null}
-    </View>
+    </StageFit>
   );
 }
 
@@ -290,18 +291,126 @@ function Turn({
   const passesLeft = view.maxPasses - view.passesUsed;
   const disabled = !card || covered || secondsLeft === 0;
 
-  return (
-    <View className="gap-3">
-      <View className="flex-row items-center justify-between">
-        <Text variant="eyebrow">{tr.games.turnEyebrow(server.turnNo, server.totalTurns)}</Text>
-        <ClockPill seconds={secondsLeft} />
+  const actions =
+    secondsLeft === 0 ? (
+      <Text variant="fine" align="center">
+        {tr.games.turnOverWait}
+      </Text>
+    ) : guessing ? null : server.mode === 'cooperative' ? (
+      <View className="flex-row gap-2">
+        {/* Three in a row (canvas: Tabu iş birliği): no icons, the points under each label. */}
+        <View className="flex-1">
+          <Button
+            variant="positive"
+            testID="tabu-correct"
+            size="lg"
+            stack
+            label={tr.games.correct}
+            detail={tr.games.correctPoints}
+            onPress={() => press('correct')}
+            disabled={disabled}
+          />
+        </View>
+        <View className="flex-1">
+          <Button
+            variant="neutral"
+            testID="tabu-pass"
+            size="lg"
+            stack
+            label={tr.games.pass}
+            detail={tr.games.passDetail(passesLeft)}
+            accessibilityLabel={`${tr.games.pass}, ${tr.games.passesLeft(passesLeft)}`}
+            onPress={() => press('pass')}
+            disabled={disabled || passesLeft <= 0}
+          />
+        </View>
+        <View className="flex-1">
+          <Button
+            variant="danger"
+            testID="tabu-taboo"
+            size="lg"
+            stack
+            label={tr.games.taboo}
+            detail={tr.games.tabooPoints}
+            onPress={() => press('taboo')}
+            disabled={disabled}
+          />
+        </View>
       </View>
-      <Scores
-        scores={view.scores}
-        aliases={aliases}
-        side={side}
-        describing={view.describingTable}
-      />
+    ) : (
+      <View className="flex-row gap-2.5">
+        <View className="flex-1">
+          <Button
+            variant="positive"
+            testID="tabu-correct"
+            size="lg"
+            icon="checkmark"
+            label={tr.games.correct}
+            detail={tr.games.correctPoints}
+            onPress={() => press('correct')}
+            disabled={disabled}
+          />
+        </View>
+        <View className="flex-1">
+          {role === 'judge' ? (
+            <Button
+              variant="danger"
+              testID="tabu-taboo"
+              size="lg"
+              icon="close"
+              label={tr.games.taboo}
+              detail={tr.games.tabooPoints}
+              onPress={() => press('taboo')}
+              disabled={disabled}
+            />
+          ) : (
+            <Button
+              variant="neutral"
+              testID="tabu-pass"
+              size="lg"
+              icon="play-skip-forward-outline"
+              label={tr.games.pass}
+              detail={tr.games.passDetail(passesLeft)}
+              accessibilityLabel={`${tr.games.pass}, ${tr.games.passesLeft(passesLeft)}`}
+              onPress={() => press('pass')}
+              disabled={disabled || passesLeft <= 0}
+            />
+          )}
+        </View>
+      </View>
+    );
+
+  // The clock and the scores on top, the card in the middle, the buttons at the bottom: on screen
+  // together at 320 × 640 (StageFit). The note on who sees the card shows before it is revealed.
+  return (
+    <StageFit
+      status={
+        <View className="gap-3">
+          <View className="flex-row items-center justify-between">
+            <Text variant="eyebrow">{tr.games.turnEyebrow(server.turnNo, server.totalTurns)}</Text>
+            <ClockPill seconds={secondsLeft} />
+          </View>
+          <Scores
+            scores={view.scores}
+            aliases={aliases}
+            side={side}
+            describing={view.describingTable}
+          />
+        </View>
+      }
+      actions={
+        actions || error ? (
+          <>
+            {actions}
+            {error ? (
+              <Text variant="fine" tone="danger">
+                {errorMessage(error)}
+              </Text>
+            ) : null}
+          </>
+        ) : null
+      }
+    >
       <RoleNote
         icon={
           role === 'describer'
@@ -357,102 +466,11 @@ function Turn({
           {cards.isError ? errorMessage(cards.error) : tr.games.cardsLoading}
         </Text>
       )}
-
-      {secondsLeft === 0 ? (
+      {covered || guessing ? (
         <Text variant="fine" align="center">
-          {tr.games.turnOverWait}
-        </Text>
-      ) : guessing ? null : server.mode === 'cooperative' ? (
-        <View className="flex-row gap-2">
-          {/* Three in a row (canvas: Tabu iş birliği): no icons, the points under each label. */}
-          <View className="flex-1">
-            <Button
-              variant="positive"
-              testID="tabu-correct"
-              size="lg"
-              stack
-              label={tr.games.correct}
-              detail={tr.games.correctPoints}
-              onPress={() => press('correct')}
-              disabled={disabled}
-            />
-          </View>
-          <View className="flex-1">
-            <Button
-              variant="neutral"
-              testID="tabu-pass"
-              size="lg"
-              stack
-              label={tr.games.pass}
-              detail={tr.games.passDetail(passesLeft)}
-              accessibilityLabel={`${tr.games.pass}, ${tr.games.passesLeft(passesLeft)}`}
-              onPress={() => press('pass')}
-              disabled={disabled || passesLeft <= 0}
-            />
-          </View>
-          <View className="flex-1">
-            <Button
-              variant="danger"
-              testID="tabu-taboo"
-              size="lg"
-              stack
-              label={tr.games.taboo}
-              detail={tr.games.tabooPoints}
-              onPress={() => press('taboo')}
-              disabled={disabled}
-            />
-          </View>
-        </View>
-      ) : (
-        <View className="flex-row gap-2.5">
-          <View className="flex-1">
-            <Button
-              variant="positive"
-              testID="tabu-correct"
-              size="lg"
-              icon="checkmark"
-              label={tr.games.correct}
-              detail={tr.games.correctPoints}
-              onPress={() => press('correct')}
-              disabled={disabled}
-            />
-          </View>
-          <View className="flex-1">
-            {role === 'judge' ? (
-              <Button
-                variant="danger"
-                testID="tabu-taboo"
-                size="lg"
-                icon="close"
-                label={tr.games.taboo}
-                detail={tr.games.tabooPoints}
-                onPress={() => press('taboo')}
-                disabled={disabled}
-              />
-            ) : (
-              <Button
-                variant="neutral"
-                testID="tabu-pass"
-                size="lg"
-                icon="play-skip-forward-outline"
-                label={tr.games.pass}
-                detail={tr.games.passDetail(passesLeft)}
-                accessibilityLabel={`${tr.games.pass}, ${tr.games.passesLeft(passesLeft)}`}
-                onPress={() => press('pass')}
-                disabled={disabled || passesLeft <= 0}
-              />
-            )}
-          </View>
-        </View>
-      )}
-      {error ? (
-        <Text variant="fine" tone="danger">
-          {errorMessage(error)}
+          {server.mode === 'cooperative' ? tr.games.coopIntro : tr.games.cardOnlyHere}
         </Text>
       ) : null}
-      <Text variant="fine" align="center">
-        {server.mode === 'cooperative' ? tr.games.coopIntro : tr.games.cardOnlyHere}
-      </Text>
-    </View>
+    </StageFit>
   );
 }

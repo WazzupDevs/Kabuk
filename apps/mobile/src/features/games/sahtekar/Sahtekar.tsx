@@ -11,6 +11,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING, TOUCH } from '@/theme/tokens';
 
 import { ClockPill } from '../GameBits';
+import { StageFit } from '../GameStage';
 import { SeatBadge } from './Seat';
 
 // Sahtekar's visual parts (docs/SPEC_V3.md §20.2; canvas: Aşama 6 · Oyunlar → Sahtekar). They take
@@ -62,16 +63,23 @@ export function PassPhone({
   seat,
   seats,
   onReady,
+  top,
 }: {
   seat: string;
   // Both tables' seats with their seen state, this table first.
   seats?: ReactNode;
   onReady: () => void;
+  // Over it on the stage: the category and the clock.
+  top?: ReactNode;
 }) {
   return (
-    <View className="flex-1 gap-4" testID="sahtekar-pass">
+    <StageFit
+      testID="sahtekar-pass"
+      status={top}
+      actions={<Button testID="sahtekar-ready" label={tr.sahtekar.ready(seat)} onPress={onReady} />}
+    >
       {seats ? <Card>{seats}</Card> : null}
-      <View className="flex-1 items-center justify-center gap-3">
+      <View className="items-center justify-center gap-3" style={{ flexGrow: 1 }}>
         <SeatBadge seat={seat} state="current" size={BIG_SEAT} />
         <Text variant="display" align="center" accessibilityRole="header">
           {tr.sahtekar.passTo(seat)}
@@ -80,8 +88,7 @@ export function PassPhone({
           {tr.sahtekar.passHint}
         </Text>
       </View>
-      <Button testID="sahtekar-ready" label={tr.sahtekar.ready(seat)} onPress={onReady} />
-    </View>
+    </StageFit>
   );
 }
 
@@ -98,6 +105,7 @@ export function HoldCard({
   onHoldStart,
   onHoldEnd,
   onDone,
+  top,
 }: {
   seat: string;
   // Null until the server answers.
@@ -105,11 +113,24 @@ export function HoldCard({
   onHoldStart: () => void;
   onHoldEnd: () => void;
   onDone: () => void;
+  // Over it on the stage: the category and the clock.
+  top?: ReactNode;
 }) {
   const [holding, setHolding] = useState(false);
   const [held, setHeld] = useState(false);
   return (
-    <View className="flex-1 gap-3">
+    <StageFit
+      status={top}
+      actions={
+        <Button
+          variant="neutral"
+          testID="sahtekar-seen"
+          label={tr.sahtekar.seen}
+          onPress={onDone}
+          disabled={!held || holding}
+        />
+      }
+    >
       <Pressable
         testID="sahtekar-hold"
         accessibilityRole="button"
@@ -124,18 +145,11 @@ export function HoldCard({
           setHolding(false);
           onHoldEnd();
         }}
-        className="flex-1"
+        style={{ flexGrow: 1 }}
       >
         <SeatCardFace card={holding ? card : null} loading={holding && !card} />
       </Pressable>
-      <Button
-        variant="neutral"
-        testID="sahtekar-seen"
-        label={tr.sahtekar.seen}
-        onPress={onDone}
-        disabled={!held || holding}
-      />
-    </View>
+    </StageFit>
   );
 }
 
@@ -150,8 +164,9 @@ export function SeatCardFace({ card, loading }: { card: SeatCard | null; loading
     : [colors.surface2, colors.text];
   return (
     <View
-      className="flex-1 items-center justify-center gap-3"
+      className="items-center justify-center gap-3"
       style={{
+        flexGrow: 1,
         minHeight: CARD_MIN,
         padding: SPACING[6],
         borderRadius: shape.radius.lg + SPACING[2],
@@ -211,7 +226,10 @@ export function ClueOrder({
   canSay,
   onSaid,
   saying,
+  top,
 }: {
+  // Over the round line on the stage: the category.
+  top?: ReactNode;
   round: number;
   totalRounds: number;
   order: readonly string[];
@@ -224,14 +242,36 @@ export function ClueOrder({
 }) {
   const { colors, shape } = useTheme();
   const speaking = order[currentIndex] ?? '';
+  // The clock on top and "Söyledi" at the bottom stay on screen; the order scrolls between them.
   return (
-    <View className="flex-1 gap-3" testID="sahtekar-clues">
-      <View className="flex-row items-center justify-between">
-        <Text variant="overline" tone="muted">
-          {tr.sahtekar.clueRound(round, totalRounds)}
-        </Text>
-        <ClockPill seconds={secondsLeft} />
-      </View>
+    <StageFit
+      testID="sahtekar-clues"
+      status={
+        <View className="gap-1">
+          {top}
+          <View className="flex-row items-center justify-between">
+            <Text variant="overline" tone="muted">
+              {tr.sahtekar.clueRound(round, totalRounds)}
+            </Text>
+            <ClockPill seconds={secondsLeft} />
+          </View>
+        </View>
+      }
+      actions={
+        canSay ? (
+          <Button
+            testID="sahtekar-said"
+            label={tr.sahtekar.saidButton}
+            onPress={onSaid}
+            loading={saying}
+          />
+        ) : (
+          <Text variant="fine" align="center">
+            {tr.sahtekar.otherSpeaking}
+          </Text>
+        )
+      }
+    >
       <Text variant="display" accessibilityRole="header">
         {tr.sahtekar.turnOf(speaking)}
       </Text>
@@ -271,21 +311,7 @@ export function ClueOrder({
           );
         })}
       </View>
-      <View className="mt-auto">
-        {canSay ? (
-          <Button
-            testID="sahtekar-said"
-            label={tr.sahtekar.saidButton}
-            onPress={onSaid}
-            loading={saying}
-          />
-        ) : (
-          <Text variant="fine" align="center">
-            {tr.sahtekar.otherSpeaking}
-          </Text>
-        )}
-      </View>
-    </View>
+    </StageFit>
   );
 }
 
@@ -316,13 +342,26 @@ export function VoteGrid({
   const { colors, shape } = useTheme();
   const depth = useDepth();
   return (
-    <View className="flex-1 gap-3" testID="sahtekar-vote">
-      <View className="flex-row items-center justify-between">
-        <Text variant="overline" tone="muted">
-          {tr.sahtekar.votesCast(votesCast, totalVoters)}
-        </Text>
-        {secondsLeft !== undefined ? <ClockPill seconds={secondsLeft} /> : null}
-      </View>
+    <StageFit
+      testID="sahtekar-vote"
+      status={
+        <View className="flex-row items-center justify-between">
+          <Text variant="overline" tone="muted">
+            {tr.sahtekar.votesCast(votesCast, totalVoters)}
+          </Text>
+          {secondsLeft !== undefined ? <ClockPill seconds={secondsLeft} /> : null}
+        </View>
+      }
+      actions={
+        <Button
+          testID="sahtekar-vote-submit"
+          label={selected ? tr.sahtekar.voteFor(selected) : tr.sahtekar.pickSeat}
+          onPress={onSubmit}
+          disabled={!selected}
+          loading={submitting}
+        />
+      }
+    >
       <View className="flex-row items-center gap-3">
         <SeatBadge seat={voter} state="current" size={SPACING[11]} />
         <Text variant="display" accessibilityRole="header" className="flex-1">
@@ -381,16 +420,7 @@ export function VoteGrid({
           );
         })}
       </View>
-      <View className="mt-auto">
-        <Button
-          testID="sahtekar-vote-submit"
-          label={selected ? tr.sahtekar.voteFor(selected) : tr.sahtekar.pickSeat}
-          onPress={onSubmit}
-          disabled={!selected}
-          loading={submitting}
-        />
-      </View>
-    </View>
+    </StageFit>
   );
 }
 
@@ -419,13 +449,26 @@ export function GuessOptions({
   const { colors, shape } = useTheme();
   const depth = useDepth();
   return (
-    <View className="flex-1 gap-3" testID="sahtekar-guess">
-      <View className="flex-row items-center justify-between">
-        <Text variant="overline" tone="muted">
-          {tr.sahtekar.lastChance(seat)}
-        </Text>
-        <ClockPill seconds={secondsLeft} />
-      </View>
+    <StageFit
+      testID="sahtekar-guess"
+      status={
+        <View className="flex-row items-center justify-between gap-3">
+          <Text variant="overline" tone="muted" className="flex-1">
+            {tr.sahtekar.lastChance(seat)}
+          </Text>
+          <ClockPill seconds={secondsLeft} />
+        </View>
+      }
+      actions={
+        <Button
+          testID="sahtekar-guess-submit"
+          label={selected ? tr.sahtekar.guessSubmit(selected) : tr.sahtekar.pickWord}
+          onPress={onSubmit}
+          disabled={!selected}
+          loading={submitting}
+        />
+      }
+    >
       <View className="flex-row items-center gap-3">
         <GameIcon name="impostor" color={colors.text} size={SPACING[12]} />
         <Text variant="display" accessibilityRole="header" className="flex-1">
@@ -466,32 +509,25 @@ export function GuessOptions({
           );
         })}
       </View>
-      <View className="mt-auto">
-        <Button
-          testID="sahtekar-guess-submit"
-          label={selected ? tr.sahtekar.guessSubmit(selected) : tr.sahtekar.pickWord}
-          onPress={onSubmit}
-          disabled={!selected}
-          loading={submitting}
-        />
-      </View>
-    </View>
+    </StageFit>
   );
 }
 
 // The other tables while the caught imposter guesses.
 export function GuessWaiting({ seat, secondsLeft }: { seat: string; secondsLeft: number }) {
   return (
-    <View className="flex-1 items-center justify-center gap-3" testID="sahtekar-guess-wait">
-      <ClockPill seconds={secondsLeft} />
-      <SeatBadge seat={seat} state="current" size={BIG_SEAT} />
-      <Text variant="display" align="center">
-        {tr.sahtekar.caught(seat)}
-      </Text>
-      <Text variant="fine" align="center">
-        {tr.sahtekar.guessingNow}
-      </Text>
-    </View>
+    <StageFit testID="sahtekar-guess-wait">
+      <View className="items-center justify-center gap-3" style={{ flexGrow: 1 }}>
+        <ClockPill seconds={secondsLeft} />
+        <SeatBadge seat={seat} state="current" size={BIG_SEAT} />
+        <Text variant="display" align="center">
+          {tr.sahtekar.caught(seat)}
+        </Text>
+        <Text variant="fine" align="center">
+          {tr.sahtekar.guessingNow}
+        </Text>
+      </View>
+    </StageFit>
   );
 }
 
@@ -523,8 +559,9 @@ export function ImposterReveal({
     <View
       testID="sahtekar-reveal"
       accessibilityLiveRegion="polite"
-      className="flex-1 items-center justify-center gap-3"
+      className="items-center justify-center gap-3"
       style={{
+        flexGrow: 1,
         padding: SPACING[6],
         borderRadius: shape.radius.lg + SPACING[2],
         backgroundColor: colors.lively,

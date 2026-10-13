@@ -109,7 +109,14 @@ export function GameCard({
           />
           {/* The whole width: a narrower box breaks "Sahtekar" inside the word at 320 dp. */}
           <View style={{ padding: SPACING[2.5], opacity: disabled ? FADED : 1 }}>
-            <Text variant="gameName" color={colors[fg]} numberOfLines={2}>
+            <Text
+              variant="gameName"
+              color={colors[fg]}
+              // Two lines at most; in large type the name shrinks rather than breaking a word.
+              numberOfLines={2}
+              adjustsFontSizeToFit
+              minimumFontScale={0.5}
+            >
               {name}
             </Text>
           </View>

@@ -230,6 +230,7 @@ export default function RoomScreen() {
         ending={endGame.isPending}
         endError={endGame.error}
         solo={!hasOtherTable}
+        banner={hasOtherTable ? <OtherTableStatus roomId={r.id} isOwner={isOwner} slim /> : null}
         chat={
           <>
             {topBar(() => toggleChat(false))}
@@ -256,7 +257,6 @@ export default function RoomScreen() {
           </Text>
         ) : null}
         {gameArea}
-        {hasOtherTable ? <OtherTableStatus roomId={r.id} isOwner={isOwner} /> : null}
         {isOwner ? <IncomingRequest roomId={r.id} ownerSessionId={r.owner_session_id} /> : null}
         <FirstGameIntro
           visible={concept === 'tabu' && hasOtherTable && intro.seen === false}
@@ -272,18 +272,24 @@ export default function RoomScreen() {
       composer={<RoomComposer chat={chat} />}
       newestKey={newest.key}
       newestMine={newest.mine}
+      // At the newest message once there is one (CLAUDE.md → Ekran davranışı); an empty room opens
+      // on its games.
+      startAtEnd={newest.key !== undefined}
     >
       {exit.isError ? (
         <Text variant="fine" tone="danger">
           {errorMessage(exit.error)}
         </Text>
       ) : null}
-      <View className="mt-4">{gameArea}</View>
+      {/* Over the games, not under them: below the grid it sat under the message bar. */}
       {r.status === 'waiting' && r.visibility === 'open' ? (
-        <Card tone="note" className="mt-1">
+        <Card tone="note" className="mt-4" testID="room-waiting-note">
           <Text variant="fine">{tr.rooms.waitingForGuest}</Text>
         </Card>
       ) : null}
+      <View className={r.status === 'waiting' && r.visibility === 'open' ? 'mt-1' : 'mt-4'}>
+        {gameArea}
+      </View>
       {hasOtherTable ? <OtherTableStatus roomId={r.id} isOwner={isOwner} /> : null}
 
       <RoomMessages
@@ -424,13 +430,40 @@ function TableFaces({ aliases }: { aliases: readonly string[] }) {
   );
 }
 
-function OtherTableStatus({ roomId, isOwner }: { roomId: string; isOwner: boolean }) {
+// "Diğer masanın bağlantısı koptu." In a running game it is a slim strip under the top row
+// (GameStage → banner), never over the game's buttons.
+function OtherTableStatus({
+  roomId,
+  isOwner,
+  slim,
+}: {
+  roomId: string;
+  isOwner: boolean;
+  slim?: boolean;
+}) {
+  const { colors, shape } = useTheme();
   const online = useOtherTableOnline(roomId, isOwner ? 'owner' : 'guest', true);
-  return online ? null : (
-    <Card tone="note" className="mt-1">
-      <Text variant="fine" tone="text" accessibilityLiveRegion="polite">
-        {tr.safety.otherOffline}
-      </Text>
+  if (online) return null;
+  const text = (
+    <Text variant="fine" tone="text" accessibilityLiveRegion="polite">
+      {tr.safety.otherOffline}
+    </Text>
+  );
+  return slim ? (
+    <View
+      testID="other-offline"
+      style={{
+        paddingHorizontal: SPACING[3],
+        paddingVertical: SPACING[1.5],
+        borderRadius: shape.radius.md,
+        backgroundColor: colors.surface2,
+      }}
+    >
+      {text}
+    </View>
+  ) : (
+    <Card tone="note" className="mt-1" testID="other-offline">
+      {text}
     </Card>
   );
 }

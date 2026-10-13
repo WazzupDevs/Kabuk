@@ -85,6 +85,14 @@ jobs:
       APK: ${{ github.workspace }}/apk/app-release.apk
     steps:
       - uses: actions/checkout@v4
+      # The runner's free disk varies; the emulator's userdata partition needs ~7.5 GB next to the
+      # local Supabase images. Tools this job never uses go first (the APK is built in `build`, so
+      # the NDK too).
+      - name: Free disk
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost \
+            /opt/hostedtoolcache/CodeQL /usr/local/lib/android/sdk/ndk
+          df -h /
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:

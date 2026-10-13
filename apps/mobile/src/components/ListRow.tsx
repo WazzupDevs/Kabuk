@@ -41,14 +41,9 @@ export function ListRow({
     <>
       {leading}
       <View className={card ? 'flex-1 gap-0.5' : 'flex-1 gap-1'}>
-        <Text variant="bodyStrong" numberOfLines={card ? 1 : undefined}>
-          {title}
-        </Text>
-        {meta ? (
-          <Text variant="fine" numberOfLines={card ? 1 : undefined}>
-            {meta}
-          </Text>
-        ) : null}
+        {/* Wraps rather than ending in "…" ("Sakarya Üniversitesi"). */}
+        <Text variant="bodyStrong">{title}</Text>
+        {meta ? <Text variant="fine">{meta}</Text> : null}
         {below}
       </View>
       {trailing ? (

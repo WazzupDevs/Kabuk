@@ -14,6 +14,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track, trackOnce } from '@/lib/analytics';
 import { gamesApi, roomsApi } from '@/lib/api';
+import { SPACING } from '@/theme/tokens';
 
 import { IbreGame, RoundReveal } from './ibre/IbreGame';
 import { LocalIbre } from './ibre/LocalIbre';
@@ -236,7 +237,8 @@ export function GameArea({
       <VoiceTabu roomId={roomId} state={state} side={side} aliases={aliases} />
     ) : null;
 
-  if (game) return <View className="gap-3">{game}</View>;
+  // The game fills the stage: the timed screens (StageFit) lay out against its height.
+  if (game) return <View style={{ flexGrow: 1, gap: SPACING[3] }}>{game}</View>;
 
   return (
     <View className="mt-4 gap-3">

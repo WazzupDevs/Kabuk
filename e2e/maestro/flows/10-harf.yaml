@@ -98,11 +98,13 @@ appId: app.kabuk.mobile
     file: ../scripts/bot.js
     env:
       ACTION: say-hold
-# İtiraz sits under the letter board, below the fold on a small screen.
-- scrollUntilVisible:
-    element:
+# The board, the window and İtiraz on screen together, with the clock (no scrolling).
+- extendedWaitUntil:
+    visible:
       id: say-object
     timeout: 15000
+- assertVisible:
+    id: letter-board
 - takeScreenshot: 48-harf-window
 # This phone lets it pass; the bot runs the game to its end.
 - runScript:

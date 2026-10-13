@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { REACTIONS, type Reaction } from '@shared/reactions.ts';
-import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useId, useRef, useState } from 'react';
 import { Animated, Pressable, View } from 'react-native';
 
 import { tr } from '@/i18n/tr';
@@ -10,6 +10,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 
 import { AVATAR_SIZE } from './Avatar';
+import { useChatBar } from './ChatScreen';
 import { useDepth } from './Depth';
 import { Text } from './Text';
 
@@ -89,7 +90,20 @@ export function ChatBubble({
   testID,
 }: Props) {
   const { colors, shape } = useTheme();
-  const [picking, setPicking] = useState(false);
+  // The reaction bar: the screen's one (open on one bubble at a time, closed by a tap outside, a
+  // scroll, the keyboard or back; ChatScreen), or this bubble's own outside a chat screen.
+  const sharedBar = useChatBar();
+  const barId = useId();
+  const [ownPicking, setOwnPicking] = useState(false);
+  const picking = sharedBar ? sharedBar.open === barId : ownPicking;
+  const setPicking = (next: boolean) => {
+    if (sharedBar) sharedBar.setOpen(next ? barId : null);
+    else setOwnPicking(next);
+  };
+  // A long press opens the bar when the finger lifts, not while it is still down: the bar makes the
+  // stream taller, and a stream that turned scrollable under a held finger took the next press for
+  // itself (the next long press was lost).
+  const longPressed = useRef(false);
   const big = shape.radius.lg - SPACING[1];
   const small = SPACING[1.5];
   const top = first ? big : small;
@@ -112,7 +126,22 @@ export function ChatBubble({
         if (e.nativeEvent.actionName === 'react') setPicking(true);
         if (e.nativeEvent.actionName === 'quote') onPressQuote?.();
       }}
-      onLongPress={onReact ? () => setPicking((p) => !p) : undefined}
+      onLongPress={
+        onReact
+          ? () => {
+              longPressed.current = true;
+            }
+          : undefined
+      }
+      onPressOut={
+        onReact
+          ? () => {
+              if (!longPressed.current) return;
+              longPressed.current = false;
+              setPicking(!picking);
+            }
+          : undefined
+      }
       style={{ maxWidth: '100%' }}
     >
       <View
@@ -148,6 +177,7 @@ export function ChatBubble({
     picking && onReact ? (
       <ReactionBar
         mine={mine}
+        onTouchInside={() => sharedBar?.markInside()}
         onPick={(emoji) => {
           setPicking(false);
           onReact(emoji);
@@ -201,7 +231,7 @@ export function ChatBubble({
       <View className="flex-row items-center gap-2">
         {avatar}
         {name ? (
-          <Text variant="label" tone="muted" numberOfLines={1} className="shrink">
+          <Text variant="label" tone="muted" className="shrink">
             {name}
           </Text>
         ) : null}
@@ -263,10 +293,11 @@ function QuoteBlock({
         backgroundColor: mine ? withAlpha(colors.onAccent, 0.16) : colors.surface2,
       }}
     >
-      <Text variant="label" color={mine ? colors.onAccent : colors.violet} numberOfLines={1}>
+      <Text variant="label" color={mine ? colors.onAccent : colors.violet}>
         {quote.name}
       </Text>
       {quote.text ? (
+        // An excerpt of the answered message: one line, like the inbox's last-message line.
         <Text variant="fine" color={mine ? colors.onAccent : colors.text} numberOfLines={1}>
           {quote.text}
         </Text>
@@ -341,7 +372,16 @@ function SwipeToReply({ onReply, children }: { onReply?: () => void; children: R
 }
 
 // The long-press bar: the six reactions, 3D like the buttons.
-function ReactionBar({ onPick, mine }: { onPick: (emoji: Reaction) => void; mine: boolean }) {
+function ReactionBar({
+  onPick,
+  mine,
+  onTouchInside,
+}: {
+  onPick: (emoji: Reaction) => void;
+  mine: boolean;
+  // A touch on the bar, before the screen's "tap outside closes it" sees it.
+  onTouchInside: () => void;
+}) {
   const { colors, shape } = useTheme();
   const depth = useDepth();
   return (
@@ -349,6 +389,7 @@ function ReactionBar({ onPick, mine }: { onPick: (emoji: Reaction) => void; mine
       accessibilityRole="menu"
       accessibilityLabel={tr.chat.react}
       testID="reaction-bar"
+      onTouchStart={onTouchInside}
       className="flex-row"
       style={[
         {

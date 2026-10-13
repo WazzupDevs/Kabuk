@@ -1,5 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
-import { type ReactNode, useState } from 'react';
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { KeyboardAvoidingView, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -10,6 +18,15 @@ import { tr } from '@/i18n/tr';
 import { withAlpha } from '@/theme/contrast';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
+
+// A timed screen on the stage (StageFit) turns the stage's scrolling off while it shows.
+const StageFitContext = createContext<(change: 1 | -1) => void>(() => undefined);
+// The height of a timed screen's middle, for pictures that size to it (İbre's dials).
+const StageRoomContext = createContext<number | null>(null);
+
+export function useStageRoom(): number | null {
+  return useContext(StageRoomContext);
+}
 
 const SCRIM_OPACITY = 0.45;
 // The chat panel covers most of the screen; the game stays visible above it.
@@ -32,6 +49,9 @@ type Props = {
   solo: boolean;
   // Over everything (the "Süre bitti" overlay).
   overlay?: ReactNode;
+  // Under the top row, outside the game: the other table's connection notice. It never lies over
+  // the game's buttons.
+  banner?: ReactNode;
 };
 
 // The running game, full screen (canvas: Aşama 6 · Oyunlar → Tam ekran oyun): no tab bar and no
@@ -50,9 +70,22 @@ export function GameStage({
   endError,
   solo,
   overlay,
+  banner,
 }: Props) {
   const { colors, shape } = useTheme();
   const [confirm, setConfirm] = useState(false);
+  // How many timed screens are showing (StageFit): while any is, the stage stands still at its top.
+  const [fitting, setFitting] = useState(0);
+  const changeFit = useCallback((change: 1 | -1) => setFitting((n) => n + change), []);
+  const fit = fitting > 0;
+  const scroll = useRef<ScrollView>(null);
+  useEffect(() => {
+    if (fit) scroll.current?.scrollTo({ y: 0, animated: false });
+  }, [fit]);
+  // The stage's visible height. A scroll view lets its content grow past the screen, so a timed
+  // screen's middle would take its content's height and push the actions off the bottom; while one
+  // shows, the content is held to exactly the screen.
+  const [viewport, setViewport] = useState<number | null>(null);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.canvas }}>
@@ -69,7 +102,7 @@ export function GameStage({
           icon="close"
           onPress={() => setConfirm(true)}
         />
-        <Text variant="heading" accessibilityRole="header" numberOfLines={1} className="flex-1">
+        <Text variant="heading" accessibilityRole="header" className="flex-1">
           {title}
         </Text>
         <View>
@@ -101,14 +134,22 @@ export function GameStage({
         </View>
       </View>
 
+      {banner ? (
+        <View style={{ paddingHorizontal: shape.screenPadding - SPACING[1] }}>{banner}</View>
+      ) : null}
+
       <ScrollView
+        ref={scroll}
         testID="game-stage"
         className="flex-1"
+        scrollEnabled={!fit}
+        onLayout={(e) => setViewport(e.nativeEvent.layout.height)}
         contentContainerStyle={{
           flexGrow: 1,
+          height: fit && viewport !== null ? viewport : undefined,
           paddingHorizontal: shape.screenPadding - SPACING[1],
           paddingTop: SPACING[2],
-          paddingBottom: SPACING[6],
+          paddingBottom: fit ? SPACING[2] : SPACING[6],
           gap: SPACING[3],
         }}
         keyboardShouldPersistTaps="handled"
@@ -118,7 +159,7 @@ export function GameStage({
             {errorMessage(endError)}
           </Text>
         ) : null}
-        {children}
+        <StageFitContext.Provider value={changeFit}>{children}</StageFitContext.Provider>
       </ScrollView>
 
       {overlay}
@@ -171,6 +212,51 @@ export function GameStage({
         }}
       />
     </SafeAreaView>
+  );
+}
+
+// A timed game screen (CLAUDE.md → Ekran davranışı): the turn and clock on top, the prompt in the
+// middle and the actions at the bottom are on screen together, without scrolling. Only the middle
+// scrolls, and only when it is taller than the room left (a long card in large text).
+export function StageFit({
+  status,
+  children,
+  actions,
+  testID,
+}: {
+  status?: ReactNode;
+  children: ReactNode;
+  actions?: ReactNode;
+  testID?: string;
+}) {
+  const changeFit = useContext(StageFitContext);
+  useEffect(() => {
+    changeFit(1);
+    return () => changeFit(-1);
+  }, [changeFit]);
+  const [room, setRoom] = useState<number | null>(null);
+  return (
+    // Grows to the stage's height; never squeezed below its content (flex-1 would let the content
+    // spill over its neighbours).
+    <View style={{ flexGrow: 1, gap: SPACING[2.5] }} testID={testID}>
+      {status}
+      <ScrollView
+        className="flex-1"
+        // The cards' hard shadows need a little room inside the scroll's clip.
+        style={{ marginHorizontal: -SPACING[1] }}
+        onLayout={(e) => setRoom(Math.floor(e.nativeEvent.layout.height - SPACING[1] * 2))}
+        contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: 'center',
+          gap: SPACING[2],
+          padding: SPACING[1],
+        }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <StageRoomContext.Provider value={room}>{children}</StageRoomContext.Provider>
+      </ScrollView>
+      {actions ? <View style={{ gap: SPACING[2] }}>{actions}</View> : null}
+    </View>
   );
 }
 

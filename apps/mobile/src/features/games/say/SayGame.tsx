@@ -13,6 +13,7 @@ import { gamesApi } from '@/lib/api';
 import { useNow } from '@/lib/useNow';
 
 import { ClockPill, TeamScore } from '../GameBits';
+import { StageFit } from '../GameStage';
 import { TurnReady } from '../TurnReady';
 import {
   LetterBoard,
@@ -62,30 +63,68 @@ export function SayRound({
   const secondsLeft = Math.max(0, Math.ceil(((state.endsAt ?? now) - now) / 1000));
   const result = useRoundResult(state, now, sides.names);
 
+  // The clock and the scores on top, the prompt and the board in the middle, "Söyledik" or the
+  // window and "İtiraz" at the bottom: together on a 320 × 640 screen (StageFit).
   return (
-    <View className="gap-3" testID="say-round">
-      <View className="flex-row items-center justify-between">
-        <Text variant="overline" tone="muted">
-          {tr.say.round(state.roundNo, state.totalRounds)}
-        </Text>
-        <ClockPill seconds={secondsLeft} />
-      </View>
-      <View className="flex-row gap-2.5">
-        {(['owner', 'guest'] as const).map((side) => (
-          // Straight in the row: TeamScore fills its half (a wrapper collapsed it to a strip).
-          <TeamScore
-            key={side}
-            name={sides.names[side]}
-            note={
-              side === sides.mine
-                ? `${tr.games.you} · ${tr.say.objectionsShort(state.objectionsLeft[side])}`
-                : tr.say.objectionsShort(state.objectionsLeft[side])
-            }
-            score={state.scores[side]}
-            active={side === turn}
-          />
-        ))}
-      </View>
+    <StageFit
+      testID="say-round"
+      status={
+        <View className="gap-2.5">
+          <View className="flex-row items-center justify-between">
+            <Text variant="overline" tone="muted">
+              {tr.say.round(state.roundNo, state.totalRounds)}
+            </Text>
+            <ClockPill seconds={secondsLeft} />
+          </View>
+          <View className="flex-row gap-2.5">
+            {(['owner', 'guest'] as const).map((side) => (
+              // Straight in the row: TeamScore fills its half (a wrapper collapsed it to a strip).
+              <TeamScore
+                key={side}
+                name={sides.names[side]}
+                note={
+                  side === sides.mine
+                    ? `${tr.games.you} · ${tr.say.objectionsShort(state.objectionsLeft[side])}`
+                    : tr.say.objectionsShort(state.objectionsLeft[side])
+                }
+                score={state.scores[side]}
+                active={side === turn}
+              />
+            ))}
+          </View>
+        </View>
+      }
+      actions={
+        (state.kind === 'sarki' && myTurn) || canObject || error ? (
+          <>
+            {state.kind === 'sarki' && myTurn ? (
+              <SaidButton onPress={() => onClaim(null)} disabled={busy} loading={busy} />
+            ) : null}
+            {canObject ? (
+              <>
+                <ObjectionWindow
+                  remainingMs={objectionMsLeft(state, now)}
+                  totalMs={SAY_CONFIG[state.kind].objectionSeconds * 1000}
+                  left={state.objectionsLeft[objector]}
+                />
+                <ObjectButton
+                  left={state.objectionsLeft[objector]}
+                  onPress={() => onObject(objector)}
+                  disabled={busy}
+                  loading={busy}
+                  size={state.kind === 'harf' ? 'md' : 'lg'}
+                />
+              </>
+            ) : null}
+            {error ? (
+              <Text variant="fine" tone="danger">
+                {errorMessage(error)}
+              </Text>
+            ) : null}
+          </>
+        ) : null
+      }
+    >
       {result}
       <PromptCard
         kind={state.kind === 'harf' ? 'category' : 'word'}
@@ -103,35 +142,14 @@ export function SayRound({
             onPick={(letter) => onClaim(letter)}
             disabled={!myTurn || busy}
           />
-          {myTurn ? (
+          {myTurn && !canObject ? (
             <Text variant="fine" align="center">
               {tr.say.pickLetter}
             </Text>
           ) : null}
         </>
-      ) : myTurn ? (
-        <SaidButton onPress={() => onClaim(null)} disabled={busy} />
       ) : null}
-      {canObject ? (
-        <View className="gap-2.5">
-          <ObjectionWindow
-            remainingMs={objectionMsLeft(state, now)}
-            totalMs={SAY_CONFIG[state.kind].objectionSeconds * 1000}
-            left={state.objectionsLeft[objector]}
-          />
-          <ObjectButton
-            left={state.objectionsLeft[objector]}
-            onPress={() => onObject(objector)}
-            disabled={busy}
-          />
-        </View>
-      ) : null}
-      {error ? (
-        <Text variant="fine" tone="danger">
-          {errorMessage(error)}
-        </Text>
-      ) : null}
-    </View>
+    </StageFit>
   );
 }
 
@@ -212,7 +230,7 @@ export function SayGame({ roomId, kind, state, side, aliases }: Props) {
     const last = state.lastRound;
     const total = SAY_CONFIG[kind].readySeconds;
     return (
-      <View className="gap-3">
+      <StageFit>
         <PromptCard kind={kind === 'harf' ? 'category' : 'word'} prompt={state.prompt} compact />
         <TurnReady
           testID="say-ready"
@@ -236,7 +254,7 @@ export function SayGame({ roomId, kind, state, side, aliases }: Props) {
           hint={tr.say.readyHint(turnSeconds(kind, state.roundNo))}
           waitingHint={tr.say.readyWaitingHint}
         />
-      </View>
+      </StageFit>
     );
   }
 

@@ -250,6 +250,23 @@ Pilot listesinde olmayan bir yerde test için elle girilen mekan. Dosya boşsa (
 - İçerik (kartlar, mekanlar, küfür listesi) `content/` altında JSON olarak durur ve seed script'iyle yüklenir. Koda gömülmez.
 - Yeni bağımlılık eklemeden önce gerekçesini belirt.
 
+## Ekran davranışı
+Her ekran buna uyar (tuvalde "Ekran davranışı" sayfası):
+- Açılan her çubuk, menü ve alt sayfa dışarı dokununca, kaydırınca ve Android geri tuşuyla kapanır. Aynı anda yalnızca biri açık olur.
+- Sohbetler (DM, oda, mekan) en son mesajdan açılır; fotoğraf ve alıntı yüklenince de en altta kalır. Kullanıcı yukarı kaydırdıysa yerinde kalır.
+- Basılan düğme, işlem bitene kadar ikinci kez basılamaz ve beklediğini gösterir.
+- Her ekranın yükleniyor, boş ve hata hâli vardır.
+- 320 dp genişlikte ve en büyük yazı boyutunda hiçbir metin "..." ile kesilmez, hiçbir düğme yazısı iki satıra bölünmez; gerekirse metin kısalır ya da düzen değişir.
+- Süreli oyun ekranlarında süre, istem ve eylem düğmeleri kaydırmadan aynı anda görünür.
+- Uyarı kartları hiçbir düğmenin üstüne binmez.
+
+Kodda karşılıkları:
+- Sohbet akışı `ChatScroll` (`src/components/ChatScreen.tsx`): sona tutunur, yalnızca kullanıcının kendi kaydırması bırakır. Tepki çubuğu ekran başına tek (`useChatBar`).
+- Süreli oyun ekranı `StageFit` (`src/features/games/GameStage.tsx`): üstte süre ve skor, ortada istem, altta eylemler; yalnızca orta kendi içinde kayar. Oyun sahnesinde `flex-1` yerine `flexGrow: 1` (içerikten küçülmez, komşusunun üstüne taşmaz). Bağlantı uyarısı sahnenin `banner`'ında.
+- `Button` yazısı tek satırdır, sığmazsa küçülür. Metinlere `numberOfLines` yalnızca önizleme olan alıntılarda verilir (gelen kutusu son satırı, alıntı).
+- Büyük harf `textTransform` ile değil, `Text` içinde `@shared/trText.ts` → `upperTr` ile (kural 7; testli); `styleGuard.test.ts` uygulamada `textTransform` büyük harfi olmadığını denetler.
+- E2E süreli ekranlarda düğmeye kaydırmaz, kaydırmadan görünür olduğunu denetler.
+
 ## Çalışma şekli
 - **main'e yalnızca `ci` kontrolü yeşil bir PR girer.** Doğrudan push yok. `.github/workflows/ci.yml` her PR'da ve main'e push'ta çalışır: `checks` işi (typecheck, lint, format:check, birim testleri, varsa `site:build`) ve `integration` işi (yerel Supabase, `db:reset`, `functions serve`, `test:integration`; pg_cron koşu boyunca duraklatılır). Tek zorunlu kontrol `ci` işidir; ikisi de geçerse geçer. E2E (`e2e.yml`) zorunlu değildir, etiketle çalışır.
 - **Branch protection (tek seferlik, repo sahibi):** GitHub → repo Settings → Rules → Rulesets → New branch ruleset: ad "main", Enforcement: Active, Target branches: Include default branch. Kurallar: Restrict deletions, Block force pushes, Require a pull request before merging, **Require status checks to pass** → Add checks → `ci` (kaynak GitHub Actions; liste, workflow en az bir kez çalıştıktan sonra dolar). İsteğe bağlı: "Require branches to be up to date before merging". Bypass listesine kimse eklenmez.

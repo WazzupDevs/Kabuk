@@ -217,7 +217,7 @@ function SingleVenue({ venue, bottomSpace }: { venue: ExploreVenue; bottomSpace:
           </View>
           <View className="gap-4 p-4">
             <View className="gap-1">
-              <Text variant="title" accessibilityRole="header" numberOfLines={2}>
+              <Text variant="title" accessibilityRole="header">
                 {venue.name}
               </Text>
               <View className="flex-row items-center gap-1.5">

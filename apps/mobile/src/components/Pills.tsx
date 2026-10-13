@@ -51,7 +51,7 @@ export function Pills<T extends string>({ options, value, onChange }: Props<T>) 
                   color={on ? colors.canvas : colors.text}
                   numberOfLines={1}
                   adjustsFontSizeToFit
-                  minimumFontScale={0.8}
+                  minimumFontScale={0.5}
                 >
                   {o.label}
                 </Text>

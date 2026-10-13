@@ -150,19 +150,19 @@ appId: app.kabuk.mobile
 - takeScreenshot: 18b-game-chat
 - tapOn:
     id: chat-back
-# The buttons are under the card; with a two-line room title they are below the fold.
-- scrollUntilVisible:
-    element:
+# CLAUDE.md → Ekran davranışı: the clock, the card and the buttons on screen together, no
+# scrolling (StageFit).
+- extendedWaitUntil:
+    visible:
       id: tabu-pass
-    centerElement: true
     timeout: 10000
+- assertVisible:
+    id: game-clock
 - assertVisible: 3 hak
 - tapOn:
     id: tabu-pass
-- scrollUntilVisible:
-    element:
-      text: 2 hak
-    centerElement: true
+- extendedWaitUntil:
+    visible: 2 hak
     timeout: 10000
 # The judging table (the bot) says Doğru.
 - runScript:
@@ -187,16 +187,14 @@ appId: app.kabuk.mobile
     file: ../scripts/bot.js
     env:
       ACTION: begin-turn
-# The screen is scrolled down to the buttons; the turn counter is at the top.
-- scrollUntilVisible:
-    element:
+# The turn counter on top and the judge's buttons at the bottom, together (no scrolling).
+- extendedWaitUntil:
+    visible:
       text: .*Tur 2/6
-    direction: UP
     timeout: 20000
-- scrollUntilVisible:
-    element:
+- extendedWaitUntil:
+    visible:
       id: tabu-taboo
-    centerElement: true
     timeout: 20000
 - takeScreenshot: 20-judge
 - tapOn:

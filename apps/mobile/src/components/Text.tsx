@@ -52,7 +52,6 @@ export function Text({
         align ? { textAlign: align } : null,
         tabular ? { fontVariant: ['tabular-nums'] } : null,
         strike ? { textDecorationLine: 'line-through' } : null,
-        upper ? { textTransform: 'none' } : null,
       ]}
     >
       {content}
