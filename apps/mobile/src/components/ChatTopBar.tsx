@@ -34,7 +34,7 @@ export function ChatTopBar({
 }: Props) {
   const { colors, shape } = useTheme();
   const who = (
-    <View className="flex-1 flex-row items-center gap-2.5" style={{ minHeight: TOUCH.min }}>
+    <>
       {leading}
       <View className="flex-1">
         {/* Wraps rather than ending in "…" (CLAUDE.md → Ekran davranışı): a room's two table
@@ -44,8 +44,13 @@ export function ChatTopBar({
         </Text>
         {subtitle ? <Text variant="fine">{subtitle}</Text> : null}
       </View>
-    </View>
+    </>
   );
+  // The avatar and the name sit straight in the bar's row. Inside another wrapper, flex-1 would
+  // size them by the screen's height and squeeze them to the touch height: a two-line name then
+  // spilled out of the bar.
+  const whoStyle = { minHeight: TOUCH.min };
+  const whoClass = 'flex-1 flex-row items-center gap-2.5';
   return (
     <View
       className="flex-row items-center gap-1"
@@ -71,12 +76,15 @@ export function ChatTopBar({
           accessibilityRole="button"
           accessibilityLabel={titleAccessibilityLabel}
           onPress={onPressTitle}
-          className="flex-1"
+          className={whoClass}
+          style={whoStyle}
         >
           {who}
         </Pressable>
       ) : (
-        who
+        <View className={whoClass} style={whoStyle}>
+          {who}
+        </View>
       )}
       {actions}
     </View>

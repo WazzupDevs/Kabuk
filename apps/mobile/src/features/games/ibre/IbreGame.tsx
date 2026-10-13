@@ -29,7 +29,7 @@ import { Dial, HUB_HALF, NeedleDial, NeedleReveal, SideChoice, TargetHold } from
 // The dials' widest; a phone narrower than this gets its own width (measured, not assumed).
 const DIAL_MAX = 360;
 // The narrowest a dial gets on a short screen; below it the middle scrolls instead.
-const DIAL_MIN = 160;
+const DIAL_MIN = 120;
 
 // The dials take the width their column really has, and on a timed screen no more than the height
 // left lets them have (CLAUDE.md → Ekran davranışı): `dials` half dials stacked, `reserve` the
@@ -43,9 +43,24 @@ export function DialWidth({
   dials?: number;
   reserve?: number;
 }) {
-  const room = useStageRoom();
+  const stage = useStageRoom();
   const [width, setWidth] = useState(0);
-  const byHeight = room === null ? DIAL_MAX : Math.floor(((room - reserve) / dials) * 2);
+  // `reserve` is an estimate: an end that wraps to two lines makes the middle taller than it says.
+  // What the middle really overflows by comes back from the stage, and the dials give it up (each
+  // pixel of width is half a pixel of height per half dial). Kept per height of the middle.
+  const [cut, setCut] = useState({ room: 0, over: 0, px: 0 });
+  if (stage !== null && (cut.room !== stage.room || cut.over !== stage.over)) {
+    const kept = cut.room === stage.room ? cut.px : 0;
+    setCut({
+      room: stage.room,
+      over: stage.over,
+      px: kept + Math.ceil((stage.over * 2) / dials),
+    });
+  }
+  const byHeight =
+    stage === null
+      ? DIAL_MAX
+      : Math.floor(((stage.room - reserve) / dials) * 2) - (cut.room === stage.room ? cut.px : 0);
   const w = Math.min(width, Math.max(DIAL_MIN, byHeight));
   return (
     <View
