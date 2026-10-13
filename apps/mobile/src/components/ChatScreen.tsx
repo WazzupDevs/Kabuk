@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -182,6 +183,21 @@ export function ChatScroll({
     setAtBottom(true);
     setPending(0);
   };
+
+  // The reaction bar opening over a message makes the stream taller, but it is not new content: the
+  // stream stays where it is, so the message under the finger does not jump, and closing the bar
+  // leaves no scroll to pull back (a long press right after it was lost). Following the end
+  // resumes when the bar closes.
+  const pinnedBeforeBar = useRef<boolean | null>(null);
+  useLayoutEffect(() => {
+    if (bar.open !== null) {
+      if (pinnedBeforeBar.current === null) pinnedBeforeBar.current = pinned.current;
+      pinned.current = false;
+    } else if (pinnedBeforeBar.current !== null) {
+      pinned.current = pinnedBeforeBar.current;
+      pinnedBeforeBar.current = null;
+    }
+  }, [bar.open]);
 
   // A stream that starts opening at the end once it has messages (the room), before the reader
   // touched it.
