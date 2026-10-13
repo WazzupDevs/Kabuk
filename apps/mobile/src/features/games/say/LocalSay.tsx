@@ -24,6 +24,7 @@ import { track } from '@/lib/analytics';
 import { gamesApi } from '@/lib/api';
 import { useNow } from '@/lib/useNow';
 
+import { StageFit } from '../GameStage';
 import { TurnReady } from '../TurnReady';
 import { PromptCard } from './Say';
 import { SayRound } from './SayGame';
@@ -121,7 +122,7 @@ export function LocalSay({ roomId, kind }: Props) {
 
   if (game.turnPhase === 'ready') {
     return (
-      <View className="gap-3">
+      <StageFit>
         <PromptCard kind={kind === 'harf' ? 'category' : 'word'} prompt={game.prompt} compact />
         <TurnReady
           testID="say-ready"
@@ -135,7 +136,7 @@ export function LocalSay({ roomId, kind }: Props) {
         <Text variant="fine" align="center">
           {tr.say.teamTurn(game.turnTable === 'owner' ? 'A' : 'B')}
         </Text>
-      </View>
+      </StageFit>
     );
   }
 

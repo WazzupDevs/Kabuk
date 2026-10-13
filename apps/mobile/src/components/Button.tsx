@@ -119,7 +119,6 @@ export function Button({
     style.paddingHorizontal = 0;
   }
 
-  const oneLine = !!detail || !!tight || small || !/\s/.test(label.trim());
   // The 3D depth on every filled button; text-only and reveal-signal buttons have none.
   const raised = !textOnly && !tint;
 
@@ -157,11 +156,11 @@ export function Button({
                   variant={small ? 'buttonSmall' : size === 'lg' ? 'buttonLarge' : 'button'}
                   color={fg}
                   align="center"
-                  // A single word or a label with a detail ("Doğru +1") stays on one line and
-                  // shrinks to fit instead of breaking inside the word.
-                  numberOfLines={oneLine ? 1 : 2}
-                  adjustsFontSizeToFit={oneLine}
-                  minimumFontScale={0.7}
+                  // One line, always (CLAUDE.md → Ekran davranışı): a label that does not fit
+                  // shrinks rather than breaking onto a second line ("Şimdi değil", "Daha sol").
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.5}
                   className="shrink"
                 >
                   {label}
@@ -172,7 +171,7 @@ export function Button({
                     color={fg}
                     numberOfLines={1}
                     adjustsFontSizeToFit
-                    minimumFontScale={0.7}
+                    minimumFontScale={0.5}
                   >
                     {detail}
                   </Text>

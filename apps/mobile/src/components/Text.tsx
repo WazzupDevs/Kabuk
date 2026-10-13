@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Text as RNText, type TextProps } from 'react-native';
 
+import { upperTr } from '@/theme/textCase';
 import { typeStyle, useTheme } from '@/theme/ThemeProvider';
 import type { PaletteKey, TypeVariant } from '@/theme/tokens';
 
@@ -49,7 +50,7 @@ export function Text({
         strike ? { textDecorationLine: 'line-through' } : null,
       ]}
     >
-      {children}
+      {theme.typography[variant].uppercase ? upperTr(children) : children}
     </RNText>
   );
 }

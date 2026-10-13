@@ -67,10 +67,12 @@ export function PromptCard({
       testID="say-prompt"
       accessible
       accessibilityLabel={`${kind === 'category' ? tr.say.category : tr.say.word}: ${prompt}`}
-      className={compact ? 'items-center gap-1' : 'flex-1 items-center justify-center gap-2'}
+      className={compact ? 'items-center gap-0.5' : 'items-center justify-center gap-2'}
       style={{
+        // Grows into a timed screen's free height, never below its content.
+        flexGrow: compact ? 0 : 1,
         paddingHorizontal: SPACING[5],
-        paddingVertical: compact ? SPACING[4] : SPACING[8],
+        paddingVertical: compact ? SPACING[2.5] : SPACING[6],
         borderRadius: shape.radius.lg + SPACING[2],
         backgroundColor: bg,
         borderWidth: Math.max(shape.stroke.feature, 2),
@@ -124,7 +126,7 @@ export function LetterBoard({
     <View
       testID="letter-board"
       className="flex-row flex-wrap"
-      style={{ marginHorizontal: -GAP, rowGap: GAP * 2 }}
+      style={{ marginHorizontal: -GAP, rowGap: GAP }}
     >
       {letters.map(({ letter, closed }) => {
         const on = letter === selected;
@@ -224,7 +226,7 @@ export function ObjectionWindow({
   return (
     <View
       testID="objection-window"
-      className="gap-1.5"
+      className="gap-1"
       accessibilityRole="timer"
       accessibilityLabel={tr.say.windowLabel(seconds)}
     >
@@ -241,7 +243,7 @@ export function ObjectionWindow({
       </View>
       <View
         style={{
-          height: SPACING[2.5],
+          height: SPACING[1.5],
           borderRadius: shape.radius.pill,
           backgroundColor: colors.surface2,
           overflow: 'hidden',
@@ -289,16 +291,19 @@ export function ObjectButton({
   onPress,
   disabled,
   loading,
+  size = 'lg',
 }: {
   left: number;
   onPress: () => void;
   disabled?: boolean;
   loading?: boolean;
+  // md under Harf Kapmaca's board, so the board, the window and the button fit together.
+  size?: 'md' | 'lg';
 }) {
   return (
     <Button
       variant="danger"
-      size="lg"
+      size={size}
       testID="say-object"
       label={tr.say.object}
       detail={tr.say.objectionsShort(left)}

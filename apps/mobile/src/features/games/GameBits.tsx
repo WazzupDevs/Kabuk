@@ -47,7 +47,8 @@ export function ClockPill({ seconds }: { seconds: number }) {
       accessibilityLabel={tr.games.clockLabel(seconds)}
       className="flex-row items-center gap-1.5"
       style={{
-        minHeight: urgent ? TOUCH.min + SPACING[1] : TOUCH.min - SPACING[2],
+        // The same height urgent or not: the timed screen's layout does not jump in the last seconds.
+        minHeight: TOUCH.min - SPACING[2],
         paddingHorizontal: urgent ? SPACING[4] : SPACING[3],
         borderRadius: shape.radius.pill,
         backgroundColor: urgent ? colors.danger : colors.surface2,
@@ -64,7 +65,9 @@ export function ClockPill({ seconds }: { seconds: number }) {
   );
 }
 
-// A team's score. The describing team is ringed in the accent, or filled like a sticker when the
+// A team's score, one row: the name (and "siz", "anlatıyor") on the left, the score on the right, so
+// a timed screen keeps its room for the card (CLAUDE.md → Ekran davranışı). The name wraps rather
+// than being cut. The describing team is ringed in the accent, or filled like a sticker when the
 // theme's `selectedTeam` is `fill`. When the score changes the number grows for a moment and the
 // change ("+1", "−1") floats up beside it; with reduce motion the number just changes.
 export function TeamScore({
@@ -105,10 +108,10 @@ export function TeamScore({
 
   return (
     <View
-      className="flex-1 gap-0.5"
+      className="flex-1 flex-row items-center gap-2"
       style={{
         paddingHorizontal: SPACING[3],
-        paddingVertical: SPACING[2.5],
+        paddingVertical: SPACING[1.5],
         borderRadius: shape.radius.md,
         backgroundColor: fill ? colors.buzz : colors.surface,
         borderWidth:
@@ -117,13 +120,42 @@ export function TeamScore({
         boxShadow: shape.shadow.card,
       }}
     >
-      <Text variant="label" color={fg} numberOfLines={1}>
-        {name}
-      </Text>
-      <Text variant="fine" color={fill ? colors.onBuzz : colors.muted}>
-        {note}
-      </Text>
-      <View className="flex-row items-end gap-2">
+      <View className="flex-1">
+        <Text variant="label" color={fg}>
+          {name}
+        </Text>
+        {note.trim() ? (
+          <Text variant="fine" color={fill ? colors.onBuzz : colors.muted}>
+            {note}
+          </Text>
+        ) : null}
+      </View>
+      <View className="items-end">
+        {delta !== 0 ? (
+          <Animated.View
+            pointerEvents="none"
+            importantForAccessibility="no-hide-descendants"
+            accessibilityElementsHidden
+            className="absolute"
+            style={{
+              right: 0,
+              bottom: '100%',
+              opacity: float.interpolate({ inputRange: [0, 0.2, 1], outputRange: [0, 1, 0] }),
+              transform: [
+                {
+                  translateY: float.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [SPACING[2], -SPACING[1]],
+                  }),
+                },
+              ],
+            }}
+          >
+            <Text variant="label" color={fg}>
+              {delta > 0 ? tr.games.scoreUp(delta) : tr.games.scoreDown(-delta)}
+            </Text>
+          </Animated.View>
+        ) : null}
         <Animated.View
           style={{
             transform: [
@@ -131,45 +163,25 @@ export function TeamScore({
             ],
           }}
         >
-          <Text variant="score" color={fg}>
+          <Text variant="score" color={fg} tabular>
             {String(score)}
           </Text>
         </Animated.View>
-        {delta !== 0 ? (
-          <Animated.View
-            pointerEvents="none"
-            importantForAccessibility="no-hide-descendants"
-            accessibilityElementsHidden
-            style={{
-              opacity: float.interpolate({ inputRange: [0, 0.2, 1], outputRange: [0, 1, 0] }),
-              transform: [
-                {
-                  translateY: float.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0, -SPACING[5]],
-                  }),
-                },
-              ],
-            }}
-          >
-            <Text variant="bodyStrong" color={fg}>
-              {delta > 0 ? tr.games.scoreUp(delta) : tr.games.scoreDown(-delta)}
-            </Text>
-          </Animated.View>
-        ) : null}
       </View>
     </View>
   );
 }
 
-// "Hakem sizsiniz …": the role note above the card.
+// "Hakem sizsiniz …": the role note above the card, in small type so the card keeps the room.
 export function RoleNote({ icon, text }: { icon: IconName; text: string }) {
   const { colors } = useTheme();
   return (
     <Card tone="note">
       <View className="flex-row items-start gap-2">
-        <Ionicons name={icon} size={ICON.md} color={colors.text} />
-        <Text className="flex-1">{text}</Text>
+        <Ionicons name={icon} size={ICON.sm} color={colors.text} />
+        <Text variant="fine" tone="text" className="flex-1">
+          {text}
+        </Text>
       </View>
     </Card>
   );

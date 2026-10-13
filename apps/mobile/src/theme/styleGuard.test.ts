@@ -73,6 +73,30 @@ describe('no hard-coded styles outside the theme', () => {
   });
 });
 
+// Capitals by textTransform follow the device's rules, not Turkish: Android writes KATEGORI and
+// BITTI. Text writes capitals itself (textCase.ts). This covers the theme folder too.
+describe('no textTransform capitals', () => {
+  const paths = SOURCES.flatMap((d) => files(join(mobile, d))).map((p) => relative(mobile, p));
+
+  it.each(paths)('%s', (path) => {
+    const lines = readFileSync(join(mobile, path), 'utf8').split('\n');
+    const problems: string[] = [];
+    lines.forEach((line, i) => {
+      if (/^\s*\/\//.test(line)) return;
+      if (/textTransform\b.*['"`]uppercase['"`]/.test(line)) {
+        problems.push(`${i + 1}: textTransform uppercase: ${line.trim()}`);
+      }
+      for (const match of line.matchAll(CLASS_ATTR)) {
+        const classes = match[1] ?? match[2] ?? match[3] ?? '';
+        if (/(?:^|\s)uppercase\b/.test(classes)) {
+          problems.push(`${i + 1}: uppercase class: ${classes}`);
+        }
+      }
+    });
+    expect(problems).toEqual([]);
+  });
+});
+
 describe('tailwind.config.js', () => {
   const config = require('../../tailwind.config.js') as {
     theme: Record<string, unknown> & { spacing: Record<string, string> };

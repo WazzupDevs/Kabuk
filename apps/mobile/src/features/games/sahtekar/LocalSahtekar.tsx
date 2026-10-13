@@ -20,8 +20,10 @@ import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { gamesApi } from '@/lib/api';
 import { useNow } from '@/lib/useNow';
+import { SPACING } from '@/theme/tokens';
 
 import { ClockPill } from '../GameBits';
+import { StageFit } from '../GameStage';
 import {
   ClueOrder,
   GuessOptions,
@@ -118,25 +120,25 @@ export function LocalSahtekar({ roomId, players }: Props) {
     case 'viewing': {
       const next = game.seats.find((s) => !game.viewed.includes(s)) ?? game.seats[0] ?? '';
       return (
-        <View className="flex-1 gap-3">
-          <View className="flex-row items-center justify-between">
-            <Text variant="overline" tone="muted" className="flex-1">
-              {tr.sahtekar.category(game.category)}
-            </Text>
-            <ClockPill seconds={secondsLeft} />
-          </View>
-          <PassPhone
-            seat={next}
-            seats={
-              <SeatList
-                title={tr.sahtekar.ownTable}
-                seats={game.seats.map((seat) => ({ seat, viewed: game.viewed.includes(seat) }))}
-                current={next}
-              />
-            }
-            onReady={() => setHolding(next)}
-          />
-        </View>
+        <PassPhone
+          seat={next}
+          top={
+            <View className="flex-row items-center justify-between">
+              <Text variant="overline" tone="muted" className="flex-1">
+                {tr.sahtekar.category(game.category)}
+              </Text>
+              <ClockPill seconds={secondsLeft} />
+            </View>
+          }
+          seats={
+            <SeatList
+              title={tr.sahtekar.ownTable}
+              seats={game.seats.map((seat) => ({ seat, viewed: game.viewed.includes(seat) }))}
+              current={next}
+            />
+          }
+          onReady={() => setHolding(next)}
+        />
       );
     }
     case 'redeal':
@@ -152,20 +154,20 @@ export function LocalSahtekar({ roomId, players }: Props) {
       );
     case 'clues':
       return (
-        <View className="flex-1 gap-3">
-          <Text variant="overline" tone="muted">
-            {tr.sahtekar.category(game.category)}
-          </Text>
-          <ClueOrder
-            round={clueRoundOf(game.step, game.order.length)}
-            totalRounds={SAHTEKAR.clueRounds}
-            order={game.order}
-            currentIndex={game.step}
-            secondsLeft={secondsLeft}
-            canSay
-            onSaid={() => dispatch({ type: 'said', step: game.step })}
-          />
-        </View>
+        <ClueOrder
+          top={
+            <Text variant="overline" tone="muted">
+              {tr.sahtekar.category(game.category)}
+            </Text>
+          }
+          round={clueRoundOf(game.step, game.order.length)}
+          totalRounds={SAHTEKAR.clueRounds}
+          order={game.order}
+          currentIndex={game.step}
+          secondsLeft={secondsLeft}
+          canSay
+          onSaid={() => dispatch({ type: 'said', step: game.step })}
+        />
       );
     case 'voting': {
       const next = game.seats.find((s) => !(s in game.votes)) ?? null;
@@ -188,16 +190,18 @@ export function LocalSahtekar({ roomId, players }: Props) {
           />
         );
       }
-      return (
-        <View className="flex-1 gap-3">
-          <View className="flex-row items-center justify-between">
-            <Text variant="overline" tone="muted">
-              {tr.sahtekar.votesCast(Object.keys(game.votes).length, game.seats.length)}
-            </Text>
-            <ClockPill seconds={secondsLeft} />
-          </View>
-          {next ? <PassPhone seat={next} onReady={() => setVoting(next)} /> : null}
+      const top = (
+        <View className="flex-row items-center justify-between">
+          <Text variant="overline" tone="muted">
+            {tr.sahtekar.votesCast(Object.keys(game.votes).length, game.seats.length)}
+          </Text>
+          <ClockPill seconds={secondsLeft} />
         </View>
+      );
+      return next ? (
+        <PassPhone seat={next} top={top} onReady={() => setVoting(next)} />
+      ) : (
+        <StageFit status={top}>{null}</StageFit>
       );
     }
     case 'guess':
@@ -218,7 +222,7 @@ export function LocalSahtekar({ roomId, players }: Props) {
       );
     case 'done':
       return (
-        <View className="flex-1 gap-3">
+        <View style={{ flexGrow: 1, gap: SPACING[3] }}>
           {game.winner ? (
             <ImposterReveal
               imposter={game.imposter}

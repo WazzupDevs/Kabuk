@@ -25,9 +25,12 @@ import { track } from '@/lib/analytics';
 import { gamesApi } from '@/lib/api';
 import { useNow } from '@/lib/useNow';
 
+import { SPACING } from '@/theme/tokens';
+
+import { StageFit } from '../GameStage';
 import { TurnReady } from '../TurnReady';
-import { NeedleDial, SideChoice, TargetHold } from './Ibre';
-import { DialWidth, IbreHeader, RoundReveal } from './IbreGame';
+import { Dial, NeedleDial, SideChoice, TargetHold } from './Ibre';
+import { DialWidth, IbreHeader, RoundReveal, useDialReserve } from './IbreGame';
 
 type Props = { roomId: string };
 
@@ -46,6 +49,7 @@ export function LocalIbre({ roomId }: Props) {
   const [local, setLocal] = useState<Local | null>(null);
   const [scales, setScales] = useState<IbreScale[]>([]);
   const [needle, setNeedle] = useState<{ round: number; value: number }>({ round: 0, value: 50 });
+  const sizes = useDialReserve();
   // The scale of the round after `game`'s (one per round, from ibre/start).
   const nextFor = (g: IbreState) => () => scales[g.roundNo] ?? g.scale;
   const deal = useMutation({
@@ -116,15 +120,20 @@ export function LocalIbre({ roomId }: Props) {
   }
 
   const { game, target } = local;
-  const reveal = game.reveal ? (
-    <RoundReveal reveal={game.reveal} guesser={TEAMS[other(game.reveal.table)]} />
-  ) : null;
+  const reveal = (reserve?: number) =>
+    game.reveal ? (
+      <RoundReveal
+        reveal={game.reveal}
+        guesser={TEAMS[other(game.reveal.table)]}
+        reserve={reserve}
+      />
+    ) : null;
 
   if (game.phase === 'finished') {
     const winner = ibreWinner(game);
     return (
       <View className="gap-3">
-        {reveal}
+        {reveal()}
         <Card tone="note">
           <Text variant="title" align="center" testID="ibre-local-result">
             {winner ? tr.games.winner(LETTER[winner]) : tr.games.draw}
@@ -147,8 +156,8 @@ export function LocalIbre({ roomId }: Props) {
 
   if (game.turnPhase === 'ready') {
     return (
-      <View className="gap-3">
-        {reveal}
+      <StageFit>
+        {reveal(sizes.under + sizes.ends + sizes.reveal + sizes.ready + sizes.text(1, 'fine'))}
         <TurnReady
           testID="ibre-ready"
           describing
@@ -161,24 +170,44 @@ export function LocalIbre({ roomId }: Props) {
         <Text variant="fine" align="center">
           {tr.ibre.describerTurn(TEAMS[game.turnTable])}
         </Text>
-      </View>
+      </StageFit>
     );
   }
 
   const round = game.roundNo;
   const value = needle.round === round ? needle.value : 50;
-  const header = <IbreHeader state={game} now={now} names={TEAMS} mine={null} />;
+  const header = (
+    <View className="gap-2.5">
+      <IbreHeader state={game} now={now} names={TEAMS} mine={null} />
+    </View>
+  );
 
   if (game.turnPhase === 'running') {
+    // The clue's rules are on the ready screen (readyHint), not under the clock.
     return (
-      <View className="gap-3" testID="ibre-round">
-        {header}
-        <Text variant="fine" align="center">
-          {tr.ibre.clueHint}
-        </Text>
-        <DialWidth>
+      <StageFit
+        testID="ibre-round"
+        status={header}
+        actions={
+          <Button
+            testID="ibre-lock"
+            size="lg"
+            label={tr.ibre.lock}
+            onPress={() =>
+              setLocal({
+                ...local,
+                game: ibreLock(game, game.turnTable, round, value, Date.now()),
+              })
+            }
+          />
+        }
+      >
+        <DialWidth
+          dials={2}
+          reserve={sizes.under * 2 + sizes.target + sizes.ends + sizes.stepper + SPACING[2]}
+        >
           {(w) => (
-            <View className="gap-4">
+            <View className="gap-2">
               <TargetHold
                 width={w}
                 left={game.scale.left}
@@ -197,51 +226,52 @@ export function LocalIbre({ roomId }: Props) {
             </View>
           )}
         </DialWidth>
-        <Button
-          testID="ibre-lock"
-          size="lg"
-          label={tr.ibre.lock}
-          onPress={() =>
-            setLocal({
-              ...local,
-              game: ibreLock(game, game.turnTable, round, value, Date.now()),
-            })
-          }
-        />
-      </View>
+      </StageFit>
     );
   }
 
   const guesser = other(game.turnTable);
   return (
-    <View className="gap-3" testID="ibre-side-phase">
-      {header}
-      <DialWidth>
+    <StageFit
+      testID="ibre-side-phase"
+      status={header}
+      actions={
+        <>
+          <Text variant="bodyStrong" align="center">
+            {tr.ibre.sideTurn(TEAMS[guesser])}
+          </Text>
+          <SideChoice
+            selected={null}
+            onSelect={(side) =>
+              setLocal(
+                next(
+                  local,
+                  ibreSide(game, guesser, round, side, target, nextFor(game), Date.now()),
+                ),
+              )
+            }
+          />
+          <Text variant="fine" align="center">
+            {tr.ibre.sideHint(IBRE_CONFIG.sideSeconds)}
+          </Text>
+        </>
+      }
+    >
+      <DialWidth reserve={sizes.under + sizes.ends}>
         {(w) => (
-          <NeedleDial
+          <Dial
             width={w}
             left={game.scale.left}
             right={game.scale.right}
-            value={game.needle ?? 50}
-            onChange={() => undefined}
-            disabled
+            needle={game.needle ?? 50}
+            accessibilityLabel={tr.ibre.needleLabel(
+              game.needle ?? 50,
+              game.scale.left,
+              game.scale.right,
+            )}
           />
         )}
       </DialWidth>
-      <Text variant="bodyStrong" align="center">
-        {tr.ibre.sideTurn(TEAMS[guesser])}
-      </Text>
-      <SideChoice
-        selected={null}
-        onSelect={(side) =>
-          setLocal(
-            next(local, ibreSide(game, guesser, round, side, target, nextFor(game), Date.now())),
-          )
-        }
-      />
-      <Text variant="fine" align="center">
-        {tr.ibre.sideHint(IBRE_CONFIG.sideSeconds)}
-      </Text>
-    </View>
+    </StageFit>
   );
 }

@@ -18,8 +18,10 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { gamesApi } from '@/lib/api';
 import { useNow } from '@/lib/useNow';
+import { SPACING } from '@/theme/tokens';
 
 import { ClockPill } from '../GameBits';
+import { StageFit } from '../GameStage';
 import {
   ClueOrder,
   GuessOptions,
@@ -201,26 +203,23 @@ function Viewing({
   const next = ownSeats(state.seats, side).find((s) => !state.viewed.includes(s)) ?? null;
   if (next) {
     return (
-      <View className="flex-1 gap-3">
-        <ViewingTop state={state} secondsLeft={secondsLeft} />
-        <PassPhone
-          seat={next}
-          seats={<Seats state={state} side={side} current={next} />}
-          onReady={() => onHold(next)}
-        />
-      </View>
+      <PassPhone
+        seat={next}
+        top={<ViewingTop state={state} secondsLeft={secondsLeft} />}
+        seats={<Seats state={state} side={side} current={next} />}
+        onReady={() => onHold(next)}
+      />
     );
   }
   return (
-    <View className="gap-3">
-      <ViewingTop state={state} secondsLeft={secondsLeft} />
+    <StageFit status={<ViewingTop state={state} secondsLeft={secondsLeft} />}>
       <Card>
         <Seats state={state} side={side} />
       </Card>
       <Text variant="fine" align="center" testID="sahtekar-own-done">
         {tr.sahtekar.ownDone}
       </Text>
-    </View>
+    </StageFit>
   );
 }
 
@@ -250,11 +249,11 @@ function HoldStage({
     onSettled: onChanged,
   });
   return (
-    <View className="flex-1 gap-3">
-      <ViewingTop state={state} secondsLeft={secondsLeft} />
+    <View style={{ flexGrow: 1, gap: SPACING[3] }}>
       <HoldCard
         seat={hold.seat}
         card={hold.card}
+        top={<ViewingTop state={state} secondsLeft={secondsLeft} />}
         onHoldStart={() => {
           if (state.phase === 'viewing') view.mutate();
         }}
@@ -277,11 +276,13 @@ function Clues({ roomId, state, side, secondsLeft, onChanged }: PhaseProps) {
   });
   const speaking = state.order[state.step] ?? '';
   return (
-    <View className="flex-1 gap-3">
-      <Text variant="overline" tone="muted">
-        {tr.sahtekar.category(state.category)}
-      </Text>
+    <View style={{ flexGrow: 1, gap: SPACING[3] }}>
       <ClueOrder
+        top={
+          <Text variant="overline" tone="muted">
+            {tr.sahtekar.category(state.category)}
+          </Text>
+        }
         round={clueRoundOf(state.step, state.order.length)}
         totalRounds={SAHTEKAR.clueRounds}
         order={state.order}
@@ -326,7 +327,7 @@ function Voting({ roomId, state, side, secondsLeft, onChanged }: PhaseProps) {
 
   if (voting) {
     return (
-      <View className="flex-1 gap-3">
+      <View style={{ flexGrow: 1, gap: SPACING[3] }}>
         <VoteGrid
           voter={voting}
           seats={state.seats}
@@ -346,28 +347,35 @@ function Voting({ roomId, state, side, secondsLeft, onChanged }: PhaseProps) {
   }
   if (next) {
     return (
-      <View className="flex-1 gap-3">
-        <View className="flex-row items-center justify-between">
-          <Text variant="overline" tone="muted">
-            {tr.sahtekar.votesCast(state.votesCast, state.voters.length)}
-          </Text>
-          <ClockPill seconds={secondsLeft} />
-        </View>
-        <PassPhone seat={next} onReady={() => setVoting(next)} />
+      <View style={{ flexGrow: 1, gap: SPACING[3] }}>
+        <PassPhone
+          seat={next}
+          top={
+            <View className="flex-row items-center justify-between">
+              <Text variant="overline" tone="muted">
+                {tr.sahtekar.votesCast(state.votesCast, state.voters.length)}
+              </Text>
+              <ClockPill seconds={secondsLeft} />
+            </View>
+          }
+          onReady={() => setVoting(next)}
+        />
         {error}
       </View>
     );
   }
   return (
-    <View className="items-center gap-3">
-      <ClockPill seconds={secondsLeft} />
-      <Text variant="overline" tone="muted">
-        {tr.sahtekar.votesCast(state.votesCast, state.voters.length)}
-      </Text>
-      <Text variant="fine" align="center" testID="sahtekar-votes-done">
-        {tr.sahtekar.votesDone}
-      </Text>
-    </View>
+    <StageFit>
+      <View className="items-center gap-3">
+        <ClockPill seconds={secondsLeft} />
+        <Text variant="overline" tone="muted">
+          {tr.sahtekar.votesCast(state.votesCast, state.voters.length)}
+        </Text>
+        <Text variant="fine" align="center" testID="sahtekar-votes-done">
+          {tr.sahtekar.votesDone}
+        </Text>
+      </View>
+    </StageFit>
   );
 }
 
@@ -388,7 +396,7 @@ function Guess({ roomId, state, side, secondsLeft, onChanged }: PhaseProps) {
   });
   if (!mine) return <GuessWaiting seat={accused} secondsLeft={secondsLeft} />;
   return (
-    <View className="flex-1 gap-3">
+    <View style={{ flexGrow: 1, gap: SPACING[3] }}>
       <GuessOptions
         seat={accused}
         category={state.category}

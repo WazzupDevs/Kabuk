@@ -9,14 +9,14 @@ type Props = { word: string; forbidden: readonly string[]; testID?: string };
 export function TabuCardView({ word, forbidden, testID }: Props) {
   return (
     <Card tone="feature" testID={testID}>
-      <View className="items-center py-1">
+      <View className="items-center">
         <Text variant="word" align="center">
           {word.toLocaleUpperCase('tr-TR')}
         </Text>
-        <Text variant="overline" className="mb-1.5 mt-3">
+        <Text variant="overline" className="mb-1 mt-2">
           {tr.games.forbiddenLabel}
         </Text>
-        <View className="items-center gap-1">
+        <View className="items-center">
           {forbidden.map((f) => (
             <Text key={f} variant="forbidden">
               {f}
