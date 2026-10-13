@@ -74,7 +74,7 @@ describe('no hard-coded styles outside the theme', () => {
 });
 
 // Capitals by textTransform follow the device's rules, not Turkish: Android writes KATEGORI and
-// BITTI. Text writes capitals itself (textCase.ts). This covers the theme folder too.
+// BITTI. Text writes capitals itself (upperTr in @shared/trText.ts). This covers the theme folder too.
 describe('no textTransform capitals', () => {
   const paths = SOURCES.flatMap((d) => files(join(mobile, d))).map((p) => relative(mobile, p));
 

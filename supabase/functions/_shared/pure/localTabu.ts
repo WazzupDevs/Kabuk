@@ -74,3 +74,11 @@ export function localTabuReducer(state: LocalTabuState, action: LocalTabuAction)
     }
   }
 }
+
+// The game counts turns like two-table Tabu: A and B each describe localRoundsPerTeam times, so the
+// screen shows "Tur 1/6" … "Tur 6/6" (not each team's round out of 3).
+export const LOCAL_TABU_TURNS = TABU.localRoundsPerTeam * 2;
+
+export function localTurnNo(state: Pick<LocalTabuState, 'round' | 'team'>): number {
+  return (state.round - 1) * 2 + (state.team === 'A' ? 1 : 2);
+}

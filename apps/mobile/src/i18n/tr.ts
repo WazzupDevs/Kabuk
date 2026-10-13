@@ -2,10 +2,45 @@ import { APP_NAME } from '@shared/brand.ts';
 import { headcountLabel } from '@shared/checkin.ts';
 import type { InboxStamp } from '@shared/dmInbox.ts';
 import type { EventTime } from '@shared/explore.ts';
+import { ENCOUNTER_MIN_MINUTES } from '@shared/friends.ts';
 import { TABU } from '@shared/tabu.ts';
 import { SAHTEKAR } from '@shared/sahtekar.ts';
-import { IBRE_CONFIG } from '@shared/ibre.ts';
+import { IBRE_AUTO_LOCK_SECONDS, IBRE_CONFIG } from '@shared/ibre.ts';
+import { formatTrMobile } from '@shared/phone.ts';
 import { SAY_CONFIG } from '@shared/sayChallenge.ts';
+import { capitalizeTr } from '@shared/trText.ts';
+import type { VenueKind } from '@shared/venueKind.ts';
+
+// Address (hitap): a person is "sen", a table "siz"; a sentence never mixes the two.
+// Numbers in the texts come from the game settings, never typed by hand.
+const NUMBER_WORDS = [
+  'sıfır',
+  'bir',
+  'iki',
+  'üç',
+  'dört',
+  'beş',
+  'altı',
+  'yedi',
+  'sekiz',
+  'dokuz',
+  'on',
+];
+const ORDINALS = [
+  'sıfırıncı',
+  'birinci',
+  'ikinci',
+  'üçüncü',
+  'dördüncü',
+  'beşinci',
+  'altıncı',
+  'yedinci',
+  'sekizinci',
+  'dokuzuncu',
+  'onuncu',
+];
+const numberWord = (n: number) => NUMBER_WORDS[n] ?? String(n);
+const ordinal = (n: number) => ORDINALS[n] ?? `${n}.`;
 
 const MONTHS = [
   'Ocak',
@@ -56,6 +91,25 @@ const HISTORY_CONCEPTS: Record<HistoryConcept, string> = {
   sarki: 'Şarkıda Geçsin',
   ibre: 'İbre',
   chat: 'Sohbet',
+};
+
+// The Sohbet card themes (content/sohbet-cards.json), each its own name.
+const SOHBET_THEMES = {
+  isinma: 'Isınma',
+  'film-dizi-muzik': 'Film, dizi, müzik',
+  'hic-yaptin-mi': 'Hiç … yaptın mı?',
+  derin: 'Derin',
+} as const;
+
+// "… oynadığınız" in a friend request: the room's last game, or the chat.
+const PLAYED_WITH: Record<HistoryConcept, string> = {
+  tabu: 'Sesli Tabu oynadığınız',
+  sohbet: 'Sohbet kartlarıyla oynadığınız',
+  sahtekar: 'Sahtekar oynadığınız',
+  harf: 'Harf Kapmaca oynadığınız',
+  sarki: 'Şarkıda Geçsin oynadığınız',
+  ibre: 'İbre oynadığınız',
+  chat: 'sohbet ettiğiniz',
 };
 
 // The voice games' names in "… · yüz yüze".
@@ -124,7 +178,7 @@ export const tr = {
     phonePlaceholder: '5xx xxx xx xx',
     sendCode: 'Kod gönder',
     otpTitle: 'Doğrulama kodu',
-    otpHint: (phone: string) => `${phone} numarasına gelen 6 haneli kodu gir.`,
+    otpHint: (phone: string) => `${formatTrMobile(phone)} numarasına gelen 6 haneli kodu gir.`,
     verify: 'Doğrula',
     resend: 'Kodu tekrar gönder',
     resendIn: (seconds: number) => `Tekrar gönder (${seconds} sn)`,
@@ -221,7 +275,7 @@ export const tr = {
         'Anlatan masa karttaki kelimeyi yasaklı kelimeleri söylemeden anlatır; kendi masası tahmin eder.',
         `Doğru: kelime bilindi, iki masa da basabilir. Pas: kart geçilir, yalnızca anlatan masa basar, turda en çok ${TABU.maxPasses}. Tabu: yasaklı kelime söylendi, yalnızca dinleyen masa basar.`,
         'Masalardan biri tek kişiyse iş birliği modu: tek takım, süreye karşı; üç düğmeye yalnızca anlatan masa basar.',
-        'Kendi masanla oynarken masanızı iki takıma ayırın; anlatan telefonu tutar, takımı tahmin eder.',
+        `Kendi masanızla oynarken masanızı iki takıma ayırın; anlatan telefonu tutar, takımı tahmin eder. Her takım ${TABU.localRoundsPerTeam} kez anlatır.`,
       ],
     },
     sahtekar: {
@@ -229,19 +283,19 @@ export const tr = {
       steps: [
         `En az ${SAHTEKAR.minPlayers} kişi. Telefon elden ele dolaşır; herkes kendi kartını basılı tutarak görür.`,
         `Kartına ${SAHTEKAR.viewSeconds / 60} dakikada bakmayan oyundan çıkar.`,
-        `İki tur boyunca sırayla tek kelimelik ipucu verin; her ipucu ${SAHTEKAR.clueSeconds} saniye.`,
+        `${capitalizeTr(numberWord(SAHTEKAR.clueRounds))} tur boyunca sırayla tek kelimelik ipucu verin; her ipucu ${SAHTEKAR.clueSeconds} saniye.`,
         'Sonra herkes gizlice sahtekar sandığı kişiye oy verir; kendine oy verilmez.',
-        'Sahtekar yakalanırsa kelimeyi altı seçenek arasından tahmin eder. Bilirse ya da yakalanmazsa sahtekar kazanır.',
+        `Sahtekar yakalanırsa kelimeyi ${numberWord(SAHTEKAR.options)} seçenek arasından tahmin eder. Bilirse ya da yakalanmazsa sahtekar kazanır.`,
       ],
     },
     harf: {
-      body: 'Kategoriye uyan bir kelime söyle, baş harfini kap. Diğer masa itiraz edebilir.',
+      body: 'Kategoriye uyan bir kelime söyleyin, baş harfini kapın. Diğer masa itiraz edebilir.',
       steps: [
         `Masalar sırayla oynar; her sıra ${SAY_CONFIG.harf.turnSeconds} saniye.`,
-        'Kategoriye uyan, tahtada açık bir harfle başlayan bir kelime söyle ve o harfe dokun.',
+        'Kategoriye uyan, tahtada açık bir harfle başlayan bir kelime söyleyin ve o harfe dokunun.',
         `Diğer masa ${SAY_CONFIG.harf.objectionSeconds} saniye içinde itiraz edebilir; itiraz alan ya da süresi dolan masa turu kaybeder, rakip 1 puan alır. Her masanın ${SAY_CONFIG.harf.objections} itiraz hakkı var.`,
         `Bütün harfler kapanırsa tur son harfi kapatanın. ${SAY_CONFIG.harf.totalRounds} kategori oynanır.`,
-        'Kendi masanla oynarken iki takıma ayrılın; telefon ortada durur.',
+        'Kendi masanızla oynarken iki takıma ayrılın; telefon ortada durur.',
       ],
     },
     sarki: {
@@ -250,8 +304,8 @@ export const tr = {
         `Masalar sırayla, ${SAY_CONFIG.sarki.turnSeconds} saniye içinde kelimenin geçtiği bir dize söyler ve "Söyledik"e basar.`,
         'Kelimenin çekimli hâli de sayılır: "göz" için "gözlerin" geçen bir dize de olur.',
         `Diğer masa ${SAY_CONFIG.sarki.objectionSeconds} saniye içinde itiraz edebilir; itiraz alan ya da söyleyemeyen masanın rakibi 1 puan alır. Her masanın ${SAY_CONFIG.sarki.objections} itiraz hakkı var.`,
-        `Bir kelimede en çok ${SAY_CONFIG.sarki.maxSteps} dize; sekizinci de geçerse kelime puansız biter.`,
-        `${SAY_CONFIG.sarki.totalRounds} kelime oynanır; son iki kelimede süre ${SAY_CONFIG.sarki.shortSeconds} saniye.`,
+        `Bir kelimede en çok ${SAY_CONFIG.sarki.maxSteps} dize; ${ordinal(SAY_CONFIG.sarki.maxSteps)} de geçerse kelime puansız biter.`,
+        `${SAY_CONFIG.sarki.totalRounds} kelime oynanır; son ${numberWord(SAY_CONFIG.sarki.shortRounds)} kelimede süre ${SAY_CONFIG.sarki.shortSeconds} saniye.`,
         'Uygulama müzik çalmaz, şarkı göstermez; dizeyi siz söylersiniz.',
       ],
     },
@@ -262,13 +316,16 @@ export const tr = {
         `Anlatıcı hedefi basılı tutarak görür, sesli tek ipucu verir. Masası ibreyi ayarlayıp onaylar; ${IBRE_CONFIG.clueSeconds} saniye.`,
         `Diğer masa ${IBRE_CONFIG.sideSeconds} saniye içinde hedefin ibrenin solunda mı sağında mı olduğunu söyler; doğruysa 1 puan.`,
         `Hedefe yakınlığa göre 4, 3 ya da 2 puan. ${IBRE_CONFIG.totalRounds} tur oynanır.`,
-        'Kendi masanla oynarken iki takıma ayrılın; anlatıcı hedefi takımından saklar.',
+        'Kendi masanızla oynarken iki takıma ayrılın; anlatıcı hedefi takımından saklar.',
       ],
     },
     sohbet: {
       body: 'Sırayla kart çekin, soruyu masanızda konuşun.',
       steps: [
-        'Bir tema seçin: Isınma, Film, dizi, müzik, Hiç … yaptın mı? ya da Derin.',
+        `Bir tema seçin: ${Object.values(SOHBET_THEMES)
+          .map((t) => `"${t}"`)
+          .join(', ')
+          .replace(/, ([^,]*)$/, ' ya da $1')}.`,
         'Sırayla kart çekin; karttaki soruyu masanızda konuşun.',
         'Başka bir masayla oynarken iki masa aynı kartı görür; sohbet oda sohbetinde de sürer.',
       ],
@@ -319,17 +376,15 @@ export const tr = {
     incomingTitle: 'Gelen istekler',
     noIncoming: 'Yeni istek yok.',
     incoming: (playedAt: string, concept: HistoryConcept, alias: string) =>
-      concept === 'tabu'
-        ? `${dayMonthAt(playedAt)} Sesli Tabu oynadığınız ${alias} masası arkadaşın olmak istiyor`
-        : `${dayMonthAt(playedAt)} sohbet ettiğiniz ${alias} masası arkadaşın olmak istiyor`,
+      `${dayMonthAt(playedAt)} ${PLAYED_WITH[concept]} ${alias} masası arkadaşın olmak istiyor`,
     accept: 'Kabul et',
     decline: 'Reddet',
     declineNote: 'Reddedersen karşı tarafa bildirilmez.',
     sentTitle: 'Gönderilen istekler',
-    sent: (alias: string) => `${alias} masasına istek gönderildi`,
+    sent: (alias: string) => `İstek gönderildi: ${alias} masası`,
     sentAccepted: (alias: string) => `${alias} masası isteğini kabul etti`,
     historyTitle: 'Oyun geçmişi',
-    noHistory: 'Başka bir masayla en az 3 dakika oynadığınızda burada görünür.',
+    noHistory: `Başka bir masayla en az ${ENCOUNTER_MIN_MINUTES} dakika oynadığınızda burada görünür.`,
     // The last game played in the room, or the chat (docs/SPEC_V3.md §5.5).
     historyRow: (alias: string, concept: HistoryConcept, playedAt: string) =>
       `${alias} masasıyla ${HISTORY_CONCEPTS[concept]} · ${dayMonth(playedAt)}`,
@@ -357,7 +412,7 @@ export const tr = {
     title: 'Bildirimler',
     withCount: (n: number) => `Bildirimler, ${n} yeni`,
     empty: 'Yeni bildirim yok.',
-    emptyHint: 'Başka bir masayla en az 3 dakika oynadığınızda burada görünür.',
+    emptyHint: `Başka bir masayla en az ${ENCOUNTER_MIN_MINUTES} dakika oynadığınızda burada görünür.`,
   },
   dm: {
     placeholder: 'Mesaj yaz…',
@@ -428,12 +483,12 @@ export const tr = {
   checkin: {
     locationTitle: 'Konumun',
     locationBody:
-      'Yakınındaki mekanları bulmak için konumunu yalnızca şimdi, bir kez kullanıyoruz. Konumun saklanmaz ve diğer masalarla paylaşılmaz; yalnızca seçtiğin mekan kaydedilir.',
+      'Mekanda olduğunu doğrulamak için konumunu bir kez kullanıyoruz. Konumun saklanmaz.',
     locationConsent: 'Konumumun bu amaçla kullanılmasına açık rıza veriyorum.',
     useLocation: 'Konumumu kullan',
     locating: 'Konum alınıyor…',
     permissionDenied:
-      'Konum izni olmadan yakındaki mekanları bulamıyoruz. İzni ayarlardan verebilirsin.',
+      'Konum izni olmadan mekanda olduğunu doğrulayamıyoruz. İzni ayarlardan verebilirsin.',
     openSettings: 'Ayarları aç',
     locationFailed: 'Konum alınamadı. Açık bir alanda tekrar dene.',
     venuesTitle: 'Yakındaki mekanlar',
@@ -441,13 +496,16 @@ export const tr = {
     retry: 'Tekrar dene',
     distance: (meters: number) => `${meters} m`,
     osmAttribution: '© OpenStreetMap katkıda bulunanlar',
-    outsideBoundary: 'Kampüsün içinde görünmüyorsun. Kampüse girince tekrar dene.',
+    outsideBoundary: (kind: VenueKind) =>
+      kind === 'campus'
+        ? 'Kampüsün içinde görünmüyorsun. Kampüse girince tekrar dene.'
+        : 'Mekanın içinde görünmüyorsun. Mekana girince tekrar dene.',
     spotTitle: 'Neredesin?',
     spotHint: 'Aynı noktadaki masalarla oynarsın. Noktanı sonra da değiştirebilirsin.',
     venueAtSpot: (venue: string, spot: string) => `${venue} · ${spot}`,
     headcountTitle: 'Masada kaç kişisiniz?',
     headcountOption: (n: number) => headcountLabel(n),
-    headcountHint: 'Sen dahil. Dört ya da daha fazlaysanız 4+ seçin.',
+    headcountHint: 'Kendinizi de sayın. Dört ya da daha fazlaysanız 4+ seçin.',
     open: 'Masayı aç',
     doneTitle: 'Masan hazır',
     doneBody: 'Bu mekanda diğer masalar sizi bu adla görecek:',
@@ -489,7 +547,7 @@ export const tr = {
     newTitle: 'Oda kur',
     newHint:
       'Oda mekandaki diğer masalara açılır ve sohbetle başlar. Oyunu odada iki masa birlikte seçer.',
-    intentLabel: 'Niyetin (isteğe bağlı)',
+    intentLabel: 'Niyetiniz (isteğe bağlı)',
     intentNone: 'Etiket yok',
     intentHint: {
       game: 'Oyun oynamak istiyorsunuz.',
@@ -514,9 +572,8 @@ export const tr = {
     incomingBody: (alias: string, headcount: number) =>
       `${alias} (${headcountLabel(headcount)} kişi) odana katılmak istiyor.`,
     accept: 'Kabul',
-    decline: 'Geç',
-    declineNote:
-      'Geç dersen karşı masa yalnızca "Masa şu an müsait değil" görür. Kimse bilgilendirilmez.',
+    decline: 'Reddet',
+    declineNote: 'Reddedersen karşı masa yalnızca "Masa şu an müsait değil" görür.',
     viewProfile: 'Diğer masanın profilini gör',
     secondsLeft: (s: number) => `${s} sn`,
   },
@@ -554,7 +611,7 @@ export const tr = {
     you: 'Sen',
     quoteLabel: (name: string, text: string) => `${name} mesajına yanıt: ${text}`,
     reactionChip: (emoji: string, n: number, mine: boolean) =>
-      `${emoji} ${n}${mine ? ', sizin tepkiniz' : ''}`,
+      `${emoji} ${n}${mine ? ', senin tepkin' : ''}`,
     reactWith: (emoji: string) => `${emoji} ile tepki ver`,
     openProfile: (name: string) => `${name}, profili aç`,
   },
@@ -584,7 +641,7 @@ export const tr = {
     // A request from the venue chat (§7.5): the sender's name and age.
     incoming: (venue: string, name: string, age: number | null) =>
       `${venue} sohbet odasından ${age !== null ? `${name} (${age})` : name} arkadaşın olmak istiyor`,
-    sent: (name: string) => `${name} kişisine istek gönderildi`,
+    sent: (name: string) => `İstek gönderildi: ${name}`,
     sentAccepted: (name: string) => `${name} isteğini kabul etti`,
   },
   safety: {
@@ -600,7 +657,7 @@ export const tr = {
     block: 'Engelle',
     blockConfirmTitle: 'Bu masayı engellemek istiyor musun?',
     blockConfirmBody:
-      'Birbirinizin odalarını artık görmezsiniz. Oda biter ve cevabın "Hayır" sayılır. Engeli ayarlardan kaldırabilirsin.',
+      'Birbirinizin odalarını artık görmezsiniz. Oda biter ve masanızın cevabı "Hayır" sayılır. Engeli ayarlardan kaldırabilirsin.',
     blockConfirm: 'Engelle',
     blockedTitle: 'Engellenenler',
     blockedEmpty: 'Engellediğin kimse yok.',
@@ -612,12 +669,7 @@ export const tr = {
     sohbetFirst: 'İlk kartı aç',
     sohbetNext: 'Sonraki',
     sohbetWait: (s: number) => `Sonraki (${s} sn)`,
-    themes: {
-      isinma: 'Isınma',
-      'film-dizi-muzik': 'Film, dizi, müzik',
-      'hic-yaptin-mi': 'Hiç … yaptın mı?',
-      derin: 'Derin',
-    },
+    themes: SOHBET_THEMES,
     localIntro: 'Masanızı iki takıma ayırın. Anlatan telefonu tutar, takımı tahmin eder.',
     team: (t: string) => `Takım ${t}`,
     round: (n: number, total: number) => `Tur ${n}/${total}`,
@@ -659,8 +711,7 @@ export const tr = {
     correctPoints: '+1',
     tabooPoints: '−1',
     turnOverWait: 'Tur bitiyor…',
-    voiceIntro:
-      'Yüz yüze oynanır: masalar sırayla anlatır, diğer masa kartı görür ve hakemlik yapar. 6 tur, her tur 60 saniye.',
+    voiceIntro: `Yüz yüze oynanır: masalar sırayla anlatır, diğer masa kartı görür ve hakemlik yapar. ${TABU.totalTurns} tur, her tur ${TABU.turnSeconds} saniye.`,
     sohbetIntro: 'Sohbet kartları: her kart bir soru; iki masa da sonraki kartı açabilir.',
     voiceDescribe: 'Sıra sizde: kartı masanıza anlatın. Diğer masa kartı görüyor ve Tabu der.',
     tapToReveal: 'Kartı görmek için dokun',
@@ -716,7 +767,7 @@ export const tr = {
       { title: 'Hakem masa', body: 'Karşı masa dinler. Yasaklı kelime geçerse "Tabu"ya basar.' },
       {
         title: 'Düğmeler',
-        body: 'Bilinince "Doğru" (+1), geçmek için "Pas" (turda 3 hak). Tur 60 sn sürer.',
+        body: `Bilinince "Doğru" (+1), geçmek için "Pas" (turda ${TABU.maxPasses} hak). Tur ${TABU.turnSeconds} sn sürer.`,
       },
     ],
     introDone: 'Anladım, başlayalım',
@@ -728,7 +779,7 @@ export const tr = {
     gameBrand: (game: string) => `${APP_NAME} · ${game}`,
   },
   // Harf Kapmaca and Şarkıda Geçsin (docs/SPEC_V3.md §20.3–20.4): say, then the other table may
-  // object within 3 seconds; three objections per table.
+  // object within the window; a few objections per table (SAY_CONFIG).
   say: {
     category: 'Kategori',
     word: 'Kelime',
@@ -745,19 +796,22 @@ export const tr = {
     round: (n: number, total: number) => `Tur ${n} / ${total}`,
     yourTurn: 'Sıra sizde',
     theirTurn: (alias: string) => `Sıra ${alias} masasında`,
-    teamTurn: (team: string) => `Sıra Takım ${team}'de`,
+    teamTurn: (team: string) => `Sıra: Takım ${team}`,
     team: (team: string) => `Takım ${team}`,
+    // The last round's winner over the next round; the points stand beside it ("+1").
     roundWon: (alias: string, reason: 'objection' | 'timeout' | 'board' | 'lines') =>
       reason === 'objection'
-        ? `İtiraz! ${alias} +1`
+        ? `İtiraz! ${alias}`
         : reason === 'board'
-          ? `Tahta doldu. ${alias} +1`
-          : `Süre doldu. ${alias} +1`,
+          ? `Tahta doldu. ${alias}`
+          : `Süre doldu. ${alias}`,
+    // Under "İtiraz!": who took the point.
+    objectionPoint: (alias: string) => `${alias} +1`,
     roundEnd: { objection: 'İtiraz!', timeout: 'Süre doldu, tur bitti.', board: 'Tahta doldu.' },
-    roundNoPoint: 'Sekiz dize söylendi; puan yok.',
+    roundNoPoint: `${capitalizeTr(numberWord(SAY_CONFIG.sarki.maxSteps))} dize söylendi; puan yok.`,
     readyHint: (s: number) => `Başlayınca her sıra ${s} saniye. İstem ekranda.`,
     readyWaitingHint: 'Onlar başlayınca ya da süre dolunca tur başlar.',
-    pickLetter: 'Kelimeyi söyle, baş harfine dokun.',
+    pickLetter: 'Kelimeyi söyleyin, baş harfine dokunun.',
   },
   // İbre (docs/SPEC_V3.md §20.5): a two-ended scale, values 0–100.
   ibre: {
@@ -771,8 +825,8 @@ export const tr = {
     needleLabel: (v: number, l: string, r: string) => `İbre ${v}; ${l} 0, ${r} 100`,
     left: 'İbreyi sola al',
     right: 'İbreyi sağa al',
-    moreLeft: '← Daha sol',
-    moreRight: 'Daha sağ →',
+    moreLeft: '← Solunda',
+    moreRight: 'Sağında →',
     revealLabel: (t: number, n: number | null) =>
       n === null ? `Hedef ${t}, ibre onaylanmadı` : `Hedef ${t}, ibre ${n}`,
     points: (n: number) => `+${n}`,
@@ -781,8 +835,7 @@ export const tr = {
     round: (n: number, total: number) => `Tur ${n} / ${total}`,
     readyHint: `Başla'ya basınca ${IBRE_CONFIG.clueSeconds} saniye: hedefe bakın, tek ipucu verin, ibreyi onaylayın.`,
     readyWaitingHint: 'Karşı masa hedefe bakıp tek ipucu verecek. Dinleyin.',
-    clueHint:
-      'Anlatıcı hedefe baksın, sesli tek ipucu versin. Masası ibreyi ayarlayıp onaylasın; son 3 saniyede ibre olduğu yerde onaylanır.',
+    clueHint: `Anlatıcı hedefe baksın, sesli tek ipucu versin. Masası ibreyi ayarlayıp onaylasın; son ${IBRE_AUTO_LOCK_SECONDS} saniyede ibre olduğu yerde onaylanır.`,
     lock: 'İbreyi onayla',
     otherClue: (alias: string) => `${alias} ipucu veriyor. İbre onaylanınca taraf seçeceksiniz.`,
     sideTitle: 'Hedef ibrenin solunda mı, sağında mı?',
@@ -802,7 +855,7 @@ export const tr = {
         ? `Hedef ${target} · ibre onaylanmadı`
         : side === null
           ? `Hedef ${target} · ibre ${needle} · ${guesser} taraf seçmedi`
-          : `Hedef ${target} · ibre ${needle} · ${guesser} "${side === 'left' ? 'Daha sol' : 'Daha sağ'}" dedi: ${point ? '+1' : '0'}`,
+          : `Hedef ${target} · ibre ${needle} · ${guesser}: ${side === 'left' ? 'solunda' : 'sağında'}, ${point ? '+1' : 'puan yok'}`,
   },
   // Sahtekar (docs/SPEC_V3.md §20.2): seats are game labels, never identities.
   sahtekar: {
@@ -822,7 +875,7 @@ export const tr = {
     seen: 'Gördüm, telefonu ver',
     clueRound: (n: number, total: number) => `İpucu turu ${n} / ${total}`,
     turnOf: (seat: string) => `Sıra ${seatTo(seat, 'locative')}`,
-    clueHint: 'Tek kelime, 15 sn. Söyleyince bu masa "Söyledi"ye basar.',
+    clueHint: `Tek kelime, ${SAHTEKAR.clueSeconds} sn. Söyleyince bu masa "Söyledi"ye basar.`,
     speaking: (seat: string) => `${seat} söylüyor`,
     said: (seat: string) => `${seat} söyledi`,
     saidButton: 'Söyledi',
@@ -856,7 +909,7 @@ export const tr = {
       'Sahtekar kartına bakmadı ve oyundan çıktı. Yeni kelime dağıtıldı; herkes yeniden baksın.',
     dealing: 'Yeni kelime geliyor…',
     votesDone: 'Masanızın oyları verildi. Diğer masa bekleniyor.',
-    notEnough: 'Kartına bakmayanlar oyundan çıktı; 3 kişi kalmadı. Oyun bitti.',
+    notEnough: `Kartına bakmayanlar oyundan çıktı; ${SAHTEKAR.minPlayers} kişi kalmadı. Oyun bitti.`,
   },
   reveal: {
     question: 'Tanışalım mı?',
@@ -864,7 +917,7 @@ export const tr = {
     yes: 'Evet',
     no: 'Hayır',
     secondsLeft: (s: number) => `${s} sn`,
-    answered: 'Cevabın alındı. Sonuç birazdan.',
+    answered: 'Cevabınız alındı. Sonuç birazdan.',
     signal: 'Ekranını kaldır, birbirinizi bulun.',
     signalTop: 'Tanışalım mı? · İki masa da "Evet" dedi',
     signalSame: 'Diğer masada da aynı renk ve aynı işaret var.',
@@ -872,7 +925,7 @@ export const tr = {
     backToVenue: 'Mekana dön',
     score: (n: number) => `Ortak skor: ${n}`,
     addFriend: 'Arkadaş ekle',
-    addFriendDone: 'Eklendi. İkiniz de basarsanız arkadaş olursunuz.',
+    addFriendDone: 'Senin tarafın tamam. Diğer masa da basarsa arkadaş olursunuz.',
   },
   venue: {
     here: 'Mekandasın',
@@ -967,8 +1020,8 @@ export const tr = {
     not_describer: 'Bu turda anlatan siz değilsiniz.',
     turn_over: 'Tur bitti.',
     turn_not_started: 'Tur henüz başlamadı.',
-    not_your_seat: 'Bu sıra senin masanın değil.',
-    not_enough_players: 'Bu oyun için en az 3 oyuncu gerekiyor.',
+    not_your_seat: 'Bu sıra masanızın değil.',
+    not_enough_players: `Bu oyun için en az ${SAHTEKAR.minPlayers} oyuncu gerekiyor.`,
     no_objections_left: 'İtiraz hakkınız kalmadı.',
     no_passes_left: 'Pas hakkınız kalmadı.',
     too_soon: 'Biraz bekle.',

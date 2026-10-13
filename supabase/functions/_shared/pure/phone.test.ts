@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { toTrMobileE164 } from './phone.ts';
+import { formatTrMobile, toTrMobileE164 } from './phone.ts';
 
 describe('toTrMobileE164', () => {
   it.each([
@@ -20,5 +20,13 @@ describe('toTrMobileE164', () => {
     [''],
   ])('rejects %s', (input) => {
     expect(toTrMobileE164(input)).toBeNull();
+  });
+});
+
+describe('formatTrMobile', () => {
+  it('groups a Turkish mobile number for the screen', () => {
+    expect(formatTrMobile('+905550000001')).toBe('+90 555 000 00 01');
+    expect(formatTrMobile('05321234567')).toBe('+90 532 123 45 67');
+    expect(formatTrMobile('not a number')).toBe('not a number');
   });
 });

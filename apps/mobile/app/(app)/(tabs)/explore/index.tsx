@@ -235,6 +235,7 @@ function SingleVenue({ venue, bottomSpace }: { venue: ExploreVenue; bottomSpace:
                   lat: venue.lat,
                   lng: venue.lng,
                   boundary: venue.boundary,
+                  kind: venue.kind,
                 });
                 router.push('/checkin');
               }}

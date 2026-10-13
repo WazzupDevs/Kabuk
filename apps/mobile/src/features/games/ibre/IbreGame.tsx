@@ -368,7 +368,7 @@ export function IbreGame({ roomId, state, side, aliases }: Props) {
     );
   }
 
-  // The other table's 15 seconds: the locked needle, "Daha sol / Daha sağ" at the bottom.
+  // The other table's 15 seconds: the locked needle, "Solunda / Sağında" at the bottom.
   const mine = picked?.round === round ? picked.side : null;
   return (
     <StageFit

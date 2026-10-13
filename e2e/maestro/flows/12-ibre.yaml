@@ -1,5 +1,5 @@
 # İbre (docs/SPEC_V3.md §20.5): round 1 this phone describes: Başla, holds the target, drags the
-# needle, locks it; the bot says "Daha sağ" and the reveal shows. Round 2 the bot describes and this
+# needle, locks it; the bot says "Sağında" and the reveal shows. Round 2 the bot describes and this
 # phone picks a side. The bot then ends the game on the clock and the result shows. The clocks are
 # held (ibre-hold) wherever the emulator's slow screen reads would race them.
 appId: app.kabuk.mobile

@@ -157,7 +157,7 @@ export function Button({
                   color={fg}
                   align="center"
                   // One line, always (CLAUDE.md → Ekran davranışı): a label that does not fit
-                  // shrinks rather than breaking onto a second line ("Şimdi değil", "Daha sol").
+                  // shrinks rather than breaking onto a second line ("Şimdi değil", "Sağında").
                   numberOfLines={1}
                   adjustsFontSizeToFit
                   minimumFontScale={0.5}

@@ -264,7 +264,7 @@ Kodda karşılıkları:
 - Sohbet akışı `ChatScroll` (`src/components/ChatScreen.tsx`): sona tutunur, yalnızca kullanıcının kendi kaydırması bırakır. Tepki çubuğu ekran başına tek (`useChatBar`).
 - Süreli oyun ekranı `StageFit` (`src/features/games/GameStage.tsx`): üstte süre ve skor, ortada istem, altta eylemler; yalnızca orta kendi içinde kayar. Oyun sahnesinde `flex-1` yerine `flexGrow: 1` (içerikten küçülmez, komşusunun üstüne taşmaz). Bağlantı uyarısı sahnenin `banner`'ında.
 - `Button` yazısı tek satırdır, sığmazsa küçülür. Metinlere `numberOfLines` yalnızca önizleme olan alıntılarda verilir (gelen kutusu son satırı, alıntı).
-- Büyük harf `textTransform` ile değil `Text`'in `toLocaleUpperCase('tr-TR')` çağrısıyla (`src/theme/textCase.ts`); `styleGuard.test.ts` denetler.
+- Büyük harf `textTransform` ile değil, `Text` içinde `@shared/trText.ts` → `upperTr` ile (kural 7; testli); `styleGuard.test.ts` uygulamada `textTransform` büyük harfi olmadığını denetler.
 - E2E süreli ekranlarda düğmeye kaydırmaz, kaydırmadan görünür olduğunu denetler.
 
 ## Çalışma şekli
