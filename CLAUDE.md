@@ -75,7 +75,7 @@ Node 22, pnpm 10, Docker (yerel Supabase için). Supabase CLI ve Deno root devDe
 6. **SMS: dev projesinde yok.** Twilio hesabı açılmaz. Telefonla giriş yalnızca panele girilen test numaralarıyla çalışır (7. adım ve aşağıda "Barındırılan projede SMS'siz giriş"). Phone sağlayıcısını açmak için panel sağlayıcı alanlarını ister: Twilio Verify seçili kalır, kutularda sahte değerler durur; hiçbir SMS gönderilmez. Gerçek SMS yalnızca pilot (üretim) projesinde Netgsm kancasıyla gider (aşağıda "Üretim Supabase projesi").
 7. **Supabase paneli → Authentication:**
    - Sign In / Providers → **Email: kapalı**. **Phone: açık**, SMS sağlayıcı **Twilio Verify** (kutularda sahte değerler, 6. adım), telefonla kayıt açık.
-   - Phone → test numaraları: `905550000001=123456` (yalnızca dev projesinde; pilot projesinde olmaz).
+   - Phone → test numaraları: `905550000001=<kod>` (yalnızca dev projesinde; pilot projesinde olmaz). Dev kodu panelde ve parola yöneticisinde durur, repoya yazılmaz (depo herkese açık).
    - Rate Limits: saatlik SMS **100**; aynı numaraya tekrar gönderim aralığı **60 sn**.
    - Hooks → **Before User Created** → Postgres → şema `private`, fonksiyon `before_user_created`.
    - **Realtime → Settings → Allow public access: kapalı.** Tüm kanallar özeldir; kimin abone olup yayın yapacağına `realtime.messages` politikaları karar verir.
@@ -95,7 +95,7 @@ Pilot ve Play kullanıcıları için ayrı proje. Pilotun baştan sona yayın s�
 
 | Konu | Dev projesi | Üretim projesi |
 | --- | --- | --- |
-| Test numaraları | `905550000001=123456` ve saha testi numaraları | **Yalnızca tek, kalıcı inceleme hesabı:** bir numara, tahmin edilemez 6 haneli kod. Kod yalnızca Play Console → Uygulama erişimi'nde durur (aşağıda "İnceleme hesabı") |
+| Test numaraları | `905550000001=<kod>` ve saha testi numaraları (kodlar panelde ve parola yöneticisinde, repoda değil) | **Yalnızca tek, kalıcı inceleme hesabı:** bir numara, tahmin edilemez 6 haneli kod. Kod yalnızca Play Console → Uygulama erişimi'nde durur (aşağıda "İnceleme hesabı") |
 | E2E botu (#19) | `scripts/e2e/bot-table.ts` bu projeyi kabul eder | **Reddedilir:** bot yalnızca yerel stack'i ve dev projesinin adresini kabul eder; üretim adresi listeye eklenmez |
 | SMS | **Yok:** yalnızca test numaraları; Twilio kutularında sahte değerler | **Netgsm, Send SMS Hook** (`docs/SPEC_V3.md` §2.3): `SMS_PROVIDER` ve Netgsm sırları, panelde kanca açık; Twilio kutularında sahte değerler; saatlik SMS sınırı 100, aynı numaraya 60 sn |
 | Vault anahtarı (`phone_hash_key`) | Dev anahtarı | **Yeni ve farklı** anahtar (`openssl rand -hex 32`), parola yöneticisinde; asla değişmez |
@@ -211,7 +211,7 @@ Dev projesinde girişin tek yolu budur (orada SMS yok): gerçek ya da uydurma nu
 - Kodu `123456` gibi tahmin edilebilir seçme: numarayı ve kodu bilen herkes o hesaba girebilir. Test bitince çiftleri sil.
 - Test numarası ban kontrolünden ve 18+/onay akışından muaf değildir. Hesap silme ve `pnpm admin:ban` aynı şekilde çalışır.
 - Phone sağlayıcısı açık olmalı. Panel sağlayıcı alanlarını ister: Twilio kutularına sahte değerler yazılır (dev projesinde Twilio yok); test numaralarına SMS gönderilmez.
-- Gerçek numara şart değil: dev projesindeki `905550000001=123456` gibi uydurma numaralar da aynı yolla çalışır.
+- Gerçek numara şart değil: dev projesindeki `905550000001=<kod>` gibi uydurma numaralar da aynı yolla çalışır. Dev kodu panelde ve parola yöneticisinde durur, repoya yazılmaz.
 
 ### Saha testi mekanı (`content/venues-test.json`)
 Pilot listesinde olmayan bir yerde test için elle girilen mekan. Dosya boşsa (`"venues": []`) seed onu atlar.
