@@ -24,7 +24,15 @@ import { SPACING, TOUCH, type TypeVariant } from '@/theme/tokens';
 import { ClockPill, TeamScore } from '../GameBits';
 import { StageFit, useStageRoom } from '../GameStage';
 import { TURN_CIRCLE_MIN, TurnReady } from '../TurnReady';
-import { Dial, HUB_HALF, NeedleDial, NeedleReveal, SideChoice, TargetHold } from './Ibre';
+import {
+  Dial,
+  DialColumnContext,
+  HUB_HALF,
+  NeedleDial,
+  NeedleReveal,
+  SideChoice,
+  TargetHold,
+} from './Ibre';
 
 // The dials' widest; a phone narrower than this gets its own width (measured, not assumed).
 const DIAL_MAX = 360;
@@ -46,28 +54,30 @@ export function DialWidth({
   const stage = useStageRoom();
   const [width, setWidth] = useState(0);
   // `reserve` is an estimate: an end that wraps to two lines makes the middle taller than it says.
-  // What the middle really overflows by comes back from the stage, and the dials give it up (each
-  // pixel of width is half a pixel of height per half dial). Kept per height of the middle.
-  const [cut, setCut] = useState({ room: 0, over: 0, px: 0 });
-  if (stage !== null && (cut.room !== stage.room || cut.over !== stage.over)) {
-    const kept = cut.room === stage.room ? cut.px : 0;
-    setCut({
+  // When the middle still overflows, the dials give up exactly that much at the width they were
+  // drawn at (each pixel of width is half a pixel of height per half dial), so even a large overflow
+  // in the first frame never shrinks them past what fits. The cap holds for this height of the
+  // middle.
+  const [fit, setFit] = useState({ room: 0, over: 0, cap: DIAL_MAX });
+  const cap = stage !== null && fit.room === stage.room ? fit.cap : DIAL_MAX;
+  const byHeight = stage === null ? DIAL_MAX : Math.floor(((stage.room - reserve) / dials) * 2);
+  const w = Math.min(width, cap, Math.max(DIAL_MIN, byHeight));
+  if (stage !== null && (fit.room !== stage.room || fit.over !== stage.over)) {
+    setFit({
       room: stage.room,
       over: stage.over,
-      px: kept + Math.ceil((stage.over * 2) / dials),
+      cap:
+        stage.over > 0 && w > 0 ? Math.max(DIAL_MIN, w - Math.ceil((stage.over * 2) / dials)) : cap,
     });
   }
-  const byHeight =
-    stage === null
-      ? DIAL_MAX
-      : Math.floor(((stage.room - reserve) / dials) * 2) - (cut.room === stage.room ? cut.px : 0);
-  const w = Math.min(width, Math.max(DIAL_MIN, byHeight));
   return (
     <View
       onLayout={(e) => setWidth(Math.min(DIAL_MAX, Math.floor(e.nativeEvent.layout.width)))}
       testID="ibre-dial-area"
     >
-      {w > 0 ? children(w) : null}
+      <DialColumnContext.Provider value={width}>
+        {w > 0 ? children(w) : null}
+      </DialColumnContext.Provider>
     </View>
   );
 }

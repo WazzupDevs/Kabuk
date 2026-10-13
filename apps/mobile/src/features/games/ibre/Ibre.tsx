@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from 'react';
+import { createContext, type ReactNode, useContext, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { Button } from '@/components/Button';
@@ -32,6 +32,10 @@ const KNOB = SPACING[10];
 // The band numbers sit on a ring this far in from the rim (their box: SPACING[6], centred
 // SPACING[6] in); its inner edge.
 const LABEL_RING = SPACING[6] + SPACING[6] / 2;
+
+// The width of the column the dials sit in (DialWidth): a dial narrower than its column lets its two
+// ends use the column's width, so a long end ("Kullanışsız") is never broken mid-word.
+export const DialColumnContext = createContext<number | null>(null);
 
 const clamp = (v: number) => Math.max(NEEDLE_MIN, Math.min(NEEDLE_MAX, Math.round(v)));
 // 0 → pointing left, 50 → up, 100 → right; degrees clockwise from up for RN's rotate.
@@ -79,6 +83,8 @@ export function Dial({
   // With the band numbers shown (the reveal), the needle stops short of their ring so it never
   // covers the number it points at; otherwise it reaches the rim.
   const needleTop = labels ? LABEL_RING + SPACING[2] : SPACING[3];
+  const column = useContext(DialColumnContext);
+  const spill = column !== null && column > width ? (column - width) / 2 : 0;
   return (
     <View className="gap-2 self-center" style={{ width }}>
       <View
@@ -186,7 +192,7 @@ export function Dial({
       </View>
       {/* Each end has half the row and wraps: long ends ran into each other at 320 dp. */}
       {ends ? (
-        <View className="flex-row gap-3">
+        <View className="flex-row gap-3" style={{ marginHorizontal: -spill }}>
           <Text variant="bodyStrong" className="flex-1">
             {left}
           </Text>
@@ -342,7 +348,12 @@ export function TargetHold({
                 borderColor: colors.border,
               }}
             >
-              <GameIcon name="needle" color={colors.onViolet} size={SPACING[11]} />
+              {/* Smaller on a small dial, so the line under it stays inside the cover. */}
+              <GameIcon
+                name="needle"
+                color={colors.onViolet}
+                size={Math.min(SPACING[11], Math.round(r * 0.4))}
+              />
               <Text variant="bodyStrong" tone="onViolet" align="center">
                 {holding ? tr.ibre.loading : tr.ibre.hold}
               </Text>
