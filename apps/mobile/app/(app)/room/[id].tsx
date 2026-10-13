@@ -130,7 +130,10 @@ export default function RoomScreen() {
   // Room-level events come from one table only, so each room counts once.
   if (!isOwner) trackOnce(`join_accepted:${r.id}`, 'join_accepted', {});
 
-  const title = r.guest_alias ? tr.rooms.withGuest(r.owner_alias, r.guest_alias) : r.owner_alias;
+  // A two-table room is named for the other table ("Kibar Badem ile"); a one-table room keeps the
+  // table's own name.
+  const otherAlias = isOwner ? r.guest_alias : r.owner_alias;
+  const title = r.guest_alias && otherAlias ? tr.rooms.withOther(otherAlias) : r.owner_alias;
   const topBar = (onClose?: () => void) => (
     <RoomTopBar
       roomId={r.id}
@@ -342,6 +345,7 @@ function RoomTopBar({
       <ChatTopBar
         onBack={onClose}
         title={title}
+        titleLines={2}
         subtitle={subtitle}
         leading={<TableFaces aliases={aliases} />}
         onPressTitle={

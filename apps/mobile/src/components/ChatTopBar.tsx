@@ -10,6 +10,9 @@ import { Text } from './Text';
 
 type Props = {
   title: string;
+  // At most this many lines; a longer title shrinks to fit rather than ending in "…" (a room's
+  // name at 320 dp). Unset: it wraps freely.
+  titleLines?: number;
   subtitle?: string;
   // An avatar (or two) before the name.
   leading?: ReactNode;
@@ -21,10 +24,11 @@ type Props = {
   actions?: ReactNode;
 };
 
-// The compact top of a chat screen (canvas: Aşama 4 · Yenileme): back, avatar, the name on one
-// line and one line under it, actions; a hairline under it.
+// The compact top of a chat screen (canvas: Aşama 4 · Yenileme): back, avatar, the name and a line
+// under it, actions; a hairline under it.
 export function ChatTopBar({
   title,
+  titleLines,
   subtitle,
   leading,
   onBack,
@@ -37,9 +41,15 @@ export function ChatTopBar({
     <>
       {leading}
       <View className="flex-1">
-        {/* Wraps rather than ending in "…" (CLAUDE.md → Ekran davranışı): a room's two table
-            names, "12 Ekim'den beri arkadaşsınız". */}
-        <Text variant="heading" accessibilityRole="header">
+        {/* Wraps rather than ending in "…" (CLAUDE.md → Ekran davranışı): "12 Ekim'den beri
+            arkadaşsınız". */}
+        <Text
+          variant="heading"
+          accessibilityRole="header"
+          numberOfLines={titleLines}
+          adjustsFontSizeToFit={titleLines !== undefined}
+          minimumFontScale={0.5}
+        >
           {title}
         </Text>
         {subtitle ? <Text variant="fine">{subtitle}</Text> : null}

@@ -563,6 +563,8 @@ export const tr = {
           ? 'Sohbet kartları'
           : `${VOICE_NAMES[concept]} · yüz yüze`,
     withGuest: (owner: string, guest: string) => `${owner} ve ${guest}`,
+    // A two-table room's top bar: only the other table's name.
+    withOther: (alias: string) => `${alias} ile`,
     waitingForGuest: 'Başka bir masa katılmak isteyebilir. Bu arada kendi masanla oynayabilirsin.',
     end: 'Odayı bitir',
     endHint: 'İki masalı odada "Tanışalım mı?" sorulur.',
