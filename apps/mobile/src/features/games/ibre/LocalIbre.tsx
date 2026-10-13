@@ -25,8 +25,6 @@ import { track } from '@/lib/analytics';
 import { gamesApi } from '@/lib/api';
 import { useNow } from '@/lib/useNow';
 
-import { SPACING } from '@/theme/tokens';
-
 import { StageFit } from '../GameStage';
 import { TurnReady } from '../TurnReady';
 import { Dial, NeedleDial, SideChoice, TargetHold } from './Ibre';
@@ -120,12 +118,12 @@ export function LocalIbre({ roomId }: Props) {
   }
 
   const { game, target } = local;
-  const reveal = (reserve?: number) =>
+  const reveal = (outside?: number) =>
     game.reveal ? (
       <RoundReveal
         reveal={game.reveal}
         guesser={TEAMS[other(game.reveal.table)]}
-        reserve={reserve}
+        outside={outside}
       />
     ) : null;
 
@@ -157,7 +155,7 @@ export function LocalIbre({ roomId }: Props) {
   if (game.turnPhase === 'ready') {
     return (
       <StageFit>
-        {reveal(sizes.under + sizes.ends + sizes.reveal + sizes.ready + sizes.text(1, 'fine'))}
+        {reveal(sizes.ready + sizes.text(1, 'fine'))}
         <TurnReady
           testID="ibre-ready"
           describing
@@ -202,10 +200,7 @@ export function LocalIbre({ roomId }: Props) {
           />
         }
       >
-        <DialWidth
-          dials={2}
-          reserve={sizes.under * 2 + sizes.target + sizes.ends + sizes.stepper + SPACING[2]}
-        >
+        <DialWidth dials={2}>
           {(w) => (
             <View className="gap-2">
               <TargetHold
@@ -257,7 +252,7 @@ export function LocalIbre({ roomId }: Props) {
         </>
       }
     >
-      <DialWidth reserve={sizes.under + sizes.ends}>
+      <DialWidth>
         {(w) => (
           <Dial
             width={w}

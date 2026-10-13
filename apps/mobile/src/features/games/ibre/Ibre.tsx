@@ -26,8 +26,6 @@ const BANDS: readonly { reach: number; points: number; tone: [PaletteKey, Palett
 ];
 const NEEDLE_WIDTH = SPACING[1.5];
 const HUB = SPACING[7];
-// How far the hub reaches below a half dial (for sizing dials to a screen's height).
-export const HUB_HALF = HUB / 2;
 const KNOB = SPACING[10];
 // The band numbers sit on a ring this far in from the rim (their box: SPACING[6], centred
 // SPACING[6] in); its inner edge.

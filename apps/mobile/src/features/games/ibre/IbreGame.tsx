@@ -19,20 +19,12 @@ import { gamesApi } from '@/lib/api';
 import { useNow } from '@/lib/useNow';
 
 import { useTheme } from '@/theme/ThemeProvider';
-import { SPACING, TOUCH, type TypeVariant } from '@/theme/tokens';
+import { SPACING, type TypeVariant } from '@/theme/tokens';
 
 import { ClockPill, TeamScore } from '../GameBits';
 import { StageFit, useStageRoom } from '../GameStage';
 import { TURN_CIRCLE_MIN, TurnReady } from '../TurnReady';
-import {
-  Dial,
-  DialColumnContext,
-  HUB_HALF,
-  NeedleDial,
-  NeedleReveal,
-  SideChoice,
-  TargetHold,
-} from './Ibre';
+import { Dial, DialColumnContext, NeedleDial, NeedleReveal, SideChoice, TargetHold } from './Ibre';
 
 // The dials' widest; a phone narrower than this gets its own width (measured, not assumed).
 const DIAL_MAX = 360;
@@ -40,35 +32,27 @@ const DIAL_MAX = 360;
 const DIAL_MIN = 120;
 
 // The dials take the width their column really has, and on a timed screen no more than the height
-// left lets them have (CLAUDE.md → Ekran davranışı): `dials` half dials stacked, `reserve` the
-// height of everything else in the middle (ends, the − / + row, texts).
+// left lets them have (CLAUDE.md → Ekran davranışı). `dials` half dials are stacked in the block;
+// `outside` is the height of what else shares the middle (TurnReady, a line of text).
 export function DialWidth({
   children,
   dials = 1,
-  reserve = 0,
+  outside = 0,
 }: {
   children: (width: number) => ReactNode;
   dials?: number;
-  reserve?: number;
+  outside?: number;
 }) {
-  const stage = useStageRoom();
+  const room = useStageRoom();
   const [width, setWidth] = useState(0);
-  // `reserve` is an estimate: an end that wraps to two lines makes the middle taller than it says.
-  // When the middle still overflows, the dials give up exactly that much at the width they were
-  // drawn at (each pixel of width is half a pixel of height per half dial), so even a large overflow
-  // in the first frame never shrinks them past what fits. The cap holds for this height of the
-  // middle.
-  const [fit, setFit] = useState({ room: 0, over: 0, cap: DIAL_MAX });
-  const cap = stage !== null && fit.room === stage.room ? fit.cap : DIAL_MAX;
-  const byHeight = stage === null ? DIAL_MAX : Math.floor(((stage.room - reserve) / dials) * 2);
-  const w = Math.min(width, cap, Math.max(DIAL_MIN, byHeight));
-  if (stage !== null && (fit.room !== stage.room || fit.over !== stage.over)) {
-    setFit({
-      room: stage.room,
-      over: stage.over,
-      cap:
-        stage.over > 0 && w > 0 ? Math.max(DIAL_MIN, w - Math.ceil((stage.over * 2) / dials)) : cap,
-    });
+  // The block's own height at the width it was drawn at: what it holds besides the half dials (the
+  // hubs, the ends, the target's number, the − / + row, a reveal's points) is measured, not guessed;
+  // narrower dials only ever make that taller, so the width settles in a step or two.
+  const [drawn, setDrawn] = useState<{ w: number; h: number } | null>(null);
+  let w = Math.min(width, DIAL_MAX);
+  if (room !== null) {
+    const besides = drawn ? drawn.h - (drawn.w / 2) * dials : 0;
+    w = Math.min(w, Math.max(DIAL_MIN, Math.floor(((room - outside - besides) / dials) * 2)));
   }
   return (
     <View
@@ -76,32 +60,27 @@ export function DialWidth({
       testID="ibre-dial-area"
     >
       <DialColumnContext.Provider value={width}>
-        {w > 0 ? children(w) : null}
+        {w > 0 ? (
+          <View onLayout={(e) => setDrawn({ w, h: Math.ceil(e.nativeEvent.layout.height) })}>
+            {children(w)}
+          </View>
+        ) : null}
       </DialColumnContext.Provider>
     </View>
   );
 }
 
-// Heights around the dials, for DialWidth's `reserve`; texts grow with the font scale.
+// Heights of what shares a timed screen's middle with the dials (DialWidth's `outside`); texts grow
+// with the font scale.
 export function useDialReserve() {
   const { typography } = useTheme();
   const { fontScale } = useWindowDimensions();
   const line = (variant: TypeVariant, lines = 1) =>
     Math.ceil(typography[variant].lineHeight * Math.max(1, fontScale)) * lines;
   return {
-    // Under each half dial: the hub's lower half.
-    under: HUB_HALF,
-    // The two ends under a dial.
-    ends: SPACING[2] + line('bodyStrong'),
-    // The − / + row under the needle.
-    stepper: SPACING[2] + TOUCH.button,
-    // The target's number under the hold-to-see dial.
-    target: SPACING[2] + line('title'),
-    // A reveal under its dial: the points and the line on the side guess.
-    reveal: SPACING[2] * 2 + line('hero') + line('bodyStrong', 2),
-    // TurnReady at its smallest: the circle, a line and a two-line hint.
-    ready: TURN_CIRCLE_MIN + SPACING[3] * 2 + line('heading') + line('fine', 2),
-    // A text of `lines` lines.
+    // TurnReady at its smallest (the circle, a line and a two-line hint), and the gap before it.
+    ready: SPACING[2] + TURN_CIRCLE_MIN + SPACING[3] * 2 + line('heading') + line('fine', 2),
+    // A text of `lines` lines, and the gap before it.
     text: (lines: number, variant: TypeVariant = 'bodyStrong') => SPACING[2] + line(variant, lines),
   };
 }
@@ -111,17 +90,17 @@ export function RoundReveal({
   reveal,
   guesser,
   brand,
-  reserve,
+  outside,
 }: {
   reveal: IbreReveal;
   // The other table's alias, or Takım A / B.
   guesser: string;
   brand?: string;
-  // Height taken by what else shares the screen (DialWidth).
-  reserve?: number;
+  // Height of what else shares the screen's middle (DialWidth).
+  outside?: number;
 }) {
   return (
-    <DialWidth reserve={reserve}>
+    <DialWidth outside={outside}>
       {(w) => (
         <NeedleReveal
           width={w}
@@ -264,13 +243,9 @@ export function IbreGame({ roomId, state, side, aliases }: Props) {
     return (
       <StageFit>
         {last ? (
-          <RoundReveal
-            reveal={last}
-            guesser={aliases[other(last.table)]}
-            reserve={sizes.under + sizes.ends + sizes.reveal + sizes.ready}
-          />
+          <RoundReveal reveal={last} guesser={aliases[other(last.table)]} outside={sizes.ready} />
         ) : (
-          <DialWidth reserve={sizes.under + sizes.ends + sizes.ready}>
+          <DialWidth outside={sizes.ready}>
             {(w) => (
               <Dial
                 width={w}
@@ -331,10 +306,7 @@ export function IbreGame({ roomId, state, side, aliases }: Props) {
           </>
         }
       >
-        <DialWidth
-          dials={2}
-          reserve={sizes.under * 2 + sizes.target + sizes.ends + sizes.stepper + SPACING[2]}
-        >
+        <DialWidth dials={2}>
           {(w) => (
             <View className="gap-2">
               <TargetHold
@@ -361,7 +333,7 @@ export function IbreGame({ roomId, state, side, aliases }: Props) {
       </StageFit>
     ) : (
       <StageFit testID="ibre-round" status={header} actions={errorLine}>
-        <DialWidth reserve={sizes.under + sizes.ends + sizes.text(2)}>
+        <DialWidth outside={sizes.text(2)}>
           {(w) => (
             <Dial
               width={w}
@@ -412,7 +384,7 @@ export function IbreGame({ roomId, state, side, aliases }: Props) {
         </>
       }
     >
-      <DialWidth reserve={sizes.under + sizes.ends}>
+      <DialWidth>
         {(w) => (
           <Dial
             width={w}

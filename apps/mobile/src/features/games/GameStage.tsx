@@ -5,7 +5,6 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -22,12 +21,10 @@ import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 
 // A timed screen on the stage (StageFit) turns the stage's scrolling off while it shows.
 const StageFitContext = createContext<(change: 1 | -1) => void>(() => undefined);
-// The height of a timed screen's middle, for pictures that size to it (İbre's dials), and by how
-// much its content is taller than that (0 when it fits).
-export type StageRoom = { room: number; over: number };
-const StageRoomContext = createContext<StageRoom | null>(null);
+// The height of a timed screen's middle, for pictures that size to it (İbre's dials).
+const StageRoomContext = createContext<number | null>(null);
 
-export function useStageRoom(): StageRoom | null {
+export function useStageRoom(): number | null {
   return useContext(StageRoomContext);
 }
 
@@ -238,18 +235,6 @@ export function StageFit({
     return () => changeFit(-1);
   }, [changeFit]);
   const [room, setRoom] = useState<number | null>(null);
-  const [content, setContent] = useState<number | null>(null);
-  const stageRoom = useMemo<StageRoom | null>(
-    () =>
-      room === null
-        ? null
-        : {
-            room,
-            // The content fills the middle at least (flexGrow); a pixel of rounding is not "over".
-            over: content === null ? 0 : Math.max(0, content - room - SPACING[1] * 2 - 1),
-          },
-    [room, content],
-  );
   return (
     // Grows to the stage's height; never squeezed below its content (flex-1 would let the content
     // spill over its neighbours).
@@ -260,7 +245,6 @@ export function StageFit({
         // The cards' hard shadows need a little room inside the scroll's clip.
         style={{ marginHorizontal: -SPACING[1] }}
         onLayout={(e) => setRoom(Math.floor(e.nativeEvent.layout.height - SPACING[1] * 2))}
-        onContentSizeChange={(_, height) => setContent(Math.ceil(height))}
         contentContainerStyle={{
           flexGrow: 1,
           justifyContent: 'center',
@@ -269,7 +253,7 @@ export function StageFit({
         }}
         keyboardShouldPersistTaps="handled"
       >
-        <StageRoomContext.Provider value={stageRoom}>{children}</StageRoomContext.Provider>
+        <StageRoomContext.Provider value={room}>{children}</StageRoomContext.Provider>
       </ScrollView>
       {actions ? <View style={{ gap: SPACING[2] }}>{actions}</View> : null}
     </View>
