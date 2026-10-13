@@ -14,7 +14,12 @@
 //   node --experimental-strip-types scripts/e2e/bot-table.ts <action> [json]
 import { createServer } from 'node:http';
 
-import { createClient, FunctionsHttpError, type SupabaseClient } from '@supabase/supabase-js';
+import {
+  createClient,
+  FunctionsHttpError,
+  type RealtimeChannel,
+  type SupabaseClient,
+} from '@supabase/supabase-js';
 import postgres from 'postgres';
 
 import {
@@ -1017,6 +1022,7 @@ async function opponent() {
   };
 
   await actions.login?.({});
+  startPresence();
   const checkedIn = (await actions.checkin?.({})) as { alias?: string };
   say(`checked in as ${checkedIn.alias ?? '?'} (${role})`);
   const { data: session } = await me()
@@ -1284,7 +1290,48 @@ async function run(action: string, args: Json): Promise<Json> {
   return fn(args);
 }
 
+// Presence (like the app's useOtherTableOnline): the bot tracks itself on its open room's
+// presence:{room_id} channel under its role, so the device sees the other table connected as it
+// would with a real phone. Checked every few seconds; a new room (or a new sign-in) rejoins.
+let presence: { client: SupabaseClient; roomId: string; channel: RealtimeChannel } | null = null;
+
+async function keepPresence(): Promise<void> {
+  if (!client) return;
+  const { data } = await client
+    .from('rooms')
+    .select('id, owner_session_id')
+    .neq('status', 'closed')
+    .order('created_at', { ascending: false })
+    .limit(1);
+  const room = data?.[0] as { id: string; owner_session_id: string } | undefined;
+  if (presence && (presence.client !== client || presence.roomId !== room?.id)) {
+    await presence.client.removeChannel(presence.channel);
+    presence = null;
+  }
+  if (!room || presence) return;
+  const role = room.owner_session_id === (await mySessionId()) ? 'owner' : 'guest';
+  const channel = client.channel(`presence:${room.id}`, {
+    config: { private: true, presence: { key: role } },
+  });
+  channel.subscribe((status) => {
+    if (status === 'SUBSCRIBED') void channel.track({});
+  });
+  presence = { client, roomId: room.id, channel };
+}
+
+function startPresence(): void {
+  let busy = false;
+  setInterval(() => {
+    if (busy) return;
+    busy = true;
+    keepPresence()
+      .catch((err: unknown) => console.error(`bot-table presence: ${String(err)}`))
+      .finally(() => (busy = false));
+  }, 2000);
+}
+
 function serve(port: number) {
+  startPresence();
   // One action at a time, in the order the flow sends them.
   let queue: Promise<unknown> = Promise.resolve();
   createServer((req, res) => {

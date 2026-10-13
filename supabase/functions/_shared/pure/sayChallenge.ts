@@ -277,6 +277,18 @@ export function mayObject(game: SayState, by: TableSide, now: number): boolean {
   );
 }
 
+// The objection window's time left as the phone shows it, never more than the window itself
+// (objectionSeconds): the deadline is the server's, and a phone clock behind the server's (or a
+// test holding the clocks) would otherwise show a 3-second window as a minute.
+export function objectionMsLeft(
+  game: Pick<SayState, 'kind' | 'objectionEndsAt'>,
+  now: number,
+): number {
+  if (game.objectionEndsAt === null) return 0;
+  const windowMs = SAY_CONFIG[game.kind].objectionSeconds * 1000;
+  return Math.min(windowMs, Math.max(0, game.objectionEndsAt - now));
+}
+
 export function sayWinner(game: Pick<SayState, 'scores'>): TableSide | null {
   const { owner, guest } = game.scores;
   return owner === guest ? null : owner > guest ? 'owner' : 'guest';
