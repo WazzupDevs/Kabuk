@@ -1,7 +1,7 @@
 // MVP_SPEC §6. Tests first (CLAUDE.md).
 import { describe, expect, it } from 'vitest';
 
-import { normalize, tokenize } from './trText.ts';
+import { capitalizeTr, normalize, tokenize, upperTr } from './trText.ts';
 
 describe('normalize', () => {
   it('lowercases with Turkish rules and folds Turkish letters', () => {
@@ -47,5 +47,24 @@ describe('tokenize', () => {
     expect(tokenize('d e n i z')).toEqual(['deniz']);
     expect(tokenize('bu d-e-n-i-z mavi')).toEqual(['bu', 'deniz', 'mavi']);
     expect(tokenize('a')).toEqual(['a']);
+  });
+});
+
+// Shown words follow Turkish case rules: "isim" → "İsim", "ılık" → "Ilık" (a plain toUpperCase or
+// Android's textTransform makes "i" into "I").
+describe('capitalizeTr and upperTr', () => {
+  it('capitalizes the first letter the Turkish way', () => {
+    expect(capitalizeTr('isim')).toBe('İsim');
+    expect(capitalizeTr('ılık')).toBe('Ilık');
+    expect(capitalizeTr('çiçek')).toBe('Çiçek');
+    expect(capitalizeTr('aşk')).toBe('Aşk');
+    expect(capitalizeTr('Meyve')).toBe('Meyve');
+    expect(capitalizeTr('')).toBe('');
+  });
+
+  it('uppercases the Turkish way', () => {
+    expect(upperTr('Kategori')).toBe('KATEGORİ');
+    expect(upperTr('ılık')).toBe('ILIK');
+    expect(upperTr('Tur 1 bitti')).toBe('TUR 1 BİTTİ');
   });
 });

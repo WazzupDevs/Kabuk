@@ -129,7 +129,7 @@ export default function LocationScreen() {
       ) : null}
       {problem === 'outsideBoundary' ? (
         <Text variant="fine" tone="danger" className="mt-4">
-          {tr.checkin.outsideBoundary}
+          {tr.checkin.outsideBoundary(venue.kind)}
         </Text>
       ) : null}
       {problem === 'failed' ? (

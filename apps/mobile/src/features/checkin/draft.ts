@@ -1,4 +1,5 @@
 import type { LngLat } from '@shared/geo.ts';
+import type { VenueKind } from '@shared/venueKind.ts';
 import { create } from 'zustand';
 
 // The check-in in progress (docs/SPEC_V2.md §4): the venue is chosen by hand in Keşfet first; the
@@ -12,6 +13,8 @@ export type DraftVenue = {
   lat: number;
   lng: number;
   boundary: readonly LngLat[] | null;
+  // Cafe or campus: which "not inside" message the check-in shows.
+  kind: VenueKind;
 };
 // "Neredesin?" at a venue with spots (docs/SPEC_V3.md §4.3).
 export type DraftSpot = { id: string; name: string };

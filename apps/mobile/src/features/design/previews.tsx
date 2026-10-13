@@ -476,7 +476,7 @@ function IbreSet() {
               target={34}
               needle={41}
               points={3}
-              detail='Hedef 34 · ibre 41 · Sakin Martı "Daha sol" dedi: +1'
+              detail="Hedef 34 · ibre 41 · Sakin Martı: solunda, +1"
               brand="Kabuk · İbre"
             />
           )}

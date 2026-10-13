@@ -1354,7 +1354,7 @@ Tasarımın bileşenleriyle:
 - Telefon iki uçlu bir ölçek gösterir (ör. Ucuz ile Pahalı).
 - Sıradaki masanın anlatıcısı gizli hedefi (0 ile 100 arası) görür, telefonu kapatır, sesli tek ipucu verir.
 - Kendi masası ibreyi telefonda sürükleyip onaylar.
-- Karşı masa 15 sn içinde "Daha sol" ya da "Daha sağ" der; doğruysa 1 puan alır.
+- Karşı masa 15 sn içinde "Solunda" ya da "Sağında" der; doğruysa 1 puan alır.
 - Puan, hedefe uzaklığa göre 4, 3, 2 ya da 0'dır; bantları sunucu hesaplar.
 - 4 tur oynanır, masalar dönüşümlü.
 
@@ -1403,7 +1403,7 @@ Tasarımın bileşenleriyle:
 **E2E:**
 
 - Cihaz anlatan masadır: "Başla"ya basar, hedefi basılı tutar, ibreyi sürükler, onaylar.
-- Bot "Daha sağ" der. Açılış görünür.
+- Bot "Sağında" der. Açılış görünür.
 - Bot anlatan masa olur, cihaz taraf seçer.
 - Entegrasyon testi: hedef, karşı masaya ve odanın satırına açılıştan önce gitmez.
 
@@ -1427,7 +1427,7 @@ Tasarımın bileşenleriyle:
 - **Öneri ve Aktiviteler:** İbre `CONCEPTS`'te; öneri kutucuğu ibre ikonuyla, Aktiviteler'de kart ve "Nasıl oynanır".
 - **Kadranın genişliği:** her kadran, içinde durduğu sütunun gerçek genişliğini `onLayout` ile ölçer ve onunla çizilir (en çok 360). Sabit genişlik yok.
 - **Açılışta ibre ve bant numarası:** bant numaraları gösterilirken (açılış) ibre numaraların halkasının içinde biter; ucunu gösterdiği numarayı örtmez. Onaylanmamış ibre açılışta çizilmez.
-- **İki masalı ekran** (`IbreGame`): hazır durumda önceki turun açılışı (ilk turda boş ölçek) ve `TurnReady` (Başla yalnızca anlatan masada). Anlatan masada hedef basılı tutulunca `ibre/target`'tan gelir (tur boyunca saklanır), altında sürüklenen ya da − / + ile oynatılan ibre ve "İbreyi onayla". Karşı masada ölçek ve "… ipucu veriyor". Taraf aşamasında kilitli ibre; karşı masa "Daha sol / Daha sağ" seçer. Süre dolunca iki telefon da bir kez `advance` çağırır.
+- **İki masalı ekran** (`IbreGame`): hazır durumda önceki turun açılışı (ilk turda boş ölçek) ve `TurnReady` (Başla yalnızca anlatan masada). Anlatan masada hedef basılı tutulunca `ibre/target`'tan gelir (tur boyunca saklanır), altında sürüklenen ya da − / + ile oynatılan ibre ve "İbreyi onayla". Karşı masada ölçek ve "… ipucu veriyor". Taraf aşamasında kilitli ibre; karşı masa "Solunda / Sağında" seçer. Süre dolunca iki telefon da bir kez `advance` çağırır.
 - **Otomatik onay:** anlatan masanın ibresi son 3 sn'de onaylanmamışsa uygulama o anki değeri `ibre/lock` ile kendisi gönderir (`ibreAutoLockDue`, tur başına bir kez); ipucu satırı bunu söyler. Tek masalı oyunda da aynı. Arka plandaki telefon göndermez, tur 0 kalır.
 - **Tek masalı oyun** (`LocalIbre`): "Masanla oyna"da düğme (en az 2 kişi); hedefi telefon üretir; anlatıcı basılı tutarak görür, takımı ibreyi ayarlar, diğer takım aynı telefonda taraf seçer. Ölçekler `ibre/start`'tan bir kerede gelir.
 - **Bitiş:** oda sohbete döner; son turun açılışı ve son oyun kartı (iki skor, "Rövanş").

@@ -1,5 +1,9 @@
-import { initialLocalTabu, localTabuReducer } from '@shared/localTabu.ts';
-import { TABU } from '@shared/tabu.ts';
+import {
+  initialLocalTabu,
+  LOCAL_TABU_TURNS,
+  localTabuReducer,
+  localTurnNo,
+} from '@shared/localTabu.ts';
 import { useMutation } from '@tanstack/react-query';
 import { useEffect, useReducer, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
@@ -45,9 +49,9 @@ export function LocalTabu({ roomId }: { roomId: string }) {
   const { A, B } = state.scores;
 
   // How far the game got, for game_abandoned if "Oyunu bitir" stops it (docs/SPEC_V3.md §19.1):
-  // teams A and B take turns, 3 rounds each.
-  const totalTurns = TABU.localRoundsPerTeam * 2;
-  const turnNo = (state.round - 1) * 2 + (state.team === 'B' ? 2 : 1);
+  // the same turn count the screen shows.
+  const totalTurns = LOCAL_TABU_TURNS;
+  const turnNo = localTurnNo(state);
   const setLocal = useGameSignals((s) => s.setLocal);
   useEffect(() => {
     setLocal({ turnNo, totalTurns, finished });
@@ -104,7 +108,7 @@ export function LocalTabu({ roomId }: { roomId: string }) {
           </Card>
         ) : null}
         <Scores a={game.scores.A} b={game.scores.B} active={null} />
-        <Text variant="eyebrow">{tr.games.round(game.round, TABU.localRoundsPerTeam)}</Text>
+        <Text variant="eyebrow">{tr.games.round(localTurnNo(game), LOCAL_TABU_TURNS)}</Text>
         <View className="w-full">
           <Button
             label={tr.games.startTurn(game.team)}
@@ -118,7 +122,7 @@ export function LocalTabu({ roomId }: { roomId: string }) {
   return (
     <View className="gap-3">
       <View className="flex-row items-center justify-between">
-        <Text variant="eyebrow">{tr.games.round(game.round, TABU.localRoundsPerTeam)}</Text>
+        <Text variant="eyebrow">{tr.games.round(localTurnNo(game), LOCAL_TABU_TURNS)}</Text>
         <ClockPill seconds={secondsLeft} />
       </View>
       <Scores a={game.scores.A} b={game.scores.B} active={game.team} />

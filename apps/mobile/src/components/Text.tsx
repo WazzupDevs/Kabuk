@@ -1,3 +1,4 @@
+import { upperTr } from '@shared/trText.ts';
 import type { ReactNode } from 'react';
 import { Text as RNText, type TextProps } from 'react-native';
 
@@ -31,6 +32,10 @@ export function Text({
   ...rest
 }: Props) {
   const theme = useTheme();
+  // Uppercase variants (overline): Turkish case rules in JS ("KATEGORİ"), not textTransform,
+  // which turns "i" into "I" on Android.
+  const upper = theme.typography[variant].uppercase === true;
+  const content = upper ? toUpper(children) : children;
   const defaultTone: PaletteKey =
     variant === 'subtitle' || variant === 'eyebrow' || variant === 'label' || variant === 'fine'
       ? 'muted'
@@ -47,9 +52,17 @@ export function Text({
         align ? { textAlign: align } : null,
         tabular ? { fontVariant: ['tabular-nums'] } : null,
         strike ? { textDecorationLine: 'line-through' } : null,
+        upper ? { textTransform: 'none' } : null,
       ]}
     >
-      {children}
+      {content}
     </RNText>
   );
+}
+
+function toUpper(node: ReactNode): ReactNode {
+  if (typeof node === 'string') return upperTr(node);
+  if (Array.isArray(node))
+    return node.map((n: ReactNode) => (typeof n === 'string' ? upperTr(n) : n));
+  return node;
 }

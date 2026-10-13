@@ -650,7 +650,7 @@ export const actions: Record<string, (args: Json) => Promise<Json>> = {
     return call('ibre', { action: 'lock', roomId: room.id, round, value });
   },
 
-  // "Daha sol / Daha sağ" (`side`, default right) on the device's locked needle.
+  // "Solunda / Sağında" (`side`, default right) on the device's locked needle.
   async 'ibre-side'(args) {
     const room = await retryUntil('a needle to judge', async () => {
       const r = await ibreRoom();
