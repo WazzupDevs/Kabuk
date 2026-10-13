@@ -100,6 +100,10 @@ export function ChatBubble({
     if (sharedBar) sharedBar.setOpen(next ? barId : null);
     else setOwnPicking(next);
   };
+  // A long press opens the bar when the finger lifts, not while it is still down: the bar makes the
+  // stream taller, and a stream that turned scrollable under a held finger took the next press for
+  // itself (the next long press was lost).
+  const longPressed = useRef(false);
   const big = shape.radius.lg - SPACING[1];
   const small = SPACING[1.5];
   const top = first ? big : small;
@@ -122,7 +126,22 @@ export function ChatBubble({
         if (e.nativeEvent.actionName === 'react') setPicking(true);
         if (e.nativeEvent.actionName === 'quote') onPressQuote?.();
       }}
-      onLongPress={onReact ? () => setPicking(!picking) : undefined}
+      onLongPress={
+        onReact
+          ? () => {
+              longPressed.current = true;
+            }
+          : undefined
+      }
+      onPressOut={
+        onReact
+          ? () => {
+              if (!longPressed.current) return;
+              longPressed.current = false;
+              setPicking(!picking);
+            }
+          : undefined
+      }
       style={{ maxWidth: '100%' }}
     >
       <View
