@@ -32,3 +32,15 @@ export function tokenize(s: string, options: TextOptions = {}): string[] {
   if (letters) tokens.push(letters);
   return tokens;
 }
+
+// Turkish uppercase for what the screen shows ("Kategori" → "KATEGORİ"). Done by hand for i and ı,
+// so it does not depend on the phone's locale support (Android's textTransform makes "i" an "I").
+export function upperTr(s: string): string {
+  return s.replace(/i/g, 'İ').replace(/ı/g, 'I').toUpperCase();
+}
+
+// The first letter in Turkish uppercase, the rest as it is ("isim" → "İsim").
+export function capitalizeTr(s: string): string {
+  const [first = '', ...rest] = [...s];
+  return upperTr(first) + rest.join('');
+}

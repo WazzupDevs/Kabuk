@@ -293,7 +293,7 @@ export function IbreGame({ roomId, state, side, aliases }: Props) {
     );
   }
 
-  // The other table's 15 seconds: the locked needle, "Daha sol / Daha sağ".
+  // The other table's 15 seconds: the locked needle, "Solunda / Sağında".
   const mine = picked?.round === round ? picked.side : null;
   return (
     <View className="gap-3" testID="ibre-side-phase">

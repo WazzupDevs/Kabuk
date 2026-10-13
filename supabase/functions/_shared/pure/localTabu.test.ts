@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { initialLocalTabu, localTabuReducer, type LocalTabuState } from './localTabu.ts';
+import {
+  initialLocalTabu,
+  LOCAL_TABU_TURNS,
+  localTabuReducer,
+  localTurnNo,
+  type LocalTabuState,
+} from './localTabu.ts';
+import { TABU } from './tabu.ts';
 
 const deck = Array.from({ length: 10 }, (_, i) => ({
   word: `kelime${i}`,
@@ -60,5 +67,14 @@ describe('localTabuReducer', () => {
     let s = run(initialLocalTabu(deck.slice(0, 2)), { type: 'start', now: 0 });
     s = run(s, { type: 'pass' }, { type: 'pass' });
     expect(s.cardIndex).toBe(0);
+  });
+});
+
+describe('the turn on the screen', () => {
+  it('counts both teams’ turns, like the rules say', () => {
+    expect(LOCAL_TABU_TURNS).toBe(TABU.localRoundsPerTeam * 2);
+    expect(localTurnNo({ round: 1, team: 'A' })).toBe(1);
+    expect(localTurnNo({ round: 1, team: 'B' })).toBe(2);
+    expect(localTurnNo({ round: TABU.localRoundsPerTeam, team: 'B' })).toBe(LOCAL_TABU_TURNS);
   });
 });

@@ -60,7 +60,7 @@ export function SayRound({
   const objector: TableSide = sides.mine ?? (turn === 'owner' ? 'guest' : 'owner');
   const canObject = mayObject(state, objector, now);
   const secondsLeft = Math.max(0, Math.ceil(((state.endsAt ?? now) - now) / 1000));
-  const result = useRoundResult(state, now);
+  const result = useRoundResult(state, now, sides.names);
 
   return (
     <View className="gap-3" testID="say-round">
@@ -137,14 +137,14 @@ export function SayRound({
 
 // The last round's result, for a moment after it ended: "İtiraz!" with what it changed, or the
 // clock or the full board.
-function useRoundResult(state: SayState, now: number) {
+function useRoundResult(state: SayState, now: number, names: Record<TableSide, string>) {
   const last = state.lastRound;
   const key = last ? `${last.roundNo}:${last.reason}:${last.winner ?? ''}` : null;
   const [seen, setSeen] = useState<{ key: string | null; at: number }>({ key, at: 0 });
   if (seen.key !== key) setSeen({ key, at: now });
   if (!last || now - seen.at > RESULT_MS || seen.at === 0) return null;
   if (last.reason === 'objection' && last.winner) {
-    return <ObjectionResult detail={`${tr.say.object}: +1`} />;
+    return <ObjectionResult detail={tr.say.objectionPoint(names[last.winner])} />;
   }
   return (
     <Text variant="fine" align="center" testID="say-round-result">

@@ -1,5 +1,5 @@
 // İbre (docs/SPEC_V3.md §20.5): a two-ended scale, a hidden target from 0 to 100, one spoken clue
-// from the describing table, its needle, the other table's "Daha sol / Daha sağ" within 15 seconds,
+// from the describing table, its needle, the other table's "Solunda / Sağında" within 15 seconds,
 // the bands 4 / 3 / 2 / 0 and 4 rounds with the tables in turn. Times are milliseconds. The SQL
 // functions apply the same rules (private.ibre_config, private.ibre_band); integration tests check
 // that they agree with this file. The one-table game runs it on the phone for Takım A (owner) and
@@ -13,7 +13,7 @@ export const IBRE_CONFIG = {
   readySeconds: 10,
   // The describing table's clock: the target, the clue and the needle.
   clueSeconds: 90,
-  // The other table's "Daha sol / Daha sağ".
+  // The other table's "Solunda / Sağında".
   sideSeconds: 15,
   minLocalPlayers: GAME_CATALOG.ibre.onePhone.minPlayers,
 } as const;
@@ -135,7 +135,7 @@ export function ibreLock(
   };
 }
 
-// "Daha sol / Daha sağ": the other table, within its 15 seconds. The round is revealed at once.
+// "Solunda / Sağında": the other table, within its 15 seconds. The round is revealed at once.
 export function ibreSide(
   game: IbreState,
   by: TableSide,

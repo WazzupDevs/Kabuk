@@ -63,6 +63,7 @@ export default function VenueDetailScreen() {
               lat: venue.lat,
               lng: venue.lng,
               boundary: venue.boundary,
+              kind: venue.kind,
             });
             router.push('/checkin');
           }}

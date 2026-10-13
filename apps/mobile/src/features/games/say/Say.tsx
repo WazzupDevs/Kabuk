@@ -1,3 +1,4 @@
+import { capitalizeTr } from '@shared/trText.ts';
 import { Pressable, View } from 'react-native';
 
 import { Button } from '@/components/Button';
@@ -66,7 +67,7 @@ export function PromptCard({
     <View
       testID="say-prompt"
       accessible
-      accessibilityLabel={`${kind === 'category' ? tr.say.category : tr.say.word}: ${prompt}`}
+      accessibilityLabel={`${kind === 'category' ? tr.say.category : tr.say.word}: ${capitalizeTr(prompt)}`}
       className={compact ? 'items-center gap-1' : 'flex-1 items-center justify-center gap-2'}
       style={{
         paddingHorizontal: SPACING[5],
@@ -91,7 +92,7 @@ export function PromptCard({
         adjustsFontSizeToFit
         minimumFontScale={0.5}
       >
-        {prompt}
+        {capitalizeTr(prompt)}
       </Text>
       {line ? (
         <Text variant="bodyStrong" color={fg} align="center">

@@ -12,7 +12,7 @@ import { SPACING, TOUCH } from '@/theme/tokens';
 
 // İbre's visual parts (docs/SPEC_V3.md §20.5; canvas: Aşama 6 · Oyunlar → İbre): the two-ended
 // scale as a half dial, the target seen while held, the needle dragged in JS (the view's own touch
-// responder; no native module) or moved with − / +, "Daha sol / Daha sağ", and the reveal with the target zone and
+// responder; no native module) or moved with − / +, "Solunda / Sağında", and the reveal with the target zone and
 // the 4 / 3 / 2 bands. Drawn with views only: the bands are triangles clipped by the round dial.
 // Values run 0 (left) to 100 (right). Props only; the game screen wires them.
 
@@ -479,7 +479,7 @@ function StepButton({
 
 export type Side = 'left' | 'right';
 
-// "Daha sol / Daha sağ": the other table's guess of where the target is from the locked needle.
+// "Solunda / Sağında": the other table's guess of where the target is from the locked needle.
 export function SideChoice({
   selected,
   onSelect,
@@ -531,7 +531,7 @@ export function NeedleReveal({
   // Null: never locked (the clock ran out); no needle is drawn.
   needle: number | null;
   points: number;
-  // "Hedef 34 · ibre 41 · Sakin Martı "Daha sol" dedi: +1".
+  // "Hedef 34 · ibre 41 · Sakin Martı: solunda, +1".
   detail: string;
   brand?: string;
 }) {
