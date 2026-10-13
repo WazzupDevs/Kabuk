@@ -278,12 +278,15 @@ export default function RoomScreen() {
           {errorMessage(exit.error)}
         </Text>
       ) : null}
-      <View className="mt-4">{gameArea}</View>
+      {/* Over the games, not under them: below the grid it sat under the message bar. */}
       {r.status === 'waiting' && r.visibility === 'open' ? (
-        <Card tone="note" className="mt-1">
+        <Card tone="note" className="mt-4" testID="room-waiting-note">
           <Text variant="fine">{tr.rooms.waitingForGuest}</Text>
         </Card>
       ) : null}
+      <View className={r.status === 'waiting' && r.visibility === 'open' ? 'mt-1' : 'mt-4'}>
+        {gameArea}
+      </View>
       {hasOtherTable ? <OtherTableStatus roomId={r.id} isOwner={isOwner} /> : null}
 
       <RoomMessages

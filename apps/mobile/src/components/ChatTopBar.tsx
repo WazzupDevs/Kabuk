@@ -37,14 +37,12 @@ export function ChatTopBar({
     <View className="flex-1 flex-row items-center gap-2.5" style={{ minHeight: TOUCH.min }}>
       {leading}
       <View className="flex-1">
-        <Text variant="heading" accessibilityRole="header" numberOfLines={1}>
+        {/* Wraps rather than ending in "…" (CLAUDE.md → Ekran davranışı): a room's two table
+            names, "12 Ekim'den beri arkadaşsınız". */}
+        <Text variant="heading" accessibilityRole="header">
           {title}
         </Text>
-        {subtitle ? (
-          <Text variant="fine" numberOfLines={1}>
-            {subtitle}
-          </Text>
-        ) : null}
+        {subtitle ? <Text variant="fine">{subtitle}</Text> : null}
       </View>
     </View>
   );

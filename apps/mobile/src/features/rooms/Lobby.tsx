@@ -153,9 +153,7 @@ export function Lobby({ venueId, sessionId, since, mySpotId, venueHasSpots }: Pr
                       <View className="flex-row items-center gap-3.5">
                         <Avatar kind="table" alias={room.alias} size="xl" />
                         <View className="flex-1 gap-0.5">
-                          <Text variant="heading" numberOfLines={1}>
-                            {room.alias}
-                          </Text>
+                          <Text variant="heading">{room.alias}</Text>
                           <Text variant="fine">
                             {`${tr.rooms.people(room.headcount)} · ${tr.rooms.waitingFor(waitedMin)}`}
                           </Text>

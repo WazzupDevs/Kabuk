@@ -70,9 +70,10 @@ appId: app.kabuk.mobile
     timeout: 15000
 - longPressOn:
     id: ibre-hold
-# The two dials and the buttons run below the fold on a small screen: scroll to each.
-- scrollUntilVisible:
-    element:
+# The two dials size to the screen: both, the − / + row and "İbreyi onayla" are on screen with
+# the clock, no scrolling.
+- extendedWaitUntil:
+    visible:
       id: ibre-drag
     timeout: 15000
 - swipe:
@@ -80,17 +81,13 @@ appId: app.kabuk.mobile
       id: ibre-drag
     direction: RIGHT
     duration: 600
-- scrollUntilVisible:
-    element:
-      id: ibre-plus
-    timeout: 15000
+- assertVisible:
+    id: ibre-plus
 - tapOn:
     id: ibre-plus
 - takeScreenshot: 55-ibre-needle
-- scrollUntilVisible:
-    element:
-      id: ibre-lock
-    timeout: 15000
+- assertVisible:
+    id: ibre-lock
 - tapOn:
     id: ibre-lock
 - runScript:
@@ -122,8 +119,8 @@ appId: app.kabuk.mobile
     visible:
       id: ibre-side-phase
     timeout: 20000
-- scrollUntilVisible:
-    element:
+- extendedWaitUntil:
+    visible:
       id: ibre-side-left
     timeout: 15000
 - takeScreenshot: 57-ibre-side

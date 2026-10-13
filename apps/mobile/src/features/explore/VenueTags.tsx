@@ -38,23 +38,58 @@ export function EventTag({ event }: { event: NonNullable<ExploreVenue['event']> 
   );
 }
 
-// How lively a venue is, as a beating dot on the Keşfet list (canvas: Aşama 8 · Saha → Keşfet):
-// calm blue and slow, lively green, buzzing red and fast. The reader hears the bucket's name.
-const LIVENESS: Record<ActivityBucket, { tone: PaletteKey; periodMs: number }> = {
-  calm: { tone: 'read', periodMs: 2400 },
-  lively: { tone: 'success', periodMs: 1400 },
-  buzzing: { tone: 'danger', periodMs: 800 },
+// How lively a venue is, beside its name on the Keşfet list (canvas: Aşama 8 · Saha → Keşfet). The
+// three states differ in shape, colour and motion, not colour alone: calm is a still, hollow ring in
+// the quiet colour; lively a green dot beating with its halo; buzzing a larger red dot beating fast.
+// The reader hears the bucket's name ("Sakin", "Hareketli", "Çok hareketli").
+const LIVENESS: Record<
+  Exclude<ActivityBucket, 'calm'>,
+  { tone: PaletteKey; periodMs: number; size: number }
+> = {
+  lively: { tone: 'success', periodMs: 1400, size: SPACING[2.5] },
+  buzzing: { tone: 'danger', periodMs: 700, size: SPACING[3] + SPACING[0.5] },
 };
+// Every state takes the same box, so the rows line up.
+const LIVENESS_BOX = (SPACING[3] + SPACING[0.5]) * 3;
 
 export function LivenessDot({ bucket }: { bucket: ActivityBucket }) {
-  const { tone, periodMs } = LIVENESS[bucket];
+  const { colors, shape } = useTheme();
+  if (bucket === 'calm') {
+    return (
+      <View
+        accessible
+        accessibilityRole="image"
+        accessibilityLabel={tr.explore.buckets.calm}
+        testID="liveness-calm"
+        className="items-center justify-center"
+        style={{ width: LIVENESS_BOX, height: LIVENESS_BOX }}
+      >
+        <View
+          style={{
+            width: SPACING[2.5],
+            height: SPACING[2.5],
+            borderRadius: shape.radius.pill,
+            borderWidth: shape.stroke.control,
+            borderColor: colors.muted,
+          }}
+        />
+      </View>
+    );
+  }
+  const { tone, periodMs, size } = LIVENESS[bucket];
   return (
-    <LiveDot
-      tone={tone}
-      periodMs={periodMs}
-      size={SPACING[2.5]}
-      accessibilityLabel={tr.explore.buckets[bucket]}
-    />
+    <View
+      testID={`liveness-${bucket}`}
+      className="items-center justify-center"
+      style={{ width: LIVENESS_BOX, height: LIVENESS_BOX }}
+    >
+      <LiveDot
+        tone={tone}
+        periodMs={periodMs}
+        size={size}
+        accessibilityLabel={tr.explore.buckets[bucket]}
+      />
+    </View>
   );
 }
 

@@ -112,7 +112,7 @@ function InboxRow({
           </View>
           <View className="flex-1" style={{ gap: SPACING[0.5] }}>
             <View className="flex-row items-center gap-2">
-              <Text variant={unread ? 'bodyStrong' : 'body'} numberOfLines={1} className="flex-1">
+              <Text variant={unread ? 'bodyStrong' : 'body'} className="flex-1">
                 {name}
               </Text>
               {t.lastMessageAt ? (
@@ -176,7 +176,7 @@ function TypingOr({
   if (!typing) return children;
   return (
     <View className="flex-1" testID="inbox-typing">
-      <Text variant="bodyStrong" tone="success" numberOfLines={1}>
+      <Text variant="bodyStrong" tone="success">
         {tr.messages.typing}
       </Text>
     </View>

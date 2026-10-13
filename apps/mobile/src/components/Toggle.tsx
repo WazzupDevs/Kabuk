@@ -78,9 +78,7 @@ export function Toggle({ label, value, onChange, hint, disabled, compact, testID
         </Text>
         {hint ? (
           <View className="flex-1">
-            <Text variant="fine" numberOfLines={1}>
-              {hint}
-            </Text>
+            <Text variant="fine">{hint}</Text>
           </View>
         ) : null}
       </Pressable>

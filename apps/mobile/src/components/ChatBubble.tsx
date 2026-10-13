@@ -201,7 +201,7 @@ export function ChatBubble({
       <View className="flex-row items-center gap-2">
         {avatar}
         {name ? (
-          <Text variant="label" tone="muted" numberOfLines={1} className="shrink">
+          <Text variant="label" tone="muted" className="shrink">
             {name}
           </Text>
         ) : null}
@@ -263,10 +263,11 @@ function QuoteBlock({
         backgroundColor: mine ? withAlpha(colors.onAccent, 0.16) : colors.surface2,
       }}
     >
-      <Text variant="label" color={mine ? colors.onAccent : colors.violet} numberOfLines={1}>
+      <Text variant="label" color={mine ? colors.onAccent : colors.violet}>
         {quote.name}
       </Text>
       {quote.text ? (
+        // An excerpt of the answered message: one line, like the inbox's last-message line.
         <Text variant="fine" color={mine ? colors.onAccent : colors.text} numberOfLines={1}>
           {quote.text}
         </Text>

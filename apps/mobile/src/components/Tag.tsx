@@ -59,7 +59,7 @@ export function Tag({ label, variant = 'neutral', icon }: Props) {
       }}
     >
       {icon ? <Ionicons name={icon} size={ICON.sm} color={fg} /> : null}
-      <Text variant={variant === 'neutral' ? 'label' : 'tag'} color={fg} numberOfLines={1}>
+      <Text variant={variant === 'neutral' ? 'label' : 'tag'} color={fg}>
         {label}
       </Text>
     </View>

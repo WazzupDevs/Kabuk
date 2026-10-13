@@ -67,10 +67,10 @@ appId: app.kabuk.mobile
     visible:
       id: tabu-card
     timeout: 20000
-- scrollUntilVisible:
-    element:
+# The three buttons under the card, on screen without scrolling.
+- extendedWaitUntil:
+    visible:
       id: tabu-taboo
-    centerElement: true
     timeout: 10000
 - assertVisible:
     id: tabu-pass
@@ -87,10 +87,9 @@ appId: app.kabuk.mobile
     file: ../scripts/bot.js
     env:
       ACTION: begin-turn
-- scrollUntilVisible:
-    element:
+- extendedWaitUntil:
+    visible:
       id: tabu-guessing
-    direction: UP
     timeout: 20000
 - assertNotVisible:
     id: tabu-card
