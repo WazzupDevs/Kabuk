@@ -29,7 +29,7 @@ appId: app.kabuk.mobile
       ACTION: reveal
       BODY: '{"yes":true}'
 - extendedWaitUntil:
-    visible: Ekranını kaldır, birbirinizi bulun.
+    visible: Ekranınızı kaldırın, birbirinizi bulun.
     timeout: 15000
 - takeScreenshot: 23-reveal-mutual
 - tapOn: Arkadaş ekle

@@ -321,7 +321,7 @@ Basan telefon: anında / gecikmeli
 
 A **Odayı bitir**: "Tanışalım mı?" ekranında skor satırı yok (sesli oyunda ortak skor yok); akış önceki adımlardaki gibi.
 
-İki taraf da **Evet** desin. **Bak:** ikinci Evet'ten hemen sonra iki ekranda **aynı renk ve aynı emoji**, "Ekranını kaldır, birbirinizi bulun." Bu ekranda kal: F1 burada yapılır. Bu pencerenin 30 saniyesi dolmadan kurulan yeni açık oda lobide görünmez; beklenen davranış.
+İki taraf da **Evet** desin. **Bak:** ikinci Evet'ten hemen sonra iki ekranda **aynı renk ve aynı emoji**, "Ekranınızı kaldırın, birbirinizi bulun." Bu ekranda kal: F1 burada yapılır. Bu pencerenin 30 saniyesi dolmadan kurulan yeni açık oda lobide görünmez; beklenen davranış.
 
 ## F1. "Arkadaş ekle": iki masa da basarsa arkadaş olunur (T6'nın sonuç ekranında) [P0]
 
