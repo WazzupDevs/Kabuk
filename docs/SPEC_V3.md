@@ -1548,3 +1548,441 @@ Ek kararlar: oyuncu sayısı yalnızca Sahtekar'da ve öneri/kabulle (§20.1); i
 - **Oda sohbetinde görünürlük:** misafir masa, odaya katılmadan önceki mesajı alıntılayamaz ve ona yapılmış yanıtı `{ gone: true }` görür (mesajların kendi politikası, `guest_joined_at`).
 - **Yeniden deneme:** `dm/react` ve `chat/react` `IDEMPOTENT_CALLS`'tadır. `venue-chat/react` değildir: her istek tepki sınırına sayılır, iki kez gönderilince durum (sayaç) aynı kalmaz.
 - **Alıntıya dokunma:** alıntı dokunmayı alır (`ChatBubble` → `onPressQuote`, ekran okuyucuda "Yanıtlanan mesaja git"); liste alıntılanan mesaja kayar (`ChatRow` / `ChatScroll` → `jumpTo`). Mesaj yüklenmiş sayfada yoksa ya da alıntı "Mesaj artık yok" ise hiçbir şey olmaz.
+
+---
+
+## 22. Faz 2: Takımlar
+
+**Onaylandı.** Proje sahiplerinin dokuz kararı önerildiği gibi onaylandı (karar belgesi: https://claude.ai/artifact/EnSwLZraAEhLkAqVDAcnDE; kararlar §22.P'de). Bu bölüm kararları şemaya, RLS'e, Edge Function'lara ve Realtime'a oturtur. Uygulama §22.N'deki sırayla yapılır; her adım kendi dalı ve PR'ıyla gelir ve "onaylandı" olmadan birleşmez. Bu bölümde olmayan bir karar gerekirse uygulama durur ve sorulur.
+
+Alt bölümler harfle numaralanır (§22.A, §22.B…); **adım** numaraları (adım 22.1…22.6) §22.N'deki uygulama adımlarıdır.
+
+### 22.A Amaç ve kapsam
+
+Bugün kişi başına check-in var: her telefon mekanda kendi masa oturumunu, takma adını ve profilini taşır. Ama odada her tarafta tam bir telefon var; aynı masadaki ikinci telefon odaya giremez, oyunu ve sohbeti göremez, tanışmada kendi adına cevap veremez. Faz 2 bunu kapatır:
+
+- Oda iki taraflı kalır (kuran taraf `owner`, katılan taraf `guest`). Her tarafa en çok **4 telefon**: lider ve en çok 3 üye.
+- Masadaki herkes kendi telefonu ve kendi seçtiği katılımla (anonim ya da profilli) odaya girer, istediği an çıkar.
+- Oyun ve skor tarafa bağlıdır; telefonlar gelip gitse de oyun sürer.
+- Tanışma kişi başınadır; oyun geçmişi ve "Arkadaş ekle" karşı taraftaki her çift için ayrıdır.
+- Mekan sohbetinde anonim ya da profilli seçimi check-in başına bir kez yapılır; "Profilimle" her yerde profil fotoğrafı ister.
+
+**Kapsam dışı:** QR kod ve davet bağlantısı; taraf sayısını artırmak (oyunların hepsi iki tarafa kurulu); Sahtekar'da her telefonun bir koltuk olması (Faz 3); "Masanla oyna" (tek telefonlu oyunlar) değişmez.
+
+**Native değişiklik yok:** Faz 2'nin bütün adımları JS ve sunucu değişikliğidir. `app.json` → `version` 0.3.0 kalır, istemci OTA ile gider. Bir adımda native bağımlılık gerekirse uygulama durur ve sorulur. Pilot build 0.4.0 Faz 2'den sonra alınır (`docs/PILOT_RELEASE.md`).
+
+### 22.B Model
+
+**Taraf, lider, üye.**
+
+- **Lider:** tarafın bugünkü masa telefonu. `rooms.owner_session_id` ve `rooms.guest_session_id` tarafların lideridir; kayıttaki yerleri ve anlamları değişmez. `owner_alias`/`guest_alias` ve `owner_profiled`/`guest_profiled` liderin takma adı ve o odadaki seçimidir.
+- **Üye:** lidere katılan telefon. Taraf başına en çok 3.
+- **`room_members`:** odadaki **her** telefonun (liderler dahil) satırı: `room_id`, `session_id`, `side`, `alias`, `profiled`, `joined_at`, `left_at`. Liderin de satırı olması iki şeyi sağlar:
+  - "Bir telefon aynı anda tek odadadır, lider ya da üye olarak" tek bir kısmi benzersiz indeksle veritabanında zorlanır: `unique (session_id) where left_at is null`.
+  - Bir telefonun odada bulunduğu aralıklar (oyun geçmişindeki 3 dakika kuralı, §22.F) herkes için aynı yoldan hesaplanır.
+  - `rooms.owner_session_id`/`guest_session_id` her zaman o tarafın `left_at is null` bir satırını gösterir. Lideri değiştiren her yol iki kaydı aynı işlemde yazar; bir entegrasyon testi her yoldan sonra bunu denetler.
+- **Hesap başına tek taraf:** bir hesap bir odada yalnızca bir tarafta bulunabilir. Odadan çıkan telefon aynı odaya yeniden istek gönderebilir, ama yalnızca daha önce bulunduğu tarafa; diğer tarafa istek `wrong_side` (409) döner. Gerekçe: oyun geçmişi ve tanışma karşı taraf çiftleri üzerinden kurulur; taraf değiştiren biri eski takım arkadaşlarıyla çift olurdu.
+
+**Tarafın kişi sayısı** = max(tarafın beyan ettiği kişi sayısı, taraftaki telefon sayısı).
+
+- Beyan edilen sayı `rooms.owner_headcount`/`guest_headcount`'tur: tarafın ilk liderinin check-in'de beyan ettiği masa sayısı. **Liderlik devrinde değişmez:** masanın sayısını anlatır, liderin kendisini değil. Üyelerin kendi check-in sayıları kullanılmaz.
+- Telefon sayısı `rooms.owner_phones`/`guest_phones`'tur (§22.H): taraftaki `left_at is null` satır sayısı.
+- Kural `pure/teams.ts` → `sideHeadcount(declared, phones)`'tadır ve testlidir; SQL'deki karşılığı `private.side_headcount` bir testle aynı sonucu verir (`tabu_mode` kalıbı).
+- Tabu'nun modu ve Sahtekar'ın koltukları oyun başlarken bu sayıdan belirlenir ve **oyun bitene kadar değişmez** (§22.E). Oyun kataloğunun soluk kart kuralı (`gameAvailability`, §20.1) odada iki tarafın bu sayılarının toplamını kullanır.
+
+**Eski uygulama: takım yeteneği.** Güncellemeyen telefon yalnızca lider olarak oynar ve hiçbir şey bozulmaz. Sunucu, OTA ile değişmeyen build numarasından (`x-app-build`) eski JS'i ayırt edemez; bu yüzden yeni istemci bunu kendisi söyler:
+
+- `checkin/check-in { …, teams: true }` → `table_sessions.team_capable = true`. Eski istemci alanı göndermez; masası `false` kalır.
+- Bir tarafa üye yalnızca **iki tarafın lideri de** takım yetenekliyse katılır (açık odada yalnızca sahip). Değilse oda "Süren odalar"da görünmez, açık odada "Bu masadayım" görünmez ve istek `room_not_available` döner.
+- Böylece eski istemcili bir lider hiçbir zaman üyeli bir odada bulunmaz: oda, oyunlar, tanışma ve geçmiş onun için bugünküyle birebir aynıdır. Lider devri yalnızca üyeye, yani yeni istemciye olur.
+- Bugünkü entegrasyon testleri `teams` göndermez; bu yüzden bugünkü davranışı sınar ve **değişmeden yeşil kalır** (§22.M).
+
+### 22.C Katılma
+
+**Lobi** iki bölümdür:
+
+- **Açık odalar** (bugünkü gibi, karşı masa arayan): sahibin takma adı, kişi sayısı, telefon sayısı, varsa niyet ve "profilli" işareti (bugünkü kural 4). İki düğme:
+  - **"Katıl"** (boş misafir tarafı): bugünkü karşı masa isteği. Kabul edilince istek sahibi misafir tarafın lideri olur.
+  - **"Bu masadayım"** (sahibin tarafı): sahibin tarafına üye olarak katılma isteği. Sahip takım yetenekli değilse ya da taraf 4 telefondaysa görünmez.
+- **Süren odalar** (yeni): iki taraflı, açık (`visibility = 'open'`) ve tanışma penceresinde olmayan odalar. Yalnızca iki liderin takma adı, taraf başına telefon sayısı ve taraf başına kişi sayısı görünür (karar 4); niyet, "profilli" işareti, üyelerin adları ve oyun görünmez. Her tarafın yanında "Bu masadayım"; taraf 4 telefondaysa o düğme görünmez.
+
+Lobide bir oda şu durumlarda görünmez (iki bölüm için de): çağıranla odadaki herhangi bir telefon arasında engel varsa; oda tanışma penceresindeyse (`status = 'ending'`); odadaki bir telefon penceresi süren başka bir odadan geldiyse (`lobby_listed_from`, aşağıda "Pencere sürerken lobi"); iki liderden biri takım yetenekli değilse (yalnızca Süren odalar). Kampüs noktası kuralı aynıdır: başka noktadaki odaya istek `different_spot` döner, "Bu noktadayım" yolu değişmez.
+
+**İstek (`rooms/request-join { roomId, profiled, side? }`).**
+
+- `side` yoksa bugünkü istektir ("Katıl", misafir tarafa lider olarak). `side: 'owner' | 'guest'` "Bu masadayım"dır: o tarafa üye olarak.
+- İstek o tarafın **şu anki liderine** gider (`session:{lider}` → `join_request`, bugünkü push dahil). "Katıl"ı bugünkü gibi sahip onaylar.
+- `profiled` seçimi istekle gelir, varsayılan anonim. `profiled: true` profil fotoğrafı ister (karar 8, §22.G).
+- **Red ve zaman aşımı aynıdır (kural 5):** lider reddederse ya da 60 sn cevap vermezse istek sahibi ikisini ayırt edemez; `my_join_requests` `expires_at`'e kadar `pending`, sonra `unavailable` döner (bugünkü görünüm, değişmez).
+- **Sınırlar:** saatte 10 istek, "Katıl" ve "Bu masadayım" için **ortak** sayaç (`MAX_JOIN_REQUESTS_PER_HOUR`); masa başına aynı anda tek bekleyen istek (bugünkü indeks).
+- İstek sahibi başka bir odadaysa `in_room` (bugünkü). Taraf doluysa, oda pencerede ya da takım yeteneksizse, engel varsa ya da oda yoksa `room_not_available` (hepsi aynı yanıt).
+- Lider istek beklerken değişirse istek düşmez: yeni lider de okur ve cevaplar (RLS "tarafın lideri okur"); süresi aynıdır.
+
+**Kabul (`rooms/respond { requestId, accept }`).**
+
+- Yalnızca isteğin tarafının şu anki lideri cevaplar ("Katıl"da sahip); başkası `request_not_found`.
+- Üye kabulünde sunucu kilit altında şunları denetler: taraf hâlâ 4'ten az telefon, oda pencerede değil, istek sahibinin masası aktif ve başka odada değil, hesap diğer tarafta bulunmamış (`wrong_side` değil), engel yok. Biri tutmazsa kabul `room_not_available` döner ve istek beklemede kalır; süresi dolunca `unavailable` olur (istek sahibi bunu da redden ayırt edemez).
+- Kabul edilen telefon `room_members`'a o tarafın üyesi olarak girer, oda kanallarına abone olur, odanın sohbetini ve süren oyununu görür. İstek sahibine `session:` → `join_accepted` (bugünkü).
+
+### 22.D Ayrılma ve liderlik devri
+
+**Yeni eylem `rooms/leave { roomId }`** (v3 §5.5'te kalkan eylemin adı yeniden kullanılır; davranışı yenidir). Çağıran telefon odadan çıkar:
+
+| Kim çıkar                               | Ne olur                                                                                                                                                                                                      |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Üye                                     | Yalnızca o telefon çıkar (`left_at`), oda sürer. Pencerede ise o telefonun cevabı "Hayır" olarak yazılır.                                                                                                    |
+| Lider, tarafta başka telefon varken     | Liderlik o taraftaki **en eski üyeye** (en küçük `joined_at`) geçer; oyun sürer. Karşı taraf o tarafın adının değiştiğini görür.                                                                             |
+| Taraftaki son telefon (lider ya da üye) | Bugünkü kural: iki taraflı odada tanışma penceresi açılır, çıkanın cevabı "Hayır"dır ve karşı taraf bunu "Hayır"dan ayırt edemez; tek taraflı (bekleyen) oda kapanır. Bugünkü masa bitişi yolunun aynısıdır. |
+
+- **Liderlik devri:** `rooms.<taraf>_session_id`, `<taraf>_alias` ve `<taraf>_profiled` yeni liderinkine döner; `<taraf>_headcount` değişmez (§22.B). Bekleyen istekler yeni lidere geçer. Devir oyun durumunu değiştirmez; `game_state` tarafları `owner`/`guest` olarak tutar.
+- **Engelleme** (`safety/block { roomId, sessionId? }`): engelleyen telefon odadaki bir telefonu (karşı taraftan ya da kendi tarafından; `sessionId` oda üyelerine görünen masa oturum id'sidir, kural 4) engeller ve **engelleyen** odadan çıkar; yukarıdaki tablo işler. `sessionId` yoksa karşı tarafın lideri engellenir (eski istemcinin bugünkü çağrısı).
+- **Mekandan ayrılma, masa süresinin dolması:** bugünkü gibi; telefon odadan da çıkar ve tablo işler.
+- **Hesap silme ve ban:** hesap silinmeden önce masa bitirilir (bugünkü `account/delete` ve `admin:delete` sırası); böylece liderlik devreder ve oda diğer telefonlar için sürer. `admin:ban` da önce aynı masa bitişi yolunu çağırır (bugün doğrudan siler; `rooms.owner_session_id`'nin `on delete cascade`'i odayı herkes için silerdi).
+- **10 dakika hareketsizlik:** bugünkü gibi (odadaki herhangi bir telefonun eylemi etkinlik sayılır).
+- **Erişim hemen kapanır:** çıkan telefonun `room_members` satırı kapanır kapanmaz `rooms`, `messages`, `game_events`, `game_proposals` okumaları ve oda kanallarının yetkisi biter (§22.I).
+
+**Menü** (görünüm tasarım oturumunda):
+
+- Üye: "Odadan çık", "Şikayet et", "Engelle".
+- Lider: "Odayı bitir" (bugünkü gibi; iki tarafın bütün telefonları için pencereyi açar), "Şikayet et", "Engelle"; tarafında başka telefon varken ayrıca "Odadan çık" (liderliği devreder).
+- **`rooms/end` yalnızca liderdir;** üyeden gelirse `not_leader` (403). Tek telefonlu taraf için "Odadan çık" yoktur: orada çıkmak "Odayı bitir" ile aynı sonucu verir (v3'ün tek çıkış kuralı).
+
+### 22.E Oyunlar: yetki ve gizli bilgi
+
+Oyun kuralları değişmez; değişen, hangi telefonun basabildiği ve gizli bilginin hangi telefona gittiğidir. Bugün "masa" denen her yetki Faz 2'de **tarafa** aittir: o taraftaki her telefon kullanabilir.
+
+**Temel kurallar.**
+
+- **Anlatıcı telefon:** turu başlatan telefon o turun anlatıcısıdır. Anlatan taraftan bir telefon "Başla"ya basınca (`tabu/begin-turn`, `ibre/begin`) sunucu o telefonu anlatıcı yazar: Tabu'da `tabu_turns.describer_session_id` (kolon var; bugün anlatan masanın oturumu, artık basan telefon), İbre'de `game_secrets` ve `game_state.describer`. Hazır süresi dolup tur kendiliğinden başlarsa (karşı taraf ya da zamanlayıcı çağırır) anlatıcı o anki anlatan tarafın lideridir.
+- `game_state.describer` anlatıcının masa oturum id'sidir (kural 4: oda üyelerine gidebilir); telefonlar kimin anlattığını buradan bilir.
+- **Telefonu olmayan kişi** anlatıcı olacaksa bugünkü gibi bir telefonu eline alır.
+- **İlk gelen geçer:** iki telefon aynı eyleme basarsa sunucu oda satırını kilitler, ilkini uygular, ikincisini yok sayar (`{ ok: true }`, oda değişmez). Her eylem bugünkü gibi bir tur ve adım (ya da kart) indeksine bağlıdır.
+- **Yetki hataları bugünkü kodlardır:** anlatıcı olmayan telefonun anlatıcı eylemi `not_describer`, karşı tarafın eylemi `not_judge`, Sahtekar'da liderden başka telefonun koltuk eylemi `not_your_seat`.
+
+| Oyun                         | Turu kim başlatır                                     | Kim basar                                                                                                                                                                     | Gizli bilgi kime gider                                                                                   |
+| ---------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Sesli Tabu, hakemli          | Anlatan taraftaki herhangi bir telefon; anlatıcı olur | Doğru: iki tarafın her telefonu. Tabu: hakem tarafın her telefonu. Pas: yalnızca anlatıcı                                                                                     | Kart (`tabu/turn-cards`): anlatıcı ve hakem tarafın bütün telefonları; takım arkadaşları `not_describer` |
+| Sesli Tabu, iş birliği       | Aynı                                                  | Doğru, Tabu, Pas: yalnızca anlatıcı                                                                                                                                           | Kart yalnızca anlatıcıya                                                                                 |
+| İbre                         | Anlatan taraftaki herhangi bir telefon; anlatıcı olur | Kilit (`ibre/lock`): anlatan tarafın anlatıcı dışındaki telefonları, ilk gelen geçer; taraf tek telefonsa anlatıcı. Solunda/Sağında (`ibre/side`): karşı tarafın her telefonu | Hedef (`ibre/target`) yalnızca anlatıcıya                                                                |
+| Harf Kapmaca, Şarkıda Geçsin | Sırası gelen taraftaki herhangi bir telefon           | Harf (`harf/claim`) ve Söyledik (`sarki/said`): sırası gelen tarafın her telefonu. İtiraz (`*/object`): karşı tarafın her telefonu; hak taraf başına                          | Yok                                                                                                      |
+| Sahtekar                     | Bugünkü gibi                                          | Koltuk eylemleri (`view`, `said`, `vote`, `options`, `guess`) yalnızca tarafın **liderinin** telefonundan; koltuklar o telefonda dolaşır, üyeler izler                        | Kartlar yalnızca liderin telefonunda, koltuk koltuk                                                      |
+| Sohbet kartları              | —                                                     | Sonraki kart (`sohbet/next-card`): her telefon                                                                                                                                | Yok                                                                                                      |
+
+- **Öneri ve kabul:** taraftaki her telefon önerebilir (`rooms/propose-game`) ve karşı taraftaki her telefon cevaplayabilir (`rooms/answer-game`); önerenin takım arkadaşları cevaplayamaz (`no_proposal`). Odada yine tek oyun ve tek öneri olur; öneri tarafa aittir (`game_proposals.proposer_side`), öneren telefon çıksa da geçerli kalır.
+- **"Oyunu bitir"** (`rooms/end-game`) ve rövanş: her telefon (bugün iki masa da basabiliyor).
+- **Hazır süresi** (`*/advance`, `tabu/end-turn`): bugünkü gibi herhangi bir telefon; sunucu süreyi denetler.
+
+**Oyun ortasında telefon gelir ya da giderse.**
+
+- **Mod ve koltuklar donar:** Tabu modu (`game_state.mode`) ve Sahtekar koltukları (`game_state.players`, `seats`) oyun başlarken iki tarafın kişi sayısından hesaplanır ve oyun bitene kadar değişmez. Oyun ortasında gelen üye, tarafın sayısını yalnızca bir sonraki oyun için artırır. Gerekçe: skor karşılaştırılabilir kalır (§6.1'in gerekçesi) ve Sahtekar'da kelime dağıtılmış koltuk sayısı değişemez.
+- Sahtekar'da koltuk sayısının varsayılanı tarafın kişi sayısıdır, en çok 4 (bugün masanın check-in sayısı, en çok 4).
+- **Yeni gelen telefon hemen oynar:** gizli bilgisi olmayan oyunlarda (Harf, Şarkı, Sohbet) ve kendi tarafının yetkisiyle (Doğru, Tabu, kilit, Solunda/Sağında, itiraz) katıldığı andan itibaren basabilir. Hakem tarafa gelen telefon süren turun kartını `turn-cards` ile alır; anlatan tarafa gelen almaz.
+- **İbre'de kilit yetkisi tur başında donar:** `ibre/begin` anında anlatan tarafta tek telefon varsa kilidi anlatıcı, birden fazla varsa anlatıcı dışındakiler basar (`game_state.lockBy: 'describer' | 'team'`). Turda takım arkadaşlarının hepsi çıkarsa anlatıcı da kilitleyebilir; kilitlenmezse süre sonunda bugünkü otomatik kilit işler.
+- **Anlatıcı turda çıkarsa** tur süresi dolana kadar sürer; o turda anlatıcıya özgü eylemleri (Pas; iş birliğinde üç eylem) kimse basamaz, gizli bilgi kimseye yeniden verilmez. Sonraki turu taraftaki herhangi bir telefon başlatır.
+- **Lider Sahtekar sırasında çıkarsa** koltuk eylemleri yeni liderin telefonuna geçer; görülen koltuklar sunucuda sayılı olduğu için kaldığı yerden sürer (görmeyen koltuk kuralı §20.2 aynıdır).
+
+**Sonuç ve rozetler.** İki taraflı oyun bitince `game_results`'a oyun bittiği anda odada bulunan **her telefonun hesabı** için bir satır yazılır; puan ve kazanma tarafındır. Oyun sayısı ve Sesli Tabu galibiyeti rozetleri buradan sayılır (bugün yalnızca iki masanın hesabı).
+
+**Gizli bilgi denetimi (kural 4 ve 3).** Kart, kelime, hedef ve sahtekar bilgisi `rooms.game_state`'te, `game_events`'te ve hiçbir Realtime yükünde yoktur (değişmez). Yanıtla giden gizli bilgi yalnızca tablodaki telefonlara gider; entegrasyon testi anlatıcının takım arkadaşının, iş birliğinde karşı tarafın ve Sahtekar'da üyenin hiçbir yanıtta gizli bilgi almadığını denetler.
+
+### 22.F Tanışma, arkadaşlık ve oyun geçmişi
+
+**Kişi başına cevap.** Pencere açılınca odadaki her telefon "Tanışalım mı?"yı kendi adına cevaplar (`reveal/decide { roomId, wantsMeet }`; `reveal_decisions` zaten `(room_id, session_id)` anahtarlıdır). Cevap verilince değişmez (bugünkü gibi).
+
+- **Pencerenin katılımcıları:** pencere açıldığı anda odada bulunan telefonlar ve pencereyi açan çıkış yaptıysa o telefon (cevabı "Hayır").
+- **Pencere ne zaman açılır:** lider "Odayı bitir"e basınca, bir taraftaki son telefon çıkınca (çıkış, engelleme, mekandan ayrılma, masa süresi) ya da 10 dakika hareketsizlikte (bugünkü yollar).
+- **Pencerede çıkış:** üye çıkarsa ya da engellerse cevabı "Hayır" yazılır (önceden "Evet" dediyse "Hayır"a döner, bugünkü engelleme kuralı); ama **zaten gösterilmiş bir eşleşme geri alınmaz**. Engel bundan sonraki arkadaşlık isteğini ve "Arkadaş ekle"yi bugünkü gibi sessizce yutar.
+- Pencerede yeni istek ve katılma yoktur; bekleyen istekler süresi dolunca `unavailable` olur.
+
+**Eşleşme.** Karşı taraflardan iki telefonun ikisi de "Evet" dediğinde o çift eşleşir.
+
+- **Hemen ve yalnızca o ikisine görünür:** ikinci "Evet" geldiği anda sunucu iki telefonun `session:` kanalına veri içermeyen `reveal_match` yayını yapar. Telefon `reveal/matches { roomId }` ile kendi eşleşmelerini okur: her eşleşen telefon için masa oturum id'si, takma adı ve profilliyse profili (görünen ad, yaş, imzalı fotoğraf). Yanıt, en az bir eşleşmesi olan telefona oda başına tek **sinyal** (renk ve emoji; bugünkü `pickRevealToken`) taşır. En az bir eşleşmesi olan telefon "Ekranınızı kaldırın, birbirinizi bulun." sinyalini ve eşleştiği kişileri görür.
+- Sinyal pencere açılırken üretilir ve sunucuda kalır (`reveal_signals`, §22.H); `rooms` satırına yazılmaz, çünkü o satırı odadaki herkes okur.
+- **Geri kalan her şey pencere bitince:** hayır, cevapsız, ayrılma ve engelleme yalnızca `reveal_ends_at`'te açıklanır. O ana kadar "Evet" diyen telefon bunları birbirinden ve henüz cevap vermemekten ayırt edemez: `rooms` satırı, `room_phones`, telefon sayıları, presence, kanal olayları, `reveal/matches` yanıtı ve zamanlama aynıdır (kural 5, çift başına).
+- **Pencere sonunda** `reveal/matches` eşleşmeyen karşı taraf telefonlarını tek bir sonuçla ("eşleşmedi"; neden yok) ekler; eşleşmesi olmayan telefon bugünkü "Güzel oyundu"yu görür.
+- **Erken kapanma:** pencerenin bütün katılımcıları "Evet" dediyse oda hemen kapanır; `rooms.reveal_result = 'mutual'` ve `reveal_token` sinyalle aynıdır. İki telefonlu odada (bugünkü iki masa) bu bugünkü davranışın aynısıdır. Diğer her durumda oda `reveal_ends_at`'te `reveal_result = 'none'` ile kapanır; eşleşmeler yalnızca `reveal/matches`'tedir.
+- **Pencere sürerken lobi:** pencerenin herhangi bir katılımcısının açtığı yeni oda ya da gönderdiği istek, bugünkü `lobby_listed_from` kuralıyla `reveal_ends_at`'e kadar lobide görünmez ve lobi yayını üretmez (bugün iki masa için; artık bütün katılımcılar için).
+- **Takım arkadaşları** arasında tanışma yoktur: aynı taraftaki iki telefon eşleşmez ve birbirinin cevabını görmez.
+
+**Oyun geçmişi çift başına.**
+
+- Karşı taraflardaki her iki telefonun hesabı bir **çift**tir; bir oda en çok 4 × 4 = 16 çift, 32 kayıt.
+- Çiftin odada birlikte geçirdiği süre, iki telefonun `room_members` aralıklarının kesişimidir (yeniden katılma dahil, toplanır). **3 dakika kuralı çift başınadır:** kesişimi 3 dakikadan kısa olan çifte kayıt yazılmaz.
+- **Ne zaman yazılır:** oda iki taraflıyken bir telefon çıkınca, o telefonun karşı taraftaki telefonlarla çiftleri (`available_at = now()`); pencere açılınca, katılımcıların çiftleri (`available_at = reveal_ends_at`). Bir çift için tek kayıt; yazılmış kayıt sonradan değişmez (`on conflict do nothing`), yalnızca eşleşme onu açar.
+- **Eşleşen çiftin** iki kaydı eşleşme anında `reveal_mutual = true` ve `available_at = now()` olur (bugün iki masanın kaydı "karşılıklı" sonuçta böyle açılıyor).
+- **`encounter_id` çift karşılaşmasıdır:** her çift kendi `encounter_id`'sini alır. Böylece `unique (user_id, encounter_id)` anlamı değişerek korunur ve onun üstüne kurulu her şey (`mutual_friend_intents` anahtarı, `friend_requests.encounter_id`, `my_*_requests` birleşimleri) çift başına doğru çalışır. Gerekçe: oda düzeyinde tek `encounter_id` tutulsaydı bir hesabın aynı karşılaşmada 4 kaydı olurdu ve bu birleşimlerin hepsi satır çoğaltırdı.
+- Kayıttaki `other_alias` ve `other_profiled` çiftteki karşı telefonun, `own_alias` kendisinin, `other_headcount` karşı tarafın kişi sayısıdır.
+- **Bugünkü tetikleyici** (`private.on_room_encounter`) yerini bu kurallarla yazan `private.write_pair_history(room_id, session_id?)` fonksiyonuna bırakır; çağrıyı çıkış, pencere açılışı ve eşleşme yolları yapar. İki telefonlu odada sonuç bugünkünün aynısıdır: aynı iki kayıt, aynı `available_at`.
+
+**Arkadaşlık çift başına.** İstek (`friends/request { historyId }`), "Arkadaş ekle" (`friends/add-from-room { historyId }`), engelleme ve şikayet bugünkü gibi oyun geçmişi kaydından yapılır; kayıt artık bir çifttir. Eşleşen çiftte ikisi de "Arkadaş ekle"ye basarsa arkadaş olurlar; yalnızca biri basarsa hiçbir şey olmaz ve karşı taraf bunu görmez (değişmez). Takım arkadaşları arasında kayıt olmadığı için bu yollar da yoktur.
+
+### 22.G Mekan sohbeti ve "Profilimle" (kararlar 7 ve 8)
+
+**Karar 7: mekan sohbetinde seçim check-in başına bir kez.**
+
+- **Seçim anı (önerim): mekan sohbetinde ilk mesajı gönderirken.** Check-in akışına adım eklenmez; sohbeti hiç kullanmayan kimse seçim yapmaz. Telefon ilk "Gönder"de tek seferlik bir seçim gösterir: "Bu check-in boyunca mekan sohbetinde nasıl görüneceksin?" Anonim / Profilimle. Seçim mesajla birlikte gider; ekranda değiştirme anahtarı yoktur, yalnızca seçilen biçim yazar ("Profilinle yazıyorsun" ya da "Anonim yazıyorsun").
+- **Sunucu:** `table_sessions.venue_chat_profiled boolean null` (null = seçilmedi). `venue-chat/send { profiled }`: kolon boşsa yazar (kilit altında, aynı işlemde); doluysa ve gelen değer farklıysa `venue_chat_mode_locked` (409), mesaj yazılmaz. Sunucu sessizce düzeltmez: eski istemcinin anahtarıyla anonim sandığı bir mesajın profilli gitmesi gizlilik hatası olurdu.
+- `venue-chat/page` yanıtı `mode: 'anonymous' | 'profiled' | null` taşır; telefon seçimi ve yazı biçimini buradan bilir.
+- Seçim yeni check-in'de sıfırlanır (yeni masa oturumu). Gerekçe (karar belgesi): aynı kişi ikisini birden kullanınca anonimlik zamanlamayla delinir; anonim tacizin arkasına saklanmak da zorlaşır.
+
+**Karar 8: "Profilimle" için profil fotoğrafı şart.**
+
+- Oda kurarken (`rooms/create { profiled: true }`), katılma isteğinde ve "Bu masadayım"da (`rooms/request-join { profiled: true }`) ve mekan sohbetindeki ilk profilli seçimde sunucu fotoğrafa bakar: `profiles.photo_path` dolu ve `photo_hidden_at` boş olmalı. Değilse `photo_required` (409).
+- Yalnızca var mı yok mu bakılır; yüz kontrolü yok. Gizlenmiş fotoğraf yok sayılır, çünkü karşı tarafa gösterilmez.
+- Fotoğraf odadayken silinirse ya da gizlenirse o odanın profilli işareti kalır; şart yalnızca seçim anında denetlenir.
+- İstemci fotoğrafsız hesapta "Profilimle"yi seçilemez gösterir ve neden olduğunu söyler; seçimi tasarım oturumunun tuvaline göre kurulur.
+
+**Karar 9: oda başlığı.** Oda başlığı karşı tarafın liderinin takma adıyla kalır ("<ad> ile", #90'daki `rooms.withOther`); altında karşı tarafın telefon sayısı. Başlık iki satırı aşmaz (`ChatTopBar` → `titleLines`). Liderlik devrinde başlık yeni liderin adına döner.
+
+**Odada adlar ve profiller (kural 4).** Her telefon odada kendi takma adıyla görünür; takma adlar ve profilli telefonların profili oda sürerken odanın **iki tarafındaki** bütün telefonlara gider (karar belgesindeki görünürlük tablosu). Lobideki diğer masalar yalnızca liderin takma adını ve sayıları görür. Oda sohbetinde mesaj göndericisinin takma adıyla durur (bugünkü gibi). `room_member_profile(room_id)` yerine `room_member_profiles(room_id)`: odadaki, çağıran dışındaki her profilli telefon için masa oturum id'si ve `public_id` (oda sürerken; bugünkü kural). Profil bugünkü gibi `profile/get { publicId }` ile açılır.
+
+### 22.H Veri modeli ve migration planı
+
+Eski migration'lara dokunulmaz; her adım kendi migration'ını getirir, tablo ve politikaları aynı migration'dadır (kural 2), her migration'dan sonra `pnpm gen:types`.
+
+| Migration               | İçerik                                                                                                                                                                                                                                                                                                                                                                                                                      | Adım |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
+| `…_venue_chat_mode.sql` | `table_sessions.venue_chat_profiled`; mekan sohbeti gönderiminde seçim kilidi; `venue_chat_page_for` + `mode`                                                                                                                                                                                                                                                                                                               | 22.1 |
+| `…_teams.sql`           | `room_members` (politikaları ve açık odaların liderleri için doldurma), `table_sessions.team_capable`, `rooms.owner_phones`/`guest_phones`, `join_requests.side`/`as_member`, `private.side_headcount`, `private.is_room_member` ve `private.realtime_topic_allowed` (üyeler; pencerede presence yok), `room_phones`, `venue_lobby` (+ sayılar), `venue_running_rooms`, katılma, çıkış, devir, `lobby_listed_from` (üyeler) | 22.2 |
+| `…_team_games.sql`      | `game_proposals.proposer_side`, oyun fonksiyonlarında taraf yetkisi ve anlatıcı telefon, mod ve koltuklarda `side_headcount`, `game_results` telefon başına                                                                                                                                                                                                                                                                 | 22.3 |
+| `…_team_reveal.sql`     | `reveal_signals`, kişi başına karar ve eşleşme, `private.write_pair_history` (`on_room_encounter` tetikleyicisinin yerine), `room_member_profiles`                                                                                                                                                                                                                                                                          | 22.4 |
+
+**Değişen tablolar.**
+
+```
+table_sessions   + team_capable boolean not null default false     (check-in'de teams: true; 22.2)
+                 + venue_chat_profiled boolean null                (null = seçilmedi; 22.1)
+rooms            ~ owner_session_id / guest_session_id             (tarafın lideri; devirde değişir)
+                 ~ owner_alias, guest_alias, owner_profiled, guest_profiled  (liderin; devirde değişir)
+                 ~ owner_headcount / guest_headcount               (tarafın beyanı; devirde değişmez)
+                 + owner_phones smallint not null default 1
+                 + guest_phones smallint null                      (misafir tarafı yokken null)
+join_requests    + side text not null default 'guest' check (side in ('owner', 'guest'))
+                 + as_member boolean not null default false        (false = "Katıl", true = "Bu masadayım")
+game_proposals   + proposer_side text check (proposer_side in ('owner', 'guest'))   (22.3; eski satırlar doldurulur)
+tabu_turns       ~ describer_session_id                            (turu başlatan telefon; kolon var)
+play_history     ~ encounter_id                                    (çift karşılaşması; unique (user_id, encounter_id) korunur)
+```
+
+- `rooms.*_phones` lobi ve oda ekranındaki telefon sayısıdır; taraftaki `left_at is null` satır sayısıyla aynı işlemde güncellenir. **Pencerede donar:** `status = 'ending'` iken çıkış sayıyı değiştirmez (kural 5); oda kapanınca anlamı kalmaz. Sayı değişince `rooms` satırı değiştiği için oda kanalındaki telefonlar `room_phones`'u yeniden okur.
+
+**Yeni tablolar.**
+
+```
+room_members     id pk, room_id → rooms on delete cascade,
+                 session_id → table_sessions on delete cascade,
+                 side text not null check (side in ('owner', 'guest')),
+                 alias text not null, profiled boolean not null default false,
+                 joined_at timestamptz not null default now(), left_at timestamptz null
+                 unique index (session_id) where left_at is null       (telefon başına tek oda)
+                 index (room_id, side) where left_at is null
+reveal_signals   room_id pk → rooms on delete cascade, token jsonb not null, created_at
+                 (sunucu; politika yok)
+```
+
+- `room_members`'ta hesap kimliği yoktur; hesap `table_sessions` üzerinden yalnızca sunucuda bulunur.
+- Açık odaların (`status <> 'closed'`) liderleri için migration satır ekler (`joined_at` = sahipte `created_at`, misafirde `guest_joined_at`). Eski odalar ve satırlar değişmez.
+
+### 22.I RLS ve Realtime
+
+**Okumalar.**
+
+| Tablo / RPC                                          | İstemci okuması                                                                                                                                                                                                                  |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `room_members`                                       | Yok. `room_phones(room_id)` ile                                                                                                                                                                                                  |
+| `room_phones(room_id)` (yeni)                        | Odadaki telefonlar: masa oturum id'si, taraf, takma ad, `profiled`, lider mi, `joined_at`. Yalnızca odada bulunan telefona döner. Pencerede, pencerenin açıldığı andaki listeyi döner (sonradan çıkan da listede kalır; kural 5) |
+| `rooms`, `messages`, `game_events`, `game_proposals` | Odanın liderleri ve odada bulunan üyeler (`private.is_room_member`)                                                                                                                                                              |
+| `join_requests`                                      | İsteğin onaylayıcısı: "Bu masadayım"da o tarafın lideri, "Katıl"da sahip. İstek sahibi bugünkü gibi yalnızca `my_join_requests`                                                                                                  |
+| `reveal_decisions`                                   | Kendi cevabı (değişmez)                                                                                                                                                                                                          |
+| `reveal_signals`                                     | Yok (sunucu)                                                                                                                                                                                                                     |
+| `venue_running_rooms(venue_id)` (yeni)               | Süren odalar: oda id, iki liderin takma adı, taraf başına telefon ve kişi sayısı, taraf başına "Bu masadayım" açık mı. Profil, niyet, üye adı, oyun yok                                                                          |
+| `venue_lobby(venue_id)`                              | + sahibin telefon sayısı ve "Bu masadayım" açık mı                                                                                                                                                                               |
+| `room_member_profiles(room_id)` (yeni)               | Odadaki diğer profilli telefonlar: masa oturum id'si ve `public_id`, oda sürerken                                                                                                                                                |
+
+Hepsi security definer, yalnızca okur, `set search_path = ''` (kural 1). Genel testler yeni RPC'lerin hesap id'si ve oda dışına `public_id` döndürmediğini doğrular.
+
+**Realtime (kural 9).**
+
+| Topic                                | Kim abone olur                                                  | Kim yayın yapar   | Değişen                                                      |
+| ------------------------------------ | --------------------------------------------------------------- | ----------------- | ------------------------------------------------------------ |
+| `room:` `messages:` `game:{room_id}` | İki tarafın lideri ve odada bulunan üyeler (`left_at is null`)  | Sunucu            | Üyeler eklenir; çıkan telefonun yetkisi hemen biter          |
+| `presence:{room_id}`                 | Aynı; **pencerede kimse** (`status = 'ending'` iken reddedilir) | Üyeler (presence) | Anahtar taraf adıdır (`owner`/`guest`), oturum id'si değil   |
+| `session:{session_id}`               | O masa (değişmez)                                               | Sunucu            | + `reveal_match` (veri yok); `join_request` tarafın liderine |
+| `venue:{venue_id}`                   | Değişmez                                                        | Sunucu            | `lobby_changed` süren odalar için de                         |
+
+- Presence pencerede kapalıdır, çünkü penceredeki bir telefonun ayrılması presence'tan görünürdü (kural 5). İstemci pencere açılınca presence'tan çıkar; politika ayrıca reddeder.
+- `room_members` Realtime yayınına (`supabase_realtime`) eklenmez: satır değişiklikleri doğrudan gitmez, telefonlar `rooms` değişikliğinde `room_phones`'u okur.
+- Yeni kanal türü yoktur.
+
+**Ölçüm (Faz 2'de değiştirilmez, izlenir).** Oda bugün Postgres Changes kullanıyor: her `rooms` değişikliği her abone için ayrı yetki kontrolüyle iletilir ve her telefon oda durumunu 4 sn'de bir yokluyor (`ROOM_CHECK_SECONDS`; oda denetimi ve öneri, iki sorgu). 8 telefonlu odada abone ve yetki kontrolü 4 katına çıkar. Faz 2 bunu değiştirmez; adım 22.6'da şunlar ölçülür:
+
+- **Gecikme:** `pnpm latency`'ye oda adımı eklenir: bir oyun eyleminin yanıtından `rooms` değişikliğinin her telefona varışına kadar geçen süre, 2, 4 ve 8 telefonla (botlar), medyan ve p90.
+- **Panel (dev, saha testi günü):** Realtime → Reports'ta günlük mesaj sayısı ve aynı anda bağlantı zirvesi; Database → Query Performance'ta `private.is_room_member` ve `private.realtime_topic_allowed`'ın toplam süredeki payı ve yoklama sorgularının çağrı sayısı.
+- **Eşik ve sonraki adım:** 8 telefonda p90 gecikme 1 sn'yi geçerse, aylık mesaj tahmini Pro kotasının (5 milyon) yarısını aşarsa ya da iki fonksiyon veritabanı süresinin %20'sini aşarsa oda kanalı veri içermeyen sunucu yayınına geçer (mekan sohbetindeki `venue_chat` kalıbı: `room_changed` yayını, telefon satırı okur) ve yoklama aralığı uzatılır. Bu ayrı bir PR'dır ve önce spec'e yazılır; Faz 2'ye girmez.
+
+### 22.J API (Edge Function'lar)
+
+| Fonksiyon        | Değişen                                                                                                                                                                                   | Adım      |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| `venue-chat`     | `send`: ilk mesaj seçimi kilitler, farklı seçim `venue_chat_mode_locked`, profilli seçim `photo_required`; `page`: + `mode`                                                               | 22.1      |
+| `rooms`          | `create`, `request-join`: `profiled: true` → `photo_required`                                                                                                                             | 22.1      |
+| `checkin`        | `check-in { …, teams? }` → `team_capable`; `leave` ve masa bitişi oda çıkış yolunu kullanır (devir dahil)                                                                                 | 22.2      |
+| `rooms`          | `request-join { roomId, profiled, side? }` (`wrong_side`); `respond` (tarafın lideri, `room_not_available`); **`leave { roomId }`** (yeni); `end` yalnızca lider (`not_leader`)           | 22.2      |
+| `safety`         | `block { roomId, sessionId? }` (engelleyen çıkar); `report { target: 'room' }` kopyası odadaki bütün telefonların mesajlarını içerir                                                      | 22.2      |
+| `account`        | `delete` değişmez (önce masa bitişi); `admin:ban` önce masa bitişi yolunu çağırır                                                                                                         | 22.2      |
+| `rooms`          | `propose-game` ve `answer-game` tarafa göre; `end-game` her telefon                                                                                                                       | 22.3      |
+| `tabu`           | `begin-turn` anlatıcıyı yazar; `turn-cards` anlatıcıya ve (hakemlide) hakem tarafa; `mark` §22.E tablosuna göre                                                                           | 22.3      |
+| `ibre`           | `begin` anlatıcıyı ve `lockBy`'ı yazar; `target` yalnızca anlatıcı; `lock`, `side` tarafa göre                                                                                            | 22.3      |
+| `harf`, `sarki`  | `begin`, `claim`/`said` sırası gelen taraf; `object` karşı taraf                                                                                                                          | 22.3      |
+| `sahtekar`       | Koltuk eylemleri yalnızca tarafın lideri; koltuk sayısı tarafın kişi sayısından (en çok 4)                                                                                                | 22.3      |
+| `sohbet`, `chat` | Her telefon (`is_room_member`)                                                                                                                                                            | 22.2–22.3 |
+| `reveal`         | `decide` telefon başına, eşleşmede `reveal_match`; **`matches { roomId }`** (yeni: eşleşmeler, profilliyse imzalı fotoğrafla, sinyal; pencere sonunda eşleşmeyenler); `finalize` değişmez | 22.4      |
+| `friends`        | `request { historyId }`, `add-from-room { historyId }` aynı; kayıt çifttir                                                                                                                | 22.4      |
+
+- **Kalıp değişmez:** tek endpoint, `action`, zod v4, `{ error: { code, message } }`. Yeni fonksiyon yok; `config.toml` ve `pnpm functions:deploy` listesi 18'de kalır.
+- **Yeni hata kodları:** `wrong_side` (409), `not_leader` (403), `photo_required` (409), `venue_chat_mode_locked` (409). Hepsi `tr.ts`'te metinle gelir (metin anahtarlarını ihtiyaç duyan oturum ekler).
+- **Yeniden gönderim (`IDEMPOTENT_CALLS`):** yalnızca `reveal/matches` eklenir (okuma; iki kez gönderen testle). `rooms/leave` iki kez gönderilince ikincisi `not_in_room` döner; tekrar gönderilmez.
+- **Eski istemci:** `teams` göndermeyen check-in, `side` göndermeyen istek ve `sessionId` göndermeyen engelleme bugünkü yanıtı verir. Fotoğrafsız hesabın eski istemciden profilli oda kurması artık `photo_required` alır (eski istemci genel hata gösterir); bu, karar 8'in bilinen tek eski istemci etkisidir.
+
+### 22.K Kilit sırası (kural 10)
+
+- **Masa ve oda zinciri:** `profiles` → `table_sessions` → `rooms` → **`room_members`** → `join_requests` → `game_proposals` → odanın satırları (`tabu_turns`, `game_secrets`, `room_used_cards`, `reveal_decisions` → **`reveal_signals`**, `messages` → `message_reactions`, `game_events`, `play_history`).
+- **Yollar:**
+  - Üye kabulü: istek kilitsiz okunur; istek sahibinin ve liderin masa oturumu (`for no key update`), oda, tarafın `room_members` satırları, istek. İstek kilit altında yeniden okunur (`rooms_respond` kalıbı).
+  - Çıkış ve devir: çıkanın masa oturumu, oda, `room_members` (devirde yeni liderin satırı), bekleyen istekler; son telefonsa pencere yolu (bugünkü masa bitişi sırası).
+  - Odada engelleme: engelleyenin masa oturumu, oda, `room_members`, sonra çift kilidi zinciri (`play_history` → `private.lock_pair` → …; bugünkü engelleme).
+  - Kişi başına karar: oda, `room_members`, `reveal_decisions`, `reveal_signals`, eşleşen çiftin `play_history` satırları.
+  - Mekan sohbeti seçimi: `table_sessions` → `venue_chat_rate` → … (bugünkü mekan sohbeti zinciri; seçim masa oturumu kilidi altında yazılır).
+- **Zamanlanmış işler** (`end_expired_table_sessions`, `close_idle_rooms`, istek süresi) `room_members` satırlarını `skip locked` ile seçer.
+- Her yeni yol `locks` kalıbında testle gelir (`supabase/tests/teams.test.ts` → `locks`): başka bir telefonun oturumu ya da oda tutulurken yol geçer ya da bekler ama kilitlenmez; iki telefon aynı anda basınca tek sonuç.
+
+### 22.L Analitik
+
+Değişiklikler `pure/analytics.ts` kataloğuna yalnızca izinli özelliklerle girer; kimlik, takma ad, mekan ve karşı taraf gitmez.
+
+| Olay                                                  | Değişiklik                                                        |
+| ----------------------------------------------------- | ----------------------------------------------------------------- |
+| `join_requested`, `join_accepted`, `join_unavailable` | + `as_member: boolean` ("Bu masadayım" mı)                        |
+| `team_left` (yeni)                                    | — (üye ya da lider "Odadan çık"a bastı)                           |
+| `leader_transferred` (yeni)                           | — (bu telefon lider oldu)                                         |
+| `game_completed`                                      | + `phones: number` (oyun bittiğinde odadaki telefon sayısı)       |
+| `reveal_mutual`                                       | Anlamı: bu telefonun en az bir eşleşmesi var; + `matches: number` |
+| `reveal_none`                                         | Anlamı: bu telefonun eşleşmesi yok (değişmez)                     |
+| `venue_chat_mode_chosen` (yeni)                       | `profiled: boolean`                                               |
+
+### 22.M Kabul kriterleri ve testler
+
+**Her adımda:** `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm format:check` ve entegrasyon testleri temiz. **Bugünkü entegrasyon testleri değişmeden yeşil kalır:** `supabase/tests` altındaki mevcut testlerin hiçbir satırı değiştirilmez; yeni davranış yeni dosyalarda (`teams.test.ts`, `teamGames.test.ts`, `teamReveal.test.ts`, `venueChatMode.test.ts`) test edilir. Mevcut bir test kırılırsa bu, eski istemcinin bozulduğu anlamına gelir ve adım birleşmez. Her kod PR'ı `e2e` etiketi taşır; E2E (bugünkü akışlar) yeşildir.
+
+**Adım 22.1 (kararlar 7 ve 8).**
+
+- İlk mesaj seçimi yazar; aynı check-in'de farklı seçim `venue_chat_mode_locked`, mesaj yazılmaz; yeni check-in seçimi sıfırlar. `page` `mode` döner.
+- Fotoğrafsız ya da gizli fotoğraflı hesap: profilli oda kurma, profilli istek ve mekan sohbetinde profilli ilk seçim `photo_required`; anonim hepsi çalışır.
+- E2E: mekan sohbetinde ilk mesajda seçim (cihaz anonim seçer); bot fotoğraflı profilli yazar.
+
+**Adım 22.2 (katılma ve ayrılma).**
+
+- `teams` göndermeyen check-in ile bugünkü her şey aynı; takım yeteneksiz liderin odası "Süren odalar"da yok, "Bu masadayım" `room_not_available`.
+- "Bu masadayım": istek tarafın liderine gider; kabulle `room_members` satırı açılır; red ve zaman aşımı `my_join_requests`'te birebir aynıdır (bugünkü kural 5 testinin "Bu masadayım" hâli). 4. telefondan sonra istek ve kabul `room_not_available`. Saatte 10 sınırı "Katıl" ile ortaktır. Diğer tarafa istek `wrong_side`.
+- Tek oda: başka odadaki telefonun isteği `in_room`; lider ya da üye olarak iki odada birden bulunmak veritabanı indeksiyle reddedilir.
+- Çıkış: üye çıkar, oda sürer; lider çıkar, en eski üye lider olur ve `rooms` ile `room_members` tutarlıdır; son telefon çıkar, bugünkü pencere yolu. Engelleme, mekandan ayrılma ve masa süresi aynı yolları izler.
+- Erişim: çıkan telefon `rooms`, `messages`, `game_events`, `game_proposals`'ı okuyamaz ve oda kanallarına abone olamaz; üye abone olur. Pencerede `presence:` reddedilir.
+- Lobi: "Süren odalar" yalnızca iki liderin takma adını ve sayıları döner; profil, niyet, üye adı, `public_id` ve hesap id'si yok. Engelli telefonun bulunduğu oda görünmez.
+- `locks`: üye kabulü, çıkış, devir, odada engelleme.
+- E2E: bugünkü akışlar yeşil (bot yeni alanları kullanmaz).
+
+**Adım 22.3 (oyunlar).**
+
+- Tabu: anlatıcıyı başlatan telefon olur; hakemlide kart anlatıcıya ve hakem tarafın her telefonuna gider, anlatıcının takım arkadaşına gitmez (`not_describer`); iş birliğinde yalnızca anlatıcıya. Doğru, Tabu ve Pas yetkileri §22.E'deki gibi; aynı karta iki telefon basınca tek eylem.
+- Mod oyun başında `side_headcount`'tan; oyun ortasında gelen üye modu değiştirmez (`private.side_headcount` ↔ `pure/teams.ts` eşitlik testi).
+- İbre: hedef yalnızca anlatıcıya; kilit tarafın diğer telefonlarından (tek telefonda anlatıcı), ilk gelen geçer; Solunda/Sağında karşı tarafın her telefonu.
+- Harf ve Şarkı: sırası gelen tarafın her telefonu harf alır ya da "Söyledik"e basar; itiraz karşı tarafın her telefonu, hak taraf başına.
+- Sahtekar: koltuk eylemleri yalnızca liderden; üye `not_your_seat`; üyeye hiçbir yanıtta kelime ya da sahtekar bilgisi gitmez.
+- Öneri ve kabul tarafa göre; önerenin takım arkadaşı cevaplayamaz.
+- `game_results` oyun sonunda odadaki her telefonun hesabına.
+- Gizli bilgi taraması (`readableBy`, `watchRoomChannel` kalıbı) üye telefonlarını da kapsar.
+- `locks`: iki telefon aynı eyleme aynı anda basınca tek sonuç.
+
+**Adım 22.4 (tanışma, geçmiş, arkadaşlık).**
+
+- Eşleşme yalnızca karşı taraftan iki "Evet"le olur ve yalnızca o iki telefona `reveal_match` gider; takım arkadaşları eşleşmez.
+- **Kural 5, çift başına:** "Evet" diyen telefon A için, karşı taraftaki B'nin "Hayır"ı, cevapsızlığı, çıkışı ve engellemesi `reveal_ends_at`'e kadar birebir aynıdır: `rooms` satırı, `room_phones`, `rooms.*_phones`, `reveal/matches` yanıtı, A'nın kanallarına gelen olaylar (sayı ve tür) ve presence (kapalı). Aynı test B'nin takım arkadaşlarının eylemleriyle de koşar.
+- Herkes "Evet" derse oda erken kapanır; iki telefonlu odada sonuç bugünkü testlerle aynıdır.
+- Oyun geçmişi: 2+3 telefonlu odada 6 çift, 12 kayıt; 3 dakikadan kısa kesişen çift yok; eşleşen çiftin iki kaydı hemen açılır, diğerleri `reveal_ends_at`'te; takım arkadaşları arasında kayıt yok. Çıkan üyenin çiftleri çıkış anında yazılır.
+- "Arkadaş ekle" çift başına: iki taraf basınca arkadaş, biri basınca hiçbir şey ve karşı taraf görmez. İstek, engelleme ve şikayet çift kaydından.
+- Hesap id'si ve arkadaşlık öncesi `public_id` taraması `reveal/matches` ve `room_member_profiles`'ı kapsar (oda dışından boş).
+
+**Adım 22.5 (istemci) ve 22.6 (test).** E2E açık ve koyu yeşil; yeni akışlar: "Bu masadayım" ile katılma ve takım arkadaşının (ikinci bot) Tabu'da hakem/takım ekranı; liderlik devri; kişi başına tanışma (bir eşleşme, bir "Hayır"). 3-4 gerçek telefonla saha testi geçti (`docs/FIELD_TEST.md` güncel). §22.I'deki ölçüm yapıldı ve sonucu PR'a yazıldı.
+
+### 22.N Uygulama sırası ve yayın
+
+| Adım                    | Sunucu                                                                             | İstemci                                                                                                                                                                                                                 | Yayın                                                    |
+| ----------------------- | ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| 22.0 Belge              | —                                                                                  | —                                                                                                                                                                                                                       | Bu PR                                                    |
+| 22.1 Kararlar 7 ve 8    | `…_venue_chat_mode.sql`, `venue-chat`, `rooms` (fotoğraf şartı)                    | Mekan sohbeti ilk mesaj seçimi, "Profilimle"nin fotoğrafsız hâli (önce tuval, sonra kod)                                                                                                                                | `db push` + `venue-chat`, `rooms` deploy; istemci OTA'da |
+| 22.2 Katılma ve ayrılma | `…_teams.sql`; `checkin`, `rooms`, `safety`, `chat`; `admin:ban` sırası            | —                                                                                                                                                                                                                       | `db push` + deploy (dev); eski uygulamada değişiklik yok |
+| 22.3 Oyunlar            | `…_team_games.sql`; `rooms`, `tabu`, `ibre`, `harf`, `sarki`, `sahtekar`, `sohbet` | —                                                                                                                                                                                                                       | `db push` + deploy (dev)                                 |
+| 22.4 Tanışma ve geçmiş  | `…_team_reveal.sql`; `reveal`, `friends`, `safety`                                 | —                                                                                                                                                                                                                       | `db push` + deploy (dev)                                 |
+| 22.5 İstemci            | —                                                                                  | Tasarım oturumu: önce tuval (lobide süren odalar, "Bu masadayım", odada taraf üyeleri, anlatıcı ve takım arkadaşı ekranları, kişi başına tanışma, liderlik devri notu, oda başlığı altındaki telefon sayısı), sonra kod | —                                                        |
+| 22.6 Test               | —                                                                                  | İkinci bot (`BOT_ROLE=teammate`: cihazın ya da karşı botun tarafına "Bu masadayım"), yeni E2E akışları, `FIELD_TEST.md`, `pnpm latency` oda adımı                                                                       | **Tek OTA** (`preview`), saha testi                      |
+| Pilot build             | —                                                                                  | 0.4.0 (bildirim, titreşim, ses; `docs/PILOT_RELEASE.md`)                                                                                                                                                                | `version` artışı → production build                      |
+
+- **Sıra:** her adım bir öncekinin PR'ı birleşip dev projesine yayınlandıktan sonra başlar. Sunucu adımları (22.1–22.4) eski uygulamayı bozmadan yayınlanır; istemci değişiklikleri (22.1'in istemci kısmı ve 22.5) adım 22.6'daki tek OTA'yla gider. Proje sahibi 22.1'in istemci kısmını ayrıca istemek isterse o da yalnızca bir OTA'dır.
+- **Version artmaz:** hepsi JS ve sunucu değişikliğidir; telefonlardaki 0.3.0'a OTA ile gider. Native bağımlılık gerekirse durulur ve sorulur.
+- **Yayın sırası (her sunucu adımında, Windows cmd):** `pnpm supabase migration list` → `pnpm supabase db push --include-seed --dry-run` → `pnpm supabase db push --include-seed` → `pnpm functions:deploy` → `pnpm supabase functions list`. Seed değişikliği yok (seed satırı görünmez). Yeni sır ve panel ayarı yok.
+- **PR kuralları:** her kod PR'ı `e2e` etiketi taşır, açıklamasında "Telefonda kontrol" (3-5 madde), "Maliyet ve risk" ve sunucu değiştiyse yayın sırası bulunur; "onaylandı" olmadan birleşmez. `tr.ts`'e yeni anahtar gerekirse onu ihtiyaç duyan oturum kendi PR'ında ekler.
+- Faz 2, 18 fonksiyonun yaklaşık 12'sine dokunur; bu yüzden sunucu üç PR'a bölünür ve her biri bugünkü testleri değişmeden geçer.
+
+### 22.O CLAUDE.md değişmez kuralları: yeni metinler
+
+Bu PR'da CLAUDE.md'ye işlendi. Her ek ilgili kuralın sonunda "Faz 2" başlığıyla durur ve **§22'nin ilgili adımıyla yürürlüğe girer**; o adım gelene kadar bugünkü metin geçerlidir ve bugünkü davranışı koruyan kod o adımda değişir (v3 eklemelerinin kalıbı).
+
+**Kural 3 (adım 22.3).**
+
+> "Faz 2 (§22; adım 22.3 ile yürürlüğe girer): Eylem yetkisi masaya değil tarafa bağlıdır; taraf lider ve en çok 3 üyedir (en çok 4 telefon). Turu başlatan telefon o turun anlatıcısıdır; gizli bilgi (Tabu kartı, İbre hedefi) yalnızca ona, hakemli Tabu'da ayrıca hakem tarafın bütün telefonlarına gider, anlatıcının takım arkadaşlarına gitmez. Hakemli Tabu'da Doğru iki tarafın her telefonu, Tabu hakem tarafın her telefonu, Pas yalnızca anlatıcı basar; iş birliği modunda üçünü de yalnızca anlatıcı basar. Tarafın kişi sayısı, tarafın beyan ettiği sayı ile taraftaki telefon sayısının büyüğüdür; Tabu modu ve Sahtekar koltukları oyun başlarken bu sayıdan belirlenir ve oyun bitene kadar değişmez. Sahtekar'da koltuk eylemleri yalnızca tarafın liderinin telefonundan gelir. Öneri ve kabul tarafın her telefonundan yapılır; iki telefon aynı eyleme basarsa ilk gelen geçer."
+
+**Kural 4 (adımlar 22.1, 22.2).**
+
+> "Faz 2 (§22; ilgili adımla yürürlüğe girer): Odadaki her telefon kendi takma adıyla görünür ve anonim ya da profilli katılımı odaya girerken kendisi seçer (varsayılan anonim); takma adlar ve profilli telefonların profili ile profil kimliği oda sürerken odanın iki tarafındaki bütün telefonlara gider. Lobide süren oda yalnızca iki liderin takma adını, taraf başına telefon ve kişi sayısını gösterir (adım 22.2). 'Profilimle' (oda, katılma isteği, mekan sohbeti) yalnızca profil fotoğrafı varken seçilebilir; mekan sohbetinde anonim ya da profilli seçimi check-in başına bir kez, ilk mesajda yapılır ve değişmez (adım 22.1)."
+
+**Kural 5 (adımlar 22.2, 22.4).**
+
+> "Faz 2 (§22; ilgili adımla yürürlüğe girer): 'Bu masadayım' isteğinde red ve zaman aşımı istek sahibine birebir aynı görünür (`unavailable`; adım 22.2). Tanışma kişi başınadır (adım 22.4): her telefon kendi adına cevaplar; eşleşme karşı taraflardan iki telefonun ikisi de 'Evet' dediğinde olur ve hemen, yalnızca o iki telefona görünür. Hayır, cevapsız, ayrılma ve engelleme yalnızca `reveal_ends_at`'te açıklanır; 'Evet' diyen telefon bunları satırlardan, telefon sayısından, presence'tan, kanal olaylarından ya da zamanlamadan ayırt edemez. Pencerede bir telefonun çıkması ya da engellemesi onun 'Hayır'ıdır; gösterilmiş eşleşme geri alınmaz. Pencere bir taraftaki son telefon çıkınca da açılır. Aynı taraftaki telefonlar arasında tanışma, oyun geçmişi ve 'Arkadaş ekle' yoktur; oyun geçmişi ve 'Arkadaş ekle' karşı taraftaki her çift için ayrıdır."
+
+**Kural 9 (adımlar 22.2, 22.4).**
+
+> "Faz 2 (§22; ilgili adımla yürürlüğe girer): Oda kanallarına (`room:`, `messages:`, `game:`, `presence:`) iki tarafın lideri ve odada bulunan üyeler abone olur; odadan çıkan telefonun erişimi hemen kapanır. Tanışma penceresinde `presence:` kanalına kimse abone olamaz (adım 22.2). Eşleşme bildirimi `session:{session_id}` üzerinde veri içermeyen sunucu yayınıdır (`reveal_match`; adım 22.4). Yeni kanal türü yoktur."
+
+**Kural 10 (adım 22.2).**
+
+> "Faz 2 (§22; adım 22.2 ile yürürlüğe girer): Masa ve oda zincirinde `rooms` → `room_members` → `join_requests` (zincirin geri kalanı aynı); odanın satırlarında `reveal_decisions` → `reveal_signals`. Üye kabulü, odadan çıkış, liderlik devri ve kişi başına tanışma kararı bu sırayla kilitler; her biri `locks` kalıbında testle gelir."
+
+**Değişmeyen kurallar:** 1, 2, 6, 7, 8 ve 11. Yeni tablolar (`room_members`, `reveal_signals`) politikalarıyla aynı migration'da gelir (kural 2); istemci hâlâ hiçbir tabloya yazmaz (kural 1).
+
+**Proje paragrafı:** "Faz 2 (Takımlar) kapsamı ve teknik tasarımı `docs/SPEC_V3.md` §22'de (onaylı, §22.N sırasıyla uygulanır)."
+
+### 22.P Kararlar
+
+**Proje sahiplerinin dokuz kararı (önerildiği gibi onaylandı):**
+
+1. Taraf başına en çok 4 telefon: lider ve en çok 3 üye.
+2. Katılmak isteyen tarafı kendisi seçer ("Bu masadayım"), o tarafın lideri onaylar. Red ve 60 sn zaman aşımı istek sahibine aynı görünür (kural 5). Saatte 10 istek sınırı ortak. QR ve davet bağlantısı yok.
+3. Lider çıkınca liderlik o taraftaki en eski üyeye geçer, oyun sürer. Taraftaki son telefon çıkınca bugünkü kural işler.
+4. Süren odalar lobide görünür: yalnızca iki liderin takma adı, telefon sayısı ve kişi sayısı. Tanışma penceresinde görünmez.
+5. Tanışma kişi başına: her telefon kendi adına cevaplar; eşleşme karşı taraflardan iki kişinin ikisi de "Evet" dediğinde olur; eşleşen çift hemen görünür; hayır, cevapsız ve ayrılma yalnızca `reveal_ends_at`'te açıklanır. "Arkadaş ekle" ve oyun geçmişi çift başına; aynı taraftakiler arasında ikisi de yok.
+6. Sahtekar ilk sürümde: koltuklar liderin telefonunda, üyeler izler.
+7. Mekan sohbetinde anonim ya da profilli seçimi check-in başına bir kez yapılır, değişmez.
+8. "Profilimle" katılım (oda ve mekan sohbeti) için profil fotoğrafı şart; yalnızca var mı yok mu bakılır, yüz kontrolü yok.
+9. Oda başlığı karşı tarafın liderinin takma adıyla kalır, altında telefon sayısı.
+
+**Bu bölümde verilen teknik kararlar** (proje sahibinin "sen karar ver" dediği ya da kararların gerektirdiği):
+
+- **Mod ve koltuklar oyun başında donar** (§22.E): oyun ortasında gelen üye Tabu modunu ve Sahtekar koltuklarını değiştirmez; yalnızca sonraki oyunu etkiler.
+- **Karar 7'nin seçim anı:** mekan sohbetinde ilk mesaj (§22.G).
+- **Takım yeteneği bayrağı** (§22.B): eski istemcili liderin odasına üye katılamaz; böylece eski istemci yalnızca lider olarak ve bugünkü gibi çalışır.
+- **Liderler de `room_members`'tadır** (§22.B): "tek oda" kuralı tek indeksle veritabanında zorlanır.
+- **`encounter_id` çift başına** (§22.F): `unique (user_id, encounter_id)` korunur, anlamı çift karşılaşması olur.
+- **Beyan edilen kişi sayısı devirde değişmez** (§22.B).
+- **Pencerede telefon listesi ve sayıları donar, presence kapalıdır** (§22.F, §22.I): kural 5 çift başına.
+- **Bir hesap bir odada yalnızca bir tarafta** (§22.B).
+- **Sinyal oda başına tektir** ve yalnızca eşleşmesi olan telefonlara gider (§22.F).
