@@ -4,6 +4,7 @@ import {
   HARF_LETTERS,
   mayObject,
   newSayGame,
+  objectionMsLeft,
   parseSayState,
   roundStarter,
   SAY_CONFIG,
@@ -244,5 +245,34 @@ describe('the app reading game_state', () => {
     expect(
       parseSayState({ ...gs, lastRound: { roundNo: 1, reason: 'nope' } })?.lastRound,
     ).toBeNull();
+  });
+});
+
+// E2E 48-harf-window showed "İtiraz penceresi · 61 sn": the window is 3 seconds, and only the other
+// table may object, only after a claim (docs/SPEC_V3.md §20.3: the claim passes the turn and opens
+// the window together, so the objecting table sees its own turn and İtiraz at once).
+describe('the objection window', () => {
+  const running = () => sayBegin(newSayGame('harf', 'Giysi', t0), 'owner', t0);
+
+  it('opens only for the other table, only after a claim, for 3 seconds', () => {
+    const before = running();
+    expect(mayObject(before, 'owner', t0)).toBe(false);
+    expect(mayObject(before, 'guest', t0)).toBe(false);
+    expect(objectionMsLeft(before, t0)).toBe(0);
+
+    const claimed = sayClaim(before, 'owner', 1, 0, 'A', t0 + 1000);
+    expect(claimed.turnTable).toBe('guest');
+    expect(mayObject(claimed, 'guest', t0 + 1000)).toBe(true);
+    expect(mayObject(claimed, 'owner', t0 + 1000)).toBe(false);
+    expect(objectionMsLeft(claimed, t0 + 1000)).toBe(SAY_CONFIG.harf.objectionSeconds * 1000);
+    expect(mayObject(claimed, 'guest', t0 + 1000 + 3000)).toBe(false);
+    expect(objectionMsLeft(claimed, t0 + 1000 + 3000)).toBe(0);
+  });
+
+  it('never shows more than the window, whatever the deadline says', () => {
+    const claimed = sayClaim(running(), 'owner', 1, 0, 'A', t0);
+    // A phone clock a minute behind the server's (or the E2E clock hold): the deadline is 61 s away.
+    const late = { ...claimed, objectionEndsAt: (claimed.objectionEndsAt ?? 0) + 60_000 };
+    expect(objectionMsLeft(late, t0)).toBe(SAY_CONFIG.harf.objectionSeconds * 1000);
   });
 });
