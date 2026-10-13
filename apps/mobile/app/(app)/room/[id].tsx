@@ -272,6 +272,9 @@ export default function RoomScreen() {
       composer={<RoomComposer chat={chat} />}
       newestKey={newest.key}
       newestMine={newest.mine}
+      // At the newest message once there is one (CLAUDE.md → Ekran davranışı); an empty room opens
+      // on its games.
+      startAtEnd={newest.key !== undefined}
     >
       {exit.isError ? (
         <Text variant="fine" tone="danger">

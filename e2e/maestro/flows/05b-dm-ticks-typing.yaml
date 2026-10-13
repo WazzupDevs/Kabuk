@@ -61,6 +61,30 @@ appId: app.kabuk.mobile
       id: reaction-bar
     timeout: 10000
 - takeScreenshot: 27f-dm-reaction-bar
+# CLAUDE.md → Ekran davranışı: a tap outside closes the bar, and so does the back key (the DM
+# stays open).
+- tapOn: Okudun mu\?
+- extendedWaitUntil:
+    notVisible:
+      id: reaction-bar
+    timeout: 5000
+- longPressOn: Okudum
+- extendedWaitUntil:
+    visible:
+      id: reaction-bar
+    timeout: 10000
+- back
+- extendedWaitUntil:
+    notVisible:
+      id: reaction-bar
+    timeout: 5000
+- assertVisible:
+    id: dm-input
+- longPressOn: Okudum
+- extendedWaitUntil:
+    visible:
+      id: reaction-bar
+    timeout: 10000
 - tapOn:
     id: react-0
 - runScript:
@@ -118,3 +142,18 @@ appId: app.kabuk.mobile
       id: inbox-typing
     timeout: 10000
 - takeScreenshot: 27e-inbox-typing
+# The DM opens at its newest message (CLAUDE.md → Ekran davranışı): the reply is on screen without
+# scrolling, under its quote.
+- tapOn:
+    id: inbox-Bot Masa
+- extendedWaitUntil:
+    visible: Harika
+    timeout: 15000
+- takeScreenshot: 27i-dm-reopened
+- tapOn:
+    id: chat-back
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: tab-messages
+    timeout: 10000

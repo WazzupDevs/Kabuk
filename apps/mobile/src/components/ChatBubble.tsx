@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { REACTIONS, type Reaction } from '@shared/reactions.ts';
-import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useId, useRef, useState } from 'react';
 import { Animated, Pressable, View } from 'react-native';
 
 import { tr } from '@/i18n/tr';
@@ -10,6 +10,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 
 import { AVATAR_SIZE } from './Avatar';
+import { useChatBar } from './ChatScreen';
 import { useDepth } from './Depth';
 import { Text } from './Text';
 
@@ -89,7 +90,16 @@ export function ChatBubble({
   testID,
 }: Props) {
   const { colors, shape } = useTheme();
-  const [picking, setPicking] = useState(false);
+  // The reaction bar: the screen's one (open on one bubble at a time, closed by a tap outside, a
+  // scroll, the keyboard or back; ChatScreen), or this bubble's own outside a chat screen.
+  const sharedBar = useChatBar();
+  const barId = useId();
+  const [ownPicking, setOwnPicking] = useState(false);
+  const picking = sharedBar ? sharedBar.open === barId : ownPicking;
+  const setPicking = (next: boolean) => {
+    if (sharedBar) sharedBar.setOpen(next ? barId : null);
+    else setOwnPicking(next);
+  };
   const big = shape.radius.lg - SPACING[1];
   const small = SPACING[1.5];
   const top = first ? big : small;
@@ -112,7 +122,7 @@ export function ChatBubble({
         if (e.nativeEvent.actionName === 'react') setPicking(true);
         if (e.nativeEvent.actionName === 'quote') onPressQuote?.();
       }}
-      onLongPress={onReact ? () => setPicking((p) => !p) : undefined}
+      onLongPress={onReact ? () => setPicking(!picking) : undefined}
       style={{ maxWidth: '100%' }}
     >
       <View
@@ -148,6 +158,7 @@ export function ChatBubble({
     picking && onReact ? (
       <ReactionBar
         mine={mine}
+        onTouchInside={() => sharedBar?.markInside()}
         onPick={(emoji) => {
           setPicking(false);
           onReact(emoji);
@@ -342,7 +353,16 @@ function SwipeToReply({ onReply, children }: { onReply?: () => void; children: R
 }
 
 // The long-press bar: the six reactions, 3D like the buttons.
-function ReactionBar({ onPick, mine }: { onPick: (emoji: Reaction) => void; mine: boolean }) {
+function ReactionBar({
+  onPick,
+  mine,
+  onTouchInside,
+}: {
+  onPick: (emoji: Reaction) => void;
+  mine: boolean;
+  // A touch on the bar, before the screen's "tap outside closes it" sees it.
+  onTouchInside: () => void;
+}) {
   const { colors, shape } = useTheme();
   const depth = useDepth();
   return (
@@ -350,6 +370,7 @@ function ReactionBar({ onPick, mine }: { onPick: (emoji: Reaction) => void; mine
       accessibilityRole="menu"
       accessibilityLabel={tr.chat.react}
       testID="reaction-bar"
+      onTouchStart={onTouchInside}
       className="flex-row"
       style={[
         {
