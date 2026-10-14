@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
 import { prepareTerms } from './profanity.ts';
-import { checkBio, checkDisplayName, isOwnPhotoPath } from './profile.ts';
+import {
+  checkBio,
+  checkDisplayName,
+  isLegacyPhotoPath,
+  isPhotoPath,
+  newPhotoPath,
+} from './profile.ts';
 
 const terms = prepareTerms(['siktir', 'göt']);
 
@@ -31,12 +37,29 @@ describe('checkBio', () => {
   });
 });
 
-describe('isOwnPhotoPath', () => {
-  const me = '11111111-1111-4111-8111-111111111111';
-  it('accepts only {public_id}/{uuid}.jpg of the caller', () => {
-    expect(isOwnPhotoPath(`${me}/22222222-2222-4222-8222-222222222222.jpg`, me)).toBe(true);
-    expect(isOwnPhotoPath(`33333333-3333-4333-8333-333333333333/x.jpg`, me)).toBe(false);
-    expect(isOwnPhotoPath(`${me}/../other.jpg`, me)).toBe(false);
-    expect(isOwnPhotoPath(`${me}/22222222-2222-4222-8222-222222222222.png`, me)).toBe(false);
+// Photo paths carry nothing of the account (rule 4): p/{random uuid}.jpg. The pending upload, not
+// the path, says whose it is (profile function).
+describe('photo paths', () => {
+  const uuid = '22222222-2222-4222-8222-222222222222';
+  const publicId = '11111111-1111-4111-8111-111111111111';
+
+  it('builds p/{uuid}.jpg from a random uuid only', () => {
+    expect(newPhotoPath(uuid)).toBe(`p/${uuid}.jpg`);
+    expect(() => newPhotoPath('../x')).toThrow();
+    expect(() => newPhotoPath(`${publicId}/${uuid}`)).toThrow();
+  });
+
+  it('accepts only p/{uuid}.jpg', () => {
+    expect(isPhotoPath(`p/${uuid}.jpg`)).toBe(true);
+    expect(isPhotoPath(`${publicId}/${uuid}.jpg`)).toBe(false);
+    expect(isPhotoPath(`p/../${uuid}.jpg`)).toBe(false);
+    expect(isPhotoPath(`p/${uuid}.png`)).toBe(false);
+    expect(isPhotoPath(`p/${uuid}.jpg/x`)).toBe(false);
+  });
+
+  it('tells a photo from before random paths: {public_id}/{uuid}.jpg', () => {
+    expect(isLegacyPhotoPath(`${publicId}/${uuid}.jpg`)).toBe(true);
+    expect(isLegacyPhotoPath(`p/${uuid}.jpg`)).toBe(false);
+    expect(isLegacyPhotoPath(`${publicId}/../${uuid}.jpg`)).toBe(false);
   });
 });

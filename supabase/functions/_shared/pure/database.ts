@@ -738,6 +738,7 @@ export type Database = {
           notify_friend_requests: boolean;
           photo_hidden_at: string | null;
           photo_path: string | null;
+          photo_pending_path: string | null;
           public_id: string;
           push_token: string | null;
           terms_accepted_at: string;
@@ -760,6 +761,7 @@ export type Database = {
           notify_friend_requests?: boolean;
           photo_hidden_at?: string | null;
           photo_path?: string | null;
+          photo_pending_path?: string | null;
           public_id?: string;
           push_token?: string | null;
           terms_accepted_at: string;
@@ -782,6 +784,7 @@ export type Database = {
           notify_friend_requests?: boolean;
           photo_hidden_at?: string | null;
           photo_path?: string | null;
+          photo_pending_path?: string | null;
           public_id?: string;
           push_token?: string | null;
           terms_accepted_at?: string;
@@ -1875,6 +1878,10 @@ export type Database = {
       ibre_target: {
         Args: { round: number; target_room_id: string; target_user_id: string };
         Returns: Json;
+      };
+      move_profile_photo: {
+        Args: { new_path: string; old_path: string };
+        Returns: number;
       };
       my_incoming_requests: {
         Args: never;

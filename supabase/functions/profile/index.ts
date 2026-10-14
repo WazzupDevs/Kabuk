@@ -1,7 +1,9 @@
 // Profiles (docs/SPEC_V2.md §5). `get` returns a profile only to the owner, friends and current
 // room members of a table that joined with its profile; every other case answers exactly like an
 // unknown public_id. Photos are re-encoded and stripped of metadata on the phone and checked here
-// again before they count (rule 6).
+// again before they count (rule 6). A photo's path is random (p/{uuid}.jpg) and carries nothing of the
+// account (rule 4); the path photo-upload-url issued is kept as the pending upload, and only that
+// one can be committed.
 import { requireUser, serviceClient } from '../_shared/auth.ts';
 import { dbError } from '../_shared/db.ts';
 import { z } from '../_shared/deps.ts';
@@ -20,7 +22,8 @@ import { inspectJpeg } from '../_shared/pure/jpegMetadata.ts';
 import {
   checkBio,
   checkDisplayName,
-  isOwnPhotoPath,
+  isPhotoPath,
+  newPhotoPath,
   PHOTO_BUCKET,
   PHOTO_MAX_BYTES,
   PHOTO_URL_SECONDS,
@@ -47,7 +50,7 @@ const photos = () => db.storage.from(PHOTO_BUCKET);
 async function ownProfile(userId: string) {
   const { data, error } = await db
     .from('profiles')
-    .select('public_id, display_name, photo_path')
+    .select('public_id, display_name, photo_path, photo_pending_path')
     .eq('id', userId)
     .single();
   if (error) throw dbError('profiles', error);
@@ -198,17 +201,29 @@ Deno.serve(
       case 'photo-upload-url': {
         const me = await ownProfile(user.id);
         requireName(me.display_name);
-        const path = `${me.public_id}/${crypto.randomUUID()}.jpg`;
+        const path = newPhotoPath(crypto.randomUUID());
         const { data, error } = await photos().createSignedUploadUrl(path);
         if (error) throw new Error(`storage upload url failed (${error.message})`);
+        const pending = await db
+          .from('profiles')
+          .update({ photo_pending_path: path })
+          .eq('id', user.id);
+        if (pending.error) throw dbError('profiles', pending.error);
+        // One pending upload per account: an earlier one that was never committed goes.
+        if (me.photo_pending_path) await photos().remove([me.photo_pending_path]);
         return { path, token: data.token };
       }
 
       case 'photo-commit': {
         const me = await ownProfile(user.id);
         requireName(me.display_name);
-        // Re-committing the current path would clear a hide after reports; only a new photo does.
-        if (!isOwnPhotoPath(body.path, me.public_id) || body.path === me.photo_path) {
+        // Only the path issued to this account (its pending upload). Re-committing the current path
+        // would clear a hide after reports; only a new photo does.
+        if (
+          !isPhotoPath(body.path) ||
+          body.path !== me.photo_pending_path ||
+          body.path === me.photo_path
+        ) {
           throw new AppError('photo_invalid', 'Not a new photo of yours.');
         }
         const file = await photos().download(body.path);
@@ -216,11 +231,17 @@ Deno.serve(
         const bytes = new Uint8Array(await file.data.arrayBuffer());
         if (bytes.length > PHOTO_MAX_BYTES || !inspectJpeg(bytes).ok) {
           await photos().remove([body.path]);
+          const cleared = await db
+            .from('profiles')
+            .update({ photo_pending_path: null })
+            .eq('id', user.id)
+            .eq('photo_pending_path', body.path);
+          if (cleared.error) throw dbError('profiles', cleared.error);
           throw new AppError('photo_invalid', 'Only JPEG without metadata is accepted.');
         }
         const { error } = await db
           .from('profiles')
-          .update({ photo_path: body.path, photo_hidden_at: null })
+          .update({ photo_path: body.path, photo_hidden_at: null, photo_pending_path: null })
           .eq('id', user.id);
         if (error) throw dbError('profiles', error);
         if (me.photo_path && me.photo_path !== body.path) await photos().remove([me.photo_path]);
@@ -229,10 +250,11 @@ Deno.serve(
 
       case 'photo-remove': {
         const me = await ownProfile(user.id);
-        if (me.photo_path) await photos().remove([me.photo_path]);
+        const files = [me.photo_path, me.photo_pending_path].filter((p): p is string => !!p);
+        if (files.length > 0) await photos().remove(files);
         const { error } = await db
           .from('profiles')
-          .update({ photo_path: null, photo_hidden_at: null })
+          .update({ photo_path: null, photo_hidden_at: null, photo_pending_path: null })
           .eq('id', user.id);
         if (error) throw dbError('profiles', error);
         return { ok: true };

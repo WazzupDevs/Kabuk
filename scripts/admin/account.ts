@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database } from '../../supabase/functions/_shared/pure/database.ts';
-import { deleteProfilePhotos, publicIdOf } from './photos.ts';
+import { deleteProfilePhotos } from './photos.ts';
 
 // The account function's `delete` action, step for step, with a secret-key (admin) client: used
 // by `admin:delete` (a deletion request by e-mail) and by a ban after the phone hash is kept.
@@ -15,9 +15,8 @@ export async function deleteAccount(
   const ended = await admin.rpc('end_table_session', { target_user_id: userId });
   if (ended.error) throw ended.error;
 
-  // Photos before the account: the profile row holds the folder name.
-  const publicId = await publicIdOf(admin, userId);
-  if (publicId) await deleteProfilePhotos(admin, publicId);
+  // Photos before the account: the profile row names the files.
+  await deleteProfilePhotos(admin, userId);
 
   const deletion = await admin.auth.admin.deleteUser(userId);
   if (deletion.error) throw deletion.error;

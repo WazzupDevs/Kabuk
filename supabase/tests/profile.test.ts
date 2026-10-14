@@ -7,7 +7,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import type { ProfileUploadUrl, ProfileView } from '../functions/_shared/pure/api/profile.ts';
 import { CURRENT_LOCATION_CONSENT_VERSION } from '../functions/_shared/pure/consent.ts';
 import { PHOTO_BUCKET } from '../functions/_shared/pure/profile.ts';
-import { removeProfilePhoto } from '../../scripts/admin/photos.ts';
+import { moveLegacyPhotos, removeProfilePhoto } from '../../scripts/admin/photos.ts';
 import { deleteAccount } from '../../scripts/admin/account.ts';
 import { banUser } from '../../scripts/admin/ban.ts';
 import { deleteFixtureVenues, insertFixtureVenues } from './fixtures/venues.ts';
@@ -434,7 +434,9 @@ describe('profile photos', () => {
     const [a, b] = await Promise.all([named(PHONES[0], 'Ayşe'), named(PHONES[1], 'Burak')]);
     const idA = await publicIdOf(a);
     const first = await setPhoto(a);
-    expect(first.startsWith(`${idA}/`)).toBe(true);
+    // A random path (rule 4): nothing of the account in it, so a signed URL shows nothing of it.
+    expect(first).toMatch(/^p\/[0-9a-f-]{36}\.jpg$/);
+    expect(first).not.toContain(idA);
 
     await room(a, b, 'profile', 'anonymous');
     const seen = (await get(b, idA)).body as ProfileView;
@@ -617,5 +619,115 @@ describe('reports stay closed to the app', () => {
       where reporter_id = ${await userIdOf(b)}
     `;
     expect(rows).toEqual([{ has_copy: true }]);
+  });
+});
+
+// Photo paths carry nothing of the account (rule 4): p/{random uuid}.jpg, and only the path issued
+// to the account can be committed. Photos from before move with `pnpm admin:move-photos`.
+describe('random photo paths', () => {
+  const PATH = /^p\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.jpg$/;
+  const pending = async (client: Client) => {
+    const [row] = await sql`
+      select photo_pending_path from public.profiles where id = ${await userIdOf(client)}
+    `;
+    return row?.photo_pending_path as string | null;
+  };
+
+  it('issues a random path, keeps only the latest upload pending, and commits only that', async () => {
+    const [a, b] = await Promise.all([named(PHONES[0], 'Ayşe'), named(PHONES[1], 'Burak')]);
+    const ids = [await publicIdOf(a), await userIdOf(a)];
+    const invalid = { status: 422, body: errorBody('photo_invalid') };
+
+    const older = await upload(a, CLEAN);
+    expect(older).toMatch(PATH);
+    for (const id of ids) expect(older).not.toContain(id);
+    expect(await pending(a)).toBe(older);
+    // Another account cannot commit it, even before its owner does.
+    expect(await profile(b, { action: 'photo-commit', path: older })).toEqual(invalid);
+
+    // A second upload replaces the first: the older file goes and cannot be committed.
+    const newer = await upload(a, CLEAN);
+    expect(await pending(a)).toBe(newer);
+    expect(await objectExists(older)).toBe(false);
+    expect(await profile(a, { action: 'photo-commit', path: older })).toEqual(invalid);
+    expect(await profile(a, { action: 'photo-commit', path: newer })).toEqual({
+      status: 200,
+      body: { ok: true },
+    });
+    expect(await pending(a)).toBeNull();
+    // The column stays closed to the app.
+    const { error } = await a.from('profiles').select('photo_pending_path').single();
+    expect(error).not.toBeNull();
+  });
+
+  it('deletes an upload never committed with the account', async () => {
+    const a = await named(PHONES[0], 'Ayşe');
+    const current = await setPhoto(a);
+    const uncommitted = await upload(a, CLEAN);
+    expect((await invoke(a, 'account', { action: 'delete' })).status).toBe(200);
+    expect(await objectExists(current)).toBe(false);
+    expect(await objectExists(uncommitted)).toBe(false);
+  });
+
+  it('keeps the random path in a report copy', async () => {
+    const [a, b] = await Promise.all([named(PHONES[0], 'Ayşe'), named(PHONES[1], 'Burak')]);
+    const idA = await publicIdOf(a);
+    const path = await setPhoto(a);
+    await room(a, b, 'profile', 'anonymous');
+    expect(
+      await invoke(b, 'safety', {
+        action: 'report',
+        target: 'profile',
+        publicId: idA,
+        reason: 'inappropriate',
+      }),
+    ).toEqual({ status: 200, body: { ok: true } });
+    const [row] = await sql`
+      select profile_snapshot ->> 'photo_path' as path from public.reports
+      where reported_user_id = ${await userIdOf(a)}
+    `;
+    expect(row?.path).toBe(path);
+    expect(row?.path).not.toContain(idA);
+  });
+
+  it('moves a photo from before random paths, its report copies with it, and clears old folders', async () => {
+    const [a, b] = await Promise.all([named(PHONES[0], 'Ayşe'), named(PHONES[1], 'Burak')]);
+    const [idA, uidA] = [await publicIdOf(a), await userIdOf(a)];
+    const legacy = `${idA}/${randomUUID()}.jpg`;
+    const leftover = `${idA}/${randomUUID()}.jpg`;
+    for (const path of [legacy, leftover]) {
+      const { error } = await admin.storage
+        .from(PHOTO_BUCKET)
+        .upload(path, CLEAN, { contentType: 'image/jpeg' });
+      expect(error).toBeNull();
+    }
+    await sql`update public.profiles set photo_path = ${legacy} where id = ${uidA}`;
+    await sql`
+      insert into public.reports (reporter_id, reported_user_id, reason, target_type, profile_snapshot)
+      values (${await userIdOf(b)}, ${uidA}, 'inappropriate', 'profile',
+              ${sql.json({ display_name: 'Ayşe', bio: null, photo_path: legacy })})
+    `;
+
+    const result = await moveLegacyPhotos(admin);
+    expect(result.moved).toBeGreaterThanOrEqual(1);
+    const [row] = await sql`select photo_path from public.profiles where id = ${uidA}`;
+    const moved = row?.photo_path as string;
+    expect(moved).toMatch(PATH);
+    expect(await objectExists(moved)).toBe(true);
+    expect(await objectExists(legacy)).toBe(false);
+    expect(await objectExists(leftover)).toBe(false);
+    const [report] = await sql`
+      select profile_snapshot ->> 'photo_path' as path from public.reports
+      where reported_user_id = ${uidA}
+    `;
+    expect(report?.path).toBe(moved);
+    // The moved photo is the same file and still shows.
+    const seenUrl = ((await get(a, idA)).body as ProfileView).photoUrl ?? '';
+    const signed = new URL(seenUrl);
+    const fetched = await fetch(`${apiUrl}${signed.pathname}${signed.search}`);
+    expect(new Uint8Array(await fetched.arrayBuffer())).toEqual(CLEAN);
+
+    // Again: nothing left to move.
+    expect(await moveLegacyPhotos(admin)).toEqual({ moved: 0, removed: 0 });
   });
 });
