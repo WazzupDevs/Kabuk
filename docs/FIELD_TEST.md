@@ -14,7 +14,7 @@ Kayıt, check-in ve nokta, oda kurma ve oyun önerisi, Sesli Tabu'nun iki modu v
 2. **G1.** Giriş ve kayıt (ad, doğum tarihi), A ve B (~5 dk).
 3. **V4.** Check-in, nokta seçimi ("Neredesin?"), kişi sayısı ve masa adı, A (~5 dk).
 4. **V5.** Yalnızca 1. adım: iki telefonda Profil'de ad ve yaş (~2 dk).
-5. **V7.** Oda kur (niyet, katılım), lobide "profilli" etiketi, katılma isteği (~5 dk).
+5. **V7.** Oda kur (niyet, katılım; fotoğrafsız "Profilimle" ve **Fotoğraf ekle**), lobide "profilli" etiketi, katılma isteği (~7 dk).
 6. **T1–T5.** Oyun önerisi ve Sesli Tabu (hakemli mod), T4'teki gecikme ölçümü dahil (~15 dk).
 7. **T6 → F1.** Karşılıklı Evet, sonuç ekranında "Arkadaş ekle" (~3 dk).
 8. **F3.** Mesajlaşma (~5 dk).
@@ -23,7 +23,7 @@ Kayıt, check-in ve nokta, oda kurma ve oyun önerisi, Sesli Tabu'nun iki modu v
 11. **V8.** Beyaz ekran senaryosu, V8a ve V8b (~8 dk).
 12. **F7.** Geçmişten engelleme ve engeli kaldırma (~5 dk).
 13. **T7.** İş birliği modu: B tek kişilik masayla yeniden check-in yapar, Sesli Tabu (~6 dk).
-14. **M1.** Mekan sohbet odası: anonim ve profilli mesaj, mesajdan profil ve arkadaşlık isteği (~6 dk).
+14. **M1.** Mekan sohbet odası: ilk mesajda tek seçim, anonim ve profilli mesaj, mesajdan profil ve arkadaşlık isteği, yeni girişte seçimin yeniden sorulması (~8 dk).
 
 ## Otomatik testler (e2e)
 
@@ -125,7 +125,7 @@ Her adımın sonunda ✅ / ❌ işaretle.
 2. Test kodunu gir, **Doğrula**.
 3. "Başlamadan önce" ekranında iki kutuyu (Kullanım Koşulları, KVKK) işaretle, **Onayla ve devam et**. 18 yaş kutusu artık yok.
 4. **"Seni tanıyalım"**: görünen ad (A: "Deniz", B: "Ece") ve doğum tarihi (gün, ay, yıl; 18 yaş ve üzeri) → **Devam**.
-5. **"Profilini tamamla"**: fotoğraf ve tanıtım isteğe bağlı → **Şimdilik geç** (ya da ekleyip **Bitir**).
+5. **"Profilini tamamla"**: fotoğraf ve tanıtım isteğe bağlı → **Şimdilik geç** (ya da ekleyip **Bitir**). A burada fotoğraf eklemesin: V7'de fotoğrafsız "Profilimle" sınanır.
 
 **Bak:**
 
@@ -243,12 +243,14 @@ Amaç: telefonda konum servisi ve kamerada konum etiketi açıkken çekilen foto
 
 > Otomatik: oda kurma (niyet "Oyun", anonim), botun profilli isteği, kabul, sohbetle başlayan oda (`04-room-tabu.yaml`). Elle: lobideki "profilli" etiketi.
 
-1. A: **Oda kur**. Ekranda oyun seçimi **yok**: yalnızca niyet (Etiket yok / Oyun / Sohbet) ve katılım (**Anonim** seçili / Profilimle). **Oyun** ve **Profilimle** seç → **Odayı kur**.
+1. A: **Oda kur**. Ekranda oyun seçimi **yok**: yalnızca niyet (Etiket yok / Oyun / Sohbet) ve katılım (**Anonim** seçili / Profilimle). **Oyun** seç. A'nın profil fotoğrafı yok (G1'de **Şimdilik geç**): **Profilimle** kesik çizgili ve seçilemez, fotoğraf yerinde kamera; altında "Profilinle görünmek için profil fotoğrafı gerekiyor." ve **Fotoğraf ekle**. **Fotoğraf ekle** → "Fotoğraf" alt sayfası → **Galeriden seç** → bir fotoğraf. Alt sayfa kapanır, Oda kur ekranı yerinde (**Oyun** seçili kalır), **Anonim** hâlâ seçili ve **Profilimle** artık seçilebilir. **Profilimle** seç → **Odayı kur**.
 2. B: Keşfet → test mekanı → check-in → **3** → **Masayı aç**. Mekan ekranındaki "Açık odalar"a bak.
-3. B: A'nın odasında **Katılmak istiyorum** → açılan pencerede **Profilimle** → **İsteği gönder**.
+3. B: A'nın odasında **Katılmak istiyorum** → "Katılma isteği" penceresi. B'nin fotoğrafı yoksa (V6 atlandıysa) **Profilimle** satırı seçilemez, içinde aynı cümle ve **Fotoğraf ekle**: **Fotoğraf ekle** → **Galeriden seç** → bir fotoğraf; "Katılma isteği" penceresi geri gelir, **Profilimle** seçilebilir. **Profilimle** → **İsteği gönder**.
 4. A: "Katılma isteği" penceresi → **Kabul**.
 
 **Bak:**
+
+- Fotoğraf eklenince **Profilimle** kendiliğinden seçilmez; seçimi kişi yapar.
 
 - B'nin lobisinde A'nın odasında **"Oyun"** etiketi ve takma adın yanında küçük **"profilli"** etiketi. Oyun adı, A'nın görünen adı, fotoğrafı ya da tanıtımı **lobide yok**.
 - A'nın istek penceresinde B'nin takma adı, "(3 kişi)" ve **"profilli"** etiketi; ad ya da fotoğraf yok.
@@ -400,7 +402,7 @@ Gerekli: APK `google-services.json` ile alınmış olmalı (CLAUDE.md → "Push"
 
 ## S3. Tanışma: "Evet" diyen taraf "Hayır"ı ve cevapsızlığı ayırt edemez [P0]
 
-Pencere 30 saniyedir. Karşılıklı Evet T6'da görüldü; burada kalan iki durum oynanır. İlki S1'in odasını bitirir (S1 atlandıysa A yeni bir açık oda kurar, B katılır); ikincisi için A yeni bir açık oda kurar, B katılır (V7'nin 2 ve 4–5. adımları, oyun oynamadan). Bu odalar 3 dakikadan kısa sürerse oyun geçmişine yazılmaz; beklenen davranış.
+Pencere 30 saniyedir. Karşılıklı Evet T6'da görüldü; burada kalan iki durum oynanır. İlki S1'in odasını bitirir (S1 atlandıysa A yeni bir açık oda kurar, B katılır); ikincisi için A yeni bir açık oda kurar, B katılır (V7'nin 1 ve 3–4. adımları, oyun oynamadan). Bu odalar 3 dakikadan kısa sürerse oyun geçmişine yazılmaz; beklenen davranış.
 
 **S3a. A Evet, B Hayır.** S1'in odasında (ya da yeni odada) A **Odayı bitir**. A **Evet**, B **Hayır**.
 **Bak:** B hemen "Güzel oyundu 👋" ve **Mekana dön** görür. A'da "Cevabın alındı. Sonuç birazdan." yazar ve sayaç **0'a inene kadar** hiçbir şey değişmez; sayaç bitince A da "Güzel oyundu 👋" görür. A'nın sonucu gördüğü saniyeyi not et.
@@ -436,9 +438,9 @@ Bu senaryo iki kez oynanır. Her turda **odayı bitirmeyen telefon** izlenir: ek
 
 ## V9. Odada profil görme ve profil şikayeti (A ve B) [P1]
 
-1. A yeniden oda kurar, B katılır (ikisi de V7'deki gibi **Profilimle**: A oda kurarken, B katılma isteğinde).
-2. B: oda ekranında **"Diğer masanın profilini gör"** → A'nın adı, tanıtımı ve (varsa) fotoğrafı.
-3. A: aynı düğmeyle B'nin profilini açar: V6'daki fotoğraf görünür.
+1. A yeniden oda kurar, B katılır (ikisi de V7'deki gibi **Profilimle**: A oda kurarken, B katılma isteğinde; ikisinin de fotoğrafı V6 ya da V7'den var, **Profilimle** fotoğraf ister).
+2. B: oda ekranında **"Diğer masanın profilini gör"** → A'nın adı, tanıtımı ve fotoğrafı.
+3. A: aynı düğmeyle B'nin profilini açar: B'nin fotoğrafı (V6 ya da V7) görünür.
 4. B: A'nın profilinde **Profili şikayet et** → bir sebep → **"Şikayetin alındı. Teşekkürler."**
 5. **Geri dön** ile odaya dön.
 
@@ -555,20 +557,27 @@ Engelleme odayı bitirdiği için bu adım en sona yakın yapılır. F5'ten beri
 
 ## M1. Mekan sohbet odası: anonim ve profilli (A ve B) [P0]
 
-> Otomatik: anonim ve profilli mesaj, botun profilli mesajı, profil, istek ve kabul (`08-venue-chat.yaml`). Elle: iki telefonla gerçek zamanlı akış.
+> Otomatik: ilk mesajda seçim (anonim), botun profilli mesajı, profil, istek ve kabul (`08-venue-chat.yaml`). Elle: iki telefonla gerçek zamanlı akış, profilli seçim ve yeni girişte yeniden sorulması.
 
-1. A: Mekan ekranında **Sohbet odası** → "<mekan> sohbet odası". Bir mesaj yaz (anonim): adının yerinde **masa adın**.
-2. A: **Profilimle yaz**'ı işaretle, bir mesaj daha yaz: bu kez **görünen adın** ve "profilli" etiketi; masa adın **görünmez**.
-3. B: aynı ekranda iki mesajı birkaç saniye içinde görür.
-4. B: A'nın profilli mesajındaki ada dokun → A'nın profili (ad, yaş, varsa fotoğraf). Profil kimliği ya da masa adı yok.
-5. B: **Arkadaşlık isteği gönder** → pencerede "İstek gönderirsen profilin ona görünür…" → **İsteği gönder**.
-6. A: Arkadaşlar → Geçmiş ve istekler → "<mekan> sohbet odasından **B'nin adı (yaş)** arkadaşın olmak istiyor", fotoğrafıyla. **Kabul et**.
+Mekan sohbetinde anonim ya da profilli seçimi her girişte bir kez, ilk mesajda yapılır ve o giriş boyunca değişmez.
+
+1. A: Mekan ekranında **Sohbet odası** → "<mekan> sohbet odası". Yazma alanının üstünde henüz biçim yazmaz. Bir mesaj yaz → **Gönder**: mesaj gitmez, "Bu check-in boyunca mekan sohbetinde nasıl görüneceksin?" alt sayfası açılır, **Anonim** seçili. Alt sayfanın dışına dokun: alt sayfa kapanır, mesaj gitmez, yazdığın yazma alanında durur.
+2. A: yeniden **Gönder** → **Profilimle** (A'nın fotoğrafı V7'den) → **Gönder**: mesajda **görünen adın** ve "profilli" etiketi; masa adın **görünmez**. Yazma alanının üstünde "Profilinle yazıyorsun"; değiştirme anahtarı yok. Bir mesaj daha gönder: alt sayfa açılmaz, yine adınla gider.
+3. B: aynı ekranda bir mesaj yaz → **Gönder** → **Anonim** seçili kalsın → **Gönder**: B'nin mesajında **masa adı**; yazma alanının üstünde "Anonim yazıyorsun".
+4. A ve B: karşı tarafın mesajlarını birkaç saniye içinde görür.
+5. B: A'nın profilli mesajındaki ada dokun → A'nın profili (ad, yaş, fotoğraf). Profil kimliği ya da masa adı yok.
+6. B: **Arkadaşlık isteği gönder** → pencerede "İstek gönderirsen profilin ona görünür…" → **İsteği gönder**.
+7. A: Arkadaşlar → Geçmiş ve istekler → "<mekan> sohbet odasından **B'nin adı (yaş)** arkadaşın olmak istiyor", fotoğrafıyla. **Kabul et**.
+8. A: **Mekandan ayrıl** → aynı mekana yeniden giriş (V4'teki gibi) → **Sohbet odası** → bir mesaj yaz → **Gönder**: alt sayfa yeniden açılır (yeni girişte seçim yeniden sorulur). Bu kez **Anonim** seçili kalsın → **Gönder**: mesaj A'nın **yeni masa adıyla** gider; yazma alanının üstünde "Anonim yazıyorsun".
 
 **Bak:**
 
 - Anonim mesajda ad yok, profilli mesajda masa adı yok.
-- A'nın anonim mesajına dokununca profil açılmaz; yalnızca **Şikayet et** ve **Engelle** menüsü.
+- Yazma alanında **Profilimle yaz** anahtarı yok; seçilen biçim yalnızca yazma alanının üstünde yazar.
+- A'nın 8. adımdaki anonim mesajına dokununca (B) profil açılmaz; yalnızca **Şikayet et** ve **Engelle** menüsü.
 - B'nin "Gönderilen istekler"inde "A'nın adı kişisine istek gönderildi", kabulden sonra "… isteğini kabul etti".
+
+**Hata olursa:** ilk **Gönder**'de alt sayfa açılmadan mesaj gittiyse, alt sayfa kapatıldığı hâlde mesaj gittiyse ya da aynı girişte iki biçimle yazılabildiyse ekran görüntüsü al ve saati yaz; bu ❌'dır. "Bu girişte mekan sohbetinde nasıl görüneceğini zaten seçtin. Mekandan çıkıp yeniden girince değiştirebilirsin." görünürse hangi adımda olduğunu yaz.
 
 ## M2. Mekan sohbetinde şikayet ve engel [P1]
 
