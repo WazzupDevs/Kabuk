@@ -1031,6 +1031,9 @@ export const tr = {
     reveal_closed: 'Süre doldu.',
     not_found: 'Bulunamadı.',
     reply_unavailable: 'Yanıtladığın mesaj artık yok.',
+    photo_required: 'Profilinle katılmak için önce profil fotoğrafı ekle.',
+    venue_chat_mode_locked:
+      'Bu girişte mekan sohbetinde nasıl görüneceğini zaten seçtin. Mekandan çıkıp yeniden girince değiştirebilirsin.',
     already_friends: 'Zaten arkadaşsınız.',
     not_friends: 'Artık arkadaş değilsiniz.',
     not_judge: 'Bu turda hakem diğer masa.',

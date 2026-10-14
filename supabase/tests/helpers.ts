@@ -10,7 +10,7 @@ import {
 } from '../functions/_shared/pure/consent.ts';
 import { PHOTO_BUCKET } from '../functions/_shared/pure/profile.ts';
 import { ANCHOR, FIXTURE_VENUES, offset } from './fixtures/venues.ts';
-import { type Client, invoke, signIn, sql } from './local.ts';
+import { type Client, invoke, signIn, sql, userIdOf } from './local.ts';
 
 export const PHONES = ['+905550000001', '+905550000002', '+905550000003'] as const;
 
@@ -108,6 +108,26 @@ export async function setTestPhoto(client: Client): Promise<string> {
   const commit = await invoke(client, 'profile', { action: 'photo-commit', path });
   expect(commit, JSON.stringify(commit.body)).toEqual({ status: 200, body: { ok: true } });
   return path;
+}
+
+// "Profilimle" (a profiled room, request or venue chat mode) needs a visible profile photo at the
+// moment of the choice, and only then (docs/SPEC_V3.md §22.G, step 22.1). Tests written before
+// that rule whose account has no photo make the choice through this: a temporary photo before it,
+// removed right after, so what they expect of a profile without a photo stays the same. An account
+// that already has a visible photo keeps it.
+export async function withPhotoForChoice<T>(client: Client, choose: () => Promise<T>): Promise<T> {
+  const [row] = await sql`
+    select photo_path is not null and photo_hidden_at is null as visible
+    from public.profiles where id = ${await userIdOf(client)}
+  `;
+  if (row?.visible) return choose();
+  await setTestPhoto(client);
+  try {
+    return await choose();
+  } finally {
+    const removed = await invoke(client, 'profile', { action: 'photo-remove' });
+    expect(removed, JSON.stringify(removed.body)).toEqual({ status: 200, body: { ok: true } });
+  }
 }
 
 export function errorBody(code: string) {

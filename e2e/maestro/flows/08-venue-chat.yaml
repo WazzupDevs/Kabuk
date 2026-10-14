@@ -1,6 +1,8 @@
-# Venue chat room (docs/SPEC_V3.md §7): an anonymous and a profiled message from this phone; a
-# second bot account (the first is blocked since 07) writes with its profile; this phone opens its
-# profile through the message and sends a friend request, which the bot accepts.
+# Venue chat room (docs/SPEC_V3.md §7): an anonymous message from this phone; a second bot account
+# (the first is blocked since 07) writes with its profile; this phone opens its profile through the
+# message and sends a friend request, which the bot accepts. Since step 22.1 (§22.G) a check-in has
+# one venue chat mode, fixed by its first message, so this phone no longer writes a profiled message
+# after the anonymous one; the app's choice at the first message comes with 22.1's app part.
 appId: app.kabuk.mobile
 ---
 - runScript:
@@ -36,18 +38,6 @@ appId: app.kabuk.mobile
     id: venue-chat-send
 - extendedWaitUntil:
     visible: Selam mekan
-    timeout: 15000
-# "Profilimle yaz": the next message goes with the display name, not the table alias.
-- tapOn: Profilimle yaz
-- assertVisible: Adınla görünür; masa adın görünmez.
-- tapOn:
-    id: venue-chat-input
-- inputText: Adımla yazıyorum
-- hideKeyboard
-- tapOn:
-    id: venue-chat-send
-- extendedWaitUntil:
-    visible: Adımla yazıyorum
     timeout: 15000
 - takeScreenshot: 36-venue-chat-mine
 # The bot writes with its profile; this phone sees its name and the "profilli" tag.

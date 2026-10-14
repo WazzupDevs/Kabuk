@@ -32,6 +32,7 @@ import {
   PHONES,
   waitForBroadcast,
   waitUntilBlocked,
+  withPhotoForChoice,
 } from './helpers.ts';
 import {
   admin,
@@ -115,21 +116,22 @@ async function encounter(
   const [ownerMode, guestMode] = opts.modes ?? ['anonymous', 'anonymous'];
   await checkInAt(a, venue, V, 2);
   await checkInAt(b, venue, V, 3);
-  const created = await invoke(a, 'rooms', {
-    action: 'create',
-    profiled: ownerMode === 'profile',
-  });
+  const create = () =>
+    invoke(a, 'rooms', {
+      action: 'create',
+      profiled: ownerMode === 'profile',
+    });
+  // §22.G: "Profilimle" needs a photo at the choice (a temporary one, if the account has none).
+  const created = await (ownerMode === 'profile' ? withPhotoForChoice(a, create) : create());
   expect(created.status, JSON.stringify(created.body)).toBe(200);
   const roomId = (created.body as { roomId: string }).roomId;
-  expect(
-    (
-      await invoke(b, 'rooms', {
-        action: 'request-join',
-        roomId,
-        profiled: guestMode === 'profile',
-      })
-    ).status,
-  ).toBe(200);
+  const ask = () =>
+    invoke(b, 'rooms', {
+      action: 'request-join',
+      roomId,
+      profiled: guestMode === 'profile',
+    });
+  expect((await (guestMode === 'profile' ? withPhotoForChoice(b, ask) : ask())).status).toBe(200);
   const [request] =
     await sql`select id from public.join_requests where room_id = ${roomId} and status = 'pending'`;
   const accepted = await invoke(a, 'rooms', {

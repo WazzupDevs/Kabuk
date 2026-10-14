@@ -45,6 +45,8 @@ export type ErrorCode =
   | 'reveal_closed'
   | 'not_found'
   | 'reply_unavailable'
+  | 'photo_required'
+  | 'venue_chat_mode_locked'
   | 'display_name_required'
   | 'display_name_invalid'
   | 'bio_invalid'
@@ -125,6 +127,10 @@ export const DOMAIN_ERROR_CODES: readonly ErrorCode[] = [
   // Replies and reactions (docs/SPEC_V3.md §21): a quoted message out of reach, a reacted one gone.
   'reply_unavailable',
   'not_found',
+  // "Profilimle" needs a visible profile photo; the venue chat mode is chosen once per check-in
+  // (docs/SPEC_V3.md §22.G).
+  'photo_required',
+  'venue_chat_mode_locked',
 ];
 
 export function isDomainErrorCode(value: string): value is ErrorCode {
