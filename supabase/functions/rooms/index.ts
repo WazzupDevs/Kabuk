@@ -64,6 +64,15 @@ const Body: z.ZodType<RoomsRequest> = z.discriminatedUnion('action', [
 
 const db = serviceClient();
 
+// "Profilimle" needs a profile photo others can see (docs/SPEC_V3.md §22.G, decision 8); only its
+// presence, at the moment of the choice.
+async function requirePhotoIfProfiled(userId: string, profiled: boolean): Promise<void> {
+  if (!profiled) return;
+  const { data, error } = await db.rpc('has_profile_photo', { target_user_id: userId });
+  if (error) throw dbError('has_profile_photo', error);
+  if (!data) throw new AppError('photo_required', 'A profile photo is required to join profiled.');
+}
+
 async function pushTokenOfSession(sessionId: string): Promise<string | null> {
   const session = await db.from('table_sessions').select('user_id').eq('id', sessionId).single();
   if (session.error) throw dbError('table_sessions', session.error);
@@ -90,6 +99,7 @@ Deno.serve(
       switch (body.action) {
         // "Oda kur": always open (S4).
         case 'create': {
+          await requirePhotoIfProfiled(user.id, body.profiled);
           const { data, error } = await db.rpc('rooms_create', {
             target_user_id: user.id,
             profiled: body.profiled,
@@ -108,6 +118,7 @@ Deno.serve(
         }
 
         case 'request-join': {
+          await requirePhotoIfProfiled(user.id, body.profiled);
           const { data, error } = await db.rpc('rooms_request_join', {
             target_user_id: user.id,
             target_room_id: body.roomId,

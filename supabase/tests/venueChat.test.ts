@@ -22,6 +22,7 @@ import {
   TEST_AGE,
   waitForBroadcast,
   waitUntilBlocked,
+  withPhotoForChoice,
 } from './helpers.ts';
 import { type Client, dbUrl, deleteUserByPhone, invoke, sql, userIdOf } from './local.ts';
 
@@ -58,12 +59,18 @@ async function threeAtVenue() {
 // Sends without waiting out the 3-second limit (the limit has its own test).
 async function send(client: Client, body: string, profiled = false) {
   await sql`update public.venue_chat_rate set last_sent_at = '-infinity'`;
-  return (await invoke(client, 'venue-chat', {
-    action: 'send',
-    venueId: venue[V],
-    body,
-    profiled,
-  })) as { status: number; body: { messageId: string } };
+  const sendIt = () =>
+    invoke(client, 'venue-chat', {
+      action: 'send',
+      venueId: venue[V],
+      body,
+      profiled,
+    });
+  // §22.G: a profiled choice needs a photo (a temporary one, if the account has none).
+  return (await (profiled ? withPhotoForChoice(client, sendIt) : sendIt())) as {
+    status: number;
+    body: { messageId: string };
+  };
 }
 
 async function page(client: Client) {
@@ -199,6 +206,8 @@ describe('venue chat: anonymous and profiled messages', () => {
   it('shows the alias of an anonymous message and only the name of a profiled one', async () => {
     const { a, b, aliases } = await threeAtVenue();
     await send(a, 'anonim yazıyorum');
+    // §22.G: one mode per check-in; the profiled message comes from a new check-in.
+    await checkInAt(a, venue, V);
     await send(a, 'adımla yazıyorum', true);
     const seen = await page(b);
     expect(seen).toEqual([
@@ -266,6 +275,8 @@ describe('venue chat: photos (venue-chat/page)', () => {
     const { a, b, aliases } = await threeAtVenue();
     const path = await setTestPhoto(a);
     await send(a, 'anonim yazıyorum');
+    // §22.G: one mode per check-in; the profiled message comes from a new check-in.
+    await checkInAt(a, venue, V);
     await send(a, 'adımla yazıyorum', true);
 
     // The RPC behind the function: a path only on the profiled message.
@@ -356,6 +367,8 @@ describe('venue chat: profile through the message', () => {
 
     const anonymous = (await send(a, 'anonim')).body.messageId;
     await same(b, anonymous);
+    // §22.G: one mode per check-in; the profiled message comes from a new check-in.
+    await checkInAt(a, venue, V);
 
     const hidden = (await send(a, 'gizlenecek', true)).body.messageId;
     await sql`update public.venue_chat_messages set hidden_at = now() where id = ${hidden}`;
@@ -390,6 +403,8 @@ describe('venue chat replies and reactions (docs/SPEC_V3.md §21)', () => {
   it('quotes by the message’s own label rule, never an alias of a profiled sender', async () => {
     const { a, b, c, aliases } = await threeAtVenue();
     const anon = (await send(a, 'anonim')).body.messageId;
+    // §22.G: one mode per check-in; the profiled message comes from a new check-in.
+    await checkInAt(a, venue, V);
     const named = (await send(a, 'adımla', true)).body.messageId;
     expect((await reply(b, 'cevap 1', anon)).status).toBe(200);
     expect((await reply(b, 'cevap 2', named)).status).toBe(200);
@@ -590,6 +605,8 @@ describe('venue chat: reports, hiding and blocks', () => {
   it('blocks both ways; the list shows the name of a profiled sender, never its alias', async () => {
     const { a, b, aliases } = await threeAtVenue();
     const anon = (await send(a, 'anonim')).body.messageId;
+    // §22.G: one mode per check-in; the profiled message comes from a new check-in.
+    await checkInAt(a, venue, V);
     const profiled = (await send(a, 'profilli', true)).body.messageId;
     expect(await invoke(b, 'safety', { action: 'block', venueChatMessageId: profiled })).toEqual(
       OK,
@@ -675,6 +692,8 @@ describe('venue chat: friend requests', () => {
     expect(await invoke(b, 'friends', { action: 'request', venueChatMessageId: anon })).toEqual(OK);
     expect(await sql`select 1 from public.friend_requests`).toHaveLength(0);
 
+    // §22.G: one mode per check-in; the profiled message comes from a new check-in.
+    await checkInAt(a, venue, V);
     const profiled = (await send(a, 'profilli', true)).body.messageId;
     await invoke(b, 'friends', { action: 'request', venueChatMessageId: profiled });
     const [req] = (

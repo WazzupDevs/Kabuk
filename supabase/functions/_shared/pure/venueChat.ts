@@ -86,6 +86,17 @@ export function withVenueChatExtras(
   };
 }
 
+// The caller's venue chat mode (docs/SPEC_V3.md §22.G): chosen once per check-in with the first
+// message and fixed until the table ends; null until then. venue-chat/page returns it. The column
+// is table_sessions.venue_chat_profiled; a server from before §22.G sends no mode (null).
+export type VenueChatMode = 'anonymous' | 'profiled';
+
+export function venueChatMode(profiled: boolean | null | undefined): VenueChatMode | null {
+  if (profiled === true) return 'profiled';
+  if (profiled === false) return 'anonymous';
+  return null;
+}
+
 // The name to show above a message.
 export function senderLabel(
   message: Pick<VenueChatMessage, 'senderAlias' | 'displayName'>,

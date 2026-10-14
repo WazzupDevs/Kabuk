@@ -42,6 +42,7 @@ import {
 } from '../../supabase/functions/_shared/pure/sayChallenge.ts';
 import { parseReadyTurn, type VoiceTabuState } from '../../supabase/functions/_shared/pure/tabu.ts';
 import { ANCHOR, offset, squareRing } from '../../supabase/tests/fixtures/venues.ts';
+import { ensureProfilePhoto } from '../shared/profilePhoto.ts';
 
 // The local stack's fixed publishable key (the same in every `supabase start`).
 const LOCAL_PUBLISHABLE_KEY = 'sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH';
@@ -449,6 +450,9 @@ export const actions: Record<string, (args: Json) => Promise<Json>> = {
       displayName: name,
       birthDate: '1995-05-20',
     });
+    // "Profilimle" (a profiled request, a profiled venue chat message) needs a profile photo
+    // (docs/SPEC_V3.md §22.G); the bot's account gets one once and keeps it.
+    await ensureProfilePhoto(me(), call);
     return { ok: true };
   },
 

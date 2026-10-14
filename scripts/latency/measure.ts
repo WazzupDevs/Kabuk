@@ -6,7 +6,10 @@
 // Function API, the publishable key and test numbers; never a database password or a secret key.
 // The accounts become friends through the venue chat if they are not already (a profiled message,
 // a request, an accept), check in at VENUE on its own point and leave at the end. The venue chat
-// messages ("ölçüm 1/10" …) stay visible at the venue for 24 hours, anonymous.
+// messages ("ölçüm 1/10" …) stay visible at the venue for 24 hours, anonymous. A profiled message
+// needs a profile photo and fixes the check-in's venue chat mode (docs/SPEC_V3.md §22.G): A gets a
+// photo if it has none, and checks in again after the friendship so the measured messages can be
+// anonymous.
 //
 //   SUPABASE_URL=https://<ref>.supabase.co SUPABASE_PUBLISHABLE_KEY=<publishable key> \
 //   PHONE_A=+905550000001 OTP_A=<code> PHONE_B=+905550000002 OTP_B=<code> VENUE="<venue name>" \
@@ -28,6 +31,7 @@ import {
   VENUE_CHAT_BROADCAST,
   venueChatChannel,
 } from '../../supabase/functions/_shared/pure/venueChat.ts';
+import { ensureProfilePhoto } from '../shared/profilePhoto.ts';
 import { markdownTable } from './stats.ts';
 
 // The local stack's fixed publishable key (the same in every `supabase start`).
@@ -156,6 +160,7 @@ async function threadWith(a: Phone, b: Phone, venueId: string): Promise<string> 
   if (existing) return existing;
 
   console.log('Not friends yet: a request through the venue chat.');
+  await ensureProfilePhoto(a.client, (fn, body) => call(a, fn, body));
   const { messageId } = await venueSend(a, venueId, 'ölçüm: arkadaşlık', true);
   await call(b, 'friends', { action: 'request', venueChatMessageId: messageId });
   const incoming = (await call(a, 'friends', { action: 'incoming' })) as {
@@ -166,6 +171,8 @@ async function threadWith(a: Phone, b: Phone, venueId: string): Promise<string> 
     throw new Error('no request arrived (declined or blocked before between these accounts?)');
   }
   await call(a, 'friends', { action: 'respond', requestId: request.requestId, accept: true });
+  // The profiled message fixed this check-in's mode; the measured messages are anonymous.
+  await checkIn(a);
   const thread = await find();
   if (!thread) throw new Error('friends, but no conversation');
   return thread;

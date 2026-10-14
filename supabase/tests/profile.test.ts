@@ -19,6 +19,7 @@ import {
   PHONES,
   TEST_AGE,
   TEST_BIRTH_DATE,
+  withPhotoForChoice,
 } from './helpers.ts';
 import {
   admin,
@@ -87,10 +88,13 @@ async function room(
 ): Promise<string> {
   await checkInAt(owner, venue, V, 2);
   await checkInAt(guest, venue, V, 3);
-  const created = await invoke(owner, 'rooms', {
-    action: 'create',
-    profiled: ownerMode === 'profile',
-  });
+  const create = () =>
+    invoke(owner, 'rooms', {
+      action: 'create',
+      profiled: ownerMode === 'profile',
+    });
+  // §22.G: "Profilimle" needs a photo at the choice (a temporary one, if the account has none).
+  const created = await (ownerMode === 'profile' ? withPhotoForChoice(owner, create) : create());
   const roomId = (created.body as { roomId: string }).roomId;
   await join(owner, guest, roomId, guestMode === 'profile');
   return roomId;
@@ -102,9 +106,9 @@ async function join(
   roomId: string,
   profiled: boolean,
 ): Promise<void> {
-  expect((await invoke(guest, 'rooms', { action: 'request-join', roomId, profiled })).status).toBe(
-    200,
-  );
+  const ask = () => invoke(guest, 'rooms', { action: 'request-join', roomId, profiled });
+  // §22.G: "Profilimle" needs a photo at the choice (a temporary one, if the account has none).
+  expect((await (profiled ? withPhotoForChoice(guest, ask) : ask())).status).toBe(200);
   const [request] =
     await sql`select id from public.join_requests where room_id = ${roomId} and status = 'pending'`;
   const res = await invoke(owner, 'rooms', {
@@ -379,7 +383,10 @@ describe('lobby and room: the "profilli" flag only', () => {
     await checkInAt(a, venue, V, 2);
     await checkInAt(b, venue, V, 3);
     await checkInAt(c, venue, V, 4);
-    const created = await invoke(a, 'rooms', { action: 'create', profiled: true, intent: 'chat' });
+    // §22.G: "Profilimle" needs a photo at the choice (a temporary one, removed right after).
+    const created = await withPhotoForChoice(a, () =>
+      invoke(a, 'rooms', { action: 'create', profiled: true, intent: 'chat' }),
+    );
     const roomId = (created.body as { roomId: string }).roomId;
 
     const { data: lobby } = await c.rpc('venue_lobby', { target_venue_id: venue[V] ?? '' });
@@ -399,7 +406,11 @@ describe('lobby and room: the "profilli" flag only', () => {
     );
 
     expect(
-      (await invoke(b, 'rooms', { action: 'request-join', roomId, profiled: true })).status,
+      (
+        await withPhotoForChoice(b, () =>
+          invoke(b, 'rooms', { action: 'request-join', roomId, profiled: true }),
+        )
+      ).status,
     ).toBe(200);
     const { data: requests } = await a.from('join_requests').select('*').eq('room_id', roomId);
     expect(requests).toEqual([expect.objectContaining({ requester_profiled: true })]);
