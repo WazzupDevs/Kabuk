@@ -4,7 +4,9 @@
 // venue_chat:{venue_id} and read it with `page`, which signs the photos of profiled messages
 // (§7.2; venue_chat_page_for). No push. §21: a reply names a visible message of the same venue; a
 // reaction is the account's one per message (10 per 10 seconds), announced as venue_chat_reaction;
-// the page says how many per emoji, never who.
+// the page says how many per emoji, never who. §22.G: the mode (anonymous or profiled) is chosen
+// once per check-in with the first message (venue_chat_send keeps it; a profiled choice needs a
+// visible profile photo) and the page tells the caller which one it is.
 import { requireUser, serviceClient } from '../_shared/auth.ts';
 import { inBackground } from '../_shared/background.ts';
 import { broadcast } from '../_shared/broadcast.ts';
@@ -29,6 +31,7 @@ import {
   VENUE_CHAT_BROADCAST,
   VENUE_CHAT_REACTION_BROADCAST,
   venueChatChannel,
+  venueChatMode,
 } from '../_shared/pure/venueChat.ts';
 
 const Body: z.ZodType<VenueChatRequest> = z.discriminatedUnion('action', [
@@ -54,12 +57,22 @@ const Body: z.ZodType<VenueChatRequest> = z.discriminatedUnion('action', [
 const db = serviceClient();
 
 // Empty without a live table at the venue. Only profiled messages have a path (never an anonymous
-// one, never a hidden photo); each distinct path is signed once.
+// one, never a hidden photo); each distinct path is signed once. The mode is the caller's own
+// choice at this venue's live table (null before the first message or without a table).
 async function page(
   userId: string,
   venueId: string,
   before?: string,
 ): Promise<VenueChatPageResponse> {
+  const table = await db
+    .from('table_sessions')
+    .select('venue_chat_profiled')
+    .eq('user_id', userId)
+    .eq('venue_id', venueId)
+    .eq('status', 'active')
+    .gt('expires_at', new Date().toISOString())
+    .maybeSingle();
+  if (table.error) throw dbError('table_sessions', table.error);
   const { data, error } = await db.rpc('venue_chat_page_for', {
     target_user_id: userId,
     target_venue_id: venueId,
@@ -83,6 +96,7 @@ async function page(
       replyTo: parseQuote(m.reply_to),
       reactions: parseReactionCounts(m.reactions),
     })),
+    mode: venueChatMode(table.data?.venue_chat_profiled),
   };
 }
 

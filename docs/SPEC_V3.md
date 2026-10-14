@@ -1885,7 +1885,7 @@ Değişiklikler `pure/analytics.ts` kataloğuna yalnızca izinli özelliklerle g
 
 ### 22.M Kabul kriterleri ve testler
 
-**Her adımda:** `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm format:check` ve entegrasyon testleri temiz. **Bugünkü entegrasyon testleri değişmeden yeşil kalır:** `supabase/tests` altındaki mevcut testlerin hiçbir satırı değiştirilmez; yeni davranış yeni dosyalarda (`teams.test.ts`, `teamGames.test.ts`, `teamReveal.test.ts`, `venueChatMode.test.ts`) test edilir. Mevcut bir test kırılırsa bu, eski istemcinin bozulduğu anlamına gelir ve adım birleşmez. Her kod PR'ı `e2e` etiketi taşır; E2E (bugünkü akışlar) yeşildir.
+**Her adımda:** `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm format:check` ve entegrasyon testleri temiz. **Bugünkü entegrasyon testleri değişmeden yeşil kalır:** `supabase/tests` altındaki mevcut testlerin hiçbir satırı değiştirilmez; yeni davranış yeni dosyalarda (`teams.test.ts`, `teamGames.test.ts`, `teamReveal.test.ts`, `venueChatMode.test.ts`) test edilir. Mevcut bir test kırılırsa bu, eski istemcinin bozulduğu anlamına gelir ve adım birleşmez. **Not (22.1 PR'ı):** "Mevcut testler değişmez" kuralı adım 22.2'den itibaren geçerlidir. 22.1'in kararları 7 ve 8 bütün istemciler için bilinçli bir davranış değişikliğidir; o adımda yalnızca hazırlık satırları değişebilir (geçici fotoğraf, karışık mod için ayrı check-in); hiçbir beklenti silinmez, gevşetilmez ya da değiştirilmez, kaldırılan davranış `venueChatMode.test.ts`'te ters yönden sınanır. Her kod PR'ı `e2e` etiketi taşır; E2E (bugünkü akışlar) yeşildir.
 
 **Adım 22.1 (kararlar 7 ve 8).**
 
