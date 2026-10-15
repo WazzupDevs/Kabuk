@@ -561,7 +561,7 @@ Engelleme odayı bitirdiği için bu adım en sona yakın yapılır. F5'ten beri
 
 Mekan sohbetinde anonim ya da profilli seçimi her girişte bir kez, ilk mesajda yapılır ve o giriş boyunca değişmez.
 
-1. A: Mekan ekranında **Sohbet odası** → "<mekan> sohbet odası". Yazma alanının üstünde henüz biçim yazmaz. Bir mesaj yaz → **Gönder**: mesaj gitmez, "Bu check-in boyunca mekan sohbetinde nasıl görüneceksin?" alt sayfası açılır, **Anonim** seçili. Alt sayfanın dışına dokun: alt sayfa kapanır, mesaj gitmez, yazdığın yazma alanında durur.
+1. A: Mekan ekranında **Sohbet odası** → "<mekan> sohbet odası". Yazma alanının üstünde henüz biçim yazmaz. Bir mesaj yaz → **Gönder**: mesaj gitmez, "Bu mekanda kaldığın sürece mekan sohbetinde nasıl görüneceksin?" alt sayfası açılır, **Anonim** seçili. Alt sayfanın dışına dokun: alt sayfa kapanır, mesaj gitmez, yazdığın yazma alanında durur.
 2. A: yeniden **Gönder** → **Profilimle** (A'nın fotoğrafı V7'den) → **Gönder**: mesajda **görünen adın** ve "profilli" etiketi; masa adın **görünmez**. Yazma alanının üstünde "Profilinle yazıyorsun"; değiştirme anahtarı yok. Bir mesaj daha gönder: alt sayfa açılmaz, yine adınla gider.
 3. B: aynı ekranda bir mesaj yaz → **Gönder** → **Anonim** seçili kalsın → **Gönder**: B'nin mesajında **masa adı**; yazma alanının üstünde "Anonim yazıyorsun".
 4. A ve B: karşı tarafın mesajlarını birkaç saniye içinde görür.
