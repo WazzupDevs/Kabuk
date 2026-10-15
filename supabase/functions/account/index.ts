@@ -40,10 +40,8 @@ async function deleteAccount(userId: string): Promise<void> {
   // End the table first so its rooms close or go back to waiting for the other table.
   const ended = await db.rpc('end_table_session', { target_user_id: userId });
   if (ended.error) throw dbError('end_table_session', ended.error);
-  // Photos before the account: the profile row holds the folder name.
-  const profile = await db.from('profiles').select('public_id').eq('id', userId).maybeSingle();
-  if (profile.error) throw dbError('profiles', profile.error);
-  if (profile.data) await deleteProfilePhotos(db, profile.data.public_id);
+  // Photos before the account: the profile row names the files.
+  await deleteProfilePhotos(db, userId);
   const { error } = await db.auth.admin.deleteUser(userId);
   if (error) throw error;
   inBackground(deletePosthogPerson(userId));

@@ -767,3 +767,53 @@ describe('venue chat: friend requests', () => {
     `;
   });
 });
+
+// Rule 4 with photos (random photo paths): a signed photo URL shows its path, and nothing of a
+// profiled sender or a requester may ride on it before friendship. The case above runs without
+// photos; this one gives both accounts one and reads every place a photo goes out from the venue
+// chat: the page, the profile through the message, the incoming request.
+describe('venue chat: no public_id in signed photo URLs', () => {
+  it('signs photos on random paths that carry no profile or account id', async () => {
+    const { a, b } = await threeAtVenue();
+    await setTestPhoto(a);
+    await setTestPhoto(b);
+    const ids = [
+      ...(await Promise.all(
+        [a, b].map(
+          async (x) =>
+            (await x.from('profiles').select('public_id').single()).data?.public_id ?? 'missing',
+        ),
+      )),
+      ...(await Promise.all([a, b].map((x) => userIdOf(x)))),
+    ];
+    const messageId = (await send(a, 'adımla', true)).body.messageId;
+    expect(
+      await invoke(b, 'friends', { action: 'request', venueChatMessageId: messageId }),
+    ).toEqual(OK);
+
+    const pageUrl = (await fnPage(b))[0]?.photoUrl;
+    const profileUrl = (
+      (await invoke(b, 'profile', { action: 'get', venueChatMessageId: messageId })).body as {
+        photoUrl: string | null;
+      }
+    ).photoUrl;
+    const incomingUrl = (
+      (await invoke(a, 'friends', { action: 'incoming' })).body as {
+        requests: { photoUrl: string | null }[];
+      }
+    ).requests[0]?.photoUrl;
+
+    for (const url of [pageUrl, profileUrl, incomingUrl]) {
+      expect(url).toEqual(expect.stringContaining('token='));
+      const signed = new URL(url ?? '');
+      expect(signed.pathname).toMatch(/\/profile-photos\/p\/[0-9a-f-]{36}\.jpg$/);
+      // The token's payload names the path too.
+      const token = signed.searchParams.get('token') ?? '';
+      const payload = Buffer.from(token.split('.')[1] ?? '', 'base64url').toString();
+      for (const id of ids) {
+        expect(url).not.toContain(id);
+        expect(payload).not.toContain(id);
+      }
+    }
+  });
+});

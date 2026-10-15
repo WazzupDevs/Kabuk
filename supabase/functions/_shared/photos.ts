@@ -2,14 +2,28 @@ import type { Db } from './auth.ts';
 import { cachedUrl, type PhotoUrlCache, remember, SERVER_REUSE_MS } from './pure/photoUrlCache.ts';
 import { PHOTO_BUCKET, PHOTO_URL_SECONDS } from './pure/profile.ts';
 
-// Deletes every profile photo of an account (account deletion and ban): Storage objects are not
-// removed by foreign keys, so they go explicitly.
-export async function deleteProfilePhotos(db: Db, publicId: string): Promise<void> {
+// Deletes every profile photo of an account (account deletion and ban): the current one, an
+// upload that was never committed, and anything left in the folder of photos from before random
+// paths ({public_id}/). Storage objects are not removed by foreign keys, so they go explicitly,
+// before the account (the profile row names the files).
+export async function deleteProfilePhotos(db: Db, userId: string): Promise<void> {
+  const { data: p, error } = await db
+    .from('profiles')
+    .select('public_id, photo_path, photo_pending_path')
+    .eq('id', userId)
+    .maybeSingle();
+  if (error) throw new Error(`profiles read failed (${error.code})`);
+  if (!p) return;
   const bucket = db.storage.from(PHOTO_BUCKET);
-  const { data, error } = await bucket.list(publicId, { limit: 1000 });
-  if (error) throw new Error(`storage list failed (${error.message})`);
-  if (data.length === 0) return;
-  const removed = await bucket.remove(data.map((f) => `${publicId}/${f.name}`));
+  const legacy = await bucket.list(p.public_id, { limit: 1000 });
+  if (legacy.error) throw new Error(`storage list failed (${legacy.error.message})`);
+  const files = [
+    p.photo_path,
+    p.photo_pending_path,
+    ...legacy.data.map((f) => `${p.public_id}/${f.name}`),
+  ].filter((f): f is string => !!f);
+  if (files.length === 0) return;
+  const removed = await bucket.remove(files);
   if (removed.error) throw new Error(`storage remove failed (${removed.error.message})`);
 }
 

@@ -32,16 +32,35 @@ export function checkBio(raw: string, terms: PreparedTerms): FieldCheck {
   return { ok: true, value };
 }
 
-// Profile photos: {public_id}/{uuid}.jpg in the private profile-photos bucket, at most 300 KB.
+// Profile photos: p/{uuid}.jpg in the private profile-photos bucket, at most 300 KB. The path is
+// random and carries nothing of the account: a signed URL shows its path, and a photo reaches
+// people before friendship (venue chat, its profile, its friend requests), where the public_id must
+// not (rule 4). The server issues the path (photo-upload-url) and keeps it as the account's pending
+// upload; only that path can be committed. Photos from before this rule were {public_id}/{uuid}.jpg
+// (legacy); `pnpm admin:move-photos` moves them.
 export const PHOTO_BUCKET = 'profile-photos';
 export const PHOTO_MAX_BYTES = 300 * 1024;
 export const PHOTO_SIZE_PX = 512;
 export const PHOTO_JPEG_QUALITY = 0.7;
 export const PHOTO_URL_SECONDS = 3600;
 
-const PHOTO_PATH = /^([0-9a-f-]{36})\/[0-9a-f-]{36}\.jpg$/;
+export const PHOTO_FOLDER = 'p';
 
-export function isOwnPhotoPath(path: string, publicId: string): boolean {
-  const match = PHOTO_PATH.exec(path);
-  return match !== null && match[1] === publicId;
+const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
+const PHOTO_PATH = new RegExp(`^${PHOTO_FOLDER}/${UUID}\\.jpg$`);
+const LEGACY_PHOTO_PATH = new RegExp(`^${UUID}/${UUID}\\.jpg$`);
+
+// A new photo's path from a fresh random UUID.
+export function newPhotoPath(uuid: string): string {
+  if (!new RegExp(`^${UUID}$`).test(uuid)) throw new Error('not a uuid');
+  return `${PHOTO_FOLDER}/${uuid}.jpg`;
+}
+
+export function isPhotoPath(path: string): boolean {
+  return PHOTO_PATH.test(path);
+}
+
+// {public_id}/{uuid}.jpg: a photo uploaded before random paths.
+export function isLegacyPhotoPath(path: string): boolean {
+  return LEGACY_PHOTO_PATH.test(path);
 }
