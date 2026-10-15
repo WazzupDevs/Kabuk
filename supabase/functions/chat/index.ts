@@ -1,5 +1,6 @@
 // Room chat (MVP_SPEC §7): length and profanity checked here, membership and the one message per
-// second limit in chat_send. Messages reach the other table through Postgres Changes (RLS).
+// second limit in chat_send. Messages reach the room's other phones through Postgres Changes (RLS);
+// every phone of the room writes with its own alias (docs/SPEC_V3.md §22.C).
 // docs/SPEC_V3.md §21: a reply names a message of the same room; a reaction is the table's one per
 // message, announced by a data-free `reaction` broadcast on messages:{room_id}.
 import { requireUser, serviceClient } from '../_shared/auth.ts';

@@ -11,7 +11,9 @@ export type ChatResponse = { messageId: string };
 export type ReactResponse = { ok: true };
 
 export type SafetyRequest =
-  | { action: 'report'; target?: 'room'; roomId: string; reason: ReportReason }
+  // A room (docs/SPEC_V3.md §22.J): the phone named by its table session id, any phone of the
+  // room including the reporter's own side; without it the other side's leader.
+  | { action: 'report'; target?: 'room'; roomId: string; reason: ReportReason; sessionId?: string }
   // A profile the reporter can see now (docs/SPEC_V2.md §5.3); otherwise `not_found`, the same
   // answer profile/get gives.
   | { action: 'report'; target: 'profile'; publicId: string; reason: ReportReason }
@@ -24,7 +26,9 @@ export type SafetyRequest =
   // request that came from the chat. Nothing is written for a message the caller cannot see.
   | { action: 'report'; target: 'venue_chat'; messageId: string; reason: ReportReason }
   | { action: 'report'; target: 'friend_request'; requestId: string; reason: ReportReason }
-  | { action: 'block'; roomId: string }
+  // In a room (docs/SPEC_V3.md §22.D): a phone of the room by its table session id; without it
+  // the other side's leader.
+  | { action: 'block'; roomId: string; sessionId?: string }
   // Step 4: a friend (ends the friendship, silently) or the account behind a history row. With
   // `report`, the report is written in the same transaction before anything is deleted.
   | { action: 'block'; publicId: string; report?: ReportReason }

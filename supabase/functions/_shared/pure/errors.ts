@@ -47,6 +47,8 @@ export type ErrorCode =
   | 'reply_unavailable'
   | 'photo_required'
   | 'venue_chat_mode_locked'
+  | 'wrong_side'
+  | 'not_leader'
   | 'display_name_required'
   | 'display_name_invalid'
   | 'bio_invalid'
@@ -131,6 +133,9 @@ export const DOMAIN_ERROR_CODES: readonly ErrorCode[] = [
   // (docs/SPEC_V3.md §22.G).
   'photo_required',
   'venue_chat_mode_locked',
+  // Teams (§22.B, §22.D): an account goes back only to its side; only a leader ends the room.
+  'wrong_side',
+  'not_leader',
 ];
 
 export function isDomainErrorCode(value: string): value is ErrorCode {

@@ -1043,6 +1043,8 @@ export const tr = {
     photo_required: 'Profilinle görünmek için önce profil fotoğrafı ekle.',
     venue_chat_mode_locked:
       'Mekan sohbetinde nasıl görüneceğini bu girişte zaten seçtin. Değiştirmek için mekandan ayrılıp yeniden giriş yap.',
+    wrong_side: 'Bu odaya yalnızca daha önce bulunduğun taraftan katılabilirsin.',
+    not_leader: 'Odayı yalnızca masanın lideri bitirebilir.',
     already_friends: 'Zaten arkadaşsınız.',
     not_friends: 'Artık arkadaş değilsiniz.',
     not_judge: 'Bu turda hakem diğer masa.',

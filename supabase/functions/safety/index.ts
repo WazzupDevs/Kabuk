@@ -1,6 +1,7 @@
 // Report and block (MVP_SPEC §8, docs/SPEC_V2.md §5.3, §6.2, §6.4). Reports: a room, a profile
 // visible now, a DM thread, or an encounter of the caller's own history (also after the room has
-// ended). Blocks: the other table of a room, a friend, or the account behind a history row.
+// ended). Blocks: a phone of a room (by default the other side's leader), a friend, or the account
+// behind a history row.
 // History actions answer { ok: true } whatever they find, so they reveal nothing.
 import { requireUser, serviceClient } from '../_shared/auth.ts';
 import { inBackground } from '../_shared/background.ts';
@@ -23,6 +24,7 @@ const Report = z.discriminatedUnion('target', [
     target: z.literal('room').optional(),
     roomId: z.uuid(),
     reason,
+    sessionId: z.uuid().optional(),
   }),
   z.object({
     action: z.literal('report'),
@@ -53,7 +55,7 @@ const Report = z.discriminatedUnion('target', [
 
 const Body: z.ZodType<SafetyRequest> = z.union([
   Report,
-  z.strictObject({ action: z.literal('block'), roomId: z.uuid() }),
+  z.strictObject({ action: z.literal('block'), roomId: z.uuid(), sessionId: z.uuid().optional() }),
   z.strictObject({ action: z.literal('block'), publicId: z.uuid(), report: reason.optional() }),
   z.strictObject({ action: z.literal('block'), historyId: z.uuid(), report: reason.optional() }),
   z.strictObject({
@@ -158,6 +160,7 @@ Deno.serve(
           target_user_id: user.id,
           target_room_id: body.roomId,
           new_reason: body.reason,
+          ...(body.sessionId ? { target_session_id: body.sessionId } : {}),
         });
         if (error) throw dbError('safety_report', error);
       }
@@ -217,9 +220,12 @@ Deno.serve(
       return { ok: true };
     }
 
+    // In a room (§22.D): a phone of the room, or without sessionId the other side's leader. A
+    // leader blocking its own member removes the member; anyone else who blocks leaves.
     const { data, error } = await db.rpc('safety_block', {
       target_user_id: user.id,
       target_room_id: body.roomId,
+      ...(body.sessionId ? { target_session_id: body.sessionId } : {}),
     });
     if (error) throw dbError('safety_block', error);
     // Blocking in a two-table room is "Odayı bitir" with "Hayır" (docs/SPEC_V3.md §5.5): the same

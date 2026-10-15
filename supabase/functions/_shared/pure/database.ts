@@ -476,6 +476,7 @@ export type Database = {
       };
       join_requests: {
         Row: {
+          as_member: boolean;
           created_at: string;
           expires_at: string;
           id: string;
@@ -485,9 +486,11 @@ export type Database = {
           requester_session_id: string;
           responded_at: string | null;
           room_id: string;
+          side: string;
           status: string;
         };
         Insert: {
+          as_member?: boolean;
           created_at?: string;
           expires_at: string;
           id?: string;
@@ -497,9 +500,11 @@ export type Database = {
           requester_session_id: string;
           responded_at?: string | null;
           room_id: string;
+          side?: string;
           status?: string;
         };
         Update: {
+          as_member?: boolean;
           created_at?: string;
           expires_at?: string;
           id?: string;
@@ -509,6 +514,7 @@ export type Database = {
           requester_session_id?: string;
           responded_at?: string | null;
           room_id?: string;
+          side?: string;
           status?: string;
         };
         Relationships: [
@@ -897,6 +903,54 @@ export type Database = {
           },
         ];
       };
+      room_members: {
+        Row: {
+          alias: string;
+          id: string;
+          joined_at: string;
+          left_at: string | null;
+          profiled: boolean;
+          room_id: string;
+          session_id: string;
+          side: string;
+        };
+        Insert: {
+          alias: string;
+          id?: string;
+          joined_at?: string;
+          left_at?: string | null;
+          profiled?: boolean;
+          room_id: string;
+          session_id: string;
+          side: string;
+        };
+        Update: {
+          alias?: string;
+          id?: string;
+          joined_at?: string;
+          left_at?: string | null;
+          profiled?: boolean;
+          room_id?: string;
+          session_id?: string;
+          side?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'room_members_room_id_fkey';
+            columns: ['room_id'];
+            isOneToOne: false;
+            referencedRelation: 'rooms';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'room_members_session_id_fkey';
+            columns: ['session_id'];
+            isOneToOne: false;
+            referencedRelation: 'table_sessions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       room_used_cards: {
         Row: {
           card_id: string;
@@ -936,6 +990,7 @@ export type Database = {
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
+          guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
           id: string;
@@ -943,6 +998,7 @@ export type Database = {
           last_activity_at: string;
           owner_alias: string;
           owner_headcount: number;
+          owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
           reveal_ends_at: string | null;
@@ -962,6 +1018,7 @@ export type Database = {
           guest_alias?: string | null;
           guest_headcount?: number | null;
           guest_joined_at?: string | null;
+          guest_phones?: number | null;
           guest_profiled?: boolean;
           guest_session_id?: string | null;
           id?: string;
@@ -969,6 +1026,7 @@ export type Database = {
           last_activity_at?: string;
           owner_alias: string;
           owner_headcount: number;
+          owner_phones?: number;
           owner_profiled?: boolean;
           owner_session_id: string;
           reveal_ends_at?: string | null;
@@ -988,6 +1046,7 @@ export type Database = {
           guest_alias?: string | null;
           guest_headcount?: number | null;
           guest_joined_at?: string | null;
+          guest_phones?: number | null;
           guest_profiled?: boolean;
           guest_session_id?: string | null;
           id?: string;
@@ -995,6 +1054,7 @@ export type Database = {
           last_activity_at?: string;
           owner_alias?: string;
           owner_headcount?: number;
+          owner_phones?: number;
           owner_profiled?: boolean;
           owner_session_id?: string;
           reveal_ends_at?: string | null;
@@ -1050,6 +1110,7 @@ export type Database = {
           participation: string;
           spot_id: string | null;
           status: string;
+          team_capable: boolean;
           user_id: string;
           venue_chat_profiled: boolean | null;
           venue_id: string;
@@ -1066,6 +1127,7 @@ export type Database = {
           participation?: string;
           spot_id?: string | null;
           status?: string;
+          team_capable?: boolean;
           user_id: string;
           venue_chat_profiled?: boolean | null;
           venue_id: string;
@@ -1082,6 +1144,7 @@ export type Database = {
           participation?: string;
           spot_id?: string | null;
           status?: string;
+          team_capable?: boolean;
           user_id?: string;
           venue_chat_profiled?: boolean | null;
           venue_id?: string;
@@ -1526,7 +1589,9 @@ export type Database = {
           participation: string;
           spot_id: string | null;
           status: string;
+          team_capable: boolean;
           user_id: string;
+          venue_chat_profiled: boolean | null;
           venue_id: string;
         };
         SetofOptions: {
@@ -1735,6 +1800,7 @@ export type Database = {
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
+          guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
           id: string;
@@ -1742,6 +1808,7 @@ export type Database = {
           last_activity_at: string;
           owner_alias: string;
           owner_headcount: number;
+          owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
           reveal_ends_at: string | null;
@@ -1770,6 +1837,7 @@ export type Database = {
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
+          guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
           id: string;
@@ -1777,6 +1845,7 @@ export type Database = {
           last_activity_at: string;
           owner_alias: string;
           owner_headcount: number;
+          owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
           reveal_ends_at: string | null;
@@ -1814,6 +1883,7 @@ export type Database = {
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
+          guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
           id: string;
@@ -1821,6 +1891,7 @@ export type Database = {
           last_activity_at: string;
           owner_alias: string;
           owner_headcount: number;
+          owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
           reveal_ends_at: string | null;
@@ -1854,6 +1925,7 @@ export type Database = {
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
+          guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
           id: string;
@@ -1861,6 +1933,7 @@ export type Database = {
           last_activity_at: string;
           owner_alias: string;
           owner_headcount: number;
+          owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
           reveal_ends_at: string | null;
@@ -1958,7 +2031,9 @@ export type Database = {
           participation: string;
           spot_id: string | null;
           status: string;
+          team_capable: boolean;
           user_id: string;
+          venue_chat_profiled: boolean | null;
           venue_id: string;
         };
         SetofOptions: {
@@ -1983,6 +2058,7 @@ export type Database = {
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
+          guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
           id: string;
@@ -1990,6 +2066,7 @@ export type Database = {
           last_activity_at: string;
           owner_alias: string;
           owner_headcount: number;
+          owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
           reveal_ends_at: string | null;
@@ -2021,6 +2098,17 @@ export type Database = {
         }[];
       };
       room_member_profile: { Args: { target_room_id: string }; Returns: string };
+      room_phones: {
+        Args: { target_room_id: string };
+        Returns: {
+          alias: string;
+          is_leader: boolean;
+          joined_at: string;
+          profiled: boolean;
+          session_id: string;
+          side: string;
+        }[];
+      };
       rooms_answer_game: {
         Args: {
           accept: boolean;
@@ -2041,6 +2129,7 @@ export type Database = {
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
+          guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
           id: string;
@@ -2048,6 +2137,7 @@ export type Database = {
           last_activity_at: string;
           owner_alias: string;
           owner_headcount: number;
+          owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
           reveal_ends_at: string | null;
@@ -2076,6 +2166,7 @@ export type Database = {
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
+          guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
           id: string;
@@ -2083,6 +2174,7 @@ export type Database = {
           last_activity_at: string;
           owner_alias: string;
           owner_headcount: number;
+          owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
           reveal_ends_at: string | null;
@@ -2111,6 +2203,7 @@ export type Database = {
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
+          guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
           id: string;
@@ -2118,6 +2211,7 @@ export type Database = {
           last_activity_at: string;
           owner_alias: string;
           owner_headcount: number;
+          owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
           reveal_ends_at: string | null;
@@ -2146,6 +2240,7 @@ export type Database = {
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
+          guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
           id: string;
@@ -2153,6 +2248,7 @@ export type Database = {
           last_activity_at: string;
           owner_alias: string;
           owner_headcount: number;
+          owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
           reveal_ends_at: string | null;
@@ -2181,6 +2277,7 @@ export type Database = {
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
+          guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
           id: string;
@@ -2188,6 +2285,44 @@ export type Database = {
           last_activity_at: string;
           owner_alias: string;
           owner_headcount: number;
+          owner_phones: number;
+          owner_profiled: boolean;
+          owner_session_id: string;
+          reveal_ends_at: string | null;
+          reveal_result: string | null;
+          reveal_token: Json | null;
+          spot_id: string | null;
+          status: string;
+          venue_id: string;
+          visibility: string;
+          waiting_since: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'rooms';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      rooms_leave: {
+        Args: { target_room_id: string; target_user_id: string };
+        Returns: {
+          closed_at: string | null;
+          concept: string | null;
+          created_at: string;
+          game_state: Json;
+          guest_alias: string | null;
+          guest_headcount: number | null;
+          guest_joined_at: string | null;
+          guest_phones: number | null;
+          guest_profiled: boolean;
+          guest_session_id: string | null;
+          id: string;
+          intent: string | null;
+          last_activity_at: string;
+          owner_alias: string;
+          owner_headcount: number;
+          owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
           reveal_ends_at: string | null;
@@ -2235,10 +2370,12 @@ export type Database = {
           max_per_hour: number;
           profiled: boolean;
           target_room_id: string;
+          target_side?: string;
           target_user_id: string;
           ttl_seconds: number;
         };
         Returns: {
+          as_member: boolean;
           created_at: string;
           expires_at: string;
           id: string;
@@ -2248,6 +2385,7 @@ export type Database = {
           requester_session_id: string;
           responded_at: string | null;
           room_id: string;
+          side: string;
           status: string;
         };
         SetofOptions: {
@@ -2264,6 +2402,7 @@ export type Database = {
           target_user_id: string;
         };
         Returns: {
+          as_member: boolean;
           created_at: string;
           expires_at: string;
           id: string;
@@ -2273,6 +2412,7 @@ export type Database = {
           requester_session_id: string;
           responded_at: string | null;
           room_id: string;
+          side: string;
           status: string;
         };
         SetofOptions: {
@@ -2283,7 +2423,11 @@ export type Database = {
         };
       };
       safety_block: {
-        Args: { target_room_id: string; target_user_id: string };
+        Args: {
+          target_room_id: string;
+          target_session_id?: string;
+          target_user_id: string;
+        };
         Returns: {
           closed_at: string | null;
           concept: string | null;
@@ -2292,6 +2436,7 @@ export type Database = {
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
+          guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
           id: string;
@@ -2299,6 +2444,7 @@ export type Database = {
           last_activity_at: string;
           owner_alias: string;
           owner_headcount: number;
+          owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
           reveal_ends_at: string | null;
@@ -2347,6 +2493,7 @@ export type Database = {
         Args: {
           new_reason: string;
           target_room_id: string;
+          target_session_id?: string;
           target_user_id: string;
         };
         Returns: string;
@@ -2411,6 +2558,7 @@ export type Database = {
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
+          guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
           id: string;
@@ -2418,6 +2566,7 @@ export type Database = {
           last_activity_at: string;
           owner_alias: string;
           owner_headcount: number;
+          owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
           reveal_ends_at: string | null;
@@ -2446,6 +2595,7 @@ export type Database = {
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
+          guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
           id: string;
@@ -2453,6 +2603,7 @@ export type Database = {
           last_activity_at: string;
           owner_alias: string;
           owner_headcount: number;
+          owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
           reveal_ends_at: string | null;
@@ -2489,6 +2640,7 @@ export type Database = {
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
+          guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
           id: string;
@@ -2496,6 +2648,7 @@ export type Database = {
           last_activity_at: string;
           owner_alias: string;
           owner_headcount: number;
+          owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
           reveal_ends_at: string | null;
@@ -2533,6 +2686,7 @@ export type Database = {
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
+          guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
           id: string;
@@ -2540,6 +2694,7 @@ export type Database = {
           last_activity_at: string;
           owner_alias: string;
           owner_headcount: number;
+          owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
           reveal_ends_at: string | null;
@@ -2568,6 +2723,7 @@ export type Database = {
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
+          guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
           id: string;
@@ -2575,6 +2731,7 @@ export type Database = {
           last_activity_at: string;
           owner_alias: string;
           owner_headcount: number;
+          owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
           reveal_ends_at: string | null;
@@ -2603,6 +2760,7 @@ export type Database = {
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
+          guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
           id: string;
@@ -2610,6 +2768,7 @@ export type Database = {
           last_activity_at: string;
           owner_alias: string;
           owner_headcount: number;
+          owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
           reveal_ends_at: string | null;
@@ -2645,6 +2804,7 @@ export type Database = {
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
+          guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
           id: string;
@@ -2652,6 +2812,7 @@ export type Database = {
           last_activity_at: string;
           owner_alias: string;
           owner_headcount: number;
+          owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
           reveal_ends_at: string | null;
@@ -2690,6 +2851,7 @@ export type Database = {
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
+          guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
           id: string;
@@ -2697,6 +2859,7 @@ export type Database = {
           last_activity_at: string;
           owner_alias: string;
           owner_headcount: number;
+          owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
           reveal_ends_at: string | null;
@@ -2729,6 +2892,7 @@ export type Database = {
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
+          guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
           id: string;
@@ -2736,6 +2900,7 @@ export type Database = {
           last_activity_at: string;
           owner_alias: string;
           owner_headcount: number;
+          owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
           reveal_ends_at: string | null;
@@ -2762,6 +2927,7 @@ export type Database = {
           new_headcount: number;
           new_participation?: string;
           new_spot_id?: string;
+          new_team_capable?: boolean;
           target_user_id: string;
           target_venue_id: string;
         };
@@ -2777,7 +2943,9 @@ export type Database = {
           participation: string;
           spot_id: string | null;
           status: string;
+          team_capable: boolean;
           user_id: string;
+          venue_chat_profiled: boolean | null;
           venue_id: string;
         };
         SetofOptions: {
@@ -2797,6 +2965,7 @@ export type Database = {
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
+          guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
           id: string;
@@ -2804,6 +2973,7 @@ export type Database = {
           last_activity_at: string;
           owner_alias: string;
           owner_headcount: number;
+          owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
           reveal_ends_at: string | null;
@@ -2832,6 +3002,7 @@ export type Database = {
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
+          guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
           id: string;
@@ -2839,6 +3010,7 @@ export type Database = {
           last_activity_at: string;
           owner_alias: string;
           owner_headcount: number;
+          owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
           reveal_ends_at: string | null;
@@ -2884,6 +3056,7 @@ export type Database = {
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
+          guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
           id: string;
@@ -2891,6 +3064,7 @@ export type Database = {
           last_activity_at: string;
           owner_alias: string;
           owner_headcount: number;
+          owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
           reveal_ends_at: string | null;
@@ -3031,6 +3205,30 @@ export type Database = {
           spot_id: string;
           spot_name: string;
           waiting_since: string;
+        }[];
+      };
+      venue_lobby_phones: {
+        Args: { target_venue_id: string };
+        Returns: {
+          member_open: boolean;
+          phones: number;
+          room_id: string;
+        }[];
+      };
+      venue_running_rooms: {
+        Args: { target_venue_id: string };
+        Returns: {
+          guest_alias: string;
+          guest_headcount: number;
+          guest_open: boolean;
+          guest_phones: number;
+          owner_alias: string;
+          owner_headcount: number;
+          owner_open: boolean;
+          owner_phones: number;
+          room_id: string;
+          spot_id: string;
+          spot_name: string;
         }[];
       };
     };
