@@ -12,6 +12,8 @@ export type CheckInRequest = {
   // Where the table is at a venue with spots (docs/SPEC_V3.md §4.3); required there, absent
   // elsewhere.
   spotId?: string;
+  // The app can be in a team (docs/SPEC_V3.md §22.B); an old app sends nothing.
+  teams?: boolean;
 };
 
 // "Bu noktadayım": no new position; refused in a room or with a request out (`in_room`).

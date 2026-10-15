@@ -41,6 +41,7 @@ const Body: z.ZodType<CheckinRequest> = z.discriminatedUnion('action', [
     headcount: z.number().int().min(MIN_HEADCOUNT).max(MAX_HEADCOUNT),
     locationConsentVersion: z.string(),
     spotId: z.uuid().optional(),
+    teams: z.boolean().optional(),
   }),
   z.object({ action: z.literal('change-spot'), spotId: z.uuid() }),
   z.object({ action: z.literal('reroll-alias') }),
@@ -143,6 +144,8 @@ async function checkIn(userId: string, body: CheckInRequest): Promise<CheckInRes
       consent_version: body.locationConsentVersion,
       accuracy_m: body.accuracyM ?? undefined,
       new_spot_id: body.spotId,
+      // The app can be in a team (docs/SPEC_V3.md §22.B); an old app sends nothing.
+      new_team_capable: body.teams === true,
     });
     if (!error) return { sessionId: data.id, alias: data.alias, expiresAt: data.expires_at };
     // spot_required and spot_invalid come from the database as domain errors.

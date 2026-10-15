@@ -50,6 +50,8 @@ const STATUS: Record<ErrorCode, number> = {
   reply_unavailable: 409,
   photo_required: 409,
   venue_chat_mode_locked: 409,
+  wrong_side: 409,
+  not_leader: 403,
   display_name_required: 409,
   display_name_invalid: 422,
   bio_invalid: 422,

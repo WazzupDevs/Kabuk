@@ -3,6 +3,8 @@
 // data-free broadcasts and pushes. Nothing sent to a requester depends on a decline: no broadcast,
 // no push, no response field. A room starts as a chat; a game starts only from an accepted proposal
 // (a one-table room starts its games directly through tabu/start and sohbet/next-card).
+// Teams (docs/SPEC_V3.md §22.C, §22.D): "Bu masadayım" asks a side's current leader; any phone
+// leaves with rooms/leave; only a leader ends the room.
 import { requireUser, serviceClient } from '../_shared/auth.ts';
 import { inBackground } from '../_shared/background.ts';
 import { broadcast } from '../_shared/broadcast.ts';
@@ -33,6 +35,7 @@ import {
 import { SAHTEKAR } from '../_shared/pure/sahtekar.ts';
 import { SOHBET_NEXT_COOLDOWN_MS } from '../_shared/pure/sohbet.ts';
 import { TABU } from '../_shared/pure/tabu.ts';
+import { SIDES } from '../_shared/pure/teams.ts';
 
 // A table's player count for Sahtekar (docs/SPEC_V3.md §20.1).
 const Players = z.number().int().min(1).max(SAHTEKAR.maxPerTable);
@@ -44,7 +47,12 @@ const Body: z.ZodType<RoomsRequest> = z.discriminatedUnion('action', [
     profiled: z.boolean(),
   }),
   z.object({ action: z.literal('create-solo') }),
-  z.object({ action: z.literal('request-join'), roomId: z.uuid(), profiled: z.boolean() }),
+  z.object({
+    action: z.literal('request-join'),
+    roomId: z.uuid(),
+    profiled: z.boolean(),
+    side: z.enum(SIDES).optional(),
+  }),
   z.object({ action: z.literal('respond'), requestId: z.uuid(), accept: z.boolean() }),
   z.object({
     action: z.literal('propose-game'),
@@ -60,6 +68,7 @@ const Body: z.ZodType<RoomsRequest> = z.discriminatedUnion('action', [
   }),
   z.object({ action: z.literal('end-game'), roomId: z.uuid() }),
   z.object({ action: z.literal('end') }),
+  z.object({ action: z.literal('leave'), roomId: z.uuid() }),
 ]);
 
 const db = serviceClient();
@@ -125,19 +134,24 @@ Deno.serve(
             ttl_seconds: JOIN_REQUEST_TTL_SECONDS,
             max_per_hour: MAX_JOIN_REQUESTS_PER_HOUR,
             profiled: body.profiled,
+            ...(body.side ? { target_side: body.side } : {}),
           });
           if (error) throw dbError('rooms_request_join', error);
 
+          // "Katıl" goes to the owner, "Bu masadayım" to the side's current leader.
           const room = await db
             .from('rooms')
-            .select('owner_session_id')
+            .select('owner_session_id, guest_session_id')
             .eq('id', data.room_id)
             .single();
           if (room.error) throw dbError('rooms', room.error);
-          const ownerSessionId = room.data.owner_session_id;
-          inBackground(broadcast(sessionChannel(ownerSessionId), BROADCAST.joinRequest));
+          const leaderSessionId =
+            data.as_member && data.side === 'guest'
+              ? (room.data.guest_session_id ?? room.data.owner_session_id)
+              : room.data.owner_session_id;
+          inBackground(broadcast(sessionChannel(leaderSessionId), BROADCAST.joinRequest));
           inBackground(
-            pushTokenOfSession(ownerSessionId).then((token) =>
+            pushTokenOfSession(leaderSessionId).then((token) =>
               sendPush(token, joinRequestPush(data.requester_alias, data.requester_headcount)),
             ),
           );
@@ -221,8 +235,8 @@ Deno.serve(
           return { ok: true };
         }
 
-        // "Odayı bitir", the only way out (§5.5): a two-table room opens the "Tanışalım mı?"
-        // window; a one-table room closes.
+        // "Odayı bitir" (§5.5), a leader only (§22.D: a member is not_leader): a two-table room opens
+        // the "Tanışalım mı?" window; a one-table room closes.
         case 'end': {
           const { data, error } = await db.rpc('rooms_end', {
             target_user_id: user.id,
@@ -230,6 +244,19 @@ Deno.serve(
           });
           if (error) throw dbError('rooms_end', error);
           if (data?.id && data.visibility === 'open') lobbyChanged(db, data);
+          return { ok: true };
+        }
+
+        // "Odadan çık" (§22.D): the phone leaves; a leader hands its side over; the side's last
+        // phone ends the room as leaving the venue does. The lobby hears of it unless the room is
+        // held (in its window, a phone's leaving must not show: rule 5).
+        case 'leave': {
+          const { data, error } = await db.rpc('rooms_leave', {
+            target_user_id: user.id,
+            target_room_id: body.roomId,
+          });
+          if (error) throw dbError('rooms_leave', error);
+          if (data.visibility === 'open') lobbyChanged(db, data);
           return { ok: true };
         }
       }
