@@ -11,7 +11,9 @@ import { SAY_CONFIG } from '@shared/sayChallenge.ts';
 import { capitalizeTr } from '@shared/trText.ts';
 import type { VenueKind } from '@shared/venueKind.ts';
 
-// Address (hitap): a person is "sen", a table "siz"; a sentence never mixes the two.
+// Address (hitap): a person is "sen", a table "siz"; a sentence never mixes the two. What a phone
+// chooses for itself (a room's intent and participation, the reveal answer) is a person's: in Faz 2
+// everyone chooses for themselves (canvas: Faz 2 · 22.5 → Metinler).
 // Numbers in the texts come from the game settings, never typed by hand.
 const NUMBER_WORDS = [
   'sıfır',
@@ -466,9 +468,9 @@ export const tr = {
   },
   // Anonymous or with the profile, chosen for each room (docs/SPEC_V3.md §5.4).
   participation: {
-    title: 'Bu odada nasıl görüneceksiniz?',
+    title: 'Bu odada nasıl görüneceksin?',
     anonymous: 'Anonim',
-    anonymousHint: 'Diğer masa yalnızca masa adınızı ve kişi sayınızı görür.',
+    anonymousHint: 'Diğer masalar yalnızca masa adını ve kişi sayını görür.',
     profile: 'Profilimle',
     profileHint:
       'Lobide "profilli" işareti görünür. Odadaki diğer masa, oda sürerken profilini görebilir.',
@@ -549,11 +551,11 @@ export const tr = {
     newTitle: 'Oda kur',
     newHint:
       'Oda mekandaki diğer masalara açılır ve sohbetle başlar. Oyunu odada iki masa birlikte seçer.',
-    intentLabel: 'Niyetiniz (isteğe bağlı)',
+    intentLabel: 'Niyetin (isteğe bağlı)',
     intentNone: 'Etiket yok',
     intentHint: {
-      game: 'Oyun oynamak istiyorsunuz.',
-      chat: 'Sohbet etmek istiyorsunuz. Oyun yine önerilebilir.',
+      game: 'Oyun oynamak istiyorsun.',
+      chat: 'Sohbet etmek istiyorsun. Oyun yine önerilebilir.',
     },
     createConfirm: 'Odayı kur',
     // The room's eyebrow: the running game, else the chat; voice games say they are played face to
@@ -928,8 +930,8 @@ export const tr = {
     yes: 'Evet',
     no: 'Hayır',
     secondsLeft: (s: number) => `${s} sn`,
-    answered: 'Cevabınız alındı. Sonuç birazdan.',
-    signal: 'Ekranınızı kaldırın, birbirinizi bulun.',
+    answered: 'Cevabın alındı. Sonuç birazdan.',
+    signal: 'Ekranını kaldır, eşleştiğini bul.',
     signalTop: 'Tanışalım mı? · İki masa da "Evet" dedi',
     signalSame: 'Diğer masada da aynı renk ve aynı işaret var.',
     goodGame: 'Güzel oyundu',

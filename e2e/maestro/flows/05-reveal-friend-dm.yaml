@@ -20,7 +20,7 @@ appId: app.kabuk.mobile
 - tapOn:
     id: reveal-yes
 - extendedWaitUntil:
-    visible: Cevabınız alındı. Sonuç birazdan.
+    visible: Cevabın alındı. Sonuç birazdan.
     timeout: 10000
 - takeScreenshot: 22-reveal-answered
 - runScript:
@@ -29,7 +29,7 @@ appId: app.kabuk.mobile
       ACTION: reveal
       BODY: '{"yes":true}'
 - extendedWaitUntil:
-    visible: Ekranınızı kaldırın, birbirinizi bulun.
+    visible: Ekranını kaldır, eşleştiğini bul.
     timeout: 15000
 - takeScreenshot: 23-reveal-mutual
 - tapOn: Arkadaş ekle
