@@ -1,6 +1,7 @@
 // The handler Harf Kapmaca and Şarkıda Geçsin share (docs/SPEC_V3.md §20.3–20.4): the same SQL
 // functions (public.say_*) with the game's kind. Harf claims a letter (`claim`), Şarkı sings a line
-// (`said`); everything else is the same.
+// (`said`); everything else is the same. Every phone on the side whose turn it is claims or says;
+// every phone on the other side objects (docs/SPEC_V3.md §22.E).
 import { requireUser, serviceClient } from './auth.ts';
 import { dbError } from './db.ts';
 import { z } from './deps.ts';

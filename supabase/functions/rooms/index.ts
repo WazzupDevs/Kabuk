@@ -3,8 +3,9 @@
 // data-free broadcasts and pushes. Nothing sent to a requester depends on a decline: no broadcast,
 // no push, no response field. A room starts as a chat; a game starts only from an accepted proposal
 // (a one-table room starts its games directly through tabu/start and sohbet/next-card).
-// Teams (docs/SPEC_V3.md §22.C, §22.D): "Bu masadayım" asks a side's current leader; any phone
-// leaves with rooms/leave; only a leader ends the room.
+// Teams (docs/SPEC_V3.md §22.C–§22.E): "Bu masadayım" asks a side's current leader; any phone
+// leaves with rooms/leave; only a leader ends the room. A proposal is its side's: any phone proposes,
+// any phone on the other side answers, any phone ends the game.
 import { requireUser, serviceClient } from '../_shared/auth.ts';
 import { inBackground } from '../_shared/background.ts';
 import { broadcast } from '../_shared/broadcast.ts';
@@ -37,7 +38,8 @@ import { SOHBET_NEXT_COOLDOWN_MS } from '../_shared/pure/sohbet.ts';
 import { TABU } from '../_shared/pure/tabu.ts';
 import { SIDES } from '../_shared/pure/teams.ts';
 
-// A table's player count for Sahtekar (docs/SPEC_V3.md §20.1).
+// A side's player count for Sahtekar (docs/SPEC_V3.md §20.1); without it, the side's headcount when
+// the game starts (§22.E).
 const Players = z.number().int().min(1).max(SAHTEKAR.maxPerTable);
 
 const Body: z.ZodType<RoomsRequest> = z.discriminatedUnion('action', [

@@ -9,8 +9,8 @@ export type TabuRequest =
   // A press on card `cardIndex` of turn `turnNo`; a second press on the same card is ignored.
   | { action: 'mark'; roomId: string; turnNo: number; cardIndex: number; result: MarkResult }
   | { action: 'end-turn'; roomId: string }
-  // Starts the ready turn's clock: the describing table, or either table after readyEndsAt
-  // (docs/SPEC_V3.md §19.1). Idempotent.
+  // Starts the ready turn's clock: a phone on the describing side, which describes it, or any phone
+  // after readyEndsAt (docs/SPEC_V3.md §19.1, §22.E). Idempotent.
   | { action: 'begin-turn'; roomId: string };
 
 export type TabuStartResponse = { mode: 'local'; deck: TabuCard[] };
@@ -64,7 +64,7 @@ export type IbreRequest =
   // One-table room: one scale per round; the phone makes the targets and runs the game.
   | { action: 'start'; roomId: string }
   | { action: 'begin'; roomId: string }
-  // The describing table, while a clock runs on round `round`.
+  // The round's describer, while a clock runs on round `round` (docs/SPEC_V3.md §22.E).
   | { action: 'target'; roomId: string; round: number }
   | { action: 'lock'; roomId: string; round: number; value: number }
   | { action: 'side'; roomId: string; round: number; side: 'left' | 'right' }
