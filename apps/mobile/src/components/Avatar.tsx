@@ -1,5 +1,6 @@
 import { Image, Pressable, View } from 'react-native';
 
+import { usePhoto } from '@/lib/usePhoto';
 import { initials, TABLE_AVATAR_INK, tableAvatarOf } from '@/theme/avatar';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING, TOUCH } from '@/theme/tokens';
@@ -26,7 +27,8 @@ type Props =
   // shows a table with the same face (its own one too); a new name brings a new face. Never
   // tappable (no profile).
   | { kind: 'table'; alias: string; size?: Size }
-  // A profile: the photo, or the display name's initials. Tappable when it opens the profile card.
+  // A profile: the photo, or the display name's initials (also when the photo cannot be loaded).
+  // Tappable when it opens the profile card.
   | {
       kind: 'profile';
       name: string;
@@ -40,6 +42,7 @@ type Props =
 // tables: Aşama 8 · Saha → Masa avatarları).
 export function Avatar(props: Props) {
   const { colors, shape } = useTheme();
+  const photo = usePhoto(props.kind === 'profile' ? props.photoUrl : null);
   const side = AVATAR_SIZE[props.size ?? 'md'];
   const frame = {
     width: side,
@@ -71,9 +74,10 @@ export function Avatar(props: Props) {
     );
   }
 
-  const inner = props.photoUrl ? (
+  const inner = photo.url ? (
     <Image
-      source={{ uri: props.photoUrl }}
+      source={{ uri: photo.url }}
+      onError={photo.onError}
       accessibilityIgnoresInvertColors
       style={{ width: side, height: side }}
     />
@@ -86,7 +90,7 @@ export function Avatar(props: Props) {
     </Text>
   );
   const face = (
-    <View style={[frame, { backgroundColor: props.photoUrl ? colors.surface2 : colors.violet }]}>
+    <View style={[frame, { backgroundColor: photo.url ? colors.surface2 : colors.violet }]}>
       {inner}
     </View>
   );

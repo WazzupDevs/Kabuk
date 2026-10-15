@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image, View } from 'react-native';
 
+import { usePhoto } from '@/lib/usePhoto';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING, TOUCH } from '@/theme/tokens';
 
@@ -21,9 +22,10 @@ function initials(name: string): string {
     .join('');
 }
 
-// The profile photo, or the initials on the violet when there is none.
+// The profile photo, or the initials on the violet when there is none or it cannot be loaded.
 export function ProfilePhoto({ url, name, size = 'large' }: Props) {
   const { colors, shape } = useTheme();
+  const photo = usePhoto(url);
   const side = SIZES[size];
   const frame = {
     width: side,
@@ -33,10 +35,11 @@ export function ProfilePhoto({ url, name, size = 'large' }: Props) {
     borderColor: colors.border,
   };
 
-  if (url) {
+  if (photo.url) {
     return (
       <Image
-        source={{ uri: url }}
+        source={{ uri: photo.url }}
+        onError={photo.onError}
         accessibilityIgnoresInvertColors
         style={[frame, { backgroundColor: colors.surface2 }]}
       />

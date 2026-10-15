@@ -21,7 +21,7 @@ type Props = {
   testID?: string;
 };
 
-// One of two side-by-side choices with a picture (canvas: Oda kur → nasıl görüneceksiniz?): a soft
+// One of two side-by-side choices with a picture (canvas: Oda kur → nasıl görüneceksin?): a soft
 // card, the chosen one ringed in the accent.
 export function ChoiceCard({
   label,

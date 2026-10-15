@@ -241,6 +241,7 @@ Pilot listesinde olmayan bir yerde test için elle girilen mekan. Dosya boşsa (
 
 ## Kod kuralları
 - Kod, tablo ve değişken adları İngilizce. Kullanıcıya görünen metinler Türkçe ve `apps/mobile/src/i18n/tr.ts` içinde. Bileşenlerde sabit metin yok.
+- Adlara (takma ad, görünen ad) gelen ekler elle yazılmaz: `@shared/trText.ts` → `inflectTr` (ilgi, yönelme; kesme işareti, son yazılı ünlüye göre uyum, ünlüden sonra n/y; testli).
 - Renk, font, boşluk ve köşe yalnızca tema token'larından (`apps/mobile/src/theme/`); görsel kaynak Claude Design tuvalidir (https://claude.ai/artifact/9pfA5eudWS4s5rxUydRuss: "Aşama 1 · Son" sistem, "Aşama 2 · Ekranlar" ekranlar). Ekranlar `src/components`'taki bileşenlerle kurulur; tuvalde olmayan görünüm eklenmez.
 - Uygulama adı tek yerde: `supabase/functions/_shared/pure/brand.ts` → `APP_NAME`. Mağaza ve başlatıcı adı `app.json` → `name`'dedir (`app.config.ts` hiçbir `.ts` dosyası import etmez: Node 22.18'den eskisi onu yükleyemez; `scripts/app-name.test.ts` ikisinin eşit olduğunu denetler), `tr.ts`'teki marka metni, push başlıkları ve yasal sayfalar (`{{APP_NAME}}`) oradan okur. Paket kimliği (`app.kabuk.mobile`) ayrıdır; Play'e ilk AAB yüklendikten sonra değiştirilemez.
 - `any` yok. Veritabanı tipleri `pnpm gen:types` (`supabase gen types`) ile tek dosyaya üretilir: `supabase/functions/_shared/pure/database.ts`. Mobil uygulama bunu alias ile okur, kopya tutulmaz.

@@ -8,6 +8,7 @@ import { ProfilePhoto } from '@/components/ProfilePhoto';
 import { Snail } from '@/components/Snail';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
+import { usePhoto } from '@/lib/usePhoto';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/tokens';
 import { SPACING } from '@/theme/tokens';
@@ -54,6 +55,8 @@ export function OwnProfileHead({ profile, children }: { profile: Profile; childr
 // (ChatProfileView), which has no public_id.
 export function ProfileHero({ profile, overlay }: { profile: Profile; overlay?: ReactNode }) {
   const { colors, shape } = useTheme();
+  // The initials also when the photo cannot be loaded.
+  const photo = usePhoto(profile.photoUrl);
   const letters = (profile.displayName ?? '')
     .trim()
     .split(/\s+/)
@@ -68,12 +71,13 @@ export function ProfileHero({ profile, overlay }: { profile: Profile; overlay?: 
           height: HERO_HEIGHT,
           marginHorizontal: -shape.screenPadding,
           marginTop: -SPACING[3],
-          backgroundColor: profile.photoUrl ? colors.surface2 : colors.violet,
+          backgroundColor: photo.url ? colors.surface2 : colors.violet,
         }}
       >
-        {profile.photoUrl ? (
+        {photo.url ? (
           <Image
-            source={{ uri: profile.photoUrl }}
+            source={{ uri: photo.url }}
+            onError={photo.onError}
             accessibilityIgnoresInvertColors
             resizeMode="cover"
             style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }}
