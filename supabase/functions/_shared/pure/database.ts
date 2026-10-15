@@ -1048,6 +1048,7 @@ export type Database = {
           spot_id: string | null;
           status: string;
           user_id: string;
+          venue_chat_profiled: boolean | null;
           venue_id: string;
         };
         Insert: {
@@ -1063,6 +1064,7 @@ export type Database = {
           spot_id?: string | null;
           status?: string;
           user_id: string;
+          venue_chat_profiled?: boolean | null;
           venue_id: string;
         };
         Update: {
@@ -1078,6 +1080,7 @@ export type Database = {
           spot_id?: string | null;
           status?: string;
           user_id?: string;
+          venue_chat_profiled?: boolean | null;
           venue_id?: string;
         };
         Relationships: [
@@ -1714,6 +1717,7 @@ export type Database = {
           outcome: string;
         }[];
       };
+      has_profile_photo: { Args: { target_user_id: string }; Returns: boolean };
       history_report_photo: {
         Args: { target_history_id: string; target_user_id: string };
         Returns: string;
