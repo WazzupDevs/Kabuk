@@ -27,18 +27,18 @@ Kabuk'u Google Play'de **kapalı test** kanalına çıkarmak için Play Console'
 
 ## 3. Uygulama içeriği (Console → Politika → Uygulama içeriği)
 
-Herkese açık sayfalar GitHub Pages'te (CLAUDE.md → "Yasal sayfalar"): `https://wazzupdevs.github.io/Masa/`. Sayfalar taslaktır ve üstlerinde "Taslak, hukuki kontrol bekliyor" notu vardır; hukuki kontrol bitmeden Console'a girilmez.
+Herkese açık sayfalar GitHub Pages'te (CLAUDE.md → "Yasal sayfalar"): `https://wazzupdevs.github.io/Kabuk/`. Sayfalar taslaktır ve üstlerinde "Taslak, hukuki kontrol bekliyor" notu vardır; hukuki kontrol bitmeden Console'a girilmez.
 
 ### 3.1 Gizlilik politikası
 
-- [ ] URL: `https://wazzupdevs.github.io/Masa/gizlilik-politikasi.html`. Aynı URL EAS `production` ortamında `EXPO_PUBLIC_PRIVACY_URL` olur (uygulama içi bağlantı).
+- [ ] URL: `https://wazzupdevs.github.io/Kabuk/gizlilik-politikasi.html`. Aynı URL EAS `production` ortamında `EXPO_PUBLIC_PRIVACY_URL` olur (uygulama içi bağlantı).
 
 ### 3.2 Hesap silme (Play şartı)
 
 Kullanıcı hesabı olan her uygulama için iki şey gerekir: uygulama içinden silme ve **uygulamayı kurmadan kullanılabilen bir web bağlantısı**. Web sayfası uygulamanın adını anmalı, silme adımlarını anlatmalı, hangi verinin silinip hangisinin ne kadar saklandığını söylemelidir.
 
 - [ ] Uygulama içi yol: Profil → Ayarlar (dişli) → Hesabımı sil → Sil. Hemen siler (`account/delete`: fotoğraflar, hesap ve bağlı bütün satırlar, PostHog kişi kaydı).
-- [ ] Web bağlantısı: `https://wazzupdevs.github.io/Masa/hesap-silme.html`. Uygulama içi adımlar, e-postayla talep ([e-posta], en geç 30 gün), silinen veriler, saklananlar (şikayet kaydı 30 gün, banlanan numaranın özeti, hata kayıtları, yedekler).
+- [ ] Web bağlantısı: `https://wazzupdevs.github.io/Kabuk/hesap-silme.html`. Uygulama içi adımlar, e-postayla talep ([e-posta], en geç 30 gün), silinen veriler, saklananlar (şikayet kaydı 30 gün, banlanan numaranın özeti, hata kayıtları, yedekler).
 - [ ] Console → Veri güvenliği → "Hesap silme" alanına bu URL girilir.
 - E-postayla gelen talep: `pnpm admin:delete <userId>`. Uygulama içi silmeyle aynı sonuç: fotoğraflar, hesap ve bağlı bütün satırlar, PostHog kişi kaydı; ban yapmaz. Kullanıcı kimliği panelde Authentication → Users'ta numarayla bulunur.
 

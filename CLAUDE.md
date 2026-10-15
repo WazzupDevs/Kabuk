@@ -86,7 +86,7 @@ Node 22, pnpm 10, Docker (yerel Supabase için). Supabase CLI ve Deno root devDe
 ### Yasal sayfalar (GitHub Pages)
 Gizlilik politikası, KVKK metni, kullanım koşulları ve hesap silme talebi herkese açık statik sayfalardır; Play gizlilik politikası ve hesap silme için web bağlantısı ister. Kaynak `docs/legal/*.md`, yayın `.github/workflows/pages.yml` (main'e `docs/legal/**` değişikliği gelince ya da elle). Sayfalar taslaktır; her sayfada "Taslak, hukuki kontrol bekliyor" notu durur, hukuki kontrol bitince kaldırılır.
 1. Tek seferlik: GitHub → repo **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-2. main'e merge ya da Actions → **pages** → Run workflow. Adresler: `https://wazzupdevs.github.io/Masa/` (dizin), `…/gizlilik-politikasi.html`, `…/kvkk-aydinlatma-metni.html`, `…/kullanim-kosullari.html`, `…/hesap-silme.html`.
+2. main'e merge ya da Actions → **pages** → Run workflow. Adresler: `https://wazzupdevs.github.io/Kabuk/` (dizin), `…/gizlilik-politikasi.html`, `…/kvkk-aydinlatma-metni.html`, `…/kullanim-kosullari.html`, `…/hesap-silme.html`.
 3. EAS `preview` ve `production` ortamlarında `EXPO_PUBLIC_PRIVACY_URL` = gizlilik sayfası adresi, sonra `eas update`.
 4. Yerelde bakmak için `pnpm site:build` ve `site/index.html`'i tarayıcıda aç.
 - Repo gizliye çevrilirse GitHub Pages ücretli plan ister (Pro/Team). O zaman Cloudflare Pages: panelde repoyu bağla, build komutu `pnpm site:build`, çıktı klasörü `site` (bkz. `docs/DECISIONS.md` → "Yasal sayfalar").
@@ -271,6 +271,7 @@ Kodda karşılıkları:
 ## Çalışma şekli
 - **main'e yalnızca `ci` kontrolü yeşil bir PR girer.** Doğrudan push yok. `.github/workflows/ci.yml` her PR'da ve main'e push'ta çalışır: `checks` işi (typecheck, lint, format:check, birim testleri, varsa `site:build`) ve `integration` işi (yerel Supabase, `db:reset`, `functions serve`, `test:integration`; pg_cron koşu boyunca duraklatılır). Tek zorunlu kontrol `ci` işidir; ikisi de geçerse geçer. E2E (`e2e.yml`) zorunlu değildir, etiketle çalışır.
 - **Branch protection (tek seferlik, repo sahibi):** GitHub → repo Settings → Rules → Rulesets → New branch ruleset: ad "main", Enforcement: Active, Target branches: Include default branch. Kurallar: Restrict deletions, Block force pushes, Require a pull request before merging, **Require status checks to pass** → Add checks → `ci` (kaynak GitHub Actions; liste, workflow en az bir kez çalıştıktan sonra dolar). İsteğe bağlı: "Require branches to be up to date before merging". Bypass listesine kimse eklenmez.
+- **Repo adı `WazzupDevs/Kabuk`** (eski `Masa`): WazzupDevs altında "Masa" adıyla yeni repo açılmaz; açılırsa eski `github.com/WazzupDevs/Masa` bağlantılarının yönlendirmesi kırılır.
 - Kilometre taşlarıyla ilerle (`MVP_SPEC.md` §13). Bir taşın kabul kriterleri karşılanmadan sonrakine geçme.
 - Her taşın sonunda: typecheck, lint ve testler temiz olmalı. Kısa bir özet yaz. Spec'ten sapma olduysa spec'i güncelle ve bunu açıkça belirt.
 - `trText.ts` için önce testler, sonra implementasyon.
