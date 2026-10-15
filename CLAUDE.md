@@ -1,7 +1,7 @@
 # CLAUDE.md
 
 ## Proje
-Mekan içi sosyal oyun uygulaması: **Kabuk** (kod içi çalışma adı Masa; repo, slug ve şema `masa` kaldı; paket kimliği `app.kabuk.mobile`). Aynı mekandaki masalar konsept üzerine odalar kurar, oyun oynar ve sohbet eder. İki taraf da isterse oda sonunda fiziksel olarak tanışırlar.
+Mekan içi sosyal oyun uygulaması: **Kabuk** (kod içi çalışma adı Masa; repo `WazzupDevs/Kabuk`; Expo slug'ı (`@wazzupdevs/masa`) ve şema `masa` kaldı; paket kimliği `app.kabuk.mobile`). Aynı mekandaki masalar konsept üzerine odalar kurar, oyun oynar ve sohbet eder. İki taraf da isterse oda sonunda fiziksel olarak tanışırlar.
 
 Tüm ürün kararları, kapsam ve kilometre taşları `MVP_SPEC.md` içinde; v2 kapsamı ve teknik tasarımı `docs/SPEC_V2.md` içinde (onaylı, §12 sırasıyla uygulanır). Kabuk v1 (Sakarya Üniversitesi pilotu, kod içi v3) kapsamı ve teknik tasarımı `docs/SPEC_V3.md` içinde (onaylı, §14 sırasıyla uygulanır). Faz 2 (Takımlar) kapsamı ve teknik tasarımı `docs/SPEC_V3.md` §22'de (onaylı, §22.N sırasıyla uygulanır); değişmez kurallardaki Faz 2 ekleri §22'nin ilgili adımıyla yürürlüğe girer. Değişmez kurallardaki v3 eklemeleri ilgili adımla yürürlüğe girer; adımı gelmemiş davranışı koruyan kod o adımda değişir. Spec'te olmayan bir özelliği ekleme. Belirsizlikte varsayım yapma, sor.
 
