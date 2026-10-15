@@ -1729,6 +1729,17 @@ Oyun kuralları değişmez; değişen, hangi telefonun basabildiği ve gizli bil
 
 **Arkadaşlık çift başına.** İstek (`friends/request { historyId }`), "Arkadaş ekle" (`friends/add-from-room { historyId }`), engelleme ve şikayet bugünkü gibi oyun geçmişi kaydından yapılır; kayıt artık bir çifttir. Eşleşen çiftte ikisi de "Arkadaş ekle"ye basarsa arkadaş olurlar; yalnızca biri basarsa hiçbir şey olmaz ve karşı taraf bunu görmez (değişmez). Takım arkadaşları arasında kayıt olmadığı için bu yollar da yoktur.
 
+**Uygulama notları (22.4 PR'ı).**
+
+- **Katılımcılar** `room_members` aralıklarından bulunur: pencerenin açıldığı anı (`reveal_signals.created_at`) kapsayan aralığı olan her telefon (`private.reveal_participants`). Pencereyi çıkarak açan telefonun satırı o anda kapandığı için o da katılımcıdır.
+- **`reveal/matches` yanıtı:** `{ color, matches, unmatched }`. `color` yalnızca en az bir eşleşme varken dolar. `matches` her eşleşme için masa oturum id'si, takma ad, emoji ve profilliyse profil (görünen ad, yaş, imzalı fotoğraf; `public_id` yok). `unmatched` pencere sürerken `null`, `reveal_ends_at`'ten sonra eşleşmeyen karşı taraf telefonları (yalnızca masa oturum id'si ve takma ad). Katılımcı olmayan telefon `not_in_room` alır.
+- **Gösterilmiş eşleşme geri alınmaz:** sonradan gelen engel ya da çıkış eşleşmeyi ve profilini `reveal/matches`'ten kaldırmaz; kaldırsaydı "Evet" diyen telefon engeli zamanlamadan ayırt ederdi (kural 5).
+- **`room_member_profiles` pencerede** katılımcıların listesini döner ve engele bakmaz: çıkan ya da engelleyen profilli telefon `reveal_ends_at`'e kadar listede kalır (kural 5). Oda sürerken (`waiting`, `active`) odadaki açık satırlar ve engel süzgeci. Eski `room_member_profile` eski istemci için kalır.
+- **"Evet" deyip mekandan ayrılan lider:** cevabı durur ve eşleşebilir (bugünkü iki masalı davranışın aynısı); "Hayır" yalnızca odadan çıkış ve engellemede yazılır (§22.D).
+- **`reveal/finalize`** her katılımcıdan çağrılabilir (bugün yalnızca iki lider); davranışı değişmez.
+- **`reveal_decide`'nin `token` parametresi** artık kullanılmaz: renk ve emojiyi sunucu `private.reveal_colors()` ve `private.reveal_emojis()`'ten (`pure/reveal.ts` ile aynı listeler, testli) seçer. Parametre yalnızca migration ile fonksiyon yayını arasındaki kısa sürede eski çağrı çözülsün diye durur.
+- **Bir çift için tek kayıt:** `play_history` üzerinde `unique (room_id, user_id, other_user_id)`; çıkışta yazılan çift pencerede yeniden yazılmaz. `other_headcount` karşı tarafın kişi sayısıdır (`side_headcount`).
+
 ### 22.G Mekan sohbeti ve "Profilimle" (kararlar 7 ve 8)
 
 **Karar 7: mekan sohbetinde seçim check-in başına bir kez.**
@@ -1777,6 +1788,7 @@ game_proposals   + proposer_side text check (proposer_side in ('owner', 'guest')
                  ~ proposer_players                                (önerenin verdiği sayı ya da null; 22.3)
 tabu_turns       ~ describer_session_id                            (turu başlatan telefon; null olabilir, on delete set null; 22.3)
 play_history     ~ encounter_id                                    (çift karşılaşması; unique (user_id, encounter_id) korunur)
+                 + unique (room_id, user_id, other_user_id)        (oda başına çift başına tek kayıt; 22.4)
 ```
 
 - `rooms.*_phones` lobi ve oda ekranındaki telefon sayısıdır; taraftaki `left_at is null` satır sayısıyla aynı işlemde güncellenir. **Pencerede donar:** `status = 'ending'` iken çıkış sayıyı değiştirmez (kural 5); oda kapanınca anlamı kalmaz. Sayı değişince `rooms` satırı değiştiği için oda kanalındaki telefonlar `room_phones`'u yeniden okur.
@@ -1955,6 +1967,7 @@ Değişiklikler `pure/analytics.ts` kataloğuna yalnızca izinli özelliklerle g
   - Sunucu adımları (22.1–22.4) eski uygulamayı bozmadan yayınlanır.
 - **22.2'de üyelerin yapabildikleri:** odayı okur (`rooms`, `messages`, `game_events`, `game_proposals`, `room_phones`), oda kanallarına abone olur, sohbete yazar ve tepki verir, odayı şikayet eder, engeller ve odadan çıkar. Oyun eylemleri, öneri ve kabul, Sohbet kartları ve "Tanışalım mı?" cevabı bu adımda yalnızca iki lidere açıktır (üyeye `not_in_room`); üyeler 22.3'te oyunlara, 22.4'te tanışmaya girer. Oyun geçmişi de 22.4'e kadar bugünkü gibi odanın sonundaki iki lider için yazılır; liderlik devri kayıt yazmaz. Liderlik devrinde açık bir öneri yeni liderin olur (`game_proposals.proposer_session_id`); 22.3'te öneri tarafa bağlanır (`proposer_side`).
 - **22.3'te üyelerin yapabildikleri:** yukarıdakilere ek olarak oyunlar (§22.E tablosu), öneri ve kabul, Sohbet kartları, "Oyunu bitir" ve tek masalı oyunun destesi. "Tanışalım mı?" cevabı ve oyun geçmişi 22.4'e kadar iki liderindir (`private.room_membership` yalnızca `reveal_decide`'de kalır).
+- **22.4'ten sonra** üyeler tanışmaya girer: her telefon kendi adına cevaplar, oyun geçmişi ve "Arkadaş ekle" çift başınadır (§22.F). `private.room_membership`'i artık hiçbir oyun ya da tanışma yolu kullanmaz.
 - **22.1'in istemcisi kendi OTA'sıyla gider:** 22.1 sunucusu yayınlanır yayınlanmaz istemci kısmı (ilk mesaj seçimi, fotoğrafsız "Profilimle") ayrı bir OTA ile gönderilir; 22.6'yı beklemez. Gerekçe: sunucunun `photo_required` ve `venue_chat_mode_locked` kodlarını bilmeyen istemci bunları genel hata olarak gösterir; fotoğrafsız test kullanıcıları haftalarca genel hata görmesin. Bu yüzden 22.1'in istemci PR'ı (önce tuval) sunucusuyla birlikte hazırlanır ve ondan hemen sonra birleşir.
 - **Faz 2 OTA'sı:** 22.5'in istemci değişiklikleri 22.6'da tek OTA'yla gider; saha testi bu OTA'yla yapılır.
 - **Version artmaz:** hepsi JS ve sunucu değişikliğidir; telefonlardaki 0.3.0'a OTA ile gider. Native bağımlılık gerekirse durulur ve sorulur.
