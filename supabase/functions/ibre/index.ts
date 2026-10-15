@@ -1,6 +1,8 @@
 // İbre (docs/SPEC_V3.md §20.5). One table: the scales, then the phone runs the game. Two tables:
-// started by rooms/answer-game, server-authoritative. The target stays in game_secrets; before the
-// reveal it leaves only as the answer to the describing table's ibre/target.
+// started by rooms/answer-game, server-authoritative. The phone that starts a round describes it
+// (docs/SPEC_V3.md §22.E). The target stays in game_secrets; before the reveal it leaves only as the
+// answer to the describer's ibre/target. The describing side's other phones lock the needle (the
+// describer when it is alone, game_state.lockBy); the other side's phones pick a side.
 import { requireUser, serviceClient } from '../_shared/auth.ts';
 import { dbError } from '../_shared/db.ts';
 import { z } from '../_shared/deps.ts';

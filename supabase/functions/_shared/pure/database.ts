@@ -366,6 +366,7 @@ export type Database = {
           expires_at: string;
           proposer_players: number | null;
           proposer_session_id: string;
+          proposer_side: string;
           room_id: string;
         };
         Insert: {
@@ -374,6 +375,7 @@ export type Database = {
           expires_at: string;
           proposer_players?: number | null;
           proposer_session_id: string;
+          proposer_side: string;
           room_id: string;
         };
         Update: {
@@ -382,6 +384,7 @@ export type Database = {
           expires_at?: string;
           proposer_players?: number | null;
           proposer_session_id?: string;
+          proposer_side?: string;
           room_id?: string;
         };
         Relationships: [
@@ -986,6 +989,7 @@ export type Database = {
           closed_at: string | null;
           concept: string | null;
           created_at: string;
+          game_started_at: string | null;
           game_state: Json;
           guest_alias: string | null;
           guest_headcount: number | null;
@@ -1014,6 +1018,7 @@ export type Database = {
           closed_at?: string | null;
           concept?: string | null;
           created_at?: string;
+          game_started_at?: string | null;
           game_state?: Json;
           guest_alias?: string | null;
           guest_headcount?: number | null;
@@ -1042,6 +1047,7 @@ export type Database = {
           closed_at?: string | null;
           concept?: string | null;
           created_at?: string;
+          game_started_at?: string | null;
           game_state?: Json;
           guest_alias?: string | null;
           guest_headcount?: number | null;
@@ -1171,7 +1177,7 @@ export type Database = {
           card_id: string;
           card_ids: string[];
           card_index: number;
-          describer_session_id: string;
+          describer_session_id: string | null;
           ends_at: string | null;
           game_no: number;
           id: string;
@@ -1186,7 +1192,7 @@ export type Database = {
           card_id: string;
           card_ids?: string[];
           card_index?: number;
-          describer_session_id: string;
+          describer_session_id?: string | null;
           ends_at?: string | null;
           game_no: number;
           id?: string;
@@ -1201,7 +1207,7 @@ export type Database = {
           card_id?: string;
           card_ids?: string[];
           card_index?: number;
-          describer_session_id?: string;
+          describer_session_id?: string | null;
           ends_at?: string | null;
           game_no?: number;
           id?: string;
@@ -1796,6 +1802,7 @@ export type Database = {
           closed_at: string | null;
           concept: string | null;
           created_at: string;
+          game_started_at: string | null;
           game_state: Json;
           guest_alias: string | null;
           guest_headcount: number | null;
@@ -1833,6 +1840,7 @@ export type Database = {
           closed_at: string | null;
           concept: string | null;
           created_at: string;
+          game_started_at: string | null;
           game_state: Json;
           guest_alias: string | null;
           guest_headcount: number | null;
@@ -1879,6 +1887,7 @@ export type Database = {
           closed_at: string | null;
           concept: string | null;
           created_at: string;
+          game_started_at: string | null;
           game_state: Json;
           guest_alias: string | null;
           guest_headcount: number | null;
@@ -1921,6 +1930,7 @@ export type Database = {
           closed_at: string | null;
           concept: string | null;
           created_at: string;
+          game_started_at: string | null;
           game_state: Json;
           guest_alias: string | null;
           guest_headcount: number | null;
@@ -2054,6 +2064,7 @@ export type Database = {
           closed_at: string | null;
           concept: string | null;
           created_at: string;
+          game_started_at: string | null;
           game_state: Json;
           guest_alias: string | null;
           guest_headcount: number | null;
@@ -2125,6 +2136,7 @@ export type Database = {
           closed_at: string | null;
           concept: string | null;
           created_at: string;
+          game_started_at: string | null;
           game_state: Json;
           guest_alias: string | null;
           guest_headcount: number | null;
@@ -2162,6 +2174,7 @@ export type Database = {
           closed_at: string | null;
           concept: string | null;
           created_at: string;
+          game_started_at: string | null;
           game_state: Json;
           guest_alias: string | null;
           guest_headcount: number | null;
@@ -2199,6 +2212,7 @@ export type Database = {
           closed_at: string | null;
           concept: string | null;
           created_at: string;
+          game_started_at: string | null;
           game_state: Json;
           guest_alias: string | null;
           guest_headcount: number | null;
@@ -2236,6 +2250,7 @@ export type Database = {
           closed_at: string | null;
           concept: string | null;
           created_at: string;
+          game_started_at: string | null;
           game_state: Json;
           guest_alias: string | null;
           guest_headcount: number | null;
@@ -2273,6 +2288,7 @@ export type Database = {
           closed_at: string | null;
           concept: string | null;
           created_at: string;
+          game_started_at: string | null;
           game_state: Json;
           guest_alias: string | null;
           guest_headcount: number | null;
@@ -2310,6 +2326,7 @@ export type Database = {
           closed_at: string | null;
           concept: string | null;
           created_at: string;
+          game_started_at: string | null;
           game_state: Json;
           guest_alias: string | null;
           guest_headcount: number | null;
@@ -2356,6 +2373,7 @@ export type Database = {
           expires_at: string;
           proposer_players: number | null;
           proposer_session_id: string;
+          proposer_side: string;
           room_id: string;
         };
         SetofOptions: {
@@ -2432,6 +2450,7 @@ export type Database = {
           closed_at: string | null;
           concept: string | null;
           created_at: string;
+          game_started_at: string | null;
           game_state: Json;
           guest_alias: string | null;
           guest_headcount: number | null;
@@ -2554,6 +2573,7 @@ export type Database = {
           closed_at: string | null;
           concept: string | null;
           created_at: string;
+          game_started_at: string | null;
           game_state: Json;
           guest_alias: string | null;
           guest_headcount: number | null;
@@ -2591,6 +2611,7 @@ export type Database = {
           closed_at: string | null;
           concept: string | null;
           created_at: string;
+          game_started_at: string | null;
           game_state: Json;
           guest_alias: string | null;
           guest_headcount: number | null;
@@ -2636,6 +2657,7 @@ export type Database = {
           closed_at: string | null;
           concept: string | null;
           created_at: string;
+          game_started_at: string | null;
           game_state: Json;
           guest_alias: string | null;
           guest_headcount: number | null;
@@ -2682,6 +2704,7 @@ export type Database = {
           closed_at: string | null;
           concept: string | null;
           created_at: string;
+          game_started_at: string | null;
           game_state: Json;
           guest_alias: string | null;
           guest_headcount: number | null;
@@ -2719,6 +2742,7 @@ export type Database = {
           closed_at: string | null;
           concept: string | null;
           created_at: string;
+          game_started_at: string | null;
           game_state: Json;
           guest_alias: string | null;
           guest_headcount: number | null;
@@ -2756,6 +2780,7 @@ export type Database = {
           closed_at: string | null;
           concept: string | null;
           created_at: string;
+          game_started_at: string | null;
           game_state: Json;
           guest_alias: string | null;
           guest_headcount: number | null;
@@ -2800,6 +2825,7 @@ export type Database = {
           closed_at: string | null;
           concept: string | null;
           created_at: string;
+          game_started_at: string | null;
           game_state: Json;
           guest_alias: string | null;
           guest_headcount: number | null;
@@ -2847,6 +2873,7 @@ export type Database = {
           closed_at: string | null;
           concept: string | null;
           created_at: string;
+          game_started_at: string | null;
           game_state: Json;
           guest_alias: string | null;
           guest_headcount: number | null;
@@ -2888,6 +2915,7 @@ export type Database = {
           closed_at: string | null;
           concept: string | null;
           created_at: string;
+          game_started_at: string | null;
           game_state: Json;
           guest_alias: string | null;
           guest_headcount: number | null;
@@ -2961,6 +2989,7 @@ export type Database = {
           closed_at: string | null;
           concept: string | null;
           created_at: string;
+          game_started_at: string | null;
           game_state: Json;
           guest_alias: string | null;
           guest_headcount: number | null;
@@ -2998,6 +3027,7 @@ export type Database = {
           closed_at: string | null;
           concept: string | null;
           created_at: string;
+          game_started_at: string | null;
           game_state: Json;
           guest_alias: string | null;
           guest_headcount: number | null;
@@ -3052,6 +3082,7 @@ export type Database = {
           closed_at: string | null;
           concept: string | null;
           created_at: string;
+          game_started_at: string | null;
           game_state: Json;
           guest_alias: string | null;
           guest_headcount: number | null;

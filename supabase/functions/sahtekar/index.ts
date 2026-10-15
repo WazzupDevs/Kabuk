@@ -1,6 +1,8 @@
 // Sahtekar (docs/SPEC_V3.md §20.2). One table: the deck, then the phone runs the game. Two tables:
 // started by rooms/answer-game, server-authoritative. The secrets (the impostor's seat, the word,
-// the votes, the options) stay in game_secrets; they leave only as the answer to the asking table.
+// the votes, the options) stay in game_secrets; they leave only as the answer to the asking side's
+// leader: the seats' actions come from the leader's phone only (docs/SPEC_V3.md §22.E; members:
+// not_your_seat).
 import { requireUser, serviceClient } from '../_shared/auth.ts';
 import { dbError } from '../_shared/db.ts';
 import { z } from '../_shared/deps.ts';

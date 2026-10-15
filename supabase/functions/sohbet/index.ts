@@ -1,5 +1,6 @@
-// Sohbet cards (MVP_SPEC §5.3): either table deals the next card, 5 seconds apart per room. The
-// card lands in rooms.game_state, which both tables receive through Postgres Changes.
+// Sohbet cards (MVP_SPEC §5.3): any phone in the room deals the next card (docs/SPEC_V3.md §22.E),
+// 5 seconds apart per room. The card lands in rooms.game_state, which every phone receives through
+// Postgres Changes.
 import { requireUser, serviceClient } from '../_shared/auth.ts';
 import { dbError } from '../_shared/db.ts';
 import { z } from '../_shared/deps.ts';
