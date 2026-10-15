@@ -75,7 +75,21 @@ appId: app.kabuk.mobile
     timeout: 10000
 - assertVisible:
     id: participation-anonymous
+# "Profilimle" needs a profile photo (docs/SPEC_V3.md §22.G); this phone skipped it at sign-up, so
+# the choice says why and opens the photo sheet in place.
+- extendedWaitUntil:
+    visible: Profilinle görünmek için profil fotoğrafı gerekiyor.
+    timeout: 10000
 - takeScreenshot: 13b-new-room-bottom
+- tapOn:
+    id: photo-add
+- extendedWaitUntil:
+    visible:
+      id: photo-from-library
+    timeout: 10000
+- takeScreenshot: 13c-new-room-photo-sheet
+- tapOn:
+    id: photo-cancel
 - tapOn: Odayı kur
 # A waiting room: the table can play on its own until another table joins.
 - extendedWaitUntil:

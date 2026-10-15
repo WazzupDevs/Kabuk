@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { ReportReason } from '@shared/chat.ts';
 import {
   prepareVenueMessage,
@@ -10,7 +9,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { toRuns } from '@shared/chatRuns.ts';
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ActivityIndicator, Alert, View } from 'react-native';
 
 import { Avatar, AVATAR_SIZE } from '@/components/Avatar';
@@ -27,35 +26,44 @@ import { Sheet } from '@/components/Sheet';
 import { Snail } from '@/components/Snail';
 import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
-import { Toggle } from '@/components/Toggle';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
+import { PhotoSheet } from '@/features/profile/PhotoSheet';
+import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
 import { quoteJump, toChatQuote, useReplyTarget } from '@/features/chat/messageExtras';
-import { useVenueChat, useVenueChatReactions, venueChatKeys } from '@/features/venueChat/queries';
+import { ModeSheet } from '@/features/venueChat/ModeSheet';
+import {
+  useVenueChat,
+  useVenueChatReactions,
+  type VenueChatPage,
+  venueChatKeys,
+} from '@/features/venueChat/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
-import { safetyApi, venueChatApi } from '@/lib/api';
+import { ApiError, safetyApi, venueChatApi } from '@/lib/api';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
-// "Profilimle yaz" is remembered on this phone only (docs/SPEC_V3.md §7.3).
-const AS_PROFILE_KEY = 'venueChat.asProfile';
-
 // The venue's chat room (docs/SPEC_V3.md §7): everyone with a live table at the venue reads and
-// writes; a message goes with the table alias, or with the display name and no alias. Tapping a
-// profiled sender opens their profile through the message; any other sender offers report and
-// block.
+// writes; a message goes with the table alias, or with the display name and no alias. Which one is
+// chosen once per check-in, at the first "Gönder" (§22.G), and then only named over the message
+// bar. Tapping a profiled sender opens their profile through the message; any other sender offers
+// report and block.
 export default function VenueChatScreen() {
   const { colors, shape } = useTheme();
   const queryClient = useQueryClient();
   const table = useActiveTable();
   const venueId = table.data?.venue_id;
   const venueName = table.data?.venue?.name ?? '';
-  const messages = useVenueChat(venueId);
+  const sessionId = table.data?.id;
+  const page = useVenueChat(venueId, sessionId);
+  const mode = page.data?.mode;
+  const photo = useOwnPhoto();
   const [draft, setDraft] = useState('');
-  const [asProfile, setAsProfile] = useState(false);
+  // The first-message choice and, from it, the photo sheet: one at a time.
+  const [sheet, setSheet] = useState<'mode' | 'photo' | null>(null);
   const [menuFor, setMenuFor] = useState<VenueChatMessage | null>(null);
   const [reporting, setReporting] = useState<VenueChatMessage | null>(null);
   const [blocking, setBlocking] = useState<VenueChatMessage | null>(null);
@@ -63,32 +71,56 @@ export default function VenueChatScreen() {
   const reply = useReplyTarget();
   const reactions = useVenueChatReactions(venueId);
 
-  useEffect(() => {
-    AsyncStorage.getItem(AS_PROFILE_KEY)
-      .then((raw) => setAsProfile(raw === '1'))
-      .catch(() => undefined);
-  }, []);
-  const toggleProfile = () => {
-    const next = !asProfile;
-    setAsProfile(next);
-    void AsyncStorage.setItem(AS_PROFILE_KEY, next ? '1' : '0').catch(() => undefined);
-  };
-
   const refresh = () => {
     if (venueId) void queryClient.invalidateQueries({ queryKey: venueChatKeys.messages(venueId) });
   };
   const send = useMutation({
-    mutationFn: (text: string) =>
+    mutationFn: ({ text, profiled }: { text: string; profiled: boolean; first: boolean }) =>
       reply.target
-        ? venueChatApi.reply(venueId ?? '', text, asProfile, reply.target.id)
-        : venueChatApi.send(venueId ?? '', text, asProfile),
-    onSuccess: () => {
+        ? venueChatApi.reply(venueId ?? '', text, profiled, reply.target.id)
+        : venueChatApi.send(venueId ?? '', text, profiled),
+    onSuccess: (_data, { profiled, first }) => {
       setDraft('');
       reply.clear();
-      track('venue_chat_sent', { profiled: asProfile });
+      setSheet(null);
+      track('venue_chat_sent', { profiled });
+      if (first) {
+        track('venue_chat_mode_chosen', { profiled });
+        // The next "Gönder" must not ask again before the page comes back with the mode.
+        if (venueId && sessionId) {
+          queryClient.setQueryData<VenueChatPage>(
+            venueChatKeys.page(venueId, sessionId),
+            (old) => old && { ...old, mode: profiled ? 'profiled' : 'anonymous' },
+          );
+        }
+      }
       refresh();
     },
+    onError: (err) => {
+      if (!(err instanceof ApiError)) return;
+      // The server has this check-in's mode already (the page was read before it): nothing sent;
+      // the bar shows that mode and what was typed stays for the next "Gönder".
+      if (err.code === 'venue_chat_mode_locked') {
+        setSheet(null);
+        refresh();
+      }
+      // The photo went (or was hidden): the sheet stays, "Profilimle" turns unavailable.
+      if (err.code === 'photo_required') void photo.refresh();
+    },
   });
+  const press = () => {
+    if (!body || mode === undefined) return;
+    if (mode === null) {
+      send.reset();
+      setSheet('mode');
+    } else {
+      send.mutate({ text: body, profiled: mode === 'profiled', first: false });
+    }
+  };
+  const closeSheet = () => {
+    setSheet(null);
+    send.reset();
+  };
   const report = useMutation({
     mutationFn: ({ id, reason }: { id: string; reason: ReportReason }) =>
       safetyApi.reportVenueChat(id, reason),
@@ -126,9 +158,10 @@ export default function VenueChatScreen() {
     );
   }
 
-  const newest = messages.data?.[messages.data.length - 1];
+  const messages = page.data?.messages;
+  const newest = messages?.[messages.length - 1];
   const runs = toRuns(
-    messages.data ?? [],
+    messages ?? [],
     (m) => (m.fromMe ? '' : `${m.profiled ? 'p' : 'a'}:${senderLabel(m)}`),
     (m) => m.createdAt,
   );
@@ -168,27 +201,40 @@ export default function VenueChatScreen() {
           value={draft}
           onChangeText={setDraft}
           maxLength={VENUE_CHAT.maxLength}
-          sendDisabled={!body}
+          sendDisabled={!body || mode === undefined}
           sending={send.isPending}
-          onSend={() => body && send.mutate(body)}
+          onSend={press}
           replyTo={reply.target?.quote}
           onCancelReply={reply.clear}
           counter={draft ? tr.chat.counter([...draft].length, VENUE_CHAT.maxLength) : undefined}
           above={
-            <View>
-              <Toggle
-                compact
-                label={tr.venueChat.asProfile}
-                hint={asProfile ? tr.venueChat.asProfileOn : tr.venueChat.asProfileOff}
-                value={asProfile}
-                onChange={toggleProfile}
-              />
-              {send.isError ? (
-                <Text variant="fine" tone="danger">
-                  {errorMessage(send.error)}
-                </Text>
-              ) : null}
-            </View>
+            mode || (send.isError && sheet === null) ? (
+              <View className="gap-1.5">
+                {send.isError && sheet === null ? (
+                  <Text variant="fine" tone="danger" accessibilityLiveRegion="polite">
+                    {errorMessage(send.error)}
+                  </Text>
+                ) : null}
+                {mode ? (
+                  <View
+                    testID="venue-chat-mode"
+                    className="flex-row items-center gap-2"
+                    style={{ minHeight: SPACING[8] }}
+                  >
+                    {mode === 'profiled' ? (
+                      <Avatar kind="profile" name={photo.name} photoUrl={photo.url} size="sm" />
+                    ) : (
+                      <Avatar kind="table" alias={table.data?.alias ?? ''} size="sm" />
+                    )}
+                    <Text variant="label" tone="muted" className="flex-1">
+                      {mode === 'profiled'
+                        ? tr.venueChat.writingProfile
+                        : tr.venueChat.writingAnonymous}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
+            ) : undefined
           }
         />
       }
@@ -201,9 +247,9 @@ export default function VenueChatScreen() {
           </Text>
         </View>
       </Card>
-      {messages.isPending ? (
+      {page.isPending ? (
         <ActivityIndicator color={colors.muted} />
-      ) : messages.data?.length === 0 ? (
+      ) : messages?.length === 0 ? (
         <View className="flex-1 justify-center">
           <EmptyState snail body={tr.venueChat.empty} />
         </View>
@@ -253,6 +299,24 @@ export default function VenueChatScreen() {
         ))
       )}
 
+      <ModeSheet
+        visible={sheet === 'mode'}
+        onClose={closeSheet}
+        alias={table.data?.alias ?? ''}
+        photo={photo}
+        sending={send.isPending}
+        error={send.error}
+        onSend={(profiled) => body && send.mutate({ text: body, profiled, first: true })}
+        onAddPhoto={() => setSheet('photo')}
+      />
+      {/* From the choice: back to it once the photo sheet closes, uploaded or not. */}
+      <PhotoSheet
+        visible={sheet === 'photo'}
+        onClose={() => {
+          setSheet('mode');
+          send.reset();
+        }}
+      />
       <Sheet
         visible={menuFor !== null}
         onClose={() => setMenuFor(null)}

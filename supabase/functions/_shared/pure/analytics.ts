@@ -64,6 +64,8 @@ export type AnalyticsEventProps = {
   dm_sent: Record<string, never>;
   // Venue chat (docs/SPEC_V3.md §15): never the venue, the text or the other side.
   venue_chat_sent: { profiled: boolean };
+  // Faz 2 (docs/SPEC_V3.md §22.L): the one choice of a check-in, with its first message.
+  venue_chat_mode_chosen: { profiled: boolean };
   venue_chat_reported: Record<string, never>;
 };
 
@@ -110,6 +112,7 @@ const ALLOWED: { [E in AnalyticsEvent]: readonly (keyof AnalyticsEventProps[E])[
   friendship_created: ['source'],
   dm_sent: [],
   venue_chat_sent: ['profiled'],
+  venue_chat_mode_chosen: ['profiled'],
   venue_chat_reported: [],
 };
 

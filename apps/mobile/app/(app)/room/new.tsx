@@ -14,19 +14,24 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { Text } from '@/components/Text';
 import { useProfile } from '@/features/account/useProfile';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
+import { NoPhotoPicture, PhotoNeeded } from '@/features/profile/PhotoNeeded';
+import { PhotoSheet } from '@/features/profile/PhotoSheet';
+import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { registerForPush } from '@/features/push/push';
 import { participationHint } from '@/features/rooms/participation';
 import { roomKeys } from '@/features/rooms/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
-import { roomsApi } from '@/lib/api';
+import { ApiError, roomsApi } from '@/lib/api';
 
 type IntentChoice = Intent | 'none';
 
 // "Oda kur" (docs/SPEC_V3.md §5.1): always open to the venue, no game chosen; an optional intent
 // label and, for this room, anonymous or with the profile (§5.4; anonymous by default). From
-// Aktiviteler ("Bu oyunla oda kur", §18.3) the intent arrives preselected.
+// Aktiviteler ("Bu oyunla oda kur", §18.3) the intent arrives preselected. "Profilimle" needs a
+// profile photo (§22.G): without one it cannot be chosen, and "Fotoğraf ekle" opens the photo
+// sheet right here, so the choices made stay.
 export default function NewRoomScreen() {
   const params = useLocalSearchParams<{ intent?: string }>();
   const queryClient = useQueryClient();
@@ -37,6 +42,8 @@ export default function NewRoomScreen() {
     isIntent(params.intent) ? params.intent : null,
   );
   const [participation, setParticipation] = useState<Participation>('anonymous');
+  const photo = useOwnPhoto();
+  const [photoSheet, setPhotoSheet] = useState(false);
 
   const create = useMutation({
     mutationFn: () =>
@@ -51,7 +58,16 @@ export default function NewRoomScreen() {
       await queryClient.invalidateQueries({ queryKey: roomKeys.current });
       router.replace({ pathname: '/room/[id]', params: { id: roomId } });
     },
+    onError: (err) => {
+      // The photo went (or was hidden) after the screen read it: no room; back to anonymous.
+      if (err instanceof ApiError && err.code === 'photo_required') {
+        setParticipation('anonymous');
+        void photo.refresh();
+      }
+    },
   });
+  const refused = create.error instanceof ApiError && create.error.code === 'photo_required';
+  const needsPhoto = hasName && ((photo.known && !photo.has) || refused);
 
   return (
     <Screen>
@@ -90,16 +106,20 @@ export default function NewRoomScreen() {
             picture={
               mode === 'anonymous' ? (
                 <Avatar kind="table" alias={table.data?.alias ?? ''} size="xl" />
+              ) : needsPhoto ? (
+                <NoPhotoPicture />
               ) : (
                 <Avatar
                   kind="profile"
                   name={profile.data?.display_name ?? tr.participation.profile}
+                  photoUrl={photo.url}
                   size="xl"
                 />
               )
             }
             selected={participation === mode}
             disabled={mode === 'profile' && !hasName}
+            unavailable={mode === 'profile' && needsPhoto}
             onPress={() => setParticipation(mode)}
           />
         ))}
@@ -113,7 +133,12 @@ export default function NewRoomScreen() {
           {participationHint('profile', false)}
         </Text>
       ) : null}
-      {create.isError ? (
+      {needsPhoto ? (
+        <View className="mt-2 px-1">
+          <PhotoNeeded refused={refused} onAddPhoto={() => setPhotoSheet(true)} />
+        </View>
+      ) : null}
+      {create.isError && !refused ? (
         <Text variant="fine" tone="danger" className="mt-4">
           {errorMessage(create.error)}
         </Text>
@@ -126,6 +151,13 @@ export default function NewRoomScreen() {
           loading={create.isPending}
         />
       </View>
+      <PhotoSheet
+        visible={photoSheet}
+        onClose={() => {
+          setPhotoSheet(false);
+          create.reset();
+        }}
+      />
     </Screen>
   );
 }
