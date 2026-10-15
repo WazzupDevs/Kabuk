@@ -577,7 +577,7 @@ Mekan sohbetinde anonim ya da profilli seçimi her girişte bir kez, ilk mesajda
 - A'nın 8. adımdaki anonim mesajına dokununca (B) profil açılmaz; yalnızca **Şikayet et** ve **Engelle** menüsü.
 - B'nin "Gönderilen istekler"inde "A'nın adı kişisine istek gönderildi", kabulden sonra "… isteğini kabul etti".
 
-**Hata olursa:** ilk **Gönder**'de alt sayfa açılmadan mesaj gittiyse, alt sayfa kapatıldığı hâlde mesaj gittiyse ya da aynı girişte iki biçimle yazılabildiyse ekran görüntüsü al ve saati yaz; bu ❌'dır. "Bu girişte mekan sohbetinde nasıl görüneceğini zaten seçtin. Mekandan çıkıp yeniden girince değiştirebilirsin." görünürse hangi adımda olduğunu yaz.
+**Hata olursa:** ilk **Gönder**'de alt sayfa açılmadan mesaj gittiyse, alt sayfa kapatıldığı hâlde mesaj gittiyse ya da aynı girişte iki biçimle yazılabildiyse ekran görüntüsü al ve saati yaz; bu ❌'dır. "Mekan sohbetinde nasıl görüneceğini bu girişte zaten seçtin. Değiştirmek için mekandan ayrılıp yeniden giriş yap." görünürse hangi adımda olduğunu yaz.
 
 ## M2. Mekan sohbetinde şikayet ve engel [P1]
 

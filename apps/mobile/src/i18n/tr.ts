@@ -473,6 +473,8 @@ export const tr = {
     profileHint:
       'Lobide "profilli" işareti görünür. Odadaki diğer masa, oda sürerken profilini görebilir.',
     profileNeedsName: 'Profilinle katılmak için önce Profil sekmesinden bir ad seç.',
+    // "Profilimle" needs a profile photo others can see (docs/SPEC_V3.md §22.G, decision 8).
+    photoNeeded: 'Profilinle görünmek için profil fotoğrafı gerekiyor.',
   },
   home: {
     title: 'Hoş geldin',
@@ -628,6 +630,13 @@ export const tr = {
     asProfile: 'Profilimle yaz',
     asProfileOn: 'Adınla görünür; masa adın görünmez.',
     asProfileOff: 'Masa adınla görünür.',
+    // One choice per check-in, asked at the first "Gönder" (§22.G, decision 7); the line over the
+    // message bar says which one it is.
+    modeTitle: 'Bu mekanda kaldığın sürece mekan sohbetinde nasıl görüneceksin?',
+    modeAnonymousHint: (alias: string) => `Mesajların masa adınla görünür: ${alias}.`,
+    modeProfileHint: 'Mesajların adın ve fotoğrafınla görünür; masa adın görünmez.',
+    writingAnonymous: 'Anonim yazıyorsun',
+    writingProfile: 'Profilinle yazıyorsun',
     profiled: 'profilli',
     you: 'Sen',
     messageMenu: 'Mesaj',

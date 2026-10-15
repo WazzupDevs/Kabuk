@@ -2,6 +2,7 @@ import {
   VENUE_CHAT_BROADCAST,
   VENUE_CHAT_REACTION_BROADCAST,
   type VenueChatMessage,
+  type VenueChatMode,
   venueChatChannel,
   withVenueChatExtras,
 } from '@shared/venueChat.ts';
@@ -15,13 +16,19 @@ import { stablePhoto } from '@/lib/photoUrls';
 
 export const venueChatKeys = {
   messages: (venueId: string) => ['venueChat', venueId] as const,
+  // Per check-in as well: a new table session at the same venue never starts from the last one's
+  // mode (§22.G), so its first message always asks.
+  page: (venueId: string, sessionId: string) => ['venueChat', venueId, sessionId] as const,
   profile: (messageId: string) => ['venueChatProfile', messageId] as const,
 };
 
+export type VenueChatPage = { messages: VenueChatMessage[]; mode: VenueChatMode | null };
+
 // The venue chat, oldest first for the screen (venue-chat/page returns newest first, with the
-// photos of profiled messages signed). Refetched on the data-free `venue_chat` broadcast; empty
-// without a live table at the venue.
-export function useVenueChat(venueId: string | undefined) {
+// photos of profiled messages signed), and this check-in's mode (null until the first message,
+// docs/SPEC_V3.md §22.G). Refetched on the data-free `venue_chat` broadcast; empty without a live
+// table at the venue.
+export function useVenueChat(venueId: string | undefined, sessionId: string | undefined) {
   const queryClient = useQueryClient();
   const refetch = useCallback(() => {
     if (venueId) void queryClient.invalidateQueries({ queryKey: venueChatKeys.messages(venueId) });
@@ -31,12 +38,17 @@ export function useVenueChat(venueId: string | undefined) {
   useBroadcast(venueId ? venueChatChannel(venueId) : null, VENUE_CHAT_REACTION_BROADCAST, refetch);
 
   return useQuery({
-    queryKey: venueChatKeys.messages(venueId ?? ''),
-    enabled: venueId !== undefined,
-    queryFn: async (): Promise<VenueChatMessage[]> =>
-      (await venueChatApi.page(venueId ?? '')).messages
-        .map((m) => withVenueChatExtras({ ...m, photoUrl: stablePhoto(m.photoUrl) }))
-        .reverse(),
+    queryKey: venueChatKeys.page(venueId ?? '', sessionId ?? ''),
+    enabled: venueId !== undefined && sessionId !== undefined,
+    queryFn: async (): Promise<VenueChatPage> => {
+      const page = await venueChatApi.page(venueId ?? '');
+      return {
+        messages: page.messages
+          .map((m) => withVenueChatExtras({ ...m, photoUrl: stablePhoto(m.photoUrl) }))
+          .reverse(),
+        mode: page.mode,
+      };
+    },
   });
 }
 
