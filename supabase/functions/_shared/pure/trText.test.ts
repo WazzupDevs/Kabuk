@@ -104,6 +104,34 @@ describe('inflectTr', () => {
     expect(genitive('Deniz Kaya')).toBe("Deniz Kaya'nın");
   });
 
+  // Common names read with a soft l take a front vowel whatever their last written vowel.
+  it('gives names with a soft l a front vowel', () => {
+    for (const name of [
+      'Kemal',
+      'Cemal',
+      'Celal',
+      'Bilal',
+      'Hilal',
+      'Nihal',
+      'Meral',
+      'İkbal',
+      'İclal',
+      'Hayal',
+    ]) {
+      expect(genitive(name)).toBe(`${name}'in`);
+      expect(dative(name)).toBe(`${name}'e`);
+    }
+    expect(genitive('Mustafa Kemal')).toBe("Mustafa Kemal'in");
+    expect(dative('Mustafa Kemal')).toBe("Mustafa Kemal'e");
+    expect(genitive('KEMAL')).toBe("KEMAL'in");
+    expect(dative('KEMAL')).toBe("KEMAL'e");
+    expect(genitive('Kemâl')).toBe("Kemâl'in");
+    expect(dative('Kemâl')).toBe("Kemâl'e");
+    // Only the whole last word: other names ending in -al keep their harmony.
+    expect(genitive('Kemal Bal')).toBe("Kemal Bal'ın");
+    expect(genitive('Kemalcan')).toBe("Kemalcan'ın");
+  });
+
   it('reads capitals the Turkish way', () => {
     expect(genitive('IŞIK')).toBe("IŞIK'ın");
     expect(genitive('İNCİ')).toBe("İNCİ'nin");
