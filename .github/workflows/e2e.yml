@@ -116,9 +116,13 @@ jobs:
           pnpm --filter scripts apply-local-secrets
           key=$(pnpm -s supabase status -o env | sed -n 's/^PUBLISHABLE_KEY="\(.*\)"$/\1/p')
           test "$key" = "$E2E_PUBLISHABLE_KEY" || { echo "local publishable key changed: $key"; exit 1; }
+      # The local stack signs photo URLs on its internal address (http://kong:8000), which the
+      # emulator cannot reach; LOCAL_DEVICE_URL puts the emulator's address in its place
+      # (supabase/functions/_shared/pure/devProject.ts → deviceReachableUrl; local stack only).
       - name: Edge Functions, E2E venue, bot table
         run: |
-          nohup pnpm supabase functions serve > "$OUT/functions.log" 2>&1 &
+          echo "LOCAL_DEVICE_URL=$E2E_SUPABASE_URL" > "$RUNNER_TEMP/functions.env"
+          nohup pnpm supabase functions serve --env-file "$RUNNER_TEMP/functions.env" > "$OUT/functions.log" 2>&1 &
           timeout 180 bash -c 'until curl -sf -X POST http://127.0.0.1:54321/functions/v1/ping -H "apikey: $E2E_PUBLISHABLE_KEY" -H "content-type: application/json" -d "{}" > /dev/null; do sleep 2; done'
           node --experimental-strip-types scripts/e2e/bot-table.ts setup > "$OUT/setup.json"
           node -e 'const s = require(process.argv[1]);
