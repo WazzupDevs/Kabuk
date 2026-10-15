@@ -67,7 +67,7 @@ Birincil: Sosyal ağ (iOS) / Sosyal (Android). İkincil: Oyunlar → Kelime.
 
 - Zorunlu veriler: telefon numarası, görünen ad ve doğum tarihi. Fotoğraf, biyografi ve arkadaşlık isteğe bağlıdır.
 - 18 yaş altı beyanda hesap o anda silinir, hiçbir veri saklanmaz.
-- Veriler aktarımda şifrelenir. Kullanıcı verilerinin silinmesini isteyebilir (uygulama içi ve `https://wazzupdevs.github.io/Masa/hesap-silme.html`).
+- Veriler aktarımda şifrelenir. Kullanıcı verilerinin silinmesini isteyebilir (uygulama içi ve `https://wazzupdevs.github.io/Kabuk/hesap-silme.html`).
 - İzleme (tracking) yok; reklam yok.
 
 ## Ekran görüntüleri (hazırlanacak)

@@ -16,11 +16,14 @@ import { Sheet } from '@/components/Sheet';
 import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
 import { useProfile } from '@/features/account/useProfile';
+import { PhotoNeeded } from '@/features/profile/PhotoNeeded';
+import { PhotoSheet } from '@/features/profile/PhotoSheet';
+import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { registerForPush } from '@/features/push/push';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track, trackOnce } from '@/lib/analytics';
-import { callChangeSpot, roomsApi } from '@/lib/api';
+import { ApiError, callChangeSpot, roomsApi } from '@/lib/api';
 import { useNow } from '@/lib/useNow';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON } from '@/theme/tokens';
@@ -50,6 +53,10 @@ export function Lobby({ venueId, sessionId, since, mySpotId, venueHasSpots }: Pr
   // The room this table is about to ask for, and its choice for that room (docs/SPEC_V3.md §5.4).
   const [asking, setAsking] = useState<string | null>(null);
   const [participation, setParticipation] = useState<Participation>('anonymous');
+  // "Profilimle" needs a profile photo (docs/SPEC_V3.md §22.G): "Fotoğraf ekle" swaps the request
+  // sheet for the photo sheet, and the request comes back once it closes.
+  const photo = useOwnPhoto();
+  const [photoSheet, setPhotoSheet] = useState(false);
   const solo = useCreateSolo();
   const lobby = useLobby(venueId);
   const myRequest = useMyRequest(sessionId, since);
@@ -63,12 +70,24 @@ export function Lobby({ venueId, sessionId, since, mySpotId, venueHasSpots }: Pr
     onSuccess: (_data, { profiled }) => {
       track('join_requested', {});
       track('participation_chosen', { mode: profiled ? 'profile' : 'anonymous' });
+      setAsking(null);
+    },
+    onError: (err) => {
+      // The photo went (or was hidden) after the sheet read it: nothing sent, the sheet stays with
+      // the reason, back to anonymous.
+      if (err instanceof ApiError && err.code === 'photo_required') {
+        setParticipation('anonymous');
+        void photo.refresh();
+      } else {
+        setAsking(null);
+      }
     },
     onSettled: () => {
-      setAsking(null);
       void queryClient.invalidateQueries({ queryKey: roomKeys.myRequest });
     },
   });
+  const refused = request.error instanceof ApiError && request.error.code === 'photo_required';
+  const needsPhoto = hasName && ((photo.known && !photo.has) || refused);
   const moveHere = useMutation({
     mutationFn: callChangeSpot,
     onSuccess: () => {
@@ -109,7 +128,7 @@ export function Lobby({ venueId, sessionId, since, mySpotId, venueHasSpots }: Pr
           <Text accessibilityLiveRegion="polite">{tr.rooms.requestUnavailable}</Text>
         </Card>
       ) : null}
-      {request.isError || moveHere.isError ? (
+      {(request.isError && !refused) || moveHere.isError ? (
         <Text variant="fine" tone="danger" className="mb-3">
           {errorMessage(request.error ?? moveHere.error)}
         </Text>
@@ -171,6 +190,7 @@ export function Lobby({ venueId, sessionId, since, mySpotId, venueHasSpots }: Pr
                           label={tr.rooms.requestJoin}
                           onPress={() => {
                             setParticipation('anonymous');
+                            request.reset();
                             setAsking(room.room_id);
                           }}
                           disabled={status === 'pending' || request.isPending}
@@ -197,8 +217,11 @@ export function Lobby({ venueId, sessionId, since, mySpotId, venueHasSpots }: Pr
       )}
 
       <Sheet
-        visible={asking !== null}
-        onClose={() => setAsking(null)}
+        visible={asking !== null && !photoSheet}
+        onClose={() => {
+          setAsking(null);
+          request.reset();
+        }}
         title={tr.rooms.requestTitle}
         icon="people-outline"
       >
@@ -212,6 +235,11 @@ export function Lobby({ venueId, sessionId, since, mySpotId, venueHasSpots }: Pr
               hint={participationHint(mode, hasName)}
               selected={participation === mode}
               disabled={mode === 'profile' && !hasName}
+              unavailable={
+                mode === 'profile' && needsPhoto ? (
+                  <PhotoNeeded refused={refused} onAddPhoto={() => setPhotoSheet(true)} />
+                ) : undefined
+              }
               onPress={() => setParticipation(mode)}
             />
           ))}
@@ -225,6 +253,13 @@ export function Lobby({ venueId, sessionId, since, mySpotId, venueHasSpots }: Pr
           loading={request.isPending}
         />
       </Sheet>
+      <PhotoSheet
+        visible={photoSheet}
+        onClose={() => {
+          setPhotoSheet(false);
+          request.reset();
+        }}
+      />
     </View>
   );
 }

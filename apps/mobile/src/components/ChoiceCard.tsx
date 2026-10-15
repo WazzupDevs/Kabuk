@@ -14,13 +14,25 @@ type Props = {
   picture: ReactNode;
   selected: boolean;
   disabled?: boolean;
+  // Cannot be chosen yet (canvas: Faz 2 · 22.1 → "Profilimle" without a photo): a dashed outline
+  // and a muted label; the reason stands under the cards.
+  unavailable?: boolean;
   onPress: () => void;
   testID?: string;
 };
 
 // One of two side-by-side choices with a picture (canvas: Oda kur → nasıl görüneceksiniz?): a soft
 // card, the chosen one ringed in the accent.
-export function ChoiceCard({ label, hint, picture, selected, disabled, onPress, testID }: Props) {
+export function ChoiceCard({
+  label,
+  hint,
+  picture,
+  selected,
+  disabled,
+  unavailable = false,
+  onPress,
+  testID,
+}: Props) {
   const { colors, shape } = useTheme();
   const pressScale = usePressScale();
   return (
@@ -28,8 +40,8 @@ export function ChoiceCard({ label, hint, picture, selected, disabled, onPress, 
       testID={testID}
       accessibilityRole="radio"
       accessibilityLabel={hint ? `${label}. ${hint}` : label}
-      accessibilityState={{ selected, disabled: !!disabled }}
-      disabled={disabled}
+      accessibilityState={{ selected, disabled: !!disabled || unavailable }}
+      disabled={disabled || unavailable}
       onPress={onPress}
       className="flex-1"
     >
@@ -41,17 +53,18 @@ export function ChoiceCard({ label, hint, picture, selected, disabled, onPress, 
               paddingHorizontal: SPACING[3],
               paddingVertical: SPACING[3],
               borderRadius: shape.radius.lg,
-              backgroundColor: colors.surface,
+              backgroundColor: unavailable ? 'transparent' : colors.surface,
               borderWidth: shape.stroke.feature + 1,
-              borderColor: selected ? colors.accent : 'transparent',
-              boxShadow: shape.shadow.card,
+              borderStyle: unavailable ? 'dashed' : 'solid',
+              borderColor: unavailable ? colors.muted : selected ? colors.accent : 'transparent',
+              boxShadow: unavailable ? undefined : shape.shadow.card,
               opacity: disabled ? 0.5 : 1,
             },
             pressScale(pressed),
           ]}
         >
           {picture}
-          <Text variant="bodyStrong" align="center">
+          <Text variant="bodyStrong" align="center" tone={unavailable ? 'muted' : undefined}>
             {label}
           </Text>
           {hint ? (

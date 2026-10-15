@@ -1,4 +1,5 @@
 import type { Db } from './auth.ts';
+import { deviceReachableUrl } from './pure/devProject.ts';
 import { cachedUrl, type PhotoUrlCache, remember, SERVER_REUSE_MS } from './pure/photoUrlCache.ts';
 import { PHOTO_BUCKET, PHOTO_URL_SECONDS } from './pure/profile.ts';
 
@@ -60,8 +61,19 @@ export async function signPhotos(db: Db, paths: readonly string[]): Promise<Map<
   if (signed.error) throw new Error(`storage sign failed (${signed.error.message})`);
   for (const s of signed.data) {
     if (!s.path || !s.signedUrl) continue;
-    urls.set(s.path, s.signedUrl);
-    remember(signedUrls, s.path, s.signedUrl, now, SERVER_REUSE_MS);
+    const url = reachablePhotoUrl(s.signedUrl);
+    urls.set(s.path, url);
+    remember(signedUrls, s.path, url, now, SERVER_REUSE_MS);
   }
   return urls;
+}
+
+// A signed photo URL as the phone opens it: on the local stack with LOCAL_DEVICE_URL set (E2E), on
+// the address the emulator reaches; on a hosted project exactly as signed (pure/devProject.ts).
+export function reachablePhotoUrl(signedUrl: string): string {
+  return deviceReachableUrl(
+    signedUrl,
+    Deno.env.get('SUPABASE_URL'),
+    Deno.env.get('LOCAL_DEVICE_URL'),
+  );
 }
