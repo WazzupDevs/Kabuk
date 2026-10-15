@@ -1739,6 +1739,7 @@ Oyun kuralları değişmez; değişen, hangi telefonun basabildiği ve gizli bil
 - **`reveal/finalize`** her katılımcıdan çağrılabilir (bugün yalnızca iki lider); davranışı değişmez.
 - **`reveal_decide`'nin `token` parametresi** artık kullanılmaz: renk ve emojiyi sunucu `private.reveal_colors()` ve `private.reveal_emojis()`'ten (`pure/reveal.ts` ile aynı listeler, testli) seçer. Parametre yalnızca migration ile fonksiyon yayını arasındaki kısa sürede eski çağrı çözülsün diye durur.
 - **Bir çift için tek kayıt:** `play_history` üzerinde `unique (room_id, user_id, other_user_id)`; çıkışta yazılan çift pencerede yeniden yazılmaz. `other_headcount` karşı tarafın kişi sayısıdır (`side_headcount`).
+- **İki tarafın ilk telefonları** `rooms.guest_joined_at`'ten (tarafların buluştuğu an) sayılır: misafirin ilk satırı o anda yazılır, sahibin ilk satırı ondan eskidir, yani üretimde hiçbir şey değişmez; iki telefonlu odanın 3 dakika kuralı bugünkü gibi `guest_joined_at`'ten ölçülür ve bugünkü testler (karşılaşmayı `guest_joined_at` ile eskiten `friends.test.ts`) değişmeden geçer.
 
 ### 22.G Mekan sohbeti ve "Profilimle" (kararlar 7 ve 8)
 

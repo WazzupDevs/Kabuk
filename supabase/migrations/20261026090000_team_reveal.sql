@@ -118,6 +118,9 @@ revoke all on function private.reveal_participants(public.rooms) from public, an
 -- (the overlap of their room_members intervals, summed). With a phone (it has just left a two-sided
 -- room): its pairs with the other side's phones in the room, available now. Without: the window's
 -- participants' pairs, available at reveal_ends_at. A pair already written keeps its record.
+-- The two sides' first phones count from rooms.guest_joined_at, when the sides met: the guest's
+-- first row is written in that same moment and the owner's first row is older, so nothing changes
+-- for them, and the 3-minute rule of a two-phone room is measured from guest_joined_at, as before.
 create function private.write_pair_history(target_room_id uuid, target_session_id uuid default null)
 returns integer
 language plpgsql
@@ -156,6 +159,20 @@ begin
         order by rm.session_id, rm.joined_at desc
       )
     ),
+    spans as (
+      select rm.session_id,
+             case when rm.joined_at = first_row.at
+                  then least(rm.joined_at, coalesce(r.guest_joined_at, rm.joined_at))
+                  else rm.joined_at end as since,
+             coalesce(rm.left_at, now()) as until
+      from public.room_members rm
+      join (
+        select f.side, min(f.joined_at) as at from public.room_members f
+        where f.room_id = r.id
+        group by f.side
+      ) first_row on first_row.side = rm.side
+      where rm.room_id = r.id
+    ),
     pairs as (
       select o.session_id as owner_session, o.alias as owner_alias, o.profiled as owner_profiled,
              o.user_id as owner_user,
@@ -170,20 +187,14 @@ begin
     select pairs.*, together.total, together.since
     from pairs
     cross join lateral (
-      select sum(greatest(
-               least(coalesce(x.left_at, now()), coalesce(y.left_at, now()))
-                 - greatest(x.joined_at, y.joined_at),
-               interval '0'
-             )) as total,
-             min(greatest(x.joined_at, y.joined_at)) filter (
-               where least(coalesce(x.left_at, now()), coalesce(y.left_at, now()))
-                     > greatest(x.joined_at, y.joined_at)
+      select sum(greatest(least(x.until, y.until) - greatest(x.since, y.since), interval '0'))
+               as total,
+             min(greatest(x.since, y.since)) filter (
+               where least(x.until, y.until) > greatest(x.since, y.since)
              ) as since
-      from public.room_members x
-      join public.room_members y on y.room_id = x.room_id
-      where x.room_id = r.id
-        and x.session_id = pairs.owner_session
-        and y.session_id = pairs.guest_session
+      from spans x
+      join spans y on y.session_id = pairs.guest_session
+      where x.session_id = pairs.owner_session
     ) together
     where together.total >= interval '3 minutes'
   loop
