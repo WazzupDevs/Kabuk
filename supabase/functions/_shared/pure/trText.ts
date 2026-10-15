@@ -49,7 +49,8 @@ export function capitalizeTr(s: string): string {
 // decides: an apostrophe, harmony from the last written vowel, n or y after a final vowel. A final
 // number is read aloud (5'in, 6'nın, 10'un, 100'ün); an accented vowel counts as its base letter;
 // w, q, x and letters of other alphabets are consonants; trailing symbols are skipped, though the
-// suffix still follows the whole name; a name without a vowel takes the e-forms.
+// suffix still follows the whole name; a name without a vowel takes the e-forms. Common names read
+// with a soft l take a front vowel (Hilal'in, Kemal'e).
 export type GrammaticalCase = 'genitive' | 'dative';
 
 const VOWELS = new Set([...'aıoueiöü']);
@@ -70,6 +71,20 @@ for (const [base, accented] of [
 const ONES = ['', 'bir', 'iki', 'üç', 'dört', 'beş', 'altı', 'yedi', 'sekiz', 'dokuz'];
 const TENS = ['', 'on', 'yirmi', 'otuz', 'kırk', 'elli', 'altmış', 'yetmiş', 'seksen', 'doksan'];
 const POWERS = ['bin', 'milyon', 'milyar', 'trilyon', 'katrilyon', 'kentilyon', 'seksilyon'];
+// Names whose final l is soft: the suffix takes a front vowel, as after "e" (a language rule, not
+// content). Matched on the whole last word, lowercased and with accents mapped (Kemâl → kemal).
+const SOFT_L = new Set([
+  'kemal',
+  'cemal',
+  'celal',
+  'bilal',
+  'hilal',
+  'nihal',
+  'meral',
+  'ikbal',
+  'iclal',
+  'hayal',
+]);
 
 // The last word of a number read aloud: "5" → "beş", "10" → "on", "100" → "yüz", "2000" → "bin".
 function lastNumberWord(digits: string): string {
@@ -87,7 +102,10 @@ export function inflectTr(name: string, grammaticalCase: GrammaticalCase): strin
   const text = name.toLocaleLowerCase('tr-TR').replace(/[^\p{L}0-9]+$/u, '');
   const number = /[0-9]+$/.exec(text);
   const letters = [...(number ? lastNumberWord(number[0]) : text)].map((c) => ACCENTED[c] ?? c);
-  const lastVowel = letters.filter((c) => VOWELS.has(c)).at(-1) ?? 'e';
+  const lastWord = /\p{L}*$/u.exec(letters.join(''))?.[0] ?? '';
+  const lastVowel = SOFT_L.has(lastWord)
+    ? 'e'
+    : (letters.filter((c) => VOWELS.has(c)).at(-1) ?? 'e');
   const endsInVowel = VOWELS.has(letters.at(-1) ?? '');
   const back = BACK.has(lastVowel);
   const rounded = ROUNDED.has(lastVowel);
