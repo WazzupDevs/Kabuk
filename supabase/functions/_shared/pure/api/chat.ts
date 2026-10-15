@@ -11,7 +11,9 @@ export type ChatResponse = { messageId: string };
 export type ReactResponse = { ok: true };
 
 export type SafetyRequest =
-  | { action: 'report'; target?: 'room'; roomId: string; reason: ReportReason }
+  // A room (docs/SPEC_V3.md §22.J): the phone named by its table session id, any phone of the
+  // room including the reporter's own side; without it the other side's leader.
+  | { action: 'report'; target?: 'room'; roomId: string; reason: ReportReason; sessionId?: string }
   // A profile the reporter can see now (docs/SPEC_V2.md §5.3); otherwise `not_found`, the same
   // answer profile/get gives.
   | { action: 'report'; target: 'profile'; publicId: string; reason: ReportReason }

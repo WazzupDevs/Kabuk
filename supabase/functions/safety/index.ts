@@ -24,6 +24,7 @@ const Report = z.discriminatedUnion('target', [
     target: z.literal('room').optional(),
     roomId: z.uuid(),
     reason,
+    sessionId: z.uuid().optional(),
   }),
   z.object({
     action: z.literal('report'),
@@ -159,6 +160,7 @@ Deno.serve(
           target_user_id: user.id,
           target_room_id: body.roomId,
           new_reason: body.reason,
+          ...(body.sessionId ? { target_session_id: body.sessionId } : {}),
         });
         if (error) throw dbError('safety_report', error);
       }

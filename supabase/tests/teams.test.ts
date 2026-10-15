@@ -613,6 +613,67 @@ describe('blocking in a room (§22.D)', () => {
   });
 });
 
+describe('reporting in a room (§22.J)', () => {
+  const report = (p: Phone, roomId: string, target?: Phone) =>
+    invoke(p.client, 'safety', {
+      action: 'report',
+      target: 'room',
+      roomId,
+      reason: 'harassment',
+      ...(target ? { sessionId: target.sessionId } : {}),
+    });
+
+  async function reportsBy(p: Phone) {
+    return sql`
+      select reported_user_id, room_id, messages_snapshot from public.reports
+      where reporter_id = ${p.userId} order by created_at
+    `;
+  }
+
+  it('reports the phone it names, on the other side or on its own', async () => {
+    const [owner, ownerMember, guest, guestMember] = await tables(4);
+    const roomId = await room(owner, guest, { owner: [ownerMember], guest: [guestMember] });
+    await invoke(guestMember.client, 'chat', { action: 'send', roomId, body: 'rahatsız edici' });
+
+    expect(await report(ownerMember, roomId, guestMember)).toEqual({
+      status: 200,
+      body: { ok: true },
+    });
+    expect(await report(ownerMember, roomId, owner)).toEqual({ status: 200, body: { ok: true } });
+    const rows = await reportsBy(ownerMember);
+    expect(rows.map((r) => r.reported_user_id)).toEqual([guestMember.userId, owner.userId]);
+    // The copy is the same as before: the room's messages the reporter's side can read.
+    expect(rows[0]?.messages_snapshot).toEqual([
+      expect.objectContaining({ alias: guestMember.alias, body: 'rahatsız edici' }),
+    ]);
+    // Nothing about the room changes: a report is not a block.
+    expect(await roomRow(roomId)).toMatchObject({ status: 'active', owner_phones: 2 });
+  });
+
+  it("reports the other side's leader without sessionId, as before", async () => {
+    const [owner, guest, guestMember] = await tables(3);
+    const roomId = await room(owner, guest, { guest: [guestMember] });
+    expect(await report(guestMember, roomId)).toEqual({ status: 200, body: { ok: true } });
+    expect((await reportsBy(guestMember)).map((r) => r.reported_user_id)).toEqual([owner.userId]);
+  });
+
+  it('reports a phone that has left, and nobody outside the room or itself', async () => {
+    const [owner, member, guest, stranger] = await tables(4);
+    const roomId = await room(owner, guest, { owner: [member] });
+    await leave(member, roomId);
+    expect(await report(guest, roomId, member)).toEqual({ status: 200, body: { ok: true } });
+    expect((await reportsBy(guest)).map((r) => r.reported_user_id)).toEqual([member.userId]);
+
+    for (const target of [stranger, guest]) {
+      expect(await report(guest, roomId, target)).toEqual({
+        status: 404,
+        body: errorBody('not_found'),
+      });
+    }
+    expect(await reportsBy(guest)).toHaveLength(1);
+  });
+});
+
 describe('access (§22.I)', { timeout: 60_000 }, () => {
   it('gives a member the room and its channels, and a phone that left nothing; presence is shut in the window', async () => {
     const [owner, member, guest] = await tables(3);

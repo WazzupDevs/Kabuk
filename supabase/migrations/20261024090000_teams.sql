@@ -1176,10 +1176,19 @@ as $$
     and (m.replied or exists (select 1 from public.message_reactions x where x.message_id = m.id));
 $$;
 
--- A room report from any phone: the copy holds the messages its side could read, from every phone
--- (§22.J); the reported account is the other side's leader, as before. Otherwise as in
--- 20260928090000_chat_and_safety.sql.
-create or replace function public.safety_report(target_user_id uuid, target_room_id uuid, new_reason text)
+-- safety/report { target: 'room', roomId, sessionId? } from any phone (§22.J). The reported
+-- account is the phone the reporter names, any phone that is or was in the room, its own side
+-- included; without sessionId the other side's leader, as before (an old app is only ever in a
+-- room without members, where that is the right account). The copy holds the messages the
+-- reporter's side could read, from every phone. Otherwise as in 20260928090000_chat_and_safety.sql.
+drop function public.safety_report(uuid, uuid, text);
+
+create function public.safety_report(
+  target_user_id uuid,
+  target_room_id uuid,
+  new_reason text,
+  target_session_id uuid default null
+)
 returns uuid
 language plpgsql
 security definer
@@ -1193,7 +1202,24 @@ declare
   report_id uuid;
 begin
   select * into p from private.room_phone(target_user_id, target_room_id);
-  select user_id into reported from public.table_sessions where id = p.other_leader;
+  if target_session_id is null then
+    select user_id into reported from public.table_sessions where id = p.other_leader;
+  else
+    if target_session_id = p.session_id or not (
+      exists (
+        select 1 from public.rooms r
+        where r.id = target_room_id
+          and target_session_id in (r.owner_session_id, coalesce(r.guest_session_id, r.owner_session_id))
+      )
+      or exists (
+        select 1 from public.room_members rm
+        where rm.room_id = target_room_id and rm.session_id = target_session_id
+      )
+    ) then
+      raise exception using errcode = 'P0001', message = 'not_found';
+    end if;
+    select user_id into reported from public.table_sessions where id = target_session_id;
+  end if;
   select case when p.side = 'owner' then null else guest_joined_at end into guest_since
   from public.rooms where id = target_room_id;
 
@@ -1214,6 +1240,9 @@ begin
   return report_id;
 end;
 $$;
+
+revoke all on function public.safety_report(uuid, uuid, text, uuid) from public, anon, authenticated;
+grant execute on function public.safety_report(uuid, uuid, text, uuid) to service_role;
 
 -- safety/block { roomId, sessionId? } (§22.D). Without sessionId the other side's leader, as before.
 -- Who leaves: a leader blocking a member of its own side removes that member and stays; a member

@@ -2493,6 +2493,7 @@ export type Database = {
         Args: {
           new_reason: string;
           target_room_id: string;
+          target_session_id?: string;
           target_user_id: string;
         };
         Returns: string;
