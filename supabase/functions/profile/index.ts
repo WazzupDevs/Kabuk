@@ -8,6 +8,7 @@ import { requireUser, serviceClient } from '../_shared/auth.ts';
 import { dbError } from '../_shared/db.ts';
 import { z } from '../_shared/deps.ts';
 import { handle } from '../_shared/http.ts';
+import { reachablePhotoUrl } from '../_shared/photos.ts';
 import { loadProfanity } from '../_shared/profanity.ts';
 import type {
   ChatProfileView,
@@ -99,7 +100,7 @@ async function getChatProfile(viewer: string, messageId: string): Promise<ChatPr
   if (data.photo_path && !data.photo_hidden_at) {
     const signed = await photos().createSignedUrl(data.photo_path, PHOTO_URL_SECONDS);
     if (signed.error) throw new Error(`storage sign failed (${signed.error.message})`);
-    photoUrl = signed.data.signedUrl;
+    photoUrl = reachablePhotoUrl(signed.data.signedUrl);
   }
   return {
     displayName: data.display_name,
@@ -133,7 +134,7 @@ async function getProfile(viewer: string, publicId: string): Promise<ProfileView
   if (row.photo_path && !row.photo_hidden) {
     const signed = await photos().createSignedUrl(row.photo_path, PHOTO_URL_SECONDS);
     if (signed.error) throw new Error(`storage sign failed (${signed.error.message})`);
-    photoUrl = signed.data.signedUrl;
+    photoUrl = reachablePhotoUrl(signed.data.signedUrl);
   }
   return {
     publicId: row.public_id,

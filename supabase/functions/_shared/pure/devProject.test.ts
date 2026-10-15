@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { DEV_PROJECT_HOST, isDevProjectUrl, isLocalUrl, locationCheck } from './devProject.ts';
+import {
+  DEV_PROJECT_HOST,
+  deviceReachableUrl,
+  isDevProjectUrl,
+  isLocalUrl,
+  locationCheck,
+} from './devProject.ts';
 
 const DEV = `https://${DEV_PROJECT_HOST}`;
 
@@ -32,5 +38,42 @@ describe('project urls', () => {
     expect(isDevProjectUrl('https://x.supabase.co')).toBe(false);
     expect(isLocalUrl('http://10.0.2.2:54321')).toBe(true);
     expect(isLocalUrl(DEV)).toBe(false);
+  });
+});
+
+describe('deviceReachableUrl', () => {
+  const signed = 'http://kong:8000/storage/v1/object/sign/profile-photos/p/a.jpg?token=t';
+
+  it('puts the device address in place of the local stack’s internal one', () => {
+    expect(deviceReachableUrl(signed, 'http://kong:8000', 'http://10.0.2.2:54321')).toBe(
+      'http://10.0.2.2:54321/storage/v1/object/sign/profile-photos/p/a.jpg?token=t',
+    );
+    expect(deviceReachableUrl(signed, 'http://kong:8000/', 'http://127.0.0.1:54321/')).toBe(
+      'http://127.0.0.1:54321/storage/v1/object/sign/profile-photos/p/a.jpg?token=t',
+    );
+  });
+
+  it('changes nothing without the setting', () => {
+    expect(deviceReachableUrl(signed, 'http://kong:8000', undefined)).toBe(signed);
+    expect(deviceReachableUrl(signed, 'http://kong:8000', '')).toBe(signed);
+  });
+
+  it('changes nothing on a hosted project, even with the setting', () => {
+    for (const project of [DEV, 'https://abcdefghijklmnopqrst.supabase.co']) {
+      const hosted = `${project}/storage/v1/object/sign/profile-photos/p/a.jpg?token=t`;
+      expect(deviceReachableUrl(hosted, project, 'http://10.0.2.2:54321')).toBe(hosted);
+    }
+  });
+
+  it('never points a URL at a host that is not local', () => {
+    expect(deviceReachableUrl(signed, 'http://kong:8000', 'https://evil.example')).toBe(signed);
+  });
+
+  it('leaves a URL of another origin alone', () => {
+    const other = 'http://127.0.0.1:54321/storage/v1/object/sign/x.jpg?token=t';
+    expect(deviceReachableUrl(other, 'http://kong:8000', 'http://10.0.2.2:54321')).toBe(other);
+    expect(
+      deviceReachableUrl('http://kong:80001/x', 'http://kong:8000', 'http://10.0.2.2:54321'),
+    ).toBe('http://kong:80001/x');
   });
 });

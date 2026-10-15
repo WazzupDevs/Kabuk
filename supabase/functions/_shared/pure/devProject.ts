@@ -34,3 +34,21 @@ export function locationCheck(
   const url = supabaseUrl ?? '';
   return isLocalUrl(url) || isDevProjectUrl(url) ? 'skipped' : 'ignored';
 }
+
+// The local stack signs storage URLs on its internal address (SUPABASE_URL in `functions serve` is
+// http://kong:8000), which neither the host nor the Android emulator can reach, so a profile photo
+// never loads there. LOCAL_DEVICE_URL (a local-only setting; E2E: http://10.0.2.2:54321) is the
+// address the device reaches the same stack at: a signed URL's origin becomes it. The signature
+// covers the path, not the host. Only between two local addresses; anywhere else (the dev project,
+// the pilot) and without the setting the URL stays exactly as signed.
+export function deviceReachableUrl(
+  signedUrl: string,
+  supabaseUrl: string | undefined,
+  localDeviceUrl: string | undefined,
+): string {
+  if (!localDeviceUrl || !supabaseUrl) return signedUrl;
+  if (!isLocalUrl(supabaseUrl) || !isLocalUrl(localDeviceUrl)) return signedUrl;
+  const from = supabaseUrl.replace(/\/+$/, '');
+  if (!signedUrl.startsWith(`${from}/`)) return signedUrl;
+  return localDeviceUrl.replace(/\/+$/, '') + signedUrl.slice(from.length);
+}
