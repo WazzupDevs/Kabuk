@@ -29,8 +29,8 @@ describe('logo colours', () => {
 describe('launch mask', () => {
   // react-native-svg's luminance-to-alpha (Android RenderableView), on the sRGB values.
   const alpha = (hex: string) => {
-    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
-    return 0.2125 * r + 0.7154 * g + 0.0721 * b;
+    const channel = (i: number) => parseInt(hex.slice(i, i + 2), 16) / 255;
+    return 0.2125 * channel(1) + 0.7154 * channel(3) + 0.0721 * channel(5);
   };
 
   it('keeps the curtain whole and cuts the window clean', () => {
