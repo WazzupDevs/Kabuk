@@ -37,14 +37,14 @@ appId: app.kabuk.mobile
     element:
       id: request-member
     timeout: 20000
-- takeScreenshot: 41-teams-lobby
+- takeScreenshot: 59-teams-lobby
 - tapOn:
     id: request-member
 - extendedWaitUntil:
     visible:
       id: request-send
     timeout: 10000
-- takeScreenshot: 42-teams-member-sheet
+- takeScreenshot: 60-teams-member-sheet
 - tapOn:
     id: request-send
 # "Liderine bu adı söyle": this phone's alias at its largest, the name bot A sees on the request.
@@ -52,7 +52,7 @@ appId: app.kabuk.mobile
     visible:
       id: member-pending
     timeout: 15000
-- takeScreenshot: 43-teams-member-pending
+- takeScreenshot: 61-teams-member-pending
 - runScript:
     file: ../scripts/bot.js
     env:
@@ -64,7 +64,7 @@ appId: app.kabuk.mobile
     timeout: 20000
 - assertNotVisible:
     id: end-room
-- takeScreenshot: 44-teams-member-room
+- takeScreenshot: 62-teams-member-room
 # Bot B joins as the other side's leader ("Katıl"); bot A accepts.
 - runScript:
     file: ../scripts/bot.js
@@ -102,7 +102,7 @@ appId: app.kabuk.mobile
     id: tabu-card
 - assertVisible:
     id: tabu-correct
-- takeScreenshot: 45-teams-teammate
+- takeScreenshot: 63-teams-teammate
 - tapOn:
     id: tabu-correct
 - runScript:
@@ -121,7 +121,7 @@ appId: app.kabuk.mobile
     timeout: 20000
 - assertVisible:
     id: tabu-taboo
-- takeScreenshot: 46-teams-judge
+- takeScreenshot: 64-teams-judge
 - tapOn:
     id: tabu-taboo
 - runScript:
@@ -140,7 +140,7 @@ appId: app.kabuk.mobile
     timeout: 20000
 - assertVisible:
     id: end-room
-- takeScreenshot: 47-teams-new-leader
+- takeScreenshot: 65-teams-new-leader
 - tapOn:
     id: end-room
 - extendedWaitUntil:
@@ -157,17 +157,18 @@ appId: app.kabuk.mobile
       ACTION: reveal
       BODY: '{"yes":false}'
       BOT_PORT: '8788'
+- tapOn: Mekana dön
+- extendedWaitUntil:
+    visible: Oda kur
+    timeout: 15000
 # A window with a "Hayır" runs to reveal_ends_at; bot B closes it now, so this phone's next room
-# shows in the lobby (rule 5).
+# shows in the lobby (rule 5). Only after this phone left the room: a room closed before the
+# reveal_ends_at it saw would keep its screen waiting for that time.
 - runScript:
     file: ../scripts/bot.js
     env:
       ACTION: expire-reveal
       BOT_PORT: '8788'
-- tapOn: Mekana dön
-- extendedWaitUntil:
-    visible: Oda kur
-    timeout: 15000
 # 3. This phone's room: bot A joins as the other side's leader, bot B as bot A's member.
 - tapOn: Oda kur
 - extendedWaitUntil:
@@ -212,7 +213,7 @@ appId: app.kabuk.mobile
       id: room-people
     timeout: 10000
 - assertVisible: KARŞI TARAF · 2 TELEFON
-- takeScreenshot: 48-teams-people
+- takeScreenshot: 66-teams-people
 - back
 - tapOn:
     id: end-room
@@ -233,7 +234,7 @@ appId: app.kabuk.mobile
     timeout: 20000
 - assertVisible: ${output.aliasA}
 - assertNotVisible: ${output.aliasB}
-- takeScreenshot: 49-teams-match
+- takeScreenshot: 67-teams-match
 # Bot B's "Hayır" and the window's end change nothing on this phone (rule 5).
 - runScript:
     file: ../scripts/bot.js
@@ -249,7 +250,7 @@ appId: app.kabuk.mobile
 - assertVisible:
     id: reveal-matches
 - assertNotVisible: ${output.aliasB}
-- takeScreenshot: 50-teams-match-after-window
+- takeScreenshot: 68-teams-match-after-window
 - tapOn: Mekana dön
 - extendedWaitUntil:
     visible: Oda kur
