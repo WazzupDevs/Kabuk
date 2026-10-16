@@ -45,6 +45,10 @@ jobs:
   integration:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    env:
+      # supabase/tests/local.ts writes here every call the local serve refused or cut off (refusal.ts),
+      # and whether it sent the call again.
+      INVOKE_RETRY_LOG: invoke-retries.log
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -75,8 +79,37 @@ jobs:
           key=$(pnpm -s supabase status -o env | sed -n 's/^PUBLISHABLE_KEY="\(.*\)"$/\1/p')
           timeout 180 bash -c "until curl -sf -X POST http://127.0.0.1:54321/functions/v1/ping -H 'apikey: $key' -H 'content-type: application/json' -d '{}' > /dev/null; do sleep 2; done"
           CHECKIN_SKIP_LOCATION_TEST=1 pnpm vitest run -c vitest.integration.config.ts supabase/tests/checkinSkipLocation.test.ts
+      # The calls the local serve refused and the tests sent again (supabase/tests/refusal.ts), in
+      # the job summary: the total, and per call and refusal. A call that comes back often is looked
+      # at separately.
+      - name: Retries
+        if: always()
+        run: |
+          touch invoke-retries.log
+          total=$(wc -l < invoke-retries.log)
+          again=$(grep -c ' yes$' invoke-retries.log || true)
+          {
+            echo "### Edge Function calls refused or cut off by the local serve: $total, sent again: $again"
+            if [ "$total" -gt 0 ]; then
+              echo
+              echo "| Times | Call | Answer | Sent again |"
+              echo "| ---: | --- | --- | --- |"
+              sort invoke-retries.log | uniq -c | sort -rn | awk '{ print "| " $1 " | `" $2 "` | " $3 " | " $4 " |" }'
+            fi
+          } | tee -a "$GITHUB_STEP_SUMMARY"
       - if: failure()
         run: tail -n 200 functions.log functions-skip.log 2>/dev/null || true
+      # The whole serve log, to match a failure against the runtime's lines (a retired isolate, a
+      # refused request) beyond the tail above.
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: functions-logs
+          path: |
+            functions.log
+            functions-skip.log
+          if-no-files-found: ignore
+          retention-days: 14
 
   # The one required status check.
   ci:
