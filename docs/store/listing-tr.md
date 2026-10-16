@@ -72,4 +72,4 @@ Birincil: Sosyal ağ (iOS) / Sosyal (Android). İkincil: Oyunlar → Kelime.
 
 ## Ekran görüntüleri (hazırlanacak)
 
-1. Yakındaki mekanlar 2. Mekan ekranı ve lobi 3. Katılma isteği 4. İki masalı Tabu 5. Sohbet kartı 6. "Tanışalım mı?" sinyali
+1. Mekanları keşfet 2. Mekan ekranı ve lobi 3. Katılma isteği 4. İki masalı Tabu 5. Sohbet kartı 6. "Tanışalım mı?" sinyali
