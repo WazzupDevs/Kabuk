@@ -1,4 +1,4 @@
-import type { ReportReason } from '@shared/chat.ts';
+import { REPORT_REASONS, type ReportReason } from '@shared/chat.ts';
 import {
   prepareVenueMessage,
   senderLabel,
@@ -348,6 +348,7 @@ export default function VenueChatScreen() {
         />
       </Sheet>
       <ReportModal
+        reasons={REPORT_REASONS}
         visible={reporting !== null}
         pending={report.isPending}
         error={report.error}
@@ -355,6 +356,7 @@ export default function VenueChatScreen() {
         onClose={() => setReporting(null)}
       />
       <ConfirmWithReport
+        reasons={REPORT_REASONS}
         visible={blocking !== null}
         title={tr.venueChat.blockConfirmTitle}
         hint={tr.venueChat.blockConfirmBody}

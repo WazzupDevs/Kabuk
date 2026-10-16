@@ -1,5 +1,5 @@
 import type { VenueChatIncoming } from '@shared/api/friends.ts';
-import type { ReportReason } from '@shared/chat.ts';
+import { REPORT_REASONS, type ReportReason } from '@shared/chat.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { View } from 'react-native';
@@ -92,6 +92,7 @@ export function VenueChatRequests({ requests }: { requests: VenueChatIncoming[] 
         </Text>
       ) : null}
       <ConfirmWithReport
+        reasons={REPORT_REASONS}
         visible={blocking !== null}
         title={tr.venueChat.blockConfirmTitle}
         hint={tr.venueChat.blockConfirmBody}

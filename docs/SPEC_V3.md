@@ -2345,6 +2345,7 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 - **Oyun akışındaki `profiled` özelliği kalkar (23.2):** anonim katılım yalnızca kadın beyanıyla mümkün olduğundan `profiled: false` cinsiyetin vekili olur. Bugün bunu taşıyan olay `room_created { intent, profiled }`'dır; 23.2'de `profiled` çıkar. Mekan sohbetinin `profiled` özellikleri kalır, çünkü orada herkes anonim yazabilir.
 - 23.1: lobiye açma (etiketli ya da etiketsiz), istek ve kabul.
 - 23.3: `reveal_mutual` ve `reveal_none` kalkar; masa sonundaki "Arkadaş ekle" ve arkadaşlık olayları kalır.
+- 23.2 (23.2b PR'ı): `room_created { intent, game_tag }` (`profiled` çıktı). `participation_chosen { mode }` olayı da kalktı: yalnızca oyun akışında tetikleniyordu ve tek özelliği aynı vekildi. Cinsiyet ekranı ve fotoğraf notu olay üretmez; `onboarding_completed` herkese aynı.
 - Kesin olay listesi ilgili adımın PR'ında yazılır.
 
 **Yasal (adım 23.2, OTA'dan önce):**

@@ -63,6 +63,19 @@ async function completeOnboarding(userId: string, body: CompleteOnboardingReques
     .maybeSingle();
   if (existing.error) throw dbError('profiles', existing.error);
 
+  // Set once, like the birth date (docs/SPEC_V3.md §23.D); a correction goes through
+  // admin:set-gender. Sign-up (the profile is not complete yet) asks for it, checked before the age
+  // so a refused call writes and deletes nothing. A complete profile only re-consents here; an
+  // empty gender from before the step is asked once by set-gender, after the new KVKK notice.
+  const gender = (existing.data?.gender ?? null) as Gender | null;
+  const signingUp = !existing.data?.display_name || !existing.data?.birth_date;
+  if (signingUp && gender === null && body.gender === undefined) {
+    throw new AppError('bad_request', 'The gender is required.');
+  }
+  if (gender !== null && body.gender !== undefined && body.gender !== gender) {
+    throw new AppError('bad_request', 'The gender cannot be changed.');
+  }
+
   let birthDate = existing.data?.birth_date ?? null;
   if (birthDate === null) {
     if (body.birthDate === undefined) {
@@ -78,13 +91,6 @@ async function completeOnboarding(userId: string, body: CompleteOnboardingReques
   } else if (body.birthDate !== undefined && body.birthDate !== birthDate) {
     // Set once; a correction goes through admin:set-birth-date.
     throw new AppError('birth_date_invalid', 'The birth date cannot be changed.');
-  }
-
-  // Set once, like the birth date (docs/SPEC_V3.md §23.D); a correction goes through
-  // admin:set-gender. Optional until the app asks for it (step 23.2's client part).
-  const gender = (existing.data?.gender ?? null) as Gender | null;
-  if (gender !== null && body.gender !== undefined && body.gender !== gender) {
-    throw new AppError('bad_request', 'The gender cannot be changed.');
   }
 
   let displayName = existing.data?.display_name ?? null;

@@ -486,13 +486,16 @@ export const actions: Record<string, (args: Json) => Promise<Json>> = {
     if (sent.error) throw sent.error;
     const verified = await client.auth.verifyOtp({ phone, token: BOT_OTP, type: 'sms' });
     if (verified.error) throw verified.error;
-    // Sign-up = profile (docs/SPEC_V3.md §3): an adult birth date and the bot's name.
+    // Sign-up = profile (docs/SPEC_V3.md §3): an adult birth date, the bot's name and "Kadın", since
+    // the bot's requests and rooms are anonymous (§23.D); an account from before the gender step
+    // gets it here once.
     await call('account', {
       action: 'complete-onboarding',
       termsVersion: CURRENT_TERMS_VERSION,
       kvkkVersion: CURRENT_KVKK_VERSION,
       displayName: name,
       birthDate: '1995-05-20',
+      gender: 'female',
     });
     // "Profilimle" (a profiled request, a profiled venue chat message) needs a profile photo
     // (docs/SPEC_V3.md §22.G); the bot's account gets one once and keeps it.

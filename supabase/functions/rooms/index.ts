@@ -83,14 +83,15 @@ const Body: z.ZodType<RoomsRequest> = z.discriminatedUnion('action', [
 
 const db = serviceClient();
 
-// The game flow ("Masanı lobiye aç", "Katıl", "Bu masadayım"; not "Masanla oyna"): a man and
-// "Belirtmek istemiyorum" join only with the profile (docs/SPEC_V3.md §23.D, pure/gender.ts), never
-// turned into a profiled entry behind their back. Then "Profilimle" needs a profile photo others can
+// The game flow ("Masanı lobiye aç", "Katıl", "Bu masadayım"; not "Masanla oyna"): an empty gender
+// answers the one-time question first; a man and "Belirtmek istemiyorum" join only with the profile
+// (docs/SPEC_V3.md §23.D, pure/gender.ts), never turned into a profiled entry behind their back. Then "Profilimle" needs a profile photo others can
 // see (§22.G, decision 8); only its presence, at the moment of the choice.
 async function requireParticipation(userId: string, profiled: boolean): Promise<void> {
   const profile = await db.from('profiles').select('gender').eq('id', userId).maybeSingle();
   if (profile.error) throw dbError('profiles', profile.error);
   const refused = participationError((profile.data?.gender ?? null) as Gender | null, profiled);
+  if (refused === 'gender_required') throw new AppError(refused, 'The gender is not set yet.');
   if (refused) throw new AppError(refused, 'This account joins with its profile.');
   if (!profiled) return;
   const { data, error } = await db.rpc('has_profile_photo', { target_user_id: userId });
