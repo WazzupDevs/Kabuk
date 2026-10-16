@@ -472,8 +472,7 @@ export const tr = {
     anonymous: 'Anonim',
     anonymousHint: 'Diğer masalar yalnızca masa adını ve kişi sayını görür.',
     profile: 'Profilimle',
-    profileHint:
-      'Lobide "profilli" işareti görünür. Odadaki diğer masa, oda sürerken profilini görebilir.',
+    profileHint: 'Lobide "profilli" işareti görünür. Odadakiler oda sürerken profilini görür.',
     profileNeedsName: 'Profilinle katılmak için önce Profil sekmesinden bir ad seç.',
     // "Bu masadayım" (canvas: Faz 2 · 22.5 → Bu masadayım: seçim): the room's phones see this one.
     memberAnonymousHint: (alias: string) => `Odadakiler yalnızca takma adını görür: ${alias}.`,
@@ -556,7 +555,7 @@ export const tr = {
       `${inflectTr(leader, 'genitive')} tarafına katılırsın. Kabul ederse oyun ve sohbet senin telefonunda da açılır.`,
     tellLeader: 'Liderine bu adı söyle',
     tellLeaderBody: (leader: string) =>
-      `${leader}, masandaki bu adı istek kartında görür. Kabul ederse odaya girersin.`,
+      `${leader} bu adı istek kartında görür. Kabul ederse odaya girersin.`,
     incomingMemberTitle: 'Masana katılmak istiyor',
     incomingMemberBody:
       'Bu adı söyleyen arkadaşınsa kabul et. Kabul edersen senin tarafına katılır.',
@@ -998,7 +997,7 @@ export const tr = {
     backToVenue: 'Mekana dön',
     score: (n: number) => `Ortak skor: ${n}`,
     addFriend: 'Arkadaş ekle',
-    addFriendDone: 'Senin tarafın tamam. Diğer masa da basarsa arkadaş olursunuz.',
+    addFriendDone: 'Sen bastın. O da basarsa arkadaş olursunuz.',
     addFriendBoth: 'İkiniz de "Arkadaş ekle"ye basarsanız arkadaş olursunuz.',
   },
   venue: {
