@@ -2249,9 +2249,8 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 **Hareketsizlik** (karar, §23.P):
 
 - **İki taraflı masa hareketsizlikle kapanmaz.** Birleşik masada insanlar yüz yüze konuşur ve telefonlar cepte durur; hareketsizlik masayı oyun aralarında kapatır, "Arkadaş ekle" anı da kaçardı. Masayı yalnızca yukarıdaki iki yol kapatır: liderin "Masayı bitir"i ve bir taraftaki son telefonun çıkışı (masa oturumunun bitişi dahil).
-- **Lobide bekleyen tek taraflı masa** (`status = 'waiting'`, `visibility = 'open'`) **30 dakika hareketsizlikte sessizce kapanır.** Ona bekleyen istekler `unavailable` olur (kural 5).
-- **"Masanla oyna" odası** (`visibility = 'private'`) bugünkü gibi 10 dakika hareketsizlikte kapanır (`ROOM_IDLE_MINUTES`); bu karar onu değiştirmez.
-- Sunucuda `private.close_idle_rooms` iki taraflı odayı atlar ve tek taraflı odaları türüne göre kapatır; cron işi değişmez.
+- **Tek taraflı masa 30 dakika hareketsizlikte sessizce kapanır.** Tek kural budur: lobide bekleyen masa (`status = 'waiting'`, `visibility = 'open'`) da "Masanla oyna" odası (`visibility = 'private'`) da. Lobide bekleyen masaya bekleyen istekler `unavailable` olur (kural 5).
+- Sunucuda `private.close_idle_rooms` iki taraflı odayı atlar ve tek taraflı odayı 30 dakikada kapatır (bugün 10 dakika; `ROOM_IDLE_MINUTES` ve cron çağrısı 30 olur). Cron işinin sıklığı değişmez.
 
 **Masa sonu ekranı.**
 
@@ -2293,7 +2292,7 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 | ---- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 23.1 | `…_table_lobby.sql`    | `rooms.game_tag text null check (game_tag in (CONCEPTS))`; oyun etiketi okuması (§23.C); `rooms_request_join`: istekçinin bekleyen tek taraflı odası isteği engellemez; `rooms_respond`: kabul istekçinin bekleyen odasını aynı işlemde kapatır ve üyelerini seçimleriyle misafir tarafa taşır            |
 | 23.2 | `…_gender.sql`         | `profiles.gender text null check (gender in ('female', 'male', 'unspecified'))`, kolon yetkisi kapalı, `has_gender` üretilmiş kolon; oyun akışındaki profil şartı (`profile_required`, `gender_required`; "Masanla oyna" hariç); istek kartı profili için okuma; `reports.reason` kısıtına `wrong_gender` |
-| 23.3 | `…_table_end.sql`      | Pencere açan yolların doğrudan kapanışa dönmesi (çıkış ve engelleme yolları, "Odayı bitir"); `close_idle_rooms`: iki taraflı oda atlanır, lobide bekleyen oda 30 dakikada kapanır; kapanışta `write_pair_history`; `play_history.friend_open`; `friends_add_from_room` şartı                              |
+| 23.3 | `…_table_end.sql`      | Pencere açan yolların doğrudan kapanışa dönmesi (çıkış ve engelleme yolları, "Odayı bitir"); `close_idle_rooms`: iki taraflı oda atlanır, tek taraflı oda 30 dakikada kapanır; kapanışta `write_pair_history`; `play_history.friend_open`; `friends_add_from_room` şartı                                  |
 | 23.4 | `…_reveal_cleanup.sql` | Reveal fonksiyonları, `reveal_decisions`, `reveal_signals`, `rooms.reveal_*` kolonları ve `private.lobby_listed_from` kaldırılır; yalnızca okuyan kalmadığı testle gösterildikten sonra. Kaldırmanın kapsamı 23.4 PR'ında yazılır                                                                         |
 
 - Yeni tablo yoktur; kural 2 değişmez.
@@ -2408,7 +2407,7 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 **Adım 23.3.**
 
 - Hiçbir yol `ending` üretmez: "Odayı bitir", son telefonun çıkışı, mekandan ayrılma, engelleme ve masa oturumunun bitişi odayı doğrudan kapatır.
-- Hareketsizlik (`close_idle_rooms` doğrudan çağrılır): iki taraflı oda kapanmaz; lobide bekleyen tek taraflı oda 30 dakikada kapanır ve ona bekleyen istekler `unavailable` olur; "Masanla oyna" odası 10 dakikada kapanır.
+- Hareketsizlik (`close_idle_rooms` doğrudan çağrılır): iki taraflı oda kapanmaz. Tek taraflı oda (lobide bekleyen ve "Masanla oyna") 30 dakikada kapanır, daha önce kapanmaz; lobide bekleyen odaya bekleyen istekler `unavailable` olur.
 - Kapanışta 3 dakikayı geçen karşı taraf çiftlerine kayıt yazılır (`available_at = now()`, `friend_open = true`). Aynı taraftakiler arasında kayıt yoktur.
 - `add-from-room`: iki taraf basınca arkadaş olurlar; biri basınca hiçbir şey olmaz ve karşı taraf görmez. Biri masa sonundan, diğeri oyun geçmişinden basınca da arkadaş olurlar. Eski `reveal_mutual = false` kayıtlar hâlâ açılmaz.
 - `historyAction` (birim testi): `friend_open` kayıt "Arkadaş ekle", eski kayıt "İstek gönder" sunar.
@@ -2478,7 +2477,7 @@ Bu PR kurallara dokunmaz (Faz 2 geleneği). Aşağıdaki her değişiklik ilgili
 
 - Tanışma penceresine dair cümleler kalkar: "Evet"/"Hayır", `reveal_ends_at`, pencerede lobiden saklama, engelleme ve ayrılmanın "Hayır" sayılması, hareketsizliğin pencereyi açması, Faz 2 ekinin kişi başı tanışma kısmı.
 - Yerine:
-  - İki taraflı masa hareketsizlikle kapanmaz. Lobide bekleyen tek taraflı masa 30 dakika hareketsizlikte sessizce kapanır ve ona bekleyen istekler `unavailable` olur.
+  - İki taraflı masa hareketsizlikle kapanmaz. Tek taraflı masa (lobide bekleyen ve "Masanla oyna") 30 dakika hareketsizlikte sessizce kapanır; lobide bekleyen masaya bekleyen istekler `unavailable` olur.
   - Masa sonunda "Arkadaş ekle" karşı taraftaki her çift için ayrıdır ve aynı sessiz düğme oyun geçmişinden de sunulur. İki taraf basarsa arkadaş olunur; tek taraf basarsa hiçbir şey olmaz ve görünmez.
 - Aynen kalanlar:
   - katılma isteğinde ve "Bu masadayım"da red ve zaman aşımının aynı görünmesi;
@@ -2508,7 +2507,7 @@ Bu PR kurallara dokunmaz (Faz 2 geleneği). Aşağıdaki her değişiklik ilgili
 
 1. **Hareketsizlik** (§23.G; adım 23.3):
    - İki taraflı masa hareketsizlikle kapanmaz. Yalnızca liderin "Masayı bitir"i, son telefonun çıkışı ya da masa oturumunun bitişi kapatır.
-   - Lobide bekleyen tek taraflı masa 30 dakika hareketsizlikte sessizce kapanır.
+   - Tek taraflı masa 30 dakika hareketsizlikte sessizce kapanır. Tek kural budur: lobide bekleyen masa da "Masanla oyna" odası da.
 2. **Takım taşıma (P-1)** (§23.F): pilotta yok. Taraflar katılımdaki masalardır. Karışık takım saha testinden sonra ayrı karardır.
 3. **Bekleyen masanın üyeleri (P-4)** (§23.C; adım 23.1): kabulde misafir tarafa üye olarak taşınırlar; anonim ya da profilli seçimleri aynen kalır.
 4. **Mekan sohbeti** (§23.D): §22.G okuması doğru, aynen kalır. "Mekan sohbeti değişmez" kararı §22.G'nin check-in başına tek seçimidir: herkes anonim yazabilir; seçim ilk mesajda yapılır ve o check-in boyunca değişmez.
@@ -2545,9 +2544,8 @@ Bu PR kurallara dokunmaz (Faz 2 geleneği). Aşağıdaki her değişiklik ilgili
 - Kabulden sonra vazgeçme (§23.E).
 - `e2e` etiketi PR incelemeye hazır olunca (§23.M, §23.N).
 
-**Bu güncellemede eklenen teknik ayrıntılar (onay bekler):**
+**İncelemeden sonra eklenen teknik ayrıntılar (onaylı):**
 
-- **"Masanla oyna" odası 10 dakika hareketsizlikte kapanmaya devam eder** (§23.G): hareketsizlik kararı yalnızca iki taraflı masayı ve lobide bekleyen masayı andığı için bugünkü süre kaldı.
 - **`room_created` olayından `profiled` kalkar** (§23.L): 23.2'den sonra `profiled: false` cinsiyetin vekili olurdu.
 - **`wrong_gender` yalnızca oyun akışındaki kişi şikayetlerinde görünür** (§23.D): mekan sohbeti ve DM şikayetlerinde cinsiyet kuralı uygulanmaz.
 - **`friend_open` kaydın geçmiş satırı yalnızca "Arkadaş ekle" sunar** (§23.G): bugün karşılıklı "Evet" kaydında olduğu gibi; "İstek gönder" eski kayıtlarda kalır.
