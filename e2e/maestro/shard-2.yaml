@@ -1,6 +1,7 @@
 # P0 shard 2 of 4 (.github/workflows/e2e.yml runs the four in parallel, light and dark). p0.yaml is
 # the whole path in one run (locally); the shards split it so each runs on its own emulator and
-# local stack: every shard signs up and picks the design, and those that play check in too.
+# local stack: every shard signs up, picks the design, checks in and names the table; a shard
+# without 04 then moves to the bot's spot (flows/spot-kutuphane.yaml), as 04 does.
 # scripts/e2e/shards.test.ts checks that the shards cover p0.yaml once and keep its order.
 appId: app.kabuk.mobile
 name: P0 kritik yol, parça 2

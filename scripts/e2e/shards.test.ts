@@ -17,7 +17,10 @@ const P0 = flowsOf('p0.yaml');
 // Sign-up, the design (Ayarlar → Tasarım (test)), check-in and the table name: the state every
 // later flow starts from. 01c-preview only looks at the design previews and needs none of it.
 const SETUP = ['01-login', '01b-design', '02-checkin', '03-name'];
-const OWN = SHARDS.map((flows) => flows.filter((f) => !SETUP.includes(f)));
+// 02 checks in at Kantin; 04 moves this phone to Kütüphane, where every game flow has the bot check
+// in. A shard without 04 makes that move right after the setup.
+const MOVE = 'spot-kutuphane';
+const OWN = SHARDS.map((flows) => flows.filter((f) => !SETUP.includes(f) && f !== MOVE));
 const shardOf = (flow: string): number => OWN.findIndex((flows) => flows.includes(flow));
 
 describe('E2E shards', () => {
@@ -28,11 +31,19 @@ describe('E2E shards', () => {
     }
   });
 
+  it("move to the bot's spot after the setup unless 04 does", () => {
+    for (const flows of SHARDS) {
+      const after = flows[flows.indexOf('03-name') + 1];
+      expect(after).toBe(flows.includes('04-room-tabu') ? '04-room-tabu' : MOVE);
+      expect(flows.filter((f) => f === MOVE).length).toBe(flows.includes('04-room-tabu') ? 0 : 1);
+    }
+  });
+
   it("run p0's other flows once between them, in p0's order", () => {
     const rest = P0.filter((f) => !SETUP.includes(f));
     expect(OWN.flat().sort()).toEqual([...rest].sort());
     for (const flows of SHARDS) {
-      const inP0 = flows.map((f) => P0.indexOf(f));
+      const inP0 = flows.filter((f) => f !== MOVE).map((f) => P0.indexOf(f));
       expect(inP0).toEqual([...inP0].sort((a, b) => a - b));
     }
   });
