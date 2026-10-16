@@ -14,7 +14,27 @@ export const REVEAL_COLORS = [
   '#06D6A0',
 ] as const;
 
-export const REVEAL_EMOJIS = ['🦊', '🐙', '🌻', '🚀', '🍉', '🎈', '⭐', '🦋', '🍀', '🎸'] as const;
+// One emoji per matched pair in a room (docs/SPEC_V3.md §22.F): up to 4 × 4 = 16 pairs, so at least
+// 16. private.reveal_colors() and private.reveal_emojis() hold the same lists (an integration test
+// checks); the server picks both.
+export const REVEAL_EMOJIS = [
+  '🦊',
+  '🐙',
+  '🌻',
+  '🚀',
+  '🍉',
+  '🎈',
+  '⭐',
+  '🦋',
+  '🍀',
+  '🎸',
+  '🐢',
+  '🍒',
+  '🌈',
+  '🎯',
+  '🍩',
+  '🦄',
+] as const;
 
 export type RevealToken = { color: string; emoji: string };
 

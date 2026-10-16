@@ -89,6 +89,9 @@ export const IDEMPOTENT_CALLS = [
   // reveal.test "reveal/finalize and cleanup": "does nothing before the window ends, then closes
   // with "none" for both"
   'reveal/finalize',
+  // teamReveal.test "reveal/matches (§22.F)": "answers the same when sent twice, and nothing to a
+  // phone outside the window"
+  'reveal/matches',
   // checkin.test "checkin/leave and expiry": "ends the active table and is idempotent"
   'checkin/leave',
   // friends.test "DM replies and reactions (docs/SPEC_V3.md §21)": "keeps one reaction per

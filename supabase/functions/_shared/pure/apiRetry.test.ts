@@ -24,6 +24,7 @@ describe('IDEMPOTENT_CALLS', () => {
         'ping',
         'profile/get',
         'reveal/finalize',
+        'reveal/matches',
         'sahtekar/advance',
         'sarki/advance',
         'sarki/begin',

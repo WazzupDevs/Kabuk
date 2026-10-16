@@ -906,6 +906,35 @@ export type Database = {
           },
         ];
       };
+      reveal_signals: {
+        Row: {
+          color: string;
+          created_at: string;
+          pair_emojis: Json;
+          room_id: string;
+        };
+        Insert: {
+          color: string;
+          created_at?: string;
+          pair_emojis?: Json;
+          room_id: string;
+        };
+        Update: {
+          color?: string;
+          created_at?: string;
+          pair_emojis?: Json;
+          room_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'reveal_signals_room_id_fkey';
+            columns: ['room_id'];
+            isOneToOne: true;
+            referencedRelation: 'rooms';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       room_members: {
         Row: {
           alias: string;
@@ -2057,48 +2086,31 @@ export type Database = {
         Args: {
           target_room_id: string;
           target_user_id: string;
-          token: Json;
+          token?: Json;
           wants: boolean;
         };
         Returns: {
-          closed_at: string | null;
-          concept: string | null;
-          created_at: string;
-          game_started_at: string | null;
-          game_state: Json;
-          guest_alias: string | null;
-          guest_headcount: number | null;
-          guest_joined_at: string | null;
-          guest_phones: number | null;
-          guest_profiled: boolean;
-          guest_session_id: string | null;
-          id: string;
-          intent: string | null;
-          last_activity_at: string;
-          owner_alias: string;
-          owner_headcount: number;
-          owner_phones: number;
-          owner_profiled: boolean;
-          owner_session_id: string;
-          reveal_ends_at: string | null;
-          reveal_result: string | null;
-          reveal_token: Json | null;
-          spot_id: string | null;
-          status: string;
-          venue_id: string;
-          visibility: string;
-          waiting_since: string;
-        };
-        SetofOptions: {
-          from: '*';
-          to: 'rooms';
-          isOneToOne: true;
-          isSetofReturn: false;
-        };
+          matched_session_id: string;
+        }[];
       };
       reveal_finalize: {
         Args: { target_room_id: string; target_user_id: string };
         Returns: string;
+      };
+      reveal_matches: {
+        Args: { target_room_id: string; target_user_id: string };
+        Returns: {
+          alias: string;
+          birth_date: string;
+          color: string;
+          display_name: string;
+          emoji: string;
+          ended: boolean;
+          matched: boolean;
+          photo_path: string;
+          profiled: boolean;
+          session_id: string;
+        }[];
       };
       room_chat_extras: {
         Args: { target_room_id: string };
@@ -2109,6 +2121,13 @@ export type Database = {
         }[];
       };
       room_member_profile: { Args: { target_room_id: string }; Returns: string };
+      room_member_profiles: {
+        Args: { target_room_id: string };
+        Returns: {
+          public_id: string;
+          session_id: string;
+        }[];
+      };
       room_phones: {
         Args: { target_room_id: string };
         Returns: {
