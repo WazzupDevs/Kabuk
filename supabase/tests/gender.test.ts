@@ -131,6 +131,25 @@ describe('the gender column (§23.D, rule 12)', () => {
     });
   });
 
+  it('set-gender refuses a filled gender, from sign-up or from itself, even the same answer', async () => {
+    const refused = { status: 400, body: errorBody('bad_request') };
+    const signedUp = { client: await onboarded(PHONES[0], { gender: 'female' }) };
+    const answered = { client: await onboarded(PHONES[1]) };
+    expect(await account(answered, { action: 'set-gender', gender: 'male' })).toEqual(OK);
+
+    for (const [p, kept] of [
+      [signedUp, 'female'],
+      [answered, 'male'],
+    ] as const) {
+      for (const gender of ['female', 'male', 'unspecified']) {
+        expect(await account(p, { action: 'set-gender', gender })).toEqual(refused);
+      }
+      const [row] =
+        await sql`select gender from public.profiles where id = ${await userIdOf(p.client)}`;
+      expect(row?.gender).toBe(kept);
+    }
+  });
+
   it('goes to nobody else, even in a room where both joined with their profile', async () => {
     const owner = await at(0, 'female', { photo: true });
     const guest = await at(1, 'male', { photo: true });

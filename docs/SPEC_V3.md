@@ -2446,6 +2446,7 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 - **23.2 kademeli zorlanır** (proje sahibinin kararı, 23.2 sunucu PR'ı). Sunucu PR'ı (23.2a) bugünkü uygulamayı bozmaz, E2E'si bugünkü uygulamayla yeşil kalır:
   - 23.2a: kolon, `set-gender`, kayıtta isteğe bağlı `gender`, erkek ve belirtmeyen için `anonymous_not_allowed`, `request-profile`, `wrong_gender`, `admin:set-gender`, kural 4 ve 12, yasal metinler. Boş cinsiyet oyun akışında bugünkü gibi geçer.
   - 23.2b (istemci PR'ı, iki küçük sunucu değişikliğiyle): cinsiyetsiz `complete-onboarding` `bad_request` döner, cinsiyeti boş hesap oyun akışında `gender_required` alır ve `CURRENT_KVKK_VERSION` artar (mevcut kullanıcılar yeniden onaylar). §23.M'deki bu iki madde o PR'da test edilir.
+  - **Boş cinsiyetin oyun akışında geçmesi yalnızca ara durumdur: 23.2, 23.2b "kayıtta zorunlu" ve `gender_required`'ı açıp ikisini kanıtlayan testlerle birleşmeden bitmiş sayılmaz.**
 - **Açık kararlar bekletir:**
   - bulma yardımı → 23.3 saha testinden sonra;
   - analitikte cinsiyet → 23.2.
