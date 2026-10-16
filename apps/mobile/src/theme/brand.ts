@@ -13,3 +13,7 @@ export const BRAND = {
 export const VENUE_TILE_SHADOW = '0px 6px 10px rgba(20, 17, 43, 0.28)';
 // The tile's edge: a white line at this opacity.
 export const VENUE_TILE_EDGE_OPACITY = 0.16;
+
+// The launch curtain's light (src/features/launch/LaunchCurtain.tsx): the glow behind the mark and
+// the flash's middle where the capsules meet.
+export const LAUNCH_LIGHT = { glow: '#3B2B92', flash: '#FFD3E4' } as const;

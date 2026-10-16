@@ -267,6 +267,7 @@ Her ekran buna uyar (tuvalde "Ekran davranışı" sayfası):
 Kodda karşılıkları:
 - Sohbet akışı `ChatScroll` (`src/components/ChatScreen.tsx`): sona tutunur, yalnızca kullanıcının kendi kaydırması bırakır. Tepki çubuğu ekran başına tek (`useChatBar`).
 - Süreli oyun ekranı `StageFit` (`src/features/games/GameStage.tsx`): üstte süre ve skor, ortada istem, altta eylemler; yalnızca orta kendi içinde kayar. Oyun sahnesinde `flex-1` yerine `flexGrow: 1` (içerikten küçülmez, komşusunun üstüne taşmaz). Bağlantı uyarısı sahnenin `banner`'ında.
+- Açılış `LaunchCurtain` (`src/features/launch/`): sistem açılış ekranının karesinden devralır, uygulamayı bekletmez; ilk ekran `markLaunchReady` ile bildirilir (kök gezgin, güncelleme ve hata ekranı). Hareketin eğrileri `src/theme/launchMotion.ts`'te, testli.
 - Yükleme göstergesi `Loader` (`src/components/Loader.tsx`: Tahterevalli, Kesişme, Buluş, Dönüş) 300 ms sonra görünür; içeriğin yerini alan yükleme `useLoaderHold` ile en az 600 ms kalır. Basılan `Button` (`loading`) yazısını yerinde bırakıp Buluş'u gösterir, ikinci basışı yok sayar.
 - `Button` yazısı tek satırdır, sığmazsa küçülür. Metinlere `numberOfLines` yalnızca önizleme olan alıntılarda (gelen kutusu son satırı, alıntı) ve oda başlığında verilir; oda başlığı en fazla iki satırdır, sığmazsa küçülür (`ChatTopBar` → `titleLines`).
 - Büyük harf `textTransform` ile değil, `Text` içinde `@shared/trText.ts` → `upperTr` ile (kural 7; testli); `styleGuard.test.ts` uygulamada `textTransform` büyük harfi olmadığını denetler.
