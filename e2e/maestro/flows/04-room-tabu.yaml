@@ -33,6 +33,7 @@ appId: app.kabuk.mobile
 - scrollUntilVisible:
     element:
       id: spot-here
+    centerElement: true
     timeout: 20000
 - assertVisible: Kütüphane
 # "Katıl" by id: the open table's card has "Bu masadayım" too when its owner can have members.
@@ -134,6 +135,7 @@ appId: app.kabuk.mobile
 - scrollUntilVisible:
     element:
       id: go-to-table
+    centerElement: true
     timeout: 10000
 - tapOn:
     id: go-to-table
