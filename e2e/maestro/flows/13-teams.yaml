@@ -87,6 +87,8 @@ appId: app.kabuk.mobile
     env:
       ACTION: answer-game
       BOT_PORT: '8788'
+# The device's first two-table Tabu in a shard without 04: its intro (§19.2).
+- runFlow: tabu-intro-if-shown.yaml
 # Turn 1, bot A's side: bot A starts it and so describes. This phone, its teammate, never gets the
 # card; Doğru is every phone's in a refereed game.
 - runScript:
