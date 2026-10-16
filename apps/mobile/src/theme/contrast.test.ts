@@ -1,6 +1,7 @@
 import { REVEAL_COLORS } from '../../../../supabase/functions/_shared/pure/reveal.ts';
 import { describe, expect, it } from 'vitest';
 
+import { BUTTON_VARIANTS, buttonFill } from './buttonFill';
 import { AA_LARGE, AA_TEXT, contrastRatio, readableOn } from './contrast';
 import { featurePalette } from './feature';
 import { REVEAL_FOREGROUNDS } from './reveal';
@@ -8,6 +9,17 @@ import { THEME } from './theme';
 import { type Palette, type PaletteKey, TAB_TONE } from './tokens';
 
 type Pair = [foreground: PaletteKey, background: PaletteKey, minimum: number];
+
+// Button: every role's label on its fill, enabled and disabled, taken from the fills the Button
+// draws (buttonFill.ts), so a disabled label is checked as drawn; a text-only role on each ground
+// it sits on.
+const BUTTON_GROUNDS = ['canvas', 'surface', 'surface2'] as const satisfies readonly PaletteKey[];
+const BUTTON_PAIRS: readonly Pair[] = BUTTON_VARIANTS.flatMap((variant) =>
+  [false, true].flatMap((disabled): Pair[] => {
+    const { bg, fg } = buttonFill(variant, disabled);
+    return bg ? [[fg, bg, AA_TEXT]] : BUTTON_GROUNDS.map((ground): Pair => [fg, ground, AA_TEXT]);
+  }),
+);
 
 // Every foreground/background pair the kit draws. Text is AA (4.5:1); UI shapes that carry meaning
 // (the selected choice ring, input outlines) are 3:1.
@@ -48,13 +60,7 @@ const PAIRS: readonly Pair[] = [
   ['border', 'raised', AA_LARGE],
   ['accent', 'canvas', AA_LARGE],
   ['accent', 'raised', AA_LARGE],
-  // Button roles: the label on its fill.
-  ['onAccent', 'accent', AA_TEXT], // primary
-  ['text', 'raised', AA_TEXT], // secondary
-  ['accent', 'surface', AA_TEXT], // quiet (text button)
-  ['onSuccess', 'success', AA_TEXT], // positive
-  ['onDanger', 'danger', AA_TEXT], // danger
-  ['muted', 'surface2', AA_TEXT], // disabled
+  ...BUTTON_PAIRS,
   // The second accent on quiet fills (unread counts), danger on a note.
   ['violet', 'surface2', AA_TEXT],
   ['danger', 'surface2', AA_TEXT],
@@ -110,6 +116,7 @@ const FEATURE_PAIRS: readonly Pair[] = [
   ['border', 'surface', AA_LARGE],
   ['focus', 'surface', AA_LARGE],
   [TAB_TONE, 'surface', AA_LARGE],
+  ...BUTTON_PAIRS,
 ];
 
 describe('featured card contrast (WCAG AA)', () => {
@@ -121,6 +128,16 @@ describe('featured card contrast (WCAG AA)', () => {
       });
     });
   }
+});
+
+describe('disabled button', () => {
+  // Not a faded role: one neutral fill for every filled role, the muted label on it; a text-only
+  // role stays clear. Its label reports a state too ("Gönderildi"), so it is checked as text above.
+  it.each(BUTTON_VARIANTS)('%s', (variant) => {
+    const fill = buttonFill(variant, true);
+    expect(fill.fg).toBe('muted');
+    expect(fill.bg).toBe(buttonFill(variant, false).bg === null ? null : 'surface2');
+  });
 });
 
 describe('palette values', () => {
