@@ -47,7 +47,6 @@ import { NARROW_SCREEN, SPACING } from '@/theme/tokens';
 export default function RoomScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const queryClient = useQueryClient();
-  const { shape } = useTheme();
   const table = useActiveTable();
   const room = useRoom(id);
   const chat = useRoomChat(id);
@@ -411,32 +410,6 @@ export default function RoomScreen() {
     const head = (
       <>
         {topBar(tr.rooms.phones(otherPhones))}
-        <View
-          className="gap-3 pb-2"
-          style={{ paddingHorizontal: shape.screenPadding - SPACING[1] }}
-        >
-          <PeopleStrip
-            phones={roomPhones}
-            me={{ ...seat, sessionId }}
-            profiles={profiles}
-            onAll={() => setStripPeople(true)}
-          />
-          <Segmented<'games' | 'chat'>
-            value={tab}
-            onChange={setTab}
-            accessibilityLabel={tr.rooms.tabsLabel}
-            options={[
-              { value: 'games', label: tr.rooms.tabGames, testID: 'tab-games' },
-              {
-                value: 'chat',
-                label: tr.rooms.tabChat,
-                testID: 'tab-chat',
-                dot: unreadChat,
-                dotLabel: tr.rooms.unreadChat,
-              },
-            ]}
-          />
-        </View>
         <PeopleSheet
           visible={stripPeople}
           onClose={() => setStripPeople(false)}
@@ -446,20 +419,51 @@ export default function RoomScreen() {
         />
       </>
     );
+    // Under the title bar the page scrolls, the strip and the tabs with it (canvas: 320 dp ·
+    // birleşik masa): on a small screen a fixed strip left half the screen to the games.
+    const tableTop = (
+      <View className="gap-3 pb-2">
+        <PeopleStrip
+          phones={roomPhones}
+          me={{ ...seat, sessionId }}
+          profiles={profiles}
+          onAll={() => setStripPeople(true)}
+        />
+        <Segmented<'games' | 'chat'>
+          value={tab}
+          onChange={setTab}
+          accessibilityLabel={tr.rooms.tabsLabel}
+          options={[
+            { value: 'games', label: tr.rooms.tabGames, testID: 'tab-games' },
+            {
+              value: 'chat',
+              label: tr.rooms.tabChat,
+              testID: 'tab-chat',
+              dot: unreadChat,
+              dotLabel: tr.rooms.unreadChat,
+            },
+          ]}
+        />
+      </View>
+    );
+    // A tab is its own stream (key): Masa Sohbeti opens at its newest message every time.
     return tab === 'games' ? (
-      <ChatScreen top={head} composer={null}>
+      <ChatScreen key="games" top={head} composer={null}>
+        {tableTop}
         {notes}
-        <View className="mt-2">{gameArea}</View>
+        {gameArea}
         <OtherTableStatus roomId={r.id} isOwner={isOwner} />
       </ChatScreen>
     ) : (
       <ChatScreen
+        key="chat"
         top={head}
         composer={<RoomComposer chat={chat} />}
         newestKey={newest.key}
         newestMine={newest.mine}
         startAtEnd
       >
+        {tableTop}
         <RoomMessages chat={chat} sessionId={sessionId} profiles={profiles} />
       </ChatScreen>
     );

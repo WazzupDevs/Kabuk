@@ -104,7 +104,12 @@ appId: app.kabuk.mobile
     visible:
       id: sahtekar-reveal
     timeout: 60000
-- assertVisible: Masalar kazandı!
+# The result card is tall: its outcome may sit below the fold under the strip and the tabs.
+- scrollUntilVisible:
+    element:
+      text: Masalar kazandı!
+    centerElement: true
+    timeout: 10000
 - takeScreenshot: 45-sahtekar-reveal
 - runScript:
     file: ../scripts/bot.js

@@ -19,9 +19,15 @@ appId: app.kabuk.mobile
 # "Masanı lobiye aç", the bot asks to join, "Kabul" on the venue, "Masaya git" (§23.C).
 - runFlow:
     file: open-lobby-accept.yaml
+# The game list starts under the strip and the tabs: İbre, the fifth, is below the fold.
+- extendedWaitUntil:
+    visible:
+      id: tab-games
+    timeout: 15000
 - scrollUntilVisible:
     element:
       id: propose-ibre
+    centerElement: true
     timeout: 15000
 - tapOn:
     id: propose-ibre
@@ -111,10 +117,16 @@ appId: app.kabuk.mobile
     file: ../scripts/bot.js
     env:
       ACTION: ibre-end
+# Back on Oyun Seç: the last round's dial, then the game's result under it, below the fold.
 - extendedWaitUntil:
     visible:
-      id: last-game
+      id: tab-games
     timeout: 20000
+- scrollUntilVisible:
+    element:
+      id: last-game
+    centerElement: true
+    timeout: 10000
 - takeScreenshot: 58-ibre-result
 - runScript:
     file: ../scripts/bot.js
