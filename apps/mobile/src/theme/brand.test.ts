@@ -5,7 +5,7 @@ import { COLORS } from '../../../../scripts/icon/mark.ts';
 import { TABLE_AVATAR_ICONS } from '../../../../supabase/functions/_shared/pure/tableAvatar.ts';
 
 import { initials, TABLE_AVATAR_COLORS, TABLE_AVATAR_INK, tableAvatarOf } from './avatar';
-import { BRAND } from './brand';
+import { BRAND, LAUNCH_MASK } from './brand';
 import { contrastRatio } from './contrast';
 import { THEME } from './theme';
 
@@ -23,6 +23,21 @@ describe('logo colours', () => {
     expect(THEME.palettes.light.overlap).toBe(BRAND.orange);
     expect(THEME.palettes.dark.overlap).toBe(BRAND.white);
     expect(THEME.palettes.light.feature).toBe(BRAND.ink);
+  });
+});
+
+describe('launch mask', () => {
+  // react-native-svg's luminance-to-alpha (Android RenderableView), on the sRGB values.
+  const alpha = (hex: string) => {
+    const channel = (i: number) => parseInt(hex.slice(i, i + 2), 16) / 255;
+    return 0.2125 * channel(1) + 0.7154 * channel(3) + 0.0721 * channel(5);
+  };
+
+  it('keeps the curtain whole and cuts the window clean', () => {
+    expect(alpha(LAUNCH_MASK.keep)).toBeCloseTo(1, 3);
+    expect(alpha(LAUNCH_MASK.cut)).toBe(0);
+    // The ink, as the cut, would leave a veil over the open window.
+    expect(alpha(BRAND.ink)).toBeGreaterThan(0.07);
   });
 });
 
