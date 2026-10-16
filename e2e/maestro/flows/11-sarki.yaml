@@ -82,7 +82,7 @@ appId: app.kabuk.mobile
 - tapOn:
     id: say-object
 - extendedWaitUntil:
-    visible: siz · 2 hak
+    visible: tarafın · 2 hak
     timeout: 20000
 - takeScreenshot: 51-sarki-objected
 # The last two words: 5 seconds a line.

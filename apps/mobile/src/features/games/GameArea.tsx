@@ -41,6 +41,14 @@ type Props = {
   side: TableSide;
   // Room-level events count once: from the owner side's leader (docs/SPEC_V3.md §22.L).
   reportsRoom: boolean;
+  // Faz 2 (§22.E): whether this phone leads its side, the side leader's alias, the phones on the
+  // side now, and a phone's alias in the room.
+  leader: boolean;
+  leaderAlias: string;
+  sidePhones: number;
+  // Both sides' phones now: game_completed's `phones`.
+  roomPhones: number;
+  aliasOf: (sessionId: string) => string | undefined;
   aliases: Record<TableSide, string>;
   // The side's headcount (declared or its phones, whichever is larger): the seats of one-table
   // Sahtekar.
@@ -88,6 +96,11 @@ export function GameArea({
   hasGuest,
   side,
   reportsRoom,
+  leader,
+  leaderAlias,
+  sidePhones,
+  roomPhones,
+  aliasOf,
   aliases,
   headcount,
   roomHeadcount,
@@ -115,9 +128,10 @@ export function GameArea({
         mode: 'voice',
         score: lastScore,
         tabu_mode: last?.teamScore !== null ? 'cooperative' : 'refereed',
+        phones: roomPhones,
       });
     }
-  }, [reportsRoom, lastScore, last?.teamScore, roomId, between.gameNo]);
+  }, [reportsRoom, lastScore, last?.teamScore, roomId, between.gameNo, roomPhones]);
   // A Tabu game stopped with "Oyunu bitir" before its last turn (docs/SPEC_V3.md §19.1): each
   // phone counts it once for its own user.
   // Harf Kapmaca, Şarkıda Geçsin and İbre too (their round and rounds).
@@ -146,9 +160,10 @@ export function GameArea({
         score: sayScore,
         objections: sayLast.objections,
         rounds_lost_by_timeout: sayLast.timeouts,
+        phones: roomPhones,
       });
     }
-  }, [reportsRoom, sayConcept, sayScore, sayLast, roomId, between.gameNo]);
+  }, [reportsRoom, sayConcept, sayScore, sayLast, roomId, between.gameNo, roomPhones]);
 
   // A finished two-table İbre counts once, from the owner's phone: the owner table's score and its
   // 4-point rounds (never the scale or the target).
@@ -161,9 +176,10 @@ export function GameArea({
         mode: 'voice',
         score: ibreScore,
         bullseyes: ibreLast.bullseyes.owner,
+        phones: roomPhones,
       });
     }
-  }, [reportsRoom, ibreLast, ibreScore, roomId, between.gameNo]);
+  }, [reportsRoom, ibreLast, ibreScore, roomId, between.gameNo, roomPhones]);
 
   // A finished two-table Sahtekar counts once, from the owner's phone: who won and how many played
   // (never the seat or the word).
@@ -179,9 +195,10 @@ export function GameArea({
         mode: 'voice',
         outcome: revealed.winner,
         players: sahtekarPlayers,
+        phones: roomPhones,
       });
     }
-  }, [reportsRoom, revealed, sahtekarPlayers, roomId, between.gameNo]);
+  }, [reportsRoom, revealed, sahtekarPlayers, roomId, between.gameNo, roomPhones]);
 
   // "Rövanş" after a finished two-table game: the same game proposed again (§19.2); it starts when
   // the other table accepts. Sahtekar keeps this table's count from the last game (§20.1).
@@ -220,7 +237,15 @@ export function GameArea({
     ) : local === 'ibre' ? (
       <LocalIbre roomId={roomId} />
     ) : concept === 'ibre' ? (
-      <IbreGame roomId={roomId} state={parseIbreState(gameState)} side={side} aliases={aliases} />
+      <IbreGame
+        roomId={roomId}
+        state={parseIbreState(gameState)}
+        side={side}
+        sessionId={sessionId}
+        sidePhones={sidePhones}
+        aliasOf={aliasOf}
+        aliases={aliases}
+      />
     ) : concept === 'harf' || concept === 'sarki' ? (
       <SayGame
         roomId={roomId}
@@ -230,7 +255,13 @@ export function GameArea({
         aliases={aliases}
       />
     ) : concept === 'sahtekar' ? (
-      <SahtekarGame roomId={roomId} state={parseSahtekarState(gameState)} side={side} />
+      <SahtekarGame
+        roomId={roomId}
+        state={parseSahtekarState(gameState)}
+        side={side}
+        leader={leader}
+        leaderAlias={leaderAlias}
+      />
     ) : concept === 'sohbet' ? (
       <SohbetCard
         roomId={roomId}
@@ -238,7 +269,14 @@ export function GameArea({
         state={state?.concept === 'sohbet' ? state : null}
       />
     ) : concept === 'tabu' ? (
-      <VoiceTabu roomId={roomId} state={state} side={side} aliases={aliases} />
+      <VoiceTabu
+        roomId={roomId}
+        state={state}
+        side={side}
+        sessionId={sessionId}
+        aliasOf={aliasOf}
+        aliases={aliases}
+      />
     ) : null;
 
   // The game fills the stage: the timed screens (StageFit) lay out against its height.
@@ -296,6 +334,7 @@ export function GameArea({
         <ProposalArea
           roomId={roomId}
           sessionId={sessionId}
+          side={side}
           gameRunning={concept !== null}
           players={roomHeadcount}
         />

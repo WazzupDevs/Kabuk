@@ -225,6 +225,11 @@ export default function RoomScreen() {
       hasGuest={hasOtherTable}
       side={side}
       reportsRoom={reportsRoom}
+      leader={seat.leader}
+      leaderAlias={(isOwner ? r.owner_alias : r.guest_alias) ?? r.owner_alias}
+      sidePhones={(isOwner ? r.owner_phones : r.guest_phones) ?? 1}
+      roomPhones={r.owner_phones + (r.guest_phones ?? 0)}
+      aliasOf={(s) => roomPhones.find((p) => p.sessionId === s)?.alias}
       aliases={{ owner: r.owner_alias, guest: r.guest_alias ?? '' }}
       headcount={mySide}
       roomHeadcount={roomHeadcount}

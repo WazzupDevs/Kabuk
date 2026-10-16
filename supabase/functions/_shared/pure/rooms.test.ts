@@ -85,33 +85,47 @@ describe('room status check', () => {
 
 describe('game proposals on screen (docs/SPEC_V3.md §5.3)', () => {
   const now = Date.parse('2026-10-01T12:00:00Z');
-  const proposal = (proposer: string, secondsLeft: number) => ({
+  // A row from before Faz 2 has no side: the session decides.
+  const proposal = (
+    proposer: string,
+    secondsLeft: number,
+    side: 'owner' | 'guest' | null = null,
+  ) => ({
     proposer_session_id: proposer,
+    proposer_side: side,
     concept: 'tabu' as const,
     expires_at: new Date(now + secondsLeft * 1000).toISOString(),
   });
+  const me = { sessionId: 'me', side: 'owner' as const };
 
   it("tells this table's proposal from the other's, and drops an expired one", () => {
-    expect(proposalView(null, 'me', now)).toEqual({ kind: 'none' });
-    expect(proposalView(proposal('me', 12), 'me', now)).toEqual({
+    expect(proposalView(null, me, now)).toEqual({ kind: 'none' });
+    expect(proposalView(proposal('me', 12), me, now)).toEqual({
       kind: 'mine',
       concept: 'tabu',
       secondsLeft: 12,
     });
-    expect(proposalView(proposal('other', 30), 'me', now)).toMatchObject({ kind: 'theirs' });
-    expect(proposalView(proposal('me', 0), 'me', now)).toEqual({ kind: 'none' });
-    expect(proposalView(proposal('other', -3), 'me', now)).toEqual({ kind: 'none' });
+    expect(proposalView(proposal('other', 30), me, now)).toMatchObject({ kind: 'theirs' });
+    expect(proposalView(proposal('me', 0), me, now)).toEqual({ kind: 'none' });
+    expect(proposalView(proposal('other', -3), me, now)).toEqual({ kind: 'none' });
+  });
+
+  // docs/SPEC_V3.md §22.E: a proposal is its side's; a teammate's is this phone's to wait for.
+  it("treats a teammate's proposal as this side's", () => {
+    expect(proposalView(proposal('mate', 12, 'owner'), me, now)).toMatchObject({ kind: 'mine' });
+    expect(proposalView(proposal('other', 12, 'guest'), me, now)).toMatchObject({ kind: 'theirs' });
+    expect(proposalView(proposal('me', 12, 'guest'), me, now)).toMatchObject({ kind: 'theirs' });
   });
 
   // S7: a decline and a timeout look the same to the proposer; an accepted proposal starts a game.
   it("says 'not accepted' only when this table's proposal goes away without a game", () => {
-    const mine = proposalView(proposal('me', 10), 'me', now);
-    const gone = proposalView(null, 'me', now);
-    const expired = proposalView(proposal('me', 10), 'me', now + 11_000);
+    const mine = proposalView(proposal('me', 10), me, now);
+    const gone = proposalView(null, me, now);
+    const expired = proposalView(proposal('me', 10), me, now + 11_000);
     expect(proposalNotAccepted(mine, gone, false)).toBe(true);
     expect(proposalNotAccepted(mine, expired, false)).toBe(true);
     expect(proposalNotAccepted(mine, gone, true)).toBe(false);
-    const theirs = proposalView(proposal('other', 10), 'me', now);
+    const theirs = proposalView(proposal('other', 10), me, now);
     expect(proposalNotAccepted(theirs, gone, false)).toBe(false);
   });
 

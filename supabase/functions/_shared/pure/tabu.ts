@@ -59,6 +59,9 @@ type TabuStateBase = {
   maxPasses: number;
   // Index of the card being played in this turn's list.
   cardIndex: number;
+  // The phone describing the running turn (docs/SPEC_V3.md §22.E): its table session id. Null while
+  // the turn is ready, and in a game from before Faz 2.
+  describer: string | null;
 };
 
 export type RefereedTabuState = TabuStateBase & {
@@ -78,11 +81,13 @@ export type MarkResult = (typeof MARK_RESULTS)[number];
 // Points for the describing table (cooperative: the team): Doğru +1, Tabu −1, Pas 0.
 export const MARK_POINTS: Record<MarkResult, number> = { correct: 1, taboo: -1, pass: 0 };
 
-// A table's role in the current turn: the other table judges (refereed) or guesses (cooperative).
-export type TableRole = 'describer' | 'judge' | 'guesser';
+// A phone's role in the current turn: the other side judges (refereed) or guesses (cooperative).
+// Faz 2 (docs/SPEC_V3.md §22.E): on the describing side the phone that started the turn describes;
+// its teammates are 'teammate'.
+export type TableRole = 'describer' | 'teammate' | 'judge' | 'guesser';
 
-// Refereed: Tabu only the judging table, Pas only the describing table, Doğru either.
-// Cooperative: the describing table presses all three, the guessing table none.
+// Refereed: Tabu only the judging side, Pas only the describer, Doğru every phone of both sides.
+// Cooperative: the describer presses all three, every other phone none.
 export function mayMark(role: TableRole, result: MarkResult): boolean {
   if (role === 'guesser') return false;
   if (result === 'taboo') return role === 'judge';
@@ -186,9 +191,24 @@ export function describingTableForTurn(turnNo: number): TableSide {
   return turnNo % 2 === 1 ? 'owner' : 'guest';
 }
 
+// A side's role: the describing side, or the other side's judge or guesser.
 export function roleOf(state: VoiceTabuState, side: TableSide): TableRole {
   if (state.describingTable === side) return 'describer';
   return state.mode === 'cooperative' ? 'guesser' : 'judge';
+}
+
+// This phone's role: on the describing side, the describer only if it started the turn (or the
+// state names nobody: a ready turn, a game from before Faz 2); its teammates are 'teammate'.
+export function phoneRoleOf(state: VoiceTabuState, side: TableSide, sessionId: string): TableRole {
+  const role = roleOf(state, side);
+  if (role !== 'describer') return role;
+  return state.describer === null || state.describer === sessionId ? 'describer' : 'teammate';
+}
+
+// Whether this phone holds the turn's card list: the describer, and the judging side's phones
+// in refereed Tabu; never a teammate or a cooperative guesser (tabu/turn-cards: not_describer).
+export function seesCard(role: TableRole): boolean {
+  return role === 'describer' || role === 'judge';
 }
 
 // Ready turns (docs/SPEC_V3.md §19.1). game_state.turnPhase is 'ready' until tabu/begin-turn
@@ -330,6 +350,7 @@ export function parseGameState(value: unknown): GameState | null {
         passesUsed: v.passesUsed,
         maxPasses: v.maxPasses,
         cardIndex: v.cardIndex,
+        describer: !ready && str(v.describer) ? v.describer : null,
       };
       return teamScores
         ? { ...base, mode: 'cooperative', scores: teamScores }

@@ -776,7 +776,13 @@ export const tr = {
     voiceJudge: (alias: string) => `${alias} anlatıyor. Hakem sizsiniz.`,
     judgeCorrect: 'Doğru +1',
     judgeTaboo: 'Tabu −1',
-    you: 'siz',
+    // The score label of this phone's side (canvas: Faz 2 · 22.5).
+    you: 'tarafın',
+    // The describer's teammate (docs/SPEC_V3.md §22.E; canvas: Sesli Tabu: takım arkadaşı).
+    teammateNote: (alias: string) => `${alias} anlatıyor.`,
+    cardWithDescriber: 'Kart anlatanda',
+    cardWithDescriberHint:
+      "Kartı yalnızca anlatan ve hakem taraf görür. Sen tahmin et, bilince Doğru'ya bas.",
     describing: 'anlatıyor',
     voiceWinner: (alias: string) => `${alias} kazandı!`,
     voiceDraw: 'Berabere!',
@@ -801,8 +807,8 @@ export const tr = {
     turnDone: (n: number) => `${n}. tur bitti`,
     turnReadyStart: 'Başla',
     turnReadyStartLabel: 'Turu başlat',
-    turnReadyYou: 'Bu tur siz anlatıyorsunuz',
-    turnReadyHint: 'Telefonu takımınızdan uzak tutun; kartı yalnızca anlatan görür.',
+    turnReadyYou: 'Sıra tarafında',
+    turnReadyHint: "Başla'ya kim basarsa o anlatır; kart yalnızca onun telefonunda açılır.",
     turnReadyWaiting: (alias: string) => `${alias} hazırlanıyor`,
     turnReadyWaitingHint: 'Onlar başlayınca ya da süre dolunca tur başlar.',
     turnReadySeconds: (s: number) => `${s} saniye`,
@@ -893,6 +899,9 @@ export const tr = {
     readyWaitingHint: 'Karşı masa hedefe bakıp tek ipucu verecek. Dinleyin.',
     clueHint: `Anlatıcı hedefe baksın, sesli tek ipucu versin. Masası ibreyi ayarlayıp onaylasın; son ${IBRE_AUTO_LOCK_SECONDS} saniyede ibre olduğu yerde onaylanır.`,
     lock: 'İbreyi onayla',
+    // Faz 2 (docs/SPEC_V3.md §22.E; canvas: İbre: anlatıcı / takım arkadaşı).
+    teamLocks: 'Takım arkadaşın "İbreyi onayla"ya basınca ibre kilitlenir.',
+    teamClue: (alias: string) => `${alias} ipucu veriyor. İbreyi ipucuna göre getir.`,
     otherClue: (alias: string) => `${alias} ipucu veriyor. İbre onaylanınca taraf seçeceksiniz.`,
     sideTitle: 'Hedef ibrenin solunda mı, sağında mı?',
     sideHint: (s: number) => `${s} sn içinde seçin; doğruysa 1 puan.`,
@@ -959,6 +968,10 @@ export const tr = {
     voteLine: (voter: string, target: string) => `${voter}, ${seatTo(target, 'dative')} oy verdi`,
     // The game screens (docs/SPEC_V3.md §20.2).
     ownTable: 'Sizin masanız',
+    // A member's phone (docs/SPEC_V3.md §22.E; canvas: Sahtekar: üye izler).
+    memberTitle: 'Koltuklar liderinin telefonunda',
+    memberBody: (leader: string) =>
+      `${inflectTr(leader, 'genitive')} telefonunu izle; kartlar, ipucu sırası ve oylar orada.`,
     otherTable: 'Diğer masa',
     ownDone: 'Masanızda herkes baktı. Diğer masa bekleniyor.',
     redealt:

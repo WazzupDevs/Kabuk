@@ -165,12 +165,17 @@ export function useGameProposal(roomId: string) {
     queryFn: async (): Promise<GameProposal | null> => {
       const { data, error } = await supabase
         .from('game_proposals')
-        .select('proposer_session_id, concept, expires_at')
+        .select('proposer_session_id, proposer_side, concept, expires_at')
         .eq('room_id', roomId)
         .maybeSingle();
       if (error) throw error;
       if (!data || !isConcept(data.concept)) return null;
-      return { ...data, concept: data.concept };
+      const side = data.proposer_side;
+      return {
+        ...data,
+        proposer_side: side === 'owner' || side === 'guest' ? side : null,
+        concept: data.concept,
+      };
     },
   });
 }

@@ -43,6 +43,8 @@ export type AnalyticsEventProps = {
     rounds_lost_by_timeout?: number;
     // İbre (§20.5): rounds the reporting table scored 4. Never the scale or the target.
     bullseyes?: number;
+    // Faz 2 (docs/SPEC_V3.md §22.L): the phones in the room when the game ended.
+    phones?: number;
   };
   // v3 step 7 (docs/SPEC_V3.md §19.1): a Tabu game stopped before its last turn, by "Oyunu bitir"
   // or a table leaving. The turn it stopped in and the game's length; nothing else.
@@ -98,6 +100,7 @@ const ALLOWED: { [E in AnalyticsEvent]: readonly (keyof AnalyticsEventProps[E])[
     'objections',
     'rounds_lost_by_timeout',
     'bullseyes',
+    'phones',
   ],
   game_abandoned: ['concept', 'turn_no', 'total_turns'],
   reveal_mutual: [],

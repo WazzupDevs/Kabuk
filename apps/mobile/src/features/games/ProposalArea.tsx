@@ -27,15 +27,21 @@ import { GAME_GLYPH, GAME_ORDER, GameCard, gameCardState, GameCell, GameGrid } f
 const NOT_ACCEPTED_MS = 6000;
 
 // players: both tables' check-in headcounts added up; a game they are too few for is faded.
-type Props = { roomId: string; sessionId: string; gameRunning: boolean; players: number };
+type Props = {
+  roomId: string;
+  sessionId: string;
+  side: 'owner' | 'guest';
+  gameRunning: boolean;
+  players: number;
+};
 
 // "Oyun öner" in a two-table room (docs/SPEC_V3.md §5.3): one table proposes, the other accepts or
 // not. A decline and a timeout show the proposer the same text; the decline at once (S7).
-export function ProposalArea({ roomId, sessionId, gameRunning, players }: Props) {
+export function ProposalArea({ roomId, sessionId, side, gameRunning, players }: Props) {
   const queryClient = useQueryClient();
   const proposal = useGameProposal(roomId);
   const now = useNow(1000);
-  const view = proposalView(proposal.data, sessionId, now);
+  const view = proposalView(proposal.data, { sessionId, side }, now);
 
   const previous = useRef<ProposalView>(view);
   const [notAcceptedUntil, setNotAcceptedUntil] = useState(0);

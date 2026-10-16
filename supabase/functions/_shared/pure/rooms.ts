@@ -31,12 +31,15 @@ export const ALIAS_REROLLS_PER_CHECKIN = 3;
 
 export type GameProposal = {
   proposer_session_id: string;
+  // The side the proposal belongs to (docs/SPEC_V3.md §22.E); null on a row from before Faz 2.
+  proposer_side: 'owner' | 'guest' | null;
   concept: Concept;
   expires_at: string;
 };
 
-// The proposal area of the room screen: nothing, this table's proposal waiting, or the other
-// table's proposal to answer. A proposal past expires_at is gone on both screens at once.
+// The proposal area of the room screen: nothing, this side's proposal waiting, or the other side's
+// proposal to answer. A proposal past expires_at is gone on both screens at once. Faz 2: a proposal
+// is its side's; a teammate's shows as this phone's own (only the other side answers it).
 export type ProposalView =
   | { kind: 'none' }
   | { kind: 'mine'; concept: Concept; secondsLeft: number }
@@ -44,14 +47,18 @@ export type ProposalView =
 
 export function proposalView(
   proposal: GameProposal | null | undefined,
-  mySessionId: string,
+  me: { sessionId: string; side: 'owner' | 'guest' },
   now: number,
 ): ProposalView {
   if (!proposal) return { kind: 'none' };
   const left = Math.ceil((Date.parse(proposal.expires_at) - now) / 1000);
   if (!(left > 0)) return { kind: 'none' };
+  const mine =
+    proposal.proposer_side !== null
+      ? proposal.proposer_side === me.side
+      : proposal.proposer_session_id === me.sessionId;
   return {
-    kind: proposal.proposer_session_id === mySessionId ? 'mine' : 'theirs',
+    kind: mine ? 'mine' : 'theirs',
     concept: proposal.concept,
     secondsLeft: left,
   };

@@ -1,6 +1,7 @@
 import {
   IBRE_CONFIG,
   ibreAutoLockDue,
+  ibrePhoneRole,
   type IbreReveal,
   type IbreSide,
   type IbreState,
@@ -166,13 +167,19 @@ type Props = {
   roomId: string;
   state: IbreState | null;
   side: TableSide;
+  // This phone, the phones on its side now, and a phone's alias in the room (docs/SPEC_V3.md §22.E).
+  sessionId: string;
+  sidePhones: number;
+  aliasOf: (sessionId: string) => string | undefined;
   aliases: Record<TableSide, string>;
 };
 
 // Two-table İbre (docs/SPEC_V3.md §20.5): the server keeps the target, the clocks and the points.
 // Başla on the describing table; when a clock runs out either phone moves the game on
-// (ibre/advance, idempotent; the ready clock starts the turn from readyEndsAt).
-export function IbreGame({ roomId, state, side, aliases }: Props) {
+// (ibre/advance, idempotent; the ready clock starts the turn from readyEndsAt). Faz 2 (§22.E): the
+// phone that starts the round describes it and alone sees the target; its teammates move and lock
+// the needle (the describer when it was alone, or once its teammates left).
+export function IbreGame({ roomId, state, side, sessionId, sidePhones, aliasOf, aliases }: Props) {
   const now = useNow(200);
   const queryClient = useQueryClient();
   const refresh = () => void queryClient.invalidateQueries({ queryKey: roomKeys.room(roomId) });
@@ -213,17 +220,22 @@ export function IbreGame({ roomId, state, side, aliases }: Props) {
     advanceNow();
   }, [now, clock, clockKey, state, advanceNow]);
 
-  // The describing table's needle, locked where it stands in the last 3 seconds unless locked by
-  // hand (docs/SPEC_V3.md §20.5a). Once per round; the server ignores a second lock.
+  // The needle, locked where it stands in the last 3 seconds unless locked by hand (docs/SPEC_V3.md
+  // §20.5a), by a phone that may lock it. Once per round; the server ignores a second lock (the
+  // first of the teammates wins).
   const { mutate: lockNow } = lock;
   const lockedRound = useRef<number | null>(null);
   const autoValue = state && needle.round === state.roundNo ? needle.value : 50;
+  const role = state
+    ? ibrePhoneRole(state, side, sessionId, sidePhones)
+    : { seesTarget: false, locks: false };
+  const locks = role.locks;
   useEffect(() => {
-    if (!state || state.turnTable !== side || !ibreAutoLockDue(state, now)) return;
+    if (!state || !locks || !ibreAutoLockDue(state, now)) return;
     if (lockedRound.current === state.roundNo) return;
     lockedRound.current = state.roundNo;
     lockNow({ round: state.roundNo, value: autoValue });
-  }, [now, state, side, autoValue, lockNow]);
+  }, [now, state, locks, autoValue, lockNow]);
 
   if (!state) {
     return (
@@ -283,9 +295,76 @@ export function IbreGame({ roomId, state, side, aliases }: Props) {
   ) : null;
 
   if (state.turnPhase === 'running') {
+    const describer =
+      (state.describer ? aliasOf(state.describer) : undefined) ?? aliases[state.turnTable];
+    // The describer whose teammates lock: the target only, and who locks it.
+    if (describing && role.seesTarget && !role.locks) {
+      return (
+        <StageFit testID="ibre-round" status={header} actions={errorLine}>
+          <DialWidth outside={sizes.text(2, 'fine')}>
+            {(w) => (
+              <TargetHold
+                width={w}
+                left={state.scale.left}
+                right={state.scale.right}
+                target={target?.round === round ? target.value : null}
+                onHoldStart={() => {
+                  if (target?.round !== round && !ask.isPending) ask.mutate(round);
+                }}
+                onHoldEnd={() => undefined}
+              />
+            )}
+          </DialWidth>
+          <Text variant="fine" tone="text" align="center" testID="ibre-team-locks">
+            {tr.ibre.teamLocks}
+          </Text>
+        </StageFit>
+      );
+    }
+    // A teammate who locks: the needle and "İbreyi onayla", no target.
+    if (describing && role.locks && !role.seesTarget) {
+      return (
+        <StageFit
+          testID="ibre-round"
+          status={header}
+          actions={
+            <>
+              <Button
+                testID="ibre-lock"
+                size="lg"
+                label={tr.ibre.lock}
+                onPress={() => {
+                  lockedRound.current = round;
+                  lock.mutate({ round, value });
+                }}
+                loading={lock.isPending}
+                disabled={lock.isPending}
+              />
+              {errorLine}
+            </>
+          }
+        >
+          <Text variant="bodyStrong" align="center" accessibilityLiveRegion="polite">
+            {tr.ibre.teamClue(describer)}
+          </Text>
+          <DialWidth outside={sizes.text(1)}>
+            {(w) => (
+              <NeedleDial
+                width={w}
+                left={state.scale.left}
+                right={state.scale.right}
+                value={value}
+                onChange={(v) => setNeedle({ round, value: v })}
+                disabled={lock.isPending}
+              />
+            )}
+          </DialWidth>
+        </StageFit>
+      );
+    }
     // The describing table: the hold-to-see dial over the needle's, "İbreyi onayla" at the bottom.
     // The clue's rules are on the ready screen (readyHint), not under the clock.
-    return describing ? (
+    return describing && role.seesTarget ? (
       <StageFit
         testID="ibre-round"
         status={header}
@@ -344,7 +423,7 @@ export function IbreGame({ roomId, state, side, aliases }: Props) {
           )}
         </DialWidth>
         <Text variant="bodyStrong" align="center" accessibilityLiveRegion="polite">
-          {tr.ibre.otherClue(aliases[state.turnTable])}
+          {describing ? tr.ibre.teamClue(describer) : tr.ibre.otherClue(aliases[state.turnTable])}
         </Text>
       </StageFit>
     );
