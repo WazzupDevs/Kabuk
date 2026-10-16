@@ -120,12 +120,17 @@ export const BROADCAST = {
 // channel (re)subscribes. Only when they differ from the cached row is the full row read again, so a
 // check never overwrites a newer row that arrived over the channel (a Tabu press).
 export const ROOM_CHECK_SECONDS = 4;
-export const ROOM_CHECK_COLUMNS = 'status, owner_session_id, guest_session_id';
+// The phones on each side too (docs/SPEC_V3.md §22.H): a phone joining or leaving changes the
+// room's people and the title's count.
+export const ROOM_CHECK_COLUMNS =
+  'status, owner_session_id, guest_session_id, owner_phones, guest_phones';
 
 export type RoomCheck = {
   status: string;
   owner_session_id: string;
   guest_session_id: string | null;
+  owner_phones: number;
+  guest_phones: number | null;
 };
 
 // `checked` null: the room can no longer be read (the table is not a member any more).
@@ -137,6 +142,8 @@ export function roomCheckDiffers(
   return (
     cached.status !== checked.status ||
     cached.owner_session_id !== checked.owner_session_id ||
-    cached.guest_session_id !== checked.guest_session_id
+    cached.guest_session_id !== checked.guest_session_id ||
+    cached.owner_phones !== checked.owner_phones ||
+    cached.guest_phones !== checked.guest_phones
   );
 }

@@ -22,6 +22,8 @@ describe('analytics events', () => {
         'join_requested',
         'join_accepted',
         'join_unavailable',
+        'team_left',
+        'leader_transferred',
         'room_two_tables',
         'game_abandoned',
         'game_completed',
@@ -66,6 +68,7 @@ describe('analytics events', () => {
       } as never),
     ).toEqual({ with_photo: true, with_bio: false });
     expect(analyticsProperties('check_in', { headcount: 4 })).toEqual({ headcount: 4 });
+    expect(analyticsProperties('join_requested', { as_member: true })).toEqual({ as_member: true });
     expect(
       analyticsProperties('check_in', { headcount: 2, venueId: 'v', lat: 41 } as never),
     ).toEqual({ headcount: 2 });
