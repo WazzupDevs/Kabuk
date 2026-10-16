@@ -1,0 +1,13 @@
+# P0 shard 1 of 4 (.github/workflows/e2e.yml runs the four in parallel, light and dark). p0.yaml is
+# the whole path in one run (locally); the shards split it so each runs on its own emulator and
+# local stack: every shard signs up and picks the design, and those that play check in too.
+# scripts/e2e/shards.test.ts checks that the shards cover p0.yaml once and keep its order.
+appId: app.kabuk.mobile
+name: P0 kritik yol, parça 1
+---
+- runFlow: flows/01-login.yaml
+- runFlow: flows/01b-design.yaml
+- runFlow: flows/01c-preview.yaml
+- runFlow: flows/02-checkin.yaml
+- runFlow: flows/03-name.yaml
+- runFlow: flows/06b-tabu-coop.yaml
