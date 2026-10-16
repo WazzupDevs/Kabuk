@@ -6,17 +6,18 @@ import {
 } from '@shared/localTabu.ts';
 import { useMutation } from '@tanstack/react-query';
 import { useEffect, useReducer, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Text } from '@/components/Text';
+import { Loader } from '@/components/Loader';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { gamesApi } from '@/lib/api';
 import { useNow } from '@/lib/useNow';
-import { useTheme } from '@/theme/ThemeProvider';
+import { haptic } from '@/lib/haptics';
 
 import { ClockPill, TeamScore } from './GameBits';
 import { useGameSignals } from './gameSignals';
@@ -27,7 +28,6 @@ import { useTurnFeedback } from './useTurnFeedback';
 // One-table Tabu (MVP_SPEC §5.1): the server only hands out the deck; the game runs here. If
 // another table joins, the room switches to the two-table game and this unmounts.
 export function LocalTabu({ roomId }: { roomId: string }) {
-  const { colors } = useTheme();
   const deck = useMutation({ mutationFn: () => gamesApi.tabuStart(roomId) });
   const [state, dispatch] = useReducer(localTabuReducer, initialLocalTabu([]));
   const now = useNow(250);
@@ -80,7 +80,13 @@ export function LocalTabu({ roomId }: { roomId: string }) {
       </Text>
     );
   }
-  if (!cards || state.deck.length === 0) return <ActivityIndicator color={colors.muted} />;
+  if (!cards || state.deck.length === 0) {
+    return (
+      <View className="items-center">
+        <Loader />
+      </View>
+    );
+  }
 
   const game = state;
   const card = game.deck[game.cardIndex];
@@ -138,21 +144,30 @@ export function LocalTabu({ roomId }: { roomId: string }) {
             <Button
               variant="positive"
               label={tr.games.correct}
-              onPress={() => dispatch({ type: 'correct' })}
+              onPress={() => {
+                haptic('tabuCorrect');
+                dispatch({ type: 'correct' });
+              }}
             />
           </View>
           <View className="flex-1">
             <Button
               variant="neutral"
               label={tr.games.pass}
-              onPress={() => dispatch({ type: 'pass' })}
+              onPress={() => {
+                haptic('tabuPass');
+                dispatch({ type: 'pass' });
+              }}
             />
           </View>
           <View className="flex-1">
             <Button
               variant="danger"
               label={tr.games.taboo}
-              onPress={() => dispatch({ type: 'taboo' })}
+              onPress={() => {
+                haptic('tabuTaboo');
+                dispatch({ type: 'taboo' });
+              }}
             />
           </View>
         </View>

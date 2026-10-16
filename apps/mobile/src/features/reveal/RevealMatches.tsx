@@ -18,6 +18,7 @@ import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { friendsApi } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { withAlpha } from '@/theme/contrast';
 import { revealForeground, REVEAL_FOREGROUNDS } from '@/theme/reveal';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -182,6 +183,7 @@ function PairFriend({
     },
   });
   const add = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: (historyId: string) => friendsApi.addFromRoom(historyId),
     onSuccess: () => track('friend_add_pressed', {}),
     onError: (err, historyId) => void askName(err, historyId),

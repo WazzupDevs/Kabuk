@@ -3,6 +3,7 @@ import { Pressable, View } from 'react-native';
 
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
+import { haptic } from '@/lib/haptics';
 
 import { usePressScale } from './motion';
 import { Text } from './Text';
@@ -10,7 +11,7 @@ import { Text } from './Text';
 type Props = {
   label: string;
   hint?: string;
-  // A big picture over the label (the table's snail, the profile).
+  // A big picture over the label (the table's face, the profile).
   picture: ReactNode;
   selected: boolean;
   disabled?: boolean;
@@ -42,7 +43,10 @@ export function ChoiceCard({
       accessibilityLabel={hint ? `${label}. ${hint}` : label}
       accessibilityState={{ selected, disabled: !!disabled || unavailable }}
       disabled={disabled || unavailable}
-      onPress={onPress}
+      onPress={() => {
+        if (!selected) haptic('selection');
+        onPress();
+      }}
       className="flex-1"
     >
       {({ pressed }) => (

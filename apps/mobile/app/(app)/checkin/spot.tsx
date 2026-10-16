@@ -1,19 +1,18 @@
 import { Redirect, router } from 'expo-router';
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { Loader } from '@/components/Loader';
 import { useCheckinDraft } from '@/features/checkin/draft';
 import { SpotPicker } from '@/features/checkin/SpotPicker';
 import { useVenueSpots } from '@/features/checkin/spots';
 import { tr } from '@/i18n/tr';
-import { useTheme } from '@/theme/ThemeProvider';
 
 // Check-in at a venue with spots, before "Kaç kişisiniz?": where the table is (docs/SPEC_V3.md
 // §4.3). The spot is the table's own statement; no position is taken for it.
 export default function SpotScreen() {
-  const { colors } = useTheme();
   const { venue, position, spot, setSpot } = useCheckinDraft();
   const spots = useVenueSpots(venue?.id);
 
@@ -30,7 +29,11 @@ export default function SpotScreen() {
         onBack={() => router.back()}
       />
       <View className="mt-4">
-        {spots.isPending ? <ActivityIndicator className="mt-8" color={colors.muted} /> : null}
+        {spots.isPending ? (
+          <View className="mt-8 items-center">
+            <Loader />
+          </View>
+        ) : null}
         <SpotPicker
           spots={spots.data ?? []}
           selectedId={spot?.id ?? null}

@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { ActivityIndicator, Alert, type ScrollView, View } from 'react-native';
+import { Alert, type ScrollView, View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { ListRow } from '@/components/ListRow';
@@ -13,6 +13,7 @@ import { LiveDot } from '@/components/LiveDot';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Text } from '@/components/Text';
+import { Loader } from '@/components/Loader';
 import { useVenueSpots } from '@/features/checkin/spots';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { Lobby } from '@/features/rooms/Lobby';
@@ -29,6 +30,7 @@ import { trackOnce } from '@/lib/analytics';
 import { callLeave } from '@/lib/api';
 import { useNow } from '@/lib/useNow';
 import { useReduceMotion } from '@/lib/useReduceMotion';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, TOUCH } from '@/theme/tokens';
 
@@ -68,6 +70,7 @@ export default function VenueScreen() {
   const reduceMotion = useReduceMotion();
 
   const leave = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: callLeave,
     onSuccess: () => {
       if (table.data) endSession(table.data.id, table.data.created_at);
@@ -112,7 +115,9 @@ export default function VenueScreen() {
   if (table.isPending) {
     return (
       <Screen edges={['top']}>
-        <ActivityIndicator className="mt-16" color={colors.muted} />
+        <View className="mt-16 items-center">
+          <Loader />
+        </View>
       </Screen>
     );
   }

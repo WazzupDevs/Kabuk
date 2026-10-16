@@ -19,6 +19,8 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { ApiError, roomsApi } from '@/lib/api';
+import { haptic } from '@/lib/haptics';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 import { participationHint } from './participation';
 import { roomKeys } from './queries';
@@ -61,6 +63,7 @@ export function OpenLobbySheet({
   const [photoSheet, setPhotoSheet] = useState(false);
 
   const create = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: () =>
       roomsApi.create({
         profiled: participation === 'profile',
@@ -68,6 +71,7 @@ export function OpenLobbySheet({
         ...(tag ? { gameTag: tag } : {}),
       }),
     onSuccess: async () => {
+      haptic('tableOpened');
       track('room_created', {
         intent: intent ?? 'none',
         profiled: participation === 'profile',

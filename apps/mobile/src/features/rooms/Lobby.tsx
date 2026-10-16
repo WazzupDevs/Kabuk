@@ -5,7 +5,7 @@ import { lobbyActions, type TableState } from '@shared/tableCard.ts';
 import type { Side } from '@shared/teams.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, useWindowDimensions, View } from 'react-native';
+import { useWindowDimensions, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
@@ -17,6 +17,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { Sheet } from '@/components/Sheet';
 import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
+import { Loader } from '@/components/Loader';
 import { useProfile } from '@/features/account/useProfile';
 import { PhotoNeeded } from '@/features/profile/PhotoNeeded';
 import { PhotoSheet } from '@/features/profile/PhotoSheet';
@@ -26,9 +27,10 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track, trackOnce } from '@/lib/analytics';
 import { ApiError, callChangeSpot, roomsApi } from '@/lib/api';
+import { useRequesterHaptic } from '@/lib/haptics';
 import { useNow } from '@/lib/useNow';
-import { useTheme } from '@/theme/ThemeProvider';
-import { NARROW_SCREEN } from '@/theme/tokens';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { ICON, NARROW_SCREEN } from '@/theme/tokens';
 
 import { BigAlias } from './BigAlias';
 import { useJoinAsk } from './joinAsk';
@@ -75,7 +77,6 @@ export function Lobby({
   state,
   hostAlias,
 }: Props) {
-  const { colors } = useTheme();
   const queryClient = useQueryClient();
   const actions = lobbyActions(state);
   const profile = useProfile();
@@ -97,6 +98,7 @@ export function Lobby({
   const now = useNow(1000);
 
   const request = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: ({ ask, profiled }: { ask: Asking; profiled: boolean }) => {
       void registerForPush();
       return roomsApi.requestJoin(ask.roomId, profiled, ask.side);
@@ -124,6 +126,7 @@ export function Lobby({
   const refused = request.error instanceof ApiError && request.error.code === 'photo_required';
   const needsPhoto = hasName && ((photo.known && !photo.has) || refused);
   const moveHere = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: callChangeSpot,
     onSuccess: () => {
       track('spot_changed', {});
@@ -148,6 +151,8 @@ export function Lobby({
       trackOnce(`join_unavailable:${requestId}`, 'join_unavailable', { as_member: asMember });
     }
   }, [requestId, status, asMember]);
+  // Felt only when accepted: a decline and a timeout look and feel the same (rule 5).
+  useRequesterHaptic(requestId, status);
   const secondsLeft = mine ? Math.max(0, Math.ceil((Date.parse(mine.expiresAt) - now) / 1000)) : 0;
   const recentlyUnavailable =
     mine && status === 'unavailable' && now - Date.parse(mine.expiresAt) < 15_000;
@@ -232,7 +237,7 @@ export function Lobby({
             {tr.rooms.lobbyTitle}
           </Text>
           <View className="flex-row items-center gap-2.5">
-            <ActivityIndicator color={colors.muted} />
+            <Loader kind="meet" size={ICON.md} label={null} />
             <Text variant="fine">{tr.rooms.lobbyLoading}</Text>
           </View>
         </View>
@@ -256,7 +261,7 @@ export function Lobby({
         // A merged or "Masanla oyna" table has nothing to do in an empty lobby.
         state === 'off' || state === 'open' || state === 'member' ? (
           <EmptyState
-            snail
+            kind="empty"
             body={state === 'off' ? tr.rooms.playWithTableHint : tr.rooms.lobbyEmptyOpen}
           />
         ) : null

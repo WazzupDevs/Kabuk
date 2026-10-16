@@ -1,10 +1,10 @@
-// Usage: pnpm icons → apps/mobile/assets/icon/*.png, apps/mobile/assets/brand/*.png,
-// apps/mobile/assets/glyph/*.png and the preview page dist/icon-preview/. The skall mark
-// (scripts/icon/mark.ts: the app icon, splash and notification icon), the in-app snail
-// (scripts/icon/snail.ts, with the colours in apps/mobile/assets/icon/tokens.json) and the icon
-// family (scripts/icon/glyphs.ts) in every size the app and the stores need. Rerun after changing
-// any of them; the PNGs are committed.
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+// Usage: pnpm icons → apps/mobile/assets/icon/*.png, apps/mobile/assets/glyph/*.png, the game
+// pictures apps/mobile/assets/art/*.png and the preview page dist/icon-preview/. The skall mark
+// (scripts/icon/mark.ts: the app icon, splash and notification icon) and the icon family
+// (scripts/icon/glyphs.ts) in every size the app and the stores need. In the app the mark, the
+// loaders and the Mekan tab are drawn with Views and react-native-svg (src/components/Mark.tsx),
+// not images. Rerun after changing any of them; the PNGs are committed.
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import sharp from 'sharp';
@@ -19,7 +19,6 @@ import {
   splashSvg,
   storeIconSvg,
 } from './icon/mark.ts';
-import { brandSvg, type IconTokens, lineIconSvg } from './icon/snail.ts';
 import {
   BADGE_GLYPHS,
   type BadgeGlyph,
@@ -41,11 +40,9 @@ import { previewHtml } from './icon/preview.ts';
 
 const root = resolve(import.meta.dirname, '..');
 const assets = resolve(root, 'apps/mobile/assets/icon');
-const brand = resolve(root, 'apps/mobile/assets/brand');
 const glyph = resolve(root, 'apps/mobile/assets/glyph');
 const art = resolve(root, 'apps/mobile/assets/art');
 const preview = resolve(root, 'dist/icon-preview');
-const tokens = JSON.parse(readFileSync(resolve(assets, 'tokens.json'), 'utf8')) as IconTokens;
 
 async function png(svg: string, dir: string, file: string, opaque = false): Promise<void> {
   let image = sharp(Buffer.from(svg));
@@ -56,7 +53,6 @@ async function png(svg: string, dir: string, file: string, opaque = false): Prom
 }
 
 mkdirSync(assets, { recursive: true });
-mkdirSync(brand, { recursive: true });
 mkdirSync(glyph, { recursive: true });
 mkdirSync(art, { recursive: true });
 // Source drawing, for designers and the store.
@@ -74,22 +70,6 @@ await png(storeIconSvg(512), assets, 'play-512.png', true);
 // the 24 dp status bar icon).
 await png(splashSvg(SPLASH * 4), assets, 'splash.png');
 await png(notificationSvg(96), assets, 'notification.png');
-
-// In-app images (src/components/Snail.tsx), drawn at 3× their largest use.
-for (const ground of ['light', 'dark'] as const) {
-  await png(brandSvg(tokens, 360, { ground }), brand, `snail-${ground}.png`);
-  for (const layer of ['body', 'shell', 'antennae'] as const) {
-    await png(
-      brandSvg(tokens, 288, { ground, layer, face: true }),
-      brand,
-      `crawl-${layer}-${ground}.png`,
-    );
-  }
-}
-// Avatar and the selected Mekan tab: small, so no face; always on a light disc.
-await png(brandSvg(tokens, 144, { face: false }), brand, 'snail-small.png');
-// The Mekan tab's line icon, white (tinted by the app).
-await png(lineIconSvg(72), brand, 'tab-snail.png');
 
 // The icon family (scripts/icon/glyphs.ts), white, tinted by the app. React Native picks the
 // @2x/@3x file for the screen's density; `dp` is the size the app draws it at.

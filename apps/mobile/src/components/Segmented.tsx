@@ -3,6 +3,7 @@ import { Pressable, View } from 'react-native';
 
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
+import { haptic } from '@/lib/haptics';
 
 import type { IconName } from './Button';
 import { Text } from './Text';
@@ -48,7 +49,10 @@ export function Segmented<T extends string>({
             testID={o.testID}
             accessibilityState={{ selected: on }}
             accessibilityLabel={iconOnly ? o.label : undefined}
-            onPress={() => onChange(o.value)}
+            onPress={() => {
+              if (!on) haptic('selection');
+              onChange(o.value);
+            }}
             style={{
               flexDirection: 'row',
               alignItems: 'center',

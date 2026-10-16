@@ -30,9 +30,9 @@ import { tr } from '@/i18n/tr';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
-import { useDepth } from './Depth';
 import { useTabBarSpace } from './TabBar';
 import { Text } from './Text';
+import { usePressScale } from './motion';
 
 // How close to the end counts as "at the bottom" (a message's last line may sit under the edge).
 const BOTTOM_SLACK = SPACING[12];
@@ -135,7 +135,7 @@ export function ChatScroll({
   testID,
 }: ScrollProps) {
   const { colors, shape } = useTheme();
-  const depth = useDepth();
+  const pressScale = usePressScale();
   const scroll = useRef<ScrollView>(null);
   // The screen's reaction bar (ChatScreen), or this stream's own (the game's chat panel).
   const outerBar = useChatBar();
@@ -284,13 +284,13 @@ export function ChatScroll({
                     minHeight: SPACING[10],
                     paddingHorizontal: SPACING[4],
                     borderRadius: shape.radius.pill,
-                    backgroundColor: colors.violet,
+                    backgroundColor: colors.accent,
                   },
-                  depth({ pressed }),
+                  pressScale(pressed),
                 ]}
               >
-                <Ionicons name="arrow-down" size={ICON.sm} color={colors.onViolet} />
-                <Text variant="buttonSmall" tone="onViolet">
+                <Ionicons name="arrow-down" size={ICON.sm} color={colors.onAccent} />
+                <Text variant="buttonSmall" tone="onAccent">
                   {tr.chat.newMessages(pending)}
                 </Text>
               </View>

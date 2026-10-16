@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { forwardRef, type ReactNode } from 'react';
-import { ActivityIndicator, Pressable, TextInput, View } from 'react-native';
+import { Pressable, TextInput, View } from 'react-native';
 
 import { tr } from '@/i18n/tr';
 import { typeStyle, useTheme } from '@/theme/ThemeProvider';
@@ -10,6 +10,7 @@ import type { ChatQuote } from './ChatBubble';
 import { IconButton } from './IconButton';
 import { usePressScale } from './motion';
 import { Text } from './Text';
+import { Loader } from './Loader';
 
 type Props = {
   value: string;
@@ -122,7 +123,7 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
               ]}
             >
               {sending ? (
-                <ActivityIndicator color={colors.muted} />
+                <Loader kind="meet" size={ICON.lg} delay={0} />
               ) : (
                 <Ionicons
                   name="send"

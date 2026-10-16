@@ -2,7 +2,7 @@ import { JOIN_REQUEST_TTL_SECONDS } from '@shared/rooms.ts';
 import { requestGone } from '@shared/tableCard.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 
 import { Button } from '@/components/Button';
@@ -17,6 +17,8 @@ import { useNow } from '@/lib/useNow';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON } from '@/theme/tokens';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
+import { haptic } from '@/lib/haptics';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 import { BigAlias } from './BigAlias';
 import { ProfiledTag } from './ProfiledTag';
@@ -61,9 +63,11 @@ export function IncomingRequest({ roomId, leaderSessionId }: Props) {
   );
 
   const respond = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: ({ id, accept }: { id: string; accept: boolean; member: boolean }) =>
       roomsApi.respond(id, accept),
     onSuccess: (_data, { accept, member }) => {
+      if (accept) haptic('requestAccepted');
       // A second side came; a member joining a side does not make a two-table room.
       if (accept && !member) track('room_two_tables', {});
     },
@@ -77,6 +81,15 @@ export function IncomingRequest({ roomId, leaderSessionId }: Props) {
       void queryClient.invalidateQueries({ queryKey: roomKeys.current });
     },
   });
+
+  // A request coming in is felt once.
+  const requestId = request?.id;
+  const felt = useRef<string | null>(null);
+  useEffect(() => {
+    if (!requestId || felt.current === requestId) return;
+    felt.current = requestId;
+    haptic('incomingRequest');
+  }, [requestId]);
 
   if (!request) return null;
   const seconds = Math.max(0, Math.ceil((Date.parse(request.expires_at) - now) / 1000));

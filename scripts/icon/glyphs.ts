@@ -1,11 +1,8 @@
-// The app's own icon family (canvas: Aşama 5 · Geri bildirim): tab icons, the notification bell,
-// map marker glyphs and badge glyphs, drawn on a 24-unit grid with a 1.8 stroke, round caps and
-// joins, like the snail's line icon (snail.ts → lineIconSvg). Each icon has a passive (line) and an
-// active (solid) drawing. Drawn in white; the app tints them (tintColor) or, on the map, MapLibre
-// colours their signed distance field. react-native-svg is not in the app (a native module), so
-// scripts/build-icons.ts rasterises these to PNG at 1×, 2× and 3×.
-
-import { spiral } from './snail.ts';
+// The app's own icon family (canvas: Aşama 5 · Geri bildirim; the skall design system → Icon): tab
+// icons, the notification bell, map marker glyphs and badge glyphs, drawn on a 24-unit grid with a
+// 1.8 stroke, round caps and joins. Each icon has a passive (line) and an active (solid) drawing.
+// Drawn in white; the app tints them (tintColor) or, on the map, MapLibre colours their signed
+// distance field. scripts/build-icons.ts rasterises these to PNG at 1×, 2× and 3×.
 
 export const GRID = 24;
 export const STROKE = 1.8;
@@ -19,8 +16,13 @@ const dot = (cx: number, cy: number, r: number) =>
   `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#fff" stroke="none"/>`;
 
 // ------------------------------------------------------------------ set A: "Kabuk" (soft, curled)
-// The chosen set: rounded forms that curl like the shell, a spiral where an icon has a mark.
-const SPIRAL_MARK = spiral(13.2, 12.4, 3, 2, 3);
+// The chosen set: rounded forms; the Aktiviteler card carries skall's two capsules.
+const CAPSULES_LINE =
+  '<rect x="11.5" y="8.4" width="2.8" height="6.6" rx="1.4" fill="#fff" stroke="none"/>' +
+  '<rect x="13.5" y="10.1" width="2.8" height="6.6" rx="1.4" fill="#fff" stroke="none"/>';
+const CAPSULES_CUT =
+  '<rect x="11.3" y="8.2" width="3.2" height="7" rx="1.6" stroke="none"/>' +
+  '<rect x="13.3" y="9.9" width="3.2" height="7" rx="1.6" stroke="none"/>';
 // The Mekan awning: a sloped top over four scallops.
 const AWNING =
   'M 5.6 4.4 H 18.4 L 19.8 9.2 C 19.8 11.2 15.9 11.2 15.9 9.2 C 15.9 11.2 12 11.2 12 9.2 ' +
@@ -37,11 +39,11 @@ export const TAB_A: Record<TabIcon, Glyph> = {
     line:
       '<rect x="8.6" y="3.6" width="11.4" height="16.4" rx="3"/>' +
       '<path d="M 8.6 7 L 5.4 7.9 C 4.3 8.2 3.7 9.3 4 10.4 L 6.4 19.2 C 6.7 20.3 7.8 20.9 8.9 20.6 L 11 20"/>' +
-      `<path d="${SPIRAL_MARK}"/>`,
+      CAPSULES_LINE,
     solid:
       '<rect x="7.7" y="2.7" width="13.2" height="18.2" rx="3.9" stroke="none"/>' +
       '<path d="M 7.7 7.2 L 5.4 7.9 C 4.3 8.2 3.7 9.3 4 10.4 L 6.4 19.2 C 6.7 20.3 7.8 20.9 8.9 20.6 L 10.4 20.2" fill="none"/>',
-    cut: `<path d="${SPIRAL_MARK}" fill="none" stroke-width="1.8"/>`,
+    cut: CAPSULES_CUT,
   },
   messages: {
     line:
@@ -61,7 +63,8 @@ export const TAB_A: Record<TabIcon, Glyph> = {
       '<circle cx="12" cy="8.5" r="4.6" stroke="none"/>' +
       '<path d="M 4.1 20.9 C 4.6 15.4 8 13 12 13 C 16 13 19.4 15.4 19.9 20.9 Z" stroke="none"/>',
   },
-  // Mekan: a shop front under a striped, scalloped awning (Aşama 8: the snail left the tab bar).
+  // Mekan: a shop front under a striped, scalloped awning. The tab bar draws the mark on an ink
+  // tile instead (src/components/VenueTabIcon.tsx); this one remains for the preview sets.
   venue: {
     line:
       `<path d="${AWNING}"/>` +

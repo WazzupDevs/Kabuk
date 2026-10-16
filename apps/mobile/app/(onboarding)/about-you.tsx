@@ -18,6 +18,7 @@ import { tr } from '@/i18n/tr';
 import { ApiError, callAccount } from '@/lib/api';
 import { queryClient as rootQueryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 // Sign-up = profile (docs/SPEC_V3.md §3): display name and birth date, sent with the consents in
 // one call. Under 18 the server deletes the account; the phone signs out and the phone screen says
@@ -37,6 +38,7 @@ export default function AboutYouScreen() {
   const dateFilled = !needsBirthDate || (day !== '' && month !== '' && year.length === 4);
 
   const submit = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: (birthDate: string | undefined) =>
       callAccount({
         action: 'complete-onboarding',

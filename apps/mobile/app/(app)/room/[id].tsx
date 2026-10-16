@@ -4,7 +4,7 @@ import { roomSeat, type RoomSeat, sideHeadcount } from '@shared/teams.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, useWindowDimensions, View } from 'react-native';
+import { useWindowDimensions, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
@@ -16,6 +16,7 @@ import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
+import { Loader } from '@/components/Loader';
 import { RoomComposer, RoomMessages, useRoomChat } from '@/features/chat/ChatPanel';
 import { useRoomSafety } from '@/features/chat/RoomSafety';
 import { useOtherTableOnline } from '@/features/chat/usePresence';
@@ -36,11 +37,11 @@ import { tr } from '@/i18n/tr';
 import { track, trackOnce } from '@/lib/analytics';
 import { roomsApi } from '@/lib/api';
 import { useKeepAwakeWhile } from '@/lib/keepAwake';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
 import { NARROW_SCREEN, SPACING } from '@/theme/tokens';
 
 export default function RoomScreen() {
-  const { colors } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const queryClient = useQueryClient();
   const table = useActiveTable();
@@ -115,6 +116,7 @@ export default function RoomScreen() {
 
   // "Masayı bitir": a leader's (docs/SPEC_V3.md §22.D).
   const exit = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: roomsApi.end,
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: roomKeys.current });
@@ -123,6 +125,7 @@ export default function RoomScreen() {
   });
   // "Masadan çık": a member leaves, a leader hands its side to the oldest member.
   const leave = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: () => roomsApi.leave(id),
     onSuccess: () => track('team_left', {}),
     onSettled: () => {
@@ -135,7 +138,9 @@ export default function RoomScreen() {
   if (room.isPending || table.isPending) {
     return (
       <Screen>
-        <ActivityIndicator className="mt-16" color={colors.muted} />
+        <View className="mt-16 items-center">
+          <Loader />
+        </View>
       </Screen>
     );
   }
@@ -154,7 +159,9 @@ export default function RoomScreen() {
     if (!r && room.isFetching) {
       return (
         <Screen>
-          <ActivityIndicator className="mt-16" color={colors.muted} />
+          <View className="mt-16 items-center">
+            <Loader />
+          </View>
         </Screen>
       );
     }
@@ -164,7 +171,9 @@ export default function RoomScreen() {
     // A member is known once room_phones is read; a phone not in it goes back to the venue.
     return phones.isPending ? (
       <Screen>
-        <ActivityIndicator className="mt-16" color={colors.muted} />
+        <View className="mt-16 items-center">
+          <Loader />
+        </View>
       </Screen>
     ) : (
       <Redirect href="/venue" />

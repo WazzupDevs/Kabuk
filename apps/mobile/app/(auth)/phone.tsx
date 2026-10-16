@@ -8,7 +8,8 @@ import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { BrandLine, Snail } from '@/components/Snail';
+import { Mark } from '@/components/Mark';
+import { Wordmark } from '@/components/Wordmark';
 import { Text } from '@/components/Text';
 import { authErrorMessage } from '@/features/auth/authErrors';
 import { useOnboardingStore } from '@/features/onboarding/store';
@@ -46,7 +47,7 @@ export default function PhoneScreen() {
     return (
       <Screen>
         <View testID="under-age" collapsable={false} className="flex-1 justify-center gap-4">
-          <Snail height={SPACING[16] + SPACING[5]} />
+          <Mark size={SPACING[16] + SPACING[5]} label={null} />
           <Text variant="display" accessibilityRole="header">
             {tr.underAge.title}
           </Text>
@@ -66,7 +67,7 @@ export default function PhoneScreen() {
   return (
     <Screen>
       <View className="mb-3 mt-2">
-        <BrandLine />
+        <Wordmark height={SPACING[6]} />
       </View>
       <ScreenHeader title={tr.auth.phoneTitle} subtitle={tr.auth.phoneHint} />
       <View className="mt-6">

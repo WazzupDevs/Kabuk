@@ -6,9 +6,9 @@ import { View } from 'react-native';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { EmptyState } from '@/components/EmptyState';
+import { useLoaderHold } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { SnailLoader } from '@/components/Snail';
 import { Text } from '@/components/Text';
 import { useProfile } from '@/features/account/useProfile';
 import { useFriends } from '@/features/friends/queries';
@@ -28,6 +28,7 @@ export default function ProfileScreen() {
   const publicId = own.data?.public_id;
   const view = useProfileView(publicId);
   const friends = useFriends();
+  const loading = useLoaderHold(view.isPending);
 
   const hasName = !!own.data?.display_name;
   const friendCount = friends.data?.length;
@@ -44,9 +45,9 @@ export default function ProfileScreen() {
         }}
       />
 
-      {view.isPending ? (
+      {view.isPending || loading ? (
         <View className="mt-16">
-          <SnailLoader />
+          <EmptyState kind="loading" body={tr.common.loading} />
         </View>
       ) : view.isError || !view.data ? (
         <EmptyState

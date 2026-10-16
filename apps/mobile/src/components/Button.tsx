@@ -1,18 +1,21 @@
 import { Ionicons } from '@expo/vector-icons';
-import type { ComponentProps } from 'react';
-import { ActivityIndicator, Pressable, View, type ViewStyle } from 'react-native';
+import { type ComponentProps, useEffect, useState } from 'react';
+import { Animated, Pressable, View, type ViewStyle } from 'react-native';
 
+import { useReduceMotion } from '@/lib/useReduceMotion';
+import { EASE_OUT } from '@/theme/markMotion';
 import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, SPACING, TOUCH } from '@/theme/tokens';
+import { ICON, OPACITY, SPACING, TOUCH } from '@/theme/tokens';
 
-import { useDepth } from './Depth';
-import { useQuiet } from './Quiet';
+import { Loader } from './Loader';
+import { usePressScale } from './motion';
 import { Text } from './Text';
 
-// Roles (canvas: Aşama 8 · Saha → 3D düğme sistemi): primary purple ("Oda kur"), secondary orange
-// ("Masanla oyna"), positive green ("Doğru", "Arkadaşlar"), danger red ("Odayı bitir"), neutral
-// white (everything else that acts). All five have the 3D depth. `ghost` and `dangerText` are
-// text-only (a link-like action; "Hesabımı sil").
+// Roles (the skall design system → Button): `primary` the one main action per screen, accent
+// filled; `secondary` and `neutral` a raised capsule with an outline (every other action);
+// `positive` green ("Doğru", "Arkadaşlar"); `danger` red ("Masayı bitir"). `ghost` (an accent link)
+// and `dangerText` ("Hesabımı sil") are text only. No outlined, hard-shadowed "3D" face: pressed,
+// a button shrinks to 97 %.
 export type ButtonVariant =
   'primary' | 'secondary' | 'positive' | 'danger' | 'neutral' | 'ghost' | 'dangerText';
 export type IconName = ComponentProps<typeof Ionicons>['name'];
@@ -21,6 +24,8 @@ type Props = {
   label: string;
   onPress: () => void;
   disabled?: boolean;
+  // Busy: the label stays in place, invisible (the width does not change), and Buluş takes its
+  // place; a second press does nothing.
   loading?: boolean;
   variant?: ButtonVariant;
   // sm: a header button ("Mekandan ayrıl"), 40 high with the touch area grown to 48.
@@ -36,20 +41,73 @@ type Props = {
   flush?: boolean;
   // The detail under the label, for three buttons in a row (cooperative Tabu: "Doğru" over "+1").
   stack?: boolean;
-  // Half a row ("Oda kur" | "Masanla oyna"): tighter padding and the label kept on one line.
+  // Half a row ("Masanı lobiye aç" | "Masanla oyna"): tighter padding and the label kept on one line.
   tight?: boolean;
   // Only `icon`, in a round button as high as the size; the label is what screen readers say. For a
-  // header button on a narrow screen ("Odayı bitir" at 320 dp).
+  // header button on a narrow screen ("Masayı bitir" at 320 dp).
   iconOnly?: boolean;
 };
 
 const SMALL_HEIGHT = SPACING[10];
+// The busy mark per size (px) and its cross-fade with the label (hareket.md → "Düğmede bekleme").
+const BUSY_MARK = { sm: 20, md: 24, lg: 28 } as const;
+const LABEL_OUT_MS = 120;
+const MARK_IN_MS = 160;
+const MARK_IN_DELAY_MS = 60;
+const LABEL_LIFT = SPACING[1];
+
+// The label fades (and lifts a little) out and the busy mark fades in; with reduce motion only
+// the fade.
+function useBusy(loading: boolean) {
+  const reduce = useReduceMotion();
+  const [progress] = useState(() => new Animated.Value(loading ? 1 : 0));
+  useEffect(() => {
+    const anim = loading
+      ? Animated.timing(progress, {
+          toValue: 1,
+          duration: MARK_IN_DELAY_MS + MARK_IN_MS,
+          easing: (u) => EASE_OUT(u),
+          useNativeDriver: true,
+        })
+      : Animated.timing(progress, {
+          toValue: 0,
+          duration: LABEL_OUT_MS,
+          easing: (u) => EASE_OUT(u),
+          useNativeDriver: true,
+        });
+    anim.start();
+    return () => anim.stop();
+  }, [loading, progress]);
+  const labelOut = LABEL_OUT_MS / (MARK_IN_DELAY_MS + MARK_IN_MS);
+  const markIn = MARK_IN_DELAY_MS / (MARK_IN_DELAY_MS + MARK_IN_MS);
+  return {
+    label: {
+      opacity: progress.interpolate({
+        inputRange: [0, labelOut, 1],
+        outputRange: [1, 0, 0],
+      }),
+      transform: reduce
+        ? []
+        : [
+            {
+              translateY: progress.interpolate({
+                inputRange: [0, labelOut, 1],
+                outputRange: [0, -LABEL_LIFT, -LABEL_LIFT],
+              }),
+            },
+          ],
+    },
+    mark: {
+      opacity: progress.interpolate({ inputRange: [0, markIn, 1], outputRange: [0, 0, 1] }),
+    },
+  };
+}
 
 export function Button({
   label,
   onPress,
   disabled,
-  loading,
+  loading = false,
   variant = 'primary',
   size = 'md',
   icon,
@@ -63,38 +121,36 @@ export function Button({
   iconOnly,
 }: Props) {
   const { colors, shape } = useTheme();
-  const quiet = useQuiet();
-  const depth = useDepth();
+  const pressScale = usePressScale();
+  const busy = useBusy(loading);
   const inactive = disabled || loading;
 
   const fills: Record<ButtonVariant, { bg: string; fg: string }> = {
-    primary: { bg: colors.violet, fg: colors.onViolet },
-    secondary: { bg: colors.event, fg: colors.onEvent },
+    primary: { bg: colors.accent, fg: colors.onAccent },
+    secondary: { bg: colors.raised, fg: colors.text },
     positive: { bg: colors.success, fg: colors.onSuccess },
     danger: { bg: colors.danger, fg: colors.onDanger },
     neutral: { bg: colors.raised, fg: colors.text },
-    ghost: { bg: 'transparent', fg: colors.muted },
+    ghost: { bg: 'transparent', fg: colors.accent },
     dangerText: { bg: 'transparent', fg: colors.danger },
   };
   const textOnly = variant === 'ghost' || variant === 'dangerText';
   let { bg, fg } = fills[variant];
-  if (inactive && !tint) {
-    bg = textOnly ? 'transparent' : colors.surface2;
-    fg = colors.muted;
-  }
-  // Trust screens keep a hairline on the neutral button only; everything else is flat there.
-  const quietEdge: ViewStyle =
-    quiet && variant === 'neutral'
-      ? { borderWidth: shape.stroke.hairline, borderColor: colors.divider }
-      : {};
-  const outline: ViewStyle | undefined = tint?.outline
-    ? { borderWidth: shape.stroke.control, borderColor: tint.background }
-    : undefined;
+  // The raised capsules carry an outline: they sit on the canvas, on cards and on fills alike.
+  let edge: ViewStyle | null =
+    variant === 'secondary' || variant === 'neutral'
+      ? { borderWidth: shape.stroke.hairline * 1.5, borderColor: colors.border }
+      : null;
   if (tint) {
     bg = tint.outline ? 'transparent' : tint.background;
     fg = tint.outline ? tint.background : tint.foreground;
+    edge = tint.outline
+      ? { borderWidth: shape.stroke.control, borderColor: tint.background }
+      : null;
   }
   const small = size === 'sm';
+  // The busy mark: one colour on a filled button, the logo's colours on a raised or clear one.
+  const filled = !textOnly && !edge && !tint?.outline;
 
   const style: ViewStyle = {
     flexDirection: 'row',
@@ -119,15 +175,12 @@ export function Button({
     style.paddingHorizontal = 0;
   }
 
-  // The 3D depth on every filled button; text-only and reveal-signal buttons have none.
-  const raised = !textOnly && !tint;
-
   return (
     <Pressable
       accessibilityRole="button"
       testID={testID}
       accessibilityLabel={accessibilityLabel ?? (detail ? `${label} ${detail}` : label)}
-      accessibilityState={{ disabled: !!inactive, busy: !!loading }}
+      accessibilityState={{ disabled: !!inactive, busy: loading }}
       disabled={inactive}
       onPress={onPress}
       // The small button's face is 40 high; its touch area is 48.
@@ -137,48 +190,67 @@ export function Button({
         <View
           style={[
             style,
-            raised ? (quiet ? quietEdge : depth({ pressed, inactive })) : outline,
-            tint && inactive ? { opacity: 0.4 } : null,
-            textOnly && pressed ? { opacity: 0.7 } : null,
+            edge,
+            disabled ? { opacity: OPACITY.disabled } : null,
+            textOnly && pressed ? { opacity: OPACITY.pressed } : null,
+            pressScale(pressed && !inactive),
           ]}
         >
-          {loading ? (
-            <ActivityIndicator color={fg} />
-          ) : iconOnly && icon ? (
-            <Ionicons name={icon} size={ICON.md} color={fg} />
-          ) : (
-            <>
-              {icon ? <Ionicons name={icon} size={ICON.md} color={fg} /> : null}
-              <View
-                className={stack ? 'shrink items-center' : 'shrink flex-row items-baseline gap-1'}
-              >
-                <Text
-                  variant={small ? 'buttonSmall' : size === 'lg' ? 'buttonLarge' : 'button'}
-                  color={fg}
-                  align="center"
-                  // One line, always (CLAUDE.md → Ekran davranışı): a label that does not fit
-                  // shrinks rather than breaking onto a second line ("Şimdi değil", "Sağında").
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                  minimumFontScale={0.5}
-                  className="shrink"
+          <Animated.View
+            style={[{ flexDirection: 'row', alignItems: 'center', gap: style.gap }, busy.label]}
+            className="shrink"
+          >
+            {iconOnly && icon ? (
+              <Ionicons name={icon} size={ICON.md} color={fg} />
+            ) : (
+              <>
+                {icon ? <Ionicons name={icon} size={ICON.md} color={fg} /> : null}
+                <View
+                  className={stack ? 'shrink items-center' : 'shrink flex-row items-baseline gap-1'}
                 >
-                  {label}
-                </Text>
-                {detail ? (
                   <Text
-                    variant="buttonDetail"
+                    variant={small ? 'buttonSmall' : size === 'lg' ? 'buttonLarge' : 'button'}
                     color={fg}
+                    align="center"
+                    // One line, always (CLAUDE.md → Ekran davranışı): a label that does not fit
+                    // shrinks rather than breaking onto a second line ("Şimdi değil", "Sağında").
                     numberOfLines={1}
                     adjustsFontSizeToFit
                     minimumFontScale={0.5}
+                    className="shrink"
                   >
-                    {detail}
+                    {label}
                   </Text>
-                ) : null}
-              </View>
-            </>
-          )}
+                  {detail ? (
+                    <Text
+                      variant="buttonDetail"
+                      color={fg}
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.5}
+                    >
+                      {detail}
+                    </Text>
+                  ) : null}
+                </View>
+              </>
+            )}
+          </Animated.View>
+          {loading ? (
+            <Animated.View
+              pointerEvents="none"
+              className="absolute inset-0 items-center justify-center"
+              style={busy.mark}
+            >
+              <Loader
+                kind="meet"
+                size={BUSY_MARK[size]}
+                delay={0}
+                label={null}
+                mono={filled ? { color: fg, ground: bg } : undefined}
+              />
+            </Animated.View>
+          ) : null}
         </View>
       )}
     </Pressable>

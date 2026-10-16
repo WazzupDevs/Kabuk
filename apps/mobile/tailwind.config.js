@@ -33,6 +33,11 @@ const COLORS = [
   'event',
   'on-event',
   'scrim',
+  'feature',
+  'on-feature',
+  'feature-muted',
+  'overlap',
+  'focus',
 ];
 
 const SPACING = {

@@ -2,8 +2,8 @@ import { capitalizeTr } from '@shared/trText.ts';
 import { Pressable, View } from 'react-native';
 
 import { Button } from '@/components/Button';
-import { useDepth } from '@/components/Depth';
 import { Text } from '@/components/Text';
+import { usePressScale } from '@/components/motion';
 import { tr } from '@/i18n/tr';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
@@ -76,9 +76,7 @@ export function PromptCard({
         paddingVertical: compact ? SPACING[2.5] : SPACING[6],
         borderRadius: shape.radius.lg + SPACING[2],
         backgroundColor: bg,
-        borderWidth: Math.max(shape.stroke.feature, 2),
-        borderColor: colors.border,
-        boxShadow: shape.shadow.feature ?? undefined,
+        boxShadow: shape.shadow.card,
       }}
     >
       <Text variant="overline" color={fg}>
@@ -121,7 +119,7 @@ export function LetterBoard({
   disabled?: boolean;
 }) {
   const { colors, shape } = useTheme();
-  const depth = useDepth();
+  const pressScale = usePressScale();
   return (
     // Each sixth of the row is the touch area; the tile is drawn inside it, the gap split around it.
     <View
@@ -144,15 +142,15 @@ export function LetterBoard({
             style={{ width: `${100 / COLUMNS}%`, paddingHorizontal: GAP }}
           >
             {({ pressed }) => (
-              // A 3D tile like the buttons (canvas: Aşama 8 · Saha); the picked letter stays pressed
-              // in, a closed one is dashed and flat.
+              // A raised tile with an outline; the picked letter is filled with the accent, a closed
+              // one is dashed and flat.
               <View
                 className="items-center justify-center"
                 style={[
                   {
                     aspectRatio: 1,
                     borderRadius: shape.radius.md,
-                    backgroundColor: on ? colors.violet : closed ? 'transparent' : colors.raised,
+                    backgroundColor: on ? colors.accent : closed ? 'transparent' : colors.raised,
                   },
                   closed
                     ? {
@@ -160,12 +158,18 @@ export function LetterBoard({
                         borderStyle: 'dashed',
                         borderColor: colors.divider,
                       }
-                    : depth({ pressed: pressed || on }),
+                    : [
+                        {
+                          borderWidth: on ? 0 : shape.stroke.hairline * 1.5,
+                          borderColor: colors.border,
+                        },
+                        pressScale(pressed),
+                      ],
                 ]}
               >
                 <Text
                   variant="title"
-                  tone={on ? 'onViolet' : closed ? 'muted' : 'text'}
+                  tone={on ? 'onAccent' : closed ? 'muted' : 'text'}
                   strike={closed}
                 >
                   {letter}
@@ -329,9 +333,7 @@ export function ObjectionResult({ detail }: { detail: string }) {
         padding: SPACING[4],
         borderRadius: shape.radius.lg,
         backgroundColor: colors.danger,
-        borderWidth: Math.max(shape.stroke.feature, 2),
-        borderColor: colors.border,
-        boxShadow: shape.shadow.feature ?? undefined,
+        boxShadow: shape.shadow.card,
       }}
     >
       <Text variant="display" tone="onDanger">

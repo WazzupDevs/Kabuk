@@ -5,7 +5,7 @@ import { Image, type ImageSourcePropType, View } from 'react-native';
 
 import { Card } from '@/components/Card';
 import { ProfilePhoto } from '@/components/ProfilePhoto';
-import { Snail } from '@/components/Snail';
+import { Mark } from '@/components/Mark';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { usePhoto } from '@/lib/usePhoto';
@@ -71,7 +71,7 @@ export function ProfileHero({ profile, overlay }: { profile: Profile; overlay?: 
           height: HERO_HEIGHT,
           marginHorizontal: -shape.screenPadding,
           marginTop: -SPACING[3],
-          backgroundColor: photo.url ? colors.surface2 : colors.violet,
+          backgroundColor: photo.url || !letters ? colors.surface2 : colors.violet,
         }}
       >
         {photo.url ? (
@@ -87,7 +87,7 @@ export function ProfileHero({ profile, overlay }: { profile: Profile; overlay?: 
             {letters}
           </Text>
         ) : (
-          <Snail variant="ink" height={SPACING[16] + SPACING[8]} />
+          <Mark size={SPACING[16] + SPACING[8]} label={null} />
         )}
         {overlay ? (
           <View style={{ position: 'absolute', top: SPACING[3], left: SPACING[3] }}>{overlay}</View>
@@ -177,13 +177,13 @@ export function BadgeIcon({ badge, earned }: { badge: BadgeId; earned: boolean }
 }
 
 // Badges as round tiles. `all`: the own profile shows every badge, the locked ones quiet; another
-// person's card shows only what they earned, or the snail and "Oynadıkça rozet kazanırsın".
+// person's card shows only what they earned, or the mark and "Oynadıkça rozet kazanırsın".
 export function Badges({ badges, all = false }: { badges: readonly BadgeId[]; all?: boolean }) {
   if (badges.length === 0 && !all) {
     return (
       <Card>
         <View className="flex-row items-center gap-3">
-          <Snail height={SPACING[11]} />
+          <Mark size={SPACING[11]} label={null} />
           <Text className="flex-1">{tr.profile.noBadges}</Text>
         </View>
       </Card>

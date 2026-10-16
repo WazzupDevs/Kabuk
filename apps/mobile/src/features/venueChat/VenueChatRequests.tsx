@@ -15,6 +15,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { friendsApi, safetyApi } from '@/lib/api';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 // Friend requests from the venue chat (docs/SPEC_V3.md §7.5): the sender's name, age and photo
 // (S6), never a public_id or a table alias. Accept, decline and block work on the request.
@@ -24,6 +25,7 @@ export function VenueChatRequests({ requests }: { requests: VenueChatIncoming[] 
   const refresh = () => void queryClient.invalidateQueries({ queryKey: friendKeys.all });
 
   const respond = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: ({ requestId, accept }: { requestId: string; accept: boolean }) =>
       friendsApi.respond(requestId, accept),
     onSuccess: (_data, { accept }) => {
@@ -34,6 +36,7 @@ export function VenueChatRequests({ requests }: { requests: VenueChatIncoming[] 
     onSettled: refresh,
   });
   const block = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: ({ requestId, reason }: { requestId: string; reason?: ReportReason }) =>
       safetyApi.blockFriendRequest(requestId, reason),
     onSuccess: (_data, { reason }) => {

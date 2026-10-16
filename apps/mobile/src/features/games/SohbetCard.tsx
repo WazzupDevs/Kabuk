@@ -11,6 +11,7 @@ import { tr } from '@/i18n/tr';
 import { trackOnce } from '@/lib/analytics';
 import { gamesApi } from '@/lib/api';
 import { useNow } from '@/lib/useNow';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 // The current conversation card; either table deals the next one (MVP_SPEC §5.3). The new card
 // reaches both phones through the room's Postgres Changes.
@@ -33,7 +34,7 @@ export function SohbetCard({
       trackOnce(`sohbet_card:${roomId}:${cardId}`, 'sohbet_card_opened', { theme });
     }
   }, [isOwner, roomId, cardId, theme]);
-  const next = useMutation({ mutationFn: () => gamesApi.sohbetNext(roomId) });
+  const next = useMutation({ meta: FEEL_ERROR, mutationFn: () => gamesApi.sohbetNext(roomId) });
   const waitMs = state ? Date.parse(state.nextAllowedAt) - now : 0;
   const waitS = Math.max(0, Math.ceil(waitMs / 1000));
 

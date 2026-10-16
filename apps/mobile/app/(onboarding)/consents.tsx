@@ -19,6 +19,7 @@ import { useProfile } from '@/features/account/useProfile';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { callAccount } from '@/lib/api';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 // Terms and KVKK notice. A new account goes on to the profile step (about-you), where both are
 // sent together with the name and birth date; an existing profile only re-consents here.
@@ -30,6 +31,7 @@ export default function ConsentsScreen() {
   const hasProfile = !!profile.data && !needsProfile(profile.data);
 
   const reconsent = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: () =>
       callAccount({
         action: 'complete-onboarding',

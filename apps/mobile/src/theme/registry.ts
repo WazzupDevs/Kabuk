@@ -1,4 +1,4 @@
-import type { ColorScheme, Palette, ShadowSet, ThemeDefinition } from './tokens';
+import type { ColorScheme, ShadowSet, ThemeDefinition } from './tokens';
 
 export type SchemePreference = ColorScheme | 'system';
 export const SCHEME_PREFERENCES = ['light', 'dark', 'system'] as const;
@@ -37,23 +37,13 @@ export function parseThemePreference(raw: string | null): ThemePreference {
   }
 }
 
-// `{border}` / `{accent}` in a shadow token → the palette colour.
-export function resolveShadow(shadow: string | null, palette: Palette): string | undefined {
-  if (shadow === null) return undefined;
-  return shadow.replace('{border}', palette.border).replace('{accent}', palette.accent);
-}
-
-export function resolveShadows(
-  set: ShadowSet,
-  palette: Palette,
-): Record<keyof ShadowSet, string | undefined> {
+// A scheme's shadows for React Native styles (`null` → no `boxShadow`).
+export function resolveShadows(set: ShadowSet): Record<keyof ShadowSet, string | undefined> {
   return {
-    card: resolveShadow(set.card, palette),
-    feature: resolveShadow(set.feature, palette),
-    depth: resolveShadow(set.depth, palette),
-    raised: resolveShadow(set.raised, palette),
-    pin: resolveShadow(set.pin, palette),
-    tabBar: resolveShadow(set.tabBar, palette),
-    focus: resolveShadow(set.focus, palette),
+    card: set.card ?? undefined,
+    raised: set.raised ?? undefined,
+    sheet: set.sheet ?? undefined,
+    tabBar: set.tabBar ?? undefined,
+    focus: set.focus ?? undefined,
   };
 }

@@ -8,6 +8,7 @@ import { ListRow } from '@/components/ListRow';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Text } from '@/components/Text';
+import { Wordmark } from '@/components/Wordmark';
 import { BlockedList } from '@/features/chat/BlockedList';
 import { DesignPicker } from '@/features/design/DesignPicker';
 import { designPickerEnabled } from '@/theme/ThemeProvider';
@@ -16,10 +17,12 @@ import { useProfileView } from '@/features/profile/queries';
 import { useProfile } from '@/features/account/useProfile';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
+import { SPACING } from '@/theme/tokens';
 import { unregisterPush } from '@/features/push/push';
 import { callAccount } from '@/lib/api';
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 // Hosted texts and contact come from the environment (store listings need both); without a
 // privacy URL the in-app draft texts are shown.
@@ -49,6 +52,7 @@ export default function SettingsScreen() {
     },
   });
   const deleteAccount = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: async () => {
       await callAccount({ action: 'delete' });
       await signOutLocally();
@@ -139,9 +143,12 @@ export default function SettingsScreen() {
             />
           </View>
         </View>
-        <Text variant="fine" align="center">
-          {tr.settings.version(Constants.expoConfig?.version ?? '')}
-        </Text>
+        <View className="items-center gap-2">
+          <Wordmark height={SPACING[5]} />
+          <Text variant="fine" align="center">
+            {tr.settings.version(Constants.expoConfig?.version ?? '')}
+          </Text>
+        </View>
         <Text variant="fine" align="center">
           {tr.settings.osm}
         </Text>

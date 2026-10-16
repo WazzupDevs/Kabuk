@@ -8,6 +8,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { profileApi } from '@/lib/api';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 import { choosePhoto, PhotoError, type PhotoSource } from './photo';
 import { profileViewKeys } from './queries';
@@ -33,6 +34,7 @@ export function PhotoSheet({ visible, onClose, canRemove = false }: Props) {
   const queryClient = useQueryClient();
   const refresh = () => queryClient.invalidateQueries({ queryKey: profileViewKeys.all });
   const setPhoto = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: (source: PhotoSource) => choosePhoto(source),
     onSuccess: (changed) => {
       if (changed) track('profile_photo_set', {});
@@ -41,6 +43,7 @@ export function PhotoSheet({ visible, onClose, canRemove = false }: Props) {
     onSettled: refresh,
   });
   const removePhoto = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: () => profileApi.photoRemove(),
     onSuccess: () => onClose(),
     onSettled: refresh,

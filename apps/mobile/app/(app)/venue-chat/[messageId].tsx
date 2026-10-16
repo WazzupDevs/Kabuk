@@ -2,13 +2,14 @@ import type { ReportReason } from '@shared/chat.ts';
 import { useMutation } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, View } from 'react-native';
+import { Alert, View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
 import { Screen } from '@/components/Screen';
 import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
+import { Loader } from '@/components/Loader';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
 import { BackPill } from '@/features/profile/BackPill';
@@ -18,13 +19,12 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { friendsApi, safetyApi } from '@/lib/api';
-import { useTheme } from '@/theme/ThemeProvider';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 // The sender of a profiled venue chat message, opened through the message (docs/SPEC_V3.md §7.5):
 // no public_id. "Arkadaşlık isteği gönder" asks first, because the request shows the other side
 // this account's name, age and photo.
 export default function VenueChatProfileScreen() {
-  const { colors } = useTheme();
   const { messageId } = useLocalSearchParams<{ messageId: string }>();
   const view = useVenueChatProfile(messageId);
   const [confirming, setConfirming] = useState(false);
@@ -33,6 +33,7 @@ export default function VenueChatProfileScreen() {
   const [blocking, setBlocking] = useState(false);
 
   const request = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: () => friendsApi.requestFromVenueChat(messageId),
     onSuccess: () => {
       track('friend_request_sent', { source: 'venue_chat' });
@@ -41,6 +42,7 @@ export default function VenueChatProfileScreen() {
     },
   });
   const report = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: (reason: ReportReason) => safetyApi.reportVenueChat(messageId, reason),
     onSuccess: () => {
       track('venue_chat_reported', {});
@@ -49,6 +51,7 @@ export default function VenueChatProfileScreen() {
     },
   });
   const block = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: (reason: ReportReason | undefined) => safetyApi.blockVenueChat(messageId, reason),
     onSuccess: () => {
       track('block_created', {});
@@ -60,7 +63,9 @@ export default function VenueChatProfileScreen() {
   return (
     <Screen>
       {view.isPending ? (
-        <ActivityIndicator className="mt-16" color={colors.muted} />
+        <View className="mt-16 items-center">
+          <Loader />
+        </View>
       ) : !view.data ? (
         <EmptyState icon="eye-off-outline" body={tr.profile.notVisible} />
       ) : (
