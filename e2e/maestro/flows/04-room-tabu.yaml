@@ -1,7 +1,8 @@
-# V7 and T1–T3 with the v3 room flow (docs/SPEC_V3.md §5): a new alias, the spots (a room at another
-# spot, "Bu noktadayım", then the same spot), an open room with an intent, the bot table asks to
-# join, accept, chat, the bot proposes Sesli Tabu and this phone accepts, one voice Tabu turn, "Oyunu
-# bitir" back to chat, and a proposal the bot does not accept.
+# V7 and T1–T3 with the v3 room flow (docs/SPEC_V3.md §5) and the Faz 3 venue (§23.C): a new
+# alias, the spots (a table at another spot, "Bu noktadayım", then the same spot), "Masanı lobiye
+# aç" with an intent and a game tag, the table card "Lobide açık" and its "Masaya git" to the
+# waiting room, the bot table asks to join, accept, chat, the bot proposes Sesli Tabu and this phone
+# accepts, one voice Tabu turn, "Oyunu bitir" back to chat, and a proposal the bot does not accept.
 appId: app.kabuk.mobile
 ---
 - runScript:
@@ -28,13 +29,13 @@ appId: app.kabuk.mobile
     visible: 2 hakkın kaldı
     timeout: 15000
 - takeScreenshot: 11b-alias-rerolled
-# The venue card (alias, spot, "Oda kur", "Masanla oyna") is above the lobby: scroll to it.
+# The table card (alias, spot, "Masanı lobiye aç", "Masanla oyna") is above the lobby: scroll to it.
 - scrollUntilVisible:
     element:
       id: spot-here
     timeout: 20000
 - assertVisible: Kütüphane
-# "Katıl" by id: the open room's card has "Bu masadayım" too when the room's owner can have members.
+# "Katıl" by id: the open table's card has "Bu masadayım" too when its owner can have members.
 - assertNotVisible:
     id: request-join
 - takeScreenshot: 12b-lobby-other-spot
@@ -45,7 +46,8 @@ appId: app.kabuk.mobile
       id: request-join
     timeout: 15000
 - takeScreenshot: 12c-lobby-same-spot
-# The bot closes its room; this phone opens one at the same spot and the bot asks to join it.
+# The bot leaves the lobby; this phone opens its table to it at the same spot and the bot asks to
+# join.
 - runScript:
     file: ../scripts/bot.js
     env:
@@ -60,21 +62,31 @@ appId: app.kabuk.mobile
     direction: UP
     timeout: 10000
 - extendedWaitUntil:
-    visible: Oda kur
+    visible:
+      id: lobby-open
     timeout: 10000
-- tapOn: Oda kur
+- tapOn:
+    id: lobby-open
 - extendedWaitUntil:
     visible:
       id: intent-none
     timeout: 10000
-# No game is chosen: an optional intent label, and anonymous (default) or with the profile.
+# No game is chosen: an optional intent label, an optional game tag that only the lobby shows, and
+# anonymous (default) or with the profile.
 - tapOn:
     id: intent-game
+- tapOn:
+    id: game-tag-tabu
+# The tag is chosen before the sheet scrolls on: further down it is off the top of a 320 × 640
+# screen.
+- assertVisible:
+    id: game-tag-tabu
+    selected: true
 - takeScreenshot: 13-new-room
-# The intent and participation choices push the button below the fold.
+# The choices push the button below the fold of the sheet.
 - scrollUntilVisible:
     element:
-      text: Odayı kur
+      id: lobby-confirm
     timeout: 10000
 - assertVisible:
     id: participation-anonymous
@@ -93,8 +105,38 @@ appId: app.kabuk.mobile
 - takeScreenshot: 13c-new-room-photo-sheet
 - tapOn:
     id: photo-cancel
-- tapOn: Odayı kur
-# A waiting room: the table can play on its own until another table joins.
+# The sheet comes back with the choices made: up to the tag, still chosen, then down to the button.
+- scrollUntilVisible:
+    element:
+      id: game-tag-tabu
+    direction: UP
+    timeout: 10000
+- assertVisible:
+    id: game-tag-tabu
+    selected: true
+- scrollUntilVisible:
+    element:
+      id: lobby-confirm
+    timeout: 10000
+- tapOn:
+    id: lobby-confirm
+# In the lobby: the table card says so, and nothing opens the room by itself (§23.C). The venue
+# was not at its top when the sheet opened; it goes back to the card by itself, no scrolling here.
+- extendedWaitUntil:
+    visible: Lobide açık
+    timeout: 15000
+- assertVisible:
+    id: withdraw-table
+- assertNotVisible:
+    id: lobby-open
+- takeScreenshot: 13d-venue-in-lobby
+# "Masaya git": today's waiting room, where the table can play on its own until another table joins.
+- scrollUntilVisible:
+    element:
+      id: go-to-table
+    timeout: 10000
+- tapOn:
+    id: go-to-table
 - extendedWaitUntil:
     visible:
       id: solo-tabu
@@ -105,9 +147,11 @@ appId: app.kabuk.mobile
     env:
       ACTION: request-join
       BODY: '{"profiled":true}'
+# The request opens over whatever screen is up (§23.C), here the waiting room.
 - extendedWaitUntil:
     visible: Katılma isteği
     timeout: 20000
+- assertVisible: Geç
 - takeScreenshot: 15-join-request
 - tapOn:
     id: join-accept

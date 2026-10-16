@@ -26,7 +26,8 @@ import { useNow } from '@/lib/useNow';
 type Game = Concept;
 type Mode = 'solo' | 'room';
 
-// The intent "Bu oyunla oda kur" opens the room form with (the room still starts without a game).
+// The intent "Bu oyunla lobiye aç" opens "Masanı lobiye aç" with, beside the game's tag (the table
+// still starts without a game; docs/SPEC_V3.md §23.C).
 const INTENT_OF: Record<Game, Intent> = {
   tabu: 'game',
   sohbet: 'chat',
@@ -38,7 +39,7 @@ const INTENT_OF: Record<Game, Intent> = {
 
 // Aktiviteler, the game hub (docs/SPEC_V3.md §18.3; canvas: Aşama 8 · Saha → Oyun listesi): the
 // games as cards under "Tek telefonla" (the one-table room of the venue screen) and "İki masayla"
-// ("Bu oyunla oda kur"). A card opens the game's sheet: what it is, how it is played and the action,
+// ("Bu oyunla lobiye aç": the Mekan tab with "Masanı lobiye aç" open, the game's tag chosen). A card opens the game's sheet: what it is, how it is played and the action,
 // or "Oynamak için mekana gir" away from a venue. Below, the caller's own recent games; the section
 // is left out when there are none. No new game or content. At a venue, a "Tek telefonla" game the
 // table's headcount is too few for is faded with its reason (pure/gameCatalog.ts) and does not open;
@@ -155,9 +156,12 @@ export default function ActivitiesScreen() {
           <Button
             label={tr.activities.createWith}
             onPress={() => {
-              const intent = INTENT_OF[open.game];
+              const game = open.game;
               setOpen(null);
-              router.push({ pathname: '/room/new', params: { intent } });
+              router.navigate({
+                pathname: '/venue',
+                params: { lobbyGame: game, lobbyIntent: INTENT_OF[game] },
+              });
             }}
             testID={`activities-create-${open.game}`}
           />

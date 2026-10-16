@@ -9,6 +9,7 @@
     "vitest.integration.config.ts",
     "supabase/functions/_shared/pure/**/*.test.ts",
     "apps/mobile/src/theme/**/*.test.ts",
+    "apps/mobile/src/i18n/words.test.ts",
     "supabase/tests/**/*.ts"
   ]
 }
