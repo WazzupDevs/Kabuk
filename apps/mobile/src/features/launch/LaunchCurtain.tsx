@@ -26,7 +26,7 @@ import Svg, {
   Stop,
 } from 'react-native-svg';
 
-import { BRAND, LAUNCH_LIGHT } from '@/theme/brand';
+import { BRAND, LAUNCH_LIGHT, LAUNCH_MASK } from '@/theme/brand';
 import {
   glintPath,
   launchFrame,
@@ -291,9 +291,9 @@ function CurtainArt({
           </ClipPath>
           {/* The window: the curtain is cut where its capsules are. */}
           <Mask id="launch-window" maskUnits="userSpaceOnUse" x={0} y={0} width={w} height={h}>
-            <Rect x={0} y={0} width={w} height={h} fill={BRAND.white} />
-            <AnimatedRect animatedProps={windowA} fill={BRAND.ink} />
-            <AnimatedRect animatedProps={windowB} fill={BRAND.ink} />
+            <Rect x={0} y={0} width={w} height={h} fill={LAUNCH_MASK.keep} />
+            <AnimatedRect animatedProps={windowA} fill={LAUNCH_MASK.cut} />
+            <AnimatedRect animatedProps={windowB} fill={LAUNCH_MASK.cut} />
           </Mask>
         </Defs>
         <AnimatedG animatedProps={curtain}>

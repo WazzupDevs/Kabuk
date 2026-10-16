@@ -17,3 +17,7 @@ export const VENUE_TILE_EDGE_OPACITY = 0.16;
 // The launch curtain's light (src/features/launch/LaunchCurtain.tsx): the glow behind the mark and
 // the flash's middle where the capsules meet.
 export const LAUNCH_LIGHT = { glow: '#3B2B92', flash: '#FFD3E4' } as const;
+// The launch window's mask, a luminance mask: react-native-svg makes 0.2125 R + 0.7154 G + 0.0721 B
+// of the sRGB values its alpha. White keeps the curtain, black cuts the window clean; the ink would
+// keep 7.6 % of the curtain over the open window (brand.test.ts).
+export const LAUNCH_MASK = { keep: '#FFFFFF', cut: '#000000' } as const;
