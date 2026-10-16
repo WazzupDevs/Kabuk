@@ -46,7 +46,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:
-      # supabase/tests/local.ts writes here every call the local serve refused and it sent again.
+      # supabase/tests/local.ts writes here every call the local serve refused or cut off (refusal.ts),
+      # and whether it sent the call again.
       INVOKE_RETRY_LOG: invoke-retries.log
     steps:
       - uses: actions/checkout@v4
@@ -86,13 +87,14 @@ jobs:
         run: |
           touch invoke-retries.log
           total=$(wc -l < invoke-retries.log)
+          again=$(grep -c ' yes$' invoke-retries.log || true)
           {
-            echo "### Edge Function calls sent again: $total"
+            echo "### Edge Function calls refused or cut off by the local serve: $total, sent again: $again"
             if [ "$total" -gt 0 ]; then
               echo
-              echo "| Times | Call | Refusal |"
-              echo "| ---: | --- | --- |"
-              sort invoke-retries.log | uniq -c | sort -rn | awk '{ print "| " $1 " | `" $2 "` | " $3 " |" }'
+              echo "| Times | Call | Answer | Sent again |"
+              echo "| ---: | --- | --- | --- |"
+              sort invoke-retries.log | uniq -c | sort -rn | awk '{ print "| " $1 " | `" $2 "` | " $3 " | " $4 " |" }'
             fi
           } | tee -a "$GITHUB_STEP_SUMMARY"
       - if: failure()
