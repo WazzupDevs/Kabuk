@@ -1,0 +1,165 @@
+# After a merge to main whose ci passed: publishes main to the hosted dev project and, when the app
+# changed, sends an OTA update to the preview channel. The steps and the order of CLAUDE.md →
+# "main'den dev projesine yayın": migrations and seed, then the Edge Functions, then the update.
+# Each runs only when its files changed since the last successful deploy (scripts/deploy/plan.ts).
+#
+# Only the dev project, never the pilot's: the ref comes from
+# supabase/functions/_shared/pure/devProject.ts (the pilot project is named nowhere in the repo),
+# the step after `supabase link` checks the linked ref, and the update goes out only when the EAS
+# preview environment's EXPO_PUBLIC_SUPABASE_URL is the dev project's address. The secrets live in
+# the "dev" GitHub environment, which only main can use.
+#
+# Setup, secrets and how to stop it: CLAUDE.md → "main'den dev projesine yayın" → "Otomatik yayın".
+name: deploy-dev
+
+# The name says which commit a run deployed: the next run starts from the newest of them
+# (scripts/deploy/cli.ts plan). A dry run and a run whose ci failed never count.
+run-name: >-
+  ${{ github.event_name == 'workflow_dispatch'
+  && (inputs.dry_run && 'deploy-dev dry run' || format('deploy-dev {0}', github.sha))
+  || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+  && format('deploy-dev {0}', github.event.workflow_run.head_sha)
+  || 'deploy-dev skipped (ci did not pass)') }}
+
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Yalnızca kontrol (bağlan ve listele, hiçbir şey yayınlama)
+        type: boolean
+        default: true
+      everything:
+        description: Son yayına bakmadan hepsini yayınla
+        type: boolean
+        default: false
+      force_ota:
+        description: Native dosya değişse de OTA gönder (değişiklik yalnızca JS ise)
+        type: boolean
+        default: false
+
+# One deploy at a time, in order; a newer waiting run replaces an older waiting one (it carries
+# the older one's changes too).
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  # Earlier runs' names: where the last deploy left off.
+  actions: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  deploy:
+    # main only; after a push to main, only when its ci passed (a PR's ci never deploys).
+    if: >-
+      github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch'
+      || (github.event.workflow_run.conclusion == 'success'
+      && github.event.workflow_run.event == 'push'
+      && github.event.workflow_run.head_repository.full_name == github.repository))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: dev
+    env:
+      SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+      DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+      # pure/ modules imported by scripts/deploy have no package type: Node's notice is noise here.
+      NODE_OPTIONS: --disable-warning=MODULE_TYPELESS_PACKAGE_JSON
+      FORCE_COLOR: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.SHA }}
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: What changed since the last deploy
+        id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVERYTHING: ${{ github.event_name == 'workflow_dispatch' && inputs.everything }}
+          FORCE_OTA: ${{ github.event_name == 'workflow_dispatch' && inputs.force_ota }}
+        run: |
+          RUN_TITLES=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/deploy-dev.yml/runs?status=success&per_page=50" --jq '.workflow_runs[].display_title')
+          export RUN_TITLES
+          node --experimental-strip-types scripts/deploy/cli.ts plan
+
+      - name: Link the dev project
+        if: steps.plan.outputs.migrations == 'true' || steps.plan.outputs.functions == 'true' || env.DRY_RUN == 'true'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          ref=$(node --experimental-strip-types scripts/deploy/cli.ts ref)
+          pnpm supabase link --project-ref "$ref"
+          node --experimental-strip-types scripts/deploy/cli.ts check-link
+
+      # --skip-vault: config.toml describes the local stack only; nothing from it goes to the project
+      # (CLAUDE.md: `supabase config push` is never run).
+      - name: Migrations and seed
+        if: steps.plan.outputs.migrations == 'true' || env.DRY_RUN == 'true'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          pnpm supabase db push --include-seed --skip-vault --dry-run 2>&1 | tee "$RUNNER_TEMP/db-push.txt"
+          # A seed file changed in place would only get its hash updated, not run (CLAUDE.md → pnpm seed).
+          if grep -q "hash update" "$RUNNER_TEMP/db-push.txt"; then
+            echo "::error::Seed dosyası elle değişmiş (hash update): pnpm seed ile yeniden üret."
+            exit 1
+          fi
+          if [ "$DRY_RUN" = true ]; then exit 0; fi
+          pnpm supabase db push --include-seed --skip-vault --yes
+          echo "- Migration'lar ve seed uygulandı." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Edge Functions
+        if: steps.plan.outputs.functions == 'true' || env.DRY_RUN == 'true'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          if [ "$DRY_RUN" = true ]; then
+            pnpm supabase functions list
+            exit 0
+          fi
+          pnpm functions:deploy
+          echo "- Edge Function'lar yayınlandı." >> "$GITHUB_STEP_SUMMARY"
+
+      # The bundle takes EXPO_PUBLIC_* from the EAS preview environment: it must point at the dev
+      # project. EXPO_PUBLIC_APP_ENV is the preview build profile's (eas.json), which an update
+      # does not read: Sentry reports the update under the same environment as the build.
+      - name: OTA update (preview)
+        if: steps.plan.outputs.ota == 'true' || env.DRY_RUN == 'true'
+        working-directory: apps/mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EXPO_PUBLIC_APP_ENV: preview
+        run: |
+          url=$(npx --yes eas-cli@24.13.0 env:get preview --variable-name EXPO_PUBLIC_SUPABASE_URL --format short --non-interactive |
+            sed 's/\x1b\[[0-9;]*m//g' | sed -n 's/^EXPO_PUBLIC_SUPABASE_URL=//p')
+          node --experimental-strip-types ../../scripts/deploy/cli.ts check-url "$url"
+          if [ "$DRY_RUN" = true ]; then exit 0; fi
+          msg="main ${SHA::7}: $(git log -1 --format=%s "$SHA")"
+          npx --yes eas-cli@24.13.0 update --channel preview --environment preview --message "$msg" --non-interactive
+          echo "- OTA güncellemesi preview kanalına gönderildi." >> "$GITHUB_STEP_SUMMARY"
+
+      # The server went out; the update waits for a person. The run fails so the next one starts
+      # from the same place and holds it again until a new version or a manual run with force_ota.
+      - name: OTA held
+        if: steps.plan.outputs.held != ''
+        env:
+          HELD: ${{ steps.plan.outputs.held }}
+        run: |
+          echo "::error::OTA bekletildi: $HELD değişti ama apps/mobile/app.json → version aynı. Native ise version artır ve yeni build al; yalnızca JS ise Actions → deploy-dev → Run workflow (dry_run kapalı, force_ota açık)."
+          [ "$DRY_RUN" = true ] || exit 1
