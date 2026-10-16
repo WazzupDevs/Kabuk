@@ -1,28 +1,32 @@
 # V8: the bot table ends the room; this phone must move to "Tanışalım mı?" without a blank screen.
-# Then "Masanla oyna": a private one-table room, its games started directly, "Odayı bitir" closes it.
+# Before it, the Faz 3 venue (docs/SPEC_V3.md §23.C): the request comes while the phone is on the
+# venue screen, and after "Kabul" the table card says "Birleşti" until "Masaya git". Then "Masanla
+# oyna": a private one-table room, its games started directly, "Masayı bitir" closes it.
 appId: app.kabuk.mobile
 ---
 - tapOn:
     id: tab-venue
 - extendedWaitUntil:
-    visible: Oda kur
+    visible:
+      id: lobby-open
     timeout: 10000
-- tapOn: Oda kur
+- tapOn:
+    id: lobby-open
 - extendedWaitUntil:
     visible:
       id: intent-none
     timeout: 10000
-# The intent and participation choices push the button below the fold.
+# The choices push the button below the fold of the sheet.
 - scrollUntilVisible:
     element:
-      text: Odayı kur
+      id: lobby-confirm
     timeout: 10000
-- tapOn: Odayı kur
-# A waiting room: the table can play on its own until another table joins.
+- tapOn:
+    id: lobby-confirm
 - extendedWaitUntil:
-    visible:
-      id: solo-tabu
+    visible: Lobide açık
     timeout: 15000
+# The request opens on the venue screen too; nothing sends the phone to the room.
 - runScript:
     file: ../scripts/bot.js
     env:
@@ -32,6 +36,18 @@ appId: app.kabuk.mobile
     timeout: 20000
 - tapOn:
     id: join-accept
+- extendedWaitUntil:
+    visible: Birleşti
+    timeout: 15000
+- assertNotVisible:
+    id: propose-tabu
+- takeScreenshot: 27b-venue-merged
+- scrollUntilVisible:
+    element:
+      id: go-to-table
+    timeout: 10000
+- tapOn:
+    id: go-to-table
 - extendedWaitUntil:
     visible:
       id: propose-tabu
@@ -75,7 +91,8 @@ appId: app.kabuk.mobile
 - takeScreenshot: 29-good-game
 - tapOn: Mekana dön
 - extendedWaitUntil:
-    visible: Oda kur
+    visible:
+      id: lobby-open
     timeout: 15000
 - tapOn:
     id: play-with-table
@@ -117,13 +134,16 @@ appId: app.kabuk.mobile
 - tapOn:
     id: end-room
 - extendedWaitUntil:
-    visible: Oda kur
+    visible:
+      id: lobby-open
     timeout: 15000
 # The venue stays: it does not send the phone back into the room it just closed (the two screens
 # used to bounce into "Bir şeyler ters gitti", depending on which read came back first).
 - waitForAnimationToEnd:
     timeout: 3000
-- assertVisible: Oda kur
+- assertVisible:
+    id: lobby-open
+- assertVisible: Lobide değil
 - assertNotVisible:
     id: end-room
 - assertNotVisible: Bir şeyler ters gitti

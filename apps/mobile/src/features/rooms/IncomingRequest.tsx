@@ -15,14 +15,33 @@ import { useNow } from '@/lib/useNow';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON } from '@/theme/tokens';
 
+import { useActiveTable } from '@/features/checkin/useActiveTable';
+
 import { BigAlias } from './BigAlias';
 import { ProfiledTag } from './ProfiledTag';
-import { roomKeys, useIncomingRequests } from './queries';
+import { roomKeys, useCurrentRoom, useIncomingRequests } from './queries';
 
 // `leaderSessionId`: this phone, when it leads a side; null otherwise (no requests to answer).
 type Props = { roomId: string; leaderSessionId: string | null };
 
-// A leader's 60 second window: Kabul / Reddet (MVP_SPEC §4.4, screen 4). "Bu masadayım" shows the
+// The table's request card wherever the phone is in the app (docs/SPEC_V3.md §23.C): the venue is
+// the home screen now, so a leader is no longer on the room screen when a request comes; whatever
+// tab is open, the 60 seconds are not missed. Mounted once, in the app's layout.
+export function IncomingRequestHost() {
+  const table = useActiveTable();
+  const sessionId = table.data?.id;
+  const room = useCurrentRoom(sessionId).data;
+  const leads =
+    !!room &&
+    !!sessionId &&
+    (room.status === 'waiting' || room.status === 'active') &&
+    (room.owner_session_id === sessionId || room.guest_session_id === sessionId);
+  return room && leads ? (
+    <IncomingRequest roomId={room.id} leaderSessionId={sessionId ?? null} />
+  ) : null;
+}
+
+// A leader's 60 second window: Kabul / Geç (MVP_SPEC §4.4, screen 4; docs/SPEC_V3.md §23.E). "Bu masadayım" shows the
 // requester's alias as large as the requester's own waiting card (docs/SPEC_V3.md §22.C; canvas:
 // Faz 2 · 22.5 → Lider: istek kartı).
 export function IncomingRequest({ roomId, leaderSessionId }: Props) {
@@ -42,6 +61,8 @@ export function IncomingRequest({ roomId, leaderSessionId }: Props) {
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: roomKeys.incoming(roomId) });
       void queryClient.invalidateQueries({ queryKey: roomKeys.room(roomId) });
+      // The table card ("Lobide açık" → "Birleşti") and the lobby.
+      void queryClient.invalidateQueries({ queryKey: roomKeys.current });
     },
   });
 

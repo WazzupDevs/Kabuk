@@ -1,30 +1,31 @@
+import { CONCEPTS, type Concept, type Intent, isIntent } from '@shared/rooms.ts';
+import { tableState } from '@shared/tableCard.ts';
+import { roomSeat } from '@shared/teams.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Redirect, router } from 'expo-router';
-import { useEffect } from 'react';
+import { Redirect, router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { ActivityIndicator, Alert, View } from 'react-native';
 
-import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
 import { ListRow } from '@/components/ListRow';
 import { LiveDot } from '@/components/LiveDot';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
 import { useVenueSpots } from '@/features/checkin/spots';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { Lobby } from '@/features/rooms/Lobby';
-import { roomKeys, useCurrentRoom } from '@/features/rooms/queries';
+import { OpenLobbySheet } from '@/features/rooms/OpenLobbySheet';
+import { useCurrentRoom, useRoom, useRoomPhones } from '@/features/rooms/queries';
+import { TableCard } from '@/features/rooms/TableCard';
 import { useCreateSolo } from '@/features/rooms/useCreateSolo';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { sessionDurationMinutes } from '@shared/analytics.ts';
-import { ALIAS_REROLLS_PER_CHECKIN } from '@shared/rooms.ts';
 
-import { track, trackOnce } from '@/lib/analytics';
-import { callLeave, callRerollAlias } from '@/lib/api';
+import { trackOnce } from '@/lib/analytics';
+import { callLeave } from '@/lib/api';
 import { useNow } from '@/lib/useNow';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, TOUCH } from '@/theme/tokens';
@@ -32,14 +33,23 @@ import { ICON, TOUCH } from '@/theme/tokens';
 // The venue chat row's live dot beats at a calm pace.
 const VENUE_CHAT_BEAT_MS = 1600;
 
+type LobbySheet = { intent: Intent | null; gameTag: Concept | null };
+
 function endSession(tableId: string, startedAt: string) {
   trackOnce(`session_ended:${tableId}`, 'session_ended', {
     duration_min: sessionDurationMinutes(startedAt, Date.now()),
   });
 }
 
-// The active table's venue: lobby, rooms, leaving (docs/SPEC_V2.md §2). Without an active table
-// it sends the user to Keşfet; an open room of the table opens directly.
+function isConcept(value: unknown): value is Concept {
+  return (CONCEPTS as readonly unknown[]).includes(value);
+}
+
+// The table's venue, the home screen (docs/SPEC_V3.md §23.C): the table card with its state, the
+// venue chat and the lobby. Without an active table it sends the user to Keşfet. Nothing sends the
+// table to its room any more: the card's "Masaya git" does (canvas: Faz 3 · 23.1 Masa ve lobi).
+// Aktiviteler's "Bu oyunla lobiye aç" lands here with the game (`lobbyGame`, `lobbyIntent`) and
+// opens "Masanı lobiye aç" with them.
 export default function VenueScreen() {
   const { colors, shape } = useTheme();
   const queryClient = useQueryClient();
@@ -47,15 +57,11 @@ export default function VenueScreen() {
   const currentRoom = useCurrentRoom(table.data?.id);
   const spots = useVenueSpots(table.data?.venue_id);
   const solo = useCreateSolo();
-  const reroll = useMutation({
-    mutationFn: callRerollAlias,
-    onSuccess: () => {
-      track('alias_rerolled', {});
-      return queryClient.invalidateQueries({ queryKey: ['activeTable'] });
-    },
-  });
   const venueHasSpots = (spots.data ?? []).length > 0;
-  const now = useNow(30_000);
+  // While a room's reveal window is open the card follows its end to the second (@shared/tableCard.ts).
+  const now = useNow(currentRoom.data?.status === 'ending' ? 1000 : 30_000);
+  const params = useLocalSearchParams<{ lobbyGame?: string; lobbyIntent?: string }>();
+  const [sheet, setSheet] = useState<LobbySheet | null>(null);
 
   const leave = useMutation({
     mutationFn: callLeave,
@@ -76,6 +82,27 @@ export default function VenueScreen() {
     void queryClient.invalidateQueries({ queryKey: ['activeTable'] });
   }, [expired, queryClient, tableId, tableStartedAt]);
 
+  // "Bu oyunla lobiye aç" from Aktiviteler: the sheet opens once with the game (adjusted while
+  // rendering), then the params go so that the next time opens it again.
+  const { lobbyGame, lobbyIntent } = params;
+  const asked = isConcept(lobbyGame) ? `${lobbyGame}:${lobbyIntent ?? ''}` : null;
+  const [handled, setHandled] = useState<string | null>(null);
+  if (asked !== handled) {
+    setHandled(asked);
+    if (asked && isConcept(lobbyGame)) {
+      setSheet({ intent: isIntent(lobbyIntent) ? lobbyIntent : null, gameTag: lobbyGame });
+    }
+  }
+  useEffect(() => {
+    if (asked) router.setParams({ lobbyGame: undefined, lobbyIntent: undefined });
+  }, [asked]);
+
+  const room = currentRoom.data ?? null;
+  const leads =
+    !!room && !!tableId && [room.owner_session_id, room.guest_session_id].includes(tableId);
+  // A member's side is only in room_phones (docs/SPEC_V3.md §22.B).
+  const phones = useRoomPhones(room?.id ?? '', !!room && !leads);
+
   if (table.isPending) {
     return (
       <Screen edges={['top']}>
@@ -88,20 +115,8 @@ export default function VenueScreen() {
     return <Redirect href="/explore" />;
   }
 
-  // The table's room opens directly, unless the room's own row, read since, says this phone is no
-  // longer in it: the room screen sends a closed or unreadable room here while the current room is
-  // still being read again, and sending it back would bounce between the two screens.
-  const roomId = currentRoom.data?.id;
-  const roomRow = roomId
-    ? queryClient.getQueryState<{ status: string } | null>(roomKeys.room(roomId))
-    : undefined;
-  const leftRoom =
-    roomRow?.data?.status === 'closed' ||
-    (roomRow?.data === null && roomRow.dataUpdatedAt >= currentRoom.dataUpdatedAt);
-  if (roomId && !leftRoom) {
-    return <Redirect href={{ pathname: '/room/[id]', params: { id: roomId } }} />;
-  }
-
+  const seat = room ? roomSeat(room, phones.data, table.data.id) : null;
+  const state = tableState(room, seat?.leader ?? false, now);
   const minutesLeft = Math.max(0, Math.ceil((expiresAt - now) / 60_000));
 
   function confirmLeave() {
@@ -113,6 +128,8 @@ export default function VenueScreen() {
 
   return (
     <Screen edges={['top']}>
+      {/* The room's changes reach the card while it is on screen (Realtime and the status check). */}
+      {room ? <RoomWatch roomId={room.id} /> : null}
       {/* Aşama 8 · Saha: no bell here; leaving the table is the small red button on the right. */}
       <ScreenHeader
         eyebrow={tr.venue.here}
@@ -134,80 +151,37 @@ export default function VenueScreen() {
           {errorMessage(leave.error)}
         </Text>
       ) : null}
-      <Card tone="feature" className="mt-3">
-        <View className="flex-row items-center gap-4">
-          <Avatar kind="table" alias={table.data.alias} size="lg" />
-          <View className="flex-1 gap-1">
-            <Text variant="overline" tone="muted">
-              {tr.venue.yourTable}
-            </Text>
-            <Text variant="alias" testID="table-alias" numberOfLines={1} adjustsFontSizeToFit>
-              {table.data.alias}
-            </Text>
-            <View className="flex-row flex-wrap items-center gap-1.5">
-              <Tag label={tr.venue.people(table.data.headcount)} />
-              <Tag
-                icon="time-outline"
-                label={tr.venue.remaining(Math.floor(minutesLeft / 60), minutesLeft % 60)}
-              />
-            </View>
-          </View>
-        </View>
-        <View
-          className="my-2.5"
-          style={{ height: shape.stroke.hairline, backgroundColor: colors.divider }}
-        />
-        {venueHasSpots ? (
-          <View className="flex-row items-center justify-between gap-2">
-            <View className="flex-1 flex-row items-center gap-2">
-              <Ionicons name="location-outline" size={ICON.md} color={colors.text} />
-              <Text variant="bodyStrong" className="flex-1">
-                {table.data.spot?.name ? tr.venue.spot(table.data.spot.name) : tr.venue.noSpot}
-              </Text>
-            </View>
+      <TableCard
+        table={table.data}
+        room={room}
+        state={state}
+        seat={seat}
+        minutesLeft={minutesLeft}
+        venueHasSpots={venueHasSpots}
+      />
+      {state === 'off' ? (
+        // Side by side: the venue chat row stays above the floating tab bar on small phones.
+        <View className="mt-5 flex-row gap-3">
+          <View className="flex-1">
             <Button
-              variant="ghost"
-              testID="change-spot"
-              label={table.data.spot_id ? tr.venue.changeSpot : tr.venue.chooseSpot}
-              onPress={() => router.push('/spot')}
+              tight
+              testID="lobby-open"
+              label={tr.rooms.create}
+              onPress={() => setSheet({ intent: null, gameTag: null })}
             />
           </View>
-        ) : null}
-        <View className="flex-row items-center justify-between gap-2">
-          <Text variant="fine" className="flex-1">
-            {tr.venue.rerollsLeft(ALIAS_REROLLS_PER_CHECKIN - table.data.alias_rerolls)}
-          </Text>
-          <Button
-            variant="ghost"
-            testID="reroll-alias"
-            label={tr.venue.rerollAlias}
-            onPress={() => reroll.mutate()}
-            disabled={table.data.alias_rerolls >= ALIAS_REROLLS_PER_CHECKIN}
-            loading={reroll.isPending}
-          />
+          <View className="flex-1">
+            <Button
+              variant="secondary"
+              tight
+              testID="play-with-table"
+              label={tr.rooms.playWithTable}
+              onPress={() => solo.mutate()}
+              loading={solo.isPending}
+            />
+          </View>
         </View>
-        {reroll.isError ? (
-          <Text variant="fine" tone="danger">
-            {errorMessage(reroll.error)}
-          </Text>
-        ) : null}
-      </Card>
-      {/* Side by side: the venue chat row stays above the floating tab bar on small phones. */}
-      <View className="mt-5 flex-row gap-3">
-        <View className="flex-1">
-          <Button tight label={tr.rooms.create} onPress={() => router.push('/room/new')} />
-        </View>
-        <View className="flex-1">
-          <Button
-            variant="secondary"
-            tight
-            testID="play-with-table"
-            label={tr.rooms.playWithTable}
-            onPress={() => solo.mutate()}
-            loading={solo.isPending}
-          />
-        </View>
-      </View>
+      ) : null}
       {solo.isError ? (
         <Text variant="fine" tone="danger" className="mt-2">
           {errorMessage(solo.error)}
@@ -244,7 +218,25 @@ export default function VenueScreen() {
         since={table.data.created_at}
         mySpotId={table.data.spot_id}
         venueHasSpots={venueHasSpots}
+        state={state}
+        hostAlias={room?.owner_alias ?? null}
       />
+      {sheet && state === 'off' ? (
+        <OpenLobbySheet
+          onClose={() => setSheet(null)}
+          alias={table.data.alias}
+          venueId={table.data.venue_id}
+          intent={sheet.intent}
+          gameTag={sheet.gameTag}
+        />
+      ) : null}
     </Screen>
   );
+}
+
+// Keeps the table's room live while the venue screen shows its card: its row's changes re-read the
+// table's current room (useRoom).
+function RoomWatch({ roomId }: { roomId: string }) {
+  useRoom(roomId);
+  return null;
 }

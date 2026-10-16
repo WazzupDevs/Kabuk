@@ -396,7 +396,7 @@ Gerekçeler `docs/DECISIONS.md` → "Tabu modları (v3 adım 4)".
 
 ### 7.1 Kapsam
 
-- Her mekanın tek, sabit bir grup sohbeti vardır: "Sakarya Üniversitesi sohbet odası". Adı `tr.ts`'te şablondur: `${venueName} sohbet odası`.
+- Her mekanın tek, sabit bir grup sohbeti vardır: "Sakarya Üniversitesi sohbeti". Adı `tr.ts`'te şablondur: `${venueName} sohbeti`; mekan ekranındaki satırın adı "Mekan sohbeti". (Faz 3, adım 23.1: "oda" kelimesi kullanıcıya görünmez, §23.C; önceki ad "… sohbet odası".)
 - **Erişim:** Yalnızca o mekanda aktif masası olan hesaplar okur ve yazar (`table_sessions.status = 'active' and expires_at > now()`). Masa bitince (ayrılma, süre dolumu) erişim hemen biter; geçmiş mesajlar da okunamaz.
 - Yalnızca metin: en fazla 200 karakter, oda sohbetiyle aynı sınır.
 - Mekandaki odalardan bağımsızdır: odadayken de açılabilir.
@@ -456,7 +456,7 @@ Gerekçeler `docs/DECISIONS.md` → "Tabu modları (v3 adım 4)".
   - Hız sınırı: hesap başına günde 10 istek (mekan sohbetinden). Aşılınca da `{ ok: true }` döner ve hiçbir şey yazılmaz; sınırın varlığı sızdırılmaz.
   - `friend_requests.encounter_id` null olabilir hâle gelir. Yeni kolonlar `source text check (in 'encounter','venue_chat')` ve `venue_chat_context jsonb` (mekan adı, tarih; mesaj metni yok).
 - **Gönderme onayı:** İstek göndermeden önce onay penceresinde "İstek gönderirsen profilin ona görünür" yazar.
-- **Alıcının görünümü:** "Sakarya Üniversitesi sohbet odasından **Ayşe (21)** arkadaşın olmak istiyor", yanında fotoğraf (gizlenmemişse).
+- **Alıcının görünümü:** "Sakarya Üniversitesi sohbetinden **Ayşe (21)** arkadaşın olmak istiyor", yanında fotoğraf (gizlenmemişse).
   - İstek sahibinin görünen adı, yaşı ve fotoğrafı gösterilir (S6): kampüs ölçeğinde yalnızca ad kimseyi tanıtmaz. İstek sahibi onay penceresiyle bunu kabul etmiştir. `public_id`, biyografi ve rozetler gitmez.
   - Fotoğraf `my_incoming_requests` yerine `friends/list` gibi fonksiyonda imzalanır (1 saatlik imzalı URL; `friends/incoming` eylemi). İstek sahibinin masa adı gitmez.
   - Kabul, red, engel ve şikayet bu istek kaydıyla yapılır.

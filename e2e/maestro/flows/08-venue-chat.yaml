@@ -24,7 +24,7 @@ appId: app.kabuk.mobile
 - tapOn:
     id: venue-chat-open
 - extendedWaitUntil:
-    visible: E2E Kafe sohbet odası
+    visible: E2E Kafe sohbeti
     timeout: 15000
 - scrollUntilVisible:
     element:
