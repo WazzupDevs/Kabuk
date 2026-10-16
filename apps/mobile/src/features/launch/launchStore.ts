@@ -1,7 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SplashScreen } from 'expo-router';
 import * as Updates from 'expo-updates';
 import { create } from 'zustand';
 
+import { reportError } from '@/lib/errorReporting';
+import { createLaunchGuard } from '@/lib/launchGuard';
 import { type LaunchKind, launchKindFrom, launchRecord } from '@/theme/launchMotion';
 
 // The launch: whether the curtain is still over the app (the status bar stays light on it) and
@@ -15,6 +18,15 @@ export const useLaunchStore = create<{ curtain: boolean; ready: boolean }>(() =>
 export function markLaunchReady(): void {
   if (!useLaunchStore.getState().ready) useLaunchStore.setState({ ready: true });
 }
+
+// The system splash goes at the curtain's first frame, or at the latest at the cap; a curtain that
+// has not begun by then, or fails, is dropped (src/lib/launchGuard.ts). The cap counts from here,
+// as the root layout first loads.
+export const launchGuard = createLaunchGuard({
+  hideSplash: () => SplashScreen.hideAsync(),
+  dropCurtain: () => useLaunchStore.setState({ curtain: false }),
+  report: reportError,
+});
 
 const STORAGE_KEY = 'skall.launch.v1';
 // Once this JS context has launched, a new root (the app reopened while in memory) is a quick launch.

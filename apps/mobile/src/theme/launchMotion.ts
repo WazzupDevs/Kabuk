@@ -293,6 +293,25 @@ export type LaunchScene = {
   done: boolean;
 };
 
+// A scene that draws nothing: the curtain clear. A frame that throws gives it, and the curtain is
+// dropped (src/lib/launchGuard.ts).
+export const CLEAR_SCENE: LaunchScene = {
+  a: [0, 0, 0, 0],
+  b: [0, 0, 0, 0],
+  marks: 0,
+  letters: [0, 0, 0],
+  lettersClip: 0,
+  glow: 0,
+  glint: null,
+  ring: null,
+  flare: null,
+  window: null,
+  curtain: 0,
+  appScale: 1,
+  origin: [0, 0],
+  done: true,
+};
+
 // Whether the launch is waiting for the app at `t` (the wait motion plays).
 export function launchWaiting(T: LaunchTimeline, t: number, wait: number): boolean {
   'worklet';

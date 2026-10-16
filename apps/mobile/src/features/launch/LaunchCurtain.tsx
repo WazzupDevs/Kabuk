@@ -1,6 +1,5 @@
-import { SplashScreen } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import { Component, type ReactNode, useEffect, useMemo, useState } from 'react';
 import { type LayoutChangeEvent, StyleSheet, View } from 'react-native';
 import Animated, {
   runOnJS,
@@ -28,6 +27,7 @@ import Svg, {
 
 import { BRAND, LAUNCH_LIGHT, LAUNCH_MASK } from '@/theme/brand';
 import {
+  CLEAR_SCENE,
   flareCircle,
   glintPath,
   launchFrame,
@@ -43,7 +43,7 @@ import {
 } from '@/theme/launchMotion';
 import { SKA_LETTERS } from '@/theme/wordmark';
 
-import { decideLaunchKind, useLaunchStore } from './launchStore';
+import { decideLaunchKind, launchGuard, useLaunchStore } from './launchStore';
 
 const AnimatedRect = Animated.createAnimatedComponent(Rect);
 const AnimatedPath = Animated.createAnimatedComponent(Path);
@@ -73,11 +73,14 @@ type Props = { children: ReactNode };
 // app through a window that grows from the capsules' overlap. The app renders underneath from the
 // first moment and never waits: if its first screen is late, the ll seesaw until it is there. Runs
 // on the UI thread (Reanimated); touches go through to the app. The app's view stays where it is
-// in the tree before, during and after the launch, so nothing in it remounts.
+// in the tree before, during and after the launch, so nothing in it remounts. Guarded
+// (src/lib/launchGuard.ts): the system splash goes at the latest after 3 s, and a curtain that fails
+// (its drawing throws, a frame throws) is dropped and reported; the app shows either way.
 export function LaunchCurtain({ children }: Props) {
   const reduce = useReducedMotion();
   const [size, setSize] = useState<{ w: number; h: number } | null>(null);
-  const [shown, setShown] = useState(true);
+  // Off when the launch ends, the guard drops it, or it fails.
+  const shown = useLaunchStore((s) => s.curtain);
   const w = size?.w ?? 0;
   const h = size?.h ?? 0;
   const g = useMemo(() => launchGeometry(w / 2, h / 2), [w, h]);
@@ -87,6 +90,8 @@ export function LaunchCurtain({ children }: Props) {
   const kind = useSharedValue(-1);
   const began = useSharedValue(-1);
   const active = useSharedValue(true);
+  // A frame threw on the UI thread: the curtain draws nothing and is dropped.
+  const broken = useSharedValue(false);
 
   const onLayout = (e: LayoutChangeEvent) => {
     const { width, height } = e.nativeEvent.layout;
@@ -94,8 +99,10 @@ export function LaunchCurtain({ children }: Props) {
   };
 
   const finish = () => {
-    setShown(false);
     useLaunchStore.setState({ curtain: false });
+  };
+  const failOnUI = (message: string) => {
+    launchGuard.fail(new Error(`launch frame: ${message}`));
   };
 
   // The app's first screen.
@@ -110,16 +117,22 @@ export function LaunchCurtain({ children }: Props) {
   const clock = useFrameCallback((frame) => {
     'worklet';
     if (kind.value < 0 || !active.value) return;
-    if (began.value < 0) began.value = frame.timestamp;
-    const k = KINDS[kind.value] ?? 'cold';
-    const now = 500 + frame.timestamp - began.value;
-    const T = launchTimeline(k, reduce, wait.value);
-    // Not ready where the window should open: one more cycle of the wait motion.
-    if (!ready.value && now >= T.gate + wait.value) wait.value += T.cycle;
-    t.value = now;
-    if (now >= launchTimeline(k, reduce, wait.value).R1) {
+    try {
+      if (broken.value) throw new Error('scene');
+      if (began.value < 0) began.value = frame.timestamp;
+      const k = KINDS[kind.value] ?? 'cold';
+      const now = 500 + frame.timestamp - began.value;
+      const T = launchTimeline(k, reduce, wait.value);
+      // Not ready where the window should open: one more cycle of the wait motion.
+      if (!ready.value && now >= T.gate + wait.value) wait.value += T.cycle;
+      t.value = now;
+      if (now >= launchTimeline(k, reduce, wait.value).R1) {
+        active.value = false;
+        runOnJS(finish)();
+      }
+    } catch (e) {
       active.value = false;
-      runOnJS(finish)();
+      runOnJS(failOnUI)(e instanceof Error ? e.message : String(e));
     }
   }, false);
 
@@ -142,17 +155,29 @@ export function LaunchCurtain({ children }: Props) {
   }, [kind]);
   const [drawn, setDrawn] = useState(false);
   useEffect(() => {
-    if (!drawn || !kindKnown) return undefined;
+    if (!drawn || !kindKnown || !shown) return undefined;
     const id = requestAnimationFrame(() => {
-      void SplashScreen.hideAsync();
+      launchGuard.begin();
       clock.setActive(true);
     });
     return () => cancelAnimationFrame(id);
-  }, [drawn, kindKnown, clock]);
+  }, [drawn, kindKnown, shown, clock]);
 
-  const scene = useDerivedValue(() =>
-    launchFrame(KINDS[kind.value] ?? 'cold', reduce, g, t.value, wait.value),
-  );
+  // Dropped (the guard) or failed: the clock stops and the app keeps its own size.
+  useEffect(() => {
+    if (shown) return;
+    active.set(false);
+    clock.setActive(false);
+  }, [shown, active, clock]);
+
+  const scene = useDerivedValue(() => {
+    try {
+      return launchFrame(KINDS[kind.value] ?? 'cold', reduce, g, t.value, wait.value);
+    } catch {
+      broken.set(true);
+      return CLEAR_SCENE;
+    }
+  });
 
   // The app under the curtain settles from 1.06 around the overlap as the window opens.
   const appStyle = useAnimatedStyle(() => {
@@ -175,20 +200,40 @@ export function LaunchCurtain({ children }: Props) {
     <View style={styles.fill} onLayout={onLayout}>
       <Animated.View style={[styles.fill, appStyle]}>{children}</Animated.View>
       {shown ? (
-        size ? (
-          <CurtainArt scene={scene} g={g} w={w} h={h} onDrawn={() => setDrawn(true)} />
-        ) : (
-          // Until the size is known the system splash is still on top.
-          <View
-            testID={TEST_ID}
-            collapsable={false}
-            pointerEvents="none"
-            style={[StyleSheet.absoluteFill, styles.ink]}
-          />
-        )
+        <CurtainBoundary>
+          {size ? (
+            <CurtainArt scene={scene} g={g} w={w} h={h} onDrawn={() => setDrawn(true)} />
+          ) : (
+            // Until the size is known the system splash is still on top.
+            <View
+              testID={TEST_ID}
+              collapsable={false}
+              pointerEvents="none"
+              style={[StyleSheet.absoluteFill, styles.ink]}
+            />
+          )}
+        </CurtainBoundary>
       ) : null}
     </View>
   );
+}
+
+// The curtain's own error boundary: a drawing that throws drops the curtain and is reported; the
+// app beside it is outside the boundary and stays mounted.
+class CurtainBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  override state = { failed: false };
+
+  static getDerivedStateFromError(): { failed: boolean } {
+    return { failed: true };
+  }
+
+  override componentDidCatch(error: unknown): void {
+    launchGuard.fail(error);
+  }
+
+  override render(): ReactNode {
+    return this.state.failed ? null : this.props.children;
+  }
 }
 
 function CurtainArt({

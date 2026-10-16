@@ -1,11 +1,11 @@
-import { type ErrorBoundaryProps, router, SplashScreen } from 'expo-router';
+import { type ErrorBoundaryProps, router } from 'expo-router';
 import { useEffect } from 'react';
 import { View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
 import { Screen } from '@/components/Screen';
-import { markLaunchReady } from '@/features/launch/launchStore';
+import { launchGuard, markLaunchReady } from '@/features/launch/launchStore';
 import { tr } from '@/i18n/tr';
 import { reportError } from '@/lib/errorReporting';
 
@@ -17,7 +17,7 @@ export function RouteError({ error, retry }: ErrorBoundaryProps) {
     // An error screen is a first screen too: the launch opens onto it, and the system splash goes
     // even when the curtain never got to hand over.
     markLaunchReady();
-    void SplashScreen.hideAsync();
+    launchGuard.release();
   }, [error]);
 
   return (

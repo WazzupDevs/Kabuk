@@ -23,7 +23,8 @@ import { ThemeProvider } from '@/theme/ThemeProvider';
 export { RouteError as ErrorBoundary } from '@/components/RouteError';
 
 initErrorReporting();
-// The launch curtain hands over from the system splash on its first frame (LaunchCurtain).
+// The launch curtain hands over from the system splash on its first frame (LaunchCurtain); whatever
+// the curtain does, the system splash goes at the latest after 3 s (launchGuard).
 void SplashScreen.preventAutoHideAsync();
 
 function RootNavigator() {
