@@ -88,7 +88,7 @@ Netgsm hazır olunca, önce dev projesinde, sonra üretimde:
 
 1. **Netgsm:**
    - Hesap ve OTP servisi yetkisi alınır.
-   - SMS başlığı (gönderici adı, ör. `KABUK`) onaylatılır.
+   - SMS başlığı (gönderici adı, ör. `SKALL`) onaylatılır. Başlık onayında Netgsm marka ya da şirket belgesi isteyebilir; pilottan önce Netgsm'e sorulur.
    - Hesapta **OTP SMS paketi** tanımlı olmalıdır; yoksa Netgsm kod 60 döner ve kod gitmez.
    - API için bir alt kullanıcı açılır. Edge Function'ların sabit IP'si olmadığı için API alt kullanıcısında IP kısıtı **olmamalıdır**; varsa Netgsm kod 30 döner. Netgsm bunu zorunlu tutarsa uygulama durur ve sorulur.
    - Gönderim sınırı dakikada 100 sorgudur (aşımda kod 80; kanca Supabase'e yeniden dene yanıtı verir). Supabase'in saatlik 100 SMS sınırı bunun altında kalır.

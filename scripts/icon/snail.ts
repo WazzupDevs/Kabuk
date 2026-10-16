@@ -1,27 +1,19 @@
-// The Kabuk snail ("Çıkartma", Oyun Gecesi) as SVG: a lemon body, a purple shell with a lemon
-// spiral, ink outline and a hard ink shadow. One drawing for every size: the Android adaptive icon
-// (108 × 108 dp canvas, everything inside the 66 dp safe circle), the store icons, the splash image,
-// the one-colour notification icon and the in-app images (apps/mobile/assets/brand). Pure, so the
-// geometry is tested; scripts/build-icons.ts rasterises it with sharp.
+// The snail ("Çıkartma", Oyun Gecesi) as SVG: a lemon body, a purple shell with a lemon spiral, ink
+// outline and a hard ink shadow, for the in-app images (apps/mobile/assets/brand). The app icon,
+// splash and notification icon are the skall mark (scripts/icon/mark.ts). Pure, so the geometry is
+// tested; scripts/build-icons.ts rasterises it with sharp.
 // Design source: the Claude Design canvas, "Aşama 1 · Son".
 
 export type IconTokens = {
-  cream: string; // light canvas: icon background, splash
+  cream: string; // light canvas
   ink: string; // outline and shadow
   purple: string; // shell
   lemon: string; // body and spiral
   paper: string; // outline and shadow on dark grounds
-  night: string; // dark canvas: dark splash
+  night: string; // dark canvas
 };
 
 export type Point = [number, number];
-
-export const CANVAS = 108;
-const CENTER = CANVAS / 2;
-// Adaptive icon safe zone: a 66 dp circle; the launcher may crop anything outside it.
-export const SAFE_RADIUS = 33;
-// Radius the whole drawing (outline and shadow included) is fitted into, per use.
-export const RADIUS = { adaptive: 32, store: 42, splash: 50, notification: 50 } as const;
 
 // ------------------------------------------------------------------ geometry (local units)
 const W = 5; // outline
@@ -77,34 +69,6 @@ export function inkPoints(): Point[] {
     [66, 12],
     [100, 18],
   ];
-}
-
-export type Fit = { scale: number; dx: number; dy: number };
-
-// Uniform scale and offset that centre the drawing (shadow included) on the canvas and keep every
-// ink point, with the pad and half the shadow, inside `radius` of the centre.
-export function fit(radius: number, shadow = SHADOW): Fit {
-  const points = inkPoints();
-  const xs = points.map((p) => p[0]);
-  const ys = points.map((p) => p[1]);
-  const cx = (Math.min(...xs) + Math.max(...xs) + shadow) / 2;
-  const cy = (Math.min(...ys) + Math.max(...ys) + shadow) / 2;
-  const far = Math.max(...points.map(([x, y]) => Math.hypot(x - cx, y - cy))) + PAD + shadow / 2;
-  const scale = radius / far;
-  return { scale, dx: CENTER - cx * scale, dy: CENTER - cy * scale };
-}
-// How far the drawing reaches from the canvas centre once fitted, in canvas units.
-export function reach(radius: number, shadow = SHADOW): number {
-  const { scale, dx, dy } = fit(radius, shadow);
-  const shadowed = inkPoints().flatMap(([x, y]): Point[] => [
-    [x, y],
-    [x + shadow, y + shadow],
-  ]);
-  return Math.max(
-    ...shadowed.map(
-      ([x, y]) => Math.hypot(x * scale + dx - CENTER, y * scale + dy - CENTER) + PAD * scale,
-    ),
-  );
 }
 
 // The tight box of the drawing in local units (for the in-app images).
@@ -178,74 +142,6 @@ export function snail(
       `<circle cx="${SHELL.cx}" cy="${SHELL.cy}" r="${SHELL.r}" fill="${p.shell}" stroke="${p.line}" stroke-width="${W}"/>` +
       `<path d="${SPIRAL}" fill="none" stroke="${p.swirl}" stroke-width="6.2" stroke-linecap="round"/>`;
   return out;
-}
-
-// One colour, the details cut out (spiral and the shell's edge; the face only when asked).
-export function silhouette(color: string, face = false): string {
-  const cut = '#000';
-  return (
-    `<defs><mask id="silhouette" maskUnits="userSpaceOnUse" x="-30" y="-30" width="170" height="170">` +
-    `<g fill="#fff" stroke="#fff" stroke-width="${W}" stroke-linejoin="round" stroke-linecap="round">` +
-    `<path d="${BODY}"/><circle cx="${SHELL.cx}" cy="${SHELL.cy}" r="${SHELL.r}"/>` +
-    ANTENNAE.map(
-      ([x1, y1, x2, y2]) =>
-        `<path d="M ${x1} ${y1} L ${x2} ${y2}"/><circle cx="${x2}" cy="${y2}" r="${DOT}"/>`,
-    ).join('') +
-    `</g>` +
-    `<circle cx="${SHELL.cx}" cy="${SHELL.cy}" r="${SHELL.r + 0.2}" fill="none" stroke="${cut}" stroke-width="4.2"/>` +
-    `<circle cx="${SHELL.cx}" cy="${SHELL.cy}" r="${SHELL.r - 2}" fill="#fff"/>` +
-    `<path d="${SPIRAL}" fill="none" stroke="${cut}" stroke-width="5.6" stroke-linecap="round"/>` +
-    (face
-      ? `<circle cx="${EYE.cx}" cy="${EYE.cy}" r="${EYE.r}" fill="${cut}"/><path d="${SMILE}" fill="none" stroke="${cut}" stroke-width="3" stroke-linecap="round"/>`
-      : '') +
-    `</mask></defs><rect x="-30" y="-30" width="170" height="170" fill="${color}" mask="url(#silhouette)"/>`
-  );
-}
-
-function place(inner: string, radius: number, shadow = SHADOW): string {
-  const { scale, dx, dy } = fit(radius, shadow);
-  return `<g transform="translate(${f(dx)} ${f(dy)}) scale(${scale.toFixed(5)})">${inner}</g>`;
-}
-
-function svg(size: number, content: string): string {
-  return (
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" ` +
-    `viewBox="0 0 ${CANVAS} ${CANVAS}">${content}</svg>`
-  );
-}
-
-// ------------------------------------------------------------------ launcher and stores
-// Adaptive icon: the snail on transparent inside the safe circle, and a flat cream background.
-export function foregroundSvg(tokens: IconTokens, size: number): string {
-  return svg(size, place(snail(palette(tokens, 'light')), RADIUS.adaptive));
-}
-export function backgroundSvg(tokens: IconTokens, size: number): string {
-  return svg(size, `<rect width="${CANVAS}" height="${CANVAS}" fill="${tokens.cream}"/>`);
-}
-// Android 13 themed icon: the system tints by alpha. A silhouette without the face.
-export function monochromeSvg(size: number): string {
-  return svg(size, place(silhouette('#ffffff'), RADIUS.adaptive, 0));
-}
-// iOS (1024, opaque) and Play (512): background and snail in one square. Their masks cut less than
-// a launcher's circle, so the snail is larger.
-export function fullIconSvg(tokens: IconTokens, size: number): string {
-  return svg(
-    size,
-    `<rect width="${CANVAS}" height="${CANVAS}" fill="${tokens.cream}"/>` +
-      place(snail(palette(tokens, 'light')), RADIUS.store),
-  );
-}
-// Splash image on transparent (the plugin draws the background colour), light and dark ground.
-export function splashSvg(
-  tokens: IconTokens,
-  size: number,
-  ground: 'light' | 'dark' = 'light',
-): string {
-  return svg(size, place(snail(palette(tokens, ground)), RADIUS.splash));
-}
-// Android status bar icon: white on transparent, no mask, a silhouette without the face.
-export function notificationSvg(size: number): string {
-  return svg(size, place(silhouette('#ffffff'), RADIUS.notification, 0));
 }
 
 // ------------------------------------------------------------------ in-app images

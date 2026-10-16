@@ -1,6 +1,6 @@
 # Gizlilik Politikası (TASLAK)
 
-> **HUKUKİ KONTROL GEREKLİ.** Bu metin uygulamanın gerçekte işlediği verilere göre hazırlanmış bir taslaktır; hukuki görüş alınmadan yayımlanmamalıdır. Köşeli parantezli alanlar doldurulmalıdır. Uygulama içindeki onay sürümü şu an `draft-1`'dir (Kabuk v1: doğum tarihi, zorunlu görünen ad, mekan sohbeti; `docs/SPEC_V3.md`); bu metin yayımlanınca sürüm artırılır ve kullanıcılardan yeniden onay istenir. Faz 2 (takımlar; `docs/SPEC_V3.md` §22) metne işlendi; onay sürümü pilottan önce hukuki kontrolle birlikte artırılır.
+> **HUKUKİ KONTROL GEREKLİ.** Bu metin uygulamanın gerçekte işlediği verilere göre hazırlanmış bir taslaktır; hukuki görüş alınmadan yayımlanmamalıdır. Köşeli parantezli alanlar doldurulmalıdır. Uygulama içindeki onay sürümü şu an `draft-1`'dir ({{APP_NAME}} v1: doğum tarihi, zorunlu görünen ad, mekan sohbeti; `docs/SPEC_V3.md`); bu metin yayımlanınca sürüm artırılır ve kullanıcılardan yeniden onay istenir. Faz 2 (takımlar; `docs/SPEC_V3.md` §22) metne işlendi; onay sürümü pilottan önce hukuki kontrolle birlikte artırılır.
 
 Son güncelleme: [tarih]
 

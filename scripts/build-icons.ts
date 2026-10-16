@@ -1,24 +1,25 @@
 // Usage: pnpm icons → apps/mobile/assets/icon/*.png, apps/mobile/assets/brand/*.png,
-// apps/mobile/assets/glyph/*.png and the preview page dist/icon-preview/. The snail
-// (scripts/icon/snail.ts), the icon family (scripts/icon/glyphs.ts) and the colours
-// (apps/mobile/assets/icon/tokens.json) in every size the app and the stores need. Rerun after
-// changing any of them; the PNGs are committed.
+// apps/mobile/assets/glyph/*.png and the preview page dist/icon-preview/. The skall mark
+// (scripts/icon/mark.ts: the app icon, splash and notification icon), the in-app snail
+// (scripts/icon/snail.ts, with the colours in apps/mobile/assets/icon/tokens.json) and the icon
+// family (scripts/icon/glyphs.ts) in every size the app and the stores need. Rerun after changing
+// any of them; the PNGs are committed.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import sharp from 'sharp';
 
 import {
-  backgroundSvg,
-  brandSvg,
-  foregroundSvg,
-  fullIconSvg,
-  type IconTokens,
-  lineIconSvg,
-  monochromeSvg,
+  adaptiveBackgroundSvg,
+  adaptiveForegroundSvg,
+  adaptiveMonochromeSvg,
+  COLORS,
   notificationSvg,
+  SPLASH,
   splashSvg,
-} from './icon/snail.ts';
+  storeIconSvg,
+} from './icon/mark.ts';
+import { brandSvg, type IconTokens, lineIconSvg } from './icon/snail.ts';
 import {
   BADGE_GLYPHS,
   type BadgeGlyph,
@@ -49,7 +50,7 @@ const tokens = JSON.parse(readFileSync(resolve(assets, 'tokens.json'), 'utf8')) 
 async function png(svg: string, dir: string, file: string, opaque = false): Promise<void> {
   let image = sharp(Buffer.from(svg));
   // iOS and Play reject transparency in the app icon.
-  if (opaque) image = image.flatten({ background: tokens.cream });
+  if (opaque) image = image.flatten({ background: COLORS.night });
   await image.png().toFile(resolve(dir, file));
   console.log(`${dir.slice(root.length + 1)}/${file}`);
 }
@@ -59,19 +60,19 @@ mkdirSync(brand, { recursive: true });
 mkdirSync(glyph, { recursive: true });
 mkdirSync(art, { recursive: true });
 // Source drawing, for designers and the store.
-writeFileSync(resolve(assets, 'snail.svg'), `${foregroundSvg(tokens, 1024)}\n`);
+writeFileSync(resolve(assets, 'mark.svg'), `${storeIconSvg(1024)}\n`);
 
 // Android adaptive icon (108 dp layers at 1024 px) and the Android 13 themed (monochrome) layer.
-await png(foregroundSvg(tokens, 1024), assets, 'adaptive-foreground.png');
-await png(backgroundSvg(tokens, 1024), assets, 'adaptive-background.png');
-await png(monochromeSvg(1024), assets, 'adaptive-monochrome.png');
+await png(adaptiveForegroundSvg(1024), assets, 'adaptive-foreground.png');
+await png(adaptiveBackgroundSvg(1024), assets, 'adaptive-background.png');
+await png(adaptiveMonochromeSvg(1024), assets, 'adaptive-monochrome.png');
 // iOS: 1024 square, no rounded corners, opaque. Play Console: 512 square.
-await png(fullIconSvg(tokens, 1024), assets, 'icon.png', true);
-await png(fullIconSvg(tokens, 512), assets, 'play-512.png', true);
-// Splash images (the plugin draws the background colour) and the notification icon (white on
-// transparent; 96 px is the xxxhdpi size of the 24 dp status bar icon).
-await png(splashSvg(tokens, 1024, 'light'), assets, 'splash.png');
-await png(splashSvg(tokens, 1024, 'dark'), assets, 'splash-dark.png');
+await png(storeIconSvg(1024), assets, 'icon.png', true);
+await png(storeIconSvg(512), assets, 'play-512.png', true);
+// Splash image: the 288 dp canvas at xxxhdpi (4×; the plugin draws the night colour, the same in
+// light and dark), and the notification icon (white on transparent; 96 px is the xxxhdpi size of
+// the 24 dp status bar icon).
+await png(splashSvg(SPLASH * 4), assets, 'splash.png');
 await png(notificationSvg(96), assets, 'notification.png');
 
 // In-app images (src/components/Snail.tsx), drawn at 3× their largest use.
@@ -193,5 +194,5 @@ for (const kind of Object.keys(MARKERS) as MarkerKind[]) {
 }
 
 mkdirSync(preview, { recursive: true });
-writeFileSync(resolve(preview, 'index.html'), previewHtml('../../apps/mobile/assets/icon', tokens));
+writeFileSync(resolve(preview, 'index.html'), previewHtml('../../apps/mobile/assets/icon'));
 console.log('dist/icon-preview/index.html');
