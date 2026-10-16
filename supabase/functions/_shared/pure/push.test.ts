@@ -20,10 +20,14 @@ describe('isExpoPushToken', () => {
 describe('push texts', () => {
   it('names only the table alias, headcount and concept', () => {
     expect(joinRequestPush('Mor Baykuş', 3).body).toBe(
-      'Mor Baykuş (3 kişi) odana katılmak istiyor.',
+      'Mor Baykuş (3 kişi) masana katılmak istiyor.',
     );
     expect(joinRequestPush('Mor Baykuş', 4).body).toContain('(4+ kişi)');
-    expect(joinAcceptedPush().body.length).toBeGreaterThan(0);
+    // The user never sees "oda" (docs/SPEC_V3.md §23.C): the table joins a table.
+    expect(joinAcceptedPush()).toEqual({
+      title: 'İsteğin kabul edildi',
+      body: 'Masaya katılabilirsin.',
+    });
   });
 
   it('say nothing about who wrote or asked, and nothing of the message', () => {

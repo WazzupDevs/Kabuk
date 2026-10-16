@@ -201,7 +201,7 @@ Dev client olmadan, tek başına çalışan bir Android APK'sı. Arkadaşa link 
 4. **Build:** `pnpm dlx eas-cli build --platform android --profile preview`. İlk seferde Android keystore'u EAS'ın üretmesini kabul et (sonraki APK'lar aynı anahtarla imzalanır, üstüne kurulur). Ücretsiz planda kuyrukla birlikte 15–40 dk sürebilir.
 5. **Paylaşma:** Build bitince CLI bir `expo.dev/.../builds/<id>` linki ve QR kodu verir; sonra `pnpm dlx eas-cli build:list` ya da expo.dev'deki proje sayfasından da bulunur. Linki arkadaşına gönder. Android'de linki Chrome'da açar, **Install** ile APK'yı indirir, "bilinmeyen uygulamaları yükleme" iznini Chrome'a verir ve kurar. Play Protect uyarısında "Yine de yükle" seçilir.
 6. **Güncelleme:** kod ya da `EXPO_PUBLIC_*` değişince yeni build gerekir (değerler build anında pakete girer). Yeni APK eskisinin üstüne kurulur, oturum korunur. Sunucu değişiklikleri (migration, fonksiyon) yeni APK gerektirmez.
-7. Push bu APK'da çalışmaz (Firebase yok, bkz. "Push"). Uygulama bunu sessizce atlar; bildirim izni sorulursa cevap önemsizdir.
+7. Bildirimler bu APK'da da çalışır (bkz. "Push"). Uygulama bildirim iznini ister; izin verilmezse push token kaydedilmez ve uygulama bildirimsiz çalışır.
 
 ### Barındırılan projede SMS'siz giriş (test numaraları)
 Dev projesinde girişin tek yolu budur (orada SMS yok): gerçek ya da uydurma numaralarla, SMS gönderilmeden, sabit kodla giriş yapılır.

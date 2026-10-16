@@ -12,12 +12,12 @@ export type PushMessage = { title: string; body: string; target?: PushTarget };
 export function joinRequestPush(alias: string, headcount: number): PushMessage {
   return {
     title: 'Katılma isteği',
-    body: `${alias} (${headcountLabel(headcount)} kişi) odana katılmak istiyor.`,
+    body: `${alias} (${headcountLabel(headcount)} kişi) masana katılmak istiyor.`,
   };
 }
 
 export function joinAcceptedPush(): PushMessage {
-  return { title: 'İsteğin kabul edildi', body: 'Odaya katılabilirsin.' };
+  return { title: 'İsteğin kabul edildi', body: 'Masaya katılabilirsin.' };
 }
 
 // v2 (docs/SPEC_V2.md §6.4): no sender, no preview. The friend request text follows the DM one.
