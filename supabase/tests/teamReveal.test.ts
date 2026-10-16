@@ -636,6 +636,61 @@ describe('reveal/matches (§22.F)', { timeout: 60_000 }, () => {
       body: errorBody('not_in_room'),
     });
   });
+
+  // Rule 4: a profile goes only while the room lasts. The pair's profile comes until
+  // reveal_ends_at, also when every "Evet" closed the room early; after it the match is its table
+  // session id, alias and emoji, and no photo is signed.
+  it('gives a matched profile only until reveal_ends_at, also when the room closed early', async () => {
+    const [owner, guest] = await tables(2);
+    await setTestPhoto(owner.client);
+    const created = await rooms(owner, { action: 'create', profiled: true });
+    expect(created.status, JSON.stringify(created.body)).toBe(200);
+    const roomId = (created.body as { roomId: string }).roomId;
+    await join(guest, owner, roomId);
+    await end(owner, roomId);
+    await decide(owner, roomId, true);
+    await decide(guest, roomId, true);
+    expect((await roomRow(roomId)).status).toBe('closed');
+
+    const pathFor = async () =>
+      (
+        await sql`
+        select photo_path, display_name, birth_date
+        from public.reveal_matches(${guest.userId}, ${roomId})
+      `
+      )[0];
+    const during = await matchesOf(guest, roomId);
+    expect(during.matches).toEqual([
+      {
+        sessionId: owner.sessionId,
+        alias: owner.alias,
+        emoji: expect.any(String),
+        profile: {
+          displayName: 'Kişi 0',
+          age: expect.any(Number),
+          photoUrl: expect.stringContaining('/storage/v1/object/sign/'),
+        },
+      },
+    ]);
+    expect((await pathFor())?.photo_path).toEqual(expect.any(String));
+
+    await expireWindow(roomId);
+    const after = await matchesOf(guest, roomId);
+    expect(after).toEqual({
+      color: during.color,
+      matches: [
+        {
+          sessionId: owner.sessionId,
+          alias: owner.alias,
+          emoji: during.matches[0]?.emoji,
+          profile: null,
+        },
+      ],
+      unmatched: [],
+    });
+    // Nothing to sign: the path, the name and the birth date stay on the server.
+    expect(await pathFor()).toEqual({ photo_path: null, display_name: null, birth_date: null });
+  });
 });
 
 describe('reveal lists (pure/reveal.ts)', () => {

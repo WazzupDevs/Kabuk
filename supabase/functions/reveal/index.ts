@@ -61,7 +61,8 @@ Deno.serve(
       }
 
       // The caller's own matches; from reveal_ends_at on, also the other side's phones it did not
-      // match. A matched profile's photo is signed and its birth date becomes an age here.
+      // match. A matched profile comes only before reveal_ends_at (rule 4; reveal_matches leaves it
+      // out after): its photo is signed and its birth date becomes an age here.
       case 'matches': {
         const { data, error } = await db.rpc('reveal_matches', {
           target_user_id: user.id,

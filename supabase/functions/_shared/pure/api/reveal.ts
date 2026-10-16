@@ -8,7 +8,8 @@ export type RevealRequest =
 export type RevealResponse = { ok: true };
 
 // A phone this phone matched: its table session id, alias, the pair's emoji and, when it joined
-// with its profile, the profile (no public_id).
+// with its profile, the profile (no public_id), only before reveal_ends_at: the app keeps it from
+// the answers inside the window, the answer after it has none (docs/SPEC_V3.md §22.F).
 export type RevealMatch = {
   sessionId: string;
   alias: string;

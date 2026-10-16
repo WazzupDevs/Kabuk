@@ -46,6 +46,20 @@ comment on table public.reveal_signals is
 
 -- One record per pair of accounts in a room: a pair written twice (a phone leaving, then the window)
 -- keeps its first record.
+--
+-- Existing rows first. The rooms_record_encounter trigger (20261005100000_encounters.sql to
+-- 20261024090000_teams.sql) also wrote a record when a room stayed open with a new guest, so the same
+-- two accounts may have two records of one room, and the index below would then fail. Each such
+-- pair keeps its oldest record (played_at, then id) and the others go. Nothing references
+-- play_history by foreign key (friend_requests and mutual_friend_intents name an encounter_id, not a
+-- row). On an empty database this deletes nothing.
+delete from public.play_history newer
+using public.play_history older
+where newer.room_id = older.room_id
+  and newer.user_id = older.user_id
+  and newer.other_user_id = older.other_user_id
+  and (older.played_at, older.id) < (newer.played_at, newer.id);
+
 create unique index play_history_room_pair_idx
   on public.play_history (room_id, user_id, other_user_id);
 
@@ -430,7 +444,10 @@ $$;
 -- and turns the birth date into an age. One row per phone on the other side: during the window only
 -- the phones it matched (with the room's color, the pair's emoji and, when that phone joined
 -- profiled, its profile), from reveal_ends_at on also the others (matched false, nothing but the
--- alias); `ended` says which. Never an account id or public_id. Not a participant: not_in_room.
+-- alias); `ended` says which. The profile (name, birth date, photo path) only before reveal_ends_at,
+-- even when the room closed early on every "Evet" (rule 4: a profile goes only while the room
+-- lasts); after it a match is its table session id, alias and emoji. Never an account id or
+-- public_id. Not a participant: not_in_room.
 create function public.reveal_matches(target_user_id uuid, target_room_id uuid)
 returns table (
   color text,
@@ -454,6 +471,7 @@ declare
   me record;
   s public.reveal_signals;
   ended boolean;
+  live boolean;
 begin
   select * into r from public.rooms where id = target_room_id;
   if r.id is null then
@@ -465,6 +483,7 @@ begin
   end if;
   select * into s from public.reveal_signals x where x.room_id = r.id;
   ended := r.status = 'closed' or now() >= r.reveal_ends_at;
+  live := now() < r.reveal_ends_at;
   return query
     with others as (
       select p.*, s.pair_emojis ->> private.pair_key(me.session_id, p.session_id) as pair_emoji
@@ -474,10 +493,10 @@ begin
     select case when exists (select 1 from others o where o.pair_emoji is not null)
                 then s.color end,
            o.session_id, o.alias, o.pair_emoji is not null, o.pair_emoji,
-           o.pair_emoji is not null and o.profiled,
-           case when o.pair_emoji is not null and o.profiled then pr.display_name end,
-           case when o.pair_emoji is not null and o.profiled then pr.birth_date end,
-           case when o.pair_emoji is not null and o.profiled and pr.photo_hidden_at is null
+           live and o.pair_emoji is not null and o.profiled,
+           case when live and o.pair_emoji is not null and o.profiled then pr.display_name end,
+           case when live and o.pair_emoji is not null and o.profiled then pr.birth_date end,
+           case when live and o.pair_emoji is not null and o.profiled and pr.photo_hidden_at is null
                 then pr.photo_path end,
            ended
     from others o
