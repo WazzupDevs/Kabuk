@@ -33,9 +33,12 @@ appId: app.kabuk.mobile
       ACTION: create-room
 - tapOn:
     id: tab-venue
+# Centred: at the bottom of a 320 × 640 screen the card's second button sits under the floating tab
+# bar, where a tap lands on the bar.
 - scrollUntilVisible:
     element:
       id: request-member
+    centerElement: true
     timeout: 20000
 - takeScreenshot: 59-teams-lobby
 - tapOn:
