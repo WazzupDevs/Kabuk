@@ -1851,6 +1851,7 @@ Hepsi security definer, yalnızca okur, `set search_path = ''` (kural 1). Genel 
 - **Gecikme:** `pnpm latency`'ye oda adımı eklenir: bir oyun eyleminin yanıtından `rooms` değişikliğinin her telefona varışına kadar geçen süre, 2, 4 ve 8 telefonla (botlar), medyan ve p90.
 - **Panel (dev, saha testi günü):** Realtime → Reports'ta günlük mesaj sayısı ve aynı anda bağlantı zirvesi; Database → Query Performance'ta `private.is_room_member` ve `private.realtime_topic_allowed`'ın toplam süredeki payı ve yoklama sorgularının çağrı sayısı.
 - **Eşik ve sonraki adım:** 8 telefonda p90 gecikme 1 sn'yi geçerse, aylık mesaj tahmini Pro kotasının (5 milyon) yarısını aşarsa ya da iki fonksiyon veritabanı süresinin %20'sini aşarsa oda kanalı veri içermeyen sunucu yayınına geçer (mekan sohbetindeki `venue_chat` kalıbı: `room_changed` yayını, telefon satırı okur) ve yoklama aralığı uzatılır. Bu ayrı bir PR'dır ve önce spec'e yazılır; Faz 2'ye girmez.
+- **Hazırlık (22.6):** nasıl ölçüleceği ve kayıt tablosu `docs/ROOM_LOAD.md`'de; gecikme `pnpm latency` oda adımıyla (`STEPS=room`, `ROOM_PHONES`), panel sayıları `scripts/latency/room-load.sql` ile. İki fonksiyon politikaların içinde çalıştığı için Query Performance'ta kendi satırları yoktur; payları, onları çalıştıran sorgu gruplarından (Postgres Changes ve `realtime.messages`) üst sınır olarak okunur.
 
 ### 22.J API (Edge Function'lar)
 

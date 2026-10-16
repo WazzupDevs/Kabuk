@@ -17,6 +17,12 @@
 //
 // Optional: ROUNDS (default 10). The venue chat allows an account 20 messages per 10 minutes, so
 // leave 10 minutes between two runs.
+//
+// The room step (docs/SPEC_V3.md §22.I, step 22.6; room.ts): a game action's way to every phone of
+// a two-sided room with 2, 4 and 8 phones. A and B are the first two phones; ROOM_PHONES adds the
+// others as `+90555…=<code>` pairs, separated by commas (locally the test numbers +905550000003 …
+// +905550000008). A size with too few accounts is skipped. STEPS chooses the steps: `chat`, `room`
+// or both (default `chat,room`).
 import { createClient, FunctionsHttpError, type SupabaseClient } from '@supabase/supabase-js';
 
 import {
@@ -32,6 +38,7 @@ import {
   venueChatChannel,
 } from '../../supabase/functions/_shared/pure/venueChat.ts';
 import { ensureProfilePhoto } from '../shared/profilePhoto.ts';
+import { measureRoom } from './room.ts';
 import { markdownTable } from './stats.ts';
 
 // The local stack's fixed publishable key (the same in every `supabase start`).
@@ -55,6 +62,19 @@ if (!isLocal && !wantedVenue) {
   process.exit(1);
 }
 const ROUNDS = Math.max(1, Math.min(Number(process.env.ROUNDS ?? 10), VENUE_CHAT.windowMax));
+const STEPS = new Set((process.env.STEPS ?? 'chat,room').split(',').map((s) => s.trim()));
+// The room step's phones after A and B: `+90…=code` pairs; locally the remaining test numbers.
+const ROOM_PHONES = (
+  process.env.ROOM_PHONES ??
+  (isLocal ? ['3', '4', '5', '6', '7', '8'].map((n) => `+90555000000${n}=123456`).join(',') : '')
+)
+  .split(',')
+  .map((pair) => pair.trim())
+  .filter(Boolean)
+  .map((pair) => {
+    const [phone = '', otp = ''] = pair.split('=');
+    return { phone: phone.trim(), otp: otp.trim() };
+  });
 
 type Json = Record<string, unknown>;
 type Phone = { name: string; client: SupabaseClient; userId: string };
@@ -109,7 +129,8 @@ async function signIn(name: string, phone: string, otp: string): Promise<Phone> 
 }
 
 // At VENUE (name or id; locally the first active venue), on the venue's own point and first spot.
-async function checkIn(phone: Phone): Promise<string> {
+// `teams`: a table that takes members (the room step).
+async function checkIn(phone: Phone, teams = false): Promise<string> {
   const { data, error } = await phone.client.rpc('explore_venues', {});
   if (error) throw error;
   const venues = (data ?? []) as { venue_id: string; name: string; lat: number; lng: number }[];
@@ -133,6 +154,7 @@ async function checkIn(phone: Phone): Promise<string> {
     headcount: 2,
     locationConsentVersion: CURRENT_LOCATION_CONSENT_VERSION,
     ...(spots?.[0] ? { spotId: spots[0].id } : {}),
+    ...(teams ? { teams: true } : {}),
   });
   return venue.venue_id;
 }
@@ -237,6 +259,29 @@ async function main() {
     process.env.PHONE_B ?? '+905550000002',
     process.env.OTP_B ?? '123456',
   );
+  if (STEPS.has('chat')) await chatSteps(a, b);
+  if (STEPS.has('room')) {
+    const others: Phone[] = [];
+    for (const [i, { phone, otp }] of ROOM_PHONES.entries()) {
+      others.push(await signIn(`Ölçüm ${String.fromCharCode(67 + i)}`, phone, otp));
+    }
+    console.log(`${url}: oda adımı, ${2 + others.length} hesap, ${ROUNDS} tur.`);
+    await measureRoom([a, b, ...others], {
+      call,
+      checkIn: (phone) => checkIn(phone as Phone, true),
+      add,
+      now,
+      sleep,
+      rounds: ROUNDS,
+    });
+  }
+
+  console.log(`\nms, ${url}, ${new Date().toISOString()}\n`);
+  console.log(markdownTable([...samples].map(([step, values]) => ({ step, samples: values }))));
+}
+
+// DM and venue chat: A sends, B hears and reads.
+async function chatSteps(a: Phone, b: Phone) {
   const venueId = await checkIn(a);
   await checkIn(b);
   const threadId = await threadWith(a, b, venueId);
@@ -337,9 +382,6 @@ async function main() {
   await Promise.all([dm.close(), inbox.close(), venue.close()]);
   await call(a, 'checkin', { action: 'leave' });
   await call(b, 'checkin', { action: 'leave' });
-
-  console.log(`\nms, ${url}, ${new Date().toISOString()}\n`);
-  console.log(markdownTable([...samples].map(([step, values]) => ({ step, samples: values }))));
 }
 
 // The DM limit is one message per second per account.
