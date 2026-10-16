@@ -85,7 +85,7 @@ Katılma isteği, kabul, sohbet, oyun ve tanışma olayları **uygulama önde ve
 
 ## Test öncesi (evde, bir kez)
 
-- [ ] Barındırılan proje main ile güncel: CLAUDE.md → **"main'den dev projesine yayın"** komutlarının hepsi çalıştırıldı (migration'lar, seed, 12 fonksiyonun hepsi).
+- [ ] Barındırılan proje main ile güncel: CLAUDE.md → **"main'den dev projesine yayın"** komutlarının hepsi çalıştırıldı (migration'lar, seed, 18 fonksiyonun hepsi).
 - [ ] Panel → Realtime → Settings → **Allow public access kapalı**.
 - [ ] İki numara test numarası olarak tanımlı ve "Valid Until" test gününden sonra (CLAUDE.md → "Barındırılan projede SMS'siz giriş").
 - [ ] `content/venues-test.json` içinde test mekanının koordinatı var, seed edildi (CLAUDE.md → "Saha testi mekanı").
