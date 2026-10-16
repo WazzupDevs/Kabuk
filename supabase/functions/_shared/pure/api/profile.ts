@@ -1,4 +1,5 @@
 import type { BadgeId } from '../badges.ts';
+import type { Gender } from '../gender.ts';
 
 // `profile` Edge Function (docs/SPEC_V2.md §5), shared with the mobile app.
 export type ProfileView = {
@@ -10,14 +11,18 @@ export type ProfileView = {
   badges: BadgeId[];
   // Completed years (Istanbul day); the birth date itself goes to nobody else (rule 11).
   age: number | null;
-  // Only on the caller's own profile.
+  // Only on the caller's own profile; the gender goes to nobody else (rule 12).
   photoHidden?: boolean;
   birthDate?: string | null;
+  gender?: Gender | null;
 };
 
 // The profile behind a profiled venue chat message (docs/SPEC_V3.md §7.5): no public_id; it opens
 // through the message only.
-export type ChatProfileView = Omit<ProfileView, 'publicId' | 'photoHidden' | 'birthDate'>;
+export type ChatProfileView = Omit<
+  ProfileView,
+  'publicId' | 'photoHidden' | 'birthDate' | 'gender'
+>;
 
 export type ProfileRequest =
   | { action: 'get'; publicId: string }

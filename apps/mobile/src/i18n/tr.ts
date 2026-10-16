@@ -1127,6 +1127,7 @@ export const tr = {
     not_found: 'Bulunamadı.',
     reply_unavailable: 'Yanıtladığın mesaj artık yok.',
     photo_required: 'Profilinle görünmek için önce profil fotoğrafı ekle.',
+    anonymous_not_allowed: 'Masalara profilinle katılırsın.',
     venue_chat_mode_locked:
       'Mekan sohbetinde nasıl görüneceğini bu girişte zaten seçtin. Değiştirmek için mekandan ayrılıp yeniden giriş yap.',
     wrong_side: 'Bu masaya yalnızca daha önce bulunduğun taraftan katılabilirsin.',
