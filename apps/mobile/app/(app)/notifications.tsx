@@ -1,4 +1,4 @@
-import type { ReportReason } from '@shared/chat.ts';
+import { GAME_FLOW_REPORT_REASONS, type GameFlowReportReason } from '@shared/chat.ts';
 import { historyAction } from '@shared/friends.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
@@ -84,7 +84,7 @@ export default function NotificationsScreen() {
 
   const report = useMutation({
     meta: FEEL_ERROR,
-    mutationFn: ({ historyId, reason }: { historyId: string; reason: ReportReason }) =>
+    mutationFn: ({ historyId, reason }: { historyId: string; reason: GameFlowReportReason }) =>
       safetyApi.reportHistory(historyId, reason),
     onSuccess: () => {
       track('report_submitted', {});
@@ -94,7 +94,7 @@ export default function NotificationsScreen() {
   });
   const block = useMutation({
     meta: FEEL_ERROR,
-    mutationFn: ({ historyId, reason }: { historyId: string; reason?: ReportReason }) =>
+    mutationFn: ({ historyId, reason }: { historyId: string; reason?: GameFlowReportReason }) =>
       safetyApi.blockHistory(historyId, reason),
     onSuccess: (_data, { reason }) => {
       track('block_created', {});
@@ -283,6 +283,7 @@ export default function NotificationsScreen() {
 
       <ReportModal
         visible={reporting !== null}
+        reasons={GAME_FLOW_REPORT_REASONS}
         pending={report.isPending}
         error={report.error}
         onReport={(reason) => reporting && report.mutate({ historyId: reporting, reason })}
@@ -290,6 +291,7 @@ export default function NotificationsScreen() {
       />
       <ConfirmWithReport
         visible={blocking !== null}
+        reasons={GAME_FLOW_REPORT_REASONS}
         title={tr.safety.blockConfirmTitle}
         hint={tr.friends.blockHint}
         confirmLabel={tr.friends.blockConfirm}

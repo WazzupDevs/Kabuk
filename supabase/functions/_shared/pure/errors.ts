@@ -47,6 +47,7 @@ export type ErrorCode =
   | 'reply_unavailable'
   | 'photo_required'
   | 'anonymous_not_allowed'
+  | 'gender_required'
   | 'venue_chat_mode_locked'
   | 'wrong_side'
   | 'not_leader'

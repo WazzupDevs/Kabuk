@@ -41,6 +41,7 @@ async function onboarded(): Promise<Client> {
     kvkkVersion: CURRENT_KVKK_VERSION,
     displayName: 'Test Masa',
     birthDate: '2000-01-15',
+    gender: 'female',
   });
   expect(res.status).toBe(200);
   return client;

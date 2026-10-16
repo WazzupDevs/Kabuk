@@ -16,6 +16,7 @@ import type { Side } from '@shared/teams.ts';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 
+import { roomsApi } from '@/lib/api';
 import { privateChannel, useChannel } from '@/lib/realtime';
 import { supabase } from '@/lib/supabase';
 
@@ -36,6 +37,7 @@ export const roomKeys = {
   proposal: (roomId: string) => ['gameProposal', roomId] as const,
   roomCheck: (roomId: string) => ['roomCheck', roomId] as const,
   phones: (roomId: string) => ['roomPhones', roomId] as const,
+  requestProfile: (requestId: string) => ['requestProfile', requestId] as const,
 };
 
 // What decides the room's people: a phone joining or leaving a side, a new leader.
@@ -342,5 +344,19 @@ export function useIncomingRequests(roomId: string, leaderSessionId: string | nu
       if (error) throw error;
       return data;
     },
+  });
+}
+
+// The request card's profile (docs/SPEC_V3.md §23.E): name, age and photo of a requester who asked
+// with its profile, for the leader who can answer, while the request waits (rule 4). Not kept after
+// the card closes; the card waits for nothing (the countdown and the buttons are there at once).
+export function useRequestProfile(requestId: string | undefined, profiled: boolean) {
+  return useQuery({
+    queryKey: roomKeys.requestProfile(requestId ?? ''),
+    enabled: !!requestId && profiled,
+    staleTime: Infinity,
+    gcTime: 0,
+    retry: 1,
+    queryFn: () => roomsApi.requestProfile(requestId ?? ''),
   });
 }

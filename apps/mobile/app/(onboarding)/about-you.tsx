@@ -1,5 +1,6 @@
 import { composeBirthDate } from '@shared/age.ts';
 import { CURRENT_KVKK_VERSION, CURRENT_TERMS_VERSION } from '@shared/consent.ts';
+import type { Gender } from '@shared/gender.ts';
 import { DISPLAY_NAME_MAX, DISPLAY_NAME_MIN } from '@shared/profile.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
@@ -11,6 +12,7 @@ import { Input } from '@/components/Input';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Text } from '@/components/Text';
+import { GenderChoice } from '@/features/account/GenderChoice';
 import { useProfile } from '@/features/account/useProfile';
 import { useOnboardingStore } from '@/features/onboarding/store';
 import { errorMessage } from '@/i18n/errors';
@@ -20,22 +22,26 @@ import { queryClient as rootQueryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 
-// Sign-up = profile (docs/SPEC_V3.md §3): display name and birth date, sent with the consents in
-// one call. Under 18 the server deletes the account; the phone signs out and the phone screen says
-// why. The birth date is never shown to anyone; the profile shows the age.
+// Sign-up = profile (docs/SPEC_V3.md §3): display name, birth date and gender (§23.D), sent with the
+// consents in one call. Under 18 the server deletes the account; the phone signs out and the phone
+// screen says why. The birth date is never shown to anyone, the profile shows the age; the gender
+// is shown to nobody (rule 12).
 export default function AboutYouScreen() {
   const queryClient = useQueryClient();
   const profile = useProfile();
   const needsBirthDate = profile.data?.has_birth_date !== true;
+  const needsGender = profile.data?.has_gender !== true;
   const [name, setName] = useState(profile.data?.display_name ?? '');
   const [day, setDay] = useState('');
   const [month, setMonth] = useState('');
   const [year, setYear] = useState('');
   const [dateError, setDateError] = useState<string | null>(null);
+  const [gender, setGender] = useState<Gender | null>(null);
 
   const nameLength = [...name.trim()].length;
   const nameValid = nameLength >= DISPLAY_NAME_MIN && nameLength <= DISPLAY_NAME_MAX;
   const dateFilled = !needsBirthDate || (day !== '' && month !== '' && year.length === 4);
+  const genderChosen = !needsGender || gender !== null;
 
   const submit = useMutation({
     meta: FEEL_ERROR,
@@ -46,10 +52,12 @@ export default function AboutYouScreen() {
         kvkkVersion: CURRENT_KVKK_VERSION,
         displayName: name,
         ...(birthDate ? { birthDate } : {}),
+        ...(needsGender && gender ? { gender } : {}),
       }),
     onSuccess: async () => {
-      // Keep the onboarding screens for the optional photo step before the gate opens.
-      useOnboardingStore.setState({ extrasPending: true });
+      // Keep the onboarding screens for the optional photo step before the gate opens; the photo
+      // step's note depends on the answer (§23.D).
+      useOnboardingStore.setState({ extrasPending: true, gender });
       await queryClient.invalidateQueries({ queryKey: ['profile'] });
       router.replace('/extras');
     },
@@ -143,6 +151,9 @@ export default function AboutYouScreen() {
             </Text>
           </View>
         ) : null}
+        {needsGender ? (
+          <GenderChoice value={gender} onChange={setGender} disabled={submit.isPending} />
+        ) : null}
       </View>
       {submit.isError &&
       !(submit.error instanceof ApiError && submit.error.code === 'under_age') ? (
@@ -155,7 +166,7 @@ export default function AboutYouScreen() {
           testID="signup-continue"
           label={tr.signup.continue}
           onPress={onContinue}
-          disabled={!nameValid || !dateFilled}
+          disabled={!nameValid || !dateFilled || !genderChosen}
           loading={submit.isPending}
         />
       </View>

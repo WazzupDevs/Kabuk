@@ -19,6 +19,7 @@ import type {
   CreateRoomResponse,
   ProposeGameResponse,
   RequestJoinResponse,
+  RequestProfileResponse,
   RoomsOkResponse,
 } from '@shared/api/rooms.ts';
 import type {
@@ -44,7 +45,7 @@ import type {
   ProfileView,
 } from '@shared/api/profile.ts';
 import type { VenueChatPageResponse, VenueChatResponse } from '@shared/api/venueChat.ts';
-import type { ReportReason } from '@shared/chat.ts';
+import type { GameFlowReportReason, ReportReason } from '@shared/chat.ts';
 import type { Concept } from '@shared/rooms.ts';
 import type { SayKind } from '@shared/sayChallenge.ts';
 import type { Mark } from '@shared/tabu.ts';
@@ -150,6 +151,10 @@ export const roomsApi = {
     }),
   respond: (requestId: string, accept: boolean) =>
     invoke<RoomsOkResponse>('rooms', { action: 'respond', requestId, accept }),
+  // The request card's profile (docs/SPEC_V3.md §23.E): only the leader who can answer, while the
+  // request waits; not_found otherwise.
+  requestProfile: (requestId: string) =>
+    invoke<RequestProfileResponse>('rooms', { action: 'request-profile', requestId }),
   // `players`: Sahtekar only, the table's count (1-4); without it the server takes the check-in
   // headcount (docs/SPEC_V3.md §20.2a).
   proposeGame: (roomId: string, concept: Concept, players?: number) =>
@@ -182,7 +187,7 @@ export const chatApi = {
 
 export const safetyApi = {
   // `sessionId`: the phone reported, any phone of the room (docs/SPEC_V3.md §22.J).
-  report: (roomId: string, reason: ReportReason, sessionId?: string) =>
+  report: (roomId: string, reason: GameFlowReportReason, sessionId?: string) =>
     invoke<SafetyResponse>('safety', {
       action: 'report',
       roomId,
@@ -191,13 +196,13 @@ export const safetyApi = {
     }),
   reportProfile: (publicId: string, reason: ReportReason) =>
     invoke<SafetyResponse>('safety', { action: 'report', target: 'profile', publicId, reason }),
-  reportHistory: (historyId: string, reason: ReportReason) =>
+  reportHistory: (historyId: string, reason: GameFlowReportReason) =>
     invoke<SafetyResponse>('safety', { action: 'report', target: 'history', historyId, reason }),
   reportDm: (threadId: string, reason: ReportReason) =>
     invoke<SafetyResponse>('safety', { action: 'report', target: 'dm', threadId, reason }),
   blockFriend: (publicId: string, report?: ReportReason) =>
     invoke<SafetyResponse>('safety', { action: 'block', publicId, ...(report ? { report } : {}) }),
-  blockHistory: (historyId: string, report?: ReportReason) =>
+  blockHistory: (historyId: string, report?: GameFlowReportReason) =>
     invoke<SafetyResponse>('safety', { action: 'block', historyId, ...(report ? { report } : {}) }),
   // `sessionId`: the phone blocked; who leaves depends on both (docs/SPEC_V3.md §22.D).
   block: (roomId: string, sessionId?: string) =>

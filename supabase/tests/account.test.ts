@@ -20,6 +20,7 @@ const onboarding: AccountRequest = {
   kvkkVersion: CURRENT_KVKK_VERSION,
   displayName: 'Ayşe',
   birthDate: '2000-01-15',
+  gender: 'female',
 };
 
 // 17 on any day of the year: 1 January, 17 years ago.

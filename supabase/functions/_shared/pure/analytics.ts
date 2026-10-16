@@ -2,7 +2,6 @@
 // the distinct id: never a phone number, alias, message, venue or position.
 import type { GameMode } from './concepts.ts';
 import type { FriendRequestSource, FriendshipSource } from './friends.ts';
-import type { Participation } from './profile.ts';
 import type { Concept, RoomIntentLabel } from './rooms.ts';
 import type { SohbetTheme } from './sohbet.ts';
 import type { TabuMode } from './tabu.ts';
@@ -12,9 +11,11 @@ export type AnalyticsEventProps = {
   onboarding_completed: { with_photo: boolean; with_bio: boolean };
   // 1–4; 4 means "4+".
   check_in: { headcount: number };
-  // v3 (docs/SPEC_V3.md §15): the intent ('none' without one) and the owner's choice for the room.
-  // Faz 3 (§23.L, step 23.1): "Masanı lobiye aç", with the game tag ('none': "fark etmez").
-  room_created: { intent: RoomIntentLabel; profiled: boolean; game_tag: Concept | 'none' };
+  // v3 (docs/SPEC_V3.md §15): the intent ('none' without one). Faz 3 (§23.L, step 23.1): "Masanı
+  // lobiye aç", with the game tag ('none': "fark etmez"). No anonymous or profiled choice (step
+  // 23.2): only a woman can stay anonymous in the game flow, so the choice would stand in for the
+  // gender, which no event carries (rule 12).
+  room_created: { intent: RoomIntentLabel; game_tag: Concept | 'none' };
   // A proposal and its acceptance; the game only, never the other table.
   game_proposed: { concept: Concept };
   game_accepted: { concept: Concept };
@@ -61,7 +62,6 @@ export type AnalyticsEventProps = {
   checkin_out_of_range: Record<string, never>;
   // "Bu noktadayım" or a spot change (docs/SPEC_V3.md §15); never which spot.
   spot_changed: Record<string, never>;
-  participation_chosen: { mode: Participation };
   profile_photo_set: Record<string, never>;
   profile_bio_set: Record<string, never>;
   // A Sohbet card was opened in a room; the theme only, never the prompt.
@@ -83,7 +83,7 @@ export type AnalyticsEvent = keyof AnalyticsEventProps;
 const ALLOWED: { [E in AnalyticsEvent]: readonly (keyof AnalyticsEventProps[E])[] } = {
   onboarding_completed: ['with_photo', 'with_bio'],
   check_in: ['headcount'],
-  room_created: ['intent', 'profiled', 'game_tag'],
+  room_created: ['intent', 'game_tag'],
   game_proposed: ['concept'],
   game_accepted: ['concept'],
   alias_rerolled: [],
@@ -114,7 +114,6 @@ const ALLOWED: { [E in AnalyticsEvent]: readonly (keyof AnalyticsEventProps[E])[
   explore_viewed: ['view'],
   checkin_out_of_range: [],
   spot_changed: [],
-  participation_chosen: ['mode'],
   profile_photo_set: [],
   profile_bio_set: [],
   sohbet_card_opened: ['theme'],
