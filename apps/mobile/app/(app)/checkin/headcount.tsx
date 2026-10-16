@@ -15,6 +15,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { callCheckIn } from '@/lib/api';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 // "Kaç kişisiniz?" 1 / 2 / 3 / 4+ (docs/SPEC_V2.md §6.6). Anonymous or with the profile is chosen
 // for each room from v3 on (docs/SPEC_V3.md §5.4), not here.
@@ -24,6 +25,7 @@ export default function HeadcountScreen() {
   const [headcount, setHeadcount] = useState<number | null>(null);
 
   const checkIn = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: (count: number) => {
       if (!position || !venue) throw new Error('No check-in draft');
       return callCheckIn({

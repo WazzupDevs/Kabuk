@@ -1,12 +1,17 @@
-import { focusManager, MutationCache, QueryClient } from '@tanstack/react-query';
+import { focusManager, QueryClient } from '@tanstack/react-query';
 import { AppState } from 'react-native';
 
 import { haptic } from './haptics';
+import { feelingMutationCache } from './mutationHaptics';
 
-// A failed action is felt (hareket.md: "İşlem başarısız"); its screen shows the error.
-export const queryClient = new QueryClient({
-  mutationCache: new MutationCache({ onError: () => haptic('failed') }),
-});
+declare module '@tanstack/react-query' {
+  interface Register {
+    // `feelError`: a failed press is felt (hapticMoments.ts → FEEL_ERROR).
+    mutationMeta: { feelError?: boolean };
+  }
+}
+
+export const queryClient = new QueryClient({ mutationCache: feelingMutationCache(haptic) });
 
 // React Native has no window focus: without this, queries never refetch when the app comes back to
 // the foreground, and a Realtime event missed in the background (Realtime never replays) leaves

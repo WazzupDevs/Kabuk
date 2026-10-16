@@ -20,6 +20,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { profileApi } from '@/lib/api';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
@@ -120,6 +121,7 @@ function EditForm({
   const bioChanged = bio.trim() !== initialBio;
 
   const save = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: () =>
       profileApi.update({
         ...(nameChanged ? { displayName: name } : {}),

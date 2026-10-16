@@ -18,6 +18,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { ICON } from '@/theme/tokens';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { haptic } from '@/lib/haptics';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 import { BigAlias } from './BigAlias';
 import { ProfiledTag } from './ProfiledTag';
@@ -62,6 +63,7 @@ export function IncomingRequest({ roomId, leaderSessionId }: Props) {
   );
 
   const respond = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: ({ id, accept }: { id: string; accept: boolean; member: boolean }) =>
       roomsApi.respond(id, accept),
     onSuccess: (_data, { accept, member }) => {

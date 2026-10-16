@@ -29,6 +29,7 @@ import { track, trackOnce } from '@/lib/analytics';
 import { ApiError, callChangeSpot, roomsApi } from '@/lib/api';
 import { useRequesterHaptic } from '@/lib/haptics';
 import { useNow } from '@/lib/useNow';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { ICON, NARROW_SCREEN } from '@/theme/tokens';
 
 import { BigAlias } from './BigAlias';
@@ -97,6 +98,7 @@ export function Lobby({
   const now = useNow(1000);
 
   const request = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: ({ ask, profiled }: { ask: Asking; profiled: boolean }) => {
       void registerForPush();
       return roomsApi.requestJoin(ask.roomId, profiled, ask.side);
@@ -124,6 +126,7 @@ export function Lobby({
   const refused = request.error instanceof ApiError && request.error.code === 'photo_required';
   const needsPhoto = hasName && ((photo.known && !photo.has) || refused);
   const moveHere = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: callChangeSpot,
     onSuccess: () => {
       track('spot_changed', {});

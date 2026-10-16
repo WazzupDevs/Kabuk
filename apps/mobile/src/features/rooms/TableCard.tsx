@@ -16,6 +16,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { callRerollAlias, roomsApi } from '@/lib/api';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
 import { NARROW_SCREEN, SPACING } from '@/theme/tokens';
 
@@ -56,6 +57,7 @@ export function TableCard({ table, room, state, seat, minutesLeft, venueHasSpots
   const narrow = width < NARROW_SCREEN * Math.max(1, fontScale);
 
   const reroll = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: callRerollAlias,
     onSuccess: () => {
       track('alias_rerolled', {});
@@ -68,9 +70,10 @@ export function TableCard({ table, room, state, seat, minutesLeft, venueHasSpots
     if (room) void queryClient.invalidateQueries({ queryKey: roomKeys.room(room.id) });
   };
   // "Lobiden çek": the leader ends the waiting room, as "Odayı bitir" did (docs/SPEC_V3.md §23.C).
-  const withdraw = useMutation({ mutationFn: roomsApi.end, onSettled: settle });
+  const withdraw = useMutation({ meta: FEEL_ERROR, mutationFn: roomsApi.end, onSettled: settle });
   // A member leaves the side (docs/SPEC_V3.md §22.D).
   const leave = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: () => roomsApi.leave(room?.id ?? ''),
     onSuccess: () => track('team_left', {}),
     onSettled: settle,

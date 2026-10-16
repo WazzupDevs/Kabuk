@@ -30,6 +30,7 @@ import { trackOnce } from '@/lib/analytics';
 import { callLeave } from '@/lib/api';
 import { useNow } from '@/lib/useNow';
 import { useReduceMotion } from '@/lib/useReduceMotion';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, TOUCH } from '@/theme/tokens';
 
@@ -69,6 +70,7 @@ export default function VenueScreen() {
   const reduceMotion = useReduceMotion();
 
   const leave = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: callLeave,
     onSuccess: () => {
       if (table.data) endSession(table.data.id, table.data.created_at);

@@ -7,6 +7,7 @@ import { roomKeys } from '@/features/rooms/queries';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { safetyApi } from '@/lib/api';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 import { ReportModal } from './ReportModal';
 
@@ -19,6 +20,7 @@ export function useRoomSafety(roomId: string) {
   const [reporting, setReporting] = useState<string | null>(null);
 
   const report = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: ({ sessionId, reason }: { sessionId: string; reason: ReportReason }) =>
       safetyApi.report(roomId, reason, sessionId),
     onSuccess: () => {
@@ -29,6 +31,7 @@ export function useRoomSafety(roomId: string) {
   });
   // Who leaves is the server's (a leader's own member, or the one who blocks).
   const block = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: (sessionId: string) => safetyApi.block(roomId, sessionId),
     onSuccess: () => track('block_created', {}),
     onSettled: () => {

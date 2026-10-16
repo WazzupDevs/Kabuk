@@ -17,6 +17,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { profileApi } from '@/lib/api';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 // The optional last sign-up step (docs/SPEC_V3.md §3.1): a photo and a bio, both skippable and
 // both addable later from Profil. Finishing or skipping opens the app.
@@ -29,6 +30,7 @@ export default function ExtrasScreen() {
   const view = useProfileView(own.data?.public_id);
 
   const photo = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: (source: PhotoSource) => choosePhoto(source),
     onSuccess: async (changed) => {
       if (changed) {
@@ -40,6 +42,7 @@ export default function ExtrasScreen() {
   });
 
   const finish = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: async (withBio: boolean) => {
       if (withBio) await profileApi.update({ bio });
       return withBio;

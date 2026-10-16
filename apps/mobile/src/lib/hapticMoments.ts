@@ -13,7 +13,7 @@ export type HapticMoment =
   | 'tabuTaboo' // Tabu: Tabu
   | 'tabuPass' // Tabu: Pas
   | 'timeUp' // a turn's time ran out
-  | 'failed' // an action failed (its error shows)
+  | 'failed' // an action the person pressed failed, and its error shows (FEEL_ERROR)
   | 'friendsMade'; // the end of the table: "Arkadaş oldunuz"
 
 export type HapticCall =
@@ -43,4 +43,16 @@ export function requesterHaptic(
   next: RequesterStatus | null,
 ): HapticMoment | null {
   return next === 'accepted' && previous !== 'accepted' ? 'requestAccepted' : null;
+}
+
+// A failed action is felt only when the person pressed it and its error shows on screen: those
+// mutations carry this `meta`. Calls the phones send by themselves (advancing a phase whose time
+// ran out, starting a turn when its time is up, fetching a target or a card while held) have none,
+// so one that drops quietly (the network, an old turn) never makes the phone buzz for nothing.
+export const FEEL_ERROR = { feelError: true } as const;
+
+export function failureHaptic(
+  meta: Readonly<Record<string, unknown>> | undefined,
+): HapticMoment | null {
+  return meta?.feelError === true ? 'failed' : null;
 }

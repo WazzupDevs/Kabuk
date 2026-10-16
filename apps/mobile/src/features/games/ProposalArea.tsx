@@ -21,6 +21,7 @@ import { roomsApi } from '@/lib/api';
 import { useNow } from '@/lib/useNow';
 import { TOUCH } from '@/theme/tokens';
 import { haptic } from '@/lib/haptics';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 import { GAME_GLYPH, GAME_ORDER, GameCard, gameCardState, GameCell, GameGrid } from './GameCard';
 
@@ -58,11 +59,13 @@ export function ProposalArea({ roomId, sessionId, side, gameRunning, players }: 
     void queryClient.invalidateQueries({ queryKey: roomKeys.room(roomId) });
   };
   const propose = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: (concept: Concept) => roomsApi.proposeGame(roomId, concept),
     onSuccess: (_data, concept) => track('game_proposed', { concept }),
     onSettled: refresh,
   });
   const answer = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: ({ accept }: { accept: boolean; concept: Concept }) =>
       roomsApi.answerGame(roomId, accept),
     onSuccess: (_data, { accept, concept }) => {

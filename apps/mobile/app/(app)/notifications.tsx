@@ -29,6 +29,7 @@ import { errorMessage } from '@/i18n/errors';
 import { type HistoryConcept, tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { friendsApi, safetyApi } from '@/lib/api';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 // The last game of the encounter, or the chat (docs/SPEC_V3.md §5.5).
 const concept = (c: string): HistoryConcept =>
@@ -53,6 +54,7 @@ export default function NotificationsScreen() {
 
   type Action = { kind: 'request' | 'add'; historyId: string };
   const act = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: ({ kind, historyId }: Action) =>
       kind === 'request' ? friendsApi.request(historyId) : friendsApi.addFromRoom(historyId),
     onSuccess: (_data, { kind }) =>
@@ -67,6 +69,7 @@ export default function NotificationsScreen() {
 
   type Answer = { requestId: string; accept: boolean };
   const respond = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: ({ requestId, accept }: Answer) => friendsApi.respond(requestId, accept),
     onSuccess: (_data, { accept }) => {
       if (!accept) return;
@@ -80,6 +83,7 @@ export default function NotificationsScreen() {
   const askNameForAnswer = useRetryAfterName(runAnswer);
 
   const report = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: ({ historyId, reason }: { historyId: string; reason: ReportReason }) =>
       safetyApi.reportHistory(historyId, reason),
     onSuccess: () => {
@@ -89,6 +93,7 @@ export default function NotificationsScreen() {
     },
   });
   const block = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: ({ historyId, reason }: { historyId: string; reason?: ReportReason }) =>
       safetyApi.blockHistory(historyId, reason),
     onSuccess: (_data, { reason }) => {

@@ -44,6 +44,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { ApiError, safetyApi, venueChatApi } from '@/lib/api';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
@@ -76,6 +77,7 @@ export default function VenueChatScreen() {
     if (venueId) void queryClient.invalidateQueries({ queryKey: venueChatKeys.messages(venueId) });
   };
   const send = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: ({ text, profiled }: { text: string; profiled: boolean; first: boolean }) =>
       reply.target
         ? venueChatApi.reply(venueId ?? '', text, profiled, reply.target.id)
@@ -123,6 +125,7 @@ export default function VenueChatScreen() {
     send.reset();
   };
   const report = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: ({ id, reason }: { id: string; reason: ReportReason }) =>
       safetyApi.reportVenueChat(id, reason),
     onSuccess: () => {
@@ -133,6 +136,7 @@ export default function VenueChatScreen() {
     },
   });
   const block = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: ({ id, reason }: { id: string; reason: ReportReason | undefined }) =>
       safetyApi.blockVenueChat(id, reason),
     onSuccess: () => {

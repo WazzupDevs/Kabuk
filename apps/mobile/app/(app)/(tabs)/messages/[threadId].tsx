@@ -35,6 +35,7 @@ import { useBroadcast } from '@/features/rooms/useBroadcast';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { ApiError, friendsApi, safetyApi } from '@/lib/api';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 type Params = { threadId: string; publicId: string; name: string };
 
@@ -143,6 +144,7 @@ export default function DmScreen() {
     router.back();
   };
   const end = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: ({ kind, reason }: { kind: 'remove' | 'block'; reason?: ReportReason }) =>
       kind === 'remove'
         ? friendsApi.remove(publicId, reason)
@@ -155,6 +157,7 @@ export default function DmScreen() {
     },
   });
   const report = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: (reason: ReportReason) => safetyApi.reportDm(threadId, reason),
     onSuccess: () => {
       track('report_submitted', {});

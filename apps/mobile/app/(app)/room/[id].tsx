@@ -37,6 +37,7 @@ import { tr } from '@/i18n/tr';
 import { track, trackOnce } from '@/lib/analytics';
 import { roomsApi } from '@/lib/api';
 import { useKeepAwakeWhile } from '@/lib/keepAwake';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
 import { NARROW_SCREEN, SPACING } from '@/theme/tokens';
 
@@ -115,6 +116,7 @@ export default function RoomScreen() {
 
   // "Masayı bitir": a leader's (docs/SPEC_V3.md §22.D).
   const exit = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: roomsApi.end,
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: roomKeys.current });
@@ -123,6 +125,7 @@ export default function RoomScreen() {
   });
   // "Masadan çık": a member leaves, a leader hands its side to the oldest member.
   const leave = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: () => roomsApi.leave(id),
     onSuccess: () => track('team_left', {}),
     onSettled: () => {

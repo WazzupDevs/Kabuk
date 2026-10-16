@@ -19,6 +19,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { friendsApi, safetyApi } from '@/lib/api';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 // The sender of a profiled venue chat message, opened through the message (docs/SPEC_V3.md §7.5):
 // no public_id. "Arkadaşlık isteği gönder" asks first, because the request shows the other side
@@ -32,6 +33,7 @@ export default function VenueChatProfileScreen() {
   const [blocking, setBlocking] = useState(false);
 
   const request = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: () => friendsApi.requestFromVenueChat(messageId),
     onSuccess: () => {
       track('friend_request_sent', { source: 'venue_chat' });
@@ -40,6 +42,7 @@ export default function VenueChatProfileScreen() {
     },
   });
   const report = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: (reason: ReportReason) => safetyApi.reportVenueChat(messageId, reason),
     onSuccess: () => {
       track('venue_chat_reported', {});
@@ -48,6 +51,7 @@ export default function VenueChatProfileScreen() {
     },
   });
   const block = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: (reason: ReportReason | undefined) => safetyApi.blockVenueChat(messageId, reason),
     onSuccess: () => {
       track('block_created', {});

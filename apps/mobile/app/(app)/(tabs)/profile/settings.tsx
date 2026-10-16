@@ -22,6 +22,7 @@ import { unregisterPush } from '@/features/push/push';
 import { callAccount } from '@/lib/api';
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 // Hosted texts and contact come from the environment (store listings need both); without a
 // privacy URL the in-app draft texts are shown.
@@ -51,6 +52,7 @@ export default function SettingsScreen() {
     },
   });
   const deleteAccount = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: async () => {
       await callAccount({ action: 'delete' });
       await signOutLocally();

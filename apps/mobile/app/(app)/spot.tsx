@@ -16,6 +16,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { callChangeSpot } from '@/lib/api';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 // Changing the table's spot without a new position (docs/SPEC_V3.md §4.3). The server refuses it
 // while the table is in a room or has a request out.
@@ -27,6 +28,7 @@ export default function ChangeSpotScreen() {
   const selected = chosen ?? table.data?.spot_id ?? null;
 
   const change = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: callChangeSpot,
     onSuccess: async () => {
       track('spot_changed', {});
