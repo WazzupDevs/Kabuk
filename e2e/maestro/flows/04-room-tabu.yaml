@@ -77,6 +77,11 @@ appId: app.kabuk.mobile
     id: intent-game
 - tapOn:
     id: game-tag-tabu
+# The tag is chosen before the sheet scrolls on: further down it is off the top of a 320 × 640
+# screen.
+- assertVisible:
+    id: game-tag-tabu
+    selected: true
 - takeScreenshot: 13-new-room
 # The choices push the button below the fold of the sheet.
 - scrollUntilVisible:
@@ -100,16 +105,23 @@ appId: app.kabuk.mobile
 - takeScreenshot: 13c-new-room-photo-sheet
 - tapOn:
     id: photo-cancel
-# The sheet comes back with the choices made.
+# The sheet comes back with the choices made: up to the tag, still chosen, then down to the button.
+- scrollUntilVisible:
+    element:
+      id: game-tag-tabu
+    direction: UP
+    timeout: 10000
+- assertVisible:
+    id: game-tag-tabu
+    selected: true
 - scrollUntilVisible:
     element:
       id: lobby-confirm
     timeout: 10000
-- assertVisible:
-    id: game-tag-tabu
 - tapOn:
     id: lobby-confirm
-# In the lobby: the table card says so, and nothing opens the room by itself (§23.C).
+# In the lobby: the table card says so, and nothing opens the room by itself (§23.C). The venue
+# was not at its top when the sheet opened; it goes back to the card by itself, no scrolling here.
 - extendedWaitUntil:
     visible: Lobide açık
     timeout: 15000

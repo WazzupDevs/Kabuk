@@ -3,9 +3,9 @@ import { tableState } from '@shared/tableCard.ts';
 import { roomSeat } from '@shared/teams.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { ActivityIndicator, Alert, View } from 'react-native';
+import { ActivityIndicator, Alert, type ScrollView, View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { ListRow } from '@/components/ListRow';
@@ -27,6 +27,7 @@ import { sessionDurationMinutes } from '@shared/analytics.ts';
 import { trackOnce } from '@/lib/analytics';
 import { callLeave } from '@/lib/api';
 import { useNow } from '@/lib/useNow';
+import { useReduceMotion } from '@/lib/useReduceMotion';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, TOUCH } from '@/theme/tokens';
 
@@ -62,6 +63,8 @@ export default function VenueScreen() {
   const now = useNow(currentRoom.data?.status === 'ending' ? 1000 : 30_000);
   const params = useLocalSearchParams<{ lobbyGame?: string; lobbyIntent?: string }>();
   const [sheet, setSheet] = useState<LobbySheet | null>(null);
+  const scroll = useRef<ScrollView>(null);
+  const reduceMotion = useReduceMotion();
 
   const leave = useMutation({
     mutationFn: callLeave,
@@ -127,7 +130,7 @@ export default function VenueScreen() {
   }
 
   return (
-    <Screen edges={['top']}>
+    <Screen edges={['top']} scrollRef={scroll}>
       {/* The room's changes reach the card while it is on screen (Realtime and the status check). */}
       {room ? <RoomWatch roomId={room.id} /> : null}
       {/* Aşama 8 · Saha: no bell here; leaving the table is the small red button on the right. */}
@@ -224,6 +227,8 @@ export default function VenueScreen() {
       {sheet && state === 'off' ? (
         <OpenLobbySheet
           onClose={() => setSheet(null)}
+          // Opened from further down the screen, the card's new "Lobide açık" is scrolled away.
+          onOpened={() => scroll.current?.scrollTo({ y: 0, animated: !reduceMotion })}
           alias={table.data.alias}
           venueId={table.data.venue_id}
           intent={sheet.intent}

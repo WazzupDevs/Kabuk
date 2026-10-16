@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import { KeyboardAvoidingView, ScrollView } from 'react-native';
 import { type Edge, SafeAreaView } from 'react-native-safe-area-context';
 
@@ -11,11 +11,13 @@ type Props = {
   children: ReactNode;
   // Tab screens leave the bottom edge to the tab bar.
   edges?: readonly Edge[];
+  // For a screen that moves its own scroll (the venue goes back to its table card).
+  scrollRef?: RefObject<ScrollView | null>;
 };
 
 // A scrolling screen on the canvas with the theme's side padding. Under the tabs the floating tab
 // bar covers the bottom: the content scrolls behind it and ends above it.
-export function Screen({ children, edges }: Props) {
+export function Screen({ children, edges, scrollRef }: Props) {
   const { colors, shape } = useTheme();
   const barSpace = useTabBarSpace();
   const safe: readonly Edge[] = barSpace
@@ -29,6 +31,7 @@ export function Screen({ children, edges }: Props) {
         behavior="padding"
       >
         <ScrollView
+          ref={scrollRef}
           contentContainerStyle={{
             flexGrow: 1,
             paddingHorizontal: shape.screenPadding,

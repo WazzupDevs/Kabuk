@@ -63,7 +63,12 @@ appId: app.kabuk.mobile
     visible:
       id: leave-table
     timeout: 20000
-- assertVisible: Lobide açık
+# The phone was down at the lobby for "Bu masadayım": up to the card's status line.
+- scrollUntilVisible:
+    element:
+      text: Lobide açık
+    direction: UP
+    timeout: 10000
 - takeScreenshot: 61b-teams-member-card
 - scrollUntilVisible:
     element:

@@ -28,6 +28,8 @@ type TagChoice = Concept | 'none';
 
 type Props = {
   onClose: () => void;
+  // The table is in the lobby: the venue shows its card's new state.
+  onOpened: () => void;
   alias: string;
   venueId: string;
   // From Aktiviteler ("Bu oyunla lobiye aç", docs/SPEC_V3.md §18.3): that game's intent and tag.
@@ -41,7 +43,14 @@ type Props = {
 // (§5.4; anonymous by default). "Profilimle" needs a profile photo (§22.G): "Fotoğraf ekle" swaps
 // this sheet for the photo sheet and the choices made stay. The sheet closes on the venue screen,
 // whose table card then says "Lobide açık"; nothing opens the room by itself.
-export function OpenLobbySheet({ onClose, alias, venueId, intent: initialIntent, gameTag }: Props) {
+export function OpenLobbySheet({
+  onClose,
+  onOpened,
+  alias,
+  venueId,
+  intent: initialIntent,
+  gameTag,
+}: Props) {
   const queryClient = useQueryClient();
   const profile = useProfile();
   const hasName = !!profile.data?.display_name;
@@ -70,6 +79,7 @@ export function OpenLobbySheet({ onClose, alias, venueId, intent: initialIntent,
         queryClient.invalidateQueries({ queryKey: roomKeys.current }),
         queryClient.invalidateQueries({ queryKey: roomKeys.lobby(venueId) }),
       ]);
+      onOpened();
       onClose();
     },
     onError: (err) => {
