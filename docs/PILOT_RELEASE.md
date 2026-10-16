@@ -33,6 +33,8 @@ npx eas-cli whoami
 cd ..\..
 ```
 
+**Netgsm SMS başlığı:** `SKALL` başlığının onayında Netgsm marka ya da şirket belgesi isteyebilir; pilottan önce Netgsm'e sorulur (`docs/SPEC_V3.md` §2.3).
+
 ## 1. Kampüsü içerikte aç
 
 Gerçek poligon ve nokta adları (S1) geldikten sonra. Bu adım bir PR'dır: main'e yalnızca yeşil `ci` ile girer.

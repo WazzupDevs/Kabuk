@@ -1,0 +1,42 @@
+# The Faz 3 venue (docs/SPEC_V3.md §23.C): "Masanı lobiye aç" with no choices, the bot table asks
+# to join, "Kabul" on the venue screen, and "Masaya git" from the table card to the two-table room.
+# Nothing sends the phone to the room by itself.
+appId: app.kabuk.mobile
+---
+- extendedWaitUntil:
+    visible:
+      id: lobby-open
+    timeout: 15000
+- tapOn:
+    id: lobby-open
+- extendedWaitUntil:
+    visible:
+      id: intent-none
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: lobby-confirm
+    timeout: 10000
+- tapOn:
+    id: lobby-confirm
+- extendedWaitUntil:
+    visible: Lobide açık
+    timeout: 15000
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: request-join
+- extendedWaitUntil:
+    visible: Katılma isteği
+    timeout: 20000
+- tapOn:
+    id: join-accept
+- extendedWaitUntil:
+    visible: Birleşti
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: go-to-table
+    timeout: 10000
+- tapOn:
+    id: go-to-table

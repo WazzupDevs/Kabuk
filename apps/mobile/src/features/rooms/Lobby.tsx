@@ -1,10 +1,11 @@
 import { PARTICIPATIONS, type Participation } from '@shared/profile.ts';
 import { isIntent, JOIN_REQUEST_TTL_SECONDS, requesterStatus } from '@shared/rooms.ts';
 import { groupRoomsBySpot } from '@shared/spots.ts';
+import { lobbyActions, type TableState } from '@shared/tableCard.ts';
 import type { Side } from '@shared/teams.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, useWindowDimensions, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
@@ -26,16 +27,15 @@ import { tr } from '@/i18n/tr';
 import { track, trackOnce } from '@/lib/analytics';
 import { ApiError, callChangeSpot, roomsApi } from '@/lib/api';
 import { useNow } from '@/lib/useNow';
+import { useTheme } from '@/theme/ThemeProvider';
 import { NARROW_SCREEN } from '@/theme/tokens';
 
 import { BigAlias } from './BigAlias';
 import { useJoinAsk } from './joinAsk';
 import { participationHint } from './participation';
-import { ProfiledTag } from './ProfiledTag';
 import { roomKeys, useLobby, useMyRequest } from './queries';
 import { RunningRooms } from './RunningRooms';
 import { SpotHeading } from './SpotHeading';
-import { useCreateSolo } from './useCreateSolo';
 
 type Props = {
   venueId: string;
@@ -46,18 +46,38 @@ type Props = {
   // The table's spot, and whether the venue has spots at all (docs/SPEC_V3.md §4.3).
   mySpotId: string | null;
   venueHasSpots: boolean;
+  // The table card's state (@shared/tableCard.ts): which requests the lobby offers.
+  state: TableState;
+  // The owner of the table's current room: the host whose "Kabul" the requester sees.
+  hostAlias: string | null;
 };
+
+// How long "… kabul etti." stays in place of the pending note, like "Masa şu an müsait değil".
+const ACCEPTED_NOTE_MS = 15_000;
 
 // What the table is about to ask for: "Katıl" (the guest's side) or, with a side, "Bu masadayım"
 // (docs/SPEC_V3.md §22.C) with that side's leader.
 type Asking = { roomId: string; side?: Side; leader?: string };
 
-// Open rooms at the venue, the running rooms (Faz 2) and the table's own request. When nothing is
-// open "Masanla oyna" shows instead (MVP_SPEC §4.3). At a venue with spots the rooms are grouped
-// by spot, the table's own first; a room at another spot offers "Bu noktadayım" instead of a
-// request.
-export function Lobby({ venueId, sessionId, alias, since, mySpotId, venueHasSpots }: Props) {
+// "Açık masalar" (the waiting rooms), "Süren masalar" (Faz 2) and the table's own request
+// (docs/SPEC_V3.md §23.C; canvas: Faz 3 · 23.1 Masa ve lobi). A card shows only the alias, the
+// people, the intent and the game tag: no "profilli" mark (rule 4, step 23.1). Its buttons follow
+// the table's state: "Katıl" without a room and from the table's own waiting room, "Bu masadayım"
+// only without one, none once merged. At a venue with spots the tables are grouped by spot, the
+// table's own first; a table at another spot offers "Bu noktadayım" instead of a request.
+export function Lobby({
+  venueId,
+  sessionId,
+  alias,
+  since,
+  mySpotId,
+  venueHasSpots,
+  state,
+  hostAlias,
+}: Props) {
+  const { colors } = useTheme();
   const queryClient = useQueryClient();
+  const actions = lobbyActions(state);
   const profile = useProfile();
   const hasName = !!profile.data?.display_name;
   // Side by side "Katıl" and "Bu masadayım" do not fit at 320 dp with the largest text.
@@ -72,7 +92,6 @@ export function Lobby({ venueId, sessionId, alias, since, mySpotId, venueHasSpot
   // sheet for the photo sheet, and the request comes back once it closes.
   const photo = useOwnPhoto();
   const [photoSheet, setPhotoSheet] = useState(false);
-  const solo = useCreateSolo();
   const lobby = useLobby(venueId);
   const myRequest = useMyRequest(sessionId, since);
   const now = useNow(1000);
@@ -83,7 +102,7 @@ export function Lobby({ venueId, sessionId, alias, since, mySpotId, venueHasSpot
       return roomsApi.requestJoin(ask.roomId, profiled, ask.side);
     },
     onSuccess: (data, { ask, profiled }) => {
-      track('join_requested', { as_member: ask.side !== undefined });
+      track('join_requested', { as_member: ask.side !== undefined, in_lobby: state === 'open' });
       track('participation_chosen', { mode: profiled ? 'profile' : 'anonymous' });
       setJoinAsk(ask.side && ask.leader ? { requestId: data.requestId, leader: ask.leader } : null);
       setAsking(null);
@@ -132,6 +151,26 @@ export function Lobby({ venueId, sessionId, alias, since, mySpotId, venueHasSpot
   const secondsLeft = mine ? Math.max(0, Math.ceil((Date.parse(mine.expiresAt) - now) / 1000)) : 0;
   const recentlyUnavailable =
     mine && status === 'unavailable' && now - Date.parse(mine.expiresAt) < 15_000;
+  // A request this screen saw waiting, and when it saw it accepted: "… kabul etti." for a few
+  // seconds where the pending note was (adjusted while rendering). Nothing opens the room: the
+  // table card's "Masaya git" does.
+  const [seen, setSeen] = useState<{ id: string; acceptedAt: number | null } | null>(null);
+  if (mine && status === 'pending' && seen?.id !== mine.id)
+    setSeen({ id: mine.id, acceptedAt: null });
+  if (mine && status === 'accepted' && seen?.id === mine.id && seen.acceptedAt === null) {
+    setSeen({ id: mine.id, acceptedAt: now });
+  }
+  const acceptedNow = !!mine && seen?.id === mine.id && seen.acceptedAt !== null;
+  const acceptedBy = memberAsk?.leader ?? (state === 'merged' ? hostAlias : null);
+  const showAccepted =
+    acceptedNow && acceptedBy !== null && now - (seen?.acceptedAt ?? 0) < ACCEPTED_NOTE_MS;
+  const acceptedRoom = acceptedNow ? mine?.roomId : undefined;
+  useEffect(() => {
+    // Counted here once per room, the same key as the room screen's: the requester may never open it.
+    if (acceptedRoom) {
+      trackOnce(`join_accepted:${acceptedRoom}`, 'join_accepted', { as_member: asMember });
+    }
+  }, [acceptedRoom, asMember]);
 
   const rooms = lobby.data?.open ?? [];
   const running = lobby.data?.running ?? [];
@@ -171,18 +210,56 @@ export function Lobby({ venueId, sessionId, alias, since, mySpotId, venueHasSpot
           <Text accessibilityLiveRegion="polite">{tr.rooms.requestUnavailable}</Text>
         </Card>
       ) : null}
+      {showAccepted && acceptedBy ? (
+        <Card tone="note" className="mb-3" testID="request-accepted">
+          <View className="flex-row items-center gap-2.5">
+            <Avatar kind="table" alias={acceptedBy} size="sm" />
+            <Text variant="bodyStrong" className="flex-1" accessibilityLiveRegion="polite">
+              {tr.rooms.requestAccepted(acceptedBy)}
+            </Text>
+          </View>
+        </Card>
+      ) : null}
       {(request.isError && !refused) || moveHere.isError ? (
         <Text variant="fine" tone="danger" className="mb-3">
           {errorMessage(request.error ?? moveHere.error)}
         </Text>
       ) : null}
 
-      {rooms.length === 0 ? (
-        <EmptyState
-          snail
-          body={tr.rooms.playWithTableHint}
-          action={{ label: tr.rooms.playWithTable, onPress: () => solo.mutate() }}
-        />
+      {lobby.isPending ? (
+        <View className="gap-3">
+          <Text variant="heading" accessibilityRole="header">
+            {tr.rooms.lobbyTitle}
+          </Text>
+          <View className="flex-row items-center gap-2.5">
+            <ActivityIndicator color={colors.muted} />
+            <Text variant="fine">{tr.rooms.lobbyLoading}</Text>
+          </View>
+        </View>
+      ) : lobby.isError ? (
+        <View className="gap-3">
+          <Text variant="heading" accessibilityRole="header">
+            {tr.rooms.lobbyTitle}
+          </Text>
+          <Card className="gap-3" testID="lobby-error">
+            <Text variant="bodyStrong">{tr.rooms.lobbyError}</Text>
+            <Button
+              variant="neutral"
+              icon="refresh-outline"
+              label={tr.common.retry}
+              onPress={() => void lobby.refetch()}
+              loading={lobby.isRefetching}
+            />
+          </Card>
+        </View>
+      ) : rooms.length === 0 ? (
+        // A merged or "Masanla oyna" table has nothing to do in an empty lobby.
+        state === 'off' || state === 'open' || state === 'member' ? (
+          <EmptyState
+            snail
+            body={state === 'off' ? tr.rooms.playWithTableHint : tr.rooms.lobbyEmptyOpen}
+          />
+        ) : null
       ) : (
         <View className="gap-3">
           <View className="mb-1 flex-row items-center justify-between">
@@ -197,41 +274,43 @@ export function Lobby({ venueId, sessionId, alias, since, mySpotId, venueHasSpot
                 <SpotHeading spotId={group.spotId} spotName={group.spotName} mine={group.mine} />
               ) : null}
               {group.rooms.map((room, i) => {
-                const waitedMin = Math.floor((now - Date.parse(room.waiting_since)) / 60_000);
                 const spotId = room.spot_id;
                 const intent = isIntent(room.intent) ? room.intent : null;
+                const member = actions.member && room.memberOpen;
                 return (
                   <Rise key={room.room_id} index={i}>
                     <Card className="gap-3">
                       <View className="flex-row items-center gap-3.5">
                         <Avatar kind="table" alias={room.alias} size="xl" />
-                        <View className="flex-1 gap-0.5">
+                        <View className="flex-1 gap-1">
                           <Text variant="heading">{room.alias}</Text>
-                          <Text variant="fine">
-                            {`${tr.rooms.people(room.headcount)} · ${tr.rooms.phones(room.phones)} · ${tr.rooms.waitingFor(waitedMin)}`}
-                          </Text>
+                          <Text variant="fine">{tr.rooms.people(room.headcount)}</Text>
+                          {intent || room.gameTag ? (
+                            <View className="flex-row flex-wrap items-center gap-1.5">
+                              {intent ? <Tag variant={intent} label={tr.intents[intent]} /> : null}
+                              {room.gameTag ? (
+                                <Tag icon="dice-outline" label={tr.concepts[room.gameTag]} />
+                              ) : null}
+                            </View>
+                          ) : null}
                         </View>
-                        {intent ? <Tag variant={intent} label={tr.intents[intent]} /> : null}
                       </View>
-                      {room.profiled ? (
-                        <View className="flex-row">
-                          <ProfiledTag />
-                        </View>
-                      ) : null}
-                      {group.mine ? (
+                      {group.mine && (actions.join || member) ? (
                         // "Katıl": the guest's side as its leader; "Bu masadayım": a member of
                         // the owner's side, while it has room (docs/SPEC_V3.md §22.C).
                         <View className={narrow ? 'gap-2.5' : 'flex-row gap-2.5'}>
-                          <View className={narrow ? undefined : 'flex-1'}>
-                            <Button
-                              variant="neutral"
-                              testID="request-join"
-                              label={tr.rooms.requestJoin}
-                              onPress={() => ask({ roomId: room.room_id })}
-                              disabled={waiting}
-                            />
-                          </View>
-                          {room.memberOpen ? (
+                          {actions.join ? (
+                            <View className={narrow ? undefined : 'flex-1'}>
+                              <Button
+                                variant="neutral"
+                                testID="request-join"
+                                label={tr.rooms.requestJoin}
+                                onPress={() => ask({ roomId: room.room_id })}
+                                disabled={waiting}
+                              />
+                            </View>
+                          ) : null}
+                          {member ? (
                             <View className={narrow ? undefined : 'flex-1'}>
                               <Button
                                 variant="neutral"
@@ -245,7 +324,8 @@ export function Lobby({ venueId, sessionId, alias, since, mySpotId, venueHasSpot
                             </View>
                           ) : null}
                         </View>
-                      ) : spotId !== null ? (
+                      ) : group.mine ? null : state === 'off' && spotId !== null ? (
+                        // Moving is only for a table without a room (in_room).
                         <Button
                           variant="neutral"
                           testID="spot-here"
@@ -254,9 +334,9 @@ export function Lobby({ venueId, sessionId, alias, since, mySpotId, venueHasSpot
                           onPress={() => moveHere.mutate(spotId)}
                           disabled={waiting || moveHere.isPending}
                         />
-                      ) : (
+                      ) : actions.join ? (
                         <Text variant="fine">{tr.rooms.otherSpot}</Text>
-                      )}
+                      ) : null}
                     </Card>
                   </Rise>
                 );
@@ -271,6 +351,7 @@ export function Lobby({ venueId, sessionId, alias, since, mySpotId, venueHasSpot
         mySpotId={mySpotId}
         venueHasSpots={venueHasSpots}
         disabled={waiting || moveHere.isPending}
+        canMember={actions.member}
         onMember={(roomId, side, leader) => ask({ roomId, side, leader })}
         onSpotHere={(spotId) => moveHere.mutate(spotId)}
       />

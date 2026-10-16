@@ -87,7 +87,9 @@ appId: app.kabuk.mobile
 - takeScreenshot: 10-table-ready
 - tapOn: Devam
 - extendedWaitUntil:
-    visible: Oda kur
+    visible:
+      id: lobby-open
     timeout: 15000
+- assertVisible: Lobide değil
 - assertVisible: 'Noktan: Kantin'
 - takeScreenshot: 11-venue

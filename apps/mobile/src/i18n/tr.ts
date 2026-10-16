@@ -205,7 +205,7 @@ export const tr = {
     adultsOnly: `${APP_NAME} 18 yaş ve üzeri içindir.`,
     nameLabel: 'Görünen ad',
     nameHint:
-      '2–24 karakter. Bu adı arkadaşların görür; profilinle göründüğün odalarda ve mekan sohbetinde orada bulunanlar da görür.',
+      '2–24 karakter. Bu adı arkadaşların görür; profilinle göründüğün masalarda ve mekan sohbetinde orada bulunanlar da görür.',
     birthLabel: 'Doğum tarihin',
     day: 'Gün',
     month: 'Ay',
@@ -263,7 +263,7 @@ export const tr = {
     howTo: 'Nasıl oynanır',
     oneTable: 'Tek telefonla',
     twoTables: 'İki masayla',
-    createWith: 'Bu oyunla oda kur',
+    createWith: 'Bu oyunla lobiye aç',
     goToVenue: 'Oynamak için mekana gir',
     recent: 'Son oyunların',
     recentRow: (alias: string | null, iso: string) =>
@@ -329,7 +329,7 @@ export const tr = {
           .join(', ')
           .replace(/, ([^,]*)$/, ' ya da $1')}.`,
         'Sırayla kart çekin; karttaki soruyu masanızda konuşun.',
-        'Başka bir masayla oynarken iki masa aynı kartı görür; sohbet oda sohbetinde de sürer.',
+        'Başka bir masayla oynarken iki masa aynı kartı görür; sohbet masa sohbetinde de sürer.',
       ],
     },
   },
@@ -436,7 +436,7 @@ export const tr = {
     editTitle: 'Profili düzenle',
     nameLabel: 'Görünen ad',
     nameHint:
-      '2–24 karakter. Bu adı arkadaşların görür; profilinle göründüğün odalarda ve mekan sohbetinde orada bulunanlar da görür.',
+      '2–24 karakter. Bu adı arkadaşların görür; profilinle göründüğün masalarda ve mekan sohbetinde orada bulunanlar da görür.',
     bioLabel: 'Tanıtım',
     bioHint: (n: number, max: number) => `${n}/${max}`,
     save: 'Kaydet',
@@ -467,17 +467,17 @@ export const tr = {
     report: 'Profili şikayet et',
     back: 'Geri dön',
   },
-  // Anonymous or with the profile, chosen for each room (docs/SPEC_V3.md §5.4).
+  // Anonymous or with the profile, chosen for each table in the lobby (docs/SPEC_V3.md §5.4).
   participation: {
-    title: 'Bu odada nasıl görüneceksin?',
+    title: 'Bu masada nasıl görüneceksin?',
     anonymous: 'Anonim',
     anonymousHint: 'Diğer masalar yalnızca masa adını ve kişi sayını görür.',
     profile: 'Profilimle',
-    profileHint: 'Lobide "profilli" işareti görünür. Odadakiler oda sürerken profilini görür.',
+    profileHint: 'Lobide yalnızca masa adın görünür. Masadakiler, masa sürerken profilini görür.',
     profileNeedsName: 'Profilinle katılmak için önce Profil sekmesinden bir ad seç.',
-    // "Bu masadayım" (canvas: Faz 2 · 22.5 → Bu masadayım: seçim): the room's phones see this one.
-    memberAnonymousHint: (alias: string) => `Odadakiler yalnızca takma adını görür: ${alias}.`,
-    memberProfileHint: 'Odadakiler oda sürerken profilini görür.',
+    // "Bu masadayım" (canvas: Faz 2 · 22.5 → Bu masadayım: seçim): the table's phones see this one.
+    memberAnonymousHint: (alias: string) => `Masadakiler yalnızca takma adını görür: ${alias}.`,
+    memberProfileHint: 'Masadakiler, masa sürerken profilini görür.',
     // "Profilimle" needs a profile photo others can see (docs/SPEC_V3.md §22.G, decision 8).
     photoNeeded: 'Profilinle görünmek için profil fotoğrafı gerekiyor.',
   },
@@ -536,68 +536,80 @@ export const tr = {
   voiceNote:
     'Bu oyun yüz yüze oynanır: başka bir masa katılırsa masalar bir araya gelip sesli oynar.',
   rooms: {
-    create: 'Oda kur',
+    // Faz 3 (docs/SPEC_V3.md §23.C; canvas: Aşama 2 · Ekranlar → Faz 3 · 23.1 Masa ve lobi): the
+    // word "oda" is never shown; the server's rooms stay.
+    create: 'Masanı lobiye aç',
     playWithTable: 'Masanla oyna',
-    playWithTableHint: 'Şu an mekanda açık oda yok. Kendi masanla oynayabilirsin.',
-    lobbyTitle: 'Açık odalar',
-    roomCount: (n: number) => `${n} oda`,
+    playWithTableHint:
+      'Şu an lobide masa yok. Masanı lobiye açabilir ya da kendi masanla oynayabilirsin.',
+    // The empty lobby while this table is in it.
+    lobbyEmptyOpen: 'Lobide şimdilik başka masa yok. Biri katılmak isterse burada görürsün.',
+    lobbyLoading: 'Lobi yükleniyor…',
+    lobbyError: 'Lobi yüklenemedi.',
+    lobbyTitle: 'Açık masalar',
+    roomCount: (n: number) => `${n} masa`,
     profiled: 'profilli',
     people: (n: number) => `${headcountLabel(n)} kişi`,
-    waitingFor: (minutes: number) => (minutes < 1 ? 'yeni açıldı' : `${minutes} dk bekliyor`),
     requestJoin: 'Katıl',
     // Faz 2 (docs/SPEC_V3.md §22.C; canvas: Faz 2 · 22.5 Takımlar): a member of a side.
     requestMember: 'Bu masadayım',
     phones: (n: number) => `${n} telefon`,
-    runningTitle: 'Süren odalar',
-    runningHint: 'Masandan biri bir odadaysa onun tarafına katılabilirsin.',
+    runningTitle: 'Süren masalar',
+    runningHint: 'Masandakiler bunlardan birinde oynuyorsa onların tarafına katılabilirsin.',
     // Between the two sides of a running room.
     versus: 'ile',
     memberBody: (leader: string) =>
       `${inflectTr(leader, 'genitive')} tarafına katılırsın. Kabul ederse oyun ve sohbet senin telefonunda da açılır.`,
     tellLeader: 'Liderine bu adı söyle',
     tellLeaderBody: (leader: string) =>
-      `${leader} bu adı istek kartında görür. Kabul ederse odaya girersin.`,
+      `${leader} bu adı istek kartında görür. Kabul ederse masaya katılırsın.`,
     incomingMemberTitle: 'Masana katılmak istiyor',
     incomingMemberBody:
       'Bu adı söyleyen arkadaşınsa kabul et. Kabul edersen senin tarafına katılır.',
-    declineMemberNote: 'Reddedersen o yalnızca "Masa şu an müsait değil" görür.',
-    peopleTitle: 'Odadakiler',
+    declineMemberNote: 'Geçersen o yalnızca "Masa şu an müsait değil" görür.',
+    peopleTitle: 'Masadakiler',
     mySide: (phones: number) => `Senin tarafın · ${phones} telefon`,
     otherSide: (phones: number) => `Karşı taraf · ${phones} telefon`,
     leaderTag: 'Lider',
     youTag: 'Sen',
-    peopleNote: 'Profilli olanların profili oda sürerken açılır.',
-    leave: 'Odadan çık',
+    peopleNote: 'Profilli olanların profili masa sürerken açılır.',
+    leave: 'Masadan çık',
     leaveHandover: (next: string) =>
-      `Çıkarsan liderlik ${inflectTr(next, 'dative')} geçer, oda sürer.`,
-    leaveConfirmTitle: 'Odadan çıkıyor musun?',
+      `Çıkarsan liderlik ${inflectTr(next, 'dative')} geçer, masa sürer.`,
+    leaveConfirmTitle: 'Masadan çıkıyor musun?',
     leaveConfirmLeader: (next: string) =>
-      `Liderlik ${inflectTr(next, 'dative')} geçer, oda sürer. Yeniden yalnızca bu tarafa katılabilirsin.`,
+      `Liderlik ${inflectTr(next, 'dative')} geçer, masa sürer. Yeniden yalnızca bu tarafa katılabilirsin.`,
     leaveConfirmMember: 'Yeniden yalnızca bu tarafa katılabilirsin.',
     // The new leader's note at the top of the chat (canvas: Liderlik devri notu).
     newLeader: (previous: string) =>
-      `Artık lider sensin. ${previous} odadan çıktı; katılma istekleri sana gelir, odayı sen bitirebilirsin.`,
+      `Artık lider sensin. ${previous} masadan çıktı; katılma istekleri sana gelir, masayı sen bitirebilirsin.`,
     mySpot: (name: string) => `Senin noktan · ${name}`,
     noSpot: 'Noktasız',
     spotHere: 'Bu noktadayım',
-    otherSpot: 'Bu oda başka bir noktada.',
+    otherSpot: 'Bu masa başka bir noktada.',
     requestPending: (seconds: number) => `İsteğin gönderildi. Yanıt bekleniyor (${seconds} sn).`,
     requestUnavailable: 'Masa şu an müsait değil.',
-    newTitle: 'Oda kur',
+    // In place of the pending note for a few seconds once the request is accepted.
+    requestAccepted: (alias: string) => `${alias} kabul etti.`,
+    newTitle: 'Masanı lobiye aç',
     newHint:
-      'Oda mekandaki diğer masalara açılır ve sohbetle başlar. Oyunu odada iki taraf birlikte seçer.',
+      'Mekandaki masalar seni lobide görür ve katılmak isteyebilir. Oyunu birleşince birlikte seçersiniz.',
     intentLabel: 'Niyetin (isteğe bağlı)',
     intentNone: 'Etiket yok',
     intentHint: {
       game: 'Oyun oynamak istiyorsun.',
       chat: 'Sohbet etmek istiyorsun. Oyun yine önerilebilir.',
     },
-    createConfirm: 'Odayı kur',
+    // The optional game tag (docs/SPEC_V3.md §23.C): only seen in the lobby.
+    gameTagLabel: 'Oyun (isteğe bağlı)',
+    gameTagNone: 'Fark etmez',
+    gameTagHint: 'Yalnızca lobide görünür; oyunu başlatmaz.',
+    createConfirm: 'Lobiye aç',
     // The room's eyebrow: the running game, else the chat; voice games say they are played face to
     // face (docs/SPEC_V2.md §8.1).
     roomEyebrow: (concept: 'tabu' | 'sohbet' | 'sahtekar' | 'harf' | 'sarki' | 'ibre' | null) =>
       concept === null
-        ? 'Oda'
+        ? 'Masan'
         : concept === 'sohbet'
           ? 'Sohbet kartları'
           : `${VOICE_NAMES[concept]} · yüz yüze`,
@@ -605,17 +617,20 @@ export const tr = {
     // A two-table room's top bar: only the other table's name.
     withOther: (alias: string) => `${alias} ile`,
     waitingForGuest: 'Başka bir masa katılmak isteyebilir. Bu arada kendi masanla oynayabilirsin.',
-    end: 'Odayı bitir',
-    endHint: 'Odayı bitirirsen odadaki herkese "Tanışalım mı?" sorulur.',
+    end: 'Masayı bitir',
+    endHint: 'Masayı bitirirsen masadaki herkese "Tanışalım mı?" sorulur.',
     requestTitle: 'Katılma isteği',
     sendRequest: 'İsteği gönder',
     incomingTitle: 'Katılma isteği',
     incomingBody: (alias: string, headcount: number) =>
-      `${alias} (${headcountLabel(headcount)} kişi) odana katılmak istiyor.`,
+      `${alias} (${headcountLabel(headcount)} kişi) masana katılmak istiyor.`,
     accept: 'Kabul',
-    decline: 'Reddet',
-    declineNote: 'Reddedersen karşı masa yalnızca "Masa şu an müsait değil" görür.',
-    viewPeople: 'Odadakileri gör',
+    decline: 'Geç',
+    declineNote: 'Geçersen karşı masa yalnızca "Masa şu an müsait değil" görür.',
+    // The leader's "Kabul" came too late: the requester's table merged with another meanwhile
+    // (room_not_available) or the request ended (docs/SPEC_V3.md §23.C).
+    requestGone: 'Bu masa artık müsait değil.',
+    viewPeople: 'Masadakileri gör',
     secondsLeft: (s: number) => `${s} sn`,
   },
   chat: {
@@ -656,10 +671,10 @@ export const tr = {
     reactWith: (emoji: string) => `${emoji} ile tepki ver`,
     openProfile: (name: string) => `${name}, profili aç`,
   },
-  // Mekan sohbet odası (docs/SPEC_V3.md §7).
+  // Mekan sohbeti (docs/SPEC_V3.md §7).
   venueChat: {
-    open: 'Sohbet odası',
-    title: (venue: string) => `${venue} sohbet odası`,
+    open: 'Mekan sohbeti',
+    title: (venue: string) => `${venue} sohbeti`,
     hint: 'Mekanda masası olan herkes okur ve yazar. Mesajlar 24 saat sonra silinir.',
     empty: 'Henüz mesaj yok. İlk mesajı sen yaz.',
     placeholder: 'Mekana yaz…',
@@ -685,10 +700,10 @@ export const tr = {
     blockConfirmTitle: 'Bu kişiyi engellemek istiyor musun?',
     blockConfirmBody:
       'Birbirinizin mesajlarını artık görmezsiniz. Karşı tarafa bildirilmez. Engeli ayarlardan kaldırabilirsin.',
-    noTable: 'Sohbet odası yalnızca mekanda masan varken açılır.',
+    noTable: 'Mekan sohbeti yalnızca mekanda masan varken açılır.',
     // A request from the venue chat (§7.5): the sender's name and age.
     incoming: (venue: string, name: string, age: number | null) =>
-      `${venue} sohbet odasından ${age !== null ? `${name} (${age})` : name} arkadaşın olmak istiyor`,
+      `${venue} sohbetinden ${age !== null ? `${name} (${age})` : name} arkadaşın olmak istiyor`,
     sent: (name: string) => `İstek gönderildi: ${name}`,
     sentAccepted: (name: string) => `${name} isteğini kabul etti`,
   },
@@ -709,9 +724,9 @@ export const tr = {
     blockWho: 'Kimi engelliyorsun?',
     reportWho: 'Kimi şikayet ediyorsun?',
     blockOwnMember: (alias: string) =>
-      `${alias} odadan çıkar, sen odada kalırsın. Birbirinizin odalarını artık görmezsiniz.`,
+      `${alias} masadan çıkar, sen masada kalırsın. Birbirinizin masalarını artık görmezsiniz.`,
     blockLeaves:
-      'Sen odadan çıkarsın ve cevabın "Hayır" sayılır. Birbirinizin odalarını artık görmezsiniz.',
+      'Sen masadan çıkarsın ve cevabın "Hayır" sayılır. Birbirinizin masalarını artık görmezsiniz.',
     reportNote: 'Şikayetin, şikayet ettiğin kişiye bildirilmez.',
     blockedTitle: 'Engellenenler',
     blockedEmpty: 'Engellediğin kimse yok.',
@@ -784,7 +799,7 @@ export const tr = {
     describing: 'anlatıyor',
     voiceWinner: (alias: string) => `${alias} kazandı!`,
     voiceDraw: 'Berabere!',
-    cardOnlyHere: 'Kartı yalnızca bu odadaki iki masa görür.',
+    cardOnlyHere: 'Kartı yalnızca bu masadakiler görür.',
     // Cooperative mode (docs/SPEC_V3.md §6.3): one team, the guessing table never sees the card.
     coopIntro: 'Masalardan biri tek kişi: iki masa tek takım, ortak skor süreye karşı.',
     coopDescribe: "Sıra sizde: kartı diğer masaya anlatın. Doğru, Pas ve Tabu'ya siz basarsınız.",
@@ -1014,12 +1029,22 @@ export const tr = {
     chooseSpot: 'Noktanı seç',
     changeSpotTitle: 'Neredesin?',
     changeSpotHint:
-      'Aynı noktadaki masalarla oynarsın. Odadayken ya da bir isteğin beklerken değiştiremezsin.',
+      'Aynı noktadaki masalarla oynarsın. Masan lobideyken, oyundayken ya da bir isteğin beklerken değiştiremezsin.',
     changeSpotSave: 'Bu noktadayım',
     // "Masa adını değiştir" (docs/SPEC_V3.md §5.6).
     rerollAlias: 'Adı değiştir',
     rerollsLeft: (n: number) =>
       n > 0 ? `${n} hakkın kaldı` : 'Bu masada adı değiştirme hakkın bitti',
+    // The table card's state (docs/SPEC_V3.md §23.C; canvas: Faz 3 · 23.1 Masa ve lobi).
+    lobbyOff: 'Lobide değil',
+    lobbyOpen: 'Lobide açık',
+    merged: 'Birleşti',
+    solo: 'Masanla oynuyorsun',
+    openHint: 'Bir masa katılmak isterse sana sorulur. Beklerken masanla oynayabilirsin.',
+    memberOf: (leader: string) =>
+      `${inflectTr(leader, 'genitive')} tarafındasın. Lobiden yalnızca o çekebilir.`,
+    withdraw: 'Lobiden çek',
+    goToTable: 'Masaya git',
   },
   design: {
     title: 'Tasarım (test)',
@@ -1067,25 +1092,25 @@ export const tr = {
     alias_exhausted: 'Şu an bu mekanda masa açılamıyor. Biraz sonra tekrar dene.',
     spot_required: 'Önce nerede olduğunu seç.',
     spot_invalid: 'Bu nokta artık seçilemiyor. Listeden başka bir nokta seç.',
-    different_spot: 'Bu oda başka bir noktada. Önce "Bu noktadayım"a dokun.',
-    in_room: 'Odadayken ya da bir isteğin beklerken bunu yapamazsın.',
+    different_spot: 'Bu masa başka bir noktada. Önce "Bu noktadayım"a dokun.',
+    in_room: 'Masan lobideyken, oyundayken ya da bir isteğin beklerken bunu yapamazsın.',
     reroll_limit: 'Bu masada adı değiştirme hakkın bitti.',
     proposal_pending: 'Zaten bekleyen bir öneri var.',
     no_proposal: 'Bu öneri artık geçerli değil.',
     no_active_table: 'Önce mekana giriş yapman gerekiyor.',
-    already_in_room: 'Masan zaten bir odada.',
+    already_in_room: 'Masan zaten lobide ya da oyunda.',
     room_not_available: 'Masa şu an müsait değil.',
     request_pending: 'Yanıt bekleyen bir isteğin var.',
     rate_limited: 'Çok fazla istek gönderdin. Biraz sonra tekrar dene.',
     request_expired: 'Bu isteğin süresi doldu.',
     request_not_found: 'İstek bulunamadı.',
-    not_in_room: 'Bu odada değilsin.',
-    nothing_to_block: 'Engellemek istediğin kişi odada değil.',
+    not_in_room: 'Bu masada değilsin.',
+    nothing_to_block: 'Engellemek istediğin kişi masada değil.',
     message_invalid: 'Mesaj 1-200 karakter olmalı.',
     profanity_rejected: 'Mesajın uygun olmayan bir ifade içeriyor.',
-    wrong_concept: 'Bu oda başka bir oyun için.',
-    two_tables: 'Oda artık iki masalı.',
-    not_owner: 'Oyunu oda sahibi başlatır.',
+    wrong_concept: 'Bu masa başka bir oyun için.',
+    two_tables: 'Masana başka bir masa katıldı.',
+    not_owner: 'Oyunu lobiye açan masa başlatır.',
     needs_two_tables: 'Bu oyun için ikinci masa gerekiyor.',
     game_in_progress: 'Oyun zaten sürüyor.',
     no_game: 'Şu an oyun yok.',
@@ -1102,10 +1127,11 @@ export const tr = {
     not_found: 'Bulunamadı.',
     reply_unavailable: 'Yanıtladığın mesaj artık yok.',
     photo_required: 'Profilinle görünmek için önce profil fotoğrafı ekle.',
+    anonymous_not_allowed: 'Masalara profilinle katılırsın.',
     venue_chat_mode_locked:
       'Mekan sohbetinde nasıl görüneceğini bu girişte zaten seçtin. Değiştirmek için mekandan ayrılıp yeniden giriş yap.',
-    wrong_side: 'Bu odaya yalnızca daha önce bulunduğun taraftan katılabilirsin.',
-    not_leader: 'Odayı yalnızca masanın lideri bitirebilir.',
+    wrong_side: 'Bu masaya yalnızca daha önce bulunduğun taraftan katılabilirsin.',
+    not_leader: 'Bunu yalnızca masanın lideri yapabilir.',
     already_friends: 'Zaten arkadaşsınız.',
     not_friends: 'Artık arkadaş değilsiniz.',
     not_judge: 'Bu turda hakem diğer masa.',

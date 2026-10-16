@@ -22,11 +22,13 @@ type Props = {
   venueHasSpots: boolean;
   // While the table's one request waits, like "Katıl" today.
   disabled: boolean;
+  // "Bu masadayım" and "Bu noktadayım" are for a table without a room (docs/SPEC_V3.md §23.C).
+  canMember: boolean;
   onMember: (roomId: string, side: Side, leader: string) => void;
   onSpotHere: (spotId: string) => void;
 };
 
-// "Süren odalar" (docs/SPEC_V3.md §22.C; canvas: Faz 2 · 22.5 → Lobi): two-sided rooms with only
+// "Süren masalar" (docs/SPEC_V3.md §22.C; canvas: Faz 2 · 22.5 → Lobi): two-sided rooms with only
 // the two leaders' aliases and each side's phones and people; no intent, profile or game. "Bu
 // masadayım" beside each side that still has room (a side of 4 phones has none).
 export function RunningRooms({
@@ -34,6 +36,7 @@ export function RunningRooms({
   mySpotId,
   venueHasSpots,
   disabled,
+  canMember,
   onMember,
   onSpotHere,
 }: Props) {
@@ -61,7 +64,8 @@ export function RunningRooms({
           {group.rooms.map((room, i) => {
             const side = (s: Side) => {
               const alias = s === 'owner' ? room.owner_alias : room.guest_alias;
-              const open = group.mine && (s === 'owner' ? room.owner_open : room.guest_open);
+              const open =
+                canMember && group.mine && (s === 'owner' ? room.owner_open : room.guest_open);
               return (
                 <SideLine
                   alias={alias}
@@ -81,7 +85,7 @@ export function RunningRooms({
                   {side('owner')}
                   <Versus />
                   {side('guest')}
-                  {!group.mine && spotId !== null ? (
+                  {canMember && !group.mine && spotId !== null ? (
                     <Button
                       variant="neutral"
                       icon="location-outline"

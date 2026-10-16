@@ -130,7 +130,7 @@ Her adımın sonunda ✅ / ❌ işaretle.
 **Bak:**
 
 - SMS gelmemeli; kod ekranı hemen açılmalı. Yanlış kod "Kod hatalı ya da süresi dolmuş." demeli.
-- "Seni tanıyalım" ekranında "Kabuk 18 yaş ve üzeri içindir." yazar; ad ve tam bir tarih girilmeden **Devam** soluk kalır. Olmayan bir tarih (ör. 31.04) "Geçerli bir tarih gir." der.
+- "Seni tanıyalım" ekranında "skall 18 yaş ve üzeri içindir." yazar; ad ve tam bir tarih girilmeden **Devam** soluk kalır. Olmayan bir tarih (ör. 31.04) "Geçerli bir tarih gir." der.
 - Sonunda uygulama Keşfet sekmesinde açılmalı.
   **Hata olursa:** hangi numara, hangi ekranda kaldı, hata metni. "Bu numarayla devam edilemiyor." görünürse numara ban listesinde olabilir; panelde test numarası tanımını kontrol et.
 
@@ -143,7 +143,7 @@ Her adımın sonunda ✅ / ❌ işaretle.
 
 **Bak:**
 
-- Telefon numarası ekranına dönülür; üstte **"Kabuk 18 yaş ve üzeri içindir"** ve "Hesabın açılmadı ve bilgilerin saklanmadı." yazar.
+- Telefon numarası ekranına dönülür; üstte **"skall 18 yaş ve üzeri içindir"** ve "Hesabın açılmadı ve bilgilerin saklanmadı." yazar.
 - Panelde (Authentication → Users) bu numarayla kullanıcı **yok**; `profiles` tablosunda satır yok.
 - Aynı numarayla hemen yeniden kayıt olunabilir (kabul edilmiş risk, `docs/SPEC_V3.md` §17-S2).
 
@@ -375,7 +375,7 @@ Gerekli: APK `google-services.json` ile alınmış olmalı (CLAUDE.md → "Push"
 
 **Bak:**
 
-- 2. adımda B'de bildirim: başlık **"Kabuk"**, metin **"Yeni bir mesajın var"**. Gönderenin adı ve mesajın içeriği **yok**.
+- 2. adımda B'de bildirim: başlık **"skall"**, metin **"Yeni bir mesajın var"**. Gönderenin adı ve mesajın içeriği **yok**.
 - Bildirime dokununca uygulama açılır.
 - 4. adımda bildirim **gelmez**; mesaj uygulama açılınca konuşmada görünür.
 
@@ -498,7 +498,7 @@ Reddedilen masa o odayı lobide bir daha görmez; bu yüzden iki deneme için A 
 
 **Bak:**
 
-- 1'de (FCM'li build) B'de bildirim: **"Kabuk"**, **"Yeni bir arkadaşlık isteğin var"**; ad ya da içerik yok. Zilde "1" rozeti.
+- 1'de (FCM'li build) B'de bildirim: **"skall"**, **"Yeni bir arkadaşlık isteğin var"**; ad ya da içerik yok. Zilde "1" rozeti.
 - 2'de istek oyun bağlamıyla görünür: "… Sesli Tabu oynadığınız … masası arkadaşın olmak istiyor". A'nın görünen adı ya da fotoğrafı **yok**.
 - 3'ten sonra A'da satır "… masasına istek gönderildi" olarak **kalır**; red A'ya hiçbir yerde görünmez ve bildirim gitmez.
 

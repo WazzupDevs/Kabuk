@@ -13,13 +13,15 @@ export type AnalyticsEventProps = {
   // 1–4; 4 means "4+".
   check_in: { headcount: number };
   // v3 (docs/SPEC_V3.md §15): the intent ('none' without one) and the owner's choice for the room.
-  room_created: { intent: RoomIntentLabel; profiled: boolean };
+  // Faz 3 (§23.L, step 23.1): "Masanı lobiye aç", with the game tag ('none': "fark etmez").
+  room_created: { intent: RoomIntentLabel; profiled: boolean; game_tag: Concept | 'none' };
   // A proposal and its acceptance; the game only, never the other table.
   game_proposed: { concept: Concept };
   game_accepted: { concept: Concept };
   alias_rerolled: Record<string, never>;
   // Faz 2 (docs/SPEC_V3.md §22.L): as_member is "Bu masadayım" (a member of a side), not "Katıl".
-  join_requested: { as_member: boolean };
+  // Faz 3 (§23.L, step 23.1): in_lobby is "Katıl" from the table's own waiting room.
+  join_requested: { as_member: boolean; in_lobby: boolean };
   join_accepted: { as_member: boolean };
   join_unavailable: { as_member: boolean };
   // "Odadan çık" by a member or a leader, and this phone becoming its side's leader.
@@ -81,11 +83,11 @@ export type AnalyticsEvent = keyof AnalyticsEventProps;
 const ALLOWED: { [E in AnalyticsEvent]: readonly (keyof AnalyticsEventProps[E])[] } = {
   onboarding_completed: ['with_photo', 'with_bio'],
   check_in: ['headcount'],
-  room_created: ['intent', 'profiled'],
+  room_created: ['intent', 'profiled', 'game_tag'],
   game_proposed: ['concept'],
   game_accepted: ['concept'],
   alias_rerolled: [],
-  join_requested: ['as_member'],
+  join_requested: ['as_member', 'in_lobby'],
   join_accepted: ['as_member'],
   join_unavailable: ['as_member'],
   team_left: [],
