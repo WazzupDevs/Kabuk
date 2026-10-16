@@ -196,7 +196,7 @@ jobs:
       - name: Emulator and system image cache (save, main only)
         if: >-
           github.ref == 'refs/heads/main' && steps.emulator-cache.outputs.cache-hit != 'true' &&
-          matrix.scheme == 'light' && matrix.shard == 1
+          matrix.scheme == 'light' && matrix.shard == 1 && matrix.font == '1'
         uses: actions/cache/save@v4
         with:
           path: |
