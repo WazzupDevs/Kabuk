@@ -26,16 +26,19 @@ appId: app.kabuk.mobile
       BODY: '{"spot":"kutuphane","headcount":2,"teams":true}'
       BOT_PORT: '8788'
 - evalScript: ${output.aliasB = output.bot.alias}
-# 1. Bot A opens a room at this phone's spot: its card has "Katıl" and "Bu masadayım".
+# 1. Bot A opens its table to the lobby at this phone's spot: its card has "Katıl" and "Bu masadayım".
 - runScript:
     file: ../scripts/bot.js
     env:
       ACTION: create-room
 - tapOn:
     id: tab-venue
+# Centred: at the bottom of a 320 × 640 screen the card's second button sits under the floating tab
+# bar, where a tap lands on the bar.
 - scrollUntilVisible:
     element:
       id: request-member
+    centerElement: true
     timeout: 20000
 - takeScreenshot: 59-teams-lobby
 - tapOn:
@@ -57,7 +60,26 @@ appId: app.kabuk.mobile
     file: ../scripts/bot.js
     env:
       ACTION: accept-request
-# In the room as a member: the red button is "Odadan çık", not "Odayı bitir".
+# On bot A's side in the lobby (docs/SPEC_V3.md §23.C): the table card says so, with "Masaya git"
+# and "Masadan çık"; nothing sends the phone to the room.
+- extendedWaitUntil:
+    visible:
+      id: leave-table
+    timeout: 20000
+# The phone was down at the lobby for "Bu masadayım": up to the card's status line.
+- scrollUntilVisible:
+    element:
+      text: Lobide açık
+    direction: UP
+    timeout: 10000
+- takeScreenshot: 61b-teams-member-card
+- scrollUntilVisible:
+    element:
+      id: go-to-table
+    timeout: 10000
+- tapOn:
+    id: go-to-table
+# In the room as a member: the red button is "Masadan çık", not "Masayı bitir".
 - extendedWaitUntil:
     visible:
       id: leave-room
@@ -87,6 +109,8 @@ appId: app.kabuk.mobile
     env:
       ACTION: answer-game
       BOT_PORT: '8788'
+# The device's first two-table Tabu in a shard without 04: its intro (§19.2).
+- runFlow: tabu-intro-if-shown.yaml
 # Turn 1, bot A's side: bot A starts it and so describes. This phone, its teammate, never gets the
 # card; Doğru is every phone's in a refereed game.
 - runScript:
@@ -159,7 +183,8 @@ appId: app.kabuk.mobile
       BOT_PORT: '8788'
 - tapOn: Mekana dön
 - extendedWaitUntil:
-    visible: Oda kur
+    visible:
+      id: lobby-open
     timeout: 15000
 # A window with a "Hayır" runs to reveal_ends_at; bot B closes it now, so this phone's next room
 # shows in the lobby (rule 5). Only after this phone left the room: a room closed before the
@@ -169,30 +194,13 @@ appId: app.kabuk.mobile
     env:
       ACTION: expire-reveal
       BOT_PORT: '8788'
-# 3. This phone's room: bot A joins as the other side's leader, bot B as bot A's member.
-- tapOn: Oda kur
+# 3. This phone's table: bot A joins as the other side's leader, bot B as bot A's member.
+- runFlow:
+    file: open-lobby-accept.yaml
 - extendedWaitUntil:
     visible:
-      id: intent-none
-    timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: Odayı kur
-    timeout: 10000
-- tapOn: Odayı kur
-- extendedWaitUntil:
-    visible:
-      id: solo-tabu
+      id: propose-tabu
     timeout: 15000
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: request-join
-- extendedWaitUntil:
-    visible: Katılma isteği
-    timeout: 20000
-- tapOn:
-    id: join-accept
 - runScript:
     file: ../scripts/bot.js
     env:
@@ -203,11 +211,11 @@ appId: app.kabuk.mobile
     file: ../scripts/bot.js
     env:
       ACTION: accept-request
-# "Odadakiler" from the room's title: the other side has two phones (overline: upper case).
+# "Masadakiler" from the room's title: the other side has two phones (overline: upper case).
 - extendedWaitUntil:
     visible: 2 telefon
     timeout: 20000
-- tapOn: Odadakileri gör
+- tapOn: Masadakileri gör
 - extendedWaitUntil:
     visible:
       id: room-people
@@ -253,5 +261,6 @@ appId: app.kabuk.mobile
 - takeScreenshot: 68-teams-match-after-window
 - tapOn: Mekana dön
 - extendedWaitUntil:
-    visible: Oda kur
+    visible:
+      id: lobby-open
     timeout: 15000

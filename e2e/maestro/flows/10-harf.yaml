@@ -14,32 +14,9 @@ appId: app.kabuk.mobile
       BODY: '{"spot":"kutuphane","headcount":2}'
 - tapOn:
     id: tab-venue
-- extendedWaitUntil:
-    visible: Oda kur
-    timeout: 15000
-- tapOn: Oda kur
-- extendedWaitUntil:
-    visible:
-      id: intent-none
-    timeout: 10000
-- scrollUntilVisible:
-    element:
-      text: Odayı kur
-    timeout: 10000
-- tapOn: Odayı kur
-- extendedWaitUntil:
-    visible:
-      id: solo-tabu
-    timeout: 15000
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: request-join
-- extendedWaitUntil:
-    visible: Katılma isteği
-    timeout: 20000
-- tapOn:
-    id: join-accept
+# "Masanı lobiye aç", the bot asks to join, "Kabul" on the venue, "Masaya git" (§23.C).
+- runFlow:
+    file: open-lobby-accept.yaml
 - extendedWaitUntil:
     visible:
       id: propose-harf
@@ -136,5 +113,6 @@ appId: app.kabuk.mobile
       BODY: '{"yes":false}'
 - tapOn: Mekana dön
 - extendedWaitUntil:
-    visible: Oda kur
+    visible:
+      id: lobby-open
     timeout: 15000

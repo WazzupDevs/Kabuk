@@ -11,6 +11,7 @@ import {
   sessionChannel,
   venueChannel,
 } from '@shared/rooms.ts';
+import { gameTag } from '@shared/tableCard.ts';
 import type { Side } from '@shared/teams.ts';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
@@ -48,19 +49,40 @@ function peopleChanged(a: RoomRow | null | undefined, b: RoomRow): boolean {
   );
 }
 
-// The open room the table is in, as a leader or a member of a side: RLS lets a phone read only
-// the rooms it leads or is in (docs/SPEC_V3.md §22.I), so no filter on the session is needed. An
-// 'ending' room does not hold the table: a table that answered "Hayır" goes on at once
-// (MVP_SPEC §4.6).
+// What the table card shows of the table's room (docs/SPEC_V3.md §23.C).
+export const TABLE_ROOM_COLUMNS =
+  'id, status, visibility, owner_session_id, guest_session_id, owner_alias, guest_alias, owner_headcount, guest_headcount, owner_phones, guest_phones, intent, game_tag, reveal_ends_at';
+export type TableRoomRow = Pick<
+  RoomRow,
+  | 'id'
+  | 'status'
+  | 'visibility'
+  | 'owner_session_id'
+  | 'guest_session_id'
+  | 'owner_alias'
+  | 'guest_alias'
+  | 'owner_headcount'
+  | 'guest_headcount'
+  | 'owner_phones'
+  | 'guest_phones'
+  | 'intent'
+  | 'game_tag'
+  | 'reveal_ends_at'
+>;
+
+// The table's latest room, as a leader or a member of a side: RLS lets a phone read only the rooms
+// it leads or is in (docs/SPEC_V3.md §22.I), so no filter on the session is needed. An 'ending' room
+// does not hold the table (a table that answered "Hayır" goes on at once, MVP_SPEC §4.6, and its
+// new room is the latest); the card still leads to it while its window is open (@shared/tableCard.ts).
 export function useCurrentRoom(sessionId: string | undefined) {
   return useQuery({
     queryKey: roomKeys.current,
     enabled: sessionId !== undefined,
-    queryFn: async () => {
+    queryFn: async (): Promise<TableRoomRow | null> => {
       const { data, error } = await supabase
         .from('rooms')
-        .select('id')
-        .in('status', ['waiting', 'active'])
+        .select(TABLE_ROOM_COLUMNS)
+        .in('status', ['waiting', 'active', 'ending'])
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -216,9 +238,10 @@ export function useRoomPhones(roomId: string, enabled = true) {
   });
 }
 
-// The venue's lobby (docs/SPEC_V3.md §22.C): open rooms with the owner's phones and whether a phone
-// can still join its side ("Bu masadayım"), and the running rooms with only the two leaders'
-// aliases and each side's phones and people. One query, one refetch on lobby_changed.
+// The venue's lobby (docs/SPEC_V3.md §22.C, §23.C): open rooms ("Açık masalar") with the owner's
+// phones, whether a phone can still join its side ("Bu masadayım") and the optional game tag, and
+// the running rooms ("Süren masalar") with only the two leaders' aliases and each side's phones and
+// people. One query, one refetch on lobby_changed.
 export function useLobby(venueId: string | undefined) {
   const queryClient = useQueryClient();
   const refetch = useCallback(() => {
@@ -231,20 +254,24 @@ export function useLobby(venueId: string | undefined) {
     enabled: venueId !== undefined,
     queryFn: async () => {
       const args = { target_venue_id: venueId ?? '' };
-      const [open, phones, running] = await Promise.all([
+      const [open, phones, tags, running] = await Promise.all([
         supabase.rpc('venue_lobby', args),
         supabase.rpc('venue_lobby_phones', args),
+        supabase.rpc('venue_lobby_tags', args),
         supabase.rpc('venue_running_rooms', args),
       ]);
       if (open.error) throw open.error;
       if (phones.error) throw phones.error;
+      if (tags.error) throw tags.error;
       if (running.error) throw running.error;
       const byRoom = new Map(phones.data.map((p) => [p.room_id, p]));
+      const tagOf = new Map(tags.data.map((t) => [t.room_id, gameTag(t.game_tag)]));
       return {
         open: open.data.map((room) => ({
           ...room,
           phones: byRoom.get(room.room_id)?.phones ?? 1,
           memberOpen: byRoom.get(room.room_id)?.member_open ?? false,
+          gameTag: tagOf.get(room.room_id) ?? null,
         })),
         running: running.data,
       };
