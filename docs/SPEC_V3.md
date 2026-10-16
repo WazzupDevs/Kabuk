@@ -2084,6 +2084,7 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 - QR, davet bağlantısı, masa numarası ya da harita üstünde masa yeri.
 - Yeni oyun ya da oyun kuralı değişikliği.
 - Mekan sohbeti (§23.D).
+- Takım taşıma ve karışık takım: pilotta yoktur, taraflar katılımdaki masalardır (§23.P).
 
 **Native değişiklik yok:** bütün adımlar JS ve sunucu değişikliğidir. `app.json` → `version` 0.3.0 kalır, istemci OTA ile gider. Bir adımda native bağımlılık gerekirse uygulama durur ve sorulur.
 
@@ -2150,7 +2151,7 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 - İstek kabul edildiğinde istekçinin bekleyen odası **aynı işlemde sessizce kapanır**: pencere yok, oyun geçmişi yok, çünkü oda tek taraflıdır. O odaya bekleyen istekler zaman aşımıyla `unavailable` olur (kural 5).
 - İstek reddedilir ya da zaman aşımına uğrarsa bekleyen oda lobide kalır.
 - İstekçinin odası istek beklerken başka bir masayla birleştiyse kabul `room_not_available` döner. İstekçi bunu bugünkü `unavailable` olarak görür.
-- Bekleyen odanın üyeleri ("Bu masadayım" ile katılmış telefonlar) kabulde ne olur: açık karar, §23.P-4.
+- **Bekleyen odanın üyeleri** ("Bu masadayım" ile katılmış telefonlar) kabulde, aynı işlemde misafir tarafa üye olarak taşınır (karar, §23.P). Anonim ya da profilli seçimleri aynen kalır; Faz 2'de de üye sonradan gelen masaya bu seçimiyle görünüyordu. Taşınan taraf bekleyen odanın tarafının aynısıdır, bu yüzden 4 telefon sınırı aşılmaz. Taşınan üyeler istekçiyle aynı durum satırını görür (§23.E).
 
 **"Oda" kelimesi.**
 
@@ -2182,8 +2183,16 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 - **Sunucu zorlar:**
   - Erkek ya da belirtmeyen hesaptan `profiled: false` ile gelen istek, oda kurma ve katılma `profile_required` döner (yeni hata kodu). Sunucu bunu sessizce profilliye çevirmez: kimse ekranda görmeden profiliyle görünmez (teknik karar, §23.P).
   - Cinsiyeti boş hesap oyun akışına giremez: `gender_required` (yeni hata kodu). Check-in, Keşfet ve mekan sohbeti bunu istemez.
+- **"Masanla oyna" oyun akışı sayılmaz:** `visibility = 'private'` odada `profile_required`, `photo_required` ve `gender_required` uygulanmaz. O odada yalnızca masanın kendisi vardır ve oda lobiye çıkmaz.
 - **Mekan sohbeti değişmez (§22.G):** herkes anonim yazabilir, erkek ve belirtmeyen dahil. Seçim bugünkü gibi check-in başına ilk mesajda yapılır.
 - Cinsiyet kimseye gösterilmez; yalnızca ekranda seçim olup olmayacağını ve sunucunun neyi kabul edeceğini belirler.
+- **Dolaylı bilgi:** oyun akışında anonim katılım yalnızca kadın beyanıyla mümkün olduğundan, anonim görünmek cinsiyet hakkında dolaylı bilgi verir. Cinsiyet alan olarak hiçbir yerde gösterilmez. Kural 12 (§23.O) ve gizlilik politikası (§23.L) bunu açıkça söyler; yanlış güven verilmez.
+
+**Yanlış cinsiyet beyanı (şikayet).**
+
+- Asimetrik kuralın asıl kötüye kullanım yolu, erkeğin kadın beyan etmesidir. Şikayet nedenlerine "yanlış cinsiyet beyanı" eklenir (karar, §23.P): `REPORT_REASONS`'a (`pure/chat.ts`) `wrong_gender`, `reports.reason` kısıtına aynı değer.
+- Neden, oyun akışındaki kişi şikayetlerinde görünür: masa içinde kişi seçerek (§22.D) ve oyun geçmişinden. Mekan sohbeti ve DM şikayetlerinde görünmez, çünkü cinsiyet kuralı orada uygulanmaz.
+- Şikayet edilene bildirilmez (bugünkü kural). İnceleme bugünkü gibidir: düzeltme `pnpm admin:set-gender`, kötüye kullanımda `pnpm admin:ban`.
 
 ### 23.E Katılma isteği ve kabul (adımlar 23.1–23.3)
 
@@ -2207,10 +2216,11 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 **Kabul buluşmadır (adım 23.3).**
 
 - Tören ve tam ekran eşleşme görseli yoktur.
-- İstekçinin telefonunda: "Kabul edildi, X masasının yanına git" (X: ev sahibi masanın takma adı).
+- İstekçi masanın telefonlarında (bekleyen odadan taşınan üyeler dahil, §23.C): "Kabul edildi, X masasının yanına git" (X: ev sahibi masanın takma adı).
 - Ev sahibinin telefonlarında: "Y geliyor, N kişi" (Y: istekçi masanın takma adı, N: kişi sayısı).
 - Durum satırları mekan ekranındaki masa kartında görünür; birleşik masa ekranına buradan geçilir.
 - Katılan fiziksel olarak masaya gelir. İstekçinin bekleyen boş masası kabulde kapanır (§23.C).
+- **Kabulden sonra vazgeçme:** katılan, kabulden sonra Masadakiler'de ev sahibi masanın profilli kişilerini görüp gitmemeyi seçebilir; bu bir güvenlik kapısıdır. Masadan çıkması ev sahibine bugünkü çıkış olarak görünür (red gibi gizlenmez); fiziksel dünyada gelmemekle aynı şeydir ve kabul edilebilir. Misafir tarafın son telefonu çıktıysa masa kapanır (§23.G); 3 dakika dolmadığı için oyun geçmişi kaydı ve "Arkadaş ekle" oluşmaz.
 - 23.1 ile 23.3 arasında kabulden sonra bugünkü oda ekranı açılır (masa kartından, yönlendirmesiz).
 
 ### 23.F Birleşik masa ve oyunlar (adım 23.3)
@@ -2223,19 +2233,25 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 - **Oyunlar tek masada, Faz 2'nin taraf ve çok telefon mekaniğiyle oynanır:** taraflar katılımdaki masalardır. Tabu modu tarafın kişi sayısından belirlenir (§22.B).
 - **Gizli bilgi kuralları aynen geçerlidir** (kural 3, Faz 2): Tabu kartı anlatıcıya ve hakemli modda hakem tarafın telefonlarına gider, anlatıcının takım arkadaşına gitmez. İnsanlar artık aynı masada oturduğu için ekranı saklamak oyuncunun işidir; kart bugünkü gibi kapalı başlar (§19).
 - **Masa Sohbeti** bugünkü oda sohbetidir (`messages`); değişmez.
-- **"Masanla oyna"** (tek masa modu, `visibility = 'private'`) kalır.
-- **Takım taşıma** (kişileri taraflar arasında taşımak): açık karar, §23.P-1.
+- **"Masanla oyna"** (tek masa modu, `visibility = 'private'`) kalır; oyun akışı sayılmaz (§23.D).
+- **Takım taşıma** (kişileri taraflar arasında taşımak) pilotta yoktur: taraflar katılımdaki masalardır (karar, §23.P). Karışık takım saha testinden sonra ayrı karardır.
 
 ### 23.G Masa sonu, arkadaşlık ve oyun geçmişi (adım 23.3)
 
 **Pencere yok.**
 
-- Bugün tanışma penceresini açan her yol 23.3'ten sonra odayı doğrudan kapatır (`status = 'closed'`; teknik karar, §23.P):
+- Bugün tanışma penceresini açan yollar 23.3'ten sonra odayı doğrudan kapatır (`status = 'closed'`; teknik karar, §23.P):
   - lider "Odayı bitir"e basar;
-  - bir taraftaki son telefon çıkar (çıkış, engelleme, mekandan ayrılma, masa süresi);
-  - 10 dakika hareketsizlik olur (`private.close_idle_rooms`).
+  - bir taraftaki son telefon çıkar (çıkış, engelleme, mekandan ayrılma, masa oturumunun bitişi: `TABLE_SESSION_HOURS`, 4 saat).
 - `ending` durumu, `reveal_ends_at`, `reveal_decisions`, `reveal_signals` ve `reveal_match` yayını kullanılmaz.
 - Pencerede lobiden saklama kuralı (`private.lobby_listed_from`) artık hiçbir şey saklamaz.
+
+**Hareketsizlik** (karar, §23.P):
+
+- **İki taraflı masa hareketsizlikle kapanmaz.** Birleşik masada insanlar yüz yüze konuşur ve telefonlar cepte durur; hareketsizlik masayı oyun aralarında kapatır, "Arkadaş ekle" anı da kaçardı. Masayı yalnızca yukarıdaki iki yol kapatır: liderin "Masayı bitir"i ve bir taraftaki son telefonun çıkışı (masa oturumunun bitişi dahil).
+- **Lobide bekleyen tek taraflı masa** (`status = 'waiting'`, `visibility = 'open'`) **30 dakika hareketsizlikte sessizce kapanır.** Ona bekleyen istekler `unavailable` olur (kural 5).
+- **"Masanla oyna" odası** (`visibility = 'private'`) bugünkü gibi 10 dakika hareketsizlikte kapanır (`ROOM_IDLE_MINUTES`); bu karar onu değiştirmez.
+- Sunucuda `private.close_idle_rooms` iki taraflı odayı atlar ve tek taraflı odaları türüne göre kapatır; cron işi değişmez.
 
 **Masa sonu ekranı.**
 
@@ -2244,6 +2260,13 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 - Arkadaş ekleme karşı taraftaki çiftler içindir. Aynı taraftakiler (birlikte gelenler) arasında yoktur.
 - "Arkadaş ekle" yalnızca oyun geçmişi kaydı olan çiftte görünür; 3 dakika kuralı aynen kalır. 3 dakikadan kısa birlikte kalınan kişide düğme yoktur.
 - Kapat ile mekan ekranına dönülür.
+
+**Oyun geçmişinden "Arkadaş ekle".**
+
+- Masa telefon cepteyken kapanırsa masa sonu ekranı hiç görülmeyebilir. Bu yüzden `friend_open` kayıtlarda aynı sessiz "Arkadaş ekle" oyun geçmişinden de sunulur: Bildirimler ekranındaki oyun geçmişi (§18.3), bugün karşılıklı "Evet" kayıtlarında olduğu gibi.
+- `pure/friends.ts` → `historyAction`: `friend_open` kayıt yalnızca "Arkadaş ekle" sunar. "İstek gönder" yalnızca eski kayıtlarda (`reveal_mutual = false`, `friend_open = false`) kalır.
+- İki yer aynı niyeti (`mutual_friend_intents`) yazar: masa sonunda basılan düğme geçmişte "yapıldı" görünür (`friend_action_at`). `friends_add_from_room`'da zaman sınırı yoktur.
+- Bu yazılmasaydı geriye tek yol olarak görünür arkadaşlık isteği kalırdı ve sessiz karşılıklılık kaybolurdu.
 
 **Kimlik.** Anonim katılanın profili ve profil kimliği yalnızca arkadaşlıkla açılır: arkadaşlar birbirinin profilini görür (kural 4). Bu, §23.A'daki ilkenin kendisidir.
 
@@ -2257,7 +2280,7 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 
 - §22.F'nin çift başına kuralları aynen kalır: 3 dakika kesişim, çift başına tek kayıt, `encounter_id` çift karşılaşmasıdır.
 - `private.write_pair_history` çıkışta ve pencere açılışı yerine oda kapanışında çağrılır; `available_at = now()`.
-- Geçmişten arkadaşlık isteği (`friends/request { historyId }`) kalır. "Pencere bitmeden oda geçmişinden istek gönderilemez" kuralı anlamını yitirir, çünkü kayıt kapanışta açılır.
+- Geçmişten arkadaşlık isteği (`friends/request { historyId }`) sunucuda kalır; ekranda yalnızca eski kayıtlarda sunulur (yukarıda). "Pencere bitmeden oda geçmişinden istek gönderilemez" kuralı anlamını yitirir, çünkü kayıt kapanışta açılır.
 
 **Güvenlik.**
 
@@ -2266,12 +2289,12 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 
 ### 23.H Veri modeli ve migration planı
 
-| Adım | Migration              | Değişiklik                                                                                                                                                                                                                                      |
-| ---- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 23.1 | `…_table_lobby.sql`    | `rooms.game_tag text null check (game_tag in (CONCEPTS))`; oyun etiketi okuması (§23.C); `rooms_request_join`: istekçinin bekleyen tek taraflı odası isteği engellemez; `rooms_respond`: kabul istekçinin bekleyen odasını aynı işlemde kapatır |
-| 23.2 | `…_gender.sql`         | `profiles.gender text null check (gender in ('female', 'male', 'unspecified'))`, kolon yetkisi kapalı, `has_gender` üretilmiş kolon; oyun akışındaki profil şartı (`profile_required`, `gender_required`); istek kartı profili için okuma       |
-| 23.3 | `…_table_end.sql`      | Pencere açan yolların doğrudan kapanışa dönmesi (`close_idle_rooms`, çıkış ve engelleme yolları, "Odayı bitir"); kapanışta `write_pair_history`; `play_history.friend_open`; `friends_add_from_room` şartı                                      |
-| 23.4 | `…_reveal_cleanup.sql` | Reveal fonksiyonları, `reveal_decisions`, `reveal_signals`, `rooms.reveal_*` kolonları ve `private.lobby_listed_from` kaldırılır; yalnızca okuyan kalmadığı testle gösterildikten sonra. Kaldırmanın kapsamı 23.4 PR'ında yazılır               |
+| Adım | Migration              | Değişiklik                                                                                                                                                                                                                                                                                                |
+| ---- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 23.1 | `…_table_lobby.sql`    | `rooms.game_tag text null check (game_tag in (CONCEPTS))`; oyun etiketi okuması (§23.C); `rooms_request_join`: istekçinin bekleyen tek taraflı odası isteği engellemez; `rooms_respond`: kabul istekçinin bekleyen odasını aynı işlemde kapatır ve üyelerini seçimleriyle misafir tarafa taşır            |
+| 23.2 | `…_gender.sql`         | `profiles.gender text null check (gender in ('female', 'male', 'unspecified'))`, kolon yetkisi kapalı, `has_gender` üretilmiş kolon; oyun akışındaki profil şartı (`profile_required`, `gender_required`; "Masanla oyna" hariç); istek kartı profili için okuma; `reports.reason` kısıtına `wrong_gender` |
+| 23.3 | `…_table_end.sql`      | Pencere açan yolların doğrudan kapanışa dönmesi (çıkış ve engelleme yolları, "Odayı bitir"); `close_idle_rooms`: iki taraflı oda atlanır, lobide bekleyen oda 30 dakikada kapanır; kapanışta `write_pair_history`; `play_history.friend_open`; `friends_add_from_room` şartı                              |
+| 23.4 | `…_reveal_cleanup.sql` | Reveal fonksiyonları, `reveal_decisions`, `reveal_signals`, `rooms.reveal_*` kolonları ve `private.lobby_listed_from` kaldırılır; yalnızca okuyan kalmadığı testle gösterildikten sonra. Kaldırmanın kapsamı 23.4 PR'ında yazılır                                                                         |
 
 - Yeni tablo yoktur; kural 2 değişmez.
 - `pnpm gen:types` her migration'dan sonra çalıştırılır.
@@ -2289,16 +2312,17 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 
 ### 23.J API (Edge Function'lar)
 
-| Fonksiyon                    | Değişen                                                                                                                       | Adım      |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------- |
-| `rooms`                      | `create { …, gameTag? }`; bekleyen odası olan masanın `request-join`'i; `respond` kabulde istekçinin bekleyen odasını kapatır | 23.1      |
-| `account`                    | `complete-onboarding { …, gender }`; `set-gender { gender }` (yalnızca alan boşken)                                           | 23.2      |
-| `profile`                    | Kendi `get` yanıtında `gender`; başkası için hiçbir yanıtta yok                                                               | 23.2      |
-| `rooms`                      | `profile_required`, `gender_required`; `request-profile { requestId }`                                                        | 23.2      |
-| `rooms`, `checkin`, `safety` | Pencere yerine doğrudan kapanış ("Odayı bitir", son telefonun çıkışı, mekandan ayrılma, engelleme)                            | 23.3      |
-| `friends`                    | `add-from-room`: `friend_open` kayıtta karşılıklı "Evet" şartı yok                                                            | 23.3      |
-| `reveal`                     | 23.3'ten sonra çağrılmaz; 23.4'te kaldırılır (18 fonksiyon → 17; `config.toml`, `pnpm functions:deploy`, CLAUDE.md sayıları)  | 23.3–23.4 |
-| `scripts/admin`              | `pnpm admin:set-gender <userId> <female\|male\|unspecified>`                                                                  | 23.2      |
+| Fonksiyon                    | Değişen                                                                                                                                          | Adım      |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------- |
+| `rooms`                      | `create { …, gameTag? }`; bekleyen odası olan masanın `request-join`'i; `respond` kabulde istekçinin bekleyen odasını kapatır ve üyelerini taşır | 23.1      |
+| `account`                    | `complete-onboarding { …, gender }`; `set-gender { gender }` (yalnızca alan boşken)                                                              | 23.2      |
+| `profile`                    | Kendi `get` yanıtında `gender`; başkası için hiçbir yanıtta yok                                                                                  | 23.2      |
+| `rooms`                      | `profile_required`, `gender_required` ("Masanla oyna" hariç); `request-profile { requestId }`                                                    | 23.2      |
+| `safety`                     | `report` ve `block { report }`: yeni neden `wrong_gender`                                                                                        | 23.2      |
+| `rooms`, `checkin`, `safety` | Pencere yerine doğrudan kapanış ("Odayı bitir", son telefonun çıkışı, mekandan ayrılma, engelleme)                                               | 23.3      |
+| `friends`                    | `add-from-room`: `friend_open` kayıtta karşılıklı "Evet" şartı yok; masa sonundan ve oyun geçmişinden aynı çağrı                                 | 23.3      |
+| `reveal`                     | 23.3'ten sonra çağrılmaz; 23.4'te kaldırılır (18 fonksiyon → 17; `config.toml`, `pnpm functions:deploy`, CLAUDE.md sayıları)                     | 23.3–23.4 |
+| `scripts/admin`              | `pnpm admin:set-gender <userId> <female\|male\|unspecified>`                                                                                     | 23.2      |
 
 - Kalıp değişmez: tek endpoint, `action`, zod v4, `{ error: { code, message } }`.
 - Yeni hata kodları (`profile_required`, `gender_required`) `pure/errors.ts`'e ve Türkçe metinleri `tr.ts`'e girer.
@@ -2306,7 +2330,7 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 ### 23.K Kilit sırası (kural 10)
 
 - **23.1:** kabul iki odayı kilitler: ev sahibinin odası ve istekçinin bekleyen odası.
-  - Sıra: masa oturumları (`table_sessions`, bugünkü sıra) → iki `rooms` satırı `id` sırasıyla → `room_members` → `join_requests`.
+  - Sıra: masa oturumları (`table_sessions`, bugünkü sıra) → iki `rooms` satırı `id` sırasıyla → `room_members` (bekleyen odanın üyelerinin taşınması dahil) → `join_requests`.
   - Çapraz kabul testi (`locks` kalıbı): iki masa birbirine istek gönderir ve iki istek aynı anda kabul edilir. Yalnızca biri geçer, diğeri `room_not_available` döner, kilitlenme olmaz.
   - Kural 10'a bu cümle 23.1'de eklenir.
 - **23.3:** pencere kalkınca `reveal_decisions` → `reveal_signals` sırası kullanılmaz. Tablolar 23.4'te kalkınca kural metninden de çıkar.
@@ -2316,7 +2340,8 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 **Analitik** (`pure/analytics.ts`):
 
 - **Cinsiyet hiçbir olayda özellik olarak gitmez** (varsayılan; §23.P-3).
-- Kayıt hunisi olayları cinsiyetsizdir: fotoğraf adımı gösterildi, atlandı, yüklendi.
+- **Kayıt hunisi olayları yalnızca herkese aynı gösterilen adımlardan tetiklenir:** fotoğraf adımı gösterildi, atlandı, yüklendi. Erkek ve belirtmeyende görünen fotoğraf notu (§23.D) ayrı bir olay değildir ve hiçbir olaya özellik olarak girmez; girseydi PostHog'a cinsiyetin vekili giderdi.
+- **Oyun akışındaki `profiled` özelliği kalkar (23.2):** anonim katılım yalnızca kadın beyanıyla mümkün olduğundan `profiled: false` cinsiyetin vekili olur. Bugün bunu taşıyan olay `room_created { intent, profiled }`'dır; 23.2'de `profiled` çıkar. Mekan sohbetinin `profiled` özellikleri kalır, çünkü orada herkes anonim yazabilir.
 - 23.1: lobiye açma (etiketli ya da etiketsiz), istek ve kabul.
 - 23.3: `reveal_mutual` ve `reveal_none` kalkar; masa sonundaki "Arkadaş ekle" ve arkadaşlık olayları kalır.
 - Kesin olay listesi ilgili adımın PR'ında yazılır.
@@ -2325,7 +2350,9 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 
 - `docs/legal/kvkk-aydinlatma-metni.md` ve `gizlilik-politikasi.md`'ye cinsiyet verisi eklenir:
   - Amaç: oyun akışındaki anonimlik kuralının uygulanması.
-  - Hiçbir kullanıcıya gösterilmez ve analitiğe gitmez.
+  - Hiçbir kullanıcıya alan olarak gösterilmez ve analitiğe gitmez.
+  - Açıkça yazılır: oyun akışında anonim katılım yalnızca kadın beyanıyla mümkün olduğundan, anonim görünmek cinsiyet hakkında dolaylı bilgi verir.
+  - Yanlış beyan şikayet edilebilir ve düzeltilir (§23.D).
   - Hesapla silinir.
 - `CURRENT_KVKK_VERSION` artırılır; mevcut kullanıcılar yeniden onaylar.
 - Sayfalar taslaktır; "hukuki kontrol bekliyor" notu kalır.
@@ -2341,7 +2368,7 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 **Her adımda:**
 
 - `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm format:check` ve entegrasyon testleri temiz.
-- Her kod PR'ı `e2e` etiketi taşır; E2E açık ve koyu yeşildir.
+- Her kod PR'ı birleşmeden önce `e2e` etiketi taşır ve E2E açık ve koyu yeşildir. Etiket PR incelemeye hazır olduğunda (taslaktan çıkarken) eklenir; taslaktaki ara push'larda E2E koşmaz (§23.N).
 - Metni ya da gezinmesi değişen akış aynı PR'da güncellenir. Örneğin 23.1'de zorunlu yönlendirme kalkınca odaya giden adımlar.
 
 **Mevcut testler:**
@@ -2355,6 +2382,7 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 
 - `game_tag` yazılır ve lobi okumasından döner; geçersiz etiket `bad_request`. `venue_lobby`'nin kolonları aynı kalır.
 - Bekleyen odası olan masa istek gönderir. Kabulde o oda kapanır ve ona bekleyen istekler `unavailable` olur. Red ya da zaman aşımında bekleyen oda lobide kalır.
+- Bekleyen odanın üyeleri kabulde misafir tarafa üye olarak geçer; anonim ya da profilli seçimleri aynı kalır ve oda kanallarına yeni odada erişirler.
 - İstekçinin odası istek beklerken birleştiyse kabul `room_not_available` döner.
 - `locks`: çapraz kabul.
 - Lobi okumaları `public_id`, hesap id'si ve 'profilli' işareti taşımaz.
@@ -2373,12 +2401,17 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
   - `public_id` taşımaz.
 - `set-gender` yalnızca alan boşken yazar.
 - Mekan sohbetinde erkek ve belirtmeyen anonim yazabilir.
+- "Masanla oyna": erkek, belirtmeyen, fotoğrafsız ya da cinsiyeti boş hesap özel oda kurabilir.
+- `wrong_gender` nedeniyle şikayet kaydedilir (masa içi ve oyun geçmişinden); şikayet edilen hiçbir şey görmez.
+- `room_created` olayı `profiled` taşımaz (`pure/analytics.ts` birim testi).
 
 **Adım 23.3.**
 
-- Hiçbir yol `ending` üretmez: "Odayı bitir", son telefonun çıkışı, mekandan ayrılma, engelleme ve hareketsizlik odayı doğrudan kapatır.
+- Hiçbir yol `ending` üretmez: "Odayı bitir", son telefonun çıkışı, mekandan ayrılma, engelleme ve masa oturumunun bitişi odayı doğrudan kapatır.
+- Hareketsizlik (`close_idle_rooms` doğrudan çağrılır): iki taraflı oda kapanmaz; lobide bekleyen tek taraflı oda 30 dakikada kapanır ve ona bekleyen istekler `unavailable` olur; "Masanla oyna" odası 10 dakikada kapanır.
 - Kapanışta 3 dakikayı geçen karşı taraf çiftlerine kayıt yazılır (`available_at = now()`, `friend_open = true`). Aynı taraftakiler arasında kayıt yoktur.
-- `add-from-room`: iki taraf basınca arkadaş olurlar; biri basınca hiçbir şey olmaz ve karşı taraf görmez. Eski `reveal_mutual = false` kayıtlar hâlâ açılmaz.
+- `add-from-room`: iki taraf basınca arkadaş olurlar; biri basınca hiçbir şey olmaz ve karşı taraf görmez. Biri masa sonundan, diğeri oyun geçmişinden basınca da arkadaş olurlar. Eski `reveal_mutual = false` kayıtlar hâlâ açılmaz.
+- `historyAction` (birim testi): `friend_open` kayıt "Arkadaş ekle", eski kayıt "İstek gönder" sunar.
 - Kalıcı red, çift kilidi ve katılma isteğinin kural 5 testi değişmeden yeşil kalır.
 - `reveal_match` yayını yoktur.
 
@@ -2410,10 +2443,8 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
   - 23.3'ün sunucusundan sonra eski istemci tanışma penceresini göremez; oda doğrudan kapanır ve uygulama mekana döner. "Arkadaş ekle" ancak OTA ile gelir.
   - Bu yüzden iki adımın sunucusu ve OTA'sı arka arkaya yayınlanır. Pilot kullanıcısı yoktur; dev projesindeki test telefonları etkilenir.
 - **Açık kararlar bekletir:**
-  - takım taşıma → 23.3'ün takım işi;
   - bulma yardımı → 23.3 saha testinden sonra;
-  - analitikte cinsiyet → 23.2;
-  - bekleyen masanın üyeleri → 23.1.
+  - analitikte cinsiyet → 23.2.
 
 **Yayın.**
 
@@ -2423,20 +2454,21 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 
 **PR kuralları.**
 
-- Her kod PR'ı `e2e` etiketi taşır. Açıklamasında "Telefonda kontrol" (3–5 madde), "Maliyet ve risk" ve sunucu değiştiyse yayın sırası bulunur.
+- Kod PR'ı ilk push'ta taslak (draft) olarak ve `e2e` etiketi olmadan açılır. Etiket **PR incelemeye hazır olduğunda** (taslaktan çıkarken) eklenir: etiket her push'ta tam E2E koşusu başlattığı için ara push'larda E2E koşmaz. Güvence aynı kalır, bekleme kısalır. Etiket eklendikten sonraki her push E2E'yi yeniden koşturur; birleşme için E2E açık ve koyu yeşildir.
+- Açıklamada "Telefonda kontrol" (3–5 madde), "Maliyet ve risk" ve sunucu değiştiyse yayın sırası bulunur.
 - Her PR "onaylandı" olmadan birleşmez. Belge PR'ları `e2e` etiketi taşımaz.
 
 ### 23.O Değişmez kurallar: adım adım değişiklikler
 
 Bu PR kurallara dokunmaz (Faz 2 geleneği). Aşağıdaki her değişiklik ilgili adımın PR'ında CLAUDE.md'ye işlenir; o adım gelene kadar bugünkü metin geçerlidir ve bugünkü davranışı koruyan kod o adımda değişir.
 
-**Kural 3:** değişmez. Taraflar katılımdaki masalardır; öneri ve kabul, yetki ve gizli bilgi Faz 2 ekindeki gibidir. Takım taşıma kararı (§23.P-1) "evet" çıkarsa, o işin PR'ı kurala taraf değiştirme cümlesini ekler.
+**Kural 3:** değişmez. Taraflar katılımdaki masalardır; öneri ve kabul, yetki ve gizli bilgi Faz 2 ekindeki gibidir. Takım taşıma pilotta yoktur (§23.P). Karışık takım saha testinden sonra ayrı karardır; "evet" çıkarsa o işin PR'ı kurala taraf değiştirme cümlesini ekler.
 
 **Kural 4:**
 
 - **23.1:** Lobi yalnızca takma ad, kişi sayısı, varsa niyet ve oyun etiketini gösterir. "Profilli odada lobi … yalnızca 'profilli' işaretini görür" cümlesi lobiden 'profilli' işaretini kaldıracak biçimde değişir.
 - **23.2:**
-  - Asimetrik anonimlik: kadın oyun akışında anonim ya da profilli seçer, erkek ve belirtmeyen her zaman profillidir.
+  - Asimetrik anonimlik: kadın oyun akışında anonim ya da profilli seçer, erkek ve belirtmeyen her zaman profillidir. "Masanla oyna" oyun akışı sayılmaz.
   - Profilli istekçinin görünen adı, yaşı ve fotoğrafı istek sırasında isteği onaylayan lidere gider (profil kimliği gitmez). Ev sahibi masanın profilleri istekçiye kabulden önce gitmez.
   - Cinsiyet hiçbir kullanıcıya gitmez.
   - Bu cümleler bugünkü "Profilli odada … katılma isteği yalnızca 'profilli' işaretini görür" cümlesinin yerini alır.
@@ -2445,7 +2477,9 @@ Bu PR kurallara dokunmaz (Faz 2 geleneği). Aşağıdaki her değişiklik ilgili
 **Kural 5 (23.3):**
 
 - Tanışma penceresine dair cümleler kalkar: "Evet"/"Hayır", `reveal_ends_at`, pencerede lobiden saklama, engelleme ve ayrılmanın "Hayır" sayılması, hareketsizliğin pencereyi açması, Faz 2 ekinin kişi başı tanışma kısmı.
-- Yerine: 10 dakika hareketsizlik masayı kapatır; masa sonunda "Arkadaş ekle" karşı taraftaki her çift için ayrıdır, iki taraf basarsa arkadaş olunur, tek taraf basarsa hiçbir şey olmaz ve görünmez.
+- Yerine:
+  - İki taraflı masa hareketsizlikle kapanmaz. Lobide bekleyen tek taraflı masa 30 dakika hareketsizlikte sessizce kapanır ve ona bekleyen istekler `unavailable` olur.
+  - Masa sonunda "Arkadaş ekle" karşı taraftaki her çift için ayrıdır ve aynı sessiz düğme oyun geçmişinden de sunulur. İki taraf basarsa arkadaş olunur; tek taraf basarsa hiçbir şey olmaz ve görünmez.
 - Aynen kalanlar:
   - katılma isteğinde ve "Bu masadayım"da red ve zaman aşımının aynı görünmesi;
   - arkadaşlık isteğinde red ve kalıcı red;
@@ -2462,33 +2496,35 @@ Bu PR kurallara dokunmaz (Faz 2 geleneği). Aşağıdaki her değişiklik ilgili
 
 **Kural 12 (yeni, 23.2):**
 
-> "Cinsiyet kayıtta zorunludur (Kadın, Erkek, Belirtmek istemiyorum) ve istemciye kapalı kolondur; hiçbir kullanıcıya gösterilmez, hiçbir yanıt, Realtime yükü ya da analitik olayı taşımaz ve uygulamadan değiştirilemez. Yalnızca oyun akışındaki anonimlik kuralını uygular: kadın anonim ya da profilli katılır, erkek ve belirtmeyen her zaman profillidir."
+> "Cinsiyet kayıtta zorunludur (Kadın, Erkek, Belirtmek istemiyorum) ve istemciye kapalı kolondur; hiçbir kullanıcıya gösterilmez, hiçbir yanıt, Realtime yükü ya da analitik olayı taşımaz ve uygulamadan değiştirilemez. Yalnızca oyun akışındaki anonimlik kuralını uygular ('Masanla oyna' oyun akışı sayılmaz): kadın anonim ya da profilli katılır, erkek ve belirtmeyen her zaman profillidir. Oyun akışında anonim katılım yalnızca kadın beyanıyla mümkün olduğundan, anonim görünmek cinsiyet hakkında dolaylı bilgi verir; cinsiyet alan olarak hiçbir yerde gösterilmez."
 
 **Değişmeyen kurallar:** 1, 2, 6, 7, 8 ve 11.
 
 **Proje paragrafı:** bu PR'da CLAUDE.md'ye işlendi.
 
-### 23.P Açık kararlar ve bu bölümde verilen teknik kararlar
+### 23.P Kararlar
+
+**Proje sahibinin kararları (#108 incelemesi):**
+
+1. **Hareketsizlik** (§23.G; adım 23.3):
+   - İki taraflı masa hareketsizlikle kapanmaz. Yalnızca liderin "Masayı bitir"i, son telefonun çıkışı ya da masa oturumunun bitişi kapatır.
+   - Lobide bekleyen tek taraflı masa 30 dakika hareketsizlikte sessizce kapanır.
+2. **Takım taşıma (P-1)** (§23.F): pilotta yok. Taraflar katılımdaki masalardır. Karışık takım saha testinden sonra ayrı karardır.
+3. **Bekleyen masanın üyeleri (P-4)** (§23.C; adım 23.1): kabulde misafir tarafa üye olarak taşınırlar; anonim ya da profilli seçimleri aynen kalır.
+4. **Mekan sohbeti** (§23.D): §22.G okuması doğru, aynen kalır. "Mekan sohbeti değişmez" kararı §22.G'nin check-in başına tek seçimidir: herkes anonim yazabilir; seçim ilk mesajda yapılır ve o check-in boyunca değişmez.
+5. **Yanlış cinsiyet beyanı** (§23.D; adım 23.2): şikayet nedenlerine eklenir.
 
 **Açık kararlar (karar verilmeden ilgili iş başlamaz):**
 
-1. **Takım taşıma.**
-   - Soru: takımlı oyun başlamadan kişileri taraflar arasında taşımak gerekli mi?
-   - Gerekirse sunucuda yeni eylem ister. Bugün bir hesap bir odada yalnızca bir tarafta bulunur ve taraf değiştiremez (`wrong_side`, §22.B); oyun geçmişi de karşı taraf çiftlerine kuruludur.
-   - Karar prototip incelemesinden sonra verilir.
-2. **Bulma yardımı.**
-   - Soru: kabul anındaki iki satır kalabalık mekanda yeterli mi?
-   - Yetmezse eski renk-emoji ekranı geri gelebilir.
-   - Karar saha testinden sonra verilir.
-3. **Analitikte cinsiyet.**
-   - Kayıt hunisindeki fotoğraf adımı kaybı ölçülecek.
-   - Varsayılan: cinsiyet PostHog'a özellik olarak gitmez; ölçüm cinsiyetsiz olay sayımlarıyla yapılır.
-4. **Bekleyen masanın üyeleri** (bu PR'da soruluyor).
-   - Soru: istekçinin lobide bekleyen masasına "Bu masadayım" ile katılmış telefonlar varsa, kabulde o oda kapanınca bu telefonlar ne olur?
-   - Öneri: misafir tarafa üye olarak taşınırlar (4 telefon sınırı içinde). Taşınmazlarsa her biri yeniden "Bu masadayım" göndermek zorunda kalır.
-   - Karar 23.1'den önce verilir.
+- **P-2. Bulma yardımı.**
+  - Soru: kabul anındaki iki satır kalabalık mekanda yeterli mi?
+  - Yetmezse eski renk-emoji ekranı geri gelebilir.
+  - Karar saha testinden sonra verilir.
+- **P-3. Analitikte cinsiyet.**
+  - Kayıt hunisindeki fotoğraf adımı kaybı ölçülecek.
+  - Varsayılan: cinsiyet PostHog'a özellik olarak gitmez; ölçüm cinsiyetsiz olay sayımlarıyla yapılır (§23.L).
 
-**Bu bölümde verilen teknik kararlar (onay bekler):**
+**Bu bölümde verilen teknik kararlar (onaylı):**
 
 - **Pencere açan her yol doğrudan kapanır** (§23.G): "Tanışma penceresi kalkar" kararının sunucudaki karşılığı.
 - **`profile_required` reddi** (§23.D): erkek ve belirtmeyenin anonim isteği sessizce profilliye çevrilmez; kimse ekranda görmeden profiliyle görünmez.
@@ -2499,4 +2535,20 @@ Bu PR kurallara dokunmaz (Faz 2 geleneği). Aşağıdaki her değişiklik ilgili
 - **'profilli' işareti lobiden kalkar** (§23.C): işaret cinsiyete dair ipucu olurdu.
 - **Çapraz kabul kilidi** (§23.K): iki `rooms` satırı `id` sırasıyla kilitlenir.
 - **"Bu masadayım" ve süren masalar kalır** (§23.C): çok telefonlu masanın sonradan gelen telefonu için.
-- **Mekan sohbeti bugünkü gibi kalır** (§23.D): "mekan sohbeti değişmez" kararı §22.G'nin check-in başına tek seçimi olarak okundu. Herkes anonim yazabilir; seçim ilk mesajda yapılır ve o check-in boyunca değişmez.
+
+**İncelemeden gelen eklemeler** (CTO incelemesi, maddeler 2, 3, 4, 5, 6 ve 8):
+
+- Oyun geçmişinden "Arkadaş ekle" (§23.G).
+- "Masanla oyna" oyun akışı sayılmaz (§23.D).
+- Kayıt hunisi olayları yalnızca herkese aynı gösterilen adımlardan (§23.L).
+- Kural 12'de ve gizlilik politikasında dolaylı bilgi cümlesi (§23.D, §23.L, §23.O).
+- Kabulden sonra vazgeçme (§23.E).
+- `e2e` etiketi PR incelemeye hazır olunca (§23.M, §23.N).
+
+**Bu güncellemede eklenen teknik ayrıntılar (onay bekler):**
+
+- **"Masanla oyna" odası 10 dakika hareketsizlikte kapanmaya devam eder** (§23.G): hareketsizlik kararı yalnızca iki taraflı masayı ve lobide bekleyen masayı andığı için bugünkü süre kaldı.
+- **`room_created` olayından `profiled` kalkar** (§23.L): 23.2'den sonra `profiled: false` cinsiyetin vekili olurdu.
+- **`wrong_gender` yalnızca oyun akışındaki kişi şikayetlerinde görünür** (§23.D): mekan sohbeti ve DM şikayetlerinde cinsiyet kuralı uygulanmaz.
+- **`friend_open` kaydın geçmiş satırı yalnızca "Arkadaş ekle" sunar** (§23.G): bugün karşılıklı "Evet" kaydında olduğu gibi; "İstek gönder" eski kayıtlarda kalır.
+- **Bekleyen odadan taşınan üyeler istekçiyle aynı durum satırını görür** (§23.E).
