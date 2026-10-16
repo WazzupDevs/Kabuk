@@ -27,7 +27,7 @@ Talebin hesabın sahibinden geldiğini doğrulamak için sizinle iletişime geç
 - Onay kayıtları (18 yaş beyanı, Kullanım Koşulları, KVKK metni, konum rızası)
 - Profil: görünen ad, profil fotoğrafı, biyografi, rozetler, tercihler
 - Mekan ve masa kayıtları (seçilen mekan, kişi sayısı, masa takma adı, giriş ve çıkış zamanı)
-- Odalar, oyun verileri ve "Tanışalım mı?" cevapları
+- Odalar ve odalardaki kayıtlarınız: odaya katılımınız, mesajlarınız, oyun hamleleriniz ve "Tanışalım mı?" cevaplarınız. Hesap silinirken odadan çıkarsınız; tarafınızda başka telefon varsa oda onlar için sürer.
 - Oyun geçmişi, arkadaşlık istekleri, arkadaşlıklar ve arkadaşlar arası mesajlar
 - Engelleme kayıtları
 - Bildirim anahtarı (push token)

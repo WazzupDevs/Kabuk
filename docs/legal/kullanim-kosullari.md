@@ -3,9 +3,9 @@
 > **HUKUKİ KONTROL GEREKLİ.** Taslaktır; hukuki görüş alınmadan yayımlanmamalıdır.
 
 1. **Yaş:** {{APP_NAME}} 18 yaş ve üzeri içindir. Kayıtta doğum tarihinizi doğru beyan edersiniz; 18 yaşın altındaki beyanda hesap açılmaz. Yaşını yanlış beyan ettiği anlaşılan hesaplar kapatılır. Doğum tarihiniz kimseye gösterilmez, profilinizde yalnızca yaşınız görünür.
-2. **Amaç:** {{APP_NAME}}, aynı mekandaki masaların birlikte oyun oynayıp sohbet etmesi içindir. Tanışma isteğe bağlıdır ve yalnızca iki taraf da isterse gerçekleşir.
+2. **Amaç:** {{APP_NAME}}, aynı mekandaki masaların birlikte oyun oynayıp sohbet etmesi içindir. Tanışma isteğe bağlıdır ve kişi başınadır: yalnızca karşı taraflardan iki kişinin ikisi de isterse gerçekleşir.
 3. **Davranış:** Diğer kullanıcılara saygılı davranmayı; taciz, hakaret, nefret söylemi, cinsel içerik, spam ve yasa dışı içerik paylaşmamayı kabul edersiniz. Uygunsuz ifadeler filtrelenir.
-4. **Şikayet ve engelleme:** Rahatsız olduğunuz masayı oda menüsünden şikayet edebilir ve engelleyebilirsiniz.
+4. **Şikayet ve engelleme:** Rahatsız olduğunuz kişiyi oda menüsünden şikayet edebilir ve engelleyebilirsiniz.
 5. **Yaptırım:** Kurallara aykırı davranan hesaplar bildirimsiz silinebilir ve aynı numarayla yeniden kayıt engellenebilir.
 6. **Konum:** Check-in için mekanda bulunduğunuzu beyan edersiniz. Konumunuz yalnızca check-in anında kullanılır ve saklanmaz.
 7. **Hizmet:** Uygulama "olduğu gibi" sunulur; kesintisiz çalışma garanti edilmez. [Sorumluluğun sınırlandırılması hukuki görüşle yazılacak.]
