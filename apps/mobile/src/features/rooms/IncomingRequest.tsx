@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 
+import { Avatar, AVATAR_SIZE } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { Countdown } from '@/components/Countdown';
 import { Sheet } from '@/components/Sheet';
@@ -21,8 +22,7 @@ import { haptic } from '@/lib/haptics';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 import { BigAlias } from './BigAlias';
-import { ProfiledTag } from './ProfiledTag';
-import { roomKeys, useCurrentRoom, useIncomingRequests } from './queries';
+import { roomKeys, useCurrentRoom, useIncomingRequests, useRequestProfile } from './queries';
 
 // `leaderSessionId`: this phone, when it leads a side; null otherwise (no requests to answer).
 type Props = { roomId: string; leaderSessionId: string | null };
@@ -49,7 +49,10 @@ export function IncomingRequestHost() {
 // (docs/SPEC_V3.md §22.C; canvas: Faz 2 · 22.5 → Lider: istek kartı). A "Kabul" that comes too late
 // (the requester's table merged with another meanwhile, §23.C) says "Bu masa artık müsait değil."
 // in place of the request, with only "Kapat"; the request is not shown again on this phone (the
-// requester sees "Masa şu an müsait değil" when its 60 seconds end, as after "Geç": rule 5).
+// requester sees "Masa şu an müsait değil" when its 60 seconds end, as after "Geç": rule 5). A
+// requester who asked with its profile shows its name, age and photo (§23.E; canvas: Faz 3 · 23.2 →
+// istek kartı), read while the request waits; "Bu masadayım" keeps the alias in small type, the name
+// the member told its leader. The countdown and the buttons never wait for the profile.
 export function IncomingRequest({ roomId, leaderSessionId }: Props) {
   const { colors } = useTheme();
   const queryClient = useQueryClient();
@@ -61,6 +64,7 @@ export function IncomingRequest({ roomId, leaderSessionId }: Props) {
   const request = requests.data?.find(
     (r) => (Date.parse(r.expires_at) > now || r.id === gone) && !closed.has(r.id),
   );
+  const profile = useRequestProfile(request?.id, request?.requester_profiled === true);
 
   const respond = useMutation({
     meta: FEEL_ERROR,
@@ -120,30 +124,59 @@ export function IncomingRequest({ roomId, leaderSessionId }: Props) {
     );
   }
 
+  const profiled = request.requester_profiled;
+  const body = member
+    ? tr.rooms.incomingMemberBody
+    : tr.rooms.incomingBody(request.requester_alias, request.requester_headcount);
+
   return (
     <Sheet
       visible
-      centered
+      centered={!profiled}
       title={member ? tr.rooms.incomingMemberTitle : tr.rooms.incomingTitle}
-      icon="people-outline"
+      icon={profiled ? undefined : 'people-outline'}
     >
-      {member ? (
+      {profiled ? (
+        <View className="flex-row items-start gap-3" testID="request-profile">
+          {profile.isPending ? (
+            <Placeholder round />
+          ) : profile.data ? (
+            <Avatar
+              kind="profile"
+              name={profile.data.displayName ?? request.requester_alias}
+              photoUrl={profile.data.photoUrl}
+              size="xl"
+            />
+          ) : (
+            <Avatar kind="default" size="xl" />
+          )}
+          <View className="flex-1 gap-0.5">
+            {profile.isPending ? (
+              <Placeholder label={tr.rooms.requestProfileLoading} />
+            ) : profile.data ? (
+              <Text variant="heading">
+                {tr.participation.previewName(
+                  profile.data.displayName ?? request.requester_alias,
+                  profile.data.age,
+                )}
+              </Text>
+            ) : null}
+            {member ? <Text variant="fine">{request.requester_alias}</Text> : null}
+            <Text className="mt-0.5">{body}</Text>
+          </View>
+        </View>
+      ) : member ? (
         <>
           <BigAlias alias={request.requester_alias} />
           <Text variant="fine" tone="text">
-            {tr.rooms.incomingMemberBody}
+            {body}
           </Text>
         </>
       ) : (
         <Text variant="bodyStrong" align="center">
-          {tr.rooms.incomingBody(request.requester_alias, request.requester_headcount)}
+          {body}
         </Text>
       )}
-      {request.requester_profiled ? (
-        <View className="items-center">
-          <ProfiledTag />
-        </View>
-      ) : null}
       <View className="mt-1">
         <Countdown
           secondsLeft={seconds}
@@ -181,5 +214,24 @@ export function IncomingRequest({ roomId, leaderSessionId }: Props) {
         </Text>
       </View>
     </Sheet>
+  );
+}
+
+// The profile's place while it loads: the photo's circle, or a line of the name's height.
+function Placeholder({ round, label }: { round?: boolean; label?: string }) {
+  const { colors, shape } = useTheme();
+  const side = AVATAR_SIZE.xl;
+  return (
+    <View
+      accessibilityLabel={label}
+      accessibilityElementsHidden={!label}
+      importantForAccessibility={label ? 'yes' : 'no-hide-descendants'}
+      style={{
+        width: round ? side : '55%',
+        height: round ? side : ICON.lg,
+        borderRadius: round ? shape.radius.pill : shape.radius.sm,
+        backgroundColor: colors.surface2,
+      }}
+    />
   );
 }

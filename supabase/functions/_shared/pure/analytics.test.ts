@@ -35,7 +35,6 @@ describe('analytics events', () => {
         'explore_viewed',
         'checkin_out_of_range',
         'spot_changed',
-        'participation_chosen',
         'profile_photo_set',
         'profile_bio_set',
         'sohbet_card_opened',
@@ -58,8 +57,8 @@ describe('analytics events', () => {
         profiled: false,
         phone: '+905551234567',
       } as never),
-    ).toEqual({ intent: 'chat', profiled: false });
-    // Booleans are kept (onboarding_completed, room_created); objects never are.
+    ).toEqual({ intent: 'chat' });
+    // Booleans are kept (onboarding_completed, join_requested); objects never are.
     expect(
       analyticsProperties('onboarding_completed', {
         with_photo: true,
@@ -80,13 +79,10 @@ describe('analytics events', () => {
         game_tag: 'tabu',
         alias: 'Sakin Martı',
       } as never),
-    ).toEqual({ intent: 'none', profiled: false, game_tag: 'tabu' });
+    ).toEqual({ intent: 'none', game_tag: 'tabu' });
     expect(
       analyticsProperties('check_in', { headcount: 2, venueId: 'v', lat: 41 } as never),
     ).toEqual({ headcount: 2 });
-    expect(analyticsProperties('participation_chosen', { mode: 'profile' })).toEqual({
-      mode: 'profile',
-    });
     expect(analyticsProperties('profile_bio_set', { bio: 'merhaba' } as never)).toEqual({});
     expect(
       analyticsProperties('sohbet_card_opened', {
@@ -102,6 +98,22 @@ describe('analytics events', () => {
     expect(
       analyticsProperties('game_completed', { concept: 'tabu', score: 4, mode: 'voice' }),
     ).toEqual({ concept: 'tabu', score: 4, mode: 'voice' });
+  });
+
+  it('never carry the gender or a stand-in for it from the game flow (§23.L, rule 12)', () => {
+    // Only a woman can stay anonymous in the game flow: the room's anonymous or profiled choice
+    // would stand in for the gender (step 23.2).
+    expect(
+      analyticsProperties('room_created', {
+        intent: 'game',
+        profiled: true,
+        game_tag: 'none',
+      } as never),
+    ).toEqual({ intent: 'game', game_tag: 'none' });
+    for (const event of ANALYTICS_EVENTS) {
+      expect(analyticsProperties(event, { gender: 'female' } as never)).toEqual({});
+    }
+    expect(ANALYTICS_EVENTS).not.toContain('participation_chosen');
   });
 
   it('measures a table session in whole minutes', () => {

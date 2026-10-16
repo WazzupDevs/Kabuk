@@ -5,6 +5,7 @@
 import { expect } from 'vitest';
 
 import { CURRENT_LOCATION_CONSENT_VERSION } from '../functions/_shared/pure/consent.ts';
+import type { Gender } from '../functions/_shared/pure/gender.ts';
 import { ANCHOR, FIXTURE_VENUES, offset } from './fixtures/venues.ts';
 import { onboarded, PHONES } from './helpers.ts';
 import { type Client, invoke, sql, userIdOf } from './local.ts';
@@ -28,11 +29,11 @@ export type Phone = { client: Client; sessionId: string; alias: string; userId: 
 export async function table(
   venue: Record<string, string>,
   n: number,
-  opts: { teams?: boolean; headcount?: number } = {},
+  opts: { teams?: boolean; headcount?: number; gender?: Gender } = {},
 ): Promise<Phone> {
   const phone = TEAM_PHONES[n];
   if (!phone) throw new Error(`no test phone ${n}`);
-  const client = await onboarded(phone, { displayName: `Kişi ${n}` });
+  const client = await onboarded(phone, { displayName: `Kişi ${n}`, gender: opts.gender });
   const fixture = FIXTURE_VENUES.find((v) => v.key === FIXTURE_VENUE);
   if (!fixture) throw new Error('no fixture');
   const here = offset(ANCHOR, fixture.distanceM, fixture.bearingDeg);

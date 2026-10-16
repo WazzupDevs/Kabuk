@@ -1,4 +1,4 @@
-import type { ReportReason } from '@shared/chat.ts';
+import { GAME_FLOW_REPORT_REASONS, type GameFlowReportReason } from '@shared/chat.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Alert } from 'react-native';
@@ -21,7 +21,7 @@ export function useRoomSafety(roomId: string) {
 
   const report = useMutation({
     meta: FEEL_ERROR,
-    mutationFn: ({ sessionId, reason }: { sessionId: string; reason: ReportReason }) =>
+    mutationFn: ({ sessionId, reason }: { sessionId: string; reason: GameFlowReportReason }) =>
       safetyApi.report(roomId, reason, sessionId),
     onSuccess: () => {
       track('report_submitted', {});
@@ -44,6 +44,7 @@ export function useRoomSafety(roomId: string) {
   const reportForm = (
     <ReportModal
       visible={reporting !== null}
+      reasons={GAME_FLOW_REPORT_REASONS}
       pending={report.isPending}
       error={report.error}
       onReport={(reason) => reporting && report.mutate({ sessionId: reporting, reason })}

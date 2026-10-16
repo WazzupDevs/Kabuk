@@ -1,4 +1,4 @@
-import type { ReportReason } from '@shared/chat.ts';
+import { REPORT_REASONS, type ReportReason } from '@shared/chat.ts';
 import { useMutation } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
@@ -137,6 +137,7 @@ export default function VenueChatProfileScreen() {
         />
       </Sheet>
       <ReportModal
+        reasons={REPORT_REASONS}
         visible={reporting}
         pending={report.isPending}
         error={report.error}
@@ -144,6 +145,7 @@ export default function VenueChatProfileScreen() {
         onClose={() => setReporting(false)}
       />
       <ConfirmWithReport
+        reasons={REPORT_REASONS}
         visible={blocking}
         title={tr.venueChat.blockConfirmTitle}
         hint={tr.venueChat.blockConfirmBody}
