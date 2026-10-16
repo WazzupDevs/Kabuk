@@ -27,8 +27,8 @@ import { useGameSignals } from '@/features/games/gameSignals';
 import { GameStage } from '@/features/games/GameStage';
 import { TimeUpOverlay } from '@/features/games/TimeUpOverlay';
 import { useRoomMemberProfiles } from '@/features/profile/queries';
+import { Reveal } from '@/features/reveal/Reveal';
 import { RevealPrompt } from '@/features/reveal/RevealPrompt';
-import { RevealResult } from '@/features/reveal/RevealResult';
 import { IncomingRequest } from '@/features/rooms/IncomingRequest';
 import { type RoomPhone, roomKeys, useRoom, useRoomPhones } from '@/features/rooms/queries';
 import { PeopleSheet, PickPersonSheet } from '@/features/rooms/RoomPeople';
@@ -92,6 +92,12 @@ export default function RoomScreen() {
   const people = (phones.data ?? []).map((p) => p.sessionId).join(',');
   const profiles = useRoomMemberProfiles(id, people).data;
   const seat = room.data && ownSession ? roomSeat(room.data, phones.data, ownSession) : null;
+  // The reveal window this phone saw open: its result is read from reveal/matches even once the
+  // room can no longer be read (a member's row closes with the room, docs/SPEC_V3.md §22.F).
+  // Adjusted while rendering, like `seen` above.
+  const [windowEndsAt, setWindowEndsAt] = useState<string | null>(null);
+  const openWindow = room.data?.status === 'ending' ? room.data.reveal_ends_at : null;
+  if (openWindow && openWindow !== windowEndsAt) setWindowEndsAt(openWindow);
   // A member who becomes the leader (the leader left, docs/SPEC_V3.md §22.D) sees one note at the
   // top of the chat with the name of the leader who left (canvas: Liderlik devri notu). Adjusted
   // while rendering, like `seen` above.
@@ -137,16 +143,13 @@ export default function RoomScreen() {
 
   const sessionId = table.data?.id;
   const r = room.data;
-  if (!r || !sessionId) return <Redirect href="/venue" />;
-  if (r.status === 'closed') {
-    // A two-table room shows its shared result once; otherwise back to the venue.
-    return seat && (r.reveal_result === 'mutual' || r.reveal_result === 'none') ? (
-      <RevealResult
-        roomId={r.id}
-        isOwner={seat.side === 'owner' && seat.leader}
-        result={r.reveal_result}
-        token={r.reveal_token}
-      />
+  if (!sessionId) return <Redirect href="/venue" />;
+  if (!r || r.status === 'closed') {
+    // A room whose window this phone saw, or a leader's closed room with a result: each phone's
+    // own result; otherwise back to the venue.
+    const ended = windowEndsAt ?? (r && seat && r.reveal_result !== null ? r.reveal_ends_at : null);
+    return ended ? (
+      <Reveal roomId={id} sessionId={sessionId} revealEndsAt={ended} />
     ) : (
       <Redirect href="/venue" />
     );
@@ -249,18 +252,22 @@ export default function RoomScreen() {
       });
     }
     return (
-      <Screen>
-        <ScreenHeader
-          eyebrow={tr.rooms.roomEyebrow(concept)}
-          title={r.guest_alias ? tr.rooms.withGuest(r.owner_alias, r.guest_alias) : r.owner_alias}
-        />
-        <RevealPrompt
-          roomId={r.id}
-          isOwner={reportsRoom}
-          revealEndsAt={r.reveal_ends_at}
-          score={null}
-        />
-      </Screen>
+      <Reveal
+        roomId={r.id}
+        sessionId={sessionId}
+        revealEndsAt={r.reveal_ends_at}
+        prompt={
+          <Screen>
+            <ScreenHeader
+              eyebrow={tr.rooms.roomEyebrow(concept)}
+              title={
+                r.guest_alias ? tr.rooms.withGuest(r.owner_alias, r.guest_alias) : r.owner_alias
+              }
+            />
+            <RevealPrompt roomId={r.id} revealEndsAt={r.reveal_ends_at} score={null} />
+          </Screen>
+        }
+      />
     );
   }
 
