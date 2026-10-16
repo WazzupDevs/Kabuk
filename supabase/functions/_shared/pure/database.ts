@@ -652,6 +652,7 @@ export type Database = {
           concept: string;
           encounter_id: string;
           friend_action_at: string | null;
+          friend_open: boolean;
           id: string;
           intent: string | null;
           mode: string;
@@ -671,6 +672,7 @@ export type Database = {
           concept: string;
           encounter_id: string;
           friend_action_at?: string | null;
+          friend_open?: boolean;
           id?: string;
           intent?: string | null;
           mode: string;
@@ -690,6 +692,7 @@ export type Database = {
           concept?: string;
           encounter_id?: string;
           friend_action_at?: string | null;
+          friend_open?: boolean;
           id?: string;
           intent?: string | null;
           mode?: string;
