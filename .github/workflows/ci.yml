@@ -18,7 +18,7 @@ jobs:
   # typecheck (mobile, scripts, pure/, Edge Functions with deno check, root), lint, format, unit
   # tests, and the legal site build when the repo has it.
   checks:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
@@ -43,7 +43,7 @@ jobs:
   # Integration tests against the local stack, the same commands as on a developer machine
   # (CLAUDE.md → pnpm test:integration). globalSetup pauses pg_cron for the run.
   integration:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
@@ -82,7 +82,7 @@ jobs:
   ci:
     if: always()
     needs: [checks, integration]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 2
     steps:
       - name: checks and integration passed
