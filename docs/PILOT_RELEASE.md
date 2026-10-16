@@ -58,6 +58,8 @@ Gerçek poligon ve nokta adları (S1) geldikten sonra. Bu adım bir PR'dır: mai
 
 Panelde yeni proje (Frankfurt `eu-central-1`) ve **Pro plan** (Organization → Billing). Proje ref'ini not et.
 
+Üretim projesi dev projesinden **ayrı bir Supabase organizasyonunda** açılır. dev'e otomatik yayın (`.github/workflows/deploy-dev.yml`) hesap genelinde bir erişim anahtarı taşır; o anahtar yalnızca dev organizasyonuna üye bir kullanıcıdan alınır, böylece üretim projesine erişemez.
+
 Repo kökü:
 
 ```
@@ -87,8 +89,8 @@ Repo kökü (bağlı proje: üretim):
 
 ```
 pnpm supabase migration list
-pnpm supabase db push --include-seed --dry-run
-pnpm supabase db push --include-seed
+pnpm supabase db push --include-seed --skip-vault --dry-run
+pnpm supabase db push --include-seed --skip-vault
 pnpm functions:deploy
 pnpm supabase functions list
 pnpm supabase migration list

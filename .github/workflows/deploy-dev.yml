@@ -47,6 +47,8 @@ concurrency:
   group: deploy-dev
   cancel-in-progress: false
 
+# The actions are pinned to commits (version in the comment): this job carries an account-wide
+# Supabase access token, and a moved tag must not be able to read it.
 permissions:
   contents: read
   # Earlier runs' names: where the last deploy left off.
@@ -74,12 +76,12 @@ jobs:
       NODE_OPTIONS: --disable-warning=MODULE_TYPELESS_PACKAGE_JSON
       FORCE_COLOR: '0'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           ref: ${{ env.SHA }}
           fetch-depth: 0
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4.3.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
           cache: pnpm
@@ -106,8 +108,9 @@ jobs:
           pnpm supabase link --project-ref "$ref"
           node --experimental-strip-types scripts/deploy/cli.ts check-link
 
-      # --skip-vault: config.toml describes the local stack only; nothing from it goes to the project
-      # (CLAUDE.md: `supabase config push` is never run).
+      # --skip-vault: without it db push first writes config.toml's [db.vault] secrets to the project
+      # (`supabase db push --help`). config.toml describes the local stack only; a local value must never
+      # overwrite a hosted secret such as phone_hash_key. The manual steps in CLAUDE.md use it too.
       - name: Migrations and seed
         if: steps.plan.outputs.migrations == 'true' || env.DRY_RUN == 'true'
         env:
