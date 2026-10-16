@@ -157,6 +157,7 @@ jobs:
         id: week
         run: echo "week=$(date -u +%G-%V)" >> "$GITHUB_OUTPUT"
       - name: Emulator and system image cache
+        id: emulator-cache
         uses: actions/cache@v4
         with:
           path: |
@@ -164,6 +165,23 @@ jobs:
             /usr/local/lib/android/sdk/system-images/android-34/google_apis/x86_64
           key: android-emulator-34-google_apis-x86_64-${{ steps.week.outputs.week }}
           restore-keys: android-emulator-34-google_apis-x86_64-
+      # Without this week's cache (the first jobs of a week, or a new emulator) the two packages are
+      # downloaded here, with retries: the failure ("Error on ZipFile unknown archive", the emulator
+      # on #121 and #123, the system image on this PR's first run) passes on a second try. The
+      # runner action then finds them installed and downloads nothing.
+      - name: Emulator and system image download (with retries)
+        if: steps.emulator-cache.outputs.cache-hit != 'true'
+        run: |
+          sdkmanager="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$sdkmanager" --licenses > /dev/null || true
+          for attempt in 1 2 3 4; do
+            if "$sdkmanager" --install emulator 'system-images;android-34;google_apis;x86_64' --channel=0 > /dev/null; then
+              exit 0
+            fi
+            echo "sdkmanager failed (attempt $attempt of 4)"
+            sleep $((attempt * 15))
+          done
+          exit 1
       - name: Emulator, APK and the shard's flows
         uses: reactivecircus/android-emulator-runner@v2
         env:
