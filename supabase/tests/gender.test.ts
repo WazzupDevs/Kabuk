@@ -1,12 +1,22 @@
 // Faz 3 step 23.2, server (docs/SPEC_V3.md §23.D, §23.E, §23.M, rule 12): the gender, a closed
 // column like the birth date; the asymmetric anonymity rule of the game flow; the request card's
-// profile; "yanlış cinsiyet beyanı" reports. Staged (the owner's decision): until the app asks for the
-// gender (step 23.2's client part), sign-up may leave it out and an empty gender passes the game flow.
+// profile; "yanlış cinsiyet beyanı" reports. Step 23.2b (the app asks for it): sign-up without it is
+// bad_request, and an account from before the step meets gender_required in the game flow.
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
+import { istanbulToday } from '../functions/_shared/pure/age.ts';
+import { CURRENT_KVKK_VERSION, CURRENT_TERMS_VERSION } from '../functions/_shared/pure/consent.ts';
 import type { Gender } from '../functions/_shared/pure/gender.ts';
 import { deleteFixtureVenues, insertFixtureVenues } from './fixtures/venues.ts';
-import { errorBody, onboarded, PHONES, setTestPhoto, TEST_AGE } from './helpers.ts';
+import {
+  clearGender,
+  errorBody,
+  onboarded,
+  PHONES,
+  setTestPhoto,
+  TEST_AGE,
+  TEST_BIRTH_DATE,
+} from './helpers.ts';
 import { deleteUserByPhone, invoke, signIn, sql, userIdOf } from './local.ts';
 import {
   createRoom,
@@ -38,15 +48,15 @@ afterAll(async () => {
 const account = (p: { client: Phone['client'] }, body: Record<string, unknown>) =>
   invoke(p.client, 'account', body);
 
-// Phone n checked in at the venue, with a gender (none: left empty, as sign-up does today) and, if
-// asked, a visible profile photo.
+// Phone n checked in at the venue, with a gender (null: an account from before the gender step) and,
+// if asked, a visible profile photo.
 async function at(
   n: number,
   gender: Gender | null,
   opts: { photo?: boolean } = {},
 ): Promise<Phone> {
-  const p = await table(venue, n);
-  if (gender) expect(await account(p, { action: 'set-gender', gender })).toEqual(OK);
+  const p = await table(venue, n, gender ? { gender } : {});
+  if (gender === null) await clearGender(p.client);
   if (opts.photo) await setTestPhoto(p.client);
   return p;
 }
@@ -75,8 +85,8 @@ describe('the gender column (§23.D, rule 12)', () => {
     // The same answer again is fine (a re-consent); another one is refused, like the birth date.
     const again = {
       action: 'complete-onboarding',
-      termsVersion: 'draft-1',
-      kvkkVersion: 'draft-1',
+      termsVersion: CURRENT_TERMS_VERSION,
+      kvkkVersion: CURRENT_KVKK_VERSION,
     };
     expect(await account(a, { ...again, gender: 'female' })).toEqual(OK);
     expect(await account(a, { ...again, gender: 'male' })).toEqual({
@@ -104,15 +114,57 @@ describe('the gender column (§23.D, rule 12)', () => {
     expect(readers.map((r) => r.proname)).toEqual([]);
   });
 
-  it('stays empty after a sign-up without it, until the app asks (step 23.2, client part)', async () => {
-    const client = await onboarded(PHONES[0]);
+  it('is needed at sign-up: without it bad_request, and nothing is written or deleted', async () => {
+    const client = await signIn(PHONES[0]);
+    const id = await userIdOf(client);
+    const signUp = {
+      action: 'complete-onboarding',
+      termsVersion: CURRENT_TERMS_VERSION,
+      kvkkVersion: CURRENT_KVKK_VERSION,
+      displayName: 'Ayşe',
+      birthDate: TEST_BIRTH_DATE,
+    };
+    const refused = { status: 400, body: errorBody('bad_request') };
+    expect(await account({ client }, signUp)).toEqual(refused);
+    // Checked before the age: an under-18 date without a gender deletes nothing either.
+    const underAge = `${istanbulToday(new Date()).year - 17}-01-01`;
+    expect(await account({ client }, { ...signUp, birthDate: underAge })).toEqual(refused);
+    expect(await sql`select 1 from public.profiles where id = ${id}`).toHaveLength(0);
+    expect(await sql`select 1 from auth.users where id = ${id}`).toHaveLength(1);
+
+    // An account from before v3 (consents only) completes its profile with a gender too.
+    await sql`
+      insert into public.profiles
+        (id, age_confirmed_at, terms_accepted_at, terms_version, kvkk_accepted_at, kvkk_version)
+      values (${id}, now(), now(), 'draft-0', now(), 'draft-0')
+    `;
+    expect(await account({ client }, signUp)).toEqual(refused);
+    expect(await account({ client }, { ...signUp, gender: 'unspecified' })).toEqual(OK);
     const flag = await client.from('profiles').select('has_gender').single();
+    expect(flag.data).toEqual({ has_gender: true });
+  });
+
+  it('lets an account from before the step re-consent without it, then answer once', async () => {
+    const a = { client: await onboarded(PHONES[0]) };
+    await clearGender(a.client);
+    // The new KVKK notice comes first (§23.N): a re-consent of a complete profile needs no gender.
+    expect(
+      await account(a, {
+        action: 'complete-onboarding',
+        termsVersion: CURRENT_TERMS_VERSION,
+        kvkkVersion: CURRENT_KVKK_VERSION,
+      }),
+    ).toEqual(OK);
+    const flag = await a.client.from('profiles').select('has_gender').single();
     expect(flag.data).toEqual({ has_gender: false });
-    expect(((await ownProfile(client)).body as { gender: unknown }).gender).toBeNull();
+    expect(((await ownProfile(a.client)).body as { gender: unknown }).gender).toBeNull();
+    expect(await account(a, { action: 'set-gender', gender: 'male' })).toEqual(OK);
+    expect(((await ownProfile(a.client)).body as { gender: string }).gender).toBe('male');
   });
 
   it('set-gender writes only an empty gender and needs a finished sign-up', async () => {
     const a = { client: await onboarded(PHONES[0]) };
+    await clearGender(a.client);
     expect(await account(a, { action: 'set-gender', gender: 'x' })).toEqual({
       status: 400,
       body: errorBody('bad_request'),
@@ -135,6 +187,7 @@ describe('the gender column (§23.D, rule 12)', () => {
     const refused = { status: 400, body: errorBody('bad_request') };
     const signedUp = { client: await onboarded(PHONES[0], { gender: 'female' }) };
     const answered = { client: await onboarded(PHONES[1]) };
+    await clearGender(answered.client);
     expect(await account(answered, { action: 'set-gender', gender: 'male' })).toEqual(OK);
 
     for (const [p, kept] of [
@@ -218,11 +271,11 @@ describe('the game flow (§23.D)', () => {
     expect((await rooms(man, { action: 'create', profiled: true })).status).toBe(200);
   });
 
-  it('lets a woman choose, and an empty gender pass until the app asks', async () => {
-    const empty = await at(0, null);
+  it('lets a woman choose', async () => {
+    const owner = await at(0, 'female');
     const woman = await at(1, 'female', { photo: true });
     const other = await at(2, 'female');
-    const roomId = await createRoom(empty);
+    const roomId = await createRoom(owner);
     for (const [p, profiled] of [
       [woman, true],
       [other, false],
@@ -230,6 +283,34 @@ describe('the game flow (§23.D)', () => {
       const asked = await rooms(p, { action: 'request-join', roomId, profiled });
       expect(asked.status, JSON.stringify(asked.body)).toBe(200);
     }
+  });
+
+  it('refuses an empty gender with gender_required, anonymous or profiled, and writes nothing', async () => {
+    const owner = await at(0, 'female');
+    const empty = await at(1, null, { photo: true });
+    const roomId = await createRoom(owner);
+    const refused = { status: 409, body: errorBody('gender_required') };
+
+    for (const profiled of [false, true]) {
+      expect(await rooms(empty, { action: 'create', profiled })).toEqual(refused);
+      expect(await rooms(empty, { action: 'request-join', roomId, profiled })).toEqual(refused);
+      expect(
+        await rooms(empty, { action: 'request-join', roomId, profiled, side: 'owner' }),
+      ).toEqual(refused);
+    }
+    const [count] = await sql`
+      select count(*)::int as n from public.join_requests where room_id = ${roomId}
+    `;
+    expect(count?.n).toBe(0);
+    const [own] = await sql`
+      select count(*)::int as n from public.rooms where owner_session_id = ${empty.sessionId}
+    `;
+    expect(own?.n).toBe(0);
+
+    // Once answered, the game flow opens.
+    expect(await account(empty, { action: 'set-gender', gender: 'female' })).toEqual(OK);
+    const asked = await rooms(empty, { action: 'request-join', roomId, profiled: false });
+    expect(asked.status, JSON.stringify(asked.body)).toBe(200);
   });
 
   it('does not count "Masanla oyna": a man, "Belirtmek istemiyorum" and an empty gender, without a photo', async () => {

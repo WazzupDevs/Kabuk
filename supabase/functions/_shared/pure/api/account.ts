@@ -4,8 +4,8 @@ import type { Gender } from '../gender.ts';
 // Consents and the profile in one call (docs/SPEC_V3.md §3.1). The display name and the birth date
 // may be left out only when the profile already has them (re-consent after a text change); a set
 // birth date cannot be changed. Under 18 the account is deleted and the answer is under_age.
-// `gender` (docs/SPEC_V3.md §23.D) is written once like the birth date; until the app asks for it
-// (step 23.2's client part) it may be left out.
+// `gender` (docs/SPEC_V3.md §23.D) is written once like the birth date: sign-up sends it (without it
+// the answer is bad_request); a re-consent of a complete profile leaves it out.
 export type CompleteOnboardingRequest = {
   action: 'complete-onboarding';
   termsVersion: string;

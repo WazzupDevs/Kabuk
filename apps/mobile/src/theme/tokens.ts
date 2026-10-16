@@ -216,8 +216,9 @@ export const SPACING = {
 // ink square (src/components/VenueTabIcon.tsx), the same in both schemes.
 export const TAB_TONE = 'accent' as const satisfies PaletteKey;
 
-// Opacities: the scrim behind a sheet, a disabled control, a pressed text button.
-export const OPACITY = { scrim: 0.5, disabled: 0.4, pressed: 0.7 } as const;
+// Opacities: the scrim behind a sheet, a pressed text button. A disabled button is not faded: it
+// takes a neutral fill (theme/buttonFill.ts).
+export const OPACITY = { scrim: 0.5, pressed: 0.7 } as const;
 
 // Icon sizes (Ionicons).
 export const ICON = { xs: 12, sm: 16, md: 20, lg: 24, xl: 28 } as const;

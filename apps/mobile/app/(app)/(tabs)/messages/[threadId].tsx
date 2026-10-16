@@ -1,4 +1,4 @@
-import type { ReportReason } from '@shared/chat.ts';
+import { REPORT_REASONS, type ReportReason } from '@shared/chat.ts';
 import { DM_MAX_LENGTH, prepareDm } from '@shared/friends.ts';
 import { canRetry, type OutboxMessage, outboxReducer } from '@shared/chatOutbox.ts';
 import { toRuns } from '@shared/chatRuns.ts';
@@ -311,6 +311,7 @@ export default function DmScreen() {
       </Sheet>
 
       <ReportModal
+        reasons={REPORT_REASONS}
         visible={reporting}
         pending={report.isPending}
         error={report.error}
@@ -318,6 +319,7 @@ export default function DmScreen() {
         onClose={() => setReporting(false)}
       />
       <ConfirmWithReport
+        reasons={REPORT_REASONS}
         visible={confirm !== null}
         title={confirm === 'block' ? tr.safety.blockConfirmTitle : tr.friends.removeFriend}
         hint={confirm === 'block' ? tr.friends.blockHint : tr.friends.removeHint}
