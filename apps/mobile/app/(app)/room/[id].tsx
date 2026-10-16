@@ -148,11 +148,18 @@ export default function RoomScreen() {
     // A room whose window this phone saw, or a leader's closed room with a result: each phone's
     // own result; otherwise back to the venue.
     const ended = windowEndsAt ?? (r && seat && r.reveal_result !== null ? r.reveal_ends_at : null);
-    return ended ? (
-      <Reveal roomId={id} sessionId={sessionId} revealEndsAt={ended} />
-    ) : (
-      <Redirect href="/venue" />
-    );
+    if (ended) return <Reveal roomId={id} sessionId={sessionId} revealEndsAt={ended} />;
+    // An unreadable row being read again is waited for: one left in the cache from an earlier visit
+    // (a phone back in a room it left, docs/SPEC_V3.md §22.B) would send it to the venue, and the
+    // venue straight back here.
+    if (!r && room.isFetching) {
+      return (
+        <Screen>
+          <ActivityIndicator className="mt-16" color={colors.muted} />
+        </Screen>
+      );
+    }
+    return <Redirect href="/venue" />;
   }
   if (!seat) {
     // A member is known once room_phones is read; a phone not in it goes back to the venue.
