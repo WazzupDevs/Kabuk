@@ -52,6 +52,14 @@ jobs:
       # Gradle's dependency and build caches (~/.gradle): written by main's nightly run, read by the
       # rest; --build-cache below lets unchanged tasks come from it.
       - uses: gradle/actions/setup-gradle@v4
+      # The NDK version React Native pins is not on the runner image, so Gradle downloaded it in every
+      # build, without retrying; on 16 Oct that download broke ("Archive is not a ZIP archive"). It
+      # is installed here first, with retries, at the version Gradle asks for.
+      - name: NDK (with retries)
+        run: |
+          ndk=$(sed -n 's/^ndkVersion = "\(.*\)"$/\1/p' node_modules/react-native/gradle/libs.versions.toml)
+          test -n "$ndk" || { echo "ndkVersion not found in react-native's libs.versions.toml"; exit 1; }
+          bash scripts/e2e/sdk-install.sh "ndk;$ndk"
       - name: Prebuild, local-stack settings (cleartext HTTP, no OTA)
         run: |
           (cd apps/mobile && npx expo prebuild --platform android --no-install --clean)
@@ -168,22 +176,12 @@ jobs:
           key: android-emulator-34-google_apis-x86_64-${{ steps.week.outputs.week }}
           restore-keys: android-emulator-34-google_apis-x86_64-
       # Without this week's cache (before main's first run of the week, or a new emulator) the two
-      # packages are downloaded here, with retries: the failure ("Error on ZipFile unknown archive",
-      # the emulator on #121 and #123, the system image on #126's first run) passes on a second try.
-      # The runner action then finds them installed and downloads nothing.
+      # packages are downloaded here, with retries (scripts/e2e/sdk-install.sh): the failure ("Error
+      # on ZipFile unknown archive", the emulator on #121 and #123, the system image on #126's first
+      # run) passes on a second try. The runner action then finds them installed.
       - name: Emulator and system image download (with retries)
         if: steps.emulator-cache.outputs.cache-hit != 'true'
-        run: |
-          sdkmanager="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
-          yes | "$sdkmanager" --licenses > /dev/null || true
-          for attempt in 1 2 3 4; do
-            if "$sdkmanager" --install emulator 'system-images;android-34;google_apis;x86_64' --channel=0 > /dev/null; then
-              exit 0
-            fi
-            echo "sdkmanager failed (attempt $attempt of 4)"
-            sleep $((attempt * 15))
-          done
-          exit 1
+        run: bash scripts/e2e/sdk-install.sh emulator 'system-images;android-34;google_apis;x86_64'
       # One job of main's run saves it, before the emulator starts: only the downloaded packages.
       - name: Emulator and system image cache (save, main only)
         if: >-
