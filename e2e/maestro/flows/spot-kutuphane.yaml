@@ -18,6 +18,7 @@ appId: app.kabuk.mobile
 - scrollUntilVisible:
     element:
       id: spot-here
+    centerElement: true
     timeout: 20000
 - tapOn:
     id: spot-here

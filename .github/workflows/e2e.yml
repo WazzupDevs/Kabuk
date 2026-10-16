@@ -2,7 +2,8 @@
 # as the second table (scripts/e2e/bot-table.ts). One job builds the APK. The path is split in four
 # shards (e2e/maestro/shard-<n>.yaml), each run in light and dark: eight jobs that start with the
 # build job, set up the local stack and boot their emulator while it builds, then fetch the APK,
-# pick the design in Ayarlar → Tasarım (test) and run their shard.
+# pick the design in Ayarlar → Tasarım (test) and run their shard. Nightly and by hand, the four
+# shards run once more in light at the largest text size (font_scale 1.3): twelve jobs.
 name: e2e
 
 on:
@@ -100,10 +101,19 @@ jobs:
       matrix:
         scheme: [light, dark]
         shard: [1, 2, 3, 4]
+        # Android's text size (Settings → Display → Font size): the default, and nightly and by hand
+        # also the largest the app is checked at, 1.3 (CLAUDE.md → "Ekran davranışı"), in light only.
+        # A PR runs the default size.
+        font: ${{ fromJSON(github.event_name == 'pull_request' && '["1"]' || '["1", "1.3"]') }}
+        exclude:
+          - scheme: dark
+            font: '1.3'
     env:
       SCHEME: ${{ matrix.scheme }}
+      FONT_SCALE: ${{ matrix.font }}
       FLOW: e2e/maestro/shard-${{ matrix.shard }}.yaml
-      OUT: ${{ github.workspace }}/e2e-out/${{ matrix.scheme }}-${{ matrix.shard }}
+      # light-1 … dark-4 at the default size, large-1 … large-4 at 1.3.
+      OUT: ${{ github.workspace }}/e2e-out/${{ matrix.font == '1' && format('{0}-{1}', matrix.scheme, matrix.shard) || format('large-{0}', matrix.shard) }}
       APK: ${{ github.workspace }}/apk/app-release.apk
     steps:
       - uses: actions/checkout@v4
@@ -186,7 +196,7 @@ jobs:
       - name: Emulator and system image cache (save, main only)
         if: >-
           github.ref == 'refs/heads/main' && steps.emulator-cache.outputs.cache-hit != 'true' &&
-          matrix.scheme == 'light' && matrix.shard == 1
+          matrix.scheme == 'light' && matrix.shard == 1 && matrix.font == '1'
         uses: actions/cache/save@v4
         with:
           path: |
@@ -208,8 +218,8 @@ jobs:
       - if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-run-${{ matrix.scheme }}-${{ matrix.shard }}
-          path: e2e-out/${{ matrix.scheme }}-${{ matrix.shard }}
+          name: e2e-run-${{ matrix.font == '1' && format('{0}-{1}', matrix.scheme, matrix.shard) || format('large-{0}', matrix.shard) }}
+          path: ${{ env.OUT }}
           retention-days: 14
 
   # Screenshots and logs (no video) on an e2e-screenshots branch, for readers without access to
@@ -217,8 +227,9 @@ jobs:
   # never pile up in history. A PR run writes its own branch (e2e-screenshots-pr-<number>), so runs of
   # two PRs do not overwrite each other; main, nightly and manual runs write e2e-screenshots. (Git
   # cannot hold both e2e-screenshots and e2e-screenshots/pr-<number>, hence the dash.) Each shard's
-  # run is in its own folder (light-1 … dark-4); <scheme>/takeScreenshot holds the takeScreenshot
-  # images of the scheme's four shards together, for `pnpm store:screenshots`.
+  # run is in its own folder (light-1 … dark-4, and large-1 … large-4 at the largest text size);
+  # light/takeScreenshot and dark/takeScreenshot hold the takeScreenshot images of the scheme's four
+  # shards together, for `pnpm store:screenshots` (large/takeScreenshot those of the large pass).
   publish-screenshots:
     if: ${{ always() && needs.e2e.result != 'skipped' }}
     needs: e2e
