@@ -33,7 +33,7 @@ jobs:
       github.event_name != 'pull_request' ||
       (contains(github.event.pull_request.labels.*.name, 'e2e') &&
        (github.event.action != 'labeled' || github.event.label.name == 'e2e'))
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -73,7 +73,7 @@ jobs:
 
   e2e:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -129,6 +129,9 @@ jobs:
             console.log(`INSIDE_LAT=${s.inside.lat}\nINSIDE_LNG=${s.inside.lng}\nOUTSIDE_LAT=${s.outside.lat}\nOUTSIDE_LNG=${s.outside.lng}`)' \
             "$OUT/setup.json" >> "$GITHUB_ENV"
           nohup node --experimental-strip-types scripts/e2e/bot-table.ts serve > "$OUT/bot.log" 2>&1 &
+          # 13-teams: the second bot table, another account on its own port.
+          BOT_PORT=8788 BOT_PHONE=+905550000004 BOT_NAME="Bot Üç" \
+            nohup node --experimental-strip-types scripts/e2e/bot-table.ts serve > "$OUT/bot2.log" 2>&1 &
       - name: Maestro
         run: |
           curl -Ls "https://get.maestro.mobile.dev" | MAESTRO_VERSION=2.10.0 bash
@@ -159,7 +162,7 @@ jobs:
   publish-screenshots:
     if: ${{ always() && needs.e2e.result != 'skipped' }}
     needs: e2e
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
       contents: write

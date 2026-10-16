@@ -1,0 +1,257 @@
+# Faz 2, teams (docs/SPEC_V3.md §22; step 22.6): this phone plays with two bot tables. Bot A is the
+# bot server on port 8787 ("Bot İki" since 08); bot B is the second bot server, on port 8788.
+# 1. "Bu masadayım" (§22.C): this phone joins bot A's side as a member; bot B joins as the other
+#    side's leader. Refereed Sesli Tabu (§22.E): on bot A's turn this phone is the describer's
+#    teammate and never gets the card; on bot B's turn its side judges: the card and Tabu.
+# 2. Leadership (§22.D): bot A leaves; this phone leads the side now and ends the room.
+# 3. The reveal per phone (§22.F): this phone alone against bot A and bot B. Bot A says "Evet": the
+#    match shows at once. Bot B says "Hayır": this phone never sees it, before or after the window.
+appId: app.kabuk.mobile
+---
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: checkin
+      BODY: '{"spot":"kutuphane","headcount":2,"teams":true}'
+- evalScript: ${output.aliasA = output.bot.alias}
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: login
+      BOT_PORT: '8788'
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: checkin
+      BODY: '{"spot":"kutuphane","headcount":2,"teams":true}'
+      BOT_PORT: '8788'
+- evalScript: ${output.aliasB = output.bot.alias}
+# 1. Bot A opens a room at this phone's spot: its card has "Katıl" and "Bu masadayım".
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: create-room
+- tapOn:
+    id: tab-venue
+- scrollUntilVisible:
+    element:
+      id: request-member
+    timeout: 20000
+- takeScreenshot: 59-teams-lobby
+- tapOn:
+    id: request-member
+- extendedWaitUntil:
+    visible:
+      id: request-send
+    timeout: 10000
+- takeScreenshot: 60-teams-member-sheet
+- tapOn:
+    id: request-send
+# "Liderine bu adı söyle": this phone's alias at its largest, the name bot A sees on the request.
+- extendedWaitUntil:
+    visible:
+      id: member-pending
+    timeout: 15000
+- takeScreenshot: 61-teams-member-pending
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: accept-request
+# In the room as a member: the red button is "Odadan çık", not "Odayı bitir".
+- extendedWaitUntil:
+    visible:
+      id: leave-room
+    timeout: 20000
+- assertNotVisible:
+    id: end-room
+- takeScreenshot: 62-teams-member-room
+# Bot B joins as the other side's leader ("Katıl"); bot A accepts.
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: request-join
+      BOT_PORT: '8788'
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: accept-request
+# A member may propose a game (§22.E); bot B accepts.
+- extendedWaitUntil:
+    visible:
+      id: propose-tabu
+    timeout: 20000
+- tapOn:
+    id: propose-tabu
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: answer-game
+      BOT_PORT: '8788'
+# Turn 1, bot A's side: bot A starts it and so describes. This phone, its teammate, never gets the
+# card; Doğru is every phone's in a refereed game.
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: begin-turn
+- extendedWaitUntil:
+    visible:
+      id: tabu-with-describer
+    timeout: 20000
+- assertVisible: ${output.aliasA} anlatıyor\.
+- assertNotVisible:
+    id: tabu-card
+- assertVisible:
+    id: tabu-correct
+- takeScreenshot: 63-teams-teammate
+- tapOn:
+    id: tabu-correct
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: expire-turn
+# Turn 2, bot B's side: this phone's side judges, so it sees the card, Doğru and Tabu.
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: begin-turn
+      BOT_PORT: '8788'
+- extendedWaitUntil:
+    visible:
+      id: tabu-card
+    timeout: 20000
+- assertVisible:
+    id: tabu-taboo
+- takeScreenshot: 64-teams-judge
+- tapOn:
+    id: tabu-taboo
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: end-game
+# 2. Bot A leaves: this phone, the side's only member, leads it now ("Artık lider sensin").
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: leave-room
+- scrollUntilVisible:
+    element:
+      id: leader-note
+    direction: UP
+    timeout: 20000
+- assertVisible:
+    id: end-room
+- takeScreenshot: 65-teams-new-leader
+- tapOn:
+    id: end-room
+- extendedWaitUntil:
+    visible: Tanışalım mı\?
+    timeout: 20000
+- tapOn:
+    id: reveal-no
+- extendedWaitUntil:
+    visible: Güzel oyundu.*
+    timeout: 15000
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: reveal
+      BODY: '{"yes":false}'
+      BOT_PORT: '8788'
+- tapOn: Mekana dön
+- extendedWaitUntil:
+    visible: Oda kur
+    timeout: 15000
+# A window with a "Hayır" runs to reveal_ends_at; bot B closes it now, so this phone's next room
+# shows in the lobby (rule 5). Only after this phone left the room: a room closed before the
+# reveal_ends_at it saw would keep its screen waiting for that time.
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: expire-reveal
+      BOT_PORT: '8788'
+# 3. This phone's room: bot A joins as the other side's leader, bot B as bot A's member.
+- tapOn: Oda kur
+- extendedWaitUntil:
+    visible:
+      id: intent-none
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      text: Odayı kur
+    timeout: 10000
+- tapOn: Odayı kur
+- extendedWaitUntil:
+    visible:
+      id: solo-tabu
+    timeout: 15000
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: request-join
+- extendedWaitUntil:
+    visible: Katılma isteği
+    timeout: 20000
+- tapOn:
+    id: join-accept
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: request-member
+      BODY: '{"side":"guest"}'
+      BOT_PORT: '8788'
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: accept-request
+# "Odadakiler" from the room's title: the other side has two phones (overline: upper case).
+- extendedWaitUntil:
+    visible: 2 telefon
+    timeout: 20000
+- tapOn: Odadakileri gör
+- extendedWaitUntil:
+    visible:
+      id: room-people
+    timeout: 10000
+- assertVisible: KARŞI TARAF · 2 TELEFON
+- takeScreenshot: 66-teams-people
+- back
+- tapOn:
+    id: end-room
+- extendedWaitUntil:
+    visible: Tanışalım mı\?
+    timeout: 20000
+- tapOn:
+    id: reveal-yes
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: reveal
+      BODY: '{"yes":true}'
+# The match shows at once and names only bot A.
+- extendedWaitUntil:
+    visible:
+      id: reveal-matches
+    timeout: 20000
+- assertVisible: ${output.aliasA}
+- assertNotVisible: ${output.aliasB}
+- takeScreenshot: 67-teams-match
+# Bot B's "Hayır" and the window's end change nothing on this phone (rule 5).
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: reveal
+      BODY: '{"yes":false}'
+      BOT_PORT: '8788'
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: expire-reveal
+      BOT_PORT: '8788'
+- assertVisible:
+    id: reveal-matches
+- assertNotVisible: ${output.aliasB}
+- takeScreenshot: 68-teams-match-after-window
+- tapOn: Mekana dön
+- extendedWaitUntil:
+    visible: Oda kur
+    timeout: 15000

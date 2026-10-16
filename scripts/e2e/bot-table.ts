@@ -6,10 +6,11 @@
 // Runs only against the local stack or the hosted dev project; any other URL is refused. Against
 // the dev project it uses only the public Edge Function API with the publishable key and a test
 // number: it never asks for a database password or a secret key. A few test hooks that move the
-// clock (backdate the encounter, expire a turn) and the fixture setup write to the database
+// clock (backdate the encounter, expire a turn or a reveal window) and the fixture setup write to the database
 // directly; they run only on the local stack and are refused anywhere else.
 //
 //   node --experimental-strip-types scripts/e2e/bot-table.ts serve     # HTTP for Maestro, port 8787
+//   BOT_PORT=8788 BOT_PHONE=+905550000004 BOT_NAME='Bot Üç' … serve     # the team flow's second bot
 //   node --experimental-strip-types scripts/e2e/bot-table.ts opponent  # the other table, for one phone
 //   node --experimental-strip-types scripts/e2e/bot-table.ts <action> [json]
 import { createServer } from 'node:http';
@@ -69,6 +70,9 @@ const BOT_NAME = process.env.BOT_NAME ?? 'Bot Masa';
 const DEVICE_PHONE = process.env.DEVICE_PHONE ?? '+905550000001';
 // Local only: a second bot account for the venue chat flow (the first one is blocked by then).
 const SECOND_BOT_PHONE = '+905550000003';
+// Local only: the team flow's other bot, a second `serve` on port 8788 with this BOT_PHONE
+// (13-teams.yaml; docs/SPEC_V3.md §22.N step 22.6). `setup` deletes it with the others.
+const TEAM_BOT_PHONE = '+905550000004';
 // A campus-like venue (docs/SPEC_V3.md §4): a 200 m square boundary around the anchor and two
 // spots. The device checks in at "Kantin"; the bot opens a room at "Kütüphane" for "Bu noktadayım".
 export const E2E_VENUE = {
@@ -409,7 +413,10 @@ export const actions: Record<string, (args: Json) => Promise<Json>> = {
     try {
       await sql`
         delete from auth.users
-        where phone in (${BOT_PHONE.slice(1)}, ${DEVICE_PHONE.slice(1)}, ${SECOND_BOT_PHONE.slice(1)})
+        where phone in (
+          ${BOT_PHONE.slice(1)}, ${DEVICE_PHONE.slice(1)}, ${SECOND_BOT_PHONE.slice(1)},
+          ${TEAM_BOT_PHONE.slice(1)}
+        )
       `;
       const wkt = `POLYGON((${E2E_VENUE.boundary.map(([lng, lat]) => `${lng} ${lat}`).join(', ')}))`;
       const [venue] = await sql<{ id: string }[]>`
@@ -550,6 +557,54 @@ export const actions: Record<string, (args: Json) => Promise<Json>> = {
       roomId: room.room_id,
       profiled: args.profiled === true,
     });
+  },
+
+  // "Bu masadayım" (docs/SPEC_V3.md §22.C): to join a side as a member. `side` 'owner' (default):
+  // the first open room in the lobby, else the first running room whose owner side takes members;
+  // 'guest': the first running room whose guest side takes members.
+  async 'request-member'(args) {
+    const side = args.side === 'guest' ? 'guest' : 'owner';
+    const roomId = await retryUntil(`a room whose ${side} side takes members`, async () => {
+      const [open, running] = await Promise.all([
+        me().rpc('venue_lobby', { target_venue_id: venueId ?? '' }),
+        me().rpc('venue_running_rooms', { target_venue_id: venueId ?? '' }),
+      ]);
+      if (open.error) throw open.error;
+      if (running.error) throw running.error;
+      const first = ((open.data ?? []) as { room_id: string }[])[0];
+      if (side === 'owner' && first) return first.room_id;
+      const rows = (running.data ?? []) as {
+        room_id: string;
+        owner_open: boolean;
+        guest_open: boolean;
+      }[];
+      return rows.find((r) => (side === 'owner' ? r.owner_open : r.guest_open))?.room_id ?? null;
+    });
+    return call('rooms', { action: 'request-join', roomId, profiled: false, side });
+  },
+
+  // As a leader, accepts the request now waiting for it: "Katıl" to its open room or "Bu
+  // masadayım" for its side (the join_requests policy shows a leader only those).
+  async 'accept-request'() {
+    const request = await retryUntil('a request to accept', async () => {
+      const room = await myRoom();
+      const { data, error } = await me()
+        .from('join_requests')
+        .select('id')
+        .eq('room_id', room.id)
+        .eq('status', 'pending')
+        .limit(1);
+      if (error) throw error;
+      return (data?.[0] as { id: string } | undefined) ?? null;
+    });
+    return call('rooms', { action: 'respond', requestId: request.id, accept: true });
+  },
+
+  // "Odadan çık" (docs/SPEC_V3.md §22.D): a member leaves; a leader hands its side to the side's
+  // oldest member.
+  async 'leave-room'() {
+    const room = await myRoom();
+    return call('rooms', { action: 'leave', roomId: room.id });
   },
 
   // "Oyun öner" in the bot's room (docs/SPEC_V3.md §5.3): `concept` tabu (default), sohbet or
@@ -921,6 +976,31 @@ export const actions: Record<string, (args: Json) => Promise<Json>> = {
     const roomId = data?.[0]?.id;
     if (!roomId) throw new Error('no room is waiting for an answer');
     return call('reveal', { action: 'decide', roomId, wantsMeet: args.yes !== false });
+  },
+
+  // Local only: closes the newest "Tanışalım mı?" window of the bot now instead of at
+  // reveal_ends_at (a window with a "Hayır" runs to its end; docs/SPEC_V3.md §22.F). Its phones,
+  // and the lobby (rule 5), see what they would see at reveal_ends_at.
+  async 'expire-reveal'() {
+    const { data, error } = await me()
+      .from('rooms')
+      .select('id')
+      .eq('status', 'ending')
+      .order('created_at', { ascending: false })
+      .limit(1);
+    if (error) throw error;
+    const roomId = data?.[0]?.id as string | undefined;
+    if (!roomId) throw new Error('no room is waiting for an answer');
+    const sql = db();
+    try {
+      await sql`
+        update public.rooms set reveal_ends_at = now() - interval '1 second'
+        where id = ${roomId} and status = 'ending'
+      `;
+    } finally {
+      await sql.end();
+    }
+    return call('reveal', { action: 'finalize', roomId });
   },
 
   // "Arkadaş ekle" for the latest encounter.
