@@ -108,6 +108,7 @@ async function sessionEvents(p: Phone) {
 // The room channel as the app subscribes to it: every row change of the room and its rows.
 async function roomChanges(p: Phone, roomId: string) {
   const payloads: unknown[] = [];
+  let since = -Infinity;
   const channel = p.client.channel(`room:${roomId}`, { config: { private: true } });
   for (const t of ['rooms', 'game_events', 'game_proposals', 'messages']) {
     channel.on(
@@ -118,7 +119,9 @@ async function roomChanges(p: Phone, roomId: string) {
         table: t,
         filter: t === 'rooms' ? `id=eq.${roomId}` : `room_id=eq.${roomId}`,
       },
-      (payload: unknown) => payloads.push(payload),
+      (payload: { commit_timestamp: string }) => {
+        if (Date.parse(payload.commit_timestamp) > since) payloads.push(payload);
+      },
     );
   }
   await new Promise<void>((resolve, reject) => {
@@ -137,7 +140,10 @@ async function roomChanges(p: Phone, roomId: string) {
       { timeout: 15_000, interval: 500 },
     )
     .toBeGreaterThan(0);
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  // A touch made before the poll saw the first one can still arrive later, after any fixed wait:
+  // count only what commits from here on, by the database's own clock (commit_timestamp).
+  const [clock] = await sql<{ now: Date }[]>`select clock_timestamp() as now`;
+  since = clock?.now.getTime() ?? since;
   payloads.length = 0;
   return { payloads, close: async () => void (await p.client.removeChannel(channel)) };
 }
