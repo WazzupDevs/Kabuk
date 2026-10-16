@@ -20,6 +20,7 @@ import { OpenLobbySheet } from '@/features/rooms/OpenLobbySheet';
 import { useCurrentRoom, useRoom, useRoomPhones } from '@/features/rooms/queries';
 import { TableCard } from '@/features/rooms/TableCard';
 import { useCreateSolo } from '@/features/rooms/useCreateSolo';
+import { useRevealDecision } from '@/features/reveal/useRevealDecision';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { sessionDurationMinutes } from '@shared/analytics.ts';
@@ -105,6 +106,8 @@ export default function VenueScreen() {
     !!room && !!tableId && [room.owner_session_id, room.guest_session_id].includes(tableId);
   // A member's side is only in room_phones (docs/SPEC_V3.md §22.B).
   const phones = useRoomPhones(room?.id ?? '', !!room && !leads);
+  // This phone's own answer in the room's reveal window: "Hayır" lets the card go (tableState).
+  const decision = useRevealDecision(room?.status === 'ending' ? room.id : null);
 
   if (table.isPending) {
     return (
@@ -119,7 +122,7 @@ export default function VenueScreen() {
   }
 
   const seat = room ? roomSeat(room, phones.data, table.data.id) : null;
-  const state = tableState(room, seat?.leader ?? false, now);
+  const state = tableState(room, seat?.leader ?? false, now, decision.data?.wants_meet === false);
   const minutesLeft = Math.max(0, Math.ceil((expiresAt - now) / 60_000));
 
   function confirmLeave() {

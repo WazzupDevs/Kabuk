@@ -36,6 +36,15 @@ describe('tableState', () => {
     expect(tableState(room('ending', 'open', null), true, NOW)).toBe('off');
     expect(tableState(room('ending', 'private', '2026-10-16T20:01:00Z'), true, NOW)).toBe('off');
   });
+
+  it('lets a phone that said "Hayır" go while the window still runs for the others', () => {
+    const ending = room('ending', 'open', '2026-10-16T20:01:00Z');
+    expect(tableState(ending, true, NOW, true)).toBe('off');
+    expect(tableState(ending, false, NOW, true)).toBe('off');
+    expect(tableState(ending, true, NOW, false)).toBe('merged');
+    // Only the reveal window reads the answer.
+    expect(tableState(room('active'), true, NOW, true)).toBe('merged');
+  });
 });
 
 describe('lobbyActions', () => {

@@ -89,6 +89,7 @@ appId: app.kabuk.mobile
       BODY: '{"yes":false}'
 - assertNotVisible: Bir şeyler ters gitti
 - takeScreenshot: 29-good-game
+# "Hayır" said, the window still runs for the bot: the card lets this phone go at once.
 - tapOn: Mekana dön
 - extendedWaitUntil:
     visible:

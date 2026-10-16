@@ -17,13 +17,20 @@ export type TableRoom = {
 };
 
 // `leader`: this phone leads a side of the room (its session is the room's owner or guest).
-export function tableState(room: TableRoom | null, leader: boolean, now: number): TableState {
+// `saidNo`: this phone answered "Hayır" in the room's reveal window.
+export function tableState(
+  room: TableRoom | null,
+  leader: boolean,
+  now: number,
+  saidNo = false,
+): TableState {
   if (!room || room.status === 'closed') return 'off';
   // Until 23.3 a two-sided room still ends with "Tanışalım mı?" on the room screen: the card keeps
-  // leading there while the window is open, now that nothing sends the phone back to the room.
+  // leading there while the window is open, now that nothing sends the phone back to the room. A
+  // phone that said "Hayır" already has its result ("Güzel oyundu") and is let go at once.
   if (room.status === 'ending') {
     const open = room.reveal_ends_at !== null && Date.parse(room.reveal_ends_at) > now;
-    return open && room.visibility === 'open' ? 'merged' : 'off';
+    return open && !saidNo && room.visibility === 'open' ? 'merged' : 'off';
   }
   if (room.visibility === 'private') return 'solo';
   if (room.status === 'waiting') return leader ? 'open' : 'member';
