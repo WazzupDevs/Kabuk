@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuites>
+  <testsuite name="Test Suite" device="test" tests="1" failures="1" time="586.091" timestamp="2026-10-16T01:39:13">
+    <testcase id="P0 kritik yol" name="P0 kritik yol" classname="P0 kritik yol" file="e2e/maestro/p0.yaml" time="585.914" timestamp="2026-10-16T01:39:13" status="ERROR">
+      <failure>Assertion is false: "Oda kur" is visible</failure>
+    </testcase>
+  </testsuite>
+</testsuites>
