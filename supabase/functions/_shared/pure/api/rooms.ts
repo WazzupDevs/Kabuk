@@ -1,10 +1,16 @@
-import type { Intent, ProposableConcept } from '../rooms.ts';
+import type { Concept, Intent, ProposableConcept } from '../rooms.ts';
 import type { Side } from '../teams.ts';
 
 // Request and response shapes of the `rooms` Edge Function, shared with the mobile app
 // (docs/SPEC_V3.md §5, §11).
-// "Oda kur": always open to the venue; an optional intent and the owner's choice for this room.
-export type CreateRoomRequest = { action: 'create'; intent?: Intent; profiled: boolean };
+// "Oda kur" ("Masanı lobiye aç", docs/SPEC_V3.md §23.C): always open to the venue; an optional
+// intent, an optional game tag (none: "fark etmez") and the owner's choice for this room.
+export type CreateRoomRequest = {
+  action: 'create';
+  intent?: Intent;
+  gameTag?: Concept;
+  profiled: boolean;
+};
 // "Masanla oyna": a private one-table room, anonymous.
 export type CreateSoloRoomRequest = { action: 'create-solo' };
 // Without `side`: "Katıl", the guest's side as its leader. With it: "Bu masadayım", a member of that
