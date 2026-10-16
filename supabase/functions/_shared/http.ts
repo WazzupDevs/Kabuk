@@ -49,6 +49,7 @@ const STATUS: Record<ErrorCode, number> = {
   not_found: 404,
   reply_unavailable: 409,
   photo_required: 409,
+  anonymous_not_allowed: 409,
   venue_chat_mode_locked: 409,
   wrong_side: 409,
   not_leader: 403,

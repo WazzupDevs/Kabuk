@@ -12,18 +12,25 @@ import { handle } from '../_shared/http.ts';
 import { lobbyChanged } from '../_shared/lobby.ts';
 import { photoCopyHex } from '../_shared/photos.ts';
 import type { SafetyRequest, SafetyResponse } from '../_shared/pure/api/chat.ts';
-import { REPORT_REASONS, type ReportReason } from '../_shared/pure/chat.ts';
+import {
+  GAME_FLOW_REPORT_REASONS,
+  REPORT_REASONS,
+  type ReportReason,
+} from '../_shared/pure/chat.ts';
 import { AppError } from '../_shared/pure/errors.ts';
 import { VENUE_CHAT, VENUE_CHAT_BROADCAST, venueChatChannel } from '../_shared/pure/venueChat.ts';
 
 const reason = z.enum(REPORT_REASONS);
+// A person met in the game flow (a phone in the room, a history row) can also be reported for a
+// wrong gender (docs/SPEC_V3.md §23.D); the venue chat, DMs and profiles cannot.
+const gameFlowReason = z.enum(GAME_FLOW_REPORT_REASONS);
 
 const Report = z.discriminatedUnion('target', [
   z.object({
     action: z.literal('report'),
     target: z.literal('room').optional(),
     roomId: z.uuid(),
-    reason,
+    reason: gameFlowReason,
     sessionId: z.uuid().optional(),
   }),
   z.object({
@@ -37,7 +44,7 @@ const Report = z.discriminatedUnion('target', [
     action: z.literal('report'),
     target: z.literal('history'),
     historyId: z.uuid(),
-    reason,
+    reason: gameFlowReason,
   }),
   z.object({
     action: z.literal('report'),
@@ -57,7 +64,11 @@ const Body: z.ZodType<SafetyRequest> = z.union([
   Report,
   z.strictObject({ action: z.literal('block'), roomId: z.uuid(), sessionId: z.uuid().optional() }),
   z.strictObject({ action: z.literal('block'), publicId: z.uuid(), report: reason.optional() }),
-  z.strictObject({ action: z.literal('block'), historyId: z.uuid(), report: reason.optional() }),
+  z.strictObject({
+    action: z.literal('block'),
+    historyId: z.uuid(),
+    report: gameFlowReason.optional(),
+  }),
   z.strictObject({
     action: z.literal('block'),
     venueChatMessageId: z.uuid(),

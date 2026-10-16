@@ -1,4 +1,4 @@
-import type { ReportReason } from '../chat.ts';
+import type { GameFlowReportReason, ReportReason } from '../chat.ts';
 import type { Reaction } from '../reactions.ts';
 
 // `chat` and `safety` Edge Functions, shared with the mobile app.
@@ -12,8 +12,15 @@ export type ReactResponse = { ok: true };
 
 export type SafetyRequest =
   // A room (docs/SPEC_V3.md §22.J): the phone named by its table session id, any phone of the
-  // room including the reporter's own side; without it the other side's leader.
-  | { action: 'report'; target?: 'room'; roomId: string; reason: ReportReason; sessionId?: string }
+  // room including the reporter's own side; without it the other side's leader. A person met in
+  // the game flow (a room or a history row) can also be reported for a wrong gender (§23.D).
+  | {
+      action: 'report';
+      target?: 'room';
+      roomId: string;
+      reason: GameFlowReportReason;
+      sessionId?: string;
+    }
   // A profile the reporter can see now (docs/SPEC_V2.md §5.3); otherwise `not_found`, the same
   // answer profile/get gives.
   | { action: 'report'; target: 'profile'; publicId: string; reason: ReportReason }
@@ -21,7 +28,7 @@ export type SafetyRequest =
   // report works after the room has ended; it copies the profile only if that table joined with
   // it. Nothing is written for an unknown row, and the answer does not change.
   | { action: 'report'; target: 'dm'; threadId: string; reason: ReportReason }
-  | { action: 'report'; target: 'history'; historyId: string; reason: ReportReason }
+  | { action: 'report'; target: 'history'; historyId: string; reason: GameFlowReportReason }
   // Venue chat (docs/SPEC_V3.md §7.4): a message (with a copy of the venue's last 50), or a friend
   // request that came from the chat. Nothing is written for a message the caller cannot see.
   | { action: 'report'; target: 'venue_chat'; messageId: string; reason: ReportReason }
@@ -32,7 +39,7 @@ export type SafetyRequest =
   // Step 4: a friend (ends the friendship, silently) or the account behind a history row. With
   // `report`, the report is written in the same transaction before anything is deleted.
   | { action: 'block'; publicId: string; report?: ReportReason }
-  | { action: 'block'; historyId: string; report?: ReportReason }
+  | { action: 'block'; historyId: string; report?: GameFlowReportReason }
   // The sender of a venue chat message, or of a friend request from the chat.
   | { action: 'block'; venueChatMessageId: string; report?: ReportReason }
   | { action: 'block'; friendRequestId: string; report?: ReportReason }
