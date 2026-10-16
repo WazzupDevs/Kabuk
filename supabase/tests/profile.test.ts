@@ -367,8 +367,8 @@ describe('profile/get', () => {
         age: TEST_AGE,
         photoHidden: false,
         birthDate: TEST_BIRTH_DATE,
-        // Step 23.2 (docs/SPEC_V3.md §23.D): the own gender, empty until it is given.
-        gender: null,
+        // Step 23.2 (docs/SPEC_V3.md §23.D): the own gender, given at sign-up.
+        gender: 'female',
       },
     });
   });
