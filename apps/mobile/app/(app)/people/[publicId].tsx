@@ -2,12 +2,13 @@ import type { ReportReason } from '@shared/chat.ts';
 import { useMutation } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, View } from 'react-native';
+import { Alert, View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
 import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
+import { Loader } from '@/components/Loader';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { BackPill } from '@/features/profile/BackPill';
 import { Badges, ProfileHero } from '@/features/profile/ProfileCard';
@@ -15,12 +16,10 @@ import { useProfileView } from '@/features/profile/queries';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { safetyApi } from '@/lib/api';
-import { useTheme } from '@/theme/ThemeProvider';
 
 // Another account's profile: only while the viewer may see it (a friend, or the other table of
 // the current room). Anything else, including a room that just ended, reads as "not visible".
 export default function PersonScreen() {
-  const { colors } = useTheme();
   const { publicId } = useLocalSearchParams<{ publicId: string }>();
   const view = useProfileView(publicId);
   const [reporting, setReporting] = useState(false);
@@ -37,7 +36,9 @@ export default function PersonScreen() {
   return (
     <Screen>
       {view.isPending ? (
-        <ActivityIndicator className="mt-16" color={colors.muted} />
+        <View className="mt-16 items-center">
+          <Loader />
+        </View>
       ) : !view.data ? (
         <EmptyState icon="eye-off-outline" body={tr.profile.notVisible} />
       ) : (

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Pressable, View, type ViewStyle } from 'react-native';
 
-import { useTheme } from '@/theme/ThemeProvider';
+import { colorVars, ThemeScope, useFeatureTheme, useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
 import { usePressScale } from './motion';
@@ -9,8 +9,10 @@ import { useQuiet } from './Quiet';
 
 type Props = {
   children: ReactNode;
-  // `card`: soft, no outline. `feature`: the one featured card per screen, with the outline and
-  // the hard shadow. `note`: a quiet surface2 block (role hint, pending request, notices).
+  // `card`: surface with a soft shadow. `feature`: the one featured card per screen, ink in the
+  // light scheme; everything inside draws from its dark palette (src/theme/feature.ts), so text,
+  // icons and buttons stay readable without being told. `note`: a quiet surface2 block (role hint,
+  // pending request, notices).
   tone?: 'card' | 'feature' | 'note';
   // Content that runs to the card's edges (a colour block on top); the card clips it.
   flush?: boolean;
@@ -20,8 +22,8 @@ type Props = {
   testID?: string;
 };
 
-// A card drawn from the theme's tokens. On trust screens (`Quiet`) a hairline in the divider colour
-// and no shadow.
+// A card drawn from the theme's tokens: continuous corners, no outline, no hard shadow. On trust
+// screens (`Quiet`) a hairline in the divider colour and no shadow.
 export function Card({
   children,
   tone = 'card',
@@ -32,27 +34,34 @@ export function Card({
   testID,
 }: Props) {
   const { colors, shape } = useTheme();
+  const featureTheme = useFeatureTheme();
   const quiet = useQuiet();
   const pressScale = usePressScale();
 
   const feature = tone === 'feature' && !quiet;
-  const style: ViewStyle =
+  const style: ViewStyle[] =
     tone === 'note'
-      ? {
-          backgroundColor: colors.surface2,
-          borderRadius: shape.radius.md,
-          paddingHorizontal: SPACING[3],
-          paddingVertical: SPACING[2.5],
-        }
-      : {
-          backgroundColor: colors.surface,
-          borderRadius: feature ? shape.radius.lg + SPACING[1] : shape.radius.lg,
-          padding: flush ? 0 : SPACING[4],
-          overflow: flush ? 'hidden' : undefined,
-          borderWidth: quiet ? shape.stroke.hairline : feature ? shape.stroke.feature : 0,
-          borderColor: quiet ? colors.divider : colors.border,
-          boxShadow: quiet ? undefined : feature ? shape.shadow.feature : shape.shadow.card,
-        };
+      ? [
+          {
+            backgroundColor: colors.surface2,
+            borderRadius: shape.radius.lg,
+            paddingHorizontal: SPACING[3],
+            paddingVertical: SPACING[2.5],
+          },
+        ]
+      : [
+          {
+            backgroundColor: feature ? colors.feature : colors.surface,
+            borderRadius: shape.radius.lg,
+            padding: flush ? 0 : SPACING[4],
+            overflow: flush ? 'hidden' : undefined,
+            borderWidth: quiet ? shape.stroke.hairline : 0,
+            borderColor: colors.divider,
+            boxShadow: quiet || feature ? undefined : shape.shadow.card,
+          },
+          feature ? (colorVars(featureTheme.colors) as ViewStyle) : {},
+        ];
+  const content = feature ? <ThemeScope theme={featureTheme}>{children}</ThemeScope> : children;
 
   if (onPress) {
     return (
@@ -63,14 +72,14 @@ export function Card({
           accessibilityLabel={accessibilityLabel}
           onPress={onPress}
         >
-          {({ pressed }) => <View style={[style, pressScale(pressed)]}>{children}</View>}
+          {({ pressed }) => <View style={[...style, pressScale(pressed)]}>{content}</View>}
         </Pressable>
       </View>
     );
   }
   return (
     <View className={className} style={style} testID={testID}>
-      {children}
+      {content}
     </View>
   );
 }

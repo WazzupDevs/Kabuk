@@ -213,7 +213,7 @@ export default function DmScreen() {
     >
       {list.length === 0 && outbox.length === 0 && !messages.isPending ? (
         <View className="flex-1 justify-center">
-          <EmptyState snail body={tr.friends.noMessagesYet} />
+          <EmptyState kind="empty" body={tr.friends.noMessagesYet} />
         </View>
       ) : null}
       {runs.map(({ item: m, first, last, day }) => {

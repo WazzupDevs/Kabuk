@@ -3,9 +3,9 @@ import type { Concept } from '@shared/rooms.ts';
 import type { ReactNode } from 'react';
 import { Image, type ImageSourcePropType, Pressable, View } from 'react-native';
 
-import { useDepth } from '@/components/Depth';
 import { GAME_TONES, type GameGlyph } from '@/components/Glyph';
 import { Text } from '@/components/Text';
+import { usePressScale } from '@/components/motion';
 import { tr } from '@/i18n/tr';
 import { withAlpha } from '@/theme/contrast';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -69,7 +69,7 @@ export function GameCard({
   testID,
 }: Props) {
   const { colors, shape } = useTheme();
-  const depth = useDepth();
+  const pressScale = usePressScale();
   const glyph = GAME_GLYPH[concept];
   const [bg, fg] = GAME_TONES[glyph];
   const name = tr.concepts[concept];
@@ -92,7 +92,7 @@ export function GameCard({
               backgroundColor: disabled ? withAlpha(colors[bg], FADED) : colors[bg],
               overflow: 'hidden',
             },
-            depth({ pressed, inactive: disabled }),
+            pressScale(pressed && !disabled),
           ]}
         >
           <Image

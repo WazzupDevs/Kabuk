@@ -10,7 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { toRuns } from '@shared/chatRuns.ts';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, View } from 'react-native';
+import { Alert, View } from 'react-native';
 
 import { Avatar, AVATAR_SIZE } from '@/components/Avatar';
 import { Card } from '@/components/Card';
@@ -23,9 +23,10 @@ import { ListRow } from '@/components/ListRow';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Sheet } from '@/components/Sheet';
-import { Snail } from '@/components/Snail';
+import { Mark } from '@/components/Mark';
 import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
+import { Loader } from '@/components/Loader';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { PhotoSheet } from '@/features/profile/PhotoSheet';
@@ -241,17 +242,19 @@ export default function VenueChatScreen() {
     >
       <Card tone="note">
         <View className="flex-row items-center gap-3">
-          <Snail height={SPACING[9]} />
+          <Mark size={SPACING[9]} label={null} />
           <Text variant="fine" tone="text" className="flex-1">
             {tr.venueChat.hint}
           </Text>
         </View>
       </Card>
       {page.isPending ? (
-        <ActivityIndicator color={colors.muted} />
+        <View className="items-center">
+          <Loader />
+        </View>
       ) : messages?.length === 0 ? (
         <View className="flex-1 justify-center">
-          <EmptyState snail body={tr.venueChat.empty} />
+          <EmptyState kind="empty" body={tr.venueChat.empty} />
         </View>
       ) : (
         runs.map(({ item: m, first, last, day }) => (

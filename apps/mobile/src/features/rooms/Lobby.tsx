@@ -25,6 +25,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track, trackOnce } from '@/lib/analytics';
 import { ApiError, callChangeSpot, roomsApi } from '@/lib/api';
+import { useRequesterHaptic } from '@/lib/haptics';
 import { useNow } from '@/lib/useNow';
 import { NARROW_SCREEN } from '@/theme/tokens';
 
@@ -129,6 +130,8 @@ export function Lobby({ venueId, sessionId, alias, since, mySpotId, venueHasSpot
       trackOnce(`join_unavailable:${requestId}`, 'join_unavailable', { as_member: asMember });
     }
   }, [requestId, status, asMember]);
+  // Felt only when accepted: a decline and a timeout look and feel the same (rule 5).
+  useRequesterHaptic(requestId, status);
   const secondsLeft = mine ? Math.max(0, Math.ceil((Date.parse(mine.expiresAt) - now) / 1000)) : 0;
   const recentlyUnavailable =
     mine && status === 'unavailable' && now - Date.parse(mine.expiresAt) < 15_000;
@@ -179,7 +182,7 @@ export function Lobby({ venueId, sessionId, alias, since, mySpotId, venueHasSpot
 
       {rooms.length === 0 ? (
         <EmptyState
-          snail
+          kind="empty"
           body={tr.rooms.playWithTableHint}
           action={{ label: tr.rooms.playWithTable, onPress: () => solo.mutate() }}
         />

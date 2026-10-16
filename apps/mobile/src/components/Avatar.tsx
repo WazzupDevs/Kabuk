@@ -6,6 +6,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING, TOUCH } from '@/theme/tokens';
 
 import { TABLE_AVATAR_IMAGES } from './Glyph';
+import { Mark } from './Mark';
 import { Text } from './Text';
 
 // sm 32 (chat), md 40 (top bars), lg 48, xl 56 (list rows and room cards), hero 72 (the table card).
@@ -19,14 +20,17 @@ export const AVATAR_SIZE = {
 
 type Size = keyof typeof AVATAR_SIZE;
 
-// The table icon's share of the disc.
-const ICON_SHARE = 0.56;
+// The table icon's share of the disc; the mark's share of the default face.
+const ICON_SHARE = 0.6;
+const MARK_SHARE = 0.72;
 
 type Props =
   // An anonymous table: a game-night icon on a coloured disc, picked from the alias, so every phone
   // shows a table with the same face (its own one too); a new name brings a new face. Never
   // tappable (no profile).
   | { kind: 'table'; alias: string; size?: Size }
+  // No face yet, or nobody to show: the mark on a quiet disc.
+  | { kind: 'default'; size?: Size; accessibilityLabel?: string }
   // A profile: the photo, or the display name's initials (also when the photo cannot be loaded).
   // Tappable when it opens the profile card.
   | {
@@ -38,8 +42,7 @@ type Props =
       accessibilityLabel?: string;
     };
 
-// The face of a table or a person in chats, lists and cards (canvas: Aşama 1 · Son → Avatarlar;
-// tables: Aşama 8 · Saha → Masa avatarları).
+// The face of a table or a person in chats, lists and cards (the skall design system → Avatar).
 export function Avatar(props: Props) {
   const { colors, shape } = useTheme();
   const photo = usePhoto(props.kind === 'profile' ? props.photoUrl : null);
@@ -48,12 +51,22 @@ export function Avatar(props: Props) {
     width: side,
     height: side,
     borderRadius: shape.radius.pill,
-    borderWidth: shape.stroke.card,
-    borderColor: colors.border,
     overflow: 'hidden' as const,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
   };
+
+  if (props.kind === 'default') {
+    return (
+      <View
+        accessible={!!props.accessibilityLabel}
+        accessibilityLabel={props.accessibilityLabel}
+        style={[frame, { backgroundColor: colors.surface2 }]}
+      >
+        <Mark size={Math.round(side * MARK_SHARE)} label={null} />
+      </View>
+    );
+  }
 
   if (props.kind === 'table') {
     const face = tableAvatarOf(props.alias);
@@ -83,7 +96,18 @@ export function Avatar(props: Props) {
     />
   ) : (
     <Text
-      variant={side >= AVATAR_SIZE.lg ? (side >= AVATAR_SIZE.xl ? 'heading' : 'bodyStrong') : 'tag'}
+      // Poppins 700, about 38 % of the disc.
+      variant={
+        side >= AVATAR_SIZE.hero
+          ? 'title'
+          : side >= AVATAR_SIZE.xl
+            ? 'mark'
+            : side >= AVATAR_SIZE.lg
+              ? 'heading'
+              : side >= AVATAR_SIZE.md
+                ? 'gameName'
+                : 'caption'
+      }
       tone="onViolet"
     >
       {initials(props.name)}

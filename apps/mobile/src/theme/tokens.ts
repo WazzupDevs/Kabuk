@@ -15,7 +15,8 @@ export type Palette = {
   muted: string; // secondary text
   accent: string;
   onAccent: string;
-  // The second accent: profile faces (initials), the "profilli" tag, colour blocks.
+  // The second accent (skall: `accent-2`): profile faces (initials), unread counts, the "profilli"
+  // tag. Not an action colour.
   violet: string;
   onViolet: string;
   read: string; // DM: the double tick of a read message
@@ -25,7 +26,9 @@ export type Palette = {
   onDanger: string;
   success: string;
   onSuccess: string;
-  signal: string; // "Tanışalım mı?" highlight
+  // "Tanışalım mı?" highlight. Leaves with step 23.3 (docs/SPEC_V3.md §23.G); the skall system has
+  // no value of its own for it.
+  signal: string;
   onSignal: string;
   calm: string; // Keşfet buckets and the event tag
   onCalm: string;
@@ -36,6 +39,15 @@ export type Palette = {
   event: string;
   onEvent: string;
   scrim: string; // behind sheets
+  // The one featured card per screen (Mekan: "Masanın adı"): ink in the light scheme. Its text is
+  // `onFeature`, secondary text `featureMuted`.
+  feature: string;
+  onFeature: string;
+  featureMuted: string;
+  // Where the two capsules of the mark meet: orange in the light scheme, white in the dark one.
+  overlap: string;
+  // The focus ring (the code box that takes the next digit).
+  focus: string;
 };
 
 export const PALETTE_KEYS = [
@@ -67,6 +79,11 @@ export const PALETTE_KEYS = [
   'event',
   'onEvent',
   'scrim',
+  'feature',
+  'onFeature',
+  'featureMuted',
+  'overlap',
+  'focus',
 ] as const satisfies readonly (keyof Palette)[];
 
 export type PaletteKey = (typeof PALETTE_KEYS)[number];
@@ -77,42 +94,39 @@ export function colorClass(key: PaletteKey): string {
 }
 
 // Font family names as registered with expo-font (the @expo-google-fonts export names). Only these
-// weights are bundled (src/theme/fonts.ts maps each to its file).
+// five weights are bundled (src/theme/fonts.ts maps each to its file); no other weight is added.
 export type FontName =
-  | 'BricolageGrotesque_800ExtraBold'
-  | 'Nunito_400Regular'
-  | 'Nunito_600SemiBold'
-  | 'Nunito_700Bold'
-  | 'Nunito_800ExtraBold';
+  | 'Poppins_700Bold'
+  | 'Poppins_800ExtraBold'
+  | 'Manrope_400Regular'
+  | 'Manrope_600SemiBold'
+  | 'Manrope_700Bold';
 
 export type FontSet = {
-  display: FontName; // headings, aliases, scores, the Tabu word
-  displayItalic: FontName | null; // an italic Tabu word, if the theme has one
-  italic: FontName | null; // italic subtitles and eyebrows, if the theme has one
-  regular: FontName;
-  semibold: FontName;
-  bold: FontName;
-  extrabold: FontName;
+  display: FontName; // hero, display, alias, word, score
+  displayBold: FontName; // title, heading, mark, gameName, initials
+  regular: FontName; // body, subtitle, fine
+  semibold: FontName; // bodyStrong only
+  bold: FontName; // eyebrow, label, buttons, tag, caption, overline
 };
 
 // Where a shadow is drawn. Values are CSS `box-shadow` strings (React Native `boxShadow`); `null`
-// draws none. `{border}` and `{accent}` are replaced with the palette colour.
+// draws none. Soft only: skall has no outlined, hard-shadowed "3D" look.
 export type ShadowSet = {
-  card: string | null; // every card: soft
-  feature: string | null; // the one featured card per screen (and the Tabu card): hard
-  // Aşama 8 · Saha: the 3D look of every button and game control (src/components/Depth.tsx): an
-  // outline in `border` and this hard shadow; pressed, the shadow goes and the face moves into it.
-  depth: string | null;
-  raised: string | null; // the selected segment of a switch
-  pin: string | null; // map pins
+  card: string | null; // every card
+  raised: string | null; // others' bubbles, the selected segment of a switch
+  sheet: string | null; // bottom sheets
   tabBar: string | null; // the floating tab bar
-  focus: string | null; // the code box that takes the next digit
+  focus: string | null; // the focus ring: a ground gap, then `focus`
 };
 
 export type Shape = {
-  radius: { sm: number; md: number; lg: number; pill: number };
-  // Border widths: cards (0 = none), the featured card, controls (inputs, segments, switches),
-  // tags, the hairline (list rows, trust screens) and the raised Mekan tab's ring.
+  // Containers have continuous corners (card `lg`, sheet and tab bar `xl`, game card `md`); a
+  // bubble's corner towards its author is `xs`; everything interactive is a capsule (`pill`).
+  radius: { xs: number; sm: number; md: number; lg: number; xl: number; pill: number };
+  // Border widths: cards (0 = none), rings (an avatar's unread ring, a selected choice, the second
+  // table's face), controls (inputs, segments, switches), tags, the hairline (list rows, trust
+  // screens) and the active Mekan tab's ring.
   stroke: {
     card: number;
     feature: number;
@@ -121,16 +135,13 @@ export type Shape = {
     hairline: number;
     venueRing: number;
   };
-  shadow: ShadowSet;
-  // The 3D look: outline width and how far the face sinks when pressed (the shadow's offset).
-  depth: { stroke: number; offset: number };
   // The describing team in Tabu: an accent ring or a filled sticker.
   selectedTeam: 'ring' | 'fill';
   screenPadding: number;
 };
 
 export type TypeStyle = {
-  font: keyof FontSet; // a null italic falls back to `display` / `regular`
+  font: keyof FontSet;
   size: number;
   lineHeight: number;
   letterSpacing?: number;
@@ -172,11 +183,9 @@ export type ThemeDefinition = {
   palettes: Record<ColorScheme, Palette>;
   fonts: FontSet;
   shape: Shape;
+  // Light: soft shadows. Dark: the surface tone carries the separation.
+  shadows: Record<ColorScheme, ShadowSet>;
   typography: Typography;
-  // Tags that lean (an event sticker). Never on trust screens.
-  eventTagTilt: number;
-  // Draws the "profilli" tag with a dashed outline.
-  profiledTagDashed: boolean;
 };
 
 // Spacing scale (4 · 8 · 12 · 16 · 24 · 32, plus the in-between steps
@@ -202,19 +211,13 @@ export const SPACING = {
   16: 64,
 } as const;
 
-// The tab bar's colours (canvas: Aşama 8 · Saha → Sekme çubuğu): the selected tab's icon is drawn in
-// its own colour; the others are muted. Mekan is the raised disc: filled with its colour, the icon
-// in the colour's foreground. contrast.test.ts checks each against the bar and the icon's halo.
-export const TAB_TONES = {
-  explore: 'success',
-  activities: 'violet',
-  messages: 'read',
-  profile: 'danger',
-} as const satisfies Record<string, PaletteKey>;
-export const VENUE_TAB_TONE = { fill: 'event', icon: 'onEvent' } as const satisfies Record<
-  string,
-  PaletteKey
->;
+// The tab bar: the selected tab's icon is solid and in one colour, the others are muted lines.
+// contrast.test.ts checks it against the bar and the icon's halo. The Mekan tab is the mark on an
+// ink square (src/components/VenueTabIcon.tsx), the same in both schemes.
+export const TAB_TONE = 'accent' as const satisfies PaletteKey;
+
+// Opacities: the scrim behind a sheet, a disabled control, a pressed text button.
+export const OPACITY = { scrim: 0.5, disabled: 0.4, pressed: 0.7 } as const;
 
 // Icon sizes (Ionicons).
 export const ICON = { xs: 12, sm: 16, md: 20, lg: 24, xl: 28 } as const;
@@ -250,32 +253,32 @@ export const MAP_PIN = {
 } as const;
 export const MAP_FONTS = { regular: ['Noto Sans Regular'], bold: ['Noto Sans Bold'] } as const;
 
-// Type sizes from directions.html; the theme overrides what differs.
+// The skall type scale: Poppins headings (700 and 800), Manrope body (400, 600, 700).
 export function baseTypography(overrides: Partial<Typography> = {}): Typography {
   return {
-    display: { font: 'display', size: 30, lineHeight: 34, letterSpacing: -0.3 },
-    title: { font: 'display', size: 23, lineHeight: 28 },
-    heading: { font: 'display', size: 18, lineHeight: 24 },
-    gameName: { font: 'display', size: 16, lineHeight: 19 },
-    alias: { font: 'display', size: 26, lineHeight: 32 },
-    word: { font: 'display', size: 38, lineHeight: 42, letterSpacing: 0.8 },
+    display: { font: 'display', size: 28, lineHeight: 34, letterSpacing: -0.4 },
+    title: { font: 'displayBold', size: 22, lineHeight: 28, letterSpacing: -0.2 },
+    heading: { font: 'displayBold', size: 18, lineHeight: 24 },
+    gameName: { font: 'displayBold', size: 16, lineHeight: 20 },
+    alias: { font: 'display', size: 26, lineHeight: 32, letterSpacing: -0.3 },
+    word: { font: 'display', size: 38, lineHeight: 44, letterSpacing: -0.6 },
     forbidden: { font: 'semibold', size: 18, lineHeight: 24 },
     score: { font: 'display', size: 30, lineHeight: 34 },
-    hero: { font: 'display', size: 54, lineHeight: 58, letterSpacing: -1 },
-    mark: { font: 'display', size: 20, lineHeight: 24 },
-    body: { font: 'regular', size: 16, lineHeight: 23 },
-    bodyStrong: { font: 'semibold', size: 16, lineHeight: 23 },
+    hero: { font: 'display', size: 52, lineHeight: 56, letterSpacing: -1 },
+    mark: { font: 'displayBold', size: 20, lineHeight: 24 },
+    body: { font: 'regular', size: 16, lineHeight: 24 },
+    bodyStrong: { font: 'semibold', size: 16, lineHeight: 24 },
     subtitle: { font: 'regular', size: 14, lineHeight: 20 },
-    eyebrow: { font: 'semibold', size: 14, lineHeight: 20 },
-    label: { font: 'semibold', size: 13, lineHeight: 18 },
+    eyebrow: { font: 'bold', size: 13, lineHeight: 18, letterSpacing: 0.2 },
+    label: { font: 'bold', size: 13, lineHeight: 18 },
     fine: { font: 'regular', size: 13, lineHeight: 18 },
     button: { font: 'bold', size: 16, lineHeight: 20 },
-    buttonLarge: { font: 'bold', size: 18, lineHeight: 22 },
+    buttonLarge: { font: 'bold', size: 17, lineHeight: 22 },
     buttonDetail: { font: 'semibold', size: 16, lineHeight: 20 },
     buttonSmall: { font: 'bold', size: 14, lineHeight: 18 },
-    tag: { font: 'bold', size: 13, lineHeight: 17 },
-    caption: { font: 'bold', size: 12, lineHeight: 16 },
-    overline: { font: 'extrabold', size: 12, lineHeight: 16, letterSpacing: 1, uppercase: true },
+    tag: { font: 'bold', size: 13, lineHeight: 16 },
+    caption: { font: 'bold', size: 11, lineHeight: 14 },
+    overline: { font: 'bold', size: 12, lineHeight: 16, letterSpacing: 1, uppercase: true },
     signalMark: { font: 'regular', size: 104, lineHeight: 126 },
     ...overrides,
   };

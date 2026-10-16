@@ -110,7 +110,11 @@ export default function NotificationsScreen() {
       <Screen>
         <ScreenHeader title={tr.notifications.title} onBack={() => router.back()} />
         <View className="flex-1 justify-center">
-          <EmptyState snail title={tr.notifications.empty} body={tr.notifications.emptyHint} />
+          <EmptyState
+            kind="empty"
+            title={tr.notifications.empty}
+            body={tr.notifications.emptyHint}
+          />
         </View>
       </Screen>
     );

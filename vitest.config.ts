@@ -17,6 +17,8 @@ export default defineConfig({
       'apps/mobile/src/theme/**/*.test.ts',
       // Turkish suffixes built in the strings file.
       'apps/mobile/src/i18n/**/*.test.ts',
+      // Pure helpers of the app (haptic moments).
+      'apps/mobile/src/lib/**/*.test.ts',
     ],
   },
 });

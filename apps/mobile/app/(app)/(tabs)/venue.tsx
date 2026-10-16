@@ -13,6 +13,7 @@ import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
+import { Icon } from '@/components/Icon';
 import { useVenueSpots } from '@/features/checkin/spots';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { Lobby } from '@/features/rooms/Lobby';
@@ -153,14 +154,11 @@ export default function VenueScreen() {
             </View>
           </View>
         </View>
-        <View
-          className="my-2.5"
-          style={{ height: shape.stroke.hairline, backgroundColor: colors.divider }}
-        />
+        <View className="my-2.5 bg-divider" style={{ height: shape.stroke.hairline }} />
         {venueHasSpots ? (
           <View className="flex-row items-center justify-between gap-2">
             <View className="flex-1 flex-row items-center gap-2">
-              <Ionicons name="location-outline" size={ICON.md} color={colors.text} />
+              <Icon name="location-outline" />
               <Text variant="bodyStrong" className="flex-1">
                 {table.data.spot?.name ? tr.venue.spot(table.data.spot.name) : tr.venue.noSpot}
               </Text>

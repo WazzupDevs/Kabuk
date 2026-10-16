@@ -3,7 +3,7 @@ import { exploreLayout } from '@shared/explore.ts';
 import { hasActiveTable } from '@shared/navigation.ts';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/Button';
@@ -14,8 +14,10 @@ import { Rise } from '@/components/motion';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useTabBarOverMap, useTabBarSpace } from '@/components/TabBar';
 import { Segmented } from '@/components/Segmented';
-import { Snail } from '@/components/Snail';
+import { Mark } from '@/components/Mark';
 import { Text } from '@/components/Text';
+import { Loader } from '@/components/Loader';
+import { Icon } from '@/components/Icon';
 import { useCheckinDraft } from '@/features/checkin/draft';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { NotificationsBell } from '@/features/notifications/Bell';
@@ -39,7 +41,7 @@ type View_ = 'list' | 'map';
 const BUCKET_ORDER = { buzzing: 0, lively: 1, calm: 2 } as const;
 // The single venue's colour block (canvas: Keşfet · tek mekan).
 const HERO_HEIGHT = SPACING[16] * 2 + SPACING[8];
-const HERO_SNAIL = SPACING[16] + SPACING[10];
+const HERO_MARK = SPACING[16] + SPACING[10];
 
 // Keşfet (docs/SPEC_V2.md §4): every venue, livelier ones first, as a list or on a map. The venue
 // is chosen by hand; check-in then verifies the position. With one active venue (the campus pilot)
@@ -116,7 +118,11 @@ export default function ExploreScreen() {
           ) : null}
         </View>
 
-        {venues.isPending ? <ActivityIndicator className="mt-8" color={colors.muted} /> : null}
+        {venues.isPending ? (
+          <View className="mt-8 items-center">
+            <Loader />
+          </View>
+        ) : null}
         {venues.isError ? (
           <View style={{ paddingHorizontal: shape.screenPadding }}>
             <EmptyState
@@ -189,7 +195,7 @@ function VenueList({
   );
 }
 
-// The pilot's Keşfet: the one venue as the featured card (a colour block with the snail, the name,
+// The pilot's Keşfet: the one venue as the featured card (a colour block with the mark, the name,
 // check-in), all its events within the week, then "Yeni mekanlar yakında". A second active venue
 // brings the list and the map back (content only).
 function SingleVenue({ venue, bottomSpace }: { venue: ExploreVenue; bottomSpace: number }) {
@@ -207,13 +213,13 @@ function SingleVenue({ venue, bottomSpace }: { venue: ExploreVenue; bottomSpace:
       <Rise>
         <Card tone="feature" flush>
           <View
-            style={{ height: HERO_HEIGHT, backgroundColor: colors.violet }}
+            style={{ height: HERO_HEIGHT, backgroundColor: colors.surface2 }}
             className="flex-row items-end justify-between px-4 pb-3 pt-4"
           >
             <View className="self-start">
               <BucketBadge bucket={venue.bucket} />
             </View>
-            <Snail variant="ink" height={HERO_SNAIL} />
+            <Mark size={HERO_MARK} label={null} />
           </View>
           <View className="gap-4 p-4">
             <View className="gap-1">
@@ -221,7 +227,7 @@ function SingleVenue({ venue, bottomSpace }: { venue: ExploreVenue; bottomSpace:
                 {venue.name}
               </Text>
               <View className="flex-row items-center gap-1.5">
-                <Ionicons name="location-outline" size={ICON.md} color={colors.muted} />
+                <Icon name="location-outline" tone="muted" />
                 <Text variant="fine">{venue.district}</Text>
               </View>
             </View>
@@ -277,7 +283,7 @@ function SingleVenue({ venue, bottomSpace }: { venue: ExploreVenue; bottomSpace:
       <Rise index={2}>
         <Card tone="note">
           <View className="flex-row items-center gap-3">
-            <Snail height={SPACING[11]} />
+            <Mark size={SPACING[11]} label={null} />
             <Text variant="bodyStrong" className="flex-1">
               {tr.explore.comingSoon}
             </Text>

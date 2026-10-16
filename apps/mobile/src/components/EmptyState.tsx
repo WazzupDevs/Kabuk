@@ -1,41 +1,88 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 
+import { useReduceMotion } from '@/lib/useReduceMotion';
+import {
+  LOADER_SHOW_AFTER_MS,
+  loaderMotion,
+  MARK_MAIN,
+  type StateKind,
+  stateMotion,
+  STILL_MOTION,
+} from '@/theme/markMotion';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 
 import { Button, type IconName } from './Button';
-import { Snail } from './Snail';
+import { useLoopActive } from './Loader';
+import { MotionMark } from './Mark';
 import { Text } from './Text';
 
+export type { StateKind };
+
 type Props = {
-  // An icon in a disc, or the brand snail (errors, "update required", empty lists).
+  // The living mark (the skall design system → StateView): `empty` the missing table waits as a
+  // dashed outline, `error` the capsules collide and no overlap forms, `offline` the second
+  // capsule flickers out and comes back, `loading` Tahterevalli. Or an icon in a disc.
+  kind?: StateKind;
   icon?: IconName;
-  snail?: boolean;
   title?: string;
   body: string;
   action?: { label: string; onPress: () => void };
 };
 
-const DISC = SPACING[16] * 2 + SPACING[4];
+const MARK_SIZE = SPACING[16] + SPACING[8];
 
-// Nothing to show yet: an icon disc, a short explanation and at most one action.
-export function EmptyState({ icon, snail, title, body, action }: Props) {
-  const { colors, shape } = useTheme();
+function StateMark({ kind }: { kind: StateKind }) {
+  const reduce = useReduceMotion();
+  const active = useLoopActive();
+  const m = MARK_MAIN;
+  const state = useMemo(() => {
+    if (kind === 'loading') {
+      return {
+        scene: { m, dx: m.dx, dy: m.dy },
+        motions: [reduce ? STILL_MOTION : loaderMotion('seesaw', m)],
+        outline: false,
+        flare: false,
+      };
+    }
+    return stateMotion(kind, m, reduce);
+  }, [kind, reduce, m]);
   return (
-    <View className="items-center gap-3 py-8">
-      {snail ? (
-        // Canvas (Aşama 4): an inviting snail in a soft disc.
-        <View
-          className="mb-1 items-center justify-center"
-          style={{
-            width: DISC,
-            height: DISC,
-            borderRadius: shape.radius.pill,
-            backgroundColor: colors.surface2,
-          }}
-        >
-          <Snail height={SPACING[16] + SPACING[6]} />
+    <MotionMark
+      key={`${kind}:${reduce ? 'still' : 'move'}`}
+      size={MARK_SIZE}
+      scene={state.scene}
+      motions={state.motions}
+      active={active}
+      outline={state.outline}
+      flare={state.flare}
+    />
+  );
+}
+
+// A screen's empty, error, offline or loading state: the living mark (or an icon disc), a short
+// explanation and at most one action.
+export function EmptyState({ kind, icon, title, body, action }: Props) {
+  const { colors, shape } = useTheme();
+  // Loading shows 300 ms into the wait, like every loader (a quick answer shows nothing).
+  const [shown, setShown] = useState(kind !== 'loading');
+  useEffect(() => {
+    if (kind !== 'loading') return undefined;
+    const id = setTimeout(() => setShown(true), LOADER_SHOW_AFTER_MS);
+    return () => clearTimeout(id);
+  }, [kind]);
+  return (
+    <View
+      style={{ opacity: shown || kind !== 'loading' ? 1 : 0 }}
+      className="items-center gap-3 py-8"
+      accessibilityRole={kind === 'loading' ? 'progressbar' : undefined}
+      accessibilityLabel={kind === 'loading' ? body : undefined}
+    >
+      {kind ? (
+        <View className="mb-1">
+          <StateMark kind={kind} />
         </View>
       ) : null}
       {icon ? (
@@ -56,7 +103,11 @@ export function EmptyState({ icon, snail, title, body, action }: Props) {
           {title}
         </Text>
       ) : null}
-      <Text variant={snail ? 'bodyStrong' : 'body'} tone={snail ? 'text' : 'muted'} align="center">
+      <Text
+        variant={kind === 'loading' ? 'fine' : kind ? 'bodyStrong' : 'body'}
+        tone={kind && kind !== 'loading' ? 'text' : 'muted'}
+        align="center"
+      >
         {body}
       </Text>
       {action ? (

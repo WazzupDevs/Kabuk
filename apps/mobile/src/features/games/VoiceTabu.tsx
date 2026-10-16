@@ -20,8 +20,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { Pressable, View } from 'react-native';
 
 import { Button } from '@/components/Button';
-import { useDepth } from '@/components/Depth';
 import { Text } from '@/components/Text';
+import { usePressScale } from '@/components/motion';
 import { roomKeys } from '@/features/rooms/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -29,12 +29,21 @@ import { gamesApi } from '@/lib/api';
 import { useNow } from '@/lib/useNow';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
+import { type HapticMoment } from '@/lib/hapticMoments';
+import { haptic } from '@/lib/haptics';
 
 import { ClockPill, RoleNote, TeamScore } from './GameBits';
 import { StageFit } from './GameStage';
 import { TabuCardView } from './TabuCardView';
 import { tabuStats, TurnReady } from './TurnReady';
 import { useTurnFeedback } from './useTurnFeedback';
+
+// Doğru is felt lightly; Tabu and Pas firmly (hareket.md).
+const MARK_HAPTIC: Record<MarkResult, HapticMoment> = {
+  correct: 'tabuCorrect',
+  taboo: 'tabuTaboo',
+  pass: 'tabuPass',
+};
 
 // Height of the covered card, about that of an open one.
 const COVER_HEIGHT = 192;
@@ -257,7 +266,7 @@ function Turn({
   aliases: Record<TableSide, string>;
 }) {
   const { colors, shape } = useTheme();
-  const depth = useDepth();
+  const pressScale = usePressScale();
   const now = useNow(250);
   const role = phoneRoleOf(server, side, sessionId);
   const { pending, push, error } = usePressQueue(roomId);
@@ -310,7 +319,9 @@ function Turn({
 
   const press = (result: MarkResult) => {
     const mark = { turnNo: view.turnNo, cardIndex: view.cardIndex, result };
-    if (applyMark(view, mark, role, now).kind === 'applied') push(mark);
+    if (applyMark(view, mark, role, now).kind !== 'applied') return;
+    haptic(MARK_HAPTIC[result]);
+    push(mark);
   };
   const passesLeft = view.maxPasses - view.passesUsed;
   const disabled = !card || covered || secondsLeft === 0;
@@ -506,16 +517,16 @@ function Turn({
                   minHeight: COVER_HEIGHT,
                   padding: SPACING[6],
                   borderRadius: shape.radius.lg,
-                  backgroundColor: colors.violet,
+                  backgroundColor: colors.accent,
                 },
-                depth({ pressed }),
+                pressScale(pressed),
               ]}
             >
-              <Ionicons name="eye-outline" size={ICON.xl} color={colors.onViolet} />
-              <Text variant="title" tone="onViolet" align="center">
+              <Ionicons name="eye-outline" size={ICON.xl} color={colors.onAccent} />
+              <Text variant="title" tone="onAccent" align="center">
                 {tr.games.tapToReveal}
               </Text>
-              <Text variant="fine" tone="onViolet" align="center">
+              <Text variant="fine" tone="onAccent" align="center">
                 {tr.games.hideFromTeam}
               </Text>
             </View>

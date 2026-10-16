@@ -11,7 +11,6 @@ import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 
 import { AVATAR_SIZE } from './Avatar';
 import { useChatBar } from './ChatScreen';
-import { useDepth } from './Depth';
 import { Text } from './Text';
 
 export type ChatQuote = { name: string; text: string };
@@ -383,7 +382,6 @@ function ReactionBar({
   onTouchInside: () => void;
 }) {
   const { colors, shape } = useTheme();
-  const depth = useDepth();
   return (
     <View
       accessibilityRole="menu"
@@ -398,8 +396,8 @@ function ReactionBar({
           alignSelf: mine ? 'flex-end' : 'flex-start',
           borderRadius: shape.radius.pill,
           backgroundColor: colors.surface,
+          boxShadow: shape.shadow.raised,
         },
-        depth(),
       ]}
     >
       {REACTIONS.map((emoji) => (

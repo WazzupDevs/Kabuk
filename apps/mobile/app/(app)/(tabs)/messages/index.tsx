@@ -6,10 +6,10 @@ import { Pressable, View } from 'react-native';
 import { Avatar } from '@/components/Avatar';
 import { DeliveryTicks } from '@/components/ChatBubble';
 import { EmptyState } from '@/components/EmptyState';
+import { useLoaderHold } from '@/components/Loader';
 import { Rise } from '@/components/motion';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { SnailLoader } from '@/components/Snail';
 import { Text } from '@/components/Text';
 import { openDm } from '@/features/friends/openDm';
 import { useDmInbox } from '@/features/friends/queries';
@@ -27,14 +27,15 @@ import { SPACING } from '@/theme/tokens';
 export default function MessagesScreen() {
   const inbox = useDmInbox();
   const now = useNow(60_000);
+  const loading = useLoaderHold(inbox.isPending);
 
   return (
     <Screen edges={['top']}>
       <ScreenHeader title={tr.tabs.messages} trailing={<NotificationsBell />} />
 
-      {inbox.isPending ? (
+      {inbox.isPending || loading ? (
         <View className="mt-12">
-          <SnailLoader />
+          <EmptyState kind="loading" body={tr.common.loading} />
         </View>
       ) : inbox.isError ? (
         <EmptyState
@@ -44,7 +45,7 @@ export default function MessagesScreen() {
         />
       ) : inbox.data.length === 0 ? (
         <View className="flex-1 justify-center">
-          <EmptyState snail title={tr.messages.empty} body={tr.messages.emptyHint} />
+          <EmptyState kind="empty" title={tr.messages.empty} body={tr.messages.emptyHint} />
         </View>
       ) : (
         <View className="mt-2 gap-1.5">

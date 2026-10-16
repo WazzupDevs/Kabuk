@@ -2,7 +2,7 @@ import { createRequire } from 'node:module';
 
 import { describe, expect, it } from 'vitest';
 
-import { parseThemePreference, resolveScheme, resolveShadow } from './registry';
+import { parseThemePreference, resolveScheme, resolveShadows } from './registry';
 import { THEME } from './theme';
 import { colorClass, PALETTE_KEYS } from './tokens';
 
@@ -46,10 +46,26 @@ describe('parseThemePreference', () => {
 });
 
 describe('tokens', () => {
-  it('fills shadow colours from the palette', () => {
-    const palette = THEME.palettes.light;
-    expect(resolveShadow('3px 3px 0px {border}', palette)).toBe(`3px 3px 0px ${palette.border}`);
-    expect(resolveShadow(null, palette)).toBeUndefined();
+  it('draws no shadow for null', () => {
+    const shadows = resolveShadows({ ...THEME.shadows.light, card: null });
+    expect(shadows.card).toBeUndefined();
+    expect(shadows.tabBar).toBe(THEME.shadows.light.tabBar);
+  });
+
+  // skall: soft shadows only, no hard offset shadow of the old "3D" look.
+  it('has no hard shadows', () => {
+    for (const scheme of ['light', 'dark'] as const) {
+      for (const shadow of Object.values(THEME.shadows[scheme])) {
+        for (const layer of (shadow ?? '').split(/,(?![^(]*\))/)) {
+          const [x, y, blur, spread] = layer
+            .trim()
+            .split(/\s+/)
+            .map((v) => parseFloat(v));
+          if (!blur) expect([x, y]).toEqual([0, 0]);
+          expect(spread ?? 0).toBeLessThanOrEqual(4);
+        }
+      }
+    }
   });
 
   it('the theme defines every palette key in both schemes', () => {

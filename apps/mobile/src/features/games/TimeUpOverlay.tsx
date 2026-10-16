@@ -7,6 +7,7 @@ import { useReduceMotion } from '@/lib/useReduceMotion';
 import { withAlpha } from '@/theme/contrast';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
+import { haptic } from '@/lib/haptics';
 
 const SCRIM_OPACITY = 0.55;
 
@@ -31,6 +32,7 @@ export function TimeUpOverlay({ visible, detail, brand }: Props) {
       pop.setValue(0);
       return;
     }
+    haptic('timeUp');
     if (reduce) {
       pop.setValue(1);
       return;
@@ -59,9 +61,7 @@ export function TimeUpOverlay({ visible, detail, brand }: Props) {
           paddingVertical: SPACING[8],
           borderRadius: shape.radius.lg + SPACING[3],
           backgroundColor: colors.danger,
-          borderWidth: Math.max(shape.stroke.feature, 2),
-          borderColor: colors.border,
-          boxShadow: shape.shadow.feature ?? undefined,
+          boxShadow: shape.shadow.card,
           opacity: pop,
           transform: [{ scale: pop.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1] }) }],
         }}
