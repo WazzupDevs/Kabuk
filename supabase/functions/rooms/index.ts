@@ -9,6 +9,7 @@
 import { requireUser, serviceClient } from '../_shared/auth.ts';
 import { inBackground } from '../_shared/background.ts';
 import { broadcast } from '../_shared/broadcast.ts';
+import { reachablePhotoUrl } from '../_shared/photos.ts';
 import { dbError } from '../_shared/db.ts';
 import { z } from '../_shared/deps.ts';
 import { handle } from '../_shared/http.ts';
@@ -19,9 +20,13 @@ import type {
   CreateRoomResponse,
   ProposeGameResponse,
   RequestJoinResponse,
+  RequestProfileResponse,
   RoomsOkResponse,
   RoomsRequest,
 } from '../_shared/pure/api/rooms.ts';
+import { ageOn, istanbulToday, parseIsoDate } from '../_shared/pure/age.ts';
+import { type Gender, participationError } from '../_shared/pure/gender.ts';
+import { PHOTO_BUCKET, PHOTO_URL_SECONDS } from '../_shared/pure/profile.ts';
 import { joinAcceptedPush, joinRequestPush } from '../_shared/pure/push.ts';
 import { REVEAL } from '../_shared/pure/reveal.ts';
 import {
@@ -73,17 +78,56 @@ const Body: z.ZodType<RoomsRequest> = z.discriminatedUnion('action', [
   z.object({ action: z.literal('end-game'), roomId: z.uuid() }),
   z.object({ action: z.literal('end') }),
   z.object({ action: z.literal('leave'), roomId: z.uuid() }),
+  z.object({ action: z.literal('request-profile'), requestId: z.uuid() }),
 ]);
 
 const db = serviceClient();
 
-// "Profilimle" needs a profile photo others can see (docs/SPEC_V3.md §22.G, decision 8); only its
-// presence, at the moment of the choice.
-async function requirePhotoIfProfiled(userId: string, profiled: boolean): Promise<void> {
+// The game flow ("Masanı lobiye aç", "Katıl", "Bu masadayım"; not "Masanla oyna"): a man and
+// "Belirtmek istemiyorum" join only with the profile (docs/SPEC_V3.md §23.D, pure/gender.ts), never
+// turned into a profiled entry behind their back. Then "Profilimle" needs a profile photo others can
+// see (§22.G, decision 8); only its presence, at the moment of the choice.
+async function requireParticipation(userId: string, profiled: boolean): Promise<void> {
+  const profile = await db.from('profiles').select('gender').eq('id', userId).maybeSingle();
+  if (profile.error) throw dbError('profiles', profile.error);
+  const refused = participationError((profile.data?.gender ?? null) as Gender | null, profiled);
+  if (refused) throw new AppError(refused, 'This account joins with its profile.');
   if (!profiled) return;
   const { data, error } = await db.rpc('has_profile_photo', { target_user_id: userId });
   if (error) throw dbError('has_profile_photo', error);
   if (!data) throw new AppError('photo_required', 'A profile photo is required to join profiled.');
+}
+
+// The request card's profile (docs/SPEC_V3.md §23.E): the name, the age and the photo of a
+// requester who asked with its profile, for the leader who can answer while the request waits.
+// Everything else answers not_found alike; nothing in the answer names the account (rule 4).
+async function requestProfile(userId: string, requestId: string): Promise<RequestProfileResponse> {
+  const owner = await db.rpc('rooms_request_profile_owner', {
+    target_user_id: userId,
+    target_request_id: requestId,
+  });
+  if (owner.error) throw dbError('rooms_request_profile_owner', owner.error);
+  if (!owner.data) throw new AppError('not_found', 'Request not found.');
+  const { data, error } = await db
+    .from('profiles')
+    .select('display_name, birth_date, photo_path, photo_hidden_at')
+    .eq('id', owner.data)
+    .single();
+  if (error) throw dbError('profiles', error);
+  const born = data.birth_date ? parseIsoDate(data.birth_date) : null;
+  let photoUrl: string | null = null;
+  if (data.photo_path && !data.photo_hidden_at) {
+    const signed = await db.storage
+      .from(PHOTO_BUCKET)
+      .createSignedUrl(data.photo_path, PHOTO_URL_SECONDS);
+    if (signed.error) throw new Error(`storage sign failed (${signed.error.message})`);
+    photoUrl = reachablePhotoUrl(signed.data.signedUrl);
+  }
+  return {
+    displayName: data.display_name,
+    age: born ? ageOn(born, istanbulToday(new Date())) : null,
+    photoUrl,
+  };
 }
 
 async function pushTokenOfSession(sessionId: string): Promise<string | null> {
@@ -104,7 +148,11 @@ Deno.serve(
       req,
       raw,
     ): Promise<
-      CreateRoomResponse | RequestJoinResponse | ProposeGameResponse | RoomsOkResponse
+      | CreateRoomResponse
+      | RequestJoinResponse
+      | RequestProfileResponse
+      | ProposeGameResponse
+      | RoomsOkResponse
     > => {
       const body = Body.parse(raw);
       const user = await requireUser(req, db);
@@ -112,7 +160,7 @@ Deno.serve(
       switch (body.action) {
         // "Oda kur" ("Masanı lobiye aç"): always open (S4), with an optional game tag (§23.C).
         case 'create': {
-          await requirePhotoIfProfiled(user.id, body.profiled);
+          await requireParticipation(user.id, body.profiled);
           const { data, error } = await db.rpc('rooms_create', {
             target_user_id: user.id,
             profiled: body.profiled,
@@ -132,7 +180,7 @@ Deno.serve(
         }
 
         case 'request-join': {
-          await requirePhotoIfProfiled(user.id, body.profiled);
+          await requireParticipation(user.id, body.profiled);
           const { data, error } = await db.rpc('rooms_request_join', {
             target_user_id: user.id,
             target_room_id: body.roomId,
@@ -291,6 +339,9 @@ Deno.serve(
           if (data.visibility === 'open') lobbyChanged(db, data);
           return { ok: true };
         }
+
+        case 'request-profile':
+          return await requestProfile(user.id, body.requestId);
       }
     },
   ),

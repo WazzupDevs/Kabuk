@@ -46,6 +46,7 @@ export type ErrorCode =
   | 'not_found'
   | 'reply_unavailable'
   | 'photo_required'
+  | 'anonymous_not_allowed'
   | 'venue_chat_mode_locked'
   | 'wrong_side'
   | 'not_leader'

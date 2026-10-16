@@ -12,3 +12,8 @@ export function prepareMessage(raw: string): string | null {
 
 export const REPORT_REASONS = ['harassment', 'inappropriate', 'spam', 'other'] as const;
 export type ReportReason = (typeof REPORT_REASONS)[number];
+// "Yanlış cinsiyet beyanı" (docs/SPEC_V3.md §23.D) is a reason only for a person met in the game
+// flow: a phone in the room and a history row. The venue chat and DMs have no gender rule, so their
+// reports keep REPORT_REASONS.
+export const GAME_FLOW_REPORT_REASONS = [...REPORT_REASONS, 'wrong_gender'] as const;
+export type GameFlowReportReason = (typeof GAME_FLOW_REPORT_REASONS)[number];

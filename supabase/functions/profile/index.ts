@@ -18,6 +18,7 @@ import type {
 } from '../_shared/pure/api/profile.ts';
 import { ageOn, istanbulToday, parseIsoDate } from '../_shared/pure/age.ts';
 import { earnedBadges } from '../_shared/pure/badges.ts';
+import type { Gender } from '../_shared/pure/gender.ts';
 import { AppError } from '../_shared/pure/errors.ts';
 import { inspectJpeg } from '../_shared/pure/jpegMetadata.ts';
 import {
@@ -122,7 +123,7 @@ async function getProfile(viewer: string, publicId: string): Promise<ProfileView
 
   const [stats, birth] = await Promise.all([
     db.rpc('user_stats', { target_user_id: row.user_id }),
-    db.from('profiles').select('birth_date').eq('id', row.user_id).single(),
+    db.from('profiles').select('birth_date, gender').eq('id', row.user_id).single(),
   ]);
   if (stats.error) throw dbError('user_stats', stats.error);
   if (birth.error) throw dbError('profiles', birth.error);
@@ -147,8 +148,15 @@ async function getProfile(viewer: string, publicId: string): Promise<ProfileView
       distinctTables: counts?.distinct_tables ?? 0,
     }),
     age,
-    // The owner sees their own birth date (Ayarlar → Hesap); nobody else does.
-    ...(row.is_self ? { photoHidden: row.photo_hidden, birthDate: birth.data.birth_date } : {}),
+    // The owner sees their own birth date (Ayarlar → Hesap) and gender; nobody else does (rules 11
+    // and 12).
+    ...(row.is_self
+      ? {
+          photoHidden: row.photo_hidden,
+          birthDate: birth.data.birth_date,
+          gender: birth.data.gender as Gender | null,
+        }
+      : {}),
   };
 }
 

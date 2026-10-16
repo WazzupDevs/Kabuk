@@ -13,6 +13,7 @@ import type {
 } from '../_shared/pure/api/account.ts';
 import { CURRENT_KVKK_VERSION, CURRENT_TERMS_VERSION } from '../_shared/pure/consent.ts';
 import { AppError } from '../_shared/pure/errors.ts';
+import { type Gender, GENDERS } from '../_shared/pure/gender.ts';
 import { checkDisplayName } from '../_shared/pure/profile.ts';
 import { loadProfanity } from '../_shared/profanity.ts';
 import { isExpoPushToken } from '../_shared/pure/push.ts';
@@ -24,7 +25,9 @@ const Body: z.ZodType<AccountRequest> = z.discriminatedUnion('action', [
     kvkkVersion: z.string(),
     displayName: z.string().max(200).optional(),
     birthDate: z.string().max(20).optional(),
+    gender: z.enum(GENDERS).optional(),
   }),
+  z.object({ action: z.literal('set-gender'), gender: z.enum(GENDERS) }),
   z.object({ action: z.literal('delete') }),
   z.object({
     action: z.literal('register-push'),
@@ -55,7 +58,7 @@ async function completeOnboarding(userId: string, body: CompleteOnboardingReques
   }
   const existing = await db
     .from('profiles')
-    .select('display_name, birth_date')
+    .select('display_name, birth_date, gender')
     .eq('id', userId)
     .maybeSingle();
   if (existing.error) throw dbError('profiles', existing.error);
@@ -75,6 +78,13 @@ async function completeOnboarding(userId: string, body: CompleteOnboardingReques
   } else if (body.birthDate !== undefined && body.birthDate !== birthDate) {
     // Set once; a correction goes through admin:set-birth-date.
     throw new AppError('birth_date_invalid', 'The birth date cannot be changed.');
+  }
+
+  // Set once, like the birth date (docs/SPEC_V3.md §23.D); a correction goes through
+  // admin:set-gender. Optional until the app asks for it (step 23.2's client part).
+  const gender = (existing.data?.gender ?? null) as Gender | null;
+  if (gender !== null && body.gender !== undefined && body.gender !== gender) {
+    throw new AppError('bad_request', 'The gender cannot be changed.');
   }
 
   let displayName = existing.data?.display_name ?? null;
@@ -97,8 +107,26 @@ async function completeOnboarding(userId: string, body: CompleteOnboardingReques
     kvkk_version: body.kvkkVersion,
     display_name: displayName,
     birth_date: birthDate,
+    gender: gender ?? body.gender ?? null,
   });
   if (error) throw dbError('profiles', error);
+}
+
+// The one-time gender question for an account from before the gender step (docs/SPEC_V3.md §23.D):
+// only while the profile's gender is empty. The update itself checks it, so two answers cannot both
+// land.
+async function setGender(userId: string, gender: Gender): Promise<void> {
+  const existing = await db.from('profiles').select('gender').eq('id', userId).maybeSingle();
+  if (existing.error) throw dbError('profiles', existing.error);
+  if (!existing.data) throw new AppError('onboarding_required', 'Complete onboarding first.');
+  const { data, error } = await db
+    .from('profiles')
+    .update({ gender })
+    .eq('id', userId)
+    .is('gender', null)
+    .select('id');
+  if (error) throw dbError('profiles', error);
+  if (data.length === 0) throw new AppError('bad_request', 'The gender is already set.');
 }
 
 Deno.serve(
@@ -109,6 +137,12 @@ Deno.serve(
       case 'complete-onboarding': {
         const user = await requireUser(req, db);
         await completeOnboarding(user.id, body);
+        return { ok: true };
+      }
+
+      case 'set-gender': {
+        const user = await requireUser(req, db);
+        await setGender(user.id, body.gender);
         return { ok: true };
       }
 

@@ -8,6 +8,7 @@ import {
   CURRENT_LOCATION_CONSENT_VERSION,
   CURRENT_TERMS_VERSION,
 } from '../functions/_shared/pure/consent.ts';
+import type { Gender } from '../functions/_shared/pure/gender.ts';
 import { PHOTO_BUCKET } from '../functions/_shared/pure/profile.ts';
 import { ANCHOR, FIXTURE_VENUES, offset } from './fixtures/venues.ts';
 import { type Client, invoke, signIn, sql, userIdOf } from './local.ts';
@@ -19,9 +20,10 @@ export const TEST_DISPLAY_NAME = 'Test Masa';
 export const TEST_BIRTH_DATE = '2000-01-15';
 export const TEST_AGE = ageOn({ year: 2000, month: 1, day: 15 }, istanbulToday(new Date()));
 
+// `gender` (docs/SPEC_V3.md §23.D) only when given: until the app asks for it, sign-up leaves it out.
 export async function onboarded(
   phone: string,
-  profile: { displayName?: string; birthDate?: string } = {},
+  profile: { displayName?: string; birthDate?: string; gender?: Gender } = {},
 ): Promise<Client> {
   const client = await signIn(phone);
   const res = await invoke(client, 'account', {
@@ -30,6 +32,7 @@ export async function onboarded(
     kvkkVersion: CURRENT_KVKK_VERSION,
     displayName: profile.displayName ?? TEST_DISPLAY_NAME,
     birthDate: profile.birthDate ?? TEST_BIRTH_DATE,
+    ...(profile.gender ? { gender: profile.gender } : {}),
   });
   expect(res.status, JSON.stringify(res.body)).toBe(200);
   return client;
