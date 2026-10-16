@@ -8,6 +8,8 @@ import { createContext, type ReactNode, useContext, useEffect, useMemo, useState
 import { type TextStyle, useColorScheme, View } from 'react-native';
 import { create } from 'zustand';
 
+import { useLaunchStore } from '@/features/launch/launchStore';
+
 import { rgbChannels } from './contrast';
 import { featurePalette } from './feature';
 import { fontsOf } from './fonts';
@@ -165,6 +167,7 @@ export function colorVars(colors: Palette) {
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const preference = useSchemePreference();
   const loaded = useDesignStore((s) => s.loaded);
+  const curtain = useLaunchStore((s) => s.curtain);
   const system = useColorScheme();
 
   useEffect(loadPreference, []);
@@ -191,7 +194,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   return (
     <ThemeContext.Provider value={theme}>
       <NavigationTheme value={navTheme}>
-        <StatusBar style={theme.scheme === 'dark' ? 'light' : 'dark'} />
+        {/* Light on the launch curtain's ink, then the scheme's. */}
+        <StatusBar style={curtain || theme.scheme === 'dark' ? 'light' : 'dark'} />
         <View style={style}>{children}</View>
       </NavigationTheme>
     </ThemeContext.Provider>

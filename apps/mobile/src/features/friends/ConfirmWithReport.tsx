@@ -1,4 +1,4 @@
-import type { ReportReason } from '@shared/chat.ts';
+import type { GameFlowReportReason } from '@shared/chat.ts';
 import { useState } from 'react';
 
 import { Button } from '@/components/Button';
@@ -9,20 +9,22 @@ import { ReportModal } from '@/features/chat/ReportModal';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 
-type Props = {
+type Props<R extends GameFlowReportReason> = {
   visible: boolean;
+  // The report's reasons (ReportModal): GAME_FLOW_REPORT_REASONS only for a history row.
+  reasons: readonly R[];
   title: string;
   hint: string;
   confirmLabel: string;
   pending: boolean;
   error: unknown;
-  onConfirm: (report: ReportReason | undefined) => void;
+  onConfirm: (report: R | undefined) => void;
   onClose: () => void;
 };
 
 // Block or unfriend with the "Şikayet de et" option (docs/SPEC_V2.md §6.4): the server copies the
 // report in the same transaction before anything is deleted.
-export function ConfirmWithReport(props: Props) {
+export function ConfirmWithReport<R extends GameFlowReportReason>(props: Props<R>) {
   const [alsoReport, setAlsoReport] = useState(false);
   const [pickingReason, setPickingReason] = useState(false);
 
@@ -56,6 +58,7 @@ export function ConfirmWithReport(props: Props) {
       </Sheet>
       <ReportModal
         visible={props.visible && pickingReason}
+        reasons={props.reasons}
         pending={props.pending}
         error={props.error}
         onReport={(reason) => {

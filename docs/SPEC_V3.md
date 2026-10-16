@@ -2345,6 +2345,7 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 - **Oyun akışındaki `profiled` özelliği kalkar (23.2):** anonim katılım yalnızca kadın beyanıyla mümkün olduğundan `profiled: false` cinsiyetin vekili olur. Bugün bunu taşıyan olay `room_created { intent, profiled }`'dır; 23.2'de `profiled` çıkar. Mekan sohbetinin `profiled` özellikleri kalır, çünkü orada herkes anonim yazabilir.
 - 23.1: lobiye açma (etiketli ya da etiketsiz), istek ve kabul.
 - 23.3: `reveal_mutual` ve `reveal_none` kalkar; masa sonundaki "Arkadaş ekle" ve arkadaşlık olayları kalır.
+- 23.2 (23.2b PR'ı): `room_created { intent, game_tag }` (`profiled` çıktı). `participation_chosen { mode }` olayı da kalktı: yalnızca oyun akışında tetikleniyordu ve tek özelliği aynı vekildi. Cinsiyet ekranı ve fotoğraf notu olay üretmez; `onboarding_completed` herkese aynı.
 - Kesin olay listesi ilgili adımın PR'ında yazılır.
 
 **Yasal (adım 23.2, OTA'dan önce):**
@@ -2447,6 +2448,11 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
   - 23.2a: kolon, `set-gender`, kayıtta isteğe bağlı `gender`, erkek ve belirtmeyen için `anonymous_not_allowed`, `request-profile`, `wrong_gender`, `admin:set-gender`, kural 4 ve 12, yasal metinler. Boş cinsiyet oyun akışında bugünkü gibi geçer.
   - 23.2b (istemci PR'ı, iki küçük sunucu değişikliğiyle): cinsiyetsiz `complete-onboarding` `bad_request` döner, cinsiyeti boş hesap oyun akışında `gender_required` alır ve `CURRENT_KVKK_VERSION` artar (mevcut kullanıcılar yeniden onaylar). §23.M'deki bu iki madde o PR'da test edilir.
   - **Boş cinsiyetin oyun akışında geçmesi yalnızca ara durumdur: 23.2, 23.2b "kayıtta zorunlu" ve `gender_required`'ı açıp ikisini kanıtlayan testlerle birleşmeden bitmiş sayılmaz.**
+- **23.3 de kademeli zorlanır** (proje sahibinin kararı, 23.3 sunucu PR'ı). Sunucu PR'ı (23.3a) bugünkü uygulamayı bozmaz, E2E'si bugünkü uygulamayla yeşil kalır:
+  - 23.3a: `…_table_end.sql`. Doğrudan kapanış, kapanışta kayıt ve yeni hareketsizlik kuralı `private.table_end_on()` anahtarının arkasındadır; anahtar kapalıdır, bugünkü pencere ve 10 dakika aynen sürer. Anahtardan bağımsız olanlar: `play_history.friend_open`, `friends_add_from_room`'un `friend_open` şartı ve `historyAction`'ın `friend_open` okuması; anahtar kapalıyken hiçbir kayıt `friend_open` almaz. `tableEnd.test.ts` anahtarı kendi koşusu için açar.
+  - 23.3b (istemci PR'ı): anahtarı açan migration, cron'un 30 dakikası ve `ROOM_IDLE_MINUTES = 30`. Pencereyi bekleyen mevcut test beklentileri bu PR'da değişir (§23.M); kural 4, 5 ve 9'un 23.3 değişiklikleri bu PR'da CLAUDE.md'ye işlenir.
+  - 23.3a, 23.2b birleşmeden main'e girmez.
+  - **Anahtar kapalıyken 23.3 bitmiş sayılmaz: 23.3, 23.3b anahtarı istemciyle birlikte açınca biter.**
 - **Açık kararlar bekletir:**
   - bulma yardımı → 23.3 saha testinden sonra;
   - analitikte cinsiyet → 23.2.

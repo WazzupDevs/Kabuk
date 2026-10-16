@@ -149,11 +149,15 @@ appId: app.kabuk.mobile
     env:
       ACTION: request-join
       BODY: '{"profiled":true}'
-# The request opens over whatever screen is up (§23.C), here the waiting room.
+# The request opens over whatever screen is up (§23.C), here the waiting room. The bot asked with
+# its profile: the card shows its name and age (§23.E), read while the request waits.
 - extendedWaitUntil:
     visible: Katılma isteği
     timeout: 20000
 - assertVisible: Geç
+- extendedWaitUntil:
+    visible: 'Bot Masa, \d+'
+    timeout: 10000
 - takeScreenshot: 15-join-request
 - tapOn:
     id: join-accept
