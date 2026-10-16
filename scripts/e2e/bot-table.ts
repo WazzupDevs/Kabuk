@@ -157,7 +157,7 @@ async function sayRoom(): Promise<{
   return retryUntil('a Harf or Şarkı game', async () => {
     const { data } = await me()
       .from('rooms')
-      .select('id, game_state, owner_session_id')
+      .select('id, game_state, owner_session_id, guest_session_id')
       .neq('status', 'closed')
       .order('created_at', { ascending: false })
       .limit(1);
@@ -167,7 +167,7 @@ async function sayRoom(): Promise<{
     return {
       id: room.id as string,
       kind: state.kind,
-      side: room.owner_session_id === sessionId ? 'owner' : 'guest',
+      side: await sideIn(room as RoomRow, sessionId),
       state,
     };
   });
@@ -177,13 +177,13 @@ async function sayRoom(): Promise<{
 // its own ready round after a few seconds, a random open letter (or a line) on its own turn after
 // a few seconds, advance when a clock ran out. It never objects.
 async function sayStep(
-  room: { id: string; game_state: Json; owner_session_id?: string | null },
+  room: RoomRow,
   sessionId: string | undefined,
   seen: Map<string, number>,
 ): Promise<string | null> {
   const state = parseSayState(room.game_state);
   if (!state) return null;
-  const side = room.owner_session_id === sessionId ? 'owner' : 'guest';
+  const side = await sideIn(room, sessionId);
   const key = `${room.id}/${state.roundNo}/${state.step}/${state.turnPhase}`;
   const since = seen.get(key) ?? Date.now();
   seen.set(key, since);
@@ -227,7 +227,7 @@ async function ibreRoom(): Promise<{ id: string; side: 'owner' | 'guest'; state:
   return retryUntil('an İbre game', async () => {
     const { data } = await me()
       .from('rooms')
-      .select('id, game_state, owner_session_id')
+      .select('id, game_state, owner_session_id, guest_session_id')
       .neq('status', 'closed')
       .order('created_at', { ascending: false })
       .limit(1);
@@ -236,7 +236,7 @@ async function ibreRoom(): Promise<{ id: string; side: 'owner' | 'guest'; state:
     if (!room || !state) return null;
     return {
       id: room.id as string,
-      side: room.owner_session_id === sessionId ? 'owner' : 'guest',
+      side: await sideIn(room as RoomRow, sessionId),
       state,
     };
   });
@@ -245,17 +245,18 @@ async function ibreRoom(): Promise<{ id: string; side: 'owner' | 'guest'; state:
 const clampNeedle = (v: number) => Math.max(IBRE_MIN, Math.min(IBRE_MAX, Math.round(v)));
 
 // One step of the bot table's part in İbre (opponent mode): Başla on its own ready round after a
-// few seconds, advance once a clock ran out; on its own round it asks for the target and locks the
-// needle near it after a few seconds; on the other table's round it picks a side after a few
-// seconds.
+// few seconds, advance once a clock ran out; on its own round, as the describer locking alone, it
+// asks for the target and locks the needle near it after a few seconds, and as a teammate of the
+// describer (lockBy 'team', docs/SPEC_V3.md §22.E) it locks without the target; on the other side's
+// round it picks a side after a few seconds.
 async function ibreStep(
-  room: { id: string; game_state: Json; owner_session_id?: string | null },
+  room: RoomRow,
   sessionId: string | undefined,
   seen: Map<string, number>,
 ): Promise<string | null> {
   const state = parseIbreState(room.game_state);
   if (!state) return null;
-  const side = room.owner_session_id === sessionId ? 'owner' : 'guest';
+  const side = await sideIn(room, sessionId);
   const key = `${room.id}/ibre/${state.roundNo}/${state.turnPhase}`;
   const since = seen.get(key) ?? Date.now();
   seen.set(key, since);
@@ -273,14 +274,25 @@ async function ibreStep(
     return null;
   }
   if (state.turnPhase === 'running' && mine && Date.now() - since > 4_000) {
-    const { target } = (await call('ibre', {
-      action: 'target',
-      roomId: room.id,
-      round: state.roundNo,
-    })) as { target: number };
-    const value = clampNeedle(target + (Math.random() * 16 - 8));
-    await call('ibre', { action: 'lock', roomId: room.id, round: state.roundNo, value });
-    return `locked ${value}`;
+    // Before step 22.3 the leader described and locked alone.
+    const roles = room.game_state as { describer?: string | null; lockBy?: string | null };
+    const describer = roles.describer ?? sessionId;
+    if (describer === sessionId && roles.lockBy !== 'team') {
+      const { target } = (await call('ibre', {
+        action: 'target',
+        roomId: room.id,
+        round: state.roundNo,
+      })) as { target: number };
+      const value = clampNeedle(target + (Math.random() * 16 - 8));
+      await call('ibre', { action: 'lock', roomId: room.id, round: state.roundNo, value });
+      return `locked ${value}`;
+    }
+    if (describer !== sessionId && roles.lockBy === 'team') {
+      const value = clampNeedle(IBRE_MIN + Math.random() * (IBRE_MAX - IBRE_MIN));
+      await call('ibre', { action: 'lock', roomId: room.id, round: state.roundNo, value });
+      return `locked ${value} for the describer`;
+    }
+    return null;
   }
   if (state.turnPhase === 'side' && !mine && Date.now() - since > 3_000) {
     const pick = Math.random() < 0.5 ? 'left' : 'right';
@@ -295,6 +307,29 @@ async function mySessionId(): Promise<string | undefined> {
   return data?.[0]?.id as string | undefined;
 }
 
+type Side = 'owner' | 'guest';
+type RoomRow = {
+  id: string;
+  game_state: Json;
+  owner_session_id?: string | null;
+  guest_session_id?: string | null;
+};
+
+// The bot's side in a room (docs/SPEC_V3.md §22.B): a leader's from the room row, a member's
+// ("Bu masadayım") from room_phones. In a room without members this is the old answer.
+async function sideIn(room: RoomRow, sessionId: string | undefined): Promise<Side> {
+  if (room.owner_session_id === sessionId) return 'owner';
+  if (room.guest_session_id === sessionId) return 'guest';
+  const { data } = await me().rpc('room_phones', { target_room_id: room.id });
+  const mine = ((data ?? []) as { session_id: string; side: Side }[]).find(
+    (p) => p.session_id === sessionId,
+  );
+  return mine?.side ?? 'guest';
+}
+
+const leads = (room: RoomRow, sessionId: string | undefined) =>
+  !!sessionId && (room.owner_session_id === sessionId || room.guest_session_id === sessionId);
+
 // The bot's part of a two-table Sahtekar game (docs/SPEC_V3.md §20.2), one step per call: it looks
 // at its seats' cards, says "Söyledi" on its own clue steps, votes with each of its seats for the
 // other table's first seat, guesses when it is caught (`guessWrong`, local only: a word that is not
@@ -302,19 +337,21 @@ async function mySessionId(): Promise<string | undefined> {
 type SahtekarBot = { done: Set<string>; guessWrong: boolean };
 
 async function sahtekarStep(
-  room: { id: string; game_state: Json; owner_session_id?: string | null },
+  room: RoomRow,
   sessionId: string | undefined,
   bot: SahtekarBot,
 ): Promise<string | null> {
   const state = parseSahtekarState(room.game_state);
   if (!state) return null;
-  const side = room.owner_session_id === sessionId ? 'owner' : 'guest';
+  const side = await sideIn(room, sessionId);
   const mine = ownSeats(state.seats, side);
   const deal = `${room.id}/${state.gameNo}/${state.dealNo}`;
   if (Date.now() >= Date.parse(state.endsAt)) {
     await call('sahtekar', { action: 'advance', roomId: room.id });
     return 'advanced';
   }
+  // The seats are on the side's leader's phone (docs/SPEC_V3.md §22.E): a member only watches.
+  if (!leads(room, sessionId)) return null;
   if (state.phase === 'viewing') {
     for (const seat of mine) {
       if (state.viewed.includes(seat) || bot.done.has(`${deal}/view/${seat}`)) continue;
@@ -457,7 +494,8 @@ export const actions: Record<string, (args: Json) => Promise<Json>> = {
   },
 
   // At BOT_VENUE (name or id; the E2E venue by default), standing on the venue's own point. At a
-  // venue with spots, at `spot` or BOT_SPOT (ref or name), else the first spot.
+  // venue with spots, at `spot` or BOT_SPOT (ref or name), else the first spot. `teams`: the table
+  // takes members ("Bu masadayım", docs/SPEC_V3.md §22.B); without it, as an old app.
   async checkin(args) {
     const wanted = String(args.venue ?? process.env.BOT_VENUE ?? E2E_VENUE.name);
     const { data, error } = await me().rpc('explore_venues', {});
@@ -490,6 +528,7 @@ export const actions: Record<string, (args: Json) => Promise<Json>> = {
       headcount: Number(args.headcount ?? 3),
       locationConsentVersion: CURRENT_LOCATION_CONSENT_VERSION,
       ...(spot ? { spotId: spot.id } : {}),
+      ...(args.teams === true ? { teams: true } : {}),
     });
   },
 
@@ -765,7 +804,7 @@ export const actions: Record<string, (args: Json) => Promise<Json>> = {
         try {
           const { data } = await me()
             .from('rooms')
-            .select('id, game_state, owner_session_id')
+            .select('id, game_state, owner_session_id, guest_session_id')
             .eq('id', room.id)
             .single();
           if (!data || !parseSahtekarState(data.game_state)) return;
@@ -1005,17 +1044,108 @@ export const actions: Record<string, (args: Json) => Promise<Json>> = {
   },
 };
 
+// The teammate bot's "Bu masadayım" (docs/SPEC_V3.md §22.C): to the side whose leader goes by
+// BOT_JOIN_ALIAS, in an open room (the owner's side) or a running one (either side); without it,
+// to the only open room's owner side. The request goes to the side's leader; one it does not answer
+// in 60 seconds is unavailable and may be sent again (the hour's 10 requests are shared with
+// "Katıl"). A side that is full or whose tables do not take members is waited for.
+async function askToJoinSide(
+  venue: string,
+  asked: Map<string, number>,
+  say: (text: string) => void,
+  tellOnce: (text: string) => void,
+): Promise<void> {
+  const wanted = process.env.BOT_JOIN_ALIAS?.trim();
+  const [open, running, phones] = await Promise.all([
+    me().rpc('venue_lobby', { target_venue_id: venue }),
+    me().rpc('venue_running_rooms', { target_venue_id: venue }),
+    me().rpc('venue_lobby_phones', { target_venue_id: venue }),
+  ]);
+  for (const r of [open, running, phones]) if (r.error) throw r.error;
+  type Target = { roomId: string; side: Side; alias: string; open: boolean };
+  const openRooms = (open.data ?? []) as { room_id: string; alias: string }[];
+  const memberOpen = new Map(
+    ((phones.data ?? []) as { room_id: string; member_open: boolean }[]).map((p) => [
+      p.room_id,
+      p.member_open,
+    ]),
+  );
+  const targets: Target[] = [
+    ...openRooms.map((r) => ({
+      roomId: r.room_id,
+      side: 'owner' as const,
+      alias: r.alias,
+      open: memberOpen.get(r.room_id) ?? false,
+    })),
+    ...(
+      (running.data ?? []) as {
+        room_id: string;
+        owner_alias: string;
+        guest_alias: string;
+        owner_open: boolean;
+        guest_open: boolean;
+      }[]
+    ).flatMap((r) => [
+      { roomId: r.room_id, side: 'owner' as const, alias: r.owner_alias, open: r.owner_open },
+      { roomId: r.room_id, side: 'guest' as const, alias: r.guest_alias, open: r.guest_open },
+    ]),
+  ];
+  const found = wanted
+    ? targets.filter((t) => t.alias === wanted)
+    : openRooms.length === 1
+      ? targets.filter((t) => t.roomId === openRooms[0]?.room_id)
+      : [];
+  const target = found[0];
+  if (!target || found.length > 1) {
+    tellOnce(
+      wanted
+        ? `waiting for a side led by ${wanted}`
+        : 'waiting for a single open room (or set BOT_JOIN_ALIAS)',
+    );
+    return;
+  }
+  if (!target.open) {
+    tellOnce(`${target.alias}'s side takes no member now (full, or not on a teams app)`);
+    return;
+  }
+  const key = `${target.roomId}/${target.side}`;
+  if (Date.now() - (asked.get(key) ?? 0) < 65_000) return;
+  asked.set(key, Date.now());
+  await call('rooms', {
+    action: 'request-join',
+    roomId: target.roomId,
+    profiled: false,
+    side: target.side,
+  });
+  say(`"Bu masadayım" to ${target.alias}'s side (${target.side})`);
+}
+
 // "Karşı masa": the other table for a one-phone P0 test on the dev project. Checks in at
 // BOT_VENUE (at a venue with spots: BOT_SPOT, else the first spot; only tables at the same spot
-// play together) and then, every two seconds, does what the other table would: as a guest
-// (BOT_ROLE=guest, default) asks to join each new room in the lobby; as a host (BOT_ROLE=host)
-// keeps an open room and accepts the first request. In the room the host proposes Sesli Tabu once
-// and either table accepts the other's proposal (docs/SPEC_V3.md §5.3); it presses Doğru on each card after a few seconds, ends turns and the answer window when their time
-// is up, says "Evet" to "Tanışalım mı?", adds the friend, accepts requests from the venue chat and
-// answers every new DM. Only the public
-// API: the same calls the app makes.
+// play together), as a table that takes members (docs/SPEC_V3.md §22.B), and then, every two
+// seconds, does what the other table would: as a guest (BOT_ROLE=guest, default) asks to join each
+// new room in the lobby; as a host (BOT_ROLE=host) keeps an open room and accepts the first
+// request. As a leader it also accepts "Bu masadayım" for its side. In the room the host proposes
+// Sesli Tabu once and either table accepts the other's proposal (docs/SPEC_V3.md §5.3); it presses
+// Doğru on each card after a few seconds, ends turns and the answer window when their time is up,
+// says "Evet" to "Tanışalım mı?", adds each friend it matched, accepts requests from the venue chat
+// and answers every new DM. Only the public API: the same calls the app makes.
+//
+// BOT_ROLE=teammate (Faz 2, docs/SPEC_V3.md §22.N step 22.6): a second bot that joins a side as a
+// member with "Bu masadayım": the side whose leader goes by BOT_JOIN_ALIAS (the device's alias on
+// its screen, or the other bot's from its terminal); without it, the only open room's owner side.
+// A request the leader does not answer in 60 seconds is sent again. In the room it plays its side:
+// starts its side's ready Tabu turn after a few seconds (and so describes it), presses Doğru where
+// a member may, locks İbre's needle for its describer, claims letters and lines, watches Sahtekar
+// (the seats are the leader's) and answers "Tanışalım mı?" for itself. It neither proposes nor
+// answers games: that is left to the leaders.
 async function opponent() {
-  const role = process.env.BOT_ROLE === 'host' ? 'host' : 'guest';
+  const role =
+    process.env.BOT_ROLE === 'host'
+      ? 'host'
+      : process.env.BOT_ROLE === 'teammate'
+        ? 'teammate'
+        : 'guest';
   const say = (text: string) => console.log(`${new Date().toLocaleTimeString('tr-TR')} ${text}`);
   const quiet = async (what: string, step: () => Promise<unknown>) => {
     try {
@@ -1027,7 +1157,7 @@ async function opponent() {
 
   await actions.login?.({});
   startPresence();
-  const checkedIn = (await actions.checkin?.({})) as { alias?: string };
+  const checkedIn = (await actions.checkin?.({ teams: true })) as { alias?: string };
   say(`checked in as ${checkedIn.alias ?? '?'} (${role})`);
   const { data: session } = await me()
     .from('table_sessions')
@@ -1045,6 +1175,13 @@ async function opponent() {
   const proposed = new Set<string>();
   const accepted = new Set<string>();
   const sahtekarBot: SahtekarBot = { done: new Set(), guessWrong: false };
+  const joinAsked = new Map<string, number>();
+  const told = new Set<string>();
+  const tellOnce = (text: string) => {
+    if (told.has(text)) return;
+    told.add(text);
+    say(text);
+  };
 
   for (;;) {
     await quiet('tick', async () => {
@@ -1060,7 +1197,9 @@ async function opponent() {
       const room = rooms?.[0];
 
       if (!room) {
-        if (role === 'guest') {
+        if (role === 'teammate') {
+          await askToJoinSide(venueId ?? '', joinAsked, say, tellOnce);
+        } else if (role === 'guest') {
           const { data: lobby } = await me().rpc('venue_lobby', { target_venue_id: venueId ?? '' });
           for (const { room_id } of (lobby ?? []) as { room_id: string }[]) {
             if (asked.has(room_id)) continue;
@@ -1077,39 +1216,53 @@ async function opponent() {
         return;
       }
 
-      if (room.status === 'waiting' && room.owner_session_id === sessionId) {
+      // A leader answers the requests it approves: "Katıl" as the owner of an open room, "Bu
+      // masadayım" for its side in an open or running room (the join_requests policy shows a
+      // leader only those).
+      const leader = leads(room, sessionId);
+      if (leader && (room.status === 'waiting' || room.status === 'active')) {
         const { data: requests } = await me()
           .from('join_requests')
-          .select('id')
+          .select('id, as_member')
           .eq('room_id', room.id)
           .eq('status', 'pending')
           .limit(1);
         const request = requests?.[0];
         if (request) {
-          await call('rooms', { action: 'respond', requestId: request.id, accept: true });
-          say('accepted a request');
+          await quiet('respond', () =>
+            call('rooms', { action: 'respond', requestId: request.id, accept: true }),
+          );
+          say(request.as_member ? 'accepted "Bu masadayım"' : 'accepted a request');
         }
-        return;
       }
+      if (room.status === 'waiting') return;
 
       if (room.status === 'active') {
         const state = room.game_state as Partial<VoiceTabuState> | null;
-        const isOwner = room.owner_session_id === sessionId;
+        const mySide = await sideIn(room, sessionId);
         if (room.guest_session_id && room.concept === null) {
+          // Proposals are the leaders' to make and answer here (any phone may, §22.E).
+          if (!leader) return;
           const { data: proposals } = await me()
             .from('game_proposals')
-            .select('proposer_session_id, created_at')
+            .select('proposer_session_id, proposer_side, created_at')
             .eq('room_id', room.id)
             .limit(1);
-          const proposal = proposals?.[0];
+          const proposal = proposals?.[0] as
+            { proposer_session_id: string; proposer_side?: Side; created_at: string } | undefined;
+          const theirs = proposal
+            ? (proposal.proposer_side ?? null) !== null
+              ? proposal.proposer_side !== mySide
+              : proposal.proposer_session_id !== sessionId
+            : false;
           const key = `${room.id}/${proposal?.created_at ?? ''}`;
-          if (proposal && proposal.proposer_session_id !== sessionId && !accepted.has(key)) {
+          if (proposal && theirs && !accepted.has(key)) {
             accepted.add(key);
             await quiet('answer-game', () =>
               call('rooms', { action: 'answer-game', roomId: room.id, accept: true }),
             );
             say('accepted a game proposal');
-          } else if (!proposal && isOwner && !proposed.has(room.id)) {
+          } else if (!proposal && room.owner_session_id === sessionId && !proposed.has(room.id)) {
             proposed.add(room.id);
             await quiet('propose-game', () =>
               call('rooms', { action: 'propose-game', roomId: room.id, concept: 'tabu' }),
@@ -1134,7 +1287,6 @@ async function opponent() {
           return;
         }
         if (!state?.mode || state.phase !== 'playing') return;
-        const mySide = isOwner ? 'owner' : 'guest';
         // A ready turn (docs/SPEC_V3.md §19.1): the bot starts its own after a few seconds, and the
         // other table's once readyEndsAt has passed.
         const ready = parseReadyTurn(state);
@@ -1155,9 +1307,15 @@ async function opponent() {
           await quiet('end-turn', () => call('tabu', { action: 'end-turn', roomId: room.id }));
           return;
         }
-        // Cooperative (docs/SPEC_V3.md §6.3): only the describing table presses; the bot waits
-        // while the other table describes to it.
-        if (state.mode === 'cooperative' && state.describingTable !== mySide) return;
+        // Cooperative (docs/SPEC_V3.md §6.3): only the describer presses (§22.E; before step 22.3
+        // the describing table's leader); the bot waits while another phone describes.
+        const describer = (state as { describer?: string | null }).describer;
+        if (
+          state.mode === 'cooperative' &&
+          (describer ? describer !== sessionId : state.describingTable !== mySide)
+        ) {
+          return;
+        }
         // One Doğru per card, after the card has been on the table for a few seconds.
         const card = `${room.id}/${state.gameNo}/${state.turnNo}/${state.cardIndex}`;
         const seen = firstSeen.get(card) ?? Date.now();
@@ -1191,13 +1349,15 @@ async function opponent() {
     });
 
     await quiet('friends', async () => {
+      // "Arkadaş ekle" on each matched record (one per pair since step 22.4, §22.F).
       const { data: history } = await me()
         .from('play_history')
         .select('id')
+        .eq('reveal_mutual', true)
         .order('played_at', { ascending: false })
-        .limit(1);
-      const historyId = history?.[0]?.id as string | undefined;
-      if (historyId && !befriended.has(historyId)) {
+        .limit(8);
+      for (const { id: historyId } of (history ?? []) as { id: string }[]) {
+        if (befriended.has(historyId)) continue;
         befriended.add(historyId);
         await quiet('add-friend', () => call('friends', { action: 'add-from-room', historyId }));
       }
@@ -1303,17 +1463,18 @@ async function keepPresence(): Promise<void> {
   if (!client) return;
   const { data } = await client
     .from('rooms')
-    .select('id, owner_session_id')
+    .select('id, game_state, owner_session_id, guest_session_id')
     .neq('status', 'closed')
     .order('created_at', { ascending: false })
     .limit(1);
-  const room = data?.[0] as { id: string; owner_session_id: string } | undefined;
+  const room = data?.[0] as RoomRow | undefined;
   if (presence && (presence.client !== client || presence.roomId !== room?.id)) {
     await presence.client.removeChannel(presence.channel);
     presence = null;
   }
   if (!room || presence) return;
-  const role = room.owner_session_id === (await mySessionId()) ? 'owner' : 'guest';
+  // The key is the side (§22.I), a member's too.
+  const role = await sideIn(room, await mySessionId());
   const channel = client.channel(`presence:${room.id}`, {
     config: { private: true, presence: { key: role } },
   });
