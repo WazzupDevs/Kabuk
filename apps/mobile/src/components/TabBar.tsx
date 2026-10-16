@@ -256,19 +256,24 @@ export function TabBar({ state, descriptors, navigation, insets, raised }: Props
               style={{
                 flex: 1,
                 height: TAB_BAR_HEIGHT,
+                paddingHorizontal: SPACING[0.5],
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: 0,
               }}
             >
               {glyph}
-              {/* One line; a long name ("Aktiviteler") shrinks a little on a narrow phone. */}
+              {/* 11 px and one line wherever it fits; only where it does not (a 320 dp screen,
+                  the largest text) does it shrink, like a button's label. As wide as its tab, so
+                  the shrink has a width to fit. */}
               <Text
                 variant="caption"
                 tone={focused ? 'text' : 'muted'}
+                align="center"
                 numberOfLines={1}
                 adjustsFontSizeToFit
-                minimumFontScale={0.8}
+                minimumFontScale={0.5}
+                className="self-stretch"
               >
                 {label}
               </Text>
