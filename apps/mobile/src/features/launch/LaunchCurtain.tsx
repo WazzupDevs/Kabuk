@@ -28,6 +28,7 @@ import Svg, {
 
 import { BRAND, LAUNCH_LIGHT, LAUNCH_MASK } from '@/theme/brand';
 import {
+  flareCircle,
   glintPath,
   launchFrame,
   type LaunchGeometry,
@@ -241,12 +242,7 @@ function CurtainArt({
       ? { cx: r.cx, cy: r.cy, r: r.r, strokeWidth: r.width, opacity: r.opacity }
       : { cx: 0, cy: 0, r: 0, strokeWidth: 0, opacity: 0 };
   });
-  const flare = useAnimatedProps(() => {
-    const f = scene.value.flare;
-    return f
-      ? { cx: f.cx, cy: f.cy, r: f.r, opacity: f.opacity }
-      : { cx: 0, cy: 0, r: 0, opacity: 0 };
-  });
+  const flare = useAnimatedProps(() => flareCircle(scene.value.flare));
 
   return (
     <View

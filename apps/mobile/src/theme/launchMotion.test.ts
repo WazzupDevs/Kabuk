@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { MAIN, reach, SPLASH, SPLASH_REACH } from '../../../../scripts/icon/mark.ts';
 
 import {
+  flareCircle,
   glintPath,
   launchFrame,
   launchKindFrom,
@@ -196,6 +197,21 @@ describe('reduce motion', () => {
   it.each(KINDS)('%s ends with the curtain gone', (kind) => {
     const T = launchTimeline(kind, true, 0);
     expect(launchFrame(kind, true, g, T.R1, 0).curtain).toBe(0);
+  });
+});
+
+describe('gradient fills', () => {
+  // The flare is a radial gradient: Android throws on a zero radius, so no frame may give one.
+  it('the flare never has a zero radius', () => {
+    expect(flareCircle(null).r).toBeGreaterThan(0);
+    expect(flareCircle(null).opacity).toBe(0);
+    for (const kind of KINDS) {
+      for (const reduce of [false, true]) {
+        for (const [, s] of frames(kind, reduce, 1200, 2)) {
+          expect(flareCircle(s.flare).r).toBeGreaterThan(0);
+        }
+      }
+    }
   });
 });
 

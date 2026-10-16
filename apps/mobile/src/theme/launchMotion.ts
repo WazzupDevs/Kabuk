@@ -533,6 +533,23 @@ export function shiftedPath(p: ParsedPath, dx: number): string {
   return d;
 }
 
+// The flare's circle. It is filled with a radial gradient, and Android's RadialGradient refuses a
+// zero radius (it throws, and the app goes down): with no flare the circle keeps a 1 dp radius,
+// unseen at opacity 0.
+const HIDDEN_FLARE_R = 1;
+
+export function flareCircle(f: LaunchScene['flare']): {
+  cx: number;
+  cy: number;
+  r: number;
+  opacity: number;
+} {
+  'worklet';
+  return f
+    ? { cx: f.cx, cy: f.cy, r: Math.max(HIDDEN_FLARE_R, f.r), opacity: f.opacity }
+    : { cx: 0, cy: 0, r: HIDDEN_FLARE_R, opacity: 0 };
+}
+
 // The glint: a 30 dp bar leaning 16° (left edge at `x` on the screen's middle line), drawn between
 // `top` and `bottom`.
 export function glintPath(x: number, cy: number, top: number, bottom: number): string {
