@@ -4,7 +4,7 @@ Tek bir sıra. **A** ve **B** iki telefon, iki hesap, aynı mekan; **A** oda sah
 
 Kabuk v1'in (`docs/SPEC_V3.md`) bütün adımları işlendi: kayıt = profil ve 18 yaş (adım 1), kampüs ve nokta seçimi (adım 2), oda akışı ve oyun önerisi (adım 3), Tabu modları (adım 4), mekan sohbet odası (adım 5). Kampüs açılana kadar test, noktaları olan test mekanında (Hush Coffee: İç salon, Bahçe) yapılır.
 
-Adım adları: **G** giriş ve kayıt, **V** iskelet, Keşfet, check-in ve nokta, oda kurma, profil, **T** öneri ve Sesli Tabu (T7: iş birliği modu), **F** arkadaşlar, mesajlar ve bildirimler, **M** mekan sohbet odası, **S** v1'den kalan ve hâlâ geçerli akışlar. Hata satırında bu adları kullan.
+Adım adları: **G** giriş ve kayıt, **V** iskelet, Keşfet, check-in ve nokta, oda kurma, profil, **T** öneri ve Sesli Tabu (T7: iş birliği modu), **F** arkadaşlar, mesajlar ve bildirimler, **M** mekan sohbet odası, **S** v1'den kalan ve hâlâ geçerli akışlar, **K** Faz 2 takımları (3–4 telefon, ayrı oturum; sonda "Faz 2: takımlar"). Hata satırında bu adları kullan.
 
 ## P0 sırası (kritik yol, yaklaşık 1,5 saat)
 
@@ -600,6 +600,112 @@ Mekan sohbetinde anonim ya da profilli seçimi her girişte bir kez, ilk mesajda
 3. Etkinlikleri kaldır: `pnpm admin:event list`, sonra her biri için `pnpm admin:event remove <id>`.
 4. (İsteğe bağlı) Ayarlar → **Hesabımı sil**; aynı test numarasıyla yeniden kayıt olunabilmeli. Arkadaşlıklar, konuşmalar ve fotoğraflar hesapla gider.
 5. Test bitince panelde test numaralarını sil ve test mekanını pasif yap.
+
+## Faz 2: takımlar (3–4 telefon)
+
+Ayrı bir oturum (`docs/SPEC_V3.md` §22; adım 22.6). **A** ve **C** aynı gerçek masada oturur: A lider, C onun takım arkadaşı. **B** ve **D** ikinci masada: B lider, D takım arkadaşı. Dört telefon yoksa D'nin adımları atlanır (K2'deki D, K3 ve K7'deki D satırları); üç telefonla da her kural görülür. Tamamı yaklaşık 1 saat. Adımlar **K** ile adlandırılır.
+
+> Otomatik: `e2e/maestro/flows/13-teams.yaml` (iki bot masası, port 8787 ve 8788). Cihaz bir botun tarafına "Bu masadayım" ile girer; o botun turunda kartsız takım arkadaşı ekranını, karşı botun turunda hakem ekranını görür. Bot çıkınca lider olur ve odayı bitirir. Sonra tek başına iki bota karşı oynar: bir eşleşme görür, diğer botun "Hayır"ını hiçbir an görmez. Elle kalanlar: dört gerçek telefon, sesli oyun, İbre ve Sahtekar'da takım, engelleme ve oda yükü ölçümü.
+
+**Test öncesi (evde):**
+
+- [ ] Dev projesi main ile güncel (CLAUDE.md → "main'den dev projesine yayın"); 22.5'in OTA'sı `preview` kanalında. Dört telefonda uygulama güncel: mekan lobisinde açık oda kartında **"Bu masadayım"** düğmesi görünüyorsa 22.5 gelmiştir.
+- [ ] Dört test numarası panelde, "Valid Until" test gününden sonra. Kodlar repoda değil.
+- [ ] Oda yükü ölçümü (`docs/ROOM_LOAD.md` → 2): testten hemen önce panel → Database → Query Performance → **Reset**, saati not et.
+
+| #   | Öncelik | Adım                                         | Otomatik | Telefonlar |
+| --- | ------- | -------------------------------------------- | -------- | ---------- |
+| K1  | P0      | "Bu masadayım" ile açık odaya katılma        | Evet     | A, C       |
+| K2  | P0      | Süren odaya katılma, lobide süren oda        | Kısmen   | A–D        |
+| K3  | P0      | Sesli Tabu takımlarla (anlatıcı, hakem)      | Kısmen   | A–D        |
+| K4  | P1      | İbre takımlarla                              | Hayır    | A–D        |
+| K5  | P1      | Sahtekar takımlarla                          | Hayır    | A–D        |
+| K6  | P0      | Liderlik devri                               | Kısmen   | A–D        |
+| K7  | P0      | Tanışma kişi başına                          | Kısmen   | A–D        |
+| K8  | P1      | "Bu masadayım"da red ve zaman aşımı; engelle | Hayır    | A–D        |
+| K9  | P0      | Oda yükü ölçümü                              | Hayır    | —          |
+
+### K1. "Bu masadayım" ile açık odaya katılma (A, C) [P0]
+
+1. A ve C aynı noktada check-in yapar (A kişi sayısı 2, C 1). A **Oda kur**.
+2. C: lobide A'nın kartında **Bu masadayım** → katılım seçimi (anonim) → **İsteği gönder**.
+3. C'nin ekranında **"Liderine bu adı söyle"** ve kendi takma adı büyük harflerle; C adı A'ya söyler.
+4. A'nın odasında **"Masana katılmak istiyor"** kartı, aynı ad aynı büyüklükte → **Kabul**.
+
+**Bak:**
+
+- İki ekrandaki ad aynı. C odaya girer; kırmızı düğmesi **Odadan çık** (Odayı bitir değil).
+- Başlığa dokununca **Odadakiler**: "Senin tarafın · 2 telefon", A'da **Lider** etiketi, C'de kendi satırında **Sen**.
+
+### K2. Süren odaya katılma ve lobide süren oda (A–D) [P0]
+
+1. B (kişi sayısı 2) A'nın odasına **Katıl**, A kabul eder.
+2. D (kişi sayısı 1): lobide **Süren odalar** altında "A ile B" kartı. B'nin tarafında **Bu masadayım** → isteği B kabul eder.
+
+**Bak:**
+
+- Süren oda kartında yalnızca iki liderin takma adı, taraf başına telefon ve kişi sayısı var; üye adı, profil ve oyun yok (kural 4).
+- Dört telefonda Odadakiler: iki taraf, 2 + 2 telefon. Oda başlığı karşı tarafın liderinin adı ("B ile" / "A ile") ve altında karşı tarafın telefon sayısı.
+
+### K3. Sesli Tabu takımlarla (A–D) [P0]
+
+1. C (üye) **Sesli Tabu öner**; D (karşı tarafın üyesi) **Oynayalım**. İki tarafın kişi sayısı 2 olduğu için hakemli mod.
+2. 1. tur A'nın tarafında: C **Başla**'ya basar, böylece anlatıcı C olur.
+3. 2. tur B'nin tarafında: D **Başla**'ya basar.
+
+**Bak:**
+
+- 1. turda kart yalnızca C'de (kapalı başlar). A'da "C anlatıyor." ve **Kart anlatanda**; kart yok, ama **Doğru** var. B ve D'de kart, **Doğru** ve **Tabu**. **Pas** yalnızca C'de.
+- A ile B aynı karta aynı anda **Doğru**'ya basarsa skor bir kez artar.
+- 2. turda kart D'de; B'de "D anlatıyor." ve kart yok; A ve C hakem: kart, Doğru ve Tabu.
+
+**Hata olursa:** anlatıcının takım arkadaşında kart ya da yasaklı kelime gördüysen ekran görüntüsü al ve turu yaz; bu ❌'dır.
+
+### K4. İbre takımlarla (A–D) [P1]
+
+1. Bir taraf **İbre öner**, diğeri kabul eder. A'nın turunda C **Başla**'ya basar: anlatıcı C.
+
+**Bak:** Hedefi yalnızca C görür. A'da hedef yok, ibre ve **İbreyi onayla** var ("Takım arkadaşın "İbreyi onayla"ya basınca ibre kilitlenir." notu C'de). B ve D, Solunda/Sağında'yı seçer. Taraf tek telefonsa anlatıcı kendisi kilitler.
+
+### K5. Sahtekar takımlarla (A–D) [P1]
+
+**Bak:** Koltuklar ve kartlar yalnızca liderlerin (A, B) telefonunda dolaşır. C ve D izler: kart ve kelime yok, koltuk düğmesi yok. Koltuk sayısı tarafın kişi sayısı.
+
+### K6. Liderlik devri (A–D) [P0]
+
+1. A: **Diğer** menüsü → "Çıkarsan liderlik C'ye geçer, oda sürer." → **Odadan çık** → onay.
+2. A (aynı masada): lobide bu odanın A'nın eski tarafına **Bu masadayım**.
+
+**Bak:**
+
+- C'de sohbetin başında **"Artık lider sensin. A odadan çıktı; katılma istekleri sana gelir, odayı sen bitirebilirsin."** ve kırmızı düğme **Odayı bitir**. B ve D'de başlık "C ile" olur. Oyun sürüyorsa kaldığı yerden sürer.
+- 2'de istek C'ye gelir (A'ya değil); C kabul edince A üye olarak döner.
+
+### K7. Tanışma kişi başına (A–D) [P0]
+
+1. Bir lider **Odayı bitir**. Her telefon kendi adına cevap verir: A **Evet**, C **Evet**, B **Evet**, D **Hayır**.
+
+**Bak:**
+
+- A ve C'de, B de "Evet" deyince hemen tam ekran renk: "Tanışalım mı? · Eşleştin", B'nin satırı ve çiftin işareti. B'de A ve C'nin iki satırı, aynı renk, her çiftin ayrı işareti. A ile C arasında eşleşme yok (aynı taraf).
+- D'nin "Hayır"ı A, B ve C'nin hiçbir ekranında, hiçbir an görünmez: ne pencere sırasında ne sonunda (kural 5). D pencere sonunda "Güzel oyundu" görür.
+- Her eşleşmenin kendi **Arkadaş ekle**'si var. A ile B basarsa arkadaş olurlar, C'nin durumu değişmez.
+
+**Hata olursa:** "Evet" diyen bir telefonda D'nin cevabını belli eden bir şey (satır, sayı, zamanlama) gördüysen ekran görüntüsü ve saat; bu ❌'dır.
+
+### K8. "Bu masadayım"da red ve zaman aşımı; odada engelleme (A–D) [P1]
+
+1. D, B'nin tarafına **Bu masadayım**; B **Reddet**. Sonra D yeniden ister, B 60 sn cevap vermez.
+2. Bir odada: lider kendi üyesini engeller; ayrı bir odada bir üye karşı taraftan birini engeller.
+
+**Bak:**
+
+- 1'de iki durum D'de birebir aynı: "Masa şu an müsait değil."
+- 2'de liderin engellediği üye odadan çıkar, lider kalır. Karşı tarafı engelleyen üye kendisi çıkar.
+
+### K9. Oda yükü ölçümü [P0]
+
+`docs/ROOM_LOAD.md`: 1. bölüm (`pnpm latency`, `STEPS=room`) dev projesinde istediğin zaman; 2. bölüm testten sonra, panelde (Realtime → Reports, `scripts/latency/room-load.sql`). Sonucu oradaki tabloyla 22.6'nın PR'ına yaz.
 
 ## Test sonrası
 
