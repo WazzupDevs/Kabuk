@@ -26,6 +26,7 @@ import { joinAcceptedPush, joinRequestPush } from '../_shared/pure/push.ts';
 import { REVEAL } from '../_shared/pure/reveal.ts';
 import {
   BROADCAST,
+  CONCEPTS,
   GAME_PROPOSAL_TTL_SECONDS,
   INTENTS,
   JOIN_REQUEST_TTL_SECONDS,
@@ -46,6 +47,7 @@ const Body: z.ZodType<RoomsRequest> = z.discriminatedUnion('action', [
   z.object({
     action: z.literal('create'),
     intent: z.enum(INTENTS).optional(),
+    gameTag: z.enum(CONCEPTS).optional(),
     profiled: z.boolean(),
   }),
   z.object({ action: z.literal('create-solo') }),
@@ -108,13 +110,14 @@ Deno.serve(
       const user = await requireUser(req, db);
 
       switch (body.action) {
-        // "Oda kur": always open (S4).
+        // "Oda kur" ("Masanı lobiye aç"): always open (S4), with an optional game tag (§23.C).
         case 'create': {
           await requirePhotoIfProfiled(user.id, body.profiled);
           const { data, error } = await db.rpc('rooms_create', {
             target_user_id: user.id,
             profiled: body.profiled,
             ...(body.intent ? { new_intent: body.intent } : {}),
+            ...(body.gameTag ? { new_game_tag: body.gameTag } : {}),
           });
           if (error) throw dbError('rooms_create', error);
           lobbyChanged(db, data);
@@ -185,6 +188,33 @@ Deno.serve(
                 sendPush(token, joinAcceptedPush()),
               ),
             );
+            // §23.C: an accepted "Katıl" closed the requester's own waiting room and moved its
+            // phones to the guest side, in the same transaction (both stamped with its now():
+            // closed_at and joined_at equal responded_at). The lobby hears of that room too, and
+            // each moved phone hears of the accept as its leader does.
+            if (!data.as_member) {
+              const [closed, moved] = await Promise.all([
+                db
+                  .from('rooms')
+                  .select('id, venue_id')
+                  .eq('owner_session_id', data.requester_session_id)
+                  .eq('closed_at', data.responded_at ?? '')
+                  .maybeSingle(),
+                db
+                  .from('room_members')
+                  .select('session_id')
+                  .eq('room_id', data.room_id)
+                  .eq('side', 'guest')
+                  .eq('joined_at', data.responded_at ?? '')
+                  .neq('session_id', data.requester_session_id),
+              ]);
+              if (closed.error) throw dbError('rooms', closed.error);
+              if (moved.error) throw dbError('room_members', moved.error);
+              if (closed.data) lobbyChanged(db, closed.data);
+              for (const m of moved.data) {
+                inBackground(broadcast(sessionChannel(m.session_id), BROADCAST.joinAccepted));
+              }
+            }
           }
           return { ok: true };
         }

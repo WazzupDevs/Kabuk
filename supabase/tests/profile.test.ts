@@ -390,7 +390,9 @@ describe('lobby and room: the "profilli" flag only', () => {
     const roomId = (created.body as { roomId: string }).roomId;
 
     const { data: lobby } = await c.rpc('venue_lobby', { target_venue_id: venue[V] ?? '' });
-    expect(lobby).toEqual([expect.objectContaining({ room_id: roomId, profiled: true })]);
+    // Step 23.1 (docs/SPEC_V3.md §23.C, rule 4): the lobby no longer carries the flag; the column
+    // stays, false in every row.
+    expect(lobby).toEqual([expect.objectContaining({ room_id: roomId, profiled: false })]);
     expect(Object.keys(lobby?.[0] ?? {}).sort()).toEqual(
       [
         'alias',

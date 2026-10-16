@@ -2139,18 +2139,20 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 **Lobi.**
 
 - Lobi kartı: takma ad, kişi sayısı, varsa niyet ve oyun etiketi, "Katıl".
-- **'profilli' işareti lobiden kalkar** (kural 4, adım 23.1). Gerekçe: erkek ve belirtmeyen her zaman profilli olduğu için (§23.D) işaret, cinsiyete dair bir ipucu olurdu.
+- **'profilli' işareti lobiden kalkar** (kural 4, adım 23.1). Gerekçe: erkek ve belirtmeyen her zaman profilli olduğu için (§23.D) işaret, cinsiyete dair bir ipucu olurdu. `venue_lobby.profiled` kolonu kalır ve her satırda `false` döner: eski istemci ve kolon listesini denetleyen testler kırılmaz, işaret gider.
 - Görünen ad, yaş ve fotoğraf lobiye asla çıkmaz.
 - `venue_lobby`'nin kolonları değişmez; eski istemci ve kolon listesini denetleyen bugünkü testler bunu bekler.
-- Oyun etiketi, 22.2'deki `venue_lobby_phones` kalıbıyla oda başına ayrı bir okumadan gelir. Bu okuma ya `venue_lobby_phones`'a eklenen bir kolondur ya da yeni bir okuma RPC'sidir; seçim 23.1 PR'ında yapılır. Hiçbiri `public_id` ya da hesap id'si taşımaz.
+- Oyun etiketi, 22.2'deki `venue_lobby_phones` kalıbıyla oda başına ayrı bir okumadan gelir: yeni okuma RPC'si `venue_lobby_tags(target_venue_id)` → `(room_id, game_tag)`, `venue_lobby`'nin satırları üzerinden (23.1 PR'ındaki seçim). `venue_lobby_phones`'a kolon eklenmedi, çünkü onun kolonlarını da bugünkü testler birebir denetler. `public_id` ya da hesap id'si taşımaz; `game_tag` boşsa "fark etmez".
 - **Süren masalar ve "Bu masadayım" (§22.C) kalır.** Bir masanın sonradan gelen telefonu kendi tarafına böyle katılır; ekrandaki adı "masa" olur.
 
 **Katıl'da bekleyen boş masa.**
 
 - Bugün masası lobide bekleyen telefonun başka bir odaya isteği `already_in_room` döner. 23.1'den sonra, istekçinin masasının yalnızca bekleyen (karşı tarafı olmayan, `status = 'waiting'`) bir odası varsa istek gönderilebilir.
+- Değişmeyenler ve sınırlar (23.1 PR'ı): yalnızca kendi açık (`visibility = 'open'`) bekleyen odası olan masa, yalnızca "Katıl" ile. "Bu masadayım", "Masanla oyna" odasının masası ve bir odanın üyesi bugünkü gibi `already_in_room` alır; masanın kendi odasına isteği `room_not_available` olur. Üyeli bekleyen odadan, takım yetenekli olmayan (`teams` göndermeyen) bir masanın odasına istek ve kabul `room_not_available` döner (§22.B'nin ters yönü: o masanın uygulaması çok telefonlu tarafı göstermez).
 - İstek kabul edildiğinde istekçinin bekleyen odası **aynı işlemde sessizce kapanır**: pencere yok, oyun geçmişi yok, çünkü oda tek taraflıdır. O odaya bekleyen istekler zaman aşımıyla `unavailable` olur (kural 5).
 - İstek reddedilir ya da zaman aşımına uğrarsa bekleyen oda lobide kalır.
-- İstekçinin odası istek beklerken başka bir masayla birleştiyse kabul `room_not_available` döner. İstekçi bunu bugünkü `unavailable` olarak görür.
+- İstekçinin odası istek beklerken başka bir masayla birleştiyse kabul `room_not_available` döner. İstekçi bunu bugünkü `unavailable` olarak görür. Bu denetim kabulün ilk denetimidir: birbirini aynı anda kabul eden iki masada ikinci kabulün kendi odası da birinci kabulle kapanmış olsa bile cevap `room_not_available`'dır (§23.K).
+- Kabulde kapanan bekleyen oda için lobi yayını gider; taşınan üyelerin `session:` kanalına, istekçiye olduğu gibi veri içermeyen `join_accepted` gider.
 - **Bekleyen odanın üyeleri** ("Bu masadayım" ile katılmış telefonlar) kabulde, aynı işlemde misafir tarafa üye olarak taşınır (karar, §23.P). Anonim ya da profilli seçimleri aynen kalır; Faz 2'de de üye sonradan gelen masaya bu seçimiyle görünüyordu. Taşınan taraf bekleyen odanın tarafının aynısıdır, bu yüzden 4 telefon sınırı aşılmaz. Taşınan üyeler istekçiyle aynı durum satırını görür (§23.E).
 
 **"Oda" kelimesi.**

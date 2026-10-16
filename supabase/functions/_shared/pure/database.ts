@@ -1020,6 +1020,7 @@ export type Database = {
           created_at: string;
           game_started_at: string | null;
           game_state: Json;
+          game_tag: string | null;
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
@@ -1049,6 +1050,7 @@ export type Database = {
           created_at?: string;
           game_started_at?: string | null;
           game_state?: Json;
+          game_tag?: string | null;
           guest_alias?: string | null;
           guest_headcount?: number | null;
           guest_joined_at?: string | null;
@@ -1078,6 +1080,7 @@ export type Database = {
           created_at?: string;
           game_started_at?: string | null;
           game_state?: Json;
+          game_tag?: string | null;
           guest_alias?: string | null;
           guest_headcount?: number | null;
           guest_joined_at?: string | null;
@@ -1833,6 +1836,7 @@ export type Database = {
           created_at: string;
           game_started_at: string | null;
           game_state: Json;
+          game_tag: string | null;
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
@@ -1871,6 +1875,7 @@ export type Database = {
           created_at: string;
           game_started_at: string | null;
           game_state: Json;
+          game_tag: string | null;
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
@@ -1918,6 +1923,7 @@ export type Database = {
           created_at: string;
           game_started_at: string | null;
           game_state: Json;
+          game_tag: string | null;
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
@@ -1961,6 +1967,7 @@ export type Database = {
           created_at: string;
           game_started_at: string | null;
           game_state: Json;
+          game_tag: string | null;
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
@@ -2157,6 +2164,7 @@ export type Database = {
           created_at: string;
           game_started_at: string | null;
           game_state: Json;
+          game_tag: string | null;
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
@@ -2188,13 +2196,19 @@ export type Database = {
         };
       };
       rooms_create: {
-        Args: { new_intent?: string; profiled: boolean; target_user_id: string };
+        Args: {
+          new_game_tag?: string;
+          new_intent?: string;
+          profiled: boolean;
+          target_user_id: string;
+        };
         Returns: {
           closed_at: string | null;
           concept: string | null;
           created_at: string;
           game_started_at: string | null;
           game_state: Json;
+          game_tag: string | null;
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
@@ -2233,6 +2247,7 @@ export type Database = {
           created_at: string;
           game_started_at: string | null;
           game_state: Json;
+          game_tag: string | null;
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
@@ -2271,6 +2286,7 @@ export type Database = {
           created_at: string;
           game_started_at: string | null;
           game_state: Json;
+          game_tag: string | null;
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
@@ -2309,6 +2325,7 @@ export type Database = {
           created_at: string;
           game_started_at: string | null;
           game_state: Json;
+          game_tag: string | null;
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
@@ -2347,6 +2364,7 @@ export type Database = {
           created_at: string;
           game_started_at: string | null;
           game_state: Json;
+          game_tag: string | null;
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
@@ -2471,6 +2489,7 @@ export type Database = {
           created_at: string;
           game_started_at: string | null;
           game_state: Json;
+          game_tag: string | null;
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
@@ -2594,6 +2613,7 @@ export type Database = {
           created_at: string;
           game_started_at: string | null;
           game_state: Json;
+          game_tag: string | null;
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
@@ -2632,6 +2652,7 @@ export type Database = {
           created_at: string;
           game_started_at: string | null;
           game_state: Json;
+          game_tag: string | null;
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
@@ -2678,6 +2699,7 @@ export type Database = {
           created_at: string;
           game_started_at: string | null;
           game_state: Json;
+          game_tag: string | null;
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
@@ -2725,6 +2747,7 @@ export type Database = {
           created_at: string;
           game_started_at: string | null;
           game_state: Json;
+          game_tag: string | null;
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
@@ -2763,6 +2786,7 @@ export type Database = {
           created_at: string;
           game_started_at: string | null;
           game_state: Json;
+          game_tag: string | null;
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
@@ -2801,6 +2825,7 @@ export type Database = {
           created_at: string;
           game_started_at: string | null;
           game_state: Json;
+          game_tag: string | null;
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
@@ -2846,6 +2871,7 @@ export type Database = {
           created_at: string;
           game_started_at: string | null;
           game_state: Json;
+          game_tag: string | null;
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
@@ -2894,6 +2920,7 @@ export type Database = {
           created_at: string;
           game_started_at: string | null;
           game_state: Json;
+          game_tag: string | null;
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
@@ -2936,6 +2963,7 @@ export type Database = {
           created_at: string;
           game_started_at: string | null;
           game_state: Json;
+          game_tag: string | null;
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
@@ -3010,6 +3038,7 @@ export type Database = {
           created_at: string;
           game_started_at: string | null;
           game_state: Json;
+          game_tag: string | null;
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
@@ -3048,6 +3077,7 @@ export type Database = {
           created_at: string;
           game_started_at: string | null;
           game_state: Json;
+          game_tag: string | null;
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
@@ -3103,6 +3133,7 @@ export type Database = {
           created_at: string;
           game_started_at: string | null;
           game_state: Json;
+          game_tag: string | null;
           guest_alias: string | null;
           guest_headcount: number | null;
           guest_joined_at: string | null;
@@ -3262,6 +3293,13 @@ export type Database = {
         Returns: {
           member_open: boolean;
           phones: number;
+          room_id: string;
+        }[];
+      };
+      venue_lobby_tags: {
+        Args: { target_venue_id: string };
+        Returns: {
+          game_tag: string;
           room_id: string;
         }[];
       };
