@@ -2056,6 +2056,15 @@ export type Database = {
           name: string;
         }[];
       };
+      play_history_friends: {
+        Args: never;
+        Returns: {
+          display_name: string;
+          history_id: string;
+          public_id: string;
+          thread_id: string;
+        }[];
+      };
       profile_view: {
         Args: { target_public_id: string; viewer: string };
         Returns: {

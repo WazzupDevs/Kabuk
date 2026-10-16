@@ -1,4 +1,5 @@
 import { CONCEPTS, type Concept } from '@shared/rooms.ts';
+import { showsTableEnd } from '@shared/tableEnd.ts';
 import { parseGameState } from '@shared/tabu.ts';
 import { roomSeat, type RoomSeat, sideHeadcount } from '@shared/teams.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -13,7 +14,7 @@ import { ChatScreen, ChatScroll } from '@/components/ChatScreen';
 import { ChatTopBar } from '@/components/ChatTopBar';
 import { IconButton } from '@/components/IconButton';
 import { Screen } from '@/components/Screen';
-import { ScreenHeader } from '@/components/ScreenHeader';
+import { Segmented } from '@/components/Segmented';
 import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
 import { Loader } from '@/components/Loader';
@@ -27,11 +28,13 @@ import { FirstGameIntro } from '@/features/games/FirstGameIntro';
 import { useGameSignals } from '@/features/games/gameSignals';
 import { GameStage } from '@/features/games/GameStage';
 import { TimeUpOverlay } from '@/features/games/TimeUpOverlay';
+import { useTableHistory } from '@/features/friends/queries';
 import { useRoomMemberProfiles } from '@/features/profile/queries';
-import { Reveal } from '@/features/reveal/Reveal';
-import { RevealPrompt } from '@/features/reveal/RevealPrompt';
+import { useOpenedTables } from '@/features/rooms/openedTables';
 import { type RoomPhone, roomKeys, useRoom, useRoomPhones } from '@/features/rooms/queries';
-import { PeopleSheet, PickPersonSheet } from '@/features/rooms/RoomPeople';
+import { PeopleSheet, PeopleStrip, PickPersonSheet } from '@/features/rooms/RoomPeople';
+import { TableEnd } from '@/features/rooms/TableEnd';
+import { type EndPerson, useRememberTable, useTableEndStore } from '@/features/rooms/tableEnd';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track, trackOnce } from '@/lib/analytics';
@@ -44,6 +47,7 @@ import { NARROW_SCREEN, SPACING } from '@/theme/tokens';
 export default function RoomScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const queryClient = useQueryClient();
+  const { shape } = useTheme();
   const table = useActiveTable();
   const room = useRoom(id);
   const chat = useRoomChat(id);
@@ -92,12 +96,29 @@ export default function RoomScreen() {
   const people = (phones.data ?? []).map((p) => p.sessionId).join(',');
   const profiles = useRoomMemberProfiles(id, people).data;
   const seat = room.data && ownSession ? roomSeat(room.data, phones.data, ownSession) : null;
-  // The reveal window this phone saw open: its result is read from reveal/matches even once the
-  // room can no longer be read (a member's row closes with the room, docs/SPEC_V3.md §22.F).
-  // Adjusted while rendering, like `seen` above.
-  const [windowEndsAt, setWindowEndsAt] = useState<string | null>(null);
-  const openWindow = room.data?.status === 'ending' ? room.data.reveal_ends_at : null;
-  if (openWindow && openWindow !== windowEndsAt) setWindowEndsAt(openWindow);
+  // The merged table (docs/SPEC_V3.md §23.F): what this phone sees of the other side is kept for the
+  // table's end (§23.G), and the venue card's "Kabul edildi …" line ends once it is opened (§23.E).
+  const twoSided =
+    !!room.data && room.data.status === 'active' && room.data.guest_session_id !== null;
+  const otherSideAlias =
+    seat && room.data
+      ? seat.side === 'owner'
+        ? room.data.guest_alias
+        : room.data.owner_alias
+      : null;
+  useRememberTable(id, twoSided ? otherSideAlias : null, phones.data, seat?.side, profiles);
+  const markOpened = useOpenedTables((s) => s.markOpened);
+  useEffect(() => {
+    if (twoSided) markOpened(id);
+  }, [twoSided, id, markOpened]);
+  const seenTable = useTableEndStore((s) => s.tables[id]);
+  const markLeft = useTableEndStore((s) => s.markLeft);
+  const forgetTable = useTableEndStore((s) => s.forget);
+  // Oyun Seç or Masa Sohbeti, and the other side's messages already seen: the rest put a dot on
+  // Masa Sohbeti (canvas: Faz 3 · 23.3).
+  const [tab, setTab] = useState<'games' | 'chat'>('games');
+  const [chatSeen, setChatSeen] = useState<ReadonlySet<string> | null>(null);
+  const [stripPeople, setStripPeople] = useState(false);
   // A member who becomes the leader (the leader left, docs/SPEC_V3.md §22.D) sees one note at the
   // top of the chat with the name of the leader who left (canvas: Liderlik devri notu). Adjusted
   // while rendering, like `seen` above.
@@ -127,7 +148,11 @@ export default function RoomScreen() {
   const leave = useMutation({
     meta: FEEL_ERROR,
     mutationFn: () => roomsApi.leave(id),
-    onSuccess: () => track('team_left', {}),
+    onSuccess: () => {
+      // Left on its own: the table's end shows only with a record (@shared/tableEnd.ts).
+      markLeft(id);
+      track('team_left', {});
+    },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: roomKeys.current });
       void queryClient.invalidateQueries({ queryKey: roomKeys.room(id) });
@@ -148,11 +173,23 @@ export default function RoomScreen() {
   const sessionId = table.data?.id;
   const r = room.data;
   if (!sessionId) return <Redirect href="/venue" />;
+  const closeEnd = () => {
+    forgetTable(id);
+    router.replace('/venue');
+  };
   if (!r || r.status === 'closed') {
-    // A room whose window this phone saw, or a leader's closed room with a result: each phone's
-    // own result; otherwise back to the venue.
-    const ended = windowEndsAt ?? (r && seat && r.reveal_result !== null ? r.reveal_ends_at : null);
-    if (ended) return <Reveal roomId={id} sessionId={sessionId} revealEndsAt={ended} />;
+    // A table closed while Tabu ran: the game was stopped (§19.1).
+    const stopped = r ? parseGameState(r.game_state) : null;
+    if (r && stopped?.concept === 'tabu' && stopped.phase === 'playing') {
+      trackOnce(`game_abandoned:${r.id}:${stopped.gameNo}`, 'game_abandoned', {
+        concept: 'tabu',
+        turn_no: stopped.turnNo,
+        total_turns: stopped.totalTurns,
+      });
+    }
+    // A merged table this phone sat at ends on its table's end (docs/SPEC_V3.md §23.G); any other
+    // room goes back to the venue.
+    if (seenTable) return <TableEndGate roomId={id} seen={seenTable} onClose={closeEnd} />;
     // An unreadable row being read again is waited for: one left in the cache from an earlier visit
     // (a phone back in a room it left, docs/SPEC_V3.md §22.B) would send it to the venue, and the
     // venue straight back here.
@@ -168,16 +205,19 @@ export default function RoomScreen() {
     return <Redirect href="/venue" />;
   }
   if (!seat) {
-    // A member is known once room_phones is read; a phone not in it goes back to the venue.
-    return phones.isPending ? (
-      <Screen>
-        <View className="mt-16 items-center">
-          <Loader />
-        </View>
-      </Screen>
-    ) : (
-      <Redirect href="/venue" />
-    );
+    // A member is known once room_phones is read; a phone no longer in it (it left, or its leader
+    // took it out) sees its table's end, or goes back to the venue.
+    if (phones.isPending) {
+      return (
+        <Screen>
+          <View className="mt-16 items-center">
+            <Loader />
+          </View>
+        </Screen>
+      );
+    }
+    if (seenTable) return <TableEndGate roomId={id} seen={seenTable} onClose={closeEnd} />;
+    return <Redirect href="/venue" />;
   }
 
   const side = seat.side;
@@ -260,36 +300,6 @@ export default function RoomScreen() {
     />
   );
 
-  if (r.status === 'ending' && r.reveal_ends_at) {
-    // A table left (or ended the room) while Tabu ran: the game was stopped (§19.1).
-    const stopped = parseGameState(r.game_state);
-    if (stopped?.concept === 'tabu' && stopped.phase === 'playing') {
-      trackOnce(`game_abandoned:${r.id}:${stopped.gameNo}`, 'game_abandoned', {
-        concept: 'tabu',
-        turn_no: stopped.turnNo,
-        total_turns: stopped.totalTurns,
-      });
-    }
-    return (
-      <Reveal
-        roomId={r.id}
-        sessionId={sessionId}
-        revealEndsAt={r.reveal_ends_at}
-        prompt={
-          <Screen>
-            <ScreenHeader
-              eyebrow={tr.rooms.roomEyebrow(concept)}
-              title={
-                r.guest_alias ? tr.rooms.withGuest(r.owner_alias, r.guest_alias) : r.owner_alias
-              }
-            />
-            <RevealPrompt roomId={r.id} revealEndsAt={r.reveal_ends_at} score={null} />
-          </Screen>
-        }
-      />
-    );
-  }
-
   // The newest message, for following it (ChatScroll): one on its way, else the newest read.
   const newestOut = chat.outbox[chat.outbox.length - 1];
   const newestIn = (chat.messages.data ?? []).at(-1);
@@ -366,16 +376,8 @@ export default function RoomScreen() {
     );
   }
 
-  return (
-    <ChatScreen
-      top={topBar(hasOtherTable ? tr.rooms.phones(otherPhones) : tr.rooms.roomEyebrow(concept))}
-      composer={<RoomComposer chat={chat} />}
-      newestKey={newest.key}
-      newestMine={newest.mine}
-      // At the newest message once there is one (CLAUDE.md → Ekran davranışı); an empty room opens
-      // on its games.
-      startAtEnd={newest.key !== undefined}
-    >
+  const notes = (
+    <>
       {handover ? (
         <Card tone="note" className="mt-4" testID="leader-note">
           <Text variant="fine" tone="text">
@@ -388,6 +390,92 @@ export default function RoomScreen() {
           {errorMessage(exit.error)}
         </Text>
       ) : null}
+    </>
+  );
+
+  // The merged table (docs/SPEC_V3.md §23.F; canvas: Faz 3 · 23.3): the people at the table on a
+  // strip, then two tabs, Oyun Seç (today's games) and Masa Sohbeti (today's room chat). A message
+  // from the other phones while Oyun Seç is open puts a dot on Masa Sohbeti. A one-sided room (the
+  // lobby's waiting room, "Masanla oyna") keeps its games over its chat.
+  if (hasOtherTable) {
+    const others = (chat.messages.data ?? []).filter((m) => m.session_id !== sessionId);
+    // What was there when the table opened is seen; on Masa Sohbeti everything is (adjusted while
+    // rendering, like `seen` above).
+    if (
+      loaded &&
+      (chatSeen === null || (tab === 'chat' && others.some((m) => !chatSeen.has(m.id))))
+    ) {
+      setChatSeen(new Set(others.map((m) => m.id)));
+    }
+    const unreadChat = tab === 'games' && !!chatSeen && others.some((m) => !chatSeen.has(m.id));
+    const head = (
+      <>
+        {topBar(tr.rooms.phones(otherPhones))}
+        <View
+          className="gap-3 pb-2"
+          style={{ paddingHorizontal: shape.screenPadding - SPACING[1] }}
+        >
+          <PeopleStrip
+            phones={roomPhones}
+            me={{ ...seat, sessionId }}
+            profiles={profiles}
+            onAll={() => setStripPeople(true)}
+          />
+          <Segmented<'games' | 'chat'>
+            value={tab}
+            onChange={setTab}
+            accessibilityLabel={tr.rooms.tabsLabel}
+            options={[
+              { value: 'games', label: tr.rooms.tabGames, testID: 'tab-games' },
+              {
+                value: 'chat',
+                label: tr.rooms.tabChat,
+                testID: 'tab-chat',
+                dot: unreadChat,
+                dotLabel: tr.rooms.unreadChat,
+              },
+            ]}
+          />
+        </View>
+        <PeopleSheet
+          visible={stripPeople}
+          onClose={() => setStripPeople(false)}
+          phones={roomPhones}
+          me={{ ...seat, sessionId }}
+          profiles={profiles}
+        />
+      </>
+    );
+    return tab === 'games' ? (
+      <ChatScreen top={head} composer={null}>
+        {notes}
+        <View className="mt-2">{gameArea}</View>
+        <OtherTableStatus roomId={r.id} isOwner={isOwner} />
+      </ChatScreen>
+    ) : (
+      <ChatScreen
+        top={head}
+        composer={<RoomComposer chat={chat} />}
+        newestKey={newest.key}
+        newestMine={newest.mine}
+        startAtEnd
+      >
+        <RoomMessages chat={chat} sessionId={sessionId} profiles={profiles} />
+      </ChatScreen>
+    );
+  }
+
+  return (
+    <ChatScreen
+      top={topBar(tr.rooms.roomEyebrow(concept))}
+      composer={<RoomComposer chat={chat} />}
+      newestKey={newest.key}
+      newestMine={newest.mine}
+      // At the newest message once there is one (CLAUDE.md → Ekran davranışı); an empty room opens
+      // on its games.
+      startAtEnd={newest.key !== undefined}
+    >
+      {notes}
       {/* Over the games, not under them: below the grid it sat under the message bar. */}
       {r.status === 'waiting' && r.visibility === 'open' ? (
         <Card tone="note" className="mt-4" testID="room-waiting-note">
@@ -397,10 +485,43 @@ export default function RoomScreen() {
       <View className={r.status === 'waiting' && r.visibility === 'open' ? 'mt-1' : 'mt-4'}>
         {gameArea}
       </View>
-      {hasOtherTable ? <OtherTableStatus roomId={r.id} isOwner={isOwner} /> : null}
 
       <RoomMessages chat={chat} sessionId={sessionId} profiles={profiles} />
     </ChatScreen>
+  );
+}
+
+// The end of a merged table this phone sat at (@shared/tableEnd.ts): its records decide, once read,
+// whether there is anything to show; otherwise the venue.
+function TableEndGate({
+  roomId,
+  seen,
+  onClose,
+}: {
+  roomId: string;
+  seen: { otherAlias: string; people: EndPerson[]; left: boolean };
+  onClose: () => void;
+}) {
+  const records = useTableHistory(roomId, true);
+  if (records.isPending) {
+    return (
+      <Screen>
+        <View className="mt-16 items-center">
+          <Loader />
+        </View>
+      </Screen>
+    );
+  }
+  const show =
+    records.isError ||
+    showsTableEnd({
+      hadOtherSide: seen.people.length > 0,
+      leftOnItsOwn: seen.left,
+      records: records.data.length,
+    });
+  if (!show) return <Redirect href="/venue" />;
+  return (
+    <TableEnd roomId={roomId} otherAlias={seen.otherAlias} people={seen.people} onClose={onClose} />
   );
 }
 

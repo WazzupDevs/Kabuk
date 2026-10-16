@@ -27,8 +27,6 @@ describe('analytics events', () => {
         'room_two_tables',
         'game_abandoned',
         'game_completed',
-        'reveal_mutual',
-        'reveal_none',
         'report_submitted',
         'block_created',
         'session_ended',

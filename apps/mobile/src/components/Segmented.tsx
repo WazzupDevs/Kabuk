@@ -8,7 +8,16 @@ import { haptic } from '@/lib/haptics';
 import type { IconName } from './Button';
 import { Text } from './Text';
 
-type Option<T extends string> = { value: T; label: string; icon?: IconName; testID?: string };
+type Option<T extends string> = {
+  value: T;
+  label: string;
+  icon?: IconName;
+  testID?: string;
+  // A dot after the label (the second accent): something unread behind this option (the merged
+  // table's Masa Sohbeti, docs/SPEC_V3.md §23.F). `dotLabel` is what the reader hears for it.
+  dot?: boolean;
+  dotLabel?: string;
+};
 
 type Props<T extends string> = {
   options: readonly Option<T>[];
@@ -78,6 +87,18 @@ export function Segmented<T extends string>({
                 {o.label}
               </Text>
             )}
+            {o.dot ? (
+              <View
+                testID={o.testID ? `${o.testID}-unread` : undefined}
+                accessibilityLabel={o.dotLabel}
+                style={{
+                  width: SPACING[2],
+                  height: SPACING[2],
+                  borderRadius: shape.radius.pill,
+                  backgroundColor: colors.violet,
+                }}
+              />
+            ) : null}
           </Pressable>
         );
       })}

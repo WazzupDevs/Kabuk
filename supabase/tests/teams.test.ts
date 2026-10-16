@@ -19,6 +19,7 @@ import {
 } from './fixtures/venues.ts';
 import { errorBody, onboarded, PHONES, waitForBroadcast, waitUntilBlocked } from './helpers.ts';
 import { admin, type Client, dbUrl, deleteUserByPhone, invoke, sql, userIdOf } from './local.ts';
+import { setTableEnd, windowOn } from './tableEndSwitch.ts';
 
 let venue: Record<string, string> = {};
 const V = 'at-anchor';
@@ -478,14 +479,15 @@ describe('leaving (§22.D)', () => {
     await expectConsistent(roomId);
   });
 
-  it('opens the window with the side\'s last phone\'s "Hayır", and closes a one-sided room', async () => {
+  // Step 23.3 (docs/SPEC_V3.md §23.G): no window; the side's last phone closes the table at once.
+  it("closes the room at once with the side's last phone, and a one-sided room", async () => {
     const [owner, guest, member] = await tables(3);
     const roomId = await room(owner, guest);
     expect(await leave(guest, roomId)).toEqual({ status: 200, body: { ok: true } });
-    expect((await roomRow(roomId)).status).toBe('ending');
-    expect(
-      await sql`select session_id, wants_meet from public.reveal_decisions where room_id = ${roomId}`,
-    ).toEqual([{ session_id: guest.sessionId, wants_meet: false }]);
+    expect((await roomRow(roomId)).status).toBe('closed');
+    expect(await sql`select 1 from public.reveal_decisions where room_id = ${roomId}`).toHaveLength(
+      0,
+    );
 
     const solo = await room(member, null);
     expect(await leave(member, solo)).toEqual({ status: 200, body: { ok: true } });
@@ -507,7 +509,7 @@ describe('leaving (§22.D)', () => {
 
     await sql`update public.table_sessions set expires_at = now() - interval '1 minute' where id = ${member.sessionId}`;
     await sql`select private.end_expired_table_sessions()`;
-    expect((await roomRow(roomId)).status).toBe('ending');
+    expect((await roomRow(roomId)).status).toBe('closed');
   });
 
   it('hands over when a leader’s account is deleted, and the room goes on', async () => {
@@ -521,7 +523,7 @@ describe('leaving (§22.D)', () => {
     await expectConsistent(roomId);
   });
 
-  it('lets only a leader end the room (not_leader); the window takes every phone', async () => {
+  it('lets only a leader end the room (not_leader), for every phone at once', async () => {
     const [owner, member, guest] = await tables(3);
     const roomId = await room(owner, guest, { owner: [member] });
     expect(await rooms(member, { action: 'end' })).toEqual({
@@ -530,8 +532,8 @@ describe('leaving (§22.D)', () => {
     });
     expect((await roomRow(roomId)).status).toBe('active');
     expect(await rooms(owner, { action: 'end' })).toEqual({ status: 200, body: { ok: true } });
-    expect((await roomRow(roomId)).status).toBe('ending');
-    expect(await readsRoom(member, roomId)).toBe(true);
+    expect((await roomRow(roomId)).status).toBe('closed');
+    expect(await readsRoom(member, roomId)).toBe(false);
   });
 });
 
@@ -588,28 +590,31 @@ describe('blocking in a room (§22.D)', () => {
       guest_phones: 1,
     });
     await expectConsistent(roomId);
-    // Two leaders and no members: the step 3 block.
+    // Two leaders and no members: the step 3 block, which closes the table (step 23.3).
     expect(await block(guest, roomId)).toEqual({ status: 200, body: { ok: true } });
-    expect((await roomRow(roomId)).status).toBe('ending');
-    expect(
-      await sql`select session_id, wants_meet from public.reveal_decisions where room_id = ${roomId}`,
-    ).toEqual([{ session_id: guest.sessionId, wants_meet: false }]);
+    expect((await roomRow(roomId)).status).toBe('closed');
   });
 
+  // The window's code stays until step 23.4: with the switch off (tableEndSwitch.ts).
   it('writes "Hayır" for a member removed during the window, and nothing about the room changes', async () => {
-    const [owner, member, guest] = await tables(3);
-    const roomId = await room(owner, guest, { owner: [member] });
-    await rooms(owner, { action: 'end' });
-    const before = await roomRow(roomId);
-    expect(await block(owner, roomId, member)).toEqual({ status: 200, body: { ok: true } });
-    expect(await roomRow(roomId)).toEqual(before);
-    expect(
-      await sql`select session_id, wants_meet from public.reveal_decisions where room_id = ${roomId}`,
-    ).toEqual([{ session_id: member.sessionId, wants_meet: false }]);
-    // The phones of the window stay listed (rule 5).
-    expect((await phonesOf(owner, roomId)).map((p) => p.session_id).sort()).toEqual(
-      [owner.sessionId, member.sessionId, guest.sessionId].sort(),
-    );
+    const wasOn = await windowOn();
+    try {
+      const [owner, member, guest] = await tables(3);
+      const roomId = await room(owner, guest, { owner: [member] });
+      await rooms(owner, { action: 'end' });
+      const before = await roomRow(roomId);
+      expect(await block(owner, roomId, member)).toEqual({ status: 200, body: { ok: true } });
+      expect(await roomRow(roomId)).toEqual(before);
+      expect(
+        await sql`select session_id, wants_meet from public.reveal_decisions where room_id = ${roomId}`,
+      ).toEqual([{ session_id: member.sessionId, wants_meet: false }]);
+      // The phones of the window stay listed (rule 5).
+      expect((await phonesOf(owner, roomId)).map((p) => p.session_id).sort()).toEqual(
+        [owner.sessionId, member.sessionId, guest.sessionId].sort(),
+      );
+    } finally {
+      await setTableEnd(wasOn);
+    }
   });
 });
 
@@ -675,7 +680,7 @@ describe('reporting in a room (§22.J)', () => {
 });
 
 describe('access (§22.I)', { timeout: 60_000 }, () => {
-  it('gives a member the room and its channels, and a phone that left nothing; presence is shut in the window', async () => {
+  it('gives a member the room and its channels, and a phone that left nothing', async () => {
     const [owner, member, guest] = await tables(3);
     const roomId = await room(owner, guest, { guest: [member] });
     expect(
@@ -705,10 +710,9 @@ describe('access (§22.I)', { timeout: 60_000 }, () => {
       expect(await joinChannel(member, `${kind}:${roomId}`), kind).toBe('CHANNEL_ERROR');
     }
 
+    // Step 23.3: "Odayı bitir" closes the table at once; no window to shut presence in.
     await rooms(owner, { action: 'end' });
-    expect(await joinChannel(owner, `presence:${roomId}`)).toBe('CHANNEL_ERROR');
-    expect(await joinChannel(guest, `presence:${roomId}`)).toBe('CHANNEL_ERROR');
-    expect(await joinChannel(owner, `room:${roomId}`)).toBe('SUBSCRIBED');
+    expect((await roomRow(roomId)).status).toBe('closed');
   });
 
   it("lets the guest's side read the chat from the moment its side came, not before", async () => {

@@ -53,12 +53,7 @@ type Props = {
   venueHasSpots: boolean;
   // The table card's state (@shared/tableCard.ts): which requests the lobby offers.
   state: TableState;
-  // The owner of the table's current room: the host whose "Kabul" the requester sees.
-  hostAlias: string | null;
 };
-
-// How long "… kabul etti." stays in place of the pending note, like "Masa şu an müsait değil".
-const ACCEPTED_NOTE_MS = 15_000;
 
 // What the table is about to ask for: "Katıl" (the guest's side) or, with a side, "Bu masadayım"
 // (docs/SPEC_V3.md §22.C) with that side's leader.
@@ -70,16 +65,7 @@ type Asking = { roomId: string; side?: Side; leader?: string };
 // the table's state: "Katıl" without a room and from the table's own waiting room, "Bu masadayım"
 // only without one, none once merged. At a venue with spots the tables are grouped by spot, the
 // table's own first; a table at another spot offers "Bu noktadayım" instead of a request.
-export function Lobby({
-  venueId,
-  sessionId,
-  alias,
-  since,
-  mySpotId,
-  venueHasSpots,
-  state,
-  hostAlias,
-}: Props) {
+export function Lobby({ venueId, sessionId, alias, since, mySpotId, venueHasSpots, state }: Props) {
   const queryClient = useQueryClient();
   const actions = lobbyActions(state);
   const profile = useProfile();
@@ -178,9 +164,9 @@ export function Lobby({
   const secondsLeft = mine ? Math.max(0, Math.ceil((Date.parse(mine.expiresAt) - now) / 1000)) : 0;
   const recentlyUnavailable =
     mine && status === 'unavailable' && now - Date.parse(mine.expiresAt) < 15_000;
-  // A request this screen saw waiting, and when it saw it accepted: "… kabul etti." for a few
-  // seconds where the pending note was (adjusted while rendering). Nothing opens the room: the
-  // table card's "Masaya git" does.
+  // A request this screen saw waiting, and when it saw it accepted (adjusted while rendering). The
+  // table card says so ("Kabul edildi, X masasının yanına git", docs/SPEC_V3.md §23.E); nothing
+  // opens the room: the card's "Masaya git" does.
   const [seen, setSeen] = useState<{ id: string; acceptedAt: number | null } | null>(null);
   if (mine && status === 'pending' && seen?.id !== mine.id)
     setSeen({ id: mine.id, acceptedAt: null });
@@ -188,9 +174,6 @@ export function Lobby({
     setSeen({ id: mine.id, acceptedAt: now });
   }
   const acceptedNow = !!mine && seen?.id === mine.id && seen.acceptedAt !== null;
-  const acceptedBy = memberAsk?.leader ?? (state === 'merged' ? hostAlias : null);
-  const showAccepted =
-    acceptedNow && acceptedBy !== null && now - (seen?.acceptedAt ?? 0) < ACCEPTED_NOTE_MS;
   const acceptedRoom = acceptedNow ? mine?.roomId : undefined;
   useEffect(() => {
     // Counted here once per room, the same key as the room screen's: the requester may never open it.
@@ -235,16 +218,6 @@ export function Lobby({
       {recentlyUnavailable ? (
         <Card tone="note" className="mb-3">
           <Text accessibilityLiveRegion="polite">{tr.rooms.requestUnavailable}</Text>
-        </Card>
-      ) : null}
-      {showAccepted && acceptedBy ? (
-        <Card tone="note" className="mb-3" testID="request-accepted">
-          <View className="flex-row items-center gap-2.5">
-            <Avatar kind="table" alias={acceptedBy} size="sm" />
-            <Text variant="bodyStrong" className="flex-1" accessibilityLiveRegion="polite">
-              {tr.rooms.requestAccepted(acceptedBy)}
-            </Text>
-          </View>
         </Card>
       ) : null}
       {(request.isError && !handled) || moveHere.isError ? (
@@ -397,7 +370,13 @@ export function Lobby({
             {tr.rooms.memberBody(asking.leader)}
           </Text>
         ) : null}
-        {view !== 'choice' ? (
+        {photo.loading ? (
+          // Until the own profile answers: neither a choice nor a profile that may change a moment
+          // later.
+          <View className="items-center py-3">
+            <Loader kind="meet" size={ICON.lg} label={null} />
+          </View>
+        ) : view !== 'choice' ? (
           <ProfilePreview
             sheet={asking?.side ? 'member' : 'join'}
             view={view}
@@ -446,7 +425,7 @@ export function Lobby({
               profiled: view !== 'choice' || participation === 'profile',
             })
           }
-          disabled={view === 'gender' || (view === 'profile' && needsPhoto)}
+          disabled={photo.loading || view === 'gender' || (view === 'profile' && needsPhoto)}
           loading={request.isPending}
         />
       </Sheet>

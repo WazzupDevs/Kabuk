@@ -12,15 +12,19 @@ export const profileViewKeys = {
 // A profile as profile/get returns it: the caller's own, a friend's, or the other table's in the
 // current room. Not kept after the screen closes (access can end with the room), and refetched
 // well before the one-hour photo URL expires.
-export function useProfileView(publicId: string | null | undefined) {
-  return useQuery({
+export function profileViewQuery(publicId: string | null | undefined) {
+  return {
     queryKey: profileViewKeys.view(publicId ?? ''),
     enabled: !!publicId,
     staleTime: 10 * 60_000,
     gcTime: 0,
     retry: false,
     queryFn: () => profileApi.get(publicId ?? ''),
-  });
+  };
+}
+
+export function useProfileView(publicId: string | null | undefined) {
+  return useQuery(profileViewQuery(publicId));
 }
 
 // The profile ids of the other profiled phones in the room, both sides, by table session id, while

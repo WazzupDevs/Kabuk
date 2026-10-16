@@ -18,10 +18,10 @@ import { useVenueSpots } from '@/features/checkin/spots';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { Lobby } from '@/features/rooms/Lobby';
 import { OpenLobbySheet } from '@/features/rooms/OpenLobbySheet';
+import { useOpenedTables } from '@/features/rooms/openedTables';
 import { useCurrentRoom, useRoom, useRoomPhones } from '@/features/rooms/queries';
 import { TableCard } from '@/features/rooms/TableCard';
 import { useCreateSolo } from '@/features/rooms/useCreateSolo';
-import { useRevealDecision } from '@/features/reveal/useRevealDecision';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { sessionDurationMinutes } from '@shared/analytics.ts';
@@ -62,8 +62,7 @@ export default function VenueScreen() {
   const spots = useVenueSpots(table.data?.venue_id);
   const solo = useCreateSolo();
   const venueHasSpots = (spots.data ?? []).length > 0;
-  // While a room's reveal window is open the card follows its end to the second (@shared/tableCard.ts).
-  const now = useNow(currentRoom.data?.status === 'ending' ? 1000 : 30_000);
+  const now = useNow(30_000);
   const params = useLocalSearchParams<{ lobbyGame?: string; lobbyIntent?: string }>();
   const [sheet, setSheet] = useState<LobbySheet | null>(null);
   const scroll = useRef<ScrollView>(null);
@@ -109,8 +108,10 @@ export default function VenueScreen() {
     !!room && !!tableId && [room.owner_session_id, room.guest_session_id].includes(tableId);
   // A member's side is only in room_phones (docs/SPEC_V3.md §22.B).
   const phones = useRoomPhones(room?.id ?? '', !!room && !leads);
-  // This phone's own answer in the room's reveal window: "Hayır" lets the card go (tableState).
-  const decision = useRevealDecision(room?.status === 'ending' ? room.id : null);
+  // "Kabul edildi …" / "… geliyor" until this phone opens the merged table once (openedTables).
+  const openedIds = useOpenedTables((s) => s.ids);
+  const loadOpened = useOpenedTables((s) => s.load);
+  useEffect(() => loadOpened(), [loadOpened]);
 
   if (table.isPending) {
     return (
@@ -127,7 +128,7 @@ export default function VenueScreen() {
   }
 
   const seat = room ? roomSeat(room, phones.data, table.data.id) : null;
-  const state = tableState(room, seat?.leader ?? false, now, decision.data?.wants_meet === false);
+  const state = tableState(room, seat?.leader ?? false, now);
   const minutesLeft = Math.max(0, Math.ceil((expiresAt - now) / 60_000));
 
   function confirmLeave() {
@@ -169,6 +170,8 @@ export default function VenueScreen() {
         seat={seat}
         minutesLeft={minutesLeft}
         venueHasSpots={venueHasSpots}
+        // Unknown until read: the plain "Birleşti" rather than a line that may be gone a moment later.
+        opened={openedIds === null || (!!room && openedIds.includes(room.id))}
       />
       {state === 'off' ? (
         // Side by side: the venue chat row stays above the floating tab bar on small phones.
@@ -230,7 +233,6 @@ export default function VenueScreen() {
         mySpotId={table.data.spot_id}
         venueHasSpots={venueHasSpots}
         state={state}
-        hostAlias={room?.owner_alias ?? null}
       />
       {sheet && state === 'off' ? (
         <OpenLobbySheet

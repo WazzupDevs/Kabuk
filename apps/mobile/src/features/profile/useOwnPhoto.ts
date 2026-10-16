@@ -26,6 +26,9 @@ export function useOwnPhoto() {
     name: view.data?.displayName ?? own.data?.display_name ?? '',
     age: view.data?.age ?? null,
     gender: view.isSuccess ? (view.data.gender ?? null) : undefined,
+    // The own profile is still on its way (not failed): the game flow's sheets wait for it rather
+    // than show a choice that may turn into the profile a moment later.
+    loading: view.isPending && view.fetchStatus !== 'idle',
     refresh,
   };
 }

@@ -2,7 +2,9 @@
 // from here, so this is the single source.
 export const JOIN_REQUEST_TTL_SECONDS = 60;
 export const MAX_JOIN_REQUESTS_PER_HOUR = 10;
-export const ROOM_IDLE_MINUTES = 10;
+// A one-sided room (waiting in the lobby, "Masanla oyna") closes after this much inactivity; a
+// two-sided one never does (docs/SPEC_V3.md §23.G). The cron's argument.
+export const ROOM_IDLE_MINUTES = 30;
 
 // The games (Sesli Tabu, Sohbet kartları, Sahtekar, Harf Kapmaca, Şarkıda Geçsin, İbre). rooms.concept is the running game; null is
 // chat (docs/SPEC_V3.md §5.1).

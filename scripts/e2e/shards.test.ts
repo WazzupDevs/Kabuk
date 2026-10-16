@@ -49,10 +49,10 @@ describe('E2E shards', () => {
   });
 
   it('keep the flows that build on each other in one shard', () => {
-    // 05 and 05b go on with 04's room, reveal and friend; 06 needs the bot checked in from 04;
+    // 05 and 05b go on with 04's room, its end and friend; 06 needs the bot checked in from 04;
     // 07 blocks the bot met in 04. 08 logs the second bot account in, which 13 plays as bot A.
     for (const group of [
-      ['04-room-tabu', '05-reveal-friend-dm', '05b-dm-ticks-typing', '06-white-screen'],
+      ['04-room-tabu', '05-table-end-friend-dm', '05b-dm-ticks-typing', '06-white-screen'],
       ['04-room-tabu', '07-history-block'],
       ['08-venue-chat', '13-teams'],
     ]) {

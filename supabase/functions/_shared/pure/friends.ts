@@ -32,16 +32,16 @@ export function sentRequestView(status: StoredRequestStatus): SentRequestView {
 // Which friend action a history row offers. A mutual "Evet" and a table that ended without the
 // window (friend_open, docs/SPEC_V3.md §23.G) offer only "Arkadaş ekle"; any other encounter (an
 // older record) offers "İstek gönder". After a press the row only says it was done, whatever the
-// server did with it (§6.2, §6.5). friend_open is optional until the app reads it (step 23.3).
+// server did with it (§6.2, §6.5).
 export type HistoryAction = 'add_friend' | 'send_request' | 'done';
 
 export function historyAction(row: {
   reveal_mutual: boolean;
-  friend_open?: boolean;
+  friend_open: boolean;
   friend_action_at: string | null;
 }): HistoryAction {
   if (row.friend_action_at !== null) return 'done';
-  return row.reveal_mutual || row.friend_open === true ? 'add_friend' : 'send_request';
+  return row.reveal_mutual || row.friend_open ? 'add_friend' : 'send_request';
 }
 
 export const FRIEND_REQUEST_SOURCES = ['history', 'room_end', 'venue_chat'] as const;

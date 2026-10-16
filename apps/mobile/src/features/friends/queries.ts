@@ -87,12 +87,44 @@ export function usePlayHistory() {
       const { data, error } = await supabase
         .from('play_history')
         .select(
-          'id, room_id, concept, own_alias, other_alias, other_headcount, reveal_mutual, friend_action_at, played_at',
+          'id, room_id, concept, own_alias, other_alias, other_headcount, reveal_mutual, friend_open, friend_action_at, played_at',
         )
         .order('played_at', { ascending: false })
         .limit(100);
       if (error) throw error;
       return data;
+    },
+  });
+}
+
+// This phone's records of one table (docs/SPEC_V3.md §23.G), written when the table closed or when
+// this phone left it: one per phone of the other side it sat with for 3 minutes, by that phone's
+// alias. The table's end is built from them and from what the phone saw at the table.
+export function useTableHistory(roomId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: [...friendKeys.history, 'room', roomId] as const,
+    enabled,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('play_history')
+        .select('id, other_alias, reveal_mutual, friend_open, friend_action_at')
+        .eq('room_id', roomId);
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+// The records whose two accounts are friends now (public.play_history_friends): "Arkadaş oldunuz ·
+// Mesajlaş" on the table's end and in the play history, with the friend's DM. Under friendKeys.all,
+// so a new friendship (the inbox broadcast) reads it again. A single press shows nothing (rule 5).
+export function useHistoryFriends() {
+  return useQuery({
+    queryKey: [...friendKeys.history, 'friends'] as const,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('play_history_friends');
+      if (error) throw error;
+      return new Map(data.map((f) => [f.history_id, f]));
     },
   });
 }

@@ -12,7 +12,7 @@ name: P0 kritik yol
 - runFlow: flows/02-checkin.yaml
 - runFlow: flows/03-name.yaml
 - runFlow: flows/04-room-tabu.yaml
-- runFlow: flows/05-reveal-friend-dm.yaml
+- runFlow: flows/05-table-end-friend-dm.yaml
 - runFlow: flows/05b-dm-ticks-typing.yaml
 - runFlow: flows/06-white-screen.yaml
 - runFlow: flows/06b-tabu-coop.yaml

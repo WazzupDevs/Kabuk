@@ -4,16 +4,15 @@
 // room after 30 minutes; "Arkadaş ekle" works on a friend_open record from the table's end and from
 // the play history alike.
 //
-// Staged (§23.N): private.table_end_on() is false until step 23.3's client PR, and today's app keeps
-// its window (the rest of the suite runs with it off, unchanged). This file turns it on for its own
-// run and puts back what it found; files run one at a time (vitest.integration.config.ts). A run
-// killed here leaves it on until `pnpm db:reset`.
+// Staged (§23.N): private.table_end_on() is on since step 23.3's client PR (23.3b); the files about
+// the window turn it off for their own run (tableEndSwitch.ts). This file turns it on for its own
+// run and puts back what it found; files run one at a time (vitest.integration.config.ts).
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { REVEAL } from '../functions/_shared/pure/reveal.ts';
 import { BROADCAST, sessionChannel } from '../functions/_shared/pure/rooms.ts';
 import { deleteFixtureVenues, insertFixtureVenues } from './fixtures/venues.ts';
-import { deleteUserByPhone, invoke, sql } from './local.ts';
+import { anonKey, apiUrl, deleteUserByPhone, invoke, sql } from './local.ts';
 import {
   createRoom,
   leave,
@@ -392,6 +391,87 @@ describe('"Arkadaş ekle" on a friend_open record (§23.G)', { timeout: 60_000 }
     expect((await addFromRoom(guest, owner, roomId)).status).toBe(200);
     expect(await friendsOf(owner, guest)).toHaveLength(0);
     expect(await sql`select 1 from public.mutual_friend_intents`).toHaveLength(0);
+  });
+});
+
+// "Arkadaş oldunuz · Mesajlaş" on the table's end and in the play history (step 23.3's client,
+// public.play_history_friends): the caller's own records whose two accounts are friends now.
+describe('play_history_friends (§23.G, rules 4 and 5)', { timeout: 60_000 }, () => {
+  const historyId = async (p: Phone, other: Phone, roomId: string) => {
+    const [row] = await sql`
+      select id from public.play_history
+      where room_id = ${roomId} and user_id = ${p.userId} and other_user_id = ${other.userId}
+    `;
+    if (!row) throw new Error('no history');
+    return row.id as string;
+  };
+  const press = async (p: Phone, other: Phone, roomId: string) =>
+    invoke(p.client, 'friends', {
+      action: 'add-from-room',
+      historyId: await historyId(p, other, roomId),
+    });
+  const friendsRead = async (p: Phone) => {
+    const { data, error } = await p.client.rpc('play_history_friends');
+    expect(error).toBeNull();
+    return data ?? [];
+  };
+
+  it('lists a record only once the pair are friends, with the friend and the DM, and only to them', async () => {
+    const [owner, guest, ownerMember] = await tables(3);
+    const roomId = await teamRoom(owner, guest, { owner: [ownerMember] });
+    await backdate(roomId);
+    expect(await rooms(owner, { action: 'end' })).toEqual(OK);
+
+    // One press: nothing on either side (rule 5).
+    expect((await press(ownerMember, guest, roomId)).status).toBe(200);
+    expect((await press(owner, guest, roomId)).status).toBe(200);
+    for (const p of [owner, guest, ownerMember]) expect(await friendsRead(p)).toEqual([]);
+
+    // Both: the two records of that pair, each to its own account.
+    expect((await press(guest, owner, roomId)).status).toBe(200);
+    const [thread] = await sql`
+      select t.id from public.dm_threads t
+      where (t.user_a, t.user_b) = (least(${owner.userId}::uuid, ${guest.userId}::uuid),
+                                   greatest(${owner.userId}::uuid, ${guest.userId}::uuid))
+    `;
+    const [ownerProfile] =
+      await sql`select public_id, display_name from public.profiles where id = ${owner.userId}`;
+    const [guestProfile] =
+      await sql`select public_id, display_name from public.profiles where id = ${guest.userId}`;
+    expect(await friendsRead(owner)).toEqual([
+      {
+        history_id: await historyId(owner, guest, roomId),
+        public_id: guestProfile?.public_id,
+        display_name: guestProfile?.display_name,
+        thread_id: thread?.id,
+      },
+    ]);
+    expect(await friendsRead(guest)).toEqual([
+      {
+        history_id: await historyId(guest, owner, roomId),
+        public_id: ownerProfile?.public_id,
+        display_name: ownerProfile?.display_name,
+        thread_id: thread?.id,
+      },
+    ]);
+    expect(await friendsRead(ownerMember)).toEqual([]);
+
+    // A block ends the friendship: the record is no longer listed.
+    expect(
+      (await invoke(owner.client, 'safety', { action: 'block', publicId: guestProfile?.public_id }))
+        .status,
+    ).toBe(200);
+    expect(await friendsRead(owner)).toEqual([]);
+    expect(await friendsRead(guest)).toEqual([]);
+  });
+
+  it('is closed to callers without an account', async () => {
+    const res = await fetch(`${apiUrl}/rest/v1/rpc/play_history_friends`, {
+      method: 'POST',
+      headers: { apikey: anonKey, 'content-type': 'application/json' },
+      body: '{}',
+    });
+    expect(res.ok).toBe(false);
   });
 });
 
