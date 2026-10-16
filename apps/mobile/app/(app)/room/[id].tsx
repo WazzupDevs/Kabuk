@@ -1,7 +1,8 @@
 import { CONCEPTS, type Concept } from '@shared/rooms.ts';
 import { parseGameState } from '@shared/tabu.ts';
+import { roomSeat, type RoomSeat, sideHeadcount } from '@shared/teams.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Redirect, router, useLocalSearchParams } from 'expo-router';
+import { Redirect, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, useWindowDimensions, View } from 'react-native';
 
@@ -25,11 +26,12 @@ import { FirstGameIntro } from '@/features/games/FirstGameIntro';
 import { useGameSignals } from '@/features/games/gameSignals';
 import { GameStage } from '@/features/games/GameStage';
 import { TimeUpOverlay } from '@/features/games/TimeUpOverlay';
-import { useRoomMemberProfile } from '@/features/profile/queries';
+import { useRoomMemberProfiles } from '@/features/profile/queries';
 import { RevealPrompt } from '@/features/reveal/RevealPrompt';
 import { RevealResult } from '@/features/reveal/RevealResult';
 import { IncomingRequest } from '@/features/rooms/IncomingRequest';
-import { roomKeys, useRoom } from '@/features/rooms/queries';
+import { type RoomPhone, roomKeys, useRoom, useRoomPhones } from '@/features/rooms/queries';
+import { PeopleSheet, PickPersonSheet } from '@/features/rooms/RoomPeople';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track, trackOnce } from '@/lib/analytics';
@@ -84,12 +86,44 @@ export default function RoomScreen() {
   const loadIntro = intro.load;
   useEffect(() => loadIntro(), [loadIntro]);
 
-  // "Odayı bitir" is the only way out (docs/SPEC_V3.md §5.5).
+  // The room's phones and this phone's place in it (docs/SPEC_V3.md §22.B): a leader is on the room
+  // row, a member only in room_phones.
+  const phones = useRoomPhones(id, !!room.data && room.data.status !== 'closed');
+  const people = (phones.data ?? []).map((p) => p.sessionId).join(',');
+  const profiles = useRoomMemberProfiles(id, people).data;
+  const seat = room.data && ownSession ? roomSeat(room.data, phones.data, ownSession) : null;
+  // A member who becomes the leader (the leader left, docs/SPEC_V3.md §22.D) sees one note at the
+  // top of the chat with the name of the leader who left (canvas: Liderlik devri notu). Adjusted
+  // while rendering, like `seen` above.
+  const myLeaderAlias =
+    seat && room.data
+      ? seat.side === 'owner'
+        ? room.data.owner_alias
+        : room.data.guest_alias
+      : null;
+  const [lastSeat, setLastSeat] = useState<{ leader: boolean; alias: string | null } | null>(null);
+  const [handover, setHandover] = useState<string | null>(null);
+  if (seat && (lastSeat?.leader !== seat.leader || lastSeat.alias !== myLeaderAlias)) {
+    if (lastSeat && !lastSeat.leader && seat.leader && lastSeat.alias) setHandover(lastSeat.alias);
+    setLastSeat({ leader: seat.leader, alias: myLeaderAlias });
+  }
+
+  // "Odayı bitir": a leader's (docs/SPEC_V3.md §22.D).
   const exit = useMutation({
     mutationFn: roomsApi.end,
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: roomKeys.current });
       void queryClient.invalidateQueries({ queryKey: roomKeys.room(id) });
+    },
+  });
+  // "Odadan çık": a member leaves, a leader hands its side to the oldest member.
+  const leave = useMutation({
+    mutationFn: () => roomsApi.leave(id),
+    onSuccess: () => track('team_left', {}),
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: roomKeys.current });
+      void queryClient.invalidateQueries({ queryKey: roomKeys.room(id) });
+      void queryClient.invalidateQueries({ queryKey: roomKeys.phones(id) });
     },
   });
 
@@ -103,15 +137,13 @@ export default function RoomScreen() {
 
   const sessionId = table.data?.id;
   const r = room.data;
-  const member =
-    r && sessionId && (r.owner_session_id === sessionId || r.guest_session_id === sessionId);
-  if (!r || !member) return <Redirect href="/venue" />;
+  if (!r || !sessionId) return <Redirect href="/venue" />;
   if (r.status === 'closed') {
     // A two-table room shows its shared result once; otherwise back to the venue.
-    return r.reveal_result === 'mutual' || r.reveal_result === 'none' ? (
+    return seat && (r.reveal_result === 'mutual' || r.reveal_result === 'none') ? (
       <RevealResult
         roomId={r.id}
-        isOwner={r.owner_session_id === sessionId}
+        isOwner={seat.side === 'owner' && seat.leader}
         result={r.reveal_result}
         token={r.reveal_token}
       />
@@ -119,31 +151,68 @@ export default function RoomScreen() {
       <Redirect href="/venue" />
     );
   }
+  if (!seat) {
+    // A member is known once room_phones is read; a phone not in it goes back to the venue.
+    return phones.isPending ? (
+      <Screen>
+        <ActivityIndicator className="mt-16" color={colors.muted} />
+      </Screen>
+    ) : (
+      <Redirect href="/venue" />
+    );
+  }
 
-  const isOwner = r.owner_session_id === sessionId;
+  const side = seat.side;
+  const isOwner = side === 'owner';
+  // Room-level events count once, from the owner side's leader.
+  const reportsRoom = isOwner && seat.leader;
+  const mySide = sideHeadcount(
+    isOwner ? r.owner_headcount : (r.guest_headcount ?? 0),
+    isOwner ? r.owner_phones : (r.guest_phones ?? 0),
+  );
+  const roomHeadcount =
+    sideHeadcount(r.owner_headcount, r.owner_phones) +
+    (r.guest_headcount !== null ? sideHeadcount(r.guest_headcount, r.guest_phones ?? 0) : 0);
   // The running game; null is chat (docs/SPEC_V3.md §5.1).
   const concept: Concept | null = (CONCEPTS as readonly unknown[]).includes(r.concept)
     ? (r.concept as Concept)
     : null;
   const hasOtherTable = r.guest_session_id !== null;
 
-  // Room-level events come from one table only, so each room counts once.
-  if (!isOwner) trackOnce(`join_accepted:${r.id}`, 'join_accepted', {});
+  // Each phone that came by a request counts once per room: "Katıl" (the guest's leader) and "Bu
+  // masadayım" (a member of either side; docs/SPEC_V3.md §22.L).
+  if (!reportsRoom) {
+    trackOnce(`join_accepted:${r.id}`, 'join_accepted', { as_member: !(seat.leader && !isOwner) });
+  }
+  if (handover) trackOnce(`leader_transferred:${r.id}`, 'leader_transferred', {});
 
-  // A two-table room is named for the other table ("Kibar Badem ile"); a one-table room keeps the
-  // table's own name.
+  // A two-sided room is named for the other side's leader ("Kibar Badem ile"), its phones under the
+  // name (docs/SPEC_V3.md §22.G, decision 9); a one-sided room keeps the room's own name.
   const otherAlias = isOwner ? r.guest_alias : r.owner_alias;
+  const otherPhones = (isOwner ? r.guest_phones : r.owner_phones) ?? 1;
   const title = r.guest_alias && otherAlias ? tr.rooms.withOther(otherAlias) : r.owner_alias;
+  const myAlias = table.data?.alias ?? r.owner_alias;
+  const roomPhones = phones.data ?? [];
+  // The member a leader's "Odadan çık" hands the side to: the oldest one (docs/SPEC_V3.md §22.D).
+  const nextLeader =
+    roomPhones
+      .filter((p) => p.side === side && !p.leader)
+      .sort((a, b) => a.joinedAt.localeCompare(b.joinedAt))[0]?.alias ?? null;
   const topBar = (subtitle: string, onClose?: () => void) => (
     <RoomTopBar
       roomId={r.id}
       title={title}
       subtitle={subtitle}
-      aliases={[r.owner_alias, ...(r.guest_alias ? [r.guest_alias] : [])]}
-      guestSessionId={r.guest_session_id}
-      hasOtherTable={hasOtherTable}
+      aliases={hasOtherTable && otherAlias ? [myAlias, otherAlias] : [r.owner_alias]}
+      me={{ ...seat, sessionId }}
+      phones={roomPhones}
+      profiles={profiles}
+      nextLeader={nextLeader}
       onEnd={() => exit.mutate()}
       ending={exit.isPending}
+      onLeave={() => leave.mutate()}
+      leaving={leave.isPending}
+      leaveError={leave.error}
       onClose={onClose}
     />
   );
@@ -154,10 +223,11 @@ export default function RoomScreen() {
       concept={concept}
       gameState={r.game_state}
       hasGuest={hasOtherTable}
-      isOwner={isOwner}
+      side={side}
+      reportsRoom={reportsRoom}
       aliases={{ owner: r.owner_alias, guest: r.guest_alias ?? '' }}
-      headcount={table.data?.headcount ?? 0}
-      roomHeadcount={r.owner_headcount + (r.guest_headcount ?? 0)}
+      headcount={mySide}
+      roomHeadcount={roomHeadcount}
       localGame={localGame}
       onLocalGame={setLocalGame}
     />
@@ -181,7 +251,7 @@ export default function RoomScreen() {
         />
         <RevealPrompt
           roomId={r.id}
-          isOwner={isOwner}
+          isOwner={reportsRoom}
           revealEndsAt={r.reveal_ends_at}
           score={null}
         />
@@ -245,12 +315,7 @@ export default function RoomScreen() {
               newestMine={newest.mine}
               contentContainerStyle={{ padding: SPACING[4], gap: SPACING[2] }}
             >
-              <RoomMessages
-                chat={chat}
-                sessionId={sessionId}
-                roomId={r.id}
-                guestSessionId={r.guest_session_id}
-              />
+              <RoomMessages chat={chat} sessionId={sessionId} profiles={profiles} />
             </ChatScroll>
             <RoomComposer chat={chat} />
           </>
@@ -262,7 +327,7 @@ export default function RoomScreen() {
           </Text>
         ) : null}
         {gameArea}
-        {isOwner ? <IncomingRequest roomId={r.id} ownerSessionId={r.owner_session_id} /> : null}
+        {seat.leader ? <IncomingRequest roomId={r.id} leaderSessionId={sessionId} /> : null}
         <FirstGameIntro
           visible={concept === 'tabu' && hasOtherTable && intro.seen === false}
           onClose={intro.markSeen}
@@ -273,7 +338,7 @@ export default function RoomScreen() {
 
   return (
     <ChatScreen
-      top={topBar(tr.rooms.roomEyebrow(concept))}
+      top={topBar(hasOtherTable ? tr.rooms.phones(otherPhones) : tr.rooms.roomEyebrow(concept))}
       composer={<RoomComposer chat={chat} />}
       newestKey={newest.key}
       newestMine={newest.mine}
@@ -281,6 +346,13 @@ export default function RoomScreen() {
       // on its games.
       startAtEnd={newest.key !== undefined}
     >
+      {handover ? (
+        <Card tone="note" className="mt-4" testID="leader-note">
+          <Text variant="fine" tone="text">
+            {tr.rooms.newLeader(handover)}
+          </Text>
+        </Card>
+      ) : null}
       {exit.isError ? (
         <Text variant="fine" tone="danger">
           {errorMessage(exit.error)}
@@ -297,49 +369,56 @@ export default function RoomScreen() {
       </View>
       {hasOtherTable ? <OtherTableStatus roomId={r.id} isOwner={isOwner} /> : null}
 
-      <RoomMessages
-        chat={chat}
-        sessionId={sessionId}
-        roomId={r.id}
-        guestSessionId={r.guest_session_id}
-      />
+      <RoomMessages chat={chat} sessionId={sessionId} profiles={profiles} />
 
-      {isOwner ? <IncomingRequest roomId={r.id} ownerSessionId={r.owner_session_id} /> : null}
+      {seat.leader ? <IncomingRequest roomId={r.id} leaderSessionId={sessionId} /> : null}
     </ChatScreen>
   );
 }
 
-// The room's top bar (canvas: Aşama 4 · Yenileme): the tables' avatars and names, "Odayı bitir"
-// (the only way out, docs/SPEC_V3.md §5.5) and a menu with "Şikayet et" and "Engelle". The avatars
-// open the other table's profile only when it joined with its profile, and only while the room runs
-// (room_member_profile; docs/SPEC_V2.md §5.4).
+// The room's top bar (canvas: Aşama 4 · Yenileme; Faz 2 · 22.5): the faces, the name with the
+// other side's phones under it, the red button (a leader's "Odayı bitir", a member's "Odadan çık")
+// and the menu. The name opens "Odadakiler". Only one of the bar's sheets is open at a time.
 function RoomTopBar({
   roomId,
   title,
   subtitle,
   aliases,
-  guestSessionId,
-  hasOtherTable,
+  me,
+  phones,
+  profiles,
+  nextLeader,
   onEnd,
   ending,
+  onLeave,
+  leaving,
+  leaveError,
   onClose,
 }: {
   roomId: string;
   title: string;
   subtitle: string;
   aliases: readonly string[];
-  guestSessionId: string | null;
-  hasOtherTable: boolean;
+  me: RoomSeat & { sessionId: string };
+  phones: readonly RoomPhone[];
+  profiles: ReadonlyMap<string, string> | undefined;
+  // The member a leader's "Odadan çık" hands the side to; null: no one else on the side.
+  nextLeader: string | null;
   onEnd: () => void;
   ending: boolean;
+  onLeave: () => void;
+  leaving: boolean;
+  leaveError: unknown;
   // In the game's chat panel: the back arrow closes the panel.
   onClose?: () => void;
 }) {
-  const [menu, setMenu] = useState(false);
+  const [sheet, setSheet] = useState<'menu' | 'people' | 'block' | 'report' | 'leave' | null>(null);
   const safety = useRoomSafety(roomId);
-  const member = useRoomMemberProfile(roomId, guestSessionId);
-  const publicId = member.data;
-  // On a narrow screen "Odayı bitir" is an icon: the label left the tables' names a letter.
+  const close = () => setSheet(null);
+  const hasOthers = phones.some((p) => p.sessionId !== me.sessionId);
+  // A leader alone on its side has no "Odadan çık": leaving would end the room, as "Odayı bitir".
+  const canLeave = !me.leader || nextLeader !== null;
+  // On a narrow screen the red button is an icon: the label left the names a letter.
   const { width, fontScale } = useWindowDimensions();
   const narrow = width < NARROW_SCREEN * Math.max(1, fontScale);
   return (
@@ -350,60 +429,137 @@ function RoomTopBar({
         titleLines={2}
         subtitle={subtitle}
         leading={<TableFaces aliases={aliases} />}
-        onPressTitle={
-          publicId
-            ? () => router.push({ pathname: '/people/[publicId]', params: { publicId } })
-            : undefined
-        }
-        titleAccessibilityLabel={tr.rooms.viewProfile}
+        onPressTitle={phones.length > 0 ? () => setSheet('people') : undefined}
+        titleAccessibilityLabel={tr.rooms.viewPeople}
         actions={
           <>
-            <Button
-              variant="danger"
-              size="sm"
-              testID="end-room"
-              label={tr.rooms.end}
-              icon={narrow ? 'exit-outline' : undefined}
-              iconOnly={narrow}
-              onPress={onEnd}
-              disabled={ending}
-            />
+            {me.leader ? (
+              <Button
+                variant="danger"
+                size="sm"
+                testID="end-room"
+                label={tr.rooms.end}
+                icon={narrow ? 'exit-outline' : undefined}
+                iconOnly={narrow}
+                onPress={onEnd}
+                disabled={ending}
+              />
+            ) : (
+              <Button
+                variant="danger"
+                size="sm"
+                testID="leave-room"
+                label={tr.rooms.leave}
+                icon={narrow ? 'exit-outline' : undefined}
+                iconOnly={narrow}
+                onPress={() => setSheet('leave')}
+                disabled={leaving}
+              />
+            )}
             <IconButton
               icon="ellipsis-horizontal"
               label={tr.friends.more}
-              onPress={() => setMenu(true)}
+              onPress={() => setSheet('menu')}
             />
           </>
         }
       />
-      <Sheet visible={menu} onClose={() => setMenu(false)} title={tr.friends.more}>
-        {hasOtherTable ? <Text variant="fine">{tr.rooms.endHint}</Text> : null}
-        <Button
-          variant="neutral"
-          label={tr.safety.report}
-          onPress={() => {
-            setMenu(false);
-            safety.startReport();
-          }}
-        />
-        {hasOtherTable ? (
+      <Sheet visible={sheet === 'menu'} onClose={close} title={tr.friends.more}>
+        {me.leader && hasOthers ? <Text variant="fine">{tr.rooms.endHint}</Text> : null}
+        {canLeave ? (
           <Button
             variant="neutral"
-            label={tr.safety.block}
-            onPress={() => {
-              setMenu(false);
-              safety.confirmBlock();
-            }}
+            testID="menu-leave"
+            label={tr.rooms.leave}
+            onPress={() => setSheet('leave')}
           />
         ) : null}
+        {me.leader && nextLeader ? (
+          <Text variant="fine">{tr.rooms.leaveHandover(nextLeader)}</Text>
+        ) : null}
+        {hasOthers ? (
+          <>
+            <Button
+              variant="neutral"
+              testID="menu-report"
+              label={tr.safety.report}
+              onPress={() => setSheet('report')}
+            />
+            <Button
+              variant="neutral"
+              testID="menu-block"
+              label={tr.safety.block}
+              onPress={() => {
+                safety.resetBlock();
+                setSheet('block');
+              }}
+            />
+          </>
+        ) : null}
       </Sheet>
-      {safety.blockError ? (
-        <View style={{ paddingHorizontal: SPACING[5], paddingTop: SPACING[2] }}>
+      <Sheet
+        visible={sheet === 'leave'}
+        onClose={close}
+        title={tr.rooms.leaveConfirmTitle}
+        icon="exit-outline"
+      >
+        <Text variant="fine" tone="text">
+          {me.leader && nextLeader
+            ? tr.rooms.leaveConfirmLeader(nextLeader)
+            : tr.rooms.leaveConfirmMember}
+        </Text>
+        {leaveError ? (
           <Text variant="fine" tone="danger">
-            {errorMessage(safety.blockError)}
+            {errorMessage(leaveError)}
           </Text>
+        ) : null}
+        <View className="flex-row gap-2.5">
+          <View className="flex-1">
+            <Button variant="neutral" label={tr.common.cancel} onPress={close} />
+          </View>
+          <View className="flex-1">
+            <Button
+              variant="danger"
+              testID="leave-confirm"
+              label={tr.rooms.leave}
+              onPress={onLeave}
+              loading={leaving}
+            />
+          </View>
         </View>
-      ) : null}
+      </Sheet>
+      <PeopleSheet
+        visible={sheet === 'people'}
+        onClose={close}
+        phones={phones}
+        me={me}
+        profiles={profiles}
+      />
+      <PickPersonSheet
+        mode="block"
+        visible={sheet === 'block'}
+        onClose={close}
+        phones={phones}
+        me={me}
+        profiles={profiles}
+        pending={safety.blocking}
+        error={safety.blockError}
+        onPick={(sessionId) => safety.block(sessionId, close)}
+      />
+      <PickPersonSheet
+        mode="report"
+        visible={sheet === 'report'}
+        onClose={close}
+        phones={phones}
+        me={me}
+        profiles={profiles}
+        pending={false}
+        error={null}
+        onPick={(sessionId) => {
+          close();
+          safety.startReport(sessionId);
+        }}
+      />
       {safety.reportForm}
     </>
   );
@@ -416,7 +572,7 @@ function TableFaces({ aliases }: { aliases: readonly string[] }) {
     <View className="flex-row">
       {aliases.map((alias, i) => (
         <View
-          key={alias}
+          key={`${i}:${alias}`}
           style={
             i > 0
               ? {

@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 export const profileViewKeys = {
   all: ['profileView'] as const,
   view: (publicId: string) => ['profileView', publicId] as const,
-  roomMember: (roomId: string) => ['roomMemberProfile', roomId] as const,
+  roomMembers: (roomId: string) => ['roomMemberProfiles', roomId] as const,
 };
 
 // A profile as profile/get returns it: the caller's own, a friend's, or the other table's in the
@@ -23,18 +23,18 @@ export function useProfileView(publicId: string | null | undefined) {
   });
 }
 
-// The other table's profile id while the room runs, only if it joined with its profile
-// (docs/SPEC_V2.md §5.4); null otherwise.
-export function useRoomMemberProfile(roomId: string, guestSessionId: string | null) {
+// The profile ids of the other profiled phones in the room, both sides, by table session id, while
+// the room runs (docs/SPEC_V3.md §22.G; rule 4). `people`: the room's phones, so the list is read
+// again when a phone joins or leaves.
+export function useRoomMemberProfiles(roomId: string, people: string) {
   return useQuery({
-    queryKey: [...profileViewKeys.roomMember(roomId), guestSessionId],
-    enabled: guestSessionId !== null,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('room_member_profile', {
+    queryKey: [...profileViewKeys.roomMembers(roomId), people],
+    queryFn: async (): Promise<ReadonlyMap<string, string>> => {
+      const { data, error } = await supabase.rpc('room_member_profiles', {
         target_room_id: roomId,
       });
       if (error) throw error;
-      return data ? data : null;
+      return new Map(data.map((p) => [p.session_id, p.public_id]));
     },
   });
 }

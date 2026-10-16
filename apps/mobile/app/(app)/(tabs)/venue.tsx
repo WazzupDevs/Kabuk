@@ -230,6 +230,7 @@ export default function VenueScreen() {
       <Lobby
         venueId={table.data.venue_id}
         sessionId={table.data.id}
+        alias={table.data.alias}
         since={table.data.created_at}
         mySpotId={table.data.spot_id}
         venueHasSpots={venueHasSpots}

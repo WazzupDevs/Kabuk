@@ -12,7 +12,6 @@ import { ChatBubble } from '@/components/ChatBubble';
 import { ChatRow, DayLine, dayLabel } from '@/components/ChatScreen';
 import { Composer } from '@/components/Composer';
 import { Text } from '@/components/Text';
-import { useRoomMemberProfile } from '@/features/profile/queries';
 import { tr } from '@/i18n/tr';
 import { ApiError, chatApi } from '@/lib/api';
 
@@ -84,23 +83,24 @@ export function useRoomChat(roomId: string) {
 
 export type RoomChat = ReturnType<typeof useRoomChat>;
 
-// The room's messages in runs (canvas: Aşama 4 · Yenileme), then the ones still on their way. In a
-// profiled room the other table's photo opens its profile, as the top bar's title does.
+// The room's messages in runs (canvas: Aşama 4 · Yenileme), then the ones still on their way. A
+// profiled phone's message opens its profile while the room runs (docs/SPEC_V3.md §22.G).
 export function RoomMessages({
   chat,
   sessionId,
-  roomId,
-  guestSessionId,
+  profiles,
 }: {
   chat: RoomChat;
   sessionId: string;
-  roomId: string;
-  guestSessionId: string | null;
+  // Profile ids of the room's profiled phones, by table session id (room_member_profiles).
+  profiles: ReadonlyMap<string, string> | undefined;
 }) {
-  const publicId = useRoomMemberProfile(roomId, guestSessionId).data;
-  const openProfile = publicId
-    ? () => router.push({ pathname: '/people/[publicId]', params: { publicId } })
-    : undefined;
+  const openProfile = (sender: string) => {
+    const publicId = profiles?.get(sender);
+    return publicId
+      ? () => router.push({ pathname: '/people/[publicId]', params: { publicId } })
+      : undefined;
+  };
   const list = chat.messages.data ?? [];
   const extras = chat.extras.data;
   // The quote of a message on its way, from the loaded list.
@@ -159,7 +159,7 @@ export function RoomMessages({
                   avatar={
                     mine ? undefined : <Avatar kind="table" alias={m.sender_alias} size="sm" />
                   }
-                  onPressSender={mine ? undefined : openProfile}
+                  onPressSender={mine ? undefined : openProfile(m.session_id)}
                 />
               </>
             )}

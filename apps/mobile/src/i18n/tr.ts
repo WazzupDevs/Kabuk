@@ -8,7 +8,7 @@ import { SAHTEKAR } from '@shared/sahtekar.ts';
 import { IBRE_AUTO_LOCK_SECONDS, IBRE_CONFIG } from '@shared/ibre.ts';
 import { formatTrMobile } from '@shared/phone.ts';
 import { SAY_CONFIG } from '@shared/sayChallenge.ts';
-import { capitalizeTr } from '@shared/trText.ts';
+import { capitalizeTr, inflectTr } from '@shared/trText.ts';
 import type { VenueKind } from '@shared/venueKind.ts';
 
 // Address (hitap): a person is "sen", a table "siz"; a sentence never mixes the two. What a phone
@@ -475,6 +475,9 @@ export const tr = {
     profileHint:
       'Lobide "profilli" işareti görünür. Odadaki diğer masa, oda sürerken profilini görebilir.',
     profileNeedsName: 'Profilinle katılmak için önce Profil sekmesinden bir ad seç.',
+    // "Bu masadayım" (canvas: Faz 2 · 22.5 → Bu masadayım: seçim): the room's phones see this one.
+    memberAnonymousHint: (alias: string) => `Odadakiler yalnızca takma adını görür: ${alias}.`,
+    memberProfileHint: 'Odadakiler oda sürerken profilini görür.',
     // "Profilimle" needs a profile photo others can see (docs/SPEC_V3.md §22.G, decision 8).
     photoNeeded: 'Profilinle görünmek için profil fotoğrafı gerekiyor.',
   },
@@ -541,7 +544,39 @@ export const tr = {
     profiled: 'profilli',
     people: (n: number) => `${headcountLabel(n)} kişi`,
     waitingFor: (minutes: number) => (minutes < 1 ? 'yeni açıldı' : `${minutes} dk bekliyor`),
-    requestJoin: 'Katılmak istiyorum',
+    requestJoin: 'Katıl',
+    // Faz 2 (docs/SPEC_V3.md §22.C; canvas: Faz 2 · 22.5 Takımlar): a member of a side.
+    requestMember: 'Bu masadayım',
+    phones: (n: number) => `${n} telefon`,
+    runningTitle: 'Süren odalar',
+    runningHint: 'Masandan biri bir odadaysa onun tarafına katılabilirsin.',
+    // Between the two sides of a running room.
+    versus: 'ile',
+    memberBody: (leader: string) =>
+      `${inflectTr(leader, 'genitive')} tarafına katılırsın. Kabul ederse oyun ve sohbet senin telefonunda da açılır.`,
+    tellLeader: 'Liderine bu adı söyle',
+    tellLeaderBody: (leader: string) =>
+      `${leader}, masandaki bu adı istek kartında görür. Kabul ederse odaya girersin.`,
+    incomingMemberTitle: 'Masana katılmak istiyor',
+    incomingMemberBody:
+      'Bu adı söyleyen arkadaşınsa kabul et. Kabul edersen senin tarafına katılır.',
+    declineMemberNote: 'Reddedersen o yalnızca "Masa şu an müsait değil" görür.',
+    peopleTitle: 'Odadakiler',
+    mySide: (phones: number) => `Senin tarafın · ${phones} telefon`,
+    otherSide: (phones: number) => `Karşı taraf · ${phones} telefon`,
+    leaderTag: 'Lider',
+    youTag: 'Sen',
+    peopleNote: 'Profilli olanların profili oda sürerken açılır.',
+    leave: 'Odadan çık',
+    leaveHandover: (next: string) =>
+      `Çıkarsan liderlik ${inflectTr(next, 'dative')} geçer, oda sürer.`,
+    leaveConfirmTitle: 'Odadan çıkıyor musun?',
+    leaveConfirmLeader: (next: string) =>
+      `Liderlik ${inflectTr(next, 'dative')} geçer, oda sürer. Yeniden yalnızca bu tarafa katılabilirsin.`,
+    leaveConfirmMember: 'Yeniden yalnızca bu tarafa katılabilirsin.',
+    // The new leader's note at the top of the chat (canvas: Liderlik devri notu).
+    newLeader: (previous: string) =>
+      `Artık lider sensin. ${previous} odadan çıktı; katılma istekleri sana gelir, odayı sen bitirebilirsin.`,
     mySpot: (name: string) => `Senin noktan · ${name}`,
     noSpot: 'Noktasız',
     spotHere: 'Bu noktadayım',
@@ -550,7 +585,7 @@ export const tr = {
     requestUnavailable: 'Masa şu an müsait değil.',
     newTitle: 'Oda kur',
     newHint:
-      'Oda mekandaki diğer masalara açılır ve sohbetle başlar. Oyunu odada iki masa birlikte seçer.',
+      'Oda mekandaki diğer masalara açılır ve sohbetle başlar. Oyunu odada iki taraf birlikte seçer.',
     intentLabel: 'Niyetin (isteğe bağlı)',
     intentNone: 'Etiket yok',
     intentHint: {
@@ -571,7 +606,7 @@ export const tr = {
     withOther: (alias: string) => `${alias} ile`,
     waitingForGuest: 'Başka bir masa katılmak isteyebilir. Bu arada kendi masanla oynayabilirsin.',
     end: 'Odayı bitir',
-    endHint: 'İki masalı odada "Tanışalım mı?" sorulur.',
+    endHint: 'Odayı bitirirsen odadaki herkese "Tanışalım mı?" sorulur.',
     requestTitle: 'Katılma isteği',
     sendRequest: 'İsteği gönder',
     incomingTitle: 'Katılma isteği',
@@ -580,7 +615,7 @@ export const tr = {
     accept: 'Kabul',
     decline: 'Reddet',
     declineNote: 'Reddedersen karşı masa yalnızca "Masa şu an müsait değil" görür.',
-    viewProfile: 'Diğer masanın profilini gör',
+    viewPeople: 'Odadakileri gör',
     secondsLeft: (s: number) => `${s} sn`,
   },
   chat: {
@@ -672,6 +707,14 @@ export const tr = {
     blockConfirmBody:
       'Birbirinizin odalarını artık görmezsiniz. Oda biter ve masanızın cevabı "Hayır" sayılır. Engeli ayarlardan kaldırabilirsin.',
     blockConfirm: 'Engelle',
+    // Faz 2 (canvas: Engelle / Şikayet et: kişi seçimi): the person first.
+    blockWho: 'Kimi engelliyorsun?',
+    reportWho: 'Kimi şikayet ediyorsun?',
+    blockOwnMember: (alias: string) =>
+      `${alias} odadan çıkar, sen odada kalırsın. Birbirinizin odalarını artık görmezsiniz.`,
+    blockLeaves:
+      'Sen odadan çıkarsın ve cevabın "Hayır" sayılır. Birbirinizin odalarını artık görmezsiniz.',
+    reportNote: 'Şikayetin, şikayet ettiğin kişiye bildirilmez.',
     blockedTitle: 'Engellenenler',
     blockedEmpty: 'Engellediğin kimse yok.',
     blockedSince: (date: string) => `${date} tarihinde engellendi`,
