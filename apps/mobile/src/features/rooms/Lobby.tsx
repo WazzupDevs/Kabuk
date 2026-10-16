@@ -1,3 +1,4 @@
+import { gameFlowView } from '@shared/gender.ts';
 import { PARTICIPATIONS, type Participation } from '@shared/profile.ts';
 import { isIntent, JOIN_REQUEST_TTL_SECONDS, requesterStatus } from '@shared/rooms.ts';
 import { groupRoomsBySpot } from '@shared/spots.ts';
@@ -18,6 +19,7 @@ import { Sheet } from '@/components/Sheet';
 import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
 import { Loader } from '@/components/Loader';
+import { GenderSheet } from '@/features/account/GenderSheet';
 import { useProfile } from '@/features/account/useProfile';
 import { PhotoNeeded } from '@/features/profile/PhotoNeeded';
 import { PhotoSheet } from '@/features/profile/PhotoSheet';
@@ -35,6 +37,7 @@ import { ICON, NARROW_SCREEN } from '@/theme/tokens';
 import { BigAlias } from './BigAlias';
 import { useJoinAsk } from './joinAsk';
 import { participationHint } from './participation';
+import { ProfilePreview } from './ProfilePreview';
 import { roomKeys, useLobby, useMyRequest } from './queries';
 import { RunningRooms } from './RunningRooms';
 import { SpotHeading } from './SpotHeading';
@@ -90,9 +93,13 @@ export function Lobby({
   const joinAsk = useJoinAsk((s) => s.ask);
   const [participation, setParticipation] = useState<Participation>('anonymous');
   // "Profilimle" needs a profile photo (docs/SPEC_V3.md §22.G): "Fotoğraf ekle" swaps the request
-  // sheet for the photo sheet, and the request comes back once it closes.
+  // sheet for the photo sheet, and the request comes back once it closes; "Cinsiyetini seç" does
+  // the same with the one-time gender question (§23.D).
   const photo = useOwnPhoto();
   const [photoSheet, setPhotoSheet] = useState(false);
+  const [genderSheet, setGenderSheet] = useState(false);
+  // The server said this account joins only with its profile (the phone did not know its gender).
+  const [mustProfile, setMustProfile] = useState(false);
   const lobby = useLobby(venueId);
   const myRequest = useMyRequest(sessionId, since);
   const now = useNow(1000);
@@ -103,9 +110,9 @@ export function Lobby({
       void registerForPush();
       return roomsApi.requestJoin(ask.roomId, profiled, ask.side);
     },
-    onSuccess: (data, { ask, profiled }) => {
+    onSuccess: (data, { ask }) => {
+      // Never the anonymous or profiled choice: it would stand in for the gender (§23.L).
       track('join_requested', { as_member: ask.side !== undefined, in_lobby: state === 'open' });
-      track('participation_chosen', { mode: profiled ? 'profile' : 'anonymous' });
       setJoinAsk(ask.side && ask.leader ? { requestId: data.requestId, leader: ask.leader } : null);
       setAsking(null);
     },
@@ -115,7 +122,11 @@ export function Lobby({
       if (err instanceof ApiError && err.code === 'photo_required') {
         setParticipation('anonymous');
         void photo.refresh();
-      } else {
+      } else if (err instanceof ApiError && err.code === 'anonymous_not_allowed') {
+        // The sheet stays and shows the profile that goes; nothing is sent until the next press.
+        setMustProfile(true);
+        void photo.refresh();
+      } else if (!(err instanceof ApiError && err.code === 'gender_required')) {
         setAsking(null);
       }
     },
@@ -123,8 +134,19 @@ export function Lobby({
       void queryClient.invalidateQueries({ queryKey: roomKeys.myRequest });
     },
   });
-  const refused = request.error instanceof ApiError && request.error.code === 'photo_required';
+  const code = request.error instanceof ApiError ? request.error.code : null;
+  const refused = code === 'photo_required';
   const needsPhoto = hasName && ((photo.known && !photo.has) || refused);
+  const view = gameFlowView(
+    photo.gender,
+    code === 'gender_required'
+      ? 'gender_required'
+      : mustProfile || code === 'anonymous_not_allowed'
+        ? 'anonymous_not_allowed'
+        : null,
+  );
+  // Refusals the request sheet shows in place; anything else closes it and shows above the lobby.
+  const handled = refused || code === 'anonymous_not_allowed' || code === 'gender_required';
   const moveHere = useMutation({
     meta: FEEL_ERROR,
     mutationFn: callChangeSpot,
@@ -225,7 +247,7 @@ export function Lobby({
           </View>
         </Card>
       ) : null}
-      {(request.isError && !refused) || moveHere.isError ? (
+      {(request.isError && !handled) || moveHere.isError ? (
         <Text variant="fine" tone="danger" className="mb-3">
           {errorMessage(request.error ?? moveHere.error)}
         </Text>
@@ -362,7 +384,7 @@ export function Lobby({
       />
 
       <Sheet
-        visible={asking !== null && !photoSheet}
+        visible={asking !== null && !photoSheet && !genderSheet}
         onClose={() => {
           setAsking(null);
           request.reset();
@@ -375,39 +397,56 @@ export function Lobby({
             {tr.rooms.memberBody(asking.leader)}
           </Text>
         ) : null}
-        <Text variant="label">{tr.participation.title}</Text>
-        <View accessibilityRole="radiogroup" className="gap-2">
-          {PARTICIPATIONS.map((mode) => (
-            <Choice
-              key={mode}
-              testID={`request-${mode}`}
-              label={tr.participation[mode]}
-              hint={participationHint(mode, hasName, asking?.side ? { alias } : undefined)}
-              // "Bu masadayım": the face the room's phones will see (canvas: Bu masadayım: seçim).
-              picture={
-                !asking?.side ? undefined : mode === 'anonymous' ? (
-                  <Avatar kind="table" alias={alias} size="sm" />
-                ) : needsPhoto || !hasName ? null : (
-                  <Avatar kind="profile" name={photo.name} photoUrl={photo.url} size="sm" />
-                )
-              }
-              selected={participation === mode}
-              disabled={mode === 'profile' && !hasName}
-              unavailable={
-                mode === 'profile' && needsPhoto ? (
-                  <PhotoNeeded refused={refused} onAddPhoto={() => setPhotoSheet(true)} />
-                ) : undefined
-              }
-              onPress={() => setParticipation(mode)}
-            />
-          ))}
-        </View>
+        {view !== 'choice' ? (
+          <ProfilePreview
+            sheet={asking?.side ? 'member' : 'join'}
+            view={view}
+            refused={code}
+            onAddPhoto={() => setPhotoSheet(true)}
+            onChooseGender={() => setGenderSheet(true)}
+          />
+        ) : (
+          <>
+            <Text variant="label">{tr.participation.title}</Text>
+            <View accessibilityRole="radiogroup" className="gap-2">
+              {PARTICIPATIONS.map((mode) => (
+                <Choice
+                  key={mode}
+                  testID={`request-${mode}`}
+                  label={tr.participation[mode]}
+                  hint={participationHint(mode, hasName, asking?.side ? { alias } : undefined)}
+                  // "Bu masadayım": the face the room's phones will see (canvas: Bu masadayım: seçim).
+                  picture={
+                    !asking?.side ? undefined : mode === 'anonymous' ? (
+                      <Avatar kind="table" alias={alias} size="sm" />
+                    ) : needsPhoto || !hasName ? null : (
+                      <Avatar kind="profile" name={photo.name} photoUrl={photo.url} size="sm" />
+                    )
+                  }
+                  selected={participation === mode}
+                  disabled={mode === 'profile' && !hasName}
+                  unavailable={
+                    mode === 'profile' && needsPhoto ? (
+                      <PhotoNeeded refused={refused} onAddPhoto={() => setPhotoSheet(true)} />
+                    ) : undefined
+                  }
+                  onPress={() => setParticipation(mode)}
+                />
+              ))}
+            </View>
+          </>
+        )}
         <Button
           testID="request-send"
           label={tr.rooms.sendRequest}
           onPress={() =>
-            asking && request.mutate({ ask: asking, profiled: participation === 'profile' })
+            asking &&
+            request.mutate({
+              ask: asking,
+              profiled: view !== 'choice' || participation === 'profile',
+            })
           }
+          disabled={view === 'gender' || (view === 'profile' && needsPhoto)}
           loading={request.isPending}
         />
       </Sheet>
@@ -415,6 +454,13 @@ export function Lobby({
         visible={photoSheet}
         onClose={() => {
           setPhotoSheet(false);
+          request.reset();
+        }}
+      />
+      <GenderSheet
+        visible={genderSheet}
+        onClose={() => {
+          setGenderSheet(false);
           request.reset();
         }}
       />

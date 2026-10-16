@@ -11,13 +11,31 @@ export function mayStayAnonymous(gender: Gender): boolean {
   return gender === 'female';
 }
 
-// Why the server refuses a game-flow entry with this participation, or null. A profiled entry still
-// needs a visible photo (photo_required, checked after this). An empty gender passes as before the
-// rule until the app asks for it (step 23.2's client part).
+// Why the server refuses a game-flow entry with this participation, or null. An account from
+// before the gender step answers the one-time question first (gender_required), whatever it chose. A
+// profiled entry still needs a visible photo (photo_required, checked after this).
 export function participationError(
   gender: Gender | null,
   profiled: boolean,
-): 'anonymous_not_allowed' | null {
-  if (profiled || gender === null) return null;
+): 'gender_required' | 'anonymous_not_allowed' | null {
+  if (gender === null) return 'gender_required';
+  if (profiled) return null;
   return mayStayAnonymous(gender) ? null : 'anonymous_not_allowed';
+}
+
+// What a game-flow sheet shows (docs/SPEC_V3.md §23.D; canvas: Faz 3 · 23.2): a woman's choice, the
+// profile that goes for a man and "Belirtmek istemiyorum", or the one-time gender question for an
+// account from before the step. `gender` is undefined until the own profile answers: the choice
+// stays, and the server's anonymous_not_allowed (`refused`) turns it into the profile, never into a
+// profiled entry by itself. gender_required asks the question whatever the phone knew.
+export type GameFlowView = 'choice' | 'profile' | 'gender';
+
+export function gameFlowView(
+  gender: Gender | null | undefined,
+  refused: 'anonymous_not_allowed' | 'gender_required' | null,
+): GameFlowView {
+  if (refused === 'gender_required' || gender === null) return 'gender';
+  if (refused === 'anonymous_not_allowed') return 'profile';
+  if (gender === undefined) return 'choice';
+  return mayStayAnonymous(gender) ? 'choice' : 'profile';
 }

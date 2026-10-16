@@ -39,7 +39,8 @@ function RootNavigator() {
     );
   }
 
-  // Consents, a display name and a birth date (docs/SPEC_V3.md §3), then the optional photo step.
+  // Consents, a display name, a birth date and the gender (docs/SPEC_V3.md §3, §23.D), then the
+  // optional photo step.
   const onboarded =
     signedIn && profile.isSuccess && !needsOnboarding(profile.data) && !extrasPending;
 

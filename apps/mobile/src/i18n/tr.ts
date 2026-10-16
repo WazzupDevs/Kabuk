@@ -213,9 +213,24 @@ export const tr = {
     birthHint:
       'Doğum tarihin kimseye gösterilmez, profilinde yalnızca yaşın görünür. Sonradan değiştirilemez.',
     birthInvalid: 'Geçerli bir tarih gir.',
+    // The gender (docs/SPEC_V3.md §23.D; canvas: Faz 3 · 23.2): asked at sign-up, and once on a
+    // separate screen for an account from before the step. Shown to nobody (rule 12).
+    genderLabel: 'Cinsiyetin',
+    genders: { female: 'Kadın', male: 'Erkek', unspecified: 'Belirtmek istemiyorum' },
+    genderHint:
+      'Kimseye gösterilmez ve sonradan değiştirilemez. Masalara katılırken kadınlar anonim ya da profille katılabilir; erkekler ve belirtmek istemeyenler profilleriyle katılır.',
+    genderGateTitle: 'Cinsiyetini seç',
+    genderGateBody: 'Masalara nasıl katılacağın buna bağlı. Bir kez sorulur.',
+    genderSave: 'Kaydet',
+    // Beside gender_required in the game flow: opens the one-time question in place.
+    chooseGender: 'Cinsiyetini seç',
     continue: 'Devam',
     extrasTitle: 'Profilini tamamla',
     extrasBody: 'Fotoğraf ve tanıtım isteğe bağlı. İstersen sonra Profil’den de ekleyebilirsin.',
+    // Only for a man and "Belirtmek istemiyorum", who always join with the profile; every account
+    // sends the same events from this step (docs/SPEC_V3.md §23.L).
+    photoNeededNote:
+      'Fotoğrafın yoksa masalara katılamazsın, masanı da lobiye açamazsın. Fotoğrafı sonra Profil’den de ekleyebilirsin.',
     skip: 'Şimdilik geç',
     finish: 'Bitir',
   },
@@ -230,7 +245,7 @@ export const tr = {
     draftNotice: 'Bu metin taslaktır ve pilot öncesinde güncellenecektir.',
     termsBody: `${APP_NAME}, aynı mekandaki masaların birlikte oyun oynayıp sohbet etmesi için bir uygulamadır. Diğer kullanıcılara saygılı davranmayı, taciz, hakaret ve uygunsuz içerik paylaşmamayı kabul edersin.`,
     kvkkBody:
-      'Hesabını oluşturmak için telefon numaran, görünen adın ve doğum tarihin işlenir. Numaran ve doğum tarihin diğer kullanıcılarla paylaşılmaz; profilinde yalnızca yaşın görünür. 18 yaşından küçüksen hesap açılmaz ve bilgilerin saklanmaz. Hesabını istediğin zaman uygulama içinden silebilirsin.',
+      'Hesabını oluşturmak için telefon numaran, görünen adın, doğum tarihin ve cinsiyetin işlenir. Numaran ve doğum tarihin diğer kullanıcılarla paylaşılmaz; profilinde yalnızca yaşın görünür. Cinsiyetin hiçbir kullanıcıya gösterilmez ve kullanım istatistiğine gitmez; yalnızca masalara anonim mi profilinle mi katılabileceğini belirler. Masalara anonim katılım yalnızca kadın beyanıyla mümkün olduğundan, anonim görünmek cinsiyetin hakkında dolaylı bilgi verir. 18 yaşından küçüksen hesap açılmaz ve bilgilerin saklanmaz. Hesabını istediğin zaman uygulama içinden silebilirsin.',
   },
   tabs: {
     explore: 'Keşfet',
@@ -480,6 +495,19 @@ export const tr = {
     memberProfileHint: 'Masadakiler, masa sürerken profilini görür.',
     // "Profilimle" needs a profile photo others can see (docs/SPEC_V3.md §22.G, decision 8).
     photoNeeded: 'Profilinle görünmek için profil fotoğrafı gerekiyor.',
+    // A man and "Belirtmek istemiyorum" always join with the profile (docs/SPEC_V3.md §23.D): no
+    // choice, the profile that goes (canvas: Faz 3 · 23.2 → profil önizlemesi).
+    previewTitle: 'Masada böyle görüneceksin',
+    previewJoinTitle: 'İsteğinle birlikte gider',
+    previewTag: 'Profilinle',
+    previewLobby: 'Lobide yalnızca masa adın görünür. Masadakiler, masa sürerken profilini görür.',
+    previewJoin:
+      'Masanın lideri isteğinde adını, yaşını ve fotoğrafını görür. Kabul ederse masadakiler, masa sürerken profilini görür.',
+    previewMember: 'Masadakiler, masa sürerken profilini görür.',
+    previewName: (name: string, age: number | null) => (age === null ? name : `${name}, ${age}`),
+    photoNeededLobby: 'Masanı lobiye açmak için profil fotoğrafı gerekiyor.',
+    photoNeededJoin: 'Katılma isteği göndermek için profil fotoğrafı gerekiyor.',
+    photoNeededMember: 'Bu tarafa katılmak için profil fotoğrafı gerekiyor.',
   },
   home: {
     title: 'Hoş geldin',
@@ -627,6 +655,8 @@ export const tr = {
     accept: 'Kabul',
     decline: 'Geç',
     declineNote: 'Geçersen karşı masa yalnızca "Masa şu an müsait değil" görür.',
+    // The profiled requester's card (docs/SPEC_V3.md §23.E) while its profile loads.
+    requestProfileLoading: 'Profil yükleniyor',
     // The leader's "Kabul" came too late: the requester's table merged with another meanwhile
     // (room_not_available) or the request ended (docs/SPEC_V3.md §23.C).
     requestGone: 'Bu masa artık müsait değil.',
@@ -715,6 +745,8 @@ export const tr = {
       inappropriate: 'Uygunsuz içerik',
       spam: 'Spam',
       other: 'Diğer',
+      // Only for a person met in the game flow: a phone at the table and a history row (§23.D).
+      wrong_gender: 'Yanlış cinsiyet beyanı',
     },
     reportSent: 'Şikayetin alındı. Teşekkürler.',
     block: 'Engelle',
@@ -1127,7 +1159,8 @@ export const tr = {
     not_found: 'Bulunamadı.',
     reply_unavailable: 'Yanıtladığın mesaj artık yok.',
     photo_required: 'Profilinle görünmek için önce profil fotoğrafı ekle.',
-    anonymous_not_allowed: 'Masalara profilinle katılırsın.',
+    anonymous_not_allowed: 'Bu hesapla masalara yalnızca profilinle katılabilirsin.',
+    gender_required: 'Devam etmek için önce cinsiyetini seçmen gerekiyor.',
     venue_chat_mode_locked:
       'Mekan sohbetinde nasıl görüneceğini bu girişte zaten seçtin. Değiştirmek için mekandan ayrılıp yeniden giriş yap.',
     wrong_side: 'Bu masaya yalnızca daha önce bulunduğun taraftan katılabilirsin.',
