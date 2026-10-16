@@ -102,6 +102,11 @@ async function readableBy(p: Phone, roomId: string): Promise<string> {
 const wordsIn = (text: string, words: string[]) =>
   words.filter((word) => ` ${text} `.includes(` ${word} `));
 
+// The open cards' words once card 0 has closed, minus those inside card 0's own text: "Saat" sits
+// in "Saat kulesi", which the room now reads (games.test.ts → openWords).
+const openWords = (dealt: string[]) =>
+  dealt.slice(1).filter((word) => wordsIn(dealt[0] as string, [word]).length === 0);
+
 // The room channel as the app subscribes to it: every row change of the room and its game rows.
 function watchRoomChannel(p: Phone, roomId: string) {
   const payloads: unknown[] = [];
@@ -707,7 +712,7 @@ describe('secrets (§22.E, rules 3 and 4)', () => {
         result: 'correct',
       }),
     ).toEqual(OK);
-    const unclosed = dealt.slice(1).filter((w) => w !== dealt[0]);
+    const unclosed = openWords(dealt);
     expect(wordsIn(await readableBy(owner, roomId), unclosed)).toEqual([]);
     await expect.poll(() => watch.payloads.length, { timeout: 10_000 }).toBeGreaterThan(3);
     await new Promise((resolve) => setTimeout(resolve, 1500));

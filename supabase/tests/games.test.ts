@@ -841,6 +841,10 @@ describe('tabu, cooperative mode (docs/SPEC_V3.md §6.3)', () => {
     );
   const wordsIn = (text: string, words: string[]) =>
     words.filter((word) => ` ${text} `.includes(` ${word} `));
+  // The open cards' words once card 0 has closed, minus those inside card 0's own text: "Saat"
+  // sits in "Saat kulesi", which the room now reads.
+  const openWords = (dealt: string[]) =>
+    dealt.slice(1).filter((word) => wordsIn(dealt[0] as string, [word]).length === 0);
 
   it('gives the guessing table no card: not in turn-cards, the room row, events or Realtime', async () => {
     const { owner, guest, roomId } = await room(true, { owner: 1, guest: 3 });
@@ -876,7 +880,7 @@ describe('tabu, cooperative mode (docs/SPEC_V3.md §6.3)', () => {
     expect(await mark(owner, roomId, 0, 'correct')).toEqual({ status: 200, body: { ok: true } });
     const readable = await readableBy(guest, roomId);
     expect(wordsIn(readable, [dealt[0] as string])).toEqual([dealt[0]]);
-    const unclosed = dealt.slice(1).filter((w) => w !== dealt[0]);
+    const unclosed = openWords(dealt);
     expect(wordsIn(readable, unclosed)).toEqual([]);
 
     // Realtime: give the changes time to arrive, then nothing but the closed card.
