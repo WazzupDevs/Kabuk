@@ -26,6 +26,7 @@
     "admin:remove-photo": "pnpm --filter scripts admin:remove-photo",
     "admin:move-photos": "pnpm --filter scripts admin:move-photos",
     "admin:set-birth-date": "pnpm --filter scripts admin:set-birth-date",
+    "admin:set-gender": "pnpm --filter scripts admin:set-gender",
     "db:reset": "supabase db reset && pnpm --filter scripts apply-local-secrets",
     "fetch:venues": "pnpm --filter scripts fetch:venues",
     "latency": "pnpm --filter scripts latency",

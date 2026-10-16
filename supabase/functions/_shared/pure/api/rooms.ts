@@ -43,6 +43,9 @@ export type EndRoomRequest = { action: 'end' };
 // "Odadan çık" (docs/SPEC_V3.md §22.D): this phone leaves; a leader hands its side to the oldest
 // member, the side's last phone ends the room as before.
 export type LeaveRoomRequest = { action: 'leave'; roomId: string };
+// The request card's profile (docs/SPEC_V3.md §23.E): a requester who asked with its profile, read
+// by the leader who can answer the request while it waits. Anything else is not_found, alike.
+export type RequestProfileRequest = { action: 'request-profile'; requestId: string };
 
 export type RoomsRequest =
   | CreateRoomRequest
@@ -53,10 +56,17 @@ export type RoomsRequest =
   | AnswerGameRequest
   | EndGameRequest
   | EndRoomRequest
-  | LeaveRoomRequest;
+  | LeaveRoomRequest
+  | RequestProfileRequest;
 
 export type CreateRoomResponse = { roomId: string };
 // Identical for every request: nothing in it depends on the owner's later answer.
 export type RequestJoinResponse = { requestId: string; expiresAt: string };
+// The display name, the age and a signed photo URL (null when hidden); no public_id (rule 4).
+export type RequestProfileResponse = {
+  displayName: string | null;
+  age: number | null;
+  photoUrl: string | null;
+};
 export type ProposeGameResponse = { expiresAt: string };
 export type RoomsOkResponse = { ok: true };

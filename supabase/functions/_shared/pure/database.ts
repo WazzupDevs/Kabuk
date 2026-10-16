@@ -737,7 +737,9 @@ export type Database = {
           created_at: string;
           default_participation: string;
           display_name: string | null;
+          gender: string | null;
           has_birth_date: boolean | null;
+          has_gender: boolean | null;
           id: string;
           kvkk_accepted_at: string;
           kvkk_version: string;
@@ -760,7 +762,9 @@ export type Database = {
           created_at?: string;
           default_participation?: string;
           display_name?: string | null;
+          gender?: string | null;
           has_birth_date?: boolean | null;
+          has_gender?: boolean | null;
           id: string;
           kvkk_accepted_at: string;
           kvkk_version: string;
@@ -783,7 +787,9 @@ export type Database = {
           created_at?: string;
           default_participation?: string;
           display_name?: string | null;
+          gender?: string | null;
           has_birth_date?: boolean | null;
+          has_gender?: boolean | null;
           id?: string;
           kvkk_accepted_at?: string;
           kvkk_version?: string;
@@ -2449,6 +2455,10 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      rooms_request_profile_owner: {
+        Args: { target_request_id: string; target_user_id: string };
+        Returns: string;
       };
       rooms_respond: {
         Args: {
