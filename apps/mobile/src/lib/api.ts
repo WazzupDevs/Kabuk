@@ -2,7 +2,7 @@ import { FunctionsHttpError } from '@supabase/supabase-js';
 import type { AccountRequest, AccountResponse } from '@shared/api/account.ts';
 import type { ChatResponse, ReactResponse, SafetyResponse } from '@shared/api/chat.ts';
 import type { Reaction } from '@shared/reactions.ts';
-import type { RevealResponse } from '@shared/api/reveal.ts';
+import type { RevealMatchesResponse, RevealResponse } from '@shared/api/reveal.ts';
 import type {
   GameOkResponse,
   TabuStartResponse,
@@ -48,6 +48,7 @@ import type { ReportReason } from '@shared/chat.ts';
 import type { Concept } from '@shared/rooms.ts';
 import type { SayKind } from '@shared/sayChallenge.ts';
 import type { Mark } from '@shared/tabu.ts';
+import type { Side } from '@shared/teams.ts';
 import { callName, RETRY_DELAY_MS, retriesAfter } from '@shared/apiRetry.ts';
 import { type ErrorCode, isApiErrorBody } from '@shared/errors.ts';
 
@@ -139,8 +140,14 @@ export const roomsApi = {
   create: (body: Omit<CreateRoomRequest, 'action'>) =>
     invoke<CreateRoomResponse>('rooms', { action: 'create', ...body }),
   createSolo: () => invoke<CreateRoomResponse>('rooms', { action: 'create-solo' }),
-  requestJoin: (roomId: string, profiled: boolean) =>
-    invoke<RequestJoinResponse>('rooms', { action: 'request-join', roomId, profiled }),
+  // With `side`: "Bu masadayım", a member of that side (docs/SPEC_V3.md §22.C).
+  requestJoin: (roomId: string, profiled: boolean, side?: Side) =>
+    invoke<RequestJoinResponse>('rooms', {
+      action: 'request-join',
+      roomId,
+      profiled,
+      ...(side ? { side } : {}),
+    }),
   respond: (requestId: string, accept: boolean) =>
     invoke<RoomsOkResponse>('rooms', { action: 'respond', requestId, accept }),
   // `players`: Sahtekar only, the table's count (1-4); without it the server takes the check-in
@@ -161,6 +168,8 @@ export const roomsApi = {
     }),
   endGame: (roomId: string) => invoke<RoomsOkResponse>('rooms', { action: 'end-game', roomId }),
   end: () => invoke<RoomsOkResponse>('rooms', { action: 'end' }),
+  // "Odadan çık" (docs/SPEC_V3.md §22.D): a leader hands its side to the oldest member.
+  leave: (roomId: string) => invoke<RoomsOkResponse>('rooms', { action: 'leave', roomId }),
 };
 
 export const chatApi = {
@@ -172,8 +181,14 @@ export const chatApi = {
 };
 
 export const safetyApi = {
-  report: (roomId: string, reason: ReportReason) =>
-    invoke<SafetyResponse>('safety', { action: 'report', roomId, reason }),
+  // `sessionId`: the phone reported, any phone of the room (docs/SPEC_V3.md §22.J).
+  report: (roomId: string, reason: ReportReason, sessionId?: string) =>
+    invoke<SafetyResponse>('safety', {
+      action: 'report',
+      roomId,
+      reason,
+      ...(sessionId ? { sessionId } : {}),
+    }),
   reportProfile: (publicId: string, reason: ReportReason) =>
     invoke<SafetyResponse>('safety', { action: 'report', target: 'profile', publicId, reason }),
   reportHistory: (historyId: string, reason: ReportReason) =>
@@ -184,7 +199,13 @@ export const safetyApi = {
     invoke<SafetyResponse>('safety', { action: 'block', publicId, ...(report ? { report } : {}) }),
   blockHistory: (historyId: string, report?: ReportReason) =>
     invoke<SafetyResponse>('safety', { action: 'block', historyId, ...(report ? { report } : {}) }),
-  block: (roomId: string) => invoke<SafetyResponse>('safety', { action: 'block', roomId }),
+  // `sessionId`: the phone blocked; who leaves depends on both (docs/SPEC_V3.md §22.D).
+  block: (roomId: string, sessionId?: string) =>
+    invoke<SafetyResponse>('safety', {
+      action: 'block',
+      roomId,
+      ...(sessionId ? { sessionId } : {}),
+    }),
   // Venue chat (docs/SPEC_V3.md §7.4, §7.5).
   reportVenueChat: (messageId: string, reason: ReportReason) =>
     invoke<SafetyResponse>('safety', {
@@ -275,6 +296,10 @@ export const revealApi = {
   decide: (roomId: string, wantsMeet: boolean) =>
     invoke<RevealResponse>('reveal', { action: 'decide', roomId, wantsMeet }),
   finalize: (roomId: string) => invoke<RevealResponse>('reveal', { action: 'finalize', roomId }),
+  // This phone's matches in the window, and from reveal_ends_at the other side's phones it did
+  // not match (docs/SPEC_V3.md §22.F).
+  matches: (roomId: string) =>
+    invoke<RevealMatchesResponse>('reveal', { action: 'matches', roomId }),
 };
 
 type ProfileUpdate = Omit<Extract<ProfileRequest, { action: 'update' }>, 'action'>;

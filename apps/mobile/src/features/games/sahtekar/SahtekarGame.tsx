@@ -8,6 +8,7 @@ import {
 } from '@shared/sahtekar.ts';
 import type { TableSide } from '@shared/tabu.ts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 
@@ -18,7 +19,8 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { gamesApi } from '@/lib/api';
 import { useNow } from '@/lib/useNow';
-import { SPACING } from '@/theme/tokens';
+import { useTheme } from '@/theme/ThemeProvider';
+import { ICON, SPACING } from '@/theme/tokens';
 
 import { ClockPill } from '../GameBits';
 import { StageFit } from '../GameStage';
@@ -33,13 +35,21 @@ import {
   VoteGrid,
 } from './Sahtekar';
 
-type Props = { roomId: string; state: SahtekarState | null; side: TableSide };
+type Props = {
+  roomId: string;
+  state: SahtekarState | null;
+  side: TableSide;
+  // The seats are on the side leader's phone (docs/SPEC_V3.md §22.E, decision 6): a member
+  // watches it.
+  leader: boolean;
+  leaderAlias: string;
+};
 
 // Two-table Sahtekar (docs/SPEC_V3.md §20.2). Each table passes its own phone between its seats:
 // the card is asked for only while a seat holds it (sahtekar/view) and dropped when the finger
 // lifts; the vote is cast seat by seat. The server keeps the impostor, the word, the order and the
 // clock; when a phase's time is up either phone moves it on (sahtekar/advance, idempotent).
-export function SahtekarGame({ roomId, state, side }: Props) {
+export function SahtekarGame({ roomId, state, side, leader, leaderAlias }: Props) {
   const now = useNow(250);
   const queryClient = useQueryClient();
   const refresh = () => void queryClient.invalidateQueries({ queryKey: roomKeys.room(roomId) });
@@ -71,6 +81,10 @@ export function SahtekarGame({ roomId, state, side }: Props) {
         {tr.activities.sahtekar.body}
       </Text>
     );
+  }
+
+  if (!leader) {
+    return <MemberWatch state={state} side={side} secondsLeft={secondsLeft} leader={leaderAlias} />;
   }
 
   const key = `${state.gameNo}:${state.dealNo}`;
@@ -159,6 +173,43 @@ function Seats({
         <SeatList title={tr.sahtekar.otherTable} seats={rows(other)} />
       ) : null}
     </View>
+  );
+}
+
+// A member's phone (canvas: Sahtekar: üye izler): the seats, the cards, the clue order and the
+// votes are on the leader's phone; this one shows the clock and who has looked.
+function MemberWatch({
+  state,
+  side,
+  secondsLeft,
+  leader,
+}: {
+  state: SahtekarState;
+  side: TableSide;
+  secondsLeft: number;
+  leader: string;
+}) {
+  const { colors } = useTheme();
+  return (
+    <StageFit
+      testID="sahtekar-member"
+      status={
+        <View className="flex-row items-center justify-end">
+          <ClockPill seconds={secondsLeft} />
+        </View>
+      }
+    >
+      <View className="items-center gap-3">
+        <Ionicons name="eye-outline" size={ICON.xl} color={colors.muted} />
+        <Text variant="title" align="center">
+          {tr.sahtekar.memberTitle}
+        </Text>
+        <Text variant="fine" tone="text" align="center">
+          {tr.sahtekar.memberBody(leader)}
+        </Text>
+      </View>
+      <Seats state={state} side={side} />
+    </StageFit>
   );
 }
 

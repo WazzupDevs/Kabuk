@@ -13,6 +13,7 @@ import {
   ibreWinner,
   newIbreGame,
   parseIbreState,
+  ibrePhoneRole,
   randomTarget,
   sideIsRight,
 } from './ibre.ts';
@@ -233,5 +234,34 @@ describe('the app reading game_state', () => {
     expect(parseIbreState({ ...gs, turnPhase: 'x' })).toBeNull();
     expect(parseIbreState({ ...gs, reveal: null })?.reveal).toBeNull();
     expect(parseIbreState({ ...gs, needle: null })?.needle).toBeNull();
+    expect(parseIbreState(gs)).toMatchObject({ describer: null, lockBy: null });
+    expect(parseIbreState({ ...gs, describer: 's1', lockBy: 'team' })).toMatchObject({
+      describer: 's1',
+      lockBy: 'team',
+    });
+  });
+});
+
+// docs/SPEC_V3.md §22.E: the target only to the describer; the needle locked by its teammates, or
+// by the describer when its side had one phone or its teammates all left.
+describe('ibrePhoneRole', () => {
+  const round = { turnTable: 'owner' as const, describer: 's1', lockBy: 'team' as const };
+
+  it('gives the target to the describer and the needle to its teammates', () => {
+    expect(ibrePhoneRole(round, 'owner', 's1', 3)).toEqual({ seesTarget: true, locks: false });
+    expect(ibrePhoneRole(round, 'owner', 's2', 3)).toEqual({ seesTarget: false, locks: true });
+  });
+
+  it('lets the describer lock alone, or once its teammates left', () => {
+    const alone = { ...round, lockBy: 'describer' as const };
+    expect(ibrePhoneRole(alone, 'owner', 's1', 1)).toEqual({ seesTarget: true, locks: true });
+    expect(ibrePhoneRole(alone, 'owner', 's2', 2)).toEqual({ seesTarget: false, locks: false });
+    expect(ibrePhoneRole(round, 'owner', 's1', 1)).toEqual({ seesTarget: true, locks: true });
+  });
+
+  it('is nothing on the other side, and the whole side before Faz 2', () => {
+    expect(ibrePhoneRole(round, 'guest', 's3', 2)).toEqual({ seesTarget: false, locks: false });
+    const old = { turnTable: 'owner' as const, describer: null, lockBy: null };
+    expect(ibrePhoneRole(old, 'owner', 's9', 1)).toEqual({ seesTarget: true, locks: true });
   });
 });

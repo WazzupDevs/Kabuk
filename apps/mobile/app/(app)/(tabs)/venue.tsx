@@ -16,7 +16,7 @@ import { Text } from '@/components/Text';
 import { useVenueSpots } from '@/features/checkin/spots';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { Lobby } from '@/features/rooms/Lobby';
-import { useCurrentRoom } from '@/features/rooms/queries';
+import { roomKeys, useCurrentRoom } from '@/features/rooms/queries';
 import { useCreateSolo } from '@/features/rooms/useCreateSolo';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -88,8 +88,18 @@ export default function VenueScreen() {
     return <Redirect href="/explore" />;
   }
 
-  if (currentRoom.data) {
-    return <Redirect href={{ pathname: '/room/[id]', params: { id: currentRoom.data.id } }} />;
+  // The table's room opens directly, unless the room's own row, read since, says this phone is no
+  // longer in it: the room screen sends a closed or unreadable room here while the current room is
+  // still being read again, and sending it back would bounce between the two screens.
+  const roomId = currentRoom.data?.id;
+  const roomRow = roomId
+    ? queryClient.getQueryState<{ status: string } | null>(roomKeys.room(roomId))
+    : undefined;
+  const leftRoom =
+    roomRow?.data?.status === 'closed' ||
+    (roomRow?.data === null && roomRow.dataUpdatedAt >= currentRoom.dataUpdatedAt);
+  if (roomId && !leftRoom) {
+    return <Redirect href={{ pathname: '/room/[id]', params: { id: roomId } }} />;
   }
 
   const minutesLeft = Math.max(0, Math.ceil((expiresAt - now) / 60_000));
@@ -230,6 +240,7 @@ export default function VenueScreen() {
       <Lobby
         venueId={table.data.venue_id}
         sessionId={table.data.id}
+        alias={table.data.alias}
         since={table.data.created_at}
         mySpotId={table.data.spot_id}
         venueHasSpots={venueHasSpots}

@@ -13,7 +13,9 @@ import {
   parseGameState,
   parseReadyTurn,
   pendingAfter,
+  phoneRoleOf,
   roleOf,
+  seesCard,
   summarizeTurn,
   TABU,
   tabuMode,
@@ -42,6 +44,7 @@ const state: RefereedTabuState = {
   passesUsed: 0,
   maxPasses: 3,
   cardIndex: 0,
+  describer: null,
 };
 const mark = (cardIndex: number, result: Mark['result'], turnNo = 1): Mark => ({
   turnNo,
@@ -126,6 +129,44 @@ describe('who may mark what', () => {
   it('knows each table role from the describing table', () => {
     expect(roleOf(state, 'owner')).toBe('describer');
     expect(roleOf(state, 'guest')).toBe('judge');
+  });
+
+  // docs/SPEC_V3.md §22.E: the phone that starts the turn describes it.
+  it('tells the describer from its teammates on the describing side', () => {
+    const running = { ...state, describer: 's1' };
+    expect(phoneRoleOf(running, 'owner', 's1')).toBe('describer');
+    expect(phoneRoleOf(running, 'owner', 's2')).toBe('teammate');
+    expect(phoneRoleOf(running, 'guest', 's3')).toBe('judge');
+    expect(phoneRoleOf({ ...coop, describer: 's1' }, 'guest', 's3')).toBe('guesser');
+    // No describer named (a ready turn, a game from before Faz 2): the side describes.
+    expect(phoneRoleOf(state, 'owner', 's2')).toBe('describer');
+  });
+
+  it('lets a teammate press Doğru only, and in the cooperative mode nothing', () => {
+    expect(mayMark('teammate', 'correct')).toBe(true);
+    expect(mayMark('teammate', 'taboo')).toBe(false);
+    expect(mayMark('teammate', 'pass')).toBe(false);
+    const running = { ...state, describer: 's1' };
+    expect(applyMark(running, mark(0, 'correct'), 'teammate', now).kind).toBe('applied');
+    expect(applyMark(running, mark(0, 'pass'), 'teammate', now)).toEqual({
+      kind: 'rejected',
+      reason: 'not_describer',
+    });
+    expect(applyMark(running, mark(0, 'taboo'), 'teammate', now)).toEqual({
+      kind: 'rejected',
+      reason: 'not_judge',
+    });
+    expect(applyMark({ ...coop, describer: 's1' }, mark(0, 'correct'), 'teammate', now)).toEqual({
+      kind: 'rejected',
+      reason: 'not_describer',
+    });
+  });
+
+  it('gives the card to the describer and the judging side only', () => {
+    expect(seesCard('describer')).toBe(true);
+    expect(seesCard('judge')).toBe(true);
+    expect(seesCard('teammate')).toBe(false);
+    expect(seesCard('guesser')).toBe(false);
   });
 });
 
@@ -236,6 +277,19 @@ describe('parseGameState', () => {
     expect(isVoiceTabu(parsed)).toBe(true);
     expect(parseGameState({ ...state, scores: { owner: 1 } })).toBeNull();
     expect(parseGameState({ ...state, cardIndex: 'x' })).toBeNull();
+  });
+
+  it('reads the describer of a running turn, not of a ready one', () => {
+    expect(parseGameState({ ...state, describer: 's1' })).toEqual({ ...state, describer: 's1' });
+    expect(
+      parseGameState({
+        ...state,
+        turnPhase: 'ready',
+        readyEndsAt: '2026-10-06T20:00:15Z',
+        turnEndsAt: null,
+        describer: 's1',
+      }),
+    ).toMatchObject({ turnPhase: 'ready', describer: null });
   });
 
   it('reads the cooperative state with its team score, and the old voice name as refereed', () => {

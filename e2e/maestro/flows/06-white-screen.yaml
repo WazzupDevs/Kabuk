@@ -119,3 +119,12 @@ appId: app.kabuk.mobile
 - extendedWaitUntil:
     visible: Oda kur
     timeout: 15000
+# The venue stays: it does not send the phone back into the room it just closed (the two screens
+# used to bounce into "Bir şeyler ters gitti", depending on which read came back first).
+- waitForAnimationToEnd:
+    timeout: 3000
+- assertVisible: Oda kur
+- assertNotVisible:
+    id: end-room
+- assertNotVisible: Bir şeyler ters gitti
+- takeScreenshot: 29d-room-ended

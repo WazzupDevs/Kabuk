@@ -10,50 +10,53 @@ import { safetyApi } from '@/lib/api';
 
 import { ReportModal } from './ReportModal';
 
-// "Şikayet et" and "Engelle" for the room's ⋯ menu (MVP_SPEC §4.5, §8). The actions are started
-// from the menu; the report form lives outside it, so it stays open after the menu closes.
+// "Şikayet et" and "Engelle" in the room (MVP_SPEC §4.5, §8). Faz 2 (docs/SPEC_V3.md §22.D, §22.J):
+// the phone is picked first, any phone of the room; the report form follows the pick and lives
+// outside the menu, so it stays open after the menu closes.
 export function useRoomSafety(roomId: string) {
   const queryClient = useQueryClient();
-  const [reporting, setReporting] = useState(false);
+  // The phone being reported; the reason sheet is open while it is set.
+  const [reporting, setReporting] = useState<string | null>(null);
 
   const report = useMutation({
-    mutationFn: (reason: ReportReason) => safetyApi.report(roomId, reason),
+    mutationFn: ({ sessionId, reason }: { sessionId: string; reason: ReportReason }) =>
+      safetyApi.report(roomId, reason, sessionId),
     onSuccess: () => {
       track('report_submitted', {});
-      setReporting(false);
+      setReporting(null);
       Alert.alert(tr.safety.reportSent);
     },
   });
+  // Who leaves is the server's (a leader's own member, or the one who blocks).
   const block = useMutation({
-    mutationFn: () => safetyApi.block(roomId),
+    mutationFn: (sessionId: string) => safetyApi.block(roomId, sessionId),
     onSuccess: () => track('block_created', {}),
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: roomKeys.current });
       void queryClient.invalidateQueries({ queryKey: roomKeys.room(roomId) });
+      void queryClient.invalidateQueries({ queryKey: roomKeys.phones(roomId) });
     },
   });
 
-  function confirmBlock() {
-    Alert.alert(tr.safety.blockConfirmTitle, tr.safety.blockConfirmBody, [
-      { text: tr.common.cancel, style: 'cancel' },
-      { text: tr.safety.blockConfirm, style: 'destructive', onPress: () => block.mutate() },
-    ]);
-  }
-
   const reportForm = (
     <ReportModal
-      visible={reporting}
+      visible={reporting !== null}
       pending={report.isPending}
       error={report.error}
-      onReport={(reason) => report.mutate(reason)}
-      onClose={() => setReporting(false)}
+      onReport={(reason) => reporting && report.mutate({ sessionId: reporting, reason })}
+      onClose={() => setReporting(null)}
     />
   );
   return {
-    startReport: () => setReporting(true),
-    confirmBlock,
+    startReport: (sessionId: string) => {
+      report.reset();
+      setReporting(sessionId);
+    },
+    block: (sessionId: string, onDone: () => void) =>
+      block.mutate(sessionId, { onSuccess: onDone }),
     blocking: block.isPending,
     blockError: block.error,
+    resetBlock: block.reset,
     reportForm,
   };
 }

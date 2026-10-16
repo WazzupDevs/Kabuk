@@ -16,12 +16,13 @@ import { supabase } from '@/lib/supabase';
 import { useNow } from '@/lib/useNow';
 import { REVEAL } from '@shared/reveal.ts';
 
-type Props = { roomId: string; isOwner: boolean; revealEndsAt: string; score: number | null };
+type Props = { roomId: string; revealEndsAt: string; score: number | null };
 
-// "Tanışalım mı?" with a 30 second countdown (MVP_SPEC §4.6, screen 8). Only this table's own
-// answer is ever readable. A table that said "Hayır" already knows the result and may leave at
-// once; the room stays 'ending' for the other table until the window ends.
-export function RevealPrompt({ roomId, isOwner, revealEndsAt, score }: Props) {
+// "Tanışalım mı?" with a 30 second countdown (MVP_SPEC §4.6, screen 8). Only this phone's own
+// answer is ever readable; each phone answers for itself (docs/SPEC_V3.md §22.F). A phone that
+// said "Hayır" already knows its result and may leave at once; the room stays 'ending' for the
+// others until the window ends.
+export function RevealPrompt({ roomId, revealEndsAt, score }: Props) {
   const queryClient = useQueryClient();
   const now = useNow(250);
   const secondsLeft = Math.max(0, Math.ceil((Date.parse(revealEndsAt) - now) / 1000));
@@ -57,10 +58,10 @@ export function RevealPrompt({ roomId, isOwner, revealEndsAt, score }: Props) {
   const saidNo = myAnswer.data?.wants_meet === false;
 
   useEffect(() => {
-    // The result is certainly "none"; counted once per room from the owner's phone, under the same
-    // key RevealResult uses.
-    if (saidNo && isOwner) trackOnce(`reveal:${roomId}`, 'reveal_none', {});
-  }, [saidNo, isOwner, roomId]);
+    // This phone's result is certainly "none"; counted once per room on each phone, under the same
+    // key Reveal uses.
+    if (saidNo) trackOnce(`reveal:${roomId}`, 'reveal_none', {});
+  }, [saidNo, roomId]);
 
   if (saidNo) {
     return (
@@ -87,6 +88,9 @@ export function RevealPrompt({ roomId, isOwner, revealEndsAt, score }: Props) {
           {score !== null ? <Text variant="label">{tr.reveal.score(score)}</Text> : null}
           <Text variant="display" align="center" accessibilityRole="header">
             {tr.reveal.question}
+          </Text>
+          <Text variant="bodyStrong" align="center">
+            {tr.reveal.ownAnswer}
           </Text>
           <Text variant="fine" align="center">
             {tr.reveal.hint}

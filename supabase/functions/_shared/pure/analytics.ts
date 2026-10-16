@@ -18,9 +18,13 @@ export type AnalyticsEventProps = {
   game_proposed: { concept: Concept };
   game_accepted: { concept: Concept };
   alias_rerolled: Record<string, never>;
-  join_requested: Record<string, never>;
-  join_accepted: Record<string, never>;
-  join_unavailable: Record<string, never>;
+  // Faz 2 (docs/SPEC_V3.md §22.L): as_member is "Bu masadayım" (a member of a side), not "Katıl".
+  join_requested: { as_member: boolean };
+  join_accepted: { as_member: boolean };
+  join_unavailable: { as_member: boolean };
+  // "Odadan çık" by a member or a leader, and this phone becoming its side's leader.
+  team_left: Record<string, never>;
+  leader_transferred: Record<string, never>;
   room_two_tables: Record<string, never>;
   // v2: + mode (docs/SPEC_V2.md §13); for voice Tabu the owner table's score (cooperative: the
   // team's) and, v3, the Tabu mode (docs/SPEC_V3.md §15).
@@ -39,11 +43,14 @@ export type AnalyticsEventProps = {
     rounds_lost_by_timeout?: number;
     // İbre (§20.5): rounds the reporting table scored 4. Never the scale or the target.
     bullseyes?: number;
+    // Faz 2 (docs/SPEC_V3.md §22.L): the phones in the room when the game ended.
+    phones?: number;
   };
   // v3 step 7 (docs/SPEC_V3.md §19.1): a Tabu game stopped before its last turn, by "Oyunu bitir"
   // or a table leaving. The turn it stopped in and the game's length; nothing else.
   game_abandoned: { concept: Concept; turn_no: number; total_turns: number };
-  reveal_mutual: Record<string, never>;
+  // Faz 2 (docs/SPEC_V3.md §22.L): this phone has at least one match, and how many.
+  reveal_mutual: { matches?: number };
   reveal_none: Record<string, never>;
   report_submitted: Record<string, never>;
   block_created: Record<string, never>;
@@ -78,9 +85,11 @@ const ALLOWED: { [E in AnalyticsEvent]: readonly (keyof AnalyticsEventProps[E])[
   game_proposed: ['concept'],
   game_accepted: ['concept'],
   alias_rerolled: [],
-  join_requested: [],
-  join_accepted: [],
-  join_unavailable: [],
+  join_requested: ['as_member'],
+  join_accepted: ['as_member'],
+  join_unavailable: ['as_member'],
+  team_left: [],
+  leader_transferred: [],
   room_two_tables: [],
   game_completed: [
     'concept',
@@ -92,9 +101,10 @@ const ALLOWED: { [E in AnalyticsEvent]: readonly (keyof AnalyticsEventProps[E])[
     'objections',
     'rounds_lost_by_timeout',
     'bullseyes',
+    'phones',
   ],
   game_abandoned: ['concept', 'turn_no', 'total_turns'],
-  reveal_mutual: [],
+  reveal_mutual: ['matches'],
   reveal_none: [],
   report_submitted: [],
   block_created: [],

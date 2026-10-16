@@ -31,12 +31,15 @@ export const ALIAS_REROLLS_PER_CHECKIN = 3;
 
 export type GameProposal = {
   proposer_session_id: string;
+  // The side the proposal belongs to (docs/SPEC_V3.md §22.E); null on a row from before Faz 2.
+  proposer_side: 'owner' | 'guest' | null;
   concept: Concept;
   expires_at: string;
 };
 
-// The proposal area of the room screen: nothing, this table's proposal waiting, or the other
-// table's proposal to answer. A proposal past expires_at is gone on both screens at once.
+// The proposal area of the room screen: nothing, this side's proposal waiting, or the other side's
+// proposal to answer. A proposal past expires_at is gone on both screens at once. Faz 2: a proposal
+// is its side's; a teammate's shows as this phone's own (only the other side answers it).
 export type ProposalView =
   | { kind: 'none' }
   | { kind: 'mine'; concept: Concept; secondsLeft: number }
@@ -44,14 +47,18 @@ export type ProposalView =
 
 export function proposalView(
   proposal: GameProposal | null | undefined,
-  mySessionId: string,
+  me: { sessionId: string; side: 'owner' | 'guest' },
   now: number,
 ): ProposalView {
   if (!proposal) return { kind: 'none' };
   const left = Math.ceil((Date.parse(proposal.expires_at) - now) / 1000);
   if (!(left > 0)) return { kind: 'none' };
+  const mine =
+    proposal.proposer_side !== null
+      ? proposal.proposer_side === me.side
+      : proposal.proposer_session_id === me.sessionId;
   return {
-    kind: proposal.proposer_session_id === mySessionId ? 'mine' : 'theirs',
+    kind: mine ? 'mine' : 'theirs',
     concept: proposal.concept,
     secondsLeft: left,
   };
@@ -120,12 +127,17 @@ export const BROADCAST = {
 // channel (re)subscribes. Only when they differ from the cached row is the full row read again, so a
 // check never overwrites a newer row that arrived over the channel (a Tabu press).
 export const ROOM_CHECK_SECONDS = 4;
-export const ROOM_CHECK_COLUMNS = 'status, owner_session_id, guest_session_id';
+// The phones on each side too (docs/SPEC_V3.md §22.H): a phone joining or leaving changes the
+// room's people and the title's count.
+export const ROOM_CHECK_COLUMNS =
+  'status, owner_session_id, guest_session_id, owner_phones, guest_phones';
 
 export type RoomCheck = {
   status: string;
   owner_session_id: string;
   guest_session_id: string | null;
+  owner_phones: number;
+  guest_phones: number | null;
 };
 
 // `checked` null: the room can no longer be read (the table is not a member any more).
@@ -137,6 +149,8 @@ export function roomCheckDiffers(
   return (
     cached.status !== checked.status ||
     cached.owner_session_id !== checked.owner_session_id ||
-    cached.guest_session_id !== checked.guest_session_id
+    cached.guest_session_id !== checked.guest_session_id ||
+    cached.owner_phones !== checked.owner_phones ||
+    cached.guest_phones !== checked.guest_phones
   );
 }

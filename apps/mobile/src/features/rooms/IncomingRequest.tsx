@@ -15,23 +15,29 @@ import { useNow } from '@/lib/useNow';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON } from '@/theme/tokens';
 
+import { BigAlias } from './BigAlias';
 import { ProfiledTag } from './ProfiledTag';
 import { roomKeys, useIncomingRequests } from './queries';
 
-type Props = { roomId: string; ownerSessionId: string | null };
+// `leaderSessionId`: this phone, when it leads a side; null otherwise (no requests to answer).
+type Props = { roomId: string; leaderSessionId: string | null };
 
-// The owner's 60 second window: Kabul / Geç (MVP_SPEC §4.4, screen 4).
-export function IncomingRequest({ roomId, ownerSessionId }: Props) {
+// A leader's 60 second window: Kabul / Reddet (MVP_SPEC §4.4, screen 4). "Bu masadayım" shows the
+// requester's alias as large as the requester's own waiting card (docs/SPEC_V3.md §22.C; canvas:
+// Faz 2 · 22.5 → Lider: istek kartı).
+export function IncomingRequest({ roomId, leaderSessionId }: Props) {
   const { colors } = useTheme();
   const queryClient = useQueryClient();
-  const requests = useIncomingRequests(roomId, ownerSessionId);
+  const requests = useIncomingRequests(roomId, leaderSessionId);
   const now = useNow(1000);
   const request = requests.data?.find((r) => Date.parse(r.expires_at) > now);
 
   const respond = useMutation({
-    mutationFn: ({ id, accept }: { id: string; accept: boolean }) => roomsApi.respond(id, accept),
-    onSuccess: (_data, { accept }) => {
-      if (accept) track('room_two_tables', {});
+    mutationFn: ({ id, accept }: { id: string; accept: boolean; member: boolean }) =>
+      roomsApi.respond(id, accept),
+    onSuccess: (_data, { accept, member }) => {
+      // A second side came; a member joining a side does not make a two-table room.
+      if (accept && !member) track('room_two_tables', {});
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: roomKeys.incoming(roomId) });
@@ -42,11 +48,27 @@ export function IncomingRequest({ roomId, ownerSessionId }: Props) {
   if (!request) return null;
   const seconds = Math.max(0, Math.ceil((Date.parse(request.expires_at) - now) / 1000));
 
+  const member = request.as_member;
+
   return (
-    <Sheet visible centered title={tr.rooms.incomingTitle} icon="people-outline">
-      <Text variant="bodyStrong" align="center">
-        {tr.rooms.incomingBody(request.requester_alias, request.requester_headcount)}
-      </Text>
+    <Sheet
+      visible
+      centered
+      title={member ? tr.rooms.incomingMemberTitle : tr.rooms.incomingTitle}
+      icon="people-outline"
+    >
+      {member ? (
+        <>
+          <BigAlias alias={request.requester_alias} />
+          <Text variant="fine" tone="text">
+            {tr.rooms.incomingMemberBody}
+          </Text>
+        </>
+      ) : (
+        <Text variant="bodyStrong" align="center">
+          {tr.rooms.incomingBody(request.requester_alias, request.requester_headcount)}
+        </Text>
+      )}
       {request.requester_profiled ? (
         <View className="items-center">
           <ProfiledTag />
@@ -69,7 +91,7 @@ export function IncomingRequest({ roomId, ownerSessionId }: Props) {
           <Button
             variant="neutral"
             label={tr.rooms.decline}
-            onPress={() => respond.mutate({ id: request.id, accept: false })}
+            onPress={() => respond.mutate({ id: request.id, accept: false, member })}
             disabled={respond.isPending}
           />
         </View>
@@ -77,7 +99,7 @@ export function IncomingRequest({ roomId, ownerSessionId }: Props) {
           <Button
             testID="join-accept"
             label={tr.rooms.accept}
-            onPress={() => respond.mutate({ id: request.id, accept: true })}
+            onPress={() => respond.mutate({ id: request.id, accept: true, member })}
             loading={respond.isPending}
           />
         </View>
@@ -85,7 +107,7 @@ export function IncomingRequest({ roomId, ownerSessionId }: Props) {
       <View className="flex-row items-start gap-2">
         <Ionicons name="lock-closed-outline" size={ICON.sm} color={colors.muted} />
         <Text variant="fine" className="flex-1">
-          {tr.rooms.declineNote}
+          {member ? tr.rooms.declineMemberNote : tr.rooms.declineNote}
         </Text>
       </View>
     </Sheet>

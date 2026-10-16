@@ -8,7 +8,7 @@ import { SAHTEKAR } from '@shared/sahtekar.ts';
 import { IBRE_AUTO_LOCK_SECONDS, IBRE_CONFIG } from '@shared/ibre.ts';
 import { formatTrMobile } from '@shared/phone.ts';
 import { SAY_CONFIG } from '@shared/sayChallenge.ts';
-import { capitalizeTr } from '@shared/trText.ts';
+import { capitalizeTr, inflectTr } from '@shared/trText.ts';
 import type { VenueKind } from '@shared/venueKind.ts';
 
 // Address (hitap): a person is "sen", a table "siz"; a sentence never mixes the two. What a phone
@@ -472,9 +472,11 @@ export const tr = {
     anonymous: 'Anonim',
     anonymousHint: 'Diğer masalar yalnızca masa adını ve kişi sayını görür.',
     profile: 'Profilimle',
-    profileHint:
-      'Lobide "profilli" işareti görünür. Odadaki diğer masa, oda sürerken profilini görebilir.',
+    profileHint: 'Lobide "profilli" işareti görünür. Odadakiler oda sürerken profilini görür.',
     profileNeedsName: 'Profilinle katılmak için önce Profil sekmesinden bir ad seç.',
+    // "Bu masadayım" (canvas: Faz 2 · 22.5 → Bu masadayım: seçim): the room's phones see this one.
+    memberAnonymousHint: (alias: string) => `Odadakiler yalnızca takma adını görür: ${alias}.`,
+    memberProfileHint: 'Odadakiler oda sürerken profilini görür.',
     // "Profilimle" needs a profile photo others can see (docs/SPEC_V3.md §22.G, decision 8).
     photoNeeded: 'Profilinle görünmek için profil fotoğrafı gerekiyor.',
   },
@@ -541,7 +543,39 @@ export const tr = {
     profiled: 'profilli',
     people: (n: number) => `${headcountLabel(n)} kişi`,
     waitingFor: (minutes: number) => (minutes < 1 ? 'yeni açıldı' : `${minutes} dk bekliyor`),
-    requestJoin: 'Katılmak istiyorum',
+    requestJoin: 'Katıl',
+    // Faz 2 (docs/SPEC_V3.md §22.C; canvas: Faz 2 · 22.5 Takımlar): a member of a side.
+    requestMember: 'Bu masadayım',
+    phones: (n: number) => `${n} telefon`,
+    runningTitle: 'Süren odalar',
+    runningHint: 'Masandan biri bir odadaysa onun tarafına katılabilirsin.',
+    // Between the two sides of a running room.
+    versus: 'ile',
+    memberBody: (leader: string) =>
+      `${inflectTr(leader, 'genitive')} tarafına katılırsın. Kabul ederse oyun ve sohbet senin telefonunda da açılır.`,
+    tellLeader: 'Liderine bu adı söyle',
+    tellLeaderBody: (leader: string) =>
+      `${leader} bu adı istek kartında görür. Kabul ederse odaya girersin.`,
+    incomingMemberTitle: 'Masana katılmak istiyor',
+    incomingMemberBody:
+      'Bu adı söyleyen arkadaşınsa kabul et. Kabul edersen senin tarafına katılır.',
+    declineMemberNote: 'Reddedersen o yalnızca "Masa şu an müsait değil" görür.',
+    peopleTitle: 'Odadakiler',
+    mySide: (phones: number) => `Senin tarafın · ${phones} telefon`,
+    otherSide: (phones: number) => `Karşı taraf · ${phones} telefon`,
+    leaderTag: 'Lider',
+    youTag: 'Sen',
+    peopleNote: 'Profilli olanların profili oda sürerken açılır.',
+    leave: 'Odadan çık',
+    leaveHandover: (next: string) =>
+      `Çıkarsan liderlik ${inflectTr(next, 'dative')} geçer, oda sürer.`,
+    leaveConfirmTitle: 'Odadan çıkıyor musun?',
+    leaveConfirmLeader: (next: string) =>
+      `Liderlik ${inflectTr(next, 'dative')} geçer, oda sürer. Yeniden yalnızca bu tarafa katılabilirsin.`,
+    leaveConfirmMember: 'Yeniden yalnızca bu tarafa katılabilirsin.',
+    // The new leader's note at the top of the chat (canvas: Liderlik devri notu).
+    newLeader: (previous: string) =>
+      `Artık lider sensin. ${previous} odadan çıktı; katılma istekleri sana gelir, odayı sen bitirebilirsin.`,
     mySpot: (name: string) => `Senin noktan · ${name}`,
     noSpot: 'Noktasız',
     spotHere: 'Bu noktadayım',
@@ -550,7 +584,7 @@ export const tr = {
     requestUnavailable: 'Masa şu an müsait değil.',
     newTitle: 'Oda kur',
     newHint:
-      'Oda mekandaki diğer masalara açılır ve sohbetle başlar. Oyunu odada iki masa birlikte seçer.',
+      'Oda mekandaki diğer masalara açılır ve sohbetle başlar. Oyunu odada iki taraf birlikte seçer.',
     intentLabel: 'Niyetin (isteğe bağlı)',
     intentNone: 'Etiket yok',
     intentHint: {
@@ -571,7 +605,7 @@ export const tr = {
     withOther: (alias: string) => `${alias} ile`,
     waitingForGuest: 'Başka bir masa katılmak isteyebilir. Bu arada kendi masanla oynayabilirsin.',
     end: 'Odayı bitir',
-    endHint: 'İki masalı odada "Tanışalım mı?" sorulur.',
+    endHint: 'Odayı bitirirsen odadaki herkese "Tanışalım mı?" sorulur.',
     requestTitle: 'Katılma isteği',
     sendRequest: 'İsteği gönder',
     incomingTitle: 'Katılma isteği',
@@ -580,7 +614,7 @@ export const tr = {
     accept: 'Kabul',
     decline: 'Reddet',
     declineNote: 'Reddedersen karşı masa yalnızca "Masa şu an müsait değil" görür.',
-    viewProfile: 'Diğer masanın profilini gör',
+    viewPeople: 'Odadakileri gör',
     secondsLeft: (s: number) => `${s} sn`,
   },
   chat: {
@@ -672,6 +706,14 @@ export const tr = {
     blockConfirmBody:
       'Birbirinizin odalarını artık görmezsiniz. Oda biter ve masanızın cevabı "Hayır" sayılır. Engeli ayarlardan kaldırabilirsin.',
     blockConfirm: 'Engelle',
+    // Faz 2 (canvas: Engelle / Şikayet et: kişi seçimi): the person first.
+    blockWho: 'Kimi engelliyorsun?',
+    reportWho: 'Kimi şikayet ediyorsun?',
+    blockOwnMember: (alias: string) =>
+      `${alias} odadan çıkar, sen odada kalırsın. Birbirinizin odalarını artık görmezsiniz.`,
+    blockLeaves:
+      'Sen odadan çıkarsın ve cevabın "Hayır" sayılır. Birbirinizin odalarını artık görmezsiniz.',
+    reportNote: 'Şikayetin, şikayet ettiğin kişiye bildirilmez.',
     blockedTitle: 'Engellenenler',
     blockedEmpty: 'Engellediğin kimse yok.',
     blockedSince: (date: string) => `${date} tarihinde engellendi`,
@@ -733,7 +775,13 @@ export const tr = {
     voiceJudge: (alias: string) => `${alias} anlatıyor. Hakem sizsiniz.`,
     judgeCorrect: 'Doğru +1',
     judgeTaboo: 'Tabu −1',
-    you: 'siz',
+    // The score label of this phone's side (canvas: Faz 2 · 22.5).
+    you: 'tarafın',
+    // The describer's teammate (docs/SPEC_V3.md §22.E; canvas: Sesli Tabu: takım arkadaşı).
+    teammateNote: (alias: string) => `${alias} anlatıyor.`,
+    cardWithDescriber: 'Kart anlatanda',
+    cardWithDescriberHint:
+      "Kartı yalnızca anlatan ve hakem taraf görür. Sen tahmin et, bilince Doğru'ya bas.",
     describing: 'anlatıyor',
     voiceWinner: (alias: string) => `${alias} kazandı!`,
     voiceDraw: 'Berabere!',
@@ -758,8 +806,8 @@ export const tr = {
     turnDone: (n: number) => `${n}. tur bitti`,
     turnReadyStart: 'Başla',
     turnReadyStartLabel: 'Turu başlat',
-    turnReadyYou: 'Bu tur siz anlatıyorsunuz',
-    turnReadyHint: 'Telefonu takımınızdan uzak tutun; kartı yalnızca anlatan görür.',
+    turnReadyYou: 'Sıra tarafında',
+    turnReadyHint: "Başla'ya kim basarsa o anlatır; kart yalnızca onun telefonunda açılır.",
     turnReadyWaiting: (alias: string) => `${alias} hazırlanıyor`,
     turnReadyWaitingHint: 'Onlar başlayınca ya da süre dolunca tur başlar.',
     turnReadySeconds: (s: number) => `${s} saniye`,
@@ -850,6 +898,9 @@ export const tr = {
     readyWaitingHint: 'Karşı masa hedefe bakıp tek ipucu verecek. Dinleyin.',
     clueHint: `Anlatıcı hedefe baksın, sesli tek ipucu versin. Masası ibreyi ayarlayıp onaylasın; son ${IBRE_AUTO_LOCK_SECONDS} saniyede ibre olduğu yerde onaylanır.`,
     lock: 'İbreyi onayla',
+    // Faz 2 (docs/SPEC_V3.md §22.E; canvas: İbre: anlatıcı / takım arkadaşı).
+    teamLocks: 'Takım arkadaşın "İbreyi onayla"ya basınca ibre kilitlenir.',
+    teamClue: (alias: string) => `${alias} ipucu veriyor. İbreyi ipucuna göre getir.`,
     otherClue: (alias: string) => `${alias} ipucu veriyor. İbre onaylanınca taraf seçeceksiniz.`,
     sideTitle: 'Hedef ibrenin solunda mı, sağında mı?',
     sideHint: (s: number) => `${s} sn içinde seçin; doğruysa 1 puan.`,
@@ -916,6 +967,10 @@ export const tr = {
     voteLine: (voter: string, target: string) => `${voter}, ${seatTo(target, 'dative')} oy verdi`,
     // The game screens (docs/SPEC_V3.md §20.2).
     ownTable: 'Sizin masanız',
+    // A member's phone (docs/SPEC_V3.md §22.E; canvas: Sahtekar: üye izler).
+    memberTitle: 'Koltuklar liderinin telefonunda',
+    memberBody: (leader: string) =>
+      `${inflectTr(leader, 'genitive')} telefonunu izle; kartlar, ipucu sırası ve oylar orada.`,
     otherTable: 'Diğer masa',
     ownDone: 'Masanızda herkes baktı. Diğer masa bekleniyor.',
     redealt:
@@ -926,19 +981,24 @@ export const tr = {
   },
   reveal: {
     question: 'Tanışalım mı?',
-    hint: 'İki masa da "Evet" derse aynı renk ve işaret iki ekranda da belirir. Kimin ne dediği gösterilmez.',
+    // Faz 2 (docs/SPEC_V3.md §22.F; canvas: Tanışalım mı? kişi başına): each phone for itself.
+    ownAnswer: 'Kendi adına cevap ver.',
+    hint: 'Karşı taraftan biriyle ikiniz de "Evet" derseniz ikinizin ekranında aynı renk ve işaret belirir. Kimin ne dediği gösterilmez.',
     yes: 'Evet',
     no: 'Hayır',
     secondsLeft: (s: number) => `${s} sn`,
     answered: 'Cevabın alındı. Sonuç birazdan.',
     signal: 'Ekranını kaldır, eşleştiğini bul.',
-    signalTop: 'Tanışalım mı? · İki masa da "Evet" dedi',
-    signalSame: 'Diğer masada da aynı renk ve aynı işaret var.',
+    signalMany: 'Ekranını kaldır, eşleştiklerini bul.',
+    signalTop: 'Tanışalım mı? · Eşleştin',
+    signalSame: 'Eşleştiğin kişide de aynı renk ve aynı işaret var.',
+    signalSameMany: 'Eşleşen herkes bu rengi görür; her eşleşmenin işareti ayrı.',
     goodGame: 'Güzel oyundu',
     backToVenue: 'Mekana dön',
     score: (n: number) => `Ortak skor: ${n}`,
     addFriend: 'Arkadaş ekle',
-    addFriendDone: 'Senin tarafın tamam. Diğer masa da basarsa arkadaş olursunuz.',
+    addFriendDone: 'Sen bastın. O da basarsa arkadaş olursunuz.',
+    addFriendBoth: 'İkiniz de "Arkadaş ekle"ye basarsanız arkadaş olursunuz.',
   },
   venue: {
     here: 'Mekandasın',

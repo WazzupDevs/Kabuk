@@ -35,6 +35,8 @@ export default function HeadcountScreen() {
         headcount: count,
         locationConsentVersion: CURRENT_LOCATION_CONSENT_VERSION,
         ...(spot ? { spotId: spot.id } : {}),
+        // This app can be a member of a side (docs/SPEC_V3.md §22.B).
+        teams: true,
       });
     },
     onSuccess: async (result, count) => {

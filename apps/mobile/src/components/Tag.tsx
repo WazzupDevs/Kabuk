@@ -17,7 +17,8 @@ export type TagVariant =
   | 'profiled'
   | 'accent' // counters: new requests, unread
   | 'game' // room intent "Oyun"
-  | 'chat'; // room intent "Sohbet"
+  | 'chat' // room intent "Sohbet"
+  | 'leader'; // a side's leader in "Odadakiler" (canvas: Faz 2 · 22.5)
 
 type Props = { label: string; variant?: TagVariant; icon?: IconName };
 
@@ -39,6 +40,7 @@ export function Tag({ label, variant = 'neutral', icon }: Props) {
     accent: { bg: colors.accent, fg: colors.onAccent },
     game: { bg: colors.accent, fg: colors.onAccent },
     chat: { bg: colors.signal, fg: colors.onSignal },
+    leader: { bg: colors.text, fg: colors.canvas },
   };
   const { bg, fg } = fill[variant];
   const outline = shape.stroke.tag;

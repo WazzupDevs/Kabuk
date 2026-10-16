@@ -72,7 +72,27 @@ export type IbreState = {
   bullseyes: Record<TableSide, number>;
   // The last round's reveal, kept through the next round's ready state.
   reveal: IbreReveal | null;
+  // Two-table rooms with teams (docs/SPEC_V3.md §22.E): the phone that started the round (its table
+  // session id) and who locks the needle, fixed when the round starts: the describer when its side
+  // had one phone, otherwise its teammates. Null in the one-phone game and before Faz 2.
+  describer: string | null;
+  lockBy: 'describer' | 'team' | null;
 };
+
+// What this phone does in a running round on the describing side: whether it sees the target (the
+// describer) and whether it moves and locks the needle (§22.E: the teammates when lockBy is 'team',
+// or the describer once its teammates have all left). `sidePhones`: the phones on this side now.
+export function ibrePhoneRole(
+  state: Pick<IbreState, 'turnTable' | 'describer' | 'lockBy'>,
+  side: TableSide,
+  sessionId: string,
+  sidePhones: number,
+): { seesTarget: boolean; locks: boolean } {
+  if (side !== state.turnTable) return { seesTarget: false, locks: false };
+  const describer = state.describer === null || state.describer === sessionId;
+  if (state.lockBy !== 'team') return { seesTarget: describer, locks: describer };
+  return { seesTarget: describer, locks: !describer || sidePhones <= 1 };
+}
 
 export const otherSide = (side: TableSide): TableSide => (side === 'owner' ? 'guest' : 'owner');
 
@@ -95,6 +115,8 @@ export function newIbreGame(scale: IbreScale, now: number): IbreState {
     scores: { owner: 0, guest: 0 },
     bullseyes: { owner: 0, guest: 0 },
     reveal: null,
+    describer: null,
+    lockBy: null,
   };
 }
 
@@ -316,5 +338,7 @@ export function parseIbreState(value: unknown): IbreState | null {
     scores,
     bullseyes,
     reveal: parseIbreReveal(v.reveal),
+    describer: typeof v.describer === 'string' ? v.describer : null,
+    lockBy: v.lockBy === 'describer' || v.lockBy === 'team' ? v.lockBy : null,
   };
 }

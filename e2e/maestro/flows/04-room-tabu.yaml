@@ -34,13 +34,15 @@ appId: app.kabuk.mobile
       id: spot-here
     timeout: 20000
 - assertVisible: Kütüphane
-- assertNotVisible: Katılmak istiyorum
+# "Katıl" by id: the open room's card has "Bu masadayım" too when the room's owner can have members.
+- assertNotVisible:
+    id: request-join
 - takeScreenshot: 12b-lobby-other-spot
 - tapOn:
     id: spot-here
 - scrollUntilVisible:
     element:
-      text: Katılmak istiyorum
+      id: request-join
     timeout: 15000
 - takeScreenshot: 12c-lobby-same-spot
 # The bot closes its room; this phone opens one at the same spot and the bot asks to join it.
@@ -49,7 +51,8 @@ appId: app.kabuk.mobile
     env:
       ACTION: end-room
 - extendedWaitUntil:
-    notVisible: Katılmak istiyorum
+    notVisible:
+      id: request-join
     timeout: 20000
 - scrollUntilVisible:
     element:

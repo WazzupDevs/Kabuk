@@ -7,7 +7,8 @@ import {
   mayBeginTurn,
   optimisticView,
   pendingAfter,
-  roleOf,
+  phoneRoleOf,
+  seesCard,
   TABU,
   type TableSide,
   type VoiceTabuState,
@@ -42,6 +43,9 @@ type Props = {
   roomId: string;
   state: GameState | null;
   side: TableSide;
+  // This phone, and a phone's alias in the room (the describer's name for its teammates).
+  sessionId: string;
+  aliasOf: (sessionId: string) => string | undefined;
   aliases: Record<TableSide, string>;
 };
 
@@ -53,7 +57,9 @@ type Props = {
 // wins.
 // A game starts only from an accepted proposal and, when it ends, the room returns to chat with the
 // result kept as lastGame (docs/SPEC_V3.md §5.3); this shows the running game only.
-export function VoiceTabu({ roomId, state, side, aliases }: Props) {
+// Faz 2 (docs/SPEC_V3.md §22.E): the phone that starts the turn describes it; the card goes to it
+// and to the judging side, never to its teammates, who press Doğru only.
+export function VoiceTabu({ roomId, state, side, sessionId, aliasOf, aliases }: Props) {
   const voice = isVoiceTabu(state) ? state : null;
   if (!voice || voice.phase !== 'playing') {
     return (
@@ -65,7 +71,16 @@ export function VoiceTabu({ roomId, state, side, aliases }: Props) {
   if (voice.turnPhase === 'ready') {
     return <ReadyTurn roomId={roomId} server={voice} side={side} aliases={aliases} />;
   }
-  return <Turn roomId={roomId} server={voice} side={side} aliases={aliases} />;
+  return (
+    <Turn
+      roomId={roomId}
+      server={voice}
+      side={side}
+      sessionId={sessionId}
+      aliasOf={aliasOf}
+      aliases={aliases}
+    />
+  );
 }
 
 // Between turns (docs/SPEC_V3.md §19.1, canvas: Aşama 6 · Oyunlar → Tur hazır): the last turn's
@@ -85,7 +100,8 @@ function ReadyTurn({
 }) {
   const now = useNow(250);
   const queryClient = useQueryClient();
-  const role = roleOf(server, side);
+  // Every phone of the describing side may start the turn; the one that does describes it.
+  const describingSide = server.describingTable === side;
   const readyEndsAt = server.readyEndsAt ?? new Date(now).toISOString();
   const secondsLeft = Math.max(0, Math.ceil((Date.parse(readyEndsAt) - now) / 1000));
   const begin = useMutation({
@@ -118,7 +134,7 @@ function ReadyTurn({
               }
             : undefined
         }
-        describing={role === 'describer'}
+        describing={describingSide}
         describingAlias={aliases[server.describingTable]}
         secondsLeft={secondsLeft}
         totalSeconds={TABU.readySeconds}
@@ -229,28 +245,36 @@ function Turn({
   roomId,
   server,
   side,
+  sessionId,
+  aliasOf,
   aliases,
 }: {
   roomId: string;
   server: VoiceTabuState;
   side: TableSide;
+  sessionId: string;
+  aliasOf: (sessionId: string) => string | undefined;
   aliases: Record<TableSide, string>;
 }) {
   const { colors, shape } = useTheme();
   const depth = useDepth();
   const now = useNow(250);
-  const role = roleOf(server, side);
+  const role = phoneRoleOf(server, side, sessionId);
   const { pending, push, error } = usePressQueue(roomId);
   const view = optimisticView(server, pendingAfter(server, pending), role, now);
 
-  // The whole turn's list, fetched once when the turn starts. A cooperative guessing table never
-  // asks: the server would refuse it (not_describer), and the card must not reach this phone.
+  // The whole turn's list, fetched once when the turn starts, only on a phone that holds it: the
+  // describer and the judging side. A teammate or a cooperative guesser never asks: the server
+  // would refuse it (not_describer), and the card must not reach this phone.
   const guessing = role === 'guesser';
+  const teammate = role === 'teammate';
+  const describerName =
+    (server.describer ? aliasOf(server.describer) : undefined) ?? aliases[server.describingTable];
   const cards = useQuery({
     queryKey: ['tabuTurnCards', roomId, server.gameNo, server.turnNo],
     queryFn: () => gamesApi.tabuTurnCards(roomId),
     staleTime: Infinity,
-    enabled: !guessing,
+    enabled: seesCard(role),
   });
   const card = cards.data?.turnNo === server.turnNo ? cards.data.cards[view.cardIndex] : undefined;
 
@@ -296,7 +320,19 @@ function Turn({
       <Text variant="fine" align="center">
         {tr.games.turnOverWait}
       </Text>
-    ) : guessing ? null : server.mode === 'cooperative' ? (
+    ) : guessing || (teammate && server.mode === 'cooperative') ? null : teammate ? (
+      // A teammate guesses with its side: Doğru only (docs/SPEC_V3.md §22.E).
+      <Button
+        variant="positive"
+        testID="tabu-correct"
+        size="lg"
+        icon="checkmark"
+        label={tr.games.correct}
+        detail={tr.games.correctPoints}
+        onPress={() => press('correct')}
+        disabled={secondsLeft === 0}
+      />
+    ) : server.mode === 'cooperative' ? (
       <View className="flex-row gap-2">
         {/* Three in a row (canvas: Tabu iş birliği): no icons, the points under each label. */}
         <View className="flex-1">
@@ -415,7 +451,7 @@ function Turn({
         icon={
           role === 'describer'
             ? 'megaphone-outline'
-            : role === 'guesser'
+            : role === 'guesser' || teammate
               ? 'ear-outline'
               : 'shield-checkmark-outline'
         }
@@ -424,13 +460,39 @@ function Turn({
             ? server.mode === 'cooperative'
               ? tr.games.coopDescribe
               : tr.games.voiceDescribe
-            : role === 'guesser'
-              ? tr.games.coopGuess(aliases[view.describingTable])
-              : tr.games.voiceJudge(aliases[view.describingTable])
+            : teammate
+              ? tr.games.teammateNote(describerName)
+              : role === 'guesser'
+                ? tr.games.coopGuess(aliases[view.describingTable])
+                : tr.games.voiceJudge(aliases[view.describingTable])
         }
       />
 
-      {guessing ? (
+      {teammate ? (
+        // The card stays with the describer (canvas: Sesli Tabu: takım arkadaşı).
+        <View
+          testID="tabu-with-describer"
+          className="items-center justify-center gap-2"
+          style={{
+            minHeight: COVER_HEIGHT,
+            padding: SPACING[6],
+            borderRadius: shape.radius.lg,
+            borderWidth: shape.stroke.control,
+            borderStyle: 'dashed',
+            borderColor: colors.muted,
+          }}
+        >
+          <Ionicons name="lock-closed-outline" size={ICON.xl} color={colors.muted} />
+          <Text variant="title" align="center">
+            {tr.games.cardWithDescriber}
+          </Text>
+          <Text variant="fine" tone="text" align="center">
+            {server.mode === 'cooperative'
+              ? tr.games.coopCardHidden
+              : tr.games.cardWithDescriberHint}
+          </Text>
+        </View>
+      ) : guessing ? (
         <Text variant="fine" align="center" testID="tabu-guessing">
           {tr.games.coopCardHidden}
         </Text>

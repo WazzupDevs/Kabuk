@@ -34,7 +34,7 @@ appId: app.kabuk.mobile
 - takeScreenshot: 23-reveal-mutual
 - tapOn: Arkadaş ekle
 - extendedWaitUntil:
-    visible: Senin tarafın tamam. Diğer masa da basarsa arkadaş olursunuz.
+    visible: Sen bastın. O da basarsa arkadaş olursunuz.
     timeout: 10000
 - takeScreenshot: 24-add-friend-done
 - runScript:
