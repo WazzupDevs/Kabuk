@@ -5,8 +5,9 @@ import { appendFileSync } from 'node:fs';
 import { createClient, FunctionsHttpError, type SupabaseClient } from '@supabase/supabase-js';
 import postgres from 'postgres';
 
+import { callName } from '../functions/_shared/pure/apiRetry.ts';
 import type { Database } from '../functions/_shared/pure/database.ts';
-import { type Refusal, refusalOf } from './refusal.ts';
+import { sendsAgain, type ServeFault, serveFaultOf } from './refusal.ts';
 
 function readStatus(): Record<string, string> {
   const out = execSync('pnpm -s supabase status -o env', { encoding: 'utf8' });
@@ -68,65 +69,67 @@ export type Client = SupabaseClient<Database>;
 // with its function and action instead of as an unnamed test timeout.
 export const INVOKE_TIMEOUT_MS = 10_000;
 
-// A call the local serve refused (refusal.ts) is sent again once, with a warning naming it. In CI,
-// INVOKE_RETRY_LOG collects them for the job summary (.github/workflows/ci.yml → "Retries"), so a
-// call that comes back often shows.
-function noteRetry(call: string, refusal: Refusal): void {
-  console.warn(`local serve refused ${call} (${refusal}): sending it again`);
+// Every answer of the local serve's retiring isolate (refusal.ts), with a warning naming the call
+// and whether it is sent again. In CI, INVOKE_RETRY_LOG collects them for the job summary
+// (.github/workflows/ci.yml → "Retries"), so a call that comes back often shows, and so does an
+// empty 503 that failed its test.
+function noteFault(call: string, fault: ServeFault, again: boolean): void {
+  console.warn(`local serve ${fault} on ${call}: ${again ? 'sending it again' : 'not sent again'}`);
   const log = process.env.INVOKE_RETRY_LOG;
-  if (log) appendFileSync(log, `${call} ${refusal}\n`);
+  if (log) appendFileSync(log, `${call} ${fault} ${again ? 'yes' : 'no'}\n`);
 }
 
 // Calls an Edge Function; errors come back as { status, body } instead of throwing. A 5xx is never
-// an expected answer, so it throws with the function, action and body to name the failure; so does
-// a refusal of the second attempt.
+// an expected answer, so it throws with the function, action and body to name the failure. A serve
+// fault (refusal.ts) is sent again once when sendsAgain says so; otherwise, and on the second
+// attempt, it throws too.
 export async function invoke(
   client: Client,
   fn: string,
   body: Record<string, unknown>,
   attempt = 1,
 ): Promise<{ status: number; body: unknown }> {
-  const call = `${fn}/${String(body.action)}`;
-  const again = attempt > 1 ? ' (sent twice)' : '';
+  const call = callName(fn, body);
+  const twice = attempt > 1 ? ' (sent twice)' : '';
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), INVOKE_TIMEOUT_MS);
-  let answer: { status: number; body: unknown } | Refusal;
+  let answer: { status: number; body: unknown } | { fault: ServeFault; failure: Error };
   try {
-    answer = await send(client, fn, body, controller.signal, again);
+    answer = await send(client, call, fn, body, controller.signal, twice);
   } catch (e) {
     if (!controller.signal.aborted) throw e;
-    if (attempt > 1) {
-      throw new Error(`${call} got no answer in ${INVOKE_TIMEOUT_MS} ms${again}`, { cause: e });
-    }
-    answer = 'no-answer';
+    answer = {
+      fault: 'no-answer',
+      failure: new Error(`${call} got no answer in ${INVOKE_TIMEOUT_MS} ms${twice}`, { cause: e }),
+    };
   } finally {
     clearTimeout(timer);
   }
-  if (typeof answer === 'string') {
-    noteRetry(call, answer);
-    return invoke(client, fn, body, 2);
-  }
-  return answer;
+  if (!('fault' in answer)) return answer;
+  const again = attempt === 1 && sendsAgain(answer.fault, call);
+  noteFault(call, answer.fault, again);
+  if (!again) throw answer.failure;
+  return invoke(client, fn, body, 2);
 }
 
 async function send(
   client: Client,
+  call: string,
   fn: string,
   body: Record<string, unknown>,
   signal: AbortSignal,
-  again: string,
-): Promise<{ status: number; body: unknown } | Refusal> {
+  twice: string,
+): Promise<{ status: number; body: unknown } | { fault: ServeFault; failure: Error }> {
   const { data, error } = await client.functions.invoke(fn, { body, signal });
   // A request aborted mid-way may come back as an error value rather than a throw.
   signal.throwIfAborted();
   if (error instanceof FunctionsHttpError) {
     const status = error.context.status as number;
     const text = await (error.context as Response).text();
-    const refusal = refusalOf(status, text);
-    if (refusal && !again) return refusal;
-    if (status >= 500) {
-      throw new Error(`${fn}/${String(body.action)} answered ${status}: ${text}${again}`);
-    }
+    const failure = new Error(`${call} answered ${status}: ${text}${twice}`);
+    const fault = serveFaultOf(status, text);
+    if (fault) return { fault, failure };
+    if (status >= 500) throw failure;
     return { status, body: JSON.parse(text) as unknown };
   }
   if (error) throw error;
