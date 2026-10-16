@@ -22,7 +22,7 @@ Kafede, nargile kafede ya da barda misin? Kabuk ile aynı mekandaki diğer masal
 - **Oda kur:** Tabu ya da Sohbet kartları. İster yalnızca kendi masanla oyna, ister odanı mekana aç.
 - **Katıl:** Mekandaki açık odaları gör, katılmak iste. Masalar birbirini yalnızca takma ad ve kişi sayısıyla görür.
 - **Birlikte oyna:** İki masalı Tabu'da bir masa anlatır, diğeri tahmin eder; ortak skor, rekabet yok.
-- **İstersen tanış:** Oyun sonunda iki masa da "Evet" derse ekranlarınızda aynı renk ve işaret belirir. Kimin ne dediği hiçbir zaman gösterilmez.
+- **İstersen tanış:** Oyun sonunda karşı taraftan biriyle ikiniz de "Evet" derseniz ikinizin ekranında aynı renk ve işaret belirir. Kimin ne dediği hiçbir zaman gösterilmez.
 
 Güvenlik: küfür filtresi, şikayet ve engelleme, uygulama içinden hesap silme. 18 yaş ve üzeri içindir.
 
