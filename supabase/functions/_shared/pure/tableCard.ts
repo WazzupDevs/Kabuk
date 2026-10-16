@@ -42,3 +42,12 @@ export function lobbyActions(state: TableState): { join: boolean; member: boolea
 export function gameTag(value: unknown): Concept | null {
   return (CONCEPTS as readonly unknown[]).includes(value) ? (value as Concept) : null;
 }
+
+// A "Kabul" the server can no longer carry out (docs/SPEC_V3.md §23.C): the requester's table
+// merged with another table while its request waited (room_not_available), or the request ended.
+// The leader's card then says the table is no longer available instead of an error, and closes.
+export function requestGone(code: string): boolean {
+  return (
+    code === 'room_not_available' || code === 'request_expired' || code === 'request_not_found'
+  );
+}

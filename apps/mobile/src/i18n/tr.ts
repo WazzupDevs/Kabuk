@@ -627,6 +627,9 @@ export const tr = {
     accept: 'Kabul',
     decline: 'Geç',
     declineNote: 'Geçersen karşı masa yalnızca "Masa şu an müsait değil" görür.',
+    // The leader's "Kabul" came too late: the requester's table merged with another meanwhile
+    // (room_not_available) or the request ended (docs/SPEC_V3.md §23.C).
+    requestGone: 'Bu masa artık müsait değil.',
     viewPeople: 'Masadakileri gör',
     secondsLeft: (s: number) => `${s} sn`,
   },

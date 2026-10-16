@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { gameTag, lobbyActions, tableState } from './tableCard.ts';
+import { gameTag, lobbyActions, requestGone, tableState } from './tableCard.ts';
 
 const NOW = Date.parse('2026-10-16T20:00:00Z');
 const room = (status: string, visibility = 'open', revealEndsAt: string | null = null) => ({
@@ -58,5 +58,19 @@ describe('gameTag', () => {
     expect(gameTag(null)).toBeNull();
     expect(gameTag('')).toBeNull();
     expect(gameTag('poker')).toBeNull();
+  });
+});
+
+describe('requestGone', () => {
+  it('is the requester table that merged meanwhile, or a request that ended', () => {
+    expect(requestGone('room_not_available')).toBe(true);
+    expect(requestGone('request_expired')).toBe(true);
+    expect(requestGone('request_not_found')).toBe(true);
+  });
+
+  it('leaves every other error to the card as an error', () => {
+    for (const code of ['internal', 'rate_limited', 'not_leader', 'already_in_room']) {
+      expect(requestGone(code)).toBe(false);
+    }
   });
 });
