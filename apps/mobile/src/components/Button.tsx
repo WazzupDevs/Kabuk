@@ -3,6 +3,7 @@ import { type ComponentProps, useEffect, useState } from 'react';
 import { Animated, Pressable, View, type ViewStyle } from 'react-native';
 
 import { useReduceMotion } from '@/lib/useReduceMotion';
+import { buttonFill, type ButtonVariant, isTextOnly } from '@/theme/buttonFill';
 import { EASE_OUT } from '@/theme/markMotion';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, OPACITY, SPACING, TOUCH } from '@/theme/tokens';
@@ -11,13 +12,9 @@ import { Loader } from './Loader';
 import { usePressScale } from './motion';
 import { Text } from './Text';
 
-// Roles (the skall design system → Button): `primary` the one main action per screen, accent
-// filled; `secondary` and `neutral` a raised capsule with an outline (every other action);
-// `positive` green ("Doğru", "Arkadaşlar"); `danger` red ("Masayı bitir"). `ghost` (an accent link)
-// and `dangerText` ("Hesabımı sil") are text only. No outlined, hard-shadowed "3D" face: pressed,
-// a button shrinks to 97 %.
-export type ButtonVariant =
-  'primary' | 'secondary' | 'positive' | 'danger' | 'neutral' | 'ghost' | 'dangerText';
+// The skall design system → Button: the roles and their fills are in theme/buttonFill.ts. No
+// outlined, hard-shadowed "3D" face: pressed, a button shrinks to 97 %. Disabled, it takes a
+// neutral fill instead of fading.
 export type IconName = ComponentProps<typeof Ionicons>['name'];
 
 type Props = {
@@ -125,23 +122,17 @@ export function Button({
   const busy = useBusy(loading);
   const inactive = disabled || loading;
 
-  const fills: Record<ButtonVariant, { bg: string; fg: string }> = {
-    primary: { bg: colors.accent, fg: colors.onAccent },
-    secondary: { bg: colors.raised, fg: colors.text },
-    positive: { bg: colors.success, fg: colors.onSuccess },
-    danger: { bg: colors.danger, fg: colors.onDanger },
-    neutral: { bg: colors.raised, fg: colors.text },
-    ghost: { bg: 'transparent', fg: colors.accent },
-    dangerText: { bg: 'transparent', fg: colors.danger },
-  };
-  const textOnly = variant === 'ghost' || variant === 'dangerText';
-  let { bg, fg } = fills[variant];
+  const textOnly = isTextOnly(variant);
+  const fill = buttonFill(variant, !!disabled);
+  let bg = fill.bg ? colors[fill.bg] : 'transparent';
+  let fg = colors[fill.fg];
   // The raised capsules carry an outline: they sit on the canvas, on cards and on fills alike.
+  // Disabled, every filled role is the same neutral fill, without one.
   let edge: ViewStyle | null =
-    variant === 'secondary' || variant === 'neutral'
+    !disabled && (variant === 'secondary' || variant === 'neutral')
       ? { borderWidth: shape.stroke.hairline * 1.5, borderColor: colors.border }
       : null;
-  if (tint) {
+  if (tint && !disabled) {
     bg = tint.outline ? 'transparent' : tint.background;
     fg = tint.outline ? tint.background : tint.foreground;
     edge = tint.outline
@@ -191,7 +182,6 @@ export function Button({
           style={[
             style,
             edge,
-            disabled ? { opacity: OPACITY.disabled } : null,
             textOnly && pressed ? { opacity: OPACITY.pressed } : null,
             pressScale(pressed && !inactive),
           ]}
