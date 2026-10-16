@@ -4,7 +4,7 @@
 >
 > **v2 taslağı:** Profil, arkadaşlık, DM, oyun geçmişi ve hata raporları (`docs/SPEC_V2.md`) eklendi. v2 yayınından önce hukuki kontrolden geçmeli; yayınla birlikte uygulama içi onay sürümü artırılır.
 >
-> **v3 taslağı (Kabuk v1, sürüm `draft-1`):** Doğum tarihi ve zorunlu görünen ad, 18 yaş altında hesabın silinmesi, kampüs noktası, mekan sohbet odası ve yerli SMS sağlayıcısı (`docs/SPEC_V3.md` §3.3) eklendi.
+> **v3 taslağı ({{APP_NAME}} v1, sürüm `draft-1`):** Doğum tarihi ve zorunlu görünen ad, 18 yaş altında hesabın silinmesi, kampüs noktası, mekan sohbet odası ve yerli SMS sağlayıcısı (`docs/SPEC_V3.md` §3.3) eklendi.
 >
 > **Faz 2 taslağı (takımlar, `docs/SPEC_V3.md` §22):** Odada her telefon kendi takma adıyla görünür; profil oda sürerken odadaki herkese görünür; tanışma, oyun geçmişi ve engelleme kişi başınadır. Onay sürümü pilottan önce hukuki kontrolle birlikte artırılır.
 

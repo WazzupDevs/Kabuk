@@ -1,9 +1,9 @@
 {
   "expo": {
-    "name": "Kabuk",
+    "name": "skall",
     "slug": "masa",
     "scheme": "masa",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "platforms": ["android", "ios"],
@@ -28,12 +28,12 @@
         "expo-splash-screen",
         {
           "image": "./assets/icon/splash.png",
-          "imageWidth": 180,
+          "imageWidth": 288,
           "resizeMode": "contain",
-          "backgroundColor": "#FFF7E6",
+          "backgroundColor": "#14112B",
           "dark": {
-            "image": "./assets/icon/splash-dark.png",
-            "backgroundColor": "#140E26"
+            "image": "./assets/icon/splash.png",
+            "backgroundColor": "#14112B"
           }
         }
       ],
@@ -41,7 +41,7 @@
         "expo-notifications",
         {
           "icon": "./assets/icon/notification.png",
-          "color": "#5B2EEA"
+          "color": "#7B5CFF"
         }
       ],
       "expo-dev-client",

@@ -35,7 +35,7 @@ appId: app.kabuk.mobile
     visible:
       id: under-age
     timeout: 20000
-- assertVisible: Kabuk 18 yaş ve üzeri içindir
+- assertVisible: skall 18 yaş ve üzeri içindir
 - takeScreenshot: 03a-under-age
 # The account was deleted; the same number signs up again.
 - tapOn: Kapat
