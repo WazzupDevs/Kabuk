@@ -2,7 +2,8 @@
 // rounded square) on a light and a dark wallpaper, plus the Android 13 themed icon, the iOS icon,
 // the splash image and the notification icon. Adaptive icons show the middle 72 of their 108 dp,
 // so the layers are drawn 1.5 × the mask and centred.
-import type { IconTokens } from './snail.ts';
+import { APP_NAME } from '../../supabase/functions/_shared/pure/brand.ts';
+import { COLORS, SPLASH } from './mark.ts';
 
 export const PREVIEW_SIZES = [48, 72, 96, 192] as const;
 export const MASKS = ['circle', 'squircle', 'rounded'] as const;
@@ -33,10 +34,10 @@ function wallpaper(dir: string, tone: 'light' | 'dark', themed: boolean): string
   return `<section class="wall ${tone}"><h2>${tone === 'light' ? 'Açık' : 'Koyu'} duvar kağıdı${themed ? ' · Android 13 temalı' : ''}</h2>${rows}</section>`;
 }
 
-export function previewHtml(dir: string, tokens: IconTokens): string {
+export function previewHtml(dir: string): string {
   return `<!doctype html>
 <html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Kabuk ikon önizlemesi</title>
+<title>${APP_NAME} ikon önizlemesi</title>
 <style>
 body { margin: 0; font: 14px system-ui, sans-serif; background: #f4f4f5; color: #111; }
 main { padding: 16px; display: grid; gap: 16px; }
@@ -56,9 +57,9 @@ h2 { margin: 0 0 12px; font-size: 15px; }
 .themed-fg { background: #1f3a78; -webkit-mask-size: 100% 100%; mask-size: 100% 100%; }
 .misc { display: flex; gap: 24px; align-items: flex-end; flex-wrap: wrap; }
 .misc figure { margin: 0; text-align: center; }
-.splash { width: 180px; height: 320px; border-radius: 16px; display: grid; place-items: center; background: ${tokens.cream}; }
-.splash.dark { background: ${tokens.night}; }
-.splash img { width: 110px; }
+/* A 360 dp wide phone at half size: the 288 dp splash canvas is 144 px. */
+.splash { width: 180px; height: 390px; border-radius: 16px; display: grid; place-items: center; background: ${COLORS.night}; }
+.splash img { width: ${SPLASH / 2}px; }
 .status { background: #111; padding: 8px 12px; border-radius: 8px; display: flex; gap: 8px; align-items: center; }
 </style></head><body><main>
 ${wallpaper(dir, 'light', false)}
@@ -68,8 +69,7 @@ ${wallpaper(dir, 'dark', true)}
 <section class="wall light"><h2>Mağaza ve diğerleri</h2><div class="misc">
 <figure><img src="${dir}/icon.png" width="120" style="border-radius:22%"><figcaption>iOS 1024 (köşesiz; maske iOS'tan)</figcaption></figure>
 <figure><img src="${dir}/play-512.png" width="120" style="border-radius:20%"><figcaption>Play 512</figcaption></figure>
-<figure><div class="splash"><img src="${dir}/splash.png"></div><figcaption>Açılış ekranı</figcaption></figure>
-<figure><div class="splash dark"><img src="${dir}/splash-dark.png"></div><figcaption>Açılış ekranı · koyu</figcaption></figure>
+<figure><div class="splash"><img src="${dir}/splash.png"></div><figcaption>Açılış ekranı (açık ve koyu aynı)</figcaption></figure>
 <figure><div class="status"><img src="${dir}/notification.png" width="24"><img src="${dir}/notification.png" width="48"></div><figcaption>Bildirim (24 ve 48 px)</figcaption></figure>
 </div></section>
 </main></body></html>

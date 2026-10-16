@@ -10,7 +10,7 @@ import {
 
 describe('sms', () => {
   it('sends only the app name and the code, in ASCII', () => {
-    expect(otpMessage('123456')).toBe('Kabuk kodun: 123456. Kimseyle paylasma.');
+    expect(otpMessage('123456')).toBe('skall kodun: 123456. Kimseyle paylasma.');
     expect(toSmsAscii('Çiğ şöİü')).toBe('Cig soIu');
     expect(otpMessage('123456')).toMatch(/^[\x20-\x7e]+$/);
   });
@@ -43,7 +43,7 @@ describe('netgsm', () => {
     expect(body).toContain('<usercode>u&amp;1</usercode>');
     expect(body).toContain('<password>p&lt;2&gt;</password>');
     expect(body).toContain('<msgheader>KABUK</msgheader>');
-    expect(body).toContain('<msg>Kabuk kodun: 123456. Kimseyle paylasma.</msg>');
+    expect(body).toContain('<msg>skall kodun: 123456. Kimseyle paylasma.</msg>');
   });
 
   it('maps answers to sent, retry and failed', () => {
