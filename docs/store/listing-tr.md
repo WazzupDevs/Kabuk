@@ -49,6 +49,8 @@ Birincil: Sosyal ağ (iOS) / Sosyal (Android). İkincil: Oyunlar → Kelime.
 > **v2 taslağı.** Profil, arkadaşlık, DM ve hata raporları eklendi (`docs/SPEC_V2.md`). Play Console'daki form bu tabloya göre doldurulur (adımlar `docs/store/PLAY_CHECKLIST.md`). v2 yayınından önce hukuki kontrolden geçmeli. Başka kullanıcılara kullanıcının kendi isteğiyle gösterilen veriler (profil, DM) Play tanımında "paylaşım" sayılmaz; yine de formda "Toplanıyor" olarak işaretlenir.
 >
 > **v3 (Kabuk v1):** Görünen ad ve doğum tarihi kayıtta zorunlu; mekan sohbet odası mesajları (24 saat). Form OTA'dan önce güncellenir (`docs/SPEC_V3.md` §3.3).
+>
+> **Faz 3 adım 23.2:** Cinsiyet kayıtta zorunlu (`docs/SPEC_V3.md` §23.D, §23.L). Form ve gizlilik politikası 23.2 OTA'sından önce güncellenir (`docs/store/PLAY_CHECKLIST.md` → OTA sınırı).
 
 | Veri                                                                  | Toplanıyor                     | Paylaşılıyor | Amaç                                      | Kimliğe bağlı            |
 | --------------------------------------------------------------------- | ------------------------------ | ------------ | ----------------------------------------- | ------------------------ |
@@ -59,13 +61,14 @@ Birincil: Sosyal ağ (iOS) / Sosyal (Android). İkincil: Oyunlar → Kelime.
 | Cihaz kimliği (push token)                                            | Evet                           | Hayır        | Uygulama işlevi                           | Evet                     |
 | Ad (görünen ad; zorunlu)                                              | Evet                           | Hayır        | Uygulama işlevi                           | Evet                     |
 | Kişisel bilgiler → Diğer (doğum tarihi; zorunlu, kimseye gösterilmez) | Evet                           | Hayır        | Uygulama işlevi, güvenlik (18 yaş sınırı) | Evet                     |
+| Kişisel bilgiler → Diğer (cinsiyet; zorunlu, kimseye gösterilmez)     | Evet                           | Hayır        | Uygulama işlevi                           | Evet                     |
 | Fotoğraflar (profil fotoğrafı; isteğe bağlı, konum ve EXIF silinir)   | Evet                           | Hayır        | Uygulama işlevi                           | Evet                     |
 | Diğer kullanıcı içeriği (biyografi)                                   | Evet                           | Hayır        | Uygulama işlevi                           | Evet                     |
 | Uygulama içi mesajlar (arkadaşlar arası DM)                           | Evet                           | Hayır        | Uygulama işlevi, güvenlik                 | Evet                     |
 | Diğer uygulama etkinlikleri (oyun geçmişi, arkadaşlık)                | Evet                           | Hayır        | Uygulama işlevi                           | Evet                     |
 | Kilitlenme günlükleri ve teşhis (Sentry)                              | Evet                           | Hayır        | Analitik (hata giderme)                   | Evet (kullanıcı kimliği) |
 
-- Zorunlu veriler: telefon numarası, görünen ad ve doğum tarihi. Fotoğraf, biyografi ve arkadaşlık isteğe bağlıdır.
+- Zorunlu veriler: telefon numarası, görünen ad, doğum tarihi ve cinsiyet. Fotoğraf, biyografi ve arkadaşlık isteğe bağlıdır.
 - 18 yaş altı beyanda hesap o anda silinir, hiçbir veri saklanmaz.
 - Veriler aktarımda şifrelenir. Kullanıcı verilerinin silinmesini isteyebilir (uygulama içi ve `https://wazzupdevs.github.io/Kabuk/hesap-silme.html`).
 - İzleme (tracking) yok; reklam yok.
