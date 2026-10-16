@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { View } from 'react-native';
@@ -12,9 +12,10 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { trackOnce } from '@/lib/analytics';
 import { revealApi } from '@/lib/api';
-import { supabase } from '@/lib/supabase';
 import { useNow } from '@/lib/useNow';
 import { REVEAL } from '@shared/reveal.ts';
+
+import { revealDecisionKey, useRevealDecision } from './useRevealDecision';
 
 type Props = { roomId: string; revealEndsAt: string; score: number | null };
 
@@ -27,22 +28,11 @@ export function RevealPrompt({ roomId, revealEndsAt, score }: Props) {
   const now = useNow(250);
   const secondsLeft = Math.max(0, Math.ceil((Date.parse(revealEndsAt) - now) / 1000));
 
-  const myAnswer = useQuery({
-    queryKey: ['revealDecision', roomId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('reveal_decisions')
-        .select('wants_meet')
-        .eq('room_id', roomId)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-  });
+  const myAnswer = useRevealDecision(roomId);
 
   const decide = useMutation({
     mutationFn: (wantsMeet: boolean) => revealApi.decide(roomId, wantsMeet),
-    onSettled: () => void queryClient.invalidateQueries({ queryKey: ['revealDecision', roomId] }),
+    onSettled: () => void queryClient.invalidateQueries({ queryKey: revealDecisionKey(roomId) }),
   });
 
   // Either table closes the window when the time is up; the server is idempotent.

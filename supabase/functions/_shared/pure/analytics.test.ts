@@ -68,7 +68,19 @@ describe('analytics events', () => {
       } as never),
     ).toEqual({ with_photo: true, with_bio: false });
     expect(analyticsProperties('check_in', { headcount: 4 })).toEqual({ headcount: 4 });
-    expect(analyticsProperties('join_requested', { as_member: true })).toEqual({ as_member: true });
+    expect(analyticsProperties('join_requested', { as_member: true, in_lobby: false })).toEqual({
+      as_member: true,
+      in_lobby: false,
+    });
+    // Faz 3 (step 23.1): the game tag of "Masanı lobiye aç", never the table.
+    expect(
+      analyticsProperties('room_created', {
+        intent: 'none',
+        profiled: false,
+        game_tag: 'tabu',
+        alias: 'Sakin Martı',
+      } as never),
+    ).toEqual({ intent: 'none', profiled: false, game_tag: 'tabu' });
     expect(
       analyticsProperties('check_in', { headcount: 2, venueId: 'v', lat: 41 } as never),
     ).toEqual({ headcount: 2 });

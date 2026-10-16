@@ -2,9 +2,9 @@ import { CONCEPTS, type Concept } from '@shared/rooms.ts';
 import { parseGameState } from '@shared/tabu.ts';
 import { roomSeat, type RoomSeat, sideHeadcount } from '@shared/teams.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Redirect, useLocalSearchParams } from 'expo-router';
+import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, useWindowDimensions, View } from 'react-native';
+import { useWindowDimensions, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
@@ -16,6 +16,7 @@ import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
+import { Loader } from '@/components/Loader';
 import { RoomComposer, RoomMessages, useRoomChat } from '@/features/chat/ChatPanel';
 import { useRoomSafety } from '@/features/chat/RoomSafety';
 import { useOtherTableOnline } from '@/features/chat/usePresence';
@@ -29,7 +30,6 @@ import { TimeUpOverlay } from '@/features/games/TimeUpOverlay';
 import { useRoomMemberProfiles } from '@/features/profile/queries';
 import { Reveal } from '@/features/reveal/Reveal';
 import { RevealPrompt } from '@/features/reveal/RevealPrompt';
-import { IncomingRequest } from '@/features/rooms/IncomingRequest';
 import { type RoomPhone, roomKeys, useRoom, useRoomPhones } from '@/features/rooms/queries';
 import { PeopleSheet, PickPersonSheet } from '@/features/rooms/RoomPeople';
 import { errorMessage } from '@/i18n/errors';
@@ -41,7 +41,6 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { NARROW_SCREEN, SPACING } from '@/theme/tokens';
 
 export default function RoomScreen() {
-  const { colors } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const queryClient = useQueryClient();
   const table = useActiveTable();
@@ -114,7 +113,7 @@ export default function RoomScreen() {
     setLastSeat({ leader: seat.leader, alias: myLeaderAlias });
   }
 
-  // "Odayı bitir": a leader's (docs/SPEC_V3.md §22.D).
+  // "Masayı bitir": a leader's (docs/SPEC_V3.md §22.D).
   const exit = useMutation({
     mutationFn: roomsApi.end,
     onSettled: () => {
@@ -122,7 +121,7 @@ export default function RoomScreen() {
       void queryClient.invalidateQueries({ queryKey: roomKeys.room(id) });
     },
   });
-  // "Odadan çık": a member leaves, a leader hands its side to the oldest member.
+  // "Masadan çık": a member leaves, a leader hands its side to the oldest member.
   const leave = useMutation({
     mutationFn: () => roomsApi.leave(id),
     onSuccess: () => track('team_left', {}),
@@ -136,7 +135,9 @@ export default function RoomScreen() {
   if (room.isPending || table.isPending) {
     return (
       <Screen>
-        <ActivityIndicator className="mt-16" color={colors.muted} />
+        <View className="mt-16 items-center">
+          <Loader />
+        </View>
       </Screen>
     );
   }
@@ -155,7 +156,9 @@ export default function RoomScreen() {
     if (!r && room.isFetching) {
       return (
         <Screen>
-          <ActivityIndicator className="mt-16" color={colors.muted} />
+          <View className="mt-16 items-center">
+            <Loader />
+          </View>
         </Screen>
       );
     }
@@ -165,7 +168,9 @@ export default function RoomScreen() {
     // A member is known once room_phones is read; a phone not in it goes back to the venue.
     return phones.isPending ? (
       <Screen>
-        <ActivityIndicator className="mt-16" color={colors.muted} />
+        <View className="mt-16 items-center">
+          <Loader />
+        </View>
       </Screen>
     ) : (
       <Redirect href="/venue" />
@@ -203,11 +208,14 @@ export default function RoomScreen() {
   const title = r.guest_alias && otherAlias ? tr.rooms.withOther(otherAlias) : r.owner_alias;
   const myAlias = table.data?.alias ?? r.owner_alias;
   const roomPhones = phones.data ?? [];
-  // The member a leader's "Odadan çık" hands the side to: the oldest one (docs/SPEC_V3.md §22.D).
+  // The member a leader's "Masadan çık" hands the side to: the oldest one (docs/SPEC_V3.md §22.D).
   const nextLeader =
     roomPhones
       .filter((p) => p.side === side && !p.leader)
       .sort((a, b) => a.joinedAt.localeCompare(b.joinedAt))[0]?.alias ?? null;
+  // The venue is the home screen (docs/SPEC_V3.md §23.C): the back arrow returns there, also when the
+  // room was opened from a notification.
+  const backToVenue = () => (router.canGoBack() ? router.back() : router.replace('/venue'));
   const topBar = (subtitle: string, onClose?: () => void) => (
     <RoomTopBar
       roomId={r.id}
@@ -223,7 +231,8 @@ export default function RoomScreen() {
       onLeave={() => leave.mutate()}
       leaving={leave.isPending}
       leaveError={leave.error}
-      onClose={onClose}
+      waiting={r.status === 'waiting' && r.visibility === 'open'}
+      onBack={onClose ?? backToVenue}
     />
   );
   const gameArea = (
@@ -346,7 +355,6 @@ export default function RoomScreen() {
           </Text>
         ) : null}
         {gameArea}
-        {seat.leader ? <IncomingRequest roomId={r.id} leaderSessionId={sessionId} /> : null}
         <FirstGameIntro
           visible={concept === 'tabu' && hasOtherTable && intro.seen === false}
           onClose={intro.markSeen}
@@ -389,15 +397,15 @@ export default function RoomScreen() {
       {hasOtherTable ? <OtherTableStatus roomId={r.id} isOwner={isOwner} /> : null}
 
       <RoomMessages chat={chat} sessionId={sessionId} profiles={profiles} />
-
-      {seat.leader ? <IncomingRequest roomId={r.id} leaderSessionId={sessionId} /> : null}
     </ChatScreen>
   );
 }
 
-// The room's top bar (canvas: Aşama 4 · Yenileme; Faz 2 · 22.5): the faces, the name with the
-// other side's phones under it, the red button (a leader's "Odayı bitir", a member's "Odadan çık")
-// and the menu. The name opens "Odadakiler". Only one of the bar's sheets is open at a time.
+// The room's top bar (canvas: Aşama 4 · Yenileme; Faz 2 · 22.5; Faz 3 · 23.1): the back arrow, the
+// faces, the name with the other side's phones under it, the red button (a leader's "Masayı
+// bitir", in the lobby's waiting room "Lobiden çek"; a member's "Masadan çık") and the menu. The
+// name opens "Masadakiler". Only one of the bar's sheets is open at a time. On a narrow screen the
+// faces go and the red button is an icon, so the name fits its two lines.
 function RoomTopBar({
   roomId,
   title,
@@ -412,7 +420,8 @@ function RoomTopBar({
   onLeave,
   leaving,
   leaveError,
-  onClose,
+  waiting,
+  onBack,
 }: {
   roomId: string;
   title: string;
@@ -421,21 +430,23 @@ function RoomTopBar({
   me: RoomSeat & { sessionId: string };
   phones: readonly RoomPhone[];
   profiles: ReadonlyMap<string, string> | undefined;
-  // The member a leader's "Odadan çık" hands the side to; null: no one else on the side.
+  // The member a leader's "Masadan çık" hands the side to; null: no one else on the side.
   nextLeader: string | null;
   onEnd: () => void;
   ending: boolean;
   onLeave: () => void;
   leaving: boolean;
   leaveError: unknown;
-  // In the game's chat panel: the back arrow closes the panel.
-  onClose?: () => void;
+  // The table's waiting room in the lobby (docs/SPEC_V3.md §23.C): ending it is "Lobiden çek".
+  waiting: boolean;
+  // The back arrow: back to the venue, the home screen; in the game's chat panel it closes the panel.
+  onBack: () => void;
 }) {
   const [sheet, setSheet] = useState<'menu' | 'people' | 'block' | 'report' | 'leave' | null>(null);
   const safety = useRoomSafety(roomId);
   const close = () => setSheet(null);
   const hasOthers = phones.some((p) => p.sessionId !== me.sessionId);
-  // A leader alone on its side has no "Odadan çık": leaving would end the room, as "Odayı bitir".
+  // A leader alone on its side has no "Masadan çık": leaving would end the room, as "Masayı bitir".
   const canLeave = !me.leader || nextLeader !== null;
   // On a narrow screen the red button is an icon: the label left the names a letter.
   const { width, fontScale } = useWindowDimensions();
@@ -443,11 +454,11 @@ function RoomTopBar({
   return (
     <>
       <ChatTopBar
-        onBack={onClose}
+        onBack={onBack}
         title={title}
         titleLines={2}
         subtitle={subtitle}
-        leading={<TableFaces aliases={aliases} />}
+        leading={narrow ? undefined : <TableFaces aliases={aliases} />}
         onPressTitle={phones.length > 0 ? () => setSheet('people') : undefined}
         titleAccessibilityLabel={tr.rooms.viewPeople}
         actions={
@@ -457,7 +468,7 @@ function RoomTopBar({
                 variant="danger"
                 size="sm"
                 testID="end-room"
-                label={tr.rooms.end}
+                label={waiting ? tr.venue.withdraw : tr.rooms.end}
                 icon={narrow ? 'exit-outline' : undefined}
                 iconOnly={narrow}
                 onPress={onEnd}

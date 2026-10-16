@@ -84,7 +84,7 @@ function ButtonsBlock() {
       <View className="gap-3" testID="preview-buttons">
         <View className="flex-row gap-3">
           <View className="flex-1">
-            <Button tight label="Oda kur" onPress={() => undefined} />
+            <Button tight label={tr.rooms.create} onPress={() => undefined} />
           </View>
           <View className="flex-1">
             <Button tight variant="secondary" label="Masanla oyna" onPress={() => undefined} />
@@ -95,7 +95,7 @@ function ButtonsBlock() {
             <Button tight variant="positive" label="Arkadaşlar" onPress={() => undefined} />
           </View>
           <View className="flex-1">
-            <Button tight variant="danger" label="Odayı bitir" onPress={() => undefined} />
+            <Button tight variant="danger" label={tr.rooms.end} onPress={() => undefined} />
           </View>
         </View>
         <View className="flex-row gap-3">
@@ -103,7 +103,7 @@ function ButtonsBlock() {
             <Button tight variant="neutral" label="Vazgeç" onPress={() => undefined} />
           </View>
           <View className="flex-1">
-            <Button tight label="Oda kur" disabled onPress={() => undefined} />
+            <Button tight label={tr.rooms.create} disabled onPress={() => undefined} />
           </View>
         </View>
         <View className="flex-row flex-wrap items-center gap-3">
@@ -115,7 +115,7 @@ function ButtonsBlock() {
             variant="danger"
             icon="exit-outline"
             iconOnly
-            label="Odayı bitir"
+            label={tr.rooms.end}
             onPress={() => undefined}
           />
         </View>

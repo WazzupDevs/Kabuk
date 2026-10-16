@@ -1,6 +1,8 @@
 import { JOIN_REQUEST_TTL_SECONDS } from '@shared/rooms.ts';
+import { requestGone } from '@shared/tableCard.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
+import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 
 import { Button } from '@/components/Button';
@@ -10,45 +12,111 @@ import { Text } from '@/components/Text';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
-import { roomsApi } from '@/lib/api';
+import { ApiError, roomsApi } from '@/lib/api';
 import { useNow } from '@/lib/useNow';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON } from '@/theme/tokens';
+import { useActiveTable } from '@/features/checkin/useActiveTable';
+import { haptic } from '@/lib/haptics';
 
 import { BigAlias } from './BigAlias';
 import { ProfiledTag } from './ProfiledTag';
-import { roomKeys, useIncomingRequests } from './queries';
+import { roomKeys, useCurrentRoom, useIncomingRequests } from './queries';
 
 // `leaderSessionId`: this phone, when it leads a side; null otherwise (no requests to answer).
 type Props = { roomId: string; leaderSessionId: string | null };
 
-// A leader's 60 second window: Kabul / Reddet (MVP_SPEC §4.4, screen 4). "Bu masadayım" shows the
-// requester's alias as large as the requester's own waiting card (docs/SPEC_V3.md §22.C; canvas:
-// Faz 2 · 22.5 → Lider: istek kartı).
+// The table's request card wherever the phone is in the app (docs/SPEC_V3.md §23.C): the venue is
+// the home screen now, so a leader is no longer on the room screen when a request comes; whatever
+// tab is open, the 60 seconds are not missed. Mounted once, in the app's layout.
+export function IncomingRequestHost() {
+  const table = useActiveTable();
+  const sessionId = table.data?.id;
+  const room = useCurrentRoom(sessionId).data;
+  const leads =
+    !!room &&
+    !!sessionId &&
+    (room.status === 'waiting' || room.status === 'active') &&
+    (room.owner_session_id === sessionId || room.guest_session_id === sessionId);
+  return room && leads ? (
+    <IncomingRequest roomId={room.id} leaderSessionId={sessionId ?? null} />
+  ) : null;
+}
+
+// A leader's 60 second window: Kabul / Geç (MVP_SPEC §4.4, screen 4; docs/SPEC_V3.md §23.E).
+// "Bu masadayım" shows the requester's alias as large as the requester's own waiting card
+// (docs/SPEC_V3.md §22.C; canvas: Faz 2 · 22.5 → Lider: istek kartı). A "Kabul" that comes too late
+// (the requester's table merged with another meanwhile, §23.C) says "Bu masa artık müsait değil."
+// in place of the request, with only "Kapat"; the request is not shown again on this phone (the
+// requester sees "Masa şu an müsait değil" when its 60 seconds end, as after "Geç": rule 5).
 export function IncomingRequest({ roomId, leaderSessionId }: Props) {
   const { colors } = useTheme();
   const queryClient = useQueryClient();
   const requests = useIncomingRequests(roomId, leaderSessionId);
   const now = useNow(1000);
-  const request = requests.data?.find((r) => Date.parse(r.expires_at) > now);
+  // Requests whose "Kabul" came too late, and the one whose card says so now.
+  const [closed, setClosed] = useState<ReadonlySet<string>>(new Set());
+  const [gone, setGone] = useState<string | null>(null);
+  const request = requests.data?.find(
+    (r) => (Date.parse(r.expires_at) > now || r.id === gone) && !closed.has(r.id),
+  );
 
   const respond = useMutation({
     mutationFn: ({ id, accept }: { id: string; accept: boolean; member: boolean }) =>
       roomsApi.respond(id, accept),
     onSuccess: (_data, { accept, member }) => {
+      if (accept) haptic('requestAccepted');
       // A second side came; a member joining a side does not make a two-table room.
       if (accept && !member) track('room_two_tables', {});
+    },
+    onError: (err, { id }) => {
+      if (err instanceof ApiError && requestGone(err.code)) setGone(id);
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: roomKeys.incoming(roomId) });
       void queryClient.invalidateQueries({ queryKey: roomKeys.room(roomId) });
+      // The table card ("Lobide açık" → "Birleşti") and the lobby.
+      void queryClient.invalidateQueries({ queryKey: roomKeys.current });
     },
   });
+
+  // A request coming in is felt once.
+  const requestId = request?.id;
+  const felt = useRef<string | null>(null);
+  useEffect(() => {
+    if (!requestId || felt.current === requestId) return;
+    felt.current = requestId;
+    haptic('incomingRequest');
+  }, [requestId]);
 
   if (!request) return null;
   const seconds = Math.max(0, Math.ceil((Date.parse(request.expires_at) - now) / 1000));
 
   const member = request.as_member;
+
+  if (request.id === gone) {
+    return (
+      <Sheet
+        visible
+        centered
+        title={member ? tr.rooms.incomingMemberTitle : tr.rooms.incomingTitle}
+        icon="people-outline"
+      >
+        <Text variant="bodyStrong" align="center" testID="request-gone">
+          {tr.rooms.requestGone}
+        </Text>
+        <Button
+          variant="neutral"
+          label={tr.common.close}
+          onPress={() => {
+            setClosed((ids) => new Set([...ids, request.id]));
+            setGone(null);
+            respond.reset();
+          }}
+        />
+      </Sheet>
+    );
+  }
 
   return (
     <Sheet
