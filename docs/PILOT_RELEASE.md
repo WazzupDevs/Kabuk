@@ -89,8 +89,8 @@ Repo kökü (bağlı proje: üretim):
 
 ```
 pnpm supabase migration list
-pnpm supabase db push --include-seed --dry-run
-pnpm supabase db push --include-seed
+pnpm supabase db push --include-seed --skip-vault --dry-run
+pnpm supabase db push --include-seed --skip-vault
 pnpm functions:deploy
 pnpm supabase functions list
 pnpm supabase migration list
