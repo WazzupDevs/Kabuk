@@ -1,0 +1,14 @@
+# LF in the repository and in every checkout, Windows included. The Supabase CLI records a seed
+# file's hash from its bytes (supabase_migrations.seed_files): a CRLF checkout on Windows made the
+# hosted project record another hash than CI's LF copy, and deploy-dev stopped on "hash update".
+# After this file arrives, a Windows copy is turned to LF once: CLAUDE.md → "Windows'ta satır
+# sonları".
+* text=auto eol=lf
+
+# Never converted.
+*.png binary
+*.jpg binary
+*.ttf binary
+*.otf binary
+*.apk binary
+*.aab binary

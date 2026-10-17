@@ -128,8 +128,10 @@ jobs:
         run: |
           pnpm supabase db push --include-seed --skip-vault --dry-run 2>&1 | tee "$RUNNER_TEMP/db-push.txt"
           # A seed file changed in place would only get its hash updated, not run (CLAUDE.md → pnpm seed).
+          # The same shows when the project recorded the file from a CRLF copy (a Windows checkout
+          # before .gitattributes): the CLI hashes the bytes.
           if grep -q "hash update" "$RUNNER_TEMP/db-push.txt"; then
-            echo "::error::Seed dosyası elle değişmiş (hash update): pnpm seed ile yeniden üret."
+            echo "::error::Seed dosyası projedeki kayıttan farklı (hash update). Elle değiştiyse pnpm seed ile yeniden üret. Windows'tan gönderildiyse CRLF satır sonları olabilir: CLAUDE.md → \"Windows'ta satır sonları\"."
             exit 1
           fi
           if [ "$DRY_RUN" = true ]; then

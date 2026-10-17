@@ -98,7 +98,7 @@ pnpm supabase functions list
 pnpm supabase migration list
 ```
 
-- `--dry-run`: seed satırında `supabase/seeds/content-<id>.sql` görünmeli. `(hash update)` yazıyorsa seed çalışmaz: dosya elle değiştirilmiştir, `pnpm seed` ile yeniden üretip PR'la birleştir.
+- `--dry-run`: seed satırında `supabase/seeds/content-<id>.sql` görünmeli. `(hash update)` yazıyorsa seed çalışmaz: ya dosya elle değiştirilmiştir (`pnpm seed` ile yeniden üretip PR'la birleştir) ya da kopya CRLF'dir (CLAUDE.md → "Windows'ta satır sonları"; ilk yayından önce bir kez).
 - `functions:deploy`: `config.toml`'daki bütün fonksiyonları yayınlar; sonda yazdığı proje üretim ref'i olmalı, sayı `config.toml`'daki `[functions.*]` blok sayısı (şu an 18).
 - `functions list`: hepsi `ACTIVE`.
 - `migration list`: her satırda Local ve Remote aynı.
