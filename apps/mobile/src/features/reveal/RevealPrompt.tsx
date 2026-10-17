@@ -13,6 +13,7 @@ import { tr } from '@/i18n/tr';
 import { trackOnce } from '@/lib/analytics';
 import { revealApi } from '@/lib/api';
 import { useNow } from '@/lib/useNow';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { REVEAL } from '@shared/reveal.ts';
 
 import { revealDecisionKey, useRevealDecision } from './useRevealDecision';
@@ -31,6 +32,7 @@ export function RevealPrompt({ roomId, revealEndsAt, score }: Props) {
   const myAnswer = useRevealDecision(roomId);
 
   const decide = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: (wantsMeet: boolean) => revealApi.decide(roomId, wantsMeet),
     onSettled: () => void queryClient.invalidateQueries({ queryKey: revealDecisionKey(roomId) }),
   });

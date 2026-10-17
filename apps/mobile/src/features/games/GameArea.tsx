@@ -14,6 +14,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track, trackOnce } from '@/lib/analytics';
 import { gamesApi, roomsApi } from '@/lib/api';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { SPACING } from '@/theme/tokens';
 
 import { IbreGame, RoundReveal } from './ibre/IbreGame';
@@ -111,6 +112,7 @@ export function GameArea({
 
   const refresh = () => void queryClient.invalidateQueries({ queryKey: roomKeys.room(roomId) });
   const startSohbet = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: () => gamesApi.sohbetNext(roomId),
     onSettled: refresh,
   });
@@ -211,6 +213,7 @@ export function GameArea({
       : 'tabu';
   const rematchPlayers = sahtekarLast?.players?.[side];
   const rematch = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: () => roomsApi.proposeGame(roomId, rematchConcept, rematchPlayers),
     onSuccess: () => track('game_proposed', { concept: rematchConcept }),
     onSettled: refresh,

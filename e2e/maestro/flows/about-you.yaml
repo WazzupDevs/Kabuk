@@ -1,4 +1,5 @@
-# The sign-up profile step: display name and birth date (env NAME, DAY, MONTH, YEAR).
+# The sign-up profile step: display name, birth date (env NAME, DAY, MONTH, YEAR) and the gender
+# (docs/SPEC_V3.md §23.D). "Kadın", so the game flow's flows keep the anonymous or profiled choice.
 appId: app.kabuk.mobile
 ---
 - tapOn:
@@ -15,5 +16,15 @@ appId: app.kabuk.mobile
     id: birth-year
 - inputText: ${YEAR}
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: gender-female
+    direction: DOWN
+- tapOn:
+    id: gender-female
+- scrollUntilVisible:
+    element:
+      id: signup-continue
+    direction: DOWN
 - tapOn:
     id: signup-continue

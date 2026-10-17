@@ -38,7 +38,7 @@ export default function TabsLayout() {
           options={{
             title: tr.tabs.venue,
             tabBarButtonTestID: 'tab-venue',
-            // The Mekan disc (docs/SPEC_V2.md §2) with the snail, drawn by TabBar.
+            // The Mekan tile (docs/SPEC_V2.md §2) with the mark, drawn by TabBar.
           }}
           listeners={{
             // Without an active table the Mekan tab opens Keşfet instead.

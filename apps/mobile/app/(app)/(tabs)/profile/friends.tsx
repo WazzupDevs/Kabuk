@@ -3,12 +3,12 @@ import { View } from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
 import { EmptyState } from '@/components/EmptyState';
+import { useLoaderHold } from '@/components/Loader';
 import { IconButton } from '@/components/IconButton';
 import { ListRow } from '@/components/ListRow';
 import { Rise } from '@/components/motion';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { SnailLoader } from '@/components/Snail';
 import { Text } from '@/components/Text';
 import { useFriends } from '@/features/friends/queries';
 import { openDm } from '@/features/friends/openDm';
@@ -20,21 +20,22 @@ import { tr } from '@/i18n/tr';
 // position or active table of a friend anywhere.
 export default function FriendsScreen() {
   const friends = useFriends();
+  const loading = useLoaderHold(friends.isPending);
 
   return (
     <Screen>
       <ScreenHeader title={tr.profile.friends} onBack={() => router.back()} />
 
-      {friends.isPending ? (
+      {friends.isPending || loading ? (
         <View className="mt-12">
-          <SnailLoader />
+          <EmptyState kind="loading" body={tr.common.loading} />
         </View>
       ) : friends.isError ? (
         <Text tone="danger" className="mt-8">
           {errorMessage(friends.error)}
         </Text>
       ) : friends.data.length === 0 ? (
-        <EmptyState snail body={tr.friends.empty} />
+        <EmptyState kind="empty" body={tr.friends.empty} />
       ) : (
         <View className="mt-3 gap-3">
           {friends.data.map((f, i) => {

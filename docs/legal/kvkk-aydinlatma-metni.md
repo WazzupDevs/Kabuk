@@ -6,7 +6,7 @@
 >
 > **v3 taslağı ({{APP_NAME}} v1, sürüm `draft-1`):** Doğum tarihi ve zorunlu görünen ad, 18 yaş altında hesabın silinmesi, kampüs noktası, mekan sohbet odası ve yerli SMS sağlayıcısı (`docs/SPEC_V3.md` §3.3) eklendi.
 >
-> **Faz 3 taslağı (cinsiyet, `docs/SPEC_V3.md` §23.D):** Kayıtta zorunlu cinsiyet ve oyun akışındaki anonimlik kuralı eklendi. Uygulama cinsiyeti sormaya başladığında onay sürümü artırılır.
+> **Faz 3 taslağı (cinsiyet, `docs/SPEC_V3.md` §23.D; sürüm `draft-2`):** Kayıtta zorunlu cinsiyet ve oyun akışındaki anonimlik kuralı eklendi. Uygulama cinsiyeti sormaya başladığında onay sürümü `draft-2`'ye artırıldı; mevcut kullanıcılar metni yeniden onaylar, cinsiyet ondan sonra bir kez sorulur.
 >
 > **Faz 2 taslağı (takımlar, `docs/SPEC_V3.md` §22):** Odada her telefon kendi takma adıyla görünür; profil oda sürerken odadaki herkese görünür; tanışma, oyun geçmişi ve engelleme kişi başınadır. Onay sürümü pilottan önce hukuki kontrolle birlikte artırılır.
 

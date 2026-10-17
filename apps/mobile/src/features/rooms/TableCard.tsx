@@ -3,12 +3,12 @@ import { gameTag, type TableState } from '@shared/tableCard.ts';
 import { type RoomSeat, sideHeadcount } from '@shared/teams.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { Alert, useWindowDimensions, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
+import { Icon } from '@/components/Icon';
 import { LiveDot } from '@/components/LiveDot';
 import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
@@ -16,8 +16,9 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { callRerollAlias, roomsApi } from '@/lib/api';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, NARROW_SCREEN, SPACING } from '@/theme/tokens';
+import { NARROW_SCREEN, SPACING } from '@/theme/tokens';
 
 import { roomKeys, type TableRoomRow } from './queries';
 
@@ -49,13 +50,14 @@ const LOBBY_BEAT_MS = 1600;
 // state with what it can do there. "Masaya git" opens the room screen: the waiting room with its
 // "Masanla oyna" games, the two-sided room, or "Masanla oyna"; nothing opens it by itself.
 export function TableCard({ table, room, state, seat, minutesLeft, venueHasSpots }: Props) {
-  const { colors, shape } = useTheme();
+  const { shape } = useTheme();
   const queryClient = useQueryClient();
   // Side by side the status and "Lobiden çek" do not fit at 320 dp with the largest text.
   const { width, fontScale } = useWindowDimensions();
   const narrow = width < NARROW_SCREEN * Math.max(1, fontScale);
 
   const reroll = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: callRerollAlias,
     onSuccess: () => {
       track('alias_rerolled', {});
@@ -68,9 +70,10 @@ export function TableCard({ table, room, state, seat, minutesLeft, venueHasSpots
     if (room) void queryClient.invalidateQueries({ queryKey: roomKeys.room(room.id) });
   };
   // "Lobiden çek": the leader ends the waiting room, as "Odayı bitir" did (docs/SPEC_V3.md §23.C).
-  const withdraw = useMutation({ mutationFn: roomsApi.end, onSettled: settle });
+  const withdraw = useMutation({ meta: FEEL_ERROR, mutationFn: roomsApi.end, onSettled: settle });
   // A member leaves the side (docs/SPEC_V3.md §22.D).
   const leave = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: () => roomsApi.leave(room?.id ?? ''),
     onSuccess: () => track('team_left', {}),
     onSettled: settle,
@@ -131,10 +134,7 @@ export function TableCard({ table, room, state, seat, minutesLeft, venueHasSpots
           </View>
         </View>
       </View>
-      <View
-        className="my-2.5"
-        style={{ height: shape.stroke.hairline, backgroundColor: colors.divider }}
-      />
+      <View className="my-2.5 bg-divider" style={{ height: shape.stroke.hairline }} />
       <View className="gap-2.5">
         {state === 'off' ? (
           <>
@@ -142,7 +142,7 @@ export function TableCard({ table, room, state, seat, minutesLeft, venueHasSpots
             {venueHasSpots ? (
               <View className="flex-row items-center justify-between gap-2">
                 <View className="flex-1 flex-row items-center gap-2">
-                  <Ionicons name="location-outline" size={ICON.md} color={colors.text} />
+                  <Icon name="location-outline" />
                   <Text variant="bodyStrong" className="flex-1">
                     {table.spot?.name ? tr.venue.spot(table.spot.name) : tr.venue.noSpot}
                   </Text>

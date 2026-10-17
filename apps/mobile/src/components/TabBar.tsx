@@ -7,23 +7,27 @@ import { create } from 'zustand';
 
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, type PaletteKey, SPACING, TAB_TONES, TOUCH, VENUE_TAB_TONE } from '@/theme/tokens';
+import { ICON, SPACING, TAB_TONE, TOUCH } from '@/theme/tokens';
+import { haptic } from '@/lib/haptics';
 
 import { FADE_IMAGE, type TabGlyph, TabIcon } from './Glyph';
 import { Text } from './Text';
+import { VenueTabIcon } from './VenueTabIcon';
 
-// The floating capsule (canvas: Aşama 1 · Son → Sekme çubuğu, option 1): 16 in from the screen
-// edges, 8 above the safe area, fully rounded; an opaque surface with a soft shadow and no top
-// line. Content scrolls behind it and fades into the canvas (one stretched, tinted gradient image:
-// no native gradient module); over the Keşfet map there is no fade. The Mekan disc sits inside it.
-// Aşama 8 · Saha: five icons of one family at one size; the selected tab's icon is solid and in its
-// own colour, the others are line icons in one colour; the halo wraps only the icon, so a long
-// label ("Aktiviteler") never spills out of it.
+// The floating bar (the skall design system → TabBar): 12 in from the screen edges and above the
+// safe area, continuous corners; an opaque surface with a soft shadow and no top line. Content
+// scrolls behind it and fades into the canvas (one stretched, tinted gradient image: no native
+// gradient module); over the Keşfet map there is no fade. Five icons of one family at one size:
+// the selected tab's icon is solid and in the accent on a quiet halo, the others muted lines; the
+// halo wraps only the icon, so a long label ("Aktiviteler") never spills out of it. Mekan is the
+// raised ink tile with the mark (VenueTabIcon).
 export const TAB_BAR_HEIGHT = TOUCH.large;
-const INSET = SPACING[4];
-const GAP = SPACING[2];
+const INSET = SPACING[3];
+const GAP = SPACING[3];
 const VENUE_DISC = SPACING[10];
-const PILL = { width: SPACING[12] + SPACING[1], height: SPACING[8] } as const;
+// The Mekan tile: taller than the icon row, so it rises out of the bar; its label stays on the line.
+const VENUE_TILE = SPACING[12] + SPACING[0.5];
+const PILL = { width: TOUCH.min, height: SPACING[7] + SPACING[0.5] } as const;
 const LABEL_HEIGHT = SPACING[4];
 // The icon row is as high as the Mekan disc, so every label sits on the same line; the halo is
 // centred on the icon.
@@ -31,14 +35,14 @@ const PILL_TOP = (TAB_BAR_HEIGHT - VENUE_DISC - LABEL_HEIGHT) / 2 + (VENUE_DISC 
 const BADGE = 18;
 const FADE_HEIGHT = 128;
 
-// The tab icon and colour of each route; the Arkadaşlar tab uses the Mesajlar icon. Other routes
-// fall back to their `tabBarIcon` option.
-const ROUTE_GLYPH: Partial<Record<string, { glyph: TabGlyph; tone: PaletteKey }>> = {
-  explore: { glyph: 'explore', tone: TAB_TONES.explore },
-  activities: { glyph: 'activities', tone: TAB_TONES.activities },
-  friends: { glyph: 'messages', tone: TAB_TONES.messages },
-  messages: { glyph: 'messages', tone: TAB_TONES.messages },
-  profile: { glyph: 'profile', tone: TAB_TONES.profile },
+// The tab icon of each route; the Arkadaşlar tab uses the Mesajlar icon. Other routes fall back to
+// their `tabBarIcon` option.
+const ROUTE_GLYPH: Partial<Record<string, TabGlyph>> = {
+  explore: 'explore',
+  activities: 'activities',
+  friends: 'messages',
+  messages: 'messages',
+  profile: 'profile',
 };
 
 // Screens that change the bar while focused: a DM hides it (its message bar sits at the bottom),
@@ -151,7 +155,7 @@ export function TabBar({ state, descriptors, navigation, insets, raised }: Props
           marginBottom: insets.bottom + GAP,
           height: TAB_BAR_HEIGHT,
           paddingHorizontal: SPACING[2],
-          borderRadius: shape.radius.pill,
+          borderRadius: shape.radius.xl,
           backgroundColor: colors.surface,
           boxShadow: shape.shadow.tabBar,
         }}
@@ -181,7 +185,7 @@ export function TabBar({ state, descriptors, navigation, insets, raised }: Props
           const badge = options.tabBarBadge;
           const isVenue = route.name === raised;
           const tabGlyph = ROUTE_GLYPH[route.name];
-          const color = focused && tabGlyph ? colors[tabGlyph.tone] : colors.muted;
+          const color = focused && tabGlyph ? colors[TAB_TONE] : colors.muted;
 
           const onPress = () => {
             const event = navigation.emit({
@@ -189,29 +193,20 @@ export function TabBar({ state, descriptors, navigation, insets, raised }: Props
               target: route.key,
               canPreventDefault: true,
             });
-            if (!focused && !event.defaultPrevented) navigation.navigate(route.name, route.params);
+            if (!focused && !event.defaultPrevented) {
+              haptic('selection');
+              navigation.navigate(route.name, route.params);
+            }
           };
 
           let glyph: ReactNode;
           if (isVenue) {
-            // The raised Mekan disc: filled with its colour when selected.
+            // The raised Mekan tile, rising out of the icon row; its label stays on the line.
             glyph = (
-              <View
-                className="items-center justify-center"
-                style={{
-                  width: VENUE_DISC,
-                  height: VENUE_DISC,
-                  borderRadius: shape.radius.pill,
-                  backgroundColor: focused ? colors[VENUE_TAB_TONE.fill] : colors.surface2,
-                  borderWidth: shape.stroke.venueRing,
-                  borderColor: focused ? colors.border : 'transparent',
-                }}
-              >
-                <TabIcon
-                  name="venue"
-                  active={focused}
-                  color={focused ? colors[VENUE_TAB_TONE.icon] : colors.muted}
-                />
+              <View style={{ height: VENUE_DISC, width: VENUE_TILE }}>
+                <View style={{ position: 'absolute', bottom: SPACING[1] }}>
+                  <VenueTabIcon size={VENUE_TILE} active={focused} />
+                </View>
               </View>
             );
           } else {
@@ -219,7 +214,7 @@ export function TabBar({ state, descriptors, navigation, insets, raised }: Props
             glyph = (
               <View style={{ height: VENUE_DISC, justifyContent: 'center' }}>
                 {tabGlyph ? (
-                  <TabIcon name={tabGlyph.glyph} active={focused} color={color} />
+                  <TabIcon name={tabGlyph} active={focused} color={color} />
                 ) : (
                   options.tabBarIcon?.({ focused, color, size: ICON.lg })
                 )}
@@ -233,10 +228,12 @@ export function TabBar({ state, descriptors, navigation, insets, raised }: Props
                       height: BADGE,
                       paddingHorizontal: SPACING[1],
                       borderRadius: shape.radius.pill,
-                      backgroundColor: colors.danger,
+                      backgroundColor: colors.violet,
+                      borderWidth: shape.stroke.feature,
+                      borderColor: colors.surface,
                     }}
                   >
-                    <Text variant="caption" tone="onDanger">
+                    <Text variant="caption" tone="onViolet">
                       {String(badge)}
                     </Text>
                   </View>
@@ -259,19 +256,24 @@ export function TabBar({ state, descriptors, navigation, insets, raised }: Props
               style={{
                 flex: 1,
                 height: TAB_BAR_HEIGHT,
+                paddingHorizontal: SPACING[0.5],
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: 0,
               }}
             >
               {glyph}
-              {/* One line; a long name ("Aktiviteler") shrinks a little on a narrow phone. */}
+              {/* 11 px and one line wherever it fits; only where it does not (a 320 dp screen,
+                  the largest text) does it shrink, like a button's label. As wide as its tab, so
+                  the shrink has a width to fit. */}
               <Text
                 variant="caption"
                 tone={focused ? 'text' : 'muted'}
+                align="center"
                 numberOfLines={1}
                 adjustsFontSizeToFit
-                minimumFontScale={0.8}
+                minimumFontScale={0.5}
+                className="self-stretch"
               >
                 {label}
               </Text>

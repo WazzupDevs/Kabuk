@@ -8,7 +8,10 @@ import { createContext, type ReactNode, useContext, useEffect, useMemo, useState
 import { type TextStyle, useColorScheme, View } from 'react-native';
 import { create } from 'zustand';
 
+import { useLaunchStore } from '@/features/launch/launchStore';
+
 import { rgbChannels } from './contrast';
+import { featurePalette } from './feature';
 import { fontsOf } from './fonts';
 import {
   parseThemePreference,
@@ -35,9 +38,7 @@ export type AppTheme = {
   colors: Palette;
   fonts: FontSet;
   typography: Typography;
-  shape: Omit<Shape, 'shadow'> & { shadow: Record<keyof ShadowSet, string | undefined> };
-  eventTagTilt: number;
-  profiledTagDashed: boolean;
+  shape: Shape & { shadow: Record<keyof ShadowSet, string | undefined> };
 };
 
 // The test picker (Ayarlar → Tasarım (test)) exists only in preview builds, development and the
@@ -80,9 +81,7 @@ function buildTheme(scheme: ColorScheme): AppTheme {
     colors,
     fonts: def.fonts,
     typography: def.typography,
-    shape: { ...def.shape, shadow: resolveShadows(def.shape.shadow, colors) },
-    eventTagTilt: def.eventTagTilt,
-    profiledTagDashed: def.profiledTagDashed,
+    shape: { ...def.shape, shadow: resolveShadows(def.shadows[scheme]) },
   };
 }
 
@@ -92,15 +91,29 @@ export function useTheme(): AppTheme {
   return useContext(ThemeContext);
 }
 
+// The theme inside the featured card (Card `feature`): the same theme on the card's dark palette
+// (src/theme/feature.ts).
+export function useFeatureTheme(): AppTheme {
+  const theme = useTheme();
+  return useMemo(
+    () => ({ ...theme, colors: featurePalette(THEME.palettes, theme.scheme) }),
+    [theme],
+  );
+}
+
+// Components below draw from `theme` instead of the screen's (the featured card). The View that
+// holds them also needs `colorVars(theme.colors)` for NativeWind colour classes.
+export function ThemeScope({ theme, children }: { theme: AppTheme; children: ReactNode }) {
+  return <ThemeContext.Provider value={theme}>{children}</ThemeContext.Provider>;
+}
+
 // Text style of a type variant in the active theme. Custom fonts carry their weight, so no
 // fontWeight is set (Android does not pick a weight file from fontWeight). Capitals are not a
 // style: Text writes them the Turkish way (upperTr in @shared/trText.ts).
 export function typeStyle(theme: AppTheme, variant: TypeVariant): TextStyle {
   const t = theme.typography[variant];
-  const family =
-    theme.fonts[t.font] ?? (t.font === 'displayItalic' ? theme.fonts.display : theme.fonts.regular);
   return {
-    fontFamily: family,
+    fontFamily: theme.fonts[t.font],
     fontSize: t.size,
     lineHeight: t.lineHeight,
     letterSpacing: t.letterSpacing,
@@ -146,7 +159,7 @@ function navigationTheme(theme: AppTheme) {
 }
 
 // Colours as NativeWind variables (`bg-surface`, `text-muted`, `border-border` …).
-function colorVars(colors: Palette) {
+export function colorVars(colors: Palette) {
   const entries = PALETTE_KEYS.map((k) => [`--color-${colorClass(k)}`, rgbChannels(colors[k])]);
   return vars(Object.fromEntries(entries));
 }
@@ -154,6 +167,7 @@ function colorVars(colors: Palette) {
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const preference = useSchemePreference();
   const loaded = useDesignStore((s) => s.loaded);
+  const curtain = useLaunchStore((s) => s.curtain);
   const system = useColorScheme();
 
   useEffect(loadPreference, []);
@@ -180,7 +194,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   return (
     <ThemeContext.Provider value={theme}>
       <NavigationTheme value={navTheme}>
-        <StatusBar style={theme.scheme === 'dark' ? 'light' : 'dark'} />
+        {/* Light on the launch curtain's ink, then the scheme's. */}
+        <StatusBar style={curtain || theme.scheme === 'dark' ? 'light' : 'dark'} />
         <View style={style}>{children}</View>
       </NavigationTheme>
     </ThemeContext.Provider>

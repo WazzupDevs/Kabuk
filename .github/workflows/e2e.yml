@@ -2,7 +2,8 @@
 # as the second table (scripts/e2e/bot-table.ts). One job builds the APK. The path is split in four
 # shards (e2e/maestro/shard-<n>.yaml), each run in light and dark: eight jobs that start with the
 # build job, set up the local stack and boot their emulator while it builds, then fetch the APK,
-# pick the design in Ayarlar → Tasarım (test) and run their shard.
+# pick the design in Ayarlar → Tasarım (test) and run their shard. Nightly and by hand, the four
+# shards run once more in light at the largest text size (font_scale 1.3): twelve jobs.
 name: e2e
 
 on:
@@ -52,6 +53,14 @@ jobs:
       # Gradle's dependency and build caches (~/.gradle): written by main's nightly run, read by the
       # rest; --build-cache below lets unchanged tasks come from it.
       - uses: gradle/actions/setup-gradle@v4
+      # The NDK version React Native pins is not on the runner image, so Gradle downloaded it in every
+      # build, without retrying; on 16 Oct that download broke ("Archive is not a ZIP archive"). It
+      # is installed here first, with retries, at the version Gradle asks for.
+      - name: NDK (with retries)
+        run: |
+          ndk=$(sed -n 's/^ndkVersion = "\(.*\)"$/\1/p' node_modules/react-native/gradle/libs.versions.toml)
+          test -n "$ndk" || { echo "ndkVersion not found in react-native's libs.versions.toml"; exit 1; }
+          bash scripts/e2e/sdk-install.sh "ndk;$ndk"
       - name: Prebuild, local-stack settings (cleartext HTTP, no OTA)
         run: |
           (cd apps/mobile && npx expo prebuild --platform android --no-install --clean)
@@ -92,10 +101,19 @@ jobs:
       matrix:
         scheme: [light, dark]
         shard: [1, 2, 3, 4]
+        # Android's text size (Settings → Display → Font size): the default, and nightly and by hand
+        # also the largest the app is checked at, 1.3 (CLAUDE.md → "Ekran davranışı"), in light only.
+        # A PR runs the default size.
+        font: ${{ fromJSON(github.event_name == 'pull_request' && '["1"]' || '["1", "1.3"]') }}
+        exclude:
+          - scheme: dark
+            font: '1.3'
     env:
       SCHEME: ${{ matrix.scheme }}
+      FONT_SCALE: ${{ matrix.font }}
       FLOW: e2e/maestro/shard-${{ matrix.shard }}.yaml
-      OUT: ${{ github.workspace }}/e2e-out/${{ matrix.scheme }}-${{ matrix.shard }}
+      # light-1 … dark-4 at the default size, large-1 … large-4 at 1.3.
+      OUT: ${{ github.workspace }}/e2e-out/${{ matrix.font == '1' && format('{0}-{1}', matrix.scheme, matrix.shard) || format('large-{0}', matrix.shard) }}
       APK: ${{ github.workspace }}/apk/app-release.apk
     steps:
       - uses: actions/checkout@v4
@@ -147,6 +165,44 @@ jobs:
           curl -Ls "https://get.maestro.mobile.dev" | MAESTRO_VERSION=2.10.0 bash
           echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
           "$HOME/.maestro/bin/maestro" --version | tee "$OUT/maestro-version.txt"
+      # The emulator and its system image come from the Actions cache instead of Google's servers on
+      # every job: on 16 Oct two runs (#121, #123) died while sdkmanager downloaded the emulator
+      # package ("Error on ZipFile unknown archive"), before any flow ran. The runner action still
+      # updates the emulator when a newer one is out, and the cache is renewed every week. Only these
+      # two SDK folders are cached; the AVD and the phone's data (app, settings, font size) live in
+      # ~/.android and start fresh in every job. As with Gradle, only main's runs (nightly, manual)
+      # write it and PR runs read it: a PR's copy is visible to that PR alone, and ~1.8 GB per PR
+      # would push the Gradle cache out of the repo's 10 GB.
+      - name: Week (emulator cache key)
+        id: week
+        run: echo "week=$(date -u +%G-%V)" >> "$GITHUB_OUTPUT"
+      - name: Emulator and system image cache
+        id: emulator-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            /usr/local/lib/android/sdk/emulator
+            /usr/local/lib/android/sdk/system-images/android-34/google_apis/x86_64
+          key: android-emulator-34-google_apis-x86_64-${{ steps.week.outputs.week }}
+          restore-keys: android-emulator-34-google_apis-x86_64-
+      # Without this week's cache (before main's first run of the week, or a new emulator) the two
+      # packages are downloaded here, with retries (scripts/e2e/sdk-install.sh): the failure ("Error
+      # on ZipFile unknown archive", the emulator on #121 and #123, the system image on #126's first
+      # run) passes on a second try. The runner action then finds them installed.
+      - name: Emulator and system image download (with retries)
+        if: steps.emulator-cache.outputs.cache-hit != 'true'
+        run: bash scripts/e2e/sdk-install.sh emulator 'system-images;android-34;google_apis;x86_64'
+      # One job of main's run saves it, before the emulator starts: only the downloaded packages.
+      - name: Emulator and system image cache (save, main only)
+        if: >-
+          github.ref == 'refs/heads/main' && steps.emulator-cache.outputs.cache-hit != 'true' &&
+          matrix.scheme == 'light' && matrix.shard == 1 && matrix.font == '1'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            /usr/local/lib/android/sdk/emulator
+            /usr/local/lib/android/sdk/system-images/android-34/google_apis/x86_64
+          key: ${{ steps.emulator-cache.outputs.cache-primary-key }}
       - name: Emulator, APK and the shard's flows
         uses: reactivecircus/android-emulator-runner@v2
         env:
@@ -162,8 +218,8 @@ jobs:
       - if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-run-${{ matrix.scheme }}-${{ matrix.shard }}
-          path: e2e-out/${{ matrix.scheme }}-${{ matrix.shard }}
+          name: e2e-run-${{ matrix.font == '1' && format('{0}-{1}', matrix.scheme, matrix.shard) || format('large-{0}', matrix.shard) }}
+          path: ${{ env.OUT }}
           retention-days: 14
 
   # Screenshots and logs (no video) on an e2e-screenshots branch, for readers without access to
@@ -171,8 +227,9 @@ jobs:
   # never pile up in history. A PR run writes its own branch (e2e-screenshots-pr-<number>), so runs of
   # two PRs do not overwrite each other; main, nightly and manual runs write e2e-screenshots. (Git
   # cannot hold both e2e-screenshots and e2e-screenshots/pr-<number>, hence the dash.) Each shard's
-  # run is in its own folder (light-1 … dark-4); <scheme>/takeScreenshot holds the takeScreenshot
-  # images of the scheme's four shards together, for `pnpm store:screenshots`.
+  # run is in its own folder (light-1 … dark-4, and large-1 … large-4 at the largest text size);
+  # light/takeScreenshot and dark/takeScreenshot hold the takeScreenshot images of the scheme's four
+  # shards together, for `pnpm store:screenshots` (large/takeScreenshot those of the large pass).
   publish-screenshots:
     if: ${{ always() && needs.e2e.result != 'skipped' }}
     needs: e2e

@@ -20,7 +20,7 @@ export const TEST_DISPLAY_NAME = 'Test Masa';
 export const TEST_BIRTH_DATE = '2000-01-15';
 export const TEST_AGE = ageOn({ year: 2000, month: 1, day: 15 }, istanbulToday(new Date()));
 
-// `gender` (docs/SPEC_V3.md §23.D) only when given: until the app asks for it, sign-up leaves it out.
+// `gender` (docs/SPEC_V3.md §23.D): sign-up needs one; a woman unless the test says otherwise.
 export async function onboarded(
   phone: string,
   profile: { displayName?: string; birthDate?: string; gender?: Gender } = {},
@@ -32,7 +32,7 @@ export async function onboarded(
     kvkkVersion: CURRENT_KVKK_VERSION,
     displayName: profile.displayName ?? TEST_DISPLAY_NAME,
     birthDate: profile.birthDate ?? TEST_BIRTH_DATE,
-    ...(profile.gender ? { gender: profile.gender } : {}),
+    gender: profile.gender ?? 'female',
   });
   expect(res.status, JSON.stringify(res.body)).toBe(200);
   return client;
@@ -44,6 +44,14 @@ export async function clearDisplayName(client: Client): Promise<void> {
   const { data } = await client.auth.getUser();
   if (!data.user) throw new Error('not signed in');
   await sql`update public.profiles set display_name = null where id = ${data.user.id}`;
+}
+
+// An account from before the gender step (docs/SPEC_V3.md §23.D): sign-up asks for it now, so only
+// the database can empty it.
+export async function clearGender(client: Client): Promise<void> {
+  const { data } = await client.auth.getUser();
+  if (!data.user) throw new Error('not signed in');
+  await sql`update public.profiles set gender = null where id = ${data.user.id}`;
 }
 
 // Checks in standing right at the fixture venue.
@@ -161,14 +169,15 @@ export function waitForBroadcast(
   return { subscribed, received, close: async () => void (await client.removeChannel(channel)) };
 }
 
-// Waits until another connection's statement running `fn` waits on a lock (tests of lock order).
-export async function waitUntilBlocked(fn: string): Promise<void> {
+// Waits until `count` other connections' statements running `fn` wait on a lock (tests of lock
+// order).
+export async function waitUntilBlocked(fn: string, count = 1): Promise<void> {
   for (let i = 0; i < 50; i++) {
     const [row] = await sql`
       select count(*)::int as n from pg_stat_activity
       where wait_event_type = 'Lock' and query like ${`%${fn}%`} and pid <> pg_backend_pid()
     `;
-    if ((row?.n ?? 0) > 0) return;
+    if ((row?.n ?? 0) >= count) return;
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
   throw new Error(`${fn} never waited on a lock`);

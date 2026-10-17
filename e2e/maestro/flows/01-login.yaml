@@ -9,6 +9,12 @@ appId: app.kabuk.mobile
 - extendedWaitUntil:
     visible: Telefon numaran
     timeout: 60000
+# The launch curtain (src/features/launch/LaunchCurtain.tsx) mounts before the first screen and
+# opens onto it; the flow looks at the screen once it is gone.
+- extendedWaitUntil:
+    notVisible:
+      id: launch-curtain
+    timeout: 15000
 - takeScreenshot: 01-phone
 - runFlow:
     file: login-code.yaml

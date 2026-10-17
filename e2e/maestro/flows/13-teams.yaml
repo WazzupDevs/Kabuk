@@ -43,9 +43,11 @@ appId: app.kabuk.mobile
 - takeScreenshot: 59-teams-lobby
 - tapOn:
     id: request-member
-- extendedWaitUntil:
-    visible:
+# The sheet scrolls: at the largest text size "İstek gönder" is below its fold.
+- scrollUntilVisible:
+    element:
       id: request-send
+    centerElement: true
     timeout: 10000
 - takeScreenshot: 60-teams-member-sheet
 - tapOn:
@@ -73,9 +75,11 @@ appId: app.kabuk.mobile
     direction: UP
     timeout: 10000
 - takeScreenshot: 61b-teams-member-card
+# Centred, like "Bu masadayım": a button at the bottom sits under the tab bar or the Mekan tile.
 - scrollUntilVisible:
     element:
       id: go-to-table
+    centerElement: true
     timeout: 10000
 - tapOn:
     id: go-to-table

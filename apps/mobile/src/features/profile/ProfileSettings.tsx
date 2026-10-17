@@ -7,6 +7,7 @@ import { useProfile } from '@/features/account/useProfile';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { profileApi } from '@/lib/api';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
 
 type Changes = {
@@ -20,6 +21,7 @@ export function ProfileSettings() {
   const queryClient = useQueryClient();
   const own = useProfile();
   const update = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: (changes: Changes) => profileApi.update(changes),
     onSettled: () => queryClient.invalidateQueries({ queryKey: ['profile'] }),
   });

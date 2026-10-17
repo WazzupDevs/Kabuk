@@ -17,9 +17,12 @@ appId: app.kabuk.mobile
       BODY: '{"spot":"kutuphane"}'
 - tapOn:
     id: tab-venue
+# Centred: at the bottom of a 320 × 640 screen the card's middle sits under the Mekan tile, which
+# rises out of the floating tab bar; a tap there lands on the tab.
 - scrollUntilVisible:
     element:
       id: venue-chat-open
+    centerElement: true
     timeout: 15000
 - tapOn:
     id: venue-chat-open

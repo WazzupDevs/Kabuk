@@ -1,12 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Text } from '@/components/Text';
+import { Loader } from '@/components/Loader';
 import { SpotPicker } from '@/features/checkin/SpotPicker';
 import { useVenueSpots } from '@/features/checkin/spots';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
@@ -15,12 +16,11 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { callChangeSpot } from '@/lib/api';
-import { useTheme } from '@/theme/ThemeProvider';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 // Changing the table's spot without a new position (docs/SPEC_V3.md §4.3). The server refuses it
 // while the table is in a room or has a request out.
 export default function ChangeSpotScreen() {
-  const { colors } = useTheme();
   const queryClient = useQueryClient();
   const table = useActiveTable();
   const spots = useVenueSpots(table.data?.venue_id);
@@ -28,6 +28,7 @@ export default function ChangeSpotScreen() {
   const selected = chosen ?? table.data?.spot_id ?? null;
 
   const change = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: callChangeSpot,
     onSuccess: async () => {
       track('spot_changed', {});
@@ -42,7 +43,9 @@ export default function ChangeSpotScreen() {
   if (table.isPending) {
     return (
       <Screen>
-        <ActivityIndicator className="mt-16" color={colors.muted} />
+        <View className="mt-16 items-center">
+          <Loader />
+        </View>
       </Screen>
     );
   }

@@ -18,6 +18,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { gamesApi } from '@/lib/api';
 import { useNow } from '@/lib/useNow';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING, type TypeVariant } from '@/theme/tokens';
@@ -189,11 +190,13 @@ export function IbreGame({ roomId, state, side, sessionId, sidePhones, aliasOf, 
     onSettled: refresh,
   });
   const lock = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: (v: { round: number; value: number }) =>
       gamesApi.ibreLock(roomId, v.round, v.value),
     onSettled: refresh,
   });
   const choose = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: (v: { round: number; side: IbreSide }) =>
       gamesApi.ibreSide(roomId, v.round, v.side),
     onSettled: refresh,

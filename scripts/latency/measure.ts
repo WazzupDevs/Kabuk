@@ -117,13 +117,15 @@ async function signIn(name: string, phone: string, otp: string): Promise<Phone> 
   const userId = verified.data.user?.id;
   if (!userId) throw new Error(`${name}: no user after sign-in`);
   const self: Phone = { name, client, userId };
-  // Sign-up = profile (docs/SPEC_V3.md §3); a no-op for an account that already has one.
+  // Sign-up = profile (docs/SPEC_V3.md §3); a no-op for an account that already has one. "Kadın":
+  // the room step's requests are anonymous (§23.D).
   await call(self, 'account', {
     action: 'complete-onboarding',
     termsVersion: CURRENT_TERMS_VERSION,
     kvkkVersion: CURRENT_KVKK_VERSION,
     displayName: name,
     birthDate: '1995-05-20',
+    gender: 'female',
   });
   return self;
 }

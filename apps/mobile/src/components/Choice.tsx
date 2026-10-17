@@ -3,13 +3,14 @@ import { Pressable, View } from 'react-native';
 
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING, TOUCH } from '@/theme/tokens';
+import { haptic } from '@/lib/haptics';
 
 import { Text } from './Text';
 
 type Props = {
   label: string;
   hint?: string;
-  // A small picture before the label (the table's snail, the profile photo).
+  // A small picture before the label (the table's face, the profile photo).
   picture?: ReactNode;
   selected: boolean;
   onPress: () => void;
@@ -23,7 +24,7 @@ type Props = {
 const DOT = SPACING[6];
 
 // One option of a single choice (canvas: Bileşenler): a card with the radio mark first; the
-// selected one fills with the quiet colour and lifts on the theme's hard shadow.
+// selected one fills with the quiet colour, its outline in the accent, and lifts a little.
 export function Choice({
   label,
   hint,
@@ -42,7 +43,7 @@ export function Choice({
     minHeight: TOUCH.tab,
     paddingHorizontal: SPACING[4],
     paddingVertical: SPACING[3] + SPACING[0.5],
-    borderRadius: shape.radius.md,
+    borderRadius: shape.radius.lg,
     borderWidth: Math.max(shape.stroke.control, 1),
   } as const;
   const title = (tone?: 'muted') => (
@@ -87,11 +88,14 @@ export function Choice({
       testID={testID}
       accessibilityState={{ selected, disabled: !!disabled }}
       disabled={disabled}
-      onPress={onPress}
+      onPress={() => {
+        if (!selected) haptic('selection');
+        onPress();
+      }}
       style={{
         ...frame,
         backgroundColor: selected ? colors.surface2 : colors.surface,
-        borderColor: colors.border,
+        borderColor: selected ? colors.accent : colors.border,
         boxShadow: selected ? shape.shadow.raised : undefined,
         opacity: disabled ? 0.4 : 1,
       }}

@@ -11,6 +11,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { gamesApi } from '@/lib/api';
 import { useNow } from '@/lib/useNow';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 import { ClockPill, TeamScore } from '../GameBits';
 import { StageFit } from '../GameStage';
@@ -195,11 +196,13 @@ export function SayGame({ roomId, kind, state, side, aliases }: Props) {
     onSettled: refresh,
   });
   const claim = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: (v: { round: number; step: number; letter: string | null }) =>
       gamesApi.sayClaim(kind, roomId, v.round, v.step, v.letter),
     onSettled: refresh,
   });
   const object = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: (v: { round: number; step: number }) =>
       gamesApi.sayObject(kind, roomId, v.round, v.step),
     onSettled: refresh,

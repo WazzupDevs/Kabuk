@@ -3,9 +3,9 @@ import { Pressable, View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
-import { useDepth } from '@/components/Depth';
 import { GameIcon } from '@/components/Glyph';
 import { Text } from '@/components/Text';
+import { usePressScale } from '@/components/motion';
 import { tr } from '@/i18n/tr';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING, TOUCH } from '@/theme/tokens';
@@ -160,7 +160,7 @@ export function SeatCardFace({ card, loading }: { card: SeatCard | null; loading
   const [bg, fg] = card
     ? imposter
       ? [colors.lively, colors.onLively]
-      : [colors.violet, colors.onViolet]
+      : [colors.accent, colors.onAccent]
     : [colors.surface2, colors.text];
   return (
     <View
@@ -171,10 +171,10 @@ export function SeatCardFace({ card, loading }: { card: SeatCard | null; loading
         padding: SPACING[6],
         borderRadius: shape.radius.lg + SPACING[2],
         backgroundColor: bg,
-        borderWidth: card ? Math.max(shape.stroke.feature, 2) : shape.stroke.hairline * 2,
-        borderStyle: card ? 'solid' : 'dashed',
-        borderColor: card ? colors.border : colors.muted,
-        boxShadow: card ? (shape.shadow.feature ?? undefined) : undefined,
+        borderWidth: card ? 0 : shape.stroke.hairline * 2,
+        borderStyle: 'dashed',
+        borderColor: colors.muted,
+        boxShadow: card ? shape.shadow.card : undefined,
       }}
     >
       {card === null ? (
@@ -340,7 +340,7 @@ export function VoteGrid({
   submitting?: boolean;
 }) {
   const { colors, shape } = useTheme();
-  const depth = useDepth();
+  const pressScale = usePressScale();
   return (
     <StageFit
       testID="sahtekar-vote"
@@ -387,15 +387,15 @@ export function VoteGrid({
                 onPress={() => onSelect(seat)}
               >
                 {({ pressed }) => (
-                  // 3D like the buttons (canvas: Aşama 8 · Saha); the chosen seat stays pressed in,
-                  // the voter's own seat is dashed and flat.
+                  // A raised tile with an outline; the chosen seat is filled with the accent, the
+                  // voter's own seat is dashed and flat.
                   <View
                     className="items-center justify-center gap-1"
                     style={[
                       {
                         paddingVertical: SPACING[3],
                         borderRadius: shape.radius.lg,
-                        backgroundColor: on ? colors.violet : colors.raised,
+                        backgroundColor: on ? colors.accent : colors.raised,
                         opacity: self ? 0.45 : 1,
                       },
                       self
@@ -404,7 +404,13 @@ export function VoteGrid({
                             borderStyle: 'dashed',
                             borderColor: colors.divider,
                           }
-                        : depth({ pressed: pressed || on }),
+                        : [
+                            {
+                              borderWidth: on ? 0 : shape.stroke.hairline * 1.5,
+                              borderColor: colors.border,
+                            },
+                            pressScale(pressed),
+                          ],
                     ]}
                   >
                     <SeatBadge seat={seat} size={SPACING[14]} />
@@ -447,7 +453,7 @@ export function GuessOptions({
   submitting?: boolean;
 }) {
   const { colors, shape } = useTheme();
-  const depth = useDepth();
+  const pressScale = usePressScale();
   return (
     <StageFit
       testID="sahtekar-guess"
@@ -495,12 +501,14 @@ export function GuessOptions({
                     {
                       minHeight: TOUCH.large,
                       borderRadius: shape.radius.lg,
-                      backgroundColor: on ? colors.violet : colors.raised,
+                      backgroundColor: on ? colors.accent : colors.raised,
+                      borderWidth: on ? 0 : shape.stroke.hairline * 1.5,
+                      borderColor: colors.border,
                     },
-                    depth({ pressed: pressed || on }),
+                    pressScale(pressed),
                   ]}
                 >
-                  <Text variant="buttonLarge" tone={on ? 'onViolet' : 'text'}>
+                  <Text variant="buttonLarge" tone={on ? 'onAccent' : 'text'}>
                     {o}
                   </Text>
                 </View>
@@ -578,9 +586,7 @@ export function ImposterReveal({
           height: BIG_SEAT + SPACING[4],
           borderRadius: shape.radius.pill,
           backgroundColor: colors.surface,
-          borderWidth: Math.max(shape.stroke.feature, 2),
-          borderColor: colors.border,
-          boxShadow: shape.shadow.feature ?? undefined,
+          boxShadow: shape.shadow.card,
         }}
       >
         <Text variant="hero">{imposter}</Text>

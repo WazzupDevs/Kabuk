@@ -1,4 +1,4 @@
-import type { ReportReason } from '@shared/chat.ts';
+import { GAME_FLOW_REPORT_REASONS, type GameFlowReportReason } from '@shared/chat.ts';
 import { historyAction } from '@shared/friends.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
@@ -29,6 +29,7 @@ import { errorMessage } from '@/i18n/errors';
 import { type HistoryConcept, tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { friendsApi, safetyApi } from '@/lib/api';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 // The last game of the encounter, or the chat (docs/SPEC_V3.md §5.5).
 const concept = (c: string): HistoryConcept =>
@@ -53,6 +54,7 @@ export default function NotificationsScreen() {
 
   type Action = { kind: 'request' | 'add'; historyId: string };
   const act = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: ({ kind, historyId }: Action) =>
       kind === 'request' ? friendsApi.request(historyId) : friendsApi.addFromRoom(historyId),
     onSuccess: (_data, { kind }) =>
@@ -67,6 +69,7 @@ export default function NotificationsScreen() {
 
   type Answer = { requestId: string; accept: boolean };
   const respond = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: ({ requestId, accept }: Answer) => friendsApi.respond(requestId, accept),
     onSuccess: (_data, { accept }) => {
       if (!accept) return;
@@ -80,7 +83,8 @@ export default function NotificationsScreen() {
   const askNameForAnswer = useRetryAfterName(runAnswer);
 
   const report = useMutation({
-    mutationFn: ({ historyId, reason }: { historyId: string; reason: ReportReason }) =>
+    meta: FEEL_ERROR,
+    mutationFn: ({ historyId, reason }: { historyId: string; reason: GameFlowReportReason }) =>
       safetyApi.reportHistory(historyId, reason),
     onSuccess: () => {
       track('report_submitted', {});
@@ -89,7 +93,8 @@ export default function NotificationsScreen() {
     },
   });
   const block = useMutation({
-    mutationFn: ({ historyId, reason }: { historyId: string; reason?: ReportReason }) =>
+    meta: FEEL_ERROR,
+    mutationFn: ({ historyId, reason }: { historyId: string; reason?: GameFlowReportReason }) =>
       safetyApi.blockHistory(historyId, reason),
     onSuccess: (_data, { reason }) => {
       track('block_created', {});
@@ -110,7 +115,11 @@ export default function NotificationsScreen() {
       <Screen>
         <ScreenHeader title={tr.notifications.title} onBack={() => router.back()} />
         <View className="flex-1 justify-center">
-          <EmptyState snail title={tr.notifications.empty} body={tr.notifications.emptyHint} />
+          <EmptyState
+            kind="empty"
+            title={tr.notifications.empty}
+            body={tr.notifications.emptyHint}
+          />
         </View>
       </Screen>
     );
@@ -274,6 +283,7 @@ export default function NotificationsScreen() {
 
       <ReportModal
         visible={reporting !== null}
+        reasons={GAME_FLOW_REPORT_REASONS}
         pending={report.isPending}
         error={report.error}
         onReport={(reason) => reporting && report.mutate({ historyId: reporting, reason })}
@@ -281,6 +291,7 @@ export default function NotificationsScreen() {
       />
       <ConfirmWithReport
         visible={blocking !== null}
+        reasons={GAME_FLOW_REPORT_REASONS}
         title={tr.safety.blockConfirmTitle}
         hint={tr.friends.blockHint}
         confirmLabel={tr.friends.blockConfirm}

@@ -1,9 +1,12 @@
+import { Ionicons } from '@expo/vector-icons';
+import { mayStayAnonymous } from '@shared/gender.ts';
 import { BIO_MAX } from '@shared/profile.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { View } from 'react-native';
 
 import { Button } from '@/components/Button';
+import { Card } from '@/components/Card';
 import { Input } from '@/components/Input';
 import { ProfilePhoto } from '@/components/ProfilePhoto';
 import { Screen } from '@/components/Screen';
@@ -17,9 +20,14 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { profileApi } from '@/lib/api';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { useTheme } from '@/theme/ThemeProvider';
+import { ICON } from '@/theme/tokens';
 
 // The optional last sign-up step (docs/SPEC_V3.md §3.1): a photo and a bio, both skippable and
-// both addable later from Profil. Finishing or skipping opens the app.
+// both addable later from Profil. Finishing or skipping opens the app. A man and "Belirtmek
+// istemiyorum" always join with the profile, so for them a note says what no photo means (§23.D);
+// the step and its events are the same for everyone (§23.L).
 export default function ExtrasScreen() {
   const queryClient = useQueryClient();
   const [bio, setBio] = useState('');
@@ -27,8 +35,12 @@ export default function ExtrasScreen() {
   // The preview: the uploaded photo, or the display name's initials.
   const own = useProfile();
   const view = useProfileView(own.data?.public_id);
+  const { colors } = useTheme();
+  const gender = useOnboardingStore((s) => s.gender) ?? view.data?.gender ?? null;
+  const photoNote = gender !== null && !mayStayAnonymous(gender) && !photoSet;
 
   const photo = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: (source: PhotoSource) => choosePhoto(source),
     onSuccess: async (changed) => {
       if (changed) {
@@ -40,6 +52,7 @@ export default function ExtrasScreen() {
   });
 
   const finish = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: async (withBio: boolean) => {
       if (withBio) await profileApi.update({ bio });
       return withBio;
@@ -48,7 +61,7 @@ export default function ExtrasScreen() {
       if (withBio) track('profile_bio_set', {});
       track('onboarding_completed', { with_photo: photoSet, with_bio: withBio });
       await queryClient.invalidateQueries({ queryKey: profileViewKeys.all });
-      useOnboardingStore.setState({ extrasPending: false });
+      useOnboardingStore.setState({ extrasPending: false, gender: null });
     },
   });
 
@@ -94,6 +107,16 @@ export default function ExtrasScreen() {
             </Text>
           ) : null}
         </View>
+        {photoNote ? (
+          <Card tone="note" testID="photo-needed-note">
+            <View className="flex-row items-start gap-2.5">
+              <Ionicons name="information-circle-outline" size={ICON.md} color={colors.accent} />
+              <Text variant="bodyStrong" className="flex-1">
+                {tr.signup.photoNeededNote}
+              </Text>
+            </View>
+          </Card>
+        ) : null}
         <Input
           label={tr.profile.bioLabel}
           counter={tr.profile.bioHint([...bio].length, BIO_MAX)}

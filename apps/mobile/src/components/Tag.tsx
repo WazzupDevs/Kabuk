@@ -5,7 +5,6 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
 import type { IconName } from './Button';
-import { useQuiet } from './Quiet';
 import { Text } from './Text';
 
 export type TagVariant =
@@ -15,20 +14,17 @@ export type TagVariant =
   | 'event'
   | 'neutral' // headcount, participation, badges
   | 'profiled'
-  | 'accent' // counters: new requests, unread
-  | 'game' // room intent "Oyun"
-  | 'chat' // room intent "Sohbet"
-  | 'leader'; // a side's leader in "Odadakiler" (canvas: Faz 2 · 22.5)
+  | 'accent' // a won game
+  | 'game' // table intent "Oyun"
+  | 'chat' // table intent "Sohbet"
+  | 'leader'; // a side's leader in "Masadakiler"
 
 type Props = { label: string; variant?: TagVariant; icon?: IconName };
 
-// A filled pill label (no outline since Stage 4, `stroke.tag`). The theme may tilt the event sticker
-// (`eventTagTilt`) and dash the "profilli" outline (`profiledTagDashed`). On trust screens it sits
-// still.
+// A chip (the skall design system → Chip): a filled capsule label, never outlined or tilted.
+// Keşfet's liveliness is calm / lively / buzz, an event `event`; a table's intent is `calm`.
 export function Tag({ label, variant = 'neutral', icon }: Props) {
-  const theme = useTheme();
-  const quiet = useQuiet();
-  const { colors, shape } = theme;
+  const { colors, shape } = useTheme();
 
   const fill: Record<TagVariant, { bg: string; fg: string }> = {
     calm: { bg: colors.calm, fg: colors.onCalm },
@@ -38,30 +34,25 @@ export function Tag({ label, variant = 'neutral', icon }: Props) {
     neutral: { bg: colors.surface2, fg: colors.text },
     profiled: { bg: colors.violet, fg: colors.onViolet },
     accent: { bg: colors.accent, fg: colors.onAccent },
-    game: { bg: colors.accent, fg: colors.onAccent },
-    chat: { bg: colors.signal, fg: colors.onSignal },
+    game: { bg: colors.calm, fg: colors.onCalm },
+    chat: { bg: colors.calm, fg: colors.onCalm },
     leader: { bg: colors.text, fg: colors.canvas },
   };
   const { bg, fg } = fill[variant];
-  const outline = shape.stroke.tag;
-  const tilt = variant === 'event' && !quiet ? theme.eventTagTilt : 0;
 
   return (
     <View
-      className="flex-row items-center gap-1 self-start"
+      className="flex-row items-center self-start"
       style={{
+        gap: SPACING[1.5],
         backgroundColor: bg,
         borderRadius: shape.radius.pill,
-        paddingHorizontal: SPACING[2.5],
+        paddingHorizontal: SPACING[3],
         paddingVertical: SPACING[1],
-        borderWidth: quiet ? Math.min(outline, shape.stroke.hairline) : outline,
-        borderColor: quiet ? colors.divider : colors.border,
-        borderStyle: variant === 'profiled' && theme.profiledTagDashed ? 'dashed' : 'solid',
-        transform: tilt ? [{ rotate: `${tilt}deg` }] : undefined,
       }}
     >
       {icon ? <Ionicons name={icon} size={ICON.sm} color={fg} /> : null}
-      <Text variant={variant === 'neutral' ? 'label' : 'tag'} color={fg}>
+      <Text variant="tag" color={fg}>
         {label}
       </Text>
     </View>

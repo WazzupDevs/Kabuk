@@ -19,6 +19,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { gamesApi } from '@/lib/api';
 import { useNow } from '@/lib/useNow';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
@@ -322,6 +323,7 @@ function HoldStage({
 
 function Clues({ roomId, state, side, secondsLeft, onChanged }: PhaseProps) {
   const said = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: (step: number) => gamesApi.sahtekarSaid(roomId, step),
     onSettled: onChanged,
   });
@@ -361,6 +363,7 @@ function Voting({ roomId, state, side, secondsLeft, onChanged }: PhaseProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const next = mine.find((s) => !voted.includes(s)) ?? null;
   const vote = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: ({ voter, target }: { voter: string; target: string }) =>
       gamesApi.sahtekarVote(roomId, voter, target),
     onSuccess: (_res, { voter }) => {
@@ -442,6 +445,7 @@ function Guess({ roomId, state, side, secondsLeft, onChanged }: PhaseProps) {
   });
   const [selected, setSelected] = useState<string | null>(null);
   const guess = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: (option: string) => gamesApi.sahtekarGuess(roomId, option),
     onSettled: onChanged,
   });

@@ -3,7 +3,7 @@ import { BIO_MAX, DISPLAY_NAME_MAX, DISPLAY_NAME_MIN } from '@shared/profile.ts'
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
@@ -12,6 +12,7 @@ import { ProfilePhoto } from '@/components/ProfilePhoto';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Text } from '@/components/Text';
+import { Loader } from '@/components/Loader';
 import { useProfile } from '@/features/account/useProfile';
 import { PhotoSheet } from '@/features/profile/PhotoSheet';
 import { profileViewKeys, useProfileView } from '@/features/profile/queries';
@@ -19,6 +20,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { profileApi } from '@/lib/api';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
@@ -26,12 +28,13 @@ import { ICON, SPACING } from '@/theme/tokens';
 // Profili düzenle). Length is checked here; the profile function checks length and profanity
 // again. The birth date cannot change (rule 11).
 export default function EditProfileScreen() {
-  const { colors } = useTheme();
   const own = useProfile();
   if (own.isPending || !own.data) {
     return (
       <Screen>
-        <ActivityIndicator className="mt-16" color={colors.muted} />
+        <View className="mt-16 items-center">
+          <Loader />
+        </View>
       </Screen>
     );
   }
@@ -118,6 +121,7 @@ function EditForm({
   const bioChanged = bio.trim() !== initialBio;
 
   const save = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: () =>
       profileApi.update({
         ...(nameChanged ? { displayName: name } : {}),

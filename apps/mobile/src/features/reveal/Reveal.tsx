@@ -1,14 +1,14 @@
 import { router } from 'expo-router';
 import { type ReactNode, useEffect } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
+import { Loader } from '@/components/Loader';
 import { tr } from '@/i18n/tr';
 import { trackOnce } from '@/lib/analytics';
 import { useNow } from '@/lib/useNow';
-import { useTheme } from '@/theme/ThemeProvider';
 
 import { RevealMatches } from './RevealMatches';
 import { useRevealMatches } from './useRevealMatches';
@@ -27,7 +27,6 @@ type Props = {
 // oyundu". It reads reveal/matches, not the room row, so a member whose room closed still sees its
 // result.
 export function Reveal({ roomId, sessionId, revealEndsAt, prompt }: Props) {
-  const { colors } = useTheme();
   const now = useNow(1000);
   const over = now >= Date.parse(revealEndsAt);
   const result = useRevealMatches(roomId, sessionId);
@@ -63,7 +62,9 @@ export function Reveal({ roomId, sessionId, revealEndsAt, prompt }: Props) {
   return (
     prompt ?? (
       <Screen>
-        <ActivityIndicator className="mt-16" color={colors.muted} />
+        <View className="mt-16 items-center">
+          <Loader />
+        </View>
       </Screen>
     )
   );

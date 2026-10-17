@@ -2,8 +2,8 @@ import { Pressable, View } from 'react-native';
 
 import { Card } from '@/components/Card';
 import { Avatar } from '@/components/Avatar';
-import { useDepth } from '@/components/Depth';
 import { Text } from '@/components/Text';
+import { usePressScale } from '@/components/motion';
 import { tr } from '@/i18n/tr';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { PaletteKey } from '@/theme/tokens';
@@ -52,7 +52,7 @@ export function TurnReady({
   testID,
 }: Props) {
   const { colors, shape } = useTheme();
-  const depth = useDepth();
+  const pressScale = usePressScale();
   const fraction = totalSeconds > 0 ? Math.max(0, Math.min(1, secondsLeft / totalSeconds)) : 0;
   return (
     <View className="justify-center gap-3" style={{ flexGrow: 1 }} testID={testID}>
@@ -109,15 +109,15 @@ export function TurnReady({
                 style={[
                   {
                     borderRadius: shape.radius.pill,
-                    backgroundColor: colors.violet,
+                    backgroundColor: colors.accent,
                     opacity: starting ? 0.6 : 1,
                   },
-                  depth({ pressed: pressed || starting }),
+                  pressScale(pressed && !starting),
                 ]}
               >
                 <Text
                   variant="hero"
-                  tone="onViolet"
+                  tone="onAccent"
                   numberOfLines={1}
                   adjustsFontSizeToFit
                   minimumFontScale={0.5}

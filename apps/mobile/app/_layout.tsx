@@ -2,12 +2,15 @@ import '../global.css';
 
 import { needsOnboarding } from '@shared/consent.ts';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { Stack } from 'expo-router';
+import { SplashScreen, Stack } from 'expo-router';
 import { useEffect } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
 
+import { Loader } from '@/components/Loader';
 import { useProfile } from '@/features/account/useProfile';
 import { startSessionSync, useSessionStore } from '@/features/auth/session';
+import { LaunchCurtain } from '@/features/launch/LaunchCurtain';
+import { markLaunchReady } from '@/features/launch/launchStore';
 import { useOnboardingStore } from '@/features/onboarding/store';
 import { configureNotifications } from '@/features/push/push';
 import { UpdateRequired } from '@/features/update/UpdateRequired';
@@ -15,11 +18,14 @@ import { useUpdateGate, watchUpdateGate } from '@/features/update/updateGate';
 import { pingUpdateGate } from '@/lib/api';
 import { initErrorReporting } from '@/lib/errorReporting';
 import { queryClient } from '@/lib/queryClient';
-import { ThemeProvider, useTheme } from '@/theme/ThemeProvider';
+import { ThemeProvider } from '@/theme/ThemeProvider';
 
 export { RouteError as ErrorBoundary } from '@/components/RouteError';
 
 initErrorReporting();
+// The launch curtain hands over from the system splash on its first frame (LaunchCurtain); whatever
+// the curtain does, the system splash goes at the latest after 3 s (launchGuard).
+void SplashScreen.preventAutoHideAsync();
 
 function RootNavigator() {
   const updateRequired = useUpdateGate((s) => s.required);
@@ -27,19 +33,25 @@ function RootNavigator() {
   const signedIn = useSessionStore((s) => s.session !== null);
   const profile = useProfile();
   const extrasPending = useOnboardingStore((s) => s.extrasPending);
-  const theme = useTheme();
+  const loading = !initialized || (signedIn && profile.isPending);
+
+  // The first screen is there: the launch opens onto it.
+  useEffect(() => {
+    if (updateRequired || !loading) markLaunchReady();
+  }, [updateRequired, loading]);
 
   if (updateRequired) return <UpdateRequired />;
 
-  if (!initialized || (signedIn && profile.isPending)) {
+  if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-canvas">
-        <ActivityIndicator color={theme.colors.muted} />
+        <Loader />
       </View>
     );
   }
 
-  // Consents, a display name and a birth date (docs/SPEC_V3.md §3), then the optional photo step.
+  // Consents, a display name, a birth date and the gender (docs/SPEC_V3.md §3, §23.D), then the
+  // optional photo step.
   const onboarded =
     signedIn && profile.isSuccess && !needsOnboarding(profile.data) && !extrasPending;
 
@@ -67,9 +79,11 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <RootNavigator />
-      </ThemeProvider>
+      <LaunchCurtain>
+        <ThemeProvider>
+          <RootNavigator />
+        </ThemeProvider>
+      </LaunchCurtain>
     </QueryClientProvider>
   );
 }

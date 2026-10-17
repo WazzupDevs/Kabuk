@@ -3,8 +3,8 @@ import { Pressable, View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { GameIcon } from '@/components/Glyph';
-import { useDepth } from '@/components/Depth';
 import { Text } from '@/components/Text';
+import { usePressScale } from '@/components/motion';
 import { tr } from '@/i18n/tr';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { PaletteKey } from '@/theme/tokens';
@@ -302,7 +302,7 @@ export function TargetHold({
   onHoldStart: () => void;
   onHoldEnd: () => void;
 }) {
-  const { colors, shape } = useTheme();
+  const { colors } = useTheme();
   const [holding, setHolding] = useState(false);
   const shown = holding && target !== null;
   const r = width / 2;
@@ -341,18 +341,16 @@ export function TargetHold({
                 height: r + HUB / 2,
                 borderTopLeftRadius: r,
                 borderTopRightRadius: r,
-                backgroundColor: colors.violet,
-                borderWidth: Math.max(shape.stroke.control, 2),
-                borderColor: colors.border,
+                backgroundColor: colors.accent,
               }}
             >
               {/* Smaller on a small dial, so the line under it stays inside the cover. */}
               <GameIcon
                 name="needle"
-                color={colors.onViolet}
+                color={colors.onAccent}
                 size={Math.min(SPACING[11], Math.round(r * 0.4))}
               />
-              <Text variant="bodyStrong" tone="onViolet" align="center">
+              <Text variant="bodyStrong" tone="onAccent" align="center">
                 {holding ? tr.ibre.loading : tr.ibre.hold}
               </Text>
             </View>
@@ -465,7 +463,7 @@ function StepButton({
   disabled?: boolean;
 }) {
   const { colors, shape } = useTheme();
-  const depth = useDepth();
+  const pressScale = usePressScale();
   return (
     <Pressable
       testID={testID}
@@ -486,7 +484,7 @@ function StepButton({
               borderRadius: shape.radius.pill,
               backgroundColor: disabled ? colors.surface2 : colors.raised,
             },
-            depth({ pressed, inactive: disabled }),
+            pressScale(pressed && !disabled),
           ]}
         >
           <Text variant="title" tone={disabled ? 'muted' : 'text'}>

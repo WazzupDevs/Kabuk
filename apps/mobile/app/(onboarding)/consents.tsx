@@ -2,6 +2,7 @@ import {
   CURRENT_KVKK_VERSION,
   CURRENT_TERMS_VERSION,
   needsConsent,
+  needsGender,
   needsProfile,
 } from '@shared/consent.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -19,9 +20,12 @@ import { useProfile } from '@/features/account/useProfile';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { callAccount } from '@/lib/api';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 // Terms and KVKK notice. A new account goes on to the profile step (about-you), where both are
-// sent together with the name and birth date; an existing profile only re-consents here.
+// sent together with the name, the birth date and the gender; an existing profile only re-consents
+// here, and an account from before the gender step then answers it once (docs/SPEC_V3.md §23.D):
+// the notice that tells why comes first.
 export default function ConsentsScreen() {
   const queryClient = useQueryClient();
   const profile = useProfile();
@@ -30,6 +34,7 @@ export default function ConsentsScreen() {
   const hasProfile = !!profile.data && !needsProfile(profile.data);
 
   const reconsent = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: () =>
       callAccount({
         action: 'complete-onboarding',
@@ -39,8 +44,16 @@ export default function ConsentsScreen() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['profile'] }),
   });
 
-  // Consents are current and only the profile is missing (an account from before v3).
-  if (profile.data && !needsConsent(profile.data)) return <Redirect href="/about-you" />;
+  // Consents are current: the profile is missing (an account from before v3), or only the gender;
+  // otherwise the optional photo step is still open.
+  if (profile.data && !needsConsent(profile.data)) {
+    const next = needsProfile(profile.data)
+      ? '/about-you'
+      : needsGender(profile.data)
+        ? '/gender'
+        : '/extras';
+    return <Redirect href={next} />;
+  }
 
   return (
     <Screen>

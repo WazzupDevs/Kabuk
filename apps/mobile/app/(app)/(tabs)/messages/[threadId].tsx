@@ -1,4 +1,4 @@
-import type { ReportReason } from '@shared/chat.ts';
+import { REPORT_REASONS, type ReportReason } from '@shared/chat.ts';
 import { DM_MAX_LENGTH, prepareDm } from '@shared/friends.ts';
 import { canRetry, type OutboxMessage, outboxReducer } from '@shared/chatOutbox.ts';
 import { toRuns } from '@shared/chatRuns.ts';
@@ -35,6 +35,7 @@ import { useBroadcast } from '@/features/rooms/useBroadcast';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { ApiError, friendsApi, safetyApi } from '@/lib/api';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 type Params = { threadId: string; publicId: string; name: string };
 
@@ -143,6 +144,7 @@ export default function DmScreen() {
     router.back();
   };
   const end = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: ({ kind, reason }: { kind: 'remove' | 'block'; reason?: ReportReason }) =>
       kind === 'remove'
         ? friendsApi.remove(publicId, reason)
@@ -155,6 +157,7 @@ export default function DmScreen() {
     },
   });
   const report = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: (reason: ReportReason) => safetyApi.reportDm(threadId, reason),
     onSuccess: () => {
       track('report_submitted', {});
@@ -213,7 +216,7 @@ export default function DmScreen() {
     >
       {list.length === 0 && outbox.length === 0 && !messages.isPending ? (
         <View className="flex-1 justify-center">
-          <EmptyState snail body={tr.friends.noMessagesYet} />
+          <EmptyState kind="empty" body={tr.friends.noMessagesYet} />
         </View>
       ) : null}
       {runs.map(({ item: m, first, last, day }) => {
@@ -308,6 +311,7 @@ export default function DmScreen() {
       </Sheet>
 
       <ReportModal
+        reasons={REPORT_REASONS}
         visible={reporting}
         pending={report.isPending}
         error={report.error}
@@ -315,6 +319,7 @@ export default function DmScreen() {
         onClose={() => setReporting(false)}
       />
       <ConfirmWithReport
+        reasons={REPORT_REASONS}
         visible={confirm !== null}
         title={confirm === 'block' ? tr.safety.blockConfirmTitle : tr.friends.removeFriend}
         hint={confirm === 'block' ? tr.friends.blockHint : tr.friends.removeHint}

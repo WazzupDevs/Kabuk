@@ -1,4 +1,4 @@
-import type { ReportReason } from '@shared/chat.ts';
+import { REPORT_REASONS, type ReportReason } from '@shared/chat.ts';
 import {
   prepareVenueMessage,
   senderLabel,
@@ -10,7 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { toRuns } from '@shared/chatRuns.ts';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, View } from 'react-native';
+import { Alert, View } from 'react-native';
 
 import { Avatar, AVATAR_SIZE } from '@/components/Avatar';
 import { Card } from '@/components/Card';
@@ -23,9 +23,10 @@ import { ListRow } from '@/components/ListRow';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Sheet } from '@/components/Sheet';
-import { Snail } from '@/components/Snail';
+import { Mark } from '@/components/Mark';
 import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
+import { Loader } from '@/components/Loader';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { PhotoSheet } from '@/features/profile/PhotoSheet';
@@ -43,6 +44,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { ApiError, safetyApi, venueChatApi } from '@/lib/api';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
@@ -75,6 +77,7 @@ export default function VenueChatScreen() {
     if (venueId) void queryClient.invalidateQueries({ queryKey: venueChatKeys.messages(venueId) });
   };
   const send = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: ({ text, profiled }: { text: string; profiled: boolean; first: boolean }) =>
       reply.target
         ? venueChatApi.reply(venueId ?? '', text, profiled, reply.target.id)
@@ -122,6 +125,7 @@ export default function VenueChatScreen() {
     send.reset();
   };
   const report = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: ({ id, reason }: { id: string; reason: ReportReason }) =>
       safetyApi.reportVenueChat(id, reason),
     onSuccess: () => {
@@ -132,6 +136,7 @@ export default function VenueChatScreen() {
     },
   });
   const block = useMutation({
+    meta: FEEL_ERROR,
     mutationFn: ({ id, reason }: { id: string; reason: ReportReason | undefined }) =>
       safetyApi.blockVenueChat(id, reason),
     onSuccess: () => {
@@ -241,17 +246,19 @@ export default function VenueChatScreen() {
     >
       <Card tone="note">
         <View className="flex-row items-center gap-3">
-          <Snail height={SPACING[9]} />
+          <Mark size={SPACING[9]} label={null} />
           <Text variant="fine" tone="text" className="flex-1">
             {tr.venueChat.hint}
           </Text>
         </View>
       </Card>
       {page.isPending ? (
-        <ActivityIndicator color={colors.muted} />
+        <View className="items-center">
+          <Loader />
+        </View>
       ) : messages?.length === 0 ? (
         <View className="flex-1 justify-center">
-          <EmptyState snail body={tr.venueChat.empty} />
+          <EmptyState kind="empty" body={tr.venueChat.empty} />
         </View>
       ) : (
         runs.map(({ item: m, first, last, day }) => (
@@ -341,6 +348,7 @@ export default function VenueChatScreen() {
         />
       </Sheet>
       <ReportModal
+        reasons={REPORT_REASONS}
         visible={reporting !== null}
         pending={report.isPending}
         error={report.error}
@@ -348,6 +356,7 @@ export default function VenueChatScreen() {
         onClose={() => setReporting(null)}
       />
       <ConfirmWithReport
+        reasons={REPORT_REASONS}
         visible={blocking !== null}
         title={tr.venueChat.blockConfirmTitle}
         hint={tr.venueChat.blockConfirmBody}
