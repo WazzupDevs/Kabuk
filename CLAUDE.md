@@ -72,7 +72,7 @@ Node 22, pnpm 10, Docker (yerel Supabase için). Supabase CLI ve Deno root devDe
 3. **Vault anahtarı:** `openssl rand -hex 32` ile üret, parola yöneticisine kaydet, SQL Editor'da çalıştır:
    `select vault.create_secret('<anahtar>', 'phone_hash_key');`
    Anahtar asla değişmez (rotasyon yok; değişirse `banned_phones` geçersiz olur). `supabase/local/secrets.sql`'i barındırılan projede asla çalıştırma.
-4. `pnpm supabase db push --include-seed` — migration'lar + `supabase/seeds/*.sql` (takma ad kelimeleri, mekanlar; tekrar çalıştırılabilir). Yerel sırlar seed yolunda değildir, buradan barındırılan projeye gidemez.
+4. `pnpm supabase db push --include-seed --skip-vault` — migration'lar + `supabase/seeds/*.sql` (takma ad kelimeleri, mekanlar; tekrar çalıştırılabilir). Yerel sırlar seed yolunda değildir, buradan barındırılan projeye gidemez. `--skip-vault`: "main'den dev projesine yayın" adım 4.
 5. `pnpm supabase functions deploy` — tüm fonksiyonlar. `verify_jwt = false` ayarı `config.toml`'dan gelir; token'ı fonksiyon kendisi doğrular.
 6. **SMS: dev projesinde yok.** Twilio hesabı açılmaz. Telefonla giriş yalnızca panele girilen test numaralarıyla çalışır (7. adım ve aşağıda "Barındırılan projede SMS'siz giriş"). Phone sağlayıcısını açmak için panel sağlayıcı alanlarını ister: Twilio Verify seçili kalır, kutularda sahte değerler durur; hiçbir SMS gönderilmez. Gerçek SMS yalnızca pilot (üretim) projesinde Netgsm kancasıyla gider (aşağıda "Üretim Supabase projesi").
 7. **Supabase paneli → Authentication:**
@@ -111,7 +111,7 @@ Pilot ve Play kullanıcıları için ayrı proje. Pilotun baştan sona yayın s�
 Sıra:
 1. Yeni proje (Frankfurt `eu-central-1`) ve **Pro plana al** (panel → Organization → Billing). Gerekçe: Free planda otomatik yedek yok ve düşük aktivitede proje haftalık duraklatılır (https://supabase.com/docs/guides/platform/free-project-pausing); Pro'da günlük yedekler 7 gün saklanır (https://supabase.com/docs/guides/platform/backups) ve hesap silme sayfası bu süreyi söyler. Dev projesi Free kalır.
 2. `pnpm supabase link --project-ref <üretim ref>`. Dev ve üretim arasında geçerken her komuttan önce `pnpm supabase migration list`'in hangi projeye bağlı olduğunu kontrol et; bitince dev'e geri bağla.
-3. Vault anahtarı (yukarıdaki tabloya göre yeni), sonra `db push --include-seed` (seed notu tabloda) ve 18 fonksiyonun deploy'u ("main'den dev projesine yayın" adım 5).
+3. Vault anahtarı (yukarıdaki tabloya göre yeni), sonra `pnpm supabase db push --include-seed --skip-vault` (seed notu tabloda) ve 18 fonksiyonun deploy'u ("main'den dev projesine yayın" adım 5).
 4. Panel → Authentication: Email kapalı, Phone açık (Twilio kutularında sahte değerler; SMS'i Netgsm kancası gönderir, `docs/SPEC_V3.md` §2.3), test numarası yalnızca inceleme hesabı, Rate Limits, Hooks → Before User Created → `private.before_user_created` ve Send SMS Hook.
 5. Panel → Realtime → Settings → Allow public access **kapalı**.
 6. `pnpm supabase secrets set POSTHOG_PERSONAL_API_KEY=… POSTHOG_PROJECT_ID=…`. `MIN_APP_BUILD` ilk production AAB'den sonra.
@@ -129,8 +129,8 @@ Sıra:
 Tek seferlik kurulum (yukarıda) yapılmış bir projeye main'in güncel hâlini gönderir. Repo kökünde, sırayla. `supabase login` gerekirse tarayıcıdan giriş ister; uzak veritabanına bağlanan komutlar (2–4, 6) veritabanı parolasını sorabilir (panel → Settings → Database).
 1. `git checkout main && git pull && pnpm install`
 2. `pnpm supabase migration list`: bağlı projeyi ve uygulanmamış migration'ları gösterir (Local dolu, Remote boş satırlar). Proje yanlışsa: `pnpm supabase link --project-ref <ref>`.
-3. `pnpm supabase db push --include-seed --dry-run`: uygulanacakları yalnızca listeler. İçerik değiştiyse seed satırında yeni `supabase/seeds/content-<id>.sql` görünür; `(hash update)` yazıyorsa seed çalışmaz (dosya elle değiştirilmiş demektir: `pnpm seed` ile yeniden üret).
-4. `pnpm supabase db push --include-seed`: migration'lar, ardından içerik değiştiyse yeni seed dosyası (`supabase/seeds/content-<id>.sql`; takma ad kelimeleri, kartlar, küfür listesi, mekanlar; tekrar çalıştırılabilir; silmez, ekler ya da günceller; JSON'dan çıkarılan kart deste deste `is_active = false` olur). Profil fotoğrafı kovası ve cron işleri migration'larla gelir.
+3. `pnpm supabase db push --include-seed --skip-vault --dry-run`: uygulanacakları yalnızca listeler. İçerik değiştiyse seed satırında yeni `supabase/seeds/content-<id>.sql` görünür; `(hash update)` yazıyorsa seed çalışmaz (dosya elle değiştirilmiş demektir: `pnpm seed` ile yeniden üret).
+4. `pnpm supabase db push --include-seed --skip-vault`: migration'lar, ardından içerik değiştiyse yeni seed dosyası (`supabase/seeds/content-<id>.sql`; takma ad kelimeleri, kartlar, küfür listesi, mekanlar; tekrar çalıştırılabilir; silmez, ekler ya da günceller; JSON'dan çıkarılan kart deste deste `is_active = false` olur). Profil fotoğrafı kovası ve cron işleri migration'larla gelir. `--skip-vault`: `db push` öntanımlı olarak `config.toml`'daki Vault sırlarını (`[db.vault]`) migration'lardan önce barındırılan projeye yazar (CLI 2.117). O blok bugün yorum satırı, bayrak koruyucudur: biri ileride oraya bir sır yazarsa barındırılan projeye gitmez. `phone_hash_key` yalnızca kurulumdaki SQL Editor adımıyla yazılır ve asla değişmez.
 5. Fonksiyonların hepsi: `pnpm functions:deploy`. Liste `config.toml`'daki `[functions.*]` bloklarından okunur (şu an 18); sonda bağlı projeyi ve yayınlanan fonksiyon sayısını yazar, biri bile yayınlanamazsa sıfırdan farklı kodla çıkar. Uzun bir satırı yapıştırmak gerekmez (Windows cmd'de bölünüp fonksiyonların bir kısmı yayınlanmadan kalabiliyordu). `verify_jwt = false` her birinin `config.toml` bloğundan gelir; yeni bir fonksiyon yalnızca `config.toml` bloğu ve klasörüyle gelir, script değişmez (`scripts/functions/config.test.ts` ikisinin eşleştiğini denetler).
 6. Kontrol: `pnpm supabase functions list` (18'i de `ACTIVE`, sürümleri artmış) ve `pnpm supabase migration list` (her satırda Local ve Remote aynı).
 7. Sırlar, yalnızca gerektiğinde (`pnpm supabase secrets list` ile bak):
@@ -162,7 +162,7 @@ Tek seferlik kurulum (yukarıda) yapılmış bir projeye main'in güncel hâlini
 | Yalnızca JS/TS, metin, stil, `@shared` kodu | `pnpm dlx eas-cli update --channel preview --message "…"` (`apps/mobile` içinde) |
 | `EXPO_PUBLIC_*` değeri | EAS ortam değişkenini güncelle, sonra `eas update` (değerler JS paketine girer) |
 | Yeni ya da güncellenen native modül, config plugin, `app.json`/`app.config.ts` native alanı (izin, paket adı, ikon, splash, `userInterfaceStyle`), Expo SDK yükseltmesi, `google-services.json` | Önce `app.json` → `version` artır, sonra yeni `eas build --profile preview` ve APK'nın yeniden kurulması |
-| Migration ya da `content/` (seed) | `pnpm supabase db push --include-seed` |
+| Migration ya da `content/` (seed) | `pnpm supabase db push --include-seed --skip-vault` |
 | Edge Function | `pnpm supabase functions deploy <ad>` |
 | Panel ayarı (Auth, Realtime, Storage) | Panelden; `config push` asla |
 | Eski build'leri kapatmak (zorunlu güncelleme) | Yeni build dağıtıldıktan sonra `pnpm supabase secrets set MIN_APP_BUILD=<yeni versionCode>`; bu build'den eski uygulamalar her fonksiyon çağrısında `update_required` alır ve "Güncelleme gerekli" ekranını gösterir. `0` ya da ayarsız: kapı kapalı değil, açık |
@@ -222,7 +222,7 @@ Pilot listesinde olmayan bir yerde test için elle girilen mekan. Dosya boşsa (
    { "venues": [{ "ref": "saha-1", "name": "Saha Testi", "kind": "cafe", "lat": 41.00123, "lng": 28.64210 }] }
    ```
    `ref` kalıcı kimliktir (değiştirme; aynı `ref` güncellenir). `kind` zorunlu ve `cafe`. İsteğe bağlı: `city` (varsayılan İstanbul), `district` (varsayılan Test), `isActive`, `spots` (kampüsteki gibi noktalar, ör. `[{ "ref": "bahce", "name": "Bahçe" }]`; noktası olan mekanda check-in "Neredesin?" sorar, 300 m kuralı değişmez).
-2. `pnpm seed`, sonra `pnpm supabase db push --include-seed` (yerelde `pnpm db:reset`). Seed dosyası (`supabase/seeds/`) commit'lenir, yani koordinat git'e girer: ev adresi değil mekan koordinatı kullan.
+2. `pnpm seed`, sonra `pnpm supabase db push --include-seed --skip-vault` (yerelde `pnpm db:reset`). Seed dosyası (`supabase/seeds/`) commit'lenir, yani koordinat git'e girer: ev adresi değil mekan koordinatı kullan.
 3. Check-in 300 m içinden çalışır. İki telefon da mekanın yakınında olmalı.
 4. Test bitince mekanı silmek yerine `"isActive": false` yapıp tekrar seed et (seed yalnızca ekler ya da günceller, silmez), ya da listeyi boşalt ve mekanı panelden pasif yap.
 5. Uçtan uca senaryo: `docs/FIELD_TEST.md`.

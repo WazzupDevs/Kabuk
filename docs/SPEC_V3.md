@@ -2460,7 +2460,7 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 **Yayın.**
 
 - `version` artmaz: hepsi JS ve sunucu değişikliğidir; telefonlardaki 0.3.0'a OTA ile gider.
-- Yayın sırası (her sunucu adımında, Windows cmd): `pnpm supabase migration list` → `pnpm supabase db push --include-seed --dry-run` → `pnpm supabase db push --include-seed` → `pnpm functions:deploy` → `pnpm supabase functions list`.
+- Yayın sırası (her sunucu adımında, Windows cmd): `pnpm supabase migration list` → `pnpm supabase db push --include-seed --skip-vault --dry-run` → `pnpm supabase db push --include-seed --skip-vault` → `pnpm functions:deploy` → `pnpm supabase functions list`.
 - Yeni sır ve panel ayarı yoktur.
 
 **PR kuralları.**
