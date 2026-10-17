@@ -12,7 +12,12 @@ import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Text } from '@/components/Text';
 import { openDm } from '@/features/friends/openDm';
-import { friendKeys, useHistoryFriends, useTableHistory } from '@/features/friends/queries';
+import {
+  friendKeys,
+  type HistoryFriend,
+  useHistoryFriends,
+  useTableHistory,
+} from '@/features/friends/queries';
 import { useRetryAfterName } from '@/features/friends/useRetryAfterName';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -82,8 +87,6 @@ export function TableEnd({ roomId, otherAlias, people, onClose }: Props) {
   );
 }
 
-type Friend = { public_id: string; display_name: string | null; thread_id: string | null };
-
 function EndRow({
   person,
   record,
@@ -91,7 +94,7 @@ function EndRow({
 }: {
   person: EndPerson;
   record: { id: string; friend_action_at: string | null } | undefined;
-  friend: Friend | undefined;
+  friend: HistoryFriend | undefined;
 }) {
   const { colors } = useTheme();
   const queryClient = useQueryClient();
@@ -146,7 +149,7 @@ function EndRow({
           {tr.tableEnd.pressed}
         </Text>
       </View>
-    ) : state === 'friends' && friend?.thread_id ? (
+    ) : state === 'friends' && friend?.threadId ? (
       <Button
         variant="neutral"
         size="sm"
@@ -154,9 +157,9 @@ function EndRow({
         label={tr.tableEnd.message}
         onPress={() =>
           openDm({
-            threadId: friend.thread_id ?? '',
-            publicId: friend.public_id,
-            name: friend.display_name,
+            threadId: friend.threadId ?? '',
+            publicId: friend.publicId,
+            name: friend.name,
           })
         }
       />

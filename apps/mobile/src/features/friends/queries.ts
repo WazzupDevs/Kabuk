@@ -2,7 +2,7 @@ import type { DmInboxThread } from '@shared/api/friends.ts';
 import { type DmPageRow, totalUnread, withSentDm, withThreadRead } from '@shared/dmInbox.ts';
 import { BROADCAST, inboxChannel } from '@shared/rooms.ts';
 import { type QueryClient, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { AppState } from 'react-native';
 
 import { useSessionStore } from '@/features/auth/session';
@@ -115,18 +115,39 @@ export function useTableHistory(roomId: string, enabled: boolean) {
   });
 }
 
-// The records whose two accounts are friends now (public.play_history_friends): "Arkadaş oldunuz ·
-// Mesajlaş" on the table's end and in the play history, with the friend's DM. Under friendKeys.all,
-// so a new friendship (the inbox broadcast) reads it again. A single press shows nothing (rule 5).
-export function useHistoryFriends() {
-  return useQuery({
+// The records whose pair became friends at that encounter (public.my_history_friends: both pressed
+// "Arkadaş ekle" on it, friends now, no block): "Arkadaş oldunuz · Mesajlaş" on the table's end and
+// in the play history. The RPC gives only the profile id; the name and the DM come from the friend
+// list. Both are under friendKeys.all, so a new friendship (the inbox broadcast) reads them again. A
+// single press shows nothing (rule 5).
+export type HistoryFriend = { publicId: string; name: string | null; threadId: string | null };
+
+export function useHistoryFriends(): { data: ReadonlyMap<string, HistoryFriend> | undefined } {
+  const records = useQuery({
     queryKey: [...friendKeys.history, 'friends'] as const,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('play_history_friends');
+      const { data, error } = await supabase.rpc('my_history_friends');
       if (error) throw error;
-      return new Map(data.map((f) => [f.history_id, f]));
+      return data;
     },
   });
+  const friends = useFriends();
+  const data = useMemo(() => {
+    if (!records.data || !friends.data) return undefined;
+    const byId = new Map(friends.data.map((f) => [f.publicId, f]));
+    const joined = new Map<string, HistoryFriend>();
+    for (const r of records.data) {
+      const f = byId.get(r.public_id);
+      if (f)
+        joined.set(r.history_id, {
+          publicId: f.publicId,
+          name: f.displayName,
+          threadId: f.threadId,
+        });
+    }
+    return joined;
+  }, [records.data, friends.data]);
+  return { data };
 }
 
 // Mesajlar (docs/SPEC_V3.md §18.3): every friend, newest conversation first. Under friendKeys.all,

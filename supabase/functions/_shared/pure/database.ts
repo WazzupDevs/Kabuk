@@ -2015,6 +2015,13 @@ export type Database = {
         Args: { new_path: string; old_path: string };
         Returns: number;
       };
+      my_history_friends: {
+        Args: never;
+        Returns: {
+          history_id: string;
+          public_id: string;
+        }[];
+      };
       my_incoming_requests: {
         Args: never;
         Returns: {
@@ -2054,15 +2061,6 @@ export type Database = {
           district: string;
           id: string;
           name: string;
-        }[];
-      };
-      play_history_friends: {
-        Args: never;
-        Returns: {
-          display_name: string;
-          history_id: string;
-          public_id: string;
-          thread_id: string;
         }[];
       };
       profile_view: {

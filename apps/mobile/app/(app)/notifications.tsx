@@ -222,7 +222,7 @@ export default function NotificationsScreen() {
           // canvas: Faz 3 · 23.3 → oyun geçmişi. A silent "Arkadaş ekle" (friend_open, a mutual
           // "Evet") says only that this phone pressed, until the two are friends; an older record
           // keeps "İstek gönder".
-          const primary = friend?.thread_id ? (
+          const primary = friend?.threadId ? (
             <Button
               variant="neutral"
               size="sm"
@@ -230,9 +230,9 @@ export default function NotificationsScreen() {
               label={tr.tableEnd.message}
               onPress={() =>
                 openDm({
-                  threadId: friend.thread_id ?? '',
-                  publicId: friend.public_id,
-                  name: friend.display_name,
+                  threadId: friend.threadId ?? '',
+                  publicId: friend.publicId,
+                  name: friend.name,
                 })
               }
             />

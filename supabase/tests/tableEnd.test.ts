@@ -395,8 +395,10 @@ describe('"Arkadaş ekle" on a friend_open record (§23.G)', { timeout: 60_000 }
 });
 
 // "Arkadaş oldunuz · Mesajlaş" on the table's end and in the play history (step 23.3's client,
-// public.play_history_friends): the caller's own records whose two accounts are friends now.
-describe('play_history_friends (§23.G, rules 4 and 5)', { timeout: 60_000 }, () => {
+// public.my_history_friends): the caller's records whose pair became friends at that encounter. Both
+// pressed "Arkadaş ekle" on it, they are friends now and nothing blocks them; friends alone would tie
+// an anonymous table to a friend (rule 4).
+describe('my_history_friends (§23.G, rules 4 and 5)', { timeout: 60_000 }, () => {
   const historyId = async (p: Phone, other: Phone, roomId: string) => {
     const [row] = await sql`
       select id from public.play_history
@@ -411,62 +413,97 @@ describe('play_history_friends (§23.G, rules 4 and 5)', { timeout: 60_000 }, ()
       historyId: await historyId(p, other, roomId),
     });
   const friendsRead = async (p: Phone) => {
-    const { data, error } = await p.client.rpc('play_history_friends');
+    const { data, error } = await p.client.rpc('my_history_friends');
     expect(error).toBeNull();
     return data ?? [];
   };
+  const publicIdOf = async (p: Phone) =>
+    ((await sql`select public_id from public.profiles where id = ${p.userId}`)[0]?.public_id ??
+      '') as string;
+  const friendsOf = async (a: Phone, b: Phone) =>
+    sql`
+      select 1 from public.friendships
+      where (user_a = ${a.userId} and user_b = ${b.userId})
+         or (user_a = ${b.userId} and user_b = ${a.userId})
+    `;
+  // A two-table room that ran 3 minutes and ended, both pressing "Arkadaş ekle": friends.
+  async function friendsAtTable() {
+    const [owner, guest] = await tables(2);
+    const roomId = await teamRoom(owner, guest);
+    await backdate(roomId);
+    expect(await rooms(owner, { action: 'end' })).toEqual(OK);
+    expect((await press(owner, guest, roomId)).status).toBe(200);
+    expect((await press(guest, owner, roomId)).status).toBe(200);
+    expect(await friendsOf(owner, guest)).toHaveLength(1);
+    return { owner, guest, roomId };
+  }
 
-  it('lists a record only once the pair are friends, with the friend and the DM, and only to them', async () => {
+  it('lists the record to each side once both pressed, and only to that pair', async () => {
     const [owner, guest, ownerMember] = await tables(3);
     const roomId = await teamRoom(owner, guest, { owner: [ownerMember] });
     await backdate(roomId);
     expect(await rooms(owner, { action: 'end' })).toEqual(OK);
-
-    // One press: nothing on either side (rule 5).
-    expect((await press(ownerMember, guest, roomId)).status).toBe(200);
     expect((await press(owner, guest, roomId)).status).toBe(200);
-    for (const p of [owner, guest, ownerMember]) expect(await friendsRead(p)).toEqual([]);
-
-    // Both: the two records of that pair, each to its own account.
     expect((await press(guest, owner, roomId)).status).toBe(200);
-    const [thread] = await sql`
-      select t.id from public.dm_threads t
-      where (t.user_a, t.user_b) = (least(${owner.userId}::uuid, ${guest.userId}::uuid),
-                                   greatest(${owner.userId}::uuid, ${guest.userId}::uuid))
-    `;
-    const [ownerProfile] =
-      await sql`select public_id, display_name from public.profiles where id = ${owner.userId}`;
-    const [guestProfile] =
-      await sql`select public_id, display_name from public.profiles where id = ${guest.userId}`;
+
     expect(await friendsRead(owner)).toEqual([
-      {
-        history_id: await historyId(owner, guest, roomId),
-        public_id: guestProfile?.public_id,
-        display_name: guestProfile?.display_name,
-        thread_id: thread?.id,
-      },
+      { history_id: await historyId(owner, guest, roomId), public_id: await publicIdOf(guest) },
     ]);
     expect(await friendsRead(guest)).toEqual([
-      {
-        history_id: await historyId(guest, owner, roomId),
-        public_id: ownerProfile?.public_id,
-        display_name: ownerProfile?.display_name,
-        thread_id: thread?.id,
-      },
+      { history_id: await historyId(guest, owner, roomId), public_id: await publicIdOf(owner) },
     ]);
     expect(await friendsRead(ownerMember)).toEqual([]);
+  });
 
-    // A block ends the friendship: the record is no longer listed.
+  it('lists nothing to either side after one press (rule 5)', async () => {
+    const [owner, guest] = await tables(2);
+    const roomId = await teamRoom(owner, guest);
+    await backdate(roomId);
+    expect(await rooms(owner, { action: 'end' })).toEqual(OK);
+    expect((await press(owner, guest, roomId)).status).toBe(200);
+    expect(await friendsRead(owner)).toEqual([]);
+    expect(await friendsRead(guest)).toEqual([]);
+  });
+
+  it('never ties an anonymous table to a friend from before it, even when both press (rule 4)', async () => {
+    const [owner, guest] = await tables(2);
+    await sql`select private.make_friends(${owner.userId}::uuid, ${guest.userId}::uuid, 'request')`;
+    const roomId = await teamRoom(owner, guest);
+    await backdate(roomId);
+    expect(await rooms(owner, { action: 'end' })).toEqual(OK);
+    expect((await press(owner, guest, roomId)).status).toBe(200);
+    expect((await press(guest, owner, roomId)).status).toBe(200);
+    expect(await friendsOf(owner, guest)).toHaveLength(1);
+    expect(await friendsRead(owner)).toEqual([]);
+    expect(await friendsRead(guest)).toEqual([]);
+  });
+
+  it('lists nothing once one blocks the other', async () => {
+    const { owner, guest } = await friendsAtTable();
     expect(
-      (await invoke(owner.client, 'safety', { action: 'block', publicId: guestProfile?.public_id }))
+      (await invoke(owner.client, 'safety', { action: 'block', publicId: await publicIdOf(guest) }))
         .status,
     ).toBe(200);
     expect(await friendsRead(owner)).toEqual([]);
     expect(await friendsRead(guest)).toEqual([]);
   });
 
+  it('lists nothing once the friendship ends', async () => {
+    const { owner, guest } = await friendsAtTable();
+    expect(
+      (
+        await invoke(owner.client, 'friends', {
+          action: 'remove',
+          publicId: await publicIdOf(guest),
+        })
+      ).status,
+    ).toBe(200);
+    expect(await friendsRead(owner)).toEqual([]);
+    expect(await friendsRead(guest)).toEqual([]);
+  });
+
   it('is closed to callers without an account', async () => {
-    const res = await fetch(`${apiUrl}/rest/v1/rpc/play_history_friends`, {
+    const res = await fetch(`${apiUrl}/rest/v1/rpc/my_history_friends`, {
       method: 'POST',
       headers: { apikey: anonKey, 'content-type': 'application/json' },
       body: '{}',
