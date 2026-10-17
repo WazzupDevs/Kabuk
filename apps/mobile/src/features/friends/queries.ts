@@ -2,7 +2,7 @@ import type { DmInboxThread } from '@shared/api/friends.ts';
 import { type DmPageRow, totalUnread, withSentDm, withThreadRead } from '@shared/dmInbox.ts';
 import { BROADCAST, inboxChannel } from '@shared/rooms.ts';
 import { type QueryClient, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { AppState } from 'react-native';
 
 import { useSessionStore } from '@/features/auth/session';
@@ -87,7 +87,7 @@ export function usePlayHistory() {
       const { data, error } = await supabase
         .from('play_history')
         .select(
-          'id, room_id, concept, own_alias, other_alias, other_headcount, reveal_mutual, friend_action_at, played_at',
+          'id, room_id, concept, own_alias, other_alias, other_headcount, reveal_mutual, friend_open, friend_action_at, played_at',
         )
         .order('played_at', { ascending: false })
         .limit(100);
@@ -95,6 +95,59 @@ export function usePlayHistory() {
       return data;
     },
   });
+}
+
+// This phone's records of one table (docs/SPEC_V3.md §23.G), written when the table closed or when
+// this phone left it: one per phone of the other side it sat with for 3 minutes, by that phone's
+// alias. The table's end is built from them and from what the phone saw at the table.
+export function useTableHistory(roomId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: [...friendKeys.history, 'room', roomId] as const,
+    enabled,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('play_history')
+        .select('id, other_alias, reveal_mutual, friend_open, friend_action_at')
+        .eq('room_id', roomId);
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+// The records whose pair became friends at that encounter (public.my_history_friends: both pressed
+// "Arkadaş ekle" on it, friends now, no block): "Arkadaş oldunuz · Mesajlaş" on the table's end and
+// in the play history. The RPC gives only the profile id; the name and the DM come from the friend
+// list. Both are under friendKeys.all, so a new friendship (the inbox broadcast) reads them again. A
+// single press shows nothing (rule 5).
+export type HistoryFriend = { publicId: string; name: string | null; threadId: string | null };
+
+export function useHistoryFriends(): { data: ReadonlyMap<string, HistoryFriend> | undefined } {
+  const records = useQuery({
+    queryKey: [...friendKeys.history, 'friends'] as const,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('my_history_friends');
+      if (error) throw error;
+      return data;
+    },
+  });
+  const friends = useFriends();
+  const data = useMemo(() => {
+    if (!records.data || !friends.data) return undefined;
+    const byId = new Map(friends.data.map((f) => [f.publicId, f]));
+    const joined = new Map<string, HistoryFriend>();
+    for (const r of records.data) {
+      const f = byId.get(r.public_id);
+      if (f)
+        joined.set(r.history_id, {
+          publicId: f.publicId,
+          name: f.displayName,
+          threadId: f.threadId,
+        });
+    }
+    return joined;
+  }, [records.data, friends.data]);
+  return { data };
 }
 
 // Mesajlar (docs/SPEC_V3.md §18.3): every friend, newest conversation first. Under friendKeys.all,

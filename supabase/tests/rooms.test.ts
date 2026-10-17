@@ -381,26 +381,14 @@ describe('leaving', () => {
     expect(await roomRow(roomId)).toMatchObject({ status: 'active' });
   });
 
-  it('opens the window when either table leaves the venue, with its answer "Hayır"', async () => {
+  // Step 23.3 (docs/SPEC_V3.md §23.G): no window; the table closes at once (tableEnd.test.ts has
+  // the rest of it).
+  it('closes a two-table room at once when either table leaves the venue', async () => {
     for (const leaver of ['guest', 'owner'] as const) {
       const tables = await roomWithGuest();
-      const leaving = tables[leaver];
-      await invoke(leaving, 'checkin', { action: 'leave' });
-      expect(await roomRow(tables.roomId)).toMatchObject({ status: 'ending' });
-      expect(await decisionsOf(tables.roomId)).toEqual([
-        { user_id: await userIdOf(leaving), wants_meet: false },
-      ]);
-      // The other table may still answer.
-      const other = leaver === 'guest' ? tables.owner : tables.guest;
-      expect(
-        (
-          await invoke(other, 'reveal', {
-            action: 'decide',
-            roomId: tables.roomId,
-            wantsMeet: true,
-          })
-        ).status,
-      ).toBe(200);
+      await invoke(tables[leaver], 'checkin', { action: 'leave' });
+      expect(await roomRow(tables.roomId)).toMatchObject({ status: 'closed' });
+      expect(await decisionsOf(tables.roomId)).toEqual([]);
       for (const phone of PHONES) await deleteUserByPhone(phone);
     }
   });
@@ -412,12 +400,12 @@ describe('leaving', () => {
     expect(await roomRow(roomId)).toMatchObject({ status: 'closed' });
   });
 
-  it('ending a two-table room opens the reveal window, idempotently', async () => {
+  it('ending a two-table room closes it at once, idempotently', async () => {
     const { owner, roomId } = await roomWithGuest();
     await rooms(owner, { action: 'end' });
-    expect((await roomRow(roomId))?.status).toBe('ending');
-    await rooms(owner, { action: 'end' });
-    expect((await roomRow(roomId))?.status).toBe('ending');
+    expect((await roomRow(roomId))?.status).toBe('closed');
+    expect((await rooms(owner, { action: 'end' })).status).toBe(200);
+    expect((await roomRow(roomId))?.status).toBe('closed');
   });
 
   it('closes a one-table room on end', async () => {
@@ -428,10 +416,10 @@ describe('leaving', () => {
     expect(row).toMatchObject({ status: 'closed', reveal_result: null });
   });
 
-  it('opens the window when the guest is deleted by admin:delete, as when the table leaves', async () => {
+  it('closes the room when the guest is deleted by admin:delete, as when the table leaves', async () => {
     const { roomId, guest } = await roomWithGuest();
     await deleteAccount(admin, await userIdOf(guest));
-    expect(await roomRow(roomId)).toMatchObject({ status: 'ending' });
+    expect(await roomRow(roomId)).toMatchObject({ status: 'closed' });
   });
 
   it('closes the room of a deleted account', async () => {
@@ -743,7 +731,7 @@ describe('locks', () => {
 });
 
 describe('scheduled jobs', () => {
-  it('closes rooms idle for 10 minutes and expires old requests', async () => {
+  it('closes rooms idle for ROOM_IDLE_MINUTES and expires old requests', async () => {
     const [owner, requester] = await threeTables();
     const roomId = await createRoom(owner);
     await requestJoin(requester, roomId);
@@ -753,7 +741,7 @@ describe('scheduled jobs', () => {
     const [jr] = await sql`select status from public.join_requests where room_id = ${roomId}`;
     expect(jr?.status).toBe('expired');
 
-    await sql`update public.rooms set last_activity_at = now() - interval '11 minutes' where id = ${roomId}`;
+    await sql`update public.rooms set last_activity_at = now() - make_interval(mins => ${ROOM_IDLE_MINUTES + 1}) where id = ${roomId}`;
     await sql`select private.close_idle_rooms(${ROOM_IDLE_MINUTES}, ${REVEAL.decisionSeconds})`;
     const [room] = await sql`select status from public.rooms where id = ${roomId}`;
     expect(room?.status).toBe('closed');
@@ -768,7 +756,7 @@ describe('scheduled jobs', () => {
     const roomId = await createRoom(owner);
     await requestJoin(requester, roomId);
     await expireRequestsOf(requester);
-    await sql`update public.rooms set last_activity_at = now() - interval '11 minutes' where id = ${roomId}`;
+    await sql`update public.rooms set last_activity_at = now() - make_interval(mins => ${ROOM_IDLE_MINUTES + 1}) where id = ${roomId}`;
 
     const job = postgres(dbUrl, { max: 1, onnotice: () => {} });
     try {
@@ -795,29 +783,18 @@ describe('scheduled jobs', () => {
     expect(next).toEqual({ rooms: 1, requests: 1 });
   });
 
-  // S5: an idle two-table room is not closed; the window opens for both tables alike and neither
-  // answer is written in advance.
-  it('opens the window of an idle two-table room for both tables', async () => {
+  // Step 23.3 (docs/SPEC_V3.md §23.G): people at one table talk with their phones away, so an idle
+  // two-table room is neither closed nor ended.
+  it('leaves an idle two-table room open', async () => {
     const [owner, guest] = await threeTables();
     const roomId = await createRoom(owner);
     await requestJoin(guest, roomId);
     const [requestId] = await pendingRequestIds(owner, roomId);
     await rooms(owner, { action: 'respond', requestId, accept: true });
-    await sql`update public.rooms set last_activity_at = now() - interval '11 minutes' where id = ${roomId}`;
+    await sql`update public.rooms set last_activity_at = now() - make_interval(mins => ${ROOM_IDLE_MINUTES + 1}) where id = ${roomId}`;
     await sql`select private.close_idle_rooms(${ROOM_IDLE_MINUTES}, ${REVEAL.decisionSeconds})`;
-    const [room] = await sql`
-      select status, reveal_ends_at - now() > interval '20 seconds' as open_window
-      from public.rooms where id = ${roomId}
-    `;
-    expect(room).toEqual({ status: 'ending', open_window: true });
-    expect(await sql`select 1 from public.reveal_decisions where room_id = ${roomId}`).toHaveLength(
-      0,
-    );
-    for (const table of [owner, guest]) {
-      expect(
-        (await invoke(table, 'reveal', { action: 'decide', roomId, wantsMeet: true })).status,
-      ).toBe(200);
-    }
+    const [room] = await sql`select status, reveal_ends_at from public.rooms where id = ${roomId}`;
+    expect(room).toEqual({ status: 'active', reveal_ends_at: null });
   });
 
   it('runs the idle job and the proposal job every minute with the numbers of pure/', async () => {

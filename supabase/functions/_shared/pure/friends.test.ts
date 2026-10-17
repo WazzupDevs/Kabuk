@@ -38,11 +38,19 @@ describe('sentRequestView', () => {
 
 describe('historyAction', () => {
   it('offers "Arkadaş ekle" only after a mutual Evet, and nothing once pressed', () => {
-    expect(historyAction({ reveal_mutual: true, friend_action_at: null })).toBe('add_friend');
-    expect(historyAction({ reveal_mutual: false, friend_action_at: null })).toBe('send_request');
-    expect(historyAction({ reveal_mutual: false, friend_action_at: '2026-10-05T20:00:00Z' })).toBe(
-      'done',
+    expect(historyAction({ reveal_mutual: true, friend_open: false, friend_action_at: null })).toBe(
+      'add_friend',
     );
+    expect(
+      historyAction({ reveal_mutual: false, friend_open: false, friend_action_at: null }),
+    ).toBe('send_request');
+    expect(
+      historyAction({
+        reveal_mutual: false,
+        friend_open: false,
+        friend_action_at: '2026-10-05T20:00:00Z',
+      }),
+    ).toBe('done');
   });
 
   // Step 23.3 (§23.G): a table that ended without the window opens "Arkadaş ekle" on its record; an

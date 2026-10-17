@@ -2015,6 +2015,13 @@ export type Database = {
         Args: { new_path: string; old_path: string };
         Returns: number;
       };
+      my_history_friends: {
+        Args: never;
+        Returns: {
+          history_id: string;
+          public_id: string;
+        }[];
+      };
       my_incoming_requests: {
         Args: never;
         Returns: {

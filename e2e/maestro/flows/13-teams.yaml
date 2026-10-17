@@ -4,8 +4,8 @@
 #    side's leader. Refereed Sesli Tabu (§22.E): on bot A's turn this phone is the describer's
 #    teammate and never gets the card; on bot B's turn its side judges: the card and Tabu.
 # 2. Leadership (§22.D): bot A leaves; this phone leads the side now and ends the room.
-# 3. The reveal per phone (§22.F): this phone alone against bot A and bot B. Bot A says "Evet": the
-#    match shows at once. Bot B says "Hayır": this phone never sees it, before or after the window.
+# 3. This phone alone against bot A and bot B (§22.C), then the table's end (§23.G): both of the
+#    other side's phones, one row each.
 appId: app.kabuk.mobile
 ---
 - runScript:
@@ -169,35 +169,17 @@ appId: app.kabuk.mobile
 - assertVisible:
     id: end-room
 - takeScreenshot: 65-teams-new-leader
+# No window (docs/SPEC_V3.md §23.G): "Masayı bitir" closes the table at once for every phone, and
+# this phone gets the table's end with the other side's phone it sat with.
 - tapOn:
     id: end-room
 - extendedWaitUntil:
-    visible: Tanışalım mı\?
-    timeout: 20000
-- tapOn:
-    id: reveal-no
-- extendedWaitUntil:
-    visible: Güzel oyundu.*
-    timeout: 15000
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: reveal
-      BODY: '{"yes":false}'
-      BOT_PORT: '8788'
-- tapOn: Mekana dön
-- extendedWaitUntil:
     visible:
-      id: lobby-open
-    timeout: 15000
-# A window with a "Hayır" runs to reveal_ends_at; bot B closes it now, so this phone's next room
-# shows in the lobby (rule 5). Only after this phone left the room: a room closed before the
-# reveal_ends_at it saw would keep its screen waiting for that time.
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: expire-reveal
-      BOT_PORT: '8788'
+      id: table-end
+    timeout: 20000
+- assertVisible: ${output.aliasB}
+- runFlow:
+    file: table-end-close.yaml
 # 3. This phone's table: bot A joins as the other side's leader, bot B as bot A's member.
 - runFlow:
     file: open-lobby-accept.yaml
@@ -229,42 +211,15 @@ appId: app.kabuk.mobile
 - back
 - tapOn:
     id: end-room
-- extendedWaitUntil:
-    visible: Tanışalım mı\?
-    timeout: 20000
-- tapOn:
-    id: reveal-yes
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: reveal
-      BODY: '{"yes":true}'
-# The match shows at once and names only bot A.
+# The table's end lists both phones of the other side, each with its own row (§23.G): the pair
+# played for less than 3 minutes, so a row has no "Arkadaş ekle".
 - extendedWaitUntil:
     visible:
-      id: reveal-matches
+      id: table-end
     timeout: 20000
 - assertVisible: ${output.aliasA}
-- assertNotVisible: ${output.aliasB}
-- takeScreenshot: 67-teams-match
-# Bot B's "Hayır" and the window's end change nothing on this phone (rule 5).
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: reveal
-      BODY: '{"yes":false}'
-      BOT_PORT: '8788'
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: expire-reveal
-      BOT_PORT: '8788'
-- assertVisible:
-    id: reveal-matches
-- assertNotVisible: ${output.aliasB}
-- takeScreenshot: 68-teams-match-after-window
-- tapOn: Mekana dön
-- extendedWaitUntil:
-    visible:
-      id: lobby-open
-    timeout: 15000
+- assertVisible: ${output.aliasB}
+- assertNotVisible: Tanışalım mı\?
+- takeScreenshot: 67-teams-table-end
+- runFlow:
+    file: table-end-close.yaml

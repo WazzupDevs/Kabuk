@@ -40,6 +40,8 @@ type Props = {
   seat: RoomSeat | null;
   minutesLeft: number;
   venueHasSpots: boolean;
+  // This phone has opened the merged table once (openedTables): "Birleşti" from then on.
+  opened: boolean;
 };
 
 // The lobby's dot: beats while the table is open to it.
@@ -49,7 +51,7 @@ const LOBBY_BEAT_MS = 1600;
 // Aşama 2 · Ekranlar → Faz 3 · 23.1 Masa ve lobi): the table's name, people and time left, and its
 // state with what it can do there. "Masaya git" opens the room screen: the waiting room with its
 // "Masanla oyna" games, the two-sided room, or "Masanla oyna"; nothing opens it by itself.
-export function TableCard({ table, room, state, seat, minutesLeft, venueHasSpots }: Props) {
+export function TableCard({ table, room, state, seat, minutesLeft, venueHasSpots, opened }: Props) {
   const { shape } = useTheme();
   const queryClient = useQueryClient();
   // Side by side the status and "Lobiden çek" do not fit at 320 dp with the largest text.
@@ -220,7 +222,26 @@ export function TableCard({ table, room, state, seat, minutesLeft, venueHasSpots
           </>
         ) : state === 'merged' ? (
           <>
-            <Status dot="merged" label={tr.venue.merged} />
+            {/* Kabul is the meeting (docs/SPEC_V3.md §23.E): the joining side goes to the host's
+                table, the host's side waits for it; once this phone has opened the table, "Birleşti". */}
+            {opened || !other?.alias ? (
+              <Status dot="merged" label={tr.venue.merged} testID="table-merged" />
+            ) : mySide === 'guest' ? (
+              <Status
+                dot="live"
+                label={tr.venue.acceptedGoTo(other.alias)}
+                testID="table-accepted"
+              />
+            ) : (
+              <Status
+                dot="live"
+                label={tr.venue.coming(
+                  other.alias,
+                  sideHeadcount(other.headcount ?? 1, other.phones ?? 1),
+                )}
+                testID="table-coming"
+              />
+            )}
             {other?.alias ? (
               <View className="flex-row items-center gap-3">
                 <Avatar kind="table" alias={other.alias} size="md" />
@@ -250,8 +271,17 @@ export function TableCard({ table, room, state, seat, minutesLeft, venueHasSpots
   );
 }
 
-// The table's state with its dot: hollow off the lobby, beating in it, filled once merged.
-function Status({ dot, label }: { dot: 'off' | 'live' | 'merged'; label: string }) {
+// The table's state with its dot: hollow off the lobby, beating in it and on the way to the other
+// table, filled once merged.
+function Status({
+  dot,
+  label,
+  testID,
+}: {
+  dot: 'off' | 'live' | 'merged';
+  label: string;
+  testID?: string;
+}) {
   const { colors, shape } = useTheme();
   const size = SPACING[2.5];
   return (
@@ -270,7 +300,9 @@ function Status({ dot, label }: { dot: 'off' | 'live' | 'merged'; label: string 
           }}
         />
       )}
-      <Text variant="bodyStrong">{label}</Text>
+      <Text variant="bodyStrong" className="flex-1" testID={testID}>
+        {label}
+      </Text>
     </View>
   );
 }

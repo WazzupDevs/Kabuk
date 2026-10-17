@@ -8,6 +8,7 @@ import { View } from 'react-native';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { ChoiceCard } from '@/components/ChoiceCard';
+import { Loader } from '@/components/Loader';
 import { Pills } from '@/components/Pills';
 import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
@@ -23,6 +24,7 @@ import { track } from '@/lib/analytics';
 import { ApiError, roomsApi } from '@/lib/api';
 import { haptic } from '@/lib/haptics';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { ICON } from '@/theme/tokens';
 
 import { participationHint } from './participation';
 import { ProfilePreview } from './ProfilePreview';
@@ -162,7 +164,13 @@ export function OpenLobbySheet({
             {tr.rooms.gameTagHint}
           </Text>
         </View>
-        {view !== 'choice' ? (
+        {photo.loading ? (
+          // Until the own profile answers: neither a choice nor a profile that may change a moment
+          // later.
+          <View className="items-center py-3">
+            <Loader kind="meet" size={ICON.lg} label={null} />
+          </View>
+        ) : view !== 'choice' ? (
           <ProfilePreview
             sheet="lobby"
             view={view}
@@ -228,7 +236,7 @@ export function OpenLobbySheet({
           testID="lobby-confirm"
           label={tr.rooms.createConfirm}
           onPress={() => create.mutate(profiled)}
-          disabled={view === 'gender' || (view === 'profile' && needsPhoto)}
+          disabled={photo.loading || view === 'gender' || (view === 'profile' && needsPhoto)}
           loading={create.isPending}
         />
       </Sheet>

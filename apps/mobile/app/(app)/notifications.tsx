@@ -1,10 +1,12 @@
 import { GAME_FLOW_REPORT_REASONS, type GameFlowReportReason } from '@shared/chat.ts';
 import { historyAction } from '@shared/friends.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, View } from 'react-native';
+import { Alert, useWindowDimensions, View } from 'react-native';
 
+import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { EmptyState } from '@/components/EmptyState';
@@ -15,8 +17,10 @@ import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
+import { openDm } from '@/features/friends/openDm';
 import {
   friendKeys,
+  useHistoryFriends,
   useIncomingFriendRequests,
   usePlayHistory,
   useSentFriendRequests,
@@ -30,6 +34,8 @@ import { type HistoryConcept, tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { friendsApi, safetyApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { useTheme } from '@/theme/ThemeProvider';
+import { ICON, NARROW_SCREEN } from '@/theme/tokens';
 
 // The last game of the encounter, or the chat (docs/SPEC_V3.md §5.5).
 const concept = (c: string): HistoryConcept =>
@@ -46,6 +52,12 @@ export default function NotificationsScreen() {
   const sent = useSentFriendRequests();
   const sentChat = useSentVenueChatRequests();
   const history = usePlayHistory();
+  // The records whose two accounts are friends now: "Arkadaş oldunuz · Mesajlaş" (§23.G).
+  const historyFriends = useHistoryFriends();
+  const { colors } = useTheme();
+  // Side by side the action and "Diğer" do not fit at 320 dp with the largest text.
+  const { width, fontScale } = useWindowDimensions();
+  const narrow = width < NARROW_SCREEN * Math.max(1, fontScale);
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [reporting, setReporting] = useState<string | null>(null);
   const [blocking, setBlocking] = useState<string | null>(null);
@@ -204,47 +216,93 @@ export default function NotificationsScreen() {
         ) : null}
         {history.data?.map((h) => {
           const action = historyAction(h);
+          const friend = historyFriends.data?.get(h.id);
+          const silent = h.reveal_mutual || h.friend_open;
+          const pending = act.isPending && act.variables.historyId === h.id;
+          // canvas: Faz 3 · 23.3 → oyun geçmişi. A silent "Arkadaş ekle" (friend_open, a mutual
+          // "Evet") says only that this phone pressed, until the two are friends; an older record
+          // keeps "İstek gönder".
+          const primary = friend?.threadId ? (
+            <Button
+              variant="neutral"
+              size="sm"
+              testID="history-message"
+              label={tr.tableEnd.message}
+              onPress={() =>
+                openDm({
+                  threadId: friend.threadId ?? '',
+                  publicId: friend.publicId,
+                  name: friend.name,
+                })
+              }
+            />
+          ) : action === 'done' ? (
+            <View className="flex-row items-center gap-1.5 self-center">
+              <Ionicons name="checkmark" size={ICON.sm} color={colors.muted} />
+              <Text variant="label" tone="muted">
+                {silent ? tr.tableEnd.pressed : tr.friends.actionDone}
+              </Text>
+            </View>
+          ) : (
+            <Button
+              variant="neutral"
+              size="sm"
+              testID={action === 'add_friend' ? 'history-add' : 'history-request'}
+              label={action === 'add_friend' ? tr.friends.addFriend : tr.friends.sendRequest}
+              disabled={act.isPending}
+              loading={pending}
+              onPress={() =>
+                act.mutate({
+                  kind: action === 'add_friend' ? 'add' : 'request',
+                  historyId: h.id,
+                })
+              }
+            />
+          );
+          const hint = friend ? (
+            <View className="mt-1 flex-row items-center gap-1.5">
+              <Ionicons name="checkmark-circle" size={ICON.sm} color={colors.success} />
+              <Text variant="label" tone="success">
+                {tr.tableEnd.friends}
+              </Text>
+            </View>
+          ) : action === 'add_friend' ? (
+            <Text variant="fine" className="mt-1">
+              {tr.friends.addFriendHint}
+            </Text>
+          ) : action === 'done' && silent ? (
+            <Text variant="fine" className="mt-1">
+              {tr.tableEnd.pressedHint}
+            </Text>
+          ) : null;
+          const more = (
+            <Button
+              testID="history-more"
+              variant="ghost"
+              size="sm"
+              label={tr.friends.more}
+              onPress={() => setMenuFor(h.id)}
+            />
+          );
           return (
             <Card key={h.id}>
-              <Text variant="bodyStrong">
-                {tr.friends.historyRow(h.other_alias, concept(h.concept), h.played_at)}
-              </Text>
-              <Text variant="fine" className="mt-0.5">
-                {tr.friends.people(h.other_headcount)}
-              </Text>
-              {action === 'add_friend' ? (
-                <Text variant="fine" className="mt-1">
-                  {tr.friends.addFriendHint}
-                </Text>
-              ) : null}
-              <View className="mt-3 flex-row gap-2.5">
+              <View className="flex-row items-center gap-3">
+                <Avatar kind="table" alias={h.other_alias} size="md" />
                 <View className="flex-1">
-                  <Button
-                    label={
-                      action === 'done'
-                        ? tr.friends.actionDone
-                        : action === 'add_friend'
-                          ? tr.friends.addFriend
-                          : tr.friends.sendRequest
-                    }
-                    disabled={action === 'done' || act.isPending}
-                    loading={act.isPending && act.variables.historyId === h.id}
-                    onPress={() =>
-                      act.mutate({
-                        kind: action === 'add_friend' ? 'add' : 'request',
-                        historyId: h.id,
-                      })
-                    }
-                  />
+                  <Text variant="bodyStrong">
+                    {tr.friends.historyRow(h.other_alias, concept(h.concept), h.played_at)}
+                  </Text>
+                  <Text variant="fine" className="mt-0.5">
+                    {tr.friends.people(h.other_headcount)}
+                  </Text>
                 </View>
-                <View>
-                  <Button
-                    testID="history-more"
-                    variant="neutral"
-                    label={tr.friends.more}
-                    onPress={() => setMenuFor(h.id)}
-                  />
-                </View>
+              </View>
+              {hint}
+              <View
+                className={narrow ? 'mt-3 items-start gap-2' : 'mt-3 flex-row items-center gap-2'}
+              >
+                {primary}
+                {more}
               </View>
             </Card>
           );

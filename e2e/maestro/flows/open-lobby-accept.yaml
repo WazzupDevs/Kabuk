@@ -31,8 +31,11 @@ appId: app.kabuk.mobile
     timeout: 20000
 - tapOn:
     id: join-accept
+# Kabul is the meeting (docs/SPEC_V3.md §23.E): the card says the bot's table is coming until this
+# phone opens the merged table.
 - extendedWaitUntil:
-    visible: Birleşti
+    visible:
+      id: table-coming
     timeout: 15000
 - scrollUntilVisible:
     element:

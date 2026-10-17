@@ -52,9 +52,6 @@ export type AnalyticsEventProps = {
   // v3 step 7 (docs/SPEC_V3.md §19.1): a Tabu game stopped before its last turn, by "Oyunu bitir"
   // or a table leaving. The turn it stopped in and the game's length; nothing else.
   game_abandoned: { concept: Concept; turn_no: number; total_turns: number };
-  // Faz 2 (docs/SPEC_V3.md §22.L): this phone has at least one match, and how many.
-  reveal_mutual: { matches?: number };
-  reveal_none: Record<string, never>;
   report_submitted: Record<string, never>;
   block_created: Record<string, never>;
   session_ended: { duration_min: number };
@@ -106,8 +103,6 @@ const ALLOWED: { [E in AnalyticsEvent]: readonly (keyof AnalyticsEventProps[E])[
     'phones',
   ],
   game_abandoned: ['concept', 'turn_no', 'total_turns'],
-  reveal_mutual: ['matches'],
-  reveal_none: [],
   report_submitted: [],
   block_created: [],
   session_ended: ['duration_min'],

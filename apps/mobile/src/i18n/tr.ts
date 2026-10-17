@@ -618,7 +618,6 @@ export const tr = {
     requestPending: (seconds: number) => `İsteğin gönderildi. Yanıt bekleniyor (${seconds} sn).`,
     requestUnavailable: 'Masa şu an müsait değil.',
     // In place of the pending note for a few seconds once the request is accepted.
-    requestAccepted: (alias: string) => `${alias} kabul etti.`,
     newTitle: 'Masanı lobiye aç',
     newHint:
       'Mekandaki masalar seni lobide görür ve katılmak isteyebilir. Oyunu birleşince birlikte seçersiniz.',
@@ -646,7 +645,15 @@ export const tr = {
     withOther: (alias: string) => `${alias} ile`,
     waitingForGuest: 'Başka bir masa katılmak isteyebilir. Bu arada kendi masanla oynayabilirsin.',
     end: 'Masayı bitir',
-    endHint: 'Masayı bitirirsen masadaki herkese "Tanışalım mı?" sorulur.',
+    endHint:
+      'Masayı bitirirsen masa herkes için kapanır. Karşı taraftakileri sonra da arkadaş ekleyebilirsin.',
+    // The merged table (docs/SPEC_V3.md §23.F; canvas: Faz 3 · 23.3).
+    tabsLabel: 'Oyun ve sohbet',
+    tabGames: 'Oyun Seç',
+    tabChat: 'Masa Sohbeti',
+    unreadChat: 'okunmamış mesaj',
+    peopleStrip: (n: number) => `Masadakiler · ${n}`,
+    peopleAll: 'Tümü',
     requestTitle: 'Katılma isteği',
     sendRequest: 'İsteği gönder',
     incomingTitle: 'Katılma isteği',
@@ -757,8 +764,7 @@ export const tr = {
     reportWho: 'Kimi şikayet ediyorsun?',
     blockOwnMember: (alias: string) =>
       `${alias} masadan çıkar, sen masada kalırsın. Birbirinizin masalarını artık görmezsiniz.`,
-    blockLeaves:
-      'Sen masadan çıkarsın ve cevabın "Hayır" sayılır. Birbirinizin masalarını artık görmezsiniz.',
+    blockLeaves: 'Sen masadan çıkarsın. Birbirinizin masalarını artık görmezsiniz.',
     reportNote: 'Şikayetin, şikayet ettiğin kişiye bildirilmez.',
     blockedTitle: 'Engellenenler',
     blockedEmpty: 'Engellediğin kimse yok.',
@@ -1071,12 +1077,31 @@ export const tr = {
     lobbyOff: 'Lobide değil',
     lobbyOpen: 'Lobide açık',
     merged: 'Birleşti',
+    // Kabul is the meeting (docs/SPEC_V3.md §23.E; canvas: Faz 3 · 23.3): until this phone opens the
+    // merged table once, then "Birleşti".
+    acceptedGoTo: (host: string) => `Kabul edildi, ${host} masasının yanına git`,
+    coming: (guest: string, people: number) => `${guest} geliyor, ${headcountLabel(people)} kişi`,
     solo: 'Masanla oynuyorsun',
     openHint: 'Bir masa katılmak isterse sana sorulur. Beklerken masanla oynayabilirsin.',
     memberOf: (leader: string) =>
       `${inflectTr(leader, 'genitive')} tarafındasın. Lobiden yalnızca o çekebilir.`,
     withdraw: 'Lobiden çek',
     goToTable: 'Masaya git',
+  },
+  // The table's end (docs/SPEC_V3.md §23.G; canvas: Faz 3 · 23.3 → masa sonu): the other side's
+  // phones and each pair's own "Arkadaş ekle".
+  tableEnd: {
+    title: 'Masa bitti',
+    subtitle: (alias: string) => `${alias} masasıyla oynadınız.`,
+    otherSide: 'Karşı taraf',
+    addFriend: 'Arkadaş ekle',
+    pressed: 'Sen bastın',
+    pressedHint: 'O da basarsa arkadaş olursunuz.',
+    friends: 'Arkadaş oldunuz',
+    message: 'Mesajlaş',
+    short: `Birlikte ${ENCOUNTER_MIN_MINUTES} dakikadan az kaldınız.`,
+    body: 'İkiniz de basarsanız arkadaş olursunuz. O basmazsa hiçbir şey olmaz.',
+    later: 'Sonra da Bildirimler’deki oyun geçmişinden ekleyebilirsin.',
   },
   design: {
     title: 'Tasarım (test)',

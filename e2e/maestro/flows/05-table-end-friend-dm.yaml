@@ -1,7 +1,8 @@
-# T6, F1, F3: end the room, mutual Evet, "Arkadaş ekle" from both tables, DM both ways.
+# T6, F1, F3 (docs/SPEC_V3.md §23.G): end the table; on the table's end "Arkadaş ekle" from both
+# tables makes friends at once, with "Mesajlaş"; then a DM both ways.
 appId: app.kabuk.mobile
 ---
-# The encounter must be at least 3 minutes old for the play history (and "Arkadaş ekle").
+# The pair must have played at least 3 minutes for a record (and "Arkadaş ekle").
 - runScript:
     file: ../scripts/bot.js
     env:
@@ -13,35 +14,34 @@ appId: app.kabuk.mobile
     timeout: 20000
 - tapOn:
     id: end-room
+# No "Tanışalım mı?" window: the table's end at once, one row for the bot's phone.
 - extendedWaitUntil:
-    visible: Tanışalım mı\?
-    timeout: 15000
-- takeScreenshot: 21-reveal-question
+    visible:
+      id: table-end-add-.*
+    timeout: 20000
+- assertNotVisible: Tanışalım mı\?
+- takeScreenshot: 21-table-end
 - tapOn:
-    id: reveal-yes
+    id: table-end-add-.*
+# One press shows only "Sen bastın" on this phone; the bot sees nothing (rule 5).
 - extendedWaitUntil:
-    visible: Cevabın alındı. Sonuç birazdan.
+    visible:
+      id: table-end-pressed-.*
     timeout: 10000
-- takeScreenshot: 22-reveal-answered
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: reveal
-      BODY: '{"yes":true}'
-- extendedWaitUntil:
-    visible: Ekranını kaldır, eşleştiğini bul.
-    timeout: 15000
-- takeScreenshot: 23-reveal-mutual
-- tapOn: Arkadaş ekle
-- extendedWaitUntil:
-    visible: Sen bastın. O da basarsa arkadaş olursunuz.
-    timeout: 10000
-- takeScreenshot: 24-add-friend-done
+- takeScreenshot: 22-table-end-pressed
 - runScript:
     file: ../scripts/bot.js
     env:
       ACTION: add-friend
-- tapOn: Mekana dön
+# Both pressed: friends, and "Mesajlaş" on the row.
+- extendedWaitUntil:
+    visible:
+      id: table-end-message-.*
+    timeout: 20000
+- assertVisible: Arkadaş oldunuz
+- takeScreenshot: 23-table-end-friends
+- runFlow:
+    file: table-end-close.yaml
 # Mesajlar (docs/SPEC_V3.md §18.3): the new friend with "Henüz mesaj yok".
 - tapOn:
     id: tab-messages

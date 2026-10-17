@@ -83,21 +83,5 @@ appId: app.kabuk.mobile
     file: ../scripts/bot.js
     env:
       ACTION: end-room
-- extendedWaitUntil:
-    visible: Tanışalım mı\?
-    timeout: 20000
-- tapOn:
-    id: reveal-no
-- extendedWaitUntil:
-    visible: Güzel oyundu.*
-    timeout: 15000
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: reveal
-      BODY: '{"yes":false}'
-- tapOn: Mekana dön
-- extendedWaitUntil:
-    visible:
-      id: lobby-open
-    timeout: 15000
+- runFlow:
+    file: table-end-close.yaml

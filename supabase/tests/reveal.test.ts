@@ -5,11 +5,17 @@ import { BROADCAST, venueChannel } from '../functions/_shared/pure/rooms.ts';
 import { deleteFixtureVenues, insertFixtureVenues } from './fixtures/venues.ts';
 import { checkInAt, errorBody, onboarded, PHONES } from './helpers.ts';
 import { type Client, deleteUserByPhone, invoke, sql } from './local.ts';
+import { setTableEnd, windowOn } from './tableEndSwitch.ts';
 
 let venue: Record<string, string> = {};
 const V = 'at-anchor';
 
+// The window these tests are about stays until step 23.4; since step 23.3b it opens only with the
+// table-end switch off, for this file's run (tableEndSwitch.ts).
+let tableEndWasOn = true;
+
 beforeAll(async () => {
+  tableEndWasOn = await windowOn();
   await deleteFixtureVenues(sql);
   venue = await insertFixtureVenues(sql);
 });
@@ -19,6 +25,7 @@ afterEach(async () => {
 });
 
 afterAll(async () => {
+  await setTableEnd(tableEndWasOn);
   await deleteFixtureVenues(sql);
   await sql.end();
 });

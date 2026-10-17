@@ -1,0 +1,19 @@
+# The merged table ended (docs/SPEC_V3.md §23.G): no "Tanışalım mı?" window; this phone sees the
+# table's end, and "Kapat" goes back to the venue.
+appId: app.kabuk.mobile
+---
+- extendedWaitUntil:
+    visible:
+      id: table-end
+    timeout: 20000
+- scrollUntilVisible:
+    element:
+      id: table-end-close
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: table-end-close
+- extendedWaitUntil:
+    visible:
+      id: lobby-open
+    timeout: 15000

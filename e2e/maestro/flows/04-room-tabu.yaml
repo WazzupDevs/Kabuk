@@ -288,8 +288,13 @@ appId: app.kabuk.mobile
       id: last-game
     direction: UP
     timeout: 15000
-- assertVisible:
-    id: propose-sohbet
+# The strip and the tabs scroll with the page (docs/SPEC_V3.md §23.F): the game list may sit below
+# the fold.
+- scrollUntilVisible:
+    element:
+      id: propose-sohbet
+    centerElement: true
+    timeout: 10000
 - takeScreenshot: 20b-back-to-chat
 # This table proposes Sohbet kartları and the bot declines: "Öneri kabul edilmedi" at once (S7).
 - tapOn:
@@ -308,19 +313,25 @@ appId: app.kabuk.mobile
     timeout: 15000
 - takeScreenshot: 20c-not-accepted
 # docs/SPEC_V3.md §21: the bot table writes in the room chat; this table reacts with ❤️ (the second
-# of the six) and the bot sees it. Last in the flow: until now the room has no messages, so the
-# proposal steps above see the game list at the top of the screen.
+# of the six) and the bot sees it. Last in the flow: until now the room has no messages.
 - runScript:
     file: ../scripts/bot.js
     env:
       ACTION: chat-send
       BODY: '{"body":"Selam masa"}'
-# The game list sits above the messages; on a small screen the message is below the fold.
+# On Oyun Seç the message puts a dot on Masa Sohbeti (§23.F); the tabs are at the top of the page.
 - scrollUntilVisible:
     element:
-      text: Selam masa
-    direction: DOWN
-    timeout: 20000
+      id: tab-chat
+    direction: UP
+    timeout: 15000
+- takeScreenshot: 20c2-unread-chat
+- tapOn:
+    id: tab-chat
+# Masa Sohbeti opens at the newest message.
+- extendedWaitUntil:
+    visible: Selam masa
+    timeout: 15000
 - longPressOn: Selam masa
 - extendedWaitUntil:
     visible:

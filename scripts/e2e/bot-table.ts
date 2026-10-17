@@ -1210,9 +1210,10 @@ async function askToJoinSide(
 // new room in the lobby; as a host (BOT_ROLE=host) keeps an open room and accepts the first
 // request. As a leader it also accepts "Bu masadayım" for its side. In the room the host proposes
 // Sesli Tabu once and either table accepts the other's proposal (docs/SPEC_V3.md §5.3); it presses
-// Doğru on each card after a few seconds, ends turns and the answer window when their time is up,
-// says "Evet" to "Tanışalım mı?", adds each friend it matched, accepts requests from the venue chat
-// and answers every new DM. Only the public API: the same calls the app makes.
+// Doğru on each card after a few seconds, ends turns when their time is up, presses "Arkadaş ekle"
+// on each record that offers it (a table's end, docs/SPEC_V3.md §23.G), accepts requests from the
+// venue chat and answers every new DM. Only the public API: the same calls the app makes. (What it
+// still does for a "Tanışalım mı?" window goes with the window's code in step 23.4.)
 //
 // BOT_ROLE=teammate (Faz 2, docs/SPEC_V3.md §22.N step 22.6): a second bot that joins a side as a
 // member with "Bu masadayım": the side whose leader goes by BOT_JOIN_ALIAS (the device's alias on
@@ -1220,8 +1221,8 @@ async function askToJoinSide(
 // A request the leader does not answer in 60 seconds is sent again. In the room it plays its side:
 // starts its side's ready Tabu turn after a few seconds (and so describes it), presses Doğru where
 // a member may, locks İbre's needle for its describer, claims letters and lines, watches Sahtekar
-// (the seats are the leader's) and answers "Tanışalım mı?" for itself. It neither proposes nor
-// answers games: that is left to the leaders.
+// (the seats are the leader's) and presses "Arkadaş ekle" on its own records. It neither proposes
+// nor answers games: that is left to the leaders.
 async function opponent() {
   const role =
     process.env.BOT_ROLE === 'host'
@@ -1432,11 +1433,12 @@ async function opponent() {
     });
 
     await quiet('friends', async () => {
-      // "Arkadaş ekle" on each matched record (one per pair since step 22.4, §22.F).
+      // "Arkadaş ekle" on each record that offers it (one per pair since step 22.4, §22.F): a
+      // mutual "Evet", or a table that ended without the window (friend_open, §23.G).
       const { data: history } = await me()
         .from('play_history')
         .select('id')
-        .eq('reveal_mutual', true)
+        .or('reveal_mutual.eq.true,friend_open.eq.true')
         .order('played_at', { ascending: false })
         .limit(8);
       for (const { id: historyId } of (history ?? []) as { id: string }[]) {

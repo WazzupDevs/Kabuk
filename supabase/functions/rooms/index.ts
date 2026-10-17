@@ -316,8 +316,9 @@ Deno.serve(
           return { ok: true };
         }
 
-        // "Odayı bitir" (§5.5), a leader only (§22.D: a member is not_leader): a two-table room opens
-        // the "Tanışalım mı?" window; a one-table room closes.
+        // "Odayı bitir" (§5.5), a leader only (§22.D: a member is not_leader): the room closes and a
+        // two-sided one writes its pairs' records (§23.G). decision_seconds is the "Tanışalım mı?"
+        // window's, opened only while private.table_end_on() is off (until step 23.4).
         case 'end': {
           const { data, error } = await db.rpc('rooms_end', {
             target_user_id: user.id,
@@ -330,7 +331,7 @@ Deno.serve(
 
         // "Odadan çık" (§22.D): the phone leaves; a leader hands its side over; the side's last
         // phone ends the room as leaving the venue does. The lobby hears of it unless the room is
-        // held (in its window, a phone's leaving must not show: rule 5).
+        // held (in the window, while private.table_end_on() is off, a phone's leaving must not show).
         case 'leave': {
           const { data, error } = await db.rpc('rooms_leave', {
             target_user_id: user.id,

@@ -1,7 +1,7 @@
 import type { RoomSeat } from '@shared/teams.ts';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
@@ -14,6 +14,8 @@ import { Text } from '@/components/Text';
 import { useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
+import { useTheme } from '@/theme/ThemeProvider';
+import { SPACING } from '@/theme/tokens';
 
 import { ProfiledTag } from './ProfiledTag';
 import type { RoomPhone } from './queries';
@@ -30,12 +32,18 @@ function usePerson(phone: RoomPhone, profiles: ReadonlyMap<string, string> | und
       ? tr.profile.nameWithAge(profile.displayName, profile.age)
       : profile.displayName
     : phone.alias;
-  const picture = profile ? (
-    <Avatar kind="profile" name={profile.displayName ?? phone.alias} photoUrl={profile.photoUrl} />
-  ) : (
-    <Avatar kind="table" alias={phone.alias} />
-  );
-  return { publicId, name, picture };
+  const face = (size?: 'md' | 'lg') =>
+    profile ? (
+      <Avatar
+        kind="profile"
+        name={profile.displayName ?? phone.alias}
+        photoUrl={profile.photoUrl}
+        size={size}
+      />
+    ) : (
+      <Avatar kind="table" alias={phone.alias} size={size} />
+    );
+  return { publicId, name, picture: face(), face };
 }
 
 // Each side's phones, the leader first, then by when they came.
@@ -86,6 +94,90 @@ function PersonRow({
           : undefined
       }
     />
+  );
+}
+
+// "Masadakiler" on the merged table (docs/SPEC_V3.md §23.F; canvas: Faz 3 · 23.3): this phone and
+// its side, then the other side, each with its face and name (a profiled phone's name and age, an
+// anonymous one's alias), side by side; "Tümü" opens the whole list (PeopleSheet).
+export function PeopleStrip({
+  phones,
+  me,
+  profiles,
+  onAll,
+}: {
+  phones: readonly RoomPhone[];
+  me: Me;
+  profiles: ReadonlyMap<string, string> | undefined;
+  onAll: () => void;
+}) {
+  const { colors, shape } = useTheme();
+  const { mine, other } = bySide(phones, me);
+  // This phone first on its side.
+  const own = [
+    ...mine.filter((p) => p.sessionId === me.sessionId),
+    ...mine.filter((p) => p.sessionId !== me.sessionId),
+  ];
+  return (
+    <View className="gap-1.5" testID="people-strip">
+      <View className="flex-row items-center justify-between">
+        <Text variant="overline" tone="muted">
+          {tr.rooms.peopleStrip(phones.length)}
+        </Text>
+        <Button
+          variant="ghost"
+          size="sm"
+          testID="people-all"
+          label={tr.rooms.peopleAll}
+          onPress={onAll}
+        />
+      </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <View className="flex-row items-start" style={{ gap: SPACING[3] }}>
+          {own.map((p) => (
+            <StripPerson key={p.sessionId} phone={p} me={me} profiles={profiles} />
+          ))}
+          {other.length > 0 ? (
+            <View
+              style={{
+                width: shape.stroke.hairline,
+                alignSelf: 'stretch',
+                backgroundColor: colors.divider,
+              }}
+            />
+          ) : null}
+          {other.map((p) => (
+            <StripPerson key={p.sessionId} phone={p} me={me} profiles={profiles} />
+          ))}
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
+
+function StripPerson({
+  phone,
+  me,
+  profiles,
+}: {
+  phone: RoomPhone;
+  me: Me;
+  profiles: ReadonlyMap<string, string> | undefined;
+}) {
+  const { name, face } = usePerson(phone, profiles);
+  const isMe = phone.sessionId === me.sessionId;
+  return (
+    <View className="items-center gap-1" style={{ width: SPACING[16] + SPACING[2] }}>
+      {face('lg')}
+      <Text variant="label" align="center">
+        {name}
+      </Text>
+      {isMe ? (
+        <Text variant="fine" align="center">
+          {tr.rooms.youTag}
+        </Text>
+      ) : null}
+    </View>
   );
 }
 
