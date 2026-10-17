@@ -1,0 +1,33 @@
+10-17 05:53:17.429 F/libc    ( 7107): Fatal signal 11 (SIGSEGV), code 2 (SEGV_ACCERR), fault addr 0x7cfb6568e000 in tid 7107 (pp.kabuk.mobile), pid 7107 (pp.kabuk.mobile)
+10-17 05:53:17.709 F/DEBUG   ( 7160): *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+10-17 05:53:17.709 F/DEBUG   ( 7160): Build fingerprint: 'google/sdk_gphone64_x86_64/emu64xa:14/UE1A.230829.050/12077443:userdebug/dev-keys'
+10-17 05:53:17.709 F/DEBUG   ( 7160): Revision: '0'
+10-17 05:53:17.709 F/DEBUG   ( 7160): ABI: 'x86_64'
+10-17 05:53:17.709 F/DEBUG   ( 7160): Timestamp: 2026-10-17 05:53:17.483942944+0000
+10-17 05:53:17.709 F/DEBUG   ( 7160): Process uptime: 2s
+10-17 05:53:17.709 F/DEBUG   ( 7160): Cmdline: app.kabuk.mobile
+10-17 05:53:17.709 F/DEBUG   ( 7160): pid: 7107, tid: 7107, name: pp.kabuk.mobile  >>> app.kabuk.mobile <<<
+10-17 05:53:17.709 F/DEBUG   ( 7160): uid: 10192
+10-17 05:53:17.709 F/DEBUG   ( 7160): signal 11 (SIGSEGV), code 2 (SEGV_ACCERR), fault addr 0x00007cfb6568e000
+10-17 05:53:17.709 F/DEBUG   ( 7160):     rax 0000000000000001  rbx 0000000000000080  rcx 00007cfb6568dff8  rdx 0000000000000000
+10-17 05:53:17.709 F/DEBUG   ( 7160):     r8  0000000000000400  r9  00007cfb5cf07140  r10 0000000000002000  r11 0000000000000246
+10-17 05:53:17.709 F/DEBUG   ( 7160):     r12 00007cfb6568dff8  r13 00007cfb5cf071a0  r14 00007cf6aef010e0  r15 00007ffdb55ad9e8
+10-17 05:53:17.709 F/DEBUG   ( 7160):     rdi 0000000000000000  rsi 00007cf6aef01090
+10-17 05:53:17.709 F/DEBUG   ( 7160):     rbp 00007cf6aef010d0  rsp 00007cf6aef01090  rip 00007cfb5cef8d45
+10-17 05:53:17.709 F/DEBUG   ( 7160): 15 total frames
+10-17 05:53:17.709 F/DEBUG   ( 7160): backtrace:
+10-17 05:53:17.709 F/DEBUG   ( 7160):       #00 pc 00000000000cfd45  /apex/com.android.runtime/lib64/bionic/libc.so (android_unsafe_frame_pointer_chase+117) (BuildId: fa337969c798946280caa45e2d71a2e7)
+10-17 05:53:17.709 F/DEBUG   ( 7160):       #01 pc 0000000000051a77  /apex/com.android.runtime/lib64/bionic/libc.so (gwp_asan::AllocationMetadata::CallSiteInfo::RecordBacktrace(unsigned long (*)(unsigned long*, unsigned long))+87) (BuildId: fa337969c798946280caa45e2d71a2e7)
+10-17 05:53:17.709 F/DEBUG   ( 7160):       #02 pc 000000000005230c  /apex/com.android.runtime/lib64/bionic/libc.so (gwp_asan::GuardedPoolAllocator::deallocate(void*)+380) (BuildId: fa337969c798946280caa45e2d71a2e7)
+10-17 05:53:17.709 F/DEBUG   ( 7160):       #03 pc 0000000000129825  /data/app/~~gczWO7h5_0Kc0ALupuSdQA==/app.kabuk.mobile-s7V3BHr3yNo8DADf1z3Y_g==/base.apk!libhermesvm.so (offset 0x18c8000) (BuildId: 8d927b4d4757e3548fed384ed5666d66ee44c365)
+10-17 05:53:17.709 F/DEBUG   ( 7160):       #04 pc 000000000012cc99  /data/app/~~gczWO7h5_0Kc0ALupuSdQA==/app.kabuk.mobile-s7V3BHr3yNo8DADf1z3Y_g==/base.apk!libhermesvm.so (offset 0x18c8000) (BuildId: 8d927b4d4757e3548fed384ed5666d66ee44c365)
+10-17 05:53:17.709 F/DEBUG   ( 7160):       #05 pc 0000000000128fe7  /data/app/~~gczWO7h5_0Kc0ALupuSdQA==/app.kabuk.mobile-s7V3BHr3yNo8DADf1z3Y_g==/base.apk!libhermesvm.so (offset 0x18c8000) (BuildId: 8d927b4d4757e3548fed384ed5666d66ee44c365)
+10-17 05:53:17.709 F/DEBUG   ( 7160):       #06 pc 00000000001227b2  /data/app/~~gczWO7h5_0Kc0ALupuSdQA==/app.kabuk.mobile-s7V3BHr3yNo8DADf1z3Y_g==/base.apk!libhermesvm.so (offset 0x18c8000) (BuildId: 8d927b4d4757e3548fed384ed5666d66ee44c365)
+10-17 05:53:17.709 F/DEBUG   ( 7160):       #07 pc 0000000000133a19  /data/app/~~gczWO7h5_0Kc0ALupuSdQA==/app.kabuk.mobile-s7V3BHr3yNo8DADf1z3Y_g==/base.apk!libhermesvm.so (offset 0x18c8000) (BuildId: 8d927b4d4757e3548fed384ed5666d66ee44c365)
+10-17 05:53:17.709 F/DEBUG   ( 7160):       #08 pc 000000000013414f  /data/app/~~gczWO7h5_0Kc0ALupuSdQA==/app.kabuk.mobile-s7V3BHr3yNo8DADf1z3Y_g==/base.apk!libhermesvm.so (offset 0x18c8000) (BuildId: 8d927b4d4757e3548fed384ed5666d66ee44c365)
+10-17 05:53:17.709 F/DEBUG   ( 7160):       #09 pc 0000000000120fe8  /data/app/~~gczWO7h5_0Kc0ALupuSdQA==/app.kabuk.mobile-s7V3BHr3yNo8DADf1z3Y_g==/base.apk!libhermesvm.so (offset 0x18c8000) (BuildId: 8d927b4d4757e3548fed384ed5666d66ee44c365)
+10-17 05:53:17.709 F/DEBUG   ( 7160):       #10 pc 00000000001382b0  /data/app/~~gczWO7h5_0Kc0ALupuSdQA==/app.kabuk.mobile-s7V3BHr3yNo8DADf1z3Y_g==/base.apk!libhermesvm.so (offset 0x18c8000) (BuildId: 8d927b4d4757e3548fed384ed5666d66ee44c365)
+10-17 05:53:17.709 F/DEBUG   ( 7160):       #11 pc 0000000000120dd0  /data/app/~~gczWO7h5_0Kc0ALupuSdQA==/app.kabuk.mobile-s7V3BHr3yNo8DADf1z3Y_g==/base.apk!libhermesvm.so (offset 0x18c8000) (BuildId: 8d927b4d4757e3548fed384ed5666d66ee44c365)
+10-17 05:53:17.709 F/DEBUG   ( 7160):       #12 pc 00000000002599b3  /data/app/~~gczWO7h5_0Kc0ALupuSdQA==/app.kabuk.mobile-s7V3BHr3yNo8DADf1z3Y_g==/base.apk!libhermesvm.so (offset 0x18c8000) (BuildId: 8d927b4d4757e3548fed384ed5666d66ee44c365)
+10-17 05:53:17.709 F/DEBUG   ( 7160):       #13 pc 0000000000191a79  /data/app/~~gczWO7h5_0Kc0ALupuSdQA==/app.kabuk.mobile-s7V3BHr3yNo8DADf1z3Y_g==/base.apk!libhermesvm.so (offset 0x18c8000) (BuildId: 8d927b4d4757e3548fed384ed5666d66ee44c365)
+10-17 05:53:17.709 F/DEBUG   ( 7160):       #14 pc 00000000000afe8e  /data/app/~~gczWO7h5_0Kc0ALupuSdQA==/app.kabuk.mobile-s7V3BHr3yNo8DADf1z3Y_g==/base.apk!libhermesvm.so (offset 0x18c8000) (hoost_make_fcontext+46) (BuildId: 8d927b4d4757e3548fed384ed5666d66ee44c365)

@@ -1,0 +1,23 @@
+Setting up Edge Functions runtime...
+2026-10-17T05:43:42.036756706Z Serving functions on http://127.0.0.1:54321/functions/v1/<function-name>
+2026-10-17T05:43:42.036789824Z  - http://127.0.0.1:54321/functions/v1/account
+2026-10-17T05:43:42.036792985Z  - http://127.0.0.1:54321/functions/v1/chat
+2026-10-17T05:43:42.036795087Z  - http://127.0.0.1:54321/functions/v1/checkin
+2026-10-17T05:43:42.036797178Z  - http://127.0.0.1:54321/functions/v1/dm
+2026-10-17T05:43:42.036799223Z  - http://127.0.0.1:54321/functions/v1/friends
+2026-10-17T05:43:42.036801225Z ... and 13 more functions
+2026-10-17T05:43:42.036803202Z Using supabase-edge-runtime-1.74.3 (compatible with Deno v2.1.4)
+2026-10-17T05:50:15.265199959Z serving the request with supabase/functions/ping
+2026-10-17T05:50:47.458700088Z serving the request with supabase/functions/ping
+2026-10-17T05:51:46.640376147Z serving the request with supabase/functions/account
+2026-10-17T05:52:41.538211591Z serving the request with supabase/functions/account
+2026-10-17T05:52:41.826505195Z serving the request with supabase/functions/profile
+2026-10-17T05:52:44.740322993Z serving the request with supabase/functions/profile
+2026-10-17T05:52:45.001640946Z serving the request with supabase/functions/dm
+2026-10-17T05:52:45.004469807Z serving the request with supabase/functions/friends
+2026-10-17T05:52:45.937284313Z serving the request with supabase/functions/dm
+2026-10-17T05:52:48.086379847Z serving the request with supabase/functions/friends
+2026-10-17T05:52:48.087335073Z serving the request with supabase/functions/profile
+2026-10-17T05:52:48.092836715Z serving the request with supabase/functions/friends
+2026-10-17T05:53:35.837679606Z wall clock duration warning: isolate: 731ba394-ed7d-4a7b-8bfa-9e376ddf6446
+2026-10-17T05:53:35.855619893Z early termination has been triggered: isolate: 731ba394-ed7d-4a7b-8bfa-9e376ddf6446
