@@ -113,6 +113,35 @@ export function deployedShas(runTitles: readonly string[]): string[] {
   return [...new Set(shas)];
 }
 
+// CLAUDE.md → "main'den dev projesine yayın" step 6: after a deploy every row of `supabase migration
+// list` has the same version on both sides. `--output-format json` prints one line on stdout,
+// `{"migrations":[{"local","remote","time"}],"message"}`, a side empty where the repo or the project
+// lacks that version.
+export type MigrationRow = { local: string; remote: string };
+
+export function migrationRows(stdout: string): MigrationRow[] {
+  const line = stdout
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l.startsWith('{'))
+    .at(-1);
+  const parsed = JSON.parse(line ?? '{}') as { migrations?: unknown };
+  if (!Array.isArray(parsed.migrations) || parsed.migrations.length === 0) {
+    throw new Error('supabase migration list okunamadı');
+  }
+  return parsed.migrations.map((m: { local?: unknown; remote?: unknown }) => ({
+    local: typeof m.local === 'string' ? m.local : '',
+    remote: typeof m.remote === 'string' ? m.remote : '',
+  }));
+}
+
+// The rows where the two sides differ: not yet on the project, or on the project but not in main.
+export function migrationMismatches(rows: readonly MigrationRow[]): string[] {
+  return rows
+    .filter((r) => r.local !== r.remote)
+    .map((r) => (r.local ? `${r.local} (yalnızca Local)` : `${r.remote} (yalnızca Remote)`));
+}
+
 export function appState(appJson: string, packageJson: string): AppState {
   const app = JSON.parse(appJson) as { expo?: { version?: unknown } };
   const pkg = JSON.parse(packageJson) as { dependencies?: Record<string, string> };

@@ -10,6 +10,8 @@ import {
   devProjectRef,
   isDevProjectRef,
   isDevSupabaseUrl,
+  migrationMismatches,
+  migrationRows,
   nativeChanges,
   planDeploy,
 } from './plan.ts';
@@ -166,6 +168,48 @@ describe('deployedShas', () => {
         '',
       ]),
     ).toEqual([a, b]);
+  });
+});
+
+describe('migration list', () => {
+  // `supabase --output-format json migration list`, as CLI 2.117.0 prints it against the local stack.
+  const out = (migrations: { local: string; remote: string }[]) =>
+    `${JSON.stringify({
+      migrations: migrations.map((m) => ({ ...m, time: '2026-10-30 09:00:00' })),
+      message: 'Migrations listed',
+    })}\n`;
+
+  it('finds nothing when every row has the same version on both sides', () => {
+    const rows = migrationRows(
+      out([
+        { local: '20261029090000', remote: '20261029090000' },
+        { local: '20261030090000', remote: '20261030090000' },
+      ]),
+    );
+    expect(rows).toHaveLength(2);
+    expect(migrationMismatches(rows)).toEqual([]);
+  });
+
+  it('names a migration not yet on the project and one only on the project', () => {
+    const rows = migrationRows(
+      out([
+        { local: '20261029090000', remote: '20261029090000' },
+        { local: '', remote: '20261029100000' },
+        { local: '20261030090000', remote: '' },
+      ]),
+    );
+    expect(migrationMismatches(rows)).toEqual([
+      '20261029100000 (yalnızca Remote)',
+      '20261030090000 (yalnızca Local)',
+    ]);
+  });
+
+  it('refuses output it cannot read (an error, or no rows)', () => {
+    expect(() =>
+      migrationRows('{"_tag":"Error","error":{"code":"LegacyDbConnectError","message":"x"}}\n'),
+    ).toThrow();
+    expect(() => migrationRows(out([]))).toThrow();
+    expect(() => migrationRows('')).toThrow();
   });
 });
 

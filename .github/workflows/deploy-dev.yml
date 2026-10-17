@@ -9,11 +9,17 @@
 # preview environment's EXPO_PUBLIC_SUPABASE_URL is the dev project's address. The secrets live in
 # the "dev" GitHub environment, which only main can use.
 #
+# Automatic runs only while the repository variable DEPLOY_DEV_AUTO is 'true': the first run is a
+# manual dry run, and the switch goes on once it is green. Off (or missing), a merge publishes
+# nothing; manual runs work either way.
+#
 # Setup, secrets and how to stop it: CLAUDE.md → "main'den dev projesine yayın" → "Otomatik yayın".
 name: deploy-dev
 
 # The name says which commit a run deployed: the next run starts from the newest of them
-# (scripts/deploy/cli.ts plan). A dry run and a run whose ci failed never count.
+# (scripts/deploy/cli.ts plan reads only runs that succeeded). A dry run and a run whose ci failed
+# never count; neither does an automatic run while DEPLOY_DEV_AUTO is off: its job is skipped and
+# the run ends as skipped, not success (run-name cannot read vars).
 run-name: >-
   ${{ github.event_name == 'workflow_dispatch'
   && (inputs.dry_run && 'deploy-dev dry run' || format('deploy-dev {0}', github.sha))
@@ -60,10 +66,12 @@ defaults:
 
 jobs:
   deploy:
-    # main only; after a push to main, only when its ci passed (a PR's ci never deploys).
+    # main only; after a push to main, only when its ci passed (a PR's ci never deploys) and the
+    # switch is on (a job's `if` reads repository variables, not the environment's).
     if: >-
       github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch'
-      || (github.event.workflow_run.conclusion == 'success'
+      || (vars.DEPLOY_DEV_AUTO == 'true'
+      && github.event.workflow_run.conclusion == 'success'
       && github.event.workflow_run.event == 'push'
       && github.event.workflow_run.head_repository.full_name == github.repository))
     runs-on: ubuntu-24.04
@@ -99,6 +107,7 @@ jobs:
           node --experimental-strip-types scripts/deploy/cli.ts plan
 
       - name: Link the dev project
+        id: link
         if: steps.plan.outputs.migrations == 'true' || steps.plan.outputs.functions == 'true' || env.DRY_RUN == 'true'
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
@@ -123,9 +132,26 @@ jobs:
             echo "::error::Seed dosyası elle değişmiş (hash update): pnpm seed ile yeniden üret."
             exit 1
           fi
-          if [ "$DRY_RUN" = true ]; then exit 0; fi
+          if [ "$DRY_RUN" = true ]; then
+            { echo '- `db push --dry-run`:'; echo; echo '```'; cat "$RUNNER_TEMP/db-push.txt"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
           pnpm supabase db push --include-seed --skip-vault --yes
-          echo "- Migration'lar ve seed uygulandı." >> "$GITHUB_STEP_SUMMARY"
+          echo "- Migration'lar ve seed uygulandı." | tee -a "$GITHUB_STEP_SUMMARY"
+
+      # CLAUDE.md → "main'den dev projesine yayın" step 6, before anything else goes out: every
+      # migration in main is on the project and nothing else is. A dry run only lists the difference.
+      - name: Migration list (Local = Remote)
+        if: steps.link.outcome == 'success'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          if ! pnpm exec supabase --output-format json migration list > "$RUNNER_TEMP/migrations.json"; then
+            cat "$RUNNER_TEMP/migrations.json"
+            exit 1
+          fi
+          node --experimental-strip-types scripts/deploy/cli.ts check-migrations "$RUNNER_TEMP/migrations.json"
 
       - name: Edge Functions
         if: steps.plan.outputs.functions == 'true' || env.DRY_RUN == 'true'
@@ -133,11 +159,12 @@ jobs:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
           if [ "$DRY_RUN" = true ]; then
-            pnpm supabase functions list
+            pnpm supabase functions list 2>&1 | tee "$RUNNER_TEMP/functions.txt"
+            { echo '- `functions list`:'; echo; echo '```'; cat "$RUNNER_TEMP/functions.txt"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
           pnpm functions:deploy
-          echo "- Edge Function'lar yayınlandı." >> "$GITHUB_STEP_SUMMARY"
+          echo "- Edge Function'lar yayınlandı." | tee -a "$GITHUB_STEP_SUMMARY"
 
       # The bundle takes EXPO_PUBLIC_* from the EAS preview environment: it must point at the dev
       # project. EXPO_PUBLIC_APP_ENV is the preview build profile's (eas.json), which an update
@@ -155,7 +182,7 @@ jobs:
           if [ "$DRY_RUN" = true ]; then exit 0; fi
           msg="main ${SHA::7}: $(git log -1 --format=%s "$SHA")"
           npx --yes eas-cli@24.13.0 update --channel preview --environment preview --message "$msg" --non-interactive
-          echo "- OTA güncellemesi preview kanalına gönderildi." >> "$GITHUB_STEP_SUMMARY"
+          echo "- OTA güncellemesi preview kanalına gönderildi." | tee -a "$GITHUB_STEP_SUMMARY"
 
       # The server went out; the update waits for a person. The run fails so the next one starts
       # from the same place and holds it again until a new version or a manual run with force_ota.

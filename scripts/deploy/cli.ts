@@ -2,9 +2,13 @@
 //   ref              prints the dev project's ref (pure/devProject.ts)
 //   check-link       fails unless `supabase link` stored the dev project's ref
 //   check-url <url>  fails unless the URL is the dev project's address
+//   check-migrations <file>
+//                    `supabase --output-format json migration list`'s output: fails unless Local
+//                    and Remote are the same on every row (a dry run only lists the difference)
 //   plan             what to publish since the last successful deploy (plan.ts), as step outputs
 // `plan` reads SHA (the commit to deploy), RUN_TITLES (names of earlier successful runs, one per
-// line), EVERYTHING and FORCE_OTA ('true' from a manual run).
+// line), EVERYTHING and FORCE_OTA ('true' from a manual run). Every summary line goes to the log too:
+// the run page's summary is not readable through the API, the log is.
 import { spawnSync } from 'node:child_process';
 import { appendFileSync, existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -16,6 +20,8 @@ import {
   devProjectRef,
   isDevProjectRef,
   isDevSupabaseUrl,
+  migrationMismatches,
+  migrationRows,
   nativeChanges,
   planDeploy,
 } from './plan.ts';
@@ -54,6 +60,7 @@ function output(values: Record<string, string>): void {
 function summary(markdown: string): void {
   const file = process.env.GITHUB_STEP_SUMMARY;
   if (file) appendFileSync(file, `${markdown}\n`);
+  console.log(markdown);
 }
 
 function plan(): void {
@@ -126,7 +133,7 @@ switch (command) {
       );
       process.exit(1);
     }
-    console.log(`Bağlı proje: ${devProjectRef()} (dev)`);
+    summary(`- Bağlı proje: \`${devProjectRef()}\` (dev).`);
     break;
   }
   case 'check-url':
@@ -136,12 +143,27 @@ switch (command) {
       );
       process.exit(1);
     }
-    console.log('EAS preview ortamı dev projesini gösteriyor.');
+    summary('- EAS preview ortamı dev projesini gösteriyor.');
     break;
+  case 'check-migrations': {
+    const rows = migrationRows(readFileSync(arg ?? '', 'utf8'));
+    const off = migrationMismatches(rows);
+    if (off.length === 0) {
+      summary(`- \`migration list\`: ${rows.length} migration, her satırda Local ve Remote aynı.`);
+      break;
+    }
+    summary(
+      `- \`migration list\`: ${off.length} satırda Local ve Remote farklı: ${off.join(', ')}.`,
+    );
+    if (process.env.DRY_RUN !== 'true') process.exit(1);
+    break;
+  }
   case 'plan':
     plan();
     break;
   default:
-    console.error('Kullanım: cli.ts ref | check-link | check-url <url> | plan');
+    console.error(
+      'Kullanım: cli.ts ref | check-link | check-url <url> | check-migrations <dosya> | plan',
+    );
     process.exit(1);
 }
