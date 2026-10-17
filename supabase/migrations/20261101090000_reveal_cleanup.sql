@@ -25,7 +25,8 @@
 -- public.rooms_end keeps its decision_seconds argument, now with a default and unused: the rooms
 -- Edge Function deployed before this migration sends it until the new one is deployed (deploy-dev
 -- and docs/PILOT_RELEASE.md run the migration first, then the functions), and "Masayı bitir" must
--- not fail in between. The new function leaves it out.
+-- not fail in between. The new function leaves it out. A small migration of its own drops it once
+-- this one is live on the dev and production projects (docs/DECISIONS.md → 23.4b).
 --
 -- Lock order (rule 10): reveal_decisions and reveal_signals leave the order (§23.K); nothing else
 -- changes. The functions below take the locks they took with the switch on.
