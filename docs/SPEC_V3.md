@@ -1974,7 +1974,7 @@ Değişiklikler `pure/analytics.ts` kataloğuna yalnızca izinli özelliklerle g
 - **22.1'in istemcisi kendi OTA'sıyla gider:** 22.1 sunucusu yayınlanır yayınlanmaz istemci kısmı (ilk mesaj seçimi, fotoğrafsız "Profilimle") ayrı bir OTA ile gönderilir; 22.6'yı beklemez. Gerekçe: sunucunun `photo_required` ve `venue_chat_mode_locked` kodlarını bilmeyen istemci bunları genel hata olarak gösterir; fotoğrafsız test kullanıcıları haftalarca genel hata görmesin. Bu yüzden 22.1'in istemci PR'ı (önce tuval) sunucusuyla birlikte hazırlanır ve ondan hemen sonra birleşir.
 - **Faz 2 OTA'sı:** 22.5'in istemci değişiklikleri 22.6'da tek OTA'yla gider; saha testi bu OTA'yla yapılır.
 - **Version artmaz:** hepsi JS ve sunucu değişikliğidir; telefonlardaki 0.3.0'a OTA ile gider. Native bağımlılık gerekirse durulur ve sorulur.
-- **Yayın sırası (her sunucu adımında, Windows cmd):** `pnpm supabase migration list` → `pnpm supabase db push --include-seed --dry-run` → `pnpm supabase db push --include-seed` → `pnpm functions:deploy` → `pnpm supabase functions list`. Seed değişikliği yok (seed satırı görünmez). Yeni sır ve panel ayarı yok.
+- **Yayın sırası (her sunucu adımında, Windows cmd):** `pnpm supabase migration list` → `pnpm supabase db push --include-seed --skip-vault --dry-run` → `pnpm supabase db push --include-seed --skip-vault` → `pnpm functions:deploy` → `pnpm supabase functions list`. Seed değişikliği yok (seed satırı görünmez). Yeni sır ve panel ayarı yok.
 - **PR kuralları:** her kod PR'ı `e2e` etiketi taşır, açıklamasında "Telefonda kontrol" (3-5 madde), "Maliyet ve risk" ve sunucu değiştiyse yayın sırası bulunur; "onaylandı" olmadan birleşmez. `tr.ts`'e yeni anahtar gerekirse onu ihtiyaç duyan oturum kendi PR'ında ekler.
 - Faz 2, 18 fonksiyonun yaklaşık 12'sine dokunur; bu yüzden sunucu üç PR'a bölünür ve her biri bugünkü testleri değişmeden geçer.
 
@@ -2460,7 +2460,7 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 **Yayın.**
 
 - `version` artmaz: hepsi JS ve sunucu değişikliğidir; telefonlardaki 0.3.0'a OTA ile gider.
-- Yayın sırası (her sunucu adımında, Windows cmd): `pnpm supabase migration list` → `pnpm supabase db push --include-seed --dry-run` → `pnpm supabase db push --include-seed` → `pnpm functions:deploy` → `pnpm supabase functions list`.
+- Yayın sırası (her sunucu adımında, Windows cmd): `pnpm supabase migration list` → `pnpm supabase db push --include-seed --skip-vault --dry-run` → `pnpm supabase db push --include-seed --skip-vault` → `pnpm functions:deploy` → `pnpm supabase functions list`.
 - Yeni sır ve panel ayarı yoktur.
 
 **PR kuralları.**
