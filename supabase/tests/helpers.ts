@@ -169,14 +169,15 @@ export function waitForBroadcast(
   return { subscribed, received, close: async () => void (await client.removeChannel(channel)) };
 }
 
-// Waits until another connection's statement running `fn` waits on a lock (tests of lock order).
-export async function waitUntilBlocked(fn: string): Promise<void> {
+// Waits until `count` other connections' statements running `fn` wait on a lock (tests of lock
+// order).
+export async function waitUntilBlocked(fn: string, count = 1): Promise<void> {
   for (let i = 0; i < 50; i++) {
     const [row] = await sql`
       select count(*)::int as n from pg_stat_activity
       where wait_event_type = 'Lock' and query like ${`%${fn}%`} and pid <> pg_backend_pid()
     `;
-    if ((row?.n ?? 0) > 0) return;
+    if ((row?.n ?? 0) >= count) return;
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
   throw new Error(`${fn} never waited on a lock`);
