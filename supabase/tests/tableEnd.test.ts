@@ -7,12 +7,14 @@
 // Staged (§23.N): private.table_end_on() is on since step 23.3's client PR (23.3b); the files about
 // the window turn it off for their own run (tableEndSwitch.ts). This file turns it on for its own
 // run and puts back what it found; files run one at a time (vitest.integration.config.ts).
+import postgres from 'postgres';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { REVEAL } from '../functions/_shared/pure/reveal.ts';
 import { BROADCAST, sessionChannel } from '../functions/_shared/pure/rooms.ts';
 import { deleteFixtureVenues, insertFixtureVenues } from './fixtures/venues.ts';
-import { anonKey, apiUrl, deleteUserByPhone, invoke, sql } from './local.ts';
+import { waitUntilBlocked } from './helpers.ts';
+import { anonKey, apiUrl, dbUrl, deleteUserByPhone, invoke, sql } from './local.ts';
 import {
   createRoom,
   leave,
@@ -509,6 +511,114 @@ describe('my_history_friends (§23.G, rules 4 and 5)', { timeout: 60_000 }, () =
       body: '{}',
     });
     expect(res.ok).toBe(false);
+  });
+});
+
+// Rule 10: the table's end holds the room, then room_members (the close's trigger), then
+// play_history; "Arkadaş ekle" holds play_history, then the pair. Two calls that meet run on their
+// own connections while a third holds what both need; once both wait, it lets go, and both finish:
+// no deadlock, one close, one record per pair, one friendship.
+describe('locks (rule 10)', { timeout: 60_000 }, () => {
+  type Outcome = { ok: unknown } | { err: string };
+
+  async function atOnce(
+    hold: (tx: postgres.TransactionSql) => Promise<unknown>,
+    waitingIn: string[],
+    calls: ((db: postgres.Sql) => Promise<unknown>)[],
+  ): Promise<Outcome[]> {
+    const holder = postgres(dbUrl, { max: 1, onnotice: () => {} });
+    const dbs = calls.map(() => postgres(dbUrl, { max: 1, onnotice: () => {} }));
+    try {
+      let running: Promise<Outcome>[] = [];
+      await holder.begin(async (tx) => {
+        await hold(tx);
+        running = calls.map((call, i) =>
+          call(dbs[i] ?? holder).then(
+            (ok): Outcome => ({ ok }),
+            (err: unknown): Outcome => ({ err: err instanceof Error ? err.message : String(err) }),
+          ),
+        );
+        for (const fn of new Set(waitingIn)) {
+          await waitUntilBlocked(fn, waitingIn.filter((f) => f === fn).length);
+        }
+      });
+      return await Promise.all(running);
+    } finally {
+      await Promise.all([holder.end(), ...dbs.map((db) => db.end())]);
+    }
+  }
+
+  const holdRoom = (roomId: string) => (tx: postgres.TransactionSql) =>
+    tx`select id from public.rooms where id = ${roomId} for update`;
+  const leaving = (p: Phone, roomId: string) => async (db: postgres.Sql) =>
+    (await db`select (public.rooms_leave(${p.userId}, ${roomId})).status`)[0]?.status;
+  const ending = (p: Phone) => async (db: postgres.Sql) =>
+    (await db`select (public.rooms_end(${p.userId}, ${REVEAL.decisionSeconds})).status`)[0]?.status;
+
+  it("closes once when both sides' last phones leave at once", async () => {
+    const [owner, guest] = await tables(2);
+    const roomId = await teamRoom(owner, guest);
+    await backdate(roomId);
+
+    const outcomes = await atOnce(
+      holdRoom(roomId),
+      ['rooms_leave', 'rooms_leave'],
+      [leaving(owner, roomId), leaving(guest, roomId)],
+    );
+    // One closes the table; the other then finds itself already out of it.
+    expect(outcomes).toContainEqual({ ok: 'closed' });
+    expect(outcomes).toContainEqual({ err: 'not_in_room' });
+    await expectClosedWithoutWindow(roomId);
+    expect(pairsOf(await historyOf(roomId))).toEqual(pair(owner, guest).sort());
+  });
+
+  it("closes once when the leader ends the table while the other side's last phone leaves", async () => {
+    const [owner, guest, ownerMember] = await tables(3);
+    const roomId = await teamRoom(owner, guest, { owner: [ownerMember] });
+    await backdate(roomId);
+
+    const [ended, left] = await atOnce(
+      holdRoom(roomId),
+      ['rooms_end', 'rooms_leave'],
+      [ending(owner), leaving(guest, roomId)],
+    );
+    // "Masayı bitir" finds the table closed if the leave came first; the leave finds itself out
+    // of it if the end came first.
+    expect(ended).toEqual({ ok: 'closed' });
+    expect([{ ok: 'closed' }, { err: 'not_in_room' }]).toContainEqual(left);
+    await expectClosedWithoutWindow(roomId);
+    expect(pairsOf(await historyOf(roomId))).toEqual(
+      [...pair(owner, guest), ...pair(ownerMember, guest)].sort(),
+    );
+  });
+
+  it('makes one friendship when both phones press "Arkadaş ekle" at once', async () => {
+    const [owner, guest] = await tables(2);
+    const roomId = await teamRoom(owner, guest);
+    await backdate(roomId);
+    expect(await rooms(owner, { action: 'end' })).toEqual(OK);
+    const history = await historyOf(roomId);
+    const pressing = (p: Phone) => async (db: postgres.Sql) => {
+      const own = history.find((r) => r.user_id === p.userId);
+      return (
+        await db`select outcome from public.friends_add_from_room(${p.userId}, ${own?.id ?? ''})`
+      )[0]?.outcome;
+    };
+
+    const outcomes = await atOnce(
+      (tx) => tx`select private.lock_pair(${owner.userId}, ${guest.userId})`,
+      ['friends_add_from_room', 'friends_add_from_room'],
+      [pressing(owner), pressing(guest)],
+    );
+    expect(outcomes).toContainEqual({ ok: 'friendship_created' });
+    expect(outcomes).toContainEqual({ ok: 'ok' });
+    expect(
+      await sql`
+        select 1 from public.friendships
+        where (user_a = ${owner.userId} and user_b = ${guest.userId})
+           or (user_a = ${guest.userId} and user_b = ${owner.userId})
+      `,
+    ).toHaveLength(1);
   });
 });
 

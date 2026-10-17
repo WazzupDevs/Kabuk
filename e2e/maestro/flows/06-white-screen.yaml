@@ -47,6 +47,7 @@ appId: app.kabuk.mobile
 - scrollUntilVisible:
     element:
       id: go-to-table
+    centerElement: true
     timeout: 10000
 - tapOn:
     id: go-to-table

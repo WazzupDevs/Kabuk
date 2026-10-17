@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Runs inside reactivecircus/android-emulator-runner once the emulator has booted.
-# Env: SCHEME (light|dark), FLOW (the Maestro file; e2e/maestro/shard-<n>.yaml in CI, p0.yaml when
+# Env: SCHEME (light|dark), FONT_SCALE (Android's text size; 1 when unset, 1.3 in the nightly large
+# pass), FLOW (the Maestro file; e2e/maestro/shard-<n>.yaml in CI, p0.yaml when
 # unset), OUT (output directory), APK (path), INSIDE_LAT/INSIDE_LNG, OUTSIDE_LAT/OUTSIDE_LNG.
 # Without the APK at $APK also GH_TOKEN (actions: read), GITHUB_API_URL, GITHUB_REPOSITORY and
 # GITHUB_RUN_ID: the APK is this run's build job's e2e-apk artifact.
@@ -43,6 +44,8 @@ test -f "$APK"
 
 adb install -r -g "$APK"
 if [ "$SCHEME" = dark ]; then adb shell cmd uimode night yes; else adb shell cmd uimode night no; fi
+adb shell settings put system font_scale "${FONT_SCALE:-1}"
+echo "font_scale $(adb shell settings get system font_scale | tr -d '\r')"
 # A slow emulator can raise "Pixel Launcher isn't responding" over the app; hide system ANR dialogs.
 adb shell settings put global hide_error_dialogs 1 || true
 
