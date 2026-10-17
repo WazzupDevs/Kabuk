@@ -15,11 +15,12 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, labeled]
     # Only docs and tests (unit and integration): nothing new for the app, no run. The E2E flows and
-    # the bot (e2e/, scripts/e2e/*.ts) are not in the list.
+    # the bot (e2e/, scripts/e2e/*.ts) are not in the list, nor supabase/tests/ beyond its *.test.ts:
+    # the bot takes the E2E venue's geometry from supabase/tests/fixtures/venues.ts (paths-ignore
+    # cannot list exceptions).
     paths-ignore:
       - '**/*.md'
       - 'docs/**'
-      - 'supabase/tests/**'
       - '**/*.test.ts'
   workflow_dispatch:
   # Nightly on main, 04:23 İstanbul. Also the run that fills the Gradle cache (only the default
