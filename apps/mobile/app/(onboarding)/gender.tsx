@@ -20,12 +20,17 @@ export default function GenderStep() {
   const profile = useProfile();
   const signingUp = !profile.data || needsProfile(profile.data);
   const name = useOnboardingStore((s) => s.name);
+  const extrasPending = useOnboardingStore((s) => s.extrasPending);
   const [gender, setGender] = useState<Gender | null>(null);
   const submit = useCompleteSignup();
   const save = useSetGender();
   const pending = submit.isPending || save.isPending;
   const friend = useFriend();
 
+  // The profile went (Android's back from the photo step): the photo step is the only way on, not
+  // the one-time question for older accounts. Not while this step sends it: its own success opens
+  // the photo step.
+  if (extrasPending && submit.isIdle) return <Redirect href="/extras" />;
   if (signingUp && !name) return <Redirect href="/name" />;
 
   const error = signingUp

@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { mayStayAnonymous } from '@shared/gender.ts';
-import { useState } from 'react';
-import { View } from 'react-native';
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { BackHandler, View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
@@ -9,7 +10,7 @@ import { ProfilePhoto, PROFILE_PHOTO_SIZES } from '@/components/ProfilePhoto';
 import { Text } from '@/components/Text';
 import { useProfile } from '@/features/account/useProfile';
 import { SignupStep } from '@/features/onboarding/SignupStep';
-import { useOnboardingStore } from '@/features/onboarding/store';
+import { resetOnboarding, useOnboardingStore } from '@/features/onboarding/store';
 import { useFriend } from '@/features/onboarding/useFriend';
 import { PhotoSheet } from '@/features/profile/PhotoSheet';
 import { useProfileView } from '@/features/profile/queries';
@@ -41,10 +42,20 @@ export default function PhotoStep() {
   const photoNote = gender !== null && !mayStayAnonymous(gender) && !hasPhoto;
   const side = PROFILE_PHOTO_SIZES.large;
 
+  // The profile is sent: Android's back would step into the birth date and the gender again,
+  // which have nothing left to do. This is the last step, so back does nothing here.
+  useFocusEffect(
+    useCallback(() => {
+      const sub = BackHandler.addEventListener('hardwareBackPress', () => true);
+      return () => sub.remove();
+    }, []),
+  );
+
   const finish = () => {
     track('onboarding_completed', { with_photo: hasPhoto, with_bio: false });
     haptic('accountReady');
-    useOnboardingStore.setState({ extrasPending: false, gender: null, name: '', birthDate: null });
+    // Everything the steps kept goes, the consents too; the gate opens the app.
+    resetOnboarding();
   };
 
   return (
