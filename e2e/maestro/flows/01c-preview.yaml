@@ -447,8 +447,14 @@ appId: app.kabuk.mobile
     id: preview-set-measure
 - extendedWaitUntil:
     visible:
-      id: measure-chat
+      id: measure-stats
     timeout: 10000
+# The list is 384 dp tall and starts low on a 640 dp screen: bring all of it on screen, so the
+# swipes start on it and scroll it, not the page.
+- scrollUntilVisible:
+    element:
+      id: measure-chat
+    timeout: 30000
 - repeat:
     times: 3
     commands:
