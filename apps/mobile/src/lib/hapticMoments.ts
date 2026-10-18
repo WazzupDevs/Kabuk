@@ -10,9 +10,12 @@ export type HapticMoment =
   | 'proposalAccepted' // a game proposal was accepted
   | 'incomingRequest' // a join request came in
   | 'tabuCorrect' // Tabu: Doğru
-  | 'tabuTaboo' // Tabu: Tabu
+  | 'tabuTaboo' // Tabu: the rival's button ("Yasak!" from step 4.3, K-5)
   | 'tabuPass' // Tabu: Pas
   | 'timeUp' // a turn's time ran out
+  | 'grabbed' // a grab game: the person's "Kaptım" came first (v43)
+  | 'lastSeconds' // a timed turn: one of its last seconds (v43)
+  | 'replyThreshold' // a chat: a swiped message passed the point where letting go answers it (v43)
   | 'failed' // an action the person pressed failed, and its error shows (FEEL_ERROR)
   | 'friendsMade'; // the end of the table: "Arkadaş oldunuz"
 
@@ -31,6 +34,9 @@ export const HAPTICS: Record<HapticMoment, HapticCall> = {
   tabuTaboo: { kind: 'impact', style: 'rigid' },
   tabuPass: { kind: 'impact', style: 'rigid' },
   timeUp: { kind: 'impact', style: 'rigid' },
+  grabbed: { kind: 'impact', style: 'medium' },
+  lastSeconds: { kind: 'impact', style: 'light' },
+  replyThreshold: { kind: 'selection' },
   failed: { kind: 'notification', type: 'error' },
   friendsMade: { kind: 'notification', type: 'success' },
 };
@@ -55,4 +61,35 @@ export function failureHaptic(
   meta: Readonly<Record<string, unknown>> | undefined,
 ): HapticMoment | null {
   return meta?.feelError === true ? 'failed' : null;
+}
+
+// How often the phone may answer with a touch (K-30, docs/SPEC_V4.md): the same moment at most
+// every 600 ms, any two touches at least 150 ms apart, and none while the person types (no touch on
+// a keystroke, nor one that lands between keystrokes).
+export const HAPTIC_LIMITS = { sameMomentMs: 600, anyMs: 150, typingMs: 600 } as const;
+
+export type HapticGate = {
+  // Whether `moment` may play at `now` (ms). A touch that plays is remembered; a held one is not.
+  allow(moment: HapticMoment, now: number): boolean;
+  // A keystroke at `now`: touches hold until the person has not typed for `typingMs`.
+  typed(now: number): void;
+};
+
+export function hapticGate(limits: typeof HAPTIC_LIMITS = HAPTIC_LIMITS): HapticGate {
+  const lastOf = new Map<HapticMoment, number>();
+  let lastAny = -Infinity;
+  let lastKey = -Infinity;
+  return {
+    allow(moment, now) {
+      if (now - lastKey < limits.typingMs) return false;
+      if (now - lastAny < limits.anyMs) return false;
+      if (now - (lastOf.get(moment) ?? -Infinity) < limits.sameMomentMs) return false;
+      lastAny = now;
+      lastOf.set(moment, now);
+      return true;
+    },
+    typed(now) {
+      lastKey = now;
+    },
+  };
 }

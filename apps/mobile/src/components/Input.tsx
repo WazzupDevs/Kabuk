@@ -1,6 +1,7 @@
 import { forwardRef, useState } from 'react';
 import { TextInput, type TextInputProps, View } from 'react-native';
 
+import { noteTyping } from '@/lib/haptics';
 import { AA_LARGE, contrastRatio } from '@/theme/contrast';
 import { typeStyle, useTheme } from '@/theme/ThemeProvider';
 import { SPACING, TOUCH } from '@/theme/tokens';
@@ -58,6 +59,11 @@ export const Input = forwardRef<TextInput, Props>(function Input(
           ref={ref}
           {...rest}
           multiline={multiline}
+          // No touch while the person types (K-30).
+          onChangeText={(text) => {
+            noteTyping();
+            rest.onChangeText?.(text);
+          }}
           onFocus={(e) => {
             setFocused(true);
             rest.onFocus?.(e);

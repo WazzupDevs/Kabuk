@@ -3,7 +3,13 @@ import { useEffect, useRef } from 'react';
 
 import type { RequesterStatus } from '@shared/rooms.ts';
 
-import { type HapticCall, type HapticMoment, HAPTICS, requesterHaptic } from './hapticMoments';
+import {
+  type HapticCall,
+  hapticGate,
+  type HapticMoment,
+  HAPTICS,
+  requesterHaptic,
+} from './hapticMoments';
 
 const NOTIFICATION = {
   success: Haptics.NotificationFeedbackType.Success,
@@ -26,11 +32,19 @@ function play(call: HapticCall): Promise<void> {
   }
 }
 
-// The one way the app makes a touch (hapticMoments.ts says when). A device without haptics, or a
-// failure, is silent.
+// One gate for the whole app: the rate limits of K-30 (hapticMoments.ts).
+const gate = hapticGate();
+
+// The one way the app makes a touch (hapticMoments.ts says when). A touch the gate holds back, a
+// device without haptics or a failure is silent.
 export function haptic(moment: HapticMoment | null): void {
-  if (!moment) return;
+  if (!moment || !gate.allow(moment, Date.now())) return;
   void play(HAPTICS[moment]).catch(() => undefined);
+}
+
+// Text fields call this on every change: no touch while the person types (K-30).
+export function noteTyping(): void {
+  gate.typed(Date.now());
 }
 
 // The requester's join request: a touch when it is accepted, none for a decline or a timeout.

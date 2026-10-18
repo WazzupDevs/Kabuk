@@ -60,6 +60,10 @@ import {
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
+import { IdentitySet } from './identityPreview';
+import { PartsSet } from './partsPreview';
+import { PreviewBlock } from './PreviewBlock';
+
 // Sample data for the component preview (Ayarlar → Tasarım (test) → Bileşen önizleme): the game
 // components that screens wire later, shown with made-up props so E2E can photograph them in both
 // schemes. Test builds only.
@@ -67,27 +71,6 @@ export type PreviewSet = { key: string; label: string; render: () => ReactNode }
 
 const STAGE = 560;
 const GAMES: GameGlyph[] = ['tabu', 'sohbet', 'impostor', 'letters', 'song', 'needle'];
-
-// A labelled block of the preview.
-export function PreviewBlock({ title, children }: { title: string; children: ReactNode }) {
-  const { colors, shape } = useTheme();
-  return (
-    <View
-      className="gap-3"
-      style={{
-        padding: SPACING[3],
-        borderRadius: shape.radius.lg,
-        borderWidth: shape.stroke.hairline,
-        borderColor: colors.divider,
-      }}
-    >
-      <Text variant="overline" tone="muted">
-        {title}
-      </Text>
-      {children}
-    </View>
-  );
-}
 
 // Aşama 8 · Saha: the button roles with the 3D depth, a disabled one, the small header size and
 // the choice chips (the chosen one stays pressed in).
@@ -741,4 +724,6 @@ export const PREVIEW_SETS: PreviewSet[] = [
   { key: 'ibre', label: 'İbre', render: () => <IbreSet /> },
   { key: 'chat', label: 'Sohbet', render: () => <ChatSet /> },
   { key: 'tokens', label: tr.design.tokens.set, render: () => <TokensSet /> },
+  { key: 'parts', label: tr.design.parts.set, render: () => <PartsSet /> },
+  { key: 'identity', label: tr.design.identity.set, render: () => <IdentitySet /> },
 ];

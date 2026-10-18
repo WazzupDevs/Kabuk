@@ -1113,6 +1113,39 @@ export const tr = {
       zones: 'İbre bölgeleri',
       badge: 'Rozet',
     },
+    // Bileşen önizleme → Oyun parçaları (step 4.2b): the game screens' parts on a ground.
+    parts: {
+      set: 'Oyun parçaları',
+      buttons: 'Oyun düğmeleri',
+      main: 'Başlat',
+      side: 'Masaya dön',
+      grab: 'Kaptım',
+      busy: 'Gönderiliyor',
+      disabledPass: 'Pas',
+      timer: 'Süre çubuğu',
+      ring: 'Halka sayaç',
+      moments: 'Kısa bildirim, 3-2-1, konfeti',
+      showToast: 'Bildirim göster',
+      toast: 'Yasak! Kart geçildi',
+      countIn: '3-2-1',
+      confetti: 'Konfeti',
+    },
+    // Bileşen önizleme → Kapsül ve ikonlar (step 4.2b): the capsule avatars, the bar icons, the bell
+    // and the chat wallpaper.
+    identity: {
+      set: 'Kapsül ve ikonlar',
+      capsules: 'Kapsül avatarlar',
+      icons: 'Çubuk ikonlar ve zil',
+      wallpaper: 'Sohbet duvar kağıdı',
+      sampleName: 'kapsul-ab12',
+      sampleTheirs: 'Masa kurduk, gelir misiniz?',
+      sampleMine: 'Geliyoruz, iki kişiyiz',
+    },
+  },
+  // The game screens' parts (src/components/game/).
+  gameParts: {
+    secondsLeft: (s: number) => `${s} saniye kaldı`,
+    go: 'Başla',
   },
   settings: {
     title: 'Ayarlar',

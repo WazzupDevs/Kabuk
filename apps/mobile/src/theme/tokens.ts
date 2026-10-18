@@ -173,7 +173,13 @@ export type TypeVariant =
   | 'tag'
   | 'caption' // tab labels, small counters
   | 'overline' // "Söylenmeyecekler"
-  | 'signalMark'; // the emoji of the "Tanışalım mı?" signal
+  | 'signalMark' // the emoji of the "Tanışalım mı?" signal
+  | 'gameButton' // the 56 high game button (v43: .tbtn)
+  | 'gameButtonLarge' // the grab button, "Kaptım" (v43: .bx-buzz)
+  | 'clock' // a timed turn's seconds next to the timer bar (v43: .tg-timer b)
+  | 'countIn' // "3", "2", "1" (v43: .tg-cd)
+  | 'countInGo' // "Başla" after them
+  | 'toast'; // the short notice at the top of a game (v43: .tg-flash)
 
 export type Typography = Record<TypeVariant, TypeStyle>;
 
@@ -281,6 +287,12 @@ export function baseTypography(overrides: Partial<Typography> = {}): Typography 
     caption: { font: 'bold', size: 11, lineHeight: 14 },
     overline: { font: 'bold', size: 12, lineHeight: 16, letterSpacing: 1, uppercase: true },
     signalMark: { font: 'regular', size: 104, lineHeight: 126 },
+    gameButton: { font: 'display', size: 16, lineHeight: 20 },
+    gameButtonLarge: { font: 'display', size: 20, lineHeight: 24 },
+    clock: { font: 'display', size: 40, lineHeight: 44, letterSpacing: -1 },
+    countIn: { font: 'display', size: 110, lineHeight: 120, letterSpacing: -4 },
+    countInGo: { font: 'display', size: 60, lineHeight: 66, letterSpacing: -0.5 },
+    toast: { font: 'display', size: 14, lineHeight: 18 },
     ...overrides,
   };
 }

@@ -1,4 +1,4 @@
-import { withAlpha } from './contrast';
+import { contrastRatio, withAlpha } from './contrast';
 import { mix } from './feature';
 import type { ColorScheme } from './tokens';
 
@@ -29,6 +29,24 @@ export const CHAT_THEMES = {
 
 // The unread badge (the bell on Mesajlar, step 4.7).
 export const BADGE = '#C51F62';
+
+// A timed turn's last seconds (gameMotion.ts → LOW_SECONDS): the bar and the ring fill orange (the
+// logo's overlap colour), the clock's number turns pale orange.
+export const LOW_TIME = { fill: '#FFB547', text: '#FFE2B3' } as const;
+
+// White marks on a ground at reduced strength: the timer bar's track, the ring's track, the side
+// button's outline (v43: .tg-bar, .bx-ring .bg, .tbtn.ghost).
+export const ON_GAME_ALPHA = { track: 0.22, ring: 0.18, outline: 0.6 } as const;
+
+// Shadows on a game ground (v43): Pas and Doğru, the "Yasak!" button, the toast.
+export const GAME_SHADOW = {
+  button: '0px 8px 18px rgba(20, 17, 43, 0.18)',
+  forbidden: '0px 10px 22px rgba(20, 17, 43, 0.25)',
+  toast: '0px 12px 26px rgba(20, 17, 43, 0.25)',
+} as const;
+
+// The winners' confetti (v43 → conf()).
+export const CONFETTI_COLORS = ['#FFFFFF', '#FFB547', '#FF9DC0', '#C9BAFF'] as const;
 
 // A game screen's ground: a vertical gradient (top to bottom), and the fill of the translucent chips
 // and ghost buttons that sit on it. White chips (18 %) read on the deep grounds; on the light
@@ -73,6 +91,14 @@ export function chipOn(ground: GameGround, stop: string): string {
   return ground.chip === 'white'
     ? mix(ON_GAME, stop, CHIP_ALPHA.white)
     : mix(ON_JUDGE, stop, CHIP_ALPHA.ink);
+}
+
+// The main game button is white with its label in the game's colour (v43: .tbtn.main): the ground's
+// stop that reads better on white.
+export function mainButtonInk(ground: GameGround): string {
+  return contrastRatio(ON_GAME, ground.top) >= contrastRatio(ON_GAME, ground.bottom)
+    ? ground.top
+    : ground.bottom;
 }
 
 // The chip's fill as drawn, translucent over the gradient.
