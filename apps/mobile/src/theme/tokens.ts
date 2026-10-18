@@ -94,13 +94,13 @@ export function colorClass(key: PaletteKey): string {
 }
 
 // Font family names as registered with expo-font (the @expo-google-fonts export names). Only these
-// five weights are bundled (src/theme/fonts.ts maps each to its file); no other weight is added.
+// four weights of Plus Jakarta Sans are bundled (src/theme/fonts.ts maps each to its file), the ones
+// v45 loads; no other weight is added.
 export type FontName =
-  | 'Poppins_700Bold'
-  | 'Poppins_800ExtraBold'
-  | 'Manrope_400Regular'
-  | 'Manrope_600SemiBold'
-  | 'Manrope_700Bold';
+  | 'PlusJakartaSans_500Medium'
+  | 'PlusJakartaSans_600SemiBold'
+  | 'PlusJakartaSans_700Bold'
+  | 'PlusJakartaSans_800ExtraBold';
 
 export type FontSet = {
   display: FontName; // hero, display, alias, word, score
@@ -254,7 +254,7 @@ export const MAP_PIN = {
 } as const;
 export const MAP_FONTS = { regular: ['Noto Sans Regular'], bold: ['Noto Sans Bold'] } as const;
 
-// The skall type scale: Poppins headings (700 and 800), Manrope body (400, 600, 700).
+// The skall type scale in Plus Jakarta Sans: headings 800 and 700, body 500, strong 600, labels 700.
 export function baseTypography(overrides: Partial<Typography> = {}): Typography {
   return {
     display: { font: 'display', size: 28, lineHeight: 34, letterSpacing: -0.4 },

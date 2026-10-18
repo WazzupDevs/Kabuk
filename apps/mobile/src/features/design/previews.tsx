@@ -1,5 +1,6 @@
 import { type ReactNode, useState } from 'react';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
@@ -10,6 +11,7 @@ import { ConfirmSheet } from '@/components/ConfirmSheet';
 import { GameDisc, type GameGlyph } from '@/components/Glyph';
 import { Composer } from '@/components/Composer';
 import { Text } from '@/components/Text';
+import { Wordmark } from '@/components/Wordmark';
 import { FirstGameIntro } from '@/features/games/FirstGameIntro';
 import { ClockPill, TeamScore } from '@/features/games/GameBits';
 import {
@@ -43,6 +45,18 @@ import {
 import { TimeUpOverlay } from '@/features/games/TimeUpOverlay';
 import { tabuStats, TurnReady } from '@/features/games/TurnReady';
 import { tr } from '@/i18n/tr';
+import {
+  BADGE,
+  CHAT_THEMES,
+  chipFill,
+  type GameGround,
+  gameGround,
+  JUDGE_COLORS,
+  NEEDLE_ZONES,
+  ON_GAME,
+  ON_JUDGE,
+  teamGround,
+} from '@/theme/gameColors';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
@@ -581,10 +595,150 @@ function ChatSet() {
   );
 }
 
+// Step 4.2 (K-25): the game grounds with their chips, the judge buttons, the chat themes, İbre's
+// zones, the badge and the wordmark, in the run's scheme. E2E photographs them in both schemes for
+// the owner's approval of the dark tones and the dark translucent chips.
+function GroundSwatch({ id, label, ground }: { id: string; label: string; ground: GameGround }) {
+  const { shape } = useTheme();
+  return (
+    <View
+      style={{
+        height: SPACING[16] + SPACING[6],
+        borderRadius: shape.radius.md,
+        overflow: 'hidden',
+      }}
+    >
+      <Svg style={StyleSheet.absoluteFill} viewBox="0 0 1 1" preserveAspectRatio="none">
+        <Defs>
+          <LinearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor={ground.top} />
+            <Stop offset="1" stopColor={ground.bottom} />
+          </LinearGradient>
+        </Defs>
+        <Rect x="0" y="0" width="1" height="1" fill={`url(#${id})`} />
+      </Svg>
+      <View className="flex-1 justify-between" style={{ padding: SPACING[3] }}>
+        <Text variant="heading" color={ON_GAME}>
+          {label}
+        </Text>
+        <View
+          style={{
+            alignSelf: 'flex-start',
+            backgroundColor: chipFill(ground),
+            borderRadius: shape.radius.pill,
+            paddingHorizontal: SPACING[3],
+            paddingVertical: SPACING[1],
+          }}
+        >
+          <Text variant="tag" color={ON_GAME}>
+            {tr.design.tokens.chip}
+          </Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+// basis 0: the swatches of one row share it equally (İbre's three zones fit the 320 dp screen).
+function Swatch({
+  label,
+  fill,
+  text,
+  basis = SPACING[16] + SPACING[8],
+}: {
+  label: string;
+  fill: string;
+  text: string;
+  basis?: number;
+}) {
+  const { shape } = useTheme();
+  return (
+    <View
+      className="items-center justify-center"
+      style={{
+        flexGrow: 1,
+        flexBasis: basis,
+        minHeight: SPACING[12],
+        paddingHorizontal: SPACING[3],
+        borderRadius: shape.radius.pill,
+        backgroundColor: fill,
+      }}
+    >
+      <Text variant="tag" color={text} align="center">
+        {label}
+      </Text>
+    </View>
+  );
+}
+
+function TokensSet() {
+  const { scheme, colors, shape } = useTheme();
+  const t = tr.design.tokens;
+  const grounds: [string, string, GameGround][] = [
+    ['team-purple', t.teamPurple, teamGround(scheme, 'purple')],
+    ['team-pink', t.teamPink, teamGround(scheme, 'pink')],
+    ['sahtekar', t.sahtekar, gameGround(scheme, 'sahtekar')],
+    ['letters', t.letters, gameGround(scheme, 'letters')],
+    ['song', t.song, gameGround(scheme, 'song')],
+    ['chat', t.chat, gameGround(scheme, 'chat')],
+  ];
+  return (
+    <View className="gap-4">
+      <PreviewBlock title={t.grounds}>
+        <View className="gap-3" testID="preview-tokens-grounds">
+          {grounds.map(([key, label, ground]) => (
+            <GroundSwatch key={key} id={`ground-${key}`} label={label} ground={ground} />
+          ))}
+        </View>
+      </PreviewBlock>
+      <PreviewBlock title={t.buttonsAndThemes}>
+        <View className="gap-3" testID="preview-tokens-themes">
+          <View className="flex-row flex-wrap gap-2">
+            <Swatch label={t.pass} fill={JUDGE_COLORS.pass} text={ON_JUDGE} />
+            <Swatch label={t.correct} fill={JUDGE_COLORS.correct} text={ON_JUDGE} />
+            <Swatch label={t.forbidden} fill={JUDGE_COLORS.forbidden} text={ON_GAME} />
+          </View>
+          <View className="flex-row flex-wrap gap-2">
+            <Swatch label={t.warmUp} fill={CHAT_THEMES.warmUp} text={ON_GAME} />
+            <Swatch label={t.campus} fill={CHAT_THEMES.campus} text={ON_GAME} />
+            <Swatch label={t.deep} fill={CHAT_THEMES.deep} text={ON_GAME} />
+            <Swatch label={t.either} fill={CHAT_THEMES.either} text={ON_GAME} />
+          </View>
+          <Text variant="label" tone="muted">
+            {t.zones}
+          </Text>
+          <View className="flex-row gap-2">
+            {NEEDLE_ZONES.map((fill, i) => (
+              <Swatch key={fill} label={String(i + 2)} fill={fill} text={ON_JUDGE} basis={0} />
+            ))}
+          </View>
+          <View className="flex-row flex-wrap gap-2">
+            <Swatch label={t.badge} fill={BADGE} text={ON_GAME} />
+          </View>
+        </View>
+      </PreviewBlock>
+      <PreviewBlock title={t.logo}>
+        <View
+          className="items-center"
+          style={{
+            padding: SPACING[4],
+            borderRadius: shape.radius.md,
+            backgroundColor: colors.canvas,
+          }}
+          testID="preview-tokens-logo"
+        >
+          <Wordmark height={SPACING[10]} />
+        </View>
+      </PreviewBlock>
+    </View>
+  );
+}
+
 export const PREVIEW_SETS: PreviewSet[] = [
   { key: 'games', label: 'Oyun', render: () => <GamesSet /> },
   { key: 'sahtekar', label: 'Sahtekar', render: () => <SahtekarSet /> },
   { key: 'say', label: 'Harf · Şarkı', render: () => <SaySet /> },
   { key: 'ibre', label: 'İbre', render: () => <IbreSet /> },
   { key: 'chat', label: 'Sohbet', render: () => <ChatSet /> },
+  { key: 'tokens', label: tr.design.tokens.set, render: () => <TokensSet /> },
 ];
