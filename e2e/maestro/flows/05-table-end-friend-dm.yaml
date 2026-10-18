@@ -48,6 +48,19 @@ appId: app.kabuk.mobile
     visible: Henüz mesaj yok
     timeout: 20000
 - takeScreenshot: 25-messages
+# İstekler (docs/SPEC_V4.md §4.C, v45): the two became friends at the table's end, no request waits.
+- tapOn:
+    id: messages-tab-requests
+- extendedWaitUntil:
+    visible: Bekleyen istek yok
+    timeout: 15000
+- takeScreenshot: 25a-requests-empty
+- tapOn:
+    id: messages-tab-chats
+- extendedWaitUntil:
+    visible:
+      id: inbox-Bot Masa
+    timeout: 15000
 - tapOn:
     id: inbox-Bot Masa
 - extendedWaitUntil:
