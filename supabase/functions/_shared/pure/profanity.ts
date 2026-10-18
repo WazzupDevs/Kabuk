@@ -39,3 +39,28 @@ export function containsProfanity(text: string, terms: PreparedTerms): boolean {
     (token) => terms.exact.includes(token) || terms.prefixes.some((p) => token.startsWith(p)),
   );
 }
+
+// K-34 (docs/SPEC_V4.md §4.C): a phone number, an e-mail address, a username or a link in a bio
+// or a display name, a way to reach someone off the app (rule 4). Rejected, never masked. Contact
+// details are ASCII, so this lowercases without Turkish rules ("INFO" → "info", not "ınfo").
+const PHONE_DIGITS = 10;
+// A run of digits and the marks numbers are spaced with: "0532 123 45 67", "+90 (532) 123-45-67".
+const DIGIT_RUN = /[+(]?\d[\d\s.\-()/]*\d/g;
+const EMAIL = /[\p{L}\p{N}._%+-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)*\.[a-z]{2,}/u;
+// "@elif.kaya", not the middle of an address.
+const HANDLE = /(?:^|[^\p{L}\p{N}._@])@[a-z0-9._]{2,}/u;
+const SCHEME = /(?:https?:\/\/|\bwww\.)/;
+const TLDS = 'com|net|org|io|me|co|tr|app|dev|gg|tv|ly|link|ee|xyz|info|biz|edu';
+// "instagram.com/elif", "t.me/deniz", "elifkaya.com.tr"; not "severim.kahve".
+const DOMAIN = new RegExp(
+  `(?:^|[^\\p{L}\\p{N}.@-])[a-z0-9][a-z0-9-]*(?:\\.[a-z0-9-]+)*\\.(?:${TLDS})(?![\\p{L}\\p{N}])`,
+  'u',
+);
+
+export function containsContact(text: string): boolean {
+  const s = text.toLowerCase();
+  const phone = (s.match(DIGIT_RUN) ?? []).some(
+    (run) => run.replace(/\D/g, '').length >= PHONE_DIGITS,
+  );
+  return phone || EMAIL.test(s) || HANDLE.test(s) || SCHEME.test(s) || DOMAIN.test(s);
+}

@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { containsContact } from '@shared/profanity.ts';
 import { BIO_MAX, DISPLAY_NAME_MAX, DISPLAY_NAME_MIN } from '@shared/profile.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
@@ -116,9 +117,15 @@ function EditForm({
   const [bio, setBio] = useState(initialBio);
 
   const nameLength = [...name.trim()].length;
-  const nameValid = nameLength >= DISPLAY_NAME_MIN && nameLength <= DISPLAY_NAME_MAX;
   const nameChanged = name.trim() !== initialName;
   const bioChanged = bio.trim() !== initialBio;
+  // K-34: no phone, e-mail, username or link; the server checks the same. A bio from before the
+  // 80 limit stays until it is edited.
+  const nameContact = nameChanged && containsContact(name);
+  const bioContact = bioChanged && containsContact(bio);
+  const nameValid =
+    nameLength >= DISPLAY_NAME_MIN && nameLength <= DISPLAY_NAME_MAX && !nameContact;
+  const bioValid = !bioChanged || ([...bio.trim()].length <= BIO_MAX && !bioContact);
 
   const save = useMutation({
     meta: FEEL_ERROR,
@@ -149,6 +156,7 @@ function EditForm({
           hint={tr.profile.nameHint}
           value={name}
           onChangeText={setName}
+          error={nameContact ? tr.errors.contact_not_allowed : null}
           maxLength={DISPLAY_NAME_MAX}
           autoCapitalize="words"
           autoCorrect={false}
@@ -158,7 +166,8 @@ function EditForm({
           counter={tr.profile.bioHint([...bio].length, BIO_MAX)}
           value={bio}
           onChangeText={setBio}
-          maxLength={BIO_MAX}
+          error={bioContact ? tr.errors.contact_not_allowed : null}
+          maxLength={Math.max(BIO_MAX, [...initialBio].length)}
           multiline
           tall
         />
@@ -181,7 +190,7 @@ function EditForm({
         <Button
           label={tr.profile.save}
           onPress={() => save.mutate()}
-          disabled={!nameValid || (!nameChanged && !bioChanged)}
+          disabled={!nameValid || !bioValid || (!nameChanged && !bioChanged)}
           loading={save.isPending}
         />
         <Button variant="ghost" label={tr.common.cancel} onPress={() => router.back()} />

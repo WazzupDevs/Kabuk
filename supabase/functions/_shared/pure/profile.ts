@@ -1,33 +1,39 @@
-// Profile fields (docs/SPEC_V2.md §5.1). The same rules run on the phone (length) and in the
-// profile function (length and profanity).
-import { containsProfanity, type PreparedTerms } from './profanity.ts';
+// Profile fields (docs/SPEC_V2.md §5.1; K-34 in docs/SPEC_V4.md §4.C). The same rules run on the
+// phone (length, contact details) and in the profile and account functions (length, contact
+// details and profanity).
+import { containsContact, containsProfanity, type PreparedTerms } from './profanity.ts';
 
 export const DISPLAY_NAME_MIN = 2;
 export const DISPLAY_NAME_MAX = 24;
-export const BIO_MAX = 160;
+// Down from 160 (K-34); a longer bio from before stays until it is edited.
+export const BIO_MAX = 80;
 export const PARTICIPATIONS = ['anonymous', 'profile'] as const;
 export type Participation = (typeof PARTICIPATIONS)[number];
 
 export type FieldCheck =
-  { ok: true; value: string | null } | { ok: false; reason: 'length' | 'profanity' };
+  { ok: true; value: string | null } | { ok: false; reason: 'length' | 'contact' | 'profanity' };
 
 const length = (s: string) => [...s].length;
 
-// Trimmed display name with inner whitespace collapsed; required (2–24 characters).
+// Trimmed display name with inner whitespace collapsed; required (2–24 characters), no phone,
+// e-mail, username or link.
 export function checkDisplayName(raw: string, terms: PreparedTerms): FieldCheck {
   const value = raw.trim().replace(/\s+/g, ' ');
   if (length(value) < DISPLAY_NAME_MIN || length(value) > DISPLAY_NAME_MAX) {
     return { ok: false, reason: 'length' };
   }
+  if (containsContact(value)) return { ok: false, reason: 'contact' };
   if (containsProfanity(value, terms)) return { ok: false, reason: 'profanity' };
   return { ok: true, value };
 }
 
-// Trimmed bio; empty clears it (null), otherwise at most 160 characters.
+// Trimmed bio; empty clears it (null), otherwise at most 80 characters, no phone, e-mail, username
+// or link.
 export function checkBio(raw: string, terms: PreparedTerms): FieldCheck {
   const value = raw.trim();
   if (value === '') return { ok: true, value: null };
   if (length(value) > BIO_MAX) return { ok: false, reason: 'length' };
+  if (containsContact(value)) return { ok: false, reason: 'contact' };
   if (containsProfanity(value, terms)) return { ok: false, reason: 'profanity' };
   return { ok: true, value };
 }

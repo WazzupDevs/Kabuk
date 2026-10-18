@@ -7,6 +7,7 @@ import { TABU } from '@shared/tabu.ts';
 import { SAHTEKAR } from '@shared/sahtekar.ts';
 import { IBRE_AUTO_LOCK_SECONDS, IBRE_CONFIG } from '@shared/ibre.ts';
 import { formatTrMobile } from '@shared/phone.ts';
+import { BIO_MAX } from '@shared/profile.ts';
 import { SAY_CONFIG } from '@shared/sayChallenge.ts';
 import { capitalizeTr, inflectTr } from '@shared/trText.ts';
 import type { VenueKind } from '@shared/venueKind.ts';
@@ -1287,7 +1288,8 @@ export const tr = {
     not_judge: 'Bu turda hakem diğer masa.',
     display_name_required: 'Önce profilinde bir ad seç.',
     display_name_invalid: 'Ad 2–24 karakter olmalı ve uygun olmayan ifade içermemeli.',
-    bio_invalid: 'Tanıtım en fazla 160 karakter olmalı ve uygun olmayan ifade içermemeli.',
+    bio_invalid: `Tanıtım en fazla ${BIO_MAX} karakter olmalı ve uygun olmayan ifade içermemeli.`,
+    contact_not_allowed: 'Telefon, e-posta, kullanıcı adı ya da bağlantı ekleyemezsin.',
     photo_invalid: 'Fotoğraf yüklenemedi. Başka bir fotoğraf dene.',
     method_not_allowed: 'İstek geçersiz.',
     update_required: 'Uygulamanın yeni sürümünü yüklemen gerekiyor.',

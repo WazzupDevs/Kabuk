@@ -22,13 +22,28 @@ describe('checkDisplayName', () => {
   it('rejects profanity', () => {
     expect(checkDisplayName('Siktir Ali', terms)).toEqual({ ok: false, reason: 'profanity' });
   });
+
+  it('rejects a phone, an e-mail, a username or a link (K-34)', () => {
+    for (const name of ['Elif 5321234567', 'a@b.co', '@elifkaya', 'elif.com']) {
+      expect(checkDisplayName(name, terms), name).toEqual({ ok: false, reason: 'contact' });
+    }
+    expect(checkDisplayName('Dr. Elif K.', terms).ok).toBe(true);
+  });
 });
 
 describe('checkBio', () => {
-  it('clears on empty and allows up to 160 characters', () => {
+  it('clears on empty and allows up to 80 characters (K-34)', () => {
     expect(checkBio('   ', terms)).toEqual({ ok: true, value: null });
     expect(checkBio('Kahve ve Tabu ', terms)).toEqual({ ok: true, value: 'Kahve ve Tabu' });
-    expect(checkBio('a'.repeat(161), terms)).toEqual({ ok: false, reason: 'length' });
+    expect(checkBio('ş'.repeat(80), terms).ok).toBe(true);
+    expect(checkBio('a'.repeat(81), terms)).toEqual({ ok: false, reason: 'length' });
+  });
+
+  it('rejects a phone, an e-mail, a username or a link (K-34)', () => {
+    for (const bio of ['ara 0532 123 45 67', 'elif@gmail.com', 'insta @elif', 'www.elif.net']) {
+      expect(checkBio(bio, terms), bio).toEqual({ ok: false, reason: 'contact' });
+    }
+    expect(checkBio('1998 doğumlu, Sakarya Üni. 2. sınıf', terms).ok).toBe(true);
   });
 
   it('rejects profanity but not everyday words', () => {

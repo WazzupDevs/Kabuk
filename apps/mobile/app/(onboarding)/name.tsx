@@ -1,3 +1,4 @@
+import { containsContact } from '@shared/profanity.ts';
 import { DISPLAY_NAME_MAX, DISPLAY_NAME_MIN } from '@shared/profile.ts';
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -17,7 +18,9 @@ export default function NameStep() {
     () => useOnboardingStore.getState().name || profile.data?.display_name || '',
   );
   const length = [...name.trim()].length;
-  const valid = length >= DISPLAY_NAME_MIN && length <= DISPLAY_NAME_MAX;
+  // K-34: no phone, e-mail, username or link; the server checks the same.
+  const contact = containsContact(name);
+  const valid = length >= DISPLAY_NAME_MIN && length <= DISPLAY_NAME_MAX && !contact;
   const friend = useFriend();
   const bubble = greeting(name, valid, { named: tr.signup.hello, plain: tr.signup.helloPlain });
 
@@ -45,6 +48,7 @@ export default function NameStep() {
         placeholder={tr.signup.namePlaceholder}
         value={name}
         onChangeText={setName}
+        error={contact ? tr.errors.contact_not_allowed : null}
         maxLength={DISPLAY_NAME_MAX}
         autoCapitalize="words"
         autoCorrect={false}
