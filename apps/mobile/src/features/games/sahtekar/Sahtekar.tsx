@@ -558,7 +558,7 @@ export function ImposterReveal({
   guess?: string | null;
   outcome: 'imposter' | 'tables';
   votes: readonly Vote[];
-  // "Kabuk · Sahtekar" in the corner of a recording.
+  // "skall · Sahtekar" in the corner of a recording.
   brand?: string;
 }) {
   const { colors, shape } = useTheme();

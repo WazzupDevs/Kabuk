@@ -21,14 +21,14 @@ Kafede, nargile kafede ya da barda misin? skall ile aynı mekandaki diğer masal
 - **Mekana giriş yap:** Konumun yalnızca o an, bir kez kullanılır ve saklanmaz. Masan "Mor Baykuş" gibi bir takma ad alır.
 - **Masanı lobiye aç:** Mekandaki masalar seni lobide takma adın ve kişi sayınla görür. İstersen yalnızca kendi masanla da oynarsın.
 - **Katıl:** Lobideki bir masaya katılmak iste. Kabul edilirsen o masanın yanına gidersin.
-- **Tek masada oyna:** Sesli Tabu, Sahtekar, İbre, Harf Kapmaca, Şarkıda Geçsin ve sohbet kartları; masadaki herkes kendi telefonuyla.
+- **Tek masada oyna:** Kapsül Anlat, Sahtekar, İbre, Harf Kapmaca, Şarkıda Geçsin ve sohbet kartları; masadaki herkes kendi telefonuyla.
 - **İstersen arkadaş ol:** Masa bitince karşı masadan biriyle ikiniz de "Arkadaş ekle"ye basarsanız arkadaş olursunuz. Yalnızca sen basarsan hiçbir şey olmaz ve o bunu görmez.
 
 Güvenlik: küfür filtresi, şikayet ve engelleme, uygulama içinden hesap silme. 18 yaş ve üzeri içindir.
 
 ## Anahtar kelimeler (App Store, virgülle, en fazla 100 karakter)
 
-tabu,oyun,kafe,sohbet,mekan,arkadaş,masa oyunu,parti,tanışma
+kelime oyunu,oyun,kafe,sohbet,mekan,arkadaş,masa oyunu,parti,tanışma
 
 ## Kategori
 
@@ -75,4 +75,4 @@ Birincil: Sosyal ağ (iOS) / Sosyal (Android). İkincil: Oyunlar → Kelime.
 
 ## Ekran görüntüleri (hazırlanacak)
 
-1. Mekanları keşfet 2. Mekan ekranı ve lobi 3. Katılma isteği 4. Tek masada Tabu 5. Masa sonunda "Arkadaş oldunuz" 6. Mesajlaşma (seçim ve başlıklar `docs/store/screenshots.json`)
+1. Mekanları keşfet 2. Mekan ekranı ve lobi 3. Katılma isteği 4. Tek masada Kapsül Anlat 5. Masa sonunda "Arkadaş oldunuz" 6. Mesajlaşma (seçim ve başlıklar `docs/store/screenshots.json`)
