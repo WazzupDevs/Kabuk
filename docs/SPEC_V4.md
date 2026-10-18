@@ -607,6 +607,7 @@ Değişmez kabul edilir.
 **4.8 temizliği** (23.4 kalıbı: 4.8a okuyan kalmadığını bir birim testiyle gösterir ve fonksiyonları kaldırır, migration yoktur; 4.8b migration'dır):
 
 - `game_proposals` ve öneri fonksiyonları (`rooms_propose_game`, `rooms_answer_game`);
+- `rooms_end`'in kullanılmayan `decision_seconds` argümanı (23.4b'den kalan, varsayılanla `null`): fonksiyon `rooms_end(target_user_id)` olur. 23.4b'nin "sonraki adım" olarak yazdığı ayrı küçük migration yerine 4.8b'ye girer (CTO incelemesi, 23.4b; proje sahibi). O zaman yayındaki `rooms` fonksiyonu argümanı göndermez (23.4b'den beri), kaldırmak hiçbir çağrıyı kırmaz;
 - taraf kolonları ve fonksiyonları (`room_members.side`, `join_requests.side`, `private.side_headcount`, `private.max_side_phones`, `private.was_on_side`);
 - eski lobi okumaları (`venue_lobby`, `venue_lobby_phones`, `venue_lobby_tags`, `venue_running_rooms`);
 - kişi sayısı beyanı kolonları;
