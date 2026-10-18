@@ -272,7 +272,8 @@ export const tr = {
     empty: 'Henüz mesajın yok.',
     emptyHint: 'Arkadaş olduğun kişilerle burada yazışırsın.',
     noMessage: 'Henüz mesaj yok',
-    typing: 'yazıyor…',
+    // With the dots beside it (v45).
+    typing: 'yazıyor',
     yesterday: 'Dün',
     stamp: (iso: string, stamp: InboxStamp) =>
       stamp.kind === 'time'
@@ -285,6 +286,15 @@ export const tr = {
     unread: (n: number) => `${n} okunmamış mesaj`,
     row: (name: string, preview: string, unread: number) =>
       unread > 0 ? `${name}, ${preview}, ${unread} okunmamış` : `${name}, ${preview}`,
+    // The two tabs (v45: Sohbet, İstekler (2)).
+    tabs: 'Mesajlar ve istekler',
+    chats: 'Sohbet',
+    requests: (n: number) => (n > 0 ? `İstekler (${n})` : 'İstekler'),
+    requestKind: 'Arkadaşlık isteği',
+    noRequests: 'Bekleyen istek yok',
+    noRequestsHint: 'Biri seni arkadaş olarak eklemek isterse burada görürsün.',
+    decline: (name: string) => `${name} isteğini reddet`,
+    accept: (name: string) => `${name} isteğini kabul et`,
   },
   // Aktiviteler: the game hub (docs/SPEC_V3.md §18.3). Same games and rules as the room.
   activities: {
@@ -1168,6 +1178,8 @@ export const tr = {
       roleBack: 'Basılı tut, rolünü gör',
       roleWord: 'Kütüphane',
       roleCategory: 'Mekan',
+      // What a screen reader says while the card is held: the face's words.
+      roleFace: (category: string, word: string) => `${category}: ${word}`,
       wheel: 'Harf çarkı',
       spin: 'Çevir',
       vinyl: 'Plak ve ekolayzer',
@@ -1207,6 +1219,8 @@ export const tr = {
   gameParts: {
     secondsLeft: (s: number) => `${s} saniye kaldı`,
     go: 'Başla',
+    // The bell's badge: the count, and over 99 "99+".
+    badge: (n: number) => (n > 99 ? '99+' : String(n)),
   },
   settings: {
     title: 'Ayarlar',

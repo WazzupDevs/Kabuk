@@ -8,6 +8,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { ClipPath, Defs, G, Path, Rect } from 'react-native-svg';
 
+import { tr } from '@/i18n/tr';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 
 import {
@@ -274,7 +275,7 @@ export function BellIcon({ unread = 0, size = ICON.lg, ringKey }: BellProps) {
           ]}
         >
           <Text variant="caption" color={ON_GAME} tabular>
-            {unread > 99 ? '99+' : String(unread)}
+            {tr.gameParts.badge(unread)}
           </Text>
         </Animated.View>
       ) : null}

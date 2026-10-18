@@ -12,6 +12,8 @@ import {
   LOW_SECONDS,
   RING,
   RING_CIRCUMFERENCE,
+  RING_HALVES,
+  ringHalves,
   timeShare,
   TOAST,
 } from './gameMotion';
@@ -50,6 +52,22 @@ describe('timer bar and ring (v43: .tg-timer, .bx-ring)', () => {
     expect(RING).toEqual({ box: 120, radius: 53, stroke: 6, faceInset: 0.13 });
     expect(RING_CIRCUMFERENCE).toBeCloseTo(333, 0);
     expect(RING.radius + RING.stroke / 2).toBeLessThanOrEqual(RING.box / 2);
+  });
+
+  it('turns the two half arcs so they show the time left from 12 o’clock, clockwise', () => {
+    // The right half fills first, the left half after half the time.
+    for (const s of [0, 0.1, 0.25, 0.5, 0.6, 0.9, 1]) {
+      const { right, left } = ringHalves(s);
+      expect(right + left).toBeCloseTo(s * 360);
+      expect(right).toBeLessThanOrEqual(180);
+      expect(left).toBe(s <= 0.5 ? 0 : (s - 0.5) * 360);
+    }
+    // The component's interpolation table is the same function, linear between its points.
+    RING_HALVES.at.forEach((s, i) => {
+      expect(ringHalves(s)).toEqual({ right: RING_HALVES.right[i], left: RING_HALVES.left[i] });
+    });
+    expect(ringHalves(-1)).toEqual({ right: 0, left: 0 });
+    expect(ringHalves(2)).toEqual({ right: 180, left: 180 });
   });
 });
 

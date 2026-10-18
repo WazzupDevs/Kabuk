@@ -1,59 +1,48 @@
 import { Ionicons } from '@expo/vector-icons';
 import { mayStayAnonymous } from '@shared/gender.ts';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
-import { ProfilePhoto } from '@/components/ProfilePhoto';
+import { ProfilePhoto, PROFILE_PHOTO_SIZES } from '@/components/ProfilePhoto';
 import { Text } from '@/components/Text';
 import { useProfile } from '@/features/account/useProfile';
 import { SignupStep } from '@/features/onboarding/SignupStep';
 import { useOnboardingStore } from '@/features/onboarding/store';
 import { useFriend } from '@/features/onboarding/useFriend';
-import { choosePhoto, PhotoError, type PhotoSource } from '@/features/profile/photo';
-import { profileViewKeys, useProfileView } from '@/features/profile/queries';
-import { errorMessage } from '@/i18n/errors';
+import { PhotoSheet } from '@/features/profile/PhotoSheet';
+import { useProfileView } from '@/features/profile/queries';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { haptic } from '@/lib/haptics';
-import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { finishLabel } from '@/lib/signupSteps';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON } from '@/theme/tokens';
 
-// The photo, the last sign-up step (7/7; v45 §1): optional and addable later from Profil. The
+// The photo, the last sign-up step (7/7; v45 §1): optional and addable later from Profil. An empty
+// dashed circle and "Fotoğraf ekle", which opens the library or camera sheet (v45: .sup-ph). The
 // button is "Bitir", or "Fotoğrafsız bitir" without a photo (K-29); finishing opens the app with
 // one success touch (accountReady, K-30). A man and "Belirtmek istemiyorum" always join with the
 // profile, so for them a note says what no photo means (§23.D); the step and its events are the
 // same for everyone (§23.L). The bio is written later from Profil (v45 has none here).
 export default function PhotoStep() {
-  const queryClient = useQueryClient();
   const [photoSet, setPhotoSet] = useState(false);
-  // The preview: the uploaded photo, or the display name's initials.
+  const [sheet, setSheet] = useState(false);
   const own = useProfile();
   const view = useProfileView(own.data?.public_id);
-  const { colors } = useTheme();
+  const { colors, shape } = useTheme();
   const gender = useOnboardingStore((s) => s.gender) ?? view.data?.gender ?? null;
-  const photoNote = gender !== null && !mayStayAnonymous(gender) && !photoSet;
   const friend = useFriend();
-
-  const photo = useMutation({
-    meta: FEEL_ERROR,
-    mutationFn: (source: PhotoSource) => choosePhoto(source),
-    onSuccess: async (changed) => {
-      if (changed) {
-        setPhotoSet(true);
-        friend.react('ok');
-        track('profile_photo_set', {});
-        await queryClient.invalidateQueries({ queryKey: profileViewKeys.all });
-      }
-    },
-  });
+  const photoUrl = view.data?.photoUrl ?? null;
+  // A photo put up earlier counts too (the app was closed on this step after the upload): the
+  // circle, the button and the finish label say the same thing.
+  const hasPhoto = photoSet || photoUrl !== null;
+  const photoNote = gender !== null && !mayStayAnonymous(gender) && !hasPhoto;
+  const side = PROFILE_PHOTO_SIZES.large;
 
   const finish = () => {
-    track('onboarding_completed', { with_photo: photoSet, with_bio: false });
+    track('onboarding_completed', { with_photo: hasPhoto, with_bio: false });
     haptic('accountReady');
     useOnboardingStore.setState({ extrasPending: false, gender: null, name: '', birthDate: null });
   };
@@ -67,47 +56,43 @@ export default function PhotoStep() {
       friend={friend}
       action={{
         testID: 'signup-finish',
-        label: finishLabel(photoSet, {
+        label: finishLabel(hasPhoto, {
           finish: tr.signup.finish,
           noPhoto: tr.signup.finishNoPhoto,
         }),
         onPress: finish,
-        disabled: photo.isPending,
       }}
     >
       <View className="gap-4">
         <View className="items-center gap-3">
-          <ProfilePhoto url={view.data?.photoUrl ?? null} name={own.data?.display_name} />
-          <View className="w-full flex-row gap-3">
-            <View className="flex-1">
-              <Button
-                variant="neutral"
-                icon="image-outline"
-                label={tr.profile.photoFromLibrary}
-                onPress={() => photo.mutate('library')}
-                disabled={photo.isPending}
-              />
+          {photoUrl ? (
+            <ProfilePhoto url={photoUrl} name={own.data?.display_name} />
+          ) : (
+            <View
+              accessible={false}
+              style={{
+                width: side,
+                height: side,
+                borderRadius: shape.radius.pill,
+                borderWidth: shape.stroke.feature,
+                borderStyle: 'dashed',
+                borderColor: colors.accent,
+                backgroundColor: colors.surface2,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Ionicons name="person-outline" size={ICON.xl} color={colors.accent} />
             </View>
-            <View className="flex-1">
-              <Button
-                variant="neutral"
-                icon="camera-outline"
-                label={tr.profile.photoFromCamera}
-                onPress={() => photo.mutate('camera')}
-                disabled={photo.isPending}
-              />
-            </View>
-          </View>
+          )}
+          <Button
+            testID="signup-photo-add"
+            variant="neutral"
+            icon="camera-outline"
+            label={hasPhoto ? tr.profile.photoChange : tr.profile.photoAdd}
+            onPress={() => setSheet(true)}
+          />
         </View>
-        {photo.isError ? (
-          <Text variant="fine" tone="danger">
-            {photo.error instanceof PhotoError
-              ? photo.error.reason === 'permission'
-                ? tr.profile.photoPermission
-                : tr.profile.photoInvalid
-              : errorMessage(photo.error)}
-          </Text>
-        ) : null}
         {photoNote ? (
           <Card tone="note" testID="photo-needed-note">
             <View className="flex-row items-start gap-2.5">
@@ -119,6 +104,14 @@ export default function PhotoStep() {
           </Card>
         ) : null}
       </View>
+      <PhotoSheet
+        visible={sheet}
+        onClose={() => setSheet(false)}
+        onSet={() => {
+          setPhotoSet(true);
+          friend.react('ok');
+        }}
+      />
     </SignupStep>
   );
 }

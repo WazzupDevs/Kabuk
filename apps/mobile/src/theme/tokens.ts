@@ -26,6 +26,10 @@ export type Palette = {
   onDanger: string;
   success: string;
   onSuccess: string;
+  // Tinted circles behind the decline (red cross) and accept (green check) icons: Mesajlar →
+  // İstekler (v45: .qbtn).
+  dangerSoft: string;
+  successSoft: string;
   // "Tanışalım mı?" highlight. Leaves with step 23.3 (docs/SPEC_V3.md §23.G); the skall system has
   // no value of its own for it.
   signal: string;
@@ -68,6 +72,8 @@ export const PALETTE_KEYS = [
   'onDanger',
   'success',
   'onSuccess',
+  'dangerSoft',
+  'successSoft',
   'signal',
   'onSignal',
   'calm',
@@ -123,7 +129,17 @@ export type ShadowSet = {
 export type Shape = {
   // Containers have continuous corners (card `lg`, sheet and tab bar `xl`, game card `md`); a
   // bubble's corner towards its author is `xs`; everything interactive is a capsule (`pill`).
-  radius: { xs: number; sm: number; md: number; lg: number; xl: number; pill: number };
+  radius: {
+    xs: number;
+    sm: number;
+    md: number;
+    lg: number;
+    xl: number;
+    pill: number;
+    deck: number;
+    roleCard: number;
+    letterTile: number;
+  };
   // Border widths: cards (0 = none), rings (an avatar's unread ring, a selected choice, the second
   // table's face), controls (inputs, segments, switches), tags, the hairline (list rows, trust
   // screens) and the active Mekan tab's ring.

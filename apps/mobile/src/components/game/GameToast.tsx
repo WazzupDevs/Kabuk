@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Animated } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { AccessibilityInfo, Animated } from 'react-native';
 
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { GAME_SHADOW, JUDGE_COLORS, ON_GAME, ON_JUDGE } from '@/theme/gameColors';
@@ -21,7 +21,7 @@ type Props = {
 
 // The short notice at the top of a game (v43 report §5, the v45 file's .tg-flash): a white pill,
 // in with a pop, gone after 1.6 s ("1 puan aldın"; "Yasak! Kart geçildi" in red). It sits over the
-// prompt, never over the buttons, and lets touches through. Screen readers hear it once.
+// prompt, never over the buttons, and lets touches through. Screen readers hear it once, announced.
 export function GameToast({ message, top = SPACING[16] - SPACING[0.5], testID }: Props) {
   const { shape } = useTheme();
   const reduce = useReduceMotion();
@@ -29,9 +29,18 @@ export function GameToast({ message, top = SPACING[16] - SPACING[0.5], testID }:
   const [gone, setGone] = useState<GameToastMessage['id'] | null>(null);
   const [progress] = useState(() => new Animated.Value(0));
   const shown = message && message.id !== gone ? message : null;
+  // Only a new id starts it again: a game screen re-renders every second and may pass a new object
+  // with the same id (the CTO's 4.2b review: the notice then never went).
+  const id = message?.id;
+  const text = useRef(message?.text ?? '');
+  useEffect(() => {
+    text.current = message?.text ?? '';
+  }, [message?.text]);
 
   useEffect(() => {
-    if (!message) return undefined;
+    if (id === undefined) return undefined;
+    // Said once per notice: a live region on a view mounted just now is not always read.
+    AccessibilityInfo.announceForAccessibility(text.current);
     progress.setValue(reduce ? 1 : 0);
     const anim = Animated.timing(progress, {
       toValue: 1,
@@ -40,19 +49,17 @@ export function GameToast({ message, top = SPACING[16] - SPACING[0.5], testID }:
       useNativeDriver: true,
     });
     anim.start();
-    const hide = setTimeout(() => setGone(message.id), TOAST.showMs);
+    const hide = setTimeout(() => setGone(id), TOAST.showMs);
     return () => {
       anim.stop();
       clearTimeout(hide);
     };
-  }, [message, progress, reduce]);
+  }, [id, progress, reduce]);
 
   if (!shown) return null;
   return (
     <Animated.View
       pointerEvents="none"
-      accessibilityLiveRegion="polite"
-      accessibilityRole="alert"
       testID={testID}
       className="absolute self-center"
       style={{

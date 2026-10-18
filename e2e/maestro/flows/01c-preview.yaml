@@ -403,6 +403,13 @@ appId: app.kabuk.mobile
 - tapOn:
     id: preview-motion-correct
 - takeScreenshot: 04m-motion-deck-out
+# The role card at rest: its back, the face hidden (the CTO's 4.2c review).
+- scrollUntilVisible:
+    element:
+      id: preview-motion-role
+    centerElement: true
+    timeout: 30000
+- takeScreenshot: 04m-motion-role
 - scrollUntilVisible:
     element:
       id: preview-motion-spin

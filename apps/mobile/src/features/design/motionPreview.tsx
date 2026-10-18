@@ -100,6 +100,7 @@ export function MotionSet() {
           <View className="self-center" style={{ width: ROLE_WIDTH }}>
             <RoleCard
               accessibilityLabel={t.roleBack}
+              faceLabel={t.roleFace(t.roleCategory, t.roleWord)}
               testID="preview-motion-role"
               back={
                 <View

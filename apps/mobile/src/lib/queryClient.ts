@@ -1,7 +1,7 @@
 import { focusManager, QueryClient } from '@tanstack/react-query';
 import { AppState } from 'react-native';
 
-import { haptic } from './haptics';
+import { haptic, stoppedTyping } from './haptics';
 import { feelingMutationCache } from './mutationHaptics';
 
 declare module '@tanstack/react-query' {
@@ -11,7 +11,9 @@ declare module '@tanstack/react-query' {
   }
 }
 
-export const queryClient = new QueryClient({ mutationCache: feelingMutationCache(haptic) });
+export const queryClient = new QueryClient({
+  mutationCache: feelingMutationCache(haptic, stoppedTyping),
+});
 
 // React Native has no window focus: without this, queries never refetch when the app comes back to
 // the foreground, and a Realtime event missed in the background (Realtime never replays) leaves

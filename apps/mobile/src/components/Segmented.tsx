@@ -26,6 +26,8 @@ type Props<T extends string> = {
   accessibilityLabel: string;
   // Each option shows only its icon in a 44 × 44 segment; its label is what the reader hears.
   iconOnly?: boolean;
+  // The track spans the width and the options share it (Mesajlar: Sohbet and İstekler).
+  fill?: boolean;
 };
 
 // A pill switch on a quiet track, no outline (Keşfet list/map, the design picker).
@@ -35,13 +37,14 @@ export function Segmented<T extends string>({
   onChange,
   accessibilityLabel,
   iconOnly,
+  fill,
 }: Props<T>) {
   const { colors, shape } = useTheme();
   return (
     <View
       accessibilityRole="tablist"
       accessibilityLabel={accessibilityLabel}
-      className="flex-row self-start"
+      className={fill ? 'flex-row self-stretch' : 'flex-row self-start'}
       style={{
         padding: SPACING[0.5],
         gap: SPACING[0.5],
@@ -63,6 +66,7 @@ export function Segmented<T extends string>({
               onChange(o.value);
             }}
             style={{
+              flex: fill ? 1 : undefined,
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
