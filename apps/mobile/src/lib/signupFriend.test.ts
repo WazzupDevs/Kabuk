@@ -59,7 +59,7 @@ describe('sign-up friends (v45 report §3)', () => {
   });
 
   // The CTO's 4.3d review: its moves must not cover anything either.
-  it("does not jump over the step counter; the rest of its moves go on", () => {
+  it('does not jump over the step counter; the rest of its moves go on', () => {
     const top = 100;
     // "2/7" in the top row, right above it: its rest and shake stay under the row, its jump's top
     // (18 up) would reach the counter.

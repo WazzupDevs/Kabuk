@@ -178,7 +178,7 @@ Telefonda (iç test build'i):
 - Kayıt: ad ve doğum tarihi; 18 yaş altı reddedilir.
 - Keşfet tek mekan kartı (kampüs) gösterir.
 - Check-in yalnızca kampüs sınırının içinden (50 m toleransla); "Neredesin?" gerçek nokta adlarını listeler.
-- Oda kur, öneri, Sesli Tabu (iki mod), mekan sohbeti, tanışma (`docs/FIELD_TEST.md` P0 sırası).
+- Oda kur, öneri, Kapsül Anlat (iki mod), mekan sohbeti, tanışma (`docs/FIELD_TEST.md` P0 sırası).
 
 ## 7. Dev projesine geri bağla
 
