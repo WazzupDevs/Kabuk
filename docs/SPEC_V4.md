@@ -181,10 +181,11 @@ Değişmez kabul edilir.
   - halka sayaç, süre çubuğu (son 5 sn turuncu), üstte beliren kısa bildirim, 3-2-1 geri sayım, konfeti;
   - sohbet duvar kağıdı: önceden çizilmiş tek görsel; mesajlar üstünden kayar (`ChatScroll` aynen), yazma alanı yüzer. `src/theme/chatWallpaper.ts`: alanı kaplayan tek SVG, bir kez çizilir (4.2b; ekranlara 4.3'te girer).
   - 4.2b'de: oyun parçaları `src/components/game/`'te (süreler `src/theme/gameMotion.ts`), kapsül avatar `src/theme/capsules.ts` ve `components/CapsuleAvatar.tsx`. Hareketler ve tasarım sisteminin yenilenmesi 4.2c'de.
+  - 4.2c'de: hareketler `src/theme/playMotion.ts`'te (eğriler, süreler, anahtar kareler; testli), bileşenleri `src/components/game/` (`TiltDeck`, `RoleCard`, `LetterWheel`, `Vinyl` ve `Equaliser`, `DialCover`) ve `components/BarIcon.tsx` (zil, ikon yayları); tasarım sistemi v45'e göre yenilendi.
 - **Hareket:**
-  - korunanlar: Buluş, Kesişme, Tahterevalli, boş durum, Dönüş ve ikon yayları;
-  - yeniler: kart eğilmesi, rol kartının dönmesi, harf çarkı, plak ve ekolayzer, İbre örtüsünün açılması, zilin sallanması;
-  - kart eğilmesi ve ibre `react-native-reanimated` ile arayüz iş parçacığında, dokunuşlar `react-native-gesture-handler` ile;
+  - korunanlar: Buluş, Kesişme, Tahterevalli, boş durum, Dönüş ve ikon yayları (ikon yayları çubuk ikonlarla birlikte 4.2c'de gelir; kareler JS'de, yalnızca hareket sürerken çizilir, uzun listelerde açılmaz);
+  - yeniler: kart eğilmesi, rol kartının dönmesi, harf çarkı, plak ve ekolayzer, İbre örtüsünün açılması, zilin sallanması ve rozetin zıplaması;
+  - kart eğilmesi ve ibre `react-native-reanimated` ile arayüz iş parçacığında, dokunuşlar `react-native-gesture-handler` ile. Kart parmağı sahiplenmez (karttaki düğmeler ve kaydırma çalışır). İbre arayüz iş parçacığına İbre ekranıyla ve canlı ibre kanalıyla 4.6.5'te geçer; 4.2c bugünkü ibreye dokunmaz;
   - ekran dışındaki hareketler durur; hareketi azalt açıkken hepsi durur ya da yalnızca saydamlık değişir;
   - eğriler `src/theme/` altında testli kalır (`markMotion.ts`, `launchMotion.ts` kalıbı).
 - **Dokunuş:** yalnızca `haptic(an)`. v43'teki anlar (kapma, rakip düğmesi, son saniyeler, yanıt eşiği) `hapticMoments.ts`'e eklenir. Sıklık sınırı (K-30, 4.2b): aynı an 600 ms'den sık çalmaz, iki titreşim arasında en az 150 ms olur, yazarken titreşim yok. Sınır saftır ve testlidir (`hapticMoments.ts`); `haptics.ts` her titreşimde uygular.
@@ -749,6 +750,7 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 
 - Kontrast testleri yeni tokenlarla; `tr.ts` ve `docs/store/`'da "Tabu" geçmez (birim testi); `GAME_NAMES` tek kaynaktır.
 - Sıklık sınırı (K-30, 4.2b) `hapticMoments.test.ts`'te: aynı an 600 ms'den sık çalmaz, iki titreşim arasında en az 150 ms, yazarken titreşim yok.
+- Hareketler (4.2c) `playMotion.test.ts`'te: kartın eğilmesi ve çıkışları, rol kartı, harf çarkı (son harf sorunun açılmasından önce iner), plak ve ekolayzer, İbre örtüsü, zilin ve rozetin anahtar kareleri, ikon yayları (kesişimden başlar, dinlenen çizimde biter); arayüz iş parçacığındaki `bezierAt` `cubicBezier` ile aynıdır.
 - Listelerde kapsül avatar (4.3, CTO'nun 4.2b incelemesi): her `CapsuleAvatar` kendi SVG metnini ayrıştırır. 100 mesajlık mekan sohbeti ve 12 kişilik masa listesi düşük donanımlı bir Android'de kaydırılarak ölçülür. Takılma varsa görünüm başına modül düzeyinde önbellek kullanılır (bir kez ayrıştırılmış ağaç ya da `pnpm icons` hattından üretilen PNG).
 - Biyografi ve görünen ad (K-34, 4.3): telefon, e-posta, kullanıcı adı ve bağlantı birim testleriyle (`profanity.test.ts`, `trText.test.ts`) ve profil fonksiyonunun entegrasyon testiyle reddedilir; Türkçe karakterli olağan adlar ve biyografiler geçer.
 - Keşfet ve Aktiviteler konuma göre sıralamaz (birim testi: liste sırası konum almaz). Keşfet'te bugün etkinliği olan mekanlar üstte, sonra ada göre (K-21).
