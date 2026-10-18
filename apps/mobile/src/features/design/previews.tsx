@@ -639,14 +639,25 @@ function GroundSwatch({ id, label, ground }: { id: string; label: string; ground
   );
 }
 
-function Swatch({ label, fill, text }: { label: string; fill: string; text: string }) {
+// basis 0: the swatches of one row share it equally (İbre's three zones fit the 320 dp screen).
+function Swatch({
+  label,
+  fill,
+  text,
+  basis = SPACING[16] + SPACING[8],
+}: {
+  label: string;
+  fill: string;
+  text: string;
+  basis?: number;
+}) {
   const { shape } = useTheme();
   return (
     <View
       className="items-center justify-center"
       style={{
         flexGrow: 1,
-        flexBasis: SPACING[16] + SPACING[8],
+        flexBasis: basis,
         minHeight: SPACING[12],
         paddingHorizontal: SPACING[3],
         borderRadius: shape.radius.pill,
@@ -698,7 +709,7 @@ function TokensSet() {
           </Text>
           <View className="flex-row gap-2">
             {NEEDLE_ZONES.map((fill, i) => (
-              <Swatch key={fill} label={String(i + 2)} fill={fill} text={ON_JUDGE} />
+              <Swatch key={fill} label={String(i + 2)} fill={fill} text={ON_JUDGE} basis={0} />
             ))}
           </View>
           <View className="flex-row flex-wrap gap-2">
