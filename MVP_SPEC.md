@@ -60,7 +60,7 @@ Aynı mekandaki insanların, konsept üzerine kurulu odalarda birlikte oyun oyna
    - Kabul edilmiş risk: sahte GPS ile uzaktan check-in yapılabilir. Mekanda bulunmayı doğrulama (BLE) v2'de.
 4. Kişi sayısı girilir, masa oluşur, takma ad atanır. Takma ad `content/aliases-tr.json` içindeki sıfat ve hayvan listelerinden üretilir ve mekandaki aktif masalar arasında benzersizdir.
 5. Masa 4 saat sonra ya da kullanıcı "Mekandan ayrıl" dediğinde biter. Biten masanın odaları kapanır.
-6. Kullanıcının aynı anda tek aktif masası olur. Aktif masası varken yeniden check-in yaparsa eski masa biter (odaları kapanır) ve yenisi açılır.
+6. Kullanıcının aynı anda tek aktif masası olur. Aktif masası varken yeniden check-in yaparsa eski masa biter (odaları kapanır) ve yenisi açılır. Aynı check-in'in tekrarı bunun dışındadır: masa açıldıktan sonraki 1 dakika içinde, masa henüz hiçbir şey yapmamışken (odada değil, açık isteği yok, takma adı yenilenmemiş, mekan sohbetine yazmamış) aynı mekan, nokta, kişi sayısı ve takım yeteneğiyle gelen check-in yeni masa açmaz, açık masayı olduğu gibi döner. Gerekçe: uygulama check-in'i 5xx'ten sonra bir kez daha gönderir (`_shared/pure/apiRetry.ts`) ve 5xx fonksiyon çalıştıktan sonra da gelebilir.
 
 ### 4.3 Oda kurma ve lobi
 > **v3:** Oda kurulurken oyun ve görünürlük seçilmez; "Oda kur" her zaman mekana açık, "Masanla oyna" tek masalı özel odayı kurar. Oda sohbetle başlar, oyunu bir masa önerir, diğeri kabul eder. Lobide konsept yerine isteğe bağlı niyet etiketi ("Oyun" / "Sohbet") ve oda sahibinin noktası görünür; yüz yüze oyun ve tanışma yalnızca aynı noktadaki masalar arasında (`docs/SPEC_V3.md` §4.3, §5).

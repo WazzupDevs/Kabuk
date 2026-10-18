@@ -84,6 +84,9 @@ export const IDEMPOTENT_CALLS = [
   // ibre.test "İbre, two tables": "ends the round without a side guess when the other table's
   // clock runs out, once from both phones"
   'ibre/advance',
+  // checkin.test "checkin/check-in": "answers the same check-in sent twice with the same table and
+  // writes nothing"
+  'checkin/check-in',
   // checkin.test "checkin/leave and expiry": "ends the active table and is idempotent"
   'checkin/leave',
   // friends.test "DM replies and reactions (docs/SPEC_V3.md §21)": "keeps one reaction per

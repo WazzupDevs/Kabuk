@@ -201,6 +201,52 @@ describe('checkin/check-in', () => {
     ]);
   });
 
+  it('answers the same check-in sent twice with the same table and writes nothing', async () => {
+    // The app sends a check-in once more after a 5xx (pure/apiRetry.ts), and a 5xx can come after
+    // the function ran: the second call finds the table the first one opened.
+    const client = await onboarded(PHONE_A);
+    const id = await userIdOf(client);
+    const state = async () => ({
+      tables: await sql`select * from public.table_sessions where user_id = ${id}`,
+      profile: await sql`select * from public.profiles where id = ${id}`,
+    });
+    const first = await checkIn(client, { teams: true });
+    expect(first.status).toBe(200);
+    const once = await state();
+    expect(once.tables).toHaveLength(1);
+
+    expect(await checkIn(client, { teams: true })).toEqual(first);
+    expect(await state()).toEqual(once);
+  });
+
+  it('still opens a new table for another choice, a minute later, or after the table did something', async () => {
+    const client = await onboarded(PHONE_A);
+    const id = await userIdOf(client);
+    const opened: string[] = [];
+    const newTable = async (overrides: Partial<CheckInRequest>) => {
+      const res = await checkIn(client, overrides);
+      expect(res.status, JSON.stringify(res.body)).toBe(200);
+      const { sessionId } = res.body as { sessionId: string };
+      expect(opened).not.toContain(sessionId);
+      opened.push(sessionId);
+    };
+    await newTable({});
+    await newTable({ headcount: 2 });
+    await newTable({ headcount: 2, teams: true });
+    await sql`
+      update public.table_sessions set created_at = now() - interval '1 minute'
+      where user_id = ${id} and status = 'active'
+    `;
+    await newTable({ headcount: 2, teams: true });
+    expect((await invoke(client, 'checkin', { action: 'reroll-alias' })).status).toBe(200);
+    await newTable({ headcount: 2, teams: true });
+    expect((await invoke(client, 'rooms', { action: 'create', profiled: false })).status).toBe(200);
+    await newTable({ headcount: 2, teams: true });
+
+    const rows = await sql`select status from public.table_sessions where user_id = ${id}`;
+    expect(rows.map((r) => r.status).sort()).toEqual(['active', ...Array(5).fill('ended')]);
+  });
+
   it('gives tables at the same venue different aliases', async () => {
     const a = await onboarded(PHONE_A);
     const b = await onboarded(PHONE_B);

@@ -302,7 +302,7 @@ Değişmez kabul edilir.
 - Konum doğrulaması, nokta (`spot_id`), 4 saat süre (`TABLE_SESSION_HOURS`) ve "Mekandan ayrıl" aynen kalır.
 - **Check-in masa kurmaz:** kişi sayısı sorulmaz (`headcount` yazılmaz), masa adı üretilmez. `checkin/check-in { venueId, lat, lng, accuracy, spotId? }`.
 - Check-in'i olan kişi mekan sohbetini okur ve yazar, lobiyi ve süren masaları görür, masa kurar, istek gönderir, davet alır.
-- Yeni check-in eski check-in'i bitirir; kişi bulunduğu masadan ayrılmış sayılır (aşağıda "Ayrılma ve sahiplik").
+- Yeni check-in eski check-in'i bitirir; kişi bulunduğu masadan ayrılmış sayılır (aşağıda "Ayrılma ve sahiplik"). Aynı check-in'in 1 dakika içindeki tekrarı (aynı mekan ve nokta, kişi henüz hiçbir şey yapmamışken) eski check-in'i bitirmez, onu döner (`MVP_SPEC.md` §4.2, madde 6).
 
 **Masa.**
 

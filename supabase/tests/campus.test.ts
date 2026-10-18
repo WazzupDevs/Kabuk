@@ -113,6 +113,19 @@ describe('check-in at a venue with a boundary', () => {
     expect((await sessionOf(client))?.spot_id).toBe(spot('kantin'));
   });
 
+  it('answers the same check-in at a spot sent twice with the same table, another spot with a new one', async () => {
+    const client = await onboarded(PHONES[0]);
+    const first = await checkIn(client, CAMPUS_CENTER, { spotId: spot('kantin') });
+    expect(first.status).toBe(200);
+    expect(await checkIn(client, CAMPUS_CENTER, { spotId: spot('kantin') })).toEqual(first);
+
+    const other = await checkIn(client, CAMPUS_CENTER, { spotId: spot('kutuphane') });
+    expect(other.status).toBe(200);
+    const { sessionId } = other.body as { sessionId: string };
+    expect(sessionId).not.toBe((first.body as { sessionId: string }).sessionId);
+    expect(await sessionOf(client)).toMatchObject({ id: sessionId, spot_id: spot('kutuphane') });
+  });
+
   it('accepts 40 m outside the boundary and refuses 60 m (50 m tolerance)', async () => {
     expect(BOUNDARY_TOLERANCE_M).toBe(50);
     const client = await onboarded(PHONES[0]);

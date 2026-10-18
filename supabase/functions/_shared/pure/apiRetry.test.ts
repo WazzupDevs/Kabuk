@@ -10,6 +10,7 @@ describe('IDEMPOTENT_CALLS', () => {
     expect([...IDEMPOTENT_CALLS].sort()).toEqual(
       [
         'chat/react',
+        'checkin/check-in',
         'checkin/leave',
         'dm/delivered',
         'dm/inbox',
@@ -97,7 +98,6 @@ describe('retriesAfter', () => {
       'safety/block',
       'tabu/start',
       'sohbet/next-card',
-      'checkin/check-in',
       'account/delete',
       'profile/update',
       'profile/photo-commit',
