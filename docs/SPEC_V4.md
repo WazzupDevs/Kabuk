@@ -46,7 +46,7 @@ Bu yüzden Faz 4 Faz 3'ün devamı değil, yeni bir fazdır. Değişenler: masa 
 
 - Katılma isteği ve kabul akışı: 60 sn ömür, saatte 10 istek, red ve zaman aşımının istekçiye aynı görünmesi (`unavailable`), "Kabul edildi, X masasının yanına git".
 - Masa sonunda sessiz "Arkadaş ekle", kalıcı red, çift kilidi, oyun geçmişi (3 dakika kuralı), engelleme ve şikayet.
-- 18 yaş sınırı (kural 11) ve cinsiyet kuralı (kural 12): erkek ve belirtmeyende anonim anahtarı yoktur.
+- 18 yaş sınırı (kural 11) ve cinsiyet kuralı (kural 12, yalnızca oyun akışı için): erkek ve belirtmeyen oyun akışında ve masada her zaman profillidir; mekan sohbetinde anonim yazabilir (K-3, §4.D).
 - Konum yalnızca check-in'de (kural 6), istemci tablolara yazmaz (kural 1), her tabloda RLS (kural 2), metin ve küfür filtresi (kural 7), service role anahtarı (kural 8).
 - Kod, tablo ve kavram adları (`rooms`, `table_sessions`, `tabu`…) değişmez. Değişen, kullanıcıya görünen adlardır ("Kapsül Anlat", "masa").
 - İçerik havuzları yeterlidir ve yeni yazılmaz: Kapsül Anlat 547 kart, Harf Kapmaca 174 kategori, İbre 225 ölçek, Şarkıda Geçsin 445 kelime, Sohbet kartları 160 kart, Sahtekar 25 kategori ve 526 kelime. Yalnızca Sohbet kartlarına iki tema eklenir (adım 4.6.2).
@@ -87,7 +87,7 @@ Değişmez kabul edilir.
 6. **Anonim kimlik:** kapsül avatar ve `kapsul-xx55` nick, hesaba sabit.
    - Anonim ve profilli arasında check-in başına 1 değişiklik.
    - Değişiklikten önce yazılan mesajlar eski kimlikte kalır.
-   - Kural 12 aynen: erkek ve belirtmeyende anahtar yok.
+   - Kural 12 aynen: erkek ve belirtmeyende masaya giden anahtar yok. Mekan sohbetinde anonim yazabilirler; anonim seçimleri yalnızca mekan sohbetini etkiler (K-3, §4.D).
 7. **Mekan ve masa sohbetinde masa adı yoktur;** yalnızca anonim nick ya da gerçek ad.
 8. **Masa daveti:**
    - yalnızca aynı mekanda check-in'i olan arkadaşa gider;
@@ -122,12 +122,13 @@ Değişmez kabul edilir.
 - kayıt akışı (telefon, kod, profil, doğum tarihi, cinsiyet, fotoğraf, onaylar) ve cinsiyet kapısı;
 - check-in ve mekanda masası olmayan kişinin mekan ekranı ("Masa kur");
 - masa kurma ve masa adı (yenileme hakkıyla);
-- davet gönderme ekranı (§4.G);
+- davet gönderme ekranı: bütün arkadaşların listesi, kimin mekanda olduğu görünmez (K-2, §4.G). Tasarım oturumuna giden "aynı mekandaki arkadaşların listesi" isteği bununla değişir;
 - "Masa bitti" ekranı: masadakiler ve kişi başına "Arkadaş ekle";
 - bildirim ayarları, gizlilik, hesap (hesap silme dahil), engellenenler, sessize alınanlar;
-- anonim anahtarının durumları: değiştirme onayı, "bu check-in'de hakkın bitti", erkek ve belirtmeyende anahtarsız üst satır (§4.D);
+- anonim anahtarının durumları: değiştirme onayı, "bu check-in'de hakkın bitti"; erkek ve belirtmeyen için yalnızca mekan sohbetini etkileyen anonim seçimi ve masaya taşınmadığını söyleyen metin (K-3, §4.D); fotoğrafı olmayanın profilli seçimi (`photo_required`, K-4);
 - oyunların "Yakında" hâli (§4.F);
-- Kapsül Anlat adıyla oyun ekranları ve rakip düğmesinin yeni adı (§4.P);
+- Kapsül Anlat adıyla oyun ekranları; rakip düğmesi "Yasak!", ödül "Yasak avcısı" (K-5);
+- zil yalnızca Mesajlar'da, alt çubuktaki Mesajlar sekmesinde okunmamış noktası (K-6, §4.G);
 - v43'te çizilmemiş ekranların yükleniyor, boş ve hata hâlleri.
 
 4.3 ve sonraki adımlar ekran başına v43'e ya da v44'e göre kurulur. v44'te de olmayan bir görünüm gerekirse uygulama durur ve tasarım oturumuna sorulur.
@@ -139,7 +140,7 @@ Değişmez kabul edilir.
   | Rol                                                  | Renk                                       |
   | ---------------------------------------------------- | ------------------------------------------ |
   | Takımlar (Mor, Pembe)                                | `#6A47F5`, `#D6336C`                       |
-  | Pas, Doğru, rakip düğmesi                            | `#FFD23F`, `#34D27F`, `#C8331F`            |
+  | Pas, Doğru, Yasak!                                   | `#FFD23F`, `#34D27F`, `#C8331F`            |
   | Sahtekar zemini                                      | `#2A1C66` → `#1B1446`                      |
   | Harf Kapmaca zemini                                  | `#CF4A2A` → `#B8325A`                      |
   | Şarkıda Geçsin zemini                                | `#2B1878` → `#4A22A8`                      |
@@ -179,14 +180,14 @@ Değişmez kabul edilir.
 - **Oyun ekranları** 4.3'te bugünkü oyun ekranlarıdır (yeni tokenlar ve yazı tipiyle). v43'ün oyun ekranları her oyunun 4.6 adımında gelir.
 - **"Tabu" kelimesi** kullanıcıya görünen metinlerden 4.3'te kalkar:
   - Oyunun adı tek sabitten gelir: `supabase/functions/_shared/pure/brand.ts` → `GAME_NAMES` (`tabu: 'Kapsül Anlat'`); `tr.ts` ve mağaza metinleri oradan okur.
-  - Rakip düğmesinin ve "Tabu avcısı"nın yeni adı §4.P'dedir.
+  - Rakip düğmesi "Yasak!", "Tabu avcısı" ödülü "Yasak avcısı" olur (K-5).
   - `tr.ts`'te ve `docs/store/`'da "Tabu" kelimesinin geçmediğini bir birim testi denetler (Faz 3'teki "oda" testinin kalıbı).
   - Kod, tablo, içerik dosyası ve kavram adı (`tabu`) değişmez.
 - **Keşfet ve Aktiviteler** (kural 6):
   - Konuma göre sıralama yoktur. v43'teki "Yakındaki" listesi ve Aktiviteler'deki "Yakınındaki mekanlardan" başlığı kalkar; sıralama şehir, semt, etkinlik ve ada göredir.
   - "Şu an buradasın" kartı kişinin kendi check-in'idir (kendi verisi; kimseyle paylaşılmaz).
   - Mekan adlarına sınır konmaz: adlar içerikten gelir, ekran en çok iki satıra kırar ve gerekirse küçültür (Ekran davranışı).
-- **Bildirim düğmesi** 4.3'te bugünkü yerinde ve bugünkü içerikle kalır; v43'ün zili ve listesi 4.7'de gelir.
+- **Bildirim düğmesi** 4.3'te bugünkü yerinde ve bugünkü içerikle kalır; v43'ün zili ve listesi 4.7'de gelir ve zil o adımda Mesajlar'a taşınır (K-6, §4.G).
 
 ## 4.D Kimlik ve mekan sohbeti (adım 4.4)
 
@@ -195,30 +196,41 @@ Değişmez kabul edilir.
 - Her hesabın bir kapsül varyantı ve bir nick'i vardır.
   - Kapsül: 28 varyanttan biri. Ölçü hep aynıdır; renk ve aksesuar değişir (korsan, kaptan, vampir, taç, kulaklık, kedi…).
   - Nick: `kapsul-xx55` biçimi; iki harf (`abcdefghkmnprstuvyz`) ve iki rakam.
-- **Hesaba sabittir** (§4.B-6) ve hesapla silinir. Yenileme §4.P'dedir.
+- **Hesaba sabittir** (§4.B-6) ve hesapla silinir; yalnızca nick metni, yeniden verilmesin diye emekli listesinde kalır (aşağıda). Yenileme §4.P'dedir.
 - **Atama sunucudadır ve saklanır.** v43'teki "aynı ad hep aynı kapsül" denemenin tohum davranışıdır; uygulamada değer atama anında yazılır: `profiles.capsule_nick` (benzersiz) ve `profiles.capsule_variant`. Kayıtta (`account/complete-onboarding`) atanır; mevcut hesaplara 4.4'ün migration'ı atar.
 - Kaba kısaltmalar (`am`, `mk`, `sk`, `sg`, `gt`) ve sayılar (`31`, `69`) üretilmez. Liste `content/profanity-tr.json`'a taşınır; üretim `pure/capsule.ts`'tedir ve testlidir.
+- **Kapasite:** `kapsul-xx55` biçimi 19 × 19 × 100 = 36.100 nick verir; elenen kısaltma ve sayılar bunu azaltır. Nick benzersiz ve hesaba sabit olduğu için doluluk arttıkça rastgele üretim çakışmaya düşer.
+  - Doluluk (atanmış ve emekli nick'ler) biçimin kapasitesinin (elenenler çıkmış) yüzde 50'sini geçince yeni nick'ler 3 rakamlı biçimden üretilir (`kapsul-xx555`). Mevcut nick'ler değişmez. Kapasite, doluluk ve eşik `pure/capsule.ts`'tedir, testlidir.
+  - **Silinen hesabın nick'i yeniden kullanılmaz:** yeni sahibi eski kişiyle karıştırılırdı. Hesap silinirken nick `retired_capsule_nicks`'e yazılır: yalnızca nick metni; hesapla bağı ve tarihi yoktur (§4.H).
+  - Nick, `complete-onboarding`'de 18 yaş denetiminden sonra atanır; 18 yaş altı beyanında nick atanmaz ve hiçbir şey kalmaz (kural 11).
 - **Nick profil kimliği değildir.** `public_id` ile ilişkisi hiçbir yanıtta görünmez; nick kolonları istemciye kapalıdır, nick yalnızca bir bağlamda (anonim mesaj, masadaki anonim kişi) o bağlamın kitlesine gider (kural 4).
 - **Bilinçli bedel:** nick hesaba sabit olduğu için anonim kişi ziyaretler arasında aynı nick'le tanınır. Bu proje sahibinin kararıdır; gizlilik politikasında açıkça yazılır (§4.L).
 - **Üç görünüm:**
   - fotoğraflı profil: fotoğraf ve gerçek ad;
-  - fotoğrafsız profil: soluk "hayalet" kapsül ve gerçek ad (fotoğraf şartı §4.P);
+  - fotoğrafı sonradan gizlenen ya da kaldırılan profil: soluk "hayalet" kapsül ve gerçek ad;
   - anonim: kapsül ve nick.
+- **Fotoğraf şartı** (K-4): profilli görünmek profil fotoğrafı ister. Fotoğrafı olmayan (ya da fotoğrafı gizlenmiş: `photo_hidden_at` dolu) kişi profilli kimlik seçemez ve profilli olması gereken yere giremez (`photo_required`, SPEC_V3 §22.G karar 8 aynen). Soluk kapsül yalnızca fotoğraf, kişi zaten profilli görünürken gizlendiyse ya da kaldırıldıysa görünür.
 
 **Anonim anahtarı.**
 
 - Mekan ekranının üst satırındadır; açık anonim demektir.
-- Check-in başında değeri `profiles.default_participation`'dır (Ayarlar → "Oyunlara katılım").
-- **Kural 12 aynen:** erkek ve belirtmeyende anahtar görünmez ve her zaman profillidir. Sunucu anonim isteği `anonymous_not_allowed` ile reddeder, sessizce profilliye çevirmez. Cinsiyeti boş hesap oyun akışına giremez (`gender_required`).
+- Check-in başında değeri anonimdir (SPEC_V3 §5.4: varsayılan her zaman anonim; `profiles.default_participation` okunmaz ve 4.8'de kalkar).
+- **Erkek ve belirtmeyen** (K-3; kural 12 yalnızca oyun akışı için, aynen):
+  - Mekan sohbetinde anonim yazabilir. Bu hesaplar için anonim seçim yalnızca mekan sohbetini etkiler: `identity_mode` onların mekan sohbeti kimliğidir.
+  - Oyun akışında ve masada her zaman profillidir. Masaya girişte (masa kurma, Katıl, Bu masadayım, davete katılma) `room_members.profiled = true` ve `alias` gerçek addır; check-in'in anonim kimliği masaya taşınmaz. Fotoğrafı yoksa masaya giremez (`photo_required`).
+  - Check-in başına 1 değişiklik kuralı onlar için de geçerlidir.
+  - Uygulamada seçim onlarda masaya giden bir anahtar olarak değil, yalnızca mekan sohbetini etkileyen bir seçim olarak görünür ve masaya taşınmadığını söyler (v44, §4.C).
+  - Masaya giriş isteği açıkça anonim katılım isterse sunucu `anonymous_not_allowed` döner, sessizce profilliye çevirmez (SPEC_V3 §23.D aynen). 4.5'e kadar eski masa modelinde "Masanla oyna" bugünkü gibi oyun akışı sayılmaz.
+- Cinsiyeti boş hesap oyun akışına ve masaya giremez (`gender_required`); check-in ve mekan sohbeti bunu istemez.
 - **Check-in başına 1 değişiklik.**
-  - Check-in'in kimliği `table_sessions.identity_mode` (`anonymous` | `profiled`) ve değişiklik sayısı `table_sessions.identity_switches` (0 ya da 1).
-  - Anahtar `checkin/set-identity { anonymous }` ile değişir; ikinci değişiklik `identity_switch_used` (409) döner.
+  - Check-in'in kimliği `table_sessions.identity_mode` (`anonymous` | `profiled`; kadında mekan sohbetinde ve masada, erkek ve belirtmeyende yalnızca mekan sohbetinde) ve değişiklik sayısı `table_sessions.identity_switches` (0 ya da 1).
+  - Anahtar `checkin/set-identity { anonymous }` ile değişir; ikinci değişiklik `identity_switch_used` (409), fotoğrafsız profilli seçim `photo_required` (409) döner.
   - Uygulama değiştirmeden önce sonucunu söyler: hakkın bu check-in'de biter, yeni mesajların yeni kimlikle görünür. Metin v44'te.
   - Faz 2'nin mekan sohbetine özgü seçimi (`table_sessions.venue_chat_profiled`, `venue_chat_mode_locked`) bu modele taşınır; kolon 4.8'de kalkar.
 - **Değişiklikten önce yazılan mesajlar eski kimlikte kalır.**
   - Mesaj kimliği yazıldığı anda saklar: mekan sohbetinde `venue_chat_messages.profiled` ve `sender_alias` (anonimde nick), masa sohbetinde `messages.sender_alias` ve yeni `messages.profiled`.
   - Okuma eski mesajı eski kimlikle döner. Anonim mesajda fotoğraf, ad ve `public_id` asla gitmez (SPEC_V3 §7.2 aynen).
-- **Masada:** kişinin masaya girdiği andaki kimliği `room_members.alias` ve `profiled`'a yazılır (masayı kurarken, katılırken, davetle). Anahtar masa sürerken değişirse masadaki kimliğin değişip değişmeyeceği §4.P'dedir.
+- **Masada:** kişinin masaya girdiği andaki kimliği `room_members.alias` ve `profiled`'a yazılır (masayı kurarken, katılırken, davetle); erkek ve belirtmeyende her zaman profillidir (yukarıda). Anahtar masa sürerken değişirse masadaki kimliğin değişip değişmeyeceği §4.P'dedir.
 - **Zamanlama:** anahtar bir kez değişince sonraki mesajlar yeni kimlikle gider. Mekan sohbetini izleyen biri iki kimliği zamanlamayla eşleyebilir. Hak check-in başına 1 olduğu için bu en çok bir kez olur; değiştirme onayı bunu söyler.
 - **Eski istemci koruması:** `venue-chat/send` kimliği check-in'den okur. İstek `profiled` taşıyor ve check-in'in kimliğinden farklıysa `identity_mismatch` (409) döner, mesaj yazılmaz (Faz 2'nin gerekçesi: anonim sanılan bir mesajın profilli gitmesi gizlilik hatasıdır).
 
@@ -245,8 +257,6 @@ Değişmez kabul edilir.
 - **Tüm sohbeti sessize alma:** mekan sohbeti bugün push göndermez (SPEC_V3 §7.4). v43'teki "Yeni mesajlar bildirim göndermez" bu yüzden mekan kartındaki aktiflik noktası ve okunmamış sayısı içindir; tercih telefonda tutulur (§4.P).
 
 **Erişim.** 4.4'te bugünkü gibidir (check-in ile masa oturumu aynı kayıttır). 4.5'ten sonra "mekanda check-in'i olan" okur ve yazar (§4.E); koşul kaydı değişmez: `table_sessions.status = 'active' and expires_at > now()`.
-
-**Erkek ve belirtmeyenin mekan sohbetinde anonim yazması** §4.P'dedir (4.4'ten önce).
 
 ## 4.E Check-in, masa ve katılım (adım 4.5)
 
@@ -283,7 +293,7 @@ Değişmez kabul edilir.
    - 60 sn, saatte 10 istek, red ve zaman aşımı `unavailable` (kural 5) aynen.
 2. **Bu masadayım (süren masalar):** `rooms/request-join { roomId, asMember: true }`.
    - Masası olmayan kişi, fiziksel olarak oturduğu bir masaya tek başına istek gönderir. Kuralı SPEC_V3 §22.C ve kural 5'in Faz 2 ekidir.
-   - "Süren masalar" mekandaki lobide olmayan masalardır (teknik karar, §4.P).
+   - "Süren masalar" mekandaki lobide olmayan bütün masalardır, tek kişilik masa dahil (teknik karar ve gerekçesi §4.P). Sahip gelen isteği sessizce reddedebilir: red ve zaman aşımı istekçiye aynı görünür (`unavailable`, kural 5).
 3. **Davet** (4.7): sahibin davetini kabul eden arkadaş (§4.G).
 
 **İstek kartı** (sahip):
@@ -385,22 +395,22 @@ Değişmez kabul edilir.
   - Anlatıcı takım içinde sırayla değişir: takımın n. turunda, oyun başındaki sırayla takımın n. kişisi.
 - **Aşamalar:** takımlar → tur öncesi → 3-2-1 geri sayım → oyun (60 sn) → tur sonu → … → oyun sonu.
   - Tur öncesi: anlatıcı "Turu başlat"a basar (`tabu/begin-turn`). Hazır süresi bugünkü gibi 10 sn; dolunca tur kendiliğinden başlar (SPEC_V3 §20.1).
-  - Tur sonu: kelimeler Doğru, Pas ya da rakip düğmesi etiketiyle listelenir; sıradaki takım ve anlatıcı yazar.
-  - Oyun sonu: kazanan takım, "En çok bildiren anlatıcı" ve rakip düğmesinde en çok yakalayan (adı §4.P).
-- **Puan:** Doğru +1, rakip düğmesi −1 (anlatan takımdan), Pas 0.
+  - Tur sonu: kelimeler Doğru, Pas ya da Yasak! etiketiyle listelenir; sıradaki takım ve anlatıcı yazar.
+  - Oyun sonu: kazanan takım, "En çok bildiren anlatıcı" ve "Yasak avcısı": Yasak!'la en çok yakalayan (K-5).
+- **Puan:** Doğru +1, Yasak! −1 (anlatan takımdan), Pas 0. Rakip düğmesinin adı "Yasak!"tir (K-5).
 - **Roller:**
 
-  | Rol      | Kim                      | Kart   | Eylem                                                           |
-  | -------- | ------------------------ | ------ | --------------------------------------------------------------- |
-  | Anlatıcı | Sırası gelen kişi        | Görür  | Doğru ve Pas (`tabu/mark`)                                      |
-  | Tahminci | Anlatanın takımı         | Görmez | Yok; doğru sayısını ve son kelimeleri görür, cevabı söyler      |
-  | Rakip    | Karşı takımın her kişisi | Görür  | Rakip düğmesi: anlatan takıma −1, kart geçilir; ilk basan geçer |
-  | Gözlemci | Gözlemciler              | Görür  | Yok                                                             |
+  | Rol      | Kim                      | Kart   | Eylem                                                      |
+  | -------- | ------------------------ | ------ | ---------------------------------------------------------- |
+  | Anlatıcı | Sırası gelen kişi        | Görür  | Doğru ve Pas (`tabu/mark`)                                 |
+  | Tahminci | Anlatanın takımı         | Görmez | Yok; doğru sayısını ve son kelimeleri görür, cevabı söyler |
+  | Rakip    | Karşı takımın her kişisi | Görür  | Yasak!: anlatan takıma −1, kart geçilir; ilk basan geçer   |
+  | Gözlemci | Gözlemciler              | Görür  | Yok                                                        |
 
 - **Gizli bilgi:** kart (`tabu/turn-cards`) anlatıcıya, rakip takımın her telefonuna ve gözlemcilere gider; tahmincilere gitmez. Hakemli ve iş birliği modları kalkar.
 - **Çıkış:** anlatıcı turda çıkarsa tur süresi dolana kadar sürer, Doğru ve Pas basılamaz. Bir takım 1 kişiye düşerse oyun sürer; o takımın anlatıcısı her turda aynı kişidir.
 - **Kart:** üst üste yığılı bir deste gibidir; kenarına dokununca 3B eğilir. Üzerinde yalnızca kelime ve yasak kelimeler vardır. Boyu ekran yüksekliğine göre uzar.
-- **Bu turun sayıları:** skorun hemen altında ikonlu mini tablo (doğru, pas, rakip düğmesi).
+- **Bu turun sayıları:** skorun hemen altında ikonlu mini tablo (Doğru, Pas, Yasak!).
 - **Sunucu:** `tabu` fonksiyonu kişi bazlı yeniden yazılır. `tabu_turns.describer_session_id` kalır; `tabu_mode` ve taraf kolonları 4.8'de kalkar.
 
 ### Adım 4.6.2: Sohbet kartları
@@ -498,7 +508,9 @@ Değişmez kabul edilir.
 
 **Zil ve liste.**
 
-- Zil çubuk ikon ailesindendir (mor kubbe, pembe çubuk, kesişimde koyu ton, sarı tokmak). Yeri §4.P'dedir (öneri: Mesajlar'da zil ve alt çubuktaki Mesajlar sekmesinde okunmamış noktası).
+- Zil çubuk ikon ailesindendir (mor kubbe, pembe çubuk, kesişimde koyu ton, sarı tokmak).
+- **Yeri** (K-6): zil yalnızca Mesajlar'dadır; okunmamış bildirim varken alt çubuktaki Mesajlar sekmesinde nokta görünür. Sekmenin görünümü v44'tedir.
+  - Zil diğer sekmelerin köklerinden kalkar. SPEC_V3 §18.3a'daki "Bildirim düğmesi her sekmenin kök ekranında" maddesi 4.7'nin PR'ında bu metne göre güncellenir; o adıma kadar bugünkü yer geçerlidir.
 - Yeni bildirim gelince zil sallanır; okunmamış sayısı rozet olur. Liste açılınca rozet silinir; yeni olanlar liste açıkken vurgulu kalır.
 - Liste bir alt sayfadır: "Yeni" ve "Önceki". Boşken: "Henüz bildirim yok. Arkadaşlık istekleri ve arkadaşlarının masa davetleri burada görünür."
 - **Üç tür vardır:**
@@ -521,9 +533,9 @@ Değişmez kabul edilir.
 **Masa daveti** (§4.B-8; kural 4'e açık istisna):
 
 - **Yalnızca sahip** gönderir, yalnızca **arkadaşa**: `rooms/invite { roomId, friendPublicId }`.
-- **Davet ekranı arkadaş listesidir ve kimin mekanda olduğunu göstermez** (teknik karar, §4.P).
+- **Davet ekranında bütün arkadaşlar listelenir; kimin mekanda olduğu görünmez** (K-2).
   - Sunucu daveti yalnızca aynı mekanda check-in'i olan arkadaşa iletir.
-  - Olmayana sessizce yutar; gönderen her durumda aynı "Davet gönderildi"yi görür.
+  - Mekanda olmayana daveti sessizce iletmez; gönderen her durumda aynı "Davet gönderildi"yi görür.
   - Böylece istisna yalnızca alıcı tarafındadır: alıcı, arkadaşının aynı mekanda bir masası olduğunu öğrenir. Gönderen, arkadaşının mekanda olup olmadığını davetten öğrenemez.
 - Davet masa adını ve telefon sayısını taşır; **mekan adı taşımaz.**
 - **2 dakika geçerlidir** (`TABLE_INVITE_TTL_SECONDS = 120`, `pure/tables.ts`).
@@ -551,22 +563,23 @@ Değişmez kabul edilir.
 
 ## 4.H Veri modeli ve migration planı
 
-| Adım    | Migration            | Değişiklik                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| ------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 4.1–4.3 | —                    | Yok                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| 4.4     | `…_identity.sql`     | `profiles.capsule_nick` (benzersiz) ve `capsule_variant smallint check (0–27)`, kolon yetkisi `authenticated`'a kapalı (`gender` kalıbı); mevcut hesaplara atama. `table_sessions.identity_mode text check (in ('anonymous', 'profiled'))` ve `identity_switches smallint default 0 check (0–1)`; `venue_chat_profiled`'dan taşıma. `messages.profiled boolean not null default false`. `venue_chat_messages`'ta anonim `sender_alias` artık nick. Yeni tablo `venue_chat_mutes` (politikalarıyla). Kendi mesajını silme için `venue_chat_messages.deleted_at`. Nick yenileme onaylanırsa (§4.P) `profiles.capsule_nick_changed_at` |
-| 4.5     | `…_table_model.sql`  | `rooms.name`, `rooms.name_rerolls`, `rooms.phones`; 12 telefon kısıtı. `room_members.side` boş olabilir (yazılmaz). `join_requests.requester_room_id` (taşınacak masa) ve `requester_phones`. Yeni tablolar `table_votes` ve `game_players` (politikalarıyla). `table_sessions.headcount` boş olabilir (yazılmaz). Yeni okumalar `venue_tables`, `table_vote_counts`, `table_people`. Migration o an açık bütün masaları kapatır (pilot yok; aynı gün OTA, §4.N)                                                                                                                                                                    |
-| 4.6.1   | `…_kapsul_anlat.sql` | `tabu_*` fonksiyonları kişi bazlı; rakip düğmesi istatistiği; hakemli ve iş birliği modu kalkar                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 4.6.2   | `…_sohbet_cards.sql` | `messages.kind text default 'text' check (in ('text', 'card'))` ve kart notu; `sohbet_choices` (Ya da seçimleri); `cards` kısıtına `kampus` ve `ya-da` temaları ve Ya da'nın iki seçeneği                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| 4.6.3   | `…_sahtekar_v4.sql`  | Kişi bazlı roller; 2 sahtekar; yazılı son şans; koltuk fonksiyonları kalkar                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| 4.6.4   | `…_clash.sql`        | Ortak kapışma durumu; koşullu ilk basan; çoğunluk itirazı                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| 4.6.5   | `…_ibre_v4.sql`      | `ibre/move`, `ibre/ready`; takımın ortak ibresi; `realtime_topic_allowed`'a `ibre:`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| 4.7     | `…_invites.sql`      | Yeni tablo `table_invites` (politikalarıyla). `profiles.notifications_seen_at`, `profiles.notify_invites`. Okuma `my_notifications()`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| 4.8     | `…_v4_cleanup.sql`   | Eski modelin kalanı (aşağıda), 23.4 kalıbıyla iki PR                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| Adım    | Migration            | Değişiklik                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.1–4.3 | —                    | Yok                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| 4.4     | `…_identity.sql`     | `profiles.capsule_nick` (benzersiz) ve `capsule_variant smallint check (0–27)`, kolon yetkisi `authenticated`'a kapalı (`gender` kalıbı); mevcut hesaplara atama. `table_sessions.identity_mode text check (in ('anonymous', 'profiled'))` ve `identity_switches smallint default 0 check (0–1)`; `venue_chat_profiled`'dan taşıma. `messages.profiled boolean not null default false`. `venue_chat_messages`'ta anonim `sender_alias` artık nick. Yeni tablo `venue_chat_mutes` (politikalarıyla). Kendi mesajını silme için `venue_chat_messages.deleted_at`. Yeni tablo `retired_capsule_nicks` (politikalarıyla; silinen hesapların nick'leri). Nick yenileme onaylanırsa (§4.P) `profiles.capsule_nick_changed_at` |
+| 4.5     | `…_table_model.sql`  | `rooms.name`, `rooms.name_rerolls`, `rooms.phones`; 12 telefon kısıtı. `room_members.side` boş olabilir (yazılmaz). `join_requests.requester_room_id` (taşınacak masa) ve `requester_phones`. Yeni tablolar `table_votes` ve `game_players` (politikalarıyla). `table_sessions.headcount` boş olabilir (yazılmaz). Yeni okumalar `venue_tables`, `table_vote_counts`, `table_people`. Migration o an açık bütün masaları kapatır (pilot yok; aynı gün OTA, §4.N)                                                                                                                                                                                                                                                        |
+| 4.6.1   | `…_kapsul_anlat.sql` | `tabu_*` fonksiyonları kişi bazlı; Yasak! istatistiği (Yasak avcısı); hakemli ve iş birliği modu kalkar                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| 4.6.2   | `…_sohbet_cards.sql` | `messages.kind text default 'text' check (in ('text', 'card'))` ve kart notu; `sohbet_choices` (Ya da seçimleri); `cards` kısıtına `kampus` ve `ya-da` temaları ve Ya da'nın iki seçeneği                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| 4.6.3   | `…_sahtekar_v4.sql`  | Kişi bazlı roller; 2 sahtekar; yazılı son şans; koltuk fonksiyonları kalkar                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| 4.6.4   | `…_clash.sql`        | Ortak kapışma durumu; koşullu ilk basan; çoğunluk itirazı                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| 4.6.5   | `…_ibre_v4.sql`      | `ibre/move`, `ibre/ready`; takımın ortak ibresi; `realtime_topic_allowed`'a `ibre:`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| 4.7     | `…_invites.sql`      | Yeni tablo `table_invites` (politikalarıyla). `profiles.notifications_seen_at`, `profiles.notify_invites`. Okuma `my_notifications()`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| 4.8     | `…_v4_cleanup.sql`   | Eski modelin kalanı (aşağıda), 23.4 kalıbıyla iki PR                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 
 **Yeni tablolar.**
 
 - **`venue_chat_mutes`** (4.4): `id`, `user_id` (→ `auth.users` cascade), `muted_user_id` (cascade; istemciye kapalı), `profiled`, `label`, `created_at`; benzersiz `(user_id, muted_user_id, profiled)`. RLS açık, istemci politikası yok; okuma `venue-chat/mutes` ile.
+- **`retired_capsule_nicks`** (4.4): `nick text primary key`; başka kolon yoktur (hesapla bağı ve tarihi yok). Hesap silinirken nick buraya yazılır; üretim burada olan nick'i vermez. RLS açık, istemci politikası yok.
 - **`table_votes`** (4.5): `room_id` (cascade), `session_id` (cascade), `concept`, `created_at`; birincil anahtar `(room_id, session_id)`. RLS açık, istemci politikası yok; okuma `table_vote_counts(room_id)` ile: `(concept, votes, mine)`, yalnızca masanın kişilerine.
 - **`game_players`** (4.5): `room_id`, `game_no`, `session_id`, `role`, `team null`, `seat_order`, `joined_at`, `left_at`; birincil anahtar `(room_id, game_no, session_id)`. Gizli rol taşıyabildiği için RLS açık, istemci politikası yok; açık roller `game_state`'tedir.
 - **`sohbet_choices`** (4.6.2): `room_id`, `card_no`, `session_id`, `choice`; birincil anahtar `(room_id, card_no, session_id)`. İstemci politikası yok; sayılar `game_state`'tedir.
@@ -622,7 +635,7 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 | `venue-chat`    | `send` kimliği check-in'den okur (`identity_mismatch`); `page` yanıtında `senderKey`, anonimde nick; `delete`, `mute`, `unmute`, `mutes`                                                                                                                                         | 4.4      |
 | `rooms`         | `create`, `set-visibility`, `reroll-name`, `request-join` (masa ya da kişi, `asMember`), `respond`, `request-profile`, `leave`, `end`, `vote`, `open-game`, `pick`, `shuffle`, `end-game`, `leave-game`; yeni kodlar `already_in_table`, `table_full`, `not_owner`, `not_player` | 4.5      |
 | `rooms`         | `invite`, `answer-invite`                                                                                                                                                                                                                                                        | 4.7      |
-| `tabu`          | `start`, `begin-turn`, `turn-cards`, `mark` (Doğru, Pas, rakip), `end-turn`, `advance`; kişi bazlı yetki                                                                                                                                                                         | 4.6.1    |
+| `tabu`          | `start`, `begin-turn`, `turn-cards`, `mark` (Doğru, Pas, Yasak!), `end-turn`, `advance`; kişi bazlı yetki                                                                                                                                                                        | 4.6.1    |
 | `sohbet`        | `start { themes }`, `next-card`, `set-themes`, `shuffle`, `choose`, `close`                                                                                                                                                                                                      | 4.6.2    |
 | `sahtekar`      | `start`, `view`, `ready`, `said`, `vote`, `guess { text }`, `advance`                                                                                                                                                                                                            | 4.6.3    |
 | `harf`, `sarki` | `start`, `claim`, `said`, `object`, `advance`; ortak motor                                                                                                                                                                                                                       | 4.6.4    |
@@ -649,7 +662,7 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 **Analitik** (`pure/analytics.ts`; PostHog'a yalnızca kullanıcı id'si gider):
 
 - **Cinsiyet ve vekilleri hiçbir olaya girmez** (SPEC_V3 §23.L ilkesi). Faz 4'te yeni vekiller vardır ve olay olmaz:
-  - anonim anahtarının değişmesi (yalnızca kadın değiştirebilir);
+  - anonim anahtarının değişmesi ve masadaki anonim kimlik (masada yalnızca kadın anonim olabilir);
   - oyun akışında anonim ya da profilli katılım;
   - kapsül, nick ve sessize alma.
 - Nick, masa adı, mekan adı, mesaj ve içerik (kelime, kategori, tahmin) hiçbir olaya girmez.
@@ -660,7 +673,7 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 
 **Yasal** (`docs/legal/`; OTA'dan önce):
 
-- **4.4:** kapsül nick hesaba bağlı bir takma addır. Anonim kişi ziyaretler arasında aynı nick'le tanınabilir; nick profil kimliğini açmaz. Sessize alma kaydı: kimin hangi kimliği sessize aldığı, yalnızca sunucuda. Anahtar değişikliğinden önce yazılan mesajların eski kimlikte kaldığı.
+- **4.4:** kapsül nick hesaba bağlı bir takma addır. Anonim kişi ziyaretler arasında aynı nick'le tanınabilir; nick profil kimliğini açmaz. Sessize alma kaydı: kimin hangi kimliği sessize aldığı, yalnızca sunucuda. Anahtar değişikliğinden önce yazılan mesajların eski kimlikte kaldığı. Silinen hesabın nick'i yeniden verilmez; bunun için yalnızca nick metni, hesapla bağı olmadan saklanır.
 - **4.7:** masa daveti, arkadaşına aynı mekanda bir masan olduğunu söyler; mekan adı gitmez. Bildirim listesi ve davet push'u.
 - `CURRENT_KVKK_VERSION` 4.4'te artar; mevcut kullanıcılar yeniden onaylar. 4.7 değişikliği aynı sürüme alınabiliyorsa birlikte, değilse ikinci kez artar.
 - Sayfalar taslaktır; "hukuki kontrol bekliyor" notu kalır.
@@ -690,9 +703,11 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 
 **Adım 4.4.**
 
-- Her hesabın benzersiz nick'i ve kapsülü vardır; kayıtta atanır, mevcut hesaplara migration atar. Üretilmeyecek kısaltmalar üretilmez (birim testi).
+- Her hesabın benzersiz nick'i ve kapsülü vardır; kayıtta 18 yaş denetiminden sonra atanır, mevcut hesaplara migration atar. Üretilmeyecek kısaltmalar üretilmez (birim testi).
+- Kapasite: doluluk yüzde 50'yi geçince yeni nick 3 rakamlıdır, mevcut nick'ler değişmez (birim testi). Silinen hesabın nick'i `retired_capsule_nicks`'e geçer ve yeniden verilmez; tabloda hesapla bağ yoktur.
 - `capsule_nick` `authenticated`'a kapalıdır (`birth_date` testinin kalıbı); başkası için hiçbir yanıt ve Realtime yükü nick ile hesap ya da `public_id` arasındaki ilişkiyi taşımaz (tarama).
-- Anahtar check-in başına bir kez değişir; ikinci değişiklik `identity_switch_used`. Erkek ve belirtmeyen hesabın anonim kimliği `anonymous_not_allowed`.
+- Anahtar check-in başına bir kez değişir; ikinci değişiklik `identity_switch_used`. Fotoğrafsız hesap profilli kimlik seçemez (`photo_required`).
+- Erkek ve belirtmeyen hesap anonim kimlikle mekan sohbetine yazar; aynı check-in'de masaya girişte kimliği profillidir ve check-in'in anonim kimliği masaya taşınmaz. Açıkça anonim katılım isteyen istek `anonymous_not_allowed`. Bu hesaplarda da ikinci değişiklik `identity_switch_used`.
 - Değişiklikten önceki mesajlar eski kimlikle döner; anonim mesajda fotoğraf ve ad yoktur.
 - `identity_mismatch`: check-in'in kimliğinden farklı `profiled` taşıyan mesaj yazılmaz.
 - Sessize alma kimliğe bağlıdır: anonim kimliği sessize almak aynı kişinin profilli mesajlarını gizlemez. Sessize alınan hiçbir yanıtta bunu görmez.
@@ -725,7 +740,7 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 
 **Adım 4.7.**
 
-- Davet yalnızca sahipten ve arkadaşa; aynı mekanda check-in'i olmayan arkadaşa davet satırı oluşmaz ve gönderen aynı yanıtı alır.
+- Davet yalnızca sahipten ve arkadaşa; aynı mekanda check-in'i olmayan arkadaşa davet satırı oluşmaz ve gönderen aynı yanıtı alır (K-2). Davet ekranının okuması kimin mekanda olduğunu taşımaz.
 - Davet mekan adı taşımaz; 2 dakikada geçersiz olur. Red ve zaman aşımı gönderene aynı görünür (hiçbiri).
 - Davete katılma: tek kişilik boş masa kapanır; başka masadaki kişi oradan ayrılır; dolu masa ve geçersiz davet aynı metni verir.
 - `my_notifications()`: yalnızca açık istekler; masa sonundaki sessiz düğme hiçbir satır üretmez. Rozet `notifications_seen_at`'tan.
@@ -739,7 +754,7 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 - Akışların neredeyse tamamı yeniden yazılır: her adım kendi akışlarını aynı PR'da günceller (bugünkü kural).
 - Bot kişi bazlı rolleri oynamayı öğrenir: masaya kişi olarak katılır, takım seçer, anlatıcı, rakip, tahminci, sahtekar, kapan ve ipucu veren olur. 12 telefonlu masa için birden fazla bot telefonu aynı masaya katılır (yerel test numaraları).
 - Gizli bilginin cihaza gitmediği akışta değil, entegrasyon testinde denetlenir (SPEC_V3 §20.1).
-- **Saha testi** 4.6'nın son oyunundan sonra 6–12 telefonla yapılır (`docs/FIELD_TEST.md`, 4.8'de); Faz 3'ün bulma yardımı gözlemleri (SPEC_V3 §23.P-2) Faz 4'e taşınır.
+- **Saha testi** 4.6'nın son oyunundan sonra 6–12 telefonla yapılır (`docs/FIELD_TEST.md`, 4.8'de). Ayrı bir Faz 3 saha testi yapılmaz (K-1): Faz 3'ün bulma yardımı gözlemleri (SPEC_V3 §23.P-2: kabul anındaki iki satır kalabalık mekanda yeterli mi) bu testte yapılır ve P-2 kararı bu testten sonra verilir.
 
 ## 4.N Uygulama sırası, yayın, maliyet ve risk
 
@@ -763,6 +778,11 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 - **4.5'te sunucu ile OTA arası en kısa tutulur:** 4.5'in sunucusundan sonra eski istemci masa açamaz ve oynayamaz. Pilot kullanıcısı yoktur; dev projesindeki test telefonları etkilenir.
 - Büyük adımlar gerekirse 23.2 ve 23.3'teki a/b kalıbıyla bölünür (sunucu önce, bugünkü uygulamayı bozmadan; istemci sonra). Bölünme o adımın planında yazılır.
 - **Açık kararlar bekletir:** §4.P'deki her karar, yazılı olduğu adımdan önce.
+
+**Faz 3'ün kapanışı** (K-1):
+
+- 23.4b'nin saha testi şartı kalkar. 23.4b, 23.4a'nın OTA'sı telefonda doğrulanınca ve proje sahibinin "onaylandı"sıyla birleşir. Böylece 4.5'in migration'ı reveal tablolarıyla yaşamaz.
+- Ayrı bir Faz 3 saha testi yapılmaz (SPEC_V3 §23.M'deki "Saha testi" satırı bununla değişir). Bulma yardımı gözlemleri Faz 4 saha testinde yapılır (§4.M).
 
 **Pilot ön koşulları** (§4.B-12):
 
@@ -836,12 +856,14 @@ Bu PR yalnızca proje paragrafını ve görsel kaynak kod kuralını değiştiri
   - "Anonim ya da profilli katılım oda başına seçilir … mekan sohbetinde mesaj başına seçilir" ve Faz 2 ekindeki mekan sohbeti seçimi şu metne döner: "Anonim kişi kapsül avatar ve hesaba sabit `kapsul-xx55` nick'iyle görünür. Nick profil kimliği değildir; nick ile hesap ya da `public_id` arasındaki ilişki hiçbir yanıtta, Realtime yükünde ve analitik olayında görünmez. Anonim ve profilli arasında check-in başına bir değişiklik yapılır; değişiklikten önce yazılan mesajlar eski kimlikte kalır. Kişinin masaya girdiği andaki kimliği masaya yazılır."
   - Yeni cümle: "Mekan ve masa sohbetinde masa adı gitmez; kişi yalnızca nick'iyle ya da gerçek adıyla görünür."
   - "Masa oturum id'si, takma ad gibi check-in süresince geçerli bir takma kimliktir" cümlesi "Check-in kaydının id'si (masa oturum id'si) check-in süresince geçerli bir takma kimliktir ve masanın kişilerine gidebilir" olur.
-  - 'Profilimle'nin fotoğraf şartı §4.P-4'ün cevabına göre kalır ya da değişir.
+  - 'Profilimle'nin fotoğraf şartı kalır (K-4): "Profilli görünmek profil fotoğrafı ister."
+  - Eklenir (K-3): "Mekan sohbetinde herkes anonim yazabilir. Erkek ve belirtmeyende anonim seçim yalnızca mekan sohbetini etkiler; oyun akışında ve masada her zaman profillidir."
   - Masa içinde kimliğin sabitliği §4.P-3'ün cevabıyla yazılır.
 - **4.5:**
   - "diğer masalara … masa takma adı, kişi sayısı ve varsa niyet etiketi gider" ve Faz 3'ün lobi cümlesi: "masa adı, telefon sayısı, varsa niyet ve oyun etiketi".
   - "oda sürerken o odanın üyelerine" ve Faz 2'nin "odanın iki tarafındaki bütün telefonlara" ifadeleri: "masa sürerken masanın bütün kişilerine".
   - "Lobide süren oda yalnızca iki liderin takma adını, taraf başına telefon ve kişi sayısını gösterir" cümlesi: "Süren masalar listesi masa adını ve telefon sayısını gösterir."
+  - Faz 3'ün 23.2 cümlesindeki "Oyun akışında (katılma isteği, 'Masanı lobiye aç', 'Bu masadayım'; 'Masanla oyna' oyun akışı sayılmaz)" ifadesi "Oyun akışında ve masada (masa kurma, Katıl, 'Bu masadayım', davete katılma)" olur: "Masanla oyna" ayrı mod olmaktan çıkar (§4.E).
   - Kişi sayısına ve taraflara yapılan diğer atıflar kalkar.
 - **4.7:** "Koordinat, mekan ve aktif masa hiçbir kullanıcıya, arkadaşa da gitmez" cümlesinin ardına istisna eklenir: "İstisna (masa daveti): masa sahibi, aynı mekanda check-in'i olan bir arkadaşına masa daveti gönderebilir. Davet masa adını ve telefon sayısını taşır, mekan adı taşımaz ve 2 dakika geçerlidir. Davet ekranı kimin mekanda olduğunu göstermez: sunucu daveti yalnızca aynı mekanda check-in'i olana iletir, gönderen her durumda aynı yanıtı alır."
 
@@ -876,39 +898,47 @@ Bu PR yalnızca proje paragrafını ve görsel kaynak kod kuralını değiştiri
 - **4.7:** `table_invites` `join_requests`'ten sonra gelir; davete katılma alıcının check-in'ini, iki masayı `id` sırasıyla, `room_members`'ı ve daveti kilitler.
 - **4.8:** `game_proposals` metinden çıkar.
 
-**Kural 12:** değişmez. §4.P-1'in cevabı mekan sohbetinde de erkek ve belirtmeyenin her zaman profilli olmasını isterse 4.4'te "Yalnızca oyun akışındaki anonimlik kuralını uygular" cümlesi mekan sohbetini de kapsayacak biçimde değişir.
+**Kural 12:** yalnızca oyun akışı için, aynen kalır (K-3). Erkek ve belirtmeyenin mekan sohbetinde anonim yazması kural 12'nin dışındadır ve 4.4'te kural 4'e yazılır. Tek metin değişikliği 4.5'tedir: "Masanla oyna" kalktığı için "('Masanla oyna' oyun akışı sayılmaz)" parantezi kalkar ve cümle "oyun akışındaki ve masadaki anonimlik kuralını uygular" olur.
 
 **Değişmeyen kurallar:** 1, 2, 7, 8 ve 11.
 
-**Bu PR'da işlenenler:** proje paragrafı (Faz 4 ve pilotun v43'ün tamamıyla çıkması) ve kod kuralındaki görsel kaynak (`docs/design/v43/`; ana tuval arşiv).
+**Bu PR'da işlenenler:** proje paragrafı (ilk cümle Faz 4 kurgusuyla; Faz 4 ve pilotun v43'ün tamamıyla çıkması) ve kod kuralındaki görsel kaynak (`docs/design/v43/`; ana tuval arşiv).
 
 ## 4.P Kararlar
 
-**Proje sahibinin kararları:** §4.B'deki 12 madde ve kural metinleri için verilen üç ölçü (18 Ekim; "skall v43 dönüşüm raporu" ve bu belgenin isteği).
+**Proje sahibinin kararları.**
 
-**Açık kararlar.** İlgili adımdan önce proje sahibine sorulur; karar verilmeden o adımın işi başlamaz.
+- §4.B'deki 12 madde ve kural metinleri için verilen üç ölçü (18 Ekim; "skall v43 dönüşüm raporu" ve bu belgenin isteği).
+- CTO incelemesinden sonra verilen altı karar (18 Ekim). Metinde "K-n" diye anılır:
 
-| No   | Karar                                                                                                                                                                                                     | Önerim                                                                                                                                                                                                                                         | Ne zaman     |
-| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| P-1  | Erkek ve belirtmeyen mekan sohbetinde anonim yazabilir mi? Bugün evet (SPEC_V3 §23.B-4); v43'te anahtar erkekte gizli                                                                                     | Evet, kalsın. Mekan sohbetinde yalnızca kadın anonim olabilseydi her kapsül kadın olurdu: anonim yazan kadınlar görünür bir hedefe döner. Bedeli: v44'te erkek ve belirtmeyen için yalnızca mekan sohbetinde görünen bir anonim seçimi çizilir | 4.4'ten önce |
-| P-2  | Nick yenileme                                                                                                                                                                                             | Profil'den haftada bir. Yeni nick eski mesajları değiştirmez; sessize alma hesaba ve kimliğe bağlı olduğu için yenilemeyle düşmez                                                                                                              | 4.4'ten önce |
-| P-3  | Anahtar masanın içinde masa süresince sabit mi?                                                                                                                                                           | Evet. Masadaki kimlik girişte yazılır; anahtar değişirse yeni kimlik mekan sohbetinde ve bir sonraki masada geçerli olur                                                                                                                       | 4.4          |
-| P-4  | Profilli görünmek profil fotoğrafı ister mi? Bugün ister (SPEC_V3 §22.G karar 8, §23.D); v43 fotoğrafsız profili soluk kapsülle gösteriyor                                                                | Şart kalsın: fotoğrafsız erkek ve belirtmeyen oyun akışına giremez (`photo_required`). Soluk kapsül, fotoğrafı sonradan gizlenen ya da kaldırılan profiller içindir                                                                            | 4.4'ten önce |
-| P-5  | Mekan sohbetinde "yazıyor" balonu ve tüm sohbeti sessize alma                                                                                                                                             | "Yazıyor" pilotta yok: üçüncü bir istemci yayın kanalı ister (kural 9). Tüm sohbeti sessize alma yalnızca telefonda; aktiflik noktasını ve okunmamış sayısını kapatır (push yok)                                                               | 4.4          |
-| P-6  | Mekan sohbeti aktiflik noktasının tanımı                                                                                                                                                                  | Son 10 dakikada mesaj varsa                                                                                                                                                                                                                    | 4.3          |
-| P-7  | Biyografi: iletişim bilgisi filtresi ve sınır (bugün 160, v43'te 80)                                                                                                                                      | Telefon, e-posta, kullanıcı adı ve bağlantı içeren biyografi ve görünen ad reddedilir (maskeleme yok); denetim kural 7 gereği `pure/profanity.ts` ve `trText.ts` içinde, testli. Sınır 80; mevcut uzun biyografiler düzenlenene kadar kalır    | 4.3          |
-| P-8  | Sahtekar                                                                                                                                                                                                  | İpucu kişi başı 30 sn. 7 ve üstünde 2 sahtekar, birbirlerini bilmezler. Kısmi yakalamada masaya yakalanan her sahtekar için puan                                                                                                               | 4.6.3        |
-| P-9  | Kapışma                                                                                                                                                                                                   | İtiraz eşiği kapan dışındakilerin yarıdan fazlası; bire birde tek itiraz yeter; gözlemci itiraz edemez; Şarkıda Geçsin'de aynı şarkı serbest, itirazla çözülür                                                                                 | 4.6.4        |
-| P-10 | İbre: rakibin sol ya da sağ tahmini                                                                                                                                                                       | Kalsın (bugünkü kural: 15 sn, doğruysa rakibe 1 puan; ibre hedefin tam üstündeyse puan yok). İzleyen takımın bir işi olur                                                                                                                      | 4.6.5        |
-| P-11 | Sohbet kartları                                                                                                                                                                                           | Kartı sahip ilerletir; başka oyun başlayınca kartlar kapanır; Ya da'da yalnızca sayılar görünür. `film-dizi-muzik` ve `hic-yaptin-mi` kartları pasif olur (`is_active = false`), içerik silinmez                                               | 4.6.2        |
-| P-12 | Rakip düğmesinin ve "Tabu avcısı"nın adı                                                                                                                                                                  | Düğme "Yasak!", ödül "Yasak avcısı". Poster alt yazısı "Yasak kelimeyi söyleme" kalır                                                                                                                                                          | 4.3'ten önce |
-| P-13 | Bildirim yeri (v43 sorusu 17)                                                                                                                                                                             | Zil yalnızca Mesajlar'da; alt çubuktaki Mesajlar sekmesinde okunmamış noktası. Zil diğer sekme köklerinden kalkar (SPEC_V3 §18.3a değişir)                                                                                                     | 4.7          |
-| P-14 | Sahip masadan ya da mekandan ayrılırsa, check-in'i biterse; masada biri diğerini engellerse                                                                                                               | Sahiplik masaya en erken katılan kişiye geçer, masa sürer; masada kimse kalmadıysa kapanır ("Masayı bitir" ayrıca durur). Engel: sahip engellerse engellenen masadan çıkarılır; katılımcı engellerse kendisi çıkar                             | 4.5          |
-| P-15 | Oyun geçmişi kaydı ve sessiz "Arkadaş ekle" hangi çiftler arasında? Taraf yok                                                                                                                             | Masada 3 dakika kesişen her çift (zaten arkadaş olanlar hariç). Birlikte gelenler ayrı tutulmaz: düğme sessizdir ve iki taraf basmadan hiçbir şey olmaz                                                                                        | 4.5          |
-| P-16 | Masa sürerken profilde "Arkadaş ekle"                                                                                                                                                                     | Yok. Düğme masa sonunda ve oyun geçmişindedir (Faz 3)                                                                                                                                                                                          | 4.5          |
-| P-17 | Aktiviteler: Kampanya türü ve "ilgileniyorum" sayacı (v43'te var, spec'te yok)                                                                                                                            | Pilotta yok: Aktiviteler bugünkü etkinlikleri (`venue_events`) ve Geçmiş'i gösterir. Kampanya ve ilgilenme ayrı bir karardır                                                                                                                   | 4.3          |
-| P-18 | Keşfet'te açık masa sayısı: v43 kesin sayı gösteriyor ("3 açık masa", "Sessiz"); bugün kova (`venue_activity`)                                                                                            | Kova kalsın; metin kovadan gelir ("Birkaç açık masa", "Sessiz")                                                                                                                                                                                | 4.3          |
-| P-19 | v43 tasarım istisnaları (v43 raporu §3, soru 19): Kapsül Anlat'ta iki renkli eşit Pas ve Doğru, bildirim satırlarında birden çok "Kabul et", Ya da kartında iki seçenek; mesaj önizlemesi ve alıntıda "…" | Hepsi kabul; 4.2'de tasarım sistemine istisna olarak yazılır. "…" yalnızca önizlemede ve alıntıda (bugünkü Ekran davranışı kuralı)                                                                                                             | 4.2          |
+| No         | Karar                                                                                                                                                                                                                                                                          | Nerede              |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------- |
+| K-1        | 23.4b'nin saha testi şartı kalkar: 23.4a'nın OTA'sı telefonda doğrulanınca ve proje sahibinin "onaylandı"sıyla birleşir. Ayrı bir Faz 3 saha testi yapılmaz; bulma yardımı gözlemleri Faz 4 saha testinde yapılır                                                              | §4.M, §4.N          |
+| K-2        | Davet ekranı: bütün arkadaşlar listelenir, kimin mekanda olduğu görünmez; sunucu mekanda olmayana daveti sessizce iletmez; gönderen her durumda aynı yanıtı görür                                                                                                              | §4.C, §4.G, kural 4 |
+| K-3 (P-1)  | Erkek ve belirtmeyen mekan sohbetinde anonim yazabilir; oyun akışında ve masada her zaman profillidir (kural 12 yalnızca oyun akışı için, aynen). Bu hesaplar için anonim seçim yalnızca mekan sohbetini etkiler; check-in başına 1 değişiklik kuralı onlar için de geçerlidir | §4.D, kural 4 ve 12 |
+| K-4 (P-4)  | Profilli görünmek profil fotoğrafı ister (`photo_required`). Soluk kapsül yalnızca fotoğrafı sonradan gizlenen ya da kaldırılan profil içindir                                                                                                                                 | §4.D, kural 4       |
+| K-5 (P-12) | Rakip düğmesi "Yasak!", ödül "Yasak avcısı"                                                                                                                                                                                                                                    | §4.C, §4.F          |
+| K-6 (P-13) | Zil yalnızca Mesajlar'da; alt çubuktaki Mesajlar sekmesinde okunmamış noktası. SPEC_V3 §18.3a bu adımda (4.7) değişir                                                                                                                                                          | §4.C, §4.G          |
+
+**Açık kararlar.** İlgili adımdan önce proje sahibine sorulur; karar verilmeden o adımın işi başlamaz. P-1, P-4, P-12 ve P-13 karara bağlandı (K-3…K-6); diğer numaralar değişmez.
+
+| No   | Karar                                                                                                                                                                                                     | Önerim                                                                                                                                                                                                                                      | Ne zaman     |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| P-2  | Nick yenileme                                                                                                                                                                                             | Profil'den haftada bir. Yeni nick eski mesajları değiştirmez; sessize alma hesaba ve kimliğe bağlı olduğu için yenilemeyle düşmez                                                                                                           | 4.4'ten önce |
+| P-3  | Anahtar masanın içinde masa süresince sabit mi?                                                                                                                                                           | Evet. Masadaki kimlik girişte yazılır; anahtar değişirse yeni kimlik mekan sohbetinde ve bir sonraki masada geçerli olur                                                                                                                    | 4.4          |
+| P-5  | Mekan sohbetinde "yazıyor" balonu ve tüm sohbeti sessize alma                                                                                                                                             | "Yazıyor" pilotta yok: üçüncü bir istemci yayın kanalı ister (kural 9). Tüm sohbeti sessize alma yalnızca telefonda; aktiflik noktasını ve okunmamış sayısını kapatır (push yok)                                                            | 4.4          |
+| P-6  | Mekan sohbeti aktiflik noktasının tanımı                                                                                                                                                                  | Son 10 dakikada mesaj varsa                                                                                                                                                                                                                 | 4.3          |
+| P-7  | Biyografi: iletişim bilgisi filtresi ve sınır (bugün 160, v43'te 80)                                                                                                                                      | Telefon, e-posta, kullanıcı adı ve bağlantı içeren biyografi ve görünen ad reddedilir (maskeleme yok); denetim kural 7 gereği `pure/profanity.ts` ve `trText.ts` içinde, testli. Sınır 80; mevcut uzun biyografiler düzenlenene kadar kalır | 4.3          |
+| P-8  | Sahtekar                                                                                                                                                                                                  | İpucu kişi başı 30 sn. 7 ve üstünde 2 sahtekar, birbirlerini bilmezler. Kısmi yakalamada masaya yakalanan her sahtekar için puan                                                                                                            | 4.6.3        |
+| P-9  | Kapışma                                                                                                                                                                                                   | İtiraz eşiği kapan dışındakilerin yarıdan fazlası; bire birde tek itiraz yeter; gözlemci itiraz edemez; Şarkıda Geçsin'de aynı şarkı serbest, itirazla çözülür                                                                              | 4.6.4        |
+| P-10 | İbre: rakibin sol ya da sağ tahmini                                                                                                                                                                       | Kalsın (bugünkü kural: 15 sn, doğruysa rakibe 1 puan; ibre hedefin tam üstündeyse puan yok). İzleyen takımın bir işi olur                                                                                                                   | 4.6.5        |
+| P-11 | Sohbet kartları                                                                                                                                                                                           | Kartı sahip ilerletir; başka oyun başlayınca kartlar kapanır; Ya da'da yalnızca sayılar görünür. `film-dizi-muzik` ve `hic-yaptin-mi` kartları pasif olur (`is_active = false`), içerik silinmez                                            | 4.6.2        |
+| P-14 | Sahip masadan ya da mekandan ayrılırsa, check-in'i biterse; masada biri diğerini engellerse                                                                                                               | Sahiplik masaya en erken katılan kişiye geçer, masa sürer; masada kimse kalmadıysa kapanır ("Masayı bitir" ayrıca durur). Engel: sahip engellerse engellenen masadan çıkarılır; katılımcı engellerse kendisi çıkar                          | 4.5          |
+| P-15 | Oyun geçmişi kaydı ve sessiz "Arkadaş ekle" hangi çiftler arasında? Taraf yok                                                                                                                             | Masada 3 dakika kesişen her çift (zaten arkadaş olanlar hariç). Birlikte gelenler ayrı tutulmaz: düğme sessizdir ve iki taraf basmadan hiçbir şey olmaz                                                                                     | 4.5          |
+| P-16 | Masa sürerken profilde "Arkadaş ekle"                                                                                                                                                                     | Yok. Düğme masa sonunda ve oyun geçmişindedir (Faz 3)                                                                                                                                                                                       | 4.5          |
+| P-17 | Aktiviteler: Kampanya türü ve "ilgileniyorum" sayacı (v43'te var, spec'te yok)                                                                                                                            | Pilotta yok: Aktiviteler bugünkü etkinlikleri (`venue_events`) ve Geçmiş'i gösterir. Kampanya ve ilgilenme ayrı bir karardır                                                                                                                | 4.3          |
+| P-18 | Keşfet'te açık masa sayısı: v43 kesin sayı gösteriyor ("3 açık masa", "Sessiz"); bugün kova (`venue_activity`)                                                                                            | Kova kalsın; metin kovadan gelir ("Birkaç açık masa", "Sessiz")                                                                                                                                                                             | 4.3          |
+| P-19 | v43 tasarım istisnaları (v43 raporu §3, soru 19): Kapsül Anlat'ta iki renkli eşit Pas ve Doğru, bildirim satırlarında birden çok "Kabul et", Ya da kartında iki seçenek; mesaj önizlemesi ve alıntıda "…" | Hepsi kabul; 4.2'de tasarım sistemine istisna olarak yazılır. "…" yalnızca önizlemede ve alıntıda (bugünkü Ekran davranışı kuralı)                                                                                                          | 4.2          |
 
 **Bu belgede önerilen teknik kararlar (onay bekler).**
 
@@ -916,10 +946,14 @@ Bu PR yalnızca proje paragrafını ve görsel kaynak kod kuralını değiştiri
 - **Masa adı masanındır** (`rooms.name`), 3 yenileme hakkı masa başına (§4.E).
 - **"Masanla oyna" ayrı mod olmaktan çıkar** (§4.E): lobide olmayan masa kendi içinde oynar.
 - **Katıl isteği masa taşır** (§4.E): istekçi masanın kişileri kabulde aynı işlemde taşınır, istekçi masa kapanır (23.1 kalıbının genellemesi). Başka bir masanın katılımcısı Katıl gönderemez.
-- **"Süren masalar" mekandaki lobide olmayan masalardır** (§4.E): yalnızca masa adı ve telefon sayısı.
+- **"Süren masalar" mekandaki lobide olmayan bütün masalardır, tek kişilik masa dahil** (§4.E; proje sahibi: kalsın). Liste yalnızca masa adını ve telefon sayısını gösterir. Gerekçe:
+  - "Bu masadayım" fiziksel olarak masada oturan kişinin yoludur. Bir grup oturunca masayı biri kendi telefonunda kurar; diğerleri katılana kadar masa tek telefonludur. Tek telefonlu masayı gizlemek en sık başlangıcı kapatırdı.
+  - Telefon sayısı masada kaç kişinin oturduğunu söylemez. 2 telefon eşiği yalnız oturan kişiyi listeden çıkarırdı ama arkadaşlarıyla oturan ve ilk katılanı bekleyen kişiyi de çıkarırdı.
+  - Yabancıdan gelen istek sessizce reddedilebilir: red ve zaman aşımı istekçiye aynı görünür (`unavailable`, kural 5). İstek sahibe istekçinin adı, yaşı ve fotoğrafıyla gelir (profilli istekçide), sahip kimi tanıdığına bakarak karar verir.
 - **Tek lobi okuması `venue_tables`** (§4.E): dört eski okuma 4.8'de kalkar.
 - **4.5 migration'ı açık masaları kapatır** (§4.H): pilot yoktur, OTA aynı gün gider.
 - **Kapsül nick sunucuda atanır ve saklanır** (§4.D); kolonlar istemciye kapalıdır.
+- **Emekli nick'ler** (§4.D): silinen hesabın nick'i `retired_capsule_nicks`'te yalnızca metin olarak tutulur (hesapla bağı ve tarihi yok); doluluk hesabına girer.
 - **`senderKey`** (§4.D): kimliğe göre ayrılan opak anahtar; iki kimliği bağlamaz.
 - **Sessize alma sunucuda ve kimliğe bağlı** (§4.D): kimliğe bağlı olmasaydı iki kimlik eşleşirdi.
 - **Mekan sohbetinde kendi mesajını silme** (§4.D): v43'te var.
@@ -931,7 +965,6 @@ Bu PR yalnızca proje paragrafını ve görsel kaynak kod kuralını değiştiri
 - **Kapsül Anlat'ta 1 kişiye düşen takım oynamaya devam eder** (§4.F).
 - **İbre'nin değeri bırakınca yazılır** (`ibre/move`), canlı konum yalnızca yayındır (§4.F).
 - **Bildirim tablosu yok;** liste `my_notifications()` okumasıdır, rozet `notifications_seen_at` (§4.G).
-- **Davet ekranında kimin mekanda olduğu görünmez** (§4.G): sunucu uygun olmayan daveti sessizce yutar.
 - **Davet sınırları:** aynı arkadaşa tek bekleyen davet, sahip başına saatte 30 (§4.G).
 - **Davete katılmak "Masadan ayrıl" kuralını uygular** (§4.G).
 - **Davet push'u ad, masa ve mekan taşımaz** (§4.G).
@@ -941,32 +974,32 @@ Bu PR yalnızca proje paragrafını ve görsel kaynak kod kuralını değiştiri
 
 Numaralar devir raporunun §6'sındakidir. "Kural" atıfları raporun brief numaralarıdır, CLAUDE.md'ninkiler değil; cevaplarda CLAUDE.md numaraları kullanılır.
 
-| No  | Soru                                                                                      | Cevap                                                                                                                                                                                  |
-| --- | ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Sahip en çok oy alan dışında bir oyunu başlatabilir mi?                                   | Evet (§4.B-4, §4.F)                                                                                                                                                                    |
-| 2   | Kategoriler ve oyunların dağılımı                                                         | v43'teki gibi: Takımlı (Kapsül Anlat, İbre), Bire bir (Harf Kapmaca, Şarkıda Geçsin), Çok oyunculu (Sahtekar, Harf Kapmaca, Şarkıda Geçsin, Sohbet kartları) (§4.F)                    |
-| 3   | İstekler sekmesi ve gelen istek bildirimi: istek karşı tarafa görünecek mi?               | Yalnızca açık istekler görünür (mekan sohbetinden istek, oyun geçmişinden "İstek gönder"); masa sonundaki "Arkadaş ekle" sessizdir (kural 5, §4.G)                                     |
-| 4   | Arkadaş olmayana mesaj                                                                    | DM yalnızca arkadaşlar arasında; "Mesaj" düğmesi arkadaş değilken görünmez, yerine bağlama göre "Arkadaş ekle" (§4.G)                                                                  |
-| 5   | Anonim katılım nerede seçilir, masa sırasında kilitlenir mi?                              | Mekan ekranının üst satırındaki anahtar; check-in başına bir değişiklik (§4.D). Masa içinde sabitlik P-3                                                                               |
-| 6   | Mekan sohbeti aktiflik noktası                                                            | P-6                                                                                                                                                                                    |
-| 7   | Okundu tiki ve yazıyor                                                                    | DM'de var (SPEC_V3 §18.2). Mekan sohbetinde "yazıyor" P-5                                                                                                                              |
-| 8   | Engelle, Bildir, Arkadaşlıktan çıkar: karşı taraf ne görür?                               | Engellenen ve şikayet edilen hiçbir şey görmez; çıkarılan çıkarmayı engellemeden ayırt edemez (kural 5). Masada engel P-14                                                             |
-| 9   | Bio sınırı ve iletişim bilgisi filtresi                                                   | P-7                                                                                                                                                                                    |
-| 10  | Masa bitince akış                                                                         | "Masa bitti" ekranı: masadakiler ve kişi başına sessiz "Arkadaş ekle" (§4.E); ekran v44'te                                                                                             |
-| 11  | Başka mekana girişte eski masa kapanınca katılımcılara ne olur?                           | Yeni check-in eski check-in'i bitirir; kişi masadan ayrılmış sayılır. Masa diğerleri için sürer; sahipse sahiplik P-14 (§4.E)                                                          |
-| 12  | Aktiviteleri kim girer?                                                                   | Geliştirici, `pnpm admin:event` ile. Kampanya türü P-17                                                                                                                                |
-| 13  | Oyun geçmişi kaydedilecek mi?                                                             | Evet: `play_history` (3 dakika kuralı) ve `game_results`; Aktiviteler → Geçmiş bunlardan (§4.F)                                                                                        |
-| 14  | "Yakındaki" sıralaması                                                                    | Konuma göre sıralama yok (kural 6, §4.C)                                                                                                                                               |
-| 15  | Mekan adlarına karakter sınırı                                                            | Sınır yok; ad içerikten gelir, ekran en çok iki satıra kırar ve küçültür (§4.C)                                                                                                        |
-| 16  | Mekan sohbeti gizliliği, ad engel listesi                                                 | Görünen ad ve biyografi küfür filtresinden geçer (kural 7); nick'te kaba kısaltmalar üretilmez, liste `content/profanity-tr.json`'da (§4.D)                                            |
-| 17  | Bildirim yeri                                                                             | P-13                                                                                                                                                                                   |
-| 18  | Masa daveti: kapsam, süre, kim davet eder, davete katılanın masası, davet gönderme ekranı | Aynı mekanda check-in'i olan arkadaşa, mekan adı olmadan, 2 dakika, yalnızca sahip; boş masa sessizce kapanır (§4.B-8, §4.G). Gönderme ekranı v44'te                                   |
-| 19  | Pas ve Doğru'nun iki renkli olması istisna mı?                                            | P-19                                                                                                                                                                                   |
-| 20  | Sahtekar: 30 sn, 2 sahtekar, kısmi yakalama                                               | P-8                                                                                                                                                                                    |
-| 21  | Kapışma: eşik, bire bir, gözlemci, aynı şarkı                                             | P-9                                                                                                                                                                                    |
-| 22  | İbre: "herkes hazırsa kilitlenir", sol-sağ tahmini, tur sayısı ve süreler                 | "Herkes hazırsa kilitlenir" ve süre sonunda kilit kabul; 4 tur, ipucu 30 sn, ayar 45 sn (§4.F). Sol-sağ P-10                                                                           |
-| 23  | Sohbet kartları: kim geçirir, başka oyun başlarsa, Ya da'da kim neyi seçti                | P-11                                                                                                                                                                                   |
-| 24  | Kartlar ve kelime havuzları                                                               | Havuzlar hazır (Kapsül Anlat 547, Harf Kapmaca 174 kategori, İbre 225, Şarkıda Geçsin 445, Sohbet kartları 160, Sahtekar 526 kelime); yalnızca Kampüs ve Ya da temaları yazılır (§4.F) |
-| 25  | Masa sohbetinde grup adı                                                                  | Kalkar: kişi yalnızca nick'iyle ya da gerçek adıyla görünür (§4.B-7)                                                                                                                   |
+| No  | Soru                                                                                      | Cevap                                                                                                                                                                                                                       |
+| --- | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Sahip en çok oy alan dışında bir oyunu başlatabilir mi?                                   | Evet (§4.B-4, §4.F)                                                                                                                                                                                                         |
+| 2   | Kategoriler ve oyunların dağılımı                                                         | v43'teki gibi: Takımlı (Kapsül Anlat, İbre), Bire bir (Harf Kapmaca, Şarkıda Geçsin), Çok oyunculu (Sahtekar, Harf Kapmaca, Şarkıda Geçsin, Sohbet kartları) (§4.F)                                                         |
+| 3   | İstekler sekmesi ve gelen istek bildirimi: istek karşı tarafa görünecek mi?               | Yalnızca açık istekler görünür (mekan sohbetinden istek, oyun geçmişinden "İstek gönder"); masa sonundaki "Arkadaş ekle" sessizdir (kural 5, §4.G)                                                                          |
+| 4   | Arkadaş olmayana mesaj                                                                    | DM yalnızca arkadaşlar arasında; "Mesaj" düğmesi arkadaş değilken görünmez, yerine bağlama göre "Arkadaş ekle" (§4.G)                                                                                                       |
+| 5   | Anonim katılım nerede seçilir, masa sırasında kilitlenir mi?                              | Mekan ekranının üst satırındaki anahtar; check-in başına bir değişiklik (§4.D). Erkek ve belirtmeyende seçim yalnızca mekan sohbetini etkiler (K-3). Masa içinde sabitlik P-3                                               |
+| 6   | Mekan sohbeti aktiflik noktası                                                            | P-6                                                                                                                                                                                                                         |
+| 7   | Okundu tiki ve yazıyor                                                                    | DM'de var (SPEC_V3 §18.2). Mekan sohbetinde "yazıyor" P-5                                                                                                                                                                   |
+| 8   | Engelle, Bildir, Arkadaşlıktan çıkar: karşı taraf ne görür?                               | Engellenen ve şikayet edilen hiçbir şey görmez; çıkarılan çıkarmayı engellemeden ayırt edemez (kural 5). Masada engel P-14                                                                                                  |
+| 9   | Bio sınırı ve iletişim bilgisi filtresi                                                   | P-7                                                                                                                                                                                                                         |
+| 10  | Masa bitince akış                                                                         | "Masa bitti" ekranı: masadakiler ve kişi başına sessiz "Arkadaş ekle" (§4.E); ekran v44'te                                                                                                                                  |
+| 11  | Başka mekana girişte eski masa kapanınca katılımcılara ne olur?                           | Yeni check-in eski check-in'i bitirir; kişi masadan ayrılmış sayılır. Masa diğerleri için sürer; sahipse sahiplik P-14 (§4.E)                                                                                               |
+| 12  | Aktiviteleri kim girer?                                                                   | Geliştirici, `pnpm admin:event` ile. Kampanya türü P-17                                                                                                                                                                     |
+| 13  | Oyun geçmişi kaydedilecek mi?                                                             | Evet: `play_history` (3 dakika kuralı) ve `game_results`; Aktiviteler → Geçmiş bunlardan (§4.F)                                                                                                                             |
+| 14  | "Yakındaki" sıralaması                                                                    | Konuma göre sıralama yok (kural 6, §4.C)                                                                                                                                                                                    |
+| 15  | Mekan adlarına karakter sınırı                                                            | Sınır yok; ad içerikten gelir, ekran en çok iki satıra kırar ve küçültür (§4.C)                                                                                                                                             |
+| 16  | Mekan sohbeti gizliliği, ad engel listesi                                                 | Görünen ad ve biyografi küfür filtresinden geçer (kural 7); nick'te kaba kısaltmalar üretilmez, liste `content/profanity-tr.json`'da (§4.D)                                                                                 |
+| 17  | Bildirim yeri                                                                             | Zil yalnızca Mesajlar'da; alt çubuktaki Mesajlar sekmesinde okunmamış noktası (K-6, §4.G)                                                                                                                                   |
+| 18  | Masa daveti: kapsam, süre, kim davet eder, davete katılanın masası, davet gönderme ekranı | Aynı mekanda check-in'i olan arkadaşa, mekan adı olmadan, 2 dakika, yalnızca sahip; boş masa sessizce kapanır (§4.B-8, §4.G). Gönderme ekranı bütün arkadaşları listeler, kimin mekanda olduğu görünmez (K-2); ekran v44'te |
+| 19  | Pas ve Doğru'nun iki renkli olması istisna mı?                                            | P-19                                                                                                                                                                                                                        |
+| 20  | Sahtekar: 30 sn, 2 sahtekar, kısmi yakalama                                               | P-8                                                                                                                                                                                                                         |
+| 21  | Kapışma: eşik, bire bir, gözlemci, aynı şarkı                                             | P-9                                                                                                                                                                                                                         |
+| 22  | İbre: "herkes hazırsa kilitlenir", sol-sağ tahmini, tur sayısı ve süreler                 | "Herkes hazırsa kilitlenir" ve süre sonunda kilit kabul; 4 tur, ipucu 30 sn, ayar 45 sn (§4.F). Sol-sağ P-10                                                                                                                |
+| 23  | Sohbet kartları: kim geçirir, başka oyun başlarsa, Ya da'da kim neyi seçti                | P-11                                                                                                                                                                                                                        |
+| 24  | Kartlar ve kelime havuzları                                                               | Havuzlar hazır (Kapsül Anlat 547, Harf Kapmaca 174 kategori, İbre 225, Şarkıda Geçsin 445, Sohbet kartları 160, Sahtekar 526 kelime); yalnızca Kampüs ve Ya da temaları yazılır (§4.F)                                      |
+| 25  | Masa sohbetinde grup adı                                                                  | Kalkar: kişi yalnızca nick'iyle ya da gerçek adıyla görünür (§4.B-7)                                                                                                                                                        |
 
 **Raporun §10 açık soruları:** kural çakışmaları §4.O'da; yazı tipi Plus Jakarta Sans (§4.B-10); koyu tema ve denenmeyen ekranlar v44'te (§4.C); oyun geçmişi Aktiviteler'i besler (soru 13).

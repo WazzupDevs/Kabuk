@@ -2426,7 +2426,7 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 - E2E akışları ve botlar (`scripts/e2e/bot-table.ts`, `13-teams.yaml` dahil) yeni akışa göre yeniden yazılır.
 - `docs/FIELD_TEST.md`, mağaza metinleri ve CLAUDE.md'deki sayılar güncellenir.
 
-**Saha testi:** 23.3'ün OTA'sından sonra 3–4 telefonla yapılır. Bulma yardımı kararı (§23.P-2) bu testin sonucuna bağlıdır.
+**Saha testi:** 23.3'ün OTA'sından sonra 3–4 telefonla yapılır. Bulma yardımı kararı (§23.P-2) bu testin sonucuna bağlıdır. _Faz 4 kararı (SPEC_V4 §4.N, K-1): ayrı bir Faz 3 saha testi yapılmaz; bulma yardımı gözlemleri Faz 4 saha testinde yapılır ve 23.4b bu testi beklemez._
 
 ### 23.N Uygulama sırası ve yayın
 
@@ -2533,7 +2533,7 @@ Bu PR kurallara dokunmaz (Faz 2 geleneği). Aşağıdaki her değişiklik ilgili
 - **P-2. Bulma yardımı.**
   - Soru: kabul anındaki iki satır kalabalık mekanda yeterli mi?
   - Yetmezse eski renk-emoji ekranı geri gelebilir.
-  - Karar saha testinden sonra verilir.
+  - Karar saha testinden sonra verilir. _Faz 4 kararı: Faz 4 saha testinden sonra (SPEC_V4 §4.M)._
 - **P-3. Analitikte cinsiyet.**
   - Kayıt hunisindeki fotoğraf adımı kaybı ölçülecek.
   - Varsayılan: cinsiyet PostHog'a özellik olarak gitmez; ölçüm cinsiyetsiz olay sayımlarıyla yapılır (§23.L).
