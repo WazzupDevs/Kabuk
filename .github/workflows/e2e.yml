@@ -4,20 +4,36 @@
 # build job, set up the local stack and boot their emulator while it builds, then fetch the APK,
 # pick the design in Ayarlar → Tasarım (test) and run their shard. Nightly and by hand, the four
 # shards run once more in light at the largest text size (font_scale 1.3): twelve jobs.
+#
+# Minutes (CLAUDE.md → Uçtan uca): a PR's new push replaces its run that is still going; a PR that
+# changes only docs and tests has no run; the nightly run is skipped while main has not moved
+# since the last nightly run that passed.
 name: e2e
 
 on:
   # On a PR only with the `e2e` label: when it is added, and on every push while it is on.
   pull_request:
     types: [opened, synchronize, reopened, labeled]
+    # Only docs and tests (unit and integration): nothing new for the app, no run. The E2E flows and
+    # the bot (e2e/, scripts/e2e/*.ts) are not in the list, nor supabase/tests/ beyond its *.test.ts:
+    # the bot takes the E2E venue's geometry from supabase/tests/fixtures/venues.ts (paths-ignore
+    # cannot list exceptions).
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - '**/*.test.ts'
   workflow_dispatch:
   # Nightly on main, 04:23 İstanbul. Also the run that fills the Gradle cache (only the default
   # branch writes it; PR runs read it).
   schedule:
     - cron: '23 1 * * *'
 
+# A PR's new push (or the e2e label added again) replaces its run that is still going, as in
+# ci.yml. Another label checks nothing new: it gets a group of its own, so it never cancels the run.
 concurrency:
-  group: e2e-${{ github.ref }}
+  group: >-
+    e2e-${{ github.ref }}${{ github.event.action == 'labeled' && github.event.label.name != 'e2e'
+    && format('-{0}', github.run_id) || '' }}
   cancel-in-progress: true
 
 permissions:
@@ -30,12 +46,39 @@ env:
   E2E_PUBLISHABLE_KEY: sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH
 
 jobs:
+  # Nightly only: nothing new to check when main has not moved since the last nightly run that
+  # passed (a night that failed runs again the next night). PR and manual runs skip this job and
+  # do not wait for it; if it fails, the run goes ahead.
+  changed:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      actions: read
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+      - id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          last=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/e2e.yml/runs?event=schedule&branch=main&status=success&per_page=1" \
+            --jq '.workflow_runs[0].head_sha // ""')
+          if [ "$last" = "$GITHUB_SHA" ]; then
+            echo "main (${GITHUB_SHA::7}) son başarılı gece koşusundan beri değişmedi: atlandı." | tee -a "$GITHUB_STEP_SUMMARY"
+            echo run=false >> "$GITHUB_OUTPUT"
+          else
+            echo run=true >> "$GITHUB_OUTPUT"
+          fi
+
   # One release APK for every run: light or dark is picked at runtime in Ayarlar → Tasarım (test).
   build:
+    needs: changed
     if: >-
-      github.event_name != 'pull_request' ||
+      needs.changed.outputs.run != 'false' && !cancelled() &&
+      (github.event_name != 'pull_request' ||
       (contains(github.event.pull_request.labels.*.name, 'e2e') &&
-       (github.event.action != 'labeled' || github.event.label.name == 'e2e'))
+       (github.event.action != 'labeled' || github.event.label.name == 'e2e')))
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -82,14 +125,16 @@ jobs:
           path: apps/mobile/android/app/build/outputs/apk/release/app-release.apk
           retention-days: 3
 
-  # Not `needs: build`: the shards start with it and wait for its APK only after the emulator has
-  # booted (scripts/e2e/run-on-emulator.sh), so the setup and boot run while Gradle builds. The
-  # shard files and their order are checked in scripts/e2e/shards.test.ts.
+  # Not `needs: build` (only `changed`, nightly): the shards start with it and wait for its APK
+  # only after the emulator has booted (scripts/e2e/run-on-emulator.sh), so the setup and boot run
+  # while Gradle builds. The shard files and their order are checked in scripts/e2e/shards.test.ts.
   e2e:
+    needs: changed
     if: >-
-      github.event_name != 'pull_request' ||
+      needs.changed.outputs.run != 'false' && !cancelled() &&
+      (github.event_name != 'pull_request' ||
       (contains(github.event.pull_request.labels.*.name, 'e2e') &&
-       (github.event.action != 'labeled' || github.event.label.name == 'e2e'))
+       (github.event.action != 'labeled' || github.event.label.name == 'e2e')))
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     # actions: read for this run's e2e-apk artifact (run-on-emulator.sh).

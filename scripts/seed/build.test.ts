@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
@@ -46,5 +47,22 @@ describe(SEEDS_DIR, () => {
     const [name] = files;
     expect(name !== undefined && isSeedFileName(name)).toBe(true);
     expect(readFileSync(resolve(dir, name ?? ''), 'utf8')).toBe(buildSeed(root).sql);
+  });
+
+  // The Supabase CLI records a seed file's hash from its bytes: a CRLF copy (a Windows checkout
+  // before .gitattributes) records another hash on the hosted project than CI's LF copy, and the
+  // next deploy-dev run stops on "hash update". On Windows this fails until the copy is turned to
+  // LF: CLAUDE.md → "Windows'ta satır sonları".
+  it('has LF line endings, and .gitattributes keeps them LF in every checkout', () => {
+    const dir = resolve(root, SEEDS_DIR);
+    for (const name of readdirSync(dir)) {
+      expect(readFileSync(resolve(dir, name)).includes('\r'), `${name} has CR`).toBe(false);
+      const attrs = spawnSync('git', ['check-attr', 'text', 'eol', '--', `${SEEDS_DIR}/${name}`], {
+        cwd: root,
+        encoding: 'utf8',
+      });
+      expect(attrs.stdout).toContain(': eol: lf');
+      expect(attrs.stdout).not.toContain(': text: unset');
+    }
   });
 });
