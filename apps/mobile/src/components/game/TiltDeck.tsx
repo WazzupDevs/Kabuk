@@ -43,8 +43,8 @@ const RELEASE = { damping: 14, stiffness: 180 } as const;
 // cards show their edges behind the top one. Held, the top card leans toward the finger on the UI
 // thread (react-native-gesture-handler and reanimated) and springs back when let go; a new card
 // rises from the deck, and a played one leaves right (Doğru), left (Pas) or down ("Yasak!"). With
-// reduce motion the card does not lean and cards change at once. Touches still reach the card's
-// buttons: the gesture only follows the finger, it never claims it.
+// reduce motion the card does not lean and cards change at once. The gesture only follows the
+// finger, it never claims it: buttons on the card still take their taps and a scroll still scrolls.
 export function TiltDeck({ cardKey, children, exit = null, onExited, testID }: Props) {
   const { colors, shape } = useTheme();
   const reduce = useReduceMotion();
@@ -98,20 +98,29 @@ export function TiltDeck({ cardKey, children, exit = null, onExited, testID }: P
     nx.set(fx);
     ny.set(fy);
   };
-  const pan = Gesture.Pan()
+  // A manual gesture that never activates: it hears the finger while it is down and lets a scroll
+  // (the stage's middle, the preview) take the touch over, which ends the tilt.
+  const release = () => {
+    'worklet';
+    nx.set(withSpring(0, RELEASE));
+    ny.set(withSpring(0, RELEASE));
+    held.set(withTiming(0, { duration: 180 }));
+  };
+  const finger = Gesture.Manual()
     .enabled(!reduce)
-    .minDistance(0)
-    .shouldCancelWhenOutside(false)
-    .onBegin((e) => {
-      follow(e.x, e.y);
+    .onTouchesDown((e) => {
+      const t = e.allTouches[0];
+      if (!t) return;
+      follow(t.x, t.y);
       held.set(withTiming(1, { duration: 90 }));
     })
-    .onUpdate((e) => follow(e.x, e.y))
-    .onFinalize(() => {
-      nx.set(withSpring(0, RELEASE));
-      ny.set(withSpring(0, RELEASE));
-      held.set(withTiming(0, { duration: 180 }));
-    });
+    .onTouchesMove((e) => {
+      const t = e.allTouches[0];
+      if (t) follow(t.x, t.y);
+    })
+    .onTouchesUp(release)
+    .onTouchesCancelled(release)
+    .onFinalize(release);
 
   const top = useAnimatedStyle(() => {
     const t = tiltFor(nx.value, ny.value, false);
@@ -157,7 +166,7 @@ export function TiltDeck({ cardKey, children, exit = null, onExited, testID }: P
           }}
         />
       )).reverse()}
-      <GestureDetector gesture={pan}>
+      <GestureDetector gesture={finger}>
         <Animated.View
           onLayout={onLayout}
           style={[
