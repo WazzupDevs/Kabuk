@@ -26,6 +26,7 @@ import {
   BADGE_BUMP,
   BELL_RING,
   BELL_RING_MS,
+  CURVES,
   ICON_SPRINGS,
   iconFormAt,
   keyAt,
@@ -200,13 +201,13 @@ export function BellIcon({ unread = 0, size = ICON.lg, ringKey }: BellProps) {
     bump.set(withTiming(1, { duration: BADGE_BUMP.ms, easing: Easing.linear }));
   }, [ringKey, reduce, ring, bump]);
   const swing = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${keyAt(ring.value, BELL_RING.rotate)}deg` }],
+    transform: [{ rotate: `${keyAt(ring.value, BELL_RING.rotate, CURVES.back)}deg` }],
   }));
   const clap = useAnimatedStyle(() => ({
-    transform: [{ translateX: keyAt(ring.value, BELL_RING.clapper) * unit }],
+    transform: [{ translateX: keyAt(ring.value, BELL_RING.clapper, CURVES.back) * unit }],
   }));
   const badge = useAnimatedStyle(() => ({
-    transform: [{ scale: keyAt(bump.value, BADGE_BUMP.keys) }],
+    transform: [{ scale: keyAt(bump.value, BADGE_BUMP.keys, CURVES.back) }],
   }));
   return (
     <View style={{ width: size, height: size }}>

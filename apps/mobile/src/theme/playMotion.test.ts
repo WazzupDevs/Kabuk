@@ -11,6 +11,7 @@ import {
   CARD_IN,
   CARD_OUT_MS,
   COVER_OPEN,
+  CURVES,
   DIAL,
   dialFacePath,
   DECK,
@@ -113,25 +114,27 @@ describe('the role card, the wheel, the record, the cover, the bell', () => {
   it('the bell swings smaller each time, each swing with the pop, and rests where it started', () => {
     expect(BELL_RING_MS).toBe(900);
     const ring = BELL_RING.rotate;
-    expect(keyAt(0, ring)).toBe(0);
-    expect(keyAt(0.15, ring)).toBe(16);
+    expect(keyAt(0, ring, CURVES.back)).toBe(0);
+    expect(keyAt(0.15, ring, CURVES.back)).toBe(16);
     // Between two keys the pop overshoots the next one, as in v45's CSS keyframes.
-    expect(Math.min(...[0.24, 0.26, 0.28].map((u) => keyAt(u, ring)))).toBeLessThan(-13);
-    expect(keyAt(1, ring)).toBe(0);
+    expect(Math.min(...[0.24, 0.26, 0.28].map((u) => keyAt(u, ring, CURVES.back)))).toBeLessThan(
+      -13,
+    );
+    expect(keyAt(1, ring, CURVES.back)).toBe(0);
     const peaks = ring.v.slice(1, -1).map(Math.abs);
     for (let i = 1; i < peaks.length; i++) {
       expect(peaks[i] as number).toBeLessThan(peaks[i - 1] as number);
     }
-    expect(keyAt(0.15, BELL_RING.clapper)).toBe(-2);
-    expect(keyAt(1, BELL_RING.clapper)).toBe(0);
+    expect(keyAt(0.15, BELL_RING.clapper, CURVES.back)).toBe(-2);
+    expect(keyAt(1, BELL_RING.clapper, CURVES.back)).toBe(0);
     for (const k of [BELL_RING.rotate, BELL_RING.clapper]) expect(k.at).toHaveLength(k.v.length);
   });
 
   it('the badge bumps from 50 % past full size in 450 ms and settles at full size', () => {
     expect(BADGE_BUMP.ms).toBe(450);
-    expect(keyAt(0, BADGE_BUMP.keys)).toBe(0.5);
-    expect(keyAt(0.6, BADGE_BUMP.keys)).toBeCloseTo(1.22);
-    expect(keyAt(1, BADGE_BUMP.keys)).toBe(1);
+    expect(keyAt(0, BADGE_BUMP.keys, CURVES.back)).toBe(0.5);
+    expect(keyAt(0.6, BADGE_BUMP.keys, CURVES.back)).toBeCloseTo(1.22);
+    expect(keyAt(1, BADGE_BUMP.keys, CURVES.back)).toBe(1);
   });
 
   it("the UI-thread bezier is markMotion's cubicBezier", () => {

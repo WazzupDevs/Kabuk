@@ -45,8 +45,9 @@ export function bezierAt(curve: Curve, u: number): number {
 export type Keys = { at: readonly number[]; v: readonly number[] };
 
 // A value through keyframes at `u` (0..1), each step eased by `curve` like a CSS animation's
-// timing function (v45 animates the bell and the badge that way).
-export function keyAt(u: number, keys: Keys, curve: Curve = CURVES.back): number {
+// timing function (v45 animates the bell and the badge that way). The curve is passed, never a
+// default: a worklet does not carry a default parameter's module constants to the UI thread.
+export function keyAt(u: number, keys: Keys, curve: Curve): number {
   'worklet';
   const t = Math.max(0, Math.min(1, u));
   const { at, v } = keys;
