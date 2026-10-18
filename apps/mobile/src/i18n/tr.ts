@@ -1130,6 +1130,17 @@ export const tr = {
       countIn: '3-2-1',
       confetti: 'Konfeti',
     },
+    // Bileşen önizleme → Kapsül ve ikonlar (step 4.2b): the capsule avatars, the bar icons, the bell
+    // and the chat wallpaper.
+    identity: {
+      set: 'Kapsül ve ikonlar',
+      capsules: 'Kapsül avatarlar',
+      icons: 'Çubuk ikonlar ve zil',
+      wallpaper: 'Sohbet duvar kağıdı',
+      sampleName: 'kapsul-ab12',
+      sampleTheirs: 'Masa kurduk, gelir misiniz?',
+      sampleMine: 'Geliyoruz, iki kişiyiz',
+    },
   },
   // The game screens' parts (src/components/game/).
   gameParts: {

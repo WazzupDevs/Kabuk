@@ -60,6 +60,7 @@ import {
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
+import { IdentitySet } from './identityPreview';
 import { PartsSet } from './partsPreview';
 import { PreviewBlock } from './PreviewBlock';
 
@@ -724,4 +725,5 @@ export const PREVIEW_SETS: PreviewSet[] = [
   { key: 'chat', label: 'Sohbet', render: () => <ChatSet /> },
   { key: 'tokens', label: tr.design.tokens.set, render: () => <TokensSet /> },
   { key: 'parts', label: tr.design.parts.set, render: () => <PartsSet /> },
+  { key: 'identity', label: tr.design.identity.set, render: () => <IdentitySet /> },
 ];
