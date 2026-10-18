@@ -80,6 +80,10 @@ export const TILT = {
   shadowY: 18, // px, at rest
   shadowYRange: 6,
   perspective: 1000,
+  // The held press: in fast, out a little slower; let go, the lean springs back.
+  holdInMs: 90,
+  holdOutMs: 180,
+  release: { damping: 14, stiffness: 180 },
 } as const;
 
 export type Tilt = {
@@ -144,7 +148,8 @@ export const CARD_EXITS: Record<CardExit, { x: number; y: number; rotate: number
 // ------------------------------------------------------------------ the role card (Sahtekar)
 
 // Held, the card turns over to its face in 550 ms with a slight overshoot; let go, it turns back.
-export const ROLE_TURN = { ms: 550, degrees: 180 } as const;
+// With reduce motion the face fades in and out in 120 ms instead.
+export const ROLE_TURN = { ms: 550, degrees: 180, reducedMs: 120 } as const;
 
 // ------------------------------------------------------------------ the letter wheel (Harf Kapmaca)
 

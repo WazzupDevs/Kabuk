@@ -123,7 +123,17 @@ export type ShadowSet = {
 export type Shape = {
   // Containers have continuous corners (card `lg`, sheet and tab bar `xl`, game card `md`); a
   // bubble's corner towards its author is `xs`; everything interactive is a capsule (`pill`).
-  radius: { xs: number; sm: number; md: number; lg: number; xl: number; pill: number };
+  radius: {
+    xs: number;
+    sm: number;
+    md: number;
+    lg: number;
+    xl: number;
+    pill: number;
+    deck: number;
+    roleCard: number;
+    letterTile: number;
+  };
   // Border widths: cards (0 = none), rings (an avatar's unread ring, a selected choice, the second
   // table's face), controls (inputs, segments, switches), tags, the hairline (list rows, trust
   // screens) and the active Mekan tab's ring.

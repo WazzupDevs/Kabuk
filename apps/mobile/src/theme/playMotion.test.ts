@@ -79,7 +79,8 @@ describe('the deck', () => {
 
 describe('the role card, the wheel, the record, the cover, the bell', () => {
   it('the role card turns over in 550 ms with a slight overshoot', () => {
-    expect(ROLE_TURN).toEqual({ ms: 550, degrees: 180 });
+    // With reduce motion the face fades in 120 ms instead.
+    expect(ROLE_TURN).toEqual({ ms: 550, degrees: 180, reducedMs: 120 });
     expect(Math.max(...[0.6, 0.7, 0.8].map(EASE_TURN))).toBeGreaterThan(1);
   });
 

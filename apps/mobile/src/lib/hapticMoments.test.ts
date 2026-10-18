@@ -87,12 +87,13 @@ describe('haptic table', () => {
 });
 
 // Which of the asked touches play: [ms, moment] in time order through one gate, with keystrokes
-// as [ms, 'key'].
-function played(events: [number, HapticMoment | 'key'][]): string[] {
+// as [ms, 'key'] and a pressed send or save as [ms, 'press'].
+function played(events: [number, HapticMoment | 'key' | 'press'][]): string[] {
   const gate = hapticGate();
   const out: string[] = [];
   for (const [at, what] of events) {
     if (what === 'key') gate.typed(at);
+    else if (what === 'press') gate.stoppedTyping();
     else if (gate.allow(what, at)) out.push(`${at}:${what}`);
   }
   return out;
@@ -162,6 +163,19 @@ describe('haptic rate limits (K-30)', () => {
         [1100, 'failed'],
       ]),
     ).toEqual(['1100:failed']);
+  });
+
+  it('a pressed send or save ends the pause: its failure plays right after the last key', () => {
+    expect(
+      played([
+        [0, 'key'],
+        [300, 'key'],
+        [350, 'press'],
+        [500, 'failed'],
+        [600, 'key'],
+        [700, 'incomingRequest'],
+      ]),
+    ).toEqual(['500:failed']);
   });
 
   it('every moment has its own 600 ms window', () => {
