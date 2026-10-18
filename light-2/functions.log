@@ -1,0 +1,171 @@
+Setting up Edge Functions runtime...
+2026-10-18T09:31:09.990340762Z Serving functions on http://127.0.0.1:54321/functions/v1/<function-name>
+2026-10-18T09:31:09.990394422Z  - http://127.0.0.1:54321/functions/v1/account
+2026-10-18T09:31:09.990399391Z  - http://127.0.0.1:54321/functions/v1/chat
+2026-10-18T09:31:09.990403429Z  - http://127.0.0.1:54321/functions/v1/checkin
+2026-10-18T09:31:09.990406815Z  - http://127.0.0.1:54321/functions/v1/dm
+2026-10-18T09:31:09.990410192Z  - http://127.0.0.1:54321/functions/v1/friends
+2026-10-18T09:31:09.990446910Z ... and 12 more functions
+2026-10-18T09:31:09.990451238Z Using supabase-edge-runtime-1.74.3 (compatible with Deno v2.1.4)
+2026-10-18T09:35:18.142312887Z serving the request with supabase/functions/ping
+2026-10-18T09:35:54.316189776Z serving the request with supabase/functions/ping
+2026-10-18T09:36:50.296394893Z serving the request with supabase/functions/account
+2026-10-18T09:37:41.428612394Z serving the request with supabase/functions/account
+2026-10-18T09:37:41.693048047Z serving the request with supabase/functions/profile
+2026-10-18T09:37:44.705768808Z serving the request with supabase/functions/profile
+2026-10-18T09:37:44.873135069Z serving the request with supabase/functions/dm
+2026-10-18T09:37:44.951917261Z serving the request with supabase/functions/friends
+2026-10-18T09:37:45.818450555Z serving the request with supabase/functions/dm
+2026-10-18T09:37:47.998940272Z serving the request with supabase/functions/friends
+2026-10-18T09:37:48.001838214Z serving the request with supabase/functions/profile
+2026-10-18T09:37:48.041369158Z serving the request with supabase/functions/friends
+2026-10-18T09:38:19.258654572Z serving the request with supabase/functions/ping
+2026-10-18T09:38:20.045214452Z serving the request with supabase/functions/dm
+2026-10-18T09:38:20.085916122Z serving the request with supabase/functions/friends
+2026-10-18T09:38:21.483834316Z serving the request with supabase/functions/dm
+2026-10-18T09:38:25.159607949Z serving the request with supabase/functions/checkin
+2026-10-18T09:38:30.565546414Z serving the request with supabase/functions/ping
+2026-10-18T09:38:30.597627752Z serving the request with supabase/functions/dm
+2026-10-18T09:38:30.619133398Z serving the request with supabase/functions/friends
+2026-10-18T09:38:31.552246033Z serving the request with supabase/functions/dm
+2026-10-18T09:38:33.223163038Z serving the request with supabase/functions/dm
+2026-10-18T09:38:33.223263475Z serving the request with supabase/functions/ping
+2026-10-18T09:38:33.328746762Z serving the request with supabase/functions/friends
+2026-10-18T09:38:34.218589993Z serving the request with supabase/functions/dm
+2026-10-18T09:38:38.756791832Z wall clock duration warning: isolate: 8d53968f-9e81-4a09-a43b-713695ffdea2
+2026-10-18T09:38:38.777314127Z early termination has been triggered: isolate: 8d53968f-9e81-4a09-a43b-713695ffdea2
+2026-10-18T09:38:44.026402909Z serving the request with supabase/functions/checkin
+2026-10-18T09:38:44.301075171Z serving the request with supabase/functions/friends
+2026-10-18T09:38:44.317031292Z serving the request with supabase/functions/dm
+2026-10-18T09:38:46.856137299Z serving the request with supabase/functions/profile
+2026-10-18T09:38:51.746618801Z serving the request with supabase/functions/friends
+2026-10-18T09:38:51.747000272Z serving the request with supabase/functions/friends
+2026-10-18T09:38:54.082935376Z serving the request with supabase/functions/account
+2026-10-18T09:38:54.187350058Z serving the request with supabase/functions/profile
+2026-10-18T09:38:54.248958101Z serving the request with supabase/functions/profile
+2026-10-18T09:38:54.370294907Z serving the request with supabase/functions/profile
+2026-10-18T09:38:54.517339788Z serving the request with supabase/functions/checkin
+2026-10-18T09:38:54.599997457Z serving the request with supabase/functions/rooms
+2026-10-18T09:38:58.789635643Z serving the request with supabase/functions/checkin
+2026-10-18T09:39:11.128149222Z serving the request with supabase/functions/checkin
+2026-10-18T09:39:12.558746737Z serving the request with supabase/functions/rooms
+2026-10-18T09:39:38.579891744Z serving the request with supabase/functions/rooms
+2026-10-18T09:39:47.041994370Z serving the request with supabase/functions/rooms
+2026-10-18T09:39:47.225126981Z serving the request with supabase/functions/rooms
+2026-10-18T09:39:50.225803954Z serving the request with supabase/functions/rooms
+2026-10-18T09:39:51.573130938Z serving the request with supabase/functions/rooms
+2026-10-18T09:39:51.848564587Z serving the request with supabase/functions/profile
+2026-10-18T09:39:54.143907728Z serving the request with supabase/functions/rooms
+2026-10-18T09:39:59.227351525Z serving the request with supabase/functions/tabu
+2026-10-18T09:39:59.587181987Z serving the request with supabase/functions/tabu
+2026-10-18T09:40:10.528144710Z wall clock duration warning: isolate: 3564d19f-0aed-4a7a-a6a6-e36273bc1195
+2026-10-18T09:40:10.541789224Z early termination has been triggered: isolate: 3564d19f-0aed-4a7a-a6a6-e36273bc1195
+2026-10-18T09:40:17.009855293Z serving the request with supabase/functions/tabu
+2026-10-18T09:40:18.767026598Z serving the request with supabase/functions/tabu
+2026-10-18T09:40:18.913155398Z serving the request with supabase/functions/tabu
+2026-10-18T09:40:19.995639628Z serving the request with supabase/functions/tabu
+2026-10-18T09:40:20.126670171Z serving the request with supabase/functions/tabu
+2026-10-18T09:40:23.423269943Z serving the request with supabase/functions/tabu
+2026-10-18T09:40:29.757255925Z serving the request with supabase/functions/rooms
+2026-10-18T09:40:40.243315021Z serving the request with supabase/functions/rooms
+2026-10-18T09:40:41.670930343Z serving the request with supabase/functions/rooms
+2026-10-18T09:40:42.695489782Z serving the request with supabase/functions/chat
+2026-10-18T09:40:53.045677756Z serving the request with supabase/functions/chat
+2026-10-18T09:40:55.519532231Z serving the request with supabase/functions/rooms
+2026-10-18T09:40:55.730121021Z serving the request with supabase/functions/friends
+2026-10-18T09:40:58.076581060Z serving the request with supabase/functions/friends
+2026-10-18T09:40:58.176582863Z serving the request with supabase/functions/friends
+2026-10-18T09:40:58.177352930Z serving the request with supabase/functions/friends
+2026-10-18T09:40:58.177712809Z serving the request with supabase/functions/dm
+2026-10-18T09:40:59.140617595Z serving the request with supabase/functions/friends
+2026-10-18T09:40:59.221218778Z serving the request with supabase/functions/friends
+2026-10-18T09:40:59.227228298Z serving the request with supabase/functions/friends
+2026-10-18T09:40:59.227246362Z serving the request with supabase/functions/dm
+2026-10-18T09:41:01.929943388Z wall clock duration warning: isolate: 986cd797-aa1b-4b61-b0d7-5b3378fbe96e
+2026-10-18T09:41:01.941132324Z early termination has been triggered: isolate: 986cd797-aa1b-4b61-b0d7-5b3378fbe96e
+2026-10-18T09:41:02.593042827Z serving the request with supabase/functions/dm
+2026-10-18T09:41:03.561033476Z serving the request with supabase/functions/dm
+2026-10-18T09:41:05.307251802Z wall clock duration warning: isolate: da9bebb5-ac1f-4333-abb0-645cb04b7878
+2026-10-18T09:41:05.326283326Z early termination has been triggered: isolate: da9bebb5-ac1f-4333-abb0-645cb04b7878
+2026-10-18T09:41:05.404918106Z wall clock duration warning: isolate: 6ac768c5-7f7e-4698-b9a0-04d95dc93318
+2026-10-18T09:41:05.424019823Z early termination has been triggered: isolate: 6ac768c5-7f7e-4698-b9a0-04d95dc93318
+2026-10-18T09:41:05.481159391Z serving the request with supabase/functions/friends
+2026-10-18T09:41:05.518055820Z serving the request with supabase/functions/dm
+2026-10-18T09:41:08.147875684Z serving the request with supabase/functions/friends
+2026-10-18T09:41:08.150477495Z serving the request with supabase/functions/dm
+2026-10-18T09:41:09.291808945Z serving the request with supabase/functions/dm
+2026-10-18T09:41:09.292335691Z serving the request with supabase/functions/friends
+2026-10-18T09:41:18.060985315Z serving the request with supabase/functions/dm
+2026-10-18T09:41:18.200241199Z serving the request with supabase/functions/dm
+2026-10-18T09:41:19.186840200Z serving the request with supabase/functions/friends
+2026-10-18T09:41:19.187267021Z serving the request with supabase/functions/dm
+2026-10-18T09:41:19.231186524Z serving the request with supabase/functions/friends
+2026-10-18T09:41:19.328514810Z serving the request with supabase/functions/friends
+2026-10-18T09:41:19.381801494Z serving the request with supabase/functions/dm
+2026-10-18T09:41:19.451808063Z serving the request with supabase/functions/dm
+2026-10-18T09:41:20.454031259Z serving the request with supabase/functions/friends
+2026-10-18T09:41:20.456756246Z serving the request with supabase/functions/dm
+2026-10-18T09:41:20.464840967Z serving the request with supabase/functions/dm
+2026-10-18T09:41:20.465118983Z serving the request with supabase/functions/dm
+2026-10-18T09:41:30.739778633Z serving the request with supabase/functions/friends
+2026-10-18T09:41:30.740016065Z serving the request with supabase/functions/dm
+2026-10-18T09:41:31.851069701Z serving the request with supabase/functions/dm
+2026-10-18T09:41:31.851242418Z serving the request with supabase/functions/friends
+2026-10-18T09:41:39.641895224Z serving the request with supabase/functions/dm
+2026-10-18T09:41:39.757559403Z serving the request with supabase/functions/dm
+2026-10-18T09:41:40.735459137Z serving the request with supabase/functions/dm
+2026-10-18T09:41:40.736684419Z serving the request with supabase/functions/friends
+2026-10-18T09:41:40.767127520Z serving the request with supabase/functions/friends
+2026-10-18T09:41:40.866736529Z serving the request with supabase/functions/friends
+2026-10-18T09:41:40.921437317Z serving the request with supabase/functions/dm
+2026-10-18T09:41:41.104379441Z serving the request with supabase/functions/friends
+2026-10-18T09:41:41.847211869Z serving the request with supabase/functions/friends
+2026-10-18T09:41:42.677605686Z serving the request with supabase/functions/dm
+2026-10-18T09:41:42.741019755Z serving the request with supabase/functions/dm
+2026-10-18T09:41:43.753779390Z serving the request with supabase/functions/dm
+2026-10-18T09:41:43.753969825Z serving the request with supabase/functions/dm
+2026-10-18T09:41:43.757499445Z serving the request with supabase/functions/friends
+2026-10-18T09:41:43.759156587Z serving the request with supabase/functions/dm
+2026-10-18T09:41:45.397676462Z wall clock duration warning: isolate: 63ce1eb1-bbcf-4a1f-8ed2-fecbedddfe50
+2026-10-18T09:41:45.409765817Z early termination has been triggered: isolate: 63ce1eb1-bbcf-4a1f-8ed2-fecbedddfe50
+2026-10-18T09:42:07.093702223Z serving the request with supabase/functions/dm
+2026-10-18T09:42:07.911266048Z serving the request with supabase/functions/friends
+2026-10-18T09:42:14.791656762Z wall clock duration warning: isolate: d3064823-4c69-4fd3-b4d1-ef38a370e076
+2026-10-18T09:42:14.806947059Z early termination has been triggered: isolate: d3064823-4c69-4fd3-b4d1-ef38a370e076
+2026-10-18T09:42:18.250717928Z serving the request with supabase/functions/dm
+2026-10-18T09:42:18.370523702Z serving the request with supabase/functions/dm
+2026-10-18T09:42:19.335474260Z serving the request with supabase/functions/friends
+2026-10-18T09:42:19.335796751Z serving the request with supabase/functions/dm
+2026-10-18T09:42:19.415779143Z serving the request with supabase/functions/friends
+2026-10-18T09:42:23.842333572Z serving the request with supabase/functions/friends
+2026-10-18T09:42:26.107794942Z serving the request with supabase/functions/friends
+2026-10-18T09:42:26.111164722Z serving the request with supabase/functions/dm
+2026-10-18T09:42:27.235398580Z serving the request with supabase/functions/dm
+2026-10-18T09:42:27.235427785Z serving the request with supabase/functions/friends
+2026-10-18T09:42:42.183594415Z serving the request with supabase/functions/rooms
+2026-10-18T09:42:43.980418728Z serving the request with supabase/functions/rooms
+2026-10-18T09:42:46.045890543Z serving the request with supabase/functions/rooms
+2026-10-18T09:42:52.657532871Z serving the request with supabase/functions/rooms
+2026-10-18T09:42:53.458388394Z serving the request with supabase/functions/rooms
+2026-10-18T09:42:55.870752907Z serving the request with supabase/functions/tabu
+2026-10-18T09:42:55.993744655Z serving the request with supabase/functions/tabu
+2026-10-18T09:42:57.357061472Z serving the request with supabase/functions/rooms
+2026-10-18T09:42:57.889842726Z serving the request with supabase/functions/friends
+2026-10-18T09:43:01.442504160Z serving the request with supabase/functions/dm
+2026-10-18T09:43:02.376347915Z serving the request with supabase/functions/dm
+2026-10-18T09:43:05.310260289Z serving the request with supabase/functions/rooms
+2026-10-18T09:43:08.711637409Z serving the request with supabase/functions/tabu
+2026-10-18T09:43:13.622197069Z serving the request with supabase/functions/rooms
+2026-10-18T09:43:16.520692409Z serving the request with supabase/functions/rooms
+2026-10-18T09:43:16.819589695Z serving the request with supabase/functions/dm
+2026-10-18T09:43:17.776642705Z serving the request with supabase/functions/dm
+2026-10-18T09:43:19.419290153Z wall clock duration warning: isolate: 5ef16409-1f52-4af5-a0ca-24ba7e73df0d
+2026-10-18T09:43:19.440762043Z early termination has been triggered: isolate: 5ef16409-1f52-4af5-a0ca-24ba7e73df0d
+2026-10-18T09:43:23.252843517Z serving the request with supabase/functions/friends
+2026-10-18T09:43:23.253351421Z serving the request with supabase/functions/dm
+2026-10-18T09:43:25.835856393Z serving the request with supabase/functions/friends
+2026-10-18T09:43:25.856181082Z serving the request with supabase/functions/friends
+2026-10-18T09:43:33.443227202Z serving the request with supabase/functions/safety
+2026-10-18T09:43:33.881209870Z serving the request with supabase/functions/dm
+2026-10-18T09:43:33.881254864Z serving the request with supabase/functions/friends
+2026-10-18T09:43:33.899855110Z serving the request with supabase/functions/friends
