@@ -271,7 +271,8 @@ export const tr = {
     empty: 'Henüz mesajın yok.',
     emptyHint: 'Arkadaş olduğun kişilerle burada yazışırsın.',
     noMessage: 'Henüz mesaj yok',
-    typing: 'yazıyor…',
+    // With the dots beside it (v45).
+    typing: 'yazıyor',
     yesterday: 'Dün',
     stamp: (iso: string, stamp: InboxStamp) =>
       stamp.kind === 'time'
@@ -284,6 +285,15 @@ export const tr = {
     unread: (n: number) => `${n} okunmamış mesaj`,
     row: (name: string, preview: string, unread: number) =>
       unread > 0 ? `${name}, ${preview}, ${unread} okunmamış` : `${name}, ${preview}`,
+    // The two tabs (v45: Sohbet, İstekler (2)).
+    tabs: 'Mesajlar ve istekler',
+    chats: 'Sohbet',
+    requests: (n: number) => (n > 0 ? `İstekler (${n})` : 'İstekler'),
+    requestKind: 'Arkadaşlık isteği',
+    noRequests: 'Bekleyen istek yok',
+    noRequestsHint: 'Biri seni arkadaş olarak eklemek isterse burada görürsün.',
+    decline: (name: string) => `${name} isteğini reddet`,
+    accept: (name: string) => `${name} isteğini kabul et`,
   },
   // Aktiviteler: the game hub (docs/SPEC_V3.md §18.3). Same games and rules as the room.
   activities: {

@@ -22,6 +22,8 @@ const COLORS = [
   'on-danger',
   'success',
   'on-success',
+  'danger-soft',
+  'success-soft',
   'signal',
   'on-signal',
   'calm',

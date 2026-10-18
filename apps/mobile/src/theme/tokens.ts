@@ -26,6 +26,10 @@ export type Palette = {
   onDanger: string;
   success: string;
   onSuccess: string;
+  // Tinted circles behind the decline (red cross) and accept (green check) icons: Mesajlar →
+  // İstekler (v45: .qbtn).
+  dangerSoft: string;
+  successSoft: string;
   // "Tanışalım mı?" highlight. Leaves with step 23.3 (docs/SPEC_V3.md §23.G); the skall system has
   // no value of its own for it.
   signal: string;
@@ -68,6 +72,8 @@ export const PALETTE_KEYS = [
   'onDanger',
   'success',
   'onSuccess',
+  'dangerSoft',
+  'successSoft',
   'signal',
   'onSignal',
   'calm',
