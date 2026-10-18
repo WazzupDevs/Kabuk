@@ -50,6 +50,7 @@ export const CodeInput = forwardRef<TextInput, Props>(function CodeInput(
             );
           })}
         </View>
+        {/* No noteTyping here (K-30): the last digit sends the code, and a wrong code is felt. */}
         <TextInput
           ref={ref}
           {...rest}

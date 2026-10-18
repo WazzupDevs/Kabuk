@@ -3,6 +3,7 @@ import { forwardRef, type ReactNode } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
 
 import { tr } from '@/i18n/tr';
+import { noteTyping } from '@/lib/haptics';
 import { typeStyle, useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 
@@ -88,7 +89,11 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
             ref={ref}
             testID={inputTestID}
             value={value}
-            onChangeText={onChangeText}
+            onChangeText={(text) => {
+              // No touch while the person types (K-30).
+              noteTyping();
+              onChangeText(text);
+            }}
             placeholder={placeholder}
             placeholderTextColor={colors.muted}
             selectionColor={colors.accent}

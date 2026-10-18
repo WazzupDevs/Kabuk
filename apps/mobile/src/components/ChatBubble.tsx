@@ -4,6 +4,7 @@ import { type ReactNode, useEffect, useId, useRef, useState } from 'react';
 import { Animated, Pressable, View } from 'react-native';
 
 import { tr } from '@/i18n/tr';
+import { haptic } from '@/lib/haptics';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { withAlpha } from '@/theme/contrast';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -333,7 +334,10 @@ function SwipeToReply({ onReply, children }: { onReply?: () => void; children: R
       onResponderMove={(e) => {
         const s = start.current;
         if (!s) return;
+        const was = moved.current;
         moved.current = Math.max(0, Math.min(SWIPE_MAX, e.nativeEvent.pageX - s.x));
+        // Past the trigger, letting go answers: one touch as it is crossed (v43).
+        if (was < SWIPE_TRIGGER && moved.current >= SWIPE_TRIGGER) haptic('replyThreshold');
         dx.setValue(moved.current);
       }}
       onResponderRelease={() => {
