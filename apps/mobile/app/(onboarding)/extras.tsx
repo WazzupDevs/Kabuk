@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { mayStayAnonymous } from '@shared/gender.ts';
-import { useFocusEffect } from 'expo-router';
+import { Stack, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { BackHandler, View } from 'react-native';
 
@@ -59,70 +59,75 @@ export default function PhotoStep() {
   };
 
   return (
-    <SignupStep
-      step="photo"
-      testID="signup-photo-step"
-      title={tr.signup.photoTitle}
-      body={tr.signup.photoBody}
-      friend={friend}
-      action={{
-        testID: 'signup-finish',
-        label: finishLabel(hasPhoto, {
-          finish: tr.signup.finish,
-          noPhoto: tr.signup.finishNoPhoto,
-        }),
-        onPress: finish,
-      }}
-    >
-      <View className="gap-4">
-        <View className="items-center gap-3">
-          {photoUrl ? (
-            <ProfilePhoto url={photoUrl} name={own.data?.display_name} />
-          ) : (
-            <View
-              accessible={false}
-              style={{
-                width: side,
-                height: side,
-                borderRadius: shape.radius.pill,
-                borderWidth: shape.stroke.feature,
-                borderStyle: 'dashed',
-                borderColor: colors.accent,
-                backgroundColor: colors.surface2,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Ionicons name="person-outline" size={ICON.xl} color={colors.accent} />
-            </View>
-          )}
-          <Button
-            testID="signup-photo-add"
-            variant="neutral"
-            icon="camera-outline"
-            label={hasPhoto ? tr.profile.photoChange : tr.profile.photoAdd}
-            onPress={() => setSheet(true)}
-          />
-        </View>
-        {photoNote ? (
-          <Card tone="note" testID="photo-needed-note">
-            <View className="flex-row items-start gap-2.5">
-              <Ionicons name="information-circle-outline" size={ICON.md} color={colors.accent} />
-              <Text variant="bodyStrong" className="flex-1">
-                {tr.signup.photoNeededNote}
-              </Text>
-            </View>
-          </Card>
-        ) : null}
-      </View>
-      <PhotoSheet
-        visible={sheet}
-        onClose={() => setSheet(false)}
-        onSet={() => {
-          setPhotoSet(true);
-          friend.react('ok');
+    <>
+      {/* No swipe back into the sent profile (Android's back is blocked above). Set here, not in the
+          group's layout: a screen listed there comes first and the group would open on it. */}
+      <Stack.Screen options={{ gestureEnabled: false }} />
+      <SignupStep
+        step="photo"
+        testID="signup-photo-step"
+        title={tr.signup.photoTitle}
+        body={tr.signup.photoBody}
+        friend={friend}
+        action={{
+          testID: 'signup-finish',
+          label: finishLabel(hasPhoto, {
+            finish: tr.signup.finish,
+            noPhoto: tr.signup.finishNoPhoto,
+          }),
+          onPress: finish,
         }}
-      />
-    </SignupStep>
+      >
+        <View className="gap-4">
+          <View className="items-center gap-3">
+            {photoUrl ? (
+              <ProfilePhoto url={photoUrl} name={own.data?.display_name} />
+            ) : (
+              <View
+                accessible={false}
+                style={{
+                  width: side,
+                  height: side,
+                  borderRadius: shape.radius.pill,
+                  borderWidth: shape.stroke.feature,
+                  borderStyle: 'dashed',
+                  borderColor: colors.accent,
+                  backgroundColor: colors.surface2,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Ionicons name="person-outline" size={ICON.xl} color={colors.accent} />
+              </View>
+            )}
+            <Button
+              testID="signup-photo-add"
+              variant="neutral"
+              icon="camera-outline"
+              label={hasPhoto ? tr.profile.photoChange : tr.profile.photoAdd}
+              onPress={() => setSheet(true)}
+            />
+          </View>
+          {photoNote ? (
+            <Card tone="note" testID="photo-needed-note">
+              <View className="flex-row items-start gap-2.5">
+                <Ionicons name="information-circle-outline" size={ICON.md} color={colors.accent} />
+                <Text variant="bodyStrong" className="flex-1">
+                  {tr.signup.photoNeededNote}
+                </Text>
+              </View>
+            </Card>
+          ) : null}
+        </View>
+        <PhotoSheet
+          visible={sheet}
+          onClose={() => setSheet(false)}
+          onSet={() => {
+            setPhotoSet(true);
+            friend.react('ok');
+          }}
+        />
+      </SignupStep>
+    </>
   );
 }
