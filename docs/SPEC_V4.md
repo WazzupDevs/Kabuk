@@ -647,7 +647,7 @@ Değişmez kabul edilir.
 - `rooms_end`'in kullanılmayan `decision_seconds` argümanı (23.4b'den kalan, varsayılanla `null`): fonksiyon `rooms_end(target_user_id)` olur. 23.4b'nin "sonraki adım" olarak yazdığı ayrı küçük migration yerine 4.8b'ye girer (CTO incelemesi, 23.4b; proje sahibi). O zaman yayındaki `rooms` fonksiyonu argümanı göndermez (23.4b'den beri), kaldırmak hiçbir çağrıyı kırmaz;
 - taraf kolonları ve fonksiyonları (`room_members.side`, `join_requests.side`, `private.side_headcount`, `private.max_side_phones`, `private.was_on_side`);
 - eski lobi okumaları (`venue_lobby`, `venue_lobby_phones`, `venue_lobby_tags`, `venue_running_rooms`);
-- kişi sayısı beyanı kolonları;
+- kişi sayısı beyanı kolonları; check-in anahtarının araması (`start_table_session` → `checkin_key`) `headcount` ve `team_capable`'ı da karşılaştırır, bu kolonlar kalkarken aramadan da çıkarlar (CTO incelemesi, WazzupDevs/Kabuk#156);
 - Sahtekar koltukları, Tabu modları ve kapışmanın taraf hakları;
 - Poppins ve Manrope paketleri, eski tokenlar;
 - kapsam PR açıklamasında tek tek yazılır.

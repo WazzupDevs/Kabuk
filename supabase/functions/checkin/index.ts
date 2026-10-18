@@ -152,6 +152,9 @@ async function checkIn(userId: string, body: CheckInRequest): Promise<CheckInRes
     });
     if (!error) return { sessionId: data.id, alias: data.alias, expiresAt: data.expires_at };
     // spot_required and spot_invalid come from the database as domain errors.
+    // A unique violation is a taken alias, or the same check-in arriving twice at once: the second
+    // copy hits the one-active-table index, and the next attempt finds the first copy's table by
+    // its key. Narrowing this to the alias index would open a second table for such a copy.
     if (error.code !== UNIQUE_VIOLATION) throw domainError('start_table_session', error);
     used.add(alias);
   }
