@@ -292,6 +292,14 @@ appId: app.kabuk.mobile
       id: preview-tokens-grounds
     timeout: 10000
 - takeScreenshot: 04j-tokens-grounds
+# The lower grounds (Harf Kapmaca, Şarkıda Geçsin, Sohbet kartları): their labels are the only such
+# texts on the screen.
+- scrollUntilVisible:
+    element:
+      text: Şarkıda Geçsin
+    centerElement: true
+    timeout: 30000
+- takeScreenshot: 04j-tokens-grounds-2
 - scrollUntilVisible:
     element:
       id: preview-tokens-logo
