@@ -25,19 +25,24 @@ type Props = {
   onClose: () => void;
   // "Fotoğrafı kaldır" too (Profili düzenle, with a photo).
   canRemove?: boolean;
+  // A new photo is up (the sign-up photo step: its button and its friend react).
+  onSet?: () => void;
 };
 
 // The profile photo sheet (canvas: Aşama 5 · Profili düzenle): from the library or the camera, or
 // removed. Also opened in place where "Profilimle" needs a photo (canvas: Faz 2 · 22.1), so the
 // screen and what was typed stay; it closes once the photo is up.
-export function PhotoSheet({ visible, onClose, canRemove = false }: Props) {
+export function PhotoSheet({ visible, onClose, canRemove = false, onSet }: Props) {
   const queryClient = useQueryClient();
   const refresh = () => queryClient.invalidateQueries({ queryKey: profileViewKeys.all });
   const setPhoto = useMutation({
     meta: FEEL_ERROR,
     mutationFn: (source: PhotoSource) => choosePhoto(source),
     onSuccess: (changed) => {
-      if (changed) track('profile_photo_set', {});
+      if (changed) {
+        track('profile_photo_set', {});
+        onSet?.();
+      }
       onClose();
     },
     onSettled: refresh,
@@ -49,8 +54,17 @@ export function PhotoSheet({ visible, onClose, canRemove = false }: Props) {
     onSettled: refresh,
   });
 
+  // While a photo goes up or comes off the sheet stays: closed half way, the step's button could
+  // finish without it while it is still saved.
+  const busy = setPhoto.isPending || removePhoto.isPending;
+
   return (
-    <Sheet visible={visible} onClose={onClose} title={tr.profile.photo} icon="image-outline">
+    <Sheet
+      visible={visible}
+      onClose={busy ? undefined : onClose}
+      title={tr.profile.photo}
+      icon="image-outline"
+    >
       <Text variant="fine">{tr.profile.photoPrivacy}</Text>
       <Button
         variant="neutral"
@@ -58,14 +72,14 @@ export function PhotoSheet({ visible, onClose, canRemove = false }: Props) {
         label={tr.profile.photoFromLibrary}
         onPress={() => setPhoto.mutate('library')}
         loading={setPhoto.isPending && setPhoto.variables === 'library'}
-        disabled={setPhoto.isPending || removePhoto.isPending}
+        disabled={busy}
       />
       <Button
         variant="neutral"
         label={tr.profile.photoFromCamera}
         onPress={() => setPhoto.mutate('camera')}
         loading={setPhoto.isPending && setPhoto.variables === 'camera'}
-        disabled={setPhoto.isPending || removePhoto.isPending}
+        disabled={busy}
       />
       {canRemove ? (
         <Button
@@ -73,7 +87,7 @@ export function PhotoSheet({ visible, onClose, canRemove = false }: Props) {
           label={tr.profile.photoRemove}
           onPress={() => removePhoto.mutate()}
           loading={removePhoto.isPending}
-          disabled={setPhoto.isPending}
+          disabled={busy}
         />
       ) : null}
       {setPhoto.isError ? (
@@ -95,7 +109,13 @@ export function PhotoSheet({ visible, onClose, canRemove = false }: Props) {
           {errorMessage(removePhoto.error)}
         </Text>
       ) : null}
-      <Button variant="ghost" testID="photo-cancel" label={tr.common.cancel} onPress={onClose} />
+      <Button
+        variant="ghost"
+        testID="photo-cancel"
+        label={tr.common.cancel}
+        onPress={onClose}
+        disabled={busy}
+      />
     </Sheet>
   );
 }
