@@ -33,13 +33,16 @@ export default function PhotoStep() {
   const view = useProfileView(own.data?.public_id);
   const { colors, shape } = useTheme();
   const gender = useOnboardingStore((s) => s.gender) ?? view.data?.gender ?? null;
-  const photoNote = gender !== null && !mayStayAnonymous(gender) && !photoSet;
   const friend = useFriend();
   const photoUrl = view.data?.photoUrl ?? null;
+  // A photo put up earlier counts too (the app was closed on this step after the upload): the
+  // circle, the button and the finish label say the same thing.
+  const hasPhoto = photoSet || photoUrl !== null;
+  const photoNote = gender !== null && !mayStayAnonymous(gender) && !hasPhoto;
   const side = PROFILE_PHOTO_SIZES.large;
 
   const finish = () => {
-    track('onboarding_completed', { with_photo: photoSet, with_bio: false });
+    track('onboarding_completed', { with_photo: hasPhoto, with_bio: false });
     haptic('accountReady');
     useOnboardingStore.setState({ extrasPending: false, gender: null, name: '', birthDate: null });
   };
@@ -53,7 +56,7 @@ export default function PhotoStep() {
       friend={friend}
       action={{
         testID: 'signup-finish',
-        label: finishLabel(photoSet, {
+        label: finishLabel(hasPhoto, {
           finish: tr.signup.finish,
           noPhoto: tr.signup.finishNoPhoto,
         }),
@@ -71,7 +74,7 @@ export default function PhotoStep() {
                 width: side,
                 height: side,
                 borderRadius: shape.radius.pill,
-                borderWidth: 2,
+                borderWidth: shape.stroke.feature,
                 borderStyle: 'dashed',
                 borderColor: colors.accent,
                 backgroundColor: colors.surface2,
@@ -86,7 +89,7 @@ export default function PhotoStep() {
             testID="signup-photo-add"
             variant="neutral"
             icon="camera-outline"
-            label={photoSet ? tr.profile.photoChange : tr.profile.photoAdd}
+            label={hasPhoto ? tr.profile.photoChange : tr.profile.photoAdd}
             onPress={() => setSheet(true)}
           />
         </View>

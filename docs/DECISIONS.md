@@ -800,6 +800,7 @@ Onaylandı (`docs/SPEC_V3.md` §20; cevaplar §20.8).
 | Görünüm | Fotoğraf yokken kesikli çizgili boş daire (içinde kişi işareti), altında tek "Fotoğraf ekle" düğmesi; fotoğraf eklenince fotoğraf ve "Fotoğrafı değiştir". Düğme Profili düzenle'deki fotoğraf sayfasını açar (galeri, kamera) | v45: `.sup-ph`, `.pedit`. Yan yana iki yarım genişlik düğmede "Galeriden seç" ve "Fotoğraf çek" sığmıyor, yazı küçülüyordu |
 | Renk    | Daire zemini `surface2`, çizgi `accent`                                                                                                                                                                                        | v45'teki açık mor çizgi (`#B9A6FF`) için ayrı token yok; tek görünüm için palete renk eklenmedi                            |
 | Hata    | Fotoğraf hataları sayfanın içinde (izin, geçersiz dosya), Profili düzenle'deki gibi                                                                                                                                            | Aynı sayfa                                                                                                                 |
+| Yükleme | Fotoğraf yüklenirken ya da kaldırılırken sayfa kapanmaz (dışarı dokunma, geri tuşu, "İptal"); fotoğrafı olan kişide (uygulama bu adımda yeniden açıldıysa) daire, düğme ve bitir düğmesi aynı şeyi söyler                      | CTO incelemesi: yarıda kapanan sayfadan sonra "Fotoğrafsız bitir" fotoğraf kaydedilirken basılabiliyordu                   |
 
 ## Faz 4 adım 4.3e: ilk ekranın giriş sahnesi (proje sahibiyle)
 
