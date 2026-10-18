@@ -225,11 +225,12 @@ appId: app.kabuk.mobile
     timeout: 10000
 - assertVisible:
     id: game-clock
-- assertVisible: 3 hak
+# The passes left are part of the button's text (Button: the detail shrinks with its label).
+- assertVisible: Pas 3 hak
 - tapOn:
     id: tabu-pass
 - extendedWaitUntil:
-    visible: 2 hak
+    visible: Pas 2 hak
     timeout: 10000
 # The judging table (the bot) says Doğru.
 - runScript:

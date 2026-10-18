@@ -1,18 +1,22 @@
 import { inboxStamp } from '@shared/dmInbox.ts';
 import type { DmInboxThread } from '@shared/api/friends.ts';
-import { type ReactNode, useEffect, useRef } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
+import { Card } from '@/components/Card';
 import { DeliveryTicks } from '@/components/ChatBubble';
 import { EmptyState } from '@/components/EmptyState';
 import { useLoaderHold } from '@/components/Loader';
 import { Rise } from '@/components/motion';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { Segmented } from '@/components/Segmented';
 import { Text } from '@/components/Text';
+import { TypingDots } from '@/components/TypingDots';
 import { openDm } from '@/features/friends/openDm';
-import { useDmInbox } from '@/features/friends/queries';
+import { useDmInbox, useRequestCount } from '@/features/friends/queries';
+import { RequestList } from '@/features/friends/RequestList';
 import { useDmTyping } from '@/features/friends/useDmTyping';
 import { NotificationsBell } from '@/features/notifications/Bell';
 import { errorMessage } from '@/i18n/errors';
@@ -21,42 +25,80 @@ import { useNow } from '@/lib/useNow';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
-// Mesajlar (docs/SPEC_V3.md §18.3; canvas: Aşama 5 · Geri bildirim): every friend, newest
-// conversation first, from dm/inbox (the function signs the photos). A friend without messages
-// shows "Henüz mesaj yok". A row opens the DM.
+type Tab = 'chats' | 'requests';
+
+// Mesajlar (docs/SPEC_V3.md §18.3; docs/SPEC_V4.md §4.C, v45: .msgs): "Sohbet" lists every friend,
+// newest conversation first, from dm/inbox (the function signs the photos); a friend without
+// messages shows "Henüz mesaj yok" and a row opens the DM. "İstekler" lists the open friend
+// requests waiting for the caller (RequestList). The bell stays where it is until step 4.7.
 export default function MessagesScreen() {
-  const inbox = useDmInbox();
+  const [tab, setTab] = useState<Tab>('chats');
+  const requests = useRequestCount();
   const now = useNow(60_000);
-  const loading = useLoaderHold(inbox.isPending);
 
   return (
     <Screen edges={['top']}>
       <ScreenHeader title={tr.tabs.messages} trailing={<NotificationsBell />} />
-
-      {inbox.isPending || loading ? (
-        <View className="mt-12">
-          <EmptyState kind="loading" body={tr.common.loading} />
-        </View>
-      ) : inbox.isError ? (
-        <EmptyState
-          icon="cloud-offline-outline"
-          body={errorMessage(inbox.error)}
-          action={{ label: tr.common.retry, onPress: () => void inbox.refetch() }}
+      <View className="mt-3">
+        <Segmented<Tab>
+          fill
+          value={tab}
+          onChange={setTab}
+          accessibilityLabel={tr.messages.tabs}
+          options={[
+            { value: 'chats', label: tr.messages.chats, testID: 'messages-tab-chats' },
+            {
+              value: 'requests',
+              label: tr.messages.requests(requests),
+              testID: 'messages-tab-requests',
+            },
+          ]}
         />
-      ) : inbox.data.length === 0 ? (
-        <View className="flex-1 justify-center">
-          <EmptyState kind="empty" title={tr.messages.empty} body={tr.messages.emptyHint} />
-        </View>
-      ) : (
-        <View className="mt-2 gap-1.5">
+      </View>
+      {tab === 'chats' ? <Chats now={new Date(now)} /> : <RequestList now={new Date(now)} />}
+    </Screen>
+  );
+}
+
+function Chats({ now }: { now: Date }) {
+  const inbox = useDmInbox();
+  const loading = useLoaderHold(inbox.isPending);
+
+  if (inbox.isPending || loading) {
+    return (
+      <View className="mt-12">
+        <EmptyState kind="loading" body={tr.common.loading} />
+      </View>
+    );
+  }
+  if (inbox.isError) {
+    return (
+      <EmptyState
+        icon="cloud-offline-outline"
+        body={errorMessage(inbox.error)}
+        action={{ label: tr.common.retry, onPress: () => void inbox.refetch() }}
+      />
+    );
+  }
+  if (inbox.data.length === 0) {
+    return (
+      <View className="flex-1 justify-center">
+        <EmptyState kind="empty" title={tr.messages.empty} body={tr.messages.emptyHint} />
+      </View>
+    );
+  }
+  return (
+    <View className="mt-3">
+      <Card flush>
+        <View style={{ paddingVertical: SPACING[1.5] }}>
           {inbox.data.map((t, i) => (
             <Rise key={t.publicId} index={i}>
-              <InboxRow thread={t} now={new Date(now)} listen={i < TYPING_ROWS} />
+              <InboxRow thread={t} now={now} listen={i < TYPING_ROWS} />
             </Rise>
           ))}
         </View>
-      )}
-    </Screen>
+      </Card>
+    </View>
   );
 }
 
@@ -64,9 +106,8 @@ export default function MessagesScreen() {
 // of channels, and the rows further down are off screen.
 const TYPING_ROWS = 30;
 
-// A conversation (canvas: Aşama 8 · Saha → Mesajlar, A): a ring round the photo, the name and the
-// time on top, the last message or "yazıyor…" below. Unread: the ring and the counter in colour,
-// the name and the line in bold.
+// A conversation (v45: .crow): the photo, the name and the time on top, the last message or
+// "yazıyor" below. Unread: the name bolder, the time, the line and the counter in the accent.
 function InboxRow({
   thread: t,
   now,
@@ -76,7 +117,7 @@ function InboxRow({
   now: Date;
   listen: boolean;
 }) {
-  const { colors, shape } = useTheme();
+  const { colors } = useTheme();
   const name = t.displayName ?? tr.profile.noName;
   const unread = t.unreadCount > 0;
   const threadId = t.threadId;
@@ -97,27 +138,21 @@ function InboxRow({
           style={{
             gap: SPACING[3] + SPACING[0.5],
             paddingVertical: SPACING[2.5],
-            paddingHorizontal: SPACING[1],
-            opacity: pressed ? 0.7 : 1,
+            paddingHorizontal: SPACING[4],
+            backgroundColor: pressed ? colors.canvas : undefined,
           }}
         >
-          <View
-            style={{
-              padding: SPACING[0.5],
-              borderRadius: shape.radius.pill,
-              borderWidth: shape.stroke.feature,
-              borderColor: unread ? colors.violet : colors.divider,
-            }}
-          >
-            <Avatar kind="profile" size="lg" name={name} photoUrl={t.photoUrl} />
-          </View>
+          <Avatar kind="profile" size="xl" name={name} photoUrl={t.photoUrl} />
           <View className="flex-1" style={{ gap: SPACING[0.5] }}>
-            <View className="flex-row items-center gap-2">
-              <Text variant={unread ? 'bodyStrong' : 'body'} className="flex-1">
+            <View className="flex-row items-baseline gap-2">
+              <Text variant={unread ? 'heading' : 'bodyStrong'} className="flex-1">
                 {name}
               </Text>
               {t.lastMessageAt ? (
-                <Text variant="fine" color={unread ? colors.violet : undefined}>
+                <Text
+                  variant={unread ? 'label' : 'fine'}
+                  color={unread ? colors.accent : undefined}
+                >
                   {tr.messages.stamp(t.lastMessageAt, inboxStamp(t.lastMessageAt, now))}
                 </Text>
               ) : null}
@@ -139,14 +174,14 @@ function InboxRow({
   );
 }
 
-// The last message: the ticks on the own one, bold when unread.
+// The last message: the ticks on the own one, in the accent when unread.
 function Preview({ thread: t, unread }: { thread: DmInboxThread; unread: boolean }) {
   return (
     <View className="flex-1 flex-row items-center gap-1">
       {t.lastFromMe && t.lastStatus ? <DeliveryTicks delivery={t.lastStatus} /> : null}
       <Text
-        variant={unread ? 'bodyStrong' : 'fine'}
-        tone={t.lastBody ? undefined : 'muted'}
+        variant={unread ? 'label' : 'fine'}
+        tone={unread ? 'accent' : t.lastBody ? undefined : 'muted'}
         numberOfLines={1}
         className="flex-1"
       >
@@ -156,7 +191,8 @@ function Preview({ thread: t, unread }: { thread: DmInboxThread; unread: boolean
   );
 }
 
-// "yazıyor…" in place of the last message while the friend types (dm_typing, as in the DM).
+// "yazıyor" and the dots in place of the last message while the friend types (dm_typing, as in the
+// DM).
 function TypingOr({
   threadId,
   lastMessageAt,
@@ -176,10 +212,11 @@ function TypingOr({
   }, [lastMessageAt, clearTyping]);
   if (!typing) return children;
   return (
-    <View className="flex-1" testID="inbox-typing">
-      <Text variant="bodyStrong" tone="success">
+    <View className="flex-1 flex-row items-center" testID="inbox-typing">
+      <Text variant="label" tone="accent">
         {tr.messages.typing}
       </Text>
+      <TypingDots />
     </View>
   );
 }
@@ -196,10 +233,10 @@ function UnreadCount({ count }: { count: number }) {
         height: SPACING[5] + SPACING[0.5],
         paddingHorizontal: SPACING[1.5],
         borderRadius: shape.radius.pill,
-        backgroundColor: colors.violet,
+        backgroundColor: colors.accent,
       }}
     >
-      <Text variant="caption" tone="onViolet">
+      <Text variant="caption" tone="onAccent">
         {String(count)}
       </Text>
     </View>
