@@ -45,6 +45,28 @@ export const GAME_SHADOW = {
   toast: '0px 12px 26px rgba(20, 17, 43, 0.25)',
 } as const;
 
+// Şarkıda Geçsin's record (v43: .sx-rec): grooves in two dark tones, a label in the logo's orange
+// and pink, a white hole. The equaliser beside the singer (v43: .sx-eq) in four bars.
+export const VINYL = {
+  disc: '#1B1640',
+  groove: '#2A2360',
+  label: ['#FFB547', '#FF4F8B'],
+  hole: '#FFFFFF',
+} as const;
+export const EQUALISER_COLORS = ['#FFB547', '#FF9DC0', '#FFB547', '#C9BAFF'] as const;
+
+// The light under the finger on a held card (v45: .tk-glare): the card's paper at 32 %, gone at 42 %
+// of the way out; white on the light scheme's card, the dark card's colour on the dark one.
+export const CARD_GLARE = {
+  light: '#FFFFFF',
+  dark: '#1C1838',
+  opacity: 0.32,
+  reach: 0.42,
+} as const;
+
+// İbre's cover over the dial until the result (v43: #nxst): pale stripes.
+export const DIAL_COVER = ['#EEE9FF', '#E3DBFF'] as const;
+
 // The winners' confetti (v43 → conf()).
 export const CONFETTI_COLORS = ['#FFFFFF', '#FFB547', '#FF9DC0', '#C9BAFF'] as const;
 

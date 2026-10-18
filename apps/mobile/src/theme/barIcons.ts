@@ -5,7 +5,7 @@ import { BRAND } from './brand';
 // §4.C): icons made of the logo's capsules, the same rounded bar, a second colour where two bars
 // cross. They are several colours each, so they are drawn with react-native-svg
 // (src/components/BarIcon.tsx), not rasterised to one-colour PNGs like scripts/icon/glyphs.ts.
-// Pure, so barIcons.test.ts pins the geometry; the forming spring of v43 is a motion (step 4.2c).
+// Pure, so barIcons.test.ts pins the geometry; the icons' springs are in playMotion.ts (step 4.2c).
 
 // A bar's thickness in the 24-unit box: plus, cross and check are thinner than the lobby's bar.
 export const BAR = { thin: 4.6, thick: 6.4 } as const;
@@ -76,7 +76,7 @@ export function barRect(p: BarState, thickness: number): BarRect {
 }
 
 // The Mesajlar bell (v43 → "Bildirim düğmesi"): the purple dome, the pink bar across its rim, a dark
-// tone where they cross, the orange clapper. Rung by a new notification (step 4.2c).
+// tone where they cross, the orange clapper. A new notification rings it (playMotion.ts → BELL_RING).
 export const BELL = {
   dome: 'M5.2 16.2V9.6a6.8 6.8 0 0 1 13.6 0v6.6z',
   bar: { x: 2.4, y: 14, width: 19.2, height: 4.6, rx: 2.3 },
