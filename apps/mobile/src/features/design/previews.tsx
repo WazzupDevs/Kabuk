@@ -191,7 +191,11 @@ function GamesSet() {
       </PreviewBlock>
       <PreviewBlock title="TimeUpOverlay">
         <View style={{ height: STAGE / 1.4 }}>
-          <TimeUpOverlay visible detail="Yaratıcı Lokma bu turda +5" brand="Kabuk · Sesli Tabu" />
+          <TimeUpOverlay
+            visible
+            detail="Yaratıcı Lokma bu turda +5"
+            brand={tr.games.gameBrand(tr.concepts.tabu)}
+          />
         </View>
       </PreviewBlock>
       <PreviewBlock title="RematchButton · ConfirmSheet · FirstGameIntro">
@@ -336,7 +340,7 @@ function SahtekarSet() {
               { voter: 'B1', target: 'B2' },
               { voter: 'B2', target: 'A2' },
             ]}
-            brand="Kabuk · Sahtekar"
+            brand={tr.games.gameBrand(tr.concepts.sahtekar)}
           />
         </View>
       </PreviewBlock>
@@ -474,7 +478,7 @@ function IbreSet() {
               needle={41}
               points={3}
               detail="Hedef 34 · ibre 41 · Sakin Martı: solunda, +1"
-              brand="Kabuk · İbre"
+              brand={tr.games.gameBrand(tr.concepts.ibre)}
             />
           )}
         </FitWidth>

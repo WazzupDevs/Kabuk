@@ -7,7 +7,7 @@ appId: app.kabuk.mobile
 - tapOn:
     id: bell
 - extendedWaitUntil:
-    visible: .*masasıyla Sesli Tabu.*
+    visible: .*masasıyla Kapsül Anlat.*
     timeout: 15000
 - takeScreenshot: 30-history
 - tapOn:

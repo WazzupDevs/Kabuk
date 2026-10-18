@@ -69,7 +69,7 @@ bio), Ayarlar (legal texts, blocked tables, account deletion: Profil → gear ic
 → "Hesabımı sil") and Arkadaşlar.
 
 The in-venue flow (check-in, opening the table to the lobby, another table
-joining, a voice Tabu turn at the merged table, ending the table, "Arkadaş
+joining, a Kapsül Anlat turn at the merged table, ending the table, "Arkadaş
 ekle", a direct message, blocking and reporting) is shown in this video:
 [video link]
 
@@ -87,7 +87,7 @@ dahil) ve Arkadaşlar kullanılabilir. Mekan içi akış videoda: [video bağlan
   2. Uygulamayı aç, inceleme hesabıyla giriş yap. Kod ekranında kodu yazarken kaydı durdur ya da sonra kodu buzla; kod videoda görünmemeli.
   3. Onaylar → Keşfet (liste ve harita) → mekanın sayfası → "Buraya giriş yap" → konum rızası ve izin → kişi sayısı → "Masayı aç" → masa takma adı.
   4. "Masanı lobiye aç" → "Lobiye aç". İkinci telefondan "Katıl" isteği gelir → "Kabul". Masa kartında "… geliyor" satırı; ikinci telefonun kartında "Kabul edildi, … masasının yanına git". İkinci telefon masaya gelir → iki telefonda "Masaya git".
-  5. Birleşik masa: Oyun Seç → "Sesli Tabu öner" → ikinci telefonda "Oynayalım" → kartı aç → bir Doğru, bir Pas; ikinci telefon hakem olarak Tabu basar. Tur geçişini göster.
+  5. Birleşik masa: Oyun Seç → "Kapsül Anlat öner" → ikinci telefonda "Oynayalım" → kartı aç → bir Doğru, bir Pas; ikinci telefon hakem olarak "Yasak!" basar. Tur geçişini göster.
   6. "Masayı bitir" → iki telefonda "Masa bitti" ve karşı taraf satırında "Arkadaş ekle".
   7. "Arkadaş ekle" (iki taraf) → "Arkadaş oldunuz" → "Mesajlaş" → DM gönder ve al.
   8. Arkadaşlar → Geçmiş ve istekler → Diğer → "Şikayet et" ve "Engelle" pencerelerini göster (vazgeç).
@@ -108,8 +108,8 @@ Yanıtlar `content/` taramasına göre (kartlar, mekan adları, takma adlar, soh
 
 | İçerik          | Bulunan                                                                                                                                 |
 | --------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Alkol           | Tabu kartı "Üzüm": yasaklı kelime "şarap" (1 kart, yalnızca kelime)                                                                     |
-| Tütün           | Tabu kartı "Nargile": yasaklı kelimeler "tütün", "köz", "hortum", "kafe", "duman" (1 kart, yalnızca kelime)                             |
+| Alkol           | Kapsül Anlat kartı "Üzüm": yasaklı kelime "şarap" (1 kart, yalnızca kelime)                                                             |
+| Tütün           | Kapsül Anlat kartı "Nargile": yasaklı kelimeler "tütün", "köz", "hortum", "kafe", "duman" (1 kart, yalnızca kelime)                     |
 | Kumar           | Yasaklı kelime "piyango" ("Yılbaşı", "Şans" kartları); "zar" ("Şans"); "Okey" kartı ve "Kahvehane" kartında "okey" (taş oyunu, parasız) |
 | Mekan adları    | 43 mekanın hepsi `amenity=cafe`; adlarda alkol, tütün ya da kumar geçmiyor. Nargile kafesi listede yok                                  |
 | Takma adlar     | Eşleşme yok                                                                                                                             |
@@ -171,7 +171,7 @@ Tanım: cihazdan çıkan her veri "toplanan" sayılır; hizmet sağlayıcıya (S
 
 ## 4. Mağaza girişi (Console → Büyüme → Mağaza varlığı)
 
-- [ ] Kısa ve uzun açıklama: `docs/store/listing-tr.md`. v2 özellikleri (Keşfet, profil, arkadaşlar, sesli Tabu) eklenince güncellenir.
+- [ ] Kısa ve uzun açıklama: `docs/store/listing-tr.md`. v2 özellikleri (Keşfet, profil, arkadaşlar, Kapsül Anlat) eklenince güncellenir.
 - [ ] Uygulama simgesi 512×512, öne çıkan grafik 1024×500.
 - [ ] Telefon ekran görüntüleri: `pnpm store:screenshots <E2E ekran görüntüsü klasörü>` → `dist/store-screenshots/phone-01.png` … (1080×1920, 9:16; seçim ve başlıklar `docs/store/screenshots.json`). Play en az 2, öne çıkarılmak için en az 4 ister; 6 üretilir. Marka teması ya da uygulama adı değişince yeniden üretilir. E2E emülatörü 320×640 çektiği için görüntüler büyütülmüş ve yumuşak; mağaza için yüksek çözünürlüklü bir emülatörle çekilmeli.
 - [ ] Kategori: Sosyal. İletişim e-postası.

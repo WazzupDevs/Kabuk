@@ -15,7 +15,7 @@ type Props = {
   visible: boolean;
   // Under the title: "Yaratıcı Lokma bu turda +5".
   detail?: string;
-  // The game's name for the corner mark of a screen recording ("Kabuk · Sesli Tabu").
+  // The game's name for the corner mark of a screen recording ("skall · Kapsül Anlat").
   brand?: string;
 };
 

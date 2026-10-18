@@ -1,4 +1,4 @@
-import { APP_NAME } from '@shared/brand.ts';
+import { APP_NAME, GAME_NAMES } from '@shared/brand.ts';
 import { headcountLabel } from '@shared/checkin.ts';
 import type { InboxStamp } from '@shared/dmInbox.ts';
 import type { EventTime } from '@shared/explore.ts';
@@ -85,15 +85,7 @@ function dayMonthAt(iso: string): string {
 
 // play_history.concept: the last game played in the room, or 'chat' (docs/SPEC_V3.md §5.5).
 export type HistoryConcept = 'tabu' | 'sohbet' | 'sahtekar' | 'harf' | 'sarki' | 'ibre' | 'chat';
-const HISTORY_CONCEPTS: Record<HistoryConcept, string> = {
-  tabu: 'Sesli Tabu',
-  sohbet: 'Sohbet kartları',
-  sahtekar: 'Sahtekar',
-  harf: 'Harf Kapmaca',
-  sarki: 'Şarkıda Geçsin',
-  ibre: 'İbre',
-  chat: 'Sohbet',
-};
+const HISTORY_CONCEPTS: Record<HistoryConcept, string> = { ...GAME_NAMES, chat: 'Sohbet' };
 
 // The Sohbet card themes (content/sohbet-cards.json), each its own name.
 const SOHBET_THEMES = {
@@ -105,22 +97,22 @@ const SOHBET_THEMES = {
 
 // "… oynadığınız" in a friend request: the room's last game, or the chat.
 const PLAYED_WITH: Record<HistoryConcept, string> = {
-  tabu: 'Sesli Tabu oynadığınız',
+  tabu: `${GAME_NAMES.tabu} oynadığınız`,
   sohbet: 'Sohbet kartlarıyla oynadığınız',
-  sahtekar: 'Sahtekar oynadığınız',
-  harf: 'Harf Kapmaca oynadığınız',
-  sarki: 'Şarkıda Geçsin oynadığınız',
-  ibre: 'İbre oynadığınız',
+  sahtekar: `${GAME_NAMES.sahtekar} oynadığınız`,
+  harf: `${GAME_NAMES.harf} oynadığınız`,
+  sarki: `${GAME_NAMES.sarki} oynadığınız`,
+  ibre: `${GAME_NAMES.ibre} oynadığınız`,
   chat: 'sohbet ettiğiniz',
 };
 
 // The voice games' names in "… · yüz yüze".
 const VOICE_NAMES = {
-  tabu: 'Sesli Tabu',
-  sahtekar: 'Sahtekar',
-  harf: 'Harf Kapmaca',
-  sarki: 'Şarkıda Geçsin',
-  ibre: 'İbre',
+  tabu: GAME_NAMES.tabu,
+  sahtekar: GAME_NAMES.sahtekar,
+  harf: GAME_NAMES.harf,
+  sarki: GAME_NAMES.sarki,
+  ibre: GAME_NAMES.ibre,
 } as const;
 
 const WEEKDAYS = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
@@ -290,7 +282,7 @@ export const tr = {
       steps: [
         `İki masa yüz yüze oynar, sırayla anlatır. Her tur ${TABU.turnSeconds} saniye, oyun ${TABU.totalTurns} tur.`,
         'Anlatan karttaki kelimeyi yasaklı kelimeleri söylemeden anlatır; kendi masası tahmin eder.',
-        `Doğru: kelime bilindi, iki masa da basabilir. Pas: kart geçilir, yalnızca anlatan basar, turda en çok ${TABU.maxPasses}. Tabu: yasaklı kelime söylendi, yalnızca dinleyen masa basar.`,
+        `Doğru: kelime bilindi, iki masa da basabilir. Pas: kart geçilir, yalnızca anlatan basar, turda en çok ${TABU.maxPasses}. Yasak!: yasaklı kelime söylendi, yalnızca dinleyen masa basar.`,
         'Masalardan biri tek kişiyse iş birliği modu: tek takım, süreye karşı; üç düğmeye yalnızca anlatan basar.',
         `Kendi masanızla oynarken masanızı iki takıma ayırın; anlatan telefonu tutar, takımı tahmin eder. Her takım ${TABU.localRoundsPerTeam} kez anlatır.`,
       ],
@@ -475,7 +467,7 @@ export const tr = {
     badges: {
       first_game: 'İlk oyun',
       ten_games: '10 oyun',
-      voice_tabu_five_wins: 'Sesli Tabu ustası',
+      voice_tabu_five_wins: `${GAME_NAMES.tabu} ustası`,
       five_tables: '5 farklı masa',
     },
     notVisible: 'Bu profil artık görüntülenemiyor.',
@@ -547,14 +539,7 @@ export const tr = {
     continue: 'Devam',
   },
   // The games (docs/SPEC_V3.md §5.1). "Sohbet" alone is the intent label, never a game.
-  concepts: {
-    tabu: 'Sesli Tabu',
-    sohbet: 'Sohbet kartları',
-    sahtekar: 'Sahtekar',
-    harf: 'Harf Kapmaca',
-    sarki: 'Şarkıda Geçsin',
-    ibre: 'İbre',
-  },
+  concepts: GAME_NAMES,
   // How a game is shown with its type (docs/SPEC_V2.md §8.1): only voice games are marked, since
   // they need the tables to come together.
   conceptWithMode: (concept: 'tabu' | 'sohbet' | 'sahtekar' | 'harf' | 'sarki' | 'ibre') =>
@@ -784,7 +769,7 @@ export const tr = {
     forbiddenLabel: 'Yasaklı kelimeler',
     correct: 'Doğru',
     pass: 'Pas',
-    taboo: 'Tabu',
+    taboo: 'Yasak!',
     scores: (a: number, b: number) => `A ${a} – ${b} B`,
     winner: (t: string) => `Takım ${t} kazandı!`,
     draw: 'Berabere!',
@@ -808,7 +793,7 @@ export const tr = {
       `Son oyun: ${owner} ${ownerScore} – ${guestScore} ${guest}`,
     lastGameOther: (game: string) => `${game} bitti.`,
     turn: (n: number, total: number) => `Tur ${n}/${total}`,
-    turnEyebrow: (n: number, total: number) => `Tabu · Tur ${n}/${total}`,
+    turnEyebrow: (n: number, total: number) => `${GAME_NAMES.tabu} · Tur ${n}/${total}`,
     passesLeft: (n: number) => `${n} pas hakkı`,
     passDetail: (n: number) => `${n} hak`,
     secondsLeft: (s: number) => `${s} sn`,
@@ -820,13 +805,14 @@ export const tr = {
     turnOverWait: 'Tur bitiyor…',
     voiceIntro: `Yüz yüze oynanır: masalar sırayla anlatır, diğer masa kartı görür ve hakemlik yapar. ${TABU.totalTurns} tur, her tur ${TABU.turnSeconds} saniye.`,
     sohbetIntro: 'Sohbet kartları: her kart bir soru; iki masa da sonraki kartı açabilir.',
-    voiceDescribe: 'Sıra sizde: kartı masanıza anlatın. Diğer masa kartı görüyor ve Tabu der.',
+    voiceDescribe:
+      'Sıra sizde: kartı masanıza anlatın. Diğer masa kartı görüyor, yasaklı kelime geçerse "Yasak!" der.',
     tapToReveal: 'Kartı görmek için dokun',
     hideFromTeam: 'Önce telefonu takım arkadaşlarından sakla.',
     cardsLoading: 'Kartlar geliyor…',
     voiceJudge: (alias: string) => `${alias} anlatıyor. Hakem sizsiniz.`,
     judgeCorrect: 'Doğru +1',
-    judgeTaboo: 'Tabu −1',
+    judgeTaboo: 'Yasak! −1',
     // The score label of this phone's side (canvas: Faz 2 · 22.5).
     you: 'tarafın',
     // The describer's teammate (docs/SPEC_V3.md §22.E; canvas: Sesli Tabu: takım arkadaşı).
@@ -840,11 +826,12 @@ export const tr = {
     cardOnlyHere: 'Kartı yalnızca bu masadakiler görür.',
     // Cooperative mode (docs/SPEC_V3.md §6.3): one team, the guessing table never sees the card.
     coopIntro: 'Masalardan biri tek kişi: iki masa tek takım, ortak skor süreye karşı.',
-    coopDescribe: "Sıra sizde: kartı diğer masaya anlatın. Doğru, Pas ve Tabu'ya siz basarsınız.",
+    coopDescribe:
+      'Sıra sizde: kartı diğer masaya anlatın. Doğru, Pas ve Yasak! düğmelerine siz basarsınız.',
     coopGuess: (alias: string) => `${alias} size anlatıyor. Anlatanı dinleyin ve tahmin edin.`,
     coopCardHidden: 'Kartı yalnızca anlatan görür.',
     teamScore: 'Ortak skor',
-    lastGameTeam: (score: number) => `Sesli Tabu bitti. Ortak skor: ${score}`,
+    lastGameTeam: (score: number) => `${GAME_NAMES.tabu} bitti. Ortak skor: ${score}`,
     // Stage 6 (canvas: Aşama 6 · Oyunlar): full-screen game, turn ready, feedback, end, intro.
     scoreUp: (n: number) => `+${n}`,
     scoreDown: (n: number) => `−${n}`,
@@ -864,20 +851,23 @@ export const tr = {
     turnReadyWaitingHint: 'Onlar başlayınca ya da süre dolunca tur başlar.',
     turnReadySeconds: (s: number) => `${s} saniye`,
     statCorrect: 'Doğru',
-    statTaboo: 'Tabu',
+    statTaboo: 'Yasak',
     statPass: 'Pas',
     timeUp: 'Süre bitti!',
     rematch: 'Rövanş',
     introEyebrow: 'İlk oyun',
     introSkip: 'Geç',
-    introTitle: 'Sesli Tabu nasıl oynanır?',
+    introTitle: `${GAME_NAMES.tabu} nasıl oynanır?`,
     introStep: (n: number) => `${n}. adım`,
     introSteps: [
       {
         title: 'Anlatan masa',
         body: 'Kartı yalnızca anlatan görür. Kelimeyi yasaklı kelimeleri söylemeden kendi takımına anlatır.',
       },
-      { title: 'Hakem masa', body: 'Karşı masa dinler. Yasaklı kelime geçerse "Tabu"ya basar.' },
+      {
+        title: 'Hakem masa',
+        body: 'Karşı masa dinler. Yasaklı kelime geçerse "Yasak!" düğmesine basar.',
+      },
       {
         title: 'Düğmeler',
         body: `Bilinince "Doğru" (+1), geçmek için "Pas" (turda ${TABU.maxPasses} hak). Tur ${TABU.turnSeconds} sn sürer.`,
