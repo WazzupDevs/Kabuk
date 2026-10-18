@@ -49,6 +49,19 @@ export const TOAST = { showMs: 1600, inMs: 400, fromScale: 0.85, fromY: -10 } as
 export const RING = { box: 120, radius: 53, stroke: 6, faceInset: 0.13 } as const;
 export const RING_CIRCUMFERENCE = 2 * Math.PI * RING.radius;
 
+// The ring's arc without redrawing it (the CTO's 4.2b review: an animated stroke offset redrew the
+// SVG on every frame): two fixed half arcs, each in a half-wide clip, turned by native transforms.
+// The right clip holds a half arc that starts on the left and turns into view; the left clip one
+// that starts on the right and turns in after half the time. Turned by `right` and `left` degrees
+// for a share s of the time left, they show the arc from 12 o'clock clockwise to s · 360°. The
+// component interpolates the share over RING_HALVES.at; ringHalves is the same table as a function.
+export const RING_HALVES = { at: [0, 0.5, 1], right: [0, 180, 180], left: [0, 0, 180] } as const;
+
+export function ringHalves(share: number): { right: number; left: number } {
+  const s = Math.min(1, Math.max(0, share));
+  return { right: Math.min(s, 0.5) * 360, left: Math.max(0, s - 0.5) * 360 };
+}
+
 // Confetti for the winners: 26 pieces 8 x 20 with round ends, each starting up to 0.9 s late,
 // drifting up to 40 px sideways and turning up to 270° either way while it falls for 2.6 s.
 export const CONFETTI = {

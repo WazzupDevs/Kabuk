@@ -1165,6 +1165,8 @@ export const tr = {
       roleBack: 'Basılı tut, rolünü gör',
       roleWord: 'Kütüphane',
       roleCategory: 'Mekan',
+      // What a screen reader says while the card is held: the face's words.
+      roleFace: (category: string, word: string) => `${category}: ${word}`,
       wheel: 'Harf çarkı',
       spin: 'Çevir',
       vinyl: 'Plak ve ekolayzer',
@@ -1204,6 +1206,8 @@ export const tr = {
   gameParts: {
     secondsLeft: (s: number) => `${s} saniye kaldı`,
     go: 'Başla',
+    // The bell's badge: the count, and over 99 "99+".
+    badge: (n: number) => (n > 99 ? '99+' : String(n)),
   },
   settings: {
     title: 'Ayarlar',

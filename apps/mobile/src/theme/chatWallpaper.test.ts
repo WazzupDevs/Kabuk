@@ -8,12 +8,20 @@ function tags(svg: string, name: string): number {
 }
 
 describe('chat wallpaper (v45: .chatbg)', () => {
-  it('covers the area with whole tiles', () => {
-    expect(tags(wallpaperSvg('light', 250, 250), 'g transform="translate(')).toBe(1);
-    // 400 x 900 needs 2 x 4 tiles.
-    const svg = wallpaperSvg('light', 400, 900);
-    expect(svg).toContain('translate(250 750)');
-    expect(svg.split('<g transform="translate(').length - 1).toBe(8);
+  it('covers the area with one pattern: the tile drawn once, whatever the size', () => {
+    const small = wallpaperSvg('light', 250, 250);
+    const tall = wallpaperSvg('light', 400, 900);
+    for (const svg of [small, tall]) {
+      expect(tags(svg, 'pattern ')).toBe(1);
+      expect(svg).toContain(
+        '<pattern id="tile" patternUnits="userSpaceOnUse" width="250" height="250">',
+      );
+      expect(svg).toContain('fill="url(#tile)"');
+      expect(svg.split("<g transform='translate(").length - 1).toBe(27);
+    }
+    // The SVG barely grows with the area (the CTO's 4.2b review: 580 nodes on a tall screen).
+    expect(tall.length - small.length).toBeLessThan(40);
+    expect(tall).toContain('<rect width="400" height="900" fill="url(#tile)"/>');
   });
 
   it("a tile has v45's 27 doodles, drawn in one colour at 11 %", () => {

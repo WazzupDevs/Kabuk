@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -39,14 +39,25 @@ export function LetterWheel({ letter, pool, spinKey, ground, testID }: Props) {
   const still = reduce || pool.length === 0;
   const shown = still ? letter : ticking;
   const land = useSharedValue(1);
+  // The letter and the pool as they are now, read when a tick shows: a parent that builds a new pool
+  // array on every render must not start the spin again (only a new spinKey does).
+  const latest = useRef({ letter, pool });
+  useEffect(() => {
+    latest.current = { letter, pool };
+  }, [letter, pool]);
 
   useEffect(() => {
     if (still) return undefined;
     const timers = times.map((at, k) =>
       setTimeout(() => {
         const last = k === times.length - 1;
+        const { letter: target, pool: letters } = latest.current;
         // A steady walk through the pool: the same spin looks the same on every phone.
-        setShown(last ? letter : (pool[(k * 7 + String(spinKey).length) % pool.length] ?? letter));
+        setShown(
+          last
+            ? target
+            : (letters[(k * 7 + String(spinKey).length) % Math.max(1, letters.length)] ?? target),
+        );
         if (last) {
           land.set(LETTER_WHEEL.landFrom);
           land.set(
@@ -56,7 +67,7 @@ export function LetterWheel({ letter, pool, spinKey, ground, testID }: Props) {
       }, at),
     );
     return () => timers.forEach(clearTimeout);
-  }, [spinKey, letter, pool, still, times, land]);
+  }, [spinKey, still, times, land]);
 
   const pop = useAnimatedStyle(() => ({ transform: [{ scale: land.value }] }));
 
@@ -70,7 +81,7 @@ export function LetterWheel({ letter, pool, spinKey, ground, testID }: Props) {
         {
           width: TILE,
           aspectRatio: 1,
-          borderRadius: shape.radius.xl + 10,
+          borderRadius: shape.radius.letterTile,
           backgroundColor: ON_GAME,
           boxShadow: GAME_SHADOW.forbidden,
         },

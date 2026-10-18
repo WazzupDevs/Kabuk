@@ -7,14 +7,20 @@ import { feelingMutationCache } from './mutationHaptics';
 // A client with the app's mutation cache, recording what the phone would feel.
 function setup() {
   const felt: HapticMoment[] = [];
-  const client = new QueryClient({ mutationCache: feelingMutationCache((m) => felt.push(m)) });
+  const presses: number[] = [];
+  const client = new QueryClient({
+    mutationCache: feelingMutationCache(
+      (m) => felt.push(m),
+      () => presses.push(felt.length),
+    ),
+  });
   const run = (options: MutationOptions<unknown, Error, void>) =>
     client
       .getMutationCache()
       .build(client, { retry: false, ...options })
       .execute(undefined)
       .catch(() => undefined);
-  return { felt, run };
+  return { felt, presses, run };
 }
 
 const fails = () => Promise.reject(new Error('network'));
@@ -33,6 +39,17 @@ describe('failed mutation haptics', () => {
     await run({ mutationFn: fails });
     await run({ mutationFn: fails, meta: {} });
     expect(felt).toEqual([]);
+  });
+
+  it('a press ends the typing pause before its answer (K-30): a fast failure is still felt', async () => {
+    const { felt, presses, run } = setup();
+    await run({ mutationFn: fails, meta: FEEL_ERROR });
+    // The pause ended when the press began, before the failure was felt.
+    expect(presses).toEqual([0]);
+    expect(felt).toEqual(['failed']);
+    // A call the phone sends by itself is not a press.
+    await run({ mutationFn: fails });
+    expect(presses).toEqual([0]);
   });
 
   it('a success is not felt as a failure', async () => {

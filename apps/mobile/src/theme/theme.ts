@@ -94,7 +94,18 @@ export const THEME: ThemeDefinition = {
     bold: 'PlusJakartaSans_700Bold',
   },
   shape: {
-    radius: { xs: 6, sm: 12, md: 16, lg: 22, xl: 28, pill: 999 },
+    // deck: Kapsül Anlat's cards; roleCard: Sahtekar's role card; letterTile: Harf Kapmaca's tile.
+    radius: {
+      xs: 6,
+      sm: 12,
+      md: 16,
+      lg: 22,
+      xl: 28,
+      pill: 999,
+      deck: 24,
+      roleCard: 26,
+      letterTile: 38,
+    },
     stroke: { card: 0, feature: 2, control: 2, tag: 0, hairline: 1, venueRing: 2 },
     selectedTeam: 'fill',
     screenPadding: 20,

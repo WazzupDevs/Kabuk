@@ -75,6 +75,9 @@ export type HapticGate = {
   allow(moment: HapticMoment, now: number): boolean;
   // A keystroke at `now`: touches hold until the person has not typed for `typingMs`.
   typed(now: number): void;
+  // The person pressed send or save: they stopped typing, and the answer to that press (a failure
+  // felt as `failed`) plays even within `typingMs` of the last keystroke.
+  stoppedTyping(): void;
 };
 
 export function hapticGate(limits: typeof HAPTIC_LIMITS = HAPTIC_LIMITS): HapticGate {
@@ -92,6 +95,9 @@ export function hapticGate(limits: typeof HAPTIC_LIMITS = HAPTIC_LIMITS): Haptic
     },
     typed(now) {
       lastKey = now;
+    },
+    stoppedTyping() {
+      lastKey = -Infinity;
     },
   };
 }

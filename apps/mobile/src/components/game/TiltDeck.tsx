@@ -38,7 +38,9 @@ type Props = {
 
 // The cards behind: the paper of the top card, a shade and two shades darker (v45: .tk-s).
 const BACK_FILLS = ['surface2', 'divider'] as const;
-const RELEASE = { damping: 14, stiffness: 180 } as const;
+// The light is drawn this small and scaled up: drawn at the card's size, Android would keep a
+// bitmap of about 2800 px square (some 32 MB) for it on every card (the CTO's 4.2c review).
+const GLARE_DRAWN = 64;
 
 // Kapsül Anlat's card deck (v43 report §2, the v45 file's .tk; docs/SPEC_V4.md §4.C): the next two
 // cards show their edges behind the top one. Held, the top card leans toward the finger on the UI
@@ -86,14 +88,12 @@ export function TiltDeck({ cardKey, children, exit = null, onExited, testID }: P
       done();
       return;
     }
+    // Cut short too (a new card came in mid-way: the other phone pressed first), the screen hears
+    // that the card left; else it would wait for this exit for ever.
     out.set(
-      withTiming(
-        1,
-        { duration: CARD_OUT_MS, easing: Easing.bezier(...CURVES.swap) },
-        (finished) => {
-          if (finished) runOnJS(done)();
-        },
-      ),
+      withTiming(1, { duration: CARD_OUT_MS, easing: Easing.bezier(...CURVES.swap) }, () => {
+        runOnJS(done)();
+      }),
     );
   }, [exit, reduce, leave, out]);
 
@@ -107,9 +107,9 @@ export function TiltDeck({ cardKey, children, exit = null, onExited, testID }: P
   // (the stage's middle, the preview) take the touch over, which ends the tilt.
   const release = () => {
     'worklet';
-    nx.set(withSpring(0, RELEASE));
-    ny.set(withSpring(0, RELEASE));
-    held.set(withTiming(0, { duration: 180 }));
+    nx.set(withSpring(0, TILT.release));
+    ny.set(withSpring(0, TILT.release));
+    held.set(withTiming(0, { duration: TILT.holdOutMs }));
   };
   const finger = Gesture.Manual()
     .enabled(!reduce)
@@ -117,14 +117,22 @@ export function TiltDeck({ cardKey, children, exit = null, onExited, testID }: P
       const t = e.allTouches[0];
       if (!t) return;
       follow(t.x, t.y);
-      held.set(withTiming(1, { duration: 90 }));
+      held.set(withTiming(1, { duration: TILT.holdInMs }));
     })
     .onTouchesMove((e) => {
       const t = e.allTouches[0];
       if (t) follow(t.x, t.y);
     })
-    .onTouchesUp(release)
-    .onTouchesCancelled(release)
+    // The finger lifted: the gesture is over (it never activated, so it fails); onFinalize
+    // then runs as on every other end.
+    .onTouchesUp((_e, manager) => {
+      release();
+      manager.fail();
+    })
+    .onTouchesCancelled((_e, manager) => {
+      release();
+      manager.fail();
+    })
     .onFinalize(release);
 
   const top = useAnimatedStyle(() => {
@@ -152,21 +160,17 @@ export function TiltDeck({ cardKey, children, exit = null, onExited, testID }: P
   });
 
   // The light (v45: radial-gradient(circle at the finger) out to 42 % of the farthest corner): a
-  // circle as wide as the card's diagonal, centred under the finger and scaled to that corner.
-  const glareR = Math.hypot(box.w, box.h);
+  // small circle (GLARE_DRAWN) centred under the finger and scaled up to that corner.
   const glare = useAnimatedStyle(() => {
     const t = tiltFor(nx.value, ny.value);
     const { w, h } = size.value;
     const x = t.glareX * w;
     const y = t.glareY * h;
     const corner = Math.hypot(Math.max(x, w - x), Math.max(y, h - y));
+    const r = GLARE_DRAWN / 2;
     return {
       opacity: held.value,
-      transform: [
-        { translateX: x - glareR },
-        { translateY: y - glareR },
-        { scale: glareR > 0 ? corner / glareR : 0 },
-      ],
+      transform: [{ translateX: x - r }, { translateY: y - r }, { scale: corner / r }],
     };
   });
 
@@ -184,7 +188,7 @@ export function TiltDeck({ cardKey, children, exit = null, onExited, testID }: P
           pointerEvents="none"
           className="absolute inset-0"
           style={{
-            borderRadius: shape.radius.xl - 4,
+            borderRadius: shape.radius.deck,
             backgroundColor: colors[BACK_FILLS[i] ?? 'surface2'],
             boxShadow: GAME_SHADOW.button,
             transform: [{ translateY: d.y }, { rotate: `${d.rotate}deg` }, { scale: d.scale }],
@@ -196,7 +200,7 @@ export function TiltDeck({ cardKey, children, exit = null, onExited, testID }: P
           onLayout={onLayout}
           style={[
             {
-              borderRadius: shape.radius.xl - 4,
+              borderRadius: shape.radius.deck,
               backgroundColor: colors.surface,
               boxShadow: GAME_SHADOW.forbidden,
             },
@@ -204,16 +208,16 @@ export function TiltDeck({ cardKey, children, exit = null, onExited, testID }: P
           ]}
         >
           {children}
-          {reduce || glareR === 0 ? null : (
+          {reduce || box.w === 0 ? null : (
             <View
               pointerEvents="none"
               className="absolute inset-0 overflow-hidden"
-              style={{ borderRadius: shape.radius.xl - 4 }}
+              style={{ borderRadius: shape.radius.deck }}
             >
               <Animated.View
-                style={[{ position: 'absolute', width: glareR * 2, height: glareR * 2 }, glare]}
+                style={[{ position: 'absolute', width: GLARE_DRAWN, height: GLARE_DRAWN }, glare]}
               >
-                <Svg width={glareR * 2} height={glareR * 2}>
+                <Svg width={GLARE_DRAWN} height={GLARE_DRAWN}>
                   <Defs>
                     <RadialGradient id={glareId} cx="50%" cy="50%" r="50%">
                       <Stop
@@ -228,7 +232,12 @@ export function TiltDeck({ cardKey, children, exit = null, onExited, testID }: P
                       />
                     </RadialGradient>
                   </Defs>
-                  <Circle cx={glareR} cy={glareR} r={glareR} fill={`url(#${glareId})`} />
+                  <Circle
+                    cx={GLARE_DRAWN / 2}
+                    cy={GLARE_DRAWN / 2}
+                    r={GLARE_DRAWN / 2}
+                    fill={`url(#${glareId})`}
+                  />
                 </Svg>
               </Animated.View>
             </View>

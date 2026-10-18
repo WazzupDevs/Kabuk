@@ -30,8 +30,9 @@ export const WALLPAPER = {
 const TILE =
   "<g transform='translate(26.5 29.0) rotate(-30) scale(1)'><path d='M-3.6-3.6a3.6 3.6 0 1 1 5.4 3.1C.6.2 0 1 0 2.4'/><circle cx='0' cy='6.6' r='1.1' fill='#5A3AE6'/></g><g transform='translate(69.4 29.6) rotate(10) scale(1)'><path d='M-8.5 4a8.5 8.5 0 0 1 17 0'/><path d='M0 4l4.6-5.6'/></g><g transform='translate(128.3 22.9) rotate(10) scale(1)'><rect x='-7.5' y='-7.5' width='15' height='15' rx='3.5'/><circle cx='-3' cy='-3' r='1.1' fill='#5A3AE6'/><circle cx='3' cy='3' r='1.1' fill='#5A3AE6'/><circle cx='0' cy='0' r='1.1' fill='#5A3AE6'/></g><g transform='translate(175.2 26.7) rotate(0) scale(1)'><path d='M-3.5-7l7 7-7 7'/></g><g transform='translate(226.9 24.5) rotate(-10) scale(0.88)'><path d='M0-8C.8-2.2 2.2-.8 8 0 2.2.8.8 2.2 0 8-.8 2.2-2.2.8-8 0-2.2-.8-.8-2.2 0-8z'/></g><g transform='translate(56.0 80.9) rotate(28) scale(1)'><path d='M-8.5 4a8.5 8.5 0 0 1 17 0'/><path d='M0 4l4.6-5.6'/></g><g transform='translate(102.5 72.8) rotate(-20) scale(1.1)'><rect x='-6.5' y='-10' width='8' height='20' rx='4'/><rect x='-1.5' y='-10' width='8' height='20' rx='4'/></g><g transform='translate(144.4 75.8) rotate(-30) scale(0.88)'><path d='M0-8C.8-2.2 2.2-.8 8 0 2.2.8.8 2.2 0 8-.8 2.2-2.2.8-8 0-2.2-.8-.8-2.2 0-8z'/></g><g transform='translate(195.3 72.5) rotate(-30) scale(1)'><path d='M-9-5a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3h-6l-5 4v-4h-1a3 3 0 0 1-3-3z'/></g><g transform='translate(4.2 69.0) rotate(-20) scale(1)'><path d='M2.5-9v12.5M2.5-9l5 2'/><circle cx='-0.5' cy='4' r='3'/></g><g transform='translate(254.2 69.0) rotate(-20) scale(1)'><path d='M2.5-9v12.5M2.5-9l5 2'/><circle cx='-0.5' cy='4' r='3'/></g><g transform='translate(24.6 130.8) rotate(0) scale(0.88)'><path d='M0-7.5v15M-7.5 0h15'/></g><g transform='translate(69.9 126.6) rotate(28) scale(1.1)'><path d='M-5.5-5.5l11 11M5.5-5.5l-11 11'/></g><g transform='translate(123.0 122.7) rotate(-30) scale(0.88)'><rect x='-7.5' y='-7.5' width='15' height='15' rx='3.5'/><circle cx='-3' cy='-3' r='1.1' fill='#5A3AE6'/><circle cx='3' cy='3' r='1.1' fill='#5A3AE6'/><circle cx='0' cy='0' r='1.1' fill='#5A3AE6'/></g><g transform='translate(178.1 120.4) rotate(-20) scale(1)'><path d='M-5.5 8l5.5-16 5.5 16M-3.2 2.2h6.4'/></g><g transform='translate(219.1 124.6) rotate(0) scale(1)'><path d='M0 7s-8-4.8-8-10a4 4 0 0 1 8-1.2A4 4 0 0 1 8-3c0 5.2-8 10-8 10z'/></g><g transform='translate(52.2 171.3) rotate(10) scale(1)'><rect x='-6.5' y='-10' width='8' height='20' rx='4'/><rect x='-1.5' y='-10' width='8' height='20' rx='4'/></g><g transform='translate(105.8 178.2) rotate(0) scale(0.88)'><path d='M2.5-9v12.5M2.5-9l5 2'/><circle cx='-0.5' cy='4' r='3'/></g><g transform='translate(145.4 174.0) rotate(-20) scale(1)'><rect x='-6' y='-9' width='12' height='18' rx='2.6'/><path d='M-2.8-4h5.6M-2.8 0h3.6'/></g><g transform='translate(197.2 180.7) rotate(28) scale(1.1)'><circle cx='0' cy='1.5' r='7.5'/><path d='M0 1.5V-2.5M-2.4-8.5h4.8'/></g><g transform='translate(6.0 169.2) rotate(-20) scale(0.88)'><path d='M0 7s-8-4.8-8-10a4 4 0 0 1 8-1.2A4 4 0 0 1 8-3c0 5.2-8 10-8 10z'/></g><g transform='translate(256.0 169.2) rotate(-20) scale(0.88)'><path d='M0 7s-8-4.8-8-10a4 4 0 0 1 8-1.2A4 4 0 0 1 8-3c0 5.2-8 10-8 10z'/></g><g transform='translate(31.0 226.2) rotate(10) scale(1)'><path d='M-9-5a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3h-6l-5 4v-4h-1a3 3 0 0 1-3-3z'/></g><g transform='translate(69.5 220.8) rotate(0) scale(1.1)'><circle cx='0' cy='1.5' r='7.5'/><path d='M0 1.5V-2.5M-2.4-8.5h4.8'/></g><g transform='translate(119.1 226.3) rotate(28) scale(1.1)'><path d='M-5.5 8l5.5-16 5.5 16M-3.2 2.2h6.4'/></g><g transform='translate(173.6 219.9) rotate(-20) scale(1)'><rect x='-6' y='-9' width='12' height='18' rx='2.6'/><path d='M-2.8-4h5.6M-2.8 0h3.6'/></g><g transform='translate(219.2 223.4) rotate(10) scale(0.88)'><rect x='-6.5' y='-10' width='8' height='20' rx='4'/><rect x='-1.5' y='-10' width='8' height='20' rx='4'/></g>";
 
-// The whole wallpaper for a `width` x `height` area as SVG text: the gradient, the glows and as many
-// tiles as cover it.
+// The whole wallpaper for a `width` x `height` area as SVG text: the gradient, the glows and the
+// tile repeated by one <pattern> (the tile's doodles once, not once per tile: some 60 nodes instead
+// of 580 on a tall screen; the CTO's 4.2b review).
 export function wallpaperSvg(scheme: ColorScheme, width: number, height: number): string {
   const w = Math.max(1, Math.ceil(width));
   const h = Math.max(1, Math.ceil(height));
@@ -45,22 +46,20 @@ export function wallpaperSvg(scheme: ColorScheme, width: number, height: number)
         `<stop offset="${WALLPAPER.fadeAt}" stop-color="${g.color}" stop-opacity="0"/></radialGradient>`,
     )
     .join('');
-  const tiles: string[] = [];
-  for (let y = 0; y < h; y += WALLPAPER.tile) {
-    for (let x = 0; x < w; x += WALLPAPER.tile) {
-      tiles.push(`<g transform="translate(${x} ${y})">${TILE}</g>`);
-    }
-  }
+  const tile =
+    `<pattern id="tile" patternUnits="userSpaceOnUse" width="${WALLPAPER.tile}" ` +
+    `height="${WALLPAPER.tile}"><g fill="none" stroke="${WALLPAPER.ink}" ` +
+    `stroke-width="${WALLPAPER.stroke}" stroke-linecap="round" stroke-linejoin="round" ` +
+    `opacity="${WALLPAPER.inkOpacity}">${TILE}</g></pattern>`;
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">` +
     `<defs><linearGradient id="base" x1="0" y1="0" x2="0" y2="1">` +
-    `<stop offset="0" stop-color="${top}"/><stop offset="1" stop-color="${bottom}"/></linearGradient>${glows}</defs>` +
+    `<stop offset="0" stop-color="${top}"/><stop offset="1" stop-color="${bottom}"/></linearGradient>${glows}${tile}</defs>` +
     `<rect width="${w}" height="${h}" fill="url(#base)"/>` +
     WALLPAPER.glows
       .map((_, i) => `<rect width="${w}" height="${h}" fill="url(#glow${i})"/>`)
       .join('') +
-    `<g fill="none" stroke="${WALLPAPER.ink}" stroke-width="${WALLPAPER.stroke}" stroke-linecap="round" ` +
-    `stroke-linejoin="round" opacity="${WALLPAPER.inkOpacity}">${tiles.join('')}</g></svg>`
+    `<rect width="${w}" height="${h}" fill="url(#tile)"/></svg>`
   );
 }
 
