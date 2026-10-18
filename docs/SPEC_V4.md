@@ -781,8 +781,16 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 
 **Faz 3'ün kapanışı** (K-1):
 
-- 23.4b'nin saha testi şartı kalkar. 23.4b, 23.4a'nın OTA'sı telefonda doğrulanınca ve proje sahibinin "onaylandı"sıyla birleşir. Böylece 4.5'in migration'ı reveal tablolarıyla yaşamaz.
+- 23.4b'nin saha testi şartı kalkar. Böylece 4.5'in migration'ı reveal tablolarıyla yaşamaz.
 - Ayrı bir Faz 3 saha testi yapılmaz (SPEC_V3 §23.M'deki "Saha testi" satırı bununla değişir). Bulma yardımı gözlemleri Faz 4 saha testinde yapılır (§4.M).
+
+**Faz 3'ün telefon kontrolü** (K-7):
+
+- "OTA telefonda doğrulandı" 23.3b, 23.4a ve 23.4b için birleşme şartı değildir.
+- Telefonda tek kontrol, adım 4.1'in PR'ı birleştikten sonra 0.5.0 preview APK'sı kurulunca yapılır ve üçünü birlikte kapsar. Bu PR'ların "Telefonda kontrol" adımları silinmez, "0.5.0 APK'sı kurulunca" başlığıyla durur.
+- 23.4a proje sahibinin "onaylandı"sıyla birleşir.
+- 23.4b'nin şartı: 23.4a birleştikten sonraki deploy-dev koşusu yeşil bitti ve `reveal` fonksiyonu dev projesinden elle silindi; birleşme yine "onaylandı"yla. Gerekçe aynı: kolonları okuyan eski istemci ya da eski fonksiyon yayın sırasında kırılmasın. Eski JS paketli bir telefonun bir açılışta hata görmesi dev projesinde kabul edildi.
+- SPEC_V3 §23.N'deki "Bir sonraki adımın PR'ı, önceki adımın OTA'sı telefonda kontrol edildikten sonra birleşir" şartı bu üç PR için bununla değişir.
 
 **Pilot ön koşulları** (§4.B-12):
 
@@ -909,16 +917,17 @@ Bu PR yalnızca proje paragrafını ve görsel kaynak kod kuralını değiştiri
 **Proje sahibinin kararları.**
 
 - §4.B'deki 12 madde ve kural metinleri için verilen üç ölçü (18 Ekim; "skall v43 dönüşüm raporu" ve bu belgenin isteği).
-- CTO incelemesinden sonra verilen altı karar (18 Ekim). Metinde "K-n" diye anılır:
+- CTO incelemesinden sonra verilen kararlar (18 Ekim). Metinde "K-n" diye anılır:
 
-| No         | Karar                                                                                                                                                                                                                                                                          | Nerede              |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------- |
-| K-1        | 23.4b'nin saha testi şartı kalkar: 23.4a'nın OTA'sı telefonda doğrulanınca ve proje sahibinin "onaylandı"sıyla birleşir. Ayrı bir Faz 3 saha testi yapılmaz; bulma yardımı gözlemleri Faz 4 saha testinde yapılır                                                              | §4.M, §4.N          |
-| K-2        | Davet ekranı: bütün arkadaşlar listelenir, kimin mekanda olduğu görünmez; sunucu mekanda olmayana daveti sessizce iletmez; gönderen her durumda aynı yanıtı görür                                                                                                              | §4.C, §4.G, kural 4 |
-| K-3 (P-1)  | Erkek ve belirtmeyen mekan sohbetinde anonim yazabilir; oyun akışında ve masada her zaman profillidir (kural 12 yalnızca oyun akışı için, aynen). Bu hesaplar için anonim seçim yalnızca mekan sohbetini etkiler; check-in başına 1 değişiklik kuralı onlar için de geçerlidir | §4.D, kural 4 ve 12 |
-| K-4 (P-4)  | Profilli görünmek profil fotoğrafı ister (`photo_required`). Soluk kapsül yalnızca fotoğrafı sonradan gizlenen ya da kaldırılan profil içindir                                                                                                                                 | §4.D, kural 4       |
-| K-5 (P-12) | Rakip düğmesi "Yasak!", ödül "Yasak avcısı"                                                                                                                                                                                                                                    | §4.C, §4.F          |
-| K-6 (P-13) | Zil yalnızca Mesajlar'da; alt çubuktaki Mesajlar sekmesinde okunmamış noktası. SPEC_V3 §18.3a bu adımda (4.7) değişir                                                                                                                                                          | §4.C, §4.G          |
+| No         | Karar                                                                                                                                                                                                                                                                                                                                                                              | Nerede              |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
+| K-1        | 23.4b'nin saha testi şartı kalkar. Ayrı bir Faz 3 saha testi yapılmaz; bulma yardımı gözlemleri Faz 4 saha testinde yapılır. (23.4b'nin birleşme şartı K-7 ile değişti.)                                                                                                                                                                                                           | §4.M, §4.N          |
+| K-2        | Davet ekranı: bütün arkadaşlar listelenir, kimin mekanda olduğu görünmez; sunucu mekanda olmayana daveti sessizce iletmez; gönderen her durumda aynı yanıtı görür                                                                                                                                                                                                                  | §4.C, §4.G, kural 4 |
+| K-3 (P-1)  | Erkek ve belirtmeyen mekan sohbetinde anonim yazabilir; oyun akışında ve masada her zaman profillidir (kural 12 yalnızca oyun akışı için, aynen). Bu hesaplar için anonim seçim yalnızca mekan sohbetini etkiler; check-in başına 1 değişiklik kuralı onlar için de geçerlidir                                                                                                     | §4.D, kural 4 ve 12 |
+| K-4 (P-4)  | Profilli görünmek profil fotoğrafı ister (`photo_required`). Soluk kapsül yalnızca fotoğrafı sonradan gizlenen ya da kaldırılan profil içindir                                                                                                                                                                                                                                     | §4.D, kural 4       |
+| K-5 (P-12) | Rakip düğmesi "Yasak!", ödül "Yasak avcısı"                                                                                                                                                                                                                                                                                                                                        | §4.C, §4.F          |
+| K-6 (P-13) | Zil yalnızca Mesajlar'da; alt çubuktaki Mesajlar sekmesinde okunmamış noktası. SPEC_V3 §18.3a bu adımda (4.7) değişir                                                                                                                                                                                                                                                              | §4.C, §4.G          |
+| K-7        | "OTA telefonda doğrulandı" 23.3b, 23.4a ve 23.4b için birleşme şartı değildir. Telefonda tek kontrol, 4.1 birleştikten sonra 0.5.0 preview APK'sı kurulunca yapılır ve üçünü birlikte kapsar. 23.4b'nin şartı: 23.4a'dan sonraki deploy-dev koşusu yeşil ve `reveal` dev projesinden elle silindi. Eski JS paketli telefonun bir açılışta hata görmesi dev projesinde kabul edildi | §4.N; SPEC_V3 §23.N |
 
 **Açık kararlar.** İlgili adımdan önce proje sahibine sorulur; karar verilmeden o adımın işi başlamaz. P-1, P-4, P-12 ve P-13 karara bağlandı (K-3…K-6); diğer numaralar değişmez.
 

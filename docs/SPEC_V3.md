@@ -2442,6 +2442,7 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 
 - Her adım telefonda tek başına denenebilir: adımın sunucusu dev'e yayınlanır ve hemen ardından istemcisi OTA ile gider (22.1 kalıbı).
 - Bir sonraki adımın PR'ı, önceki adımın OTA'sı telefonda kontrol edildikten sonra birleşir. Çalışma öncekinin yayınını beklemeden başlayabilir.
+  - _Proje sahibinin kararı (18 Ekim; SPEC_V4 §4.N, K-7): 23.3b, 23.4a ve 23.4b için bu şart kalktı. Telefonda tek kontrol, Faz 4 adım 4.1 (0.5.0) birleştikten sonra preview APK'sı kurulunca yapılır ve üçünü birlikte kapsar. 23.4b, 23.4a'dan sonraki deploy-dev koşusu yeşil bitip `reveal` dev projesinden elle silinince birleşebilir._
 - İstemci işi önce tuvalde (tasarım oturumu), sonra kodda yapılır.
 - **23.2 ve 23.3'te sunucu ile OTA arası kısa tutulur:**
   - Eski istemci `gender_required` ve `anonymous_not_allowed`'ı tanımaz, genel hata olarak gösterir.
