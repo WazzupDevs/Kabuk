@@ -1,12 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
-import { type ComponentProps, useEffect, useState } from 'react';
+import { type ComponentProps, type ReactNode, useEffect, useState } from 'react';
 import { Animated, Pressable, View, type ViewStyle } from 'react-native';
 
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { buttonFill, type ButtonVariant, isTextOnly } from '@/theme/buttonFill';
 import { EASE_OUT } from '@/theme/markMotion';
 import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, OPACITY, SPACING, TOUCH } from '@/theme/tokens';
+import { ICON, OPACITY, SPACING, TOUCH, type TypeVariant } from '@/theme/tokens';
 
 import { Loader } from './Loader';
 import { usePressScale } from './motion';
@@ -130,6 +130,11 @@ export function Button({
       ? { borderWidth: shape.stroke.hairline * 1.5, borderColor: colors.border }
       : null;
   const small = size === 'sm';
+  const labelVariant: TypeVariant = small
+    ? 'buttonSmall'
+    : size === 'lg'
+      ? 'buttonLarge'
+      : 'button';
   // The busy mark: one colour on a filled button, the logo's colours on a raised or clear one.
   const filled = !textOnly && !edge;
 
@@ -185,34 +190,29 @@ export function Button({
             ) : (
               <>
                 {icon ? <Ionicons name={icon} size={ICON.md} color={fg} /> : null}
-                <View
-                  className={stack ? 'shrink items-center' : 'shrink flex-row items-baseline gap-1'}
-                >
-                  <Text
-                    variant={small ? 'buttonSmall' : size === 'lg' ? 'buttonLarge' : 'button'}
-                    color={fg}
-                    align="center"
-                    // One line, always (CLAUDE.md → Ekran davranışı): a label that does not fit
-                    // shrinks rather than breaking onto a second line ("Şimdi değil", "Sağında").
-                    numberOfLines={1}
-                    adjustsFontSizeToFit
-                    minimumFontScale={0.5}
-                    className="shrink"
-                  >
+                {stack ? (
+                  <View className="shrink items-center">
+                    <Label variant={labelVariant} color={fg}>
+                      {label}
+                    </Label>
+                    {detail ? (
+                      <Label variant="buttonDetail" color={fg}>
+                        {detail}
+                      </Label>
+                    ) : null}
+                  </View>
+                ) : (
+                  // The detail on the same line is part of the label's text, so a label that
+                  // does not fit shrinks with its detail ("Pas 3 hak"), never alone.
+                  <Label variant={labelVariant} color={fg}>
                     {label}
-                  </Text>
-                  {detail ? (
-                    <Text
-                      variant="buttonDetail"
-                      color={fg}
-                      numberOfLines={1}
-                      adjustsFontSizeToFit
-                      minimumFontScale={0.5}
-                    >
-                      {detail}
-                    </Text>
-                  ) : null}
-                </View>
+                    {detail ? (
+                      <Text variant="buttonDetail" color={fg}>
+                        {` ${detail}`}
+                      </Text>
+                    ) : null}
+                  </Label>
+                )}
               </>
             )}
           </Animated.View>
@@ -234,5 +234,31 @@ export function Button({
         </View>
       )}
     </Pressable>
+  );
+}
+
+// One line, always (CLAUDE.md → Ekran davranışı): a label that does not fit shrinks rather than
+// breaking onto a second line ("Şimdi değil", "Sağında").
+function Label({
+  variant,
+  color,
+  children,
+}: {
+  variant: TypeVariant;
+  color: string;
+  children: ReactNode;
+}) {
+  return (
+    <Text
+      variant={variant}
+      color={color}
+      align="center"
+      numberOfLines={1}
+      adjustsFontSizeToFit
+      minimumFontScale={0.5}
+      className="shrink"
+    >
+      {children}
+    </Text>
   );
 }
