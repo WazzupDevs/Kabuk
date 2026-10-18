@@ -62,6 +62,7 @@ import { SPACING } from '@/theme/tokens';
 
 import { IdentitySet } from './identityPreview';
 import { MotionSet } from './motionPreview';
+import { MeasureSet } from './measurePreview';
 import { PartsSet } from './partsPreview';
 import { PreviewBlock } from './PreviewBlock';
 
@@ -732,4 +733,5 @@ export const PREVIEW_SETS: PreviewSet[] = [
   { key: 'parts', label: tr.design.parts.set, render: () => <PartsSet /> },
   { key: 'identity', label: tr.design.identity.set, render: () => <IdentitySet /> },
   { key: 'motion', label: tr.design.motion.set, render: () => <MotionSet /> },
+  { key: 'measure', label: tr.design.measure.set, render: () => <MeasureSet /> },
 ];
