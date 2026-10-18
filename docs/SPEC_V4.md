@@ -12,7 +12,8 @@ Alt bölümler harfle (§4.A, §4.B…), **adımlar** sayıyla numaralanır (ad�
 
 - `docs/design/v43/skall-masa-deneme-v43.html`: tek dosyalık deneme. Yalnızca "Senin görünümün" vardır; üstteki koyu deneme şeridi uygulamanın parçası değildir.
 - `docs/design/v43/skall-arayuz-devir-raporu-v43.md`: tasarım oturumunun devir raporu. Rapor karar vermez; önerileri ve 25 sorusu bu belgede karara bağlanır ya da §4.P'ye yazılır.
-- `docs/design/v44/skall-masa-deneme-v44.html` ve `skall-arayuz-devir-raporu-v44.md` (18 Ekim): koyu tema, v43'te olmayan ekranlar ve v43'ten düzeltmeler. Raporun §6'daki 17 sorusu proje sahibince cevaplandı (§4.P, K-9…K-25). v44 görsel kaynaktır; öncelik §4.C'de.
+- `docs/design/v44/skall-masa-deneme-v44.html` ve `skall-arayuz-devir-raporu-v44.md` (18 Ekim): koyu tema, v43'te olmayan ekranlar ve v43'ten düzeltmeler. Raporun §6'daki 17 sorusu proje sahibince cevaplandı (§4.P, K-9…K-25).
+- `docs/design/v45/skall-masa-deneme-v45.html` ve `skall-arayuz-devir-raporu-v45.md` (18 Ekim): v44'ün üstüne yalnızca ilk ekran giriş animasyonu ve kayıt adımlarındaki kapsül dostları; kayıt sırası K-19'a göre (onaylar başta). Diğer ekranlar v44'le aynıdır. Raporun §6'daki 6 sorusu proje sahibince cevaplandı (§4.P, K-26…K-31). v45 görsel kaynaktır; öncelik §4.C'de.
 - Proje sahibinin kararları (§4.B) ve yönetimin "skall v43 dönüşüm raporu" (18 Ekim).
 
 ## 4.A Gerekçe, ilke ve kapsam
@@ -65,7 +66,7 @@ Bu yüzden Faz 4 Faz 3'ün devamı değil, yeni bir fazdır. Değişenler: masa 
 - Telefonu olmayan oyuncu (§4.B-1).
 - Uygulama içi ses ya da mikrofon. SPEC_V3 §20.1 aynen geçerlidir: her şey sesli söylenir, uygulama dinlemez ve ses çalmaz.
 - Yeni oyun.
-- v43'te ve v44'te olmayan ekran ya da özellik (§4.C).
+- v43'te, v44'te ve v45'te olmayan ekran ya da özellik (§4.C).
 
 **Native değişiklik: tek build** (adım 4.1, `version` 0.5.0):
 
@@ -100,7 +101,7 @@ Değişmez kabul edilir.
    - kural 4'e açık istisna olarak yazılır.
 9. **Oyun adında "Tabu" geçmez.** Çalışma adı "Kapsül Anlat"; metinlere tek sabitten gelir.
 10. **Koyu tema vardır; yazı tipi Plus Jakarta Sans.**
-11. **Görsel kaynak v43'tür** (`docs/design/v43/`); Claude Design tuvali arşiv olur. Koyu tema ve eksik ekranlar v44 olarak "Kabuk tasarım denemeleri" oturumundan gelir; 4.2'nin ön koşuludur. (18 Ekim: v44 geldi, `docs/design/v44/`; görsel kaynak artık v44, öncelik §4.C.)
+11. **Görsel kaynak v45'tir** (`docs/design/v45/`; öncelik §4.C); Claude Design tuvali arşiv olur. Karar v43 içindi (`docs/design/v43/`). Koyu tema ve eksik ekranlar v44 olarak (`docs/design/v44/`), ilk ekran giriş animasyonu ve kayıt adımlarındaki kapsül dostları v45 olarak "Kabuk tasarım denemeleri" oturumundan geldi (18 Ekim); v43 ve v44 tarih için kalır.
 12. **Pilot v43'ün tamamıyla çıkar;** hazır olmadan Play'e çıkılmaz.
 
 **Kural metinleri için proje sahibinin verdiği ölçüler** (§4.O):
@@ -113,16 +114,16 @@ Değişmez kabul edilir.
 
 **Kaynak.**
 
-- `docs/design/v44/`: deneme ve devir raporu. Ekranlar, renk, yazı, şekil, bileşen ve hareket buradan alınır.
-- **Öncelik sırası:** önce aşağıdaki "v44'ten farklı uygulananlar" listesi, sonra v44, sonra v43.
-- `docs/design/v43/`: önceki deneme; v44'ün değiştirmediği yerde geçerlidir ve tarih için kalır.
+- `docs/design/v45/`: deneme ve devir raporu. Ekranlar, renk, yazı, şekil, bileşen, hareket ve dokunuş buradan alınır. v45, v44'ün üstüne yalnızca ilk ekran giriş animasyonunu ve kayıt adımlarındaki kapsül dostlarını ekler ve kayıt sırasını K-19'a göre kurar; diğer ekranları v44'le aynıdır (v45 raporu, giriş).
+- **Öncelik sırası:** önce aşağıdaki "v45'ten farklı uygulananlar" listesi, sonra v45, sonra v44, sonra v43.
+- `docs/design/v44/` ve `docs/design/v43/`: önceki denemeler; sonrakinin değiştirmediği yerde geçerlidir ve tarih için kalır.
 - Claude Design ana tuvali (https://claude.ai/artifact/9pfA5eudWS4s5rxUydRuss) ve önceki tasarım denemeleri arşivdir.
-- skall tasarım sistemi (https://claude.ai/artifact/TBSmpZEA6Lg29Qc4oVtSX5) 4.2'de v44'e göre yenilenir; o zamana kadar bugünkü tokenların açıklaması olarak kalır.
+- skall tasarım sistemi (https://claude.ai/artifact/TBSmpZEA6Lg29Qc4oVtSX5) 4.2'de v45'e göre yenilenir; o zamana kadar bugünkü tokenların açıklaması olarak kalır.
 
-**v44: 4.2'nin ön koşulu (18 Ekim'de geldi).** Koyu tema ve v43'te olmayan ekranlar "Kabuk tasarım denemeleri" oturumundan v44 olarak geldi (`docs/design/v44/`, raporun §3'ü). 4.2 v44'e göre yapılır. İstenen ekranlar (v43 raporu §10 ve bu belge):
+**v44: 4.2'nin ön koşulu (18 Ekim'de geldi).** Koyu tema ve v43'te olmayan ekranlar "Kabuk tasarım denemeleri" oturumundan v44 olarak geldi (`docs/design/v44/`, raporun §3'ü). 4.2 v45'e göre yapılır (v45'in diğer ekranları v44'le aynıdır). İstenen ekranlar (v43 raporu §10 ve bu belge):
 
 - bütün ekranların koyu teması;
-- kayıt akışı (telefon, kod, profil, doğum tarihi, cinsiyet, fotoğraf, onaylar; onayların yeri aşağıda) ve cinsiyet kapısı;
+- kayıt akışı (telefon, kod, profil, doğum tarihi, cinsiyet, fotoğraf, onaylar; onaylar başta, K-19; v45'te çizili) ve cinsiyet kapısı;
 - check-in ve mekanda masası olmayan kişinin mekan ekranı ("Masa kur");
 - masa kurma ve masa adı (yenileme hakkıyla);
 - davet gönderme ekranı: bütün arkadaşların listesi, kimin mekanda olduğu görünmez (K-2, §4.G). Tasarım oturumuna giden "aynı mekandaki arkadaşların listesi" isteği bununla değişir;
@@ -134,12 +135,11 @@ Değişmez kabul edilir.
 - zil yalnızca Mesajlar'da, alt çubuktaki Mesajlar sekmesinde okunmamış noktası (K-6, §4.G);
 - v43'te çizilmemiş ekranların yükleniyor, boş ve hata hâlleri.
 
-  4.3 ve sonraki adımlar ekran başına yukarıdaki öncelik sırasıyla kurulur. v44'te de v43'te de olmayan bir görünüm gerekirse uygulama durur ve tasarım oturumuna sorulur.
+  4.3 ve sonraki adımlar ekran başına yukarıdaki öncelik sırasıyla kurulur. v45'te, v44'te ve v43'te olmayan bir görünüm gerekirse uygulama durur ve tasarım oturumuna sorulur.
 
-**v44'ten farklı uygulananlar** (proje sahibinin kararları; v44 çizimi bu noktalarda uygulanmaz):
+**v45'ten farklı uygulananlar** (proje sahibinin kararları; v45 çizimi bu noktalarda uygulanmaz). Maddelerdeki "v44'te" notları v45 için de geçerlidir: v45'in bu ekranları v44'le aynıdır.
 
 - **Soluk posterde oy verilir** (K-17). v44'te soluk poster oy vermiyor. Masanın telefon sayısı alt sınıra ulaşmadan sahip o oyunu başlatamaz.
-- **Kayıtta onaylar başta kalır** (K-19), bugünkü uygulama gibi: telefon, kod ve profil bilgilerinden önce. v44'te sonda.
 - **"Anonime geç"** (K-20): fotoğrafı olmayan ve profilli görünmek isteyen kadına "Fotoğraf ekle"nin yanında "Anonime geç" de önerilir. v44'te yalnızca "Fotoğraf ekle".
 - **Keşfet sıralaması** (K-21): bugün etkinliği olan mekanlar üstte, sonra ada göre. v44'te yalnızca ada göre.
 - **Erkekte ve belirtmeyende "Oyunlara katılım"** (K-22): Ayarlar'da görünür ve yalnızca mekan sohbetindeki girişteki varsayılanı belirler. v44'te gizli.
@@ -150,6 +150,8 @@ Değişmez kabul edilir.
 - **Aktiflik noktası** (K-12, P-6): mekan sohbeti kartındaki nokta yalnızca son 10 dakikada mesaj varsa yanar. v44'te her zaman yanıyor.
 - **Mekan sohbetinde "yazıyor" yok** (K-11, P-5): üçüncü bir istemci yayın kanalı isterdi (kural 9).
 - **Nick yenileme 30 günde bir** (K-9, P-2): v44'te "Karar bekliyor" etiketli ayrı durum.
+- **İlk ekranın düğmesi "Başla"** (K-26): önce "Başlamadan önce"yi açar. v45'te "Telefonla devam et".
+- **"Başlamadan önce"den geri gelince sahne durağan gelir** (K-28), yeniden oynamaz. v45'te perdesiz yeniden oynuyor.
 
 **Tasarım sistemi (adım 4.2).** Sunucu değişmez; istemci OTA ile gider.
 
@@ -198,6 +200,14 @@ Değişmez kabul edilir.
 - **Masa:** sabit üst alan (geri, masa adı ve kişi sayısı → Masadakiler; sahipte "Bitir", katılımcıda "Ayrıl"; sahipte altında "Lobiye aç" ve "Davet et"), "Oyun Seç" ve "Masa Sohbeti" sekmeleri, kategori çipleri ve altı animasyonlu poster. 4.3'te poster bugünkü öneri ve kabulü açar; oylama 4.5'te gelir.
 - **Mesajlar** (Sohbet ve İstekler sekmeleri), DM, Profil, Arkadaşlar, Profili düzenle, Aktiviteler, Keşfet: v44 görünümü, bugünkü veriyle. Aktiviteler'de kampanya ve "ilgileniyorum" yoktur (K-15).
 - **Oyun ekranları** 4.3'te bugünkü oyun ekranlarıdır (yeni tokenlar ve yazı tipiyle). v44'ün oyun ekranları her oyunun 4.6 adımında gelir.
+- **İlk ekran ve kayıt** (v45): kayıt ekranları v45 görünümüyle, sırası K-19'a göre: Başlamadan önce, telefon, kod, ad, doğum tarihi, cinsiyet, fotoğraf (v45 raporu §1). Kapsamda ilk ekran giriş animasyonu ve kayıt adımlarındaki kapsül dostları (v45):
+  - İlk ekranın düğmesi "Başla"; önce "Başlamadan önce" açılır (K-26). Son adımın düğmesi "Bitir", fotoğraf yoksa "Fotoğrafsız bitir" (K-29).
+  - Sahne `LaunchCurtain` bittikten sonra başlar; v45'teki perde taklidi uygulamaya girmez. Sahne kısadır: yaklaşık 5 saniye, tek sefer, döngü yok (K-27). "Geç" ya da "Başla" sahneyi hemen son hâline getirir. "Başlamadan önce"den geri gelinince sahne durağan gelir, yeniden oynamaz (K-28).
+  - Hareketi azalt açıkken (`useReducedMotion`) sahne son hâlinde ve durağandır; dostlar kaymadan görünür, zıplama, sallanma, konfeti ve parlama olmaz.
+  - Sahne ve dostlar ekran okuyucuya kapalıdır ve dokunulmaz. Dost hiçbir yazının, alanın ya da düğmenin üstüne binmez: binecekse en çok 18 dp yukarı kayar, yine binecekse o adımda görünmez (v45 raporu §3). 320 dp ve en büyük yazıda doğum tarihi adımında dostun gizlenmesi kabul (K-31).
+  - Dost başını yalnızca ekrandaki bir hata metniyle birlikte sallar; hatayı her zaman metin söyler.
+  - Hesap açılınca tek bir başarı titreşimi: yeni an `accountReady` (`notification: success`), `hapticMoments.ts`'te. `haptics.ts`'e saf ve testli sıklık sınırı: aynı an 600 ms'den sık çalmaz, iki titreşim arasında en az 150 ms olur, yazarken titreşim yok (K-30). Dost kendi başına titreşim üretmez.
+  - Yeni native paket yok: `react-native-reanimated`, `react-native-svg` ve `expo-haptics` kurulu. Kapsüller kapsül avatarından zemin dairesi olmadan, masalar, lambalar ve ışık konisi `react-native-svg` ile çizilir; görsel dosya yok. Sahnenin zamanlama tablosu saf bir modülde durur ve testlidir (`launchMotion.ts` kalıbı).
 - **Alt sekme etiketleri** en büyük yazıda en çok 1,2 kat büyür (`maxFontSizeMultiplier={1.2}`); 320 dp'de sığmazsa 1 (K-23).
 - **"Tabu" kelimesi** kullanıcıya görünen metinlerden 4.3'te kalkar:
   - Oyunun adı tek sabitten gelir: `supabase/functions/_shared/pure/brand.ts` → `GAME_NAMES` (`tabu: 'Kapsül Anlat'`); `tr.ts` ve mağaza metinleri oradan okur.
@@ -738,6 +748,7 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 - Kontrast testleri yeni tokenlarla; `tr.ts` ve `docs/store/`'da "Tabu" geçmez (birim testi); `GAME_NAMES` tek kaynaktır.
 - Keşfet ve Aktiviteler konuma göre sıralamaz (birim testi: liste sırası konum almaz). Keşfet'te bugün etkinliği olan mekanlar üstte, sonra ada göre (K-21).
 - E2E: bütün akışlar yeni ekranlarda; büyük yazı koşusu 320 dp'de kesilen metin ve iki satıra bölünen düğme bulmaz.
+- İlk ekran ve kayıt (v45): sahnenin zamanlama tablosu tek seferde yaklaşık 5 sn'de biter ve döngü içermez (birim testi). Dostun yerleşim kuralı saftır ve testlidir (en çok 18 dp yukarı, yine kesişirse gizli). Sıklık sınırı `hapticMoments.test.ts`'te: aynı an 600 ms'den sık çalmaz, iki titreşim arasında en az 150 ms. E2E'nin kayıt akışı "Başla" ve yeni sırayla; giriş sahnesi akışı bekletmez.
 
 **Adım 4.4.**
 
@@ -797,18 +808,18 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 
 ## 4.N Uygulama sırası, yayın, maliyet ve risk
 
-| Adım                           | Sunucu                                                          | İstemci                                                                                                                 | Yayın                                                                | Ön koşul   |
-| ------------------------------ | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ---------- |
-| 4.0 Belge                      | —                                                               | —                                                                                                                       | Bu PR                                                                | —          |
-| 4.1 Native build 0.5.0 (M0)    | —                                                               | `react-native-gesture-handler`, `gwpAsanMode="never"`; `version` 0.5.0                                                  | `eas build`, APK yeniden kurulur                                     | 4.0        |
-| 4.2 Tasarım sistemi            | —                                                               | Tokenlar (açık ve koyu), Plus Jakarta Sans, ikonlar, kapsül avatar bileşeni, hareketler, temel bileşenler               | OTA                                                                  | 4.1 ve v44 |
-| 4.3 Ekranlar, bugünkü mantıkla | —                                                               | Mekan, mekan sohbeti, masa kabuğu, Mesajlar ve DM, Profil, Aktiviteler, Keşfet; "Tabu" metinlerden kalkar               | OTA (ekran başına PR olabilir)                                       | 4.2        |
-| 4.4 Kimlik                     | `…_identity.sql`; `account`, `profile`, `checkin`, `venue-chat` | Kapsül, nick, anahtar, mekan sohbetinde kişi görünümü, sessize alma, silme                                              | Önce yasal metin ve Veri güvenliği; `db push` + deploy; aynı gün OTA | 4.3        |
-| 4.5 Masa modeli                | `…_table_model.sql`; `checkin`, `rooms`                         | Check-in'siz masa, çoklu masa, kişi bazlı katılım, oylama, oyun öncesi sayfa, takım ve gözlemci; eski oyunlar "Yakında" | `db push` + deploy; **hemen ardından** OTA                           | 4.4        |
-| 4.6.1–4.6.5 Oyunlar            | Oyun başına migration ve fonksiyon                              | Oyun başına v43 ekranları                                                                                               | Oyun başına PR; `db push` + deploy; OTA                              | 4.5 ve 4.1 |
-| 4.7 Bildirim ve davet          | `…_invites.sql`; `rooms`, `friends`, `account`                  | Zil, liste, davet gönderme ve katılma, push                                                                             | Önce yasal metin ve Veri güvenliği; `db push` + deploy; OTA          | 4.5        |
-| Saha testi                     | —                                                               | Önce `docs/FIELD_TEST.md`'nin Faz 4 sürümü (ayrı belge PR'ı); test 6–12 telefonla, dev projesinde, Faz 4'ün tamamı      | —                                                                    | 4.6 ve 4.7 |
-| 4.8 Temizlik                   | 4.8a (fonksiyonlar), 4.8b (`…_v4_cleanup.sql`)                  | Ölü kod; saha testinin düzeltmeleri; mağaza metinleri ve görüntüleri                                                    | `db push` + deploy; OTA                                              | Saha testi |
+| Adım                           | Sunucu                                                          | İstemci                                                                                                                                                                | Yayın                                                                | Ön koşul   |
+| ------------------------------ | --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ---------- |
+| 4.0 Belge                      | —                                                               | —                                                                                                                                                                      | Bu PR                                                                | —          |
+| 4.1 Native build 0.5.0 (M0)    | —                                                               | `react-native-gesture-handler`, `gwpAsanMode="never"`; `version` 0.5.0                                                                                                 | `eas build`, APK yeniden kurulur                                     | 4.0        |
+| 4.2 Tasarım sistemi            | —                                                               | Tokenlar (açık ve koyu), Plus Jakarta Sans, ikonlar, kapsül avatar bileşeni, hareketler, temel bileşenler                                                              | OTA                                                                  | 4.1 ve v44 |
+| 4.3 Ekranlar, bugünkü mantıkla | —                                                               | Mekan, mekan sohbeti, masa kabuğu, Mesajlar ve DM, Profil, Aktiviteler, Keşfet; ilk ekran ve kayıt (v45: giriş animasyonu, kapsül dostları); "Tabu" metinlerden kalkar | OTA (ekran başına PR olabilir)                                       | 4.2        |
+| 4.4 Kimlik                     | `…_identity.sql`; `account`, `profile`, `checkin`, `venue-chat` | Kapsül, nick, anahtar, mekan sohbetinde kişi görünümü, sessize alma, silme                                                                                             | Önce yasal metin ve Veri güvenliği; `db push` + deploy; aynı gün OTA | 4.3        |
+| 4.5 Masa modeli                | `…_table_model.sql`; `checkin`, `rooms`                         | Check-in'siz masa, çoklu masa, kişi bazlı katılım, oylama, oyun öncesi sayfa, takım ve gözlemci; eski oyunlar "Yakında"                                                | `db push` + deploy; **hemen ardından** OTA                           | 4.4        |
+| 4.6.1–4.6.5 Oyunlar            | Oyun başına migration ve fonksiyon                              | Oyun başına v43 ekranları                                                                                                                                              | Oyun başına PR; `db push` + deploy; OTA                              | 4.5 ve 4.1 |
+| 4.7 Bildirim ve davet          | `…_invites.sql`; `rooms`, `friends`, `account`                  | Zil, liste, davet gönderme ve katılma, push                                                                                                                            | Önce yasal metin ve Veri güvenliği; `db push` + deploy; OTA          | 4.5        |
+| Saha testi                     | —                                                               | Önce `docs/FIELD_TEST.md`'nin Faz 4 sürümü (ayrı belge PR'ı); test 6–12 telefonla, dev projesinde, Faz 4'ün tamamı                                                     | —                                                                    | 4.6 ve 4.7 |
+| 4.8 Temizlik                   | 4.8a (fonksiyonlar), 4.8b (`…_v4_cleanup.sql`)                  | Ölü kod; saha testinin düzeltmeleri; mağaza metinleri ve görüntüleri                                                                                                   | `db push` + deploy; OTA                                              | Saha testi |
 
 **Sıra ve birleşme.**
 
@@ -819,7 +830,7 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
   - `docs/FIELD_TEST.md`'nin Faz 4 sürümü saha testinden önce ayrı bir belge PR'ıyla yazılır.
   - 4.8 saha testinden sonra gelir ve testte çıkan düzeltmeleri de alır.
 - **PR'lar küçük tutulur:** telefonda görünen bir hatayı saha testinde hangi adımın getirdiği bulunabilsin (aşağıda "Maliyet ve risk").
-- İstemci işi önce v44'e bakılarak yapılır (öncelik §4.C); tasarım dosyalarında olmayan görünüm eklenmez.
+- İstemci işi önce v45'e bakılarak yapılır (öncelik §4.C); tasarım dosyalarında olmayan görünüm eklenmez.
 - **4.5'te sunucu ile OTA arası en kısa tutulur:** 4.5'in sunucusundan sonra eski istemci masa açamaz ve oynayamaz. Pilot kullanıcısı yoktur; dev projesindeki test telefonları etkilenir.
 - Büyük adımlar gerekirse 23.2 ve 23.3'teki a/b kalıbıyla bölünür (sunucu önce, bugünkü uygulamayı bozmadan; istemci sonra). Bölünme o adımın planında yazılır.
 - **Açık kararlar bekletir:** §4.P'deki her karar, yazılı olduğu adımdan önce.
@@ -839,7 +850,7 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 
 **Pilot ön koşulları** (§4.B-12):
 
-- 4.0–4.7 birleşmiş; v44 ekranları ve koyu tema uygulanmış;
+- 4.0–4.7 birleşmiş; v45 ekranları ve koyu tema uygulanmış;
 - saha testi (6–12 telefon, `docs/FIELD_TEST.md`'nin Faz 4 sürümüyle) 4.6 ve 4.7'den sonra yapılmış;
 - 4.8 birleşmiş ve saha testinin bulguları kapatılmış;
 - "Kapsül Anlat" için hukuki kontrol;
@@ -967,7 +978,7 @@ Bu PR yalnızca proje paragrafını ve görsel kaynak kod kuralını değiştiri
 **Proje sahibinin kararları.**
 
 - §4.B'deki 12 madde ve kural metinleri için verilen üç ölçü (18 Ekim; "skall v43 dönüşüm raporu" ve bu belgenin isteği).
-- CTO incelemelerinden ve v44 raporunun 17 sorusundan sonra verilen kararlar (18 Ekim). Metinde "K-n" diye anılır:
+- CTO incelemelerinden, v44 raporunun 17 sorusundan ve v45 raporunun 6 sorusundan sonra verilen kararlar (18 Ekim). Metinde "K-n" diye anılır:
 
 | No          | Karar                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Nerede              |
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
@@ -989,16 +1000,23 @@ Bu PR yalnızca proje paragrafını ve görsel kaynak kod kuralını değiştiri
 | K-16 (P-18) | Keşfet'te açık masa sayısı kesin sayı değil, kova ("Birkaç açık masa", "Sessiz")                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | §4.C                |
 | K-17        | Soluk posterde oy verilir; masanın telefon sayısı alt sınıra ulaşmadan sahip o oyunu başlatamaz (v44 raporu soru 8)                                                                                                                                                                                                                                                                                                                                                                                                                                                   | §4.C, §4.F, §4.M    |
 | K-18        | Davette geri sayım gönderende görünür; v44'teki gibi (soru 10)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | §4.G                |
-| K-19        | Kayıtta onaylar başta kalır (bugünkü uygulama gibi): telefon, kod ve profil bilgilerinden önce (soru 11)                                                                                                                                                                                                                                                                                                                                                                                                                                                              | §4.C                |
+| K-19        | Kayıtta onaylar başta kalır (bugünkü uygulama gibi): telefon, kod ve profil bilgilerinden önce (soru 11). v45'te uygulandı (1/7): telefondan önce (K-33)                                                                                                                                                                                                                                                                                                                                                                                                              | §4.C                |
 | K-20        | Fotoğrafı olmayan ve profilli görünmek isteyen kadına "Fotoğraf ekle"nin yanında "Anonime geç" de önerilir (soru 12)                                                                                                                                                                                                                                                                                                                                                                                                                                                  | §4.C, §4.D          |
 | K-21        | Keşfet: bugün etkinliği olan mekanlar üstte, sonra ada göre (soru 13)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | §4.C, kural 6       |
 | K-22        | Erkek ve belirtmeyende Ayarlar'daki "Oyunlara katılım" görünür ve yalnızca mekan sohbetindeki girişteki varsayılanı belirler. Gerekçe: yoksa hep anonim yazmak isteyen biri her girişte tek değişiklik hakkını harcar (soru 14)                                                                                                                                                                                                                                                                                                                                       | §4.C, §4.D          |
 | K-23        | Alt sekme etiketleri en büyük yazıda en çok 1,2 kat büyür (`maxFontSizeMultiplier`); 320 dp'de sığmazsa 1 (soru 15)                                                                                                                                                                                                                                                                                                                                                                                                                                                   | §4.C                |
 | K-24        | Isınma rengi `#B4481A` (soru 16)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | §4.C                |
 | K-25        | Koyu tema tonları, oyun zeminleri, koyu zemin logosu ve açık temadaki koyu yarı saydam oyun çipleri 4.2'nin PR'ında ekran görüntüleriyle proje sahibinin onayına gelir (soru 17)                                                                                                                                                                                                                                                                                                                                                                                      | §4.C, §4.N          |
+| K-26        | İlk ekrandaki düğme "Başla"; önce "Başlamadan önce" açılır. v45'te "Telefonla devam et" (v45 raporu soru 1)                                                                                                                                                                                                                                                                                                                                                                                                                                                           | §4.C                |
+| K-27        | Giriş sahnesi kısa kalır: yaklaşık 5 saniye, tek sefer, döngü yok (soru 2)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | §4.C                |
+| K-28        | "Başlamadan önce"den geri gelinince sahne durağan gelir, yeniden oynamaz. v45'te yeniden oynuyor (soru 3)                                                                                                                                                                                                                                                                                                                                                                                                                                                             | §4.C                |
+| K-29        | Son adımda "Bitir" ve "Fotoğrafsız bitir" (soru 4)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | §4.C                |
+| K-30        | Hesap açılınca tek bir başarı titreşimi (`accountReady`). Raporun sıklık sınırları geçerli: aynı an 600 ms'den sık çalmaz, iki titreşim arasında en az 150 ms, yazarken titreşim yok (soru 5)                                                                                                                                                                                                                                                                                                                                                                         | §4.C, §4.M          |
+| K-31        | Doğum tarihi adımında 320 dp ve en büyük yazıda dostun gizlenmesi kabul (soru 6)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | §4.C                |
 | K-32 (P-19) | v43 tasarım istisnaları kabul (spec önerisi): Kapsül Anlat'ta iki renkli eşit Pas ve Doğru, bildirim satırlarında birden çok "Kabul et", Ya da kartında iki seçenek; "…" yalnızca mesaj önizlemesinde ve alıntıda (bugünkü Ekran davranışı kuralı). 4.2'de tasarım sistemine istisna olarak yazılır                                                                                                                                                                                                                                                                   | §4.C                |
+| K-33 (P-20) | Onaylar telefondan önce (v45 gibi; v45 raporu §1, 1/7): "Başlamadan önce" kayıtta ilk adımdır. Sunucu değişmez: onaylar bugünkü gibi hesap açılırken `account/complete-onboarding` ile kaydedilir; metinleri güncellenen mevcut kullanıcı "Başlamadan önce"yi bugünkü gibi girişten sonra görür. K-19'un "bugünkü uygulama gibi" gerekçesi bununla düzelir (bugün onaylar koddan sonra geliyordu)                                                                                                                                                                     | §4.C                |
 
-**Açık kararlar.** İlgili adımdan önce proje sahibine sorulur; karar verilmeden o adımın işi başlamaz. P-1, P-4, P-12 ve P-13 (K-3…K-6), sonra P-2, P-3, P-5, P-6, P-14, P-16, P-17 ve P-18 (K-9…K-16), sonra P-19 (K-32) karara bağlandı; diğer numaralar değişmez. Açık kalanlar: P-7, P-8, P-9, P-10, P-11, P-15.
+**Açık kararlar.** İlgili adımdan önce proje sahibine sorulur; karar verilmeden o adımın işi başlamaz. P-1, P-4, P-12 ve P-13 (K-3…K-6), sonra P-2, P-3, P-5, P-6, P-14, P-16, P-17 ve P-18 (K-9…K-16), sonra P-19 (K-32) ve P-20 (K-33) karara bağlandı; diğer numaralar değişmez. Açık kalanlar: P-7, P-8, P-9, P-10, P-11, P-15.
 
 | No   | Karar                                                                         | Önerim                                                                                                                                                                                                                                      | Ne zaman |
 | ---- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
@@ -1064,7 +1082,7 @@ Numaralar devir raporunun §6'sındakidir. "Kural" atıfları raporun brief numa
 | 16  | Mekan sohbeti gizliliği, ad engel listesi                                                 | Görünen ad ve biyografi küfür filtresinden geçer (kural 7); nick'te kaba kısaltmalar üretilmez, liste `content/profanity-tr.json`'da (§4.D)                                                                                 |
 | 17  | Bildirim yeri                                                                             | Zil yalnızca Mesajlar'da; alt çubuktaki Mesajlar sekmesinde okunmamış noktası (K-6, §4.G)                                                                                                                                   |
 | 18  | Masa daveti: kapsam, süre, kim davet eder, davete katılanın masası, davet gönderme ekranı | Aynı mekanda check-in'i olan arkadaşa, mekan adı olmadan, 2 dakika, yalnızca sahip; boş masa sessizce kapanır (§4.B-8, §4.G). Gönderme ekranı bütün arkadaşları listeler, kimin mekanda olduğu görünmez (K-2); ekran v44'te |
-| 19  | Pas ve Doğru'nun iki renkli olması istisna mı?                                            | P-19                                                                                                                                                                                                                        |
+| 19  | Pas ve Doğru'nun iki renkli olması istisna mı?                                            | Evet: K-32 (P-19), 4.2'de tasarım sistemine istisna olarak yazılır                                                                                                                                                          |
 | 20  | Sahtekar: 30 sn, 2 sahtekar, kısmi yakalama                                               | P-8                                                                                                                                                                                                                         |
 | 21  | Kapışma: eşik, bire bir, gözlemci, aynı şarkı                                             | P-9                                                                                                                                                                                                                         |
 | 22  | İbre: "herkes hazırsa kilitlenir", sol-sağ tahmini, tur sayısı ve süreler                 | "Herkes hazırsa kilitlenir" ve süre sonunda kilit kabul; 4 tur, ipucu 30 sn, ayar 45 sn (§4.F). Sol-sağ P-10                                                                                                                |
