@@ -96,7 +96,7 @@ export function Avatar(props: Props) {
     />
   ) : (
     <Text
-      // Poppins 700, about 38 % of the disc.
+      // The heading weight (700), about 38 % of the disc.
       variant={
         side >= AVATAR_SIZE.hero
           ? 'title'

@@ -277,6 +277,32 @@ appId: app.kabuk.mobile
     visible:
       id: preview-open
     timeout: 10000
+# Step 4.2 (docs/SPEC_V4.md, K-25): the game grounds with their chips, the buttons and themes and
+# the wordmark in the run's scheme, for the owner's approval of the dark tones.
+- tapOn:
+    id: preview-open
+- extendedWaitUntil:
+    visible:
+      id: preview-set-tokens
+    timeout: 10000
+- tapOn:
+    id: preview-set-tokens
+- extendedWaitUntil:
+    visible:
+      id: preview-tokens-grounds
+    timeout: 10000
+- takeScreenshot: 04j-tokens-grounds
+- scrollUntilVisible:
+    element:
+      id: preview-tokens-logo
+    centerElement: true
+    timeout: 30000
+- takeScreenshot: 04j-tokens-themes
+- back
+- extendedWaitUntil:
+    visible:
+      id: preview-open
+    timeout: 10000
 - back
 # Aşama 8 · Saha: Aktiviteler's game cards and a game's sheet (no table yet: "Oynamak için mekana
 # gir").

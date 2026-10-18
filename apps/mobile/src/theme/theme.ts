@@ -3,27 +3,32 @@ import { baseTypography, type ThemeDefinition } from './tokens';
 // The app's one theme, skall: two capsules that overlap by 35 %. Everything interactive is a
 // capsule, where two things meet takes the overlap colour. Light: a pale violet ground, ink text, a
 // violet accent and soft shadows. Dark: a deep ink ground, a lighter violet accent, and the surface
-// tones carry the separation instead of shadows. Poppins headings over Manrope. No outlined,
-// hard-shadowed "3D" controls: a pressed control shrinks to 97 %. Visual source: the skall design
-// system (README, kod-esleme.md, hareket.md; CLAUDE.md → "Kod kuralları"). Every text/ground pair
-// is AA (contrast.test.ts).
+// tones carry the separation instead of shadows. Plus Jakarta Sans throughout (500 to 800). No
+// outlined, hard-shadowed "3D" controls: a pressed control shrinks to 97 %. Visual source: v45
+// (docs/design/v45/; CLAUDE.md → "Kod kuralları"; docs/SPEC_V4.md §4.C, step 4.2). Every
+// text/ground pair is AA (contrast.test.ts).
+//
+// v44's values (step 4.2a): canvas, quiet fill, divider and muted text in both schemes; the dark
+// card `surface` #1C1838 and muted #B8B3D2 are one tone lighter than the old system's (v44 report
+// §1; the owner approves them with the PR's screenshots, K-25). `border` stays: v44's soft input
+// outlines (#DAD3F2, #3A3563) fall under the 3:1 a control's outline needs (contrast.test.ts).
 export const THEME: ThemeDefinition = {
   defaultScheme: 'system',
   palettes: {
     light: {
-      canvas: '#F4F2FA',
+      canvas: '#F5F3FC',
       surface: '#FFFFFF',
-      surface2: '#ECE8F7',
+      surface2: '#EEEBF8',
       raised: '#FFFFFF',
       text: '#14112B',
-      muted: '#565169',
+      muted: '#5E5878',
       accent: '#5A3AE6',
       onAccent: '#FFFFFF',
       violet: '#C51F62',
       onViolet: '#FFFFFF',
       read: '#2C63D6',
       border: '#817B9A',
-      divider: '#E2DEEE',
+      divider: '#E3DEF2',
       danger: '#BF3A14',
       onDanger: '#FFFFFF',
       success: '#1C7843',
@@ -47,18 +52,18 @@ export const THEME: ThemeDefinition = {
     },
     dark: {
       canvas: '#0D0B1E',
-      surface: '#17142E',
-      surface2: '#221E40',
+      surface: '#1C1838',
+      surface2: '#262148',
       raised: '#2C2752',
       text: '#F3F0FF',
-      muted: '#ADA8C8',
+      muted: '#B8B3D2',
       accent: '#A28FFF',
       onAccent: '#14112B',
       violet: '#FF7DAD',
       onViolet: '#14112B',
       read: '#7DB2FF',
       border: '#7A73A3',
-      divider: '#2C2850',
+      divider: '#34305A',
       danger: '#FF8F6E',
       onDanger: '#1F0A04',
       success: '#5FD98C',
@@ -82,11 +87,11 @@ export const THEME: ThemeDefinition = {
     },
   },
   fonts: {
-    display: 'Poppins_800ExtraBold',
-    displayBold: 'Poppins_700Bold',
-    regular: 'Manrope_400Regular',
-    semibold: 'Manrope_600SemiBold',
-    bold: 'Manrope_700Bold',
+    display: 'PlusJakartaSans_800ExtraBold',
+    displayBold: 'PlusJakartaSans_700Bold',
+    regular: 'PlusJakartaSans_500Medium',
+    semibold: 'PlusJakartaSans_600SemiBold',
+    bold: 'PlusJakartaSans_700Bold',
   },
   shape: {
     radius: { xs: 6, sm: 12, md: 16, lg: 22, xl: 28, pill: 999 },
@@ -100,7 +105,7 @@ export const THEME: ThemeDefinition = {
       raised: '0px 2px 8px -2px rgba(20, 17, 43, 0.16)',
       sheet: '0px -16px 48px -16px rgba(20, 17, 43, 0.32)',
       tabBar: '0px 14px 36px -10px rgba(20, 17, 43, 0.28)',
-      focus: '0px 0px 0px 2px #F4F2FA, 0px 0px 0px 4px #5A3AE6',
+      focus: '0px 0px 0px 2px #F5F3FC, 0px 0px 0px 4px #5A3AE6',
     },
     dark: {
       card: '0px 0px 0px 1px rgba(255, 255, 255, 0.05)',
