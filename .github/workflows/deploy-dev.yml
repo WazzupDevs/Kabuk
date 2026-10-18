@@ -173,6 +173,7 @@ jobs:
       # deletes it (CLAUDE.md → "main'den dev projesine yayın" step 6). Never fails the run.
       - name: Functions not in config.toml (warning only)
         if: steps.link.outcome == 'success'
+        continue-on-error: true
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
