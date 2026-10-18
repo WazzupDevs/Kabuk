@@ -34,10 +34,10 @@ type Props = {
   failedText?: string;
   onRetry?: () => void;
   onDiscard?: () => void;
-  // A run of messages from one sender: the photo and the name over the first, the time under the
-  // last, tight corners inside the run. A lone message is both first and last.
+  // A run of messages from one sender: the photo and the name over the first, tight corners inside
+  // the run. A lone message is the first.
   first?: boolean;
-  last?: boolean;
+  // In the bubble's bottom corner, after the text (v45: .bub time).
   time?: string;
   // Own DM messages (canvas: Aşama 5 · Geri bildirim → DM): one tick sent, two delivered, two in
   // the read colour read. Shown next to the time.
@@ -63,9 +63,10 @@ const SWIPE_SLOP = SPACING[3];
 const SWIPE_TRIGGER = SPACING[14];
 const SWIPE_MAX = SPACING[16] + SPACING[4];
 
-// One chat message, WhatsApp-like (canvas: Aşama 8 · Saha → Sohbet): the others' runs open with
-// the sender's photo and name on one line and the bubbles under them; the viewer's own are right,
-// in the accent colour.
+// One chat message, WhatsApp-like (v45: .msg, .bub): the others' runs open with the sender's photo
+// and name on one line and the bubbles under them, on the surface with a hairline; the viewer's own
+// are right, in the accent colour. The time (and the ticks) sit in the bubble's corner after the
+// text, or under it when the last line is full.
 export function ChatBubble({
   text,
   mine,
@@ -78,7 +79,6 @@ export function ChatBubble({
   onRetry,
   onDiscard,
   first = true,
-  last = true,
   time,
   delivery,
   quote,
@@ -152,23 +152,30 @@ export function ChatBubble({
           borderTopRightRadius: mine ? top : big,
           borderBottomLeftRadius: mine ? big : small,
           borderBottomRightRadius: mine ? small : big,
-          backgroundColor: mine ? colors.accent : colors.raised,
+          backgroundColor: mine ? colors.accent : colors.surface,
+          borderWidth: mine ? 0 : shape.stroke.hairline,
+          borderColor: colors.divider,
           opacity: state === 'sending' ? 0.6 : 1,
-          boxShadow: mine ? undefined : shape.shadow.raised,
         }}
       >
         {quote ? <QuoteBlock quote={quote} mine={mine} onPress={onPressQuote} /> : null}
-        <Text color={fg}>{text}</Text>
+        <View
+          className="flex-row flex-wrap items-end justify-end"
+          style={{ columnGap: SPACING[2.5] }}
+        >
+          <Text color={fg}>{text}</Text>
+          {time && !state ? (
+            <View className="flex-row items-center gap-1">
+              <Text variant="fine" color={mine ? colors.onAccent : colors.muted}>
+                {time}
+              </Text>
+              {mine && delivery ? <DeliveryTicks delivery={delivery} onAccent /> : null}
+            </View>
+          ) : null}
+        </View>
       </View>
     </Pressable>
   );
-  const stamp =
-    time && last && !state ? (
-      <View className="flex-row items-center gap-1" style={{ paddingHorizontal: SPACING[1.5] }}>
-        <Text variant="fine">{time}</Text>
-        {mine && delivery ? <DeliveryTicks delivery={delivery} /> : null}
-      </View>
-    ) : null;
   const chips =
     reactions && reactions.length > 0 ? (
       <ReactionChips reactions={reactions} onToggle={onToggleReaction} mine={mine} />
@@ -191,7 +198,6 @@ export function ChatBubble({
         {bar}
         <SwipeToReply onReply={onReply}>{bubble}</SwipeToReply>
         {chips}
-        {stamp}
         {state ? (
           <View className="flex-row items-center gap-3">
             <Text variant="fine" tone={state === 'failed' ? 'danger' : 'muted'}>
@@ -260,7 +266,6 @@ export function ChatBubble({
       <View className="items-start gap-1" style={{ paddingLeft: avatar ? INDENT : 0 }}>
         <SwipeToReply onReply={onReply}>{bubble}</SwipeToReply>
         {chips}
-        {stamp}
       </View>
     </View>
   );
@@ -486,15 +491,18 @@ function ReactionChips({
   );
 }
 
-// Also on a Mesajlar row, before the preview of the viewer's own last message.
-export function DeliveryTicks({ delivery }: { delivery: Delivery }) {
+// Also on a Mesajlar row, before the preview of the viewer's own last message. In the viewer's own
+// bubble (`onAccent`) the ticks are in its text colour and a read one in readOnAccent.
+export function DeliveryTicks({ delivery, onAccent }: { delivery: Delivery; onAccent?: boolean }) {
   const { colors } = useTheme();
+  const read = onAccent ? colors.readOnAccent : colors.read;
+  const plain = onAccent ? colors.onAccent : colors.muted;
   return (
     <View accessible accessibilityLabel={tr.dm.delivery[delivery]} testID={`tick-${delivery}`}>
       <Ionicons
         name={delivery === 'sent' ? 'checkmark' : 'checkmark-done'}
         size={ICON.sm}
-        color={delivery === 'read' ? colors.read : colors.muted}
+        color={delivery === 'read' ? read : plain}
       />
     </View>
   );

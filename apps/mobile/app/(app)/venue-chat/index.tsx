@@ -261,7 +261,7 @@ export default function VenueChatScreen() {
           <EmptyState kind="empty" body={tr.venueChat.empty} />
         </View>
       ) : (
-        runs.map(({ item: m, first, last, day }) => (
+        runs.map(({ item: m, first, day }) => (
           <ChatRow key={m.id} id={m.id} className={first ? 'mt-1.5 gap-2' : 'gap-2'}>
             {(jumpTo) => (
               <>
@@ -282,7 +282,6 @@ export default function VenueChatScreen() {
                     })
                   }
                   first={first}
-                  last={last}
                   time={tr.chat.time(m.createdAt)}
                   name={m.fromMe ? tr.venueChat.you : senderLabel(m)}
                   avatar={
