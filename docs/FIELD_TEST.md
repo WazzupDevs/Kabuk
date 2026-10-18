@@ -165,18 +165,22 @@ Testin sonunda **Bulma gözlemi özeti**'ni doldur.
 
 > Otomatik: tamamı, 18 yaş altı denemesi dahil (`01-login.yaml`).
 
-1. Uygulamayı aç, numarayı `5xx xxx xx xx` biçiminde gir, **Kod gönder**.
-2. Test kodunu gir, **Doğrula**.
-3. "Başlamadan önce" ekranında iki kutuyu (Kullanım Koşulları, KVKK) işaretle, **Onayla ve devam et**.
-4. **"Seni tanıyalım"**: görünen ad (A: "Deniz", B: "Ece", C: "Can", D: "Duru"), doğum tarihi (18 yaş ve üzeri) ve **Cinsiyetin**: A **Kadın**, B **Erkek**, C **Belirtmek istemiyorum**, D **Kadın** → **Devam**.
-5. **"Profilini tamamla"**: fotoğraf ve tanıtım isteğe bağlı. Hepsi **Şimdilik geç** (fotoğraflar V5'te).
+1. Uygulamayı aç: ilk ekranda "Aynı mekanda, aynı masada." → **Başla**.
+2. **"Başlamadan önce"** (1/7): iki kutuyu (Kullanım Koşulları, KVKK) işaretle, **Onayla ve devam et**.
+3. **"Telefon numaran"** (2/7): numarayı `5xx xxx xx xx` biçiminde gir, **Kod gönder**.
+4. **"Kodu gir"** (3/7): test kodunu gir (altı hane kendiliğinden doğrular).
+5. **"Adın"** (4/7): görünen ad (A: "Deniz", B: "Ece", C: "Can", D: "Duru") → **Devam**.
+6. **"Doğum tarihin"** (5/7): 18 yaş ve üzeri bir tarih → **Devam**.
+7. **"Cinsiyetin"** (6/7): A **Kadın**, B **Erkek**, C **Belirtmek istemiyorum**, D **Kadın** → **Devam**.
+8. **"Profil fotoğrafın"** (7/7): fotoğraf isteğe bağlı. Hepsi **Fotoğrafsız bitir** (fotoğraflar V5'te).
 
 **Bak:**
 
+- Her adımın üstünde geri düğmesi (telefondan sonraki ilk adım "Adın"da yok), yedi çubuk ve "n/7".
 - SMS gelmemeli; kod ekranı hemen açılmalı. Yanlış kod "Kod hatalı ya da süresi dolmuş." demeli.
-- Cinsiyet seçilmeden **Devam** soluk kalır. Altında "Kimseye gösterilmez ve sonradan değiştirilemez…" yazar.
-- **B ve C**'nin "Profilini tamamla" ekranında not: "Fotoğrafın yoksa masalara katılamazsın, masanı da lobiye açamazsın…". **A ve D**'de bu not **yok**.
-- Sonunda uygulama Keşfet sekmesinde açılır.
+- Cinsiyet seçilmeden **Devam** soluk kalır. Başlığın altında "Kimseye gösterilmez ve sonradan değiştirilemez…" yazar.
+- **B ve C**'nin fotoğraf adımında not: "Fotoğrafın yoksa masalara katılamazsın, masanı da lobiye açamazsın…". **A ve D**'de bu not **yok**.
+- Fotoğraf ekleyince düğme **Bitir** olur. Bitirince tek bir başarı titreşimi ve uygulama Keşfet sekmesinde açılır.
 
 **Hata olursa:** hangi numara, hangi ekranda kaldı, hata metni. "Bu numarayla devam edilemiyor." görünürse numara ban listesinde olabilir; panelde test numarası tanımını kontrol et.
 
@@ -184,12 +188,12 @@ Testin sonunda **Bulma gözlemi özeti**'ni doldur.
 
 > Otomatik: tamamı (`01-login.yaml`, ilk deneme).
 
-1. Panelde tanımlı ama hiç kullanılmamış bir test numarasıyla giriş yap, iki kutuyu işaretle.
-2. "Seni tanıyalım": bir ad, bir cinsiyet ve **17 yaşında** biri için doğum tarihi → **Devam**.
+1. **Başla**, iki kutuyu işaretle, panelde tanımlı ama hiç kullanılmamış bir test numarasıyla kodu gir.
+2. Bir ad, **17 yaşında** biri için doğum tarihi ve bir cinsiyet → **Devam**.
 
 **Bak:**
 
-- Telefon numarası ekranına dönülür; üstte **"skall 18 yaş ve üzeri içindir"** ve "Hesabın açılmadı ve bilgilerin saklanmadı." yazar.
+- Sunucu yaşa cinsiyetten sonra baktığı için sonuç cinsiyet adımından sonra gelir: **"skall 18 yaş ve üzeri içindir"** ve "Hesabın açılmadı ve bilgilerin saklanmadı." yazar. **Kapat** ilk ekrana döner.
 - Panelde (Authentication → Users) bu numarayla kullanıcı **yok**; `profiles` tablosunda satır yok.
 
 **Hata olursa:** kullanıcı panelde kaldıysa ❌; numarayı ve saati yaz.

@@ -1,6 +1,23 @@
-# The test number and its fixed code, from the phone screen.
+# From the first screen: "Başla", the two consents (step 1/7, before the phone; K-26, K-33), the
+# test number (2/7) and its fixed code (3/7).
 appId: app.kabuk.mobile
 ---
+- tapOn:
+    id: welcome-start
+- extendedWaitUntil:
+    visible:
+      id: signup-consents
+    timeout: 10000
+- takeScreenshot: 01a-consents
+- tapOn: Kullanım Koşulları’nı okudum ve kabul ediyorum.
+- tapOn: KVKK Aydınlatma Metni’ni okudum.
+- tapOn:
+    id: consents-accept
+- extendedWaitUntil:
+    visible:
+      id: signup-phone
+    timeout: 10000
+- takeScreenshot: 01b-phone
 - tapOn:
     id: phone-input
 - eraseText
@@ -8,7 +25,7 @@ appId: app.kabuk.mobile
 - hideKeyboard
 - tapOn: Kod gönder
 - extendedWaitUntil:
-    visible: Doğrulama kodu
+    visible: Kodu gir
     timeout: 20000
 - takeScreenshot: 02-otp
 - tapOn:

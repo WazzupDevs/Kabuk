@@ -13,14 +13,16 @@ type Props = {
   value: Gender | null;
   onChange: (gender: Gender) => void;
   disabled?: boolean;
+  // Only the options: the sign-up step says the rest in its title and the line under it.
+  bare?: boolean;
 };
 
 // "Cinsiyetin" (docs/SPEC_V3.md §23.D; canvas: Faz 3 · 23.2): three options and what the answer
 // does. Shown to nobody, set once (rule 12).
-export function GenderChoice({ value, onChange, disabled }: Props) {
+export function GenderChoice({ value, onChange, disabled, bare = false }: Props) {
   return (
     <View className="gap-2">
-      <Text variant="label">{tr.signup.genderLabel}</Text>
+      {bare ? null : <Text variant="label">{tr.signup.genderLabel}</Text>}
       <View
         accessibilityRole="radiogroup"
         accessibilityLabel={tr.signup.genderLabel}
@@ -37,7 +39,7 @@ export function GenderChoice({ value, onChange, disabled }: Props) {
           />
         ))}
       </View>
-      <Text variant="fine">{tr.signup.genderHint}</Text>
+      {bare ? null : <Text variant="fine">{tr.signup.genderHint}</Text>}
     </View>
   );
 }
