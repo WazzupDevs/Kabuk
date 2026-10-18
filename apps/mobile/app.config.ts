@@ -8,22 +8,37 @@
 //   app.json) therefore bumps `version` and ships as a new build. The native fingerprint was dropped:
 //   computed on Windows (where builds and updates start) and on the Linux build server it differed
 //   (docs/DECISIONS.md, "runtimeVersion").
+// - Android's GWP-ASan is off for this app (withGwpAsanOff below).
 // This file imports no other .ts file: Node before 22.18 cannot load one (the Expo CLI and the EAS
 // build server read this config with plain Node). The app name therefore lives in app.json;
 // scripts/app-name.test.ts keeps it equal to APP_NAME (supabase/functions/_shared/pure/brand.ts).
+// For the same reason the one config plugin of our own is written here, not in a file of its own.
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import type { ConfigContext, ExpoConfig } from 'expo/config';
+import { type ConfigPlugin, withAndroidManifest } from 'expo/config-plugins';
 
 const EAS_PROJECT_ID = '9692ae9b-7826-4f6b-a41e-a0506d5992c2';
+
+// <application android:gwpAsanMode="never">. Android 14's GWP-ASan samples allocations; when it
+// records a backtrace on a free inside Hermes, its frame-pointer walk runs off Hermes's fiber stack
+// and the app dies at launch now and then (facebook/hermes#1873; the fix is not in the Hermes
+// React Native ships). docs/DECISIONS.md → "Hermes çökmesi".
+export const withGwpAsanOff: ConfigPlugin = (config) =>
+  withAndroidManifest(config, (mod) => {
+    const application = mod.modResults.manifest.application?.[0];
+    if (!application) throw new Error('AndroidManifest.xml has no <application>');
+    application.$['android:gwpAsanMode'] = 'never';
+    return mod;
+  });
 
 export default ({ config }: ConfigContext): ExpoConfig => {
   const googleServicesFile = process.env.GOOGLE_SERVICES_JSON ?? './google-services.json';
   const hasGoogleServices = existsSync(resolve(__dirname, googleServicesFile));
   if (!config.name) throw new Error('app.json: expo.name is missing');
 
-  return {
+  return withGwpAsanOff({
     ...config,
     name: config.name,
     slug: config.slug ?? 'masa',
@@ -37,5 +52,5 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     runtimeVersion: { policy: 'appVersion' },
     updates: { url: `https://u.expo.dev/${EAS_PROJECT_ID}`, enabled: true },
-  };
+  });
 };

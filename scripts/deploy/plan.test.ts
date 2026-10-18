@@ -152,6 +152,43 @@ describe('nativeChanges', () => {
       nativeChanges(['apps/mobile/app.json'], state('0.3.0'), state('0.4.0', { b: '1' })),
     ).toEqual([]);
   });
+
+  // Faz 4 step 4.1: a new native module, a config plugin in app.config.ts and 0.4.0 → 0.5.0. The
+  // server goes out and the update is sent, built for runtime 0.5.0 (next test): 0.4.0 APKs keep
+  // their last update and never receive it. Without the new version the same change holds the OTA.
+  it('sends the 0.5.0 update after a native change with a new version, holds it without one', () => {
+    const changed = [
+      'apps/mobile/app.json',
+      'apps/mobile/app.config.ts',
+      'apps/mobile/package.json',
+      'apps/mobile/app/_layout.tsx',
+      'pnpm-lock.yaml',
+    ];
+    const before = state('0.4.0', { expo: '~57.0.25' });
+    const withGestures = { expo: '~57.0.25', 'react-native-gesture-handler': '~2.32.0' };
+    const native = nativeChanges(changed, before, state('0.5.0', withGestures));
+    expect(native).toEqual([]);
+    expect(planDeploy({ changed, native, forceOta: false })).toEqual({
+      migrations: false,
+      functions: false,
+      ota: true,
+      otaHeld: [],
+    });
+    const sameVersion = nativeChanges(changed, before, state('0.4.0', withGestures));
+    expect(planDeploy({ changed, native: sameVersion, forceOta: false })).toMatchObject({
+      ota: false,
+      otaHeld: [
+        'apps/mobile/app.json',
+        'apps/mobile/app.config.ts',
+        'apps/mobile/package.json → dependencies',
+      ],
+    });
+  });
+
+  it("builds an update for app.json's version only (app.config.ts: appVersion runtime policy)", () => {
+    const config = readFileSync(resolve(root, 'apps/mobile/app.config.ts'), 'utf8');
+    expect(config).toContain("runtimeVersion: { policy: 'appVersion' }");
+  });
 });
 
 describe('deployedShas', () => {
