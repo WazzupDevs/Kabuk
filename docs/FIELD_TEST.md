@@ -1,5 +1,7 @@
 # Saha testi: Faz 3 (önce buluş, sonra oyna), 3–4 telefonla uçtan uca
 
+> **Not (18 Ekim, proje sahibinin kararı):** ayrı bir Faz 3 saha testi yapılmayacak (`docs/SPEC_V4.md` §4.N, K-1). Bu belge uygulamanın bugünkü akışına uysun diye duruyor; bulma yardımı gözlemleri (§23.P-2) Faz 4 saha testinde yapılır. Faz 4 sürümü saha testinden önce ayrı bir belge PR'ıyla yazılır. 0.5.0 APK'sındaki tek telefon kontrolü (K-7) bu test değildir: 23.3b, 23.4a ve 23.4b PR'larındaki "0.5.0 APK'sı kurulunca" adımlarıyla yapılır.
+
 Faz 3'ün akışı (`docs/SPEC_V3.md` §23): masa lobiye açılır, başka bir masa katılmak ister, **kabul buluşmadır**. Katılan masa ev sahibi masanın yanına gider, iki masa tek masada birlikte oynar. Masa sonunda karşı taraftaki her kişi için ayrı, sessiz bir **"Arkadaş ekle"** vardır. Tanışma penceresi ("Tanışalım mı?") yoktur.
 
 Bu test **3 ya da 4 telefonla** yapılır. Tek sıra:

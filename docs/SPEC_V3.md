@@ -2459,9 +2459,9 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 - **23.4 iki PR'dır** (proje sahibinin kararı, 23.4 başlarken; aynı a/b kalıbı):
   - 23.4a: veriyi silmeyen temizlik, migration yok. Uygulama, Edge Function'lar ve scriptler `rooms.reveal_*` kolonlarını, `reveal_decisions`, `reveal_signals` ve `private.lobby_listed_from`'u okumaz ve yazmaz; bunu bir birim testi gösterir (`scripts/reveal-removed.test.ts`, üretilen `database.ts` hariç). `reveal` fonksiyonu repodan kalkar (17 fonksiyon); pencere testleri silinir; E2E, bot, `docs/FIELD_TEST.md` ve mağaza metinleri yeni akışa göre. `functions deploy` repodan kalkan fonksiyonu barındırılan projeden silmez: `pnpm supabase functions delete reveal` dev ve üretimde elle (CLAUDE.md → "main'den dev projesine yayın" adım 6).
   - 23.4b: `…_reveal_cleanup.sql`. Reveal SQL fonksiyonları, `reveal_decisions`, `reveal_signals`, `rooms.reveal_*`, `private.lobby_listed_from`, hep açık olan `private.table_end_on()` ve dalları kalkar; Realtime politika metinleri sadeleşir; kural 9 ve 10'un metni güncellenir. Kapsam PR açıklamasında tek tek yazılır.
-  - 23.4b, 23.4a'nın OTA'sı telefonlarda doğrulanıp saha testi yapılmadan birleşmez: kolonları okuyan eski istemci ya da eski fonksiyon yayın sırasında kırılmasın; bulma yardımı (§23.P-2) geri gelirse neye ihtiyaç olduğu belli olsun.
+  - 23.4b, 23.4a birleştikten sonraki deploy-dev koşusu yeşil bitip `reveal` fonksiyonu dev projesinden elle silinmeden birleşmez: kolonları okuyan eski istemci ya da eski fonksiyon yayın sırasında kırılmasın. Eski JS paketli bir telefonun bir açılışta hata görmesi dev projesinde kabul edildi (proje sahibinin kararı, 18 Ekim; SPEC_V4 §4.N, K-7). Telefonda doğrulama ve saha testi şartı yoktur (K-1, K-7).
 - **Açık kararlar bekletir:**
-  - bulma yardımı → 23.3 saha testinden sonra;
+  - bulma yardımı → Faz 4 saha testinden sonra (SPEC_V4 §4.M, K-1; ayrı bir Faz 3 saha testi yapılmaz);
   - analitikte cinsiyet → 23.2.
 
 **Yayın.**
