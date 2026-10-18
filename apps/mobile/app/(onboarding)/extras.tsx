@@ -52,7 +52,7 @@ export default function PhotoStep() {
   const finish = () => {
     track('onboarding_completed', { with_photo: photoSet, with_bio: false });
     haptic('accountReady');
-    useOnboardingStore.setState({ extrasPending: false, gender: null });
+    useOnboardingStore.setState({ extrasPending: false, gender: null, name: '', birthDate: null });
   };
 
   return (

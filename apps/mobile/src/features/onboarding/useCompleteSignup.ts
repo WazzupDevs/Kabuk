@@ -30,8 +30,9 @@ export function useCompleteSignup() {
     },
     onSuccess: async (_data, gender) => {
       // Keep the onboarding screens for the photo step before the gate opens; its note depends on
-      // the answer (§23.D).
-      useOnboardingStore.setState({ extrasPending: true, gender, name: '', birthDate: null });
+      // the answer (§23.D). The name and the birth date stay until the photo step ends: the steps
+      // still on screen would send a phone without them back to the name step.
+      useOnboardingStore.setState({ extrasPending: true, gender });
       await queryClient.invalidateQueries({ queryKey: ['profile'] });
       router.replace('/extras');
     },

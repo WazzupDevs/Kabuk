@@ -5,7 +5,8 @@ import { create } from 'zustand';
 // - consented: the terms and KVKK versions accepted on "Başlamadan önce", the first step, before
 //   the phone (K-33). They are sent with the profile (account/complete-onboarding) as before; after
 //   an app restart they are asked again after the code.
-// - name, birthDate: the profile steps' answers until the gender step sends them all in one call.
+// - name, birthDate: the profile steps' answers; the gender step sends them all in one call, they
+//   are cleared when the photo step ends.
 // - extrasPending: complete-onboarding succeeded and the optional photo step is still open, so the
 //   gate keeps the onboarding screens until it is done. After an app restart the step is skipped.
 // - underAge: the server deleted the account (under 18); the first screen says why once.
