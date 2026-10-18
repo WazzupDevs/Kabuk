@@ -1,6 +1,5 @@
-import { useMemo } from 'react';
 import { View } from 'react-native';
-import { SvgXml } from 'react-native-svg';
+import { type JsxAST, parse, SvgAst } from 'react-native-svg';
 
 import { type CapsuleLook, capsuleSvg } from '@/theme/capsules';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -15,11 +14,23 @@ type Props = {
   accessibilityLabel?: string;
 };
 
+// Each look's SVG parsed once for the app's life (the CTO's 4.2b review: a list of 100 messages
+// would otherwise parse the same 29 drawings again and again). The tree is plain elements, so every
+// avatar of a look shares it.
+const parsed = new Map<CapsuleLook, JsxAST | null>();
+export function capsuleAst(look: CapsuleLook): JsxAST | null {
+  let ast = parsed.get(look);
+  if (ast === undefined) {
+    ast = parse(capsuleSvg(look));
+    parsed.set(look, ast);
+  }
+  return ast;
+}
+
 // An anonymous person's face, or the ghost of a profile whose photo was hidden (docs/SPEC_V4.md
 // §4.D, K-4): the capsule of src/theme/capsules.ts on its disc, in the avatar sizes.
 export function CapsuleAvatar({ look, size = 'md', accessibilityLabel }: Props) {
   const { shape } = useTheme();
-  const xml = useMemo(() => capsuleSvg(look), [look]);
   const side = AVATAR_SIZE[size];
   return (
     <View
@@ -27,7 +38,7 @@ export function CapsuleAvatar({ look, size = 'md', accessibilityLabel }: Props) 
       accessibilityLabel={accessibilityLabel}
       style={{ width: side, height: side, borderRadius: shape.radius.pill, overflow: 'hidden' }}
     >
-      <SvgXml xml={xml} width={side} height={side} />
+      <SvgAst ast={capsuleAst(look)} override={{ width: side, height: side }} />
     </View>
   );
 }

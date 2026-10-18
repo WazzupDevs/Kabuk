@@ -1178,6 +1178,27 @@ export const tr = {
       bell: 'Zil',
       ring: 'Zili çal',
     },
+    // Ölçüm (docs/SPEC_V4.md §4.M, 4.3): scrolling capsule avatars on the phone.
+    measure: {
+      set: 'Ölçüm',
+      cached: 'Önbellekli',
+      parsed: 'Her seferinde ayrıştır',
+      stats: (frames: number, stalls: number, worstMs: number, fps: number) =>
+        `${frames} kare · ${stalls} takılma · en uzun ${worstMs} ms · ${fps} fps`,
+      reset: 'Sıfırla',
+      hint: 'Listeyi kaydır. Takılma: 25 ms’den uzun kare. Sayı yalnızca kaydırırken toplanır.',
+      chat: 'Mekan sohbeti, 100 mesaj',
+      table: 'Masa, 12 kişi',
+      name: (i: number) =>
+        `kapsul-${String.fromCharCode(97 + (i % 19))}${String.fromCharCode(98 + ((i * 3) % 19))}${String(10 + (i % 90))}`,
+      message: (i: number) =>
+        i % 3 === 0
+          ? 'Masa kurduk, gelir misiniz?'
+          : i % 3 === 1
+            ? 'Geliyoruz, iki kişiyiz'
+            : 'Sıradaki oyun ne olsun?',
+      person: 'Masada',
+    },
   },
   // The game screens' parts (src/components/game/).
   gameParts: {
