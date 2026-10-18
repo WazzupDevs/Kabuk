@@ -2426,7 +2426,7 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 - E2E akışları ve botlar (`scripts/e2e/bot-table.ts`, `13-teams.yaml` dahil) yeni akışa göre yeniden yazılır.
 - `docs/FIELD_TEST.md`, mağaza metinleri ve CLAUDE.md'deki sayılar güncellenir.
 
-**Saha testi:** 23.3'ün OTA'sından sonra 3–4 telefonla yapılır. Bulma yardımı kararı (§23.P-2) bu testin sonucuna bağlıdır.
+**Saha testi:** 23.3'ün OTA'sından sonra 3–4 telefonla yapılır. Bulma yardımı kararı (§23.P-2) bu testin sonucuna bağlıdır. _Faz 4 kararı (SPEC_V4 §4.N, K-1): ayrı bir Faz 3 saha testi yapılmaz; bulma yardımı gözlemleri Faz 4 saha testinde yapılır ve 23.4b bu testi beklemez._
 
 ### 23.N Uygulama sırası ve yayın
 
@@ -2442,6 +2442,7 @@ Alt bölümler harfle numaralanır (§23.A, §23.B…); **adım** numaraları (a
 
 - Her adım telefonda tek başına denenebilir: adımın sunucusu dev'e yayınlanır ve hemen ardından istemcisi OTA ile gider (22.1 kalıbı).
 - Bir sonraki adımın PR'ı, önceki adımın OTA'sı telefonda kontrol edildikten sonra birleşir. Çalışma öncekinin yayınını beklemeden başlayabilir.
+  - _Proje sahibinin kararı (18 Ekim; SPEC_V4 §4.N, K-7): 23.3b, 23.4a ve 23.4b için bu şart kalktı. Telefonda tek kontrol, Faz 4 adım 4.1 (0.5.0) birleştikten sonra preview APK'sı kurulunca yapılır ve üçünü birlikte kapsar. 23.4b, 23.4a'dan sonraki deploy-dev koşusu yeşil bitip `reveal` dev projesinden elle silinince birleşebilir._
 - İstemci işi önce tuvalde (tasarım oturumu), sonra kodda yapılır.
 - **23.2 ve 23.3'te sunucu ile OTA arası kısa tutulur:**
   - Eski istemci `gender_required` ve `anonymous_not_allowed`'ı tanımaz, genel hata olarak gösterir.
@@ -2537,7 +2538,7 @@ Bu PR kurallara dokunmaz (Faz 2 geleneği). Aşağıdaki her değişiklik ilgili
 - **P-2. Bulma yardımı.**
   - Soru: kabul anındaki iki satır kalabalık mekanda yeterli mi?
   - Yetmezse eski renk-emoji ekranı geri gelebilir.
-  - Karar saha testinden sonra verilir.
+  - Karar saha testinden sonra verilir. _Faz 4 kararı: Faz 4 saha testinden sonra (SPEC_V4 §4.M)._
 - **P-3. Analitikte cinsiyet.**
   - Kayıt hunisindeki fotoğraf adımı kaybı ölçülecek.
   - Varsayılan: cinsiyet PostHog'a özellik olarak gitmez; ölçüm cinsiyetsiz olay sayımlarıyla yapılır (§23.L).
