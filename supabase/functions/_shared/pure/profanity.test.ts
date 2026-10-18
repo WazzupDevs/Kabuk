@@ -224,8 +224,21 @@ describe('containsContact', () => {
     }
   });
 
-  it('finds @ followed by a space', () => {
-    expect(containsContact('@ elif')).toBe(true);
+  it('finds @ followed by a space at the start of a line or after a platform', () => {
+    for (const text of ['@ elif', 'Kahve\n@ elif', 'ig @ elif', 'insta: @ elif', 'x: @ elif']) {
+      expect(containsContact(text), text).toBe(true);
+    }
+  });
+
+  it('leaves a workplace or a school after a spaced @ alone', () => {
+    for (const text of [
+      'Öğrenci @ SAÜ',
+      'Bilgisayar Müh. @ SAÜ',
+      'Barista @ Starbucks',
+      'Ayşe @ Moda',
+    ]) {
+      expect(containsContact(text), text).toBe(false);
+    }
   });
 
   it('leaves a sentence with no space after its full stop alone', () => {

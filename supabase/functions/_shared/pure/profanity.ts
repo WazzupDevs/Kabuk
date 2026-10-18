@@ -61,8 +61,8 @@ const EMAIL =
 // No extension: "elif@gmail".
 const MAIL_PROVIDER =
   /[\p{L}\p{N}._%+-]\s*@\s*(?:gmail|googlemail|hotmail|outlook|yahoo|icloud|yandex|protonmail|proton|live|msn|mynet)(?![\p{L}\p{N}])/u;
-// "@elif.kaya", "@ elif", not the middle of an address ("mail@ desem").
-const HANDLE = /(?:^|[^\p{L}\p{N}._@])@\s?(?=[\p{N}._]*\p{L})[\p{L}\p{N}._]{2,}/u;
+// "@elif.kaya", not the middle of an address ("mail@ desem").
+const HANDLE = /(?:^|[^\p{L}\p{N}._@])@(?=[\p{N}._]*\p{L})[\p{L}\p{N}._]{2,}/u;
 const SCHEME = /https?:\/\/|\bwww\s*\./;
 // Bare domains: "elifkaya.com.tr", "elif.ai"; not "severim.kahve". tv is left out ("film.tv
 // izlerim"); a tv link with a path is still found.
@@ -86,6 +86,12 @@ const SHORT_PLATFORMS = ['x', 'sc', 'dc'];
 const PLATFORM = new RegExp(
   `(?:^|[^\\p{L}\\p{N}])(${PLATFORMS}|${SHORT_PLATFORMS.join('|')})(?![\\p{L}\\p{N}])\\s*([:=-]?)\\s*([\\p{L}\\p{N}_.#]*)`,
   'gu',
+);
+// "@ elif" with a space only at the start of a line or after a platform's name ("ig @ elif"): after
+// another word the @ reads as "at" ("Öğrenci @ SAÜ", "Barista @ Starbucks").
+const SPACED_HANDLE = new RegExp(
+  `(?:^[^\\S\\n]*|(?:^|[^\\p{L}\\p{N}])(?:(?:${PLATFORMS})\\s*[:=-]?|(?:${SHORT_PLATFORMS.join('|')})\\s*[:=])\\s*)@\\s+(?=[\\p{N}._]*\\p{L})[\\p{L}\\p{N}._]{2,}`,
+  'mu',
 );
 // A full stop between a small letter and a capitalised word starts a sentence, not a domain
 // ("Kafa dengi.Net konuşurum"); not in a word with an @ ("elif@Site.Com").
@@ -133,6 +139,7 @@ export function containsContact(text: string): boolean {
     EMAIL.test(s) ||
     MAIL_PROVIDER.test(s) ||
     HANDLE.test(s) ||
+    SPACED_HANDLE.test(s) ||
     SCHEME.test(s) ||
     DOMAIN.test(s) ||
     PATH_LINK.test(s) ||
