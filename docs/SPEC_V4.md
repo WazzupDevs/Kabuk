@@ -689,7 +689,7 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 **Her adımda:**
 
 - `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm format:check` ve entegrasyon testleri temiz.
-- Her kod PR'ı birleşmeden önce `e2e` etiketi taşır; E2E açık ve koyu yeşildir. Etiket PR incelemeye hazır olduğunda (taslaktan çıkarken) eklenir (SPEC_V3 §23.N).
+- Her adımın PR'ı `e2e` etiketiyle açılır. Birleşme şartı `ci`'ın ve E2E'nin 8/8 (açık ve koyu) yeşil olması ve proje sahibinin "onaylandı"sıdır (K-8). Telefon kontrolü birleşme şartı değildir; telefondaki kontrol saha testidir.
 - Metni ya da gezinmesi değişen akış aynı PR'da güncellenir.
 - Davranışı bilerek kalkan beklentiler yalnızca o davranışı kaldıran adımın PR'ında değişir; değişen ya da silinen her test dosyası nedeniyle birlikte PR açıklamasında listelenir.
 - Yeni davranış yeni dosyalarda test edilir: `identity.test.ts` (4.4), `tableModel.test.ts` (4.5), oyun başına bir dosya (4.6), `invites.test.ts` (4.7).
@@ -747,14 +747,14 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 - Davet push'u ad, masa ve mekan taşımaz; `notify_invites` kapalıyken gitmez.
 - `locks`: davete katılma ile masanın dolması.
 
-**Adım 4.8.** Okuyan kalmadığı birim testiyle gösterilir (4.8a, `scripts/reveal-removed.test.ts` kalıbı); migration (4.8b) sonrası `pnpm gen:types`. `docs/FIELD_TEST.md` v43 akışına göre yeniden yazılır.
+**Adım 4.8.** Saha testinden sonra gelir ve testte çıkan düzeltmeleri de alır (K-8). Okuyan kalmadığı birim testiyle gösterilir (4.8a, `scripts/reveal-removed.test.ts` kalıbı); migration (4.8b) sonrası `pnpm gen:types`.
 
 **E2E ve bot.**
 
 - Akışların neredeyse tamamı yeniden yazılır: her adım kendi akışlarını aynı PR'da günceller (bugünkü kural).
 - Bot kişi bazlı rolleri oynamayı öğrenir: masaya kişi olarak katılır, takım seçer, anlatıcı, rakip, tahminci, sahtekar, kapan ve ipucu veren olur. 12 telefonlu masa için birden fazla bot telefonu aynı masaya katılır (yerel test numaraları).
 - Gizli bilginin cihaza gitmediği akışta değil, entegrasyon testinde denetlenir (SPEC_V3 §20.1).
-- **Saha testi** 4.6'nın son oyunundan sonra 6–12 telefonla yapılır (`docs/FIELD_TEST.md`, 4.8'de). Ayrı bir Faz 3 saha testi yapılmaz (K-1): Faz 3'ün bulma yardımı gözlemleri (SPEC_V3 §23.P-2: kabul anındaki iki satır kalabalık mekanda yeterli mi) bu testte yapılır ve P-2 kararı bu testten sonra verilir.
+- **Saha testi** 4.6 ve 4.7 ikisi de birleştikten sonra 6–12 telefonla yapılır (K-8). Faz 4'ün tamamını kapsar: push ve davet emülatörde sınanamaz ve başka telefon kontrolü yoktur. `docs/FIELD_TEST.md`'nin Faz 4 sürümü testten önce ayrı bir belge PR'ıyla yazılır; bulgular 4.8'de düzeltilir. Ayrı bir Faz 3 saha testi yapılmaz (K-1): Faz 3'ün bulma yardımı gözlemleri (SPEC_V3 §23.P-2: kabul anındaki iki satır kalabalık mekanda yeterli mi) bu testte yapılır ve P-2 kararı bu testten sonra verilir.
 
 ## 4.N Uygulama sırası, yayın, maliyet ve risk
 
@@ -768,12 +768,18 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 | 4.5 Masa modeli                | `…_table_model.sql`; `checkin`, `rooms`                         | Check-in'siz masa, çoklu masa, kişi bazlı katılım, oylama, oyun öncesi sayfa, takım ve gözlemci; eski oyunlar "Yakında" | `db push` + deploy; **hemen ardından** OTA                           | 4.4        |
 | 4.6.1–4.6.5 Oyunlar            | Oyun başına migration ve fonksiyon                              | Oyun başına v43 ekranları                                                                                               | Oyun başına PR; `db push` + deploy; OTA                              | 4.5 ve 4.1 |
 | 4.7 Bildirim ve davet          | `…_invites.sql`; `rooms`, `friends`, `account`                  | Zil, liste, davet gönderme ve katılma, push                                                                             | Önce yasal metin ve Veri güvenliği; `db push` + deploy; OTA          | 4.5        |
-| 4.8 Temizlik                   | 4.8a (fonksiyonlar), 4.8b (`…_v4_cleanup.sql`)                  | Ölü kod; `FIELD_TEST.md`, mağaza metinleri ve görüntüleri                                                               | `db push` + deploy; OTA                                              | 4.6 ve 4.7 |
+| Saha testi                     | —                                                               | Önce `docs/FIELD_TEST.md`'nin Faz 4 sürümü (ayrı belge PR'ı); test 6–12 telefonla, dev projesinde, Faz 4'ün tamamı      | —                                                                    | 4.6 ve 4.7 |
+| 4.8 Temizlik                   | 4.8a (fonksiyonlar), 4.8b (`…_v4_cleanup.sql`)                  | Ölü kod; saha testinin düzeltmeleri; mağaza metinleri ve görüntüleri                                                    | `db push` + deploy; OTA                                              | Saha testi |
 
 **Sıra ve birleşme.**
 
-- Her adım telefonda tek başına denenebilir: adımın sunucusu dev'e gider ve hemen ardından istemcisi OTA ile gider. `deploy-dev` otomatik yayını bunu birleşmede kendiliğinden yapar (migration, fonksiyonlar, OTA).
-- Bir sonraki adımın PR'ı, önceki adımın OTA'sı telefonda kontrol edildikten sonra birleşir. Çalışma öncekinin yayınını beklemeden başlayabilir.
+- Her adımın sunucusu dev'e gider ve hemen ardından istemcisi OTA ile gider. `deploy-dev` otomatik yayını bunu birleşmede kendiliğinden yapar (migration, fonksiyonlar, OTA). Her adımın OTA'sı ayrı gider; adımlar tek OTA'da toplanmaz.
+- **Telefon kontrolü birleşme şartı değildir** (K-8). Her adımın PR'ı `e2e` etiketiyle açılır; birleşme şartı `ci`'ın ve E2E'nin 8/8 yeşil olması ve proje sahibinin "onaylandı"sıdır. Çalışma öncekinin yayınını beklemeden başlayabilir.
+- **Telefondaki kontrol saha testidir** (K-8). K-7'deki 0.5.0 APK kontrolü olduğu gibi kalır.
+  - Zamanı: 4.6 ve 4.7 ikisi de birleştikten sonra. Push ve davet emülatörde sınanamaz ve başka telefon kontrolü olmadığı için saha testi Faz 4'ün tamamını kapsar.
+  - `docs/FIELD_TEST.md`'nin Faz 4 sürümü saha testinden önce ayrı bir belge PR'ıyla yazılır.
+  - 4.8 saha testinden sonra gelir ve testte çıkan düzeltmeleri de alır.
+- **PR'lar küçük tutulur:** telefonda görünen bir hatayı saha testinde hangi adımın getirdiği bulunabilsin (aşağıda "Maliyet ve risk").
 - İstemci işi önce v43 ya da v44'e bakılarak yapılır; tasarım dosyalarında olmayan görünüm eklenmez.
 - **4.5'te sunucu ile OTA arası en kısa tutulur:** 4.5'in sunucusundan sonra eski istemci masa açamaz ve oynayamaz. Pilot kullanıcısı yoktur; dev projesindeki test telefonları etkilenir.
 - Büyük adımlar gerekirse 23.2 ve 23.3'teki a/b kalıbıyla bölünür (sunucu önce, bugünkü uygulamayı bozmadan; istemci sonra). Bölünme o adımın planında yazılır.
@@ -794,9 +800,9 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 
 **Pilot ön koşulları** (§4.B-12):
 
-- 4.0–4.8 birleşmiş ve dev'de telefonlarda doğrulanmış;
-- v44 ekranları ve koyu tema uygulanmış;
-- saha testi (6–12 telefon) yapılmış ve bulguları kapatılmış;
+- 4.0–4.7 birleşmiş; v44 ekranları ve koyu tema uygulanmış;
+- saha testi (6–12 telefon, `docs/FIELD_TEST.md`'nin Faz 4 sürümüyle) 4.6 ve 4.7'den sonra yapılmış;
+- 4.8 birleşmiş ve saha testinin bulguları kapatılmış;
 - "Kapsül Anlat" için hukuki kontrol;
 - mağaza metinleri, görüntüler ve Veri güvenliği formu;
 - üretim projesi `docs/PILOT_RELEASE.md` sırasıyla (Firebase anahtarının Expo panelinde olduğu dahil).
@@ -835,12 +841,17 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 - Her adım kendi akışını ve bot eylemlerini aynı PR'da günceller; bir anda bütün akışı yeniden yazmak gerekmez.
 - Repo herkese açıkken Actions dakikası ücretsizdir; 12 telefonlu senaryolar yalnızca entegrasyon testinde, E2E'de bir cihaz ve bot telefonlarıyla koşar.
 
+**Telefonda görünen hatalar saha testine kadar birikir** (K-8).
+
+- Adımlar arasında telefon kontrolü yoktur. E2E emülatörde koşar; yalnızca telefonda görünen hatalar (dokunma ve sürükleme, gerçek ağ gecikmesi, push, yazı tipi) saha testine kadar birikir ve testte birlikte çıkar.
+- Önlem: hangi adımın bozduğunu bulabilmek için PR'lar küçük tutulur ve her birinin OTA'sı ayrı gider. Düzeltmeler 4.8'e girer.
+
 **Diğer riskler.**
 
 - **Herkesin kendi telefonu** (ürünsel, proje sahibinin kararı): oynayan herkes uygulamayı kurar, kayıt olur, doğum tarihi ve cinsiyet girer. Pilotta en büyük kayıp noktası bu olabilir; saha testinde ölçülür (kayıt süresi, masaya katılamayan kişi).
-- **Takvim:** v43 uygulamanın büyük kısmını yeniden yazar ve pilot tamamını bekler; geri bildirim geç gelir. Adımlar telefonda tek tek denenir ve saha testi 4.6'dan sonra yapılır.
+- **Takvim:** v43 uygulamanın büyük kısmını yeniden yazar ve pilot tamamını bekler; geri bildirim geç gelir. Adımlar arasında telefon kontrolü yoktur; telefondaki kontrol 4.6 ve 4.7'den sonraki saha testidir (K-8).
 - **v44 bağımlılığı:** koyu tema ve eksik ekranlar gelmeden 4.2 başlamaz.
-- **Yazı tipi:** Plus Jakarta Sans geniş; 320 dp'de sığma payı azdır. Büyük yazı E2E koşusu her adımda denetler.
+- **Yazı tipi:** Plus Jakarta Sans geniş; 320 dp'de sığma payı azdır. Büyük yazı E2E koşusu (gece ve elle) emülatörde denetler; telefonda görünen kısmı saha testinde.
 - **Kontrast:** Harf Kapmaca'nın turuncu zemininde çipler koyulaştırılır (§4.C).
 - **Sahtekar'da yazılı tahmin:** serbest metne ilk kez izin verilir; yalnızca son şansta, saklanmaz, `trText` ile eşleşir.
 - **Kapsül nick'in hesaba sabit olması:** anonim kişi ziyaretler arasında tanınır (proje sahibinin kararı; gizlilik politikasında yazılı; yenileme §4.P).
@@ -919,15 +930,16 @@ Bu PR yalnızca proje paragrafını ve görsel kaynak kod kuralını değiştiri
 - §4.B'deki 12 madde ve kural metinleri için verilen üç ölçü (18 Ekim; "skall v43 dönüşüm raporu" ve bu belgenin isteği).
 - CTO incelemesinden sonra verilen kararlar (18 Ekim). Metinde "K-n" diye anılır:
 
-| No         | Karar                                                                                                                                                                                                                                                                                                                                                                              | Nerede              |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
-| K-1        | 23.4b'nin saha testi şartı kalkar. Ayrı bir Faz 3 saha testi yapılmaz; bulma yardımı gözlemleri Faz 4 saha testinde yapılır. (23.4b'nin birleşme şartı K-7 ile değişti.)                                                                                                                                                                                                           | §4.M, §4.N          |
-| K-2        | Davet ekranı: bütün arkadaşlar listelenir, kimin mekanda olduğu görünmez; sunucu mekanda olmayana daveti sessizce iletmez; gönderen her durumda aynı yanıtı görür                                                                                                                                                                                                                  | §4.C, §4.G, kural 4 |
-| K-3 (P-1)  | Erkek ve belirtmeyen mekan sohbetinde anonim yazabilir; oyun akışında ve masada her zaman profillidir (kural 12 yalnızca oyun akışı için, aynen). Bu hesaplar için anonim seçim yalnızca mekan sohbetini etkiler; check-in başına 1 değişiklik kuralı onlar için de geçerlidir                                                                                                     | §4.D, kural 4 ve 12 |
-| K-4 (P-4)  | Profilli görünmek profil fotoğrafı ister (`photo_required`). Soluk kapsül yalnızca fotoğrafı sonradan gizlenen ya da kaldırılan profil içindir                                                                                                                                                                                                                                     | §4.D, kural 4       |
-| K-5 (P-12) | Rakip düğmesi "Yasak!", ödül "Yasak avcısı"                                                                                                                                                                                                                                                                                                                                        | §4.C, §4.F          |
-| K-6 (P-13) | Zil yalnızca Mesajlar'da; alt çubuktaki Mesajlar sekmesinde okunmamış noktası. SPEC_V3 §18.3a bu adımda (4.7) değişir                                                                                                                                                                                                                                                              | §4.C, §4.G          |
-| K-7        | "OTA telefonda doğrulandı" 23.3b, 23.4a ve 23.4b için birleşme şartı değildir. Telefonda tek kontrol, 4.1 birleştikten sonra 0.5.0 preview APK'sı kurulunca yapılır ve üçünü birlikte kapsar. 23.4b'nin şartı: 23.4a'dan sonraki deploy-dev koşusu yeşil ve `reveal` dev projesinden elle silindi. Eski JS paketli telefonun bir açılışta hata görmesi dev projesinde kabul edildi | §4.N; SPEC_V3 §23.N |
+| No         | Karar                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Nerede              |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
+| K-1        | 23.4b'nin saha testi şartı kalkar. Ayrı bir Faz 3 saha testi yapılmaz; bulma yardımı gözlemleri Faz 4 saha testinde yapılır. (23.4b'nin birleşme şartı K-7 ile değişti.)                                                                                                                                                                                                                                                                                                                                                  | §4.M, §4.N          |
+| K-2        | Davet ekranı: bütün arkadaşlar listelenir, kimin mekanda olduğu görünmez; sunucu mekanda olmayana daveti sessizce iletmez; gönderen her durumda aynı yanıtı görür                                                                                                                                                                                                                                                                                                                                                         | §4.C, §4.G, kural 4 |
+| K-3 (P-1)  | Erkek ve belirtmeyen mekan sohbetinde anonim yazabilir; oyun akışında ve masada her zaman profillidir (kural 12 yalnızca oyun akışı için, aynen). Bu hesaplar için anonim seçim yalnızca mekan sohbetini etkiler; check-in başına 1 değişiklik kuralı onlar için de geçerlidir                                                                                                                                                                                                                                            | §4.D, kural 4 ve 12 |
+| K-4 (P-4)  | Profilli görünmek profil fotoğrafı ister (`photo_required`). Soluk kapsül yalnızca fotoğrafı sonradan gizlenen ya da kaldırılan profil içindir                                                                                                                                                                                                                                                                                                                                                                            | §4.D, kural 4       |
+| K-5 (P-12) | Rakip düğmesi "Yasak!", ödül "Yasak avcısı"                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | §4.C, §4.F          |
+| K-6 (P-13) | Zil yalnızca Mesajlar'da; alt çubuktaki Mesajlar sekmesinde okunmamış noktası. SPEC_V3 §18.3a bu adımda (4.7) değişir                                                                                                                                                                                                                                                                                                                                                                                                     | §4.C, §4.G          |
+| K-7        | "OTA telefonda doğrulandı" 23.3b, 23.4a ve 23.4b için birleşme şartı değildir. Telefonda tek kontrol, 4.1 birleştikten sonra 0.5.0 preview APK'sı kurulunca yapılır ve üçünü birlikte kapsar. 23.4b'nin şartı: 23.4a'dan sonraki deploy-dev koşusu yeşil ve `reveal` dev projesinden elle silindi. Eski JS paketli telefonun bir açılışta hata görmesi dev projesinde kabul edildi                                                                                                                                        | §4.N; SPEC_V3 §23.N |
+| K-8        | Faz 4 adımları arasında telefon kontrolü birleşme şartı değildir: her adımın PR'ı `e2e` etiketiyle açılır, birleşme şartı `ci` ve E2E 8/8 yeşil ve "onaylandı". Telefondaki kontrol saha testidir; K-7'deki 0.5.0 APK kontrolü kalır. Saha testi 4.6 ve 4.7 birleştikten sonra, Faz 4'ün tamamını kapsar; `docs/FIELD_TEST.md`'nin Faz 4 sürümü testten önce ayrı belge PR'ıyla yazılır; 4.8 testten sonra gelir ve düzeltmeleri alır. Yalnızca telefonda görünen hatalar teste kadar birikir: PR'lar küçük, OTA'lar ayrı | §4.M, §4.N          |
 
 **Açık kararlar.** İlgili adımdan önce proje sahibine sorulur; karar verilmeden o adımın işi başlamaz. P-1, P-4, P-12 ve P-13 karara bağlandı (K-3…K-6); diğer numaralar değişmez.
 
