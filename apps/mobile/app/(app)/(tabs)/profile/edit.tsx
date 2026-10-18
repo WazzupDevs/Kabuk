@@ -22,6 +22,7 @@ import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { profileApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { maxLengthFor } from '@/lib/textLimit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
@@ -125,7 +126,15 @@ function EditForm({
   const bioContact = bioChanged && containsContact(bio);
   const nameValid =
     nameLength >= DISPLAY_NAME_MIN && nameLength <= DISPLAY_NAME_MAX && !nameContact;
-  const bioValid = !bioChanged || ([...bio.trim()].length <= BIO_MAX && !bioContact);
+  // An edited bio from before the limit that is still too long says so (Kaydet stays off).
+  const bioTooLong = bioChanged && [...bio.trim()].length > BIO_MAX;
+  const bioValid = !bioChanged || (!bioTooLong && !bioContact);
+  const bioLimit = Math.max(BIO_MAX, [...initialBio].length);
+  const bioError = bioContact
+    ? tr.errors.contact_not_allowed
+    : bioTooLong
+      ? tr.profile.bioTooLong(BIO_MAX)
+      : null;
 
   const save = useMutation({
     meta: FEEL_ERROR,
@@ -157,7 +166,7 @@ function EditForm({
           value={name}
           onChangeText={setName}
           error={nameContact ? tr.errors.contact_not_allowed : null}
-          maxLength={DISPLAY_NAME_MAX}
+          maxLength={maxLengthFor(name, DISPLAY_NAME_MAX)}
           autoCapitalize="words"
           autoCorrect={false}
         />
@@ -166,8 +175,8 @@ function EditForm({
           counter={tr.profile.bioHint([...bio].length, BIO_MAX)}
           value={bio}
           onChangeText={setBio}
-          error={bioContact ? tr.errors.contact_not_allowed : null}
-          maxLength={Math.max(BIO_MAX, [...initialBio].length)}
+          error={bioError}
+          maxLength={maxLengthFor(bio, bioLimit)}
           multiline
           tall
         />

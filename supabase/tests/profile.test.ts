@@ -221,7 +221,16 @@ describe('profile/update', () => {
         body: errorBody('contact_not_allowed'),
       });
     }
-    for (const bio of ['ara 5321234567', 'yaz: elif@gmail.com', 'insta @elif', 't.me/elif']) {
+    for (const bio of [
+      'ara 5321234567',
+      'yaz: elif@gmail.com',
+      'insta @elif',
+      't.me/elif',
+      'ig: elif.kaya',
+      'O532 l23 45 67',
+      'elif [at] gmail [dot] com',
+      'goo.gl/abc',
+    ]) {
       expect(await profile(client, { action: 'update', bio })).toEqual({
         status: 422,
         body: errorBody('contact_not_allowed'),
@@ -234,6 +243,12 @@ describe('profile/update', () => {
         bio: '1998, Sakarya Üni.',
       }),
     ).toEqual({ status: 200, body: { ok: true } });
+    for (const bio of ['1071 1453 1923', 'Kafa dengi.Net konuşurum', 'insta yok']) {
+      expect(await profile(client, { action: 'update', bio })).toEqual({
+        status: 200,
+        body: { ok: true },
+      });
+    }
   });
 
   // A bio from before the 80 limit stays until it is edited (K-34).

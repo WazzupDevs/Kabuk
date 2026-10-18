@@ -467,6 +467,8 @@ export const tr = {
       '2–24 karakter. Bu adı arkadaşların görür; profilinle göründüğün masalarda ve mekan sohbetinde orada bulunanlar da görür.',
     bioLabel: 'Tanıtım',
     bioHint: (n: number, max: number) => `${n}/${max}`,
+    bioTooLong: (max: number) =>
+      `Tanıtım en fazla ${max} karakter olabilir; kaydetmek için kısalt.`,
     save: 'Kaydet',
     photo: 'Fotoğraf',
     photoChange: 'Fotoğrafı değiştir',

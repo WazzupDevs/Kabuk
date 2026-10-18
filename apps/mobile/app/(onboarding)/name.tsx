@@ -10,6 +10,7 @@ import { useOnboardingStore } from '@/features/onboarding/store';
 import { useFriend } from '@/features/onboarding/useFriend';
 import { tr } from '@/i18n/tr';
 import { greeting } from '@/lib/signupFriend';
+import { maxLengthFor } from '@/lib/textLimit';
 
 // The display name, step 4/7. Kept on the phone until the gender step sends the profile.
 export default function NameStep() {
@@ -49,7 +50,7 @@ export default function NameStep() {
         value={name}
         onChangeText={setName}
         error={contact ? tr.errors.contact_not_allowed : null}
-        maxLength={DISPLAY_NAME_MAX}
+        maxLength={maxLengthFor(name, DISPLAY_NAME_MAX)}
         autoCapitalize="words"
         autoCorrect={false}
         autoComplete="given-name"

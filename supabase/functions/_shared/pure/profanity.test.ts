@@ -118,4 +118,128 @@ describe('containsContact', () => {
       expect(containsContact(text), text).toBe(false);
     }
   });
+
+  // The CTO's review of WazzupDevs/Kabuk#145: what slipped through and what was wrongly refused.
+  it('sees through invisible characters, full-width forms and Turkish capitals', () => {
+    for (const text of [
+      '0532\u200B123\u200B45\u200B67',
+      '０５３２ １２３ ４５ ６７',
+      'e\u200Blif@gmail.com',
+      'ｗｗｗ.elif.net',
+      '﹫elif',
+      '＠elif',
+      '@İrem',
+      '@IREM',
+    ]) {
+      expect(containsContact(text), text).toBe(true);
+    }
+  });
+
+  it('finds phone numbers spaced with other marks or written with O and l', () => {
+    for (const text of [
+      '0532_123_45_67',
+      '0532,123,45,67',
+      '0532·123·45·67',
+      '0532*123*45*67',
+      '0532|123|45|67',
+      'O532 l23 45 67',
+      'o5321234567',
+    ]) {
+      expect(containsContact(text), text).toBe(true);
+    }
+  });
+
+  it('leaves runs of years and dates alone', () => {
+    for (const text of [
+      '1071 1453 1923',
+      '1903 1905 1907',
+      'ODTÜ 2016-2020/2020-2022',
+      '01.01.2000 - 31.12.2020',
+      'Mezuniyet 2012, 2016, 2020',
+    ]) {
+      expect(containsContact(text), text).toBe(false);
+    }
+  });
+
+  it('finds usernames written after a platform without @', () => {
+    for (const text of [
+      'ig: elif.kaya',
+      'snap: elif_k',
+      'tg: elif',
+      'insta=elif',
+      'tiktok - elif',
+      'Instagram elif.kaya',
+      'insta elif99',
+      'snapchat elif_k',
+      'discord: elif#1234',
+      'x: elif',
+      'onlyfans: elif',
+      'ig_elif',
+    ]) {
+      expect(containsContact(text), text).toBe(true);
+    }
+  });
+
+  it('leaves a platform named in a sentence alone', () => {
+    for (const text of [
+      'insta yok',
+      'insta elif',
+      'Instagram yok. Kahve var',
+      "Twitter'da yokum",
+      'snap 3 yıldır yok',
+      'x-men severim',
+      'Haftada 3 x 10 km koşarım',
+      'DC-Marvel tartışmasına varım',
+    ]) {
+      expect(containsContact(text), text).toBe(false);
+    }
+  });
+
+  it('finds links with spaced dots, any extension before a path, and more bare domains', () => {
+    for (const text of [
+      't. me/elif',
+      'instagram com/elif',
+      'instagram . com / elif',
+      'goo.gl/abc',
+      'elif.site/abc',
+      'Instagram.Com/elif',
+      'elif.ai',
+      'elif.online',
+      'www . elif . net',
+    ]) {
+      expect(containsContact(text), text).toBe(true);
+    }
+  });
+
+  it('finds e-mail addresses with spaces, without an extension or with [at] and [dot]', () => {
+    for (const text of [
+      'elif @ gmail . com',
+      'elif@gmail',
+      'elif @ hotmail',
+      'elif [at] gmail [dot] com',
+      'elif (at) gmail (dot) com',
+      'elif@Site.Com',
+    ]) {
+      expect(containsContact(text), text).toBe(true);
+    }
+  });
+
+  it('finds @ followed by a space', () => {
+    expect(containsContact('@ elif')).toBe(true);
+  });
+
+  it('leaves a sentence with no space after its full stop alone', () => {
+    for (const text of [
+      'Kafa dengi.Net konuşurum',
+      'Kahve severim.Dev gibi',
+      'film.tv izlerim',
+      'Mim.Fak/2020',
+      'Konuştuğum diller TR/EN',
+      'iOS app/web',
+      'puan 4.5/5',
+      'Bilgisayar Müh. 2. sınıf/ODTÜ',
+    ]) {
+      expect(containsContact(text), text).toBe(false);
+    }
+  });
 });
