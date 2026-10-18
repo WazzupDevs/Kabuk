@@ -5,7 +5,9 @@ import {
   fitFriend,
   FRIEND,
   FRIEND_LOOKS,
+  friendMoves,
   greeting,
+  placeFriend,
   polyHits,
   type Rect,
   rectsHit,
@@ -54,6 +56,51 @@ describe('sign-up friends (v45 report §3)', () => {
       height: 34,
     };
     expect(fitFriend(SCREEN, top, [long], topLimit)).not.toBe(0);
+  });
+
+  // The CTO's 4.3d review: its moves must not cover anything either.
+  it("does not jump over the step counter; the rest of its moves go on", () => {
+    const top = 100;
+    // "2/7" in the top row, right above it: its rest and shake stay under the row, its jump's top
+    // (18 up) would reach the counter.
+    const counter: Rect = { x: SCREEN - 64, y: top - 34, width: 32, height: 20 };
+    expect(fitFriend(SCREEN, top, [counter], 60)).toBe(0);
+    expect(friendMoves(SCREEN, top, 0, [counter], 60)).toEqual({
+      jump: false,
+      shake: true,
+      nod: true,
+    });
+    expect(friendMoves(SCREEN, top, 0, [], 60)).toEqual({ jump: true, shake: true, nod: true });
+  });
+
+  it('does not shake its head over a title line that runs close to the edge', () => {
+    const top = 100;
+    // A line ending 70 dp from the edge clears it at rest; the shake's -24° reaches about 10 dp
+    // further left, over the line's end. One ending 80 dp from the edge clears both.
+    const near: Rect = { x: 20, y: top + 6, width: SCREEN - 20 - 70, height: 34 };
+    expect(placeFriend(SCREEN, top, [near], 60)?.moves.shake).toBe(false);
+    const far: Rect = { x: 20, y: top + 6, width: SCREEN - 20 - 80, height: 34 };
+    expect(placeFriend(SCREEN, top, [far], 60)?.moves).toEqual({
+      jump: true,
+      shake: true,
+      nod: true,
+    });
+  });
+
+  it('rests a little higher when that lets it nod, and shows exactly where it fits at rest', () => {
+    const top = 100;
+    // A field 10 dp into its feet: at rest it needs 12 dp up, where the nod (6 down) would touch
+    // the field; 18 dp up it nods too.
+    const field: Rect = { x: 20, y: top + 88, width: SCREEN - 40, height: 56 };
+    expect(fitFriend(SCREEN, top, [field], 60)).toBe(12);
+    expect(friendMoves(SCREEN, top, 12, [field], 60).nod).toBe(false);
+    expect(placeFriend(SCREEN, top, [field], 60)).toEqual({
+      shift: 18,
+      moves: { jump: true, shake: false, nod: true },
+    });
+    // Where it does not fit at rest it does not show, moves or not.
+    const across: Rect = { x: 20, y: top + 20, width: SCREEN - 40, height: 56 };
+    expect(placeFriend(SCREEN, top, [across], 60)).toBeNull();
   });
 
   it('never climbs into the top row', () => {
