@@ -8,6 +8,8 @@ import {
   CARD_IN,
   CARD_OUT_MS,
   COVER_OPEN,
+  DIAL,
+  dialFacePath,
   DECK,
   EASE_COVER,
   EASE_SWAP,
@@ -15,8 +17,6 @@ import {
   EQUALISER,
   equaliserHeight,
   fingerOnCard,
-  ICON_HIT,
-  ICON_MORPH,
   LETTER_WHEEL,
   letterWheelTimes,
   ROLE_TURN,
@@ -113,10 +113,12 @@ describe('the role card, the wheel, the record, the cover, the bell', () => {
     }
     expect(bellAt(0.15, BELL_RING.clapper)).toBe(-2);
   });
+});
 
-  it('the icon springs settle', () => {
-    expect(ICON_HIT(0)).toBe(0);
-    expect(ICON_HIT(900)).toBeCloseTo(1, 1);
-    expect(ICON_MORPH(900)).toBeCloseTo(1, 1);
+describe("İbre's dial", () => {
+  it('the face and its cover are the half disc about the pivot (v45: 300 x 168, r 140)', () => {
+    expect(dialFacePath()).toBe('M10 156A140 140 0 0 1 290 156Z');
+    expect(DIAL.cy + 0).toBeLessThanOrEqual(DIAL.height);
+    expect(DIAL.cx - DIAL.r).toBeGreaterThanOrEqual(0);
   });
 });

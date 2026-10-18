@@ -1,15 +1,23 @@
-import { cubicBezier, spring } from './markMotion';
+import { cubicBezier } from './markMotion';
 
 // The game screens' motions (v43 report §5 "Hareket", the v45 file's .tk, .sgc, .hx-big, .sx-rec,
 // .sx-eq, .nx-shut and .nbell; docs/SPEC_V4.md §4.C, step 4.2c): the card's tilt, the role card's
 // turn, the letter wheel, the record and its equaliser, İbre's cover and the bell's ring. Pure, so
-// playMotion.test.ts pins them; the components in src/components/game/ and BarIcon.tsx play them,
-// the tilt and the needle on the UI thread (react-native-reanimated).
+// playMotion.test.ts pins them; the components in src/components/game/ and BarIcon.tsx play them on
+// the UI thread (react-native-reanimated), the card's tilt following the finger there.
 
-// v45's eases.
-export const EASE_SWAP = cubicBezier(0.4, 0, 0.6, 1); // a card leaving
-export const EASE_TURN = cubicBezier(0.34, 1.3, 0.64, 1); // the role card turning
-export const EASE_COVER = cubicBezier(0.6, 0, 0.3, 1); // İbre's cover swinging away
+// v45's eases as cubic-bezier points: the components pass them to reanimated's Easing.bezier (it
+// runs on the UI thread), the tests check them through cubicBezier.
+export const CURVES = {
+  back: [0.34, 1.56, 0.64, 1], // a pop that overshoots: a new card, the wheel landing
+  swap: [0.4, 0, 0.6, 1], // a card leaving
+  turn: [0.34, 1.3, 0.64, 1], // the role card turning
+  cover: [0.6, 0, 0.3, 1], // İbre's cover swinging away
+} as const satisfies Record<string, readonly [number, number, number, number]>;
+
+export const EASE_SWAP = cubicBezier(...CURVES.swap);
+export const EASE_TURN = cubicBezier(...CURVES.turn);
+export const EASE_COVER = cubicBezier(...CURVES.cover);
 
 // ------------------------------------------------------------------ the card (Kapsül Anlat)
 
@@ -146,6 +154,15 @@ export function equaliserHeight(ms: number, offset = 0): number {
 // 250 ms pause, over 1 s; the result card pops in after it.
 export const COVER_OPEN = { delayMs: 250, ms: 1000, degrees: -175, resultDelayMs: 1000 } as const;
 
+// İbre's dial (v45: viewBox 300 x 168): the pivot at (150, 156), the face a half disc of radius 140.
+export const DIAL = { width: 300, height: 168, cx: 150, cy: 156, r: 140 } as const;
+
+// The half disc the dial's face and its cover share.
+export function dialFacePath(): string {
+  const { cx, cy, r } = DIAL;
+  return `M${cx - r} ${cy}A${r} ${r} 0 0 1 ${cx + r} ${cy}Z`;
+}
+
 // ------------------------------------------------------------------ the bell (Mesajlar)
 
 // A new notification rings the bell: it swings about its top, smaller each time, over 900 ms; the
@@ -174,17 +191,3 @@ export function bellAt(u: number, track: readonly number[] = BELL_RING.rotate): 
   }
   return track[track.length - 1] as number;
 }
-
-// ------------------------------------------------------------------ the bar icons' springs
-
-// Shown for the first time, a bar icon's two bars start in the mark's place and spring into the
-// icon after 120 ms (v45: IC → form); the lobby icon morphs between lobby and minus.
-export const ICON_FORM = { delayMs: 120, settleMs: 900 } as const;
-export const ICON_HIT = spring(320, 14); // forming
-export const ICON_MORPH = spring(220, 20); // lobby ↔ minus
-
-// The mark's two bars, where a forming icon starts.
-export const ICON_MARK = {
-  a: { c: [10.3, 10.4], L: 14, r: 0 },
-  b: { c: [13.7, 13.6], L: 14, r: 0 },
-} as const;

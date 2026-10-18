@@ -179,7 +179,8 @@ export type TypeVariant =
   | 'clock' // a timed turn's seconds next to the timer bar (v43: .tg-timer b)
   | 'countIn' // "3", "2", "1" (v43: .tg-cd)
   | 'countInGo' // "Başla" after them
-  | 'toast'; // the short notice at the top of a game (v43: .tg-flash)
+  | 'toast' // the short notice at the top of a game (v43: .tg-flash)
+  | 'letterTile'; // Harf Kapmaca's letter on its wheel tile (v43: .hx-big)
 
 export type Typography = Record<TypeVariant, TypeStyle>;
 
@@ -293,6 +294,7 @@ export function baseTypography(overrides: Partial<Typography> = {}): Typography 
     countIn: { font: 'display', size: 110, lineHeight: 120, letterSpacing: -4 },
     countInGo: { font: 'display', size: 60, lineHeight: 66, letterSpacing: -0.5 },
     toast: { font: 'display', size: 14, lineHeight: 18 },
+    letterTile: { font: 'display', size: 96, lineHeight: 104 },
     ...overrides,
   };
 }

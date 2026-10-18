@@ -1,6 +1,14 @@
-import { useId } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import { View } from 'react-native';
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import Svg, { ClipPath, Defs, G, Path, Rect } from 'react-native-svg';
+
+import { useReduceMotion } from '@/lib/useReduceMotion';
 
 import {
   BAR,
@@ -14,6 +22,7 @@ import {
   SLOT,
 } from '@/theme/barIcons';
 import { ON_GAME } from '@/theme/gameColors';
+import { BELL_RING, BELL_RING_MS, bellAt } from '@/theme/playMotion';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON } from '@/theme/tokens';
 
@@ -113,44 +122,77 @@ type BellProps = {
   // Unread notifications; none shows no badge.
   unread?: number;
   size?: number;
+  // A new value rings the bell once (a new notification, step 4.7); the first value does not.
+  ringKey?: string | number;
 };
 
 // The Mesajlar bell from the bar family (src/theme/barIcons.ts) with its unread badge (v43:
 // .nbell, .nb-bdg). The button around it carries the label and the count ("Bildirimler, 3 yeni").
-export function BellIcon({ unread = 0, size = ICON.lg }: BellProps) {
+export function BellIcon({ unread = 0, size = ICON.lg, ringKey }: BellProps) {
   const { colors } = useTheme();
+  const reduce = useReduceMotion();
   const clip = `bell${useId().replace(/[^A-Za-z0-9]/g, '')}`;
   const b = BELL.bar;
   const c = BELL.clapper;
+  const unit = size / 24;
+  // The ring (v45: nbRing, nbClap): the bell swings about its top, the clapper the other way.
+  const ring = useSharedValue(1);
+  const lastKey = useRef(ringKey);
+  useEffect(() => {
+    if (lastKey.current === ringKey) return;
+    lastKey.current = ringKey;
+    if (reduce) return;
+    ring.set(0);
+    ring.set(withTiming(1, { duration: BELL_RING_MS, easing: Easing.linear }));
+  }, [ringKey, reduce, ring]);
+  const swing = useAnimatedStyle(() => ({ transform: [{ rotate: `${bellAt(ring.value)}deg` }] }));
+  const clap = useAnimatedStyle(() => ({
+    transform: [{ translateX: bellAt(ring.value, BELL_RING.clapper) * unit }],
+  }));
   return (
     <View style={{ width: size, height: size }}>
-      <Svg width={size} height={size} viewBox="0 0 24 24">
-        <Defs>
-          <ClipPath id={clip}>
-            <Path d={BELL.dome} />
-          </ClipPath>
-        </Defs>
-        <Path d={BELL.dome} fill={BELL.colors.dome} />
-        <Rect x={b.x} y={b.y} width={b.width} height={b.height} rx={b.rx} fill={BELL.colors.bar} />
-        <G clipPath={`url(#${clip})`}>
+      <Animated.View style={[{ width: size, height: size, transformOrigin: '50% 14%' }, swing]}>
+        <Svg width={size} height={size} viewBox="0 0 24 24">
+          <Defs>
+            <ClipPath id={clip}>
+              <Path d={BELL.dome} />
+            </ClipPath>
+          </Defs>
+          <Path d={BELL.dome} fill={BELL.colors.dome} />
           <Rect
             x={b.x}
             y={b.y}
             width={b.width}
             height={b.height}
             rx={b.rx}
-            fill={BELL.colors.overlap}
+            fill={BELL.colors.bar}
           />
-        </G>
-        <Rect
-          x={c.x}
-          y={c.y}
-          width={c.width}
-          height={c.height}
-          rx={c.rx}
-          fill={BELL.colors.clapper}
+          <G clipPath={`url(#${clip})`}>
+            <Rect
+              x={b.x}
+              y={b.y}
+              width={b.width}
+              height={b.height}
+              rx={b.rx}
+              fill={BELL.colors.overlap}
+            />
+          </G>
+        </Svg>
+        <Animated.View
+          style={[
+            {
+              position: 'absolute',
+              left: c.x * unit,
+              top: c.y * unit,
+              width: c.width * unit,
+              height: c.height * unit,
+              borderRadius: c.rx * unit,
+              backgroundColor: BELL.colors.clapper,
+            },
+            clap,
+          ]}
         />
-      </Svg>
+      </Animated.View>
       {unread > 0 ? (
         <View
           className="absolute items-center justify-center"
