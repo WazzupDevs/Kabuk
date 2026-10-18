@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { BAR_ICON_COLORS } from './barIcons';
 import { BUTTON_VARIANTS, buttonFill } from './buttonFill';
 import { AA_LARGE, AA_TEXT, contrastRatio, readableOn } from './contrast';
 import { featurePalette } from './feature';
@@ -126,6 +127,24 @@ describe('featured card contrast (WCAG AA)', () => {
       it.each(FEATURE_PAIRS)('%s on %s ≥ %s', (fg, bg, min) => {
         expect(ratio(palette, fg, bg)).toBeGreaterThanOrEqual(min);
       });
+    });
+  }
+});
+
+// Mesajlar → İstekler: the decline and accept circles. Each icon has a light and a dark bar; at
+// least one of them stands out 3:1 from its circle in both schemes (a graphic, with its own label).
+describe('request buttons (WCAG AA graphics)', () => {
+  const ICONS = [
+    ['cross', 'dangerSoft'],
+    ['check', 'successSoft'],
+  ] as const;
+  for (const scheme of ['light', 'dark'] as const) {
+    it.each(ICONS)(`${scheme}: %s on %s`, (icon, fill) => {
+      const { a, b } = BAR_ICON_COLORS[icon];
+      const ground = THEME.palettes[scheme][fill];
+      expect(Math.max(contrastRatio(a, ground), contrastRatio(b, ground))).toBeGreaterThanOrEqual(
+        AA_LARGE,
+      );
     });
   }
 });
