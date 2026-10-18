@@ -24,7 +24,6 @@ import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Sheet } from '@/components/Sheet';
 import { Mark } from '@/components/Mark';
-import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
 import { Loader } from '@/components/Loader';
 import { ReportModal } from '@/features/chat/ReportModal';
@@ -45,6 +44,7 @@ import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { ApiError, safetyApi, venueChatApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { nameInk } from '@/theme/nameInk';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
@@ -54,7 +54,7 @@ import { ICON, SPACING } from '@/theme/tokens';
 // bar. Tapping a profiled sender opens their profile through the message; any other sender offers
 // report and block.
 export default function VenueChatScreen() {
-  const { colors, shape } = useTheme();
+  const { colors, shape, scheme } = useTheme();
   const queryClient = useQueryClient();
   const table = useActiveTable();
   const venueId = table.data?.venue_id;
@@ -146,6 +146,14 @@ export default function VenueChatScreen() {
   });
 
   const body = prepareVenueMessage(draft);
+  // Each sender's name keeps one colour, in their bubbles and in quotes of them (v45: VC.col); the
+  // viewer's own name in a quote is in the accent.
+  const inkOf = (sender: string) => nameInk(scheme, sender);
+  const quoteOf = (q: VenueChatMessage['replyTo']) => {
+    const base = toChatQuote(q);
+    if (!base || !q || q.gone) return base;
+    return { ...base, color: q.fromMe ? colors.accent : inkOf(base.name) };
+  };
   const openSender = (m: VenueChatMessage) => {
     if (m.profiled) {
       router.push({ pathname: '/venue-chat/[messageId]', params: { messageId: m.id } });
@@ -270,7 +278,7 @@ export default function VenueChatScreen() {
                   testID={m.fromMe ? 'venue-chat-mine' : 'venue-chat-theirs'}
                   text={m.body}
                   mine={m.fromMe}
-                  quote={toChatQuote(m.replyTo)}
+                  quote={quoteOf(m.replyTo)}
                   onPressQuote={quoteJump(m.replyTo, jumpTo)}
                   reactions={reactions.view(m.id, m.reactions)}
                   onToggleReaction={(emoji) => reactions.pick(m.id, m.reactions, emoji)}
@@ -278,7 +286,11 @@ export default function VenueChatScreen() {
                   onReply={() =>
                     reply.setTarget({
                       id: m.id,
-                      quote: { name: m.fromMe ? tr.chat.you : senderLabel(m), text: m.body },
+                      quote: {
+                        name: m.fromMe ? tr.chat.you : senderLabel(m),
+                        text: m.body,
+                        color: m.fromMe ? colors.accent : inkOf(senderLabel(m)),
+                      },
                     })
                   }
                   first={first}
@@ -296,7 +308,7 @@ export default function VenueChatScreen() {
                       <Avatar kind="table" alias={senderLabel(m)} size="sm" />
                     )
                   }
-                  tag={m.profiled ? <Tag label={tr.venueChat.profiled} variant="profiled" /> : null}
+                  nameInk={m.fromMe ? undefined : inkOf(senderLabel(m))}
                   onPressSender={m.fromMe ? undefined : () => openSender(m)}
                 />
               </>

@@ -14,7 +14,8 @@ import { AVATAR_SIZE } from './Avatar';
 import { useChatBar } from './ChatScreen';
 import { Text } from './Text';
 
-export type ChatQuote = { name: string; text: string };
+// color: the quoted sender's name colour in the venue chat (v45: --qc); otherwise the second accent.
+export type ChatQuote = { name: string; text: string; color?: string };
 export type ChatReaction = { emoji: string; count: number; mine: boolean };
 
 type Props = {
@@ -28,6 +29,10 @@ type Props = {
   tag?: ReactNode;
   // Opens the sender's profile from the photo and the name (profiled senders only).
   onPressSender?: () => void;
+  // The venue chat (v45: .vc .msg, .vname): the sender's name inside the run's first bubble in this
+  // colour (theme/nameInk.ts), the photo beside the bubbles, every bubble's top-left corner tight.
+  // No tag. Without it the photo and the name sit over the run.
+  nameInk?: string;
   // Own messages still on the way, or refused by the network.
   state?: 'sending' | 'failed';
   // Why a failed message was refused, when the server said ("Çok hızlı yazıyorsun.").
@@ -74,6 +79,7 @@ export function ChatBubble({
   name,
   tag,
   onPressSender,
+  nameInk,
   state,
   failedText,
   onRetry,
@@ -108,6 +114,7 @@ export function ChatBubble({
   const small = SPACING[1.5];
   const top = first ? big : small;
   const fg = mine ? colors.onAccent : colors.text;
+  const inside = !mine && nameInk !== undefined;
   const bubble = (
     <Pressable
       testID={testID}
@@ -148,9 +155,9 @@ export function ChatBubble({
         style={{
           paddingHorizontal: SPACING[3] + SPACING[0.5],
           paddingVertical: SPACING[2],
-          borderTopLeftRadius: mine ? big : top,
+          borderTopLeftRadius: mine ? big : inside ? shape.radius.xs : top,
           borderTopRightRadius: mine ? top : big,
-          borderBottomLeftRadius: mine ? big : small,
+          borderBottomLeftRadius: mine || inside ? big : small,
           borderBottomRightRadius: mine ? small : big,
           backgroundColor: mine ? colors.accent : colors.surface,
           borderWidth: mine ? 0 : shape.stroke.hairline,
@@ -158,6 +165,22 @@ export function ChatBubble({
           opacity: state === 'sending' ? 0.6 : 1,
         }}
       >
+        {inside && first && name ? (
+          <Pressable
+            testID={testID ? `${testID}-name` : undefined}
+            accessibilityRole="button"
+            accessibilityLabel={tr.chat.openProfile(name)}
+            disabled={!onPressSender}
+            onPress={onPressSender}
+            hitSlop={SPACING[1.5]}
+            className="self-start"
+            style={{ marginBottom: SPACING[0.5] }}
+          >
+            <Text variant="label" color={nameInk}>
+              {name}
+            </Text>
+          </Pressable>
+        ) : null}
         {quote ? <QuoteBlock quote={quote} mine={mine} onPress={onPressQuote} /> : null}
         <View
           className="flex-row flex-wrap items-end justify-end"
@@ -231,6 +254,37 @@ export function ChatBubble({
     );
   }
 
+  if (inside) {
+    const photo =
+      first && avatar ? (
+        onPressSender ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={tr.chat.openProfile(name ?? '')}
+            onPress={onPressSender}
+            hitSlop={SPACING[1.5]}
+          >
+            {avatar}
+          </Pressable>
+        ) : (
+          avatar
+        )
+      ) : null;
+    return (
+      <View className="gap-1 self-start" style={{ maxWidth: '88%' }}>
+        {bar}
+        <View className="flex-row items-start" style={{ columnGap: SPACING[2] }}>
+          {/* Kept empty under the run's first photo, so the bubbles stay in one column. */}
+          <View style={{ width: AVATAR_SIZE.sm }}>{photo}</View>
+          <View className="shrink items-start gap-1">
+            <SwipeToReply onReply={onReply}>{bubble}</SwipeToReply>
+            {chips}
+          </View>
+        </View>
+      </View>
+    );
+  }
+
   // The run's head: the photo and the name on one line; both open the profile when there is one.
   const headRow =
     first && (avatar || name || tag) ? (
@@ -294,11 +348,11 @@ function QuoteBlock({
         paddingVertical: SPACING[1.5],
         borderRadius: shape.radius.sm,
         borderLeftWidth: SPACING[1],
-        borderLeftColor: mine ? colors.onAccent : colors.violet,
+        borderLeftColor: mine ? colors.onAccent : (quote.color ?? colors.violet),
         backgroundColor: mine ? withAlpha(colors.onAccent, 0.16) : colors.surface2,
       }}
     >
-      <Text variant="label" color={mine ? colors.onAccent : colors.violet}>
+      <Text variant="label" color={mine ? colors.onAccent : (quote.color ?? colors.violet)}>
         {quote.name}
       </Text>
       {quote.text ? (

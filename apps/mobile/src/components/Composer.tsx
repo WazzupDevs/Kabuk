@@ -161,12 +161,12 @@ function ReplyStrip({ quote, onCancel }: { quote: ChatQuote; onCancel?: () => vo
         paddingLeft: SPACING[3],
         borderRadius: shape.radius.md,
         borderLeftWidth: SPACING[1],
-        borderLeftColor: colors.violet,
+        borderLeftColor: quote.color ?? colors.violet,
         backgroundColor: colors.raised,
       }}
     >
       <View className="flex-1" style={{ paddingVertical: SPACING[1.5] }}>
-        <Text variant="label" color={colors.violet}>
+        <Text variant="label" color={quote.color ?? colors.violet}>
           {tr.chat.replyingTo(quote.name)}
         </Text>
         {/* An excerpt of the answered message: one line. */}
