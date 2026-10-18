@@ -8,8 +8,13 @@ import { SPACING, TOUCH } from '@/theme/tokens';
 import { Text } from './Text';
 
 // Row avatar (48), the sign-up preview beside its buttons (72) and profile head (104, the mockup's
-// size).
-const SIZES = { small: TOUCH.button, medium: TOUCH.large + SPACING[2], large: 104 } as const;
+// size). The sign-up photo step's empty circle takes the large size too.
+export const PROFILE_PHOTO_SIZES = {
+  small: TOUCH.button,
+  medium: TOUCH.large + SPACING[2],
+  large: 104,
+} as const;
+const SIZES = PROFILE_PHOTO_SIZES;
 
 type Props = { url: string | null; name?: string | null; size?: keyof typeof SIZES };
 

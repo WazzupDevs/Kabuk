@@ -74,6 +74,20 @@ appId: app.kabuk.mobile
       id: signup-photo-step
     timeout: 20000
 - takeScreenshot: 03c-photo
+# "Fotoğraf ekle" opens the library or camera sheet (v45: one button under the empty circle).
+- tapOn:
+    id: signup-photo-add
+- extendedWaitUntil:
+    visible:
+      id: photo-from-library
+    timeout: 10000
+- takeScreenshot: 03d-photo-sheet
+- tapOn:
+    id: photo-cancel
+- extendedWaitUntil:
+    notVisible:
+      id: photo-from-library
+    timeout: 10000
 # No photo: the last step's button is "Fotoğrafsız bitir" (K-29).
 - assertVisible: Fotoğrafsız bitir
 - tapOn:
