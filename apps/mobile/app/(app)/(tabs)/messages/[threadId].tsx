@@ -16,7 +16,7 @@ import { ChatRow, ChatScreen, DayLine, dayLabel } from '@/components/ChatScreen'
 import { ChatTopBar } from '@/components/ChatTopBar';
 import { Composer } from '@/components/Composer';
 import { EmptyState } from '@/components/EmptyState';
-import { IconButton } from '@/components/IconButton';
+import { IconButton, MoreDots } from '@/components/IconButton';
 import { Sheet } from '@/components/Sheet';
 import { useHideTabBar } from '@/components/TabBar';
 import { quoteJump, toChatQuote, useReplyTarget } from '@/features/chat/messageExtras';
@@ -191,7 +191,9 @@ export default function DmScreen() {
           titleAccessibilityLabel={name}
           actions={
             <IconButton
+              round
               icon="ellipsis-horizontal"
+              glyph={<MoreDots />}
               label={tr.friends.more}
               onPress={() => setMenu(true)}
             />
@@ -219,7 +221,7 @@ export default function DmScreen() {
           <EmptyState kind="empty" body={tr.friends.noMessagesYet} />
         </View>
       ) : null}
-      {runs.map(({ item: m, first, last, day }) => {
+      {runs.map(({ item: m, first, day }) => {
         const counts = parseDmReactions(m.reactions);
         const quote = parseQuote(m.reply_to);
         return (
@@ -242,7 +244,6 @@ export default function DmScreen() {
                     })
                   }
                   first={first}
-                  last={last}
                   time={tr.chat.time(m.created_at)}
                   delivery={m.from_me && isDelivery(m.status) ? m.status : undefined}
                   name={m.from_me ? undefined : name}

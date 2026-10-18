@@ -24,8 +24,8 @@ type Props = {
   actions?: ReactNode;
 };
 
-// The compact top of a chat screen (canvas: Aşama 4 · Yenileme): back, avatar, the name and a line
-// under it, actions; a hairline under it.
+// The compact top of a chat screen (v45: .dpin): a round back button, the avatar, the name and a
+// line under it, actions; a hairline under it.
 export function ChatTopBar({
   title,
   titleLines,
@@ -63,11 +63,10 @@ export function ChatTopBar({
   const whoClass = 'flex-1 flex-row items-center gap-2.5';
   return (
     <View
-      className="flex-row items-center gap-1"
+      className="flex-row items-center gap-2.5"
       style={{
-        paddingLeft: onBack ? SPACING[1] : shape.screenPadding,
-        paddingRight: SPACING[2],
-        paddingVertical: SPACING[1.5],
+        paddingHorizontal: SPACING[4],
+        paddingVertical: SPACING[2.5],
         borderBottomWidth: shape.stroke.hairline,
         borderBottomColor: colors.divider,
         backgroundColor: colors.canvas,
@@ -75,6 +74,7 @@ export function ChatTopBar({
     >
       {onBack ? (
         <IconButton
+          round
           icon="chevron-back"
           label={tr.common.back}
           onPress={onBack}

@@ -30,6 +30,7 @@ import { tr } from '@/i18n/tr';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
+import { ChatWallpaper } from './ChatWallpaper';
 import { useTabBarSpace } from './TabBar';
 import { Text } from './Text';
 import { usePressScale } from './motion';
@@ -314,8 +315,8 @@ type Props = {
   testID?: string;
 };
 
-// A chat app's screen (canvas: Aşama 4 · Yenileme): the top bar, the scrolling stream, the message
-// bar at the bottom above the keyboard.
+// A chat app's screen (v45: .dm): the top bar, the stream scrolling over the wallpaper, the
+// message bar floating at the bottom above the keyboard.
 export function ChatScreen({
   top,
   children,
@@ -340,6 +341,9 @@ export function ChatScreen({
       >
         {top}
         <KeyboardAvoidingView className="flex-1" behavior="padding">
+          {/* The wallpaper under the stream and the message bar (v45: .chatpane); the bar floats on
+              it. */}
+          <ChatWallpaper />
           <ChatScroll
             testID={testID}
             newestKey={newestKey}
@@ -375,7 +379,7 @@ export function DayLine({ label }: { label: string }) {
         paddingVertical: SPACING[0.5],
       }}
     >
-      <Text variant="caption" tone="text">
+      <Text variant="caption" tone="muted">
         {label}
       </Text>
     </View>

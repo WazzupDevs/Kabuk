@@ -16,6 +16,7 @@ const COLORS = [
   'violet',
   'on-violet',
   'read',
+  'read-on-accent',
   'border',
   'divider',
   'danger',

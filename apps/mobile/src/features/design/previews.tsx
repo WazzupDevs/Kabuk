@@ -523,7 +523,6 @@ function ChatSet() {
             avatar={deniz}
             name="Deniz Kaya"
             onPressSender={() => undefined}
-            last={false}
           />
           <ChatBubble
             text="Yarın aynı yerde mi?"

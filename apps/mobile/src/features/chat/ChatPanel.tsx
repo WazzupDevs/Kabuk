@@ -128,7 +128,7 @@ export function RoomMessages({
           {tr.chat.empty}
         </Text>
       ) : null}
-      {runs.map(({ item: m, first, last, day }) => {
+      {runs.map(({ item: m, first, day }) => {
         const mine = m.session_id === sessionId;
         const extra = extras?.get(m.id);
         const counts = parseReactionCounts(extra?.reactions);
@@ -153,7 +153,6 @@ export function RoomMessages({
                     })
                   }
                   first={first}
-                  last={last}
                   time={tr.chat.time(m.created_at)}
                   name={mine ? undefined : m.sender_alias}
                   avatar={

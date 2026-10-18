@@ -34,8 +34,9 @@ type Props = {
   sendTestID?: string;
 };
 
-// The message bar of a chat screen (canvas: Aşama 4 · Yenileme): fixed at the bottom on a hairline,
-// a pill field and a round send button in the accent colour.
+// The message bar of a chat screen (v45: .dbar): it floats at the bottom over the chat's wallpaper, a
+// raised pill field and a round send button, both on a soft shadow; the button fills with the accent
+// once there is something to send.
 export const Composer = forwardRef<TextInput, Props>(function Composer(
   {
     value,
@@ -66,9 +67,6 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
         paddingTop: above ? SPACING[1] : SPACING[2.5],
         paddingBottom: SPACING[2.5],
         gap: SPACING[1.5],
-        backgroundColor: colors.canvas,
-        borderTopWidth: shape.stroke.hairline,
-        borderTopColor: colors.divider,
       }}
     >
       {above}
@@ -82,6 +80,7 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
             backgroundColor: colors.raised,
             borderWidth: shape.stroke.hairline,
             borderColor: colors.divider,
+            boxShadow: shape.shadow.card,
             paddingHorizontal: SPACING[4],
           }}
         >
@@ -122,7 +121,8 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
                   borderRadius: shape.radius.pill,
                   alignItems: 'center',
                   justifyContent: 'center',
-                  backgroundColor: inactive ? colors.surface2 : colors.accent,
+                  backgroundColor: inactive ? colors.surface : colors.accent,
+                  boxShadow: shape.shadow.card,
                 },
                 pressScale(pressed),
               ]}
