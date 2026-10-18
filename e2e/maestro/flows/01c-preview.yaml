@@ -447,10 +447,11 @@ appId: app.kabuk.mobile
     id: preview-set-measure
 - extendedWaitUntil:
     visible:
-      id: measure-stats
+      id: measure-cached
     timeout: 10000
-# The list is 384 dp tall and starts low on a 640 dp screen: bring all of it on screen, so the
-# swipes start on it and scroll it, not the page.
+# The list is 384 dp tall: bring all of it on screen (the meter sits right above it), then swipe at
+# fixed points inside it. A swipe from the list's own bounds can start in the gesture-navigation
+# strip at the bottom and send the app home.
 - scrollUntilVisible:
     element:
       id: measure-chat
@@ -459,14 +460,10 @@ appId: app.kabuk.mobile
     times: 3
     commands:
       - swipe:
-          from:
-            id: measure-chat
-          direction: UP
-- scrollUntilVisible:
-    element:
-      id: measure-stats
-    direction: UP
-    timeout: 10000
+          start: 50%, 80%
+          end: 50%, 45%
+- assertVisible:
+    id: measure-stats
 - takeScreenshot: 04n-measure
 - back
 - extendedWaitUntil:

@@ -50,17 +50,18 @@ export function MeasureSet() {
           meter.reset();
         }}
       />
-      <View className="flex-row items-center gap-3" testID="measure-stats">
-        <Text variant="bodyStrong" tabular className="flex-1">
-          {t.stats(meter.stats.frames, meter.stats.stalls, meter.stats.worstMs, meter.stats.fps)}
-        </Text>
-        <Button size="sm" variant="neutral" label={t.reset} onPress={meter.reset} />
-      </View>
       <Text variant="fine" tone="muted">
         {t.hint}
       </Text>
 
       <PreviewBlock title={t.chat}>
+        {/* Right above the list: on screen whenever the list is. */}
+        <View className="flex-row items-center gap-3" testID="measure-stats">
+          <Text variant="bodyStrong" tabular className="flex-1">
+            {t.stats(meter.stats.frames, meter.stats.stalls, meter.stats.worstMs, meter.stats.fps)}
+          </Text>
+          <Button size="sm" variant="neutral" label={t.reset} onPress={meter.reset} />
+        </View>
         <FlatList
           testID="measure-chat"
           data={looks}
