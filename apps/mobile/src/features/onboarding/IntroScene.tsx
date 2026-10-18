@@ -6,6 +6,7 @@ import Animated, {
   type SharedValue,
   useAnimatedReaction,
   useAnimatedStyle,
+  useDerivedValue,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -25,6 +26,7 @@ import {
   bodyFrame,
   charFrame,
   confettiFrame,
+  INTRO,
   INTRO_BLINK_OPEN,
   INTRO_COLORS,
   INTRO_CONFETTI,
@@ -71,6 +73,15 @@ export function IntroScene({ scene, t, still }: Props) {
     },
     [scene],
   );
+  // The confetti is drawn only while it bursts (from INTRO.playAt; gone by the end): before and
+  // after, its 18 pieces would be worked out on every frame for nothing.
+  const [bursting, setBursting] = useState(false);
+  useAnimatedReaction(
+    () => t.value >= INTRO.playAt && t.value < INTRO.endMs,
+    (on, prev) => {
+      if (on !== prev) runOnJS(setBursting)(on);
+    },
+  );
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
       {scene.tables.map((tb, i) => (
@@ -100,9 +111,7 @@ export function IntroScene({ scene, t, still }: Props) {
           still={still}
         />
       ))}
-      {scene.confetti.map((p, i) => (
-        <Piece key={`c${i}`} p={p} t={t} />
-      ))}
+      {bursting ? scene.confetti.map((p, i) => <Piece key={`c${i}`} p={p} t={t} />) : null}
     </View>
   );
 }
@@ -137,8 +146,9 @@ const Capsule = memo(function Capsule({
     const b = bodyFrame(c, t.value, jump.value);
     return { transform: [{ translateY: b.dy * ch }, { scaleY: b.sy }] };
   });
-  // A tap makes it jump (v45: obfJump), during the scene and after it.
-  const onPressIn = () => {
+  // A tap makes it jump (v45: obfJump), during the scene and after it: on the press itself, so a
+  // scroll that starts on a capsule does not.
+  const onPress = () => {
     jump.set(0);
     jump.set(withTiming(1, { duration: INTRO_JUMP_MS, easing: Easing.linear }));
   };
@@ -156,7 +166,7 @@ const Capsule = memo(function Capsule({
         place,
       ]}
     >
-      <Pressable accessible={false} disabled={still} onPressIn={onPressIn} style={styles.fill}>
+      <Pressable accessible={false} disabled={still} onPress={onPress} style={styles.fill}>
         <Animated.View style={[styles.fill, body]}>
           <SvgAst
             ast={figureDrawing(c.look, { open: blink ? INTRO_BLINK_OPEN : 1 }, ink)}
@@ -168,7 +178,15 @@ const Capsule = memo(function Capsule({
   );
 });
 
-function Table({ tb, t, pal }: { tb: IntroTable; t: SharedValue<number>; pal: Palette }) {
+const Table = memo(function Table({
+  tb,
+  t,
+  pal,
+}: {
+  tb: IntroTable;
+  t: SharedValue<number>;
+  pal: Palette;
+}) {
   const { shape } = useTheme();
   const style = useAnimatedStyle(() => {
     const f = tableFrame(tb, t.value);
@@ -195,9 +213,17 @@ function Table({ tb, t, pal }: { tb: IntroTable; t: SharedValue<number>; pal: Pa
       <View style={{ height: tb.h * tone.band, backgroundColor: tone.top }} />
     </Animated.View>
   );
-}
+});
 
-function TableShadow({ tb, t, pal }: { tb: IntroTable; t: SharedValue<number>; pal: Palette }) {
+const TableShadow = memo(function TableShadow({
+  tb,
+  t,
+  pal,
+}: {
+  tb: IntroTable;
+  t: SharedValue<number>;
+  pal: Palette;
+}) {
   const style = useAnimatedStyle(() => ({ opacity: shadowFrame(t.value) }));
   const w = tb.w * 0.92;
   const h = tb.h * 0.7;
@@ -220,19 +246,27 @@ function TableShadow({ tb, t, pal }: { tb: IntroTable; t: SharedValue<number>; p
       </Svg>
     </Animated.View>
   );
-}
+});
 
-function Lamp({ l, t, pal }: { l: IntroLamp; t: SharedValue<number>; pal: Palette }) {
+const Lamp = memo(function Lamp({
+  l,
+  t,
+  pal,
+}: {
+  l: IntroLamp;
+  t: SharedValue<number>;
+  pal: Palette;
+}) {
   const { shape } = useTheme();
-  const hang = useAnimatedStyle(() => {
-    const f = lampFrame(l, t.value);
-    return { opacity: f.opacity, transform: [{ translateY: -(l.cord + l.h) * f.drop }] };
-  });
-  const sway = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${lampFrame(l, t.value).rotate}deg` }],
+  // The lamp's frame once per frame; its four styles read it.
+  const f = useDerivedValue(() => lampFrame(l, t.value));
+  const hang = useAnimatedStyle(() => ({
+    opacity: f.value.opacity,
+    transform: [{ translateY: -(l.cord + l.h) * f.value.drop }],
   }));
-  const lit = useAnimatedStyle(() => ({ opacity: lampFrame(l, t.value).lit }));
-  const glow = useAnimatedStyle(() => ({ opacity: lampFrame(l, t.value).glow }));
+  const sway = useAnimatedStyle(() => ({ transform: [{ rotate: `${f.value.rotate}deg` }] }));
+  const lit = useAnimatedStyle(() => ({ opacity: f.value.lit }));
+  const glow = useAnimatedStyle(() => ({ opacity: f.value.glow }));
   const bulb = l.w * INTRO_SHAPE.bulb;
   const bulbBox = {
     position: 'absolute' as const,
@@ -295,15 +329,24 @@ function Lamp({ l, t, pal }: { l: IntroLamp; t: SharedValue<number>; pal: Palett
       </Animated.View>
     </Animated.View>
   );
-}
+});
 
-function Phone({ p, t, pal }: { p: IntroPhone; t: SharedValue<number>; pal: Palette }) {
-  const style = useAnimatedStyle(() => {
-    const f = phoneFrame(p, t.value);
-    return { opacity: f.opacity, transform: [{ translateY: f.rise * p.h * 0.3 }] };
-  });
-  const lit = useAnimatedStyle(() => ({ opacity: phoneFrame(p, t.value).lit }));
-  const glow = useAnimatedStyle(() => ({ opacity: phoneFrame(p, t.value).glow }));
+const Phone = memo(function Phone({
+  p,
+  t,
+  pal,
+}: {
+  p: IntroPhone;
+  t: SharedValue<number>;
+  pal: Palette;
+}) {
+  const f = useDerivedValue(() => phoneFrame(p, t.value));
+  const style = useAnimatedStyle(() => ({
+    opacity: f.value.opacity,
+    transform: [{ translateY: f.value.rise * p.h * 0.3 }],
+  }));
+  const lit = useAnimatedStyle(() => ({ opacity: f.value.lit }));
+  const glow = useAnimatedStyle(() => ({ opacity: f.value.glow }));
   // The screen: 3 px in from the sides and the top, 5 px from the bottom (inside the 2 px rim).
   const sw = p.w - 6;
   const sh = p.h - 8;
@@ -350,12 +393,21 @@ function Phone({ p, t, pal }: { p: IntroPhone; t: SharedValue<number>; pal: Pale
       </Animated.View>
     </Animated.View>
   );
-}
+});
 
-function Ring({ rg, t, pal }: { rg: IntroRing; t: SharedValue<number>; pal: Palette }) {
+const Ring = memo(function Ring({
+  rg,
+  t,
+  pal,
+}: {
+  rg: IntroRing;
+  t: SharedValue<number>;
+  pal: Palette;
+}) {
   const { shape } = useTheme();
-  const style = useAnimatedStyle(() => ({ opacity: ringFrame(rg, t.value).opacity }));
-  const glow = useAnimatedStyle(() => ({ opacity: ringFrame(rg, t.value).glow }));
+  const f = useDerivedValue(() => ringFrame(rg, t.value));
+  const style = useAnimatedStyle(() => ({ opacity: f.value.opacity }));
+  const glow = useAnimatedStyle(() => ({ opacity: f.value.glow }));
   const pill = { borderRadius: shape.radius.pill, backgroundColor: pal.ring.fill };
   return (
     <Animated.View
@@ -376,9 +428,9 @@ function Ring({ rg, t, pal }: { rg: IntroRing; t: SharedValue<number>; pal: Pale
       <Animated.View style={[StyleSheet.absoluteFill, pill, { boxShadow: pal.ring.glow }, glow]} />
     </Animated.View>
   );
-}
+});
 
-function Piece({ p, t }: { p: IntroConfetti; t: SharedValue<number> }) {
+const Piece = memo(function Piece({ p, t }: { p: IntroConfetti; t: SharedValue<number> }) {
   const style = useAnimatedStyle(() => {
     const f = confettiFrame(p, t.value);
     return {
@@ -409,6 +461,6 @@ function Piece({ p, t }: { p: IntroConfetti; t: SharedValue<number> }) {
       ]}
     />
   );
-}
+});
 
 const styles = StyleSheet.create({ fill: { flex: 1 } });

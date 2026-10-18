@@ -184,6 +184,8 @@ const BLINK_MS = 100;
 const FOREVER = 1e9;
 const BOB_MS = 2600;
 const BOB_SHARE = 0.03;
+// The pop's peak, as a share of the capsule's size.
+const POP_PEAK = 1.14;
 export const INTRO_BLINK_OPEN = 0.12;
 
 // v45's fixed-seed generator: the same places on every launch.
@@ -194,6 +196,12 @@ function rng(seed: number): () => number {
     return h / 4294967296;
   };
 }
+
+// A capsule is drawn in its ch-high box at (x, y) and scaled from its feet (the box's bottom
+// middle), so its top is ch * (1 - s) below y. Kept this far below the scene box's top, with room for
+// its bob (the words and the logo sit right above the box).
+const EDGE = 2;
+const topLimit = (ch: number, s: number) => EDGE - ch * (1 - s) + ch * s * BOB_SHARE;
 
 function hop(
   from: IntroPos,
@@ -209,6 +217,7 @@ function hop(
 ): IntroHop {
   const outY = rise ? from.y - (ch * 0.32 * from.s + 4) : from.y;
   const inY = sink ? to.y - (ch * 0.32 * to.s + 4) : to.y;
+  const midS = from.s + (to.s - from.s) * 0.55;
   return {
     at,
     ms,
@@ -220,8 +229,10 @@ function hop(
     inY,
     mid: {
       x: from.x + (to.x - from.x) * 0.62,
-      y: Math.min(outY, inY) - lift,
-      s: from.s + (to.s - from.s) * 0.55,
+      // The arc's top stays inside the box: on a short screen the lift is cut, never the box. The
+      // capsule grows on the way to a nearer seat, so its top is held where the grown one fits.
+      y: Math.max(Math.min(outY, inY) - lift, topLimit(ch, midS)),
+      s: midS,
     },
     zBefore,
     zAfter,
@@ -259,6 +270,7 @@ export function introScene(width: number, height: number): IntroScene {
 
   // 1) Everyone somewhere in the venue, not on top of each other.
   const r = rng(7);
+  const k = POP_PEAK + BOB_SHARE;
   const spots: [number, number][] = [];
   const chars: IntroChar[] = INTRO_LOOKS.map((look, i) => {
     let bx = 0;
@@ -266,7 +278,9 @@ export function introScene(width: number, height: number): IntroScene {
     let tries = 0;
     do {
       bx = W * (0.1 + r() * 0.8);
-      by = H * (0.28 + r() * 0.4);
+      // Low enough that the pop (114 %) and the bob stay inside the box: s grows with by
+      // (s = 0.5 + 0.45 by / H), so the lowest by solves by = k ch s for k = 1.14 + BOB_SHARE.
+      by = Math.max(H * (0.28 + r() * 0.4), (0.5 * k * ch) / (1 - (0.45 * k * ch) / H) + EDGE);
       tries++;
     } while (
       tries < 30 &&
@@ -289,7 +303,7 @@ export function introScene(width: number, height: number): IntroScene {
   chars.forEach((c, i) => {
     if (i % 3 !== 1) return;
     const [bx, by] = spots[i]!;
-    const nb = Math.min(W * 0.92, Math.max(W * 0.08, bx + (r() - 0.5) * cw * 2.4));
+    const nb = Math.min(W - cw * 0.6, Math.max(cw * 0.6, bx + (r() - 0.5) * cw * 2.4));
     const to = at(nb, by, c.spot.s);
     const start = INTRO.wanderAt + i * INTRO.wanderStep;
     c.hops.push(hop(c.spot, to, start, INTRO.wanderMs, ch * 0.35, ch, c.z0, c.z0, false, false));
@@ -439,7 +453,7 @@ export function charFrame(c: IntroChar, t: number): CharFrame {
   if (t < c.appearAt + INTRO.appearMs) {
     // The pop: from nothing to 114 % and back (ease-out over the whole pop).
     const u = t <= c.appearAt ? 0 : ease(EASE_OUT, (t - c.appearAt) / INTRO.appearMs);
-    const big = c.spot.s * 1.14;
+    const big = c.spot.s * POP_PEAK;
     const s = u < 0.65 ? lerp(0.01, big, u / 0.65) : lerp(big, c.spot.s, (u - 0.65) / 0.35);
     const opacity = u < 0.65 ? u / 0.65 : 1;
     return { x: c.spot.x, y: c.spot.y, s, opacity, z: c.z0 };
