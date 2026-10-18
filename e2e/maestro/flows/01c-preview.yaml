@@ -395,8 +395,7 @@ appId: app.kabuk.mobile
       id: preview-motion-deck
     timeout: 10000
 - takeScreenshot: 04m-motion-deck
-# "Doğru" is under the deck, below the fold at 640 dp. Not centred: a swipe that starts on the deck
-# tilts the card instead of scrolling.
+# "Doğru" is under the deck, below the fold at 640 dp.
 - scrollUntilVisible:
     element:
       id: preview-motion-correct
