@@ -1,6 +1,8 @@
 // The campus pilot (docs/SPEC_V3.md §4): check-in against a boundary with a 50 m tolerance, spots
 // declared by the table, the same-spot rule for join requests and spots added through the seed. A
 // fixture polygon, not the real campus.
+import { randomUUID } from 'node:crypto';
+
 import postgres from 'postgres';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
@@ -71,6 +73,7 @@ function checkIn(
     accuracyM: 20,
     headcount: 2,
     locationConsentVersion: CURRENT_LOCATION_CONSENT_VERSION,
+    requestId: randomUUID(),
     ...(extra.spotId ? { spotId: extra.spotId } : {}),
   });
 }
@@ -175,6 +178,7 @@ describe('check-in at a venue with a boundary', () => {
       accuracyM: 10,
       headcount: 2,
       locationConsentVersion: CURRENT_LOCATION_CONSENT_VERSION,
+      requestId: randomUUID(),
       spotId: spot('kantin'),
     });
     expect(withSpot).toEqual({ status: 422, body: errorBody('spot_invalid') });

@@ -3,6 +3,8 @@
 // its own, its leader's block or the end of its table; the side's oldest member leads when the
 // leader goes. Old apps (no `teams` at check-in) keep today's room: the existing tests of
 // rooms.test.ts, reveal.test.ts and the others run unchanged against the same functions.
+import { randomUUID } from 'node:crypto';
+
 import postgres from 'postgres';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
@@ -68,6 +70,7 @@ async function table(
     accuracyM: 10,
     headcount: opts.headcount ?? 2,
     locationConsentVersion: CURRENT_LOCATION_CONSENT_VERSION,
+    requestId: randomUUID(),
     ...(opts.teams === false ? {} : { teams: true }),
   });
   expect(res.status, JSON.stringify(res.body)).toBe(200);

@@ -1074,6 +1074,7 @@ export type Database = {
         Row: {
           alias: string;
           alias_rerolls: number;
+          checkin_key: string | null;
           created_at: string;
           ended_at: string | null;
           expires_at: string;
@@ -1091,6 +1092,7 @@ export type Database = {
         Insert: {
           alias: string;
           alias_rerolls?: number;
+          checkin_key?: string | null;
           created_at?: string;
           ended_at?: string | null;
           expires_at: string;
@@ -1108,6 +1110,7 @@ export type Database = {
         Update: {
           alias?: string;
           alias_rerolls?: number;
+          checkin_key?: string | null;
           created_at?: string;
           ended_at?: string | null;
           expires_at?: string;
@@ -1553,6 +1556,7 @@ export type Database = {
         Returns: {
           alias: string;
           alias_rerolls: number;
+          checkin_key: string | null;
           created_at: string;
           ended_at: string | null;
           expires_at: string;
@@ -1998,6 +2002,7 @@ export type Database = {
         Returns: {
           alias: string;
           alias_rerolls: number;
+          checkin_key: string | null;
           created_at: string;
           ended_at: string | null;
           expires_at: string;
@@ -2854,6 +2859,7 @@ export type Database = {
           accuracy_m?: number;
           consent_version: string;
           new_alias: string;
+          new_checkin_key?: string;
           new_headcount: number;
           new_participation?: string;
           new_spot_id?: string;
@@ -2864,6 +2870,7 @@ export type Database = {
         Returns: {
           alias: string;
           alias_rerolls: number;
+          checkin_key: string | null;
           created_at: string;
           ended_at: string | null;
           expires_at: string;

@@ -14,6 +14,10 @@ export type CheckInRequest = {
   spotId?: string;
   // The app can be in a team (docs/SPEC_V3.md §22.B); an old app sends nothing.
   teams?: boolean;
+  // A UUID the app makes for each check-in it starts and sends again unchanged when it retries the
+  // same one: while the table it opened is active, the same key returns that table (one table for a
+  // check-in sent twice). Without it, or with a new key, a check-in opens a new table.
+  requestId?: string;
 };
 
 // "Bu noktadayım": no new position; refused in a room or with a request out (`in_room`).

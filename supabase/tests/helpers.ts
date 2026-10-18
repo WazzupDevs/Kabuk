@@ -1,4 +1,6 @@
 // Shared flows for integration tests: onboarding and check-in at fixture venues.
+import { randomUUID } from 'node:crypto';
+
 import { expect } from 'vitest';
 
 import { ageOn, istanbulToday } from '../functions/_shared/pure/age.ts';
@@ -73,6 +75,7 @@ export async function checkInAt(
     accuracyM: 10,
     headcount,
     locationConsentVersion: CURRENT_LOCATION_CONSENT_VERSION,
+    requestId: randomUUID(),
   });
   expect(res.status, JSON.stringify(res.body)).toBe(200);
   return res.body as { sessionId: string; alias: string };

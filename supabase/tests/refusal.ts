@@ -12,8 +12,8 @@
 //   and the 503 came back. Only a call that answers the same when sent twice is sent again:
 //   IDEMPOTENT_CALLS (pure/apiRetry.ts), the calls the app itself sends again after a 5xx, each
 //   with an integration test that sends it twice. Any other call stays a failure: sent again, it
-//   may answer differently (a second check-in ends the table the first one opened and opens
-//   another, and the checkin tests count those rows).
+//   may answer differently (a second `rooms/create` finds the room the first one opened and
+//   answers `already_in_room`; a second `dm/send` writes the message twice).
 // local.ts → invoke sends a call again once and writes every one of these answers to
 // INVOKE_RETRY_LOG, sent again or not, for the CI job summary.
 import { IDEMPOTENT_CALLS } from '../functions/_shared/pure/apiRetry.ts';

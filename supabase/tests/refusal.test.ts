@@ -30,8 +30,8 @@ describe('sendsAgain', () => {
 
   it('sends a cut-off call again only when it answers the same when sent twice', () => {
     for (const call of IDEMPOTENT_CALLS) expect(sendsAgain('empty-503', call)).toBe(true);
-    // The function ran: a request accepted, a table opened, a message sent.
-    for (const call of ['rooms/respond', 'checkin/check-in', 'chat/send', 'dm/send']) {
+    // The function ran: a request accepted, a room opened, a message sent.
+    for (const call of ['rooms/respond', 'rooms/create', 'chat/send', 'dm/send']) {
       expect(sendsAgain('empty-503', call)).toBe(false);
     }
   });
