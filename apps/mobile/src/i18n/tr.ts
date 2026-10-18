@@ -197,6 +197,10 @@ export const tr = {
   // seven steps, the consents first (K-19, K-33).
   signup: {
     welcomeTitle: 'Aynı mekanda, aynı masada.',
+    // The title in two halves: the second comes in when everyone has sat down (v45 §2).
+    welcomeHalves: ['Aynı mekanda,', 'aynı masada.'],
+    // Skips the first screen's scene to its end.
+    skip: 'Geç',
     welcomeBody:
       'Girdiğin mekandaki masaları gör, birine katıl ya da kendi masanı kur. Oyunu herkes kendi telefonundan oynar.',
     // K-26: the first screen's button opens "Başlamadan önce".

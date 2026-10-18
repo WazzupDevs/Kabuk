@@ -7,7 +7,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { type JsxAST, parse, SvgAst } from 'react-native-svg';
+import { SvgAst } from 'react-native-svg';
 
 import { Text } from '@/components/Text';
 import { useReduceMotion } from '@/lib/useReduceMotion';
@@ -15,13 +15,14 @@ import { FRIEND, type Rect, rectsHit } from '@/lib/signupFriend';
 import {
   type CapsuleEyes,
   type CapsuleKey,
-  capsuleSvg,
   FRIEND_DARK_INK,
   FRIEND_PUFF_COLORS,
 } from '@/theme/capsules';
 import { GAME_SHADOW } from '@/theme/gameColors';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
+
+import { figureDrawing } from './figureDrawing';
 
 export type FriendReaction = { kind: 'ok' | 'err' | 'nod'; key: number };
 
@@ -42,23 +43,6 @@ type Props = {
   // A new value throws a little burst (the birth date).
   puffKey?: number;
 };
-
-// The figure's drawing, one per look, eye position and scheme, parsed once (the eyes are part of
-// the drawing: they look, squint and blink by swapping it).
-const drawings = new Map<string, JsxAST | null>();
-function drawing(look: CapsuleKey, eyes: CapsuleEyes, dark: boolean): JsxAST | null {
-  const key = `${look}:${eyes.dx ?? 0}:${eyes.dy ?? 0}:${eyes.open ?? 1}:${dark ? 'd' : 'l'}`;
-  let ast = drawings.get(key);
-  if (ast === undefined) {
-    const svg = capsuleSvg(look, false, eyes, dark ? FRIEND_DARK_INK : undefined).replace(
-      'viewBox="0 0 48 58"',
-      'viewBox="0 0 48 66"',
-    );
-    ast = parse(svg);
-    drawings.set(key, ast);
-  }
-  return ast;
-}
 
 const LOOK = { dx: -2.6, dy: 1.8 } as const;
 const SQUINT = 0.25;
@@ -228,7 +212,7 @@ export function SignupFriend({
         ]}
       >
         <SvgAst
-          ast={drawing(look, eyes, scheme === 'dark')}
+          ast={figureDrawing(look, eyes, scheme === 'dark' ? FRIEND_DARK_INK : undefined)}
           override={{ width: FRIEND.width, height: FRIEND.height }}
         />
       </Animated.View>

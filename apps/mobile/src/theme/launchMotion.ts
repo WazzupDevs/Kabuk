@@ -43,7 +43,7 @@ function bump(u: number): number {
   return Math.sin(Math.PI * clamp(u));
 }
 // CSS cubic-bezier(x1, y1, x2, y2) at progress u.
-function bezier(x1: number, y1: number, x2: number, y2: number, u: number): number {
+export function bezier(x1: number, y1: number, x2: number, y2: number, u: number): number {
   'worklet';
   if (u <= 0) return 0;
   if (u >= 1) return 1;

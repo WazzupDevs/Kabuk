@@ -18,6 +18,15 @@ appId: app.kabuk.mobile
     notVisible:
       id: launch-curtain
     timeout: 15000
+# The scene plays once after the curtain (v45 §2, K-27): "Geç" jumps to its end and goes. If the
+# scene is already over there is nothing to skip; either way "Geç" is gone within its 4.5 s.
+- tapOn:
+    id: intro-skip
+    optional: true
+- extendedWaitUntil:
+    notVisible:
+      id: intro-skip
+    timeout: 10000
 - takeScreenshot: 01-welcome
 - runFlow:
     file: login-code.yaml
