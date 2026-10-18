@@ -749,6 +749,7 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 
 - Kontrast testleri yeni tokenlarla; `tr.ts` ve `docs/store/`'da "Tabu" geçmez (birim testi); `GAME_NAMES` tek kaynaktır.
 - Sıklık sınırı (K-30, 4.2b) `hapticMoments.test.ts`'te: aynı an 600 ms'den sık çalmaz, iki titreşim arasında en az 150 ms, yazarken titreşim yok.
+- Listelerde kapsül avatar (4.3, CTO'nun 4.2b incelemesi): her `CapsuleAvatar` kendi SVG metnini ayrıştırır. 100 mesajlık mekan sohbeti ve 12 kişilik masa listesi düşük donanımlı bir Android'de kaydırılarak ölçülür. Takılma varsa görünüm başına modül düzeyinde önbellek kullanılır (bir kez ayrıştırılmış ağaç ya da `pnpm icons` hattından üretilen PNG).
 - Biyografi ve görünen ad (K-34, 4.3): telefon, e-posta, kullanıcı adı ve bağlantı birim testleriyle (`profanity.test.ts`, `trText.test.ts`) ve profil fonksiyonunun entegrasyon testiyle reddedilir; Türkçe karakterli olağan adlar ve biyografiler geçer.
 - Keşfet ve Aktiviteler konuma göre sıralamaz (birim testi: liste sırası konum almaz). Keşfet'te bugün etkinliği olan mekanlar üstte, sonra ada göre (K-21).
 - E2E: bütün akışlar yeni ekranlarda; büyük yazı koşusu 320 dp'de kesilen metin ve iki satıra bölünen düğme bulmaz.

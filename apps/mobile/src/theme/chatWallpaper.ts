@@ -63,3 +63,18 @@ export function wallpaperSvg(scheme: ColorScheme, width: number, height: number)
     `stroke-linejoin="round" opacity="${WALLPAPER.inkOpacity}">${tiles.join('')}</g></svg>`
   );
 }
+
+export type WallpaperCanvas = { w: number; h: number };
+
+// The size the wallpaper is drawn at: the area's width and the tallest window height seen. The
+// keyboard only shortens the area, so it never redraws the picture; a shorter area clips it. A new
+// width (a new layout) or a taller window draws it again; the same size returns `prev` unchanged.
+export function wallpaperCanvas(
+  prev: WallpaperCanvas | null,
+  areaWidth: number,
+  windowHeight: number,
+): WallpaperCanvas {
+  const w = Math.max(1, Math.ceil(areaWidth));
+  const h = Math.max(1, Math.ceil(windowHeight), prev?.h ?? 0);
+  return prev && prev.w === w && prev.h === h ? prev : { w, h };
+}

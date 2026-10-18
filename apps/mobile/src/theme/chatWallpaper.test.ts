@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { BRAND } from './brand';
-import { WALLPAPER, wallpaperSvg } from './chatWallpaper';
+import { WALLPAPER, wallpaperCanvas, wallpaperSvg } from './chatWallpaper';
 
 function tags(svg: string, name: string): number {
   return svg.split(`<${name}`).length - 1;
@@ -30,5 +30,24 @@ describe('chat wallpaper (v45: .chatbg)', () => {
     const svg = wallpaperSvg('light', 100, 100);
     for (const c of [BRAND.purple, BRAND.pink, BRAND.orange]) expect(svg).toContain(c);
     expect(tags(svg, 'radialGradient ')).toBe(3);
+  });
+});
+
+describe('wallpaper canvas (drawn once, clipped)', () => {
+  it("takes the area's width and the window's height", () => {
+    expect(wallpaperCanvas(null, 360.4, 780)).toEqual({ w: 361, h: 780 });
+  });
+
+  it('a keyboard, a shorter window or a new message keeps the same picture', () => {
+    const first = wallpaperCanvas(null, 360, 780);
+    expect(wallpaperCanvas(first, 360, 780)).toBe(first);
+    // The window never shrinks the picture; a shorter area clips it.
+    expect(wallpaperCanvas(first, 360, 420)).toBe(first);
+  });
+
+  it('a new width or a taller window draws it again', () => {
+    const first = wallpaperCanvas(null, 360, 780);
+    expect(wallpaperCanvas(first, 400, 780)).toEqual({ w: 400, h: 780 });
+    expect(wallpaperCanvas(first, 360, 900)).toEqual({ w: 360, h: 900 });
   });
 });
