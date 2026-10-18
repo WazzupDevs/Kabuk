@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-import { BellIcon } from '@/components/BarIcon';
+import { BarIcon, BellIcon } from '@/components/BarIcon';
 import { Button } from '@/components/Button';
 import { DialCover } from '@/components/game/DialCover';
 import { GroundView } from '@/components/game/GroundView';
@@ -16,13 +16,15 @@ import { tr } from '@/i18n/tr';
 import { gameGround, ON_GAME, teamGround } from '@/theme/gameColors';
 import { type CardExit, DIAL, dialFacePath } from '@/theme/playMotion';
 import { useTheme } from '@/theme/ThemeProvider';
-import { SPACING } from '@/theme/tokens';
+import { ICON, SPACING } from '@/theme/tokens';
 
 import { PreviewBlock } from './PreviewBlock';
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'K', 'M', 'S', 'T'];
 const DIAL_WIDTH = 240;
 const ROLE_WIDTH = 180;
+const ROLE_MARK = 56;
+const VINYL_SIZE = 120;
 
 // Bileşen önizleme → Hareketler (docs/SPEC_V4.md §4.C, step 4.2c): the game motions in the run's
 // scheme, each played on a press, for E2E to photograph and for a look on the phone.
@@ -34,6 +36,8 @@ export function MotionSet() {
   const [spin, setSpin] = useState(0);
   const [open, setOpen] = useState(false);
   const [ring, setRing] = useState(0);
+  const [press, setPress] = useState(0);
+  const [lobby, setLobby] = useState(false);
   const word = t.words[card % t.words.length] ?? t.words[0];
   const ground = { borderRadius: shape.radius.lg, padding: SPACING[4] };
 
@@ -102,7 +106,7 @@ export function MotionSet() {
                   className="flex-1 items-center justify-center gap-3"
                   style={{ backgroundColor: colors.violet, padding: SPACING[4] }}
                 >
-                  <Mark size={56} label={null} />
+                  <Mark size={ROLE_MARK} label={null} />
                   <Text variant="label" color={ON_GAME} align="center">
                     {t.roleBack}
                   </Text>
@@ -155,7 +159,7 @@ export function MotionSet() {
         >
           <View className="flex-row items-center justify-center gap-4">
             <Equaliser group={0} />
-            <Vinyl size={120} />
+            <Vinyl size={VINYL_SIZE} />
             <Equaliser group={1} />
           </View>
         </GroundView>
@@ -187,6 +191,33 @@ export function MotionSet() {
           onPress={() => setOpen((o) => !o)}
           testID="preview-motion-cover-toggle"
         />
+      </PreviewBlock>
+
+      <PreviewBlock title={t.icons}>
+        <View className="flex-row items-center gap-4" testID="preview-motion-icons">
+          {(['plus', 'cross', 'check'] as const).map((kind) => (
+            <BarIcon key={kind} kind={kind} size={ICON.xl} form pressKey={press} />
+          ))}
+          <BarIcon kind={lobby ? 'minus' : 'lobby'} size={ICON.xl} />
+        </View>
+        <View className="flex-row gap-2">
+          <View className="flex-1">
+            <Button
+              variant="secondary"
+              label={t.press}
+              onPress={() => setPress((n) => n + 1)}
+              testID="preview-motion-press"
+            />
+          </View>
+          <View className="flex-1">
+            <Button
+              variant="secondary"
+              label={lobby ? t.lobbyClose : t.lobbyOpen}
+              onPress={() => setLobby((o) => !o)}
+              testID="preview-motion-lobby"
+            />
+          </View>
+        </View>
       </PreviewBlock>
 
       <PreviewBlock title={t.bell}>

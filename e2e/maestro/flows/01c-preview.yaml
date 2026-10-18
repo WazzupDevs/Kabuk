@@ -381,7 +381,7 @@ appId: app.kabuk.mobile
       id: preview-open
     timeout: 10000
 # Step 4.2c: the game motions, each on a press: the deck (a card leaves), the letter wheel, the
-# record, İbre's cover and the bell.
+# record, İbre's cover, the icons' springs (the lobby icon open) and the bell.
 - tapOn:
     id: preview-open
 - extendedWaitUntil:
@@ -420,6 +420,8 @@ appId: app.kabuk.mobile
       id: preview-motion-ring
     centerElement: true
     timeout: 30000
+- tapOn:
+    id: preview-motion-lobby
 - tapOn:
     id: preview-motion-ring
 - takeScreenshot: 04m-motion-bell

@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
+import { BAR_ICONS } from './barIcons';
+import { cubicBezier } from './markMotion';
 import {
+  BADGE_BUMP,
   BELL_RING,
   BELL_RING_MS,
-  bellAt,
+  bezierAt,
   CARD_EXITS,
   CARD_IN,
   CARD_OUT_MS,
@@ -17,8 +20,14 @@ import {
   EQUALISER,
   equaliserHeight,
   fingerOnCard,
+  ICON_SPRINGS,
+  iconFormAt,
+  keyAt,
   LETTER_WHEEL,
   letterWheelTimes,
+  lobbyMorphAt,
+  MARK_BARS,
+  mixBar,
   ROLE_TURN,
   TILT,
   tiltFor,
@@ -101,17 +110,84 @@ describe('the role card, the wheel, the record, the cover, the bell', () => {
     expect(EASE_SWAP(0.5)).toBeCloseTo(0.5, 1);
   });
 
-  it('the bell swings smaller each time and rests where it started', () => {
+  it('the bell swings smaller each time, each swing with the pop, and rests where it started', () => {
     expect(BELL_RING_MS).toBe(900);
-    expect(bellAt(0)).toBe(0);
-    expect(bellAt(0.15)).toBe(16);
-    expect(bellAt(0.225)).toBeCloseTo(1.5);
-    expect(bellAt(1)).toBe(0);
-    const peaks = BELL_RING.rotate.slice(1, -1).map(Math.abs);
+    const ring = BELL_RING.rotate;
+    expect(keyAt(0, ring)).toBe(0);
+    expect(keyAt(0.15, ring)).toBe(16);
+    // Between two keys the pop overshoots the next one, as in v45's CSS keyframes.
+    expect(Math.min(...[0.24, 0.26, 0.28].map((u) => keyAt(u, ring)))).toBeLessThan(-13);
+    expect(keyAt(1, ring)).toBe(0);
+    const peaks = ring.v.slice(1, -1).map(Math.abs);
     for (let i = 1; i < peaks.length; i++) {
       expect(peaks[i] as number).toBeLessThan(peaks[i - 1] as number);
     }
-    expect(bellAt(0.15, BELL_RING.clapper)).toBe(-2);
+    expect(keyAt(0.15, BELL_RING.clapper)).toBe(-2);
+    expect(keyAt(1, BELL_RING.clapper)).toBe(0);
+    for (const k of [BELL_RING.rotate, BELL_RING.clapper]) expect(k.at).toHaveLength(k.v.length);
+  });
+
+  it('the badge bumps from 50 % past full size in 450 ms and settles at full size', () => {
+    expect(BADGE_BUMP.ms).toBe(450);
+    expect(keyAt(0, BADGE_BUMP.keys)).toBe(0.5);
+    expect(keyAt(0.6, BADGE_BUMP.keys)).toBeCloseTo(1.22);
+    expect(keyAt(1, BADGE_BUMP.keys)).toBe(1);
+  });
+
+  it("the UI-thread bezier is markMotion's cubicBezier", () => {
+    const curve = [0.34, 1.56, 0.64, 1] as const;
+    const js = cubicBezier(...curve);
+    for (const u of [0, 0.1, 0.33, 0.5, 0.8, 1]) expect(bezierAt(curve, u)).toBeCloseTo(js(u), 4);
+  });
+});
+
+describe("the bar icons' springs (v45: IC)", () => {
+  // Within a twentieth of a unit and half a degree (v45 stops the springs at these times too): when
+  // the motion stops, BarIcon draws the resting icon; the step is under a tenth of a pixel.
+  const near = (a: { c: readonly number[]; L: number; r: number }, b: typeof a) => {
+    expect(a.c[0]).toBeCloseTo(b.c[0] as number, 1);
+    expect(a.c[1]).toBeCloseTo(b.c[1] as number, 1);
+    expect(a.L).toBeCloseTo(b.L, 1);
+    expect(Math.abs(a.r - b.r)).toBeLessThan(0.5);
+  };
+
+  it('a two-bar icon starts as the mark and springs into its drawing', () => {
+    for (const kind of ['plus', 'cross', 'check'] as const) {
+      near(iconFormAt(kind, 0).a, MARK_BARS.a);
+      near(iconFormAt(kind, ICON_SPRINGS.formDelayMs).b, MARK_BARS.b);
+      near(iconFormAt(kind, ICON_SPRINGS.formMs).a, BAR_ICONS[kind].a);
+      near(iconFormAt(kind, ICON_SPRINGS.formMs).b, BAR_ICONS[kind].b);
+    }
+    // The spring overshoots: the plus's second bar turns past 90°.
+    const turns = [200, 240, 280, 320].map((ms) => iconFormAt('plus', ms).b.r);
+    expect(Math.max(...turns)).toBeGreaterThan(90);
+  });
+
+  it('pressed, it folds into the mark in 220 ms and springs out again', () => {
+    near(iconFormAt('plus', 0, true).a, BAR_ICONS.plus.a);
+    near(iconFormAt('plus', ICON_SPRINGS.foldMs, true).a, MARK_BARS.a);
+    near(iconFormAt('plus', ICON_SPRINGS.pressMs, true).b, BAR_ICONS.plus.b);
+  });
+
+  it('the lobby bar turns flat with a softer spring, the slot going at once and back after 120 ms', () => {
+    near(lobbyMorphAt('minus', 0).a, BAR_ICONS.lobby.a);
+    near(lobbyMorphAt('minus', ICON_SPRINGS.morphMs).a, BAR_ICONS.minus.a);
+    expect(lobbyMorphAt('minus', ICON_SPRINGS.slotAwayMs).s.o).toBeCloseTo(0);
+    expect(lobbyMorphAt('lobby', 100).s.o).toBeCloseTo(0);
+    expect(lobbyMorphAt('lobby', ICON_SPRINGS.slotBackDelayMs + ICON_SPRINGS.slotBackMs).s.o).toBe(
+      BAR_ICONS.lobby.s.o,
+    );
+    near(lobbyMorphAt('lobby', ICON_SPRINGS.morphMs).a, BAR_ICONS.lobby.a);
+  });
+
+  it('mixes a bar part way, opacity and scale default to 1', () => {
+    expect(mixBar(MARK_BARS.a, BAR_ICONS.plus.a, 0.5)).toEqual({
+      c: [11.15, 11.2],
+      L: 16,
+      r: 0,
+      o: 1,
+      k: 1,
+    });
   });
 });
 

@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useRef } from 'react';
+import { type ReactNode, useEffect, useId, useRef, useState } from 'react';
 import { type LayoutChangeEvent, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -9,9 +9,10 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
 
 import { useReduceMotion } from '@/lib/useReduceMotion';
-import { GAME_SHADOW } from '@/theme/gameColors';
+import { CARD_GLARE, GAME_SHADOW } from '@/theme/gameColors';
 import {
   CARD_EXITS,
   CARD_IN,
@@ -42,12 +43,16 @@ const RELEASE = { damping: 14, stiffness: 180 } as const;
 // Kapsül Anlat's card deck (v43 report §2, the v45 file's .tk; docs/SPEC_V4.md §4.C): the next two
 // cards show their edges behind the top one. Held, the top card leans toward the finger on the UI
 // thread (react-native-gesture-handler and reanimated) and springs back when let go; a new card
-// rises from the deck, and a played one leaves right (Doğru), left (Pas) or down ("Yasak!"). With
-// reduce motion the card does not lean and cards change at once. The gesture only follows the
-// finger, it never claims it: buttons on the card still take their taps and a scroll still scrolls.
+// rises from the deck, and a played one leaves right (Doğru), left (Pas) or down ("Yasak!"). A soft
+// light follows the finger while it is down. With reduce motion the card does not lean, there is no
+// light and cards change at once. The gesture only follows the finger, it never claims it: buttons
+// on the card still take their taps and a scroll still scrolls.
 export function TiltDeck({ cardKey, children, exit = null, onExited, testID }: Props) {
-  const { colors, shape } = useTheme();
+  const { scheme, colors, shape } = useTheme();
   const reduce = useReduceMotion();
+  const glareId = `glare${useId().replace(/[^A-Za-z0-9]/g, '')}`;
+  // The card's size for the light's circle (React) and for the worklets (UI thread).
+  const [box, setBox] = useState({ w: 0, h: 0 });
   const size = useSharedValue({ w: 0, h: 0 });
   const nx = useSharedValue(0);
   const ny = useSharedValue(0);
@@ -146,9 +151,29 @@ export function TiltDeck({ cardKey, children, exit = null, onExited, testID }: P
     };
   });
 
+  // The light (v45: radial-gradient(circle at the finger) out to 42 % of the farthest corner): a
+  // circle as wide as the card's diagonal, centred under the finger and scaled to that corner.
+  const glareR = Math.hypot(box.w, box.h);
+  const glare = useAnimatedStyle(() => {
+    const t = tiltFor(nx.value, ny.value);
+    const { w, h } = size.value;
+    const x = t.glareX * w;
+    const y = t.glareY * h;
+    const corner = Math.hypot(Math.max(x, w - x), Math.max(y, h - y));
+    return {
+      opacity: held.value,
+      transform: [
+        { translateX: x - glareR },
+        { translateY: y - glareR },
+        { scale: glareR > 0 ? corner / glareR : 0 },
+      ],
+    };
+  });
+
   const onLayout = (e: LayoutChangeEvent) => {
     const { width, height } = e.nativeEvent.layout;
     size.set({ w: width, h: height });
+    setBox({ w: width, h: height });
   };
 
   return (
@@ -179,6 +204,35 @@ export function TiltDeck({ cardKey, children, exit = null, onExited, testID }: P
           ]}
         >
           {children}
+          {reduce || glareR === 0 ? null : (
+            <View
+              pointerEvents="none"
+              className="absolute inset-0 overflow-hidden"
+              style={{ borderRadius: shape.radius.xl - 4 }}
+            >
+              <Animated.View
+                style={[{ position: 'absolute', width: glareR * 2, height: glareR * 2 }, glare]}
+              >
+                <Svg width={glareR * 2} height={glareR * 2}>
+                  <Defs>
+                    <RadialGradient id={glareId} cx="50%" cy="50%" r="50%">
+                      <Stop
+                        offset="0"
+                        stopColor={CARD_GLARE[scheme]}
+                        stopOpacity={CARD_GLARE.opacity}
+                      />
+                      <Stop
+                        offset={CARD_GLARE.reach}
+                        stopColor={CARD_GLARE[scheme]}
+                        stopOpacity={0}
+                      />
+                    </RadialGradient>
+                  </Defs>
+                  <Circle cx={glareR} cy={glareR} r={glareR} fill={`url(#${glareId})`} />
+                </Svg>
+              </Animated.View>
+            </View>
+          )}
         </Animated.View>
       </GestureDetector>
     </View>
