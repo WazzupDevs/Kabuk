@@ -210,6 +210,9 @@ export const tr = {
     nameLabel: 'Görünen ad',
     namePlaceholder: 'Adın',
     nameHint: '2–24 karakter.',
+    // The name step's friend (v45 §3): "Selam Elif!", or "Selam!" for a long name.
+    hello: (name: string) => `Selam ${name}!`,
+    helloPlain: 'Selam!',
     birthTitle: 'Doğum tarihin',
     birthBody: `${APP_NAME} 18 yaş ve üzeri içindir. Doğum tarihin kimseye görünmez, profilinde yalnızca yaşın görünür. Sonra değiştiremezsin.`,
     day: 'Gün',

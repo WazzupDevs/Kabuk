@@ -15,6 +15,7 @@ import { ConsentBoxes } from '@/features/onboarding/ConsentBoxes';
 import { nextAfterConsents } from '@/features/onboarding/next';
 import { SignupStep } from '@/features/onboarding/SignupStep';
 import { useOnboardingStore } from '@/features/onboarding/store';
+import { useFriend } from '@/features/onboarding/useFriend';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { callAccount } from '@/lib/api';
@@ -32,6 +33,11 @@ export default function ConsentsAfterCode() {
     consented?.terms === CURRENT_TERMS_VERSION && consented.kvkk === CURRENT_KVKK_VERSION;
   const [terms, setTerms] = useState(false);
   const [kvkk, setKvkk] = useState(false);
+  const friend = useFriend();
+  const toggle = (other: boolean, set: (v: boolean) => void, now: boolean) => {
+    set(!now);
+    friend.react(!now && other ? 'ok' : 'nod');
+  };
   const hasProfile = !!profile.data && !needsProfile(profile.data);
 
   const reconsent = useMutation({
@@ -80,6 +86,7 @@ export default function ConsentsAfterCode() {
       title={tr.consents.title}
       body={profile.data && hasProfile ? tr.consents.outdated : tr.consents.body}
       error={reconsent.isError ? errorMessage(reconsent.error) : null}
+      friend={friend}
       action={{
         testID: 'consents-accept',
         label: tr.consents.accept,
@@ -91,8 +98,8 @@ export default function ConsentsAfterCode() {
       <ConsentBoxes
         terms={terms}
         kvkk={kvkk}
-        onTerms={() => setTerms((v) => !v)}
-        onKvkk={() => setKvkk((v) => !v)}
+        onTerms={() => toggle(kvkk, setTerms, terms)}
+        onKvkk={() => toggle(terms, setKvkk, kvkk)}
       />
     </SignupStep>
   );

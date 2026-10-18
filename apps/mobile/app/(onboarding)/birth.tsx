@@ -8,6 +8,7 @@ import { Text } from '@/components/Text';
 import { useProfile } from '@/features/account/useProfile';
 import { SignupStep } from '@/features/onboarding/SignupStep';
 import { useOnboardingStore } from '@/features/onboarding/store';
+import { useFriend, useJumpWhen, useShakeOnError } from '@/features/onboarding/useFriend';
 import { signupError, useCompleteSignup } from '@/features/onboarding/useCompleteSignup';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -24,6 +25,13 @@ export default function BirthStep() {
   const [error, setError] = useState<string | null>(null);
   const submit = useCompleteSignup();
   const needsGender = profile.data?.has_gender !== true;
+  const friend = useFriend();
+  // The date set: the friend jumps and throws a little burst (v45 §3).
+  useJumpWhen(composeBirthDate(day, month, year) !== null, () => {
+    friend.react('ok');
+    friend.puff();
+  });
+  useShakeOnError(error, () => friend.react('err'));
 
   if (!name) return <Redirect href="/name" />;
   if (profile.data?.has_birth_date === true) return <Redirect href="/gender" />;
@@ -48,6 +56,7 @@ export default function BirthStep() {
       title={tr.signup.birthTitle}
       body={tr.signup.birthBody}
       onBack={() => router.back()}
+      friend={friend}
       error={submit.isError && signupError(submit.error) ? errorMessage(submit.error) : null}
       action={{
         testID: 'birth-continue',
@@ -59,8 +68,16 @@ export default function BirthStep() {
     >
       <View className="gap-2">
         <View className="flex-row gap-2.5">
-          <Field testID="birth-day" label={tr.signup.day} value={day} onChange={setDay} max={2} />
           <Field
+            testID="birth-day"
+            label={tr.signup.day}
+            value={day}
+            onChange={setDay}
+            max={2}
+            friend={friend}
+          />
+          <Field
+            friend={friend}
             testID="birth-month"
             label={tr.signup.month}
             value={month}
@@ -68,6 +85,7 @@ export default function BirthStep() {
             max={2}
           />
           <Field
+            friend={friend}
             testID="birth-year"
             label={tr.signup.year}
             value={year}
@@ -93,6 +111,7 @@ function Field({
   onChange,
   max,
   wide = false,
+  friend,
 }: {
   testID: string;
   label: string;
@@ -100,6 +119,7 @@ function Field({
   onChange: (v: string) => void;
   max: number;
   wide?: boolean;
+  friend: { onFocus: () => void; onBlur: () => void };
 }) {
   return (
     <View className={wide ? 'flex-[1.6] gap-1' : 'flex-1 gap-1'}>
@@ -110,6 +130,8 @@ function Field({
         maxLength={max}
         value={value}
         onChangeText={onChange}
+        onFocus={friend.onFocus}
+        onBlur={friend.onBlur}
         centered
       />
       <Text variant="fine" align="center">

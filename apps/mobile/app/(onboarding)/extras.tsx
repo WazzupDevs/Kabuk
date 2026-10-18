@@ -11,6 +11,7 @@ import { Text } from '@/components/Text';
 import { useProfile } from '@/features/account/useProfile';
 import { SignupStep } from '@/features/onboarding/SignupStep';
 import { useOnboardingStore } from '@/features/onboarding/store';
+import { useFriend } from '@/features/onboarding/useFriend';
 import { choosePhoto, PhotoError, type PhotoSource } from '@/features/profile/photo';
 import { profileViewKeys, useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
@@ -36,6 +37,7 @@ export default function PhotoStep() {
   const { colors } = useTheme();
   const gender = useOnboardingStore((s) => s.gender) ?? view.data?.gender ?? null;
   const photoNote = gender !== null && !mayStayAnonymous(gender) && !photoSet;
+  const friend = useFriend();
 
   const photo = useMutation({
     meta: FEEL_ERROR,
@@ -43,6 +45,7 @@ export default function PhotoStep() {
     onSuccess: async (changed) => {
       if (changed) {
         setPhotoSet(true);
+        friend.react('ok');
         track('profile_photo_set', {});
         await queryClient.invalidateQueries({ queryKey: profileViewKeys.all });
       }
@@ -61,6 +64,7 @@ export default function PhotoStep() {
       testID="signup-photo-step"
       title={tr.signup.photoTitle}
       body={tr.signup.photoBody}
+      friend={friend}
       action={{
         testID: 'signup-finish',
         label: finishLabel(photoSet, {

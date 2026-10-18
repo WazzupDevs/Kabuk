@@ -1,14 +1,22 @@
-import type { ReactNode } from 'react';
-import { View } from 'react-native';
+import { type ReactNode, useState } from 'react';
+import {
+  type LayoutChangeEvent,
+  type LayoutRectangle,
+  type TextLayoutLine,
+  View,
+} from 'react-native';
 
 import { Button } from '@/components/Button';
 import { IconButton } from '@/components/IconButton';
 import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
+import { fitFriend, FRIEND, FRIEND_LOOKS, type Rect } from '@/lib/signupFriend';
 import { SIGNUP_STEPS, SIGNUP_TOTAL, type SignupStep as Step, stepNumber } from '@/lib/signupSteps';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
+
+import { type FriendReaction, SignupFriend } from './SignupFriend';
 
 type Action = {
   label: string;
@@ -18,26 +26,97 @@ type Action = {
   testID?: string;
 };
 
+// What the step's friend does (src/features/onboarding/SignupFriend.tsx).
+export type FriendState = {
+  reaction?: FriendReaction | null;
+  looking?: boolean;
+  bubble?: string | null;
+  puffKey?: number;
+};
+
 type Props = {
-  // The step this screen is ("2/7" over it); none for a one-time question outside sign-up (the
-  // gender gate, new consents).
+  // The step this screen is ("2/7" over it, and its friend); none for a one-time question outside
+  // sign-up (the gender gate, new consents).
   step?: Step;
   title: string;
-  body?: ReactNode;
+  body?: string;
   onBack?: () => void;
   action: Action;
   // An error the step shows above its button.
   error?: string | null;
+  friend?: FriendState;
   children?: ReactNode;
   testID?: string;
 };
 
+// The friend's box rests this far above the title's first line (v45: 64 px against the title at
+// 72), and may not rise into the top row.
+const FRIEND_ABOVE_TITLE = 8;
+
+type Layouts = {
+  wrapper?: LayoutRectangle;
+  head?: LayoutRectangle;
+  title?: LayoutRectangle;
+  body?: LayoutRectangle;
+  fields?: LayoutRectangle;
+  error?: LayoutRectangle;
+  titleLines?: TextLayoutLine[];
+  bodyLines?: TextLayoutLine[];
+};
+
 // One sign-up step (v44/v45: .sup): the back button, seven bars that fill up to this step and
 // "2/7"; the title and a line under it; the step's fields; the button at the bottom. The bars are
-// decoration: a screen reader hears "Adım 2/7".
-export function SignupStep({ step, title, body, onBack, action, error, children, testID }: Props) {
+// decoration: a screen reader hears "Adım 2/7". On the seven steps a capsule friend peeks from the
+// right edge, kept off every word, field and error (v45 report §3).
+export function SignupStep({
+  step,
+  title,
+  body,
+  onBack,
+  action,
+  error,
+  friend,
+  children,
+  testID,
+}: Props) {
   const { colors, shape } = useTheme();
   const n = step ? stepNumber(step) : 0;
+  const withFriend = step !== undefined;
+  const [layouts, setLayouts] = useState<Layouts>({});
+  const keep =
+    <K extends keyof Layouts>(key: K) =>
+    (value: Layouts[K]) =>
+      setLayouts((l) => ({ ...l, [key]: value }));
+  const onLayout =
+    (key: 'wrapper' | 'head' | 'title' | 'body' | 'fields' | 'error') => (e: LayoutChangeEvent) =>
+      keep(key)(e.nativeEvent.layout);
+
+  // Everything the friend must stay off, in the wrapper's coordinates.
+  const head = layouts.head;
+  const lines = (box: LayoutRectangle | undefined, list: TextLayoutLine[] | undefined): Rect[] =>
+    box && head && list
+      ? list.map((l) => ({
+          x: head.x + box.x + l.x,
+          y: head.y + box.y + l.y,
+          width: l.width,
+          height: l.height,
+        }))
+      : [];
+  const titleRects = lines(layouts.title, layouts.titleLines);
+  const blockers: Rect[] = [
+    ...titleRects,
+    ...lines(layouts.body, layouts.bodyLines),
+    ...(layouts.fields ? [toRect(layouts.fields)] : []),
+    ...(error && layouts.error ? [toRect(layouts.error)] : []),
+  ];
+  const right = (layouts.wrapper?.width ?? 0) + shape.screenPadding;
+  const friendTop = head && layouts.title ? head.y + layouts.title.y - FRIEND_ABOVE_TITLE : null;
+  const shift =
+    withFriend && friendTop !== null && layouts.wrapper && layouts.fields
+      ? fitFriend(right, friendTop, blockers, head?.y ?? 0)
+      : null;
+  const inset = withFriend ? FRIEND.textInset : 0;
+
   return (
     <Screen>
       <View testID={testID} collapsable={false} className="flex-1">
@@ -81,28 +160,64 @@ export function SignupStep({ step, title, body, onBack, action, error, children,
             </>
           ) : null}
         </View>
-        <View className="gap-2.5 pt-4">
-          <Text variant="display" accessibilityRole="header">
-            {title}
-          </Text>
-          {typeof body === 'string' ? <Text tone="muted">{body}</Text> : body}
-        </View>
-        <View className="mt-5">{children}</View>
-        {error ? (
-          <Text variant="fine" tone="danger" className="mt-4">
-            {error}
-          </Text>
-        ) : null}
-        <View className="mt-auto pt-8">
-          <Button
-            testID={action.testID}
-            label={action.label}
-            onPress={action.onPress}
-            disabled={action.disabled}
-            loading={action.loading}
-          />
+        <View className="flex-1" onLayout={onLayout('wrapper')}>
+          <View className="gap-2.5 pt-4" onLayout={onLayout('head')}>
+            <View onLayout={onLayout('title')} style={{ paddingRight: inset }}>
+              <Text
+                variant="display"
+                accessibilityRole="header"
+                onTextLayout={(e) => keep('titleLines')(e.nativeEvent.lines)}
+              >
+                {title}
+              </Text>
+            </View>
+            {body ? (
+              <View onLayout={onLayout('body')} style={{ paddingRight: inset }}>
+                <Text tone="muted" onTextLayout={(e) => keep('bodyLines')(e.nativeEvent.lines)}>
+                  {body}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+          <View className="mt-5" onLayout={onLayout('fields')}>
+            {children}
+          </View>
+          {error ? (
+            <View onLayout={onLayout('error')} className="mt-4">
+              <Text variant="fine" tone="danger">
+                {error}
+              </Text>
+            </View>
+          ) : null}
+          {withFriend && friendTop !== null ? (
+            <SignupFriend
+              look={FRIEND_LOOKS[step]}
+              top={friendTop}
+              right={right}
+              shift={shift}
+              reaction={friend?.reaction ?? null}
+              looking={friend?.looking ?? false}
+              bubble={friend?.bubble ?? null}
+              titleLine={titleRects[0] ?? null}
+              blockers={blockers}
+              puffKey={friend?.puffKey}
+            />
+          ) : null}
+          <View className="mt-auto pt-8">
+            <Button
+              testID={action.testID}
+              label={action.label}
+              onPress={action.onPress}
+              disabled={action.disabled}
+              loading={action.loading}
+            />
+          </View>
         </View>
       </View>
     </Screen>
   );
+}
+
+function toRect(l: LayoutRectangle): Rect {
+  return { x: l.x, y: l.y, width: l.width, height: l.height };
 }

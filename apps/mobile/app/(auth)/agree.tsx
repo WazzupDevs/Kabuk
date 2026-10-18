@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { ConsentBoxes } from '@/features/onboarding/ConsentBoxes';
 import { SignupStep } from '@/features/onboarding/SignupStep';
 import { useOnboardingStore } from '@/features/onboarding/store';
+import { useFriend } from '@/features/onboarding/useFriend';
 import { tr } from '@/i18n/tr';
 
 // "Başlamadan önce", step 1/7, before the phone (K-19, K-33): the two consents are kept on the
@@ -14,6 +15,12 @@ export default function ConsentsStep() {
   const accepted = useOnboardingStore((s) => s.consented !== null);
   const [terms, setTerms] = useState(accepted);
   const [kvkk, setKvkk] = useState(accepted);
+  const friend = useFriend();
+  // The friend nods at each box and jumps when both are ticked.
+  const toggle = (other: boolean, set: (v: boolean) => void, now: boolean) => {
+    set(!now);
+    friend.react(!now && other ? 'ok' : 'nod');
+  };
 
   return (
     <SignupStep
@@ -22,6 +29,7 @@ export default function ConsentsStep() {
       title={tr.consents.title}
       body={tr.consents.body}
       onBack={() => router.back()}
+      friend={friend}
       action={{
         testID: 'consents-accept',
         label: tr.consents.accept,
@@ -37,8 +45,8 @@ export default function ConsentsStep() {
       <ConsentBoxes
         terms={terms}
         kvkk={kvkk}
-        onTerms={() => setTerms((v) => !v)}
-        onKvkk={() => setKvkk((v) => !v)}
+        onTerms={() => toggle(kvkk, setTerms, terms)}
+        onKvkk={() => toggle(terms, setKvkk, kvkk)}
       />
     </SignupStep>
   );

@@ -272,30 +272,57 @@ const GHOST: Omit<Variant, 'key'> = {
 
 export type CapsuleLook = CapsuleKey | 'ghost';
 
+// Where the eyes look and how open they are (the sign-up friends, v45: .ob-pal .eye): moved by
+// `dx`, `dy` in the 48-unit box, their height times `open` (1 open, 0.25 squinting).
+export type CapsuleEyes = { dx?: number; dy?: number; open?: number };
+
+// The friends on the dark scheme draw their ink parts (accessories, shade, dark visor) in this
+// lighter ink, the eyes stay dark (v45: .ob-pal-b [fill="#14112B"]:not(.eye)).
+export const FRIEND_DARK_INK = '#4A4272';
+
+// The little burst when the birth date is set (v45: puff()).
+export const FRIEND_PUFF_COLORS = ['#FFB547', '#00B8A9', '#3BA9FF', '#FF6FA3', '#9C86FF'] as const;
+
 // The avatar as SVG text in a 48-unit box: a disc in the variant's ground with the capsule clipped
 // to it (`disc`); without the disc, the capsule standing alone in a 48 x 58 box (v45: AV.fig, the
 // sign-up friends and the first screen's scene, step 4.3).
-export function capsuleSvg(look: CapsuleLook, disc = true): string {
+export function capsuleSvg(
+  look: CapsuleLook,
+  disc = true,
+  eyes: CapsuleEyes = {},
+  ink: string = INK,
+): string {
   const v = look === 'ghost' ? GHOST : (CAPSULES.find((c) => c.key === look) ?? CAPSULES[0]!);
   const eye = v.eye;
-  let face = '';
+  const dx = eyes.dx ?? 0;
+  const dy = eyes.dy ?? 0;
+  const open = eyes.open ?? 1;
+  const n = (x: number) => String(Math.round(x * 100) / 100);
+  const inked = (svg: string) => (ink === INK ? svg : svg.split(INK).join(ink));
+  let visor = '';
+  let eyesSvg = '';
   if (v.visor === 'dark') {
-    face =
-      `<rect x="12" y="15" width="24" height="10" rx="5" fill="${INK}"/>` +
-      `<ellipse cx="19" cy="20" rx="2.8" ry="2" fill="${eye ?? '#fff'}"/>` +
-      `<ellipse cx="29" cy="20" rx="2.8" ry="2" fill="${eye ?? '#fff'}"/>`;
+    visor = `<rect x="12" y="15" width="24" height="10" rx="5" fill="${INK}"/>`;
+    eyesSvg =
+      `<ellipse cx="${n(19 + dx)}" cy="${n(20 + dy)}" rx="2.8" ry="${n(2 * open)}" fill="${eye ?? '#fff'}"/>` +
+      `<ellipse cx="${n(29 + dx)}" cy="${n(20 + dy)}" rx="2.8" ry="${n(2 * open)}" fill="${eye ?? '#fff'}"/>`;
   } else if (v.visor !== 'none') {
-    face =
-      `<rect x="14" y="15" width="20" height="11" rx="5.5" fill="${v.vc ?? '#fff'}"/>` +
-      `<circle cx="20" cy="20.5" r="2.1" fill="${eye ?? INK}"/>` +
-      `<circle cx="28" cy="20.5" r="2.1" fill="${eye ?? INK}"/>`;
+    const eyeShape = (cx: number) =>
+      open === 1
+        ? `<circle cx="${n(cx + dx)}" cy="${n(20.5 + dy)}" r="2.1" fill="${eye ?? INK}"/>`
+        : `<ellipse cx="${n(cx + dx)}" cy="${n(20.5 + dy)}" rx="2.1" ry="${n(2.1 * open)}" fill="${eye ?? INK}"/>`;
+    visor = `<rect x="14" y="15" width="20" height="11" rx="5.5" fill="${v.vc ?? '#fff'}"/>`;
+    eyesSvg = eyeShape(20) + eyeShape(28);
   }
   const capsule =
-    (v.back ?? '') +
-    `<rect x="10" y="8" width="28" height="56" rx="14" fill="${v.body}"${v.op ? ` opacity="${v.op}"` : ''}/>` +
-    `<path d="M30 10a14 14 0 0 1 8 12v42h-8z" fill="${INK}" opacity="${v.sh ?? 0.12}"/>` +
-    face +
-    (v.front ?? '');
+    inked(
+      (v.back ?? '') +
+        `<rect x="10" y="8" width="28" height="56" rx="14" fill="${v.body}"${v.op ? ` opacity="${v.op}"` : ''}/>` +
+        `<path d="M30 10a14 14 0 0 1 8 12v42h-8z" fill="${INK}" opacity="${v.sh ?? 0.12}"/>` +
+        visor,
+    ) +
+    eyesSvg +
+    inked(v.front ?? '');
   if (!disc) return `<svg viewBox="0 0 48 58" xmlns="http://www.w3.org/2000/svg">${capsule}</svg>`;
   return (
     '<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">' +

@@ -7,6 +7,7 @@ import { Input } from '@/components/Input';
 import { authErrorMessage } from '@/features/auth/authErrors';
 import { SignupStep } from '@/features/onboarding/SignupStep';
 import { useOnboardingStore } from '@/features/onboarding/store';
+import { useFriend, useJumpWhen, useShakeOnError } from '@/features/onboarding/useFriend';
 import { tr } from '@/i18n/tr';
 import { supabase } from '@/lib/supabase';
 
@@ -16,6 +17,9 @@ export default function PhoneStep() {
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const consented = useOnboardingStore((s) => s.consented !== null);
+  const friend = useFriend();
+  useJumpWhen(toTrMobileE164(input) !== null, () => friend.react('ok'));
+  useShakeOnError(error, () => friend.react('err'));
 
   // The consents come first; an app restart or a deep link starts over there.
   if (!consented) return <Redirect href="/agree" />;
@@ -45,6 +49,7 @@ export default function PhoneStep() {
       title={tr.auth.phoneTitle}
       body={tr.auth.phoneHint}
       onBack={() => router.back()}
+      friend={friend}
       action={{ label: tr.auth.sendCode, onPress: () => void sendCode(), loading: sending }}
     >
       <Input
@@ -58,6 +63,8 @@ export default function PhoneStep() {
         value={input}
         onChangeText={setInput}
         onSubmitEditing={() => void sendCode()}
+        onFocus={friend.onFocus}
+        onBlur={friend.onBlur}
         maxLength={16}
         error={error}
       />
