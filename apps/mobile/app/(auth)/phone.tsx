@@ -1,28 +1,24 @@
 import { toTrMobileE164 } from '@shared/phone.ts';
 import { AuthError } from '@supabase/supabase-js';
-import { router } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
-import { View } from 'react-native';
 
-import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
-import { Screen } from '@/components/Screen';
-import { ScreenHeader } from '@/components/ScreenHeader';
-import { Mark } from '@/components/Mark';
-import { Wordmark } from '@/components/Wordmark';
-import { Text } from '@/components/Text';
 import { authErrorMessage } from '@/features/auth/authErrors';
+import { SignupStep } from '@/features/onboarding/SignupStep';
 import { useOnboardingStore } from '@/features/onboarding/store';
 import { tr } from '@/i18n/tr';
 import { supabase } from '@/lib/supabase';
-import { SPACING } from '@/theme/tokens';
 
-export default function PhoneScreen() {
+// The phone, step 2/7 (v45 §1): after "Başlamadan önce" (K-33). The code goes by SMS.
+export default function PhoneStep() {
   const [input, setInput] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
-  // Set when sign-up ended under 18: the account was deleted, nothing was kept.
-  const underAge = useOnboardingStore((s) => s.underAge);
+  const consented = useOnboardingStore((s) => s.consented !== null);
+
+  // The consents come first; an app restart or a deep link starts over there.
+  if (!consented) return <Redirect href="/agree" />;
 
   async function sendCode() {
     const phone = toTrMobileE164(input);
@@ -42,53 +38,29 @@ export default function PhoneScreen() {
     router.push({ pathname: '/otp', params: { phone } });
   }
 
-  // Sign-up ended under 18 (canvas: 18 yaş sınırı): the account was deleted, nothing was kept.
-  if (underAge) {
-    return (
-      <Screen>
-        <View testID="under-age" collapsable={false} className="flex-1 justify-center gap-4">
-          <Mark size={SPACING[16] + SPACING[5]} label={null} />
-          <Text variant="display" accessibilityRole="header">
-            {tr.underAge.title}
-          </Text>
-          <Text tone="muted">{tr.underAge.body}</Text>
-        </View>
-        <View className="pt-8">
-          <Button
-            variant="neutral"
-            label={tr.common.close}
-            onPress={() => useOnboardingStore.setState({ underAge: false })}
-          />
-        </View>
-      </Screen>
-    );
-  }
-
   return (
-    <Screen>
-      <View className="mb-3 mt-2">
-        <Wordmark height={SPACING[6]} />
-      </View>
-      <ScreenHeader title={tr.auth.phoneTitle} subtitle={tr.auth.phoneHint} />
-      <View className="mt-6">
-        <Input
-          testID="phone-input"
-          prefix={tr.auth.phonePrefix}
-          accessibilityLabel={tr.auth.phoneTitle}
-          keyboardType="phone-pad"
-          autoComplete="tel"
-          textContentType="telephoneNumber"
-          placeholder={tr.auth.phonePlaceholder}
-          value={input}
-          onChangeText={setInput}
-          onSubmitEditing={sendCode}
-          maxLength={16}
-          error={error}
-        />
-      </View>
-      <View className="mt-auto pt-8">
-        <Button label={tr.auth.sendCode} onPress={sendCode} loading={sending} />
-      </View>
-    </Screen>
+    <SignupStep
+      step="phone"
+      testID="signup-phone"
+      title={tr.auth.phoneTitle}
+      body={tr.auth.phoneHint}
+      onBack={() => router.back()}
+      action={{ label: tr.auth.sendCode, onPress: () => void sendCode(), loading: sending }}
+    >
+      <Input
+        testID="phone-input"
+        prefix={tr.auth.phonePrefix}
+        accessibilityLabel={tr.auth.phoneTitle}
+        keyboardType="phone-pad"
+        autoComplete="tel"
+        textContentType="telephoneNumber"
+        placeholder={tr.auth.phonePlaceholder}
+        value={input}
+        onChangeText={setInput}
+        onSubmitEditing={() => void sendCode()}
+        maxLength={16}
+        error={error}
+      />
+    </SignupStep>
   );
 }

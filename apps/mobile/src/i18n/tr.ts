@@ -167,15 +167,16 @@ export const tr = {
   },
   auth: {
     phoneTitle: 'Telefon numaran',
-    phoneHint: 'Sana SMS ile bir doğrulama kodu göndereceğiz.',
+    phoneHint: 'Giriş için sana SMS ile kod göndereceğiz. Numaran kimseye görünmez.',
     phonePrefix: '+90',
     phonePlaceholder: '5xx xxx xx xx',
     sendCode: 'Kod gönder',
-    otpTitle: 'Doğrulama kodu',
-    otpHint: (phone: string) => `${formatTrMobile(phone)} numarasına gelen 6 haneli kodu gir.`,
+    otpTitle: 'Kodu gir',
+    otpHint: (phone: string) => `${formatTrMobile(phone)} numarasına 6 haneli bir kod gönderdik.`,
     verify: 'Doğrula',
-    resend: 'Kodu tekrar gönder',
-    resendIn: (seconds: number) => `Tekrar gönder (${seconds} sn)`,
+    resend: 'Yeniden gönder',
+    resendIn: (seconds: number) => `Yeniden gönder (${seconds} sn)`,
+    changeNumber: 'Numarayı değiştir',
     errors: {
       invalidPhone: 'Geçerli bir cep telefonu numarası gir (5xx xxx xx xx).',
       signupNotAllowed: 'Bu numarayla devam edilemiyor.',
@@ -185,25 +186,35 @@ export const tr = {
   },
   consents: {
     title: 'Başlamadan önce',
+    body: 'İkisini de okuyup onaylaman gerekir.',
     terms: 'Kullanım Koşulları’nı okudum ve kabul ediyorum.',
     kvkk: 'KVKK Aydınlatma Metni’ni okudum.',
     read: 'Oku',
     accept: 'Onayla ve devam et',
     outdated: 'Metinler güncellendi. Lütfen tekrar onayla.',
   },
-  // Sign-up = profile (docs/SPEC_V3.md §3).
+  // Sign-up (docs/SPEC_V3.md §3; docs/SPEC_V4.md §4.C, the v45 report §1): the first screen, then
+  // seven steps, the consents first (K-19, K-33).
   signup: {
-    title: 'Seni tanıyalım',
+    welcomeTitle: 'Aynı mekanda, aynı masada.',
+    welcomeBody:
+      'Girdiğin mekandaki masaları gör, birine katıl ya da kendi masanı kur. Oyunu herkes kendi telefonundan oynar.',
+    // K-26: the first screen's button opens "Başlamadan önce".
+    start: 'Başla',
     adultsOnly: `${APP_NAME} 18 yaş ve üzeri içindir.`,
+    step: (n: number, total: number) => `${n}/${total}`,
+    stepLabel: (n: number, total: number) => `Adım ${n}/${total}`,
+    nameTitle: 'Adın',
+    nameBody:
+      'Bu adı arkadaşların görür; profilinle göründüğün masalarda ve mekan sohbetinde orada bulunanlar da görür.',
     nameLabel: 'Görünen ad',
-    nameHint:
-      '2–24 karakter. Bu adı arkadaşların görür; profilinle göründüğün masalarda ve mekan sohbetinde orada bulunanlar da görür.',
-    birthLabel: 'Doğum tarihin',
+    namePlaceholder: 'Adın',
+    nameHint: '2–24 karakter.',
+    birthTitle: 'Doğum tarihin',
+    birthBody: `${APP_NAME} 18 yaş ve üzeri içindir. Doğum tarihin kimseye görünmez, profilinde yalnızca yaşın görünür. Sonra değiştiremezsin.`,
     day: 'Gün',
     month: 'Ay',
     year: 'Yıl',
-    birthHint:
-      'Doğum tarihin kimseye gösterilmez, profilinde yalnızca yaşın görünür. Sonradan değiştirilemez.',
     birthInvalid: 'Geçerli bir tarih gir.',
     // The gender (docs/SPEC_V3.md §23.D; canvas: Faz 3 · 23.2): asked at sign-up, and once on a
     // separate screen for an account from before the step. Shown to nobody (rule 12).
@@ -217,14 +228,16 @@ export const tr = {
     // Beside gender_required in the game flow: opens the one-time question in place.
     chooseGender: 'Cinsiyetini seç',
     continue: 'Devam',
-    extrasTitle: 'Profilini tamamla',
-    extrasBody: 'Fotoğraf ve tanıtım isteğe bağlı. İstersen sonra Profil’den de ekleyebilirsin.',
+    photoTitle: 'Profil fotoğrafın',
+    photoBody:
+      'Profilinle göründüğün yerlerde adınla birlikte görünür. Yüzünün görünmesi gerekmez.',
     // Only for a man and "Belirtmek istemiyorum", who always join with the profile; every account
     // sends the same events from this step (docs/SPEC_V3.md §23.L).
     photoNeededNote:
       'Fotoğrafın yoksa masalara katılamazsın, masanı da lobiye açamazsın. Fotoğrafı sonra Profil’den de ekleyebilirsin.',
-    skip: 'Şimdilik geç',
+    // K-29: the last step's button.
     finish: 'Bitir',
+    finishNoPhoto: 'Fotoğrafsız bitir',
   },
   underAge: {
     title: `${APP_NAME} 18 yaş ve üzeri içindir`,

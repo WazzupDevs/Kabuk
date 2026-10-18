@@ -81,6 +81,7 @@ describe('haptic table', () => {
       replyThreshold: { kind: 'selection' },
       failed: { kind: 'notification', type: 'error' },
       friendsMade: { kind: 'notification', type: 'success' },
+      accountReady: { kind: 'notification', type: 'success' },
     });
   });
 });

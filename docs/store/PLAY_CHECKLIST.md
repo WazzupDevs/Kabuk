@@ -55,11 +55,12 @@ Kullanıcı hesabı olan her uygulama için iki şey gerekir: uygulama içinden 
 
 ```
 EN
-Sign in: enter the phone number above on the first screen (without +90 if it is
+Sign in: on the first screen tap "Başla", tick the two boxes (Terms, KVKK notice)
+and tap "Onayla ve devam et". Enter the phone number above (without +90 if it is
 pre-filled) and tap "Kod gönder". No SMS is sent to this number; type the 6-digit
-code above on the next screen. Then tick the two boxes (Terms, KVKK notice) and
-tap "Onayla ve devam et". On "Seni tanıyalım", enter any name and a birth date of
-18 or older (for example 01 01 1995), tap "Devam", then "Şimdilik geç".
+code above on the next screen. Then enter any name ("Devam"), a birth date of 18
+or older (for example 01 01 1995, "Devam"), any gender ("Devam") and tap
+"Fotoğrafsız bitir".
 
 Location: the core feature works only inside a partner venue in Istanbul
 (Beylikdüzü). Checking in to a venue needs the phone to be within 300 m of it;
@@ -74,9 +75,10 @@ ekle", a direct message, blocking and reporting) is shown in this video:
 [video link]
 
 TR
-Giriş: ilk ekranda yukarıdaki numarayı girip "Kod gönder"e dokunun. Bu numaraya
-SMS gitmez; sonraki ekranda yukarıdaki 6 haneli kodu yazın. Üç onayı işaretleyip
-"Onayla ve devam et"e dokunun. Mekan içi akış yalnızca İstanbul'daki bir mekanın
+Giriş: ilk ekranda "Başla"ya dokunun, iki onayı işaretleyip "Onayla ve devam
+et"e dokunun. Yukarıdaki numarayı girip "Kod gönder"e dokunun. Bu numaraya SMS
+gitmez; sonraki ekranda yukarıdaki 6 haneli kodu yazın. Ardından bir ad, 18 yaş
+ve üzeri bir doğum tarihi ve bir cinsiyet girip "Fotoğrafsız bitir"e dokunun. Mekan içi akış yalnızca İstanbul'daki bir mekanın
 300 m içinde çalışır; konum yalnızca check-in anında bir kez kullanılır ve
 saklanmaz. Mekan dışında Keşfet, mekan sayfası, Profil, Ayarlar (hesap silme
 dahil) ve Arkadaşlar kullanılabilir. Mekan içi akış videoda: [video bağlantısı]
@@ -85,7 +87,7 @@ dahil) ve Arkadaşlar kullanılabilir. Mekan içi akış videoda: [video bağlan
 - [ ] **Video çekim senaryosu** (3–4 dk, telefon ekran kaydı; Android'de Hızlı ayarlar → Ekran kaydı, sesli):
   1. Pilot mekanlardan birinde, mekanın içinde. İkinci masa için ikinci bir telefon ve gerçek bir numarayla açılmış ikinci bir hesap gerekir (karşı masa botu üretim projesini reddeder).
   2. Uygulamayı aç, inceleme hesabıyla giriş yap. Kod ekranında kodu yazarken kaydı durdur ya da sonra kodu buzla; kod videoda görünmemeli.
-  3. Onaylar → Keşfet (liste ve harita) → mekanın sayfası → "Buraya giriş yap" → konum rızası ve izin → kişi sayısı → "Masayı aç" → masa takma adı.
+  3. Başla → onaylar → telefon ve kod → ad, doğum tarihi, cinsiyet → "Fotoğrafsız bitir" → Keşfet (liste ve harita) → mekanın sayfası → "Buraya giriş yap" → konum rızası ve izin → kişi sayısı → "Masayı aç" → masa takma adı.
   4. "Masanı lobiye aç" → "Lobiye aç". İkinci telefondan "Katıl" isteği gelir → "Kabul". Masa kartında "… geliyor" satırı; ikinci telefonun kartında "Kabul edildi, … masasının yanına git". İkinci telefon masaya gelir → iki telefonda "Masaya git".
   5. Birleşik masa: Oyun Seç → "Kapsül Anlat öner" → ikinci telefonda "Oynayalım" → kartı aç → bir Doğru, bir Pas; ikinci telefon hakem olarak "Yasak!" basar. Tur geçişini göster.
   6. "Masayı bitir" → iki telefonda "Masa bitti" ve karşı taraf satırında "Arkadaş ekle".

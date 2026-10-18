@@ -4,9 +4,8 @@ import { View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { CodeInput } from '@/components/CodeInput';
-import { Screen } from '@/components/Screen';
-import { ScreenHeader } from '@/components/ScreenHeader';
 import { authErrorMessage } from '@/features/auth/authErrors';
+import { SignupStep } from '@/features/onboarding/SignupStep';
 import { tr } from '@/i18n/tr';
 import { supabase } from '@/lib/supabase';
 
@@ -14,7 +13,9 @@ import { supabase } from '@/lib/supabase';
 const RESEND_SECONDS = 60;
 const CODE_LENGTH = 6;
 
-export default function OtpScreen() {
+// The code, step 3/7: six digits verify on their own; on success the session store updates and
+// the root navigator moves on to the profile steps.
+export default function OtpStep() {
   const { phone } = useLocalSearchParams<{ phone: string }>();
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +36,6 @@ export default function OtpScreen() {
     setVerifying(true);
     const { error: verifyError } = await supabase.auth.verifyOtp({ phone, token, type: 'sms' });
     setVerifying(false);
-    // On success the session store updates and the root navigator moves on.
     if (verifyError) setError(authErrorMessage(verifyError));
   }
 
@@ -54,13 +54,20 @@ export default function OtpScreen() {
   }
 
   return (
-    <Screen>
-      <ScreenHeader
-        title={tr.auth.otpTitle}
-        subtitle={tr.auth.otpHint(phone)}
-        onBack={() => router.back()}
-      />
-      <View className="mt-6 gap-2">
+    <SignupStep
+      step="code"
+      testID="signup-code"
+      title={tr.auth.otpTitle}
+      body={tr.auth.otpHint(phone)}
+      onBack={() => router.back()}
+      action={{
+        label: tr.auth.verify,
+        onPress: () => void verify(code),
+        disabled: code.length !== CODE_LENGTH,
+        loading: verifying,
+      }}
+    >
+      <View className="gap-2">
         <CodeInput
           testID="otp-input"
           length={CODE_LENGTH}
@@ -73,7 +80,7 @@ export default function OtpScreen() {
           onChangeText={onChange}
           error={error}
         />
-        <View className="self-start">
+        <View className="flex-row flex-wrap gap-x-4">
           <Button
             variant="ghost"
             flush
@@ -81,16 +88,14 @@ export default function OtpScreen() {
             onPress={() => void resend()}
             disabled={secondsLeft > 0}
           />
+          <Button
+            variant="ghost"
+            flush
+            label={tr.auth.changeNumber}
+            onPress={() => router.back()}
+          />
         </View>
       </View>
-      <View className="mt-auto pt-8">
-        <Button
-          label={tr.auth.verify}
-          onPress={() => void verify(code)}
-          disabled={code.length !== CODE_LENGTH}
-          loading={verifying}
-        />
-      </View>
-    </Screen>
+    </SignupStep>
   );
 }

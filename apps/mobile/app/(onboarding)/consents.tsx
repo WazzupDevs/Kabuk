@@ -2,33 +2,34 @@ import {
   CURRENT_KVKK_VERSION,
   CURRENT_TERMS_VERSION,
   needsConsent,
-  needsGender,
   needsProfile,
 } from '@shared/consent.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Link, Redirect, router } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Redirect } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
+import { View } from 'react-native';
 
-import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
-import { Checkbox } from '@/components/Checkbox';
-import { Screen } from '@/components/Screen';
-import { ScreenHeader } from '@/components/ScreenHeader';
-import { Text } from '@/components/Text';
+import { Loader } from '@/components/Loader';
 import { useProfile } from '@/features/account/useProfile';
+import { ConsentBoxes } from '@/features/onboarding/ConsentBoxes';
+import { nextAfterConsents } from '@/features/onboarding/next';
+import { SignupStep } from '@/features/onboarding/SignupStep';
+import { useOnboardingStore } from '@/features/onboarding/store';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { callAccount } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 
-// Terms and KVKK notice. A new account goes on to the profile step (about-you), where both are
-// sent together with the name, the birth date and the gender; an existing profile only re-consents
-// here, and an account from before the gender step then answers it once (docs/SPEC_V3.md §23.D):
-// the notice that tells why comes first.
-export default function ConsentsScreen() {
+// After the code: the consents given on "Başlamadan önce" (before the phone, K-33) carry on. A new
+// account goes to the profile steps, which send them; an existing account whose texts changed sends
+// them now, once. Without them (an app restart, or texts updated since) "Başlamadan önce" is asked
+// here as before; then an account from before the gender step answers that once (§23.D).
+export default function ConsentsAfterCode() {
   const queryClient = useQueryClient();
   const profile = useProfile();
+  const consented = useOnboardingStore((s) => s.consented);
+  const current =
+    consented?.terms === CURRENT_TERMS_VERSION && consented.kvkk === CURRENT_KVKK_VERSION;
   const [terms, setTerms] = useState(false);
   const [kvkk, setKvkk] = useState(false);
   const hasProfile = !!profile.data && !needsProfile(profile.data);
@@ -44,55 +45,55 @@ export default function ConsentsScreen() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['profile'] }),
   });
 
-  // Consents are current: the profile is missing (an account from before v3), or only the gender;
-  // otherwise the optional photo step is still open.
+  // An existing account that accepted the current texts before the phone: send them once.
+  const sent = useRef(false);
+  const autoSend = current && hasProfile && !!profile.data && needsConsent(profile.data);
+  useEffect(() => {
+    if (!autoSend || sent.current) return;
+    sent.current = true;
+    reconsent.mutate();
+  }, [autoSend, reconsent]);
+
   if (profile.data && !needsConsent(profile.data)) {
-    const next = needsProfile(profile.data)
-      ? '/about-you'
-      : needsGender(profile.data)
-        ? '/gender'
-        : '/extras';
-    return <Redirect href={next} />;
+    return <Redirect href={nextAfterConsents(profile.data)} />;
+  }
+  if (current && !hasProfile) return <Redirect href="/name" />;
+  if (autoSend && !reconsent.isError) {
+    return (
+      <View className="flex-1 items-center justify-center bg-canvas">
+        <Loader />
+      </View>
+    );
   }
 
-  return (
-    <Screen>
-      <ScreenHeader
-        title={tr.consents.title}
-        subtitle={profile.data ? tr.consents.outdated : undefined}
-      />
-      <Card className="mt-6 gap-1">
-        <Checkbox label={tr.consents.terms} checked={terms} onToggle={() => setTerms((v) => !v)} />
-        <ReadLink href="/terms" />
-        <Checkbox label={tr.consents.kvkk} checked={kvkk} onToggle={() => setKvkk((v) => !v)} />
-        <ReadLink href="/kvkk" />
-      </Card>
-      {reconsent.isError ? (
-        <Text variant="fine" tone="danger" className="mt-4">
-          {errorMessage(reconsent.error)}
-        </Text>
-      ) : null}
-      <View className="mt-auto pt-8">
-        <Button
-          label={tr.consents.accept}
-          onPress={() => (hasProfile ? reconsent.mutate() : router.push('/about-you'))}
-          disabled={!(terms && kvkk)}
-          loading={reconsent.isPending}
-        />
-      </View>
-    </Screen>
-  );
-}
+  const accept = () => {
+    useOnboardingStore.setState({
+      consented: { terms: CURRENT_TERMS_VERSION, kvkk: CURRENT_KVKK_VERSION },
+    });
+    if (hasProfile) reconsent.mutate();
+  };
 
-// "Oku" under a consent, aligned with the checkbox label; 44 high for the finger.
-function ReadLink({ href }: { href: '/terms' | '/kvkk' }) {
   return (
-    <Link href={href} asChild>
-      <Pressable accessibilityRole="link" className="ml-9 min-h-11 justify-center self-start">
-        <Text tone="accent" variant="bodyStrong">
-          {tr.consents.read}
-        </Text>
-      </Pressable>
-    </Link>
+    <SignupStep
+      step={hasProfile ? undefined : 'consents'}
+      testID="signup-consents"
+      title={tr.consents.title}
+      body={profile.data && hasProfile ? tr.consents.outdated : tr.consents.body}
+      error={reconsent.isError ? errorMessage(reconsent.error) : null}
+      action={{
+        testID: 'consents-accept',
+        label: tr.consents.accept,
+        onPress: accept,
+        disabled: !(terms && kvkk),
+        loading: reconsent.isPending,
+      }}
+    >
+      <ConsentBoxes
+        terms={terms}
+        kvkk={kvkk}
+        onTerms={() => setTerms((v) => !v)}
+        onKvkk={() => setKvkk((v) => !v)}
+      />
+    </SignupStep>
   );
 }

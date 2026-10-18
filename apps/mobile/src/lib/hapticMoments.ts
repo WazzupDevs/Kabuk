@@ -17,7 +17,8 @@ export type HapticMoment =
   | 'lastSeconds' // a timed turn: one of its last seconds (v43)
   | 'replyThreshold' // a chat: a swiped message passed the point where letting go answers it (v43)
   | 'failed' // an action the person pressed failed, and its error shows (FEEL_ERROR)
-  | 'friendsMade'; // the end of the table: "Arkadaş oldunuz"
+  | 'friendsMade' // the end of the table: "Arkadaş oldunuz"
+  | 'accountReady'; // sign-up finished: the photo step's "Bitir" (K-30, v45)
 
 export type HapticCall =
   | { kind: 'selection' }
@@ -39,6 +40,7 @@ export const HAPTICS: Record<HapticMoment, HapticCall> = {
   replyThreshold: { kind: 'selection' },
   failed: { kind: 'notification', type: 'error' },
   friendsMade: { kind: 'notification', type: 'success' },
+  accountReady: { kind: 'notification', type: 'success' },
 };
 
 // The requester's touch when their join request's visible status changes. Only an acceptance is
