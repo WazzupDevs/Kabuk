@@ -254,9 +254,11 @@ export function BellIcon({ unread = 0, size = ICON.lg, ringKey }: BellProps) {
       </Animated.View>
       {unread > 0 ? (
         <Animated.View
-          className="absolute items-center justify-center"
           style={[
             {
+              position: 'absolute',
+              alignItems: 'center',
+              justifyContent: 'center',
               top: -BELL_BADGE.lift,
               right: -BELL_BADGE.lift,
               minWidth: BELL_BADGE.minWidth,
