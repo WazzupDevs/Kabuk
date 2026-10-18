@@ -6,7 +6,9 @@ import { Input } from '@/components/Input';
 import { useProfile } from '@/features/account/useProfile';
 import { SignupStep } from '@/features/onboarding/SignupStep';
 import { useOnboardingStore } from '@/features/onboarding/store';
+import { useFriend } from '@/features/onboarding/useFriend';
 import { tr } from '@/i18n/tr';
+import { greeting } from '@/lib/signupFriend';
 
 // The display name, step 4/7. Kept on the phone until the gender step sends the profile.
 export default function NameStep() {
@@ -16,6 +18,8 @@ export default function NameStep() {
   );
   const length = [...name.trim()].length;
   const valid = length >= DISPLAY_NAME_MIN && length <= DISPLAY_NAME_MAX;
+  const friend = useFriend();
+  const bubble = greeting(name, valid, { named: tr.signup.hello, plain: tr.signup.helloPlain });
 
   return (
     <SignupStep
@@ -23,6 +27,7 @@ export default function NameStep() {
       testID="signup-name-step"
       title={tr.signup.nameTitle}
       body={tr.signup.nameBody}
+      friend={{ ...friend, bubble }}
       action={{
         testID: 'name-continue',
         label: tr.signup.continue,
@@ -44,6 +49,8 @@ export default function NameStep() {
         autoCapitalize="words"
         autoCorrect={false}
         autoComplete="given-name"
+        onFocus={friend.onFocus}
+        onBlur={friend.onBlur}
       />
     </SignupStep>
   );

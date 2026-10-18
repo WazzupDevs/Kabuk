@@ -7,6 +7,7 @@ import { GenderChoice, useSetGender } from '@/features/account/GenderChoice';
 import { useProfile } from '@/features/account/useProfile';
 import { SignupStep } from '@/features/onboarding/SignupStep';
 import { useOnboardingStore } from '@/features/onboarding/store';
+import { useFriend } from '@/features/onboarding/useFriend';
 import { signupError, useCompleteSignup } from '@/features/onboarding/useCompleteSignup';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -23,6 +24,7 @@ export default function GenderStep() {
   const submit = useCompleteSignup();
   const save = useSetGender();
   const pending = submit.isPending || save.isPending;
+  const friend = useFriend();
 
   if (signingUp && !name) return <Redirect href="/name" />;
 
@@ -42,6 +44,7 @@ export default function GenderStep() {
       body={signingUp ? tr.signup.genderHint : tr.signup.genderGateBody}
       onBack={signingUp ? () => router.back() : undefined}
       error={error}
+      friend={friend}
       action={{
         testID: signingUp ? 'gender-continue' : 'gender-save',
         label: signingUp ? tr.signup.continue : tr.signup.genderSave,
@@ -54,7 +57,15 @@ export default function GenderStep() {
         },
       }}
     >
-      <GenderChoice value={gender} onChange={setGender} disabled={pending} bare={signingUp} />
+      <GenderChoice
+        value={gender}
+        onChange={(g) => {
+          setGender(g);
+          friend.react('nod');
+        }}
+        disabled={pending}
+        bare={signingUp}
+      />
     </SignupStep>
   );
 }

@@ -6,6 +6,7 @@ import { Button } from '@/components/Button';
 import { CodeInput } from '@/components/CodeInput';
 import { authErrorMessage } from '@/features/auth/authErrors';
 import { SignupStep } from '@/features/onboarding/SignupStep';
+import { useFriend, useShakeOnError } from '@/features/onboarding/useFriend';
 import { tr } from '@/i18n/tr';
 import { supabase } from '@/lib/supabase';
 
@@ -21,6 +22,8 @@ export default function OtpStep() {
   const [error, setError] = useState<string | null>(null);
   const [verifying, setVerifying] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(RESEND_SECONDS);
+  const friend = useFriend();
+  useShakeOnError(error, () => friend.react('err'));
 
   useEffect(() => {
     if (secondsLeft <= 0) return;
@@ -60,6 +63,7 @@ export default function OtpStep() {
       title={tr.auth.otpTitle}
       body={tr.auth.otpHint(phone)}
       onBack={() => router.back()}
+      friend={friend}
       action={{
         label: tr.auth.verify,
         onPress: () => void verify(code),
@@ -78,6 +82,8 @@ export default function OtpStep() {
           autoFocus
           value={code}
           onChangeText={onChange}
+          onFocus={friend.onFocus}
+          onBlur={friend.onBlur}
           error={error}
         />
         <View className="flex-row flex-wrap gap-x-4">
