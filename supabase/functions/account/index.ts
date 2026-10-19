@@ -1,5 +1,6 @@
 import { requireUser, serviceClient } from '../_shared/auth.ts';
 import { inBackground } from '../_shared/background.ts';
+import { assignCapsuleIdentity } from '../_shared/capsule.ts';
 import { dbError } from '../_shared/db.ts';
 import { z } from '../_shared/deps.ts';
 import { handle } from '../_shared/http.ts';
@@ -50,8 +51,9 @@ async function deleteAccount(userId: string): Promise<void> {
   inBackground(deletePosthogPerson(userId));
 }
 
-// Consents and the profile in one write (docs/SPEC_V3.md §3). The age is checked before anything
-// is written: under 18 the account is deleted and nothing about the person is kept.
+// Consents and the profile in one write (docs/SPEC_V3.md §3), then the capsule identity. The age is
+// checked before anything is written: under 18 the account is deleted and nothing about the person
+// is kept.
 async function completeOnboarding(userId: string, body: CompleteOnboardingRequest): Promise<void> {
   if (body.termsVersion !== CURRENT_TERMS_VERSION || body.kvkkVersion !== CURRENT_KVKK_VERSION) {
     throw new AppError('consent_outdated', 'Accepted texts are not the current versions.');
@@ -120,6 +122,9 @@ async function completeOnboarding(userId: string, body: CompleteOnboardingReques
     gender: gender ?? body.gender ?? null,
   });
   if (error) throw dbError('profiles', error);
+  // The nick and the start look (docs/SPEC_V4.md §4.D), once and only after the age check: under
+  // 18 nothing was written, not even a nick (rule 11). A re-consent keeps the ones it has.
+  await assignCapsuleIdentity(db, userId);
 }
 
 // The one-time gender question for an account from before the gender step (docs/SPEC_V3.md §23.D):

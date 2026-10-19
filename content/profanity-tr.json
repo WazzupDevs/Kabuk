@@ -69,5 +69,6 @@
     "pic kurusu",
     "ana avrat"
   ],
-  "wholeWords": ["ananı", "anani"]
+  "wholeWords": ["ananı", "anani"],
+  "capsuleNick": { "letterPairs": ["am", "mk", "sk", "sg", "gt"], "numbers": ["31", "69"] }
 }

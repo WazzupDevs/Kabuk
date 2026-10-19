@@ -15,6 +15,7 @@ import type {
   LeaveResponse,
   LocationModeResponse,
   RerollAliasResponse,
+  SetIdentityResponse,
 } from '../_shared/pure/api/checkin.ts';
 import {
   BOUNDARY_TOLERANCE_M,
@@ -30,6 +31,7 @@ import {
 import { locationCheck } from '../_shared/pure/devProject.ts';
 import { AppError } from '../_shared/pure/errors.ts';
 import { ALIAS_REROLLS_PER_CHECKIN } from '../_shared/pure/rooms.ts';
+import { checkinIdentity } from '../_shared/pure/venueChat.ts';
 
 const Body: z.ZodType<CheckinRequest> = z.discriminatedUnion('action', [
   z.object({
@@ -48,6 +50,7 @@ const Body: z.ZodType<CheckinRequest> = z.discriminatedUnion('action', [
   z.object({ action: z.literal('reroll-alias') }),
   z.object({ action: z.literal('leave') }),
   z.object({ action: z.literal('location-mode') }),
+  z.object({ action: z.literal('set-identity'), anonymous: z.boolean() }),
 ]);
 
 // A taken alias (a concurrent check-in at the same venue) is retried with another one.
@@ -150,7 +153,14 @@ async function checkIn(userId: string, body: CheckInRequest): Promise<CheckInRes
       // The same check-in sent again returns the table it opened (20261102090000).
       new_checkin_key: body.requestId,
     });
-    if (!error) return { sessionId: data.id, alias: data.alias, expiresAt: data.expires_at };
+    if (!error) {
+      return {
+        sessionId: data.id,
+        alias: data.alias,
+        expiresAt: data.expires_at,
+        identity: checkinIdentity(data),
+      };
+    }
     // spot_required and spot_invalid come from the database as domain errors.
     // A unique violation is a taken alias, or the same check-in arriving twice at once: the second
     // copy hits the one-active-table index, and the next attempt finds the first copy's table by
@@ -203,6 +213,7 @@ Deno.serve(
       | RerollAliasResponse
       | LeaveResponse
       | LocationModeResponse
+      | SetIdentityResponse
     > => {
       const body = Body.parse(raw);
       const user = await requireUser(req, db);
@@ -232,6 +243,17 @@ Deno.serve(
           const { error } = await db.rpc('end_table_session', { target_user_id: user.id });
           if (error) throw dbError('end_table_session', error);
           return { ok: true };
+        }
+
+        // docs/SPEC_V4.md §4.D: anonymous or profiled, once per check-in. Only the check-in is
+        // locked (§4.K); no gender is needed (check-in and the venue chat do not ask for it).
+        case 'set-identity': {
+          const { data, error } = await db.rpc('set_checkin_identity', {
+            target_user_id: user.id,
+            new_mode: body.anonymous ? 'anonymous' : 'profiled',
+          });
+          if (error) throw domainError('set_checkin_identity', error);
+          return { identity: checkinIdentity(data) };
         }
       }
     },
