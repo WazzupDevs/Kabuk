@@ -2,6 +2,8 @@
 // the fixture venue, each with `teams: true` unless told otherwise, and the paths that seat them on a
 // side. teams.test.ts (step 22.2) keeps its own copy of these helpers: existing tests do not change
 // (§22.M).
+import { randomUUID } from 'node:crypto';
+
 import { expect } from 'vitest';
 
 import { CURRENT_LOCATION_CONSENT_VERSION } from '../functions/_shared/pure/consent.ts';
@@ -45,6 +47,7 @@ export async function table(
     accuracyM: 10,
     headcount: opts.headcount ?? 2,
     locationConsentVersion: CURRENT_LOCATION_CONSENT_VERSION,
+    requestId: randomUUID(),
     ...(opts.teams === false ? {} : { teams: true }),
   });
   expect(res.status, JSON.stringify(res.body)).toBe(200);

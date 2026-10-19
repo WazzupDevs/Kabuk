@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import type { CheckInRequest } from '../functions/_shared/pure/api/checkin.ts';
@@ -56,6 +58,7 @@ function checkIn(
     accuracyM: 12.5,
     headcount: 3,
     locationConsentVersion: CURRENT_LOCATION_CONSENT_VERSION,
+    requestId: randomUUID(),
     ...rest,
   };
   return invoke(client, 'checkin', body);
@@ -199,6 +202,71 @@ describe('checkin/check-in', () => {
       ['ended', true],
       ['active', false],
     ]);
+  });
+
+  // Sent twice with its key: the app's one retry after a 5xx and the local serve's retired isolate
+  // (pure/apiRetry.ts → IDEMPOTENT_CALLS). One table, the same answer.
+  it('opens one table when the same check-in comes twice', async () => {
+    const client = await onboarded(PHONE_A);
+    const requestId = randomUUID();
+    const first = await checkIn(client, { requestId });
+    expect(first.status).toBe(200);
+    expect(await checkIn(client, { requestId })).toEqual(first);
+    const rows = await sql`
+      select status, checkin_key from public.table_sessions where user_id = ${await userIdOf(client)}
+    `;
+    expect(rows).toEqual([{ status: 'active', checkin_key: requestId }]);
+  });
+
+  it('keeps the table and its room when the same check-in comes again', async () => {
+    const client = await onboarded(PHONE_A);
+    const requestId = randomUUID();
+    const first = await checkIn(client, { requestId });
+    const created = await invoke(client, 'rooms', { action: 'create', profiled: false });
+    expect(created.status).toBe(200);
+    const roomId = (created.body as { roomId: string }).roomId;
+    expect(await checkIn(client, { requestId })).toEqual(first);
+    const [room] = await sql`select status from public.rooms where id = ${roomId}`;
+    expect(room?.status).toBe('waiting');
+  });
+
+  it('opens a new table for a new key, no key, or a key whose table ended or ran out', async () => {
+    const client = await onboarded(PHONE_A);
+    const id = await userIdOf(client);
+    const sessionOf = (res: { body: unknown }) => (res.body as { sessionId: string }).sessionId;
+    const requestId = randomUUID();
+    const first = sessionOf(await checkIn(client, { requestId }));
+    const fresh = sessionOf(await checkIn(client));
+    expect(fresh).not.toBe(first);
+    // An older app sends no key: every check-in is a new table, as before.
+    const keyless = sessionOf(await checkIn(client, { requestId: undefined }));
+    expect(keyless).not.toBe(fresh);
+    // The first key again, after its table ended: a new table.
+    const again = sessionOf(await checkIn(client, { requestId }));
+    expect(again).not.toBe(first);
+    // Past its 4 hours (the minute job has not ended it yet): a new table.
+    await sql`update public.table_sessions set expires_at = now() - interval '1 second' where id = ${again}`;
+    expect(sessionOf(await checkIn(client, { requestId }))).not.toBe(again);
+    const rows = await sql`
+      select status from public.table_sessions where user_id = ${id} order by created_at
+    `;
+    expect(rows.map((r) => r.status)).toEqual(['ended', 'ended', 'ended', 'ended', 'active']);
+  });
+
+  it('opens a new table for the same key with another headcount or team choice', async () => {
+    const client = await onboarded(PHONE_A);
+    const sessionOf = (res: { body: unknown }) => (res.body as { sessionId: string }).sessionId;
+    const requestId = randomUUID();
+    const first = sessionOf(await checkIn(client, { requestId }));
+    const headcount = sessionOf(await checkIn(client, { requestId, headcount: 2 }));
+    expect(headcount).not.toBe(first);
+    const teams = sessionOf(await checkIn(client, { requestId, headcount: 2, teams: true }));
+    expect(teams).not.toBe(headcount);
+    const [row] = await sql`
+      select id, headcount, team_capable from public.table_sessions
+      where user_id = ${await userIdOf(client)} and status = 'active'
+    `;
+    expect(row).toEqual({ id: teams, headcount: 2, team_capable: true });
   });
 
   it('gives tables at the same venue different aliases', async () => {

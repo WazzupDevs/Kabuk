@@ -323,6 +323,7 @@ describe('check-in headcount; no participation at check-in', () => {
       accuracyM: 10,
       headcount: 1,
       locationConsentVersion: CURRENT_LOCATION_CONSENT_VERSION,
+      requestId: randomUUID(),
       participation: 'profile',
     });
     expect(res.status).toBe(200);

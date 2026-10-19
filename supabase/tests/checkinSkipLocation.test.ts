@@ -3,6 +3,8 @@
 // suite, .github/workflows/ci.yml):
 //   echo CHECKIN_SKIP_LOCATION=1 > /tmp/skip.env && pnpm supabase functions serve --env-file /tmp/skip.env
 //   CHECKIN_SKIP_LOCATION_TEST=1 pnpm vitest run -c vitest.integration.config.ts supabase/tests/checkinSkipLocation.test.ts
+import { randomUUID } from 'node:crypto';
+
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import type { CheckInRequest } from '../functions/_shared/pure/api/checkin.ts';
@@ -59,6 +61,7 @@ function checkInFar(client: Client, venueKey: string): ReturnType<typeof invoke>
     accuracyM: null,
     headcount: 2,
     locationConsentVersion: CURRENT_LOCATION_CONSENT_VERSION,
+    requestId: randomUUID(),
   };
   return invoke(client, 'checkin', body);
 }
