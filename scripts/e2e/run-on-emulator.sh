@@ -83,19 +83,6 @@ adb logcat '*:W' > "$OUT/logcat.txt" 2>&1 &
 adb emu screenrecord start --time-limit 1800 "$OUT/video.webm" || true
 
 status=0
-# TEST ONLY (#164; reverted before merge): Maestro's driver stopped mid-flow in light-2's first
-# attempt, to see the retry in CI.
-if [ "$SCHEME" = light ] && [ "${FONT_SCALE:-1}" = 1 ] && [ "${FLOW:-}" = e2e/maestro/shard-2.yaml ] &&
-  [ ! -d "$OUT/attempt-1" ]; then
-  (
-    sleep 90
-    for _ in 1 2 3 4 5 6; do
-      echo "TEST: adb shell am force-stop dev.mobile.maestro"
-      adb shell am force-stop dev.mobile.maestro || true
-      sleep 5
-    done
-  ) &
-fi
 # What Maestro prints is kept too: a driver it cannot reach shows there (scripts/e2e/retry.ts).
 maestro test "${FLOW:-e2e/maestro/p0.yaml}" \
   --test-output-dir "$OUT/screenshots" \
