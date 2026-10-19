@@ -1,9 +1,11 @@
-import { composeBirthDate } from '@shared/age.ts';
+import { checkBirthDate, composeBirthDate, istanbulToday, parseIsoDate } from '@shared/age.ts';
 import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 
+import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
+import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
 import { useProfile } from '@/features/account/useProfile';
 import { SignupStep } from '@/features/onboarding/SignupStep';
@@ -15,8 +17,9 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 
 // The birth date, step 5/7: never shown to anyone, the profile shows the age; it cannot be changed
-// later (rule 11). The server decides under 18 when the profile is sent, after the gender step: it
-// asks for the gender first (docs/DECISIONS.md → "Faz 4 adım 4.3b").
+// later (rule 11). "Devam" asks once more in a sheet with the age and the date (K-55, K-63; v46
+// §6): Onayla goes on, Düzelt stays. The server decides under 18 when the profile is sent, after
+// the gender step: it asks for the gender first (docs/DECISIONS.md → "Faz 4 adım 4.3b").
 export default function BirthStep() {
   const profile = useProfile();
   const name = useOnboardingStore((s) => s.name);
@@ -26,6 +29,8 @@ export default function BirthStep() {
   const [month, setMonth] = useState('');
   const [year, setYear] = useState('');
   const [error, setError] = useState<string | null>(null);
+  // The date waiting for Onayla, with the age it gives today.
+  const [confirm, setConfirm] = useState<{ birthDate: string; age: number } | null>(null);
   const submit = useCompleteSignup();
   const needsGender = profile.data?.has_gender !== true;
   const friend = useFriend();
@@ -45,15 +50,24 @@ export default function BirthStep() {
   const filled = day !== '' && month !== '' && year.length === 4;
   const onContinue = () => {
     const birthDate = composeBirthDate(day, month, year);
-    if (!birthDate) {
+    // A day after today or more than MAX_AGE years ago is not a birth date either (the server
+    // refuses both); under 18 is asked like any date, the server decides it.
+    const check = birthDate ? checkBirthDate(birthDate, istanbulToday(new Date())) : null;
+    if (!birthDate || !check?.ok) {
       setError(tr.signup.birthInvalid);
       return;
     }
     setError(null);
-    useOnboardingStore.setState({ birthDate });
+    setConfirm({ birthDate, age: check.age });
+  };
+  const onConfirm = () => {
+    if (!confirm) return;
+    setConfirm(null);
+    useOnboardingStore.setState({ birthDate: confirm.birthDate });
     if (needsGender) go(() => router.push('/gender'));
     else submit.mutate(null);
   };
+  const confirmed = confirm ? parseIsoDate(confirm.birthDate) : null;
 
   return (
     <SignupStep
@@ -106,6 +120,22 @@ export default function BirthStep() {
           </Text>
         ) : null}
       </View>
+      <Sheet
+        visible={confirm !== null}
+        onClose={() => setConfirm(null)}
+        title={tr.signup.birthConfirmTitle(confirm?.age ?? 0)}
+      >
+        <Text variant="fine">{confirmed ? tr.signup.birthConfirmBody(confirmed) : ''}</Text>
+        <View className="gap-2.5">
+          <Button testID="birth-confirm" label={tr.signup.birthConfirm} onPress={onConfirm} />
+          <Button
+            variant="neutral"
+            testID="birth-confirm-fix"
+            label={tr.signup.birthFix}
+            onPress={() => setConfirm(null)}
+          />
+        </View>
+      </Sheet>
     </SignupStep>
   );
 }
