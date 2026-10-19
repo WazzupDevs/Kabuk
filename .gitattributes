@@ -8,6 +8,7 @@
 # Never converted.
 *.png binary
 *.jpg binary
+*.webp binary
 *.ttf binary
 *.otf binary
 *.apk binary
