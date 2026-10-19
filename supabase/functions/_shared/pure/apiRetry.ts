@@ -86,6 +86,8 @@ export const IDEMPOTENT_CALLS = [
   'ibre/advance',
   // checkin.test "checkin/leave and expiry": "ends the active table and is idempotent"
   'checkin/leave',
+  // checkin.test "checkin/check-in": "opens one table when the same check-in comes twice"
+  'checkin/check-in',
   // friends.test "DM replies and reactions (docs/SPEC_V3.md §21)": "keeps one reaction per
   // account: set, change, take back, and the same twice"
   'dm/react',

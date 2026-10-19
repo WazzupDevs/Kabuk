@@ -56,6 +56,7 @@ const STATUS: Record<ErrorCode, number> = {
   display_name_required: 409,
   display_name_invalid: 422,
   bio_invalid: 422,
+  contact_not_allowed: 422,
   photo_invalid: 422,
   already_friends: 409,
   not_friends: 403,

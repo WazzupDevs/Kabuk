@@ -19,16 +19,30 @@ type Props = {
   glyph?: ReactNode;
   // A raised circle on a hairline (v45: .round.back, .dmore) instead of a bare icon.
   round?: boolean;
+  // With `round`: the soft red disc without a hairline ("Mekandan ayrıl", v45: .round.leave).
+  danger?: boolean;
+  disabled?: boolean;
 };
 
 // A 44 × 44 icon-only button; the label is for screen readers.
-export function IconButton({ icon, label, onPress, testID, glyph, round }: Props) {
+export function IconButton({
+  icon,
+  label,
+  onPress,
+  testID,
+  glyph,
+  round,
+  danger = false,
+  disabled = false,
+}: Props) {
   const { colors, shape } = useTheme();
   const pressScale = usePressScale();
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
+      accessibilityState={{ disabled }}
+      disabled={disabled}
       onPress={onPress}
       testID={testID}
     >
@@ -42,14 +56,16 @@ export function IconButton({ icon, label, onPress, testID, glyph, round }: Props
               alignItems: 'center',
               justifyContent: 'center',
             },
-            round
-              ? {
-                  backgroundColor: colors.surface,
-                  borderWidth: shape.stroke.hairline,
-                  borderColor: colors.divider,
-                }
-              : { backgroundColor: pressed ? colors.surface2 : 'transparent' },
-            round ? pressScale(pressed) : null,
+            round && danger
+              ? { backgroundColor: colors.dangerSoft }
+              : round
+                ? {
+                    backgroundColor: colors.surface,
+                    borderWidth: shape.stroke.hairline,
+                    borderColor: colors.divider,
+                  }
+                : { backgroundColor: pressed ? colors.surface2 : 'transparent' },
+            round ? pressScale(pressed && !disabled) : null,
           ]}
         >
           {glyph ?? <Ionicons name={icon} size={ICON.lg} color={colors.text} />}

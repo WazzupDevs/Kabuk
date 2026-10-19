@@ -62,6 +62,36 @@ appId: app.kabuk.mobile
       id: request-join
     timeout: 15000
 - takeScreenshot: 12c-lobby-same-spot
+# "Katıl" to the bot's table: the request waits in its row (Kesişme and the seconds left); the bot
+# declines. A decline looks like the wait until the 60 s run out (rule 5), then the row says "Masa
+# şu an müsait değil." (the miss) and leaves: a table asks another once (venue_lobby).
+- tapOn:
+    id: request-join
+- scrollUntilVisible:
+    element:
+      id: request-send
+    centerElement: true
+    timeout: 10000
+- tapOn:
+    id: request-send
+- extendedWaitUntil:
+    visible: 'İsteğin gönderildi\. Yanıt bekleniyor \(\d+ sn\)\.'
+    timeout: 15000
+- takeScreenshot: 12d-lobby-request-waiting
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: decline-request
+- extendedWaitUntil:
+    visible: Masa şu an müsait değil.
+    timeout: 80000
+- takeScreenshot: 12e-lobby-request-missed
+# Maestro counts a wait's timeout from the last tap (over a minute ago here, before the 60 s), so
+# this one is long enough to still leave some seconds.
+- extendedWaitUntil:
+    visible:
+      id: lobby-empty
+    timeout: 120000
 # The bot leaves the lobby; this phone opens its table to it at the same spot and the bot asks to
 # join.
 - runScript:

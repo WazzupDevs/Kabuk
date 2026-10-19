@@ -53,6 +53,7 @@ export type ErrorCode =
   | 'display_name_required'
   | 'display_name_invalid'
   | 'bio_invalid'
+  | 'contact_not_allowed'
   | 'photo_invalid'
   | 'already_friends'
   | 'not_friends'

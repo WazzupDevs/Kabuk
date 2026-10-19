@@ -1,7 +1,15 @@
 // MVP_SPEC §6. Tests first (CLAUDE.md).
 import { describe, expect, it } from 'vitest';
 
-import { capitalizeTr, inflectTr, normalize, tokenize, upperTr } from './trText.ts';
+import {
+  canonicalize,
+  capitalizeTr,
+  inflectTr,
+  normalize,
+  plainText,
+  tokenize,
+  upperTr,
+} from './trText.ts';
 
 describe('normalize', () => {
   it('lowercases with Turkish rules and folds Turkish letters', () => {
@@ -30,6 +38,32 @@ describe('normalize', () => {
 
   it('keeps letters of other alphabets as letters', () => {
     expect(normalize('Café')).toBe('café');
+  });
+});
+
+// K-34: the forms contact details are matched in (profanity.ts → containsContact).
+describe('plainText and canonicalize', () => {
+  it('folds compatibility forms: full-width letters and digits, small and wide @', () => {
+    expect(plainText('ｗｗｗ.Elif.net')).toBe('www.Elif.net');
+    expect(plainText('０５３２ １２３')).toBe('0532 123');
+    expect(plainText('﹫elif ＠deniz')).toBe('@elif @deniz');
+  });
+
+  it('drops invisible format characters', () => {
+    expect(plainText('e\u200Bl\u200Ci\u200Df\u2060')).toBe('elif');
+    expect(plainText('\uFEFF@el\u00ADif')).toBe('@elif');
+    expect(plainText('0532\u200E123')).toBe('0532123');
+  });
+
+  it('keeps the case and everything else', () => {
+    expect(plainText('Kahve severim.Dev gibi, 2 şeker!')).toBe('Kahve severim.Dev gibi, 2 şeker!');
+  });
+
+  it('canonicalize also lowercases with Turkish rules and reads ı as i', () => {
+    expect(canonicalize('@İrem')).toBe('@irem');
+    expect(canonicalize('INFO@GMAIL.COM')).toBe('info@gmail.com');
+    expect(canonicalize('Işık')).toBe('işik');
+    expect(canonicalize('ＷＷＷ.Elif\u200B.NET')).toBe('www.elif.net');
   });
 });
 

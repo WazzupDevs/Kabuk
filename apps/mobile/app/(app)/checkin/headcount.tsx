@@ -16,6 +16,7 @@ import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { callCheckIn } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { requestKey } from '@/lib/requestKey';
 
 // "Kaç kişisiniz?" 1 / 2 / 3 / 4+ (docs/SPEC_V2.md §6.6). Anonymous or with the profile is chosen
 // for each room from v3 on (docs/SPEC_V3.md §5.4), not here.
@@ -23,6 +24,16 @@ export default function HeadcountScreen() {
   const queryClient = useQueryClient();
   const { position, venue, spot, clear } = useCheckinDraft();
   const [headcount, setHeadcount] = useState<number | null>(null);
+  // One key per headcount on this screen: the same check-in sent again (the app's retry after a 5xx,
+  // or a press after an error whose check-in went through) returns the table it opened.
+  const [keys] = useState(() => new Map<number, string>());
+  const keyFor = (count: number): string => {
+    const known = keys.get(count);
+    if (known) return known;
+    const key = requestKey();
+    keys.set(count, key);
+    return key;
+  };
 
   const checkIn = useMutation({
     meta: FEEL_ERROR,
@@ -39,6 +50,7 @@ export default function HeadcountScreen() {
         ...(spot ? { spotId: spot.id } : {}),
         // This app can be a member of a side (docs/SPEC_V3.md §22.B).
         teams: true,
+        requestId: keyFor(count),
       });
     },
     onSuccess: async (result, count) => {

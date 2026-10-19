@@ -141,7 +141,7 @@ export function TableCard({
   const rerollsLeft = ALIAS_REROLLS_PER_CHECKIN - table.alias_rerolls;
 
   return (
-    <Card className="mt-3" testID="table-card">
+    <Card testID="table-card">
       <Pressable
         testID="go-to-table"
         accessibilityRole="button"

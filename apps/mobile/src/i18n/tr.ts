@@ -7,6 +7,7 @@ import { TABU } from '@shared/tabu.ts';
 import { SAHTEKAR } from '@shared/sahtekar.ts';
 import { IBRE_AUTO_LOCK_SECONDS, IBRE_CONFIG } from '@shared/ibre.ts';
 import { formatTrMobile } from '@shared/phone.ts';
+import { BIO_MAX } from '@shared/profile.ts';
 import { SAY_CONFIG } from '@shared/sayChallenge.ts';
 import { capitalizeTr, inflectTr } from '@shared/trText.ts';
 import type { VenueKind } from '@shared/venueKind.ts';
@@ -482,6 +483,8 @@ export const tr = {
       '2–24 karakter. Bu adı arkadaşların görür; profilinle göründüğün masalarda ve mekan sohbetinde orada bulunanlar da görür.',
     bioLabel: 'Tanıtım',
     bioHint: (n: number, max: number) => `${n}/${max}`,
+    bioTooLong: (max: number) =>
+      `Tanıtım en fazla ${max} karakter olabilir; kaydetmek için kısalt.`,
     save: 'Kaydet',
     photo: 'Fotoğraf',
     photoChange: 'Fotoğrafı değiştir',
@@ -592,10 +595,11 @@ export const tr = {
     // word "oda" is never shown; the server's rooms stay.
     create: 'Masanı lobiye aç',
     playWithTable: 'Masanla oyna',
-    playWithTableHint:
-      'Şu an lobide masa yok. Masanı lobiye açabilir ya da kendi masanla oynayabilirsin.',
+    // The empty lobby (v45: .empty-card): the title, then what this table can do.
+    lobbyEmptyTitle: 'Açık masa yok',
+    playWithTableHint: 'Masanı lobiye açabilir ya da kendi masanla oynayabilirsin.',
     // The empty lobby while this table is in it.
-    lobbyEmptyOpen: 'Lobide şimdilik başka masa yok. Biri katılmak isterse burada görürsün.',
+    lobbyEmptyOpen: 'Biri katılmak isterse burada görürsün.',
     lobbyLoading: 'Lobi yükleniyor…',
     lobbyError: 'Lobi yüklenemedi.',
     lobbyTitle: 'Açık masalar',
@@ -1096,6 +1100,12 @@ export const tr = {
     memberOf: (leader: string) =>
       `${inflectTr(leader, 'genitive')} tarafındasın. Lobiden yalnızca o çekebilir.`,
     withdraw: 'Lobiden çek',
+    // The top row (v45: .top): the own photo opens Profil.
+    openProfile: 'Profilini aç',
+    // The venue chat card (v45: .linkcard.chat); its dot only with a message in the last 10
+    // minutes (K-12).
+    chatCard: 'Mekana giriş yapan herkes okur ve yazar.',
+    chatActive: 'şu an aktif',
     // The card's head opens the table (K-36): the room if there is one, else the table's games. A
     // screen reader hears the name, the people and the state, then what the head does.
     openTable: 'Masanı aç',
@@ -1325,7 +1335,8 @@ export const tr = {
     not_judge: 'Bu turda hakem diğer masa.',
     display_name_required: 'Önce profilinde bir ad seç.',
     display_name_invalid: 'Ad 2–24 karakter olmalı ve uygun olmayan ifade içermemeli.',
-    bio_invalid: 'Tanıtım en fazla 160 karakter olmalı ve uygun olmayan ifade içermemeli.',
+    bio_invalid: `Tanıtım en fazla ${BIO_MAX} karakter olmalı ve uygun olmayan ifade içermemeli.`,
+    contact_not_allowed: 'Telefon, e-posta, kullanıcı adı ya da bağlantı ekleyemezsin.',
     photo_invalid: 'Fotoğraf yüklenemedi. Başka bir fotoğraf dene.',
     method_not_allowed: 'İstek geçersiz.',
     update_required: 'Uygulamanın yeni sürümünü yüklemen gerekiyor.',

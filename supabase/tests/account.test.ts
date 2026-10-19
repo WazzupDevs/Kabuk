@@ -141,6 +141,11 @@ describe('account/complete-onboarding: sign-up = profile (docs/SPEC_V3.md §3)',
       status: 422,
       body: { error: { code: 'display_name_invalid', message: expect.any(String) } },
     });
+    // K-34: a phone, an e-mail, a username or a link.
+    expect(await call(client, { ...onboarding, displayName: '@elifkaya' })).toEqual({
+      status: 422,
+      body: { error: { code: 'contact_not_allowed', message: expect.any(String) } },
+    });
     expect(
       await sql`select 1 from public.profiles where id = ${await userId(client)}`,
     ).toHaveLength(0);
