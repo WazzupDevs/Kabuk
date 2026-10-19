@@ -6,8 +6,8 @@ import {
   CRASH_MARGIN_MS,
   driverCrashesInLogcat,
   failedStep,
-  flowStart,
   retryReason,
+  SERVE_STOP_LEAD_MS,
   serveStops,
 } from './retry.ts';
 
@@ -207,10 +207,12 @@ describe('E2E retry: the Edge Functions server stopped while the flow ran', () =
         gaveUp: false,
       },
     ]);
-    expect(flowStart(light2.maestroLog)?.time).toBe('16:18:44');
-    expect(failedStep(light2.maestroLog)?.failed.time).toBe('16:20:24');
+    expect(failedStep(light2.maestroLog)).toMatchObject({
+      started: { time: '16:20:03' },
+      failed: { time: '16:20:24' },
+    });
     expect(retryReason(attempt(light2))).toBe(
-      'Edge Functions sunucusu (`functions serve`) akış sürerken durdu: saat 16:20:02, `error running container: exit 135`; düşen adımın düştüğü saat 16:20:24',
+      'Edge Functions sunucusu (`functions serve`) düşen adım sürerken ya da hemen önünde durdu: saat 16:20:02, `error running container: exit 135`; düşen adım: 16:20:03–16:20:24',
     );
   });
 
@@ -227,7 +229,7 @@ describe('E2E retry: the Edge Functions server stopped while the flow ran', () =
         }),
       );
     expect(run('16:20:04.112')).toMatch(
-      /akış sürerken durdu: saat 16:20:04, `error running container: exit 135`/,
+      /hemen önünde durdu: saat 16:20:04, `error running container: exit 135`/,
     );
     expect(run('16:20:24.154')).not.toBeNull(); // as the step failed
     // Seen after the step had failed: the step did not fail because of it.
@@ -242,12 +244,38 @@ describe('E2E retry: the Edge Functions server stopped while the flow ran', () =
           maestroLog: light2.maestroLog,
           functionsLog: [
             '2026-10-19T16:12:42.284553810Z serving the request with supabase/functions/ping',
-            seen('16:19:30.020', 'stopped (container exited 137), starting it again (1 of 2)'),
+            seen('16:19:40.020', 'stopped (container exited 137), starting it again (1 of 2)'),
             restarted,
           ].join('\n'),
         }),
       ),
-    ).toMatch(/saat 16:19:30, `container exited 137`/);
+    ).toMatch(/saat 16:19:40, `container exited 137`/);
+  });
+
+  // #168's under-age step started at 16:20:03.698 (and failed at 16:20:24.154).
+  const stoppedAt = (time: string) =>
+    retryReason(
+      attempt({
+        maestroLog: light2.maestroLog,
+        functionsLog: [
+          '2026-10-19T16:18:46.775142375Z serving the request with supabase/functions/ping',
+          seen(time, 'stopped (container exited 137), starting it again (1 of 2)'),
+          restarted,
+        ].join('\n'),
+      }),
+    );
+
+  it('never retries a real failure that came long after a stop the steps between got over', () => {
+    // The serve stopped 6 s into the flow and came back; 51 steps passed after it (01-login up to
+    // the birth year and gender screens), then the under-age step failed on its own.
+    expect(stoppedAt('16:18:50.000')).toBeNull();
+    expect(stoppedAt('16:19:20.000')).toBeNull();
+  });
+
+  it(`counts a stop from ${SERVE_STOP_LEAD_MS / 1000} s before the failed step started`, () => {
+    expect(stoppedAt('16:19:33.698')).not.toBeNull(); // 30 s before
+    expect(stoppedAt('16:19:33.697')).toBeNull();
+    expect(stoppedAt('16:20:10.000')).not.toBeNull(); // while the step waited
   });
 
   it('never retries for a stop before the flow started', () => {

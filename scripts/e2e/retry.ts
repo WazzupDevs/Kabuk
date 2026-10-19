@@ -29,9 +29,13 @@
 // 18 and 19 Oct). In #168's light-2 (19 Oct) it died at 16:20:02 while it served the app's account
 // call; the next step, waiting for that call's screen, failed at 16:20:24 ("Assertion is false: id:
 // under-age is visible"). The app did nothing wrong: the server's container was gone. So a stop
-// while the flow ran, after its first line and before the failed step failed, runs the shard once
-// more. Unlike the driver's line, the serve leaves no stop line at the end of a run: it runs on
-// until the job ends. A serve that gave up (its third stop) is not coming back: no retry.
+// from SERVE_STOP_LEAD_MS before the failed step started until it failed runs the shard once more:
+// the lead covers the step before it, whose call the failed step waited for (#168: the call went
+// with the tap before it, the stop at 16:20:02, the step started at 16:20:03.698). An earlier stop
+// is not the step's: the serve came back and the steps after it passed; a real failure minutes
+// later, retried and passing, would be hidden (CTO review on #175). Unlike the driver's line, the
+// serve leaves no stop line at the end of a run: it runs on until the job ends. A serve that gave
+// up (its third stop) is not coming back: no retry.
 
 export type Attempt = {
   // Maestro's log of the flow (logs/maestro.log under --test-output-dir).
@@ -59,6 +63,7 @@ const UNREACHABLE = [
 ];
 const DAY_MS = 24 * 60 * 60 * 1000;
 export const CRASH_MARGIN_MS = 5_000;
+export const SERVE_STOP_LEAD_MS = 30_000;
 
 // Why the attempt is run once more (one line, for the job summary), or null.
 export function retryReason(a: Attempt): string | null {
@@ -68,14 +73,12 @@ export function retryReason(a: Attempt): string | null {
     return "Maestro'nun telefondaki sürücüsü akış sürerken çöktü (Maestro'nun cihaz logunda `Crash of app dev.mobile.maestro`)";
   }
   const failed = failedStep(a.maestroLog);
-  const flow = flowStart(a.maestroLog);
-  if (failed && flow) {
-    const stop = stops.find((s) => within(s.ms, flow.ms, failed.failed.ms));
-    if (stop) {
-      return `Edge Functions sunucusu (\`functions serve\`) akış sürerken durdu: saat ${stop.time}, \`${stop.why}\`; düşen adımın düştüğü saat ${failed.failed.time}`;
-    }
-  }
   if (failed) {
+    const from = (failed.started.ms - SERVE_STOP_LEAD_MS + DAY_MS) % DAY_MS;
+    const stop = stops.find((s) => within(s.ms, from, failed.failed.ms));
+    if (stop) {
+      return `Edge Functions sunucusu (\`functions serve\`) düşen adım sürerken ya da hemen önünde durdu: saat ${stop.time}, \`${stop.why}\`; düşen adım: ${failed.started.time}–${failed.failed.time}`;
+    }
     const latest = (failed.started.ms - CRASH_MARGIN_MS + DAY_MS) % DAY_MS;
     const crash = driverCrashesInLogcat(a.logcat).find(
       (at) => at.ms === latest || before(at.ms, latest),
@@ -114,12 +117,6 @@ export function failedStep(maestroLog: string): { started: At; failed: At } | nu
     }
   }
   return null;
-}
-
-// When the flow started: maestro.log's first line.
-export function flowStart(maestroLog: string): At | null {
-  const m = /^(\d\d:\d\d:\d\d\.\d{3}) /.exec(maestroLog);
-  return m?.[1] ? at(m[1]) : null;
 }
 
 export type ServeStop = At & { why: string; gaveUp: boolean };

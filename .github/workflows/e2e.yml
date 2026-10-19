@@ -295,10 +295,10 @@ jobs:
           script: bash scripts/e2e/run-on-emulator.sh
       # One retry per shard, only when the test environment fell over: Maestro's driver on the phone
       # crashed while the flows ran, or could not be reached (scripts/e2e/retry.ts; #151's dark-1
-      # and dark-4), or the Edge Functions server stopped while they ran, before the failed step
-      # failed (#168's light-2). A failing step without that (an assertion, "Element not found") is
-      # never run again: it may be a real failure that comes and goes (#161's check-in race). Nor
-      # after the server's third stop: it is not started again.
+      # and dark-4), or the Edge Functions server stopped during the failed step or at most 30 s
+      # before it started (#168's light-2). A failing step without that (an assertion, "Element not
+      # found") is never run again: it may be a real failure that comes and goes (#161's check-in
+      # race). Nor after the server's third stop: it is not started again.
       - name: Test environment crash? (one retry)
         id: retry
         if: steps.flows.outcome == 'failure'
