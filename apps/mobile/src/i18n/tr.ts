@@ -589,10 +589,11 @@ export const tr = {
     // word "oda" is never shown; the server's rooms stay.
     create: 'Masanı lobiye aç',
     playWithTable: 'Masanla oyna',
-    playWithTableHint:
-      'Şu an lobide masa yok. Masanı lobiye açabilir ya da kendi masanla oynayabilirsin.',
+    // The empty lobby (v45: .empty-card): the title, then what this table can do.
+    lobbyEmptyTitle: 'Açık masa yok',
+    playWithTableHint: 'Masanı lobiye açabilir ya da kendi masanla oynayabilirsin.',
     // The empty lobby while this table is in it.
-    lobbyEmptyOpen: 'Lobide şimdilik başka masa yok. Biri katılmak isterse burada görürsün.',
+    lobbyEmptyOpen: 'Biri katılmak isterse burada görürsün.',
     lobbyLoading: 'Lobi yükleniyor…',
     lobbyError: 'Lobi yüklenemedi.',
     lobbyTitle: 'Açık masalar',
@@ -1089,6 +1090,12 @@ export const tr = {
     memberOf: (leader: string) =>
       `${inflectTr(leader, 'genitive')} tarafındasın. Lobiden yalnızca o çekebilir.`,
     withdraw: 'Lobiden çek',
+    // The top row (v45: .top): the own photo opens Profil.
+    openProfile: 'Profilini aç',
+    // The venue chat card (v45: .linkcard.chat); its dot only with a message in the last 10
+    // minutes (K-12).
+    chatCard: 'Mekana giriş yapan herkes okur ve yazar.',
+    chatActive: 'şu an aktif',
     // The card's head opens the table (K-36): the room if there is one, else the table's games.
     openTable: 'Masanı aç',
     openLobby: 'Lobiye aç',

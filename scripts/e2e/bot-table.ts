@@ -625,6 +625,23 @@ export const actions: Record<string, (args: Json) => Promise<Json>> = {
     return call('rooms', { action: 'respond', requestId: request.id, accept: true });
   },
 
+  // As a leader, declines the request now waiting for it (the requester sees "Masa şu an müsait
+  // değil.", as on a timeout; rule 5).
+  async 'decline-request'() {
+    const request = await retryUntil('a request to decline', async () => {
+      const room = await myRoom();
+      const { data, error } = await me()
+        .from('join_requests')
+        .select('id')
+        .eq('room_id', room.id)
+        .eq('status', 'pending')
+        .limit(1);
+      if (error) throw error;
+      return (data?.[0] as { id: string } | undefined) ?? null;
+    });
+    return call('rooms', { action: 'respond', requestId: request.id, accept: false });
+  },
+
   // "Odadan çık" (docs/SPEC_V3.md §22.D): a member leaves; a leader hands its side to the side's
   // oldest member.
   async 'leave-room'() {

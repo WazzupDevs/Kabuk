@@ -4,9 +4,9 @@ import { View } from 'react-native';
 
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import {
+  drawingFor,
   LOADER_SHOW_AFTER_MS,
   loaderMotion,
-  MARK_MAIN,
   type StateKind,
   stateMotion,
   STILL_MOTION,
@@ -34,10 +34,11 @@ type Props = {
 
 const MARK_SIZE = SPACING[16] + SPACING[8];
 
-function StateMark({ kind }: { kind: StateKind }) {
+// The living mark alone, `size` across (the lobby's empty card: 64).
+export function StateMark({ kind, size = MARK_SIZE }: { kind: StateKind; size?: number }) {
   const reduce = useReduceMotion();
   const active = useLoopActive();
-  const m = MARK_MAIN;
+  const m = drawingFor(size);
   const state = useMemo(() => {
     if (kind === 'loading') {
       return {
@@ -52,7 +53,7 @@ function StateMark({ kind }: { kind: StateKind }) {
   return (
     <MotionMark
       key={`${kind}:${reduce ? 'still' : 'move'}`}
-      size={MARK_SIZE}
+      size={size}
       scene={state.scene}
       motions={state.motions}
       active={active}

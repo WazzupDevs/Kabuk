@@ -111,3 +111,12 @@ export function venueChatChannel(venueId: string): string {
 export const VENUE_CHAT_BROADCAST = 'venue_chat' as const;
 // A reaction moved (§21.3); no data, the reader reads the page again.
 export const VENUE_CHAT_REACTION_BROADCAST = 'venue_chat_reaction' as const;
+
+// The venue chat card's dot (docs/SPEC_V4.md K-12): it lights only while the chat has a message from
+// the last 10 minutes.
+export const VENUE_CHAT_ACTIVE_MINUTES = 10;
+export function venueChatActive(lastMessageAt: string | null, now: number): boolean {
+  if (lastMessageAt === null) return false;
+  const at = Date.parse(lastMessageAt);
+  return Number.isFinite(at) && now - at < VENUE_CHAT_ACTIVE_MINUTES * 60_000;
+}

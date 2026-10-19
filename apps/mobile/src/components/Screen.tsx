@@ -13,11 +13,13 @@ type Props = {
   edges?: readonly Edge[];
   // For a screen that moves its own scroll (the venue goes back to its table card).
   scrollRef?: RefObject<ScrollView | null>;
+  // Children that stay at the top while the rest scrolls under them (the venue's cards).
+  stickyHeaderIndices?: number[];
 };
 
 // A scrolling screen on the canvas with the theme's side padding. Under the tabs the floating tab
 // bar covers the bottom: the content scrolls behind it and ends above it.
-export function Screen({ children, edges, scrollRef }: Props) {
+export function Screen({ children, edges, scrollRef, stickyHeaderIndices }: Props) {
   const { colors, shape } = useTheme();
   const barSpace = useTabBarSpace();
   const safe: readonly Edge[] = barSpace
@@ -39,6 +41,7 @@ export function Screen({ children, edges, scrollRef }: Props) {
             paddingBottom: SPACING[8] + barSpace,
           }}
           keyboardShouldPersistTaps="handled"
+          stickyHeaderIndices={stickyHeaderIndices}
         >
           {children}
         </ScrollView>

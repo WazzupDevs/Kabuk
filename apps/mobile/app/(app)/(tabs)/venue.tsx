@@ -4,14 +4,9 @@ import { roomSeat } from '@shared/teams.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Ionicons } from '@expo/vector-icons';
-import { Alert, type ScrollView, View } from 'react-native';
+import { Alert, type ScrollView, useWindowDimensions, View } from 'react-native';
 
-import { Button } from '@/components/Button';
-import { ListRow } from '@/components/ListRow';
-import { LiveDot } from '@/components/LiveDot';
 import { Screen } from '@/components/Screen';
-import { ScreenHeader } from '@/components/ScreenHeader';
 import { Text } from '@/components/Text';
 import { Loader } from '@/components/Loader';
 import { useVenueSpots } from '@/features/checkin/spots';
@@ -21,6 +16,8 @@ import { OpenLobbySheet } from '@/features/rooms/OpenLobbySheet';
 import { useOpenedTables } from '@/features/rooms/openedTables';
 import { useCurrentRoom, useRoom, useRoomPhones } from '@/features/rooms/queries';
 import { TableCard } from '@/features/rooms/TableCard';
+import { VenueTop } from '@/features/rooms/VenueTop';
+import { VenueChatCard } from '@/features/venueChat/VenueChatCard';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { sessionDurationMinutes } from '@shared/analytics.ts';
@@ -31,10 +28,10 @@ import { useNow } from '@/lib/useNow';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, TOUCH } from '@/theme/tokens';
+import { SPACING } from '@/theme/tokens';
 
-// The venue chat row's live dot beats at a calm pace.
-const VENUE_CHAT_BEAT_MS = 1600;
+// Above this share of the screen the venue's two cards scroll with the page (v45: .pin.unpin).
+const PIN_SHARE = 0.45;
 
 type LobbySheet = { intent: Intent | null; gameTag: Concept | null };
 
@@ -55,7 +52,7 @@ function isConcept(value: unknown): value is Concept {
 // Aktiviteler's "Bu oyunla lobiye aç" lands here with the game (`lobbyGame`, `lobbyIntent`) and
 // opens "Masanı lobiye aç" with them.
 export default function VenueScreen() {
-  const { colors, shape } = useTheme();
+  const { colors } = useTheme();
   const queryClient = useQueryClient();
   const table = useActiveTable();
   const currentRoom = useCurrentRoom(table.data?.id);
@@ -66,6 +63,8 @@ export default function VenueScreen() {
   const [sheet, setSheet] = useState<LobbySheet | null>(null);
   const scroll = useRef<ScrollView>(null);
   const reduceMotion = useReduceMotion();
+  const { height } = useWindowDimensions();
+  const [pinHeight, setPinHeight] = useState<number | null>(null);
 
   const leave = useMutation({
     meta: FEEL_ERROR,
@@ -137,86 +136,73 @@ export default function VenueScreen() {
     ]);
   }
 
-  return (
-    <Screen edges={['top']} scrollRef={scroll}>
-      {/* The room's changes reach the card while it is on screen (Realtime and the status check). */}
-      {room ? <RoomWatch roomId={room.id} /> : null}
-      {/* Aşama 8 · Saha: no bell here; leaving the table is the small red button on the right. */}
-      <ScreenHeader
-        eyebrow={tr.venue.here}
-        eyebrowIcon="location-outline"
-        title={table.data.venue?.name ?? ''}
-        trailing={
-          <Button
-            size="sm"
-            variant="danger"
-            testID="venue-leave"
-            label={tr.venue.leave}
-            onPress={confirmLeave}
-            loading={leave.isPending}
-          />
-        }
-      />
-      {leave.isError ? (
-        <Text variant="fine" tone="danger">
-          {errorMessage(leave.error)}
-        </Text>
-      ) : null}
-      <TableCard
-        table={table.data}
-        room={room}
-        state={state}
-        seat={seat}
-        minutesLeft={minutesLeft}
-        venueHasSpots={venueHasSpots}
-        // Unknown until read: the plain "Birleşti" rather than a line that may be gone a moment later.
-        opened={openedIds === null || (!!room && openedIds.includes(room.id))}
-        onOpenLobby={() => setSheet({ intent: null, gameTag: null })}
-      />
-      <View className="mt-4">
-        <ListRow
-          card
-          testID="venue-chat-open"
-          title={tr.venueChat.open}
-          meta={tr.venueChat.title(table.data.venue?.name ?? '')}
-          onPress={() => router.push('/venue-chat')}
-          trailing={<LiveDot tone="success" periodMs={VENUE_CHAT_BEAT_MS} />}
-          leading={
-            <View
-              className="items-center justify-center"
-              style={{
-                width: TOUCH.button,
-                height: TOUCH.button,
-                borderRadius: shape.radius.pill,
-                backgroundColor: colors.signal,
-              }}
-            >
-              <Ionicons name="chatbubbles-outline" size={ICON.lg} color={colors.onSignal} />
-            </View>
-          }
-        />
-      </View>
+  // The two cards stay at the top while the lobby scrolls under them (v45: .pin), unless they would
+  // take close to half the screen (a small phone, the largest text): then they scroll too.
+  const pinned = pinHeight !== null && pinHeight < height * PIN_SHARE;
 
-      <Lobby
-        venueId={table.data.venue_id}
-        sessionId={table.data.id}
-        alias={table.data.alias}
-        since={table.data.created_at}
-        mySpotId={table.data.spot_id}
-        venueHasSpots={venueHasSpots}
-        state={state}
-      />
-      {sheet && state === 'off' ? (
-        <OpenLobbySheet
-          onClose={() => setSheet(null)}
-          // Opened from further down the screen, the card's new "Lobide açık" is scrolled away.
-          onOpened={() => scroll.current?.scrollTo({ y: 0, animated: !reduceMotion })}
-          alias={table.data.alias}
-          venueId={table.data.venue_id}
-          intent={sheet.intent}
-          gameTag={sheet.gameTag}
+  return (
+    <Screen edges={['top']} scrollRef={scroll} stickyHeaderIndices={pinned ? [1] : undefined}>
+      <View className="gap-1">
+        {/* The room's changes reach the card while it is on screen (Realtime and the status check). */}
+        {room ? <RoomWatch roomId={room.id} /> : null}
+        <VenueTop
+          venueName={table.data.venue?.name ?? ''}
+          onLeave={confirmLeave}
+          leaving={leave.isPending}
         />
-      ) : null}
+        {leave.isError ? (
+          <Text variant="fine" tone="danger">
+            {errorMessage(leave.error)}
+          </Text>
+        ) : null}
+      </View>
+      <View
+        onLayout={(e) => setPinHeight(e.nativeEvent.layout.height)}
+        style={{
+          paddingTop: SPACING[2],
+          paddingBottom: SPACING[1.5],
+          backgroundColor: colors.canvas,
+        }}
+        testID="venue-pin"
+      >
+        <View className="gap-3">
+          <VenueChatCard venueId={table.data.venue_id} sessionId={table.data.id} />
+          <TableCard
+            table={table.data}
+            room={room}
+            state={state}
+            seat={seat}
+            minutesLeft={minutesLeft}
+            venueHasSpots={venueHasSpots}
+            // Unknown until read: the plain "Birleşti" rather than a line that may be gone a moment
+            // later.
+            opened={openedIds === null || (!!room && openedIds.includes(room.id))}
+            onOpenLobby={() => setSheet({ intent: null, gameTag: null })}
+          />
+        </View>
+      </View>
+      <View>
+        <Lobby
+          venueId={table.data.venue_id}
+          sessionId={table.data.id}
+          alias={table.data.alias}
+          since={table.data.created_at}
+          mySpotId={table.data.spot_id}
+          venueHasSpots={venueHasSpots}
+          state={state}
+        />
+        {sheet && state === 'off' ? (
+          <OpenLobbySheet
+            onClose={() => setSheet(null)}
+            // Opened from further down the screen, the card's new "Lobide açık" is scrolled away.
+            onOpened={() => scroll.current?.scrollTo({ y: 0, animated: !reduceMotion })}
+            alias={table.data.alias}
+            venueId={table.data.venue_id}
+            intent={sheet.intent}
+            gameTag={sheet.gameTag}
+          />
+        ) : null}
+      </View>
     </Screen>
   );
 }

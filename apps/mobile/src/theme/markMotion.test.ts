@@ -10,6 +10,8 @@ import {
   MARK_MAIN,
   MARK_SMALL,
   MARK_WINDOW,
+  MISS_MS,
+  missMotion,
   sampleCurve,
   squirclePath,
   stateMotion,
@@ -134,6 +136,31 @@ describe('states', () => {
       const bx = m?.channels.bX?.(t) ?? 0;
       // B's left edge never enters A.
       expect(scene.dx + bx - ax).toBeGreaterThanOrEqual(MARK_MAIN.w - 1e-6);
+    }
+  });
+});
+
+describe('miss (a request that did not meet)', () => {
+  it('collides, never overlaps, and fades out by its end', () => {
+    const { scene, motion } = missMotion(MARK_SMALL, false);
+    let touched = false;
+    for (let t = 0; t <= MISS_MS; t += 5) {
+      const gap = scene.dx + (motion.channels.bX?.(t) ?? 0) - (motion.channels.aX?.(t) ?? 0);
+      // B's left edge never enters A.
+      expect(gap).toBeGreaterThanOrEqual(MARK_SMALL.w - 1e-6);
+      if (gap - MARK_SMALL.w < 1) touched = true;
+    }
+    expect(touched).toBe(true);
+    expect(motion.channels.opacity?.(0)).toBe(0);
+    expect(motion.channels.opacity?.(MISS_MS)).toBeCloseTo(0, 6);
+    expect(motion.channels.opacity?.(600)).toBe(1);
+  });
+
+  it('with reduce motion only fades', () => {
+    const { motion } = missMotion(MARK_SMALL, true);
+    for (let t = 0; t <= MISS_MS; t += 20) {
+      expect(motion.channels.aX?.(t) ?? 0).toBeCloseTo(0, 6);
+      expect(motion.channels.bX?.(t) ?? 0).toBeCloseTo(0, 6);
     }
   });
 });

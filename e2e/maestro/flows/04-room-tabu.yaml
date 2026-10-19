@@ -47,6 +47,33 @@ appId: app.kabuk.mobile
       id: request-join
     timeout: 15000
 - takeScreenshot: 12c-lobby-same-spot
+# "Katıl" to the bot's table: the request waits in its row (Kesişme and the seconds left); the bot
+# declines and the row says "Masa şu an müsait değil." (the miss), then "Katıl" is back.
+- tapOn:
+    id: request-join
+- scrollUntilVisible:
+    element:
+      id: request-send
+    centerElement: true
+    timeout: 10000
+- tapOn:
+    id: request-send
+- extendedWaitUntil:
+    visible: 'İsteğin gönderildi\. Yanıt bekleniyor \(\d+ sn\)\.'
+    timeout: 15000
+- takeScreenshot: 12d-lobby-request-waiting
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: decline-request
+- extendedWaitUntil:
+    visible: Masa şu an müsait değil.
+    timeout: 20000
+- takeScreenshot: 12e-lobby-request-missed
+- extendedWaitUntil:
+    visible:
+      id: request-join
+    timeout: 10000
 # The bot leaves the lobby; this phone opens its table to it at the same spot and the bot asks to
 # join.
 - runScript:
