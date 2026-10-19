@@ -53,21 +53,28 @@ export default function HeadcountScreen() {
         requestId: keyFor(count),
       });
     },
-    onSuccess: async (result, count) => {
+    // To "Masan hazır" first, then the draft goes: cleared while this screen was still up, it sent
+    // the phone to Keşfet instead. The profile is read again without holding the way.
+    onSuccess: (result, count) => {
       track('check_in', { headcount: count });
-      clear();
-      await queryClient.invalidateQueries({ queryKey: ['profile'] });
       router.replace({ pathname: '/checkin/done', params: { alias: result.alias } });
+      clear();
+      void queryClient.invalidateQueries({ queryKey: ['profile'] });
     },
   });
 
-  if (!venue) return <Redirect href="/explore" />;
-  if (!position) return <Redirect href="/checkin" />;
+  // A check-in that went through is on its way out: the cleared draft sends it nowhere else.
+  if (!checkIn.isSuccess) {
+    if (!venue) return <Redirect href="/explore" />;
+    if (!position) return <Redirect href="/checkin" />;
+  }
 
   return (
     <Screen>
       <ScreenHeader
-        eyebrow={spot ? tr.checkin.venueAtSpot(venue.name, spot.name) : venue.name}
+        eyebrow={
+          venue ? (spot ? tr.checkin.venueAtSpot(venue.name, spot.name) : venue.name) : undefined
+        }
         eyebrowIcon="location-outline"
         title={tr.checkin.headcountTitle}
         subtitle={tr.checkin.headcountHint}
