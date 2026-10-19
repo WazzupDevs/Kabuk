@@ -1,206 +1,348 @@
-import type { Concept, Intent } from '@shared/rooms.ts';
-import { hasActiveTable } from '@shared/navigation.ts';
+import { groupHistory, historyDay, historyResult } from '@shared/activities.ts';
+import { explorePlace, todayEvents } from '@shared/explore.ts';
 import { router } from 'expo-router';
-import { useState } from 'react';
-import { View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { Pressable, useWindowDimensions, View } from 'react-native';
 
-import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
-import { ListRow } from '@/components/ListRow';
+import { EmptyState } from '@/components/EmptyState';
+import { GameDisc } from '@/components/Glyph';
+import { Icon } from '@/components/Icon';
+import { useLoaderHold } from '@/components/Loader';
 import { Rise } from '@/components/motion';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { Segmented } from '@/components/Segmented';
 import { Sheet } from '@/components/Sheet';
 import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
-import { type RecentGame, useRecentGames } from '@/features/activities/useRecentGames';
-import { useActiveTable } from '@/features/checkin/useActiveTable';
+import { EventCard } from '@/features/activities/EventCard';
+import { useGameResults } from '@/features/activities/useGameResults';
+import { useExplorePlace } from '@/features/explore/placeStore';
+import { useCityVenues } from '@/features/explore/useExploreVenues';
+import { HistoryActions, useHistoryActions } from '@/features/friends/historyActions';
+import { useHistoryFriends, usePlayHistory } from '@/features/friends/queries';
+import { GAME_GLYPH } from '@/features/games/GameCard';
 import { NotificationsBell } from '@/features/notifications/Bell';
-import { GAME_ORDER, GameCard, gameCardState, GameCell, GameGrid } from '@/features/games/GameCard';
-import { soloRoomHref, useCreateSolo } from '@/features/rooms/useCreateSolo';
 import { errorMessage } from '@/i18n/errors';
-import { tr } from '@/i18n/tr';
+import { type HistoryConcept, historyConcept, tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
+import { useTheme } from '@/theme/ThemeProvider';
+import { NARROW_SCREEN, SPACING } from '@/theme/tokens';
 
-type Game = Concept;
-type Mode = 'solo' | 'room';
+type Tab = 'events' | 'history';
 
-// The intent "Bu oyunla lobiye aç" opens "Masanı lobiye aç" with, beside the game's tag (the table
-// still starts without a game; docs/SPEC_V3.md §23.C).
-const INTENT_OF: Record<Game, Intent> = {
-  tabu: 'game',
-  sohbet: 'chat',
-  sahtekar: 'game',
-  harf: 'game',
-  sarki: 'game',
-  ibre: 'game',
-};
+// v44: .hthumb, a record's picture.
+const THUMB = SPACING[12] + SPACING[1];
 
-// Aktiviteler, the game hub (docs/SPEC_V3.md §18.3; canvas: Aşama 8 · Saha → Oyun listesi): the
-// games as cards under "Tek telefonla" (the one-table room of the venue screen) and "İki masayla"
-// ("Bu oyunla lobiye aç": the Mekan tab with "Masanı lobiye aç" open, the game's tag chosen). A card opens the game's sheet: what it is, how it is played and the action,
-// or "Oynamak için mekana gir" away from a venue. Below, the caller's own recent games; the section
-// is left out when there are none. No new game or content. At a venue, a "Tek telefonla" game the
-// table's headcount is too few for is faded with its reason (pure/gameCatalog.ts) and does not open;
-// "İki masayla" is never faded here: the other table, and so the total, is not known before a room.
-// The server checks the count anyway (not_enough_players).
+// Aktiviteler (docs/SPEC_V4.md §4.C, K-15; v44: .acts): "Aktiviteler" lists today's events at the
+// venues of Keşfet's city (K-38; the district is Keşfet's alone), earliest first, each opening the
+// venue's page (K-43); no campaigns and no "ilgileniyorum". "Geçmiş" is the caller's play history
+// under day headings, each record with its game's result; a record opens what Bildirimler offers
+// for it ("Arkadaş ekle" or "İstek gönder", "Mesaj" once friends, "Diğer"). Nothing is sorted by
+// location (rule 6).
 export default function ActivitiesScreen() {
-  const table = useActiveTable();
-  const now = useNow(30_000);
-  const atVenue = hasActiveTable(table.data, now);
-  const solo = useCreateSolo();
-  const recent = useRecentGames();
-  const [open, setOpen] = useState<{ game: Game; mode: Mode } | null>(null);
-  const headcount = atVenue ? table.data?.headcount : undefined;
-  const cardState = (game: Game, mode: Mode) =>
-    mode === 'solo' && headcount !== undefined
-      ? gameCardState(game, 'onePhone', headcount)
-      : { disabled: false };
-
-  const section = (mode: Mode) => (
-    <View className="gap-2.5">
-      <View className="flex-row items-baseline justify-between gap-3 px-1">
-        <Text variant="heading" accessibilityRole="header">
-          {mode === 'solo' ? tr.activities.oneTable : tr.activities.twoTables}
-        </Text>
-        <Text variant="fine">
-          {mode === 'solo' ? tr.rooms.playWithTable : tr.activities.createWith}
-        </Text>
-      </View>
-      <Card>
-        <GameGrid>
-          {GAME_ORDER.map((game) => {
-            const card = cardState(game, mode);
-            return (
-              <GameCell key={game}>
-                <GameCard
-                  concept={game}
-                  testID={`activities-${mode}-card-${game}`}
-                  onPress={() => setOpen({ game, mode })}
-                  disabled={card.disabled}
-                  reason={card.reason}
-                />
-              </GameCell>
-            );
-          })}
-        </GameGrid>
-      </Card>
-    </View>
-  );
-
+  const [tab, setTab] = useState<Tab>('events');
+  const now = useNow(60_000);
   return (
     <Screen edges={['top']}>
       <ScreenHeader title={tr.tabs.activities} trailing={<NotificationsBell />} />
-
-      <View className="mt-3 gap-5">
-        <Rise>{section('solo')}</Rise>
-        <Rise index={1}>{section('room')}</Rise>
-        {solo.isError ? (
-          <Text variant="fine" tone="danger">
-            {errorMessage(solo.error)}
-          </Text>
-        ) : null}
-
-        {recent.data && recent.data.length > 0 ? (
-          <View className="mt-2 gap-3">
-            <Text variant="heading" accessibilityRole="header">
-              {tr.activities.recent}
-            </Text>
-            {recent.data.map((g) => (
-              <RecentRow key={g.id} game={g} />
-            ))}
-          </View>
-        ) : null}
+      <View className="mt-3">
+        <Segmented<Tab>
+          fill
+          value={tab}
+          onChange={setTab}
+          accessibilityLabel={tr.activities.tabs}
+          options={[
+            { value: 'events', label: tr.activities.events, testID: 'activities-tab-events' },
+            { value: 'history', label: tr.activities.history, testID: 'activities-tab-history' },
+          ]}
+        />
       </View>
+      {tab === 'events' ? <Events now={now} /> : <History now={now} />}
+    </Screen>
+  );
+}
+
+function Events({ now }: { now: number }) {
+  const { venues, cities, listed } = useCityVenues();
+  const saved = useExplorePlace((s) => s.saved);
+  const loadPlace = useExplorePlace((s) => s.load);
+  useEffect(loadPlace, [loadPlace]);
+  const place = useMemo(() => explorePlace(saved, listed), [saved, listed]);
+  const events = useMemo(
+    () =>
+      place
+        ? todayEvents(
+            listed.filter((v) => v.city === place.city),
+            now,
+          )
+        : [],
+    [listed, place, now],
+  );
+  const pending = venues.isPending || cities.isPending;
+  const loading = useLoaderHold(pending);
+
+  if (venues.isError || cities.isError) {
+    return (
+      <EmptyState
+        icon="cloud-offline-outline"
+        body={errorMessage(venues.error ?? cities.error)}
+        action={{
+          label: tr.common.retry,
+          onPress: () => {
+            void venues.refetch();
+            void cities.refetch();
+          },
+          loading: venues.isRefetching || cities.isRefetching,
+        }}
+      />
+    );
+  }
+  if (pending || loading) {
+    return (
+      <View className="mt-12">
+        <EmptyState kind="loading" body={tr.common.loading} />
+      </View>
+    );
+  }
+  return (
+    <View className="mt-2">
+      {place ? (
+        <Text variant="label" tone="muted" className="mx-0.5 mb-2.5 mt-2">
+          {tr.activities.fromVenues(place.city)}
+        </Text>
+      ) : null}
+      {events.length === 0 ? (
+        <View testID="activities-no-events" className="mt-6">
+          <EmptyState
+            kind="empty"
+            title={tr.activities.noEvents}
+            body={tr.activities.noEventsHint}
+          />
+        </View>
+      ) : (
+        <View style={{ gap: SPACING[3] }}>
+          {events.map(({ venue, event }, i) => (
+            <Rise key={`${venue.id}-${event.startsAt}-${event.title}`} index={i}>
+              <EventCard
+                venue={venue}
+                event={event}
+                now={now}
+                onPress={() =>
+                  router.navigate({ pathname: '/explore/[venueId]', params: { venueId: venue.id } })
+                }
+              />
+            </Rise>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+}
+
+function History({ now }: { now: number }) {
+  const history = usePlayHistory();
+  const friends = useHistoryFriends();
+  const results = useGameResults();
+  const { act, openMenu, sheets } = useHistoryActions();
+  const [open, setOpen] = useState<string | null>(null);
+  // Side by side the action and "Diğer" do not fit at 320 dp with the largest text.
+  const { width, fontScale } = useWindowDimensions();
+  const narrow = width < NARROW_SCREEN * Math.max(1, fontScale);
+  const loading = useLoaderHold(history.isPending);
+  const today = new Date(now);
+
+  if (history.isError) {
+    return (
+      <EmptyState
+        icon="cloud-offline-outline"
+        body={errorMessage(history.error)}
+        action={{
+          label: tr.common.retry,
+          onPress: () => void history.refetch(),
+          loading: history.isRefetching,
+        }}
+      />
+    );
+  }
+  if (history.isPending || loading) {
+    return (
+      <View className="mt-12">
+        <EmptyState kind="loading" body={tr.common.loading} />
+      </View>
+    );
+  }
+  if (history.data.length === 0) {
+    return (
+      <View testID="activities-no-history" className="flex-1 justify-center">
+        <EmptyState kind="empty" body={tr.friends.noHistory} />
+      </View>
+    );
+  }
+
+  const record = history.data.find((h) => h.id === open) ?? null;
+  return (
+    <View className="mt-3">
+      <Card flush>
+        <View style={{ paddingTop: SPACING[1], paddingBottom: SPACING[2] }}>
+          {groupHistory(history.data, today).map((group) => (
+            <View key={group.day}>
+              <View
+                style={{
+                  paddingHorizontal: SPACING[4],
+                  paddingTop: SPACING[3],
+                  paddingBottom: SPACING[1],
+                }}
+              >
+                <Text variant="label" tone="muted" accessibilityRole="header">
+                  {tr.activities.days[group.day]}
+                </Text>
+              </View>
+              {group.rows.map((h, i) => {
+                const result = historyResult(h, results.data ?? []);
+                return (
+                  <Rise key={h.id} index={i}>
+                    <HistoryRow
+                      concept={historyConcept(h.concept)}
+                      alias={h.other_alias}
+                      when={tr.activities.when(h.played_at, historyDay(h.played_at, today))}
+                      result={result ? tr.activities.results[result] : null}
+                      variant={result ?? undefined}
+                      onPress={() => setOpen(h.id)}
+                    />
+                  </Rise>
+                );
+              })}
+            </View>
+          ))}
+        </View>
+      </Card>
 
       <Sheet
-        visible={open !== null}
+        visible={record !== null}
         onClose={() => setOpen(null)}
-        title={open ? tr.concepts[open.game] : ''}
+        title={
+          record
+            ? tr.friends.historyRow(
+                record.other_alias,
+                historyConcept(record.concept),
+                record.played_at,
+              )
+            : ''
+        }
       >
-        {open ? (
-          <View className="gap-2.5">
-            <Text>{tr.activities[open.game].body}</Text>
-            <Text variant="label">{tr.activities.howTo}</Text>
-            {tr.activities[open.game].steps.map((step) => (
-              <Text key={step} variant="fine">
-                {step}
+        {record ? (
+          <View>
+            <Text variant="fine">{tr.friends.people(record.other_headcount)}</Text>
+            <HistoryActions
+              record={record}
+              friend={friends.data?.get(record.id)}
+              act={act}
+              narrow={narrow}
+              onMore={() => {
+                setOpen(null);
+                openMenu(record.id);
+              }}
+            />
+            {act.isError ? (
+              <Text variant="fine" tone="danger" className="mt-2">
+                {errorMessage(act.error)}
               </Text>
-            ))}
+            ) : null}
           </View>
-        ) : null}
-        {open && !atVenue ? (
-          <Button
-            variant="neutral"
-            label={tr.activities.goToVenue}
-            onPress={() => {
-              setOpen(null);
-              router.navigate('/explore');
-            }}
-            testID={`activities-venue-${open.game}`}
-          />
-        ) : open?.mode === 'solo' ? (
-          <Button
-            variant="secondary"
-            label={tr.rooms.playWithTable}
-            loading={solo.isPending}
-            disabled={solo.isPending}
-            onPress={() => {
-              setOpen(null);
-              solo.mutate(undefined, { onSuccess: (made) => router.push(soloRoomHref(made)) });
-            }}
-            testID={`activities-solo-${open.game}`}
-          />
-        ) : open ? (
-          <Button
-            label={tr.activities.createWith}
-            onPress={() => {
-              const game = open.game;
-              setOpen(null);
-              router.navigate({
-                pathname: '/venue',
-                params: { lobbyGame: game, lobbyIntent: INTENT_OF[game] },
-              });
-            }}
-            testID={`activities-create-${open.game}`}
-          />
         ) : null}
         <Button
           variant="ghost"
           label={tr.common.close}
           onPress={() => setOpen(null)}
-          testID="activities-sheet-close"
+          testID="history-sheet-close"
         />
       </Sheet>
-    </Screen>
+      {sheets}
+    </View>
   );
 }
 
-function RecentRow({ game }: { game: RecentGame }) {
-  const label = tr.concepts[game.concept];
+// A record (v44: .hrow): the game's picture, its name and the time, the other table and the result.
+function HistoryRow({
+  concept,
+  alias,
+  when,
+  result,
+  variant,
+  onPress,
+}: {
+  concept: HistoryConcept;
+  alias: string;
+  when: string;
+  result: string | null;
+  variant: 'won' | 'lost' | 'done' | undefined;
+  onPress: () => void;
+}) {
+  const { colors } = useTheme();
+  const game = tr.activities.game(concept);
   return (
-    <ListRow
-      card
-      title={label}
-      meta={tr.activities.recentRow(game.otherAlias, game.completedAt)}
-      leading={
-        game.otherAlias ? (
-          <Avatar kind="table" alias={game.otherAlias} size="lg" />
-        ) : (
-          <Avatar kind="table" alias={label} size="lg" />
-        )
-      }
-      trailing={
-        game.score !== null ? (
-          <View accessible accessibilityLabel={game.won ? tr.activities.won : undefined}>
-            <Tag
-              variant={game.won ? 'accent' : 'neutral'}
-              label={tr.activities.score(game.score)}
-            />
+    <Pressable
+      testID={`history-row-${alias}`}
+      accessibilityRole="button"
+      accessibilityLabel={tr.activities.rowLabel(game, alias, when, result)}
+      onPress={onPress}
+    >
+      {({ pressed }) => (
+        <View
+          className="flex-row items-center"
+          style={{
+            gap: SPACING[3],
+            minHeight: SPACING[16] + SPACING[2],
+            paddingVertical: SPACING[2],
+            paddingHorizontal: SPACING[4],
+            backgroundColor: pressed ? colors.canvas : undefined,
+          }}
+        >
+          <Thumb concept={concept} />
+          <View className="flex-1" style={{ gap: SPACING[0.5] }}>
+            <View className="flex-row items-baseline justify-between" style={{ gap: SPACING[2] }}>
+              <Text variant="bodyStrong" className="shrink">
+                {game}
+              </Text>
+              <Text variant="fine" tone="muted">
+                {when}
+              </Text>
+            </View>
+            <View
+              className="flex-row flex-wrap items-center justify-between"
+              style={{ gap: SPACING[2] }}
+            >
+              <Text variant="fine" tone="muted" className="shrink">
+                {tr.activities.withTable(alias)}
+              </Text>
+              {result && variant ? <Tag variant={variant} label={result} /> : null}
+            </View>
           </View>
-        ) : undefined
-      }
-    />
+        </View>
+      )}
+    </Pressable>
+  );
+}
+
+// The game's disc; a chat without a game has the speech bubbles.
+function Thumb({ concept }: { concept: HistoryConcept }) {
+  const { colors, shape } = useTheme();
+  if (concept !== 'chat') return <GameDisc name={GAME_GLYPH[concept]} size={THUMB} />;
+  return (
+    <View
+      accessible={false}
+      className="items-center justify-center"
+      style={{
+        width: THUMB,
+        height: THUMB,
+        borderRadius: shape.radius.pill,
+        backgroundColor: colors.surface2,
+      }}
+    >
+      <Icon name="chatbubbles-outline" tone="muted" />
+    </View>
   );
 }

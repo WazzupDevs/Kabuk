@@ -65,6 +65,8 @@ const PAIRS: readonly Pair[] = [
   // The second accent on quiet fills (unread counts), danger on a note.
   ['violet', 'surface2', AA_TEXT],
   ['danger', 'surface2', AA_TEXT],
+  // Geçmiş: a won game's chip (Tag `won`).
+  ['text', 'successSoft', AA_TEXT],
   // The intent chip and an accent link inside it.
   ['text', 'calm', AA_TEXT],
   ['accent', 'calm', AA_TEXT],

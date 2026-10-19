@@ -14,7 +14,9 @@ export type TagVariant =
   | 'event'
   | 'neutral' // headcount, participation, badges
   | 'profiled'
-  | 'accent' // a won game
+  | 'won' // Geçmiş: a game's result (v44: .rchip)
+  | 'lost'
+  | 'done'
   | 'game' // table intent "Oyun"
   | 'chat' // table intent "Sohbet"
   | 'leader'; // a side's leader in "Masadakiler"
@@ -33,7 +35,9 @@ export function Tag({ label, variant = 'neutral', icon }: Props) {
     event: { bg: colors.event, fg: colors.onEvent },
     neutral: { bg: colors.surface2, fg: colors.text },
     profiled: { bg: colors.violet, fg: colors.onViolet },
-    accent: { bg: colors.accent, fg: colors.onAccent },
+    won: { bg: colors.successSoft, fg: colors.text },
+    lost: { bg: colors.lively, fg: colors.onLively },
+    done: { bg: colors.surface2, fg: colors.muted },
     game: { bg: colors.calm, fg: colors.onCalm },
     chat: { bg: colors.calm, fg: colors.onCalm },
     leader: { bg: colors.text, fg: colors.canvas },

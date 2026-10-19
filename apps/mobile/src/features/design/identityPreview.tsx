@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { View } from 'react-native';
 
 import { BarIcon, BellIcon } from '@/components/BarIcon';
 import { CapsuleAvatar } from '@/components/CapsuleAvatar';
 import { ChatBubble } from '@/components/ChatBubble';
 import { ChatWallpaper } from '@/components/ChatWallpaper';
+import { EventCard } from '@/features/activities/EventCard';
 import { tr } from '@/i18n/tr';
 import type { BarIconKind } from '@/theme/barIcons';
 import { CAPSULE_KEYS } from '@/theme/capsules';
@@ -20,6 +22,10 @@ const WALL = 260;
 export function IdentitySet() {
   const { colors, shape } = useTheme();
   const t = tr.design.identity;
+  // Made-up events: one running for another hour, one starting in three.
+  const [now] = useState(() => Date.now());
+  const hour = 60 * 60 * 1000;
+  const iso = (ms: number) => new Date(ms).toISOString();
   return (
     <View className="gap-4">
       <PreviewBlock title={t.capsules}>
@@ -39,6 +45,27 @@ export function IdentitySet() {
           <BellIcon />
           <BellIcon unread={3} />
           <BellIcon unread={120} />
+        </View>
+      </PreviewBlock>
+
+      <PreviewBlock title={t.covers}>
+        <View className="gap-3" testID="preview-identity-covers">
+          <EventCard
+            venue={{ name: t.sampleCafe, kind: 'cafe' }}
+            event={{ title: t.sampleNow, startsAt: iso(now - hour), endsAt: iso(now + hour) }}
+            now={now}
+            onPress={() => undefined}
+          />
+          <EventCard
+            venue={{ name: t.sampleCampus, kind: 'campus' }}
+            event={{
+              title: t.sampleLater,
+              startsAt: iso(now + 3 * hour),
+              endsAt: iso(now + 6 * hour),
+            }}
+            now={now}
+            onPress={() => undefined}
+          />
         </View>
       </PreviewBlock>
 

@@ -177,3 +177,20 @@ export function filterVenues<
       (q === '' || normalize(v.name).replace(/\s+/g, ' ').includes(q)),
   );
 }
+
+// Aktiviteler's events (docs/SPEC_V4.md K-15, K-37): today's only, running or still to start, each
+// with its venue, earliest first.
+export function todayEvents<
+  E extends ExploreTimes & { title: string },
+  V extends { name: string; events: readonly E[] },
+>(venues: readonly V[], now: number): { venue: V; event: E }[] {
+  return venues
+    .flatMap((venue) =>
+      venue.events.filter((e) => hasEventToday([e], now)).map((event) => ({ venue, event })),
+    )
+    .sort(
+      (a, b) =>
+        Date.parse(a.event.startsAt) - Date.parse(b.event.startsAt) ||
+        a.venue.name.localeCompare(b.venue.name, 'tr'),
+    );
+}
