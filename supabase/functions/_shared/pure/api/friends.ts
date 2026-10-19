@@ -13,7 +13,11 @@ export type FriendsRequest =
   // Requests from the venue chat waiting for the caller: the sender's name, age and photo.
   | { action: 'incoming' }
   | { action: 'respond'; requestId: string; accept: boolean }
+  // The silent "Arkadaş ekle" (docs/SPEC_V3.md §23.G); the answer says whether the pair are friends
+  // now (docs/SPEC_V4.md K-70). withdraw-add takes it back (K-67); after a match it is ignored and
+  // the answer says so. The other side sees neither.
   | { action: 'add-from-room'; historyId: string }
+  | { action: 'withdraw-add'; historyId: string }
   | { action: 'remove'; publicId: string; report?: ReportReason };
 
 export type Friend = {
@@ -40,6 +44,7 @@ export type VenueChatIncoming = {
 };
 export type FriendsIncomingResponse = { requests: VenueChatIncoming[] };
 export type FriendsOkResponse = { ok: true };
+export type FriendsAddResponse = { ok: true; friends: boolean };
 
 export type DmRequest =
   // replyTo: a message of the same conversation (docs/SPEC_V3.md §21.1).

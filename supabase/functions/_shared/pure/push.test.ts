@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   isExpoPushToken,
   dmPush,
+  friendMatchPush,
   friendRequestPush,
   joinAcceptedPush,
   joinRequestPush,
@@ -37,6 +38,12 @@ describe('push texts', () => {
       title: 'skall',
       body: 'Yeni bir arkadaşlık isteğin var',
       target: 'notifications',
+    });
+    // K-70: no venue, no table, no name.
+    expect(friendMatchPush()).toEqual({
+      title: 'skall',
+      body: 'Masada eklediğin biriyle arkadaş oldunuz',
+      target: 'messages',
     });
   });
 });

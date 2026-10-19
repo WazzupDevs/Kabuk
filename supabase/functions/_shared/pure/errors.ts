@@ -51,6 +51,7 @@ export type ErrorCode =
   | 'identity_mismatch'
   | 'identity_switch_used'
   | 'nick_refresh_too_soon'
+  | 'icon_taken'
   | 'wrong_side'
   | 'not_leader'
   | 'display_name_required'
@@ -142,6 +143,8 @@ export const DOMAIN_ERROR_CODES: readonly ErrorCode[] = [
   'identity_mismatch',
   'identity_switch_used',
   'nick_refresh_too_soon',
+  // A table's icon (docs/SPEC_V4.md §4.E, K-45): another open or running table at the venue has it.
+  'icon_taken',
   // Teams (§22.B, §22.D): an account goes back only to its side; only a leader ends the room.
   'wrong_side',
   'not_leader',

@@ -54,6 +54,7 @@ const STATUS: Record<ErrorCode, number> = {
   identity_mismatch: 409,
   identity_switch_used: 409,
   nick_refresh_too_soon: 409,
+  icon_taken: 409,
   wrong_side: 409,
   not_leader: 403,
   display_name_required: 409,
