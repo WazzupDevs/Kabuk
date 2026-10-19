@@ -69,12 +69,13 @@ export default function ProfileScreen() {
       ) : (
         <View className="mt-2 gap-4">
           <ProfileHead profile={view.data}>
-            {/* v45: .pbtns, two quiet capsules; "Arkadaşlar" with the first friends' photos. */}
+            {/* v45: .pbtns, two quiet capsules in v45's 14 px (the small size, so "Profili düzenle"
+                fits half a row from 360 dp); "Arkadaşlar" with the first friends' photos. */}
             <View className="flex-row gap-2.5">
               <View className="flex-1">
                 <Button
                   variant="neutral"
-                  tight
+                  size="sm"
                   icon="people-outline"
                   leading={someFriends ? <FriendStack friends={someFriends} /> : undefined}
                   label={tr.profile.friends}
@@ -88,7 +89,7 @@ export default function ProfileScreen() {
               <View className="flex-1">
                 <Button
                   variant="neutral"
-                  tight
+                  size="sm"
                   icon={hasName ? 'create-outline' : 'add'}
                   label={hasName ? tr.profile.edit : tr.profile.addName}
                   onPress={() => router.push('/profile/edit')}

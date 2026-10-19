@@ -59,10 +59,14 @@ export function ScreenHeader({
           className="flex-1"
         >
           {title}
+          {/* The space in the title's size: a heading-size space reads as none after it. */}
           {titleDetail ? (
-            <Text variant="heading" tone="muted">
-              {` ${titleDetail}`}
-            </Text>
+            <>
+              {' '}
+              <Text variant="heading" tone="muted">
+                {titleDetail}
+              </Text>
+            </>
           ) : null}
         </Text>
         {trailing}
