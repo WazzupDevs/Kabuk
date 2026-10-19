@@ -76,27 +76,32 @@ function Welcome() {
     },
   );
 
-  // Starts once the curtain is gone and the scene has its size; with reduce motion it stands at
-  // its end from the start.
+  // Starts once the curtain is gone and the scene has its size, from its first frame; with reduce
+  // motion it stands at its end from the start.
   const started = useRef(false);
   useEffect(() => {
     if (started.current || curtain || !box) return;
     started.current = true;
     if (!played && !reduce) {
       played = true;
+      t.set(0);
       t.set(withTiming(INTRO.endMs, { duration: INTRO.endMs, easing: Easing.linear }));
     } else {
       t.set(INTRO.endMs);
     }
   }, [curtain, box, reduce, t]);
+  // Reduce motion turned on while it plays: it stops at its end.
+  useEffect(() => {
+    if (reduce) t.set(INTRO.endMs);
+  }, [reduce, t]);
 
-  // "Geç", "Başla" and a new size (a turned screen, a new text size: v45 lays the scene out again
-  // at its end) jump to the end.
+  // "Geç" and "Başla" jump to the end.
   const skip = () => t.set(INTRO.endMs);
+  // A new size (the safe area arriving late, a turned screen, a new text size) lays the scene out
+  // again where it is: every frame is a function of the size and the time, so nothing is skipped.
   const onSceneLayout = (e: LayoutChangeEvent) => {
     const { width, height } = e.nativeEvent.layout;
     if (box && box.w === width && box.h === height) return;
-    if (box) skip();
     setBox({ w: width, h: height });
   };
 

@@ -36,13 +36,24 @@ export const FRIEND = {
 export type Rect = { x: number; y: number; width: number; height: number };
 export type Point = readonly [number, number];
 
-// The turned figure's corners when its box's right edge is at `right` and its top at `top`.
-export function figurePoly(right: number, top: number): Point[] {
-  const a = (FRIEND.angle * Math.PI) / 180;
+// Where the figure goes besides its rest (SignupFriend.tsx animates to these): the top of its jump
+// (v45: palJump, 4 left, 18 up, turned -4°), the widest turn of its head shake (palNo, -24°) and the
+// bottom of its nod (palNod, 6 down). A move whose pose would cover something is not played
+// (friendMoves; the CTO's 4.3d review).
+export type Pose = { angle: number; dx: number; dy: number };
+export const FRIEND_REST: Pose = { angle: FRIEND.angle, dx: 0, dy: 0 };
+export const FRIEND_JUMP: Pose = { angle: -4, dx: -4, dy: -18 };
+export const FRIEND_SHAKE: Pose = { angle: -24, dx: 0, dy: 0 };
+export const FRIEND_NOD: Pose = { angle: FRIEND.angle, dx: 0, dy: 6 };
+
+// The turned figure's corners when its box's right edge is at `right` and its top at `top`, in a
+// pose (its rest by default).
+export function figurePoly(right: number, top: number, pose: Pose = FRIEND_REST): Point[] {
+  const a = (pose.angle * Math.PI) / 180;
   const c = Math.cos(a);
   const s = Math.sin(a);
-  const ox = right + FRIEND.overhang;
-  const oy = top + FRIEND.height;
+  const ox = right + FRIEND.overhang + pose.dx;
+  const oy = top + FRIEND.height + pose.dy;
   const corners: Point[] = [
     [0, 0],
     [-FRIEND.width, 0],
@@ -87,12 +98,58 @@ export function fitFriend(
   topLimit: number,
 ): number | null {
   for (const shift of FRIEND.shifts) {
-    const poly = figurePoly(right, top - shift);
+    const poly = figurePoly(right, top - shift, FRIEND_REST);
     const highest = Math.min(...poly.map(([, y]) => y));
     if (highest < topLimit - 2) continue;
     if (!blockers.some((r) => polyHits(poly, r))) return shift;
   }
   return null;
+}
+
+export type FriendMoves = { jump: boolean; shake: boolean; nod: boolean };
+
+// Where the friend rests and which moves it plays there, or null when it does not show: among the
+// heights where it fits at rest (fitFriend's), the one where the most moves fit too, the lowest on
+// a tie. It shows exactly where fitFriend would let it; moving up a little more buys it its moves.
+export function placeFriend(
+  right: number,
+  top: number,
+  blockers: readonly Rect[],
+  topLimit: number,
+): { shift: number; moves: FriendMoves } | null {
+  let best: { shift: number; moves: FriendMoves; count: number } | null = null;
+  for (const shift of FRIEND.shifts) {
+    const poly = figurePoly(right, top - shift, FRIEND_REST);
+    if (Math.min(...poly.map(([, y]) => y)) < topLimit - 2) continue;
+    if (blockers.some((r) => polyHits(poly, r))) continue;
+    const moves = friendMoves(right, top, shift, blockers, topLimit);
+    const count = Number(moves.jump) + Number(moves.shake) + Number(moves.nod);
+    if (!best || count > best.count) best = { shift, moves, count };
+  }
+  return best && { shift: best.shift, moves: best.moves };
+}
+
+// Which moves fit where it rests (`top` moved up by `shift`): one whose pose would cover a word, a
+// field, the step counter (in `blockers`) or, for the shake and the nod, rise into the top row is
+// not played and the friend stays still. Its jump may rise into the top row, but not over the
+// counter. The error is said by its text anyway; the eyes still squint.
+export function friendMoves(
+  right: number,
+  top: number,
+  shift: number,
+  blockers: readonly Rect[],
+  topLimit: number,
+): FriendMoves {
+  const clear = (pose: Pose, underRow: boolean) => {
+    const poly = figurePoly(right, top - shift, pose);
+    if (underRow && Math.min(...poly.map(([, y]) => y)) < topLimit - 2) return false;
+    return !blockers.some((r) => polyHits(poly, r));
+  };
+  return {
+    jump: clear(FRIEND_JUMP, false),
+    shake: clear(FRIEND_SHAKE, true),
+    nod: clear(FRIEND_NOD, true),
+  };
 }
 
 // Whether two rectangles overlap, the first grown by `margin` (the bubble against the words).

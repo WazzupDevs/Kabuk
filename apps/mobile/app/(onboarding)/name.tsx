@@ -1,6 +1,6 @@
 import { containsContact } from '@shared/profanity.ts';
 import { DISPLAY_NAME_MAX, DISPLAY_NAME_MIN } from '@shared/profile.ts';
-import { router } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
 
 import { Input } from '@/components/Input';
@@ -8,13 +8,18 @@ import { useProfile } from '@/features/account/useProfile';
 import { SignupStep } from '@/features/onboarding/SignupStep';
 import { useOnboardingStore } from '@/features/onboarding/store';
 import { useFriend } from '@/features/onboarding/useFriend';
+import { useGoOnce } from '@/features/onboarding/useGoOnce';
 import { tr } from '@/i18n/tr';
 import { greeting } from '@/lib/signupFriend';
 import { maxLengthFor } from '@/lib/textLimit';
 
-// The display name, step 4/7. Kept on the phone until the gender step sends the profile.
+// The display name, step 4/7. Kept on the phone until the gender step sends the profile; if the
+// server turns it down then, the phone comes back here and the step says why until it changes.
 export default function NameStep() {
   const profile = useProfile();
+  const extrasPending = useOnboardingStore((s) => s.extrasPending);
+  const nameError = useOnboardingStore((s) => s.nameError);
+  const { go, going } = useGoOnce();
   const [name, setName] = useState(
     () => useOnboardingStore.getState().name || profile.data?.display_name || '',
   );
@@ -25,6 +30,9 @@ export default function NameStep() {
   const friend = useFriend();
   const bubble = greeting(name, valid, { named: tr.signup.hello, plain: tr.signup.helloPlain });
 
+  // The profile went: the photo step is the only way on.
+  if (extrasPending) return <Redirect href="/extras" />;
+
   return (
     <SignupStep
       step="name"
@@ -32,14 +40,17 @@ export default function NameStep() {
       title={tr.signup.nameTitle}
       body={tr.signup.nameBody}
       friend={{ ...friend, bubble }}
+      error={nameError}
       action={{
         testID: 'name-continue',
         label: tr.signup.continue,
         disabled: !valid,
-        onPress: () => {
-          useOnboardingStore.setState({ name: name.trim() });
-          router.push('/birth');
-        },
+        loading: going,
+        onPress: () =>
+          go(() => {
+            useOnboardingStore.setState({ name: name.trim() });
+            router.push('/birth');
+          }),
       }}
     >
       <Input
@@ -48,7 +59,10 @@ export default function NameStep() {
         hint={tr.signup.nameHint}
         placeholder={tr.signup.namePlaceholder}
         value={name}
-        onChangeText={setName}
+        onChangeText={(text) => {
+          setName(text);
+          if (nameError) useOnboardingStore.setState({ nameError: null });
+        }}
         error={contact ? tr.errors.contact_not_allowed : null}
         maxLength={maxLengthFor(name, DISPLAY_NAME_MAX)}
         autoCapitalize="words"

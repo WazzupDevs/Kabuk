@@ -11,7 +11,15 @@ import { SvgAst } from 'react-native-svg';
 
 import { Text } from '@/components/Text';
 import { useReduceMotion } from '@/lib/useReduceMotion';
-import { FRIEND, type Rect, rectsHit } from '@/lib/signupFriend';
+import {
+  FRIEND,
+  FRIEND_JUMP,
+  FRIEND_NOD,
+  FRIEND_SHAKE,
+  type FriendMoves,
+  type Rect,
+  rectsHit,
+} from '@/lib/signupFriend';
 import {
   type CapsuleEyes,
   type CapsuleKey,
@@ -31,8 +39,10 @@ type Props = {
   // The box's top and right edge in the step's coordinates; the right edge is the screen's.
   top: number;
   right: number;
-  // How far it moved up to stay clear (signupFriend.ts → fitFriend); null: hidden on this step.
+  // How far it moved up to stay clear (signupFriend.ts → placeFriend); null: hidden on this step.
   shift: number | null;
+  // The moves that fit there (friendMoves): one that would cover something is not played.
+  moves: FriendMoves;
   reaction: FriendReaction | null;
   // A field is being typed in: it looks at it.
   looking: boolean;
@@ -63,6 +73,7 @@ export function SignupFriend({
   top,
   right,
   shift,
+  moves,
   reaction,
   looking,
   bubble,
@@ -110,10 +121,10 @@ export function SignupFriend({
     if (reaction.kind === 'err') {
       const key = reaction.key;
       const t = setTimeout(() => setSquintDone(key), REACTION_MS);
-      if (!reduce) {
+      if (!reduce && moves.shake) {
         rot.set(
           withSequence(
-            withTiming(-24, { duration: 100, easing: EASE }),
+            withTiming(FRIEND_SHAKE.angle, { duration: 100, easing: EASE }),
             withTiming(-5, { duration: 125, easing: EASE }),
             withTiming(-20, { duration: 125, easing: EASE }),
             withTiming(FRIEND.angle, { duration: 150, easing: EASE }),
@@ -123,38 +134,38 @@ export function SignupFriend({
       return () => clearTimeout(t);
     }
     if (reduce) return;
-    if (reaction.kind === 'ok') {
+    if (reaction.kind === 'ok' && moves.jump) {
       const e = Easing.bezier(...JUMP.curve);
       tx.set(
         withSequence(
-          withTiming(-4, { duration: 240, easing: e }),
+          withTiming(FRIEND_JUMP.dx, { duration: 240, easing: e }),
           withTiming(0, { duration: 210, easing: e }),
         ),
       );
       ty.set(
         withSequence(
-          withTiming(-18, { duration: 240, easing: e }),
+          withTiming(FRIEND_JUMP.dy, { duration: 240, easing: e }),
           withTiming(2, { duration: 210, easing: e }),
           withTiming(0, { duration: 150, easing: e }),
         ),
       );
       rot.set(
         withSequence(
-          withTiming(-4, { duration: 240, easing: e }),
+          withTiming(FRIEND_JUMP.angle, { duration: 240, easing: e }),
           withTiming(-16, { duration: 210, easing: e }),
           withTiming(FRIEND.angle, { duration: 150, easing: e }),
         ),
       );
-    } else {
+    } else if (reaction.kind === 'nod' && moves.nod) {
       ty.set(
         withSequence(
-          withTiming(6, { duration: 210, easing: EASE }),
+          withTiming(FRIEND_NOD.dy, { duration: 210, easing: EASE }),
           withTiming(0, { duration: 210, easing: EASE }),
         ),
       );
     }
     return undefined;
-  }, [reaction, reduce, rot, tx, ty]);
+  }, [reaction, reduce, moves.jump, moves.shake, moves.nod, rot, tx, ty]);
 
   const figure = useAnimatedStyle(() => ({
     transform: [

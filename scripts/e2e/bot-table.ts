@@ -112,6 +112,28 @@ function db() {
   });
 }
 
+// The device's own profile, by its test number (`{"phone":"+905550000001"}`), for the two hooks
+// above. Writes to the database: local only (db()).
+async function setOwnProfile(args: Json, what: 'consents' | 'gender'): Promise<Json> {
+  const phone = String((args as { phone?: unknown }).phone ?? '').replace(/^\+/, '');
+  if (!/^90\d{10}$/.test(phone)) throw new Error('phone must be a test number like +905550000001');
+  const sql = db();
+  try {
+    const owner = sql`(select id from auth.users where phone = ${phone})`;
+    const rows =
+      what === 'consents'
+        ? await sql`
+            update public.profiles set terms_version = '0', kvkk_version = '0'
+            where id = ${owner} returning 1
+          `
+        : await sql`update public.profiles set gender = null where id = ${owner} returning 1`;
+    if (rows.length !== 1) throw new Error(`no profile for ${phone}`);
+  } finally {
+    await sql.end();
+  }
+  return { ok: true };
+}
+
 function me(): SupabaseClient {
   if (!client) throw new Error('not signed in; call login first');
   return client;
@@ -960,6 +982,18 @@ export const actions: Record<string, (args: Json) => Promise<Json>> = {
       await sql.end();
     }
     return { ok: true };
+  },
+
+  // Local only: the account behind `phone` (the device's test number) accepted an older version of
+  // the texts; its next launch asks "Başlamadan önce" again (K-33).
+  async 'outdate-consents'(args) {
+    return setOwnProfile(args, 'consents');
+  },
+
+  // Local only: the account behind `phone` has no gender, like one from before the gender step; its
+  // next launch asks the one-time question (docs/SPEC_V3.md §23.D).
+  async 'clear-gender'(args) {
+    return setOwnProfile(args, 'gender');
   },
 
   async 'end-room'() {

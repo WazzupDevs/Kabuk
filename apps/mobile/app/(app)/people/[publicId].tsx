@@ -6,12 +6,13 @@ import { Alert, View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
-import { Screen } from '@/components/Screen';
-import { Text } from '@/components/Text';
+import { IconButton, MoreDots } from '@/components/IconButton';
 import { Loader } from '@/components/Loader';
+import { Screen } from '@/components/Screen';
+import { Sheet } from '@/components/Sheet';
+import { Text } from '@/components/Text';
 import { ReportModal } from '@/features/chat/ReportModal';
-import { BackPill } from '@/features/profile/BackPill';
-import { Badges, ProfileHero } from '@/features/profile/ProfileCard';
+import { Badges, ProfileHead } from '@/features/profile/ProfileCard';
 import { useProfileView } from '@/features/profile/queries';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
@@ -20,9 +21,12 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 // Another account's profile: only while the viewer may see it (a friend, or the other table of
 // the current room). Anything else, including a room that just ended, reads as "not visible".
+// v45 (.prof, other): a round back button and "Seçenekler" on top, the same head as the own
+// profile, then the badges they earned; reporting is in "Seçenekler".
 export default function PersonScreen() {
   const { publicId } = useLocalSearchParams<{ publicId: string }>();
   const view = useProfileView(publicId);
+  const [menu, setMenu] = useState(false);
   const [reporting, setReporting] = useState(false);
 
   const report = useMutation({
@@ -37,6 +41,25 @@ export default function PersonScreen() {
 
   return (
     <Screen>
+      <View className="mb-2 flex-row items-center justify-between">
+        <IconButton
+          round
+          icon="chevron-back"
+          label={tr.common.back}
+          onPress={() => router.back()}
+          testID="profile-back"
+        />
+        {view.data ? (
+          <IconButton
+            round
+            icon="ellipsis-vertical"
+            glyph={<MoreDots />}
+            label={tr.profile.more}
+            onPress={() => setMenu(true)}
+            testID="profile-more"
+          />
+        ) : null}
+      </View>
       {view.isPending ? (
         <View className="mt-16 items-center">
           <Loader />
@@ -44,29 +67,34 @@ export default function PersonScreen() {
       ) : !view.data ? (
         <EmptyState icon="eye-off-outline" body={tr.profile.notVisible} />
       ) : (
-        <View className="flex-1 gap-5">
-          <ProfileHero profile={view.data} overlay={<BackPill />} />
+        <View className="gap-5">
+          <ProfileHead profile={view.data} />
           <View className="gap-3">
             <Text variant="overline" tone="muted">
               {tr.profile.badgesTitle}
             </Text>
             <Badges badges={view.data.badges} />
           </View>
-          <View className="mt-auto pt-4">
-            <Button
-              variant="neutral"
-              icon="flag-outline"
-              label={tr.profile.report}
-              onPress={() => setReporting(true)}
-            />
-          </View>
         </View>
       )}
-      {!view.data ? (
+      {!view.isPending && !view.data ? (
         <View className="mt-auto pt-8">
           <Button label={tr.profile.back} onPress={() => router.back()} />
         </View>
       ) : null}
+      <Sheet visible={menu} onClose={() => setMenu(false)} title={tr.profile.moreTitle}>
+        <Button
+          variant="neutral"
+          icon="flag-outline"
+          label={tr.profile.report}
+          testID="profile-report"
+          onPress={() => {
+            setMenu(false);
+            setReporting(true);
+          }}
+        />
+        <Button variant="ghost" label={tr.common.cancel} onPress={() => setMenu(false)} />
+      </Sheet>
       <ReportModal
         reasons={REPORT_REASONS}
         visible={reporting}

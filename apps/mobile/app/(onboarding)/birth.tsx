@@ -9,6 +9,7 @@ import { useProfile } from '@/features/account/useProfile';
 import { SignupStep } from '@/features/onboarding/SignupStep';
 import { useOnboardingStore } from '@/features/onboarding/store';
 import { useFriend, useJumpWhen, useShakeOnError } from '@/features/onboarding/useFriend';
+import { useGoOnce } from '@/features/onboarding/useGoOnce';
 import { signupError, useCompleteSignup } from '@/features/onboarding/useCompleteSignup';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -19,6 +20,8 @@ import { tr } from '@/i18n/tr';
 export default function BirthStep() {
   const profile = useProfile();
   const name = useOnboardingStore((s) => s.name);
+  const extrasPending = useOnboardingStore((s) => s.extrasPending);
+  const { go, going } = useGoOnce();
   const [day, setDay] = useState('');
   const [month, setMonth] = useState('');
   const [year, setYear] = useState('');
@@ -33,6 +36,9 @@ export default function BirthStep() {
   });
   useShakeOnError(error, () => friend.react('err'));
 
+  // The profile went (Android's back from the photo step): the photo step is the only way on. Not
+  // while this step sends it: its own success opens the photo step.
+  if (extrasPending && submit.isIdle) return <Redirect href="/extras" />;
   if (!name) return <Redirect href="/name" />;
   if (profile.data?.has_birth_date === true) return <Redirect href="/gender" />;
 
@@ -45,7 +51,7 @@ export default function BirthStep() {
     }
     setError(null);
     useOnboardingStore.setState({ birthDate });
-    if (needsGender) router.push('/gender');
+    if (needsGender) go(() => router.push('/gender'));
     else submit.mutate(null);
   };
 
@@ -62,7 +68,7 @@ export default function BirthStep() {
         testID: 'birth-continue',
         label: tr.signup.continue,
         disabled: !filled,
-        loading: submit.isPending,
+        loading: submit.isPending || going,
         onPress: onContinue,
       }}
     >

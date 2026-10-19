@@ -408,6 +408,8 @@ export const tr = {
     empty: "Henüz arkadaşın yok. Birlikte oynadığın masaları Bildirimler'de bulabilirsin.",
     requestsAndHistory: 'Geçmiş ve istekler',
     message: (name: string) => `${name} ile mesajlaş`,
+    // The friend row's button (v45: .fmsg).
+    messageShort: 'Mesaj',
     newRequests: (n: number) => `${n} yeni arkadaşlık isteği`,
     unread: 'Yeni mesaj',
     noMessagesYet: 'Henüz mesaj yok. İlk mesajı sen yaz.',
@@ -465,9 +467,10 @@ export const tr = {
   profile: {
     noName: 'Henüz bir adın yok',
     nameWithAge: (name: string, age: number) => `${name}, ${age}`,
+    // After the name on a profile's head, in the quiet colour (v45: .page-age).
+    ageAfterName: (age: number) => `, ${age}`,
     addName: 'Ad ekle',
     edit: 'Profili düzenle',
-    editShort: 'Düzenle',
     birthDateNote: 'Doğum tarihin değiştirilemez; profilinde yalnızca yaşın görünür.',
     friends: 'Arkadaşlar',
     friendsCount: (n: number) => `Arkadaşlar, ${n}`,
@@ -505,6 +508,9 @@ export const tr = {
     },
     notVisible: 'Bu profil artık görüntülenemiyor.',
     report: 'Profili şikayet et',
+    // Another person's profile: the menu at the top right (v45: .pmore).
+    more: 'Seçenekler',
+    moreTitle: 'Bu profil',
     back: 'Geri dön',
   },
   // Anonymous or with the profile, chosen for each table in the lobby (docs/SPEC_V3.md §5.4).
@@ -744,7 +750,6 @@ export const tr = {
     modeProfileHint: 'Mesajların adın ve fotoğrafınla görünür; masa adın görünmez.',
     writingAnonymous: 'Anonim yazıyorsun',
     writingProfile: 'Profilinle yazıyorsun',
-    profiled: 'profilli',
     you: 'Sen',
     messageMenu: 'Mesaj',
     sendRequest: 'Arkadaşlık isteği gönder',

@@ -1,0 +1,68 @@
+# The way back in (the CTO review of 4.3b): sign out, then the same number from the first screen.
+# "Başlamadan önce" starts unticked (login-code.yaml checks it: the consents never carry over to the
+# next account on this phone) and the code opens the app with no sign-up step. Then the texts change
+# under the account (bot-table.ts `outdate-consents`, local only): the next launch asks "Başlamadan
+# önce" again with "Metinler güncellendi" (K-33). Then the gender goes (`clear-gender`, local only):
+# the next launch asks the one-time question, like an account from before the gender step
+# (docs/SPEC_V3.md §23.D); "Kadın" again, as the later flows expect.
+appId: app.kabuk.mobile
+---
+- tapOn:
+    id: tab-profile
+- tapOn: Ayarlar
+- scrollUntilVisible:
+    element:
+      id: settings-sign-out
+    timeout: 20000
+- tapOn:
+    id: settings-sign-out
+- extendedWaitUntil:
+    visible:
+      id: welcome
+    timeout: 15000
+- takeScreenshot: 01d-signed-out
+- runFlow:
+    file: login-code.yaml
+- extendedWaitUntil:
+    visible: Liste
+    timeout: 20000
+# New texts: the next launch asks again.
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: outdate-consents
+      BODY: '{"phone":"+905550000001"}'
+- launchApp
+- extendedWaitUntil:
+    visible: Metinler güncellendi. Lütfen tekrar onayla.
+    timeout: 60000
+- assertVisible:
+    id: consents-accept
+    enabled: false
+- takeScreenshot: 01d-reconsent
+- tapOn: Kullanım Koşulları’nı okudum ve kabul ediyorum.
+- tapOn: KVKK Aydınlatma Metni’ni okudum.
+- tapOn:
+    id: consents-accept
+- extendedWaitUntil:
+    visible: Liste
+    timeout: 20000
+# An account without a gender: the one-time question.
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: clear-gender
+      BODY: '{"phone":"+905550000001"}'
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: signup-gender-step
+    timeout: 60000
+- takeScreenshot: 01d-gender-gate
+- tapOn:
+    id: gender-female
+- tapOn:
+    id: gender-save
+- extendedWaitUntil:
+    visible: Liste
+    timeout: 20000
