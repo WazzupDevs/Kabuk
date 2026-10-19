@@ -573,22 +573,23 @@ Değişmez kabul edilir.
 - **Kart:** sohbetin üstünde küçük ve sabittir; temayı, kaçıncı kart olduğunu ve soruyu gösterir. Mesajlar kartın altından kayar.
 - **Sohbetteki not:** her yeni kart sohbete küçük bir not olarak düşer; eski cevapların hangi soruya ait olduğu belli kalır. Kartların açılıp kapandığı da tek satırla görünür. Not bir sunucu mesajıdır (`messages.kind = 'card'`); kişi yazamaz.
 - **Cevaplar** mesajdır; kart açıkken yazma alanında "Cevabını yaz" yazar. Küfür filtresi (kural 7) aynen.
-- **Sahip:** "Kartı geç" ile ilerler (`sohbet/next-card`). Tema adına dokununca temayı değiştirir (kartlar yeniden karışır), kartları karıştırır ya da kapatır (`sohbet/close`). Katılımcı yalnızca kartı görür. (Kartı kimin geçeceği §4.P.)
-- **Ya da kartı:** iki seçenek kartın içindedir; herkes birini seçer (`sohbet/choose { cardNo, choice }`). Her seçenekte yalnızca kaç kişinin seçtiği görünür (§4.P).
-- **Başka oyun başlayınca kartlar kapanır** (§4.P). Kapanınca sohbete "Sohbet kartları kapandı · N kart konuşuldu" düşer.
-- **İçerik:** temalar Isınma, Kampüs, Derin ve Ya da. Bugün `content/sohbet-cards.json`'da `isinma`, `derin`, `film-dizi-muzik` ve `hic-yaptin-mi` (40'ar) var. Kampüs kartları ve iki seçenekli Ya da kartları yazılır (`cards` satır kısıtı Ya da'nın iki seçeneğini zorunlu tutar). `film-dizi-muzik` ve `hic-yaptin-mi` §4.P'dedir.
+- **Sahip:** "Kartı geç" ile ilerler (`sohbet/next-card`). Tema adına dokununca temayı değiştirir (kartlar yeniden karışır), kartları karıştırır ya da kapatır (`sohbet/close`). Katılımcı yalnızca kartı görür. Kartı yalnızca sahip geçirir (K-74).
+- **Ya da kartı:** iki seçenek kartın içindedir; herkes birini seçer (`sohbet/choose { cardNo, choice }`). Her seçenekte yalnızca kaç kişinin seçtiği görünür; kimin neyi seçtiği görünmez (K-74).
+- **Başka oyun başlayınca kartlar kapanır** (K-74). Kapanınca sohbete "Sohbet kartları kapandı · N kart konuşuldu" düşer.
+- **İçerik:** temalar Isınma, Kampüs, Derin ve Ya da. Bugün `content/sohbet-cards.json`'da `isinma`, `derin`, `film-dizi-muzik` ve `hic-yaptin-mi` (40'ar) var. Kampüs kartları ve iki seçenekli Ya da kartları yazılır (`cards` satır kısıtı Ya da'nın iki seçeneğini zorunlu tutar). `film-dizi-muzik` ve `hic-yaptin-mi` kartları pasif olur (`is_active = false`); içerik silinmez (K-74).
+  - Kampüs ve Ya da kartlarının taslağı 4.6.2'de yazılır. Kullanıcıya görünen içerik olduğu için birleşmeden önce proje sahibinin onayına gelir (K-74).
 
 ### Adım 4.6.3: Sahtekar
 
-- **Oyuncular:** en az 3; gözlemciler. 1 sahtekar; 7 ve üstü oyuncuda 2 sahtekar, birbirlerini bilmezler (§4.P).
+- **Oyuncular:** en az 3; gözlemciler. 1 sahtekar; 7 ve üstü oyuncuda 2 sahtekar, birbirlerini bilmezler (K-71).
 - **Aşamalar:**
   1. **Rol kartı:** kart basılı tutunca döner ve rol görünür. Oyun boyunca "Rolüm" basılı tutunca yine görünür. Oyuncular "Hazırım" der; herkes hazır olunca ya da 30 sn sonra ipucu turları başlar.
-  2. **İpucu turları:** 2 tur, kişi başı 30 sn (§4.P). İpuçları sesli verilir. Sırayı sunucu belirler; konuşanın etrafında halka sayaç döner, sıradaki kişi yazılıdır. Sırası gelen "Söyledim"e basar (`sahtekar/said`).
+  2. **İpucu turları:** 2 tur, kişi başı 30 sn (K-71). İpuçları sesli verilir. Sırayı sunucu belirler; konuşanın etrafında halka sayaç döner, sıradaki kişi yazılıdır. Sırası gelen "Söyledim"e basar (`sahtekar/said`).
   3. **Oylama:** 90 sn. Herkes sahtekar sayısı kadar kişi seçer (`sahtekar/vote`). Kimlerin oy verdiği görünür, kime verdikleri görünmez. Oylar sonuca kadar `game_secrets`'tadır.
   4. **Sonuç:** oylar çubuk olarak görünür. En çok oy alan, sahtekar sayısı kadar kişi suçlanır; sınırda oy eşitliği varsa o koltuk boş kalır. Sahtekarların altında "Yakalandı" ya da "Kaçtı" yazar.
   5. **Son şans:** yakalanan sahtekarların yazarak tek bir ortak tahmin hakkı vardır, 15 sn (`sahtekar/guess { text }`). Karşılaştırmada büyük küçük harf ve noktalama dikkate alınmaz; eşleştirme `pure/trText.ts` ile yapılır (kural 7). Bu, SPEC_V3 §20.1'deki "serbest metin yok" kuralına Sahtekar'ın son şansı için istisnadır; tahmin saklanmaz, yalnızca sonucu yazılır.
   6. **Oyun sonu.**
-- **Kazanma:** masa ancak bütün sahtekarlar yakalanır ve tahmin tutmazsa kazanır. Kısmi yakalamada puan §4.P'dedir.
+- **Kazanma:** masa ancak bütün sahtekarlar yakalanır ve tahmin tutmazsa kazanır. Kısmi yakalamada masaya yakalanan her sahtekar için puan yazılır (K-71).
 - **Roller:**
 
   | Rol      | Görür                                                           | Eylem                           |
@@ -609,16 +610,17 @@ Değişmez kabul edilir.
   - Soru herkese aynı anda açılır. İlk basan ("Kaptım" ya da "Söylüyorum") cevabı yüksek sesle söyler.
   - **İlk basanı sunucu belirler:** tek seferlik koşullu güncelleme, "henüz kapan yoksa kapan bu kişi". Telefon saatine güvenilmez; Wi-Fi ile mobil veri arasındaki gecikme farkı birkaç yüz milisaniyeyi bulabilir.
   - Kapan kişi "Söyledim" (Şarkıda Geçsin'de "Bitirdim") deyince 2 sn itiraz payı kalır, sonra karar verilir; demezse söyleme süresi dolunca.
-  - **İtiraz eşiği:** kapan dışındaki oyuncuların yarıdan fazlası (`floor((n - 1) / 2) + 1`); bire birde tek itiraz yeter (§4.P). İtiraz geri alınabilir.
+  - **İtiraz eşiği:** kapan dışındaki oyuncuların yarıdan fazlası (`floor((n - 1) / 2) + 1`); bire birde tek itiraz yeter (K-72). İtiraz geri alınabilir.
   - İtiraz geçerse soru diğerlerine yeniden açılır ve kapanın o soruda hakkı biter. Kimse kalmazsa soru boş geçer.
   - İtiraz çıkmazsa kapana 1 puan.
-  - Gözlemci itiraz edemez (§4.P).
+  - **Bire birde karşı itiraz** (K-72): itiraz geçip soru itiraz edene açılınca, ilk kapanın onun cevabına itiraz hakkı kalır. O da itiraz ederse soru boş geçer; ikisi de puan almaz.
+  - Gözlemci itiraz edemez (K-72).
 - **Harf Kapmaca:** 3 harf; her harfin başında harf çarkı döner, ardından sırayla 5 kategori gelir. Kapma 15 sn, söyleme ve itiraz 6 sn, yeniden açık 8 sn.
   - Harf sonu: kimin hangi kategoriyi kaptığı listelenir; sahip "Sonraki harfe geç"e basar (15 sn kuralı, çerçeve).
   - Oyun sonu: ilk üç kişi kürsüde.
 - **Şarkıda Geçsin:** 8 kelime. Kapma 20 sn, söyleme ve itiraz 12 sn, yeniden açık 10 sn. Söyleyenin avatarının iki yanında ekolayzer çubukları oynar.
   - Uygulama şarkı sözü göstermez, yalnızca kelime verir; ses kaydedilmez.
-  - Aynı şarkının yeniden kullanılması serbesttir, itirazla çözülür (§4.P).
+  - Aynı şarkının yeniden kullanılması serbesttir, itirazla çözülür (K-72).
 - **Ekranda:** oyuncuların puanları küçük avatar sırası olarak görünür; sağ üstte kişinin kendi puanı.
 - **Roller:** oyuncu, o soruda kapan, gözlemci ("İzliyorsun"). Gizli bilgi yoktur.
 - **Sunucu:** `harf` ve `sarki` fonksiyonları ortak motorla yeniden yazılır; masalar arası sıra ve taraf başına itiraz hakları kalkar.
@@ -633,7 +635,7 @@ Değişmez kabul edilir.
      - Takımdaki herkes aynı ibreyi görür ve çevirebilir. Başkası çevirirken ibrenin üstünde "X çeviriyor" yazar.
      - Takımın tamamı "Hazırım" deyince ibre kilitlenir. İbre oynarsa onaylar sıfırlanır. Süre biterse ibre olduğu yerde kilitlenir.
      - Rakip takım ibreyi canlı izler; ipucu veren yalnızca izler.
-     - Rakibin sol ya da sağ tahmini §4.P'dedir (öneri: kalsın).
+     - Rakibin sol ya da sağ tahmini kalır (K-73, bugünkü kural): 15 sn; doğruysa rakibe 1 puan; ibre hedefin tam üstündeyse puan yok.
   4. **Sonuç:** örtü açılır. Hedefin ortasına yakınlığa göre 4, 3 ya da 2 puan; ıskalanırsa 0. Bantları sunucu hesaplar (bugünkü `pure/ibre.ts`).
   5. **Oyun sonu:** kazanan takım ve en iyi ipucu veren.
 - **İbrenin sunucudaki değeri:** canlı konum hiçbir zaman otorite değildir.
@@ -647,12 +649,12 @@ Değişmez kabul edilir.
   - Kanal politikası ve hız sınırı §4.I'dadır.
 - **Roller:**
 
-  | Rol         | Hedef  | Eylem                                         |
-  | ----------- | ------ | --------------------------------------------- |
-  | İpucu veren | Görür  | Hedefi gör, İpucunu söyledim                  |
-  | Tahminci    | Görmez | İbreyi çevirir (`ibre/move`), Hazırım         |
-  | Rakip takım | Görmez | İzler; sol ya da sağ tahmini kalırsa o (§4.P) |
-  | Gözlemci    | Görür  | Yok; ibreyi izler                             |
+  | Rol         | Hedef  | Eylem                                 |
+  | ----------- | ------ | ------------------------------------- |
+  | İpucu veren | Görür  | Hedefi gör, İpucunu söyledim          |
+  | Tahminci    | Görmez | İbreyi çevirir (`ibre/move`), Hazırım |
+  | Rakip takım | Görmez | İzler; sol ya da sağ tahmini (K-73)   |
+  | Gözlemci    | Görür  | Yok; ibreyi izler                     |
 
 - **Çıkış:** ipucu veren turda çıkarsa tur sürer, kilit tahmincilerle olur. Tahminci çıkarsa hazır onayları kalanlarla sayılır.
 - **Sunucu:** `ibre` fonksiyonu kişi bazlı yeniden yazılır; `ibre/lock`'un taraf yetkisi (`lockBy`) kalkar.
@@ -820,7 +822,7 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 | `sohbet`        | `start { themes }`, `next-card`, `set-themes`, `shuffle`, `choose`, `close`                                                                                                                                                                                                                                   | 4.6.2    |
 | `sahtekar`      | `start`, `view`, `ready`, `said`, `vote`, `guess { text }`, `advance`                                                                                                                                                                                                                                         | 4.6.3    |
 | `harf`, `sarki` | `start`, `claim`, `said`, `object`, `advance`; ortak motor                                                                                                                                                                                                                                                    | 4.6.4    |
-| `ibre`          | `start`, `begin`, `target`, `clue-given`, `move`, `ready`, `side` (§4.P), `advance`                                                                                                                                                                                                                           | 4.6.5    |
+| `ibre`          | `start`, `begin`, `target`, `clue-given`, `move`, `ready`, `side` (K-73), `advance`                                                                                                                                                                                                                           | 4.6.5    |
 | `friends`       | `withdraw-add { historyId }` (ör.; K-67): masa sonundaki ve oyun geçmişindeki sessiz eklemeyi geri alır. Eşleşme olmuşsa yok sayılır ve yanıt arkadaş olunduğunu söyler. Karşı tarafa hiçbir şey gitmez. `add-from-room`: eşleşmede ilk basana push (K-70, `notify_friend_requests`)                          | 4.5      |
 | `friends`       | `my_notifications()` okuması `friends/notifications` ile (fotoğraflar imzalı)                                                                                                                                                                                                                                 | 4.7      |
 
@@ -954,8 +956,10 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 - Gizli bilgi yalnızca tablodaki rollere gider. Tahminci, rakip olmayan ve gözlemci olmayan hiçbir yanıtta kart, kelime, hedef ya da sahtekar bilgisi almaz (`readableBy` ve `watchRoomChannel` kalıbı; `game_state`, `game_events` ve Realtime yükleri taranır).
 - Süreler sunucudan; `advance` idempotent ve iki kez gönderen testle.
 - Çıkış kuralları (oyun başına) ve oyun sonu kayıtları (`game_results`: oyuncular evet, gözlemciler hayır).
-- 4.6.3: 7 oyuncuda 2 sahtekar, birbirlerini görmezler; son şans `trText` eşleştirmesiyle.
+- 4.6.3: 7 oyuncuda 2 sahtekar, birbirlerini görmezler; son şans `trText` eşleştirmesiyle. Kısmi yakalamada yakalanan her sahtekar için masaya puan (K-71).
 - 4.6.4: aynı anda iki "Kaptım"da yalnızca biri kapar (`locks`); eşik ve bire bir.
+  - Bire birde karşı itiraz (K-72): itiraz geçip soru itiraz edene açılınca ilk kapan onun cevabına itiraz edebilir. O itiraz geçerse soru boş geçer ve kimse puan almaz.
+  - Gözlemcinin itirazı yetki koduyla reddedilir.
 - 4.6.5: `ibre:` kanalına masanın kişileri dışındakiler abone olamaz ve yayın yapamaz (`realtime.test.ts` kalıbı); kısıcı saniyede 10'u geçmez (birim testi); kilit `game_state.needle`'dan.
 
 **Adım 4.7.**
@@ -1229,19 +1233,16 @@ Bu PR yalnızca proje paragrafını ve görsel kaynak kod kuralını değiştiri
 | K-68        | Anonim katılan kişinin kendi Masa bitti ekranında (adım 4.5), alttaki notun yanında: "Arkadaş olursanız anonim adının sen olduğunu görür. İstersen Profil'den adını yenileyebilirsin." Gerekçe: nick yenilenene kadar kalıcıdır (K-9). K-49 arkadaşa nick'i bu yüzden göstermez; eşleşme ise bu bağı kurar                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | §4.C, §4.E                   |
 | K-69        | "Geliyor" hâli yok (adım 4.5): kabul edilen kişiler kabul anında Masadakiler'e normal üye olarak girer, masa ekranının üst satırı "N kişi". §4.E'deki tek seferlik "Y geliyor, N kişi" bildirimi kalır. v46'da gelen masa telefonları katılana kadar "Geliyor"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | §4.C, §4.E                   |
 | K-70        | Eşleşme bildirimi (adım 4.5; sunucu değişikliği, PR proje sahibinin onayına gelir): eşleşmeyi kuran basışın karşı tarafına (ilk basana) push, `notify_friend_requests` ayarıyla. Yeni kolon yok; bildirim ayarlarında satır aynı. Push mekan ve masa adı taşımaz. 4.7'de zil listesinde de bir satır. Tek taraflı basışta hiçbir şey gitmez (kural 5). v46'daki not metni aynen kalır                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | §4.E, §4.G, §4.J, §4.M, §4.O |
+| K-71 (P-8)  | Sahtekar (adım 4.6.3): ipucu kişi başı 30 sn; 7 ve üstü oyuncuda 2 sahtekar, birbirini bilmez; kısmi yakalamada masaya yakalanan her sahtekar için puan                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | §4.F, §4.M                   |
+| K-72 (P-9)  | Kapışma (adım 4.6.4): itiraz eşiği kapan dışındakilerin yarıdan fazlası; bire birde tek itiraz yeter; gözlemci itiraz edemez; Şarkıda Geçsin'de aynı şarkı serbest, itirazla çözülür. Ek: bire birde itiraz geçip soru itiraz edene açılınca ilk kapanın onun cevabına itiraz hakkı kalır; o da itiraz ederse soru boş geçer                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | §4.F, §4.M                   |
+| K-73 (P-10) | İbre (adım 4.6.5): rakibin sol ya da sağ tahmini kalır (bugünkü kural: 15 sn, doğruysa rakibe 1 puan; ibre hedefin tam üstündeyse puan yok)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | §4.F, §4.J                   |
+| K-74 (P-11) | Sohbet kartları (adım 4.6.2): kartı sahip ilerletir; başka oyun başlayınca kartlar kapanır; Ya da'da yalnızca sayılar görünür. `film-dizi-muzik` ve `hic-yaptin-mi` kartları pasif olur (`is_active = false`), içerik silinmez. Ek: Kampüs ve Ya da kartlarının taslağı 4.6.2'de yazılır ve kullanıcıya görünen içerik olduğu için birleşmeden önce proje sahibinin onayına gelir                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | §4.F                         |
 
 **Fırat paketi (v46).** Proje sahibinin onayladığı kararlar K-45–K-57'dir; pakette K-41–K-53 diye numaralanmışlardı. K-41–K-44 o sırada Keşfet ve Aktiviteler kararlarına verildiği için numaralar dört kaydı (proje sahibinin kuralı: çakışmada main'deki son K'dan devam; Fırat paketi en son).
 
-**v46 (19 Ekim).** K-58–K-65 v46 geldiğinde verilen kararlardır. K-66–K-70 proje sahibinin aynı gün verdiği kararlardır. v46 raporunun iki açık sorusu K-59 (simge değişikliği) ve K-61 (üç hazır görünüş) ile, v46'nın iki farkı K-69 ("Geliyor") ve K-70 (eşleşme bildirimi) ile cevaplandı.
+**v46 (19 Ekim).** K-58–K-65 v46 geldiğinde verilen kararlardır. K-66–K-74 proje sahibinin aynı gün verdiği kararlardır; K-71–K-74 son dört açık kararı (P-8–P-11) kapatır. v46 raporunun iki açık sorusu K-59 (simge değişikliği) ve K-61 (üç hazır görünüş) ile, v46'nın iki farkı K-69 ("Geliyor") ve K-70 (eşleşme bildirimi) ile cevaplandı.
 
-**Açık kararlar.** İlgili adımdan önce proje sahibine sorulur; karar verilmeden o adımın işi başlamaz. P-1, P-4, P-12 ve P-13 (K-3…K-6), sonra P-2, P-3, P-5, P-6, P-14, P-16, P-17 ve P-18 (K-9…K-16), sonra P-19 (K-32) ve P-20 (K-33), sonra P-7 (K-34), sonra P-15 (K-66) karara bağlandı; diğer numaralar değişmez. Açık kalanlar: P-8, P-9, P-10, P-11.
-
-| No   | Karar                               | Önerim                                                                                                                                                                                           | Ne zaman |
-| ---- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- |
-| P-8  | Sahtekar                            | İpucu kişi başı 30 sn. 7 ve üstünde 2 sahtekar, birbirlerini bilmezler. Kısmi yakalamada masaya yakalanan her sahtekar için puan                                                                 | 4.6.3    |
-| P-9  | Kapışma                             | İtiraz eşiği kapan dışındakilerin yarıdan fazlası; bire birde tek itiraz yeter; gözlemci itiraz edemez; Şarkıda Geçsin'de aynı şarkı serbest, itirazla çözülür                                   | 4.6.4    |
-| P-10 | İbre: rakibin sol ya da sağ tahmini | Kalsın (bugünkü kural: 15 sn, doğruysa rakibe 1 puan; ibre hedefin tam üstündeyse puan yok). İzleyen takımın bir işi olur                                                                        | 4.6.5    |
-| P-11 | Sohbet kartları                     | Kartı sahip ilerletir; başka oyun başlayınca kartlar kapanır; Ya da'da yalnızca sayılar görünür. `film-dizi-muzik` ve `hic-yaptin-mi` kartları pasif olur (`is_active = false`), içerik silinmez | 4.6.2    |
+**Açık kararlar.** İlgili adımdan önce proje sahibine sorulur; karar verilmeden o adımın işi başlamaz. P-1, P-4, P-12 ve P-13 (K-3…K-6), sonra P-2, P-3, P-5, P-6, P-14, P-16, P-17 ve P-18 (K-9…K-16), sonra P-19 (K-32) ve P-20 (K-33), sonra P-7 (K-34), sonra P-15 (K-66), sonra P-8–P-11 (K-71–K-74) karara bağlandı. Açık karar kalmadı.
 
 **Bu belgede önerilen teknik kararlar (onay bekler).**
 
@@ -1299,10 +1300,10 @@ Numaralar devir raporunun §6'sındakidir. "Kural" atıfları raporun brief numa
 | 17  | Bildirim yeri                                                                             | Zil yalnızca Mesajlar'da; alt çubuktaki Mesajlar sekmesinde okunmamış noktası (K-6, §4.G)                                                                                                                                   |
 | 18  | Masa daveti: kapsam, süre, kim davet eder, davete katılanın masası, davet gönderme ekranı | Aynı mekanda check-in'i olan arkadaşa, mekan adı olmadan, 2 dakika, yalnızca sahip; boş masa sessizce kapanır (§4.B-8, §4.G). Gönderme ekranı bütün arkadaşları listeler, kimin mekanda olduğu görünmez (K-2); ekran v44'te |
 | 19  | Pas ve Doğru'nun iki renkli olması istisna mı?                                            | Evet: K-32 (P-19), 4.2'de tasarım sistemine istisna olarak yazılır                                                                                                                                                          |
-| 20  | Sahtekar: 30 sn, 2 sahtekar, kısmi yakalama                                               | P-8                                                                                                                                                                                                                         |
-| 21  | Kapışma: eşik, bire bir, gözlemci, aynı şarkı                                             | P-9                                                                                                                                                                                                                         |
-| 22  | İbre: "herkes hazırsa kilitlenir", sol-sağ tahmini, tur sayısı ve süreler                 | "Herkes hazırsa kilitlenir" ve süre sonunda kilit kabul; 4 tur, ipucu 30 sn, ayar 45 sn (§4.F). Sol-sağ P-10                                                                                                                |
-| 23  | Sohbet kartları: kim geçirir, başka oyun başlarsa, Ya da'da kim neyi seçti                | P-11                                                                                                                                                                                                                        |
+| 20  | Sahtekar: 30 sn, 2 sahtekar, kısmi yakalama                                               | K-71 (P-8)                                                                                                                                                                                                                  |
+| 21  | Kapışma: eşik, bire bir, gözlemci, aynı şarkı                                             | K-72 (P-9)                                                                                                                                                                                                                  |
+| 22  | İbre: "herkes hazırsa kilitlenir", sol-sağ tahmini, tur sayısı ve süreler                 | "Herkes hazırsa kilitlenir" ve süre sonunda kilit kabul; 4 tur, ipucu 30 sn, ayar 45 sn (§4.F). Sol-sağ K-73 (P-10)                                                                                                         |
+| 23  | Sohbet kartları: kim geçirir, başka oyun başlarsa, Ya da'da kim neyi seçti                | K-74 (P-11)                                                                                                                                                                                                                 |
 | 24  | Kartlar ve kelime havuzları                                                               | Havuzlar hazır (Kapsül Anlat 547, Harf Kapmaca 174 kategori, İbre 225, Şarkıda Geçsin 445, Sohbet kartları 160, Sahtekar 526 kelime); yalnızca Kampüs ve Ya da temaları yazılır (§4.F)                                      |
 | 25  | Masa sohbetinde grup adı                                                                  | Kalkar: kişi yalnızca nick'iyle ya da gerçek adıyla görünür (§4.B-7)                                                                                                                                                        |
 
