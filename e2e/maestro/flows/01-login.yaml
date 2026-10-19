@@ -89,11 +89,20 @@ appId: app.kabuk.mobile
     notVisible:
       id: photo-from-library
     timeout: 10000
-# The profile is sent: Android's back leaves the last step where it is.
-- pressKey: back
+# The profile is sent: Android's back leaves the last step where it is. Pressed five times: without
+# the step's own back handler a press would open the step below (which sends the phone straight
+# back here, so one press proves nothing), and the presses would run out of steps and close the app.
+- repeat:
+    times: 5
+    commands:
+      - pressKey: back
 - assertVisible:
     id: signup-photo-step
 # No photo: the last step's button is "Fotoğrafsız bitir" (K-29).
+- scrollUntilVisible:
+    element:
+      id: signup-finish
+    timeout: 10000
 - assertVisible: Fotoğrafsız bitir
 - tapOn:
     id: signup-finish

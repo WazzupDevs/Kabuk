@@ -3,7 +3,9 @@
 # comes while the phone is on the venue screen, and after "Kabul" the table card says the bot's table
 # is coming (§23.E) until the card's head opens the table. Then the table screen (K-36): looking
 # makes nothing, picking a game makes the private one-table room and starts the game in it;
-# "Masayı bitir" closes it.
+# "Masayı bitir" closes it. Then Sohbet kartları from the table screen: the room opens on its first
+# card, and Android's back from the game lands on the venue (the room took the table screen's
+# place).
 appId: app.kabuk.mobile
 ---
 - tapOn:
@@ -153,3 +155,44 @@ appId: app.kabuk.mobile
     id: end-room
 - assertNotVisible: Bir şeyler ters gitti
 - takeScreenshot: 29d-room-ended
+# Sohbet kartları from the table screen: its first card is on screen when the room opens.
+- tapOn:
+    id: go-to-table
+- scrollUntilVisible:
+    element:
+      id: solo-sohbet
+    timeout: 15000
+- tapOn:
+    id: solo-sohbet
+- extendedWaitUntil:
+    visible: 'Sonraki( \(\d+ sn\))?'
+    timeout: 15000
+- takeScreenshot: 29e-solo-sohbet
+# Back from the game: the venue, not the table screen.
+- back
+- extendedWaitUntil:
+    visible: Masanla oynuyorsun
+    timeout: 10000
+- assertNotVisible:
+    id: solo-tabu
+# The card's head opens the room; the game and the room close as before.
+- tapOn:
+    id: go-to-table
+- scrollUntilVisible:
+    element:
+      id: end-game
+    timeout: 15000
+- tapOn:
+    id: end-game
+- tapOn:
+    id: end-game-confirm
+- scrollUntilVisible:
+    element:
+      id: end-room
+    timeout: 15000
+- tapOn:
+    id: end-room
+- extendedWaitUntil:
+    visible:
+      id: lobby-open
+    timeout: 15000

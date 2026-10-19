@@ -68,7 +68,11 @@ export default function ConsentsAfterCode() {
           <EmptyState
             icon="cloud-offline-outline"
             body={errorMessage(profile.error)}
-            action={{ label: tr.common.retry, onPress: () => void profile.refetch() }}
+            action={{
+              label: tr.common.retry,
+              onPress: () => void profile.refetch(),
+              loading: profile.isRefetching,
+            }}
           />
         </View>
       </Screen>

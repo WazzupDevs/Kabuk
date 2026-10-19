@@ -58,12 +58,30 @@ appId: app.kabuk.mobile
       id: member-pending
     timeout: 15000
 - takeScreenshot: 61-teams-member-pending
+# While it waits the card's head opens the table screen (no room yet, K-36); the acceptance takes
+# that screen to the room. Not centred: the head is near the page's top and cannot be.
+- scrollUntilVisible:
+    element:
+      id: go-to-table
+    direction: UP
+    timeout: 10000
+- tapOn:
+    id: go-to-table
+- extendedWaitUntil:
+    visible:
+      id: solo-tabu
+    timeout: 15000
 - runScript:
     file: ../scripts/bot.js
     env:
       ACTION: accept-request
+- extendedWaitUntil:
+    visible:
+      id: leave-room
+    timeout: 20000
+- back
 # On bot A's side in the lobby (docs/SPEC_V3.md §23.C): the table card says so, its head opens the
-# room and "Masadan çık" is under it; nothing sends the phone to the room.
+# room and "Masadan çık" is under it; on the venue nothing sends the phone to the room.
 - extendedWaitUntil:
     visible:
       id: leave-table

@@ -4,7 +4,7 @@ import { parseSahtekarState } from '@shared/sahtekar.ts';
 import { parseSayState } from '@shared/sayChallenge.ts';
 import { parseBetweenGames, parseGameState, type TableSide } from '@shared/tabu.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { View } from 'react-native';
 
 import { Card } from '@/components/Card';
@@ -60,6 +60,9 @@ type Props = {
   // can lay the running game out full screen.
   localGame: LocalGame | null;
   onLocalGame: (game: LocalGame | null) => void;
+  // Sohbet kartları was picked before the room (the table screen) and its first card did not come:
+  // asked for once when the room opens, its error under the game as if picked here.
+  askFirstCard?: boolean;
 };
 
 export const LOCAL_GAMES = ['tabu', 'sahtekar', 'harf', 'sarki', 'ibre'] as const;
@@ -112,6 +115,7 @@ export function GameArea({
   roomHeadcount,
   localGame,
   onLocalGame: setLocalGame,
+  askFirstCard = false,
 }: Props) {
   const queryClient = useQueryClient();
 
@@ -121,6 +125,13 @@ export function GameArea({
     mutationFn: () => gamesApi.sohbetNext(roomId),
     onSettled: refresh,
   });
+  const { mutate: askCard } = startSohbet;
+  const asked = useRef(false);
+  useEffect(() => {
+    if (!askFirstCard || asked.current || hasGuest || concept !== null) return;
+    asked.current = true;
+    askCard();
+  }, [askFirstCard, hasGuest, concept, askCard]);
 
   const between = parseBetweenGames(gameState);
   const last = between.lastGame;

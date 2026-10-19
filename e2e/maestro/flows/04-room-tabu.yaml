@@ -29,6 +29,21 @@ appId: app.kabuk.mobile
     visible: 2 hakkın kaldı
     timeout: 15000
 - takeScreenshot: 11b-alias-rerolled
+# The other two: with none left the link goes and only the line that says so stays (it wraps inside
+# the card at the largest text size).
+- tapOn:
+    id: reroll-alias
+- extendedWaitUntil:
+    visible: 1 hakkın kaldı
+    timeout: 15000
+- tapOn:
+    id: reroll-alias
+- extendedWaitUntil:
+    visible: Bu masada adı değiştirme hakkın bitti
+    timeout: 15000
+- assertNotVisible:
+    id: reroll-alias
+- takeScreenshot: 11c-alias-rerolls-done
 # The table card (alias, spot, "Lobiye aç", "Davet et") is above the lobby: scroll to it.
 - scrollUntilVisible:
     element:
@@ -161,6 +176,21 @@ appId: app.kabuk.mobile
 - assertNotVisible:
     id: lobby-open
 - takeScreenshot: 13d-venue-in-lobby
+# "Davet et" on a table in the lobby: the name and how a friend joins, no "Lobiye aç".
+- tapOn:
+    id: invite-open
+- extendedWaitUntil:
+    visible:
+      id: invite-sheet
+    timeout: 10000
+- assertNotVisible:
+    id: invite-open-lobby
+- takeScreenshot: 13e-invite-in-lobby
+- back
+- extendedWaitUntil:
+    notVisible:
+      id: invite-sheet
+    timeout: 10000
 # The card's head: today's waiting room, where the table can play on its own until another table joins.
 - scrollUntilVisible:
     element:

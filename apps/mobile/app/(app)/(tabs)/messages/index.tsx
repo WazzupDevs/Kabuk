@@ -76,7 +76,11 @@ function Chats({ now }: { now: Date }) {
       <EmptyState
         icon="cloud-offline-outline"
         body={errorMessage(inbox.error)}
-        action={{ label: tr.common.retry, onPress: () => void inbox.refetch() }}
+        action={{
+          label: tr.common.retry,
+          onPress: () => void inbox.refetch(),
+          loading: inbox.isRefetching,
+        }}
       />
     );
   }

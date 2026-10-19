@@ -1,7 +1,8 @@
 # The profile steps after the code (docs/SPEC_V4.md §4.C, the v45 report §1): the display name
 # (4/7), the birth date (5/7) and the gender (6/7; docs/SPEC_V3.md §23.D), from env NAME, DAY,
 # MONTH, YEAR. "Kadın", so the game flow's flows keep the anonymous or profiled choice. The gender
-# step sends the profile.
+# step sends the profile. Every step scrolls to its button first: at the largest font size on a
+# small screen it can be under the fold (the steps are a scrolling page, not a timed screen).
 appId: app.kabuk.mobile
 ---
 - tapOn:
@@ -9,6 +10,10 @@ appId: app.kabuk.mobile
 - eraseText
 - inputText: ${NAME}
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: name-continue
+    timeout: 10000
 - tapOn:
     id: name-continue
 - extendedWaitUntil:
@@ -20,6 +25,10 @@ appId: app.kabuk.mobile
 - extendedWaitUntil:
     visible:
       id: signup-name-step
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: name-continue
     timeout: 10000
 - tapOn:
     id: name-continue
@@ -37,6 +46,10 @@ appId: app.kabuk.mobile
     id: birth-year
 - inputText: ${YEAR}
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: birth-continue
+    timeout: 10000
 - tapOn:
     id: birth-continue
 - extendedWaitUntil:
@@ -45,5 +58,9 @@ appId: app.kabuk.mobile
     timeout: 10000
 - tapOn:
     id: gender-female
+- scrollUntilVisible:
+    element:
+      id: gender-continue
+    timeout: 10000
 - tapOn:
     id: gender-continue

@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { BADGES } from '@shared/badges.ts';
 import { router } from 'expo-router';
-import { View } from 'react-native';
+import { useWindowDimensions, View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
@@ -20,7 +20,7 @@ import { useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { useTheme } from '@/theme/ThemeProvider';
-import { ICON } from '@/theme/tokens';
+import { ICON, NARROW_SCREEN } from '@/theme/tokens';
 
 // The own profile (docs/SPEC_V2.md §5; v45: .prof, self). The photo, the name and the bio change on
 // the edit screen; settings open only from the round sliders button (top right), beside the bell
@@ -33,6 +33,10 @@ export default function ProfileScreen() {
   const view = useProfileView(publicId);
   const friends = useFriends();
   const loading = useLoaderHold(view.isPending);
+  // Half a row is too narrow for "Profili düzenle" under 360 dp (times the font scale): "Düzenle",
+  // the full name still read out.
+  const { width, fontScale } = useWindowDimensions();
+  const narrow = width < NARROW_SCREEN * Math.max(1, fontScale);
 
   const hasName = !!own.data?.display_name;
   const friendCount = friends.data?.length;
@@ -64,13 +68,18 @@ export default function ProfileScreen() {
         <EmptyState
           icon="cloud-offline-outline"
           body={errorMessage(view.error)}
-          action={{ label: tr.common.retry, onPress: () => void view.refetch() }}
+          action={{
+            label: tr.common.retry,
+            onPress: () => void view.refetch(),
+            loading: view.isRefetching,
+          }}
         />
       ) : (
         <View className="mt-2 gap-4">
           <ProfileHead profile={view.data}>
             {/* v45: .pbtns, two quiet capsules in v45's 14 px (the small size, so "Profili düzenle"
-                fits half a row from 360 dp); "Arkadaşlar" with the first friends' photos. */}
+                fits half a row from 360 dp; "Düzenle" below); "Arkadaşlar" with the first friends'
+                photos. */}
             <View className="flex-row gap-2.5">
               <View className="flex-1">
                 <Button
@@ -91,7 +100,10 @@ export default function ProfileScreen() {
                   variant="neutral"
                   size="sm"
                   icon={hasName ? 'create-outline' : 'add'}
-                  label={hasName ? tr.profile.edit : tr.profile.addName}
+                  label={
+                    hasName ? (narrow ? tr.profile.editShort : tr.profile.edit) : tr.profile.addName
+                  }
+                  accessibilityLabel={hasName ? tr.profile.edit : undefined}
                   onPress={() => router.push('/profile/edit')}
                 />
               </View>

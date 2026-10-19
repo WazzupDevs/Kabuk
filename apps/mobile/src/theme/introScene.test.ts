@@ -13,6 +13,7 @@ import {
   INTRO_LOOKS,
   introMinHeight,
   introScene,
+  jumpRoom,
   lampFrame,
   phoneFrame,
   ringFrame,
@@ -149,6 +150,30 @@ describe('the intro scene (v45 §2, K-27, K-28)', () => {
           expect(mid + half).toBeLessThanOrEqual(w);
         }
       }
+    }
+  });
+
+  it('keeps a tapped capsule inside the scene box too: its jump is cut near the top', () => {
+    for (const [w, h] of SIZES) {
+      const s = introScene(w, h);
+      for (const c of s.chars) {
+        for (let t = 0; t <= INTRO.endMs + 1000; t += 5) {
+          const f = charFrame(c, t);
+          if (f.opacity === 0) continue;
+          // At the jump's peak: the body lifts by dy and stretches from its middle.
+          const b = bodyFrame(c, t, 0.4, jumpRoom(f, s.ch));
+          const rise = (-b.dy + (b.sy - 1) / 2) * s.ch * f.s;
+          const top = f.y + s.ch * (1 - f.s) - rise;
+          expect(top, `${w}x${h} ${c.look} at ${t} ms`).toBeGreaterThanOrEqual(0);
+        }
+      }
+    }
+    // Where there is room (every seat at the end, at a phone's usual size), the whole jump.
+    const s = introScene(360, 290);
+    for (const c of s.chars) {
+      const b = bodyFrame(c, INTRO.endMs, 0.4, jumpRoom(charFrame(c, INTRO.endMs), s.ch));
+      expect(b.dy).toBeCloseTo(-0.34);
+      expect(b.sy).toBeCloseTo(1.04);
     }
   });
 
