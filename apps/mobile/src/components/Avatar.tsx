@@ -9,8 +9,10 @@ import { TABLE_AVATAR_IMAGES } from './Glyph';
 import { Mark } from './Mark';
 import { Text } from './Text';
 
-// sm 32 (chat), md 40 (top bars), lg 48, xl 56 (list rows and room cards), hero 72 (the table card).
+// xs 20 (the friends' photos on the profile's "Arkadaşlar"), sm 32 (chat), md 40 (top bars), lg 48,
+// xl 56 (list rows and room cards), hero 72 (the table card).
 export const AVATAR_SIZE = {
+  xs: SPACING[5],
   sm: SPACING[8],
   md: SPACING[10],
   lg: TOUCH.button,

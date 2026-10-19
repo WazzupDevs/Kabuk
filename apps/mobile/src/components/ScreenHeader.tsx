@@ -11,6 +11,8 @@ import { Text } from './Text';
 
 type Props = {
   title: string;
+  // Right after the title, quieter (Arkadaşlar's count; v45: .fpin h1 small).
+  titleDetail?: string;
   eyebrow?: string;
   eyebrowIcon?: IconName;
   subtitle?: string;
@@ -28,6 +30,7 @@ const LONG_TITLE = 22;
 // and a subtitle.
 export function ScreenHeader({
   title,
+  titleDetail,
   eyebrow,
   eyebrowIcon,
   subtitle,
@@ -56,6 +59,11 @@ export function ScreenHeader({
           className="flex-1"
         >
           {title}
+          {titleDetail ? (
+            <Text variant="heading" tone="muted">
+              {` ${titleDetail}`}
+            </Text>
+          ) : null}
         </Text>
         {trailing}
         {action ? (

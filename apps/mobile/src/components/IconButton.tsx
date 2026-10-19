@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
+import Svg, { Rect } from 'react-native-svg';
 
 import { BRAND } from '@/theme/brand';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -78,5 +79,19 @@ export function MoreDots() {
         />
       ))}
     </View>
+  );
+}
+
+// The profile's settings (v45: .pset .sl-ic): two slider tracks, their knobs in the mark's purple and
+// pink.
+export function SlidersGlyph() {
+  const { colors } = useTheme();
+  return (
+    <Svg width={ICON.lg - 2} height={ICON.lg - 2} viewBox="0 0 24 24">
+      <Rect x={3} y={6.8} width={18} height={2.6} rx={1.3} fill={colors.divider} />
+      <Rect x={3} y={14.6} width={18} height={2.6} rx={1.3} fill={colors.divider} />
+      <Rect x={13} y={3.6} width={5} height={9} rx={2.5} fill={BRAND.purple} />
+      <Rect x={6} y={11.4} width={5} height={9} rx={2.5} fill={BRAND.pink} />
+    </Svg>
   );
 }
