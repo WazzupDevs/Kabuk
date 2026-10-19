@@ -71,10 +71,12 @@ appId: app.kabuk.mobile
     visible: Masa şu an müsait değil.
     timeout: 80000
 - takeScreenshot: 12e-lobby-request-missed
+# Maestro counts a wait's timeout from the last tap (over a minute ago here, before the 60 s), so
+# this one is long enough to still leave some seconds.
 - extendedWaitUntil:
     visible:
       id: lobby-empty
-    timeout: 15000
+    timeout: 120000
 # The bot leaves the lobby; this phone opens its table to it at the same spot and the bot asks to
 # join.
 - runScript:
