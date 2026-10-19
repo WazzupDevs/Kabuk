@@ -3,10 +3,16 @@ import { describe, expect, it } from 'vitest';
 import { CHECKIN_RADIUS_M } from './checkin.ts';
 import {
   activityBucket,
+  defaultCity,
   describeEventTime,
   distanceMeters,
+  exploreCities,
   exploreLayout,
+  explorePlace,
+  filterVenues,
+  hasEventToday,
   isActivityBucket,
+  sortVenues,
 } from './explore.ts';
 
 describe('activityBucket', () => {
@@ -77,5 +83,103 @@ describe('exploreLayout', () => {
 
   it('brings the list and the map back from two venues on, and for none', () => {
     expect([0, 2, 3, 40].map(exploreLayout)).toEqual(['list', 'list', 'list', 'list']);
+  });
+});
+
+describe('Keşfet list (docs/SPEC_V4.md K-21, K-38, K-42)', () => {
+  // Friday 26 September 2026, 12:00 in Istanbul.
+  const now = Date.parse('2026-09-26T09:00:00Z');
+  const at = (iso: string, hours = 3) => ({
+    startsAt: iso,
+    endsAt: new Date(Date.parse(iso) + hours * 3_600_000).toISOString(),
+  });
+
+  it('counts an event running now or starting before midnight as today, not one that ended', () => {
+    expect(hasEventToday([at('2026-09-26T08:00:00Z')], now)).toBe(true); // running
+    expect(hasEventToday([at('2026-09-26T18:00:00Z')], now)).toBe(true); // 21:00 today
+    expect(hasEventToday([at('2026-09-25T20:00:00Z', 16)], now)).toBe(true); // since last night
+    expect(hasEventToday([at('2026-09-26T21:30:00Z')], now)).toBe(false); // 00:30 tomorrow
+    expect(hasEventToday([at('2026-09-26T04:00:00Z', 1)], now)).toBe(false); // ended at 08:00
+    expect(hasEventToday([], now)).toBe(false);
+  });
+
+  it('puts venues with an event today first, then sorts by name in Turkish', () => {
+    const venues = [
+      { name: 'Zeytin', events: [] },
+      { name: 'Çınar', events: [] },
+      { name: 'Şahin', events: [at('2026-09-26T18:00:00Z')] },
+      { name: 'Cadde', events: [at('2026-09-27T18:00:00Z')] },
+    ];
+    const sorted = sortVenues(venues, now);
+    expect(sorted.venues.map((v) => v.name)).toEqual(['Şahin', 'Cadde', 'Çınar', 'Zeytin']);
+    expect(sorted.sort).toBe('eventsFirst');
+    expect(sortVenues(venues.slice(0, 2), now)).toEqual({
+      venues: [venues[1], venues[0]],
+      sort: 'byName',
+    });
+  });
+
+  const venues = [
+    { name: 'Kampüs', city: 'Sakarya', district: 'Serdivan', kind: 'campus' },
+    { name: 'Köşe Kahve', city: 'İstanbul', district: 'Beylikdüzü', kind: 'cafe' },
+    { name: 'Liman Çay', city: 'İstanbul', district: 'Avcılar', kind: 'cafe' },
+  ];
+
+  it('lists the cities and their districts by name', () => {
+    expect(exploreCities(venues)).toEqual([
+      { city: 'İstanbul', districts: ['Avcılar', 'Beylikdüzü'] },
+      { city: 'Sakarya', districts: ['Serdivan'] },
+    ]);
+  });
+
+  it('picks the city with the most active venues, the first by name on a tie', () => {
+    expect(defaultCity(venues)).toBe('İstanbul');
+    expect(defaultCity(venues.slice(0, 2))).toBe('İstanbul');
+    expect(defaultCity([])).toBeNull();
+  });
+
+  it('keeps a remembered place while it still has a venue, else falls back to the default city', () => {
+    expect(explorePlace({ city: 'Sakarya', district: 'Serdivan' }, venues)).toEqual({
+      city: 'Sakarya',
+      district: 'Serdivan',
+    });
+    expect(explorePlace({ city: 'Sakarya', district: 'Adapazarı' }, venues)).toEqual({
+      city: 'Sakarya',
+      district: null,
+    });
+    expect(explorePlace({ city: 'Ankara', district: null }, venues)).toEqual({
+      city: 'İstanbul',
+      district: null,
+    });
+    expect(explorePlace(null, venues)).toEqual({ city: 'İstanbul', district: null });
+    expect(explorePlace(null, [])).toBeNull();
+  });
+
+  it('filters by place, kind and the name, Turkish letters alike', () => {
+    const names = (r: { name: string }[]) => r.map((v) => v.name);
+    const istanbul = { city: 'İstanbul', district: null };
+    expect(names(filterVenues(venues, { place: istanbul, kind: 'all', query: '' }))).toEqual([
+      'Köşe Kahve',
+      'Liman Çay',
+    ]);
+    expect(
+      names(
+        filterVenues(venues, {
+          place: { ...istanbul, district: 'Avcılar' },
+          kind: 'all',
+          query: '',
+        }),
+      ),
+    ).toEqual(['Liman Çay']);
+    expect(names(filterVenues(venues, { place: istanbul, kind: 'campus', query: '' }))).toEqual([]);
+    expect(names(filterVenues(venues, { place: istanbul, kind: 'all', query: '  KOSE ' }))).toEqual(
+      ['Köşe Kahve'],
+    );
+    expect(names(filterVenues(venues, { place: istanbul, kind: 'all', query: 'çay' }))).toEqual([
+      'Liman Çay',
+    ]);
+    expect(names(filterVenues(venues, { place: null, kind: 'campus', query: '' }))).toEqual([
+      'Kampüs',
+    ]);
   });
 });

@@ -83,3 +83,20 @@ export function useExploreVenue(id: string) {
   const venues = useExploreVenues();
   return { ...venues, venue: venues.data?.find((v) => v.id === id) ?? null };
 }
+
+// Each active venue's city (venues: every signed-in phone reads them; explore_venues has the
+// district only). Content changes it rarely, so the list keeps its minute and this half an hour.
+export function useVenueCities() {
+  return useQuery({
+    queryKey: ['venueCities'],
+    staleTime: 30 * 60_000,
+    queryFn: async (): Promise<Record<string, string>> => {
+      const { data, error } = await supabase
+        .from('venues')
+        .select('id, city')
+        .eq('is_active', true);
+      if (error) throw error;
+      return Object.fromEntries(data.map((v) => [v.id, v.city]));
+    },
+  });
+}

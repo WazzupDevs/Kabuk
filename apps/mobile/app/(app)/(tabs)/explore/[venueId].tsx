@@ -10,11 +10,12 @@ import { Text } from '@/components/Text';
 import { Loader } from '@/components/Loader';
 import { useCheckinDraft } from '@/features/checkin/draft';
 import { useExploreVenue } from '@/features/explore/useExploreVenues';
-import { BucketBadge, EventTag } from '@/features/explore/VenueTags';
+import { BucketLine, EventTag, VenueTile } from '@/features/explore/VenueTags';
 import { tr } from '@/i18n/tr';
 
 // A venue from Keşfet: its bucket, its event, and check-in. Choosing the venue here is the manual
-// selection; the position is taken next only to verify it (docs/SPEC_V2.md §4).
+// selection; the position is taken next only to verify it (docs/SPEC_V2.md §4). In v44's look until
+// 4.5 brings v44's check-in sheet in its place (docs/SPEC_V4.md K-43).
 export default function VenueDetailScreen() {
   const { venueId } = useLocalSearchParams<{ venueId: string }>();
   const { venue, isPending } = useExploreVenue(venueId);
@@ -45,12 +46,27 @@ export default function VenueDetailScreen() {
 
   return (
     <Screen>
-      <ScreenHeader title={venue.name} subtitle={venue.district} onBack={() => router.back()} />
-      <View className="mt-3 flex-row flex-wrap gap-1.5">
-        <BucketBadge bucket={venue.bucket} />
-        {venue.event ? <EventTag event={venue.event} /> : null}
-      </View>
-      <Card tone="note" className="mt-6">
+      <ScreenHeader title={tr.tabs.explore} onBack={() => router.back()} />
+      {/* v44's venue head (.ci-head): its kind on a tile, the name, the kind and district, the
+          bucket in words (K-41) and today's event. */}
+      <Card className="mt-3">
+        <View className="flex-row items-center gap-3">
+          <VenueTile kind={venue.kind} />
+          <View className="flex-1 gap-0.5">
+            <Text variant="title" accessibilityRole="header">
+              {venue.name}
+            </Text>
+            <Text variant="fine">
+              {tr.explore.venueSub(tr.explore.kindLabel[venue.kind], venue.district)}
+            </Text>
+          </View>
+        </View>
+        <View className="mt-3 flex-row flex-wrap items-center gap-x-3 gap-y-2">
+          <BucketLine bucket={venue.bucket} />
+          {venue.event ? <EventTag event={venue.event} /> : null}
+        </View>
+      </Card>
+      <Card tone="note" className="mt-3">
         <Text variant="fine">{tr.explore.checkInHint}</Text>
       </Card>
       <View className="mt-auto gap-3 pt-8">

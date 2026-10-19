@@ -374,9 +374,37 @@ export const tr = {
     },
   },
   explore: {
-    backToVenue: 'Mekan ekranına dön',
+    // "Şu an buradasın" (v44: .vhere): the own check-in, kept on this phone only.
+    here: 'Şu an buradasın',
+    hereAt: (spot: string | null) => (spot ? `${spot} · giriş yaptın` : 'Giriş yaptın'),
+    backToVenue: 'Mekana dön',
     views: { list: 'Liste', map: 'Harita' },
-    buckets: { calm: 'Sakin', lively: 'Hareketli', buzzing: 'Çok canlı' },
+    // The bucket of a venue's active tables (K-16, K-41): never a count.
+    buckets: { calm: 'Sessiz', lively: 'Birkaç açık masa', buzzing: 'Kalabalık' },
+    // Search and kind (v44: .dsearch, .vcats).
+    search: 'Mekan ara',
+    kinds: { all: 'Tümü', campus: 'Kampüs', cafe: 'Kafe ve mekan' },
+    kindsLabel: 'Mekan türü',
+    kindLabel: { campus: 'Kampüs', cafe: 'Kafe' },
+    venueSub: (kind: string, district: string) => `${kind} · ${district}`,
+    // City and district (v44: .vloc; K-38): chosen, never the phone's position (rule 6).
+    place: (city: string, district: string | null) => `${city} · ${district ?? 'Tüm semtler'}`,
+    placeLabel: (city: string, district: string | null) =>
+      `Şehir ve semt: ${city}, ${district ?? 'tüm semtler'}`,
+    placeTitle: 'Şehir ve semt',
+    placeNote:
+      'Mekanlar konumuna göre değil, seçtiğin şehir ve semte göre listelenir. Bugün etkinliği olanlar önce, sonra ada göre.',
+    city: 'Şehir',
+    district: 'Semt',
+    allDistricts: 'Tüm semtler',
+    showPlace: 'Göster',
+    // The count line (K-42).
+    countLine: (n: number, eventsFirst: boolean) =>
+      `${n} mekan · ${eventsFirst ? 'bugün etkinliği olanlar önce' : 'ada göre'}`,
+    noMatch: 'Mekan bulunamadı',
+    noMatchHint: 'Başka bir ad dene.',
+    noPlace: 'Bu semtte mekan yok',
+    noPlaceHint: 'Başka bir semt ya da şehir seç.',
     eventShort: 'Etkinlik',
     eventTag: (when: string, title: string) => `${when} · ${title}`,
     eventTime: (when: EventTime): string => {
@@ -392,8 +420,6 @@ export const tr = {
       }
     },
     empty: 'Şu an listede mekan yok.',
-    count: (n: number) => `${n} mekan`,
-    locationHidden: 'Konumun gösterilmez',
     viewSwitch: 'Görünüm',
     mapLabel: 'Mekan haritası. Bir mekana dokununca altta kartı açılır.',
     goToVenue: 'Mekana git',
