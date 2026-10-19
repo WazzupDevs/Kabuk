@@ -741,7 +741,6 @@ export const tr = {
     modeProfileHint: 'Mesajların adın ve fotoğrafınla görünür; masa adın görünmez.',
     writingAnonymous: 'Anonim yazıyorsun',
     writingProfile: 'Profilinle yazıyorsun',
-    profiled: 'profilli',
     you: 'Sen',
     messageMenu: 'Mesaj',
     sendRequest: 'Arkadaşlık isteği gönder',

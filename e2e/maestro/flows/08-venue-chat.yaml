@@ -54,7 +54,8 @@ appId: app.kabuk.mobile
 - assertVisible:
     id: venue-chat-mine
 - takeScreenshot: 36-venue-chat-mine
-# The bot writes with its profile; this phone sees its name and the "profilli" tag.
+# The bot writes with its profile; this phone sees its photo beside the bubble and its name inside it,
+# in its colour (v45: .vname).
 - runScript:
     file: ../scripts/bot.js
     env:

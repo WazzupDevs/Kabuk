@@ -39,6 +39,8 @@ const PAIRS: readonly Pair[] = [
   ['onViolet', 'violet', AA_TEXT], // initials, "profilli"
   ['read', 'canvas', AA_TEXT], // DM: read ticks next to the time
   ['read', 'surface', AA_TEXT],
+  // Inside the viewer's own bubble: the time in on-accent, a read tick in its own colour.
+  ['readOnAccent', 'accent', AA_LARGE],
   ['danger', 'canvas', AA_TEXT], // error messages
   ['danger', 'surface', AA_TEXT],
   ['success', 'surface', AA_TEXT], // turn summary counts (Doğru)

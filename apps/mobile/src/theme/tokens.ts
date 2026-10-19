@@ -20,6 +20,7 @@ export type Palette = {
   violet: string;
   onViolet: string;
   read: string; // DM: the double tick of a read message
+  readOnAccent: string; // the same tick inside the viewer's own (accent) bubble
   border: string; // the outline colour (cards, controls)
   divider: string; // hairlines: list rows, trust screens
   danger: string;
@@ -66,6 +67,7 @@ export const PALETTE_KEYS = [
   'violet',
   'onViolet',
   'read',
+  'readOnAccent',
   'border',
   'divider',
   'danger',
