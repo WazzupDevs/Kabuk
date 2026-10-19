@@ -15,6 +15,19 @@ export function normalize(s: string, { fold = true }: TextOptions = {}): string 
   return folded.replace(/[^\p{L}\p{N}]/gu, ' ');
 }
 
+// Compatibility forms folded (NFKC: full-width letters and digits, "﹫" and "＠" as "@") and
+// invisible format characters dropped (zero-width space and joiners, soft hyphen, direction marks);
+// the case and everything else kept.
+export function plainText(s: string): string {
+  return s.normalize('NFKC').replace(/\p{Cf}/gu, '');
+}
+
+// plainText in Turkish lowercase, with ı read as i ("@İrem" → "@irem", "INFO" → "info"): the form
+// contact details are matched in (K-34).
+export function canonicalize(s: string): string {
+  return plainText(s).toLocaleLowerCase('tr-TR').replace(/ı/g, 'i');
+}
+
 // Splits a normalized string into words and joins runs of single letters ("d e n i z" → "deniz").
 export function tokenize(s: string, options: TextOptions = {}): string[] {
   const tokens: string[] = [];

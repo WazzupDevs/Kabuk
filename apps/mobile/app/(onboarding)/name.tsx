@@ -1,3 +1,4 @@
+import { containsContact } from '@shared/profanity.ts';
 import { DISPLAY_NAME_MAX, DISPLAY_NAME_MIN } from '@shared/profile.ts';
 import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
@@ -10,6 +11,7 @@ import { useFriend } from '@/features/onboarding/useFriend';
 import { useGoOnce } from '@/features/onboarding/useGoOnce';
 import { tr } from '@/i18n/tr';
 import { greeting } from '@/lib/signupFriend';
+import { maxLengthFor } from '@/lib/textLimit';
 
 // The display name, step 4/7. Kept on the phone until the gender step sends the profile; if the
 // server turns it down then, the phone comes back here and the step says why until it changes.
@@ -22,7 +24,9 @@ export default function NameStep() {
     () => useOnboardingStore.getState().name || profile.data?.display_name || '',
   );
   const length = [...name.trim()].length;
-  const valid = length >= DISPLAY_NAME_MIN && length <= DISPLAY_NAME_MAX;
+  // K-34: no phone, e-mail, username or link; the server checks the same.
+  const contact = containsContact(name);
+  const valid = length >= DISPLAY_NAME_MIN && length <= DISPLAY_NAME_MAX && !contact;
   const friend = useFriend();
   const bubble = greeting(name, valid, { named: tr.signup.hello, plain: tr.signup.helloPlain });
 
@@ -59,7 +63,8 @@ export default function NameStep() {
           setName(text);
           if (nameError) useOnboardingStore.setState({ nameError: null });
         }}
-        maxLength={DISPLAY_NAME_MAX}
+        error={contact ? tr.errors.contact_not_allowed : null}
+        maxLength={maxLengthFor(name, DISPLAY_NAME_MAX)}
         autoCapitalize="words"
         autoCorrect={false}
         autoComplete="given-name"

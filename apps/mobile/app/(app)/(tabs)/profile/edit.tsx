@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { containsContact } from '@shared/profanity.ts';
 import { BIO_MAX, DISPLAY_NAME_MAX, DISPLAY_NAME_MIN } from '@shared/profile.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
@@ -21,6 +22,7 @@ import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { profileApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { maxLengthFor } from '@/lib/textLimit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
@@ -116,9 +118,23 @@ function EditForm({
   const [bio, setBio] = useState(initialBio);
 
   const nameLength = [...name.trim()].length;
-  const nameValid = nameLength >= DISPLAY_NAME_MIN && nameLength <= DISPLAY_NAME_MAX;
   const nameChanged = name.trim() !== initialName;
   const bioChanged = bio.trim() !== initialBio;
+  // K-34: no phone, e-mail, username or link; the server checks the same. A bio from before the
+  // 80 limit stays until it is edited.
+  const nameContact = nameChanged && containsContact(name);
+  const bioContact = bioChanged && containsContact(bio);
+  const nameValid =
+    nameLength >= DISPLAY_NAME_MIN && nameLength <= DISPLAY_NAME_MAX && !nameContact;
+  // An edited bio from before the limit that is still too long says so (Kaydet stays off).
+  const bioTooLong = bioChanged && [...bio.trim()].length > BIO_MAX;
+  const bioValid = !bioChanged || (!bioTooLong && !bioContact);
+  const bioLimit = Math.max(BIO_MAX, [...initialBio].length);
+  const bioError = bioContact
+    ? tr.errors.contact_not_allowed
+    : bioTooLong
+      ? tr.profile.bioTooLong(BIO_MAX)
+      : null;
 
   const save = useMutation({
     meta: FEEL_ERROR,
@@ -149,7 +165,8 @@ function EditForm({
           hint={tr.profile.nameHint}
           value={name}
           onChangeText={setName}
-          maxLength={DISPLAY_NAME_MAX}
+          error={nameContact ? tr.errors.contact_not_allowed : null}
+          maxLength={maxLengthFor(name, DISPLAY_NAME_MAX)}
           autoCapitalize="words"
           autoCorrect={false}
         />
@@ -158,7 +175,8 @@ function EditForm({
           counter={tr.profile.bioHint([...bio].length, BIO_MAX)}
           value={bio}
           onChangeText={setBio}
-          maxLength={BIO_MAX}
+          error={bioError}
+          maxLength={maxLengthFor(bio, bioLimit)}
           multiline
           tall
         />
@@ -181,7 +199,7 @@ function EditForm({
         <Button
           label={tr.profile.save}
           onPress={() => save.mutate()}
-          disabled={!nameValid || (!nameChanged && !bioChanged)}
+          disabled={!nameValid || !bioValid || (!nameChanged && !bioChanged)}
           loading={save.isPending}
         />
         <Button variant="ghost" label={tr.common.cancel} onPress={() => router.back()} />

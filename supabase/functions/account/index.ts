@@ -96,6 +96,10 @@ async function completeOnboarding(userId: string, body: CompleteOnboardingReques
   let displayName = existing.data?.display_name ?? null;
   if (body.displayName !== undefined) {
     const checked = checkDisplayName(body.displayName, await loadProfanity(db));
+    if (!checked.ok && checked.reason === 'contact') {
+      // K-34: a phone, an e-mail, a username or a link.
+      throw new AppError('contact_not_allowed', 'Contact details are not allowed.');
+    }
     if (!checked.ok || checked.value === null) {
       throw new AppError('display_name_invalid', 'Invalid display name.');
     }

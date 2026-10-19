@@ -196,7 +196,7 @@ describe('profile/update', () => {
       status: 200,
       body: { ok: true },
     });
-    for (const bio of ['x'.repeat(161), 'selam aq']) {
+    for (const bio of ['x'.repeat(81), 'selam aq']) {
       expect(await profile(client, { action: 'update', bio })).toEqual({
         status: 422,
         body: errorBody('bio_invalid'),
@@ -210,6 +210,65 @@ describe('profile/update', () => {
     });
     await profile(client, { action: 'update', bio: '  ' });
     expect((await sql`select bio from public.profiles where id = ${id}`)[0]).toEqual({ bio: null });
+  });
+
+  // K-34 (docs/SPEC_V4.md §4.C): no way to reach someone off the app, rejected, not masked.
+  it('rejects a phone, an e-mail, a username or a link in the name and the bio', async () => {
+    const client = await onboarded(PHONES[0]);
+    for (const displayName of ['Elif 0532 123 45 67', 'elif@gmail.com', '@elifkaya', 'elif.com']) {
+      expect(await profile(client, { action: 'update', displayName })).toEqual({
+        status: 422,
+        body: errorBody('contact_not_allowed'),
+      });
+    }
+    for (const bio of [
+      'ara 5321234567',
+      'yaz: elif@gmail.com',
+      'insta @elif',
+      't.me/elif',
+      'ig: elif.kaya',
+      'O532 l23 45 67',
+      'elif [at] gmail [dot] com',
+      'goo.gl/abc',
+    ]) {
+      expect(await profile(client, { action: 'update', bio })).toEqual({
+        status: 422,
+        body: errorBody('contact_not_allowed'),
+      });
+    }
+    expect(
+      await profile(client, {
+        action: 'update',
+        displayName: 'Dr. Elif',
+        bio: '1998, Sakarya Üni.',
+      }),
+    ).toEqual({ status: 200, body: { ok: true } });
+    for (const bio of ['1071 1453 1923', 'Kafa dengi.Net konuşurum', 'insta yok']) {
+      expect(await profile(client, { action: 'update', bio })).toEqual({
+        status: 200,
+        body: { ok: true },
+      });
+    }
+  });
+
+  // A bio from before the 80 limit stays until it is edited (K-34).
+  it('keeps a longer bio from before while it is unchanged', async () => {
+    const client = await named(PHONES[0], 'Deniz');
+    const id = await userIdOf(client);
+    const old = 'k'.repeat(150);
+    await sql`update public.profiles set bio = ${old} where id = ${id}`;
+    expect(await profile(client, { action: 'update', displayName: 'Deniz K.', bio: old })).toEqual({
+      status: 200,
+      body: { ok: true },
+    });
+    expect(await profile(client, { action: 'update', bio: `${old}!` })).toEqual({
+      status: 422,
+      body: errorBody('bio_invalid'),
+    });
+    expect((await sql`select display_name, bio from public.profiles where id = ${id}`)[0]).toEqual({
+      display_name: 'Deniz K.',
+      bio: old,
+    });
   });
 
   // The default participation is gone (docs/SPEC_V3.md §5.4): an old app sending it changes nothing.

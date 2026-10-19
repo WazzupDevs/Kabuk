@@ -49,10 +49,15 @@ const Body: z.ZodType<ProfileRequest> = z.union([
 const db = serviceClient();
 const photos = () => db.storage.from(PHOTO_BUCKET);
 
+// K-34: a phone, an e-mail, a username or a link in a display name or a bio.
+function contactError(): AppError {
+  return new AppError('contact_not_allowed', 'Contact details are not allowed.');
+}
+
 async function ownProfile(userId: string) {
   const { data, error } = await db
     .from('profiles')
-    .select('public_id, display_name, photo_path, photo_pending_path')
+    .select('public_id, display_name, bio, photo_path, photo_pending_path')
     .eq('id', userId)
     .single();
   if (error) throw dbError('profiles', error);
@@ -184,14 +189,18 @@ Deno.serve(
 
         if (body.displayName !== undefined) {
           const checked = checkDisplayName(body.displayName, terms);
+          if (!checked.ok && checked.reason === 'contact') throw contactError();
           if (!checked.ok || checked.value === null) {
             throw new AppError('display_name_invalid', 'Invalid display name.');
           }
           changes.display_name = checked.value;
           name = checked.value;
         }
-        if (body.bio !== undefined) {
+        // An unchanged bio is not checked again: one from before the 80 limit stays until it is
+        // edited (K-34).
+        if (body.bio !== undefined && body.bio.trim() !== (me.bio ?? '')) {
           const checked = checkBio(body.bio, terms);
+          if (!checked.ok && checked.reason === 'contact') throw contactError();
           if (!checked.ok) throw new AppError('bio_invalid', 'Invalid bio.');
           if (checked.value !== null) requireName(name);
           changes.bio = checked.value;
