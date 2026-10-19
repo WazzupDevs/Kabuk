@@ -13,8 +13,15 @@
 // - in Maestro's own copy of the phone's log (`logs/device-logcat.txt` under --test-output-dir),
 //   which covers the flow and is read before Maestro stops its driver: in none of those 476, #103's
 //   real assertion failure among them; or
-// - in the job's own logcat, earlier than the step that failed (maestro.log's first FAILED).
-// A driver Maestro cannot reach shows in what Maestro prints or logs.
+// - in the job's own logcat, at least CRASH_MARGIN_MS before the failed step started (its RUNNING
+//   line in maestro.log). The emulator's clock can lag Maestro's by half a second (247d8dc large-4:
+//   Maestro 13:52:12.238, the phone 13:52:11.757), and on a real failure Maestro's own stop writes
+//   the line ~1 s after the FAILED line (19 Oct nightly large-1: FAILED 06:29:03.730, the line
+//   06:29:04.611). A step waits seconds for its element before failing, so a margin from its
+//   start keeps that stop line out; #151's crash came 15 s before its step failed.
+// A driver Maestro cannot reach shows in what Maestro prints, logs or reports: #164's test run
+// (5b07df55, light-2) reported "maestro.android.DeviceServerDiedException: Device server died
+// during 'viewHierarchy' … StatusRuntimeException: UNAVAILABLE" in report.xml alone.
 
 export type Attempt = {
   // Maestro's log of the flow (logs/maestro.log under --test-output-dir).
@@ -26,6 +33,8 @@ export type Attempt = {
   logcat: string;
   // What `maestro test` printed.
   console: string;
+  // Maestro's JUnit report (report.xml), its failure message.
+  report: string;
 };
 
 const DRIVER_CRASH = /Crash of app dev\.mobile\.maestro\b/;
@@ -33,23 +42,28 @@ const DRIVER_CRASH = /Crash of app dev\.mobile\.maestro\b/;
 // UNAVAILABLE: the driver's port answers no more).
 const UNREACHABLE = [
   /Maestro Android driver did not start up in time/,
+  /DeviceServerDiedException/,
   /StatusRuntimeException: UNAVAILABLE/,
 ];
 const DAY_MS = 24 * 60 * 60 * 1000;
+export const CRASH_MARGIN_MS = 5_000;
 
 // Why the attempt is run once more (one line, for the job summary), or null.
 export function retryReason(a: Attempt): string | null {
   if (DRIVER_CRASH.test(a.deviceLogcat)) {
     return "Maestro'nun telefondaki sürücüsü akış sürerken çöktü (Maestro'nun cihaz logunda `Crash of app dev.mobile.maestro`)";
   }
-  const failedAt = firstFailure(a.maestroLog);
-  if (failedAt) {
-    const crash = driverCrashesInLogcat(a.logcat).find((at) => before(at.ms, failedAt.ms));
+  const failed = failedStep(a.maestroLog);
+  if (failed) {
+    const latest = (failed.started.ms - CRASH_MARGIN_MS + DAY_MS) % DAY_MS;
+    const crash = driverCrashesInLogcat(a.logcat).find(
+      (at) => at.ms === latest || before(at.ms, latest),
+    );
     if (crash) {
-      return `Maestro'nun telefondaki sürücüsü ${crash.time}'da çöktü, akış ${failedAt.time}'da düştü (logcat: \`Crash of app dev.mobile.maestro\`)`;
+      return `Maestro'nun telefondaki sürücüsü ${crash.time}'da çöktü, düşen adım ${failed.started.time}'da başlamıştı (logcat: \`Crash of app dev.mobile.maestro\`)`;
     }
   }
-  for (const text of [a.console, a.maestroLog]) {
+  for (const text of [a.report, a.console, a.maestroLog]) {
     for (const pattern of UNREACHABLE) {
       const line = text.split('\n').find((l) => pattern.test(l));
       if (line) {
@@ -62,10 +76,23 @@ export function retryReason(a: Attempt): string | null {
 
 type At = { time: string; ms: number };
 
-// The first step that failed: maestro.log's "HH:MM:SS.mmm [ INFO] …onCommandFinished: … FAILED".
-export function firstFailure(maestroLog: string): At | null {
-  const m = /^(\d\d:\d\d:\d\d\.\d{3}) .*onCommandFinished: .* FAILED$/m.exec(maestroLog);
-  return m?.[1] ? at(m[1]) : null;
+// The first step that failed (maestro.log's first "…onCommandFinished: <step> FAILED"; the step
+// itself, before the flows around it) and when it started: the last "…onCommandStart: <step>
+// RUNNING" before it.
+export function failedStep(maestroLog: string): { started: At; failed: At } | null {
+  const started = new Map<string, string>();
+  for (const line of maestroLog.split('\n')) {
+    const m = /^(\d\d:\d\d:\d\d\.\d{3}) .*onCommand(Start|Finished): (.*) (RUNNING|FAILED)$/.exec(
+      line,
+    );
+    if (!m?.[1] || !m[3]) continue;
+    if (m[2] === 'Start' && m[4] === 'RUNNING') started.set(m[3], m[1]);
+    if (m[2] === 'Finished' && m[4] === 'FAILED') {
+      const start = started.get(m[3]);
+      return start ? { started: at(start), failed: at(m[1]) } : null;
+    }
+  }
+  return null;
 }
 
 // Logcat's "MM-DD HH:MM:SS.mmm  pid  tid W ActivityManager: Crash of app dev.mobile.maestro …".

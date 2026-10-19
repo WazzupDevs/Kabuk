@@ -4,8 +4,8 @@
 # build job, set up the local stack and boot their emulator while it builds, then fetch the APK,
 # pick the design in Ayarlar → Tasarım (test) and run their shard. Nightly and by hand, the four
 # shards run once more in light at the largest text size (font_scale 1.3): twelve jobs. On a PR the
-# `e2e-large` label does the same: added, it runs the build and the four large jobs alone (the
-# eight others passed before it was added); while it is on, every push runs all twelve.
+# `e2e-large` label does the same: added, it runs the build and the four large jobs alone, after
+# the run still going (the eight others pass first); while it is on, every push runs all twelve.
 #
 # A shard whose flows fail because Maestro's driver on the phone crashed or could not be reached
 # runs once more on a fresh phone (scripts/e2e/retry.ts); a failing step alone never does. The job
@@ -35,14 +35,15 @@ on:
   schedule:
     - cron: '23 1 * * *'
 
-# A PR's new push (or the e2e or e2e-large label added again) replaces its run that is still going,
-# as in ci.yml. Another label checks nothing new: it gets a group of its own, so it never cancels
-# the run.
+# A PR's new push (or the e2e label added again) replaces its run that is still going, as in
+# ci.yml. Adding e2e-large never cancels: its four large jobs wait until the run still going (the
+# eight) has finished, then run; a new push still replaces both. Another label checks nothing new:
+# it gets a group of its own, so it never cancels the run.
 concurrency:
   group: >-
     e2e-${{ github.ref }}${{ github.event.action == 'labeled' && github.event.label.name != 'e2e'
     && github.event.label.name != 'e2e-large' && format('-{0}', github.run_id) || '' }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event.action != 'labeled' || github.event.label.name != 'e2e-large' }}
 
 permissions:
   contents: read
@@ -151,8 +152,9 @@ jobs:
        (contains(github.event.pull_request.labels.*.name, 'e2e') ||
         contains(github.event.pull_request.labels.*.name, 'e2e-large'))))
     runs-on: ubuntu-24.04
-    # A shard's own run takes ~16 minutes; a retry (below) another ~15.
-    timeout-minutes: 55
+    # A shard's own run takes ~16 minutes, a retry (below) as long again; at the largest text size
+    # the flows are slower (large-1's took 23.7 min), so a late crash and its retry need ~48.
+    timeout-minutes: ${{ matrix.font == '1.3' && 70 || 55 }}
     # actions: read for this run's e2e-apk artifact (run-on-emulator.sh).
     permissions:
       actions: read
@@ -331,8 +333,10 @@ jobs:
           emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: bash scripts/e2e/run-on-emulator.sh
+      # always(): also after a failed step on the retry's way (its reset), so the summary still says
+      # how the retry ended.
       - name: Result
-        if: steps.flows.outcome == 'failure'
+        if: always() && steps.flows.outcome == 'failure'
         env:
           RETRIED: ${{ steps.retry.outputs.reason != '' }}
           SECOND: ${{ steps.flows-retry.outcome }}

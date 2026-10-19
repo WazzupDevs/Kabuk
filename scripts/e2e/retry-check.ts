@@ -25,5 +25,6 @@ const reason = retryReason({
   deviceLogcat: read(found(out, 'device-logcat.txt')),
   logcat: read([join(out, 'logcat.txt')].filter((p) => existsSync(p))),
   console: read([join(out, 'maestro-console.txt')].filter((p) => existsSync(p))),
+  report: read([join(out, 'report.xml')].filter((p) => existsSync(p))),
 });
 if (reason) console.log(reason);
