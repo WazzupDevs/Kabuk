@@ -128,6 +128,7 @@ export default function SettingsScreen() {
         <View className="flex-row gap-2.5">
           <View className="flex-1">
             <Button
+              testID="settings-sign-out"
               variant="neutral"
               label={tr.settings.signOut}
               onPress={() => signOut.mutate()}

@@ -15,6 +15,18 @@ appId: app.kabuk.mobile
     visible:
       id: signup-birth-step
     timeout: 10000
+# Android's back goes to the name step, the name still there; its button works again.
+- pressKey: back
+- extendedWaitUntil:
+    visible:
+      id: signup-name-step
+    timeout: 10000
+- tapOn:
+    id: name-continue
+- extendedWaitUntil:
+    visible:
+      id: signup-birth-step
+    timeout: 10000
 - tapOn:
     id: birth-day
 - inputText: ${DAY}

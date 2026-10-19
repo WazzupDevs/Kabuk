@@ -19,6 +19,8 @@ export default defineConfig({
       'apps/mobile/src/i18n/**/*.test.ts',
       // Pure helpers of the app (haptic moments).
       'apps/mobile/src/lib/**/*.test.ts',
+      // The sign-up store (what a sign-out clears).
+      'apps/mobile/src/features/onboarding/**/*.test.ts',
     ],
   },
 });

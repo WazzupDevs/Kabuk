@@ -7,12 +7,13 @@ import { SPACING, TOUCH } from '@/theme/tokens';
 
 import { Text } from './Text';
 
-// Row avatar (48), the sign-up preview beside its buttons (72) and profile head (104, the mockup's
-// size). The sign-up photo step's empty circle takes the large size too.
+// Row avatar (48), the sign-up preview beside its buttons (72), the sign-up photo step and the edit
+// screen (104), and the profile's head (116, v45: .pav), which sits in a ring on a soft shadow.
 export const PROFILE_PHOTO_SIZES = {
   small: TOUCH.button,
   medium: TOUCH.large + SPACING[2],
   large: 104,
+  hero: 116,
 } as const;
 const SIZES = PROFILE_PHOTO_SIZES;
 
@@ -32,12 +33,14 @@ export function ProfilePhoto({ url, name, size = 'large' }: Props) {
   const { colors, shape } = useTheme();
   const photo = usePhoto(url);
   const side = SIZES[size];
+  const hero = size === 'hero';
   const frame = {
     width: side,
     height: side,
     borderRadius: shape.radius.pill,
-    borderWidth: shape.stroke.card,
-    borderColor: colors.border,
+    borderWidth: hero ? SPACING[1] : shape.stroke.card,
+    borderColor: hero ? colors.surface : colors.border,
+    boxShadow: hero ? shape.shadow.card : undefined,
   };
 
   if (photo.url) {

@@ -6,10 +6,12 @@ import {
 } from '@shared/consent.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Redirect } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 
+import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
+import { Screen } from '@/components/Screen';
 import { useProfile } from '@/features/account/useProfile';
 import { ConsentBoxes } from '@/features/onboarding/ConsentBoxes';
 import { nextAfterConsents } from '@/features/onboarding/next';
@@ -21,10 +23,12 @@ import { tr } from '@/i18n/tr';
 import { callAccount } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 
-// After the code: the consents given on "Başlamadan önce" (before the phone, K-33) carry on. A new
-// account goes to the profile steps, which send them; an existing account whose texts changed sends
-// them now, once. Without them (an app restart, or texts updated since) "Başlamadan önce" is asked
-// here as before; then an account from before the gender step answers that once (§23.D).
+// After the code: the consents given on "Başlamadan önce" (before the phone, K-33) carry on to a new
+// account's profile steps, which send them. An existing account whose texts changed is asked again
+// here, always ("Metinler güncellendi"), even if it ticked the boxes before the phone: the notice
+// that the texts changed is the point. Without them (an app restart) "Başlamadan önce" is asked here
+// as before; then an account from before the gender step answers that once (§23.D). The account is
+// told apart only once its profile has loaded: a failed load is an error, not a new account.
 export default function ConsentsAfterCode() {
   const queryClient = useQueryClient();
   const profile = useProfile();
@@ -38,7 +42,6 @@ export default function ConsentsAfterCode() {
     set(!now);
     friend.react(!now && other ? 'ok' : 'nod');
   };
-  const hasProfile = !!profile.data && !needsProfile(profile.data);
 
   const reconsent = useMutation({
     meta: FEEL_ERROR,
@@ -51,26 +54,32 @@ export default function ConsentsAfterCode() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['profile'] }),
   });
 
-  // An existing account that accepted the current texts before the phone: send them once.
-  const sent = useRef(false);
-  const autoSend = current && hasProfile && !!profile.data && needsConsent(profile.data);
-  useEffect(() => {
-    if (!autoSend || sent.current) return;
-    sent.current = true;
-    reconsent.mutate();
-  }, [autoSend, reconsent]);
-
-  if (profile.data && !needsConsent(profile.data)) {
-    return <Redirect href={nextAfterConsents(profile.data)} />;
-  }
-  if (current && !hasProfile) return <Redirect href="/name" />;
-  if (autoSend && !reconsent.isError) {
+  if (profile.isPending) {
     return (
       <View className="flex-1 items-center justify-center bg-canvas">
         <Loader />
       </View>
     );
   }
+  if (profile.isError) {
+    return (
+      <Screen>
+        <View className="flex-1 justify-center">
+          <EmptyState
+            icon="cloud-offline-outline"
+            body={errorMessage(profile.error)}
+            action={{ label: tr.common.retry, onPress: () => void profile.refetch() }}
+          />
+        </View>
+      </Screen>
+    );
+  }
+
+  // null: a new account (no profile row yet).
+  const row = profile.data;
+  const hasProfile = row !== null && !needsProfile(row);
+  if (row && !needsConsent(row)) return <Redirect href={nextAfterConsents(row)} />;
+  if (current && !hasProfile) return <Redirect href="/name" />;
 
   const accept = () => {
     useOnboardingStore.setState({
@@ -84,7 +93,7 @@ export default function ConsentsAfterCode() {
       step={hasProfile ? undefined : 'consents'}
       testID="signup-consents"
       title={tr.consents.title}
-      body={profile.data && hasProfile ? tr.consents.outdated : tr.consents.body}
+      body={hasProfile ? tr.consents.outdated : tr.consents.body}
       error={reconsent.isError ? errorMessage(reconsent.error) : null}
       friend={friend}
       action={{

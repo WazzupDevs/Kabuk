@@ -1,5 +1,5 @@
 # From the first screen: "Başla", the two consents (step 1/7, before the phone; K-26, K-33), the
-# test number (2/7) and its fixed code (3/7).
+# test number (2/7) and its fixed code (3/7). Also the way back in for an existing account.
 appId: app.kabuk.mobile
 ---
 - tapOn:
@@ -9,6 +9,10 @@ appId: app.kabuk.mobile
       id: signup-consents
     timeout: 10000
 - takeScreenshot: 01a-consents
+# Unticked, every time (the boxes never carry over, not even after a sign-out): the button waits.
+- assertVisible:
+    id: consents-accept
+    enabled: false
 - tapOn: Kullanım Koşulları’nı okudum ve kabul ediyorum.
 - tapOn: KVKK Aydınlatma Metni’ni okudum.
 - tapOn:
