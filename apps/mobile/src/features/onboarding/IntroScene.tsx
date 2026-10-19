@@ -39,6 +39,7 @@ import {
   type IntroRing,
   type IntroScene as Scene,
   type IntroTable,
+  jumpRoom,
   lampFrame,
   phoneFrame,
   ringFrame,
@@ -143,7 +144,7 @@ const Capsule = memo(function Capsule({
     };
   });
   const body = useAnimatedStyle(() => {
-    const b = bodyFrame(c, t.value, jump.value);
+    const b = bodyFrame(c, t.value, jump.value, jumpRoom(charFrame(c, t.value), ch));
     return { transform: [{ translateY: b.dy * ch }, { scaleY: b.sy }] };
   });
   // A tap makes it jump (v45: obfJump), during the scene and after it: on the press itself, so a

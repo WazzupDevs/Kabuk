@@ -3,7 +3,7 @@ import { gameTag, type TableState } from '@shared/tableCard.ts';
 import { type RoomSeat, sideHeadcount } from '@shared/teams.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { Alert, Pressable, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
@@ -119,47 +119,33 @@ export function TableCard({
 
   // Kabul is the meeting (docs/SPEC_V3.md §23.E): the joining side goes to the host's table, the
   // host's side waits for it; once this phone has opened the table, "Birleşti".
-  const status =
-    state === 'off' ? (
-      <Status people={table.headcount} dot="off" label={tr.venue.lobbyOff} />
-    ) : state === 'open' || state === 'member' ? (
-      <Status people={table.headcount} dot="live" label={tr.venue.lobbyOpen} />
-    ) : state === 'merged' ? (
-      opened || !other?.alias ? (
-        <Status
-          people={table.headcount}
-          dot="merged"
-          label={tr.venue.merged}
-          testID="table-merged"
-        />
-      ) : mySide === 'guest' ? (
-        <Status
-          people={table.headcount}
-          dot="live"
-          label={tr.venue.acceptedGoTo(other.alias)}
-          testID="table-accepted"
-        />
-      ) : (
-        <Status
-          people={table.headcount}
-          dot="live"
-          label={tr.venue.coming(
-            other.alias,
-            sideHeadcount(other.headcount ?? 1, other.phones ?? 1),
-          )}
-          testID="table-coming"
-        />
-      )
-    ) : (
-      <Status people={table.headcount} dot="merged" label={tr.venue.solo} />
-    );
+  const status: StatusLine =
+    state === 'off'
+      ? { dot: 'off', label: tr.venue.lobbyOff }
+      : state === 'open' || state === 'member'
+        ? { dot: 'live', label: tr.venue.lobbyOpen }
+        : state === 'merged'
+          ? opened || !other?.alias
+            ? { dot: 'merged', label: tr.venue.merged, testID: 'table-merged' }
+            : mySide === 'guest'
+              ? { dot: 'live', label: tr.venue.acceptedGoTo(other.alias), testID: 'table-accepted' }
+              : {
+                  dot: 'live',
+                  label: tr.venue.coming(
+                    other.alias,
+                    sideHeadcount(other.headcount ?? 1, other.phones ?? 1),
+                  ),
+                  testID: 'table-coming',
+                }
+          : { dot: 'merged', label: tr.venue.solo };
+  const rerollsLeft = ALIAS_REROLLS_PER_CHECKIN - table.alias_rerolls;
 
   return (
     <Card className="mt-3" testID="table-card">
       <Pressable
         testID="go-to-table"
         accessibilityRole="button"
-        accessibilityLabel={`${table.alias}, ${tr.venue.openTable}`}
+        accessibilityLabel={tr.venue.tableHead(table.alias, table.headcount, status.label)}
         onPress={openTable}
         className="flex-row items-center gap-3"
         style={{ minHeight: TOUCH.min }}
@@ -169,27 +155,28 @@ export function TableCard({
           <Text variant="heading" testID="table-alias">
             {table.alias}
           </Text>
-          {status}
+          <Status people={table.headcount} {...status} />
         </View>
         <Icon name="chevron-forward" tone="muted" />
       </Pressable>
 
       {/* The quiet line (K-35): the time left, and without a room the spot and the name, as text
-          links so the line stays small (their touch areas grow to 44). */}
+          links so the line stays small (their touch areas grow to 44). Each part wraps inside
+          itself too, so nothing leaves the card at 320 dp and the largest text size. */}
       <View
         className="mt-2 flex-row flex-wrap items-center"
         style={{ columnGap: SPACING[3], rowGap: SPACING[2] }}
       >
-        <View className="flex-row items-center gap-1">
+        <QuietPart>
           <Icon name="time-outline" size={ICON.sm} tone="muted" />
-          <Text variant="fine">
+          <Text variant="fine" className="shrink">
             {tr.venue.remaining(Math.floor(minutesLeft / 60), minutesLeft % 60)}
           </Text>
-        </View>
+        </QuietPart>
         {state === 'off' && venueHasSpots ? (
-          <View className="flex-row items-center gap-1.5">
+          <QuietPart>
             <Icon name="location-outline" size={ICON.sm} tone="muted" />
-            <Text variant="fine">
+            <Text variant="fine" className="shrink">
               {table.spot?.name ? tr.venue.spot(table.spot.name) : tr.venue.noSpot}
             </Text>
             <QuietLink
@@ -197,21 +184,23 @@ export function TableCard({
               label={table.spot_id ? tr.venue.changeSpot : tr.venue.chooseSpot}
               onPress={() => router.push('/spot')}
             />
-          </View>
+          </QuietPart>
         ) : null}
         {state === 'off' ? (
-          <View className="flex-row items-center gap-1.5">
-            <QuietLink
-              testID="reroll-alias"
-              label={tr.venue.rerollAlias}
-              onPress={() => reroll.mutate()}
-              disabled={table.alias_rerolls >= ALIAS_REROLLS_PER_CHECKIN}
-              loading={reroll.isPending}
-            />
-            <Text variant="fine">
-              {tr.venue.rerollsLeft(ALIAS_REROLLS_PER_CHECKIN - table.alias_rerolls)}
+          // With no change left, only the line that says so.
+          <QuietPart>
+            {rerollsLeft > 0 ? (
+              <QuietLink
+                testID="reroll-alias"
+                label={tr.venue.rerollAlias}
+                onPress={() => reroll.mutate()}
+                loading={reroll.isPending}
+              />
+            ) : null}
+            <Text variant="fine" className="shrink">
+              {tr.venue.rerollsLeft(rerollsLeft)}
             </Text>
-          </View>
+          </QuietPart>
         ) : null}
       </View>
 
@@ -277,7 +266,10 @@ export function TableCard({
           <View className="flex-1 gap-0.5">
             <Text variant="bodyStrong">{tr.rooms.withOther(other.alias)}</Text>
             <Text variant="fine">
-              {`${tr.rooms.people(sideHeadcount(other.headcount ?? 1, other.phones ?? 1))} · ${tr.rooms.phones(other.phones ?? 1)}`}
+              {tr.rooms.peopleAndPhones(
+                sideHeadcount(other.headcount ?? 1, other.phones ?? 1),
+                other.phones ?? 1,
+              )}
             </Text>
           </View>
         </View>
@@ -317,19 +309,11 @@ export function TableCard({
   );
 }
 
+type StatusLine = { dot: 'off' | 'live' | 'merged'; label: string; testID?: string };
+
 // The head's second line (v45: .mine-head small): the state's dot, the people and the state. The dot
 // is hollow off the lobby, beating in it and on the way to the other table, filled once merged.
-function Status({
-  people,
-  dot,
-  label,
-  testID,
-}: {
-  people: number;
-  dot: 'off' | 'live' | 'merged';
-  label: string;
-  testID?: string;
-}) {
+function Status({ people, dot, label, testID }: StatusLine & { people: number }) {
   const { colors, shape } = useTheme();
   const size = SPACING[2];
   return (
@@ -352,11 +336,24 @@ function Status({
         {tr.venue.people(people)}
       </Text>
       <Text variant="label" tone="muted" accessible={false}>
-        ·
+        {tr.common.separator}
       </Text>
       <Text variant="label" tone="muted" className="shrink" testID={testID}>
         {label}
       </Text>
+    </View>
+  );
+}
+
+// One part of the quiet line: an icon, a fact and maybe a link, wrapping inside itself when the card
+// is narrow (the link goes under, a long fact breaks) and never wider than the card.
+function QuietPart({ children }: { children: ReactNode }) {
+  return (
+    <View
+      className="shrink flex-row flex-wrap items-center"
+      style={{ maxWidth: '100%', columnGap: SPACING[1.5], rowGap: SPACING[1] }}
+    >
+      {children}
     </View>
   );
 }
@@ -366,33 +363,30 @@ function Status({
 function QuietLink({
   label,
   onPress,
-  disabled = false,
   loading = false,
   testID,
 }: {
   label: string;
   onPress: () => void;
-  disabled?: boolean;
   loading?: boolean;
   testID?: string;
 }) {
   const { typography } = useTheme();
-  const inactive = disabled || loading;
   const slop = (TOUCH.min - typography.label.lineHeight) / 2;
   return (
     <Pressable
       testID={testID}
       accessibilityRole="button"
       accessibilityLabel={label}
-      accessibilityState={{ disabled: inactive, busy: loading }}
-      disabled={inactive}
+      accessibilityState={{ disabled: loading, busy: loading }}
+      disabled={loading}
       onPress={onPress}
       hitSlop={{ top: slop, bottom: slop, left: SPACING[2], right: SPACING[2] }}
     >
       {({ pressed }) => (
         <View style={{ opacity: pressed ? OPACITY.pressed : 1 }}>
           <View style={{ opacity: loading ? 0 : 1 }}>
-            <Text variant="label" tone={disabled ? 'muted' : 'accent'}>
+            <Text variant="label" tone="accent">
               {label}
             </Text>
           </View>

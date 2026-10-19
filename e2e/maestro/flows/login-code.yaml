@@ -10,6 +10,11 @@ appId: app.kabuk.mobile
     timeout: 10000
 - takeScreenshot: 01a-consents
 # Unticked, every time (the boxes never carry over, not even after a sign-out): the button waits.
+# At the largest font size it can be under the fold; the boxes sit right above it.
+- scrollUntilVisible:
+    element:
+      id: consents-accept
+    timeout: 10000
 - assertVisible:
     id: consents-accept
     enabled: false

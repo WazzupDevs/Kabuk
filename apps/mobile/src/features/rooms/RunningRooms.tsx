@@ -126,7 +126,7 @@ function SideLine({
       <Avatar kind="table" alias={alias} size="md" />
       <View className="flex-1 gap-0.5">
         <Text variant="bodyStrong">{alias}</Text>
-        <Text variant="fine">{`${tr.rooms.phones(phones)} · ${tr.rooms.people(people)}`}</Text>
+        <Text variant="fine">{tr.rooms.phonesAndPeople(phones, people)}</Text>
       </View>
     </View>
   );

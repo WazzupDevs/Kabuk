@@ -14,13 +14,16 @@ import { Text } from '@/components/Text';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { Badges, ProfileHead } from '@/features/profile/ProfileCard';
 import { useProfileView } from '@/features/profile/queries';
+import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
-import { safetyApi } from '@/lib/api';
+import { ApiError, safetyApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 // Another account's profile: only while the viewer may see it (a friend, or the other table of
-// the current room). Anything else, including a room that just ended, reads as "not visible".
+// the current room). Anything else, including a room that just ended, reads as "not visible"
+// (`not_found`, the same for a removed friend and a block: rule 5); a failed load (no connection)
+// says so and offers "Tekrar dene".
 // v45 (.prof, other): a round back button and "Seçenekler" on top, the same head as the own
 // profile, then the badges they earned; reporting is in "Seçenekler".
 export default function PersonScreen() {
@@ -28,6 +31,9 @@ export default function PersonScreen() {
   const view = useProfileView(publicId);
   const [menu, setMenu] = useState(false);
   const [reporting, setReporting] = useState(false);
+  const failed =
+    view.isError && !(view.error instanceof ApiError && view.error.code === 'not_found');
+  const hidden = !view.isPending && !view.data && !failed;
 
   const report = useMutation({
     meta: FEEL_ERROR,
@@ -64,6 +70,16 @@ export default function PersonScreen() {
         <View className="mt-16 items-center">
           <Loader />
         </View>
+      ) : failed ? (
+        <EmptyState
+          icon="cloud-offline-outline"
+          body={errorMessage(view.error)}
+          action={{
+            label: tr.common.retry,
+            onPress: () => void view.refetch(),
+            loading: view.isRefetching,
+          }}
+        />
       ) : !view.data ? (
         <EmptyState icon="eye-off-outline" body={tr.profile.notVisible} />
       ) : (
@@ -77,7 +93,7 @@ export default function PersonScreen() {
           </View>
         </View>
       )}
-      {!view.isPending && !view.data ? (
+      {hidden ? (
         <View className="mt-auto pt-8">
           <Button label={tr.profile.back} onPress={() => router.back()} />
         </View>

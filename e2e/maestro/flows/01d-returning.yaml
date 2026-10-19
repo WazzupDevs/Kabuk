@@ -36,6 +36,10 @@ appId: app.kabuk.mobile
 - extendedWaitUntil:
     visible: Metinler güncellendi. Lütfen tekrar onayla.
     timeout: 60000
+- scrollUntilVisible:
+    element:
+      id: consents-accept
+    timeout: 10000
 - assertVisible:
     id: consents-accept
     enabled: false
@@ -61,6 +65,10 @@ appId: app.kabuk.mobile
 - takeScreenshot: 01d-gender-gate
 - tapOn:
     id: gender-female
+- scrollUntilVisible:
+    element:
+      id: gender-save
+    timeout: 10000
 - tapOn:
     id: gender-save
 - extendedWaitUntil:

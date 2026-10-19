@@ -505,21 +505,45 @@ export function charFrame(c: IntroChar, t: number): CharFrame {
   return { x, y, s, opacity: 1, z };
 }
 
+// How far a tapped capsule's top rises at the jump's peak, as a share of its height: the lift and
+// half the stretch (the body stretches from its middle).
+const JUMP_TOP = 0.34 + 0.04 / 2;
+
+// The room over a capsule at this frame for its jump, as a share of its height: from its top (it
+// is scaled from its feet) to the scene box's top, less the edge the layout keeps.
+export function jumpRoom(f: CharFrame, ch: number): number {
+  'worklet';
+  return (f.y + ch * (1 - f.s) - EDGE) / (ch * f.s);
+}
+
 // The body's bob inside its place, as a share of its height (negative: up), and, after a tap, the
-// jump (`jump` 0…1 over INTRO_JUMP_MS; 0 when there is none).
-export function bodyFrame(c: IntroChar, t: number, jump: number): { dy: number; sy: number } {
+// jump (`jump` 0…1 over INTRO_JUMP_MS; 0 when there is none). The jump is cut to `room`
+// (jumpRoom): a capsule high in its arc on a short screen jumps less and stays inside the box.
+export function bodyFrame(
+  c: IntroChar,
+  t: number,
+  jump: number,
+  room?: number,
+): { dy: number; sy: number } {
   'worklet';
   if (jump > 0 && jump < 1) {
+    const k = room === undefined ? 1 : Math.min(1, Math.max(0, room) / JUMP_TOP);
+    let dy: number;
+    let sy: number;
     if (jump < 0.4) {
       const u = ease(JUMP, jump / 0.4);
-      return { dy: lerp(0, -0.34, u), sy: lerp(1, 1.04, u) };
-    }
-    if (jump < 0.8) {
+      dy = lerp(0, -0.34, u);
+      sy = lerp(1, 1.04, u);
+    } else if (jump < 0.8) {
       const u = ease(JUMP, (jump - 0.4) / 0.4);
-      return { dy: lerp(-0.34, 0.02, u), sy: lerp(1.04, 0.96, u) };
+      dy = lerp(-0.34, 0.02, u);
+      sy = lerp(1.04, 0.96, u);
+    } else {
+      const u = ease(JUMP, (jump - 0.8) / 0.2);
+      dy = lerp(0.02, 0, u);
+      sy = lerp(0.96, 1, u);
     }
-    const u = ease(JUMP, (jump - 0.8) / 0.2);
-    return { dy: lerp(0.02, 0, u), sy: lerp(0.96, 1, u) };
+    return { dy: dy * k, sy: 1 + (sy - 1) * k };
   }
   const e = t - c.bobAt;
   if (e <= 0 || e >= BOB_MS) return { dy: 0, sy: 1 };

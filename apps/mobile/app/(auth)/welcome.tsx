@@ -1,5 +1,5 @@
-import { router } from 'expo-router';
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   type LayoutChangeEvent,
   Pressable,
@@ -53,6 +53,13 @@ let played = false;
 export default function WelcomeScreen() {
   // Set when sign-up ended under 18: the account was deleted, nothing was kept.
   const underAge = useOnboardingStore((s) => s.underAge);
+  // Back here, the consents start over (KVKK): whoever reaches the phone step next in this app
+  // session, by "Başla" or a link straight to it, ticks the boxes for themselves.
+  useFocusEffect(
+    useCallback(() => {
+      useOnboardingStore.setState({ consented: null });
+    }, []),
+  );
   if (underAge) return <UnderAge />;
   return <Welcome />;
 }

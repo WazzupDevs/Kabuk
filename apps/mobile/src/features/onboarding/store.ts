@@ -4,7 +4,8 @@ import { create } from 'zustand';
 // Sign-up = profile (docs/SPEC_V3.md §3), state that lives only on the phone:
 // - consented: the terms and KVKK versions accepted on "Başlamadan önce", the first step, before
 //   the phone (K-33). They are sent with the profile (account/complete-onboarding) as before; after
-//   an app restart they are asked again after the code.
+//   an app restart they are asked again after the code. The first screen clears them whenever it
+//   comes into view.
 // - name, birthDate: the profile steps' answers; the gender step sends them all in one call.
 // - nameError: the server turned the display name down when the profile was sent; the name step
 //   says why until the name changes.
