@@ -164,14 +164,16 @@ export function Lobby({ venueId, sessionId, alias, since, mySpotId, venueHasSpot
       trackOnce(`join_unavailable:${requestId}`, 'join_unavailable', { as_member: asMember });
     }
   }, [requestId, status, asMember]);
-  // A table asked once and not met leaves this table's lobby (venue_lobby): read again once the
-  // row's miss has played, so it goes then and its "Katıl" never comes back.
+  // A table asked once and not met leaves this table's lobby (venue_lobby hides it): once the row's
+  // miss has played the row goes here too, without waiting for the server's clock to pass the same
+  // second, and its "Katıl" never comes back. The lobby is read again for the rest.
+  const [leftRequest, setLeftRequest] = useState<string | null>(null);
   useEffect(() => {
-    if (!requestId || status !== 'unavailable' || !venueId) return undefined;
-    const id = setTimeout(
-      () => void queryClient.invalidateQueries({ queryKey: roomKeys.lobby(venueId) }),
-      MISS_MS,
-    );
+    if (!requestId || status !== 'unavailable') return undefined;
+    const id = setTimeout(() => {
+      setLeftRequest(requestId);
+      void queryClient.invalidateQueries({ queryKey: roomKeys.lobby(venueId) });
+    }, MISS_MS);
     return () => clearTimeout(id);
   }, [requestId, status, venueId, queryClient]);
   // Felt only when accepted: a decline and a timeout look and feel the same (rule 5).
@@ -197,7 +199,8 @@ export function Lobby({ venueId, sessionId, alias, since, mySpotId, venueHasSpot
     }
   }, [acceptedRoom, asMember]);
 
-  const rooms = lobby.data?.open ?? [];
+  const leftRoom = mine && leftRequest === mine.id ? mine.roomId : null;
+  const rooms = (lobby.data?.open ?? []).filter((r) => r.room_id !== leftRoom);
   const running = lobby.data?.running ?? [];
   // A request to an open table shows in its row (v45: .row .wait); one to a table that is not
   // listed (gone from the lobby, or a running table's side) keeps the note above the lobby.
