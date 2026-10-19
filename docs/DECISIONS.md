@@ -804,6 +804,15 @@ Onaylandı (`docs/SPEC_V3.md` §20; cevaplar §20.8).
 | İstek kartı profili          | `rooms/request-profile`: profilli istek, beklerken, onaylayabilen lider ("Katıl"da sahip, "Bu masadayım"da tarafın lideri); anonim, süresi dolmuş, cevaplanmış ve başkasının isteği `not_found` | §23.E; yanıt ad, yaş ve fotoğraf; `public_id` yok                                                                                  |
 | Kayıtta cinsiyet             | Doğum tarihi gibi bir kez yazılır; aynı cevap tekrar gelirse geçer, farklısı `bad_request`                                                                                                      | Yeniden onayda uygulama aynı alanları gönderebilir; düzeltme `admin:set-gender`                                                    |
 
+## Faz 4 adım 4.3: masa kartının durum satırında ayırıcı (proje sahibiyle)
+
+Yalnızca OTA.
+
+| Konu                 | Seçim                                                                                                                                                                                    | Gerekçe                                                                                                                                       |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ayırıcının sarılması | Masa kartının başındaki durum satırında "·" ve ardındaki durum tek sarılma birimidir: satır dar gelince ikisi birlikte alt satıra geçer, durum gerekirse kendi içinde de sarılır         | Proje sahibi kararı: 320 dp'de birleşmiş masada "2 kişi ·" ilk satırın sonunda kalıyor, "Gizemli Baklava geliyor, 3 kişi" alt satıra iniyordu |
+| E2E                  | `06`: "Masanla oyna" masasının kartı (`29f-venue-solo`); birleşmiş (`27b-venue-merged`) ve lobideki masa (`13d-venue-in-lobby`) zaten çekiliyor. Büyük yazı koşusu üçünü de 1.3'te çeker | Üç hâl, durum metninin en uzun olduğu yerler                                                                                                  |
+
 ## Faz 4 adım 4.3 düzeltmeleri: CTO incelemeleri, birleşmeden sonra (proje sahibiyle)
 
 WazzupDevs/Kabuk#158, WazzupDevs/Kabuk#151 ve WazzupDevs/Kabuk#159'daki "CTO incelemesi (Claude), birleşmeden sonra" yorumlarının bütün maddeleri. Yalnızca OTA.
