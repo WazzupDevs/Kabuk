@@ -7,7 +7,7 @@ import postgres from 'postgres';
 
 import { callName } from '../functions/_shared/pure/apiRetry.ts';
 import type { Database } from '../functions/_shared/pure/database.ts';
-import { sendsAgain, type ServeFault, serveFaultOf } from './refusal.ts';
+import { sendsAgain, type ServeFault, serveFaultOf, waitUntil } from './refusal.ts';
 
 function readStatus(): Record<string, string> {
   const out = execSync('pnpm -s supabase status -o env', { encoding: 'utf8' });
@@ -69,12 +69,34 @@ export type Client = SupabaseClient<Database>;
 // with its function and action instead of as an unnamed test timeout.
 export const INVOKE_TIMEOUT_MS = 10_000;
 
-// Every answer of the local serve's retiring isolate (refusal.ts), with a warning naming the call
-// and whether it is sent again. In CI, INVOKE_RETRY_LOG collects them for the job summary
-// (.github/workflows/ci.yml → "Retries"), so a call that comes back often shows, and so does an
-// empty 503 that failed its test.
-function noteFault(call: string, fault: ServeFault, again: boolean): void {
-  console.warn(`local serve ${fault} on ${call}: ${again ? 'sending it again' : 'not sent again'}`);
+// After Kong's "name resolution failed" (`no-runtime`, refusal.ts) the serve's container is gone;
+// CI starts the serve again (scripts/ci/functions-serve.sh). The call waits this long at most for
+// `ping` to answer, then is sent again. Once a wait has run out, later calls in the same test file
+// do not wait again: the serve is not coming back.
+export const SERVE_WAIT_MS = 60_000;
+let serveGone = false;
+
+async function pingAnswers(): Promise<boolean> {
+  try {
+    const res = await fetch(`${apiUrl}/functions/v1/ping`, {
+      method: 'POST',
+      headers: { apikey: anonKey, 'content-type': 'application/json' },
+      body: '{}',
+      signal: AbortSignal.timeout(5_000),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+// Every serve fault (refusal.ts), with a warning naming the call and whether it is sent again. In
+// CI, INVOKE_RETRY_LOG collects them for the job summary (.github/workflows/ci.yml → "Retries"), so
+// a call that comes back often shows, and so does an empty 503 that failed its test.
+function noteFault(call: string, fault: ServeFault, again: boolean, detail = ''): void {
+  console.warn(
+    `local serve ${fault} on ${call}: ${again ? 'sending it again' : 'not sent again'}${detail}`,
+  );
   const log = process.env.INVOKE_RETRY_LOG;
   if (log) appendFileSync(log, `${call} ${fault} ${again ? 'yes' : 'no'}\n`);
 }
@@ -106,8 +128,17 @@ export async function invoke(
     clearTimeout(timer);
   }
   if (!('fault' in answer)) return answer;
-  const again = attempt === 1 && sendsAgain(answer.fault, call);
-  noteFault(call, answer.fault, again);
+  let again = attempt === 1 && sendsAgain(answer.fault, call);
+  let detail = '';
+  if (again && answer.fault === 'no-runtime') {
+    const start = Date.now();
+    again = !serveGone && (await waitUntil(pingAnswers, SERVE_WAIT_MS, 1_000));
+    serveGone = !again;
+    detail = again
+      ? ` (ping answered after ${Math.round((Date.now() - start) / 1000)} s)`
+      : ` (ping did not answer in ${SERVE_WAIT_MS / 1000} s)`;
+  }
+  noteFault(call, answer.fault, again, detail);
   if (!again) throw answer.failure;
   return invoke(client, fn, body, 2);
 }
