@@ -13,6 +13,9 @@ export type Palette = {
   raised: string; // lifted off the canvas and off cards: secondary buttons, fields, others' bubbles
   text: string;
   muted: string; // secondary text
+  // Input placeholders (Masaya yaz, Mesaj yaz, Mekan ara…; v46 §8, K-65): lighter than `muted` in
+  // light, v45's value in dark; AA on the fields they sit on.
+  placeholder: string;
   accent: string;
   onAccent: string;
   // The second accent (skall: `accent-2`): profile faces (initials), unread counts, the "profilli"
@@ -62,6 +65,7 @@ export const PALETTE_KEYS = [
   'raised',
   'text',
   'muted',
+  'placeholder',
   'accent',
   'onAccent',
   'violet',
