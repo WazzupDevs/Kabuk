@@ -4,10 +4,11 @@ import {
   type VenueChatMessage,
   type VenueChatMode,
   venueChatChannel,
+  venueChatLastAt,
   withVenueChatExtras,
 } from '@shared/venueChat.ts';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useBroadcast } from '@/features/rooms/useBroadcast';
 import { useReactions } from '@/features/chat/messageExtras';
@@ -26,18 +27,9 @@ export type VenueChatPage = { messages: VenueChatMessage[]; mode: VenueChatMode 
 
 // The venue chat, oldest first for the screen (venue-chat/page returns newest first, with the
 // photos of profiled messages signed), and this check-in's mode (null until the first message,
-// docs/SPEC_V3.md §22.G). Refetched on the data-free `venue_chat` broadcast; empty without a live
-// table at the venue.
-export function useVenueChat(venueId: string | undefined, sessionId: string | undefined) {
-  const queryClient = useQueryClient();
-  const refetch = useCallback(() => {
-    if (venueId) void queryClient.invalidateQueries({ queryKey: venueChatKeys.messages(venueId) });
-  }, [queryClient, venueId]);
-  useBroadcast(venueId ? venueChatChannel(venueId) : null, VENUE_CHAT_BROADCAST, refetch);
-  // A reaction moved (docs/SPEC_V3.md §21.3): the page again.
-  useBroadcast(venueId ? venueChatChannel(venueId) : null, VENUE_CHAT_REACTION_BROADCAST, refetch);
-
-  return useQuery({
+// docs/SPEC_V3.md §22.G). Empty without a live table at the venue.
+function venueChatPage(venueId: string | undefined, sessionId: string | undefined) {
+  return {
     queryKey: venueChatKeys.page(venueId ?? '', sessionId ?? ''),
     enabled: venueId !== undefined && sessionId !== undefined,
     queryFn: async (): Promise<VenueChatPage> => {
@@ -49,7 +41,36 @@ export function useVenueChat(venueId: string | undefined, sessionId: string | un
         mode: page.mode,
       };
     },
-  });
+  };
+}
+
+// The venue chat screen's page: read again on the data-free `venue_chat` broadcast and when a
+// reaction moved (docs/SPEC_V3.md §21.3). Only the chat screen does this.
+export function useVenueChat(venueId: string | undefined, sessionId: string | undefined) {
+  const queryClient = useQueryClient();
+  const refetch = useCallback(() => {
+    if (venueId) void queryClient.invalidateQueries({ queryKey: venueChatKeys.messages(venueId) });
+  }, [queryClient, venueId]);
+  useBroadcast(venueId ? venueChatChannel(venueId) : null, VENUE_CHAT_BROADCAST, refetch);
+  useBroadcast(venueId ? venueChatChannel(venueId) : null, VENUE_CHAT_REACTION_BROADCAST, refetch);
+
+  return useQuery(venueChatPage(venueId, sessionId));
+}
+
+// When the venue chat's last message came, for the venue screen's chat card (K-12): the page once
+// (the same cache as the chat screen, never stale on its own), then each `venue_chat` broadcast only
+// marks the moment it was heard. No read again for a message and none for a reaction: the venue
+// screen stays open under every other screen, so every phone at the venue would read the page (and
+// sign its photos) at each message.
+export function useVenueChatLastAt(
+  venueId: string | undefined,
+  sessionId: string | undefined,
+): string | null {
+  const first = useQuery({ ...venueChatPage(venueId, sessionId), staleTime: Infinity });
+  const [heardAt, setHeardAt] = useState<string | null>(null);
+  const heard = useCallback(() => setHeardAt(new Date().toISOString()), []);
+  useBroadcast(venueId ? venueChatChannel(venueId) : null, VENUE_CHAT_BROADCAST, heard);
+  return venueChatLastAt(first.data?.messages.at(-1)?.createdAt ?? null, heardAt);
 }
 
 // The sender of a profiled message, opened through the message (no public_id).

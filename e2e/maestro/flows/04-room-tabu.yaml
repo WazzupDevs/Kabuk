@@ -67,6 +67,9 @@ appId: app.kabuk.mobile
     file: ../scripts/bot.js
     env:
       ACTION: decline-request
+# Declined, and still the same wait (rule 5): nothing tells a decline from a timeout early.
+- assertVisible: 'İsteğin gönderildi\. Yanıt bekleniyor \(\d+ sn\)\.'
+- assertNotVisible: Masa şu an müsait değil.
 - extendedWaitUntil:
     visible: Masa şu an müsait değil.
     timeout: 80000

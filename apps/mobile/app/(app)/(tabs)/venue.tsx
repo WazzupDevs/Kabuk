@@ -137,8 +137,10 @@ export default function VenueScreen() {
   }
 
   // The two cards stay at the top while the lobby scrolls under them (v45: .pin), unless they would
-  // take close to half the screen (a small phone, the largest text): then they scroll too.
-  const pinned = pinHeight !== null && pinHeight < height * PIN_SHARE;
+  // take close to half the screen (a small phone, the largest text): then they scroll too. Pinned
+  // until measured, so the usual case never changes the sticky index (which rebuilds both cards:
+  // the venue chat's channel again, an open "Davet et" sheet closed).
+  const pinned = pinHeight === null || pinHeight < height * PIN_SHARE;
 
   return (
     <Screen edges={['top']} scrollRef={scroll} stickyHeaderIndices={pinned ? [1] : undefined}>
