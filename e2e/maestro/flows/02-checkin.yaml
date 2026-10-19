@@ -135,8 +135,17 @@ appId: app.kabuk.mobile
 - assertVisible:
     id: invite-open-lobby
 - takeScreenshot: 11a-invite
+# Its "Lobiye aç" opens the lobby sheet in its place; back closes that too.
+- tapOn:
+    id: invite-open-lobby
+- extendedWaitUntil:
+    visible:
+      id: intent-none
+    timeout: 10000
+- assertNotVisible:
+    id: invite-sheet
 - back
 - extendedWaitUntil:
     notVisible:
-      id: invite-sheet
+      id: intent-none
     timeout: 10000

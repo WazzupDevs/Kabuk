@@ -8,7 +8,7 @@ import { Loader } from '@/components/Loader';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { SoloGames } from '@/features/games/SoloGames';
 import { useCurrentRoom } from '@/features/rooms/queries';
-import { useCreateSolo } from '@/features/rooms/useCreateSolo';
+import { soloRoomHref, useCreateSolo } from '@/features/rooms/useCreateSolo';
 import { tr } from '@/i18n/tr';
 
 // The table before it has a room (K-36): the venue card's head opens it. Only the table's games;
@@ -18,7 +18,7 @@ import { tr } from '@/i18n/tr';
 export default function TableScreen() {
   const table = useActiveTable();
   const room = useCurrentRoom(table.data?.id);
-  const solo = useCreateSolo({ replace: true });
+  const solo = useCreateSolo();
 
   if (table.isPending || (table.data && room.isPending)) {
     return (
@@ -45,7 +45,10 @@ export default function TableScreen() {
       <View className="mt-4">
         <SoloGames
           headcount={table.data.headcount}
-          onPick={(game: Concept) => solo.mutate(game)}
+          // The room takes this screen's place, so back goes to the venue.
+          onPick={(game: Concept) =>
+            solo.mutate(game, { onSuccess: (made) => router.replace(soloRoomHref(made)) })
+          }
           busy={solo.isPending}
           error={solo.error}
         />

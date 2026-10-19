@@ -111,6 +111,9 @@ export function Avatar(props: Props) {
                 : 'caption'
       }
       tone="onViolet"
+      // The disc does not grow with the text size, so its letters do not either (two letters at
+      // the largest size would spill out of the 20 dp disc); the name is read from the label.
+      maxFontSizeMultiplier={1}
     >
       {initials(props.name)}
     </Text>

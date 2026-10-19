@@ -29,7 +29,9 @@ type Props = {
   icon?: IconName;
   title?: string;
   body: string;
-  action?: { label: string; onPress: () => void };
+  // `loading`: the action is running (a retry reloading); the button waits and takes no second
+  // press.
+  action?: { label: string; onPress: () => void; loading?: boolean };
 };
 
 const MARK_SIZE = SPACING[16] + SPACING[8];
@@ -113,7 +115,12 @@ export function EmptyState({ kind, icon, title, body, action }: Props) {
       </Text>
       {action ? (
         <View className="mt-2 self-stretch">
-          <Button variant="neutral" label={action.label} onPress={action.onPress} />
+          <Button
+            variant="neutral"
+            label={action.label}
+            onPress={action.onPress}
+            loading={action.loading}
+          />
         </View>
       ) : null}
     </View>

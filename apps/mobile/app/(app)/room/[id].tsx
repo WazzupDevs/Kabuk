@@ -62,6 +62,9 @@ export default function RoomScreen() {
   const [localGame, setLocalGame] = useState<LocalGame | null>(() =>
     isLocalGame(start) ? start : null,
   );
+  // Sohbet kartları picked on the table screen whose first card did not come (useCreateSolo): the
+  // game area asks for it once more.
+  const [askFirstCard] = useState(() => start === 'sohbet');
   // Started once: a later visit to this screen opens on the games.
   useEffect(() => {
     if (start) router.setParams({ start: undefined });
@@ -309,6 +312,7 @@ export default function RoomScreen() {
       roomHeadcount={roomHeadcount}
       localGame={localGame}
       onLocalGame={setLocalGame}
+      askFirstCard={askFirstCard}
     />
   );
 

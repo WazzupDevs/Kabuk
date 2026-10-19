@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
+import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { EmptyState } from '@/components/EmptyState';
 import { Icon } from '@/components/Icon';
@@ -21,10 +22,15 @@ import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 // Arkadaşlar, under Profil (docs/SPEC_V3.md §18.3; v45: .frs): the count beside the title, the
 // friends in one card. A row opens the friend's profile, its "Mesaj" the DM. Removing and blocking
 // stay where they were (the DM menu, the profile). No venue, position or active table of a friend
-// anywhere.
+// anywhere. A failed reload keeps the list it had, with the error and "Tekrar dene" over it.
 export default function FriendsScreen() {
   const friends = useFriends();
   const loading = useLoaderHold(friends.isPending);
+  const retry = {
+    label: tr.common.retry,
+    onPress: () => void friends.refetch(),
+    loading: friends.isRefetching,
+  };
 
   return (
     <Screen>
@@ -38,23 +44,35 @@ export default function FriendsScreen() {
         <View className="mt-12">
           <EmptyState kind="loading" body={tr.common.loading} />
         </View>
-      ) : friends.isError ? (
-        <Text tone="danger" className="mt-8">
-          {errorMessage(friends.error)}
-        </Text>
-      ) : friends.data.length === 0 ? (
-        <EmptyState kind="empty" body={tr.friends.empty} />
+      ) : !friends.data ? (
+        <EmptyState
+          icon="cloud-offline-outline"
+          body={errorMessage(friends.error)}
+          action={retry}
+        />
       ) : (
-        <View className="mt-1">
-          <Card flush>
-            <View style={{ paddingVertical: SPACING[1.5] }}>
-              {friends.data.map((f, i) => (
-                <Rise key={f.publicId} index={i}>
-                  <FriendRow friend={f} />
-                </Rise>
-              ))}
-            </View>
-          </Card>
+        <View className="mt-1 gap-3">
+          {friends.isError ? (
+            <Card tone="note" className="gap-3" testID="friends-error">
+              <Text variant="fine" tone="text">
+                {errorMessage(friends.error)}
+              </Text>
+              <Button variant="neutral" size="sm" icon="refresh-outline" {...retry} />
+            </Card>
+          ) : null}
+          {friends.data.length === 0 ? (
+            <EmptyState kind="empty" body={tr.friends.empty} />
+          ) : (
+            <Card flush>
+              <View style={{ paddingVertical: SPACING[1.5] }}>
+                {friends.data.map((f, i) => (
+                  <Rise key={f.publicId} index={i}>
+                    <FriendRow friend={f} />
+                  </Rise>
+                ))}
+              </View>
+            </Card>
+          )}
         </View>
       )}
     </Screen>

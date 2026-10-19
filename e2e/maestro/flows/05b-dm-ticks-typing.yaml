@@ -158,9 +158,14 @@ appId: app.kabuk.mobile
       id: tab-messages
     timeout: 10000
 # Arkadaşlar under Profil (v45: .frs) and the friend's profile (v45: .prof, other): "Seçenekler"
-# holds the report; back to Profil.
+# holds the report; back to Profil. Profil's "Arkadaşlar" with a friend: the photos in it, the
+# count read out.
 - tapOn:
     id: tab-profile
+- extendedWaitUntil:
+    visible: 'Arkadaşlar, [1-9]\d*'
+    timeout: 15000
+- takeScreenshot: 27ia-profile-friends
 - tapOn:
     id: profile-friends
 - extendedWaitUntil:

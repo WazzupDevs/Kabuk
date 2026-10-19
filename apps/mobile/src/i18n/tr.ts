@@ -165,6 +165,8 @@ export const tr = {
     genericError: 'Bir şeyler ters gitti. Tekrar dener misin?',
     close: 'Kapat',
     back: 'Geri',
+    // Between two short facts on one line ("2 kişi · Lobide değil").
+    separator: '·',
   },
   auth: {
     phoneTitle: 'Telefon numaran',
@@ -471,6 +473,7 @@ export const tr = {
     ageAfterName: (age: number) => `, ${age}`,
     addName: 'Ad ekle',
     edit: 'Profili düzenle',
+    editShort: 'Düzenle',
     birthDateNote: 'Doğum tarihin değiştirilemez; profilinde yalnızca yaşın görünür.',
     friends: 'Arkadaşlar',
     friendsCount: (n: number) => `Arkadaşlar, ${n}`,
@@ -607,6 +610,10 @@ export const tr = {
     // Faz 2 (docs/SPEC_V3.md §22.C; canvas: Faz 2 · 22.5 Takımlar): a member of a side.
     requestMember: 'Bu masadayım',
     phones: (n: number) => `${n} telefon`,
+    peopleAndPhones: (people: number, phones: number) =>
+      `${headcountLabel(people)} kişi · ${phones} telefon`,
+    phonesAndPeople: (phones: number, people: number) =>
+      `${phones} telefon · ${headcountLabel(people)} kişi`,
     runningTitle: 'Süren masalar',
     runningHint: 'Masandakiler bunlardan birinde oynuyorsa onların tarafına katılabilirsin.',
     // Between the two sides of a running room.
@@ -1099,8 +1106,11 @@ export const tr = {
     // minutes (K-12).
     chatCard: 'Mekana giriş yapan herkes okur ve yazar.',
     chatActive: 'şu an aktif',
-    // The card's head opens the table (K-36): the room if there is one, else the table's games.
+    // The card's head opens the table (K-36): the room if there is one, else the table's games. A
+    // screen reader hears the name, the people and the state, then what the head does.
     openTable: 'Masanı aç',
+    tableHead: (alias: string, people: number, state: string) =>
+      `${alias}, ${headcountLabel(people)} kişi, ${state}, Masanı aç`,
     openLobby: 'Lobiye aç',
     // "Davet et" (docs/SPEC_V4.md §4.C, 4.3): how a friend at the venue joins the table today; the
     // real invite comes with step 4.7.

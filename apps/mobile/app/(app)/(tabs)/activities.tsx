@@ -18,7 +18,7 @@ import { type RecentGame, useRecentGames } from '@/features/activities/useRecent
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { NotificationsBell } from '@/features/notifications/Bell';
 import { GAME_ORDER, GameCard, gameCardState, GameCell, GameGrid } from '@/features/games/GameCard';
-import { useCreateSolo } from '@/features/rooms/useCreateSolo';
+import { soloRoomHref, useCreateSolo } from '@/features/rooms/useCreateSolo';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
@@ -148,7 +148,7 @@ export default function ActivitiesScreen() {
             disabled={solo.isPending}
             onPress={() => {
               setOpen(null);
-              solo.mutate();
+              solo.mutate(undefined, { onSuccess: (made) => router.push(soloRoomHref(made)) });
             }}
             testID={`activities-solo-${open.game}`}
           />

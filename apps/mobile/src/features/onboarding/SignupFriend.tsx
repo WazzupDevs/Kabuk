@@ -113,14 +113,21 @@ export function SignupFriend({
     };
   }, [look, reduce]);
 
+  // The squint after an error ends on its own, tied to that reaction only: a new layout (and so
+  // new moves) while it lasts does not keep the eyes narrow.
+  const errKey = reaction?.kind === 'err' ? reaction.key : null;
+  useEffect(() => {
+    if (errKey === null) return;
+    const t = setTimeout(() => setSquintDone(errKey), REACTION_MS);
+    return () => clearTimeout(t);
+  }, [errKey]);
+
   // A reaction: jump (v45: palJump), shake (palNo, with the eyes squinting) or nod (palNod).
   const lastReaction = useRef(reaction?.key);
   useEffect(() => {
     if (!reaction || reaction.key === lastReaction.current) return;
     lastReaction.current = reaction.key;
     if (reaction.kind === 'err') {
-      const key = reaction.key;
-      const t = setTimeout(() => setSquintDone(key), REACTION_MS);
       if (!reduce && moves.shake) {
         rot.set(
           withSequence(
@@ -131,7 +138,7 @@ export function SignupFriend({
           ),
         );
       }
-      return () => clearTimeout(t);
+      return;
     }
     if (reduce) return;
     if (reaction.kind === 'ok' && moves.jump) {
