@@ -1,0 +1,527 @@
+{
+ "surum": "v46",
+ "tema_sirasi": [
+  "Kış",
+  "Yılbaşı",
+  "Korku",
+  "Uzay",
+  "Deniz",
+  "Parti",
+  "Sihir",
+  "Masal",
+  "Kamp",
+  "Kafe",
+  "Tatlı",
+  "Retro",
+  "Oyun",
+  "Spor",
+  "Bilim",
+  "Bizden",
+  "Müzik",
+  "Bahar",
+  "Vahşi Batı",
+  "Kampüs"
+ ],
+ "simgeler": [
+  {
+   "id": "kis-kardanadam",
+   "ad": "Kardan adam",
+   "tema": "Kış"
+  },
+  {
+   "id": "kis-karkuresi",
+   "ad": "Kar küresi",
+   "tema": "Kış"
+  },
+  {
+   "id": "kis-dagevi",
+   "ad": "Dağ evi",
+   "tema": "Kış"
+  },
+  {
+   "id": "kis-kizak",
+   "ad": "Kızak",
+   "tema": "Kış"
+  },
+  {
+   "id": "kis-kayak",
+   "ad": "Kayak",
+   "tema": "Kış"
+  },
+  {
+   "id": "yilbasi-cam",
+   "ad": "Süslü çam",
+   "tema": "Yılbaşı"
+  },
+  {
+   "id": "yilbasi-hediyeler",
+   "ad": "Hediyeler",
+   "tema": "Yılbaşı"
+  },
+  {
+   "id": "yilbasi-top",
+   "ad": "Yılbaşı topu",
+   "tema": "Yılbaşı"
+  },
+  {
+   "id": "yilbasi-kurabiyeev",
+   "ad": "Kurabiye ev",
+   "tema": "Yılbaşı"
+  },
+  {
+   "id": "yilbasi-fisek",
+   "ad": "Havai fişek",
+   "tema": "Yılbaşı"
+  },
+  {
+   "id": "korku-perili",
+   "ad": "Perili ev",
+   "tema": "Korku"
+  },
+  {
+   "id": "korku-hayalet",
+   "ad": "Hayalet",
+   "tema": "Korku"
+  },
+  {
+   "id": "korku-balkabagi",
+   "ad": "Balkabağı",
+   "tema": "Korku"
+  },
+  {
+   "id": "korku-kazan",
+   "ad": "Cadı kazanı",
+   "tema": "Korku"
+  },
+  {
+   "id": "korku-ag",
+   "ad": "Ağ ve dolunay",
+   "tema": "Korku"
+  },
+  {
+   "id": "uzay-roket",
+   "ad": "Roket kalkışı",
+   "tema": "Uzay"
+  },
+  {
+   "id": "uzay-gezegen",
+   "ad": "Halkalı gezegen",
+   "tema": "Uzay"
+  },
+  {
+   "id": "uzay-ufo",
+   "ad": "UFO",
+   "tema": "Uzay"
+  },
+  {
+   "id": "uzay-istasyon",
+   "ad": "Uzay istasyonu",
+   "tema": "Uzay"
+  },
+  {
+   "id": "uzay-galaksi",
+   "ad": "Galaksi",
+   "tema": "Uzay"
+  },
+  {
+   "id": "deniz-fener",
+   "ad": "Deniz feneri",
+   "tema": "Deniz"
+  },
+  {
+   "id": "deniz-yelkenli",
+   "ad": "Yelkenli",
+   "tema": "Deniz"
+  },
+  {
+   "id": "deniz-denizalti",
+   "ad": "Denizaltı",
+   "tema": "Deniz"
+  },
+  {
+   "id": "deniz-inci",
+   "ad": "İstiridye ve inci",
+   "tema": "Deniz"
+  },
+  {
+   "id": "deniz-ada",
+   "ad": "Ada",
+   "tema": "Deniz"
+  },
+  {
+   "id": "parti-disko",
+   "ad": "Disko",
+   "tema": "Parti"
+  },
+  {
+   "id": "parti-pasta",
+   "ad": "Doğum günü pastası",
+   "tema": "Parti"
+  },
+  {
+   "id": "parti-konfeti",
+   "ad": "Konfeti",
+   "tema": "Parti"
+  },
+  {
+   "id": "parti-dj",
+   "ad": "DJ masası",
+   "tema": "Parti"
+  },
+  {
+   "id": "parti-dans",
+   "ad": "Dans pisti",
+   "tema": "Parti"
+  },
+  {
+   "id": "sihir-kure",
+   "ad": "Kristal küre",
+   "tema": "Sihir"
+  },
+  {
+   "id": "sihir-iksir",
+   "ad": "İksir",
+   "tema": "Sihir"
+  },
+  {
+   "id": "sihir-degnek",
+   "ad": "Sihirli değnek",
+   "tema": "Sihir"
+  },
+  {
+   "id": "sihir-portal",
+   "ad": "Büyülü portal",
+   "tema": "Sihir"
+  },
+  {
+   "id": "sihir-hali",
+   "ad": "Uçan halı",
+   "tema": "Sihir"
+  },
+  {
+   "id": "masal-sato",
+   "ad": "Şato",
+   "tema": "Masal"
+  },
+  {
+   "id": "masal-yumurta",
+   "ad": "Ejderha yumurtası",
+   "tema": "Masal"
+  },
+  {
+   "id": "masal-mantar",
+   "ad": "Mantar evi",
+   "tema": "Masal"
+  },
+  {
+   "id": "masal-ucanada",
+   "ad": "Uçan ada",
+   "tema": "Masal"
+  },
+  {
+   "id": "masal-hazine",
+   "ad": "Hazine sandığı",
+   "tema": "Masal"
+  },
+  {
+   "id": "kamp-ates",
+   "ad": "Kamp ateşi",
+   "tema": "Kamp"
+  },
+  {
+   "id": "kamp-cadir",
+   "ad": "Çadır",
+   "tema": "Kamp"
+  },
+  {
+   "id": "kamp-agacev",
+   "ad": "Ağaç ev",
+   "tema": "Kamp"
+  },
+  {
+   "id": "kamp-selale",
+   "ad": "Şelale",
+   "tema": "Kamp"
+  },
+  {
+   "id": "kamp-kano",
+   "ad": "Kano",
+   "tema": "Kamp"
+  },
+  {
+   "id": "kafe-cezve",
+   "ad": "Cezve ve lokum",
+   "tema": "Kafe"
+  },
+  {
+   "id": "kafe-demlik",
+   "ad": "Demlik ve çay",
+   "tema": "Kafe"
+  },
+  {
+   "id": "kafe-frenchpress",
+   "ad": "French press",
+   "tema": "Kafe"
+  },
+  {
+   "id": "kafe-espresso",
+   "ad": "Espresso makinesi",
+   "tema": "Kafe"
+  },
+  {
+   "id": "kafe-fanus",
+   "ad": "Pasta fanusu",
+   "tema": "Kafe"
+  },
+  {
+   "id": "tatli-cupcake",
+   "ad": "Cupcake",
+   "tema": "Tatlı"
+  },
+  {
+   "id": "tatli-donut",
+   "ad": "Donut kulesi",
+   "tema": "Tatlı"
+  },
+  {
+   "id": "tatli-dondurma",
+   "ad": "Dondurma",
+   "tema": "Tatlı"
+  },
+  {
+   "id": "tatli-sekermakinesi",
+   "ad": "Şeker makinesi",
+   "tema": "Tatlı"
+  },
+  {
+   "id": "tatli-kavanoz",
+   "ad": "Şeker kavanozu",
+   "tema": "Tatlı"
+  },
+  {
+   "id": "retro-kaset",
+   "ad": "Kaset",
+   "tema": "Retro"
+  },
+  {
+   "id": "retro-tv",
+   "ad": "Tüplü TV",
+   "tema": "Retro"
+  },
+  {
+   "id": "retro-jukebox",
+   "ad": "Jukebox",
+   "tema": "Retro"
+  },
+  {
+   "id": "retro-telefon",
+   "ad": "Çevirmeli telefon",
+   "tema": "Retro"
+  },
+  {
+   "id": "retro-teyp",
+   "ad": "Teyp",
+   "tema": "Retro"
+  },
+  {
+   "id": "oyun-kolu",
+   "ad": "Oyun kolu",
+   "tema": "Oyun"
+  },
+  {
+   "id": "oyun-atari",
+   "ad": "Atari makinesi",
+   "tema": "Oyun"
+  },
+  {
+   "id": "oyun-zar",
+   "ad": "Zarlar",
+   "tema": "Oyun"
+  },
+  {
+   "id": "oyun-satranc",
+   "ad": "Satranç",
+   "tema": "Oyun"
+  },
+  {
+   "id": "oyun-kupa",
+   "ad": "Kupa",
+   "tema": "Oyun"
+  },
+  {
+   "id": "spor-gol",
+   "ad": "Gol",
+   "tema": "Spor"
+  },
+  {
+   "id": "spor-pota",
+   "ad": "Pota",
+   "tema": "Spor"
+  },
+  {
+   "id": "spor-tenis",
+   "ad": "Tenis",
+   "tema": "Spor"
+  },
+  {
+   "id": "spor-bowling",
+   "ad": "Bowling",
+   "tema": "Spor"
+  },
+  {
+   "id": "spor-kaykay",
+   "ad": "Kaykay rampası",
+   "tema": "Spor"
+  },
+  {
+   "id": "bilim-atom",
+   "ad": "Atom",
+   "tema": "Bilim"
+  },
+  {
+   "id": "bilim-deney",
+   "ad": "Deney şişeleri",
+   "tema": "Bilim"
+  },
+  {
+   "id": "bilim-mikroskop",
+   "ad": "Mikroskop",
+   "tema": "Bilim"
+  },
+  {
+   "id": "bilim-dna",
+   "ad": "DNA sarmalı",
+   "tema": "Bilim"
+  },
+  {
+   "id": "bilim-teleskop",
+   "ad": "Teleskop",
+   "tema": "Bilim"
+  },
+  {
+   "id": "bizden-nazar",
+   "ad": "Nazar boncuğu",
+   "tema": "Bizden"
+  },
+  {
+   "id": "bizden-tavla",
+   "ad": "Tavla",
+   "tema": "Bizden"
+  },
+  {
+   "id": "bizden-kizkulesi",
+   "ad": "Kız Kulesi",
+   "tema": "Bizden"
+  },
+  {
+   "id": "bizden-lale",
+   "ad": "Lale",
+   "tema": "Bizden"
+  },
+  {
+   "id": "bizden-cini",
+   "ad": "Çini",
+   "tema": "Bizden"
+  },
+  {
+   "id": "muzik-mikrofon",
+   "ad": "Mikrofon",
+   "tema": "Müzik"
+  },
+  {
+   "id": "muzik-hoparlor",
+   "ad": "Hoparlör",
+   "tema": "Müzik"
+  },
+  {
+   "id": "muzik-piyano",
+   "ad": "Piyano",
+   "tema": "Müzik"
+  },
+  {
+   "id": "muzik-sahne",
+   "ad": "Sahne",
+   "tema": "Müzik"
+  },
+  {
+   "id": "muzik-nota",
+   "ad": "Nota",
+   "tema": "Müzik"
+  },
+  {
+   "id": "bahar-kiraz",
+   "ad": "Kiraz çiçeği",
+   "tema": "Bahar"
+  },
+  {
+   "id": "bahar-saksi",
+   "ad": "Saksı çiçekleri",
+   "tema": "Bahar"
+  },
+  {
+   "id": "bahar-sulama",
+   "ad": "Sulama kabı",
+   "tema": "Bahar"
+  },
+  {
+   "id": "bahar-tarla",
+   "ad": "Çiçek tarlası",
+   "tema": "Bahar"
+  },
+  {
+   "id": "bahar-kusevi",
+   "ad": "Kuş evi",
+   "tema": "Bahar"
+  },
+  {
+   "id": "bati-colgunbatimi",
+   "ad": "Çöl gün batımı",
+   "tema": "Vahşi Batı"
+  },
+  {
+   "id": "bati-serif",
+   "ad": "Şerif yıldızı",
+   "tema": "Vahşi Batı"
+  },
+  {
+   "id": "bati-salon",
+   "ad": "Salon kapısı",
+   "tema": "Vahşi Batı"
+  },
+  {
+   "id": "bati-atnali",
+   "ad": "At nalı",
+   "tema": "Vahşi Batı"
+  },
+  {
+   "id": "bati-yeldegirmeni",
+   "ad": "Yel değirmeni",
+   "tema": "Vahşi Batı"
+  },
+  {
+   "id": "kampus-saatkulesi",
+   "ad": "Saat kulesi",
+   "tema": "Kampüs"
+  },
+  {
+   "id": "kampus-kutuphane",
+   "ad": "Kütüphane",
+   "tema": "Kampüs"
+  },
+  {
+   "id": "kampus-karatahta",
+   "ad": "Kara tahta",
+   "tema": "Kampüs"
+  },
+  {
+   "id": "kampus-bahce",
+   "ad": "Kampüs bahçesi",
+   "tema": "Kampüs"
+  },
+  {
+   "id": "kampus-kantin",
+   "ad": "Kantin tepsisi",
+   "tema": "Kampüs"
+  }
+ ]
+}
