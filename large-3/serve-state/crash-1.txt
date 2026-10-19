@@ -1,0 +1,92 @@
+# e2e: functions serve stopped at 22:29:34 UTC (container removing 137), stop 1 of the job
+
+## df -h
+Filesystem       Size  Used Avail Use% Mounted on
+/dev/root        145G   46G   99G  32% /
+tmpfs            7.9G   84K  7.9G   1% /dev/shm
+tmpfs            3.2G  1.5M  3.2G   1% /run
+tmpfs            5.0M     0  5.0M   0% /run/lock
+efivarfs         128M   32K  128M   1% /sys/firmware/efi/efivars
+/dev/nvme0n1p16  881M   64M  756M   8% /boot
+/dev/nvme0n1p15  105M  6.2M   99M   6% /boot/efi
+tmpfs            1.6G   12K  1.6G   1% /run/user/1001
+
+## /dev/shm
+Filesystem      Size  Used Avail Use% Mounted on
+tmpfs           7.9G   84K  7.9G   1% /dev/shm
+84K	/dev/shm
+total 84
+drwxrwxrwt  2 root root    60 Oct 19 22:26 .
+drwxr-xr-x 18 root root  4000 Oct 19 22:26 ..
+-rw-------  1 root root 82488 Oct 19 22:26 libpod_lock
+
+## free -m
+               total        used        free      shared  buff/cache   available
+Mem:           15989        2338        5911         177        8264       13651
+Swap:           3071           0        3071
+
+## docker stats --no-stream --all
+CONTAINER ID   NAME                     CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O       PIDS
+b40a818bd25a   supabase_storage_masa    0.00%     220.9MiB / 15.61GiB   1.38%     17.2kB / 9.93kB   0B / 0B         12
+4027b3df7112   supabase_rest_masa       0.06%     16.06MiB / 15.61GiB   0.10%     301kB / 83.2kB    0B / 0B         16
+90c388f9abb7   supabase_realtime_masa   0.13%     221.3MiB / 15.61GiB   1.38%     121kB / 48.5kB    0B / 0B         32
+46d1603bcb28   supabase_auth_masa       0.00%     14.84MiB / 15.61GiB   0.09%     16.5kB / 12.8kB   1.28MB / 0B     9
+22786cb5a20d   supabase_kong_masa       0.02%     93.31MiB / 15.61GiB   0.58%     5.23kB / 5.12kB   0B / 86kB       2
+20e3ed6cee58   supabase_db_masa         0.06%     111.5MiB / 15.61GiB   0.70%     2.08MB / 749kB    139kB / 137MB   17
+
+## docker ps -a
+supabase_storage_masa	Up 21 seconds (healthy)	0B (virtual 839MB)
+supabase_rest_masa	Up 21 seconds	0B (virtual 20.5MB)
+supabase_realtime_masa	Up 21 seconds (healthy)	0B (virtual 376MB)
+supabase_auth_masa	Up 21 seconds (healthy)	0B (virtual 61.4MB)
+supabase_kong_masa	Up 21 seconds (healthy)	48.9kB (virtual 139MB)
+supabase_db_masa	Up 38 seconds (healthy)	37.9kB (virtual 1.25GB)
+
+## edge runtime container state
+
+## dmesg (last 40 lines)
+[  164.833630] br-3af22398cb35: port 3(veth15af69b) entered disabled state
+[  164.834344] veth15af69b: entered allmulticast mode
+[  164.834430] veth15af69b: entered promiscuous mode
+[  164.854250] eth0: renamed from veth95e9738
+[  164.854881] br-3af22398cb35: port 3(veth15af69b) entered blocking state
+[  164.854886] br-3af22398cb35: port 3(veth15af69b) entered forwarding state
+[  165.005942] br-3af22398cb35: port 4(veth354ecd6) entered blocking state
+[  165.005950] br-3af22398cb35: port 4(veth354ecd6) entered disabled state
+[  165.005964] veth354ecd6: entered allmulticast mode
+[  165.006270] veth354ecd6: entered promiscuous mode
+[  165.024540] eth0: renamed from veth174a0c2
+[  165.025300] br-3af22398cb35: port 4(veth354ecd6) entered blocking state
+[  165.025305] br-3af22398cb35: port 4(veth354ecd6) entered forwarding state
+[  165.171617] br-3af22398cb35: port 5(vethbfcf8db) entered blocking state
+[  165.171625] br-3af22398cb35: port 5(vethbfcf8db) entered disabled state
+[  165.171641] vethbfcf8db: entered allmulticast mode
+[  165.171730] vethbfcf8db: entered promiscuous mode
+[  165.191824] eth0: renamed from veth7641cdf
+[  165.193438] br-3af22398cb35: port 5(vethbfcf8db) entered blocking state
+[  165.193444] br-3af22398cb35: port 5(vethbfcf8db) entered forwarding state
+[  165.395860] br-3af22398cb35: port 6(vethb193887) entered blocking state
+[  165.395868] br-3af22398cb35: port 6(vethb193887) entered disabled state
+[  165.395883] vethb193887: entered allmulticast mode
+[  165.395960] vethb193887: entered promiscuous mode
+[  165.418051] eth0: renamed from vethbf3449b
+[  165.418891] br-3af22398cb35: port 6(vethb193887) entered blocking state
+[  165.418896] br-3af22398cb35: port 6(vethb193887) entered forwarding state
+[  165.756004] br-3af22398cb35: port 7(veth0dc7602) entered blocking state
+[  165.756012] br-3af22398cb35: port 7(veth0dc7602) entered disabled state
+[  165.756041] veth0dc7602: entered allmulticast mode
+[  165.756148] veth0dc7602: entered promiscuous mode
+[  165.780891] eth0: renamed from veth5c26f82
+[  165.781692] br-3af22398cb35: port 7(veth0dc7602) entered blocking state
+[  165.781698] br-3af22398cb35: port 7(veth0dc7602) entered forwarding state
+[  180.590093] br-3af22398cb35: port 7(veth0dc7602) entered disabled state
+[  180.590161] veth5c26f82: renamed from eth0
+[  180.603956] br-3af22398cb35: port 7(veth0dc7602) entered disabled state
+[  180.608660] veth0dc7602 (unregistering): left allmulticast mode
+[  180.608665] veth0dc7602 (unregistering): left promiscuous mode
+[  180.608671] br-3af22398cb35: port 7(veth0dc7602) entered disabled state
+
+## the serve's last 60 lines
+Stopped serving supabase/functions
+A new version of Supabase CLI is available: v2.121.0 (currently installed v2.117.0)
+We recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli
