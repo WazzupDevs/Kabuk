@@ -249,11 +249,15 @@ Yalnızca 23.2'den önce açılmış, cinsiyeti boş bir hesap varsa.
 
 **Bak:**
 
-- Mekan ekranının üstünde **kendi masa kartı**: takma ad, kişi sayısı ve durum **"Lobide değil"**; altında küçük bir satırda kalan süre, nokta (**Değiştir**) ve **Adı değiştir**. En altta **Lobiye aç** ve **Davet et**.
+- Mekan ekranının en üstünde solda kırmızı çarpılı yuvarlak **Mekandan ayrıl**, ortada skall yazısı, sağda kendi fotoğrafın (basınca Profil); altında mekanın adı.
+- Altında **Mekan sohbeti** kartı ("Mekana giriş yapan herkes okur ve yazar."). Yeşil nokta yalnızca son 10 dakikada mesaj varsa yanar; mesaj yoksa nokta yok.
+- **Mekan sohbeti** kartı ve masa kartı lobi kaydırılırken üstte sabit kalır; küçük ekranda ya da en büyük yazıda ekranın yarısına yaklaşırsa sayfayla birlikte kayar.
+- **Kendi masa kartı**: takma ad, kişi sayısı ve durum **"Lobide değil"**; altında küçük bir satırda kalan süre, nokta (**Değiştir**) ve **Adı değiştir**. En altta **Lobiye aç** ve **Davet et**.
 - **Davet et**: açılan sayfada masanın adı ve arkadaşın nasıl katılacağı ("Açık masalar"da **Bu masadayım**); masa lobide değilken "Önce lobiye aç." ve **Lobiye aç**.
 - Kartın başına (takma ad) dokununca masa ekranı açılır: masanın oyunları. Oyun seçmeden geri dönünce kart yine **"Lobide değil"**; başka bir masanın lobideki kartında **Katıl** basılabilir.
 - Masa açıldıktan sonra Mekan sekmesi Mekan ekranını açar.
-- Lobide ("Açık masalar") henüz masa yok: "Şu an lobide masa yok…".
+- Lobide ("Açık masalar") henüz masa yok: **"Açık masa yok"** kartı, yanında kesik çizgili ikinci kapsülüyle işaret.
+- (P1) Başka bir masaya **Katıl** gönderince istek o masanın satırında bekler: "İsteğin gönderildi. Yanıt bekleniyor (… sn)." ve kesişen kapsüller. Red de süre dolana kadar bekliyor görünür (kural 5); süre dolunca satırda "Masa şu an müsait değil." ve kapsüller çarpışıp geri çekilir, sonra masa lobinden kalkar (aynı masaya ikinci istek yok).
 
 **Hata olursa:** masa açılmadıysa ekrandaki mesajı yaz.
 

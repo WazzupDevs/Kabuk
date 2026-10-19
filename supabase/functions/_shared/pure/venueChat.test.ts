@@ -5,6 +5,7 @@ import {
   senderLabel,
   shouldHide,
   VENUE_CHAT,
+  venueChatActive,
   venueChatChannel,
   venueChatRate,
   withVenueChatExtras,
@@ -102,5 +103,19 @@ describe('withVenueChatExtras', () => {
       replyTo,
       reactions,
     });
+  });
+});
+
+describe('venueChatActive (K-12)', () => {
+  const now = Date.parse('2026-10-19T12:00:00Z');
+  it('lights for a message in the last 10 minutes', () => {
+    expect(venueChatActive('2026-10-19T11:50:01Z', now)).toBe(true);
+    expect(venueChatActive('2026-10-19T11:59:59Z', now)).toBe(true);
+  });
+  it('stays dark for an older message, none, or an unreadable time', () => {
+    expect(venueChatActive('2026-10-19T11:50:00Z', now)).toBe(false);
+    expect(venueChatActive('2026-10-19T09:00:00Z', now)).toBe(false);
+    expect(venueChatActive(null, now)).toBe(false);
+    expect(venueChatActive('dün', now)).toBe(false);
   });
 });

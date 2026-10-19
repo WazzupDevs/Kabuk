@@ -280,6 +280,25 @@ export function stateMotion(
   }
 }
 
+// The request that did not meet (v45: miss), played once in the lobby row when "Masa şu an müsait
+// değil." comes: the second capsule runs into the first, which is shoved back, no overlap forms, and
+// the mark fades out by `MISS_MS`. With reduce motion only the fade.
+export const MISS_MS = 1400;
+export function missMotion(m: MarkDrawing, reduce: boolean): { scene: MarkScene; motion: Motion } {
+  const far = m.w + 34;
+  const bX = (t: number) => {
+    if (reduce || t < 120) return 0;
+    if (t < 470) return lerp(far, m.w, EASE_IN(seg(t, 120, 470))) - far;
+    return m.w + (far - m.w) * recoil(t - 470) - far;
+  };
+  const aX = (t: number) => (reduce || t < 470 ? 0 : -10 * bump(seg(t, 470, 690)));
+  const opacity = (t: number) => Math.min(seg(t, 0, 120), 1 - seg(t, 1200, MISS_MS));
+  return {
+    scene: { m, dx: far, dy: m.dy },
+    motion: { period: MISS_MS, channels: { aX, bX, opacity } },
+  };
+}
+
 // The centre of the overlap of two rectangles.
 export function overlapCentre(a: Rect, b: Rect): { x: number; y: number } {
   return {

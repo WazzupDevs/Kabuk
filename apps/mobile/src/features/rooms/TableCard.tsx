@@ -155,7 +155,7 @@ export function TableCard({
     );
 
   return (
-    <Card className="mt-3" testID="table-card">
+    <Card testID="table-card">
       <Pressable
         testID="go-to-table"
         accessibilityRole="button"
