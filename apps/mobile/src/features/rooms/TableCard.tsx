@@ -11,6 +11,7 @@ import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Icon } from '@/components/Icon';
 import { LiveDot } from '@/components/LiveDot';
+import { Loader } from '@/components/Loader';
 import { Sheet } from '@/components/Sheet';
 import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
@@ -20,7 +21,7 @@ import { track } from '@/lib/analytics';
 import { callRerollAlias, roomsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, SPACING, TOUCH } from '@/theme/tokens';
+import { ICON, OPACITY, SPACING, TOUCH } from '@/theme/tokens';
 
 import { roomKeys, type TableRoomRow } from './queries';
 
@@ -173,23 +174,25 @@ export function TableCard({
         <Icon name="chevron-forward" tone="muted" />
       </Pressable>
 
-      {/* The quiet line (K-35): the time left, and without a room the spot and the name. */}
-      <View className="mt-2 flex-row flex-wrap items-center" style={{ columnGap: SPACING[3] }}>
-        <View className="flex-row items-center gap-1" style={{ minHeight: TOUCH.min }}>
+      {/* The quiet line (K-35): the time left, and without a room the spot and the name, as text
+          links so the line stays small (their touch areas grow to 44). */}
+      <View
+        className="mt-2 flex-row flex-wrap items-center"
+        style={{ columnGap: SPACING[3], rowGap: SPACING[2] }}
+      >
+        <View className="flex-row items-center gap-1">
           <Icon name="time-outline" size={ICON.sm} tone="muted" />
           <Text variant="fine">
             {tr.venue.remaining(Math.floor(minutesLeft / 60), minutesLeft % 60)}
           </Text>
         </View>
         {state === 'off' && venueHasSpots ? (
-          <View className="flex-row items-center gap-1">
+          <View className="flex-row items-center gap-1.5">
             <Icon name="location-outline" size={ICON.sm} tone="muted" />
             <Text variant="fine">
               {table.spot?.name ? tr.venue.spot(table.spot.name) : tr.venue.noSpot}
             </Text>
-            <Button
-              variant="ghost"
-              size="sm"
+            <QuietLink
               testID="change-spot"
               label={table.spot_id ? tr.venue.changeSpot : tr.venue.chooseSpot}
               onPress={() => router.push('/spot')}
@@ -197,10 +200,8 @@ export function TableCard({
           </View>
         ) : null}
         {state === 'off' ? (
-          <View className="flex-row items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
+          <View className="flex-row items-center gap-1.5">
+            <QuietLink
               testID="reroll-alias"
               label={tr.venue.rerollAlias}
               onPress={() => reroll.mutate()}
@@ -357,5 +358,51 @@ function Status({
         {label}
       </Text>
     </View>
+  );
+}
+
+// A text link on the quiet line: the label in the accent, 44 high to the touch. Busy, the mark
+// takes the label's place and a second press does nothing (CLAUDE.md → Ekran davranışı).
+function QuietLink({
+  label,
+  onPress,
+  disabled = false,
+  loading = false,
+  testID,
+}: {
+  label: string;
+  onPress: () => void;
+  disabled?: boolean;
+  loading?: boolean;
+  testID?: string;
+}) {
+  const { typography } = useTheme();
+  const inactive = disabled || loading;
+  const slop = (TOUCH.min - typography.label.lineHeight) / 2;
+  return (
+    <Pressable
+      testID={testID}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled: inactive, busy: loading }}
+      disabled={inactive}
+      onPress={onPress}
+      hitSlop={{ top: slop, bottom: slop, left: SPACING[2], right: SPACING[2] }}
+    >
+      {({ pressed }) => (
+        <View style={{ opacity: pressed ? OPACITY.pressed : 1 }}>
+          <View style={{ opacity: loading ? 0 : 1 }}>
+            <Text variant="label" tone={disabled ? 'muted' : 'accent'}>
+              {label}
+            </Text>
+          </View>
+          {loading ? (
+            <View className="absolute inset-0 items-center justify-center">
+              <Loader kind="meet" size={ICON.sm} delay={0} label={null} />
+            </View>
+          ) : null}
+        </View>
+      )}
+    </Pressable>
   );
 }
