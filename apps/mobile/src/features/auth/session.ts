@@ -2,6 +2,7 @@ import type { Session } from '@supabase/supabase-js';
 import { AppState } from 'react-native';
 import { create } from 'zustand';
 
+import { resetOnboarding } from '@/features/onboarding/store';
 import { identify, resetAnalytics } from '@/lib/analytics';
 import { setReportingUser } from '@/lib/errorReporting';
 import { supabase } from '@/lib/supabase';
@@ -26,7 +27,11 @@ export function startSessionSync(): void {
   supabase.auth.onAuthStateChange((_event, session) => {
     useSessionStore.setState({ session, initialized: true });
     if (session) identify(session.user.id);
-    else resetAnalytics();
+    else {
+      resetAnalytics();
+      // Signed out, deleted or the session dropped: the next sign-up on this phone starts clean.
+      resetOnboarding();
+    }
     setReportingUser(session?.user.id ?? null);
   });
 

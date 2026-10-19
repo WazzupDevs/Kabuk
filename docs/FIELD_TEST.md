@@ -10,7 +10,7 @@ Bu test **3 ya da 4 telefonla** yapılır. Tek sıra:
 - **Masa 2:** **B** lider (kayıtta **Erkek**), **D** aynı masada takım arkadaşı (kayıtta **Kadın**).
 - Dört telefon yoksa **D**'nin adımları atlanır; üç telefonla da her kural görülür.
 - İki masa mekanda **birbirinden uzak** oturur (farklı salon ya da en az birkaç masa ötede). Masalar birbirini önceden tanımaz gibi davranır: bulma gözlemi (§23.P-2) buna bağlı.
-- Sesli Tabu'daki gecikme ölçümü (T4) için kamera ya da boşta bir telefon gerekir.
+- Kapsül Anlat'taki gecikme ölçümü (T4) için kamera ya da boşta bir telefon gerekir.
 
 Tamamı yaklaşık 2,5 saat; T5'ten sonra ve E2'den sonra mola verilebilir. Her adım **P0** ya da **P1** olarak işaretli: süre yetmezse önce aşağıdaki P0 sırası yapılır, P1'ler kalan sürede tam sıradaki yerlerinde.
 
@@ -29,7 +29,7 @@ Her adım, atlanan P1'lere ihtiyaç duymadan yapılabilir.
 7. **L3.** B, A'nın masasına "Katıl"; istek kartında profil; kabul (~4 dk).
 8. **L4.** Kabul buluşmadır: durum satırları ve **bulma gözlemi** (~5–10 dk).
 9. **L5.** Birleşik masa: Masadakiler şeridi, iki sekme, okunmamış noktası (~4 dk).
-10. **T1–T5.** Sesli Tabu takımlarla, T4'teki gecikme ölçümü dahil (~15 dk).
+10. **T1–T5.** Kapsül Anlat takımlarla, T4'teki gecikme ölçümü dahil (~15 dk).
 11. **E1.** Masa sonu: çift başına "Arkadaş ekle" (~5 dk).
 12. **F3.** Mesajlaşma (~4 dk).
 13. **F4.** Mesaj bildirimi; FCM'li build yoksa atlanır ve not edilir (~4 dk).
@@ -74,7 +74,7 @@ Otomatik bir adım yeşilse sahada yine yapılır, ama önce elle kalan kısmın
 | 11  | P0      | L3. "Katıl", istek kartında profil, kabul | Kısmen   | A–D         |                                           |
 | 12  | P0      | L4. Kabul buluşmadır, bulma gözlemi       | Kısmen   | A–D         | §23.P-2                                   |
 | 13  | P0      | L5. Birleşik masa                         | Kısmen   | A–D         | T bu masada sürer                         |
-| 14  | P0      | T1–T5. Sesli Tabu takımlarla              | Kısmen   | A–D, kamera | ~15 dk; masa 3 dakikayı geçer             |
+| 14  | P0      | T1–T5. Kapsül Anlat takımlarla            | Kısmen   | A–D, kamera | ~15 dk; masa 3 dakikayı geçer             |
 | 15  | P1      | T6. İbre ve Sahtekar takımlarla           | Hayır    | A–D         |                                           |
 | 16  | P0      | E1. Masa sonu, çift başına "Arkadaş ekle" | Evet     | A–D         |                                           |
 | 17  | P1      | F2. Arkadaşın profili                     | Hayır    | A, B        |                                           |
@@ -280,7 +280,7 @@ Amaç: kamerada konum etiketi açıkken çekilen fotoğrafın konum bilgisi olma
 
 > Otomatik: lobiye açma, niyet ve oyun etiketi, masa kartı "Lobide açık" (`04-room-tabu.yaml`, `open-lobby-accept.yaml`); "Bu masadayım" (`13-teams.yaml`). Elle: kadının anonim seçimi, belirtmeyenin önizlemesi.
 
-1. A: Mekan ekranında **Masanı lobiye aç**. Alt sayfada niyet (**Etiket yok** / Oyun / Sohbet), oyun etiketi (**Fark etmez** / altı oyun) ve **"Bu masada nasıl görüneceksin?"**: **Anonim** seçili, **Profilimle** fotoğrafsız olduğu için kesik çizgili ve seçilemez, altında "Profilinle görünmek için profil fotoğrafı gerekiyor." Niyet **Oyun**, oyun etiketi **Sesli Tabu** → **Lobiye aç**.
+1. A: Mekan ekranında **Masanı lobiye aç**. Alt sayfada niyet (**Etiket yok** / Oyun / Sohbet), oyun etiketi (**Fark etmez** / altı oyun) ve **"Bu masada nasıl görüneceksin?"**: **Anonim** seçili, **Profilimle** fotoğrafsız olduğu için kesik çizgili ve seçilemez, altında "Profilinle görünmek için profil fotoğrafı gerekiyor." Niyet **Oyun**, oyun etiketi **Kapsül Anlat** → **Lobiye aç**.
 2. C: lobide (**Açık masalar**) A'nın kartı. **Bu masadayım** → alt sayfa: C için seçim **yok**, **"Masada böyle görüneceksin"** önizlemesi (C'nin adı, yaşı, fotoğrafı) ve "Masadakiler, masa sürerken profilini görür." → **İsteği gönder**.
 3. C'nin ekranında **"Liderine bu adı söyle"** ve kendi takma adı büyük harflerle; C adı A'ya söyler.
 4. A'nın mekan ekranında **"Masana katılmak istiyor"** kartı, aynı ad → **Kabul**.
@@ -289,7 +289,7 @@ Amaç: kamerada konum etiketi açıkken çekilen fotoğrafın konum bilgisi olma
 
 - A'nın masa kartında durum **"Lobide açık"**, altında "Bir masa katılmak isterse sana sorulur…", **Lobiden çek** ve **Masaya git**.
 - C'nin kartında **"⟨A⟩'nın tarafındasın. Lobiden yalnızca o çekebilir."** (ek takma ada uyar) ve **Masaya git**, **Masadan çık**.
-- Lobide A'nın kartında takma ad, "2 kişi", **Oyun** ve **Sesli Tabu** etiketleri. **"profilli" işareti, görünen ad, yaş ya da fotoğraf lobide yok** (kural 4, adım 23.1).
+- Lobide A'nın kartında takma ad, "2 kişi", **Oyun** ve **Kapsül Anlat** etiketleri. **"profilli" işareti, görünen ad, yaş ya da fotoğraf lobide yok** (kural 4, adım 23.1).
 - Hiçbir telefon kendiliğinden masa ekranına gitmez; masaya yalnızca **Masaya git** ile girilir.
 
 **Hata olursa:** C'de seçim (Anonim / Profilimle) göründüyse ❌: belirtmeyen her zaman profillidir (§23.D).
@@ -364,7 +364,7 @@ B'nin masası lobide bekliyor (L2); masası lobide bekleyen lider de başka bir 
 L5'teki masada devam.
 
 1. C (üye): **Oyun Seç** → **Sohbet kartları öner**. D: **Şimdi değil**. C'de **hemen** "Öneri kabul edilmedi."
-2. C: **Sesli Tabu öner**; D (karşı tarafın üyesi) **Oynayalım**. İki tarafın kişi sayısı 2 olduğu için hakemli mod.
+2. C: **Kapsül Anlat öner**; D (karşı tarafın üyesi) **Oynayalım**. İki tarafın kişi sayısı 2 olduğu için hakemli mod.
 
 **Bak:** öneri ve kabul tarafın her telefonundan yapılabilir. Dört ekranda "Tur 1/6", aynı sayaç (en fazla 1 sn fark), iki taraf kutusu ve 0–0 skor.
 
@@ -376,7 +376,7 @@ L5'teki masada devam.
 **Bak:**
 
 - Kart **yalnızca C'de**. A'da (C'nin takım arkadaşı, aynı masada) "⟨C⟩ anlatıyor." ve kart yerine **Kart anlatanda**; kart yok, ama **Doğru** var.
-- B ve D (hakem taraf) kartı baştan görür; **Doğru** ve **Tabu** var. **Pas** yalnızca C'de.
+- B ve D (hakem taraf) kartı baştan görür; **Doğru** ve **Yasak!** var. **Pas** yalnızca C'de.
 - Herkes aynı masada oturduğu için ekranı saklamak oyuncunun işidir; uygulama kartı yalnızca doğru telefonlara gönderir.
 
 **Hata olursa:** A'da kart ya da yasaklı kelime gördüysen ekran görüntüsü al ve turu yaz; bu ❌'dır.
@@ -384,7 +384,7 @@ L5'teki masada devam.
 ## T3. Kim neye basabilir [P0]
 
 1. A ve C'nin tarafı kelimeyi bilince **A** ya da **B** Doğru'ya basar: dört ekranda skor 1, yeni kart.
-2. C yasaklı kelime söylerse **B** ya da **D** Tabu'ya basar: skor bir düşer.
+2. C yasaklı kelime söylerse **B** ya da **D** **Yasak!**'a basar: skor bir düşer.
 3. **C** Pas'a basar: "Pas · 2", skor değişmez.
 4. Bir kartta **A ile B aynı anda** Doğru'ya bassın: skor yalnızca **1** artmalı, dört ekran aynı karta geçmeli.
 
@@ -409,7 +409,7 @@ Basan telefon: anında / gecikmeli
 
 ## T5. Tur geçişi ve oyun sonu [P0]
 
-1. Süre bitince "Tur bitiyor…", ardından "Tur 2/6": B'nin tarafı anlatır. **D** turu başlatır: kart D'de; B'de "⟨D⟩ anlatıyor." ve kart yok; A ve C hakem: kart, Doğru ve Tabu.
+1. Süre bitince "Tur bitiyor…", ardından "Tur 2/6": B'nin tarafı anlatır. **D** turu başlatır: kart D'de; B'de "⟨D⟩ anlatıyor." ve kart yok; A ve C hakem: kart, Doğru ve Yasak!.
 2. 6 tur sonunda skorlar ve **"… kazandı!"** ya da **"Berabere!"**
 3. Masa sohbete döner: son oyunun skoru, yeniden Oyun Seç.
 4. (P1) Bir oyun sürerken **Oyunu bitir**: dört ekranda masa sohbete döner.
@@ -516,7 +516,7 @@ Masa telefon cepteyken kapanırsa masa sonu ekranı hiç görülmeyebilir; aynı
 
 İki kez oynanır; her turda **masayı bitirmeyen telefon** izlenir.
 
-**V8a (A bitirir, B izlenir):** A masasını lobiye açar, B katılır (bulma gözlemine satır), Sesli Tabu 1–2 tur. A **Masayı bitir**. **B'yi izle.**
+**V8a (A bitirir, B izlenir):** A masasını lobiye açar, B katılır (bulma gözlemine satır), Kapsül Anlat 1–2 tur. A **Masayı bitir**. **B'yi izle.**
 
 **V8b (B bitirir, A izlenir):** B lobiye açar, A katılır, 1–2 tur. B **Masayı bitir**. **A'yı izle.**
 
@@ -581,12 +581,12 @@ Görünür istek yalnızca 23.3'ten önceki eski kayıtlarda ("İstek gönder") 
 > Otomatik: bot tek kişilik masayla katılır; cihaz 1. turda anlatır, 2. turda kartı görmez (`06b-tabu-coop.yaml`).
 
 1. B: **Mekandan ayrıl**, yeniden check-in, kişi sayısı **1** → **Masayı aç**.
-2. A lobiye açar, B katılır (bulma gözlemine satır); **Sesli Tabu öner** → **Oynayalım**.
-3. A anlatır: kart kapalı başlar; **Doğru**, **Pas** ve **Tabu**'nun üçü de A'da. Üstte tek **"Ortak skor"**.
+2. A lobiye açar, B katılır (bulma gözlemine satır); **Kapsül Anlat öner** → **Oynayalım**.
+3. A anlatır: kart kapalı başlar; **Doğru**, **Pas** ve **Yasak!** üçü de A'da. Üstte tek **"Ortak skor"**.
 4. B (tahmin eden): kart **yok**; geri sayım, ortak skor ve "… size anlatıyor…". Düğme yok.
 5. 2. tur: B anlatır; kart ve üç düğme B'de.
 
-**Bak:** tahmin eden telefonda kart hiçbir an görünmüyor. Oyun sonunda "Sesli Tabu bitti. Ortak skor: …".
+**Bak:** tahmin eden telefonda kart hiçbir an görünmüyor. Oyun sonunda "Kapsül Anlat bitti. Ortak skor: …".
 
 **Hata olursa:** tahmin eden telefonda kart gördüysen ekran görüntüsü al; bu ❌'dır.
 
@@ -603,11 +603,11 @@ Görünür istek yalnızca 23.3'ten önceki eski kayıtlarda ("İstek gönder") 
 
 ## S5. Masanla oyna (A) [P1]
 
-> Otomatik: özel masa, tek masa Tabu ve "Masayı bitir" (`06-white-screen.yaml`).
+> Otomatik: özel masa, tek masa Kapsül Anlat ve "Masayı bitir" (`06-white-screen.yaml`).
 
 1. A: **Masanla oyna**. Masa ekranı şeritsiz ve sekmesiz; oyunlar sohbetin üstünde. Niyet ya da katılım sorulmaz; cinsiyet ve fotoğraf şartı yok (§23.D).
 2. B'nin lobisinde bu masa **görünmez**.
-3. A: Sesli Tabu → 1 tur → **Oyunu bitir** → **Masayı bitir**: mekan ekranına döner, "Arkadaş ekle" yok.
+3. A: Kapsül Anlat → 1 tur → **Oyunu bitir** → **Masayı bitir**: mekan ekranına döner, "Arkadaş ekle" yok.
 
 ## S6. Hareketsizlik (A, B) [P1]
 

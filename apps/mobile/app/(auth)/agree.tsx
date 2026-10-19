@@ -6,16 +6,18 @@ import { ConsentBoxes } from '@/features/onboarding/ConsentBoxes';
 import { SignupStep } from '@/features/onboarding/SignupStep';
 import { useOnboardingStore } from '@/features/onboarding/store';
 import { useFriend } from '@/features/onboarding/useFriend';
+import { useGoOnce } from '@/features/onboarding/useGoOnce';
 import { tr } from '@/i18n/tr';
 
 // "Başlamadan önce", step 1/7, before the phone (K-19, K-33): the two consents are kept on the
 // phone and sent with the profile (account/complete-onboarding), as before. Back goes to the first
 // screen.
 export default function ConsentsStep() {
-  const accepted = useOnboardingStore((s) => s.consented !== null);
-  const [terms, setTerms] = useState(accepted);
-  const [kvkk, setKvkk] = useState(accepted);
+  // Always unticked: each person ticks the boxes for themselves.
+  const [terms, setTerms] = useState(false);
+  const [kvkk, setKvkk] = useState(false);
   const friend = useFriend();
+  const { go, going } = useGoOnce();
   // The friend nods at each box and jumps when both are ticked.
   const toggle = (other: boolean, set: (v: boolean) => void, now: boolean) => {
     set(!now);
@@ -34,12 +36,14 @@ export default function ConsentsStep() {
         testID: 'consents-accept',
         label: tr.consents.accept,
         disabled: !(terms && kvkk),
-        onPress: () => {
-          useOnboardingStore.setState({
-            consented: { terms: CURRENT_TERMS_VERSION, kvkk: CURRENT_KVKK_VERSION },
-          });
-          router.push('/phone');
-        },
+        loading: going,
+        onPress: () =>
+          go(() => {
+            useOnboardingStore.setState({
+              consented: { terms: CURRENT_TERMS_VERSION, kvkk: CURRENT_KVKK_VERSION },
+            });
+            router.push('/phone');
+          }),
       }}
     >
       <ConsentBoxes

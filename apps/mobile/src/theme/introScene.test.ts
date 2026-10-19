@@ -131,6 +131,27 @@ describe('the intro scene (v45 §2, K-27, K-28)', () => {
     }
   });
 
+  it('keeps every capsule inside the scene box at every frame, at every tested size', () => {
+    for (const [w, h] of SIZES) {
+      const s = introScene(w, h);
+      for (const c of s.chars) {
+        for (let t = 0; t <= INTRO.endMs; t += 5) {
+          const f = charFrame(c, t);
+          if (f.opacity === 0) continue;
+          // Scaled from its feet (the box's bottom middle); the bob lifts the body inside it.
+          const lift = Math.min(0, bodyFrame(c, t, 0).dy) * s.ch * f.s;
+          const top = f.y + s.ch * (1 - f.s) + lift;
+          const half = (s.cw * f.s) / 2;
+          const mid = f.x + s.cw / 2;
+          expect(top, `${w}x${h} ${c.look} at ${t} ms`).toBeGreaterThanOrEqual(0);
+          expect(f.y + s.ch).toBeLessThanOrEqual(h);
+          expect(mid - half).toBeGreaterThanOrEqual(0);
+          expect(mid + half).toBeLessThanOrEqual(w);
+        }
+      }
+    }
+  });
+
   it('moves smoothly: no capsule jumps between two frames', () => {
     const s = introScene(360, 290);
     for (const c of s.chars) {

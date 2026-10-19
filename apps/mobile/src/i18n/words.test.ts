@@ -52,6 +52,10 @@ describe('no "oda" in what the user sees', () => {
 describe('no "Tabu" in what the user sees', () => {
   const word = /(?<!\p{L})tabu/iu;
   const storeDir = fileURLToPath(new URL('../../../../docs/store/', import.meta.url));
+  const legalDir = fileURLToPath(new URL('../../../../docs/legal/', import.meta.url));
+  const pushFile = fileURLToPath(
+    new URL('../../../../supabase/functions/_shared/pure/push.ts', import.meta.url),
+  );
 
   it('has none in tr.ts, the game names or the store texts', () => {
     expect(trTexts().filter((text) => word.test(text))).toEqual([]);
@@ -63,6 +67,19 @@ describe('no "Tabu" in what the user sees', () => {
         .split('\n')
         .filter((line) => word.test(line))
         .map((line) => `${f}: ${line}`),
+    );
+    expect(lines).toEqual([]);
+  });
+
+  it('has none in the push texts or the legal pages (the CTO review of 4.3a)', () => {
+    const legal = readdirSync(legalDir).filter((f) => f.endsWith('.md'));
+    expect(legal.length).toBeGreaterThan(2);
+    const files = [...legal.map((f) => legalDir + f), pushFile];
+    const lines = files.flatMap((path) =>
+      readFileSync(path, 'utf8')
+        .split('\n')
+        .filter((line) => word.test(line))
+        .map((line) => `${path}: ${line}`),
     );
     expect(lines).toEqual([]);
   });
