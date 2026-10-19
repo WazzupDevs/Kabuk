@@ -7,6 +7,7 @@ import {
   confettiFrame,
   copyFrame,
   type CopyPart,
+  copySettledAt,
   INTRO,
   INTRO_CONFETTI,
   INTRO_EMPTY_SEAT,
@@ -234,6 +235,14 @@ describe('the intro scene (v45 §2, K-27, K-28)', () => {
     expect(copyFrame('body', INTRO.playAt - 1).opacity).toBe(0);
     expect(copyFrame('foot', INTRO.footAt + INTRO.footMs).opacity).toBe(1);
     for (const p of COPY) expect(copyFrame(p, INTRO.endMs)).toEqual({ opacity: 1, dy: 0 });
+  });
+
+  it('says when each piece of the words stands still: from then on it is drawn without motion', () => {
+    for (const p of COPY) {
+      expect(copyFrame(p, copySettledAt(p))).toEqual({ opacity: 1, dy: 0 });
+      expect(copyFrame(p, copySettledAt(p) - 1)).not.toEqual({ opacity: 1, dy: 0 });
+      expect(copySettledAt(p)).toBeLessThan(INTRO.doneMs);
+    }
   });
 
   it('lights the near table’s phones together when the game starts', () => {

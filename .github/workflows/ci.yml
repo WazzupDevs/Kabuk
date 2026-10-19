@@ -49,6 +49,9 @@ jobs:
       # supabase/tests/local.ts writes here every call the local serve refused or cut off (refusal.ts),
       # and whether it sent the call again.
       INVOKE_RETRY_LOG: invoke-retries.log
+      # scripts/ci/functions-serve.sh: the serve's exits (restarts.log) and the machine's state at
+      # each one (crash-<n>.txt).
+      SERVE_STATE: serve-state
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -62,20 +65,25 @@ jobs:
           cp supabase/.env.example supabase/.env
           pnpm supabase start -x studio,mailpit,logflare,vector,supavisor,postgres-meta
           pnpm db:reset
+      # The serve is started again when it exits on its own, at most twice in the job; a third exit
+      # fails the job (scripts/ci/functions-serve.sh, "Functions serve exits" below).
       - name: Edge Functions
         run: |
-          nohup pnpm supabase functions serve > functions.log 2>&1 &
+          nohup bash scripts/ci/functions-serve.sh main functions.log > /dev/null 2>&1 &
           key=$(pnpm -s supabase status -o env | sed -n 's/^PUBLISHABLE_KEY="\(.*\)"$/\1/p')
           timeout 180 bash -c "until curl -sf -X POST http://127.0.0.1:54321/functions/v1/ping -H 'apikey: $key' -H 'content-type: application/json' -d '{}' > /dev/null; do sleep 2; done"
       - run: pnpm test:integration
       # CHECKIN_SKIP_LOCATION (dev project only) needs a function server started with the secret:
       # restart serve with it and run only its test (supabase/tests/checkinSkipLocation.test.ts).
+      # main.stop first: this stop is deliberate, the first serve is not started again.
       - name: Check-in with CHECKIN_SKIP_LOCATION=1
         run: |
+          touch "$SERVE_STATE/main.stop"
           pkill -f "supabase functions serve" || true
           until ! pgrep -f "supabase functions serve" > /dev/null; do sleep 1; done
+          while kill -0 "$(cat "$SERVE_STATE/main.pid")" 2> /dev/null; do sleep 1; done
           echo CHECKIN_SKIP_LOCATION=1 > "$RUNNER_TEMP/skip.env"
-          nohup pnpm supabase functions serve --env-file "$RUNNER_TEMP/skip.env" > functions-skip.log 2>&1 &
+          nohup bash scripts/ci/functions-serve.sh skip functions-skip.log --env-file "$RUNNER_TEMP/skip.env" > /dev/null 2>&1 &
           key=$(pnpm -s supabase status -o env | sed -n 's/^PUBLISHABLE_KEY="\(.*\)"$/\1/p')
           timeout 180 bash -c "until curl -sf -X POST http://127.0.0.1:54321/functions/v1/ping -H 'apikey: $key' -H 'content-type: application/json' -d '{}' > /dev/null; do sleep 2; done"
           CHECKIN_SKIP_LOCATION_TEST=1 pnpm vitest run -c vitest.integration.config.ts supabase/tests/checkinSkipLocation.test.ts
@@ -97,17 +105,51 @@ jobs:
               sort invoke-retries.log | uniq -c | sort -rn | awk '{ print "| " $1 " | `" $2 "` | " $3 " | " $4 " |" }'
             fi
           } | tee -a "$GITHUB_STEP_SUMMARY"
+          # A call that found the serve's runtime gone (Kong's 503 "name resolution failed") also as
+          # a warning on the run: vitest does not print a passing test's console warnings.
+          grep ' no-runtime ' invoke-retries.log | while read -r call fault again; do
+            echo "::warning title=Edge Function call found no runtime::$call: Kong 503 \"name resolution failed\" ($fault), sent again after ping: $again"
+          done || true
+      # Every time the serve exited on its own (scripts/ci/functions-serve.sh), with its time, in the
+      # job summary and as a warning on the run (readable through the API, for counting them over a
+      # week). A third exit fails the job here too, whatever the tests did.
+      - name: Functions serve exits
+        if: always()
+        run: |
+          mkdir -p "$SERVE_STATE"
+          touch "$SERVE_STATE/restarts.log"
+          exits=$(wc -l < "$SERVE_STATE/restarts.log")
+          {
+            echo "### functions serve exited on its own: $exits (started again at most twice)"
+            if [ "$exits" -gt 0 ]; then
+              echo
+              echo "| Time (UTC) | Serve | Exit | Then |"
+              echo "| --- | --- | --- | --- |"
+              awk -F'\t' '{ print "| " $1 " | " $2 " | `" $3 "` | " $4 " |" }' "$SERVE_STATE/restarts.log"
+              echo
+              echo "The machine at each exit (disk, /dev/shm, memory, docker stats): functions-logs artifact, serve-state/crash-<n>.txt."
+            fi
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+          while IFS=$'\t' read -r at name why then; do
+            echo "::warning title=functions serve exited::$at UTC, $name serve: $why; $then"
+          done < "$SERVE_STATE/restarts.log"
+          if grep -q 'gave-up$' "$SERVE_STATE/restarts.log"; then
+            echo "functions serve exited a third time: the job fails."
+            exit 1
+          fi
       - if: failure()
         run: tail -n 200 functions.log functions-skip.log 2>/dev/null || true
       # The whole serve log, to match a failure against the runtime's lines (a retired isolate, a
-      # refused request) beyond the tail above.
-      - if: failure()
+      # refused request) beyond the tail above; also after any exit of the serve, with the machine's
+      # state at that moment, so a restart that saved the run still shows why it was needed.
+      - if: failure() || hashFiles('serve-state/crash-*.txt') != ''
         uses: actions/upload-artifact@v4
         with:
           name: functions-logs
           path: |
             functions.log
             functions-skip.log
+            serve-state/
           if-no-files-found: ignore
           retention-days: 14
 
