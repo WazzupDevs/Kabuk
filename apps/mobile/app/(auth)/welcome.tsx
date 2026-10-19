@@ -12,9 +12,7 @@ import {
 } from 'react-native';
 import Animated, {
   Easing,
-  runOnJS,
   type SharedValue,
-  useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -26,6 +24,7 @@ import { Button } from '@/components/Button';
 import { Text } from '@/components/Text';
 import { Wordmark } from '@/components/Wordmark';
 import { useLaunchStore } from '@/features/launch/launchStore';
+import { introCopy } from '@/features/onboarding/introGate';
 import { IntroScene } from '@/features/onboarding/IntroScene';
 import { useOnboardingStore } from '@/features/onboarding/store';
 import { UnderAge } from '@/features/onboarding/UnderAge';
@@ -71,39 +70,70 @@ function Welcome() {
   const { height: windowHeight } = useWindowDimensions();
   // The scene waits for the launch curtain to open (src/features/launch/LaunchCurtain.tsx).
   const curtain = useLaunchStore((s) => s.curtain);
-  const t = useSharedValue<number>(played || reduce ? INTRO.endMs : 0);
+  // Seen before in this launch (K-27, K-28): it stands at its end. Read once, as the screen opens.
+  const [seen] = useState(() => played);
+  const t = useSharedValue<number>(seen || reduce ? INTRO.endMs : 0);
   const [box, setBox] = useState<{ w: number; h: number } | null>(null);
   const scene = useMemo(() => (box ? introScene(box.w, box.h) : null), [box]);
-  // "Geç" shows while the scene runs.
-  const [running, setRunning] = useState(false);
-  useAnimatedReaction(
-    () => t.value > 0 && t.value < INTRO.doneMs,
-    (on, prev) => {
-      if (on !== prev) runOnJS(setRunning)(on);
-    },
-  );
+
+  // The words, "Başla" and "Geç" on React's side (introGate.ts): each stands still once its
+  // motion ends, all of them at once with reduce motion, and at the cap if the curtain never opens.
+  // They never wait for the UI thread's frames or for the curtain's signal.
+  const [mountedAt] = useState(() => Date.now());
+  const [startedAt, setStartedAt] = useState<number | null>(null);
+  const [skipped, setSkipped] = useState(false);
+  const [now, setNow] = useState(mountedAt);
+  const copy = introCopy({
+    sinceMount: now - mountedAt,
+    sinceStart: startedAt === null ? null : now - startedAt,
+    still: seen || reduce || skipped,
+  });
+  useEffect(() => {
+    if (copy.next === null) return undefined;
+    const id = setTimeout(() => setNow(Date.now()), copy.next);
+    return () => clearTimeout(id);
+  }, [copy.next, now]);
 
   // Starts once the curtain is gone and the scene has its size, from its first frame; with reduce
   // motion it stands at its end from the start.
   const started = useRef(false);
   useEffect(() => {
-    if (started.current || curtain || !box) return;
-    started.current = true;
-    if (!played && !reduce) {
+    if (started.current || curtain || !box || copy.giveUp) return undefined;
+    if (seen || reduce) {
+      started.current = true;
+      t.set(INTRO.endMs);
+      return undefined;
+    }
+    // On the next frame, so the React clock and the motion start together; a new size before then
+    // schedules it again.
+    const id = requestAnimationFrame(() => {
+      started.current = true;
       played = true;
+      const at = Date.now();
+      setStartedAt(at);
+      setNow(at);
       t.set(0);
       t.set(withTiming(INTRO.endMs, { duration: INTRO.endMs, easing: Easing.linear }));
-    } else {
-      t.set(INTRO.endMs);
-    }
-  }, [curtain, box, reduce, t]);
+    });
+    return () => cancelAnimationFrame(id);
+  }, [curtain, box, copy.giveUp, seen, reduce, t]);
+  // The curtain did not open by the cap: the scene goes to its end and does not play later.
+  useEffect(() => {
+    if (!copy.giveUp) return;
+    started.current = true;
+    played = true;
+    t.set(INTRO.endMs);
+  }, [copy.giveUp, t]);
   // Reduce motion turned on while it plays: it stops at its end.
   useEffect(() => {
     if (reduce) t.set(INTRO.endMs);
   }, [reduce, t]);
 
-  // "Geç" and "Başla" jump to the end.
-  const skip = () => t.set(INTRO.endMs);
+  // "Geç" and "Başla" jump to the end; the words stand at once.
+  const skip = () => {
+    t.set(INTRO.endMs);
+    setSkipped(true);
+  };
   // A new size (the safe area arriving late, a turned screen, a new text size) lays the scene out
   // again where it is: every frame is a function of the size and the time, so nothing is skipped.
   const onSceneLayout = (e: LayoutChangeEvent) => {
@@ -128,7 +158,7 @@ function Welcome() {
             paddingBottom: SPACING[2.5],
           }}
         >
-          <Words part="logo" t={t} style={styles.logo}>
+          <Words part="logo" t={t} still={copy.shown.includes('logo')} style={styles.logo}>
             <Wordmark height={INTRO_SHAPE.logo} />
           </Words>
           <View
@@ -151,18 +181,23 @@ function Welcome() {
               accessibilityLabel={tr.signup.welcomeTitle}
               style={styles.title}
             >
-              <Words part="line1" t={t}>
+              <Words part="line1" t={t} still={copy.shown.includes('line1')}>
                 <Text variant="display">{tr.signup.welcomeHalves[0]}</Text>
               </Words>
-              <Words part="line2" t={t}>
+              <Words part="line2" t={t} still={copy.shown.includes('line2')}>
                 <Text variant="display">{tr.signup.welcomeHalves[1]}</Text>
               </Words>
             </View>
-            <Words part="body" t={t}>
+            <Words part="body" t={t} still={copy.shown.includes('body')}>
               <Text tone="muted">{tr.signup.welcomeBody}</Text>
             </Words>
           </View>
-          <Words part="foot" t={t} style={{ gap: SPACING[2], paddingTop: SPACING[4] }}>
+          <Words
+            part="foot"
+            t={t}
+            still={copy.shown.includes('foot')}
+            style={{ gap: SPACING[2], paddingTop: SPACING[4] }}
+          >
             <Button
               testID="welcome-start"
               label={tr.signup.start}
@@ -176,7 +211,7 @@ function Welcome() {
             </Text>
           </Words>
         </ScrollView>
-        {running ? (
+        {copy.skip ? (
           <Pressable
             testID="intro-skip"
             accessibilityRole="button"
@@ -200,15 +235,19 @@ function Welcome() {
   );
 }
 
-// A piece of the words coming in with the scene (src/theme/introScene.ts → copyFrame).
+// A piece of the words coming in with the scene (src/theme/introScene.ts → copyFrame). Still, it
+// is a plain view that React draws in full: nothing on the UI thread can hold it back
+// (introGate.ts).
 function Words({
   part,
   t,
+  still,
   style,
   children,
 }: {
   part: CopyPart;
   t: SharedValue<number>;
+  still: boolean;
   style?: StyleProp<ViewStyle>;
   children: ReactNode;
 }) {
@@ -216,6 +255,7 @@ function Words({
     const f = copyFrame(part, t.value);
     return { opacity: f.opacity, transform: [{ translateY: f.dy }] };
   });
+  if (still) return <View style={style}>{children}</View>;
   return <Animated.View style={[style, motion]}>{children}</Animated.View>;
 }
 

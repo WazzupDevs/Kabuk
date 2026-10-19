@@ -334,6 +334,31 @@ describe('"Bu masadayım" (§22.C)', () => {
     await expectConsistent(roomId);
   });
 
+  // K-39 (docs/SPEC_V4.md §4.P): the table screen offers "Davet et" only where "Bu masadayım" gets
+  // in today: a waiting room and both sides of a merged one, never a "Masanla oyna" room (private,
+  // never in the lobby).
+  it('gets into a waiting room and a merged one, never into a "Masanla oyna" room', async () => {
+    const [owner, guest, early, late, toGuest, soloTable, toSolo] = await tables(7);
+    const roomId = await createRoom(owner);
+    await join(early, owner, roomId, 'owner');
+    await join(guest, owner, roomId);
+    expect((await roomRow(roomId)).status).toBe('active');
+    await join(late, owner, roomId, 'owner');
+    await join(toGuest, guest, roomId, 'guest');
+    expect(await roomRow(roomId)).toMatchObject({ owner_phones: 3, guest_phones: 2 });
+    await expectConsistent(roomId);
+
+    const solo = await rooms(soloTable, { action: 'create-solo' });
+    expect(solo.status, JSON.stringify(solo.body)).toBe(200);
+    const soloId = (solo.body as { roomId: string }).roomId;
+    expect(await ask(toSolo, soloId, 'owner')).toEqual({
+      status: 409,
+      body: errorBody('room_not_available'),
+    });
+    expect(await myRequests(toSolo)).toEqual([]);
+    expect((await roomRow(soloId)).owner_phones).toBe(1);
+  });
+
   // Rule 5: the "Bu masadayım" form of rooms.test.ts → "declined and expired requests look the same".
   it('shows a decline and a timeout to the requester the same way', async () => {
     const [owner, declined, ignored] = await tables(3);
