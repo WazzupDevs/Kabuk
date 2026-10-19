@@ -659,27 +659,36 @@ export function confettiFrame(p: IntroConfetti, t: number): ConfettiFrame {
 }
 
 export type CopyPart = 'logo' | 'line1' | 'line2' | 'body' | 'foot';
+export const COPY_PARTS: readonly CopyPart[] = ['logo', 'line1', 'line2', 'body', 'foot'];
 // Where each piece of the words starts from (px down; the logo comes from above).
 const COPY_FROM: Record<CopyPart, number> = { logo: -6, line1: 16, line2: 16, body: 8, foot: 0 };
+// When each piece comes in and how long its fade and its rise take (v45: .s1, .s2, .s3, obfIn).
+const COPY_TIMES: Record<CopyPart, { at: number; fade: number; rise: number }> = {
+  logo: { at: INTRO.logoAt, fade: 500, rise: 600 },
+  line1: { at: INTRO.logoAt, fade: 450, rise: 600 },
+  line2: { at: INTRO.litAt, fade: 450, rise: 600 },
+  body: { at: INTRO.playAt, fade: 500, rise: 500 },
+  foot: { at: INTRO.footAt, fade: INTRO.footMs, rise: 0 },
+};
 
 // The words come in with the scene: the logo and the title's first half first, its second half
 // when everyone sits, the line under it when the game starts; the button from the start.
 export function copyFrame(part: CopyPart, t: number): { opacity: number; dy: number } {
   'worklet';
   const from = COPY_FROM[part];
-  if (part === 'logo') {
-    const at = INTRO.logoAt;
-    return { opacity: step(t, at, 500, EASE), dy: from - from * step(t, at, 600, LOGO_IN) };
-  }
-  if (part === 'line1' || part === 'line2') {
-    const at = part === 'line1' ? INTRO.logoAt : INTRO.litAt;
-    return { opacity: step(t, at, 450, EASE), dy: from - from * step(t, at, 600, LINE_IN) };
-  }
-  if (part === 'body') {
-    const at = INTRO.playAt;
-    return { opacity: step(t, at, 500, EASE), dy: from - from * step(t, at, 500, EASE) };
-  }
-  return { opacity: step(t, INTRO.footAt, INTRO.footMs, EASE), dy: 0 };
+  const { at, fade, rise } = COPY_TIMES[part];
+  const curve = part === 'logo' ? LOGO_IN : part === 'body' ? EASE : LINE_IN;
+  return {
+    opacity: step(t, at, fade, EASE),
+    dy: rise > 0 ? from - from * step(t, at, rise, curve) : 0,
+  };
+}
+
+// When a piece of the words stands still at full opacity, in ms from the scene's start: from then
+// on it is drawn without motion (src/features/onboarding/introGate.ts).
+export function copySettledAt(part: CopyPart): number {
+  const { at, fade, rise } = COPY_TIMES[part];
+  return at + Math.max(fade, rise);
 }
 
 // Sizes in px (v45: .obf-top svg, .obf-ring, .obf-fx i, .obf-ph, .obf-sw), and the scene's least
