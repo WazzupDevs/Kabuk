@@ -257,7 +257,7 @@ Yalnızca 23.2'den önce açılmış, cinsiyeti boş bir hesap varsa.
 - Kartın başına (takma ad) dokununca masa ekranı açılır: masanın oyunları. Oyun seçmeden geri dönünce kart yine **"Lobide değil"**; başka bir masanın lobideki kartında **Katıl** basılabilir.
 - Masa açıldıktan sonra Mekan sekmesi Mekan ekranını açar.
 - Lobide ("Açık masalar") henüz masa yok: **"Açık masa yok"** kartı, yanında kesik çizgili ikinci kapsülüyle işaret.
-- (P1) Başka bir masaya **Katıl** gönderince istek o masanın satırında bekler: "İsteğin gönderildi. Yanıt bekleniyor (… sn)." ve kesişen kapsüller. Red ya da zaman aşımında satırda "Masa şu an müsait değil." ve kapsüller çarpışıp geri çekilir, sonra **Katıl** geri gelir.
+- (P1) Başka bir masaya **Katıl** gönderince istek o masanın satırında bekler: "İsteğin gönderildi. Yanıt bekleniyor (… sn)." ve kesişen kapsüller. Red de süre dolana kadar bekliyor görünür (kural 5); süre dolunca satırda "Masa şu an müsait değil." ve kapsüller çarpışıp geri çekilir, sonra **Katıl** geri gelir.
 
 **Hata olursa:** masa açılmadıysa ekrandaki mesajı yaz.
 
