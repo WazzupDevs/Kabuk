@@ -1,7 +1,6 @@
 # V7 and T1–T3 with the v3 room flow (docs/SPEC_V3.md §5) and the Faz 3 venue (§23.C): a new
-# alias, the spots (a table at another spot, "Bu noktadayım", then the same spot), "Masanı lobiye
-# aç" with an intent and a game tag, the table card "Lobide açık" and its "Masaya git" to the
-# waiting room, the bot table asks to join, accept, chat, the bot proposes Sesli Tabu and this phone
+# alias, the spots (a table at another spot, "Bu noktadayım", then the same spot), "Lobiye aç"
+# with an intent and a game tag, the table card "Lobide açık" and its head to the waiting room, the bot table asks to join, accept, chat, the bot proposes Sesli Tabu and this phone
 # accepts, one voice Tabu turn, "Oyunu bitir" back to chat, and a proposal the bot does not accept.
 appId: app.kabuk.mobile
 ---
@@ -29,7 +28,7 @@ appId: app.kabuk.mobile
     visible: 2 hakkın kaldı
     timeout: 15000
 - takeScreenshot: 11b-alias-rerolled
-# The table card (alias, spot, "Masanı lobiye aç", "Masanla oyna") is above the lobby: scroll to it.
+# The table card (alias, spot, "Lobiye aç", "Davet et") is above the lobby: scroll to it.
 - scrollUntilVisible:
     element:
       id: spot-here
@@ -131,7 +130,7 @@ appId: app.kabuk.mobile
 - assertNotVisible:
     id: lobby-open
 - takeScreenshot: 13d-venue-in-lobby
-# "Masaya git": today's waiting room, where the table can play on its own until another table joins.
+# The card's head: today's waiting room, where the table can play on its own until another table joins.
 - scrollUntilVisible:
     element:
       id: go-to-table

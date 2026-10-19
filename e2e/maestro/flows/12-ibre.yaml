@@ -16,7 +16,7 @@ appId: app.kabuk.mobile
       BODY: '{"spot":"kutuphane","headcount":2}'
 - tapOn:
     id: tab-venue
-# "Masanı lobiye aç", the bot asks to join, "Kabul" on the venue, "Masaya git" (§23.C).
+# "Lobiye aç", the bot asks to join, "Kabul" on the venue, the table card's head (§23.C).
 - runFlow:
     file: open-lobby-accept.yaml
 # The game list starts under the strip and the tabs: İbre, the fifth, is below the fold.

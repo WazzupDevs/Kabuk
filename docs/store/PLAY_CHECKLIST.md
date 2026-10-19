@@ -88,7 +88,7 @@ dahil) ve Arkadaşlar kullanılabilir. Mekan içi akış videoda: [video bağlan
   1. Pilot mekanlardan birinde, mekanın içinde. İkinci masa için ikinci bir telefon ve gerçek bir numarayla açılmış ikinci bir hesap gerekir (karşı masa botu üretim projesini reddeder).
   2. Uygulamayı aç, inceleme hesabıyla giriş yap. Kod ekranında kodu yazarken kaydı durdur ya da sonra kodu buzla; kod videoda görünmemeli.
   3. Başla → onaylar → telefon ve kod → ad, doğum tarihi, cinsiyet → "Fotoğrafsız bitir" → Keşfet (liste ve harita) → mekanın sayfası → "Buraya giriş yap" → konum rızası ve izin → kişi sayısı → "Masayı aç" → masa takma adı.
-  4. "Masanı lobiye aç" → "Lobiye aç". İkinci telefondan "Katıl" isteği gelir → "Kabul". Masa kartında "… geliyor" satırı; ikinci telefonun kartında "Kabul edildi, … masasının yanına git". İkinci telefon masaya gelir → iki telefonda "Masaya git".
+  4. Masa kartında "Lobiye aç" → alt sayfada "Lobiye aç". İkinci telefondan "Katıl" isteği gelir → "Kabul". Masa kartında "… geliyor" satırı; ikinci telefonun kartında "Kabul edildi, … masasının yanına git". İkinci telefon masaya gelir → iki telefonda kartın başına (masa adı) dokunulur.
   5. Birleşik masa: Oyun Seç → "Kapsül Anlat öner" → ikinci telefonda "Oynayalım" → kartı aç → bir Doğru, bir Pas; ikinci telefon hakem olarak "Yasak!" basar. Tur geçişini göster.
   6. "Masayı bitir" → iki telefonda "Masa bitti" ve karşı taraf satırında "Arkadaş ekle".
   7. "Arkadaş ekle" (iki taraf) → "Arkadaş oldunuz" → "Mesajlaş" → DM gönder ve al.
