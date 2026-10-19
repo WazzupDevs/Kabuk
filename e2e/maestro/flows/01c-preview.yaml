@@ -369,6 +369,13 @@ appId: app.kabuk.mobile
       id: preview-identity-capsules
     timeout: 10000
 - takeScreenshot: 04l-identity-capsules
+# Aktiviteler's event card on the cafe and the campus cover (K-44).
+- scrollUntilVisible:
+    element:
+      id: preview-identity-covers
+    centerElement: true
+    timeout: 30000
+- takeScreenshot: 04l-identity-covers
 - scrollUntilVisible:
     element:
       id: preview-identity-wallpaper
@@ -478,36 +485,23 @@ appId: app.kabuk.mobile
       id: preview-open
     timeout: 10000
 - back
-# Aşama 8 · Saha: Aktiviteler's game cards and a game's sheet (no table yet: "Oynamak için mekana
-# gir").
+# Aktiviteler (docs/SPEC_V4.md K-15): the E2E venues have no events and a new account no history,
+# so both tabs show their empty state here; the event card is in the preview's covers above, a
+# record in 07-history-block.
 - tapOn:
     id: tab-activities
 - extendedWaitUntil:
     visible:
-      id: activities-solo-card-tabu
+      id: activities-no-events
     timeout: 10000
 - takeScreenshot: 04h-activities
-# Centred: under the floating tab bar a tap would land on the bar.
-- scrollUntilVisible:
-    element:
-      id: activities-room-card-sahtekar
-    centerElement: true
-    timeout: 30000
 - tapOn:
-    id: activities-room-card-sahtekar
-# On the 320 dp screen the game's text is taller than the sheet: its action is scrolled to.
-- scrollUntilVisible:
-    element:
-      id: activities-venue-sahtekar
-    centerElement: true
-    timeout: 30000
-- takeScreenshot: 04h-activities-sheet
-- scrollUntilVisible:
-    element:
-      id: activities-sheet-close
-    timeout: 30000
-- tapOn:
-    id: activities-sheet-close
+    id: activities-tab-history
+- extendedWaitUntil:
+    visible:
+      id: activities-no-history
+    timeout: 10000
+- takeScreenshot: 04h-activities-history
 - tapOn:
     id: tab-explore
 - extendedWaitUntil:

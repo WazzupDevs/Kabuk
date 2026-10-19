@@ -1,6 +1,31 @@
 # F7: block the bot table from the play history; the friendship ends with it.
 appId: app.kabuk.mobile
 ---
+# Aktiviteler → Geçmiş (docs/SPEC_V4.md K-15): the record with the bot table, under its day; it
+# opens what Bildirimler offers for it.
+- tapOn:
+    id: tab-activities
+- tapOn:
+    id: activities-tab-history
+- extendedWaitUntil:
+    visible:
+      id: history-row-.*
+    timeout: 15000
+- takeScreenshot: 30a-activities-history
+- tapOn:
+    id: history-row-.*
+    index: 0
+- extendedWaitUntil:
+    visible:
+      id: history-more
+    timeout: 10000
+- takeScreenshot: 30b-activities-record
+- tapOn:
+    id: history-sheet-close
+- extendedWaitUntil:
+    notVisible:
+      id: history-sheet-close
+    timeout: 10000
 # Bildirimler opens from the bell on a tab screen (docs/SPEC_V3.md §18.3).
 - tapOn:
     id: tab-messages

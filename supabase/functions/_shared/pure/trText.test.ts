@@ -122,6 +122,27 @@ describe('inflectTr', () => {
     expect(genitive('Suricat')).toBe("Suricat'ın");
   });
 
+  it('puts the locative after an apostrophe, t after a voiceless consonant', () => {
+    const locative = (name: string) => inflectTr(name, 'locative');
+    expect(locative('İstanbul')).toBe("İstanbul'da");
+    expect(locative('Sakarya')).toBe("Sakarya'da");
+    expect(locative('Eskişehir')).toBe("Eskişehir'de");
+    expect(locative('Kocaeli')).toBe("Kocaeli'de");
+    expect(locative('Bolu')).toBe("Bolu'da");
+    expect(locative('Düzce')).toBe("Düzce'de");
+    expect(locative('Elazığ')).toBe("Elazığ'da");
+    expect(locative('Muş')).toBe("Muş'ta");
+    expect(locative('Tokat')).toBe("Tokat'ta");
+    expect(locative('Kars')).toBe("Kars'ta");
+    expect(locative('Bilecik')).toBe("Bilecik'te");
+    expect(locative('Antep')).toBe("Antep'te");
+    expect(locative('Siirt')).toBe("Siirt'te");
+    expect(locative('Kemal')).toBe("Kemal'de");
+    expect(locative('Masa 5')).toBe("Masa 5'te");
+    expect(locative('Masa 10')).toBe("Masa 10'da");
+    expect(locative('Masa 100')).toBe("Masa 100'de");
+  });
+
   it('puts the dative after an apostrophe, with y after a vowel', () => {
     expect(dative('Serçe')).toBe("Serçe'ye");
     expect(dative('Badem')).toBe("Badem'e");
