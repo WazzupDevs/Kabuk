@@ -99,3 +99,19 @@ appId: app.kabuk.mobile
 - assertVisible: Lobide değil
 - assertVisible: 'Noktan: Kantin'
 - takeScreenshot: 11-venue
+# "Davet et" (docs/SPEC_V4.md §4.C, 4.3): how a friend at the venue joins; off the lobby the sheet
+# asks to open the table to it first.
+- tapOn:
+    id: invite-open
+- extendedWaitUntil:
+    visible:
+      id: invite-sheet
+    timeout: 10000
+- assertVisible:
+    id: invite-open-lobby
+- takeScreenshot: 11a-invite
+- back
+- extendedWaitUntil:
+    notVisible:
+      id: invite-sheet
+    timeout: 10000

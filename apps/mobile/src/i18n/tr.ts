@@ -1086,11 +1086,20 @@ export const tr = {
     acceptedGoTo: (host: string) => `Kabul edildi, ${host} masasının yanına git`,
     coming: (guest: string, people: number) => `${guest} geliyor, ${headcountLabel(people)} kişi`,
     solo: 'Masanla oynuyorsun',
-    openHint: 'Bir masa katılmak isterse sana sorulur. Beklerken masanla oynayabilirsin.',
     memberOf: (leader: string) =>
       `${inflectTr(leader, 'genitive')} tarafındasın. Lobiden yalnızca o çekebilir.`,
     withdraw: 'Lobiden çek',
-    goToTable: 'Masaya git',
+    // The card's head opens the table (K-36): the room if there is one, else the table's games.
+    openTable: 'Masanı aç',
+    openLobby: 'Lobiye aç',
+    // "Davet et" (docs/SPEC_V4.md §4.C, 4.3): how a friend at the venue joins the table today; the
+    // real invite comes with step 4.7.
+    invite: 'Davet et',
+    inviteTitle: 'Arkadaşını masana çağır',
+    inviteName: (alias: string) => `Arkadaşın bu mekandaysa ona masanın adını söyle: ${alias}.`,
+    inviteHow:
+      'Masan lobideyken arkadaşın Mekan’daki "Açık masalar"da masanı bulup "Bu masadayım"a basar. Sen onaylayınca masana katılır.',
+    inviteOpenFirst: 'Masan şu an lobide değil. Önce lobiye aç.',
   },
   // The table's end (docs/SPEC_V3.md §23.G; canvas: Faz 3 · 23.3 → masa sonu): the other side's
   // phones and each pair's own "Arkadaş ekle".

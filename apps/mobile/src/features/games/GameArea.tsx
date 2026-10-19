@@ -19,7 +19,6 @@ import { SPACING } from '@/theme/tokens';
 
 import { IbreGame, RoundReveal } from './ibre/IbreGame';
 import { LocalIbre } from './ibre/LocalIbre';
-import { GAME_ORDER, GameCard, gameCardState, GameCell, GameGrid } from './GameCard';
 import { LocalTabu } from './LocalTabu';
 import { ProposalArea } from './ProposalArea';
 import { RematchButton } from './RematchButton';
@@ -29,6 +28,7 @@ import { SahtekarGame } from './sahtekar/SahtekarGame';
 import { LocalSay } from './say/LocalSay';
 import { SayGame } from './say/SayGame';
 import { SohbetCard } from './SohbetCard';
+import { SoloGames } from './SoloGames';
 import { VoiceTabu, VoiceTabuResult } from './VoiceTabu';
 
 type Props = {
@@ -62,7 +62,12 @@ type Props = {
   onLocalGame: (game: LocalGame | null) => void;
 };
 
-export type LocalGame = 'tabu' | 'sahtekar' | 'harf' | 'sarki' | 'ibre';
+export const LOCAL_GAMES = ['tabu', 'sahtekar', 'harf', 'sarki', 'ibre'] as const;
+export type LocalGame = (typeof LOCAL_GAMES)[number];
+
+export function isLocalGame(value: unknown): value is LocalGame {
+  return (LOCAL_GAMES as readonly unknown[]).includes(value);
+}
 
 // Whether a game is running: the room screen shows it full screen (canvas: Aşama 6 · Oyunlar).
 export function isGameRunning(
@@ -342,42 +347,12 @@ export function GameArea({
           players={roomHeadcount}
         />
       ) : (
-        // One table: the games as cards (canvas: Aşama 8 · Saha → Oyun listesi). A game the
-        // headcount does not allow is faded with its reason.
-        <Card>
-          <View className="gap-3">
-            <View className="gap-0.5">
-              <Text variant="heading" accessibilityRole="header">
-                {tr.games.soloTitle}
-              </Text>
-              <Text variant="fine">{tr.games.soloHint(headcount)}</Text>
-            </View>
-            <GameGrid>
-              {GAME_ORDER.map((game) => {
-                const card = gameCardState(game, 'onePhone', headcount);
-                return (
-                  <GameCell key={game}>
-                    <GameCard
-                      concept={game}
-                      testID={`solo-${game}`}
-                      accessibilityLabel={tr.games.start(tr.concepts[game])}
-                      disabled={card.disabled || (game === 'sohbet' && startSohbet.isPending)}
-                      reason={card.reason}
-                      onPress={() =>
-                        game === 'sohbet' ? startSohbet.mutate() : setLocalGame(game)
-                      }
-                    />
-                  </GameCell>
-                );
-              })}
-            </GameGrid>
-            {startSohbet.isError ? (
-              <Text variant="fine" tone="danger">
-                {errorMessage(startSohbet.error)}
-              </Text>
-            ) : null}
-          </View>
-        </Card>
+        <SoloGames
+          headcount={headcount}
+          onPick={(game) => (game === 'sohbet' ? startSohbet.mutate() : setLocalGame(game))}
+          pendingGame={startSohbet.isPending ? 'sohbet' : null}
+          error={startSohbet.error}
+        />
       )}
     </View>
   );

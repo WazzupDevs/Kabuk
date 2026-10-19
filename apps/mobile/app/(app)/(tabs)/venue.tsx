@@ -21,7 +21,6 @@ import { OpenLobbySheet } from '@/features/rooms/OpenLobbySheet';
 import { useOpenedTables } from '@/features/rooms/openedTables';
 import { useCurrentRoom, useRoom, useRoomPhones } from '@/features/rooms/queries';
 import { TableCard } from '@/features/rooms/TableCard';
-import { useCreateSolo } from '@/features/rooms/useCreateSolo';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { sessionDurationMinutes } from '@shared/analytics.ts';
@@ -51,7 +50,8 @@ function isConcept(value: unknown): value is Concept {
 
 // The table's venue, the home screen (docs/SPEC_V3.md §23.C): the table card with its state, the
 // venue chat and the lobby. Without an active table it sends the user to Keşfet. Nothing sends the
-// table to its room any more: the card's "Masaya git" does (canvas: Faz 3 · 23.1 Masa ve lobi).
+// table to its room any more: the card's head opens the table (K-36; canvas: Faz 3 · 23.1 Masa ve
+// lobi).
 // Aktiviteler's "Bu oyunla lobiye aç" lands here with the game (`lobbyGame`, `lobbyIntent`) and
 // opens "Masanı lobiye aç" with them.
 export default function VenueScreen() {
@@ -60,7 +60,6 @@ export default function VenueScreen() {
   const table = useActiveTable();
   const currentRoom = useCurrentRoom(table.data?.id);
   const spots = useVenueSpots(table.data?.venue_id);
-  const solo = useCreateSolo();
   const venueHasSpots = (spots.data ?? []).length > 0;
   const now = useNow(30_000);
   const params = useLocalSearchParams<{ lobbyGame?: string; lobbyIntent?: string }>();
@@ -172,35 +171,8 @@ export default function VenueScreen() {
         venueHasSpots={venueHasSpots}
         // Unknown until read: the plain "Birleşti" rather than a line that may be gone a moment later.
         opened={openedIds === null || (!!room && openedIds.includes(room.id))}
+        onOpenLobby={() => setSheet({ intent: null, gameTag: null })}
       />
-      {state === 'off' ? (
-        // Side by side: the venue chat row stays above the floating tab bar on small phones.
-        <View className="mt-5 flex-row gap-3">
-          <View className="flex-1">
-            <Button
-              tight
-              testID="lobby-open"
-              label={tr.rooms.create}
-              onPress={() => setSheet({ intent: null, gameTag: null })}
-            />
-          </View>
-          <View className="flex-1">
-            <Button
-              variant="secondary"
-              tight
-              testID="play-with-table"
-              label={tr.rooms.playWithTable}
-              onPress={() => solo.mutate()}
-              loading={solo.isPending}
-            />
-          </View>
-        </View>
-      ) : null}
-      {solo.isError ? (
-        <Text variant="fine" tone="danger" className="mt-2">
-          {errorMessage(solo.error)}
-        </Text>
-      ) : null}
       <View className="mt-4">
         <ListRow
           card

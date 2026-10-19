@@ -91,7 +91,7 @@ Otomatik bir adım yeşilse sahada yine yapılır, ama önce elle kalan kısmın
 | 28  | P0      | F7. Geçmişten engelleme                   | Kısmen   | A, B        |                                           |
 | 29  | P0      | T7. İş birliği modu                       | Kısmen   | A, B        | B tek kişilik masayla                     |
 | 30  | P1      | S4. Masada engelleme                      | Hayır    | A–D         |                                           |
-| 31  | P1      | S5. Masanla oyna                          | Evet     | A           |                                           |
+| 31  | P1      | S5. Masanla oyna                          | Kısmen   | A, B        |                                           |
 | 32  | P1      | S6. Hareketsizlik                         | Hayır    | A, B        | 30 dk bekleme; başka adımlarla birlikte   |
 | 33  | P0      | M1. Mekan sohbeti                         | Kısmen   | A, B, C     |                                           |
 | 34  | P1      | M2. Mekan sohbetinde şikayet ve engel     | Hayır    | A, B        |                                           |
@@ -249,7 +249,9 @@ Yalnızca 23.2'den önce açılmış, cinsiyeti boş bir hesap varsa.
 
 **Bak:**
 
-- Mekan ekranının üstünde **kendi masa kartı**: takma ad, kişi sayısı, kalan süre ve durum **"Lobide değil"**. Altında **Masanı lobiye aç** ve **Masanla oyna**.
+- Mekan ekranının üstünde **kendi masa kartı**: takma ad, kişi sayısı ve durum **"Lobide değil"**; altında küçük bir satırda kalan süre, nokta (**Değiştir**) ve **Adı değiştir**. En altta **Lobiye aç** ve **Davet et**.
+- **Davet et**: açılan sayfada masanın adı ve arkadaşın nasıl katılacağı ("Açık masalar"da **Bu masadayım**); masa lobide değilken "Önce lobiye aç." ve **Lobiye aç**.
+- Kartın başına (takma ad) dokununca masa ekranı açılır: masanın oyunları. Oyun seçmeden geri dönünce kart yine **"Lobide değil"**; başka bir masanın lobideki kartında **Katıl** basılabilir.
 - Masa açıldıktan sonra Mekan sekmesi Mekan ekranını açar.
 - Lobide ("Açık masalar") henüz masa yok: "Şu an lobide masa yok…".
 
@@ -280,17 +282,17 @@ Amaç: kamerada konum etiketi açıkken çekilen fotoğrafın konum bilgisi olma
 
 > Otomatik: lobiye açma, niyet ve oyun etiketi, masa kartı "Lobide açık" (`04-room-tabu.yaml`, `open-lobby-accept.yaml`); "Bu masadayım" (`13-teams.yaml`). Elle: kadının anonim seçimi, belirtmeyenin önizlemesi.
 
-1. A: Mekan ekranında **Masanı lobiye aç**. Alt sayfada niyet (**Etiket yok** / Oyun / Sohbet), oyun etiketi (**Fark etmez** / altı oyun) ve **"Bu masada nasıl görüneceksin?"**: **Anonim** seçili, **Profilimle** fotoğrafsız olduğu için kesik çizgili ve seçilemez, altında "Profilinle görünmek için profil fotoğrafı gerekiyor." Niyet **Oyun**, oyun etiketi **Kapsül Anlat** → **Lobiye aç**.
+1. A: masa kartında **Lobiye aç**. Alt sayfada niyet (**Etiket yok** / Oyun / Sohbet), oyun etiketi (**Fark etmez** / altı oyun) ve **"Bu masada nasıl görüneceksin?"**: **Anonim** seçili, **Profilimle** fotoğrafsız olduğu için kesik çizgili ve seçilemez, altında "Profilinle görünmek için profil fotoğrafı gerekiyor." Niyet **Oyun**, oyun etiketi **Kapsül Anlat** → **Lobiye aç**.
 2. C: lobide (**Açık masalar**) A'nın kartı. **Bu masadayım** → alt sayfa: C için seçim **yok**, **"Masada böyle görüneceksin"** önizlemesi (C'nin adı, yaşı, fotoğrafı) ve "Masadakiler, masa sürerken profilini görür." → **İsteği gönder**.
 3. C'nin ekranında **"Liderine bu adı söyle"** ve kendi takma adı büyük harflerle; C adı A'ya söyler.
 4. A'nın mekan ekranında **"Masana katılmak istiyor"** kartı, aynı ad → **Kabul**.
 
 **Bak:**
 
-- A'nın masa kartında durum **"Lobide açık"**, altında "Bir masa katılmak isterse sana sorulur…", **Lobiden çek** ve **Masaya git**.
-- C'nin kartında **"⟨A⟩'nın tarafındasın. Lobiden yalnızca o çekebilir."** (ek takma ada uyar) ve **Masaya git**, **Masadan çık**.
+- A'nın masa kartında durum **"Lobide açık"**, **Oyun** ve **Kapsül Anlat** etiketleri, **Lobiden çek** ve **Davet et**. Kalan süre duruyor; nokta ve **Adı değiştir** yok (masa lobideyken sunucu ikisini de reddeder).
+- C'nin kartında **"⟨A⟩'nın tarafındasın. Lobiden yalnızca o çekebilir."** (ek takma ada uyar) ve **Masadan çık**.
 - Lobide A'nın kartında takma ad, "2 kişi", **Oyun** ve **Kapsül Anlat** etiketleri. **"profilli" işareti, görünen ad, yaş ya da fotoğraf lobide yok** (kural 4, adım 23.1).
-- Hiçbir telefon kendiliğinden masa ekranına gitmez; masaya yalnızca **Masaya git** ile girilir.
+- Hiçbir telefon kendiliğinden masa ekranına gitmez; masaya yalnızca kartın başına dokunarak girilir.
 
 **Hata olursa:** C'de seçim (Anonim / Profilimle) göründüyse ❌: belirtmeyen her zaman profillidir (§23.D).
 
@@ -325,18 +327,18 @@ B'nin masası lobide bekliyor (L2); masası lobide bekleyen lider de başka bir 
 
 ## L4. Kabul buluşmadır: durum satırları ve bulma gözlemi (A–D) [P0]
 
-> Otomatik: "… geliyor" satırı ve **Masaya git** (`open-lobby-accept.yaml`). Elle: masaların birbirini bulması.
+> Otomatik: "… geliyor" satırı ve kartın başından masaya geçiş (`open-lobby-accept.yaml`). Elle: masaların birbirini bulması.
 
 1. Kabulden hemen sonra dört telefonun **mekan ekranındaki masa kartına** bak.
 2. B ve D masalarından kalkıp A'nın masasını bulur. **Bulma gözlemi tablosuna** 1. satırı yaz.
-3. Masaya varınca dördü de **Masaya git**.
+3. Masaya varınca dördü de kartın başına dokunur.
 
 **Bak:**
 
 - **B ve D**'nin kartında: **"Kabul edildi, ⟨A⟩ masasının yanına git"**. D de bu satırı görür: lobide bekleyen masanın üyesi kabulde misafir tarafa taşınır (§23.C).
 - **A ve C**'nin kartında: **"⟨B⟩ geliyor, 2 kişi"** (B'nin masasının kişi sayısı).
 - Tören, tam ekran görsel ya da renk yok; hiçbir telefon kendiliğinden masa ekranına gitmez.
-- Bir telefon **Masaya git** ile birleşik masayı bir kez açınca o telefonun kartı **"Birleşti"** olur; diğer telefonlarınki o telefon açana kadar değişmez.
+- Bir telefon kartın başından birleşik masayı bir kez açınca o telefonun kartı **"Birleşti"** olur; diğer telefonlarınki o telefon açana kadar değişmez.
 
 **Hata olursa:** D'nin kartı "Lobide değil" ya da boş kaldıysa ❌ (üye taşınmamış); saati yaz.
 
@@ -540,7 +542,7 @@ Masa telefon cepteyken kapanırsa masa sonu ekranı hiç görülmeyebilir; aynı
 Katılan, kabulden sonra Masadakiler'de ev sahibi masanın profilli kişilerini görüp gitmemeyi seçebilir (§23.E). Bu bir güvenlik kapısıdır.
 
 1. A lobiye açar, B **Katıl**, A **Kabul**.
-2. B, A'nın masasına gitmeden: **Masaya git** → Masadakiler'e bak → **Masadan çık** → onay.
+2. B, A'nın masasına gitmeden: kartın başı → Masadakiler'e bak → **Masadan çık** → onay.
 
 **Bak:**
 
@@ -601,13 +603,15 @@ Görünür istek yalnızca 23.3'ten önceki eski kayıtlarda ("İstek gönder") 
 - 2'de karşı tarafı engelleyen D kendisi çıkar.
 - Engelleme hiçbir zaman "Tanışalım mı?" açmaz. Bir taraftaki son telefon engelleyerek çıkarsa masa hemen kapanır.
 
-## S5. Masanla oyna (A) [P1]
+## S5. Masanla oyna (A, B) [P1]
 
-> Otomatik: özel masa, tek masa Kapsül Anlat ve "Masayı bitir" (`06-white-screen.yaml`).
+> Otomatik: masa ekranı, tek masa Kapsül Anlat ve "Masayı bitir" (`06-white-screen.yaml`).
 
-1. A: **Masanla oyna**. Masa ekranı şeritsiz ve sekmesiz; oyunlar sohbetin üstünde. Niyet ya da katılım sorulmaz; cinsiyet ve fotoğraf şartı yok (§23.D).
-2. B'nin lobisinde bu masa **görünmez**.
-3. A: Kapsül Anlat → 1 tur → **Oyunu bitir** → **Masayı bitir**: mekan ekranına döner, "Arkadaş ekle" yok.
+1. A: lobide değilken kartın başına dokun: masa ekranında masanın oyunları. Hiçbir oyun seçmeden geri dön.
+2. B masasını lobiye açar. A'nın lobisinde B'nin kartındaki **Katıl** basılabilir: masa ekranına bakmak bir şey kurmaz (K-36). Basma; B lobiden çeker.
+3. A: kartın başı → **Kapsül Anlat**. Oyun hemen başlar; masa ekranı şeritsiz ve sekmesiz. Niyet ya da katılım sorulmaz; cinsiyet ve fotoğraf şartı yok (§23.D). A'nın kartı **"Masanla oynuyorsun"**.
+4. B'nin lobisinde bu masa **görünmez**.
+5. A: 1 tur → **Oyunu bitir** → **Masayı bitir**: mekan ekranına döner, "Arkadaş ekle" yok.
 
 ## S6. Hareketsizlik (A, B) [P1]
 

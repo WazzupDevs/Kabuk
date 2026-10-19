@@ -22,7 +22,13 @@ import { RoomComposer, RoomMessages, useRoomChat } from '@/features/chat/ChatPan
 import { useRoomSafety } from '@/features/chat/RoomSafety';
 import { useOtherTableOnline } from '@/features/chat/usePresence';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
-import { GameArea, isGameRunning, type LocalGame, useEndGame } from '@/features/games/GameArea';
+import {
+  GameArea,
+  isGameRunning,
+  isLocalGame,
+  type LocalGame,
+  useEndGame,
+} from '@/features/games/GameArea';
 import { useFirstGameIntro } from '@/features/games/introSeen';
 import { FirstGameIntro } from '@/features/games/FirstGameIntro';
 import { useGameSignals } from '@/features/games/gameSignals';
@@ -45,14 +51,21 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { NARROW_SCREEN, SPACING } from '@/theme/tokens';
 
 export default function RoomScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  // `start`: the game picked on the table screen, which made this one-table room for it (K-36).
+  const { id, start } = useLocalSearchParams<{ id: string; start?: string }>();
   const queryClient = useQueryClient();
   const table = useActiveTable();
   const room = useRoom(id);
   const chat = useRoomChat(id);
   // A one-table game (Tabu, Sahtekar) runs on this phone; it starts in GameArea and keeps its place
   // when the room's concept turns to it, so the deck is not dealt twice.
-  const [localGame, setLocalGame] = useState<LocalGame | null>(null);
+  const [localGame, setLocalGame] = useState<LocalGame | null>(() =>
+    isLocalGame(start) ? start : null,
+  );
+  // Started once: a later visit to this screen opens on the games.
+  useEffect(() => {
+    if (start) router.setParams({ start: undefined });
+  }, [start]);
   const endGame = useEndGame(id, () => setLocalGame(null));
   const [chatOpen, setChatOpen] = useState(false);
   // Messages from the other table seen so far; the rest count as unread on the game's chat button.

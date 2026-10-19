@@ -1,5 +1,5 @@
-# The Faz 3 venue (docs/SPEC_V3.md §23.C): "Masanı lobiye aç" with no choices, the bot table asks
-# to join, "Kabul" on the venue screen, and "Masaya git" from the table card to the two-table room.
+# The Faz 3 venue (docs/SPEC_V3.md §23.C): "Lobiye aç" with no choices, the bot table asks to join,
+# "Kabul" on the venue screen, and the table card's head to the two-table room.
 # Nothing sends the phone to the room by itself.
 appId: app.kabuk.mobile
 ---

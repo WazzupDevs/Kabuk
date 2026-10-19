@@ -3,13 +3,16 @@ import { gameTag, type TableState } from '@shared/tableCard.ts';
 import { type RoomSeat, sideHeadcount } from '@shared/teams.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { Alert, useWindowDimensions, View } from 'react-native';
+import { useState } from 'react';
+import { Alert, Pressable, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Icon } from '@/components/Icon';
 import { LiveDot } from '@/components/LiveDot';
+import { Loader } from '@/components/Loader';
+import { Sheet } from '@/components/Sheet';
 import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
 import { errorMessage } from '@/i18n/errors';
@@ -18,7 +21,7 @@ import { track } from '@/lib/analytics';
 import { callRerollAlias, roomsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
-import { NARROW_SCREEN, SPACING } from '@/theme/tokens';
+import { ICON, OPACITY, SPACING, TOUCH } from '@/theme/tokens';
 
 import { roomKeys, type TableRoomRow } from './queries';
 
@@ -42,21 +45,30 @@ type Props = {
   venueHasSpots: boolean;
   // This phone has opened the merged table once (openedTables): "Birleşti" from then on.
   opened: boolean;
+  // "Lobiye aç": the venue screen's sheet (OpenLobbySheet).
+  onOpenLobby: () => void;
 };
 
 // The lobby's dot: beats while the table is open to it.
 const LOBBY_BEAT_MS = 1600;
 
-// The table card at the top of the venue screen, the home screen (docs/SPEC_V3.md §23.C; canvas:
-// Aşama 2 · Ekranlar → Faz 3 · 23.1 Masa ve lobi): the table's name, people and time left, and its
-// state with what it can do there. "Masaya git" opens the room screen: the waiting room with its
-// "Masanla oyna" games, the two-sided room, or "Masanla oyna"; nothing opens it by itself.
-export function TableCard({ table, room, state, seat, minutesLeft, venueHasSpots, opened }: Props) {
-  const { shape } = useTheme();
+// The table card at the top of the venue screen, the home screen (v45: .card.mine; docs/SPEC_V3.md
+// §23.C). Its head opens the table: the room when there is one, else the table screen with the
+// table's games, which makes nothing until a game is picked (K-36). Under the head a quiet line: the
+// time left and, without a room, the spot and the name to change (K-35; the server refuses both in a
+// room). Then what the state allows: "Lobiye aç" or "Lobiden çek", and "Davet et".
+export function TableCard({
+  table,
+  room,
+  state,
+  seat,
+  minutesLeft,
+  venueHasSpots,
+  opened,
+  onOpenLobby,
+}: Props) {
   const queryClient = useQueryClient();
-  // Side by side the status and "Lobiden çek" do not fit at 320 dp with the largest text.
-  const { width, fontScale } = useWindowDimensions();
-  const narrow = width < NARROW_SCREEN * Math.max(1, fontScale);
+  const [invite, setInvite] = useState(false);
 
   const reroll = useMutation({
     meta: FEEL_ERROR,
@@ -81,8 +93,9 @@ export function TableCard({ table, room, state, seat, minutesLeft, venueHasSpots
     onSettled: settle,
   });
 
-  const goToTable = () => {
+  const openTable = () => {
     if (room) router.push({ pathname: '/room/[id]', params: { id: room.id } });
+    else router.push('/table');
   };
   const confirmLeave = () => {
     Alert.alert(tr.rooms.leaveConfirmTitle, tr.rooms.leaveConfirmMember, [
@@ -102,190 +115,225 @@ export function TableCard({ table, room, state, seat, minutesLeft, venueHasSpots
       : null;
   const intent = room && isIntent(room.intent) ? room.intent : null;
   const tag = room ? gameTag(room.game_tag) : null;
-  const error = withdraw.error ?? leave.error;
+  const error = withdraw.error ?? leave.error ?? reroll.error;
 
-  const goButton = <Button testID="go-to-table" label={tr.venue.goToTable} onPress={goToTable} />;
-  const withdrawButton = (
-    <Button
-      variant="neutral"
-      size="sm"
-      testID="withdraw-table"
-      label={tr.venue.withdraw}
-      onPress={() => withdraw.mutate()}
-      loading={withdraw.isPending}
-    />
-  );
+  // Kabul is the meeting (docs/SPEC_V3.md §23.E): the joining side goes to the host's table, the
+  // host's side waits for it; once this phone has opened the table, "Birleşti".
+  const status =
+    state === 'off' ? (
+      <Status people={table.headcount} dot="off" label={tr.venue.lobbyOff} />
+    ) : state === 'open' || state === 'member' ? (
+      <Status people={table.headcount} dot="live" label={tr.venue.lobbyOpen} />
+    ) : state === 'merged' ? (
+      opened || !other?.alias ? (
+        <Status
+          people={table.headcount}
+          dot="merged"
+          label={tr.venue.merged}
+          testID="table-merged"
+        />
+      ) : mySide === 'guest' ? (
+        <Status
+          people={table.headcount}
+          dot="live"
+          label={tr.venue.acceptedGoTo(other.alias)}
+          testID="table-accepted"
+        />
+      ) : (
+        <Status
+          people={table.headcount}
+          dot="live"
+          label={tr.venue.coming(
+            other.alias,
+            sideHeadcount(other.headcount ?? 1, other.phones ?? 1),
+          )}
+          testID="table-coming"
+        />
+      )
+    ) : (
+      <Status people={table.headcount} dot="merged" label={tr.venue.solo} />
+    );
 
   return (
-    <Card tone="feature" className="mt-3" testID="table-card">
-      <View className="flex-row items-center gap-4">
-        <Avatar kind="table" alias={table.alias} size="lg" />
-        <View className="flex-1 gap-1">
-          <Text variant="overline" tone="muted">
-            {tr.venue.yourTable}
-          </Text>
-          <Text variant="alias" testID="table-alias" numberOfLines={1} adjustsFontSizeToFit>
+    <Card className="mt-3" testID="table-card">
+      <Pressable
+        testID="go-to-table"
+        accessibilityRole="button"
+        accessibilityLabel={`${table.alias}, ${tr.venue.openTable}`}
+        onPress={openTable}
+        className="flex-row items-center gap-3"
+        style={{ minHeight: TOUCH.min }}
+      >
+        <Avatar kind="table" alias={table.alias} size="md" />
+        <View className="flex-1 gap-0.5">
+          <Text variant="heading" testID="table-alias">
             {table.alias}
           </Text>
-          <View className="flex-row flex-wrap items-center gap-1.5">
-            <Tag label={tr.venue.people(table.headcount)} />
-            <Tag
-              icon="time-outline"
-              label={tr.venue.remaining(Math.floor(minutesLeft / 60), minutesLeft % 60)}
+          {status}
+        </View>
+        <Icon name="chevron-forward" tone="muted" />
+      </Pressable>
+
+      {/* The quiet line (K-35): the time left, and without a room the spot and the name, as text
+          links so the line stays small (their touch areas grow to 44). */}
+      <View
+        className="mt-2 flex-row flex-wrap items-center"
+        style={{ columnGap: SPACING[3], rowGap: SPACING[2] }}
+      >
+        <View className="flex-row items-center gap-1">
+          <Icon name="time-outline" size={ICON.sm} tone="muted" />
+          <Text variant="fine">
+            {tr.venue.remaining(Math.floor(minutesLeft / 60), minutesLeft % 60)}
+          </Text>
+        </View>
+        {state === 'off' && venueHasSpots ? (
+          <View className="flex-row items-center gap-1.5">
+            <Icon name="location-outline" size={ICON.sm} tone="muted" />
+            <Text variant="fine">
+              {table.spot?.name ? tr.venue.spot(table.spot.name) : tr.venue.noSpot}
+            </Text>
+            <QuietLink
+              testID="change-spot"
+              label={table.spot_id ? tr.venue.changeSpot : tr.venue.chooseSpot}
+              onPress={() => router.push('/spot')}
+            />
+          </View>
+        ) : null}
+        {state === 'off' ? (
+          <View className="flex-row items-center gap-1.5">
+            <QuietLink
+              testID="reroll-alias"
+              label={tr.venue.rerollAlias}
+              onPress={() => reroll.mutate()}
+              disabled={table.alias_rerolls >= ALIAS_REROLLS_PER_CHECKIN}
+              loading={reroll.isPending}
+            />
+            <Text variant="fine">
+              {tr.venue.rerollsLeft(ALIAS_REROLLS_PER_CHECKIN - table.alias_rerolls)}
+            </Text>
+          </View>
+        ) : null}
+      </View>
+
+      {state === 'open' && (intent || tag) ? (
+        <View className="mt-1 flex-row flex-wrap items-center gap-1.5">
+          {intent ? <Tag variant={intent} label={tr.intents[intent]} /> : null}
+          {tag ? <Tag icon="dice-outline" label={tr.concepts[tag]} /> : null}
+        </View>
+      ) : null}
+
+      {state === 'off' || state === 'open' ? (
+        // The table's leader: into the lobby or out of it, and how a friend joins (v45: .two).
+        <View className="mt-3 flex-row gap-2.5">
+          <View className="flex-1">
+            {state === 'off' ? (
+              <Button tight testID="lobby-open" label={tr.venue.openLobby} onPress={onOpenLobby} />
+            ) : (
+              <Button
+                tight
+                variant="neutral"
+                testID="withdraw-table"
+                label={tr.venue.withdraw}
+                onPress={() => withdraw.mutate()}
+                loading={withdraw.isPending}
+              />
+            )}
+          </View>
+          <View className="flex-1">
+            <Button
+              tight
+              variant="neutral"
+              testID="invite-open"
+              label={tr.venue.invite}
+              onPress={() => setInvite(true)}
             />
           </View>
         </View>
-      </View>
-      <View className="my-2.5 bg-divider" style={{ height: shape.stroke.hairline }} />
-      <View className="gap-2.5">
-        {state === 'off' ? (
-          <>
-            <Status dot="off" label={tr.venue.lobbyOff} />
-            {venueHasSpots ? (
-              <View className="flex-row items-center justify-between gap-2">
-                <View className="flex-1 flex-row items-center gap-2">
-                  <Icon name="location-outline" />
-                  <Text variant="bodyStrong" className="flex-1">
-                    {table.spot?.name ? tr.venue.spot(table.spot.name) : tr.venue.noSpot}
-                  </Text>
-                </View>
-                <Button
-                  variant="ghost"
-                  testID="change-spot"
-                  label={table.spot_id ? tr.venue.changeSpot : tr.venue.chooseSpot}
-                  onPress={() => router.push('/spot')}
-                />
-              </View>
-            ) : null}
-            <View className="flex-row items-center justify-between gap-2">
-              <Text variant="fine" className="flex-1">
-                {tr.venue.rerollsLeft(ALIAS_REROLLS_PER_CHECKIN - table.alias_rerolls)}
-              </Text>
-              <Button
-                variant="ghost"
-                testID="reroll-alias"
-                label={tr.venue.rerollAlias}
-                onPress={() => reroll.mutate()}
-                disabled={table.alias_rerolls >= ALIAS_REROLLS_PER_CHECKIN}
-                loading={reroll.isPending}
-              />
-            </View>
-            {reroll.isError ? (
-              <Text variant="fine" tone="danger">
-                {errorMessage(reroll.error)}
-              </Text>
-            ) : null}
-          </>
-        ) : state === 'open' ? (
-          <>
-            {narrow ? (
-              <Status dot="live" label={tr.venue.lobbyOpen} />
-            ) : (
-              <View className="flex-row items-center gap-2">
-                <View className="flex-1">
-                  <Status dot="live" label={tr.venue.lobbyOpen} />
-                </View>
-                {withdrawButton}
-              </View>
-            )}
-            {intent || tag ? (
-              <View className="flex-row flex-wrap items-center gap-1.5">
-                {intent ? <Tag variant={intent} label={tr.intents[intent]} /> : null}
-                {tag ? <Tag icon="dice-outline" label={tr.concepts[tag]} /> : null}
-              </View>
-            ) : null}
+      ) : null}
+
+      {state === 'member' ? (
+        <View className="mt-2 gap-2">
+          {leaderAlias ? (
             <Text variant="fine" tone="text">
-              {tr.venue.openHint}
+              {tr.venue.memberOf(leaderAlias)}
             </Text>
-            {narrow ? withdrawButton : null}
-            {goButton}
-          </>
-        ) : state === 'member' ? (
-          <>
-            <Status dot="live" label={tr.venue.lobbyOpen} />
-            {leaderAlias ? (
-              <Text variant="fine" tone="text">
-                {tr.venue.memberOf(leaderAlias)}
-              </Text>
-            ) : null}
-            {goButton}
-            <View className="flex-row">
+          ) : null}
+          <View className="flex-row">
+            <Button
+              variant="neutral"
+              size="sm"
+              testID="leave-table"
+              label={tr.rooms.leave}
+              onPress={confirmLeave}
+              loading={leave.isPending}
+            />
+          </View>
+        </View>
+      ) : null}
+
+      {state === 'merged' && other?.alias ? (
+        <View className="mt-2 flex-row items-center gap-3">
+          <Avatar kind="table" alias={other.alias} size="md" />
+          <View className="flex-1 gap-0.5">
+            <Text variant="bodyStrong">{tr.rooms.withOther(other.alias)}</Text>
+            <Text variant="fine">
+              {`${tr.rooms.people(sideHeadcount(other.headcount ?? 1, other.phones ?? 1))} · ${tr.rooms.phones(other.phones ?? 1)}`}
+            </Text>
+          </View>
+        </View>
+      ) : null}
+
+      {error ? (
+        <Text variant="fine" tone="danger" className="mt-2">
+          {errorMessage(error)}
+        </Text>
+      ) : null}
+
+      <Sheet
+        visible={invite}
+        onClose={() => setInvite(false)}
+        title={tr.venue.inviteTitle}
+        icon="people-outline"
+      >
+        <View className="gap-3" testID="invite-sheet">
+          <Text>{tr.venue.inviteName(table.alias)}</Text>
+          <Text tone="muted">{tr.venue.inviteHow}</Text>
+          {state === 'off' ? (
+            <>
+              <Text variant="bodyStrong">{tr.venue.inviteOpenFirst}</Text>
               <Button
-                variant="neutral"
-                size="sm"
-                testID="leave-table"
-                label={tr.rooms.leave}
-                onPress={confirmLeave}
-                loading={leave.isPending}
+                testID="invite-open-lobby"
+                label={tr.venue.openLobby}
+                onPress={() => {
+                  setInvite(false);
+                  onOpenLobby();
+                }}
               />
-            </View>
-          </>
-        ) : state === 'merged' ? (
-          <>
-            {/* Kabul is the meeting (docs/SPEC_V3.md §23.E): the joining side goes to the host's
-                table, the host's side waits for it; once this phone has opened the table, "Birleşti". */}
-            {opened || !other?.alias ? (
-              <Status dot="merged" label={tr.venue.merged} testID="table-merged" />
-            ) : mySide === 'guest' ? (
-              <Status
-                dot="live"
-                label={tr.venue.acceptedGoTo(other.alias)}
-                testID="table-accepted"
-              />
-            ) : (
-              <Status
-                dot="live"
-                label={tr.venue.coming(
-                  other.alias,
-                  sideHeadcount(other.headcount ?? 1, other.phones ?? 1),
-                )}
-                testID="table-coming"
-              />
-            )}
-            {other?.alias ? (
-              <View className="flex-row items-center gap-3">
-                <Avatar kind="table" alias={other.alias} size="md" />
-                <View className="flex-1 gap-0.5">
-                  <Text variant="bodyStrong">{tr.rooms.withOther(other.alias)}</Text>
-                  <Text variant="fine">
-                    {`${tr.rooms.people(sideHeadcount(other.headcount ?? 1, other.phones ?? 1))} · ${tr.rooms.phones(other.phones ?? 1)}`}
-                  </Text>
-                </View>
-              </View>
-            ) : null}
-            {goButton}
-          </>
-        ) : (
-          <>
-            <Status dot="merged" label={tr.venue.solo} />
-            {goButton}
-          </>
-        )}
-        {error ? (
-          <Text variant="fine" tone="danger">
-            {errorMessage(error)}
-          </Text>
-        ) : null}
-      </View>
+            </>
+          ) : null}
+        </View>
+      </Sheet>
     </Card>
   );
 }
 
-// The table's state with its dot: hollow off the lobby, beating in it and on the way to the other
-// table, filled once merged.
+// The head's second line (v45: .mine-head small): the state's dot, the people and the state. The dot
+// is hollow off the lobby, beating in it and on the way to the other table, filled once merged.
 function Status({
+  people,
   dot,
   label,
   testID,
 }: {
+  people: number;
   dot: 'off' | 'live' | 'merged';
   label: string;
   testID?: string;
 }) {
   const { colors, shape } = useTheme();
-  const size = SPACING[2.5];
+  const size = SPACING[2];
   return (
-    <View className="flex-row items-center gap-2" testID="table-state">
+    <View className="flex-row flex-wrap items-center gap-x-1.5" testID="table-state">
       {dot === 'live' ? (
         <LiveDot tone="success" periodMs={LOBBY_BEAT_MS} size={size} />
       ) : (
@@ -300,9 +348,61 @@ function Status({
           }}
         />
       )}
-      <Text variant="bodyStrong" className="flex-1" testID={testID}>
+      <Text variant="label" tone="muted">
+        {tr.venue.people(people)}
+      </Text>
+      <Text variant="label" tone="muted" accessible={false}>
+        ·
+      </Text>
+      <Text variant="label" tone="muted" className="shrink" testID={testID}>
         {label}
       </Text>
     </View>
+  );
+}
+
+// A text link on the quiet line: the label in the accent, 44 high to the touch. Busy, the mark
+// takes the label's place and a second press does nothing (CLAUDE.md → Ekran davranışı).
+function QuietLink({
+  label,
+  onPress,
+  disabled = false,
+  loading = false,
+  testID,
+}: {
+  label: string;
+  onPress: () => void;
+  disabled?: boolean;
+  loading?: boolean;
+  testID?: string;
+}) {
+  const { typography } = useTheme();
+  const inactive = disabled || loading;
+  const slop = (TOUCH.min - typography.label.lineHeight) / 2;
+  return (
+    <Pressable
+      testID={testID}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled: inactive, busy: loading }}
+      disabled={inactive}
+      onPress={onPress}
+      hitSlop={{ top: slop, bottom: slop, left: SPACING[2], right: SPACING[2] }}
+    >
+      {({ pressed }) => (
+        <View style={{ opacity: pressed ? OPACITY.pressed : 1 }}>
+          <View style={{ opacity: loading ? 0 : 1 }}>
+            <Text variant="label" tone={disabled ? 'muted' : 'accent'}>
+              {label}
+            </Text>
+          </View>
+          {loading ? (
+            <View className="absolute inset-0 items-center justify-center">
+              <Loader kind="meet" size={ICON.sm} delay={0} label={null} />
+            </View>
+          ) : null}
+        </View>
+      )}
+    </Pressable>
   );
 }

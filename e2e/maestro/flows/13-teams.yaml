@@ -62,8 +62,8 @@ appId: app.kabuk.mobile
     file: ../scripts/bot.js
     env:
       ACTION: accept-request
-# On bot A's side in the lobby (docs/SPEC_V3.md §23.C): the table card says so, with "Masaya git"
-# and "Masadan çık"; nothing sends the phone to the room.
+# On bot A's side in the lobby (docs/SPEC_V3.md §23.C): the table card says so, its head opens the
+# room and "Masadan çık" is under it; nothing sends the phone to the room.
 - extendedWaitUntil:
     visible:
       id: leave-table
