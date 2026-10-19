@@ -7,9 +7,11 @@
 # `e2e-large` label does the same: added, it runs the build and the four large jobs alone, after
 # the run still going (the eight others pass first); while it is on, every push runs all twelve.
 #
-# A shard whose flows fail because Maestro's driver on the phone crashed or could not be reached
-# runs once more on a fresh phone (scripts/e2e/retry.ts); a failing step alone never does. The job
-# summary names every retry and its reason.
+# A shard whose flows fail because Maestro's driver on the phone crashed or could not be reached,
+# or because the Edge Functions server stopped while they ran, runs once more on a fresh phone
+# (scripts/e2e/retry.ts); a failing step alone never does. The job summary names every retry and
+# its reason. The server is started again when it stops on its own, at most twice in the job, as
+# in ci.yml (scripts/ci/functions-serve.sh); every stop is in the job summary and a warning.
 #
 # Minutes (CLAUDE.md → Uçtan uca): a PR's new push replaces its run that is still going; a PR that
 # changes only docs and tests has no run; the nightly run is skipped while main has not moved
@@ -217,10 +219,16 @@ jobs:
       # The local stack signs photo URLs on its internal address (http://kong:8000), which the
       # emulator cannot reach; LOCAL_DEVICE_URL puts the emulator's address in its place
       # (supabase/functions/_shared/pure/devProject.ts → deviceReachableUrl; local stack only).
+      # The serve runs through both attempts of the shard and is started again when it stops on its
+      # own, at most twice in the job; a third stop fails the job ("Functions serve exits" below).
+      # On 19 Oct its container died in #168's light-2 ("error running container: exit 135") while
+      # it served the app's account call.
       - name: Edge Functions, E2E venue, bot table
+        env:
+          SERVE_STATE: ${{ env.OUT }}/serve-state
         run: |
           echo "LOCAL_DEVICE_URL=$E2E_SUPABASE_URL" > "$RUNNER_TEMP/functions.env"
-          nohup pnpm supabase functions serve --env-file "$RUNNER_TEMP/functions.env" > "$OUT/functions.log" 2>&1 &
+          nohup bash scripts/ci/functions-serve.sh e2e "$OUT/functions.log" --env-file "$RUNNER_TEMP/functions.env" > /dev/null 2>&1 &
           timeout 180 bash -c 'until curl -sf -X POST http://127.0.0.1:54321/functions/v1/ping -H "apikey: $E2E_PUBLISHABLE_KEY" -H "content-type: application/json" -d "{}" > /dev/null; do sleep 2; done'
           bash scripts/e2e/start-bots.sh
           node -e 'const s = require(process.argv[1]);
@@ -287,8 +295,10 @@ jobs:
           script: bash scripts/e2e/run-on-emulator.sh
       # One retry per shard, only when the test environment fell over: Maestro's driver on the phone
       # crashed while the flows ran, or could not be reached (scripts/e2e/retry.ts; #151's dark-1
-      # and dark-4). A failing step without that (an assertion, "Element not found") is never run
-      # again: it may be a real failure that comes and goes (#161's check-in race).
+      # and dark-4), or the Edge Functions server stopped while they ran, before the failed step
+      # failed (#168's light-2). A failing step without that (an assertion, "Element not found") is
+      # never run again: it may be a real failure that comes and goes (#161's check-in race). Nor
+      # after the server's third stop: it is not started again.
       - name: Test environment crash? (one retry)
         id: retry
         if: steps.flows.outcome == 'failure'
@@ -297,7 +307,7 @@ jobs:
         run: |
           reason=$(node --experimental-strip-types scripts/e2e/retry-check.ts "$OUT")
           if [ -z "$reason" ]; then
-            echo "No sign of a test-environment crash (scripts/e2e/retry.ts): no retry."
+            echo "No retry (scripts/e2e/retry.ts): no test-environment crash while the flows ran, or functions serve gave up."
             exit 0
           fi
           echo "reason=$reason" >> "$GITHUB_OUTPUT"
@@ -318,6 +328,9 @@ jobs:
             tail -n 3000 "$OUT/attempt-1/logcat.txt" > "$OUT/attempt-1/logcat-tail.txt"
           fi
           pnpm db:reset
+          # A serve that stopped in the first attempt has been started again; the bots sign in
+          # through it.
+          timeout 180 bash -c 'until curl -sf -X POST http://127.0.0.1:54321/functions/v1/ping -H "apikey: $E2E_PUBLISHABLE_KEY" -H "content-type: application/json" -d "{}" > /dev/null; do sleep 2; done'
           bash scripts/e2e/start-bots.sh
       - name: Emulator, APK and the shard's flows (retry)
         id: flows-retry
@@ -342,13 +355,43 @@ jobs:
           SECOND: ${{ steps.flows-retry.outcome }}
         run: |
           if [ "$RETRIED" != true ]; then
-            echo "The shard's flows failed (no retry: not a test-environment crash)."
+            echo "The shard's flows failed (no retry)."
             exit 1
           fi
           if [ "$SECOND" = success ]; then
             echo "- 2. deneme geçti." | tee -a "$GITHUB_STEP_SUMMARY"
           else
             echo "- 2. deneme de düştü ($SECOND). İlk deneme \`attempt-1/\` klasöründe." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+      # Every time the serve stopped on its own (scripts/ci/functions-serve.sh), with its time, in
+      # the job summary and as a warning on the run (the same warning as ci.yml's, read through the
+      # API to count them over a week); the machine's state at each stop is in this job's artifact,
+      # serve-state/crash-<n>.txt. A third stop fails the job here, whatever the flows did.
+      - name: Functions serve exits
+        if: always()
+        env:
+          SERVE_STATE: ${{ env.OUT }}/serve-state
+          JOB: e2e (${{ matrix.scheme }}, ${{ matrix.shard }}, ${{ matrix.font }})
+        run: |
+          mkdir -p "$SERVE_STATE"
+          touch "$SERVE_STATE/restarts.log"
+          exits=$(wc -l < "$SERVE_STATE/restarts.log")
+          if [ "$exits" -eq 0 ]; then exit 0; fi
+          {
+            echo "### $JOB: functions serve stopped on its own: $exits (started again at most twice)"
+            echo
+            echo "| Time (UTC) | Exit | Then |"
+            echo "| --- | --- | --- |"
+            awk -F'\t' '{ print "| " $1 " | `" $3 "` | " $4 " |" }' "$SERVE_STATE/restarts.log"
+            echo
+            echo "The machine at each stop (disk, /dev/shm, memory, docker stats): this job's artifact, serve-state/crash-<n>.txt."
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+          while IFS=$'\t' read -r at name why then; do
+            echo "::warning title=functions serve exited::$at UTC, $name serve: $why; $then"
+          done < "$SERVE_STATE/restarts.log"
+          if grep -q 'gave-up$' "$SERVE_STATE/restarts.log"; then
+            echo "functions serve stopped a third time: the job fails."
             exit 1
           fi
       - if: always()

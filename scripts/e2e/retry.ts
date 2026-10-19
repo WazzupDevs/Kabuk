@@ -1,9 +1,10 @@
 // Whether a shard's failed attempt in CI is run once more (.github/workflows/e2e.yml): only when
-// the test environment fell over, never because a step failed. Maestro drives the phone through a
-// driver it installs there (dev.mobile.maestro, an instrumentation); when that driver crashes or
-// cannot be reached, the next step fails as "Element not found" or an assertion although the app
-// did nothing wrong (#151's dark-1 and dark-4: "Element not found: welcome-start", with the driver
-// gone). A failing step without one of those signs is a real failure and is never run again: #161's
+// the test environment fell over (Maestro's driver on the phone, or the local Edge Functions
+// server, below), never because a step failed. Maestro drives the phone through a driver it
+// installs there (dev.mobile.maestro, an instrumentation); when that driver crashes or cannot be
+// reached, the next step fails as "Element not found" or an assertion although the app did nothing
+// wrong (#151's dark-1 and dark-4: "Element not found: welcome-start", with the driver gone). A
+// failing step without one of those signs is a real failure and is never run again: #161's
 // check-in race came and went, and a retry would have hidden it.
 //
 // Android logs "Crash of app dev.mobile.maestro running instrumentation" at the end of every run,
@@ -22,6 +23,15 @@
 // A driver Maestro cannot reach shows in what Maestro prints, logs or reports: #164's test run
 // (5b07df55, light-2) reported "maestro.android.DeviceServerDiedException: Device server died
 // during 'viewHierarchy' … StatusRuntimeException: UNAVAILABLE" in report.xml alone.
+//
+// The Edge Functions server (`supabase functions serve`, scripts/ci/functions-serve.sh) can stop
+// too: its container dies ("error running container: exit 135", SIGBUS; ci.yml's integration job on
+// 18 and 19 Oct). In #168's light-2 (19 Oct) it died at 16:20:02 while it served the app's account
+// call; the next step, waiting for that call's screen, failed at 16:20:24 ("Assertion is false: id:
+// under-age is visible"). The app did nothing wrong: the server's container was gone. So a stop
+// while the flow ran, after its first line and before the failed step failed, runs the shard once
+// more. Unlike the driver's line, the serve leaves no stop line at the end of a run: it runs on
+// until the job ends. A serve that gave up (its third stop) is not coming back: no retry.
 
 export type Attempt = {
   // Maestro's log of the flow (logs/maestro.log under --test-output-dir).
@@ -35,6 +45,8 @@ export type Attempt = {
   console: string;
   // Maestro's JUnit report (report.xml), its failure message.
   report: string;
+  // The Edge Functions server's log over the job so far (functions.log; functions-serve.sh).
+  functionsLog: string;
 };
 
 const DRIVER_CRASH = /Crash of app dev\.mobile\.maestro\b/;
@@ -50,10 +62,19 @@ export const CRASH_MARGIN_MS = 5_000;
 
 // Why the attempt is run once more (one line, for the job summary), or null.
 export function retryReason(a: Attempt): string | null {
+  const stops = serveStops(a.functionsLog);
+  if (stops.some((s) => s.gaveUp)) return null;
   if (DRIVER_CRASH.test(a.deviceLogcat)) {
     return "Maestro'nun telefondaki sürücüsü akış sürerken çöktü (Maestro'nun cihaz logunda `Crash of app dev.mobile.maestro`)";
   }
   const failed = failedStep(a.maestroLog);
+  const flow = flowStart(a.maestroLog);
+  if (failed && flow) {
+    const stop = stops.find((s) => within(s.ms, flow.ms, failed.failed.ms));
+    if (stop) {
+      return `Edge Functions sunucusu (\`functions serve\`) akış sürerken durdu: saat ${stop.time}, \`${stop.why}\`; düşen adımın düştüğü saat ${failed.failed.time}`;
+    }
+  }
   if (failed) {
     const latest = (failed.started.ms - CRASH_MARGIN_MS + DAY_MS) % DAY_MS;
     const crash = driverCrashesInLogcat(a.logcat).find(
@@ -95,6 +116,51 @@ export function failedStep(maestroLog: string): { started: At; failed: At } | nu
   return null;
 }
 
+// When the flow started: maestro.log's first line.
+export function flowStart(maestroLog: string): At | null {
+  const m = /^(\d\d:\d\d:\d\d\.\d{3}) /.exec(maestroLog);
+  return m?.[1] ? at(m[1]) : null;
+}
+
+export type ServeStop = At & { why: string; gaveUp: boolean };
+
+// functions.log: the container's lines carry its timestamps ("2026-10-19T16:20:02.553665822Z
+// serving the request with supabase/functions/account"), the CLI's own carry none ("error running
+// container: exit 135"), and functions-serve.sh's line on every stop carries the time it saw the
+// stop, at most 2 s after it ("2026-10-19T16:20:04.112Z [functions-serve.sh] stopped (error running
+// container: exit 135), starting it again (1 of 2)"). A stop is placed at that time; in a log
+// written without functions-serve.sh, at the container's last line before the CLI's (when it was
+// last seen alive).
+const SERVE_LINE = /^\d{4}-\d\d-\d\dT(\d\d:\d\d:\d\d\.\d{3})\d*Z (.*)$/;
+const SERVE_SEEN = /^\[functions-serve\.sh\] stopped (?:again )?\(([^)]*)\)/;
+const CONTAINER_EXIT = /error running container: exit \d+/;
+
+// Every stop of the serve in functions.log, in order.
+export function serveStops(functionsLog: string): ServeStop[] {
+  const stops: ServeStop[] = [];
+  let alive: At | null = null;
+  // The CLI's exit line, until functions-serve.sh's line places it.
+  let exited: ServeStop | null = null;
+  for (const line of functionsLog.split('\n')) {
+    const timed = SERVE_LINE.exec(line);
+    const seen = timed?.[1] ? SERVE_SEEN.exec(timed[2] ?? '') : null;
+    if (timed?.[1] && seen) {
+      stops.push({ ...at(timed[1]), why: seen[1] ?? '', gaveUp: /giving up/.test(line) });
+      exited = null;
+      continue;
+    }
+    const exit = CONTAINER_EXIT.exec(line);
+    if (exit) {
+      if (exited) stops.push(exited);
+      exited = alive ? { ...alive, why: exit[0], gaveUp: false } : null;
+    } else if (timed?.[1]) {
+      alive = at(timed[1]);
+    }
+  }
+  if (exited) stops.push(exited);
+  return stops;
+}
+
 // Logcat's "MM-DD HH:MM:SS.mmm  pid  tid W ActivityManager: Crash of app dev.mobile.maestro …".
 export function driverCrashesInLogcat(logcat: string): At[] {
   return [...logcat.matchAll(/^\d\d-\d\d (\d\d:\d\d:\d\d\.\d{3}) .*$/gm)]
@@ -114,4 +180,9 @@ function at(time: string): At {
 function before(a: number, b: number): boolean {
   const d = (b - a + DAY_MS) % DAY_MS;
   return d > 0 && d < DAY_MS / 2;
+}
+
+// `t` from `from` to `to`, both included (across midnight too).
+function within(t: number, from: number, to: number): boolean {
+  return (t - from + DAY_MS) % DAY_MS <= (to - from + DAY_MS) % DAY_MS;
 }
