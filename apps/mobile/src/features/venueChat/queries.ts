@@ -58,15 +58,17 @@ export function useVenueChat(venueId: string | undefined, sessionId: string | un
 }
 
 // When the venue chat's last message came, for the venue screen's chat card (K-12): the page once
-// (the same cache as the chat screen, never stale on its own), then each `venue_chat` broadcast only
-// marks the moment it was heard. No read again for a message and none for a reaction: the venue
-// screen stays open under every other screen, so every phone at the venue would read the page (and
-// sign its photos) at each message.
+// (the same cache as the chat screen), then each `venue_chat` broadcast only marks the moment it was
+// heard. No read again for a message and none for a reaction: the venue screen stays open under
+// every other screen, so every phone at the venue would read the page (and sign its photos) at each
+// message. Older than CARD_STALE_MS, the page is read once more when the app comes back to the
+// front, which also catches a broadcast missed while the connection was down.
+const CARD_STALE_MS = 5 * 60_000;
 export function useVenueChatLastAt(
   venueId: string | undefined,
   sessionId: string | undefined,
 ): string | null {
-  const first = useQuery({ ...venueChatPage(venueId, sessionId), staleTime: Infinity });
+  const first = useQuery({ ...venueChatPage(venueId, sessionId), staleTime: CARD_STALE_MS });
   const [heardAt, setHeardAt] = useState<string | null>(null);
   const heard = useCallback(() => setHeardAt(new Date().toISOString()), []);
   useBroadcast(venueId ? venueChatChannel(venueId) : null, VENUE_CHAT_BROADCAST, heard);
