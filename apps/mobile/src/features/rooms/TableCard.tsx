@@ -312,7 +312,8 @@ export function TableCard({
 type StatusLine = { dot: 'off' | 'live' | 'merged'; label: string; testID?: string };
 
 // The head's second line (v45: .mine-head small): the state's dot, the people and the state. The dot
-// is hollow off the lobby, beating in it and on the way to the other table, filled once merged.
+// is hollow off the lobby, beating in it and on the way to the other table, filled once merged. The
+// separator and the state wrap as one, so a narrow card never leaves the "·" at a line's end.
 function Status({ people, dot, label, testID }: StatusLine & { people: number }) {
   const { colors, shape } = useTheme();
   const size = SPACING[2];
@@ -335,12 +336,14 @@ function Status({ people, dot, label, testID }: StatusLine & { people: number })
       <Text variant="label" tone="muted">
         {tr.venue.people(people)}
       </Text>
-      <Text variant="label" tone="muted" accessible={false}>
-        {tr.common.separator}
-      </Text>
-      <Text variant="label" tone="muted" className="shrink" testID={testID}>
-        {label}
-      </Text>
+      <View className="shrink flex-row gap-x-1.5" style={{ maxWidth: '100%' }}>
+        <Text variant="label" tone="muted" accessible={false}>
+          {tr.common.separator}
+        </Text>
+        <Text variant="label" tone="muted" className="shrink" testID={testID}>
+          {label}
+        </Text>
+      </View>
     </View>
   );
 }
