@@ -1,3 +1,4 @@
+import type { CalendarDate } from '@shared/age.ts';
 import { APP_NAME, GAME_NAMES } from '@shared/brand.ts';
 import { headcountLabel } from '@shared/checkin.ts';
 import type { InboxStamp } from '@shared/dmInbox.ts';
@@ -232,6 +233,12 @@ export const tr = {
     month: 'Ay',
     year: 'Yıl',
     birthInvalid: 'Geçerli bir tarih gir.',
+    // The confirmation after "Devam" (K-55, K-63; v46 §6).
+    birthConfirmTitle: (age: number) => `${age} yaşındasın`,
+    birthConfirmBody: (d: CalendarDate) =>
+      `Doğum tarihin ${d.day} ${MONTHS[d.month - 1] ?? ''} ${d.year}. Sonra değiştiremezsin.`,
+    birthConfirm: 'Onayla',
+    birthFix: 'Düzelt',
     // The gender (docs/SPEC_V3.md §23.D; canvas: Faz 3 · 23.2): asked at sign-up, and once on a
     // separate screen for an account from before the step. Shown to nobody (rule 12).
     genderLabel: 'Cinsiyetin',
