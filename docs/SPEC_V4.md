@@ -131,7 +131,7 @@ Değişmez kabul edilir.
 
 - kural 6: Keşfet'te konuma göre sıralama yok;
 - kural 9: İbre'nin canlı ibresi istemcinin yayın yaptığı ikinci kanaldır: oda üyeleriyle sınırlı, yükte yalnızca sayı, yalnızca sürüklerken, saniyede en çok 10;
-- kural 5: masa sonundaki "Arkadaş ekle" sessiz kalır; bildirime yalnızca açık arkadaşlık istekleri düşer.
+- kural 5: masa sonundaki "Arkadaş ekle" sessiz kalır; bildirime yalnızca açık arkadaşlık istekleri düşer. K-70 ile eşleşme de ilk basana bildirim olarak düşer; tek taraflı basış sessiz kalır.
 
 ## 4.C Tasarım sistemi ve ekranlar (adımlar 4.2, 4.3)
 
@@ -199,6 +199,10 @@ Değişmez kabul edilir.
   - Başkası dokununca bir şey olmaz. Yeni çizim yok.
   - v46'da simge yalnızca Masa kur'da seçilir.
 - **Masa bitti'de anonim katılanın notu** (K-68). Anonim katılan kişinin kendi ekranında, alttaki notun yanında: "Arkadaş olursanız anonim adının sen olduğunu görür. İstersen Profil'den adını yenileyebilirsin." v46'da yok.
+- **"Geliyor" hâli yok** (K-69).
+  - Kabul edilen kişiler kabul anında Masadakiler'e normal üye olarak girer; masa ekranının üst satırı "N kişi" yazar.
+  - §4.E'deki tek seferlik "Y geliyor, N kişi" bildirimi kalır.
+  - v46'da kabul edilen masa, telefonları katılana kadar Masadakiler'de "Geliyor" olarak durur ve üst satır "6 kişi · 3 geliyor" yazar.
 
 **Tasarım sistemi (adım 4.2).** Sunucu değişmez; istemci OTA ile gider.
 
@@ -429,7 +433,8 @@ Değişmez kabul edilir.
 **Kabul buluşmadır** (Faz 3 aynen):
 
 - istekçi tarafta "Kabul edildi, X masasının yanına git";
-- sahipte "Y geliyor, N kişi" (v43: "N kişi masanın yanına geliyorlar");
+- sahipte "Y geliyor, N kişi" (v43: "N kişi masanın yanına geliyorlar"), tek seferlik bir bildirim;
+- "Geliyor" hâli yoktur (K-69): kabul edilen kişiler kabul anında Masadakiler'e normal üye olarak girer, masa ekranının üst satırı "N kişi" yazar;
 - iki masa birbirine istek gönderip aynı anda kabul ederse biri geçer, diğeri `room_not_available` alır (SPEC_V3 §23.K aynen).
 
 **Ayrılma ve sahiplik.**
@@ -459,6 +464,14 @@ Değişmez kabul edilir.
 - **Geri alma** (K-67): "Eklendi"ye yeniden basmak eklemeyi geri alır (`friends/withdraw-add { historyId }`, §4.J). Oyun geçmişindeki düğme de aynıdır.
   - Eşleşme olmuşsa geri alma yok sayılır ve yanıt arkadaş olunduğunu söyler.
   - Karşı taraf bunu hiçbir biçimde görmez (kural 5).
+- **Eşleşme bildirimi** (K-70, adım 4.5):
+  - Eşleşmeyi kuran basışın karşı tarafına (ilk basana) push gider; ayar `notify_friend_requests`.
+    - Yeni kolon yoktur; bildirim ayarlarındaki satır aynıdır.
+  - Push mekan ve masa adı taşımaz (bugünkü push ilkesi, SPEC_V3 §18.3a).
+  - Eşleşmeyi kuran kişi sonucu ekranında görür ("Arkadaş oldunuz").
+  - 4.7'de zil listesinde de bir satır olur (§4.G).
+  - Tek taraflı basışta hiçbir şey gitmez (kural 5).
+  - v46'daki alt not aynen kalır: "Eklediğin kişi bunu görmez. O da seni eklerse ikinize de haber gelir ve arkadaş olursunuz."
 - **Anonim katılanın notu** (K-68): anonim katılan kişinin kendi Masa bitti ekranında, alttaki notun yanında "Arkadaş olursanız anonim adının sen olduğunu görür. İstersen Profil'den adını yenileyebilirsin." yazar.
   - Gerekçe: nick yenilenene kadar kalıcıdır (K-9). K-49 arkadaşa nick'i bu yüzden göstermez; eşleşme ise bu bağı kurar.
 - Masa sürerken profilde "Arkadaş ekle" yoktur; profil masa içinde yalnızca görüntülenir. Düğme masa sonunda ve oyun geçmişindedir (K-14).
@@ -653,11 +666,14 @@ Değişmez kabul edilir.
   - Zil diğer sekmelerin köklerinden kalkar. SPEC_V3 §18.3a'daki "Bildirim düğmesi her sekmenin kök ekranında" maddesi 4.7'nin PR'ında bu metne göre güncellenir; o adıma kadar bugünkü yer geçerlidir.
 - Yeni bildirim gelince zil sallanır; okunmamış sayısı rozet olur. Liste açılınca rozet silinir; yeni olanlar liste açıkken vurgulu kalır.
 - Liste bir alt sayfadır: "Yeni" ve "Önceki". Boşken: "Henüz bildirim yok. Arkadaşlık istekleri ve arkadaşlarının masa davetleri burada görünür."
-- **Üç tür vardır:**
+- **Dört tür vardır:**
   1. **Gelen arkadaşlık isteği:** Reddet ya da Kabul et. İstekler sekmesiyle iki yönlü eş zamanlıdır. Kabul edince satır "artık arkadaşsınız" olur ve "Mesaj yaz" çıkar.
   2. **İsteğini kabul eden kişi:** satıra dokununca DM açılır.
   3. **Arkadaşın masa daveti:** masa adı ve telefon sayısı, Reddet ya da Katıl. Katıl'da "Kabul edildi, X masasının yanına git" çıkar ve kişi masaya katılımcı olarak girer. Süresi dolan davet soluk görünür.
-- **Yalnızca açık istekler bildirime düşer** (kural 5): mekan sohbetinden gönderilen istek ve oyun geçmişindeki "İstek gönder". Masa sonundaki ve oyun geçmişindeki sessiz "Arkadaş ekle" hiçbir bildirim üretmez; iki taraf basınca arkadaşlık masa sonunda ve geçmişte görünür (Faz 3 aynen).
+  4. **Eşleşme** (K-70): masa sonunda ya da oyun geçmişinde eklediğin kişi de seni ekledi, arkadaş oldunuz. Satır yalnızca ilk basanın listesindedir; satıra dokununca DM açılır.
+- **Bildirime düşenler** (kural 5): açık istekler (mekan sohbetinden gönderilen istek ve oyun geçmişindeki "İstek gönder") ve eşleşme (K-70).
+  - Masa sonundaki ve oyun geçmişindeki sessiz "Arkadaş ekle"nin tek taraflı basışı hiçbir bildirim üretmez; geri alma da üretmez.
+  - İki taraf basınca arkadaşlık masa sonunda ve geçmişte görünür (Faz 3 aynen). İlk basana ayrıca push gider ve zil listesinde satır olur.
 - **Reddetmek sessizdir:** reddedilen istekten ya da davetten karşı taraf haberdar olmaz.
 
 **Veri.**
@@ -665,6 +681,7 @@ Değişmez kabul edilir.
 - Ayrı bir bildirim tablosu yoktur (SPEC_V3 §18.3'teki karar sürer). Liste salt okunur bir RPC'dir: `my_notifications()` (security definer, yalnızca okur, `set search_path = ''`; kural 1). Kaynakları:
   - gelen ve bekleyen açık arkadaşlık istekleri (`friend_requests`);
   - kişinin kabul edilen istekleri, son 7 gün;
+  - eşleşmeyle kurulan arkadaşlıklar (`friendships`, kaynağı `room_end_mutual`), son 7 gün, yalnızca ilk basan için. Kimin önce bastığı `mutual_friend_intents.created_at`'ten okunur; niyetler arkadaşlık sürdükçe kalır (K-70);
   - gelen masa davetleri (`table_invites`), son 1 gün.
 - Satırlar hesap id'si ve karşılaşma öncesinde `public_id` taşımaz. Arkadaşlık isteğinde ad, yaş ve fotoğraf bugünkü kurallarla gelir (SPEC_V3 §7.5).
 - Rozet: `profiles.notifications_seen_at`; liste açılınca `account/notifications-seen` yazar. Okunmamış = bu zamandan sonraki satırlar.
@@ -691,6 +708,9 @@ Değişmez kabul edilir.
 
 - Masa daveti push'u: "Bir arkadaşın seni masasına çağırıyor" (`target: 'notifications'`). Ad, masa adı ve mekan push'a girmez (bugünkü push ilkesi, SPEC_V3 §18.3a).
 - Gelen arkadaşlık isteği push'u bugünkü gibidir. Kabul edilen istek push üretmez.
+- Eşleşme push'u (K-70, adım 4.5): eşleşmeyi kuran basışın karşı tarafına (ilk basana) gider.
+  - Tercih `notify_friend_requests`'tir; yeni kolon yoktur. Bildirim ayarlarındaki "Arkadaşlık istekleri" satırı bunu da kapsar.
+  - Mekan ve masa adı taşımaz.
 - **Bildirim ayarları** (K-53, K-62): kişi başına üç satır.
   - Arkadaşlık istekleri, Masa davetleri, Birebir mesajlar: bugünkü `notify_friend_requests` ve `notify_dm`'in yanına `notify_invites`.
   - Tercih push gönderilmeden önce okunur.
@@ -801,7 +821,7 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 | `sahtekar`      | `start`, `view`, `ready`, `said`, `vote`, `guess { text }`, `advance`                                                                                                                                                                                                                                         | 4.6.3    |
 | `harf`, `sarki` | `start`, `claim`, `said`, `object`, `advance`; ortak motor                                                                                                                                                                                                                                                    | 4.6.4    |
 | `ibre`          | `start`, `begin`, `target`, `clue-given`, `move`, `ready`, `side` (§4.P), `advance`                                                                                                                                                                                                                           | 4.6.5    |
-| `friends`       | `withdraw-add { historyId }` (ör.; K-67): masa sonundaki ve oyun geçmişindeki sessiz eklemeyi geri alır. Eşleşme olmuşsa yok sayılır ve yanıt arkadaş olunduğunu söyler. Karşı tarafa hiçbir şey gitmez                                                                                                       | 4.5      |
+| `friends`       | `withdraw-add { historyId }` (ör.; K-67): masa sonundaki ve oyun geçmişindeki sessiz eklemeyi geri alır. Eşleşme olmuşsa yok sayılır ve yanıt arkadaş olunduğunu söyler. Karşı tarafa hiçbir şey gitmez. `add-from-room`: eşleşmede ilk basana push (K-70, `notify_friend_requests`)                          | 4.5      |
 | `friends`       | `my_notifications()` okuması `friends/notifications` ile (fotoğraflar imzalı)                                                                                                                                                                                                                                 | 4.7      |
 
 - Yeni hata kodları `pure/errors.ts`'e, Türkçe metinleri `tr.ts`'e girer.
@@ -813,10 +833,14 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 - **4.5:** masa zinciri `profiles` → `table_sessions` → `rooms` → `room_members` → `join_requests` → `table_votes` → odanın satırları. Odanın satırlarında `game_players` `tabu_turns`'ten önce gelir: `game_players` → `tabu_turns` → `game_secrets` → `room_used_cards`, `messages` → `message_reactions`, `game_events`, `play_history`.
   - Masa taşıyan kabul (Katıl) iki masayı kilitler: istekçinin check-in'i → iki `rooms` satırı `id` sırasıyla → iki masanın `room_members` satırları → `join_requests` (SPEC_V3 §23.K'nın genellemesi).
   - `locks` testleri: çapraz kabul; 12. telefonun iki istekte aynı anda kabulü (biri geçer, diğeri `table_full`); oy ve seçimin oyun başlatmayla aynı anda gelmesi.
-  - Sessiz eklemeyi geri alma (`friends/withdraw-add`, K-67): önce çift kilidi (`private.lock_pair`), sonra `mutual_friend_intents`; kişinin niyeti silinir.
-    - Basış kişinin kendi `play_history` satırındadır (`friend_action_at`, geri almada boşalır). O satır çift kilidinden önce güncellenir, bugünkü `add-from-room`'daki gibi (kural 10: `play_history` → çift kilidi → `friend_requests` → `friendships`, `mutual_friend_intents`).
-    - Arkadaşlık kilit altında görülürse hiçbir şey değişmez ve yanıt arkadaş olunduğunu söyler.
-    - `locks` testi (`friends.test.ts` kalıbı): geri alma ile karşı tarafın eklemesinin aynı anda gelmesi. İkisinden biri sonuçtur: arkadaşlık oluşur ve geri alma yok sayılır, ya da niyet silinir ve arkadaşlık oluşmaz.
+  - Sessiz eklemeyi geri alma (`friends/withdraw-add`, K-67):
+    - Basış kişinin kendi `play_history` satırındadır (`friend_action_at`). Satır önce yalnızca kilitlenir (`for update`, değişiklik yok). Kural 10'un sırası: `play_history` → çift kilidi → `friend_requests` → `friendships`, `mutual_friend_intents`.
+    - Sonra çift kilidi (`private.lock_pair`) alınır. Arkadaşlık kilit altında görülürse hiçbir şey değişmez: `friend_action_at` dolu kalır ve yanıt arkadaş olunduğunu söyler.
+    - Arkadaşlık yoksa iki şey çift kilidi altında birlikte yapılır: niyetin silinmesi (`mutual_friend_intents`) ve `friend_action_at`'in boşalması.
+    - Gerekçe (CTO incelemesi, WazzupDevs/Kabuk#174): satır kilitten önce boşalsaydı, arada karşı tarafın eklemesi arkadaşlığı kurabilirdi. Kişi arkadaş olur ama kendi basışı silinmiş görünürdü.
+    - `locks` testi (`friends.test.ts` kalıbı): geri alma ile karşı tarafın eklemesi aynı anda gelir. Sonuç ikisinden biridir:
+      - arkadaşlık oluşur, geri alma yok sayılır ve `friend_action_at` dolu kalır;
+      - ya da niyet silinir, `friend_action_at` boşalır ve arkadaşlık oluşmaz.
 - **4.6:** her oyunun eylemleri `rooms` → `game_players` → oyunun satırları sırasıyla kilitler; ilk basanı belirleyen koşullu güncelleme (`harf`, `sarki`) ve aynı adıma iki eylem `locks` testiyle gelir.
 - **4.7:** `table_invites` `join_requests`'ten sonra gelir: `table_sessions` → `rooms` → `room_members` → `join_requests` → `table_invites`.
   - Davete katılma: alıcının check-in'i → alıcının bulunduğu masa ve sahibin masası `id` sırasıyla → `room_members` → `table_invites`.
@@ -913,7 +937,12 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
   - Geri alınan niyet silinir: karşı taraf sonra basınca arkadaşlık oluşmaz.
   - Eşleşmeden sonra geri alma yok sayılır ve yanıt arkadaş olunduğunu söyler.
   - Karşı tarafın hiçbir yanıtı, okunabilir satırı ve Realtime yükü eklemeyi ya da geri almayı göstermez.
-  - `locks`: geri alma ile karşı tarafın eklemesi aynı anda.
+  - `locks`: geri alma ile karşı tarafın eklemesi aynı anda. İki sonuçta da `friend_action_at` denetlenir: arkadaşlık oluştuysa dolu, oluşmadıysa boş (§4.K).
+- Eşleşme bildirimi (K-70):
+  - Push, eşleşmeyi kuran basışın karşı tarafına (ilk basana) gider; kurana gitmez.
+  - `notify_friend_requests` kapalıyken gitmez.
+  - Mekan ve masa adı taşımaz.
+  - Tek taraflı basışta ve geri almada hiçbir push ya da yayın gitmez.
 - Kalıcı red ve çift kilidi testleri değişmeden yeşil.
 - `locks`: çapraz kabul, 12. telefon, oy ve başlatma.
 - Eski oyunların posterleri "Yakında" (E2E).
@@ -934,7 +963,7 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 - Davet yalnızca sahipten ve arkadaşa; aynı mekanda check-in'i olmayan arkadaşa davet satırı oluşmaz ve gönderen aynı yanıtı alır (K-2). Davet ekranının okuması kimin mekanda olduğunu taşımaz.
 - Davet mekan adı taşımaz; 2 dakikada geçersiz olur. Red ve zaman aşımı gönderene aynı görünür (hiçbiri).
 - Davete katılma: tek kişilik boş masa kapanır; başka masadaki kişi oradan ayrılır; dolu masa ve geçersiz davet aynı metni verir.
-- `my_notifications()`: yalnızca açık istekler; masa sonundaki sessiz düğme hiçbir satır üretmez. Rozet `notifications_seen_at`'tan.
+- `my_notifications()`: açık istekler ve eşleşme. Eşleşme satırı yalnızca ilk basanın listesindedir (K-70). Masa sonundaki sessiz düğmenin tek taraflı basışı ve geri alma hiçbir satır üretmez. Rozet `notifications_seen_at`'tan.
 - Davet push'u ad, masa ve mekan taşımaz; `notify_invites` kapalıyken gitmez. Üç tercihin her biri push gönderilmeden önce okunur (K-53, K-62). Katılma isteği ve kabul push'u tercihten bağımsız gider.
 - `locks`: davete katılma ile masanın dolması.
 
@@ -1089,10 +1118,10 @@ Bu PR yalnızca proje paragrafını ve görsel kaynak kod kuralını değiştiri
 - **4.4:** "Mekan sohbetinde sessize alınan bunu hiçbir biçimde görmez. Sessize alma kimliğe bağlıdır: anonim kimliği sessize almak aynı kişinin profilli mesajlarını gizlemez."
 - **4.5:**
   - Faz 3 eki: "İki taraflı masa hareketsizlikle kapanmaz. Tek taraflı masa (lobide bekleyen ve 'Masanla oyna')…" cümlesi "İki ve daha fazla kişili masa hareketsizlikle kapanmaz. Tek kişilik masa 30 dakika hareketsizlikte sessizce kapanır; lobide bekleyen masaya bekleyen istekler `unavailable` olur" olur.
-  - Faz 3 eki (23.3), "Masa sonunda 'Arkadaş ekle' karşı taraftaki her çift için ayrıdır … karşı taraf bunu hiçbir biçimde görmez" (K-66, K-67), şu metne döner: "Masa sonunda 'Arkadaş ekle' masada en az 3 dakika birlikte bulunan her çift için ayrıdır; birlikte gelenler ayrı tutulmaz. Zaten arkadaş olanlarda düğme yoktur ('Arkadaşsınız'); 3 dakikadan az birlikte bulunan Masa bitti listesine girmez. Aynı sessiz düğme oyun geçmişinden de sunulur (`play_history.friend_open`). İki taraf basarsa arkadaş olunur; tek taraf basarsa hiçbir şey olmaz. Basan, yeniden basarak eklemeyi geri alabilir; eşleşmeden sonra geri alma yok sayılır. Karşı taraf eklemeyi de geri almayı da hiçbir biçimde görmez."
+  - Faz 3 eki (23.3), "Masa sonunda 'Arkadaş ekle' karşı taraftaki her çift için ayrıdır … karşı taraf bunu hiçbir biçimde görmez" (K-66, K-67, K-70), şu metne döner: "Masa sonunda 'Arkadaş ekle' masada en az 3 dakika birlikte bulunan her çift için ayrıdır; birlikte gelenler ayrı tutulmaz. Zaten arkadaş olanlarda düğme yoktur ('Arkadaşsınız'); 3 dakikadan az birlikte bulunan Masa bitti listesine girmez. Aynı sessiz düğme oyun geçmişinden de sunulur (`play_history.friend_open`). İki taraf basarsa arkadaş olunur; tek taraf basarsa hiçbir şey olmaz. Basan, yeniden basarak eklemeyi geri alabilir; eşleşmeden sonra geri alma yok sayılır. Karşı taraf eklemeyi de geri almayı da hiçbir biçimde görmez. Eşleşince ilk basana bildirim gider; bildirim mekan ve masa adı taşımaz."
   - Faz 2 eki (22.2), "Lider kendi tarafındaki bir üyeyi engellerse … Aynı taraftaki telefonlar arasında oyun geçmişi ve 'Arkadaş ekle' yoktur" (K-13, K-66), şu metne döner: "Masada sahip birini engellerse engellenen masadan çıkarılır; katılımcı kimi engellerse engellesin kendisi çıkar. Oyun geçmişi masada en az 3 dakika birlikte bulunan her çift arasında yazılır."
   - Aynen kalanlar: katılma isteğinde ve "Bu masadayım"da red ve zaman aşımının aynı görünmesi; arkadaşlık isteğinde red ve kalıcı red; arkadaşlıktan çıkarma; mekan sohbetinden gelen isteğin günlük sınırı.
-- **4.7:** "Masa sonundaki ve oyun geçmişindeki 'Arkadaş ekle' sessizdir ve bildirim üretmez; bildirime yalnızca açık arkadaşlık istekleri düşer (mekan sohbetinden istek, oyun geçmişinden 'İstek gönder'). Masa davetinde red ve zaman aşımı gönderene aynı görünür; reddedilen istekten ya da davetten karşı taraf haberdar olmaz."
+- **4.7:** "Masa sonundaki ve oyun geçmişindeki 'Arkadaş ekle'nin tek taraflı basışı sessizdir ve bildirim üretmez. Bildirime açık arkadaşlık istekleri (mekan sohbetinden istek, oyun geçmişinden 'İstek gönder') ve eşleşme düşer; eşleşme yalnızca ilk basana bildirilir (K-70). Masa davetinde red ve zaman aşımı gönderene aynı görünür; reddedilen istekten ya da davetten karşı taraf haberdar olmaz."
 
 **Kural 6 (4.3):** eklenir: "Keşfet ve Aktiviteler'de konuma göre sıralama ya da 'yakındaki' listesi yoktur; şehir ve semt seçilir; bugün etkinliği olan mekanlar üstte, sonra ada göre sıralanır. Kişinin kendi check-in'i yalnızca kendisine gösterilir."
 
@@ -1196,12 +1225,14 @@ Bu PR yalnızca proje paragrafını ve görsel kaynak kod kuralını değiştiri
 | K-64        | Masa bitti (K-56; adım 4.5): anonim katılan dahil listedeki herkeste "Arkadaş ekle". Basınca "Eklendi"; eşleşince "Arkadaş oldunuz" ve "Mesaj". Masa süresi ve oyun sayısı yok (v46)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | §4.E                         |
 | K-65        | v46'nın kontrast ve koyu harita düzeltmeleri (v46 raporu, bölüm 8) 4.3'ün kalan OTA işleridir (proje sahibinin önerisi): yer tutucu yazı, oyunlardaki beyaz açıklama yazıları, "İtiraz"ın örtüsü, Keşfet haritası. Süresi geçmiş bildirim satırı bugün yok; 4.7'de zil listesiyle gelir                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | §4.C, §4.N                   |
 | K-66 (P-15) | Oyun geçmişi kaydı ve sessiz "Arkadaş ekle" (adım 4.5): masada en az 3 dakika birlikte bulunan her çift. Zaten arkadaş olanlarda düğme yerine "Arkadaşsınız". Birlikte gelenler ayrı tutulmaz. 3 dakikadan az birlikte bulunan Masa bitti listesinde yok. Kural 5'in "karşı taraftaki her çift" ifadesi ve Faz 2'nin taraf cümleleri buna göre yeniden yazılır (§4.O)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | §4.E, §4.M, §4.O             |
-| K-67        | "Eklendi"ye yeniden basmak eklemeyi geri alır; karşı taraf bunu hiçbir biçimde görmez (kural 5). Oyun geçmişindeki düğme de aynı. Adım 4.5'te yeni sunucu eylemi (ör. `friends/withdraw-add { historyId }`): önce çift kilidi, sonra `mutual_friend_intents`; `locks` kalıbında test. Eşleşme olmuşsa geri alma yok sayılır ve yanıt arkadaş olunduğunu söyler                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | §4.E, §4.J, §4.K, §4.M, §4.O |
+| K-67        | "Eklendi"ye yeniden basmak eklemeyi geri alır; karşı taraf bunu hiçbir biçimde görmez (kural 5). Oyun geçmişindeki düğme de aynı. Adım 4.5'te yeni sunucu eylemi (ör. `friends/withdraw-add { historyId }`). Kişinin `play_history` satırı önce yalnızca kilitlenir; sonra çift kilidi. Arkadaşlık yoksa niyetin silinmesi ve `friend_action_at`'in boşalması çift kilidi altında birlikte yapılır (CTO incelemesi, WazzupDevs/Kabuk#174). `locks` kalıbında test; iki sonuçta da `friend_action_at` denetlenir. Eşleşme olmuşsa geri alma yok sayılır ve yanıt arkadaş olunduğunu söyler                                                                                                                                                                                                                                                                       | §4.E, §4.J, §4.K, §4.M, §4.O |
 | K-68        | Anonim katılan kişinin kendi Masa bitti ekranında (adım 4.5), alttaki notun yanında: "Arkadaş olursanız anonim adının sen olduğunu görür. İstersen Profil'den adını yenileyebilirsin." Gerekçe: nick yenilenene kadar kalıcıdır (K-9). K-49 arkadaşa nick'i bu yüzden göstermez; eşleşme ise bu bağı kurar                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | §4.C, §4.E                   |
+| K-69        | "Geliyor" hâli yok (adım 4.5): kabul edilen kişiler kabul anında Masadakiler'e normal üye olarak girer, masa ekranının üst satırı "N kişi". §4.E'deki tek seferlik "Y geliyor, N kişi" bildirimi kalır. v46'da gelen masa telefonları katılana kadar "Geliyor"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | §4.C, §4.E                   |
+| K-70        | Eşleşme bildirimi (adım 4.5; sunucu değişikliği, PR proje sahibinin onayına gelir): eşleşmeyi kuran basışın karşı tarafına (ilk basana) push, `notify_friend_requests` ayarıyla. Yeni kolon yok; bildirim ayarlarında satır aynı. Push mekan ve masa adı taşımaz. 4.7'de zil listesinde de bir satır. Tek taraflı basışta hiçbir şey gitmez (kural 5). v46'daki not metni aynen kalır                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | §4.E, §4.G, §4.J, §4.M, §4.O |
 
 **Fırat paketi (v46).** Proje sahibinin onayladığı kararlar K-45–K-57'dir; pakette K-41–K-53 diye numaralanmışlardı. K-41–K-44 o sırada Keşfet ve Aktiviteler kararlarına verildiği için numaralar dört kaydı (proje sahibinin kuralı: çakışmada main'deki son K'dan devam; Fırat paketi en son).
 
-**v46 (19 Ekim).** K-58–K-65 v46 geldiğinde verilen kararlardır. K-66–K-68 proje sahibinin aynı gün verdiği kararlardır. v46 raporunun iki açık sorusu K-59 (simge değişikliği) ve K-61 (üç hazır görünüş) ile cevaplandı.
+**v46 (19 Ekim).** K-58–K-65 v46 geldiğinde verilen kararlardır. K-66–K-70 proje sahibinin aynı gün verdiği kararlardır. v46 raporunun iki açık sorusu K-59 (simge değişikliği) ve K-61 (üç hazır görünüş) ile, v46'nın iki farkı K-69 ("Geliyor") ve K-70 (eşleşme bildirimi) ile cevaplandı.
 
 **Açık kararlar.** İlgili adımdan önce proje sahibine sorulur; karar verilmeden o adımın işi başlamaz. P-1, P-4, P-12 ve P-13 (K-3…K-6), sonra P-2, P-3, P-5, P-6, P-14, P-16, P-17 ve P-18 (K-9…K-16), sonra P-19 (K-32) ve P-20 (K-33), sonra P-7 (K-34), sonra P-15 (K-66) karara bağlandı; diğer numaralar değişmez. Açık kalanlar: P-8, P-9, P-10, P-11.
 
@@ -1251,7 +1282,7 @@ Numaralar devir raporunun §6'sındakidir. "Kural" atıfları raporun brief numa
 | --- | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | Sahip en çok oy alan dışında bir oyunu başlatabilir mi?                                   | Evet (§4.B-4, §4.F)                                                                                                                                                                                                         |
 | 2   | Kategoriler ve oyunların dağılımı                                                         | v43'teki gibi: Takımlı (Kapsül Anlat, İbre), Bire bir (Harf Kapmaca, Şarkıda Geçsin), Çok oyunculu (Sahtekar, Harf Kapmaca, Şarkıda Geçsin, Sohbet kartları) (§4.F)                                                         |
-| 3   | İstekler sekmesi ve gelen istek bildirimi: istek karşı tarafa görünecek mi?               | Yalnızca açık istekler görünür (mekan sohbetinden istek, oyun geçmişinden "İstek gönder"); masa sonundaki "Arkadaş ekle" sessizdir (kural 5, §4.G)                                                                          |
+| 3   | İstekler sekmesi ve gelen istek bildirimi: istek karşı tarafa görünecek mi?               | Yalnızca açık istekler görünür (mekan sohbetinden istek, oyun geçmişinden "İstek gönder"); masa sonundaki "Arkadaş ekle" sessizdir (kural 5, §4.G); eşleşme ilk basana bildirilir (K-70)                                    |
 | 4   | Arkadaş olmayana mesaj                                                                    | DM yalnızca arkadaşlar arasında; "Mesaj" düğmesi arkadaş değilken görünmez, yerine bağlama göre "Arkadaş ekle" (§4.G)                                                                                                       |
 | 5   | Anonim katılım nerede seçilir, masa sırasında kilitlenir mi?                              | Mekan ekranının üst satırındaki anahtar; check-in başına bir değişiklik (§4.D). Erkek ve belirtmeyende seçim yalnızca mekan sohbetini etkiler (K-3). Masa içinde kimlik sabit (K-10)                                        |
 | 6   | Mekan sohbeti aktiflik noktası                                                            | Son 10 dakikada mesaj varsa (K-12)                                                                                                                                                                                          |
