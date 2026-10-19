@@ -1,5 +1,7 @@
 # Kararlar
 
+**Bu dosyaya yeni karar yazılmaz.** Bundan sonraki her karar kendi dosyasına gider: `docs/decisions/<adım>-<konu>.md` (ör. `docs/decisions/4.3k-masa-karti.md`), böylece iki PR aynı yere yazıp çakışmaz, biri diğerini beklemez. Bu dosya tarih için olduğu gibi kalır; CLAUDE.md'deki `DECISIONS.md → …` bağlantıları buraya gösterir.
+
 Her satır bir kilometre taşında verilen bir kararı kaydeder: soru, seçim ve gerekçe. M0–M2 kararları proje sahibiyle birlikte verildi ve `MVP_SPEC.md` / `CLAUDE.md`'ye işlendi; burada yalnızca özetleri var. M3'ten itibaren kararlar otonom verildi: belirsizlikte spec'e ve CLAUDE.md kurallarına en uygun, en basit ve geri alınabilir seçenek seçildi.
 
 ## M0–M2 (proje sahibiyle)
