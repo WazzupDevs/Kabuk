@@ -231,6 +231,12 @@ jobs:
           nohup bash scripts/ci/functions-serve.sh e2e "$OUT/functions.log" --env-file "$RUNNER_TEMP/functions.env" > /dev/null 2>&1 &
           timeout 180 bash -c 'until curl -sf -X POST http://127.0.0.1:54321/functions/v1/ping -H "apikey: $E2E_PUBLISHABLE_KEY" -H "content-type: application/json" -d "{}" > /dev/null; do sleep 2; done'
           bash scripts/e2e/start-bots.sh
+          # TEST ONLY (reverted before merge): in light-2, the serve's container is killed as Maestro
+          # starts the tap that sends the under-age account call (#168's light-2), once.
+          if [ "${{ matrix.scheme }}-${{ matrix.shard }}-${{ matrix.font }}" = light-2-1 ]; then
+            nohup bash -c 'until grep -qs "Tap on id: gender-continue RUNNING" "$OUT"/screenshots/*/*/logs/maestro.log; do sleep 0.2; done
+              date -u +%H:%M:%S.%3N; docker kill $(docker ps -q --filter name=supabase_edge_runtime)' > "$OUT/test-kill.log" 2>&1 &
+          fi
           node -e 'const s = require(process.argv[1]);
             console.log(`INSIDE_LAT=${s.inside.lat}\nINSIDE_LNG=${s.inside.lng}\nOUTSIDE_LAT=${s.outside.lat}\nOUTSIDE_LNG=${s.outside.lng}`)' \
             "$OUT/setup.json" >> "$GITHUB_ENV"
