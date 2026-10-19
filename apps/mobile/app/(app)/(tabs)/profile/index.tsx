@@ -6,6 +6,7 @@ import { View } from 'react-native';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { EmptyState } from '@/components/EmptyState';
+import { IconButton, SlidersGlyph } from '@/components/IconButton';
 import { useLoaderHold } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -13,15 +14,18 @@ import { Text } from '@/components/Text';
 import { useProfile } from '@/features/account/useProfile';
 import { useFriends } from '@/features/friends/queries';
 import { NotificationsBell } from '@/features/notifications/Bell';
-import { Badges, OwnProfileHead } from '@/features/profile/ProfileCard';
+import { FriendStack } from '@/features/profile/FriendStack';
+import { Badges, ProfileHead } from '@/features/profile/ProfileCard';
 import { useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON } from '@/theme/tokens';
 
-// The own profile (docs/SPEC_V2.md §5; canvas: Aşama 5 · Geri bildirim → Profil). The photo, the
-// name and the bio change on the edit screen; settings open only from the gear (top right).
+// The own profile (docs/SPEC_V2.md §5; v45: .prof, self). The photo, the name and the bio change on
+// the edit screen; settings open only from the round sliders button (top right), beside the bell
+// (every tab root keeps it until step 4.7). The badges stay under the head (today's data; v45 has
+// none on the profile).
 export default function ProfileScreen() {
   const { colors } = useTheme();
   const own = useProfile();
@@ -32,17 +36,24 @@ export default function ProfileScreen() {
 
   const hasName = !!own.data?.display_name;
   const friendCount = friends.data?.length;
+  const someFriends = friends.data && friends.data.length > 0 ? friends.data : null;
 
   return (
     <Screen>
       <ScreenHeader
         title={tr.tabs.profile}
-        trailing={<NotificationsBell />}
-        action={{
-          icon: 'settings-outline',
-          label: tr.settings.title,
-          onPress: () => router.push('/profile/settings'),
-        }}
+        trailing={
+          <View className="flex-row items-center gap-2">
+            <NotificationsBell />
+            <IconButton
+              round
+              icon="options-outline"
+              glyph={<SlidersGlyph />}
+              label={tr.settings.title}
+              onPress={() => router.push('/profile/settings')}
+            />
+          </View>
+        }
       />
 
       {view.isPending || loading ? (
@@ -57,15 +68,18 @@ export default function ProfileScreen() {
         />
       ) : (
         <View className="mt-2 gap-4">
-          <OwnProfileHead profile={view.data}>
-            <View className="mt-1 flex-row gap-2.5">
+          <ProfileHead profile={view.data}>
+            {/* v45: .pbtns, two quiet capsules in v45's 14 px (the small size, so "Profili düzenle"
+                fits half a row from 360 dp); "Arkadaşlar" with the first friends' photos. */}
+            <View className="flex-row gap-2.5">
               <View className="flex-1">
                 <Button
                   variant="neutral"
-                  tight
+                  size="sm"
                   icon="people-outline"
+                  leading={someFriends ? <FriendStack friends={someFriends} /> : undefined}
                   label={tr.profile.friends}
-                  detail={friendCount !== undefined ? String(friendCount) : undefined}
+                  testID="profile-friends"
                   accessibilityLabel={
                     friendCount !== undefined ? tr.profile.friendsCount(friendCount) : undefined
                   }
@@ -74,14 +88,15 @@ export default function ProfileScreen() {
               </View>
               <View className="flex-1">
                 <Button
-                  tight
-                  label={hasName ? tr.profile.editShort : tr.profile.addName}
-                  accessibilityLabel={hasName ? tr.profile.edit : tr.profile.addName}
+                  variant="neutral"
+                  size="sm"
+                  icon={hasName ? 'create-outline' : 'add'}
+                  label={hasName ? tr.profile.edit : tr.profile.addName}
                   onPress={() => router.push('/profile/edit')}
                 />
               </View>
             </View>
-          </OwnProfileHead>
+          </ProfileHead>
           {view.data.photoHidden ? (
             <Card tone="note">
               <View className="flex-row items-start gap-2">

@@ -29,30 +29,34 @@ function nameLine(profile: Profile): string {
     : tr.profile.noName;
 }
 
-// The own profile (canvas: Aşama 5 · Geri bildirim → Profil): the photo, the name with the age
-// (never the birth date, rule 11) and the bio, centred on the canvas, then the actions.
-export function OwnProfileHead({ profile, children }: { profile: Profile; children: ReactNode }) {
+// A profile's head (v45: .phero), the own one and another person's: the photo in its ring, the name
+// with the age in the quiet colour (never the birth date, rule 11) and the bio, centred; then the
+// actions.
+export function ProfileHead({ profile, children }: { profile: Profile; children?: ReactNode }) {
   return (
-    <View className="items-center gap-3">
-      <ProfilePhoto url={profile.photoUrl} name={profile.displayName} />
-      <View className="items-center gap-1">
-        <Text variant="alias" align="center">
-          {nameLine(profile)}
-        </Text>
-        {profile.bio ? (
-          <Text tone="muted" align="center">
-            {profile.bio}
+    <View className="items-center gap-2">
+      <ProfilePhoto url={profile.photoUrl} name={profile.displayName} size="hero" />
+      <Text variant="alias" align="center" accessibilityRole="header" className="mt-1">
+        {profile.displayName ?? tr.profile.noName}
+        {profile.displayName && profile.age !== null ? (
+          <Text variant="alias" tone="muted">
+            {tr.profile.ageAfterName(profile.age)}
           </Text>
         ) : null}
-      </View>
-      <View className="self-stretch">{children}</View>
+      </Text>
+      {profile.bio ? (
+        <Text variant="subtitle" align="center">
+          {profile.bio}
+        </Text>
+      ) : null}
+      {children ? <View className="mt-1.5 self-stretch">{children}</View> : null}
     </View>
   );
 }
 
-// Another person's profile (canvas: Profil kartı): the photo across the top (or the initials on the
-// violet), then the name with the age and the bio. Also the venue chat sender's card
-// (ChatProfileView), which has no public_id.
+// The venue chat sender's card (ChatProfileView, which has no public_id; its v45 look comes with
+// step 4.4): the photo across the top (or the initials on the violet), then the name with the age
+// and the bio.
 export function ProfileHero({ profile, overlay }: { profile: Profile; overlay?: ReactNode }) {
   const { colors, shape } = useTheme();
   // The initials also when the photo cannot be loaded.

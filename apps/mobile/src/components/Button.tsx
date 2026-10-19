@@ -28,6 +28,8 @@ type Props = {
   // sm: a header button ("Mekandan ayrıl"), 40 high with the touch area grown to 48.
   size?: 'sm' | 'md' | 'lg';
   icon?: IconName;
+  // A drawing in the icon's place (the profile's "Arkadaşlar": the friends' photos).
+  leading?: ReactNode;
   // A short addition after the label ("+1", "2 hak").
   detail?: string;
   accessibilityLabel?: string;
@@ -106,6 +108,7 @@ export function Button({
   variant = 'primary',
   size = 'md',
   icon,
+  leading,
   detail,
   accessibilityLabel,
   testID,
@@ -189,7 +192,7 @@ export function Button({
               <Ionicons name={icon} size={ICON.md} color={fg} />
             ) : (
               <>
-                {icon ? <Ionicons name={icon} size={ICON.md} color={fg} /> : null}
+                {leading ?? (icon ? <Ionicons name={icon} size={ICON.md} color={fg} /> : null)}
                 {stack ? (
                   <View className="shrink items-center">
                     <Label variant={labelVariant} color={fg}>
