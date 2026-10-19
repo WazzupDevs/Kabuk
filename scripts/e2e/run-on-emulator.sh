@@ -83,13 +83,14 @@ adb logcat '*:W' > "$OUT/logcat.txt" 2>&1 &
 adb emu screenrecord start --time-limit 1800 "$OUT/video.webm" || true
 
 status=0
+# What Maestro prints is kept too: a driver it cannot reach shows there (scripts/e2e/retry.ts).
 maestro test "${FLOW:-e2e/maestro/p0.yaml}" \
   --test-output-dir "$OUT/screenshots" \
   -e INSIDE_LAT="$INSIDE_LAT" -e INSIDE_LNG="$INSIDE_LNG" \
   -e OUTSIDE_LAT="$OUTSIDE_LAT" -e OUTSIDE_LNG="$OUTSIDE_LNG" \
   -e SCHEME="$SCHEME" \
   --format junit --output "$OUT/report.xml" \
-  --debug-output "$OUT/maestro" || status=$?
+  --debug-output "$OUT/maestro" 2>&1 | tee "$OUT/maestro-console.txt" || status=$?
 
 adb emu screenrecord stop || true
 exit "$status"
