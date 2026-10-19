@@ -59,12 +59,11 @@ appId: app.kabuk.mobile
     timeout: 15000
 - takeScreenshot: 61-teams-member-pending
 # While it waits the card's head opens the table screen (no room yet, K-36); the acceptance takes
-# that screen to the room.
+# that screen to the room. Not centred: the head is near the page's top and cannot be.
 - scrollUntilVisible:
     element:
       id: go-to-table
     direction: UP
-    centerElement: true
     timeout: 10000
 - tapOn:
     id: go-to-table
