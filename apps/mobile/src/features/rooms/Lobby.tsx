@@ -67,6 +67,12 @@ const LOAD_HEIGHT = SPACING[16] * 2 + SPACING[3];
 // (docs/SPEC_V3.md §22.C) with that side's leader.
 type Asking = { roomId: string; side?: Side; leader?: string };
 
+// The "Katıl" requests this app sent, by id ("Bu masadayım" is not one): only a "Katıl" that did not
+// meet takes its table out of this table's lobby (venue_lobby: `not as_member`); a "Bu masadayım"
+// can be sent again. Kept for the app's session, so reopening the venue screen still knows them;
+// after a restart the server's lobby alone decides.
+const joinRequests = new Set<string>();
+
 // "Açık masalar" (the waiting rooms), "Süren masalar" (Faz 2) and the table's own request
 // (docs/SPEC_V3.md §23.C; canvas: Faz 3 · 23.1 Masa ve lobi). A card shows only the alias, the
 // people, the intent and the game tag: no "profilli" mark (rule 4, step 23.1). Its buttons follow
@@ -104,6 +110,7 @@ export function Lobby({ venueId, sessionId, alias, since, mySpotId, venueHasSpot
     onSuccess: (data, { ask }) => {
       // Never the anonymous or profiled choice: it would stand in for the gender (§23.L).
       track('join_requested', { as_member: ask.side !== undefined, in_lobby: state === 'open' });
+      if (ask.side === undefined) joinRequests.add(data.requestId);
       setJoinAsk(ask.side && ask.leader ? { requestId: data.requestId, leader: ask.leader } : null);
       setAsking(null);
     },
@@ -164,12 +171,13 @@ export function Lobby({ venueId, sessionId, alias, since, mySpotId, venueHasSpot
       trackOnce(`join_unavailable:${requestId}`, 'join_unavailable', { as_member: asMember });
     }
   }, [requestId, status, asMember]);
-  // A table asked once and not met leaves this table's lobby (venue_lobby hides it): once the row's
-  // miss has played the row goes here too, without waiting for the server's clock to pass the same
-  // second, and its "Katıl" never comes back. The lobby is read again for the rest.
+  // A table asked once with "Katıl" and not met leaves this table's lobby (venue_lobby hides it):
+  // once the row's miss has played the row goes here too, without waiting for the server's clock to
+  // pass the same second, and its "Katıl" never comes back. The lobby is read again for the rest. A
+  // "Bu masadayım" keeps its row: it can be sent again.
   const [leftRequest, setLeftRequest] = useState<string | null>(null);
   useEffect(() => {
-    if (!requestId || status !== 'unavailable') return undefined;
+    if (!requestId || status !== 'unavailable' || !joinRequests.has(requestId)) return undefined;
     const id = setTimeout(() => {
       setLeftRequest(requestId);
       void queryClient.invalidateQueries({ queryKey: roomKeys.lobby(venueId) });
@@ -205,6 +213,10 @@ export function Lobby({ venueId, sessionId, alias, since, mySpotId, venueHasSpot
   // A request to an open table shows in its row (v45: .row .wait); one to a table that is not
   // listed (gone from the lobby, or a running table's side) keeps the note above the lobby.
   const inRow = !!mine && rooms.some((r) => r.room_id === mine.roomId);
+  // A merged or "Masanla oyna" table has nothing to do in an empty lobby: no card, and no heading
+  // over nothing.
+  const emptyCard = state === 'off' || state === 'open' || state === 'member';
+  const lobbyShown = !lobby.isSuccess || rooms.length > 0 || emptyCard;
   const waiting = status === 'pending' || request.isPending;
   const ask = (next: Asking) => {
     setParticipation('anonymous');
@@ -236,7 +248,8 @@ export function Lobby({ venueId, sessionId, alias, since, mySpotId, venueHasSpot
           <Text accessibilityLiveRegion="polite">{tr.rooms.requestPending(secondsLeft)}</Text>
         </Card>
       ) : null}
-      {recentlyUnavailable && !inRow ? (
+      {/* Not for a request whose row just left after its miss: the row said it already. */}
+      {recentlyUnavailable && !inRow && leftRequest !== mine?.id ? (
         <Card tone="note" className="mb-3">
           <Text accessibilityLiveRegion="polite">{tr.rooms.requestUnavailable}</Text>
         </Card>
@@ -247,15 +260,17 @@ export function Lobby({ venueId, sessionId, alias, since, mySpotId, venueHasSpot
         </Text>
       ) : null}
 
-      {/* "Açık masalar" and how many (v45: .sec), over every state of the list. */}
-      <View className="mb-2 flex-row items-baseline justify-between">
-        <Text variant="heading" accessibilityRole="header">
-          {tr.rooms.lobbyTitle}
-        </Text>
-        {lobby.isSuccess && rooms.length > 0 ? (
-          <Text variant="label">{tr.rooms.roomCount(rooms.length)}</Text>
-        ) : null}
-      </View>
+      {/* "Açık masalar" and how many (v45: .sec), over every state of the list that shows. */}
+      {lobbyShown ? (
+        <View className="mb-2 flex-row items-baseline justify-between">
+          <Text variant="heading" accessibilityRole="header">
+            {tr.rooms.lobbyTitle}
+          </Text>
+          {lobby.isSuccess && rooms.length > 0 ? (
+            <Text variant="label">{tr.rooms.roomCount(rooms.length)}</Text>
+          ) : null}
+        </View>
+      ) : null}
       {lobby.isPending ? (
         // Tahterevalli while the lobby is read (v45: .lobby-load).
         <View className="items-center justify-center" style={{ minHeight: LOAD_HEIGHT }}>
@@ -273,8 +288,7 @@ export function Lobby({ venueId, sessionId, alias, since, mySpotId, venueHasSpot
           />
         </Card>
       ) : rooms.length === 0 ? (
-        // A merged or "Masanla oyna" table has nothing to do in an empty lobby.
-        state === 'off' || state === 'open' || state === 'member' ? (
+        emptyCard ? (
           <Card testID="lobby-empty">
             <View className="flex-row items-center gap-3.5">
               <StateMark kind="empty" size={SPACING[16]} />

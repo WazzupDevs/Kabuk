@@ -99,6 +99,31 @@ appId: app.kabuk.mobile
 - assertVisible: Lobide değil
 - assertVisible: 'Noktan: Kantin'
 - takeScreenshot: 11-venue
+# The top row (v45: .top): the own photo opens Profil, Mekan's tab brings it back; "Mekandan ayrıl"
+# asks first and "Vazgeç" keeps the table (Android may write the dialog's buttons in capitals).
+- tapOn:
+    id: venue-profile
+- extendedWaitUntil:
+    visible:
+      id: profile-friends
+    timeout: 10000
+- tapOn:
+    id: tab-venue
+- extendedWaitUntil:
+    visible:
+      id: venue-leave
+    timeout: 10000
+- tapOn:
+    id: venue-leave
+- extendedWaitUntil:
+    visible: 'Mekandan ayrılıyor musun\?'
+    timeout: 10000
+- tapOn: 'vazge[çÇ]'
+- extendedWaitUntil:
+    notVisible: 'Mekandan ayrılıyor musun\?'
+    timeout: 10000
+- assertVisible:
+    id: lobby-open
 # "Davet et" (docs/SPEC_V4.md §4.C, 4.3): how a friend at the venue joins; off the lobby the sheet
 # asks to open the table to it first.
 - tapOn:

@@ -120,3 +120,11 @@ export function venueChatActive(lastMessageAt: string | null, now: number): bool
   const at = Date.parse(lastMessageAt);
   return Number.isFinite(at) && now - at < VENUE_CHAT_ACTIVE_MINUTES * 60_000;
 }
+
+// The card's last message (docs/SPEC_V4.md K-12): the later of the page's newest (read once) and the
+// moment a message broadcast was heard since. Either may be missing.
+export function venueChatLastAt(read: string | null, heard: string | null): string | null {
+  if (heard === null) return read;
+  if (read === null) return heard;
+  return Date.parse(heard) > Date.parse(read) ? heard : read;
+}

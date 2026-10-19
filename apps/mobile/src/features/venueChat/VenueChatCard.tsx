@@ -11,19 +11,18 @@ import { useNow } from '@/lib/useNow';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, OPACITY, SPACING, TOUCH } from '@/theme/tokens';
 
-import { useVenueChat } from './queries';
+import { useVenueChatLastAt } from './queries';
 
 // The dot beats at a calm pace.
 const BEAT_MS = 1600;
 
 // "Mekan sohbeti" at the top of the venue screen (v45: .linkcard.chat): the chat disc, the name and
 // who reads it, a dot only while the chat is active (a message in the last 10 minutes, K-12), and
-// the arrow. The page is the venue chat's own (one read for both screens).
+// the arrow. The page is read once; then a new message only marks its time (useVenueChatLastAt).
 export function VenueChatCard({ venueId, sessionId }: { venueId: string; sessionId: string }) {
   const { colors, shape } = useTheme();
-  const chat = useVenueChat(venueId, sessionId);
+  const last = useVenueChatLastAt(venueId, sessionId);
   const now = useNow(30_000);
-  const last = chat.data?.messages.at(-1)?.createdAt ?? null;
   const active = venueChatActive(last, now);
   return (
     <Pressable

@@ -25,25 +25,25 @@ type Num = Animated.AnimatedInterpolation<number> | number;
 export type MarkColors = { mono: string; ground: string } | { onInk?: boolean };
 
 // One Animated value per motion, looping 0 → 1 over its period while `active`.
-function useLoops(motions: readonly Motion[], active: boolean): Animated.Value[] {
+// `once`: each motion plays one period and stays on its last frame (no loop).
+function useLoops(motions: readonly Motion[], active: boolean, once: boolean): Animated.Value[] {
   const [values] = useState(() => motions.map(() => new Animated.Value(0)));
   useEffect(() => {
     if (!active) return undefined;
     // A paused loop starts again from its beginning.
     values.forEach((v) => v.setValue(0));
-    const loops = motions.map((motion, i) =>
-      Animated.loop(
-        Animated.timing(values[i] ?? new Animated.Value(0), {
-          toValue: 1,
-          duration: motion.period,
-          easing: Easing.linear,
-          useNativeDriver: true,
-        }),
-      ),
-    );
+    const loops = motions.map((motion, i) => {
+      const run = Animated.timing(values[i] ?? new Animated.Value(0), {
+        toValue: 1,
+        duration: motion.period,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      });
+      return once ? run : Animated.loop(run);
+    });
     loops.forEach((l) => l.start());
     return () => loops.forEach((l) => l.stop());
-  }, [motions, values, active]);
+  }, [motions, values, active, once]);
   return values;
 }
 
@@ -58,6 +58,8 @@ type Props = {
   outline?: boolean;
   // The overlap-coloured flash where the capsules meet again (the offline state).
   flare?: boolean;
+  // Played once and left on its last frame (the miss), not looped.
+  once?: boolean;
 };
 
 const NO_MOTION: readonly Motion[] = [];
@@ -73,9 +75,10 @@ export function MotionMark({
   colors = {},
   outline = false,
   flare = false,
+  once = false,
 }: Props) {
   const theme = useTheme();
-  const values = useLoops(motions, active);
+  const values = useLoops(motions, active, once);
   const k = size / MARK_WINDOW;
   const [a, b] = capsules(scene.m, scene.dx, scene.dy);
 
