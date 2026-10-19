@@ -13,13 +13,14 @@ appId: app.kabuk.mobile
       id: welcome
     timeout: 60000
 # The launch curtain (src/features/launch/LaunchCurtain.tsx) mounts before the first screen and
-# opens onto it; the flow looks at the screen once it is gone.
+# opens onto it; the scene plays once after it (v45 §2, K-27) and "Geç" shows while it runs. E2E's
+# emulator runs with animations off, which Android reports as reduce motion: there the scene comes
+# at its end and "Geç" never shows, so the flow cannot require it. On a phone with motion the tap
+# skips the scene; either way "Geç" is gone within its 4.5 s.
 - extendedWaitUntil:
     notVisible:
       id: launch-curtain
     timeout: 15000
-# The scene plays once after the curtain (v45 §2, K-27): "Geç" jumps to its end and goes. If the
-# scene is already over there is nothing to skip; either way "Geç" is gone within its 4.5 s.
 - tapOn:
     id: intro-skip
     optional: true
@@ -88,6 +89,10 @@ appId: app.kabuk.mobile
     notVisible:
       id: photo-from-library
     timeout: 10000
+# The profile is sent: Android's back leaves the last step where it is.
+- pressKey: back
+- assertVisible:
+    id: signup-photo-step
 # No photo: the last step's button is "Fotoğrafsız bitir" (K-29).
 - assertVisible: Fotoğrafsız bitir
 - tapOn:

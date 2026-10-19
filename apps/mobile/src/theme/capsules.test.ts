@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { CAPSULE_KEYS, CAPSULES, capsuleSvg } from './capsules';
+import { CAPSULE_KEYS, CAPSULES, capsuleSvg, FRIEND_DARK_INK } from './capsules';
 
 // A small well-formedness check: every tag closes, in order (SvgXml parses the text on the phone).
 function wellFormed(svg: string): boolean {
@@ -56,5 +56,39 @@ describe('capsule avatars (v45: AV)', () => {
     expect(svg).toContain('viewBox="0 0 48 58"');
     expect(svg).not.toContain('clipPath');
     expect(svg).not.toContain('r="24"');
+  });
+
+  // The sign-up friends' eyes (the CTO's 4.3d review): looking, squinting, blinking and the dark
+  // scheme's ink.
+  it('turns the eyes: shifted when looking, flattened when squinting or blinking', () => {
+    // 'cat' has a light visor and ink-coloured eyes at x 20 and 28, y 20.5.
+    const rest = capsuleSvg('cat', false);
+    expect(rest).toContain('<circle cx="20" cy="20.5" r="2.1"');
+    expect(rest).toContain('<circle cx="28" cy="20.5" r="2.1"');
+    const looking = capsuleSvg('cat', false, { dx: -2.6, dy: 1.8 });
+    expect(looking).toContain('<circle cx="17.4" cy="22.3" r="2.1"');
+    expect(looking).toContain('<circle cx="25.4" cy="22.3" r="2.1"');
+    const squint = capsuleSvg('cat', false, { open: 0.25 });
+    expect(squint).toContain('<ellipse cx="20" cy="20.5" rx="2.1" ry="0.53"');
+    expect(squint).not.toContain('<circle cx="20"');
+    // A dark visor's eyes flatten too.
+    const shades = CAPSULES.find((c) => c.visor === 'dark')!;
+    expect(capsuleSvg(shades.key, false, { open: 0.1 })).toContain('ry="0.2"');
+    for (const key of CAPSULE_KEYS) {
+      expect(wellFormed(capsuleSvg(key, false, { dx: -2.6, dy: 1.8, open: 0.25 }))).toBe(true);
+    }
+  });
+
+  it("the dark scheme's ink lightens the outlines and shading, never the eyes", () => {
+    const light = capsuleSvg('cat', false);
+    const dark = capsuleSvg('cat', false, {}, FRIEND_DARK_INK);
+    expect(dark).toContain(FRIEND_DARK_INK);
+    // The shading of the body took the new ink...
+    expect(dark).toContain(`<path d="M30 10a14 14 0 0 1 8 12v42h-8z" fill="${FRIEND_DARK_INK}"`);
+    // ...the eyes kept the dark one, so they still read on the light visor.
+    expect(dark).toContain('<circle cx="20" cy="20.5" r="2.1" fill="#14112B"/>');
+    expect(dark).toContain('<circle cx="28" cy="20.5" r="2.1" fill="#14112B"/>');
+    // The default ink leaves the drawing as it is.
+    expect(capsuleSvg('cat', false, {}, '#14112B')).toBe(light);
   });
 });

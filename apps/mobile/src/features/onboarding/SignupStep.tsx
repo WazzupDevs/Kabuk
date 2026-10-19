@@ -11,7 +11,7 @@ import { IconButton } from '@/components/IconButton';
 import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
-import { fitFriend, FRIEND, FRIEND_LOOKS, type Rect } from '@/lib/signupFriend';
+import { FRIEND, FRIEND_LOOKS, placeFriend, type Rect } from '@/lib/signupFriend';
 import { SIGNUP_STEPS, SIGNUP_TOTAL, type SignupStep as Step, stepNumber } from '@/lib/signupSteps';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
@@ -49,11 +49,16 @@ type Props = {
   testID?: string;
 };
 
+const NO_MOVES = { jump: false, shake: false, nod: false } as const;
+
 // The friend's box rests this far above the title's first line (v45: 64 px against the title at
 // 72), and may not rise into the top row.
 const FRIEND_ABOVE_TITLE = 8;
 
 type Layouts = {
+  // The top row and its "2/7" (the friend's jump must not cover it).
+  row?: LayoutRectangle;
+  counter?: LayoutRectangle;
   wrapper?: LayoutRectangle;
   head?: LayoutRectangle;
   title?: LayoutRectangle;
@@ -88,7 +93,8 @@ export function SignupStep({
     (value: Layouts[K]) =>
       setLayouts((l) => ({ ...l, [key]: value }));
   const onLayout =
-    (key: 'wrapper' | 'head' | 'title' | 'body' | 'fields' | 'error') => (e: LayoutChangeEvent) =>
+    (key: 'row' | 'counter' | 'wrapper' | 'head' | 'title' | 'body' | 'fields' | 'error') =>
+    (e: LayoutChangeEvent) =>
       keep(key)(e.nativeEvent.layout);
 
   // Everything the friend must stay off, in the wrapper's coordinates.
@@ -103,24 +109,51 @@ export function SignupStep({
         }))
       : [];
   const titleRects = lines(layouts.title, layouts.titleLines);
+  // The counter, from the top row into the wrapper's coordinates.
+  const { row, counter, wrapper } = layouts;
+  const counterRect: Rect[] =
+    row && counter && wrapper
+      ? [
+          {
+            x: row.x + counter.x - wrapper.x,
+            y: row.y + counter.y - wrapper.y,
+            width: counter.width,
+            height: counter.height,
+          },
+        ]
+      : [];
   const blockers: Rect[] = [
     ...titleRects,
     ...lines(layouts.body, layouts.bodyLines),
     ...(layouts.fields ? [toRect(layouts.fields)] : []),
     ...(error && layouts.error ? [toRect(layouts.error)] : []),
+    ...counterRect,
   ];
-  const right = (layouts.wrapper?.width ?? 0) + shape.screenPadding;
+  const right = (wrapper?.width ?? 0) + shape.screenPadding;
   const friendTop = head && layouts.title ? head.y + layouts.title.y - FRIEND_ABOVE_TITLE : null;
-  const shift =
-    withFriend && friendTop !== null && layouts.wrapper && layouts.fields
-      ? fitFriend(right, friendTop, blockers, head?.y ?? 0)
+  // Placed only once every word it must stay off has been measured: the title's lines, the body's,
+  // the counter. Before that it could show over the title for a frame (with reduce motion there is
+  // no slide in to hide it).
+  const measured =
+    layouts.titleLines !== undefined &&
+    (!body || layouts.bodyLines !== undefined) &&
+    counterRect.length > 0;
+  const place =
+    withFriend && measured && friendTop !== null && wrapper && layouts.fields
+      ? placeFriend(right, friendTop, blockers, head?.y ?? 0)
       : null;
+  const shift = place?.shift ?? null;
+  const moves = place?.moves ?? NO_MOVES;
   const inset = withFriend ? FRIEND.textInset : 0;
 
   return (
     <Screen>
       <View testID={testID} collapsable={false} className="flex-1">
-        <View className="-mx-3 flex-row items-center gap-3" style={{ minHeight: SPACING[11] }}>
+        <View
+          className="-mx-3 flex-row items-center gap-3"
+          style={{ minHeight: SPACING[11] }}
+          onLayout={onLayout('row')}
+        >
           {onBack ? (
             <IconButton icon="chevron-back" label={tr.common.back} onPress={onBack} />
           ) : (
@@ -146,7 +179,10 @@ export function SignupStep({
                   />
                 ))}
               </View>
-              <View style={{ minWidth: SPACING[8], marginRight: SPACING[3] }}>
+              <View
+                style={{ minWidth: SPACING[8], marginRight: SPACING[3] }}
+                onLayout={onLayout('counter')}
+              >
                 <Text
                   variant="label"
                   tone="muted"
@@ -189,12 +225,13 @@ export function SignupStep({
               </Text>
             </View>
           ) : null}
-          {withFriend && friendTop !== null ? (
+          {withFriend && measured && friendTop !== null ? (
             <SignupFriend
               look={FRIEND_LOOKS[step]}
               top={friendTop}
               right={right}
               shift={shift}
+              moves={moves}
               reaction={friend?.reaction ?? null}
               looking={friend?.looking ?? false}
               bubble={friend?.bubble ?? null}
