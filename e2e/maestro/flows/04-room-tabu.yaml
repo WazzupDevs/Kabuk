@@ -49,7 +49,7 @@ appId: app.kabuk.mobile
 - takeScreenshot: 12c-lobby-same-spot
 # "Katıl" to the bot's table: the request waits in its row (Kesişme and the seconds left); the bot
 # declines. A decline looks like the wait until the 60 s run out (rule 5), then the row says "Masa
-# şu an müsait değil." (the miss) and "Katıl" is back.
+# şu an müsait değil." (the miss) and leaves: a table asks another once (venue_lobby).
 - tapOn:
     id: request-join
 - scrollUntilVisible:
@@ -73,8 +73,8 @@ appId: app.kabuk.mobile
 - takeScreenshot: 12e-lobby-request-missed
 - extendedWaitUntil:
     visible:
-      id: request-join
-    timeout: 10000
+      id: lobby-empty
+    timeout: 15000
 # The bot leaves the lobby; this phone opens its table to it at the same spot and the bot asks to
 # join.
 - runScript:

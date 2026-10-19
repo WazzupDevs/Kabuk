@@ -164,6 +164,16 @@ export function Lobby({ venueId, sessionId, alias, since, mySpotId, venueHasSpot
       trackOnce(`join_unavailable:${requestId}`, 'join_unavailable', { as_member: asMember });
     }
   }, [requestId, status, asMember]);
+  // A table asked once and not met leaves this table's lobby (venue_lobby): read again once the
+  // row's miss has played, so it goes then and its "Katıl" never comes back.
+  useEffect(() => {
+    if (!requestId || status !== 'unavailable' || !venueId) return undefined;
+    const id = setTimeout(
+      () => void queryClient.invalidateQueries({ queryKey: roomKeys.lobby(venueId) }),
+      MISS_MS,
+    );
+    return () => clearTimeout(id);
+  }, [requestId, status, venueId, queryClient]);
   // Felt only when accepted: a decline and a timeout look and feel the same (rule 5).
   useRequesterHaptic(requestId, status);
   const secondsLeft = mine ? Math.max(0, Math.ceil((Date.parse(mine.expiresAt) - now) / 1000)) : 0;
@@ -301,19 +311,19 @@ export function Lobby({ venueId, sessionId, alias, since, mySpotId, venueHasSpot
                       side={
                         pendingHere ? (
                           <Loader kind="swap" size={SPACING[7]} delay={0} label={null} />
+                        ) : missedHere && mine ? (
+                          // A request that did not meet: the miss once (keyed by the request),
+                          // then the row leaves the lobby (one request per table).
+                          <MissMark key={mine.id} size={SPACING[7]} />
                         ) : group.mine && actions.join ? (
-                          // After a request that did not meet, the miss once (keyed by the
-                          // request), then "Katıl" again.
-                          <AfterMiss key={missedHere && mine ? mine.id : 'join'} miss={missedHere}>
-                            <Button
-                              variant="neutral"
-                              size="sm"
-                              testID="request-join"
-                              label={tr.rooms.requestJoin}
-                              onPress={() => ask({ roomId: room.room_id })}
-                              disabled={waiting}
-                            />
-                          </AfterMiss>
+                          <Button
+                            variant="neutral"
+                            size="sm"
+                            testID="request-join"
+                            label={tr.rooms.requestJoin}
+                            onPress={() => ask({ roomId: room.room_id })}
+                            disabled={waiting}
+                          />
                         ) : null
                       }
                       below={
@@ -451,17 +461,6 @@ export function Lobby({ venueId, sessionId, alias, since, mySpotId, venueHasSpot
       />
     </View>
   );
-}
-
-// The miss (a request that did not meet) where the request's mark was, then `children`.
-function AfterMiss({ miss, children }: { miss: boolean; children: ReactNode }) {
-  const [done, setDone] = useState(!miss);
-  useEffect(() => {
-    if (done) return undefined;
-    const id = setTimeout(() => setDone(true), MISS_MS);
-    return () => clearTimeout(id);
-  }, [done]);
-  return done ? children : <MissMark size={SPACING[7]} />;
 }
 
 // An open table (v45: .row): its avatar, its name, a line about this table's request to it, and its
