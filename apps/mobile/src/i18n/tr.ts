@@ -1164,9 +1164,7 @@ export const tr = {
   },
   design: {
     title: 'Tasarım (test)',
-    hint: 'Yalnızca test sürümünde görünür. Seçimin bu cihazda saklanır.',
-    schemeLabel: 'Görünüm',
-    schemes: { light: 'Açık', dark: 'Koyu', system: 'Sistem' },
+    hint: 'Yalnızca test sürümünde görünür.',
     previewTitle: 'Bileşen önizleme',
     previewOpen: 'Bileşen önizlemesini aç',
     previewIncoming: 'Mesaj gelsin',
@@ -1286,6 +1284,16 @@ export const tr = {
     // "2000-01-15" → "15.01.2000"
     birthDateValue: (iso: string) => iso.split('-').reverse().join('.'),
     birthDateHint: 'Yalnızca sen görürsün. Yanlışsa düzeltmek için bize yaz.',
+    // Görünüm (K-54; v46 §5): kept only on the phone.
+    appearance: {
+      title: 'Görünüm',
+      options: { system: 'Sistem', light: 'Açık', dark: 'Koyu' },
+      notes: {
+        system: 'Telefonunun ayarına uyar.',
+        light: 'Her zaman açık tema.',
+        dark: 'Her zaman koyu tema.',
+      },
+    },
     notificationsSection: 'Bildirimler',
     notifyDm: 'Mesajlar',
     notifyFriendRequests: 'Arkadaşlık istekleri',
