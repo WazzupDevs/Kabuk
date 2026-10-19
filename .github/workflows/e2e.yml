@@ -3,7 +3,13 @@
 # shards (e2e/maestro/shard-<n>.yaml), each run in light and dark: eight jobs that start with the
 # build job, set up the local stack and boot their emulator while it builds, then fetch the APK,
 # pick the design in Ayarlar → Tasarım (test) and run their shard. Nightly and by hand, the four
-# shards run once more in light at the largest text size (font_scale 1.3): twelve jobs.
+# shards run once more in light at the largest text size (font_scale 1.3): twelve jobs. On a PR the
+# `e2e-large` label does the same: added, it runs the build and the four large jobs alone (the
+# eight others passed before it was added); while it is on, every push runs all twelve.
+#
+# A shard whose flows fail because Maestro's driver on the phone crashed or could not be reached
+# runs once more on a fresh phone (scripts/e2e/retry.ts); a failing step alone never does. The job
+# summary names every retry and its reason.
 #
 # Minutes (CLAUDE.md → Uçtan uca): a PR's new push replaces its run that is still going; a PR that
 # changes only docs and tests has no run; the nightly run is skipped while main has not moved
@@ -11,7 +17,8 @@
 name: e2e
 
 on:
-  # On a PR only with the `e2e` label: when it is added, and on every push while it is on.
+  # On a PR only with the `e2e` or `e2e-large` label: when one is added, and on every push while
+  # one is on.
   pull_request:
     types: [opened, synchronize, reopened, labeled]
     # Only docs and tests (unit and integration): nothing new for the app, no run. The E2E flows and
@@ -28,12 +35,13 @@ on:
   schedule:
     - cron: '23 1 * * *'
 
-# A PR's new push (or the e2e label added again) replaces its run that is still going, as in
-# ci.yml. Another label checks nothing new: it gets a group of its own, so it never cancels the run.
+# A PR's new push (or the e2e or e2e-large label added again) replaces its run that is still going,
+# as in ci.yml. Another label checks nothing new: it gets a group of its own, so it never cancels
+# the run.
 concurrency:
   group: >-
     e2e-${{ github.ref }}${{ github.event.action == 'labeled' && github.event.label.name != 'e2e'
-    && format('-{0}', github.run_id) || '' }}
+    && github.event.label.name != 'e2e-large' && format('-{0}', github.run_id) || '' }}
   cancel-in-progress: true
 
 permissions:
@@ -72,13 +80,17 @@ jobs:
           fi
 
   # One release APK for every run: light or dark is picked at runtime in Ayarlar → Tasarım (test).
+  # On a PR: the e2e or e2e-large label just added, or a push while either is on.
   build:
     needs: changed
     if: >-
       needs.changed.outputs.run != 'false' && !cancelled() &&
       (github.event_name != 'pull_request' ||
-      (contains(github.event.pull_request.labels.*.name, 'e2e') &&
-       (github.event.action != 'labeled' || github.event.label.name == 'e2e')))
+      (github.event.action == 'labeled' &&
+       (github.event.label.name == 'e2e' || github.event.label.name == 'e2e-large')) ||
+      (github.event.action != 'labeled' &&
+       (contains(github.event.pull_request.labels.*.name, 'e2e') ||
+        contains(github.event.pull_request.labels.*.name, 'e2e-large'))))
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -133,10 +145,14 @@ jobs:
     if: >-
       needs.changed.outputs.run != 'false' && !cancelled() &&
       (github.event_name != 'pull_request' ||
-      (contains(github.event.pull_request.labels.*.name, 'e2e') &&
-       (github.event.action != 'labeled' || github.event.label.name == 'e2e')))
+      (github.event.action == 'labeled' &&
+       (github.event.label.name == 'e2e' || github.event.label.name == 'e2e-large')) ||
+      (github.event.action != 'labeled' &&
+       (contains(github.event.pull_request.labels.*.name, 'e2e') ||
+        contains(github.event.pull_request.labels.*.name, 'e2e-large'))))
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    # A shard's own run takes ~16 minutes; a retry (below) another ~15.
+    timeout-minutes: 55
     # actions: read for this run's e2e-apk artifact (run-on-emulator.sh).
     permissions:
       actions: read
@@ -146,10 +162,17 @@ jobs:
       matrix:
         scheme: [light, dark]
         shard: [1, 2, 3, 4]
-        # Android's text size (Settings → Display → Font size): the default, and nightly and by hand
-        # also the largest the app is checked at, 1.3 (CLAUDE.md → "Ekran davranışı"), in light only.
-        # A PR runs the default size.
-        font: ${{ fromJSON(github.event_name == 'pull_request' && '["1"]' || '["1", "1.3"]') }}
+        # Android's text size (Settings → Display → Font size): the default, and also the largest
+        # the app is checked at, 1.3 (CLAUDE.md → "Ekran davranışı"), in light only. Both nightly,
+        # by hand and on a PR's push while e2e-large is on; 1.3 alone when e2e-large has just been
+        # added; otherwise a PR runs the default size.
+        font: >-
+          ${{ fromJSON(
+          (github.event_name != 'pull_request' ||
+           (github.event.action != 'labeled' &&
+            contains(github.event.pull_request.labels.*.name, 'e2e-large'))) && '["1", "1.3"]' ||
+          (github.event.action == 'labeled' && github.event.label.name == 'e2e-large') && '["1.3"]' ||
+          '["1"]') }}
         exclude:
           - scheme: dark
             font: '1.3'
@@ -197,14 +220,10 @@ jobs:
           echo "LOCAL_DEVICE_URL=$E2E_SUPABASE_URL" > "$RUNNER_TEMP/functions.env"
           nohup pnpm supabase functions serve --env-file "$RUNNER_TEMP/functions.env" > "$OUT/functions.log" 2>&1 &
           timeout 180 bash -c 'until curl -sf -X POST http://127.0.0.1:54321/functions/v1/ping -H "apikey: $E2E_PUBLISHABLE_KEY" -H "content-type: application/json" -d "{}" > /dev/null; do sleep 2; done'
-          node --experimental-strip-types scripts/e2e/bot-table.ts setup > "$OUT/setup.json"
+          bash scripts/e2e/start-bots.sh
           node -e 'const s = require(process.argv[1]);
             console.log(`INSIDE_LAT=${s.inside.lat}\nINSIDE_LNG=${s.inside.lng}\nOUTSIDE_LAT=${s.outside.lat}\nOUTSIDE_LNG=${s.outside.lng}`)' \
             "$OUT/setup.json" >> "$GITHUB_ENV"
-          nohup node --experimental-strip-types scripts/e2e/bot-table.ts serve > "$OUT/bot.log" 2>&1 &
-          # 13-teams: the second bot table, another account on its own port.
-          BOT_PORT=8788 BOT_PHONE=+905550000004 BOT_NAME="Bot Üç" \
-            nohup node --experimental-strip-types scripts/e2e/bot-table.ts serve > "$OUT/bot2.log" 2>&1 &
       - name: Maestro
         run: |
           curl -Ls "https://get.maestro.mobile.dev" | MAESTRO_VERSION=2.10.0 bash
@@ -248,7 +267,11 @@ jobs:
             /usr/local/lib/android/sdk/emulator
             /usr/local/lib/android/sdk/system-images/android-34/google_apis/x86_64
           key: ${{ steps.emulator-cache.outputs.cache-primary-key }}
+      # Its failure does not end the job at once: the steps below decide on one retry, and "Result"
+      # fails the job unless the retry passed.
       - name: Emulator, APK and the shard's flows
+        id: flows
+        continue-on-error: true
         uses: reactivecircus/android-emulator-runner@v2
         env:
           GH_TOKEN: ${{ github.token }}
@@ -260,6 +283,70 @@ jobs:
           emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: bash scripts/e2e/run-on-emulator.sh
+      # One retry per shard, only when the test environment fell over: Maestro's driver on the phone
+      # crashed while the flows ran, or could not be reached (scripts/e2e/retry.ts; #151's dark-1
+      # and dark-4). A failing step without that (an assertion, "Element not found") is never run
+      # again: it may be a real failure that comes and goes (#161's check-in race).
+      - name: Test environment crash? (one retry)
+        id: retry
+        if: steps.flows.outcome == 'failure'
+        env:
+          JOB: e2e (${{ matrix.scheme }}, ${{ matrix.shard }}, ${{ matrix.font }})
+        run: |
+          reason=$(node --experimental-strip-types scripts/e2e/retry-check.ts "$OUT")
+          if [ -z "$reason" ]; then
+            echo "No sign of a test-environment crash (scripts/e2e/retry.ts): no retry."
+            exit 0
+          fi
+          echo "reason=$reason" >> "$GITHUB_OUTPUT"
+          { echo "### $JOB: yeniden deneme"; echo; echo "- Sebep: $reason"; } | tee -a "$GITHUB_STEP_SUMMARY"
+      # Before the retry: the first attempt's outputs into attempt-1/ (the artifact and the
+      # screenshots branch keep them, except its takeScreenshot images), the local database back to
+      # its start (test accounts, rooms, and the venues 02-checkin closed), and the bots anew. The
+      # runner action then boots a new phone: it creates the AVD again.
+      - name: Before the retry (outputs, local database, bots)
+        if: steps.retry.outputs.reason != ''
+        run: |
+          xargs kill < "$OUT/bots.pid" || true
+          mkdir -p "$OUT/attempt-1"
+          for f in screenshots maestro report.xml logcat.txt video.webm maestro-console.txt setup.json bot.log bot2.log bots.pid; do
+            if [ -e "$OUT/$f" ]; then mv "$OUT/$f" "$OUT/attempt-1/"; fi
+          done
+          if [ -f "$OUT/attempt-1/logcat.txt" ]; then
+            tail -n 3000 "$OUT/attempt-1/logcat.txt" > "$OUT/attempt-1/logcat-tail.txt"
+          fi
+          pnpm db:reset
+          bash scripts/e2e/start-bots.sh
+      - name: Emulator, APK and the shard's flows (retry)
+        id: flows-retry
+        if: steps.retry.outputs.reason != ''
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          GH_TOKEN: ${{ github.token }}
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          ram-size: 4096M
+          emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: bash scripts/e2e/run-on-emulator.sh
+      - name: Result
+        if: steps.flows.outcome == 'failure'
+        env:
+          RETRIED: ${{ steps.retry.outputs.reason != '' }}
+          SECOND: ${{ steps.flows-retry.outcome }}
+        run: |
+          if [ "$RETRIED" != true ]; then
+            echo "The shard's flows failed (no retry: not a test-environment crash)."
+            exit 1
+          fi
+          if [ "$SECOND" = success ]; then
+            echo "- 2. deneme geçti." | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            echo "- 2. deneme de düştü ($SECOND). İlk deneme \`attempt-1/\` klasöründe." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
       - if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -274,7 +361,9 @@ jobs:
   # cannot hold both e2e-screenshots and e2e-screenshots/pr-<number>, hence the dash.) Each shard's
   # run is in its own folder (light-1 … dark-4, and large-1 … large-4 at the largest text size);
   # light/takeScreenshot and dark/takeScreenshot hold the takeScreenshot images of the scheme's four
-  # shards together, for `pnpm store:screenshots` (large/takeScreenshot those of the large pass).
+  # shards together, for `pnpm store:screenshots` (large/takeScreenshot those of the large pass); a
+  # retried shard's first attempt is in its folder's attempt-1/, without those images. A PR run that
+  # only the e2e-large label started writes the four large folders alone.
   publish-screenshots:
     if: ${{ always() && needs.e2e.result != 'skipped' }}
     needs: e2e
@@ -297,7 +386,7 @@ jobs:
             mkdir -p "site/$run" "site/${run%-*}/takeScreenshot"
             (cd "$dir" && find . -type f ! -name '*.webm' ! -name 'logcat.txt' -exec cp --parents {} "../../site/$run/" \;)
             tail -n 3000 "$dir/logcat.txt" > "site/$run/logcat-tail.txt" 2>/dev/null || true
-            find "$dir" -path '*/takeScreenshot/*.png' -exec cp {} "site/${run%-*}/takeScreenshot/" \;
+            find "$dir" -path '*/takeScreenshot/*.png' ! -path '*/attempt-1/*' -exec cp {} "site/${run%-*}/takeScreenshot/" \;
           done
           cd site
           git init -q -b "$BRANCH"
