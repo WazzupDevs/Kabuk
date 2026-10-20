@@ -29,6 +29,12 @@ export function friendRequestPush(): PushMessage {
   return { title: APP_NAME, body: 'Yeni bir arkadaşlık isteğin var', target: 'notifications' };
 }
 
+// K-70 (docs/SPEC_V4.md §4.E): the silent "Arkadaş ekle" became mutual; to the first presser only.
+// No venue, no table, no name (§18.3a).
+export function friendMatchPush(): PushMessage {
+  return { title: APP_NAME, body: 'Masada eklediğin biriyle arkadaş oldunuz', target: 'messages' };
+}
+
 export function isExpoPushToken(token: string): boolean {
   return /^Expo(nent)?PushToken\[[^\]]+\]$/.test(token);
 }

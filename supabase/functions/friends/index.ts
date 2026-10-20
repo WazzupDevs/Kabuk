@@ -13,13 +13,15 @@ import type {
   Friend,
   FriendsIncomingResponse,
   FriendsListResponse,
+  FriendsAddResponse,
   FriendsOkResponse,
   FriendsRequest,
 } from '../_shared/pure/api/friends.ts';
 import { ageOn, istanbulToday, parseIsoDate } from '../_shared/pure/age.ts';
 import { REPORT_REASONS } from '../_shared/pure/chat.ts';
 import { AppError } from '../_shared/pure/errors.ts';
-import { friendRequestPush } from '../_shared/pure/push.ts';
+import { matchPushRecipient } from '../_shared/pure/friends.ts';
+import { friendMatchPush, friendRequestPush } from '../_shared/pure/push.ts';
 import { BROADCAST } from '../_shared/pure/rooms.ts';
 import { VENUE_CHAT } from '../_shared/pure/venueChat.ts';
 
@@ -30,6 +32,7 @@ const Body: z.ZodType<FriendsRequest> = z.union([
   z.object({ action: z.literal('incoming') }),
   z.object({ action: z.literal('respond'), requestId: z.uuid(), accept: z.boolean() }),
   z.object({ action: z.literal('add-from-room'), historyId: z.uuid() }),
+  z.object({ action: z.literal('withdraw-add'), historyId: z.uuid() }),
   z.object({
     action: z.literal('remove'),
     publicId: z.uuid(),
@@ -100,7 +103,9 @@ Deno.serve(
     async (
       req,
       raw,
-    ): Promise<FriendsListResponse | FriendsIncomingResponse | FriendsOkResponse> => {
+    ): Promise<
+      FriendsListResponse | FriendsIncomingResponse | FriendsOkResponse | FriendsAddResponse
+    > => {
       const body = Body.parse(raw);
       const user = await requireUser(req, db);
 
@@ -152,8 +157,29 @@ Deno.serve(
             target_history_id: body.historyId,
           });
           if (error) throw dbError('friends_add_from_room', error);
-          announce(user.id, data[0]);
-          return { ok: true };
+          const result = data[0];
+          announce(user.id, result);
+          // K-70: the match is told to the first presser; the second sees it in this answer. A
+          // friendship from before comes back as 'ok' (rule 4): an anonymous friend stays unnamed.
+          const recipient = matchPushRecipient(result?.outcome, result?.other_user_id);
+          if (recipient) {
+            pushIfAllowed(db, recipient, 'notify_friend_requests', friendMatchPush());
+          }
+          return {
+            ok: true,
+            friends:
+              result?.outcome === 'friendship_created' || result?.outcome === 'already_matched',
+          };
+        }
+
+        // K-67: nothing goes to the other side, whatever the outcome.
+        case 'withdraw-add': {
+          const { data, error } = await db.rpc('friends_withdraw_add', {
+            target_user_id: user.id,
+            target_history_id: body.historyId,
+          });
+          if (error) throw dbError('friends_withdraw_add', error);
+          return { ok: true, friends: data === 'already_matched' };
         }
 
         case 'remove': {

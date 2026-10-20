@@ -1406,6 +1406,7 @@ export const tr = {
     identity_switch_used:
       'Anonim ile profilli arasında bu girişte bir kez geçebilirsin; hakkını kullandın.',
     nick_refresh_too_soon: 'Anonim adını 30 günde bir yenileyebilirsin.',
+    icon_taken: 'Bu simge mekandaki başka bir masada. Başka bir simge seç.',
     wrong_side: 'Bu masaya yalnızca daha önce bulunduğun taraftan katılabilirsin.',
     not_leader: 'Bunu yalnızca masanın lideri yapabilir.',
     already_friends: 'Zaten arkadaşsınız.',

@@ -79,13 +79,22 @@ async function play(
 
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
 
-// Table aliases come from alias_words, whose animals are Tabu words too ("Kelebek"); a capsule look
-// names catalog parts, some of them Tabu words too ("h:korsan"). Neither comes from a card.
-const ALIAS_COLUMNS = new Set(['owner_alias', 'guest_alias', 'sender_alias', 'sender_look']);
+// Table aliases and names come from alias_words, whose animals are Tabu words too ("Kelebek"); a
+// capsule look names catalog parts and a table icon its theme and thing, some of them Tabu words
+// too ("h:korsan", "sihir-hali"). None comes from a card.
+const ALIAS_COLUMNS = new Set([
+  'owner_alias',
+  'guest_alias',
+  'sender_alias',
+  'sender_look',
+  'name',
+  'icon',
+]);
 
 // Everything a member's client can read about the room outside tabu/turn-cards, as one string:
 // every value, and every key inside JSON values. Column names are left out (they are the schema,
-// and `created_at` would read as the card "At"), and so are the alias and look columns.
+// and `created_at` would read as the card "At"), and so are the alias, look, name and icon
+// columns.
 async function readableBy(guest: Client, roomId: string): Promise<string> {
   const reads = await Promise.all([
     guest.from('rooms').select('*').eq('id', roomId),

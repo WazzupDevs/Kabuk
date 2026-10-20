@@ -21,8 +21,10 @@ import type {
   ProposeGameResponse,
   RequestJoinResponse,
   RequestProfileResponse,
+  RerollNameResponse,
   RoomsOkResponse,
   RoomsRequest,
+  SetIconResponse,
 } from '../_shared/pure/api/rooms.ts';
 import { ageOn, istanbulToday, parseIsoDate } from '../_shared/pure/age.ts';
 import { type Gender, participationError } from '../_shared/pure/gender.ts';
@@ -41,6 +43,7 @@ import {
 import { SAHTEKAR } from '../_shared/pure/sahtekar.ts';
 import { SOHBET_NEXT_COOLDOWN_MS } from '../_shared/pure/sohbet.ts';
 import { TABU } from '../_shared/pure/tabu.ts';
+import { isTableIcon, TABLE_NAME_REROLLS } from '../_shared/pure/tables.ts';
 import { SIDES } from '../_shared/pure/teams.ts';
 
 // A side's player count for Sahtekar (docs/SPEC_V3.md §20.1); without it, the side's headcount when
@@ -53,8 +56,15 @@ const Body: z.ZodType<RoomsRequest> = z.discriminatedUnion('action', [
     intent: z.enum(INTENTS).optional(),
     gameTag: z.enum(CONCEPTS).optional(),
     profiled: z.boolean(),
+    icon: z.string().refine(isTableIcon).optional(),
   }),
   z.object({ action: z.literal('create-solo') }),
+  z.object({
+    action: z.literal('set-icon'),
+    roomId: z.uuid(),
+    icon: z.string().refine(isTableIcon),
+  }),
+  z.object({ action: z.literal('reroll-name'), roomId: z.uuid() }),
   z.object({
     action: z.literal('request-join'),
     roomId: z.uuid(),
@@ -153,6 +163,8 @@ Deno.serve(
       | RequestProfileResponse
       | ProposeGameResponse
       | RoomsOkResponse
+      | SetIconResponse
+      | RerollNameResponse
     > => {
       const body = Body.parse(raw);
       const user = await requireUser(req, db);
@@ -166,10 +178,42 @@ Deno.serve(
             profiled: body.profiled,
             ...(body.intent ? { new_intent: body.intent } : {}),
             ...(body.gameTag ? { new_game_tag: body.gameTag } : {}),
+            ...(body.icon ? { new_icon: body.icon } : {}),
           });
           if (error) throw dbError('rooms_create', error);
           lobbyChanged(data);
           return { roomId: data.id };
+        }
+
+        // docs/SPEC_V4.md §4.E (K-45, K-59): only the owner; the name stays.
+        case 'set-icon': {
+          const before = await db.from('rooms').select('icon').eq('id', body.roomId).maybeSingle();
+          if (before.error) throw dbError('rooms', before.error);
+          const { data, error } = await db.rpc('rooms_set_icon', {
+            target_user_id: user.id,
+            target_room_id: body.roomId,
+            new_icon: body.icon,
+          });
+          if (error) throw dbError('rooms_set_icon', error);
+          // Only a change of a table in the lobby is news there (the same icon again changes
+          // nothing).
+          if (before.data?.icon !== data.icon && data.visibility === 'open') lobbyChanged(data);
+          return { icon: data.icon ?? body.icon };
+        }
+
+        // Only the owner, TABLE_NAME_REROLLS times per table; the icon stays.
+        case 'reroll-name': {
+          const { data, error } = await db.rpc('rooms_reroll_name', {
+            target_user_id: user.id,
+            target_room_id: body.roomId,
+            max_rerolls: TABLE_NAME_REROLLS,
+          });
+          if (error) throw dbError('rooms_reroll_name', error);
+          if (data.visibility === 'open') lobbyChanged(data);
+          return {
+            name: data.name ?? '',
+            rerollsLeft: Math.max(TABLE_NAME_REROLLS - data.name_rerolls, 0),
+          };
         }
 
         // "Masanla oyna": private, never in the lobby.
