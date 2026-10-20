@@ -46,6 +46,8 @@ export type ProfileRequest =
       bio?: string;
       notifyDm?: boolean;
       notifyFriendRequests?: boolean;
+      // "Masa davetleri" (docs/SPEC_V4.md §4.G, K-53, K-62).
+      notifyInvites?: boolean;
     }
   | { action: 'photo-upload-url' }
   | { action: 'photo-commit'; path: string }

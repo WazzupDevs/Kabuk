@@ -3,6 +3,7 @@
 // twice leaves the same state and answer as sending it once, and an integration test sends it twice
 // to show that (named next to each entry). Anything else may already have taken effect (a message
 // sent, a request created), so its 5xx is shown to the user instead.
+import type { AccountRequest } from './api/account.ts';
 import type { ChatRequest } from './api/chat.ts';
 import type { CheckinRequest } from './api/checkin.ts';
 import type { DmRequest, FriendsRequest } from './api/friends.ts';
@@ -17,7 +18,8 @@ type CallName =
   | `profile/${ProfileRequest['action']}`
   | `friends/${FriendsRequest['action']}`
   | `dm/${DmRequest['action']}`
-  | `venue-chat/${VenueChatRequest['action']}`;
+  | `venue-chat/${VenueChatRequest['action']}`
+  | `account/${AccountRequest['action']}`;
 
 export const IDEMPOTENT_CALLS = [
   // updateGate.test "update gate, open": "answers the launch and foreground ping without a user"
@@ -49,6 +51,12 @@ export const IDEMPOTENT_CALLS = [
   // venueChat.test "venue chat: photos (venue-chat/page)": "signs the photo of a profiled message
   // and never gives an anonymous one a photo path"
   'venue-chat/page',
+  // invites.test "the bell (§4.G, K-70)": "lists requests, accepted requests, matches and invites,
+  // new until the list is opened"
+  'friends/notifications',
+  // invites.test "the bell (§4.G, K-70)": "lists requests, accepted requests, matches and invites,
+  // new until the list is opened"
+  'account/notifications-seen',
 ] as const satisfies readonly CallName[];
 
 export const RETRY_DELAY_MS = 500;

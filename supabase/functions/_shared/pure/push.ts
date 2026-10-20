@@ -38,6 +38,28 @@ export function friendMatchPush(): PushMessage {
   return { title: APP_NAME, body: 'Masada eklediğin biriyle arkadaş oldunuz', target: 'messages' };
 }
 
+// A friend's table invite (docs/SPEC_V4.md §4.G): no name, no table, no venue (§18.3a).
+export function invitePush(): PushMessage {
+  return {
+    title: APP_NAME,
+    body: 'Bir arkadaşın seni masasına çağırıyor',
+    target: 'notifications',
+  };
+}
+
+// The setting each push is read against before it goes (K-53, K-62): "Arkadaşlık istekleri" covers
+// the requests and the matches (K-70), "Masa davetleri" the invites, "Birebir mesajlar" the DMs. The
+// join request and its accept have no setting and always go.
+export type PushPreference = 'notify_dm' | 'notify_friend_requests' | 'notify_invites';
+export type PushKind = 'dm' | 'friend_request' | 'friend_match' | 'table_invite';
+
+export const PUSH_PREFERENCE: Record<PushKind, PushPreference> = {
+  dm: 'notify_dm',
+  friend_request: 'notify_friend_requests',
+  friend_match: 'notify_friend_requests',
+  table_invite: 'notify_invites',
+};
+
 export function isExpoPushToken(token: string): boolean {
   return /^Expo(nent)?PushToken\[[^\]]+\]$/.test(token);
 }

@@ -160,7 +160,7 @@ Tanım: cihazdan çıkan her veri "toplanan" sayılır; hizmet sağlayıcıya (S
 | Mesajlar → Diğer uygulama içi mesajlar                            | Oda sohbeti, arkadaşlar arası DM                      | Hayır                 | Hayır                     | Uygulama işlevi, güvenlik (şikayet kopyası)                  |
 | Uygulama etkinliği → Uygulama etkileşimleri                       | Analitik olayları (PostHog)                           | Evet                  | Hayır                     | Analitik                                                     |
 | Uygulama etkinliği → Diğer kullanıcı içeriği                      | Biyografi                                             | Hayır                 | Hayır                     | Uygulama işlevi                                              |
-| Uygulama etkinliği → Diğer işlemler                               | Oyun geçmişi, arkadaşlık, tanışma cevabı              | Evet                  | Hayır                     | Uygulama işlevi                                              |
+| Uygulama etkinliği → Diğer işlemler                               | Oyun geçmişi, arkadaşlık, tanışma cevabı, masa daveti | Evet                  | Hayır                     | Uygulama işlevi                                              |
 | Uygulama bilgileri ve performansı → Kilitlenme günlükleri, Teşhis | Sentry hata raporları (telefon, konum, metin silinir) | Evet                  | Hayır                     | Analitik (hata giderme)                                      |
 | Cihaz ya da diğer kimlikler                                       | Push token                                            | Hayır (bildirim izni) | Hayır                     | Uygulama işlevi                                              |
 

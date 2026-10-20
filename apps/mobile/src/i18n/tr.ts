@@ -1411,6 +1411,7 @@ export const tr = {
     icon_taken: 'Bu simge mekandaki başka bir masada. Başka bir simge seç.',
     already_in_table: 'Zaten bir masadasın.',
     table_full: 'Masa dolu.',
+    invite_unavailable: 'Davet artık geçerli değil.',
     wrong_side: 'Bu masaya yalnızca daha önce bulunduğun taraftan katılabilirsin.',
     not_leader: 'Bunu yalnızca masanın lideri yapabilir.',
     already_friends: 'Zaten arkadaşsınız.',

@@ -110,6 +110,8 @@ export const BROADCAST = {
   // inbox:{user_id}
   friendRequest: 'friend_request',
   friendshipChanged: 'friendship_changed',
+  // A friend's table invite (docs/SPEC_V4.md §4.G); no data.
+  tableInvite: 'table_invite',
   dm: 'dm',
   // dm:{thread_id}
   dmMessage: 'dm_message',

@@ -698,7 +698,7 @@ Değişmez kabul edilir.
 
 **Veri.**
 
-- Ayrı bir bildirim tablosu yoktur (SPEC_V3 §18.3'teki karar sürer). Liste salt okunur bir RPC'dir: `my_notifications()` (security definer, yalnızca okur, `set search_path = ''`; kural 1). Kaynakları:
+- Ayrı bir bildirim tablosu yoktur (SPEC_V3 §18.3'teki karar sürer). Liste salt okunur bir RPC'dir: `my_notifications()` (security definer, yalnızca okur, `set search_path = ''`; kural 1). Adım 4.7'de `my_notifications(target_user_id)` olarak yalnızca service role'e açıktır ve `friends/notifications` çağırır: fotoğrafları imzalar, doğum tarihini yaşa çevirir (`friends/incoming` kalıbı). Kaynakları:
   - gelen ve bekleyen açık arkadaşlık istekleri (`friend_requests`);
   - kişinin kabul edilen istekleri, son 7 gün;
   - eşleşmeyle kurulan arkadaşlıklar (`friendships`, kaynağı `room_end_mutual`), son 7 gün, yalnızca ilk basan için. Kimin önce bastığı `mutual_friend_intents.created_at`'ten okunur; niyetler arkadaşlık sürdükçe kalır (K-70);
@@ -723,6 +723,16 @@ Değişmez kabul edilir.
   - Kişinin bulunduğu masa için "Masadan ayrıl" kuralı uygulanır: tek kişilik boş masası sessizce kapanır; başka bir masanın katılımcısıysa o masadan ayrılır; başka kişilerin bulunduğu bir masanın sahibiyse §4.E'deki sahiplik kuralı (K-13) uygulanır.
   - Masa dolmuşsa, kapanmışsa ya da davetin süresi geçmişse alıcıya tek bir metin görünür: davet artık geçerli değil.
 - **Red ve zaman aşımı gönderene aynı görünür:** sahip ikisinde de hiçbir şey görmez. Kabulde kişi masaya gelir (Masadakiler'de görünür).
+- **Sunucunun ayrıntıları (adım 4.7):**
+  - `rooms/invite`: sahip olmayan `not_owner` alır. Şunların hiçbiri satır yazmaz ve yanıt hep `{ ok: true }`'dur: arkadaş değil (ya da bilinmeyen kimlik), iki yönlü engel (masadaki herhangi biriyle), mekanda check-in'i yok, noktası olan mekanda masanın noktasında değil (proje sahibinin kararı, CTO incelemesi WazzupDevs/Kabuk#195), zaten bu masada, aynı sahipten bekleyen bir davet, saatlik sınır, dolu masa. Davet alıcının `inbox:{user_id}` kanalına veri içermeyen `table_invite` olayıyla duyurulur.
+  - Davet masanın adını ve telefon sayısını gönderildiği anki değerleriyle saklar (`table_invites.room_name`, `phones`); liste onları gösterir, masanın sonraki hâlini (açık mı, kaç kişi) hiç göstermez (kural 4; WazzupDevs/Kabuk#195).
+  - `rooms/answer-invite`: başkasının davet kimliği `not_found`. Red sessizdir. Katılmada şunların hepsi aynı `invite_unavailable` (409, "Davet artık geçerli değil.") döner: süresi geçmiş, masa kapanmış ya da dolmuş, daveti gönderen artık sahip değil (sahiplik geçmiş) ya da check-in'i bitmiş, ikisi artık arkadaş değil (arkadaşlıktan çıkarma engelle aynı görünür, kural 5), alıcının check-in'i başka mekanda ya da masanın noktasından başka bir noktada, masadaki biriyle engel (WazzupDevs/Kabuk#195). Zaten bu masadaysa davet kabul edilmiş sayılır.
+  - Masaya oturuş check-in'in kimliğiyledir (`private.table_seat`; `photo_required`, `gender_required` aynen).
+  - Liste satırları (`friends/notifications`): gelen istek bekliyor ya da 7 gün içinde kabul edilmiş (kabulden sonra arkadaşın `public_id`'si); mekan sohbetinden gelen istekte ad, yaş, fotoğraf ve mekan (SPEC_V3 §7.5 aynen), oyun geçmişinden gelende yalnızca masadaki adı ve kayıt. Engel ve biten arkadaşlık satırı kaldırır. Yanıt okunmamış sayısını da taşır (`unseen`).
+  - Rozet: `account/notifications-seen { seenAt }`; `seenAt` listenin gösterdiği en yeni satırın `createdAt`'idir. Sunucu onu şimdiyle sınırlar ve işareti yalnızca ileri götürür: liste okunduktan sonra gelen satır yeni kalır, aynı çağrı iki kez ya da geç gelen eski bir çağrı işareti geri almaz (CTO incelemesi, WazzupDevs/Kabuk#195).
+  - Bildirim ayarları: `profile/update { notifyInvites }`; üç tercih kişinin kendi satırında okunur.
+  - Analitik olayları (§4.L: `invite_sent`, `invite_accepted`, `notifications_opened`) uygulama gönderir; katalog istemci PR'ında.
+  - `CURRENT_KVKK_VERSION`: metin bu adımın sunucu PR'ında; sürüm tek seferde, 4.5 ile birlikte main'e girecek istemci PR'ında artar ve 4.4'ün ve bu adımın metnini birlikte onaylatır (proje sahibinin kararı, §4.L).
 
 **Push.**
 
@@ -886,7 +896,7 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 
 - **4.4:** kapsül nick hesaba bağlı bir takma addır. Anonim kişi ziyaretler arasında aynı nick'le tanınabilir; nick profil kimliğini açmaz. Sessize alma kaydı: kimin hangi kimliği sessize aldığı, yalnızca sunucuda. Anahtar değişikliğinden önce yazılan mesajların eski kimlikte kaldığı. Silinen hesabın ve yenilenen nick'in metni yeniden verilmez; bunun için yalnızca nick metni, hesapla bağı olmadan saklanır.
 - **4.7:** masa daveti, arkadaşına aynı mekanda bir masan olduğunu söyler; mekan adı gitmez. Bildirim listesi ve davet push'u.
-- `CURRENT_KVKK_VERSION` 4.4'te artar; mevcut kullanıcılar yeniden onaylar. 4.7 değişikliği aynı sürüme alınabiliyorsa birlikte, değilse ikinci kez artar.
+- `CURRENT_KVKK_VERSION` tek seferde artar: 4.5 ile birlikte main'e girecek istemci PR'ında; mevcut kullanıcılar 4.4'ün ve 4.7'nin metnini bir kez onaylar. 4.4'ün istemcisi daha önce main'e girerse o PR'da artmaz (proje sahibinin kararı).
 - Sayfalar taslaktır; "hukuki kontrol bekliyor" notu kalır.
 
 **Mağaza** (`docs/store/`):
