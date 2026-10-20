@@ -25,7 +25,7 @@ import { type Browser, chromium, type ElementHandle, type Page } from 'playwrigh
 import { GATE_NOW } from '../../apps/mobile/src/features/design/gorsel/deterministic.ts';
 import { appFonts, fontFaces, withRoboto } from '../visual/prototype.ts';
 import { readInventory } from './inventory.ts';
-import { SCREEN_PARTS, type ScreenPart } from './screenParts.ts';
+import { SCREEN, SCREEN_PARTS, type ScreenPart } from './screenParts.ts';
 
 export const MEASURE_OUT = 'docs/design/v46/olcum/skall-v46-olcum.json';
 const GALLERY = 'docs/design/v46/skall-masa-deneme-v46-galeri.html';
@@ -52,6 +52,8 @@ const MOTION_RULES = [
 const galleryUrl = pathToFileURL(galleryFile).href;
 
 type Viewport = { width: number; height: number };
+// Wider than any phone v46 draws for: its app frame stops at 400 (`.va`), its tab bar at 376.
+const ROOMY: Viewport = { width: 480, height: 740 };
 
 async function open(
   browser: Browser,
@@ -150,10 +152,18 @@ function readElement(el: Element) {
       : {};
   // A pseudo-element that draws (a pinned head's fade below it: `.dhd::after`).
   const after = getComputedStyle(el, '::after');
+  const draws = (a: CSSStyleDeclaration) =>
+    (a.backgroundImage && a.backgroundImage !== 'none') || a.backgroundColor !== 'rgba(0, 0, 0, 0)';
+  // One that only widens where a part takes a touch (`.vmode button::after`: 3 px above and below),
+  // as its insets.
+  const hitOf = (n: Element) => {
+    const a = getComputedStyle(n, '::after');
+    return a.content !== 'none' && a.position === 'absolute' && !draws(a)
+      ? { hit: [a.top, a.right, a.bottom, a.left].map(px) }
+      : {};
+  };
   const drawnAfter =
-    after.content !== 'none' &&
-    ((after.backgroundImage && after.backgroundImage !== 'none') ||
-      after.backgroundColor !== 'rgba(0, 0, 0, 0)')
+    after.content !== 'none' && draws(after)
       ? {
           after: {
             height: px(after.height),
@@ -306,6 +316,8 @@ function readElement(el: Element) {
         radius: ccs.borderRadius,
         shadow: ccs.boxShadow,
         padding: ccs.padding,
+        ...(ccs.margin !== '0px' ? { margin: ccs.margin } : {}),
+        ...hitOf(c),
         ...(ccs.display === 'flex' || ccs.display === 'inline-flex'
           ? { flex: [ccs.flexDirection, ccs.justifyContent, ccs.alignItems, px(ccs.columnGap)] }
           : {}),
@@ -538,7 +550,7 @@ const browser = await chromium.launch(
 );
 const out: Record<string, Record<string, unknown>> = {};
 try {
-  const wide = { width: 360, height: 740 };
+  const wide = SCREEN;
   for (const scheme of ['light', 'dark'] as const) {
     const still = await open(browser, `page=galeri&theme=${scheme}&demo=0&anim=0`, wide);
     const moving = await open(browser, `page=galeri&theme=${scheme}&demo=0`, wide);
@@ -607,6 +619,13 @@ try {
     (out[c.id] as Record<string, unknown>).narrow = el ? await el.evaluate(readElement) : null;
     await page.context().close();
   }
+  // A screen part on a wider phone (light): what stops growing there (the tab bar: `min(376px,
+  // calc(100% - 24px))`).
+  for (const c of SCREEN_PARTS) {
+    const { page, sel } = await openPart(browser, c, 'theme=light&demo=0&anim=0', ROOMY);
+    (out[c.id] as Record<string, unknown>).roomy = await page.locator(sel).evaluate(readElement);
+    await page.context().close();
+  }
   // In the real screen (light, 360, motion on): the transitions the element has where it is used,
   // and which of the inventory's motion rules reach it (the buttons' motion test reads these).
   for (const c of [...inventory.components, ...SCREEN_PARTS]) {
@@ -633,7 +652,8 @@ const result = {
     viewport:
       '360x740 (page=galeri; reduced: light), narrow 320x568 (s=<state>, light), ' +
       'real 360x740 (s=<state>, light, motion on: transitions and matched motion rules); ' +
-      'screen parts (scripts/v46/screenParts.ts) in their real state for every pass',
+      'screen parts (scripts/v46/screenParts.ts) in their real state for every pass, and roomy ' +
+      `${ROOMY.width}x${ROOMY.height} (light)`,
     fonts: "the app's own files (apps/mobile/src/theme/fonts.ts), Roboto for system-ui",
   },
   components: out,

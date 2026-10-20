@@ -129,6 +129,92 @@ export type V46ButtonMotions = {
   sendBars: V46RuleTransition;
   barFill: V46RuleTransition;
 };
+export type V46Text = { font: V46Font; color: string; letterSpacing: number };
+export type V46Edge = { width: number; color: string };
+export type V46Surface = {
+  bg: string | null;
+  gradient: string | null;
+  border: V46Edge | null;
+  shadow: string | null;
+  opacity: number;
+};
+export type V46Insets = { top: number; right: number; bottom: number; left: number };
+export type V46TabKey = 'explore' | 'activities' | 'venue' | 'messages' | 'profile';
+// The Mekan tab's mark in one state, in its drawing's units: the group, the first capsule, the
+// second one against it and their overlap (the second clipped to the first).
+export type V46VenueGlyphState = {
+  group: { at: readonly [number, number]; transitions: V46Transition[] };
+  a: { fill: string; transitions: V46Transition[] };
+  b: { at: readonly [number, number]; fill: string; transitions: V46Transition[] };
+  x: { at: readonly [number, number]; fill: string; opacity: number; transitions: V46Transition[] };
+};
+export type V46TabBarScheme = {
+  height: number;
+  inset: number;
+  bottom: number;
+  maxWidth: number;
+  padding: readonly [number, number, number, number];
+  radius: number;
+  gradient: string;
+  border: V46Edge;
+  shadow: { outer: string | null; inset: string | null };
+  backdrop: { blur: number; saturate: number };
+  tab: { gap: number; pressedScale: number };
+  label: { inactive: V46Text; active: V46Text };
+  pill: {
+    size: readonly [number, number];
+    radius: number;
+    inactive: V46Surface;
+    active: V46Surface;
+    transitions: V46Transition[];
+  };
+  icon: { size: readonly [number, number]; inactive: string; active: string };
+  venue: {
+    viewBox: readonly [number, number, number, number];
+    capsule: { width: number; height: number; rx: number };
+    inactive: V46VenueGlyphState;
+    active: V46VenueGlyphState;
+  };
+  dot: {
+    size: readonly [number, number];
+    top: number;
+    right: number;
+    bg: string;
+    shadow: string | null;
+  };
+};
+export type V46VenueTransitions = Record<'group' | 'a' | 'b' | 'x', V46Transition[]>;
+export type V46Justify = 'flex-start' | 'center' | 'space-between' | 'flex-end';
+export type V46Align = 'stretch' | 'center' | 'flex-start' | 'flex-end' | 'baseline';
+export type V46HeadScheme = {
+  bg: string;
+  padding: readonly [number, number, number, number];
+  fade: { height: number; gradient: string };
+  title: V46Text;
+  row: { minHeight: number; justify: V46Justify; align: V46Align } | null;
+};
+export type V46SubHeadScheme = Omit<V46HeadScheme, 'row'> & {
+  gap: number;
+  align: V46Align;
+  count: V46Text & { marginLeft: number };
+};
+export type V46ViewModeScheme = {
+  size: readonly [number, number];
+  padding: readonly [number, number, number, number];
+  gap: number;
+  radius: number;
+  bg: string;
+  button: {
+    size: readonly [number, number];
+    radius: number;
+    pressedScale: number;
+    hitSlop: V46Insets;
+    on: V46Surface;
+    off: V46Surface;
+    transitions: V46Transition[];
+  };
+  icon: { size: readonly [number, number] };
+};
 
 // v46's one small-screen breakpoint (`@media (max-width: …px)` in its CSS).
 export const V46_NARROW_MAX_WIDTH = 350;
@@ -1759,5 +1845,672 @@ export const V46_BUTTON_MOTION: V46ButtonMotions = {
     selector: '.bi-a',
     transitions: [{ prop: 'fill', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] }],
     reduced: [],
+  },
+};
+
+export type V46ScreenPartId =
+  | 'alt-sekme-kesfet'
+  | 'alt-sekme-aktiviteler'
+  | 'ust-kesfet'
+  | 'ust-aktiviteler'
+  | 'ust-mesajlar'
+  | 'ust-alt'
+  | 'ust-alt-sayili'
+  | 'liste-harita'
+  | 'liste-harita-harita';
+
+// The parts of v46's screens the inventory does not list (scripts/v46/screenParts.ts): their
+// name, group and measured box, for the app's v46 gallery.
+export const V46_SCREEN_PARTS: Record<
+  V46ScreenPartId,
+  { name: string; group: string; width: number; height: number }
+> = {
+  'alt-sekme-kesfet': {
+    name: 'Alt sekme çubuğu, Keşfet seçili',
+    group: 'Sekme çubuğu',
+    width: 336,
+    height: 62,
+  },
+  'alt-sekme-aktiviteler': {
+    name: 'Alt sekme çubuğu, Aktiviteler seçili',
+    group: 'Sekme çubuğu',
+    width: 336,
+    height: 62,
+  },
+  'ust-kesfet': {
+    name: 'Üst çubuk, Keşfet (başlık ve liste/harita seçici)',
+    group: 'Üst çubuk',
+    width: 360,
+    height: 178,
+  },
+  'ust-aktiviteler': {
+    name: 'Üst çubuk, Aktiviteler (başlık)',
+    group: 'Üst çubuk',
+    width: 360,
+    height: 170,
+  },
+  'ust-mesajlar': {
+    name: 'Üst çubuk, Mesajlar (başlık ve zil)',
+    group: 'Üst çubuk',
+    width: 360,
+    height: 130,
+  },
+  'ust-alt': {
+    name: 'Üst çubuk, alt sayfa (geri ve başlık)',
+    group: 'Üst çubuk',
+    width: 360,
+    height: 66,
+  },
+  'ust-alt-sayili': {
+    name: 'Üst çubuk, alt sayfa, başlıkta sayı',
+    group: 'Üst çubuk',
+    width: 360,
+    height: 66,
+  },
+  'liste-harita': {
+    name: 'Liste/harita seçici, liste seçili',
+    group: 'Üst çubuk',
+    width: 96,
+    height: 44,
+  },
+  'liste-harita-harita': {
+    name: 'Liste/harita seçici, harita seçili',
+    group: 'Üst çubuk',
+    width: 96,
+    height: 44,
+  },
+};
+
+// v46's tab bar (`nav.nav`), each tab as it is selected and not (scripts/v46/navigation.ts).
+export const V46_TAB_BAR: {
+  light: V46TabBarScheme;
+  dark: V46TabBarScheme;
+  icons: Record<Exclude<V46TabKey, 'venue'>, V46Drawing>;
+  reduced: { pill: V46Transition[]; venue: V46VenueTransitions };
+} = {
+  light: {
+    height: 62,
+    inset: 12,
+    bottom: 12,
+    maxWidth: 376,
+    padding: [4, 4, 4, 4],
+    radius: 999,
+    gradient: 'linear-gradient(135deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.2))',
+    border: { width: 1, color: 'rgba(255, 255, 255, 0.78)' },
+    shadow: {
+      outer: '0px 10px 26px 0px rgba(40, 30, 90, 0.16), 0px 2px 6px 0px rgba(40, 30, 90, 0.08)',
+      inset: 'inset 0px 1.5px 1px 0px rgba(255, 255, 255, 0.95)',
+    },
+    backdrop: { blur: 20, saturate: 1.9 },
+    tab: { gap: 2, pressedScale: 0.97 },
+    label: {
+      inactive: {
+        font: { size: 11, weight: 700, lineHeight: 13 },
+        color: '#5E5878',
+        letterSpacing: 0,
+      },
+      active: {
+        font: { size: 11, weight: 800, lineHeight: 13 },
+        color: '#14112B',
+        letterSpacing: 0,
+      },
+    },
+    pill: {
+      size: [46, 30],
+      radius: 999,
+      inactive: { bg: null, gradient: null, border: null, shadow: null, opacity: 1 },
+      active: {
+        bg: null,
+        gradient: 'linear-gradient(rgba(255, 255, 255, 0.92), rgba(185, 166, 255, 0.55))',
+        border: { width: 1, color: 'rgba(255, 255, 255, 0.95)' },
+        shadow:
+          '0px 4px 10px 0px rgba(123, 92, 255, 0.22), inset 0px 1px 1px 0px #FFFFFF, inset 0px -2px 6px 0px rgba(123, 92, 255, 0.18)',
+        opacity: 1,
+      },
+      transitions: [
+        { prop: 'background-color', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+        { prop: 'box-shadow', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+      ],
+    },
+    icon: { size: [22, 22], inactive: '#5E5878', active: '#14112B' },
+    venue: {
+      viewBox: [86, 86, 340, 340],
+      capsule: { width: 96, height: 236, rx: 48 },
+      inactive: {
+        group: {
+          at: [142, 138],
+          transitions: [{ prop: 'transform', ms: 380, delayMs: 0, ease: [0.2, 0.8, 0.2, 1] }],
+        },
+        a: {
+          fill: '#5E5878',
+          transitions: [
+            { prop: 'fill', ms: 250, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+            { prop: 'transform', ms: 380, delayMs: 0, ease: [0.2, 0.8, 0.2, 1] },
+          ],
+        },
+        b: {
+          at: [132, 0],
+          fill: '#5E5878',
+          transitions: [
+            { prop: 'fill', ms: 250, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+            { prop: 'transform', ms: 380, delayMs: 0, ease: [0.2, 0.8, 0.2, 1] },
+          ],
+        },
+        x: {
+          at: [132, 0],
+          fill: '#5E5878',
+          opacity: 0,
+          transitions: [{ prop: 'opacity', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] }],
+        },
+      },
+      active: {
+        group: {
+          at: [180, 111],
+          transitions: [{ prop: 'transform', ms: 380, delayMs: 0, ease: [0.2, 0.8, 0.2, 1] }],
+        },
+        a: {
+          fill: '#7B5CFF',
+          transitions: [
+            { prop: 'fill', ms: 250, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+            { prop: 'transform', ms: 380, delayMs: 0, ease: [0.2, 0.8, 0.2, 1] },
+          ],
+        },
+        b: {
+          at: [56, 54],
+          fill: '#FF4F8B',
+          transitions: [
+            { prop: 'fill', ms: 250, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+            { prop: 'transform', ms: 380, delayMs: 0, ease: [0.2, 0.8, 0.2, 1] },
+          ],
+        },
+        x: {
+          at: [56, 54],
+          fill: '#FFB547',
+          opacity: 1,
+          transitions: [{ prop: 'opacity', ms: 200, delayMs: 180, ease: [0.25, 0.1, 0.25, 1] }],
+        },
+      },
+    },
+    dot: { size: [9, 9], top: 2, right: 8, bg: '#C51F62', shadow: '0px 0px 0px 2px #FFFFFF' },
+  },
+  dark: {
+    height: 62,
+    inset: 12,
+    bottom: 12,
+    maxWidth: 376,
+    padding: [4, 4, 4, 4],
+    radius: 999,
+    gradient: 'linear-gradient(135deg, rgba(28, 24, 56, 0.62), rgba(28, 24, 56, 0.2))',
+    border: { width: 1, color: 'rgba(28, 24, 56, 0.78)' },
+    shadow: {
+      outer: '0px 10px 26px 0px rgba(0, 0, 0, 0.27), 0px 2px 6px 0px rgba(0, 0, 0, 0.137)',
+      inset: 'inset 0px 1.5px 1px 0px rgba(255, 255, 255, 0.067)',
+    },
+    backdrop: { blur: 20, saturate: 1.9 },
+    tab: { gap: 2, pressedScale: 0.97 },
+    label: {
+      inactive: {
+        font: { size: 11, weight: 700, lineHeight: 13 },
+        color: '#B8B3D2',
+        letterSpacing: 0,
+      },
+      active: {
+        font: { size: 11, weight: 800, lineHeight: 13 },
+        color: '#F3F0FF',
+        letterSpacing: 0,
+      },
+    },
+    pill: {
+      size: [46, 30],
+      radius: 999,
+      inactive: { bg: null, gradient: null, border: null, shadow: null, opacity: 1 },
+      active: {
+        bg: null,
+        gradient: 'linear-gradient(rgba(28, 24, 56, 0.92), rgba(185, 166, 255, 0.55))',
+        border: { width: 1, color: 'rgba(28, 24, 56, 0.95)' },
+        shadow:
+          '0px 4px 10px 0px rgba(255, 255, 255, 0.016), inset 0px 1px 1px 0px rgba(255, 255, 255, 0.07), inset 0px -2px 6px 0px rgba(255, 255, 255, 0.01)',
+        opacity: 1,
+      },
+      transitions: [
+        { prop: 'background-color', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+        { prop: 'box-shadow', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+      ],
+    },
+    icon: { size: [22, 22], inactive: '#B8B3D2', active: '#F3F0FF' },
+    venue: {
+      viewBox: [86, 86, 340, 340],
+      capsule: { width: 96, height: 236, rx: 48 },
+      inactive: {
+        group: {
+          at: [142, 138],
+          transitions: [{ prop: 'transform', ms: 380, delayMs: 0, ease: [0.2, 0.8, 0.2, 1] }],
+        },
+        a: {
+          fill: '#B8B3D2',
+          transitions: [
+            { prop: 'fill', ms: 250, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+            { prop: 'transform', ms: 380, delayMs: 0, ease: [0.2, 0.8, 0.2, 1] },
+          ],
+        },
+        b: {
+          at: [132, 0],
+          fill: '#B8B3D2',
+          transitions: [
+            { prop: 'fill', ms: 250, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+            { prop: 'transform', ms: 380, delayMs: 0, ease: [0.2, 0.8, 0.2, 1] },
+          ],
+        },
+        x: {
+          at: [132, 0],
+          fill: '#B8B3D2',
+          opacity: 0,
+          transitions: [{ prop: 'opacity', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] }],
+        },
+      },
+      active: {
+        group: {
+          at: [180, 111],
+          transitions: [{ prop: 'transform', ms: 380, delayMs: 0, ease: [0.2, 0.8, 0.2, 1] }],
+        },
+        a: {
+          fill: '#7B5CFF',
+          transitions: [
+            { prop: 'fill', ms: 250, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+            { prop: 'transform', ms: 380, delayMs: 0, ease: [0.2, 0.8, 0.2, 1] },
+          ],
+        },
+        b: {
+          at: [56, 54],
+          fill: '#FF4F8B',
+          transitions: [
+            { prop: 'fill', ms: 250, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+            { prop: 'transform', ms: 380, delayMs: 0, ease: [0.2, 0.8, 0.2, 1] },
+          ],
+        },
+        x: {
+          at: [56, 54],
+          fill: '#FFB547',
+          opacity: 1,
+          transitions: [{ prop: 'opacity', ms: 200, delayMs: 180, ease: [0.25, 0.1, 0.25, 1] }],
+        },
+      },
+    },
+    dot: { size: [9, 9], top: 2, right: 8, bg: '#FF5C93', shadow: '0px 0px 0px 2px #1C1838' },
+  },
+  icons: {
+    explore: {
+      viewBox: [0, 0, 24, 24],
+      clips: [],
+      gradients: [],
+      nodes: [
+        {
+          tag: 'circle',
+          attrs: { cx: 12, cy: 12, r: 9 },
+          fill: null,
+          stroke: 'currentColor',
+          strokeWidth: 2,
+          lineCap: 'round',
+          lineJoin: 'round',
+          opacity: 1,
+        },
+        {
+          tag: 'path',
+          attrs: { d: 'M15.5 8.5l-2 5-5 2 2-5z' },
+          fill: null,
+          stroke: 'currentColor',
+          strokeWidth: 2,
+          lineCap: 'round',
+          lineJoin: 'round',
+          opacity: 1,
+        },
+      ],
+    },
+    activities: {
+      viewBox: [0, 0, 24, 24],
+      clips: [],
+      gradients: [],
+      nodes: [
+        {
+          tag: 'rect',
+          attrs: { x: 5, y: 4, width: 13, height: 16, rx: 2.6 },
+          fill: null,
+          stroke: 'currentColor',
+          strokeWidth: 2,
+          lineCap: 'round',
+          lineJoin: 'round',
+          opacity: 1,
+        },
+        {
+          tag: 'path',
+          attrs: { d: 'M9 8.5h5M9 12h3' },
+          fill: null,
+          stroke: 'currentColor',
+          strokeWidth: 2,
+          lineCap: 'round',
+          lineJoin: 'round',
+          opacity: 1,
+        },
+        {
+          tag: 'path',
+          attrs: { d: 'M19.5 7.5v10a2.5 2.5 0 0 1-2.5 2.5' },
+          fill: null,
+          stroke: 'currentColor',
+          strokeWidth: 2,
+          lineCap: 'round',
+          lineJoin: 'round',
+          opacity: 1,
+        },
+      ],
+    },
+    messages: {
+      viewBox: [0, 0, 24, 24],
+      clips: [],
+      gradients: [],
+      nodes: [
+        {
+          tag: 'path',
+          attrs: {
+            d: 'M20 11.5a7.5 7.5 0 0 1-8 7.5 8.2 8.2 0 0 1-3.5-.8L4 19.5l1.5-4.2A7.2 7.2 0 0 1 4 11.5 7.5 7.5 0 0 1 12 4a7.5 7.5 0 0 1 8 7.5z',
+          },
+          fill: null,
+          stroke: 'currentColor',
+          strokeWidth: 2,
+          lineCap: 'round',
+          lineJoin: 'round',
+          opacity: 1,
+        },
+      ],
+    },
+    profile: {
+      viewBox: [0, 0, 24, 24],
+      clips: [],
+      gradients: [],
+      nodes: [
+        {
+          tag: 'circle',
+          attrs: { cx: 12, cy: 8, r: 3.6 },
+          fill: null,
+          stroke: 'currentColor',
+          strokeWidth: 2,
+          lineCap: 'round',
+          lineJoin: 'round',
+          opacity: 1,
+        },
+        {
+          tag: 'path',
+          attrs: { d: 'M5 20c0-3.9 3.1-6.5 7-6.5s7 2.6 7 6.5' },
+          fill: null,
+          stroke: 'currentColor',
+          strokeWidth: 2,
+          lineCap: 'round',
+          lineJoin: 'round',
+          opacity: 1,
+        },
+      ],
+    },
+  },
+  reduced: {
+    pill: [
+      { prop: 'background-color', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+      { prop: 'box-shadow', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+    ],
+    venue: { group: [], a: [], b: [], x: [] },
+  },
+};
+
+// The tab screens' pinned heads and a sub page's (`.dhd`, `.apin`, `.mpin`, `.fpin`).
+export const V46_TOP_BARS: Record<
+  'light' | 'dark',
+  {
+    explore: V46HeadScheme;
+    activities: V46HeadScheme;
+    messages: V46HeadScheme;
+    sub: V46SubHeadScheme;
+  }
+> = {
+  light: {
+    explore: {
+      bg: '#F5F3FC',
+      padding: [14, 16, 6, 16],
+      fade: { height: 16, gradient: 'linear-gradient(rgb(245, 243, 252), rgba(245, 243, 252, 0))' },
+      title: {
+        font: { size: 28, weight: 800, lineHeight: 34 },
+        color: '#14112B',
+        letterSpacing: -0.8,
+      },
+      row: { minHeight: 44, justify: 'space-between', align: 'center' },
+    },
+    activities: {
+      bg: '#F5F3FC',
+      padding: [14, 16, 6, 16],
+      fade: { height: 16, gradient: 'linear-gradient(rgb(245, 243, 252), rgba(245, 243, 252, 0))' },
+      title: {
+        font: { size: 28, weight: 800, lineHeight: 34 },
+        color: '#14112B',
+        letterSpacing: -0.8,
+      },
+      row: null,
+    },
+    messages: {
+      bg: '#F5F3FC',
+      padding: [14, 16, 10, 16],
+      fade: { height: 16, gradient: 'linear-gradient(rgb(245, 243, 252), rgba(245, 243, 252, 0))' },
+      title: {
+        font: { size: 28, weight: 800, lineHeight: 34 },
+        color: '#14112B',
+        letterSpacing: -0.8,
+      },
+      row: { minHeight: 44, justify: 'space-between', align: 'center' },
+    },
+    sub: {
+      bg: '#F5F3FC',
+      padding: [10, 16, 12, 16],
+      fade: { height: 16, gradient: 'linear-gradient(rgb(245, 243, 252), rgba(245, 243, 252, 0))' },
+      gap: 12,
+      align: 'center',
+      title: {
+        font: { size: 28, weight: 800, lineHeight: 34 },
+        color: '#14112B',
+        letterSpacing: -0.8,
+      },
+      count: {
+        font: { size: 16, weight: 700, lineHeight: 34 },
+        color: '#5E5878',
+        letterSpacing: 0,
+        marginLeft: 2,
+      },
+    },
+  },
+  dark: {
+    explore: {
+      bg: '#0D0B1E',
+      padding: [14, 16, 6, 16],
+      fade: { height: 16, gradient: 'linear-gradient(rgb(13, 11, 30), rgba(13, 11, 30, 0))' },
+      title: {
+        font: { size: 28, weight: 800, lineHeight: 34 },
+        color: '#F3F0FF',
+        letterSpacing: -0.8,
+      },
+      row: { minHeight: 44, justify: 'space-between', align: 'center' },
+    },
+    activities: {
+      bg: '#0D0B1E',
+      padding: [14, 16, 6, 16],
+      fade: { height: 16, gradient: 'linear-gradient(rgb(13, 11, 30), rgba(13, 11, 30, 0))' },
+      title: {
+        font: { size: 28, weight: 800, lineHeight: 34 },
+        color: '#F3F0FF',
+        letterSpacing: -0.8,
+      },
+      row: null,
+    },
+    messages: {
+      bg: '#0D0B1E',
+      padding: [14, 16, 10, 16],
+      fade: { height: 16, gradient: 'linear-gradient(rgb(13, 11, 30), rgba(13, 11, 30, 0))' },
+      title: {
+        font: { size: 28, weight: 800, lineHeight: 34 },
+        color: '#F3F0FF',
+        letterSpacing: -0.8,
+      },
+      row: { minHeight: 44, justify: 'space-between', align: 'center' },
+    },
+    sub: {
+      bg: '#0D0B1E',
+      padding: [10, 16, 12, 16],
+      fade: { height: 16, gradient: 'linear-gradient(rgb(13, 11, 30), rgba(13, 11, 30, 0))' },
+      gap: 12,
+      align: 'center',
+      title: {
+        font: { size: 28, weight: 800, lineHeight: 34 },
+        color: '#F3F0FF',
+        letterSpacing: -0.8,
+      },
+      count: {
+        font: { size: 16, weight: 700, lineHeight: 34 },
+        color: '#B8B3D2',
+        letterSpacing: 0,
+        marginLeft: 2,
+      },
+    },
+  },
+};
+
+// Keşfet's list/map switch (`.vmode`).
+export const V46_VIEW_MODE: Record<'light' | 'dark', V46ViewModeScheme> & {
+  icons: { list: V46Drawing; map: V46Drawing };
+} = {
+  light: {
+    size: [96, 44],
+    padding: [3, 3, 3, 3],
+    gap: 2,
+    radius: 999,
+    bg: '#EAE6F6',
+    button: {
+      size: [44, 38],
+      radius: 999,
+      pressedScale: 0.97,
+      hitSlop: { top: 3, right: 0, bottom: 3, left: 0 },
+      on: {
+        bg: '#FFFFFF',
+        gradient: null,
+        border: null,
+        shadow: '0px 2px 8px 0px rgba(20, 17, 43, 0.08)',
+        opacity: 1,
+      },
+      off: { bg: null, gradient: null, border: null, shadow: null, opacity: 0.55 },
+      transitions: [
+        { prop: 'background-color', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+        { prop: 'opacity', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+        { prop: 'box-shadow', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+      ],
+    },
+    icon: { size: [20, 20] },
+  },
+  dark: {
+    size: [96, 44],
+    padding: [3, 3, 3, 3],
+    gap: 2,
+    radius: 999,
+    bg: '#262148',
+    button: {
+      size: [44, 38],
+      radius: 999,
+      pressedScale: 0.97,
+      hitSlop: { top: 3, right: 0, bottom: 3, left: 0 },
+      on: {
+        bg: '#1C1838',
+        gradient: null,
+        border: null,
+        shadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.137)',
+        opacity: 1,
+      },
+      off: { bg: null, gradient: null, border: null, shadow: null, opacity: 0.55 },
+      transitions: [
+        { prop: 'background-color', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+        { prop: 'opacity', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+        { prop: 'box-shadow', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+      ],
+    },
+    icon: { size: [20, 20] },
+  },
+  icons: {
+    list: {
+      viewBox: [0, 0, 24, 24],
+      clips: [],
+      gradients: [],
+      nodes: [
+        {
+          tag: 'rect',
+          attrs: { x: 4, y: 5, width: 16, height: 3.6, rx: 1.8 },
+          fill: '#7B5CFF',
+          stroke: null,
+          strokeWidth: 1,
+          lineCap: 'butt',
+          lineJoin: 'miter',
+          opacity: 1,
+        },
+        {
+          tag: 'rect',
+          attrs: { x: 4, y: 10.2, width: 16, height: 3.6, rx: 1.8 },
+          fill: '#FF4F8B',
+          stroke: null,
+          strokeWidth: 1,
+          lineCap: 'butt',
+          lineJoin: 'miter',
+          opacity: 1,
+        },
+        {
+          tag: 'rect',
+          attrs: { x: 4, y: 15.4, width: 11, height: 3.6, rx: 1.8 },
+          fill: '#FFB547',
+          stroke: null,
+          strokeWidth: 1,
+          lineCap: 'butt',
+          lineJoin: 'miter',
+          opacity: 1,
+        },
+      ],
+    },
+    map: {
+      viewBox: [0, 0, 24, 24],
+      clips: [],
+      gradients: [],
+      nodes: [
+        {
+          tag: 'path',
+          attrs: {
+            d: 'M12 21.5c-.4 0-.8-.2-1-.5C8.4 17.6 5.5 13.6 5.5 10a6.5 6.5 0 0 1 13 0c0 3.6-2.9 7.6-5.5 11-.2.3-.6.5-1 .5z',
+          },
+          fill: '#7B5CFF',
+          stroke: null,
+          strokeWidth: 1,
+          lineCap: 'butt',
+          lineJoin: 'miter',
+          opacity: 1,
+        },
+        {
+          tag: 'rect',
+          attrs: { x: 9.6, y: 6, width: 4.8, height: 8, rx: 2.4 },
+          fill: '#FFFFFF',
+          stroke: null,
+          strokeWidth: 1,
+          lineCap: 'butt',
+          lineJoin: 'miter',
+          opacity: 1,
+        },
+        {
+          tag: 'rect',
+          attrs: { x: 11.6, y: 7.6, width: 4.8, height: 8, rx: 2.4 },
+          fill: '#FF4F8B',
+          stroke: null,
+          strokeWidth: 1,
+          lineCap: 'butt',
+          lineJoin: 'miter',
+          opacity: 0.9,
+        },
+      ],
+    },
   },
 };

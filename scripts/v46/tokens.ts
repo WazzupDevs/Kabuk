@@ -36,6 +36,20 @@ import {
   buttonScheme,
 } from './buttons.ts';
 import { element, narrowBreakpoint, pressed, readMeasured } from './measured.ts';
+import {
+  type BarReading,
+  headScheme,
+  subHeadScheme,
+  TAB_BARS,
+  TAB_KEYS,
+  tabBarIcons,
+  tabBarReduced,
+  tabBarScheme,
+  type TabKey,
+  viewModeIcons,
+  viewModeScheme,
+} from './navigation.ts';
+import { SCREEN_PARTS } from './screenParts.ts';
 import { type ColorRef, PALETTE_REFS } from './palette.ts';
 import { COMPONENT_GRADIENTS, GRADIENTS } from './supplement.ts';
 
@@ -340,6 +354,92 @@ const PARTS_TYPES = [
   '  sendBars: V46RuleTransition;',
   '  barFill: V46RuleTransition;',
   '};',
+  'export type V46Text = { font: V46Font; color: string; letterSpacing: number };',
+  'export type V46Edge = { width: number; color: string };',
+  'export type V46Surface = {',
+  '  bg: string | null;',
+  '  gradient: string | null;',
+  '  border: V46Edge | null;',
+  '  shadow: string | null;',
+  '  opacity: number;',
+  '};',
+  'export type V46Insets = { top: number; right: number; bottom: number; left: number };',
+  "export type V46TabKey = 'explore' | 'activities' | 'venue' | 'messages' | 'profile';",
+  "// The Mekan tab's mark in one state, in its drawing's units: the group, the first capsule, the",
+  '// second one against it and their overlap (the second clipped to the first).',
+  'export type V46VenueGlyphState = {',
+  '  group: { at: readonly [number, number]; transitions: V46Transition[] };',
+  '  a: { fill: string; transitions: V46Transition[] };',
+  '  b: { at: readonly [number, number]; fill: string; transitions: V46Transition[] };',
+  '  x: { at: readonly [number, number]; fill: string; opacity: number; transitions: V46Transition[] };',
+  '};',
+  'export type V46TabBarScheme = {',
+  '  height: number;',
+  '  inset: number;',
+  '  bottom: number;',
+  '  maxWidth: number;',
+  '  padding: readonly [number, number, number, number];',
+  '  radius: number;',
+  '  gradient: string;',
+  '  border: V46Edge;',
+  '  shadow: { outer: string | null; inset: string | null };',
+  '  backdrop: { blur: number; saturate: number };',
+  '  tab: { gap: number; pressedScale: number };',
+  '  label: { inactive: V46Text; active: V46Text };',
+  '  pill: {',
+  '    size: readonly [number, number];',
+  '    radius: number;',
+  '    inactive: V46Surface;',
+  '    active: V46Surface;',
+  '    transitions: V46Transition[];',
+  '  };',
+  '  icon: { size: readonly [number, number]; inactive: string; active: string };',
+  '  venue: {',
+  '    viewBox: readonly [number, number, number, number];',
+  '    capsule: { width: number; height: number; rx: number };',
+  '    inactive: V46VenueGlyphState;',
+  '    active: V46VenueGlyphState;',
+  '  };',
+  '  dot: {',
+  '    size: readonly [number, number];',
+  '    top: number;',
+  '    right: number;',
+  '    bg: string;',
+  '    shadow: string | null;',
+  '  };',
+  '};',
+  'export type V46VenueTransitions = Record<"group" | "a" | "b" | "x", V46Transition[]>;',
+  "export type V46Justify = 'flex-start' | 'center' | 'space-between' | 'flex-end';",
+  "export type V46Align = 'stretch' | 'center' | 'flex-start' | 'flex-end' | 'baseline';",
+  'export type V46HeadScheme = {',
+  '  bg: string;',
+  '  padding: readonly [number, number, number, number];',
+  '  fade: { height: number; gradient: string };',
+  '  title: V46Text;',
+  '  row: { minHeight: number; justify: V46Justify; align: V46Align } | null;',
+  '};',
+  'export type V46SubHeadScheme = Omit<V46HeadScheme, "row"> & {',
+  '  gap: number;',
+  '  align: V46Align;',
+  '  count: V46Text & { marginLeft: number };',
+  '};',
+  'export type V46ViewModeScheme = {',
+  '  size: readonly [number, number];',
+  '  padding: readonly [number, number, number, number];',
+  '  gap: number;',
+  '  radius: number;',
+  '  bg: string;',
+  '  button: {',
+  '    size: readonly [number, number];',
+  '    radius: number;',
+  '    pressedScale: number;',
+  '    hitSlop: V46Insets;',
+  '    on: V46Surface;',
+  '    off: V46Surface;',
+  '    transitions: V46Transition[];',
+  '  };',
+  '  icon: { size: readonly [number, number] };',
+  '};',
 ];
 
 // The measurement (scripts/v46/measured.ts) as parts.generated.ts: per component only the values its
@@ -394,6 +494,89 @@ export async function buildPartsModule(root: string): Promise<string> {
     "// v46's button motions that play in a state (scripts/v46/buttons.ts → buttonMotions), by the",
     "// inventory's rule for each.",
     `export const V46_BUTTON_MOTION: V46ButtonMotions = ${json(buttonMotions(inventory, matches))};`,
+    '',
+  );
+
+  // The navigation (scripts/v46/navigation.ts).
+  const reading = (id: string) => {
+    const m = measured.components[id];
+    if (!m) throw new Error(`no measurement of ${id}`);
+    return m;
+  };
+  const bars = (s: 'light' | 'dark') =>
+    Object.fromEntries(
+      TAB_KEYS.map((k) => {
+        const m = reading(TAB_BARS[k]);
+        return [k, { el: element(m[s], metrics), matches: m.matches ?? null }];
+      }),
+    ) as Record<TabKey, BarReading>;
+  const roomy = reading(TAB_BARS.explore).roomy;
+  if (!roomy) throw new Error('no roomy reading of the tab bar');
+  const head = (id: string, s: 'light' | 'dark') =>
+    headScheme(element(reading(id)[s], metrics), id);
+  // A drawing the same in both schemes, written once.
+  const once = <T>(what: string, of: (s: 'light' | 'dark') => T): T => {
+    const light = of('light');
+    if (json(light) !== json(of('dark'))) throw new Error(`${what} differ between the schemes`);
+    return light;
+  };
+  lines.push(
+    `export type V46ScreenPartId = ${SCREEN_PARTS.map((p) => json(p.id)).join(' | ')};`,
+    '',
+    "// The parts of v46's screens the inventory does not list (scripts/v46/screenParts.ts): their",
+    "// name, group and measured box, for the app's v46 gallery.",
+    'export const V46_SCREEN_PARTS: Record<V46ScreenPartId, { name: string; group: string; width: number; height: number }> = {',
+    ...SCREEN_PARTS.map((p) => {
+      const box = reading(p.id).light.self.box;
+      return `${json(p.id)}: ${json({ name: p.name, group: p.group, width: box[0], height: box[1] })},`;
+    }),
+    '};',
+    '',
+    "// v46's tab bar (`nav.nav`), each tab as it is selected and not (scripts/v46/navigation.ts).",
+    "export const V46_TAB_BAR: { light: V46TabBarScheme; dark: V46TabBarScheme; icons: Record<Exclude<V46TabKey, 'venue'>, V46Drawing>; reduced: { pill: V46Transition[]; venue: V46VenueTransitions } } = {",
+    ...(['light', 'dark'] as const).map(
+      (s) => `${s}: ${json(tabBarScheme(inventory, bars(s), element(roomy, metrics)))},`,
+    ),
+    `icons: ${json(once('tab icons', (s) => tabBarIcons(bars(s))))},`,
+    `reduced: ${json(tabBarReduced(element(reading(TAB_BARS.venue).reduced, metrics)))},`,
+    '};',
+    '',
+    "// The tab screens' pinned heads and a sub page's (`.dhd`, `.apin`, `.mpin`, `.fpin`).",
+    'export const V46_TOP_BARS: Record<"light" | "dark", { explore: V46HeadScheme; activities: V46HeadScheme; messages: V46HeadScheme; sub: V46SubHeadScheme }> = {',
+    ...(['light', 'dark'] as const).map(
+      (s) =>
+        `${s}: ${json({
+          explore: head('ust-kesfet', s),
+          activities: head('ust-aktiviteler', s),
+          messages: head('ust-mesajlar', s),
+          sub: subHeadScheme(
+            element(reading('ust-alt')[s], metrics),
+            element(reading('ust-alt-sayili')[s], metrics),
+            'ust-alt',
+          ),
+        })},`,
+    ),
+    '};',
+    '',
+    "// Keşfet's list/map switch (`.vmode`).",
+    'export const V46_VIEW_MODE: Record<"light" | "dark", V46ViewModeScheme> & { icons: { list: V46Drawing; map: V46Drawing } } = {',
+    ...(['light', 'dark'] as const).map(
+      (s) =>
+        `${s}: ${json(
+          viewModeScheme(
+            inventory,
+            {
+              el: element(reading('liste-harita')[s], metrics),
+              matches: reading('liste-harita').matches ?? null,
+            },
+            element(reading('liste-harita-harita')[s], metrics),
+          ),
+        )},`,
+    ),
+    `icons: ${json(
+      once('list/map icons', (s) => viewModeIcons(element(reading('liste-harita')[s], metrics))),
+    )},`,
+    '};',
     '',
   );
   const target = resolve(root, PARTS_MODULE);

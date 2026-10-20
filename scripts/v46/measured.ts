@@ -55,6 +55,9 @@ type RawPart = {
   radius?: string;
   shadow?: string;
   padding?: string;
+  margin?: string;
+  // Where its `::after` widens the touch (insets, negative outward).
+  hit?: (number | string)[];
   // A flex box: direction, justify-content, align-items, gap.
   flex?: [string, string, string, number | string];
   color?: string;
@@ -136,6 +139,8 @@ export type Measured = {
       // that reach it. Buttons only.
       real?: RawElement | null;
       matches?: MotionMatch[] | null;
+      // A screen part on a phone wider than v46 draws for (measure.ts → ROOMY), light.
+      roomy?: RawElement;
     }
   >;
 };
@@ -311,6 +316,9 @@ export type Part = {
   radius?: string;
   shadow?: string | null;
   padding?: readonly [number, number, number, number];
+  margin?: readonly [number, number, number, number];
+  // How far past its box it takes a touch, each side (React Native `hitSlop`).
+  hitSlop?: { top: number; right: number; bottom: number; left: number };
   flex?: { direction: string; justify: string; align: string; gap: number };
   text?: { sample: string; font: Font; color: string; letterSpacing: number };
   svg?: {
@@ -373,6 +381,13 @@ function part(p: RawPart, metrics: VerticalMetrics): Part {
   if (p.radius !== undefined) base.radius = p.radius;
   if (p.shadow !== undefined) base.shadow = parseShadow(p.shadow);
   if (p.padding !== undefined) base.padding = parseBoxSides(p.padding);
+  if (p.margin !== undefined) base.margin = parseBoxSides(p.margin);
+  if (p.hit) {
+    const [top = 0, right = 0, bottom = 0, left = 0] = p.hit.map((v) =>
+      typeof v === 'number' ? Math.max(0, -v) : 0,
+    );
+    base.hitSlop = { top, right, bottom, left };
+  }
   if (p.text && p.font && p.color) {
     base.text = {
       sample: p.text,
@@ -410,6 +425,8 @@ export type Element = {
   box: readonly [number, number];
   gap: number;
   justify: string;
+  // A flex box's align-items.
+  align: string;
   padding: readonly [number, number, number, number];
   font: Font;
   minHeight: number | null;
@@ -486,6 +503,7 @@ export function element(raw: RawElement, metrics: VerticalMetrics): Element {
     box: raw.self.box,
     gap: typeof raw.self.gap === 'number' ? raw.self.gap : 0,
     justify,
+    align: ALIGN[raw.self.alignItems] ?? raw.self.alignItems,
     padding: parseBoxSides(raw.self.padding),
     font: parseMeasuredFont(raw.self.font, metrics),
     minHeight: raw.self.minHeight === 'auto' ? null : parsePx(raw.self.minHeight),

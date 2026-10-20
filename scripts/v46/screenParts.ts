@@ -12,14 +12,20 @@ export type ScreenPart = {
   extra_steps: string[];
 };
 
-export const NAVIGATION_GROUP = 'Gezinme';
+// The phone v46 is measured on (its inventory's 360×740): where a part pinned to the screen's edge
+// sits is read against it.
+export const SCREEN = { width: 360, height: 740 } as const;
+
+// The tab bars go with the inventory's own (Sekme çubuğu); the heads are a group of their own.
+export const TAB_BAR_GROUP = 'Sekme çubuğu';
+export const TOP_BAR_GROUP = 'Üst çubuk';
 
 export const SCREEN_PARTS: readonly ScreenPart[] = [
   // The tab bar with each tab selected that the inventory does not have (it has Mekan, Mesajlar
   // and Profil: alt-sekme-*).
   {
     id: 'alt-sekme-kesfet',
-    group: NAVIGATION_GROUP,
+    group: TAB_BAR_GROUP,
     name: 'Alt sekme çubuğu, Keşfet seçili',
     source_state: 'kesfet',
     selector_in_state: 'nav[data-nav]',
@@ -27,7 +33,7 @@ export const SCREEN_PARTS: readonly ScreenPart[] = [
   },
   {
     id: 'alt-sekme-aktiviteler',
-    group: NAVIGATION_GROUP,
+    group: TAB_BAR_GROUP,
     name: 'Alt sekme çubuğu, Aktiviteler seçili',
     source_state: 'aktiviteler',
     selector_in_state: 'nav[data-nav]',
@@ -37,7 +43,7 @@ export const SCREEN_PARTS: readonly ScreenPart[] = [
   // the fade below), and a sub page's (back, title, its count).
   {
     id: 'ust-kesfet',
-    group: NAVIGATION_GROUP,
+    group: TOP_BAR_GROUP,
     name: 'Üst çubuk, Keşfet (başlık ve liste/harita seçici)',
     source_state: 'kesfet',
     selector_in_state: '.dhd',
@@ -45,7 +51,7 @@ export const SCREEN_PARTS: readonly ScreenPart[] = [
   },
   {
     id: 'ust-aktiviteler',
-    group: NAVIGATION_GROUP,
+    group: TOP_BAR_GROUP,
     name: 'Üst çubuk, Aktiviteler (başlık)',
     source_state: 'aktiviteler',
     selector_in_state: '.apin',
@@ -53,7 +59,7 @@ export const SCREEN_PARTS: readonly ScreenPart[] = [
   },
   {
     id: 'ust-mesajlar',
-    group: NAVIGATION_GROUP,
+    group: TOP_BAR_GROUP,
     name: 'Üst çubuk, Mesajlar (başlık ve zil)',
     source_state: 'mesajlar',
     selector_in_state: '.mpin',
@@ -61,7 +67,7 @@ export const SCREEN_PARTS: readonly ScreenPart[] = [
   },
   {
     id: 'ust-alt',
-    group: NAVIGATION_GROUP,
+    group: TOP_BAR_GROUP,
     name: 'Üst çubuk, alt sayfa (geri ve başlık)',
     source_state: 'gizlilik',
     selector_in_state: '.fpin',
@@ -69,7 +75,7 @@ export const SCREEN_PARTS: readonly ScreenPart[] = [
   },
   {
     id: 'ust-alt-sayili',
-    group: NAVIGATION_GROUP,
+    group: TOP_BAR_GROUP,
     name: 'Üst çubuk, alt sayfa, başlıkta sayı',
     source_state: 'arkadaslar',
     selector_in_state: '.fpin',
@@ -78,7 +84,7 @@ export const SCREEN_PARTS: readonly ScreenPart[] = [
   // Keşfet's list/map switch, the list on and the map on.
   {
     id: 'liste-harita',
-    group: NAVIGATION_GROUP,
+    group: TOP_BAR_GROUP,
     name: 'Liste/harita seçici, liste seçili',
     source_state: 'kesfet',
     selector_in_state: '.vmode',
@@ -86,7 +92,7 @@ export const SCREEN_PARTS: readonly ScreenPart[] = [
   },
   {
     id: 'liste-harita-harita',
-    group: NAVIGATION_GROUP,
+    group: TOP_BAR_GROUP,
     name: 'Liste/harita seçici, harita seçili',
     source_state: 'kesfet',
     selector_in_state: '.vmode',
