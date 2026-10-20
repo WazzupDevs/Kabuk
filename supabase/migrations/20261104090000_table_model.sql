@@ -290,7 +290,7 @@ begin
   perform private.lock_pair(target_user_id, h.other_user_id);
   if private.are_friends(target_user_id, h.other_user_id) then
     if private.matched_at(h.encounter_id, target_user_id, h.other_user_id) then
-      return query select 'already_friends'::text, null::uuid;
+      return query select 'already_matched'::text, null::uuid;
     else
       return query select 'ok'::text, null::uuid;
     end if;
@@ -340,7 +340,7 @@ begin
     if private.are_friends(target_user_id, h.other_user_id)
       and private.matched_at(h.encounter_id, target_user_id, h.other_user_id)
     then
-      return 'already_friends';
+      return 'already_matched';
     end if;
   end if;
   delete from public.mutual_friend_intents

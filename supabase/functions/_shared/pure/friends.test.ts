@@ -16,7 +16,7 @@ describe('matchPushRecipient (K-70)', () => {
     expect(matchPushRecipient('friendship_created', null)).toBeNull();
     // Already friends from this encounter, a press that matched nothing, a friendship from
     // before (answered 'ok', rule 4), or no answer: nobody hears of it.
-    for (const outcome of ['already_friends', 'ok', undefined]) {
+    for (const outcome of ['already_matched', 'ok', undefined]) {
       expect(matchPushRecipient(outcome, 'u-1')).toBeNull();
     }
   });

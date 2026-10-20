@@ -168,7 +168,7 @@ Deno.serve(
           return {
             ok: true,
             friends:
-              result?.outcome === 'friendship_created' || result?.outcome === 'already_friends',
+              result?.outcome === 'friendship_created' || result?.outcome === 'already_matched',
           };
         }
 
@@ -179,7 +179,7 @@ Deno.serve(
             target_history_id: body.historyId,
           });
           if (error) throw dbError('friends_withdraw_add', error);
-          return { ok: true, friends: data === 'already_friends' };
+          return { ok: true, friends: data === 'already_matched' };
         }
 
         case 'remove': {

@@ -456,13 +456,13 @@ Değişmez kabul edilir.
   - Listede, masada en az 3 dakika birlikte bulunduğun kişiler. Her satırda sessiz "Arkadaş ekle" (kural 5), anonim katılan dahil.
   - Anonim katılanın adının altında "Anonim katıldı" yazar; yalnızca etikettir, düğmeyi değiştirmez.
   - Basınca düğme "Eklendi" olur; yeniden basmak eklemeyi geri alır (K-67).
-  - Karşı taraf da eklediyse "Arkadaş oldunuz" ve "Mesaj". Zaten arkadaş olanlarda düğme yerine "Arkadaşsınız".
+  - Karşı taraf da eklediyse "Arkadaş oldunuz" ve "Mesaj". Zaten arkadaş olanlarda düğme yerine "Arkadaşsınız", yalnızca kişi masada profilliyse; anonim oturan kişide düğme normaldir (K-75).
   - Masa süresi ve oyun sayısı yoktur.
   - Mekanizma Faz 3'ünkü (`mutual_friend_intents`). Tek taraf basarsa hiçbir şey olmaz; karşı taraf ne eklemeyi ne geri almayı görür.
 - **Çiftler** (K-66, P-15): oyun geçmişi kaydı ve "Arkadaş ekle", masada en az 3 dakika birlikte bulunan her kişi çifti arasındadır. Bugünkü 3 dakika kesişimi geçerlidir; taraf yerine kişi.
   - Birlikte gelenler ayrı tutulmaz: düğme sessizdir ve iki taraf basmadan hiçbir şey olmaz.
   - 3 dakikadan az birlikte bulunan kişi Masa bitti listesinde yoktur ve kayıt almaz.
-  - Zaten arkadaş olan çift de kayıt alır (bugünkü gibi); Masa bitti'de ve oyun geçmişinde "Arkadaşsınız" görünür.
+  - Zaten arkadaş olan çift de kayıt alır (bugünkü gibi); Masa bitti'de ve oyun geçmişinde "Arkadaşsınız" kişi masada profilliyse görünür (K-75).
 - **Geri alma** (K-67): "Eklendi"ye yeniden basmak eklemeyi geri alır (`friends/withdraw-add { historyId }`, §4.J). Oyun geçmişindeki düğme de aynıdır.
   - Eşleşme olmuşsa geri alma yok sayılır ve yanıt arkadaş olunduğunu söyler.
   - Karşı taraf bunu hiçbir biçimde görmez (kural 5).
@@ -938,7 +938,7 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 - Oyun geçmişi ve "Arkadaş ekle" masada en az 3 dakika birlikte bulunan her çift arasında (K-66).
   - Birlikte gelen iki kişi de kayıt alır.
   - 3 dakikadan az birlikte bulunan kayıt almaz ve Masa bitti listesinde yoktur.
-  - Zaten arkadaş olan çift kayıt alır ve "Arkadaşsınız" görür.
+  - Zaten arkadaş olan çift kayıt alır; "Arkadaşsınız" yalnızca kişi masada profilliyse görünür. Masadan önceki arkadaşlık `add-from-room` ve `withdraw-add` yanıtlarında eşleşmeyen basıştan ayırt edilemez (K-75).
 - Geri alma (K-67):
   - Geri alınan niyet silinir: karşı taraf sonra basınca arkadaşlık oluşmaz.
   - Eşleşmeden sonra geri alma yok sayılır ve yanıt arkadaş olunduğunu söyler.
@@ -1241,6 +1241,7 @@ Bu PR yalnızca proje paragrafını ve görsel kaynak kod kuralını değiştiri
 | K-72 (P-9)  | Kapışma (adım 4.6.4): itiraz eşiği kapan dışındakilerin yarıdan fazlası; bire birde tek itiraz yeter; gözlemci itiraz edemez; Şarkıda Geçsin'de aynı şarkı serbest, itirazla çözülür. Ek: bire birde itiraz geçip soru itiraz edene açılınca ilk kapanın onun cevabına itiraz hakkı kalır; o da itiraz ederse soru boş geçer                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | §4.F, §4.M                   |
 | K-73 (P-10) | İbre (adım 4.6.5): rakibin sol ya da sağ tahmini kalır (bugünkü kural: 15 sn, doğruysa rakibe 1 puan; ibre hedefin tam üstündeyse puan yok)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | §4.F, §4.J                   |
 | K-74 (P-11) | Sohbet kartları (adım 4.6.2): kartı sahip ilerletir; başka oyun başlayınca kartlar kapanır; Ya da'da yalnızca sayılar görünür. `film-dizi-muzik` ve `hic-yaptin-mi` kartları pasif olur (`is_active = false`), içerik silinmez. Ek: Kampüs ve Ya da kartlarının taslağı 4.6.2'de yazılır ve kullanıcıya görünen içerik olduğu için birleşmeden önce proje sahibinin onayına gelir                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | §4.F                         |
+| K-75        | K-66 düzeltmesi (kural 4; CTO incelemesi, WazzupDevs/Kabuk#182): "Arkadaşsınız" yalnızca kişi masada profilliyse görünür (uygulama kendi arkadaş listesinden `public_id` ile bilir). Anonim oturan kişide düğme normaldir ve basış arkadaşlıkta hiçbir şey değiştirmez. Sunucu masadan önceki arkadaşlığı `add-from-room`'da ve `withdraw-add`'de eşleşmeyen basıştan ayırt edilemez döndürür (`friends: false`); `friends: true` yalnızca arkadaşlık bu karşılaşmada kurulduysa (iki taraf da bastı)                                                                                                                                                                                                                                                                                                                                                           | §4.E, §4.M, kural 4          |
 
 **Fırat paketi (v46).** Proje sahibinin onayladığı kararlar K-45–K-57'dir; pakette K-41–K-53 diye numaralanmışlardı. K-41–K-44 o sırada Keşfet ve Aktiviteler kararlarına verildiği için numaralar dört kaydı (proje sahibinin kuralı: çakışmada main'deki son K'dan devam; Fırat paketi en son).
 
