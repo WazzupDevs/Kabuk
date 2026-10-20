@@ -6,7 +6,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { junitCases, maestroMatch, readPng, similarity, thresholdFor } from './compare.ts';
-import { hasBaseline, loadStates, shots, THEMES } from './states.ts';
+import { hasBaseline, loadStates, shots, type Theme, THEMES } from './states.ts';
 
 export type Gate = {
   ok: boolean;
@@ -32,6 +32,7 @@ export function buildReport(
   root: string,
   out: string,
   urls: Urls = {},
+  themes: readonly Theme[] = THEMES,
 ): { text: string; gate: Gate } {
   const at = (base: string | undefined, rel: string) =>
     base ? `${base.replace(/\/$/, '')}/${rel}` : rel;
@@ -39,7 +40,7 @@ export function buildReport(
   const thumb = (rel: string, base = urls.images) =>
     base ? `<a href="${at(base, rel)}"><img src="${at(base, rel)}" width="120"></a>` : `\`${rel}\``;
   const config = loadStates(root);
-  const all = shots(config);
+  const all = shots(config, themes);
   const lines: string[] = [];
 
   // The hard gate: every shot photographed, every expected baseline there, every flow passed.
@@ -53,7 +54,7 @@ export function buildReport(
   lines.push(
     `### Görsel kapı: ${ok ? 'geçti' : 'GEÇMEDİ'}`,
     '',
-    `${all.length} görüntü (${config.durumlar.length} durum, ${THEMES.length} tema, sayfalar), eşik %${config.esik}.`,
+    `${all.length} görüntü (${config.durumlar.length} durum, ${themes.length === 1 ? `tema ${themes[0]}` : `${themes.length} tema`}, sayfalar), eşik %${config.esik}.`,
   );
   if (!ran) lines.push('', '- Maestro raporu yok: akışlar koşmadı.');
   if (failed.length > 0) {
@@ -107,7 +108,7 @@ export function buildReport(
       '| --- | --- | ---: | --- | --- | --- | --- |',
     );
     for (const s of pairs) {
-      for (const theme of THEMES) {
+      for (const theme of themes) {
         const app = `aday/${s.id}-${theme}-1.png`;
         const proto = `prototip/${s.id}-${theme}.png`;
         const diff = `fark/${s.id}-${theme}.png`;
@@ -128,6 +129,23 @@ export function buildReport(
         );
       }
     }
+  }
+
+  // Shots without a baseline and without a prototype counterpart (today's game sets): only here,
+  // as candidates for the baselines that come once the CTO approves them.
+  const onlyHere = all.filter((s) => !s.baseline && !s.state.prototip);
+  if (onlyHere.length > 0) {
+    lines.push(
+      '',
+      '### Yalnızca rapor (`baz: false`, v46 karşılığı yok)',
+      '',
+      '| Görüntü | Aday |',
+      '| --- | --- |',
+      ...onlyHere.map((s) => {
+        const candidate = `aday/${s.name}.png`;
+        return `| ${s.name} | ${existsSync(join(out, candidate)) ? thumb(candidate) : 'yok'} |`;
+      }),
+    );
   }
 
   // The noise: the same state photographed twice in this run (TEKRAR=1), in Maestro's measure.

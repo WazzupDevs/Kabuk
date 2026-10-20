@@ -2,7 +2,14 @@
 // comparison never stops the rest: open the state's route, wait for it to settle,
 // photograph its frame (the candidate) and, when a baseline exists, assertScreenshot against it.
 // Written by make-flows.ts.
-import { baselinePath, hasBaseline, type Shot } from './states.ts';
+import {
+  baselinePath,
+  type GateConfig,
+  hasBaseline,
+  type Shot,
+  shots,
+  type Theme,
+} from './states.ts';
 
 export const CANDIDATE = 'aday__';
 export const CANDIDATE_AGAIN = 'aday2__';
@@ -100,4 +107,20 @@ export function flowFor(
     );
   }
   return `${lines.join('\n')}\n`;
+}
+
+// The flows of one run: one file per shot of the schemes, numbered in order. `again` (TEKRAR)
+// photographs a second time only the shots that expect a baseline: the noise matters where a
+// threshold is checked, not for the `baz: false` states.
+export function flowFiles(
+  root: string,
+  config: GateConfig,
+  themes: readonly Theme[],
+  again: boolean,
+): { file: string; text: string; shot: Shot }[] {
+  return shots(config, themes).map((shot, i) => ({
+    file: `${String(i + 1).padStart(3, '0')}-${shot.name}.yaml`,
+    text: flowFor(root, shot, i + 1, config.esik, again && shot.baseline),
+    shot,
+  }));
 }

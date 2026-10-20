@@ -34,8 +34,9 @@ export type GateState = {
   sayfa?: number;
   // The same state in the prototype: set beside it in the similarity report.
   prototip?: PrototypeState;
-  // false: photographed and set beside the prototype, never compared with a baseline (a trial
-  // entry).
+  // false: photographed and, with `prototip`, set beside the prototype; never compared with a
+  // baseline, never photographed twice for the noise. Today's game sets and phases until the
+  // screens session redraws the game screens from v46 and the CTO approves their baselines.
   baz?: boolean;
 };
 
@@ -47,6 +48,15 @@ export type GateConfig = {
 
 export const THEMES = ['light', 'dark'] as const;
 export type Theme = (typeof THEMES)[number];
+
+// The schemes one run of the gate photographs: the workflow runs a job per scheme (TEMA), a local
+// run without it both.
+export function themesFrom(value: string | undefined): readonly Theme[] {
+  if (value === undefined || value === '') return THEMES;
+  const theme = THEMES.find((t) => t === value);
+  if (!theme) throw new Error(`theme is ${THEMES.join(' or ')}, not "${value}"`);
+  return [theme];
+}
 
 export type Shot = {
   state: GateState;
@@ -123,10 +133,10 @@ export function loadStates(root: string): GateConfig {
   return parseStates(JSON.parse(readFileSync(join(root, STATES_FILE), 'utf8')));
 }
 
-export function shots(config: GateConfig): Shot[] {
+export function shots(config: GateConfig, themes: readonly Theme[] = THEMES): Shot[] {
   return config.durumlar.flatMap((state) => {
     const pages = state.sayfa ?? 1;
-    return THEMES.flatMap((theme) =>
+    return themes.flatMap((theme) =>
       Array.from({ length: pages }, (_, i) => ({
         state,
         theme,

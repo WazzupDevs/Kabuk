@@ -2,8 +2,9 @@
 # The visual gate's phone part (CLAUDE.md → Görsel kapı), inside reactivecircus/android-emulator-
 # runner once the emulator (skin 720x1280) has booted: 360 dp at 2x, v46's width, the app's text
 # size 1.0, animations off; then one Maestro flow per shot of e2e/visual/states.json
-# (scripts/visual/make-flows.ts) and the candidates collected into $OUT/aday (and $OUT/aday2 with
-# TEKRAR=1). Env: OUT, APK (scripts/e2e/fetch-apk.sh), TEKRAR.
+# (scripts/visual/make-flows.ts) in the scheme of TEMA (both without it) and the candidates
+# collected into $OUT/aday (and $OUT/aday2 with TEKRAR=1). Env: OUT, APK (scripts/e2e/fetch-apk.sh),
+# TEKRAR, TEMA.
 set -euo pipefail
 mkdir -p "$OUT"
 # shellcheck source=../e2e/fetch-apk.sh

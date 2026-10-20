@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 
 import { PREVIEW_SETS } from '../previews';
+import { TabuJudgePhase } from './tabuJudge';
 
 // `full`: the state draws the whole screen itself (a game's stage), one page, no side padding.
 export type GateEntry = { render: () => ReactNode; full?: boolean };
@@ -14,4 +15,5 @@ export type GateEntry = { render: () => ReactNode; full?: boolean };
 // - later the non-game screens, with v46's sample data, as the screens session moves them.
 export const GATE_STATES: Record<string, GateEntry> = {
   ...Object.fromEntries(PREVIEW_SETS.map((s) => [`galeri/${s.key}`, { render: s.render }])),
+  'oyun/tabu/rakip': { render: () => <TabuJudgePhase />, full: true },
 };

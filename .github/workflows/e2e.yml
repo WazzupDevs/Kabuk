@@ -403,15 +403,18 @@ jobs:
 
   # The visual gate (CLAUDE.md → Görsel kapı): the states of e2e/visual/states.json (the design
   # gallery's sets, game phases) opened in the app's hidden route with a fixed state (timers
-  # frozen, motion off, randomness seeded) and photographed in light and dark on a phone at v46's
-  # width and density (360 dp at 2x: skin 720x1280, density 320). Two comparisons: with the app's
+  # frozen, motion off, randomness seeded) and photographed in light and dark (a job each) on a
+  # phone at v46's width and density (360 dp at 2x: skin 720x1280, density 320). States with
+  # `baz: false` (today's game sets and phases) are photographed and set beside v46 only. Two
+  # comparisons: with the app's
   # own baselines (e2e/visual/baz/, Maestro assertScreenshot), the hard gate that fails the job;
   # and with v46's prototype rendered by Playwright at the same size and fonts, the soft similarity
   # report in the job summary with the diff images (the CTO decides). With the e2e label, as the
   # eight shards (not when only e2e-large has just been added), nightly and by hand. No local
   # stack: the route opens without signing in and reads nothing from the server. It starts with the
   # build job and boots its emulator while Gradle builds, as the shards do. TEKRAR photographs every
-  # shot twice: the noise the hard threshold is set above (the summary's "Gürültü" table).
+  # shot that expects a baseline twice: the noise the hard threshold is set above (the summary's
+  # "Gürültü" table).
   visual:
     needs: changed
     if: >-
@@ -422,18 +425,25 @@ jobs:
        (contains(github.event.pull_request.labels.*.name, 'e2e') ||
         contains(github.event.pull_request.labels.*.name, 'e2e-large'))))
     runs-on: ubuntu-24.04
-    # The build (~8 min) and the shots (each state opened in the running app, scripts/visual/flow.ts)
-    # well inside it; aim: no longer than the E2E shards (~25 min).
+    # A job per scheme (TEMA): with today's game sets back (baz: false) the two schemes' shots in
+    # one job would outrun the E2E shards. The build (~8 min) and the shots (each state opened in
+    # the running app, scripts/visual/flow.ts) well inside it; aim: no longer than the shards
+    # (~25 min).
     timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        scheme: [light, dark]
     # actions: read for this run's e2e-apk artifact (scripts/e2e/fetch-apk.sh).
     permissions:
       actions: read
       contents: read
     env:
-      OUT: ${{ github.workspace }}/e2e-out/visual
+      OUT: ${{ github.workspace }}/e2e-out/visual-${{ matrix.scheme }}
       APK: ${{ github.workspace }}/apk/app-release.apk
-      # Every shot photographed twice, nightly only: the noise table the threshold is checked
-      # against (#184's first measurement: 23 of 24 at 100%, one at 99.92%).
+      TEMA: ${{ matrix.scheme }}
+      # Every shot that expects a baseline photographed twice, nightly only: the noise table the
+      # threshold is checked against (#184's first measurement: 23 of 24 at 100%, one at 99.92%).
       TEKRAR: ${{ github.event_name == 'schedule' && '1' || '' }}
     steps:
       - uses: actions/checkout@v4
@@ -518,7 +528,7 @@ jobs:
       - name: Report
         if: always()
         env:
-          GORSEL_URL: https://raw.githubusercontent.com/${{ github.repository }}/${{ github.event_name == 'pull_request' && format('e2e-screenshots-pr-{0}', github.event.pull_request.number) || 'e2e-screenshots' }}/visual
+          GORSEL_URL: https://raw.githubusercontent.com/${{ github.repository }}/${{ github.event_name == 'pull_request' && format('e2e-screenshots-pr-{0}', github.event.pull_request.number) || 'e2e-screenshots' }}/visual-${{ matrix.scheme }}
           GORSEL_BAZ_URL: https://raw.githubusercontent.com/${{ github.repository }}/${{ github.event.pull_request.head.sha || github.sha }}/e2e/visual/baz
         run: node --experimental-strip-types scripts/visual/report.ts . "$OUT" | tee -a "$GITHUB_STEP_SUMMARY"
       # The hard gate: every shot photographed, every expected baseline there, every comparison
@@ -531,7 +541,7 @@ jobs:
       - if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-run-visual
+          name: e2e-run-visual-${{ matrix.scheme }}
           path: ${{ env.OUT }}
           retention-days: 14
 
@@ -544,8 +554,9 @@ jobs:
   # light/takeScreenshot and dark/takeScreenshot hold the takeScreenshot images of the scheme's four
   # shards together, for `pnpm store:screenshots` (large/takeScreenshot those of the large pass); a
   # retried shard's first attempt is in its folder's attempt-1/, without those images. A PR run that
-  # only the e2e-large label started writes the four large folders alone. The visual gate's run is
-  # in visual/ (its candidates in visual/aday/, which `pnpm visual:accept` reads).
+  # only the e2e-large label started writes the four large folders alone. The visual gate's runs are
+  # in visual-light/ and visual-dark/ (candidates in visual-<scheme>/aday/, which
+  # `pnpm visual:accept` reads).
   publish-screenshots:
     if: ${{ always() && (needs.e2e.result != 'skipped' || needs.visual.result != 'skipped') }}
     needs: [e2e, visual]
@@ -568,7 +579,7 @@ jobs:
             mkdir -p "site/$run"
             (cd "$dir" && find . -type f ! -name '*.webm' ! -name 'logcat.txt' -exec cp --parents {} "../../site/$run/" \;)
             tail -n 3000 "$dir/logcat.txt" > "site/$run/logcat-tail.txt" 2>/dev/null || true
-            if [ "$run" = visual ]; then continue; fi
+            case "$run" in visual-*) continue ;; esac
             mkdir -p "site/${run%-*}/takeScreenshot"
             find "$dir" -path '*/takeScreenshot/*.png' ! -path '*/attempt-1/*' -exec cp {} "site/${run%-*}/takeScreenshot/" \;
           done

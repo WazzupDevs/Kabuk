@@ -1,8 +1,8 @@
 // pnpm visual:accept <PR number> [state id …]
 // Takes the visual gate's candidates from the PR's e2e-screenshots-pr-<n> branch (its last run,
-// visual/aday/) into e2e/visual/baz/: every shot that expects a baseline, or only the given
-// states'. Only after the CTO has approved them; the PR that changes baz/ needs the `gorsel-baz`
-// label (ci → checks). CLAUDE.md → Görsel kapı.
+// visual-<tema>/aday/: a job per scheme) into e2e/visual/baz/: every shot that expects a baseline,
+// or only the given states'. Only after the CTO has approved them; the PR that changes baz/ needs
+// the `gorsel-baz` label (ci → checks). CLAUDE.md → Görsel kapı.
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -20,11 +20,15 @@ const missing: string[] = [];
 for (const shot of shots(loadStates(root))) {
   if (!shot.baseline || (only.length > 0 && !only.includes(shot.state.id))) continue;
   try {
-    const png = execFileSync('git', ['show', `FETCH_HEAD:visual/aday/${shot.name}.png`], {
-      cwd: root,
-      maxBuffer: 64 * 1024 * 1024,
-      stdio: ['ignore', 'pipe', 'ignore'],
-    });
+    const png = execFileSync(
+      'git',
+      ['show', `FETCH_HEAD:visual-${shot.theme}/aday/${shot.name}.png`],
+      {
+        cwd: root,
+        maxBuffer: 64 * 1024 * 1024,
+        stdio: ['ignore', 'pipe', 'ignore'],
+      },
+    );
     writeFileSync(join(root, BASELINE_DIR, `${shot.name}.png`), png);
     taken.push(shot.name);
   } catch {

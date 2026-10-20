@@ -7,10 +7,10 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { seededRandom } from '../../apps/mobile/src/features/design/gorsel/deterministic.ts';
 import { junitCases, maestroMatch, padTo, similarity, thresholdFor } from './compare.ts';
-import { flowFor, shotLink } from './flow.ts';
+import { flowFiles, flowFor, shotLink } from './flow.ts';
 import { buildReport, pageHints } from './gate-report.ts';
 import { appFonts, fontFaces, pageScript, SCALE, VIEWPORT, withRoboto } from './prototype.ts';
-import { type GateConfig, loadStates, parseStates, shots } from './states.ts';
+import { type GateConfig, loadStates, parseStates, shots, themesFrom } from './states.ts';
 
 const ROOT = join(import.meta.dirname, '..', '..');
 
@@ -60,6 +60,21 @@ describe('visual gate: the states list', () => {
       ['galeri-oyun-dark-2', 2, 2, true],
       ['oyun-x-anlat-light-1', 1, 1, false],
       ['oyun-x-anlat-dark-1', 1, 1, false],
+    ]);
+  });
+
+  it('photographs one scheme per job (TEMA), both without it', () => {
+    expect(themesFrom(undefined)).toEqual(['light', 'dark']);
+    expect(themesFrom('')).toEqual(['light', 'dark']);
+    expect(themesFrom('dark')).toEqual(['dark']);
+    expect(() => themesFrom('blue')).toThrow(/light or dark/);
+    const config = parseStates({
+      esik: 99.5,
+      durumlar: [{ id: 'galeri-oyun', app: 'galeri/games', sayfa: 2 }],
+    });
+    expect(shots(config, ['dark']).map((s) => s.name)).toEqual([
+      'galeri-oyun-dark-1',
+      'galeri-oyun-dark-2',
     ]);
   });
 
@@ -132,6 +147,19 @@ describe('visual gate: the Maestro flows', () => {
     const second = shots(config)[1];
     expect(second && shotLink(second, 7)).toBe(
       'masa:///gorsel?durum=galeri/games&tema=light&sayfa=1&sayfalar=2&n=7',
+    );
+  });
+
+  it('numbers one flow per shot of the scheme; TEKRAR photographs twice only where a baseline is expected', () => {
+    const flows = flowFiles(root, config, ['dark'], true);
+    expect(flows.map((f) => f.file)).toEqual([
+      '001-galeri-oyun-dark-1.yaml',
+      '002-galeri-oyun-dark-2.yaml',
+      '003-oyun-x-dark-1.yaml',
+    ]);
+    expect(flows.map((f) => f.text.includes('aday2__'))).toEqual([true, true, false]);
+    expect(flowFiles(root, config, ['dark'], false).some((f) => f.text.includes('aday2__'))).toBe(
+      false,
     );
   });
 
@@ -363,6 +391,41 @@ describe('visual gate: the report', () => {
     );
     expect([...pageHints(out)]).toEqual([['galeri-oyun', { listed: 1, needed: 5 }]]);
     expect(buildReport(root, out).text).toContain('| galeri-oyun | 1 | 5 |');
+  });
+
+  it("reports one scheme's job: its shots and prototype pairs only", () => {
+    for (const n of ['galeri-oyun-light-1', 'oyun-x-light-1']) {
+      write(join(out, 'aday', `${n}.png`), png(4, 4));
+    }
+    write(join(root, 'e2e/visual/baz', 'galeri-oyun-light-1.png'), png(4, 4));
+    writeFileSync(join(out, 'report.xml'), passing(['galeri-oyun-light-1', 'oyun-x-light-1']));
+    const { gate, text } = buildReport(root, out, {}, ['light']);
+    expect(gate.ok).toBe(true);
+    expect(text).toContain('2 görüntü (2 durum, tema light, sayfalar)');
+    expect(text).toContain('| oyun-x | light |');
+    expect(text).not.toContain('| oyun-x | dark |');
+  });
+
+  it('lists the baz: false shots without a v46 counterpart in the report only', () => {
+    writeFileSync(
+      join(root, 'e2e/visual/states.json'),
+      JSON.stringify({
+        esik: 99.5,
+        durumlar: [
+          { id: 'galeri-sahtekar', app: 'galeri/sahtekar', baz: false },
+          { id: 'oyun-x', app: 'oyun/x/anlat', baz: false, prototip: { adimlar: [], kirp: '.tg' } },
+        ],
+      }),
+    );
+    write(join(out, 'aday', 'galeri-sahtekar-light-1.png'), png(4, 4));
+    const { gate, text } = buildReport(root, out, { images: 'https://x/visual-light' }, ['light']);
+    expect(gate.noBaseline).toEqual([]);
+    expect(text).toContain('### Yalnızca rapor (`baz: false`, v46 karşılığı yok)');
+    expect(text).toContain(
+      '| galeri-sahtekar-light-1 | <a href="https://x/visual-light/aday/galeri-sahtekar-light-1.png">',
+    );
+    // The state with a prototype is in the similarity table, not here.
+    expect(text).not.toContain('| oyun-x-light-1 |');
   });
 
   it("measures the noise of two photos of the same state in Maestro's measure", () => {
