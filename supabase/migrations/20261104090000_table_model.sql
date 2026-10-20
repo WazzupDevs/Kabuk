@@ -29,7 +29,9 @@ revoke all on table public.table_icons from anon, authenticated;
 alter table public.rooms
   add column name text check (char_length(name) between 1 and 60),
   add column name_rerolls smallint not null default 0 check (name_rerolls >= 0),
-  add column icon text references public.table_icons (id);
+  -- Nulled on delete like every public key (account.test.ts); the seed never deletes an icon, it
+  -- sets is_active = false.
+  add column icon text references public.table_icons (id) on delete set null;
 
 -- No two open or running tables of a venue show the same icon (K-45). The trigger below picks under
 -- the venue's lock; this is the database's own guard.
