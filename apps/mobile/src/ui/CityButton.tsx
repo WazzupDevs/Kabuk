@@ -19,6 +19,8 @@ type Props = {
   pressedPreview?: boolean;
 };
 
+const MIN_FONT_SCALE = 0.5;
+
 // Keşfet's city and district button and the count of venues beside it (v46 `.vloc`): a round
 // button with a pin and an arrow down, the count at the row's other end; on a narrow screen the
 // count goes below. Pressed, the button shrinks (`.va button:active`).
@@ -74,7 +76,12 @@ export function CityButton({
         }}
       >
         <V46Svg drawing={V46_EXPLORE_ICONS.pin} size={b.pin.size} />
+        {/* One line, like a button's label: only where it does not fit (a 320 dp screen, the
+            largest text) it shrinks. */}
         <Text
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={MIN_FONT_SCALE}
           style={[
             v46FontStyle(b.label.font, b.label.letterSpacing),
             { color: b.label.color, flexShrink: 1 },

@@ -1,6 +1,6 @@
 import { BlurView } from 'expo-blur';
 import { type RefObject, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { PixelRatio, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { useReduceMotion } from '@/lib/useReduceMotion';
@@ -28,12 +28,9 @@ type Props = {
   items: readonly TabBarItem[];
   selected: V46TabKey | null;
   onPress: (key: V46TabKey) => void;
-  onLongPress?: (key: V46TabKey) => void;
   // What the bar blurs behind it (an expo-blur `BlurTargetView` around the screen; Android blurs
   // only a target). Without one the bar is its ground alone, as over an empty screen.
   blurTarget?: RefObject<View | null>;
-  // A tab drawn pressed (the gallery's "Basılı").
-  pressedPreview?: V46TabKey;
 };
 
 // v46's tab bar (`nav.nav`, docs/design/v46: the inventory's alt-sekme-* and the measured Keşfet
@@ -44,19 +41,12 @@ type Props = {
 // shadow (the shadow eases, 200 ms), its icon and label the ink colour and the label a heavier
 // weight; Mekan's icon is the mark (VenueGlyph). A pressed tab shrinks (`.va button:active`). The
 // bar sits where the caller puts it (v46: 12 above the bottom, above the safe area).
-export function TabBar({
-  items,
-  selected,
-  onPress,
-  onLongPress,
-  blurTarget,
-  pressedPreview,
-}: Props) {
+export function TabBar({ items, selected, onPress, blurTarget }: Props) {
   const { scheme } = useTheme();
   const reduce = useReduceMotion();
   const t = V46_TAB_BAR[scheme];
   const width = Math.min(t.maxWidth, useLayoutWidth() - 2 * t.inset);
-  const blur = androidBlur(t.backdrop.blur);
+  const blur = androidBlur(t.backdrop.blur, PixelRatio.get());
   return (
     <View
       accessibilityRole="tablist"
@@ -106,10 +96,8 @@ export function TabBar({
             key={item.key}
             item={item}
             active={item.key === selected}
-            pressedPreview={pressedPreview === item.key}
             reduce={reduce}
             onPress={() => onPress(item.key)}
-            onLongPress={onLongPress ? () => onLongPress(item.key) : undefined}
           />
         ))}
       </View>
@@ -120,17 +108,13 @@ export function TabBar({
 function Tab({
   item,
   active,
-  pressedPreview,
   reduce,
   onPress,
-  onLongPress,
 }: {
   item: TabBarItem;
   active: boolean;
-  pressedPreview: boolean;
   reduce: boolean;
   onPress: () => void;
-  onLongPress?: () => void;
 }) {
   const { scheme } = useTheme();
   const t = V46_TAB_BAR[scheme];
@@ -138,7 +122,6 @@ function Tab({
   const pill = active ? t.pill.active : t.pill.inactive;
   const label = active ? t.label.active : t.label.inactive;
   const iconColor = active ? t.icon.active : t.icon.inactive;
-  const pressed = pressing || pressedPreview;
   return (
     <Pressable
       accessibilityRole="tab"
@@ -146,7 +129,6 @@ function Tab({
       accessibilityLabel={item.accessibilityLabel ?? item.label}
       testID={item.testID}
       onPress={onPress}
-      onLongPress={onLongPress}
       onPressIn={() => setPressing(true)}
       onPressOut={() => setPressing(false)}
       style={{
@@ -154,7 +136,7 @@ function Tab({
         alignItems: 'center',
         justifyContent: 'center',
         gap: t.tab.gap,
-        transform: [{ scale: pressed ? t.tab.pressedScale : 1 }],
+        transform: [{ scale: pressing ? t.tab.pressedScale : 1 }],
       }}
     >
       <Animated.View

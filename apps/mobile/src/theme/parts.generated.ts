@@ -136,8 +136,8 @@ export type V46Surface = {
   gradient: string | null;
   border: V46Edge | null;
   shadow: string | null;
-  opacity: number;
 };
+export type V46FadingSurface = V46Surface & { opacity: number };
 export type V46Insets = { top: number; right: number; bottom: number; left: number };
 export type V46TabKey = 'explore' | 'activities' | 'venue' | 'messages' | 'profile';
 // The Mekan tab's mark in one state, in its drawing's units: the group, the first capsule, the
@@ -151,14 +151,13 @@ export type V46VenueGlyphState = {
 export type V46TabBarScheme = {
   height: number;
   inset: number;
-  bottom: number;
   maxWidth: number;
   padding: readonly [number, number, number, number];
   radius: number;
   gradient: string;
   border: V46Edge;
   shadow: { outer: string | null; inset: string | null };
-  backdrop: { blur: number; saturate: number };
+  backdrop: { blur: number };
   tab: { gap: number; pressedScale: number };
   label: { inactive: V46Text; active: V46Text };
   pill: {
@@ -209,8 +208,8 @@ export type V46ViewModeScheme = {
     radius: number;
     pressedScale: number;
     hitSlop: V46Insets;
-    on: V46Surface;
-    off: V46Surface;
+    on: V46FadingSurface;
+    off: V46FadingSurface;
     transitions: V46Transition[];
   };
   icon: { size: readonly [number, number] };
@@ -2075,7 +2074,6 @@ export const V46_TAB_BAR: {
   light: {
     height: 62,
     inset: 12,
-    bottom: 12,
     maxWidth: 376,
     padding: [4, 4, 4, 4],
     radius: 999,
@@ -2085,7 +2083,7 @@ export const V46_TAB_BAR: {
       outer: '0px 10px 26px 0px rgba(40, 30, 90, 0.16), 0px 2px 6px 0px rgba(40, 30, 90, 0.08)',
       inset: 'inset 0px 1.5px 1px 0px rgba(255, 255, 255, 0.95)',
     },
-    backdrop: { blur: 20, saturate: 1.9 },
+    backdrop: { blur: 20 },
     tab: { gap: 2, pressedScale: 0.97 },
     label: {
       inactive: {
@@ -2107,7 +2105,6 @@ export const V46_TAB_BAR: {
         gradient: null,
         border: { width: 1, color: 'transparent' },
         shadow: null,
-        opacity: 1,
       },
       active: {
         bg: null,
@@ -2115,7 +2112,6 @@ export const V46_TAB_BAR: {
         border: { width: 1, color: 'rgba(255, 255, 255, 0.95)' },
         shadow:
           '0px 4px 10px 0px rgba(123, 92, 255, 0.22), inset 0px 1px 1px 0px #FFFFFF, inset 0px -2px 6px 0px rgba(123, 92, 255, 0.18)',
-        opacity: 1,
       },
       transitions: [
         { prop: 'background-color', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
@@ -2186,7 +2182,6 @@ export const V46_TAB_BAR: {
   dark: {
     height: 62,
     inset: 12,
-    bottom: 12,
     maxWidth: 376,
     padding: [4, 4, 4, 4],
     radius: 999,
@@ -2196,7 +2191,7 @@ export const V46_TAB_BAR: {
       outer: '0px 10px 26px 0px rgba(0, 0, 0, 0.27), 0px 2px 6px 0px rgba(0, 0, 0, 0.137)',
       inset: 'inset 0px 1.5px 1px 0px rgba(255, 255, 255, 0.067)',
     },
-    backdrop: { blur: 20, saturate: 1.9 },
+    backdrop: { blur: 20 },
     tab: { gap: 2, pressedScale: 0.97 },
     label: {
       inactive: {
@@ -2218,7 +2213,6 @@ export const V46_TAB_BAR: {
         gradient: null,
         border: { width: 1, color: 'transparent' },
         shadow: null,
-        opacity: 1,
       },
       active: {
         bg: null,
@@ -2226,7 +2220,6 @@ export const V46_TAB_BAR: {
         border: { width: 1, color: 'rgba(28, 24, 56, 0.95)' },
         shadow:
           '0px 4px 10px 0px rgba(255, 255, 255, 0.016), inset 0px 1px 1px 0px rgba(255, 255, 255, 0.07), inset 0px -2px 6px 0px rgba(255, 255, 255, 0.01)',
-        opacity: 1,
       },
       transitions: [
         { prop: 'background-color', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },

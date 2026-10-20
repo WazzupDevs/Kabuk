@@ -7,7 +7,6 @@
 import { color, type Drawing, drawingOf, need, px, styled } from './buttons.ts';
 import type { Inventory } from './inventory.ts';
 import type { Element, Font, Look, MotionMatch, Part, SvgNode, Transition } from './measured.ts';
-import { SCREEN } from './screenParts.ts';
 
 // The tabs in v46's order, by the app's route names.
 export const TAB_KEYS = ['explore', 'activities', 'venue', 'messages', 'profile'] as const;
@@ -37,8 +36,9 @@ export type Surface = {
   gradient: string | null;
   border: { width: number; color: string } | null;
   shadow: string | null;
-  opacity: number;
 };
+// A switch's button, which also fades when not chosen.
+export type FadingSurface = Surface & { opacity: number };
 
 const transparent = (c: string | undefined) => c === undefined || c === 'transparent';
 
@@ -61,7 +61,6 @@ export function surface(p: Part): Surface {
     gradient: p.gradient ?? null,
     border: p.border ?? null,
     shadow: p.shadow ?? null,
-    opacity: p.opacity,
   };
 }
 
@@ -244,17 +243,16 @@ export function pressScale(
 
 export type TabBarScheme = {
   height: number;
-  // From the screen's sides and bottom (above the safe area), and the most it grows to.
+  // From the screen's sides, and the most it grows to.
   inset: number;
-  bottom: number;
   maxWidth: number;
   padding: readonly [number, number, number, number];
   radius: number;
   gradient: string;
   border: { width: number; color: string };
   shadow: { outer: string | null; inset: string | null };
-  // v46's `backdrop-filter`: what is behind the bar, blurred and saturated.
-  backdrop: { blur: number; saturate: number };
+  // v46's `backdrop-filter`: what is behind the bar, blurred (its saturate is not drawn: §4.C).
+  backdrop: { blur: number };
   tab: { gap: number; pressedScale: number };
   label: { inactive: Text; active: Text };
   pill: {
@@ -317,7 +315,7 @@ export function tabBarScheme(
   const base = bars.explore.el;
   const look: Look = base.look;
   if (!look.at || look.radius === null) throw new Error('the bar has no position or corner');
-  const [x, y] = look.at;
+  const [x] = look.at;
   const dotted = TAB_KEYS.flatMap((k) => parts[k].map((t) => t.dot)).find(
     (d): d is Part => d !== null && d.display !== 'none',
   );
@@ -335,14 +333,13 @@ export function tabBarScheme(
   return {
     height: base.box[1],
     inset: x,
-    bottom: SCREEN.height - y - base.box[1],
     maxWidth: roomy.box[0],
     padding: base.padding,
     radius: look.radius,
     gradient: need(look.gradient ?? '', 'bar gradient'),
     border: look.border ?? { width: 0, color: 'transparent' },
     shadow: splitShadow(need(look.shadow ?? '', 'bar shadow')),
-    backdrop: look.backdrop ?? { blur: 0, saturate: 1 },
+    backdrop: { blur: look.backdrop?.blur ?? 0 },
     tab: {
       gap: tab.button.flex?.gap ?? 0,
       pressedScale: pressScale(inventory, matches, tab.button.part),
@@ -447,8 +444,8 @@ export type ViewModeScheme = {
     radius: number;
     pressedScale: number;
     hitSlop: { top: number; right: number; bottom: number; left: number };
-    on: Surface;
-    off: Surface;
+    on: FadingSurface;
+    off: FadingSurface;
     transitions: Transition[];
   };
   icon: { size: readonly [number, number] };
@@ -493,8 +490,8 @@ export function viewModeScheme(
       radius: px(on.radius, 'button radius'),
       pressedScale: pressScale(inventory, matches, on.part),
       hitSlop: on.hitSlop ?? { top: 0, right: 0, bottom: 0, left: 0 },
-      on: surface(on),
-      off: surface(off),
+      on: { ...surface(on), opacity: on.opacity },
+      off: { ...surface(off), opacity: off.opacity },
       transitions: styled(on.transitions),
     },
     icon: { size: list.box },

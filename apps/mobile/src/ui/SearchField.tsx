@@ -5,7 +5,7 @@ import Animated from 'react-native-reanimated';
 import { noteTyping } from '@/lib/haptics';
 import { V46_EXPLORE, V46_EXPLORE_ICONS } from '@/theme/parts.generated';
 import { useTheme } from '@/theme/ThemeProvider';
-import { familyFor } from '@/theme/v46Fonts';
+import { v46FontStyle } from '@/theme/v46Type';
 
 import { transitionStyle } from './motion';
 import { V46Svg } from './V46Svg';
@@ -70,14 +70,10 @@ export function SearchField({
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           testID={testID}
-          style={{
-            height: s.field.height,
-            padding: 0,
-            fontFamily: familyFor(s.field.font.weight),
-            fontSize: s.field.font.size,
-            letterSpacing: s.field.letterSpacing,
-            color: s.field.color,
-          }}
+          style={[
+            v46FontStyle(s.field.font, s.field.letterSpacing),
+            { height: s.field.height, padding: 0, color: s.field.color },
+          ]}
         />
       </View>
     </Animated.View>
