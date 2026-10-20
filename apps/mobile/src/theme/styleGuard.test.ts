@@ -21,6 +21,7 @@ const FORBIDDEN: readonly [RegExp, string][] = [
   [/\bcolor="[^"{]/, 'colour attribute literal'],
   [/\bsize=\{\d/, 'numeric icon size (use ICON)'],
   [/\bfont(?:Size|Weight|Family)\s*:/, 'font style (use a Text variant)'],
+  [/\bexperimental_background/, 'gradient style (use gradientStyle, src/theme/gradient.ts)'],
 ];
 
 // Inside className strings.
