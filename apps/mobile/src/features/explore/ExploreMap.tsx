@@ -30,9 +30,12 @@ import { MAP_FONTS, MAP_PIN, SPACING } from '@/theme/tokens';
 import type { ExploreVenue } from './useExploreVenues';
 import { BucketBadge, EventTag } from './VenueTags';
 
-// OpenFreeMap by default: no API key in the app and no per-load cost (DECISIONS: map library).
-const MAP_STYLE_URL =
-  process.env.EXPO_PUBLIC_MAP_STYLE_URL ?? 'https://tiles.openfreemap.org/styles/liberty';
+// OpenFreeMap by default: no API key in the app and no per-load cost (DECISIONS: map library). The
+// dark theme draws a dark map (v46 §8, K-65), OpenFreeMap's own dark style.
+const MAP_STYLE_URL = {
+  light: process.env.EXPO_PUBLIC_MAP_STYLE_URL ?? 'https://tiles.openfreemap.org/styles/liberty',
+  dark: process.env.EXPO_PUBLIC_MAP_STYLE_URL_DARK ?? 'https://tiles.openfreemap.org/styles/dark',
+} as const;
 
 type SymbolLayer = Extract<LayerProps, { type: 'symbol' }>;
 type Filter = NonNullable<SymbolLayer['filter']>;
@@ -68,7 +71,7 @@ export function ExploreMap({
   headerHeight: number;
   tabBarHeight: number;
 }) {
-  const { colors, shape } = useTheme();
+  const { colors, shape, scheme } = useTheme();
   const camera = useRef<CameraRef>(null);
   const source = useRef<GeoJSONSourceRef>(null);
   const [selected, setSelected] = useState<string | null>(null);
@@ -139,7 +142,7 @@ export function ExploreMap({
       testID={ready ? 'explore-map-ready' : 'explore-map'}
     >
       <Map
-        mapStyle={MAP_STYLE_URL}
+        mapStyle={MAP_STYLE_URL[scheme]}
         style={{ flex: 1 }}
         logo={false}
         attribution

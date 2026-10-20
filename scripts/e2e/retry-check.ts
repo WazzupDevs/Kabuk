@@ -1,6 +1,7 @@
 // .github/workflows/e2e.yml → "Test environment crash? (one retry)": reads a shard's failed attempt
-// from its folder ($OUT; scripts/e2e/run-on-emulator.sh) and prints why it is run once more
-// (retry.ts), or nothing. node --experimental-strip-types scripts/e2e/retry-check.ts <OUT>
+// from its folder ($OUT; scripts/e2e/run-on-emulator.sh, and the serve's functions.log) and prints
+// why it is run once more (retry.ts), or nothing.
+// node --experimental-strip-types scripts/e2e/retry-check.ts <OUT>
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -26,5 +27,6 @@ const reason = retryReason({
   logcat: read([join(out, 'logcat.txt')].filter((p) => existsSync(p))),
   console: read([join(out, 'maestro-console.txt')].filter((p) => existsSync(p))),
   report: read([join(out, 'report.xml')].filter((p) => existsSync(p))),
+  functionsLog: read([join(out, 'functions.log')].filter((p) => existsSync(p))),
 });
 if (reason) console.log(reason);

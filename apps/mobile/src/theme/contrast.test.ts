@@ -30,7 +30,9 @@ const PAIRS: readonly Pair[] = [
   ['muted', 'surface', AA_TEXT],
   ['muted', 'surface2', AA_TEXT],
   ['text', 'raised', AA_TEXT], // others' bubbles, fields, secondary buttons
-  ['muted', 'raised', AA_TEXT], // placeholders, message times
+  ['muted', 'raised', AA_TEXT], // message times
+  ['placeholder', 'surface', AA_TEXT], // fields (Input)
+  ['placeholder', 'raised', AA_TEXT], // the composer (Masaya yaz, Mesaj yaz)
   ['accent', 'canvas', AA_TEXT], // links
   ['accent', 'surface', AA_TEXT],
   ['accent', 'surface2', AA_TEXT],
@@ -65,6 +67,8 @@ const PAIRS: readonly Pair[] = [
   // The second accent on quiet fills (unread counts), danger on a note.
   ['violet', 'surface2', AA_TEXT],
   ['danger', 'surface2', AA_TEXT],
+  // Geçmiş: a won game's chip (Tag `won`).
+  ['text', 'successSoft', AA_TEXT],
   // The intent chip and an accent link inside it.
   ['text', 'calm', AA_TEXT],
   ['accent', 'calm', AA_TEXT],

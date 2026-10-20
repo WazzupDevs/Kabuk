@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -6,6 +7,8 @@ import {
   driverCrashesInLogcat,
   failedStep,
   retryReason,
+  SERVE_STOP_LEAD_MS,
+  serveStops,
 } from './retry.ts';
 
 // Lines as Maestro 2.10.0 and the emulator (API 34) write them in CI.
@@ -28,6 +31,7 @@ const attempt = (a: Partial<Attempt>): Attempt => ({
   logcat: '',
   console: '',
   report: '',
+  functionsLog: '',
   ...a,
 });
 
@@ -177,5 +181,150 @@ describe('E2E retry: only a test-environment crash', () => {
         [logcatLine('12:23:00.516', CRASH), logcatLine('12:23:01.000', 'W Other: x')].join('\n'),
       ).map((c) => c.time),
     ).toEqual(['12:23:00']);
+  });
+});
+
+// #168's light-2 (run 39283391380, 19 Oct), as the job left them (e2e-screenshots-pr-168): the
+// serve's log and Maestro's. The serve's container died while it served the app's account call.
+const fixture = (name: string) =>
+  readFileSync(new URL(`fixtures/pr168-light-2/${name}`, import.meta.url), 'utf8');
+const light2 = { functionsLog: fixture('functions.log'), maestroLog: fixture('maestro.log') };
+// A line as scripts/ci/functions-serve.sh writes it on a stop: the time it saw the stop.
+const seen = (time: string, rest: string) => `2026-10-19T${time}Z [functions-serve.sh] ${rest}`;
+// What the restarted serve writes next.
+const restarted = [
+  'Setting up Edge Functions runtime...',
+  '2026-10-19T16:20:15.204871102Z Serving functions on http://127.0.0.1:54321/functions/v1/<function-name>',
+].join('\n');
+
+describe('E2E retry: the Edge Functions server stopped while the flow ran', () => {
+  it("retries #168's light-2: the serve died before the under-age step failed", () => {
+    expect(serveStops(light2.functionsLog)).toEqual([
+      {
+        time: '16:20:02',
+        ms: (16 * 3600 + 20 * 60 + 2) * 1000 + 553,
+        why: 'error running container: exit 135',
+        gaveUp: false,
+      },
+    ]);
+    expect(failedStep(light2.maestroLog)).toMatchObject({
+      started: { time: '16:20:03' },
+      failed: { time: '16:20:24' },
+    });
+    expect(retryReason(attempt(light2))).toBe(
+      'Edge Functions sunucusu (`functions serve`) düşen adım sürerken ya da hemen önünde durdu: saat 16:20:02, `error running container: exit 135`; düşen adım: 16:20:03–16:20:24',
+    );
+  });
+
+  it('places a stop when functions-serve.sh saw it, and retries only if that was before the step failed', () => {
+    const run = (time: string) =>
+      retryReason(
+        attempt({
+          maestroLog: light2.maestroLog,
+          functionsLog: [
+            light2.functionsLog.trimEnd(),
+            seen(time, 'stopped (error running container: exit 135), starting it again (1 of 2)'),
+            restarted,
+          ].join('\n'),
+        }),
+      );
+    expect(run('16:20:04.112')).toMatch(
+      /hemen önünde durdu: saat 16:20:04, `error running container: exit 135`/,
+    );
+    expect(run('16:20:24.154')).not.toBeNull(); // as the step failed
+    // Seen after the step had failed: the step did not fail because of it.
+    expect(run('16:20:24.155')).toBeNull();
+    expect(run('16:20:30.000')).toBeNull();
+  });
+
+  it('retries when the container died and the CLI hung on (functions-serve.sh stopped it)', () => {
+    expect(
+      retryReason(
+        attempt({
+          maestroLog: light2.maestroLog,
+          functionsLog: [
+            '2026-10-19T16:12:42.284553810Z serving the request with supabase/functions/ping',
+            seen('16:19:40.020', 'stopped (container exited 137), starting it again (1 of 2)'),
+            restarted,
+          ].join('\n'),
+        }),
+      ),
+    ).toMatch(/saat 16:19:40, `container exited 137`/);
+  });
+
+  // #168's under-age step started at 16:20:03.698 (and failed at 16:20:24.154).
+  const stoppedAt = (time: string) =>
+    retryReason(
+      attempt({
+        maestroLog: light2.maestroLog,
+        functionsLog: [
+          '2026-10-19T16:18:46.775142375Z serving the request with supabase/functions/ping',
+          seen(time, 'stopped (container exited 137), starting it again (1 of 2)'),
+          restarted,
+        ].join('\n'),
+      }),
+    );
+
+  it('never retries a real failure that came long after a stop the steps between got over', () => {
+    // The serve stopped 6 s into the flow and came back; 51 steps passed after it (01-login up to
+    // the birth year and gender screens), then the under-age step failed on its own.
+    expect(stoppedAt('16:18:50.000')).toBeNull();
+    expect(stoppedAt('16:19:20.000')).toBeNull();
+  });
+
+  it(`counts a stop from ${SERVE_STOP_LEAD_MS / 1000} s before the failed step started`, () => {
+    expect(stoppedAt('16:19:33.698')).not.toBeNull(); // 30 s before
+    expect(stoppedAt('16:19:33.697')).toBeNull();
+    expect(stoppedAt('16:20:10.000')).not.toBeNull(); // while the step waited
+  });
+
+  it('never retries for a stop before the flow started', () => {
+    // The serve stopped while the bots were set up and came back; the flow then failed on its own.
+    const functionsLog = [
+      '2026-10-19T16:12:42.284553810Z serving the request with supabase/functions/ping',
+      'error running container: exit 135',
+      seen(
+        '16:12:43.900',
+        'stopped (error running container: exit 135), starting it again (1 of 2)',
+      ),
+      restarted,
+    ].join('\n');
+    expect(serveStops(functionsLog).map((s) => s.time)).toEqual(['16:12:43']);
+    expect(retryReason(attempt({ maestroLog: light2.maestroLog, functionsLog }))).toBeNull();
+  });
+
+  it('never retries once the serve gave up: it is not coming back', () => {
+    const functionsLog = [
+      light2.functionsLog.trimEnd(),
+      seen(
+        '16:20:04.112',
+        'stopped again (error running container: exit 135), stop 3: giving up, stopping the tests',
+      ),
+    ].join('\n');
+    expect(serveStops(functionsLog).at(-1)?.gaveUp).toBe(true);
+    expect(retryReason(attempt({ maestroLog: light2.maestroLog, functionsLog }))).toBeNull();
+    // Not even with the driver crashing too.
+    expect(
+      retryReason(
+        attempt({
+          maestroLog: light2.maestroLog,
+          functionsLog,
+          deviceLogcat: logcatLine('16:20:10.000', CRASH),
+        }),
+      ),
+    ).toBeNull();
+  });
+
+  it('never retries a failure while the serve ran on', () => {
+    expect(
+      retryReason(
+        attempt({
+          maestroLog: light2.maestroLog,
+          functionsLog: light2.functionsLog.split('\n').slice(0, 13).join('\n'),
+        }),
+      ),
+    ).toBeNull();
+    // Nothing of Maestro's: the emulator or the APK failed before the flow ran.
+    expect(retryReason(attempt({ functionsLog: light2.functionsLog }))).toBeNull();
   });
 });

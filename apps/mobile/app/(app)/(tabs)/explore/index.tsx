@@ -37,9 +37,9 @@ import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { ExploreMap } from '@/features/explore/ExploreMap';
 import { useExplorePlace } from '@/features/explore/placeStore';
 import {
+  type CityVenue,
   type ExploreVenue,
-  useExploreVenues,
-  useVenueCities,
+  useCityVenues,
 } from '@/features/explore/useExploreVenues';
 import { BucketBadge, BucketLine, EventRow, VenueTile } from '@/features/explore/VenueTags';
 import { NotificationsBell } from '@/features/notifications/Bell';
@@ -55,7 +55,6 @@ type View_ = 'list' | 'map';
 const HERO_HEIGHT = SPACING[16] * 2 + SPACING[8];
 const HERO_MARK = SPACING[16] + SPACING[10];
 
-type ListedVenue = ExploreVenue & { city: string };
 type Here = { name: string; spot: string | null; kind: VenueKind };
 
 // The own check-in's dot beats slow and steady.
@@ -71,8 +70,7 @@ export default function ExploreScreen() {
   const { colors, shape } = useTheme();
   const table = useActiveTable();
   const now = useNow(30_000);
-  const venues = useExploreVenues();
-  const cities = useVenueCities();
+  const { venues, cities, listed } = useCityVenues();
   const [view, setView] = useState<View_>('list');
   const [query, setQuery] = useState('');
   const [kind, setKind] = useState<ExploreKind>('all');
@@ -94,21 +92,6 @@ export default function ExploreScreen() {
     if (layout === 'list') track('explore_viewed', { view });
   }, [layout, view]);
 
-  // A venue the city list has not seen yet (it refreshes every half hour): read the cities again.
-  const missingCity =
-    venues.isSuccess && cities.isSuccess && venues.data.some((v) => !(v.id in cities.data));
-  useEffect(() => {
-    if (missingCity) void cities.refetch();
-  }, [missingCity, cities]);
-
-  const listed = useMemo<ListedVenue[]>(
-    () =>
-      (venues.data ?? []).flatMap((v) => {
-        const city = cities.data?.[v.id];
-        return city === undefined ? [] : [{ ...v, city }];
-      }),
-    [venues.data, cities.data],
-  );
   const place = useMemo(() => explorePlace(saved, listed), [saved, listed]);
   const shown = useMemo(
     () => sortVenues(filterVenues(listed, { place, kind, query }), now),
@@ -265,9 +248,9 @@ function VenueList({
   here,
   bottomSpace,
 }: {
-  venues: readonly ListedVenue[];
+  venues: readonly CityVenue[];
   eventsFirst: boolean;
-  listed: readonly ListedVenue[];
+  listed: readonly CityVenue[];
   place: ExplorePlace | null;
   searching: boolean;
   here: Here | null;
@@ -441,7 +424,7 @@ function PlaceSheet({
 
 // A venue (v44: .vrow): its kind on a tile, the name, the kind and district, then the bucket in
 // words (K-41).
-function VenueRow({ venue: v }: { venue: ListedVenue }) {
+function VenueRow({ venue: v }: { venue: CityVenue }) {
   const { colors } = useTheme();
   const sub = tr.explore.venueSub(tr.explore.kindLabel[v.kind], v.district);
   const bucket = tr.explore.buckets[v.bucket];

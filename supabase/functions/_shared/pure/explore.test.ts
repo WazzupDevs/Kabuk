@@ -13,6 +13,7 @@ import {
   hasEventToday,
   isActivityBucket,
   sortVenues,
+  todayEvents,
 } from './explore.ts';
 
 describe('activityBucket', () => {
@@ -181,5 +182,35 @@ describe('Keşfet list (docs/SPEC_V4.md K-21, K-38, K-42)', () => {
     expect(names(filterVenues(venues, { place: null, kind: 'campus', query: '' }))).toEqual([
       'Kampüs',
     ]);
+  });
+});
+
+describe('todayEvents (docs/SPEC_V4.md K-15)', () => {
+  // Friday 26 September 2026, 12:00 in Istanbul.
+  const now = Date.parse('2026-09-26T09:00:00Z');
+  const ev = (title: string, iso: string, hours = 3) => ({
+    title,
+    startsAt: iso,
+    endsAt: new Date(Date.parse(iso) + hours * 3_600_000).toISOString(),
+  });
+
+  it("lists today's events of every venue, earliest first, and leaves tomorrow and the ended out", () => {
+    const venues = [
+      {
+        name: 'Zeytin',
+        events: [ev('Akşam', '2026-09-26T17:00:00Z'), ev('Yarın', '2026-09-27T10:00:00Z')],
+      },
+      { name: 'Çınar', events: [ev('Sabah', '2026-09-26T05:00:00Z', 1)] },
+      {
+        name: 'Ada',
+        events: [ev('Öğle', '2026-09-26T08:30:00Z'), ev('Akşam', '2026-09-26T17:00:00Z')],
+      },
+    ];
+    expect(todayEvents(venues, now).map((e) => `${e.venue.name}/${e.event.title}`)).toEqual([
+      'Ada/Öğle',
+      'Ada/Akşam',
+      'Zeytin/Akşam',
+    ]);
+    expect(todayEvents([], now)).toEqual([]);
   });
 });
