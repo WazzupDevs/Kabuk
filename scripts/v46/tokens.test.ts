@@ -14,6 +14,7 @@ import {
   readInventory,
 } from './inventory.ts';
 import { PALETTE_REFS } from './palette.ts';
+import { SCREEN_PARTS } from './screenParts.ts';
 import { COMPONENT_GRADIENTS } from './supplement.ts';
 import { narrowBreakpoint, parseEase, parseTransform, readMeasured } from './measured.ts';
 import {
@@ -53,7 +54,10 @@ describe(PARTS_MODULE, () => {
   it('is measured from the same v46 as the inventory, every component', () => {
     const measured = readMeasured(root);
     expect(measured.meta.source_sha256).toBe(inventory.meta.source_sha256);
-    expect(Object.keys(measured.components)).toEqual(inventory.components.map((c) => c.id));
+    expect(Object.keys(measured.components)).toEqual([
+      ...inventory.components.map((c) => c.id),
+      ...SCREEN_PARTS.map((c) => c.id),
+    ]);
   });
 });
 

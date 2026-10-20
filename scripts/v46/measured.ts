@@ -33,7 +33,10 @@ type RawSvgNode = {
   lineJoin?: string;
   opacity?: number;
   children?: RawSvgNode[];
+  transitions?: RawTransition[];
 };
+
+type RawEdge = { width: number; color: string };
 
 type RawPart = {
   part: string;
@@ -47,9 +50,13 @@ type RawPart = {
   position?: string;
   inset?: (number | string)[];
   bg?: string;
+  bgImage?: string;
+  border?: RawEdge;
   radius?: string;
   shadow?: string;
   padding?: string;
+  // A flex box: direction, justify-content, align-items, gap.
+  flex?: [string, string, string, number | string];
   color?: string;
   text?: string;
   font?: string;
@@ -63,6 +70,14 @@ type RawPart = {
 type RawElement = {
   self: {
     box: [number, number];
+    at?: [number, number];
+    bg?: string;
+    bgImage?: string;
+    border?: RawEdge;
+    radius?: string;
+    shadow?: string;
+    backdrop?: string;
+    after?: { height: number; top: number; bg: string; bgImage?: string };
     display: string;
     textAlign: string;
     padding: string;
@@ -252,6 +267,7 @@ export type SvgNode = {
   lineJoin?: string;
   opacity?: number;
   children?: SvgNode[];
+  transitions?: Transition[];
 };
 
 function svgNode(n: RawSvgNode): SvgNode {
@@ -273,6 +289,7 @@ function svgNode(n: RawSvgNode): SvgNode {
           opacity: n.opacity,
         }),
     ...(n.children ? { children: n.children.map(svgNode) } : {}),
+    ...(n.transitions?.length ? { transitions: transitions(n.transitions) } : {}),
   };
 }
 
@@ -288,9 +305,13 @@ export type Part = {
   transitions: Transition[];
   absolute?: { top: number; right: number; bottom: number; left: number };
   bg?: string;
+  // A CSS gradient, as React Native's background image takes it (theme/gradient.ts).
+  gradient?: string;
+  border?: { width: number; color: string };
   radius?: string;
   shadow?: string | null;
   padding?: readonly [number, number, number, number];
+  flex?: { direction: string; justify: string; align: string; gap: number };
   text?: { sample: string; font: Font; color: string; letterSpacing: number };
   svg?: {
     viewBox: readonly [number, number, number, number];
@@ -338,6 +359,17 @@ function part(p: RawPart, metrics: VerticalMetrics): Part {
     base.absolute = { top, right, bottom, left };
   }
   if (p.bg !== undefined) base.bg = parseColor(p.bg);
+  if (p.bgImage) base.gradient = p.bgImage;
+  if (p.border) base.border = { width: p.border.width, color: parseColor(p.border.color) };
+  if (p.flex) {
+    const [direction, justify, align, gap] = p.flex;
+    base.flex = {
+      direction,
+      justify: JUSTIFY[justify] ?? justify,
+      align: ALIGN[align] ?? align,
+      gap: typeof gap === 'number' ? gap : 0,
+    };
+  }
   if (p.radius !== undefined) base.radius = p.radius;
   if (p.shadow !== undefined) base.shadow = parseShadow(p.shadow);
   if (p.padding !== undefined) base.padding = parseBoxSides(p.padding);
@@ -352,6 +384,17 @@ function part(p: RawPart, metrics: VerticalMetrics): Part {
   }
   return base;
 }
+
+const ALIGN: Record<string, string> = {
+  normal: 'stretch',
+  stretch: 'stretch',
+  center: 'center',
+  'flex-start': 'flex-start',
+  start: 'flex-start',
+  'flex-end': 'flex-end',
+  end: 'flex-end',
+  baseline: 'baseline',
+};
 
 const JUSTIFY: Record<string, string> = {
   normal: 'flex-start',
@@ -374,8 +417,51 @@ export type Element = {
   // The element's own text colour and spacing, when it holds text itself (`<button>Kaydet</button>`).
   text: { color: string; letterSpacing: number } | null;
   transitions: Transition[];
+  // Its own look, where the inventory has none (a screen part: scripts/v46/screenParts.ts).
+  look: Look;
   parts: Part[];
 };
+
+// The backdrop a part blurs (v46 `backdrop-filter: blur(20px) saturate(1.9)`).
+export type Backdrop = { blur: number; saturate: number };
+
+export type Look = {
+  at: readonly [number, number] | null;
+  bg: string | null;
+  gradient: string | null;
+  border: { width: number; color: string } | null;
+  radius: number | null;
+  shadow: string | null;
+  backdrop: Backdrop | null;
+  // A pseudo-element drawn below it (a pinned head's fade: `.dhd::after`).
+  after: { height: number; gradient: string } | null;
+};
+
+export function parseBackdrop(value: string): Backdrop {
+  const blur = /blur\(([0-9.]+)px\)/.exec(value);
+  const saturate = /saturate\(([0-9.]+)\)/.exec(value);
+  const rest = value.replace(/blur\([^)]*\)|saturate\([^)]*\)/g, '').trim();
+  if (!blur || rest) throw new Error(`backdrop-filter: ${value}`);
+  return { blur: Number(blur[1]), saturate: saturate ? Number(saturate[1]) : 1 };
+}
+
+function look(raw: RawElement['self']): Look {
+  const transparent = (c: string | undefined) => !c || parseColor(c) === 'transparent';
+  const radius = raw.radius === undefined ? null : parseFloat(raw.radius);
+  return {
+    at: raw.at ?? null,
+    bg: transparent(raw.bg) ? null : parseColor(raw.bg ?? ''),
+    gradient: raw.bgImage ?? null,
+    border: raw.border ? { width: raw.border.width, color: parseColor(raw.border.color) } : null,
+    radius: radius === null || Number.isNaN(radius) ? null : radius,
+    shadow: raw.shadow === undefined ? null : parseShadow(raw.shadow),
+    backdrop: raw.backdrop ? parseBackdrop(raw.backdrop) : null,
+    after:
+      raw.after?.bgImage !== undefined
+        ? { height: raw.after.height, gradient: raw.after.bgImage }
+        : null,
+  };
+}
 
 // Where a block button (not a flex box: v46's `.sheet .close`) puts its text: its text-align (the
 // browser's own for a button is center).
@@ -414,6 +500,7 @@ export function element(raw: RawElement, metrics: VerticalMetrics): Element {
         }
       : null,
     transitions: transitions(raw.self.transitions),
+    look: look(raw.self),
     parts: raw.parts.map((p) => part(p, metrics)),
   };
 }

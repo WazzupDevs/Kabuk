@@ -30,11 +30,13 @@ const STYLED = new Set([
   'opacity',
   'transform',
 ]);
-const styled = (list: Transition[]) => list.filter((t) => STYLED.has(t.prop));
+export const styled = (list: Transition[]) => list.filter((t) => STYLED.has(t.prop));
 
-// A drawing as the app draws it: v46's nodes without their class names (the components never read
-// them; the projection below uses them to find parts).
-export type DrawingNode = Omit<SvgNode, 'cls' | 'children'> & { children?: DrawingNode[] };
+// A drawing as the app draws it: v46's nodes without their class names and transitions (the
+// components never read them; the projections use them to find parts and motions).
+export type DrawingNode = Omit<SvgNode, 'cls' | 'children' | 'transitions'> & {
+  children?: DrawingNode[];
+};
 
 export type Drawing = {
   viewBox: readonly [number, number, number, number];
@@ -138,7 +140,7 @@ function fill(nodes: readonly SvgNode[], cls: string): string {
   return '';
 }
 
-function need(value: string, what: string): string {
+export function need(value: string, what: string): string {
   if (!value) throw new Error(`no ${what}`);
   return value;
 }
@@ -146,12 +148,25 @@ function need(value: string, what: string): string {
 const classes = (p: Part) => p.part.split('.').slice(1);
 const isLoader = (p: Part) => p.svg !== undefined && classes(p).includes('ld');
 
-const strip = (nodes: readonly SvgNode[]): DrawingNode[] =>
+export const strip = (nodes: readonly SvgNode[]): DrawingNode[] =>
   nodes.map(({ children, ...n }) => {
-    const node: DrawingNode & { cls?: string | null } = { ...n };
+    const node: DrawingNode & Pick<Partial<SvgNode>, 'cls' | 'transitions'> = { ...n };
     delete node.cls;
+    delete node.transitions;
     return children ? { ...node, children: strip(children) } : node;
   });
+
+// A part's svg as the app draws it, the whole of it or some of its nodes.
+export function drawingOf(p: Part, nodes?: readonly SvgNode[]): Drawing {
+  const svg = p.svg;
+  if (!svg) throw new Error(`${p.part} is not a drawing`);
+  return {
+    viewBox: svg.viewBox,
+    clips: svg.clips.map(strip),
+    gradients: svg.gradients,
+    nodes: strip(nodes ?? svg.nodes),
+  };
+}
 
 // The nodes with class `cls` (and their subtrees) apart from the others.
 function pick(nodes: readonly SvgNode[], cls: string): [SvgNode[], SvgNode[]] {
@@ -168,7 +183,7 @@ function pick(nodes: readonly SvgNode[], cls: string): [SvgNode[], SvgNode[]] {
   return [rest, picked];
 }
 
-const color = (p: Paint | undefined, what: string): string => {
+export const color = (p: Paint | undefined, what: string): string => {
   if (typeof p !== 'string') throw new Error(`${what}: not a plain colour`);
   return p;
 };
@@ -237,21 +252,15 @@ function icon(p: Part, pressedScale: number, ready: Part | undefined): ButtonIco
     };
   }
   const [rest, clap] = pick(svg.nodes, 'nb-clap');
-  const drawingOf = (nodes: readonly SvgNode[]): Drawing => ({
-    viewBox: svg.viewBox,
-    clips: svg.clips.map(strip),
-    gradients: svg.gradients,
-    nodes: strip(nodes),
-  });
   return {
     ...base,
-    drawing: drawingOf(rest),
-    clap: clap.length ? drawingOf(clap) : null,
+    drawing: drawingOf(p, rest),
+    clap: clap.length ? drawingOf(p, clap) : null,
     origin: p.origin ?? [p.box[0] / 2, p.box[1] / 2],
   };
 }
 
-const px = (v: string | undefined, what: string) => {
+export const px = (v: string | undefined, what: string) => {
   const m = /^(-?[0-9.]+)px$/.exec(v ?? '');
   if (!m?.[1]) throw new Error(`${what}: ${v}`);
   return Number(m[1]);
