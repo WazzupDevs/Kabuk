@@ -29,7 +29,7 @@ Alt bölümler harfle (§4.A, §4.B…), **adımlar** sayıyla numaralanır (ad�
   - `kapsul/kapsul-katalogu.json`: kapsül kataloğu, 28 hazır görünüşüyle;
   - `kapsul/kapsul-cizim-kutuphanesi.js`: denemenin çizim kodu, başvuru.
 
-  4.4, 4.4b ve 4.5 `content/` ve `apps/mobile/assets` dosyalarını buradan üretir. v46 bu belgenin K-26–K-44 kararlarını çizmedi (raporun girişi); bu kararların maddeleri §4.C'deki listede kalır. Raporun iki açık sorusu cevaplandı (§4.P, K-59 ve K-61). v46 görsel kaynaktır; öncelik §4.C'de.
+    4.4, 4.4b ve 4.5 `content/` ve `apps/mobile/assets` dosyalarını buradan üretir. v46 bu belgenin K-26–K-44 kararlarını çizmedi (raporun girişi); bu kararların maddeleri §4.C'deki listede kalır. Raporun iki açık sorusu cevaplandı (§4.P, K-59 ve K-61). v46 görsel kaynaktır; öncelik §4.C'de.
 
 - Proje sahibinin kararları (§4.B) ve yönetimin "skall v43 dönüşüm raporu" (18 Ekim).
 
@@ -143,6 +143,12 @@ Değişmez kabul edilir.
 - `docs/design/v46/kaynak/`: masa simgeleri (100 WebP ve `masa-simgeleri.json`), kapsül kataloğu (`kapsul-katalogu.json`) ve çizim kütüphanesi (`kapsul-cizim-kutuphanesi.js`, başvuru).
   - 4.4 ve 4.4b kataloğu `content/`'e, 4.5 simgeleri `apps/mobile/assets`'e ve listelerini `pure/`'a buradan üretir (§4.D, §4.E).
   - Dosyalar teslim edildiği gibi kalır: Prettier ve ESLint `docs/design/`'a bakmaz.
+- **Galeri katmanı ve envanter** (Fırat'ın tasarım oturumu, 20 Ekim; `docs/design/v46/`). Hepsi repodaki `skall-masa-deneme-v46.html`'in üstüne kuruludur (kaynak sha256 `1063519b…`, `skall-v46-galeri-notu.md`):
+  - `skall-masa-deneme-v46-galeri.html`: v46'nın kendisi (stil ve betik blokları bayt bayt aynı), üstüne galeri ve URL katmanı. Her durum `?s=<durum>&theme=light|dark&fs=1.3&anim=0&demo=0` ile açılır (127 durum). `page=galeri` 59 ortak bileşeni bütün hâlleriyle gösterir.
+  - `skall-v46-envanter.json`: **birincil kaynak.** Değerler hesaplanmış son değerlerdir (canlı `getComputedStyle`, açık ve koyu). Renk ve yazı token'ları, bileşenler, hareketler, etkileşimler ve durumlar buradan alınır. `skall-v46-envanter.md` aynı verinin tablo hâlidir.
+  - **Birincil düğme `.btn.btn-room`'dur ve üç boyu vardır** (envanter F4, F5). `.btn-primary` eski bir CSS kalıntısıdır, kullanılmaz.
+  - Fırat'ın düzeltilmiş sürümü gelince bu dosyalar aynı adlarla değişir. O zamana kadar v46 native adımları (token betiği, galeri, ortak bileşenler) bu sürümle yapılır.
+- **v46 kendi içinde çelişiyorsa** (envanterin `findings` bölümü) v46'nın çoğunluk kalıbı ve CLAUDE.md "Ekran davranışı" geçerlidir (proje sahibi, 20 Ekim). Her biri aşağıdaki "v46'dan farklı uygulananlar" listesine yazılır.
 - **Öncelik sırası:** önce aşağıdaki "v46'dan farklı uygulananlar" listesi, sonra v46, sonra v45, sonra v44, sonra v43.
 - `docs/design/v45/`, `docs/design/v44/` ve `docs/design/v43/`: önceki denemeler. Sonrakinin değiştirmediği yerde geçerlidir ve tarih için kalır.
 - Claude Design ana tuvali (https://claude.ai/artifact/9pfA5eudWS4s5rxUydRuss) ve önceki tasarım denemeleri arşivdir.
@@ -199,6 +205,10 @@ Değişmez kabul edilir.
   - Başkası dokununca bir şey olmaz. Yeni çizim yok.
   - v46'da simge yalnızca Masa kur'da seçilir.
 - **Masa bitti'de anonim katılanın notu** (K-68). Anonim katılan kişinin kendi ekranında, alttaki notun yanında: "Arkadaş olursanız anonim adının sen olduğunu görür. İstersen Profil'den adını yenileyebilirsin." v46'da yok.
+- **Katıl'ın pasif hâli** (envanter F7; proje sahibi, 20 Ekim): dolu masada "Katıl" ortak pasif görünümü alır. v46'da Katıl'ın pasif görünümü yok; masa doluyken de aynı görünür. v46'daki öteki pasif hâller de dağınık: gri dolgu, soluk yazı ya da opaklık 0,45. Ortak pasif görünüm ortak bileşenlerde tek tanımdır.
+- **Birebir sohbette de uzun basmada titreşim** (envanter F9; proje sahibi, 20 Ekim): mekan sohbetindeki gibi. v46'da uzun basma yalnızca mekan sohbetinde titreşiyor (10 ms).
+- **Alt sayfa kapanışı açılışın tersi; sürükleyip kapatma var** (envanter F10; proje sahibi, 20 Ekim; "Ekran davranışı"). v46'da sayfa 320 ms kayma ve 200 ms perdeyle açılıyor, ama kapanışta animasyon yok ve sayfa sürüklenerek kapanmıyor.
+- **Yüklenirken birincil düğme mor kalır, gösterge görünür** (envanter F13; proje sahibi, 20 Ekim; "Ekran davranışı": basılan düğme beklediğini gösterir). v46'da yüklenen düğme pasif görünüme düşüyor: gri zemin `#E6E2F2`, koyu temada `#29283A`.
 - **"Geliyor" hâli yok** (K-69).
   - Kabul edilen kişiler kabul anında Masadakiler'e normal üye olarak girer; masa ekranının üst satırı "N kişi" yazar.
   - §4.E'deki tek seferlik "Y geliyor, N kişi" bildirimi kalır.
