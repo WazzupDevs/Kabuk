@@ -23,7 +23,7 @@ import type {
 import { AppError } from '../_shared/pure/errors.ts';
 import { DM_MIN_INTERVAL_MS, prepareDm } from '../_shared/pure/friends.ts';
 import { containsProfanity } from '../_shared/pure/profanity.ts';
-import { dmPush } from '../_shared/pure/push.ts';
+import { dmPush, PUSH_PREFERENCE } from '../_shared/pure/push.ts';
 import { isReaction, type Reaction } from '../_shared/pure/reactions.ts';
 import { BROADCAST, dmChannel } from '../_shared/pure/rooms.ts';
 
@@ -96,7 +96,7 @@ Deno.serve(
         if (!sent) throw new Error('dm_send_message returned no row');
         inBackground(broadcast(dmChannel(body.threadId), BROADCAST.dmMessage));
         notifyInbox([sent.other_user_id], BROADCAST.dm);
-        pushIfAllowed(db, sent.other_user_id, 'notify_dm', dmPush());
+        pushIfAllowed(db, sent.other_user_id, PUSH_PREFERENCE.dm, dmPush());
         return { ok: true, messageId: sent.message_id, createdAt: sent.created_at };
       }
 

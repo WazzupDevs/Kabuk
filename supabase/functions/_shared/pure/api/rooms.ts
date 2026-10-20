@@ -90,6 +90,14 @@ export type RequestProfileRequest = { action: 'request-profile'; requestId: stri
 // otherwise. The name and the icon never say anything about anyone.
 export type SetIconRequest = { action: 'set-icon'; roomId: string; icon: string };
 export type RerollNameRequest = { action: 'reroll-name'; roomId: string };
+// docs/SPEC_V4.md §4.G (step 4.7): the owner invites a friend by public_id (not_owner otherwise).
+// The answer is { ok: true } whatever happens: only a friend checked in at the same venue gets it,
+// and nothing tells the owner who did (K-2).
+export type InviteRequest = { action: 'invite'; roomId: string; friendPublicId: string };
+// The invitee answers. A decline reaches nobody. Joining leaves the table the person is at by the
+// "Masadan ayrıl" rule (K-13) and sits down with the check-in's identity; an invite that ran out, a
+// closed or full table are invite_unavailable alike.
+export type AnswerInviteRequest = { action: 'answer-invite'; inviteId: string; accept: boolean };
 export type SetIconResponse = { icon: string };
 export type RerollNameResponse = { name: string; rerollsLeft: number };
 
@@ -111,7 +119,9 @@ export type RoomsRequest =
   | LeaveRoomRequest
   | RequestProfileRequest
   | SetIconRequest
-  | RerollNameRequest;
+  | RerollNameRequest
+  | InviteRequest
+  | AnswerInviteRequest;
 
 export type CreateRoomResponse = { roomId: string };
 // Identical for every request: nothing in it depends on the owner's later answer.

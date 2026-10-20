@@ -58,6 +58,7 @@ const STATUS: Record<ErrorCode, number> = {
   icon_taken: 409,
   already_in_table: 409,
   table_full: 409,
+  invite_unavailable: 409,
   wrong_side: 409,
   not_leader: 403,
   display_name_required: 409,

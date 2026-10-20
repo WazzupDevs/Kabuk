@@ -34,6 +34,7 @@ const Body: z.ZodType<AccountRequest> = z.discriminatedUnion('action', [
     action: z.literal('register-push'),
     token: z.string().max(200).refine(isExpoPushToken).nullable(),
   }),
+  z.object({ action: z.literal('notifications-seen') }),
 ]);
 
 const db = serviceClient();
@@ -172,6 +173,17 @@ Deno.serve(
         const { error } = await db
           .from('profiles')
           .update({ push_token: body.token })
+          .eq('id', user.id);
+        if (error) throw dbError('profiles', error);
+        return { ok: true };
+      }
+
+      // The bell's list was opened (docs/SPEC_V4.md §4.G): the badge counts what comes after.
+      case 'notifications-seen': {
+        const user = await requireUser(req, db);
+        const { error } = await db
+          .from('profiles')
+          .update({ notifications_seen_at: new Date().toISOString() })
           .eq('id', user.id);
         if (error) throw dbError('profiles', error);
         return { ok: true };

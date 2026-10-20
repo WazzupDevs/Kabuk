@@ -24,7 +24,14 @@ export type DeleteAccountRequest = { action: 'delete' };
 // null clears the token (sign-out).
 export type RegisterPushRequest = { action: 'register-push'; token: string | null };
 
+// The bell's list was opened (docs/SPEC_V4.md §4.G): what came before is no longer new.
+export type NotificationsSeenRequest = { action: 'notifications-seen' };
+
 export type AccountRequest =
-  CompleteOnboardingRequest | SetGenderRequest | DeleteAccountRequest | RegisterPushRequest;
+  | CompleteOnboardingRequest
+  | SetGenderRequest
+  | DeleteAccountRequest
+  | RegisterPushRequest
+  | NotificationsSeenRequest;
 
 export type AccountResponse = { ok: true };

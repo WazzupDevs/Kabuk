@@ -5,7 +5,9 @@
 // on the venue channel: the lobby and the running tables are one read (venue_tables). The frame of
 // the table's games (§4.F): votes, the pre-game page, its picks, ending and leaving a game; the
 // table's people see each change as a change of its row. Today's app's game proposals and "Masanla
-// oyna" answer update_required; the games come back with 4.6.
+// oyna" answer update_required; the games come back with 4.6. The table invite (§4.G, step 4.7):
+// the owner invites a friend, who gets it only when checked in at the same venue; the owner's answer
+// never says who did (K-2), and a decline reaches nobody.
 import { requireUser, serviceClient } from '../_shared/auth.ts';
 import { inBackground } from '../_shared/background.ts';
 import { broadcast } from '../_shared/broadcast.ts';
@@ -13,6 +15,7 @@ import { reachablePhotoUrl } from '../_shared/photos.ts';
 import { dbError } from '../_shared/db.ts';
 import { z } from '../_shared/deps.ts';
 import { handle } from '../_shared/http.ts';
+import { notifyInbox, pushIfAllowed } from '../_shared/inbox.ts';
 import { AppError } from '../_shared/pure/errors.ts';
 import { lobbyChanged } from '../_shared/lobby.ts';
 import { sendPush } from '../_shared/push.ts';
@@ -28,7 +31,12 @@ import type {
 import { ageOn, istanbulToday, parseIsoDate } from '../_shared/pure/age.ts';
 import { isTableGame, PICKS } from '../_shared/pure/gameFrame.ts';
 import { PHOTO_BUCKET, PHOTO_URL_SECONDS } from '../_shared/pure/profile.ts';
-import { joinAcceptedPush, joinRequestPush } from '../_shared/pure/push.ts';
+import {
+  invitePush,
+  joinAcceptedPush,
+  joinRequestPush,
+  PUSH_PREFERENCE,
+} from '../_shared/pure/push.ts';
 import {
   BROADCAST,
   CONCEPTS,
@@ -39,7 +47,12 @@ import {
   sessionChannel,
 } from '../_shared/pure/rooms.ts';
 import { SAHTEKAR } from '../_shared/pure/sahtekar.ts';
-import { isTableIcon, TABLE_NAME_REROLLS } from '../_shared/pure/tables.ts';
+import {
+  isTableIcon,
+  MAX_TABLE_INVITES_PER_HOUR,
+  TABLE_INVITE_TTL_SECONDS,
+  TABLE_NAME_REROLLS,
+} from '../_shared/pure/tables.ts';
 import { SIDES } from '../_shared/pure/teams.ts';
 
 // Today's app's proposal fields, parsed so that it hears update_required rather than bad_request.
@@ -100,6 +113,8 @@ const Body: z.ZodType<RoomsRequest> = z.discriminatedUnion('action', [
   z.object({ action: z.literal('end') }),
   z.object({ action: z.literal('leave'), roomId: z.uuid() }),
   z.object({ action: z.literal('request-profile'), requestId: z.uuid() }),
+  z.object({ action: z.literal('invite'), roomId: z.uuid(), friendPublicId: z.uuid() }),
+  z.object({ action: z.literal('answer-invite'), inviteId: z.uuid(), accept: z.boolean() }),
 ]);
 
 const db = serviceClient();
@@ -384,6 +399,45 @@ Deno.serve(
 
         case 'request-profile':
           return await requestProfile(user.id, body.requestId);
+
+        // Only a friend checked in at the same venue gets it; the answer is the same for every
+        // invite (K-2). The push and the inbox event go after the response.
+        case 'invite': {
+          const { data, error } = await db.rpc('rooms_invite', {
+            target_user_id: user.id,
+            target_room_id: body.roomId,
+            friend_public_id: body.friendPublicId,
+            ttl_seconds: TABLE_INVITE_TTL_SECONDS,
+            hourly_max: MAX_TABLE_INVITES_PER_HOUR,
+          });
+          if (error) throw dbError('rooms_invite', error);
+          for (const invite of data) {
+            notifyInbox([invite.to_user_id], BROADCAST.tableInvite);
+            pushIfAllowed(db, invite.to_user_id, PUSH_PREFERENCE.table_invite, invitePush());
+          }
+          return { ok: true };
+        }
+
+        // A decline sends nothing anywhere; joining changes the venue's tables.
+        case 'answer-invite': {
+          const { data, error } = await db.rpc('rooms_answer_invite', {
+            target_user_id: user.id,
+            target_invite_id: body.inviteId,
+            accept: body.accept,
+          });
+          if (error) throw dbError('rooms_answer_invite', error);
+          const answered = data[0]?.invite;
+          if (body.accept && answered) {
+            const room = await db
+              .from('rooms')
+              .select('venue_id')
+              .eq('id', answered.room_id)
+              .single();
+            if (room.error) throw dbError('rooms', room.error);
+            lobbyChanged(room.data);
+          }
+          return { ok: true };
+        }
       }
     },
   ),

@@ -9,6 +9,7 @@ describe('IDEMPOTENT_CALLS', () => {
     // Changing this list changes which failures the app sends twice: each entry names its test.
     expect([...IDEMPOTENT_CALLS].sort()).toEqual(
       [
+        'account/notifications-seen',
         'chat/react',
         'checkin/check-in',
         'checkin/leave',
@@ -17,6 +18,7 @@ describe('IDEMPOTENT_CALLS', () => {
         'dm/react',
         'dm/read',
         'friends/list',
+        'friends/notifications',
         'ping',
         'profile/get',
         'venue-chat/page',

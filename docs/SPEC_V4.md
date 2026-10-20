@@ -694,7 +694,7 @@ Değişmez kabul edilir.
 
 **Veri.**
 
-- Ayrı bir bildirim tablosu yoktur (SPEC_V3 §18.3'teki karar sürer). Liste salt okunur bir RPC'dir: `my_notifications()` (security definer, yalnızca okur, `set search_path = ''`; kural 1). Kaynakları:
+- Ayrı bir bildirim tablosu yoktur (SPEC_V3 §18.3'teki karar sürer). Liste salt okunur bir RPC'dir: `my_notifications()` (security definer, yalnızca okur, `set search_path = ''`; kural 1). Adım 4.7'de `my_notifications(target_user_id)` olarak yalnızca service role'e açıktır ve `friends/notifications` çağırır: fotoğrafları imzalar, doğum tarihini yaşa çevirir (`friends/incoming` kalıbı). Kaynakları:
   - gelen ve bekleyen açık arkadaşlık istekleri (`friend_requests`);
   - kişinin kabul edilen istekleri, son 7 gün;
   - eşleşmeyle kurulan arkadaşlıklar (`friendships`, kaynağı `room_end_mutual`), son 7 gün, yalnızca ilk basan için. Kimin önce bastığı `mutual_friend_intents.created_at`'ten okunur; niyetler arkadaşlık sürdükçe kalır (K-70);
@@ -719,6 +719,14 @@ Değişmez kabul edilir.
   - Kişinin bulunduğu masa için "Masadan ayrıl" kuralı uygulanır: tek kişilik boş masası sessizce kapanır; başka bir masanın katılımcısıysa o masadan ayrılır; başka kişilerin bulunduğu bir masanın sahibiyse §4.E'deki sahiplik kuralı (K-13) uygulanır.
   - Masa dolmuşsa, kapanmışsa ya da davetin süresi geçmişse alıcıya tek bir metin görünür: davet artık geçerli değil.
 - **Red ve zaman aşımı gönderene aynı görünür:** sahip ikisinde de hiçbir şey görmez. Kabulde kişi masaya gelir (Masadakiler'de görünür).
+- **Sunucunun ayrıntıları (adım 4.7):**
+  - `rooms/invite`: sahip olmayan `not_owner` alır. Şunların hiçbiri satır yazmaz ve yanıt hep `{ ok: true }`'dur: arkadaş değil (ya da bilinmeyen kimlik), iki yönlü engel (masadaki herhangi biriyle), mekanda check-in'i yok, zaten bu masada, aynı sahipten bekleyen bir davet, saatlik sınır, dolu masa. Davet alıcının `inbox:{user_id}` kanalına veri içermeyen `table_invite` olayıyla duyurulur.
+  - `rooms/answer-invite`: başkasının davet kimliği `not_found`. Red sessizdir. Katılmada şunların hepsi aynı `invite_unavailable` (409, "Davet artık geçerli değil.") döner: süresi geçmiş, masa kapanmış ya da dolmuş, daveti gönderen artık sahip değil (sahiplik geçmiş), alıcının check-in'i başka mekanda, masadaki biriyle engel. Zaten bu masadaysa davet kabul edilmiş sayılır.
+  - Masaya oturuş check-in'in kimliğiyledir (`private.table_seat`; `photo_required`, `gender_required` aynen).
+  - Liste satırları (`friends/notifications`): gelen istek bekliyor ya da 7 gün içinde kabul edilmiş (kabulden sonra arkadaşın `public_id`'si); mekan sohbetinden gelen istekte ad, yaş, fotoğraf ve mekan (SPEC_V3 §7.5 aynen), oyun geçmişinden gelende yalnızca masadaki adı ve kayıt. Engel ve biten arkadaşlık satırı kaldırır. Yanıt okunmamış sayısını da taşır (`unseen`).
+  - Bildirim ayarları: `profile/update { notifyInvites }`; üç tercih kişinin kendi satırında okunur.
+  - Analitik olayları (§4.L: `invite_sent`, `invite_accepted`, `notifications_opened`) uygulama gönderir; katalog istemci PR'ında.
+  - `CURRENT_KVKK_VERSION`: metin bu adımın sunucu PR'ında, sürüm istemci PR'ında artar (4.4'ün kararı, `docs/decisions/4.4-kimlik.md`); 4.4'ün artışı henüz yayında değilse ikisi tek artışta birleşir (§4.L).
 
 **Push.**
 
