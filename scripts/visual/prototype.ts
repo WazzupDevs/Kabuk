@@ -136,8 +136,17 @@ export function pageScript(arg: PageArg): void {
   });
 }
 
-async function openState(page: Page, file: string, id: string, theme: Theme): Promise<void> {
-  await page.goto(`${pathToFileURL(file).href}?gorsel=${encodeURIComponent(id)}&tema=${theme}`);
+async function openState(
+  page: Page,
+  file: string,
+  id: string,
+  theme: Theme,
+  query?: string,
+): Promise<void> {
+  const more = query ? `&${query.replaceAll('{tema}', theme)}` : '';
+  await page.goto(
+    `${pathToFileURL(file).href}?gorsel=${encodeURIComponent(id)}&tema=${theme}${more}`,
+  );
   await page.waitForFunction(() => document.documentElement.dataset.gorselHazir === '1', null, {
     timeout: 30_000,
   });
@@ -145,7 +154,8 @@ async function openState(page: Page, file: string, id: string, theme: Theme): Pr
   if (error) throw new Error(`prototype ${id}: ${error}`);
 }
 
-export type Wanted = { id: string; theme: Theme; state: PrototypeState };
+// `width`: the state's `genislik` (dp), when it is drawn narrower than the emulator.
+export type Wanted = { id: string; theme: Theme; state: PrototypeState; width?: number };
 export type Rendered = { id: string; theme: Theme; file: string };
 
 // Draws each (state, scheme) into `out/<id>-<theme>.png`, cropped to the state's `kirp` element.
@@ -161,11 +171,11 @@ export async function renderPrototype(
   const browser = await chromium.launch(executablePath ? { executablePath } : {});
   const done: Rendered[] = [];
   try {
-    for (const { id, theme, state } of wanted) {
+    for (const { id, theme, state, width } of wanted) {
       const documentFile = join(root, state.dosya ?? PROTOTYPE_FILE);
       const documentUrl = pathToFileURL(documentFile).href;
       const context = await browser.newContext({
-        viewport: VIEWPORT,
+        viewport: { ...VIEWPORT, width: state.genislik ?? width ?? VIEWPORT.width },
         deviceScaleFactor: SCALE,
         colorScheme: theme,
         reducedMotion: 'reduce',
@@ -192,7 +202,7 @@ export async function renderPrototype(
       const page = await context.newPage();
       await page.exposeFunction('__gorselBekle', (ms: number) => page.clock.runFor(ms));
       await page.addInitScript(pageScript, { seed: GATE_SEED, states } satisfies PageArg);
-      await openState(page, documentFile, id, theme);
+      await openState(page, documentFile, id, theme, state.sorgu);
       await page.evaluate(() => document.fonts.ready);
       await checkFonts(page, fonts);
       const file = join(out, `${id}-${theme}.png`);

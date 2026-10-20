@@ -30,6 +30,8 @@ export type RawComponent = {
   class: string;
   selector_in_state: string;
   source_state: string;
+  // Steps after the state opens, in the gallery layer's own language (`f:` types, `c:` presses…).
+  extra_steps: string[];
   size: [number, number];
   variants: string[];
   light: RawLook;

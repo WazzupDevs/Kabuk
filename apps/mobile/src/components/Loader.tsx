@@ -37,6 +37,8 @@ type Props = {
   size?: number;
   // One colour, with a gap in the ground's colour around the second capsule: inside a filled button.
   mono?: { color: string; ground: string };
+  // Each part's own colour (v46's loader inside a button; src/ui/Button.tsx).
+  fills?: { a: string; b: string; overlap: string };
   onInk?: boolean;
   // Read by screen readers; null when a label next to it already says it.
   label?: string | null;
@@ -52,6 +54,7 @@ export function Loader({
   kind = 'seesaw',
   size = 48,
   mono,
+  fills,
   onInk,
   label = tr.common.loading,
   delay = LOADER_SHOW_AFTER_MS,
@@ -67,7 +70,11 @@ export function Loader({
 
   const m = drawingFor(size);
   const motions = useMemo(() => [reduce ? STILL_MOTION : loaderMotion(kind, m)], [reduce, kind, m]);
-  const colors: MarkColors = mono ? { mono: mono.color, ground: mono.ground } : { onInk };
+  const colors: MarkColors = mono
+    ? { mono: mono.color, ground: mono.ground }
+    : fills
+      ? { fills }
+      : { onInk };
 
   return (
     <View

@@ -5,6 +5,7 @@
 // tokens.test.ts fails while it is not what this script writes, so a value changes only by
 // changing its source. Shadows and gradients stay CSS strings (React Native `boxShadow`, and
 // `backgroundImage` behind theme/gradient.ts).
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import { format, resolveConfig } from 'prettier';
@@ -27,10 +28,14 @@ import {
   type Scheme,
 } from './inventory.ts';
 import { bundledMetrics, normalLineHeight, type VerticalMetrics } from './fontMetrics.ts';
+import { BUTTONS_GROUP, buttonNarrow, buttonScheme } from './buttons.ts';
+import { element, narrowBreakpoint, pressed, readMeasured } from './measured.ts';
 import { type ColorRef, PALETTE_REFS } from './palette.ts';
 import { COMPONENT_GRADIENTS, GRADIENTS } from './supplement.ts';
 
 export const TOKENS_MODULE = 'apps/mobile/src/theme/tokens.generated.ts';
+// What the measurement adds, only as much of it as the src/ui components read (buttons.ts …).
+export const PARTS_MODULE = 'apps/mobile/src/theme/parts.generated.ts';
 
 const SCHEMES: readonly Scheme[] = ['light', 'dark'];
 
@@ -196,6 +201,134 @@ export async function buildTokensModule(root: string): Promise<string> {
   lines.push('} as const;', '', 'export type V46ComponentId = keyof typeof V46_COMPONENTS;', '');
 
   const target = resolve(root, TOKENS_MODULE);
+  const options = await resolveConfig(target);
+  return format(lines.join('\n'), { ...options, filepath: target });
+}
+
+const PARTS_TYPES = [
+  'export type V46Bezier = readonly [number, number, number, number];',
+  'export type V46Transition = { prop: string; ms: number; delayMs: number; ease: V46Bezier };',
+  'export type V46Font = { size: number; weight: number; lineHeight: number };',
+  'export type V46Paint = string | { gradient: number } | null;',
+  'export type V46Gradient = {',
+  '  tag: string;',
+  '  attrs: Record<string, string | number>;',
+  '  stops: { offset: number; color: string; opacity: number }[];',
+  '};',
+  'export type V46SvgNode = {',
+  '  tag: string;',
+  '  cls: string | null;',
+  '  attrs: Record<string, string | number>;',
+  '  clip?: number;',
+  '  fill?: V46Paint;',
+  '  stroke?: V46Paint;',
+  '  strokeWidth?: number;',
+  '  lineCap?: string;',
+  '  lineJoin?: string;',
+  '  opacity?: number;',
+  '  children?: V46SvgNode[];',
+  '};',
+  'export type V46Drawing = {',
+  '  viewBox: readonly [number, number, number, number];',
+  '  clips: V46SvgNode[][];',
+  '  gradients: V46Gradient[];',
+  '  nodes: V46SvgNode[];',
+  '};',
+  'export type V46ButtonIcon = {',
+  '  size: readonly [number, number];',
+  '  pressedScale: number;',
+  '  transitions: V46Transition[];',
+  '} & (',
+  "  | { bar: 'plus' | 'cross' | 'check'; fills: { a: string; b: string; x: string } }",
+  '  | { drawing: V46Drawing }',
+  ');',
+  'export type V46ButtonScheme = {',
+  '  gap: number;',
+  '  justify: string;',
+  '  padding: readonly [number, number, number, number];',
+  '  pressedScale: number;',
+  '  transitions: V46Transition[];',
+  '  label: {',
+  '    font: V46Font;',
+  '    color: string;',
+  '    letterSpacing: number;',
+  '    opacity: number;',
+  '    translateY: number;',
+  '    transitions: V46Transition[];',
+  '  } | null;',
+  '  icon: V46ButtonIcon | null;',
+  '  loader: {',
+  '    size: readonly [number, number];',
+  '    fills: { a: string; b: string; overlap: string };',
+  '    transitions: V46Transition[];',
+  '  } | null;',
+  '  badge: {',
+  '    size: readonly [number, number];',
+  '    bg: string;',
+  '    color: string;',
+  '    font: V46Font;',
+  '    radius: number;',
+  '    shadow: string | null;',
+  '    padding: readonly [number, number, number, number];',
+  '    top: number;',
+  '    right: number;',
+  '  } | null;',
+  '};',
+  'export type V46ButtonNarrow = {',
+  '  width: number;',
+  '  gap: number;',
+  '  padding: readonly [number, number, number, number];',
+  '  font: V46Font;',
+  '  iconShown: boolean;',
+  '};',
+  'export type V46ButtonParts = {',
+  '  light: V46ButtonScheme;',
+  '  dark: V46ButtonScheme;',
+  "  // At v46's narrow width (V46_NARROW_MAX_WIDTH and below), light; null if v46 does not show it there.",
+  '  narrow: V46ButtonNarrow | null;',
+  '};',
+];
+
+// The measurement (scripts/v46/measured.ts) as parts.generated.ts: per component only the values its
+// src/ui component reads (buttons.ts for the buttons), in both schemes and at v46's narrow width.
+export async function buildPartsModule(root: string): Promise<string> {
+  const measured = readMeasured(root);
+  const inventory = readInventory(root);
+  if (measured.meta.source_sha256 !== inventory.meta.source_sha256) {
+    throw new Error('the measurement and the inventory are of different v46 files');
+  }
+  const metrics = bundledMetrics(root);
+  const html = readFileSync(resolve(root, 'docs/design/v46', inventory.meta.source), 'utf8');
+  const buttons = inventory.components.filter((c) => c.group === BUTTONS_GROUP).map((c) => c.id);
+  const lines: string[] = [
+    '// Generated by `pnpm tokens` (scripts/v46/tokens.ts) from docs/design/v46/olcum/skall-v46-olcum.json',
+    '// (scripts/v46/measure.ts). Do not edit by hand: measure again and run `pnpm tokens`.',
+    '',
+    ...PARTS_TYPES,
+    '',
+    "// v46's one small-screen breakpoint (`@media (max-width: …px)` in its CSS).",
+    `export const V46_NARROW_MAX_WIDTH = ${narrowBreakpoint(html)};`,
+    '',
+    `export type V46ButtonId = ${buttons.map(json).join(' | ')};`,
+    '',
+    `// v46's buttons (gallery group ${BUTTONS_GROUP}): scripts/v46/buttons.ts.`,
+    'export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {',
+  ];
+  for (const id of buttons) {
+    const m = measured.components[id];
+    if (!m) throw new Error(`no measurement of ${id}`);
+    const scheme = (s: 'light' | 'dark') =>
+      buttonScheme(element(m[s], metrics), pressed(m[s].pressed));
+    lines.push(
+      `${json(id)}: {`,
+      `light: ${json(scheme('light'))},`,
+      `dark: ${json(scheme('dark'))},`,
+      `narrow: ${json(m.narrow ? buttonNarrow(element(m.narrow, metrics)) : null)},`,
+      '},',
+    );
+  }
+  lines.push('};', '');
+  const target = resolve(root, PARTS_MODULE);
   const options = await resolveConfig(target);
   return format(lines.join('\n'), { ...options, filepath: target });
 }
