@@ -2,15 +2,29 @@ import { type ReactNode, useState } from 'react';
 import { View } from 'react-native';
 
 import { tr } from '@/i18n/tr';
-import { V46_BUTTONS, type V46ButtonId, type V46TabKey } from '@/theme/parts.generated';
+import {
+  V46_BUTTONS,
+  V46_EXPLORE,
+  type V46ButtonId,
+  type V46TabKey,
+  type V46ThumbKind,
+} from '@/theme/parts.generated';
 import { V46_COMPONENTS } from '@/theme/tokens.generated';
 import type { GalleryId } from '@/theme/v46Gallery';
 import { Button, type ButtonLook } from '@/ui/Button';
+import { CityButton } from '@/ui/CityButton';
+import { FilterChips } from '@/ui/FilterChips';
+import { HereCard } from '@/ui/HereCard';
+import { LiveDot } from '@/ui/LiveDot';
 import { useNarrow } from '@/ui/narrow';
 import { RoundButton } from '@/ui/RoundButton';
+import { SearchField } from '@/ui/SearchField';
 import { SendButton } from '@/ui/SendButton';
 import { TabBar, type TabBarItem, UnreadDot } from '@/ui/TabBar';
 import { TopBar } from '@/ui/TopBar';
+import { VenueList } from '@/ui/VenueList';
+import { VenueRow } from '@/ui/VenueRow';
+import { VenueThumb } from '@/ui/VenueThumb';
 import { type ViewMode, ViewModeToggle } from '@/ui/ViewModeToggle';
 
 // What the v46 gallery draws for a component once it is rewritten in src/ui (v46 native, step 3):
@@ -164,6 +178,148 @@ const NAVIGATION: Partial<Record<GalleryId, readonly GalleryState[]>> = {
   'liste-harita-harita': [{ key: 'normal', render: () => <SampleViewMode mode="map" /> }],
 };
 
+// Keşfet's parts with v46's sample data (its list in its own order, each row's icon as v46 draws
+// it). The search is live: type in it; a chip or the city button answers a press.
+const VENUE_THUMBS: readonly V46ThumbKind[] = ['cay', 'kafe', 'kafe', 'kafe', 'yemek'];
+const QUIET = tr.explore.buckets.calm;
+
+function SampleSearch({ word = '', focused = false }: { word?: string; focused?: boolean }) {
+  const [value, setValue] = useState(word);
+  return (
+    <SearchField
+      value={value}
+      onChangeText={setValue}
+      placeholder={tr.explore.search}
+      focusedPreview={focused}
+    />
+  );
+}
+
+function SampleChips({ testID }: { testID?: string }) {
+  const [kind, setKind] = useState<'all' | 'campus' | 'cafe'>('all');
+  const k = tr.explore.kinds;
+  return (
+    <FilterChips
+      items={[
+        { key: 'all', label: k.all },
+        { key: 'campus', label: k.campus },
+        { key: 'cafe', label: k.cafe },
+      ]}
+      value={kind}
+      onChange={setKind}
+      testID={testID}
+    />
+  );
+}
+
+// A row in the list's card, as v46 draws it there; `gorsel-satir` is the row (the gate's crop).
+const venueRow = (i: number, pressed = false) => {
+  const v = s.venues[i];
+  const thumb = VENUE_THUMBS[i];
+  if (!v || !thumb) return null;
+  return (
+    <VenueList>
+      <VenueRow
+        thumb={thumb}
+        name={v.name}
+        sub={v.sub}
+        status={{ text: v.status, live: v.status !== QUIET }}
+        index={0}
+        onPress={noop}
+        pressedPreview={pressed}
+        testID="gorsel-satir"
+      />
+    </VenueList>
+  );
+};
+
+// v46's side padding on its screens (the chips reach past it by as much).
+const SIDE = -V46_EXPLORE.light.chips.margin[3];
+
+// Within the screen's side padding, where v46 puts it (Keşfet's search, list and cards);
+// `gorsel-parca` is the part itself (the visual gate's crop).
+const padded = (render: () => ReactNode, key: GalleryState['key'] = 'normal'): GalleryState => ({
+  key,
+  wide: true,
+  render: () => (
+    <View style={{ paddingHorizontal: SIDE }}>
+      <View testID="gorsel-parca">{render()}</View>
+    </View>
+  ),
+});
+
+const EXPLORE: Partial<Record<GalleryId, readonly GalleryState[]>> = {
+  arama: [padded(() => <SampleSearch />)],
+  'arama-odak': [padded(() => <SampleSearch focused />)],
+  'arama-dolu': [padded(() => <SampleSearch word={s.searchWord} />)],
+  // As wide as the screen: the row reaches past the side padding by itself.
+  'suzgec-cipleri': [
+    {
+      key: 'normal',
+      wide: true,
+      render: () => (
+        <View style={{ paddingHorizontal: SIDE }}>
+          <SampleChips testID="gorsel-parca" />
+        </View>
+      ),
+    },
+  ],
+  'sehir-secici': [
+    padded(() => (
+      <CityButton label={s.place} count={s.venueCount} onPress={noop} rowTestID="gorsel-sehir" />
+    )),
+  ],
+  'mekan-listesi': [
+    padded(() => (
+      <VenueList>
+        {s.venues.map((v, i) => {
+          const thumb = VENUE_THUMBS[i];
+          return thumb ? (
+            <VenueRow
+              key={v.name}
+              thumb={thumb}
+              name={v.name}
+              sub={v.sub}
+              status={{ text: v.status, live: v.status !== QUIET }}
+              index={i}
+              onPress={noop}
+            />
+          ) : null;
+        })}
+      </VenueList>
+    )),
+  ],
+  'mekan-satiri': [padded(() => venueRow(0)), padded(() => venueRow(0, true), 'pressed')],
+  'mekan-satiri-sessiz': [padded(() => venueRow(3))],
+  'mekan-simgesi-kafe': [{ key: 'normal', render: () => <VenueThumb kind="kafe" /> }],
+  'mekan-simgesi-cay': [{ key: 'normal', render: () => <VenueThumb kind="cay" /> }],
+  'mekan-simgesi-yemek': [{ key: 'normal', render: () => <VenueThumb kind="yemek" /> }],
+  'mekan-simgesi-kampus': [{ key: 'normal', render: () => <VenueThumb kind="kampus" /> }],
+  // The card itself is the crop: its margin above (`.vhere{margin-top:8px}`) is not in v46's.
+  'su-an-buradasin': [
+    {
+      key: 'normal',
+      wide: true,
+      render: () => (
+        <View style={{ paddingHorizontal: SIDE }}>
+          <HereCard
+            label={tr.explore.here}
+            thumb="kampus"
+            name={s.hereName}
+            sub={s.hereSub}
+            action={tr.explore.backToVenue}
+            onPress={noop}
+            testID="gorsel-parca"
+          />
+        </View>
+      ),
+    },
+  ],
+  'canli-nokta': [
+    { key: 'normal', render: () => <LiveDot size={V46_EXPLORE.light.here.label.dot} /> },
+  ],
+};
+
 export const UI_GALLERY: Partial<Record<GalleryId, readonly GalleryState[]>> = {
   ...Object.fromEntries(
     (Object.entries(BUTTONS) as [V46ButtonId, ButtonSample][]).map(([id, b]) => [
@@ -190,6 +346,7 @@ export const UI_GALLERY: Partial<Record<GalleryId, readonly GalleryState[]>> = {
     },
   ],
   ...NAVIGATION,
+  ...EXPLORE,
 };
 
 // The bell with v46's sample count; each press is a new notice: it swings and the count grows.

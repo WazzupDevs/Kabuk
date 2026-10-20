@@ -136,8 +136,8 @@ export type V46Surface = {
   gradient: string | null;
   border: V46Edge | null;
   shadow: string | null;
-  opacity: number;
 };
+export type V46FadingSurface = V46Surface & { opacity: number };
 export type V46Insets = { top: number; right: number; bottom: number; left: number };
 export type V46TabKey = 'explore' | 'activities' | 'venue' | 'messages' | 'profile';
 // The Mekan tab's mark in one state, in its drawing's units: the group, the first capsule, the
@@ -151,14 +151,13 @@ export type V46VenueGlyphState = {
 export type V46TabBarScheme = {
   height: number;
   inset: number;
-  bottom: number;
   maxWidth: number;
   padding: readonly [number, number, number, number];
   radius: number;
   gradient: string;
   border: V46Edge;
   shadow: { outer: string | null; inset: string | null };
-  backdrop: { blur: number; saturate: number };
+  backdrop: { blur: number };
   tab: { gap: number; pressedScale: number };
   label: { inactive: V46Text; active: V46Text };
   pill: {
@@ -209,11 +208,122 @@ export type V46ViewModeScheme = {
     radius: number;
     pressedScale: number;
     hitSlop: V46Insets;
-    on: V46Surface;
-    off: V46Surface;
+    on: V46FadingSurface;
+    off: V46FadingSurface;
     transitions: V46Transition[];
   };
   icon: { size: readonly [number, number] };
+};
+export type V46Sides = readonly [number, number, number, number];
+export type V46Card = { bg: string; border: V46Edge; radius: number; shadow: string };
+export type V46ChipLook = { bg: string; border: V46Edge; color: string };
+export type V46ExploreScheme = {
+  list: { card: V46Card; padding: V46Sides };
+  search: {
+    height: number;
+    padding: V46Sides;
+    gap: number;
+    radius: number;
+    bg: string;
+    idle: { border: V46Edge; shadow: string | null };
+    focus: { border: V46Edge; shadow: string | null };
+    transitions: V46Transition[];
+    icon: { size: readonly [number, number]; color: string };
+    field: {
+      height: number;
+      font: V46Font;
+      letterSpacing: number;
+      color: string;
+      placeholderColor: string;
+    };
+  };
+  chips: {
+    margin: V46Sides;
+    padding: V46Sides;
+    gap: number;
+    chip: {
+      height: number;
+      padding: V46Sides;
+      gap: number;
+      radius: number;
+      hitSlop: V46Insets;
+      font: V46Font;
+      letterSpacing: number;
+      pressedScale: number;
+      on: V46ChipLook;
+      off: V46ChipLook;
+    };
+  };
+  city: {
+    margin: V46Sides;
+    gap: number;
+    rowGap: number;
+    button: {
+      minHeight: number;
+      padding: V46Sides;
+      gap: number;
+      radius: number;
+      bg: string;
+      border: V46Edge;
+      pressedScale: number;
+      label: V46Text;
+      pin: { size: readonly [number, number] };
+      chevron: { size: readonly [number, number]; color: string };
+    };
+    count: V46Text;
+  };
+  row: {
+    minHeight: number;
+    padding: V46Sides;
+    gap: number;
+    pressed: { bg: string; scale: number };
+    transitions: V46Transition[];
+    thumb: { size: readonly [number, number]; radius: number };
+    middle: { gap: number };
+    name: V46Text;
+    sub: V46Text;
+    live: {
+      marginTop: number;
+      gap: number;
+      font: V46Font;
+      color: string;
+      quiet: string;
+      dot: number;
+    };
+    chevron: { size: readonly [number, number]; color: string };
+  };
+  here: {
+    card: V46Card;
+    margin: V46Sides;
+    padding: V46Sides;
+    label: { gap: number; font: V46Font; color: string; dot: number };
+    row: { marginTop: number; gap: number };
+    middle: { gap: number };
+    name: V46Text;
+    sub: V46Text;
+    button: { marginTop: number };
+  };
+  live: { bg: string; halo: { bg: string; opacity: number } };
+};
+export type V46ThumbKind = 'kafe' | 'cay' | 'yemek' | 'kampus';
+export type V46SteamBar = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rx: number;
+  fill: string;
+  delayMs: number;
+};
+// A keyframe animation as v46's rule plays it; `iterations` null: for ever; `holdsBefore`: its
+// first keyframe holds during the delay (`animation-fill-mode: backwards`).
+export type V46Animation = {
+  delayMs: number;
+  ease: V46Bezier;
+  channels: Partial<Record<V46Channel, V46ChannelSteps>>;
+  offWhenReduced: boolean;
+  iterations: number | null;
+  holdsBefore: boolean;
 };
 
 // v46's one small-screen breakpoint (`@media (max-width: …px)` in its CSS).
@@ -1857,7 +1967,20 @@ export type V46ScreenPartId =
   | 'ust-alt'
   | 'ust-alt-sayili'
   | 'liste-harita'
-  | 'liste-harita-harita';
+  | 'liste-harita-harita'
+  | 'arama'
+  | 'arama-odak'
+  | 'arama-dolu'
+  | 'sehir-secici'
+  | 'mekan-listesi'
+  | 'mekan-satiri'
+  | 'mekan-satiri-sessiz'
+  | 'mekan-simgesi-kafe'
+  | 'mekan-simgesi-cay'
+  | 'mekan-simgesi-yemek'
+  | 'mekan-simgesi-kampus'
+  | 'su-an-buradasin'
+  | 'canli-nokta';
 
 // The parts of v46's screens the inventory does not list (scripts/v46/screenParts.ts): their
 // name, group and measured box, for the app's v46 gallery.
@@ -1919,6 +2042,24 @@ export const V46_SCREEN_PARTS: Record<
     width: 96,
     height: 44,
   },
+  arama: { name: 'Arama kutusu, boş', group: 'Keşfet', width: 328, height: 48 },
+  'arama-odak': { name: 'Arama kutusu, yazarken', group: 'Keşfet', width: 328, height: 48 },
+  'arama-dolu': { name: 'Arama kutusu, dolu', group: 'Keşfet', width: 328, height: 48 },
+  'sehir-secici': { name: 'Şehir seçici ve mekan sayısı', group: 'Keşfet', width: 324, height: 68 },
+  'mekan-listesi': { name: 'Mekan listesi', group: 'Keşfet', width: 328, height: 414 },
+  'mekan-satiri': { name: 'Mekan satırı, açık masalı', group: 'Keşfet', width: 326, height: 80 },
+  'mekan-satiri-sessiz': { name: 'Mekan satırı, sessiz', group: 'Keşfet', width: 326, height: 80 },
+  'mekan-simgesi-kafe': { name: 'Mekan simgesi, kafe', group: 'Keşfet', width: 56, height: 56 },
+  'mekan-simgesi-cay': {
+    name: 'Mekan simgesi, çay bahçesi',
+    group: 'Keşfet',
+    width: 56,
+    height: 56,
+  },
+  'mekan-simgesi-yemek': { name: 'Mekan simgesi, yemek', group: 'Keşfet', width: 56, height: 56 },
+  'mekan-simgesi-kampus': { name: 'Mekan simgesi, kampüs', group: 'Keşfet', width: 56, height: 56 },
+  'su-an-buradasin': { name: 'Şu an buradasın', group: 'Keşfet', width: 328, height: 177 },
+  'canli-nokta': { name: 'Canlı nokta', group: 'Keşfet', width: 8, height: 8 },
 };
 
 // v46's tab bar (`nav.nav`), each tab as it is selected and not (scripts/v46/navigation.ts).
@@ -1931,7 +2072,6 @@ export const V46_TAB_BAR: {
   light: {
     height: 62,
     inset: 12,
-    bottom: 12,
     maxWidth: 376,
     padding: [4, 4, 4, 4],
     radius: 999,
@@ -1941,7 +2081,7 @@ export const V46_TAB_BAR: {
       outer: '0px 10px 26px 0px rgba(40, 30, 90, 0.16), 0px 2px 6px 0px rgba(40, 30, 90, 0.08)',
       inset: 'inset 0px 1.5px 1px 0px rgba(255, 255, 255, 0.95)',
     },
-    backdrop: { blur: 20, saturate: 1.9 },
+    backdrop: { blur: 20 },
     tab: { gap: 2, pressedScale: 0.97 },
     label: {
       inactive: {
@@ -1963,7 +2103,6 @@ export const V46_TAB_BAR: {
         gradient: null,
         border: { width: 1, color: 'transparent' },
         shadow: null,
-        opacity: 1,
       },
       active: {
         bg: null,
@@ -1971,7 +2110,6 @@ export const V46_TAB_BAR: {
         border: { width: 1, color: 'rgba(255, 255, 255, 0.95)' },
         shadow:
           '0px 4px 10px 0px rgba(123, 92, 255, 0.22), inset 0px 1px 1px 0px #FFFFFF, inset 0px -2px 6px 0px rgba(123, 92, 255, 0.18)',
-        opacity: 1,
       },
       transitions: [
         { prop: 'background-color', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
@@ -2042,7 +2180,6 @@ export const V46_TAB_BAR: {
   dark: {
     height: 62,
     inset: 12,
-    bottom: 12,
     maxWidth: 376,
     padding: [4, 4, 4, 4],
     radius: 999,
@@ -2052,7 +2189,7 @@ export const V46_TAB_BAR: {
       outer: '0px 10px 26px 0px rgba(0, 0, 0, 0.27), 0px 2px 6px 0px rgba(0, 0, 0, 0.137)',
       inset: 'inset 0px 1.5px 1px 0px rgba(255, 255, 255, 0.067)',
     },
-    backdrop: { blur: 20, saturate: 1.9 },
+    backdrop: { blur: 20 },
     tab: { gap: 2, pressedScale: 0.97 },
     label: {
       inactive: {
@@ -2074,7 +2211,6 @@ export const V46_TAB_BAR: {
         gradient: null,
         border: { width: 1, color: 'transparent' },
         shadow: null,
-        opacity: 1,
       },
       active: {
         bg: null,
@@ -2082,7 +2218,6 @@ export const V46_TAB_BAR: {
         border: { width: 1, color: 'rgba(28, 24, 56, 0.95)' },
         shadow:
           '0px 4px 10px 0px rgba(255, 255, 255, 0.016), inset 0px 1px 1px 0px rgba(255, 255, 255, 0.07), inset 0px -2px 6px 0px rgba(255, 255, 255, 0.01)',
-        opacity: 1,
       },
       transitions: [
         { prop: 'background-color', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
@@ -2524,5 +2659,699 @@ export const V46_VIEW_MODE: Record<'light' | 'dark', V46ViewModeScheme> & {
         },
       ],
     },
+  },
+};
+
+// Keşfet's parts: search, filter chips, city, the venue list and rows, "Şu an buradasın", the live dot.
+export const V46_EXPLORE: Record<'light' | 'dark', V46ExploreScheme> = {
+  light: {
+    list: {
+      card: {
+        bg: '#FFFFFF',
+        border: { width: 1, color: 'rgba(20, 17, 43, 0.06)' },
+        radius: 22,
+        shadow: '0px 10px 22px 0px rgba(20, 17, 43, 0.07)',
+      },
+      padding: [6, 0, 6, 0],
+    },
+    search: {
+      height: 48,
+      padding: [0, 16, 0, 16],
+      gap: 10,
+      radius: 999,
+      bg: '#FFFFFF',
+      idle: { border: { width: 1, color: '#DAD3F2' }, shadow: null },
+      focus: {
+        border: { width: 1, color: '#7B5CFF' },
+        shadow: '0px 0px 0px 3px rgba(123, 92, 255, 0.15)',
+      },
+      transitions: [
+        { prop: 'border-color', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+        { prop: 'box-shadow', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+      ],
+      icon: { size: [20, 20], color: '#8A85A0' },
+      field: {
+        height: 44,
+        font: { size: 15, weight: 600, lineHeight: 19 },
+        letterSpacing: 0,
+        color: '#14112B',
+        placeholderColor: '#6E6890',
+      },
+    },
+    chips: {
+      margin: [10, -16, 0, -16],
+      padding: [4, 16, 4, 16],
+      gap: 8,
+      chip: {
+        height: 36,
+        padding: [0, 8, 0, 14],
+        gap: 7,
+        radius: 999,
+        hitSlop: { top: 4, right: 0, bottom: 4, left: 0 },
+        font: { size: 13, weight: 700, lineHeight: 16 },
+        letterSpacing: 0,
+        pressedScale: 0.97,
+        on: { bg: '#14112B', border: { width: 1, color: '#14112B' }, color: '#FFFFFF' },
+        off: { bg: '#FFFFFF', border: { width: 1, color: '#E3DEF2' }, color: '#14112B' },
+      },
+    },
+    city: {
+      margin: [8, 2, 10, 2],
+      gap: 10,
+      rowGap: 6,
+      button: {
+        minHeight: 44,
+        padding: [0, 14, 0, 10],
+        gap: 6,
+        radius: 999,
+        bg: '#FFFFFF',
+        border: { width: 1, color: '#DAD3F2' },
+        pressedScale: 0.97,
+        label: {
+          font: { size: 14, weight: 800, lineHeight: 18 },
+          color: '#14112B',
+          letterSpacing: 0,
+        },
+        pin: { size: [18, 18] },
+        chevron: { size: [16, 16], color: '#14112B' },
+      },
+      count: {
+        font: { size: 13, weight: 700, lineHeight: 18 },
+        color: '#5E5878',
+        letterSpacing: 0,
+      },
+    },
+    row: {
+      minHeight: 80,
+      padding: [10, 12, 10, 16],
+      gap: 12,
+      pressed: { bg: '#F5F3FC', scale: 0.97 },
+      transitions: [{ prop: 'background-color', ms: 150, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] }],
+      thumb: { size: [56, 56], radius: 16 },
+      middle: { gap: 1 },
+      name: {
+        font: { size: 15, weight: 800, lineHeight: 20 },
+        color: '#14112B',
+        letterSpacing: -0.2,
+      },
+      sub: { font: { size: 13, weight: 600, lineHeight: 18 }, color: '#5E5878', letterSpacing: 0 },
+      live: {
+        marginTop: 3,
+        gap: 6,
+        font: { size: 12, weight: 800, lineHeight: 16 },
+        color: '#1C7843',
+        quiet: '#5E5878',
+        dot: 7,
+      },
+      chevron: { size: [20, 20], color: '#8A85A0' },
+    },
+    here: {
+      card: {
+        bg: '#FFFFFF',
+        border: { width: 1, color: 'rgba(20, 17, 43, 0.06)' },
+        radius: 22,
+        shadow: '0px 10px 22px 0px rgba(20, 17, 43, 0.07)',
+      },
+      margin: [8, 0, 0, 0],
+      padding: [14, 14, 14, 14],
+      label: { gap: 8, font: { size: 12, weight: 800, lineHeight: 16 }, color: '#1C7843', dot: 8 },
+      row: { marginTop: 10, gap: 12 },
+      middle: { gap: 3 },
+      name: { font: { size: 15, weight: 800, lineHeight: 20 }, color: '#14112B', letterSpacing: 0 },
+      sub: { font: { size: 13, weight: 600, lineHeight: 18 }, color: '#5E5878', letterSpacing: 0 },
+      button: { marginTop: 12 },
+    },
+    live: { bg: '#16A34A', halo: { bg: '#16A34A', opacity: 0.35 } },
+  },
+  dark: {
+    list: {
+      card: {
+        bg: '#1C1838',
+        border: { width: 1, color: 'rgba(48, 47, 72, 0.06)' },
+        radius: 22,
+        shadow: '0px 10px 22px 0px rgba(0, 0, 0, 0.118)',
+      },
+      padding: [6, 0, 6, 0],
+    },
+    search: {
+      height: 48,
+      padding: [0, 16, 0, 16],
+      gap: 10,
+      radius: 999,
+      bg: '#1C1838',
+      idle: { border: { width: 1, color: '#3A3563' }, shadow: null },
+      focus: {
+        border: { width: 1, color: '#7B5CFF' },
+        shadow: '0px 0px 0px 3px rgba(0, 0, 0, 0.075)',
+      },
+      transitions: [
+        { prop: 'border-color', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+        { prop: 'box-shadow', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+      ],
+      icon: { size: [20, 20], color: '#ADA8C8' },
+      field: {
+        height: 44,
+        font: { size: 15, weight: 600, lineHeight: 19 },
+        letterSpacing: 0,
+        color: '#F3F0FF',
+        placeholderColor: '#ADA8C8',
+      },
+    },
+    chips: {
+      margin: [10, -16, 0, -16],
+      padding: [4, 16, 4, 16],
+      gap: 8,
+      chip: {
+        height: 36,
+        padding: [0, 8, 0, 14],
+        gap: 7,
+        radius: 999,
+        hitSlop: { top: 4, right: 0, bottom: 4, left: 0 },
+        font: { size: 13, weight: 700, lineHeight: 16 },
+        letterSpacing: 0,
+        pressedScale: 0.97,
+        on: { bg: '#F3F0FF', border: { width: 1, color: '#F3F0FF' }, color: '#14112B' },
+        off: { bg: '#1C1838', border: { width: 1, color: '#34305A' }, color: '#F3F0FF' },
+      },
+    },
+    city: {
+      margin: [8, 2, 10, 2],
+      gap: 10,
+      rowGap: 6,
+      button: {
+        minHeight: 44,
+        padding: [0, 14, 0, 10],
+        gap: 6,
+        radius: 999,
+        bg: '#1C1838',
+        border: { width: 1, color: '#3A3563' },
+        pressedScale: 0.97,
+        label: {
+          font: { size: 14, weight: 800, lineHeight: 18 },
+          color: '#F3F0FF',
+          letterSpacing: 0,
+        },
+        pin: { size: [18, 18] },
+        chevron: { size: [16, 16], color: '#F3F0FF' },
+      },
+      count: {
+        font: { size: 13, weight: 700, lineHeight: 18 },
+        color: '#B8B3D2',
+        letterSpacing: 0,
+      },
+    },
+    row: {
+      minHeight: 80,
+      padding: [10, 12, 10, 16],
+      gap: 12,
+      pressed: { bg: '#0D0B1E', scale: 0.97 },
+      transitions: [{ prop: 'background-color', ms: 150, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] }],
+      thumb: { size: [56, 56], radius: 16 },
+      middle: { gap: 1 },
+      name: {
+        font: { size: 15, weight: 800, lineHeight: 20 },
+        color: '#F3F0FF',
+        letterSpacing: -0.2,
+      },
+      sub: { font: { size: 13, weight: 600, lineHeight: 18 }, color: '#B8B3D2', letterSpacing: 0 },
+      live: {
+        marginTop: 3,
+        gap: 6,
+        font: { size: 12, weight: 800, lineHeight: 16 },
+        color: '#7FD499',
+        quiet: '#B8B3D2',
+        dot: 7,
+      },
+      chevron: { size: [20, 20], color: '#ADA8C8' },
+    },
+    here: {
+      card: {
+        bg: '#1C1838',
+        border: { width: 1, color: 'rgba(48, 47, 72, 0.06)' },
+        radius: 22,
+        shadow: '0px 10px 22px 0px rgba(0, 0, 0, 0.118)',
+      },
+      margin: [8, 0, 0, 0],
+      padding: [14, 14, 14, 14],
+      label: { gap: 8, font: { size: 12, weight: 800, lineHeight: 16 }, color: '#7FD499', dot: 8 },
+      row: { marginTop: 10, gap: 12 },
+      middle: { gap: 3 },
+      name: { font: { size: 15, weight: 800, lineHeight: 20 }, color: '#F3F0FF', letterSpacing: 0 },
+      sub: { font: { size: 13, weight: 600, lineHeight: 18 }, color: '#B8B3D2', letterSpacing: 0 },
+      button: { marginTop: 12 },
+    },
+    live: { bg: '#16A34A', halo: { bg: '#16A34A', opacity: 0.35 } },
+  },
+};
+
+// The search's, city's and row's icons; the venues' icons (their steam bars apart).
+export const V46_EXPLORE_ICONS: {
+  search: V46Drawing;
+  pin: V46Drawing;
+  down: V46Drawing;
+  chevron: V46Drawing;
+} = {
+  search: {
+    viewBox: [0, 0, 24, 24],
+    clips: [],
+    gradients: [],
+    nodes: [
+      {
+        tag: 'circle',
+        attrs: { cx: 11, cy: 11, r: 6.5 },
+        fill: null,
+        stroke: 'currentColor',
+        strokeWidth: 2,
+        lineCap: 'round',
+        lineJoin: 'round',
+        opacity: 1,
+      },
+      {
+        tag: 'path',
+        attrs: { d: 'M16 16l4 4' },
+        fill: null,
+        stroke: 'currentColor',
+        strokeWidth: 2,
+        lineCap: 'round',
+        lineJoin: 'round',
+        opacity: 1,
+      },
+    ],
+  },
+  pin: {
+    viewBox: [0, 0, 24, 24],
+    clips: [],
+    gradients: [],
+    nodes: [
+      {
+        tag: 'path',
+        attrs: { d: 'M12 21s-6.5-6.2-6.5-11.2a6.5 6.5 0 0 1 13 0C18.5 14.8 12 21 12 21z' },
+        fill: '#7B5CFF',
+        stroke: null,
+        strokeWidth: 1,
+        lineCap: 'butt',
+        lineJoin: 'miter',
+        opacity: 1,
+      },
+      {
+        tag: 'circle',
+        attrs: { cx: 12, cy: 9.8, r: 2.6 },
+        fill: '#FFFFFF',
+        stroke: null,
+        strokeWidth: 1,
+        lineCap: 'butt',
+        lineJoin: 'miter',
+        opacity: 1,
+      },
+    ],
+  },
+  down: {
+    viewBox: [0, 0, 24, 24],
+    clips: [],
+    gradients: [],
+    nodes: [
+      {
+        tag: 'polyline',
+        attrs: { points: '6 9 12 15 18 9' },
+        fill: null,
+        stroke: 'currentColor',
+        strokeWidth: 2,
+        lineCap: 'round',
+        lineJoin: 'round',
+        opacity: 1,
+      },
+    ],
+  },
+  chevron: {
+    viewBox: [0, 0, 24, 24],
+    clips: [],
+    gradients: [],
+    nodes: [
+      {
+        tag: 'polyline',
+        attrs: { points: '9 5 16 12 9 19' },
+        fill: null,
+        stroke: 'currentColor',
+        strokeWidth: 2,
+        lineCap: 'round',
+        lineJoin: 'round',
+        opacity: 1,
+      },
+    ],
+  },
+};
+
+export const V46_VENUE_THUMBS: Record<V46ThumbKind, { drawing: V46Drawing; steam: V46SteamBar[] }> =
+  {
+    kafe: {
+      drawing: {
+        viewBox: [0, 0, 56, 56],
+        clips: [],
+        gradients: [],
+        nodes: [
+          {
+            tag: 'rect',
+            attrs: { width: 56, height: 56, rx: 16 },
+            fill: '#FFE6C7',
+            stroke: null,
+            strokeWidth: 1,
+            lineCap: 'butt',
+            lineJoin: 'miter',
+            opacity: 1,
+          },
+          {
+            tag: 'path',
+            attrs: { d: 'M14 24 h24 l-3 20 a4 4 0 0 1-4 3.5 h-10 a4 4 0 0 1-4-3.5 z' },
+            fill: '#FFFFFF',
+            stroke: null,
+            strokeWidth: 1,
+            lineCap: 'butt',
+            lineJoin: 'miter',
+            opacity: 1,
+          },
+          {
+            tag: 'path',
+            attrs: { d: 'M15.5 31 h21 l-1 8 h-19 z' },
+            fill: '#7B5CFF',
+            stroke: null,
+            strokeWidth: 1,
+            lineCap: 'butt',
+            lineJoin: 'miter',
+            opacity: 1,
+          },
+          {
+            tag: 'path',
+            attrs: { d: 'M38 28 h3 a4 4 0 0 1 0 8 h-4' },
+            fill: null,
+            stroke: '#FFFFFF',
+            strokeWidth: 3,
+            lineCap: 'butt',
+            lineJoin: 'miter',
+            opacity: 1,
+          },
+        ],
+      },
+      steam: [
+        { x: 21, y: 12, width: 4, height: 9, rx: 2, fill: '#FF4F8B', delayMs: 0 },
+        { x: 28, y: 12, width: 4, height: 9, rx: 2, fill: '#FFB547', delayMs: 600 },
+      ],
+    },
+    cay: {
+      drawing: {
+        viewBox: [0, 0, 56, 56],
+        clips: [],
+        gradients: [],
+        nodes: [
+          {
+            tag: 'rect',
+            attrs: { width: 56, height: 56, rx: 16 },
+            fill: '#D9F3E3',
+            stroke: null,
+            strokeWidth: 1,
+            lineCap: 'butt',
+            lineJoin: 'miter',
+            opacity: 1,
+          },
+          {
+            tag: 'path',
+            attrs: {
+              d: 'M20 16 C18 24 22 28 21 34 C20 40 23 46 28 46 C33 46 36 40 35 34 C34 28 38 24 36 16 Z',
+            },
+            fill: '#FFFFFF',
+            stroke: null,
+            strokeWidth: 1,
+            lineCap: 'butt',
+            lineJoin: 'miter',
+            opacity: 0.7,
+          },
+          {
+            tag: 'path',
+            attrs: {
+              d: 'M21.5 24 C21 28 23 31 22.5 35 C22 40 24.5 44 28 44 C31.5 44 34 40 33.5 35 C33 31 35 28 34.5 24 Z',
+            },
+            fill: '#E0402C',
+            stroke: null,
+            strokeWidth: 1,
+            lineCap: 'butt',
+            lineJoin: 'miter',
+            opacity: 1,
+          },
+          {
+            tag: 'rect',
+            attrs: { x: 19, y: 46, width: 18, height: 4, rx: 2 },
+            fill: '#7B5CFF',
+            stroke: null,
+            strokeWidth: 1,
+            lineCap: 'butt',
+            lineJoin: 'miter',
+            opacity: 1,
+          },
+        ],
+      },
+      steam: [],
+    },
+    yemek: {
+      drawing: {
+        viewBox: [0, 0, 56, 56],
+        clips: [],
+        gradients: [],
+        nodes: [
+          {
+            tag: 'rect',
+            attrs: { width: 56, height: 56, rx: 16 },
+            fill: '#FFD3E2',
+            stroke: null,
+            strokeWidth: 1,
+            lineCap: 'butt',
+            lineJoin: 'miter',
+            opacity: 1,
+          },
+          {
+            tag: 'g',
+            attrs: {
+              transform:
+                'translate(0 0) matrix(0.819 -0.574 0.574 0.819 -12.144 21.486) translate(0 0)',
+            },
+            children: [
+              {
+                tag: 'rect',
+                attrs: { x: 12, y: 22, width: 32, height: 15, rx: 7.5 },
+                fill: '#FFB547',
+                stroke: null,
+                strokeWidth: 1,
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                opacity: 1,
+              },
+              {
+                tag: 'rect',
+                attrs: { x: 18, y: 22, width: 2.5, height: 15 },
+                fill: '#E89A2A',
+                stroke: null,
+                strokeWidth: 1,
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                opacity: 1,
+              },
+              {
+                tag: 'rect',
+                attrs: { x: 26, y: 22, width: 2.5, height: 15 },
+                fill: '#E89A2A',
+                stroke: null,
+                strokeWidth: 1,
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                opacity: 1,
+              },
+              {
+                tag: 'rect',
+                attrs: { x: 34, y: 22, width: 2.5, height: 15 },
+                fill: '#E89A2A',
+                stroke: null,
+                strokeWidth: 1,
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                opacity: 1,
+              },
+              {
+                tag: 'rect',
+                attrs: { x: 38, y: 23, width: 9, height: 13, rx: 4.5 },
+                fill: '#7B5CFF',
+                stroke: null,
+                strokeWidth: 1,
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                opacity: 1,
+              },
+            ],
+          },
+        ],
+      },
+      steam: [],
+    },
+    kampus: {
+      drawing: {
+        viewBox: [0, 0, 56, 56],
+        clips: [],
+        gradients: [],
+        nodes: [
+          {
+            tag: 'rect',
+            attrs: { width: 56, height: 56, rx: 16 },
+            fill: '#E8E3FF',
+            stroke: null,
+            strokeWidth: 1,
+            lineCap: 'butt',
+            lineJoin: 'miter',
+            opacity: 1,
+          },
+          {
+            tag: 'path',
+            attrs: { d: 'M10 22 L28 11 L46 22 Z' },
+            fill: '#14112B',
+            stroke: null,
+            strokeWidth: 1,
+            lineCap: 'butt',
+            lineJoin: 'miter',
+            opacity: 1,
+          },
+          {
+            tag: 'rect',
+            attrs: { x: 13, y: 24, width: 7, height: 20, rx: 3.5 },
+            fill: '#7B5CFF',
+            stroke: null,
+            strokeWidth: 1,
+            lineCap: 'butt',
+            lineJoin: 'miter',
+            opacity: 1,
+          },
+          {
+            tag: 'rect',
+            attrs: { x: 24.5, y: 24, width: 7, height: 20, rx: 3.5 },
+            fill: '#FF4F8B',
+            stroke: null,
+            strokeWidth: 1,
+            lineCap: 'butt',
+            lineJoin: 'miter',
+            opacity: 1,
+          },
+          {
+            tag: 'rect',
+            attrs: { x: 36, y: 24, width: 7, height: 20, rx: 3.5 },
+            fill: '#FFB547',
+            stroke: null,
+            strokeWidth: 1,
+            lineCap: 'butt',
+            lineJoin: 'miter',
+            opacity: 1,
+          },
+          {
+            tag: 'rect',
+            attrs: { x: 9, y: 44, width: 38, height: 4, rx: 2 },
+            fill: '#14112B',
+            stroke: null,
+            strokeWidth: 1,
+            lineCap: 'butt',
+            lineJoin: 'miter',
+            opacity: 1,
+          },
+        ],
+      },
+      steam: [],
+    },
+  };
+
+// Keşfet's motions: rows coming in, steam, the live dot (scripts/v46/explore.ts).
+export const V46_EXPLORE_MOTION: {
+  rowIn: V46Animation;
+  rowStaggerMs: number;
+  steam: V46Animation;
+  livePulse: V46Animation;
+  liveHalo: V46Animation;
+  liveFade: V46Animation;
+} = {
+  rowIn: {
+    delayMs: 0,
+    ease: [0.2, 0.8, 0.2, 1],
+    channels: {
+      translateY: { from: 10, steps: [{ to: 0, ms: 340 }] },
+      opacity: { from: 0, steps: [{ to: 1, ms: 340 }] },
+    },
+    offWhenReduced: true,
+    iterations: 1,
+    holdsBefore: true,
+  },
+  rowStaggerMs: 40,
+  steam: {
+    delayMs: 0,
+    ease: [0.42, 0, 0.58, 1],
+    channels: {
+      translateY: { from: 8, steps: [{ to: -16, ms: 2400 }] },
+      opacity: {
+        from: 0,
+        steps: [
+          { to: 0.8, ms: 960 },
+          { to: 0, ms: 1440 },
+        ],
+      },
+    },
+    offWhenReduced: true,
+    iterations: null,
+    holdsBefore: false,
+  },
+  livePulse: {
+    delayMs: 0,
+    ease: [0.42, 0, 0.58, 1],
+    channels: {
+      scale: {
+        from: 0.8,
+        steps: [
+          { to: 1.25, ms: 800 },
+          { to: 0.8, ms: 800 },
+        ],
+      },
+    },
+    offWhenReduced: true,
+    iterations: null,
+    holdsBefore: false,
+  },
+  liveHalo: {
+    delayMs: 0,
+    ease: [0.42, 0, 0.58, 1],
+    channels: {
+      scale: {
+        from: 1,
+        steps: [
+          { to: 2.2, ms: 800 },
+          { to: 1, ms: 800 },
+        ],
+      },
+      opacity: {
+        from: 0,
+        steps: [
+          { to: 0.28, ms: 800 },
+          { to: 0, ms: 800 },
+        ],
+      },
+    },
+    offWhenReduced: true,
+    iterations: null,
+    holdsBefore: false,
+  },
+  liveFade: {
+    delayMs: 0,
+    ease: [0.42, 0, 0.58, 1],
+    channels: {
+      opacity: {
+        from: 1,
+        steps: [
+          { to: 0.5, ms: 800 },
+          { to: 1, ms: 800 },
+        ],
+      },
+    },
+    offWhenReduced: false,
+    iterations: null,
+    holdsBefore: false,
   },
 };

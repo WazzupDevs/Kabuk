@@ -127,6 +127,32 @@ function readElement(el: Element) {
     (n.getAttribute('class')
       ? '.' + (n.getAttribute('class') ?? '').trim().split(/\s+/).join('.')
       : '');
+  // The keyframe animation a node plays, if any: its name, time and delay (a row's place in the
+  // list, the second steam bar's `.6s`).
+  const animationOf = (c: CSSStyleDeclaration) =>
+    c.animationName && c.animationName !== 'none'
+      ? {
+          animation: {
+            name: c.animationName,
+            ms: round(parseFloat(c.animationDuration) * 1000),
+            delayMs: round(parseFloat(c.animationDelay) * 1000),
+          },
+        }
+      : {};
+  // What a text field shows: its value or placeholder, in their font and colours.
+  const fieldOf = (n: Element, c: CSSStyleDeclaration) =>
+    n instanceof HTMLInputElement || n instanceof HTMLTextAreaElement
+      ? {
+          field: {
+            value: n.value,
+            placeholder: n.placeholder,
+            font: `${c.fontSize}/${c.fontWeight}/${c.lineHeight}`,
+            letterSpacing: c.letterSpacing,
+            color: c.color,
+            placeholderColor: getComputedStyle(n, '::placeholder').color,
+          },
+        }
+      : {};
   const box = (n: Element) => {
     const r = n.getBoundingClientRect();
     return [round(r.width), round(r.height)];
@@ -169,6 +195,7 @@ function readElement(el: Element) {
             height: px(after.height),
             top: px(after.top),
             bg: after.backgroundColor,
+            opacity: Number(after.opacity),
             ...image(after),
           },
         }
@@ -188,6 +215,9 @@ function readElement(el: Element) {
     display: cs.display,
     textAlign: cs.textAlign,
     padding: cs.padding,
+    ...(cs.margin !== '0px' ? { margin: cs.margin } : {}),
+    ...(cs.flexWrap === 'wrap' ? { wrap: true, rowGap: px(cs.rowGap) } : {}),
+    ...animationOf(cs),
     font: `${cs.fontSize}/${cs.fontWeight}/${cs.lineHeight}`,
     minHeight: cs.minHeight,
     gap: px(cs.columnGap),
@@ -263,6 +293,7 @@ function readElement(el: Element) {
                 }
               : {}),
             ...(t === 'g' || kids.length ? { children: kids.map(node) } : {}),
+            ...animationOf(scs),
             // A node's own transition (the Mekan tab's capsules: `.vt-a,.vt-b`), with the delay a
             // state gives it (`.is-active .vt-x`).
             ...(transitions(scs).length ? { transitions: transitions(scs) } : {}),
@@ -318,6 +349,8 @@ function readElement(el: Element) {
         padding: ccs.padding,
         ...(ccs.margin !== '0px' ? { margin: ccs.margin } : {}),
         ...hitOf(c),
+        ...animationOf(ccs),
+        ...fieldOf(c, ccs),
         ...(ccs.display === 'flex' || ccs.display === 'inline-flex'
           ? { flex: [ccs.flexDirection, ccs.justifyContent, ccs.alignItems, px(ccs.columnGap)] }
           : {}),
@@ -462,7 +495,7 @@ async function pressed(page: Page, selector: string) {
 // The same element read on two pages: everything from the still one (`anim=0`, v46's own switch:
 // every animation and transition at 0, so nothing is caught mid-flight and a forced `:active` shows
 // at once), the transitions from the moving one.
-type DrawnNode = { transitions?: unknown; children?: DrawnNode[] };
+type DrawnNode = { transitions?: unknown; animation?: unknown; children?: DrawnNode[] };
 function withTransitions(still: Reading, moving: Reading): Reading {
   // An svg's nodes take theirs from the same node on the moving page (the trees are the same).
   const nodes = (a: DrawnNode[], b: DrawnNode[] | undefined): DrawnNode[] =>
@@ -470,18 +503,26 @@ function withTransitions(still: Reading, moving: Reading): Reading {
       const m = b?.[i];
       const out: DrawnNode = { ...n };
       delete out.transitions;
+      delete out.animation;
       if (m?.transitions) out.transitions = m.transitions;
+      if (m?.animation) out.animation = m.animation;
       if (n.children) out.children = nodes(n.children, m?.children);
       return out;
     });
   return {
-    self: { ...still.self, transitions: moving.self.transitions },
+    self: {
+      ...still.self,
+      transitions: moving.self.transitions,
+      ...('animation' in moving.self ? { animation: moving.self.animation } : {}),
+    },
     parts: still.parts.map((p, i) => {
-      const m = moving.parts[i] as { transitions?: unknown; nodes?: DrawnNode[] } | undefined;
+      const m = moving.parts[i] as
+        { transitions?: unknown; animation?: unknown; nodes?: DrawnNode[] } | undefined;
       const own = p as { nodes?: DrawnNode[] };
       return {
         ...(p as object),
         transitions: m?.transitions ?? [],
+        ...(m?.animation ? { animation: m.animation } : {}),
         ...(own.nodes ? { nodes: nodes(own.nodes, m?.nodes) } : {}),
       };
     }),

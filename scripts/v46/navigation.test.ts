@@ -10,7 +10,8 @@ import {
   V46_VIEW_MODE as viewMode,
   type V46Transition,
 } from '../../apps/mobile/src/theme/parts.generated.ts';
-import { V46_COMPONENTS } from '../../apps/mobile/src/theme/tokens.generated.ts';
+import { V46_COMPONENTS, V46_PALETTE } from '../../apps/mobile/src/theme/tokens.generated.ts';
+import { androidBlur, blursBehind } from '../../apps/mobile/src/ui/backdrop.ts';
 import { readInventory } from './inventory.ts';
 import { parseEase, readMeasured } from './measured.ts';
 import { splitShadow, TAB_BARS, TAB_KEYS } from './navigation.ts';
@@ -73,8 +74,36 @@ describe('v46 tab bar', () => {
     expect(html).toContain(
       `width:min(${b.maxWidth}px,calc(100% - ${2 * b.inset}px));height:${b.height}px`,
     );
-    expect(html).toContain(`bottom:${b.bottom}px;width:min(`);
-    expect(b.backdrop).toEqual({ blur: 20, saturate: 1.9 });
+    const top = m?.light.self.at?.[1] ?? 0;
+    expect(html).toContain(`bottom:${SCREEN.height - top - b.height}px;width:min(`);
+    // Blurred as v46 does; its saturate is not drawn (§4.C).
+    expect(m?.light.self.backdrop).toBe('blur(20px) saturate(1.9)');
+    expect(b.backdrop).toEqual({ blur: 20 });
+  });
+
+  it("blurs as much as v46's `blur(20px)` on any screen", () => {
+    // CSS blurs by a deviation in dp; Dimezis by `RenderEffect.createBlurEffect(radius × 4)`, and
+    // Android turns a radius into a deviation as Skia does (0.57735 × radius + 0.5).
+    for (const ratio of [1.5, 2, 2.625, 2.75, 3, 3.5]) {
+      const blur = androidBlur(bar.light.backdrop.blur, ratio);
+      expect(blur.intensity).toBe(1);
+      const sigma = 0.57735 * ((blur.intensity / blur.reductionFactor) * 4) + 0.5;
+      expect(sigma).toBeCloseTo(bar.light.backdrop.blur * ratio, 9);
+    }
+    expect(source('TabBar.tsx')).toMatch(/androidBlur\(t\.backdrop\.blur, PixelRatio\.get\(\)\)/);
+  });
+
+  it("is opaque where Android does not blur: v46's screen ground under its gradient", () => {
+    // expo-blur blurs on Android from 12 (`dimezisBlurViewSdk31Plus`); the owner's decision (§4.C).
+    expect([29, 30].map((v) => blursBehind('android', v))).toEqual([false, false]);
+    expect([31, 34, '35'].map((v) => blursBehind('android', v))).toEqual([true, true, true]);
+    expect(blursBehind('ios', '17.4')).toBe(true);
+    for (const s of SCHEMES) expect(V46_PALETTE[s].canvas).toBe(heads[s].explore.bg);
+    const tabBar = source('TabBar.tsx');
+    expect(tabBar).toMatch(/blursBehind\(Platform\.OS, Platform\.Version\)/);
+    expect(tabBar).toMatch(
+      /!blurs \? \(\s*<View\s+style=\{\[StyleSheet\.absoluteFill, \{ backgroundColor: V46_PALETTE\[scheme\]\.canvas \}\]\}/,
+    );
   });
 
   it('shrinks a pressed tab by the press rule that reaches it', () => {

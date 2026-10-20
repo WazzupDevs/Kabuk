@@ -66,7 +66,15 @@ export type RawAnimationRule = {
 export type RawKeyframes = {
   name: string;
   keyframes_css: string;
-  usages: { selector: string; media: string; duration: string; delay: string; easing: string }[];
+  usages: {
+    selector: string;
+    media: string;
+    duration: string;
+    delay: string;
+    easing: string;
+    iterations: string;
+    fill: string;
+  }[];
 };
 
 export type RawPressFeedback = { selector: string; effect: Record<string, string> };
