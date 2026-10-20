@@ -302,7 +302,7 @@ Değişmez kabul edilir.
   - "Şu an buradasın" kartı kişinin kendi check-in'idir (kendi verisi; kimseyle paylaşılmaz).
   - Mekan adlarına sınır konmaz: adlar içerikten gelir, ekran en çok iki satıra kırar ve gerekirse küçültür (Ekran davranışı).
   - Tek aktif mekanda Keşfet mekanın kartıdır (K-37); varsayılan şehir ve şehir düğmesi K-38'de. Aktiviteler yalnızca bugünün etkinliklerini gösterir (K-15).
-- **Bildirim düğmesi** 4.3'te bugünkü yerinde ve bugünkü içerikle kalır; v43'ün zili ve listesi 4.7'de gelir ve zil o adımda Mesajlar'a taşınır (K-6, §4.G).
+- **Bildirim düğmesi** yalnızca Mesajlar'da (K-6, §4.G). Proje sahibi 20 Ekim'de 4.7'den öne aldı; Keşfet ekranının PR'ında Keşfet, Aktiviteler ve Profil'in başından kalktı. Bekleyen istek ya da okunmamış mesaj varken alt çubuktaki Mesajlar sekmesinde nokta görünür; ekran okuyucu ikisini ayrı okur ("Mesajlar, 1 okunmamış, 2 yeni bildirim"). Zilin içeriği bugünkü gibi (sayısı bekleyen istekler, Bildirimler sayfası); v43'ün zili ve listesi 4.7'de gelir.
 
 ## 4.D Kimlik ve mekan sohbeti (adım 4.4)
 
@@ -683,7 +683,7 @@ Değişmez kabul edilir.
 
 - Zil çubuk ikon ailesindendir (mor kubbe, pembe çubuk, kesişimde koyu ton, sarı tokmak).
 - **Yeri** (K-6): zil yalnızca Mesajlar'dadır; okunmamış bildirim varken alt çubuktaki Mesajlar sekmesinde nokta görünür. Sekmenin görünümü v44'tedir.
-  - Zil diğer sekmelerin köklerinden kalkar. SPEC_V3 §18.3a'daki "Bildirim düğmesi her sekmenin kök ekranında" maddesi 4.7'nin PR'ında bu metne göre güncellenir; o adıma kadar bugünkü yer geçerlidir.
+  - Zil diğer sekmelerin köklerinden kalkar. Proje sahibi 20 Ekim'de öne aldı: Keşfet ekranının PR'ında kalktı ve SPEC_V3 §18.3a'daki "Bildirim düğmesi her sekmenin kök ekranında" maddesi aynı PR'da bu metne göre güncellendi.
 - Yeni bildirim gelince zil sallanır; okunmamış sayısı rozet olur. Liste açılınca rozet silinir; yeni olanlar liste açıkken vurgulu kalır.
 - Liste bir alt sayfadır: "Yeni" ve "Önceki". Boşken: "Henüz bildirim yok. Arkadaşlık istekleri ve arkadaşlarının masa davetleri burada görünür."
 - **Dört tür vardır:**

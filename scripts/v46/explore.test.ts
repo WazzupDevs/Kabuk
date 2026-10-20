@@ -215,7 +215,7 @@ describe("the app's Keşfet", () => {
     'utf8',
   );
 
-  it("is built from v46's parts, the bell left to Mesajlar (K-6)", () => {
+  it("is built from v46's parts", () => {
     for (const part of [
       'TopBar',
       'ViewModeToggle',
@@ -228,7 +228,29 @@ describe("the app's Keşfet", () => {
       expect(screen, part).toMatch(new RegExp(`from '@/ui/${part}'`));
     }
     expect(screen).toMatch(/<TopBar\s+kind="explore"/);
-    expect(screen).not.toMatch(/NotificationsBell|BellButton/);
+  });
+
+  it('leaves the bell to Mesajlar alone, its dot on the tab for unread DMs and waiting requests (K-6)', () => {
+    const tab = (file: string) =>
+      readFileSync(resolve(root, 'apps/mobile/app/(app)/(tabs)', file), 'utf8');
+    for (const file of ['explore/index.tsx', 'activities.tsx', 'profile/index.tsx']) {
+      expect(tab(file), file).not.toMatch(/NotificationsBell|BellButton/);
+    }
+    expect(tab('messages/index.tsx')).toMatch(/<NotificationsBell \/>/);
+    const layout = tab('_layout.tsx');
+    expect(layout).toMatch(/tabBarBadge: unread \+ requests > 0 \? unread \+ requests : undefined/);
+    expect(layout).toMatch(/tabBarAccessibilityLabel: tr\.tabs\.messagesWith\(unread, requests\)/);
+  });
+
+  it('names the chips and the switch for a screen reader, as the old ones did', () => {
+    expect(screen).toMatch(/accessibilityLabel=\{tr\.explore\.viewSwitch\}/);
+    expect(screen).toMatch(/accessibilityLabel=\{tr\.explore\.kindsLabel\}/);
+    expect(source('FilterChips.tsx')).toMatch(
+      /accessibilityRole="radiogroup"\s*accessibilityLabel=\{accessibilityLabel\}/,
+    );
+    expect(source('ViewModeToggle.tsx')).toMatch(
+      /accessibilityRole="tablist"\s*accessibilityLabel=\{accessibilityLabel\}/,
+    );
   });
 
   it('feels a new view, the list or the map (haptics.ts → selection)', () => {
@@ -247,6 +269,8 @@ describe("the app's Keşfet", () => {
     expect(html).toContain(
       '.dsearch{display:flex;align-items:center;gap:10px;height:48px;margin-top:12px',
     );
-    expect(source('SearchField.tsx')).toMatch(/marginTop: s\.marginTop/);
+    // The screen keeps it, so the field is its own box (the visual gate crops to it).
+    expect(screen).toMatch(/marginTop: V46_EXPLORE\[scheme\]\.search\.marginTop/);
+    expect(source('SearchField.tsx')).not.toMatch(/marginTop/);
   });
 });

@@ -42,7 +42,6 @@ export function SearchField({
           flexDirection: 'row',
           alignItems: 'center',
           gap: s.gap,
-          marginTop: s.marginTop,
           height: s.height,
           paddingRight: s.padding[1],
           paddingLeft: s.padding[3],

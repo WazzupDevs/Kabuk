@@ -281,6 +281,15 @@ export const tr = {
     venue: 'Mekan',
     messages: 'Mesajlar',
     profile: 'Profil',
+    // The Mesajlar tab read out with its dot: unread DMs and waiting requests (the bell's).
+    messagesWith: (unread: number, requests: number) =>
+      [
+        'Mesajlar',
+        unread > 0 ? `${unread} okunmamış` : null,
+        requests > 0 ? `${requests} yeni bildirim` : null,
+      ]
+        .filter((part) => part !== null)
+        .join(', '),
   },
   // Mesajlar (docs/SPEC_V3.md §18.3).
   messages: {

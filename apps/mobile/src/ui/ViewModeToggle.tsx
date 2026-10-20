@@ -14,6 +14,8 @@ type Props = {
   value: ViewMode;
   onChange: (mode: ViewMode) => void;
   labels: Record<ViewMode, string>;
+  // The group's name for a screen reader ("Görünüm").
+  accessibilityLabel?: string;
   testID?: string;
 };
 
@@ -24,13 +26,14 @@ const MODES: readonly ViewMode[] = ['list', 'map'];
 // (`opacity: .55`); ground, opacity and shadow ease (200 ms). A pressed button shrinks
 // (`.va button:active`). Each button takes a touch 3 dp past its top and bottom (`button::after`),
 // so the pill is one 44 dp target.
-export function ViewModeToggle({ value, onChange, labels, testID }: Props) {
+export function ViewModeToggle({ value, onChange, labels, accessibilityLabel, testID }: Props) {
   const { scheme } = useTheme();
   const m = V46_VIEW_MODE[scheme];
   const [pressing, setPressing] = useState<ViewMode | null>(null);
   return (
     <View
       accessibilityRole="tablist"
+      accessibilityLabel={accessibilityLabel}
       testID={testID}
       style={{
         flexDirection: 'row',

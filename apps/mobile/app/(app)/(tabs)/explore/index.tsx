@@ -135,6 +135,7 @@ export default function ExploreScreen() {
                 <ViewModeToggle
                   value={view}
                   labels={tr.explore.views}
+                  accessibilityLabel={tr.explore.viewSwitch}
                   onChange={(mode) => {
                     haptic('selection');
                     setView(mode);
@@ -145,12 +146,15 @@ export default function ExploreScreen() {
           >
             {ready && layout === 'list' ? (
               <>
-                <SearchField
-                  value={query}
-                  onChangeText={setQuery}
-                  placeholder={tr.explore.search}
-                  testID="explore-search"
-                />
+                {/* 12 below the title's row (`.dsearch{margin-top:12px}`). */}
+                <View style={{ marginTop: V46_EXPLORE[scheme].search.marginTop }}>
+                  <SearchField
+                    value={query}
+                    onChangeText={setQuery}
+                    placeholder={tr.explore.search}
+                    testID="explore-search"
+                  />
+                </View>
                 <FilterChips
                   items={EXPLORE_KINDS.map((k) => ({
                     key: k,
@@ -159,6 +163,7 @@ export default function ExploreScreen() {
                   }))}
                   value={kind}
                   onChange={setKind}
+                  accessibilityLabel={tr.explore.kindsLabel}
                 />
               </>
             ) : null}
