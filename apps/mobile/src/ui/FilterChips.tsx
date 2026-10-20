@@ -13,6 +13,8 @@ type Props<K extends string> = {
   value: K;
   onChange: (key: K) => void;
   pressedPreview?: K;
+  // The row's own (its box without the margins: the visual gate crops to it).
+  testID?: string;
 };
 
 // Keşfet's filter chips (v46 `.cats.vcats`, the inventory's suzgec-cipleri): a row of round chips
@@ -25,11 +27,13 @@ export function FilterChips<K extends string>({
   value,
   onChange,
   pressedPreview,
+  testID,
 }: Props<K>) {
   const { scheme } = useTheme();
   const c = V46_EXPLORE[scheme].chips;
   return (
     <ScrollView
+      testID={testID}
       horizontal
       showsHorizontalScrollIndicator={false}
       style={{

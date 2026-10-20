@@ -195,7 +195,7 @@ function SampleSearch({ word = '', focused = false }: { word?: string; focused?:
   );
 }
 
-function SampleChips() {
+function SampleChips({ testID }: { testID?: string }) {
   const [kind, setKind] = useState<'all' | 'campus' | 'cafe'>('all');
   const k = tr.explore.kinds;
   return (
@@ -207,6 +207,7 @@ function SampleChips() {
       ]}
       value={kind}
       onChange={setKind}
+      testID={testID}
     />
   );
 }
@@ -258,7 +259,7 @@ const EXPLORE: Partial<Record<GalleryId, readonly GalleryState[]>> = {
       wide: true,
       render: () => (
         <View style={{ paddingHorizontal: SIDE }}>
-          <SampleChips />
+          <SampleChips testID="gorsel-parca" />
         </View>
       ),
     },
@@ -294,17 +295,25 @@ const EXPLORE: Partial<Record<GalleryId, readonly GalleryState[]>> = {
   'mekan-simgesi-cay': [{ key: 'normal', render: () => <VenueThumb kind="cay" /> }],
   'mekan-simgesi-yemek': [{ key: 'normal', render: () => <VenueThumb kind="yemek" /> }],
   'mekan-simgesi-kampus': [{ key: 'normal', render: () => <VenueThumb kind="kampus" /> }],
+  // The card itself is the crop: its margin above (`.vhere{margin-top:8px}`) is not in v46's.
   'su-an-buradasin': [
-    padded(() => (
-      <HereCard
-        label={tr.explore.here}
-        thumb="kampus"
-        name={s.hereName}
-        sub={s.hereSub}
-        action={tr.explore.backToVenue}
-        onPress={noop}
-      />
-    )),
+    {
+      key: 'normal',
+      wide: true,
+      render: () => (
+        <View style={{ paddingHorizontal: SIDE }}>
+          <HereCard
+            label={tr.explore.here}
+            thumb="kampus"
+            name={s.hereName}
+            sub={s.hereSub}
+            action={tr.explore.backToVenue}
+            onPress={noop}
+            testID="gorsel-parca"
+          />
+        </View>
+      ),
+    },
   ],
   'canli-nokta': [
     { key: 'normal', render: () => <LiveDot size={V46_EXPLORE.light.here.label.dot} /> },
