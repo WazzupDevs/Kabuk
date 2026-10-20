@@ -51,6 +51,7 @@ export type ErrorCode =
   | 'identity_mismatch'
   | 'identity_switch_used'
   | 'nick_refresh_too_soon'
+  | 'icon_taken'
   | 'wrong_side'
   | 'not_leader'
   | 'display_name_required'
@@ -104,6 +105,8 @@ export const DOMAIN_ERROR_CODES: readonly ErrorCode[] = [
   'different_spot',
   'in_room',
   'reroll_limit',
+  // No free table name at the venue (rooms/reroll-name, rooms/create; docs/SPEC_V4.md §4.E).
+  'alias_exhausted',
   'proposal_pending',
   'no_proposal',
   'room_not_available',
@@ -144,6 +147,8 @@ export const DOMAIN_ERROR_CODES: readonly ErrorCode[] = [
   'nick_refresh_too_soon',
   // An account without a nick cannot write an anonymous venue chat message (venue_chat_send).
   'onboarding_required',
+  // A table's icon (docs/SPEC_V4.md §4.E, K-45): another open or running table at the venue has it.
+  'icon_taken',
   // Teams (§22.B, §22.D): an account goes back only to its side; only a leader ends the room.
   'wrong_side',
   'not_leader',
