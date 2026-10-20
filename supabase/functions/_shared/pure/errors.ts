@@ -105,6 +105,8 @@ export const DOMAIN_ERROR_CODES: readonly ErrorCode[] = [
   'different_spot',
   'in_room',
   'reroll_limit',
+  // No free table name at the venue (rooms/reroll-name, rooms/create; docs/SPEC_V4.md §4.E).
+  'alias_exhausted',
   'proposal_pending',
   'no_proposal',
   'room_not_available',

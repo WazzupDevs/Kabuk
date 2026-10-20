@@ -1,6 +1,7 @@
 // Faz 4 step 4.5, server part 1 (docs/SPEC_V4.md §4.E, §4.K, §4.M "Adım 4.5"; the plan:
 // docs/decisions/4.5-masa-modeli.md): a table's name and icon (K-45, K-59), and taking back the
-// silent "Arkadaş ekle" (K-67) with the match told to the pair (K-70). Additive: today's app keeps
+// silent "Arkadaş ekle" (K-67) with the match told to the pair (K-70), never a friendship from
+// before (rule 4). Additive: today's app keeps
 // working (rooms.test.ts, teams.test.ts and tableEnd.test.ts stay as they are).
 import { randomUUID } from 'node:crypto';
 
@@ -91,6 +92,18 @@ describe('a table’s name and icon (K-45)', () => {
     });
     // Its own icon again is no clash.
     expect((await rooms(a, { action: 'set-icon', roomId, icon: free })).status).toBe(200);
+    // An icon not in the list, or taken out of it: refused, nothing changes.
+    expect(await rooms(a, { action: 'set-icon', roomId, icon: 'boyle-bir-simge-yok' })).toEqual({
+      status: 400,
+      body: errorBody('bad_request'),
+    });
+    const retired = ICON_IDS.find((id) => id !== free && id !== taken) ?? '';
+    await sql`update public.table_icons set is_active = false where id = ${retired}`;
+    expect(await rooms(a, { action: 'set-icon', roomId, icon: retired })).toEqual({
+      status: 400,
+      body: errorBody('bad_request'),
+    });
+    expect((await roomRow(roomId)).icon).toBe(free);
 
     const names = [before.name];
     for (let left = 2; left >= 0; left--) {
@@ -234,6 +247,49 @@ describe('"Arkadaş ekle" taken back (K-67) and the match (K-70)', () => {
       status: 200,
       body: { ok: true, friends: false },
     });
+  });
+
+  // Rule 4: a friend who sat anonymously is not named by "Arkadaş ekle" or by taking it back; a
+  // friendship from before answers like a press that matched nothing.
+  it('tells a friendship from before through neither the press nor the take-back (rule 4)', async () => {
+    const { a, b, historyA, historyB } = await pair();
+    await sql`select private.make_friends(${a.userId}::uuid, ${b.userId}::uuid, 'request')`;
+    const nothing = { status: 200, body: { ok: true, friends: false } };
+    expect(await friendsOp(a, 'add-from-room', historyA)).toEqual(nothing);
+    expect(await friendsOp(a, 'withdraw-add', historyA)).toEqual(nothing);
+    expect(await pressed(historyA)).toBe(false);
+    expect(await friendsOp(b, 'add-from-room', historyB)).toEqual(nothing);
+    expect(await friendsOp(a, 'add-from-room', historyA)).toEqual(nothing);
+    expect(await intents(a.userId)).toBe(0);
+  });
+
+  it('takes back only a silent press: an "İstek gönder" record keeps its request', async () => {
+    const { a, b, historyA } = await pair();
+    await sql`update public.play_history set friend_open = false where id = ${historyA}`;
+    expect(await friendsOp(a, 'request', historyA)).toEqual({ status: 200, body: { ok: true } });
+    expect(await pressed(historyA)).toBe(true);
+    expect(await friendsOp(a, 'withdraw-add', historyA)).toEqual({
+      status: 200,
+      body: { ok: true, friends: false },
+    });
+    expect(await pressed(historyA)).toBe(true);
+    const sent = await a.client.rpc('my_sent_requests');
+    expect(sent.data).toHaveLength(1);
+    const incoming = await b.client.rpc('my_incoming_requests');
+    expect(incoming.data).toHaveLength(1);
+  });
+
+  it('leaves the other’s record and requests as they were when one takes back', async () => {
+    const { a, b, historyA, historyB } = await pair();
+    const snapshot = async () => ({
+      record: await sql`select * from public.play_history where id = ${historyB}`,
+      incoming: (await b.client.rpc('my_incoming_requests')).data,
+      sent: (await b.client.rpc('my_sent_requests')).data,
+    });
+    const before = await snapshot();
+    expect((await friendsOp(a, 'add-from-room', historyA)).status).toBe(200);
+    expect((await friendsOp(a, 'withdraw-add', historyA)).status).toBe(200);
+    expect(await snapshot()).toEqual(before);
   });
 
   // §4.K: the take-back and the other's press at once end either way, and friend_action_at tells
