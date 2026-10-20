@@ -504,11 +504,13 @@ appId: app.kabuk.mobile
       id: gal-colors
     timeout: 10000
 - takeScreenshot: 04v-v46-gallery-colors
+# The 60 type styles stand between the colours and the components: at 320 dp a 30 s scroll ended
+# mid-way through them on CI's emulator (e2e run 39394491623).
 - scrollUntilVisible:
     element:
       id: gal-birincil-52
     centerElement: true
-    timeout: 30000
+    timeout: 90000
 - takeScreenshot: 04v-v46-gallery-components
 - back
 - extendedWaitUntil:
