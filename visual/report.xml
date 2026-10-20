@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuites>
+  <testsuite name="Test Suite" device="test" tests="14" failures="0" time="166.237" timestamp="2026-10-20T08:08:03">
+    <testcase id="galeri-kimlik-light-2" name="galeri-kimlik-light-2" classname="galeri-kimlik-light-2" file="e2e-out/visual/akis/008-galeri-kimlik-light-2.yaml" time="17.155" timestamp="2026-10-20T08:08:03" status="SUCCESS"/>
+    <testcase id="galeri-sohbet-light-2" name="galeri-sohbet-light-2" classname="galeri-sohbet-light-2" file="e2e-out/visual/akis/002-galeri-sohbet-light-2.yaml" time="11.199" timestamp="2026-10-20T08:08:20" status="SUCCESS"/>
+    <testcase id="galeri-sohbet-dark-2" name="galeri-sohbet-dark-2" classname="galeri-sohbet-dark-2" file="e2e-out/visual/akis/004-galeri-sohbet-dark-2.yaml" time="11.318" timestamp="2026-10-20T08:08:31" status="SUCCESS"/>
+    <testcase id="galeri-sohbet-dark-1" name="galeri-sohbet-dark-1" classname="galeri-sohbet-dark-1" file="e2e-out/visual/akis/003-galeri-sohbet-dark-1.yaml" time="11.396" timestamp="2026-10-20T08:08:42" status="SUCCESS"/>
+    <testcase id="galeri-olcu-dark-1" name="galeri-olcu-dark-1" classname="galeri-olcu-dark-1" file="e2e-out/visual/akis/013-galeri-olcu-dark-1.yaml" time="11.663" timestamp="2026-10-20T08:08:54" status="SUCCESS"/>
+    <testcase id="galeri-olcu-light-2" name="galeri-olcu-light-2" classname="galeri-olcu-light-2" file="e2e-out/visual/akis/012-galeri-olcu-light-2.yaml" time="11.879" timestamp="2026-10-20T08:09:05" status="SUCCESS"/>
+    <testcase id="galeri-kimlik-light-1" name="galeri-kimlik-light-1" classname="galeri-kimlik-light-1" file="e2e-out/visual/akis/007-galeri-kimlik-light-1.yaml" time="13.113" timestamp="2026-10-20T08:09:17" status="SUCCESS"/>
+    <testcase id="galeri-olcu-dark-2" name="galeri-olcu-dark-2" classname="galeri-olcu-dark-2" file="e2e-out/visual/akis/014-galeri-olcu-dark-2.yaml" time="10.943" timestamp="2026-10-20T08:09:30" status="SUCCESS"/>
+    <testcase id="galeri-renkler-dark-1" name="galeri-renkler-dark-1" classname="galeri-renkler-dark-1" file="e2e-out/visual/akis/006-galeri-renkler-dark-1.yaml" time="10.905" timestamp="2026-10-20T08:09:41" status="SUCCESS"/>
+    <testcase id="galeri-sohbet-light-1" name="galeri-sohbet-light-1" classname="galeri-sohbet-light-1" file="e2e-out/visual/akis/001-galeri-sohbet-light-1.yaml" time="11.473" timestamp="2026-10-20T08:09:52" status="SUCCESS"/>
+    <testcase id="galeri-olcu-light-1" name="galeri-olcu-light-1" classname="galeri-olcu-light-1" file="e2e-out/visual/akis/011-galeri-olcu-light-1.yaml" time="10.788" timestamp="2026-10-20T08:10:04" status="SUCCESS"/>
+    <testcase id="galeri-kimlik-dark-1" name="galeri-kimlik-dark-1" classname="galeri-kimlik-dark-1" file="e2e-out/visual/akis/009-galeri-kimlik-dark-1.yaml" time="11.383" timestamp="2026-10-20T08:10:14" status="SUCCESS"/>
+    <testcase id="galeri-kimlik-dark-2" name="galeri-kimlik-dark-2" classname="galeri-kimlik-dark-2" file="e2e-out/visual/akis/010-galeri-kimlik-dark-2.yaml" time="12.084" timestamp="2026-10-20T08:10:26" status="SUCCESS"/>
+    <testcase id="galeri-renkler-light-1" name="galeri-renkler-light-1" classname="galeri-renkler-light-1" file="e2e-out/visual/akis/005-galeri-renkler-light-1.yaml" time="10.875" timestamp="2026-10-20T08:10:38" status="SUCCESS"/>
+  </testsuite>
+</testsuites>
