@@ -7,3 +7,15 @@ export type VenueKind = (typeof VENUE_KINDS)[number];
 export function isVenueKind(value: unknown): value is VenueKind {
   return (VENUE_KINDS as readonly unknown[]).includes(value);
 }
+
+// What sort of place a cafe-kind venue is, for Keşfet's list (docs/SPEC_V4.md §4.C, the project
+// owner's decision): a kafe, a çay bahçesi or a place to eat. Content sets it per venue
+// (`category`, venues-pilot and venues-test); an empty one is a kafe. A campus is told apart by its
+// kind and has no category.
+export const VENUE_CATEGORIES = ['kafe', 'cay_bahcesi', 'yemek'] as const;
+export type VenueCategory = (typeof VENUE_CATEGORIES)[number];
+export const DEFAULT_VENUE_CATEGORY: VenueCategory = 'kafe';
+
+export function isVenueCategory(value: unknown): value is VenueCategory {
+  return (VENUE_CATEGORIES as readonly unknown[]).includes(value);
+}

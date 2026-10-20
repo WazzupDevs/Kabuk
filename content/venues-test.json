@@ -4,6 +4,7 @@
       "ref": "hush-coffee",
       "name": "Hush Coffee",
       "kind": "cafe",
+      "category": "kafe",
       "district": "Beylikdüzü",
       "lat": 40.98819357066424,
       "lng": 28.668212457253617,
@@ -11,6 +12,15 @@
         { "ref": "ic-salon", "name": "İç salon" },
         { "ref": "bahce", "name": "Bahçe" }
       ]
+    },
+    {
+      "ref": "yedegor-durum",
+      "name": "Yedegör Dürüm",
+      "kind": "cafe",
+      "category": "yemek",
+      "district": "Beylikdüzü",
+      "lat": 40.990265,
+      "lng": 28.6686509
     }
   ]
 }
