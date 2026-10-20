@@ -5,9 +5,22 @@ import {
   ENCOUNTER_MIN_MINUTES,
   historyAction,
   isEncounterLongEnough,
+  matchPushRecipient,
   prepareDm,
   sentRequestView,
 } from './friends.ts';
+
+describe('matchPushRecipient (K-70)', () => {
+  it('names the other side only when this press made the friendship', () => {
+    expect(matchPushRecipient('friendship_created', 'u-1')).toBe('u-1');
+    expect(matchPushRecipient('friendship_created', null)).toBeNull();
+    // Already friends from this encounter, a press that matched nothing, a friendship from
+    // before (answered 'ok', rule 4), or no answer: nobody hears of it.
+    for (const outcome of ['already_matched', 'ok', undefined]) {
+      expect(matchPushRecipient(outcome, 'u-1')).toBeNull();
+    }
+  });
+});
 
 describe('isEncounterLongEnough', () => {
   it('needs 3 minutes of two tables', () => {

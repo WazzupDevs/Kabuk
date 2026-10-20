@@ -464,14 +464,18 @@ begin
     where id = ts.id;
   end if;
 
+  -- The message carries the identity's own name and never the table alias (rule 4, §4.D): an account
+  -- without a nick (check-in and the own profile give one, _shared/capsule.ts) writes nothing.
   select * into p from public.profiles where id = target_user_id;
+  if (case when chosen = 'profiled' then p.display_name else p.capsule_nick end) is null then
+    raise exception using errcode = 'P0001', message = 'onboarding_required';
+  end if;
   insert into public.venue_chat_messages
     (venue_id, session_id, sender_user_id, sender_alias, profiled, sender_look, body, reply_to_id,
      replied)
   values
     (target_venue_id, ts.id, target_user_id,
-     case when chosen = 'profiled' then coalesce(p.display_name, ts.alias)
-          else coalesce(p.capsule_nick, ts.alias) end,
+     case when chosen = 'profiled' then p.display_name else p.capsule_nick end,
      chosen = 'profiled',
      case when chosen = 'profiled' then null else p.capsule_look end,
      new_body, reply_to, reply_to is not null)
@@ -525,9 +529,10 @@ create index venue_chat_mutes_muted_user_id on public.venue_chat_mutes (muted_us
 alter table public.venue_chat_mutes enable row level security;
 revoke all on table public.venue_chat_mutes from anon, authenticated;
 
--- The page. sender_key groups a person's messages of one identity on one day at the venue: an HMAC
--- of the account, the identity, the venue and the Istanbul date. The two identities of one person
--- get different keys, and the key carries no account id or public_id (§4.D). sender_look: an
+-- The page. sender_key groups a person's messages of one identity and name on one day at the venue:
+-- an HMAC of the account, the identity, the name it wrote with, the venue and the Istanbul date. The
+-- two identities of one person get different keys, so does a refreshed nick (K-68: a new nick leaves
+-- the old one behind), and the key carries no account id or public_id (§4.D). sender_look: an
 -- anonymous message's look as written. Deleted messages and muted identities are left out.
 drop function public.venue_chat_page_for(uuid, uuid, timestamptz, integer);
 
@@ -566,7 +571,8 @@ as $$
          private.venue_reaction_list(target_user_id, m.id),
          left(encode(extensions.hmac(
            'venue_chat_sender:' || m.sender_user_id::text || ':' || m.profiled::text || ':'
-             || m.venue_id::text || ':' || ((m.created_at at time zone 'Europe/Istanbul')::date)::text,
+             || m.sender_alias || ':' || m.venue_id::text || ':'
+             || ((m.created_at at time zone 'Europe/Istanbul')::date)::text,
            k.secret, 'sha256'), 'hex'), 24),
          case when m.profiled then null else m.sender_look end
   from public.venue_chat_messages m
@@ -654,6 +660,77 @@ begin
     raise exception using errcode = 'P0001', message = 'not_found';
   end if;
   return deleted_venue;
+end;
+$$;
+
+-- A report copies the venue's last visible messages: a deleted one is gone from it too (its
+-- sender took it back), whatever the report. A copy made before the delete keeps it.
+create or replace function public.safety_report_venue_chat(
+  target_user_id uuid,
+  target_message_id uuid,
+  new_reason text,
+  snapshot_size integer,
+  hide_after integer
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  ts public.table_sessions;
+  m public.venue_chat_messages;
+  snapshot jsonb;
+  added integer;
+  reporters integer;
+begin
+  select * into m from private.visible_venue_chat_message(target_user_id, target_message_id);
+  if m.id is null or m.sender_user_id = target_user_id then
+    return false;
+  end if;
+  select * into ts from public.table_sessions
+  where id = (private.venue_chat_session(target_user_id, m.venue_id)).id
+  for no key update;
+  select * into m from public.venue_chat_messages where id = target_message_id for update;
+  if m.id is null then
+    return false;
+  end if;
+
+  select coalesce(jsonb_agg(row order by row ->> 'created_at'), '[]'::jsonb) into snapshot
+  from (
+    select jsonb_build_object(
+      'sender_alias', x.sender_alias,
+      'display_name', case when x.profiled then p.display_name end,
+      'body', x.body,
+      'created_at', x.created_at,
+      'reported', x.id = m.id
+    ) as row
+    from public.venue_chat_messages x
+    left join public.profiles p on p.id = x.sender_user_id
+    where x.venue_id = m.venue_id and (x.hidden_at is null or x.id = m.id)
+      and x.deleted_at is null
+    order by x.created_at desc
+    limit snapshot_size
+  ) last;
+
+  insert into public.reports (reporter_id, reported_user_id, reason, target_type,
+                              venue_chat_message_id, messages_snapshot)
+  values (target_user_id, m.sender_user_id, new_reason, 'venue_chat', m.id, snapshot);
+
+  insert into public.venue_chat_reports (message_id, reporter_user_id)
+  values (m.id, target_user_id)
+  on conflict do nothing;
+  get diagnostics added = row_count;
+  if added = 0 or m.hidden_at is not null then
+    return false;
+  end if;
+  select count(*) into reporters from public.venue_chat_reports
+  where message_id = m.id and reporter_user_id <> m.sender_user_id;
+  if reporters >= hide_after then
+    update public.venue_chat_messages set hidden_at = now() where id = m.id;
+    return true;
+  end if;
+  return false;
 end;
 $$;
 
@@ -758,13 +835,15 @@ security definer
 set search_path = ''
 as $$
 begin
+  -- A seat moved with its person keeps the look it was written with (K-10); a new one takes the
+  -- profile's.
   new.look := case
     when new.profiled then null
-    else (
+    else coalesce(new.look, (
       select p.capsule_look from public.table_sessions ts
       join public.profiles p on p.id = ts.user_id
       where ts.id = new.session_id
-    )
+    ))
   end;
   return new;
 end;

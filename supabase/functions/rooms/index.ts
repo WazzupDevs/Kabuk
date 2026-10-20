@@ -177,13 +177,17 @@ Deno.serve(
 
         // docs/SPEC_V4.md §4.E (K-45, K-59): only the owner; the name stays.
         case 'set-icon': {
+          const before = await db.from('rooms').select('icon').eq('id', body.roomId).maybeSingle();
+          if (before.error) throw dbError('rooms', before.error);
           const { data, error } = await db.rpc('rooms_set_icon', {
             target_user_id: user.id,
             target_room_id: body.roomId,
             new_icon: body.icon,
           });
           if (error) throw dbError('rooms_set_icon', error);
-          lobbyChanged(data);
+          // A change is news to the venue (the lobby and the running tables both show the icon);
+          // the same icon again changes nothing.
+          if (before.data?.icon !== data.icon) lobbyChanged(data);
           return { icon: data.icon ?? body.icon };
         }
 

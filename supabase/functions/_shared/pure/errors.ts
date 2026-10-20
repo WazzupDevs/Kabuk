@@ -107,6 +107,8 @@ export const DOMAIN_ERROR_CODES: readonly ErrorCode[] = [
   'different_spot',
   'in_room',
   'reroll_limit',
+  // No free table name at the venue (rooms/reroll-name, rooms/create; docs/SPEC_V4.md §4.E).
+  'alias_exhausted',
   'proposal_pending',
   'no_proposal',
   'room_not_available',
@@ -145,6 +147,8 @@ export const DOMAIN_ERROR_CODES: readonly ErrorCode[] = [
   'identity_mismatch',
   'identity_switch_used',
   'nick_refresh_too_soon',
+  // An account without a nick cannot write an anonymous venue chat message (venue_chat_send).
+  'onboarding_required',
   // A table's icon (docs/SPEC_V4.md §4.E, K-45): another open or running table at the venue has it.
   'icon_taken',
   // The table of people (§4.E): one table at a time; at most MAX_TABLE_PHONES phones together. The

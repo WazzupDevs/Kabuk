@@ -431,8 +431,10 @@ describe('my_history_friends (§23.G, rules 4 and 5)', { timeout: 60_000 }, () =
     const roomId = await tableWith(owner, [guest]);
     await backdate(roomId);
     expect(await rooms(owner, { action: 'end' })).toEqual(OK);
-    expect((await press(owner, guest, roomId)).status).toBe(200);
-    expect((await press(guest, owner, roomId)).status).toBe(200);
+    // Neither answer says they are friends (WazzupDevs/Kabuk#182): it would name the anonymous one.
+    const nothing = { status: 200, body: { ok: true, friends: false } };
+    expect(await press(owner, guest, roomId)).toEqual(nothing);
+    expect(await press(guest, owner, roomId)).toEqual(nothing);
     expect(await friendsOf(owner, guest)).toHaveLength(1);
     expect(await friendsRead(owner)).toEqual([]);
     expect(await friendsRead(guest)).toEqual([]);

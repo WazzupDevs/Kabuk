@@ -206,6 +206,10 @@ declare
   r public.rooms;
 begin
   r := private.owned_open_room(target_user_id, target_room_id);
+  -- The same icon again changes nothing (and the caller announces nothing).
+  if r.icon is not distinct from new_icon then
+    return r;
+  end if;
   perform private.lock_venue_names(r.venue_id);
   perform private.check_table_icon(r.venue_id, new_icon, r.id);
   update public.rooms set icon = new_icon where id = r.id returning * into r;
@@ -245,8 +249,24 @@ end;
 $$;
 
 -- Friends -------------------------------------------------------------------------------------------
--- "Arkadaş ekle", and whether the pair are friends now or already were (K-70: the second presser
--- sees "Arkadaş oldunuz"). Otherwise as 20261029090000_table_end.sql.
+-- Whether the pair became friends at this encounter: both pressed "Arkadaş ekle" on it (the same
+-- test as public.my_history_friends). A friendship from before it is never told through it (rule 4:
+-- a friend who sat anonymously is not tied to the account).
+create function private.matched_at(target_encounter_id uuid, a uuid, b uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select count(*) = 2 from public.mutual_friend_intents
+  where encounter_id = target_encounter_id and user_id in (a, b);
+$$;
+
+-- "Arkadaş ekle", and whether the pair became friends at this encounter (K-70: the second presser
+-- sees "Arkadaş oldunuz"). A friendship from before answers like a press that matched nothing
+-- (rule 4). The intent's time is taken under the pair's lock, so the first presser by it is the one
+-- the match push goes to. Otherwise as 20261029090000_table_end.sql.
 create or replace function public.friends_add_from_room(target_user_id uuid, target_history_id uuid)
 returns table (outcome text, other_user_id uuid)
 language plpgsql
@@ -269,12 +289,16 @@ begin
   end if;
   perform private.lock_pair(target_user_id, h.other_user_id);
   if private.are_friends(target_user_id, h.other_user_id) then
-    return query select 'already_friends'::text, null::uuid;
+    if private.matched_at(h.encounter_id, target_user_id, h.other_user_id) then
+      return query select 'already_matched'::text, null::uuid;
+    else
+      return query select 'ok'::text, null::uuid;
+    end if;
     return;
   end if;
 
-  insert into public.mutual_friend_intents (encounter_id, user_id)
-  values (h.encounter_id, target_user_id)
+  insert into public.mutual_friend_intents (encounter_id, user_id, created_at)
+  values (h.encounter_id, target_user_id, clock_timestamp())
   on conflict do nothing;
 
   if exists (
@@ -288,8 +312,11 @@ begin
 end;
 $$;
 
--- friends/withdraw-add (K-67, §4.K): the own record is locked first and left as it is; then the
--- pair. A friendship seen under the pair's lock wins: nothing changes and the answer says so.
+-- friends/withdraw-add (K-67, §4.K): only a silent "Arkadaş ekle" press (a record open to it; an
+-- "İstek gönder" record's request stays the request's own). The own record is locked first and left
+-- as it is; then the pair. A friendship made at this encounter, seen under the pair's lock, wins:
+-- nothing changes and the answer says so. A friendship from before is not told (rule 4): the press
+-- is taken back like any other.
 -- Otherwise the intent goes and friend_action_at empties together, under the pair's lock: emptied
 -- before it, the other side's press could make the pair friends in between, and the record would
 -- look unpressed for a friendship it made. The other side sees nothing of it (rule 5).
@@ -305,13 +332,15 @@ begin
   select * into h from public.play_history
   where id = target_history_id and user_id = target_user_id and available_at <= now()
   for update;
-  if h.id is null or h.friend_action_at is null then
+  if h.id is null or h.friend_action_at is null or not (h.reveal_mutual or h.friend_open) then
     return 'ok';
   end if;
   if h.other_user_id is not null then
     perform private.lock_pair(target_user_id, h.other_user_id);
-    if private.are_friends(target_user_id, h.other_user_id) then
-      return 'already_friends';
+    if private.are_friends(target_user_id, h.other_user_id)
+      and private.matched_at(h.encounter_id, target_user_id, h.other_user_id)
+    then
+      return 'already_matched';
     end if;
   end if;
   delete from public.mutual_friend_intents

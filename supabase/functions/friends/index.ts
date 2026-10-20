@@ -20,6 +20,7 @@ import type {
 import { ageOn, istanbulToday, parseIsoDate } from '../_shared/pure/age.ts';
 import { REPORT_REASONS } from '../_shared/pure/chat.ts';
 import { AppError } from '../_shared/pure/errors.ts';
+import { matchPushRecipient } from '../_shared/pure/friends.ts';
 import { friendMatchPush, friendRequestPush } from '../_shared/pure/push.ts';
 import { BROADCAST } from '../_shared/pure/rooms.ts';
 import { VENUE_CHAT } from '../_shared/pure/venueChat.ts';
@@ -158,14 +159,16 @@ Deno.serve(
           if (error) throw dbError('friends_add_from_room', error);
           const result = data[0];
           announce(user.id, result);
-          // K-70: the match is told to the first presser; the second sees it in this answer.
-          if (result?.outcome === 'friendship_created' && result.other_user_id) {
-            pushIfAllowed(db, result.other_user_id, 'notify_friend_requests', friendMatchPush());
+          // K-70: the match is told to the first presser; the second sees it in this answer. A
+          // friendship from before comes back as 'ok' (rule 4): an anonymous friend stays unnamed.
+          const recipient = matchPushRecipient(result?.outcome, result?.other_user_id);
+          if (recipient) {
+            pushIfAllowed(db, recipient, 'notify_friend_requests', friendMatchPush());
           }
           return {
             ok: true,
             friends:
-              result?.outcome === 'friendship_created' || result?.outcome === 'already_friends',
+              result?.outcome === 'friendship_created' || result?.outcome === 'already_matched',
           };
         }
 
@@ -176,7 +179,7 @@ Deno.serve(
             target_history_id: body.historyId,
           });
           if (error) throw dbError('friends_withdraw_add', error);
-          return { ok: true, friends: data === 'already_friends' };
+          return { ok: true, friends: data === 'already_matched' };
         }
 
         case 'remove': {

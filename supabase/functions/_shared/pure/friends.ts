@@ -9,6 +9,15 @@ export function isEncounterLongEnough(guestJoinedAt: string, endedAt: number): b
   return endedAt - Date.parse(guestJoinedAt) >= ENCOUNTER_MIN_MINUTES * 60_000;
 }
 
+// K-70: the match push goes to the other side (the first presser) only when this press made the
+// friendship; never for a press that matched nothing, a take-back, or a friendship from before.
+export function matchPushRecipient(
+  outcome: string | undefined,
+  otherUserId: string | null | undefined,
+): string | null {
+  return outcome === 'friendship_created' && otherUserId ? otherUserId : null;
+}
+
 // DMs: 1–500 characters, one message per second per account (dm_send's min interval).
 export const DM_MAX_LENGTH = 500;
 export const DM_MIN_INTERVAL_MS = 1000;
