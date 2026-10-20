@@ -1213,6 +1213,7 @@ export const tr = {
       sample: 'Masa sohbeti 21:00',
       missing: 'Henüz yok',
       measured: (width: number, height: number) => `v46: ${width} × ${height}`,
+      typeLine: (key: string, lineHeight: number) => `${key} · satır ${lineHeight}`,
     },
     previewIncoming: 'Mesaj gelsin',
     // Bileşen önizleme → Renkler (step 4.2, K-25): the game colours in the run's scheme.

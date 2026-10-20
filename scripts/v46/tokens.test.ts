@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { bundledMetrics } from './fontMetrics.ts';
 import {
   parseBorder,
   parseColor,
@@ -18,6 +19,7 @@ import { buildTokensModule, look, resolveColor, TOKENS_MODULE, typeKey } from '.
 
 const root = resolve(import.meta.dirname, '../..');
 const inventory = readInventory(root);
+const metrics = bundledMetrics(root);
 
 describe(TOKENS_MODULE, () => {
   // The owner's rule (v46 native, step 1): the tokens change only through their source.
@@ -37,7 +39,7 @@ describe('the inventory as React Native values', () => {
     expect(inventory.components).toHaveLength(59);
     for (const c of inventory.components) {
       for (const scheme of ['light', 'dark'] as const) {
-        expect(() => look(c.id, c[scheme], scheme), c.id).not.toThrow();
+        expect(() => look(c.id, c[scheme], scheme, metrics), c.id).not.toThrow();
       }
     }
   });
