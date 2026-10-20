@@ -450,7 +450,8 @@ begin
   create temporary table if not exists pg_temp.starting_players (
     session_id uuid primary key, team text
   ) on commit drop;
-  delete from pg_temp.starting_players;
+  -- `where true`: PostgREST's sessions load pg_safeupdate, which refuses a DELETE without WHERE.
+  delete from pg_temp.starting_players where true;
   insert into pg_temp.starting_players (session_id, team)
   select rm.session_id,
          case when g.teams then picks ->> rm.session_id::text else null end
