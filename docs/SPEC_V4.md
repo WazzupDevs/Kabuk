@@ -350,7 +350,7 @@ Değişmez kabul edilir.
 - Cinsiyeti boş hesap oyun akışına ve masaya giremez (`gender_required`); check-in ve mekan sohbeti bunu istemez.
 - **Check-in başına 1 değişiklik** (K-3; K-48: v46'da da 1).
   - Check-in'in kimliği `table_sessions.identity_mode` (`anonymous` | `profiled`; kadında mekan sohbetinde ve masada, erkek ve belirtmeyende yalnızca mekan sohbetinde) ve değişiklik sayısı `table_sessions.identity_switches` (0 ya da 1).
-  - Anahtar `checkin/set-identity { anonymous }` ile değişir; ikinci değişiklik `identity_switch_used` (409), fotoğrafsız profilli seçim `photo_required` (409) döner.
+  - Anahtar `checkin/set-identity { anonymous }` ile değişir; ikinci değişiklik `identity_switch_used` (409), fotoğrafsız profilli seçim `photo_required` (409) döner. Cinsiyet istemez ve `anonymous_not_allowed` döndürmez (o iki kod masaya giriş içindir, yukarıda); aynı kimliği yeniden seçmek hak harcamaz.
   - Uygulama değiştirmeden önce sonucunu söyler: hakkın bu check-in'de biter, yeni mesajların yeni kimlikle görünür. Metin v44'te.
   - Faz 2'nin mekan sohbetine özgü seçimi (`table_sessions.venue_chat_profiled`, `venue_chat_mode_locked`) bu modele taşınır; kolon 4.8'de kalkar.
 - **Değişiklikten önce yazılan mesajlar eski kimlikte kalır.**
@@ -358,13 +358,15 @@ Değişmez kabul edilir.
   - Okuma eski mesajı eski kimlikle döner. Anonim mesajda fotoğraf, ad ve `public_id` asla gitmez (SPEC_V3 §7.2 aynen).
 - **Masada:** kişinin masaya girdiği andaki kimliği `room_members.alias`, `profiled` ve `look`'a (anonimde görünüş) yazılır (masayı kurarken, katılırken, davetle); erkek ve belirtmeyende her zaman profillidir (yukarıda). Masadaki kimlik masa süresince sabittir: anahtar değişirse, görünüş değişirse ya da nick yenilenirse yeni kimlik mekan sohbetinde ve bir sonraki masada geçerli olur (K-10).
 - **Zamanlama:** anahtar bir kez değişince sonraki mesajlar yeni kimlikle gider. Mekan sohbetini izleyen biri iki kimliği zamanlamayla eşleyebilir. Hak check-in başına 1 olduğu için bu en çok bir kez olur; değiştirme onayı bunu söyler.
-- **Eski istemci koruması:** `venue-chat/send` kimliği check-in'den okur. İstek `profiled` taşıyor ve check-in'in kimliğinden farklıysa `identity_mismatch` (409) döner, mesaj yazılmaz (Faz 2'nin gerekçesi: anonim sanılan bir mesajın profilli gitmesi gizlilik hatasıdır).
+- **Eski istemci koruması:** `venue-chat/send` kimliği check-in'den okur; istek gösterdiği kimliği tam olarak bir alanla söyler (ikisi de yoksa ya da ikisi birden varsa `bad_request`).
+  - Yeni uygulama `identity` gönderir; check-in'in kimliğinden farklıysa `identity_mismatch` (409) döner, mesaj yazılmaz (Faz 2'nin gerekçesi: anonim sanılan bir mesajın profilli gitmesi gizlilik hatasıdır).
+  - Bugünkü uygulama her mesajda `profiled` gönderir ve kimliği ilk mesajla seçer (SPEC_V3 §22.G). Sunucu bu ilk mesajı check-in'in tek değişikliği sayar (aynı kimlikse hak harcanmaz); sonrası bugünkü gibi `venue_chat_mode_locked`. Böylece bugünkü uygulama bozulmaz ve anonim sanılan mesaj yine profilli gitmez. `profiled` alanı 4.8'de kalkar (`docs/decisions/4.4-kimlik.md`).
 
 **Mekan sohbetinde kişi görünümü.**
 
 - Kişi fotoğraf ve gerçek adla ya da kapsül ve nick'le görünür; **masa adı hiç geçmez** (§4.B-7).
 - Ad balonun içindedir ve kişiye göre sabit renktedir. Art arda gelen mesajlar tek avatarla dizilir. Telefon bunu yanıttaki `senderKey`'den yapar:
-  - `senderKey` sunucuda hesaplanan opak bir anahtardır: göndericinin hesabı, kimliği (anonim ya da profilli), mekan ve gün üzerinden.
+  - `senderKey` sunucuda hesaplanan opak bir anahtardır: göndericinin hesabı, kimliği (anonim ya da profilli), yazdığı ad (nick ya da görünen ad), mekan ve gün üzerinden. Yenilenen nick bu yüzden aynı gün de eskisine bağlanmaz (K-68).
   - Aynı kişinin anonim ve profilli mesajları farklı anahtar alır. Anahtar iki kimliği bağlamaz, hesap id'si ve `public_id` taşımaz.
 - **Mesaja basılı tutunca:** tepki, Yanıtla, Bildir; kendi mesajında Sil (SPEC_V3 §21; Sil yeni, aşağıda).
 - **Kişiye dokununca:** Profili gör (anonimde kapalı), Sessize al, Bildir.
@@ -823,9 +825,9 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 | `account`       | `complete-onboarding` nick ve hazır görünüşlerden birini atar (K-46); `notifications-seen`                                                                                                                                                                                                                    | 4.4, 4.7 |
 | `profile`       | Kendi `get` yanıtında `capsuleNick`, `capsuleLook`; başkası için ikisi de yok (K-49); `refresh-nick` (30 günde bir, K-9)                                                                                                                                                                                      | 4.4      |
 | `profile`       | `set-look { look }`: görünüş katalogla doğrulanır, bilinmeyen parça atılır (K-47)                                                                                                                                                                                                                             | 4.4b     |
-| `checkin`       | `set-identity { anonymous }` (`identity_switch_used`, `anonymous_not_allowed`, `gender_required`)                                                                                                                                                                                                             | 4.4      |
+| `checkin`       | `set-identity { anonymous }` (`identity_switch_used`, `photo_required`; cinsiyet istemez)                                                                                                                                                                                                                     | 4.4      |
 | `checkin`       | `check-in` kişi sayısı ve masa adı almaz                                                                                                                                                                                                                                                                      | 4.5      |
-| `venue-chat`    | `send` kimliği check-in'den okur (`identity_mismatch`); `page` yanıtında `senderKey`, anonimde nick; `delete`, `mute`, `unmute`, `mutes`                                                                                                                                                                      | 4.4      |
+| `venue-chat`    | `send` kimliği check-in'den okur; istek `identity` ya da bugünkü uygulamanın `profiled`'ını taşır, tam olarak birini (`identity_mismatch`, `venue_chat_mode_locked`); `page` yanıtında `senderKey`, anonimde nick; `delete`, `mute`, `unmute`, `mutes`                                                        | 4.4      |
 | `rooms`         | `create { icon? }`, `set-icon` (K-45), `set-visibility`, `reroll-name`, `request-join` (masa ya da kişi, `asMember`), `respond`, `request-profile`, `leave`, `end`, `vote`, `open-game`, `pick`, `shuffle`, `end-game`, `leave-game`; yeni kodlar `already_in_table`, `table_full`, `not_owner`, `not_player` | 4.5      |
 | `rooms`         | `invite`, `answer-invite`                                                                                                                                                                                                                                                                                     | 4.7      |
 | `tabu`          | `start`, `begin-turn`, `turn-cards`, `mark` (Doğru, Pas, Yasak!), `end-turn`, `advance`; kişi bazlı yetki                                                                                                                                                                                                     | 4.6.1    |
@@ -919,9 +921,11 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 - Erkek ve belirtmeyen hesap anonim kimlikle mekan sohbetine yazar; aynı check-in'de masaya girişte kimliği profillidir ve check-in'in anonim kimliği masaya taşınmaz. Açıkça anonim katılım isteyen istek `anonymous_not_allowed`. Bu hesaplarda da ikinci değişiklik `identity_switch_used`.
 - Değişiklikten önceki mesajlar eski kimlikle döner; anonim mesajda fotoğraf ve ad yoktur.
 - Görünüş değişince ya da nick yenilenince eski mesaj eski görünüşle (ve eski nick'le) döner; masadaki kişinin görünüşü masa süresince değişmez (K-10). Profilli mesaj ve profilli kişi görünüş taşımaz.
-- `identity_mismatch`: check-in'in kimliğinden farklı `profiled` taşıyan mesaj yazılmaz.
+- `identity_mismatch`: check-in'in kimliğinden farklı `identity` taşıyan mesaj yazılmaz. Bugünkü uygulamanın `profiled`'lı ilk mesajı check-in'in tek değişikliğidir, sonrası `venue_chat_mode_locked`. Kimliksiz ya da iki alanlı istek `bad_request`.
+- `set-identity` cinsiyet istemez ve `anonymous_not_allowed` döndürmez; aynı kimliği yeniden seçmek hak harcamaz.
+- Nick'i olmayan hesap (eski fonksiyonla kayıt, başarısız atama) check-in'de ve kendi profilinde nick alır; anonim mesaj hiçbir zaman başka bir adla (masa adı dahil) yazılmaz (`onboarding_required`).
 - Sessize alma kimliğe bağlıdır: anonim kimliği sessize almak aynı kişinin profilli mesajlarını gizlemez. Sessize alınan hiçbir yanıtta bunu görmez.
-- `senderKey` aynı kişinin iki kimliği için farklıdır ve hesap id'si taşımaz.
+- `senderKey` aynı kişinin iki kimliği için ve nick yenilenince farklıdır, hesap id'si taşımaz.
 - Kendi mesajını silme yalnızca göndericinin mesajında çalışır; şikayet kopyası kalır.
 
 **Adım 4.4b.**

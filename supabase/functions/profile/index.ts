@@ -5,6 +5,7 @@
 // account (rule 4); the path photo-upload-url issued is kept as the pending upload, and only that
 // one can be committed.
 import { requireUser, serviceClient } from '../_shared/auth.ts';
+import { assignCapsuleIdentity, refreshCapsuleNick } from '../_shared/capsule.ts';
 import { dbError } from '../_shared/db.ts';
 import { z } from '../_shared/deps.ts';
 import { handle } from '../_shared/http.ts';
@@ -18,6 +19,7 @@ import type {
 } from '../_shared/pure/api/profile.ts';
 import { ageOn, istanbulToday, parseIsoDate } from '../_shared/pure/age.ts';
 import { earnedBadges } from '../_shared/pure/badges.ts';
+import { nickRefreshAt } from '../_shared/pure/capsule.ts';
 import type { Gender } from '../_shared/pure/gender.ts';
 import { AppError } from '../_shared/pure/errors.ts';
 import { inspectJpeg } from '../_shared/pure/jpegMetadata.ts';
@@ -44,6 +46,7 @@ const Body: z.ZodType<ProfileRequest> = z.union([
   z.object({ action: z.literal('photo-upload-url') }),
   z.object({ action: z.literal('photo-commit'), path: z.string().max(200) }),
   z.object({ action: z.literal('photo-remove') }),
+  z.object({ action: z.literal('refresh-nick') }),
 ]);
 
 const db = serviceClient();
@@ -125,10 +128,16 @@ async function getProfile(viewer: string, publicId: string): Promise<ProfileView
   const row = data[0];
   // Unknown, blocked, or not allowed: the same answer on the same path.
   if (!row) throw new AppError('not_found', 'Profile not found.');
+  // The own profile shows the nick: an account left without one gets it here (_shared/capsule.ts).
+  if (row.is_self) await assignCapsuleIdentity(db, row.user_id);
 
   const [stats, birth] = await Promise.all([
     db.rpc('user_stats', { target_user_id: row.user_id }),
-    db.from('profiles').select('birth_date, gender').eq('id', row.user_id).single(),
+    db
+      .from('profiles')
+      .select('birth_date, gender, capsule_nick, capsule_look, capsule_nick_changed_at')
+      .eq('id', row.user_id)
+      .single(),
   ]);
   if (stats.error) throw dbError('user_stats', stats.error);
   if (birth.error) throw dbError('profiles', birth.error);
@@ -154,12 +163,15 @@ async function getProfile(viewer: string, publicId: string): Promise<ProfileView
     }),
     age,
     // The owner sees their own birth date (Ayarlar → Hesap) and gender; nobody else does (rules 11
-    // and 12).
+    // and 12). The capsule and the nick too: never on another's profile, a friend's included (K-49).
     ...(row.is_self
       ? {
           photoHidden: row.photo_hidden,
           birthDate: birth.data.birth_date,
           gender: birth.data.gender as Gender | null,
+          capsuleNick: birth.data.capsule_nick,
+          capsuleLook: birth.data.capsule_look,
+          nickRefreshAt: nickRefreshAt(birth.data.capsule_nick_changed_at, new Date()),
         }
       : {}),
   };
@@ -175,6 +187,15 @@ Deno.serve(
         return 'venueChatMessageId' in body
           ? await getChatProfile(user.id, body.venueChatMessageId)
           : await getProfile(user.id, body.publicId);
+
+      // K-9: once in 30 days; the look stays, only the nick changes.
+      case 'refresh-nick': {
+        const refreshed = await refreshCapsuleNick(db, user.id);
+        return {
+          capsuleNick: refreshed.nick,
+          nickRefreshAt: nickRefreshAt(refreshed.changedAt, new Date()),
+        };
+      }
 
       case 'update': {
         const me = await ownProfile(user.id);

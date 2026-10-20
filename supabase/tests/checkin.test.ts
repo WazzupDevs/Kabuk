@@ -118,6 +118,8 @@ describe('checkin/check-in', () => {
         sessionId: expect.any(String),
         alias: expect.stringMatching(/^\S+ \S+$/),
         expiresAt: expect.any(String),
+        // docs/SPEC_V4.md §4.D (step 4.4): the check-in's identity, the account's default.
+        identity: { mode: 'anonymous', switchUsed: false },
       },
     });
 

@@ -68,6 +68,13 @@ export type VenueChatMessage = {
   // §21: the answered message (by its own label rule) and the counts per emoji, never who.
   replyTo: Quote | null;
   reactions: ReactionCount[];
+  // docs/SPEC_V4.md §4.D: the same key for one person's messages of one identity on one day at the
+  // venue (one avatar for a run, one colour for the name); the two identities of a person get
+  // different keys, and a key names no account. Absent from a server before step 4.4.
+  senderKey?: string;
+  // An anonymous message's capsule look as it was written (pure/capsule.ts); null for a profiled
+  // one.
+  senderLook?: string | null;
 };
 
 // A message from venue-chat/page as the app keeps it. A server from before §21 sends neither
@@ -90,6 +97,20 @@ export function withVenueChatExtras(
 // message and fixed until the table ends; null until then. venue-chat/page returns it. The column
 // is table_sessions.venue_chat_profiled; a server from before §22.G sends no mode (null).
 export type VenueChatMode = 'anonymous' | 'profiled';
+
+// The check-in's identity (docs/SPEC_V4.md §4.D): anonymous or profiled, changed at most once per
+// check-in (K-3, K-48). Its venue chat side is the mode above.
+export type CheckinIdentity = { mode: VenueChatMode; switchUsed: boolean };
+
+export function checkinIdentity(session: {
+  identity_mode: string;
+  identity_switches: number;
+}): CheckinIdentity {
+  return {
+    mode: session.identity_mode === 'profiled' ? 'profiled' : 'anonymous',
+    switchUsed: session.identity_switches >= 1,
+  };
+}
 
 export function venueChatMode(profiled: boolean | null | undefined): VenueChatMode | null {
   if (profiled === true) return 'profiled';

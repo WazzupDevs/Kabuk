@@ -429,6 +429,10 @@ describe('profile/get', () => {
         birthDate: TEST_BIRTH_DATE,
         // Step 23.2 (docs/SPEC_V3.md §23.D): the own gender, given at sign-up.
         gender: 'female',
+        // Step 4.4 (docs/SPEC_V4.md §4.D, K-49): the own nick and look, on the own profile only.
+        capsuleNick: expect.stringMatching(/^kapsul-[a-z]{2}\d{2,3}$/),
+        capsuleLook: expect.stringMatching(/^c:\S+ e:\S+/),
+        nickRefreshAt: null,
       },
     });
   });
