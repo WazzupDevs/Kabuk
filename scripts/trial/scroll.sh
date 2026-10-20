@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # TRIAL ONLY (claude/visual-trial): scroll smoothness of the 20-card list with v46's shadows and
-# gradients against the same list drawn flat, on a low-end emulator (2 cores, 2 GB, software GPU),
+# gradients against the same list drawn flat, on a low-end emulator (2 cores, 3 GB, software GPU),
 # then the cards at 320 dp and font 1.3. Runs inside reactivecircus/android-emulator-runner.
 # Env: APK, OUT.
 set -euo pipefail
@@ -9,6 +9,9 @@ D=emulator-5554
 source "$(dirname "$0")/common.sh"
 mkdir -p "$OUT"
 
+# The phone's log over the whole job, for when something falls over.
+a logcat -c || true
+a logcat '*:W' > "$OUT/logcat.txt" 2>&1 &
 a install -r -g "$APK"
 # 360 dp at 2x, v46's prototype width (the skin is 720x1280).
 a shell wm density 320

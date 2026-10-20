@@ -43,7 +43,7 @@ if (what === 'scroll') {
   const pass = dJank <= 5 && rP90 <= 1.25;
   console.log(
     [
-      '### Kaydırma (20 kart, düşük profilli emülatör: 2 çekirdek, 2 GB, yazılım GPU, 360 dp)',
+      '### Kaydırma (20 kart, düşük profilli emülatör: 2 çekirdek, 3 GB, yazılım GPU, 360 dp)',
       '',
       '| Liste | Geçiş | Kare | Takılan | p50 ms | p90 ms | p95 ms | p99 ms |',
       '| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
