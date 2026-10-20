@@ -69,6 +69,13 @@ export function transitionsEnd(list: readonly V46Transition[]): number {
   return Math.max(0, ...list.map((t) => t.ms + t.delayMs));
 }
 
+// Where a part rests between plays of a v46 keyframe animation: its own value, which CSS returns to
+// when the animation ends (the last step), not the first keyframe (`vbump` starts at half size).
+export function keyframeRest(motion: V46KeyframeMotion, channel: V46Channel): number {
+  const c = motion.channels[channel];
+  return c?.steps.at(-1)?.to ?? (channel === 'scale' || channel === 'opacity' ? 1 : 0);
+}
+
 // One channel of a v46 keyframe animation (parts.generated.ts → V46_BUTTON_MOTION) as a Reanimated
 // value: from its start, each step to the next keyframe, every step eased with the animation's
 // timing function, as CSS plays it. `scale` multiplies lengths (keyframes in a drawing's units).

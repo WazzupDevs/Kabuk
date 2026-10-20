@@ -216,6 +216,22 @@ describe('v46 button motions', () => {
     expect(motions.nope.offWhenReduced).toBe(false);
   });
 
+  // A part rests at its own value between plays (CSS returns to it when the animation ends), not at
+  // the first keyframe: `vbump` starts at half size and the badge must not rest there.
+  it('rests each animated part at its own value', () => {
+    for (const [key, motion] of keyframeMotions) {
+      for (const [channel, steps] of Object.entries(motion.channels)) {
+        const own = channel === 'scale' || channel === 'opacity' ? 1 : 0;
+        expect(steps?.steps.at(-1)?.to, `${key} ${channel}`).toBe(own);
+      }
+    }
+    const ui = ['Button.tsx', 'RoundButton.tsx', 'SendButton.tsx', 'glyph.tsx']
+      .map(source)
+      .join('\n');
+    expect(ui).not.toMatch(/useSharedValue\([^)]*\.from\b/);
+    expect(ui).toMatch(/useSharedValue\(keyframeRest\(/);
+  });
+
   it('is read by the components', () => {
     const ui = ['Button.tsx', 'RoundButton.tsx', 'SendButton.tsx', 'glyph.tsx', 'BarGlyph.tsx']
       .map(source)

@@ -9,7 +9,7 @@ import { V46_COMPONENTS } from '@/theme/tokens.generated';
 import { v46FontStyle } from '@/theme/v46Type';
 
 import { BellGlyph, ButtonGlyph } from './glyph';
-import { keyframeSequence, transitionStyle } from './motion';
+import { keyframeRest, keyframeSequence, transitionStyle } from './motion';
 
 // v46's round icon buttons (`.round`, 44): the header's back (`.round.back`) and an icon button
 // with a count (`.round.nbell`, the Mesajlar bell and its `.nb-bdg`). The icon is v46's drawing for
@@ -48,7 +48,7 @@ export function RoundButton({
   const b = p.badge;
 
   const bump = V46_BUTTON_MOTION.badgeBump;
-  const badgeScale = useSharedValue(bump.channels.scale?.from ?? 1);
+  const badgeScale = useSharedValue(keyframeRest(bump, 'scale'));
   const shownBadge = useRef(badge);
   useEffect(() => {
     const before = shownBadge.current;
