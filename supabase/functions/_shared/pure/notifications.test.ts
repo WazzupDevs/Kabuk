@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { inviteState, isUnseen, NOTIFICATION_DAYS } from './notifications.ts';
+import { inviteState, isUnseen, NOTIFICATION_DAYS, seenMark } from './notifications.ts';
 import { invitePush, PUSH_PREFERENCE } from './push.ts';
 import { MAX_TABLE_INVITES_PER_HOUR, TABLE_INVITE_TTL_SECONDS } from './tables.ts';
 
@@ -45,6 +45,13 @@ describe('notification settings (K-53, K-62)', () => {
 describe('the bell (§4.G)', () => {
   it('keeps an accepted request and a match a week, an invite a day', () => {
     expect(NOTIFICATION_DAYS).toEqual({ accepted: 7, match: 7, invite: 1 });
+  });
+
+  it('marks the newest row the list showed, never later than now', () => {
+    const now = Date.parse('2026-10-20T10:00:00.000Z');
+    expect(seenMark('2026-10-20T09:59:00.000+00:00', now)).toBe('2026-10-20T09:59:00.000Z');
+    expect(seenMark('2026-10-20T12:59:00.000+03:00', now)).toBe('2026-10-20T09:59:00.000Z');
+    expect(seenMark('2026-10-20T10:05:00.000Z', now)).toBe('2026-10-20T10:00:00.000Z');
   });
 
   it('counts what came after the list was last opened, all of it before the first time', () => {

@@ -21,6 +21,14 @@ export function inviteState(status: string, expiresAt: string, now: number): Inv
   return 'open';
 }
 
+// The mark account/notifications-seen writes: the newest row the list showed, never later than now
+// (a clock ahead on the phone must not hide what comes next). The server keeps the later of this
+// and the mark it had, so the same call twice, or an older one arriving late, moves nothing back
+// (WazzupDevs/Kabuk#195).
+export function seenMark(shownAt: string, now: number): string {
+  return new Date(Math.min(Date.parse(shownAt), now)).toISOString();
+}
+
 // New since the list was last opened (account/notifications-seen); everything is new before the
 // first opening.
 export function isUnseen(createdAt: string, seenAt: string | null): boolean {

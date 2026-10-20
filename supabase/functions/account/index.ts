@@ -17,6 +17,7 @@ import { AppError } from '../_shared/pure/errors.ts';
 import { type Gender, GENDERS } from '../_shared/pure/gender.ts';
 import { checkDisplayName } from '../_shared/pure/profile.ts';
 import { loadProfanity } from '../_shared/profanity.ts';
+import { seenMark } from '../_shared/pure/notifications.ts';
 import { isExpoPushToken } from '../_shared/pure/push.ts';
 
 const Body: z.ZodType<AccountRequest> = z.discriminatedUnion('action', [
@@ -34,7 +35,7 @@ const Body: z.ZodType<AccountRequest> = z.discriminatedUnion('action', [
     action: z.literal('register-push'),
     token: z.string().max(200).refine(isExpoPushToken).nullable(),
   }),
-  z.object({ action: z.literal('notifications-seen') }),
+  z.object({ action: z.literal('notifications-seen'), seenAt: z.iso.datetime({ offset: true }) }),
 ]);
 
 const db = serviceClient();
@@ -178,13 +179,16 @@ Deno.serve(
         return { ok: true };
       }
 
-      // The bell's list was opened (docs/SPEC_V4.md §4.G): the badge counts what comes after.
+      // The bell's list was opened (docs/SPEC_V4.md §4.G): the badge counts what came after the
+      // newest row the list showed. The mark only moves forward.
       case 'notifications-seen': {
         const user = await requireUser(req, db);
+        const seenAt = seenMark(body.seenAt, Date.now());
         const { error } = await db
           .from('profiles')
-          .update({ notifications_seen_at: new Date().toISOString() })
-          .eq('id', user.id);
+          .update({ notifications_seen_at: seenAt })
+          .eq('id', user.id)
+          .or(`notifications_seen_at.is.null,notifications_seen_at.lt."${seenAt}"`);
         if (error) throw dbError('profiles', error);
         return { ok: true };
       }

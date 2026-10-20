@@ -1259,8 +1259,10 @@ export type Database = {
           expires_at: string;
           from_session_id: string;
           id: string;
+          phones: number;
           responded_at: string | null;
           room_id: string;
+          room_name: string | null;
           status: string;
           to_user_id: string;
         };
@@ -1269,8 +1271,10 @@ export type Database = {
           expires_at: string;
           from_session_id: string;
           id?: string;
+          phones: number;
           responded_at?: string | null;
           room_id: string;
+          room_name?: string | null;
           status?: string;
           to_user_id: string;
         };
@@ -1279,8 +1283,10 @@ export type Database = {
           expires_at?: string;
           from_session_id?: string;
           id?: string;
+          phones?: number;
           responded_at?: string | null;
           room_id?: string;
+          room_name?: string | null;
           status?: string;
           to_user_id?: string;
         };
@@ -2626,8 +2632,10 @@ export type Database = {
           expires_at: string;
           from_session_id: string;
           id: string;
+          phones: number;
           responded_at: string | null;
           room_id: string;
+          room_name: string | null;
           status: string;
           to_user_id: string;
         }[];

@@ -2,10 +2,11 @@
 -- table invite, the notification list behind the bell and the notification settings.
 --
 -- The table invite (§4.B-8, rule 4's open exception): only a table's owner sends it, only to a
--- friend, and only a friend checked in at the same venue gets it. Everything else (a friend
--- elsewhere, a block either way, one already invited, the hour's limit, a full table) writes nothing,
--- and the owner hears the same "Davet gönderildi" every time (K-2, K-18). An invite carries the
--- table's name and phones, never the venue; it lasts 2 minutes. Joining by an invite is the owner's
+-- friend, and only a friend checked in at the same venue, and at the table's spot where the venue
+-- has spots, gets it. Everything else (a friend elsewhere, a block either way, one already invited,
+-- the hour's limit, a full table) writes nothing, and the owner hears the same "Davet gönderildi"
+-- every time (K-2, K-18). An invite carries the table's name and phones as they were when it went,
+-- never the venue; it lasts 2 minutes. Joining by an invite is the owner's
 -- consent; the person leaves the table they were at by the "Masadan ayrıl" rule (K-13). A decline and
 -- a time-out look the same to the owner: nothing.
 --
@@ -30,12 +31,16 @@ grant select (notify_invites, notifications_seen_at) on public.profiles to authe
 
 -- 2. The invites -----------------------------------------------------------------------------------
 -- Closed to clients (no policy): the invitee reads its own through my_notifications; the account it
--- went to never reaches a client.
+-- went to never reaches a client. room_name and phones are the table's when the invite went: the
+-- list shows them a day, and the table itself (still open? how many now?) never reaches the
+-- invitee after the 2 minutes (rule 4; WazzupDevs/Kabuk#195).
 create table public.table_invites (
   id uuid primary key default gen_random_uuid(),
   room_id uuid not null references public.rooms (id) on delete cascade,
   from_session_id uuid not null references public.table_sessions (id) on delete cascade,
   to_user_id uuid not null references auth.users (id) on delete cascade,
+  room_name text,
+  phones smallint not null,
   created_at timestamptz not null default now(),
   expires_at timestamptz not null,
   status text not null default 'pending'
@@ -56,8 +61,9 @@ revoke all on table public.table_invites from anon, authenticated;
 -- 3. rooms/invite ----------------------------------------------------------------------------------
 -- The owner of the table (not_owner otherwise) invites a friend by public_id. Returns the invite
 -- written, or no row: not a friend (or no such id), a block either way, not checked in at the
--- venue, already at the table, a waiting invite from this owner, `hourly_max` invites from this
--- account in the past hour, or a full table. The answer never tells which (K-2).
+-- venue or at another spot of it, already at the table, a waiting invite from this owner,
+-- `hourly_max` invites from this account in the past hour, or a full table. The answer never tells
+-- which (K-2).
 create function public.rooms_invite(
   target_user_id uuid,
   target_room_id uuid,
@@ -93,7 +99,10 @@ begin
   -- The friend's check-in, read only: the invite says nothing about it, and the join checks again.
   select * into invitee from public.table_sessions
   where user_id = friend_id and status = 'active' and expires_at > now();
+  -- Only a table's own spot sits together (rooms_request_join's different_spot): another spot is
+  -- as far as another venue (the project owner's decision, WazzupDevs/Kabuk#195).
   if invitee.id is null or invitee.venue_id <> r.venue_id
+     or invitee.spot_id is distinct from r.spot_id
      or private.open_room_of_session(invitee.id) is not distinct from r.id
      or r.phones >= private.max_table_phones()
   then
@@ -110,8 +119,8 @@ begin
   update public.table_invites set status = 'expired'
   where from_session_id = p.session_id and to_user_id = friend_id
     and status = 'pending' and expires_at <= now();
-  insert into public.table_invites (room_id, from_session_id, to_user_id, expires_at)
-  values (r.id, p.session_id, friend_id, now() + make_interval(secs => ttl_seconds))
+  insert into public.table_invites (room_id, from_session_id, to_user_id, room_name, phones, expires_at)
+  values (r.id, p.session_id, friend_id, r.name, r.phones, now() + make_interval(secs => ttl_seconds))
   on conflict (from_session_id, to_user_id) where status = 'pending' do nothing
   returning * into created;
   if created.id is not null then
@@ -123,8 +132,10 @@ $$;
 -- 4. rooms/answer-invite -----------------------------------------------------------------------------
 -- The invitee answers. A decline: the invite ends, and nothing reaches the owner. Joining: the invite
 -- is the owner's consent. It is no longer valid (invite_unavailable, one answer for all) when it has
--- run out, the table closed or is full, its owner is not the inviter any more, the table is at
--- another venue than the invitee's check-in, or there is a block with someone at the table. The
+-- run out, the table closed or is full, its owner is not the inviter any more or the inviter's
+-- check-in has run out, the two are not friends any more (a removal looks like a block, rule 5),
+-- the table is at another venue or spot than the invitee's check-in, or there is a block with
+-- someone at the table (WazzupDevs/Kabuk#195). The
 -- invitee sits with the check-in's identity (private.table_seat: photo_required, gender_required)
 -- and first leaves the table it is at by the "Masadan ayrıl" rule (private.leave_room: alone there,
 -- the table closes quietly; its owner, the table goes to the earliest person; K-13). Already at the
@@ -143,6 +154,7 @@ declare
   inv public.table_invites;
   s public.table_sessions;
   r public.rooms;
+  inviter public.table_sessions;
   current_room uuid;
   seat record;
 begin
@@ -173,6 +185,8 @@ begin
   for update;
   select * into inv from public.table_invites where id = target_invite_id for update;
   select * into r from public.rooms where id = inv.room_id;
+  -- The inviter's check-in, read only, as rooms_respond reads the owner's.
+  select * into inviter from public.table_sessions where id = inv.from_session_id;
 
   if current_room is not distinct from r.id and r.status <> 'closed' then
     update public.table_invites set status = 'accepted', responded_at = now()
@@ -187,7 +201,10 @@ begin
   if inv.status <> 'pending' or inv.expires_at <= now()
      or r.status = 'closed'
      or r.owner_session_id <> inv.from_session_id
+     or inviter.status <> 'active' or inviter.expires_at <= now()
+     or not private.are_friends(inviter.user_id, target_user_id)
      or r.venue_id <> s.venue_id
+     or r.spot_id is distinct from s.spot_id
      or r.phones >= private.max_table_phones()
      or private.room_blocked_for(r.id, target_user_id)
   then
@@ -221,7 +238,8 @@ $$;
 -- - 'match': a friendship of the silent "Arkadaş ekle" made in 7 days, for the first presser only
 --   (the earlier of the two intents; K-70): the friend.
 -- - 'invite': a friend's table invite to the caller in a day: the friend, the table's name and
---   phones, the invite's time and status. Never the venue.
+--   phones as they were when it went (never the table as it is now), the invite's time and
+--   status. Never the venue.
 -- A block either way, and a friendship that ended, take the row out. No account id; no public_id
 -- before a friendship (rule 4).
 create function public.my_notifications(target_user_id uuid)
@@ -312,11 +330,10 @@ as $$
            case when p.photo_hidden_at is null then p.photo_path end,
            case when ti.status = 'pending' and ti.expires_at <= now() then 'expired'
                 else ti.status end,
-           r.name, r.phones, ti.expires_at
+           ti.room_name, ti.phones, ti.expires_at
     from public.table_invites ti
     join public.table_sessions ts on ts.id = ti.from_session_id
     join public.profiles p on p.id = ts.user_id
-    join public.rooms r on r.id = ti.room_id
     where ti.to_user_id = target_user_id
       and ti.created_at > now() - interval '1 day'
       and private.are_friends(ts.user_id, ti.to_user_id)

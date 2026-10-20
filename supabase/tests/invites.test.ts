@@ -159,8 +159,9 @@ describe('the table invite (§4.G)', () => {
 
     // The hour's limit: what goes over it writes nothing and answers the same.
     await sql`
-      insert into public.table_invites (room_id, from_session_id, to_user_id, created_at, expires_at, status)
-      select ${roomId}, ${owner.sessionId}, ${member.userId}, now() - interval '10 minutes',
+      insert into public.table_invites
+        (room_id, from_session_id, to_user_id, phones, created_at, expires_at, status)
+      select ${roomId}, ${owner.sessionId}, ${member.userId}, 1, now() - interval '10 minutes',
              now() - interval '8 minutes', 'expired'
       from generate_series(1, ${MAX_TABLE_INVITES_PER_HOUR})
     `;
@@ -340,6 +341,71 @@ describe('answering an invite (§4.G)', () => {
       body: errorBody('invite_unavailable'),
     });
   });
+
+  // WazzupDevs/Kabuk#195: the invite is the owner's consent while they are friends and the owner is
+  // still at the venue. A removal answers as a block does: the one removed cannot tell (rule 5).
+  it('answers a removed friendship as a block, and an inviter whose check-in ran out alike', async () => {
+    const removed = await invited();
+    expect(
+      await invoke(removed.owner.client, 'friends', {
+        action: 'remove',
+        publicId: await publicIdOf(removed.friend),
+      }),
+    ).toMatchObject({ status: 200 });
+    expect(await answer(removed.friend, removed.inviteId, true)).toEqual({
+      status: 409,
+      body: errorBody('invite_unavailable'),
+    });
+    expect((await seated(removed.roomId)).map((x) => x.session_id)).toEqual([
+      removed.owner.sessionId,
+    ]);
+    for (const p of TABLE_PHONES.slice(0, 2)) await deleteUserByPhone(p);
+
+    const gone = await invited();
+    await sql`update public.table_sessions set expires_at = now() - interval '1 minute'
+              where id = ${gone.owner.sessionId}`;
+    expect(await answer(gone.friend, gone.inviteId, true)).toEqual({
+      status: 409,
+      body: errorBody('invite_unavailable'),
+    });
+  });
+
+  // The project owner's decision (WazzupDevs/Kabuk#195): at a venue with spots the invite finds the
+  // friend at the table's spot only. The owner hears the same either way; a friend who moved to
+  // another spot finds the invite unavailable.
+  it('invites and seats a friend at the table’s spot only', async () => {
+    const [owner, friend] = await Promise.all([at(0), at(1)]);
+    await befriend(owner, friend);
+    const spots = await sql`
+      insert into public.venue_spots (venue_id, ref, name)
+      values (${venue['at-anchor'] ?? ''}, 'davet-a', 'A'), (${venue['at-anchor'] ?? ''}, 'davet-b', 'B')
+      returning id
+    `;
+    const [a, b] = spots.map((x) => x.id as string);
+    try {
+      const place = (p: Person, spot: string | undefined) =>
+        sql`update public.table_sessions set spot_id = ${spot ?? null} where id = ${p.sessionId}`;
+      await place(owner, a);
+      await place(friend, b);
+      const roomId = await openTable(owner);
+      expect((await roomRow(roomId)).spot_id).toBe(a);
+      expect(await invite(owner, roomId, friend)).toEqual(OK);
+      expect(await invitesTo(friend)).toEqual([]);
+
+      await place(friend, a);
+      expect(await invite(owner, roomId, friend)).toEqual(OK);
+      const [row] = await invitesTo(friend);
+      await place(friend, b);
+      expect(await answer(friend, row?.id as string, true)).toEqual({
+        status: 409,
+        body: errorBody('invite_unavailable'),
+      });
+      await place(friend, a);
+      expect(await answer(friend, row?.id as string, true)).toEqual(OK);
+    } finally {
+      await sql`delete from public.venue_spots where id in ${sql(spots.map((x) => x.id as string))}`;
+    }
+  });
 });
 
 describe('the bell (§4.G, K-70)', () => {
@@ -440,14 +506,70 @@ describe('the bell (§4.G, K-70)', () => {
 
     // New until opened; opening twice is the same.
     expect(list.unseen).toBe(4);
+    const newest = list.notifications[0]?.createdAt ?? '';
     for (let i = 0; i < 2; i++) {
-      expect(await invoke(me.client, 'account', { action: 'notifications-seen' })).toEqual(OK);
+      expect(
+        await invoke(me.client, 'account', { action: 'notifications-seen', seenAt: newest }),
+      ).toEqual(OK);
     }
     const seen = await notificationsOf(me);
     expect(seen.unseen).toBe(0);
     expect(seen.notifications.every((n) => !n.isNew)).toBe(true);
     // Read twice, alike.
     expect(await notificationsOf(me)).toEqual(seen);
+  });
+
+  // WazzupDevs/Kabuk#195: the list keeps an invite a day, the table only as it was when the invite
+  // went. Whether it is still open, or how many sit at it now, never reaches the invitee (rule 4).
+  it('shows the table’s name and phones as they were when the invite went', async () => {
+    const [owner, friend, other] = await Promise.all([at(0), at(1), at(2)]);
+    await befriend(owner, friend);
+    const roomId = await openTable(owner);
+    const { name } = await roomRow(roomId);
+    expect(await invite(owner, roomId, friend)).toEqual(OK);
+    const before = (await notificationsOf(friend)).notifications[0];
+    expect(before).toMatchObject({ kind: 'invite', tableName: name, phones: 1 });
+
+    await sit(other, owner, roomId);
+    expect((await rooms(owner, { action: 'reroll-name', roomId })).status).toBe(200);
+    expect((await roomRow(roomId)).name).not.toBe(name);
+    expect((await notificationsOf(friend)).notifications[0]).toEqual(before);
+    expect(await rooms(owner, { action: 'end' })).toEqual(OK);
+    expect((await notificationsOf(friend)).notifications[0]).toEqual(before);
+  });
+
+  // WazzupDevs/Kabuk#195: the mark is the newest row the list showed, not the time of the call.
+  it('keeps new a row that came after the list was read, and never moves the mark back', async () => {
+    const [me, early, late, later] = await Promise.all([at(0), at(1), at(2), at(3)]);
+    const ask = (from: Person) => sql`
+      insert into public.friend_requests (from_user_id, to_user_id, source, venue_chat_context)
+      values (${from.userId}, ${me.userId}, 'venue_chat', ${sql.json({ venueName: 'X' })})
+    `;
+    const seen = (seenAt: string) =>
+      invoke(me.client, 'account', { action: 'notifications-seen', seenAt });
+    await ask(early);
+    const read = await notificationsOf(me);
+    const shown = read.notifications[0]?.createdAt ?? '';
+    // A request comes between the read and the call: it stays new.
+    await ask(late);
+    expect(await seen(shown)).toEqual(OK);
+    const after = await notificationsOf(me);
+    expect(after.unseen).toBe(1);
+    expect(after.notifications.map((n) => n.isNew)).toEqual([true, false]);
+
+    // The newest mark stays: an older one sent late moves nothing back.
+    expect(await seen(after.notifications[0]?.createdAt ?? '')).toEqual(OK);
+    expect(await seen(shown)).toEqual(OK);
+    expect((await notificationsOf(me)).unseen).toBe(0);
+
+    // A mark ahead of now (a phone's clock) is now: what comes next is still new.
+    expect(await seen(new Date(Date.now() + 3_600_000).toISOString())).toEqual(OK);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    await ask(later);
+    expect((await notificationsOf(me)).unseen).toBe(1);
+    expect(
+      await invoke(me.client, 'account', { action: 'notifications-seen', seenAt: 'dün' }),
+    ).toEqual({ status: 400, body: errorBody('bad_request') });
   });
 
   it('drops a row on a block, and an accepted request or a match after 7 days', async () => {
@@ -572,5 +694,50 @@ describe('locks (§4.K)', () => {
       await Promise.all([ending.end(), joining.end()]);
     }
     expect((await roomRow(roomId)).status).toBe('closed');
+  });
+
+  // rooms/invite locks the owner's check-in and the table (private.room_phone), then writes the
+  // invite (WazzupDevs/Kabuk#195): with "Masayı bitir" at once, the second waits. An invite after
+  // the end is the owner's no longer (not_in_room); one before it finds the table closed.
+  it('lets an invite wait for "Masayı bitir", and "Masayı bitir" for an invite', async () => {
+    for (const inviteFirst of [true, false]) {
+      const [owner, friend] = await Promise.all([at(0), at(1)]);
+      await befriend(owner, friend);
+      const roomId = await openTable(owner);
+      const friendId = await publicIdOf(friend);
+      const first = postgres(dbUrl, { max: 1, onnotice: () => {} });
+      const second = postgres(dbUrl, { max: 1, onnotice: () => {} });
+      const inviting = (q: postgres.Sql | postgres.TransactionSql) =>
+        q`select id from public.rooms_invite(${owner.userId}, ${roomId}, ${friendId}, 120, 30)`;
+      const ending = (q: postgres.Sql | postgres.TransactionSql) =>
+        q`select (public.rooms_end(${owner.userId})).status`;
+      try {
+        let later: Promise<unknown> = Promise.resolve();
+        await first.begin(async (tx) => {
+          await (inviteFirst ? inviting(tx) : ending(tx));
+          later = (inviteFirst ? ending(second) : inviting(second))
+            .execute()
+            .catch((err: unknown) => err);
+          await waitUntilBlocked(inviteFirst ? 'rooms_end' : 'rooms_invite');
+        });
+        if (inviteFirst) {
+          expect(await later).toEqual([{ status: 'closed' }]);
+        } else {
+          expect(await later).toMatchObject({ message: 'not_in_room' });
+        }
+      } finally {
+        await Promise.all([first.end(), second.end()]);
+      }
+      expect((await roomRow(roomId)).status).toBe('closed');
+      const rows = await invitesTo(friend);
+      expect(rows).toHaveLength(inviteFirst ? 1 : 0);
+      if (rows[0]) {
+        expect(await answer(friend, rows[0].id as string, true)).toEqual({
+          status: 409,
+          body: errorBody('invite_unavailable'),
+        });
+      }
+      for (const phone of TABLE_PHONES) await deleteUserByPhone(phone);
+    }
   });
 });
