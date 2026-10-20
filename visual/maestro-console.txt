@@ -1,0 +1,19 @@
+
+Waiting for flows to complete...
+[Passed] galeri-kimlik-light-2 (17s)
+[Passed] galeri-sohbet-light-2 (12s)
+[Passed] galeri-sohbet-dark-2 (12s)
+[Passed] galeri-sohbet-dark-1 (11s)
+[Passed] galeri-olcu-dark-1 (10s)
+[Passed] galeri-olcu-light-2 (12s)
+[Passed] galeri-kimlik-light-1 (13s)
+[Passed] galeri-olcu-dark-2 (11s)
+[Passed] galeri-renkler-dark-1 (11s)
+[Passed] galeri-sohbet-light-1 (11s)
+[Passed] galeri-olcu-light-1 (11s)
+[Passed] galeri-kimlik-dark-1 (12s)
+[Passed] galeri-kimlik-dark-2 (12s)
+[Passed] galeri-renkler-light-1 (11s)
+
+14/14 Flows Passed in 2m 46s
+
