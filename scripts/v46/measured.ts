@@ -15,6 +15,18 @@ type RawTransition = { prop: string; ms: number; delayMs: number; ease: string }
 
 type RawPaint = string | { gradient: number };
 
+// A keyframe animation a node plays (its name, time and delay).
+export type PlayedAnimation = { name: string; ms: number; delayMs: number };
+
+type RawField = {
+  value: string;
+  placeholder: string;
+  font: string;
+  letterSpacing: string;
+  color: string;
+  placeholderColor: string;
+};
+
 type RawGradient = {
   tag: string;
   attrs: Record<string, string>;
@@ -34,6 +46,7 @@ type RawSvgNode = {
   opacity?: number;
   children?: RawSvgNode[];
   transitions?: RawTransition[];
+  animation?: PlayedAnimation;
 };
 
 type RawEdge = { width: number; color: string };
@@ -58,6 +71,9 @@ type RawPart = {
   margin?: string;
   // Where its `::after` widens the touch (insets, negative outward).
   hit?: (number | string)[];
+  animation?: PlayedAnimation;
+  // A text field's value or placeholder and their look.
+  field?: RawField;
   // A flex box: direction, justify-content, align-items, gap.
   flex?: [string, string, string, number | string];
   color?: string;
@@ -80,7 +96,11 @@ type RawElement = {
     radius?: string;
     shadow?: string;
     backdrop?: string;
-    after?: { height: number; top: number; bg: string; bgImage?: string };
+    after?: { height: number; top: number; bg: string; opacity?: number; bgImage?: string };
+    margin?: string;
+    wrap?: boolean;
+    rowGap?: number | string;
+    animation?: PlayedAnimation;
     display: string;
     textAlign: string;
     padding: string;
@@ -273,6 +293,7 @@ export type SvgNode = {
   opacity?: number;
   children?: SvgNode[];
   transitions?: Transition[];
+  animation?: PlayedAnimation;
 };
 
 function svgNode(n: RawSvgNode): SvgNode {
@@ -295,6 +316,7 @@ function svgNode(n: RawSvgNode): SvgNode {
         }),
     ...(n.children ? { children: n.children.map(svgNode) } : {}),
     ...(n.transitions?.length ? { transitions: transitions(n.transitions) } : {}),
+    ...(n.animation ? { animation: n.animation } : {}),
   };
 }
 
@@ -320,6 +342,15 @@ export type Part = {
   // How far past its box it takes a touch, each side (React Native `hitSlop`).
   hitSlop?: { top: number; right: number; bottom: number; left: number };
   flex?: { direction: string; justify: string; align: string; gap: number };
+  animation?: PlayedAnimation;
+  field?: {
+    value: string;
+    placeholder: string;
+    font: Font;
+    letterSpacing: number;
+    color: string;
+    placeholderColor: string;
+  };
   text?: { sample: string; font: Font; color: string; letterSpacing: number };
   svg?: {
     viewBox: readonly [number, number, number, number];
@@ -382,6 +413,17 @@ function part(p: RawPart, metrics: VerticalMetrics): Part {
   if (p.shadow !== undefined) base.shadow = parseShadow(p.shadow);
   if (p.padding !== undefined) base.padding = parseBoxSides(p.padding);
   if (p.margin !== undefined) base.margin = parseBoxSides(p.margin);
+  if (p.animation) base.animation = p.animation;
+  if (p.field) {
+    base.field = {
+      value: p.field.value,
+      placeholder: p.field.placeholder,
+      font: parseMeasuredFont(p.field.font, metrics),
+      letterSpacing: p.field.letterSpacing === 'normal' ? 0 : parsePx(p.field.letterSpacing),
+      color: parseColor(p.field.color),
+      placeholderColor: parseColor(p.field.placeholderColor),
+    };
+  }
   if (p.hit) {
     const [top = 0, right = 0, bottom = 0, left = 0] = p.hit.map((v) =>
       typeof v === 'number' ? Math.max(0, -v) : 0,
@@ -436,6 +478,10 @@ export type Element = {
   transitions: Transition[];
   // Its own look, where the inventory has none (a screen part: scripts/v46/screenParts.ts).
   look: Look;
+  margin: readonly [number, number, number, number];
+  // A flex box that wraps its children onto more lines, with this gap between the lines.
+  wrap: { rowGap: number } | null;
+  animation: PlayedAnimation | null;
   parts: Part[];
 };
 
@@ -452,6 +498,8 @@ export type Look = {
   backdrop: Backdrop | null;
   // A pseudo-element drawn below it (a pinned head's fade: `.dhd::after`).
   after: { height: number; gradient: string } | null;
+  // A pseudo-element drawn over it in its own colour (the live dot's halo: `.live::after`).
+  halo: { bg: string; opacity: number } | null;
 };
 
 export function parseBackdrop(value: string): Backdrop {
@@ -476,6 +524,10 @@ function look(raw: RawElement['self']): Look {
     after:
       raw.after?.bgImage !== undefined
         ? { height: raw.after.height, gradient: raw.after.bgImage }
+        : null,
+    halo:
+      raw.after && raw.after.bgImage === undefined && !transparent(raw.after.bg)
+        ? { bg: parseColor(raw.after.bg), opacity: raw.after.opacity ?? 1 }
         : null,
   };
 }
@@ -519,6 +571,11 @@ export function element(raw: RawElement, metrics: VerticalMetrics): Element {
       : null,
     transitions: transitions(raw.self.transitions),
     look: look(raw.self),
+    margin: raw.self.margin ? parseBoxSides(raw.self.margin) : [0, 0, 0, 0],
+    wrap: raw.self.wrap
+      ? { rowGap: typeof raw.self.rowGap === 'number' ? raw.self.rowGap : 0 }
+      : null,
+    animation: raw.self.animation ?? null,
     parts: raw.parts.map((p) => part(p, metrics)),
   };
 }

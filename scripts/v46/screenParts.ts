@@ -19,6 +19,8 @@ export const SCREEN = { width: 360, height: 740 } as const;
 // The tab bars go with the inventory's own (Sekme çubuğu); the heads are a group of their own.
 export const TAB_BAR_GROUP = 'Sekme çubuğu';
 export const TOP_BAR_GROUP = 'Üst çubuk';
+// Keşfet's own parts (the filter chips are the inventory's suzgec-cipleri).
+export const EXPLORE_GROUP = 'Keşfet';
 
 export const SCREEN_PARTS: readonly ScreenPart[] = [
   // The tab bar with each tab selected that the inventory does not have (it has Mekan, Mesajlar
@@ -97,5 +99,114 @@ export const SCREEN_PARTS: readonly ScreenPart[] = [
     source_state: 'kesfet',
     selector_in_state: '.vmode',
     extra_steps: ['c:[data-vm]@@1'],
+  },
+  // Keşfet's search, empty, focused (`:focus-within`) and with a word typed in.
+  {
+    id: 'arama',
+    group: EXPLORE_GROUP,
+    name: 'Arama kutusu, boş',
+    source_state: 'kesfet',
+    selector_in_state: '.dsearch',
+    extra_steps: [],
+  },
+  {
+    id: 'arama-odak',
+    group: EXPLORE_GROUP,
+    name: 'Arama kutusu, yazarken',
+    source_state: 'kesfet',
+    selector_in_state: '.dsearch',
+    extra_steps: ["js:document.querySelector('[data-vsearch]').focus()"],
+  },
+  {
+    id: 'arama-dolu',
+    group: EXPLORE_GROUP,
+    name: 'Arama kutusu, dolu',
+    source_state: 'kesfet',
+    selector_in_state: '.dsearch',
+    extra_steps: ['f:[data-vsearch]::Kahve'],
+  },
+  // The city and district button, with the count beside it.
+  {
+    id: 'sehir-secici',
+    group: EXPLORE_GROUP,
+    name: 'Şehir seçici ve mekan sayısı',
+    source_state: 'kesfet',
+    selector_in_state: '.vloc',
+    extra_steps: [],
+  },
+  // The list's card, and a venue in it: with open tables (the live line) and quiet.
+  {
+    id: 'mekan-listesi',
+    group: EXPLORE_GROUP,
+    name: 'Mekan listesi',
+    source_state: 'kesfet',
+    selector_in_state: '.vlist',
+    extra_steps: [],
+  },
+  {
+    id: 'mekan-satiri',
+    group: EXPLORE_GROUP,
+    name: 'Mekan satırı, açık masalı',
+    source_state: 'kesfet',
+    selector_in_state: '.vlist .vrow',
+    extra_steps: [],
+  },
+  {
+    id: 'mekan-satiri-sessiz',
+    group: EXPLORE_GROUP,
+    name: 'Mekan satırı, sessiz',
+    source_state: 'kesfet',
+    selector_in_state: '.vlist .vrow@@3',
+    extra_steps: [],
+  },
+  // The venues' icons, one per kind v46 draws: cafe, tea garden, food, campus.
+  {
+    id: 'mekan-simgesi-kafe',
+    group: EXPLORE_GROUP,
+    name: 'Mekan simgesi, kafe',
+    source_state: 'kesfet',
+    selector_in_state: '.vrow[data-vkind="cafe"] .vthumb',
+    extra_steps: [],
+  },
+  {
+    id: 'mekan-simgesi-cay',
+    group: EXPLORE_GROUP,
+    name: 'Mekan simgesi, çay bahçesi',
+    source_state: 'kesfet',
+    selector_in_state: '.vrow[data-vkind="tea"] .vthumb',
+    extra_steps: [],
+  },
+  {
+    id: 'mekan-simgesi-yemek',
+    group: EXPLORE_GROUP,
+    name: 'Mekan simgesi, yemek',
+    source_state: 'kesfet',
+    selector_in_state: '.vrow[data-vkind="food"] .vthumb',
+    extra_steps: [],
+  },
+  {
+    id: 'mekan-simgesi-kampus',
+    group: EXPLORE_GROUP,
+    name: 'Mekan simgesi, kampüs',
+    source_state: 'kesfet',
+    selector_in_state: '.vhere .vthumb',
+    extra_steps: [],
+  },
+  // Where the person is checked in, and the live dot (its halo is its `::after`).
+  {
+    id: 'su-an-buradasin',
+    group: EXPLORE_GROUP,
+    name: 'Şu an buradasın',
+    source_state: 'kesfet',
+    selector_in_state: '.vhere',
+    extra_steps: [],
+  },
+  {
+    id: 'canli-nokta',
+    group: EXPLORE_GROUP,
+    name: 'Canlı nokta',
+    source_state: 'kesfet',
+    selector_in_state: '.vh-lbl .live',
+    extra_steps: [],
   },
 ];

@@ -394,14 +394,22 @@ const REDUCED = /prefers-reduced-motion:\s*reduce/;
 // Each button's matched motion rules (the measurement of its real states: measured.ts).
 export type ButtonMatches = Record<string, readonly MotionMatch[]>;
 
-function keyframeMotion(
+// A keyframe animation as v46's rule plays it on `selector` (the one under `prefers-reduced-motion`
+// with `reduced`), and how often (`iterations`: null for ever) and whether its first keyframe holds
+// before it starts (`fill: backwards`).
+export type Animation = Omit<KeyframeMotion, 'looks'> & {
+  iterations: number | null;
+  holdsBefore: boolean;
+};
+
+export function animation(
   inventory: Inventory,
-  matches: ButtonMatches,
   name: string,
   selector: string,
-): KeyframeMotion {
+  reduced = false,
+): Animation {
   const kf = inventory.motion.keyframes.find((k) => k.name === name);
-  const use = kf?.usages.find((u) => u.selector === selector && !REDUCED.test(u.media));
+  const use = kf?.usages.find((u) => u.selector === selector && REDUCED.test(u.media) === reduced);
   if (!kf || !use) throw new Error(`no keyframes ${name} on ${selector}`);
   const ms = seconds(use.duration);
   const own = selector.split(',').map((x) => x.trim());
@@ -421,6 +429,26 @@ function keyframeMotion(
     ease: parseEase(use.easing || 'ease'),
     channels: keyframeChannels(parseKeyframes(kf.keyframes_css), ms),
     offWhenReduced,
+    iterations: use.iterations === 'infinite' ? null : Number(use.iterations || 1),
+    holdsBefore: use.fill === 'backwards' || use.fill === 'both',
+  };
+}
+
+function keyframeMotion(
+  inventory: Inventory,
+  matches: ButtonMatches,
+  name: string,
+  selector: string,
+): KeyframeMotion {
+  const a = animation(inventory, name, selector);
+  return {
+    selector: a.selector,
+    keyframes: a.keyframes,
+    ms: a.ms,
+    delayMs: a.delayMs,
+    ease: a.ease,
+    channels: a.channels,
+    offWhenReduced: a.offWhenReduced,
     looks: Object.keys(matches).filter((id) =>
       matches[id]?.some((m) => m.kind === 'animation' && m.selector === selector),
     ),

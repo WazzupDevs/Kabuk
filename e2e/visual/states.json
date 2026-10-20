@@ -555,6 +555,198 @@
       }
     },
     {
+      "id": "v46-arama",
+      "app": "galeri/v46/arama",
+      "uygulamaKirp": "gorsel-parca",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "s=kesfet&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 6000
+          }
+        ],
+        "kirp": ".dsearch"
+      }
+    },
+    {
+      "id": "v46-suzgec-cipleri",
+      "app": "galeri/v46/suzgec-cipleri",
+      "uygulamaKirp": "gorsel-oge",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "s=kesfet&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 6000
+          }
+        ],
+        "kirp": ".cats.vcats"
+      }
+    },
+    {
+      "id": "v46-sehir-secici",
+      "app": "galeri/v46/sehir-secici",
+      "uygulamaKirp": "gorsel-sehir",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "s=kesfet&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 6000
+          }
+        ],
+        "kirp": ".vloc"
+      }
+    },
+    {
+      "id": "v46-mekan-listesi",
+      "app": "galeri/v46/mekan-listesi",
+      "uygulamaKirp": "gorsel-parca",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "s=kesfet&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 6000
+          }
+        ],
+        "kirp": ".vlist"
+      }
+    },
+    {
+      "id": "v46-mekan-satiri",
+      "app": "galeri/v46/mekan-satiri",
+      "uygulamaKirp": "gorsel-satir",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "s=kesfet&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 6000
+          }
+        ],
+        "kirp": ".vlist .vrow:visible >> nth=0"
+      }
+    },
+    {
+      "id": "v46-mekan-satiri-sessiz",
+      "app": "galeri/v46/mekan-satiri-sessiz",
+      "uygulamaKirp": "gorsel-satir",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "s=kesfet&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 6000
+          }
+        ],
+        "kirp": ".vlist .vrow:visible >> nth=3"
+      }
+    },
+    {
+      "id": "v46-mekan-simgesi-kafe",
+      "app": "galeri/v46/mekan-simgesi-kafe",
+      "uygulamaKirp": "gorsel-oge",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "s=kesfet&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 6000
+          }
+        ],
+        "kirp": ".vrow[data-vkind=\"cafe\"] .vthumb"
+      }
+    },
+    {
+      "id": "v46-mekan-simgesi-cay",
+      "app": "galeri/v46/mekan-simgesi-cay",
+      "uygulamaKirp": "gorsel-oge",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "s=kesfet&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 6000
+          }
+        ],
+        "kirp": ".vrow[data-vkind=\"tea\"] .vthumb"
+      }
+    },
+    {
+      "id": "v46-mekan-simgesi-yemek",
+      "app": "galeri/v46/mekan-simgesi-yemek",
+      "uygulamaKirp": "gorsel-oge",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "s=kesfet&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 6000
+          }
+        ],
+        "kirp": ".vrow[data-vkind=\"food\"] .vthumb"
+      }
+    },
+    {
+      "id": "v46-mekan-simgesi-kampus",
+      "app": "galeri/v46/mekan-simgesi-kampus",
+      "uygulamaKirp": "gorsel-oge",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "s=kesfet&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 6000
+          }
+        ],
+        "kirp": ".vhere .vthumb"
+      }
+    },
+    {
+      "id": "v46-su-an-buradasin",
+      "app": "galeri/v46/su-an-buradasin",
+      "uygulamaKirp": "gorsel-parca",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "s=kesfet&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 6000
+          }
+        ],
+        "kirp": ".vhere"
+      }
+    },
+    {
+      "id": "v46-canli-nokta",
+      "app": "galeri/v46/canli-nokta",
+      "uygulamaKirp": "gorsel-oge",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "s=kesfet&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 6000
+          }
+        ],
+        "kirp": ".vh-lbl .live"
+      }
+    },
+    {
       "id": "v46-birincil-52-320",
       "app": "galeri/v46/birincil-52",
       "genislik": 320,
@@ -739,6 +931,74 @@
           }
         ],
         "kirp": ".dhd .dtop"
+      }
+    },
+    {
+      "id": "v46-arama-320",
+      "app": "galeri/v46/arama",
+      "genislik": 320,
+      "uygulamaKirp": "gorsel-parca",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "s=kesfet&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 6000
+          }
+        ],
+        "kirp": ".dsearch"
+      }
+    },
+    {
+      "id": "v46-sehir-secici-320",
+      "app": "galeri/v46/sehir-secici",
+      "genislik": 320,
+      "uygulamaKirp": "gorsel-sehir",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "s=kesfet&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 6000
+          }
+        ],
+        "kirp": ".vloc"
+      }
+    },
+    {
+      "id": "v46-mekan-listesi-320",
+      "app": "galeri/v46/mekan-listesi",
+      "genislik": 320,
+      "uygulamaKirp": "gorsel-parca",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "s=kesfet&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 6000
+          }
+        ],
+        "kirp": ".vlist"
+      }
+    },
+    {
+      "id": "v46-su-an-buradasin-320",
+      "app": "galeri/v46/su-an-buradasin",
+      "genislik": 320,
+      "uygulamaKirp": "gorsel-parca",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "s=kesfet&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 6000
+          }
+        ],
+        "kirp": ".vhere"
       }
     }
   ]

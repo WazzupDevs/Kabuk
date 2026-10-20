@@ -22,9 +22,9 @@ export const TAB_BARS: Record<TabKey, string> = {
   profile: 'alt-sekme-profil',
 };
 
-type Text = { font: Font; color: string; letterSpacing: number };
+export type Text = { font: Font; color: string; letterSpacing: number };
 
-const text = (p: Part, what: string): Text => {
+export const text = (p: Part, what: string): Text => {
   if (!p.text) throw new Error(`${what}: no text`);
   return { font: p.text.font, color: p.text.color, letterSpacing: p.text.letterSpacing };
 };
@@ -53,7 +53,7 @@ export function splitShadow(shadow: string): { outer: string | null; inset: stri
   };
 }
 
-function surface(p: Part): Surface {
+export function surface(p: Part): Surface {
   return {
     bg: transparent(p.bg) ? null : (p.bg ?? null),
     gradient: p.gradient ?? null,
@@ -220,7 +220,11 @@ function tabIcon(p: Part): Drawing {
 
 // The press rule that shrinks a tab (`.va button:active`): the measurement's matches name it, the
 // inventory holds its scale.
-function pressScale(inventory: Inventory, matches: readonly MotionMatch[], target: string): number {
+export function pressScale(
+  inventory: Inventory,
+  matches: readonly MotionMatch[],
+  target: string,
+): number {
   const scales = new Set(
     matches
       .filter((m) => m.kind === 'press' && m.target === target)

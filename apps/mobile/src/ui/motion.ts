@@ -4,11 +4,16 @@ import {
   Easing,
   ReduceMotion,
   withDelay,
+  withRepeat,
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
 
 import type { V46Channel, V46KeyframeMotion, V46Transition } from '@/theme/parts.generated';
+
+// What a keyframe animation's steps need: its channels, easing and delay (a button's motion or
+// another part's animation: V46_EXPLORE_MOTION).
+type Keyframes = Pick<V46KeyframeMotion, 'channels' | 'ease' | 'delayMs'>;
 
 // CSS property names as React Native style keys, for the properties v46 transitions.
 const STYLE_KEY = new Map([
@@ -71,7 +76,7 @@ export function transitionsEnd(list: readonly V46Transition[]): number {
 
 // Where a part rests between plays of a v46 keyframe animation: its own value, which CSS returns to
 // when the animation ends (the last step), not the first keyframe (`vbump` starts at half size).
-export function keyframeRest(motion: V46KeyframeMotion, channel: V46Channel): number {
+export function keyframeRest(motion: Keyframes, channel: V46Channel): number {
   const c = motion.channels[channel];
   return c?.steps.at(-1)?.to ?? (channel === 'scale' || channel === 'opacity' ? 1 : 0);
 }
@@ -81,16 +86,35 @@ export function keyframeRest(motion: V46KeyframeMotion, channel: V46Channel): nu
 // timing function, as CSS plays it. `scale` multiplies lengths (keyframes in a drawing's units).
 // v46 plays it whatever the system asks unless its own rule drops it (`offWhenReduced`, checked by
 // the caller), so the system's reduce motion does not cut it here.
-export function keyframeSequence(motion: V46KeyframeMotion, channel: V46Channel, scale = 1) {
+export function keyframeSequence(motion: Keyframes, channel: V46Channel, scale = 1) {
+  const run = keyframeSteps(motion, channel, scale);
+  if (!run) return undefined;
+  return motion.delayMs ? withDelay(motion.delayMs, run, ReduceMotion.Never) : run;
+}
+
+function keyframeSteps(motion: Keyframes, channel: V46Channel, scale: number) {
   const c = motion.channels[channel];
   if (!c) return undefined;
   const easing = Easing.bezier(...motion.ease);
   const at = (v: number) => (channel === 'translateX' || channel === 'translateY' ? v * scale : v);
-  const run = withSequence(
+  return withSequence(
     withTiming(at(c.from), { duration: 0, reduceMotion: ReduceMotion.Never }),
     ...c.steps.map((s) =>
       withTiming(at(s.to), { duration: s.ms, easing, reduceMotion: ReduceMotion.Never }),
     ),
   );
-  return motion.delayMs ? withDelay(motion.delayMs, run, ReduceMotion.Never) : run;
+}
+
+// The same, played over and over (`animation-iteration-count: infinite`): the delay once, then
+// the steps again from the first keyframe each round, as CSS repeats it. `delayMs` in place of the
+// animation's own, where the part sets its own (`style="animation-delay:.6s"`).
+export function keyframeLoop(
+  motion: Keyframes,
+  channel: V46Channel,
+  { scale = 1, delayMs = motion.delayMs }: { scale?: number; delayMs?: number } = {},
+) {
+  const run = keyframeSteps(motion, channel, scale);
+  if (!run) return undefined;
+  const loop = withRepeat(run, -1, false, undefined, ReduceMotion.Never);
+  return delayMs ? withDelay(delayMs, loop, ReduceMotion.Never) : loop;
 }
