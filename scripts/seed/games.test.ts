@@ -38,9 +38,14 @@ describe('content/games.json', () => {
     });
   });
 
-  // §4.E: after step 4.5 today's games are "Yakında"; each comes back with its step of 4.6.
-  it('has no game open to play before its step of 4.6', () => {
-    expect(parseGames(content).games.filter((g) => g.available)).toEqual([]);
+  // §4.E: after step 4.5 today's games are "Yakında"; each comes back with its step of 4.6
+  // (Kapsül Anlat: 4.6.1).
+  it('opens a game to play only from its step of 4.6', () => {
+    expect(
+      parseGames(content)
+        .games.filter((g) => g.available)
+        .map((g) => g.id),
+    ).toEqual(['tabu']);
   });
 
   it('refuses a game twice, an unknown category, and a team game under four', () => {

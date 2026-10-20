@@ -33,7 +33,11 @@ beforeAll(async () => {
 });
 
 afterEach(async () => {
-  await sql`update public.games set is_available = false`;
+  // Back to what the seed loads: each game playable from its step of 4.6 (content/games.json).
+  await sql`
+    update public.games
+    set is_available = id in ${sql(TABLE_GAMES.filter((g) => g.available).map((g) => g.id))}
+  `;
   for (const phone of TABLE_PHONES) await deleteUserByPhone(phone);
 });
 
@@ -99,7 +103,7 @@ async function abandonedEvents(roomId: string) {
 }
 
 describe('the games as data (§4.F, K-17)', () => {
-  it('holds the games of content/games.json, none playable before its step of 4.6', async () => {
+  it('holds the games of content/games.json, each playable from its step of 4.6', async () => {
     const rows = await sql`
       select id, name, min_players, max_players, teams, pregame, is_available
       from public.games order by sort_order
@@ -112,7 +116,7 @@ describe('the games as data (§4.F, K-17)', () => {
         max_players: g.maxPlayers,
         teams: g.teams,
         pregame: g.pregame,
-        is_available: false,
+        is_available: g.available,
       })),
     );
 

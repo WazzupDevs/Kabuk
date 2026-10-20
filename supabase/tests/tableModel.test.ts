@@ -901,10 +901,12 @@ describe('pair records (K-66)', () => {
 });
 
 describe("today's app's games (§4.E)", () => {
+  // Kapsül Anlat came back with step 4.6.1 (kapsulAnlat.test.ts): its start is the owner's, from
+  // the pre-game page.
   it('answers every game start and proposal update_required', async () => {
     const [owner] = await all(1);
     const roomId = await openTable(owner);
-    for (const fn of ['tabu', 'sahtekar', 'ibre', 'harf', 'sarki']) {
+    for (const fn of ['sahtekar', 'ibre', 'harf', 'sarki']) {
       expect(await invoke(owner.client, fn, { action: 'start', roomId }), fn).toEqual(
         UPDATE_REQUIRED,
       );

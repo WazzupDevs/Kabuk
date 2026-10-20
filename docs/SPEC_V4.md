@@ -546,6 +546,8 @@ Değişmez kabul edilir.
 - Masadan ayrılan kişi, hangi yoldan olursa olsun (Masadan ayrıl, Mekandan ayrıl, yeni check-in, engelleme, süre dolumu), oyundan, oyun öncesi sayfadan ve oylardan da çıkar (adım 4.5a-3).
 - Masa kapanınca (sahip, son kişi, hareketsizlik, sahibinin "Katıl"ıyla başka masaya taşınma) süren oyun terk edilmiş olarak biter (`game_abandoned`); oyun öncesi sayfa kapanır. Sahibin "Oyunu bitir"i de sonuna varmamış oyunu terk edilmiş sayar; terk edilen oyun sonuç yazmaz (adım 4.5a-3).
 - Rol sahibinin çıkışı oyunun kuralıyla çözülür (her oyunda aşağıda). Genel kural: süren tur ya da aşama süresi dolana kadar sürer; çıkanın rolüne özgü eylemi kimse basamaz ve gizli bilgi kimseye yeniden verilmez (SPEC_V3 §22.E kalıbı).
+- Oyundan çıkan oyuncu masada kalır ama o oyunda gözlemci sayılmaz: gözlemcinin gördüğü gizli bilgiyi almaz, eylemi `not_player` alır. Oyunun başındaki seçimiyle izleyen ve oyun sırasında masaya gelen gözlemcidir (teknik karar, adım 4.6.1). Gerekçe: çıkıp gözlemci olan bir tahminci kartı ya da sahtekarı görüp takımına söyleyebilirdi.
+- Çıkanlar oyun sürerken `game_state.left`'tedir (masa oturum id'leri); her telefon kimin hâlâ oynadığını buradan görür (adım 4.6.1).
 - **Oyun sonu:** kazanan ve öne çıkanlar, kazananlara konfeti. "Masaya dön" herkeste; "Yeniden oyna" yalnızca sahipte (aynı oyunun oyun öncesi sayfasını aynı seçimlerle açar: oyuncular takımlarıyla, oyunun başında izleyenler izleyerek; oyundan sonra gelenler yeniden seçer).
 
 **Sonuç ve rozetler.**
@@ -561,7 +563,8 @@ Değişmez kabul edilir.
   - Turlar takımlar arasında sırayla gider (Mor, Pembe, Mor…).
   - Anlatıcı takım içinde sırayla değişir: takımın n. turunda, oyun başındaki sırayla takımın n. kişisi.
 - **Aşamalar:** takımlar → tur öncesi → 3-2-1 geri sayım → oyun (60 sn) → tur sonu → … → oyun sonu.
-  - Tur öncesi: anlatıcı "Turu başlat"a basar (`tabu/begin-turn`). Hazır süresi bugünkü gibi 10 sn; dolunca tur kendiliğinden başlar (SPEC_V3 §20.1).
+  - Tur öncesi: anlatıcı "Turu başlat"a basar (`tabu/begin-turn`). Hazır süresi bugünkü gibi 10 sn; dolunca tur kendiliğinden başlar (SPEC_V3 §20.1). Bugünkü Sesli Tabu'nun hazır süresi 15 sn'ydi (SPEC_V3 §19.1); Kapsül Anlat bu belgenin yazdığı 10 sn'yi kullanır (adım 4.6.1).
+  - 3-2-1 geri sayım sunucudadır (teknik karar, adım 4.6.1): `begin-turn` saati hemen kurar, basışlar 3 sn sonra açılır (`startsAt`) ve 60 sn sonra kapanır (`endsAt`). Geri sayımda basış `turn_not_started` alır; kart listesi geri sayımda verilir, telefon kartı `startsAt`'te gösterir.
   - Tur sonu: kelimeler Doğru, Pas ya da Yasak! etiketiyle listelenir; sıradaki takım ve anlatıcı yazar.
   - Oyun sonu: kazanan takım, "En çok bildiren anlatıcı" ve "Yasak avcısı": Yasak!'la en çok yakalayan (K-5).
 - **Puan:** Doğru +1, Yasak! −1 (anlatan takımdan), Pas 0. Rakip düğmesinin adı "Yasak!"tir (K-5).
@@ -576,9 +579,17 @@ Değişmez kabul edilir.
 
 - **Gizli bilgi:** kart (`tabu/turn-cards`) anlatıcıya, rakip takımın her telefonuna ve gözlemcilere gider; tahmincilere gitmez. Hakemli ve iş birliği modları kalkar.
 - **Çıkış:** anlatıcı turda çıkarsa tur süresi dolana kadar sürer, Doğru ve Pas basılamaz. Bir takım 1 kişiye düşerse oyun sürer; o takımın anlatıcısı her turda aynı kişidir.
+  - Anlatıcısı çıkan turda Yasak! de bir şey değiştirmez (kimse anlatmıyordur; adım 4.6.1).
+  - Anlatıcı tur başlamadan (tur öncesinde) çıkarsa tur, takımın hâlâ oynayan sıradaki kişisiyle başlar; kart henüz kimseye gitmemiştir (adım 4.6.1).
+  - Anlatıcının sırası takımda hâlâ oynayanlar arasında döner: takımın n. turu, oyunun başındaki sırayla hâlâ oynayanların n. kişisidir (bir kişiye düşen takımda hep aynı kişi).
+  - Bir takımda kimse kalmazsa oyun o takımın sırası gelince terk edilmiş olarak biter (`game_abandoned`, sonuç yazılmaz; teknik karar, adım 4.6.1).
 - **Kart:** üst üste yığılı bir deste gibidir; kenarına dokununca 3B eğilir. Üzerinde yalnızca kelime ve yasak kelimeler vardır. Boyu ekran yüksekliğine göre uzar.
 - **Bu turun sayıları:** skorun hemen altında ikonlu mini tablo (Doğru, Pas, Yasak!).
 - **Sunucu:** `tabu` fonksiyonu kişi bazlı yeniden yazılır. `tabu_turns.describer_session_id` kalır; `tabu_mode` ve taraf kolonları 4.8'de kalkar.
+  - Akış (adım 4.6.1): `start` (sahip, oyun öncesi sayfadan) → her tur `ready` (`readyEndsAt`) → `begin-turn` → `running` (`startsAt`, `endsAt`) → süre dolunca herhangi bir telefonun `end-turn`'ü → `over` (tur sonu: `lastTurn` kapanan kartlarıyla, `next` sıradaki takım ve anlatıcı, `nextAt`) → sahibin ya da 15 sn sonra herhangi birinin `advance`'i → sonraki tur ya da oyun sonu.
+  - Açık durum `rooms.game_state`'tedir: takımlar (oyunun başındaki sırayla), çıkanlar (`left`), anlatan takım ve anlatıcı, skorlar, kart indeksi, kullanılan pas, bu turun sayıları (`counts`). Oynanan kart hiçbir zaman `game_state`'te değildir; kartın kelimesi kart kapanınca `card_closed` olayına ve tur sonunun listesine girer.
+  - Oyun sonu (`lastGame`): skorlar, kazanan takım (berabere yok sayılır), takımlar, "En çok bildiren anlatıcı" (en çok Doğru) ve "Yasak avcısı" (en çok Yasak!, o anlatıcı dışında). Eşitlikte oyunun başındaki sırada önce gelen; yalnızca oyun sonunda hâlâ oynayanlar gösterilir.
+  - `game_results`: oyunun sonunda hâlâ oynayan her oyuncuya takımının skoru ve kazanıp kazanmadığı (`mode = 'voice'`, kazanma rozeti `user_stats.voice_tabu_wins` aynen sayar).
 
 ### Adım 4.6.2: Sohbet kartları
 

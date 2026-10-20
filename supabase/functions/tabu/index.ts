@@ -1,54 +1,57 @@
-// Tabu (MVP_SPEC §5.1, docs/SPEC_V2.md §8.2, docs/SPEC_V3.md §6). One table: the deck, then the
-// phone runs the game. Two tables: face to face, server-authoritative, started by
-// rooms/answer-game, in the mode the server sets from the sides' headcounts. Each turn opens ready;
-// the phone that starts it (begin-turn) describes it (docs/SPEC_V3.md §22.E). Refereed: the
-// describer and every phone on the judging side get the turn's card list; Doğru from every phone,
-// Tabu from the judging side, Pas from the describer. Cooperative: only the describer gets the list
-// and presses (`not_describer` for everyone else). Every press names its card index, the server
-// checks it and publishes the room row, and a second press on the same card is ignored.
+// Kapsül Anlat (docs/SPEC_V4.md §4.F, adım 4.6.1): the table's person-based Tabu. The owner starts
+// it from the pre-game page; Mor and Pembe take turns and the describer goes round within the team.
+// Each turn opens ready: its describer starts it ("Turu başlat"), anyone at the table once the
+// ready time is up. The describer presses Doğru and Pas, the other team Yasak!; every press names
+// its turn and card, the server checks it and the first press on a card wins. The card list goes to
+// the describer, the other team and the watchers (turn-cards), never to the describer's teammates.
+// The table's phones see every change as a change of its row (rooms.game_state, no card in it).
 import { requireUser, serviceClient } from '../_shared/auth.ts';
 import { dbError } from '../_shared/db.ts';
 import { z } from '../_shared/deps.ts';
 import { handle } from '../_shared/http.ts';
-import { AppError } from '../_shared/pure/errors.ts';
 import type {
   GameOkResponse,
   TabuRequest,
-  TabuStartResponse,
   TabuTurnCardsResponse,
 } from '../_shared/pure/api/games.ts';
-import { MARK_RESULTS } from '../_shared/pure/tabu.ts';
+import { KAPSUL_MARKS } from '../_shared/pure/kapsulAnlat.ts';
 
 const Body: z.ZodType<TabuRequest> = z.discriminatedUnion('action', [
   z.object({ action: z.literal('start'), roomId: z.uuid() }),
+  z.object({ action: z.literal('begin-turn'), roomId: z.uuid() }),
   z.object({ action: z.literal('turn-cards'), roomId: z.uuid() }),
   z.object({
     action: z.literal('mark'),
     roomId: z.uuid(),
     turnNo: z.number().int().min(1).max(100),
     cardIndex: z.number().int().min(0).max(1000),
-    result: z.enum(MARK_RESULTS),
+    result: z.enum(KAPSUL_MARKS),
   }),
   z.object({ action: z.literal('end-turn'), roomId: z.uuid() }),
-  z.object({ action: z.literal('begin-turn'), roomId: z.uuid() }),
+  z.object({ action: z.literal('advance'), roomId: z.uuid() }),
 ]);
 
 const db = serviceClient();
 
 Deno.serve(
-  handle(async (req, raw): Promise<TabuStartResponse | TabuTurnCardsResponse | GameOkResponse> => {
+  handle(async (req, raw): Promise<TabuTurnCardsResponse | GameOkResponse> => {
     const body = Body.parse(raw);
     const user = await requireUser(req, db);
     const target = { target_user_id: user.id, target_room_id: body.roomId };
 
     switch (body.action) {
-      // One table only: the deck, and the room's activity becomes Tabu (docs/SPEC_V3.md §5.3). A
-      // two-table game starts from an accepted proposal (rooms/answer-game); here it is
-      // no_proposal.
-      // The side model's games do not run at a table of people (docs/SPEC_V4.md §4.E); today's app
-      // hears update_required until the game comes back in step 4.6.
-      case 'start':
-        throw new AppError('update_required', 'This version of the app is too old. Update it.');
+      // The owner, from the pre-game page: Mor and Pembe of at least two each (not_enough_players).
+      case 'start': {
+        const { error } = await db.rpc('tabu_start', target);
+        if (error) throw dbError('tabu_start', error);
+        return { ok: true };
+      }
+
+      case 'begin-turn': {
+        const { error } = await db.rpc('tabu_begin_turn', target);
+        if (error) throw dbError('tabu_begin_turn', error);
+        return { ok: true };
+      }
 
       case 'turn-cards': {
         const { data, error } = await db.rpc('tabu_turn_cards', target);
@@ -70,20 +73,18 @@ Deno.serve(
         return { ok: true };
       }
 
-      // After the last turn the game is finished; the room stays open (MVP_SPEC §4.6). Otherwise
-      // the next turn opens ready (docs/SPEC_V3.md §19.1).
+      // Anyone at the table once the clock has run out; the server checks the time.
       case 'end-turn': {
         const { error } = await db.rpc('tabu_end_turn', target);
         if (error) throw dbError('tabu_end_turn', error);
         return { ok: true };
       }
 
-      // The ready turn's clock starts: a phone on the describing side at any time, and it describes;
-      // any phone after readyEndsAt, and the side's leader describes. Anything else leaves the room
-      // as it is.
-      case 'begin-turn': {
-        const { error } = await db.rpc('tabu_begin_turn', target);
-        if (error) throw dbError('tabu_begin_turn', error);
+      // The turn's end screen: the owner at once, anyone after nextAt; after the last turn the
+      // game ends with its results.
+      case 'advance': {
+        const { error } = await db.rpc('tabu_advance', target);
+        if (error) throw dbError('tabu_advance', error);
         return { ok: true };
       }
     }

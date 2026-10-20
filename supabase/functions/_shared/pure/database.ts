@@ -3610,6 +3610,46 @@ export type Database = {
           votes: number;
         }[];
       };
+      tabu_advance: {
+        Args: { target_room_id: string; target_user_id: string };
+        Returns: {
+          closed_at: string | null;
+          concept: string | null;
+          created_at: string;
+          game_started_at: string | null;
+          game_state: Json;
+          game_tag: string | null;
+          guest_alias: string | null;
+          guest_headcount: number | null;
+          guest_joined_at: string | null;
+          guest_phones: number | null;
+          guest_profiled: boolean;
+          guest_session_id: string | null;
+          icon: string | null;
+          id: string;
+          intent: string | null;
+          last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
+          owner_phones: number;
+          owner_profiled: boolean;
+          owner_session_id: string;
+          phones: number;
+          spot_id: string | null;
+          status: string;
+          venue_id: string;
+          visibility: string;
+          waiting_since: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'rooms';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       tabu_begin_turn: {
         Args: { target_room_id: string; target_user_id: string };
         Returns: {
@@ -3709,6 +3749,46 @@ export type Database = {
           target_user_id: string;
           turn_number: number;
         };
+        Returns: {
+          closed_at: string | null;
+          concept: string | null;
+          created_at: string;
+          game_started_at: string | null;
+          game_state: Json;
+          game_tag: string | null;
+          guest_alias: string | null;
+          guest_headcount: number | null;
+          guest_joined_at: string | null;
+          guest_phones: number | null;
+          guest_profiled: boolean;
+          guest_session_id: string | null;
+          icon: string | null;
+          id: string;
+          intent: string | null;
+          last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
+          owner_phones: number;
+          owner_profiled: boolean;
+          owner_session_id: string;
+          phones: number;
+          spot_id: string | null;
+          status: string;
+          venue_id: string;
+          visibility: string;
+          waiting_since: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'rooms';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      tabu_start: {
+        Args: { target_room_id: string; target_user_id: string };
         Returns: {
           closed_at: string | null;
           concept: string | null;

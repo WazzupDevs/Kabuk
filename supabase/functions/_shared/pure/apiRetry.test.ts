@@ -19,6 +19,10 @@ describe('IDEMPOTENT_CALLS', () => {
         'friends/list',
         'ping',
         'profile/get',
+        'tabu/advance',
+        'tabu/begin-turn',
+        'tabu/end-turn',
+        'tabu/turn-cards',
         'venue-chat/page',
       ].sort(),
     );

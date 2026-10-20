@@ -1,21 +1,26 @@
-import type { MarkResult, TabuCard } from '../tabu.ts';
+import type { KapsulMark } from '../kapsulAnlat.ts';
+import type { TabuCard } from '../tabu.ts';
 
-// `tabu` and `sohbet` Edge Functions, shared with the mobile app.
+// `tabu`: Kapsül Anlat (docs/SPEC_V4.md §4.F, adım 4.6.1), shared with the mobile app. The owner
+// starts it from the pre-game page; begin-turn, turn-cards, end-turn and advance are idempotent.
 export type TabuRequest =
-  // One-table room: the deck for the phone. A two-table game starts from rooms/answer-game.
   | { action: 'start'; roomId: string }
-  // The ordered card list of the current turn, for the two tables of the room.
+  // "Turu başlat": the describer at once, anyone at the table after readyEndsAt.
+  | { action: 'begin-turn'; roomId: string }
+  // The running turn's ordered card list: the describer, the other team and the watchers.
   | { action: 'turn-cards'; roomId: string }
-  // A press on card `cardIndex` of turn `turnNo`; a second press on the same card is ignored.
-  | { action: 'mark'; roomId: string; turnNo: number; cardIndex: number; result: MarkResult }
+  // A press on card `cardIndex` of turn `turnNo`: Doğru and Pas from the describer, Yasak! from the
+  // other team; a second press on the same card is ignored.
+  | { action: 'mark'; roomId: string; turnNo: number; cardIndex: number; result: KapsulMark }
+  // Anyone at the table once the clock has run out: the turn's end screen.
   | { action: 'end-turn'; roomId: string }
-  // Starts the ready turn's clock: a phone on the describing side, which describes it, or any phone
-  // after readyEndsAt (docs/SPEC_V3.md §19.1, §22.E). Idempotent.
-  | { action: 'begin-turn'; roomId: string };
+  // "Sonraki tura geç": the owner at once, anyone after nextAt.
+  | { action: 'advance'; roomId: string };
 
-export type TabuStartResponse = { mode: 'local'; deck: TabuCard[] };
 export type TabuTurnCardsResponse = { turnNo: number; cards: TabuCard[] };
 export type GameOkResponse = { ok: true };
+// Today's app's one-table deck (its screens until Kapsül Anlat's): the server no longer sends it.
+export type TabuStartResponse = { mode: 'local'; deck: TabuCard[] };
 
 export type SohbetRequest = { action: 'next-card'; roomId: string };
 

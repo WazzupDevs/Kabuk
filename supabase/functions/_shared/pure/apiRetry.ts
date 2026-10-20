@@ -6,6 +6,7 @@
 import type { ChatRequest } from './api/chat.ts';
 import type { CheckinRequest } from './api/checkin.ts';
 import type { DmRequest, FriendsRequest } from './api/friends.ts';
+import type { TabuRequest } from './api/games.ts';
 import type { ProfileRequest } from './api/profile.ts';
 import type { VenueChatRequest } from './api/venueChat.ts';
 
@@ -17,7 +18,8 @@ type CallName =
   | `profile/${ProfileRequest['action']}`
   | `friends/${FriendsRequest['action']}`
   | `dm/${DmRequest['action']}`
-  | `venue-chat/${VenueChatRequest['action']}`;
+  | `venue-chat/${VenueChatRequest['action']}`
+  | `tabu/${TabuRequest['action']}`;
 
 export const IDEMPOTENT_CALLS = [
   // updateGate.test "update gate, open": "answers the launch and foreground ping without a user"
@@ -49,6 +51,18 @@ export const IDEMPOTENT_CALLS = [
   // venueChat.test "venue chat: photos (venue-chat/page)": "signs the photo of a profiled message
   // and never gives an anonymous one a photo path"
   'venue-chat/page',
+  // kapsulAnlat.test "Kapsül Anlat: turns and presses (§4.6.1)": "starts the turn once however
+  // often it is sent, and ends and moves on idempotently"
+  'tabu/begin-turn',
+  // kapsulAnlat.test "Kapsül Anlat: turns and presses (§4.6.1)": "starts the turn once however
+  // often it is sent, and ends and moves on idempotently"
+  'tabu/end-turn',
+  // kapsulAnlat.test "Kapsül Anlat: turns and presses (§4.6.1)": "starts the turn once however
+  // often it is sent, and ends and moves on idempotently"
+  'tabu/advance',
+  // kapsulAnlat.test "Kapsül Anlat: turns and presses (§4.6.1)": "hands the same card list to the
+  // describer, the other team and the watchers, twice alike"
+  'tabu/turn-cards',
 ] as const satisfies readonly CallName[];
 
 export const RETRY_DELAY_MS = 500;

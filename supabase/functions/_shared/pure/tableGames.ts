@@ -17,7 +17,7 @@ export const TABLE_GAMES = [
     pregame: true,
     categories: ['teams'],
     poster: 'kapsul-anlat',
-    available: false,
+    available: true,
   },
   {
     id: 'ibre',
