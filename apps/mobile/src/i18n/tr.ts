@@ -1392,6 +1392,7 @@ export const tr = {
     not_your_seat: 'Bu sıra masanızın değil.',
     not_player: 'Bu oyunda oynamıyorsun.',
     not_enough_players: 'Bu oyun için yeterli oyuncu yok.',
+    too_many_players: 'Bu oyun için oyuncu sayısı fazla.',
     no_objections_left: 'İtiraz hakkınız kalmadı.',
     no_passes_left: 'Pas hakkınız kalmadı.',
     too_soon: 'Biraz bekle.',

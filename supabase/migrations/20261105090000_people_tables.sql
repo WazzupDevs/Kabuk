@@ -102,6 +102,51 @@ revoke all on function public.start_table_session(uuid, uuid, text, real, uuid, 
 grant execute on function public.start_table_session(uuid, uuid, text, real, uuid, uuid)
   to service_role;
 
+-- checkin/set-identity as in step 4.4, refused while the check-in has an open request
+-- (request_pending): the owner sees the identity the request came with (rooms/request-profile)
+-- and would link it to the other one the person sits with (rule 4; WazzupDevs/Kabuk#183). A declined
+-- request is open until it expires, as the requester sees it (rule 5). Only the check-in is locked
+-- (§4.K).
+create or replace function public.set_checkin_identity(target_user_id uuid, new_mode text)
+returns public.table_sessions
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  ts public.table_sessions;
+begin
+  if new_mode not in ('anonymous', 'profiled') then
+    raise exception using errcode = 'P0001', message = 'bad_request';
+  end if;
+  select * into ts from public.table_sessions
+  where user_id = target_user_id and status = 'active' and expires_at > now()
+  for no key update;
+  if ts.id is null then
+    raise exception using errcode = 'P0001', message = 'no_active_table';
+  end if;
+  if ts.identity_mode = new_mode then
+    return ts;
+  end if;
+  if ts.identity_switches >= 1 then
+    raise exception using errcode = 'P0001', message = 'identity_switch_used';
+  end if;
+  if private.has_open_request(ts.id) then
+    raise exception using errcode = 'P0001', message = 'request_pending';
+  end if;
+  if new_mode = 'profiled' and not public.has_profile_photo(target_user_id) then
+    raise exception using errcode = 'P0001', message = 'photo_required';
+  end if;
+  update public.table_sessions
+  set identity_mode = new_mode,
+      identity_switches = identity_switches + 1,
+      venue_chat_profiled = new_mode = 'profiled'
+  where id = ts.id
+  returning * into ts;
+  return ts;
+end;
+$$;
+
 -- 3. The table and its people --------------------------------------------------------------------
 -- pure/tables.ts → MAX_TABLE_PHONES; tableModel.test.ts checks both give the same number.
 create function private.max_table_phones()
@@ -423,10 +468,18 @@ begin
     asked_profiled := seat.profiled;
   end if;
 
-  -- No key update, not update: the request's requester_room_id references the requester's own
-  -- table (a key share lock), and two tables asking each other at once must not wait on each
-  -- other's table (WazzupDevs/Kabuk#183).
+  -- The two tables in id order, as rooms_respond takes them (WazzupDevs/Kabuk#183): the target
+  -- for no key update, the requester's own with the key share lock the request's
+  -- requester_room_id takes anyway. An owner asking another table while it accepts that table's
+  -- request into its own then waits instead of deadlocking, and two tables asking each other at
+  -- once still do not wait on each other (no key update and key share do not conflict).
+  if mine.id < target_room_id then
+    perform 1 from public.rooms where id = mine.id for key share;
+  end if;
   select * into r from public.rooms where id = target_room_id for no key update;
+  if mine.id > target_room_id then
+    perform 1 from public.rooms where id = mine.id for key share;
+  end if;
   select * into owner from public.table_sessions where id = r.owner_session_id;
   if r.id is null
     or r.status = 'closed'
