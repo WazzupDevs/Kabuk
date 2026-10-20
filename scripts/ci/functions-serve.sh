@@ -22,6 +22,14 @@
 # A deliberate stop (the CHECKIN_SKIP_LOCATION step) touches $SERVE_STATE/<name>.stop before
 # stopping the serve: no restart, nothing written.
 #
+# The serve's container is the only edge runtime: the workflows start the stack with
+# `supabase start -x edge-runtime`. Until 20 Oct start ran one of its own. It answered `ping` before
+# the serve was up, and when the serve replaced it, this script saw it go and stopped the serve
+# (the E2E "stops" of 19 and 20 Oct, "container removing 137", seconds after the start). So the
+# script does not start while another edge runtime runs. Each run of the CLI touches
+# $SERVE_STATE/<name>.ready once it says "Serving functions on" with its container up; the
+# workflows wait for that and for `ping` (scripts/ci/wait-for-serve.sh).
+#
 # Usage: functions-serve.sh <name> <log file> [serve options…]   Env: SERVE_STATE (a directory)
 set -uo pipefail
 name=$1
@@ -32,6 +40,7 @@ mkdir -p "$SERVE_STATE"
 rm -f "$SERVE_STATE/$name.stop"
 echo $$ > "$SERVE_STATE/$name.pid"
 touch "$SERVE_STATE/restarts.log"
+ready="$SERVE_STATE/$name.ready"
 : > "$log"
 
 stopping() { [ -e "$SERVE_STATE/$name.stop" ]; }
@@ -41,7 +50,20 @@ container() {
     xargs -r docker inspect --format '{{.State.Status}} {{.State.ExitCode}}' 2> /dev/null
 }
 
+# A serve stopped just before (the CHECKIN_SKIP_LOCATION step) takes its container down within
+# seconds; one that stays is not this script's.
+running() { docker ps -q --filter name=supabase_edge_runtime --filter status=running; }
+for _ in $(seq 1 30); do
+  [ -z "$(running)" ] && break
+  sleep 1
+done
+if [ -n "$(running)" ]; then
+  echo "$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ) [functions-serve.sh] another edge runtime is running (supabase start without -x edge-runtime?): not starting" >> "$log"
+  exit 1
+fi
+
 while true; do
+  rm -f "$ready"
   from=$(wc -l < "$log")
   # Its own process group, so the CLI and its children stop together.
   setsid pnpm supabase functions serve "$@" >> "$log" 2>&1 &
@@ -52,6 +74,9 @@ while true; do
     state=$(container)
     if [ "${state%% *}" = running ]; then
       seen=true
+      if [ ! -e "$ready" ] && tail -n +"$((from + 1))" "$log" | grep -q 'Serving functions on'; then
+        touch "$ready"
+      fi
     elif $seen && ! stopping; then
       died="container ${state:-gone}"
       kill -TERM -- "-$cli" 2> /dev/null

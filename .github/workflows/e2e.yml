@@ -212,7 +212,7 @@ jobs:
         run: |
           mkdir -p "$OUT"
           cp supabase/.env.example supabase/.env
-          pnpm supabase start -x studio,imgproxy,mailpit,logflare,vector,supavisor,postgres-meta
+          pnpm supabase start -x studio,imgproxy,mailpit,logflare,vector,supavisor,postgres-meta,edge-runtime
           pnpm --filter scripts apply-local-secrets
           key=$(pnpm -s supabase status -o env | sed -n 's/^PUBLISHABLE_KEY="\(.*\)"$/\1/p')
           test "$key" = "$E2E_PUBLISHABLE_KEY" || { echo "local publishable key changed: $key"; exit 1; }
@@ -222,14 +222,16 @@ jobs:
       # The serve runs through both attempts of the shard and is started again when it stops on its
       # own, at most twice in the job; a third stop fails the job ("Functions serve exits" below).
       # On 19 Oct its container died in #168's light-2 ("error running container: exit 135") while
-      # it served the app's account call.
+      # it served the app's account call. `supabase start` runs no edge runtime (-x edge-runtime
+      # above): the serve's container is the only one, and the readiness check waits for it
+      # (docs/decisions/ci-functions-serve.md → Hazırlık).
       - name: Edge Functions, E2E venue, bot table
         env:
           SERVE_STATE: ${{ env.OUT }}/serve-state
         run: |
           echo "LOCAL_DEVICE_URL=$E2E_SUPABASE_URL" > "$RUNNER_TEMP/functions.env"
           nohup bash scripts/ci/functions-serve.sh e2e "$OUT/functions.log" --env-file "$RUNNER_TEMP/functions.env" > /dev/null 2>&1 &
-          timeout 180 bash -c 'until curl -sf -X POST http://127.0.0.1:54321/functions/v1/ping -H "apikey: $E2E_PUBLISHABLE_KEY" -H "content-type: application/json" -d "{}" > /dev/null; do sleep 2; done'
+          bash scripts/ci/wait-for-serve.sh e2e "$OUT/functions.log" "$E2E_PUBLISHABLE_KEY"
           bash scripts/e2e/start-bots.sh
           node -e 'const s = require(process.argv[1]);
             console.log(`INSIDE_LAT=${s.inside.lat}\nINSIDE_LNG=${s.inside.lng}\nOUTSIDE_LAT=${s.outside.lat}\nOUTSIDE_LNG=${s.outside.lng}`)' \
@@ -318,6 +320,8 @@ jobs:
       # runner action then boots a new phone: it creates the AVD again.
       - name: Before the retry (outputs, local database, bots)
         if: steps.retry.outputs.reason != ''
+        env:
+          SERVE_STATE: ${{ env.OUT }}/serve-state
         run: |
           xargs kill < "$OUT/bots.pid" || true
           mkdir -p "$OUT/attempt-1"
@@ -330,7 +334,7 @@ jobs:
           pnpm db:reset
           # A serve that stopped in the first attempt has been started again; the bots sign in
           # through it.
-          timeout 180 bash -c 'until curl -sf -X POST http://127.0.0.1:54321/functions/v1/ping -H "apikey: $E2E_PUBLISHABLE_KEY" -H "content-type: application/json" -d "{}" > /dev/null; do sleep 2; done'
+          bash scripts/ci/wait-for-serve.sh e2e "$OUT/functions.log" "$E2E_PUBLISHABLE_KEY"
           bash scripts/e2e/start-bots.sh
       - name: Emulator, APK and the shard's flows (retry)
         id: flows-retry
