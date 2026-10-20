@@ -52,9 +52,19 @@ export type ProfileRequest =
   | { action: 'photo-remove' }
   // K-9: a new nick once in 30 days (nick_refresh_too_soon before); the old one is never given
   // again, and old messages keep it.
-  | { action: 'refresh-nick' };
+  | { action: 'refresh-nick' }
+  // K-47 (step 4.4b): the decoration screen's Kaydet. The look is checked against the catalog (an
+  // unknown part is dropped) and answered as written; the emotions stay on the phone (K-52). Old
+  // messages and a running table's seat keep the look they were written with (K-10).
+  | { action: 'set-look'; look: string };
 
 export type ProfileUploadUrl = { path: string; token: string };
 export type RefreshNickResponse = { capsuleNick: string; nickRefreshAt: string | null };
+export type SetLookResponse = { capsuleLook: string };
 export type ProfileResponse =
-  ProfileView | ChatProfileView | ProfileUploadUrl | RefreshNickResponse | { ok: true };
+  | ProfileView
+  | ChatProfileView
+  | ProfileUploadUrl
+  | RefreshNickResponse
+  | SetLookResponse
+  | { ok: true };

@@ -2,6 +2,7 @@
 // check-in's one identity change, and the venue chat's identity: nick and look on an anonymous
 // message, the senderKey, deleting one's own message, muting one identity of another. Today's app
 // (`profiled` with every message, the mode picked by the first one) keeps working: the last block.
+// Step 4.4b (K-47): the look from the decoration screen (profile/set-look).
 import { CURRENT_KVKK_VERSION, CURRENT_TERMS_VERSION } from '../functions/_shared/pure/consent.ts';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
@@ -256,6 +257,91 @@ describe('nick and look (§4.D, K-9, K-46, K-50, K-61)', () => {
     await sql`delete from public.retired_capsule_nicks where nick = 'kapsul-zz99'`;
     await sql`select public.assign_capsule_identity(${uid}, ${nick}, 'c:mor e:klasik')`;
     expect((await capsuleOf(a)).capsule_nick).toBe(nick);
+  });
+});
+
+// Step 4.4b (docs/SPEC_V4.md §4.D "Kapsül süsleme", §4.M "Adım 4.4b"; K-47, K-52): the decoration
+// screen's Kaydet writes the account's own look through profile/set-look, checked against the
+// catalog. What was written before keeps its look: a message, and the seat of a running table.
+describe('capsule decoration (profile/set-look, K-47)', () => {
+  const setLook = (client: Client, look: string) =>
+    invoke(client, 'profile', { action: 'set-look', look });
+
+  it('writes the look the catalog knows, dropping unknown parts, and answers it', async () => {
+    const a = await onboarded(PHONES[0]);
+    const res = await setLook(a, 'c:nane e:koyu h:anten f:yok q:fiyonk h:fiyonk m:');
+    expect(res).toEqual({ status: 200, body: { capsuleLook: 'c:nane e:koyu h:anten' } });
+    expect((await capsuleOf(a)).capsule_look).toBe('c:nane e:koyu h:anten');
+    // "Hepsini çıkar": the colour and the eyes stay.
+    expect(await setLook(a, 'c:nane e:koyu')).toEqual({
+      status: 200,
+      body: { capsuleLook: 'c:nane e:koyu' },
+    });
+    // Nothing known at all: the drawing's defaults, spelled out.
+    const first = CAPSULE_CATALOG.colors[0]?.id;
+    expect(await setLook(a, 'zzz')).toEqual({
+      status: 200,
+      body: { capsuleLook: `c:${first} e:klasik` },
+    });
+    const { data: own } = await a.from('profiles').select('public_id').single();
+    const mine = await invoke(a, 'profile', { action: 'get', publicId: own?.public_id });
+    expect(mine.body).toMatchObject({ capsuleLook: `c:${first} e:klasik` });
+  });
+
+  it('writes only the caller’s own look and takes no emotion (K-52)', async () => {
+    const [a, b] = await Promise.all([onboarded(PHONES[0]), onboarded(PHONES[1])]);
+    const before = (await capsuleOf(b)).capsule_look;
+    const { data: other } = await b.from('profiles').select('public_id').single();
+    // No field names another account; an emotion is not a field either.
+    for (const extra of [{ publicId: other?.public_id }, { emotion: 'mutlu' }]) {
+      expect(
+        await invoke(a, 'profile', { action: 'set-look', look: 'c:nane e:koyu', ...extra }),
+      ).toEqual({ status: 400, body: errorBody('bad_request') });
+    }
+    // An emotion inside the code is not a part: dropped.
+    const emotion = CAPSULE_CATALOG.emotions[0]?.id ?? 'mutlu';
+    expect(await setLook(a, `c:nane e:koyu d:${emotion} ${emotion}`)).toEqual({
+      status: 200,
+      body: { capsuleLook: 'c:nane e:koyu' },
+    });
+    expect((await capsuleOf(b)).capsule_look).toBe(before);
+    expect(await setLook(a, 'c:nane '.repeat(40))).toEqual({
+      status: 400,
+      body: errorBody('bad_request'),
+    });
+  });
+
+  it('keeps an old message’s look and a running table’s seat as they were written (K-10)', async () => {
+    const a = await atVenue(PHONES[0], 'Ayşe');
+    const b = await atVenue(PHONES[1], 'Burak');
+    const { capsule_look: look } = await capsuleOf(a);
+    expect(await send(a, 'önce')).toEqual(ok);
+    // A running table: a's seat, anonymous, with the look of now.
+    const created = await invoke(a, 'rooms', { action: 'create', profiled: false });
+    expect(created.status, JSON.stringify(created.body)).toBe(200);
+    const { roomId } = created.body as { roomId: string };
+    expect(await invoke(a, 'chat', { action: 'send', roomId, body: 'masada önce' })).toEqual(ok);
+
+    expect(await setLook(a, 'c:nane e:koyu h:anten')).toEqual(ok);
+    await sql`update public.messages set created_at = created_at - interval '2 seconds'
+              where room_id = ${roomId}`;
+    expect(await send(a, 'sonra')).toEqual(ok);
+    expect(await invoke(a, 'chat', { action: 'send', roomId, body: 'masada sonra' })).toEqual(ok);
+    expect((await page(b)).messages.map((m) => [m.body, m.senderLook])).toEqual([
+      ['sonra', 'c:nane e:koyu h:anten'],
+      ['önce', look],
+    ]);
+    const [seat] = await sql`
+      select look from public.room_members where room_id = ${roomId} and left_at is null
+    `;
+    expect(seat?.look).toBe(look);
+    const roomMessages = await sql`
+      select body, sender_look from public.messages where room_id = ${roomId} order by created_at
+    `;
+    expect(roomMessages.map((m) => [m.body, m.sender_look])).toEqual([
+      ['masada önce', look],
+      ['masada sonra', look],
+    ]);
   });
 });
 

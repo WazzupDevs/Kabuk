@@ -325,6 +325,7 @@ Değişmez kabul edilir.
 - **Profillerde kapsül** (K-49): kapsül ve nick profil ekranlarında yalnızca kişinin kendi profil sekmesinde, fotoğrafla yan yana ve "Masada görünen" işaretiyle görünür. Başkasının profilinde, arkadaşınki dahil, hiçbir ekranda kapsül ya da nick görünmez: anonim kimlik gerçek kişiyle eşleşirdi (kural 4). `profile/get` başkası için `capsule_look` ve nick taşımaz. Kendi profilindeki "Anonim adın" kartında kapsül yoktur: yalnızca ad ve açıklama. Kapsül profilde yalnızca fotoğrafla yan yana görünür (K-60).
 - **Bilinçli bedel:** nick hesaba sabit olduğu için anonim kişi ziyaretler arasında aynı nick'le tanınır. Bu proje sahibinin kararıdır; gizlilik politikasında açıkça yazılır (§4.L).
 - **Kapsül süsleme** (adım 4.4b, K-47): Profil'den açılan ekran. Raflar, paketler, yuvalar; Karıştır, Hepsini çıkar, Kaydet. Kaydet `profile/set-look { look }` ile yazar; sunucu görünüşü 4.4'teki gibi katalogla doğrular.
+  - İstek yalnızca `look` taşır (başka alan `bad_request`): kişi yalnızca kendi görünüşünü yazar. Yanıt yazılan kodu döner (`{ capsuleLook }`); bilinmeyen parça atılır, hiçbir renk ya da göz tanınmazsa çizimin varsayılanı (kataloğun ilk rengi, klasik göz) yazılır (adım 4.4b).
   - Süsleme düğmesi profildeki kapsülün sağ altındadır. Profil açılınca iki kez oynar ve 3,1 sn'de durur; hareketi azaltta hiç oynamaz (K-60).
   - Raflar cinsiyetsiz adlıdır (v46'daki adlar; K-50).
   - Katalogdan "Yıldız bıçak" ve "Fes" çıkar; kalp, hayvan kulakları, nazar, çay ve simit kalır. Mevsim paketleri bütün yıl açıktır (K-51).
