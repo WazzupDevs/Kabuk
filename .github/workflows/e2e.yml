@@ -401,6 +401,118 @@ jobs:
           path: ${{ env.OUT }}
           retention-days: 14
 
+  # The visual gate (CLAUDE.md → Görsel kapı): the states of e2e/visual/states.json (the design
+  # gallery's sets, game phases) opened in the app's hidden route with a fixed state (timers
+  # frozen, motion off, randomness seeded) and photographed in light and dark on a phone at v46's
+  # width and density (360 dp at 2x: skin 720x1280, density 320). Two comparisons: with the app's
+  # own baselines (e2e/visual/baz/, Maestro assertScreenshot), the hard gate that fails the job;
+  # and with v46's prototype rendered by Playwright at the same size and fonts, the soft similarity
+  # report in the job summary with the diff images (the CTO decides). With the e2e label, as the
+  # eight shards (not when only e2e-large has just been added), nightly and by hand. No local
+  # stack: the route opens without signing in and reads nothing from the server. It starts with the
+  # build job and boots its emulator while Gradle builds, as the shards do. TEKRAR photographs every
+  # shot twice: the noise the hard threshold is set above (the summary's "Gürültü" table).
+  visual:
+    needs: changed
+    if: >-
+      needs.changed.outputs.run != 'false' && !cancelled() &&
+      (github.event_name != 'pull_request' ||
+      (github.event.action == 'labeled' && github.event.label.name == 'e2e') ||
+      (github.event.action != 'labeled' &&
+       (contains(github.event.pull_request.labels.*.name, 'e2e') ||
+        contains(github.event.pull_request.labels.*.name, 'e2e-large'))))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    # actions: read for this run's e2e-apk artifact (scripts/e2e/fetch-apk.sh).
+    permissions:
+      actions: read
+      contents: read
+    env:
+      OUT: ${{ github.workspace }}/e2e-out/visual
+      APK: ${{ github.workspace }}/apk/app-release.apk
+      TEKRAR: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Free disk
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost \
+            /opt/hostedtoolcache/CodeQL /usr/local/lib/android/sdk/ndk
+          df -h /
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      # Playwright's Chromium at the version in package.json; v46's fonts are the app's own files
+      # (scripts/visual/prototype.ts), not Google's.
+      - name: Design prototype (Playwright)
+        run: |
+          mkdir -p "$OUT"
+          pnpm --filter scripts exec playwright install --with-deps chromium
+          node --experimental-strip-types scripts/visual/render-prototype.ts . "$OUT"
+      - name: Maestro
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | MAESTRO_VERSION=2.10.0 bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+          "$HOME/.maestro/bin/maestro" --version | tee "$OUT/maestro-version.txt"
+      # The emulator cache of the e2e job (read only; its light-1 job on main saves it).
+      - name: Week (emulator cache key)
+        id: week
+        run: echo "week=$(date -u +%G-%V)" >> "$GITHUB_OUTPUT"
+      - name: Emulator and system image cache
+        id: emulator-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            /usr/local/lib/android/sdk/emulator
+            /usr/local/lib/android/sdk/system-images/android-34/google_apis/x86_64
+          key: android-emulator-34-google_apis-x86_64-${{ steps.week.outputs.week }}
+          restore-keys: android-emulator-34-google_apis-x86_64-
+      - name: Emulator and system image download (with retries)
+        if: steps.emulator-cache.outputs.cache-hit != 'true'
+        run: bash scripts/e2e/sdk-install.sh emulator 'system-images;android-34;google_apis;x86_64'
+      # Its failure does not end the job at once: the report below still says which shots failed.
+      - name: Emulator, APK and the gate's shots
+        continue-on-error: true
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          GH_TOKEN: ${{ github.token }}
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          ram-size: 4096M
+          emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -skin 720x1280
+          disable-animations: true
+          script: bash scripts/visual/run-on-emulator.sh
+      # The images point at this run's screenshots branch (publish-screenshots, below) and the
+      # baselines at the commit under test.
+      - name: Report
+        if: always()
+        env:
+          GORSEL_URL: https://raw.githubusercontent.com/${{ github.repository }}/${{ github.event_name == 'pull_request' && format('e2e-screenshots-pr-{0}', github.event.pull_request.number) || 'e2e-screenshots' }}/visual
+          GORSEL_BAZ_URL: https://raw.githubusercontent.com/${{ github.repository }}/${{ github.event.pull_request.head.sha || github.sha }}/e2e/visual/baz
+        run: node --experimental-strip-types scripts/visual/report.ts . "$OUT" | tee -a "$GITHUB_STEP_SUMMARY"
+      # The hard gate: every shot photographed, every expected baseline there, every comparison
+      # with a baseline passed (scripts/visual/report.ts → kapi.json).
+      - name: Result
+        if: always()
+        run: |
+          test -f "$OUT/kapi.json" || { echo "no gate report"; exit 1; }
+          node -e 'const k = require(process.argv[1]); if (!k.ok) { console.log(JSON.stringify(k, null, 1)); process.exit(1); }' "$OUT/kapi.json"
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-run-visual
+          path: ${{ env.OUT }}
+          retention-days: 14
+
   # Screenshots and logs (no video) on an e2e-screenshots branch, for readers without access to
   # artifact storage: an orphan branch with a single commit, force-pushed by every run, so binaries
   # never pile up in history. A PR run writes its own branch (e2e-screenshots-pr-<number>), so runs of
@@ -410,10 +522,11 @@ jobs:
   # light/takeScreenshot and dark/takeScreenshot hold the takeScreenshot images of the scheme's four
   # shards together, for `pnpm store:screenshots` (large/takeScreenshot those of the large pass); a
   # retried shard's first attempt is in its folder's attempt-1/, without those images. A PR run that
-  # only the e2e-large label started writes the four large folders alone.
+  # only the e2e-large label started writes the four large folders alone. The visual gate's run is
+  # in visual/ (its candidates in visual/aday/, which `pnpm visual:accept` reads).
   publish-screenshots:
-    if: ${{ always() && needs.e2e.result != 'skipped' }}
-    needs: e2e
+    if: ${{ always() && (needs.e2e.result != 'skipped' || needs.visual.result != 'skipped') }}
+    needs: [e2e, visual]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
@@ -430,9 +543,11 @@ jobs:
           mkdir site
           for dir in out/*; do
             run=${dir#out/e2e-run-}
-            mkdir -p "site/$run" "site/${run%-*}/takeScreenshot"
+            mkdir -p "site/$run"
             (cd "$dir" && find . -type f ! -name '*.webm' ! -name 'logcat.txt' -exec cp --parents {} "../../site/$run/" \;)
             tail -n 3000 "$dir/logcat.txt" > "site/$run/logcat-tail.txt" 2>/dev/null || true
+            if [ "$run" = visual ]; then continue; fi
+            mkdir -p "site/${run%-*}/takeScreenshot"
             find "$dir" -path '*/takeScreenshot/*.png' ! -path '*/attempt-1/*' -exec cp {} "site/${run%-*}/takeScreenshot/" \;
           done
           cd site

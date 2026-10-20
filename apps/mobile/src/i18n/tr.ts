@@ -1202,6 +1202,12 @@ export const tr = {
     previewTitle: 'Bileşen önizleme',
     previewOpen: 'Bileşen önizlemesini aç',
     previewIncoming: 'Mesaj gelsin',
+    // The visual gate's route (CLAUDE.md → Görsel kapı), test builds only.
+    gate: {
+      unknown: (key: string) => `Görsel kapıda böyle bir durum yok: ${key}`,
+      pageCount: (listed: number, needed: number) =>
+        `Bu durum ${needed} sayfa, listede ${listed}: e2e/visual/states.json'da sayfa sayısını ${needed} yap.`,
+    },
     // Bileşen önizleme → Renkler (step 4.2, K-25): the game colours in the run's scheme.
     tokens: {
       set: 'Renkler',

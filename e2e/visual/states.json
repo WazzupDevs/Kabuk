@@ -1,0 +1,27 @@
+{
+  "esik": 99.5,
+  "durumlar": [
+    { "id": "galeri-oyun", "app": "galeri/games", "sayfa": 1 },
+    { "id": "galeri-sahtekar", "app": "galeri/sahtekar", "sayfa": 1 },
+    { "id": "galeri-harf-sarki", "app": "galeri/say", "sayfa": 1 },
+    { "id": "galeri-ibre", "app": "galeri/ibre", "sayfa": 1 },
+    { "id": "galeri-sohbet", "app": "galeri/chat", "sayfa": 1 },
+    { "id": "galeri-renkler", "app": "galeri/tokens", "sayfa": 1 },
+    { "id": "galeri-parcalar", "app": "galeri/parts", "sayfa": 1 },
+    { "id": "galeri-kimlik", "app": "galeri/identity", "sayfa": 1 },
+    { "id": "galeri-olcu", "app": "galeri/measure", "sayfa": 1 },
+    {
+      "id": "oyun-kapsul-rakip",
+      "app": "oyun/tabu/rakip",
+      "baz": false,
+      "prototip": {
+        "adimlar": [
+          { "tikla": "[data-dgame=\"tb\"]" },
+          { "tikla": "[data-tb=\"opp\"]" },
+          { "bekle": 600 }
+        ],
+        "kirp": ".tg"
+      }
+    }
+  ]
+}
