@@ -3,7 +3,8 @@
 // experimental_backgroundImage (linear-gradient, radial-gradient); no native module, no SVG.
 // Values are v46's CSS (docs/design/v46/skall-masa-deneme-v46.html): .tk + .tk-s + .tk-glare
 // (Kapsül Anlat), .sgc-f.sgc-face.imp (Sahtekar), .va .mine (own table card), .tbtn.tabu
-// ("Yasak!"). `flat` draws the same boxes without shadows and gradients: the scroll baseline.
+// ("Yasak!"). `flat` draws the same boxes without shadows and gradients: what the drawing check
+// (scripts/trial/report.ts → cizim) compares them with.
 import type { ReactNode } from 'react';
 import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Svg, { Polyline, Rect } from 'react-native-svg';
@@ -45,7 +46,7 @@ export function TabuCard({ flat }: Props) {
             },
           ]}
         />
-        <View style={fx(flat, styles.tk)}>
+        <View style={fx(flat, styles.tk)} testID="deneme-tk">
           <View style={styles.tkHead}>
             <View style={styles.tkHeadDot} />
             <Text style={styles.tkWord}>KAPSÜL</Text>
@@ -70,7 +71,7 @@ export function TabuCard({ flat }: Props) {
 export function ImpostorCard({ flat }: Props) {
   return (
     <View style={[styles.ground, { backgroundColor: '#4A22A8' }]} testID="deneme-sahtekar">
-      <View style={fx(flat, styles.imp)}>
+      <View style={fx(flat, styles.imp)} testID="deneme-imp">
         <Text style={styles.impMark}>?</Text>
         <Text style={styles.impLabel}>SAHTEKARSIN</Text>
         <View style={styles.impCat}>
@@ -86,7 +87,7 @@ export function ImpostorCard({ flat }: Props) {
 export function MineCard({ flat }: Props) {
   return (
     <View style={styles.page} testID="deneme-masa">
-      <View style={fx(flat, styles.mine)}>
+      <View style={fx(flat, styles.mine)} testID="deneme-mine">
         {flat ? null : <View pointerEvents="none" style={styles.mineGlow} />}
         <View style={styles.mineHead}>
           <View style={styles.mineIc} />
@@ -134,6 +135,18 @@ export function YasakButton({ flat }: Props) {
         <Rect x={9.8} y={16.8} width={4.4} height={4.4} rx={2.2} fill="#FFD2C9" />
       </Svg>
       <Text style={styles.yasakText}>Yasak!</Text>
+    </View>
+  );
+}
+
+// The 20 cards of Ayarlar → Tasarım (test) → Bileşen önizleme → Kaydırma: scrolling them is checked
+// by hand on a phone (the CI emulator draws in software; its speed says nothing about a phone).
+export function ScrollTrialSet(): ReactNode {
+  return (
+    <View style={{ gap: 12 }}>
+      {Array.from({ length: 20 }, (_, i) => (
+        <TrialRow key={i} index={i} />
+      ))}
     </View>
   );
 }
