@@ -36,6 +36,7 @@ for n in 1 2 3; do
   pass golge "$n"
   pass duz "$n"
 done
+dismiss_anr
 a exec-out screencap -p > "$OUT/liste-360.png"
 
 # 360 dp, font 1.0: the reference look.
@@ -43,6 +44,7 @@ open_trial "bolum=kartlar"
 wait_id deneme-kartlar 90
 sleep 3
 for p in 1 2 3; do
+  dismiss_anr
   a exec-out screencap -p > "$OUT/kartlar-360-$p.png"
   a exec-out uiautomator dump /dev/tty > "$OUT/kartlar-360-$p.xml" 2>/dev/null || true
   a shell input swipe 360 1000 360 400 400
@@ -56,6 +58,7 @@ open_trial "bolum=kartlar"
 wait_id deneme-kartlar 90
 sleep 3
 for p in 1 2 3 4; do
+  dismiss_anr
   a exec-out screencap -p > "$OUT/kartlar-320-130-$p.png"
   a exec-out uiautomator dump /dev/tty > "$OUT/kartlar-320-130-$p.xml" 2>/dev/null || true
   a shell input swipe 320 900 320 300 400
