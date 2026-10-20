@@ -1212,7 +1212,7 @@ export const tr = {
       components: 'Bileşenler',
       sample: 'Masa sohbeti 21:00',
       missing: 'Henüz yok',
-      measured: (width: number, height: number) => `v46: ${width} × ${height}`,
+      measured: (id: string, width: number, height: number) => `${id} · v46: ${width} × ${height}`,
     },
     previewIncoming: 'Mesaj gelsin',
     // The visual gate's route (CLAUDE.md → Görsel kapı), test builds only.

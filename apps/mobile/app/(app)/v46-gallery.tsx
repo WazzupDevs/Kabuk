@@ -160,7 +160,7 @@ function ComponentEntry({
     <View className="gap-2" testID={galleryTestId(id)}>
       <Text variant="label">{c.name}</Text>
       <Text variant="caption" tone="muted">
-        {`${id} · ${tr.design.gallery.measured(c.width, look.height)}`}
+        {tr.design.gallery.measured(id, c.width, look.height)}
       </Text>
       {states ? (
         states.map((s) => (
