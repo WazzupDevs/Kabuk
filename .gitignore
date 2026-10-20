@@ -38,3 +38,7 @@ coverage/
 # Firebase config (per developer / CI secret)
 apps/mobile/google-services.json
 apps/mobile/GoogleService-Info.plist
+
+# Maestro's diff beside a baseline after a failed assertScreenshot (scripts/visual/run-on-emulator.sh
+# moves it out in CI).
+e2e/visual/baz/*_diff.png

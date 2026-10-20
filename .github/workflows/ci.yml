@@ -20,7 +20,35 @@ jobs:
   checks:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    # pull-requests: read for the PR's files and labels (the visual gate's baselines, below).
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
+      # The visual gate's baselines (e2e/visual/baz/) change only after the CTO has approved the
+      # new images: a PR that adds, changes or removes one needs the `gorsel-baz` label (CLAUDE.md
+      # → Görsel kapı). The label is read when the job runs: put on before the push that brings the
+      # baselines, it counts; put on later, the job is run again.
+      - name: Visual gate baselines need the gorsel-baz label
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          changed=$(gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR/files" \
+            --jq '.[] | select((.filename | startswith("e2e/visual/baz/")) or ((.previous_filename // "") | startswith("e2e/visual/baz/"))) | .filename')
+          if [ -z "$changed" ]; then
+            echo "No baseline changed."
+            exit 0
+          fi
+          echo "Baselines changed:"
+          echo "$changed"
+          if gh api "repos/$GITHUB_REPOSITORY/pulls/$PR" --jq '.labels[].name' | grep -qx gorsel-baz; then
+            echo "gorsel-baz label on: the CTO approved them."
+            exit 0
+          fi
+          echo "::error title=Visual gate baselines::This PR changes e2e/visual/baz/ without the gorsel-baz label (CLAUDE.md → Görsel kapı): baselines change only after the CTO has approved the new images."
+          exit 1
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4

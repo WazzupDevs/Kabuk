@@ -19,11 +19,16 @@
     "apply-local-secrets": "node --experimental-strip-types apply-local-secrets.ts",
     "fetch:venues": "node --experimental-strip-types fetch-venues.ts",
     "latency": "node --experimental-strip-types latency/measure.ts",
-    "functions:deploy": "node --experimental-strip-types functions/deploy.ts"
+    "functions:deploy": "node --experimental-strip-types functions/deploy.ts",
+    "visual:accept": "node --experimental-strip-types visual/accept.ts"
   },
   "devDependencies": {
     "@types/node": "^22.18.0",
+    "@types/pngjs": "^6.0.5",
     "marked": "^18.0.14",
+    "pixelmatch": "^7.2.0",
+    "playwright": "1.63.0",
+    "pngjs": "^7.0.0",
     "sharp": "0.35.4",
     "typescript": "~6.0.3"
   },

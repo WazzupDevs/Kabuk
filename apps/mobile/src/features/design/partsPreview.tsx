@@ -20,7 +20,7 @@ import { PreviewBlock } from './PreviewBlock';
 const STAGE = 260;
 const noop = () => undefined;
 
-// Bileşen önizleme → Oyun parçaları (docs/SPEC_V4.md §4.C, step 4.2b): the game screens' parts on
+// Bileşen önizleme → Eski oyun (docs/SPEC_V4.md §4.C, step 4.2b): the game screens' parts on
 // grounds in the run's scheme, for E2E to photograph. The moments (toast, 3-2-1, confetti) play on
 // a button.
 export function PartsSet() {
