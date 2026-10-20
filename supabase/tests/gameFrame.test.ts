@@ -10,7 +10,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { TABLE_GAMES } from '../functions/_shared/pure/tableGames.ts';
 import { deleteFixtureVenues, insertFixtureVenues } from './fixtures/venues.ts';
 import { errorBody, waitUntilBlocked } from './helpers.ts';
-import { dbUrl, deleteUserByPhone, invoke, sql } from './local.ts';
+import { admin, dbUrl, deleteUserByPhone, invoke, sql } from './local.ts';
 import {
   accept,
   ask,
@@ -63,12 +63,62 @@ const openGame = (p: Person, roomId: string, concept: string, again?: boolean) =
 const pick = (p: Person, roomId: string, choice: 'a' | 'b' | 'obs' | null) =>
   rooms(p, { action: 'pick', roomId, pick: choice });
 
-// What a game's `<game>/start` calls first (step 4.6).
-async function start(owner: Person, roomId: string, concept: string): Promise<number> {
-  const [row] = await sql`
-    select private.start_game(${owner.userId}, ${roomId}, ${concept}) as game_no
+// What a game's `<game>/start` calls first (step 4.6), called as the Edge Function will call it:
+// through PostgREST. A direct connection does not load what PostgREST's sessions load (pg_safeupdate:
+// an UPDATE or DELETE without WHERE fails there), so a test over it would miss such a failure.
+// Until the first game's start exists, a stand-in that only the service role may call, created for
+// this file and dropped after it, calls private.start_game in PostgREST's transaction.
+const START_VIA_API = 'test_start_game';
+type StartArgs = { target_user_id: string; target_room_id: string; target_concept: string };
+const callStart = admin.rpc.bind(admin) as unknown as (
+  fn: typeof START_VIA_API,
+  args: StartArgs,
+) => PromiseLike<{ data: unknown; error: { code: string; message: string } | null }>;
+
+beforeAll(async () => {
+  await sql`
+    create function public.test_start_game(
+      target_user_id uuid, target_room_id uuid, target_concept text
+    )
+    returns integer
+    language sql
+    security definer
+    set search_path = ''
+    as $$ select private.start_game(target_user_id, target_room_id, target_concept) $$
   `;
-  return row?.game_no as number;
+  await sql`
+    revoke all on function public.test_start_game(uuid, uuid, text)
+    from public, anon, authenticated
+  `;
+  await sql`grant execute on function public.test_start_game(uuid, uuid, text) to service_role`;
+  await sql`notify pgrst, 'reload schema'`;
+  // PostgREST knows the function once it no longer answers "not found" (PGRST202).
+  const nobody = '00000000-0000-0000-0000-000000000000';
+  for (let tries = 0; ; tries++) {
+    const { error } = await callStart(START_VIA_API, {
+      target_user_id: nobody,
+      target_room_id: nobody,
+      target_concept: 'harf',
+    });
+    if (error?.code !== 'PGRST202') break;
+    if (tries === 100) throw new Error('PostgREST did not load public.test_start_game');
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+});
+
+afterAll(async () => {
+  await sql`drop function if exists public.test_start_game(uuid, uuid, text)`;
+  await sql`notify pgrst, 'reload schema'`;
+});
+
+async function start(owner: Person, roomId: string, concept: string): Promise<number> {
+  const { data, error } = await callStart(START_VIA_API, {
+    target_user_id: owner.userId,
+    target_room_id: roomId,
+    target_concept: concept,
+  });
+  if (error) throw Object.assign(new Error(error.message), { code: error.code });
+  return data as number;
 }
 
 async function counts(p: Person, roomId: string) {
