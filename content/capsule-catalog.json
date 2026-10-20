@@ -1,0 +1,1634 @@
+{
+  "source": "docs/design/v46/kaynak/kapsul/kapsul-katalogu.json (v46)",
+  "racks": [
+    {
+      "id": "stil",
+      "name": "Şık",
+      "packs": ["Zarif", "Çiçek", "Sokak", "Prenses", "Gece", "Bahar", "Romantik"]
+    },
+    {
+      "id": "karakter",
+      "name": "Karakter",
+      "packs": ["Klasik", "Sokak", "Macera", "Rock", "Şef", "İş", "Kral", "Vahşi Batı"]
+    },
+    {
+      "id": "tema",
+      "name": "Tema",
+      "packs": [
+        "Hayvanlar",
+        "Orman",
+        "Fantastik",
+        "Sihir",
+        "Uzay",
+        "Parti",
+        "Oyuncu",
+        "Yılbaşı",
+        "Korku",
+        "Kış",
+        "Deniz",
+        "Spor",
+        "Ninja",
+        "Kampüs",
+        "Kafe",
+        "Tatlı",
+        "Retro",
+        "Bilim",
+        "Bizden",
+        "Günlük"
+      ]
+    }
+  ],
+  "slots": [
+    {
+      "id": "c",
+      "name": "Renk"
+    },
+    {
+      "id": "e",
+      "name": "Göz"
+    },
+    {
+      "id": "h",
+      "name": "Baş"
+    },
+    {
+      "id": "f",
+      "name": "Yüz"
+    },
+    {
+      "id": "m",
+      "name": "Ağız"
+    },
+    {
+      "id": "n",
+      "name": "Boyun"
+    }
+  ],
+  "colors": [
+    {
+      "id": "mor",
+      "name": "Mor"
+    },
+    {
+      "id": "pembe",
+      "name": "Pembe"
+    },
+    {
+      "id": "mercan",
+      "name": "Mercan"
+    },
+    {
+      "id": "hardal",
+      "name": "Hardal"
+    },
+    {
+      "id": "limon",
+      "name": "Limon"
+    },
+    {
+      "id": "nane",
+      "name": "Nane"
+    },
+    {
+      "id": "turkuaz",
+      "name": "Turkuaz"
+    },
+    {
+      "id": "gok",
+      "name": "Gök"
+    },
+    {
+      "id": "lacivert",
+      "name": "Lacivert"
+    },
+    {
+      "id": "lavanta",
+      "name": "Lavanta"
+    },
+    {
+      "id": "seftali",
+      "name": "Şeftali"
+    },
+    {
+      "id": "toz",
+      "name": "Toz pembe"
+    },
+    {
+      "id": "gri",
+      "name": "Gri"
+    },
+    {
+      "id": "komur",
+      "name": "Kömür"
+    },
+    {
+      "id": "krem",
+      "name": "Krem"
+    },
+    {
+      "id": "yesil",
+      "name": "Yeşil"
+    }
+  ],
+  "eyes": [
+    {
+      "id": "kirpik",
+      "rack": "stil",
+      "pack": "Zarif",
+      "name": "Kirpikli"
+    },
+    {
+      "id": "parilti",
+      "rack": "stil",
+      "pack": "Çiçek",
+      "name": "Parıltılı"
+    },
+    {
+      "id": "far",
+      "rack": "stil",
+      "pack": "Prenses",
+      "name": "Simli far"
+    },
+    {
+      "id": "uzunkirpik",
+      "rack": "stil",
+      "pack": "Gece",
+      "name": "Uzun kirpik"
+    },
+    {
+      "id": "kasli",
+      "rack": "karakter",
+      "pack": "Klasik",
+      "name": "Kaşlı"
+    },
+    {
+      "id": "sert",
+      "rack": "karakter",
+      "pack": "Macera",
+      "name": "Kararlı"
+    },
+    {
+      "id": "klasik",
+      "rack": "tema",
+      "pack": "Günlük",
+      "name": "Klasik"
+    },
+    {
+      "id": "koyu",
+      "rack": "tema",
+      "pack": "Günlük",
+      "name": "Koyu vizör"
+    },
+    {
+      "id": "mutlu",
+      "rack": "tema",
+      "pack": "Günlük",
+      "name": "Mutlu"
+    },
+    {
+      "id": "uykulu",
+      "rack": "tema",
+      "pack": "Günlük",
+      "name": "Uykulu"
+    },
+    {
+      "id": "kirp",
+      "rack": "tema",
+      "pack": "Günlük",
+      "name": "Göz kırpma"
+    },
+    {
+      "id": "saskin",
+      "rack": "tema",
+      "pack": "Günlük",
+      "name": "Şaşkın"
+    },
+    {
+      "id": "yildiz",
+      "rack": "tema",
+      "pack": "Fantastik",
+      "name": "Yıldız göz"
+    },
+    {
+      "id": "kalp",
+      "rack": "tema",
+      "pack": "Fantastik",
+      "name": "Kalp göz"
+    },
+    {
+      "id": "robot",
+      "rack": "tema",
+      "pack": "Fantastik",
+      "name": "Robot"
+    },
+    {
+      "id": "cekirdek",
+      "rack": "tema",
+      "pack": "Kafe",
+      "name": "Çekirdek göz"
+    },
+    {
+      "id": "ucgoz",
+      "rack": "tema",
+      "pack": "Uzay",
+      "name": "Üç göz"
+    },
+    {
+      "id": "ninjagoz",
+      "rack": "tema",
+      "pack": "Ninja",
+      "name": "Keskin bakış"
+    },
+    {
+      "id": "panda",
+      "rack": "tema",
+      "pack": "Orman",
+      "name": "Panda gözü"
+    },
+    {
+      "id": "sihirgoz",
+      "rack": "tema",
+      "pack": "Sihir",
+      "name": "Parlayan göz"
+    },
+    {
+      "id": "nazargoz",
+      "rack": "tema",
+      "pack": "Bizden",
+      "name": "Mavi göz"
+    },
+    {
+      "id": "yorgun",
+      "rack": "tema",
+      "pack": "Kampüs",
+      "name": "Uykusuz"
+    },
+    {
+      "id": "zombi",
+      "rack": "tema",
+      "pack": "Korku",
+      "name": "Zombi gözü"
+    }
+  ],
+  "parts": [
+    {
+      "id": "fiyonk",
+      "slot": "h",
+      "rack": "stil",
+      "pack": "Zarif",
+      "name": "Fiyonk"
+    },
+    {
+      "id": "tacband",
+      "slot": "h",
+      "rack": "stil",
+      "pack": "Zarif",
+      "name": "Taç bandı"
+    },
+    {
+      "id": "cicek",
+      "slot": "h",
+      "rack": "stil",
+      "pack": "Çiçek",
+      "name": "Çiçek tacı"
+    },
+    {
+      "id": "topuz",
+      "slot": "h",
+      "rack": "stil",
+      "pack": "Çiçek",
+      "name": "Topuz"
+    },
+    {
+      "id": "atkuyrugu",
+      "slot": "h",
+      "rack": "stil",
+      "pack": "Sokak",
+      "name": "At kuyruğu"
+    },
+    {
+      "id": "bandanak",
+      "slot": "h",
+      "rack": "stil",
+      "pack": "Sokak",
+      "name": "Bandana"
+    },
+    {
+      "id": "berefr",
+      "slot": "h",
+      "rack": "stil",
+      "pack": "Sokak",
+      "name": "Fransız beresi"
+    },
+    {
+      "id": "prensestac",
+      "slot": "h",
+      "rack": "stil",
+      "pack": "Prenses",
+      "name": "Prenses tacı"
+    },
+    {
+      "id": "payet",
+      "slot": "h",
+      "rack": "stil",
+      "pack": "Gece",
+      "name": "Tüylü taç bandı"
+    },
+    {
+      "id": "papatya",
+      "slot": "h",
+      "rack": "stil",
+      "pack": "Bahar",
+      "name": "Papatya tokası"
+    },
+    {
+      "id": "kelebek",
+      "slot": "h",
+      "rack": "stil",
+      "pack": "Bahar",
+      "name": "Kelebek tokası"
+    },
+    {
+      "id": "kalptac",
+      "slot": "h",
+      "rack": "stil",
+      "pack": "Romantik",
+      "name": "Kalp anteni"
+    },
+    {
+      "id": "kedigoz",
+      "slot": "f",
+      "rack": "stil",
+      "pack": "Zarif",
+      "name": "Kedi göz gözlük"
+    },
+    {
+      "id": "kalpgoz",
+      "slot": "f",
+      "rack": "stil",
+      "pack": "Çiçek",
+      "name": "Kalp gözlük"
+    },
+    {
+      "id": "yildizgoz",
+      "slot": "f",
+      "rack": "stil",
+      "pack": "Sokak",
+      "name": "Yıldız gözlük"
+    },
+    {
+      "id": "pullu",
+      "slot": "f",
+      "rack": "stil",
+      "pack": "Sokak",
+      "name": "Pullu maske"
+    },
+    {
+      "id": "cicekgoz",
+      "slot": "f",
+      "rack": "stil",
+      "pack": "Bahar",
+      "name": "Çiçek gözlük"
+    },
+    {
+      "id": "ruj",
+      "slot": "m",
+      "rack": "stil",
+      "pack": "Zarif",
+      "name": "Ruj"
+    },
+    {
+      "id": "allik",
+      "slot": "m",
+      "rack": "stil",
+      "pack": "Çiçek",
+      "name": "Allık"
+    },
+    {
+      "id": "cil",
+      "slot": "m",
+      "rack": "stil",
+      "pack": "Sokak",
+      "name": "Çiller"
+    },
+    {
+      "id": "opucuk",
+      "slot": "m",
+      "rack": "stil",
+      "pack": "Sokak",
+      "name": "Öpücük"
+    },
+    {
+      "id": "parlakruj",
+      "slot": "m",
+      "rack": "stil",
+      "pack": "Gece",
+      "name": "Mürdüm ruj"
+    },
+    {
+      "id": "kalpyanak",
+      "slot": "m",
+      "rack": "stil",
+      "pack": "Romantik",
+      "name": "Kalp yanak"
+    },
+    {
+      "id": "inci",
+      "slot": "n",
+      "rack": "stil",
+      "pack": "Zarif",
+      "name": "İnci kolye"
+    },
+    {
+      "id": "yakacicek",
+      "slot": "n",
+      "rack": "stil",
+      "pack": "Çiçek",
+      "name": "Yaka çiçeği"
+    },
+    {
+      "id": "kalpkolye",
+      "slot": "n",
+      "rack": "stil",
+      "pack": "Çiçek",
+      "name": "Kalp kolye"
+    },
+    {
+      "id": "fular",
+      "slot": "n",
+      "rack": "stil",
+      "pack": "Sokak",
+      "name": "Fular"
+    },
+    {
+      "id": "perikanat",
+      "slot": "n",
+      "rack": "stil",
+      "pack": "Prenses",
+      "name": "Peri kanatları"
+    },
+    {
+      "id": "elmas",
+      "slot": "n",
+      "rack": "stil",
+      "pack": "Prenses",
+      "name": "Elmas kolye"
+    },
+    {
+      "id": "boa",
+      "slot": "n",
+      "rack": "stil",
+      "pack": "Gece",
+      "name": "Tüy boa"
+    },
+    {
+      "id": "ugur",
+      "slot": "n",
+      "rack": "stil",
+      "pack": "Bahar",
+      "name": "Uğur böceği"
+    },
+    {
+      "id": "mektup",
+      "slot": "n",
+      "rack": "stil",
+      "pack": "Romantik",
+      "name": "Aşk mektubu"
+    },
+    {
+      "id": "silindir",
+      "slot": "h",
+      "rack": "karakter",
+      "pack": "Klasik",
+      "name": "Silindir şapka"
+    },
+    {
+      "id": "fotr",
+      "slot": "h",
+      "rack": "karakter",
+      "pack": "Klasik",
+      "name": "Fötr şapka"
+    },
+    {
+      "id": "terssapka",
+      "slot": "h",
+      "rack": "karakter",
+      "pack": "Sokak",
+      "name": "Ters şapka"
+    },
+    {
+      "id": "mohawk",
+      "slot": "h",
+      "rack": "karakter",
+      "pack": "Sokak",
+      "name": "Mohikan"
+    },
+    {
+      "id": "kasket",
+      "slot": "h",
+      "rack": "karakter",
+      "pack": "Sokak",
+      "name": "Kasket"
+    },
+    {
+      "id": "korsan",
+      "slot": "h",
+      "rack": "karakter",
+      "pack": "Macera",
+      "name": "Korsan şapkası"
+    },
+    {
+      "id": "kovboy",
+      "slot": "h",
+      "rack": "karakter",
+      "pack": "Macera",
+      "name": "Kovboy şapkası"
+    },
+    {
+      "id": "rocksac",
+      "slot": "h",
+      "rack": "karakter",
+      "pack": "Rock",
+      "name": "Uzun saç"
+    },
+    {
+      "id": "ascisapka",
+      "slot": "h",
+      "rack": "karakter",
+      "pack": "Şef",
+      "name": "Aşçı şapkası"
+    },
+    {
+      "id": "mikrofon",
+      "slot": "h",
+      "rack": "karakter",
+      "pack": "İş",
+      "name": "Mikrofonlu kulaklık"
+    },
+    {
+      "id": "kraltac",
+      "slot": "h",
+      "rack": "karakter",
+      "pack": "Kral",
+      "name": "Kral tacı"
+    },
+    {
+      "id": "monokl",
+      "slot": "f",
+      "rack": "karakter",
+      "pack": "Klasik",
+      "name": "Monokl"
+    },
+    {
+      "id": "havaci",
+      "slot": "f",
+      "rack": "karakter",
+      "pack": "Sokak",
+      "name": "Havacı gözlüğü"
+    },
+    {
+      "id": "kare",
+      "slot": "f",
+      "rack": "karakter",
+      "pack": "Sokak",
+      "name": "Kare gözlük"
+    },
+    {
+      "id": "gozbandi",
+      "slot": "f",
+      "rack": "karakter",
+      "pack": "Macera",
+      "name": "Göz bandı"
+    },
+    {
+      "id": "rockgoz",
+      "slot": "f",
+      "rack": "karakter",
+      "pack": "Rock",
+      "name": "Rock gözlüğü"
+    },
+    {
+      "id": "ince",
+      "slot": "f",
+      "rack": "karakter",
+      "pack": "İş",
+      "name": "Çerçevesiz gözlük"
+    },
+    {
+      "id": "kivrik",
+      "slot": "m",
+      "rack": "karakter",
+      "pack": "Klasik",
+      "name": "Kıvrık bıyık"
+    },
+    {
+      "id": "keci",
+      "slot": "m",
+      "rack": "karakter",
+      "pack": "Sokak",
+      "name": "Keçi sakalı"
+    },
+    {
+      "id": "kirli",
+      "slot": "m",
+      "rack": "karakter",
+      "pack": "Sokak",
+      "name": "Kirli sakal"
+    },
+    {
+      "id": "sakal",
+      "slot": "m",
+      "rack": "karakter",
+      "pack": "Macera",
+      "name": "Sakal"
+    },
+    {
+      "id": "biyik",
+      "slot": "m",
+      "rack": "karakter",
+      "pack": "Macera",
+      "name": "Bıyık"
+    },
+    {
+      "id": "kalinbiyik",
+      "slot": "m",
+      "rack": "karakter",
+      "pack": "Şef",
+      "name": "Kalın bıyık"
+    },
+    {
+      "id": "uzunsakal",
+      "slot": "m",
+      "rack": "karakter",
+      "pack": "Kral",
+      "name": "Uzun sakal"
+    },
+    {
+      "id": "atnali",
+      "slot": "m",
+      "rack": "karakter",
+      "pack": "Vahşi Batı",
+      "name": "At nalı bıyık"
+    },
+    {
+      "id": "haydut",
+      "slot": "m",
+      "rack": "karakter",
+      "pack": "Vahşi Batı",
+      "name": "Haydut bandanası"
+    },
+    {
+      "id": "papyon",
+      "slot": "n",
+      "rack": "karakter",
+      "pack": "Klasik",
+      "name": "Papyon"
+    },
+    {
+      "id": "zincir",
+      "slot": "n",
+      "rack": "karakter",
+      "pack": "Sokak",
+      "name": "Zincir"
+    },
+    {
+      "id": "bandanae",
+      "slot": "n",
+      "rack": "karakter",
+      "pack": "Macera",
+      "name": "Boyun bandanası"
+    },
+    {
+      "id": "kravat",
+      "slot": "n",
+      "rack": "karakter",
+      "pack": "Macera",
+      "name": "Kravat"
+    },
+    {
+      "id": "dikenli",
+      "slot": "n",
+      "rack": "karakter",
+      "pack": "Rock",
+      "name": "Dikenli tasma"
+    },
+    {
+      "id": "pena",
+      "slot": "n",
+      "rack": "karakter",
+      "pack": "Rock",
+      "name": "Pena kolye"
+    },
+    {
+      "id": "sefful",
+      "slot": "n",
+      "rack": "karakter",
+      "pack": "Şef",
+      "name": "Şef fuları"
+    },
+    {
+      "id": "yakakarti",
+      "slot": "n",
+      "rack": "karakter",
+      "pack": "İş",
+      "name": "Yaka kartı"
+    },
+    {
+      "id": "takimyaka",
+      "slot": "n",
+      "rack": "karakter",
+      "pack": "İş",
+      "name": "Takım yakası"
+    },
+    {
+      "id": "kurk",
+      "slot": "n",
+      "rack": "karakter",
+      "pack": "Kral",
+      "name": "Kürk yaka"
+    },
+    {
+      "id": "serif",
+      "slot": "n",
+      "rack": "karakter",
+      "pack": "Vahşi Batı",
+      "name": "Şerif yıldızı"
+    },
+    {
+      "id": "kedi",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Hayvanlar",
+      "name": "Kedi kulağı"
+    },
+    {
+      "id": "tavsan",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Hayvanlar",
+      "name": "Tavşan kulağı"
+    },
+    {
+      "id": "ayi",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Hayvanlar",
+      "name": "Ayı kulağı"
+    },
+    {
+      "id": "tilki",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Hayvanlar",
+      "name": "Tilki kulağı"
+    },
+    {
+      "id": "hale",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Fantastik",
+      "name": "Hale"
+    },
+    {
+      "id": "boynuz",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Fantastik",
+      "name": "Boynuzlar"
+    },
+    {
+      "id": "anten",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Fantastik",
+      "name": "Anten"
+    },
+    {
+      "id": "tekboynuz",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Fantastik",
+      "name": "Tek boynuz"
+    },
+    {
+      "id": "tac",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Fantastik",
+      "name": "Taç"
+    },
+    {
+      "id": "parti",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Parti",
+      "name": "Parti şapkası"
+    },
+    {
+      "id": "kulaklik",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Parti",
+      "name": "Kulaklık"
+    },
+    {
+      "id": "bere",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Günlük",
+      "name": "Bere"
+    },
+    {
+      "id": "noel",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Yılbaşı",
+      "name": "Noel şapkası"
+    },
+    {
+      "id": "geyik",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Yılbaşı",
+      "name": "Geyik boynuzu"
+    },
+    {
+      "id": "elf",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Yılbaşı",
+      "name": "Elf şapkası"
+    },
+    {
+      "id": "cadi",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Korku",
+      "name": "Cadı şapkası"
+    },
+    {
+      "id": "balkabagi",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Korku",
+      "name": "Balkabağı"
+    },
+    {
+      "id": "civata",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Korku",
+      "name": "Cıvatalar"
+    },
+    {
+      "id": "orumcek",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Korku",
+      "name": "Örümcek"
+    },
+    {
+      "id": "kep",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Kampüs",
+      "name": "Mezuniyet kepi"
+    },
+    {
+      "id": "kalem",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Kampüs",
+      "name": "Kalem"
+    },
+    {
+      "id": "kitap",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Kampüs",
+      "name": "Kitaplar"
+    },
+    {
+      "id": "barista",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Kafe",
+      "name": "Barista beresi"
+    },
+    {
+      "id": "fincan",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Kafe",
+      "name": "Fincan"
+    },
+    {
+      "id": "astronot",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Uzay",
+      "name": "Astronot kaskı"
+    },
+    {
+      "id": "saturn",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Uzay",
+      "name": "Halka"
+    },
+    {
+      "id": "uzayli",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Uzay",
+      "name": "Yaylı anten"
+    },
+    {
+      "id": "terbandi",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Spor",
+      "name": "Ter bandı"
+    },
+    {
+      "id": "kask",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Spor",
+      "name": "Bisiklet kaskı"
+    },
+    {
+      "id": "hasir",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Deniz",
+      "name": "Hasır şapka"
+    },
+    {
+      "id": "denizci",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Deniz",
+      "name": "Denizci şapkası"
+    },
+    {
+      "id": "ninjabant",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Ninja",
+      "name": "Ninja bandı"
+    },
+    {
+      "id": "kurbaga",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Orman",
+      "name": "Kurbağa gözleri"
+    },
+    {
+      "id": "yele",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Orman",
+      "name": "Aslan yelesi"
+    },
+    {
+      "id": "ibik",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Orman",
+      "name": "İbik"
+    },
+    {
+      "id": "cilek",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Tatlı",
+      "name": "Çilek yaprağı"
+    },
+    {
+      "id": "dondurma",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Tatlı",
+      "name": "Dondurma topu"
+    },
+    {
+      "id": "kek",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Tatlı",
+      "name": "Doğum günü keki"
+    },
+    {
+      "id": "headset",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Oyuncu",
+      "name": "Oyuncu kulaklığı"
+    },
+    {
+      "id": "karttac",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Oyuncu",
+      "name": "İskambil tacı"
+    },
+    {
+      "id": "kulakpelus",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Kış",
+      "name": "Kulak peluşu"
+    },
+    {
+      "id": "kartanesi",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Kış",
+      "name": "Kar tanesi tokası"
+    },
+    {
+      "id": "neonbant",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Retro",
+      "name": "Neon bant"
+    },
+    {
+      "id": "afro",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Retro",
+      "name": "Afro"
+    },
+    {
+      "id": "walkman",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Retro",
+      "name": "Süngerli kulaklık"
+    },
+    {
+      "id": "elektrik",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Bilim",
+      "name": "Elektrik saç"
+    },
+    {
+      "id": "sihirbaz",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Sihir",
+      "name": "Sihirbaz şapkası"
+    },
+    {
+      "id": "havlu",
+      "slot": "h",
+      "rack": "tema",
+      "pack": "Bizden",
+      "name": "Hamam havlusu"
+    },
+    {
+      "id": "vr",
+      "slot": "f",
+      "rack": "tema",
+      "pack": "Fantastik",
+      "name": "VR gözlük"
+    },
+    {
+      "id": "gunes",
+      "slot": "f",
+      "rack": "tema",
+      "pack": "Parti",
+      "name": "Güneş gözlüğü"
+    },
+    {
+      "id": "ucboyut",
+      "slot": "f",
+      "rack": "tema",
+      "pack": "Parti",
+      "name": "3D gözlük"
+    },
+    {
+      "id": "maske",
+      "slot": "f",
+      "rack": "tema",
+      "pack": "Parti",
+      "name": "Maske"
+    },
+    {
+      "id": "yuvarlak",
+      "slot": "f",
+      "rack": "tema",
+      "pack": "Günlük",
+      "name": "Yuvarlak gözlük"
+    },
+    {
+      "id": "kayak",
+      "slot": "f",
+      "rack": "tema",
+      "pack": "Günlük",
+      "name": "Kayak gözlüğü"
+    },
+    {
+      "id": "kargoz",
+      "slot": "f",
+      "rack": "tema",
+      "pack": "Yılbaşı",
+      "name": "Kar tanesi gözlük"
+    },
+    {
+      "id": "mumya",
+      "slot": "f",
+      "rack": "tema",
+      "pack": "Korku",
+      "name": "Mumya sargısı"
+    },
+    {
+      "id": "okuma",
+      "slot": "f",
+      "rack": "tema",
+      "pack": "Kampüs",
+      "name": "Okuma gözlüğü"
+    },
+    {
+      "id": "lazer",
+      "slot": "f",
+      "rack": "tema",
+      "pack": "Uzay",
+      "name": "Lazer vizör"
+    },
+    {
+      "id": "sporgoz",
+      "slot": "f",
+      "rack": "tema",
+      "pack": "Spor",
+      "name": "Spor gözlüğü"
+    },
+    {
+      "id": "snorkel",
+      "slot": "f",
+      "rack": "tema",
+      "pack": "Deniz",
+      "name": "Şnorkel"
+    },
+    {
+      "id": "piksel",
+      "slot": "f",
+      "rack": "tema",
+      "pack": "Oyuncu",
+      "name": "Piksel gözlük"
+    },
+    {
+      "id": "buyukgoz",
+      "slot": "f",
+      "rack": "tema",
+      "pack": "Retro",
+      "name": "Büyük gözlük"
+    },
+    {
+      "id": "labgoz",
+      "slot": "f",
+      "rack": "tema",
+      "pack": "Bilim",
+      "name": "Koruyucu gözlük"
+    },
+    {
+      "id": "vampir",
+      "slot": "m",
+      "rack": "tema",
+      "pack": "Fantastik",
+      "name": "Vampir dişleri"
+    },
+    {
+      "id": "sakiz",
+      "slot": "m",
+      "rack": "tema",
+      "pack": "Parti",
+      "name": "Sakız balonu"
+    },
+    {
+      "id": "kahkaha",
+      "slot": "m",
+      "rack": "tema",
+      "pack": "Parti",
+      "name": "Kahkaha"
+    },
+    {
+      "id": "gulumse",
+      "slot": "m",
+      "rack": "tema",
+      "pack": "Günlük",
+      "name": "Gülümseme"
+    },
+    {
+      "id": "dil",
+      "slot": "m",
+      "rack": "tema",
+      "pack": "Günlük",
+      "name": "Dil çıkarma"
+    },
+    {
+      "id": "ohh",
+      "slot": "m",
+      "rack": "tema",
+      "pack": "Günlük",
+      "name": "Şaşırma"
+    },
+    {
+      "id": "kirmiziburun",
+      "slot": "m",
+      "rack": "tema",
+      "pack": "Yılbaşı",
+      "name": "Kırmızı burun"
+    },
+    {
+      "id": "kopuk",
+      "slot": "m",
+      "rack": "tema",
+      "pack": "Kafe",
+      "name": "Köpük bıyık"
+    },
+    {
+      "id": "cinko",
+      "slot": "m",
+      "rack": "tema",
+      "pack": "Deniz",
+      "name": "Güneş kremi"
+    },
+    {
+      "id": "ninjamaske",
+      "slot": "m",
+      "rack": "tema",
+      "pack": "Ninja",
+      "name": "Ninja maskesi"
+    },
+    {
+      "id": "gaga",
+      "slot": "m",
+      "rack": "tema",
+      "pack": "Orman",
+      "name": "Ördek gagası"
+    },
+    {
+      "id": "domuz",
+      "slot": "m",
+      "rack": "tema",
+      "pack": "Orman",
+      "name": "Domuz burnu"
+    },
+    {
+      "id": "lolipop",
+      "slot": "m",
+      "rack": "tema",
+      "pack": "Tatlı",
+      "name": "Lolipop"
+    },
+    {
+      "id": "cikolata",
+      "slot": "m",
+      "rack": "tema",
+      "pack": "Kış",
+      "name": "Çikolata bıyığı"
+    },
+    {
+      "id": "dahibiyik",
+      "slot": "m",
+      "rack": "tema",
+      "pack": "Bilim",
+      "name": "Kır bıyık"
+    },
+    {
+      "id": "can",
+      "slot": "n",
+      "rack": "tema",
+      "pack": "Hayvanlar",
+      "name": "Çıngıraklı tasma"
+    },
+    {
+      "id": "madalya",
+      "slot": "n",
+      "rack": "tema",
+      "pack": "Parti",
+      "name": "Madalya"
+    },
+    {
+      "id": "atki",
+      "slot": "n",
+      "rack": "tema",
+      "pack": "Günlük",
+      "name": "Atkı"
+    },
+    {
+      "id": "rozet",
+      "slot": "n",
+      "rack": "tema",
+      "pack": "Günlük",
+      "name": "Yıldız rozet"
+    },
+    {
+      "id": "yilbasiatki",
+      "slot": "n",
+      "rack": "tema",
+      "pack": "Yılbaşı",
+      "name": "Yılbaşı atkısı"
+    },
+    {
+      "id": "zilkolye",
+      "slot": "n",
+      "rack": "tema",
+      "pack": "Yılbaşı",
+      "name": "Zilli kolye"
+    },
+    {
+      "id": "pelerin",
+      "slot": "n",
+      "rack": "tema",
+      "pack": "Korku",
+      "name": "Vampir yakası"
+    },
+    {
+      "id": "kartaski",
+      "slot": "n",
+      "rack": "tema",
+      "pack": "Kampüs",
+      "name": "Kart askısı"
+    },
+    {
+      "id": "onluk",
+      "slot": "n",
+      "rack": "tema",
+      "pack": "Kafe",
+      "name": "Önlük"
+    },
+    {
+      "id": "latte",
+      "slot": "n",
+      "rack": "tema",
+      "pack": "Kafe",
+      "name": "Latte rozeti"
+    },
+    {
+      "id": "gezegen",
+      "slot": "n",
+      "rack": "tema",
+      "pack": "Uzay",
+      "name": "Gezegen rozeti"
+    },
+    {
+      "id": "duduk",
+      "slot": "n",
+      "rack": "tema",
+      "pack": "Spor",
+      "name": "Düdük"
+    },
+    {
+      "id": "forma",
+      "slot": "n",
+      "rack": "tema",
+      "pack": "Spor",
+      "name": "Forma numarası"
+    },
+    {
+      "id": "lei",
+      "slot": "n",
+      "rack": "tema",
+      "pack": "Deniz",
+      "name": "Çiçek kolye"
+    },
+    {
+      "id": "simidi",
+      "slot": "n",
+      "rack": "tema",
+      "pack": "Deniz",
+      "name": "Can simidi"
+    },
+    {
+      "id": "donut",
+      "slot": "n",
+      "rack": "tema",
+      "pack": "Tatlı",
+      "name": "Donut kolye"
+    },
+    {
+      "id": "zar",
+      "slot": "n",
+      "rack": "tema",
+      "pack": "Oyuncu",
+      "name": "Zar kolye"
+    },
+    {
+      "id": "kumsaati",
+      "slot": "n",
+      "rack": "tema",
+      "pack": "Oyuncu",
+      "name": "Kum saati"
+    },
+    {
+      "id": "bogazli",
+      "slot": "n",
+      "rack": "tema",
+      "pack": "Kış",
+      "name": "Boğazlı yaka"
+    },
+    {
+      "id": "kaset",
+      "slot": "n",
+      "rack": "tema",
+      "pack": "Retro",
+      "name": "Kaset rozeti"
+    },
+    {
+      "id": "atom",
+      "slot": "n",
+      "rack": "tema",
+      "pack": "Bilim",
+      "name": "Atom rozeti"
+    },
+    {
+      "id": "kure",
+      "slot": "n",
+      "rack": "tema",
+      "pack": "Sihir",
+      "name": "Kristal küre"
+    },
+    {
+      "id": "buyupelerin",
+      "slot": "n",
+      "rack": "tema",
+      "pack": "Sihir",
+      "name": "Büyü pelerini"
+    },
+    {
+      "id": "nazar",
+      "slot": "n",
+      "rack": "tema",
+      "pack": "Bizden",
+      "name": "Nazar boncuğu"
+    },
+    {
+      "id": "cay",
+      "slot": "n",
+      "rack": "tema",
+      "pack": "Bizden",
+      "name": "Çay bardağı"
+    },
+    {
+      "id": "simit",
+      "slot": "n",
+      "rack": "tema",
+      "pack": "Bizden",
+      "name": "Simit kolye"
+    }
+  ],
+  "emotions": [
+    {
+      "id": "mutlu",
+      "name": "Mutlu"
+    },
+    {
+      "id": "saskin",
+      "name": "Şaşkın"
+    },
+    {
+      "id": "asik",
+      "name": "Aşık"
+    },
+    {
+      "id": "kahkaha",
+      "name": "Kahkaha"
+    },
+    {
+      "id": "utangac",
+      "name": "Utangaç"
+    },
+    {
+      "id": "uzgun",
+      "name": "Üzgün"
+    },
+    {
+      "id": "kizgin",
+      "name": "Kızgın"
+    },
+    {
+      "id": "uykulu",
+      "name": "Uykulu"
+    }
+  ],
+  "readyLooks": [
+    {
+      "name": "Sade",
+      "code": "c:mor e:klasik"
+    },
+    {
+      "name": "Göz bandı",
+      "code": "c:hardal e:klasik f:gozbandi"
+    },
+    {
+      "name": "Korsan şapkası",
+      "code": "c:mercan e:klasik h:korsan"
+    },
+    {
+      "name": "Kaptan",
+      "code": "c:pembe e:klasik h:korsan f:gozbandi"
+    },
+    {
+      "name": "Vampir",
+      "code": "c:lavanta e:koyu m:vampir"
+    },
+    {
+      "name": "Güneş gözlüğü",
+      "code": "c:turkuaz e:klasik f:gunes"
+    },
+    {
+      "name": "Parti şapkası",
+      "code": "c:gok e:klasik h:parti"
+    },
+    {
+      "name": "Taç",
+      "code": "c:mor e:klasik h:tac"
+    },
+    {
+      "name": "Kulaklık",
+      "code": "c:pembe e:koyu h:kulaklik"
+    },
+    {
+      "name": "Bıyık",
+      "code": "c:hardal e:klasik m:biyik"
+    },
+    {
+      "name": "Kedi kulağı",
+      "code": "c:pembe e:klasik h:kedi"
+    },
+    {
+      "name": "Şeytan",
+      "code": "c:mercan e:koyu h:boynuz m:gulumse"
+    },
+    {
+      "name": "Melek",
+      "code": "c:krem e:koyu h:hale m:gulumse"
+    },
+    {
+      "name": "Bere",
+      "code": "c:limon e:klasik h:bere"
+    },
+    {
+      "name": "Kovboy",
+      "code": "c:turkuaz e:klasik h:kovboy"
+    },
+    {
+      "name": "Ninja",
+      "code": "c:komur e:ninjagoz h:ninjabant"
+    },
+    {
+      "name": "Fiyonk",
+      "code": "c:lavanta e:klasik h:fiyonk m:gulumse"
+    },
+    {
+      "name": "Monokl",
+      "code": "c:yesil e:klasik f:monokl m:kivrik"
+    },
+    {
+      "name": "Gözlük",
+      "code": "c:gok e:klasik f:yuvarlak"
+    },
+    {
+      "name": "Çiçek",
+      "code": "c:yesil e:klasik h:papatya m:gulumse"
+    },
+    {
+      "name": "Uzaylı",
+      "code": "c:nane e:koyu h:anten"
+    },
+    {
+      "name": "Büyücü",
+      "code": "c:hardal e:klasik h:sihirbaz"
+    },
+    {
+      "name": "Silindir şapka",
+      "code": "c:pembe e:klasik h:silindir"
+    },
+    {
+      "name": "Utangaç",
+      "code": "c:lavanta e:klasik m:allik"
+    },
+    {
+      "name": "Atkı",
+      "code": "c:gok e:koyu n:atki"
+    },
+    {
+      "name": "Viking",
+      "code": "c:mercan e:klasik h:boynuz m:sakal"
+    },
+    {
+      "name": "Tavşan",
+      "code": "c:krem e:koyu h:tavsan"
+    },
+    {
+      "name": "Süper kahraman",
+      "code": "c:mor e:klasik f:maske"
+    }
+  ]
+}

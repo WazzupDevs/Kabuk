@@ -56,6 +56,15 @@ async function threeAtVenue() {
   return { a, b, c, aliases: tables.map((t) => t.alias) as [string, string, string] };
 }
 
+// docs/SPEC_V4.md §4.D (step 4.4): an anonymous message goes with the sender's capsule nick and
+// look, no longer with the table alias.
+async function capsuleOf(client: Client): Promise<{ nick: string; look: string }> {
+  const [row] = await sql`
+    select capsule_nick, capsule_look from public.profiles where id = ${await userIdOf(client)}
+  `;
+  return { nick: row?.capsule_nick as string, look: row?.capsule_look as string };
+}
+
 // Sends without waiting out the 3-second limit (the limit has its own test).
 async function send(client: Client, body: string, profiled = false) {
   await sql`update public.venue_chat_rate set last_sent_at = '-infinity'`;
@@ -203,8 +212,9 @@ describe('venue chat: who reads and writes', () => {
 });
 
 describe('venue chat: anonymous and profiled messages', () => {
-  it('shows the alias of an anonymous message and only the name of a profiled one', async () => {
-    const { a, b, aliases } = await threeAtVenue();
+  it('shows the nick of an anonymous message and only the name of a profiled one', async () => {
+    const { a, b } = await threeAtVenue();
+    const { nick } = await capsuleOf(a);
     await send(a, 'anonim yazıyorum');
     // §22.G: one mode per check-in; the profiled message comes from a new check-in.
     await checkInAt(a, venue, V);
@@ -222,7 +232,7 @@ describe('venue chat: anonymous and profiled messages', () => {
         body: 'anonim yazıyorum',
         profiled: false,
         display_name: null,
-        sender_alias: aliases[0],
+        sender_alias: nick,
         from_me: false,
       }),
     ]);
@@ -263,6 +273,8 @@ describe('venue chat: anonymous and profiled messages', () => {
       (await a.rpc('my_sent_venue_chat_requests')).data,
     ]);
     expect(seen).not.toContain(aliases[0]);
+    // Nor the nick: a profiled message never ties the person to their anonymous identity (§4.D).
+    expect(seen).not.toContain((await capsuleOf(a)).nick);
     expect(seen).not.toContain(uidA);
     expect(seen).not.toContain(own?.public_id ?? 'missing');
     // The broadcast carries no data.
@@ -272,7 +284,8 @@ describe('venue chat: anonymous and profiled messages', () => {
 
 describe('venue chat: photos (venue-chat/page)', () => {
   it('signs the photo of a profiled message and never gives an anonymous one a photo path', async () => {
-    const { a, b, aliases } = await threeAtVenue();
+    const { a, b } = await threeAtVenue();
+    const { nick, look } = await capsuleOf(a);
     const path = await setTestPhoto(a);
     await send(a, 'anonim yazıyorum');
     // §22.G: one mode per check-in; the profiled message comes from a new check-in.
@@ -286,7 +299,7 @@ describe('venue chat: photos (venue-chat/page)', () => {
     `;
     expect(rows).toEqual([
       { body: 'adımla yazıyorum', photo_path: path, sender_alias: null },
-      { body: 'anonim yazıyorum', photo_path: null, sender_alias: aliases[0] },
+      { body: 'anonim yazıyorum', photo_path: null, sender_alias: nick },
     ]);
 
     const seen = await fnPage(b);
@@ -302,11 +315,13 @@ describe('venue chat: photos (venue-chat/page)', () => {
         fromMe: false,
         replyTo: null,
         reactions: [],
+        senderKey: expect.stringMatching(/^[0-9a-f]{24}$/),
+        senderLook: null,
       },
       {
         id: expect.any(String),
         profiled: false,
-        senderAlias: aliases[0],
+        senderAlias: nick,
         displayName: null,
         photoUrl: null,
         body: 'anonim yazıyorum',
@@ -314,6 +329,8 @@ describe('venue chat: photos (venue-chat/page)', () => {
         fromMe: false,
         replyTo: null,
         reactions: [],
+        senderKey: expect.stringMatching(/^[0-9a-f]{24}$/),
+        senderLook: look,
       },
     ]);
     // Nothing of the photo rides on the anonymous message.
@@ -402,6 +419,7 @@ describe('venue chat replies and reactions (docs/SPEC_V3.md §21)', () => {
 
   it('quotes by the message’s own label rule, never an alias of a profiled sender', async () => {
     const { a, b, c, aliases } = await threeAtVenue();
+    const { nick } = await capsuleOf(a);
     const anon = (await send(a, 'anonim')).body.messageId;
     // §22.G: one mode per check-in; the profiled message comes from a new check-in.
     await checkInAt(a, venue, V);
@@ -415,7 +433,8 @@ describe('venue chat replies and reactions (docs/SPEC_V3.md §21)', () => {
       id: anon,
       body: 'anonim',
       fromMe: false,
-      name: aliases[0],
+      // docs/SPEC_V4.md §4.D (step 4.4): an anonymous message's own label is the nick.
+      name: nick,
     });
     expect(seenByC['cevap 2']?.replyTo).toEqual({
       gone: false,
@@ -426,6 +445,7 @@ describe('venue chat replies and reactions (docs/SPEC_V3.md §21)', () => {
     });
     expect((await byBody(a))['cevap 2']?.replyTo).toMatchObject({ fromMe: true });
     expect(JSON.stringify(seenByC['cevap 2'])).not.toContain(aliases[0]);
+    expect(JSON.stringify(seenByC['cevap 2'])).not.toContain(nick);
 
     // Out of reach: unknown, hidden or another venue's message; nothing is written.
     const unavailable = { status: 409, body: errorBody('reply_unavailable') };
@@ -614,17 +634,19 @@ describe('venue chat: reports, hiding and blocks', () => {
     const blocks = await b.from('blocks').select('blocked_alias');
     expect(blocks.data).toEqual([{ blocked_alias: 'Ayşe' }]);
     expect(JSON.stringify(blocks.data)).not.toContain(aliases[0]);
+    expect(JSON.stringify(blocks.data)).not.toContain((await capsuleOf(a)).nick);
     // Neither sees the other's messages.
     expect(await page(b)).toEqual([]);
     await send(b, 'beni görmemeli');
     expect((await page(a)).map((m) => m.id).sort()).toEqual([anon, profiled].sort());
-    // An anonymous message's block keeps the alias.
+    // An anonymous message's block keeps the name it was written with: the nick (docs/SPEC_V4.md
+    // §4.H, step 4.4).
     for (const phone of PHONES) await deleteUserByPhone(phone);
     const again = await threeAtVenue();
     const anon2 = (await send(again.a, 'anonim')).body.messageId;
     await invoke(again.b, 'safety', { action: 'block', venueChatMessageId: anon2 });
     expect((await again.b.from('blocks').select('blocked_alias')).data).toEqual([
-      { blocked_alias: again.aliases[0] },
+      { blocked_alias: (await capsuleOf(again.a)).nick },
     ]);
   });
 

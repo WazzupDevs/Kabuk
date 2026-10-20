@@ -291,12 +291,29 @@ describe('"Katıl" from a table waiting in the lobby (§23.C)', () => {
       waitForBroadcast(p.client, sessionChannel(p.sessionId), 'join_accepted'),
     );
     await Promise.all(heard.map((h) => h.subscribed));
+    // A moved seat keeps the look it sat down with, whatever the profile's is by then (K-10).
+    const seatLook = async (roomId: string) => {
+      const [seat] = await sql`
+        select look from public.room_members
+        where room_id = ${roomId} and session_id = ${anonymous.sessionId} and left_at is null
+      `;
+      return seat?.look as string | null;
+    };
+    const satWith = await seatLook(ownRoom);
+    expect(satWith).toEqual(expect.any(String));
+    const changed =
+      satWith === 'c:nane e:koyu h:anten' ? 'c:gul e:acik h:yok' : 'c:nane e:koyu h:anten';
+    await sql`
+      update public.profiles set capsule_look = ${changed}
+      where id = (select user_id from public.table_sessions where id = ${anonymous.sessionId})
+    `;
     expect((await ask(waiting, hostRoom)).status).toBe(200);
     expect(await respond(host, await requestIdOf(waiting, hostRoom), true)).toEqual(OK);
     await Promise.all(heard.map((h) => h.received));
     await Promise.all(heard.map((h) => h.close()));
 
     expect((await roomRow(ownRoom)).status).toBe('closed');
+    expect(await seatLook(hostRoom)).toBe(satWith);
     expect(await roomRow(hostRoom)).toMatchObject({
       status: 'active',
       guest_session_id: waiting.sessionId,

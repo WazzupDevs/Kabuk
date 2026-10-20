@@ -1402,6 +1402,10 @@ export const tr = {
     gender_required: 'Devam etmek için önce cinsiyetini seçmen gerekiyor.',
     venue_chat_mode_locked:
       'Mekan sohbetinde nasıl görüneceğini bu girişte zaten seçtin. Değiştirmek için mekandan ayrılıp yeniden giriş yap.',
+    identity_mismatch: 'Anonim ya da profilli görünüşün değişti. Mesajını tekrar gönder.',
+    identity_switch_used:
+      'Anonim ile profilli arasında bu girişte bir kez geçebilirsin; hakkını kullandın.',
+    nick_refresh_too_soon: 'Anonim adını 30 günde bir yenileyebilirsin.',
     wrong_side: 'Bu masaya yalnızca daha önce bulunduğun taraftan katılabilirsin.',
     not_leader: 'Bunu yalnızca masanın lideri yapabilir.',
     already_friends: 'Zaten arkadaşsınız.',

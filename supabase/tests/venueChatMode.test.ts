@@ -132,7 +132,8 @@ describe('venue chat mode: once per check-in (decision 7)', () => {
     expect(await send(a, 'anonim', false)).toEqual(ok);
     expect((await page(b)).mode).toBeNull();
     await invoke(a, 'checkin', { action: 'leave' });
-    expect(await page(a)).toEqual({ messages: [], mode: null });
+    // docs/SPEC_V4.md §4.D (step 4.4): nor an identity.
+    expect(await page(a)).toEqual({ messages: [], mode: null, identity: null });
   });
 });
 

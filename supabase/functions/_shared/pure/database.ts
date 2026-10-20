@@ -578,30 +578,36 @@ export type Database = {
           body: string;
           created_at: string;
           id: string;
+          profiled: boolean;
           replied: boolean;
           reply_to_id: string | null;
           room_id: string;
           sender_alias: string;
+          sender_look: string | null;
           session_id: string;
         };
         Insert: {
           body: string;
           created_at?: string;
           id?: string;
+          profiled?: boolean;
           replied?: boolean;
           reply_to_id?: string | null;
           room_id: string;
           sender_alias: string;
+          sender_look?: string | null;
           session_id: string;
         };
         Update: {
           body?: string;
           created_at?: string;
           id?: string;
+          profiled?: boolean;
           replied?: boolean;
           reply_to_id?: string | null;
           room_id?: string;
           sender_alias?: string;
+          sender_look?: string | null;
           session_id?: string;
         };
         Relationships: [
@@ -737,6 +743,9 @@ export type Database = {
           age_confirmed_at: string;
           bio: string | null;
           birth_date: string | null;
+          capsule_look: string | null;
+          capsule_nick: string | null;
+          capsule_nick_changed_at: string | null;
           created_at: string;
           default_participation: string;
           display_name: string | null;
@@ -762,6 +771,9 @@ export type Database = {
           age_confirmed_at: string;
           bio?: string | null;
           birth_date?: string | null;
+          capsule_look?: string | null;
+          capsule_nick?: string | null;
+          capsule_nick_changed_at?: string | null;
           created_at?: string;
           default_participation?: string;
           display_name?: string | null;
@@ -787,6 +799,9 @@ export type Database = {
           age_confirmed_at?: string;
           bio?: string | null;
           birth_date?: string | null;
+          capsule_look?: string | null;
+          capsule_nick?: string | null;
+          capsule_nick_changed_at?: string | null;
           created_at?: string;
           default_participation?: string;
           display_name?: string | null;
@@ -879,12 +894,25 @@ export type Database = {
           },
         ];
       };
+      retired_capsule_nicks: {
+        Row: {
+          nick: string;
+        };
+        Insert: {
+          nick: string;
+        };
+        Update: {
+          nick?: string;
+        };
+        Relationships: [];
+      };
       room_members: {
         Row: {
           alias: string;
           id: string;
           joined_at: string;
           left_at: string | null;
+          look: string | null;
           profiled: boolean;
           room_id: string;
           session_id: string;
@@ -895,6 +923,7 @@ export type Database = {
           id?: string;
           joined_at?: string;
           left_at?: string | null;
+          look?: string | null;
           profiled?: boolean;
           room_id: string;
           session_id: string;
@@ -905,6 +934,7 @@ export type Database = {
           id?: string;
           joined_at?: string;
           left_at?: string | null;
+          look?: string | null;
           profiled?: boolean;
           room_id?: string;
           session_id?: string;
@@ -1081,6 +1111,8 @@ export type Database = {
           gps_accuracy_m: number | null;
           headcount: number;
           id: string;
+          identity_mode: string;
+          identity_switches: number;
           participation: string;
           spot_id: string | null;
           status: string;
@@ -1099,6 +1131,8 @@ export type Database = {
           gps_accuracy_m?: number | null;
           headcount: number;
           id?: string;
+          identity_mode?: string;
+          identity_switches?: number;
           participation?: string;
           spot_id?: string | null;
           status?: string;
@@ -1117,6 +1151,8 @@ export type Database = {
           gps_accuracy_m?: number | null;
           headcount?: number;
           id?: string;
+          identity_mode?: string;
+          identity_switches?: number;
           participation?: string;
           spot_id?: string | null;
           status?: string;
@@ -1266,12 +1302,14 @@ export type Database = {
         Row: {
           body: string;
           created_at: string;
+          deleted_at: string | null;
           hidden_at: string | null;
           id: string;
           profiled: boolean;
           replied: boolean;
           reply_to_id: string | null;
           sender_alias: string;
+          sender_look: string | null;
           sender_user_id: string;
           session_id: string;
           venue_id: string;
@@ -1279,12 +1317,14 @@ export type Database = {
         Insert: {
           body: string;
           created_at?: string;
+          deleted_at?: string | null;
           hidden_at?: string | null;
           id?: string;
           profiled: boolean;
           replied?: boolean;
           reply_to_id?: string | null;
           sender_alias: string;
+          sender_look?: string | null;
           sender_user_id: string;
           session_id: string;
           venue_id: string;
@@ -1292,12 +1332,14 @@ export type Database = {
         Update: {
           body?: string;
           created_at?: string;
+          deleted_at?: string | null;
           hidden_at?: string | null;
           id?: string;
           profiled?: boolean;
           replied?: boolean;
           reply_to_id?: string | null;
           sender_alias?: string;
+          sender_look?: string | null;
           sender_user_id?: string;
           session_id?: string;
           venue_id?: string;
@@ -1325,6 +1367,33 @@ export type Database = {
             referencedColumns: ['id'];
           },
         ];
+      };
+      venue_chat_mutes: {
+        Row: {
+          created_at: string;
+          id: string;
+          label: string;
+          muted_user_id: string;
+          profiled: boolean;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          label: string;
+          muted_user_id: string;
+          profiled: boolean;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          label?: string;
+          muted_user_id?: string;
+          profiled?: boolean;
+          user_id?: string;
+        };
+        Relationships: [];
       };
       venue_chat_rate: {
         Row: {
@@ -1551,6 +1620,11 @@ export type Database = {
       };
     };
     Functions: {
+      assign_capsule_identity: {
+        Args: { new_look: string; new_nick: string; target_user_id: string };
+        Returns: string;
+      };
+      capsule_nicks_taken: { Args: never; Returns: number };
       change_table_spot: {
         Args: { target_spot_id: string; target_user_id: string };
         Returns: {
@@ -1563,6 +1637,8 @@ export type Database = {
           gps_accuracy_m: number | null;
           headcount: number;
           id: string;
+          identity_mode: string;
+          identity_switches: number;
           participation: string;
           spot_id: string | null;
           status: string;
@@ -1601,10 +1677,12 @@ export type Database = {
           body: string;
           created_at: string;
           id: string;
+          profiled: boolean;
           replied: boolean;
           reply_to_id: string | null;
           room_id: string;
           sender_alias: string;
+          sender_look: string | null;
           session_id: string;
         };
         SetofOptions: {
@@ -1997,6 +2075,43 @@ export type Database = {
         Args: { target_user_id: string };
         Returns: undefined;
       };
+      refresh_capsule_nick: {
+        Args: { min_days: number; new_nick: string; target_user_id: string };
+        Returns: {
+          age_confirmed_at: string;
+          bio: string | null;
+          birth_date: string | null;
+          capsule_look: string | null;
+          capsule_nick: string | null;
+          capsule_nick_changed_at: string | null;
+          created_at: string;
+          default_participation: string;
+          display_name: string | null;
+          gender: string | null;
+          has_birth_date: boolean | null;
+          has_gender: boolean | null;
+          id: string;
+          kvkk_accepted_at: string;
+          kvkk_version: string;
+          location_consent_at: string | null;
+          location_consent_version: string | null;
+          notify_dm: boolean;
+          notify_friend_requests: boolean;
+          photo_hidden_at: string | null;
+          photo_path: string | null;
+          photo_pending_path: string | null;
+          public_id: string;
+          push_token: string | null;
+          terms_accepted_at: string;
+          terms_version: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'profiles';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       reroll_table_alias: {
         Args: { max_rerolls: number; new_alias: string; target_user_id: string };
         Returns: {
@@ -2009,6 +2124,8 @@ export type Database = {
           gps_accuracy_m: number | null;
           headcount: number;
           id: string;
+          identity_mode: string;
+          identity_switches: number;
           participation: string;
           spot_id: string | null;
           status: string;
@@ -2046,6 +2163,7 @@ export type Database = {
           alias: string;
           is_leader: boolean;
           joined_at: string;
+          look: string;
           profiled: boolean;
           session_id: string;
           side: string;
@@ -2814,6 +2932,35 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      set_checkin_identity: {
+        Args: { new_mode: string; target_user_id: string };
+        Returns: {
+          alias: string;
+          alias_rerolls: number;
+          checkin_key: string | null;
+          created_at: string;
+          ended_at: string | null;
+          expires_at: string;
+          gps_accuracy_m: number | null;
+          headcount: number;
+          id: string;
+          identity_mode: string;
+          identity_switches: number;
+          participation: string;
+          spot_id: string | null;
+          status: string;
+          team_capable: boolean;
+          user_id: string;
+          venue_chat_profiled: boolean | null;
+          venue_id: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'table_sessions';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       sohbet_next: {
         Args: {
           cooldown_ms: number;
@@ -2877,6 +3024,8 @@ export type Database = {
           gps_accuracy_m: number | null;
           headcount: number;
           id: string;
+          identity_mode: string;
+          identity_switches: number;
           participation: string;
           spot_id: string | null;
           status: string;
@@ -3034,6 +3183,23 @@ export type Database = {
           voice_tabu_wins: number;
         }[];
       };
+      venue_chat_delete: {
+        Args: { target_message_id: string; target_user_id: string };
+        Returns: string;
+      };
+      venue_chat_mute: {
+        Args: { target_message_id: string; target_user_id: string };
+        Returns: string;
+      };
+      venue_chat_mutes_of: {
+        Args: { target_user_id: string };
+        Returns: {
+          created_at: string;
+          id: string;
+          label: string;
+          profiled: boolean;
+        }[];
+      };
       venue_chat_page: {
         Args: { before?: string; page_size?: number; target_venue_id: string };
         Returns: {
@@ -3064,6 +3230,8 @@ export type Database = {
           reactions: Json;
           reply_to: Json;
           sender_alias: string;
+          sender_key: string;
+          sender_look: string;
         }[];
       };
       venue_chat_profile_owner: {
@@ -3085,9 +3253,10 @@ export type Database = {
       };
       venue_chat_send: {
         Args: {
+          expected_identity?: string;
           min_interval_ms: number;
           new_body: string;
-          profiled: boolean;
+          profiled?: boolean;
           reply_to?: string;
           target_user_id: string;
           target_venue_id: string;
@@ -3097,12 +3266,14 @@ export type Database = {
         Returns: {
           body: string;
           created_at: string;
+          deleted_at: string | null;
           hidden_at: string | null;
           id: string;
           profiled: boolean;
           replied: boolean;
           reply_to_id: string | null;
           sender_alias: string;
+          sender_look: string | null;
           sender_user_id: string;
           session_id: string;
           venue_id: string;
@@ -3113,6 +3284,10 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      venue_chat_unmute: {
+        Args: { target_mute_id: string; target_user_id: string };
+        Returns: undefined;
       };
       venue_contains: {
         Args: {

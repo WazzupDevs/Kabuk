@@ -1,3 +1,5 @@
+import type { CheckinIdentity } from '../venueChat.ts';
+
 // Request and response shapes of the `checkin` Edge Function, shared with the mobile app.
 export type CheckInRequest = {
   action: 'check-in';
@@ -31,10 +33,28 @@ export type LeaveRequest = { action: 'leave' };
 // Whether this server skips the location check (CHECKIN_SKIP_LOCATION, dev project only).
 export type LocationModeRequest = { action: 'location-mode' };
 
-export type CheckinRequest =
-  CheckInRequest | ChangeSpotRequest | RerollAliasRequest | LeaveRequest | LocationModeRequest;
+// docs/SPEC_V4.md §4.D: the check-in's identity, changed once per check-in (identity_switch_used);
+// profiled needs a visible profile photo (photo_required). The same identity again changes nothing.
+export type SetIdentityRequest = { action: 'set-identity'; anonymous: boolean };
 
-export type CheckInResponse = { sessionId: string; alias: string; expiresAt: string };
+export type CheckinRequest =
+  | CheckInRequest
+  | ChangeSpotRequest
+  | RerollAliasRequest
+  | LeaveRequest
+  | LocationModeRequest
+  | SetIdentityRequest;
+
+export type CheckInResponse = {
+  sessionId: string;
+  alias: string;
+  expiresAt: string;
+  // The identity the check-in starts with (Ayarlar → "Oyunlara katılım", K-4). Absent from a
+  // server before step 4.4.
+  identity?: CheckinIdentity;
+};
+
+export type SetIdentityResponse = { identity: CheckinIdentity };
 
 export type ChangeSpotResponse = { spotId: string };
 
