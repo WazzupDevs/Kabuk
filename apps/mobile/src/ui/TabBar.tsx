@@ -169,8 +169,8 @@ function Tab({
             ...(pill.gradient ? gradientStyle(pill.gradient) : {}),
             // v46 keeps a transparent edge on the pill not selected (`border: 1px solid
             // transparent`), so the icon does not move.
-            borderWidth: t.pill.active.border?.width ?? 0,
-            borderColor: pill.border?.color ?? t.pill.inactive.border?.color,
+            borderWidth: pill.border?.width ?? 0,
+            borderColor: pill.border?.color ?? 'transparent',
             boxShadow: pill.shadow ?? undefined,
           },
           transitionStyle(reduce ? V46_TAB_BAR.reduced.pill : t.pill.transitions),

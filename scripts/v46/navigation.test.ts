@@ -87,6 +87,16 @@ describe('v46 tab bar', () => {
     expect(source('TabBar.tsx')).toMatch(/t\.tab\.pressedScale/);
   });
 
+  it('keeps the edge of the pill not selected, transparent, so the icon does not move', () => {
+    for (const s of SCHEMES) {
+      expect(bar[s].pill.inactive.border).toEqual({
+        width: bar[s].pill.active.border?.width,
+        color: 'transparent',
+      });
+    }
+    expect(source('TabBar.tsx')).toMatch(/borderColor: pill\.border\?\.color \?\? 'transparent'/);
+  });
+
   it('eases the pill with `.va .tab .ic`, and with reduce motion too (v46 keeps it)', () => {
     expect(matched(TAB_BARS.venue, 'transition')).toContain('.va .tab .ic');
     for (const s of SCHEMES) expect(bar[s].pill.transitions).toEqual(rule('.va .tab .ic'));
