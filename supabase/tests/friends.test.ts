@@ -134,18 +134,20 @@ async function encounter(
     roomId = (created.body as { roomId: string }).roomId;
     return created;
   });
-  const asked = await seated(b, guestMode, () =>
-    invoke(b, 'rooms', { action: 'request-join', roomId }),
-  );
-  expect(asked.status).toBe(200);
-  const [request] =
-    await sql`select id from public.join_requests where room_id = ${roomId} and status = 'pending'`;
-  const accepted = await invoke(a, 'rooms', {
-    action: 'respond',
-    requestId: request?.id,
-    accept: true,
+  // The guest sits with the identity it has at the accept (rule 4), so a profiled guest keeps the
+  // photo until then.
+  await seated(b, guestMode, async () => {
+    expect((await invoke(b, 'rooms', { action: 'request-join', roomId })).status).toBe(200);
+    const [request] =
+      await sql`select id from public.join_requests where room_id = ${roomId} and status = 'pending'`;
+    const accepted = await invoke(a, 'rooms', {
+      action: 'respond',
+      requestId: request?.id,
+      accept: true,
+    });
+    expect(accepted.status, JSON.stringify(accepted.body)).toBe(200);
+    return accepted;
   });
-  expect(accepted.status).toBe(200);
   await sql`
     update public.room_members set joined_at = joined_at - make_interval(mins => ${opts.minutes ?? 4})
     where room_id = ${roomId}
@@ -424,10 +426,30 @@ describe('friend requests', () => {
     expect(await friends(a, { action: 'request', historyId: historyA })).toEqual(OK);
     expect((await friendList(a)).map((f) => f.publicId)).toEqual([await publicIdOf(b)]);
     expect(await sent(b)).toEqual([expect.objectContaining({ status: 'accepted' })]);
+    // b sat anonymously: asking again is told apart from nothing (K-75, below).
+    expect(await friends(a, { action: 'request', historyId: historyA })).toEqual(OK);
+  });
+
+  // K-75 (rule 4): "already friends" is said only of a person who sat with its profile; for an
+  // anonymous one the press is swallowed and nothing changes, so it cannot tell a friend apart.
+  it('tells a friendship from before only of the one who sat with its profile (K-75)', async () => {
+    const { a, b, historyA, historyB } = await metOnce({ modes: ['anonymous', 'profile'] });
+    await becomeFriends(a, b, historyA);
+    const before = await sql`select id, status from public.friend_requests order by created_at`;
+    const friendships = await sql`select * from public.friendships`;
+
+    // a's row: b sat with its profile, a knows b anyway.
     expect(await friends(a, { action: 'request', historyId: historyA })).toEqual({
       status: 409,
       body: errorBody('already_friends'),
     });
+    // b's row: a sat anonymously; the same answer as any other press.
+    expect(await friends(b, { action: 'request', historyId: historyB })).toEqual(OK);
+    expect(await sql`select id, status from public.friend_requests order by created_at`).toEqual(
+      before,
+    );
+    expect(await sql`select * from public.friendships`).toEqual(friendships);
+    expect(await incoming(a)).toEqual([]);
   });
 
   it('swallows requests across a block in either direction, and when the other account is gone', async () => {

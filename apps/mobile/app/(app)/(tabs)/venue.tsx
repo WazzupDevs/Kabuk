@@ -1,8 +1,8 @@
-import { CONCEPTS, type Concept, type Intent, isIntent } from '@shared/rooms.ts';
+import type { Concept, Intent } from '@shared/rooms.ts';
 import { tableState } from '@shared/tableCard.ts';
 import { roomSeat } from '@shared/teams.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Redirect, router, useLocalSearchParams } from 'expo-router';
+import { Redirect } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, type ScrollView, useWindowDimensions, View } from 'react-native';
 
@@ -41,16 +41,10 @@ function endSession(tableId: string, startedAt: string) {
   });
 }
 
-function isConcept(value: unknown): value is Concept {
-  return (CONCEPTS as readonly unknown[]).includes(value);
-}
-
 // The table's venue, the home screen (docs/SPEC_V3.md §23.C): the table card with its state, the
 // venue chat and the lobby. Without an active table it sends the user to Keşfet. Nothing sends the
 // table to its room any more: the card's head opens the table (K-36; canvas: Faz 3 · 23.1 Masa ve
 // lobi).
-// Aktiviteler's "Bu oyunla lobiye aç" lands here with the game (`lobbyGame`, `lobbyIntent`) and
-// opens "Masanı lobiye aç" with them.
 export default function VenueScreen() {
   const { colors } = useTheme();
   const queryClient = useQueryClient();
@@ -59,7 +53,6 @@ export default function VenueScreen() {
   const spots = useVenueSpots(table.data?.venue_id);
   const venueHasSpots = (spots.data ?? []).length > 0;
   const now = useNow(30_000);
-  const params = useLocalSearchParams<{ lobbyGame?: string; lobbyIntent?: string }>();
   const [sheet, setSheet] = useState<LobbySheet | null>(null);
   const scroll = useRef<ScrollView>(null);
   const reduceMotion = useReduceMotion();
@@ -85,21 +78,6 @@ export default function VenueScreen() {
     if (tableId && tableStartedAt) endSession(tableId, tableStartedAt);
     void queryClient.invalidateQueries({ queryKey: ['activeTable'] });
   }, [expired, queryClient, tableId, tableStartedAt]);
-
-  // "Bu oyunla lobiye aç" from Aktiviteler: the sheet opens once with the game (adjusted while
-  // rendering), then the params go so that the next time opens it again.
-  const { lobbyGame, lobbyIntent } = params;
-  const asked = isConcept(lobbyGame) ? `${lobbyGame}:${lobbyIntent ?? ''}` : null;
-  const [handled, setHandled] = useState<string | null>(null);
-  if (asked !== handled) {
-    setHandled(asked);
-    if (asked && isConcept(lobbyGame)) {
-      setSheet({ intent: isIntent(lobbyIntent) ? lobbyIntent : null, gameTag: lobbyGame });
-    }
-  }
-  useEffect(() => {
-    if (asked) router.setParams({ lobbyGame: undefined, lobbyIntent: undefined });
-  }, [asked]);
 
   const room = currentRoom.data ?? null;
   const leads =

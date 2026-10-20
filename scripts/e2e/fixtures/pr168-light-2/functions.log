@@ -1,0 +1,17 @@
+Setting up Edge Functions runtime...
+2026-10-19T16:12:40.793719504Z Serving functions on http://127.0.0.1:54321/functions/v1/<function-name>
+2026-10-19T16:12:40.793756163Z  - http://127.0.0.1:54321/functions/v1/account
+2026-10-19T16:12:40.793759850Z  - http://127.0.0.1:54321/functions/v1/chat
+2026-10-19T16:12:40.793762245Z  - http://127.0.0.1:54321/functions/v1/checkin
+2026-10-19T16:12:40.793764499Z  - http://127.0.0.1:54321/functions/v1/dm
+2026-10-19T16:12:40.793766673Z  - http://127.0.0.1:54321/functions/v1/friends
+2026-10-19T16:12:40.793768867Z ... and 12 more functions
+2026-10-19T16:12:40.793770951Z Using supabase-edge-runtime-1.74.3 (compatible with Deno v2.1.4)
+2026-10-19T16:12:42.284553810Z serving the request with supabase/functions/ping
+2026-10-19T16:16:04.034437473Z wall clock duration warning: isolate: 3ef7cfbb-5a3e-48ae-96ff-daeb7e2e629d
+2026-10-19T16:16:04.057815532Z early termination has been triggered: isolate: 3ef7cfbb-5a3e-48ae-96ff-daeb7e2e629d
+2026-10-19T16:18:13.759582033Z serving the request with supabase/functions/ping
+2026-10-19T16:18:46.775142375Z serving the request with supabase/functions/ping
+2026-10-19T16:20:02.553665822Z serving the request with supabase/functions/account
+error running container: exit 135
+Try rerunning the command with --debug to troubleshoot the error.

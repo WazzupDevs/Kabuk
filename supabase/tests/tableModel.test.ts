@@ -292,6 +292,19 @@ describe('"Katıl" (§4.E)', () => {
     const hostTable = await openTable(host);
     const ownTable = await tableWith(owner, [friend, profiled]);
     const before = await seated(ownTable);
+    // K-10: a moved seat keeps the look it sat down with, whatever the profile's is by then.
+    const lookOf = async (roomId: string, p: Person) => {
+      const [row] = await sql`
+        select look from public.room_members
+        where room_id = ${roomId} and session_id = ${p.sessionId} and left_at is null
+      `;
+      return row?.look as string | null;
+    };
+    const satWith = await lookOf(ownTable, friend);
+    expect(satWith).toEqual(expect.any(String));
+    const changed =
+      satWith === 'c:nane e:koyu h:anten' ? 'c:gul e:acik h:yok' : 'c:nane e:koyu h:anten';
+    await sql`update public.profiles set capsule_look = ${changed} where id = ${friend.userId}`;
     const toOwnTable = await ask(waiting, ownTable);
 
     const requestId = await ask(owner, hostTable);
@@ -316,6 +329,7 @@ describe('"Katıl" (§4.E)', () => {
       alias: profiled.name,
       profiled: true,
     });
+    expect(await lookOf(hostTable, friend)).toBe(satWith);
     expect((await roomRow(hostTable)).phones).toBe(4);
     const [ended] = await sql`select status from public.join_requests where id = ${toOwnTable}`;
     expect(ended?.status).toBe('declined');

@@ -12,6 +12,7 @@ import { Wordmark } from '@/components/Wordmark';
 import { BlockedList } from '@/features/chat/BlockedList';
 import { DesignPicker } from '@/features/design/DesignPicker';
 import { designPickerEnabled } from '@/theme/ThemeProvider';
+import { AppearanceSetting } from '@/features/profile/AppearanceSetting';
 import { ProfileSettings } from '@/features/profile/ProfileSettings';
 import { useProfileView } from '@/features/profile/queries';
 import { useProfile } from '@/features/account/useProfile';
@@ -73,8 +74,11 @@ export default function SettingsScreen() {
   return (
     <Screen>
       <ScreenHeader title={tr.settings.title} onBack={() => router.back()} />
+      <View className="mt-4">
+        <AppearanceSetting />
+      </View>
       {designPickerEnabled ? (
-        <View className="mb-4 mt-4">
+        <View className="mb-4 mt-8">
           <DesignPicker />
         </View>
       ) : null}

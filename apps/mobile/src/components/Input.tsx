@@ -80,7 +80,7 @@ export const Input = forwardRef<TextInput, Props>(function Input(
             setFocused(false);
             rest.onBlur?.(e);
           }}
-          placeholderTextColor={colors.muted}
+          placeholderTextColor={colors.placeholder}
           selectionColor={colors.accent}
           cursorColor={colors.accent}
           textAlignVertical={multiline ? 'top' : 'center'}

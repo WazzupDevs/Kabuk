@@ -52,6 +52,32 @@ appId: app.kabuk.mobile
     timeout: 10000
 - tapOn:
     id: birth-continue
+# The confirmation sheet (K-55, K-63): Düzelt stays on the step, Onayla goes on.
+- extendedWaitUntil:
+    visible:
+      id: birth-confirm
+    timeout: 10000
+- takeScreenshot: 03a2-birth-confirm
+- tapOn:
+    id: birth-confirm-fix
+- extendedWaitUntil:
+    notVisible:
+      id: birth-confirm
+    timeout: 10000
+- assertVisible:
+    id: signup-birth-step
+- scrollUntilVisible:
+    element:
+      id: birth-continue
+    timeout: 10000
+- tapOn:
+    id: birth-continue
+- extendedWaitUntil:
+    visible:
+      id: birth-confirm
+    timeout: 10000
+- tapOn:
+    id: birth-confirm
 - extendedWaitUntil:
     visible:
       id: signup-gender-step

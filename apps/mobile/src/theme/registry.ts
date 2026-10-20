@@ -1,10 +1,10 @@
 import type { ColorScheme, ShadowSet, ThemeDefinition } from './tokens';
 
 export type SchemePreference = ColorScheme | 'system';
-export const SCHEME_PREFERENCES = ['light', 'dark', 'system'] as const;
+// Ayarlar → Görünüm (docs/SPEC_V4.md K-54; v46 §5), in v46's order. The choice is kept only on the
+// phone.
+export const SCHEME_PREFERENCES = ['system', 'light', 'dark'] as const;
 
-// The test picker (Ayarlar → Tasarım (test)) chooses only light, dark or the system's; production
-// always uses the theme's default.
 export type ThemePreference = { scheme: SchemePreference | null };
 
 // `scheme: null` means the theme's own default.
@@ -22,7 +22,8 @@ function isSchemePreference(v: unknown): v is SchemePreference {
   return typeof v === 'string' && (SCHEME_PREFERENCES as readonly string[]).includes(v);
 }
 
-// The stored test choice; anything unreadable falls back to the defaults.
+// The stored choice; anything unreadable falls back to the defaults. Test builds stored theirs
+// under the same key, so their choice carries over.
 export function parseThemePreference(raw: string | null): ThemePreference {
   const fallback: ThemePreference = { scheme: null };
   if (!raw) return fallback;

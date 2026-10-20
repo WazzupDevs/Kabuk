@@ -1,14 +1,15 @@
-# Pick light or dark in Ayarlar → Tasarım (test) before the P0 path. Env: SCHEME (light|dark).
+# Pick light or dark in Ayarlar → Görünüm (K-54) before the P0 path. Env: SCHEME (light|dark).
 appId: app.kabuk.mobile
 ---
 - tapOn:
     id: tab-profile
 - tapOn: Ayarlar
 - extendedWaitUntil:
-    visible: Tasarım \(test\)
+    visible:
+      id: appearance-system
     timeout: 10000
 - tapOn:
-    id: design-scheme-${SCHEME}
+    id: appearance-${SCHEME}
 - takeScreenshot: 04b-design
 - tapOn: Geri
 - tapOn:
