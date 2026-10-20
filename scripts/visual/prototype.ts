@@ -21,32 +21,36 @@ import { type PrototypeState, PROTOTYPE_FILE, type Theme } from './states.ts';
 export const VIEWPORT = { width: 360, height: 640 };
 export const SCALE = 2;
 const FONT_HOST = 'https://fonts.gstatic.com/gorsel/';
-// The app's font files: what apps/mobile/src/theme/fonts.ts imports, one module per weight of an
-// @expo-google-fonts package, each next to its .ttf.
+// The app's font files: the list in apps/mobile/src/theme/fonts.ts, a module per weight of an
+// @expo-google-fonts package (each next to its .ttf) or a file of the app's own
+// (`Name: require('../../assets/fonts/Name.ttf')`). Family and weight come from the name:
+// PlusJakartaSans_800ExtraBold is Plus Jakarta Sans 800.
 export const APP_FONTS_FILE = 'apps/mobile/src/theme/fonts.ts';
 
 export type AppFont = { name: string; family: string; weight: number; file: string };
+
+function fontOf(name: string, file: string): AppFont {
+  const m = /^([A-Za-z]+)_(\d+)/.exec(name);
+  if (!m) throw new Error(`${APP_FONTS_FILE}: "${name}" is not Family_<weight>…`);
+  const family = (m[1] ?? '').replace(/([a-z])([A-Z])/g, '$1 $2');
+  return { name, family, weight: Number(m[2]), file };
+}
 
 export function appFonts(root: string): AppFont[] {
   const source = readFileSync(join(root, APP_FONTS_FILE), 'utf8');
   const req = createRequire(join(root, 'apps/mobile/package.json'));
   const fonts: AppFont[] = [];
   for (const m of source.matchAll(
-    /import \{ (\w+) \} from '(@expo-google-fonts\/([a-z0-9-]+)\/(\d+)\w*)';/g,
+    /import \{ (\w+) \} from '(@expo-google-fonts\/[a-z0-9-]+\/\d+\w*)';/g,
   )) {
-    const [, name = '', module = '', slug = '', weight = ''] = m;
-    const family = slug
-      .split('-')
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(' ');
-    fonts.push({
-      name,
-      family,
-      weight: Number(weight),
-      file: join(dirname(req.resolve(module)), `${name}.ttf`),
-    });
+    const [, name = '', module = ''] = m;
+    fonts.push(fontOf(name, join(dirname(req.resolve(module)), `${name}.ttf`)));
   }
-  if (fonts.length === 0) throw new Error(`no @expo-google-fonts imports in ${APP_FONTS_FILE}`);
+  for (const m of source.matchAll(/^\s*(\w+): require\('([^']+\.ttf)'\),?$/gm)) {
+    const [, name = '', path = ''] = m;
+    fonts.push(fontOf(name, join(root, dirname(APP_FONTS_FILE), path)));
+  }
+  if (fonts.length === 0) throw new Error(`no fonts in ${APP_FONTS_FILE}`);
   return fonts;
 }
 
@@ -65,7 +69,8 @@ export function fontFaces(fonts: AppFont[]): string {
 
 // v46 sets a few texts in system-ui (the notice over the tab bar, its own test bars); the app sets
 // them in Roboto, Android's system face (the owner's decision, docs/decisions/ci-gorsel-kapi.md), so
-// the page is served with Roboto in their place. The design file itself is not changed.
+// the page is served with Roboto in their place, from the app's own file (assets/fonts/). The design
+// file itself is not changed.
 export function withRoboto(html: string): string {
   return html.replace(/\bsystem-ui\b/g, 'Roboto');
 }

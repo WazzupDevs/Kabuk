@@ -393,6 +393,17 @@ describe("visual gate: the prototype in the app's fonts", () => {
       expect(existsSync(f.file)).toBe(true);
       expect(f.file.endsWith(`${f.name}.ttf`)).toBe(true);
     }
+    // Roboto is the app's own file, not a package.
+    expect(fonts.find((f) => f.family === 'Roboto')?.file).toBe(
+      join(ROOT, 'apps/mobile/assets/fonts/Roboto_700Bold.ttf'),
+    );
+  });
+
+  it('keeps a licence next to every font file of the app (OFL for Roboto)', () => {
+    const dir = join(ROOT, 'apps/mobile/assets/fonts');
+    const licence = readFileSync(join(dir, 'Roboto-OFL.txt'), 'utf8');
+    expect(licence).toMatch(/^Copyright 2011 The Roboto Project Authors/);
+    expect(licence).toContain('SIL OPEN FONT LICENSE Version 1.1');
   });
 
   it("answers Google Fonts' stylesheet with one face per app file and no other family", () => {
