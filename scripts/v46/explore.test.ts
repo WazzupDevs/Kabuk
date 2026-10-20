@@ -129,14 +129,13 @@ describe("v46's Keşfet motions", () => {
     );
     expect(kf && use, name).toBeTruthy();
     const ms = seconds(use?.duration);
-    expect(m).toMatchObject({
-      selector,
-      keyframes: name,
-      ms,
+    expect(m).toEqual({
       delayMs: seconds(use?.delay),
       ease: parseEase(use?.easing || 'ease'),
       channels: keyframeChannels(parseKeyframes(kf?.keyframes_css ?? ''), ms),
+      offWhenReduced: m.offWhenReduced,
       iterations: use?.iterations === 'infinite' ? null : Number(use?.iterations || 1),
+      holdsBefore: use?.fill === 'backwards' || use?.fill === 'both',
     });
   };
 
@@ -146,6 +145,16 @@ describe("v46's Keşfet motions", () => {
     plays(motion.livePulse, 'livePulse', '.live');
     plays(motion.liveHalo, 'liveHalo', '.live::after');
     plays(motion.liveFade, 'liveFade', '.live', true);
+  });
+
+  it('repeat as often as their rule says, and hold the first keyframe only where it says so', () => {
+    for (const m of [motion.steam, motion.livePulse, motion.liveHalo, motion.liveFade]) {
+      expect(m.iterations).toBeNull();
+    }
+    expect(motion.rowIn.iterations).toBe(1);
+    expect(motion.rowIn.holdsBefore).toBe(true);
+    expect(source('motion.ts')).toMatch(/withRepeat\(run, motion\.iterations \?\? -1,/);
+    expect(source('VenueRow.tsx')).toMatch(/const waits = plays && m\.holdsBefore;/);
   });
 
   it('bring the rows in a step apart, as v46 writes the delays into its list', () => {
@@ -169,8 +178,13 @@ describe("v46's Keşfet motions", () => {
             .includes(selector),
       );
     expect(off('.vrow') && off('.th-steam') && off('.live') && off('.live::after')).toBe(true);
-    for (const m of [motion.rowIn, motion.steam, motion.livePulse, motion.liveHalo]) {
-      expect(m.offWhenReduced, m.keyframes).toBe(true);
+    for (const [name, m] of Object.entries({
+      rowIn: motion.rowIn,
+      steam: motion.steam,
+      livePulse: motion.livePulse,
+      liveHalo: motion.liveHalo,
+    })) {
+      expect(m.offWhenReduced, name).toBe(true);
     }
     expect(motion.liveFade.offWhenReduced).toBe(false);
     const dot = source('LiveDot.tsx');
