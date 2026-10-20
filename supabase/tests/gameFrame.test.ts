@@ -378,7 +378,8 @@ describe('the start (§4.F)', () => {
     const [row] = await sql`
       select count(*)::int as n from pg_roles, unnest(rolconfig) as setting
       where rolname = 'authenticator'
-        and setting like 'session_preload_libraries=%' and setting ~ '\msafeupdate\M'
+        and split_part(setting, '=', 1) = 'session_preload_libraries'
+        and 'safeupdate' = any(string_to_array(replace(split_part(setting, '=', 2), ' ', ''), ','))
     `;
     expect(row?.n).toBe(1);
   });
