@@ -1213,6 +1213,7 @@ export const tr = {
       sample: 'Masa sohbeti 21:00',
       missing: 'Henüz yok',
       measured: (id: string, width: number, height: number) => `${id} · v46: ${width} × ${height}`,
+      typeLine: (key: string, lineHeight: number) => `${key} · satır ${lineHeight}`,
     },
     previewIncoming: 'Mesaj gelsin',
     // The visual gate's route (CLAUDE.md → Görsel kapı), test builds only.

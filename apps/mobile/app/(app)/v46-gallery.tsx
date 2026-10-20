@@ -1,6 +1,6 @@
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { type ReactNode, useMemo, useState } from 'react';
-import { Text as RNText, View } from 'react-native';
+import { View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { Screen } from '@/components/Screen';
@@ -26,7 +26,7 @@ import {
 } from '@/theme/tokens.generated';
 import { gradientStyle } from '@/theme/gradient';
 import { galleryGroups, galleryTestId } from '@/theme/v46Gallery';
-import { v46TypeStyle } from '@/theme/v46Type';
+import { Text as UiText } from '@/ui/Text';
 
 // Ayarlar → Tasarım (test) → v46 galeri (v46 native, step 2): v46's colours, type styles and
 // components as the app draws them, in a fixed scheme, with fixed data, under the same ids as v46's
@@ -111,15 +111,18 @@ function Colors({ scheme }: { scheme: ColorScheme }) {
   );
 }
 
+// Each type style on its line box (the soft ground is the line height), so a line height that is
+// off shows as a taller or shorter band.
 function TypeStyles({ scheme }: { scheme: ColorScheme }) {
-  const ink = V46_PALETTE[scheme].ink;
   return (
     <Section title={tr.design.gallery.type}>
       {(Object.keys(V46_TYPE) as V46TypeKey[]).map((key) => (
-        <View key={key} testID={`gal-type-${key}`}>
-          <RNText style={[v46TypeStyle(key), { color: ink }]}>{tr.design.gallery.sample}</RNText>
+        <View key={key} className="items-start" testID={`gal-type-${key}`}>
+          <View style={{ backgroundColor: V46_PALETTE[scheme].surfaceSoft }}>
+            <UiText type={key}>{tr.design.gallery.sample}</UiText>
+          </View>
           <Text variant="caption" tone="muted">
-            {key}
+            {tr.design.gallery.typeLine(key, V46_TYPE[key].lineHeight)}
           </Text>
         </View>
       ))}

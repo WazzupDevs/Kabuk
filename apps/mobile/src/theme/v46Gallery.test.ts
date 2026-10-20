@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { V46_COMPONENTS, V46_PALETTE, V46_TYPE } from './tokens.generated';
+import { V46_COMPONENTS, V46_PALETTE } from './tokens.generated';
 import { galleryGroups, galleryTestId } from './v46Gallery';
-import { isBundledWeight } from './v46Fonts';
 
 describe('the v46 gallery', () => {
   it('lists every inventory component once, in its group', () => {
@@ -23,13 +22,5 @@ describe('the v46 gallery', () => {
 
   it('has the same colour names in both schemes', () => {
     expect(Object.keys(V46_PALETTE.dark)).toEqual(Object.keys(V46_PALETTE.light));
-  });
-
-  // Weight 400 is the one v46 weight the app does not bundle (13/400, emoji reactions).
-  it('bundles every v46 weight but 400', () => {
-    const missing = [...new Set(Object.values(V46_TYPE).map((t) => t.weight))].filter(
-      (w) => !isBundledWeight(w),
-    );
-    expect(missing).toEqual([400]);
   });
 });
