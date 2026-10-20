@@ -1958,7 +1958,13 @@ export const V46_TAB_BAR: {
     pill: {
       size: [46, 30],
       radius: 999,
-      inactive: { bg: null, gradient: null, border: null, shadow: null, opacity: 1 },
+      inactive: {
+        bg: null,
+        gradient: null,
+        border: { width: 1, color: 'transparent' },
+        shadow: null,
+        opacity: 1,
+      },
       active: {
         bg: null,
         gradient: 'linear-gradient(rgba(255, 255, 255, 0.92), rgba(185, 166, 255, 0.55))',
@@ -2063,7 +2069,13 @@ export const V46_TAB_BAR: {
     pill: {
       size: [46, 30],
       radius: 999,
-      inactive: { bg: null, gradient: null, border: null, shadow: null, opacity: 1 },
+      inactive: {
+        bg: null,
+        gradient: null,
+        border: { width: 1, color: 'transparent' },
+        shadow: null,
+        opacity: 1,
+      },
       active: {
         bg: null,
         gradient: 'linear-gradient(rgba(28, 24, 56, 0.92), rgba(185, 166, 255, 0.55))',

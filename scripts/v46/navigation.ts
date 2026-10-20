@@ -53,11 +53,13 @@ export function splitShadow(shadow: string): { outer: string | null; inset: stri
   };
 }
 
+// A transparent edge stays: it keeps the box's size (the tab's pill not selected, `border: 1px
+// solid transparent`).
 function surface(p: Part): Surface {
   return {
     bg: transparent(p.bg) ? null : (p.bg ?? null),
     gradient: p.gradient ?? null,
-    border: p.border && p.border.color !== 'transparent' ? p.border : null,
+    border: p.border ?? null,
     shadow: p.shadow ?? null,
     opacity: p.opacity,
   };
