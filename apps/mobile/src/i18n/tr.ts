@@ -1201,6 +1201,20 @@ export const tr = {
     hint: 'Yalnızca test sürümünde görünür.',
     previewTitle: 'Bileşen önizleme',
     previewOpen: 'Bileşen önizlemesini aç',
+    // v46 native, step 2: the app's v46 gallery, next to v46's own (docs/design/v46/).
+    galleryOpen: 'v46 galerisini aç',
+    gallery: {
+      title: 'v46 galeri',
+      light: 'Açık',
+      dark: 'Koyu',
+      colors: 'Renkler',
+      type: 'Yazı',
+      components: 'Bileşenler',
+      sample: 'Masa sohbeti 21:00',
+      missing: 'Henüz yok',
+      measured: (id: string, width: number, height: number) => `${id} · v46: ${width} × ${height}`,
+      typeLine: (key: string, lineHeight: number) => `${key} · satır ${lineHeight}`,
+    },
     previewIncoming: 'Mesaj gelsin',
     // The visual gate's route (CLAUDE.md → Görsel kapı), test builds only.
     gate: {

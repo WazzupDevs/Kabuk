@@ -99,7 +99,7 @@ export function parsePx(value: string): number {
   return Number(m[1]);
 }
 
-// `normal` stays unset: React Native's default line height is the font's own, as CSS `normal` is.
+// `normal` is null here: the browser's number for it comes from the font (fontMetrics.ts).
 export function parseLineHeight(value: string): number | null {
   return value === 'normal' ? null : parsePx(value);
 }

@@ -73,6 +73,11 @@ export function useSchemePreference(): SchemePreference | null {
   return useDesignStore((s) => s.scheme);
 }
 
+// The app theme of one scheme, whatever the viewer picked (the v46 gallery draws both).
+export function themeFor(scheme: ColorScheme): AppTheme {
+  return buildTheme(scheme);
+}
+
 function buildTheme(scheme: ColorScheme): AppTheme {
   const def = THEME;
   const colors = def.palettes[scheme];

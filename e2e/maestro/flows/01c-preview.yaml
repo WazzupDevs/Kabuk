@@ -346,8 +346,11 @@ appId: app.kabuk.mobile
       id: preview-parts-confetti
     centerElement: true
     timeout: 30000
+# The toast stays 1.6 s (theme/gameMotion.ts → TOAST.showMs). Maestro's wait for the screen to
+# settle after a tap took 3 s once at the largest font, and the toast was gone before the check.
 - tapOn:
     id: preview-parts-toast
+    waitToSettleTimeoutMs: 500
 - extendedWaitUntil:
     visible:
       id: game-toast
@@ -492,6 +495,39 @@ appId: app.kabuk.mobile
 - extendedWaitUntil:
     visible:
       id: preview-open
+    timeout: 10000
+# v46 native, step 2: the app's v46 gallery (Ayarlar → Tasarım (test) → v46 galeri), in the run's
+# scheme: the colours, the type styles on their line boxes (step 3a), then the components (v46's
+# measured boxes until each is rewritten in src/ui).
+- scrollUntilVisible:
+    element:
+      id: v46-gallery-open
+    timeout: 30000
+- tapOn:
+    id: v46-gallery-open
+- extendedWaitUntil:
+    visible:
+      id: gal-colors
+    timeout: 10000
+- takeScreenshot: 04v-v46-gallery-colors
+- scrollUntilVisible:
+    element:
+      id: gal-type-t13w600l18
+    centerElement: true
+    timeout: 30000
+- takeScreenshot: 04v-v46-gallery-type
+# The 60 type styles, on their line boxes, stand before the components: at 320 dp a 30 s scroll from
+# the first one ended at the 55th on CI's emulator (e2e run 39394778370).
+- scrollUntilVisible:
+    element:
+      id: gal-birincil-52
+    centerElement: true
+    timeout: 90000
+- takeScreenshot: 04v-v46-gallery-components
+- back
+- extendedWaitUntil:
+    visible:
+      id: v46-gallery-open
     timeout: 10000
 - back
 # Aktiviteler (docs/SPEC_V4.md K-15): the E2E venues have no events and a new account no history,
