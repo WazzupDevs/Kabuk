@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_EYES,
   isGeneratedNick,
+  LOOK_MAX_LENGTH,
+  LOOK_SLOTS,
   nickCapacity,
   nickDigits,
   nickLetterPairs,
@@ -47,6 +49,30 @@ describe('normalizeLook', () => {
   it('spells out the drawing defaults for a code without colour or eyes', () => {
     expect(normalizeLook('')).toBe(`c:${CAPSULE_CATALOG.colors[0]?.id} e:${DEFAULT_EYES}`);
     expect(CAPSULE_CATALOG.eyes.some((e) => e.id === DEFAULT_EYES)).toBe(true);
+  });
+
+  // K-52: the emotions are the phone's own and no slot of a code; one written in never reaches the
+  // server's look ("kahkaha" is also a mouth part: as m:kahkaha it is the part, not the emotion).
+  it('drops an emotion written into a code', () => {
+    expect(CAPSULE_CATALOG.emotions.length).toBeGreaterThan(0);
+    for (const { id } of CAPSULE_CATALOG.emotions) {
+      expect(normalizeLook(`c:nane e:koyu ${id} d:${id} emotion:${id}`)).toBe('c:nane e:koyu');
+    }
+  });
+
+  // profile/set-look takes a code up to LOOK_MAX_LENGTH; the longest canonical one fits well.
+  it('writes a canonical code far below the longest set-look takes', () => {
+    const longest = LOOK_SLOTS.map((slot) => {
+      const ids =
+        slot === 'c'
+          ? CAPSULE_CATALOG.colors.map((c) => c.id)
+          : slot === 'e'
+            ? CAPSULE_CATALOG.eyes.map((e) => e.id)
+            : CAPSULE_CATALOG.parts.filter((p) => p.slot === slot).map((p) => p.id);
+      return `${slot}:${ids.reduce((a, b) => (b.length > a.length ? b : a), '')}`;
+    }).join(' ');
+    expect(normalizeLook(longest)).toBe(longest);
+    expect(longest.length).toBeLessThan(LOOK_MAX_LENGTH / 2);
   });
 
   it('has no Fes and no Yıldız bıçak (K-51)', () => {
