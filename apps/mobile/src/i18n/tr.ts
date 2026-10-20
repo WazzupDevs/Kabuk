@@ -1215,6 +1215,12 @@ export const tr = {
       measured: (width: number, height: number) => `v46: ${width} × ${height}`,
     },
     previewIncoming: 'Mesaj gelsin',
+    // The visual gate's route (CLAUDE.md → Görsel kapı), test builds only.
+    gate: {
+      unknown: (key: string) => `Görsel kapıda böyle bir durum yok: ${key}`,
+      pageCount: (listed: number, needed: number) =>
+        `Bu durum ${needed} sayfa, listede ${listed}: e2e/visual/states.json'da sayfa sayısını ${needed} yap.`,
+    },
     // Bileşen önizleme → Renkler (step 4.2, K-25): the game colours in the run's scheme.
     tokens: {
       set: 'Renkler',
@@ -1237,8 +1243,22 @@ export const tr = {
       either: 'Ya da',
       zones: 'İbre bölgeleri',
       badge: 'Rozet',
+      bellBadge: 'Zil rozeti',
+      notice: 'Bildirim yazısı (Roboto)',
+      noticeSample: 'Kapsülün kaydedildi',
     },
-    // Bileşen önizleme → Oyun parçaları (step 4.2b): the game screens' parts on a ground.
+    // Bileşen önizleme → Kaydırma: 20 gölgeli kart, telefonda elle kaydırmak için.
+    scroll: {
+      set: 'Kaydırma',
+      card: (n: number) => `Kart ${n}`,
+      body: 'Gölgeli kartlar arasında yukarı aşağı kaydır.',
+    },
+    // Bileşen önizleme → Eski oyun: today's games' grounds, buttons, themes and parts, outside the
+    // visual gate.
+    legacy: {
+      set: 'Eski oyun',
+    },
+    // Bileşen önizleme → Eski oyun → the game parts (step 4.2b): the game screens' parts on a ground.
     parts: {
       set: 'Oyun parçaları',
       buttons: 'Oyun düğmeleri',
@@ -1419,6 +1439,7 @@ export const tr = {
     identity_switch_used:
       'Anonim ile profilli arasında bu girişte bir kez geçebilirsin; hakkını kullandın.',
     nick_refresh_too_soon: 'Anonim adını 30 günde bir yenileyebilirsin.',
+    icon_taken: 'Bu simge mekandaki başka bir masada. Başka bir simge seç.',
     wrong_side: 'Bu masaya yalnızca daha önce bulunduğun taraftan katılabilirsin.',
     not_leader: 'Bunu yalnızca masanın lideri yapabilir.',
     already_friends: 'Zaten arkadaşsınız.',

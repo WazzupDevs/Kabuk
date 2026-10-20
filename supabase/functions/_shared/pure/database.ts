@@ -1001,9 +1001,12 @@ export type Database = {
           guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
+          icon: string | null;
           id: string;
           intent: string | null;
           last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
           owner_alias: string;
           owner_headcount: number;
           owner_phones: number;
@@ -1028,9 +1031,12 @@ export type Database = {
           guest_phones?: number | null;
           guest_profiled?: boolean;
           guest_session_id?: string | null;
+          icon?: string | null;
           id?: string;
           intent?: string | null;
           last_activity_at?: string;
+          name?: string | null;
+          name_rerolls?: number;
           owner_alias: string;
           owner_headcount: number;
           owner_phones?: number;
@@ -1055,9 +1061,12 @@ export type Database = {
           guest_phones?: number | null;
           guest_profiled?: boolean;
           guest_session_id?: string | null;
+          icon?: string | null;
           id?: string;
           intent?: string | null;
           last_activity_at?: string;
+          name?: string | null;
+          name_rerolls?: number;
           owner_alias?: string;
           owner_headcount?: number;
           owner_phones?: number;
@@ -1075,6 +1084,13 @@ export type Database = {
             columns: ['guest_session_id'];
             isOneToOne: false;
             referencedRelation: 'table_sessions';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'rooms_icon_fkey';
+            columns: ['icon'];
+            isOneToOne: false;
+            referencedRelation: 'table_icons';
             referencedColumns: ['id'];
           },
           {
@@ -1099,6 +1115,33 @@ export type Database = {
             referencedColumns: ['id'];
           },
         ];
+      };
+      table_icons: {
+        Row: {
+          id: string;
+          is_active: boolean;
+          name: string;
+          sort_order: number;
+          theme: string;
+          theme_order: number;
+        };
+        Insert: {
+          id: string;
+          is_active?: boolean;
+          name: string;
+          sort_order: number;
+          theme: string;
+          theme_order: number;
+        };
+        Update: {
+          id?: string;
+          is_active?: boolean;
+          name?: string;
+          sort_order?: number;
+          theme?: string;
+          theme_order?: number;
+        };
+        Relationships: [];
       };
       table_sessions: {
         Row: {
@@ -1840,6 +1883,10 @@ export type Database = {
           outcome: string;
         }[];
       };
+      friends_withdraw_add: {
+        Args: { target_history_id: string; target_user_id: string };
+        Returns: string;
+      };
       has_profile_photo: { Args: { target_user_id: string }; Returns: boolean };
       history_report_photo: {
         Args: { target_history_id: string; target_user_id: string };
@@ -1860,9 +1907,12 @@ export type Database = {
           guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
+          icon: string | null;
           id: string;
           intent: string | null;
           last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
           owner_alias: string;
           owner_headcount: number;
           owner_phones: number;
@@ -1896,9 +1946,12 @@ export type Database = {
           guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
+          icon: string | null;
           id: string;
           intent: string | null;
           last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
           owner_alias: string;
           owner_headcount: number;
           owner_phones: number;
@@ -1941,9 +1994,12 @@ export type Database = {
           guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
+          icon: string | null;
           id: string;
           intent: string | null;
           last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
           owner_alias: string;
           owner_headcount: number;
           owner_phones: number;
@@ -1982,9 +2038,12 @@ export type Database = {
           guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
+          icon: string | null;
           id: string;
           intent: string | null;
           last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
           owner_alias: string;
           owner_headcount: number;
           owner_phones: number;
@@ -2194,9 +2253,12 @@ export type Database = {
           guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
+          icon: string | null;
           id: string;
           intent: string | null;
           last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
           owner_alias: string;
           owner_headcount: number;
           owner_phones: number;
@@ -2218,6 +2280,7 @@ export type Database = {
       rooms_create: {
         Args: {
           new_game_tag?: string;
+          new_icon?: string;
           new_intent?: string;
           profiled: boolean;
           target_user_id: string;
@@ -2235,9 +2298,12 @@ export type Database = {
           guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
+          icon: string | null;
           id: string;
           intent: string | null;
           last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
           owner_alias: string;
           owner_headcount: number;
           owner_phones: number;
@@ -2271,9 +2337,12 @@ export type Database = {
           guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
+          icon: string | null;
           id: string;
           intent: string | null;
           last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
           owner_alias: string;
           owner_headcount: number;
           owner_phones: number;
@@ -2307,9 +2376,12 @@ export type Database = {
           guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
+          icon: string | null;
           id: string;
           intent: string | null;
           last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
           owner_alias: string;
           owner_headcount: number;
           owner_phones: number;
@@ -2343,9 +2415,12 @@ export type Database = {
           guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
+          icon: string | null;
           id: string;
           intent: string | null;
           last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
           owner_alias: string;
           owner_headcount: number;
           owner_phones: number;
@@ -2379,9 +2454,12 @@ export type Database = {
           guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
+          icon: string | null;
           id: string;
           intent: string | null;
           last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
           owner_alias: string;
           owner_headcount: number;
           owner_phones: number;
@@ -2458,6 +2536,49 @@ export type Database = {
         Args: { target_request_id: string; target_user_id: string };
         Returns: string;
       };
+      rooms_reroll_name: {
+        Args: {
+          max_rerolls: number;
+          target_room_id: string;
+          target_user_id: string;
+        };
+        Returns: {
+          closed_at: string | null;
+          concept: string | null;
+          created_at: string;
+          game_started_at: string | null;
+          game_state: Json;
+          game_tag: string | null;
+          guest_alias: string | null;
+          guest_headcount: number | null;
+          guest_joined_at: string | null;
+          guest_phones: number | null;
+          guest_profiled: boolean;
+          guest_session_id: string | null;
+          icon: string | null;
+          id: string;
+          intent: string | null;
+          last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
+          owner_alias: string;
+          owner_headcount: number;
+          owner_phones: number;
+          owner_profiled: boolean;
+          owner_session_id: string;
+          spot_id: string | null;
+          status: string;
+          venue_id: string;
+          visibility: string;
+          waiting_since: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'rooms';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       rooms_respond: {
         Args: {
           accept: boolean;
@@ -2485,6 +2606,49 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      rooms_set_icon: {
+        Args: {
+          new_icon: string;
+          target_room_id: string;
+          target_user_id: string;
+        };
+        Returns: {
+          closed_at: string | null;
+          concept: string | null;
+          created_at: string;
+          game_started_at: string | null;
+          game_state: Json;
+          game_tag: string | null;
+          guest_alias: string | null;
+          guest_headcount: number | null;
+          guest_joined_at: string | null;
+          guest_phones: number | null;
+          guest_profiled: boolean;
+          guest_session_id: string | null;
+          icon: string | null;
+          id: string;
+          intent: string | null;
+          last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
+          owner_alias: string;
+          owner_headcount: number;
+          owner_phones: number;
+          owner_profiled: boolean;
+          owner_session_id: string;
+          spot_id: string | null;
+          status: string;
+          venue_id: string;
+          visibility: string;
+          waiting_since: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'rooms';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       safety_block: {
         Args: {
           target_room_id: string;
@@ -2504,9 +2668,12 @@ export type Database = {
           guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
+          icon: string | null;
           id: string;
           intent: string | null;
           last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
           owner_alias: string;
           owner_headcount: number;
           owner_phones: number;
@@ -2625,9 +2792,12 @@ export type Database = {
           guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
+          icon: string | null;
           id: string;
           intent: string | null;
           last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
           owner_alias: string;
           owner_headcount: number;
           owner_phones: number;
@@ -2661,9 +2831,12 @@ export type Database = {
           guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
+          icon: string | null;
           id: string;
           intent: string | null;
           last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
           owner_alias: string;
           owner_headcount: number;
           owner_phones: number;
@@ -2705,9 +2878,12 @@ export type Database = {
           guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
+          icon: string | null;
           id: string;
           intent: string | null;
           last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
           owner_alias: string;
           owner_headcount: number;
           owner_phones: number;
@@ -2750,9 +2926,12 @@ export type Database = {
           guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
+          icon: string | null;
           id: string;
           intent: string | null;
           last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
           owner_alias: string;
           owner_headcount: number;
           owner_phones: number;
@@ -2786,9 +2965,12 @@ export type Database = {
           guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
+          icon: string | null;
           id: string;
           intent: string | null;
           last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
           owner_alias: string;
           owner_headcount: number;
           owner_phones: number;
@@ -2822,9 +3004,12 @@ export type Database = {
           guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
+          icon: string | null;
           id: string;
           intent: string | null;
           last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
           owner_alias: string;
           owner_headcount: number;
           owner_phones: number;
@@ -2865,9 +3050,12 @@ export type Database = {
           guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
+          icon: string | null;
           id: string;
           intent: string | null;
           last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
           owner_alias: string;
           owner_headcount: number;
           owner_phones: number;
@@ -2911,9 +3099,12 @@ export type Database = {
           guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
+          icon: string | null;
           id: string;
           intent: string | null;
           last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
           owner_alias: string;
           owner_headcount: number;
           owner_phones: number;
@@ -2980,9 +3171,12 @@ export type Database = {
           guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
+          icon: string | null;
           id: string;
           intent: string | null;
           last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
           owner_alias: string;
           owner_headcount: number;
           owner_phones: number;
@@ -3056,9 +3250,12 @@ export type Database = {
           guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
+          icon: string | null;
           id: string;
           intent: string | null;
           last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
           owner_alias: string;
           owner_headcount: number;
           owner_phones: number;
@@ -3092,9 +3289,12 @@ export type Database = {
           guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
+          icon: string | null;
           id: string;
           intent: string | null;
           last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
           owner_alias: string;
           owner_headcount: number;
           owner_phones: number;
@@ -3145,9 +3345,12 @@ export type Database = {
           guest_phones: number | null;
           guest_profiled: boolean;
           guest_session_id: string | null;
+          icon: string | null;
           id: string;
           intent: string | null;
           last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
           owner_alias: string;
           owner_headcount: number;
           owner_phones: number;

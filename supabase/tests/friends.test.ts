@@ -409,10 +409,30 @@ describe('friend requests', () => {
     expect(await friends(a, { action: 'request', historyId: historyA })).toEqual(OK);
     expect((await friendList(a)).map((f) => f.publicId)).toEqual([await publicIdOf(b)]);
     expect(await sent(b)).toEqual([expect.objectContaining({ status: 'accepted' })]);
+    // b sat anonymously: asking again is told apart from nothing (K-75, below).
+    expect(await friends(a, { action: 'request', historyId: historyA })).toEqual(OK);
+  });
+
+  // K-75 (rule 4): "already friends" is said only of a person who sat with its profile; for an
+  // anonymous one the press is swallowed and nothing changes, so it cannot tell a friend apart.
+  it('tells a friendship from before only of the one who sat with its profile (K-75)', async () => {
+    const { a, b, historyA, historyB } = await metOnce({ modes: ['anonymous', 'profile'] });
+    await becomeFriends(a, b, historyA);
+    const before = await sql`select id, status from public.friend_requests order by created_at`;
+    const friendships = await sql`select * from public.friendships`;
+
+    // a's row: b sat with its profile, a knows b anyway.
     expect(await friends(a, { action: 'request', historyId: historyA })).toEqual({
       status: 409,
       body: errorBody('already_friends'),
     });
+    // b's row: a sat anonymously; the same answer as any other press.
+    expect(await friends(b, { action: 'request', historyId: historyB })).toEqual(OK);
+    expect(await sql`select id, status from public.friend_requests order by created_at`).toEqual(
+      before,
+    );
+    expect(await sql`select * from public.friendships`).toEqual(friendships);
+    expect(await incoming(a)).toEqual([]);
   });
 
   it('swallows requests across a block in either direction, and when the other account is gone', async () => {

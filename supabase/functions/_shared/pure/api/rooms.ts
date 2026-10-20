@@ -10,6 +10,9 @@ export type CreateRoomRequest = {
   intent?: Intent;
   gameTag?: Concept;
   profiled: boolean;
+  // docs/SPEC_V4.md §4.E (K-45): one of pure/tableIcons.ts; without it the server picks a free one.
+  // Another table's icon at the venue is icon_taken.
+  icon?: string;
 };
 // "Masanla oyna": a private one-table room, anonymous.
 export type CreateSoloRoomRequest = { action: 'create-solo' };
@@ -46,6 +49,13 @@ export type LeaveRoomRequest = { action: 'leave'; roomId: string };
 // The request card's profile (docs/SPEC_V3.md §23.E): a requester who asked with its profile, read
 // by the leader who can answer the request while it waits. Anything else is not_found, alike.
 export type RequestProfileRequest = { action: 'request-profile'; requestId: string };
+// docs/SPEC_V4.md §4.E (K-45, K-59): the owner changes the table's icon (icon_taken when another
+// table at the venue has it) or draws a new name, 3 times per table (reroll_limit); not_owner
+// otherwise. The name and the icon never say anything about anyone.
+export type SetIconRequest = { action: 'set-icon'; roomId: string; icon: string };
+export type RerollNameRequest = { action: 'reroll-name'; roomId: string };
+export type SetIconResponse = { icon: string };
+export type RerollNameResponse = { name: string; rerollsLeft: number };
 
 export type RoomsRequest =
   | CreateRoomRequest
@@ -57,7 +67,9 @@ export type RoomsRequest =
   | EndGameRequest
   | EndRoomRequest
   | LeaveRoomRequest
-  | RequestProfileRequest;
+  | RequestProfileRequest
+  | SetIconRequest
+  | RerollNameRequest;
 
 export type CreateRoomResponse = { roomId: string };
 // Identical for every request: nothing in it depends on the owner's later answer.
