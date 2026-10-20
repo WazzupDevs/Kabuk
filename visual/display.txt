@@ -1,0 +1,2 @@
+display: Physical size: 720x1280, Physical density: 160
+Override density: 320

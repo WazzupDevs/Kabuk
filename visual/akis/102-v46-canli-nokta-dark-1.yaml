@@ -1,0 +1,43 @@
+appId: app.kabuk.mobile
+name: v46-canli-nokta-dark-1
+---
+- openLink: "masa:///gorsel?durum=galeri/v46/canli-nokta&tema=dark&sayfa=0&sayfalar=1&n=102"
+- extendedWaitUntil:
+    notVisible:
+      id: launch-curtain
+    timeout: 60000
+- extendedWaitUntil:
+    visible:
+      id: gorsel-hazir-102
+    timeout: 20000
+    optional: true
+- runFlow:
+    when:
+      notVisible:
+        id: gorsel-hazir-102
+    commands:
+      - stopApp
+      - openLink: "masa:///gorsel?durum=galeri/v46/canli-nokta&tema=dark&sayfa=0&sayfalar=1&n=102"
+      - extendedWaitUntil:
+          notVisible:
+            id: launch-curtain
+          timeout: 60000
+      - extendedWaitUntil:
+          visible:
+            id: gorsel-hazir-102
+          timeout: 60000
+- assertNotVisible:
+    id: gorsel-yok
+- assertNotVisible:
+    id: gorsel-eksik-sayfa
+- runFlow:
+    when:
+      visible:
+        id: android:id/aerr_wait
+    commands:
+      - tapOn:
+          id: android:id/aerr_wait
+- takeScreenshot:
+    path: aday__v46-canli-nokta-dark-1
+    cropOn:
+      id: gorsel-oge
