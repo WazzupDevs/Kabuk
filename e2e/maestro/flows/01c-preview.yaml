@@ -511,11 +511,13 @@ appId: app.kabuk.mobile
     centerElement: true
     timeout: 30000
 - takeScreenshot: 04v-v46-gallery-type
+# The 60 type styles, on their line boxes, stand before the components: at 320 dp a 30 s scroll from
+# the first one ended at the 55th on CI's emulator (e2e run 39394778370).
 - scrollUntilVisible:
     element:
       id: gal-birincil-52
     centerElement: true
-    timeout: 30000
+    timeout: 90000
 - takeScreenshot: 04v-v46-gallery-components
 - back
 - extendedWaitUntil:
