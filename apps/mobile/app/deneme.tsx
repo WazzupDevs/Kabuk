@@ -4,7 +4,8 @@
 //   bolum=kartlar             the three cards and the button (320 dp, font 1.3)
 //   bolum=tek&kart=…[&duz=1]  one card (tabu, sahtekar, masa) for the drawing check; duz=1 the
 //                             same boxes without shadows and gradients
-// The 20-card scroll page is in the gallery (Bileşen önizleme → Kaydırma), checked on a phone.
+// The 20-card scroll page is in main's gallery (Bileşen önizleme → Kaydırma, #184), checked on a
+// phone.
 import { Redirect, useLocalSearchParams } from 'expo-router';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';

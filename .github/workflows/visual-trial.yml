@@ -3,7 +3,7 @@
 # gradients and shadows (inset, spread) checked against the same boxes drawn flat, and 320 dp at
 # font 1.3; one job comparing the Android fingerprint with the branch's base on main. No speed or
 # memory figures: the CI emulator draws in software, so they say nothing about a phone; scrolling
-# the 20 cards (Bileşen önizleme → Kaydırma) is checked by hand on a phone.
+# 20 shadowed cards is checked by hand on a phone (main's gallery: Bileşen önizleme → Kaydırma).
 name: visual-trial
 
 on:
