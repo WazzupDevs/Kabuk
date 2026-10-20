@@ -11,7 +11,6 @@ import {
   sortVenues,
 } from '@shared/explore.ts';
 import { hasActiveTable } from '@shared/navigation.ts';
-import type { VenueKind } from '@shared/venueKind.ts';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
@@ -42,7 +41,8 @@ import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { haptic } from '@/lib/haptics';
 import { useNow } from '@/lib/useNow';
-import { V46_EXPLORE, type V46ThumbKind } from '@/theme/parts.generated';
+import { venueType, type VenueType } from '@/lib/venueType';
+import { V46_EXPLORE } from '@/theme/parts.generated';
 import { useTheme } from '@/theme/ThemeProvider';
 import { V46_PALETTE } from '@/theme/tokens.generated';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
@@ -61,13 +61,7 @@ type View_ = 'list' | 'map';
 const HERO_HEIGHT = SPACING[16] * 2 + SPACING[8];
 const HERO_MARK = SPACING[16] + SPACING[10];
 
-type Here = { name: string; spot: string | null; kind: VenueKind };
-
-// A venue's icon in v46's list (`.vthumb`). The app knows two kinds today, campus and cafe; the
-// icon and the kind in words are to come from the venue's own type (the owner's decision, 20 Ekim:
-// kafe, çay bahçesi, yemek; kampüs apart; unknown is kafe), so until the server has it every cafe
-// is drawn as a cafe.
-const THUMB_OF: Record<VenueKind, V46ThumbKind> = { campus: 'kampus', cafe: 'kafe' };
+type Here = { name: string; spot: string | null; type: VenueType };
 
 // Keşfet (docs/SPEC_V2.md §4, SPEC_V4 §4.C): the venues of a city, chosen by hand, never by the
 // phone's position (rule 6). The venue is picked here; check-in then verifies the position. With one
@@ -109,11 +103,12 @@ export default function ExploreScreen() {
     [listed, place, kind, query, now],
   );
   const here = hasActiveTable(table.data, now) ? table.data : null;
+  const hereVenue = here ? venues.data?.find((v) => v.id === here.venue_id) : undefined;
   const hereCard: Here | null = here
     ? {
         name: here.venue?.name ?? '',
         spot: here.spot?.name ?? null,
-        kind: venues.data?.find((v) => v.id === here.venue_id)?.kind ?? 'cafe',
+        type: hereVenue ? venueType(hereVenue) : 'kafe',
       }
     : null;
 
@@ -217,7 +212,7 @@ function HereNow({ here }: { here: Here }) {
   return (
     <HereCard
       label={tr.explore.here}
-      thumb={THUMB_OF[here.kind]}
+      thumb={here.type}
       name={here.name}
       sub={tr.explore.hereAt(here.spot)}
       action={tr.explore.backToVenue}
@@ -284,13 +279,13 @@ function VenueList({
       ) : (
         <VenueCard>
           {venues.map((v, i) => {
-            const sub = tr.explore.venueSub(tr.explore.kindLabel[v.kind], v.district);
+            const type = venueType(v);
             return (
               <VenueRow
                 key={v.id}
-                thumb={THUMB_OF[v.kind]}
+                thumb={type}
                 name={v.name}
-                sub={sub}
+                sub={tr.explore.venueSub(tr.explore.typeLabel[type], v.district)}
                 status={{ text: tr.explore.buckets[v.bucket], live: v.bucket !== 'calm' }}
                 index={i}
                 onPress={() =>

@@ -257,11 +257,45 @@ describe("the app's Keşfet", () => {
     expect(screen).toMatch(/onChange=\{\(mode\) => \{\s*haptic\('selection'\);\s*setView\(mode\);/);
   });
 
-  it('draws a campus as the campus and, until the venue type comes, every cafe as a cafe', () => {
-    expect(screen).toMatch(
-      /const THUMB_OF: Record<VenueKind, V46ThumbKind> = \{ campus: 'kampus', cafe: 'kafe' \}/,
+  it("names each type in v46's words, under the icon v46 draws for it", () => {
+    // v46's list rows: the venue's type in words (`data-vtype`) and its icon, whose ground is the
+    // drawing's first rect. The app's word for a type (tr.ts → explore.typeLabel) is the word of
+    // the row whose icon is that type's drawing (lib/venueType.ts maps the categories onto them).
+    const words = /typeLabel: \{([^}]*)\}/.exec(
+      readFileSync(resolve(root, 'apps/mobile/src/i18n/tr.ts'), 'utf8'),
+    )?.[1];
+    if (!words) throw new Error('no typeLabel in tr.ts');
+    const typeLabel = Object.fromEntries(
+      [...words.matchAll(/(\w+): '([^']+)'/g)].map(([, key, word]) => [key, word]),
     );
-    expect(screen).toMatch(/thumb=\{THUMB_OF\[v\.kind\]\}/);
+    const rows = [
+      ...html.matchAll(
+        /class="vrow"[^>]*data-vtype="([^"]+)"[^>]*><span class="vthumb"><svg[^>]*><rect[^>]*fill="(#[0-9A-Fa-f]{6})"/g,
+      ),
+    ];
+    expect(rows.length).toBeGreaterThanOrEqual(3);
+    const seen = new Set<string>();
+    for (const [, word, ground] of rows) {
+      const type = Object.entries(thumbs).find(([, t]) => t.drawing.nodes[0]?.fill === ground)?.[0];
+      if (!type) throw new Error(`no icon with v46's ground ${ground} (${word})`);
+      seen.add(type);
+      expect(typeLabel[type], type).toBe(word);
+    }
+    // v46's list has a cafe, a tea garden and a place to eat; a campus is in "Şu an buradasın".
+    expect([...seen].sort()).toEqual(['cay', 'kafe', 'yemek']);
+    expect(typeLabel.kampus).toBe('Kampüs');
+  });
+
+  it("takes each venue's icon and type from its category (lib/venueType.ts)", () => {
+    // The list row, "Şu an buradasın" and the venue page; the mapping is tested in venueType.test.ts.
+    expect(screen).toMatch(/const type = venueType\(v\);/);
+    expect(screen).toMatch(/thumb=\{type\}/);
+    expect(screen).toMatch(/tr\.explore\.typeLabel\[type\]/);
+    expect(screen).toMatch(/type: hereVenue \? venueType\(hereVenue\) : 'kafe'/);
+    expect(screen).toMatch(/thumb=\{here\.type\}/);
+    expect(
+      readFileSync(resolve(root, 'apps/mobile/app/(app)/(tabs)/explore/[venueId].tsx'), 'utf8'),
+    ).toMatch(/tr\.explore\.typeLabel\[venueType\(venue\)\]/);
   });
 
   it('keeps the search 12 below the title, as `.dsearch` does', () => {
