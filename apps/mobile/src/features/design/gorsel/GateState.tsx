@@ -88,7 +88,7 @@ export function GateState({
         <View
           style={{
             transform: [{ translateY: -page * frame }],
-            paddingHorizontal: theme.shape.screenPadding,
+            paddingHorizontal: entry?.bare ? 0 : theme.shape.screenPadding,
             paddingTop: SPACING[3],
             paddingBottom: SPACING[8],
           }}

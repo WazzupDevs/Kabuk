@@ -6,7 +6,9 @@ import { UI_GALLERY } from '@/features/gallery/registry';
 import { PREVIEW_SETS } from '../previews';
 
 // `full`: the state draws the whole screen itself (a game's stage), one page, no side padding.
-export type GateEntry = { render: () => ReactNode; full?: boolean };
+// `bare`: in the frame without its side padding, so a component as wide as v46 makes it in its own
+// place (328 for the disabled primaries) is not narrowed to the padded 320.
+export type GateEntry = { render: () => ReactNode; full?: boolean; bare?: boolean };
 
 // Every state the visual gate can open (CLAUDE.md → Görsel kapı; e2e/visual/states.json picks
 // which ones it photographs). Keys:
@@ -25,6 +27,7 @@ export const GATE_STATES: Record<string, GateEntry> = {
       const first = states?.[0];
       if (!first) return [];
       const entry: GateEntry = {
+        bare: true,
         render: () => (
           <View testID="gorsel-oge" style={{ alignSelf: 'flex-start' }}>
             {first.render()}
