@@ -107,6 +107,17 @@ describe('v46 tab bar', () => {
     );
   });
 
+  it('grows its labels at most 1.2 times with the largest text (K-23), shrinking where they do not fit', () => {
+    // docs/SPEC_V4.md §4.C: "en büyük yazıda en çok 1,2 kat büyür (`maxFontSizeMultiplier={1.2}`)".
+    const spec = readFileSync(resolve(root, 'docs/SPEC_V4.md'), 'utf8');
+    expect(spec).toContain('en çok 1,2 kat büyür (`maxFontSizeMultiplier={1.2}`)');
+    const tabBar = source('TabBar.tsx');
+    expect(tabBar).toMatch(/const LABEL_MAX_FONT_SCALE = 1\.2;/);
+    expect(tabBar).toMatch(
+      /numberOfLines=\{1\}\s*maxFontSizeMultiplier=\{LABEL_MAX_FONT_SCALE\}\s*adjustsFontSizeToFit/,
+    );
+  });
+
   it('shrinks a pressed tab by the press rule that reaches it', () => {
     const presses = matched(TAB_BARS.venue, 'press');
     expect([...presses]).toEqual(['.va button:active']);

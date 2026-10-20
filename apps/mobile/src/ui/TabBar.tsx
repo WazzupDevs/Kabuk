@@ -180,10 +180,12 @@ function Tab({
           </View>
         ) : null}
       </Animated.View>
-      {/* One line; only where it does not fit (a 320 dp screen, the largest text) it shrinks, like
-          a button's label. As wide as its tab, so the shrink has a width to fit. */}
+      {/* One line; with the largest text it grows at most 1.2 times (K-23), and only where it
+          still does not fit (a 320 dp screen) it shrinks, like a button's label. As wide as its
+          tab, so the shrink has a width to fit. */}
       <Text
         numberOfLines={1}
+        maxFontSizeMultiplier={LABEL_MAX_FONT_SCALE}
         adjustsFontSizeToFit
         minimumFontScale={MIN_FONT_SCALE}
         style={[
@@ -199,6 +201,8 @@ function Tab({
 
 // As a button's label (Button.tsx): at most half its size.
 const MIN_FONT_SCALE = 0.5;
+// The tabs' labels grow with the system's text size at most this much (K-23, docs/SPEC_V4.md §4.C).
+const LABEL_MAX_FONT_SCALE = 1.2;
 
 // The unread dot on a tab's icon (v46 `.tdot`, the inventory's bildirim-noktasi): a small round
 // with a ring of the bar's ground around it.
