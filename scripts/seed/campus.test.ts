@@ -111,7 +111,9 @@ describe('campusSql', () => {
     const sql = campusSql(parseCampusVenues(campus({ isActive: false })));
     expect(sql).toContain('POLYGON((30 40, 30.01 40, 30.01 40.01, 30 40.01, 30 40))');
     expect(sql).toContain('extensions.st_pointonsurface(');
-    expect(sql).toContain("'campus', 'kampus', 'campus', false)");
+    // A campus has no category (docs/SPEC_V4.md §4.C).
+    expect(sql).toContain("'campus', 'kampus', 'campus', null, false)");
+    expect(sql).toContain('category = excluded.category');
     expect(sql).toContain("('kantin', 'Kantin', 0, true)");
     expect(sql).toContain("('kutuphane', 'Kütüphane''nin önü', 1, true)");
     expect(sql).toContain('on conflict (venue_id, ref) do update');
