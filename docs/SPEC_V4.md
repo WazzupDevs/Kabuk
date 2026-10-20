@@ -726,7 +726,7 @@ Değişmez kabul edilir.
   - Liste satırları (`friends/notifications`): gelen istek bekliyor ya da 7 gün içinde kabul edilmiş (kabulden sonra arkadaşın `public_id`'si); mekan sohbetinden gelen istekte ad, yaş, fotoğraf ve mekan (SPEC_V3 §7.5 aynen), oyun geçmişinden gelende yalnızca masadaki adı ve kayıt. Engel ve biten arkadaşlık satırı kaldırır. Yanıt okunmamış sayısını da taşır (`unseen`).
   - Bildirim ayarları: `profile/update { notifyInvites }`; üç tercih kişinin kendi satırında okunur.
   - Analitik olayları (§4.L: `invite_sent`, `invite_accepted`, `notifications_opened`) uygulama gönderir; katalog istemci PR'ında.
-  - `CURRENT_KVKK_VERSION`: metin bu adımın sunucu PR'ında, sürüm istemci PR'ında artar (4.4'ün kararı, `docs/decisions/4.4-kimlik.md`); 4.4'ün artışı henüz yayında değilse ikisi tek artışta birleşir (§4.L).
+  - `CURRENT_KVKK_VERSION`: metin bu adımın sunucu PR'ında; sürüm tek seferde, 4.5 ile birlikte main'e girecek istemci PR'ında artar ve 4.4'ün ve bu adımın metnini birlikte onaylatır (proje sahibinin kararı, §4.L).
 
 **Push.**
 
@@ -889,7 +889,7 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 
 - **4.4:** kapsül nick hesaba bağlı bir takma addır. Anonim kişi ziyaretler arasında aynı nick'le tanınabilir; nick profil kimliğini açmaz. Sessize alma kaydı: kimin hangi kimliği sessize aldığı, yalnızca sunucuda. Anahtar değişikliğinden önce yazılan mesajların eski kimlikte kaldığı. Silinen hesabın ve yenilenen nick'in metni yeniden verilmez; bunun için yalnızca nick metni, hesapla bağı olmadan saklanır.
 - **4.7:** masa daveti, arkadaşına aynı mekanda bir masan olduğunu söyler; mekan adı gitmez. Bildirim listesi ve davet push'u.
-- `CURRENT_KVKK_VERSION` 4.4'te artar; mevcut kullanıcılar yeniden onaylar. 4.7 değişikliği aynı sürüme alınabiliyorsa birlikte, değilse ikinci kez artar.
+- `CURRENT_KVKK_VERSION` tek seferde artar: 4.5 ile birlikte main'e girecek istemci PR'ında; mevcut kullanıcılar 4.4'ün ve 4.7'nin metnini bir kez onaylar. 4.4'ün istemcisi daha önce main'e girerse o PR'da artmaz (proje sahibinin kararı).
 - Sayfalar taslaktır; "hukuki kontrol bekliyor" notu kalır.
 
 **Mağaza** (`docs/store/`):
