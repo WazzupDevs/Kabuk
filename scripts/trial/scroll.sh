@@ -16,6 +16,7 @@ a install -r -g "$APK"
 # 360 dp at 2x, v46's prototype width (the skin is 720x1280).
 a shell wm density 320
 a shell settings put system font_scale 1.0
+a shell settings put global hide_error_dialogs 1 || true
 echo "display: $(a shell wm size | tr -d '\r') $(a shell wm density | tr -d '\r')" | tee "$OUT/display.txt"
 
 # One pass: open the list, reset the frame stats, 10 flings down and 10 up, then the stats.
@@ -25,6 +26,7 @@ pass() {
   open_trial "$query"
   wait_id "deneme-liste$([ "$variant" = duz ] && echo -duz)" 90
   sleep 3
+  dismiss_anr
   a shell dumpsys gfxinfo "$APP" reset > /dev/null
   for _ in $(seq 10); do a shell input swipe 360 1100 360 250 220; sleep 0.7; done
   for _ in $(seq 10); do a shell input swipe 360 250 360 1100 220; sleep 0.7; done

@@ -10,11 +10,33 @@ open_trial() {
   a shell "am start -W -a android.intent.action.VIEW -d 'masa:///deneme?$1' $APP" > /dev/null
 }
 
+# The centre of a system "… isn't responding" dialog's Wait button in a uiautomator dump on stdin
+# (as in scripts/e2e/run-on-emulator.sh), or nothing.
+wait_button_center() {
+  grep -oE '(resource-id="android:id/aerr_wait"|text="Wait")[^>]*bounds="\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]"' |
+    head -n 1 | grep -oE '\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]' |
+    { read -r b && read -r x1 y1 x2 y2 <<<"${b//[^0-9]/ }" && echo "$(((x1 + x2) / 2)) $(((y1 + y2) / 2))"; } || true
+}
+
+# Presses Wait on such a dialog if the screen shows one: on this 2-core emulator "Pixel Launcher
+# isn't responding" covered the trial screen for 90 s (e4144a0e).
+dismiss_anr() {
+  local at
+  at=$(a exec-out uiautomator dump /dev/tty 2>/dev/null | wait_button_center || true)
+  if [ -n "$at" ]; then
+    echo "system dialog \"… isn't responding\": pressing Wait" >&2
+    a shell input tap $at || true
+    sleep 1
+  fi
+}
+
 # Waits until the screen shows the resource id $1 (testID), at most $2 seconds.
 wait_id() {
-  local until=$((SECONDS + $2))
+  local until=$((SECONDS + $2)) dump
   while [ "$SECONDS" -lt "$until" ]; do
-    if a exec-out uiautomator dump /dev/tty 2>/dev/null | grep -q "resource-id=\"$1\""; then return 0; fi
+    dump=$(a exec-out uiautomator dump /dev/tty 2>/dev/null || true)
+    if grep -q "resource-id=\"$1\"" <<<"$dump"; then return 0; fi
+    if grep -q 'android:id/aerr_wait' <<<"$dump"; then dismiss_anr; fi
     sleep 2
   done
   echo "timeout waiting for $1 on $D" >&2
