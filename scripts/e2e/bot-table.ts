@@ -91,6 +91,8 @@ type Json = Record<string, unknown>;
 
 let client: SupabaseClient | null = null;
 let venueId: string | null = null;
+// The spot the bot checked in at (a venue with spots): only tables there meet (different_spot).
+let spotId: string | null = null;
 
 // The local stack's database, with its fixed default credentials. There is no way to point it
 // anywhere else.
@@ -177,16 +179,25 @@ async function mySessionId(): Promise<string | undefined> {
 
 // The venue's tables (venue_tables, §4.E): the lobby (`open`) and the running tables, every one
 // but the caller's own and a blocked one; a table's name, icon and phone count, no person's name.
-type VenueTable = { room_id: string; name: string | null; phones: number; open: boolean };
+// At a venue with spots only those at the bot's spot: a request elsewhere is different_spot.
+type VenueTable = {
+  room_id: string;
+  name: string | null;
+  phones: number;
+  open: boolean;
+  spot_id: string | null;
+};
 
 async function venueTables(): Promise<VenueTable[]> {
   const { data, error } = await me().rpc('venue_tables', { target_venue_id: venueId ?? '' });
   if (error) throw error;
-  return (data ?? []) as VenueTable[];
+  return ((data ?? []) as VenueTable[]).filter((t) => spotId === null || t.spot_id === spotId);
 }
 
 // The owner's request now waiting at the bot's table: "Katıl" or "Bu masadayım" (the
-// join_requests policy shows the table's owner its requests).
+// join_requests policy shows the table's owner its requests). One past its 60 seconds stays
+// pending until the expire-join-requests job runs (every minute) and is request_expired to answer,
+// so it is left out, as the app leaves it out.
 async function waitingRequest(): Promise<{ id: string; as_member: boolean } | null> {
   const table = await myTable();
   const { data, error } = await me()
@@ -194,6 +205,7 @@ async function waitingRequest(): Promise<{ id: string; as_member: boolean } | nu
     .select('id, as_member')
     .eq('room_id', table.id)
     .eq('status', 'pending')
+    .gt('expires_at', new Date().toISOString())
     .order('created_at')
     .limit(1);
   if (error) throw error;
@@ -338,6 +350,7 @@ export const actions: Record<string, (args: Json) => Promise<Json>> = {
         : spots?.find((s) => s.ref === wantedSpot || s.name === wantedSpot);
     if (wantedSpot !== undefined && !spot)
       throw new Error(`spot "${String(wantedSpot)}" not found`);
+    spotId = spot?.id ?? null;
     return call('checkin', {
       action: 'check-in',
       venueId,
@@ -576,8 +589,8 @@ export const actions: Record<string, (args: Json) => Promise<Json>> = {
 };
 
 // "Bu masadayım" from the member bot: to the running table named BOT_TABLE (its name on the
-// device's screen), else to the only running table. One the owner does not answer in 60 seconds is
-// unavailable and may be sent again (the hour's 10 requests are shared with "Katıl").
+// device's screen), else to the only running table at its spot. One the owner does not answer in
+// 60 seconds is unavailable and may be sent again (the hour's 10 requests are shared with "Katıl").
 async function askToSit(
   asked: Map<string, number>,
   say: (text: string) => void,
@@ -604,15 +617,17 @@ async function askToSit(
 // Another person at the venue, for a one-phone P0 test on the dev project. Checks in at BOT_VENUE
 // (at a venue with spots: BOT_SPOT, else the first spot; only tables at the same spot meet) and
 // then, every two seconds, does what that person would:
-// - BOT_ROLE=host: keeps a table in the lobby and accepts every request, "Katıl" and "Bu
-//   masadayım";
+// - BOT_ROLE=host: keeps a table in the lobby and accepts every "Katıl" (a table in the lobby
+//   takes no "Bu masadayım");
 // - BOT_ROLE=guest (default): without a table, sends "Katıl" to each new table in the lobby, on its
 //   own;
 // - BOT_ROLE=member: without a table, sends "Bu masadayım" to the running table named BOT_TABLE
-//   (else the only one), again after 60 s without an answer.
+//   (else the only one at its spot), again after 60 s without an answer.
 // At a table it owns (a host, or an owner by handover) it accepts every request. It presses
 // "Arkadaş ekle" on each record that offers it (a table's end), accepts requests from the venue chat
 // and answers every new DM. No games yet (§4.F, 4.6). Only the public API: the calls the app makes.
+// Ctrl+C leaves the venue first ("Mekandan ayrıl"), so neither the check-in (4 hours) nor a host's
+// lobby table (30 quiet minutes) stays behind.
 async function opponent() {
   const role =
     process.env.BOT_ROLE === 'host'
@@ -633,8 +648,19 @@ async function opponent() {
   startPresence();
   await actions.checkin?.({});
   say(`checked in as ${BOT_NAME} (${role})`);
+  const stop = () => {
+    say('leaving the venue');
+    call('checkin', { action: 'leave' })
+      .catch((err: unknown) => say(`leave: ${String(err)}`))
+      .finally(() => process.exit(0));
+  };
+  process.once('SIGINT', stop);
+  process.once('SIGTERM', stop);
 
+  // "Katıl" sent to these tables; a refused one (another request still waiting: request_pending)
+  // is tried again on a later tick, at most every 30 seconds.
   const asked = new Set<string>();
+  const tried = new Map<string, number>();
   const sitAsked = new Map<string, number>();
   const befriended = new Set<string>();
   const answered = new Set<string>();
@@ -654,11 +680,13 @@ async function opponent() {
         } else if (role === 'guest') {
           for (const t of await venueTables()) {
             if (!t.open || asked.has(t.room_id)) continue;
-            asked.add(t.room_id);
-            await quiet('request-join', () =>
-              call('rooms', { action: 'request-join', roomId: t.room_id }),
-            );
-            say(`"Katıl" to ${t.name ?? 'a table'}`);
+            if (Date.now() - (tried.get(t.room_id) ?? 0) < 30_000) continue;
+            tried.set(t.room_id, Date.now());
+            await quiet('request-join', async () => {
+              await call('rooms', { action: 'request-join', roomId: t.room_id });
+              asked.add(t.room_id);
+              say(`"Katıl" to ${t.name ?? 'a table'}`);
+            });
           }
         } else {
           await call('rooms', { action: 'create', open: true });
@@ -670,10 +698,10 @@ async function opponent() {
       if (table.owner_session_id && table.owner_session_id === (await mySessionId())) {
         const request = await waitingRequest();
         if (request) {
-          await quiet('respond', () =>
-            call('rooms', { action: 'respond', requestId: request.id, accept: true }),
-          );
-          say(request.as_member ? 'accepted "Bu masadayım"' : 'accepted "Katıl"');
+          await quiet('respond', async () => {
+            await call('rooms', { action: 'respond', requestId: request.id, accept: true });
+            say(request.as_member ? 'accepted "Bu masadayım"' : 'accepted "Katıl"');
+          });
         }
       }
     });
@@ -696,10 +724,10 @@ async function opponent() {
         requests: { requestId: string }[];
       };
       for (const { requestId } of requests) {
-        await quiet('accept-friend', () =>
-          call('friends', { action: 'respond', requestId, accept: true }),
-        );
-        say('accepted a friend request from the venue chat');
+        await quiet('accept-friend', async () => {
+          await call('friends', { action: 'respond', requestId, accept: true });
+          say('accepted a friend request from the venue chat');
+        });
       }
     });
     await quiet('dm', async () => {
