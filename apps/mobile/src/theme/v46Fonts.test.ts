@@ -9,8 +9,9 @@ describe('v46 font weights', () => {
     expect(BUNDLED_WEIGHTS).toEqual([500, 600, 700, 800]);
   });
 
-  // CSS Fonts 4 §5.2. In Chromium with v46's four files, 13 px text at 400 and at 500 measure the
-  // same width (74.906 px for "Masaya katıl"; 600: 76.031): v46's 400 is its 500 file.
+  // CSS Fonts 4 §5.2. In Chromium, inside v46 with the files it loads from Google Fonts (and again
+  // with the app's four files), 13 px text at 400 and at 500 measure the same width (74.906 px for
+  // "Masaya katıl"; 600: 76.031): v46's 400 is its 500 file.
   it('draws a weight v46 does not load as the browser does', () => {
     expect(matchWeight(400, BUNDLED_WEIGHTS)).toBe(500);
     expect(matchWeight(300, BUNDLED_WEIGHTS)).toBe(500);

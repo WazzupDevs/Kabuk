@@ -14,8 +14,9 @@ describe('Plus Jakarta Sans line heights', () => {
     expect(metrics).toEqual({ unitsPerEm: 1000, ascender: 1038, descender: -222, lineGap: 0 });
   });
 
-  // Measured in Chromium (Playwright's, 360×740 at 3×): a one-line block with `line-height: normal`
-  // in each size, the four bundled files as @font-face, every weight the same.
+  // Measured in Chromium (Playwright's, 360×740): a one-line block with `line-height: normal` in
+  // each size, every weight the same; once with the four bundled files as @font-face, once inside
+  // v46 itself with the files it loads from Google Fonts (plusjakartasans v12): the same heights.
   it('is CSS `normal` as Chromium computes it', () => {
     const measured: Record<number, number> = {
       9: 11,
