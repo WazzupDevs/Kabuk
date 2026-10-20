@@ -346,8 +346,11 @@ appId: app.kabuk.mobile
       id: preview-parts-confetti
     centerElement: true
     timeout: 30000
+# The toast stays 1.6 s (theme/gameMotion.ts → TOAST.showMs). Maestro's wait for the screen to
+# settle after a tap took 3 s once at the largest font, and the toast was gone before the check.
 - tapOn:
     id: preview-parts-toast
+    waitToSettleTimeoutMs: 500
 - extendedWaitUntil:
     visible:
       id: game-toast
