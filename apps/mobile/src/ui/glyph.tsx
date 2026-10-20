@@ -6,7 +6,7 @@ import { useReduceMotion } from '@/lib/useReduceMotion';
 import { V46_BUTTON_MOTION, type V46ButtonIcon } from '@/theme/parts.generated';
 
 import { BarGlyph } from './BarGlyph';
-import { keyframeSequence, transitionStyle } from './motion';
+import { keyframeRest, keyframeSequence, transitionStyle } from './motion';
 import { V46Svg } from './V46Svg';
 
 type SendIcon = Extract<V46ButtonIcon, { send: unknown }>;
@@ -40,8 +40,8 @@ export function SendBars({
   const k = width / icon.send.viewBox[2];
   const shoot = V46_BUTTON_MOTION.shoot;
   const bars = V46_BUTTON_MOTION.sendBars;
-  const x = useSharedValue(shoot.channels.translateX?.from ?? 0);
-  const opacity = useSharedValue(shoot.channels.opacity?.from ?? 1);
+  const x = useSharedValue(keyframeRest(shoot, 'translateX'));
+  const opacity = useSharedValue(keyframeRest(shoot, 'opacity'));
   useChanged(shot, () => {
     if (reduce && shoot.offWhenReduced) return;
     const nextX = keyframeSequence(shoot, 'translateX', k);
@@ -92,8 +92,8 @@ export function BellGlyph({ icon, ring = 0 }: { icon: DrawnIcon; ring?: number }
   const k = width / icon.drawing.viewBox[2];
   const turn = V46_BUTTON_MOTION.bellRing;
   const swing = V46_BUTTON_MOTION.bellClap;
-  const rotate = useSharedValue(turn.channels.rotate?.from ?? 0);
-  const clapX = useSharedValue(swing.channels.translateX?.from ?? 0);
+  const rotate = useSharedValue(keyframeRest(turn, 'rotate'));
+  const clapX = useSharedValue(keyframeRest(swing, 'translateX'));
   useChanged(ring, () => {
     if (reduce && turn.offWhenReduced) return;
     const nextTurn = keyframeSequence(turn, 'rotate');

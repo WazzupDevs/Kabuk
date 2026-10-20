@@ -29,7 +29,7 @@ export const GATE_STATES: Record<string, GateEntry> = {
       const entry: GateEntry = {
         bare: true,
         render: () => (
-          <View testID="gorsel-oge" style={{ alignSelf: 'flex-start' }}>
+          <View testID="gorsel-oge" style={{ alignSelf: first.wide ? 'stretch' : 'flex-start' }}>
             {first.render()}
           </View>
         ),

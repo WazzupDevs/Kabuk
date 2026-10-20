@@ -10,7 +10,13 @@ import { V46_COMPONENTS, V46_PALETTE } from '@/theme/tokens.generated';
 import { v46FontStyle } from '@/theme/v46Type';
 
 import { ButtonGlyph } from './glyph';
-import { keyframeSequence, transitionStyle, transitionsEnd, usePresence } from './motion';
+import {
+  keyframeRest,
+  keyframeSequence,
+  transitionStyle,
+  transitionsEnd,
+  usePresence,
+} from './motion';
 import { useNarrow } from './narrow';
 
 // v46's text buttons, by their gallery ids (docs/design/v46/skall-masa-deneme-v46-galeri.html
@@ -120,7 +126,7 @@ export function Button({
   const out = loading ? (busy.label ?? null) : null;
 
   const nope = V46_BUTTON_MOTION.nope;
-  const shakeX = useSharedValue(nope.channels.translateX?.from ?? 0);
+  const shakeX = useSharedValue(keyframeRest(nope, 'translateX'));
   const shake = useAnimatedStyle(() => ({ transform: [{ translateX: shakeX.value }] }));
   const press = () => {
     if (!disabled) {

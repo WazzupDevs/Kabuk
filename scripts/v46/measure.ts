@@ -7,8 +7,10 @@
 // the DevTools protocol, whether or not the gallery shows a pressed copy) and its parts (icons with
 // their drawing and every shape's paint, labels with their font). With the system asking for less
 // motion (light). At 320×568, v46's own small-screen check (`?s=<state>`, the real screen): what
-// v46's `max-width` rules change. The page gets the app's own font files and Roboto for
-// `system-ui`, as the visual gate draws v46 (scripts/visual/prototype.ts).
+// v46's `max-width` rules change. The parts of v46's screens the inventory does not list
+// (scripts/v46/screenParts.ts: the navigation) go through the same passes on their real screen.
+// The page gets the app's own font files and Roboto for `system-ui`, as the visual gate draws v46
+// (scripts/visual/prototype.ts).
 //
 // Output docs/design/v46/olcum/skall-v46-olcum.json, read by `pnpm tokens`. Not part of CI (the
 // output is committed); run it again when v46 changes:
@@ -23,6 +25,7 @@ import { type Browser, chromium, type ElementHandle, type Page } from 'playwrigh
 import { GATE_NOW } from '../../apps/mobile/src/features/design/gorsel/deterministic.ts';
 import { appFonts, fontFaces, withRoboto } from '../visual/prototype.ts';
 import { readInventory } from './inventory.ts';
+import { SCREEN, SCREEN_PARTS, type ScreenPart } from './screenParts.ts';
 
 export const MEASURE_OUT = 'docs/design/v46/olcum/skall-v46-olcum.json';
 const GALLERY = 'docs/design/v46/skall-masa-deneme-v46-galeri.html';
@@ -34,6 +37,9 @@ const fonts = appFonts(root);
 const fontFiles = new Map(fonts.map((f) => [`${FONT_HOST}${f.name}.ttf`, f.file]));
 const galleryFile = join(root, GALLERY);
 const BUTTONS = 'Düğmeler';
+// The groups whose real screen is read too (transitions where used, the motion rules that reach
+// them): their motion test reads it.
+const REAL_GROUPS = new Set([BUTTONS, 'Sekme çubuğu', ...SCREEN_PARTS.map((p) => p.group)]);
 // v46's state classes read as a look of their own (the gallery copies only the resting look).
 const STATE_CLASSES: Record<string, string[]> = { gonder: ['ready'] };
 // Every motion rule of the inventory, by its selector: transitions, animations (and their
@@ -46,6 +52,8 @@ const MOTION_RULES = [
 const galleryUrl = pathToFileURL(galleryFile).href;
 
 type Viewport = { width: number; height: number };
+// Wider than any phone v46 draws for: its app frame stops at 400 (`.va`), its tab bar at 376.
+const ROOMY: Viewport = { width: 480, height: 740 };
 
 async function open(
   browser: Browser,
@@ -136,8 +144,47 @@ function readElement(el: Element) {
     color: cs.color,
   });
   const cs = getComputedStyle(el);
+  const image = (c: CSSStyleDeclaration) =>
+    c.backgroundImage && c.backgroundImage !== 'none' ? { bgImage: c.backgroundImage } : {};
+  const edge = (c: CSSStyleDeclaration) =>
+    parseFloat(c.borderTopWidth) > 0
+      ? { border: { width: px(c.borderTopWidth), color: c.borderTopColor } }
+      : {};
+  // A pseudo-element that draws (a pinned head's fade below it: `.dhd::after`).
+  const after = getComputedStyle(el, '::after');
+  const draws = (a: CSSStyleDeclaration) =>
+    (a.backgroundImage && a.backgroundImage !== 'none') || a.backgroundColor !== 'rgba(0, 0, 0, 0)';
+  // One that only widens where a part takes a touch (`.vmode button::after`: 3 px above and below),
+  // as its insets.
+  const hitOf = (n: Element) => {
+    const a = getComputedStyle(n, '::after');
+    return a.content !== 'none' && a.position === 'absolute' && !draws(a)
+      ? { hit: [a.top, a.right, a.bottom, a.left].map(px) }
+      : {};
+  };
+  const drawnAfter =
+    after.content !== 'none' && draws(after)
+      ? {
+          after: {
+            height: px(after.height),
+            top: px(after.top),
+            bg: after.backgroundColor,
+            ...image(after),
+          },
+        }
+      : {};
+  const r = el.getBoundingClientRect();
   const self = {
     box: box(el),
+    // Where it is in the viewport (a bar pinned to the screen's edge: the tab bar).
+    at: [round(r.left), round(r.top)],
+    bg: cs.backgroundColor,
+    ...image(cs),
+    ...edge(cs),
+    radius: cs.borderRadius,
+    shadow: cs.boxShadow,
+    ...(cs.backdropFilter && cs.backdropFilter !== 'none' ? { backdrop: cs.backdropFilter } : {}),
+    ...drawnAfter,
     display: cs.display,
     textAlign: cs.textAlign,
     padding: cs.padding,
@@ -216,6 +263,9 @@ function readElement(el: Element) {
                 }
               : {}),
             ...(t === 'g' || kids.length ? { children: kids.map(node) } : {}),
+            // A node's own transition (the Mekan tab's capsules: `.vt-a,.vt-b`), with the delay a
+            // state gives it (`.is-active .vt-x`).
+            ...(transitions(scs).length ? { transitions: transitions(scs) } : {}),
           };
         };
         parts.push({
@@ -261,9 +311,16 @@ function readElement(el: Element) {
           ? { inset: [ccs.top, ccs.right, ccs.bottom, ccs.left].map(px) }
           : {}),
         bg: ccs.backgroundColor,
+        ...image(ccs),
+        ...edge(ccs),
         radius: ccs.borderRadius,
         shadow: ccs.boxShadow,
         padding: ccs.padding,
+        ...(ccs.margin !== '0px' ? { margin: ccs.margin } : {}),
+        ...hitOf(c),
+        ...(ccs.display === 'flex' || ccs.display === 'inline-flex'
+          ? { flex: [ccs.flexDirection, ccs.justifyContent, ccs.alignItems, px(ccs.columnGap)] }
+          : {}),
         opacity: Number(ccs.opacity),
         transform: ccs.transform,
         transitions: transitions(ccs),
@@ -318,10 +375,11 @@ function readBusyLoader(el: Element) {
 
 // Runs in the page: which of the inventory's motion rules (transitions, animations, press looks)
 // reach this element or a part of it, in the screen it is used in, as it is or with one of v46's
-// state classes on the element (\`nope\`, \`shoot\`, \`ring\`, \`bump\`, \`ready\`, \`busy\`). A rule
-// for \`:active\` is tried without it.
+// state classes on the element or a part (\`nope\`, \`shoot\`, \`ring\`, \`bump\`, \`ready\`, \`busy\`, and
+// the selection classes \`is-active\` and \`on\`), with the part's own subtree (\`.is-active .vt-all\`).
+// A rule for \`:active\` is tried without it.
 function readMatches(el: Element, rules: { kind: string; selector: string }[]) {
-  const STATES = [null, 'nope', 'shoot', 'ring', 'bump', 'ready', 'busy'];
+  const STATES = [null, 'nope', 'shoot', 'ring', 'bump', 'ready', 'busy', 'is-active', 'on'];
   const label = (n: Element) =>
     n === el
       ? 'self'
@@ -378,7 +436,9 @@ function readMatches(el: Element, rules: { kind: string; selector: string }[]) {
     for (const holder of state ? nodes : [el]) {
       const had = state ? holder.classList.contains(state) : true;
       if (state && !had) holder.classList.add(state);
-      for (const n of holder === el ? nodes : [holder]) test(n, state);
+      for (const n of holder === el ? nodes : [holder, ...holder.querySelectorAll('*')]) {
+        test(n, state);
+      }
       if (state && !had) holder.classList.remove(state);
     }
   }
@@ -402,13 +462,29 @@ async function pressed(page: Page, selector: string) {
 // The same element read on two pages: everything from the still one (`anim=0`, v46's own switch:
 // every animation and transition at 0, so nothing is caught mid-flight and a forced `:active` shows
 // at once), the transitions from the moving one.
+type DrawnNode = { transitions?: unknown; children?: DrawnNode[] };
 function withTransitions(still: Reading, moving: Reading): Reading {
+  // An svg's nodes take theirs from the same node on the moving page (the trees are the same).
+  const nodes = (a: DrawnNode[], b: DrawnNode[] | undefined): DrawnNode[] =>
+    a.map((n, i) => {
+      const m = b?.[i];
+      const out: DrawnNode = { ...n };
+      delete out.transitions;
+      if (m?.transitions) out.transitions = m.transitions;
+      if (n.children) out.children = nodes(n.children, m?.children);
+      return out;
+    });
   return {
     self: { ...still.self, transitions: moving.self.transitions },
-    parts: still.parts.map((p, i) => ({
-      ...(p as object),
-      transitions: (moving.parts[i] as { transitions?: unknown } | undefined)?.transitions ?? [],
-    })),
+    parts: still.parts.map((p, i) => {
+      const m = moving.parts[i] as { transitions?: unknown; nodes?: DrawnNode[] } | undefined;
+      const own = p as { nodes?: DrawnNode[] };
+      return {
+        ...(p as object),
+        transitions: m?.transitions ?? [],
+        ...(own.nodes ? { nodes: nodes(own.nodes, m?.nodes) } : {}),
+      };
+    }),
   };
 }
 
@@ -452,12 +528,29 @@ async function stateReadings(page: Page, selector: string, classes: string[]) {
   return states;
 }
 
+// A screen part's element on its real screen (screenParts.ts), marked so that the steps after can
+// find it by a selector.
+async function openPart(
+  browser: Browser,
+  c: ScreenPart,
+  query: string,
+  viewport: Viewport,
+  reducedMotion: 'reduce' | 'no-preference' = 'no-preference',
+) {
+  const page = await open(browser, `s=${c.source_state}&${query}`, viewport, reducedMotion);
+  const ok = await page.evaluate(() => document.documentElement.dataset.stateOk === '1');
+  const el = ok ? await pick(page, c) : null;
+  if (!el) throw new Error(`no ${c.selector_in_state} in ${c.source_state} (${c.id})`);
+  await el.evaluate((e, id) => e.setAttribute('data-olcum', id), c.id);
+  return { page, sel: `[data-olcum="${c.id}"]` };
+}
+
 const browser = await chromium.launch(
   process.env.PLAYWRIGHT_CHROMIUM ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM } : {},
 );
 const out: Record<string, Record<string, unknown>> = {};
 try {
-  const wide = { width: 360, height: 740 };
+  const wide = SCREEN;
   for (const scheme of ['light', 'dark'] as const) {
     const still = await open(browser, `page=galeri&theme=${scheme}&demo=0&anim=0`, wide);
     const moving = await open(browser, `page=galeri&theme=${scheme}&demo=0`, wide);
@@ -476,6 +569,22 @@ try {
     }
     await still.context().close();
     await moving.context().close();
+    for (const c of SCREEN_PARTS) {
+      const still = await openPart(browser, c, `theme=${scheme}&demo=0&anim=0`, wide);
+      const moving = await openPart(browser, c, `theme=${scheme}&demo=0`, wide);
+      const entry = (out[c.id] ??= { name: c.name, group: c.group });
+      entry[scheme] = {
+        ...withTransitions(
+          await still.page.locator(still.sel).evaluate(readElement),
+          await moving.page.locator(moving.sel).evaluate(readElement),
+        ),
+        pressed: await pressed(still.page, still.sel),
+        busyLoader: null,
+        states: {},
+      };
+      await still.page.context().close();
+      await moving.page.context().close();
+    }
   }
   // With the system asking for less motion (Chromium's `prefers-reduced-motion: reduce`), light.
   const still = await open(browser, 'page=galeri&theme=light&demo=0&anim=0', wide, 'reduce');
@@ -489,8 +598,18 @@ try {
   }
   await still.context().close();
   await moving.context().close();
+  for (const c of SCREEN_PARTS) {
+    const still = await openPart(browser, c, 'theme=light&demo=0&anim=0', wide, 'reduce');
+    const moving = await openPart(browser, c, 'theme=light&demo=0', wide, 'reduce');
+    (out[c.id] as Record<string, unknown>).reduced = withTransitions(
+      await still.page.locator(still.sel).evaluate(readElement),
+      await moving.page.locator(moving.sel).evaluate(readElement),
+    );
+    await still.page.context().close();
+    await moving.page.context().close();
+  }
   // The small screen, in the real state (light; v46's narrow rules do not depend on the scheme).
-  for (const c of inventory.components) {
+  for (const c of [...inventory.components, ...SCREEN_PARTS]) {
     const page = await open(browser, `s=${c.source_state}&theme=light&demo=0&anim=0`, {
       width: 320,
       height: 568,
@@ -500,10 +619,17 @@ try {
     (out[c.id] as Record<string, unknown>).narrow = el ? await el.evaluate(readElement) : null;
     await page.context().close();
   }
+  // A screen part on a wider phone (light): what stops growing there (the tab bar: `min(376px,
+  // calc(100% - 24px))`).
+  for (const c of SCREEN_PARTS) {
+    const { page, sel } = await openPart(browser, c, 'theme=light&demo=0&anim=0', ROOMY);
+    (out[c.id] as Record<string, unknown>).roomy = await page.locator(sel).evaluate(readElement);
+    await page.context().close();
+  }
   // In the real screen (light, 360, motion on): the transitions the element has where it is used,
   // and which of the inventory's motion rules reach it (the buttons' motion test reads these).
-  for (const c of inventory.components) {
-    if (c.group !== BUTTONS) continue;
+  for (const c of [...inventory.components, ...SCREEN_PARTS]) {
+    if (!REAL_GROUPS.has(c.group)) continue;
     const page = await open(browser, `s=${c.source_state}&theme=light&demo=0`, wide);
     const ok = await page.evaluate(() => document.documentElement.dataset.stateOk === '1');
     const el = ok ? await pick(page, c) : null;
@@ -525,7 +651,9 @@ const result = {
     script: 'scripts/v46/measure.ts',
     viewport:
       '360x740 (page=galeri; reduced: light), narrow 320x568 (s=<state>, light), ' +
-      'real 360x740 (s=<state>, light, motion on: transitions and matched motion rules)',
+      'real 360x740 (s=<state>, light, motion on: transitions and matched motion rules); ' +
+      'screen parts (scripts/v46/screenParts.ts) in their real state for every pass, and roomy ' +
+      `${ROOMY.width}x${ROOMY.height} (light)`,
     fonts: "the app's own files (apps/mobile/src/theme/fonts.ts), Roboto for system-ui",
   },
   components: out,

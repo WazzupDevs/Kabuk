@@ -18,13 +18,16 @@ import type { V46Drawing, V46Paint, V46SvgNode } from '@/theme/parts.generated';
 
 // One of v46's inline drawings as measured (parts.generated.ts: its viewBox, shapes, clip paths and
 // gradients, with each shape's computed paint), drawn with react-native-svg at `size`. Ids of clip
-// paths and gradients are made unique per drawing, as v46's own are per page.
+// paths and gradients are made unique per drawing, as v46's own are per page. A paint of
+// `currentColor` is `color` (a tab's icon, in the colour of its state).
 export function V46Svg({
   drawing,
   size,
+  color,
 }: {
   drawing: V46Drawing;
   size: readonly [number, number];
+  color?: string;
 }) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
   const [width, height] = size;
@@ -73,7 +76,7 @@ export function V46Svg({
     }
   };
   return (
-    <Svg width={width} height={height} viewBox={drawing.viewBox.join(' ')}>
+    <Svg width={width} height={height} viewBox={drawing.viewBox.join(' ')} color={color}>
       {drawing.clips.length || drawing.gradients.length ? (
         <Defs>
           {drawing.clips.map((shapes, i) => (
