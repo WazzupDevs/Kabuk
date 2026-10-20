@@ -42,6 +42,7 @@ const STATUS: Record<ErrorCode, number> = {
   not_your_seat: 403,
   not_player: 403,
   not_enough_players: 409,
+  too_many_players: 409,
   no_objections_left: 409,
   no_passes_left: 409,
   too_soon: 429,

@@ -75,7 +75,8 @@ export type ShuffleRequest = { action: 'shuffle'; roomId: string };
 // choosing. It closes an open pre-game page the same way.
 export type EndGameRequest = { action: 'end-game'; roomId: string };
 // "Oyundan çık": a player of the running game leaves it (not_player otherwise); the game goes on for
-// the others and the person stays at the table, watching.
+// the others and the person stays at the table, watching. Not the owner's (bad_request): it ends
+// the game with "Oyunu bitir".
 export type LeaveGameRequest = { action: 'leave-game'; roomId: string };
 // "Masayı bitir": the owner only (not_owner); the table closes for everyone.
 export type EndRoomRequest = { action: 'end' };

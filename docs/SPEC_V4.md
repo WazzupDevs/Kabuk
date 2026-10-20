@@ -545,6 +545,9 @@ Değişmez kabul edilir.
 - Katılımcı "Oyundan çık": oyun diğerleri için sürer (`rooms/leave-game`). Kişi masada kalır; o oyunda yeniden oyuncu olamaz.
 - Masadan ayrılan kişi, hangi yoldan olursa olsun (Masadan ayrıl, Mekandan ayrıl, yeni check-in, engelleme, süre dolumu), oyundan, oyun öncesi sayfadan ve oylardan da çıkar (adım 4.5a-3).
 - Masa kapanınca (sahip, son kişi, hareketsizlik, sahibinin "Katıl"ıyla başka masaya taşınma) süren oyun terk edilmiş olarak biter (`game_abandoned`); oyun öncesi sayfa kapanır. Sahibin "Oyunu bitir"i de sonuna varmamış oyunu terk edilmiş sayar; terk edilen oyun sonuç yazmaz (adım 4.5a-3).
+  - 4.5b için not (CTO incelemesi, WazzupDevs/Kabuk#185): masa kapanırken yazılan `game_abandoned` Realtime ile kimseye ulaşmaz. Aynı işlemde herkesin `left_at`'ı dolar, `game_events`'i ise yalnızca masada oturan okur; taşınan masada da böyledir. Masa bitti ekranı oyunun yarıda kaldığını `rooms` satırındaki `game_state.lastGame.abandoned`'dan okur.
+  - "Oyundan çık" katılımcınındır; sahip oyunu "Oyunu bitir"le bitirir, `rooms/leave-game` sahipte `bad_request` döner (proje sahibinin kararı).
+  - Oyuncu sayısı oyunun alt sınırının altındaysa başlatma `not_enough_players`, üst sınırının üstündeyse `too_many_players` döner (proje sahibinin kararı). Bugün her oyunun üst sınırı masanınkidir (12).
 - Rol sahibinin çıkışı oyunun kuralıyla çözülür (her oyunda aşağıda). Genel kural: süren tur ya da aşama süresi dolana kadar sürer; çıkanın rolüne özgü eylemi kimse basamaz ve gizli bilgi kimseye yeniden verilmez (SPEC_V3 §22.E kalıbı).
 - **Oyun sonu:** kazanan ve öne çıkanlar, kazananlara konfeti. "Masaya dön" herkeste; "Yeniden oyna" yalnızca sahipte (aynı oyunun oyun öncesi sayfasını aynı seçimlerle açar: oyuncular takımlarıyla, oyunun başında izleyenler izleyerek; oyundan sonra gelenler yeniden seçer).
 
