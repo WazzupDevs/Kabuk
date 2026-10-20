@@ -351,6 +351,7 @@ Değişmez kabul edilir.
 - **Check-in başına 1 değişiklik** (K-3; K-48: v46'da da 1).
   - Check-in'in kimliği `table_sessions.identity_mode` (`anonymous` | `profiled`; kadında mekan sohbetinde ve masada, erkek ve belirtmeyende yalnızca mekan sohbetinde) ve değişiklik sayısı `table_sessions.identity_switches` (0 ya da 1).
   - Anahtar `checkin/set-identity { anonymous }` ile değişir; ikinci değişiklik `identity_switch_used` (409), fotoğrafsız profilli seçim `photo_required` (409) döner. Cinsiyet istemez ve `anonymous_not_allowed` döndürmez (o iki kod masaya giriş içindir, yukarıda); aynı kimliği yeniden seçmek hak harcamaz.
+  - Açık bir isteği varken (bekleyen ya da süresi dolmamış reddedilen; kural 5) değişiklik `request_pending` (409) döner: sahip isteğin geldiği kimliği görür (`rooms/request-profile`), kişi masada öteki kimlikle oturursa ikisini birbirine bağlardı (kural 4; adım 4.5, CTO incelemesi, WazzupDevs/Kabuk#183). İstek kabul edilince ya da bitince değişiklik yine serbesttir.
   - Uygulama değiştirmeden önce sonucunu söyler: hakkın bu check-in'de biter, yeni mesajların yeni kimlikle görünür. Metin v44'te.
   - Faz 2'nin mekan sohbetine özgü seçimi (`table_sessions.venue_chat_profiled`, `venue_chat_mode_locked`) bu modele taşınır; kolon 4.8'de kalkar.
 - **Değişiklikten önce yazılan mesajlar eski kimlikte kalır.**
@@ -545,6 +546,9 @@ Değişmez kabul edilir.
 - Katılımcı "Oyundan çık": oyun diğerleri için sürer (`rooms/leave-game`). Kişi masada kalır; o oyunda yeniden oyuncu olamaz.
 - Masadan ayrılan kişi, hangi yoldan olursa olsun (Masadan ayrıl, Mekandan ayrıl, yeni check-in, engelleme, süre dolumu), oyundan, oyun öncesi sayfadan ve oylardan da çıkar (adım 4.5a-3).
 - Masa kapanınca (sahip, son kişi, hareketsizlik, sahibinin "Katıl"ıyla başka masaya taşınma) süren oyun terk edilmiş olarak biter (`game_abandoned`); oyun öncesi sayfa kapanır. Sahibin "Oyunu bitir"i de sonuna varmamış oyunu terk edilmiş sayar; terk edilen oyun sonuç yazmaz (adım 4.5a-3).
+  - 4.5b için not (CTO incelemesi, WazzupDevs/Kabuk#185): masa kapanırken yazılan `game_abandoned` Realtime ile kimseye ulaşmaz. Aynı işlemde herkesin `left_at`'ı dolar, `game_events`'i ise yalnızca masada oturan okur; taşınan masada da böyledir. Masa bitti ekranı oyunun yarıda kaldığını `rooms` satırındaki `game_state.lastGame.abandoned`'dan okur.
+  - "Oyundan çık" katılımcınındır; sahip oyunu "Oyunu bitir"le bitirir, `rooms/leave-game` sahipte `bad_request` döner (proje sahibinin kararı).
+  - Oyuncu sayısı oyunun alt sınırının altındaysa başlatma `not_enough_players`, üst sınırının üstündeyse `too_many_players` döner (proje sahibinin kararı). Bugün her oyunun üst sınırı masanınkidir (12).
 - Rol sahibinin çıkışı oyunun kuralıyla çözülür (her oyunda aşağıda). Genel kural: süren tur ya da aşama süresi dolana kadar sürer; çıkanın rolüne özgü eylemi kimse basamaz ve gizli bilgi kimseye yeniden verilmez (SPEC_V3 §22.E kalıbı).
 - **Oyun sonu:** kazanan ve öne çıkanlar, kazananlara konfeti. "Masaya dön" herkeste; "Yeniden oyna" yalnızca sahipte (aynı oyunun oyun öncesi sayfasını aynı seçimlerle açar: oyuncular takımlarıyla, oyunun başında izleyenler izleyerek; oyundan sonra gelenler yeniden seçer).
 
@@ -694,7 +698,7 @@ Değişmez kabul edilir.
 
 **Veri.**
 
-- Ayrı bir bildirim tablosu yoktur (SPEC_V3 §18.3'teki karar sürer). Liste salt okunur bir RPC'dir: `my_notifications()` (security definer, yalnızca okur, `set search_path = ''`; kural 1). Kaynakları:
+- Ayrı bir bildirim tablosu yoktur (SPEC_V3 §18.3'teki karar sürer). Liste salt okunur bir RPC'dir: `my_notifications()` (security definer, yalnızca okur, `set search_path = ''`; kural 1). Adım 4.7'de `my_notifications(target_user_id)` olarak yalnızca service role'e açıktır ve `friends/notifications` çağırır: fotoğrafları imzalar, doğum tarihini yaşa çevirir (`friends/incoming` kalıbı). Kaynakları:
   - gelen ve bekleyen açık arkadaşlık istekleri (`friend_requests`);
   - kişinin kabul edilen istekleri, son 7 gün;
   - eşleşmeyle kurulan arkadaşlıklar (`friendships`, kaynağı `room_end_mutual`), son 7 gün, yalnızca ilk basan için. Kimin önce bastığı `mutual_friend_intents.created_at`'ten okunur; niyetler arkadaşlık sürdükçe kalır (K-70);
@@ -719,6 +723,16 @@ Değişmez kabul edilir.
   - Kişinin bulunduğu masa için "Masadan ayrıl" kuralı uygulanır: tek kişilik boş masası sessizce kapanır; başka bir masanın katılımcısıysa o masadan ayrılır; başka kişilerin bulunduğu bir masanın sahibiyse §4.E'deki sahiplik kuralı (K-13) uygulanır.
   - Masa dolmuşsa, kapanmışsa ya da davetin süresi geçmişse alıcıya tek bir metin görünür: davet artık geçerli değil.
 - **Red ve zaman aşımı gönderene aynı görünür:** sahip ikisinde de hiçbir şey görmez. Kabulde kişi masaya gelir (Masadakiler'de görünür).
+- **Sunucunun ayrıntıları (adım 4.7):**
+  - `rooms/invite`: sahip olmayan `not_owner` alır. Şunların hiçbiri satır yazmaz ve yanıt hep `{ ok: true }`'dur: arkadaş değil (ya da bilinmeyen kimlik), iki yönlü engel (masadaki herhangi biriyle), mekanda check-in'i yok, noktası olan mekanda masanın noktasında değil (proje sahibinin kararı, CTO incelemesi WazzupDevs/Kabuk#195), zaten bu masada, aynı sahipten bekleyen bir davet, saatlik sınır, dolu masa. Davet alıcının `inbox:{user_id}` kanalına veri içermeyen `table_invite` olayıyla duyurulur.
+  - Davet masanın adını ve telefon sayısını gönderildiği anki değerleriyle saklar (`table_invites.room_name`, `phones`); liste onları gösterir, masanın sonraki hâlini (açık mı, kaç kişi) hiç göstermez (kural 4; WazzupDevs/Kabuk#195).
+  - `rooms/answer-invite`: başkasının davet kimliği `not_found`. Red sessizdir. Katılmada şunların hepsi aynı `invite_unavailable` (409, "Davet artık geçerli değil.") döner: süresi geçmiş, masa kapanmış ya da dolmuş, daveti gönderen artık sahip değil (sahiplik geçmiş) ya da check-in'i bitmiş, ikisi artık arkadaş değil (arkadaşlıktan çıkarma engelle aynı görünür, kural 5), alıcının check-in'i başka mekanda ya da masanın noktasından başka bir noktada, masadaki biriyle engel (WazzupDevs/Kabuk#195). Zaten bu masadaysa davet kabul edilmiş sayılır.
+  - Masaya oturuş check-in'in kimliğiyledir (`private.table_seat`; `photo_required`, `gender_required` aynen).
+  - Liste satırları (`friends/notifications`): gelen istek bekliyor ya da 7 gün içinde kabul edilmiş (kabulden sonra arkadaşın `public_id`'si); mekan sohbetinden gelen istekte ad, yaş, fotoğraf ve mekan (SPEC_V3 §7.5 aynen), oyun geçmişinden gelende yalnızca masadaki adı ve kayıt. Engel ve biten arkadaşlık satırı kaldırır. Yanıt okunmamış sayısını da taşır (`unseen`).
+  - Rozet: `account/notifications-seen { seenAt }`; `seenAt` listenin gösterdiği en yeni satırın `createdAt`'idir. Sunucu onu şimdiyle sınırlar ve işareti yalnızca ileri götürür: liste okunduktan sonra gelen satır yeni kalır, aynı çağrı iki kez ya da geç gelen eski bir çağrı işareti geri almaz (CTO incelemesi, WazzupDevs/Kabuk#195).
+  - Bildirim ayarları: `profile/update { notifyInvites }`; üç tercih kişinin kendi satırında okunur.
+  - Analitik olayları (§4.L: `invite_sent`, `invite_accepted`, `notifications_opened`) uygulama gönderir; katalog istemci PR'ında.
+  - `CURRENT_KVKK_VERSION`: metin bu adımın sunucu PR'ında; sürüm tek seferde, 4.5 ile birlikte main'e girecek istemci PR'ında artar ve 4.4'ün ve bu adımın metnini birlikte onaylatır (proje sahibinin kararı, §4.L).
 
 **Push.**
 
@@ -827,7 +841,7 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 | `account`       | `complete-onboarding` nick ve hazır görünüşlerden birini atar (K-46); `notifications-seen`                                                                                                                                                                                                                               | 4.4, 4.7 |
 | `profile`       | Kendi `get` yanıtında `capsuleNick`, `capsuleLook`; başkası için ikisi de yok (K-49); `refresh-nick` (30 günde bir, K-9)                                                                                                                                                                                                 | 4.4      |
 | `profile`       | `set-look { look }`: görünüş katalogla doğrulanır, bilinmeyen parça atılır (K-47)                                                                                                                                                                                                                                        | 4.4b     |
-| `checkin`       | `set-identity { anonymous }` (`identity_switch_used`, `photo_required`; cinsiyet istemez)                                                                                                                                                                                                                                | 4.4      |
+| `checkin`       | `set-identity { anonymous }` (`identity_switch_used`, `photo_required`, 4.5'ten açık istekte `request_pending`; cinsiyet istemez)                                                                                                                                                                                        | 4.4      |
 | `checkin`       | `check-in` kişi sayısı ve masa adı almaz                                                                                                                                                                                                                                                                                 | 4.5      |
 | `venue-chat`    | `send` kimliği check-in'den okur; istek `identity` ya da bugünkü uygulamanın `profiled`'ını taşır, tam olarak birini (`identity_mismatch`, `venue_chat_mode_locked`); `page` yanıtında `senderKey`, anonimde nick; `delete`, `mute`, `unmute`, `mutes`                                                                   | 4.4      |
 | `rooms`         | `create { icon? }`, `set-icon` (K-45), `set-visibility`, `reroll-name`, `request-join` (masa ya da kişi, `asMember`), `respond`, `request-profile`, `leave`, `end`, `vote`, `open-game { again? }`, `pick`, `shuffle`, `end-game`, `leave-game`; yeni kodlar `already_in_table`, `table_full`, `not_owner`, `not_player` | 4.5      |
@@ -848,6 +862,7 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 - **4.4:** `venue_chat_mutes` mekan sohbeti zincirinin sonuna girer: `table_sessions` → `venue_chat_rate` → `venue_chat_reaction_rate` → `venue_chat_messages` → `venue_chat_reactions` → `venue_chat_reports` → `venue_chat_mutes`. Kimlik değişikliği yalnızca check-in'i kilitler (`for no key update`).
 - **4.5:** masa zinciri `profiles` → `table_sessions` → `rooms` → `room_members` → `join_requests` → `table_votes` → odanın satırları. Odanın satırlarında `game_players` `tabu_turns`'ten önce gelir: `game_players` → `tabu_turns` → `game_secrets` → `room_used_cards`, `messages` → `message_reactions`, `game_events`, `play_history`.
   - Masa taşıyan kabul (Katıl) iki masayı kilitler: istekçinin check-in'i → iki `rooms` satırı `id` sırasıyla → iki masanın `room_members` satırları → `join_requests` (SPEC_V3 §23.K'nın genellemesi).
+  - Katıl isteği (`rooms_request_join`) de iki masayı `id` sırasıyla alır: hedef `for no key update`, istekçinin kendi masası `for key share` (isteğin `requester_room_id` yabancı anahtarının alacağı kilit). Birbirine aynı anda Katıl basan iki masa birbirini beklemez; bir sahibin başka bir masaya Katıl'ı ile o masanın kendi masasına isteğini kabulü birbirini bekler, kilitlenmez (`locks` testi; CTO incelemesi, WazzupDevs/Kabuk#183).
   - `locks` testleri: çapraz kabul; 12. telefonun iki istekte aynı anda kabulü (biri geçer, diğeri `table_full`); oy ve seçimin oyun başlatmayla aynı anda gelmesi.
   - Sessiz eklemeyi geri alma (`friends/withdraw-add`, K-67):
     - Basış kişinin kendi `play_history` satırındadır (`friend_action_at`). Satır önce yalnızca kilitlenir (`for update`, değişiklik yok). Kural 10'un sırası: `play_history` → çift kilidi → `friend_requests` → `friendships`, `mutual_friend_intents`.
@@ -881,7 +896,7 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 
 - **4.4:** kapsül nick hesaba bağlı bir takma addır. Anonim kişi ziyaretler arasında aynı nick'le tanınabilir; nick profil kimliğini açmaz. Sessize alma kaydı: kimin hangi kimliği sessize aldığı, yalnızca sunucuda. Anahtar değişikliğinden önce yazılan mesajların eski kimlikte kaldığı. Silinen hesabın ve yenilenen nick'in metni yeniden verilmez; bunun için yalnızca nick metni, hesapla bağı olmadan saklanır.
 - **4.7:** masa daveti, arkadaşına aynı mekanda bir masan olduğunu söyler; mekan adı gitmez. Bildirim listesi ve davet push'u.
-- `CURRENT_KVKK_VERSION` 4.4'te artar; mevcut kullanıcılar yeniden onaylar. 4.7 değişikliği aynı sürüme alınabiliyorsa birlikte, değilse ikinci kez artar.
+- `CURRENT_KVKK_VERSION` tek seferde artar: 4.5 ile birlikte main'e girecek istemci PR'ında; mevcut kullanıcılar 4.4'ün ve 4.7'nin metnini bir kez onaylar. 4.4'ün istemcisi daha önce main'e girerse o PR'da artmaz (proje sahibinin kararı).
 - Sayfalar taslaktır; "hukuki kontrol bekliyor" notu kalır.
 
 **Mağaza** (`docs/store/`):

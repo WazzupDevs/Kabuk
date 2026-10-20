@@ -495,12 +495,49 @@ describe('the seat of a person alone (rule 4)', () => {
     const [asked] =
       await sql`select requester_profiled from public.join_requests where id = ${requestId}`;
     expect(asked?.requester_profiled).toBe(true);
-    expect(
-      (await invoke(w.client, 'checkin', { action: 'set-identity', anonymous: true })).status,
-    ).toBe(200);
+    // checkin/set-identity refuses while the request is open (next test); the check-in's identity
+    // changes here straight in the database, as no road the app has can change it now.
+    await sql`update public.table_sessions set identity_mode = 'anonymous'
+              where id = ${w.sessionId}`;
     await accept(owner, requestId);
     const seat = (await seated(roomId)).find((x) => x.session_id === w.sessionId);
     expect(seat).toMatchObject({ profiled: false, alias: await nickOf(w) });
+  });
+
+  // WazzupDevs/Kabuk#183: the owner sees the identity the request came with; changing it while the
+  // request is open would let the owner link the two. A declined request is open until it expires,
+  // as the requester sees it (rule 5).
+  it('refuses a new identity while a request is open, and takes it after the accept or the end', async () => {
+    const [owner, w0, v0] = await all(3);
+    for (const p of [w0, v0]) {
+      await setTestPhoto(p.client);
+      await sql`update public.profiles set default_participation = 'profile' where id = ${p.userId}`;
+    }
+    const w = { ...w0, sessionId: await checkIn(w0.client, venue) };
+    const v = { ...v0, sessionId: await checkIn(v0.client, venue) };
+    const roomId = await openTable(owner);
+    const setIdentity = (p: Person) =>
+      invoke(p.client, 'checkin', { action: 'set-identity', anonymous: true });
+    const pending = { status: 409, body: errorBody('request_pending') };
+
+    const declined = await ask(w, roomId);
+    expect(await setIdentity(w)).toEqual(pending);
+    expect(await rooms(owner, { action: 'respond', requestId: declined, accept: false })).toEqual({
+      status: 200,
+      body: { ok: true },
+    });
+    expect(await setIdentity(w)).toEqual(pending);
+    await sql`update public.join_requests set expires_at = now() - interval '1 second'
+              where id = ${declined}`;
+    expect((await setIdentity(w)).status).toBe(200);
+
+    const accepted = await ask(v, roomId);
+    expect(await setIdentity(v)).toEqual(pending);
+    await accept(owner, accepted);
+    expect((await setIdentity(v)).status).toBe(200);
+    // The seat keeps the identity it sat down with (§4.D).
+    const seat = (await seated(roomId)).find((x) => x.session_id === v.sessionId);
+    expect(seat?.profiled).toBe(true);
   });
 
   it('finds the request gone for a person who cannot sit any more', async () => {
@@ -1028,6 +1065,48 @@ describe('locks (§4.K)', () => {
       await sql`select count(*)::int as n from public.join_requests where status = 'pending'
                 and room_id in (${roomA}, ${roomB})`,
     ).toEqual([{ n: 2 }]);
+  });
+
+  // rooms_request_join takes the two tables in id order, as rooms_respond does
+  // (WazzupDevs/Kabuk#183): an owner asking another table while it accepts that table's request
+  // into its own waits for one or the other, whichever came first; nothing deadlocks.
+  it('lets an owner\'s "Katıl" and its accept of the same table wait for each other', async () => {
+    for (const askFirst of [true, false]) {
+      const [a, b] = await all(2);
+      const roomA = await openTable(a);
+      const roomB = await openTable(b);
+      const requestId = await ask(b, roomA);
+      const first = postgres(dbUrl, { max: 1, onnotice: () => {} });
+      const second = postgres(dbUrl, { max: 1, onnotice: () => {} });
+      const asking = (c: postgres.TransactionSql | postgres.Sql) =>
+        c`select status from public.rooms_request_join(${a.userId}, ${roomB}, 60, 10)`;
+      const accepting = (c: postgres.TransactionSql | postgres.Sql) =>
+        c`select (public.rooms_respond(${a.userId}, ${requestId}, true)).status`;
+      try {
+        let later: Promise<unknown> = Promise.resolve();
+        await first.begin(async (tx) => {
+          await (askFirst ? asking(tx) : accepting(tx));
+          later = (askFirst ? accepting(second) : asking(second))
+            .execute()
+            .catch((err: unknown) => err);
+          await waitUntilBlocked(askFirst ? 'rooms_respond' : 'rooms_request_join');
+        });
+        if (askFirst) {
+          expect(await later).toEqual([{ status: 'accepted' }]);
+        } else {
+          // b's table moved into a's: nothing to ask any more.
+          expect(await later).toMatchObject({ message: 'room_not_available' });
+        }
+      } finally {
+        await Promise.all([first.end(), second.end()]);
+      }
+      expect((await seated(roomA)).map((x) => x.session_id).sort()).toEqual(
+        [a.sessionId, b.sessionId].sort(),
+      );
+      expect((await roomRow(roomB)).status).toBe('closed');
+      await expectConsistent(roomA);
+      for (const phone of TABLE_PHONES) await deleteUserByPhone(phone);
+    }
   });
 
   // A "Katıl" with a table locks its people's check-ins first: one of them leaving the venue at

@@ -39,6 +39,7 @@ export type ErrorCode =
   | 'not_your_seat'
   | 'not_player'
   | 'not_enough_players'
+  | 'too_many_players'
   | 'no_objections_left'
   | 'no_passes_left'
   | 'too_soon'
@@ -55,6 +56,7 @@ export type ErrorCode =
   | 'icon_taken'
   | 'already_in_table'
   | 'table_full'
+  | 'invite_unavailable'
   | 'wrong_side'
   | 'not_leader'
   | 'display_name_required'
@@ -131,6 +133,7 @@ export const DOMAIN_ERROR_CODES: readonly ErrorCode[] = [
   'not_your_seat',
   'not_player',
   'not_enough_players',
+  'too_many_players',
   'no_objections_left',
   'no_passes_left',
   'too_soon',
@@ -158,6 +161,9 @@ export const DOMAIN_ERROR_CODES: readonly ErrorCode[] = [
   'already_in_table',
   'table_full',
   'gender_required',
+  // A table invite that ran out, a closed or full table, an owner who is not the inviter any more:
+  // one answer for all (docs/SPEC_V4.md §4.G).
+  'invite_unavailable',
   // Teams (§22.B, §22.D): an account goes back only to its side; only a leader ends the room.
   'wrong_side',
   'not_leader',

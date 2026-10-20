@@ -411,7 +411,8 @@ $$;
 -- What a game's `<game>/start { roomId }` (step 4.6) calls first, in its transaction: the owner only
 -- (not_owner), the game playable now. A game with a pre-game page starts from its page; a team game
 -- needs Mor and Pembe of at least two each, and who chose nothing or to watch watches; any other
--- game: everyone who does not watch plays, at least the game's lower limit. A game without one
+-- game: everyone who does not watch plays, at least the game's lower limit (not_enough_players)
+-- and at most its upper one (too_many_players). A game without one
 -- (Sohbet kartları) starts with no game open and everyone at the table playing. The votes are
 -- cleared, the players go to game_players in a random seat order (roles are the game's own) and the
 -- running game is rooms.concept with its number in game_state; the game adds the rest. Returns the
@@ -450,7 +451,8 @@ begin
   create temporary table if not exists pg_temp.starting_players (
     session_id uuid primary key, team text
   ) on commit drop;
-  delete from pg_temp.starting_players;
+  -- `where true`: PostgREST's sessions load pg_safeupdate, which refuses a DELETE without WHERE.
+  delete from pg_temp.starting_players where true;
   insert into pg_temp.starting_players (session_id, team)
   select rm.session_id,
          case when g.teams then picks ->> rm.session_id::text else null end
@@ -465,10 +467,11 @@ begin
   select count(*) filter (where team = 'a'), count(*) filter (where team = 'b'), count(*)
   into team_a, team_b, players
   from pg_temp.starting_players;
-  if (g.teams and (team_a < 2 or team_b < 2)) or players < g.min_players
-    or players > g.max_players
-  then
+  if (g.teams and (team_a < 2 or team_b < 2)) or players < g.min_players then
     raise exception using errcode = 'P0001', message = 'not_enough_players';
+  end if;
+  if players > g.max_players then
+    raise exception using errcode = 'P0001', message = 'too_many_players';
   end if;
 
   next_no := private.current_game_no(r.game_state) + 1;
@@ -509,7 +512,9 @@ end;
 $$;
 
 -- rooms/leave-game: a player of the running game leaves it; the game goes on for the others and
--- the person stays at the table, watching. One who does not play it: not_player.
+-- the person stays at the table, watching. One who does not play it: not_player. The owner does
+-- not leave its game (§4.F gives "Oyundan çık" to the others; the owner ends it with "Oyunu
+-- bitir"): bad_request, as for any action the app does not offer.
 create function public.rooms_leave_game(target_user_id uuid, target_room_id uuid)
 returns public.rooms
 language plpgsql
@@ -521,6 +526,9 @@ declare
   r public.rooms;
 begin
   select * into p from private.room_phone(target_user_id, target_room_id);
+  if p.is_leader then
+    raise exception using errcode = 'P0001', message = 'bad_request';
+  end if;
   select * into r from public.rooms where id = target_room_id;
   if r.concept is null then
     raise exception using errcode = 'P0001', message = 'no_game';

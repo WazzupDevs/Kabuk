@@ -851,8 +851,10 @@ export type Database = {
           kvkk_version: string;
           location_consent_at: string | null;
           location_consent_version: string | null;
+          notifications_seen_at: string | null;
           notify_dm: boolean;
           notify_friend_requests: boolean;
+          notify_invites: boolean;
           photo_hidden_at: string | null;
           photo_path: string | null;
           photo_pending_path: string | null;
@@ -879,8 +881,10 @@ export type Database = {
           kvkk_version: string;
           location_consent_at?: string | null;
           location_consent_version?: string | null;
+          notifications_seen_at?: string | null;
           notify_dm?: boolean;
           notify_friend_requests?: boolean;
+          notify_invites?: boolean;
           photo_hidden_at?: string | null;
           photo_path?: string | null;
           photo_pending_path?: string | null;
@@ -907,8 +911,10 @@ export type Database = {
           kvkk_version?: string;
           location_consent_at?: string | null;
           location_consent_version?: string | null;
+          notifications_seen_at?: string | null;
           notify_dm?: boolean;
           notify_friend_requests?: boolean;
+          notify_invites?: boolean;
           photo_hidden_at?: string | null;
           photo_path?: string | null;
           photo_pending_path?: string | null;
@@ -1246,6 +1252,60 @@ export type Database = {
           theme_order?: number;
         };
         Relationships: [];
+      };
+      table_invites: {
+        Row: {
+          created_at: string;
+          expires_at: string;
+          from_session_id: string;
+          id: string;
+          phones: number;
+          responded_at: string | null;
+          room_id: string;
+          room_name: string | null;
+          status: string;
+          to_user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          expires_at: string;
+          from_session_id: string;
+          id?: string;
+          phones: number;
+          responded_at?: string | null;
+          room_id: string;
+          room_name?: string | null;
+          status?: string;
+          to_user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          expires_at?: string;
+          from_session_id?: string;
+          id?: string;
+          phones?: number;
+          responded_at?: string | null;
+          room_id?: string;
+          room_name?: string | null;
+          status?: string;
+          to_user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'table_invites_from_session_id_fkey';
+            columns: ['from_session_id'];
+            isOneToOne: false;
+            referencedRelation: 'table_sessions';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'table_invites_room_id_fkey';
+            columns: ['room_id'];
+            isOneToOne: false;
+            referencedRelation: 'rooms';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       table_sessions: {
         Row: {
@@ -2240,6 +2300,26 @@ export type Database = {
           request_id: string;
         }[];
       };
+      my_notifications: {
+        Args: { target_user_id: string };
+        Returns: {
+          birth_date: string;
+          created_at: string;
+          display_name: string;
+          expires_at: string;
+          history_id: string;
+          item_id: string;
+          kind: string;
+          other_alias: string;
+          phones: number;
+          photo_path: string;
+          public_id: string;
+          room_name: string;
+          source: string;
+          status: string;
+          venue_name: string;
+        }[];
+      };
       my_sent_requests: {
         Args: never;
         Returns: {
@@ -2305,8 +2385,10 @@ export type Database = {
           kvkk_version: string;
           location_consent_at: string | null;
           location_consent_version: string | null;
+          notifications_seen_at: string | null;
           notify_dm: boolean;
           notify_friend_requests: boolean;
+          notify_invites: boolean;
           photo_hidden_at: string | null;
           photo_path: string | null;
           photo_pending_path: string | null;
@@ -2399,6 +2481,17 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      rooms_answer_invite: {
+        Args: {
+          accept: boolean;
+          target_invite_id: string;
+          target_user_id: string;
+        };
+        Returns: {
+          invite: Database['public']['Tables']['table_invites']['Row'];
+          left_room_id: string;
+        }[];
       };
       rooms_create: {
         Args: {
@@ -2524,6 +2617,33 @@ export type Database = {
           to: 'rooms';
           isOneToOne: true;
           isSetofReturn: false;
+        };
+      };
+      rooms_invite: {
+        Args: {
+          friend_public_id: string;
+          hourly_max: number;
+          target_room_id: string;
+          target_user_id: string;
+          ttl_seconds: number;
+        };
+        Returns: {
+          created_at: string;
+          expires_at: string;
+          from_session_id: string;
+          id: string;
+          phones: number;
+          responded_at: string | null;
+          room_id: string;
+          room_name: string | null;
+          status: string;
+          to_user_id: string;
+        }[];
+        SetofOptions: {
+          from: '*';
+          to: 'table_invites';
+          isOneToOne: false;
+          isSetofReturn: true;
         };
       };
       rooms_leave: {
