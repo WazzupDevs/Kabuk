@@ -269,8 +269,9 @@ export type V46TypeKey = keyof typeof V46_TYPE;
 // skall-masa-deneme-v46-galeri.html?page=galeri#<id>): its selector and screen, its measured
 // width, and its look in each scheme. Radius is one value or four corners (top-left first).
 export const V46_COMPONENTS = {
-  // Birincil, büyük (52): Kayıt ve masa bitti ekranlarının alt düğmesi
+  // Kayıt ve masa bitti ekranlarının alt düğmesi
   'birincil-52': {
+    name: 'Birincil, büyük (52)',
     group: 'Düğmeler',
     source: 'button.btn.btn-room — [data-sup-start] @ kayit-hosgeldin',
     width: 320,
@@ -306,8 +307,9 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Birincil, büyük, yükleniyor: Gerçek yükleniyor hali: dokunduktan hemen sonra
+  // Gerçek yükleniyor hali: dokunduktan hemen sonra
   'birincil-52-yukleniyor': {
+    name: 'Birincil, büyük, yükleniyor',
     group: 'Düğmeler',
     source: 'button.btn.btn-room.busy — [data-sup-next] @ kayit-telefon',
     width: 328,
@@ -343,8 +345,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Birincil, büyük, pasif
   'birincil-52-pasif': {
+    name: 'Birincil, büyük, pasif',
     group: 'Düğmeler',
     source: 'button.btn.btn-room — [data-sup-next] @ kayit-telefon',
     width: 328,
@@ -380,8 +382,9 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Birincil (48): Pencerelerin onay düğmesi
+  // Pencerelerin onay düğmesi
   'birincil-48': {
+    name: 'Birincil (48)',
     group: 'Düğmeler',
     source: 'button.btn.btn-room — [data-kur-go] @ mekan-masa-kur',
     width: 320,
@@ -417,8 +420,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Birincil, pasif
   'birincil-48-pasif': {
+    name: 'Birincil, pasif',
     group: 'Düğmeler',
     source: 'button.btn.btn-room — [data-esave] @ profil-duzenle',
     width: 328,
@@ -454,8 +457,9 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Birincil, 15 px yazı (Masa kur): Aynı düğme burada 15 px, pencerelerde 14 px
+  // Aynı düğme burada 15 px, pencerelerde 14 px
   'birincil-48-15': {
+    name: 'Birincil, 15 px yazı (Masa kur)',
     group: 'Düğmeler',
     source: 'button.btn.btn-room — [data-kur-open] @ mekan',
     width: 298,
@@ -491,8 +495,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Küçük birincil (36)
   'birincil-36': {
+    name: 'Küçük birincil (36)',
     group: 'Düğmeler',
     source: 'button.ntf-chip.main — .ntf-chip.main @ masa-davet',
     width: 89,
@@ -528,8 +532,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Yumuşak, beyaz (btn-soft)
   'yumusak-beyaz': {
+    name: 'Yumuşak, beyaz (btn-soft)',
     group: 'Düğmeler',
     source: 'button.btn.btn-soft.vh-go — [data-here-go] @ kesfet',
     width: 298,
@@ -565,8 +569,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Yumuşak, lavanta (Vazgeç)
   'yumusak-lavanta': {
+    name: 'Yumuşak, lavanta (Vazgeç)',
     group: 'Düğmeler',
     source: 'button.close — .sheet-layer.open .sheet button[data-close] @ masa-bitir',
     width: 320,
@@ -602,8 +606,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Küçük yumuşak (36)
   'yumusak-36': {
+    name: 'Küçük yumuşak (36)',
     group: 'Düğmeler',
     source: 'button.ntf-chip.ghost — .ntf-chip.ghost @ engellenenler',
     width: 117.1,
@@ -639,8 +643,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Tehlike, dolu
   tehlike: {
+    name: 'Tehlike, dolu',
     group: 'Düğmeler',
     source: 'button.btn.btn-danger — [data-c-yes] @ masa-bitir',
     width: 320,
@@ -676,8 +680,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Tehlike, yumuşak (Bitir)
   'tehlike-yumusak': {
+    name: 'Tehlike, yumuşak (Bitir)',
     group: 'Düğmeler',
     source: 'button.endbtn — [data-end-room] @ masa-sahibi',
     width: 78.5,
@@ -713,8 +717,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Başarı (Arkadaş ekle)
   basari: {
+    name: 'Başarı (Arkadaş ekle)',
     group: 'Düğmeler',
     source: 'button.btn.pa-friend — [data-padd] @ profil-baskasi',
     width: 159,
@@ -750,8 +754,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Kenarlı hap (36)
   'kenarli-36': {
+    name: 'Kenarlı hap (36)',
     group: 'Düğmeler',
     source: 'button.hb — [data-invite] @ masa-sahibi',
     width: 102.4,
@@ -787,8 +791,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Kenarlı hap (44)
   'kenarli-44': {
+    name: 'Kenarlı hap (44)',
     group: 'Düğmeler',
     source: 'button.pedit — [data-pedit] @ profil',
     width: 159,
@@ -824,8 +828,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Metin bağlantısı
   baglanti: {
+    name: 'Metin bağlantısı',
     group: 'Düğmeler',
     source: 'button.link — [data-cons-read] @ kayit-onay',
     width: 28,
@@ -861,8 +865,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Yuvarlak geri (44)
   'yuvarlak-geri': {
+    name: 'Yuvarlak geri (44)',
     group: 'Düğmeler',
     source: 'button.round.back — [data-back] @ masa-sahibi',
     width: 44,
@@ -898,8 +902,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Yuvarlak simge (44)
   'yuvarlak-simge': {
+    name: 'Yuvarlak simge (44)',
     group: 'Düğmeler',
     source: 'button.round.nbell — [data-nbell] @ mesajlar',
     width: 44,
@@ -935,8 +939,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Gönder (52)
   gonder: {
+    name: 'Gönder (52)',
     group: 'Düğmeler',
     source: 'button.send — [data-dsend] @ dm',
     width: 52,
@@ -972,8 +976,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Katıl
   katil: {
+    name: 'Katıl',
     group: 'Katıl',
     source: 'button.join — [data-join] @ mekan',
     width: 66.9,
@@ -1009,8 +1013,9 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Katıl, masa dolu (aria-disabled): v46'da Katıl için pasif görünüm tanımlı değil
+  // v46'da Katıl için pasif görünüm tanımlı değil
   'katil-12': {
+    name: 'Katıl, masa dolu (aria-disabled)',
     group: 'Katıl',
     source: 'button.join — [data-join][aria-disabled="true"] @ mekan-12-kisi',
     width: 66.9,
@@ -1046,8 +1051,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Bu masadayım (join ghost)
   'katil-burada': {
+    name: 'Bu masadayım (join ghost)',
     group: 'Katıl',
     source: 'button.join.ghost — [data-join-here] @ mekan',
     width: 304,
@@ -1083,8 +1088,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Lobi masa kartı
   'lobi-satiri': {
+    name: 'Lobi masa kartı',
     group: 'Katıl',
     source: 'div.card.row — .list .card.row @ mekan',
     width: 328,
@@ -1120,8 +1125,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Lobi kartı, istek bekliyor
   'lobi-satiri-bekliyor': {
+    name: 'Lobi kartı, istek bekliyor',
     group: 'Katıl',
     source: 'div.card.row — .list .card.row@@1 @ mekan-istek-musait-degil',
     width: 328,
@@ -1157,8 +1162,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Lobi kartı, kabul edildi
   'lobi-satiri-kabul': {
+    name: 'Lobi kartı, kabul edildi',
     group: 'Katıl',
     source: 'div.card.row — .list .card.row@@1 @ mekan-istek-kabul',
     width: 328,
@@ -1194,8 +1199,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Takım kartı, Katıl
   'takim-karti': {
+    name: 'Takım kartı, Katıl',
     group: 'Takım kartı (tc-cta)',
     source: 'button.tcard — [data-tjoin="a"] @ oyun-tb-teams',
     width: 159,
@@ -1231,8 +1236,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Takım kartı, ikinci renk
   'takim-karti-pembe': {
+    name: 'Takım kartı, ikinci renk',
     group: 'Takım kartı (tc-cta)',
     source: 'button.tcard — [data-tjoin="b"] @ oyun-tb-teams',
     width: 159,
@@ -1268,8 +1273,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Takım kartı, Buradasın
   'takim-karti-burada': {
+    name: 'Takım kartı, Buradasın',
     group: 'Takım kartı (tc-cta)',
     source: 'button.tcard.mine — [data-tjoin="a"] @ oyun-tb-teams',
     width: 159,
@@ -1305,8 +1310,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // tc-cta tek başına
   'tc-cta': {
+    name: 'tc-cta tek başına',
     group: 'Takım kartı (tc-cta)',
     source: 'span.tc-cta — [data-tjoin="a"] .tc-cta @ oyun-tb-teams',
     width: 135,
@@ -1342,8 +1347,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Kart: henüz masan yok
   'kart-masasiz': {
+    name: 'Kart: henüz masan yok',
     group: 'Kartlar',
     source: 'div.card.mine.nomasa — [data-nomasa] @ mekan',
     width: 328,
@@ -1379,8 +1384,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Kart: masam
   'kart-masam': {
+    name: 'Kart: masam',
     group: 'Kartlar',
     source: 'div.card.mine — [data-mine] @ mekan-masam-var',
     width: 328,
@@ -1416,8 +1421,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Bağlantı kartı (Mekan sohbeti)
   'kart-baglanti': {
+    name: 'Bağlantı kartı (Mekan sohbeti)',
     group: 'Kartlar',
     source: 'button.card.linkcard.chat — [data-vch-open] @ mekan',
     width: 328,
@@ -1453,8 +1458,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Boş durum kartı (lobi)
   'kart-bos': {
+    name: 'Boş durum kartı (lobi)',
     group: 'Kartlar',
     source: 'div.card.empty-card — [data-lobby-empty] @ mekan-lobi-bos',
     width: 328,
@@ -1490,8 +1495,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Oyun posteri
   'kart-poster': {
+    name: 'Oyun posteri',
     group: 'Kartlar',
     source: 'button.poster — .poster @ masa-sahibi',
     width: 158,
@@ -1527,8 +1532,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Oyun posteri, yakında
   'kart-poster-yakinda': {
+    name: 'Oyun posteri, yakında',
     group: 'Kartlar',
     source: 'button.poster.soon — .poster.soon @ masa-posterler-yakinda',
     width: 158,
@@ -1564,8 +1569,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Alt sekme çubuğu, Mekan seçili
   'alt-sekme-mekan': {
+    name: 'Alt sekme çubuğu, Mekan seçili',
     group: 'Sekme çubuğu',
     source: 'nav.nav — nav[data-nav] @ mekan',
     width: 336,
@@ -1603,8 +1608,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Alt sekme çubuğu, Mesajlar seçili
   'alt-sekme-mesajlar': {
+    name: 'Alt sekme çubuğu, Mesajlar seçili',
     group: 'Sekme çubuğu',
     source: 'nav.nav — nav[data-nav] @ mesajlar',
     width: 336,
@@ -1642,8 +1647,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Alt sekme çubuğu, Profil seçili
   'alt-sekme-profil': {
+    name: 'Alt sekme çubuğu, Profil seçili',
     group: 'Sekme çubuğu',
     source: 'nav.nav — nav[data-nav] @ profil',
     width: 336,
@@ -1681,8 +1686,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Bölümlü sekme (rtabs)
   'bolumlu-sekme': {
+    name: 'Bölümlü sekme (rtabs)',
     group: 'Sekme çubuğu',
     source: 'div.rtabs — .rtabs @ masa-sahibi',
     width: 328,
@@ -1718,8 +1723,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Süzgeç çipleri (cats)
   'suzgec-cipleri': {
+    name: 'Süzgeç çipleri (cats)',
     group: 'Sekme çubuğu',
     source: 'div.cats.vcats — .cats.vcats @ kesfet',
     width: 360,
@@ -1755,8 +1760,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Sohbet satırı
   'sohbet-satiri': {
+    name: 'Sohbet satırı',
     group: 'Satırlar ve pencereler',
     source: 'button.crow — .crow:not(.unread) @ mesajlar',
     width: 326,
@@ -1792,8 +1797,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Sohbet satırı, okunmamış
   'sohbet-satiri-okunmamis': {
+    name: 'Sohbet satırı, okunmamış',
     group: 'Satırlar ve pencereler',
     source: 'button.crow.unread — .crow.unread @ mesajlar',
     width: 326,
@@ -1829,8 +1834,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Alt pencere: onay
   'pencere-onay': {
+    name: 'Alt pencere: onay',
     group: 'Satırlar ve pencereler',
     source: 'section.sheet — .sheet-layer.open .sheet @ masa-bitir',
     width: 360,
@@ -1866,8 +1871,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Alt pencere: seçenek listesi
   'pencere-liste': {
+    name: 'Alt pencere: seçenek listesi',
     group: 'Satırlar ve pencereler',
     source: 'section.sheet — .sheet-layer.open .sheet @ dm-secenekler',
     width: 360,
@@ -1903,8 +1908,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Alt pencere: davet listesi
   'pencere-davet': {
+    name: 'Alt pencere: davet listesi',
     group: 'Satırlar ve pencereler',
     source: 'section.sheet.invs — .sheet-layer.open .sheet @ masa-davet',
     width: 360,
@@ -1940,8 +1945,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Metin alanı, boş
   'alan-isim': {
+    name: 'Metin alanı, boş',
     group: 'Form',
     source: 'label.sup-field — .sup-field:has([data-sup-name]) @ kayit-isim',
     width: 320,
@@ -1977,8 +1982,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Metin alanı, dolu
   'alan-isim-dolu': {
+    name: 'Metin alanı, dolu',
     group: 'Form',
     source: 'label.sup-field — .sup-field:has([data-sup-name]) @ kayit-isim',
     width: 320,
@@ -2014,8 +2019,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Telefon alanı
   'alan-telefon': {
+    name: 'Telefon alanı',
     group: 'Form',
     source: 'label.sup-phone — .sup-phone @ kayit-telefon',
     width: 320,
@@ -2051,8 +2056,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Kod alanı
   'alan-kod': {
+    name: 'Kod alanı',
     group: 'Form',
     source: 'div.otp — [data-otp] @ kayit-kod',
     width: 320,
@@ -2088,8 +2093,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Alan hatası metni
   'alan-hata': {
+    name: 'Alan hatası metni',
     group: 'Form',
     source: 'p.sup-err — [data-sup-err="phone"] @ kayit-telefon-hata',
     width: 320,
@@ -2125,8 +2130,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Uyarı kutusu (fotoğrafsız erkek)
   uyari: {
+    name: 'Uyarı kutusu (fotoğrafsız erkek)',
     group: 'Form',
     source: 'p.sup-warn — [data-sup-warn] @ kayit-foto-erkek',
     width: 320,
@@ -2162,8 +2167,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Seçim (doğum tarihi)
   'alan-secim': {
+    name: 'Seçim (doğum tarihi)',
     group: 'Form',
     source: 'select. — [data-dob="d"] @ kayit-dogum',
     width: 80.5,
@@ -2199,8 +2204,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Çok satırlı alan
   'alan-cok-satir': {
+    name: 'Çok satırlı alan',
     group: 'Form',
     source: 'textarea. — [data-ebio] @ profil-duzenle',
     width: 298,
@@ -2236,8 +2241,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Anahtar, kapalı
   'anahtar-kapali': {
+    name: 'Anahtar, kapalı',
     group: 'Form',
     source: 'button.vsw — .sheet-layer.open .vsw[aria-checked="false"] @ mekan-masa-kur',
     width: 52,
@@ -2273,8 +2278,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Anahtar, açık
   'anahtar-acik': {
+    name: 'Anahtar, açık',
     group: 'Form',
     source: 'button.vsw — .sheet-layer.open .vsw @ mekan-masa-kur',
     width: 52,
@@ -2310,8 +2315,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Anonim anahtarı
   'anonim-anahtari': {
+    name: 'Anonim anahtarı',
     group: 'Form',
     source: 'button.anon-sw — [data-anon-sw] @ mekan',
     width: 46,
@@ -2347,8 +2352,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Yükleniyor göstergesi (lobi)
   yukleniyor: {
+    name: 'Yükleniyor göstergesi (lobi)',
     group: 'Geri bildirim',
     source: 'div.lobby-load.show — [data-lobby-load] @ mekan-lobi-yukleniyor',
     width: 328,
@@ -2384,8 +2389,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Okunmamış noktası (sekme)
   'bildirim-noktasi': {
+    name: 'Okunmamış noktası (sekme)',
     group: 'Geri bildirim',
     source: 'i.tdot — nav[data-nav] .tdot @ mesajlar',
     width: 9,
@@ -2421,8 +2426,8 @@ export const V46_COMPONENTS = {
       opacity: 1,
     },
   },
-  // Kısa bildirim (toast)
   toast: {
+    name: 'Kısa bildirim (toast)',
     group: 'Geri bildirim',
     source: 'div.toast — .toast @ aktiviteler',
     width: 190,

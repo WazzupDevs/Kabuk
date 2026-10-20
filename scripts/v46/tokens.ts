@@ -168,8 +168,9 @@ export async function buildTokensModule(root: string): Promise<string> {
   for (const c of inventory.components) {
     const sourceLine = `${c.tag}.${c.class.split(/\s+/).filter(Boolean).join('.')} — ${c.selector_in_state} @ ${c.source_state}`;
     lines.push(
-      `// ${c.name}${c.note ? `: ${c.note}` : ''}`,
+      ...(c.note ? [`// ${c.note}`] : []),
       `${json(c.id)}: {`,
+      `name: ${json(c.name)},`,
       `group: ${json(c.group)},`,
       `source: ${json(sourceLine)},`,
       `width: ${c.size[0]},`,
