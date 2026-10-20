@@ -5,7 +5,7 @@
 // account (rule 4); the path photo-upload-url issued is kept as the pending upload, and only that
 // one can be committed.
 import { requireUser, serviceClient } from '../_shared/auth.ts';
-import { refreshCapsuleNick } from '../_shared/capsule.ts';
+import { assignCapsuleIdentity, refreshCapsuleNick } from '../_shared/capsule.ts';
 import { dbError } from '../_shared/db.ts';
 import { z } from '../_shared/deps.ts';
 import { handle } from '../_shared/http.ts';
@@ -128,6 +128,8 @@ async function getProfile(viewer: string, publicId: string): Promise<ProfileView
   const row = data[0];
   // Unknown, blocked, or not allowed: the same answer on the same path.
   if (!row) throw new AppError('not_found', 'Profile not found.');
+  // The own profile shows the nick: an account left without one gets it here (_shared/capsule.ts).
+  if (row.is_self) await assignCapsuleIdentity(db, row.user_id);
 
   const [stats, birth] = await Promise.all([
     db.rpc('user_stats', { target_user_id: row.user_id }),

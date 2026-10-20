@@ -3,6 +3,7 @@
 // docs/SPEC_V3.md §4.2). Database errors are rethrown with their code only, so no request value can
 // reach the logs.
 import { type Db, requireUser, serviceClient } from '../_shared/auth.ts';
+import { assignCapsuleIdentity } from '../_shared/capsule.ts';
 import { dbError as domainError } from '../_shared/db.ts';
 import { z } from '../_shared/deps.ts';
 import { handle } from '../_shared/http.ts';
@@ -109,6 +110,9 @@ async function usedAliases(venueId: string): Promise<Set<string>> {
 
 async function checkIn(userId: string, body: CheckInRequest): Promise<CheckInResponse> {
   await requireOnboarded(db, userId);
+  // An anonymous message and seat need the nick (docs/SPEC_V4.md §4.D); venue_chat_send never falls
+  // back to anything else.
+  await assignCapsuleIdentity(db, userId);
   if (body.locationConsentVersion !== CURRENT_LOCATION_CONSENT_VERSION) {
     throw new AppError('consent_outdated', 'Location consent is not the current version.');
   }
