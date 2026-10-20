@@ -374,9 +374,72 @@ begin
     'private.free_table_name(uuid)',
     'private.free_table_icon(uuid)',
     'private.check_table_icon(uuid, text, uuid)',
-    'private.owned_open_room(uuid, uuid)'
+    'private.owned_open_room(uuid, uuid)',
+    'private.matched_at(uuid, uuid, uuid)'
   ] loop
     execute format('revoke all on function %s from public, anon, authenticated', fn);
   end loop;
+end;
+$$;
+
+-- K-75 on the old "İstek gönder" road too (WazzupDevs/Kabuk#182): friends_request as in
+-- 20261005090000_friends_dm.sql, a friendship from before with an anonymous person answering 'ok'.
+-- friends/request { historyId } (service role). Outcomes: 'ok' (nothing to tell: swallowed,
+-- already sent, unknown row), 'request_created', 'friendship_created' (the other side had asked
+-- first), 'already_friends' (only when the other sat with its profile, K-75). The caller answers
+-- { ok: true } for all but the last.
+create or replace function public.friends_request(target_user_id uuid, target_history_id uuid)
+returns table (outcome text, other_user_id uuid)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  h public.play_history;
+  reverse_status text;
+  new_id uuid;
+begin
+  select * into h from private.own_history(target_user_id, target_history_id);
+  if h.id is null then
+    return query select 'ok'::text, null::uuid;
+    return;
+  end if;
+  update public.play_history set friend_action_at = coalesce(friend_action_at, now())
+  where id = h.id;
+
+  if h.other_user_id is null or private.is_blocked_between(target_user_id, h.other_user_id) then
+    return query select 'ok'::text, null::uuid;
+    return;
+  end if;
+  perform private.lock_pair(target_user_id, h.other_user_id);
+  if private.are_friends(target_user_id, h.other_user_id) then
+    -- K-75 (rule 4): a friend who sat anonymously is told apart from nobody: the press is
+    -- swallowed as across a block (rule 5's silent pattern), nothing changes.
+    if not coalesce(h.other_profiled, false) then
+      return query select 'ok'::text, null::uuid;
+      return;
+    end if;
+    return query select 'already_friends'::text, null::uuid;
+    return;
+  end if;
+
+  select status into reverse_status from public.friend_requests
+  where from_user_id = h.other_user_id and to_user_id = target_user_id
+  for update;
+  if reverse_status = 'pending' then
+    perform private.make_friends(target_user_id, h.other_user_id, 'request');
+    return query select 'friendship_created'::text, h.other_user_id;
+    return;
+  end if;
+
+  insert into public.friend_requests (from_user_id, to_user_id, encounter_id)
+  values (target_user_id, h.other_user_id, h.encounter_id)
+  on conflict (from_user_id, to_user_id) do nothing
+  returning id into new_id;
+  if new_id is null then
+    return query select 'ok'::text, null::uuid;
+    return;
+  end if;
+  return query select 'request_created'::text, h.other_user_id;
 end;
 $$;
