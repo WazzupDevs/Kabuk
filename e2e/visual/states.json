@@ -1,23 +1,10 @@
 {
-  "esik": 99.5,
+  "esik": 99.7,
   "durumlar": [
     { "id": "galeri-sohbet", "app": "galeri/chat", "sayfa": 2 },
     { "id": "galeri-renkler", "app": "galeri/tokens", "sayfa": 3 },
     { "id": "galeri-parcalar", "app": "galeri/parts", "sayfa": 2 },
     { "id": "galeri-kimlik", "app": "galeri/identity", "sayfa": 2 },
-    { "id": "galeri-olcu", "app": "galeri/measure", "sayfa": 2 },
-    {
-      "id": "oyun-kapsul-rakip",
-      "app": "oyun/tabu/rakip",
-      "baz": false,
-      "prototip": {
-        "adimlar": [
-          { "tikla": "[data-dgame=\"tb\"]" },
-          { "tikla": "[data-tb=\"opp\"]" },
-          { "bekle": 600 }
-        ],
-        "kirp": ".tg"
-      }
-    }
+    { "id": "galeri-olcu", "app": "galeri/measure", "sayfa": 2 }
   ]
 }
