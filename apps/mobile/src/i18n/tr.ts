@@ -1230,6 +1230,14 @@ export const tr = {
       either: 'Ya da',
       zones: 'İbre bölgeleri',
       badge: 'Rozet',
+      notice: 'Bildirim yazısı (Roboto)',
+      noticeSample: 'Kapsülün kaydedildi',
+    },
+    // Bileşen önizleme → Kaydırma: 20 gölgeli kart, telefonda elle kaydırmak için.
+    scroll: {
+      set: 'Kaydırma',
+      card: (n: number) => `Kart ${n}`,
+      body: 'Gölgeli kartlar arasında yukarı aşağı kaydır.',
     },
     // Bileşen önizleme → Oyun parçaları (step 4.2b): the game screens' parts on a ground.
     parts: {

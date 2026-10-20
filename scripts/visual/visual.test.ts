@@ -9,7 +9,7 @@ import { seededRandom } from '../../apps/mobile/src/features/design/gorsel/deter
 import { junitCases, maestroMatch, padTo, similarity, thresholdFor } from './compare.ts';
 import { flowFor, shotLink } from './flow.ts';
 import { buildReport, pageHints } from './gate-report.ts';
-import { appFonts, fontFaces, pageScript, SCALE, VIEWPORT } from './prototype.ts';
+import { appFonts, fontFaces, pageScript, SCALE, VIEWPORT, withRoboto } from './prototype.ts';
 import { type GateConfig, loadStates, parseStates, shots } from './states.ts';
 
 const ROOT = join(import.meta.dirname, '..', '..');
@@ -387,6 +387,7 @@ describe("visual gate: the prototype in the app's fonts", () => {
       ['Plus Jakarta Sans', 600, 'PlusJakartaSans_600SemiBold'],
       ['Plus Jakarta Sans', 700, 'PlusJakartaSans_700Bold'],
       ['Plus Jakarta Sans', 800, 'PlusJakartaSans_800ExtraBold'],
+      ['Roboto', 700, 'Roboto_700Bold'],
     ]);
     for (const f of fonts) {
       expect(existsSync(f.file)).toBe(true);
@@ -396,9 +397,28 @@ describe("visual gate: the prototype in the app's fonts", () => {
 
   it("answers Google Fonts' stylesheet with one face per app file and no other family", () => {
     const css = fontFaces(appFonts(ROOT));
-    expect(css.match(/@font-face/g)).toHaveLength(4);
+    expect(css.match(/@font-face/g)).toHaveLength(5);
+    expect(css).toContain("font-family:'Roboto';font-style:normal;font-weight:700;");
     expect(css).not.toMatch(/Manrope|Poppins|font-weight:400/);
     expect(css).toContain("font-family:'Plus Jakarta Sans';font-style:normal;font-weight:800;");
+  });
+});
+
+describe('visual gate: system-ui is Roboto, as in the app', () => {
+  it('serves v46 with Roboto wherever it says system-ui, and changes nothing else', () => {
+    const html = readFileSync(join(ROOT, 'docs/design/v46/skall-masa-deneme-v46.html'), 'utf8');
+    const served = withRoboto(html);
+    expect(html).toContain('font:700 14px/18px system-ui,sans-serif');
+    expect(served).not.toContain('system-ui');
+    expect(served).toContain('font:700 14px/18px Roboto,sans-serif');
+    expect(served.replace(/Roboto/g, '')).toBe(html.replace(/system-ui|Roboto/g, ''));
+  });
+
+  it("gives the app's notice (v46's .toast) Roboto 700 at 14/18", async () => {
+    const { baseTypography } = await import('../../apps/mobile/src/theme/tokens.ts');
+    const { THEME } = await import('../../apps/mobile/src/theme/theme.ts');
+    expect(baseTypography().notice).toEqual({ font: 'system', size: 14, lineHeight: 18 });
+    expect(THEME.fonts.system).toBe('Roboto_700Bold');
   });
 });
 

@@ -2,7 +2,7 @@
 /// <reference lib="dom" />
 // The design prototype (v46, docs/design/v46/skall-masa-deneme-v46.html) drawn the way the visual
 // gate's emulator draws the app (CLAUDE.md → Görsel kapı): 360 × 640 dp at 2×, the app's own font
-// files (appFonts) instead of Google Fonts, no network, motion reduced, the clock stopped at the
+// files (appFonts) instead of Google Fonts, Roboto for system-ui as in the app, no network, motion reduced, the clock stopped at the
 // gate's moment and Math.random seeded as in the app (apps/mobile/src/features/design/gorsel/
 // deterministic.ts). A state opens with `?gorsel=<state id>&tema=light|dark`: the page script below
 // presses the prototype's own "Deneme durumları" buttons (states.json → `prototip.adimlar`). The
@@ -61,6 +61,13 @@ export function fontFaces(fonts: AppFont[]): string {
         `font-display:block;src:url(${FONT_HOST}${f.name}.ttf) format('truetype')}`,
     )
     .join('\n');
+}
+
+// v46 sets a few texts in system-ui (the notice over the tab bar, its own test bars); the app sets
+// them in Roboto, Android's system face (the owner's decision, docs/decisions/ci-gorsel-kapi.md), so
+// the page is served with Roboto in their place. The design file itself is not changed.
+export function withRoboto(html: string): string {
+  return html.replace(/\bsystem-ui\b/g, 'Roboto');
 }
 
 // Every face of the app's families loads from its file, or the drawing stops: no silent fallback
@@ -150,6 +157,8 @@ export async function renderPrototype(
   const done: Rendered[] = [];
   try {
     for (const { id, theme, state } of wanted) {
+      const documentFile = join(root, state.dosya ?? PROTOTYPE_FILE);
+      const documentUrl = pathToFileURL(documentFile).href;
       const context = await browser.newContext({
         viewport: VIEWPORT,
         deviceScaleFactor: SCALE,
@@ -161,6 +170,12 @@ export async function renderPrototype(
       await context.clock.install({ time: GATE_NOW });
       await context.route('**/*', async (route) => {
         const url = route.request().url();
+        if (url.startsWith(documentUrl)) {
+          return route.fulfill({
+            contentType: 'text/html; charset=utf-8',
+            body: withRoboto(readFileSync(documentFile, 'utf8')),
+          });
+        }
         if (url.startsWith('file:')) return route.continue();
         if (url.startsWith('https://fonts.googleapis.com/')) {
           return route.fulfill({ contentType: 'text/css', body: fontFaces(fonts) });
@@ -172,7 +187,7 @@ export async function renderPrototype(
       const page = await context.newPage();
       await page.exposeFunction('__gorselBekle', (ms: number) => page.clock.runFor(ms));
       await page.addInitScript(pageScript, { seed: GATE_SEED, states } satisfies PageArg);
-      await openState(page, join(root, state.dosya ?? PROTOTYPE_FILE), id, theme);
+      await openState(page, documentFile, id, theme);
       await page.evaluate(() => document.fonts.ready);
       await checkFonts(page, fonts);
       const file = join(out, `${id}-${theme}.png`);

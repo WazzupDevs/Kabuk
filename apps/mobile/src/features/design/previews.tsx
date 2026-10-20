@@ -65,6 +65,7 @@ import { MotionSet } from './motionPreview';
 import { MeasureSet } from './measurePreview';
 import { PartsSet } from './partsPreview';
 import { PreviewBlock } from './PreviewBlock';
+import { ScrollSet } from './scrollPreview';
 
 // Sample data for the component preview (Ayarlar → Tasarım (test) → Bileşen önizleme): the game
 // components that screens wire later, shown with made-up props so E2E can photograph them in both
@@ -705,6 +706,11 @@ function TokensSet() {
           </View>
         </View>
       </PreviewBlock>
+      <PreviewBlock title={t.notice}>
+        <Text variant="notice" testID="preview-tokens-notice">
+          {t.noticeSample}
+        </Text>
+      </PreviewBlock>
       <PreviewBlock title={t.logo}>
         <View
           className="items-center"
@@ -733,4 +739,5 @@ export const PREVIEW_SETS: PreviewSet[] = [
   { key: 'identity', label: tr.design.identity.set, render: () => <IdentitySet /> },
   { key: 'motion', label: tr.design.motion.set, render: () => <MotionSet /> },
   { key: 'measure', label: tr.design.measure.set, render: () => <MeasureSet /> },
+  { key: 'scroll', label: tr.design.scroll.set, render: () => <ScrollSet /> },
 ];
