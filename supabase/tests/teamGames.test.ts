@@ -77,11 +77,20 @@ async function state(roomId: string): Promise<Record<string, unknown>> {
 const failed = (status: number, code: string) => ({ status, body: errorBody(code) });
 
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
-// Table aliases come from alias_words, whose animals are Tabu words too.
-const ALIAS_COLUMNS = new Set(['owner_alias', 'guest_alias', 'sender_alias', 'alias']);
+// Table aliases come from alias_words, whose animals are Tabu words too; a capsule look names
+// catalog parts, some of them Tabu words too ("h:korsan"). Neither comes from a card.
+const ALIAS_COLUMNS = new Set([
+  'owner_alias',
+  'guest_alias',
+  'sender_alias',
+  'alias',
+  'look',
+  'sender_look',
+]);
 
 // Everything a phone reads about the room outside its own answers, as one string: every value, and
-// every key inside JSON values, without column names, aliases and ids (games.test.ts → readableBy).
+// every key inside JSON values, without column names, aliases, looks and ids (games.test.ts →
+// readableBy).
 async function readableBy(p: Phone, roomId: string): Promise<string> {
   const reads = await Promise.all([
     p.client.from('rooms').select('*').eq('id', roomId),
