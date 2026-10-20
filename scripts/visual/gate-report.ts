@@ -2,7 +2,7 @@
 // the hard gate's result, the similarity table beside the design prototype with its diff images,
 // and the noise when every shot was photographed twice. report.ts prints it into the job summary
 // and writes the result (Gate) to <out>/kapi.json, which the workflow's last step reads.
-import { existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { junitCases, maestroMatch, readPng, similarity, thresholdFor } from './compare.ts';
@@ -68,6 +68,17 @@ export function buildReport(
           `${existsSync(join(out, diff)) ? thumb(diff) : '–'} |`,
       );
     }
+  }
+  const hints = pageHints(out);
+  if (hints.size > 0) {
+    lines.push(
+      '',
+      'Sayfa sayısı yanlış (rotanın uyarısı; `e2e/visual/states.json` → `sayfa`):',
+      '',
+      '| Durum | Listede | Gereken |',
+      '| --- | ---: | ---: |',
+      ...[...hints].map(([id, h]) => `| ${id} | ${h.listed} | ${h.needed} |`),
+    );
   }
   const failedNames = new Set(failed.map((c) => c.name));
   const silent = noCandidate.filter((s) => !failedNames.has(s.name));
@@ -156,4 +167,25 @@ export function buildReport(
       worstNoise: worst,
     },
   };
+}
+
+// The page counts the route asked for (GateState's banner, "Bu durum N sayfa, listede M") in the
+// screen hierarchies Maestro saved for the failed steps: <out>/maestro/<run>/<shot>/screen-hierarchy/.
+export function pageHints(out: string): Map<string, { listed: number; needed: number }> {
+  const hints = new Map<string, { listed: number; needed: number }>();
+  const root = join(out, 'maestro');
+  if (!existsSync(root)) return hints;
+  for (const run of readdirSync(root)) {
+    if (!existsSync(join(root, run)) || run.includes('.')) continue;
+    for (const shot of readdirSync(join(root, run))) {
+      const dir = join(root, run, shot, 'screen-hierarchy');
+      if (!existsSync(dir)) continue;
+      for (const file of readdirSync(dir)) {
+        const m = /Bu durum (\d+) sayfa, listede (\d+)/.exec(readFileSync(join(dir, file), 'utf8'));
+        const id = /^(.*)-(light|dark)-\d+$/.exec(shot)?.[1];
+        if (m && id) hints.set(id, { listed: Number(m[2]), needed: Number(m[1]) });
+      }
+    }
+  }
+  return hints;
 }

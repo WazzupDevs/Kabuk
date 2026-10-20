@@ -422,7 +422,8 @@ jobs:
        (contains(github.event.pull_request.labels.*.name, 'e2e') ||
         contains(github.event.pull_request.labels.*.name, 'e2e-large'))))
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    # Every shot starts the app afresh (scripts/visual/flow.ts), twice with TEKRAR.
+    timeout-minutes: 75
     # actions: read for this run's e2e-apk artifact (scripts/e2e/fetch-apk.sh).
     permissions:
       actions: read

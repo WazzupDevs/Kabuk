@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { seededRandom } from '../../apps/mobile/src/features/design/gorsel/deterministic.ts';
 import { junitCases, maestroMatch, padTo, similarity, thresholdFor } from './compare.ts';
 import { flowFor, shotLink } from './flow.ts';
-import { buildReport } from './gate-report.ts';
+import { buildReport, pageHints } from './gate-report.ts';
 import { pageScript, SCALE, VIEWPORT } from './prototype.ts';
 import { type GateConfig, loadStates, parseStates, shots } from './states.ts';
 
@@ -139,12 +139,22 @@ describe('visual gate: the Maestro flows', () => {
     const [shot] = shots(config);
     const flow = flowFor(root, shot ?? fail(), 3, 99.5, false);
     expect(flow).toContain('name: galeri-oyun-light-1');
+    expect(flow.indexOf('- stopApp')).toBeLessThan(flow.indexOf('- openLink:'));
     expect(flow).toContain('id: gorsel-hazir-3');
     expect(flow).toContain('id: gorsel-yok');
     expect(flow).toContain('id: gorsel-eksik-sayfa');
     expect(flow).toContain('path: aday__galeri-oyun-light-1');
     expect(flow).toContain('id: gorsel-cerceve');
     expect(flow).not.toContain('assertScreenshot');
+  });
+
+  it('presses Wait on a system "isn\'t responding" dialog before the photo', () => {
+    const [shot] = shots(config);
+    const flow = flowFor(root, shot ?? fail(), 3, 99.5, false);
+    expect(flow.indexOf('id: android:id/aerr_wait')).toBeGreaterThan(-1);
+    expect(flow.indexOf('id: android:id/aerr_wait')).toBeLessThan(
+      flow.indexOf('- takeScreenshot:'),
+    );
   });
 
   it("compares with the baseline, by its absolute path, at the list's threshold", () => {
@@ -158,9 +168,10 @@ describe('visual gate: the Maestro flows', () => {
     expect(flow).toContain('thresholdPercentage: 99.5');
   });
 
-  it('photographs a second time on a fresh mount for the noise (TEKRAR)', () => {
+  it('photographs a second time on a fresh start for the noise (TEKRAR)', () => {
     const [shot] = shots(config);
     const flow = flowFor(root, shot ?? fail(), 3, 99.5, true);
+    expect(flow.match(/- stopApp/g)).toHaveLength(2);
     expect(flow).toContain('id: gorsel-hazir-100003');
     expect(flow).toContain('path: aday2__galeri-oyun-light-1');
   });
@@ -330,6 +341,24 @@ describe('visual gate: the report', () => {
     expect(text).toContain('| oyun-x | light | %93.8 | 4×4 / 4×4 |');
     expect(text).toContain('| oyun-x | dark | – | – |');
     expect(readFileSync(join(out, 'fark', 'oyun-x-light.png')).length).toBeGreaterThan(0);
+  });
+
+  it("lists the page counts the route asked for, from Maestro's screen hierarchies", () => {
+    photographAll();
+    baselines();
+    const dir = join(out, 'maestro', '2026-10-20_052259', 'galeri-oyun-dark-1', 'screen-hierarchy');
+    mkdirSync(dir, { recursive: true });
+    // As in #184's first run: the banner's text in the failed step's hierarchy.
+    writeFileSync(
+      join(dir, 'step-005-assertCondition-gorsel-hazir-2.json'),
+      JSON.stringify({
+        attributes: {
+          text: "Bu durum 5 sayfa, listede 1: e2e/visual/states.json'da sayfa sayısını 5 yap.",
+        },
+      }),
+    );
+    expect([...pageHints(out)]).toEqual([['galeri-oyun', { listed: 1, needed: 5 }]]);
+    expect(buildReport(root, out).text).toContain('| galeri-oyun | 1 | 5 |');
   });
 
   it("measures the noise of two photos of the same state in Maestro's measure", () => {

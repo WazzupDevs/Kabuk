@@ -13,6 +13,8 @@ adb install -r -g "$APK"
 adb shell wm density 320
 adb shell settings put system font_scale 1.0
 adb shell settings put global hide_error_dialogs 1 || true
+# Clock times drawn as v46 draws them (scripts/visual/prototype.ts: Europe/Istanbul).
+adb shell cmd alarm set-timezone Europe/Istanbul || true
 echo "display: $(adb shell wm size | tr -d '\r'), $(adb shell wm density | tr -d '\r')" | tee "$OUT/display.txt"
 # shellcheck source=../e2e/system-dialog.sh
 source "$(dirname "$0")/../e2e/system-dialog.sh"

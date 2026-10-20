@@ -16,8 +16,9 @@ import { GATE_STATES } from './registry';
 // photographed page by page: page `page` of `pages`; when the list has too few or too many pages,
 // a banner says how many it takes and the gate's flow fails on it (scripts/visual/flow.ts).
 // `gorsel-cerceve` is what the gate crops to (no status or navigation bar); `gorsel-hazir-<shot>`
-// shows once the fonts, the scheme and the layout have settled (the shot number, so a screen left
-// under this one in the stack never answers for it).
+// covers the frame, transparent, once the fonts, the scheme and the layout have settled (the shot
+// number, so no other screen answers for it). A 1 dp marker in the corner was there but Android
+// reported it invisible to Maestro (#184's first run).
 export function GateState({
   stateKey,
   scheme,
@@ -32,8 +33,7 @@ export function GateState({
   shot: string;
 }) {
   // Before the first render of the state, not in an effect after it.
-  const [restore] = useState(freezeWorld);
-  useEffect(() => restore, [restore]);
+  useState(() => freezeWorld());
 
   const theme = useTheme();
   const preference = useSchemePreference();
@@ -68,8 +68,8 @@ export function GateState({
           }}
         >
           {entry.render()}
+          {settled !== null && settled === layout ? <Ready shot={shot} /> : null}
         </View>
-        {settled !== null && settled === layout ? <Ready shot={shot} /> : null}
       </View>
     );
   }
@@ -113,8 +113,8 @@ export function GateState({
             </Text>
           </View>
         ) : null}
+        {settled !== null && settled === layout ? <Ready shot={shot} /> : null}
       </View>
-      {settled !== null && settled === layout ? <Ready shot={shot} /> : null}
     </SafeAreaView>
   );
 }
@@ -123,7 +123,8 @@ function Ready({ shot }: { shot: string }) {
   return (
     <View
       testID={`gorsel-hazir-${shot}`}
-      style={{ position: 'absolute', left: 0, top: 0, width: 1, height: 1 }}
+      pointerEvents="none"
+      style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 }}
     />
   );
 }
