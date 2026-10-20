@@ -48,6 +48,13 @@ async function capsuleOf(client: Client) {
   };
 }
 
+// A look other than `look`: the same parts in another colour than its own. A test that changes the
+// look takes this one, so that the ready look the account started with is never the new one too.
+function anotherLook(look: string | null): string {
+  const color = look?.match(/(?:^| )c:(\S+)/)?.[1];
+  return `c:${CAPSULE_CATALOG.colors.find((c) => c.id !== color)?.id} e:koyu h:anten`;
+}
+
 async function retired(nick: string): Promise<boolean> {
   const [row] =
     await sql`select count(*)::int as n from public.retired_capsule_nicks where nick = ${nick}`;
@@ -322,13 +329,14 @@ describe('capsule decoration (profile/set-look, K-47)', () => {
     const { roomId } = created.body as { roomId: string };
     expect(await invoke(a, 'chat', { action: 'send', roomId, body: 'masada önce' })).toEqual(ok);
 
-    expect(await setLook(a, 'c:nane e:koyu h:anten')).toEqual(ok);
+    const target = anotherLook(look);
+    expect(await setLook(a, target)).toEqual(ok);
     await sql`update public.messages set created_at = created_at - interval '2 seconds'
               where room_id = ${roomId}`;
     expect(await send(a, 'sonra')).toEqual(ok);
     expect(await invoke(a, 'chat', { action: 'send', roomId, body: 'masada sonra' })).toEqual(ok);
     expect((await page(b)).messages.map((m) => [m.body, m.senderLook])).toEqual([
-      ['sonra', 'c:nane e:koyu h:anten'],
+      ['sonra', target],
       ['önce', look],
     ]);
     const [seat] = await sql`
@@ -460,11 +468,11 @@ describe('venue chat identity (§4.D)', () => {
     const b = await atVenue(PHONES[1], 'Burak');
     const { capsule_look: look } = await capsuleOf(a);
     expect(await send(a, 'önce')).toEqual(ok);
-    await sql`update public.profiles set capsule_look = 'c:nane e:koyu h:anten'
-              where id = ${await userIdOf(a)}`;
+    const target = anotherLook(look);
+    await sql`update public.profiles set capsule_look = ${target} where id = ${await userIdOf(a)}`;
     expect(await send(a, 'sonra')).toEqual(ok);
     expect((await page(b)).messages.map((m) => [m.body, m.senderLook])).toEqual([
-      ['sonra', 'c:nane e:koyu h:anten'],
+      ['sonra', target],
       ['önce', look],
     ]);
   });
@@ -685,7 +693,7 @@ describe('a table seat and a room message keep the identity they were written wi
       insert into public.messages (room_id, session_id, sender_alias, body)
       select ${room?.id}, id, alias, 'merhaba' from public.table_sessions where id = ${sessionId}
     `;
-    await sql`update public.profiles set capsule_look = 'c:nane e:koyu h:anten'
+    await sql`update public.profiles set capsule_look = ${anotherLook(look)}
               where id = ${await userIdOf(a)}`;
     const [seat] = await sql`select look from public.room_members where room_id = ${room?.id}`;
     const [message] = await sql`

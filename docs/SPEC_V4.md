@@ -932,6 +932,7 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 **Adım 4.4b.**
 
 - `set-look` katalog dışı parçayı atar ve yalnızca kişinin kendi görünüşünü yazar; duygular sunucuya gitmez (K-52).
+- İstemci o anki duyguyu görünüş koduna, göz yuvasına da, asla yazmaz: `mutlu`, `saskin` ve `uykulu` hem duygu hem göz kimliğidir; sunucu `e:mutlu`'yu geçerli göz olarak yazar ve ikisini ayırt edemez. İstemci PR'ında bir testle bağlanır (K-52; 4.4b CTO incelemesi).
 - 4.4'ün eski mesaj testi `set-look` ile de koşar: eski mesaj ve süren masa eski görünüşle döner.
 - Listelerde görünüş kodu başına bir kez çizilir (4.3c'nin ölçümü).
 
