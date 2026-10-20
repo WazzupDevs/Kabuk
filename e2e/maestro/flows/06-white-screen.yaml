@@ -173,6 +173,7 @@ appId: app.kabuk.mobile
 - extendedWaitUntil:
     visible: Masanla oynuyorsun
     timeout: 10000
+- takeScreenshot: 29f-venue-solo
 - assertNotVisible:
     id: solo-tabu
 # The card's head opens the room; the game and the room close as before.

@@ -1,19 +1,23 @@
 #!/usr/bin/env bash
-# `supabase functions serve` for the integration job (.github/workflows/ci.yml), started again when
-# it stops on its own: at most twice in the whole job. A third stop gives up and stops the test run,
-# so the job fails instead of running on without functions. On 18 and 19 Oct the serve's container
-# died ("error running container: exit 135", SIGBUS) seconds after it started and never came back:
-# every later call got Kong's 503 "name resolution failed" (supabase/tests/refusal.ts →
-# `no-runtime`; the tests wait for `ping` and send the call again).
+# `supabase functions serve` for the integration job (.github/workflows/ci.yml) and each E2E job
+# (.github/workflows/e2e.yml), started again when it stops on its own: at most twice in the whole
+# job. A third stop gives up and stops the test run, so the job fails instead of running on without
+# functions. On 18 and 19 Oct the serve's container died ("error running container: exit 135",
+# SIGBUS) seconds after it started and never came back: every later call got Kong's 503 "name
+# resolution failed" (supabase/tests/refusal.ts → `no-runtime`; the tests wait for `ping` and send
+# the call again). On 19 Oct it died the same way in #168's E2E light-2, while it served the app's
+# account call; the flow's next step failed (scripts/e2e/retry.ts runs such a shard once more).
 #
 # Two ways to stop: the CLI exits (as on 18 and 19 Oct), or its container dies while the CLI hangs
 # on (a container killed from outside, tried locally: exit 137, the CLI never exits). So the
 # container is watched too, and the CLI stopped when its container has died.
 #
 # The restart must not hide the cause. Every stop is written, with its time, to
-# $SERVE_STATE/restarts.log (the job summary and a warning read it), and the machine's state at
-# that moment (disk, /dev/shm, memory, docker stats, the container's state, the serve's last lines)
-# to $SERVE_STATE/crash-<n>.txt (the functions-logs artifact).
+# $SERVE_STATE/restarts.log (the job summary and a warning read it) and to the log itself (a line
+# with the time the stop was seen, which scripts/e2e/retry.ts reads: keep its form), and the
+# machine's state at that moment (disk, /dev/shm, memory, docker stats, the container's state, the
+# serve's last lines) to $SERVE_STATE/crash-<n>.txt (ci.yml: the functions-logs artifact; e2e.yml:
+# the job's e2e-run-* artifact).
 #
 # A deliberate stop (the CHECKIN_SKIP_LOCATION step) touches $SERVE_STATE/<name>.stop before
 # stopping the serve: no restart, nothing written.
@@ -59,7 +63,9 @@ while true; do
   code=$?
   if stopping; then exit 0; fi
 
-  at=$(date -u +%H:%M:%S)
+  # When the stop was seen: at most 2 s after it (the loop above).
+  seen_at=$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)
+  at=${seen_at:11:8}
   exits=$(wc -l < "$SERVE_STATE/restarts.log")
   n=$((exits + 1))
   # What this run of the CLI said last ("error running container: exit 135"), else the container's
@@ -100,10 +106,12 @@ while true; do
 
   if [ "$exits" -ge "$max_restarts" ]; then
     printf '%s\t%s\t%s\t%s\n' "$at" "$name" "$why" gave-up >> "$SERVE_STATE/restarts.log"
-    echo "[functions-serve.sh] $at: stopped again ($why), stop $n: giving up, stopping the tests" >> "$log"
+    echo "$seen_at [functions-serve.sh] stopped again ($why), stop $n: giving up, stopping the tests" >> "$log"
+    # The integration tests. An E2E job runs none: its flow fails at its next call, and retry.ts
+    # does not run the shard again without a serve.
     pkill -f vitest || true
     exit 1
   fi
   printf '%s\t%s\t%s\t%s\n' "$at" "$name" "$why" restarted >> "$SERVE_STATE/restarts.log"
-  echo "[functions-serve.sh] $at: stopped ($why), starting it again ($n of $max_restarts)" >> "$log"
+  echo "$seen_at [functions-serve.sh] stopped ($why), starting it again ($n of $max_restarts)" >> "$log"
 done

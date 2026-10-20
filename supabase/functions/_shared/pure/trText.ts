@@ -63,12 +63,15 @@ export function capitalizeTr(s: string): string {
 // number is read aloud (5'in, 6'nın, 10'un, 100'ün); an accented vowel counts as its base letter;
 // w, q, x and letters of other alphabets are consonants; trailing symbols are skipped, though the
 // suffix still follows the whole name; a name without a vowel takes the e-forms. Common names read
-// with a soft l take a front vowel (Hilal'in, Kemal'e).
-export type GrammaticalCase = 'genitive' | 'dative';
+// with a soft l take a front vowel (Hilal'in, Kemal'e). The locative takes t after a voiceless
+// consonant (Muş'ta, 5'te).
+export type GrammaticalCase = 'genitive' | 'dative' | 'locative';
 
 const VOWELS = new Set([...'aıoueiöü']);
 const BACK = new Set([...'aıou']);
 const ROUNDED = new Set([...'ouöü']);
+// "Fıstıkçı şahap": the voiceless consonants.
+const VOICELESS = new Set([...'çfhkpsşt']);
 // Accented vowels outside Turkish, by their base letter; any other letter is a consonant either way.
 const ACCENTED: Record<string, string> = {};
 for (const [base, accented] of [
@@ -125,6 +128,8 @@ export function inflectTr(name: string, grammaticalCase: GrammaticalCase): strin
   const suffix =
     grammaticalCase === 'genitive'
       ? `${endsInVowel ? 'n' : ''}${back ? (rounded ? 'u' : 'ı') : rounded ? 'ü' : 'i'}n`
-      : `${endsInVowel ? 'y' : ''}${back ? 'a' : 'e'}`;
+      : grammaticalCase === 'dative'
+        ? `${endsInVowel ? 'y' : ''}${back ? 'a' : 'e'}`
+        : `${VOICELESS.has(letters.at(-1) ?? '') ? 't' : 'd'}${back ? 'a' : 'e'}`;
   return `${name}'${suffix}`;
 }

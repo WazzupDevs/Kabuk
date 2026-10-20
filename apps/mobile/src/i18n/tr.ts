@@ -1,6 +1,8 @@
+import type { CalendarDate } from '@shared/age.ts';
 import { APP_NAME, GAME_NAMES } from '@shared/brand.ts';
 import { headcountLabel } from '@shared/checkin.ts';
 import type { InboxStamp } from '@shared/dmInbox.ts';
+import type { HistoryDay, HistoryResult } from '@shared/activities.ts';
 import type { EventTime } from '@shared/explore.ts';
 import { ENCOUNTER_MIN_MINUTES } from '@shared/friends.ts';
 import { TABU } from '@shared/tabu.ts';
@@ -87,6 +89,11 @@ function dayMonthAt(iso: string): string {
 // play_history.concept: the last game played in the room, or 'chat' (docs/SPEC_V3.md §5.5).
 export type HistoryConcept = 'tabu' | 'sohbet' | 'sahtekar' | 'harf' | 'sarki' | 'ibre' | 'chat';
 const HISTORY_CONCEPTS: Record<HistoryConcept, string> = { ...GAME_NAMES, chat: 'Sohbet' };
+
+// A record's concept (play_history.concept): one of the games, otherwise the chat.
+export function historyConcept(concept: string): HistoryConcept {
+  return concept in HISTORY_CONCEPTS ? (concept as HistoryConcept) : 'chat';
+}
 
 // The Sohbet card themes (content/sohbet-cards.json), each its own name.
 const SOHBET_THEMES = {
@@ -226,6 +233,12 @@ export const tr = {
     month: 'Ay',
     year: 'Yıl',
     birthInvalid: 'Geçerli bir tarih gir.',
+    // The confirmation after "Devam" (K-55, K-63; v46 §6).
+    birthConfirmTitle: (age: number) => `${age} yaşındasın`,
+    birthConfirmBody: (d: CalendarDate) =>
+      `Doğum tarihin ${d.day} ${MONTHS[d.month - 1] ?? ''} ${d.year}. Sonra değiştiremezsin.`,
+    birthConfirm: 'Onayla',
+    birthFix: 'Düzelt',
     // The gender (docs/SPEC_V3.md §23.D; canvas: Faz 3 · 23.2): asked at sign-up, and once on a
     // separate screen for an account from before the step. Shown to nobody (rule 12).
     genderLabel: 'Cinsiyetin',
@@ -299,17 +312,38 @@ export const tr = {
     accept: (name: string) => `${name} isteğini kabul et`,
   },
   // Aktiviteler: the game hub (docs/SPEC_V3.md §18.3). Same games and rules as the room.
+  // Aktiviteler (docs/SPEC_V4.md K-15; v44: .acts): today's events and Geçmiş. Each game's rules
+  // below are its intro's and, from the table's games (4.3), its page's.
   activities: {
-    howTo: 'Nasıl oynanır',
-    oneTable: 'Tek telefonla',
-    twoTables: 'İki masayla',
-    createWith: 'Bu oyunla lobiye aç',
-    goToVenue: 'Oynamak için mekana gir',
-    recent: 'Son oyunların',
-    recentRow: (alias: string | null, iso: string) =>
-      alias ? `${alias} ile · ${dayMonth(iso)}` : dayMonth(iso),
-    score: (n: number) => `${n} puan`,
-    won: 'Kazandınız',
+    tabs: 'Aktiviteler ve geçmiş',
+    events: 'Aktiviteler',
+    history: 'Geçmiş',
+    fromVenues: (city: string) => `${inflectTr(city, 'locative')}ki mekanlardan`,
+    eventKind: 'Etkinlik',
+    eventLabel: (title: string, venue: string, when: string) => `${title}, ${venue}, ${when}`,
+    noEvents: 'Bugün etkinlik yok',
+    noEventsHint: 'Mekanların bugünkü etkinlikleri burada görünür; haftanın geri kalanı Keşfet’te.',
+    days: {
+      today: 'Bugün',
+      yesterday: 'Dün',
+      week: 'Bu hafta',
+      earlier: 'Daha önce',
+    } satisfies Record<HistoryDay, string>,
+    // Under the heading the time of day; this week the weekday, before it the date.
+    when: (iso: string, day: HistoryDay) =>
+      day === 'today' || day === 'yesterday'
+        ? clock(iso)
+        : day === 'week'
+          ? (WEEKDAYS_SHORT[new Date(iso).getDay()] ?? '')
+          : dayMonth(iso),
+    game: (concept: HistoryConcept) => HISTORY_CONCEPTS[concept],
+    withTable: (alias: string) => `${alias} masasıyla`,
+    results: { won: 'Kazandın', lost: 'Kaybettin', done: 'Bitti' } satisfies Record<
+      HistoryResult,
+      string
+    >,
+    rowLabel: (game: string, alias: string, when: string, result: string | null) =>
+      [game, `${alias} masasıyla`, when, result].filter(Boolean).join(', '),
     tabu: {
       body: 'Masalar takım olur: anlatan masa kartı anlatır, diğer masa yasaklı kelimeleri dinler.',
       steps: [
@@ -1164,9 +1198,7 @@ export const tr = {
   },
   design: {
     title: 'Tasarım (test)',
-    hint: 'Yalnızca test sürümünde görünür. Seçimin bu cihazda saklanır.',
-    schemeLabel: 'Görünüm',
-    schemes: { light: 'Açık', dark: 'Koyu', system: 'Sistem' },
+    hint: 'Yalnızca test sürümünde görünür.',
     previewTitle: 'Bileşen önizleme',
     previewOpen: 'Bileşen önizlemesini aç',
     previewIncoming: 'Mesaj gelsin',
@@ -1217,6 +1249,12 @@ export const tr = {
       capsules: 'Kapsül avatarlar',
       icons: 'Çubuk ikonlar ve zil',
       wallpaper: 'Sohbet duvar kağıdı',
+      // Aktiviteler's event card on each cover (K-44): one running now, one later today.
+      covers: 'Etkinlik kapakları',
+      sampleCafe: 'Hush Coffee',
+      sampleCampus: 'Gelişim Üniversitesi Kamp Kulübü',
+      sampleNow: 'Canlı müzik',
+      sampleLater: 'Kapsül Anlat gecesi: ikinci çay bizden, kazanan masaya tatlı',
       sampleName: 'kapsul-ab12',
       sampleTheirs: 'Masa kurduk, gelir misiniz?',
       sampleMine: 'Geliyoruz, iki kişiyiz',
@@ -1286,6 +1324,16 @@ export const tr = {
     // "2000-01-15" → "15.01.2000"
     birthDateValue: (iso: string) => iso.split('-').reverse().join('.'),
     birthDateHint: 'Yalnızca sen görürsün. Yanlışsa düzeltmek için bize yaz.',
+    // Görünüm (K-54; v46 §5): kept only on the phone.
+    appearance: {
+      title: 'Görünüm',
+      options: { system: 'Sistem', light: 'Açık', dark: 'Koyu' },
+      notes: {
+        system: 'Telefonunun ayarına uyar.',
+        light: 'Her zaman açık tema.',
+        dark: 'Her zaman koyu tema.',
+      },
+    },
     notificationsSection: 'Bildirimler',
     notifyDm: 'Mesajlar',
     notifyFriendRequests: 'Arkadaşlık istekleri',

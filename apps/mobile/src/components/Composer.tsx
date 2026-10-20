@@ -94,7 +94,7 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
               onChangeText(text);
             }}
             placeholder={placeholder}
-            placeholderTextColor={colors.muted}
+            placeholderTextColor={colors.placeholder}
             selectionColor={colors.accent}
             maxLength={maxLength}
             multiline

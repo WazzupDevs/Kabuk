@@ -41,19 +41,20 @@ export type AppTheme = {
   shape: Shape & { shadow: Record<keyof ShadowSet, string | undefined> };
 };
 
-// The test picker (Ayarlar → Tasarım (test)) exists only in preview builds, development and the
-// E2E APK (built with EXPO_PUBLIC_APP_ENV=e2e, no update channel); it picks light, dark or the
-// system's. Production always uses the theme's default scheme.
+// Ayarlar → Tasarım (test) → Bileşen önizleme exists only in preview builds, development and the
+// E2E APK (built with EXPO_PUBLIC_APP_ENV=e2e, no update channel).
 export const designPickerEnabled =
   Updates.channel === 'preview' || __DEV__ || process.env.EXPO_PUBLIC_APP_ENV === 'e2e';
 
+// Ayarlar → Görünüm (K-54): Sistem, Açık or Koyu, in every build, kept only on the phone. The key
+// is the one test builds used, so a test choice carries over.
 const STORAGE_KEY = 'masa.design.v1';
 
 type DesignState = ThemePreference & { loaded: boolean };
 
 const useDesignStore = create<DesignState>(() => ({
   scheme: null,
-  loaded: !designPickerEnabled,
+  loaded: false,
 }));
 
 function loadPreference() {
@@ -64,7 +65,6 @@ function loadPreference() {
 }
 
 export function setSchemePreference(scheme: SchemePreference) {
-  if (!designPickerEnabled) return;
   useDesignStore.setState({ scheme });
   void AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({ scheme })).catch(() => undefined);
 }
@@ -172,7 +172,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(loadPreference, []);
 
-  const scheme = resolveScheme(THEME, designPickerEnabled ? preference : null, system);
+  const scheme = resolveScheme(THEME, preference, system);
   const target = useMemo(() => buildTheme(scheme), [scheme]);
   const targetReady = useFontsReady(target.fonts);
 

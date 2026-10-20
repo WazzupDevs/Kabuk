@@ -13,6 +13,9 @@ export type Palette = {
   raised: string; // lifted off the canvas and off cards: secondary buttons, fields, others' bubbles
   text: string;
   muted: string; // secondary text
+  // Input placeholders (Masaya yaz, Mesaj yaz, Mekan ara…; v46 §8, K-65): lighter than `muted` in
+  // light, v45's value in dark; AA on the fields they sit on.
+  placeholder: string;
   accent: string;
   onAccent: string;
   // The second accent (skall: `accent-2`): profile faces (initials), unread counts, the "profilli"
@@ -62,6 +65,7 @@ export const PALETTE_KEYS = [
   'raised',
   'text',
   'muted',
+  'placeholder',
   'accent',
   'onAccent',
   'violet',
@@ -243,7 +247,8 @@ export const TAB_TONE = 'accent' as const satisfies PaletteKey;
 
 // Opacities: the scrim behind a sheet, a pressed text button. A disabled button is not faded: it
 // takes a neutral fill (theme/buttonFill.ts).
-export const OPACITY = { scrim: 0.5, pressed: 0.7 } as const;
+// On an event's cover (v44: .ewhen, .eplate) the time and the plate let the drawing show through.
+export const OPACITY = { scrim: 0.5, pressed: 0.7, onCover: 0.72, coverPlate: 0.95 } as const;
 
 // Icon sizes (Ionicons).
 export const ICON = { xs: 12, sm: 16, md: 20, lg: 24, xl: 28 } as const;

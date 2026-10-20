@@ -2,6 +2,7 @@ import { EVENT_WINDOW_DAYS, isActivityBucket } from '@shared/explore.ts';
 import type { LngLat } from '@shared/geo.ts';
 import { isVenueKind, type VenueKind } from '@shared/venueKind.ts';
 import { useQuery } from '@tanstack/react-query';
+import { useEffect, useMemo } from 'react';
 
 import { supabase } from '@/lib/supabase';
 
@@ -99,4 +100,27 @@ export function useVenueCities() {
       return Object.fromEntries(data.map((v) => [v.id, v.city]));
     },
   });
+}
+
+export type CityVenue = ExploreVenue & { city: string };
+
+// The venues with their city (Keşfet's list, Aktiviteler's events). A venue the city list has not
+// seen yet (it refreshes every half hour) waits out of the list while the cities are read again.
+export function useCityVenues() {
+  const venues = useExploreVenues();
+  const cities = useVenueCities();
+  const missingCity =
+    venues.isSuccess && cities.isSuccess && venues.data.some((v) => !(v.id in cities.data));
+  useEffect(() => {
+    if (missingCity) void cities.refetch();
+  }, [missingCity, cities]);
+  const listed = useMemo<CityVenue[]>(
+    () =>
+      (venues.data ?? []).flatMap((v) => {
+        const city = cities.data?.[v.id];
+        return city === undefined ? [] : [{ ...v, city }];
+      }),
+    [venues.data, cities.data],
+  );
+  return { venues, cities, listed };
 }

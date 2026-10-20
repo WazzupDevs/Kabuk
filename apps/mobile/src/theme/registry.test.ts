@@ -2,7 +2,12 @@ import { createRequire } from 'node:module';
 
 import { describe, expect, it } from 'vitest';
 
-import { parseThemePreference, resolveScheme, resolveShadows } from './registry';
+import {
+  parseThemePreference,
+  resolveScheme,
+  resolveShadows,
+  SCHEME_PREFERENCES,
+} from './registry';
 import { THEME } from './theme';
 import { colorClass, PALETTE_KEYS } from './tokens';
 
@@ -24,6 +29,14 @@ describe('resolveScheme', () => {
     expect(resolveScheme(THEME, 'system', null)).toBe('light');
     expect(resolveScheme(THEME, 'system', 'unspecified')).toBe('light');
     expect(resolveScheme(THEME, 'system', 'dark')).toBe('dark');
+  });
+});
+
+// Ayarlar → Görünüm (K-54; v46 §5): Sistem, Açık, Koyu on one line, Sistem by default.
+describe('appearance', () => {
+  it('offers Sistem, Açık and Koyu in that order, Sistem by default', () => {
+    expect(SCHEME_PREFERENCES).toEqual(['system', 'light', 'dark']);
+    expect(THEME.defaultScheme).toBe('system');
   });
 });
 

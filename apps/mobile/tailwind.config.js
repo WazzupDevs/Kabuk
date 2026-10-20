@@ -11,6 +11,7 @@ const COLORS = [
   'raised',
   'text',
   'muted',
+  'placeholder',
   'accent',
   'on-accent',
   'violet',
