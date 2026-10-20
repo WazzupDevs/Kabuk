@@ -221,6 +221,7 @@ export type V46ChipLook = { bg: string; border: V46Edge; color: string };
 export type V46ExploreScheme = {
   list: { card: V46Card; padding: V46Sides };
   search: {
+    marginTop: number;
     height: number;
     padding: V46Sides;
     gap: number;
@@ -2680,6 +2681,7 @@ export const V46_EXPLORE: Record<'light' | 'dark', V46ExploreScheme> = {
       padding: [6, 0, 6, 0],
     },
     search: {
+      marginTop: 12,
       height: 48,
       padding: [0, 16, 0, 16],
       gap: 10,
@@ -2799,6 +2801,7 @@ export const V46_EXPLORE: Record<'light' | 'dark', V46ExploreScheme> = {
       padding: [6, 0, 6, 0],
     },
     search: {
+      marginTop: 12,
       height: 48,
       padding: [0, 16, 0, 16],
       gap: 10,

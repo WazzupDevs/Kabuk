@@ -46,6 +46,8 @@ export function listScheme(el: Element): { card: CardLook; padding: Sides } {
 }
 
 export type SearchScheme = {
+  // Below the title's row (`.dsearch{margin-top:12px}`).
+  marginTop: number;
   height: number;
   padding: Sides;
   gap: number;
@@ -72,6 +74,7 @@ export function searchScheme(idle: Element, focus: Element): SearchScheme {
     throw new Error('arama: parts');
   }
   return {
+    marginTop: idle.margin[0],
     height: idle.box[1],
     padding: idle.padding,
     gap: idle.gap,

@@ -459,6 +459,7 @@ const PARTS_TYPES = [
   'export type V46ExploreScheme = {',
   '  list: { card: V46Card; padding: V46Sides };',
   '  search: {',
+  '    marginTop: number;',
   '    height: number;',
   '    padding: V46Sides;',
   '    gap: number;',

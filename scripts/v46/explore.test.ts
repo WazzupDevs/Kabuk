@@ -194,3 +194,45 @@ describe("v46's Keşfet motions", () => {
     expect(source('VenueThumb.tsx')).toMatch(/useLoopActive\(\)/);
   });
 });
+
+describe("the app's Keşfet", () => {
+  const screen = readFileSync(
+    resolve(root, 'apps/mobile/app/(app)/(tabs)/explore/index.tsx'),
+    'utf8',
+  );
+
+  it("is built from v46's parts, the bell left to Mesajlar (K-6)", () => {
+    for (const part of [
+      'TopBar',
+      'ViewModeToggle',
+      'SearchField',
+      'FilterChips',
+      'CityButton',
+      'HereCard',
+      'VenueRow',
+    ]) {
+      expect(screen, part).toMatch(new RegExp(`from '@/ui/${part}'`));
+    }
+    expect(screen).toMatch(/<TopBar\s+kind="explore"/);
+    expect(screen).not.toMatch(/NotificationsBell|BellButton/);
+  });
+
+  it('feels a new view, the list or the map (haptics.ts → selection)', () => {
+    expect(screen).toMatch(/onChange=\{\(mode\) => \{\s*haptic\('selection'\);\s*setView\(mode\);/);
+  });
+
+  it('draws a campus as the campus and, until the venue type comes, every cafe as a cafe', () => {
+    expect(screen).toMatch(
+      /const THUMB_OF: Record<VenueKind, V46ThumbKind> = \{ campus: 'kampus', cafe: 'kafe' \}/,
+    );
+    expect(screen).toMatch(/thumb=\{THUMB_OF\[v\.kind\]\}/);
+  });
+
+  it('keeps the search 12 below the title, as `.dsearch` does', () => {
+    for (const s of SCHEMES) expect(explore[s].search.marginTop).toBe(12);
+    expect(html).toContain(
+      '.dsearch{display:flex;align-items:center;gap:10px;height:48px;margin-top:12px',
+    );
+    expect(source('SearchField.tsx')).toMatch(/marginTop: s\.marginTop/);
+  });
+});
