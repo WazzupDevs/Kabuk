@@ -1,4 +1,5 @@
 // Overpass API → content/venues-pilot.json. Pure: the network call lives in fetch-venues.ts.
+import { DEFAULT_VENUE_CATEGORY } from '../../supabase/functions/_shared/pure/venueKind.ts';
 import type { VenueRecord, VenuesFile } from '../seed/content.ts';
 
 export const PILOT = { city: 'İstanbul', district: 'Beylikdüzü' } as const;
@@ -48,7 +49,7 @@ export function countUnnamed(overpass: unknown): number {
 }
 
 // Keeps named cafes and hookah lounges with a position; ways/relations use their center.
-// `previous` carries manual edits (isActive: false) over from the last reviewed file.
+// `previous` carries manual edits (isActive: false, category) over from the last reviewed file.
 export function toVenuesFile(
   overpass: unknown,
   fetchedAt: string,
@@ -63,6 +64,9 @@ export function toVenuesFile(
   const inactive = new Set(
     (previous?.venues ?? []).filter((v) => !v.isActive).map((v) => v.sourceRef),
   );
+  // Categories are set by hand (docs/SPEC_V4.md §4.C) and survive re-fetching; a new venue is a
+  // kafe until then.
+  const categories = new Map((previous?.venues ?? []).map((v) => [v.sourceRef, v.category]));
 
   const venues: VenueRecord[] = [];
   for (const element of elements.filter(isElement)) {
@@ -83,6 +87,7 @@ export function toVenuesFile(
       source: 'osm',
       sourceRef,
       kind: 'cafe',
+      category: categories.get(sourceRef) ?? DEFAULT_VENUE_CATEGORY,
       amenity,
       isActive: !inactive.has(sourceRef),
     });
