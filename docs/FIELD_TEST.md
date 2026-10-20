@@ -43,7 +43,7 @@ Her adım, atlanan P1'lere ihtiyaç duymadan yapılabilir.
 
 ## Otomatik testler (e2e)
 
-P0'ın telefonsuz yapılabilen kısmı CI'da koşar (PR'da `e2e` etiketiyle, elle ve her gece main'de): `e2e/maestro/p0.yaml`, Android emülatöründe, yerel stack'e karşı, açık ve koyu temada. Karşı masayı bot oynar (`scripts/e2e/bot-table.ts`); takım akışında ikinci bir bot masası da vardır. Sahada telefon eksikse bot dev projesinde karşı masa olarak oynayabilir (CLAUDE.md → "Karşı masa"). Sıra tablosundaki **Otomatik** kolonu ve adımlardaki "Otomatik:" notu neyin kapsandığını söyler.
+P0'ın telefonsuz yapılabilen kısmı CI'da koşar (PR'da `e2e` etiketiyle, elle ve her gece main'de): `e2e/maestro/p0.yaml`, Android emülatöründe, yerel stack'e karşı, açık ve koyu temada. Mekandaki diğer kişiyi bot oynar (`scripts/e2e/bot-table.ts`, kişilerin masası); masada üçüncü bir kişi için ikinci bir bot da vardır. Sahada telefon eksikse bot dev projesinde karşı masa olarak oynayabilir (CLAUDE.md → "Karşı masa"). Sıra tablosundaki **Otomatik** kolonu ve adımlardaki "Otomatik:" notu neyin kapsandığını söyler.
 
 Otomatiklenmeyen ve sahada elle kalanlar:
 
