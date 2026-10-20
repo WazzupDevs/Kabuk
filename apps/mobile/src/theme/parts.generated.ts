@@ -151,6 +151,7 @@ export type V46VenueGlyphState = {
 export type V46TabBarScheme = {
   height: number;
   inset: number;
+  bottom: number;
   maxWidth: number;
   padding: readonly [number, number, number, number];
   radius: number;
@@ -2072,6 +2073,7 @@ export const V46_TAB_BAR: {
   light: {
     height: 62,
     inset: 12,
+    bottom: 12,
     maxWidth: 376,
     padding: [4, 4, 4, 4],
     radius: 999,
@@ -2180,6 +2182,7 @@ export const V46_TAB_BAR: {
   dark: {
     height: 62,
     inset: 12,
+    bottom: 12,
     maxWidth: 376,
     padding: [4, 4, 4, 4],
     radius: 999,

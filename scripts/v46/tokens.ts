@@ -389,6 +389,7 @@ const PARTS_TYPES = [
   'export type V46TabBarScheme = {',
   '  height: number;',
   '  inset: number;',
+  '  bottom: number;',
   '  maxWidth: number;',
   '  padding: readonly [number, number, number, number];',
   '  radius: number;',
