@@ -316,11 +316,9 @@ export type V46SteamBar = {
   fill: string;
   delayMs: number;
 };
-// A keyframe animation as v46's rule plays it; `iterations` null: for ever.
+// A keyframe animation as v46's rule plays it; `iterations` null: for ever; `holdsBefore`: its
+// first keyframe holds during the delay (`animation-fill-mode: backwards`).
 export type V46Animation = {
-  selector: string;
-  keyframes: string;
-  ms: number;
   delayMs: number;
   ease: V46Bezier;
   channels: Partial<Record<V46Channel, V46ChannelSteps>>;
@@ -3276,9 +3274,6 @@ export const V46_EXPLORE_MOTION: {
   liveFade: V46Animation;
 } = {
   rowIn: {
-    selector: '.vrow',
-    keyframes: 'rowIn',
-    ms: 340,
     delayMs: 0,
     ease: [0.2, 0.8, 0.2, 1],
     channels: {
@@ -3291,9 +3286,6 @@ export const V46_EXPLORE_MOTION: {
   },
   rowStaggerMs: 40,
   steam: {
-    selector: '.th-steam',
-    keyframes: 'steam',
-    ms: 2400,
     delayMs: 0,
     ease: [0.42, 0, 0.58, 1],
     channels: {
@@ -3311,9 +3303,6 @@ export const V46_EXPLORE_MOTION: {
     holdsBefore: false,
   },
   livePulse: {
-    selector: '.live',
-    keyframes: 'livePulse',
-    ms: 1600,
     delayMs: 0,
     ease: [0.42, 0, 0.58, 1],
     channels: {
@@ -3330,9 +3319,6 @@ export const V46_EXPLORE_MOTION: {
     holdsBefore: false,
   },
   liveHalo: {
-    selector: '.live::after',
-    keyframes: 'liveHalo',
-    ms: 1600,
     delayMs: 0,
     ease: [0.42, 0, 0.58, 1],
     channels: {
@@ -3356,9 +3342,6 @@ export const V46_EXPLORE_MOTION: {
     holdsBefore: false,
   },
   liveFade: {
-    selector: '.live',
-    keyframes: 'liveFade',
-    ms: 1600,
     delayMs: 0,
     ease: [0.42, 0, 0.58, 1],
     channels: {

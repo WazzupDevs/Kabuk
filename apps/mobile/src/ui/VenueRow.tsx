@@ -121,13 +121,19 @@ function Line({ text, children }: { text: V46Text; children: ReactNode }) {
 }
 
 // v46's `rowIn` for the row at `index`: from 10 dp below and transparent to its place, after
-// `index` steps (`animation-fill-mode: backwards`: it waits at the first keyframe).
+// `index` steps. While it waits it holds the first keyframe when the rule says so (`holdsBefore`,
+// `animation-fill-mode: backwards`), else its own place.
 function useComeIn(index: number) {
   const reduce = useReduceMotion();
   const m = V46_EXPLORE_MOTION.rowIn;
   const plays = !(reduce && m.offWhenReduced);
-  const y = useSharedValue(plays ? (m.channels.translateY?.from ?? 0) : 0);
-  const opacity = useSharedValue(plays ? (m.channels.opacity?.from ?? 1) : 1);
+  const waits = plays && m.holdsBefore;
+  const y = useSharedValue(
+    waits ? (m.channels.translateY?.from ?? 0) : keyframeRest(m, 'translateY'),
+  );
+  const opacity = useSharedValue(
+    waits ? (m.channels.opacity?.from ?? 1) : keyframeRest(m, 'opacity'),
+  );
   useEffect(() => {
     if (!plays) return;
     const motion = { ...m, delayMs: m.delayMs + index * V46_EXPLORE_MOTION.rowStaggerMs };
