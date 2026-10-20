@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -9,7 +9,7 @@ import { seededRandom } from '../../apps/mobile/src/features/design/gorsel/deter
 import { junitCases, maestroMatch, padTo, similarity, thresholdFor } from './compare.ts';
 import { flowFor, shotLink } from './flow.ts';
 import { buildReport, pageHints } from './gate-report.ts';
-import { pageScript, SCALE, VIEWPORT } from './prototype.ts';
+import { appFonts, fontFaces, pageScript, SCALE, VIEWPORT } from './prototype.ts';
 import { type GateConfig, loadStates, parseStates, shots } from './states.ts';
 
 const ROOT = join(import.meta.dirname, '..', '..');
@@ -139,7 +139,11 @@ describe('visual gate: the Maestro flows', () => {
     const [shot] = shots(config);
     const flow = flowFor(root, shot ?? fail(), 3, 99.5, false);
     expect(flow).toContain('name: galeri-oyun-light-1');
-    expect(flow.indexOf('- stopApp')).toBeLessThan(flow.indexOf('- openLink:'));
+    // Warm first; the app is started afresh only when the state has not settled in 20 s.
+    expect(flow.split('\n')[3]).toMatch(/^- openLink: /);
+    expect(flow).toMatch(
+      /timeout: 20000\n {4}optional: true\n- runFlow:\n {4}when:\n {6}notVisible:\n {8}id: gorsel-hazir-3\n {4}commands:\n {6}- stopApp\n {6}- openLink: /,
+    );
     expect(flow).toContain('id: gorsel-hazir-3');
     expect(flow).toContain('id: gorsel-yok');
     expect(flow).toContain('id: gorsel-eksik-sayfa');
@@ -168,10 +172,10 @@ describe('visual gate: the Maestro flows', () => {
     expect(flow).toContain('thresholdPercentage: 99.5');
   });
 
-  it('photographs a second time on a fresh start for the noise (TEKRAR)', () => {
+  it('photographs a second time on a fresh mount for the noise (TEKRAR)', () => {
     const [shot] = shots(config);
     const flow = flowFor(root, shot ?? fail(), 3, 99.5, true);
-    expect(flow.match(/- stopApp/g)).toHaveLength(2);
+    expect(flow.match(/^- openLink: /gm)).toHaveLength(2);
     expect(flow).toContain('id: gorsel-hazir-100003');
     expect(flow).toContain('path: aday2__galeri-oyun-light-1');
   });
@@ -372,6 +376,29 @@ describe('visual gate: the report', () => {
     expect(gate.worstNoise).toBe(93.75);
     expect(text).toContain('| galeri-oyun-dark-1 | %93.750 |');
     expect(text).toContain(`önerilen eşik %${thresholdFor(93.75)}`);
+  });
+});
+
+describe("visual gate: the prototype in the app's fonts", () => {
+  it('takes the files apps/mobile/src/theme/fonts.ts imports, and only those', () => {
+    const fonts = appFonts(ROOT);
+    expect(fonts.map((f) => [f.family, f.weight, f.name])).toEqual([
+      ['Plus Jakarta Sans', 500, 'PlusJakartaSans_500Medium'],
+      ['Plus Jakarta Sans', 600, 'PlusJakartaSans_600SemiBold'],
+      ['Plus Jakarta Sans', 700, 'PlusJakartaSans_700Bold'],
+      ['Plus Jakarta Sans', 800, 'PlusJakartaSans_800ExtraBold'],
+    ]);
+    for (const f of fonts) {
+      expect(existsSync(f.file)).toBe(true);
+      expect(f.file.endsWith(`${f.name}.ttf`)).toBe(true);
+    }
+  });
+
+  it("answers Google Fonts' stylesheet with one face per app file and no other family", () => {
+    const css = fontFaces(appFonts(ROOT));
+    expect(css.match(/@font-face/g)).toHaveLength(4);
+    expect(css).not.toMatch(/Manrope|Poppins|font-weight:400/);
+    expect(css).toContain("font-family:'Plus Jakarta Sans';font-style:normal;font-weight:800;");
   });
 });
 

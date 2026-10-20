@@ -1,8 +1,8 @@
 // The page script and the in-page callbacks below run in Chromium.
 /// <reference lib="dom" />
 // The design prototype (v46, docs/design/v46/skall-masa-deneme-v46.html) drawn the way the visual
-// gate's emulator draws the app (CLAUDE.md → Görsel kapı): 360 × 640 dp at 2×, the app's own Plus
-// Jakarta Sans files instead of Google Fonts, no network, motion reduced, the clock stopped at the
+// gate's emulator draws the app (CLAUDE.md → Görsel kapı): 360 × 640 dp at 2×, the app's own font
+// files (appFonts) instead of Google Fonts, no network, motion reduced, the clock stopped at the
 // gate's moment and Math.random seeded as in the app (apps/mobile/src/features/design/gorsel/
 // deterministic.ts). A state opens with `?gorsel=<state id>&tema=light|dark`: the page script below
 // presses the prototype's own "Deneme durumları" buttons (states.json → `prototip.adimlar`). The
@@ -21,19 +21,63 @@ import { type PrototypeState, PROTOTYPE_FILE, type Theme } from './states.ts';
 export const VIEWPORT = { width: 360, height: 640 };
 export const SCALE = 2;
 const FONT_HOST = 'https://fonts.gstatic.com/gorsel/';
-const WEIGHTS = ['400Regular', '500Medium', '600SemiBold', '700Bold', '800ExtraBold'];
+// The app's font files: what apps/mobile/src/theme/fonts.ts imports, one module per weight of an
+// @expo-google-fonts package, each next to its .ttf.
+export const APP_FONTS_FILE = 'apps/mobile/src/theme/fonts.ts';
 
-function fontDir(root: string): string {
+export type AppFont = { name: string; family: string; weight: number; file: string };
+
+export function appFonts(root: string): AppFont[] {
+  const source = readFileSync(join(root, APP_FONTS_FILE), 'utf8');
   const req = createRequire(join(root, 'apps/mobile/package.json'));
-  return dirname(req.resolve('@expo-google-fonts/plus-jakarta-sans/package.json'));
+  const fonts: AppFont[] = [];
+  for (const m of source.matchAll(
+    /import \{ (\w+) \} from '(@expo-google-fonts\/([a-z0-9-]+)\/(\d+)\w*)';/g,
+  )) {
+    const [, name = '', module = '', slug = '', weight = ''] = m;
+    const family = slug
+      .split('-')
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
+    fonts.push({
+      name,
+      family,
+      weight: Number(weight),
+      file: join(dirname(req.resolve(module)), `${name}.ttf`),
+    });
+  }
+  if (fonts.length === 0) throw new Error(`no @expo-google-fonts imports in ${APP_FONTS_FILE}`);
+  return fonts;
 }
 
-export function fontFaces(): string {
-  return WEIGHTS.map(
-    (w) =>
-      `@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:${parseInt(w, 10)};` +
-      `src:url(${FONT_HOST}PlusJakartaSans_${w}.ttf) format('truetype')}`,
-  ).join('\n');
+// What the prototype gets instead of Google Fonts' stylesheet: the app's files, and nothing for
+// the families the app does not have (v46's link also asks for Manrope and Poppins, which its CSS
+// never uses).
+export function fontFaces(fonts: AppFont[]): string {
+  return fonts
+    .map(
+      (f) =>
+        `@font-face{font-family:'${f.family}';font-style:normal;font-weight:${f.weight};` +
+        `font-display:block;src:url(${FONT_HOST}${f.name}.ttf) format('truetype')}`,
+    )
+    .join('\n');
+}
+
+// Every face of the app's families loads from its file, or the drawing stops: no silent fallback
+// to a system font.
+async function checkFonts(page: Page, fonts: AppFont[]): Promise<void> {
+  const failed = await page.evaluate(async (wanted) => {
+    const bad: string[] = [];
+    for (const f of wanted) {
+      const faces = await document.fonts.load(`${f.weight} 16px "${f.family}"`);
+      if (!faces.some((face) => face.status === 'loaded' && face.weight === String(f.weight))) {
+        bad.push(`${f.family} ${f.weight}`);
+      }
+    }
+    return bad;
+  }, fonts);
+  if (failed.length > 0)
+    throw new Error(`fonts not loaded from the app's files: ${failed.join(', ')}`);
 }
 
 type PageArg = { seed: number; states: Record<string, PrototypeState> };
@@ -99,7 +143,8 @@ export async function renderPrototype(
   wanted: Wanted[],
   executablePath?: string,
 ): Promise<Rendered[]> {
-  const fonts = fontDir(root);
+  const fonts = appFonts(root);
+  const files = new Map(fonts.map((f) => [`${FONT_HOST}${f.name}.ttf`, f.file]));
   const states = Object.fromEntries(wanted.map((w) => [w.id, w.state]));
   const browser = await chromium.launch(executablePath ? { executablePath } : {});
   const done: Rendered[] = [];
@@ -118,16 +163,10 @@ export async function renderPrototype(
         const url = route.request().url();
         if (url.startsWith('file:')) return route.continue();
         if (url.startsWith('https://fonts.googleapis.com/')) {
-          return route.fulfill({ contentType: 'text/css', body: fontFaces() });
+          return route.fulfill({ contentType: 'text/css', body: fontFaces(fonts) });
         }
-        if (url.startsWith(FONT_HOST)) {
-          const file = url.slice(FONT_HOST.length);
-          const weight = /PlusJakartaSans_(\w+)\.ttf$/.exec(file)?.[1] ?? '';
-          return route.fulfill({
-            contentType: 'font/ttf',
-            body: readFileSync(join(fonts, weight, file)),
-          });
-        }
+        const file = files.get(url);
+        if (file) return route.fulfill({ contentType: 'font/ttf', body: readFileSync(file) });
         return route.abort();
       });
       const page = await context.newPage();
@@ -135,6 +174,7 @@ export async function renderPrototype(
       await page.addInitScript(pageScript, { seed: GATE_SEED, states } satisfies PageArg);
       await openState(page, join(root, state.dosya ?? PROTOTYPE_FILE), id, theme);
       await page.evaluate(() => document.fonts.ready);
+      await checkFonts(page, fonts);
       const file = join(out, `${id}-${theme}.png`);
       await page.locator(state.kirp).first().screenshot({ path: file, animations: 'disabled' });
       done.push({ id, theme, file });

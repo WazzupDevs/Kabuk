@@ -1,5 +1,5 @@
 // The visual gate's Maestro flows (CLAUDE.md → Görsel kapı), one file per shot so a failing
-// comparison never stops the rest: start the app on the state's route, wait for it to settle,
+// comparison never stops the rest: open the state's route, wait for it to settle,
 // photograph its frame (the candidate) and, when a baseline exists, assertScreenshot against it.
 // Written by make-flows.ts.
 import { baselinePath, hasBaseline, type Shot } from './states.ts';
@@ -18,12 +18,13 @@ export function shotLink(shot: Shot, n: number): string {
   return `masa:///gorsel?${q.join('&')}`;
 }
 
-// Every shot opens on a freshly started app: no earlier state's screen left in the stack, the
-// clock frozen and the random sequence seeded once for this state (deterministic.ts).
+// A shot opens on the running app: the route resets the state from its address (a fresh mount per
+// shot number, the clock frozen, the random sequence seeded again; apps/mobile/app/gorsel.tsx
+// drops the earlier states' screens). Only when the state has not settled in 20 s is the app
+// started afresh and the state opened once more (the first shot starts it anyway).
 function open(shot: Shot, n: number): string[] {
-  return [
-    '- stopApp',
-    `- openLink: "${shotLink(shot, n)}"`,
+  const link = `- openLink: "${shotLink(shot, n)}"`;
+  const settle = (timeout: number, optional: boolean) => [
     '- extendedWaitUntil:',
     '    notVisible:',
     '      id: launch-curtain',
@@ -31,7 +32,19 @@ function open(shot: Shot, n: number): string[] {
     '- extendedWaitUntil:',
     '    visible:',
     `      id: gorsel-hazir-${n}`,
-    '    timeout: 60000',
+    `    timeout: ${timeout}`,
+    ...(optional ? ['    optional: true'] : []),
+  ];
+  return [
+    link,
+    ...settle(20000, true),
+    '- runFlow:',
+    '    when:',
+    '      notVisible:',
+    `        id: gorsel-hazir-${n}`,
+    '    commands:',
+    '      - stopApp',
+    ...[link, ...settle(60000, false)].map((l) => `      ${l}`),
     // The route knows the state, and the list has its page count right (GateState).
     '- assertNotVisible:',
     '    id: gorsel-yok',
