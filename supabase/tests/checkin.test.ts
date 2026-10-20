@@ -56,7 +56,6 @@ function checkIn(
     lat: ANCHOR.lat,
     lng: ANCHOR.lng,
     accuracyM: 12.5,
-    headcount: 3,
     locationConsentVersion: CURRENT_LOCATION_CONSENT_VERSION,
     requestId: randomUUID(),
     ...rest,
@@ -109,14 +108,16 @@ describe('nearby_venues', () => {
 });
 
 describe('checkin/check-in', () => {
-  it('opens a 4 hour table with a unique alias and records location consent', async () => {
+  // From step 4.5 (docs/SPEC_V4.md §4.E) a check-in is being at the venue: no alias, no headcount;
+  // a table and its name are rooms/create's (tableModel.test.ts).
+  it('opens a 4 hour check-in without alias or headcount and records location consent', async () => {
     const client = await onboarded(PHONE_A);
     const res = await checkIn(client);
     expect(res).toEqual({
       status: 200,
       body: {
         sessionId: expect.any(String),
-        alias: expect.stringMatching(/^\S+ \S+$/),
+        alias: '',
         expiresAt: expect.any(String),
         // docs/SPEC_V4.md §4.D (step 4.4): the check-in's identity, the account's default.
         identity: { mode: 'anonymous', switchUsed: false },
@@ -128,7 +129,12 @@ describe('checkin/check-in', () => {
       select *, extract(epoch from expires_at - created_at) as seconds
       from public.table_sessions where user_id = ${id}
     `;
-    expect(session).toMatchObject({ status: 'active', headcount: 3, gps_accuracy_m: 12.5 });
+    expect(session).toMatchObject({
+      status: 'active',
+      alias: null,
+      headcount: null,
+      gps_accuracy_m: 12.5,
+    });
     expect(Number(session?.seconds)).toBe(4 * 3600);
 
     const [profile] =
@@ -136,9 +142,9 @@ describe('checkin/check-in', () => {
     expect(profile?.location_consent_version).toBe(CURRENT_LOCATION_CONSENT_VERSION);
     expect(profile?.location_consent_at).toBeInstanceOf(Date);
 
-    // The own table is readable through RLS.
-    const { data } = await client.from('table_sessions').select('alias, status');
-    expect(data).toEqual([{ alias: (res.body as { alias: string }).alias, status: 'active' }]);
+    // The own check-in is readable through RLS.
+    const { data } = await client.from('table_sessions').select('id, status');
+    expect(data).toEqual([{ id: (res.body as { sessionId: string }).sessionId, status: 'active' }]);
   });
 
   it('accepts a venue 290 m away and rejects one 310 m away', async () => {
@@ -184,11 +190,12 @@ describe('checkin/check-in', () => {
     expect(await checkIn(client)).toEqual({ status: 409, body: errorBody('profile_required') });
   });
 
-  it('validates headcount and coordinates', async () => {
+  it('validates coordinates and ignores the headcount of an old app', async () => {
     const client = await onboarded(PHONE_A);
-    for (const bad of [{ headcount: 0 }, { headcount: 5 }, { lat: 91 }, { accuracyM: -1 }]) {
+    for (const bad of [{ lat: 91 }, { accuracyM: -1 }]) {
       expect((await checkIn(client, bad)).status, JSON.stringify(bad)).toBe(400);
     }
+    expect((await checkIn(client, { headcount: 5 })).status).toBe(200);
   });
 
   it('ends the previous table when checking in again', async () => {
@@ -220,19 +227,19 @@ describe('checkin/check-in', () => {
     expect(rows).toEqual([{ status: 'active', checkin_key: requestId }]);
   });
 
-  it('keeps the table and its room when the same check-in comes again', async () => {
+  it('keeps the check-in and its table when the same check-in comes again', async () => {
     const client = await onboarded(PHONE_A);
     const requestId = randomUUID();
     const first = await checkIn(client, { requestId });
-    const created = await invoke(client, 'rooms', { action: 'create', profiled: false });
+    const created = await invoke(client, 'rooms', { action: 'create' });
     expect(created.status).toBe(200);
     const roomId = (created.body as { roomId: string }).roomId;
     expect(await checkIn(client, { requestId })).toEqual(first);
-    const [room] = await sql`select status from public.rooms where id = ${roomId}`;
-    expect(room?.status).toBe('waiting');
+    const [room] = await sql`select status, phones from public.rooms where id = ${roomId}`;
+    expect(room).toEqual({ status: 'active', phones: 1 });
   });
 
-  it('opens a new table for a new key, no key, or a key whose table ended or ran out', async () => {
+  it('opens a new check-in for a new key, no key, or a key whose check-in ended or ran out', async () => {
     const client = await onboarded(PHONE_A);
     const id = await userIdOf(client);
     const sessionOf = (res: { body: unknown }) => (res.body as { sessionId: string }).sessionId;
@@ -255,47 +262,32 @@ describe('checkin/check-in', () => {
     expect(rows.map((r) => r.status)).toEqual(['ended', 'ended', 'ended', 'ended', 'active']);
   });
 
-  it('opens a new table for the same key with another headcount or team choice', async () => {
+  // An old app sends a headcount and a team choice; neither makes another check-in (step 4.5).
+  it('keeps one check-in for the same key, whatever headcount or team choice comes with it', async () => {
     const client = await onboarded(PHONE_A);
     const sessionOf = (res: { body: unknown }) => (res.body as { sessionId: string }).sessionId;
     const requestId = randomUUID();
     const first = sessionOf(await checkIn(client, { requestId }));
-    const headcount = sessionOf(await checkIn(client, { requestId, headcount: 2 }));
-    expect(headcount).not.toBe(first);
-    const teams = sessionOf(await checkIn(client, { requestId, headcount: 2, teams: true }));
-    expect(teams).not.toBe(headcount);
-    const [row] = await sql`
-      select id, headcount, team_capable from public.table_sessions
-      where user_id = ${await userIdOf(client)} and status = 'active'
+    expect(sessionOf(await checkIn(client, { requestId, headcount: 2 }))).toBe(first);
+    expect(sessionOf(await checkIn(client, { requestId, headcount: 2, teams: true }))).toBe(first);
+    const rows = await sql`
+      select id from public.table_sessions where user_id = ${await userIdOf(client)}
     `;
-    expect(row).toEqual({ id: teams, headcount: 2, team_capable: true });
+    expect(rows).toEqual([{ id: first }]);
   });
 
-  it('gives tables at the same venue different aliases', async () => {
+  it('shows each person only its own check-in', async () => {
     const a = await onboarded(PHONE_A);
     const b = await onboarded(PHONE_B);
-    const aliasA = ((await checkIn(a)).body as { alias: string }).alias;
-    const aliasB = ((await checkIn(b)).body as { alias: string }).alias;
-    expect(aliasA).not.toBe(aliasB);
-
-    // Other tables are invisible through RLS.
-    const { data } = await a.from('table_sessions').select('alias');
-    expect(data).toEqual([{ alias: aliasA }]);
-  });
-
-  it('rejects a duplicate active alias at the database level', async () => {
-    const a = await onboarded(PHONE_A);
-    const b = await onboarded(PHONE_B);
-    const alias = ((await checkIn(a)).body as { alias: string }).alias;
-    await expect(sql`
-      insert into public.table_sessions (user_id, venue_id, alias, headcount, expires_at)
-      values (${await userIdOf(b)}, ${venueId('at-anchor')}, ${alias}, 2, now() + interval '1 hour')
-    `).rejects.toMatchObject({ code: '23505' });
+    const sessionA = ((await checkIn(a)).body as { sessionId: string }).sessionId;
+    expect((await checkIn(b)).status).toBe(200);
+    const { data } = await a.from('table_sessions').select('id');
+    expect(data).toEqual([{ id: sessionA }]);
   });
 });
 
 describe('checkin/leave and expiry', () => {
-  it('ends the active table and is idempotent', async () => {
+  it('ends the active check-in and is idempotent', async () => {
     const client = await onboarded(PHONE_A);
     await checkIn(client);
     expect(await invoke(client, 'checkin', { action: 'leave' })).toEqual({
@@ -311,7 +303,7 @@ describe('checkin/leave and expiry', () => {
     expect(rows.map((r) => r.status)).toEqual(['ended']);
   });
 
-  it('ends tables past their 4 hours, scheduled every minute', async () => {
+  it('ends check-ins past their 4 hours, scheduled every minute', async () => {
     const client = await onboarded(PHONE_A);
     await checkIn(client);
     const id = await userIdOf(client);
@@ -394,73 +386,11 @@ describe('privacy', () => {
     const start = await client.rpc('start_table_session', {
       target_user_id: id,
       target_venue_id: venueId('at-anchor'),
-      new_alias: 'Mor Baykuş',
-      new_headcount: 2,
       consent_version: CURRENT_LOCATION_CONSENT_VERSION,
+      accuracy_m: 10,
     });
     expect(start.error?.code).toBe('42501');
     const end = await client.rpc('end_table_session', { target_user_id: id });
     expect(end.error?.code).toBe('42501');
-  });
-});
-
-// docs/SPEC_V3.md §5.6: "Masa adını değiştir".
-describe('checkin/reroll-alias', () => {
-  const reroll = (client: Client) => invoke(client, 'checkin', { action: 'reroll-alias' });
-
-  async function aliasOf(client: Client) {
-    const [row] = await sql`
-      select alias from public.table_sessions
-      where user_id = ${await userIdOf(client)} and status = 'active'
-    `;
-    return row?.alias as string;
-  }
-
-  it('draws a new alias three times per check-in, then refuses', async () => {
-    const client = await onboarded(PHONE_A);
-    await checkIn(client);
-    const seen = [await aliasOf(client)];
-    for (const left of [2, 1, 0]) {
-      const res = await reroll(client);
-      expect(res).toEqual({ status: 200, body: { alias: expect.any(String), rerollsLeft: left } });
-      const alias = (res.body as { alias: string }).alias;
-      expect(alias).toMatch(/^\S+ \S+$/);
-      expect(seen).not.toContain(alias);
-      expect(await aliasOf(client)).toBe(alias);
-      seen.push(alias);
-    }
-    expect(await reroll(client)).toEqual({ status: 429, body: errorBody('reroll_limit') });
-    // A new check-in starts again.
-    await checkIn(client);
-    expect((await reroll(client)).status).toBe(200);
-  });
-
-  it('never takes an alias another active table at the venue has', async () => {
-    const [a, b] = [await onboarded(PHONE_A), await onboarded(PHONE_B)];
-    await checkIn(a);
-    await checkIn(b);
-    // The database refuses a taken alias (the function then draws another one); nothing changes.
-    await expect(
-      sql`select public.reroll_table_alias(${await userIdOf(a)}, ${await aliasOf(b)}, 3)`,
-    ).rejects.toThrow(/table_sessions_unique_active_alias/);
-    const res = await reroll(a);
-    expect(res.status).toBe(200);
-    expect((res.body as { alias: string }).alias).not.toBe(await aliasOf(b));
-  });
-
-  it('refuses in a room or with a request out', async () => {
-    const [owner, guest] = [await onboarded(PHONE_A), await onboarded(PHONE_B)];
-    await checkIn(owner);
-    await checkIn(guest);
-    const created = await invoke(owner, 'rooms', { action: 'create', profiled: false });
-    const roomId = (created.body as { roomId: string }).roomId;
-    expect(await reroll(owner)).toEqual({ status: 409, body: errorBody('in_room') });
-    await invoke(guest, 'rooms', { action: 'request-join', roomId, profiled: false });
-    expect(await reroll(guest)).toEqual({ status: 409, body: errorBody('in_room') });
-  });
-
-  it('needs an active table', async () => {
-    const client = await onboarded(PHONE_A);
-    expect(await reroll(client)).toEqual({ status: 409, body: errorBody('no_active_table') });
   });
 });

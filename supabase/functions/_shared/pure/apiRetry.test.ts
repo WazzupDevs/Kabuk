@@ -17,20 +17,8 @@ describe('IDEMPOTENT_CALLS', () => {
         'dm/react',
         'dm/read',
         'friends/list',
-        'harf/advance',
-        'harf/begin',
-        'ibre/advance',
-        'ibre/begin',
-        'ibre/target',
         'ping',
         'profile/get',
-        'sahtekar/advance',
-        'sarki/advance',
-        'sarki/begin',
-        'tabu/begin-turn',
-        'tabu/end-turn',
-        'tabu/mark',
-        'tabu/turn-cards',
         'venue-chat/page',
       ].sort(),
     );
@@ -62,7 +50,7 @@ describe('IDEMPOTENT_CALLS', () => {
 
 describe('callName', () => {
   it('joins the function and its action; ping has none', () => {
-    expect(callName('tabu', { action: 'mark', roomId: 'r' })).toBe('tabu/mark');
+    expect(callName('chat', { action: 'react', roomId: 'r' })).toBe('chat/react');
     expect(callName('ping', {})).toBe('ping');
     expect(callName('dm', { action: 1 })).toBe('dm');
   });
@@ -71,16 +59,16 @@ describe('callName', () => {
 describe('retriesAfter', () => {
   it('sends an idempotent call once more after a 5xx', () => {
     for (const status of [500, 502, 503, 504, 546]) {
-      expect(retriesAfter('tabu/mark', status, 1)).toBe(true);
+      expect(retriesAfter('chat/react', status, 1)).toBe(true);
     }
     expect(retriesAfter('ping', 500, 1)).toBe(true);
     expect(retriesAfter('friends/list', 503, 1)).toBe(true);
   });
 
   it('never twice, and never after an answer below 500', () => {
-    expect(retriesAfter('tabu/mark', 500, 2)).toBe(false);
+    expect(retriesAfter('chat/react', 500, 2)).toBe(false);
     for (const status of [200, 400, 401, 403, 404, 409, 426, 429]) {
-      expect(retriesAfter('tabu/mark', status, 1)).toBe(false);
+      expect(retriesAfter('chat/react', status, 1)).toBe(false);
     }
   });
 

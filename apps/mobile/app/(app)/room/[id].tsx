@@ -240,11 +240,11 @@ export default function RoomScreen() {
   // Room-level events count once, from the owner side's leader.
   const reportsRoom = isOwner && seat.leader;
   const mySide = sideHeadcount(
-    isOwner ? r.owner_headcount : (r.guest_headcount ?? 0),
+    isOwner ? (r.owner_headcount ?? 1) : (r.guest_headcount ?? 0),
     isOwner ? r.owner_phones : (r.guest_phones ?? 0),
   );
   const roomHeadcount =
-    sideHeadcount(r.owner_headcount, r.owner_phones) +
+    sideHeadcount(r.owner_headcount ?? 1, r.owner_phones) +
     (r.guest_headcount !== null ? sideHeadcount(r.guest_headcount, r.guest_phones ?? 0) : 0);
   // The running game; null is chat (docs/SPEC_V3.md §5.1).
   const concept: Concept | null = (CONCEPTS as readonly unknown[]).includes(r.concept)
@@ -263,8 +263,10 @@ export default function RoomScreen() {
   // name (docs/SPEC_V3.md §22.G, decision 9); a one-sided room keeps the room's own name.
   const otherAlias = isOwner ? r.guest_alias : r.owner_alias;
   const otherPhones = (isOwner ? r.guest_phones : r.owner_phones) ?? 1;
-  const title = r.guest_alias && otherAlias ? tr.rooms.withOther(otherAlias) : r.owner_alias;
-  const myAlias = table.data?.alias ?? r.owner_alias;
+  // From step 4.5 the table's name (docs/SPEC_V4.md §4.H); today's screen until the app's 4.5b.
+  const ownerAlias = r.owner_alias ?? '';
+  const title = r.guest_alias && otherAlias ? tr.rooms.withOther(otherAlias) : ownerAlias;
+  const myAlias = table.data?.alias || ownerAlias;
   const roomPhones = phones.data ?? [];
   // The member a leader's "Masadan çık" hands the side to: the oldest one (docs/SPEC_V3.md §22.D).
   const nextLeader =
@@ -279,7 +281,7 @@ export default function RoomScreen() {
       roomId={r.id}
       title={title}
       subtitle={subtitle}
-      aliases={hasOtherTable && otherAlias ? [myAlias, otherAlias] : [r.owner_alias]}
+      aliases={hasOtherTable && otherAlias ? [myAlias, otherAlias] : [ownerAlias]}
       me={{ ...seat, sessionId }}
       phones={roomPhones}
       profiles={profiles}
@@ -303,11 +305,11 @@ export default function RoomScreen() {
       side={side}
       reportsRoom={reportsRoom}
       leader={seat.leader}
-      leaderAlias={(isOwner ? r.owner_alias : r.guest_alias) ?? r.owner_alias}
+      leaderAlias={(isOwner ? r.owner_alias : r.guest_alias) ?? ownerAlias}
       sidePhones={(isOwner ? r.owner_phones : r.guest_phones) ?? 1}
       roomPhones={r.owner_phones + (r.guest_phones ?? 0)}
       aliasOf={(s) => roomPhones.find((p) => p.sessionId === s)?.alias}
-      aliases={{ owner: r.owner_alias, guest: r.guest_alias ?? '' }}
+      aliases={{ owner: ownerAlias, guest: r.guest_alias ?? '' }}
       headcount={mySide}
       roomHeadcount={roomHeadcount}
       localGame={localGame}

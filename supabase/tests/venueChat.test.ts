@@ -1,5 +1,5 @@
 // Venue chat room (docs/SPEC_V3.md §7, §13 step 5): only accounts with a live table at the venue
-// read, write and subscribe; a profiled message never carries its table alias; reports, hiding,
+// read, write and subscribe; a profiled message never carries the sender's capsule nick; reports, hiding,
 // blocks, the profile and friend requests go through the message, never a profile or account id.
 import { randomUUID } from 'node:crypto';
 
@@ -44,20 +44,19 @@ afterAll(async () => {
   await sql.end();
 });
 
-// Three accounts at the venue: Ayşe, Burak and Cem, each with a live table.
+// Three accounts checked in at the venue: Ayşe, Burak and Cem.
 async function threeAtVenue() {
   const [a, b, c] = (await Promise.all([
     onboarded(PHONES[0], { displayName: 'Ayşe' }),
     onboarded(PHONES[1], { displayName: 'Burak' }),
     onboarded(PHONES[2], { displayName: 'Cem' }),
   ])) as [Client, Client, Client];
-  const tables = [];
-  for (const client of [a, b, c]) tables.push(await checkInAt(client, venue, V));
-  return { a, b, c, aliases: tables.map((t) => t.alias) as [string, string, string] };
+  for (const client of [a, b, c]) await checkInAt(client, venue, V);
+  return { a, b, c };
 }
 
 // docs/SPEC_V4.md §4.D (step 4.4): an anonymous message goes with the sender's capsule nick and
-// look, no longer with the table alias.
+// look (a check-in has no alias from step 4.5).
 async function capsuleOf(client: Client): Promise<{ nick: string; look: string }> {
   const [row] = await sql`
     select capsule_nick, capsule_look from public.profiles where id = ${await userIdOf(client)}
@@ -242,8 +241,8 @@ describe('venue chat: anonymous and profiled messages', () => {
     expect((await page(a)).every((m) => m.from_me)).toBe(true);
   });
 
-  it('never gives a profiled sender’s alias, account id or public_id anywhere', async () => {
-    const { a, b, aliases } = await threeAtVenue();
+  it('never gives a profiled sender’s nick, account id or public_id anywhere', async () => {
+    const { a, b } = await threeAtVenue();
     const [uidA] = [await userIdOf(a)];
     const { data: own } = await a.from('profiles').select('public_id').single();
     const sent = await send(a, 'merhaba', true);
@@ -272,8 +271,7 @@ describe('venue chat: anonymous and profiled messages', () => {
       (await b.rpc('my_sent_venue_chat_requests')).data,
       (await a.rpc('my_sent_venue_chat_requests')).data,
     ]);
-    expect(seen).not.toContain(aliases[0]);
-    // Nor the nick: a profiled message never ties the person to their anonymous identity (§4.D).
+    // A profiled message never ties the person to their anonymous identity (§4.D).
     expect(seen).not.toContain((await capsuleOf(a)).nick);
     expect(seen).not.toContain(uidA);
     expect(seen).not.toContain(own?.public_id ?? 'missing');
@@ -417,8 +415,8 @@ describe('venue chat replies and reactions (docs/SPEC_V3.md §21)', () => {
   const byBody = async (client: Client) =>
     Object.fromEntries((await fnPage(client)).map((m) => [m.body, m]));
 
-  it('quotes by the message’s own label rule, never an alias of a profiled sender', async () => {
-    const { a, b, c, aliases } = await threeAtVenue();
+  it('quotes by the message’s own label rule, never the nick of a profiled sender', async () => {
+    const { a, b, c } = await threeAtVenue();
     const { nick } = await capsuleOf(a);
     const anon = (await send(a, 'anonim')).body.messageId;
     // §22.G: one mode per check-in; the profiled message comes from a new check-in.
@@ -444,7 +442,6 @@ describe('venue chat replies and reactions (docs/SPEC_V3.md §21)', () => {
       name: 'Ayşe',
     });
     expect((await byBody(a))['cevap 2']?.replyTo).toMatchObject({ fromMe: true });
-    expect(JSON.stringify(seenByC['cevap 2'])).not.toContain(aliases[0]);
     expect(JSON.stringify(seenByC['cevap 2'])).not.toContain(nick);
 
     // Out of reach: unknown, hidden or another venue's message; nothing is written.
@@ -465,7 +462,7 @@ describe('venue chat replies and reactions (docs/SPEC_V3.md §21)', () => {
   });
 
   it('shows how many per emoji and never who, one per account, 10 per 10 seconds', async () => {
-    const { a, b, c, aliases } = await threeAtVenue();
+    const { a, b, c } = await threeAtVenue();
     const messageId = (await send(a, 'merhaba', true)).body.messageId;
 
     const heard = waitForBroadcast(
@@ -487,7 +484,12 @@ describe('venue chat replies and reactions (docs/SPEC_V3.md §21)', () => {
     ]);
     const [ids, names] = [
       await Promise.all([a, b, c].map((x) => userIdOf(x))),
-      [...aliases, 'Ayşe', 'Burak', 'Cem'],
+      [
+        ...(await Promise.all([a, b, c].map(async (x) => (await capsuleOf(x)).nick))),
+        'Ayşe',
+        'Burak',
+        'Cem',
+      ],
     ];
     const seen = JSON.stringify(forC?.reactions);
     for (const value of [...ids, ...names]) expect(seen).not.toContain(value);
@@ -574,8 +576,9 @@ describe('venue chat: reports, hiding and blocks', () => {
       await sql`
         insert into public.venue_chat_messages
           (venue_id, session_id, sender_user_id, sender_alias, profiled, body, created_at)
-        select venue_id, id, user_id, alias, false, ${`mesaj ${i}`}, now() - make_interval(secs => ${60 - i})
-        from public.table_sessions where user_id = ${await userIdOf(a)} and status = 'active'
+        select ts.venue_id, ts.id, ts.user_id, p.capsule_nick, false, ${`mesaj ${i}`}, now() - make_interval(secs => ${60 - i})
+        from public.table_sessions ts join public.profiles p on p.id = ts.user_id
+        where ts.user_id = ${await userIdOf(a)} and ts.status = 'active'
       `;
     }
     const reported = (await send(a, 'şikayet edilecek', true)).body.messageId;
@@ -622,8 +625,8 @@ describe('venue chat: reports, hiding and blocks', () => {
     expect((await page(a)).map((m) => m.id)).toContain(messageId);
   });
 
-  it('blocks both ways; the list shows the name of a profiled sender, never its alias', async () => {
-    const { a, b, aliases } = await threeAtVenue();
+  it('blocks both ways; the list shows the name of a profiled sender, never its nick', async () => {
+    const { a, b } = await threeAtVenue();
     const anon = (await send(a, 'anonim')).body.messageId;
     // §22.G: one mode per check-in; the profiled message comes from a new check-in.
     await checkInAt(a, venue, V);
@@ -633,7 +636,6 @@ describe('venue chat: reports, hiding and blocks', () => {
     );
     const blocks = await b.from('blocks').select('blocked_alias');
     expect(blocks.data).toEqual([{ blocked_alias: 'Ayşe' }]);
-    expect(JSON.stringify(blocks.data)).not.toContain(aliases[0]);
     expect(JSON.stringify(blocks.data)).not.toContain((await capsuleOf(a)).nick);
     // Neither sees the other's messages.
     expect(await page(b)).toEqual([]);

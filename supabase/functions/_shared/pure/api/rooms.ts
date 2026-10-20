@@ -2,31 +2,43 @@ import type { Concept, Intent, ProposableConcept } from '../rooms.ts';
 import type { Side } from '../teams.ts';
 
 // Request and response shapes of the `rooms` Edge Function, shared with the mobile app
-// (docs/SPEC_V3.md §5, §11).
-// "Oda kur" ("Masanı lobiye aç", docs/SPEC_V3.md §23.C): always open to the venue; an optional
-// intent, an optional game tag (none: "fark etmez") and the owner's choice for this room.
+// (docs/SPEC_V3.md §5, §11; the table of people from docs/SPEC_V4.md §4.E on). Fields and actions
+// marked "today's app" stay in the types until 4.5b moves the app over: the server ignores the
+// fields and answers the actions update_required.
+// "Masa kur" (§4.E): in the lobby (`open`, the default) or not, with an optional intent and game tag
+// (none: "fark etmez"). The owner sits down with the check-in's identity (§4.D); already at a table
+// is already_in_table.
 export type CreateRoomRequest = {
   action: 'create';
+  open?: boolean;
   intent?: Intent;
   gameTag?: Concept;
-  profiled: boolean;
+  // Today's app; ignored.
+  profiled?: boolean;
   // docs/SPEC_V4.md §4.E (K-45): one of pure/tableIcons.ts; without it the server picks a free one.
   // Another table's icon at the venue is icon_taken.
   icon?: string;
 };
-// "Masanla oyna": a private one-table room, anonymous.
+// Today's app ("Masanla oyna"): update_required. A table out of the lobby is `create` with `open:
+// false`.
 export type CreateSoloRoomRequest = { action: 'create-solo' };
-// Without `side`: "Katıl", the guest's side as its leader. With it: "Bu masadayım", a member of that
-// side (docs/SPEC_V3.md §22.C).
+// "Masanı lobiye aç" and "Lobiden çek" (§4.E): the owner only. Requests of the other road end as a
+// decline does (rule 5).
+export type SetVisibilityRequest = { action: 'set-visibility'; roomId: string; open: boolean };
+// Without `asMember`: "Katıl" to a table in the lobby, from a table's owner (its whole table moves at
+// the accept) or a person on its own; another table's participant is not_owner. With it: "Bu
+// masadayım" to a running table, from a person on its own (already_in_table otherwise). At most 12
+// phones together (table_full). The identity is the check-in's.
 export type RequestJoinRequest = {
   action: 'request-join';
   roomId: string;
-  profiled: boolean;
+  asMember?: boolean;
+  // Today's app; ignored.
+  profiled?: boolean;
   side?: Side;
 };
 export type RespondRequest = { action: 'respond'; requestId: string; accept: boolean };
-// `players` (1-4): Sahtekar only, this table's count; without it the check-in headcount
-// (docs/SPEC_V3.md §20.1).
+// Today's app: update_required (the games come back with step 4.6).
 export type ProposeGameRequest = {
   action: 'propose-game';
   roomId: string;
@@ -41,13 +53,13 @@ export type AnswerGameRequest = {
 };
 // "Oyunu bitir": the room returns to chat.
 export type EndGameRequest = { action: 'end-game'; roomId: string };
-// "Odayı bitir": a leader only (not_leader).
+// "Masayı bitir": the owner only (not_owner); the table closes for everyone.
 export type EndRoomRequest = { action: 'end' };
-// "Odadan çık" (docs/SPEC_V3.md §22.D): this phone leaves; a leader hands its side to the oldest
-// member, the side's last phone ends the room as before.
+// "Masadan ayrıl" (§4.E, K-13): the person leaves and the table goes on; an owner hands it to the
+// earliest person there; the last person's leaving closes it.
 export type LeaveRoomRequest = { action: 'leave'; roomId: string };
-// The request card's profile (docs/SPEC_V3.md §23.E): a requester who asked with its profile, read
-// by the leader who can answer the request while it waits. Anything else is not_found, alike.
+// The request card's profile (docs/SPEC_V3.md §23.E): the person who asked, when it sat down
+// profiled, read by the owner while the request waits. Anything else is not_found, alike.
 export type RequestProfileRequest = { action: 'request-profile'; requestId: string };
 // docs/SPEC_V4.md §4.E (K-45, K-59): the owner changes the table's icon (icon_taken when another
 // table at the venue has it) or draws a new name, 3 times per table (reroll_limit); not_owner
@@ -60,6 +72,7 @@ export type RerollNameResponse = { name: string; rerollsLeft: number };
 export type RoomsRequest =
   | CreateRoomRequest
   | CreateSoloRoomRequest
+  | SetVisibilityRequest
   | RequestJoinRequest
   | RespondRequest
   | ProposeGameRequest

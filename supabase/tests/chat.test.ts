@@ -38,21 +38,39 @@ const send = (client: Client, roomId: string, body: string) =>
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Owner and guest in an open room; a third table at the venue.
+// The owner's table with the guest sat down at it ("Katıl", docs/SPEC_V4.md §4.E); a third person
+// checked in at the venue.
 async function roomWithGuest() {
   const [owner, guest, third] = (await Promise.all(PHONES.map((p) => onboarded(p)))) as [
     Client,
     Client,
     Client,
   ];
-  for (const c of [owner, guest, third]) await checkInAt(c, venue, V);
-  const created = await invoke(owner, 'rooms', { action: 'create', profiled: false });
+  const [ownerSession, guestSession] = [
+    (await checkInAt(owner, venue, V)).sessionId,
+    (await checkInAt(guest, venue, V)).sessionId,
+  ];
+  await checkInAt(third, venue, V);
+  const created = await invoke(owner, 'rooms', { action: 'create' });
   const roomId = (created.body as { roomId: string }).roomId;
-  await invoke(guest, 'rooms', { action: 'request-join', roomId, profiled: false });
+  await invoke(guest, 'rooms', { action: 'request-join', roomId });
   const [request] =
     await sql`select id from public.join_requests where room_id = ${roomId} and status = 'pending'`;
   await invoke(owner, 'rooms', { action: 'respond', requestId: request?.id, accept: true });
-  return { owner, guest, third, roomId };
+  return { owner, guest, third, roomId, ownerSession, guestSession };
+}
+
+// The names the owner and the guest sat down with (their capsule nicks: anonymous women).
+async function seatNames(roomId: string, ownerSession: string, guestSession: string) {
+  const rows = await sql`
+    select session_id, alias, joined_at from public.room_members where room_id = ${roomId}
+  `;
+  const of = (session: string) => rows.find((r) => r.session_id === session);
+  return {
+    owner: of(ownerSession)?.alias as string,
+    guest: of(guestSession)?.alias as string,
+    guestJoinedAt: of(guestSession)?.joined_at as Date,
+  };
 }
 
 async function messages(client: Client, roomId: string) {
@@ -65,8 +83,8 @@ async function messages(client: Client, roomId: string) {
 }
 
 describe('chat/send', () => {
-  it('delivers messages to both tables, with the sender alias, and to nobody else', async () => {
-    const { owner, guest, third, roomId } = await roomWithGuest();
+  it('delivers messages to everyone at the table, with the seat name, and to nobody else', async () => {
+    const { owner, guest, third, roomId, ownerSession, guestSession } = await roomWithGuest();
     expect(await send(owner, roomId, '  Merhaba!  ')).toEqual({
       status: 200,
       body: { messageId: expect.any(String) },
@@ -78,9 +96,8 @@ describe('chat/send', () => {
     expect(forOwner.map((m) => m.body)).toEqual(['Merhaba!', 'Selam']);
     expect(await messages(guest, roomId)).toEqual(forOwner);
     expect(await messages(third, roomId)).toEqual([]);
-    const [room] =
-      await sql`select owner_alias, guest_alias from public.rooms where id = ${roomId}`;
-    expect(forOwner.map((m) => m.sender_alias)).toEqual([room?.owner_alias, room?.guest_alias]);
+    const names = await seatNames(roomId, ownerSession, guestSession);
+    expect(forOwner.map((m) => m.sender_alias)).toEqual([names.owner, names.guest]);
   });
 
   it('streams new messages to the other table through Postgres Changes', async () => {
@@ -132,7 +149,7 @@ describe('chat/send', () => {
     expect(await messages(owner, roomId)).toHaveLength(1);
   });
 
-  it('allows one message per second per table', async () => {
+  it('allows one message per second per person', async () => {
     const { owner, guest, roomId } = await roomWithGuest();
     expect((await send(owner, roomId, 'bir')).status).toBe(200);
     expect(await send(owner, roomId, 'iki')).toEqual({
@@ -150,7 +167,7 @@ describe('chat/send', () => {
       status: 403,
       body: errorBody('not_in_room'),
     });
-    // "Odayı bitir" closes the room for both tables (docs/SPEC_V3.md §23.G).
+    // "Masayı bitir" closes the table for everyone (docs/SPEC_V4.md §4.E).
     await invoke(owner, 'rooms', { action: 'end' });
     expect(await send(owner, roomId, 'selam')).toEqual({
       status: 403,
@@ -158,16 +175,20 @@ describe('chat/send', () => {
     });
   });
 
-  // v3: a table leaving ends the encounter (docs/SPEC_V3.md §5.5); the room never takes another
-  // guest, so no later table can read what was written.
-  it('never lets another table into a room after its guest left', async () => {
-    const { guest, third, roomId } = await roomWithGuest();
+  // docs/SPEC_V4.md §4.E: the table goes on after a person leaves and takes others; a later person
+  // reads only what was written after it sat down.
+  it('never shows a later person what was written before it sat down', async () => {
+    const { owner, guest, third, roomId } = await roomWithGuest();
     await send(guest, roomId, 'eski misafir');
     await invoke(guest, 'checkin', { action: 'leave' });
-    expect(
-      await invoke(third, 'rooms', { action: 'request-join', roomId, profiled: false }),
-    ).toEqual({ status: 409, body: errorBody('room_not_available') });
+    expect((await invoke(third, 'rooms', { action: 'request-join', roomId })).status).toBe(200);
+    const [request] =
+      await sql`select id from public.join_requests where room_id = ${roomId} and status = 'pending'`;
+    await invoke(owner, 'rooms', { action: 'respond', requestId: request?.id, accept: true });
     expect(await messages(third, roomId)).toEqual([]);
+    await sleep(1100);
+    await send(owner, roomId, 'hoş geldin');
+    expect((await messages(third, roomId)).map((m) => m.body)).toEqual(['hoş geldin']);
   });
 });
 
@@ -182,15 +203,9 @@ describe('room chat replies and reactions (docs/SPEC_V3.md §21)', () => {
     expect(error).toBeNull();
     return Object.fromEntries((data ?? []).map((r) => [r.message_id, r]));
   };
-  const aliases = async (roomId: string) => {
-    const [room] =
-      await sql`select owner_alias, guest_alias from public.rooms where id = ${roomId}`;
-    return { owner: room?.owner_alias as string, guest: room?.guest_alias as string };
-  };
-
-  it('quotes a message of the room by its table alias; nothing from outside the room', async () => {
-    const { owner, guest, third, roomId } = await roomWithGuest();
-    const names = await aliases(roomId);
+  it('quotes a message of the table by its seat name; nothing from outside the table', async () => {
+    const { owner, guest, third, roomId, ownerSession, guestSession } = await roomWithGuest();
+    const names = await seatNames(roomId, ownerSession, guestSession);
     const first = await send(owner, roomId, 'Yarın aynı yerde mi?');
     const firstId = (first.body as { messageId: string }).messageId;
     const reply = await sendReply(guest, roomId, 'Olur', firstId);
@@ -211,12 +226,16 @@ describe('room chat replies and reactions (docs/SPEC_V3.md §21)', () => {
     await sleep(1100);
     const unavailable = { status: 409, body: errorBody('reply_unavailable') };
     expect(await sendReply(owner, roomId, 'x', randomUUID())).toEqual(unavailable);
-    // A message from before the guest joined: the guest cannot quote it, and sees a reply to it
-    // as gone.
+    // A message from before the guest sat down (the owner sat 10 minutes earlier): the guest cannot
+    // quote it, and sees a reply to it as gone.
+    await sql`
+      update public.room_members set joined_at = joined_at - interval '10 minutes'
+      where room_id = ${roomId} and session_id = ${ownerSession}
+    `;
     const [old] = await sql`
       insert into public.messages (room_id, session_id, sender_alias, body, created_at)
-      select ${roomId}, owner_session_id, owner_alias, 'eski', guest_joined_at - interval '1 minute'
-      from public.rooms where id = ${roomId}
+      values (${roomId}, ${ownerSession}, ${names.owner}, 'eski',
+              ${names.guestJoinedAt}::timestamptz - interval '1 minute')
       returning id
     `;
     expect(await sendReply(guest, roomId, 'x', old?.id)).toEqual(unavailable);
@@ -230,9 +249,9 @@ describe('room chat replies and reactions (docs/SPEC_V3.md §21)', () => {
     expect((await extras(owner, roomId))[replyId]?.reply_to).toEqual({ gone: true });
   });
 
-  it('keeps one reaction per table, named by the table aliases, the same when sent twice', async () => {
-    const { owner, guest, third, roomId } = await roomWithGuest();
-    const names = await aliases(roomId);
+  it('keeps one reaction per person, named by the seat names, the same when sent twice', async () => {
+    const { owner, guest, third, roomId, ownerSession, guestSession } = await roomWithGuest();
+    const names = await seatNames(roomId, ownerSession, guestSession);
     const sentOwner = await send(owner, roomId, 'selam');
     const messageId = (sentOwner.body as { messageId: string }).messageId;
 
@@ -267,7 +286,7 @@ describe('room chat replies and reactions (docs/SPEC_V3.md §21)', () => {
       status: 404,
       body: errorBody('not_found'),
     });
-    // No account id anywhere in what a table reads.
+    // No account id anywhere in what a person reads.
     const seen = JSON.stringify(await extras(owner, roomId));
     expect(seen).not.toContain(await userIdOf(guest));
 
@@ -275,7 +294,7 @@ describe('room chat replies and reactions (docs/SPEC_V3.md §21)', () => {
     expect(await sql`select count(*)::int as n from public.message_reactions`).toEqual([{ n: 0 }]);
   });
 
-  // chat_react (docs/SPEC_V3.md §21.3): the table and the room, then the message's reactions.
+  // chat_react (docs/SPEC_V3.md §21.3): the check-in and the table, then the message's reactions.
   it('reacts only after taking the room', async () => {
     const { owner, guest, roomId } = await roomWithGuest();
     const sentOwner = await send(owner, roomId, 'selam');
@@ -308,17 +327,25 @@ describe('room chat replies and reactions (docs/SPEC_V3.md §21)', () => {
 
 describe('safety/report', () => {
   it('stores the last 50 messages and the reported account, hidden from clients', async () => {
-    const { owner, guest, roomId } = await roomWithGuest();
-    const [room] =
-      await sql`select owner_session_id, guest_session_id, owner_alias from public.rooms where id = ${roomId}`;
+    const { owner, guest, roomId, ownerSession, guestSession } = await roomWithGuest();
+    const names = await seatNames(roomId, ownerSession, guestSession);
     for (let i = 1; i <= 60; i++) {
       await sql`
         insert into public.messages (room_id, session_id, sender_alias, body, created_at)
-        values (${roomId}, ${room?.owner_session_id}, ${room?.owner_alias}, ${`mesaj ${i}`}, now() + make_interval(secs => ${i}))
+        values (${roomId}, ${ownerSession}, ${names.owner}, ${`mesaj ${i}`}, now() + make_interval(secs => ${i}))
       `;
     }
+    // docs/SPEC_V4.md §4.E: the report names a person of the table.
     expect(
       await invoke(guest, 'safety', { action: 'report', roomId, reason: 'harassment' }),
+    ).toEqual({ status: 404, body: errorBody('not_found') });
+    expect(
+      await invoke(guest, 'safety', {
+        action: 'report',
+        roomId,
+        reason: 'harassment',
+        sessionId: ownerSession,
+      }),
     ).toEqual({
       status: 200,
       body: { ok: true },
@@ -341,18 +368,27 @@ describe('safety/report', () => {
   });
 
   it('validates the reason', async () => {
-    const { guest, roomId } = await roomWithGuest();
+    const { guest, roomId, ownerSession } = await roomWithGuest();
     expect(
-      (await invoke(guest, 'safety', { action: 'report', roomId, reason: 'nope' })).status,
+      (
+        await invoke(guest, 'safety', {
+          action: 'report',
+          roomId,
+          reason: 'nope',
+          sessionId: ownerSession,
+        })
+      ).status,
     ).toBe(400);
   });
 });
 
 describe('safety/block and unblock', () => {
-  it('blocks the other account, ends the room at once, and can be undone', async () => {
-    const { owner, guest, third, roomId } = await roomWithGuest();
-    const [room] = await sql`select guest_alias from public.rooms where id = ${roomId}`;
-    expect(await invoke(owner, 'safety', { action: 'block', roomId })).toEqual({
+  it('blocks the person it names, takes them out of the table, and can be undone', async () => {
+    const { owner, guest, third, roomId, ownerSession, guestSession } = await roomWithGuest();
+    const names = await seatNames(roomId, ownerSession, guestSession);
+    expect(
+      await invoke(owner, 'safety', { action: 'block', roomId, sessionId: guestSession }),
+    ).toEqual({
       status: 200,
       body: { ok: true },
     });
@@ -361,12 +397,15 @@ describe('safety/block and unblock', () => {
     expect(row?.blocked_id).toBe(await userIdOf(guest));
     const { data: blocks } = await owner.from('blocks').select('id, blocked_alias, created_at');
     expect(blocks).toEqual([
-      { id: row?.id, blocked_alias: room?.guest_alias, created_at: expect.any(String) },
+      { id: row?.id, blocked_alias: names.guest, created_at: expect.any(String) },
     ]);
     expect((await guest.from('blocks').select('id')).data).toEqual([]);
-    // docs/SPEC_V3.md §23.G: blocking closes the room at once, without a "Tanışalım mı?" window.
-    const [after] = await sql`select status from public.rooms where id = ${roomId}`;
-    expect(after?.status).toBe('closed');
+    // K-13: the owner's block takes the person out; the table goes on (tableModel.test.ts has the
+    // other roads).
+    const here = await sql`
+      select session_id from public.room_members where room_id = ${roomId} and left_at is null
+    `;
+    expect(here).toEqual([{ session_id: ownerSession }]);
 
     // Someone else's block id does nothing.
     expect(await invoke(third, 'safety', { action: 'unblock', blockId: row?.id })).toEqual({
@@ -384,29 +423,39 @@ describe('safety/block and unblock', () => {
 
   // Rule 4: the blocked account's id never reaches the blocker's client.
   it('never shows the blocked account id to the client', async () => {
-    const { owner, roomId } = await roomWithGuest();
-    await invoke(owner, 'safety', { action: 'block', roomId });
+    const { owner, roomId, guestSession } = await roomWithGuest();
+    await invoke(owner, 'safety', { action: 'block', roomId, sessionId: guestSession });
     expect((await owner.from('blocks').select('blocked_id')).error?.code).toBe('42501');
     expect((await owner.from('blocks').select('*')).error?.code).toBe('42501');
   });
 
-  it('needs another table in the room', async () => {
+  it('needs another person at the table', async () => {
     const [owner] = [await onboarded(PHONES[0])];
-    await checkInAt(owner, venue, V);
-    const created = await invoke(owner, 'rooms', { action: 'create-solo' });
+    const { sessionId } = await checkInAt(owner, venue, V);
+    const created = await invoke(owner, 'rooms', { action: 'create' });
     const roomId = (created.body as { roomId: string }).roomId;
-    expect(await invoke(owner, 'safety', { action: 'block', roomId })).toEqual({
-      status: 409,
-      body: errorBody('nothing_to_block'),
-    });
+    for (const body of [
+      { action: 'block', roomId },
+      { action: 'block', roomId, sessionId },
+    ]) {
+      expect(await invoke(owner, 'safety', body)).toEqual({
+        status: 409,
+        body: errorBody('nothing_to_block'),
+      });
+    }
   });
 });
 
 describe('cleanup jobs', () => {
   it('deletes messages 24 hours after the room closed and reports after 30 days', async () => {
-    const { owner, guest, roomId } = await roomWithGuest();
+    const { owner, guest, roomId, ownerSession } = await roomWithGuest();
     await send(owner, roomId, 'silinecek');
-    await invoke(guest, 'safety', { action: 'report', roomId, reason: 'spam' });
+    await invoke(guest, 'safety', {
+      action: 'report',
+      roomId,
+      reason: 'spam',
+      sessionId: ownerSession,
+    });
     await invoke(owner, 'rooms', { action: 'end' });
 
     await sql`update public.rooms set closed_at = now() - interval '23 hours' where id = ${roomId}`;

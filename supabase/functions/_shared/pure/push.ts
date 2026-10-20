@@ -1,18 +1,21 @@
 import { APP_NAME } from './brand.ts';
-import { headcountLabel } from './checkin.ts';
 import type { PushTarget } from './navigation.ts';
 
 // Push notification texts are built on the server, so they live here rather than in the app's
-// tr.ts (which re-exports them). They carry only what another table may see: alias and headcount
-// (rule 4). A room has no game when it is created (docs/SPEC_V3.md §5.1).
+// tr.ts (which re-exports them). They carry only what the request card shows the owner: the asking
+// table's name and its phone count, or the person's name on its own (rule 4; docs/SPEC_V4.md
+// §4.E).
 
 // `target`: the screen a tap opens (docs/SPEC_V3.md §18.3); no id, no sender, no content.
 export type PushMessage = { title: string; body: string; target?: PushTarget };
 
-export function joinRequestPush(alias: string, headcount: number): PushMessage {
+export function joinRequestPush(name: string, phones: number): PushMessage {
   return {
     title: 'Katılma isteği',
-    body: `${alias} (${headcountLabel(headcount)} kişi) masana katılmak istiyor.`,
+    body:
+      phones > 1
+        ? `${name} (${phones} kişi) masana katılmak istiyor.`
+        : `${name} masana katılmak istiyor.`,
   };
 }
 
