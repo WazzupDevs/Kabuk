@@ -139,18 +139,6 @@ export function YasakButton({ flat }: Props) {
   );
 }
 
-// The 20 cards of Ayarlar → Tasarım (test) → Bileşen önizleme → Kaydırma: scrolling them is checked
-// by hand on a phone (the CI emulator draws in software; its speed says nothing about a phone).
-export function ScrollTrialSet(): ReactNode {
-  return (
-    <View style={{ gap: 12 }}>
-      {Array.from({ length: 20 }, (_, i) => (
-        <TrialRow key={i} index={i} />
-      ))}
-    </View>
-  );
-}
-
 export function TrialRow({ index, flat }: { index: number; flat?: boolean }): ReactNode {
   const kind = index % 3;
   if (kind === 0) return <TabuCard flat={flat} />;
