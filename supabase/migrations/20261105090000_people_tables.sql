@@ -611,6 +611,10 @@ begin
   end if;
 
   if w.id is not null then
+    -- The moved table's own requests end first (rule 10: join_requests before the rows of the room
+    -- its people leave).
+    update public.join_requests set status = 'declined', responded_at = now()
+    where room_id = w.id and status = 'pending';
     for mover in
       select rm.id, rm.session_id, rm.alias, rm.profiled, rm.look,
              ts.status = 'active' and ts.expires_at > now() as still_on
@@ -627,8 +631,6 @@ begin
       end if;
     end loop;
     update public.rooms set status = 'closed', closed_at = now(), phones = 0 where id = w.id;
-    update public.join_requests set status = 'declined', responded_at = now()
-    where room_id = w.id and status = 'pending';
   else
     -- A person alone sits with the check-in's identity at the accept, not at the request: one who
     -- switched to anonymous meanwhile sits anonymous (rule 4). One who cannot sit any more (a
