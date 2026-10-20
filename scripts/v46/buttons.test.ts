@@ -9,9 +9,13 @@ import { readInventory } from './inventory.ts';
 const root = resolve(import.meta.dirname, '../..');
 const inventory = readInventory(root);
 
-const drawing = (icon: (typeof buttons)['gonder']['light']['icon']) => {
+const bell = (icon: (typeof buttons)['gonder']['light']['icon']) => {
   if (!icon || !('drawing' in icon)) throw new Error('no drawing');
-  return icon.drawing;
+  return icon;
+};
+const send = (icon: (typeof buttons)['gonder']['light']['icon']) => {
+  if (!icon || !('send' in icon)) throw new Error('no send icon');
+  return icon.send;
 };
 const fills = (icon: (typeof buttons)['gonder']['light']['icon']) => {
   if (!icon || !('fills' in icon)) throw new Error('no bar icon');
@@ -76,12 +80,42 @@ describe('v46 buttons in parts.generated.ts', () => {
       b: '#6FD69A',
       x: '#0F5C31',
     });
-    // The send icon's bars are turned by CSS (`.send-ic rect`), kept in the drawing.
-    const bars = drawing(buttons.gonder.light.icon).nodes[0]?.children ?? [];
-    expect(bars.map((b) => b.attrs.transform)).toEqual([
-      expect.stringContaining('matrix(0.899 0.438 -0.438 0.899'),
-      expect.stringContaining('matrix(0.899 -0.438 0.438 0.899'),
+  });
+
+  // `.send-ic rect` turns each bar about its own middle; `.send.ready` gives them the brand colours
+  // and opens them to 36 degrees (`.send.ready .sa{fill:#7B5CFF;transform:rotate(36deg)…}`).
+  it('draws the send bars waiting and ready, each turned about its own middle', () => {
+    const { waiting, ready } = send(buttons.gonder.light.icon);
+    expect(waiting.map((b) => [b.fill, Math.round(b.rotate)])).toEqual([
+      ['#BDB6D3', 26],
+      ['#BDB6D3', -26],
     ]);
+    expect(ready.map((b) => [b.fill, Math.round(b.rotate)])).toEqual([
+      ['#7B5CFF', 36],
+      ['#FF4F8B', -36],
+    ]);
+    expect(send(buttons.gonder.dark.icon).ready.map((b) => b.fill)).toEqual(['#7B5CFF', '#FF4F8B']);
+    for (const b of [...waiting, ...ready]) expect(b).toMatchObject({ width: 14, height: 4.4 });
+  });
+
+  // `.nb-ic{transform-origin:50% 14%}`: the bell turns about its top, the clapper on its own layer.
+  it('turns the bell about its own point and keeps the clapper apart', () => {
+    const icon = bell(buttons['yuvarlak-simge'].light.icon);
+    expect(icon.origin).toEqual([12, 3.36]);
+    expect(icon.clap).not.toBeNull();
+  });
+
+  // v46 `.va .sheet .close` is a block: the browser's button default (`text-align: center`) centres
+  // the label, not `justify-content`.
+  it('centres the label of a button that is not a flex box', () => {
+    expect(buttons['yumusak-lavanta'].light.justify).toBe('center');
+    expect(buttons['birincil-52'].light.justify).toBe('center');
+  });
+
+  // `.hb .ld.mini{width:22px;height:22px}`; elsewhere the loader is 26.
+  it("sizes the loader as each look's own", () => {
+    expect(buttons['kenarli-36'].light.loaderSize).toEqual([22, 22]);
+    expect(buttons['birincil-52'].light.loaderSize).toEqual([26, 26]);
   });
 
   it("puts the bell's count where v46 does", () => {

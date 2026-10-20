@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { View } from 'react-native';
 
 import { tr } from '@/i18n/tr';
@@ -10,10 +10,12 @@ import { RoundButton } from '@/ui/RoundButton';
 import { SendButton } from '@/ui/SendButton';
 
 // What the v46 gallery draws for a component once it is rewritten in src/ui (v46 native, step 3):
-// each state v46 shows for it (envanter `variants`: normal, pressed), with v46's sample data. A
-// component not here shows as "henüz yok" with v46's measurements. The visual gate photographs
-// each one's first state (features/design/gorsel/registry.tsx).
-export type GalleryState = { key: 'normal' | 'pressed'; render: () => ReactNode };
+// each state v46 shows for it (envanter `variants`: normal, pressed; the send button also ready),
+// with v46's sample data. A component not here shows as "henüz yok" with v46's measurements. The
+// visual gate photographs each one's first state (features/design/gorsel/registry.tsx). The
+// motions that play on an event play here on a press: a disabled button shakes, the bell swings
+// and its count grows, the ready send button sends.
+export type GalleryState = { key: 'normal' | 'pressed' | 'ready'; render: () => ReactNode };
 
 const s = tr.design.gallery.samples;
 const noop = () => undefined;
@@ -98,16 +100,29 @@ export const UI_GALLERY: Partial<Record<V46ComponentId, readonly GalleryState[]>
       pressedPreview={pressed}
     />
   )),
-  'yuvarlak-simge': pressable('yuvarlak-simge', (pressed) => (
+  'yuvarlak-simge': pressable('yuvarlak-simge', (pressed) => <Bell pressed={pressed} />),
+  gonder: [
+    ...pressable('gonder', (pressed) => (
+      <SendButton onPress={noop} accessibilityLabel={s.send} pressedPreview={pressed} />
+    )),
+    {
+      key: 'ready',
+      render: () => <SendButton onPress={noop} accessibilityLabel={s.send} ready />,
+    },
+  ],
+};
+
+// The bell with v46's sample count; each press is a new notice: it swings and the count grows.
+function Bell({ pressed }: { pressed: boolean }) {
+  const [notices, setNotices] = useState(0);
+  return (
     <RoundButton
       look="yuvarlak-simge"
-      onPress={noop}
+      onPress={() => setNotices((n) => n + 1)}
       accessibilityLabel={s.notifications}
-      badge={s.badge}
+      badge={String(Number(s.badge) + notices)}
+      ring={notices}
       pressedPreview={pressed}
     />
-  )),
-  gonder: pressable('gonder', (pressed) => (
-    <SendButton onPress={noop} accessibilityLabel={s.send} pressedPreview={pressed} />
-  )),
-};
+  );
+}

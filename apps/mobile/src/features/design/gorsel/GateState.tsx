@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import { ReducedMotionConfig, ReduceMotion } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { LoopsHeld } from '@/components/Loader';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { setSchemePreference, useSchemePreference, useTheme } from '@/theme/ThemeProvider';
@@ -20,7 +21,9 @@ import { GATE_STATES } from './registry';
 // covers the frame, transparent, once the fonts, the scheme and the layout have settled (the shot
 // number, so no other screen answers for it). A 1 dp marker in the corner was there but Android
 // reported it invisible to Maestro (#184's first run). `width`: the state laid out that wide (dp)
-// at the frame's left edge, src/ui's narrow look included (states.json → `genislik`).
+// at the frame's left edge, src/ui's narrow look included (states.json → `genislik`). Loops (the
+// loaders, Loader.tsx → LoopsHeld) hold their first frame: a busy button's loader is the same
+// picture on every run, as v46's at its clock's start.
 export function GateState({
   stateKey,
   scheme,
@@ -71,7 +74,7 @@ export function GateState({
             setContent(Math.round(e.nativeEvent.layout.height));
           }}
         >
-          {entry.render()}
+          <LoopsHeld.Provider value>{entry.render()}</LoopsHeld.Provider>
           {settled !== null && settled === layout ? <Ready shot={shot} /> : null}
         </View>
       </View>
@@ -95,13 +98,15 @@ export function GateState({
           onLayout={(e) => setContent(Math.round(e.nativeEvent.layout.height))}
         >
           {entry ? (
-            width ? (
-              <WidthScope width={width}>
-                <View style={{ width }}>{entry.render()}</View>
-              </WidthScope>
-            ) : (
-              entry.render()
-            )
+            <LoopsHeld.Provider value>
+              {width ? (
+                <WidthScope width={width}>
+                  <View style={{ width }}>{entry.render()}</View>
+                </WidthScope>
+              ) : (
+                entry.render()
+              )}
+            </LoopsHeld.Provider>
           ) : (
             <Text testID="gorsel-yok">{tr.design.gate.unknown(stateKey)}</Text>
           )}

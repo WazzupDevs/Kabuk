@@ -28,7 +28,13 @@ import {
   type Scheme,
 } from './inventory.ts';
 import { bundledMetrics, normalLineHeight, type VerticalMetrics } from './fontMetrics.ts';
-import { BUTTONS_GROUP, buttonNarrow, buttonScheme } from './buttons.ts';
+import {
+  type ButtonMatches,
+  BUTTONS_GROUP,
+  buttonMotions,
+  buttonNarrow,
+  buttonScheme,
+} from './buttons.ts';
 import { element, narrowBreakpoint, pressed, readMeasured } from './measured.ts';
 import { type ColorRef, PALETTE_REFS } from './palette.ts';
 import { COMPONENT_GRADIENTS, GRADIENTS } from './supplement.ts';
@@ -217,7 +223,6 @@ const PARTS_TYPES = [
   '};',
   'export type V46SvgNode = {',
   '  tag: string;',
-  '  cls: string | null;',
   '  attrs: Record<string, string | number>;',
   '  clip?: number;',
   '  fill?: V46Paint;',
@@ -234,13 +239,32 @@ const PARTS_TYPES = [
   '  gradients: V46Gradient[];',
   '  nodes: V46SvgNode[];',
   '};',
+  "// One bar of the send icon, in its drawing's units: turned about its own middle.",
+  'export type V46SendBar = {',
+  '  x: number;',
+  '  y: number;',
+  '  width: number;',
+  '  height: number;',
+  '  rx: number;',
+  '  fill: string;',
+  '  translateX: number;',
+  '  translateY: number;',
+  '  rotate: number;',
+  '};',
   'export type V46ButtonIcon = {',
   '  size: readonly [number, number];',
   '  pressedScale: number;',
   '  transitions: V46Transition[];',
   '} & (',
   "  | { bar: 'plus' | 'cross' | 'check'; fills: { a: string; b: string; x: string } }",
-  '  | { drawing: V46Drawing }',
+  '  | { drawing: V46Drawing; clap: V46Drawing | null; origin: readonly [number, number] }',
+  '  | {',
+  '      send: {',
+  '        viewBox: readonly [number, number, number, number];',
+  '        waiting: V46SendBar[];',
+  '        ready: V46SendBar[];',
+  '      };',
+  '    }',
   ');',
   'export type V46ButtonScheme = {',
   '  gap: number;',
@@ -262,6 +286,7 @@ const PARTS_TYPES = [
   '    fills: { a: string; b: string; overlap: string };',
   '    transitions: V46Transition[];',
   '  } | null;',
+  '  loaderSize: readonly [number, number] | null;',
   '  badge: {',
   '    size: readonly [number, number];',
   '    bg: string;',
@@ -286,6 +311,34 @@ const PARTS_TYPES = [
   '  dark: V46ButtonScheme;',
   "  // At v46's narrow width (V46_NARROW_MAX_WIDTH and below), light; null if v46 does not show it there.",
   '  narrow: V46ButtonNarrow | null;',
+  '};',
+  "export type V46Channel = 'translateX' | 'translateY' | 'rotate' | 'scale' | 'opacity';",
+  'export type V46ChannelSteps = { from: number; steps: { to: number; ms: number }[] };',
+  "// A keyframe animation as v46 runs it: each channel's steps, eased one by one.",
+  'export type V46KeyframeMotion = {',
+  '  selector: string;',
+  '  keyframes: string;',
+  '  ms: number;',
+  '  delayMs: number;',
+  '  ease: V46Bezier;',
+  '  channels: Partial<Record<V46Channel, V46ChannelSteps>>;',
+  '  offWhenReduced: boolean;',
+  '  // The buttons the rule reaches in v46.',
+  '  looks: V46ButtonId[];',
+  '};',
+  'export type V46RuleTransition = {',
+  '  selector: string;',
+  '  transitions: V46Transition[];',
+  '  reduced: V46Transition[];',
+  '};',
+  'export type V46ButtonMotions = {',
+  '  nope: V46KeyframeMotion;',
+  '  shoot: V46KeyframeMotion;',
+  '  bellRing: V46KeyframeMotion;',
+  '  bellClap: V46KeyframeMotion;',
+  '  badgeBump: V46KeyframeMotion;',
+  '  sendBars: V46RuleTransition;',
+  '  barFill: V46RuleTransition;',
   '};',
 ];
 
@@ -314,11 +367,19 @@ export async function buildPartsModule(root: string): Promise<string> {
     `// v46's buttons (gallery group ${BUTTONS_GROUP}): scripts/v46/buttons.ts.`,
     'export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {',
   ];
+  const matches: ButtonMatches = {};
   for (const id of buttons) {
     const m = measured.components[id];
     if (!m) throw new Error(`no measurement of ${id}`);
-    const scheme = (s: 'light' | 'dark') =>
-      buttonScheme(element(m[s], metrics), pressed(m[s].pressed));
+    if (!m.matches) throw new Error(`no real state of ${id} (states.json)`);
+    matches[id] = m.matches;
+    const scheme = (s: 'light' | 'dark') => {
+      const ready = m[s].states.ready;
+      return buttonScheme(element(m[s], metrics), pressed(m[s].pressed), {
+        busyLoader: m[s].busyLoader,
+        ready: ready ? element(ready, metrics) : null,
+      });
+    };
     lines.push(
       `${json(id)}: {`,
       `light: ${json(scheme('light'))},`,
@@ -327,7 +388,14 @@ export async function buildPartsModule(root: string): Promise<string> {
       '},',
     );
   }
-  lines.push('};', '');
+  lines.push(
+    '};',
+    '',
+    "// v46's button motions that play in a state (scripts/v46/buttons.ts → buttonMotions), by the",
+    "// inventory's rule for each.",
+    `export const V46_BUTTON_MOTION: V46ButtonMotions = ${json(buttonMotions(inventory, matches))};`,
+    '',
+  );
   const target = resolve(root, PARTS_MODULE);
   const options = await resolveConfig(target);
   return format(lines.join('\n'), { ...options, filepath: target });

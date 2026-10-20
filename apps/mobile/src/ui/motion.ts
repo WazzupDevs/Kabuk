@@ -1,7 +1,14 @@
 import { useEffect, useState } from 'react';
-import { cubicBezier } from 'react-native-reanimated';
+import {
+  cubicBezier,
+  Easing,
+  ReduceMotion,
+  withDelay,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
 
-import type { V46Transition } from '@/theme/parts.generated';
+import type { V46Channel, V46KeyframeMotion, V46Transition } from '@/theme/parts.generated';
 
 // CSS property names as React Native style keys, for the properties v46 transitions.
 const STYLE_KEY = new Map([
@@ -15,12 +22,17 @@ const STYLE_KEY = new Map([
 
 // v46's transitions (parts.generated.ts: property, duration, delay, cubic-bezier) as Reanimated's
 // CSS transition style, for an Animated component. Empty when there are none: a change then shows
-// at once, as in v46.
-export function transitionStyle(list: readonly V46Transition[]) {
-  const known = list.filter((t) => STYLE_KEY.has(t.prop));
+// at once, as in v46. `as` names the style a property becomes where the app draws the part another
+// way (an SVG `fill` drawn as a View's background).
+export function transitionStyle(
+  list: readonly V46Transition[],
+  as: Readonly<Record<string, string>> = {},
+) {
+  const key = (prop: string) => as[prop] ?? STYLE_KEY.get(prop);
+  const known = list.filter((t) => key(t.prop) !== undefined);
   if (!known.length) return {};
   return {
-    transitionProperty: known.map((t) => STYLE_KEY.get(t.prop) as 'opacity'),
+    transitionProperty: known.map((t) => key(t.prop) as 'opacity'),
     transitionDuration: known.map((t) => t.ms),
     transitionDelay: known.map((t) => t.delayMs),
     transitionTimingFunction: known.map((t) => cubicBezier(...t.ease)),
@@ -49,4 +61,29 @@ export function usePresence(on: boolean, exitMs: number): { mounted: boolean; sh
     };
   }, [on, exitMs]);
   return { mounted, shown };
+}
+
+// When the last of a list of transitions ends, its delay included: a part that fades out is taken
+// away after it (v46's `.ld.mini`: 160 ms after 60 ms).
+export function transitionsEnd(list: readonly V46Transition[]): number {
+  return Math.max(0, ...list.map((t) => t.ms + t.delayMs));
+}
+
+// One channel of a v46 keyframe animation (parts.generated.ts → V46_BUTTON_MOTION) as a Reanimated
+// value: from its start, each step to the next keyframe, every step eased with the animation's
+// timing function, as CSS plays it. `scale` multiplies lengths (keyframes in a drawing's units).
+// v46 plays it whatever the system asks unless its own rule drops it (`offWhenReduced`, checked by
+// the caller), so the system's reduce motion does not cut it here.
+export function keyframeSequence(motion: V46KeyframeMotion, channel: V46Channel, scale = 1) {
+  const c = motion.channels[channel];
+  if (!c) return undefined;
+  const easing = Easing.bezier(...motion.ease);
+  const at = (v: number) => (channel === 'translateX' || channel === 'translateY' ? v * scale : v);
+  const run = withSequence(
+    withTiming(at(c.from), { duration: 0, reduceMotion: ReduceMotion.Never }),
+    ...c.steps.map((s) =>
+      withTiming(at(s.to), { duration: s.ms, easing, reduceMotion: ReduceMotion.Never }),
+    ),
+  );
+  return motion.delayMs ? withDelay(motion.delayMs, run, ReduceMotion.Never) : run;
 }

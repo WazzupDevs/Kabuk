@@ -155,10 +155,9 @@
       "baz": false,
       "prototip": {
         "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
-        "sorgu": "page=galeri&theme={tema}&demo=0&anim=0",
-        "adimlar": [{ "bekle": 1000 }],
-        "kirp": "[data-gal-el=\"tehlike-yumusak\"]",
-        "genislik": 480
+        "sorgu": "s=masa-sahibi&theme={tema}&demo=0&anim=0",
+        "adimlar": [{ "bekle": 6000 }],
+        "kirp": "[data-end-room]"
       }
     },
     {
@@ -181,10 +180,9 @@
       "baz": false,
       "prototip": {
         "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
-        "sorgu": "page=galeri&theme={tema}&demo=0&anim=0",
-        "adimlar": [{ "bekle": 1000 }],
-        "kirp": "[data-gal-el=\"kenarli-36\"]",
-        "genislik": 480
+        "sorgu": "s=masa-sahibi&theme={tema}&demo=0&anim=0",
+        "adimlar": [{ "bekle": 6000 }],
+        "kirp": ".hb[data-invite]"
       }
     },
     {
@@ -206,10 +204,9 @@
       "baz": false,
       "prototip": {
         "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
-        "sorgu": "page=galeri&theme={tema}&demo=0&anim=0",
-        "adimlar": [{ "bekle": 1000 }],
-        "kirp": "[data-gal-el=\"baglanti\"]",
-        "genislik": 480
+        "sorgu": "s=kayit-onay&theme={tema}&demo=0&anim=0",
+        "adimlar": [{ "bekle": 6000 }],
+        "kirp": "[data-cons-read]"
       }
     },
     {
@@ -232,10 +229,9 @@
       "baz": false,
       "prototip": {
         "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
-        "sorgu": "page=galeri&theme={tema}&demo=0&anim=0",
-        "adimlar": [{ "bekle": 1000 }],
-        "kirp": "[data-gal-el=\"yuvarlak-simge\"]",
-        "genislik": 480
+        "sorgu": "s=mesajlar&theme={tema}&demo=0&anim=0",
+        "adimlar": [{ "bekle": 6000 }],
+        "kirp": "[data-nbell]"
       }
     },
     {

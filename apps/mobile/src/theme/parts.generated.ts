@@ -12,7 +12,6 @@ export type V46Gradient = {
 };
 export type V46SvgNode = {
   tag: string;
-  cls: string | null;
   attrs: Record<string, string | number>;
   clip?: number;
   fill?: V46Paint;
@@ -29,13 +28,32 @@ export type V46Drawing = {
   gradients: V46Gradient[];
   nodes: V46SvgNode[];
 };
+// One bar of the send icon, in its drawing's units: turned about its own middle.
+export type V46SendBar = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rx: number;
+  fill: string;
+  translateX: number;
+  translateY: number;
+  rotate: number;
+};
 export type V46ButtonIcon = {
   size: readonly [number, number];
   pressedScale: number;
   transitions: V46Transition[];
 } & (
   | { bar: 'plus' | 'cross' | 'check'; fills: { a: string; b: string; x: string } }
-  | { drawing: V46Drawing }
+  | { drawing: V46Drawing; clap: V46Drawing | null; origin: readonly [number, number] }
+  | {
+      send: {
+        viewBox: readonly [number, number, number, number];
+        waiting: V46SendBar[];
+        ready: V46SendBar[];
+      };
+    }
 );
 export type V46ButtonScheme = {
   gap: number;
@@ -57,6 +75,7 @@ export type V46ButtonScheme = {
     fills: { a: string; b: string; overlap: string };
     transitions: V46Transition[];
   } | null;
+  loaderSize: readonly [number, number] | null;
   badge: {
     size: readonly [number, number];
     bg: string;
@@ -81,6 +100,34 @@ export type V46ButtonParts = {
   dark: V46ButtonScheme;
   // At v46's narrow width (V46_NARROW_MAX_WIDTH and below), light; null if v46 does not show it there.
   narrow: V46ButtonNarrow | null;
+};
+export type V46Channel = 'translateX' | 'translateY' | 'rotate' | 'scale' | 'opacity';
+export type V46ChannelSteps = { from: number; steps: { to: number; ms: number }[] };
+// A keyframe animation as v46 runs it: each channel's steps, eased one by one.
+export type V46KeyframeMotion = {
+  selector: string;
+  keyframes: string;
+  ms: number;
+  delayMs: number;
+  ease: V46Bezier;
+  channels: Partial<Record<V46Channel, V46ChannelSteps>>;
+  offWhenReduced: boolean;
+  // The buttons the rule reaches in v46.
+  looks: V46ButtonId[];
+};
+export type V46RuleTransition = {
+  selector: string;
+  transitions: V46Transition[];
+  reduced: V46Transition[];
+};
+export type V46ButtonMotions = {
+  nope: V46KeyframeMotion;
+  shoot: V46KeyframeMotion;
+  bellRing: V46KeyframeMotion;
+  bellClap: V46KeyframeMotion;
+  badgeBump: V46KeyframeMotion;
+  sendBars: V46RuleTransition;
+  barFill: V46RuleTransition;
 };
 
 // v46's one small-screen breakpoint (`@media (max-width: …px)` in its CSS).
@@ -132,6 +179,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
       },
       icon: null,
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     dark: {
@@ -156,6 +204,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
       },
       icon: null,
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     narrow: {
@@ -193,6 +242,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
         fills: { a: '#FFFFFF', b: '#FF4F8B', overlap: '#FFB547' },
         transitions: [{ prop: 'opacity', ms: 160, delayMs: 60, ease: [0.2, 0.8, 0.2, 1] }],
       },
+      loaderSize: [26, 26],
       badge: null,
     },
     dark: {
@@ -221,6 +271,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
         fills: { a: '#1C1838', b: '#FF4F8B', overlap: '#FFB547' },
         transitions: [{ prop: 'opacity', ms: 160, delayMs: 60, ease: [0.2, 0.8, 0.2, 1] }],
       },
+      loaderSize: [26, 26],
       badge: null,
     },
     narrow: {
@@ -258,6 +309,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
         fills: { a: '#FFFFFF', b: '#FF4F8B', overlap: '#FFB547' },
         transitions: [{ prop: 'opacity', ms: 160, delayMs: 60, ease: [0.2, 0.8, 0.2, 1] }],
       },
+      loaderSize: [26, 26],
       badge: null,
     },
     dark: {
@@ -286,6 +338,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
         fills: { a: '#1C1838', b: '#FF4F8B', overlap: '#FFB547' },
         transitions: [{ prop: 'opacity', ms: 160, delayMs: 60, ease: [0.2, 0.8, 0.2, 1] }],
       },
+      loaderSize: [26, 26],
       badge: null,
     },
     narrow: {
@@ -319,6 +372,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
       },
       icon: null,
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     dark: {
@@ -343,6 +397,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
       },
       icon: null,
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     narrow: {
@@ -373,6 +428,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
       },
       icon: null,
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     dark: {
@@ -394,6 +450,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
       },
       icon: null,
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     narrow: {
@@ -436,6 +493,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
         fills: { a: '#FFFFFF', b: '#FFFFFF', x: '#E8E3FF' },
       },
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     dark: {
@@ -469,6 +527,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
         fills: { a: '#1C1838', b: '#1C1838', x: '#2A2638' },
       },
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     narrow: {
@@ -496,6 +555,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
       },
       icon: null,
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     dark: {
@@ -514,6 +574,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
       },
       icon: null,
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     narrow: {
@@ -547,6 +608,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
       },
       icon: null,
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     dark: {
@@ -571,6 +633,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
       },
       icon: null,
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     narrow: {
@@ -584,7 +647,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
   'yumusak-lavanta': {
     light: {
       gap: 0,
-      justify: 'flex-start',
+      justify: 'center',
       padding: [0, 0, 0, 0],
       pressedScale: 0.97,
       transitions: [],
@@ -598,11 +661,12 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
       },
       icon: null,
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     dark: {
       gap: 0,
-      justify: 'flex-start',
+      justify: 'center',
       padding: [0, 0, 0, 0],
       pressedScale: 0.97,
       transitions: [],
@@ -616,6 +680,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
       },
       icon: null,
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     narrow: {
@@ -643,6 +708,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
       },
       icon: null,
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     dark: {
@@ -661,6 +727,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
       },
       icon: null,
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     narrow: {
@@ -691,6 +758,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
       },
       icon: null,
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     dark: {
@@ -712,6 +780,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
       },
       icon: null,
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     narrow: {
@@ -745,6 +814,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
         fills: { a: '#E0402C', b: '#FF8A70', x: '#A8240F' },
       },
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     dark: {
@@ -769,6 +839,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
         fills: { a: '#E0402C', b: '#FF8A70', x: '#A8240F' },
       },
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     narrow: {
@@ -811,6 +882,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
         fills: { a: '#2FAE68', b: '#137A3E', x: '#0B4F28' },
       },
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     dark: {
@@ -844,6 +916,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
         fills: { a: '#2FAE68', b: '#137A3E', x: '#0B4F28' },
       },
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     narrow: {
@@ -883,6 +956,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
         fills: { a: '#7B5CFF', b: '#6FD69A', x: '#0F5C31' },
       },
       loader: null,
+      loaderSize: [22, 22],
       badge: null,
     },
     dark: {
@@ -913,6 +987,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
         fills: { a: '#7B5CFF', b: '#6FD69A', x: '#0F5C31' },
       },
       loader: null,
+      loaderSize: [22, 22],
       badge: null,
     },
     narrow: {
@@ -949,7 +1024,6 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
           nodes: [
             {
               tag: 'path',
-              cls: null,
               attrs: { d: 'M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z' },
               fill: null,
               stroke: '#7B5CFF',
@@ -960,7 +1034,6 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
             },
             {
               tag: 'path',
-              cls: null,
               attrs: { d: 'M14.5 6.5l3 3' },
               fill: null,
               stroke: '#7B5CFF',
@@ -971,8 +1044,11 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
             },
           ],
         },
+        clap: null,
+        origin: [10, 10],
       },
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     dark: {
@@ -1000,7 +1076,6 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
           nodes: [
             {
               tag: 'path',
-              cls: null,
               attrs: { d: 'M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z' },
               fill: null,
               stroke: '#B6AEFF',
@@ -1011,7 +1086,6 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
             },
             {
               tag: 'path',
-              cls: null,
               attrs: { d: 'M14.5 6.5l3 3' },
               fill: null,
               stroke: '#B6AEFF',
@@ -1022,8 +1096,11 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
             },
           ],
         },
+        clap: null,
+        origin: [10, 10],
       },
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     narrow: {
@@ -1037,7 +1114,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
   baglanti: {
     light: {
       gap: 0,
-      justify: 'flex-start',
+      justify: 'center',
       padding: [0, 0, 0, 0],
       pressedScale: 0.97,
       transitions: [],
@@ -1051,11 +1128,12 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
       },
       icon: null,
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     dark: {
       gap: 0,
-      justify: 'flex-start',
+      justify: 'center',
       padding: [0, 0, 0, 0],
       pressedScale: 0.97,
       transitions: [],
@@ -1069,6 +1147,7 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
       },
       icon: null,
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     narrow: {
@@ -1098,7 +1177,6 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
           nodes: [
             {
               tag: 'polyline',
-              cls: null,
               attrs: { points: '15 5 8 12 15 19' },
               fill: null,
               stroke: '#14112B',
@@ -1109,8 +1187,11 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
             },
           ],
         },
+        clap: null,
+        origin: [10, 10],
       },
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     dark: {
@@ -1131,7 +1212,6 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
           nodes: [
             {
               tag: 'polyline',
-              cls: null,
               attrs: { points: '15 5 8 12 15 19' },
               fill: null,
               stroke: '#F3F0FF',
@@ -1142,8 +1222,11 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
             },
           ],
         },
+        clap: null,
+        origin: [10, 10],
       },
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     narrow: {
@@ -1172,7 +1255,6 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
             [
               {
                 tag: 'path',
-                cls: null,
                 attrs: { d: 'M5.2 16.2V9.6a6.8 6.8 0 0 1 13.6 0v6.6z' },
                 fill: '#000000',
                 stroke: null,
@@ -1187,7 +1269,6 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
           nodes: [
             {
               tag: 'path',
-              cls: null,
               attrs: { d: 'M5.2 16.2V9.6a6.8 6.8 0 0 1 13.6 0v6.6z' },
               fill: '#7B5CFF',
               stroke: null,
@@ -1198,7 +1279,6 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
             },
             {
               tag: 'rect',
-              cls: null,
               attrs: { x: 2.4, y: 14, width: 19.2, height: 4.6, rx: 2.3 },
               fill: '#FF4F8B',
               stroke: null,
@@ -1209,13 +1289,11 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
             },
             {
               tag: 'g',
-              cls: null,
               attrs: {},
               clip: 0,
               children: [
                 {
                   tag: 'rect',
-                  cls: null,
                   attrs: { x: 2.4, y: 14, width: 19.2, height: 4.6, rx: 2.3 },
                   fill: '#3B25A6',
                   stroke: null,
@@ -1226,9 +1304,28 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
                 },
               ],
             },
+          ],
+        },
+        clap: {
+          viewBox: [0, 0, 24, 24],
+          clips: [
+            [
+              {
+                tag: 'path',
+                attrs: { d: 'M5.2 16.2V9.6a6.8 6.8 0 0 1 13.6 0v6.6z' },
+                fill: '#000000',
+                stroke: null,
+                strokeWidth: 1,
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                opacity: 1,
+              },
+            ],
+          ],
+          gradients: [],
+          nodes: [
             {
               tag: 'rect',
-              cls: 'nb-clap',
               attrs: { x: 9.6, y: 19.8, width: 4.8, height: 3.6, rx: 1.8 },
               fill: '#FFB547',
               stroke: null,
@@ -1239,8 +1336,10 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
             },
           ],
         },
+        origin: [12, 3.36],
       },
       loader: null,
+      loaderSize: [26, 26],
       badge: {
         size: [20, 20],
         bg: '#C51F62',
@@ -1270,7 +1369,6 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
             [
               {
                 tag: 'path',
-                cls: null,
                 attrs: { d: 'M5.2 16.2V9.6a6.8 6.8 0 0 1 13.6 0v6.6z' },
                 fill: '#000000',
                 stroke: null,
@@ -1285,7 +1383,6 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
           nodes: [
             {
               tag: 'path',
-              cls: null,
               attrs: { d: 'M5.2 16.2V9.6a6.8 6.8 0 0 1 13.6 0v6.6z' },
               fill: '#7B5CFF',
               stroke: null,
@@ -1296,7 +1393,6 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
             },
             {
               tag: 'rect',
-              cls: null,
               attrs: { x: 2.4, y: 14, width: 19.2, height: 4.6, rx: 2.3 },
               fill: '#FF4F8B',
               stroke: null,
@@ -1307,13 +1403,11 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
             },
             {
               tag: 'g',
-              cls: null,
               attrs: {},
               clip: 0,
               children: [
                 {
                   tag: 'rect',
-                  cls: null,
                   attrs: { x: 2.4, y: 14, width: 19.2, height: 4.6, rx: 2.3 },
                   fill: '#3B25A6',
                   stroke: null,
@@ -1324,9 +1418,28 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
                 },
               ],
             },
+          ],
+        },
+        clap: {
+          viewBox: [0, 0, 24, 24],
+          clips: [
+            [
+              {
+                tag: 'path',
+                attrs: { d: 'M5.2 16.2V9.6a6.8 6.8 0 0 1 13.6 0v6.6z' },
+                fill: '#000000',
+                stroke: null,
+                strokeWidth: 1,
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                opacity: 1,
+              },
+            ],
+          ],
+          gradients: [],
+          nodes: [
             {
               tag: 'rect',
-              cls: 'nb-clap',
               attrs: { x: 9.6, y: 19.8, width: 4.8, height: 3.6, rx: 1.8 },
               fill: '#FFB547',
               stroke: null,
@@ -1337,8 +1450,10 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
             },
           ],
         },
+        origin: [12, 3.36],
       },
       loader: null,
+      loaderSize: [26, 26],
       badge: {
         size: [20, 20],
         bg: '#C51F62',
@@ -1374,60 +1489,60 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
         size: [28, 28],
         pressedScale: 1,
         transitions: [],
-        drawing: {
+        send: {
           viewBox: [0, 0, 24, 24],
-          clips: [],
-          gradients: [],
-          nodes: [
+          waiting: [
             {
-              tag: 'g',
-              cls: 'sg',
-              attrs: {},
-              children: [
-                {
-                  tag: 'rect',
-                  cls: 'sa',
-                  attrs: {
-                    x: 5,
-                    y: 9.8,
-                    width: 14,
-                    height: 4.4,
-                    rx: 2.2,
-                    transform:
-                      'translate(12 12) matrix(0.899 0.438 -0.438 0.899 -1.2 -2.7) translate(-12 -12)',
-                  },
-                  fill: '#BDB6D3',
-                  stroke: null,
-                  strokeWidth: 1,
-                  lineCap: 'butt',
-                  lineJoin: 'miter',
-                  opacity: 1,
-                },
-                {
-                  tag: 'rect',
-                  cls: 'sb',
-                  attrs: {
-                    x: 5,
-                    y: 9.8,
-                    width: 14,
-                    height: 4.4,
-                    rx: 2.2,
-                    transform:
-                      'translate(12 12) matrix(0.899 -0.438 0.438 0.899 -1.2 2.7) translate(-12 -12)',
-                  },
-                  fill: '#BDB6D3',
-                  stroke: null,
-                  strokeWidth: 1,
-                  lineCap: 'butt',
-                  lineJoin: 'miter',
-                  opacity: 1,
-                },
-              ],
+              x: 5,
+              y: 9.8,
+              width: 14,
+              height: 4.4,
+              rx: 2.2,
+              fill: '#BDB6D3',
+              translateX: -1.2,
+              translateY: -2.7,
+              rotate: 25.976,
+            },
+            {
+              x: 5,
+              y: 9.8,
+              width: 14,
+              height: 4.4,
+              rx: 2.2,
+              fill: '#BDB6D3',
+              translateX: -1.2,
+              translateY: 2.7,
+              rotate: -25.976,
+            },
+          ],
+          ready: [
+            {
+              x: 5,
+              y: 9.8,
+              width: 14,
+              height: 4.4,
+              rx: 2.2,
+              fill: '#7B5CFF',
+              translateX: -0.6,
+              translateY: -3.6,
+              rotate: 36.011,
+            },
+            {
+              x: 5,
+              y: 9.8,
+              width: 14,
+              height: 4.4,
+              rx: 2.2,
+              fill: '#FF4F8B',
+              translateX: -0.6,
+              translateY: 3.6,
+              rotate: -36.011,
             },
           ],
         },
       },
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     dark: {
@@ -1444,60 +1559,60 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
         size: [28, 28],
         pressedScale: 1,
         transitions: [],
-        drawing: {
+        send: {
           viewBox: [0, 0, 24, 24],
-          clips: [],
-          gradients: [],
-          nodes: [
+          waiting: [
             {
-              tag: 'g',
-              cls: 'sg',
-              attrs: {},
-              children: [
-                {
-                  tag: 'rect',
-                  cls: 'sa',
-                  attrs: {
-                    x: 5,
-                    y: 9.8,
-                    width: 14,
-                    height: 4.4,
-                    rx: 2.2,
-                    transform:
-                      'translate(12 12) matrix(0.899 0.438 -0.438 0.899 -1.2 -2.7) translate(-12 -12)',
-                  },
-                  fill: '#4A455B',
-                  stroke: null,
-                  strokeWidth: 1,
-                  lineCap: 'butt',
-                  lineJoin: 'miter',
-                  opacity: 1,
-                },
-                {
-                  tag: 'rect',
-                  cls: 'sb',
-                  attrs: {
-                    x: 5,
-                    y: 9.8,
-                    width: 14,
-                    height: 4.4,
-                    rx: 2.2,
-                    transform:
-                      'translate(12 12) matrix(0.899 -0.438 0.438 0.899 -1.2 2.7) translate(-12 -12)',
-                  },
-                  fill: '#4A455B',
-                  stroke: null,
-                  strokeWidth: 1,
-                  lineCap: 'butt',
-                  lineJoin: 'miter',
-                  opacity: 1,
-                },
-              ],
+              x: 5,
+              y: 9.8,
+              width: 14,
+              height: 4.4,
+              rx: 2.2,
+              fill: '#4A455B',
+              translateX: -1.2,
+              translateY: -2.7,
+              rotate: 25.976,
+            },
+            {
+              x: 5,
+              y: 9.8,
+              width: 14,
+              height: 4.4,
+              rx: 2.2,
+              fill: '#4A455B',
+              translateX: -1.2,
+              translateY: 2.7,
+              rotate: -25.976,
+            },
+          ],
+          ready: [
+            {
+              x: 5,
+              y: 9.8,
+              width: 14,
+              height: 4.4,
+              rx: 2.2,
+              fill: '#7B5CFF',
+              translateX: -0.6,
+              translateY: -3.6,
+              rotate: 36.011,
+            },
+            {
+              x: 5,
+              y: 9.8,
+              width: 14,
+              height: 4.4,
+              rx: 2.2,
+              fill: '#FF4F8B',
+              translateX: -0.6,
+              translateY: 3.6,
+              rotate: -36.011,
             },
           ],
         },
       },
       loader: null,
+      loaderSize: [26, 26],
       badge: null,
     },
     narrow: {
@@ -1507,5 +1622,142 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
       font: { size: 16, weight: 400, lineHeight: 21 },
       iconShown: true,
     },
+  },
+};
+
+// v46's button motions that play in a state (scripts/v46/buttons.ts → buttonMotions), by the
+// inventory's rule for each.
+export const V46_BUTTON_MOTION: V46ButtonMotions = {
+  nope: {
+    selector: '.va .btn.nope,.ntf-chip.nope,.anon-sw.nope',
+    keyframes: 'nope',
+    ms: 360,
+    delayMs: 0,
+    ease: [0.25, 0.1, 0.25, 1],
+    channels: {
+      translateX: {
+        from: 0,
+        steps: [
+          { to: -5, ms: 90 },
+          { to: 5, ms: 180 },
+          { to: 0, ms: 90 },
+        ],
+      },
+    },
+    offWhenReduced: false,
+    looks: [
+      'birincil-52',
+      'birincil-52-yukleniyor',
+      'birincil-52-pasif',
+      'birincil-48',
+      'birincil-48-pasif',
+      'birincil-48-15',
+      'birincil-36',
+      'yumusak-beyaz',
+      'yumusak-36',
+      'tehlike',
+      'basari',
+    ],
+  },
+  shoot: {
+    selector: '.send.shoot .sg',
+    keyframes: 'shoot',
+    ms: 550,
+    delayMs: 0,
+    ease: [0.2, 0.8, 0.2, 1],
+    channels: {
+      translateX: {
+        from: 0,
+        steps: [
+          { to: 22, ms: 220 },
+          { to: -22, ms: 5.5 },
+          { to: 0, ms: 324.5 },
+        ],
+      },
+      opacity: {
+        from: 1,
+        steps: [
+          { to: 0, ms: 220 },
+          { to: 0, ms: 5.5 },
+          { to: 1, ms: 324.5 },
+        ],
+      },
+    },
+    offWhenReduced: true,
+    looks: ['gonder'],
+  },
+  bellRing: {
+    selector: '.nbell.ring .nb-ic',
+    keyframes: 'nbRing',
+    ms: 900,
+    delayMs: 0,
+    ease: [0.34, 1.56, 0.64, 1],
+    channels: {
+      rotate: {
+        from: 0,
+        steps: [
+          { to: 16, ms: 135 },
+          { to: -13, ms: 135 },
+          { to: 9, ms: 135 },
+          { to: -6, ms: 135 },
+          { to: 3, ms: 135 },
+          { to: 0, ms: 225 },
+        ],
+      },
+    },
+    offWhenReduced: true,
+    looks: ['yuvarlak-simge'],
+  },
+  bellClap: {
+    selector: '.nbell.ring .nb-clap',
+    keyframes: 'nbClap',
+    ms: 900,
+    delayMs: 0,
+    ease: [0.34, 1.56, 0.64, 1],
+    channels: {
+      translateX: {
+        from: 0,
+        steps: [
+          { to: -2, ms: 135 },
+          { to: 2, ms: 135 },
+          { to: -1.4, ms: 135 },
+          { to: 1, ms: 135 },
+          { to: 0, ms: 360 },
+        ],
+      },
+    },
+    offWhenReduced: true,
+    looks: ['yuvarlak-simge'],
+  },
+  badgeBump: {
+    selector: '.nb-bdg.bump',
+    keyframes: 'vbump',
+    ms: 450,
+    delayMs: 0,
+    ease: [0.34, 1.56, 0.64, 1],
+    channels: {
+      scale: {
+        from: 0.5,
+        steps: [
+          { to: 1.22, ms: 270 },
+          { to: 1, ms: 180 },
+        ],
+      },
+    },
+    offWhenReduced: true,
+    looks: ['yuvarlak-simge'],
+  },
+  sendBars: {
+    selector: '.send-ic rect',
+    transitions: [
+      { prop: 'fill', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+      { prop: 'transform', ms: 420, delayMs: 0, ease: [0.34, 1.56, 0.64, 1] },
+    ],
+    reduced: [{ prop: 'fill', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] }],
+  },
+  barFill: {
+    selector: '.bi-a',
+    transitions: [{ prop: 'fill', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] }],
+    reduced: [],
   },
 };

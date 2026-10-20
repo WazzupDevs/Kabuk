@@ -33,6 +33,16 @@ const inventory = readInventory(root);
 const fonts = appFonts(root);
 const fontFiles = new Map(fonts.map((f) => [`${FONT_HOST}${f.name}.ttf`, f.file]));
 const galleryFile = join(root, GALLERY);
+const BUTTONS = 'Düğmeler';
+// v46's state classes read as a look of their own (the gallery copies only the resting look).
+const STATE_CLASSES: Record<string, string[]> = { gonder: ['ready'] };
+// Every motion rule of the inventory, by its selector: transitions, animations (and their
+// reduced-motion overrides) and the press looks.
+const MOTION_RULES = [
+  ...inventory.motion.transitions.map((r) => ({ kind: 'transition', selector: r.selector })),
+  ...inventory.motion.animation_rules.map((r) => ({ kind: 'animation', selector: r.selector })),
+  ...inventory.interaction.press_feedback.map((r) => ({ kind: 'press', selector: r.selector })),
+];
 const galleryUrl = pathToFileURL(galleryFile).href;
 
 type Viewport = { width: number; height: number };
@@ -129,6 +139,7 @@ function readElement(el: Element) {
   const self = {
     box: box(el),
     display: cs.display,
+    textAlign: cs.textAlign,
     padding: cs.padding,
     font: `${cs.fontSize}/${cs.fontWeight}/${cs.lineHeight}`,
     minHeight: cs.minHeight,
@@ -215,6 +226,7 @@ function readElement(el: Element) {
           color: ccs.color,
           opacity: Number(ccs.opacity),
           transform: ccs.transform,
+          transformOrigin: ccs.transformOrigin,
           transitions: transitions(ccs),
           viewBox: c.getAttribute('viewBox'),
           clips: clips.map((k) => [...k.children].map(node)),
@@ -289,6 +301,90 @@ function readPressed(el: Element) {
   };
 }
 
+// Runs in the page: the size v46 gives its button loader (`.ld.mini`) in this button while busy
+// (\`.hb .ld.mini\` is smaller than the primary's). The loader is put in, read and taken out again.
+function readBusyLoader(el: Element) {
+  const wasBusy = el.classList.contains('busy');
+  el.classList.add('busy');
+  const ld = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  ld.setAttribute('class', 'ld mini');
+  el.appendChild(ld);
+  const cs = getComputedStyle(ld);
+  const size = [parseFloat(cs.width), parseFloat(cs.height)];
+  ld.remove();
+  if (!wasBusy) el.classList.remove('busy');
+  return size;
+}
+
+// Runs in the page: which of the inventory's motion rules (transitions, animations, press looks)
+// reach this element or a part of it, in the screen it is used in, as it is or with one of v46's
+// state classes on the element (\`nope\`, \`shoot\`, \`ring\`, \`bump\`, \`ready\`, \`busy\`). A rule
+// for \`:active\` is tried without it.
+function readMatches(el: Element, rules: { kind: string; selector: string }[]) {
+  const STATES = [null, 'nope', 'shoot', 'ring', 'bump', 'ready', 'busy'];
+  const label = (n: Element) =>
+    n === el
+      ? 'self'
+      : n.tagName.toLowerCase() +
+        (n.getAttribute('class')
+          ? '.' + (n.getAttribute('class') ?? '').trim().split(/\s+/).join('.')
+          : '');
+  const split = (sel: string) => {
+    const out: string[] = [];
+    let depth = 0;
+    let start = 0;
+    for (let i = 0; i < sel.length; i++) {
+      if (sel[i] === '(') depth++;
+      else if (sel[i] === ')') depth--;
+      else if (sel[i] === ',' && depth === 0) {
+        out.push(sel.slice(start, i));
+        start = i + 1;
+      }
+    }
+    out.push(sel.slice(start));
+    return out.map((x) => x.trim().replace(/:(active|hover|focus-visible|focus)\b/g, ''));
+  };
+  const nodes = [el, ...el.querySelectorAll('*')];
+  // Each node's name as it is, before any state class goes on.
+  const names = new Map(nodes.map((n) => [n, label(n)]));
+  const found: { kind: string; selector: string; target: string; state: string | null }[] = [];
+  // A rule is listed once per node: as it is, or else with the first state class that brings it.
+  const test = (n: Element, state: string | null) => {
+    const target = names.get(n) ?? label(n);
+    for (const r of rules) {
+      if (
+        found.some((f) => f.selector === r.selector && f.target === target && f.kind === r.kind)
+      ) {
+        continue;
+      }
+      for (const one of split(r.selector)) {
+        if (one.includes('::')) continue;
+        let hit = false;
+        try {
+          hit = n.matches(one);
+        } catch {
+          hit = false;
+        }
+        if (hit) {
+          found.push({ kind: r.kind, selector: r.selector, target, state });
+          break;
+        }
+      }
+    }
+  };
+  // A state class sits on the button (`.send.shoot .sg`, `.nbell.ring .nb-ic`) or on the part it
+  // moves (`.nb-bdg.bump`).
+  for (const state of STATES) {
+    for (const holder of state ? nodes : [el]) {
+      const had = state ? holder.classList.contains(state) : true;
+      if (state && !had) holder.classList.add(state);
+      for (const n of holder === el ? nodes : [holder]) test(n, state);
+      if (state && !had) holder.classList.remove(state);
+    }
+  }
+  return found;
+}
+
 async function pressed(page: Page, selector: string) {
   const cdp = await page.context().newCDPSession(page);
   await cdp.send('DOM.enable');
@@ -345,6 +441,17 @@ async function pick(
   return handle.asElement();
 }
 
+// The element read with each of its state classes on, one after the other (still page).
+async function stateReadings(page: Page, selector: string, classes: string[]) {
+  const states: Record<string, Reading> = {};
+  for (const cls of classes) {
+    await page.locator(selector).evaluate((el, k) => el.classList.add(k), cls);
+    states[cls] = await page.locator(selector).evaluate(readElement);
+    await page.locator(selector).evaluate((el, k) => el.classList.remove(k), cls);
+  }
+  return states;
+}
+
 const browser = await chromium.launch(
   process.env.PLAYWRIGHT_CHROMIUM ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM } : {},
 );
@@ -363,6 +470,8 @@ try {
           await moving.locator(sel).evaluate(readElement),
         ),
         pressed: await pressed(still, sel),
+        busyLoader: c.group === BUTTONS ? await still.locator(sel).evaluate(readBusyLoader) : null,
+        states: await stateReadings(still, sel, STATE_CLASSES[c.id] ?? []),
       };
     }
     await still.context().close();
@@ -391,6 +500,18 @@ try {
     (out[c.id] as Record<string, unknown>).narrow = el ? await el.evaluate(readElement) : null;
     await page.context().close();
   }
+  // In the real screen (light, 360, motion on): the transitions the element has where it is used,
+  // and which of the inventory's motion rules reach it (the buttons' motion test reads these).
+  for (const c of inventory.components) {
+    if (c.group !== BUTTONS) continue;
+    const page = await open(browser, `s=${c.source_state}&theme=light&demo=0`, wide);
+    const ok = await page.evaluate(() => document.documentElement.dataset.stateOk === '1');
+    const el = ok ? await pick(page, c) : null;
+    const entry = out[c.id] as Record<string, unknown>;
+    entry.real = el ? await el.evaluate(readElement) : null;
+    entry.matches = el ? await el.evaluate(readMatches, MOTION_RULES) : null;
+    await page.context().close();
+  }
 } finally {
   await browser.close();
 }
@@ -402,7 +523,9 @@ const result = {
     source_sha256: createHash('sha256').update(source).digest('hex'),
     gallery: 'skall-masa-deneme-v46-galeri.html',
     script: 'scripts/v46/measure.ts',
-    viewport: '360x740 (page=galeri; reduced: light), narrow 320x568 (s=<state>, light)',
+    viewport:
+      '360x740 (page=galeri; reduced: light), narrow 320x568 (s=<state>, light), ' +
+      'real 360x740 (s=<state>, light, motion on: transitions and matched motion rules)',
     fonts: "the app's own files (apps/mobile/src/theme/fonts.ts), Roboto for system-ui",
   },
   components: out,

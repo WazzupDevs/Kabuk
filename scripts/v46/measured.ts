@@ -42,6 +42,7 @@ type RawPart = {
   display: string;
   opacity: number;
   transform?: string;
+  transformOrigin?: string;
   transitions: RawTransition[];
   position?: string;
   inset?: (number | string)[];
@@ -62,6 +63,8 @@ type RawPart = {
 type RawElement = {
   self: {
     box: [number, number];
+    display: string;
+    textAlign: string;
     padding: string;
     font: string;
     minHeight: string;
@@ -86,6 +89,23 @@ type RawPressed = {
   parts: { transform: string; opacity: number }[];
 };
 
+// One of the inventory's motion rules that reaches an element in its real screen (measure.ts →
+// readMatches): on the element itself (`self`) or a part, with the state class it needs, if any.
+export type MotionMatch = {
+  kind: 'transition' | 'animation' | 'press';
+  selector: string;
+  target: string;
+  state: string | null;
+};
+
+type RawSchemeReading = RawElement & {
+  pressed: RawPressed;
+  // A button's loader while busy (`.ld.mini` put in it): its width and height.
+  busyLoader: [number, number] | null;
+  // The element with one of v46's state classes on (`ready` for the send button).
+  states: Record<string, RawElement>;
+};
+
 export type Measured = {
   meta: { source_sha256: string };
   components: Record<
@@ -93,10 +113,14 @@ export type Measured = {
     {
       name: string;
       group: string;
-      light: RawElement & { pressed: RawPressed };
-      dark: RawElement & { pressed: RawPressed };
+      light: RawSchemeReading;
+      dark: RawSchemeReading;
       narrow: RawElement | null;
       reduced: RawElement;
+      // In the real screen (light, motion on): the element's transitions there and the motion rules
+      // that reach it. Buttons only.
+      real?: RawElement | null;
+      matches?: MotionMatch[] | null;
     }
   >;
 };
@@ -259,6 +283,8 @@ export type Part = {
   display: string;
   opacity: number;
   transform: Transform;
+  // Where a turn or scale of the part is centred, in px from its top left (computed).
+  origin?: readonly [number, number];
   transitions: Transition[];
   absolute?: { top: number; right: number; bottom: number; left: number };
   bg?: string;
@@ -285,6 +311,14 @@ function part(p: RawPart, metrics: VerticalMetrics): Part {
     transform: parseTransform(p.transform),
     transitions: transitions(p.transitions),
   };
+  if (p.transformOrigin) {
+    // px, or a percentage of the part's box.
+    const [ox, oy] = p.transformOrigin
+      .split(/\s+/)
+      .map((v, i) => (v.endsWith('%') ? (parseFloat(v) / 100) * (p.box[i] ?? 0) : parsePx(v)));
+    if (ox === undefined || oy === undefined) throw new Error(`origin: ${p.transformOrigin}`);
+    base.origin = [ox, oy];
+  }
   if (p.viewBox !== undefined && p.nodes && p.clips && p.color) {
     const vb = p.viewBox.split(/\s+/).map(Number);
     if (vb.length !== 4) throw new Error(`viewBox: ${p.viewBox}`);
@@ -343,9 +377,25 @@ export type Element = {
   parts: Part[];
 };
 
+// Where a block button (not a flex box: v46's `.sheet .close`) puts its text: its text-align (the
+// browser's own for a button is center).
+const TEXT_ALIGN: Record<string, string> = {
+  center: 'center',
+  '-webkit-center': 'center',
+  left: 'flex-start',
+  start: 'flex-start',
+  right: 'flex-end',
+  end: 'flex-end',
+};
+
 export function element(raw: RawElement, metrics: VerticalMetrics): Element {
-  const justify = JUSTIFY[raw.self.justifyContent];
-  if (!justify) throw new Error(`justify-content: ${raw.self.justifyContent}`);
+  const flex = raw.self.display === 'flex' || raw.self.display === 'inline-flex';
+  const justify = flex ? JUSTIFY[raw.self.justifyContent] : TEXT_ALIGN[raw.self.textAlign];
+  if (!justify) {
+    throw new Error(
+      flex ? `justify-content: ${raw.self.justifyContent}` : `text-align: ${raw.self.textAlign}`,
+    );
+  }
   return {
     box: raw.self.box,
     gap: typeof raw.self.gap === 'number' ? raw.self.gap : 0,

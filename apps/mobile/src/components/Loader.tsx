@@ -1,5 +1,5 @@
 import { useIsFocused } from 'expo-router';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState, View } from 'react-native';
 
 import { tr } from '@/i18n/tr';
@@ -18,16 +18,21 @@ import { type MarkColors, MotionMark } from './Mark';
 
 export type { LoaderKind };
 
+// True where every loop holds its first frame: the visual gate's states
+// (features/design/gorsel/GateState.tsx), so a loader is photographed the same on every run.
+export const LoopsHeld = createContext(false);
+
 // Whether a looping animation should run: its screen is focused and the app is in the
 // foreground. Loops off screen and in the background stop.
 export function useLoopActive(): boolean {
+  const held = useContext(LoopsHeld);
   const focused = useIsFocused();
   const [foreground, setForeground] = useState(AppState.currentState === 'active');
   useEffect(() => {
     const sub = AppState.addEventListener('change', (s) => setForeground(s === 'active'));
     return () => sub.remove();
   }, []);
-  return focused && foreground;
+  return !held && focused && foreground;
 }
 
 type Props = {

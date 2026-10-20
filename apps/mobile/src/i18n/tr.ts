@@ -1216,6 +1216,7 @@ export const tr = {
       typeLine: (key: string, lineHeight: number) => `${key} · satır ${lineHeight}`,
       normal: 'Normal',
       pressed: 'Basılı',
+      ready: 'Hazır',
       narrow: '320 dp',
       // v46's own sample texts for each component (its gallery copies them from its screens).
       samples: {

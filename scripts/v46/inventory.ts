@@ -50,11 +50,39 @@ export type RawTypeStyle = {
   groups: string[];
 };
 
+// The inventory's motion rules as v46's CSS writes them (durations like `.36s`, easings as CSS).
+export type RawTransitionRule = {
+  selector: string;
+  media: string;
+  parts: { prop: string; dur: string; delay: string; ease: string }[];
+};
+
+export type RawAnimationRule = {
+  selector: string;
+  media: string;
+  parts: { name: string; dur?: string; delay?: string; ease?: string; iter?: string }[];
+};
+
+export type RawKeyframes = {
+  name: string;
+  keyframes_css: string;
+  usages: { selector: string; media: string; duration: string; delay: string; easing: string }[];
+};
+
+export type RawPressFeedback = { selector: string; effect: Record<string, string> };
+
 export type Inventory = {
   meta: { source: string; source_sha256: string; viewport_measured: string; generated: string };
   tokens: { declared: { name: string; light: string; dark: string }[]; font_family: string };
   type_styles: RawTypeStyle[];
   components: RawComponent[];
+  motion: {
+    keyframes: RawKeyframes[];
+    animation_rules: RawAnimationRule[];
+    transitions: RawTransitionRule[];
+    reduced_motion: RawAnimationRule[];
+  };
+  interaction: { press_feedback: RawPressFeedback[] };
 };
 
 export function readInventory(root: string): Inventory {
