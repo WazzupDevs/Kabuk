@@ -286,10 +286,12 @@ appId: app.kabuk.mobile
     timeout: 10000
 - tapOn:
     id: preview-set-tokens
-- extendedWaitUntil:
-    visible:
+# At the largest text size the set chips take a row more (Kaydırma) and the wordmark falls below the
+# screen.
+- scrollUntilVisible:
+    element:
       id: preview-tokens-logo
-    timeout: 10000
+    timeout: 20000
 - takeScreenshot: 04j-tokens-themes
 - back
 - extendedWaitUntil:
