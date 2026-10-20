@@ -32,6 +32,9 @@ type Props = {
   // What the bar blurs behind it (an expo-blur `BlurTargetView` around the screen; Android blurs
   // only a target). Without one the bar is its ground alone, as over an empty screen.
   blurTarget?: RefObject<View | null>;
+  // Nothing behind that can be blurred (the Keşfet map: a GL surface Dimezis cannot capture): the
+  // bar is drawn opaque, as below Android 12.
+  opaque?: boolean;
 };
 
 // v46's tab bar (`nav.nav`, docs/design/v46: the inventory's alt-sekme-* and the measured Keşfet
@@ -42,14 +45,15 @@ type Props = {
 // shadow (the shadow eases, 200 ms), its icon and label the ink colour and the label a heavier
 // weight; Mekan's icon is the mark (VenueGlyph). A pressed tab shrinks (`.va button:active`). The
 // bar sits where the caller puts it (v46: 12 above the bottom, above the safe area). Below Android
-// 12 nothing blurs, so the bar is opaque: v46's screen ground under the gradient (backdrop.ts).
-export function TabBar({ items, selected, onPress, blurTarget }: Props) {
+// 12 nothing blurs, so the bar is opaque: v46's screen ground under the gradient (backdrop.ts); so
+// is it over what cannot be blurred (`opaque`).
+export function TabBar({ items, selected, onPress, blurTarget, opaque = false }: Props) {
   const { scheme } = useTheme();
   const reduce = useReduceMotion();
   const t = V46_TAB_BAR[scheme];
   const width = Math.min(t.maxWidth, useLayoutWidth() - 2 * t.inset);
   const blur = androidBlur(t.backdrop.blur, PixelRatio.get());
-  const blurs = blursBehind(Platform.OS, Platform.Version);
+  const solid = opaque || !blursBehind(Platform.OS, Platform.Version);
   return (
     <View
       accessibilityRole="tablist"
@@ -61,7 +65,7 @@ export function TabBar({ items, selected, onPress, blurTarget }: Props) {
       }}
     >
       <View style={[StyleSheet.absoluteFill, { borderRadius: t.radius, overflow: 'hidden' }]}>
-        {!blurs ? (
+        {solid ? (
           <View
             style={[StyleSheet.absoluteFill, { backgroundColor: V46_PALETTE[scheme].canvas }]}
           />

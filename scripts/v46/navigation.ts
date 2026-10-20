@@ -7,6 +7,7 @@
 import { color, type Drawing, drawingOf, need, px, styled } from './buttons.ts';
 import type { Inventory } from './inventory.ts';
 import type { Element, Font, Look, MotionMatch, Part, SvgNode, Transition } from './measured.ts';
+import { SCREEN } from './screenParts.ts';
 
 // The tabs in v46's order, by the app's route names.
 export const TAB_KEYS = ['explore', 'activities', 'venue', 'messages', 'profile'] as const;
@@ -243,8 +244,9 @@ export function pressScale(
 
 export type TabBarScheme = {
   height: number;
-  // From the screen's sides, and the most it grows to.
+  // From the screen's sides and bottom (above the safe area), and the most it grows to.
   inset: number;
+  bottom: number;
   maxWidth: number;
   padding: readonly [number, number, number, number];
   radius: number;
@@ -315,7 +317,7 @@ export function tabBarScheme(
   const base = bars.explore.el;
   const look: Look = base.look;
   if (!look.at || look.radius === null) throw new Error('the bar has no position or corner');
-  const [x] = look.at;
+  const [x, y] = look.at;
   const dotted = TAB_KEYS.flatMap((k) => parts[k].map((t) => t.dot)).find(
     (d): d is Part => d !== null && d.display !== 'none',
   );
@@ -333,6 +335,7 @@ export function tabBarScheme(
   return {
     height: base.box[1],
     inset: x,
+    bottom: SCREEN.height - y - base.box[1],
     maxWidth: roomy.box[0],
     padding: base.padding,
     radius: look.radius,

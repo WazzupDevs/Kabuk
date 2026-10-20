@@ -85,7 +85,7 @@ export default function ExploreScreen() {
   const layout = venues.isSuccess ? exploreLayout(venues.data.length) : 'list';
   const ready = venues.isSuccess && (layout === 'single' || cities.isSuccess);
   const showMap = ready && layout === 'list' && view === 'map';
-  // The venue card and the tab bar sit right on the map: no fade band over it.
+  // The map's GL surface cannot be blurred: over it the tab bar is opaque.
   useTabBarOverMap(showMap);
 
   useEffect(() => {

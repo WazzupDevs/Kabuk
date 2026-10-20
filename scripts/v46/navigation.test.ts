@@ -74,8 +74,7 @@ describe('v46 tab bar', () => {
     expect(html).toContain(
       `width:min(${b.maxWidth}px,calc(100% - ${2 * b.inset}px));height:${b.height}px`,
     );
-    const top = m?.light.self.at?.[1] ?? 0;
-    expect(html).toContain(`bottom:${SCREEN.height - top - b.height}px;width:min(`);
+    expect(html).toContain(`bottom:${b.bottom}px;width:min(`);
     // Blurred as v46 does; its saturate is not drawn (§4.C).
     expect(m?.light.self.backdrop).toBe('blur(20px) saturate(1.9)');
     expect(b.backdrop).toEqual({ blur: 20 });
@@ -100,9 +99,11 @@ describe('v46 tab bar', () => {
     expect(blursBehind('ios', '17.4')).toBe(true);
     for (const s of SCHEMES) expect(V46_PALETTE[s].canvas).toBe(heads[s].explore.bg);
     const tabBar = source('TabBar.tsx');
-    expect(tabBar).toMatch(/blursBehind\(Platform\.OS, Platform\.Version\)/);
     expect(tabBar).toMatch(
-      /!blurs \? \(\s*<View\s+style=\{\[StyleSheet\.absoluteFill, \{ backgroundColor: V46_PALETTE\[scheme\]\.canvas \}\]\}/,
+      /const solid = opaque \|\| !blursBehind\(Platform\.OS, Platform\.Version\)/,
+    );
+    expect(tabBar).toMatch(
+      /solid \? \(\s*<View\s+style=\{\[StyleSheet\.absoluteFill, \{ backgroundColor: V46_PALETTE\[scheme\]\.canvas \}\]\}/,
     );
   });
 
@@ -255,5 +256,28 @@ describe('v46 list/map switch', () => {
     expect(toggle).toMatch(/transitionStyle\(m\.button\.transitions\)/);
     expect(toggle).toMatch(/m\.button\.pressedScale/);
     expect(toggle).toMatch(/hitSlop=\{m\.button\.hitSlop\}/);
+  });
+});
+
+describe("the app's tabs", () => {
+  const app = (file: string) => readFileSync(resolve(root, 'apps/mobile', file), 'utf8');
+
+  it("float v46's bar above the bottom, feel a new tab and blur the focused screen", () => {
+    for (const s of SCHEMES) expect(bar[s].bottom).toBe(bar.light.bottom);
+    const tabs = app('src/components/TabBar.tsx');
+    expect(tabs).toMatch(/import \{ TabBar as V46TabBar, type TabBarItem \} from '@\/ui\/TabBar'/);
+    expect(tabs).toMatch(/bottom: insets\.bottom \+ V46_TAB_BAR\[scheme\]\.bottom/);
+    // The room the bar takes at the bottom of a tab screen: the bar, its distance, a little more.
+    expect(tabs).toMatch(/t\.height \+ t\.bottom \+ insets\.bottom \+ SPACING\[4\]/);
+    // A new tab is felt once the screen's own listener had its say (the Mekan tab's redirect).
+    expect(tabs).toMatch(
+      /!event\.defaultPrevented\) \{\s*haptic\('selection'\);\s*navigation\.navigate\(route\.name, route\.params\);/,
+    );
+    // Each tab screen is a blur target; the focused one is the bar's; over the map it is opaque.
+    expect(tabs).toMatch(/<BlurTargetView ref=\{ref\}/);
+    expect(tabs).toMatch(/blurTarget=\{target \?\? undefined\}\s*opaque=\{overMap\}/);
+    expect(app('app/(app)/(tabs)/_layout.tsx')).toMatch(
+      /screenLayout=\{\(\{ navigation, children \}\) => \(\s*<TabScene navigation=\{navigation\}>\{children\}<\/TabScene>/,
+    );
   });
 });
