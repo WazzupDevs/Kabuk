@@ -507,19 +507,23 @@ appId: app.kabuk.mobile
       id: gal-colors
     timeout: 10000
 - takeScreenshot: 04v-v46-gallery-colors
+# With the buttons in it (step 3b) the gallery is heavier: a swipe takes ~5 s on CI's emulator at
+# the largest text size, and reaching the first type style took longer than 30 s (e2e run
+# 39414633633, large-1; ~4 s a swipe and 24 s in step 3a).
 - scrollUntilVisible:
     element:
       id: gal-type-t13w600l18
     centerElement: true
-    timeout: 30000
+    timeout: 60000
 - takeScreenshot: 04v-v46-gallery-type
 # The 60 type styles, on their line boxes, stand before the components: at 320 dp a 30 s scroll from
-# the first one ended at the 55th on CI's emulator (e2e run 39394778370).
+# the first one ended at the 55th on CI's emulator (e2e run 39394778370); at the largest text size
+# in step 3a it took 46 s.
 - scrollUntilVisible:
     element:
       id: gal-birincil-52
     centerElement: true
-    timeout: 90000
+    timeout: 120000
 - takeScreenshot: 04v-v46-gallery-components
 - back
 - extendedWaitUntil:
