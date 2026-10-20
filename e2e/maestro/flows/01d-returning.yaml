@@ -10,9 +10,12 @@ appId: app.kabuk.mobile
 - tapOn:
     id: tab-profile
 - tapOn: Ayarlar
+# Centred: at the largest text size the scroll otherwise stops with the button under the tab bar and
+# the tap lands on Aktiviteler (e2e run 39407746099, large-1).
 - scrollUntilVisible:
     element:
       id: settings-sign-out
+    centerElement: true
     timeout: 20000
 - tapOn:
     id: settings-sign-out
