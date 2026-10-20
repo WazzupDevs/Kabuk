@@ -490,50 +490,35 @@ describe('venue chat identity (§4.D)', () => {
 describe('a table seat and a room message keep the identity they were written with (K-10)', () => {
   it('writes the anonymous seat’s look and the message’s identity, nothing for a profiled one', async () => {
     const a = await atVenue(PHONES[0], 'Ayşe');
-    const { sessionId } = await checkInAt(a, venue, V);
     const { capsule_look: look } = await capsuleOf(a);
-    // A seat and a message straight in the database: room creation is rooms.test.ts's.
-    const [room] = await sql`
-      insert into public.rooms
-        (venue_id, owner_session_id, owner_alias, owner_headcount, visibility, status)
-      select venue_id, id, alias, headcount, 'private', 'waiting'
-      from public.table_sessions where id = ${sessionId}
-      returning id
-    `;
-    // The owner's seat comes with the room (anonymous by default); one written by hand otherwise.
-    await sql`
-      insert into public.room_members (room_id, session_id, side, alias, profiled)
-      select ${room?.id}, id, 'owner', alias, false from public.table_sessions ts
-      where ts.id = ${sessionId}
-        and not exists (select 1 from public.room_members where session_id = ts.id and left_at is null)
-    `;
-    await sql`
-      insert into public.messages (room_id, session_id, sender_alias, body)
-      select ${room?.id}, id, alias, 'merhaba' from public.table_sessions where id = ${sessionId}
-    `;
+    // "Masa kur" seats the owner with the check-in's identity (anonymous by default, step 4.5).
+    const created = await invoke(a, 'rooms', { action: 'create' });
+    expect(created.status, JSON.stringify(created.body)).toBe(200);
+    const roomId = (created.body as { roomId: string }).roomId;
+    const sent = await invoke(a, 'chat', { action: 'send', roomId, body: 'merhaba' });
+    expect(sent.status, JSON.stringify(sent.body)).toBe(200);
     await sql`update public.profiles set capsule_look = 'c:nane e:koyu h:anten'
               where id = ${await userIdOf(a)}`;
-    const [seat] = await sql`select look from public.room_members where room_id = ${room?.id}`;
+    const [seat] = await sql`select look from public.room_members where room_id = ${roomId}`;
     const [message] = await sql`
-      select profiled, sender_look from public.messages where room_id = ${room?.id}
+      select profiled, sender_look from public.messages where room_id = ${roomId}
     `;
     expect(seat?.look).toBe(look);
     expect(message).toEqual({ profiled: false, sender_look: look });
 
-    await sql`update public.room_members set left_at = now() where room_id = ${room?.id}`;
-    await sql`
-      insert into public.room_members (room_id, session_id, side, alias, profiled)
-      select ${room?.id}, id, 'owner', 'Ayşe', true from public.table_sessions where id = ${sessionId}
-    `;
-    await sql`
-      insert into public.messages (room_id, session_id, sender_alias, body)
-      values (${room?.id}, ${sessionId}, 'Ayşe', 'adımla')
-    `;
-    const [profiledSeat] = await sql`
-      select look from public.room_members where room_id = ${room?.id} and left_at is null
-    `;
+    // A man sits profiled (rule 12): his seat and message carry no look.
+    const b = await onboarded(PHONES[1], { displayName: 'Burak', gender: 'male' });
+    await setTestPhoto(b);
+    await checkInAt(b, venue, V);
+    const own = await invoke(b, 'rooms', { action: 'create' });
+    expect(own.status, JSON.stringify(own.body)).toBe(200);
+    const ownId = (own.body as { roomId: string }).roomId;
+    expect(
+      (await invoke(b, 'chat', { action: 'send', roomId: ownId, body: 'adımla' })).status,
+    ).toBe(200);
+    const [profiledSeat] = await sql`select look from public.room_members where room_id = ${ownId}`;
     const [profiledMessage] = await sql`
-      select profiled, sender_look from public.messages where body = 'adımla'
+      select profiled, sender_look from public.messages where room_id = ${ownId}
     `;
     expect(profiledSeat?.look).toBeNull();
     expect(profiledMessage).toEqual({ profiled: true, sender_look: null });

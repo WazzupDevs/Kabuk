@@ -6,13 +6,6 @@
 import type { ChatRequest } from './api/chat.ts';
 import type { CheckinRequest } from './api/checkin.ts';
 import type { DmRequest, FriendsRequest } from './api/friends.ts';
-import type {
-  HarfRequest,
-  IbreRequest,
-  SahtekarRequest,
-  SarkiRequest,
-  TabuRequest,
-} from './api/games.ts';
 import type { ProfileRequest } from './api/profile.ts';
 import type { VenueChatRequest } from './api/venueChat.ts';
 
@@ -24,11 +17,6 @@ type CallName =
   | `profile/${ProfileRequest['action']}`
   | `friends/${FriendsRequest['action']}`
   | `dm/${DmRequest['action']}`
-  | `tabu/${TabuRequest['action']}`
-  | `sahtekar/${SahtekarRequest['action']}`
-  | `harf/${HarfRequest['action']}`
-  | `sarki/${SarkiRequest['action']}`
-  | `ibre/${IbreRequest['action']}`
   | `venue-chat/${VenueChatRequest['action']}`;
 
 export const IDEMPOTENT_CALLS = [
@@ -48,43 +36,7 @@ export const IDEMPOTENT_CALLS = [
   // friends.test "DM ticks": "moves sent → delivered → read, announces each step once, and never
   // sends the times"
   'dm/delivered',
-  // games.test "tabu, two tables face to face": "hands the turn's ordered card list to both tables,
-  // and to nobody outside the room"
-  'tabu/turn-cards',
-  // games.test "tabu, two tables face to face": "ignores a second mark on the same card, a stale
-  // turn and a card ahead, without an error"
-  'tabu/mark',
-  // games.test "tabu, two tables face to face": "alternates the tables, deals a new list per turn,
-  // and ends turns idempotently"
-  'tabu/end-turn',
-  // games.test "tabu, ready turns (docs/SPEC_V3.md §19.1)": "starts the clock once from the
-  // describing table, however often either phone sends it"
-  'tabu/begin-turn',
-  // sahtekar.test "sahtekar, seeing the word": "drops a seat that did not look in 2 minutes, and
-  // its table counts one less"
-  'sahtekar/advance',
-  // say.test "Harf Kapmaca, two tables": "starts the clock from the starting table, or from either
-  // table after readyEndsAt"
-  'harf/begin',
-  // say.test "Harf Kapmaca, two tables": "gives the round to the other table when the clock runs
-  // out, once from both phones"
-  'harf/advance',
-  // say.test "Şarkıda Geçsin, two tables": "opens only the first word ready; the next word starts
-  // at once with the other table"
-  'sarki/begin',
-  // say.test "Şarkıda Geçsin, two tables": "opens only the first word ready; the next word starts
-  // at once with the other table"
-  'sarki/advance',
-  // ibre.test "İbre, two tables": "starts the clock from the describing table, or from readyEndsAt
-  // on advance, once however often it is sent"
-  'ibre/begin',
-  // ibre.test "İbre, two tables": "hands the target to the describing table only, while a clock
-  // runs, the same each time"
-  'ibre/target',
-  // ibre.test "İbre, two tables": "ends the round without a side guess when the other table's
-  // clock runs out, once from both phones"
-  'ibre/advance',
-  // checkin.test "checkin/leave and expiry": "ends the active table and is idempotent"
+  // checkin.test "checkin/leave and expiry": "ends the active check-in and is idempotent"
   'checkin/leave',
   // checkin.test "checkin/check-in": "opens one table when the same check-in comes twice"
   'checkin/check-in',
@@ -92,7 +44,7 @@ export const IDEMPOTENT_CALLS = [
   // account: set, change, take back, and the same twice"
   'dm/react',
   // chat.test "room chat replies and reactions (docs/SPEC_V3.md §21)": "keeps one reaction per
-  // table, named by the table aliases, the same when sent twice"
+  // person, named by the seat names, the same when sent twice"
   'chat/react',
   // venueChat.test "venue chat: photos (venue-chat/page)": "signs the photo of a profiled message
   // and never gives an anonymous one a photo path"
@@ -101,7 +53,7 @@ export const IDEMPOTENT_CALLS = [
 
 export const RETRY_DELAY_MS = 500;
 
-// "tabu/mark" for { action: 'mark' } sent to tabu; "ping" for a call without an action.
+// "chat/react" for { action: 'react' } sent to chat; "ping" for a call without an action.
 export function callName(fn: string, body: Record<string, unknown>): string {
   return typeof body.action === 'string' ? `${fn}/${body.action}` : fn;
 }

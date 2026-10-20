@@ -78,23 +78,30 @@ async function named(phone: string, name: string): Promise<Client> {
   return client;
 }
 
-// Owner and guest in an open room at the fixture venue, each anonymous or with its profile for this
-// room (docs/SPEC_V3.md §5.4: chosen when creating the room and in the request).
+// A seat with the check-in's identity (docs/SPEC_V4.md §4.D, §4.E): "Profilimle" is chosen for the
+// check-in and needs a photo at the choice and at the seat (a temporary one, if the account has
+// none).
+async function seated<T>(client: Client, profiled: boolean, sit: () => Promise<T>): Promise<T> {
+  if (!profiled) return sit();
+  return withPhotoForChoice(client, async () => {
+    const identity = await invoke(client, 'checkin', { action: 'set-identity', anonymous: false });
+    expect(identity.status, JSON.stringify(identity.body)).toBe(200);
+    return sit();
+  });
+}
+
+// The owner's table with the guest sat down at it, each anonymous or with its profile.
 async function room(
   owner: Client,
   guest: Client,
   ownerMode: 'anonymous' | 'profile',
   guestMode: 'anonymous' | 'profile',
 ): Promise<string> {
-  await checkInAt(owner, venue, V, 2);
-  await checkInAt(guest, venue, V, 3);
-  const create = () =>
-    invoke(owner, 'rooms', {
-      action: 'create',
-      profiled: ownerMode === 'profile',
-    });
-  // §22.G: "Profilimle" needs a photo at the choice (a temporary one, if the account has none).
-  const created = await (ownerMode === 'profile' ? withPhotoForChoice(owner, create) : create());
+  await checkInAt(owner, venue, V);
+  await checkInAt(guest, venue, V);
+  const created = await seated(owner, ownerMode === 'profile', () =>
+    invoke(owner, 'rooms', { action: 'create' }),
+  );
   const roomId = (created.body as { roomId: string }).roomId;
   await join(owner, guest, roomId, guestMode === 'profile');
   return roomId;
@@ -106,9 +113,8 @@ async function join(
   roomId: string,
   profiled: boolean,
 ): Promise<void> {
-  const ask = () => invoke(guest, 'rooms', { action: 'request-join', roomId, profiled });
-  // §22.G: "Profilimle" needs a photo at the choice (a temporary one, if the account has none).
-  expect((await (profiled ? withPhotoForChoice(guest, ask) : ask())).status).toBe(200);
+  const ask = () => invoke(guest, 'rooms', { action: 'request-join', roomId });
+  expect((await seated(guest, profiled, ask)).status).toBe(200);
   const [request] =
     await sql`select id from public.join_requests where room_id = ${roomId} and status = 'pending'`;
   const res = await invoke(owner, 'rooms', {
@@ -119,10 +125,19 @@ async function join(
   expect(res.status, JSON.stringify(res.body)).toBe(200);
 }
 
+// The profile id of the other person at the table, if that person sat with its profile (rule 4).
 async function memberProfile(client: Client, roomId: string): Promise<string | null> {
-  const { data, error } = await client.rpc('room_member_profile', { target_room_id: roomId });
+  const { data, error } = await client.rpc('room_member_profiles', { target_room_id: roomId });
   expect(error).toBeNull();
-  return data ? data : null;
+  return data?.[0]?.public_id ?? null;
+}
+
+async function sessionIdOf(client: Client): Promise<string> {
+  const [row] = await sql`
+    select id from public.table_sessions
+    where user_id = ${await userIdOf(client)} and status = 'active'
+  `;
+  return row?.id as string;
 }
 
 // Minimal JPEGs (the same builder as the pure module's tests).
@@ -176,7 +191,7 @@ describe('profile/update', () => {
     expect(await profile(client, { action: 'update', bio: 'Merhaba' })).toEqual(required);
     expect(await profile(client, { action: 'photo-upload-url' })).toEqual(required);
     // Opening a table, too (profile_required, docs/SPEC_V3.md §3).
-    await expect(checkInAt(client, venue, V, 2)).rejects.toThrow();
+    await expect(checkInAt(client, venue, V)).rejects.toThrow();
     const [row] = await sql`
       select display_name, bio, default_participation from public.profiles
       where id = ${await userIdOf(client)}
@@ -299,7 +314,7 @@ describe('profile/update', () => {
   });
 });
 
-describe('check-in headcount; no participation at check-in', () => {
+describe('no headcount or participation at check-in', () => {
   async function sessionOf(client: Client) {
     const { data } = await client
       .from('table_sessions')
@@ -309,35 +324,25 @@ describe('check-in headcount; no participation at check-in', () => {
     return data;
   }
 
-  // Anonymous or with the profile is chosen per room (docs/SPEC_V3.md §5.4); an old app sending a
-  // participation at check-in changes nothing.
-  it('ignores a participation sent at check-in', async () => {
+  // A seat takes the check-in's identity (docs/SPEC_V4.md §4.D) and a check-in asks no headcount
+  // (§4.E, step 4.5): an old app sending either changes nothing.
+  it('ignores a participation and a headcount sent at check-in', async () => {
     const client = await named(PHONES[0], 'Deniz');
-    await checkInAt(client, venue, V, 4);
-    expect(await sessionOf(client)).toEqual({ participation: 'anonymous', headcount: 4 });
+    await checkInAt(client, venue, V);
+    expect(await sessionOf(client)).toEqual({ participation: 'anonymous', headcount: null });
     const res = await invoke(client, 'checkin', {
       action: 'check-in',
       venueId: venue[V],
       lat: 41,
       lng: 28.64,
       accuracyM: 10,
-      headcount: 1,
+      headcount: 4,
       locationConsentVersion: CURRENT_LOCATION_CONSENT_VERSION,
       requestId: randomUUID(),
       participation: 'profile',
     });
     expect(res.status).toBe(200);
-    expect(await sessionOf(client)).toEqual({ participation: 'anonymous', headcount: 1 });
-  });
-
-  it('accepts 1–4 (4 = 4+) and rejects 5', async () => {
-    const client = await onboarded(PHONES[0]);
-    await expect(checkInAt(client, venue, V, 5)).rejects.toThrow();
-    await checkInAt(client, venue, V, 4);
-    // New rows cannot hold more than 4 even when written directly.
-    await expect(
-      sql`update public.table_sessions set headcount = 5 where user_id = ${await userIdOf(client)} and status = 'active'`,
-    ).rejects.toThrow(/table_sessions_headcount_check/);
+    expect(await sessionOf(client)).toEqual({ participation: 'anonymous', headcount: null });
   });
 });
 
@@ -355,10 +360,10 @@ describe('profile/get', () => {
 
     // Before any room: strangers.
     expect(await get(b, idA)).toEqual(unknown);
-    await checkInAt(c, venue, V, 2);
+    await checkInAt(c, venue, V);
     const roomId = await room(a, b, 'profile', 'profile');
 
-    // Room members see each other; the third table at the venue does not.
+    // The people at the table see each other; the third person at the venue does not.
     expect(await get(b, idA)).toMatchObject({
       status: 200,
       body: {
@@ -380,35 +385,41 @@ describe('profile/get', () => {
     expect(await get(c, idA)).toEqual(unknown);
 
     // The owner blocks the guest: nothing either way.
-    expect((await invoke(a, 'safety', { action: 'block', roomId })).status).toBe(200);
+    expect(
+      (await invoke(a, 'safety', { action: 'block', roomId, sessionId: await sessionIdOf(b) }))
+        .status,
+    ).toBe(200);
     expect(await get(a, idB)).toEqual(unknown);
     expect(await get(b, idA)).toEqual(unknown);
   });
 
-  it('ends with the room membership', async () => {
+  it('ends with the seat at the table', async () => {
     const [a, b] = await Promise.all([named(PHONES[0], 'Ayşe'), named(PHONES[1], 'Burak')]);
     const idA = await publicIdOf(a);
     const roomId = await room(a, b, 'profile', 'anonymous');
     expect((await get(b, idA)).status).toBe(200);
-    // The guest joined anonymously: the owner gets nothing for it.
+    // The guest sat anonymously: the owner gets nothing for it.
     expect(await get(a, await publicIdOf(b))).toEqual(await get(a, randomUUID()));
 
-    // The guest's table leaves the venue.
+    // The guest leaves the venue.
     expect((await invoke(b, 'checkin', { action: 'leave' })).status).toBe(200);
     expect(await get(b, idA)).toEqual(await get(b, randomUUID()));
     expect(await memberProfile(b, roomId)).toBeNull();
   });
 
-  // The room's flags decide, not the table: a session marked 'profile' (from before v3) in an
-  // anonymous room shows nothing.
-  it("follows the room's choice, not the table's", async () => {
+  // The seat decides, not the check-in's old participation column: a session marked 'profile'
+  // (from before v3) at an anonymous seat shows nothing.
+  it("follows the seat's identity, not the check-in's participation column", async () => {
     const [a, b] = await Promise.all([named(PHONES[0], 'Ayşe'), named(PHONES[1], 'Burak')]);
     const roomId = await room(a, b, 'anonymous', 'anonymous');
     await sql`update public.table_sessions set participation = 'profile' where status = 'active'`;
     expect(await memberProfile(a, roomId)).toBeNull();
     expect(await memberProfile(b, roomId)).toBeNull();
     expect((await get(b, await publicIdOf(a))).status).toBe(404);
-    await sql`update public.rooms set owner_profiled = true where id = ${roomId}`;
+    await sql`
+      update public.room_members set profiled = true
+      where room_id = ${roomId} and session_id = ${await sessionIdOf(a)}
+    `;
     expect(await memberProfile(b, roomId)).toBe(await publicIdOf(a));
     expect(await memberProfile(a, roomId)).toBeNull();
   });
@@ -438,47 +449,29 @@ describe('profile/get', () => {
   });
 });
 
-describe('lobby and room: the "profilli" flag only', () => {
-  it('shows the flag without any profile id, in the lobby, the request and the room row', async () => {
+describe('lobby and table: no profile id before the seat', () => {
+  it('shows no profile id in the lobby, the request and the table row; only the seat opens it', async () => {
     const [a, b, c] = await Promise.all([
       named(PHONES[0], 'Ayşe'),
       named(PHONES[1], 'Burak'),
       named(PHONES[2], 'Cem'),
     ]);
     const ids = await Promise.all([a, b, c].map(publicIdOf));
-    await checkInAt(a, venue, V, 2);
-    await checkInAt(b, venue, V, 3);
-    await checkInAt(c, venue, V, 4);
-    // §22.G: "Profilimle" needs a photo at the choice (a temporary one, removed right after).
-    const created = await withPhotoForChoice(a, () =>
-      invoke(a, 'rooms', { action: 'create', profiled: true, intent: 'chat' }),
+    await checkInAt(a, venue, V);
+    await checkInAt(b, venue, V);
+    await checkInAt(c, venue, V);
+    const created = await seated(a, true, () =>
+      invoke(a, 'rooms', { action: 'create', intent: 'chat' }),
     );
     const roomId = (created.body as { roomId: string }).roomId;
 
-    const { data: lobby } = await c.rpc('venue_lobby', { target_venue_id: venue[V] ?? '' });
-    // Step 23.1 (docs/SPEC_V3.md §23.C, rule 4): the lobby no longer carries the flag; the column
-    // stays, false in every row.
-    expect(lobby).toEqual([expect.objectContaining({ room_id: roomId, profiled: false })]);
-    expect(Object.keys(lobby?.[0] ?? {}).sort()).toEqual(
-      [
-        'alias',
-        'intent',
-        'headcount',
-        'profiled',
-        'room_id',
-        'waiting_since',
-        // The room's spot (docs/SPEC_V3.md §4.3): venue data, no count.
-        'spot_id',
-        'spot_name',
-      ].sort(),
-    );
+    // Step 23.1 (rule 4): the lobby carries no "profilli" flag; from step 4.5 not even the column.
+    const { data: lobby } = await c.rpc('venue_tables', { target_venue_id: venue[V] ?? '' });
+    expect(lobby).toEqual([expect.objectContaining({ room_id: roomId, intent: 'chat' })]);
+    expect(Object.keys(lobby?.[0] ?? {})).not.toContain('profiled');
 
     expect(
-      (
-        await withPhotoForChoice(b, () =>
-          invoke(b, 'rooms', { action: 'request-join', roomId, profiled: true }),
-        )
-      ).status,
+      (await seated(b, true, () => invoke(b, 'rooms', { action: 'request-join', roomId }))).status,
     ).toBe(200);
     const { data: requests } = await a.from('join_requests').select('*').eq('room_id', roomId);
     expect(requests).toEqual([expect.objectContaining({ requester_profiled: true })]);
@@ -489,13 +482,13 @@ describe('lobby and room: the "profilli" flag only', () => {
     const seen = JSON.stringify({ lobby, requests, roomRow });
     for (const id of ids) expect(seen).not.toContain(id);
 
-    // Only the members get the other table's id, and only for a profiled table.
+    // Only the people at the table get a profiled person's id.
     expect(await memberProfile(b, roomId)).toBe(ids[0]);
     expect(await memberProfile(a, roomId)).toBe(ids[1]);
     expect(await memberProfile(c, roomId)).toBeNull();
   });
 
-  it('gives an anonymous table no profile id', async () => {
+  it('gives an anonymous person no profile id', async () => {
     const [a, b] = await Promise.all([named(PHONES[0], 'Ayşe'), named(PHONES[1], 'Burak')]);
     const roomId = await room(a, b, 'anonymous', 'profile');
     expect(await memberProfile(b, roomId)).toBeNull();
@@ -589,16 +582,16 @@ describe('profile photos', () => {
     // C cannot see A yet: the report is refused like profile/get and writes nothing.
     expect(await report(c)).toEqual({ status: 404, body: errorBody('not_found') });
 
-    await room(a, b, 'profile', 'anonymous');
+    const roomId = await room(a, b, 'profile', 'anonymous');
     expect(await report(b)).toEqual({ status: 200, body: { ok: true } });
     expect(await report(b)).toEqual({ status: 200, body: { ok: true } });
     expect(((await get(b, idA)).body as ProfileView).photoUrl).toEqual(expect.any(String));
 
-    // B's table leaves; A opens another room with its profile, C joins it and reports too.
+    // B leaves the venue; C sits down at A's table (A still there with its profile) and reports
+    // too.
     await invoke(b, 'checkin', { action: 'leave' });
-    await checkInAt(c, venue, V, 2);
-    const second = await invoke(a, 'rooms', { action: 'create', profiled: true });
-    await join(a, c, (second.body as { roomId: string }).roomId, false);
+    await checkInAt(c, venue, V);
+    await join(a, c, roomId, false);
     expect(await report(c)).toEqual({ status: 200, body: { ok: true } });
 
     expect(((await get(c, idA)).body as ProfileView).photoUrl).toBeNull();

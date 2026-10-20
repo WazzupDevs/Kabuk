@@ -56,13 +56,12 @@ export async function clearGender(client: Client): Promise<void> {
   await sql`update public.profiles set gender = null where id = ${data.user.id}`;
 }
 
-// Checks in standing right at the fixture venue.
+// Checks in standing right at the fixture venue (no headcount from step 4.5, docs/SPEC_V4.md §4.E).
 export async function checkInAt(
   client: Client,
   venues: Record<string, string>,
   key: string,
-  headcount = 3,
-): Promise<{ sessionId: string; alias: string }> {
+): Promise<{ sessionId: string }> {
   const fixture = FIXTURE_VENUES.find((v) => v.key === key);
   const id = venues[key];
   if (!fixture || !id) throw new Error(`unknown fixture venue ${key}`);
@@ -73,12 +72,11 @@ export async function checkInAt(
     lat: here.lat,
     lng: here.lng,
     accuracyM: 10,
-    headcount,
     locationConsentVersion: CURRENT_LOCATION_CONSENT_VERSION,
     requestId: randomUUID(),
   });
   expect(res.status, JSON.stringify(res.body)).toBe(200);
-  return res.body as { sessionId: string; alias: string };
+  return res.body as { sessionId: string };
 }
 
 // A profile photo through the app's own path (upload URL, then commit): a minimal JPEG without

@@ -103,33 +103,41 @@ async function publicIdOf(client: Client): Promise<string> {
   return data?.public_id ?? '';
 }
 
-// Owner a, guest b in an open room, each anonymous or with its profile for this room (docs/SPEC_V3.md
-// §5.4); b proposes the game and a accepts it (§5.3), or they only chat. The encounter is made
-// `minutes` old.
+// a's table with b sat down at it, each with the check-in's identity, anonymous or profiled
+// (docs/SPEC_V4.md §4.D, §4.E); they only chat (the games come back with step 4.6). The pair is made
+// `minutes` together.
 async function encounter(
   a: Client,
   b: Client,
-  opts: { minutes?: number; modes?: [Mode, Mode]; concept?: 'tabu' | 'sohbet' | 'chat' } = {},
+  opts: { minutes?: number; modes?: [Mode, Mode] } = {},
 ): Promise<string> {
   const [ownerMode, guestMode] = opts.modes ?? ['anonymous', 'anonymous'];
-  await checkInAt(a, venue, V, 2);
-  await checkInAt(b, venue, V, 3);
-  const create = () =>
-    invoke(a, 'rooms', {
-      action: 'create',
-      profiled: ownerMode === 'profile',
+  await checkInAt(a, venue, V);
+  await checkInAt(b, venue, V);
+  // "Profilimle" needs a photo at the choice and at the seat (a temporary one, if the account has
+  // none).
+  const seated = async (client: Client, mode: Mode, sit: () => Promise<{ status: number }>) => {
+    if (mode === 'anonymous') return sit();
+    return withPhotoForChoice(client, async () => {
+      const identity = await invoke(client, 'checkin', {
+        action: 'set-identity',
+        anonymous: false,
+      });
+      expect(identity.status, JSON.stringify(identity.body)).toBe(200);
+      return sit();
     });
-  // §22.G: "Profilimle" needs a photo at the choice (a temporary one, if the account has none).
-  const created = await (ownerMode === 'profile' ? withPhotoForChoice(a, create) : create());
-  expect(created.status, JSON.stringify(created.body)).toBe(200);
-  const roomId = (created.body as { roomId: string }).roomId;
-  const ask = () =>
-    invoke(b, 'rooms', {
-      action: 'request-join',
-      roomId,
-      profiled: guestMode === 'profile',
-    });
-  expect((await (guestMode === 'profile' ? withPhotoForChoice(b, ask) : ask())).status).toBe(200);
+  };
+  let roomId = '';
+  await seated(a, ownerMode, async () => {
+    const created = await invoke(a, 'rooms', { action: 'create' });
+    expect(created.status, JSON.stringify(created.body)).toBe(200);
+    roomId = (created.body as { roomId: string }).roomId;
+    return created;
+  });
+  const asked = await seated(b, guestMode, () =>
+    invoke(b, 'rooms', { action: 'request-join', roomId }),
+  );
+  expect(asked.status).toBe(200);
   const [request] =
     await sql`select id from public.join_requests where room_id = ${roomId} and status = 'pending'`;
   const accepted = await invoke(a, 'rooms', {
@@ -138,28 +146,36 @@ async function encounter(
     accept: true,
   });
   expect(accepted.status).toBe(200);
-  const concept = opts.concept ?? 'sohbet';
-  if (concept !== 'chat') {
-    expect((await invoke(b, 'rooms', { action: 'propose-game', roomId, concept })).status).toBe(
-      200,
-    );
-    expect((await invoke(a, 'rooms', { action: 'answer-game', roomId, accept: true })).status).toBe(
-      200,
-    );
-  }
   await sql`
-    update public.rooms set guest_joined_at = now() - make_interval(mins => ${opts.minutes ?? 4})
-    where id = ${roomId}
+    update public.room_members set joined_at = joined_at - make_interval(mins => ${opts.minutes ?? 4})
+    where room_id = ${roomId}
   `;
   return roomId;
 }
 
-// The guest's table leaves the venue: the table closes at once and its history rows are available
-// (docs/SPEC_V3.md §23.G).
+// The guest leaves the venue: its pairs get their records at once (K-66); the table goes on with a.
 async function endByGuestLeaving(b: Client, roomId: string): Promise<void> {
   expect((await invoke(b, 'checkin', { action: 'leave' })).status).toBe(200);
-  const [room] = await sql`select status from public.rooms where id = ${roomId}`;
-  expect(room?.status).toBe('closed');
+  const [left] = await sql`
+    select count(*)::int as n from public.room_members rm
+    join public.table_sessions ts on ts.id = rm.session_id
+    where rm.room_id = ${roomId} and rm.left_at is null and ts.user_id = ${await userIdOf(b)}
+  `;
+  expect(left?.n).toBe(0);
+}
+
+// The names a and b sat down with (their capsule nicks, or display names when profiled).
+async function seatNames(roomId: string, a: Client, b: Client) {
+  const rows = await sql`
+    select ts.user_id, rm.alias from public.room_members rm
+    join public.table_sessions ts on ts.id = rm.session_id
+    where rm.room_id = ${roomId}
+  `;
+  const [idA, idB] = await Promise.all([userIdOf(a), userIdOf(b)]);
+  return {
+    a: rows.find((r) => r.user_id === idA)?.alias as string,
+    b: rows.find((r) => r.user_id === idB)?.alias as string,
+  };
 }
 
 // Every column the app may read; the rest (other_user_id, other_profiled, encounter_id, user_id)
@@ -246,8 +262,8 @@ async function accessToken(client: Client): Promise<string> {
 
 // Every value the client can read about its own account: rows, RPCs, function answers.
 async function everythingReadable(client: Client, roomId: string): Promise<string> {
-  const { data: lobby } = await client.rpc('venue_lobby', { target_venue_id: venue[V] ?? '' });
-  const { data: member } = await client.rpc('room_member_profile', { target_room_id: roomId });
+  const { data: lobby } = await client.rpc('venue_tables', { target_venue_id: venue[V] ?? '' });
+  const { data: member } = await client.rpc('room_member_profiles', { target_room_id: roomId });
   return JSON.stringify({
     history: await history(client),
     incoming: await incoming(client),
@@ -271,24 +287,24 @@ describe('play history', () => {
 
   it('writes one row per account, from its own view, without any id of the other side', async () => {
     const [a, b] = await Promise.all([named(PHONES[0], 'Ayşe'), named(PHONES[1], 'Burak')]);
-    const roomId = await encounter(a, b, { concept: 'tabu' });
-    const [aliases] =
-      await sql`select owner_alias, guest_alias from public.rooms where id = ${roomId}`;
+    const roomId = await encounter(a, b);
+    const names = await seatNames(roomId, a, b);
     await endByGuestLeaving(b, roomId);
 
+    // A pair of people (K-66): the names they sat down with; a person is one head.
     const [rowA] = await history(a);
     const [rowB] = await history(b);
     expect(rowA).toMatchObject({
       room_id: roomId,
-      concept: 'tabu',
-      mode: 'voice',
-      own_alias: aliases?.owner_alias,
-      other_alias: aliases?.guest_alias,
-      other_headcount: 3,
+      concept: 'chat',
+      mode: 'text',
+      own_alias: names.a,
+      other_alias: names.b,
+      other_headcount: 1,
       reveal_mutual: false,
       friend_action_at: null,
     });
-    expect(rowB).toMatchObject({ own_alias: aliases?.guest_alias, other_headcount: 2 });
+    expect(rowB).toMatchObject({ own_alias: names.b, other_alias: names.a, other_headcount: 1 });
     expect(Object.keys(rowA ?? {}).sort()).toEqual(
       [
         'available_at',
@@ -332,16 +348,15 @@ describe('friend requests', () => {
 
   it('shows the request with the table alias and date, never a profile id', async () => {
     const { a, b, historyA, roomId } = await metOnce();
-    const [aliases] =
-      await sql`select owner_alias, guest_alias from public.rooms where id = ${roomId}`;
+    const names = await seatNames(roomId, a, b);
     expect(await friends(a, { action: 'request', historyId: historyA })).toEqual(OK);
 
     const [req] = await incoming(b);
     expect(req).toMatchObject({
       history_id: await latestHistoryId(b),
-      concept: 'sohbet',
-      other_alias: aliases?.owner_alias,
-      other_headcount: 2,
+      concept: 'chat',
+      other_alias: names.a,
+      other_headcount: 1,
     });
     expect(Object.keys(req ?? {}).sort()).toEqual(
       [
@@ -453,9 +468,9 @@ describe('no profile id before a friendship', () => {
     const [uidA, uidB] = [await userIdOf(a), await userIdOf(b)];
     const roomId = await encounter(a, b, { modes: ['profile', 'anonymous'] });
 
-    // While the room runs, the profiled table's id reaches the other member (and only that one).
-    const { data: member } = await b.rpc('room_member_profile', { target_room_id: roomId });
-    expect(member).toBe(idA);
+    // While the table runs, the profiled person's id reaches the others at it (rule 4).
+    const { data: members } = await b.rpc('room_member_profiles', { target_room_id: roomId });
+    expect(members?.map((m) => m.public_id)).toEqual([idA]);
     await endByGuestLeaving(b, roomId);
 
     const answers = [
@@ -1051,7 +1066,7 @@ describe('history safety actions', () => {
       reported_user_id: await userIdOf(a),
       room_id: roomId,
       profile_snapshot: expect.objectContaining({ display_name: 'Ayşe', bio: 'Tabu sever.' }),
-      context: expect.objectContaining({ concept: 'sohbet', other_profiled: true }),
+      context: expect.objectContaining({ concept: 'chat', other_profiled: true }),
     });
     expect(report?.photo_copy).not.toBeNull();
     expect(report?.messages_snapshot).toEqual([expect.objectContaining({ body: 'iyi oyunlar' })]);
@@ -1090,12 +1105,13 @@ describe('history safety actions', () => {
   it('blocks with the alias of that encounter, reports in the same step, and ends a friendship', async () => {
     const { a, b, historyA, historyB, roomId } = await metOnce();
     await becomeFriends(a, b, historyA);
-    const [aliases] = await sql`select owner_alias from public.rooms where id = ${roomId}`;
+    const names = await seatNames(roomId, a, b);
     expect(await safety(b, { action: 'block', historyId: historyB, report: 'harassment' })).toEqual(
       OK,
     );
+    // The name a sat down with (§4.H): its capsule nick when anonymous.
     expect(await sql`select blocked_alias from public.blocks`).toEqual([
-      { blocked_alias: aliases?.owner_alias },
+      { blocked_alias: names.a },
     ]);
     expect(await sql`select target_type from public.reports`).toEqual([{ target_type: 'history' }]);
     expect(await sql`select 1 from public.friendships`).toHaveLength(0);

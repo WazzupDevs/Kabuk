@@ -1,12 +1,12 @@
 // Check-in, the spot and "Mekandan ayrıl". The coordinates in a check-in request are used for the
 // boundary or distance check only: they are never stored, logged or echoed back (MVP_SPEC §4.2,
 // docs/SPEC_V3.md §4.2). Database errors are rethrown with their code only, so no request value can
-// reach the logs.
+// reach the logs. From step 4.5 a check-in is being at the venue (docs/SPEC_V4.md §4.E): it opens no
+// table, asks no headcount and has no alias; a table and its name are rooms/create's.
 import { type Db, requireUser, serviceClient } from '../_shared/auth.ts';
 import { dbError as domainError } from '../_shared/db.ts';
 import { z } from '../_shared/deps.ts';
 import { handle } from '../_shared/http.ts';
-import { type AliasWords, pickAlias } from '../_shared/pure/alias.ts';
 import type {
   ChangeSpotResponse,
   CheckInRequest,
@@ -14,15 +14,9 @@ import type {
   CheckinRequest,
   LeaveResponse,
   LocationModeResponse,
-  RerollAliasResponse,
   SetIdentityResponse,
 } from '../_shared/pure/api/checkin.ts';
-import {
-  BOUNDARY_TOLERANCE_M,
-  CHECKIN_RADIUS_M,
-  MAX_HEADCOUNT,
-  MIN_HEADCOUNT,
-} from '../_shared/pure/checkin.ts';
+import { BOUNDARY_TOLERANCE_M, CHECKIN_RADIUS_M } from '../_shared/pure/checkin.ts';
 import {
   CURRENT_LOCATION_CONSENT_VERSION,
   needsConsent,
@@ -30,7 +24,6 @@ import {
 } from '../_shared/pure/consent.ts';
 import { locationCheck } from '../_shared/pure/devProject.ts';
 import { AppError } from '../_shared/pure/errors.ts';
-import { ALIAS_REROLLS_PER_CHECKIN } from '../_shared/pure/rooms.ts';
 import { checkinIdentity } from '../_shared/pure/venueChat.ts';
 
 const Body: z.ZodType<CheckinRequest> = z.discriminatedUnion('action', [
@@ -40,7 +33,8 @@ const Body: z.ZodType<CheckinRequest> = z.discriminatedUnion('action', [
     lat: z.number().min(-90).max(90),
     lng: z.number().min(-180).max(180),
     accuracyM: z.number().nonnegative().max(100_000).nullable(),
-    headcount: z.number().int().min(MIN_HEADCOUNT).max(MAX_HEADCOUNT),
+    // Today's app sends a headcount and `teams`; both are ignored.
+    headcount: z.number().int().optional(),
     locationConsentVersion: z.string(),
     spotId: z.uuid().optional(),
     teams: z.boolean().optional(),
@@ -53,8 +47,9 @@ const Body: z.ZodType<CheckinRequest> = z.discriminatedUnion('action', [
   z.object({ action: z.literal('set-identity'), anonymous: z.boolean() }),
 ]);
 
-// A taken alias (a concurrent check-in at the same venue) is retried with another one.
-const MAX_ALIAS_ATTEMPTS = 5;
+// Two check-ins of one account at once: the second hits the one-active-check-in index and is tried
+// once more. The same check-in sent twice finds the first copy's check-in by its key; a new one ends
+// it, as a check-in ends the one before.
 const UNIQUE_VIOLATION = '23505';
 
 const db = serviceClient();
@@ -63,21 +58,9 @@ const db = serviceClient();
 function currentLocationCheck() {
   return locationCheck(Deno.env.get('CHECKIN_SKIP_LOCATION'), Deno.env.get('SUPABASE_URL'));
 }
-let aliasWords: AliasWords | null = null;
 
 function dbError(step: string, error: { code: string }): Error {
   return new Error(`${step} failed (${error.code})`);
-}
-
-async function loadAliasWords(): Promise<AliasWords> {
-  if (aliasWords) return aliasWords;
-  const { data, error } = await db.from('alias_words').select('kind, word');
-  if (error) throw dbError('alias_words', error);
-  aliasWords = {
-    adjectives: data.filter((w) => w.kind === 'adjective').map((w) => w.word),
-    nouns: data.filter((w) => w.kind === 'noun').map((w) => w.word),
-  };
-  return aliasWords;
 }
 
 // Consents and the v3 profile (name and birth date) before a table opens. Anonymous or with the
@@ -94,17 +77,6 @@ async function requireOnboarded(db: Db, userId: string): Promise<void> {
   }
   // Sign-up = profile (docs/SPEC_V3.md §3): accounts from before v3 finish their profile first.
   if (needsProfile(data)) throw new AppError('profile_required', 'Complete your profile first.');
-}
-
-// Aliases of the venue's active tables, taken by nobody else.
-async function usedAliases(venueId: string): Promise<Set<string>> {
-  const { data, error } = await db
-    .from('table_sessions')
-    .select('alias')
-    .eq('venue_id', venueId)
-    .eq('status', 'active');
-  if (error) throw dbError('table_sessions', error);
-  return new Set(data.map((s) => s.alias));
 }
 
 async function checkIn(userId: string, body: CheckInRequest): Promise<CheckInResponse> {
@@ -134,72 +106,29 @@ async function checkIn(userId: string, body: CheckInRequest): Promise<CheckInRes
     throw new AppError('too_far', 'You are too far from this venue.');
   }
 
-  const [words, used] = await Promise.all([loadAliasWords(), usedAliases(body.venueId)]);
-
-  for (let attempt = 0; attempt < MAX_ALIAS_ATTEMPTS; attempt++) {
-    const alias = pickAlias(words, used, Math.random);
-    if (alias === null) break;
-
+  for (let attempt = 0; ; attempt++) {
     const { data, error } = await db.rpc('start_table_session', {
       target_user_id: userId,
       target_venue_id: body.venueId,
-      new_alias: alias,
-      new_headcount: body.headcount,
       consent_version: body.locationConsentVersion,
       accuracy_m: body.accuracyM ?? undefined,
       new_spot_id: body.spotId,
-      // The app can be in a team (docs/SPEC_V3.md §22.B); an old app sends nothing.
-      new_team_capable: body.teams === true,
-      // The same check-in sent again returns the table it opened (20261102090000).
+      // The same check-in sent again returns the check-in it made (20261102090000).
       new_checkin_key: body.requestId,
     });
     if (!error) {
       return {
         sessionId: data.id,
-        alias: data.alias,
+        alias: '',
         expiresAt: data.expires_at,
         identity: checkinIdentity(data),
       };
     }
     // spot_required and spot_invalid come from the database as domain errors.
-    // A unique violation is a taken alias, or the same check-in arriving twice at once: the second
-    // copy hits the one-active-table index, and the next attempt finds the first copy's table by
-    // its key. Narrowing this to the alias index would open a second table for such a copy.
-    if (error.code !== UNIQUE_VIOLATION) throw domainError('start_table_session', error);
-    used.add(alias);
-  }
-  throw new AppError('alias_exhausted', 'No table alias is available at this venue.');
-}
-
-// "Masa adını değiştir" (docs/SPEC_V3.md §5.6): a new alias unique at the venue; not in a room or
-// with a request out (in_room), at most ALIAS_REROLLS_PER_CHECKIN times (reroll_limit).
-async function rerollAlias(userId: string): Promise<RerollAliasResponse> {
-  const { data: table, error } = await db
-    .from('table_sessions')
-    .select('venue_id, alias')
-    .eq('user_id', userId)
-    .eq('status', 'active')
-    .maybeSingle();
-  if (error) throw dbError('table_sessions', error);
-  if (!table) throw new AppError('no_active_table', 'No active table.');
-
-  const [words, used] = await Promise.all([loadAliasWords(), usedAliases(table.venue_id)]);
-  used.add(table.alias);
-  for (let attempt = 0; attempt < MAX_ALIAS_ATTEMPTS; attempt++) {
-    const alias = pickAlias(words, used, Math.random);
-    if (alias === null) break;
-    const { data, error } = await db.rpc('reroll_table_alias', {
-      target_user_id: userId,
-      new_alias: alias,
-      max_rerolls: ALIAS_REROLLS_PER_CHECKIN,
-    });
-    if (!error) {
-      return { alias: data.alias, rerollsLeft: ALIAS_REROLLS_PER_CHECKIN - data.alias_rerolls };
+    if (error.code !== UNIQUE_VIOLATION || attempt > 0) {
+      throw domainError('start_table_session', error);
     }
-    if (error.code !== UNIQUE_VIOLATION) throw domainError('reroll_table_alias', error);
-    used.add(alias);
   }
-  throw new AppError('alias_exhausted', 'No table alias is available at this venue.');
 }
 
 Deno.serve(
@@ -210,7 +139,6 @@ Deno.serve(
     ): Promise<
       | CheckInResponse
       | ChangeSpotResponse
-      | RerollAliasResponse
       | LeaveResponse
       | LocationModeResponse
       | SetIdentityResponse
@@ -231,8 +159,9 @@ Deno.serve(
           return { spotId: body.spotId };
         }
 
+        // Today's app: a table's name is rooms/reroll-name's from step 4.5 on.
         case 'reroll-alias':
-          return await rerollAlias(user.id);
+          throw new AppError('update_required', 'This version of the app is too old. Update it.');
 
         // The check-in screen asks before locating: on the dev project with the switch on, a
         // position outside the venue or no position at all does not stop the flow.

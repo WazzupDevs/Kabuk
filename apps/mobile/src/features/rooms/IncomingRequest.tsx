@@ -127,7 +127,7 @@ export function IncomingRequest({ roomId, leaderSessionId }: Props) {
   const profiled = request.requester_profiled;
   const body = member
     ? tr.rooms.incomingMemberBody
-    : tr.rooms.incomingBody(request.requester_alias, request.requester_headcount);
+    : tr.rooms.incomingBody(request.requester_alias, request.requester_headcount ?? 1);
 
   return (
     <Sheet

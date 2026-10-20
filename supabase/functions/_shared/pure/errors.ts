@@ -52,6 +52,8 @@ export type ErrorCode =
   | 'identity_switch_used'
   | 'nick_refresh_too_soon'
   | 'icon_taken'
+  | 'already_in_table'
+  | 'table_full'
   | 'wrong_side'
   | 'not_leader'
   | 'display_name_required'
@@ -145,6 +147,11 @@ export const DOMAIN_ERROR_CODES: readonly ErrorCode[] = [
   'nick_refresh_too_soon',
   // A table's icon (docs/SPEC_V4.md §4.E, K-45): another open or running table at the venue has it.
   'icon_taken',
+  // The table of people (§4.E): one table at a time; at most MAX_TABLE_PHONES phones together. The
+  // seat's identity: no gender yet answers the one-time question first (rule 12).
+  'already_in_table',
+  'table_full',
+  'gender_required',
   // Teams (§22.B, §22.D): an account goes back only to its side; only a leader ends the room.
   'wrong_side',
   'not_leader',

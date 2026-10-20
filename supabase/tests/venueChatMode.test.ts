@@ -1,7 +1,7 @@
 // Faz 2 step 22.1 (docs/SPEC_V3.md §22.G, §22.M): the venue chat mode is chosen once per check-in
 // with the first message and never changes (decision 7); "Profilimle" needs a visible profile photo
-// at the moment of the choice, in the venue chat and for rooms (decision 8). Each rule is checked
-// from both sides: what is refused, and that nothing is written when it is.
+// at the moment of the choice (decision 8). Each rule is checked from both sides: what is refused,
+// and that nothing is written when it is. A table seat takes the check-in's identity (step 4.5).
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import type { VenueChatPageResponse } from '../functions/_shared/pure/api/venueChat.ts';
@@ -166,36 +166,22 @@ describe('"Profilimle" needs a profile photo (decision 8)', () => {
     expect(await send(a, 'hâlâ adımla', true)).toEqual(ok);
   });
 
-  it('refuses a profiled room and a profiled request without a photo; anonymous needs none', async () => {
+  // From step 4.5 a seat takes the check-in's identity (docs/SPEC_V4.md §4.D, §4.E); its photo is
+  // checked when the identity is chosen (identity.test.ts). Today's app's profiled field of a room
+  // or a request changes nothing and asks no photo.
+  it("ignores a room's and a request's profiled choice: the seat is the check-in identity", async () => {
     const a = await atVenue(PHONES[0], 'Ayşe');
     const b = await atVenue(PHONES[1], 'Burak');
-    const roomsOf = async (client: Client) =>
-      sql`
-        select r.id from public.rooms r
-        join public.table_sessions ts on ts.id = r.owner_session_id
-        where ts.user_id = ${await userIdOf(client)}
-      `;
-
-    expect(await invoke(a, 'rooms', { action: 'create', profiled: true })).toEqual(NO_PHOTO);
-    expect(await roomsOf(a)).toHaveLength(0);
-    await setTestPhoto(a);
-    await sql`update public.profiles set photo_hidden_at = now() where id = ${await userIdOf(a)}`;
-    expect(await invoke(a, 'rooms', { action: 'create', profiled: true })).toEqual(NO_PHOTO);
-    expect(await roomsOf(a)).toHaveLength(0);
-    await setTestPhoto(a);
     const created = await invoke(a, 'rooms', { action: 'create', profiled: true });
     expect(created.status, JSON.stringify(created.body)).toBe(200);
     const roomId = (created.body as { roomId: string }).roomId;
-
-    const request = (profiled: boolean) =>
-      invoke(b, 'rooms', { action: 'request-join', roomId, profiled });
-    expect(await request(true)).toEqual(NO_PHOTO);
-    expect(await sql`select 1 from public.join_requests where room_id = ${roomId}`).toHaveLength(0);
-    expect((await request(false)).status).toBe(200);
-
-    // Anonymous rooms never ask for a photo.
-    await invoke(a, 'rooms', { action: 'end' });
-    const c = await atVenue(PHONES[2], 'Cem');
-    expect((await invoke(c, 'rooms', { action: 'create', profiled: false })).status).toBe(200);
+    const asked = await invoke(b, 'rooms', { action: 'request-join', roomId, profiled: true });
+    expect(asked.status, JSON.stringify(asked.body)).toBe(200);
+    expect(await sql`select profiled from public.room_members where room_id = ${roomId}`).toEqual([
+      { profiled: false },
+    ]);
+    expect(
+      await sql`select requester_profiled from public.join_requests where room_id = ${roomId}`,
+    ).toEqual([{ requester_profiled: false }]);
   });
 });
