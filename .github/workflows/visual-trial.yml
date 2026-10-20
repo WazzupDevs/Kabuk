@@ -85,7 +85,8 @@ jobs:
             /usr/local/lib/android/sdk/system-images/android-34/google_apis/x86_64
           key: android-emulator-34-google_apis-x86_64-none
           restore-keys: android-emulator-34-google_apis-x86_64-
-      # The low end: two cores, 3 GB (2 GB at 720 × 1280 took the emulator down in the first run),
+      # The low end: two cores, 4 GB as the E2E jobs (2 GB took the emulator down in the first run, 3 GB
+      # once the shadowed list drew, 50a6adc3/29f9152d),
       # the software GPU every CI emulator has.
       - uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -93,7 +94,7 @@ jobs:
           arch: x86_64
           target: google_apis
           cores: 2
-          ram-size: 3072M
+          ram-size: 4096M
           emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -skin 720x1280
           disable-animations: false
           script: bash scripts/trial/scroll.sh

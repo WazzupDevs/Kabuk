@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # TRIAL ONLY (claude/visual-trial): scroll smoothness of the 20-card list with v46's shadows and
-# gradients against the same list drawn flat, on a low-end emulator (2 cores, 3 GB, software GPU),
+# gradients against the same list drawn flat, on a low-end emulator (2 cores, 4 GB, software GPU),
 # then the cards at 320 dp and font 1.3. Runs inside reactivecircus/android-emulator-runner.
 # Env: APK, OUT.
 set -euo pipefail
