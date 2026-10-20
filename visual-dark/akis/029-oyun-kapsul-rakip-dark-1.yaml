@@ -1,0 +1,43 @@
+appId: app.kabuk.mobile
+name: oyun-kapsul-rakip-dark-1
+---
+- openLink: "masa:///gorsel?durum=oyun/tabu/rakip&tema=dark&sayfa=0&sayfalar=1&n=29"
+- extendedWaitUntil:
+    notVisible:
+      id: launch-curtain
+    timeout: 60000
+- extendedWaitUntil:
+    visible:
+      id: gorsel-hazir-29
+    timeout: 20000
+    optional: true
+- runFlow:
+    when:
+      notVisible:
+        id: gorsel-hazir-29
+    commands:
+      - stopApp
+      - openLink: "masa:///gorsel?durum=oyun/tabu/rakip&tema=dark&sayfa=0&sayfalar=1&n=29"
+      - extendedWaitUntil:
+          notVisible:
+            id: launch-curtain
+          timeout: 60000
+      - extendedWaitUntil:
+          visible:
+            id: gorsel-hazir-29
+          timeout: 60000
+- assertNotVisible:
+    id: gorsel-yok
+- assertNotVisible:
+    id: gorsel-eksik-sayfa
+- runFlow:
+    when:
+      visible:
+        id: android:id/aerr_wait
+    commands:
+      - tapOn:
+          id: android:id/aerr_wait
+- takeScreenshot:
+    path: aday__oyun-kapsul-rakip-dark-1
+    cropOn:
+      id: gorsel-cerceve

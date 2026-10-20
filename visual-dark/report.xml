@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuites>
+  <testsuite name="Test Suite" device="test" tests="29" failures="0" time="318.49" timestamp="2026-10-20T09:05:00">
+    <testcase id="galeri-harf-sarki-dark-2" name="galeri-harf-sarki-dark-2" classname="galeri-harf-sarki-dark-2" file="e2e-out/visual-dark/akis/017-galeri-harf-sarki-dark-2.yaml" time="14.668" timestamp="2026-10-20T09:05:00" status="SUCCESS"/>
+    <testcase id="galeri-harf-sarki-dark-3" name="galeri-harf-sarki-dark-3" classname="galeri-harf-sarki-dark-3" file="e2e-out/visual-dark/akis/018-galeri-harf-sarki-dark-3.yaml" time="11.333" timestamp="2026-10-20T09:05:15" status="SUCCESS"/>
+    <testcase id="galeri-oyun-dark-3" name="galeri-oyun-dark-3" classname="galeri-oyun-dark-3" file="e2e-out/visual-dark/akis/003-galeri-oyun-dark-3.yaml" time="11.047" timestamp="2026-10-20T09:05:26" status="SUCCESS"/>
+    <testcase id="galeri-sahtekar-dark-4" name="galeri-sahtekar-dark-4" classname="galeri-sahtekar-dark-4" file="e2e-out/visual-dark/akis/009-galeri-sahtekar-dark-4.yaml" time="11.121" timestamp="2026-10-20T09:05:37" status="SUCCESS"/>
+    <testcase id="galeri-oyun-dark-5" name="galeri-oyun-dark-5" classname="galeri-oyun-dark-5" file="e2e-out/visual-dark/akis/005-galeri-oyun-dark-5.yaml" time="11.133" timestamp="2026-10-20T09:05:48" status="SUCCESS"/>
+    <testcase id="galeri-harf-sarki-dark-1" name="galeri-harf-sarki-dark-1" classname="galeri-harf-sarki-dark-1" file="e2e-out/visual-dark/akis/016-galeri-harf-sarki-dark-1.yaml" time="10.48" timestamp="2026-10-20T09:06:00" status="SUCCESS"/>
+    <testcase id="galeri-sahtekar-dark-2" name="galeri-sahtekar-dark-2" classname="galeri-sahtekar-dark-2" file="e2e-out/visual-dark/akis/007-galeri-sahtekar-dark-2.yaml" time="11.151" timestamp="2026-10-20T09:06:10" status="SUCCESS"/>
+    <testcase id="galeri-sahtekar-dark-5" name="galeri-sahtekar-dark-5" classname="galeri-sahtekar-dark-5" file="e2e-out/visual-dark/akis/010-galeri-sahtekar-dark-5.yaml" time="11.091" timestamp="2026-10-20T09:06:21" status="SUCCESS"/>
+    <testcase id="galeri-sahtekar-dark-10" name="galeri-sahtekar-dark-10" classname="galeri-sahtekar-dark-10" file="e2e-out/visual-dark/akis/015-galeri-sahtekar-dark-10.yaml" time="10.989" timestamp="2026-10-20T09:06:32" status="SUCCESS"/>
+    <testcase id="galeri-olcu-dark-2" name="galeri-olcu-dark-2" classname="galeri-olcu-dark-2" file="e2e-out/visual-dark/akis/028-galeri-olcu-dark-2.yaml" time="11.28" timestamp="2026-10-20T09:06:43" status="SUCCESS"/>
+    <testcase id="galeri-sahtekar-dark-8" name="galeri-sahtekar-dark-8" classname="galeri-sahtekar-dark-8" file="e2e-out/visual-dark/akis/013-galeri-sahtekar-dark-8.yaml" time="10.053" timestamp="2026-10-20T09:06:55" status="SUCCESS"/>
+    <testcase id="galeri-sohbet-dark-2" name="galeri-sohbet-dark-2" classname="galeri-sohbet-dark-2" file="e2e-out/visual-dark/akis/023-galeri-sohbet-dark-2.yaml" time="11.256" timestamp="2026-10-20T09:07:05" status="SUCCESS"/>
+    <testcase id="galeri-kimlik-dark-2" name="galeri-kimlik-dark-2" classname="galeri-kimlik-dark-2" file="e2e-out/visual-dark/akis/026-galeri-kimlik-dark-2.yaml" time="11.589" timestamp="2026-10-20T09:07:16" status="SUCCESS"/>
+    <testcase id="galeri-ibre-dark-2" name="galeri-ibre-dark-2" classname="galeri-ibre-dark-2" file="e2e-out/visual-dark/akis/020-galeri-ibre-dark-2.yaml" time="10.835" timestamp="2026-10-20T09:07:28" status="SUCCESS"/>
+    <testcase id="oyun-kapsul-rakip-dark-1" name="oyun-kapsul-rakip-dark-1" classname="oyun-kapsul-rakip-dark-1" file="e2e-out/visual-dark/akis/029-oyun-kapsul-rakip-dark-1.yaml" time="10.927" timestamp="2026-10-20T09:07:38" status="SUCCESS"/>
+    <testcase id="galeri-kimlik-dark-1" name="galeri-kimlik-dark-1" classname="galeri-kimlik-dark-1" file="e2e-out/visual-dark/akis/025-galeri-kimlik-dark-1.yaml" time="10.295" timestamp="2026-10-20T09:07:49" status="SUCCESS"/>
+    <testcase id="galeri-sohbet-dark-1" name="galeri-sohbet-dark-1" classname="galeri-sohbet-dark-1" file="e2e-out/visual-dark/akis/022-galeri-sohbet-dark-1.yaml" time="10.412" timestamp="2026-10-20T09:08:00" status="SUCCESS"/>
+    <testcase id="galeri-ibre-dark-3" name="galeri-ibre-dark-3" classname="galeri-ibre-dark-3" file="e2e-out/visual-dark/akis/021-galeri-ibre-dark-3.yaml" time="10.662" timestamp="2026-10-20T09:08:10" status="SUCCESS"/>
+    <testcase id="galeri-sahtekar-dark-1" name="galeri-sahtekar-dark-1" classname="galeri-sahtekar-dark-1" file="e2e-out/visual-dark/akis/006-galeri-sahtekar-dark-1.yaml" time="10.903" timestamp="2026-10-20T09:08:21" status="SUCCESS"/>
+    <testcase id="galeri-sahtekar-dark-9" name="galeri-sahtekar-dark-9" classname="galeri-sahtekar-dark-9" file="e2e-out/visual-dark/akis/014-galeri-sahtekar-dark-9.yaml" time="11.012" timestamp="2026-10-20T09:08:32" status="SUCCESS"/>
+    <testcase id="galeri-sahtekar-dark-6" name="galeri-sahtekar-dark-6" classname="galeri-sahtekar-dark-6" file="e2e-out/visual-dark/akis/011-galeri-sahtekar-dark-6.yaml" time="10.632" timestamp="2026-10-20T09:08:43" status="SUCCESS"/>
+    <testcase id="galeri-olcu-dark-1" name="galeri-olcu-dark-1" classname="galeri-olcu-dark-1" file="e2e-out/visual-dark/akis/027-galeri-olcu-dark-1.yaml" time="10.778" timestamp="2026-10-20T09:08:53" status="SUCCESS"/>
+    <testcase id="galeri-renkler-dark-1" name="galeri-renkler-dark-1" classname="galeri-renkler-dark-1" file="e2e-out/visual-dark/akis/024-galeri-renkler-dark-1.yaml" time="9.772" timestamp="2026-10-20T09:09:04" status="SUCCESS"/>
+    <testcase id="galeri-sahtekar-dark-3" name="galeri-sahtekar-dark-3" classname="galeri-sahtekar-dark-3" file="e2e-out/visual-dark/akis/008-galeri-sahtekar-dark-3.yaml" time="11.099" timestamp="2026-10-20T09:09:14" status="SUCCESS"/>
+    <testcase id="galeri-oyun-dark-4" name="galeri-oyun-dark-4" classname="galeri-oyun-dark-4" file="e2e-out/visual-dark/akis/004-galeri-oyun-dark-4.yaml" time="11.076" timestamp="2026-10-20T09:09:25" status="SUCCESS"/>
+    <testcase id="galeri-sahtekar-dark-7" name="galeri-sahtekar-dark-7" classname="galeri-sahtekar-dark-7" file="e2e-out/visual-dark/akis/012-galeri-sahtekar-dark-7.yaml" time="9.921" timestamp="2026-10-20T09:09:36" status="SUCCESS"/>
+    <testcase id="galeri-ibre-dark-1" name="galeri-ibre-dark-1" classname="galeri-ibre-dark-1" file="e2e-out/visual-dark/akis/019-galeri-ibre-dark-1.yaml" time="10.921" timestamp="2026-10-20T09:09:46" status="SUCCESS"/>
+    <testcase id="galeri-oyun-dark-1" name="galeri-oyun-dark-1" classname="galeri-oyun-dark-1" file="e2e-out/visual-dark/akis/001-galeri-oyun-dark-1.yaml" time="10.961" timestamp="2026-10-20T09:09:57" status="SUCCESS"/>
+    <testcase id="galeri-oyun-dark-2" name="galeri-oyun-dark-2" classname="galeri-oyun-dark-2" file="e2e-out/visual-dark/akis/002-galeri-oyun-dark-2.yaml" time="11.014" timestamp="2026-10-20T09:10:08" status="SUCCESS"/>
+  </testsuite>
+</testsuites>
