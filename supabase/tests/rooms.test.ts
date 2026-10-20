@@ -442,6 +442,11 @@ describe('locks', () => {
       (tx, userId) => tx`select id from public.reroll_table_alias(${userId}, 'Kilit Simit', 3)`,
     ],
     [
+      // docs/SPEC_V4.md §4.D: the check-in's one change of identity.
+      'changing the identity (set_checkin_identity)',
+      (tx, userId) => tx`select id from public.set_checkin_identity(${userId}, 'anonymous')`,
+    ],
+    [
       'writing in the venue chat (venue_chat_send)',
       (tx, userId) =>
         tx`select id from public.venue_chat_send(${userId}, ${venue[V] ?? ''}, 'kilit',

@@ -41,14 +41,18 @@ import {
 } from '../_shared/pure/venueChat.ts';
 
 const Body: z.ZodType<VenueChatRequest> = z.discriminatedUnion('action', [
-  z.object({
-    action: z.literal('send'),
-    venueId: z.uuid(),
-    body: z.string().max(1000),
-    profiled: z.boolean().optional(),
-    identity: z.enum(['anonymous', 'profiled']).optional(),
-    replyTo: z.uuid().optional(),
-  }),
+  // A message says which identity it goes with: today's app with `profiled`, the new app with
+  // `identity`; exactly one of them, so nothing goes out with an identity nobody chose.
+  z
+    .object({
+      action: z.literal('send'),
+      venueId: z.uuid(),
+      body: z.string().max(1000),
+      profiled: z.boolean().optional(),
+      identity: z.enum(['anonymous', 'profiled']).optional(),
+      replyTo: z.uuid().optional(),
+    })
+    .refine((m) => (m.profiled === undefined) !== (m.identity === undefined)),
   z.object({
     action: z.literal('react'),
     messageId: z.uuid(),

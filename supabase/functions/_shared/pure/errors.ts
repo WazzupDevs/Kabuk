@@ -142,6 +142,8 @@ export const DOMAIN_ERROR_CODES: readonly ErrorCode[] = [
   'identity_mismatch',
   'identity_switch_used',
   'nick_refresh_too_soon',
+  // An account without a nick cannot write an anonymous venue chat message (venue_chat_send).
+  'onboarding_required',
   // Teams (§22.B, §22.D): an account goes back only to its side; only a leader ends the room.
   'wrong_side',
   'not_leader',

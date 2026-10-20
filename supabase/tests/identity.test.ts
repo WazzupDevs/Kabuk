@@ -59,10 +59,19 @@ async function atVenue(phone: string, name: string): Promise<Client> {
   return client;
 }
 
-// Without waiting out the 3-second limit (venueChat.test.ts checks the limit).
+// Without waiting out the 3-second limit (venueChat.test.ts checks the limit). The new app's way:
+// the identity it shows, anonymous unless the test says otherwise; today's app sends `profiled`
+// instead (exactly one of the two).
 async function send(client: Client, body: string, extra: Record<string, unknown> = {}) {
   await sql`update public.venue_chat_rate set last_sent_at = '-infinity'`;
-  return invoke(client, 'venue-chat', { action: 'send', venueId: venue[V], body, ...extra });
+  const identity = 'profiled' in extra ? {} : { identity: 'anonymous' };
+  return invoke(client, 'venue-chat', {
+    action: 'send',
+    venueId: venue[V],
+    body,
+    ...identity,
+    ...extra,
+  });
 }
 
 async function page(client: Client): Promise<VenueChatPageResponse> {
@@ -182,12 +191,15 @@ describe('nick and look (§4.D, K-9, K-46, K-50, K-61)', () => {
       status: 409,
       body: errorBody('nick_refresh_too_soon'),
     });
-    // The old message keeps the old nick; a new one has the new nick.
+    // The old message keeps the old nick; a new one has the new nick, and another senderKey: the
+    // new nick is not tied to the old one, even on the same day (K-68).
     expect(await send(a, 'yeni adla')).toEqual(ok);
-    expect((await page(b)).messages.map((m) => [m.body, m.senderAlias])).toEqual([
+    const messages = (await page(b)).messages;
+    expect(messages.map((m) => [m.body, m.senderAlias])).toEqual([
       ['yeni adla', after.capsule_nick],
       ['eski adla', before.capsule_nick],
     ]);
+    expect(messages[0]?.senderKey).not.toBe(messages[1]?.senderKey);
 
     // 30 days later it can be refreshed again.
     await sql`
@@ -195,6 +207,34 @@ describe('nick and look (§4.D, K-9, K-46, K-50, K-61)', () => {
       where id = ${await userIdOf(a)}
     `;
     expect((await invoke(a, 'profile', { action: 'refresh-nick' })).status).toBe(200);
+  });
+
+  // An account can be left without a nick: signed up through an older function between the
+  // migration and the functions' deploy, or after a failed assignment. Check-in and the own profile
+  // give it one; the venue chat never writes the table alias instead (rule 4).
+  it('gives a missing nick at check-in and on the own profile; never writes another name', async () => {
+    const a = await onboarded(PHONES[0], { displayName: 'Ayşe' });
+    const id = await userIdOf(a);
+    await sql`update public.profiles set capsule_nick = null where id = ${id}`;
+    await checkInAt(a, venue, V);
+    const atCheckIn = (await capsuleOf(a)).capsule_nick;
+    expect(isGeneratedNick(atCheckIn ?? '')).toBe(true);
+
+    await sql`update public.profiles set capsule_nick = null where id = ${id}`;
+    const { data } = await a.from('profiles').select('public_id').single();
+    const own = await invoke(a, 'profile', { action: 'get', publicId: data?.public_id });
+    const fromProfile = (await capsuleOf(a)).capsule_nick;
+    expect(isGeneratedNick(fromProfile ?? '')).toBe(true);
+    expect((own.body as ProfileView).capsuleNick).toBe(fromProfile);
+
+    // Still without one at the moment of writing: nothing is written.
+    await sql`update public.profiles set capsule_nick = null where id = ${id}`;
+    await expect(
+      sql`select id from public.venue_chat_send(${id}, ${venue[V] ?? ''}, 'adsız', 3000, 600, 20)`,
+    ).rejects.toMatchObject({ message: 'onboarding_required' });
+    expect(
+      await sql`select 1 from public.venue_chat_messages where sender_user_id = ${id}`,
+    ).toHaveLength(0);
   });
 
   it('never gives a nick that is taken or retired', async () => {
@@ -343,6 +383,24 @@ describe('venue chat identity (§4.D)', () => {
     ]);
   });
 
+  it('needs exactly one of `profiled` and `identity` with a message', async () => {
+    const a = await atVenue(PHONES[0], 'Ayşe');
+    const bad = { status: 400, body: errorBody('bad_request') };
+    expect(
+      await invoke(a, 'venue-chat', { action: 'send', venueId: venue[V], body: 'kimliksiz' }),
+    ).toEqual(bad);
+    expect(
+      await invoke(a, 'venue-chat', {
+        action: 'send',
+        venueId: venue[V],
+        body: 'ikisi',
+        profiled: false,
+        identity: 'anonymous',
+      }),
+    ).toEqual(bad);
+    expect((await page(a)).messages).toEqual([]);
+  });
+
   it('refuses a message sent with a stale identity and writes nothing (identity_mismatch)', async () => {
     const a = await atVenue(PHONES[0], 'Ayşe');
     await setTestPhoto(a);
@@ -415,6 +473,36 @@ describe('venue chat identity (§4.D)', () => {
       (await invoke(b, 'venue-chat', { action: 'mute', messageId: mine.messageId })).status,
     ).toBe(404);
     expect(theirs.messageId).toEqual(expect.any(String));
+  });
+
+  it('keeps a report copy made before the delete; a later report copies nothing deleted', async () => {
+    await sql`delete from public.reports where target_type = 'venue_chat'`;
+    const a = await atVenue(PHONES[0], 'Ayşe');
+    const b = await atVenue(PHONES[1], 'Burak');
+    const c = await atVenue(PHONES[2], 'Cem');
+    const mine = (await send(a, 'sileceğim')).body as { messageId: string };
+    const theirs = (await send(c, 'kalır')).body as { messageId: string };
+    const report = (client: Client, messageId: string) =>
+      invoke(client, 'safety', {
+        action: 'report',
+        target: 'venue_chat',
+        messageId,
+        reason: 'spam',
+      });
+    expect((await report(b, mine.messageId)).status).toBe(200);
+    expect(
+      (await invoke(a, 'venue-chat', { action: 'delete', messageId: mine.messageId })).status,
+    ).toBe(200);
+    expect((await report(b, theirs.messageId)).status).toBe(200);
+    const copies = await sql`
+      select venue_chat_message_id, messages_snapshot from public.reports
+      where target_type = 'venue_chat' order by created_at
+    `;
+    const bodies = copies.map((r) =>
+      (r.messages_snapshot as { body: string }[]).map((m) => m.body),
+    );
+    expect(copies.map((r) => r.venue_chat_message_id)).toEqual([mine.messageId, theirs.messageId]);
+    expect(bodies).toEqual([['sileceğim', 'kalır'], ['kalır']]);
   });
 
   it('mutes one identity: the muter stops seeing it, the other identity and everyone else go on', async () => {
@@ -537,6 +625,57 @@ describe('a table seat and a room message keep the identity they were written wi
     `;
     expect(profiledSeat?.look).toBeNull();
     expect(profiledMessage).toEqual({ profiled: true, sender_look: null });
+  });
+  // §4.M: what the other table gets of a message and a seat (the Postgres Changes payload, the rows
+  // and room_phones) carries the identity it was written with, never an account or profile id.
+  it('gives the other table the identity, never an account or profile id', async () => {
+    const a = await atVenue(PHONES[0], 'Ayşe');
+    const b = await atVenue(PHONES[1], 'Burak');
+    const created = await invoke(a, 'rooms', { action: 'create', profiled: false });
+    const roomId = (created.body as { roomId: string }).roomId;
+    expect(
+      (await invoke(b, 'rooms', { action: 'request-join', roomId, profiled: false })).status,
+    ).toBe(200);
+    const [request] =
+      await sql`select id from public.join_requests where room_id = ${roomId} and status = 'pending'`;
+    expect(
+      (await invoke(a, 'rooms', { action: 'respond', requestId: request?.id, accept: true }))
+        .status,
+    ).toBe(200);
+
+    const payloads: unknown[] = [];
+    const channel = b.channel(`messages:${roomId}`, { config: { private: true } });
+    const live = new Promise<void>((resolve) => {
+      channel
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'messages', filter: `room_id=eq.${roomId}` },
+          (payload) => payloads.push(payload.new),
+        )
+        // Postgres Changes are live once the server confirms the database subscription.
+        .on('system', {}, (payload: { extension?: string; status?: string }) => {
+          if (payload.extension === 'postgres_changes' && payload.status === 'ok') resolve();
+        })
+        .subscribe();
+    });
+    await live;
+    expect((await invoke(a, 'chat', { action: 'send', roomId, body: 'merhaba' })).status).toBe(200);
+    await expect.poll(() => payloads.length, { timeout: 10_000 }).toBeGreaterThan(0);
+    await b.removeChannel(channel);
+
+    const rows = await b
+      .from('messages')
+      .select('id, session_id, sender_alias, body, profiled, sender_look, created_at')
+      .eq('room_id', roomId);
+    expect(rows.error).toBeNull();
+    const phones = await b.rpc('room_phones', { target_room_id: roomId });
+    expect(phones.error).toBeNull();
+    const seen = JSON.stringify({ payloads, rows: rows.data, phones: phones.data });
+    expect(seen).toContain((await capsuleOf(a)).capsule_look ?? 'missing');
+    const { data: own } = await a.from('profiles').select('public_id').single();
+    for (const value of [await userIdOf(a), own?.public_id ?? 'missing']) {
+      expect(seen).not.toContain(value);
+    }
   });
 });
 

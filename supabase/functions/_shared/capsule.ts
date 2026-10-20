@@ -22,8 +22,13 @@ async function digits(db: Db) {
 }
 
 // complete-onboarding, after the age check: a nick and one of the ready looks, once. Never from the
-// gender (K-50): nothing about the person goes in.
+// gender (K-50): nothing about the person goes in. Check-in and the own profile call it too, for an
+// account left without one (signed up through an older function between the migration and the
+// functions' deploy, or after a failed assignment); an account with a nick costs one read.
 export async function assignCapsuleIdentity(db: Db, userId: string): Promise<void> {
+  const own = await db.from('profiles').select('capsule_nick').eq('id', userId).maybeSingle();
+  if (own.error) throw dbError('profiles', own.error);
+  if (!own.data || own.data.capsule_nick !== null) return;
   const nickDigitsNow = await digits(db);
   const look = pickReadyLook(Math.random);
   for (let attempt = 0; attempt < MAX_NICK_ATTEMPTS; attempt++) {
