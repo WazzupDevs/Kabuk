@@ -22,6 +22,14 @@ export type PrototypeState = {
   kirp: string;
   // Another prototype file, from the repo root (default PROTOTYPE_FILE).
   dosya?: string;
+  // More of the address, after `?gorsel=…&tema=…`, `{tema}` standing for the scheme: v46's gallery
+  // layer opens its gallery (`page=galeri&theme={tema}`) or one of its states (`s=<state>&…`)
+  // itself (docs/design/v46/skall-v46-galeri-notu.md).
+  sorgu?: string;
+  // The prototype's page this wide (CSS px), for an element that its own page lays out at another
+  // width: v46's gallery copies each component in a 360-wide frame inside a card that, at 360,
+  // clips the full-width ones.
+  genislik?: number;
 };
 
 export type GateState = {
@@ -37,6 +45,13 @@ export type GateState = {
   // false: photographed and set beside the prototype, never compared with a baseline (a trial
   // entry).
   baz?: boolean;
+  // Drawn this wide (dp) on the 360 emulator, and the prototype at this width: v46's small-screen
+  // check is at 320 (its `max-width: 350px` rules). The app lays its content out for it (src/ui's
+  // WidthScope).
+  genislik?: number;
+  // Photographed cropped to this element of the frame (a testID), not the whole frame: a
+  // component, beside the prototype's `kirp`.
+  uygulamaKirp?: string;
 };
 
 export type GateConfig = {
@@ -44,6 +59,9 @@ export type GateConfig = {
   esik: number;
   durumlar: GateState[];
 };
+
+// The gate emulator's width in dp (scripts/visual/run-on-emulator.sh; prototype.ts → VIEWPORT).
+export const VIEWPORT_WIDTH = 360;
 
 export const THEMES = ['light', 'dark'] as const;
 export type Theme = (typeof THEMES)[number];
@@ -85,6 +103,15 @@ export function parseStates(raw: unknown): GateConfig {
     if (s.baz !== undefined && typeof s.baz !== 'boolean') {
       throw new Error(`states.json: ${s.id}: baz is true or false`);
     }
+    if (
+      s.genislik !== undefined &&
+      (!Number.isInteger(s.genislik) || s.genislik < 280 || s.genislik > VIEWPORT_WIDTH)
+    ) {
+      throw new Error(`states.json: ${s.id}: genislik is a whole number of dp, 280 to 360`);
+    }
+    if (s.uygulamaKirp !== undefined && !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(s.uygulamaKirp)) {
+      throw new Error(`states.json: ${s.id}: uygulamaKirp is a testID`);
+    }
     if (s.prototip !== undefined) checkPrototype(s.id, s.prototip);
   }
   return { esik: c.esik, durumlar: c.durumlar };
@@ -110,6 +137,18 @@ function checkPrototype(id: string, p: PrototypeState): void {
         `states.json: ${id}: a step is { "tikla": "<selector>" } or { "bekle": <ms> }`,
       );
     }
+  }
+  if (
+    p.genislik !== undefined &&
+    (!Number.isInteger(p.genislik) || p.genislik < 280 || p.genislik > 800)
+  ) {
+    throw new Error(`states.json: ${id}: prototip.genislik is a whole number of px, 280 to 800`);
+  }
+  if (
+    p.sorgu !== undefined &&
+    !/^[a-z0-9-]+=[a-z0-9{}-]+(&[a-z0-9-]+=[a-z0-9{}-]+)*$/.test(p.sorgu)
+  ) {
+    throw new Error(`states.json: ${id}: prototip.sorgu is key=value pairs joined by "&"`);
   }
   if (
     p.dosya !== undefined &&

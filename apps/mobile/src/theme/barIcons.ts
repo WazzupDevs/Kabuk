@@ -10,6 +10,9 @@ import { BRAND } from './brand';
 // A bar's thickness in the 24-unit box: plus, cross and check are thinner than the lobby's bar.
 export const BAR = { thin: 4.6, thick: 6.4 } as const;
 
+// The box the bars are drawn in (v46's `.bi`: viewBox 0 0 24 24).
+export const BAR_VIEW_BOX = '0 0 24 24';
+
 // One bar: its centre, length and turn (degrees); a slot's opacity `o` and scale `k`.
 export type BarState = {
   c: readonly [number, number];

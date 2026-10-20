@@ -109,8 +109,66 @@ describe('visual gate: the states list', () => {
         ],
       },
     ],
+    [
+      'a width wider than the emulator',
+      { esik: 99, durumlar: [{ id: 'a', app: 'galeri/a', genislik: 400 }] },
+    ],
+    [
+      'an app crop that is not a testID',
+      { esik: 99, durumlar: [{ id: 'a', app: 'galeri/a', uygulamaKirp: 'Gorsel Oge' }] },
+    ],
+    [
+      'a prototype query that is not key=value pairs',
+      {
+        esik: 99,
+        durumlar: [
+          {
+            id: 'a',
+            app: 'galeri/a',
+            prototip: { adimlar: [], kirp: 'x', sorgu: 'page=galeri&x' },
+          },
+        ],
+      },
+    ],
+    [
+      'a prototype page width out of range',
+      {
+        esik: 99,
+        durumlar: [
+          { id: 'a', app: 'galeri/a', prototip: { adimlar: [], kirp: 'x', genislik: 1200 } },
+        ],
+      },
+    ],
   ])('rejects %s', (_, raw) => {
     expect(() => parseStates(raw)).toThrow(/states\.json/);
+  });
+
+  // v46's components (src/ui) beside the same component in v46: cropped to it on both sides, at
+  // 360 and at v46's small-screen width.
+  it('takes a component state: a narrower layout, the app cropped to it, the prototype query', () => {
+    const config = parseStates({
+      esik: 99.5,
+      durumlar: [
+        {
+          id: 'v46-x-320',
+          app: 'galeri/v46/x',
+          genislik: 320,
+          uygulamaKirp: 'gorsel-oge',
+          baz: false,
+          prototip: {
+            dosya: 'docs/design/v46/skall-masa-deneme-v46-galeri.html',
+            sorgu: 's=mekan&theme={tema}&demo=0',
+            genislik: 480,
+            adimlar: [{ bekle: 6000 }],
+            kirp: '[data-x]',
+          },
+        },
+      ],
+    });
+    const [shot] = shots(config);
+    expect(shot && shotLink(shot, 3)).toBe(
+      'masa:///gorsel?durum=galeri/v46/x&tema=light&sayfa=0&sayfalar=1&genislik=320&n=3',
+    );
   });
 });
 
@@ -150,6 +208,19 @@ describe('visual gate: the Maestro flows', () => {
     expect(flow).toContain('path: aday__galeri-oyun-light-1');
     expect(flow).toContain('id: gorsel-cerceve');
     expect(flow).not.toContain('assertScreenshot');
+  });
+
+  it("crops to the state's own element when it names one, the photo and the comparison alike", () => {
+    const own: GateConfig = {
+      esik: 99.5,
+      durumlar: [{ id: 'v46-x', app: 'galeri/v46/x', uygulamaKirp: 'gorsel-oge' }],
+    };
+    const [shot] = shots(own);
+    mkdirSync(join(root, 'e2e/visual/baz'), { recursive: true });
+    write(join(root, 'e2e/visual/baz/v46-x-light-1.png'), png(4, 4));
+    const flow = flowFor(root, shot ?? fail(), 1, 99.5, false);
+    expect(flow).not.toContain('gorsel-cerceve');
+    expect(flow.match(/cropOn:\n {6}id: gorsel-oge/g)).toHaveLength(2);
   });
 
   it('presses Wait on a system "isn\'t responding" dialog before the photo', () => {

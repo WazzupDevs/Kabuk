@@ -26,19 +26,26 @@ import {
 } from '@/theme/tokens.generated';
 import { gradientStyle } from '@/theme/gradient';
 import { galleryGroups, galleryTestId } from '@/theme/v46Gallery';
+import { WidthScope } from '@/ui/narrow';
 import { Text as UiText } from '@/ui/Text';
+
+// The width v46 checks its small screen at (its gallery note: 320 × 568).
+const NARROW_WIDTH = 320;
 
 // Ayarlar → Tasarım (test) → v46 galeri (v46 native, step 2): v46's colours, type styles and
 // components as the app draws them, in a fixed scheme, with fixed data, under the same ids as v46's
 // own gallery (docs/design/v46/skall-masa-deneme-v46-galeri.html?page=galeri). A component not yet
 // rewritten in src/ui shows v46's measured box and "Henüz yok". `?theme=light|dark` opens it in a
-// scheme (screenshots). Test builds only; production redirects away.
+// scheme, `?width=320` with v46's narrow look (screenshots). Test builds only; production redirects
+// away.
 export default function V46GalleryScreen() {
-  const params = useLocalSearchParams<{ theme?: string }>();
+  const params = useLocalSearchParams<{ theme?: string; width?: string }>();
   const viewer = useTheme().scheme;
   const [scheme, setScheme] = useState<ColorScheme>(
     params.theme === 'dark' || params.theme === 'light' ? params.theme : viewer,
   );
+  // v46's narrow look (its `max-width` rules) on a wider phone: the components laid out for 320.
+  const [narrow, setNarrow] = useState(params.width === '320');
   const theme = useMemo(() => themeFor(scheme), [scheme]);
   if (!designPickerEnabled) return <Redirect href="/" />;
   return (
@@ -46,7 +53,7 @@ export default function V46GalleryScreen() {
       <View style={[{ flex: 1 }, colorVars(theme.colors)]} testID={`v46-gallery-${scheme}`}>
         <Screen>
           <ScreenHeader title={tr.design.gallery.title} onBack={() => router.back()} />
-          <View className="mt-3 flex-row gap-2">
+          <View className="mt-3 flex-row flex-wrap gap-2">
             {(['light', 'dark'] as const).map((s) => (
               <Button
                 key={s}
@@ -57,10 +64,23 @@ export default function V46GalleryScreen() {
                 onPress={() => setScheme(s)}
               />
             ))}
+            <Button
+              size="sm"
+              variant={narrow ? 'primary' : 'neutral'}
+              label={tr.design.gallery.narrow}
+              testID="v46-gallery-narrow"
+              onPress={() => setNarrow((n) => !n)}
+            />
           </View>
           <Colors scheme={scheme} />
           <TypeStyles scheme={scheme} />
-          <Components scheme={scheme} />
+          {narrow ? (
+            <WidthScope width={NARROW_WIDTH}>
+              <Components scheme={scheme} />
+            </WidthScope>
+          ) : (
+            <Components scheme={scheme} />
+          )}
         </Screen>
       </View>
     </ThemeScope>
@@ -167,8 +187,13 @@ function ComponentEntry({
       </Text>
       {states ? (
         states.map((s) => (
-          <View key={s.key} testID={galleryTestId(id, s.key)}>
-            {s.render()}
+          <View key={s.key} className="gap-1">
+            <Text variant="caption" tone="muted">
+              {tr.design.gallery[s.key]}
+            </Text>
+            <View className="items-start" testID={galleryTestId(id, s.key)}>
+              {s.render()}
+            </View>
           </View>
         ))
       ) : (

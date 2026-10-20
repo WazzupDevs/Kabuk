@@ -209,6 +209,7 @@ Değişmez kabul edilir.
 - **Birebir sohbette de uzun basmada titreşim** (envanter F9; proje sahibi, 20 Ekim): mekan sohbetindeki gibi. v46'da uzun basma yalnızca mekan sohbetinde titreşiyor (10 ms).
 - **Alt sayfa kapanışı açılışın tersi; sürükleyip kapatma var** (envanter F10; proje sahibi, 20 Ekim; "Ekran davranışı"). v46'da sayfa 320 ms kayma ve 200 ms perdeyle açılıyor, ama kapanışta animasyon yok ve sayfa sürüklenerek kapanmıyor.
 - **Yüklenirken birincil düğme mor kalır, gösterge görünür** (envanter F13; proje sahibi, 20 Ekim; "Ekran davranışı": basılan düğme beklediğini gösterir). v46'da yüklenen düğme pasif görünüme düşüyor: gri zemin `#E6E2F2`, koyu temada `#29283A`.
+- **Hareket azaltılınca yüklenen düğmenin yazısı kalkmaz, yalnızca solar** (çelişki kuralı; proje sahibi, 20 Ekim). v46'nın `prefers-reduced-motion` bloğundaki `.busy>:not(.ld){transform:none}` kuralı, dosyada sonra gelen `.busy>:not(.ld){opacity:0;transform:translateY(-5px)}` kuralınca eziliyor; v46'da yazı hareket azaltılmışken de 5 px yukarı kayıyor. Uygulanan, v46'nın niyeti.
 - **"Geliyor" hâli yok** (K-69).
   - Kabul edilen kişiler kabul anında Masadakiler'e normal üye olarak girer; masa ekranının üst satırı "N kişi" yazar.
   - §4.E'deki tek seferlik "Y geliyor, N kişi" bildirimi kalır.

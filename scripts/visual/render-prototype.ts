@@ -13,8 +13,8 @@ if (!rootArg || !outArg) throw new Error('usage: render-prototype.ts <repo root>
 const root = resolve(rootArg);
 const out = join(resolve(outArg), 'prototip');
 mkdirSync(out, { recursive: true });
-const wanted: Wanted[] = loadStates(root).durumlar.flatMap(({ id, prototip }) =>
-  prototip ? THEMES.map((theme) => ({ id, theme, state: prototip })) : [],
+const wanted: Wanted[] = loadStates(root).durumlar.flatMap(({ id, prototip, genislik }) =>
+  prototip ? THEMES.map((theme) => ({ id, theme, state: prototip, width: genislik })) : [],
 );
 const done = await renderPrototype(root, out, wanted, process.env.PLAYWRIGHT_CHROMIUM);
 console.log(`prototype: ${done.length} drawn in ${out}`);

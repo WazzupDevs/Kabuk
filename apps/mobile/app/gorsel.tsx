@@ -5,7 +5,8 @@ import { GateState } from '@/features/design/gorsel/GateState';
 import { designPickerEnabled } from '@/theme/ThemeProvider';
 
 // The visual gate's route (CLAUDE.md → Görsel kapı): masa:///gorsel?durum=<key>&tema=light|dark
-// &sayfa=<0…>&sayfalar=<n>&n=<shot>, opened by the gate's Maestro flows (scripts/visual/flow.ts).
+// &sayfa=<0…>&sayfalar=<n>[&genislik=<dp>]&n=<shot>, opened by the gate's Maestro flows
+// (scripts/visual/flow.ts).
 // Outside the signed-in groups: a gate state needs no account. Test builds only. Every shot mounts
 // a fresh state (its key), and the screens of the shots before it are dropped from the stack: the
 // gate opens one state after another in the running app.
@@ -24,6 +25,7 @@ export default function GorselScreen() {
     tema?: string;
     sayfa?: string;
     sayfalar?: string;
+    genislik?: string;
     n?: string;
   }>();
   if (!designPickerEnabled) return <Redirect href="/" />;
@@ -35,6 +37,7 @@ export default function GorselScreen() {
       scheme={p.tema === 'dark' ? 'dark' : 'light'}
       page={Number(p.sayfa ?? 0)}
       pages={Math.max(1, Number(p.sayfalar ?? 1))}
+      width={p.genislik ? Number(p.genislik) : undefined}
     />
   );
 }

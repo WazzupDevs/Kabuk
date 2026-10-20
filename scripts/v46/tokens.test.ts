@@ -15,7 +15,16 @@ import {
 } from './inventory.ts';
 import { PALETTE_REFS } from './palette.ts';
 import { COMPONENT_GRADIENTS } from './supplement.ts';
-import { buildTokensModule, look, resolveColor, TOKENS_MODULE, typeKey } from './tokens.ts';
+import { narrowBreakpoint, parseEase, parseTransform, readMeasured } from './measured.ts';
+import {
+  buildPartsModule,
+  buildTokensModule,
+  look,
+  PARTS_MODULE,
+  resolveColor,
+  TOKENS_MODULE,
+  typeKey,
+} from './tokens.ts';
 
 const root = resolve(import.meta.dirname, '../..');
 const inventory = readInventory(root);
@@ -31,6 +40,54 @@ describe(TOKENS_MODULE, () => {
     expect(inventory.meta.source_sha256).toBe(
       '1063519b7e116fe2a9039b3746e08b7d8675ed6bd7818c288003f831c477d2d4',
     );
+  });
+});
+
+describe(PARTS_MODULE, () => {
+  it('is what `pnpm tokens` writes from the measurement now', async () => {
+    expect(readFileSync(resolve(root, PARTS_MODULE), 'utf8')).toBe(await buildPartsModule(root));
+  });
+
+  // The measurement adds to the inventory; both are of the same v46 file, and every component is
+  // measured.
+  it('is measured from the same v46 as the inventory, every component', () => {
+    const measured = readMeasured(root);
+    expect(measured.meta.source_sha256).toBe(inventory.meta.source_sha256);
+    expect(Object.keys(measured.components)).toEqual(inventory.components.map((c) => c.id));
+  });
+});
+
+describe('the measurement as React Native values', () => {
+  it('reads timing functions as cubic-bezier', () => {
+    expect(parseEase('ease')).toEqual([0.25, 0.1, 0.25, 1]);
+    expect(parseEase('cubic-bezier(0.2, 0.8, 0.2, 1)')).toEqual([0.2, 0.8, 0.2, 1]);
+    expect(() => parseEase('steps(4)')).toThrow();
+  });
+
+  it('reads transforms that scale, turn and move', () => {
+    expect(parseTransform('none')).toBeNull();
+    expect(parseTransform('matrix(0.97, 0, 0, 0.97, 0, 0)')).toEqual({
+      scale: 0.97,
+      rotate: 0,
+      translateX: 0,
+      translateY: 0,
+    });
+    expect(parseTransform('matrix(1, 0, 0, 1, 0, -5)')?.translateY).toBe(-5);
+    expect(parseTransform('matrix(0.375877, -0.136808, 0.136808, 0.375877, 0, 0)')).toEqual({
+      scale: 0.4,
+      rotate: -20,
+      translateX: 0,
+      translateY: 0,
+    });
+    expect(() => parseTransform('matrix(1, 0, 0.5, 1, 0, 0)')).toThrow();
+  });
+
+  it('finds v46 has one small-screen width', () => {
+    const html = readFileSync(resolve(root, 'docs/design/v46', inventory.meta.source), 'utf8');
+    expect(narrowBreakpoint(html)).toBe(350);
+    expect(() =>
+      narrowBreakpoint('@media (max-width:350px){} @media (max-width:400px){}'),
+    ).toThrow();
   });
 });
 

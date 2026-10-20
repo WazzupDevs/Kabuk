@@ -1,5 +1,6 @@
 import type { TextStyle } from 'react-native';
 
+import type { V46Font } from './parts.generated';
 import { V46_TYPE, type V46TypeKey } from './tokens.generated';
 import { familyFor } from './v46Fonts';
 
@@ -13,5 +14,15 @@ export function v46TypeStyle(key: V46TypeKey): TextStyle {
     fontSize: t.size,
     lineHeight: t.lineHeight,
     letterSpacing: t.letterSpacing,
+  };
+}
+
+// A font measured on a component's part (parts.generated.ts), set the same way.
+export function v46FontStyle(f: V46Font, letterSpacing = 0): TextStyle {
+  return {
+    fontFamily: familyFor(f.weight),
+    fontSize: f.size,
+    lineHeight: f.lineHeight,
+    letterSpacing,
   };
 }

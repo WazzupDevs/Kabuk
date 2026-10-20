@@ -13,6 +13,7 @@ export function shotLink(shot: Shot, n: number): string {
     `tema=${shot.theme}`,
     `sayfa=${shot.page - 1}`,
     `sayfalar=${shot.pages}`,
+    ...(shot.state.genislik ? [`genislik=${shot.state.genislik}`] : []),
     `n=${n}`,
   ];
   return `masa:///gorsel?${q.join('&')}`;
@@ -65,13 +66,16 @@ const DISMISS_SYSTEM_DIALOG = [
   '          id: android:id/aerr_wait',
 ];
 
+// What the photo is cropped to: the frame, or the state's own element (`uygulamaKirp`).
+const cropId = (shot: Shot) => shot.state.uygulamaKirp ?? 'gorsel-cerceve';
+
 function photo(prefix: string, shot: Shot): string[] {
   return [
     ...DISMISS_SYSTEM_DIALOG,
     '- takeScreenshot:',
     `    path: ${prefix}${shot.name}`,
     '    cropOn:',
-    '      id: gorsel-cerceve',
+    `      id: ${cropId(shot)}`,
   ];
 }
 
@@ -95,7 +99,7 @@ export function flowFor(
       '- assertScreenshot:',
       `    path: ${baselinePath(root, shot)}`,
       '    cropOn:',
-      '      id: gorsel-cerceve',
+      `      id: ${cropId(shot)}`,
       `    thresholdPercentage: ${threshold}`,
     );
   }
