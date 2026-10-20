@@ -1,15 +1,16 @@
 import { BlurView } from 'expo-blur';
 import { type RefObject, useState } from 'react';
-import { PixelRatio, Pressable, StyleSheet, Text, View } from 'react-native';
+import { PixelRatio, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { V46_TAB_BAR, type V46TabKey } from '@/theme/parts.generated';
 import { gradientStyle } from '@/theme/gradient';
+import { V46_PALETTE } from '@/theme/tokens.generated';
 import { useTheme } from '@/theme/ThemeProvider';
 import { v46FontStyle } from '@/theme/v46Type';
 
-import { androidBlur } from './backdrop';
+import { androidBlur, blursBehind } from './backdrop';
 import { transitionStyle } from './motion';
 import { useLayoutWidth } from './narrow';
 import { V46Svg } from './V46Svg';
@@ -40,13 +41,15 @@ type Props = {
 // an icon in a pill (`.ic`) over a label. The selected tab's pill takes its gradient, edge and
 // shadow (the shadow eases, 200 ms), its icon and label the ink colour and the label a heavier
 // weight; Mekan's icon is the mark (VenueGlyph). A pressed tab shrinks (`.va button:active`). The
-// bar sits where the caller puts it (v46: 12 above the bottom, above the safe area).
+// bar sits where the caller puts it (v46: 12 above the bottom, above the safe area). Below Android
+// 12 nothing blurs, so the bar is opaque: v46's screen ground under the gradient (backdrop.ts).
 export function TabBar({ items, selected, onPress, blurTarget }: Props) {
   const { scheme } = useTheme();
   const reduce = useReduceMotion();
   const t = V46_TAB_BAR[scheme];
   const width = Math.min(t.maxWidth, useLayoutWidth() - 2 * t.inset);
   const blur = androidBlur(t.backdrop.blur, PixelRatio.get());
+  const blurs = blursBehind(Platform.OS, Platform.Version);
   return (
     <View
       accessibilityRole="tablist"
@@ -58,7 +61,11 @@ export function TabBar({ items, selected, onPress, blurTarget }: Props) {
       }}
     >
       <View style={[StyleSheet.absoluteFill, { borderRadius: t.radius, overflow: 'hidden' }]}>
-        {blurTarget ? (
+        {!blurs ? (
+          <View
+            style={[StyleSheet.absoluteFill, { backgroundColor: V46_PALETTE[scheme].canvas }]}
+          />
+        ) : blurTarget ? (
           <BlurView
             blurTarget={blurTarget}
             blurMethod="dimezisBlurViewSdk31Plus"

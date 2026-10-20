@@ -21,3 +21,12 @@ export function androidBlur(
   const radius = (cssBlur * pixelRatio - SIGMA_OFFSET) / SIGMA_PER_RADIUS / DIMEZIS_SCALE;
   return { intensity: LEAST_INTENSITY, reductionFactor: LEAST_INTENSITY / radius };
 }
+
+// Android blurs from 12 (API 31: expo-blur's `dimezisBlurViewSdk31Plus`). Below it nothing is
+// blurred, so the bar is drawn opaque there: v46's screen ground under its gradient, nothing
+// behind showing through (the owner's decision, docs/SPEC_V4.md §4.C).
+export const ANDROID_BLUR_SDK = 31;
+
+export function blursBehind(os: string, version: number | string): boolean {
+  return os !== 'android' || Number(version) >= ANDROID_BLUR_SDK;
+}
