@@ -1,0 +1,112 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+import { describe, expect, it } from 'vitest';
+
+import {
+  parseBorder,
+  parseColor,
+  parseFont,
+  parsePadding,
+  parseRadius,
+  parseShadow,
+  readInventory,
+} from './inventory.ts';
+import { PALETTE_REFS } from './palette.ts';
+import { COMPONENT_GRADIENTS } from './supplement.ts';
+import { buildTokensModule, look, resolveColor, TOKENS_MODULE, typeKey } from './tokens.ts';
+
+const root = resolve(import.meta.dirname, '../..');
+const inventory = readInventory(root);
+
+describe(TOKENS_MODULE, () => {
+  // The owner's rule (v46 native, step 1): the tokens change only through their source.
+  it('is what `pnpm tokens` writes from the inventory now', async () => {
+    expect(readFileSync(resolve(root, TOKENS_MODULE), 'utf8')).toBe(await buildTokensModule(root));
+  });
+
+  it('is measured from the v46 in the repository', () => {
+    expect(inventory.meta.source_sha256).toBe(
+      '1063519b7e116fe2a9039b3746e08b7d8675ed6bd7818c288003f831c477d2d4',
+    );
+  });
+});
+
+describe('the inventory as React Native values', () => {
+  it('reads every component in both schemes', () => {
+    expect(inventory.components).toHaveLength(59);
+    for (const c of inventory.components) {
+      for (const scheme of ['light', 'dark'] as const) {
+        expect(() => look(c.id, c[scheme], scheme), c.id).not.toThrow();
+      }
+    }
+  });
+
+  // envanter F4, F5: the primary button is .btn.btn-room in three sizes; .btn-primary is not used.
+  it('takes the primary button from .btn.btn-room, in its three sizes', () => {
+    const rooms = inventory.components.filter(
+      (c) => c.class === 'btn btn-room' && c.variants.includes('pressed'),
+    );
+    expect(rooms.map((c) => [c.id, c.light.height, c.light.font])).toEqual([
+      ['birincil-52', '52px', '16px/700/normal'],
+      ['birincil-48', '48px', '14px/700/normal'],
+      ['birincil-48-15', '48px', '15px/700/normal'],
+    ]);
+    expect(inventory.components.some((c) => c.class.includes('btn-primary'))).toBe(false);
+    expect(resolveColor(inventory, PALETTE_REFS.primary, 'light')).toBe('#6A47F5');
+  });
+
+  it('gives every gradient background its value, and no other component one', () => {
+    const gradients = inventory.components
+      .filter((c) => c.light.bg === 'gradient' || c.dark.bg === 'gradient')
+      .map((c) => c.id);
+    expect(gradients.sort()).toEqual(Object.keys(COMPONENT_GRADIENTS).sort());
+  });
+
+  it('names every palette colour in both schemes', () => {
+    for (const ref of Object.values(PALETTE_REFS)) {
+      for (const scheme of ['light', 'dark'] as const) {
+        expect(resolveColor(inventory, ref, scheme)).toMatch(/^(#[0-9A-F]{6}|rgba\(.+\))$/);
+      }
+    }
+  });
+
+  it('gives each type style its own key', () => {
+    const keys = inventory.type_styles.map(typeKey);
+    expect(new Set(keys).size).toBe(keys.length);
+    expect(keys).toContain('t28w800l34sm0_8'); // h1
+  });
+});
+
+describe('CSS to React Native', () => {
+  it('reads colours, with alpha and without', () => {
+    expect(parseColor('#6a47f5')).toBe('#6A47F5');
+    expect(parseColor('#14112B/0.06')).toBe('rgba(20, 17, 43, 0.06)');
+    expect(parseColor('#000000/0')).toBe('transparent');
+    expect(parseColor('rgb(106, 71, 245)')).toBe('#6A47F5');
+    expect(parseColor('rgba(0, 0, 0, 0.5)')).toBe('rgba(0, 0, 0, 0.5)');
+    expect(() => parseColor('gradient')).toThrow();
+  });
+
+  it('reads radii, borders, fonts and paddings', () => {
+    expect(parseRadius('999px', 52)).toBe(999);
+    expect(parseRadius('50%', 44)).toBe(22);
+    expect(parseRadius('28px 28px 0px 0px', 234)).toEqual([28, 28, 0, 0]);
+    expect(parseBorder('none')).toBeNull();
+    expect(parseBorder('1px #DAD3F2')).toEqual({ width: 1, color: '#DAD3F2' });
+    expect(parseFont('15px/600/21px')).toEqual({ size: 15, weight: 600, lineHeight: 21 });
+    expect(parseFont('16px/700/normal')).toEqual({ size: 16, weight: 700, lineHeight: null });
+    expect(parsePadding('6px 12px 6px 6px')).toEqual([6, 12, 6, 6]);
+  });
+
+  it('writes shadows as React Native boxShadow strings, inset included', () => {
+    expect(parseShadow('none')).toBeNull();
+    expect(
+      parseShadow(
+        'rgba(40, 30, 90, 0.16) 0px 10px 26px 0px, rgba(255, 255, 255, 0.95) 0px 1.5px 1px 0px inset',
+      ),
+    ).toBe(
+      '0px 10px 26px 0px rgba(40, 30, 90, 0.16), inset 0px 1.5px 1px 0px rgba(255, 255, 255, 0.95)',
+    );
+  });
+});
