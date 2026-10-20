@@ -11,9 +11,14 @@ export function WidthScope({ width, children }: { width: number; children: React
   return <WidthContext.Provider value={width}>{children}</WidthContext.Provider>;
 }
 
-// Whether v46's `max-width` rules apply: at its breakpoint and below.
-export function useNarrow(): boolean {
+// The width a screen is laid out for (a part that grows with the screen: the tab bar).
+export function useLayoutWidth(): number {
   const scoped = useContext(WidthContext);
   const { width } = useWindowDimensions();
-  return (scoped ?? width) <= V46_NARROW_MAX_WIDTH;
+  return scoped ?? width;
+}
+
+// Whether v46's `max-width` rules apply: at its breakpoint and below.
+export function useNarrow(): boolean {
+  return useLayoutWidth() <= V46_NARROW_MAX_WIDTH;
 }

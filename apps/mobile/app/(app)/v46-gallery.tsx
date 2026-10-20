@@ -25,7 +25,13 @@ import {
   type V46TypeKey,
 } from '@/theme/tokens.generated';
 import { gradientStyle } from '@/theme/gradient';
-import { galleryGroups, galleryTestId } from '@/theme/v46Gallery';
+import {
+  type GalleryId,
+  galleryGroups,
+  galleryInfo,
+  galleryTestId,
+  isScreenPart,
+} from '@/theme/v46Gallery';
 import { WidthScope } from '@/ui/narrow';
 import { Text as UiText } from '@/ui/Text';
 
@@ -172,18 +178,16 @@ function ComponentEntry({
   scheme,
   states,
 }: {
-  id: V46ComponentId;
+  id: GalleryId;
   scheme: ColorScheme;
   states: readonly GalleryState[] | undefined;
 }) {
-  const c = V46_COMPONENTS[id];
-  const look = c[scheme];
-  const radius = typeof look.radius === 'number' ? look.radius : look.radius[0];
+  const info = galleryInfo(id);
   return (
     <View className="gap-2" testID={galleryTestId(id)}>
-      <Text variant="label">{c.name}</Text>
+      <Text variant="label">{info.name}</Text>
       <Text variant="caption" tone="muted">
-        {tr.design.gallery.measured(id, c.width, look.height)}
+        {tr.design.gallery.measured(id, info.width, info.height)}
       </Text>
       {states ? (
         states.map((s) => (
@@ -191,34 +195,43 @@ function ComponentEntry({
             <Text variant="caption" tone="muted">
               {tr.design.gallery[s.key]}
             </Text>
-            <View className="items-start" testID={galleryTestId(id, s.key)}>
+            <View className={s.wide ? undefined : 'items-start'} testID={galleryTestId(id, s.key)}>
               {s.render()}
             </View>
           </View>
         ))
-      ) : (
-        // v46's measured box, until the component is rewritten: its ground, edge, corner, height
-        // and shadow, as the tokens hold them.
-        <View className="gap-1">
-          <View
-            style={{
-              ...(look.gradient ? gradientStyle(look.gradient) : {}),
-              width: c.width,
-              maxWidth: '100%',
-              height: look.height,
-              borderRadius: radius,
-              backgroundColor: look.bg ?? undefined,
-              borderWidth: look.border?.width ?? 0,
-              borderColor: look.border?.color,
-              boxShadow: look.shadow ?? undefined,
-              opacity: look.opacity,
-            }}
-          />
-          <Text variant="caption" tone="muted">
-            {tr.design.gallery.missing}
-          </Text>
-        </View>
+      ) : isScreenPart(id) ? null : (
+        <Missing id={id} scheme={scheme} />
       )}
+    </View>
+  );
+}
+
+// v46's measured box, until the component is rewritten: its ground, edge, corner, height and
+// shadow, as the tokens hold them.
+function Missing({ id, scheme }: { id: V46ComponentId; scheme: ColorScheme }) {
+  const c = V46_COMPONENTS[id];
+  const look = c[scheme];
+  const radius = typeof look.radius === 'number' ? look.radius : look.radius[0];
+  return (
+    <View className="gap-1">
+      <View
+        style={{
+          ...(look.gradient ? gradientStyle(look.gradient) : {}),
+          width: c.width,
+          maxWidth: '100%',
+          height: look.height,
+          borderRadius: radius,
+          backgroundColor: look.bg ?? undefined,
+          borderWidth: look.border?.width ?? 0,
+          borderColor: look.border?.color,
+          boxShadow: look.shadow ?? undefined,
+          opacity: look.opacity,
+        }}
+      />
+      <Text variant="caption" tone="muted">
+        {tr.design.gallery.missing}
+      </Text>
     </View>
   );
 }

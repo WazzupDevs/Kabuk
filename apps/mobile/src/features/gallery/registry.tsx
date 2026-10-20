@@ -2,12 +2,16 @@ import { type ReactNode, useState } from 'react';
 import { View } from 'react-native';
 
 import { tr } from '@/i18n/tr';
-import { V46_BUTTONS, type V46ButtonId } from '@/theme/parts.generated';
-import { V46_COMPONENTS, type V46ComponentId } from '@/theme/tokens.generated';
+import { V46_BUTTONS, type V46ButtonId, type V46TabKey } from '@/theme/parts.generated';
+import { V46_COMPONENTS } from '@/theme/tokens.generated';
+import type { GalleryId } from '@/theme/v46Gallery';
 import { Button, type ButtonLook } from '@/ui/Button';
 import { useNarrow } from '@/ui/narrow';
 import { RoundButton } from '@/ui/RoundButton';
 import { SendButton } from '@/ui/SendButton';
+import { TabBar, type TabBarItem, UnreadDot } from '@/ui/TabBar';
+import { TopBar } from '@/ui/TopBar';
+import { type ViewMode, ViewModeToggle } from '@/ui/ViewModeToggle';
 
 // What the v46 gallery draws for a component once it is rewritten in src/ui (v46 native, step 3):
 // each state v46 shows for it (envanter `variants`: normal, pressed; the send button also ready),
@@ -15,7 +19,12 @@ import { SendButton } from '@/ui/SendButton';
 // visual gate photographs each one's first state (features/design/gorsel/registry.tsx). The
 // motions that play on an event play here on a press: a disabled button shakes, the bell swings
 // and its count grows, the ready send button sends.
-export type GalleryState = { key: 'normal' | 'pressed' | 'ready'; render: () => ReactNode };
+// `wide`: drawn as wide as the screen (a head), not as wide as its content.
+export type GalleryState = {
+  key: 'normal' | 'pressed' | 'ready';
+  render: () => ReactNode;
+  wide?: boolean;
+};
 
 const s = tr.design.gallery.samples;
 const noop = () => undefined;
@@ -85,7 +94,77 @@ function buttonStates(id: V46ButtonId, b: ButtonSample): GalleryState[] {
   });
 }
 
-export const UI_GALLERY: Partial<Record<V46ComponentId, readonly GalleryState[]>> = {
+// The tab bar as v46 draws it on each tab's screen: that tab selected, Mesajlar with its unread dot
+// (v46's sample data has an unread message on every screen). A press selects the tab, so the Mekan
+// mark's slide can be seen. Without a blur target: v46's gallery draws it over an empty ground.
+const TAB_ITEMS: readonly TabBarItem[] = (
+  ['explore', 'activities', 'venue', 'messages', 'profile'] as const
+).map((key) => ({ key, label: tr.tabs[key], unread: key === 'messages' }));
+
+function SampleTabBar({ selected }: { selected: V46TabKey }) {
+  const [tab, setTab] = useState(selected);
+  return <TabBar items={TAB_ITEMS} selected={tab} onPress={setTab} />;
+}
+
+// The list/map switch; a press switches it.
+function SampleViewMode({ mode }: { mode: ViewMode }) {
+  const [value, setValue] = useState(mode);
+  return <ViewModeToggle value={value} onChange={setValue} labels={s.views} />;
+}
+
+const tabBar = (selected: V46TabKey): readonly GalleryState[] => [
+  { key: 'normal', render: () => <SampleTabBar selected={selected} /> },
+];
+
+// A head as wide as the screen; `gorsel-ust-row` is its title's row (the visual gate's crop).
+const head = (render: () => ReactNode): readonly GalleryState[] => [
+  { key: 'normal', render, wide: true },
+];
+
+const NAVIGATION: Partial<Record<GalleryId, readonly GalleryState[]>> = {
+  'alt-sekme-kesfet': tabBar('explore'),
+  'alt-sekme-aktiviteler': tabBar('activities'),
+  'alt-sekme-mekan': tabBar('venue'),
+  'alt-sekme-mesajlar': tabBar('messages'),
+  'alt-sekme-profil': tabBar('profile'),
+  'bildirim-noktasi': [{ key: 'normal', render: () => <UnreadDot /> }],
+  'ust-kesfet': head(() => (
+    <TopBar
+      kind="explore"
+      title={tr.tabs.explore}
+      right={<SampleViewMode mode="list" />}
+      testID="gorsel-ust"
+    />
+  )),
+  'ust-aktiviteler': head(() => (
+    <TopBar kind="activities" title={tr.tabs.activities} testID="gorsel-ust" />
+  )),
+  'ust-mesajlar': head(() => (
+    <TopBar
+      kind="messages"
+      title={tr.tabs.messages}
+      right={<Bell pressed={false} />}
+      testID="gorsel-ust"
+    />
+  )),
+  'ust-alt': head(() => (
+    <TopBar kind="sub" title={s.privacy} onBack={noop} backLabel={s.back} testID="gorsel-ust" />
+  )),
+  'ust-alt-sayili': head(() => (
+    <TopBar
+      kind="sub"
+      title={s.friendsTitle}
+      count={s.friendsCount}
+      onBack={noop}
+      backLabel={s.back}
+      testID="gorsel-ust"
+    />
+  )),
+  'liste-harita': [{ key: 'normal', render: () => <SampleViewMode mode="list" /> }],
+  'liste-harita-harita': [{ key: 'normal', render: () => <SampleViewMode mode="map" /> }],
+};
+
+export const UI_GALLERY: Partial<Record<GalleryId, readonly GalleryState[]>> = {
   ...Object.fromEntries(
     (Object.entries(BUTTONS) as [V46ButtonId, ButtonSample][]).map(([id, b]) => [
       id,
@@ -110,6 +189,7 @@ export const UI_GALLERY: Partial<Record<V46ComponentId, readonly GalleryState[]>
       render: () => <SendButton onPress={noop} accessibilityLabel={s.send} ready />,
     },
   ],
+  ...NAVIGATION,
 };
 
 // The bell with v46's sample count; each press is a new notice: it swings and the count grows.
