@@ -113,16 +113,19 @@ async function join(
   roomId: string,
   profiled: boolean,
 ): Promise<void> {
-  const ask = () => invoke(guest, 'rooms', { action: 'request-join', roomId });
-  expect((await seated(guest, profiled, ask)).status).toBe(200);
-  const [request] =
-    await sql`select id from public.join_requests where room_id = ${roomId} and status = 'pending'`;
-  const res = await invoke(owner, 'rooms', {
-    action: 'respond',
-    requestId: request?.id,
-    accept: true,
+  // The guest sits with the identity it has at the accept (rule 4), so a profiled guest keeps the
+  // photo until then.
+  await seated(guest, profiled, async () => {
+    expect((await invoke(guest, 'rooms', { action: 'request-join', roomId })).status).toBe(200);
+    const [request] =
+      await sql`select id from public.join_requests where room_id = ${roomId} and status = 'pending'`;
+    const res = await invoke(owner, 'rooms', {
+      action: 'respond',
+      requestId: request?.id,
+      accept: true,
+    });
+    expect(res.status, JSON.stringify(res.body)).toBe(200);
   });
-  expect(res.status, JSON.stringify(res.body)).toBe(200);
 }
 
 // The profile id of the other person at the table, if that person sat with its profile (rule 4).
@@ -470,13 +473,19 @@ describe('lobby and table: no profile id before the seat', () => {
     expect(lobby).toEqual([expect.objectContaining({ room_id: roomId, intent: 'chat' })]);
     expect(Object.keys(lobby?.[0] ?? {})).not.toContain('profiled');
 
-    expect(
-      (await seated(b, true, () => invoke(b, 'rooms', { action: 'request-join', roomId }))).status,
-    ).toBe(200);
-    const { data: requests } = await a.from('join_requests').select('*').eq('room_id', roomId);
-    expect(requests).toEqual([expect.objectContaining({ requester_profiled: true })]);
-    const [request] = requests ?? [];
-    await invoke(a, 'rooms', { action: 'respond', requestId: request?.id, accept: true });
+    const requests = await seated(b, true, async () => {
+      expect((await invoke(b, 'rooms', { action: 'request-join', roomId })).status).toBe(200);
+      const { data } = await a.from('join_requests').select('*').eq('room_id', roomId);
+      expect(data).toEqual([expect.objectContaining({ requester_profiled: true })]);
+      const [request] = data ?? [];
+      const res = await invoke(a, 'rooms', {
+        action: 'respond',
+        requestId: request?.id,
+        accept: true,
+      });
+      expect(res.status, JSON.stringify(res.body)).toBe(200);
+      return data;
+    });
     const { data: roomRow } = await b.from('rooms').select('*').eq('id', roomId).single();
 
     const seen = JSON.stringify({ lobby, requests, roomRow });
