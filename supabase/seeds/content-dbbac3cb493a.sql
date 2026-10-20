@@ -392,6 +392,20 @@ on conflict (id) do update set
   sort_order = excluded.sort_order, is_active = true;
 update public.table_icons set is_active = false where is_active and id <> all (array['kis-kardanadam', 'kis-karkuresi', 'kis-dagevi', 'kis-kizak', 'kis-kayak', 'yilbasi-cam', 'yilbasi-hediyeler', 'yilbasi-top', 'yilbasi-kurabiyeev', 'yilbasi-fisek', 'korku-perili', 'korku-hayalet', 'korku-balkabagi', 'korku-kazan', 'korku-ag', 'uzay-roket', 'uzay-gezegen', 'uzay-ufo', 'uzay-istasyon', 'uzay-galaksi', 'deniz-fener', 'deniz-yelkenli', 'deniz-denizalti', 'deniz-inci', 'deniz-ada', 'parti-disko', 'parti-pasta', 'parti-konfeti', 'parti-dj', 'parti-dans', 'sihir-kure', 'sihir-iksir', 'sihir-degnek', 'sihir-portal', 'sihir-hali', 'masal-sato', 'masal-yumurta', 'masal-mantar', 'masal-ucanada', 'masal-hazine', 'kamp-ates', 'kamp-cadir', 'kamp-agacev', 'kamp-selale', 'kamp-kano', 'kafe-cezve', 'kafe-demlik', 'kafe-frenchpress', 'kafe-espresso', 'kafe-fanus', 'tatli-cupcake', 'tatli-donut', 'tatli-dondurma', 'tatli-sekermakinesi', 'tatli-kavanoz', 'retro-kaset', 'retro-tv', 'retro-jukebox', 'retro-telefon', 'retro-teyp', 'oyun-kolu', 'oyun-atari', 'oyun-zar', 'oyun-satranc', 'oyun-kupa', 'spor-gol', 'spor-pota', 'spor-tenis', 'spor-bowling', 'spor-kaykay', 'bilim-atom', 'bilim-deney', 'bilim-mikroskop', 'bilim-dna', 'bilim-teleskop', 'bizden-nazar', 'bizden-tavla', 'bizden-kizkulesi', 'bizden-lale', 'bizden-cini', 'muzik-mikrofon', 'muzik-hoparlor', 'muzik-piyano', 'muzik-sahne', 'muzik-nota', 'bahar-kiraz', 'bahar-saksi', 'bahar-sulama', 'bahar-tarla', 'bahar-kusevi', 'bati-colgunbatimi', 'bati-serif', 'bati-salon', 'bati-atnali', 'bati-yeldegirmeni', 'kampus-saatkulesi', 'kampus-kutuphane', 'kampus-karatahta', 'kampus-bahce', 'kampus-kantin']::text[]);
 
+-- content/games.json
+insert into public.games (id, name, min_players, max_players, teams, pregame, is_available, sort_order) values
+  ('tabu', 'Kapsül Anlat', 4, 12, true, true, false, 0),
+  ('ibre', 'İbre', 4, 12, true, true, false, 1),
+  ('sahtekar', 'Sahtekar', 3, 12, false, true, false, 2),
+  ('harf', 'Harf Kapmaca', 2, 12, false, true, false, 3),
+  ('sarki', 'Şarkıda Geçsin', 2, 12, false, true, false, 4),
+  ('sohbet', 'Sohbet kartları', 1, 12, false, false, false, 5)
+on conflict (id) do update set
+  name = excluded.name, min_players = excluded.min_players, max_players = excluded.max_players,
+  teams = excluded.teams, pregame = excluded.pregame, is_available = excluded.is_available,
+  sort_order = excluded.sort_order;
+update public.games set is_available = false where is_available and id <> all (array['tabu', 'ibre', 'sahtekar', 'harf', 'sarki', 'sohbet']::text[]);
+
 -- content/tabu-cards.json, content/sohbet-cards.json, content/sahtekar-words.json, content/harf-categories.json, content/sarki-words.json, content/ibre-scales.json
 insert into public.cards (deck, source_key, word, forbidden, theme, prompt) values
   ('tabu', 'Buzdolabı', 'Buzdolabı', array['soğuk', 'mutfak', 'yiyecek', 'kapak', 'elektrik']::text[], null, null),

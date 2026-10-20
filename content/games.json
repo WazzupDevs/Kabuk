@@ -1,0 +1,76 @@
+{
+  "source": "docs/SPEC_V4.md §4.F (v43 posterleri ve kategorileri; K-17)",
+  "categories": [
+    { "id": "teams", "name": "Takımlı" },
+    { "id": "duel", "name": "Bire bir" },
+    { "id": "multi", "name": "Çok oyunculu" }
+  ],
+  "games": [
+    {
+      "id": "tabu",
+      "name": "Kapsül Anlat",
+      "minPlayers": 4,
+      "maxPlayers": 12,
+      "teams": true,
+      "pregame": true,
+      "categories": ["teams"],
+      "poster": "kapsul-anlat",
+      "available": false
+    },
+    {
+      "id": "ibre",
+      "name": "İbre",
+      "minPlayers": 4,
+      "maxPlayers": 12,
+      "teams": true,
+      "pregame": true,
+      "categories": ["teams"],
+      "poster": "ibre",
+      "available": false
+    },
+    {
+      "id": "sahtekar",
+      "name": "Sahtekar",
+      "minPlayers": 3,
+      "maxPlayers": 12,
+      "teams": false,
+      "pregame": true,
+      "categories": ["multi"],
+      "poster": "sahtekar",
+      "available": false
+    },
+    {
+      "id": "harf",
+      "name": "Harf Kapmaca",
+      "minPlayers": 2,
+      "maxPlayers": 12,
+      "teams": false,
+      "pregame": true,
+      "categories": ["duel", "multi"],
+      "poster": "harf-kapmaca",
+      "available": false
+    },
+    {
+      "id": "sarki",
+      "name": "Şarkıda Geçsin",
+      "minPlayers": 2,
+      "maxPlayers": 12,
+      "teams": false,
+      "pregame": true,
+      "categories": ["duel", "multi"],
+      "poster": "sarkida-gecsin",
+      "available": false
+    },
+    {
+      "id": "sohbet",
+      "name": "Sohbet kartları",
+      "minPlayers": 1,
+      "maxPlayers": 12,
+      "teams": false,
+      "pregame": false,
+      "categories": ["multi"],
+      "poster": "sohbet-kartlari",
+      "available": false
+    }
+  ]
+}

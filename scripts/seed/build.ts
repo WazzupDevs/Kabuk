@@ -30,6 +30,7 @@ import {
   testSpotsSql,
   venuesSql,
 } from './sections.ts';
+import { gamesSql, parseGames } from './games.ts';
 import { parseTableIcons, tableIconsSql } from './tableIcons.ts';
 
 export const SEEDS_DIR = 'supabase/seeds';
@@ -87,6 +88,7 @@ export function buildSeed(root: string): SeedBuild {
     campusSql(campus),
     profanitySql(profanity),
     tableIconsSql(parseTableIcons(readJson('content/table-icons.json'))),
+    gamesSql(parseGames(readJson('content/games.json'))),
     cardsSql(
       parseTabuCards(readJson('content/tabu-cards.json')),
       parseSohbetCards(readJson('content/sohbet-cards.json')),

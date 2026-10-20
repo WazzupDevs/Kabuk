@@ -1,3 +1,4 @@
+import type { Pick } from '../gameFrame.ts';
 import type { Concept, Intent, ProposableConcept } from '../rooms.ts';
 import type { Side } from '../teams.ts';
 
@@ -51,8 +52,31 @@ export type AnswerGameRequest = {
   accept: boolean;
   players?: number;
 };
-// "Oyunu bitir": the room returns to chat.
+// The frame of the table's games (docs/SPEC_V4.md §4.F "Çerçeve"; `concept` is a game of
+// pure/tableGames.ts). Everyone at the table votes for one poster, a vote may change or be taken
+// back (null); a "Yakında" game is bad_request, a running game or open pre-game page
+// game_in_progress. The counts are read with table_vote_counts.
+export type VoteRequest = { action: 'vote'; roomId: string; concept: string | null };
+// The owner opens a game's pre-game page (rooms.game_state.pregame): not_owner, bad_request for a
+// "Yakında" game or one without a page, game_in_progress, not_enough_players below the game's lower
+// limit (K-17). `again`: "Yeniden oyna", the game just played with its picks.
+export type OpenGameRequest = {
+  action: 'open-game';
+  roomId: string;
+  concept: string;
+  again?: boolean;
+};
+// Anyone at the table, on the open page (no_game otherwise): Mor ('a') or Pembe ('b') in a team
+// game, watching ('obs'), or no pick (null: not chosen yet in a team game, a player in any other).
+export type PickRequest = { action: 'pick'; roomId: string; pick: Pick | null };
+// "Karıştır": the owner, a team game's page; who does not watch goes to a team at random.
+export type ShuffleRequest = { action: 'shuffle'; roomId: string };
+// "Oyunu bitir": the owner only (not_owner); the game ends for everyone and the table goes back to
+// choosing. It closes an open pre-game page the same way.
 export type EndGameRequest = { action: 'end-game'; roomId: string };
+// "Oyundan çık": a player of the running game leaves it (not_player otherwise); the game goes on for
+// the others and the person stays at the table, watching.
+export type LeaveGameRequest = { action: 'leave-game'; roomId: string };
 // "Masayı bitir": the owner only (not_owner); the table closes for everyone.
 export type EndRoomRequest = { action: 'end' };
 // "Masadan ayrıl" (§4.E, K-13): the person leaves and the table goes on; an owner hands it to the
@@ -77,7 +101,12 @@ export type RoomsRequest =
   | RespondRequest
   | ProposeGameRequest
   | AnswerGameRequest
+  | VoteRequest
+  | OpenGameRequest
+  | PickRequest
+  | ShuffleRequest
   | EndGameRequest
+  | LeaveGameRequest
   | EndRoomRequest
   | LeaveRoomRequest
   | RequestProfileRequest

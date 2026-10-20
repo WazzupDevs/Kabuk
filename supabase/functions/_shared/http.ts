@@ -40,6 +40,7 @@ const STATUS: Record<ErrorCode, number> = {
   turn_over: 409,
   turn_not_started: 409,
   not_your_seat: 403,
+  not_player: 403,
   not_enough_players: 409,
   no_objections_left: 409,
   no_passes_left: 409,
