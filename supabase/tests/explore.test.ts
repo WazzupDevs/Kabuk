@@ -7,7 +7,12 @@ import {
   ACTIVITY_THRESHOLDS,
   EVENT_WINDOW_DAYS,
 } from '../functions/_shared/pure/explore.ts';
-import { deleteFixtureVenues, insertFixtureVenues } from './fixtures/venues.ts';
+import {
+  deleteFixtureCampus,
+  deleteFixtureVenues,
+  insertFixtureCampus,
+  insertFixtureVenues,
+} from './fixtures/venues.ts';
 import { onboarded, PHONES } from './helpers.ts';
 import { type Client, deleteUserByPhone, sql } from './local.ts';
 
@@ -79,7 +84,18 @@ describe('explore_venues', () => {
     await refresh();
     const row = (await explore()).find((v) => v.venue_id === venue['at-anchor']);
     expect(Object.keys(row ?? {}).sort()).toEqual(
-      ['boundary', 'bucket', 'district', 'events', 'kind', 'lat', 'lng', 'name', 'venue_id'].sort(),
+      [
+        'boundary',
+        'bucket',
+        'category',
+        'district',
+        'events',
+        'kind',
+        'lat',
+        'lng',
+        'name',
+        'venue_id',
+      ].sort(),
     );
     expect(Object.values(row ?? {})).not.toContain(4);
   });
@@ -87,6 +103,34 @@ describe('explore_venues', () => {
   it('returns the kind: cafe for a venue without a boundary', async () => {
     const row = (await explore()).find((v) => v.venue_id === venue['at-anchor']);
     expect(row?.kind).toBe('cafe');
+  });
+
+  // docs/SPEC_V4.md §4.C (the project owner's decision): kafe, çay bahçesi or yemek; an empty one
+  // is a kafe; a campus is told by its kind and has none.
+  it('returns the category: the one set, kafe when empty, none for a campus', async () => {
+    const id = venue['at-anchor'] ?? '';
+    const categoryOf = async (venueId: string) =>
+      (await explore()).find((v) => v.venue_id === venueId)?.category;
+    // The fixture is written without one, as the E2E bot's venues are.
+    expect(
+      (await sql`select category from public.venues where id = ${id}`)[0]?.category,
+    ).toBeNull();
+    expect(await categoryOf(id)).toBe('kafe');
+    for (const category of ['cay_bahcesi', 'yemek', 'kafe']) {
+      await sql`update public.venues set category = ${category} where id = ${id}`;
+      expect(await categoryOf(id)).toBe(category);
+    }
+    await expect(
+      sql`update public.venues set category = 'restoran' where id = ${id}`,
+    ).rejects.toMatchObject({ code: '23514' });
+
+    const campus = await insertFixtureCampus(sql);
+    try {
+      const row = (await explore()).find((v) => v.venue_id === campus.venueId);
+      expect(row).toMatchObject({ kind: 'campus', category: null });
+    } finally {
+      await deleteFixtureCampus(sql);
+    }
   });
 
   it('changes only when the cron job refreshes', async () => {

@@ -12,6 +12,7 @@ const venue = {
   source: 'osm',
   sourceRef: 'node/1',
   kind: 'cafe' as const,
+  category: 'kafe' as const,
   amenity: 'cafe',
   isActive: true,
 };
@@ -33,6 +34,14 @@ describe('venuesSql', () => {
     expect(sql).toContain('on conflict (source, source_ref) do update');
   });
 
+  // docs/SPEC_V4.md §4.C: Keşfet's list shows what sort of place it is.
+  it('writes the category and updates it on a re-run', () => {
+    const sql = venuesSql([{ ...venue, category: 'cay_bahcesi' }]);
+    expect(sql).toContain('source_ref, kind, category, is_active) values');
+    expect(sql).toContain("'osm', 'node/1', 'cafe', 'cay_bahcesi', true");
+    expect(sql).toContain('category = excluded.category');
+  });
+
   it('emits a comment when there are no venues', () => {
     expect(venuesSql([])).toBe('-- content/venues-pilot.json: no venues\n');
   });
@@ -46,7 +55,7 @@ describe('venuesSql', () => {
       null,
     );
     expect(sql.split('\n')[0]).toBe('-- content/venues-test.json');
-    expect(sql).toContain("'test', 'test/saha', 'cafe', true");
+    expect(sql).toContain("'test', 'test/saha', 'cafe', 'kafe', true");
   });
 });
 
@@ -66,6 +75,7 @@ describe('parseTestVenues', () => {
         source: 'test',
         sourceRef: 'test/saha',
         kind: 'cafe',
+        category: 'kafe',
         amenity: 'cafe',
         isActive: true,
         spots: [],
@@ -94,6 +104,19 @@ describe('parseTestVenues', () => {
     expect(() => parseTestVenues({ venues: [{ ...base, kind: 'campus' }] })).toThrow(
       /kind must be cafe/,
     );
+  });
+
+  it('takes a category of kafe, cay_bahcesi or yemek, kafe when left out (docs/SPEC_V4.md §4.C)', () => {
+    const base = { ref: 'a', name: 'K', kind: 'cafe', lat: 41, lng: 28 };
+    expect(parseTestVenues({ venues: [base] })[0]?.category).toBe('kafe');
+    for (const category of ['kafe', 'cay_bahcesi', 'yemek']) {
+      expect(parseTestVenues({ venues: [{ ...base, category }] })[0]?.category).toBe(category);
+    }
+    for (const category of ['restoran', 'campus', '', null]) {
+      expect(() => parseTestVenues({ venues: [{ ...base, category }] })).toThrow(
+        /category must be kafe, cay_bahcesi or yemek/,
+      );
+    }
   });
 });
 

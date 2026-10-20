@@ -302,6 +302,7 @@ Değişmez kabul edilir.
   - "Şu an buradasın" kartı kişinin kendi check-in'idir (kendi verisi; kimseyle paylaşılmaz).
   - Mekan adlarına sınır konmaz: adlar içerikten gelir, ekran en çok iki satıra kırar ve gerekirse küçültür (Ekran davranışı).
   - Tek aktif mekanda Keşfet mekanın kartıdır (K-37); varsayılan şehir ve şehir düğmesi K-38'de. Aktiviteler yalnızca bugünün etkinliklerini gösterir (K-15).
+  - Mekan türü (proje sahibinin kararı): `venues.category` `kafe`, `cay_bahcesi` ya da `yemek`; içerikte mekan başına elle (`category`, boşsa `kafe`), Keşfet listesi (`explore_venues`) taşır. Kampüs türü değildir: `kind` ile ayrı kalır ve türü yoktur.
 - **Bildirim düğmesi** yalnızca Mesajlar'da (K-6, §4.G). Proje sahibi 20 Ekim'de 4.7'den öne aldı; Keşfet ekranının PR'ında Keşfet, Aktiviteler ve Profil'in başından kalktı. Bekleyen istek ya da okunmamış mesaj varken alt çubuktaki Mesajlar sekmesinde nokta görünür; ekran okuyucu ikisini ayrı okur ("Mesajlar, 1 okunmamış, 2 yeni bildirim"). Zilin içeriği bugünkü gibi (sayısı bekleyen istekler, Bildirimler sayfası); v43'ün zili ve listesi 4.7'de gelir.
 
 ## 4.D Kimlik ve mekan sohbeti (adım 4.4)
