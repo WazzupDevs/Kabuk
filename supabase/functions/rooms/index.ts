@@ -2,8 +2,10 @@
 // leaving and ending. The SQL functions do the locked state transitions; this handler validates,
 // maps errors, and sends data-free broadcasts and pushes. Nothing sent to a requester depends on a
 // decline: no broadcast, no push, no response field (rule 5). Every change of a table is announced
-// on the venue channel: the lobby and the running tables are one read (venue_tables). Today's
-// app's game proposals and "Masanla oyna" answer update_required; the games come back with 4.6.
+// on the venue channel: the lobby and the running tables are one read (venue_tables). The frame of
+// the table's games (§4.F): votes, the pre-game page, its picks, ending and leaving a game; the
+// table's people see each change as a change of its row. Today's app's game proposals and "Masanla
+// oyna" answer update_required; the games come back with 4.6.
 import { requireUser, serviceClient } from '../_shared/auth.ts';
 import { inBackground } from '../_shared/background.ts';
 import { broadcast } from '../_shared/broadcast.ts';
@@ -24,6 +26,7 @@ import type {
   SetIconResponse,
 } from '../_shared/pure/api/rooms.ts';
 import { ageOn, istanbulToday, parseIsoDate } from '../_shared/pure/age.ts';
+import { isTableGame, PICKS } from '../_shared/pure/gameFrame.ts';
 import { PHOTO_BUCKET, PHOTO_URL_SECONDS } from '../_shared/pure/profile.ts';
 import { joinAcceptedPush, joinRequestPush } from '../_shared/pure/push.ts';
 import {
@@ -79,7 +82,21 @@ const Body: z.ZodType<RoomsRequest> = z.discriminatedUnion('action', [
     accept: z.boolean(),
     players: Players.optional(),
   }),
+  z.object({
+    action: z.literal('vote'),
+    roomId: z.uuid(),
+    concept: z.string().refine(isTableGame).nullable(),
+  }),
+  z.object({
+    action: z.literal('open-game'),
+    roomId: z.uuid(),
+    concept: z.string().refine(isTableGame),
+    again: z.boolean().optional(),
+  }),
+  z.object({ action: z.literal('pick'), roomId: z.uuid(), pick: z.enum(PICKS).nullable() }),
+  z.object({ action: z.literal('shuffle'), roomId: z.uuid() }),
   z.object({ action: z.literal('end-game'), roomId: z.uuid() }),
+  z.object({ action: z.literal('leave-game'), roomId: z.uuid() }),
   z.object({ action: z.literal('end') }),
   z.object({ action: z.literal('leave'), roomId: z.uuid() }),
   z.object({ action: z.literal('request-profile'), requestId: z.uuid() }),
@@ -283,12 +300,64 @@ Deno.serve(
           return { ok: true };
         }
 
+        // The frame of the games (§4.F). A vote is a suggestion; only the owner opens a game.
+        case 'vote': {
+          const { error } = await db.rpc('rooms_vote', {
+            target_user_id: user.id,
+            target_room_id: body.roomId,
+            ...(body.concept ? { new_concept: body.concept } : {}),
+          });
+          if (error) throw dbError('rooms_vote', error);
+          return { ok: true };
+        }
+
+        case 'open-game': {
+          const { error } = await db.rpc('rooms_open_game', {
+            target_user_id: user.id,
+            target_room_id: body.roomId,
+            new_concept: body.concept,
+            same_picks: body.again === true,
+          });
+          if (error) throw dbError('rooms_open_game', error);
+          return { ok: true };
+        }
+
+        case 'pick': {
+          const { error } = await db.rpc('rooms_pick', {
+            target_user_id: user.id,
+            target_room_id: body.roomId,
+            ...(body.pick ? { new_pick: body.pick } : {}),
+          });
+          if (error) throw dbError('rooms_pick', error);
+          return { ok: true };
+        }
+
+        case 'shuffle': {
+          const { error } = await db.rpc('rooms_shuffle', {
+            target_user_id: user.id,
+            target_room_id: body.roomId,
+          });
+          if (error) throw dbError('rooms_shuffle', error);
+          return { ok: true };
+        }
+
+        // "Oyunu bitir": the owner only; the game ends for everyone.
         case 'end-game': {
           const { error } = await db.rpc('rooms_end_game', {
             target_user_id: user.id,
             target_room_id: body.roomId,
           });
           if (error) throw dbError('rooms_end_game', error);
+          return { ok: true };
+        }
+
+        // "Oyundan çık": the person stays at the table, watching.
+        case 'leave-game': {
+          const { error } = await db.rpc('rooms_leave_game', {
+            target_user_id: user.id,
+            target_room_id: body.roomId,
+          });
+          if (error) throw dbError('rooms_leave_game', error);
           return { ok: true };
         }
 
