@@ -660,50 +660,17 @@ function Swatch({
   );
 }
 
+// Renkler: what is not a game's: the bell's badge, the notice over the tab bar (Roboto) and the
+// wordmark. Today's game grounds, buttons and themes are in Eski oyun (below), outside the visual
+// gate (CLAUDE.md → Görsel kapı).
 function TokensSet() {
-  const { scheme, colors, shape } = useTheme();
+  const { colors, shape } = useTheme();
   const t = tr.design.tokens;
-  const grounds: [string, string, GameGround][] = [
-    ['team-purple', t.teamPurple, teamGround(scheme, 'purple')],
-    ['team-pink', t.teamPink, teamGround(scheme, 'pink')],
-    ['sahtekar', t.sahtekar, gameGround(scheme, 'sahtekar')],
-    ['letters', t.letters, gameGround(scheme, 'letters')],
-    ['song', t.song, gameGround(scheme, 'song')],
-    ['chat', t.chat, gameGround(scheme, 'chat')],
-  ];
   return (
     <View className="gap-4">
-      <PreviewBlock title={t.grounds}>
-        <View className="gap-3" testID="preview-tokens-grounds">
-          {grounds.map(([key, label, ground]) => (
-            <GroundSwatch key={key} id={`ground-${key}`} label={label} ground={ground} />
-          ))}
-        </View>
-      </PreviewBlock>
-      <PreviewBlock title={t.buttonsAndThemes}>
-        <View className="gap-3" testID="preview-tokens-themes">
-          <View className="flex-row flex-wrap gap-2">
-            <Swatch label={t.pass} fill={JUDGE_COLORS.pass} text={ON_JUDGE} />
-            <Swatch label={t.correct} fill={JUDGE_COLORS.correct} text={ON_JUDGE} />
-            <Swatch label={t.forbidden} fill={JUDGE_COLORS.forbidden} text={ON_GAME} />
-          </View>
-          <View className="flex-row flex-wrap gap-2">
-            <Swatch label={t.warmUp} fill={CHAT_THEMES.warmUp} text={ON_GAME} />
-            <Swatch label={t.campus} fill={CHAT_THEMES.campus} text={ON_GAME} />
-            <Swatch label={t.deep} fill={CHAT_THEMES.deep} text={ON_GAME} />
-            <Swatch label={t.either} fill={CHAT_THEMES.either} text={ON_GAME} />
-          </View>
-          <Text variant="label" tone="muted">
-            {t.zones}
-          </Text>
-          <View className="flex-row gap-2">
-            {NEEDLE_ZONES.map((fill, i) => (
-              <Swatch key={fill} label={String(i + 2)} fill={fill} text={ON_JUDGE} basis={0} />
-            ))}
-          </View>
-          <View className="flex-row flex-wrap gap-2">
-            <Swatch label={t.badge} fill={BADGE} text={ON_GAME} />
-          </View>
+      <PreviewBlock title={t.badge}>
+        <View className="flex-row flex-wrap gap-2" testID="preview-tokens-badge">
+          <Swatch label={t.bellBadge} fill={BADGE} text={ON_GAME} />
         </View>
       </PreviewBlock>
       <PreviewBlock title={t.notice}>
@@ -728,6 +695,58 @@ function TokensSet() {
   );
 }
 
+// Eski oyun: today's games' grounds with their chips, the judge buttons, the chat themes and
+// İbre's zones (step 4.2, K-25), then the game parts (partsPreview.tsx). Kept in the gallery and in
+// E2E's photos; the visual gate leaves it out, as today's games are to change (the owner's
+// decision, the CTO's review of #184).
+function LegacyGameSet() {
+  const { scheme } = useTheme();
+  const t = tr.design.tokens;
+  const grounds: [string, string, GameGround][] = [
+    ['team-purple', t.teamPurple, teamGround(scheme, 'purple')],
+    ['team-pink', t.teamPink, teamGround(scheme, 'pink')],
+    ['sahtekar', t.sahtekar, gameGround(scheme, 'sahtekar')],
+    ['letters', t.letters, gameGround(scheme, 'letters')],
+    ['song', t.song, gameGround(scheme, 'song')],
+    ['chat', t.chat, gameGround(scheme, 'chat')],
+  ];
+  return (
+    <View className="gap-4">
+      <PreviewBlock title={t.grounds}>
+        <View className="gap-3" testID="preview-legacy-grounds">
+          {grounds.map(([key, label, ground]) => (
+            <GroundSwatch key={key} id={`ground-${key}`} label={label} ground={ground} />
+          ))}
+        </View>
+      </PreviewBlock>
+      <PreviewBlock title={t.buttonsAndThemes}>
+        <View className="gap-3" testID="preview-legacy-themes">
+          <View className="flex-row flex-wrap gap-2">
+            <Swatch label={t.pass} fill={JUDGE_COLORS.pass} text={ON_JUDGE} />
+            <Swatch label={t.correct} fill={JUDGE_COLORS.correct} text={ON_JUDGE} />
+            <Swatch label={t.forbidden} fill={JUDGE_COLORS.forbidden} text={ON_GAME} />
+          </View>
+          <View className="flex-row flex-wrap gap-2">
+            <Swatch label={t.warmUp} fill={CHAT_THEMES.warmUp} text={ON_GAME} />
+            <Swatch label={t.campus} fill={CHAT_THEMES.campus} text={ON_GAME} />
+            <Swatch label={t.deep} fill={CHAT_THEMES.deep} text={ON_GAME} />
+            <Swatch label={t.either} fill={CHAT_THEMES.either} text={ON_GAME} />
+          </View>
+          <Text variant="label" tone="muted">
+            {t.zones}
+          </Text>
+          <View className="flex-row gap-2">
+            {NEEDLE_ZONES.map((fill, i) => (
+              <Swatch key={fill} label={String(i + 2)} fill={fill} text={ON_JUDGE} basis={0} />
+            ))}
+          </View>
+        </View>
+      </PreviewBlock>
+      <PartsSet />
+    </View>
+  );
+}
+
 export const PREVIEW_SETS: PreviewSet[] = [
   { key: 'games', label: 'Oyun', render: () => <GamesSet /> },
   { key: 'sahtekar', label: 'Sahtekar', render: () => <SahtekarSet /> },
@@ -735,7 +754,7 @@ export const PREVIEW_SETS: PreviewSet[] = [
   { key: 'ibre', label: 'İbre', render: () => <IbreSet /> },
   { key: 'chat', label: 'Sohbet', render: () => <ChatSet /> },
   { key: 'tokens', label: tr.design.tokens.set, render: () => <TokensSet /> },
-  { key: 'parts', label: tr.design.parts.set, render: () => <PartsSet /> },
+  { key: 'legacyGame', label: tr.design.legacy.set, render: () => <LegacyGameSet /> },
   { key: 'identity', label: tr.design.identity.set, render: () => <IdentitySet /> },
   { key: 'motion', label: tr.design.motion.set, render: () => <MotionSet /> },
   { key: 'measure', label: tr.design.measure.set, render: () => <MeasureSet /> },

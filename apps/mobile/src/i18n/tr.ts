@@ -1230,6 +1230,7 @@ export const tr = {
       either: 'Ya da',
       zones: 'İbre bölgeleri',
       badge: 'Rozet',
+      bellBadge: 'Zil rozeti',
       notice: 'Bildirim yazısı (Roboto)',
       noticeSample: 'Kapsülün kaydedildi',
     },
@@ -1239,7 +1240,12 @@ export const tr = {
       card: (n: number) => `Kart ${n}`,
       body: 'Gölgeli kartlar arasında yukarı aşağı kaydır.',
     },
-    // Bileşen önizleme → Oyun parçaları (step 4.2b): the game screens' parts on a ground.
+    // Bileşen önizleme → Eski oyun: today's games' grounds, buttons, themes and parts, outside the
+    // visual gate.
+    legacy: {
+      set: 'Eski oyun',
+    },
+    // Bileşen önizleme → Eski oyun → the game parts (step 4.2b): the game screens' parts on a ground.
     parts: {
       set: 'Oyun parçaları',
       buttons: 'Oyun düğmeleri',

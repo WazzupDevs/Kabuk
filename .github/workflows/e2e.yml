@@ -432,7 +432,9 @@ jobs:
     env:
       OUT: ${{ github.workspace }}/e2e-out/visual
       APK: ${{ github.workspace }}/apk/app-release.apk
-      TEKRAR: '1'
+      # Every shot photographed twice, nightly only: the noise table the threshold is checked
+      # against (#184's first measurement: 23 of 24 at 100%, one at 99.92%).
+      TEKRAR: ${{ github.event_name == 'schedule' && '1' || '' }}
     steps:
       - uses: actions/checkout@v4
       - name: Free disk
@@ -451,12 +453,30 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
-      # Playwright's Chromium at the version in package.json; v46's fonts are the app's own files
-      # (scripts/visual/prototype.ts), not Google's.
+      # Playwright's headless Chromium at the version in scripts/package.json, from the Actions cache
+      # (written by main's runs, read by the rest, as the emulator's); v46's fonts are the app's own
+      # files (scripts/visual/prototype.ts), not Google's.
+      - name: Playwright version (cache key)
+        id: playwright
+        run: echo "version=$(node -p "require('./scripts/node_modules/playwright/package.json').version")" >> "$GITHUB_OUTPUT"
+      - name: Playwright Chromium cache
+        id: playwright-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-shell-${{ steps.playwright.outputs.version }}
+      - name: Playwright Chromium download
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: pnpm --filter scripts exec playwright install chromium --only-shell
+      - name: Playwright Chromium cache (save, main only)
+        if: github.ref == 'refs/heads/main' && steps.playwright-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ steps.playwright-cache.outputs.cache-primary-key }}
       - name: Design prototype (Playwright)
         run: |
           mkdir -p "$OUT"
-          pnpm --filter scripts exec playwright install --with-deps chromium
           node --experimental-strip-types scripts/visual/render-prototype.ts . "$OUT"
       - name: Maestro
         run: |
