@@ -105,16 +105,17 @@ function keyframeSteps(motion: Keyframes, channel: V46Channel, scale: number) {
   );
 }
 
-// The same, played over and over (`animation-iteration-count: infinite`): the delay once, then
-// the steps again from the first keyframe each round, as CSS repeats it. `delayMs` in place of the
-// animation's own, where the part sets its own (`style="animation-delay:.6s"`).
+// The same, played over and over (`animation-iteration-count`: as many times as v46's rule says,
+// for ever when it says `infinite`, null): the delay once, then the steps again from the first
+// keyframe each round, as CSS repeats it. `delayMs` in place of the animation's own, where the
+// part sets its own (`style="animation-delay:.6s"`).
 export function keyframeLoop(
-  motion: Keyframes,
+  motion: Keyframes & { iterations?: number | null },
   channel: V46Channel,
   { scale = 1, delayMs = motion.delayMs }: { scale?: number; delayMs?: number } = {},
 ) {
   const run = keyframeSteps(motion, channel, scale);
   if (!run) return undefined;
-  const loop = withRepeat(run, -1, false, undefined, ReduceMotion.Never);
+  const loop = withRepeat(run, motion.iterations ?? -1, false, undefined, ReduceMotion.Never);
   return delayMs ? withDelay(delayMs, loop, ReduceMotion.Never) : loop;
 }

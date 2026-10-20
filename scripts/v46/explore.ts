@@ -378,14 +378,28 @@ export const THUMBS = {
 // The rows coming in (`.vrow`: rowIn, each a step later than the one above: v46 writes the delays
 // into the list), the steam rising (`.th-steam`), the live dot beating and its halo spreading
 // (`.live`, `.live::after`), and the dot fading instead with reduce motion (`liveFade`).
+// What the components read of each: when and how it plays, how often, whether it holds its first
+// keyframe before it starts. Which rule and keyframes it is (`selector`, `keyframes`) and its
+// length (in the steps) stay here.
+export type Played = Omit<Animation, 'selector' | 'keyframes' | 'ms'>;
+
 export type ExploreMotions = {
-  rowIn: Animation;
+  rowIn: Played;
   rowStaggerMs: number;
-  steam: Animation;
-  livePulse: Animation;
-  liveHalo: Animation;
-  liveFade: Animation;
+  steam: Played;
+  livePulse: Played;
+  liveHalo: Played;
+  liveFade: Played;
 };
+
+const played = (a: Animation): Played => ({
+  delayMs: a.delayMs,
+  ease: a.ease,
+  channels: a.channels,
+  offWhenReduced: a.offWhenReduced,
+  iterations: a.iterations,
+  holdsBefore: a.holdsBefore,
+});
 
 export function exploreMotions(inventory: Inventory, list: Element): ExploreMotions {
   const delays = list.parts
@@ -400,13 +414,13 @@ export function exploreMotions(inventory: Inventory, list: Element): ExploreMoti
     throw new Error(`rows do not come in at even steps: ${delays.join(', ')}`);
   }
   return {
-    rowIn: animation(inventory, 'rowIn', '.vrow'),
+    rowIn: played(animation(inventory, 'rowIn', '.vrow')),
     rowStaggerMs: step,
-    steam: animation(inventory, 'steam', '.th-steam'),
-    livePulse: animation(inventory, 'livePulse', '.live'),
-    liveHalo: animation(inventory, 'liveHalo', '.live::after'),
+    steam: played(animation(inventory, 'steam', '.th-steam')),
+    livePulse: played(animation(inventory, 'livePulse', '.live')),
+    liveHalo: played(animation(inventory, 'liveHalo', '.live::after')),
     // v46 plays it only with reduce motion (its `.live` rule comes after the `animation: none`
     // that stops the beat), so reduce motion does not turn it off.
-    liveFade: { ...animation(inventory, 'liveFade', '.live', true), offWhenReduced: false },
+    liveFade: { ...played(animation(inventory, 'liveFade', '.live', true)), offWhenReduced: false },
   };
 }
