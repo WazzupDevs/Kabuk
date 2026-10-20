@@ -212,7 +212,7 @@ as $$
     from public.room_members rm
     join public.table_sessions ts on ts.id = rm.session_id
     where rm.room_id = target_room_id and rm.left_at is null
-      and ts.user_id = (select auth.uid())
+      and ts.user_id = (select auth.uid()) and ts.status = 'active'
   );
 $$;
 
@@ -423,7 +423,10 @@ begin
     asked_profiled := seat.profiled;
   end if;
 
-  select * into r from public.rooms where id = target_room_id for update;
+  -- No key update, not update: the request's requester_room_id references the requester's own
+  -- table (a key share lock), and two tables asking each other at once must not wait on each
+  -- other's table (WazzupDevs/Kabuk#183).
+  select * into r from public.rooms where id = target_room_id for no key update;
   select * into owner from public.table_sessions where id = r.owner_session_id;
   if r.id is null
     or r.status = 'closed'
@@ -494,18 +497,32 @@ declare
   current_room uuid;
   coming smallint;
   mover record;
+  locked uuid[];
+  seat record;
 begin
   select * into jr from public.join_requests where id = target_request_id;
   if jr.id is null then
     raise exception using errcode = 'P0001', message = 'request_not_found';
   end if;
 
-  select * into requester from public.table_sessions
-  where id = jr.requester_session_id
-  for no key update;
+  -- The requester's check-in, and for a "Katıl" with a table the check-ins of its people too, all
+  -- in id order (read unlocked first, checked again below): a moved person checking in again,
+  -- leaving or deleting the account at the same moment waits, and no seat is left behind.
   if accept then
-    current_room := private.open_room_of_session(requester.id);
+    current_room := private.open_room_of_session(jr.requester_session_id);
   end if;
+  select coalesce(array_agg(id order by id), '{}') into locked
+  from (
+    select ts.id from public.table_sessions ts
+    where ts.id = jr.requester_session_id
+       or ts.id in (
+         select rm.session_id from public.room_members rm
+         where rm.room_id = current_room and rm.left_at is null
+       )
+    order by ts.id
+    for no key update
+  ) held;
+  select * into requester from public.table_sessions where id = jr.requester_session_id;
   perform 1 from public.rooms
   where id in (jr.room_id, coalesce(current_room, jr.room_id))
   order by id
@@ -547,6 +564,11 @@ begin
     or current_room is distinct from jr.requester_room_id
     or (w.id is not null and (w.status = 'closed' or w.owner_session_id <> requester.id))
     or r.visibility <> (case when jr.as_member then 'private' else 'open' end)
+    -- Somebody sat down at the requester's table after the check-ins were locked.
+    or exists (
+      select 1 from public.room_members rm
+      where rm.room_id = w.id and rm.left_at is null and not (rm.session_id = any (locked))
+    )
   then
     raise exception using errcode = 'P0001', message = 'room_not_available';
   end if;
@@ -573,28 +595,51 @@ begin
   ) then
     raise exception using errcode = 'P0001', message = 'room_not_available';
   end if;
-  coming := case when w.id is null then 1 else w.phones end;
+  -- The people who come: a moved table's people whose check-in is still on (one past its time
+  -- leaves with the closing table), or the requester alone.
+  coming := case
+    when w.id is null then 1
+    else (
+      select count(*) from public.room_members rm
+      join public.table_sessions ts on ts.id = rm.session_id
+      where rm.room_id = w.id and rm.left_at is null
+        and ts.status = 'active' and ts.expires_at > now()
+    )
+  end;
   if r.phones + coming > private.max_table_phones() then
     raise exception using errcode = 'P0001', message = 'table_full';
   end if;
 
   if w.id is not null then
     for mover in
-      select rm.id, rm.session_id, rm.alias, rm.profiled
+      select rm.id, rm.session_id, rm.alias, rm.profiled, rm.look,
+             ts.status = 'active' and ts.expires_at > now() as still_on
       from public.room_members rm
+      join public.table_sessions ts on ts.id = rm.session_id
       where rm.room_id = w.id and rm.left_at is null
       order by rm.joined_at, rm.id
     loop
       update public.room_members set left_at = now() where id = mover.id;
-      insert into public.room_members (room_id, session_id, alias, profiled)
-      values (r.id, mover.session_id, mover.alias, mover.profiled);
+      if mover.still_on then
+        -- The seat keeps its identity, look included (K-10).
+        insert into public.room_members (room_id, session_id, alias, profiled, look)
+        values (r.id, mover.session_id, mover.alias, mover.profiled, mover.look);
+      end if;
     end loop;
     update public.rooms set status = 'closed', closed_at = now(), phones = 0 where id = w.id;
     update public.join_requests set status = 'declined', responded_at = now()
     where room_id = w.id and status = 'pending';
   else
+    -- A person alone sits with the check-in's identity at the accept, not at the request: one who
+    -- switched to anonymous meanwhile sits anonymous (rule 4). One who cannot sit any more (a
+    -- profiled identity whose photo went) finds the request gone.
+    begin
+      select * into seat from private.table_seat(requester.id);
+    exception when sqlstate 'P0001' then
+      raise exception using errcode = 'P0001', message = 'request_expired';
+    end;
     insert into public.room_members (room_id, session_id, alias, profiled)
-    values (r.id, requester.id, jr.requester_alias, jr.requester_profiled);
+    values (r.id, requester.id, seat.alias, seat.profiled);
   end if;
 
   update public.rooms set phones = phones + coming, last_activity_at = now() where id = r.id;
@@ -739,9 +784,12 @@ begin
     return r;
   end if;
 
-  select * into heir from public.room_members
-  where room_id = r.id and left_at is null and session_id <> target_session_id
-  order by joined_at, id
+  select * into heir from public.room_members hm
+  where hm.room_id = r.id and hm.left_at is null and hm.session_id <> target_session_id
+    and exists (
+      select 1 from public.table_sessions ts where ts.id = hm.session_id and ts.status = 'active'
+    )
+  order by hm.joined_at, hm.id
   limit 1
   for update;
   if heir.id is null then
@@ -750,8 +798,11 @@ begin
 
   update public.room_members set left_at = now() where id = mine.id;
   perform private.write_pair_history(r.id, target_session_id);
+  -- A leaving starts the quiet clock again: a table left with one person closes after its own
+  -- quiet minutes, not at once (§4.E).
   update public.rooms
   set phones = phones - 1,
+      last_activity_at = now(),
       owner_session_id = case when owner_session_id = target_session_id then heir.session_id
                               else owner_session_id end,
       owner_profiled = case when owner_session_id = target_session_id then heir.profiled
@@ -902,6 +953,7 @@ as $$
          rm.joined_at
   from public.rooms r
   join public.room_members rm on rm.room_id = r.id
+  join public.table_sessions ts on ts.id = rm.session_id and ts.status = 'active'
   where r.id = target_room_id
     and private.is_room_member(r.id)
     and r.status <> 'closed'
@@ -1254,6 +1306,78 @@ begin
   values (target_user_id, reported, target_room_id, new_reason, snapshot)
   returning id into report_id;
   return report_id;
+end;
+$$;
+
+-- 6b. The expiry job and the name ---------------------------------------------------------------
+-- The expiry job ends one check-in at a time and takes its tables with skip locked: from step 4.5
+-- a "Katıl" locks two tables, and a table a user action holds waits for the next run instead of
+-- the job holding a check-in while it waits (WazzupDevs/Kabuk#183).
+create or replace function private.end_expired_table_sessions()
+returns integer
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  old_session_id uuid;
+  wanted integer;
+  got integer;
+  n integer := 0;
+begin
+  for old_session_id in
+    select id from public.table_sessions
+    where status = 'active' and expires_at <= now()
+    for no key update skip locked
+  loop
+    select count(*) into wanted from public.room_members
+    where session_id = old_session_id and left_at is null;
+    select count(*) into got from (
+      select r.id from public.rooms r
+      where r.id in (
+        select room_id from public.room_members
+        where session_id = old_session_id and left_at is null
+      )
+      for update skip locked
+    ) free;
+    continue when got < wanted;
+    perform private.release_rooms_of_session(old_session_id);
+    update public.table_sessions set status = 'ended', ended_at = expires_at
+    where id = old_session_id;
+    n := n + 1;
+  end loop;
+  return n;
+end;
+$$;
+
+-- rooms/reroll-name: the old owner_alias copy follows the name (§4.H, until 4.8).
+create or replace function public.rooms_reroll_name(
+  target_user_id uuid,
+  target_room_id uuid,
+  max_rerolls integer
+)
+returns public.rooms
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  r public.rooms;
+  picked text;
+begin
+  r := private.owned_open_room(target_user_id, target_room_id);
+  if r.name_rerolls >= max_rerolls then
+    raise exception using errcode = 'P0001', message = 'reroll_limit';
+  end if;
+  perform private.lock_venue_names(r.venue_id);
+  picked := private.free_table_name(r.venue_id);
+  if picked is null then
+    raise exception using errcode = 'P0001', message = 'alias_exhausted';
+  end if;
+  update public.rooms set name = picked, owner_alias = picked, name_rerolls = name_rerolls + 1
+  where id = r.id
+  returning * into r;
+  return r;
 end;
 $$;
 

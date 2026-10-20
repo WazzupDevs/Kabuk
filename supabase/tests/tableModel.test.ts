@@ -203,6 +203,16 @@ describe('"Masa kur" (§4.E)', () => {
     });
   });
 
+  it('takes a hidden photo for none at a profiled seat', async () => {
+    const man = await at(0, { gender: 'male' });
+    await setTestPhoto(man.client);
+    await sql`update public.profiles set photo_hidden_at = now() where id = ${man.userId}`;
+    expect(await rooms(man, { action: 'create' })).toEqual({
+      status: 409,
+      body: errorBody('photo_required'),
+    });
+  });
+
   it('answers today\'s app\'s "Masanla oyna" update_required', async () => {
     const a = await at(0);
     expect(await rooms(a, { action: 'create-solo' })).toEqual(UPDATE_REQUIRED);
@@ -372,6 +382,28 @@ describe('"Katıl" (§4.E)', () => {
     expect(await rooms(requester, { action: 'request-join', roomId: roomB })).toEqual(againA);
   });
 
+  it('shows a request ended by a lobby close or by a moved table like a timeout (rule 5)', async () => {
+    const [owner, moving, host, lone, other] = await all(5);
+    const lobbyTable = await openTable(owner);
+    const movingTable = await openTable(moving);
+    const hostTable = await openTable(host);
+    const fromLone = await ask(lone, lobbyTable);
+    const fromOther = await ask(other, movingTable);
+    const status = async (p: Person) => (await myRequests(p)).map((r) => r.status);
+
+    // The owner takes the table out of the lobby; the moving table goes to the host's.
+    expect(
+      await rooms(owner, { action: 'set-visibility', roomId: lobbyTable, open: false }),
+    ).toEqual({ status: 200, body: { ok: true } });
+    await accept(host, await ask(moving, hostTable));
+    expect(fromLone).toEqual(expect.any(String));
+    expect(fromOther).toEqual(expect.any(String));
+    expect([await status(lone), await status(other)]).toEqual([['pending'], ['pending']]);
+    await expireRequests(lobbyTable);
+    await expireRequests(movingTable);
+    expect([await status(lone), await status(other)]).toEqual([['unavailable'], ['unavailable']]);
+  });
+
   it('allows one open request, 10 an hour, and answers expired requests request_expired', async () => {
     const [ownerA, ownerB, requester] = await all(3);
     const roomA = await openTable(ownerA);
@@ -437,6 +469,53 @@ describe('"Katıl" (§4.E)', () => {
   });
 });
 
+describe('the seat of a person alone (rule 4)', () => {
+  // WazzupDevs/Kabuk#183: the identity of the accept, not of the request.
+  it('seats a person alone with the identity it has when the owner accepts', async () => {
+    const [owner, w0] = await all(2);
+    await setTestPhoto(w0.client);
+    await sql`update public.profiles set default_participation = 'profile' where id = ${w0.userId}`;
+    const w = { ...w0, sessionId: await checkIn(w0.client, venue) };
+    const roomId = await openTable(owner);
+    const requestId = await ask(w, roomId);
+    const [asked] =
+      await sql`select requester_profiled from public.join_requests where id = ${requestId}`;
+    expect(asked?.requester_profiled).toBe(true);
+    expect(
+      (await invoke(w.client, 'checkin', { action: 'set-identity', anonymous: true })).status,
+    ).toBe(200);
+    await accept(owner, requestId);
+    const seat = (await seated(roomId)).find((x) => x.session_id === w.sessionId);
+    expect(seat).toMatchObject({ profiled: false, alias: await nickOf(w) });
+  });
+
+  it('finds the request gone for a person who cannot sit any more', async () => {
+    const [owner, man] = await all(2);
+    await sql`update public.profiles set gender = 'male' where id = ${man.userId}`;
+    await setTestPhoto(man.client);
+    const roomId = await openTable(owner);
+    const requestId = await ask(man, roomId);
+    await sql`update public.profiles set photo_hidden_at = now() where id = ${man.userId}`;
+    expect(await rooms(owner, { action: 'respond', requestId, accept: true })).toEqual({
+      status: 409,
+      body: errorBody('request_expired'),
+    });
+    expect((await seated(roomId)).map((x) => x.session_id)).toEqual([owner.sessionId]);
+  });
+
+  // A seat whose check-in ended without leaving (never on a path of the app; a guard) is nobody's:
+  // not among the table's people, and its person reads nothing of the table.
+  it('keeps a seat whose check-in ended out of the table', async () => {
+    const [owner, member] = await all(2);
+    const roomId = await tableWith(owner, [member]);
+    await sql`update public.table_sessions set status = 'ended', ended_at = now() where id = ${member.sessionId}`;
+    const people = await owner.client.rpc('table_people', { target_room_id: roomId });
+    expect((people.data ?? []).map((x) => x.session_id)).toEqual([owner.sessionId]);
+    const theirs = await member.client.rpc('table_people', { target_room_id: roomId });
+    expect(theirs.data ?? []).toEqual([]);
+  });
+});
+
 describe('"Bu masadayım" (§4.E)', () => {
   it('seats a person without a table at a running table; one at a table cannot ask', async () => {
     const [owner, lone, seatedElsewhere, other] = await all(4);
@@ -451,6 +530,36 @@ describe('"Bu masadayım" (§4.E)', () => {
       status: 200,
     });
     await expectConsistent(roomId);
+  });
+
+  it('makes a decline and a timeout look exactly the same to the requester (rule 5)', async () => {
+    const [ownerA, ownerB, requester] = await all(3);
+    const roomA = await openTable(ownerA, { open: false });
+    const roomB = await openTable(ownerB, { open: false });
+    const varying = new Set(['id', 'room_id', 'created_at', 'expires_at']);
+    const shape = (rows: Record<string, unknown>[]) =>
+      rows.map((row) => ({
+        keys: Object.keys(row).sort(),
+        ...Object.fromEntries(Object.entries(row).filter(([k]) => !varying.has(k))),
+      }));
+
+    const idA = await ask(requester, roomA, true);
+    expect((await rooms(ownerA, { action: 'respond', requestId: idA, accept: false })).status).toBe(
+      200,
+    );
+    const pendingA = shape(await myRequests(requester));
+    await expireRequests(roomA);
+    const unavailableA = shape(await myRequests(requester));
+
+    await ask(requester, roomB, true);
+    const pendingB = shape((await myRequests(requester)).filter((r) => r.room_id === roomB));
+    await expireRequests(roomB);
+    const unavailableB = shape((await myRequests(requester)).filter((r) => r.room_id === roomB));
+
+    expect(pendingA).toEqual(pendingB);
+    expect(pendingB).toEqual([{ keys: expect.any(Array), status: 'pending' }]);
+    expect(unavailableA).toEqual(unavailableB);
+    expect(unavailableB).toEqual([{ keys: expect.any(Array), status: 'unavailable' }]);
   });
 });
 
@@ -518,6 +627,22 @@ describe('leaving and owning (K-13)', () => {
 });
 
 describe('blocking and reporting at the table (K-13)', () => {
+  // Rule 5: a person blocked out of a table hears what a person leaving it hears, in the lobby or
+  // out of it (WazzupDevs/Kabuk#183).
+  it('announces a block on the venue channel as a leave is announced', async () => {
+    const [owner, member, watcher] = await all(3);
+    const roomId = await tableWith(owner, [member], { open: false });
+    const listener = waitForBroadcast(
+      watcher.client,
+      venueChannel(venue['at-anchor'] ?? ''),
+      'lobby_changed',
+    );
+    await listener.subscribed;
+    expect((await block(owner, roomId, member)).status).toBe(200);
+    await expect(listener.received).resolves.toBeUndefined();
+    await listener.close();
+  });
+
   it('takes out whom the owner blocks; anyone else who blocks goes', async () => {
     const [owner, member, other] = await all(3);
     const roomId = await tableWith(owner, [member, other]);
@@ -687,6 +812,20 @@ describe('inactivity (§4.E)', () => {
   });
 });
 
+describe('inactivity after leaving (§4.E)', () => {
+  it('starts the quiet clock again when a table drops to one person', async () => {
+    const [owner, a, b] = await all(3);
+    const roomId = await tableWith(owner, [a, b]);
+    await sql`
+      update public.rooms set last_activity_at = now() - interval '60 minutes' where id = ${roomId}
+    `;
+    expect((await leave(owner, roomId)).status).toBe(200);
+    expect((await leave(a, roomId)).status).toBe(200);
+    await sql`select private.close_idle_rooms(${ROOM_IDLE_MINUTES})`;
+    expect(await roomRow(roomId)).toMatchObject({ status: 'active', phones: 1 });
+  });
+});
+
 describe('pair records (K-66)', () => {
   const recordsOf = (roomId: string) => sql`
     select user_id, other_user_id, own_alias, other_alias, other_headcount, friend_open
@@ -708,6 +847,27 @@ describe('pair records (K-66)', () => {
       own_alias: await nickOf(owner),
       other_alias: await nickOf(a),
     });
+  });
+
+  it('writes the two who came together a record too, and each with the table they joined', async () => {
+    const [owner, a, a2] = await all(3);
+    const ownTable = await tableWith(a, [a2]);
+    const hostTable = await openTable(owner);
+    await accept(owner, await ask(a, hostTable));
+    expect((await roomRow(ownTable)).status).toBe('closed');
+    await backdate(hostTable, 5);
+    await rooms(owner, { action: 'end' });
+    const pairs = (await recordsOf(hostTable)).map((r) =>
+      [r.user_id, r.other_user_id].sort().join(),
+    );
+    expect(new Set(pairs)).toEqual(
+      new Set([
+        [owner.userId, a.userId].sort().join(),
+        [owner.userId, a2.userId].sort().join(),
+        [a.userId, a2.userId].sort().join(),
+      ]),
+    );
+    expect(pairs).toHaveLength(6);
   });
 
   it("writes a leaver's pairs as it leaves, and none for less than 3 minutes", async () => {
@@ -827,6 +987,87 @@ describe('locks (§4.K)', () => {
     });
     await expectConsistent(roomC);
     await expectConsistent(roomD);
+  });
+
+  // Two lobby tables pressing "Katıl" to each other at once (WazzupDevs/Kabuk#183): each request
+  // holds the other table no key update and its own table key share; neither waits on the other.
+  it('lets two lobby tables ask each other at once', async () => {
+    const [a, b] = await all(2);
+    const roomA = await openTable(a);
+    const roomB = await openTable(b);
+    const first = postgres(dbUrl, { max: 1, onnotice: () => {} });
+    const second = postgres(dbUrl, { max: 1, onnotice: () => {} });
+    try {
+      await first.begin(async (tx) => {
+        await tx`select id from public.rooms_request_join(${a.userId}, ${roomB}, 60, 10)`;
+        await second.begin(async (tx2) => {
+          await tx2`set local lock_timeout = '2s'`;
+          expect(
+            await tx2`select room_id from public.rooms_request_join(${b.userId}, ${roomA}, 60, 10)`,
+          ).toEqual([{ room_id: roomA }]);
+        });
+      });
+    } finally {
+      await Promise.all([first.end(), second.end()]);
+    }
+    expect(
+      await sql`select count(*)::int as n from public.join_requests where status = 'pending'
+                and room_id in (${roomA}, ${roomB})`,
+    ).toEqual([{ n: 2 }]);
+  });
+
+  // A "Katıl" with a table locks its people's check-ins first: one of them leaving the venue at
+  // the same moment goes first and leaves no seat behind (WazzupDevs/Kabuk#183).
+  it("waits for a moved person's check-in, and moves only those still there", async () => {
+    const [host, mover, friend] = await all(3);
+    const ownTable = await tableWith(mover, [friend]);
+    const hostTable = await openTable(host);
+    const requestId = await ask(mover, hostTable);
+    const leaving = postgres(dbUrl, { max: 1, onnotice: () => {} });
+    const accepting = postgres(dbUrl, { max: 1, onnotice: () => {} });
+    try {
+      let accepted: Promise<unknown> = Promise.resolve();
+      await leaving.begin(async (tx) => {
+        await tx`select public.end_table_session(${friend.userId})`;
+        accepted =
+          accepting`select (public.rooms_respond(${host.userId}, ${requestId}, true)).status`
+            .execute()
+            .catch((err: unknown) => err);
+        await waitUntilBlocked('rooms_respond');
+      });
+      expect(await accepted).toEqual([{ status: 'accepted' }]);
+    } finally {
+      await Promise.all([leaving.end(), accepting.end()]);
+    }
+    expect((await seated(hostTable)).map((x) => x.session_id).sort()).toEqual(
+      [host.sessionId, mover.sessionId].sort(),
+    );
+    expect((await roomRow(ownTable)).status).toBe('closed');
+    await expectConsistent(hostTable);
+  });
+
+  // The expiry job takes a check-in's tables with skip locked (WazzupDevs/Kabuk#183): a table a
+  // user action holds waits for the next run.
+  it('skips a check-in whose table a user action holds, and ends it on the next run', async () => {
+    const [owner, member] = await all(2);
+    const roomId = await tableWith(owner, [member]);
+    await sql`update public.table_sessions set expires_at = now() - interval '1 minute' where id = ${member.sessionId}`;
+    const job = postgres(dbUrl, { max: 1, onnotice: () => {} });
+    try {
+      await sql.begin(async (tx) => {
+        await tx`select id from public.rooms where id = ${roomId} for update`;
+        const [ran] = await job.begin(async (jtx) => {
+          await jtx`set local lock_timeout = '2s'`;
+          return jtx`select private.end_expired_table_sessions() as n`;
+        });
+        expect(ran).toEqual({ n: 0 });
+      });
+    } finally {
+      await job.end();
+    }
+    const [next] = await sql`select private.end_expired_table_sessions() as n`;
+    expect(next).toEqual({ n: 1 });
+    expect((await seated(roomId)).map((x) => x.session_id)).toEqual([owner.sessionId]);
   });
 
   // The 12th phone asked for twice at once: both accepts lock the host's table, the second waits,
@@ -976,6 +1217,9 @@ describe('a table’s name and icon (K-45)', () => {
       names.push((res.body as { name: string }).name);
     }
     expect(new Set(names).size).toBe(4);
+    // The old owner_alias copy follows the name until 4.8 (§4.H).
+    const renamed = await roomRow(roomId);
+    expect(renamed.owner_alias).toBe(renamed.name);
     expect(await rooms(a, { action: 'reroll-name', roomId })).toEqual({
       status: 429,
       body: errorBody('reroll_limit'),
