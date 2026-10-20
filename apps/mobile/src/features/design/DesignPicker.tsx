@@ -6,7 +6,7 @@ import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { designPickerEnabled } from '@/theme/ThemeProvider';
 
-// Ayarlar → Tasarım (test): the component preview. Preview builds and development only;
+// Ayarlar → Tasarım (test): the component preview and the v46 gallery. Preview builds and development only;
 // production never renders it. Light and dark are chosen in Ayarlar → Görünüm in every build
 // (AppearanceSetting).
 export function DesignPicker() {
@@ -24,6 +24,14 @@ export function DesignPicker() {
           testID="preview-open"
           label={tr.design.previewOpen}
           onPress={() => router.push('/design-preview')}
+        />
+      </View>
+      <View>
+        <Button
+          variant="neutral"
+          testID="v46-gallery-open"
+          label={tr.design.galleryOpen}
+          onPress={() => router.push('/v46-gallery')}
         />
       </View>
     </View>

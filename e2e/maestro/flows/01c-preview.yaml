@@ -484,6 +484,30 @@ appId: app.kabuk.mobile
     visible:
       id: preview-open
     timeout: 10000
+# v46 native, step 2: the app's v46 gallery (Ayarlar → Tasarım (test) → v46 galeri), in the run's
+# scheme: the colours, then the components (v46's measured boxes until each is rewritten in src/ui).
+- scrollUntilVisible:
+    element:
+      id: v46-gallery-open
+    timeout: 30000
+- tapOn:
+    id: v46-gallery-open
+- extendedWaitUntil:
+    visible:
+      id: gal-colors
+    timeout: 10000
+- takeScreenshot: 04v-v46-gallery-colors
+- scrollUntilVisible:
+    element:
+      id: gal-birincil-52
+    centerElement: true
+    timeout: 30000
+- takeScreenshot: 04v-v46-gallery-components
+- back
+- extendedWaitUntil:
+    visible:
+      id: v46-gallery-open
+    timeout: 10000
 - back
 # Aktiviteler (docs/SPEC_V4.md K-15): the E2E venues have no events and a new account no history,
 # so both tabs show their empty state here; the event card is in the preview's covers above, a
