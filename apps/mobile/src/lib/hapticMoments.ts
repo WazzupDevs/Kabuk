@@ -4,7 +4,7 @@ import type { RequesterStatus } from '@shared/rooms.ts';
 // bildirim"): a touch confirms an outcome, never every press. Pure, so the table and the rule-5
 // cases are tested (hapticMoments.test.ts); src/lib/haptics.ts plays it with expo-haptics.
 export type HapticMoment =
-  | 'selection' // a choice changed: headcount, spot, filter chip
+  | 'selection' // a choice changed: headcount, spot
   | 'tabChanged' // a press on the tab bar opened another tab: every one is felt (see UNLIMITED)
   | 'tableOpened' // the table opened to the lobby
   | 'requestAccepted' // a join request was accepted
