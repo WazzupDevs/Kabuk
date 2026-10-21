@@ -2998,6 +2998,8 @@ export type Database = {
       rooms_set_visibility: {
         Args: {
           in_lobby: boolean;
+          new_game_tag?: string;
+          new_intent?: string;
           target_room_id: string;
           target_user_id: string;
         };

@@ -25,7 +25,15 @@ export type CreateRoomRequest = {
 export type CreateSoloRoomRequest = { action: 'create-solo' };
 // "Masanı lobiye aç" and "Lobiden çek" (§4.E): the owner only. Requests of the other road end as a
 // decline does (rule 5).
-export type SetVisibilityRequest = { action: 'set-visibility'; roomId: string; open: boolean };
+// Opening to the lobby takes the "Masanı lobiye aç" sheet's intent and game tag (step 4.5b); leaving
+// it clears them.
+export type SetVisibilityRequest = {
+  action: 'set-visibility';
+  roomId: string;
+  open: boolean;
+  intent?: Intent;
+  gameTag?: Concept;
+};
 // Without `asMember`: "Katıl" to a table in the lobby, from a table's owner (its whole table moves at
 // the accept) or a person on its own; another table's participant is not_owner. With it: "Bu
 // masadayım" to a running table, from a person on its own (already_in_table otherwise). At most 12

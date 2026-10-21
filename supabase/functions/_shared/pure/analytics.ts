@@ -28,6 +28,44 @@ export type AnalyticsEventProps = {
   game_opened: { concept: string };
   game_started: { concept: string; players: number; observers: number };
   game_left: { concept: string };
+  // v2: + mode (docs/SPEC_V2.md §13); for voice Tabu the owner table's score (cooperative: the
+  // team's) and, v3, the Tabu mode (docs/SPEC_V3.md §15).
+  game_completed: {
+    concept: Concept;
+    // Tabu only: Sahtekar has no score.
+    score?: number;
+    mode: GameMode;
+    tabu_mode?: TabuMode;
+    // Sahtekar (docs/SPEC_V3.md §20.2): who won and how many played; never the seat or the word.
+    outcome?: 'imposter' | 'tables';
+    players?: number;
+    // Harf Kapmaca and Şarkıda Geçsin (§20.3–20.4): objections used in the game, rounds lost on
+    // the clock (Harf only in the spec; Şarkı sends it too). Never the category or the word.
+    objections?: number;
+    rounds_lost_by_timeout?: number;
+    // İbre (§20.5): rounds the reporting table scored 4. Never the scale or the target.
+    bullseyes?: number;
+    // Faz 2 (docs/SPEC_V3.md §22.L): the phones in the room when the game ended.
+    phones?: number;
+  };
+  // v3 step 7 (docs/SPEC_V3.md §19.1): a Tabu game stopped before its last turn, by "Oyunu bitir"
+  // or a table leaving. The turn it stopped in and the game's length; nothing else.
+  game_abandoned: { concept: Concept; turn_no: number; total_turns: number };
+  report_submitted: Record<string, never>;
+  block_created: Record<string, never>;
+  session_ended: { duration_min: number };
+  explore_viewed: { view: 'list' | 'map' };
+  checkin_out_of_range: Record<string, never>;
+  // "Bu noktadayım" or a spot change (docs/SPEC_V3.md §15); never which spot.
+  spot_changed: Record<string, never>;
+  profile_photo_set: Record<string, never>;
+  profile_bio_set: Record<string, never>;
+  // A Sohbet card was opened in a room; the theme only, never the prompt.
+  sohbet_card_opened: { theme: SohbetTheme };
+  friend_request_sent: { source: FriendRequestSource };
+  friend_request_accepted: Record<string, never>;
+  friend_add_pressed: Record<string, never>;
+  friendship_created: { source: FriendshipSource };
   dm_sent: Record<string, never>;
   // Venue chat (docs/SPEC_V3.md §15): never the venue, the text or the other side.
   venue_chat_sent: { profiled: boolean };

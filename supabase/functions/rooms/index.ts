@@ -68,7 +68,13 @@ const Body: z.ZodType<RoomsRequest> = z.discriminatedUnion('action', [
     icon: z.string().refine(isTableIcon).optional(),
   }),
   z.object({ action: z.literal('create-solo') }),
-  z.object({ action: z.literal('set-visibility'), roomId: z.uuid(), open: z.boolean() }),
+  z.object({
+    action: z.literal('set-visibility'),
+    roomId: z.uuid(),
+    open: z.boolean(),
+    intent: z.enum(INTENTS).optional(),
+    gameTag: z.enum(CONCEPTS).optional(),
+  }),
   z.object({
     action: z.literal('set-icon'),
     roomId: z.uuid(),
@@ -201,6 +207,8 @@ Deno.serve(
             target_user_id: user.id,
             target_room_id: body.roomId,
             in_lobby: body.open,
+            ...(body.intent ? { new_intent: body.intent } : {}),
+            ...(body.gameTag ? { new_game_tag: body.gameTag } : {}),
           });
           if (error) throw dbError('rooms_set_visibility', error);
           lobbyChanged(data);

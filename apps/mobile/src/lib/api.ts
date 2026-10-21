@@ -46,7 +46,7 @@ import type {
 } from '@shared/api/profile.ts';
 import type { VenueChatPageResponse, VenueChatResponse } from '@shared/api/venueChat.ts';
 import type { GameFlowReportReason, ReportReason } from '@shared/chat.ts';
-import type { Concept } from '@shared/rooms.ts';
+import type { Concept, Intent } from '@shared/rooms.ts';
 import type { SayKind } from '@shared/sayChallenge.ts';
 import type { Mark } from '@shared/tabu.ts';
 import type { Side } from '@shared/teams.ts';
@@ -140,19 +140,20 @@ export function callLeave(): Promise<LeaveResponse> {
 export const roomsApi = {
   create: (body: Omit<CreateRoomRequest, 'action'>) =>
     invoke<CreateRoomResponse>('rooms', { action: 'create', ...body }),
-  setVisibility: (roomId: string, open: boolean) =>
-    invoke<RoomsOkResponse>('rooms', { action: 'set-visibility', roomId, open }),
+  // "Lobiye aç" with the sheet's intent and game tag, "Lobiden çek" without.
+  setVisibility: (roomId: string, open: boolean, tags: { intent?: Intent; gameTag?: Concept } = {}) =>
+    invoke<RoomsOkResponse>('rooms', { action: 'set-visibility', roomId, open, ...tags }),
   // The owner's icon picker (K-45, K-59).
   setIcon: (roomId: string, icon: string) =>
     invoke<SetIconResponse>('rooms', { action: 'set-icon', roomId, icon }),
   rerollName: (roomId: string) =>
     invoke<RerollNameResponse>('rooms', { action: 'reroll-name', roomId }),
-  // "Katıl" (an open table) or, with `asMember`, "Bu masadayım" (a running one).
-  requestJoin: (roomId: string, profiled: boolean, asMember = false) =>
+  // "Katıl" (an open table) or, with `asMember`, "Bu masadayım" (a running one). The person sits
+  // with the check-in's identity (docs/SPEC_V4.md §4.D).
+  requestJoin: (roomId: string, asMember = false) =>
     invoke<RequestJoinResponse>('rooms', {
       action: 'request-join',
       roomId,
-      profiled,
       ...(asMember ? { asMember } : {}),
     }),
   respond: (requestId: string, accept: boolean) =>
