@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
@@ -153,7 +153,8 @@ describe("v46's Keşfet motions", () => {
     }
     expect(motion.rowIn.iterations).toBe(1);
     expect(motion.rowIn.holdsBefore).toBe(true);
-    expect(source('motion.ts')).toMatch(/withRepeat\(run, motion\.iterations \?\? -1,/);
+    expect(source('nativeLoop.ts')).toMatch(/const iterations = motion\.iterations \?\? -1;/);
+    expect(source('nativeLoop.ts')).toMatch(/\{ iterations \},/);
     expect(source('VenueRow.tsx')).toMatch(/const waits = plays && m\.holdsBefore;/);
   });
 
@@ -165,6 +166,16 @@ describe("v46's Keşfet motions", () => {
     const row = source('VenueRow.tsx');
     expect(row).toMatch(/index \* V46_EXPLORE_MOTION\.rowStaggerMs/);
     expect(row).toMatch(/V46_EXPLORE_MOTION\.rowIn/);
+  });
+
+  it('let a row wait at most 200 ms, the rest coming in together (§4.C, the owner)', () => {
+    // v46's script puts no limit on the delay.
+    expect(html).toContain("r.style.animationDelay = (i * 40) + 'ms'");
+    const spec = readFileSync(resolve(root, 'docs/SPEC_V4.md'), 'utf8');
+    expect(spec).toContain('Keşfet satırlarının girişi en çok 200 ms bekler');
+    const row = source('VenueRow.tsx');
+    expect(row).toMatch(/const ROW_DELAY_MAX_MS = 200;/);
+    expect(row).toMatch(/Math\.min\(index \* V46_EXPLORE_MOTION\.rowStaggerMs, ROW_DELAY_MAX_MS\)/);
   });
 
   it('stop the rows, the steam and the beat with reduce motion, and fade the dot instead', () => {
@@ -188,10 +199,11 @@ describe("v46's Keşfet motions", () => {
     }
     expect(motion.liveFade.offWhenReduced).toBe(false);
     const dot = source('LiveDot.tsx');
-    expect(dot).toMatch(/if \(reduce\) \{\s*const fade = keyframeLoop\(m\.liveFade, 'opacity'\)/);
-    expect(dot).toMatch(/keyframeLoop\(m\.livePulse, 'scale'\)/);
-    expect(dot).toMatch(/keyframeLoop\(m\.liveHalo, 'scale'\)/);
-    expect(dot).toMatch(/keyframeLoop\(m\.liveHalo, 'opacity'\)/);
+    expect(dot).toMatch(/const beats = active && !reduce;\s*const fades = active && reduce;/);
+    expect(dot).toMatch(/useKeyframeLoop\(m\.livePulse, 'scale', beats,/);
+    expect(dot).toMatch(/useKeyframeLoop\(m\.liveFade, 'opacity', fades,/);
+    expect(dot).toMatch(/useKeyframeLoop\(m\.liveHalo, 'scale', beats,/);
+    expect(dot).toMatch(/useKeyframeLoop\(m\.liveHalo, 'opacity', beats,/);
     expect(source('VenueThumb.tsx')).toMatch(/!\(reduce && steam\.offWhenReduced\)/);
     expect(source('VenueRow.tsx')).toMatch(/!\(reduce && m\.offWhenReduced\)/);
   });
@@ -206,6 +218,22 @@ describe("v46's Keşfet motions", () => {
   it("hold the loops where they rest, as the visual gate draws v46's still page", () => {
     expect(source('LiveDot.tsx')).toMatch(/useLoopActive\(\)/);
     expect(source('VenueThumb.tsx')).toMatch(/useLoopActive\(\)/);
+  });
+
+  it('loop on the native driver, not Reanimated (a Reanimated loop commits the UI tree every frame on Android)', () => {
+    const loop = source('nativeLoop.ts');
+    expect(loop).toMatch(/import \{ Animated, Easing \} from 'react-native';/);
+    expect(loop).toMatch(/useNativeDriver: true/);
+    for (const file of ['LiveDot.tsx', 'VenueThumb.tsx']) {
+      expect(source(file), file).toMatch(/from '\.\/nativeLoop'/);
+      expect(source(file), file).not.toMatch(/react-native-reanimated/);
+    }
+    // No other part of src/ui loops on Reanimated: its one-off motions (a press, a row coming in)
+    // end by themselves.
+    const ui = readdirSync(resolve(root, 'apps/mobile/src/ui')).filter((f) => /\.tsx?$/.test(f));
+    for (const file of ui) {
+      expect(source(file), file).not.toMatch(/withRepeat|useFrameCallback/);
+    }
   });
 });
 
