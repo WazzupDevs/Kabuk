@@ -75,6 +75,18 @@ appId: app.kabuk.mobile
 - assertNotVisible:
     id: table-invite
 - takeScreenshot: 16-table-person
+# Android's back as a person at the table, too: the tabs come back without a crash (see 04).
+- pressKey: back
+- extendedWaitUntil:
+    visible:
+      id: go-to-table
+    timeout: 15000
+- tapOn:
+    id: go-to-table
+- extendedWaitUntil:
+    visible:
+      id: table-top
+    timeout: 15000
 - runScript:
     file: ../scripts/bot.js
     env:

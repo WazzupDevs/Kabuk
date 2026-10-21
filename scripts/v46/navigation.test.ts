@@ -289,7 +289,16 @@ describe("the app's tabs", () => {
     );
     // Each tab screen is a blur target; the focused one is the bar's; over the map it is opaque.
     expect(tabs).toMatch(/<BlurTargetView ref=\{ref\}/);
-    expect(tabs).toMatch(/blurTarget=\{target \?\? undefined\}\s*opaque=\{overMap\}/);
+    expect(tabs).toMatch(
+      /blurTarget=\{target \?\? undefined\}\s*opaque=\{overMap \|\| target === null\}/,
+    );
+    // Android's back over the tabs (4.5): no BlurView while the tabs are covered, and a target is
+    // blurred only once it has been attached for two frames (expo-blur throws otherwise).
+    expect(tabs).toMatch(/const target = useSettledTarget\(useBarMode\(\(s\) => s\.target\)\)/);
+    expect(tabs).toMatch(/const focused = useIsFocused\(\)/);
+    expect(tabs).toMatch(/requestAnimationFrame\(\(\) => setSettled\(target\)\)/);
+    expect(tabs).toMatch(/cancelAnimationFrame\(second\);\s*\/\/[^\n]*\n\s*setSettled\(null\);/);
+    expect(tabs).toMatch(/return focused && settled === target \? settled : null;/);
     expect(app('app/(app)/(tabs)/_layout.tsx')).toMatch(
       /screenLayout=\{\(\{ navigation, children \}\) => \(\s*<TabScene navigation=\{navigation\}>\{children\}<\/TabScene>/,
     );

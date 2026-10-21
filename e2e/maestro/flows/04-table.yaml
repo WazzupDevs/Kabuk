@@ -136,3 +136,20 @@ appId: app.kabuk.mobile
 - extendedWaitUntil:
     notVisible: Masadakiler · 2 kişi
     timeout: 10000
+# Android's back from the table screen to the tabs (the 4.5 crash: the tab bar's blur was set up
+# again before its target was attached, and the app closed). Mekan comes back with the table card;
+# its head opens the table again for 05.
+- pressKey: back
+- extendedWaitUntil:
+    visible:
+      id: go-to-table
+    timeout: 15000
+- assertVisible:
+    id: tab-venue
+- takeScreenshot: 18b-back-to-venue
+- tapOn:
+    id: go-to-table
+- extendedWaitUntil:
+    visible:
+      id: table-top
+    timeout: 15000

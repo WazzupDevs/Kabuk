@@ -1,6 +1,6 @@
 import { ROUTES, type TabKey } from '@shared/navigation.ts';
 import { BlurTargetView } from 'expo-blur';
-import { router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect, useIsFocused } from 'expo-router';
 import type { BottomTabBarProps } from 'expo-router/tabs';
 import {
   createContext,
@@ -11,6 +11,7 @@ import {
   useContext,
   useEffect,
   useRef,
+  useState,
 } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -116,6 +117,34 @@ export function TabScene({
   );
 }
 
+// The target the bar may blur now: the focused tab screen, once the tabs are in front and that
+// screen has been attached for two frames; null otherwise, and the bar is drawn opaque. expo-blur
+// sets its BlurView up again whenever the view is attached to the window and throws if the target
+// is not attached then (`BlurViewConfigurationException`, a native crash): after Android's back
+// from a screen pushed over the tabs (the table screen), the tabs come back while their screens
+// are still being attached. So the BlurView is gone while the tabs are covered, and each target
+// gets a new one, set up once (no listener left behind on the old target). The bar is opaque for
+// those frames.
+function useSettledTarget(target: RefObject<View | null> | null): RefObject<View | null> | null {
+  const focused = useIsFocused();
+  const [settled, setSettled] = useState<RefObject<View | null> | null>(null);
+  useEffect(() => {
+    // Unfocused, or another target: the return below already says no blur.
+    if (!focused || !target) return undefined;
+    let second = 0;
+    const first = requestAnimationFrame(() => {
+      second = requestAnimationFrame(() => setSettled(target));
+    });
+    return () => {
+      cancelAnimationFrame(first);
+      cancelAnimationFrame(second);
+      // Covered or another target: the next one waits its own two frames again.
+      setSettled(null);
+    };
+  }, [focused, target]);
+  return focused && settled === target ? settled : null;
+}
+
 // Keşfet · Aktiviteler · Mekan · Mesajlar · Profil. `opens` says which tab a press leads to (the
 // Mekan tab without a table: Keşfet, opened by its route as the tab's listener did); every press
 // that changes the tab is felt, the redirected one too (haptics.ts → tabChanged). An unread count
@@ -130,7 +159,7 @@ export function TabBar({
   const { scheme } = useTheme();
   const hidden = useBarMode((s) => s.hidden > 0);
   const overMap = useBarMode((s) => s.overMap > 0);
-  const target = useBarMode((s) => s.target);
+  const target = useSettledTarget(useBarMode((s) => s.target));
   if (hidden) return null;
 
   const focused = state.routes[state.index];
@@ -186,7 +215,7 @@ export function TabBar({
         selected={focused ? (TAB_OF[focused.name] ?? null) : null}
         onPress={onPress}
         blurTarget={target ?? undefined}
-        opaque={overMap}
+        opaque={overMap || target === null}
       />
     </View>
   );
