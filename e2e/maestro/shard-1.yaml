@@ -1,16 +1,16 @@
 # P0 shard 1 of 4 (.github/workflows/e2e.yml runs the four in parallel, light and dark). p0.yaml is
 # the whole path in one run (locally); the shards split it so each runs on its own emulator and
-# local stack: every shard signs up, picks the design, checks in and names the table; a shard
-# without 04 then moves to the bot's spot (flows/spot-kutuphane.yaml), as 04 does.
+# local stack: every shard signs up, picks the design, checks in and opens Profil; a shard
+# without 04 then moves to the bot's spot (flows/spot-kutuphane.yaml); 04 sits with the bot at Kantin.
 # scripts/e2e/shards.test.ts checks that the shards cover p0.yaml once and keep its order.
 appId: app.kabuk.mobile
 name: P0 kritik yol, parça 1
 ---
 - runFlow: flows/01-login.yaml
 - runFlow: flows/01b-design.yaml
-- runFlow: flows/01c-preview.yaml
-- runFlow: flows/01d-returning.yaml
 - runFlow: flows/02-checkin.yaml
 - runFlow: flows/03-name.yaml
-- runFlow: flows/spot-kutuphane.yaml
-- runFlow: flows/06b-tabu-coop.yaml
+- runFlow: flows/04-table.yaml
+- runFlow: flows/05-table-end-friend-dm.yaml
+- runFlow: flows/05b-dm-ticks-typing.yaml
+- runFlow: flows/07-history-block.yaml

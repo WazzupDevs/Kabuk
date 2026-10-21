@@ -115,7 +115,8 @@ appId: app.kabuk.mobile
     latitude: ${INSIDE_LAT}
     longitude: ${INSIDE_LNG}
 - tapOn: Konumumu kullan
-# "Neredesin?": the venue's spots, before the headcount.
+# "Neredesin?": the venue's spots. A check-in opens no table and asks no headcount (docs/SPEC_V4.md
+# §4.E): Mekan follows with the card that sets up a table ("Masa kur").
 - extendedWaitUntil:
     visible: Neredesin\?
     timeout: 30000
@@ -124,28 +125,13 @@ appId: app.kabuk.mobile
     id: spot-kantin
 - tapOn: Devam
 - extendedWaitUntil:
-    visible: Masada kaç kişisiniz\?
-    timeout: 15000
-# The name comes from sign-up (docs/SPEC_V3.md §3): joining with the profile is available.
-- assertNotVisible: Profille katılmak için önce Profil sekmesinden bir ad seç.
-- takeScreenshot: 09-headcount
-- tapOn:
-    id: headcount-2
-- tapOn: Masayı aç
-- extendedWaitUntil:
-    visible: Masan hazır
-    timeout: 15000
-- takeScreenshot: 10-table-ready
-- tapOn: Devam
-- extendedWaitUntil:
     visible:
-      id: lobby-open
+      id: table-create-open
     timeout: 15000
-- assertVisible: Lobide değil
 - assertVisible: 'Noktan: Kantin'
 - takeScreenshot: 11-venue
 # The top row (v45: .top): the own photo opens Profil, Mekan's tab brings it back; "Mekandan ayrıl"
-# asks first and "Vazgeç" keeps the table (Android may write the dialog's buttons in capitals).
+# asks first and "Vazgeç" keeps the check-in (Android may write the dialog's buttons in capitals).
 - tapOn:
     id: venue-profile
 - extendedWaitUntil:
@@ -168,29 +154,4 @@ appId: app.kabuk.mobile
     notVisible: 'Mekandan ayrılıyor musun\?'
     timeout: 10000
 - assertVisible:
-    id: lobby-open
-# "Davet et" (docs/SPEC_V4.md §4.C, 4.3): how a friend at the venue joins; off the lobby the sheet
-# asks to open the table to it first.
-- tapOn:
-    id: invite-open
-- extendedWaitUntil:
-    visible:
-      id: invite-sheet
-    timeout: 10000
-- assertVisible:
-    id: invite-open-lobby
-- takeScreenshot: 11a-invite
-# Its "Lobiye aç" opens the lobby sheet in its place; back closes that too.
-- tapOn:
-    id: invite-open-lobby
-- extendedWaitUntil:
-    visible:
-      id: intent-none
-    timeout: 10000
-- assertNotVisible:
-    id: invite-sheet
-- back
-- extendedWaitUntil:
-    notVisible:
-      id: intent-none
-    timeout: 10000
+    id: table-create-open

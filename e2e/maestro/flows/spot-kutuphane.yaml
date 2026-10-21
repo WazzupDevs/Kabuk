@@ -1,41 +1,24 @@
-# The game flows play at Kütüphane, where the bot checks in; only tables at the same spot play
-# together (docs/SPEC_V3.md §4.3). 02 checks this phone in at Kantin and 04 moves it to Kütüphane
-# with "Bu noktadayım" under the bot's room. A shard without 04 (shard-*.yaml) makes the same move
-# here, without 04's checks and screenshots.
+# The flows with the bot's table play at Kütüphane, where the bot checks in; only tables at the
+# same spot sit together (docs/SPEC_V3.md §4.3). 02 checks this phone in at Kantin; a shard without
+# 04 (shard-*.yaml) moves it to Kütüphane here with the card's "Değiştir" and "Bu noktadayım".
 appId: app.kabuk.mobile
 ---
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: checkin
-      BODY: '{"spot":"kutuphane"}'
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: create-room
 - tapOn:
     id: tab-venue
 - scrollUntilVisible:
     element:
-      id: spot-here
+      id: change-spot
     centerElement: true
-    timeout: 20000
-- tapOn:
-    id: spot-here
-- scrollUntilVisible:
-    element:
-      id: request-join
     timeout: 15000
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: end-room
+- tapOn:
+    id: change-spot
 - extendedWaitUntil:
-    notVisible:
-      id: request-join
-    timeout: 20000
-- scrollUntilVisible:
-    element:
-      text: 'Noktan: Kütüphane'
-    direction: UP
+    visible:
+      id: spot-kutuphane
     timeout: 10000
+- tapOn:
+    id: spot-kutuphane
+- tapOn: Bu noktadayım
+- extendedWaitUntil:
+    visible: 'Noktan: Kütüphane'
+    timeout: 15000

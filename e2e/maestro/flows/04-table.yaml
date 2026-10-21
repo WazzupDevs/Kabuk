@@ -1,411 +1,138 @@
-# V7 and T1–T3 with the v3 room flow (docs/SPEC_V3.md §5) and the Faz 3 venue (§23.C): a new
-# alias, the spots (a table at another spot, "Bu noktadayım", then the same spot), "Lobiye aç"
-# with an intent and a game tag, the table card "Lobide açık" and its head to the waiting room,
-# the bot table asks to join, accept, chat, the bot proposes Sesli Tabu and this phone
-# accepts, one voice Tabu turn, "Oyunu bitir" back to chat, and a proposal the bot does not accept.
+# The people's table (docs/SPEC_V4.md §4.E, adım 4.5b): "Masa kur" with the table's icon, off the
+# lobby; the table screen alone (its games all "Yakında" in 4.5), Masadakiler with the owner's
+# "Başka ad", "Davet et", then "Masanı lobiye aç"; the bot asks to sit down and this phone accepts.
+# 05 ends the table from here.
 appId: app.kabuk.mobile
 ---
 - runScript:
     file: ../scripts/bot.js
     env:
       ACTION: login
-# The bot table checks in at another spot and opens a room there: the lobby groups it under its
-# spot with "Bu noktadayım" instead of a request (docs/SPEC_V3.md §4.3).
+# The bot sits at this phone's spot: only tables at the same spot sit together (§4.3).
 - runScript:
     file: ../scripts/bot.js
     env:
       ACTION: checkin
-      BODY: '{"spot":"kutuphane"}'
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: create-room
+      BODY: '{"spot":"kantin"}'
 - tapOn:
     id: tab-venue
-# "Adı değiştir": three per check-in (§5.6).
-- tapOn:
-    id: reroll-alias
-- extendedWaitUntil:
-    visible: 2 hakkın kaldı
-    timeout: 15000
-- takeScreenshot: 11b-alias-rerolled
-# The other two: with none left the link goes and only the line that says so stays (it wraps inside
-# the card at the largest text size).
-- tapOn:
-    id: reroll-alias
-- extendedWaitUntil:
-    visible: 1 hakkın kaldı
-    timeout: 15000
-- tapOn:
-    id: reroll-alias
-- extendedWaitUntil:
-    visible: Bu masada adı değiştirme hakkın bitti
-    timeout: 15000
-- assertNotVisible:
-    id: reroll-alias
-- takeScreenshot: 11c-alias-rerolls-done
-# The table card (alias, spot, "Lobiye aç", "Davet et") is above the lobby: scroll to it.
 - scrollUntilVisible:
     element:
-      id: spot-here
+      id: table-create-open
     centerElement: true
-    timeout: 20000
-- assertVisible: Kütüphane
-# "Katıl" by id: the open table's card has "Bu masadayım" too when its owner can have members.
-- assertNotVisible:
-    id: request-join
-- takeScreenshot: 12b-lobby-other-spot
-- tapOn:
-    id: spot-here
-- scrollUntilVisible:
-    element:
-      id: request-join
     timeout: 15000
-- takeScreenshot: 12c-lobby-same-spot
-# "Katıl" to the bot's table: the request waits in its row (Kesişme and the seconds left); the bot
-# declines. A decline looks like the wait until the 60 s run out (rule 5), then the row says "Masa
-# şu an müsait değil." (the miss) and leaves: a table asks another once (venue_lobby).
 - tapOn:
-    id: request-join
-- scrollUntilVisible:
-    element:
-      id: request-send
-    centerElement: true
-    timeout: 10000
-- tapOn:
-    id: request-send
-- extendedWaitUntil:
-    visible: 'İsteğin gönderildi\. Yanıt bekleniyor \(\d+ sn\)\.'
-    timeout: 15000
-- takeScreenshot: 12d-lobby-request-waiting
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: decline-request
-# Declined, and still the same wait (rule 5): nothing tells a decline from a timeout early.
-- assertVisible: 'İsteğin gönderildi\. Yanıt bekleniyor \(\d+ sn\)\.'
-- assertNotVisible: Masa şu an müsait değil.
-- extendedWaitUntil:
-    visible: Masa şu an müsait değil.
-    timeout: 80000
-- takeScreenshot: 12e-lobby-request-missed
-# Maestro counts a wait's timeout from the last tap (over a minute ago here, before the 60 s), so
-# this one is long enough to still leave some seconds.
+    id: table-create-open
 - extendedWaitUntil:
     visible:
-      id: lobby-empty
-    timeout: 120000
-# The bot leaves the lobby; this phone opens its table to it at the same spot and the bot asks to
-# join.
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: end-room
+      id: table-icon-pick
+    timeout: 10000
+- takeScreenshot: 12-create-table
+# The icon picker (K-45): the free scenes by theme; the same link closes it.
+- tapOn:
+    id: table-icon-pick
+- extendedWaitUntil:
+    visible:
+      id: table-icon-picker
+    timeout: 10000
+- takeScreenshot: 12b-icon-picker
+- tapOn:
+    id: table-icon-pick
 - extendedWaitUntil:
     notVisible:
-      id: request-join
-    timeout: 20000
+      id: table-icon-picker
+    timeout: 10000
+# The sheet scrolls: at the largest text size "Masayı kur" is below its fold.
 - scrollUntilVisible:
     element:
-      text: 'Noktan: Kütüphane'
-    direction: UP
-    timeout: 10000
-- extendedWaitUntil:
-    visible:
-      id: lobby-open
+      id: table-create
     timeout: 10000
 - tapOn:
-    id: lobby-open
+    id: table-create
+# The table opens at once: alone at it, the owner's bar, the games.
+- extendedWaitUntil:
+    visible:
+      id: table-top
+    timeout: 15000
+- assertVisible:
+    id: table-solo
+- assertVisible:
+    id: table-lobby
+- assertVisible: Yakında
+- takeScreenshot: 13-table
+# Masadakiler from the table's head: this phone, the owner's tag and the rename box; "Başka ad"
+# renews the name, 3 times a table.
+- tapOn:
+    id: table-who
+- extendedWaitUntil:
+    visible:
+      id: table-rename
+    timeout: 10000
+- tapOn:
+    id: table-reroll
+- extendedWaitUntil:
+    visible: 2 yenileme hakkın var
+    timeout: 15000
+- takeScreenshot: 13b-people
+- back
+- extendedWaitUntil:
+    notVisible:
+      id: table-rename
+    timeout: 10000
+# "Davet et": the friends at the venue; this phone has none yet.
+- tapOn:
+    id: table-invite
+- extendedWaitUntil:
+    visible:
+      id: invite-sheet
+    timeout: 10000
+- takeScreenshot: 13c-invite
+- back
+- extendedWaitUntil:
+    notVisible:
+      id: invite-sheet
+    timeout: 10000
+# "Masanı lobiye aç": the lobby sheet; the bot's "Katıl" then waits for this phone.
+- tapOn:
+    id: table-lobby
 - extendedWaitUntil:
     visible:
       id: intent-none
     timeout: 10000
-# No game is chosen: an optional intent label, an optional game tag that only the lobby shows, and
-# anonymous (default) or with the profile.
-- tapOn:
-    id: intent-game
-- tapOn:
-    id: game-tag-tabu
-# The tag is chosen before the sheet scrolls on: further down it is off the top of a 320 × 640
-# screen.
-- assertVisible:
-    id: game-tag-tabu
-    selected: true
-- takeScreenshot: 13-new-room
-# The choices push the button below the fold of the sheet.
-- scrollUntilVisible:
-    element:
-      id: lobby-confirm
-    timeout: 10000
-- assertVisible:
-    id: participation-anonymous
-# "Profilimle" needs a profile photo (docs/SPEC_V3.md §22.G); this phone skipped it at sign-up, so
-# the choice says why and opens the photo sheet in place.
-- extendedWaitUntil:
-    visible: Profilinle görünmek için profil fotoğrafı gerekiyor.
-    timeout: 10000
-- takeScreenshot: 13b-new-room-bottom
-- tapOn:
-    id: photo-add
-- extendedWaitUntil:
-    visible:
-      id: photo-from-library
-    timeout: 10000
-- takeScreenshot: 13c-new-room-photo-sheet
-- tapOn:
-    id: photo-cancel
-# The sheet comes back with the choices made: up to the tag, still chosen, then down to the button.
-- scrollUntilVisible:
-    element:
-      id: game-tag-tabu
-    direction: UP
-    timeout: 10000
-- assertVisible:
-    id: game-tag-tabu
-    selected: true
 - scrollUntilVisible:
     element:
       id: lobby-confirm
     timeout: 10000
 - tapOn:
     id: lobby-confirm
-# In the lobby: the table card says so, and nothing opens the room by itself (§23.C). The venue
-# was not at its top when the sheet opened; it goes back to the card by itself, no scrolling here.
-- extendedWaitUntil:
-    visible: Lobide açık
-    timeout: 15000
-- assertVisible:
-    id: withdraw-table
-- assertNotVisible:
-    id: lobby-open
-- takeScreenshot: 13d-venue-in-lobby
-# "Davet et" on a table in the lobby: the name and how a friend joins, no "Lobiye aç".
-- tapOn:
-    id: invite-open
 - extendedWaitUntil:
     visible:
-      id: invite-sheet
-    timeout: 10000
-- assertNotVisible:
-    id: invite-open-lobby
-- takeScreenshot: 13e-invite-in-lobby
-- back
-- extendedWaitUntil:
-    notVisible:
-      id: invite-sheet
-    timeout: 10000
-# The card's head: today's waiting room, where the table can play on its own until another table joins.
-- scrollUntilVisible:
-    element:
-      id: go-to-table
-    centerElement: true
-    timeout: 10000
-- tapOn:
-    id: go-to-table
-- extendedWaitUntil:
-    visible:
-      id: solo-tabu
+      id: table-withdraw
     timeout: 15000
-- takeScreenshot: 14-room-waiting
 - runScript:
     file: ../scripts/bot.js
     env:
       ACTION: request-join
-      BODY: '{"profiled":true}'
-# The request opens over whatever screen is up (§23.C), here the waiting room. The bot asked with
-# its profile: the card shows its name and age (§23.E), read while the request waits.
 - extendedWaitUntil:
     visible: Katılma isteği
     timeout: 20000
-- assertVisible: Geç
-- extendedWaitUntil:
-    visible: 'Bot Masa, \d+'
-    timeout: 10000
 - takeScreenshot: 15-join-request
 - tapOn:
     id: join-accept
-# The room starts as a chat: "Oyun öner", no game running.
+# The bot sits down (with its check-in's capsule name: anonymous, §4.D): two people, and
+# Masadakiler lists both.
 - extendedWaitUntil:
-    visible:
-      id: propose-tabu
-    timeout: 15000
-- takeScreenshot: 16-room-two-tables
-# The bot table proposes Sesli Tabu; the game starts when this table accepts.
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: propose-game
-      BODY: '{"concept":"tabu"}'
-- extendedWaitUntil:
-    visible:
-      id: proposal-accept
+    notVisible:
+      id: table-solo
     timeout: 20000
-- takeScreenshot: 16b-proposal
+- assertVisible: 2 kişi
 - tapOn:
-    id: proposal-accept
-# The device's first two-table game: Sesli Tabu's short intro, once (docs/SPEC_V3.md §19.2).
+    id: table-who
 - extendedWaitUntil:
-    visible:
-      id: first-game-intro
-    timeout: 20000
-- takeScreenshot: 16c-first-game-intro
-- tapOn:
-    id: intro-done
-# Turn 1 opens ready (§19.1): this phone describes and starts it with Başla.
-- extendedWaitUntil:
-    visible:
-      id: turn-start
-    timeout: 15000
-- takeScreenshot: 16d-turn-ready
-- tapOn:
-    id: turn-start
-# Turn 1: the owner table (this phone) describes; its card starts covered.
-- extendedWaitUntil:
-    visible: Kartı görmek için dokun
-    timeout: 20000
-- takeScreenshot: 17-card-covered
-- tapOn: Kartı görmek için dokun
-- extendedWaitUntil:
-    visible:
-      id: tabu-card
-    timeout: 20000
-- takeScreenshot: 18-card-open
-# The game is full screen; the room chat opens from its button as a panel and closes again.
-- tapOn:
-    id: game-chat
-- extendedWaitUntil:
-    visible:
-      id: game-chat-panel
+    visible: Masadakiler · 2 kişi
     timeout: 10000
-- takeScreenshot: 18b-game-chat
-- tapOn:
-    id: chat-back
-# CLAUDE.md → Ekran davranışı: the clock, the card and the buttons on screen together, no
-# scrolling (StageFit).
+- takeScreenshot: 18-table
+- back
 - extendedWaitUntil:
-    visible:
-      id: tabu-pass
+    notVisible: Masadakiler · 2 kişi
     timeout: 10000
-- assertVisible:
-    id: game-clock
-# The passes left are part of the button's text (Button: the detail shrinks with its label).
-- assertVisible: Pas 3 hak
-- tapOn:
-    id: tabu-pass
-- extendedWaitUntil:
-    visible: Pas 2 hak
-    timeout: 10000
-# The judging table (the bot) says Doğru.
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: mark
-      BODY: '{"result":"correct"}'
-- takeScreenshot: 19-after-marks
-# Turn 2 without waiting 60 s: the bot table's turn, this phone judges.
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: expire-turn
-# Turn 2 opens ready: the last turn's summary and the countdown here; the bot table describes and
-# starts it.
-- extendedWaitUntil:
-    visible:
-      id: turn-countdown
-    timeout: 20000
-- takeScreenshot: 19b-turn-ready-waiting
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: begin-turn
-# The turn counter on top and the judge's buttons at the bottom, together (no scrolling).
-- extendedWaitUntil:
-    visible:
-      text: .*Tur 2/6
-    timeout: 20000
-- extendedWaitUntil:
-    visible:
-      id: tabu-taboo
-    timeout: 20000
-- takeScreenshot: 20-judge
-- tapOn:
-    id: tabu-correct
-# "Oyunu bitir": back to the chat, the room stays.
-- scrollUntilVisible:
-    element:
-      id: end-game
-    centerElement: true
-    timeout: 10000
-- tapOn:
-    id: end-game
-- extendedWaitUntil:
-    visible:
-      id: end-game-confirm
-    timeout: 10000
-- takeScreenshot: 20a-end-confirm
-# "Oyunu bitir" asks first (canvas: Aşama 6 · Oyunlar).
-- tapOn:
-    id: end-game-confirm
-# The screen is still scrolled down to the button; the last game is at the top.
-- scrollUntilVisible:
-    element:
-      id: last-game
-    direction: UP
-    timeout: 15000
-# The strip and the tabs scroll with the page (docs/SPEC_V3.md §23.F): the game list may sit below
-# the fold.
-- scrollUntilVisible:
-    element:
-      id: propose-sohbet
-    centerElement: true
-    timeout: 10000
-- takeScreenshot: 20b-back-to-chat
-# This table proposes Sohbet kartları and the bot declines: "Öneri kabul edilmedi" at once (S7).
-- tapOn:
-    id: propose-sohbet
-- extendedWaitUntil:
-    visible: Sohbet kartları önerdin.*
-    timeout: 10000
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: answer-game
-      BODY: '{"accept":false}'
-- extendedWaitUntil:
-    visible:
-      id: proposal-not-accepted
-    timeout: 15000
-- takeScreenshot: 20c-not-accepted
-# docs/SPEC_V3.md §21: the bot table writes in the room chat; this table reacts with ❤️ (the second
-# of the six) and the bot sees it. Last in the flow: until now the room has no messages.
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: chat-send
-      BODY: '{"body":"Selam masa"}'
-# On Oyun Seç the message puts a dot on Masa Sohbeti (§23.F); the tabs are at the top of the page.
-- scrollUntilVisible:
-    element:
-      id: tab-chat
-    direction: UP
-    timeout: 15000
-- takeScreenshot: 20c2-unread-chat
-- tapOn:
-    id: tab-chat
-# Masa Sohbeti opens at the newest message.
-- extendedWaitUntil:
-    visible: Selam masa
-    timeout: 15000
-- longPressOn: Selam masa
-- extendedWaitUntil:
-    visible:
-      id: reaction-bar
-    timeout: 10000
-- tapOn:
-    id: react-1
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: chat-reactions
-      EXPECT_REACTION: ❤️
-- takeScreenshot: 20d-room-reaction

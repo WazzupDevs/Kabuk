@@ -1,19 +1,19 @@
-# Faz 2, teams (docs/SPEC_V3.md §22; step 22.6): this phone plays with two bot tables. Bot A is the
-# bot server on port 8787 ("Bot İki" since 08); bot B is the second bot server, on port 8788.
-# 1. "Bu masadayım" (§22.C): this phone joins bot A's side as a member; bot B joins as the other
-#    side's leader. Refereed Sesli Tabu (§22.E): on bot A's turn this phone is the describer's
-#    teammate and never gets the card; on bot B's turn its side judges: the card and Tabu.
-# 2. Leadership (§22.D): bot A leaves; this phone leads the side now and ends the room.
-# 3. This phone alone against bot A and bot B (§22.C), then the table's end (§23.G): both of the
-#    other side's phones, one row each.
+# A table of three (docs/SPEC_V4.md §4.E, K-13): this phone sets up a table in the lobby, bot A
+# (port 8787) and bot B (port 8788) ask with "Katıl" and this phone accepts both. The owner leaves:
+# the table goes on, handed to the earliest person there (bot A), and this phone sees "Masadan
+# ayrıldın". Then "Bu masadayım" to that table, now out of the lobby: bot A accepts, and its
+# "Masayı bitir" brings this phone to Masa bitti.
 appId: app.kabuk.mobile
 ---
 - runScript:
     file: ../scripts/bot.js
     env:
+      ACTION: login
+- runScript:
+    file: ../scripts/bot.js
+    env:
       ACTION: checkin
-      BODY: '{"spot":"kutuphane","headcount":2,"teams":true}'
-- evalScript: ${output.aliasA = output.bot.alias}
+      BODY: '{"spot":"kutuphane"}'
 - runScript:
     file: ../scripts/bot.js
     env:
@@ -23,220 +23,120 @@ appId: app.kabuk.mobile
     file: ../scripts/bot.js
     env:
       ACTION: checkin
-      BODY: '{"spot":"kutuphane","headcount":2,"teams":true}'
+      BODY: '{"spot":"kutuphane"}'
       BOT_PORT: '8788'
-- evalScript: ${output.aliasB = output.bot.alias}
-# 1. Bot A opens its table to the lobby at this phone's spot: its card has "Katıl" and "Bu masadayım".
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: create-room
+# "Masa kur" with "Lobide görünsün" on.
 - tapOn:
     id: tab-venue
-# Centred: at the bottom of a 320 × 640 screen the card's second button sits under the floating tab
-# bar, where a tap lands on the bar.
 - scrollUntilVisible:
     element:
-      id: request-member
+      id: table-create-open
     centerElement: true
-    timeout: 20000
-- takeScreenshot: 59-teams-lobby
+    timeout: 15000
 - tapOn:
-    id: request-member
-# The sheet scrolls: at the largest text size "İstek gönder" is below its fold.
-- scrollUntilVisible:
-    element:
-      id: request-send
-    centerElement: true
-    timeout: 10000
-- takeScreenshot: 60-teams-member-sheet
-- tapOn:
-    id: request-send
-# "Liderine bu adı söyle": this phone's alias at its largest, the name bot A sees on the request.
+    id: table-create-open
 - extendedWaitUntil:
     visible:
-      id: member-pending
-    timeout: 15000
-- takeScreenshot: 61-teams-member-pending
-# While it waits the card's head opens the table screen (no room yet, K-36); the acceptance takes
-# that screen to the room. Not centred: the head is near the page's top and cannot be.
-- scrollUntilVisible:
-    element:
-      id: go-to-table
-    direction: UP
+      id: table-lobby
     timeout: 10000
 - tapOn:
-    id: go-to-table
+    id: table-lobby
+- scrollUntilVisible:
+    element:
+      id: table-create
+    timeout: 10000
+- tapOn:
+    id: table-create
 - extendedWaitUntil:
     visible:
-      id: solo-tabu
+      id: table-withdraw
     timeout: 15000
+# Bot A first, then bot B: each request on its own card.
 - runScript:
     file: ../scripts/bot.js
     env:
-      ACTION: accept-request
+      ACTION: request-join
 - extendedWaitUntil:
     visible:
-      id: leave-room
+      id: join-accept
     timeout: 20000
-- back
-# On bot A's side in the lobby (docs/SPEC_V3.md §23.C): the table card says so, its head opens the
-# room and "Masadan çık" is under it; on the venue nothing sends the phone to the room.
-- extendedWaitUntil:
-    visible:
-      id: leave-table
-    timeout: 20000
-# The phone was down at the lobby for "Bu masadayım": up to the card's status line.
-- scrollUntilVisible:
-    element:
-      text: Lobide açık
-    direction: UP
-    timeout: 10000
-- takeScreenshot: 61b-teams-member-card
-# Centred, like "Bu masadayım": a button at the bottom sits under the tab bar or the Mekan tile.
-- scrollUntilVisible:
-    element:
-      id: go-to-table
-    centerElement: true
-    timeout: 10000
 - tapOn:
-    id: go-to-table
-# In the room as a member: the red button is "Masadan çık", not "Masayı bitir".
+    id: join-accept
 - extendedWaitUntil:
-    visible:
-      id: leave-room
+    visible: 2 kişi
     timeout: 20000
-- assertNotVisible:
-    id: end-room
-- takeScreenshot: 62-teams-member-room
-# Bot B joins as the other side's leader ("Katıl"); bot A accepts.
 - runScript:
     file: ../scripts/bot.js
     env:
       ACTION: request-join
       BOT_PORT: '8788'
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: accept-request
-# A member may propose a game (§22.E); bot B accepts.
 - extendedWaitUntil:
     visible:
-      id: propose-tabu
+      id: join-accept
     timeout: 20000
 - tapOn:
-    id: propose-tabu
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: answer-game
-      BOT_PORT: '8788'
-# The device's first two-table Tabu in a shard without 04: its intro (§19.2).
-- runFlow: tabu-intro-if-shown.yaml
-# Turn 1, bot A's side: bot A starts it and so describes. This phone, its teammate, never gets the
-# card; Doğru is every phone's in a refereed game.
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: begin-turn
+    id: join-accept
+- extendedWaitUntil:
+    visible: 3 kişi
+    timeout: 20000
+- tapOn:
+    id: table-who
+- extendedWaitUntil:
+    visible: Masadakiler · 3 kişi
+    timeout: 10000
+- takeScreenshot: 19-table-three
+- back
+- extendedWaitUntil:
+    notVisible: Masadakiler · 3 kişi
+    timeout: 10000
+# The owner's "Masadan ayrıl" sits in the end sheet, under "Masayı bitir" (§4.C).
+- tapOn:
+    id: table-end-open
 - extendedWaitUntil:
     visible:
-      id: tabu-with-describer
-    timeout: 20000
-- assertVisible: ${output.aliasA} anlatıyor\.
-- assertNotVisible:
-    id: tabu-card
-- assertVisible:
-    id: tabu-correct
-- takeScreenshot: 63-teams-teammate
+      id: table-owner-leave
+    timeout: 10000
 - tapOn:
-    id: tabu-correct
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: expire-turn
-# Turn 2, bot B's side: this phone's side judges, so it sees the card, Doğru and Tabu.
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: begin-turn
-      BOT_PORT: '8788'
+    id: table-owner-leave
 - extendedWaitUntil:
-    visible:
-      id: tabu-card
+    visible: Masadan ayrıldın
     timeout: 20000
-- assertVisible:
-    id: tabu-taboo
-- takeScreenshot: 64-teams-judge
-- tapOn:
-    id: tabu-taboo
+- takeScreenshot: 20-table-left
+- runFlow:
+    file: table-end-close.yaml
+# Bot A owns the table now; out of the lobby it is under "Süren masalar" with "Bu masadayım".
 - runScript:
     file: ../scripts/bot.js
     env:
-      ACTION: end-game
-# 2. Bot A leaves: this phone, the side's only member, leads it now ("Artık lider sensin").
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: leave-room
+      ACTION: set-visibility
+      BODY: '{"open":false}'
 - scrollUntilVisible:
     element:
-      id: leader-note
-    direction: UP
+      id: here-.*
+    centerElement: true
     timeout: 20000
-- assertVisible:
-    id: end-room
-- takeScreenshot: 65-teams-new-leader
-# docs/SPEC_V3.md §23.G: "Masayı bitir" closes the table at once for every phone, and
-# this phone gets the table's end with the other side's phone it sat with.
 - tapOn:
-    id: end-room
-- extendedWaitUntil:
-    visible:
-      id: table-end
-    timeout: 20000
-- assertVisible: ${output.aliasB}
-- runFlow:
-    file: table-end-close.yaml
-# 3. This phone's table: bot A joins as the other side's leader, bot B as bot A's member.
-- runFlow:
-    file: open-lobby-accept.yaml
-- extendedWaitUntil:
-    visible:
-      id: propose-tabu
-    timeout: 15000
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: request-member
-      BODY: '{"side":"guest"}'
-      BOT_PORT: '8788'
+    id: here-.*
 - runScript:
     file: ../scripts/bot.js
     env:
       ACTION: accept-request
-# "Masadakiler" from the room's title: the other side has two phones (overline: upper case).
-- extendedWaitUntil:
-    visible: 2 telefon
-    timeout: 20000
-- tapOn: Masadakileri gör
 - extendedWaitUntil:
     visible:
-      id: room-people
-    timeout: 10000
-- assertVisible: KARŞI TARAF · 2 TELEFON
-- takeScreenshot: 66-teams-people
-- back
-- tapOn:
-    id: end-room
-# The table's end lists both phones of the other side, each with its own row (§23.G): the pair
-# played for less than 3 minutes, so a row has no "Arkadaş ekle".
-- extendedWaitUntil:
-    visible:
-      id: table-end
+      id: table-top
     timeout: 20000
-- assertVisible: ${output.aliasA}
-- assertVisible: ${output.aliasB}
-- takeScreenshot: 67-teams-table-end
+- assertVisible: 3 kişi
+- assertVisible:
+    id: table-leave-open
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: end-room
 - runFlow:
     file: table-end-close.yaml
+# Bot B's check-in ends here; its table seat went with the table.
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: leave
+      BOT_PORT: '8788'

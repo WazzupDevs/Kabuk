@@ -1,199 +1,81 @@
-# V8: the bot table ends the room; this phone must move to the table's end without a blank screen
-# (docs/SPEC_V3.md §23.G). Before it, the Faz 3 venue (§23.C): the request
-# comes while the phone is on the venue screen, and after "Kabul" the table card says the bot's table
-# is coming (§23.E) until the card's head opens the table. Then the table screen (K-36): looking
-# makes nothing, picking a game makes the private one-table room and starts the game in it;
-# "Masayı bitir" closes it. Then Sohbet kartları from the table screen: the room opens on its first
-# card, and Android's back from the game lands on the venue (the room took the table screen's
-# place).
+# V8: the bot's table ends while this phone sits at it; the phone moves to Masa bitti without a
+# blank screen (docs/SPEC_V4.md §4.E). Before it, "Katıl" from the lobby (§4.E): a declined request
+# looks like a timed-out one (rule 5); a request to the bot's next table is accepted and the table
+# opens on its own.
 appId: app.kabuk.mobile
 ---
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: login
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: checkin
+      BODY: '{"spot":"kutuphane"}'
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: create-room
 - tapOn:
     id: tab-venue
-- extendedWaitUntil:
-    visible:
-      id: lobby-open
-    timeout: 10000
-- tapOn:
-    id: lobby-open
-- extendedWaitUntil:
-    visible:
-      id: intent-none
-    timeout: 10000
-# The choices push the button below the fold of the sheet.
+# Centred: at the bottom of a 320 × 640 screen a button sits under the floating tab bar.
 - scrollUntilVisible:
     element:
-      id: lobby-confirm
-    timeout: 10000
-- tapOn:
-    id: lobby-confirm
-- extendedWaitUntil:
-    visible: Lobide açık
-    timeout: 15000
-# The request opens on the venue screen too; nothing sends the phone to the room.
-- runScript:
-    file: ../scripts/bot.js
-    env:
-      ACTION: request-join
-- extendedWaitUntil:
-    visible: Katılma isteği
-    timeout: 20000
-- tapOn:
-    id: join-accept
-- extendedWaitUntil:
-    visible:
-      id: table-coming
-    timeout: 15000
-- assertNotVisible:
-    id: propose-tabu
-- takeScreenshot: 27b-venue-merged
-- scrollUntilVisible:
-    element:
-      id: go-to-table
+      id: join-.*
     centerElement: true
-    timeout: 10000
+    timeout: 20000
+- takeScreenshot: 14-lobby
 - tapOn:
-    id: go-to-table
+    id: join-.*
 - extendedWaitUntil:
-    visible:
-      id: propose-tabu
+    visible: 'İsteğin gönderildi. Yanıt bekleniyor \(\d+ sn\)\.'
     timeout: 15000
-- tapOn:
-    id: propose-tabu
+- takeScreenshot: 14b-lobby-waiting
 - runScript:
     file: ../scripts/bot.js
     env:
-      ACTION: answer-game
-# Turn 1 opens ready (docs/SPEC_V3.md §19.1): this phone describes and starts it with Başla.
+      ACTION: decline-request
 - extendedWaitUntil:
-    visible:
-      id: turn-start
+    visible: Masa şu an müsait değil.
     timeout: 20000
-- tapOn:
-    id: turn-start
-- extendedWaitUntil:
-    visible: Kartı görmek için dokun
-    timeout: 20000
+- takeScreenshot: 14c-lobby-unavailable
+# A new table of the bot's this time; the bot accepts and the table opens after the row's note.
 - runScript:
     file: ../scripts/bot.js
     env:
       ACTION: end-room
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: create-room
+- extendedWaitUntil:
+    notVisible: Masa şu an müsait değil.
+    timeout: 20000
+- scrollUntilVisible:
+    element:
+      id: join-.*
+    centerElement: true
+    timeout: 10000
+- tapOn:
+    id: join-.*
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: accept-request
 - extendedWaitUntil:
     visible:
-      id: table-end
+      id: table-top
     timeout: 20000
-- assertNotVisible: Bir şeyler ters gitti
-- takeScreenshot: 28-ended-by-bot
+# A person at the table, not its owner: "Masadan ayrıl" and no owner's bar.
+- assertVisible:
+    id: table-leave-open
+- assertNotVisible:
+    id: table-invite
+- takeScreenshot: 16-table-person
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: end-room
 - runFlow:
     file: table-end-close.yaml
-# The card's head opens the table screen: its games, and nothing made by looking (K-36).
-- tapOn:
-    id: go-to-table
-- extendedWaitUntil:
-    visible:
-      id: solo-tabu
-    timeout: 15000
-- takeScreenshot: 29b-table-screen
-- back
-- extendedWaitUntil:
-    visible:
-      id: lobby-open
-    timeout: 10000
-- assertVisible: Lobide değil
-- assertNotVisible: Masanla oynuyorsun
-- tapOn:
-    id: go-to-table
-- extendedWaitUntil:
-    visible:
-      id: solo-tabu
-    timeout: 15000
-# Picking a game makes the room and starts the game there.
-- tapOn:
-    id: solo-tabu
-- extendedWaitUntil:
-    visible: Takım . başlasın
-    timeout: 15000
-- takeScreenshot: 29c-solo-tabu
-- scrollUntilVisible:
-    element:
-      id: end-game
-    timeout: 10000
-- tapOn:
-    id: end-game
-# "Oyunu bitir" asks first (canvas: Aşama 6 · Oyunlar).
-- tapOn:
-    id: end-game-confirm
-# Back to the one-table games: up to the first, then down to Sohbet kartları (the list now runs
-# below the fold).
-- scrollUntilVisible:
-    element:
-      id: solo-tabu
-    direction: UP
-    timeout: 15000
-- scrollUntilVisible:
-    element:
-      id: solo-sohbet
-    timeout: 15000
-- scrollUntilVisible:
-    element:
-      id: end-room
-    timeout: 10000
-- tapOn:
-    id: end-room
-- extendedWaitUntil:
-    visible:
-      id: lobby-open
-    timeout: 15000
-# The venue stays: it does not send the phone back into the room it just closed (the two screens
-# used to bounce into "Bir şeyler ters gitti", depending on which read came back first).
-- waitForAnimationToEnd:
-    timeout: 3000
-- assertVisible:
-    id: lobby-open
-- assertVisible: Lobide değil
-- assertNotVisible:
-    id: end-room
-- assertNotVisible: Bir şeyler ters gitti
-- takeScreenshot: 29d-room-ended
-# Sohbet kartları from the table screen: its first card is on screen when the room opens.
-- tapOn:
-    id: go-to-table
-- scrollUntilVisible:
-    element:
-      id: solo-sohbet
-    timeout: 15000
-- tapOn:
-    id: solo-sohbet
-- extendedWaitUntil:
-    visible: 'Sonraki( \(\d+ sn\))?'
-    timeout: 15000
-- takeScreenshot: 29e-solo-sohbet
-# Back from the game: the venue, not the table screen.
-- back
-- extendedWaitUntil:
-    visible: Masanla oynuyorsun
-    timeout: 10000
-- takeScreenshot: 29f-venue-solo
-- assertNotVisible:
-    id: solo-tabu
-# The card's head opens the room; the game and the room close as before.
-- tapOn:
-    id: go-to-table
-- scrollUntilVisible:
-    element:
-      id: end-game
-    timeout: 15000
-- tapOn:
-    id: end-game
-- tapOn:
-    id: end-game-confirm
-- scrollUntilVisible:
-    element:
-      id: end-room
-    timeout: 15000
-- tapOn:
-    id: end-room
-- extendedWaitUntil:
-    visible:
-      id: lobby-open
-    timeout: 15000
