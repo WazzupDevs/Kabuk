@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { isLoaded, loadAsync } from 'expo-font';
 import { DarkTheme, DefaultTheme, ThemeProvider as NavigationTheme } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import * as SystemUI from 'expo-system-ui';
 import * as Updates from 'expo-updates';
 import { vars } from 'nativewind';
 import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from 'react';
@@ -188,6 +189,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const theme = targetReady ? target : shown;
 
   const navTheme = useMemo(() => (theme ? navigationTheme(theme) : null), [theme]);
+  // The window's own ground is the canvas too. Once a SurfaceView has been in the window (the
+  // Keşfet map's GLSurfaceView), Android keeps the window translucent for good, and what no view
+  // with a ground covers shows the black behind it: in 0.6.0 a black strip over the navigation bar
+  // on every screen after the map. An opaque window ground (expo-system-ui) covers all of it.
+  const canvas = theme?.colors.canvas;
+  useEffect(() => {
+    if (canvas) SystemUI.setBackgroundColorAsync(canvas).catch(() => undefined);
+  }, [canvas]);
   const style = useMemo(
     () =>
       theme ? [{ flex: 1, backgroundColor: theme.colors.canvas }, colorVars(theme.colors)] : null,
