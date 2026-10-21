@@ -10,21 +10,20 @@ import {
 } from './analytics.ts';
 
 describe('analytics events', () => {
-  it('cover exactly the events of MVP_SPEC §12, SPEC_V2 §13 and the v3 steps shipped so far (SPEC_V3 §15)', () => {
+  it('cover exactly the events of MVP_SPEC §12, SPEC_V2 §13, SPEC_V3 §15 and SPEC_V4 §4.L so far', () => {
     expect([...ANALYTICS_EVENTS].sort()).toEqual(
       [
         'onboarding_completed',
         'check_in',
-        'room_created',
-        'game_proposed',
-        'game_accepted',
-        'alias_rerolled',
+        'table_created',
+        'table_opened',
+        'table_joined',
         'join_requested',
         'join_accepted',
         'join_unavailable',
-        'team_left',
-        'leader_transferred',
-        'room_two_tables',
+        'game_opened',
+        'game_started',
+        'game_left',
         'game_abandoned',
         'game_completed',
         'report_submitted',
@@ -50,7 +49,7 @@ describe('analytics events', () => {
 
   it('keep only the allowed properties of each event', () => {
     expect(
-      analyticsProperties('room_created', {
+      analyticsProperties('table_opened', {
         intent: 'chat',
         profiled: false,
         phone: '+905551234567',
@@ -64,23 +63,34 @@ describe('analytics events', () => {
         birthDate: { year: 2000 },
       } as never),
     ).toEqual({ with_photo: true, with_bio: false });
-    expect(analyticsProperties('check_in', { headcount: 4 })).toEqual({ headcount: 4 });
-    expect(analyticsProperties('join_requested', { as_member: true, in_lobby: false })).toEqual({
+    expect(analyticsProperties('join_requested', { as_member: true })).toEqual({
       as_member: true,
-      in_lobby: false,
     });
-    // Faz 3 (step 23.1): the game tag of "Masanı lobiye aç", never the table.
+    // The game tag of "Lobiye aç", never the table.
     expect(
-      analyticsProperties('room_created', {
+      analyticsProperties('table_opened', {
         intent: 'none',
         profiled: false,
         game_tag: 'tabu',
         alias: 'Sakin Martı',
       } as never),
     ).toEqual({ intent: 'none', game_tag: 'tabu' });
+    // A check-in carries nothing (docs/SPEC_V4.md §4.E: no headcount).
     expect(
       analyticsProperties('check_in', { headcount: 2, venueId: 'v', lat: 41 } as never),
-    ).toEqual({ headcount: 2 });
+    ).toEqual({});
+    expect(
+      analyticsProperties('table_joined', { via: 'here', roomId: 'r', alias: 'Neşeli Panda' } as never),
+    ).toEqual({ via: 'here' });
+    // The game and the counts, never who.
+    expect(
+      analyticsProperties('game_started', {
+        concept: 'sahtekar',
+        players: 5,
+        observers: 2,
+        imposter: 'x',
+      } as never),
+    ).toEqual({ concept: 'sahtekar', players: 5, observers: 2 });
     expect(analyticsProperties('profile_bio_set', { bio: 'merhaba' } as never)).toEqual({});
     expect(
       analyticsProperties('sohbet_card_opened', {
@@ -102,7 +112,7 @@ describe('analytics events', () => {
     // Only a woman can stay anonymous in the game flow: the room's anonymous or profiled choice
     // would stand in for the gender (step 23.2).
     expect(
-      analyticsProperties('room_created', {
+      analyticsProperties('table_opened', {
         intent: 'game',
         profiled: true,
         game_tag: 'none',

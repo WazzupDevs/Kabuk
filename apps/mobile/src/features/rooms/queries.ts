@@ -1,9 +1,6 @@
 import type { Database } from '@shared/database.ts';
 import {
   BROADCAST,
-  CONCEPTS,
-  type Concept,
-  type GameProposal,
   type RequesterStatus,
   ROOM_CHECK_COLUMNS,
   ROOM_CHECK_SECONDS,
@@ -12,7 +9,6 @@ import {
   venueChannel,
 } from '@shared/rooms.ts';
 import { gameTag } from '@shared/tableCard.ts';
-import type { Side } from '@shared/teams.ts';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 
@@ -24,56 +20,42 @@ import { useBroadcast } from './useBroadcast';
 
 type RoomRow = Database['public']['Tables']['rooms']['Row'];
 
-function isConcept(value: unknown): value is Concept {
-  return (CONCEPTS as readonly unknown[]).includes(value);
-}
-
 export const roomKeys = {
   current: ['currentRoom'] as const,
-  lobby: (venueId: string) => ['lobby', venueId] as const,
+  venueTables: (venueId: string) => ['venueTables', venueId] as const,
   myRequest: ['myRequest'] as const,
   incoming: (roomId: string) => ['incomingRequests', roomId] as const,
   room: (roomId: string) => ['room', roomId] as const,
-  proposal: (roomId: string) => ['gameProposal', roomId] as const,
   roomCheck: (roomId: string) => ['roomCheck', roomId] as const,
-  phones: (roomId: string) => ['roomPhones', roomId] as const,
+  people: (roomId: string) => ['tablePeople', roomId] as const,
+  votes: (roomId: string) => ['tableVotes', roomId] as const,
   requestProfile: (requestId: string) => ['requestProfile', requestId] as const,
 };
 
-// What decides the room's people: a phone joining or leaving a side, a new leader.
+// What decides the table's people: a person joining or leaving, a new owner.
 function peopleChanged(a: RoomRow | null | undefined, b: RoomRow): boolean {
-  return (
-    !a ||
-    a.owner_session_id !== b.owner_session_id ||
-    a.guest_session_id !== b.guest_session_id ||
-    a.owner_phones !== b.owner_phones ||
-    a.guest_phones !== b.guest_phones
-  );
+  return !a || a.owner_session_id !== b.owner_session_id || a.phones !== b.phones;
 }
 
-// What the table card shows of the table's room (docs/SPEC_V3.md §23.C).
+// What Mekan's table card shows of the person's table (docs/SPEC_V4.md §4.E).
 export const TABLE_ROOM_COLUMNS =
-  'id, status, visibility, owner_session_id, guest_session_id, owner_alias, guest_alias, owner_headcount, guest_headcount, owner_phones, guest_phones, intent, game_tag';
+  'id, status, visibility, owner_session_id, name, name_rerolls, icon, phones, intent, game_tag';
 export type TableRoomRow = Pick<
   RoomRow,
   | 'id'
   | 'status'
   | 'visibility'
   | 'owner_session_id'
-  | 'guest_session_id'
-  | 'owner_alias'
-  | 'guest_alias'
-  | 'owner_headcount'
-  | 'guest_headcount'
-  | 'owner_phones'
-  | 'guest_phones'
+  | 'name'
+  | 'name_rerolls'
+  | 'icon'
+  | 'phones'
   | 'intent'
   | 'game_tag'
 >;
 
-// The table's latest room, as a leader or a member of a side: RLS lets a phone read only the rooms
-// it leads or is in (docs/SPEC_V3.md §22.I), so no filter on the session is needed. A closed room does
-// not hold the table (since step 23.3 a two-sided room closes at once, §23.G).
+// The person's table: RLS lets a person read only the tables it sits at, so no filter on the
+// check-in is needed. A closed table does not hold the person.
 export function useCurrentRoom(sessionId: string | undefined) {
   return useQuery({
     queryKey: roomKeys.current,
@@ -110,32 +92,25 @@ export function useRoom(roomId: string) {
   const reread = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: roomKeys.room(roomId) });
     void queryClient.invalidateQueries({ queryKey: roomKeys.current });
-    void queryClient.invalidateQueries({ queryKey: roomKeys.proposal(roomId) });
-    void queryClient.invalidateQueries({ queryKey: roomKeys.phones(roomId) });
+    void queryClient.invalidateQueries({ queryKey: roomKeys.people(roomId) });
+    void queryClient.invalidateQueries({ queryKey: roomKeys.votes(roomId) });
   }, [queryClient, roomId]);
 
-  // Postgres Changes on this room (RLS applies). The new row is used as it arrives, without a
-  // second round trip (the other table's Tabu press shows up at once); a delete or an empty
-  // payload refetches. The table's current room is refetched too: a room that left
-  // 'waiting'/'active' must not send the home screen back into it from cache.
+  // Postgres Changes on this table (RLS applies). The new row is used as it arrives, without a
+  // second round trip; a delete or an empty payload refetches. The person's current table is
+  // refetched too: a table that left 'waiting'/'active' must not send Mekan back into it from cache.
+  // A vote changes the row as well (rooms_vote), so the vote counts are read again on every change.
   // Realtime delivers a change only while the channel is subscribed and never replays it, so every
-  // (re)subscribe (first join, reconnect after the background or a network drop) re-reads the room.
+  // (re)subscribe (first join, reconnect after the background or a network drop) re-reads the table.
   useChannel<RoomRow | null>(
     `room:${roomId}`,
     (emit) => ({
-      channel: privateChannel(`room:${roomId}`)
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` },
-          (payload: { new?: Partial<RoomRow> }) =>
-            emit(payload.new && payload.new.id === roomId ? (payload.new as RoomRow) : null),
-        )
-        // A game proposal made, answered or expired (docs/SPEC_V3.md §5.3): re-read it.
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'game_proposals', filter: `room_id=eq.${roomId}` },
-          () => emit(null),
-        ),
+      channel: privateChannel(`room:${roomId}`).on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` },
+        (payload: { new?: Partial<RoomRow> }) =>
+          emit(payload.new && payload.new.id === roomId ? (payload.new as RoomRow) : null),
+      ),
       onStatus: (status) => {
         if (status === 'SUBSCRIBED') emit(null);
       },
@@ -145,9 +120,10 @@ export function useRoom(roomId: string) {
         const cached = queryClient.getQueryData<RoomRow | null>(roomKeys.room(roomId));
         queryClient.setQueryData(roomKeys.room(roomId), row);
         void queryClient.invalidateQueries({ queryKey: roomKeys.current });
-        // The phones are read again only when the room's people changed, not on every move.
+        void queryClient.invalidateQueries({ queryKey: roomKeys.votes(roomId) });
+        // The people are read again only when they changed, not on every move.
         if (peopleChanged(cached, row)) {
-          void queryClient.invalidateQueries({ queryKey: roomKeys.phones(roomId) });
+          void queryClient.invalidateQueries({ queryKey: roomKeys.people(roomId) });
         }
       } else reread();
     },
@@ -177,108 +153,110 @@ export function useRoom(roomId: string) {
   return query;
 }
 
-// The room's open game proposal, if any (both tables read it; RLS). The room channel re-reads it
-// on every change; the screen treats one past expires_at as gone.
-export function useGameProposal(roomId: string) {
-  return useQuery({
-    queryKey: roomKeys.proposal(roomId),
-    refetchInterval: ROOM_CHECK_SECONDS * 1000,
-    queryFn: async (): Promise<GameProposal | null> => {
-      const { data, error } = await supabase
-        .from('game_proposals')
-        .select('proposer_session_id, proposer_side, concept, expires_at')
-        .eq('room_id', roomId)
-        .maybeSingle();
-      if (error) throw error;
-      if (!data || !isConcept(data.concept)) return null;
-      const side = data.proposer_side;
-      return {
-        ...data,
-        proposer_side: side === 'owner' || side === 'guest' ? side : null,
-        concept: data.concept,
-      };
-    },
-  });
-}
-
-// The phones in the room, both sides (docs/SPEC_V3.md §22.I): only for a phone in the room. Read
-// again when the room's people change (useRoom).
-export type RoomPhone = {
+// The people at the table (Masadakiler, docs/SPEC_V4.md §4.E): only for a person at it. Read again
+// when the table's people change (useRoom).
+export type TablePerson = {
   sessionId: string;
-  side: Side;
   alias: string;
+  // The anonymous seat's capsule (docs/SPEC_V4.md §4.D); null for a profiled one.
+  look: string | null;
   profiled: boolean;
-  leader: boolean;
+  owner: boolean;
   joinedAt: string;
 };
 
-export function useRoomPhones(roomId: string, enabled = true) {
+export function useTablePeople(roomId: string, enabled = true) {
   return useQuery({
-    queryKey: roomKeys.phones(roomId),
+    queryKey: roomKeys.people(roomId),
     enabled,
-    queryFn: async (): Promise<RoomPhone[]> => {
-      const { data, error } = await supabase.rpc('room_phones', { target_room_id: roomId });
+    queryFn: async (): Promise<TablePerson[]> => {
+      const { data, error } = await supabase.rpc('table_people', { target_room_id: roomId });
       if (error) throw error;
-      return data.flatMap((p) =>
-        p.side === 'owner' || p.side === 'guest'
-          ? [
-              {
-                sessionId: p.session_id,
-                side: p.side,
-                alias: p.alias,
-                profiled: p.profiled,
-                leader: p.is_leader,
-                joinedAt: p.joined_at,
-              },
-            ]
-          : [],
-      );
+      return data.map((p) => ({
+        sessionId: p.session_id,
+        alias: p.alias,
+        look: p.look || null,
+        profiled: p.profiled,
+        owner: p.is_owner,
+        joinedAt: p.joined_at,
+      }));
     },
   });
 }
 
-// The venue's lobby (docs/SPEC_V3.md §22.C, §23.C): open rooms ("Açık masalar") with the owner's
-// phones, whether a phone can still join its side ("Bu masadayım") and the optional game tag, and
-// the running rooms ("Süren masalar") with only the two leaders' aliases and each side's phones and
-// people. One query, one refetch on lobby_changed.
-export function useLobby(venueId: string | undefined) {
+// Oyun Seç's votes (docs/SPEC_V4.md §4.F): the count per game and the person's own; never who.
+export type TableVotes = { counts: Record<string, number>; mine: string | null };
+
+export function useTableVotes(roomId: string, enabled = true) {
+  return useQuery({
+    queryKey: roomKeys.votes(roomId),
+    enabled,
+    queryFn: async (): Promise<TableVotes> => {
+      const { data, error } = await supabase.rpc('table_vote_counts', { target_room_id: roomId });
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      let mine: string | null = null;
+      for (const row of data) {
+        counts[row.concept] = row.votes;
+        if (row.mine) mine = row.concept;
+      }
+      return { counts, mine };
+    },
+  });
+}
+
+// The venue's tables (docs/SPEC_V4.md §4.E): the lobby's open ones ("Açık masalar", "Katıl") and the
+// running ones ("Süren masalar", "Bu masadayım"). One read, again on lobby_changed. No person's name,
+// public id or account id.
+export type VenueTable = {
+  roomId: string;
+  name: string;
+  icon: string | null;
+  phones: number;
+  intent: string | null;
+  gameTag: ReturnType<typeof gameTag>;
+  spotId: string | null;
+  spotName: string | null;
+  waitingSince: string;
+};
+
+export function useVenueTables(venueId: string | undefined) {
   const queryClient = useQueryClient();
   const refetch = useCallback(() => {
-    if (venueId) void queryClient.invalidateQueries({ queryKey: roomKeys.lobby(venueId) });
+    if (venueId) void queryClient.invalidateQueries({ queryKey: roomKeys.venueTables(venueId) });
   }, [queryClient, venueId]);
   useBroadcast(venueId ? venueChannel(venueId) : null, BROADCAST.lobbyChanged, refetch);
 
   return useQuery({
-    queryKey: roomKeys.lobby(venueId ?? ''),
+    queryKey: roomKeys.venueTables(venueId ?? ''),
     enabled: venueId !== undefined,
-    queryFn: async () => {
-      const args = { target_venue_id: venueId ?? '' };
-      const [open, phones, tags, running] = await Promise.all([
-        supabase.rpc('venue_lobby', args),
-        supabase.rpc('venue_lobby_phones', args),
-        supabase.rpc('venue_lobby_tags', args),
-        supabase.rpc('venue_running_rooms', args),
-      ]);
-      if (open.error) throw open.error;
-      if (phones.error) throw phones.error;
-      if (tags.error) throw tags.error;
-      if (running.error) throw running.error;
-      const byRoom = new Map(phones.data.map((p) => [p.room_id, p]));
-      const tagOf = new Map(tags.data.map((t) => [t.room_id, gameTag(t.game_tag)]));
-      return {
-        open: open.data.map((room) => ({
-          ...room,
-          phones: byRoom.get(room.room_id)?.phones ?? 1,
-          memberOpen: byRoom.get(room.room_id)?.member_open ?? false,
-          gameTag: tagOf.get(room.room_id) ?? null,
-        })),
-        running: running.data,
-      };
+    queryFn: async (): Promise<{ open: VenueTable[]; running: VenueTable[] }> => {
+      const { data, error } = await supabase.rpc('venue_tables', {
+        target_venue_id: venueId ?? '',
+      });
+      if (error) throw error;
+      const open: VenueTable[] = [];
+      const running: VenueTable[] = [];
+      for (const t of data) {
+        const table: VenueTable = {
+          roomId: t.room_id,
+          name: t.name,
+          icon: t.icon || null,
+          phones: t.phones,
+          intent: t.intent || null,
+          gameTag: gameTag(t.game_tag),
+          spotId: t.spot_id || null,
+          spotName: t.spot_name || null,
+          waitingSince: t.waiting_since,
+        };
+        (t.open ? open : running).push(table);
+      }
+      return { open, running };
     },
   });
 }
 
-// The table's latest join request, as the requester may see it.
+// The person's latest join request, as the requester may see it.
 export function useMyRequest(sessionId: string | undefined, since: string | undefined) {
   const queryClient = useQueryClient();
   const refetch = useCallback(() => {
@@ -311,29 +289,27 @@ export function useMyRequest(sessionId: string | undefined, since: string | unde
   });
 }
 
-// Pending requests this leader answers (RLS: "Katıl" to the owner, "Bu masadayım" to the side's
-// current leader; docs/SPEC_V3.md §22.I). Null: this phone leads no side.
-export function useIncomingRequests(roomId: string, leaderSessionId: string | null) {
+// Pending requests the owner answers ("Katıl" and "Bu masadayım"; RLS). Null: this person does not
+// own the table.
+export function useIncomingRequests(roomId: string, ownerSessionId: string | null) {
   const queryClient = useQueryClient();
   const refetch = useCallback(
     () => void queryClient.invalidateQueries({ queryKey: roomKeys.incoming(roomId) }),
     [queryClient, roomId],
   );
   useBroadcast(
-    leaderSessionId ? sessionChannel(leaderSessionId) : null,
+    ownerSessionId ? sessionChannel(ownerSessionId) : null,
     BROADCAST.joinRequest,
     refetch,
   );
 
   return useQuery({
     queryKey: roomKeys.incoming(roomId),
-    enabled: leaderSessionId !== null,
+    enabled: ownerSessionId !== null,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('join_requests')
-        .select(
-          'id, requester_alias, requester_headcount, requester_profiled, expires_at, as_member',
-        )
+        .select('id, requester_alias, requester_phones, requester_profiled, expires_at, as_member')
         .eq('room_id', roomId)
         .eq('status', 'pending')
         .gt('expires_at', new Date().toISOString())
@@ -345,8 +321,8 @@ export function useIncomingRequests(roomId: string, leaderSessionId: string | nu
 }
 
 // The request card's profile (docs/SPEC_V3.md §23.E): name, age and photo of a requester who asked
-// with its profile, for the leader who can answer, while the request waits (rule 4). Not kept after
-// the card closes; the card waits for nothing (the countdown and the buttons are there at once).
+// with its profile, for the owner, while the request waits (rule 4). Not kept after the card
+// closes; the card waits for nothing (the countdown and the buttons are there at once).
 export function useRequestProfile(requestId: string | undefined, profiled: boolean) {
   return useQuery({
     queryKey: roomKeys.requestProfile(requestId ?? ''),
