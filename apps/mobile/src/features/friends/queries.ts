@@ -107,7 +107,7 @@ export function useTableHistory(roomId: string, enabled: boolean) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('play_history')
-        .select('id, other_alias, reveal_mutual, friend_open, friend_action_at')
+        .select('id, other_alias, other_profiled, reveal_mutual, friend_open, friend_action_at')
         .eq('room_id', roomId);
       if (error) throw error;
       return data;

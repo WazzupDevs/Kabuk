@@ -24,7 +24,12 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
 import { roomKeys } from './queries';
-import { TABLE_ICON_RADIUS_SHARE, TABLE_ICON_SIZE, TABLE_ICON_TAKEN_OPACITY, TableIcon } from './TableIcon';
+import {
+  TABLE_ICON_RADIUS_SHARE,
+  TABLE_ICON_SIZE,
+  TABLE_ICON_TAKEN_OPACITY,
+  TableIcon,
+} from './TableIcon';
 
 type IntentChoice = Intent | 'none';
 type TagChoice = Concept | 'none';
@@ -52,8 +57,8 @@ export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Pro
     () => free[Math.floor(Math.random() * free.length)]?.id ?? null,
   );
   const [picking, setPicking] = useState(false);
-  const [theme, setTheme] = useState(
-    () => TABLE_ICONS.find((i) => i.id === icon)?.theme ?? TABLE_ICON_THEMES[0],
+  const [theme, setTheme] = useState<string>(
+    () => TABLE_ICONS.find((i) => i.id === icon)?.theme ?? TABLE_ICON_THEMES[0] ?? '',
   );
   const [lobby, setLobby] = useState(false);
   const [intent, setIntent] = useState<Intent | null>(null);
@@ -82,9 +87,7 @@ export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Pro
     },
   });
 
-  const name = anonymous
-    ? (profile.data?.capsule_nick ?? '')
-    : (profile.data?.display_name ?? '');
+  const name = anonymous ? (profile.data?.capsule_nick ?? '') : (profile.data?.display_name ?? '');
 
   return (
     <Sheet visible onClose={onClose} title={tr.createTable.title}>
@@ -140,7 +143,11 @@ export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Pro
             onChange={(v) => setTag(v === 'none' ? null : v)}
             options={[
               { value: 'none', label: tr.rooms.gameTagNone, testID: 'game-tag-none' },
-              ...CONCEPTS.map((c) => ({ value: c, label: tr.concepts[c], testID: `game-tag-${c}` })),
+              ...CONCEPTS.map((c) => ({
+                value: c,
+                label: tr.concepts[c],
+                testID: `game-tag-${c}`,
+              })),
             ]}
           />
         </View>
@@ -197,7 +204,11 @@ function IconPicker({
           options={TABLE_ICON_THEMES.map((t) => ({ value: t, label: t }))}
         />
       </ScrollView>
-      <View accessibilityRole="radiogroup" className="flex-row flex-wrap" style={{ gap: SPACING[2] }}>
+      <View
+        accessibilityRole="radiogroup"
+        className="flex-row flex-wrap"
+        style={{ gap: SPACING[2] }}
+      >
         {scenes.map((scene) => {
           const taken = used.has(scene.id) && scene.id !== selected;
           const on = scene.id === selected;

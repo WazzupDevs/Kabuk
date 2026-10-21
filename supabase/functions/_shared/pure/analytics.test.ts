@@ -80,7 +80,11 @@ describe('analytics events', () => {
       analyticsProperties('check_in', { headcount: 2, venueId: 'v', lat: 41 } as never),
     ).toEqual({});
     expect(
-      analyticsProperties('table_joined', { via: 'here', roomId: 'r', alias: 'Neşeli Panda' } as never),
+      analyticsProperties('table_joined', {
+        via: 'here',
+        roomId: 'r',
+        alias: 'Neşeli Panda',
+      } as never),
     ).toEqual({ via: 'here' });
     // The game and the counts, never who.
     expect(

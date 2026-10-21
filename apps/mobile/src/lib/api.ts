@@ -49,7 +49,6 @@ import type { GameFlowReportReason, ReportReason } from '@shared/chat.ts';
 import type { Concept, Intent } from '@shared/rooms.ts';
 import type { SayKind } from '@shared/sayChallenge.ts';
 import type { Mark } from '@shared/tabu.ts';
-import type { Side } from '@shared/teams.ts';
 import { callName, RETRY_DELAY_MS, retriesAfter } from '@shared/apiRetry.ts';
 import { type ErrorCode, isApiErrorBody } from '@shared/errors.ts';
 
@@ -141,8 +140,11 @@ export const roomsApi = {
   create: (body: Omit<CreateRoomRequest, 'action'>) =>
     invoke<CreateRoomResponse>('rooms', { action: 'create', ...body }),
   // "Lobiye aç" with the sheet's intent and game tag, "Lobiden çek" without.
-  setVisibility: (roomId: string, open: boolean, tags: { intent?: Intent; gameTag?: Concept } = {}) =>
-    invoke<RoomsOkResponse>('rooms', { action: 'set-visibility', roomId, open, ...tags }),
+  setVisibility: (
+    roomId: string,
+    open: boolean,
+    tags: { intent?: Intent; gameTag?: Concept } = {},
+  ) => invoke<RoomsOkResponse>('rooms', { action: 'set-visibility', roomId, open, ...tags }),
   // The owner's icon picker (K-45, K-59).
   setIcon: (roomId: string, icon: string) =>
     invoke<SetIconResponse>('rooms', { action: 'set-icon', roomId, icon }),
@@ -166,8 +168,7 @@ export const roomsApi = {
   vote: (roomId: string, concept: string | null) =>
     invoke<RoomsOkResponse>('rooms', { action: 'vote', roomId, concept }),
   endGame: (roomId: string) => invoke<RoomsOkResponse>('rooms', { action: 'end-game', roomId }),
-  leaveGame: (roomId: string) =>
-    invoke<RoomsOkResponse>('rooms', { action: 'leave-game', roomId }),
+  leaveGame: (roomId: string) => invoke<RoomsOkResponse>('rooms', { action: 'leave-game', roomId }),
   // "Masayı bitir": the owner's, for everyone.
   end: () => invoke<RoomsOkResponse>('rooms', { action: 'end' }),
   // "Masadan ayrıl": the table goes on for the others; an owner hands it to the earliest (K-13).
@@ -323,6 +324,9 @@ export const friendsApi = {
     invoke<FriendsOkResponse>('friends', { action: 'respond', requestId, accept }),
   addFromRoom: (historyId: string) =>
     invoke<FriendsOkResponse>('friends', { action: 'add-from-room', historyId }),
+  // "Eklendi" pressed again (K-67): the quiet add is taken back; after a match it stays.
+  withdrawAdd: (historyId: string) =>
+    invoke<FriendsOkResponse>('friends', { action: 'withdraw-add', historyId }),
   remove: (publicId: string, report?: ReportReason) =>
     invoke<FriendsOkResponse>('friends', {
       action: 'remove',

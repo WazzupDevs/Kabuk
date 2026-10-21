@@ -80,9 +80,7 @@ export function InviteSheet({ visible, onClose, roomId, phones }: Props) {
                   />
                   <View className="flex-1 gap-0.5">
                     <Text variant="bodyStrong">{f.displayName ?? ''}</Text>
-                    {seconds > 0 ? (
-                      <Text variant="fine">{tr.invite.valid(seconds)}</Text>
-                    ) : null}
+                    {seconds > 0 ? <Text variant="fine">{tr.invite.valid(seconds)}</Text> : null}
                   </View>
                   {seconds > 0 ? (
                     <Text variant="label" tone="muted" testID="invite-sent">

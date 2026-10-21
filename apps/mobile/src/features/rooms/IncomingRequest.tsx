@@ -38,7 +38,9 @@ export function IncomingRequestHost() {
     !!sessionId &&
     (room.status === 'waiting' || room.status === 'active') &&
     room.owner_session_id === sessionId;
-  return room && owns ? <IncomingRequest roomId={room.id} ownerSessionId={sessionId ?? null} /> : null;
+  return room && owns ? (
+    <IncomingRequest roomId={room.id} ownerSessionId={sessionId ?? null} />
+  ) : null;
 }
 
 // The owner's 60 second window: Kabul / Geç (docs/SPEC_V4.md §4.E, "İstek kartı"): the requesting

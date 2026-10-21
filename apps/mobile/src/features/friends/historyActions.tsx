@@ -165,7 +165,7 @@ export function HistoryActions({
     <View className="flex-row items-center gap-1.5 self-center">
       <Ionicons name="checkmark" size={ICON.sm} color={colors.muted} />
       <Text variant="label" tone="muted">
-        {silent ? tr.tableEnd.pressed : tr.friends.actionDone}
+        {silent ? tr.tableEnd.added : tr.friends.actionDone}
       </Text>
     </View>
   ) : (
@@ -197,7 +197,7 @@ export function HistoryActions({
     </Text>
   ) : action === 'done' && silent ? (
     <Text variant="fine" className="mt-1">
-      {tr.tableEnd.pressedHint}
+      {tr.tableEnd.note}
     </Text>
   ) : null;
   return (

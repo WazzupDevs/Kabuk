@@ -83,9 +83,7 @@ export function Lobby({
     },
   });
 
-  const status = mine.data
-    ? requesterStatus(mine.data.status, mine.data.expiresAt, now)
-    : null;
+  const status = mine.data ? requesterStatus(mine.data.status, mine.data.expiresAt, now) : null;
   const waitingOn = mine.data && status === 'pending' ? mine.data.roomId : null;
   const accepted = mine.data && status === 'accepted' ? mine.data.roomId : null;
   const unavailable = mine.data && status === 'unavailable' ? mine.data.roomId : null;

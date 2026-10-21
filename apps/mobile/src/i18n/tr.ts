@@ -1180,6 +1180,34 @@ export const tr = {
     openLobby: 'Lobiye aç',
     invite: 'Davet et',
   },
+  // The table screen (v46 "masa"; docs/SPEC_V4.md §4.E, §4.F).
+  table: {
+    back: 'Mekana dön',
+    whoLabel: (n: number) => `Masadakileri gör, ${headcountLabel(n)} kişi`,
+    end: 'Bitir',
+    leave: 'Masadan ayrıl',
+    tabGames: (n: number) => `Oyun Seç (${n})`,
+    tabChat: (n: number) => `Masa Sohbeti (${n})`,
+    categoryAll: (n: number) => `Tümü ${n}`,
+    category: (name: string, n: number) => `${name} ${n}`,
+    // A game before its step (4.6): its poster is faded and not pressed.
+    soon: 'Yakında',
+    soloTitle: 'Masada yalnızca sensin',
+    soloBody:
+      'Arkadaşlarını davet et ya da masanı lobiye aç. Oyunların çoğu en az 2 kişiyle başlar.',
+    endTitle: 'Masayı bitir?',
+    endBody: 'Masa herkes için kapanır. Oyun ve sohbet biter.',
+    endConfirm: 'Masayı bitir',
+    leaveTitle: 'Masadan ayrıl?',
+    leaveBody: 'Mekana dönersin. Masa diğerleri için sürer.',
+    // Masadakiler (v46 data-msheet).
+    people: (n: number) => `Masadakiler · ${headcountLabel(n)} kişi`,
+    peopleNote: 'Herkes kendi telefonuyla katılır. Masada en çok 12 kişi olur.',
+    you: (alias: string) => `${alias} (sen)`,
+    ownerTag: 'Masa sahibi',
+    nameLabel: 'Masanın adı',
+    viewProfile: 'Profili gör',
+  },
   // "Masa kur" (v46 data-kur; docs/SPEC_V4.md §4.E).
   createTable: {
     title: 'Masa kur',
@@ -1205,7 +1233,8 @@ export const tr = {
     emptyBody: 'Masa kurup lobiye açarsan mekandakiler katılmak isteyebilir.',
     join: 'Katıl',
     here: 'Bu masadayım',
-    runningNote: 'Lobide değiller. Oturduğun masa buysa "Bu masadayım"a bas, masa sahibi onaylasın.',
+    runningNote:
+      'Lobide değiller. Oturduğun masa buysa "Bu masadayım"a bas, masa sahibi onaylasın.',
     runningNoteShort: 'Lobide değiller.',
     leaveFirst: 'Başka bir masaya geçmek için önce masandan ayrıl.',
     needsPhoto: 'Masalara katılmak için profil fotoğrafı ekle.',
@@ -1233,18 +1262,21 @@ export const tr = {
   },
   // The table's end (docs/SPEC_V3.md §23.G; canvas: Faz 3 · 23.3 → masa sonu): the other side's
   // phones and each pair's own "Arkadaş ekle".
+  // Masa bitti (v46 "masa-bitti"; docs/SPEC_V4.md §4.E, K-56, K-64, K-67, K-68).
   tableEnd: {
     title: 'Masa bitti',
-    subtitle: (alias: string) => `${alias} masasıyla oynadınız.`,
-    otherSide: 'Karşı taraf',
+    leftTitle: 'Masadan ayrıldın',
+    subtitle: (table: string, people: number) =>
+      `${table} · ${headcountLabel(people)} kişi. Beğendiğin kişileri ekle.`,
     addFriend: 'Arkadaş ekle',
-    pressed: 'Sen bastın',
-    pressedHint: 'O da basarsa arkadaş olursunuz.',
+    added: 'Eklendi',
     friends: 'Arkadaş oldunuz',
-    message: 'Mesajlaş',
-    short: `Birlikte ${ENCOUNTER_MIN_MINUTES} dakikadan az kaldınız.`,
-    body: 'İkiniz de basarsanız arkadaş olursunuz. O basmazsa hiçbir şey olmaz.',
-    later: 'Sonra da Bildirimler’deki oyun geçmişinden ekleyebilirsin.',
+    message: 'Mesaj',
+    anonymous: 'Anonim katıldı',
+    note: 'Eklediğin kişi bunu görmez. O da seni eklerse ikinize de haber gelir ve arkadaş olursunuz.',
+    anonymousNote:
+      'Arkadaş olursanız anonim adının sen olduğunu görür. İstersen Profil’den adını yenileyebilirsin.',
+    back: 'Mekana dön',
   },
   design: {
     title: 'Tasarım (test)',
