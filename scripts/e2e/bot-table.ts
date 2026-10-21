@@ -1049,6 +1049,8 @@ export const actions: Record<string, (args: Json) => Promise<Json>> = {
       ['exit-info', ['shell', 'dumpsys', 'activity', 'exit-info', app]],
       ['logcat', ['logcat', '-d', '-v', 'threadtime', '-t', '4000']],
       ['crash', ['logcat', '-b', 'crash', '-d']],
+      ['layers', ['shell', 'dumpsys', 'SurfaceFlinger', '--list']],
+      ['windows', ['shell', 'dumpsys', 'window', 'windows']],
     ];
     for (const [what, cmd] of runs) {
       let text: string;

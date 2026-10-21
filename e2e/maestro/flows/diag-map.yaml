@@ -1,7 +1,25 @@
-# Diagnostic (WazzupDevs/Kabuk#206, not to be merged): from the Keşfet map to other tabs and back,
-# a screenshot at each (0.6.0: a black band stayed at the bottom of the next screen).
+# Diagnostic (WazzupDevs/Kabuk#206, not to be merged): the tabs before the Keşfet map opens, from
+# the map to other tabs, and again once the map is closed (list), a screenshot and the surface
+# layers (bot `dump`) at each (0.6.0: a black band stayed at the bottom of the next screen; on
+# Android 15 and 16 emulators the navigation bar's strip turns black after the map).
 appId: app.kabuk.mobile
 ---
+- tapOn:
+    id: tab-activities
+- extendedWaitUntil:
+    visible:
+      id: activities-no-events
+    timeout: 10000
+- takeScreenshot: diag-pre-activities
+- tapOn:
+    id: tab-profile
+- evalScript: ${const end = Date.now() + 3000; while (Date.now() < end) {} }
+- takeScreenshot: diag-pre-profile
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: dump
+      BODY: '{"name":"m0-pre"}'
 - tapOn:
     id: tab-explore
 - scrollUntilVisible:
@@ -15,30 +33,24 @@ appId: app.kabuk.mobile
     timeout: 30000
 - evalScript: ${const end = Date.now() + 4000; while (Date.now() < end) {} }
 - takeScreenshot: diag-map
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: dump
+      BODY: '{"name":"m1-map"}'
 - tapOn:
     id: tab-activities
 - extendedWaitUntil:
     visible:
       id: activities-no-events
     timeout: 10000
+- evalScript: ${const end = Date.now() + 3000; while (Date.now() < end) {} }
 - takeScreenshot: diag-map-left-activities
-- evalScript: ${const end = Date.now() + 3000; while (Date.now() < end) {} }
-- takeScreenshot: diag-map-left-activities-3s
-- tapOn:
-    id: tab-profile
-- evalScript: ${const end = Date.now() + 3000; while (Date.now() < end) {} }
-- takeScreenshot: diag-map-left-profile
-- tapOn:
-    id: tab-explore
-- extendedWaitUntil:
-    visible:
-      id: explore-map-ready
-    timeout: 30000
-- takeScreenshot: diag-map-back
-- tapOn:
-    id: tab-messages
-- evalScript: ${const end = Date.now() + 3000; while (Date.now() < end) {} }
-- takeScreenshot: diag-map-left-messages
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: dump
+      BODY: '{"name":"m2-map-left"}'
 - tapOn:
     id: tab-explore
 - extendedWaitUntil:
@@ -46,3 +58,22 @@ appId: app.kabuk.mobile
       id: explore-map-ready
     timeout: 30000
 - tapOn: Liste
+- scrollUntilVisible:
+    element:
+      text: E2E Kafe
+    timeout: 30000
+- tapOn:
+    id: tab-activities
+- extendedWaitUntil:
+    visible:
+      id: activities-no-events
+    timeout: 10000
+- evalScript: ${const end = Date.now() + 3000; while (Date.now() < end) {} }
+- takeScreenshot: diag-list-left-activities
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: dump
+      BODY: '{"name":"m3-list-left"}'
+- tapOn:
+    id: tab-explore

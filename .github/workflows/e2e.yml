@@ -168,10 +168,7 @@ jobs:
       matrix:
         include:
           - { scheme: light, shard: 1, font: '1', api: 34 }
-          - { scheme: light, shard: 1, font: '1.3', api: 34 }
-          - { scheme: light, shard: 1, font: '1', api: 35 }
           - { scheme: light, shard: 1, font: '1', api: 36 }
-          - { scheme: light, shard: 1, font: '1.3', api: 36 }
     env:
       SCHEME: ${{ matrix.scheme }}
       FONT_SCALE: ${{ matrix.font }}
