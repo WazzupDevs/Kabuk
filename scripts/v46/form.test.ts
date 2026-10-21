@@ -302,6 +302,8 @@ describe("v46's form parts", () => {
     );
     expect(gallery).toMatch(/const pane = useLayoutWidth\(\) - 2 \* shape\.screenPadding;/);
     expect(gallery).toMatch(/width: Math\.min\(galleryInfo\(id\)\.width, pane\)/);
+    // Not `wide`: the gate crops to the part itself (`gorsel-oge` as wide as its content), as v46.
+    expect(gallery).toMatch(/\{ key: 'normal', render: \(\) => <FormWidth id=\{id\}>/);
     // v46's code step opens on its first box focused: the 320 pair is the focused field.
     expect(readFileSync(resolve(root, 'e2e/visual/states.json'), 'utf8')).toMatch(
       /"id": "v46-alan-kod-odak-320",\s*"app": "galeri\/v46\/alan-kod-odak",/,

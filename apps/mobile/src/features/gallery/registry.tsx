@@ -332,12 +332,13 @@ const EXPLORE: Partial<Record<GalleryId, readonly GalleryState[]>> = {
 
 // The form parts with v46's sample data, as wide as v46 draws them: its gallery's width (a field
 // in the sign-up's pane at 360), at most the sign-up's pane on this screen (the screen less `.sup`'s
-// 20 on each side, the screen padding: 280 at 320, as v46's narrow screen). The fields take
-// typing, the switches a press; the used anonymous switch shakes.
+// 20 on each side, the screen padding: 280 at 320, as v46's narrow screen). Not `wide`: the gate's
+// crop is the part itself, as v46's is. The fields take typing, the switches a press; the used
+// anonymous switch shakes.
 const f = s.form;
 
 const sized = (id: GalleryId, render: () => ReactNode): readonly GalleryState[] => [
-  { key: 'normal', wide: true, render: () => <FormWidth id={id}>{render()}</FormWidth> },
+  { key: 'normal', render: () => <FormWidth id={id}>{render()}</FormWidth> },
 ];
 
 function FormWidth({ id, children }: { id: GalleryId; children: ReactNode }) {
