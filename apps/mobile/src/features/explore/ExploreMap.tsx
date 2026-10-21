@@ -145,6 +145,10 @@ export function ExploreMap({
         mapStyle={MAP_STYLE_URL[scheme]}
         style={{ flex: 1 }}
         logo={false}
+        // A TextureView, not MapLibre's default GLSurfaceView: a SurfaceView makes Android keep the
+        // app's window translucent for good, and after the map a black strip stayed over the
+        // navigation bar on every screen (0.6.0; the owner, 21 Oct). Its native side is in the APK.
+        androidView="texture"
         attribution
         accessibilityLabel={tr.explore.mapLabel}
         onPress={() => setSelected(null)}

@@ -1,5 +1,6 @@
+import { ROUTES, type TabKey } from '@shared/navigation.ts';
 import { BlurTargetView } from 'expo-blur';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import type { BottomTabBarProps } from 'expo-router/tabs';
 import {
   createContext,
@@ -115,11 +116,17 @@ export function TabScene({
   );
 }
 
-// Keşfet · Aktiviteler · Mekan · Mesajlar · Profil. Presses go through `tabPress`, so screen
-// listeners (the Mekan tab's redirect) still decide where a tap leads; a new tab is felt
-// (haptics.ts → selection). An unread count is a dot on the icon (v46 `.tdot`), read out with the
-// tab's name.
-export function TabBar({ state, descriptors, navigation, insets }: BottomTabBarProps) {
+// Keşfet · Aktiviteler · Mekan · Mesajlar · Profil. `opens` says which tab a press leads to (the
+// Mekan tab without a table: Keşfet, opened by its route as the tab's listener did); every press
+// that changes the tab is felt, the redirected one too (haptics.ts → tabChanged). An unread count
+// is a dot on the icon (v46 `.tdot`), read out with the tab's name.
+export function TabBar({
+  state,
+  descriptors,
+  navigation,
+  insets,
+  opens,
+}: BottomTabBarProps & { opens: (tab: TabKey) => TabKey }) {
   const { scheme } = useTheme();
   const hidden = useBarMode((s) => s.hidden > 0);
   const overMap = useBarMode((s) => s.overMap > 0);
@@ -144,14 +151,23 @@ export function TabBar({ state, descriptors, navigation, insets }: BottomTabBarP
     return [{ route, item }];
   });
 
+  const routeOf = (key: V46TabKey) => tabs.find((t) => t.item.key === key)?.route;
   const onPress = (key: V46TabKey) => {
-    const route = tabs.find((t) => t.item.key === key)?.route;
+    const pressed = routeOf(key);
+    if (!pressed) return;
+    const event = navigation.emit({
+      type: 'tabPress',
+      target: pressed.key,
+      canPreventDefault: true,
+    });
+    if (event.defaultPrevented) return;
+    const opened = opens(key);
+    const route = routeOf(opened);
     if (!route) return;
-    const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
-    if (route.key !== focused?.key && !event.defaultPrevented) {
-      haptic('selection');
-      navigation.navigate(route.name, route.params);
-    }
+    const moves = route.key !== focused?.key;
+    if (moves) haptic('tabChanged');
+    if (opened !== key) router.navigate(ROUTES[opened]);
+    else if (moves) navigation.navigate(route.name, route.params);
   };
 
   return (

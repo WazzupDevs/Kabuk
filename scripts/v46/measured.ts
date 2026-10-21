@@ -25,6 +25,9 @@ type RawField = {
   letterSpacing: string;
   color: string;
   placeholderColor: string;
+  textAlign?: string;
+  numeric?: string;
+  caret?: string;
 };
 
 type RawGradient = {
@@ -50,6 +53,17 @@ type RawSvgNode = {
 };
 
 type RawEdge = { width: number; color: string };
+
+// A pseudo-element drawn on an element's corner (`.anon-sw.used::before`).
+type RawBefore = {
+  box: [number, number];
+  inset: (number | string)[];
+  bg: string;
+  border?: RawEdge;
+  radius: string;
+  bgImage?: string;
+  bgSize: string;
+};
 
 type RawPart = {
   part: string;
@@ -97,6 +111,11 @@ type RawElement = {
     shadow?: string;
     backdrop?: string;
     after?: { height: number; top: number; bg: string; opacity?: number; bgImage?: string };
+    before?: RawBefore;
+    hit?: (number | string)[];
+    field?: RawField;
+    select?: { text: string };
+    opacity?: number;
     margin?: string;
     wrap?: boolean;
     rowGap?: number | string;
@@ -343,14 +362,7 @@ export type Part = {
   hitSlop?: { top: number; right: number; bottom: number; left: number };
   flex?: { direction: string; justify: string; align: string; gap: number };
   animation?: PlayedAnimation;
-  field?: {
-    value: string;
-    placeholder: string;
-    font: Font;
-    letterSpacing: number;
-    color: string;
-    placeholderColor: string;
-  };
+  field?: Field;
   text?: { sample: string; font: Font; color: string; letterSpacing: number };
   svg?: {
     viewBox: readonly [number, number, number, number];
@@ -359,6 +371,52 @@ export type Part = {
     gradients: Gradient[];
     nodes: SvgNode[];
   };
+};
+
+// A text field's value or placeholder: their font and colours, where they sit, whether its digits
+// are each as wide (`font-variant-numeric: tabular-nums`) and its caret's colour.
+export type Field = {
+  value: string;
+  placeholder: string;
+  font: Font;
+  letterSpacing: number;
+  color: string;
+  placeholderColor: string;
+  align: 'left' | 'center' | 'right';
+  tabular: boolean;
+  caret: string;
+};
+
+const FIELD_ALIGN: Record<string, Field['align']> = {
+  start: 'left',
+  left: 'left',
+  center: 'center',
+  right: 'right',
+  end: 'right',
+};
+
+function field(f: RawField, metrics: VerticalMetrics): Field {
+  const align = FIELD_ALIGN[f.textAlign ?? 'start'];
+  if (!align) throw new Error(`text-align: ${f.textAlign}`);
+  return {
+    value: f.value,
+    placeholder: f.placeholder,
+    font: parseMeasuredFont(f.font, metrics),
+    letterSpacing: f.letterSpacing === 'normal' ? 0 : parsePx(f.letterSpacing),
+    color: parseColor(f.color),
+    placeholderColor: parseColor(f.placeholderColor),
+    align,
+    tabular: (f.numeric ?? '').includes('tabular-nums'),
+    caret: parseColor(!f.caret || f.caret === 'auto' ? f.color : f.caret),
+  };
+}
+
+// How far past its box an element takes a touch (`::after` insets, negative outward), each side.
+const hitSlopOf = (hit: (number | string)[]) => {
+  const [top = 0, right = 0, bottom = 0, left = 0] = hit.map((v) =>
+    typeof v === 'number' ? Math.max(0, -v) : 0,
+  );
+  return { top, right, bottom, left };
 };
 
 function part(p: RawPart, metrics: VerticalMetrics): Part {
@@ -414,22 +472,8 @@ function part(p: RawPart, metrics: VerticalMetrics): Part {
   if (p.padding !== undefined) base.padding = parseBoxSides(p.padding);
   if (p.margin !== undefined) base.margin = parseBoxSides(p.margin);
   if (p.animation) base.animation = p.animation;
-  if (p.field) {
-    base.field = {
-      value: p.field.value,
-      placeholder: p.field.placeholder,
-      font: parseMeasuredFont(p.field.font, metrics),
-      letterSpacing: p.field.letterSpacing === 'normal' ? 0 : parsePx(p.field.letterSpacing),
-      color: parseColor(p.field.color),
-      placeholderColor: parseColor(p.field.placeholderColor),
-    };
-  }
-  if (p.hit) {
-    const [top = 0, right = 0, bottom = 0, left = 0] = p.hit.map((v) =>
-      typeof v === 'number' ? Math.max(0, -v) : 0,
-    );
-    base.hitSlop = { top, right, bottom, left };
-  }
+  if (p.field) base.field = field(p.field, metrics);
+  if (p.hit) base.hitSlop = hitSlopOf(p.hit);
   if (p.text && p.font && p.color) {
     base.text = {
       sample: p.text,
@@ -482,6 +526,13 @@ export type Element = {
   // A flex box that wraps its children onto more lines, with this gap between the lines.
   wrap: { rowGap: number } | null;
   animation: PlayedAnimation | null;
+  // A text field or a select itself (a `<textarea>`, v46's `.dob select`): what it shows.
+  field: Field | null;
+  select: { text: string } | null;
+  // How far past its box it takes a touch (its `::after`).
+  hitSlop: { top: number; right: number; bottom: number; left: number } | null;
+  // Its own opacity (1 unless v46 fades it: a switch that cannot change now).
+  opacity: number;
   parts: Part[];
 };
 
@@ -500,6 +551,18 @@ export type Look = {
   after: { height: number; gradient: string } | null;
   // A pseudo-element drawn over it in its own colour (the live dot's halo: `.live::after`).
   halo: { bg: string; opacity: number } | null;
+  // A badge drawn on its corner (`::before`): its box, how far it sits out from the corner
+  // (`right`, `bottom`), its edge, ground and picture (a CSS `url()`), the picture's size.
+  badge: {
+    box: readonly [number, number];
+    right: number;
+    bottom: number;
+    border: { width: number; color: string } | null;
+    bg: string;
+    radius: string;
+    image: string | null;
+    imageSize: string;
+  } | null;
 };
 
 export function parseBackdrop(value: string): Backdrop {
@@ -529,6 +592,24 @@ function look(raw: RawElement['self']): Look {
       raw.after && raw.after.bgImage === undefined && !transparent(raw.after.bg)
         ? { bg: parseColor(raw.after.bg), opacity: raw.after.opacity ?? 1 }
         : null,
+    badge: raw.before ? badge(raw.before) : null,
+  };
+}
+
+function badge(b: RawBefore): NonNullable<Look['badge']> {
+  const [, right, bottom] = b.inset;
+  if (typeof right !== 'number' || typeof bottom !== 'number') {
+    throw new Error(`badge inset: ${b.inset.join(' ')}`);
+  }
+  return {
+    box: b.box,
+    right,
+    bottom,
+    border: b.border ? { width: b.border.width, color: parseColor(b.border.color) } : null,
+    bg: parseColor(b.bg),
+    radius: b.radius,
+    image: b.bgImage ?? null,
+    imageSize: b.bgSize,
   };
 }
 
@@ -576,6 +657,10 @@ export function element(raw: RawElement, metrics: VerticalMetrics): Element {
       ? { rowGap: typeof raw.self.rowGap === 'number' ? raw.self.rowGap : 0 }
       : null,
     animation: raw.self.animation ?? null,
+    field: raw.self.field ? field(raw.self.field, metrics) : null,
+    select: raw.self.select ?? null,
+    hitSlop: raw.self.hit ? hitSlopOf(raw.self.hit) : null,
+    opacity: raw.self.opacity ?? 1,
     parts: raw.parts.map((p) => part(p, metrics)),
   };
 }

@@ -4,7 +4,8 @@ import type { RequesterStatus } from '@shared/rooms.ts';
 // bildirim"): a touch confirms an outcome, never every press. Pure, so the table and the rule-5
 // cases are tested (hapticMoments.test.ts); src/lib/haptics.ts plays it with expo-haptics.
 export type HapticMoment =
-  | 'selection' // a choice changed: headcount, spot, filter chip, tab
+  | 'selection' // a choice changed: headcount, spot, filter chip
+  | 'tabChanged' // a press on the tab bar opened another tab: every one is felt (see UNLIMITED)
   | 'tableOpened' // the table opened to the lobby
   | 'requestAccepted' // a join request was accepted
   | 'proposalAccepted' // a game proposal was accepted
@@ -27,6 +28,7 @@ export type HapticCall =
 
 export const HAPTICS: Record<HapticMoment, HapticCall> = {
   selection: { kind: 'selection' },
+  tabChanged: { kind: 'selection' },
   tableOpened: { kind: 'notification', type: 'success' },
   requestAccepted: { kind: 'notification', type: 'success' },
   proposalAccepted: { kind: 'notification', type: 'success' },
@@ -70,6 +72,11 @@ export function failureHaptic(
 // a keystroke, nor one that lands between keystrokes).
 export const HAPTIC_LIMITS = { sameMomentMs: 600, anyMs: 150, typingMs: 600 } as const;
 
+// Moments the limits do not hold back. A tab change is felt every time, however fast the person
+// goes from tab to tab (the owner, 21 Ekim, after the 0.6.0 phone test: the 600 ms rule dropped
+// every other one). It still counts as a touch, so the next other touch keeps 150 ms from it.
+const UNLIMITED: ReadonlySet<HapticMoment> = new Set<HapticMoment>(['tabChanged']);
+
 export type HapticGate = {
   // Whether `moment` may play at `now` (ms). A touch that plays is remembered; a held one is not.
   allow(moment: HapticMoment, now: number): boolean;
@@ -86,9 +93,11 @@ export function hapticGate(limits: typeof HAPTIC_LIMITS = HAPTIC_LIMITS): Haptic
   let lastKey = -Infinity;
   return {
     allow(moment, now) {
-      if (now - lastKey < limits.typingMs) return false;
-      if (now - lastAny < limits.anyMs) return false;
-      if (now - (lastOf.get(moment) ?? -Infinity) < limits.sameMomentMs) return false;
+      if (!UNLIMITED.has(moment)) {
+        if (now - lastKey < limits.typingMs) return false;
+        if (now - lastAny < limits.anyMs) return false;
+        if (now - (lastOf.get(moment) ?? -Infinity) < limits.sameMomentMs) return false;
+      }
       lastAny = now;
       lastOf.set(moment, now);
       return true;

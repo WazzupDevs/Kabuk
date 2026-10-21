@@ -9,18 +9,28 @@ import {
   type V46TabKey,
   type V46ThumbKind,
 } from '@/theme/parts.generated';
+import { useTheme } from '@/theme/ThemeProvider';
 import { V46_COMPONENTS } from '@/theme/tokens.generated';
-import type { GalleryId } from '@/theme/v46Gallery';
+import { type GalleryId, galleryInfo } from '@/theme/v46Gallery';
+import { AnonSwitch } from '@/ui/AnonSwitch';
 import { Button, type ButtonLook } from '@/ui/Button';
 import { CityButton } from '@/ui/CityButton';
+import { CodeField } from '@/ui/CodeField';
+import { FieldError } from '@/ui/FieldError';
 import { FilterChips } from '@/ui/FilterChips';
 import { HereCard } from '@/ui/HereCard';
 import { LiveDot } from '@/ui/LiveDot';
-import { useNarrow } from '@/ui/narrow';
+import { useLayoutWidth, useNarrow } from '@/ui/narrow';
+import { Notice } from '@/ui/Notice';
+import { PhoneField } from '@/ui/PhoneField';
 import { RoundButton } from '@/ui/RoundButton';
 import { SearchField } from '@/ui/SearchField';
+import { SelectField } from '@/ui/SelectField';
 import { SendButton } from '@/ui/SendButton';
+import { Switch } from '@/ui/Switch';
 import { TabBar, type TabBarItem, UnreadDot } from '@/ui/TabBar';
+import { TextArea } from '@/ui/TextArea';
+import { TextField } from '@/ui/TextField';
 import { TopBar } from '@/ui/TopBar';
 import { VenueList } from '@/ui/VenueList';
 import { VenueRow } from '@/ui/VenueRow';
@@ -320,6 +330,139 @@ const EXPLORE: Partial<Record<GalleryId, readonly GalleryState[]>> = {
   ],
 };
 
+// The form parts with v46's sample data, as wide as v46 draws them: its gallery's width (a field
+// in the sign-up's pane at 360), at most the sign-up's pane on this screen (the screen less `.sup`'s
+// 20 on each side, the screen padding: 280 at 320, as v46's narrow screen). Not `wide`: the gate's
+// crop is the part itself, as v46's is. The fields take typing, the switches a press; the used
+// anonymous switch shakes.
+const f = s.form;
+
+const sized = (id: GalleryId, render: () => ReactNode): readonly GalleryState[] => [
+  { key: 'normal', render: () => <FormWidth id={id}>{render()}</FormWidth> },
+];
+
+function FormWidth({ id, children }: { id: GalleryId; children: ReactNode }) {
+  const { shape } = useTheme();
+  const pane = useLayoutWidth() - 2 * shape.screenPadding;
+  return (
+    <View style={{ width: Math.min(galleryInfo(id).width, pane), maxWidth: '100%' }}>
+      {children}
+    </View>
+  );
+}
+
+function SampleName({ word = '', focused = false }: { word?: string; focused?: boolean }) {
+  const [value, setValue] = useState(word);
+  return (
+    <TextField
+      label={f.nameLabel}
+      value={value}
+      onChangeText={setValue}
+      placeholder={f.namePlaceholder}
+      focusedPreview={focused}
+    />
+  );
+}
+
+function SamplePhone({ number = '', focused = false }: { number?: string; focused?: boolean }) {
+  const [value, setValue] = useState(number);
+  return (
+    <PhoneField
+      prefix={f.phonePrefix}
+      value={value}
+      onChangeText={setValue}
+      placeholder={f.phonePlaceholder}
+      accessibilityLabel={f.phoneLabel}
+      focusedPreview={focused}
+    />
+  );
+}
+
+function SampleCode({ typed = '', focused = false }: { typed?: string; focused?: boolean }) {
+  const [value, setValue] = useState(typed);
+  return (
+    <CodeField
+      value={value}
+      onChangeText={setValue}
+      accessibilityLabel={f.code}
+      focusedPreview={focused}
+    />
+  );
+}
+
+function SampleBio({ focused = false }: { focused?: boolean }) {
+  const [value, setValue] = useState<string>(f.bio);
+  return (
+    <TextArea
+      value={value}
+      onChangeText={setValue}
+      placeholder={f.bioPlaceholder}
+      accessibilityLabel={f.bioLabel}
+      focusedPreview={focused}
+    />
+  );
+}
+
+function SampleSwitch({ on, disabled = false }: { on: boolean; disabled?: boolean }) {
+  const [value, setValue] = useState(on);
+  return (
+    <Switch value={value} onChange={setValue} accessibilityLabel={f.lobby} disabled={disabled} />
+  );
+}
+
+function SampleAnon({ on, used = false }: { on: boolean; used?: boolean }) {
+  const [value, setValue] = useState(on);
+  return (
+    <AnonSwitch
+      value={value}
+      used={used}
+      onPress={() => setValue((v) => !v)}
+      accessibilityLabel={used ? f.anonUsed : value ? f.anonOn : f.anonOff}
+    />
+  );
+}
+
+const FORM: Partial<Record<GalleryId, readonly GalleryState[]>> = {
+  'alan-isim': sized('alan-isim', () => <SampleName />),
+  'alan-isim-dolu': sized('alan-isim-dolu', () => <SampleName word={f.name} />),
+  'alan-isim-odak': sized('alan-isim-odak', () => <SampleName focused />),
+  'alan-telefon': sized('alan-telefon', () => <SamplePhone />),
+  'alan-telefon-odak': sized('alan-telefon-odak', () => <SamplePhone focused />),
+  'alan-telefon-dolu': sized('alan-telefon-dolu', () => <SamplePhone number={f.phone} />),
+  'alan-kod': sized('alan-kod', () => <SampleCode />),
+  'alan-kod-odak': sized('alan-kod-odak', () => <SampleCode focused />),
+  'alan-kod-dolu': sized('alan-kod-dolu', () => <SampleCode typed={f.codeTyped} focused />),
+  'alan-hata': sized('alan-hata', () => <FieldError>{f.error}</FieldError>),
+  'alan-hata-kendi': sized('alan-hata-kendi', () => <FieldError>{f.error}</FieldError>),
+  uyari: sized('uyari', () => <Notice>{f.warning}</Notice>),
+  'alan-secim': [{ key: 'normal', render: () => <SampleSelect /> }],
+  'alan-secim-odak': [{ key: 'normal', render: () => <SampleSelect open /> }],
+  'alan-cok-satir': sized('alan-cok-satir', () => <SampleBio />),
+  'alan-cok-satir-odak': sized('alan-cok-satir-odak', () => <SampleBio focused />),
+  'anahtar-kapali': [{ key: 'normal', render: () => <SampleSwitch on={false} /> }],
+  'anahtar-acik': [{ key: 'normal', render: () => <SampleSwitch on /> }],
+  'anahtar-pasif': [{ key: 'normal', render: () => <SampleSwitch on={false} disabled /> }],
+  'anonim-anahtari': [{ key: 'normal', render: () => <SampleAnon on={false} /> }],
+  'anonim-anahtari-acik': [{ key: 'normal', render: () => <SampleAnon on /> }],
+  'anonim-anahtari-kilitli': [{ key: 'normal', render: () => <SampleAnon on used /> }],
+};
+
+// The day's select as v46's gallery draws it (its width there); a press opens it in the gallery
+// only as its look.
+function SampleSelect({ open = false }: { open?: boolean }) {
+  const [shown, setShown] = useState(open);
+  return (
+    <View style={{ width: galleryInfo('alan-secim').width }}>
+      <SelectField
+        text={f.choose}
+        onPress={() => setShown((v) => !v)}
+        accessibilityLabel={f.day}
+        open={shown}
+      />
+    </View>
+  );
+}
+
 export const UI_GALLERY: Partial<Record<GalleryId, readonly GalleryState[]>> = {
   ...Object.fromEntries(
     (Object.entries(BUTTONS) as [V46ButtonId, ButtonSample][]).map(([id, b]) => [
@@ -347,6 +490,7 @@ export const UI_GALLERY: Partial<Record<GalleryId, readonly GalleryState[]>> = {
   ],
   ...NAVIGATION,
   ...EXPLORE,
+  ...FORM,
 };
 
 // The bell with v46's sample count; each press is a new notice: it swings and the count grows.

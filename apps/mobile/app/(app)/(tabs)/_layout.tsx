@@ -1,5 +1,5 @@
-import { venueTabTarget } from '@shared/navigation.ts';
-import { router, Tabs } from 'expo-router';
+import { tabOpenedBy } from '@shared/navigation.ts';
+import { Tabs } from 'expo-router';
 
 import { TabBar, TabBarSpace, TabScene } from '@/components/TabBar';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
@@ -26,7 +26,10 @@ export default function TabsLayout() {
     <TabBarSpace>
       <Tabs
         screenOptions={{ headerShown: false }}
-        tabBar={(props) => <TabBar {...props} />}
+        // Without an active table the Mekan tab opens Keşfet instead.
+        tabBar={(props) => (
+          <TabBar {...props} opens={(tab) => tabOpenedBy(tab, table.data, Date.now())} />
+        )}
         screenLayout={({ navigation, children }) => (
           <TabScene navigation={navigation}>{children}</TabScene>
         )}
@@ -46,16 +49,6 @@ export default function TabsLayout() {
             title: tr.tabs.venue,
             tabBarButtonTestID: 'tab-venue',
             // The Mekan tab (docs/SPEC_V2.md §2) with the mark, drawn by TabBar.
-          }}
-          listeners={{
-            // Without an active table the Mekan tab opens Keşfet instead.
-            tabPress: (event) => {
-              const target = venueTabTarget(table.data, Date.now());
-              if (target !== '/venue') {
-                event.preventDefault();
-                router.navigate(target);
-              }
-            },
           }}
         />
         <Tabs.Screen
