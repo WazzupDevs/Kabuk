@@ -39,12 +39,15 @@ appId: app.kabuk.mobile
     visible:
       id: letter-board
     timeout: 15000
-- tapOn:
-    id: letter-A
+# The bot table objects as soon as the claim is there (armed before the tap): the window is 3 s, and
+# the tap's wait for the screen to settle took 3.5 s once (WazzupDevs/Kabuk#202, light-3).
 - runScript:
     file: ../scripts/bot.js
     env:
       ACTION: say-object
+      BODY: '{"armed":true}'
+- tapOn:
+    id: letter-A
 # Round 2 opens ready with the bot table's point: "İtiraz! … +1".
 - extendedWaitUntil:
     visible: İtiraz!.*
