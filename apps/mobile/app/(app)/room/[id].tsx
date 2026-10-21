@@ -63,9 +63,14 @@ export default function TableScreen() {
   const seen = useTableEndStore((s) => s.tables[id]);
   const name = room.data?.name;
   const phones = room.data?.phones;
+  const profiledKey = (people.data ?? [])
+    .filter((p) => p.profiled)
+    .map((p) => p.alias)
+    .join('\n');
   useEffect(() => {
-    if (open && name && phones) remember(id, name, phones);
-  }, [open, id, name, phones, remember]);
+    if (open && name && phones)
+      remember(id, name, phones, profiledKey ? profiledKey.split('\n') : []);
+  }, [open, id, name, phones, profiledKey, remember]);
 
   const settle = () => {
     void queryClient.invalidateQueries({ queryKey: roomKeys.current });
@@ -114,6 +119,7 @@ export default function TableScreen() {
           left={seen.left}
           tableName={seen.name}
           phones={seen.phones}
+          profiled={seen.profiled}
           anonymous={checkIn.data?.identity.mode === 'anonymous'}
           onClose={backToVenue}
         />

@@ -32,6 +32,8 @@ type Props = {
   left: boolean;
   tableName: string;
   phones: number;
+  // The names seen sitting at the table with their profile (Masadakiler).
+  profiled: readonly string[];
   // This person sat anonymously: the note about the nick (K-68).
   anonymous: boolean;
   onClose: () => void;
@@ -40,7 +42,6 @@ type Props = {
 type EndRecord = {
   id: string;
   other_alias: string;
-  other_profiled: boolean;
   friend_action_at: string | null;
 };
 
@@ -49,7 +50,7 @@ type EndRecord = {
 // katıldı" under the name). A press shows "Eklendi"; pressing again takes it back (K-67). Both
 // pressed: "Arkadaş oldunuz" and "Mesaj". No table length, no game count. Built from this person's
 // own records (play_history); nothing about the others is read again (rule 4).
-export function TableEnd({ roomId, left, tableName, phones, anonymous, onClose }: Props) {
+export function TableEnd({ roomId, left, tableName, phones, profiled, anonymous, onClose }: Props) {
   const records = useTableHistory(roomId, true);
   const friends = useHistoryFriends();
 
@@ -71,7 +72,14 @@ export function TableEnd({ roomId, left, tableName, phones, anonymous, onClose }
             action={{ label: tr.common.retry, onPress: () => void records.refetch() }}
           />
         ) : (
-          records.data.map((r) => <EndRow key={r.id} record={r} friend={friends.data?.get(r.id)} />)
+          records.data.map((r) => (
+            <EndRow
+              key={r.id}
+              record={r}
+              profiled={profiled.includes(r.other_alias)}
+              friend={friends.data?.get(r.id)}
+            />
+          ))
         )}
       </View>
       <Text variant="fine" className="mt-4">
@@ -89,7 +97,16 @@ export function TableEnd({ roomId, left, tableName, phones, anonymous, onClose }
   );
 }
 
-function EndRow({ record, friend }: { record: EndRecord; friend: HistoryFriend | undefined }) {
+function EndRow({
+  record,
+  profiled,
+  friend,
+}: {
+  record: EndRecord;
+  // Seen sitting at the table with the profile (Masadakiler).
+  profiled: boolean;
+  friend: HistoryFriend | undefined;
+}) {
   const queryClient = useQueryClient();
   // Side by side the name and the button do not fit at 320 dp with the largest text: the button
   // goes to the line under it, to the right; the name never breaks.
@@ -114,7 +131,7 @@ function EndRow({ record, friend }: { record: EndRecord; friend: HistoryFriend |
   const state = pairFriendState(record, friend !== undefined);
   const who = (
     <View className="flex-row items-center gap-3">
-      {record.other_profiled ? (
+      {profiled ? (
         <Avatar kind="profile" name={record.other_alias} size="lg" />
       ) : (
         <Avatar kind="default" size="lg" />
@@ -125,7 +142,7 @@ function EndRow({ record, friend }: { record: EndRecord; friend: HistoryFriend |
           <Text variant="label" tone="success">
             {tr.tableEnd.friends}
           </Text>
-        ) : !record.other_profiled ? (
+        ) : !profiled ? (
           <Text variant="fine">{tr.tableEnd.anonymous}</Text>
         ) : null}
       </View>

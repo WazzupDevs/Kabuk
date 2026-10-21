@@ -87,7 +87,7 @@ export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Pro
     },
   });
 
-  const name = anonymous ? (profile.data?.capsule_nick ?? '') : (profile.data?.display_name ?? '');
+  const name = anonymous ? photo.nick : (profile.data?.display_name ?? '');
 
   return (
     <Sheet visible onClose={onClose} title={tr.createTable.title}>

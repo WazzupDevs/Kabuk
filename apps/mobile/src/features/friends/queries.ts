@@ -99,7 +99,8 @@ export function usePlayHistory() {
 
 // This phone's records of one table (docs/SPEC_V3.md §23.G), written when the table closed or when
 // this phone left it: one per phone of the other side it sat with for 3 minutes, by that phone's
-// alias. The table's end is built from them and from what the phone saw at the table.
+// alias. The table's end is built from them and from what the phone saw at the table (who sat
+// there profiled: play_history.other_profiled is closed to the client).
 export function useTableHistory(roomId: string, enabled: boolean) {
   return useQuery({
     queryKey: [...friendKeys.history, 'room', roomId] as const,
@@ -107,7 +108,7 @@ export function useTableHistory(roomId: string, enabled: boolean) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('play_history')
-        .select('id, other_alias, other_profiled, reveal_mutual, friend_open, friend_action_at')
+        .select('id, other_alias, reveal_mutual, friend_open, friend_action_at')
         .eq('room_id', roomId);
       if (error) throw error;
       return data;
