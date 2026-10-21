@@ -5,7 +5,7 @@ import { BUTTON_VARIANTS, buttonFill } from './buttonFill';
 import { AA_LARGE, AA_TEXT, contrastRatio, readableOn } from './contrast';
 import { featurePalette } from './feature';
 import { THEME } from './theme';
-import { type Palette, type PaletteKey, TAB_TONE } from './tokens';
+import { type Palette, type PaletteKey } from './tokens';
 
 type Pair = [foreground: PaletteKey, background: PaletteKey, minimum: number];
 
@@ -78,10 +78,6 @@ const PAIRS: readonly Pair[] = [
   // The focus ring.
   ['focus', 'surface2', AA_LARGE],
   ['focus', 'raised', AA_LARGE],
-  // Tab bar: the selected tab's icon on the bar and on its halo; the other tabs' icons.
-  [TAB_TONE, 'surface', AA_LARGE],
-  [TAB_TONE, 'surface2', AA_LARGE],
-  ['muted', 'surface', AA_LARGE],
 ];
 
 function ratio(p: Palette, fg: PaletteKey, bg: PaletteKey): number {
@@ -120,7 +116,6 @@ const FEATURE_PAIRS: readonly Pair[] = [
   ['accent', 'surface', AA_LARGE],
   ['border', 'surface', AA_LARGE],
   ['focus', 'surface', AA_LARGE],
-  [TAB_TONE, 'surface', AA_LARGE],
   ...BUTTON_PAIRS,
 ];
 

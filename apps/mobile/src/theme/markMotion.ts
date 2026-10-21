@@ -40,21 +40,6 @@ export function capsules(m: MarkDrawing, dx = m.dx, dy = m.dy): [Rect, Rect] {
   ];
 }
 
-// The app icon's continuous square (a superellipse, exponent 5) on a `side` canvas: the Mekan
-// tab's ink tile.
-export function squirclePath(side: number, points = 96): string {
-  const r = side / 2;
-  const at = (c: number) => Math.sign(c) * Math.abs(c) ** (2 / 5);
-  const d: string[] = [];
-  for (let i = 0; i < points; i++) {
-    const t = (i / points) * Math.PI * 2;
-    const x = (r + r * at(Math.cos(t))).toFixed(2);
-    const y = (r + r * at(Math.sin(t))).toFixed(2);
-    d.push(`${i === 0 ? 'M' : 'L'}${x} ${y}`);
-  }
-  return `${d.join('')}Z`;
-}
-
 // ------------------------------------------------------------------ curves
 
 const clamp = (v: number, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, v));

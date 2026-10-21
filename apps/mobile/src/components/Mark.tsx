@@ -252,7 +252,7 @@ export function MotionMark({
 
 type MarkProps = {
   size: number;
-  // On ink (the Mekan tab, a featured card): the overlap is white.
+  // On ink (a featured card): the overlap is white.
   onInk?: boolean;
   // Read as "skall"; null when the mark is decoration next to a label.
   label?: string | null;
