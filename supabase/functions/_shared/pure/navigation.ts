@@ -38,6 +38,10 @@ export function hasActiveTable(table: ActiveTableLike, now: number): boolean {
   return table !== null && table !== undefined && Date.parse(table.expires_at) > now;
 }
 
-export function venueTabTarget(table: ActiveTableLike, now: number): string {
-  return hasActiveTable(table, now) ? ROUTES.venue : ROUTES.explore;
+export type TabKey = 'explore' | 'activities' | 'venue' | 'messages' | 'profile';
+
+// The tab a press on a tab opens: the tab itself, except the Mekan tab without an active table,
+// which opens Keşfet.
+export function tabOpenedBy(tab: TabKey, table: ActiveTableLike, now: number): TabKey {
+  return tab === 'venue' && !hasActiveTable(table, now) ? 'explore' : tab;
 }

@@ -13,7 +13,11 @@
 //   BOT_PORT=8788 BOT_PHONE=+905550000004 BOT_NAME='Bot Üç' … serve     # the team flow's second bot
 //   node --experimental-strip-types scripts/e2e/bot-table.ts opponent  # the other table, for one phone
 //   node --experimental-strip-types scripts/e2e/bot-table.ts <action> [json]
+import { execFileSync } from 'node:child_process';
 import { createServer } from 'node:http';
+import { join } from 'node:path';
+
+import { PNG } from 'pngjs';
 
 import {
   createClient,
@@ -1025,6 +1029,50 @@ export const actions: Record<string, (args: Json) => Promise<Json>> = {
     return setOwnProfile(args, 'gender');
   },
 
+  // The phone's screen, for a flow that needs another one than the emulator's (01c-gallery-wide: a
+  // Galaxy S23's): `{"size":"1080x2340","density":420}` sets it, `{}` sets the emulator's own back.
+  // adb on the machine that runs the bot (CI's runner, a developer's computer): a flow cannot call
+  // it. Nothing on the server.
+  async screen(args) {
+    const size = typeof args.size === 'string' ? args.size : 'reset';
+    const density = typeof args.density === 'number' ? String(args.density) : 'reset';
+    if (!/^(reset|\d+x\d+)$/.test(size) || !/^(reset|\d+)$/.test(density)) {
+      throw new Error(`screen: size ${size}, density ${density}`);
+    }
+    const sdk = process.env.ANDROID_HOME;
+    const adb = sdk ? join(sdk, 'platform-tools', 'adb') : 'adb';
+    execFileSync(adb, ['shell', 'wm', 'size', size]);
+    execFileSync(adb, ['shell', 'wm', 'density', density]);
+    return { size, density };
+  },
+
+  // The phone's screen ends without a black strip (02-checkin, on a tab after the Keşfet map: in
+  // 0.6.0 the map left the app's window translucent and a black strip over the navigation bar on
+  // every later screen). adb on the machine that runs the bot, as `screen`.
+  async 'bottom-strip'() {
+    const sdk = process.env.ANDROID_HOME;
+    const adb = sdk ? join(sdk, 'platform-tools', 'adb') : 'adb';
+    const png = execFileSync(adb, ['exec-out', 'screencap', '-p'], { maxBuffer: 64 << 20 });
+    const img = PNG.sync.read(png);
+    const black = (y: number) => {
+      for (let x = 0; x < img.width; x++) {
+        const i = (y * img.width + x) * 4;
+        if ((img.data[i] ?? 0) > 5 || (img.data[i + 1] ?? 0) > 5 || (img.data[i + 2] ?? 0) > 5) {
+          return false;
+        }
+      }
+      return true;
+    };
+    let rows = 0;
+    while (rows < img.height && black(img.height - 1 - rows)) rows++;
+    if (rows > 0) {
+      throw new Error(
+        `${rows} black rows at the bottom of the screen (${img.width} × ${img.height})`,
+      );
+    }
+    return { rows };
+  },
+
   async 'end-room'() {
     return call('rooms', { action: 'end' });
   },
@@ -1542,7 +1590,9 @@ async function run(action: string, args: Json): Promise<Json> {
   const fn = actions[action];
   if (!fn) throw new Error(`unknown action ${action}; one of ${Object.keys(actions).join(', ')}`);
   // Each CLI call is its own process: sign in first unless the action does not need it.
-  if (!client && !['setup', 'single-venue', 'login'].includes(action)) await actions.login?.({});
+  if (!client && !['setup', 'single-venue', 'login', 'screen', 'bottom-strip'].includes(action)) {
+    await actions.login?.({});
+  }
   return fn(args);
 }
 

@@ -280,9 +280,12 @@ describe("the app's tabs", () => {
     expect(tabs).toMatch(/bottom: insets\.bottom \+ V46_TAB_BAR\[scheme\]\.bottom/);
     // The room the bar takes at the bottom of a tab screen: the bar, its distance, a little more.
     expect(tabs).toMatch(/t\.height \+ t\.bottom \+ insets\.bottom \+ SPACING\[4\]/);
-    // A new tab is felt once the screen's own listener had its say (the Mekan tab's redirect).
+    // Every press that changes the tab is felt, the Mekan tab's redirect to Keşfet too.
     expect(tabs).toMatch(
-      /!event\.defaultPrevented\) \{\s*haptic\('selection'\);\s*navigation\.navigate\(route\.name, route\.params\);/,
+      /const route = routeOf\(opened\);[\s\S]*if \(moves\) haptic\('tabChanged'\);\s*if \(opened !== key\) router\.navigate\(ROUTES\[opened\]\);\s*else if \(moves\) navigation\.navigate\(route\.name, route\.params\);/,
+    );
+    expect(app('app/(app)/(tabs)/_layout.tsx')).toMatch(
+      /opens=\{\(tab\) => tabOpenedBy\(tab, table\.data, Date\.now\(\)\)\}/,
     );
     // Each tab screen is a blur target; the focused one is the bar's; over the map it is opaque.
     expect(tabs).toMatch(/<BlurTargetView ref=\{ref\}/);

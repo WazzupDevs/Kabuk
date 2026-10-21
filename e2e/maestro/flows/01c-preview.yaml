@@ -510,6 +510,16 @@ appId: app.kabuk.mobile
       id: gal-colors
     timeout: 10000
 - takeScreenshot: 04v-v46-gallery-colors
+# The gallery's 320 view: a press lays the components out for v46's narrow screen (0.6.0: the app
+# closed here on the owner's phone). CI's emulator is 320 dp wide already, so here the press does
+# not change the width the components read. The rest of the gallery runs in that view.
+- tapOn:
+    id: v46-gallery-narrow
+- extendedWaitUntil:
+    visible:
+      id: gal-colors
+    timeout: 10000
+- takeScreenshot: 04v-v46-gallery-narrow
 # The gallery is one list that mounts the rows near the screen only (app/(app)/v46-gallery.tsx):
 # with every component mounted at once a scroll step took 6–14 s here and the step to the first
 # component ran out of its 120 s in dark (WazzupDevs/Kabuk#202, the nightly run of 21 Ekim).
