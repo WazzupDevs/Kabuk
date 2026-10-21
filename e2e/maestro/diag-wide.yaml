@@ -1,6 +1,6 @@
-# Diagnostic (WazzupDevs/Kabuk#206, not to be merged): sign up, check in (its Keşfet map steps open
-# the map), then the Mekan screen scrolled under the tab bar with screenshots, after the map and in
-# a new app process (flows/diag-mekan.yaml).
+# Diagnostic (WazzupDevs/Kabuk#206, not to be merged): sign up, open the Keşfet map and check in in
+# the same app process (flows/diag-checkin.yaml), then the Mekan screen scrolled under the tab bar
+# with screenshots, after the map and in a new app process (flows/diag-mekan.yaml).
 appId: app.kabuk.mobile
 name: Teşhis, haritadan sonra Mekan'da kaydırma
 ---
@@ -8,5 +8,5 @@ name: Teşhis, haritadan sonra Mekan'da kaydırma
 - runFlow: flows/01b-design.yaml
 - tapOn:
     id: tab-explore
-- runFlow: flows/02-checkin.yaml
+- runFlow: flows/diag-checkin.yaml
 - runFlow: flows/diag-mekan.yaml

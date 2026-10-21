@@ -1,0 +1,128 @@
+# Diagnostic (WazzupDevs/Kabuk#206, not to be merged): 02-checkin's steps up to the venue screen in
+# one app process: Keşfet's list, the map, back to the list, the venue's page and the check-in,
+# without 02-checkin's single-venue step and its relaunch (a new process starts with an opaque
+# window again).
+appId: app.kabuk.mobile
+---
+- scrollUntilVisible:
+    element:
+      text: E2E Kafe
+    timeout: 30000
+- takeScreenshot: 05-explore-list
+# v44's list (docs/SPEC_V4.md §4.C): kind, search, then city and district (K-38). Two cities have
+# active venues here (the E2E venues in İstanbul, the campus in Sakarya): the city button shows and
+# İstanbul, with the most venues, comes first.
+- tapOn:
+    id: explore-kind-campus
+- extendedWaitUntil:
+    visible: E2E Kafe
+    timeout: 10000
+- assertNotVisible: E2E Kafe İki
+- takeScreenshot: 05d-explore-kind
+- tapOn:
+    id: explore-kind-all
+- tapOn:
+    id: explore-search
+- inputText: iki
+- extendedWaitUntil:
+    visible: E2E Kafe İki
+    timeout: 10000
+- assertNotVisible: E2E Kafe
+- takeScreenshot: 05e-explore-search
+- eraseText: 10
+- hideKeyboard
+- tapOn:
+    id: explore-place
+- extendedWaitUntil:
+    visible: Şehir ve semt
+    timeout: 10000
+- tapOn:
+    id: place-city-Sakarya
+- takeScreenshot: 05f-explore-place-sheet
+- tapOn:
+    id: place-show
+- extendedWaitUntil:
+    visible: Sakarya Üniversitesi Esentepe Kampüsü
+    timeout: 10000
+- assertVisible: 'Sakarya · Tüm semtler'
+- assertNotVisible: E2E Kafe
+- takeScreenshot: 05g-explore-sakarya
+# Back to İstanbul for the rest of the flow (the choice stays on the phone).
+- tapOn:
+    id: explore-place
+- tapOn:
+    id: place-city-İstanbul
+- tapOn:
+    id: place-show
+# The map: GL layers under the header (the header and the switch stay on top), opening on the
+# venues. Pins are GL, not views, so the screenshot is the check; it waits until the map has drawn
+# its style, glyphs and venue layers (`explore-map-ready`).
+- tapOn: Harita
+- extendedWaitUntil:
+    visible:
+      id: explore-map-ready
+    timeout: 30000
+- assertVisible: Keşfet
+- assertVisible: Liste
+- takeScreenshot: 05b-explore-map
+# Symbol layers (the kind glyph inside each pin, cluster counts) load their images and glyphs after
+# the first full render: a second screenshot a few seconds later shows them.
+- evalScript: ${const end = Date.now() + 4000; while (Date.now() < end) {} }
+- takeScreenshot: 05c-explore-map-settled
+- tapOn: Liste
+- scrollUntilVisible:
+    element:
+      text: E2E Kafe
+    timeout: 30000
+- tapOn: E2E Kafe
+- extendedWaitUntil:
+    visible: Buraya giriş yap
+    timeout: 10000
+- takeScreenshot: 06-venue-detail
+- tapOn: Buraya giriş yap
+- extendedWaitUntil:
+    visible: Konumumu kullan
+    timeout: 10000
+- tapOn: Konumumun bu amaçla kullanılmasına açık rıza veriyorum.
+- takeScreenshot: 07-location-consent
+- setLocation:
+    latitude: ${OUTSIDE_LAT}
+    longitude: ${OUTSIDE_LNG}
+- tapOn: Konumumu kullan
+- extendedWaitUntil:
+    visible: Kampüsün içinde görünmüyorsun. Kampüse girince tekrar dene.
+    timeout: 30000
+- takeScreenshot: 08-too-far
+- setLocation:
+    latitude: ${INSIDE_LAT}
+    longitude: ${INSIDE_LNG}
+- tapOn: Konumumu kullan
+# "Neredesin?": the venue's spots, before the headcount.
+- extendedWaitUntil:
+    visible: Neredesin\?
+    timeout: 30000
+- takeScreenshot: 08b-spot
+- tapOn:
+    id: spot-kantin
+- tapOn: Devam
+- extendedWaitUntil:
+    visible: Masada kaç kişisiniz\?
+    timeout: 15000
+# The name comes from sign-up (docs/SPEC_V3.md §3): joining with the profile is available.
+- assertNotVisible: Profille katılmak için önce Profil sekmesinden bir ad seç.
+- takeScreenshot: 09-headcount
+- tapOn:
+    id: headcount-2
+- tapOn: Masayı aç
+- extendedWaitUntil:
+    visible: Masan hazır
+    timeout: 15000
+- takeScreenshot: 10-table-ready
+- tapOn: Devam
+- extendedWaitUntil:
+    visible:
+      id: lobby-open
+    timeout: 15000
+- assertVisible: Lobide değil
+- assertVisible: 'Noktan: Kantin'
+- takeScreenshot: 11-venue
