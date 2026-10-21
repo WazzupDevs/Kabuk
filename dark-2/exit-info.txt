@@ -1,0 +1,12 @@
+ACTIVITY MANAGER PROCESS EXIT INFO (dumpsys activity exit-info)
+Last Timestamp of Persistence Into Persistent Storage: 2026-10-21 22:38:59.806
+  package: app.kabuk.mobile
+    Historical Process Exit for uid=10192
+        ApplicationExitInfo #0:
+          timestamp=2026-10-21 22:37:10.106 pid=6351 realUid=10192 packageUid=10192 definingUid=10192 user=0
+          process=app.kabuk.mobile reason=10 (USER REQUESTED) subreason=21 (FORCE STOP) status=0
+          importance=100 pss=216MB rss=361MB description=stop app.kabuk.mobile due to from pid 7069 state=empty trace=null
+        ApplicationExitInfo #1:
+          timestamp=2026-10-21 22:32:50.074 pid=5776 realUid=10192 packageUid=10192 definingUid=10192 user=0
+          process=app.kabuk.mobile reason=10 (USER REQUESTED) subreason=21 (FORCE STOP) status=0
+          importance=100 pss=187MB rss=328MB description=stop app.kabuk.mobile due to from pid 5935 state=empty trace=null
