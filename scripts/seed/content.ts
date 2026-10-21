@@ -13,7 +13,13 @@ import {
 import { SAHTEKAR } from '../../supabase/functions/_shared/pure/sahtekar.ts';
 import { SOHBET_THEMES, type SohbetTheme } from '../../supabase/functions/_shared/pure/sohbet.ts';
 import { normalize } from '../../supabase/functions/_shared/pure/trText.ts';
-import { isVenueKind, type VenueKind } from '../../supabase/functions/_shared/pure/venueKind.ts';
+import {
+  DEFAULT_VENUE_CATEGORY,
+  isVenueCategory,
+  isVenueKind,
+  type VenueCategory,
+  type VenueKind,
+} from '../../supabase/functions/_shared/pure/venueKind.ts';
 
 export type VenueRecord = {
   name: string;
@@ -25,6 +31,8 @@ export type VenueRecord = {
   sourceRef: string;
   // Required in every venue file (pure/venueKind.ts); each file allows one kind.
   kind: VenueKind;
+  // kafe, cay_bahcesi or yemek (pure/venueKind.ts), set by hand; kafe when left out.
+  category: VenueCategory;
   amenity: string;
   isActive: boolean;
 };
@@ -90,11 +98,20 @@ function parseKind(value: unknown, allowed: VenueKind, where: string): VenueKind
   return value;
 }
 
+function parseCategory(value: unknown, where: string): VenueCategory {
+  if (value === undefined) return DEFAULT_VENUE_CATEGORY;
+  if (!isVenueCategory(value)) {
+    throw new Error(`${where}.category must be kafe, cay_bahcesi or yemek`);
+  }
+  return value;
+}
+
 function parseVenue(value: unknown, index: number): VenueRecord {
   const where = `venues[${index}]`;
   if (!isRecord(value)) throw new Error(`${where} must be an object`);
   const { name, city, district, lat, lng, source, sourceRef, amenity, isActive } = value;
   parseKind(value.kind, 'cafe', where);
+  const category = parseCategory(value.category, where);
   for (const [field, v] of Object.entries({ name, city, district, source, sourceRef, amenity })) {
     if (typeof v !== 'string' || v.trim() === '') throw new Error(`${where}.${field} is required`);
   }
@@ -103,7 +120,7 @@ function parseVenue(value: unknown, index: number): VenueRecord {
     throw new Error(`${where}.lng is invalid`);
   }
   if (typeof isActive !== 'boolean') throw new Error(`${where}.isActive must be a boolean`);
-  return value as VenueRecord;
+  return { ...(value as VenueRecord), category };
 }
 
 export function parseVenuesFile(json: unknown): VenuesFile {
@@ -144,6 +161,7 @@ export function parseTestVenues(json: unknown): TestVenue[] {
         source: 'test',
         sourceRef: typeof ref === 'string' ? `test/${ref}` : ref,
         kind: value.kind,
+        category: value.category,
         amenity: 'cafe',
         isActive,
       },

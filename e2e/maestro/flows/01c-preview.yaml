@@ -277,8 +277,7 @@ appId: app.kabuk.mobile
     visible:
       id: preview-open
     timeout: 10000
-# Step 4.2 (docs/SPEC_V4.md, K-25): the game grounds with their chips, the buttons and themes and
-# the wordmark in the run's scheme, for the owner's approval of the dark tones.
+# Renkler: the bell's badge, the notice over the tab bar (Roboto) and the wordmark.
 - tapOn:
     id: preview-open
 - extendedWaitUntil:
@@ -287,9 +286,33 @@ appId: app.kabuk.mobile
     timeout: 10000
 - tapOn:
     id: preview-set-tokens
+# At the largest text size the set chips take a row more (Kaydırma) and the wordmark falls below the
+# screen.
+- scrollUntilVisible:
+    element:
+      id: preview-tokens-logo
+    timeout: 20000
+- takeScreenshot: 04j-tokens-themes
+- back
 - extendedWaitUntil:
     visible:
-      id: preview-tokens-grounds
+      id: preview-open
+    timeout: 10000
+# Eski oyun (outside the visual gate): step 4.2's game grounds with their chips, the judge buttons,
+# the chat themes and İbre's zones in the run's scheme, for the owner's approval of the dark tones;
+# then step 4.2b's game parts on their grounds: the game buttons, the timer bar and the ring (each
+# also in its last seconds), then the toast, 3-2-1 and confetti on a press.
+- tapOn:
+    id: preview-open
+- extendedWaitUntil:
+    visible:
+      id: preview-set-legacyGame
+    timeout: 10000
+- tapOn:
+    id: preview-set-legacyGame
+- extendedWaitUntil:
+    visible:
+      id: preview-legacy-grounds
     timeout: 10000
 - takeScreenshot: 04j-tokens-grounds
 # The lower grounds (Harf Kapmaca, Şarkıda Geçsin, Sohbet kartları): their labels are the only such
@@ -302,29 +325,15 @@ appId: app.kabuk.mobile
 - takeScreenshot: 04j-tokens-grounds-2
 - scrollUntilVisible:
     element:
-      id: preview-tokens-logo
+      id: preview-legacy-themes
     centerElement: true
     timeout: 30000
-- takeScreenshot: 04j-tokens-themes
-- back
-- extendedWaitUntil:
-    visible:
-      id: preview-open
-    timeout: 10000
-# Step 4.2b (docs/SPEC_V4.md §4.C): the game parts on their grounds: the game buttons, the timer
-# bar and the ring (each also in its last seconds), then the toast, 3-2-1 and confetti on a press.
-- tapOn:
-    id: preview-open
-- extendedWaitUntil:
-    visible:
-      id: preview-set-parts
-    timeout: 10000
-- tapOn:
-    id: preview-set-parts
-- extendedWaitUntil:
-    visible:
+- takeScreenshot: 04j-legacy-themes
+- scrollUntilVisible:
+    element:
       id: preview-parts-buttons
-    timeout: 10000
+    centerElement: true
+    timeout: 30000
 - takeScreenshot: 04k-parts-buttons
 - scrollUntilVisible:
     element:
@@ -337,8 +346,11 @@ appId: app.kabuk.mobile
       id: preview-parts-confetti
     centerElement: true
     timeout: 30000
+# The toast stays 1.6 s (theme/gameMotion.ts → TOAST.showMs). Maestro's wait for the screen to
+# settle after a tap took 3 s once at the largest font, and the toast was gone before the check.
 - tapOn:
     id: preview-parts-toast
+    waitToSettleTimeoutMs: 500
 - extendedWaitUntil:
     visible:
       id: game-toast
@@ -483,6 +495,41 @@ appId: app.kabuk.mobile
 - extendedWaitUntil:
     visible:
       id: preview-open
+    timeout: 10000
+# v46 native, step 2: the app's v46 gallery (Ayarlar → Tasarım (test) → v46 galeri), in the run's
+# scheme: the colours, the type styles on their line boxes (step 3a), then the components (v46's
+# measured boxes until each is rewritten in src/ui).
+- scrollUntilVisible:
+    element:
+      id: v46-gallery-open
+    timeout: 30000
+- tapOn:
+    id: v46-gallery-open
+- extendedWaitUntil:
+    visible:
+      id: gal-colors
+    timeout: 10000
+- takeScreenshot: 04v-v46-gallery-colors
+# The gallery is one list that mounts the rows near the screen only (app/(app)/v46-gallery.tsx):
+# with every component mounted at once a scroll step took 6–14 s here and the step to the first
+# component ran out of its 120 s in dark (WazzupDevs/Kabuk#202, the nightly run of 21 Ekim).
+- scrollUntilVisible:
+    element:
+      id: gal-type-t13w600l18
+    centerElement: true
+    timeout: 60000
+- takeScreenshot: 04v-v46-gallery-type
+# The 60 type styles, on their line boxes, stand before the components.
+- scrollUntilVisible:
+    element:
+      id: gal-birincil-52
+    centerElement: true
+    timeout: 120000
+- takeScreenshot: 04v-v46-gallery-components
+- back
+- extendedWaitUntil:
+    visible:
+      id: v46-gallery-open
     timeout: 10000
 - back
 # Aktiviteler (docs/SPEC_V4.md K-15): the E2E venues have no events and a new account no history,

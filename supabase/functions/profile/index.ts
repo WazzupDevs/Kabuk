@@ -19,7 +19,7 @@ import type {
 } from '../_shared/pure/api/profile.ts';
 import { ageOn, istanbulToday, parseIsoDate } from '../_shared/pure/age.ts';
 import { earnedBadges } from '../_shared/pure/badges.ts';
-import { nickRefreshAt } from '../_shared/pure/capsule.ts';
+import { LOOK_MAX_LENGTH, nickRefreshAt, normalizeLook } from '../_shared/pure/capsule.ts';
 import type { Gender } from '../_shared/pure/gender.ts';
 import { AppError } from '../_shared/pure/errors.ts';
 import { inspectJpeg } from '../_shared/pure/jpegMetadata.ts';
@@ -48,6 +48,8 @@ const Body: z.ZodType<ProfileRequest> = z.union([
   z.object({ action: z.literal('photo-commit'), path: z.string().max(200) }),
   z.object({ action: z.literal('photo-remove') }),
   z.object({ action: z.literal('refresh-nick') }),
+  // Only the look: no account and no emotion goes with it (K-47, K-52).
+  z.strictObject({ action: z.literal('set-look'), look: z.string().max(LOOK_MAX_LENGTH) }),
 ]);
 
 const db = serviceClient();
@@ -196,6 +198,21 @@ Deno.serve(
           capsuleNick: refreshed.nick,
           nickRefreshAt: nickRefreshAt(refreshed.changedAt, new Date()),
         };
+      }
+
+      // K-47: the caller's own look, as the catalog knows it (unknown parts dropped). Written now;
+      // what was written before keeps its look (K-10).
+      case 'set-look': {
+        const look = normalizeLook(body.look);
+        const { data, error } = await db
+          .from('profiles')
+          .update({ capsule_look: look })
+          .eq('id', user.id)
+          .select('id')
+          .maybeSingle();
+        if (error) throw dbError('profiles', error);
+        if (!data) throw new AppError('onboarding_required', 'Complete onboarding first.');
+        return { capsuleLook: look };
       }
 
       case 'update': {

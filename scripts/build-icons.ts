@@ -22,18 +22,17 @@ import {
 import {
   BADGE_GLYPHS,
   type BadgeGlyph,
+  BELL,
   GAME_GLYPHS,
   type GameGlyph,
   glyphSvg,
   KIND_GLYPHS,
   LOCK,
+  lineSvg,
   MARKERS,
   type MarkerKind,
   signedDistanceField,
-  TAB_A,
-  TAB_ICONS,
   TABLE_AVATARS,
-  tabSvg,
 } from './icon/glyphs.ts';
 import { ART_BOX, artSvg } from './icon/art.ts';
 import { previewHtml } from './icon/preview.ts';
@@ -78,11 +77,8 @@ async function glyphPngs(svgAt: (px: number) => string, file: string, dp: number
   for (const d of DENSITIES)
     await png(svgAt(dp * d), glyph, d === 1 ? `${file}.png` : `${file}@${d}x.png`);
 }
-// Tab bar and the notification bell: line (passive) and solid (active), 24 dp. Set A ("Kabuk").
-for (const icon of TAB_ICONS) {
-  await glyphPngs((px) => tabSvg(TAB_A, icon, false, px), `tab-${icon}`, 24);
-  await glyphPngs((px) => tabSvg(TAB_A, icon, true, px), `tab-${icon}-active`, 24);
-}
+// The notification bell, a line drawing, 24 dp.
+await glyphPngs((px) => lineSvg(BELL, px), 'bell', 24);
 // Badges (src/features/profile/BadgeIcon.tsx): drawn up to 32 dp inside their disc; the lock 14.
 for (const id of Object.keys(BADGE_GLYPHS) as BadgeGlyph[]) {
   await glyphPngs((px) => glyphSvg(BADGE_GLYPHS[id], px), `badge-${id}`, 32);
@@ -118,26 +114,6 @@ for (const id of Object.keys(GAME_GLYPHS) as GameGlyph[]) {
   for (const d of DENSITIES)
     await png(artSvg(id, ART_BOX * d), art, d === 1 ? `${id}.png` : `${id}@${d}x.png`);
 }
-// The tab bar's fade (src/components/TabBar.tsx): white, transparent at the top, opaque at the
-// bottom, eased; tinted with the canvas colour and stretched to the band.
-await sharp({
-  create: { width: 4, height: 256, channels: 4, background: { r: 255, g: 255, b: 255, alpha: 0 } },
-})
-  .composite([
-    {
-      input: Buffer.from(
-        Array.from({ length: 256 }, (_, y) => {
-          const t = y / 255;
-          const a = Math.round(255 * t * t * (3 - 2 * t));
-          return [255, 255, 255, a, 255, 255, 255, a, 255, 255, 255, a, 255, 255, 255, a];
-        }).flat(),
-      ),
-      raw: { width: 4, height: 256, channels: 4 },
-    },
-  ])
-  .png()
-  .toFile(resolve(glyph, 'fade.png'));
-console.log('apps/mobile/assets/glyph/fade.png');
 
 // Map marker glyphs as signed distance fields (MapLibre `sdf: true` images; the map colours them
 // per bucket with `icon-color`). 24 dp glyph with a 3 dp buffer; 8 image pixels of distance range

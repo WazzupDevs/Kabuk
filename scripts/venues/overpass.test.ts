@@ -60,6 +60,22 @@ describe('toVenuesFile', () => {
     expect(again.venues.find((v) => v.sourceRef === 'node/10')?.isActive).toBe(true);
   });
 
+  // docs/SPEC_V4.md §4.C: categories are set by hand; a new venue is a kafe until then.
+  it('keeps the categories set during manual review, a new venue a kafe', () => {
+    const first = toVenuesFile(response, 't1', null);
+    expect(first.venues.map((v) => v.category)).toEqual(['kafe', 'kafe']);
+    const reviewed = {
+      ...first,
+      venues: first.venues.map((v) => ({
+        ...v,
+        category: v.sourceRef === 'way/20' ? ('cay_bahcesi' as const) : v.category,
+      })),
+    };
+    const again = toVenuesFile(response, 't2', reviewed);
+    expect(again.venues.find((v) => v.sourceRef === 'way/20')?.category).toBe('cay_bahcesi');
+    expect(again.venues.find((v) => v.sourceRef === 'node/10')?.category).toBe('kafe');
+  });
+
   it('rejects unexpected responses', () => {
     expect(() => toVenuesFile({ remark: 'error' }, 't', null)).toThrow();
   });

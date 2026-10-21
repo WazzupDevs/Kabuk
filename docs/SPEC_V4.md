@@ -209,6 +209,13 @@ Değişmez kabul edilir.
 - **Birebir sohbette de uzun basmada titreşim** (envanter F9; proje sahibi, 20 Ekim): mekan sohbetindeki gibi. v46'da uzun basma yalnızca mekan sohbetinde titreşiyor (10 ms).
 - **Alt sayfa kapanışı açılışın tersi; sürükleyip kapatma var** (envanter F10; proje sahibi, 20 Ekim; "Ekran davranışı"). v46'da sayfa 320 ms kayma ve 200 ms perdeyle açılıyor, ama kapanışta animasyon yok ve sayfa sürüklenerek kapanmıyor.
 - **Yüklenirken birincil düğme mor kalır, gösterge görünür** (envanter F13; proje sahibi, 20 Ekim; "Ekran davranışı": basılan düğme beklediğini gösterir). v46'da yüklenen düğme pasif görünüme düşüyor: gri zemin `#E6E2F2`, koyu temada `#29283A`.
+- **Hareket azaltılınca yüklenen düğmenin yazısı kalkmaz, yalnızca solar** (çelişki kuralı; proje sahibi, 20 Ekim). v46'nın `prefers-reduced-motion` bloğundaki `.busy>:not(.ld){transform:none}` kuralı, dosyada sonra gelen `.busy>:not(.ld){opacity:0;transform:translateY(-5px)}` kuralınca eziliyor; v46'da yazı hareket azaltılmışken de 5 px yukarı kayıyor. Uygulanan, v46'nın niyeti.
+- **Sekme çubuğunun buzlu camında doygunluk yok** (proje sahibi, 20 Ekim: buzlu cam expo-blur ile). v46'da çubuğun arkası `backdrop-filter: blur(20px) saturate(1.9)`: bulanık ve renkleri doygunlaşmış. expo-blur'da doygunluk ayarı yok; arkadaki ekran yalnızca bulanıklaşır (Android'de Dimezis BlurView; bulanıklık v46'nın 20 dp'lik sapmasıdır, yarıçap ekranın piksel yoğunluğundan geri hesaplanır: `apps/mobile/src/ui/backdrop.ts`). Android 12'den (API 31) eski telefonlarda bulanıklık da yok (expo-blur `dimezisBlurViewSdk31Plus`; eski sürümlerde başarım için kapalı): orada çubuk opak zeminle çizilir, v46'nın ekran rengi (`canvas`) ve üstünde çubuğun gradyanı; arkası görünmez (proje sahibi, 20 Ekim; `apps/mobile/src/ui/backdrop.ts` → `blursBehind`). iOS'ta da bulanıklık yok denecek kadar az: expo-blur orada `blurTarget`'ı kullanmaz ve yoğunluğu doğrudan uygular (1/100); pilot Android'de.
+- **Sekme çubuğunun buzlu camında ince gren.** expo-blur Dimezis BlurView'u varsayılanlarıyla kurar (`setupWith(hedef)`: ölçek 4, gürültü açık); bulanığın üstüne %15 opaklıkta bir gürültü dokusu çizilir. v46'da gren yok. Kapatmak native değişiklik ister: expo-blur'ün JavaScript'e açtığı ayarlarda (`intensity`, `tint`, `blurReductionFactor`, `blurMethod`, hedef) gürültü yok; `setupWith` çağrısını değiştirmek `version` artışı ve yeni APK demek. Yeni APK gerekmeden kapatılamadığı için gren kalır (proje sahibi, 21 Ekim).
+- **Keşfet haritasının üstünde sekme çubuğu opak.** v46'da harita görünümünde çubuğun arkasında haritanın bulanığı görünür. Uygulamanın haritası MapLibre'nin GL yüzeyidir (`SurfaceView`); Dimezis onu bulanıklaştıramaz (README). Harita açıkken çubuk Android 12 öncesindeki gibi opak çizilir: v46'nın ekran rengi ve üstünde gradyanı (`useTabBarOverMap`, `src/ui/TabBar.tsx` → `opaque`). Harita `TextureView` ile çizilmez (proje sahibi, 21 Ekim): harita görünümünde çubuk opak kalır.
+- **Keşfet satırlarının girişi en çok 200 ms bekler** (proje sahibi, 21 Ekim; CTO incelemesi, WazzupDevs/Kabuk#198). v46'nın betiği satırları 40 ms arayla getirir ve gecikmeye sınır koymaz (`i * 40` ms; yedi satırlık listesinde son satır 240 ms bekler). Uygulamada sınır v46'nın en büyük gecikmesi olan 200 ms: sonraki satırlar beklemeden, 200 ms'de birlikte gelir (`apps/mobile/src/ui/VenueRow.tsx` → `ROW_DELAY_MAX_MS`).
+- **Keşfet'te aşağı çekip yenileme v46'nın göstergesiyle** (proje sahibi, 21 Ekim; CTO incelemesi, WazzupDevs/Kabuk#201). Liste görünümünde, listenin en üstünde aşağı çekince liste parmakla iner, göstergenin kapsülleri yaklaşır ve 72'de işaret olur; orada bırakınca liste 64 aşağıda durur, işaret döner (Dönüş) ve mekanlar ile şehirleri yeniden gelir. Sayılar v46'nın betiğinden okunur (`V46_PULL`, `scripts/v46/explore.ts` → `pullRefresh`; `apps/mobile/src/ui/PullScroll.tsx`). v46'dan farkları: dönüş v46'da deneme için 1,5 sn sabit, uygulamada liste yeniden gelene kadar ve en az 600 ms (yükleme göstergesinin en kısa süresi); dönen işaret uygulamanın Dönüş göstergesidir (aynı süreler; v46 dönüşü kübik eğriyle, uygulama tasarım sisteminin `cubic-bezier(.65,0,.35,1)`'iyle yapar). Hareket azaltılınca işaret v46'daki gibi dönmez, nefes alır; liste beklemeden yerine oturur.
+- **Keşfet listesinin altında OpenStreetMap atfı** ("© OpenStreetMap katkıda bulunanlar"). v46'nın listesinde yok; mekanların konumu OpenStreetMap'ten gelir (`pnpm fetch:venues`) ve ODbL atıf ister. Listenin sonunda, ince yazıyla kalır.
 - **"Geliyor" hâli yok** (K-69).
   - Kabul edilen kişiler kabul anında Masadakiler'e normal üye olarak girer; masa ekranının üst satırı "N kişi" yazar.
   - §4.E'deki tek seferlik "Y geliyor, N kişi" bildirimi kalır.
@@ -233,7 +240,7 @@ Değişmez kabul edilir.
 
 - **Oyun renkleri** `src/theme/gameColors.ts`'te (4.2a). Koyu temada takım rengi koyu zemine OKLab'da %62 karışır (v44: `color-mix(in oklab, renk 62%, #0D0B1E)`); Sahtekar (`#1C1450` → `#120D33`), Harf Kapmaca (`#8E3420` → `#7C2440`), Şarkıda Geçsin (`#1A1150` → `#2E1872`) ve Sohbet kartları (`#7E2150` → `#6C1C46`) v44'ün koyu geçişleridir. Yarı saydam çipler koyu zeminlerde beyaz %18, açık temanın parlak zeminlerinde (iki takım, Harf Kapmaca, Sohbet kartları) mürekkep %24'tür (K-25).
 - **Kontrast:** oyun zeminlerinde ve temalarda beyaz yazı en az 4.5:1. Harf Kapmaca'nın turuncu zemininde yarı saydam beyaz çipler (yaklaşık 3.3:1) koyulaştırılır. `theme/contrast.test.ts` yeni tokenlarla güncellenir; renkler `scripts/icon/mark.ts` ile eşitlik testini korur.
-- **Yazı tipi:** Plus Jakarta Sans (500, 600, 700, 800). `@expo-google-fonts/plus-jakarta-sans` eklenir. Gerekçe: bugünkü Poppins ve Manrope paketleriyle aynı yoldur; JS paketidir, kurulu `expo-font` ile çalışma anında yüklenir ve native değişiklik değildir. Poppins ve Manrope paketleri 4.8'de kalkar.
+- **Yazı tipi:** Plus Jakarta Sans (500, 600, 700, 800). `@expo-google-fonts/plus-jakarta-sans` eklenir. v46'nın `system-ui` dediği metinler (bildirim balonu, v46'da `.toast`) Roboto 700'dür (Android'in sistem yazı tipi; paket değil, lisansıyla `apps/mobile/assets/fonts/` altında bir dosya, aynı yükleme listesinden; proje sahibinin kararı, 20 Ekim, `docs/decisions/ci-gorsel-kapi.md`). Gerekçe: bugünkü Poppins ve Manrope paketleriyle aynı yoldur; JS paketidir, kurulu `expo-font` ile çalışma anında yüklenir ve native değişiklik değildir. Poppins ve Manrope paketleri 4.8'de kalkar.
 - **Gradyanlar:** `react-native-svg` ile (`LinearGradient`).
 - **Bileşenler** (`src/components/`):
   - düz düğmeler (gradyan ve 3B gölge yok), 56 px oyun düğmesi (ana düğme beyaz zemin üstünde oyun renginde yazı, yan düğme saydam beyaz);
@@ -297,7 +304,8 @@ Değişmez kabul edilir.
   - "Şu an buradasın" kartı kişinin kendi check-in'idir (kendi verisi; kimseyle paylaşılmaz).
   - Mekan adlarına sınır konmaz: adlar içerikten gelir, ekran en çok iki satıra kırar ve gerekirse küçültür (Ekran davranışı).
   - Tek aktif mekanda Keşfet mekanın kartıdır (K-37); varsayılan şehir ve şehir düğmesi K-38'de. Aktiviteler yalnızca bugünün etkinliklerini gösterir (K-15).
-- **Bildirim düğmesi** 4.3'te bugünkü yerinde ve bugünkü içerikle kalır; v43'ün zili ve listesi 4.7'de gelir ve zil o adımda Mesajlar'a taşınır (K-6, §4.G).
+  - Mekan türü (proje sahibinin kararı): `venues.category` `kafe`, `cay_bahcesi` ya da `yemek`; içerikte mekan başına elle (`category`, boşsa `kafe`), Keşfet listesi (`explore_venues`) taşır. Kampüs türü değildir: `kind` ile ayrı kalır ve türü yoktur.
+- **Bildirim düğmesi** yalnızca Mesajlar'da (K-6, §4.G). Proje sahibi 20 Ekim'de 4.7'den öne aldı; Keşfet ekranının PR'ında Keşfet, Aktiviteler ve Profil'in başından kalktı. Bekleyen istek ya da okunmamış mesaj varken alt çubuktaki Mesajlar sekmesinde nokta görünür; ekran okuyucu ikisini ayrı okur ("Mesajlar, 1 okunmamış, 2 yeni bildirim"). Zilin içeriği bugünkü gibi (sayısı bekleyen istekler, Bildirimler sayfası); v43'ün zili ve listesi 4.7'de gelir.
 
 ## 4.D Kimlik ve mekan sohbeti (adım 4.4)
 
@@ -325,6 +333,7 @@ Değişmez kabul edilir.
 - **Profillerde kapsül** (K-49): kapsül ve nick profil ekranlarında yalnızca kişinin kendi profil sekmesinde, fotoğrafla yan yana ve "Masada görünen" işaretiyle görünür. Başkasının profilinde, arkadaşınki dahil, hiçbir ekranda kapsül ya da nick görünmez: anonim kimlik gerçek kişiyle eşleşirdi (kural 4). `profile/get` başkası için `capsule_look` ve nick taşımaz. Kendi profilindeki "Anonim adın" kartında kapsül yoktur: yalnızca ad ve açıklama. Kapsül profilde yalnızca fotoğrafla yan yana görünür (K-60).
 - **Bilinçli bedel:** nick hesaba sabit olduğu için anonim kişi ziyaretler arasında aynı nick'le tanınır. Bu proje sahibinin kararıdır; gizlilik politikasında açıkça yazılır (§4.L).
 - **Kapsül süsleme** (adım 4.4b, K-47): Profil'den açılan ekran. Raflar, paketler, yuvalar; Karıştır, Hepsini çıkar, Kaydet. Kaydet `profile/set-look { look }` ile yazar; sunucu görünüşü 4.4'teki gibi katalogla doğrular.
+  - İstek yalnızca `look` taşır (başka alan `bad_request`): kişi yalnızca kendi görünüşünü yazar. Yanıt yazılan kodu döner (`{ capsuleLook }`); bilinmeyen parça atılır, hiçbir renk ya da göz tanınmazsa çizimin varsayılanı (kataloğun ilk rengi, klasik göz) yazılır (adım 4.4b).
   - Süsleme düğmesi profildeki kapsülün sağ altındadır. Profil açılınca iki kez oynar ve 3,1 sn'de durur; hareketi azaltta hiç oynamaz (K-60).
   - Raflar cinsiyetsiz adlıdır (v46'daki adlar; K-50).
   - Katalogdan "Yıldız bıçak" ve "Fes" çıkar; kalp, hayvan kulakları, nazar, çay ve simit kalır. Mevsim paketleri bütün yıl açıktır (K-51).
@@ -683,7 +692,7 @@ Değişmez kabul edilir.
 
 - Zil çubuk ikon ailesindendir (mor kubbe, pembe çubuk, kesişimde koyu ton, sarı tokmak).
 - **Yeri** (K-6): zil yalnızca Mesajlar'dadır; okunmamış bildirim varken alt çubuktaki Mesajlar sekmesinde nokta görünür. Sekmenin görünümü v44'tedir.
-  - Zil diğer sekmelerin köklerinden kalkar. SPEC_V3 §18.3a'daki "Bildirim düğmesi her sekmenin kök ekranında" maddesi 4.7'nin PR'ında bu metne göre güncellenir; o adıma kadar bugünkü yer geçerlidir.
+  - Zil diğer sekmelerin köklerinden kalkar. Proje sahibi 20 Ekim'de öne aldı: Keşfet ekranının PR'ında kalktı ve SPEC_V3 §18.3a'daki "Bildirim düğmesi her sekmenin kök ekranında" maddesi aynı PR'da bu metne göre güncellendi.
 - Yeni bildirim gelince zil sallanır; okunmamış sayısı rozet olur. Liste açılınca rozet silinir; yeni olanlar liste açıkken vurgulu kalır.
 - Liste bir alt sayfadır: "Yeni" ve "Önceki". Boşken: "Henüz bildirim yok. Arkadaşlık istekleri ve arkadaşlarının masa davetleri burada görünür."
 - **Dört tür vardır:**
@@ -948,6 +957,7 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 **Adım 4.4b.**
 
 - `set-look` katalog dışı parçayı atar ve yalnızca kişinin kendi görünüşünü yazar; duygular sunucuya gitmez (K-52).
+- İstemci o anki duyguyu görünüş koduna, göz yuvasına da, asla yazmaz: `mutlu`, `saskin` ve `uykulu` hem duygu hem göz kimliğidir; sunucu `e:mutlu`'yu geçerli göz olarak yazar ve ikisini ayırt edemez. İstemci PR'ında bir testle bağlanır (K-52; 4.4b CTO incelemesi).
 - 4.4'ün eski mesaj testi `set-look` ile de koşar: eski mesaj ve süren masa eski görünüşle döner.
 - Listelerde görünüş kodu başına bir kez çizilir (4.3c'nin ölçümü).
 

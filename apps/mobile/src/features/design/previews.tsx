@@ -65,6 +65,7 @@ import { MotionSet } from './motionPreview';
 import { MeasureSet } from './measurePreview';
 import { PartsSet } from './partsPreview';
 import { PreviewBlock } from './PreviewBlock';
+import { ScrollSet } from './scrollPreview';
 
 // Sample data for the component preview (Ayarlar → Tasarım (test) → Bileşen önizleme): the game
 // components that screens wire later, shown with made-up props so E2E can photograph them in both
@@ -659,8 +660,47 @@ function Swatch({
   );
 }
 
+// Renkler: what is not a game's: the bell's badge, the notice over the tab bar (Roboto) and the
+// wordmark. Today's game grounds, buttons and themes are in Eski oyun (below), outside the visual
+// gate (CLAUDE.md → Görsel kapı).
 function TokensSet() {
-  const { scheme, colors, shape } = useTheme();
+  const { colors, shape } = useTheme();
+  const t = tr.design.tokens;
+  return (
+    <View className="gap-4">
+      <PreviewBlock title={t.badge}>
+        <View className="flex-row flex-wrap gap-2" testID="preview-tokens-badge">
+          <Swatch label={t.bellBadge} fill={BADGE} text={ON_GAME} />
+        </View>
+      </PreviewBlock>
+      <PreviewBlock title={t.notice}>
+        <Text variant="notice" testID="preview-tokens-notice">
+          {t.noticeSample}
+        </Text>
+      </PreviewBlock>
+      <PreviewBlock title={t.logo}>
+        <View
+          className="items-center"
+          style={{
+            padding: SPACING[4],
+            borderRadius: shape.radius.md,
+            backgroundColor: colors.canvas,
+          }}
+          testID="preview-tokens-logo"
+        >
+          <Wordmark height={SPACING[10]} />
+        </View>
+      </PreviewBlock>
+    </View>
+  );
+}
+
+// Eski oyun: today's games' grounds with their chips, the judge buttons, the chat themes and
+// İbre's zones (step 4.2, K-25), then the game parts (partsPreview.tsx). Kept in the gallery and in
+// E2E's photos; the visual gate leaves it out, as today's games are to change (the owner's
+// decision, the CTO's review of #184).
+function LegacyGameSet() {
+  const { scheme } = useTheme();
   const t = tr.design.tokens;
   const grounds: [string, string, GameGround][] = [
     ['team-purple', t.teamPurple, teamGround(scheme, 'purple')],
@@ -673,14 +713,14 @@ function TokensSet() {
   return (
     <View className="gap-4">
       <PreviewBlock title={t.grounds}>
-        <View className="gap-3" testID="preview-tokens-grounds">
+        <View className="gap-3" testID="preview-legacy-grounds">
           {grounds.map(([key, label, ground]) => (
             <GroundSwatch key={key} id={`ground-${key}`} label={label} ground={ground} />
           ))}
         </View>
       </PreviewBlock>
       <PreviewBlock title={t.buttonsAndThemes}>
-        <View className="gap-3" testID="preview-tokens-themes">
+        <View className="gap-3" testID="preview-legacy-themes">
           <View className="flex-row flex-wrap gap-2">
             <Swatch label={t.pass} fill={JUDGE_COLORS.pass} text={ON_JUDGE} />
             <Swatch label={t.correct} fill={JUDGE_COLORS.correct} text={ON_JUDGE} />
@@ -700,24 +740,9 @@ function TokensSet() {
               <Swatch key={fill} label={String(i + 2)} fill={fill} text={ON_JUDGE} basis={0} />
             ))}
           </View>
-          <View className="flex-row flex-wrap gap-2">
-            <Swatch label={t.badge} fill={BADGE} text={ON_GAME} />
-          </View>
         </View>
       </PreviewBlock>
-      <PreviewBlock title={t.logo}>
-        <View
-          className="items-center"
-          style={{
-            padding: SPACING[4],
-            borderRadius: shape.radius.md,
-            backgroundColor: colors.canvas,
-          }}
-          testID="preview-tokens-logo"
-        >
-          <Wordmark height={SPACING[10]} />
-        </View>
-      </PreviewBlock>
+      <PartsSet />
     </View>
   );
 }
@@ -729,8 +754,9 @@ export const PREVIEW_SETS: PreviewSet[] = [
   { key: 'ibre', label: 'İbre', render: () => <IbreSet /> },
   { key: 'chat', label: 'Sohbet', render: () => <ChatSet /> },
   { key: 'tokens', label: tr.design.tokens.set, render: () => <TokensSet /> },
-  { key: 'parts', label: tr.design.parts.set, render: () => <PartsSet /> },
+  { key: 'legacyGame', label: tr.design.legacy.set, render: () => <LegacyGameSet /> },
   { key: 'identity', label: tr.design.identity.set, render: () => <IdentitySet /> },
   { key: 'motion', label: tr.design.motion.set, render: () => <MotionSet /> },
   { key: 'measure', label: tr.design.measure.set, render: () => <MeasureSet /> },
+  { key: 'scroll', label: tr.design.scroll.set, render: () => <ScrollSet /> },
 ];

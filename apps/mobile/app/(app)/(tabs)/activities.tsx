@@ -24,7 +24,6 @@ import { useCityVenues } from '@/features/explore/useExploreVenues';
 import { HistoryActions, useHistoryActions } from '@/features/friends/historyActions';
 import { useHistoryFriends, usePlayHistory } from '@/features/friends/queries';
 import { GAME_GLYPH } from '@/features/games/GameCard';
-import { NotificationsBell } from '@/features/notifications/Bell';
 import { errorMessage } from '@/i18n/errors';
 import { type HistoryConcept, historyConcept, tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
@@ -47,7 +46,7 @@ export default function ActivitiesScreen() {
   const now = useNow(60_000);
   return (
     <Screen edges={['top']}>
-      <ScreenHeader title={tr.tabs.activities} trailing={<NotificationsBell />} />
+      <ScreenHeader title={tr.tabs.activities} />
       <View className="mt-3">
         <Segmented<Tab>
           fill

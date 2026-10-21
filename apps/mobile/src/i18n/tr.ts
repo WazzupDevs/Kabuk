@@ -281,6 +281,15 @@ export const tr = {
     venue: 'Mekan',
     messages: 'Mesajlar',
     profile: 'Profil',
+    // The Mesajlar tab read out with its dot: unread DMs and waiting requests (the bell's).
+    messagesWith: (unread: number, requests: number) =>
+      [
+        'Mesajlar',
+        unread > 0 ? `${unread} okunmamış` : null,
+        requests > 0 ? `${requests} yeni bildirim` : null,
+      ]
+        .filter((part) => part !== null)
+        .join(', '),
   },
   // Mesajlar (docs/SPEC_V3.md §18.3).
   messages: {
@@ -419,7 +428,8 @@ export const tr = {
     search: 'Mekan ara',
     kinds: { all: 'Tümü', campus: 'Kampüs', cafe: 'Kafe ve mekan' },
     kindsLabel: 'Mekan türü',
-    kindLabel: { campus: 'Kampüs', cafe: 'Kafe' },
+    // A venue's type in words (v46's `data-vtype`; lib/venueType.ts).
+    typeLabel: { kampus: 'Kampüs', kafe: 'Kafe', cay: 'Çay bahçesi', yemek: 'Restoran' },
     venueSub: (kind: string, district: string) => `${kind} · ${district}`,
     // City and district (v44: .vloc; K-38): chosen, never the phone's position (rule 6).
     place: (city: string, district: string | null) => `${city} · ${district ?? 'Tüm semtler'}`,
@@ -1201,7 +1211,69 @@ export const tr = {
     hint: 'Yalnızca test sürümünde görünür.',
     previewTitle: 'Bileşen önizleme',
     previewOpen: 'Bileşen önizlemesini aç',
+    // v46 native, step 2: the app's v46 gallery, next to v46's own (docs/design/v46/).
+    galleryOpen: 'v46 galerisini aç',
+    gallery: {
+      title: 'v46 galeri',
+      light: 'Açık',
+      dark: 'Koyu',
+      colors: 'Renkler',
+      type: 'Yazı',
+      components: 'Bileşenler',
+      sample: 'Masa sohbeti 21:00',
+      missing: 'Henüz yok',
+      measured: (id: string, width: number, height: number) => `${id} · v46: ${width} × ${height}`,
+      typeLine: (key: string, lineHeight: number) => `${key} · satır ${lineHeight}`,
+      normal: 'Normal',
+      pressed: 'Basılı',
+      ready: 'Hazır',
+      narrow: '320 dp',
+      // v46's own sample texts for each component (its gallery copies them from its screens).
+      samples: {
+        start: 'Telefonla devam et',
+        sendCode: 'Kod gönder',
+        setUp: 'Masayı kur',
+        save: 'Kaydet',
+        newTable: 'Masa kur',
+        invite: 'Davet et',
+        backToVenue: 'Mekana dön',
+        cancel: 'Vazgeç',
+        unblock: 'Engeli kaldır',
+        endTable: 'Masayı bitir',
+        end: 'Bitir',
+        friends: 'Arkadaşsınız',
+        editProfile: 'Profili düzenle',
+        read: 'Oku',
+        back: 'Geri',
+        notifications: 'Bildirimler',
+        badge: '2',
+        send: 'Gönder',
+        privacy: 'Gizlilik',
+        friendsTitle: 'Arkadaşlar',
+        friendsCount: '4',
+        views: { list: 'Liste', map: 'Harita' },
+        // Keşfet (v46's sample data: the list as it shows it, in its order).
+        searchWord: 'Kahve',
+        place: 'Sakarya · Tüm semtler',
+        venueCount: '5 mekan · ada göre',
+        venues: [
+          { name: 'Çınar Altı Çay Bahçesi', sub: 'Çay bahçesi · Serdivan', status: '1 açık masa' },
+          { name: 'Hush Coffee', sub: 'Kafe · Serdivan', status: '2 açık masa' },
+          { name: 'Kampüs Kafe', sub: 'Kafe · Serdivan', status: '3 açık masa' },
+          { name: 'Köşe Kahve', sub: 'Kafe · Adapazarı', status: 'Sessiz' },
+          { name: 'Yedegör Dürüm', sub: 'Restoran · Serdivan', status: 'Sessiz' },
+        ],
+        hereName: 'Sakarya Üniversitesi Esentepe Kampüsü',
+        hereSub: 'Kantin · giriş yaptın',
+      },
+    },
     previewIncoming: 'Mesaj gelsin',
+    // The visual gate's route (CLAUDE.md → Görsel kapı), test builds only.
+    gate: {
+      unknown: (key: string) => `Görsel kapıda böyle bir durum yok: ${key}`,
+      pageCount: (listed: number, needed: number) =>
+        `Bu durum ${needed} sayfa, listede ${listed}: e2e/visual/states.json'da sayfa sayısını ${needed} yap.`,
+    },
     // Bileşen önizleme → Renkler (step 4.2, K-25): the game colours in the run's scheme.
     tokens: {
       set: 'Renkler',
@@ -1224,8 +1296,22 @@ export const tr = {
       either: 'Ya da',
       zones: 'İbre bölgeleri',
       badge: 'Rozet',
+      bellBadge: 'Zil rozeti',
+      notice: 'Bildirim yazısı (Roboto)',
+      noticeSample: 'Kapsülün kaydedildi',
     },
-    // Bileşen önizleme → Oyun parçaları (step 4.2b): the game screens' parts on a ground.
+    // Bileşen önizleme → Kaydırma: 20 gölgeli kart, telefonda elle kaydırmak için.
+    scroll: {
+      set: 'Kaydırma',
+      card: (n: number) => `Kart ${n}`,
+      body: 'Gölgeli kartlar arasında yukarı aşağı kaydır.',
+    },
+    // Bileşen önizleme → Eski oyun: today's games' grounds, buttons, themes and parts, outside the
+    // visual gate.
+    legacy: {
+      set: 'Eski oyun',
+    },
+    // Bileşen önizleme → Eski oyun → the game parts (step 4.2b): the game screens' parts on a ground.
     parts: {
       set: 'Oyun parçaları',
       buttons: 'Oyun düğmeleri',

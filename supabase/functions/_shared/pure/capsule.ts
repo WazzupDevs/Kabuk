@@ -23,6 +23,10 @@ export type LookSlot = (typeof LOOK_SLOTS)[number];
 // colour, one without known eyes the "klasik" eyes. The canonical code spells them out.
 export const DEFAULT_EYES = 'klasik';
 
+// The longest code profile/set-look takes (profiles.capsule_look's check); a canonical code, one id
+// a slot, is far shorter.
+export const LOOK_MAX_LENGTH = 200;
+
 function isLookSlot(value: string): value is LookSlot {
   return (LOOK_SLOTS as readonly string[]).includes(value);
 }

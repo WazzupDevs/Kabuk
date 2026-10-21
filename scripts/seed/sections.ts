@@ -46,16 +46,18 @@ export function venuesSql(
       sqlLiteral(v.source),
       sqlLiteral(v.sourceRef),
       sqlLiteral(v.kind),
+      sqlLiteral(v.category),
       sqlLiteral(v.isActive),
     ].join(', '),
   );
   return [
     `-- ${file}${attribution ? ` (${attribution})` : ''}`,
-    'insert into public.venues (name, city, district, location, source, source_ref, kind, is_active) values',
+    'insert into public.venues (name, city, district, location, source, source_ref, kind, category, is_active) values',
     `  (${rows.join('),\n  (')})`,
     'on conflict (source, source_ref) do update set',
     '  name = excluded.name, city = excluded.city, district = excluded.district,',
-    '  location = excluded.location, kind = excluded.kind, is_active = excluded.is_active;',
+    '  location = excluded.location, kind = excluded.kind, category = excluded.category,',
+    '  is_active = excluded.is_active;',
     '',
   ].join('\n');
 }
@@ -193,7 +195,7 @@ export function campusSql(
     ...venues.flatMap((v) => {
       const polygon = polygonSql(v.boundary);
       return [
-        'insert into public.venues (name, city, district, location, boundary, source, source_ref, kind, is_active) values',
+        'insert into public.venues (name, city, district, location, boundary, source, source_ref, kind, category, is_active) values',
         `  (${[
           sqlLiteral(v.name),
           sqlLiteral(v.city),
@@ -205,12 +207,14 @@ export function campusSql(
           sqlLiteral(CAMPUS_SOURCE),
           sqlLiteral(v.ref),
           sqlLiteral(v.kind),
+          // A campus has no category (pure/venueKind.ts).
+          'null',
           sqlLiteral(v.isActive),
         ].join(', ')})`,
         'on conflict (source, source_ref) do update set',
         '  name = excluded.name, city = excluded.city, district = excluded.district,',
         '  location = excluded.location, boundary = excluded.boundary, kind = excluded.kind,',
-        '  is_active = excluded.is_active;',
+        '  category = excluded.category, is_active = excluded.is_active;',
         spotsSql(CAMPUS_SOURCE, v.ref, v.spots),
         '',
       ];

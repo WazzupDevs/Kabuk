@@ -1812,6 +1812,7 @@ export type Database = {
       venues: {
         Row: {
           boundary: unknown;
+          category: string | null;
           city: string;
           district: string;
           id: string;
@@ -1824,6 +1825,7 @@ export type Database = {
         };
         Insert: {
           boundary?: unknown;
+          category?: string | null;
           city: string;
           district: string;
           id?: string;
@@ -1836,6 +1838,7 @@ export type Database = {
         };
         Update: {
           boundary?: unknown;
+          category?: string | null;
           city?: string;
           district?: string;
           id?: string;
@@ -2014,6 +2017,7 @@ export type Database = {
         Returns: {
           boundary: Json;
           bucket: string;
+          category: string;
           district: string;
           events: Json;
           kind: string;

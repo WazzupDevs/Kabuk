@@ -20,7 +20,35 @@ jobs:
   checks:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    # pull-requests: read for the PR's files and labels (the visual gate's baselines, below).
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
+      # The visual gate's baselines (e2e/visual/baz/) change only after the CTO has approved the
+      # new images: a PR that adds, changes or removes one needs the `gorsel-baz` label (CLAUDE.md
+      # → Görsel kapı). The label is read when the job runs: put on before the push that brings the
+      # baselines, it counts; put on later, the job is run again.
+      - name: Visual gate baselines need the gorsel-baz label
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          changed=$(gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR/files" \
+            --jq '.[] | select((.filename | startswith("e2e/visual/baz/")) or ((.previous_filename // "") | startswith("e2e/visual/baz/"))) | .filename')
+          if [ -z "$changed" ]; then
+            echo "No baseline changed."
+            exit 0
+          fi
+          echo "Baselines changed:"
+          echo "$changed"
+          if gh api "repos/$GITHUB_REPOSITORY/pulls/$PR" --jq '.labels[].name' | grep -qx gorsel-baz; then
+            echo "gorsel-baz label on: the CTO approved them."
+            exit 0
+          fi
+          echo "::error title=Visual gate baselines::This PR changes e2e/visual/baz/ without the gorsel-baz label (CLAUDE.md → Görsel kapı): baselines change only after the CTO has approved the new images."
+          exit 1
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
@@ -60,10 +88,12 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # No edge runtime from `supabase start` (-x edge-runtime): the serve's container is the only
+      # one, and the readiness check waits for it (docs/decisions/ci-functions-serve.md → Hazırlık).
       - name: Local Supabase
         run: |
           cp supabase/.env.example supabase/.env
-          pnpm supabase start -x studio,mailpit,logflare,vector,supavisor,postgres-meta
+          pnpm supabase start -x studio,mailpit,logflare,vector,supavisor,postgres-meta,edge-runtime
           pnpm db:reset
       # The serve is started again when it exits on its own, at most twice in the job; a third exit
       # fails the job (scripts/ci/functions-serve.sh, "Functions serve exits" below).
@@ -71,7 +101,7 @@ jobs:
         run: |
           nohup bash scripts/ci/functions-serve.sh main functions.log > /dev/null 2>&1 &
           key=$(pnpm -s supabase status -o env | sed -n 's/^PUBLISHABLE_KEY="\(.*\)"$/\1/p')
-          timeout 180 bash -c "until curl -sf -X POST http://127.0.0.1:54321/functions/v1/ping -H 'apikey: $key' -H 'content-type: application/json' -d '{}' > /dev/null; do sleep 2; done"
+          bash scripts/ci/wait-for-serve.sh main functions.log "$key"
       - run: pnpm test:integration
       # CHECKIN_SKIP_LOCATION (dev project only) needs a function server started with the secret:
       # restart serve with it and run only its test (supabase/tests/checkinSkipLocation.test.ts).
@@ -85,7 +115,7 @@ jobs:
           echo CHECKIN_SKIP_LOCATION=1 > "$RUNNER_TEMP/skip.env"
           nohup bash scripts/ci/functions-serve.sh skip functions-skip.log --env-file "$RUNNER_TEMP/skip.env" > /dev/null 2>&1 &
           key=$(pnpm -s supabase status -o env | sed -n 's/^PUBLISHABLE_KEY="\(.*\)"$/\1/p')
-          timeout 180 bash -c "until curl -sf -X POST http://127.0.0.1:54321/functions/v1/ping -H 'apikey: $key' -H 'content-type: application/json' -d '{}' > /dev/null; do sleep 2; done"
+          bash scripts/ci/wait-for-serve.sh skip functions-skip.log "$key"
           CHECKIN_SKIP_LOCATION_TEST=1 pnpm vitest run -c vitest.integration.config.ts supabase/tests/checkinSkipLocation.test.ts
       # The calls the local serve refused and the tests sent again (supabase/tests/refusal.ts), in
       # the job summary: the total, and per call and refusal. A call that comes back often is looked

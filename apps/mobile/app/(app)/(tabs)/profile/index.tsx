@@ -13,7 +13,6 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { Text } from '@/components/Text';
 import { useProfile } from '@/features/account/useProfile';
 import { useFriends } from '@/features/friends/queries';
-import { NotificationsBell } from '@/features/notifications/Bell';
 import { FriendStack } from '@/features/profile/FriendStack';
 import { Badges, ProfileHead } from '@/features/profile/ProfileCard';
 import { useProfileView } from '@/features/profile/queries';
@@ -47,16 +46,13 @@ export default function ProfileScreen() {
       <ScreenHeader
         title={tr.tabs.profile}
         trailing={
-          <View className="flex-row items-center gap-2">
-            <NotificationsBell />
-            <IconButton
-              round
-              icon="options-outline"
-              glyph={<SlidersGlyph />}
-              label={tr.settings.title}
-              onPress={() => router.push('/profile/settings')}
-            />
-          </View>
+          <IconButton
+            round
+            icon="options-outline"
+            glyph={<SlidersGlyph />}
+            label={tr.settings.title}
+            onPress={() => router.push('/profile/settings')}
+          />
         }
       />
 

@@ -21,8 +21,12 @@ import { useTheme } from '@/theme/ThemeProvider';
 type Num = Animated.AnimatedInterpolation<number> | number;
 
 // The capsules' colours: the logo's, or one colour with a gap in the ground's colour around the
-// second capsule (inside a filled button).
-export type MarkColors = { mono: string; ground: string } | { onInk?: boolean };
+// second capsule (inside a filled button), or each part's own (v46's loader inside a button:
+// src/ui/Button.tsx, from theme/parts).
+export type MarkColors =
+  | { mono: string; ground: string }
+  | { onInk?: boolean }
+  | { fills: { a: string; b: string; overlap: string } };
 
 // One Animated value per motion, looping 0 → 1 over its period while `active`.
 // `once`: each motion plays one period and stays on its last frame (no loop).
@@ -149,10 +153,11 @@ export function MotionMark({
   });
 
   const mono = 'mono' in colors ? colors : null;
+  const own = 'fills' in colors ? colors.fills : null;
   const onInk = 'onInk' in colors && colors.onInk === true;
-  const fillA = mono ? mono.mono : BRAND.purple;
-  const fillB = mono ? mono.mono : BRAND.pink;
-  const overlap = onInk ? BRAND.white : theme.colors.overlap;
+  const fillA = mono ? mono.mono : (own?.a ?? BRAND.purple);
+  const fillB = mono ? mono.mono : (own?.b ?? BRAND.pink);
+  const overlap = own?.overlap ?? (onInk ? BRAND.white : theme.colors.overlap);
   const aMove = { transform: [{ translateX: anim.aX }, { translateY: anim.aY }] };
   const bMove = [{ translateX: anim.bX }, { translateY: anim.bY }];
   const centre = overlapCentre(a, b);
@@ -247,7 +252,7 @@ export function MotionMark({
 
 type MarkProps = {
   size: number;
-  // On ink (the Mekan tab, a featured card): the overlap is white.
+  // On ink (a featured card): the overlap is white.
   onInk?: boolean;
   // Read as "skall"; null when the mark is decoration next to a label.
   label?: string | null;

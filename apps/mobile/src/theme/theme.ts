@@ -100,6 +100,7 @@ export const THEME: ThemeDefinition = {
     regular: 'PlusJakartaSans_500Medium',
     semibold: 'PlusJakartaSans_600SemiBold',
     bold: 'PlusJakartaSans_700Bold',
+    system: 'Roboto_700Bold',
   },
   shape: {
     // deck: Kapsül Anlat's cards; roleCard: Sahtekar's role card; letterTile: Harf Kapmaca's tile.
@@ -114,7 +115,7 @@ export const THEME: ThemeDefinition = {
       roleCard: 26,
       letterTile: 38,
     },
-    stroke: { card: 0, feature: 2, control: 2, tag: 0, hairline: 1, venueRing: 2 },
+    stroke: { card: 0, feature: 2, control: 2, tag: 0, hairline: 1 },
     selectedTeam: 'fill',
     screenPadding: 20,
   },

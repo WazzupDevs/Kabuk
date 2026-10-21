@@ -107,12 +107,14 @@ export function colorClass(key: PaletteKey): string {
 
 // Font family names as registered with expo-font (the @expo-google-fonts export names). Only these
 // four weights of Plus Jakarta Sans are bundled (src/theme/fonts.ts maps each to its file), the ones
-// v45 loads; no other weight is added.
+// v45 loads, and Roboto 700 for what v46 sets in system-ui (Android's system face; the owner's
+// decision, docs/decisions/ci-gorsel-kapi.md); no other weight is added.
 export type FontName =
   | 'PlusJakartaSans_500Medium'
   | 'PlusJakartaSans_600SemiBold'
   | 'PlusJakartaSans_700Bold'
-  | 'PlusJakartaSans_800ExtraBold';
+  | 'PlusJakartaSans_800ExtraBold'
+  | 'Roboto_700Bold';
 
 export type FontSet = {
   display: FontName; // hero, display, alias, word, score
@@ -120,6 +122,7 @@ export type FontSet = {
   regular: FontName; // body, subtitle, fine
   semibold: FontName; // bodyStrong only
   bold: FontName; // eyebrow, label, buttons, tag, caption, overline
+  system: FontName; // what v46 sets in system-ui: notice (v46: .toast)
 };
 
 // Where a shadow is drawn. Values are CSS `box-shadow` strings (React Native `boxShadow`); `null`
@@ -148,14 +151,13 @@ export type Shape = {
   };
   // Border widths: cards (0 = none), rings (an avatar's unread ring, a selected choice, the second
   // table's face), controls (inputs, segments, switches), tags, the hairline (list rows, trust
-  // screens) and the active Mekan tab's ring.
+  // screens).
   stroke: {
     card: number;
     feature: number;
     control: number;
     tag: number;
     hairline: number;
-    venueRing: number;
   };
   // The describing team in Tabu: an accent ring or a filled sticker.
   selectedTeam: 'ring' | 'fill';
@@ -202,6 +204,7 @@ export type TypeVariant =
   | 'countIn' // "3", "2", "1" (v43: .tg-cd)
   | 'countInGo' // "Başla" after them
   | 'toast' // the short notice at the top of a game (v43: .tg-flash)
+  | 'notice' // the notice over the tab bar (v46: .toast, system-ui: Roboto)
   | 'letterTile'; // Harf Kapmaca's letter on its wheel tile (v43: .hx-big)
 
 export type Typography = Record<TypeVariant, TypeStyle>;
@@ -239,11 +242,6 @@ export const SPACING = {
   14: 56,
   16: 64,
 } as const;
-
-// The tab bar: the selected tab's icon is solid and in one colour, the others are muted lines.
-// contrast.test.ts checks it against the bar and the icon's halo. The Mekan tab is the mark on an
-// ink square (src/components/VenueTabIcon.tsx), the same in both schemes.
-export const TAB_TONE = 'accent' as const satisfies PaletteKey;
 
 // Opacities: the scrim behind a sheet, a pressed text button. A disabled button is not faded: it
 // takes a neutral fill (theme/buttonFill.ts).
@@ -317,6 +315,7 @@ export function baseTypography(overrides: Partial<Typography> = {}): Typography 
     countIn: { font: 'display', size: 110, lineHeight: 120, letterSpacing: -4 },
     countInGo: { font: 'display', size: 60, lineHeight: 66, letterSpacing: -0.5 },
     toast: { font: 'display', size: 14, lineHeight: 18 },
+    notice: { font: 'system', size: 14, lineHeight: 18 },
     letterTile: { font: 'display', size: 96, lineHeight: 104 },
     ...overrides,
   };

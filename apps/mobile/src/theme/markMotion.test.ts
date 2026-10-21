@@ -13,7 +13,6 @@ import {
   MISS_MS,
   missMotion,
   sampleCurve,
-  squirclePath,
   stateMotion,
   STILL_MOTION,
 } from './markMotion';
@@ -172,24 +171,5 @@ describe('sampleCurve', () => {
     expect(inputRange.at(-1)).toBe(1);
     expect(inputRange).toEqual([...inputRange].sort((a, b) => a - b));
     expect(outputRange.at(-1)).toBe(1000);
-  });
-});
-
-describe('squirclePath', () => {
-  // The design system's tile (Mekan tab): a superellipse, exponent 5, filling its square.
-  it('touches the edges and rounds the corners', () => {
-    const points = squirclePath(512)
-      .replace(/Z$/, '')
-      .split(/[ML]/)
-      .filter(Boolean)
-      .map((p) => p.split(' ').map(Number) as [number, number]);
-    const xs = points.map(([x]) => x);
-    expect(Math.min(...xs)).toBeCloseTo(0, 1);
-    expect(Math.max(...xs)).toBeCloseTo(512, 1);
-    for (const [x, y] of points) {
-      const u = Math.abs(x - 256) / 256;
-      const v = Math.abs(y - 256) / 256;
-      expect(u ** 5 + v ** 5).toBeCloseTo(1, 2);
-    }
   });
 });
