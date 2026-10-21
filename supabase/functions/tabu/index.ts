@@ -10,13 +10,14 @@ import { requireUser, serviceClient } from '../_shared/auth.ts';
 import { dbError } from '../_shared/db.ts';
 import { z } from '../_shared/deps.ts';
 import { handle } from '../_shared/http.ts';
+import { AppError } from '../_shared/pure/errors.ts';
 import type {
   GameOkResponse,
   TabuRequest,
   TabuStartResponse,
   TabuTurnCardsResponse,
 } from '../_shared/pure/api/games.ts';
-import { MARK_RESULTS, TABU } from '../_shared/pure/tabu.ts';
+import { MARK_RESULTS } from '../_shared/pure/tabu.ts';
 
 const Body: z.ZodType<TabuRequest> = z.discriminatedUnion('action', [
   z.object({ action: z.literal('start'), roomId: z.uuid() }),
@@ -44,11 +45,10 @@ Deno.serve(
       // One table only: the deck, and the room's activity becomes Tabu (docs/SPEC_V3.md §5.3). A
       // two-table game starts from an accepted proposal (rooms/answer-game); here it is
       // no_proposal.
-      case 'start': {
-        const deck = await db.rpc('tabu_local_deck', { ...target, deck_size: TABU.localDeckSize });
-        if (deck.error) throw dbError('tabu_local_deck', deck.error);
-        return { mode: 'local', deck: deck.data };
-      }
+      // The side model's games do not run at a table of people (docs/SPEC_V4.md §4.E); today's app
+      // hears update_required until the game comes back in step 4.6.
+      case 'start':
+        throw new AppError('update_required', 'This version of the app is too old. Update it.');
 
       case 'turn-cards': {
         const { data, error } = await db.rpc('tabu_turn_cards', target);

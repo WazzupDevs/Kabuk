@@ -33,7 +33,7 @@ afterAll(async () => {
   await sql.end();
 });
 
-// Owner and guest in a room at the venue; `outsider` is signed in but has no table in the room
+// The owner's table with the guest sat down at it; `outsider` is signed in but not at the table
 // (checked in at the same venue when `outsiderAtVenue`).
 async function roomWithGuest(outsiderAtVenue: boolean) {
   const [owner, guest, outsider] = (await Promise.all(PHONES.map((p) => onboarded(p)))) as [
@@ -44,9 +44,9 @@ async function roomWithGuest(outsiderAtVenue: boolean) {
   const ownerTable = await checkInAt(owner, venue, V);
   await checkInAt(guest, venue, V);
   if (outsiderAtVenue) await checkInAt(outsider, venue, V);
-  const created = await invoke(owner, 'rooms', { action: 'create', profiled: false });
+  const created = await invoke(owner, 'rooms', { action: 'create' });
   const roomId = (created.body as { roomId: string }).roomId;
-  await invoke(guest, 'rooms', { action: 'request-join', roomId, profiled: false });
+  await invoke(guest, 'rooms', { action: 'request-join', roomId });
   const [request] =
     await sql`select id from public.join_requests where room_id = ${roomId} and status = 'pending'`;
   await invoke(owner, 'rooms', { action: 'respond', requestId: request?.id, accept: true });
@@ -94,7 +94,7 @@ async function accessToken(client: Client): Promise<string> {
 }
 
 describe('private room channels', { timeout: 60_000 }, () => {
-  it('lets only the two tables of the room join its channels', async () => {
+  it('lets only the people at the table join its channels', async () => {
     const { owner, guest, outsider, roomId } = await roomWithGuest(true);
     for (const kind of ['room', 'messages', 'game', 'presence']) {
       const topic = `${kind}:${roomId}`;
@@ -180,9 +180,7 @@ describe('private table channels', { timeout: 60_000 }, () => {
 
     // The server's broadcast arrives: another table checks in and opens a room.
     await checkInAt(outsider, venue, V);
-    expect((await invoke(outsider, 'rooms', { action: 'create', profiled: false })).status).toBe(
-      200,
-    );
+    expect((await invoke(outsider, 'rooms', { action: 'create' })).status).toBe(200);
     await expect.poll(() => seen.events, { timeout: 8000 }).toEqual([BROADCAST.lobbyChanged]);
   });
 });
@@ -266,14 +264,15 @@ describe('room row changes', { timeout: 60_000 }, () => {
     // Realtime handles the change while no channel of the guest is there.
     await quiet();
 
-    // Back: the channel subscribes again, but the change it missed never comes.
+    // Back: nobody is at the closed table any more, so its channel is refused (rule 9, step 4.5);
+    // the change it missed never comes.
     const back = watchRoomRow(guest, roomId);
-    expect(await back.subscribed).toBe('SUBSCRIBED');
-    await quiet();
-    await quiet();
+    expect(await back.subscribed).toBe('CHANNEL_ERROR');
+    await guest.removeChannel(back.channel);
     expect(back.rows).toEqual([]);
 
-    // The re-read does show it, and the check says the cached row is out of date.
+    // The re-read does show it (whoever was at the table when it closed reads the closed row), and
+    // the check says the cached row is out of date.
     const after = await statusCheck(guest, roomId);
     expect(after?.status).toBe('closed');
     expect(roomCheckDiffers(before, after)).toBe(true);

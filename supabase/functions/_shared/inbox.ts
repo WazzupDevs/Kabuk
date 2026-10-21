@@ -3,7 +3,7 @@ import { inBackground } from './background.ts';
 import { broadcast } from './broadcast.ts';
 import { dbError } from './db.ts';
 import { AppError } from './pure/errors.ts';
-import type { PushMessage } from './pure/push.ts';
+import type { PushMessage, PushPreference } from './pure/push.ts';
 import { inboxChannel } from './pure/rooms.ts';
 import { sendPush } from './push.ts';
 
@@ -12,18 +12,18 @@ export function notifyInbox(userIds: string[], event: string): void {
   for (const id of userIds) inBackground(broadcast(inboxChannel(id), event));
 }
 
-// A push to an account that allows it: `notify_dm` or `notify_friend_requests`.
+// A push to an account that allows it (pure/push.ts → PUSH_PREFERENCE), read before it goes.
 export function pushIfAllowed(
   db: Db,
   userId: string,
-  preference: 'notify_dm' | 'notify_friend_requests',
+  preference: PushPreference,
   message: PushMessage,
 ): void {
   inBackground(
     (async () => {
       const { data, error } = await db
         .from('profiles')
-        .select('push_token, notify_dm, notify_friend_requests')
+        .select('push_token, notify_dm, notify_friend_requests, notify_invites')
         .eq('id', userId)
         .maybeSingle();
       if (error) throw dbError('profiles', error);

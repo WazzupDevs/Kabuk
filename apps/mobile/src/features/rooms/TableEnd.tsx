@@ -1,5 +1,4 @@
 import { pairFriendState } from '@shared/tableEnd.ts';
-import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { useWindowDimensions, View } from 'react-native';
@@ -7,6 +6,7 @@ import { useWindowDimensions, View } from 'react-native';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
+import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -24,180 +24,183 @@ import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { friendsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
-import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, NARROW_SCREEN } from '@/theme/tokens';
-
-import type { EndPerson } from './tableEnd';
+import { NARROW_SCREEN } from '@/theme/tokens';
 
 type Props = {
   roomId: string;
-  // The other side's leader as last seen: "X masasıyla oynadınız."
-  otherAlias: string;
-  people: readonly EndPerson[];
+  // "Masa bitti", or "Masadan ayrıldın" for a participant who left.
+  left: boolean;
+  tableName: string;
+  phones: number;
+  // The names seen sitting at the table with their profile (Masadakiler).
+  profiled: readonly string[];
+  // This person sat anonymously: the note about the nick (K-68).
+  anonymous: boolean;
   onClose: () => void;
 };
 
-// The table's end (docs/SPEC_V3.md §23.G; canvas: Faz 3 · 23.3 → Masa bitti): no window, no
-// ceremony. The other side's phones this one sat with, each with its own "Arkadaş ekle" on this
-// phone's record with it; a pair that sat together for less than 3 minutes has no record and no
-// button. Built from what the phone saw at the table; nothing about the others is read again
-// (rule 4). "Kapat" goes back to the venue.
-export function TableEnd({ roomId, otherAlias, people, onClose }: Props) {
+type EndRecord = {
+  id: string;
+  other_alias: string;
+  friend_action_at: string | null;
+};
+
+// Masa bitti (v46 "masa-bitti"; docs/SPEC_V4.md §4.E, K-56, K-64): the people this person sat with
+// for at least 3 minutes, each with a quiet "Arkadaş ekle" (rule 5), anonymous ones too ("Anonim
+// katıldı" under the name). A press shows "Eklendi"; pressing again takes it back (K-67). Both
+// pressed: "Arkadaş oldunuz" and "Mesaj". No table length, no game count. Built from this person's
+// own records (play_history); nothing about the others is read again (rule 4).
+export function TableEnd({ roomId, left, tableName, phones, profiled, anonymous, onClose }: Props) {
   const records = useTableHistory(roomId, true);
   const friends = useHistoryFriends();
 
   return (
     <Screen>
-      <ScreenHeader title={tr.tableEnd.title} subtitle={tr.tableEnd.subtitle(otherAlias)} />
-      <View className="mt-4 gap-2.5" testID="table-end">
-        <Text variant="overline" tone="muted">
-          {tr.tableEnd.otherSide}
-        </Text>
+      {/* On the header, which always has content: with no record (nobody sat 3 minutes) the
+          list below is empty and has no size. */}
+      <View testID="table-end">
+        <ScreenHeader
+          title={left ? tr.tableEnd.leftTitle : tr.tableEnd.title}
+          subtitle={tr.tableEnd.subtitle(tableName, phones)}
+        />
+      </View>
+      <View className="mt-4 gap-2.5">
         {records.isPending ? (
           <View className="items-center py-6">
             <Loader />
           </View>
         ) : records.isError ? (
-          <Card className="gap-3">
-            <Text variant="bodyStrong">{errorMessage(records.error)}</Text>
-            <Button
-              variant="neutral"
-              icon="refresh-outline"
-              label={tr.common.retry}
-              onPress={() => void records.refetch()}
-              loading={records.isRefetching}
-            />
-          </Card>
+          <EmptyState
+            kind="error"
+            body={errorMessage(records.error)}
+            action={{ label: tr.common.retry, onPress: () => void records.refetch() }}
+          />
         ) : (
-          people.map((p) => {
-            const record = records.data.find((r) => r.other_alias === p.alias);
-            const friend = record ? friends.data?.get(record.id) : undefined;
-            return <EndRow key={p.sessionId} person={p} record={record} friend={friend} />;
-          })
+          records.data.map((r) => (
+            <EndRow
+              key={r.id}
+              record={r}
+              profiled={profiled.includes(r.other_alias)}
+              friend={friends.data?.get(r.id)}
+            />
+          ))
         )}
       </View>
-      <Text className="mt-4">{tr.tableEnd.body}</Text>
-      <Text variant="fine" className="mt-1.5">
-        {tr.tableEnd.later}
+      <Text variant="fine" className="mt-4">
+        {tr.tableEnd.note}
       </Text>
+      {anonymous ? (
+        <Text variant="fine" className="mt-1.5">
+          {tr.tableEnd.anonymousNote}
+        </Text>
+      ) : null}
       <View className="mt-auto pt-8">
-        <Button size="lg" testID="table-end-close" label={tr.common.close} onPress={onClose} />
+        <Button size="lg" testID="table-end-close" label={tr.tableEnd.back} onPress={onClose} />
       </View>
     </Screen>
   );
 }
 
 function EndRow({
-  person,
   record,
+  profiled,
   friend,
 }: {
-  person: EndPerson;
-  record: { id: string; friend_action_at: string | null } | undefined;
+  record: EndRecord;
+  // Seen sitting at the table with the profile (Masadakiler).
+  profiled: boolean;
   friend: HistoryFriend | undefined;
 }) {
-  const { colors } = useTheme();
   const queryClient = useQueryClient();
-  // Side by side the name and the button do not fit at 320 dp with the largest text.
+  // Side by side the name and the button do not fit at 320 dp with the largest text: the button
+  // goes to the line under it, to the right; the name never breaks.
   const { width, fontScale } = useWindowDimensions();
   const narrow = width < NARROW_SCREEN * Math.max(1, fontScale);
+  const settle = () => queryClient.invalidateQueries({ queryKey: friendKeys.all });
   const add = useMutation({
     meta: FEEL_ERROR,
     mutationFn: (historyId: string) => friendsApi.addFromRoom(historyId),
     onSuccess: () => track('friend_add_pressed', {}),
     onError: (err, historyId) => void askName(err, historyId),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: friendKeys.all }),
+    onSettled: settle,
+  });
+  const withdraw = useMutation({
+    meta: FEEL_ERROR,
+    mutationFn: (historyId: string) => friendsApi.withdrawAdd(historyId),
+    onSettled: settle,
   });
   const run = useCallback((historyId: string) => add.mutate(historyId), [add]);
   const askName = useRetryAfterName(run);
 
-  const state = pairFriendState(
-    record && add.isSuccess ? { friend_action_at: record.friend_action_at ?? 'now' } : record,
-    friend !== undefined,
-  );
-  const name = person.name
-    ? person.age !== null
-      ? tr.profile.nameWithAge(person.name, person.age)
-      : person.name
-    : person.alias;
+  const state = pairFriendState(record, friend !== undefined);
   const who = (
     <View className="flex-row items-center gap-3">
-      {person.name ? (
-        <Avatar kind="profile" name={person.name} photoUrl={person.photoUrl} size="lg" />
+      {profiled ? (
+        <Avatar kind="profile" name={record.other_alias} size="lg" />
       ) : (
-        <Avatar kind="table" alias={person.alias} size="lg" />
+        <Avatar kind="default" size="lg" />
       )}
-      <Text variant="bodyStrong" className="flex-1">
-        {name}
-      </Text>
+      <View className="flex-1 gap-0.5">
+        <Text variant="bodyStrong">{record.other_alias}</Text>
+        {state === 'friends' ? (
+          <Text variant="label" tone="success">
+            {tr.tableEnd.friends}
+          </Text>
+        ) : !profiled ? (
+          <Text variant="fine">{tr.tableEnd.anonymous}</Text>
+        ) : null}
+      </View>
     </View>
   );
+  const busy = add.isPending || withdraw.isPending;
   const action =
-    state === 'add' && record ? (
+    state === 'add' ? (
       <Button
         variant="neutral"
         size="sm"
-        testID={`table-end-add-${person.alias}`}
+        testID={`table-end-add-${record.other_alias}`}
         label={tr.tableEnd.addFriend}
-        loading={add.isPending}
+        loading={busy}
         onPress={() => add.mutate(record.id)}
       />
     ) : state === 'pressed' ? (
-      <View className="flex-row items-center gap-1.5" testID={`table-end-pressed-${person.alias}`}>
-        <Ionicons name="checkmark" size={ICON.sm} color={colors.muted} />
-        <Text variant="label" tone="muted">
-          {tr.tableEnd.pressed}
-        </Text>
-      </View>
+      <Button
+        variant="positive"
+        size="sm"
+        testID={`table-end-pressed-${record.other_alias}`}
+        label={tr.tableEnd.added}
+        loading={busy}
+        onPress={() => withdraw.mutate(record.id)}
+      />
     ) : state === 'friends' && friend?.threadId ? (
       <Button
         variant="neutral"
         size="sm"
-        testID={`table-end-message-${person.alias}`}
+        testID={`table-end-message-${record.other_alias}`}
         label={tr.tableEnd.message}
         onPress={() =>
-          openDm({
-            threadId: friend.threadId ?? '',
-            publicId: friend.publicId,
-            name: friend.name,
-          })
+          openDm({ threadId: friend.threadId ?? '', publicId: friend.publicId, name: friend.name })
         }
       />
     ) : null;
-  const hint =
-    state === 'pressed' ? (
-      <Text variant="fine">{tr.tableEnd.pressedHint}</Text>
-    ) : state === 'friends' ? (
-      <View className="flex-row items-center gap-1.5">
-        <Ionicons name="checkmark-circle" size={ICON.sm} color={colors.success} />
-        <Text variant="label" tone="success">
-          {tr.tableEnd.friends}
-        </Text>
-      </View>
-    ) : state === 'short' ? (
-      <Text variant="fine">{tr.tableEnd.short}</Text>
-    ) : null;
+  const error = add.error ?? withdraw.error;
 
   return (
     <Card>
       {narrow ? (
         <View className="gap-2.5">
           {who}
-          {action ? <View className="items-start">{action}</View> : null}
-          {hint}
+          {action ? <View className="items-end">{action}</View> : null}
         </View>
       ) : (
-        <View className="gap-2">
-          <View className="flex-row items-center gap-3">
-            <View className="flex-1">{who}</View>
-            {action}
-          </View>
-          {hint}
+        <View className="flex-row items-center gap-3">
+          <View className="flex-1">{who}</View>
+          {action}
         </View>
       )}
-      {add.isError ? (
+      {error ? (
         <Text variant="fine" tone="danger" className="mt-2">
-          {errorMessage(add.error)}
+          {errorMessage(error)}
         </Text>
       ) : null}
     </Card>

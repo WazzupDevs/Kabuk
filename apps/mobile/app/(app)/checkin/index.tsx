@@ -18,6 +18,8 @@ import { useProfile } from '@/features/account/useProfile';
 import { useCheckinDraft } from '@/features/checkin/draft';
 import { useSkipLocation } from '@/features/checkin/locationMode';
 import { useVenueSpots } from '@/features/checkin/spots';
+import { useCheckIn } from '@/features/checkin/useCheckIn';
+import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -28,7 +30,7 @@ type Problem = 'denied' | 'failed' | 'tooFar' | 'outsideBoundary' | null;
 // Check-in, step 1: consent and the position, which only verifies the venue chosen in Keşfet
 // (docs/SPEC_V2.md §4). Outside the radius, or the boundary with its tolerance (docs/SPEC_V3.md
 // §4.2), the user is warned here; the server decides anyway. A venue with spots asks "Neredesin?"
-// next. On the dev project with CHECKIN_SKIP_LOCATION (useSkipLocation) neither a position outside
+// next; any other checks in from here (docs/SPEC_V4.md §4.E: no headcount). On the dev project with CHECKIN_SKIP_LOCATION (useSkipLocation) neither a position outside
 // the venue nor a missing one (no permission, no fix indoors) stops the flow: the server skips the
 // check there, and the venue's own point stands in for a missing position (never stored).
 export default function LocationScreen() {
@@ -42,10 +44,12 @@ export default function LocationScreen() {
   const [consent, setConsent] = useState(false);
   const [locating, setLocating] = useState(false);
   const [problem, setProblem] = useState<Problem>(null);
+  const checkIn = useCheckIn();
 
   function proceed(position: { lat: number; lng: number; accuracyM: number | null }) {
     setPosition(position);
-    router.push((spots.data ?? []).length > 0 ? '/checkin/spot' : '/checkin/headcount');
+    if ((spots.data ?? []).length > 0) router.push('/checkin/spot');
+    else checkIn.mutate({ position, spot: null });
   }
 
   // Dev only (see above): the venue's point when there is no position.
@@ -85,7 +89,9 @@ export default function LocationScreen() {
     }
   }
 
-  if (!venue) return <Redirect href="/explore" />;
+  // A check-in that went through is on its way out: the cleared draft sends it nowhere else.
+  if (!venue && !checkIn.isSuccess) return <Redirect href="/explore" />;
+  if (!venue) return null;
 
   return (
     <Screen>
@@ -137,12 +143,17 @@ export default function LocationScreen() {
           {tr.checkin.locationFailed}
         </Text>
       ) : null}
+      {checkIn.isError ? (
+        <Text variant="fine" tone="danger" className="mt-4">
+          {errorMessage(checkIn.error)}
+        </Text>
+      ) : null}
       <View className="mt-auto pt-8">
         <Button
           label={locating ? tr.checkin.locating : tr.checkin.useLocation}
           onPress={() => void locate()}
           disabled={!(consentGiven || consent) || spots.isPending}
-          loading={locating}
+          loading={locating || checkIn.isPending}
         />
       </View>
     </Screen>

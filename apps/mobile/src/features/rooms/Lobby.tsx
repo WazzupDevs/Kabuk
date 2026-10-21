@@ -1,502 +1,261 @@
-import { gameFlowView } from '@shared/gender.ts';
-import { PARTICIPATIONS, type Participation } from '@shared/profile.ts';
 import { isIntent, JOIN_REQUEST_TTL_SECONDS, requesterStatus } from '@shared/rooms.ts';
 import { groupRoomsBySpot } from '@shared/spots.ts';
-import { lobbyActions, type TableState } from '@shared/tableCard.ts';
-import type { Side } from '@shared/teams.ts';
+import { lobbyActions, requestGone, type TableState } from '@shared/tableCard.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
-import type { ReactNode } from 'react';
+import { router } from 'expo-router';
+import { type ReactNode, useEffect, useState } from 'react';
 import { View } from 'react-native';
 
-import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
-import { Choice } from '@/components/Choice';
-import { Countdown } from '@/components/Countdown';
-import { Rise } from '@/components/motion';
-import { StateMark } from '@/components/EmptyState';
-import { Sheet } from '@/components/Sheet';
+import { EmptyState } from '@/components/EmptyState';
+import { Loader } from '@/components/Loader';
 import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
-import { Loader, MissMark } from '@/components/Loader';
-import { GenderSheet } from '@/features/account/GenderSheet';
-import { useProfile } from '@/features/account/useProfile';
-import { PhotoNeeded } from '@/features/profile/PhotoNeeded';
-import { PhotoSheet } from '@/features/profile/PhotoSheet';
-import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
-import { registerForPush } from '@/features/push/push';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
-import { track, trackOnce } from '@/lib/analytics';
-import { ApiError, callChangeSpot, roomsApi } from '@/lib/api';
-import { useRequesterHaptic } from '@/lib/haptics';
-import { useNow } from '@/lib/useNow';
+import { track } from '@/lib/analytics';
+import { ApiError, roomsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
-import { MISS_MS } from '@/theme/markMotion';
-import { ICON, SPACING, TOUCH } from '@/theme/tokens';
+import { useNow } from '@/lib/useNow';
+import { SPACING, TOUCH } from '@/theme/tokens';
 
-import { BigAlias } from './BigAlias';
-import { useJoinAsk } from './joinAsk';
-import { participationHint } from './participation';
-import { ProfilePreview } from './ProfilePreview';
-import { roomKeys, useLobby, useMyRequest } from './queries';
-import { RunningRooms } from './RunningRooms';
+import { roomKeys, useMyRequest, useVenueTables, type VenueTable } from './queries';
 import { SpotHeading } from './SpotHeading';
+import { TableIcon } from './TableIcon';
+
+// After "Kabul edildi" the table opens by itself (v46: the row's note, then the table).
+const OPEN_AFTER_ACCEPT_MS = 1800;
 
 type Props = {
   venueId: string;
   sessionId: string;
-  // The table's alias: the name a "Bu masadayım" request tells its leader.
-  alias: string;
+  // The check-in's start: only its own requests count.
   since: string;
-  // The table's spot, and whether the venue has spots at all (docs/SPEC_V3.md §4.3).
+  // The person's spot, and whether the venue has spots at all (docs/SPEC_V3.md §4.3).
   mySpotId: string | null;
   venueHasSpots: boolean;
-  // The table card's state (@shared/tableCard.ts): which requests the lobby offers.
   state: TableState;
+  // The person's table: left out of the lists; its people count for the 12.
+  roomId: string | null;
+  myPhones: number;
+  // A profiled identity without a visible photo can neither ask nor sit (photo_required).
+  needsPhoto: boolean;
 };
 
-// An open table as the lobby reads it.
-type LobbyRoom = NonNullable<ReturnType<typeof useLobby>['data']>['open'][number];
-
-// The lobby's loading box (v45: .lobby-load, 140 high).
-const LOAD_HEIGHT = SPACING[16] * 2 + SPACING[3];
-
-// What the table is about to ask for: "Katıl" (the guest's side) or, with a side, "Bu masadayım"
-// (docs/SPEC_V3.md §22.C) with that side's leader.
-type Asking = { roomId: string; side?: Side; leader?: string };
-
-// The "Katıl" requests this app sent, by id ("Bu masadayım" is not one): only a "Katıl" that did not
-// meet takes its table out of this table's lobby (venue_lobby: `not as_member`); a "Bu masadayım"
-// can be sent again. Kept for the app's session, so reopening the venue screen still knows them;
-// after a restart the server's lobby alone decides.
-const joinRequests = new Set<string>();
-
-// "Açık masalar" (the waiting rooms), "Süren masalar" (Faz 2) and the table's own request
-// (docs/SPEC_V3.md §23.C; canvas: Faz 3 · 23.1 Masa ve lobi). A card shows only the alias, the
-// people, the intent and the game tag: no "profilli" mark (rule 4, step 23.1). Its buttons follow
-// the table's state: "Katıl" without a room and from the table's own waiting room, "Bu masadayım"
-// only without one, none once merged. At a venue with spots the tables are grouped by spot, the
-// table's own first; a table at another spot offers "Bu noktadayım" instead of a request.
-export function Lobby({ venueId, sessionId, alias, since, mySpotId, venueHasSpots, state }: Props) {
+// Mekan's lobby (v46 "mekan"; docs/SPEC_V4.md §4.E): "Açık masalar" with "Katıl" and "Süren
+// masalar" with "Bu masadayım", one read of venue_tables. "Katıl": a person without a table alone, an
+// owner with the whole table; a participant leaves first. A request waits 60 s on its row; a refusal
+// and a time-out look the same ("Masa şu an müsait değil", rule 5); an accepted one opens the table.
+// At a venue with spots the tables are grouped by spot, the person's own first.
+export function Lobby({
+  venueId,
+  sessionId,
+  since,
+  mySpotId,
+  venueHasSpots,
+  state,
+  roomId,
+  myPhones,
+  needsPhoto,
+}: Props) {
   const queryClient = useQueryClient();
-  const actions = lobbyActions(state);
-  const profile = useProfile();
-  const hasName = !!profile.data?.display_name;
-  // The room this table is about to ask for, and its choice for that room (docs/SPEC_V3.md §5.4).
-  const [asking, setAsking] = useState<Asking | null>(null);
-  const setJoinAsk = useJoinAsk((s) => s.set);
-  const joinAsk = useJoinAsk((s) => s.ask);
-  const [participation, setParticipation] = useState<Participation>('anonymous');
-  // "Profilimle" needs a profile photo (docs/SPEC_V3.md §22.G): "Fotoğraf ekle" swaps the request
-  // sheet for the photo sheet, and the request comes back once it closes; "Cinsiyetini seç" does
-  // the same with the one-time gender question (§23.D).
-  const photo = useOwnPhoto();
-  const [photoSheet, setPhotoSheet] = useState(false);
-  const [genderSheet, setGenderSheet] = useState(false);
-  // The server said this account joins only with its profile (the phone did not know its gender).
-  const [mustProfile, setMustProfile] = useState(false);
-  const lobby = useLobby(venueId);
-  const myRequest = useMyRequest(sessionId, since);
+  const tables = useVenueTables(venueId);
+  const mine = useMyRequest(sessionId, since);
   const now = useNow(1000);
+  // The request this screen sent, and to which table; the plain row once it is gone.
+  const [asked, setAsked] = useState<{ roomId: string; name: string } | null>(null);
 
   const request = useMutation({
     meta: FEEL_ERROR,
-    mutationFn: ({ ask, profiled }: { ask: Asking; profiled: boolean }) => {
-      void registerForPush();
-      return roomsApi.requestJoin(ask.roomId, profiled, ask.side);
-    },
-    onSuccess: (data, { ask }) => {
-      // Never the anonymous or profiled choice: it would stand in for the gender (§23.L).
-      track('join_requested', { as_member: ask.side !== undefined, in_lobby: state === 'open' });
-      if (ask.side === undefined) joinRequests.add(data.requestId);
-      setJoinAsk(ask.side && ask.leader ? { requestId: data.requestId, leader: ask.leader } : null);
-      setAsking(null);
-    },
-    onError: (err) => {
-      // The photo went (or was hidden) after the sheet read it: nothing sent, the sheet stays with
-      // the reason, back to anonymous.
-      if (err instanceof ApiError && err.code === 'photo_required') {
-        setParticipation('anonymous');
-        void photo.refresh();
-      } else if (err instanceof ApiError && err.code === 'anonymous_not_allowed') {
-        // The sheet stays and shows the profile that goes; nothing is sent until the next press.
-        setMustProfile(true);
-        void photo.refresh();
-      } else if (!(err instanceof ApiError && err.code === 'gender_required')) {
-        setAsking(null);
-      }
-    },
-    onSettled: () => {
+    mutationFn: ({ table, asMember }: { table: VenueTable; asMember: boolean }) =>
+      roomsApi.requestJoin(table.roomId, asMember),
+    onSuccess: (_data, { table, asMember }) => {
+      track('join_requested', { as_member: asMember });
+      setAsked({ roomId: table.roomId, name: table.name });
       void queryClient.invalidateQueries({ queryKey: roomKeys.myRequest });
     },
-  });
-  const code = request.error instanceof ApiError ? request.error.code : null;
-  const refused = code === 'photo_required';
-  const needsPhoto = hasName && ((photo.known && !photo.has) || refused);
-  const view = gameFlowView(
-    photo.gender,
-    code === 'gender_required'
-      ? 'gender_required'
-      : mustProfile || code === 'anonymous_not_allowed'
-        ? 'anonymous_not_allowed'
-        : null,
-  );
-  // Refusals the request sheet shows in place; anything else closes it and shows above the lobby.
-  const handled = refused || code === 'anonymous_not_allowed' || code === 'gender_required';
-  const moveHere = useMutation({
-    meta: FEEL_ERROR,
-    mutationFn: callChangeSpot,
-    onSuccess: () => {
-      track('spot_changed', {});
-      return queryClient.invalidateQueries({ queryKey: ['activeTable'] });
+    onError: (err) => {
+      // The table filled, closed or moved meanwhile: the lobby is read again.
+      if (err instanceof ApiError && (requestGone(err.code) || err.code === 'table_full')) {
+        void queryClient.invalidateQueries({ queryKey: roomKeys.venueTables(venueId) });
+      }
     },
   });
 
-  const mine = myRequest.data;
-  const status = mine ? requesterStatus(mine.status, mine.expiresAt, now) : null;
-  // The waiting "Bu masadayım" request, as this phone sent it.
-  const memberAsk = mine && joinAsk?.requestId === mine.id ? joinAsk : null;
-  const asMember = memberAsk !== null;
-  const viewStale = mine?.status === 'pending' && status === 'unavailable';
-  const { refetch } = myRequest;
-  // Refetch once the local clock passes expires_at, so the view and the UI agree.
-  useEffect(() => {
-    if (viewStale) void refetch();
-  }, [viewStale, refetch]);
-  const requestId = mine?.id;
-  useEffect(() => {
-    if (requestId && status === 'unavailable') {
-      trackOnce(`join_unavailable:${requestId}`, 'join_unavailable', { as_member: asMember });
-    }
-  }, [requestId, status, asMember]);
-  // A table asked once with "Katıl" and not met leaves this table's lobby (venue_lobby hides it):
-  // once the row's miss has played the row goes here too, without waiting for the server's clock to
-  // pass the same second, and its "Katıl" never comes back. The lobby is read again for the rest. A
-  // "Bu masadayım" keeps its row: it can be sent again.
-  const [leftRequest, setLeftRequest] = useState<string | null>(null);
-  useEffect(() => {
-    if (!requestId || status !== 'unavailable' || !joinRequests.has(requestId)) return undefined;
-    const id = setTimeout(() => {
-      setLeftRequest(requestId);
-      void queryClient.invalidateQueries({ queryKey: roomKeys.lobby(venueId) });
-    }, MISS_MS);
-    return () => clearTimeout(id);
-  }, [requestId, status, venueId, queryClient]);
-  // Felt only when accepted: a decline and a timeout look and feel the same (rule 5).
-  useRequesterHaptic(requestId, status);
-  const secondsLeft = mine ? Math.max(0, Math.ceil((Date.parse(mine.expiresAt) - now) / 1000)) : 0;
-  const recentlyUnavailable =
-    mine && status === 'unavailable' && now - Date.parse(mine.expiresAt) < 15_000;
-  // A request this screen saw waiting, and when it saw it accepted (adjusted while rendering). The
-  // table card says so ("Kabul edildi, X masasının yanına git", docs/SPEC_V3.md §23.E); nothing
-  // opens the room: the card's "Masaya git" does.
-  const [seen, setSeen] = useState<{ id: string; acceptedAt: number | null } | null>(null);
-  if (mine && status === 'pending' && seen?.id !== mine.id)
-    setSeen({ id: mine.id, acceptedAt: null });
-  if (mine && status === 'accepted' && seen?.id === mine.id && seen.acceptedAt === null) {
-    setSeen({ id: mine.id, acceptedAt: now });
-  }
-  const acceptedNow = !!mine && seen?.id === mine.id && seen.acceptedAt !== null;
-  const acceptedRoom = acceptedNow ? mine?.roomId : undefined;
-  useEffect(() => {
-    // Counted here once per room, the same key as the room screen's: the requester may never open it.
-    if (acceptedRoom) {
-      trackOnce(`join_accepted:${acceptedRoom}`, 'join_accepted', { as_member: asMember });
-    }
-  }, [acceptedRoom, asMember]);
+  const status = mine.data ? requesterStatus(mine.data.status, mine.data.expiresAt, now) : null;
+  const waitingOn = mine.data && status === 'pending' ? mine.data.roomId : null;
+  const accepted = mine.data && status === 'accepted' ? mine.data.roomId : null;
+  const unavailable = mine.data && status === 'unavailable' ? mine.data.roomId : null;
 
-  const leftRoom = mine && leftRequest === mine.id ? mine.roomId : null;
-  const rooms = (lobby.data?.open ?? []).filter((r) => r.room_id !== leftRoom);
-  const running = lobby.data?.running ?? [];
-  // A request to an open table shows in its row (v45: .row .wait); one to a table that is not
-  // listed (gone from the lobby, or a running table's side) keeps the note above the lobby.
-  const inRow = !!mine && rooms.some((r) => r.room_id === mine.roomId);
-  // A merged or "Masanla oyna" table has nothing to do in an empty lobby: no card, and no heading
-  // over nothing.
-  const emptyCard = state === 'off' || state === 'open' || state === 'member';
-  const lobbyShown = !lobby.isSuccess || rooms.length > 0 || emptyCard;
-  const waiting = status === 'pending' || request.isPending;
-  const ask = (next: Asking) => {
-    setParticipation('anonymous');
-    request.reset();
-    setAsking(next);
+  // Accepted: the person sits at that table now (Masadakiler, K-69); it opens after the note.
+  useEffect(() => {
+    if (!accepted) return;
+    track('table_joined', { via: 'request' });
+    void queryClient.invalidateQueries({ queryKey: roomKeys.current });
+    const timer = setTimeout(
+      () => router.push({ pathname: '/room/[id]', params: { id: accepted } }),
+      OPEN_AFTER_ACCEPT_MS,
+    );
+    return () => clearTimeout(timer);
+  }, [accepted, queryClient]);
+  const askedRoom = asked?.roomId;
+  useEffect(() => {
+    if (unavailable && unavailable === askedRoom) track('join_unavailable', { as_member: false });
+  }, [unavailable, askedRoom]);
+
+  const others = (list: VenueTable[]) => list.filter((t) => t.roomId !== roomId);
+  const open = others(tables.data?.open ?? []);
+  const running = others(tables.data?.running ?? []);
+
+  const ownerNote =
+    state === 'private' || state === 'open'
+      ? myPhones > 1
+        ? tr.lobby.bringsTable(myPhones - 1)
+        : null
+      : null;
+  const note = needsPhoto
+    ? tr.lobby.needsPhoto
+    : state === 'participant'
+      ? tr.lobby.leaveFirst
+      : ownerNote;
+
+  const rowNote = (table: VenueTable): string | null => {
+    if (!mine.data || mine.data.roomId !== table.roomId) return null;
+    if (status === 'pending') {
+      const left = Math.max(0, Math.ceil((Date.parse(mine.data.expiresAt) - now) / 1000));
+      return tr.lobby.waiting(Math.min(left, JOIN_REQUEST_TTL_SECONDS));
+    }
+    if (status === 'accepted') return tr.lobby.accepted(table.name);
+    if (asked?.roomId === table.roomId) return tr.lobby.unavailable;
+    return null;
   };
 
-  return (
-    <View className="mt-6">
-      {status === 'pending' && memberAsk ? (
-        // "Bu masadayım": the table's own alias at its largest, the name the leader sees on the
-        // request card (canvas: Faz 2 · 22.5 → İsteyen: adını söyle).
-        <Card tone="feature" className="mb-3 gap-3" testID="member-pending">
-          <Text variant="overline" tone="muted">
-            {tr.rooms.tellLeader}
-          </Text>
-          <BigAlias alias={alias} />
-          <Text variant="fine" tone="text" accessibilityLiveRegion="polite">
-            {tr.rooms.tellLeaderBody(memberAsk.leader)}
-          </Text>
-          <Countdown
-            secondsLeft={secondsLeft}
-            totalSeconds={JOIN_REQUEST_TTL_SECONDS}
-            label={tr.rooms.secondsLeft(secondsLeft)}
-          />
-        </Card>
-      ) : status === 'pending' && !inRow ? (
-        <Card tone="note" className="mb-3">
-          <Text accessibilityLiveRegion="polite">{tr.rooms.requestPending(secondsLeft)}</Text>
-        </Card>
-      ) : null}
-      {/* Not for a request whose row just left after its miss: the row said it already. */}
-      {recentlyUnavailable && !inRow && leftRequest !== mine?.id ? (
-        <Card tone="note" className="mb-3">
-          <Text accessibilityLiveRegion="polite">{tr.rooms.requestUnavailable}</Text>
-        </Card>
-      ) : null}
-      {(request.isError && !handled) || moveHere.isError ? (
-        <Text variant="fine" tone="danger" className="mb-3">
-          {errorMessage(request.error ?? moveHere.error)}
-        </Text>
-      ) : null}
+  const groups = (list: VenueTable[]) =>
+    groupRoomsBySpot(
+      list.map((t) => ({ ...t, spot_id: t.spotId, spot_name: t.spotName })),
+      mySpotId,
+    );
 
-      {/* "Açık masalar" and how many (v45: .sec), over every state of the list that shows. */}
-      {lobbyShown ? (
-        <View className="mb-2 flex-row items-baseline justify-between">
-          <Text variant="heading" accessibilityRole="header">
-            {tr.rooms.lobbyTitle}
-          </Text>
-          {lobby.isSuccess && rooms.length > 0 ? (
-            <Text variant="label">{tr.rooms.roomCount(rooms.length)}</Text>
-          ) : null}
+  return (
+    <View className="gap-3" testID="lobby">
+      <SectionHead title={tr.lobby.openTitle} count={open.length} />
+      {note ? <Text variant="fine">{note}</Text> : null}
+      {tables.isPending ? (
+        <View className="items-center py-4" accessibilityLabel={tr.lobby.loading}>
+          <Loader />
         </View>
-      ) : null}
-      {lobby.isPending ? (
-        // Tahterevalli while the lobby is read (v45: .lobby-load).
-        <View className="items-center justify-center" style={{ minHeight: LOAD_HEIGHT }}>
-          <Loader kind="seesaw" size={SPACING[10]} label={tr.rooms.lobbyLoading} />
-        </View>
-      ) : lobby.isError ? (
-        <Card className="gap-3" testID="lobby-error">
-          <Text variant="bodyStrong">{tr.rooms.lobbyError}</Text>
-          <Button
-            variant="neutral"
-            icon="refresh-outline"
-            label={tr.common.retry}
-            onPress={() => void lobby.refetch()}
-            loading={lobby.isRefetching}
-          />
-        </Card>
-      ) : rooms.length === 0 ? (
-        emptyCard ? (
-          <Card testID="lobby-empty">
-            <View className="flex-row items-center gap-3.5">
-              <StateMark kind="empty" size={SPACING[16]} />
-              <View className="flex-1 gap-0.5">
-                <Text variant="bodyStrong">{tr.rooms.lobbyEmptyTitle}</Text>
-                <Text variant="fine">
-                  {state === 'off' ? tr.rooms.playWithTableHint : tr.rooms.lobbyEmptyOpen}
-                </Text>
-              </View>
-            </View>
-          </Card>
-        ) : null
+      ) : tables.isError ? (
+        <EmptyState
+          kind="error"
+          body={errorMessage(tables.error)}
+          action={{ label: tr.common.retry, onPress: () => void tables.refetch() }}
+        />
+      ) : open.length === 0 ? (
+        <EmptyState kind="empty" title={tr.lobby.emptyTitle} body={tr.lobby.emptyBody} />
       ) : (
-        <View className="gap-3">
-          {groupRoomsBySpot(rooms, mySpotId).map((group) => (
-            <View key={group.spotId ?? 'none'} className="gap-2.5">
-              {venueHasSpots ? (
-                <SpotHeading spotId={group.spotId} spotName={group.spotName} mine={group.mine} />
-              ) : null}
-              {group.rooms.map((room, i) => {
-                const spotId = room.spot_id;
-                const member = actions.member && room.memberOpen;
-                const asked = mine?.roomId === room.room_id;
-                const pendingHere = asked && status === 'pending';
-                const missedHere = asked && !!recentlyUnavailable;
-                return (
-                  <Rise key={room.room_id} index={i}>
-                    <LobbyRow
-                      room={room}
-                      note={
-                        pendingHere
-                          ? tr.rooms.requestPending(secondsLeft)
-                          : missedHere
-                            ? tr.rooms.requestUnavailable
-                            : null
-                      }
-                      side={
-                        pendingHere ? (
-                          <Loader kind="swap" size={SPACING[7]} delay={0} label={null} />
-                        ) : missedHere && mine ? (
-                          // A request that did not meet: the miss once (keyed by the request),
-                          // then the row leaves the lobby (one request per table).
-                          <MissMark key={mine.id} size={SPACING[7]} />
-                        ) : group.mine && actions.join ? (
-                          <Button
-                            variant="neutral"
-                            size="sm"
-                            testID="request-join"
-                            label={tr.rooms.requestJoin}
-                            onPress={() => ask({ roomId: room.room_id })}
-                            disabled={waiting}
-                          />
-                        ) : null
-                      }
-                      below={
-                        group.mine && member ? (
-                          // "Bu masadayım": a member of the owner's side, while it has room
-                          // (docs/SPEC_V3.md §22.C).
-                          <Button
-                            variant="neutral"
-                            testID="request-member"
-                            label={tr.rooms.requestMember}
-                            onPress={() =>
-                              ask({ roomId: room.room_id, side: 'owner', leader: room.alias })
-                            }
-                            disabled={waiting}
-                          />
-                        ) : group.mine ? null : state === 'off' && spotId !== null ? (
-                          // Moving is only for a table without a room (in_room).
-                          <Button
-                            variant="neutral"
-                            icon="location-outline"
-                            testID="spot-here"
-                            label={tr.rooms.spotHere}
-                            onPress={() => moveHere.mutate(spotId)}
-                            disabled={waiting || moveHere.isPending}
-                          />
-                        ) : actions.join ? (
-                          <Text variant="fine">{tr.rooms.otherSpot}</Text>
-                        ) : null
-                      }
-                    />
-                  </Rise>
-                );
-              })}
-            </View>
-          ))}
-        </View>
+        groups(open).map((group) => (
+          <View key={group.spotId ?? 'none'} className="gap-2.5">
+            {venueHasSpots ? (
+              <SpotHeading spotId={group.spotId} spotName={group.spotName} mine={group.mine} />
+            ) : null}
+            {group.rooms.map((table) => {
+              const actions = lobbyActions(state, myPhones, table.phones);
+              const busy = request.isPending && request.variables?.table.roomId === table.roomId;
+              const waiting = waitingOn === table.roomId;
+              return (
+                <LobbyRow
+                  key={table.roomId}
+                  table={table}
+                  note={rowNote(table)}
+                  action={
+                    actions.join && !needsPhoto && !waiting && accepted !== table.roomId ? (
+                      <Button
+                        size="sm"
+                        testID={`join-${table.name}`}
+                        label={tr.lobby.join}
+                        disabled={actions.full || waitingOn !== null}
+                        loading={busy}
+                        onPress={() => request.mutate({ table, asMember: false })}
+                      />
+                    ) : waiting ? (
+                      <Loader kind="swap" label={null} />
+                    ) : null
+                  }
+                />
+              );
+            })}
+          </View>
+        ))
       )}
 
-      <RunningRooms
-        rooms={running}
-        mySpotId={mySpotId}
-        venueHasSpots={venueHasSpots}
-        disabled={waiting || moveHere.isPending}
-        canMember={actions.member}
-        onMember={(roomId, side, leader) => ask({ roomId, side, leader })}
-        onSpotHere={(spotId) => moveHere.mutate(spotId)}
-      />
-
-      <Sheet
-        visible={asking !== null && !photoSheet && !genderSheet}
-        onClose={() => {
-          setAsking(null);
-          request.reset();
-        }}
-        title={asking?.side ? tr.rooms.requestMember : tr.rooms.requestTitle}
-        icon="people-outline"
-      >
-        {asking?.side && asking.leader ? (
-          <Text variant="fine" tone="text">
-            {tr.rooms.memberBody(asking.leader)}
-          </Text>
-        ) : null}
-        {photo.loading ? (
-          // Until the own profile answers: neither a choice nor a profile that may change a moment
-          // later.
-          <View className="items-center py-3">
-            <Loader kind="meet" size={ICON.lg} label={null} />
-          </View>
-        ) : view !== 'choice' ? (
-          <ProfilePreview
-            sheet={asking?.side ? 'member' : 'join'}
-            view={view}
-            refused={code}
-            onAddPhoto={() => setPhotoSheet(true)}
-            onChooseGender={() => setGenderSheet(true)}
-          />
-        ) : (
-          <>
-            <Text variant="label">{tr.participation.title}</Text>
-            <View accessibilityRole="radiogroup" className="gap-2">
-              {PARTICIPATIONS.map((mode) => (
-                <Choice
-                  key={mode}
-                  testID={`request-${mode}`}
-                  label={tr.participation[mode]}
-                  hint={participationHint(mode, hasName, asking?.side ? { alias } : undefined)}
-                  // "Bu masadayım": the face the room's phones will see (canvas: Bu masadayım: seçim).
-                  picture={
-                    !asking?.side ? undefined : mode === 'anonymous' ? (
-                      <Avatar kind="table" alias={alias} size="sm" />
-                    ) : needsPhoto || !hasName ? null : (
-                      <Avatar kind="profile" name={photo.name} photoUrl={photo.url} size="sm" />
-                    )
-                  }
-                  selected={participation === mode}
-                  disabled={mode === 'profile' && !hasName}
-                  unavailable={
-                    mode === 'profile' && needsPhoto ? (
-                      <PhotoNeeded refused={refused} onAddPhoto={() => setPhotoSheet(true)} />
-                    ) : undefined
-                  }
-                  onPress={() => setParticipation(mode)}
+      <SectionHead title={tr.lobby.runningTitle} count={running.length} />
+      <Text variant="fine">
+        {state === 'none' && !needsPhoto ? tr.lobby.runningNote : tr.lobby.runningNoteShort}
+      </Text>
+      {running.map((table) => {
+        const actions = lobbyActions(state, myPhones, table.phones);
+        const busy = request.isPending && request.variables?.table.roomId === table.roomId;
+        const waiting = waitingOn === table.roomId;
+        return (
+          <LobbyRow
+            key={table.roomId}
+            table={table}
+            note={rowNote(table)}
+            below={
+              actions.member && !needsPhoto && !waiting && accepted !== table.roomId ? (
+                <Button
+                  variant="neutral"
+                  testID={`here-${table.name}`}
+                  label={tr.lobby.here}
+                  disabled={waitingOn !== null}
+                  loading={busy}
+                  onPress={() => request.mutate({ table, asMember: true })}
                 />
-              ))}
-            </View>
-          </>
-        )}
-        <Button
-          testID="request-send"
-          label={tr.rooms.sendRequest}
-          onPress={() =>
-            asking &&
-            request.mutate({
-              ask: asking,
-              profiled: view !== 'choice' || participation === 'profile',
-            })
-          }
-          disabled={photo.loading || view === 'gender' || (view === 'profile' && needsPhoto)}
-          loading={request.isPending}
-        />
-      </Sheet>
-      <PhotoSheet
-        visible={photoSheet}
-        onClose={() => {
-          setPhotoSheet(false);
-          request.reset();
-        }}
-      />
-      <GenderSheet
-        visible={genderSheet}
-        onClose={() => {
-          setGenderSheet(false);
-          request.reset();
-        }}
-      />
+              ) : null
+            }
+          />
+        );
+      })}
+
+      {request.isError ? (
+        <Text variant="fine" tone="danger">
+          {errorMessage(request.error)}
+        </Text>
+      ) : null}
     </View>
   );
 }
 
-// An open table (v45: .row): its avatar, its name, a line about this table's request to it, and its
-// people, intent and game as tags. On the right "Katıl", or the request's mark while it waits
-// (Kesişme) and when it did not meet (the miss); under it "Bu masadayım" or "Bu noktadayım".
+function SectionHead({ title, count }: { title: string; count: number }) {
+  return (
+    <View className="mt-2 flex-row items-baseline justify-between">
+      <Text variant="heading" accessibilityRole="header">
+        {title}
+      </Text>
+      <Text variant="label" tone="muted">
+        {tr.lobby.tables(count)}
+      </Text>
+    </View>
+  );
+}
+
+// A table in the lobby (v46: .card.row): its icon, name and the request's note, the people, intent
+// and game tag; its button beside it ("Katıl") or under it ("Bu masadayım"). No person's name.
 function LobbyRow({
-  room,
+  table,
   note,
-  side,
+  action,
   below,
 }: {
-  room: LobbyRoom;
+  table: VenueTable;
   note: string | null;
-  side: ReactNode;
-  below: ReactNode;
+  action?: ReactNode;
+  below?: ReactNode;
 }) {
-  const intent = isIntent(room.intent) ? room.intent : null;
+  const intent = isIntent(table.intent) ? table.intent : null;
   return (
-    <Card flush>
+    <Card flush testID={`lobby-row-${table.name}`}>
       <View
         style={{
           gap: SPACING[2.5],
@@ -506,26 +265,28 @@ function LobbyRow({
         }}
       >
         <View className="flex-row items-center" style={{ gap: SPACING[3] }}>
-          <Avatar kind="table" alias={room.alias} size="lg" />
+          <TableIcon icon={table.icon} size="lobby" />
           <View className="flex-1 gap-1">
-            <Text variant="bodyStrong">{room.alias}</Text>
+            <Text variant="bodyStrong">{table.name}</Text>
             {note ? (
               <Text variant="fine" accessibilityLiveRegion="polite">
                 {note}
               </Text>
             ) : null}
             <View className="flex-row flex-wrap items-center gap-1.5">
-              <Tag icon="people-outline" label={tr.rooms.people(room.headcount)} />
+              <Tag icon="people-outline" label={tr.venue.people(table.phones)} />
               {intent ? <Tag variant={intent} label={tr.intents[intent]} /> : null}
-              {room.gameTag ? <Tag icon="dice-outline" label={tr.concepts[room.gameTag]} /> : null}
+              {table.gameTag ? (
+                <Tag icon="dice-outline" label={tr.concepts[table.gameTag]} />
+              ) : null}
             </View>
           </View>
-          {side ? (
+          {action ? (
             <View
               className="items-center justify-center"
               style={{ minWidth: TOUCH.min, minHeight: TOUCH.min }}
             >
-              {side}
+              {action}
             </View>
           ) : null}
         </View>

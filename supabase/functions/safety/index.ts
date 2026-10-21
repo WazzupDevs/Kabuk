@@ -231,17 +231,17 @@ Deno.serve(
       return { ok: true };
     }
 
-    // In a room (§22.D): a phone of the room, or without sessionId the other side's leader. A
-    // leader blocking its own member removes the member; anyone else who blocks leaves.
+    // At a table (docs/SPEC_V4.md §4.E, K-13): a person there by its table session id. The owner's
+    // block takes that person out; anyone else's block takes the blocker out.
     const { data, error } = await db.rpc('safety_block', {
       target_user_id: user.id,
       target_room_id: body.roomId,
       ...(body.sessionId ? { target_session_id: body.sessionId } : {}),
     });
     if (error) throw dbError('safety_block', error);
-    // Blocking in a two-table room is "Odayı bitir" with "Hayır" (docs/SPEC_V3.md §5.5): the same
-    // announcement as rooms/end, so the other table cannot tell them apart (rule 5).
-    if (data.visibility === 'open') lobbyChanged(data);
+    // A block takes a person out like "Masadan ayrıl": the same announcement as rooms/leave and
+    // rooms/end, so nobody can tell them apart (rule 5).
+    lobbyChanged(data);
     return { ok: true };
   }),
 );

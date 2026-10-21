@@ -1,22 +1,12 @@
+// Tables (docs/SPEC_V4.md §4.E) around the edges: the paths that lock a check-in, the scheduled
+// jobs and the closed helpers. The table model itself is tableModel.test.ts's.
 import postgres from 'postgres';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
-import {
-  ROOM_IDLE_MINUTES,
-  sessionChannel,
-  venueChannel,
-} from '../functions/_shared/pure/rooms.ts';
+import { ROOM_IDLE_MINUTES } from '../functions/_shared/pure/rooms.ts';
 import { deleteFixtureVenues, insertFixtureVenues } from './fixtures/venues.ts';
-import {
-  checkInAt,
-  errorBody,
-  onboarded,
-  PHONES,
-  waitForBroadcast,
-  waitUntilBlocked,
-} from './helpers.ts';
-import { deleteAccount } from '../../scripts/admin/account.ts';
-import { admin, type Client, dbUrl, deleteUserByPhone, invoke, sql, userIdOf } from './local.ts';
+import { checkInAt, onboarded, PHONES } from './helpers.ts';
+import { type Client, dbUrl, deleteUserByPhone, invoke, sql, userIdOf } from './local.ts';
 
 let venue: Record<string, string> = {};
 const V = 'at-anchor';
@@ -37,36 +27,21 @@ afterAll(async () => {
 
 const rooms = (client: Client, body: Record<string, unknown>) => invoke(client, 'rooms', body);
 
-// "Oda kur" (always open) or, for 'private', "Masanla oyna" (docs/SPEC_V3.md §5.1).
-async function createRoom(
-  client: Client,
-  visibility: 'open' | 'private' = 'open',
-  intent?: 'game' | 'chat',
-): Promise<string> {
-  const res = await rooms(
-    client,
-    visibility === 'private'
-      ? { action: 'create-solo' }
-      : { action: 'create', profiled: false, ...(intent ? { intent } : {}) },
-  );
+// "Masa kur", in the lobby.
+async function createRoom(client: Client): Promise<string> {
+  const res = await rooms(client, { action: 'create' });
   expect(res.status, JSON.stringify(res.body)).toBe(200);
   return (res.body as { roomId: string }).roomId;
 }
 
-async function lobby(client: Client, key = V) {
-  const { data, error } = await client.rpc('venue_lobby', { target_venue_id: venue[key] ?? '' });
+async function tables(client: Client, key = V) {
+  const { data, error } = await client.rpc('venue_tables', { target_venue_id: venue[key] ?? '' });
   expect(error).toBeNull();
   return data ?? [];
 }
 
 async function requestJoin(client: Client, roomId: string) {
-  return rooms(client, { action: 'request-join', roomId, profiled: false });
-}
-
-async function myRequests(client: Client) {
-  const { data, error } = await client.from('my_join_requests').select('*').order('created_at');
-  expect(error).toBeNull();
-  return data ?? [];
+  return rooms(client, { action: 'request-join', roomId });
 }
 
 async function pendingRequestIds(owner: Client, roomId: string): Promise<string[]> {
@@ -86,342 +61,27 @@ async function expireRequestsOf(client: Client): Promise<void> {
   `;
 }
 
-// Three onboarded tables at the same venue.
+// Three people checked in at the same venue.
 async function threeTables(): Promise<[Client, Client, Client]> {
   const clients = await Promise.all(PHONES.map((p) => onboarded(p)));
   for (const c of clients) await checkInAt(c, venue, V);
   return clients as [Client, Client, Client];
 }
 
-describe('rooms/create and the lobby', () => {
-  it('needs an active table and allows one room per table', async () => {
-    const client = await onboarded(PHONES[0]);
-    expect(await rooms(client, { action: 'create', profiled: false })).toEqual({
-      status: 409,
-      body: errorBody('no_active_table'),
-    });
-    await checkInAt(client, venue, V);
-    await createRoom(client);
-    expect(await rooms(client, { action: 'create', profiled: false, intent: 'chat' })).toEqual({
-      status: 409,
-      body: errorBody('already_in_room'),
-    });
-  });
-
-  it('lists open waiting rooms at the venue with only the safe columns', async () => {
+describe('venue_tables', () => {
+  it('lists no table of another venue', async () => {
     const [owner, other] = await threeTables();
-    const ownerTable =
-      await sql`select alias, headcount from public.table_sessions where user_id = ${await userIdOf(owner)} and status = 'active'`;
-    const roomId = await createRoom(owner, 'open', 'chat');
-
-    const rows = await lobby(other);
-    expect(rows).toHaveLength(1);
-    // v2: + the "profilli" flag (docs/SPEC_V2.md §5.4); still no account or profile id.
-    expect(Object.keys(rows[0] ?? {}).sort()).toEqual(
-      [
-        'alias',
-        // v3: the intent label instead of the game (docs/SPEC_V3.md §5.2).
-        'intent',
-        'headcount',
-        'profiled',
-        'room_id',
-        'waiting_since',
-        // The room's spot (docs/SPEC_V3.md §4.3): venue data, no count.
-        'spot_id',
-        'spot_name',
-      ].sort(),
-    );
-    expect(rows[0]).toMatchObject({
-      room_id: roomId,
-      alias: ownerTable[0]?.alias,
-      headcount: ownerTable[0]?.headcount,
-      intent: 'chat',
-      profiled: false,
-    });
-
-    // Not the owner's own room, not private rooms, not for tables at another venue.
-    expect(await lobby(owner)).toEqual([]);
-    const [, , third] = [owner, other, await onboarded(PHONES[2])];
-    await checkInAt(third, venue, 'near');
-    expect(await lobby(third, V)).toEqual([]);
-  });
-
-  it('keeps private rooms out of the lobby', async () => {
-    const [owner, other] = await threeTables();
-    await createRoom(owner, 'private');
-    expect(await lobby(other)).toEqual([]);
-  });
-
-  it('broadcasts a data-free lobby_changed on the venue channel', async () => {
-    const [owner, other] = await threeTables();
-    const listener = waitForBroadcast(other, venueChannel(venue[V] ?? ''), 'lobby_changed');
-    await listener.subscribed;
-    await createRoom(owner);
-    await expect(listener.received).resolves.toBeUndefined();
-    await listener.close();
-  });
-});
-
-describe('join requests', () => {
-  it('lets the owner see and accept a request, and puts both tables in the room', async () => {
-    const [owner, requester, third] = await threeTables();
     const roomId = await createRoom(owner);
-
-    const [ownerSession] =
-      await sql`select id from public.table_sessions where user_id = ${await userIdOf(owner)} and status = 'active'`;
-    const ownerListener = waitForBroadcast(owner, sessionChannel(ownerSession?.id), 'join_request');
-    await ownerListener.subscribed;
-
-    const res = await requestJoin(requester, roomId);
-    expect(res).toEqual({
-      status: 200,
-      body: { requestId: expect.any(String), expiresAt: expect.any(String) },
-    });
-    await expect(ownerListener.received).resolves.toBeUndefined();
-    await ownerListener.close();
-
-    // The owner sees who asks (alias, headcount); the requester never reads the raw row.
-    const { data: incoming } = await owner
-      .from('join_requests')
-      .select('requester_alias, requester_headcount, status');
-    expect(incoming).toEqual([
-      { requester_alias: expect.any(String), requester_headcount: 3, status: 'pending' },
-    ]);
-    expect((await requester.from('join_requests').select('id')).data).toEqual([]);
-    expect((await myRequests(requester)).map((r) => r.status)).toEqual(['pending']);
-
-    const [requestId] = await pendingRequestIds(owner, roomId);
-    expect(await rooms(owner, { action: 'respond', requestId, accept: true })).toEqual({
-      status: 200,
-      body: { ok: true },
-    });
-
-    expect((await myRequests(requester)).map((r) => r.status)).toEqual(['accepted']);
-    const { data: room } = await requester
-      .from('rooms')
-      .select('status, owner_alias, guest_alias, guest_headcount')
-      .eq('id', roomId)
-      .single();
-    expect(room).toMatchObject({ status: 'active', guest_headcount: 3 });
-    expect(room?.guest_alias).toEqual(expect.any(String));
-    expect(await lobby(third)).toEqual([]);
-  });
-
-  it('makes a decline and a timeout look exactly the same to the requester', async () => {
-    const [ownerA, ownerB, requester] = await threeTables();
-    const roomA = await createRoom(ownerA);
-    const roomB = await createRoom(ownerB);
-
-    // Room A: the owner declines at once.
-    const resA = await requestJoin(requester, roomA);
-    const [idA] = await pendingRequestIds(ownerA, roomA);
-    expect((await rooms(ownerA, { action: 'respond', requestId: idA, accept: false })).status).toBe(
-      200,
-    );
-    const pendingA = await myRequests(requester);
-    const lobbyWhilePendingA = (await lobby(requester)).map((r) => r.room_id).sort();
-    await expireRequestsOf(requester);
-    const unavailableA = await myRequests(requester);
-
-    // Room B: the owner never answers.
-    const resB = await requestJoin(requester, roomB);
-    const pendingB = (await myRequests(requester)).filter((r) => r.room_id === roomB);
-    await expireRequestsOf(requester);
-    const unavailableB = (await myRequests(requester)).filter((r) => r.room_id === roomB);
-
-    // Everything but ids and timestamps, which necessarily differ between the two requests.
-    const varying = new Set(['id', 'room_id', 'created_at', 'expires_at']);
-    const shape = (rows: Record<string, unknown>[]) =>
-      rows.map((row) => ({
-        keys: Object.keys(row).sort(),
-        ...Object.fromEntries(Object.entries(row).filter(([k]) => !varying.has(k))),
-      }));
-
-    // Same response, same readable rows before and after expiry.
-    expect(Object.keys(resA.body as object).sort()).toEqual(
-      Object.keys(resB.body as object).sort(),
-    );
-    expect(resA.status).toBe(resB.status);
-    expect(shape(pendingA)).toEqual(shape(pendingB));
-    expect(shape(pendingA)).toEqual([{ keys: expect.any(Array), status: 'pending' }]);
-    expect(shape(unavailableA.filter((r) => r.room_id === roomA))).toEqual(shape(unavailableB));
-    expect(shape(unavailableB)).toEqual([{ keys: expect.any(Array), status: 'unavailable' }]);
-
-    // A declined room stays in the lobby until expiry, like an unanswered one.
-    expect(lobbyWhilePendingA).toEqual([roomA, roomB].sort());
-
-    // Afterwards both rooms are gone for this table, and asking again fails the same way.
-    expect(await lobby(requester)).toEqual([]);
-    const againA = await requestJoin(requester, roomA);
-    const againB = await requestJoin(requester, roomB);
-    expect(againA).toEqual({ status: 409, body: errorBody('room_not_available') });
-    expect(againA).toEqual(againB);
-  });
-
-  it('allows one open request per table, counting a declined one until it expires', async () => {
-    const [ownerA, ownerB, requester] = await threeTables();
-    const roomA = await createRoom(ownerA);
-    const roomB = await createRoom(ownerB);
-    await requestJoin(requester, roomA);
-    const [idA] = await pendingRequestIds(ownerA, roomA);
-    await rooms(ownerA, { action: 'respond', requestId: idA, accept: false });
-    expect(await requestJoin(requester, roomB)).toEqual({
-      status: 409,
-      body: errorBody('request_pending'),
-    });
-  });
-
-  it('limits a table to 10 requests an hour', async () => {
-    const [ownerA, ownerB, requester] = await threeTables();
-    const roomA = await createRoom(ownerA);
-    const roomB = await createRoom(ownerB);
-    const [session] =
-      await sql`select id, alias from public.table_sessions where user_id = ${await userIdOf(requester)} and status = 'active'`;
-    for (let i = 0; i < 10; i++) {
-      await sql`
-        insert into public.join_requests (room_id, requester_session_id, requester_alias, requester_headcount, status, created_at, expires_at)
-        values (${roomB}, ${session?.id}, ${session?.alias}, 3, 'accepted', now() - interval '10 minutes', now() - interval '9 minutes')
-      `;
-    }
-    expect(await requestJoin(requester, roomA)).toEqual({
-      status: 429,
-      body: errorBody('rate_limited'),
-    });
-  });
-
-  it('rejects answers to expired requests and answers from anyone but the owner', async () => {
-    const [owner, requester, third] = await threeTables();
-    const roomId = await createRoom(owner);
-    await requestJoin(requester, roomId);
-    const [requestId] = await pendingRequestIds(owner, roomId);
-
-    expect(await rooms(third, { action: 'respond', requestId, accept: true })).toEqual({
-      status: 404,
-      body: errorBody('request_not_found'),
-    });
-    await expireRequestsOf(requester);
-    expect(await rooms(owner, { action: 'respond', requestId, accept: true })).toEqual({
-      status: 409,
-      body: errorBody('request_expired'),
-    });
-  });
-
-  it('keeps a table in one room: a guest cannot create or request another', async () => {
-    const [owner, guest, third] = await threeTables();
-    const roomId = await createRoom(owner);
-    const otherRoom = await createRoom(third);
-    await requestJoin(guest, roomId);
-    const [requestId] = await pendingRequestIds(owner, roomId);
-    await rooms(owner, { action: 'respond', requestId, accept: true });
-
-    expect(await rooms(guest, { action: 'create', profiled: false })).toEqual({
-      status: 409,
-      body: errorBody('already_in_room'),
-    });
-    expect(await requestJoin(guest, otherRoom)).toEqual({
-      status: 409,
-      body: errorBody('already_in_room'),
-    });
-  });
-});
-
-describe('blocks in the lobby', () => {
-  it('hides rooms in both directions and refuses requests', async () => {
-    const [owner, blocked, third] = await threeTables();
-    const ownerRoom = await createRoom(owner);
-    const blockedRoom = await createRoom(blocked);
-    await sql`
-      insert into public.blocks (blocker_id, blocked_id, blocked_alias)
-      values (${await userIdOf(owner)}, ${await userIdOf(blocked)}, 'Test Alias')
-    `;
-
-    expect((await lobby(blocked)).map((r) => r.room_id)).not.toContain(ownerRoom);
-    expect((await lobby(owner)).map((r) => r.room_id)).not.toContain(blockedRoom);
-    expect((await lobby(third)).map((r) => r.room_id).sort()).toEqual(
-      [ownerRoom, blockedRoom].sort(),
-    );
-    // Out of its own room, the blocked table still cannot ask to join.
-    await rooms(blocked, { action: 'end' });
-    expect(await requestJoin(blocked, ownerRoom)).toEqual({
-      status: 409,
-      body: errorBody('room_not_available'),
-    });
-  });
-});
-
-describe('leaving', () => {
-  async function roomWithGuest() {
-    const [owner, guest, third] = await threeTables();
-    const roomId = await createRoom(owner);
-    await requestJoin(guest, roomId);
-    const [requestId] = await pendingRequestIds(owner, roomId);
-    await rooms(owner, { action: 'respond', requestId, accept: true });
-    return { owner, guest, third, roomId };
-  }
-
-  async function roomRow(roomId: string) {
-    const [row] =
-      await sql`select status, guest_session_id, closed_at from public.rooms where id = ${roomId}`;
-    return row;
-  }
-
-  // "Odayı bitir" is the only way out (docs/SPEC_V3.md §5.5).
-  it('has no rooms/leave', async () => {
-    const { guest, roomId } = await roomWithGuest();
-    expect((await rooms(guest, { action: 'leave' })).status).toBe(400);
-    expect(await roomRow(roomId)).toMatchObject({ status: 'active' });
-  });
-
-  // Step 23.3 (docs/SPEC_V3.md §23.G): no window; the table closes at once (tableEnd.test.ts has
-  // the rest of it).
-  it('closes a two-table room at once when either table leaves the venue', async () => {
-    for (const leaver of ['guest', 'owner'] as const) {
-      const tables = await roomWithGuest();
-      await invoke(tables[leaver], 'checkin', { action: 'leave' });
-      expect(await roomRow(tables.roomId)).toMatchObject({ status: 'closed' });
-      for (const phone of PHONES) await deleteUserByPhone(phone);
-    }
-  });
-
-  it('closes a one-table room when its table leaves the venue', async () => {
-    const [owner] = await threeTables();
-    const roomId = await createRoom(owner);
-    await invoke(owner, 'checkin', { action: 'leave' });
-    expect(await roomRow(roomId)).toMatchObject({ status: 'closed' });
-  });
-
-  it('ending a two-table room closes it at once, idempotently', async () => {
-    const { owner, roomId } = await roomWithGuest();
-    await rooms(owner, { action: 'end' });
-    expect((await roomRow(roomId))?.status).toBe('closed');
-    expect((await rooms(owner, { action: 'end' })).status).toBe(200);
-    expect((await roomRow(roomId))?.status).toBe('closed');
-  });
-
-  it('closes a one-table room on end', async () => {
-    const [owner] = await threeTables();
-    const roomId = await createRoom(owner, 'private');
-    await rooms(owner, { action: 'end' });
-    expect(await roomRow(roomId)).toMatchObject({ status: 'closed' });
-  });
-
-  it('closes the room when the guest is deleted by admin:delete, as when the table leaves', async () => {
-    const { roomId, guest } = await roomWithGuest();
-    await deleteAccount(admin, await userIdOf(guest));
-    expect(await roomRow(roomId)).toMatchObject({ status: 'closed' });
-  });
-
-  it('closes the room of a deleted account', async () => {
-    const { owner, roomId } = await roomWithGuest();
-    expect((await invoke(owner, 'account', { action: 'delete' })).status).toBe(200);
-    const [row] = await sql`select count(*)::int as n from public.rooms where id = ${roomId}`;
-    expect(row?.n).toBe(0);
+    expect((await tables(other)).map((r) => r.room_id)).toEqual([roomId]);
+    const elsewhere = await onboarded(PHONES[2]);
+    await checkInAt(elsewhere, venue, 'near');
+    expect(await tables(elsewhere, V)).toEqual([]);
   });
 });
 
 describe('locks', () => {
   type Tx = postgres.TransactionSql;
-  // Every path that locks a table's session, run inside a transaction that stays open.
+  // Every path that locks a check-in, run inside a transaction that stays open.
   const sessionLockers: [
     string,
     (tx: Tx, userId: string, sessionId: string) => Promise<unknown>,
@@ -434,12 +94,7 @@ describe('locks', () => {
     [
       'checking in again (start_table_session)',
       (tx, userId) =>
-        tx`select public.start_table_session(${userId}, ${venue[V] ?? ''}, 'Kilit Testi',
-             2::smallint, 'test', null, 'anonymous')`,
-    ],
-    [
-      'drawing a new alias (reroll_table_alias)',
-      (tx, userId) => tx`select id from public.reroll_table_alias(${userId}, 'Kilit Simit', 3)`,
+        tx`select public.start_table_session(${userId}, ${venue[V] ?? ''}, 'test', 10, null, null)`,
     ],
     [
       // docs/SPEC_V4.md §4.D: the check-in's one change of identity.
@@ -463,7 +118,8 @@ describe('locks', () => {
   ];
 
   // Both tables ending a Tabu turn at once deadlocked: the owner, holding the room, wrote the next
-  // turn whose describer is the guest's session while the guest held that row FOR UPDATE.
+  // turn whose describer is the guest's session while the guest held that row FOR UPDATE. Rows
+  // still reference check-ins (room_members, join_requests, messages): no path takes FOR UPDATE.
   it.each(sessionLockers)(
     "lets rows reference a table's session while %s holds it",
     async (_name, lock) => {
@@ -486,246 +142,10 @@ describe('locks', () => {
       }
     },
   );
-
-  // rooms_respond locked the request and the room, then waited for the requester's session. The
-  // requester leaving at that moment held its session and waited for its room: a cycle. Now
-  // respond waits for the session before it holds the room.
-  it('lets the requester take its room while the owner accepts and waits for its session', async () => {
-    const [owner, requester] = (await Promise.all(PHONES.slice(0, 2).map((p) => onboarded(p)))) as [
-      Client,
-      Client,
-    ];
-    await checkInAt(owner, venue, V);
-    await checkInAt(requester, venue, V);
-    const roomId = await createRoom(owner);
-    expect(
-      (await rooms(requester, { action: 'request-join', roomId, profiled: false })).status,
-    ).toBe(200);
-    const [request] =
-      await sql`select id from public.join_requests where room_id = ${roomId} and status = 'pending'`;
-    const [ownerId, requesterId] = await Promise.all([userIdOf(owner), userIdOf(requester)]);
-
-    const leaving = postgres(dbUrl, { max: 1, onnotice: () => {} });
-    const accepting = postgres(dbUrl, { max: 1, onnotice: () => {} });
-    try {
-      let accepted: Promise<unknown> = Promise.resolve();
-      await leaving.begin(async (tx) => {
-        // The requester's leave holds its session first, as every path does.
-        await tx`select id from private.active_session_for_update(${requesterId})`;
-        accepted = accepting`
-          select (public.rooms_respond(${ownerId}, ${request?.id}, true)).status
-        `
-          .execute()
-          .catch((err: unknown) => err);
-        await waitUntilBlocked('rooms_respond');
-        // Then it takes its room; respond must not be holding it.
-        await tx`set local lock_timeout = '2s'`;
-        const room = await tx`select id from public.rooms where id = ${roomId} for update`;
-        expect(room).toHaveLength(1);
-      });
-      expect(await accepted).toEqual([{ status: 'accepted' }]);
-    } finally {
-      await Promise.all([leaving.end(), accepting.end()]);
-    }
-  });
-
-  // tabu/begin-turn (docs/SPEC_V3.md §19.1) holds the caller's session and the room, then the turn,
-  // and writes an event that references the describing table's session. When the other table
-  // describes and is leaving, its session is held only for no key update: the start goes through.
-  // Both phones starting at once start the turn once.
-  it('starts a ready Tabu turn while the describing table holds its session, and once from both phones', async () => {
-    const [owner, guest] = await threeTables();
-    const roomId = await createRoom(owner);
-    await requestJoin(guest, roomId);
-    const [requestId] = await pendingRequestIds(owner, roomId);
-    await rooms(owner, { action: 'respond', requestId, accept: true });
-    await rooms(guest, { action: 'propose-game', roomId, concept: 'tabu' });
-    expect((await rooms(owner, { action: 'answer-game', roomId, accept: true })).status).toBe(200);
-    const [ownerId, guestId] = await Promise.all([userIdOf(owner), userIdOf(guest)]);
-    const nextReadyTurn = async () => {
-      await sql`update public.tabu_turns set ends_at = now() - interval '1 second' where room_id = ${roomId}`;
-      await invoke(owner, 'tabu', { action: 'end-turn', roomId });
-      await sql`
-        update public.tabu_turns set ready_ends_at = now() - interval '1 second'
-        where room_id = ${roomId} and ends_at is null
-      `;
-    };
-    await invoke(owner, 'tabu', { action: 'begin-turn', roomId });
-
-    // Turn 2: the guest's table describes and is leaving; the owner's table starts the turn.
-    await nextReadyTurn();
-    const starting = postgres(dbUrl, { max: 1, onnotice: () => {} });
-    try {
-      await sql.begin(async (tx) => {
-        await tx`select id from private.active_session_for_update(${guestId})`;
-        const started = await starting.begin(async (stx) => {
-          await stx`set local lock_timeout = '2s'`;
-          return stx`
-            select (public.tabu_begin_turn(${ownerId}, ${roomId})).game_state ->> 'turnPhase' as phase
-          `;
-        });
-        expect(started).toEqual([{ phase: 'running' }]);
-      });
-    } finally {
-      await starting.end();
-    }
-
-    // Turn 3: both phones press at once.
-    await nextReadyTurn();
-    const both = await Promise.all(
-      [owner, guest].map((c) => invoke(c, 'tabu', { action: 'begin-turn', roomId })),
-    );
-    expect(both).toEqual([
-      { status: 200, body: { ok: true } },
-      { status: 200, body: { ok: true } },
-    ]);
-    expect(
-      await sql`select 1 from public.game_events where room_id = ${roomId} and type = 'turn_started'`,
-    ).toHaveLength(3);
-  });
-
-  // Sahtekar (docs/SPEC_V3.md §20.2) holds the caller's session, the room, then the game's secrets.
-  // A vote goes through while the other table is leaving (its session held for no key update), and
-  // both phones moving the game on at once move it once.
-  it('takes a Harf letter while the other table holds its session, and advances once from both phones', async () => {
-    const [owner, guest] = await threeTables();
-    const roomId = await createRoom(owner);
-    await requestJoin(guest, roomId);
-    const [requestId] = await pendingRequestIds(owner, roomId);
-    await rooms(owner, { action: 'respond', requestId, accept: true });
-    await rooms(guest, { action: 'propose-game', roomId, concept: 'harf' });
-    expect((await rooms(owner, { action: 'answer-game', roomId, accept: true })).status).toBe(200);
-    expect((await invoke(owner, 'harf', { action: 'begin', roomId })).status).toBe(200);
-    // The owner's table claims while the guest's session is held.
-    const [ownerId, guestId] = await Promise.all([userIdOf(owner), userIdOf(guest)]);
-    const claiming = postgres(dbUrl, { max: 1, onnotice: () => {} });
-    try {
-      await sql.begin(async (tx) => {
-        await tx`select id from private.active_session_for_update(${guestId})`;
-        const claimed = await claiming.begin(async (ctx) => {
-          await ctx`set local lock_timeout = '2s'`;
-          return ctx`
-            select (public.say_claim(${ownerId}, ${roomId}, 'harf', 1, 0, 'A')).game_state ->> 'step' as step
-          `;
-        });
-        expect(claimed).toEqual([{ step: '1' }]);
-      });
-    } finally {
-      await claiming.end();
-    }
-    // Both phones at the end of the guest's turn: one round lost, not two.
-    await sql`update public.rooms set game_state = jsonb_set(game_state, '{endsAt}', to_jsonb(now() - interval '1 second')) where id = ${roomId}`;
-    const both = await Promise.all(
-      [owner, guest].map((c) => invoke(c, 'harf', { action: 'advance', roomId })),
-    );
-    expect(both.map((r) => r.status)).toEqual([200, 200]);
-    const [state] = await sql`
-      select (game_state ->> 'roundNo')::int as round, game_state -> 'scores' as scores
-      from public.rooms where id = ${roomId}
-    `;
-    expect(state).toEqual({ round: 2, scores: { owner: 1, guest: 0 } });
-  });
-
-  // İbre (docs/SPEC_V3.md §20.5) holds the room, then the game's secret (the target).
-  it('takes an İbre side guess while the other table holds its session, and advances once from both phones', async () => {
-    const [owner, guest] = await threeTables();
-    const roomId = await createRoom(owner);
-    await requestJoin(guest, roomId);
-    const [requestId] = await pendingRequestIds(owner, roomId);
-    await rooms(owner, { action: 'respond', requestId, accept: true });
-    await rooms(guest, { action: 'propose-game', roomId, concept: 'ibre' });
-    expect((await rooms(owner, { action: 'answer-game', roomId, accept: true })).status).toBe(200);
-    expect((await invoke(owner, 'ibre', { action: 'begin', roomId })).status).toBe(200);
-    expect(
-      (await invoke(owner, 'ibre', { action: 'lock', roomId, round: 1, value: 50 })).status,
-    ).toBe(200);
-    // The guest's table guesses while the owner's session is held: the round is revealed.
-    const [ownerId, guestId] = await Promise.all([userIdOf(owner), userIdOf(guest)]);
-    const guessing = postgres(dbUrl, { max: 1, onnotice: () => {} });
-    try {
-      await sql.begin(async (tx) => {
-        await tx`select id from private.active_session_for_update(${ownerId})`;
-        const guessed = await guessing.begin(async (ctx) => {
-          await ctx`set local lock_timeout = '2s'`;
-          return ctx`
-            select (public.ibre_side(${guestId}, ${roomId}, 1, 'left')).game_state ->> 'roundNo' as round
-          `;
-        });
-        expect(guessed).toEqual([{ round: '2' }]);
-      });
-    } finally {
-      await guessing.end();
-    }
-    // Round 2: both phones once the ready clock and then the describing clock ran out: one round.
-    await sql`update public.rooms set game_state = jsonb_set(game_state, '{readyEndsAt}', to_jsonb(now() - interval '1 second')) where id = ${roomId}`;
-    await Promise.all([owner, guest].map((c) => invoke(c, 'ibre', { action: 'advance', roomId })));
-    await sql`update public.rooms set game_state = jsonb_set(game_state, '{endsAt}', to_jsonb(now() - interval '1 second')) where id = ${roomId}`;
-    const both = await Promise.all(
-      [owner, guest].map((c) => invoke(c, 'ibre', { action: 'advance', roomId })),
-    );
-    expect(both.map((r) => r.status)).toEqual([200, 200]);
-    const [state] = await sql`
-      select (game_state ->> 'roundNo')::int as round, game_state ->> 'turnPhase' as phase
-      from public.rooms where id = ${roomId}
-    `;
-    expect(state).toEqual({ round: 3, phase: 'ready' });
-  });
-
-  it('takes a Sahtekar vote while the other table holds its session, and advances once from both phones', async () => {
-    const [owner, guest] = await threeTables();
-    const roomId = await createRoom(owner);
-    await requestJoin(guest, roomId);
-    const [requestId] = await pendingRequestIds(owner, roomId);
-    await rooms(owner, { action: 'respond', requestId, accept: true });
-    await rooms(guest, { action: 'propose-game', roomId, concept: 'sahtekar', players: 2 });
-    expect(
-      (await rooms(owner, { action: 'answer-game', roomId, accept: true, players: 2 })).status,
-    ).toBe(200);
-    for (const [client, seat] of [
-      [owner, 'A1'],
-      [owner, 'A2'],
-      [guest, 'B1'],
-      [guest, 'B2'],
-    ] as const) {
-      await invoke(client, 'sahtekar', { action: 'view', roomId, seat });
-    }
-    // Both phones at the end of a clue step: one step forward.
-    await sql`update public.rooms set game_state = jsonb_set(game_state, '{endsAt}', to_jsonb(now() - interval '1 second')) where id = ${roomId}`;
-    const both = await Promise.all(
-      [owner, guest].map((c) => invoke(c, 'sahtekar', { action: 'advance', roomId })),
-    );
-    expect(both.map((r) => r.status)).toEqual([200, 200]);
-    const [{ step } = { step: -1 }] = await sql`
-      select (game_state ->> 'step')::int as step from public.rooms where id = ${roomId}
-    `;
-    expect(step).toBe(1);
-    // Straight to the vote.
-    await sql`
-      update public.rooms
-      set game_state = game_state || jsonb_build_object('phase', 'voting', 'voters', game_state -> 'viewed')
-      where id = ${roomId}
-    `;
-    const [ownerId, guestId] = await Promise.all([userIdOf(owner), userIdOf(guest)]);
-    const voting = postgres(dbUrl, { max: 1, onnotice: () => {} });
-    try {
-      await sql.begin(async (tx) => {
-        await tx`select id from private.active_session_for_update(${guestId})`;
-        const voted = await voting.begin(async (vtx) => {
-          await vtx`set local lock_timeout = '2s'`;
-          return vtx`
-            select (public.sahtekar_vote(${ownerId}, ${roomId}, 'A1', 'B1')).game_state ->> 'votesCast' as n
-          `;
-        });
-        expect(voted).toEqual([{ n: '1' }]);
-      });
-    } finally {
-      await voting.end();
-    }
-  });
 });
 
 describe('scheduled jobs', () => {
-  it('closes rooms idle for ROOM_IDLE_MINUTES and expires old requests', async () => {
+  it('closes one-person tables idle for ROOM_IDLE_MINUTES and expires old requests', async () => {
     const [owner, requester] = await threeTables();
     const roomId = await createRoom(owner);
     await requestJoin(requester, roomId);
@@ -777,9 +197,9 @@ describe('scheduled jobs', () => {
     expect(next).toEqual({ rooms: 1, requests: 1 });
   });
 
-  // Step 23.3 (docs/SPEC_V3.md §23.G): people at one table talk with their phones away, so an idle
-  // two-table room is neither closed nor ended.
-  it('leaves an idle two-table room open', async () => {
+  // Step 23.3 (docs/SPEC_V3.md §23.G), §4.E: people at one table talk with their phones away, so
+  // an idle table of two or more is neither closed nor ended.
+  it('leaves an idle table of two open', async () => {
     const [owner, guest] = await threeTables();
     const roomId = await createRoom(owner);
     await requestJoin(guest, roomId);
@@ -829,36 +249,37 @@ describe('push tokens and closed helpers', () => {
     ).toBeNull();
   });
 
-  it('keeps room state changes server-side only', async () => {
+  it('keeps table state changes server-side only', async () => {
     const client = await onboarded(PHONES[0]);
     const id = await userIdOf(client);
     const roomId = '00000000-0000-0000-0000-000000000000';
     for (const [fn, args] of [
-      ['rooms_create', { target_user_id: id, profiled: false }],
-      ['rooms_create_solo', { target_user_id: id }],
+      ['rooms_create', { target_user_id: id }],
+      ['rooms_set_visibility', { target_user_id: id, target_room_id: roomId, in_lobby: true }],
+      [
+        'rooms_request_join',
+        { target_user_id: id, target_room_id: roomId, ttl_seconds: 60, max_per_hour: 10 },
+      ],
+      ['rooms_respond', { target_user_id: id, target_request_id: roomId, accept: true }],
+      ['rooms_leave', { target_user_id: id, target_room_id: roomId }],
+      ['rooms_end_game', { target_user_id: id, target_room_id: roomId }],
+      ['rooms_end', { target_user_id: id }],
+      // Today's app's game proposals: their SQL stays until step 4.8 (docs/SPEC_V4.md §4.H).
       [
         'rooms_propose_game',
         { target_user_id: id, target_room_id: roomId, new_concept: 'tabu', ttl_seconds: 30 },
       ],
-      [
-        'rooms_answer_game',
-        {
-          target_user_id: id,
-          target_room_id: roomId,
-          accept: true,
-          turn_seconds: 60,
-          total_turns: 6,
-          max_passes: 3,
-          cards_per_turn: 40,
-          cooldown_ms: 5000,
-        },
-      ],
-      ['rooms_end_game', { target_user_id: id, target_room_id: roomId }],
-      ['rooms_end', { target_user_id: id }],
-      ['reroll_table_alias', { target_user_id: id, new_alias: 'Mor Simit', max_rerolls: 3 }],
     ] as const) {
       const { error } = await client.rpc(fn, args as never);
       expect(error?.code, fn).toBe('42501');
+    }
+    // The side model's own calls are gone (step 4.5).
+    for (const [fn, args] of [
+      ['rooms_create_solo', { target_user_id: id }],
+      ['reroll_table_alias', { target_user_id: id, new_alias: 'Mor Simit', max_rerolls: 3 }],
+    ] as const) {
+      const { error } = await client.rpc(fn as never, args as never);
+      expect(error?.code, fn).toBe('PGRST202');
     }
   });
 });

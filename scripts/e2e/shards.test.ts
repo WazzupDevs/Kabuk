@@ -34,8 +34,8 @@ describe('E2E shards', () => {
   it("move to the bot's spot after the setup unless 04 does", () => {
     for (const flows of SHARDS) {
       const after = flows[flows.indexOf('03-name') + 1];
-      expect(after).toBe(flows.includes('04-room-tabu') ? '04-room-tabu' : MOVE);
-      expect(flows.filter((f) => f === MOVE).length).toBe(flows.includes('04-room-tabu') ? 0 : 1);
+      expect(after).toBe(flows.includes('04-table') ? '04-table' : MOVE);
+      expect(flows.filter((f) => f === MOVE).length).toBe(flows.includes('04-table') ? 0 : 1);
     }
   });
 
@@ -49,22 +49,12 @@ describe('E2E shards', () => {
   });
 
   it('keep the flows that build on each other in one shard', () => {
-    // 05 and 05b go on with 04's room, its end and friend; 06 needs the bot checked in from 04;
-    // 07 blocks the bot met in 04. 08 logs the second bot account in, which 13 plays as bot A.
+    // 05 and 05b go on with 04's table, its end and friend; 07 blocks the bot met in 04.
     for (const group of [
-      ['04-room-tabu', '05-table-end-friend-dm', '05b-dm-ticks-typing', '06-white-screen'],
-      ['04-room-tabu', '07-history-block'],
-      ['08-venue-chat', '13-teams'],
+      ['04-table', '05-table-end-friend-dm', '05b-dm-ticks-typing'],
+      ['04-table', '07-history-block'],
     ]) {
       expect(new Set(group.map(shardOf)).size, group.join(', ')).toBe(1);
-    }
-  });
-
-  it("close Sesli Tabu's first-game intro wherever a shard's first two-table Tabu is not 04", () => {
-    for (const flow of ['06b-tabu-coop', '13-teams']) {
-      expect(readFileSync(resolve(maestro, `flows/${flow}.yaml`), 'utf8')).toMatch(
-        /^- runFlow: tabu-intro-if-shown\.yaml$/m,
-      );
     }
   });
 });

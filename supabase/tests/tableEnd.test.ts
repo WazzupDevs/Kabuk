@@ -1,8 +1,9 @@
 // Faz 3 step 23.3, server (docs/SPEC_V3.md §23.G, §23.M): the table's end without the "Tanışalım
-// mı?" window. Every road that opened the window closes a two-sided room at once and writes its pairs
-// (available at once, friend_open); inactivity leaves a two-sided room alone and closes a one-sided
-// room after 30 minutes; "Arkadaş ekle" works on a friend_open record from the table's end and from
-// the play history alike.
+// mı?" window, for tables of people from step 4.5 (docs/SPEC_V4.md §4.E, K-13, K-66). Every road out
+// of a table writes the leaver's pairs (available at once, friend_open), the owner's end closes the
+// table for everyone; inactivity leaves a table of two alone and closes a one-person table after 30
+// minutes; "Arkadaş ekle" works on a friend_open record from the table's end and from the play
+// history alike.
 //
 // The switch (private.table_end_on()) was on from step 23.3's client PR (23.3b); step 23.4a took out
 // the window's tests and their switching (§23.M), and 23.4b's migration the switch, the window's
@@ -15,15 +16,15 @@ import { deleteFixtureVenues, insertFixtureVenues } from './fixtures/venues.ts';
 import { waitUntilBlocked } from './helpers.ts';
 import { anonKey, apiUrl, dbUrl, deleteUserByPhone, invoke, sql } from './local.ts';
 import {
-  createRoom,
   leave,
-  type Phone,
+  openTable,
+  type Person as Phone,
+  person,
   roomRow,
   rooms,
-  table as checkIn,
-  TEAM_PHONES,
-  teamRoom,
-} from './teamRoom.ts';
+  TABLE_PHONES,
+  tableWith,
+} from './people.ts';
 
 // Step 23.3's idle minutes for a one-sided room (§23.G; the cron's argument from step 23.3's
 // client PR on).
@@ -38,7 +39,7 @@ beforeAll(async () => {
 });
 
 afterEach(async () => {
-  for (const phone of TEAM_PHONES) await deleteUserByPhone(phone);
+  for (const phone of TABLE_PHONES) await deleteUserByPhone(phone);
 });
 
 afterAll(async () => {
@@ -46,7 +47,7 @@ afterAll(async () => {
   await sql.end();
 });
 
-const table = (n: number) => checkIn(venue, n);
+const table = (n: number) => person(venue, n);
 
 type TupleOf<T, N extends number, R extends T[] = []> = R['length'] extends N
   ? R
@@ -59,16 +60,12 @@ async function tables<N extends number>(count: N): Promise<TupleOf<Phone, N>> {
   >;
 }
 
-// Every phone now in the room has been in it for `minutes` (the 3-minute rule of play history).
+// Everyone now at the table has been there for `minutes` (the 3-minute rule of play history).
 async function backdate(roomId: string, minutes = 10) {
   await sql`
     update public.room_members
     set joined_at = joined_at - make_interval(mins => ${minutes})
     where room_id = ${roomId} and left_at is null
-  `;
-  await sql`
-    update public.rooms set guest_joined_at = guest_joined_at - make_interval(mins => ${minutes})
-    where id = ${roomId} and guest_joined_at is not null
   `;
 }
 
@@ -111,7 +108,7 @@ async function expectClosed(roomId: string) {
   ).toHaveLength(0);
 }
 
-// The broadcasts a phone's session: channel receives, by event.
+// The broadcasts a person's session: channel receives, by event.
 async function sessionEvents(p: Phone) {
   const events: string[] = [];
   const channel = p.client.channel(sessionChannel(p.sessionId), { config: { private: true } });
@@ -126,11 +123,12 @@ async function sessionEvents(p: Phone) {
   return { events, close: async () => void (await p.client.removeChannel(channel)) };
 }
 
-describe('every road closes a two-sided room at once (§23.G)', { timeout: 90_000 }, () => {
+describe("every road out writes the pair's records (§23.G, K-66)", { timeout: 90_000 }, () => {
   type Road = 'end' | 'leave' | 'block' | 'venue' | 'expiry';
   const roads: Road[] = ['end', 'leave', 'block', 'venue', 'expiry'];
 
-  // The guest's side is one phone: its leaving is the side's last phone leaving.
+  // The owner's end closes the table; every other road takes the guest out and the table goes on
+  // with the owner (K-13).
   async function take(road: Road, owner: Phone, guest: Phone, roomId: string) {
     if (road === 'end') return rooms(owner, { action: 'end' });
     if (road === 'leave') return leave(guest, roomId);
@@ -151,13 +149,17 @@ describe('every road closes a two-sided room at once (§23.G)', { timeout: 90_00
   }
 
   for (const road of roads) {
-    it(`closes on ${road}, writing the pair's records open to "Arkadaş ekle"`, async () => {
+    it(`writes the pair's records open to "Arkadaş ekle" on ${road}`, async () => {
       const [owner, guest] = await tables(2);
-      const roomId = await teamRoom(owner, guest);
+      const roomId = await tableWith(owner, [guest]);
       await backdate(roomId);
 
       expect((await take(road, owner, guest, roomId)).status).toBe(200);
-      await expectClosed(roomId);
+      if (road === 'end') {
+        await expectClosed(roomId);
+      } else {
+        expect(await roomRow(roomId)).toMatchObject({ status: 'active', phones: 1 });
+      }
 
       const history = await historyOf(roomId);
       expect(pairsOf(history)).toEqual(pair(owner, guest).sort());
@@ -173,17 +175,15 @@ describe('every road closes a two-sided room at once (§23.G)', { timeout: 90_00
     });
   }
 
-  it('writes every pair across the sides once and none within a side', async () => {
-    const [owner, guest, ownerMember, guestMember] = await tables(4);
-    const roomId = await teamRoom(owner, guest, { owner: [ownerMember], guest: [guestMember] });
+  it('writes every pair at the table once', async () => {
+    const [owner, b, c, d] = await tables(4);
+    const roomId = await tableWith(owner, [b, c, d]);
     await backdate(roomId);
 
-    // A member who leaves first writes its own pairs then; the close does not write them again.
-    expect(await leave(guestMember, roomId)).toEqual(OK);
+    // A person who leaves first writes its own pairs then; the close does not write them again.
+    expect(await leave(d, roomId)).toEqual(OK);
     const early = await historyOf(roomId);
-    expect(pairsOf(early)).toEqual(
-      [...pair(owner, guestMember), ...pair(ownerMember, guestMember)].sort(),
-    );
+    expect(pairsOf(early)).toEqual([...pair(owner, d), ...pair(b, d), ...pair(c, d)].sort());
     expect(early.every((r) => r.friend_open && r.available)).toBe(true);
 
     expect(await rooms(owner, { action: 'end' })).toEqual(OK);
@@ -191,31 +191,21 @@ describe('every road closes a two-sided room at once (§23.G)', { timeout: 90_00
     const history = await historyOf(roomId);
     expect(pairsOf(history)).toEqual(
       [
-        ...pair(owner, guest),
-        ...pair(owner, guestMember),
-        ...pair(ownerMember, guest),
-        ...pair(ownerMember, guestMember),
+        ...pair(owner, b),
+        ...pair(owner, c),
+        ...pair(owner, d),
+        ...pair(b, c),
+        ...pair(b, d),
+        ...pair(c, d),
       ].sort(),
     );
     expect(history.every((r) => r.friend_open && r.available)).toBe(true);
-    expect(new Set(history.map((r) => r.id)).size).toBe(8);
-  });
-
-  it("writes the side's last phone's pairs when its leaving closes the room", async () => {
-    const [owner, guest, ownerMember] = await tables(3);
-    const roomId = await teamRoom(owner, guest, { owner: [ownerMember] });
-    await backdate(roomId);
-
-    expect(await leave(guest, roomId)).toEqual(OK);
-    await expectClosed(roomId);
-    expect(pairsOf(await historyOf(roomId))).toEqual(
-      [...pair(owner, guest), ...pair(ownerMember, guest)].sort(),
-    );
+    expect(new Set(history.map((r) => r.id)).size).toBe(12);
   });
 
   it('writes nothing for a pair together for less than 3 minutes', async () => {
     const [owner, guest] = await tables(2);
-    const roomId = await teamRoom(owner, guest);
+    const roomId = await tableWith(owner, [guest]);
 
     expect(await rooms(owner, { action: 'end' })).toEqual(OK);
     await expectClosed(roomId);
@@ -224,7 +214,7 @@ describe('every road closes a two-sided room at once (§23.G)', { timeout: 90_00
 
   it('opens no window afterwards: no reveal_match is sent', async () => {
     const [owner, guest] = await tables(2);
-    const roomId = await teamRoom(owner, guest);
+    const roomId = await tableWith(owner, [guest]);
     await backdate(roomId);
     const heard = await sessionEvents(owner);
 
@@ -237,9 +227,9 @@ describe('every road closes a two-sided room at once (§23.G)', { timeout: 90_00
 });
 
 describe('inactivity (§23.G, §23.P-1)', { timeout: 60_000 }, () => {
-  it('leaves a two-sided room alone however long it is quiet', async () => {
+  it('leaves a table of two alone however long it is quiet', async () => {
     const [owner, guest] = await tables(2);
-    const roomId = await teamRoom(owner, guest);
+    const roomId = await tableWith(owner, [guest]);
     await idleFor(roomId, 240);
 
     await closeIdle();
@@ -248,17 +238,15 @@ describe('inactivity (§23.G, §23.P-1)', { timeout: 60_000 }, () => {
 
   it('closes a table waiting in the lobby after 30 minutes, not before; its requests end unavailable', async () => {
     const [waiting, asker] = await tables(2);
-    const roomId = await createRoom(waiting);
-    expect((await rooms(asker, { action: 'request-join', roomId, profiled: false })).status).toBe(
-      200,
-    );
+    const roomId = await openTable(waiting);
+    expect((await rooms(asker, { action: 'request-join', roomId })).status).toBe(200);
     const [request] = await sql`
       select id from public.join_requests where room_id = ${roomId} and status = 'pending'
     `;
 
     await idleFor(roomId, TABLE_IDLE_MINUTES - 1);
     await closeIdle();
-    expect((await roomRow(roomId)).status).toBe('waiting');
+    expect((await roomRow(roomId)).status).toBe('active');
 
     await idleFor(roomId, TABLE_IDLE_MINUTES + 1);
     await closeIdle();
@@ -275,11 +263,9 @@ describe('inactivity (§23.G, §23.P-1)', { timeout: 60_000 }, () => {
     expect(data).toEqual([{ status: 'unavailable' }]);
   });
 
-  it('closes a "Masanla oyna" room after 30 minutes, not before', async () => {
+  it('closes a one-person table out of the lobby after 30 minutes, not before', async () => {
     const [solo] = await tables(1);
-    const created = await rooms(solo, { action: 'create-solo' });
-    expect(created.status, JSON.stringify(created.body)).toBe(200);
-    const roomId = (created.body as { roomId: string }).roomId;
+    const roomId = await openTable(solo, { open: false });
 
     await idleFor(roomId, TABLE_IDLE_MINUTES - 1);
     await closeIdle();
@@ -312,10 +298,10 @@ describe('"Arkadaş ekle" on a friend_open record (§23.G)', { timeout: 60_000 }
          or (user_a = ${b.userId} and user_b = ${a.userId})
     `;
 
-  // An owner and a member on one side, a guest on the other, together for 10 minutes; ended.
+  // An owner and two people, together for 10 minutes; ended.
   async function endedTable() {
     const [owner, guest, ownerMember] = await tables(3);
-    const roomId = await teamRoom(owner, guest, { owner: [ownerMember] });
+    const roomId = await tableWith(owner, [guest, ownerMember]);
     await backdate(roomId);
     expect(await rooms(owner, { action: 'end' })).toEqual(OK);
     return { owner, guest, ownerMember, roomId };
@@ -330,7 +316,7 @@ describe('"Arkadaş ekle" on a friend_open record (§23.G)', { timeout: 60_000 }
     expect(second.status).toBe(200);
     expect(await friendsOf(owner, guest)).toHaveLength(1);
 
-    // One press: no friendship, no request, and the guest's own record with the member untouched.
+    // One press: no friendship, no request, and the guest's own record with the third untouched.
     expect((await addFromRoom(ownerMember, guest, roomId)).status).toBe(200);
     expect(await friendsOf(ownerMember, guest)).toHaveLength(0);
     expect(
@@ -400,10 +386,10 @@ describe('my_history_friends (§23.G, rules 4 and 5)', { timeout: 60_000 }, () =
       where (user_a = ${a.userId} and user_b = ${b.userId})
          or (user_a = ${b.userId} and user_b = ${a.userId})
     `;
-  // A two-table room that ran 3 minutes and ended, both pressing "Arkadaş ekle": friends.
+  // A table of two that ran 3 minutes and ended, both pressing "Arkadaş ekle": friends.
   async function friendsAtTable() {
     const [owner, guest] = await tables(2);
-    const roomId = await teamRoom(owner, guest);
+    const roomId = await tableWith(owner, [guest]);
     await backdate(roomId);
     expect(await rooms(owner, { action: 'end' })).toEqual(OK);
     expect((await press(owner, guest, roomId)).status).toBe(200);
@@ -414,7 +400,7 @@ describe('my_history_friends (§23.G, rules 4 and 5)', { timeout: 60_000 }, () =
 
   it('lists the record to each side once both pressed, and only to that pair', async () => {
     const [owner, guest, ownerMember] = await tables(3);
-    const roomId = await teamRoom(owner, guest, { owner: [ownerMember] });
+    const roomId = await tableWith(owner, [guest, ownerMember]);
     await backdate(roomId);
     expect(await rooms(owner, { action: 'end' })).toEqual(OK);
     expect((await press(owner, guest, roomId)).status).toBe(200);
@@ -431,7 +417,7 @@ describe('my_history_friends (§23.G, rules 4 and 5)', { timeout: 60_000 }, () =
 
   it('lists nothing to either side after one press (rule 5)', async () => {
     const [owner, guest] = await tables(2);
-    const roomId = await teamRoom(owner, guest);
+    const roomId = await tableWith(owner, [guest]);
     await backdate(roomId);
     expect(await rooms(owner, { action: 'end' })).toEqual(OK);
     expect((await press(owner, guest, roomId)).status).toBe(200);
@@ -442,7 +428,7 @@ describe('my_history_friends (§23.G, rules 4 and 5)', { timeout: 60_000 }, () =
   it('never ties an anonymous table to a friend from before it, even when both press (rule 4)', async () => {
     const [owner, guest] = await tables(2);
     await sql`select private.make_friends(${owner.userId}::uuid, ${guest.userId}::uuid, 'request')`;
-    const roomId = await teamRoom(owner, guest);
+    const roomId = await tableWith(owner, [guest]);
     await backdate(roomId);
     expect(await rooms(owner, { action: 'end' })).toEqual(OK);
     // Neither answer says they are friends (WazzupDevs/Kabuk#182): it would name the anonymous one.
@@ -488,10 +474,10 @@ describe('my_history_friends (§23.G, rules 4 and 5)', { timeout: 60_000 }, () =
   });
 });
 
-// Rule 10: the table's end holds the room, then room_members (the close's trigger), then
-// play_history; "Arkadaş ekle" holds play_history, then the pair. Two calls that meet run on their
-// own connections while a third holds what both need; once both wait, it lets go, and both finish:
-// no deadlock, one close, one record per pair, one friendship.
+// Rule 10: the table's end holds the room, then room_members, then play_history; "Arkadaş ekle"
+// holds play_history, then the pair. Two calls that meet run on their own connections while a third
+// holds what both need; once both wait, it lets go, and both finish: no deadlock, one close, one
+// record per pair, one friendship.
 describe('locks (rule 10)', { timeout: 60_000 }, () => {
   type Outcome = { ok: unknown } | { err: string };
 
@@ -529,9 +515,9 @@ describe('locks (rule 10)', { timeout: 60_000 }, () => {
   const ending = (p: Phone) => async (db: postgres.Sql) =>
     (await db`select (public.rooms_end(${p.userId})).status`)[0]?.status;
 
-  it("closes once when both sides' last phones leave at once", async () => {
+  it('closes once when the last two leave at once: one hands over, the other closes', async () => {
     const [owner, guest] = await tables(2);
-    const roomId = await teamRoom(owner, guest);
+    const roomId = await tableWith(owner, [guest]);
     await backdate(roomId);
 
     const outcomes = await atOnce(
@@ -539,16 +525,16 @@ describe('locks (rule 10)', { timeout: 60_000 }, () => {
       ['rooms_leave', 'rooms_leave'],
       [leaving(owner, roomId), leaving(guest, roomId)],
     );
-    // One closes the table; the other then finds itself already out of it.
+    // The first leaves a table of one (handed over if it was the owner's); the second closes it.
+    expect(outcomes).toContainEqual({ ok: 'active' });
     expect(outcomes).toContainEqual({ ok: 'closed' });
-    expect(outcomes).toContainEqual({ err: 'not_in_room' });
     await expectClosed(roomId);
     expect(pairsOf(await historyOf(roomId))).toEqual(pair(owner, guest).sort());
   });
 
-  it("closes once when the leader ends the table while the other side's last phone leaves", async () => {
-    const [owner, guest, ownerMember] = await tables(3);
-    const roomId = await teamRoom(owner, guest, { owner: [ownerMember] });
+  it('closes once when the owner ends the table while a person leaves', async () => {
+    const [owner, guest, third] = await tables(3);
+    const roomId = await tableWith(owner, [guest, third]);
     await backdate(roomId);
 
     const [ended, left] = await atOnce(
@@ -556,19 +542,19 @@ describe('locks (rule 10)', { timeout: 60_000 }, () => {
       ['rooms_end', 'rooms_leave'],
       [ending(owner), leaving(guest, roomId)],
     );
-    // "Masayı bitir" finds the table closed if the leave came first; the leave finds itself out
-    // of it if the end came first.
+    // The leave leaves the table going on if it came first; it finds itself out of the table if
+    // the end came first.
     expect(ended).toEqual({ ok: 'closed' });
-    expect([{ ok: 'closed' }, { err: 'not_in_room' }]).toContainEqual(left);
+    expect([{ ok: 'active' }, { err: 'not_in_room' }]).toContainEqual(left);
     await expectClosed(roomId);
     expect(pairsOf(await historyOf(roomId))).toEqual(
-      [...pair(owner, guest), ...pair(ownerMember, guest)].sort(),
+      [...pair(owner, guest), ...pair(owner, third), ...pair(guest, third)].sort(),
     );
   });
 
   it('makes one friendship when both phones press "Arkadaş ekle" at once', async () => {
     const [owner, guest] = await tables(2);
-    const roomId = await teamRoom(owner, guest);
+    const roomId = await tableWith(owner, [guest]);
     await backdate(roomId);
     expect(await rooms(owner, { action: 'end' })).toEqual(OK);
     const history = await historyOf(roomId);
@@ -636,7 +622,7 @@ describe('step 23.4b: the window is gone from the database', () => {
       [],
     );
     const [table] = await tables(1);
-    const roomId = await teamRoom(table, null);
+    const roomId = await openTable(table);
     await expect(
       sql`update public.rooms set status = 'ending' where id = ${roomId}`,
     ).rejects.toMatchObject({ code: '23514' });

@@ -1,17 +1,20 @@
-// The second table for end-to-end tests. It plays through the same Edge Function API the app uses
-// (no shortcut into the database for game actions): sign in with a test number, check in, ask to
-// join the device's room, mark Tabu cards, end the room, press "Arkadaş ekle" at the table's end and
-// exchange DMs.
+// The other people at the venue for end-to-end tests, on the table of people (docs/SPEC_V4.md §4.E,
+// step 4.5). It goes through the same Edge Function API the app uses: sign in with a test number,
+// check in (no table, no headcount), open a table ("Masa kur") or ask to sit at the device's
+// ("Katıl" to a table in the lobby, "Bu masadayım" to a running one), answer requests as a table's
+// owner, leave or end the table, press "Arkadaş ekle" at the table's end and exchange DMs. Games are
+// not played yet: today's games do not run at the new table, and each comes back with its own step
+// (§4.F, 4.6) together with the bot's part in it.
 //
 // Runs only against the local stack or the hosted dev project; any other URL is refused. Against
 // the dev project it uses only the public Edge Function API with the publishable key and a test
 // number: it never asks for a database password or a secret key. A few test hooks that move the
-// clock (backdate the encounter, expire a turn) and the fixture setup write to the database directly;
-// they run only on the local stack and are refused anywhere else.
+// clock (backdate the time together) and the fixture setup write to the database directly; they run
+// only on the local stack and are refused anywhere else.
 //
 //   node --experimental-strip-types scripts/e2e/bot-table.ts serve     # HTTP for Maestro, port 8787
-//   BOT_PORT=8788 BOT_PHONE=+905550000004 BOT_NAME='Bot Üç' … serve     # the team flow's second bot
-//   node --experimental-strip-types scripts/e2e/bot-table.ts opponent  # the other table, for one phone
+//   BOT_PORT=8788 BOT_PHONE=+905550000004 BOT_NAME='Bot Üç' … serve     # a second bot person
+//   node --experimental-strip-types scripts/e2e/bot-table.ts opponent  # another person, for one phone
 //   node --experimental-strip-types scripts/e2e/bot-table.ts <action> [json]
 import { execFileSync } from 'node:child_process';
 import { createServer } from 'node:http';
@@ -33,19 +36,7 @@ import {
   CURRENT_TERMS_VERSION,
 } from '../../supabase/functions/_shared/pure/consent.ts';
 import { isDevProjectUrl, isLocalUrl } from '../../supabase/functions/_shared/pure/devProject.ts';
-import {
-  IBRE_MAX,
-  IBRE_MIN,
-  type IbreState,
-  parseIbreState,
-} from '../../supabase/functions/_shared/pure/ibre.ts';
 import { dmTypingChannel, TYPING_EVENT } from '../../supabase/functions/_shared/pure/rooms.ts';
-import { ownSeats, parseSahtekarState } from '../../supabase/functions/_shared/pure/sahtekar.ts';
-import {
-  parseSayState,
-  type SayState,
-} from '../../supabase/functions/_shared/pure/sayChallenge.ts';
-import { parseReadyTurn, type VoiceTabuState } from '../../supabase/functions/_shared/pure/tabu.ts';
 import { ANCHOR, offset, squareRing } from '../../supabase/tests/fixtures/venues.ts';
 import { ensureProfilePhoto } from '../shared/profilePhoto.ts';
 
@@ -74,11 +65,11 @@ const BOT_NAME = process.env.BOT_NAME ?? 'Bot Masa';
 const DEVICE_PHONE = process.env.DEVICE_PHONE ?? '+905550000001';
 // Local only: a second bot account for the venue chat flow (the first one is blocked by then).
 const SECOND_BOT_PHONE = '+905550000003';
-// Local only: the team flow's other bot, a second `serve` on port 8788 with this BOT_PHONE
-// (13-teams.yaml; docs/SPEC_V3.md §22.N step 22.6). `setup` deletes it with the others.
+// Local only: a second bot person, a second `serve` on port 8788 with this BOT_PHONE (a table of
+// three, "Bu masadayım" from someone else than the device). `setup` deletes it with the others.
 const TEAM_BOT_PHONE = '+905550000004';
 // A campus-like venue (docs/SPEC_V3.md §4): a 200 m square boundary around the anchor and two
-// spots. The device checks in at "Kantin"; the bot opens a room at "Kütüphane" for "Bu noktadayım".
+// spots. The device checks in at "Kantin"; the bot opens a table at "Kütüphane" for "Bu noktadayım".
 export const E2E_VENUE = {
   name: process.env.E2E_VENUE_NAME ?? 'E2E Kafe',
   sourceRef: 'e2e-kafe',
@@ -104,6 +95,8 @@ type Json = Record<string, unknown>;
 
 let client: SupabaseClient | null = null;
 let venueId: string | null = null;
+// The spot the bot checked in at (a venue with spots): only tables there meet (different_spot).
+let spotId: string | null = null;
 
 // The local stack's database, with its fixed default credentials. There is no way to point it
 // anywhere else.
@@ -163,173 +156,24 @@ async function retryUntil<T>(what: string, attempt: () => Promise<T | null>, ms 
   }
 }
 
-async function myRoom(): Promise<{ id: string; game_state: Json; status: string }> {
+// The table the bot sits at: rooms reads only a table the caller is at (private.can_read_room).
+type Table = { id: string; status: string; owner_session_id: string | null };
+
+async function currentTable(): Promise<Table | null> {
   const { data, error } = await me()
     .from('rooms')
-    .select('id, game_state, status')
+    .select('id, status, owner_session_id')
     .neq('status', 'closed')
     .order('created_at', { ascending: false })
     .limit(1);
   if (error) throw error;
-  const room = data?.[0];
-  if (!room) throw new Error('the bot is in no open room');
-  return room as { id: string; game_state: Json; status: string };
+  return (data?.[0] as Table | undefined) ?? null;
 }
 
-// The bot's open room with a Harf or Şarkı game, its side and the parsed state.
-async function sayRoom(): Promise<{
-  id: string;
-  kind: 'harf' | 'sarki';
-  side: 'owner' | 'guest';
-  state: SayState;
-}> {
-  const sessionId = await mySessionId();
-  return retryUntil('a Harf or Şarkı game', async () => {
-    const { data } = await me()
-      .from('rooms')
-      .select('id, game_state, owner_session_id, guest_session_id')
-      .neq('status', 'closed')
-      .order('created_at', { ascending: false })
-      .limit(1);
-    const room = data?.[0];
-    const state = room ? parseSayState(room.game_state) : null;
-    if (!room || !state) return null;
-    return {
-      id: room.id as string,
-      kind: state.kind,
-      side: await sideIn(room as RoomRow, sessionId),
-      state,
-    };
-  });
-}
-
-// One step of the bot table's part in Harf Kapmaca or Şarkıda Geçsin (opponent mode): Başla on
-// its own ready round after a few seconds, a random open letter (or a line) on its own turn after
-// a few seconds, advance when a clock ran out. It never objects.
-async function sayStep(
-  room: RoomRow,
-  sessionId: string | undefined,
-  seen: Map<string, number>,
-): Promise<string | null> {
-  const state = parseSayState(room.game_state);
-  if (!state) return null;
-  const side = await sideIn(room, sessionId);
-  const key = `${room.id}/${state.roundNo}/${state.step}/${state.turnPhase}`;
-  const since = seen.get(key) ?? Date.now();
-  seen.set(key, since);
-  if (state.turnPhase === 'ready') {
-    if (
-      (state.turnTable === side && Date.now() - since > 3_000) ||
-      Date.now() >= (state.readyEndsAt ?? 0)
-    ) {
-      await call(state.kind, { action: 'begin', roomId: room.id });
-      return 'began';
-    }
-    return null;
-  }
-  if (Date.now() >= (state.endsAt ?? Number.POSITIVE_INFINITY)) {
-    await call(state.kind, { action: 'advance', roomId: room.id });
-    return 'advanced';
-  }
-  if (state.turnTable === side && Date.now() - since > 2_500) {
-    const open = state.letters.filter((l) => !l.closed);
-    const letter = open[Math.floor(Math.random() * open.length)]?.letter;
-    await call(
-      state.kind,
-      state.kind === 'harf'
-        ? {
-            action: 'claim',
-            roomId: room.id,
-            round: state.roundNo,
-            step: state.step,
-            letter: letter ?? 'A',
-          }
-        : { action: 'said', roomId: room.id, round: state.roundNo, step: state.step },
-    );
-    return state.kind === 'harf' ? `took ${letter}` : 'sang a line';
-  }
-  return null;
-}
-
-// The bot's open room with an İbre game, its side and the parsed state.
-async function ibreRoom(): Promise<{ id: string; side: 'owner' | 'guest'; state: IbreState }> {
-  const sessionId = await mySessionId();
-  return retryUntil('an İbre game', async () => {
-    const { data } = await me()
-      .from('rooms')
-      .select('id, game_state, owner_session_id, guest_session_id')
-      .neq('status', 'closed')
-      .order('created_at', { ascending: false })
-      .limit(1);
-    const room = data?.[0];
-    const state = room ? parseIbreState(room.game_state) : null;
-    if (!room || !state) return null;
-    return {
-      id: room.id as string,
-      side: await sideIn(room as RoomRow, sessionId),
-      state,
-    };
-  });
-}
-
-const clampNeedle = (v: number) => Math.max(IBRE_MIN, Math.min(IBRE_MAX, Math.round(v)));
-
-// One step of the bot table's part in İbre (opponent mode): Başla on its own ready round after a
-// few seconds, advance once a clock ran out; on its own round, as the describer locking alone, it
-// asks for the target and locks the needle near it after a few seconds, and as a teammate of the
-// describer (lockBy 'team', docs/SPEC_V3.md §22.E) it locks without the target; on the other side's
-// round it picks a side after a few seconds.
-async function ibreStep(
-  room: RoomRow,
-  sessionId: string | undefined,
-  seen: Map<string, number>,
-): Promise<string | null> {
-  const state = parseIbreState(room.game_state);
-  if (!state) return null;
-  const side = await sideIn(room, sessionId);
-  const key = `${room.id}/ibre/${state.roundNo}/${state.turnPhase}`;
-  const since = seen.get(key) ?? Date.now();
-  seen.set(key, since);
-  const mine = state.turnTable === side;
-  const clock = state.turnPhase === 'ready' ? state.readyEndsAt : state.endsAt;
-  if (Date.now() >= (clock ?? Number.POSITIVE_INFINITY)) {
-    await call('ibre', { action: 'advance', roomId: room.id });
-    return 'advanced';
-  }
-  if (state.turnPhase === 'ready') {
-    if (mine && Date.now() - since > 3_000) {
-      await call('ibre', { action: 'begin', roomId: room.id });
-      return 'began';
-    }
-    return null;
-  }
-  if (state.turnPhase === 'running' && mine && Date.now() - since > 4_000) {
-    // Before step 22.3 the leader described and locked alone.
-    const roles = room.game_state as { describer?: string | null; lockBy?: string | null };
-    const describer = roles.describer ?? sessionId;
-    if (describer === sessionId && roles.lockBy !== 'team') {
-      const { target } = (await call('ibre', {
-        action: 'target',
-        roomId: room.id,
-        round: state.roundNo,
-      })) as { target: number };
-      const value = clampNeedle(target + (Math.random() * 16 - 8));
-      await call('ibre', { action: 'lock', roomId: room.id, round: state.roundNo, value });
-      return `locked ${value}`;
-    }
-    if (describer !== sessionId && roles.lockBy === 'team') {
-      const value = clampNeedle(IBRE_MIN + Math.random() * (IBRE_MAX - IBRE_MIN));
-      await call('ibre', { action: 'lock', roomId: room.id, round: state.roundNo, value });
-      return `locked ${value} for the describer`;
-    }
-    return null;
-  }
-  if (state.turnPhase === 'side' && !mine && Date.now() - since > 3_000) {
-    const pick = Math.random() < 0.5 ? 'left' : 'right';
-    await call('ibre', { action: 'side', roomId: room.id, round: state.roundNo, side: pick });
-    return `said ${pick}`;
-  }
-  return null;
+async function myTable(): Promise<Table> {
+  const table = await currentTable();
+  if (!table) throw new Error('the bot is at no table');
+  return table;
 }
 
 async function mySessionId(): Promise<string | undefined> {
@@ -337,99 +181,54 @@ async function mySessionId(): Promise<string | undefined> {
   return data?.[0]?.id as string | undefined;
 }
 
-type Side = 'owner' | 'guest';
-type RoomRow = {
-  id: string;
-  game_state: Json;
-  owner_session_id?: string | null;
-  guest_session_id?: string | null;
+// The venue's tables (venue_tables, §4.E): the lobby (`open`) and the running tables, every one
+// but the caller's own and a blocked one; a table's name, icon and phone count, no person's name.
+// At a venue with spots only those at the bot's spot: a request elsewhere is different_spot.
+type VenueTable = {
+  room_id: string;
+  name: string | null;
+  phones: number;
+  open: boolean;
+  spot_id: string | null;
 };
 
-// The bot's side in a room (docs/SPEC_V3.md §22.B): a leader's from the room row, a member's
-// ("Bu masadayım") from room_phones. In a room without members this is the old answer.
-async function sideIn(room: RoomRow, sessionId: string | undefined): Promise<Side> {
-  if (room.owner_session_id === sessionId) return 'owner';
-  if (room.guest_session_id === sessionId) return 'guest';
-  const { data } = await me().rpc('room_phones', { target_room_id: room.id });
-  const mine = ((data ?? []) as { session_id: string; side: Side }[]).find(
-    (p) => p.session_id === sessionId,
-  );
-  return mine?.side ?? 'guest';
+async function venueTables(): Promise<VenueTable[]> {
+  const { data, error } = await me().rpc('venue_tables', { target_venue_id: venueId ?? '' });
+  if (error) throw error;
+  return ((data ?? []) as VenueTable[]).filter((t) => spotId === null || t.spot_id === spotId);
 }
 
-const leads = (room: RoomRow, sessionId: string | undefined) =>
-  !!sessionId && (room.owner_session_id === sessionId || room.guest_session_id === sessionId);
+// The owner's request now waiting at the bot's table: "Katıl" or "Bu masadayım" (the
+// join_requests policy shows the table's owner its requests). One past its 60 seconds stays
+// pending until the expire-join-requests job runs (every minute) and is request_expired to answer,
+// so it is left out, as the app leaves it out.
+async function waitingRequest(): Promise<{ id: string; as_member: boolean } | null> {
+  const table = await myTable();
+  const { data, error } = await me()
+    .from('join_requests')
+    .select('id, as_member')
+    .eq('room_id', table.id)
+    .eq('status', 'pending')
+    .gt('expires_at', new Date().toISOString())
+    .order('created_at')
+    .limit(1);
+  if (error) throw error;
+  return (data?.[0] as { id: string; as_member: boolean } | undefined) ?? null;
+}
 
-// The bot's part of a two-table Sahtekar game (docs/SPEC_V3.md §20.2), one step per call: it looks
-// at its seats' cards, says "Söyledi" on its own clue steps, votes with each of its seats for the
-// other table's first seat, guesses when it is caught (`guessWrong`, local only: a word that is not
-// the secret one) and moves a phase on when its time is up. `done` keeps what it already did.
-type SahtekarBot = { done: Set<string>; guessWrong: boolean };
-
-async function sahtekarStep(
-  room: RoomRow,
-  sessionId: string | undefined,
-  bot: SahtekarBot,
-): Promise<string | null> {
-  const state = parseSahtekarState(room.game_state);
-  if (!state) return null;
-  const side = await sideIn(room, sessionId);
-  const mine = ownSeats(state.seats, side);
-  const deal = `${room.id}/${state.gameNo}/${state.dealNo}`;
-  if (Date.now() >= Date.parse(state.endsAt)) {
-    await call('sahtekar', { action: 'advance', roomId: room.id });
-    return 'advanced';
-  }
-  // The seats are on the side's leader's phone (docs/SPEC_V3.md §22.E): a member only watches.
-  if (!leads(room, sessionId)) return null;
-  if (state.phase === 'viewing') {
-    for (const seat of mine) {
-      if (state.viewed.includes(seat) || bot.done.has(`${deal}/view/${seat}`)) continue;
-      bot.done.add(`${deal}/view/${seat}`);
-      await call('sahtekar', { action: 'view', roomId: room.id, seat });
-      return `looked at ${seat}`;
-    }
-  } else if (state.phase === 'clues') {
-    const speaking = state.order[state.step];
-    const key = `${deal}/said/${state.step}`;
-    if (speaking && mine.includes(speaking) && !bot.done.has(key)) {
-      bot.done.add(key);
-      await call('sahtekar', { action: 'said', roomId: room.id, step: state.step });
-      return `Söyledi for ${speaking}`;
-    }
-  } else if (state.phase === 'voting') {
-    const target = state.seats.find((s) => !mine.includes(s));
-    for (const voter of ownSeats(state.voters, side)) {
-      const key = `${deal}/vote/${voter}`;
-      if (!target || bot.done.has(key)) continue;
-      bot.done.add(key);
-      await call('sahtekar', { action: 'vote', roomId: room.id, voter, target });
-      return `${voter} voted for ${target}`;
-    }
-  } else if (state.phase === 'guess' && state.accused && mine.includes(state.accused)) {
-    const key = `${deal}/guess`;
-    if (bot.done.has(key)) return null;
-    bot.done.add(key);
-    const { options } = (await call('sahtekar', { action: 'options', roomId: room.id })) as {
-      options: string[];
-    };
-    let option = options[0] ?? '';
-    if (bot.guessWrong && isLocal) {
-      const sql = db();
-      try {
-        const [row] = await sql<{ word: string }[]>`
-          select secret ->> 'word' as word from public.game_secrets
-          where room_id = ${room.id} and game_no = ${state.gameNo}
-        `;
-        option = options.find((o) => o !== row?.word) ?? option;
-      } finally {
-        await sql.end();
-      }
-    }
-    await call('sahtekar', { action: 'guess', roomId: room.id, option });
-    return `guessed ${option}`;
-  }
-  return null;
+// The bot's play history, newest first: the records with `alias` as the other person when given;
+// `open` only those that still offer "Arkadaş ekle".
+async function history(
+  args: Json,
+  open: boolean,
+  limit: number,
+): Promise<{ id: string; other_alias: string }[]> {
+  let query = me().from('play_history').select('id, other_alias');
+  if (open) query = query.eq('friend_open', true);
+  if (typeof args.alias === 'string') query = query.eq('other_alias', args.alias);
+  const { data, error } = await query.order('played_at', { ascending: false }).limit(limit);
+  if (error) throw error;
+  return (data ?? []) as { id: string; other_alias: string }[];
 }
 
 export const actions: Record<string, (args: Json) => Promise<Json>> = {
@@ -530,8 +329,8 @@ export const actions: Record<string, (args: Json) => Promise<Json>> = {
   },
 
   // At BOT_VENUE (name or id; the E2E venue by default), standing on the venue's own point. At a
-  // venue with spots, at `spot` or BOT_SPOT (ref or name), else the first spot. `teams`: the table
-  // takes members ("Bu masadayım", docs/SPEC_V3.md §22.B); without it, as an old app.
+  // venue with spots, at `spot` or BOT_SPOT (ref or name), else the first spot. A check-in opens no
+  // table and asks no headcount (§4.E).
   async checkin(args) {
     const wanted = String(args.venue ?? process.env.BOT_VENUE ?? E2E_VENUE.name);
     const { data, error } = await me().rpc('explore_venues', {});
@@ -555,468 +354,101 @@ export const actions: Record<string, (args: Json) => Promise<Json>> = {
         : spots?.find((s) => s.ref === wantedSpot || s.name === wantedSpot);
     if (wantedSpot !== undefined && !spot)
       throw new Error(`spot "${String(wantedSpot)}" not found`);
+    spotId = spot?.id ?? null;
     return call('checkin', {
       action: 'check-in',
       venueId,
       lat: venue.lat,
       lng: venue.lng,
       accuracyM: 10,
-      headcount: Number(args.headcount ?? 3),
       locationConsentVersion: CURRENT_LOCATION_CONSENT_VERSION,
       ...(spot ? { spotId: spot.id } : {}),
-      ...(args.teams === true ? { teams: true } : {}),
     });
   },
 
-  // An open room of the bot's table (for "Bu noktadayım" in the lobby of another spot); anonymous
-  // unless `profiled`.
+  // "Masa kur" (§4.E): in the lobby unless `open` is false, with an optional `intent` and
+  // `gameTag`. The bot sits down with its check-in's identity (anonymous, §4.D).
   async 'create-room'(args) {
-    return call('rooms', { action: 'create', profiled: args.profiled === true });
-  },
-
-  // Asks to join the first open room of another table in the lobby (the device's).
-  async 'request-join'(args) {
-    const room = await retryUntil('an open room in the lobby', async () => {
-      const { data, error } = await me().rpc('venue_lobby', { target_venue_id: venueId ?? '' });
-      if (error) throw error;
-      return ((data ?? []) as { room_id: string }[])[0] ?? null;
-    });
     return call('rooms', {
-      action: 'request-join',
-      roomId: room.room_id,
-      profiled: args.profiled === true,
+      action: 'create',
+      open: args.open !== false,
+      ...(typeof args.intent === 'string' ? { intent: args.intent } : {}),
+      ...(typeof args.gameTag === 'string' ? { gameTag: args.gameTag } : {}),
     });
   },
 
-  // "Bu masadayım" (docs/SPEC_V3.md §22.C): to join a side as a member. `side` 'owner' (default):
-  // the first open room in the lobby, else the first running room whose owner side takes members;
-  // 'guest': the first running room whose guest side takes members.
+  // "Masanı lobiye aç" (`open`, default) or "Lobiden çek" for the bot's own table.
+  async 'set-visibility'(args) {
+    const table = await myTable();
+    return call('rooms', { action: 'set-visibility', roomId: table.id, open: args.open !== false });
+  },
+
+  // "Katıl" to a table in the lobby (the device's): the one named `name`, else the first. The bot
+  // asks on its own, or with its whole table when it owns one (the table moves at the accept).
+  async 'request-join'(args) {
+    const name = typeof args.name === 'string' ? args.name : undefined;
+    const table = await retryUntil(
+      `a table in the lobby${name ? ` named ${name}` : ''}`,
+      async () =>
+        (await venueTables()).find((t) => t.open && (name === undefined || t.name === name)) ??
+        null,
+    );
+    return call('rooms', { action: 'request-join', roomId: table.room_id });
+  },
+
+  // "Bu masadayım" to a running table, one out of the lobby (the device's): the one named `name`,
+  // else the first. Only a person without a table may ask (already_in_table otherwise).
   async 'request-member'(args) {
-    const side = args.side === 'guest' ? 'guest' : 'owner';
-    const roomId = await retryUntil(`a room whose ${side} side takes members`, async () => {
-      const [open, running] = await Promise.all([
-        me().rpc('venue_lobby', { target_venue_id: venueId ?? '' }),
-        me().rpc('venue_running_rooms', { target_venue_id: venueId ?? '' }),
-      ]);
-      if (open.error) throw open.error;
-      if (running.error) throw running.error;
-      const first = ((open.data ?? []) as { room_id: string }[])[0];
-      if (side === 'owner' && first) return first.room_id;
-      const rows = (running.data ?? []) as {
-        room_id: string;
-        owner_open: boolean;
-        guest_open: boolean;
-      }[];
-      return rows.find((r) => (side === 'owner' ? r.owner_open : r.guest_open))?.room_id ?? null;
-    });
-    return call('rooms', { action: 'request-join', roomId, profiled: false, side });
+    const name = typeof args.name === 'string' ? args.name : undefined;
+    const table = await retryUntil(
+      `a running table${name ? ` named ${name}` : ''}`,
+      async () =>
+        (await venueTables()).find((t) => !t.open && (name === undefined || t.name === name)) ??
+        null,
+    );
+    return call('rooms', { action: 'request-join', roomId: table.room_id, asMember: true });
   },
 
-  // As a leader, accepts the request now waiting for it: "Katıl" to its open room or "Bu
-  // masadayım" for its side (the join_requests policy shows a leader only those).
+  // As the table's owner, accepts the request now waiting for it ("Katıl" or "Bu masadayım").
   async 'accept-request'() {
-    const request = await retryUntil('a request to accept', async () => {
-      const room = await myRoom();
-      const { data, error } = await me()
-        .from('join_requests')
-        .select('id')
-        .eq('room_id', room.id)
-        .eq('status', 'pending')
-        .limit(1);
-      if (error) throw error;
-      return (data?.[0] as { id: string } | undefined) ?? null;
-    });
+    const request = await retryUntil('a request to accept', waitingRequest);
     return call('rooms', { action: 'respond', requestId: request.id, accept: true });
   },
 
-  // As a leader, declines the request now waiting for it (the requester sees "Masa şu an müsait
-  // değil.", as on a timeout; rule 5).
+  // As the table's owner, declines the request now waiting for it (the requester sees "Masa şu an
+  // müsait değil.", as on a timeout; rule 5).
   async 'decline-request'() {
-    const request = await retryUntil('a request to decline', async () => {
-      const room = await myRoom();
-      const { data, error } = await me()
-        .from('join_requests')
-        .select('id')
-        .eq('room_id', room.id)
-        .eq('status', 'pending')
-        .limit(1);
-      if (error) throw error;
-      return (data?.[0] as { id: string } | undefined) ?? null;
-    });
+    const request = await retryUntil('a request to decline', waitingRequest);
     return call('rooms', { action: 'respond', requestId: request.id, accept: false });
   },
 
-  // "Odadan çık" (docs/SPEC_V3.md §22.D): a member leaves; a leader hands its side to the side's
-  // oldest member.
+  // "Masadan ayrıl" (§4.E, K-13): the table goes on; an owner hands it to the earliest person
+  // there; the last person's leaving closes it.
   async 'leave-room'() {
-    const room = await myRoom();
-    return call('rooms', { action: 'leave', roomId: room.id });
+    const table = await myTable();
+    return call('rooms', { action: 'leave', roomId: table.id });
   },
 
-  // "Oyun öner" in the bot's room (docs/SPEC_V3.md §5.3): `concept` tabu (default), sohbet or
-  // sahtekar; `players` the bot table's Sahtekar count (otherwise its check-in headcount).
-  async 'propose-game'(args) {
-    const room = await myRoom();
-    return call('rooms', {
-      action: 'propose-game',
-      roomId: room.id,
-      concept: args.concept === 'sohbet' || args.concept === 'sahtekar' ? args.concept : 'tabu',
-      ...(typeof args.players === 'number' ? { players: args.players } : {}),
-    });
+  // "Masayı bitir": the owner only; the table closes for everyone.
+  async 'end-room'() {
+    return call('rooms', { action: 'end' });
   },
 
-  // Answers the other table's proposal: accepts unless `accept` is false.
-  async 'answer-game'(args) {
-    const room = await retryUntil('a proposal from the other table', async () => {
-      const found = await myRoom();
-      const { data, error } = await me()
-        .from('game_proposals')
-        .select('room_id')
-        .eq('room_id', found.id)
-        .limit(1);
-      if (error) throw error;
-      return data?.[0] ? found : null;
-    });
-    return call('rooms', {
-      action: 'answer-game',
-      roomId: room.id,
-      accept: args.accept !== false,
-      ...(typeof args.players === 'number' ? { players: args.players } : {}),
-    });
-  },
-
-  // Harf Kapmaca and Şarkıda Geçsin (docs/SPEC_V3.md §20.3–20.4). `say-begin`: Başla on the bot's
-  // ready round; `force` (local only) first moves readyEndsAt into the past, so the bot starts the
-  // device's round too.
-  async 'say-begin'(args) {
-    const room = await retryUntil('a ready round', async () => {
-      const r = await sayRoom();
-      return r.state.turnPhase === 'ready' ? r : null;
-    });
-    if (args.force === true) {
-      if (!isLocal) throw new Error('force is local only');
-      const sql = db();
-      try {
-        await sql`
-          update public.rooms
-          set game_state = jsonb_set(game_state, '{readyEndsAt}', to_jsonb(now() - interval '1 second'))
-          where id = ${room.id}
-        `;
-      } finally {
-        await sql.end();
-      }
-    }
-    return call(room.kind, { action: 'begin', roomId: room.id });
-  },
-
-  // A letter (`letter`, or the first open one) or a line on the bot's own turn.
-  async 'say-claim'(args) {
-    const room = await retryUntil('the bot table’s turn', async () => {
-      const r = await sayRoom();
-      return r.state.turnPhase === 'running' && r.state.turnTable === r.side ? r : null;
-    });
-    const { state } = room;
-    const letter =
-      typeof args.letter === 'string'
-        ? args.letter
-        : (state.letters.find((l) => !l.closed)?.letter ?? 'A');
-    return call(
-      room.kind,
-      room.kind === 'harf'
-        ? { action: 'claim', roomId: room.id, round: state.roundNo, step: state.step, letter }
-        : { action: 'said', roomId: room.id, round: state.roundNo, step: state.step },
-    );
-  },
-
-  // İtiraz on the other table's last claim, inside its window.
-  // Objects to the other table's claim while its window is open. `{"armed":true}`: answers at once
-  // and objects in the background as soon as the claim is there, for a flow that sends it before the
-  // device's own claim: Harf's window is 3 s, and a tap on the emulator can take as long to settle
-  // (10-harf, WazzupDevs/Kabuk#202's light-3).
-  async 'say-object'(args) {
-    const object = async () => {
-      const room = await retryUntil('a claim to object to', async () => {
-        const r = await sayRoom();
-        const claim = r.state.lastClaim;
-        return claim && claim.table !== r.side && Date.now() < (r.state.objectionEndsAt ?? 0)
-          ? r
-          : null;
-      });
-      return call(room.kind, {
-        action: 'object',
-        roomId: room.id,
-        round: room.state.roundNo,
-        step: room.state.lastClaim?.step,
-      });
-    };
-    if (args.armed !== true) return object();
-    object().then(
-      () => console.log('bot-table say-object (armed) ok'),
-      (err: unknown) => console.error(`bot-table say-object (armed) failed: ${String(err)}`),
-    );
-    return { armed: true };
-  },
-
-  // Local only: pushes the running clocks (the turn and the objection window) 60 seconds forward,
-  // so a slow emulator step (a tap, a screen read) cannot race a 3- or 10-second clock.
-  async 'say-hold'() {
-    if (!isLocal) throw new Error('say-hold is local only');
-    const room = await sayRoom();
-    const sql = db();
-    try {
-      await sql`
-        update public.rooms
-        set game_state = game_state
-          || case when game_state ->> 'endsAt' is not null
-               then jsonb_build_object('endsAt', (game_state ->> 'endsAt')::timestamptz + interval '60 seconds')
-               else '{}'::jsonb end
-          || case when game_state ->> 'objectionEndsAt' is not null
-               then jsonb_build_object('objectionEndsAt', (game_state ->> 'objectionEndsAt')::timestamptz + interval '60 seconds')
-               else '{}'::jsonb end
-        where id = ${room.id}
-      `;
-    } finally {
-      await sql.end();
-    }
-    return { ok: true };
-  },
-
-  // İbre (docs/SPEC_V3.md §20.5). `ibre-begin`: Başla on the bot's ready round (a round already
-  // started from readyEndsAt by the device's advance is left as it is).
-  async 'ibre-begin'() {
-    const room = await retryUntil('the bot table’s round', async () => {
-      const r = await ibreRoom();
-      return r.state.turnTable === r.side && r.state.turnPhase !== 'side' ? r : null;
-    });
-    return call('ibre', { action: 'begin', roomId: room.id });
-  },
-
-  // The needle on the bot's running round: `value`, or near the target it asks for.
-  async 'ibre-lock'(args) {
-    const room = await retryUntil('the bot table’s running round', async () => {
-      const r = await ibreRoom();
-      return r.state.turnPhase === 'running' && r.state.turnTable === r.side ? r : null;
-    });
-    const round = room.state.roundNo;
-    const { target } = (await call('ibre', { action: 'target', roomId: room.id, round })) as {
-      target: number;
-    };
-    const value =
-      typeof args.value === 'number' ? clampNeedle(args.value) : clampNeedle(target + 5);
-    return call('ibre', { action: 'lock', roomId: room.id, round, value });
-  },
-
-  // "Solunda / Sağında" (`side`, default right) on the device's locked needle.
-  async 'ibre-side'(args) {
-    const room = await retryUntil('a needle to judge', async () => {
-      const r = await ibreRoom();
-      return r.state.turnPhase === 'side' && r.state.turnTable !== r.side ? r : null;
-    });
-    return call('ibre', {
-      action: 'side',
-      roomId: room.id,
-      round: room.state.roundNo,
-      side: args.side === 'left' ? 'left' : 'right',
-    });
-  },
-
-  // Local only: pushes the running clock 60 seconds forward (see say-hold).
-  async 'ibre-hold'() {
-    if (!isLocal) throw new Error('ibre-hold is local only');
-    const room = await ibreRoom();
-    const sql = db();
-    try {
-      await sql`
-        update public.rooms
-        set game_state = game_state
-          || case when game_state ->> 'endsAt' is not null
-               then jsonb_build_object('endsAt', (game_state ->> 'endsAt')::timestamptz + interval '60 seconds')
-               else '{}'::jsonb end
-          || case when game_state ->> 'readyEndsAt' is not null
-               then jsonb_build_object('readyEndsAt', (game_state ->> 'readyEndsAt')::timestamptz + interval '60 seconds')
-               else '{}'::jsonb end
-        where id = ${room.id}
-      `;
-    } finally {
-      await sql.end();
-    }
-    return { ok: true };
-  },
-
-  // Local only: ends the game now: the last round, its clock run out without a needle.
-  async 'ibre-end'() {
-    if (!isLocal) throw new Error('ibre-end is local only');
-    const room = await ibreRoom();
-    const sql = db();
-    try {
-      await sql`
-        update public.rooms
-        set game_state = game_state || jsonb_build_object(
-          'roundNo', game_state -> 'totalRounds', 'turnPhase', 'running', 'readyEndsAt', null,
-          'endsAt', now() - interval '1 second'
-        )
-        where id = ${room.id}
-      `;
-    } finally {
-      await sql.end();
-    }
-    return call('ibre', { action: 'advance', roomId: room.id });
-  },
-
-  // Local only: runs the clock out now and moves the game on. `toRound` first jumps so the advance
-  // opens that round; `lastRound` jumps to the last round, so the advance ends the game.
-  async 'say-expire'(args) {
-    if (!isLocal) throw new Error('say-expire is local only');
-    const room = await sayRoom();
-    const sql = db();
-    try {
-      await sql`
-        update public.rooms
-        set game_state = game_state
-          || jsonb_build_object('endsAt', now() - interval '1 second', 'turnPhase', 'running')
-          || case when ${args.lastRound === true}::boolean
-               then jsonb_build_object('roundNo', game_state -> 'totalRounds')
-               when ${typeof args.toRound === 'number'}::boolean
-               then jsonb_build_object('roundNo', ${Number(args.toRound ?? 1) - 1}::int)
-               else '{}'::jsonb end
-        where id = ${room.id}
-      `;
-    } finally {
-      await sql.end();
-    }
-    return call(room.kind, { action: 'advance', roomId: room.id });
-  },
-
-  // Plays the bot table's part of the Sahtekar game now starting in its room, in the background
-  // until the game ends (the flow goes on meanwhile). Local only: `imposter` makes that seat the
-  // impostor before anyone looks; `guessWrong` makes a caught bot guess a wrong word.
-  async 'sahtekar-autoplay'(args) {
-    const room = await retryUntil('a Sahtekar game', async () => {
-      const r = await myRoom();
-      return parseSahtekarState(r.game_state) ? r : null;
-    });
-    if (typeof args.imposter === 'string') {
-      if (!isLocal) throw new Error('imposter is local only');
-      const sql = db();
-      try {
-        await sql`
-          update public.game_secrets s
-          set secret = jsonb_set(s.secret, '{imposter}', to_jsonb(${args.imposter}::text))
-          from public.rooms r
-          where r.id = s.room_id and s.room_id = ${room.id}
-            and s.game_no = (r.game_state ->> 'gameNo')::int
-        `;
-      } finally {
-        await sql.end();
-      }
-    }
-    const sessionId = await mySessionId();
-    const bot: SahtekarBot = { done: new Set(), guessWrong: args.guessWrong === true };
-    void (async () => {
-      for (;;) {
-        try {
-          const { data } = await me()
-            .from('rooms')
-            .select('id, game_state, owner_session_id, guest_session_id')
-            .eq('id', room.id)
-            .single();
-          if (!data || !parseSahtekarState(data.game_state)) return;
-          const did = await sahtekarStep(data, sessionId, bot);
-          if (did) console.log(`bot-table sahtekar: ${did}`);
-        } catch (err) {
-          console.error(`bot-table sahtekar: ${String(err)}`);
-        }
-        await new Promise((resolve) => setTimeout(resolve, 1_500));
-      }
-    })();
-    return { ok: true };
-  },
-
-  async 'end-game'() {
-    const room = await myRoom();
-    return call('rooms', { action: 'end-game', roomId: room.id });
-  },
-
-  // Marks the card now on the table; the server takes it only from the right side.
-  async mark(args) {
-    const room = await myRoom();
-    const state = room.game_state as { turnNo: number; cardIndex: number };
-    return call('tabu', {
-      action: 'mark',
-      roomId: room.id,
-      turnNo: state.turnNo,
-      cardIndex: state.cardIndex,
-      result: String(args.result ?? 'correct'),
-    });
-  },
-
-  // Starts the ready turn (docs/SPEC_V3.md §19.1): the bot's own turn at once. `force` (local only)
-  // first moves readyEndsAt into the past, so the bot starts the device's turn too, as either
-  // table may then.
-  async 'begin-turn'(args) {
-    // The device's acceptance may still be on its way: wait for the ready turn first, or the call
-    // finds no game and the turn stays ready.
-    const room = await retryUntil('a ready Tabu turn', async () => {
-      const r = await myRoom();
-      return (r.game_state as { turnPhase?: string } | null)?.turnPhase === 'ready' ? r : null;
-    });
-    if (args.force === true) {
-      const sql = db();
-      try {
-        await sql`
-          update public.tabu_turns set ready_ends_at = now() - interval '1 second'
-          where room_id = ${room.id} and ends_at is null
-        `;
-      } finally {
-        await sql.end();
-      }
-    }
-    await call('tabu', { action: 'begin-turn', roomId: room.id });
-    // begin-turn answers ok even when it starts nothing: check that the clock runs.
-    return retryUntil(
-      'the turn to start',
-      async () => {
-        const r = await myRoom();
-        return (r.game_state as { turnPhase?: string } | null)?.turnPhase === 'running'
-          ? { ok: true }
-          : null;
-      },
-      5_000,
-    );
-  },
-
-  // Local only: ends the current turn now instead of in 60 seconds.
-  async 'expire-turn'() {
-    const room = await myRoom();
-    const state = room.game_state as { gameNo: number; turnNo: number };
-    const sql = db();
-    try {
-      const expired = await sql`
-        update public.tabu_turns set ends_at = now() - interval '1 second'
-        where room_id = ${room.id} and game_no = ${state.gameNo} and turn_no = ${state.turnNo}
-        returning 1
-      `;
-      if (expired.length !== 1) throw new Error('no current turn to expire');
-    } finally {
-      await sql.end();
-    }
-    return call('tabu', { action: 'end-turn', roomId: room.id });
-  },
-
-  // Local only: makes the two tables' encounter older than the 3 minutes the play history needs.
+  // Local only: everyone at the bot's table sat down 4 minutes earlier, so every pair there has
+  // the 3 minutes together the play history needs (K-66).
   async 'backdate-encounter'() {
-    const room = await myRoom();
+    const table = await myTable();
     const sql = db();
     try {
       await sql`
-        update public.rooms set guest_joined_at = now() - interval '4 minutes' where id = ${room.id}
+        update public.room_members set joined_at = joined_at - interval '4 minutes'
+        where room_id = ${table.id} and left_at is null
       `;
     } finally {
       await sql.end();
     }
     return { ok: true };
   },
-
   // Local only: the account behind `phone` (the device's test number) accepted an older version of
   // the texts; its next launch asks "Başlamadan önce" again (K-33).
   async 'outdate-consents'(args) {
@@ -1073,21 +505,27 @@ export const actions: Record<string, (args: Json) => Promise<Json>> = {
     return { rows };
   },
 
-  async 'end-room'() {
-    return call('rooms', { action: 'end' });
+  // "Arkadaş ekle" at the table's end (K-66: a record per pair of people together for 3 minutes):
+  // for the person who sat as `alias` (the name it sat down with), else for everyone the bot sat
+  // with. `matched`: the people it is now friends with.
+  async 'add-friend'(args) {
+    const records = await history(args, true, 12);
+    if (records.length === 0) throw new Error('the bot has no play history to add from');
+    const matched: string[] = [];
+    for (const r of records) {
+      const res = (await call('friends', { action: 'add-from-room', historyId: r.id })) as {
+        friends?: boolean;
+      };
+      if (res.friends) matched.push(r.other_alias);
+    }
+    return { pressed: records.length, matched };
   },
 
-  // "Arkadaş ekle" for the latest encounter.
-  async 'add-friend'() {
-    const { data, error } = await me()
-      .from('play_history')
-      .select('id')
-      .order('played_at', { ascending: false })
-      .limit(1);
-    if (error) throw error;
-    const historyId = data?.[0]?.id;
-    if (!historyId) throw new Error('the bot has no play history');
-    return call('friends', { action: 'add-from-room', historyId });
+  // "Eklendi" pressed again (K-67): takes back the "Arkadaş ekle" for `alias`, else the latest.
+  async 'withdraw-add'(args) {
+    const [record] = await history(args, false, 1);
+    if (!record) throw new Error('the bot has no play history');
+    return call('friends', { action: 'withdraw-add', historyId: record.id });
   },
 
   async 'dm-send'(args) {
@@ -1143,15 +581,15 @@ export const actions: Record<string, (args: Json) => Promise<Json>> = {
     };
   },
 
-  // The room chat (docs/SPEC_V3.md §21): a message from the bot's table.
+  // The table chat (docs/SPEC_V3.md §21): a message from the bot.
   async 'chat-send'(args) {
-    const room = await myRoom();
-    return call('chat', { action: 'send', roomId: room.id, body: String(args.body ?? 'Selam') });
+    const table = await myTable();
+    return call('chat', { action: 'send', roomId: table.id, body: String(args.body ?? 'Selam') });
   },
 
-  // The reactions on the bot table's newest room chat message (as `reactions`, emojis).
+  // The reactions on the bot's newest table chat message (as `reactions`, emojis).
   async 'chat-reactions'() {
-    const room = await myRoom();
+    const room = await myTable();
     const sessionId = await mySessionId();
     const { data: own, error } = await me()
       .from('messages')
@@ -1198,107 +636,52 @@ export const actions: Record<string, (args: Json) => Promise<Json>> = {
   },
 };
 
-// The teammate bot's "Bu masadayım" (docs/SPEC_V3.md §22.C): to the side whose leader goes by
-// BOT_JOIN_ALIAS, in an open room (the owner's side) or a running one (either side); without it,
-// to the only open room's owner side. The request goes to the side's leader; one it does not answer
-// in 60 seconds is unavailable and may be sent again (the hour's 10 requests are shared with
-// "Katıl"). A side that is full or whose tables do not take members is waited for.
-async function askToJoinSide(
-  venue: string,
+// "Bu masadayım" from the member bot: to the running table named BOT_TABLE (its name on the
+// device's screen), else to the only running table at its spot. One the owner does not answer in
+// 60 seconds is unavailable and may be sent again (the hour's 10 requests are shared with "Katıl").
+async function askToSit(
   asked: Map<string, number>,
   say: (text: string) => void,
   tellOnce: (text: string) => void,
 ): Promise<void> {
-  const wanted = process.env.BOT_JOIN_ALIAS?.trim();
-  const [open, running, phones] = await Promise.all([
-    me().rpc('venue_lobby', { target_venue_id: venue }),
-    me().rpc('venue_running_rooms', { target_venue_id: venue }),
-    me().rpc('venue_lobby_phones', { target_venue_id: venue }),
-  ]);
-  for (const r of [open, running, phones]) if (r.error) throw r.error;
-  type Target = { roomId: string; side: Side; alias: string; open: boolean };
-  const openRooms = (open.data ?? []) as { room_id: string; alias: string }[];
-  const memberOpen = new Map(
-    ((phones.data ?? []) as { room_id: string; member_open: boolean }[]).map((p) => [
-      p.room_id,
-      p.member_open,
-    ]),
-  );
-  const targets: Target[] = [
-    ...openRooms.map((r) => ({
-      roomId: r.room_id,
-      side: 'owner' as const,
-      alias: r.alias,
-      open: memberOpen.get(r.room_id) ?? false,
-    })),
-    ...(
-      (running.data ?? []) as {
-        room_id: string;
-        owner_alias: string;
-        guest_alias: string;
-        owner_open: boolean;
-        guest_open: boolean;
-      }[]
-    ).flatMap((r) => [
-      { roomId: r.room_id, side: 'owner' as const, alias: r.owner_alias, open: r.owner_open },
-      { roomId: r.room_id, side: 'guest' as const, alias: r.guest_alias, open: r.guest_open },
-    ]),
-  ];
-  const found = wanted
-    ? targets.filter((t) => t.alias === wanted)
-    : openRooms.length === 1
-      ? targets.filter((t) => t.roomId === openRooms[0]?.room_id)
-      : [];
-  const target = found[0];
-  if (!target || found.length > 1) {
+  const wanted = process.env.BOT_TABLE?.trim();
+  const running = (await venueTables()).filter((t) => !t.open);
+  const found = wanted ? running.filter((t) => t.name === wanted) : running;
+  const target = found.length === 1 ? found[0] : undefined;
+  if (!target) {
     tellOnce(
       wanted
-        ? `waiting for a side led by ${wanted}`
-        : 'waiting for a single open room (or set BOT_JOIN_ALIAS)',
+        ? `waiting for a running table named ${wanted}`
+        : 'waiting for a single running table (or set BOT_TABLE)',
     );
     return;
   }
-  if (!target.open) {
-    tellOnce(`${target.alias}'s side takes no member now (full, or not on a teams app)`);
-    return;
-  }
-  const key = `${target.roomId}/${target.side}`;
-  if (Date.now() - (asked.get(key) ?? 0) < 65_000) return;
-  asked.set(key, Date.now());
-  await call('rooms', {
-    action: 'request-join',
-    roomId: target.roomId,
-    profiled: false,
-    side: target.side,
-  });
-  say(`"Bu masadayım" to ${target.alias}'s side (${target.side})`);
+  if (Date.now() - (asked.get(target.room_id) ?? 0) < 65_000) return;
+  asked.set(target.room_id, Date.now());
+  await call('rooms', { action: 'request-join', roomId: target.room_id, asMember: true });
+  say(`"Bu masadayım" to ${target.name ?? 'a table'}`);
 }
 
-// "Karşı masa": the other table for a one-phone P0 test on the dev project. Checks in at
-// BOT_VENUE (at a venue with spots: BOT_SPOT, else the first spot; only tables at the same spot
-// play together), as a table that takes members (docs/SPEC_V3.md §22.B), and then, every two
-// seconds, does what the other table would: as a guest (BOT_ROLE=guest, default) asks to join each
-// new room in the lobby; as a host (BOT_ROLE=host) keeps an open room and accepts the first
-// request. As a leader it also accepts "Bu masadayım" for its side. In the room the host proposes
-// Sesli Tabu once and either table accepts the other's proposal (docs/SPEC_V3.md §5.3); it presses
-// Doğru on each card after a few seconds, ends turns when their time is up, presses "Arkadaş ekle"
-// on each record that offers it (a table's end, docs/SPEC_V3.md §23.G), accepts requests from the
-// venue chat and answers every new DM. Only the public API: the same calls the app makes.
-//
-// BOT_ROLE=teammate (Faz 2, docs/SPEC_V3.md §22.N step 22.6): a second bot that joins a side as a
-// member with "Bu masadayım": the side whose leader goes by BOT_JOIN_ALIAS (the device's alias on
-// its screen, or the other bot's from its terminal); without it, the only open room's owner side.
-// A request the leader does not answer in 60 seconds is sent again. In the room it plays its side:
-// starts its side's ready Tabu turn after a few seconds (and so describes it), presses Doğru where
-// a member may, locks İbre's needle for its describer, claims letters and lines, watches Sahtekar
-// (the seats are the leader's) and presses "Arkadaş ekle" on its own records. It neither proposes
-// nor answers games: that is left to the leaders.
+// Another person at the venue, for a one-phone P0 test on the dev project. Checks in at BOT_VENUE
+// (at a venue with spots: BOT_SPOT, else the first spot; only tables at the same spot meet) and
+// then, every two seconds, does what that person would:
+// - BOT_ROLE=host: keeps a table in the lobby and accepts every "Katıl" (a table in the lobby
+//   takes no "Bu masadayım");
+// - BOT_ROLE=guest (default): without a table, sends "Katıl" to each new table in the lobby, on its
+//   own;
+// - BOT_ROLE=member: without a table, sends "Bu masadayım" to the running table named BOT_TABLE
+//   (else the only one at its spot), again after 60 s without an answer.
+// At a table it owns (a host, or an owner by handover) it accepts every request. It presses
+// "Arkadaş ekle" on each record that offers it (a table's end), accepts requests from the venue chat
+// and answers every new DM. No games yet (§4.F, 4.6). Only the public API: the calls the app makes.
+// Ctrl+C leaves the venue first ("Mekandan ayrıl"), so neither the check-in (4 hours) nor a host's
+// lobby table (30 quiet minutes) stays behind.
 async function opponent() {
   const role =
     process.env.BOT_ROLE === 'host'
       ? 'host'
-      : process.env.BOT_ROLE === 'teammate'
-        ? 'teammate'
+      : process.env.BOT_ROLE === 'member'
+        ? 'member'
         : 'guest';
   const say = (text: string) => console.log(`${new Date().toLocaleTimeString('tr-TR')} ${text}`);
   const quiet = async (what: string, step: () => Promise<unknown>) => {
@@ -1311,24 +694,24 @@ async function opponent() {
 
   await actions.login?.({});
   startPresence();
-  const checkedIn = (await actions.checkin?.({ teams: true })) as { alias?: string };
-  say(`checked in as ${checkedIn.alias ?? '?'} (${role})`);
-  const { data: session } = await me()
-    .from('table_sessions')
-    .select('id')
-    .eq('status', 'active')
-    .limit(1);
-  const sessionId = session?.[0]?.id as string | undefined;
+  await actions.checkin?.({});
+  say(`checked in as ${BOT_NAME} (${role})`);
+  const stop = () => {
+    say('leaving the venue');
+    call('checkin', { action: 'leave' })
+      .catch((err: unknown) => say(`leave: ${String(err)}`))
+      .finally(() => process.exit(0));
+  };
+  process.once('SIGINT', stop);
+  process.once('SIGTERM', stop);
 
+  // "Katıl" sent to these tables; a refused one (another request still waiting: request_pending)
+  // is tried again on a later tick, at most every 30 seconds.
   const asked = new Set<string>();
+  const tried = new Map<string, number>();
+  const sitAsked = new Map<string, number>();
   const befriended = new Set<string>();
   const answered = new Set<string>();
-  const marked = new Set<string>();
-  const firstSeen = new Map<string, number>();
-  const proposed = new Set<string>();
-  const accepted = new Set<string>();
-  const sahtekarBot: SahtekarBot = { done: new Set(), guessWrong: false };
-  const joinAsked = new Map<string, number>();
   const told = new Set<string>();
   const tellOnce = (text: string) => {
     if (told.has(text)) return;
@@ -1338,164 +721,47 @@ async function opponent() {
 
   for (;;) {
     await quiet('tick', async () => {
-      const { data: rooms, error } = await me()
-        .from('rooms')
-        .select('id, status, concept, owner_session_id, guest_session_id, game_state')
-        .neq('status', 'closed')
-        .order('created_at', { ascending: false })
-        .limit(1);
-      if (error) throw error;
-      const room = rooms?.[0];
-
-      if (!room) {
-        if (role === 'teammate') {
-          await askToJoinSide(venueId ?? '', joinAsked, say, tellOnce);
+      const table = await currentTable();
+      if (!table) {
+        if (role === 'member') {
+          await askToSit(sitAsked, say, tellOnce);
         } else if (role === 'guest') {
-          const { data: lobby } = await me().rpc('venue_lobby', { target_venue_id: venueId ?? '' });
-          for (const { room_id } of (lobby ?? []) as { room_id: string }[]) {
-            if (asked.has(room_id)) continue;
-            asked.add(room_id);
-            await quiet('request-join', () =>
-              call('rooms', { action: 'request-join', roomId: room_id, profiled: false }),
-            );
-            say('asked to join a room');
+          for (const t of await venueTables()) {
+            if (!t.open || asked.has(t.room_id)) continue;
+            if (Date.now() - (tried.get(t.room_id) ?? 0) < 30_000) continue;
+            tried.set(t.room_id, Date.now());
+            await quiet('request-join', async () => {
+              await call('rooms', { action: 'request-join', roomId: t.room_id });
+              asked.add(t.room_id);
+              say(`"Katıl" to ${t.name ?? 'a table'}`);
+            });
           }
         } else {
-          await call('rooms', { action: 'create', intent: 'game', profiled: false });
-          say('opened a room');
+          await call('rooms', { action: 'create', open: true });
+          say('opened a table in the lobby');
         }
         return;
       }
-
-      // A leader answers the requests it approves: "Katıl" as the owner of an open room, "Bu
-      // masadayım" for its side in an open or running room (the join_requests policy shows a
-      // leader only those).
-      const leader = leads(room, sessionId);
-      if (leader && (room.status === 'waiting' || room.status === 'active')) {
-        const { data: requests } = await me()
-          .from('join_requests')
-          .select('id, as_member')
-          .eq('room_id', room.id)
-          .eq('status', 'pending')
-          .limit(1);
-        const request = requests?.[0];
+      // The owner answers its table's requests (the join_requests policy shows it only those).
+      if (table.owner_session_id && table.owner_session_id === (await mySessionId())) {
+        const request = await waitingRequest();
         if (request) {
-          await quiet('respond', () =>
-            call('rooms', { action: 'respond', requestId: request.id, accept: true }),
-          );
-          say(request.as_member ? 'accepted "Bu masadayım"' : 'accepted a request');
-        }
-      }
-      if (room.status === 'waiting') return;
-
-      if (room.status === 'active') {
-        const state = room.game_state as Partial<VoiceTabuState> | null;
-        const mySide = await sideIn(room, sessionId);
-        if (room.guest_session_id && room.concept === null) {
-          // Proposals are the leaders' to make and answer here (any phone may, §22.E).
-          if (!leader) return;
-          const { data: proposals } = await me()
-            .from('game_proposals')
-            .select('proposer_session_id, proposer_side, created_at')
-            .eq('room_id', room.id)
-            .limit(1);
-          const proposal = proposals?.[0] as
-            { proposer_session_id: string; proposer_side?: Side; created_at: string } | undefined;
-          const theirs = proposal
-            ? (proposal.proposer_side ?? null) !== null
-              ? proposal.proposer_side !== mySide
-              : proposal.proposer_session_id !== sessionId
-            : false;
-          const key = `${room.id}/${proposal?.created_at ?? ''}`;
-          if (proposal && theirs && !accepted.has(key)) {
-            accepted.add(key);
-            await quiet('answer-game', () =>
-              call('rooms', { action: 'answer-game', roomId: room.id, accept: true }),
-            );
-            say('accepted a game proposal');
-          } else if (!proposal && room.owner_session_id === sessionId && !proposed.has(room.id)) {
-            proposed.add(room.id);
-            await quiet('propose-game', () =>
-              call('rooms', { action: 'propose-game', roomId: room.id, concept: 'tabu' }),
-            );
-            say('proposed Sesli Tabu');
-          }
-          return;
-        }
-        if (room.concept === 'sahtekar') {
-          const did = await sahtekarStep(room, sessionId, sahtekarBot);
-          if (did) say(`Sahtekar: ${did}`);
-          return;
-        }
-        if (room.concept === 'ibre') {
-          const did = await ibreStep(room, sessionId, firstSeen);
-          if (did) say(`İbre: ${did}`);
-          return;
-        }
-        if (room.concept === 'harf' || room.concept === 'sarki') {
-          const did = await sayStep(room, sessionId, firstSeen);
-          if (did) say(`${room.concept}: ${did}`);
-          return;
-        }
-        if (!state?.mode || state.phase !== 'playing') return;
-        // A ready turn (docs/SPEC_V3.md §19.1): the bot starts its own after a few seconds, and the
-        // other table's once readyEndsAt has passed.
-        const ready = parseReadyTurn(state);
-        if (ready) {
-          const key = `${room.id}/${state.gameNo}/${state.turnNo}`;
-          const seen = firstSeen.get(key) ?? Date.now();
-          firstSeen.set(key, seen);
-          const mine = state.describingTable === mySide;
-          if ((mine && Date.now() - seen > 3_000) || Date.now() >= Date.parse(ready.readyEndsAt)) {
-            await quiet('begin-turn', () =>
-              call('tabu', { action: 'begin-turn', roomId: room.id }),
-            );
-            if (mine) say(`started turn ${state.turnNo}`);
-          }
-          return;
-        }
-        if (Date.now() >= Date.parse(state.turnEndsAt ?? '')) {
-          await quiet('end-turn', () => call('tabu', { action: 'end-turn', roomId: room.id }));
-          return;
-        }
-        // Cooperative (docs/SPEC_V3.md §6.3): only the describer presses (§22.E; before step 22.3
-        // the describing table's leader); the bot waits while another phone describes.
-        const describer = (state as { describer?: string | null }).describer;
-        if (
-          state.mode === 'cooperative' &&
-          (describer ? describer !== sessionId : state.describingTable !== mySide)
-        ) {
-          return;
-        }
-        // One Doğru per card, after the card has been on the table for a few seconds.
-        const card = `${room.id}/${state.gameNo}/${state.turnNo}/${state.cardIndex}`;
-        const seen = firstSeen.get(card) ?? Date.now();
-        firstSeen.set(card, seen);
-        if (!marked.has(card) && Date.now() - seen > 5_000) {
-          marked.add(card);
-          await quiet('mark', async () => {
-            await call('tabu', {
-              action: 'mark',
-              roomId: room.id,
-              turnNo: state.turnNo,
-              cardIndex: state.cardIndex,
-              result: 'correct',
-            });
-            say(`Doğru, turn ${state.turnNo} card ${(state.cardIndex ?? 0) + 1}`);
+          await quiet('respond', async () => {
+            await call('rooms', { action: 'respond', requestId: request.id, accept: true });
+            say(request.as_member ? 'accepted "Bu masadayım"' : 'accepted "Katıl"');
           });
         }
       }
     });
 
     await quiet('friends', async () => {
-      // "Arkadaş ekle" on each record that offers it (one per pair, §23.G): a table's end
-      // (friend_open), or an older record with a mutual "Evet".
+      // "Arkadaş ekle" on each record that offers it (one per pair of people, K-66): a table's end.
       const { data: history } = await me()
         .from('play_history')
         .select('id')
-        .or('reveal_mutual.eq.true,friend_open.eq.true')
+        .eq('friend_open', true)
         .order('played_at', { ascending: false })
-        .limit(8);
+        .limit(12);
       for (const { id: historyId } of (history ?? []) as { id: string }[]) {
         if (befriended.has(historyId)) continue;
         befriended.add(historyId);
@@ -1506,13 +772,12 @@ async function opponent() {
         requests: { requestId: string }[];
       };
       for (const { requestId } of requests) {
-        await quiet('accept-friend', () =>
-          call('friends', { action: 'respond', requestId, accept: true }),
-        );
-        say('accepted a friend request from the venue chat');
+        await quiet('accept-friend', async () => {
+          await call('friends', { action: 'respond', requestId, accept: true });
+          say('accepted a friend request from the venue chat');
+        });
       }
     });
-
     await quiet('dm', async () => {
       const list = (await call('friends', { action: 'list' })) as {
         friends: { threadId: string | null }[];
@@ -1541,6 +806,7 @@ async function opponent() {
     await new Promise((resolve) => setTimeout(resolve, 2_000));
   }
 }
+
 async function firstThread(): Promise<string> {
   return retryUntil('a friend with a conversation', async () => {
     const list = (await call('friends', { action: 'list' })) as {
@@ -1596,34 +862,27 @@ async function run(action: string, args: Json): Promise<Json> {
   return fn(args);
 }
 
-// Presence (like the app's useOtherTableOnline): the bot tracks itself on its open room's
-// presence:{room_id} channel under its role, so the device sees the other table connected as it
-// would with a real phone. Checked every few seconds; a new room (or a new sign-in) rejoins.
+// Presence: the bot tracks itself on its table's presence:{room_id} channel under its check-in's
+// id, so the device sees another phone at the table connected as it would with a real one. Checked
+// every few seconds; a new table (or a new sign-in) rejoins.
 let presence: { client: SupabaseClient; roomId: string; channel: RealtimeChannel } | null = null;
 
 async function keepPresence(): Promise<void> {
   if (!client) return;
-  const { data } = await client
-    .from('rooms')
-    .select('id, game_state, owner_session_id, guest_session_id')
-    .neq('status', 'closed')
-    .order('created_at', { ascending: false })
-    .limit(1);
-  const room = data?.[0] as RoomRow | undefined;
-  if (presence && (presence.client !== client || presence.roomId !== room?.id)) {
+  const table = await currentTable();
+  if (presence && (presence.client !== client || presence.roomId !== table?.id)) {
     await presence.client.removeChannel(presence.channel);
     presence = null;
   }
-  if (!room || presence) return;
-  // The key is the side (§22.I), a member's too.
-  const role = await sideIn(room, await mySessionId());
-  const channel = client.channel(`presence:${room.id}`, {
-    config: { private: true, presence: { key: role } },
+  if (!table || presence) return;
+  const key = (await mySessionId()) ?? 'bot';
+  const channel = client.channel(`presence:${table.id}`, {
+    config: { private: true, presence: { key } },
   });
   channel.subscribe((status) => {
     if (status === 'SUBSCRIBED') void channel.track({});
   });
-  presence = { client, roomId: room.id, channel };
+  presence = { client, roomId: table.id, channel };
 }
 
 function startPresence(): void {

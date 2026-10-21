@@ -8,13 +8,13 @@ export type CheckInRequest = {
   lng: number;
   // Accuracy radius reported by the device, in metres. Stored; the coordinates are not.
   accuracyM: number | null;
-  // 1–4; 4 means "4+".
-  headcount: number;
+  // Today's app; ignored: a check-in opens no table and asks no headcount (docs/SPEC_V4.md §4.E).
+  headcount?: number;
   locationConsentVersion: string;
-  // Where the table is at a venue with spots (docs/SPEC_V3.md §4.3); required there, absent
+  // Where the person is at a venue with spots (docs/SPEC_V3.md §4.3); required there, absent
   // elsewhere.
   spotId?: string;
-  // The app can be in a team (docs/SPEC_V3.md §22.B); an old app sends nothing.
+  // Today's app; ignored.
   teams?: boolean;
   // A UUID the app makes for each check-in it starts and sends again unchanged when it retries the
   // same one: while the table it opened is active, the same key returns that table (one table for a
@@ -25,7 +25,7 @@ export type CheckInRequest = {
 // "Bu noktadayım": no new position; refused in a room or with a request out (`in_room`).
 export type ChangeSpotRequest = { action: 'change-spot'; spotId: string };
 
-// "Masa adını değiştir" (docs/SPEC_V3.md §5.6): not in a room, at most 3 times per check-in.
+// Today's app ("Masa adını değiştir"): update_required. A table's name is rooms/reroll-name's.
 export type RerollAliasRequest = { action: 'reroll-alias' };
 
 export type LeaveRequest = { action: 'leave' };
@@ -47,6 +47,7 @@ export type CheckinRequest =
 
 export type CheckInResponse = {
   sessionId: string;
+  // Empty from step 4.5 on (no table, no alias); today's app shows it until 4.5b.
   alias: string;
   expiresAt: string;
   // The identity the check-in starts with (Ayarlar → "Oyunlara katılım", K-4). Absent from a

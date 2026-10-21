@@ -49,14 +49,13 @@ describe('room status check', () => {
   const active = {
     status: 'active',
     owner_session_id: 'o',
-    guest_session_id: 'g',
-    owner_phones: 1,
-    guest_phones: 1,
+    phones: 2,
+    visibility: 'private',
   };
 
   it('reads the columns it compares, often enough to catch a missed change in seconds', () => {
     expect(ROOM_CHECK_COLUMNS.split(', ').sort()).toEqual(
-      ['guest_phones', 'guest_session_id', 'owner_phones', 'owner_session_id', 'status'].sort(),
+      ['owner_session_id', 'phones', 'status', 'visibility'].sort(),
     );
     expect(ROOM_CHECK_SECONDS).toBeLessThanOrEqual(5);
   });
@@ -67,19 +66,16 @@ describe('room status check', () => {
     expect(roomCheckDiffers(undefined, null)).toBe(false);
   });
 
-  it('sees a closed room, a left guest and a room it can no longer read', () => {
+  it('sees a closed table and a table it can no longer read', () => {
     expect(roomCheckDiffers(active, { ...active, status: 'closed' })).toBe(true);
-    expect(roomCheckDiffers(active, { ...active, status: 'waiting', guest_session_id: null })).toBe(
-      true,
-    );
     expect(roomCheckDiffers(active, null)).toBe(true);
     expect(roomCheckDiffers(null, active)).toBe(true);
   });
 
-  it('sees a phone joining or leaving a side, and a new leader', () => {
-    expect(roomCheckDiffers(active, { ...active, owner_phones: 2 })).toBe(true);
-    expect(roomCheckDiffers(active, { ...active, guest_phones: 2 })).toBe(true);
+  it('sees a person joining or leaving, a new owner and the lobby state (docs/SPEC_V4.md §4.E)', () => {
+    expect(roomCheckDiffers(active, { ...active, phones: 3 })).toBe(true);
     expect(roomCheckDiffers(active, { ...active, owner_session_id: 'm' })).toBe(true);
+    expect(roomCheckDiffers(active, { ...active, visibility: 'open' })).toBe(true);
   });
 });
 

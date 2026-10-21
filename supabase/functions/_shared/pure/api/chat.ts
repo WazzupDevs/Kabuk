@@ -11,9 +11,10 @@ export type ChatResponse = { messageId: string };
 export type ReactResponse = { ok: true };
 
 export type SafetyRequest =
-  // A room (docs/SPEC_V3.md §22.J): the phone named by its table session id, any phone of the
-  // room including the reporter's own side; without it the other side's leader. A person met in
-  // the game flow (a room or a history row) can also be reported for a wrong gender (§23.D).
+  // A table (docs/SPEC_V4.md §4.E): the person named by its table session id, at the table now or
+  // before (`not_found` without one); the copy is the chat from the reporter's own seat on. A
+  // person met in the game flow (a table or a history row) can also be reported for a wrong gender
+  // (docs/SPEC_V3.md §23.D).
   | {
       action: 'report';
       target?: 'room';
@@ -33,8 +34,9 @@ export type SafetyRequest =
   // request that came from the chat. Nothing is written for a message the caller cannot see.
   | { action: 'report'; target: 'venue_chat'; messageId: string; reason: ReportReason }
   | { action: 'report'; target: 'friend_request'; requestId: string; reason: ReportReason }
-  // In a room (docs/SPEC_V3.md §22.D): a phone of the room by its table session id; without it
-  // the other side's leader.
+  // At a table (docs/SPEC_V4.md §4.E, K-13): a person there by its table session id
+  // (`nothing_to_block` without one). The owner's block takes that person out; anyone else's block
+  // takes the blocker out.
   | { action: 'block'; roomId: string; sessionId?: string }
   // Step 4: a friend (ends the friendship, silently) or the account behind a history row. With
   // `report`, the report is written in the same transaction before anything is deleted.

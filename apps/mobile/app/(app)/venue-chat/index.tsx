@@ -63,6 +63,7 @@ export default function VenueChatScreen() {
   const page = useVenueChat(venueId, sessionId);
   const mode = page.data?.mode;
   const photo = useOwnPhoto();
+  // The anonymous identity's name is the capsule nick (docs/SPEC_V4.md §4.D).
   const [draft, setDraft] = useState('');
   // The first-message choice and, from it, the photo sheet: one at a time.
   const [sheet, setSheet] = useState<'mode' | 'photo' | null>(null);
@@ -237,7 +238,7 @@ export default function VenueChatScreen() {
                     {mode === 'profiled' ? (
                       <Avatar kind="profile" name={photo.name} photoUrl={photo.url} size="sm" />
                     ) : (
-                      <Avatar kind="table" alias={table.data?.alias ?? ''} size="sm" />
+                      <Avatar kind="default" size="sm" />
                     )}
                     <Text variant="label" tone="muted" className="flex-1">
                       {mode === 'profiled'
@@ -320,7 +321,7 @@ export default function VenueChatScreen() {
       <ModeSheet
         visible={sheet === 'mode'}
         onClose={closeSheet}
-        alias={table.data?.alias ?? ''}
+        alias={photo.nick}
         photo={photo}
         sending={send.isPending}
         error={send.error}

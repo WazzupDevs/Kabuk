@@ -359,6 +359,54 @@ export type Database = {
           },
         ];
       };
+      game_players: {
+        Row: {
+          game_no: number;
+          joined_at: string;
+          left_at: string | null;
+          role: string;
+          room_id: string;
+          seat_order: number;
+          session_id: string;
+          team: string | null;
+        };
+        Insert: {
+          game_no: number;
+          joined_at?: string;
+          left_at?: string | null;
+          role?: string;
+          room_id: string;
+          seat_order: number;
+          session_id: string;
+          team?: string | null;
+        };
+        Update: {
+          game_no?: number;
+          joined_at?: string;
+          left_at?: string | null;
+          role?: string;
+          room_id?: string;
+          seat_order?: number;
+          session_id?: string;
+          team?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'game_players_room_id_fkey';
+            columns: ['room_id'];
+            isOneToOne: false;
+            referencedRelation: 'rooms';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'game_players_session_id_fkey';
+            columns: ['session_id'];
+            isOneToOne: false;
+            referencedRelation: 'table_sessions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       game_proposals: {
         Row: {
           concept: string;
@@ -477,6 +525,39 @@ export type Database = {
           },
         ];
       };
+      games: {
+        Row: {
+          id: string;
+          is_available: boolean;
+          max_players: number;
+          min_players: number;
+          name: string;
+          pregame: boolean;
+          sort_order: number;
+          teams: boolean;
+        };
+        Insert: {
+          id: string;
+          is_available?: boolean;
+          max_players: number;
+          min_players: number;
+          name: string;
+          pregame: boolean;
+          sort_order?: number;
+          teams: boolean;
+        };
+        Update: {
+          id?: string;
+          is_available?: boolean;
+          max_players?: number;
+          min_players?: number;
+          name?: string;
+          pregame?: boolean;
+          sort_order?: number;
+          teams?: boolean;
+        };
+        Relationships: [];
+      };
       join_requests: {
         Row: {
           as_member: boolean;
@@ -484,12 +565,14 @@ export type Database = {
           expires_at: string;
           id: string;
           requester_alias: string;
-          requester_headcount: number;
+          requester_headcount: number | null;
+          requester_phones: number;
           requester_profiled: boolean;
+          requester_room_id: string | null;
           requester_session_id: string;
           responded_at: string | null;
           room_id: string;
-          side: string;
+          side: string | null;
           status: string;
         };
         Insert: {
@@ -498,12 +581,14 @@ export type Database = {
           expires_at: string;
           id?: string;
           requester_alias: string;
-          requester_headcount: number;
+          requester_headcount?: number | null;
+          requester_phones?: number;
           requester_profiled?: boolean;
+          requester_room_id?: string | null;
           requester_session_id: string;
           responded_at?: string | null;
           room_id: string;
-          side?: string;
+          side?: string | null;
           status?: string;
         };
         Update: {
@@ -512,15 +597,24 @@ export type Database = {
           expires_at?: string;
           id?: string;
           requester_alias?: string;
-          requester_headcount?: number;
+          requester_headcount?: number | null;
+          requester_phones?: number;
           requester_profiled?: boolean;
+          requester_room_id?: string | null;
           requester_session_id?: string;
           responded_at?: string | null;
           room_id?: string;
-          side?: string;
+          side?: string | null;
           status?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: 'join_requests_requester_room_id_fkey';
+            columns: ['requester_room_id'];
+            isOneToOne: false;
+            referencedRelation: 'rooms';
+            referencedColumns: ['id'];
+          },
           {
             foreignKeyName: 'join_requests_requester_session_id_fkey';
             columns: ['requester_session_id'];
@@ -757,8 +851,10 @@ export type Database = {
           kvkk_version: string;
           location_consent_at: string | null;
           location_consent_version: string | null;
+          notifications_seen_at: string | null;
           notify_dm: boolean;
           notify_friend_requests: boolean;
+          notify_invites: boolean;
           photo_hidden_at: string | null;
           photo_path: string | null;
           photo_pending_path: string | null;
@@ -785,8 +881,10 @@ export type Database = {
           kvkk_version: string;
           location_consent_at?: string | null;
           location_consent_version?: string | null;
+          notifications_seen_at?: string | null;
           notify_dm?: boolean;
           notify_friend_requests?: boolean;
+          notify_invites?: boolean;
           photo_hidden_at?: string | null;
           photo_path?: string | null;
           photo_pending_path?: string | null;
@@ -813,8 +911,10 @@ export type Database = {
           kvkk_version?: string;
           location_consent_at?: string | null;
           location_consent_version?: string | null;
+          notifications_seen_at?: string | null;
           notify_dm?: boolean;
           notify_friend_requests?: boolean;
+          notify_invites?: boolean;
           photo_hidden_at?: string | null;
           photo_path?: string | null;
           photo_pending_path?: string | null;
@@ -916,7 +1016,7 @@ export type Database = {
           profiled: boolean;
           room_id: string;
           session_id: string;
-          side: string;
+          side: string | null;
         };
         Insert: {
           alias: string;
@@ -927,7 +1027,7 @@ export type Database = {
           profiled?: boolean;
           room_id: string;
           session_id: string;
-          side: string;
+          side?: string | null;
         };
         Update: {
           alias?: string;
@@ -938,7 +1038,7 @@ export type Database = {
           profiled?: boolean;
           room_id?: string;
           session_id?: string;
-          side?: string;
+          side?: string | null;
         };
         Relationships: [
           {
@@ -1007,11 +1107,12 @@ export type Database = {
           last_activity_at: string;
           name: string | null;
           name_rerolls: number;
-          owner_alias: string;
-          owner_headcount: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
           owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
+          phones: number;
           spot_id: string | null;
           status: string;
           venue_id: string;
@@ -1037,11 +1138,12 @@ export type Database = {
           last_activity_at?: string;
           name?: string | null;
           name_rerolls?: number;
-          owner_alias: string;
-          owner_headcount: number;
+          owner_alias?: string | null;
+          owner_headcount?: number | null;
           owner_phones?: number;
           owner_profiled?: boolean;
           owner_session_id: string;
+          phones?: number;
           spot_id?: string | null;
           status?: string;
           venue_id: string;
@@ -1067,11 +1169,12 @@ export type Database = {
           last_activity_at?: string;
           name?: string | null;
           name_rerolls?: number;
-          owner_alias?: string;
-          owner_headcount?: number;
+          owner_alias?: string | null;
+          owner_headcount?: number | null;
           owner_phones?: number;
           owner_profiled?: boolean;
           owner_session_id?: string;
+          phones?: number;
           spot_id?: string | null;
           status?: string;
           venue_id?: string;
@@ -1079,6 +1182,13 @@ export type Database = {
           waiting_since?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: 'rooms_concept_fkey';
+            columns: ['concept'];
+            isOneToOne: false;
+            referencedRelation: 'games';
+            referencedColumns: ['id'];
+          },
           {
             foreignKeyName: 'rooms_guest_session_id_fkey';
             columns: ['guest_session_id'];
@@ -1143,16 +1253,70 @@ export type Database = {
         };
         Relationships: [];
       };
+      table_invites: {
+        Row: {
+          created_at: string;
+          expires_at: string;
+          from_session_id: string;
+          id: string;
+          phones: number;
+          responded_at: string | null;
+          room_id: string;
+          room_name: string | null;
+          status: string;
+          to_user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          expires_at: string;
+          from_session_id: string;
+          id?: string;
+          phones: number;
+          responded_at?: string | null;
+          room_id: string;
+          room_name?: string | null;
+          status?: string;
+          to_user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          expires_at?: string;
+          from_session_id?: string;
+          id?: string;
+          phones?: number;
+          responded_at?: string | null;
+          room_id?: string;
+          room_name?: string | null;
+          status?: string;
+          to_user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'table_invites_from_session_id_fkey';
+            columns: ['from_session_id'];
+            isOneToOne: false;
+            referencedRelation: 'table_sessions';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'table_invites_room_id_fkey';
+            columns: ['room_id'];
+            isOneToOne: false;
+            referencedRelation: 'rooms';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       table_sessions: {
         Row: {
-          alias: string;
+          alias: string | null;
           alias_rerolls: number;
           checkin_key: string | null;
           created_at: string;
           ended_at: string | null;
           expires_at: string;
           gps_accuracy_m: number | null;
-          headcount: number;
+          headcount: number | null;
           id: string;
           identity_mode: string;
           identity_switches: number;
@@ -1165,14 +1329,14 @@ export type Database = {
           venue_id: string;
         };
         Insert: {
-          alias: string;
+          alias?: string | null;
           alias_rerolls?: number;
           checkin_key?: string | null;
           created_at?: string;
           ended_at?: string | null;
           expires_at: string;
           gps_accuracy_m?: number | null;
-          headcount: number;
+          headcount?: number | null;
           id?: string;
           identity_mode?: string;
           identity_switches?: number;
@@ -1185,14 +1349,14 @@ export type Database = {
           venue_id: string;
         };
         Update: {
-          alias?: string;
+          alias?: string | null;
           alias_rerolls?: number;
           checkin_key?: string | null;
           created_at?: string;
           ended_at?: string | null;
           expires_at?: string;
           gps_accuracy_m?: number | null;
-          headcount?: number;
+          headcount?: number | null;
           id?: string;
           identity_mode?: string;
           identity_switches?: number;
@@ -1217,6 +1381,49 @@ export type Database = {
             columns: ['venue_id'];
             isOneToOne: false;
             referencedRelation: 'venues';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      table_votes: {
+        Row: {
+          concept: string;
+          created_at: string;
+          room_id: string;
+          session_id: string;
+        };
+        Insert: {
+          concept: string;
+          created_at?: string;
+          room_id: string;
+          session_id: string;
+        };
+        Update: {
+          concept?: string;
+          created_at?: string;
+          room_id?: string;
+          session_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'table_votes_concept_fkey';
+            columns: ['concept'];
+            isOneToOne: false;
+            referencedRelation: 'games';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'table_votes_room_id_fkey';
+            columns: ['room_id'];
+            isOneToOne: false;
+            referencedRelation: 'rooms';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'table_votes_session_id_fkey';
+            columns: ['session_id'];
+            isOneToOne: false;
+            referencedRelation: 'table_sessions';
             referencedColumns: ['id'];
           },
         ];
@@ -1674,14 +1881,14 @@ export type Database = {
       change_table_spot: {
         Args: { target_spot_id: string; target_user_id: string };
         Returns: {
-          alias: string;
+          alias: string | null;
           alias_rerolls: number;
           checkin_key: string | null;
           created_at: string;
           ended_at: string | null;
           expires_at: string;
           gps_accuracy_m: number | null;
-          headcount: number;
+          headcount: number | null;
           id: string;
           identity_mode: string;
           identity_switches: number;
@@ -1917,11 +2124,12 @@ export type Database = {
           last_activity_at: string;
           name: string | null;
           name_rerolls: number;
-          owner_alias: string;
-          owner_headcount: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
           owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
+          phones: number;
           spot_id: string | null;
           status: string;
           venue_id: string;
@@ -1956,11 +2164,12 @@ export type Database = {
           last_activity_at: string;
           name: string | null;
           name_rerolls: number;
-          owner_alias: string;
-          owner_headcount: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
           owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
+          phones: number;
           spot_id: string | null;
           status: string;
           venue_id: string;
@@ -2004,11 +2213,12 @@ export type Database = {
           last_activity_at: string;
           name: string | null;
           name_rerolls: number;
-          owner_alias: string;
-          owner_headcount: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
           owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
+          phones: number;
           spot_id: string | null;
           status: string;
           venue_id: string;
@@ -2048,11 +2258,12 @@ export type Database = {
           last_activity_at: string;
           name: string | null;
           name_rerolls: number;
-          owner_alias: string;
-          owner_headcount: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
           owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
+          phones: number;
           spot_id: string | null;
           status: string;
           venue_id: string;
@@ -2091,6 +2302,26 @@ export type Database = {
           other_headcount: number;
           played_at: string;
           request_id: string;
+        }[];
+      };
+      my_notifications: {
+        Args: { target_user_id: string };
+        Returns: {
+          birth_date: string;
+          created_at: string;
+          display_name: string;
+          expires_at: string;
+          history_id: string;
+          item_id: string;
+          kind: string;
+          other_alias: string;
+          phones: number;
+          photo_path: string;
+          public_id: string;
+          room_name: string;
+          source: string;
+          status: string;
+          venue_name: string;
         }[];
       };
       my_sent_requests: {
@@ -2158,8 +2389,10 @@ export type Database = {
           kvkk_version: string;
           location_consent_at: string | null;
           location_consent_version: string | null;
+          notifications_seen_at: string | null;
           notify_dm: boolean;
           notify_friend_requests: boolean;
+          notify_invites: boolean;
           photo_hidden_at: string | null;
           photo_path: string | null;
           photo_pending_path: string | null;
@@ -2171,35 +2404,6 @@ export type Database = {
         SetofOptions: {
           from: '*';
           to: 'profiles';
-          isOneToOne: true;
-          isSetofReturn: false;
-        };
-      };
-      reroll_table_alias: {
-        Args: { max_rerolls: number; new_alias: string; target_user_id: string };
-        Returns: {
-          alias: string;
-          alias_rerolls: number;
-          checkin_key: string | null;
-          created_at: string;
-          ended_at: string | null;
-          expires_at: string;
-          gps_accuracy_m: number | null;
-          headcount: number;
-          id: string;
-          identity_mode: string;
-          identity_switches: number;
-          participation: string;
-          spot_id: string | null;
-          status: string;
-          team_capable: boolean;
-          user_id: string;
-          venue_chat_profiled: boolean | null;
-          venue_id: string;
-        };
-        SetofOptions: {
-          from: '*';
-          to: 'table_sessions';
           isOneToOne: true;
           isSetofReturn: false;
         };
@@ -2263,11 +2467,12 @@ export type Database = {
           last_activity_at: string;
           name: string | null;
           name_rerolls: number;
-          owner_alias: string;
-          owner_headcount: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
           owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
+          phones: number;
           spot_id: string | null;
           status: string;
           venue_id: string;
@@ -2281,12 +2486,23 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      rooms_answer_invite: {
+        Args: {
+          accept: boolean;
+          target_invite_id: string;
+          target_user_id: string;
+        };
+        Returns: {
+          invite: Database['public']['Tables']['table_invites']['Row'];
+          left_room_id: string;
+        }[];
+      };
       rooms_create: {
         Args: {
+          in_lobby?: boolean;
           new_game_tag?: string;
           new_icon?: string;
           new_intent?: string;
-          profiled: boolean;
           target_user_id: string;
         };
         Returns: {
@@ -2308,50 +2524,12 @@ export type Database = {
           last_activity_at: string;
           name: string | null;
           name_rerolls: number;
-          owner_alias: string;
-          owner_headcount: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
           owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
-          spot_id: string | null;
-          status: string;
-          venue_id: string;
-          visibility: string;
-          waiting_since: string;
-        };
-        SetofOptions: {
-          from: '*';
-          to: 'rooms';
-          isOneToOne: true;
-          isSetofReturn: false;
-        };
-      };
-      rooms_create_solo: {
-        Args: { target_user_id: string };
-        Returns: {
-          closed_at: string | null;
-          concept: string | null;
-          created_at: string;
-          game_started_at: string | null;
-          game_state: Json;
-          game_tag: string | null;
-          guest_alias: string | null;
-          guest_headcount: number | null;
-          guest_joined_at: string | null;
-          guest_phones: number | null;
-          guest_profiled: boolean;
-          guest_session_id: string | null;
-          icon: string | null;
-          id: string;
-          intent: string | null;
-          last_activity_at: string;
-          name: string | null;
-          name_rerolls: number;
-          owner_alias: string;
-          owner_headcount: number;
-          owner_phones: number;
-          owner_profiled: boolean;
-          owner_session_id: string;
+          phones: number;
           spot_id: string | null;
           status: string;
           venue_id: string;
@@ -2386,11 +2564,12 @@ export type Database = {
           last_activity_at: string;
           name: string | null;
           name_rerolls: number;
-          owner_alias: string;
-          owner_headcount: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
           owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
+          phones: number;
           spot_id: string | null;
           status: string;
           venue_id: string;
@@ -2425,11 +2604,12 @@ export type Database = {
           last_activity_at: string;
           name: string | null;
           name_rerolls: number;
-          owner_alias: string;
-          owner_headcount: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
           owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
+          phones: number;
           spot_id: string | null;
           status: string;
           venue_id: string;
@@ -2441,6 +2621,33 @@ export type Database = {
           to: 'rooms';
           isOneToOne: true;
           isSetofReturn: false;
+        };
+      };
+      rooms_invite: {
+        Args: {
+          friend_public_id: string;
+          hourly_max: number;
+          target_room_id: string;
+          target_user_id: string;
+          ttl_seconds: number;
+        };
+        Returns: {
+          created_at: string;
+          expires_at: string;
+          from_session_id: string;
+          id: string;
+          phones: number;
+          responded_at: string | null;
+          room_id: string;
+          room_name: string | null;
+          status: string;
+          to_user_id: string;
+        }[];
+        SetofOptions: {
+          from: '*';
+          to: 'table_invites';
+          isOneToOne: false;
+          isSetofReturn: true;
         };
       };
       rooms_leave: {
@@ -2464,11 +2671,141 @@ export type Database = {
           last_activity_at: string;
           name: string | null;
           name_rerolls: number;
-          owner_alias: string;
-          owner_headcount: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
           owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
+          phones: number;
+          spot_id: string | null;
+          status: string;
+          venue_id: string;
+          visibility: string;
+          waiting_since: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'rooms';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      rooms_leave_game: {
+        Args: { target_room_id: string; target_user_id: string };
+        Returns: {
+          closed_at: string | null;
+          concept: string | null;
+          created_at: string;
+          game_started_at: string | null;
+          game_state: Json;
+          game_tag: string | null;
+          guest_alias: string | null;
+          guest_headcount: number | null;
+          guest_joined_at: string | null;
+          guest_phones: number | null;
+          guest_profiled: boolean;
+          guest_session_id: string | null;
+          icon: string | null;
+          id: string;
+          intent: string | null;
+          last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
+          owner_phones: number;
+          owner_profiled: boolean;
+          owner_session_id: string;
+          phones: number;
+          spot_id: string | null;
+          status: string;
+          venue_id: string;
+          visibility: string;
+          waiting_since: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'rooms';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      rooms_open_game: {
+        Args: {
+          new_concept: string;
+          same_picks?: boolean;
+          target_room_id: string;
+          target_user_id: string;
+        };
+        Returns: {
+          closed_at: string | null;
+          concept: string | null;
+          created_at: string;
+          game_started_at: string | null;
+          game_state: Json;
+          game_tag: string | null;
+          guest_alias: string | null;
+          guest_headcount: number | null;
+          guest_joined_at: string | null;
+          guest_phones: number | null;
+          guest_profiled: boolean;
+          guest_session_id: string | null;
+          icon: string | null;
+          id: string;
+          intent: string | null;
+          last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
+          owner_phones: number;
+          owner_profiled: boolean;
+          owner_session_id: string;
+          phones: number;
+          spot_id: string | null;
+          status: string;
+          venue_id: string;
+          visibility: string;
+          waiting_since: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'rooms';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      rooms_pick: {
+        Args: {
+          new_pick?: string;
+          target_room_id: string;
+          target_user_id: string;
+        };
+        Returns: {
+          closed_at: string | null;
+          concept: string | null;
+          created_at: string;
+          game_started_at: string | null;
+          game_state: Json;
+          game_tag: string | null;
+          guest_alias: string | null;
+          guest_headcount: number | null;
+          guest_joined_at: string | null;
+          guest_phones: number | null;
+          guest_profiled: boolean;
+          guest_session_id: string | null;
+          icon: string | null;
+          id: string;
+          intent: string | null;
+          last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
+          owner_phones: number;
+          owner_profiled: boolean;
+          owner_session_id: string;
+          phones: number;
           spot_id: string | null;
           status: string;
           venue_id: string;
@@ -2508,10 +2845,9 @@ export type Database = {
       };
       rooms_request_join: {
         Args: {
+          as_member?: boolean;
           max_per_hour: number;
-          profiled: boolean;
           target_room_id: string;
-          target_side?: string;
           target_user_id: string;
           ttl_seconds: number;
         };
@@ -2521,12 +2857,14 @@ export type Database = {
           expires_at: string;
           id: string;
           requester_alias: string;
-          requester_headcount: number;
+          requester_headcount: number | null;
+          requester_phones: number;
           requester_profiled: boolean;
+          requester_room_id: string | null;
           requester_session_id: string;
           responded_at: string | null;
           room_id: string;
-          side: string;
+          side: string | null;
           status: string;
         };
         SetofOptions: {
@@ -2565,11 +2903,12 @@ export type Database = {
           last_activity_at: string;
           name: string | null;
           name_rerolls: number;
-          owner_alias: string;
-          owner_headcount: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
           owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
+          phones: number;
           spot_id: string | null;
           status: string;
           venue_id: string;
@@ -2595,12 +2934,14 @@ export type Database = {
           expires_at: string;
           id: string;
           requester_alias: string;
-          requester_headcount: number;
+          requester_headcount: number | null;
+          requester_phones: number;
           requester_profiled: boolean;
+          requester_room_id: string | null;
           requester_session_id: string;
           responded_at: string | null;
           room_id: string;
-          side: string;
+          side: string | null;
           status: string;
         };
         SetofOptions: {
@@ -2635,11 +2976,142 @@ export type Database = {
           last_activity_at: string;
           name: string | null;
           name_rerolls: number;
-          owner_alias: string;
-          owner_headcount: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
           owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
+          phones: number;
+          spot_id: string | null;
+          status: string;
+          venue_id: string;
+          visibility: string;
+          waiting_since: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'rooms';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      rooms_set_visibility: {
+        Args: {
+          in_lobby: boolean;
+          new_game_tag?: string;
+          new_intent?: string;
+          target_room_id: string;
+          target_user_id: string;
+        };
+        Returns: {
+          closed_at: string | null;
+          concept: string | null;
+          created_at: string;
+          game_started_at: string | null;
+          game_state: Json;
+          game_tag: string | null;
+          guest_alias: string | null;
+          guest_headcount: number | null;
+          guest_joined_at: string | null;
+          guest_phones: number | null;
+          guest_profiled: boolean;
+          guest_session_id: string | null;
+          icon: string | null;
+          id: string;
+          intent: string | null;
+          last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
+          owner_phones: number;
+          owner_profiled: boolean;
+          owner_session_id: string;
+          phones: number;
+          spot_id: string | null;
+          status: string;
+          venue_id: string;
+          visibility: string;
+          waiting_since: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'rooms';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      rooms_shuffle: {
+        Args: { target_room_id: string; target_user_id: string };
+        Returns: {
+          closed_at: string | null;
+          concept: string | null;
+          created_at: string;
+          game_started_at: string | null;
+          game_state: Json;
+          game_tag: string | null;
+          guest_alias: string | null;
+          guest_headcount: number | null;
+          guest_joined_at: string | null;
+          guest_phones: number | null;
+          guest_profiled: boolean;
+          guest_session_id: string | null;
+          icon: string | null;
+          id: string;
+          intent: string | null;
+          last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
+          owner_phones: number;
+          owner_profiled: boolean;
+          owner_session_id: string;
+          phones: number;
+          spot_id: string | null;
+          status: string;
+          venue_id: string;
+          visibility: string;
+          waiting_since: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'rooms';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      rooms_vote: {
+        Args: {
+          new_concept?: string;
+          target_room_id: string;
+          target_user_id: string;
+        };
+        Returns: {
+          closed_at: string | null;
+          concept: string | null;
+          created_at: string;
+          game_started_at: string | null;
+          game_state: Json;
+          game_tag: string | null;
+          guest_alias: string | null;
+          guest_headcount: number | null;
+          guest_joined_at: string | null;
+          guest_phones: number | null;
+          guest_profiled: boolean;
+          guest_session_id: string | null;
+          icon: string | null;
+          id: string;
+          intent: string | null;
+          last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
+          owner_phones: number;
+          owner_profiled: boolean;
+          owner_session_id: string;
+          phones: number;
           spot_id: string | null;
           status: string;
           venue_id: string;
@@ -2678,11 +3150,12 @@ export type Database = {
           last_activity_at: string;
           name: string | null;
           name_rerolls: number;
-          owner_alias: string;
-          owner_headcount: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
           owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
+          phones: number;
           spot_id: string | null;
           status: string;
           venue_id: string;
@@ -2802,11 +3275,12 @@ export type Database = {
           last_activity_at: string;
           name: string | null;
           name_rerolls: number;
-          owner_alias: string;
-          owner_headcount: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
           owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
+          phones: number;
           spot_id: string | null;
           status: string;
           venue_id: string;
@@ -2841,11 +3315,12 @@ export type Database = {
           last_activity_at: string;
           name: string | null;
           name_rerolls: number;
-          owner_alias: string;
-          owner_headcount: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
           owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
+          phones: number;
           spot_id: string | null;
           status: string;
           venue_id: string;
@@ -2888,11 +3363,12 @@ export type Database = {
           last_activity_at: string;
           name: string | null;
           name_rerolls: number;
-          owner_alias: string;
-          owner_headcount: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
           owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
+          phones: number;
           spot_id: string | null;
           status: string;
           venue_id: string;
@@ -2936,11 +3412,12 @@ export type Database = {
           last_activity_at: string;
           name: string | null;
           name_rerolls: number;
-          owner_alias: string;
-          owner_headcount: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
           owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
+          phones: number;
           spot_id: string | null;
           status: string;
           venue_id: string;
@@ -2975,11 +3452,12 @@ export type Database = {
           last_activity_at: string;
           name: string | null;
           name_rerolls: number;
-          owner_alias: string;
-          owner_headcount: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
           owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
+          phones: number;
           spot_id: string | null;
           status: string;
           venue_id: string;
@@ -3014,11 +3492,12 @@ export type Database = {
           last_activity_at: string;
           name: string | null;
           name_rerolls: number;
-          owner_alias: string;
-          owner_headcount: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
           owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
+          phones: number;
           spot_id: string | null;
           status: string;
           venue_id: string;
@@ -3060,11 +3539,12 @@ export type Database = {
           last_activity_at: string;
           name: string | null;
           name_rerolls: number;
-          owner_alias: string;
-          owner_headcount: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
           owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
+          phones: number;
           spot_id: string | null;
           status: string;
           venue_id: string;
@@ -3109,11 +3589,12 @@ export type Database = {
           last_activity_at: string;
           name: string | null;
           name_rerolls: number;
-          owner_alias: string;
-          owner_headcount: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
           owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
+          phones: number;
           spot_id: string | null;
           status: string;
           venue_id: string;
@@ -3130,14 +3611,14 @@ export type Database = {
       set_checkin_identity: {
         Args: { new_mode: string; target_user_id: string };
         Returns: {
-          alias: string;
+          alias: string | null;
           alias_rerolls: number;
           checkin_key: string | null;
           created_at: string;
           ended_at: string | null;
           expires_at: string;
           gps_accuracy_m: number | null;
-          headcount: number;
+          headcount: number | null;
           id: string;
           identity_mode: string;
           identity_switches: number;
@@ -3181,11 +3662,12 @@ export type Database = {
           last_activity_at: string;
           name: string | null;
           name_rerolls: number;
-          owner_alias: string;
-          owner_headcount: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
           owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
+          phones: number;
           spot_id: string | null;
           status: string;
           venue_id: string;
@@ -3203,24 +3685,20 @@ export type Database = {
         Args: {
           accuracy_m?: number;
           consent_version: string;
-          new_alias: string;
           new_checkin_key?: string;
-          new_headcount: number;
-          new_participation?: string;
           new_spot_id?: string;
-          new_team_capable?: boolean;
           target_user_id: string;
           target_venue_id: string;
         };
         Returns: {
-          alias: string;
+          alias: string | null;
           alias_rerolls: number;
           checkin_key: string | null;
           created_at: string;
           ended_at: string | null;
           expires_at: string;
           gps_accuracy_m: number | null;
-          headcount: number;
+          headcount: number | null;
           id: string;
           identity_mode: string;
           identity_switches: number;
@@ -3238,6 +3716,25 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      table_people: {
+        Args: { target_room_id: string };
+        Returns: {
+          alias: string;
+          is_owner: boolean;
+          joined_at: string;
+          look: string;
+          profiled: boolean;
+          session_id: string;
+        }[];
+      };
+      table_vote_counts: {
+        Args: { target_room_id: string };
+        Returns: {
+          concept: string;
+          mine: boolean;
+          votes: number;
+        }[];
       };
       tabu_begin_turn: {
         Args: { target_room_id: string; target_user_id: string };
@@ -3260,11 +3757,12 @@ export type Database = {
           last_activity_at: string;
           name: string | null;
           name_rerolls: number;
-          owner_alias: string;
-          owner_headcount: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
           owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
+          phones: number;
           spot_id: string | null;
           status: string;
           venue_id: string;
@@ -3299,11 +3797,12 @@ export type Database = {
           last_activity_at: string;
           name: string | null;
           name_rerolls: number;
-          owner_alias: string;
-          owner_headcount: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
           owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
+          phones: number;
           spot_id: string | null;
           status: string;
           venue_id: string;
@@ -3355,11 +3854,12 @@ export type Database = {
           last_activity_at: string;
           name: string | null;
           name_rerolls: number;
-          owner_alias: string;
-          owner_headcount: number;
+          owner_alias: string | null;
+          owner_headcount: number | null;
           owner_phones: number;
           owner_profiled: boolean;
           owner_session_id: string;
+          phones: number;
           spot_id: string | null;
           status: string;
           venue_id: string;
@@ -3552,6 +4052,21 @@ export type Database = {
           room_id: string;
           spot_id: string;
           spot_name: string;
+        }[];
+      };
+      venue_tables: {
+        Args: { target_venue_id: string };
+        Returns: {
+          game_tag: string;
+          icon: string;
+          intent: string;
+          name: string;
+          open: boolean;
+          phones: number;
+          room_id: string;
+          spot_id: string;
+          spot_name: string;
+          waiting_since: string;
         }[];
       };
     };

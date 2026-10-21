@@ -1,36 +1,40 @@
 import { CONCEPTS, type Concept } from './rooms.ts';
+import { MAX_TABLE_PHONES } from './tables.ts';
 
-// The table card at the top of the venue screen, the home screen (docs/SPEC_V3.md §23.C; canvas:
-// Aşama 2 · Ekranlar → Faz 3 · 23.1 Masa ve lobi). The server's rooms stay; the user only sees the
-// table:
-// - 'off': not in the lobby ("Masanı lobiye aç", "Masanla oyna");
-// - 'open': in the lobby as the leader of its waiting room ("Lobiden çek", "Masaya git");
-// - 'member': a phone on that waiting room's side ("Masaya git", "Masadan çık");
-// - 'merged': two sides ("Masaya git");
-// - 'solo': "Masanla oyna" ("Masaya git").
-export type TableState = 'off' | 'open' | 'member' | 'merged' | 'solo';
+// Mekan's table card (docs/SPEC_V4.md §4.E; v46 "mekan" states): what the person has at the venue.
+// - 'none': no table ("Masa kur", "Katıl", "Bu masadayım");
+// - 'private': owns a table not in the lobby ("Lobiye aç", "Davet et");
+// - 'open': owns a table in the lobby ("Lobiden çek", "Davet et");
+// - 'participant': sits at another's table (opens it; "Katıl" waits until it leaves).
+export type TableState = 'none' | 'private' | 'open' | 'participant';
 
 export type TableRoom = {
   status: string;
   visibility: string;
 };
 
-// `leader`: this phone leads a side of the room (its session is the room's owner or guest). Since
-// step 23.3 a two-sided room closes at once (§23.G): a room that is neither waiting nor active
-// does not hold the table.
-export function tableState(room: TableRoom | null, leader: boolean): TableState {
-  if (!room || (room.status !== 'waiting' && room.status !== 'active')) return 'off';
-  if (room.visibility === 'private') return 'solo';
-  if (room.status === 'waiting') return leader ? 'open' : 'member';
-  return 'merged';
+export function tableState(room: TableRoom | null, owner: boolean): TableState {
+  if (!room || (room.status !== 'waiting' && room.status !== 'active')) return 'none';
+  if (!owner) return 'participant';
+  return room.visibility === 'open' ? 'open' : 'private';
 }
 
-// What the lobby offers the table in each state (docs/SPEC_V3.md §23.C, the 23.1 PR's limits):
-// "Katıl" also from its own waiting room, as its leader; "Bu masadayım" and opening to the lobby
-// only without a room. A merged table, a "Masanla oyna" table and a member see the lobby without
-// its buttons.
-export function lobbyActions(state: TableState): { join: boolean; member: boolean } {
-  return { join: state === 'off' || state === 'open', member: state === 'off' };
+// The lobby's buttons for this person (v46 "mekan" states): "Katıl" without a table or as an owner
+// (a participant leaves first: not_owner), shown but closed when the owner's table and that one
+// together would pass MAX_TABLE_PHONES (table_full; "Masan 12 kişi, Katıl kapalı"); "Bu masadayım"
+// only without a table.
+export function lobbyActions(
+  state: TableState,
+  myPhones: number,
+  theirPhones: number,
+): { join: boolean; full: boolean; member: boolean } {
+  const join = state !== 'participant';
+  const owner = state === 'private' || state === 'open';
+  return {
+    join,
+    full: join && owner && myPhones + theirPhones > MAX_TABLE_PHONES,
+    member: state === 'none',
+  };
 }
 
 // A lobby row's game tag as read (`venue_lobby_tags`); anything else is "fark etmez".

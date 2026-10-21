@@ -1,0 +1,138 @@
+# The people's table (docs/SPEC_V4.md §4.E, adım 4.5b): "Masa kur" with the table's icon, off the
+# lobby; the table screen alone (its games all "Yakında" in 4.5), Masadakiler with the owner's
+# "Başka ad", "Davet et", then "Masanı lobiye aç"; the bot asks to sit down and this phone accepts.
+# 05 ends the table from here.
+appId: app.kabuk.mobile
+---
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: login
+# The bot sits at this phone's spot: only tables at the same spot sit together (§4.3).
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: checkin
+      BODY: '{"spot":"kantin"}'
+- tapOn:
+    id: tab-venue
+- scrollUntilVisible:
+    element:
+      id: table-create-open
+    centerElement: true
+    timeout: 15000
+- tapOn:
+    id: table-create-open
+- extendedWaitUntil:
+    visible:
+      id: table-icon-pick
+    timeout: 10000
+- takeScreenshot: 12-create-table
+# The icon picker (K-45): the free scenes by theme; the same link closes it.
+- tapOn:
+    id: table-icon-pick
+- extendedWaitUntil:
+    visible:
+      id: table-icon-picker
+    timeout: 10000
+- takeScreenshot: 12b-icon-picker
+- tapOn:
+    id: table-icon-pick
+- extendedWaitUntil:
+    notVisible:
+      id: table-icon-picker
+    timeout: 10000
+# The sheet scrolls: at the largest text size "Masayı kur" is below its fold.
+- scrollUntilVisible:
+    element:
+      id: table-create
+    timeout: 10000
+- tapOn:
+    id: table-create
+# The table opens at once: alone at it, the owner's bar, the games.
+- extendedWaitUntil:
+    visible:
+      id: table-top
+    timeout: 15000
+- assertVisible:
+    id: table-solo
+- assertVisible:
+    id: table-lobby
+- assertVisible: Yakında
+- takeScreenshot: 13-table
+# Masadakiler from the table's head: this phone, the owner's tag and the rename box; "Başka ad"
+# renews the name, 3 times a table.
+- tapOn:
+    id: table-who
+- extendedWaitUntil:
+    visible:
+      id: table-rename
+    timeout: 10000
+- tapOn:
+    id: table-reroll
+- extendedWaitUntil:
+    visible: 2 yenileme hakkın var
+    timeout: 15000
+- takeScreenshot: 13b-people
+- back
+- extendedWaitUntil:
+    notVisible:
+      id: table-rename
+    timeout: 10000
+# "Davet et": the friends at the venue; this phone has none yet.
+- tapOn:
+    id: table-invite
+- extendedWaitUntil:
+    visible:
+      id: invite-sheet
+    timeout: 10000
+- takeScreenshot: 13c-invite
+- back
+- extendedWaitUntil:
+    notVisible:
+      id: invite-sheet
+    timeout: 10000
+# "Masanı lobiye aç": the lobby sheet; the bot's "Katıl" then waits for this phone.
+- tapOn:
+    id: table-lobby
+- extendedWaitUntil:
+    visible:
+      id: intent-none
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: lobby-confirm
+    timeout: 10000
+- tapOn:
+    id: lobby-confirm
+- extendedWaitUntil:
+    visible:
+      id: table-withdraw
+    timeout: 15000
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: request-join
+- extendedWaitUntil:
+    visible: Katılma isteği
+    timeout: 20000
+- takeScreenshot: 15-join-request
+- tapOn:
+    id: join-accept
+# The bot sits down (with its check-in's capsule name: anonymous, §4.D): two people, and
+# Masadakiler lists both.
+- extendedWaitUntil:
+    notVisible:
+      id: table-solo
+    timeout: 20000
+- assertVisible: 2 kişi
+- tapOn:
+    id: table-who
+- extendedWaitUntil:
+    visible: Masadakiler · 2 kişi
+    timeout: 10000
+- takeScreenshot: 18-table
+- back
+- extendedWaitUntil:
+    notVisible: Masadakiler · 2 kişi
+    timeout: 10000

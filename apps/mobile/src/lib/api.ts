@@ -16,10 +16,11 @@ import type {
 import type {
   CreateRoomRequest,
   CreateRoomResponse,
-  ProposeGameResponse,
   RequestJoinResponse,
   RequestProfileResponse,
+  RerollNameResponse,
   RoomsOkResponse,
+  SetIconResponse,
 } from '@shared/api/rooms.ts';
 import type {
   ChangeSpotResponse,
@@ -45,10 +46,9 @@ import type {
 } from '@shared/api/profile.ts';
 import type { VenueChatPageResponse, VenueChatResponse } from '@shared/api/venueChat.ts';
 import type { GameFlowReportReason, ReportReason } from '@shared/chat.ts';
-import type { Concept } from '@shared/rooms.ts';
+import type { Concept, Intent } from '@shared/rooms.ts';
 import type { SayKind } from '@shared/sayChallenge.ts';
 import type { Mark } from '@shared/tabu.ts';
-import type { Side } from '@shared/teams.ts';
 import { callName, RETRY_DELAY_MS, retriesAfter } from '@shared/apiRetry.ts';
 import { type ErrorCode, isApiErrorBody } from '@shared/errors.ts';
 
@@ -134,46 +134,50 @@ export function callLeave(): Promise<LeaveResponse> {
   return invoke<LeaveResponse>('checkin', { action: 'leave' });
 }
 
-// Rooms (docs/SPEC_V3.md §5): "Oda kur" is always open; "Masanla oyna" is a private one-table
-// room; a two-table game starts only from an accepted proposal; "Odayı bitir" is the only exit.
+// The people's table (docs/SPEC_V4.md §4.E): "Masa kur" seats its owner, "Katıl" and "Bu masadayım"
+// ask the owner, the owner ends the table and a participant leaves it.
 export const roomsApi = {
   create: (body: Omit<CreateRoomRequest, 'action'>) =>
     invoke<CreateRoomResponse>('rooms', { action: 'create', ...body }),
-  createSolo: () => invoke<CreateRoomResponse>('rooms', { action: 'create-solo' }),
-  // With `side`: "Bu masadayım", a member of that side (docs/SPEC_V3.md §22.C).
-  requestJoin: (roomId: string, profiled: boolean, side?: Side) =>
+  // "Lobiye aç" with the sheet's intent and game tag, "Lobiden çek" without.
+  setVisibility: (
+    roomId: string,
+    open: boolean,
+    tags: { intent?: Intent; gameTag?: Concept } = {},
+  ) => invoke<RoomsOkResponse>('rooms', { action: 'set-visibility', roomId, open, ...tags }),
+  // The owner's icon picker (K-45, K-59).
+  setIcon: (roomId: string, icon: string) =>
+    invoke<SetIconResponse>('rooms', { action: 'set-icon', roomId, icon }),
+  rerollName: (roomId: string) =>
+    invoke<RerollNameResponse>('rooms', { action: 'reroll-name', roomId }),
+  // "Katıl" (an open table) or, with `asMember`, "Bu masadayım" (a running one). The person sits
+  // with the check-in's identity (docs/SPEC_V4.md §4.D).
+  requestJoin: (roomId: string, asMember = false) =>
     invoke<RequestJoinResponse>('rooms', {
       action: 'request-join',
       roomId,
-      profiled,
-      ...(side ? { side } : {}),
+      ...(asMember ? { asMember } : {}),
     }),
   respond: (requestId: string, accept: boolean) =>
     invoke<RoomsOkResponse>('rooms', { action: 'respond', requestId, accept }),
-  // The request card's profile (docs/SPEC_V3.md §23.E): only the leader who can answer, while the
-  // request waits; not_found otherwise.
+  // The request card's profile (docs/SPEC_V3.md §23.E): only the owner, while the request waits;
+  // not_found otherwise.
   requestProfile: (requestId: string) =>
     invoke<RequestProfileResponse>('rooms', { action: 'request-profile', requestId }),
-  // `players`: Sahtekar only, the table's count (1-4); without it the server takes the check-in
-  // headcount (docs/SPEC_V3.md §20.2a).
-  proposeGame: (roomId: string, concept: Concept, players?: number) =>
-    invoke<ProposeGameResponse>('rooms', {
-      action: 'propose-game',
-      roomId,
-      concept,
-      ...(players ? { players } : {}),
-    }),
-  answerGame: (roomId: string, accept: boolean, players?: number) =>
-    invoke<RoomsOkResponse>('rooms', {
-      action: 'answer-game',
-      roomId,
-      accept,
-      ...(players ? { players } : {}),
-    }),
+  // Oyun Seç: one vote a person; null takes it back (docs/SPEC_V4.md §4.F).
+  vote: (roomId: string, concept: string | null) =>
+    invoke<RoomsOkResponse>('rooms', { action: 'vote', roomId, concept }),
   endGame: (roomId: string) => invoke<RoomsOkResponse>('rooms', { action: 'end-game', roomId }),
+  leaveGame: (roomId: string) => invoke<RoomsOkResponse>('rooms', { action: 'leave-game', roomId }),
+  // "Masayı bitir": the owner's, for everyone.
   end: () => invoke<RoomsOkResponse>('rooms', { action: 'end' }),
-  // "Odadan çık" (docs/SPEC_V3.md §22.D): a leader hands its side to the oldest member.
+  // "Masadan ayrıl": the table goes on for the others; an owner hands it to the earliest (K-13).
   leave: (roomId: string) => invoke<RoomsOkResponse>('rooms', { action: 'leave', roomId }),
+  // Table invites (docs/SPEC_V4.md §4.G).
+  invite: (roomId: string, friendPublicId: string) =>
+    invoke<RoomsOkResponse>('rooms', { action: 'invite', roomId, friendPublicId }),
+  answerInvite: (inviteId: string, accept: boolean) =>
+    invoke<RoomsOkResponse>('rooms', { action: 'answer-invite', inviteId, accept }),
 };
 
 export const chatApi = {
@@ -320,6 +324,9 @@ export const friendsApi = {
     invoke<FriendsOkResponse>('friends', { action: 'respond', requestId, accept }),
   addFromRoom: (historyId: string) =>
     invoke<FriendsOkResponse>('friends', { action: 'add-from-room', historyId }),
+  // "Eklendi" pressed again (K-67): the quiet add is taken back; after a match it stays.
+  withdrawAdd: (historyId: string) =>
+    invoke<FriendsOkResponse>('friends', { action: 'withdraw-add', historyId }),
   remove: (publicId: string, report?: ReportReason) =>
     invoke<FriendsOkResponse>('friends', {
       action: 'remove',
