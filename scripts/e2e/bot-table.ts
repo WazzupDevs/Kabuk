@@ -727,20 +727,32 @@ export const actions: Record<string, (args: Json) => Promise<Json>> = {
   },
 
   // İtiraz on the other table's last claim, inside its window.
-  async 'say-object'() {
-    const room = await retryUntil('a claim to object to', async () => {
-      const r = await sayRoom();
-      const claim = r.state.lastClaim;
-      return claim && claim.table !== r.side && Date.now() < (r.state.objectionEndsAt ?? 0)
-        ? r
-        : null;
-    });
-    return call(room.kind, {
-      action: 'object',
-      roomId: room.id,
-      round: room.state.roundNo,
-      step: room.state.lastClaim?.step,
-    });
+  // Objects to the other table's claim while its window is open. `{"armed":true}`: answers at once
+  // and objects in the background as soon as the claim is there, for a flow that sends it before the
+  // device's own claim: Harf's window is 3 s, and a tap on the emulator can take as long to settle
+  // (10-harf, WazzupDevs/Kabuk#202's light-3).
+  async 'say-object'(args) {
+    const object = async () => {
+      const room = await retryUntil('a claim to object to', async () => {
+        const r = await sayRoom();
+        const claim = r.state.lastClaim;
+        return claim && claim.table !== r.side && Date.now() < (r.state.objectionEndsAt ?? 0)
+          ? r
+          : null;
+      });
+      return call(room.kind, {
+        action: 'object',
+        roomId: room.id,
+        round: room.state.roundNo,
+        step: room.state.lastClaim?.step,
+      });
+    };
+    if (args.armed !== true) return object();
+    object().then(
+      () => console.log('bot-table say-object (armed) ok'),
+      (err: unknown) => console.error(`bot-table say-object (armed) failed: ${String(err)}`),
+    );
+    return { armed: true };
   },
 
   // Local only: pushes the running clocks (the turn and the objection window) 60 seconds forward,
