@@ -245,6 +245,53 @@ describe('"Masa kur" (§4.E)', () => {
       200,
     );
   });
+
+  // Step 4.5b: "Masanı lobiye aç" keeps its intent and game tag (SPEC_V3 §23.C, aynen).
+  it('takes the lobby sheet’s intent and game tag when opening, and clears them when leaving', async () => {
+    const [owner] = await all(1);
+    const roomId = await tableWith(owner, [], { open: false });
+    expect(
+      await rooms(owner, {
+        action: 'set-visibility',
+        roomId,
+        open: true,
+        intent: 'game',
+        gameTag: 'sahtekar',
+      }),
+    ).toEqual({ status: 200, body: { ok: true } });
+    const opened = await roomRow(roomId);
+    expect([opened.visibility, opened.intent, opened.game_tag]).toEqual([
+      'open',
+      'game',
+      'sahtekar',
+    ]);
+    const since = opened.waiting_since;
+
+    // New tags while in the lobby: the tags change, the table keeps its place in the lobby.
+    expect(
+      (await rooms(owner, { action: 'set-visibility', roomId, open: true, intent: 'chat' })).status,
+    ).toBe(200);
+    const retagged = await roomRow(roomId);
+    expect([retagged.intent, retagged.game_tag]).toEqual(['chat', null]);
+    expect(retagged.waiting_since).toEqual(since);
+
+    expect((await rooms(owner, { action: 'set-visibility', roomId, open: false })).status).toBe(
+      200,
+    );
+    const closed = await roomRow(roomId);
+    expect([closed.visibility, closed.intent, closed.game_tag]).toEqual(['private', null, null]);
+
+    expect(
+      (
+        await rooms(owner, {
+          action: 'set-visibility',
+          roomId,
+          open: true,
+          intent: 'party',
+        } as never)
+      ).status,
+    ).toBe(400);
+  });
 });
 
 describe('"Katıl" (§4.E)', () => {

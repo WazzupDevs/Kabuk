@@ -306,6 +306,13 @@ Değişmez kabul edilir.
   - Tek aktif mekanda Keşfet mekanın kartıdır (K-37); varsayılan şehir ve şehir düğmesi K-38'de. Aktiviteler yalnızca bugünün etkinliklerini gösterir (K-15).
   - Mekan türü (proje sahibinin kararı): `venues.category` `kafe`, `cay_bahcesi` ya da `yemek`; içerikte mekan başına elle (`category`, boşsa `kafe`), Keşfet listesi (`explore_venues`) taşır. Kampüs türü değildir: `kind` ile ayrı kalır ve türü yoktur.
 - **Bildirim düğmesi** yalnızca Mesajlar'da (K-6, §4.G). Proje sahibi 20 Ekim'de 4.7'den öne aldı; Keşfet ekranının PR'ında Keşfet, Aktiviteler ve Profil'in başından kalktı. Bekleyen istek ya da okunmamış mesaj varken alt çubuktaki Mesajlar sekmesinde nokta görünür; ekran okuyucu ikisini ayrı okur ("Mesajlar, 1 okunmamış, 2 yeni bildirim"). Zilin içeriği bugünkü gibi (sayısı bekleyen istekler, Bildirimler sayfası); v43'ün zili ve listesi 4.7'de gelir.
+- **Mekan ve masa (adım 4.5b):**
+  - **Masa kur'da ad önizlemesi yok:** v46 sayfada adı ve "Başka ad"ı gösterir. Sunucu adı masa kurulurken üretir ve yenileme masaya bağlıdır (`rooms/reroll-name { roomId }`), bu yüzden ad masa kurulunca görünür ve "Başka ad" Masadakiler'deki sahibe özel ad kutusundadır (v46: `.renamebox`, aynı haklar).
+  - **"Lobiye aç" etiketleri:** v46'nın "Masanı lobiye aç" sayfası niyet ve oyun etiketini taşır (SPEC_V3 §23.C aynen). Masa önce kurulup sonra lobiye açıldığı için etiketler `rooms/set-visibility { open, intent?, gameTag? }` ile gider; lobiden çekmek onları siler (`20261109090000_lobby_tags.sql`).
+  - **Davet'te "Masanda" yok:** v46 masadaki arkadaşın satırında "Masanda" yazar. Masadakiler profil kimliği taşımadığından (kural 4) uygulama bunu bilemez; satır "Davet et" kalır, sunucu masada oturan arkadaşa giden daveti sessizce yok sayar.
+  - **Sahibin "Masadan ayrıl"ı** (K-13, K-40) "Masayı bitir?" sayfasında ikinci düğmedir; v46'da bu yol çizilmemiş.
+  - **Gelen istek** v46'da masa ekranının üstündeki satırdır (`data-req`); uygulama bugünkü genel istek kartını korur (her sekmede 60 saniye kaçmaz). Satır görsel adımda gelir.
+  - **Kapsül görünüşü:** anonim kişinin kapsülü (4.4'ün katalogu) uygulamada henüz çizilmiyor; anonim kişi adıyla ve varsayılan yüzle görünür. Kapsül çizimi 4.4'ün istemci adımıyla gelir.
 
 ## 4.D Kimlik ve mekan sohbeti (adım 4.4)
 
