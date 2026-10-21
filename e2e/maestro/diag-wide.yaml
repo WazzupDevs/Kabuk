@@ -1,8 +1,10 @@
-# Diagnostic (WazzupDevs/Kabuk#206, not to be merged): sign up, then the v46 gallery's "320 dp"
-# press on a Galaxy S23's screen with dumps of the app's state (flows/01c-gallery-wide.yaml).
+# Diagnostic (WazzupDevs/Kabuk#206, not to be merged): sign up, leave the Keşfet map for other tabs
+# (flows/diag-map.yaml), then the v46 gallery's "320 dp" press on a Galaxy S23's screen with dumps
+# of the app's state (flows/01c-gallery-wide.yaml).
 appId: app.kabuk.mobile
 name: Teşhis, galerinin 320 basışı S23 ekranında
 ---
 - runFlow: flows/01-login.yaml
 - runFlow: flows/01b-design.yaml
+- runFlow: flows/diag-map.yaml
 - runFlow: flows/01c-gallery-wide.yaml
