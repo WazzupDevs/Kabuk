@@ -68,6 +68,21 @@ appId: app.kabuk.mobile
 # the first full render: a second screenshot a few seconds later shows them.
 - evalScript: ${const end = Date.now() + 4000; while (Date.now() < end) {} }
 - takeScreenshot: 05c-explore-map-settled
+# From the map to another tab: the bar there blurs that tab's screen, nothing of the map (0.6.0:
+# a black band stayed at the bottom of the next screen). Back on Keşfet the map is still open.
+- tapOn:
+    id: tab-activities
+- extendedWaitUntil:
+    visible:
+      id: activities-no-events
+    timeout: 10000
+- takeScreenshot: 05h-explore-map-left
+- tapOn:
+    id: tab-explore
+- extendedWaitUntil:
+    visible:
+      id: explore-map-ready
+    timeout: 30000
 - tapOn: Liste
 - scrollUntilVisible:
     element:
