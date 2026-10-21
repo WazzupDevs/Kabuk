@@ -39,7 +39,7 @@ const galleryFile = join(root, GALLERY);
 const BUTTONS = 'Düğmeler';
 // The groups whose real screen is read too (transitions where used, the motion rules that reach
 // them): their motion test reads it.
-const REAL_GROUPS = new Set([BUTTONS, 'Sekme çubuğu', ...SCREEN_PARTS.map((p) => p.group)]);
+const REAL_GROUPS = new Set([BUTTONS, 'Sekme çubuğu', 'Form', ...SCREEN_PARTS.map((p) => p.group)]);
 // v46's state classes read as a look of their own (the gallery copies only the resting look).
 const STATE_CLASSES: Record<string, string[]> = { gonder: ['ready'] };
 // Every motion rule of the inventory, by its selector: transitions, animations (and their
@@ -139,7 +139,8 @@ function readElement(el: Element) {
           },
         }
       : {};
-  // What a text field shows: its value or placeholder, in their font and colours.
+  // What a text field shows: its value or placeholder, in their font and colours, where it puts
+  // them, its digits (`tabular-nums`: each as wide as the others) and its caret.
   const fieldOf = (n: Element, c: CSSStyleDeclaration) =>
     n instanceof HTMLInputElement || n instanceof HTMLTextAreaElement
       ? {
@@ -150,6 +151,9 @@ function readElement(el: Element) {
             letterSpacing: c.letterSpacing,
             color: c.color,
             placeholderColor: getComputedStyle(n, '::placeholder').color,
+            textAlign: c.textAlign,
+            numeric: c.fontVariantNumeric,
+            caret: c.caretColor,
           },
         }
       : {};
@@ -200,6 +204,26 @@ function readElement(el: Element) {
           },
         }
       : {};
+  // A select shows its chosen option's text (v46's `.dob select`: "Seç" until a value is picked).
+  const selectOf = (n: Element) =>
+    n instanceof HTMLSelectElement ? { select: { text: n.selectedOptions[0]?.text ?? '' } } : {};
+  // A pseudo-element drawn on the element's corner (the used anonymous switch's lock: `.anon-sw.
+  // used::before`): its box, where it sits, its edge, ground and picture.
+  const before = getComputedStyle(el, '::before');
+  const drawnBefore =
+    before.content !== 'none' && draws(before)
+      ? {
+          before: {
+            box: [px(before.width), px(before.height)],
+            inset: [before.top, before.right, before.bottom, before.left].map(px),
+            bg: before.backgroundColor,
+            ...edge(before),
+            radius: before.borderRadius,
+            ...image(before),
+            bgSize: before.backgroundSize,
+          },
+        }
+      : {};
   const r = el.getBoundingClientRect();
   const self = {
     box: box(el),
@@ -212,6 +236,12 @@ function readElement(el: Element) {
     shadow: cs.boxShadow,
     ...(cs.backdropFilter && cs.backdropFilter !== 'none' ? { backdrop: cs.backdropFilter } : {}),
     ...drawnAfter,
+    ...drawnBefore,
+    ...hitOf(el),
+    ...fieldOf(el, cs),
+    ...selectOf(el),
+    // Below 1 only where v46 fades it (a switch that cannot change now).
+    ...(Number(cs.opacity) < 1 ? { opacity: Number(cs.opacity) } : {}),
     display: cs.display,
     textAlign: cs.textAlign,
     padding: cs.padding,
@@ -494,8 +524,14 @@ async function pressed(page: Page, selector: string) {
 
 // The same element read on two pages: everything from the still one (`anim=0`, v46's own switch:
 // every animation and transition at 0, so nothing is caught mid-flight and a forced `:active` shows
-// at once), the transitions from the moving one.
+// at once), the transitions from the moving one, and a field's caret too (the still page hides it:
+// `caret-color: transparent !important`).
 type DrawnNode = { transitions?: unknown; animation?: unknown; children?: DrawnNode[] };
+type WithField = { field?: { caret?: string } };
+const caretFrom = <T extends WithField>(still: T, moving: WithField | undefined): T =>
+  still.field && moving?.field
+    ? { ...still, field: { ...still.field, caret: moving.field.caret } }
+    : still;
 function withTransitions(still: Reading, moving: Reading): Reading {
   // An svg's nodes take theirs from the same node on the moving page (the trees are the same).
   const nodes = (a: DrawnNode[], b: DrawnNode[] | undefined): DrawnNode[] =>
@@ -511,7 +547,7 @@ function withTransitions(still: Reading, moving: Reading): Reading {
     });
   return {
     self: {
-      ...still.self,
+      ...caretFrom(still.self, moving.self),
       transitions: moving.self.transitions,
       ...('animation' in moving.self ? { animation: moving.self.animation } : {}),
     },
@@ -520,7 +556,7 @@ function withTransitions(still: Reading, moving: Reading): Reading {
         { transitions?: unknown; animation?: unknown; nodes?: DrawnNode[] } | undefined;
       const own = p as { nodes?: DrawnNode[] };
       return {
-        ...(p as object),
+        ...caretFrom(p as WithField, m as WithField | undefined),
         transitions: m?.transitions ?? [],
         ...(m?.animation ? { animation: m.animation } : {}),
         ...(own.nodes ? { nodes: nodes(own.nodes, m?.nodes) } : {}),
