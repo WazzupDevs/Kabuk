@@ -39,4 +39,7 @@ maestro test "${FLOW:-e2e/maestro/p0.yaml}" \
   --debug-output "$OUT/maestro" 2>&1 | tee "$OUT/maestro-console.txt" || status=$?
 
 adb emu screenrecord stop || true
+# Android's crash buffer: an app's Java or native crash with its stack (01c-gallery-wide's 320 press
+# closed the app on two phones in 0.6.0). In the job's artifact and the screenshot branch.
+adb logcat -b crash -d > "$OUT/logcat-crash.txt" 2>&1 || true
 exit "$status"
