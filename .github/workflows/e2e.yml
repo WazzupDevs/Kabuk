@@ -161,31 +161,22 @@ jobs:
     permissions:
       actions: read
       contents: read
+    # Diagnostic (WazzupDevs/Kabuk#206, not to be merged): the gallery's 320 press on an S23's
+    # screen at Android 14, 15 and 16, the default and the largest text size.
     strategy:
       fail-fast: false
       matrix:
-        scheme: [light, dark]
-        shard: [1, 2, 3, 4]
-        # Android's text size (Settings → Display → Font size): the default, and also the largest
-        # the app is checked at, 1.3 (CLAUDE.md → "Ekran davranışı"), in light only. Both nightly,
-        # by hand and on a PR's push while e2e-large is on; 1.3 alone when e2e-large has just been
-        # added; otherwise a PR runs the default size.
-        font: >-
-          ${{ fromJSON(
-          (github.event_name != 'pull_request' ||
-           (github.event.action != 'labeled' &&
-            contains(github.event.pull_request.labels.*.name, 'e2e-large'))) && '["1", "1.3"]' ||
-          (github.event.action == 'labeled' && github.event.label.name == 'e2e-large') && '["1.3"]' ||
-          '["1"]') }}
-        exclude:
-          - scheme: dark
-            font: '1.3'
+        include:
+          - { scheme: light, shard: 1, font: '1', api: 34 }
+          - { scheme: light, shard: 1, font: '1.3', api: 34 }
+          - { scheme: light, shard: 1, font: '1', api: 35 }
+          - { scheme: light, shard: 1, font: '1', api: 36 }
+          - { scheme: light, shard: 1, font: '1.3', api: 36 }
     env:
       SCHEME: ${{ matrix.scheme }}
       FONT_SCALE: ${{ matrix.font }}
-      FLOW: e2e/maestro/shard-${{ matrix.shard }}.yaml
-      # light-1 … dark-4 at the default size, large-1 … large-4 at 1.3.
-      OUT: ${{ github.workspace }}/e2e-out/${{ matrix.font == '1' && format('{0}-{1}', matrix.scheme, matrix.shard) || format('large-{0}', matrix.shard) }}
+      FLOW: e2e/maestro/diag-wide.yaml
+      OUT: ${{ github.workspace }}/e2e-out/diag-api${{ matrix.api }}-font${{ matrix.font == '1' && '1' || '13' }}
       APK: ${{ github.workspace }}/apk/app-release.apk
     steps:
       - uses: actions/checkout@v4
@@ -258,16 +249,16 @@ jobs:
         with:
           path: |
             /usr/local/lib/android/sdk/emulator
-            /usr/local/lib/android/sdk/system-images/android-34/google_apis/x86_64
-          key: android-emulator-34-google_apis-x86_64-${{ steps.week.outputs.week }}
-          restore-keys: android-emulator-34-google_apis-x86_64-
+            /usr/local/lib/android/sdk/system-images/android-${{ matrix.api }}/google_apis/x86_64
+          key: android-emulator-${{ matrix.api }}-google_apis-x86_64-${{ steps.week.outputs.week }}
+          restore-keys: android-emulator-${{ matrix.api }}-google_apis-x86_64-
       # Without this week's cache (before main's first run of the week, or a new emulator) the two
       # packages are downloaded here, with retries (scripts/e2e/sdk-install.sh): the failure ("Error
       # on ZipFile unknown archive", the emulator on #121 and #123, the system image on #126's first
       # run) passes on a second try. The runner action then finds them installed.
       - name: Emulator and system image download (with retries)
         if: steps.emulator-cache.outputs.cache-hit != 'true'
-        run: bash scripts/e2e/sdk-install.sh emulator 'system-images;android-34;google_apis;x86_64'
+        run: bash scripts/e2e/sdk-install.sh emulator 'system-images;android-${{ matrix.api }};google_apis;x86_64'
       # One job of main's run saves it, before the emulator starts: only the downloaded packages.
       - name: Emulator and system image cache (save, main only)
         if: >-
@@ -277,7 +268,7 @@ jobs:
         with:
           path: |
             /usr/local/lib/android/sdk/emulator
-            /usr/local/lib/android/sdk/system-images/android-34/google_apis/x86_64
+            /usr/local/lib/android/sdk/system-images/android-${{ matrix.api }}/google_apis/x86_64
           key: ${{ steps.emulator-cache.outputs.cache-primary-key }}
       # Its failure does not end the job at once: the steps below decide on one retry, and "Result"
       # fails the job unless the retry passed.
@@ -288,7 +279,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         with:
-          api-level: 34
+          api-level: ${{ matrix.api }}
           arch: x86_64
           target: google_apis
           ram-size: 4096M
@@ -343,7 +334,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         with:
-          api-level: 34
+          api-level: ${{ matrix.api }}
           arch: x86_64
           target: google_apis
           ram-size: 4096M
@@ -401,7 +392,7 @@ jobs:
       - if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-run-${{ matrix.font == '1' && format('{0}-{1}', matrix.scheme, matrix.shard) || format('large-{0}', matrix.shard) }}
+          name: e2e-run-diag-api${{ matrix.api }}-font${{ matrix.font == '1' && '1' || '13' }}
           path: ${{ env.OUT }}
           retention-days: 14
 
@@ -418,8 +409,9 @@ jobs:
   # shot twice: the noise the hard threshold is set above (the summary's "Gürültü" table).
   visual:
     needs: changed
+    # Diagnostic (WazzupDevs/Kabuk#206): off.
     if: >-
-      needs.changed.outputs.run != 'false' && !cancelled() &&
+      false && needs.changed.outputs.run != 'false' && !cancelled() &&
       (github.event_name != 'pull_request' ||
       (github.event.action == 'labeled' && github.event.label.name == 'e2e') ||
       (github.event.action != 'labeled' &&

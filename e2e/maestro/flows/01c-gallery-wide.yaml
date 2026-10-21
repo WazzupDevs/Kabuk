@@ -16,14 +16,54 @@ appId: app.kabuk.mobile
 - extendedWaitUntil:
     visible:
       id: gal-colors
-    timeout: 20000
+    timeout: 60000
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: dump
+      BODY: '{"name":"1-open"}'
 - tapOn:
     id: v46-gallery-narrow
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: dump
+      BODY: '{"name":"2-pressed"}'
+- extendedWaitUntil:
+    visible:
+      id: diag-never
+    timeout: 20000
+    optional: true
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: dump
+      BODY: '{"name":"3-pressed-20s"}'
 - extendedWaitUntil:
     visible:
       id: gal-colors
-    timeout: 10000
+    timeout: 60000
 - takeScreenshot: 04w-v46-gallery-wide-narrow
+- scroll
+- scroll
+- scroll
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: dump
+      BODY: '{"name":"4-scrolled"}'
+- takeScreenshot: 04w-v46-gallery-wide-narrow-scrolled
+- extendedWaitUntil:
+    visible:
+      id: diag-never
+    timeout: 30000
+    optional: true
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: dump
+      BODY: '{"name":"5-scrolled-30s"}'
+- takeScreenshot: 04w-v46-gallery-wide-narrow-scrolled-30s
 - runScript:
     file: ../scripts/bot.js
     env:

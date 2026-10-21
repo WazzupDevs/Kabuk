@@ -14,6 +14,7 @@
 //   node --experimental-strip-types scripts/e2e/bot-table.ts opponent  # the other table, for one phone
 //   node --experimental-strip-types scripts/e2e/bot-table.ts <action> [json]
 import { execFileSync } from 'node:child_process';
+import { writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { join } from 'node:path';
 
@@ -1032,6 +1033,35 @@ export const actions: Record<string, (args: Json) => Promise<Json>> = {
     return { size, density };
   },
 
+  // Diagnostic (WazzupDevs/Kabuk#206): the app's memory, graphics, busiest threads, exit reasons
+  // and the last log lines at this moment, into $OUT/dump-<name>-*.txt.
+  async dump(args) {
+    const name = typeof args.name === 'string' && /^[\w-]+$/.test(args.name) ? args.name : null;
+    const dir = process.env.OUT;
+    if (!name || !dir) throw new Error(`dump: name ${String(args.name)}, OUT ${String(dir)}`);
+    const sdk = process.env.ANDROID_HOME;
+    const adb = sdk ? join(sdk, 'platform-tools', 'adb') : 'adb';
+    const app = 'app.kabuk.mobile';
+    const runs: [string, string[]][] = [
+      ['meminfo', ['shell', 'dumpsys', 'meminfo', app]],
+      ['gfxinfo', ['shell', 'dumpsys', 'gfxinfo', app]],
+      ['threads', ['shell', `top -b -n 1 -H -m 25 -p $(pidof ${app})`]],
+      ['exit-info', ['shell', 'dumpsys', 'activity', 'exit-info', app]],
+      ['logcat', ['logcat', '-d', '-v', 'threadtime', '-t', '4000']],
+      ['crash', ['logcat', '-b', 'crash', '-d']],
+    ];
+    for (const [what, cmd] of runs) {
+      let text: string;
+      try {
+        text = execFileSync(adb, cmd, { maxBuffer: 64 << 20, timeout: 30_000 }).toString();
+      } catch (e) {
+        text = `failed: ${e instanceof Error ? e.message : String(e)}`;
+      }
+      writeFileSync(join(dir, `dump-${name}-${what}.txt`), text);
+    }
+    return { name };
+  },
+
   async 'end-room'() {
     return call('rooms', { action: 'end' });
   },
@@ -1549,7 +1579,7 @@ async function run(action: string, args: Json): Promise<Json> {
   const fn = actions[action];
   if (!fn) throw new Error(`unknown action ${action}; one of ${Object.keys(actions).join(', ')}`);
   // Each CLI call is its own process: sign in first unless the action does not need it.
-  if (!client && !['setup', 'single-venue', 'login', 'screen'].includes(action)) {
+  if (!client && !['setup', 'single-venue', 'login', 'screen', 'dump'].includes(action)) {
     await actions.login?.({});
   }
   return fn(args);
