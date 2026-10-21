@@ -49,6 +49,7 @@ import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 import { CityButton } from '@/ui/CityButton';
 import { FilterChips } from '@/ui/FilterChips';
 import { HereCard } from '@/ui/HereCard';
+import { PullScroll } from '@/ui/PullScroll';
 import { SearchField } from '@/ui/SearchField';
 import { TopBar } from '@/ui/TopBar';
 import { VenueList as VenueCard } from '@/ui/VenueList';
@@ -196,6 +197,7 @@ export default function ExploreScreen() {
             searching={query.trim() !== ''}
             here={hereCard}
             bottomSpace={barSpace}
+            onRefresh={() => Promise.all([venues.refetch(), cities.refetch()])}
           />
         ) : null}
         {ready && layout === 'single' && venues.data[0] ? (
@@ -232,6 +234,7 @@ function VenueList({
   searching,
   here,
   bottomSpace,
+  onRefresh,
 }: {
   venues: readonly CityVenue[];
   eventsFirst: boolean;
@@ -240,6 +243,7 @@ function VenueList({
   searching: boolean;
   here: Here | null;
   bottomSpace: number;
+  onRefresh: () => Promise<unknown>;
 }) {
   const { scheme } = useTheme();
   const side = -V46_EXPLORE[scheme].chips.margin[3];
@@ -247,7 +251,9 @@ function VenueList({
   const [sheetKey, setSheetKey] = useState(0);
   const cityList = useMemo(() => exploreCities(listed), [listed]);
   return (
-    <ScrollView
+    // Pulled down at its top it fetches the list again (v46's `.ptr-ind`).
+    <PullScroll
+      onRefresh={onRefresh}
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"
       contentContainerStyle={{ paddingHorizontal: side, paddingBottom: SPACING[8] + bottomSpace }}
@@ -309,7 +315,7 @@ function VenueList({
           place={place}
         />
       ) : null}
-    </ScrollView>
+    </PullScroll>
   );
 }
 

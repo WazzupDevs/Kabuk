@@ -40,6 +40,7 @@ import {
   cityScheme,
   exploreIcons,
   exploreMotions,
+  pullRefresh,
   hereScheme,
   listScheme,
   liveScheme,
@@ -544,6 +545,20 @@ const PARTS_TYPES = [
   '  iterations: number | null;',
   '  holdsBefore: boolean;',
   '};',
+  '',
+  "// Keşfet's pull to refresh, read from v46's script (scripts/v46/explore.ts → pullRefresh).",
+  'export type V46PullScheme = {',
+  '  size: number;',
+  '  lockAt: number;',
+  '  restAt: number;',
+  '  stretch: number;',
+  '  fadeOver: number;',
+  '  lift: number;',
+  '  capsule: { w: number; h: number; dx: number; dy: number };',
+  '  gap: number;',
+  '  scaleFrom: number;',
+  '  settle: { ms: number; ease: V46Bezier; offWhenReduced: boolean };',
+  '};',
 ];
 
 // The measurement (scripts/v46/measured.ts) as parts.generated.ts: per component only the values its
@@ -727,6 +742,9 @@ export async function buildPartsModule(root: string): Promise<string> {
     "// Keşfet's motions: rows coming in, steam, the live dot (scripts/v46/explore.ts).",
     'export const V46_EXPLORE_MOTION: { rowIn: V46Animation; rowStaggerMs: number; steam: V46Animation; livePulse: V46Animation; liveHalo: V46Animation; liveFade: V46Animation } = ' +
       `${json(exploreMotions(inventory, el('mekan-listesi', 'light')))};`,
+    '',
+    "// Keşfet's pull to refresh (scripts/v46/explore.ts → pullRefresh).",
+    `export const V46_PULL: V46PullScheme = ${json(pullRefresh(html))};`,
     '',
   );
   const target = resolve(root, PARTS_MODULE);

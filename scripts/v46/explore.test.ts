@@ -6,11 +6,13 @@ import { describe, expect, it } from 'vitest';
 import {
   V46_EXPLORE as explore,
   V46_EXPLORE_MOTION as motion,
+  V46_PULL,
   V46_VENUE_THUMBS as thumbs,
   type V46Animation,
   type V46Transition,
 } from '../../apps/mobile/src/theme/parts.generated.ts';
 import { V46_COMPONENTS } from '../../apps/mobile/src/theme/tokens.generated.ts';
+import { pullRefresh } from './explore.ts';
 import { readInventory } from './inventory.ts';
 import { keyframeChannels, parseKeyframes } from './keyframes.ts';
 import { parseEase, readMeasured } from './measured.ts';
@@ -334,5 +336,32 @@ describe("the app's Keşfet", () => {
     // The screen keeps it, so the field is its own box (the visual gate crops to it).
     expect(screen).toMatch(/marginTop: V46_EXPLORE\[scheme\]\.search\.marginTop/);
     expect(source('SearchField.tsx')).not.toMatch(/marginTop/);
+  });
+
+  it("fetches the list again when pulled at its top, with v46's indicator (`.ptr-ind`)", () => {
+    // v46's numbers, read from its script (the generator stops when a pattern no longer matches).
+    expect(V46_PULL).toEqual(pullRefresh(html));
+    expect(html).toContain(
+      'function ease(t) { return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }',
+    );
+    expect(html).toContain(
+      "function topOk() { return window.scrollY <= 0 && mode === 'idle' && vm === 'list'; }",
+    );
+    // The list view only, fetching the venues and their cities.
+    expect(screen).toMatch(/<PullScroll\s+onRefresh=\{onRefresh\}/);
+    expect(screen).toMatch(
+      /onRefresh=\{\(\) => Promise\.all\(\[venues\.refetch\(\), cities\.refetch\(\)\]\)\}/,
+    );
+    const pull = source('PullScroll.tsx');
+    // At the top and not already refreshing (v46's `topOk`).
+    expect(pull).toMatch(/pulling\.set\(atTop\.get\(\) && !busy\.get\(\)\)/);
+    // A release past the lock refreshes; the mark turns (Dönüş) at least as long as a loader stays.
+    expect(pull).toMatch(/if \(finger\.get\(\) >= p\.lockAt\) \{/);
+    expect(pull).toMatch(/<Loader kind="spin" size=\{p\.size\} delay=\{0\} \/>/);
+    expect(pull).toMatch(/wait\(LOADER_MIN_VISIBLE_MS\)/);
+    // The list settles with v46's transition, at once with reduce motion; it does not stretch.
+    expect(pull).toMatch(/const still = reduce && p\.settle\.offWhenReduced;/);
+    expect(pull).toMatch(/Easing\.bezier\(\.\.\.p\.settle\.ease\)/);
+    expect(pull).toMatch(/overScrollMode="never"/);
   });
 });
