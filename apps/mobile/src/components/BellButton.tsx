@@ -4,7 +4,7 @@ import { tr } from '@/i18n/tr';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING, TOUCH } from '@/theme/tokens';
 
-import { TabIcon } from './Glyph';
+import { BellIcon } from './Glyph';
 import { Text } from './Text';
 
 const BADGE = SPACING[4] + SPACING[0.5];
@@ -38,7 +38,7 @@ export function BellButton({
             backgroundColor: pressed ? colors.surface2 : colors.surface,
           }}
         >
-          <TabIcon name="bell" color={colors.text} />
+          <BellIcon color={colors.text} />
           {count > 0 ? (
             <View
               className="absolute items-center justify-center"

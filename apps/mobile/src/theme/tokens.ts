@@ -151,14 +151,13 @@ export type Shape = {
   };
   // Border widths: cards (0 = none), rings (an avatar's unread ring, a selected choice, the second
   // table's face), controls (inputs, segments, switches), tags, the hairline (list rows, trust
-  // screens) and the active Mekan tab's ring.
+  // screens).
   stroke: {
     card: number;
     feature: number;
     control: number;
     tag: number;
     hairline: number;
-    venueRing: number;
   };
   // The describing team in Tabu: an accent ring or a filled sticker.
   selectedTeam: 'ring' | 'fill';
@@ -243,11 +242,6 @@ export const SPACING = {
   14: 56,
   16: 64,
 } as const;
-
-// The tab bar: the selected tab's icon is solid and in one colour, the others are muted lines.
-// contrast.test.ts checks it against the bar and the icon's halo. The Mekan tab is the mark on an
-// ink square (src/components/VenueTabIcon.tsx), the same in both schemes.
-export const TAB_TONE = 'accent' as const satisfies PaletteKey;
 
 // Opacities: the scrim behind a sheet, a pressed text button. A disabled button is not faded: it
 // takes a neutral fill (theme/buttonFill.ts).

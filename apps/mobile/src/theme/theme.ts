@@ -115,7 +115,7 @@ export const THEME: ThemeDefinition = {
       roleCard: 26,
       letterTile: 38,
     },
-    stroke: { card: 0, feature: 2, control: 2, tag: 0, hairline: 1, venueRing: 2 },
+    stroke: { card: 0, feature: 2, control: 2, tag: 0, hairline: 1 },
     selectedTeam: 'fill',
     screenPadding: 20,
   },
