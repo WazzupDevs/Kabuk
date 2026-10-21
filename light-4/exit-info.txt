@@ -1,0 +1,28 @@
+ACTIVITY MANAGER PROCESS EXIT INFO (dumpsys activity exit-info)
+Last Timestamp of Persistence Into Persistent Storage: 2026-10-21 19:30:29.061
+  package: app.kabuk.mobile
+    Historical Process Exit for uid=10192
+        ApplicationExitInfo #0:
+          timestamp=2026-10-21 19:28:06.436 pid=8708 realUid=10192 packageUid=10192 definingUid=10192 user=0
+          process=app.kabuk.mobile reason=10 (USER REQUESTED) subreason=21 (FORCE STOP) status=0
+          importance=100 pss=187MB rss=327MB description=stop app.kabuk.mobile due to from pid 9039 state=empty trace=null
+        ApplicationExitInfo #1:
+          timestamp=2026-10-21 19:27:04.724 pid=8445 realUid=10192 packageUid=10192 definingUid=10192 user=0
+          process=app.kabuk.mobile reason=10 (USER REQUESTED) subreason=21 (FORCE STOP) status=0
+          importance=100 pss=214MB rss=355MB description=stop app.kabuk.mobile due to from pid 8695 state=empty trace=null
+        ApplicationExitInfo #2:
+          timestamp=2026-10-21 19:26:51.180 pid=8142 realUid=10192 packageUid=10192 definingUid=10192 user=0
+          process=app.kabuk.mobile reason=10 (USER REQUESTED) subreason=21 (FORCE STOP) status=0
+          importance=100 pss=208MB rss=348MB description=stop app.kabuk.mobile due to from pid 8434 state=empty trace=null
+        ApplicationExitInfo #3:
+          timestamp=2026-10-21 19:25:59.166 pid=7805 realUid=10192 packageUid=10192 definingUid=10192 user=0
+          process=app.kabuk.mobile reason=10 (USER REQUESTED) subreason=21 (FORCE STOP) status=0
+          importance=100 pss=0.00 rss=0.00 description=stop app.kabuk.mobile due to from pid 7937 state=empty trace=null
+        ApplicationExitInfo #4:
+          timestamp=2026-10-21 19:25:50.545 pid=6533 realUid=10192 packageUid=10192 definingUid=10192 user=0
+          process=app.kabuk.mobile reason=10 (USER REQUESTED) subreason=21 (FORCE STOP) status=0
+          importance=100 pss=252MB rss=395MB description=stop app.kabuk.mobile due to from pid 7787 state=empty trace=null
+        ApplicationExitInfo #5:
+          timestamp=2026-10-21 19:16:49.744 pid=5867 realUid=10192 packageUid=10192 definingUid=10192 user=0
+          process=app.kabuk.mobile reason=10 (USER REQUESTED) subreason=21 (FORCE STOP) status=0
+          importance=100 pss=186MB rss=326MB description=stop app.kabuk.mobile due to from pid 6099 state=empty trace=null
