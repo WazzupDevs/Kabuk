@@ -110,11 +110,14 @@ appId: app.kabuk.mobile
     env:
       ACTION: set-visibility
       BODY: '{"open":false}'
+# The running table is the page's last row: it cannot be centred (at the largest text size the
+# scroll never settles). Once it shows, one more scroll takes the page to its end, where its
+# bottom padding keeps the button clear of the floating tab bar.
 - scrollUntilVisible:
     element:
       id: here-.*
-    centerElement: true
     timeout: 20000
+- scroll
 - tapOn:
     id: here-.*
 - runScript:
