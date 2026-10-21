@@ -1226,8 +1226,8 @@
       }
     },
     {
-      "id": "v46-alan-kod-320",
-      "app": "galeri/v46/alan-kod",
+      "id": "v46-alan-kod-odak-320",
+      "app": "galeri/v46/alan-kod-odak",
       "genislik": 320,
       "uygulamaKirp": "gorsel-oge",
       "baz": false,

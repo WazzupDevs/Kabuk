@@ -9,6 +9,7 @@ import {
   type V46TabKey,
   type V46ThumbKind,
 } from '@/theme/parts.generated';
+import { useTheme } from '@/theme/ThemeProvider';
 import { V46_COMPONENTS } from '@/theme/tokens.generated';
 import { type GalleryId, galleryInfo } from '@/theme/v46Gallery';
 import { AnonSwitch } from '@/ui/AnonSwitch';
@@ -19,7 +20,7 @@ import { FieldError } from '@/ui/FieldError';
 import { FilterChips } from '@/ui/FilterChips';
 import { HereCard } from '@/ui/HereCard';
 import { LiveDot } from '@/ui/LiveDot';
-import { useNarrow } from '@/ui/narrow';
+import { useLayoutWidth, useNarrow } from '@/ui/narrow';
 import { Notice } from '@/ui/Notice';
 import { PhoneField } from '@/ui/PhoneField';
 import { RoundButton } from '@/ui/RoundButton';
@@ -329,20 +330,25 @@ const EXPLORE: Partial<Record<GalleryId, readonly GalleryState[]>> = {
   ],
 };
 
-// The form parts with v46's sample data, as wide as v46 draws them in its gallery (a field in the
-// sign-up's pane), at most the screen. The fields take typing, the switches a press; the used
-// anonymous switch shakes.
+// The form parts with v46's sample data, as wide as v46 draws them: its gallery's width (a field
+// in the sign-up's pane at 360), at most the sign-up's pane on this screen (the screen less `.sup`'s
+// 20 on each side, the screen padding: 280 at 320, as v46's narrow screen). The fields take
+// typing, the switches a press; the used anonymous switch shakes.
 const f = s.form;
 
 const sized = (id: GalleryId, render: () => ReactNode): readonly GalleryState[] => [
-  {
-    key: 'normal',
-    wide: true,
-    render: () => (
-      <View style={{ width: galleryInfo(id).width, maxWidth: '100%' }}>{render()}</View>
-    ),
-  },
+  { key: 'normal', wide: true, render: () => <FormWidth id={id}>{render()}</FormWidth> },
 ];
+
+function FormWidth({ id, children }: { id: GalleryId; children: ReactNode }) {
+  const { shape } = useTheme();
+  const pane = useLayoutWidth() - 2 * shape.screenPadding;
+  return (
+    <View style={{ width: Math.min(galleryInfo(id).width, pane), maxWidth: '100%' }}>
+      {children}
+    </View>
+  );
+}
 
 function SampleName({ word = '', focused = false }: { word?: string; focused?: boolean }) {
   const [value, setValue] = useState(word);

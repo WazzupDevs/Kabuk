@@ -293,7 +293,18 @@ describe("v46's form parts", () => {
     for (const file of ['TextField.tsx', 'PhoneField.tsx', 'TextArea.tsx']) {
       expect(source(file), file).toMatch(/noteTyping\(\)/);
     }
-    // The gallery's own copies are as wide as the sign-up's pane.
+    // The gallery's own copies are as wide as the sign-up's pane: v46's gallery width at 360, the
+    // screen less its padding on a narrower one (280 at 320, v46's narrow sign-up).
     expect(V46_COMPONENTS['alan-isim'].width).toBe(320);
+    const gallery = readFileSync(
+      resolve(root, 'apps/mobile/src/features/gallery/registry.tsx'),
+      'utf8',
+    );
+    expect(gallery).toMatch(/const pane = useLayoutWidth\(\) - 2 \* shape\.screenPadding;/);
+    expect(gallery).toMatch(/width: Math\.min\(galleryInfo\(id\)\.width, pane\)/);
+    // v46's code step opens on its first box focused: the 320 pair is the focused field.
+    expect(readFileSync(resolve(root, 'e2e/visual/states.json'), 'utf8')).toMatch(
+      /"id": "v46-alan-kod-odak-320",\s*"app": "galeri\/v46\/alan-kod-odak",/,
+    );
   });
 });
