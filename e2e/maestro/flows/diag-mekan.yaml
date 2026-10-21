@@ -1,0 +1,34 @@
+# Diagnostic (WazzupDevs/Kabuk#206, not to be merged): the Mekan screen scrolled under the tab bar
+# while the bot takes screenshots (`scroll-probe`), once after the Keşfet map was open in this app
+# process (02-checkin) and once in a new process that never opened it (0.6.0: text under the bar
+# flickered on Mekan, in light).
+appId: app.kabuk.mobile
+---
+- tapOn:
+    id: tab-venue
+- extendedWaitUntil:
+    visible:
+      id: venue-leave
+    timeout: 15000
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: scroll-probe
+      BODY: '{"name":"after-map"}'
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    notVisible:
+      id: launch-curtain
+    timeout: 15000
+- tapOn:
+    id: tab-venue
+- extendedWaitUntil:
+    visible:
+      id: venue-leave
+    timeout: 15000
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: scroll-probe
+      BODY: '{"name":"fresh"}'

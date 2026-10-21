@@ -13,10 +13,12 @@
 //   BOT_PORT=8788 BOT_PHONE=+905550000004 BOT_NAME='Bot Üç' … serve     # the team flow's second bot
 //   node --experimental-strip-types scripts/e2e/bot-table.ts opponent  # the other table, for one phone
 //   node --experimental-strip-types scripts/e2e/bot-table.ts <action> [json]
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { join } from 'node:path';
+
+import { PNG } from 'pngjs';
 
 import {
   createClient,
@@ -1064,6 +1066,92 @@ export const actions: Record<string, (args: Json) => Promise<Json>> = {
     return { name };
   },
 
+  // Diagnostic (WazzupDevs/Kabuk#206): swipes the screen up while taking screenshots, and counts the
+  // pure black pixels in each (the content above the navigation bar's 40 rows, and the black rows
+  // at the bottom). Frames with black in the content go to $OUT/probe-<name>-<i>.png; the app
+  // window's format (TRANSLUCENT once a SurfaceView was in it) goes with the result.
+  async 'scroll-probe'(args) {
+    const name = typeof args.name === 'string' && /^[\w-]+$/.test(args.name) ? args.name : null;
+    const dir = process.env.OUT;
+    if (!name || !dir)
+      throw new Error(`scroll-probe: name ${String(args.name)}, OUT ${String(dir)}`);
+    const sdk = process.env.ANDROID_HOME;
+    const adb = sdk ? join(sdk, 'platform-tools', 'adb') : 'adb';
+    const size = /(\d+)x(\d+)/.exec(execFileSync(adb, ['shell', 'wm', 'size']).toString());
+    const w = Number(size?.[1] ?? 320);
+    const h = Number(size?.[2] ?? 640);
+    const shot = () =>
+      PNG.sync.read(execFileSync(adb, ['exec-out', 'screencap', '-p'], { maxBuffer: 64 << 20 }));
+    const black = (img: PNG, y0: number, y1: number) => {
+      let n = 0;
+      for (let y = y0; y < y1; y++) {
+        for (let x = 0; x < img.width; x++) {
+          const i = (y * img.width + x) * 4;
+          if ((img.data[i] ?? 0) < 6 && (img.data[i + 1] ?? 0) < 6 && (img.data[i + 2] ?? 0) < 6)
+            n++;
+        }
+      }
+      return n;
+    };
+    const strip = (img: PNG) => {
+      let rows = 0;
+      for (let y = img.height - 1; y >= 0; y--) {
+        if (black(img, y, y + 1) < img.width) break;
+        rows++;
+      }
+      return rows;
+    };
+    const frames: { at: number; content: number; strip: number }[] = [];
+    const record = (img: PNG, at: number, i: number) => {
+      const content = black(img, Math.round(img.height * 0.08), img.height - 40);
+      frames.push({ at, content, strip: strip(img) });
+      if (content > 0) writeFileSync(join(dir, `probe-${name}-${i}.png`), PNG.sync.write(img));
+    };
+    const start = Date.now();
+    record(shot(), 0, 0);
+    for (let round = 0; round < 3; round++) {
+      const swipe = spawn(adb, [
+        'shell',
+        'input',
+        'swipe',
+        String(w / 2),
+        String(Math.round(h * 0.8)),
+        String(w / 2),
+        String(Math.round(h * 0.45)),
+        '1500',
+      ]);
+      const done = new Promise((resolve) => swipe.on('exit', resolve));
+      let i = 0;
+      while (swipe.exitCode === null && i < 12) {
+        record(shot(), Date.now() - start, frames.length);
+        i++;
+      }
+      await done;
+      record(shot(), Date.now() - start, frames.length);
+    }
+    const windows = execFileSync(adb, ['shell', 'dumpsys', 'window', 'windows']).toString();
+    const block = windows
+      .split(/\n(?= {2}Window #)/)
+      .find((b) => b.includes('app.kabuk.mobile/app.kabuk.mobile.MainActivity}'));
+    const translucent = !!block && /mAttrs=\{[^\n]*fmt=TRANSLUCENT/.test(block);
+    const result = {
+      name,
+      translucent,
+      frames: frames.length,
+      blackFrames: frames.filter((f) => f.content > 0).length,
+      maxStrip: Math.max(...frames.map((f) => f.strip)),
+      list: frames,
+    };
+    writeFileSync(join(dir, `probe-${name}.json`), JSON.stringify(result, null, 1));
+    return {
+      name,
+      translucent,
+      frames: result.frames,
+      blackFrames: result.blackFrames,
+      maxStrip: result.maxStrip,
+    };
+  },
+
   async 'end-room'() {
     return call('rooms', { action: 'end' });
   },
@@ -1581,7 +1669,10 @@ async function run(action: string, args: Json): Promise<Json> {
   const fn = actions[action];
   if (!fn) throw new Error(`unknown action ${action}; one of ${Object.keys(actions).join(', ')}`);
   // Each CLI call is its own process: sign in first unless the action does not need it.
-  if (!client && !['setup', 'single-venue', 'login', 'screen', 'dump'].includes(action)) {
+  if (
+    !client &&
+    !['setup', 'single-venue', 'login', 'screen', 'dump', 'scroll-probe'].includes(action)
+  ) {
     await actions.login?.({});
   }
   return fn(args);
