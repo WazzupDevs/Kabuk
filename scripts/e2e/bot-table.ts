@@ -13,7 +13,9 @@
 //   BOT_PORT=8788 BOT_PHONE=+905550000004 BOT_NAME='Bot Üç' … serve     # the team flow's second bot
 //   node --experimental-strip-types scripts/e2e/bot-table.ts opponent  # the other table, for one phone
 //   node --experimental-strip-types scripts/e2e/bot-table.ts <action> [json]
+import { execFileSync } from 'node:child_process';
 import { createServer } from 'node:http';
+import { join } from 'node:path';
 
 import {
   createClient,
@@ -1013,6 +1015,23 @@ export const actions: Record<string, (args: Json) => Promise<Json>> = {
     return setOwnProfile(args, 'gender');
   },
 
+  // The phone's screen, for a flow that needs another one than the emulator's (01c-gallery-wide: a
+  // Galaxy S23's): `{"size":"1080x2340","density":420}` sets it, `{}` sets the emulator's own back.
+  // adb on the machine that runs the bot (CI's runner, a developer's computer): a flow cannot call
+  // it. Nothing on the server.
+  async screen(args) {
+    const size = typeof args.size === 'string' ? args.size : 'reset';
+    const density = typeof args.density === 'number' ? String(args.density) : 'reset';
+    if (!/^(reset|\d+x\d+)$/.test(size) || !/^(reset|\d+)$/.test(density)) {
+      throw new Error(`screen: size ${size}, density ${density}`);
+    }
+    const sdk = process.env.ANDROID_HOME;
+    const adb = sdk ? join(sdk, 'platform-tools', 'adb') : 'adb';
+    execFileSync(adb, ['shell', 'wm', 'size', size]);
+    execFileSync(adb, ['shell', 'wm', 'density', density]);
+    return { size, density };
+  },
+
   async 'end-room'() {
     return call('rooms', { action: 'end' });
   },
@@ -1530,7 +1549,9 @@ async function run(action: string, args: Json): Promise<Json> {
   const fn = actions[action];
   if (!fn) throw new Error(`unknown action ${action}; one of ${Object.keys(actions).join(', ')}`);
   // Each CLI call is its own process: sign in first unless the action does not need it.
-  if (!client && !['setup', 'single-venue', 'login'].includes(action)) await actions.login?.({});
+  if (!client && !['setup', 'single-venue', 'login', 'screen'].includes(action)) {
+    await actions.login?.({});
+  }
   return fn(args);
 }
 
