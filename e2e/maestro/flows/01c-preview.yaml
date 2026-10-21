@@ -510,8 +510,9 @@ appId: app.kabuk.mobile
       id: gal-colors
     timeout: 10000
 - takeScreenshot: 04v-v46-gallery-colors
-# The gallery's 320 view: a press lays the components out for v46's narrow screen, the whole list
-# mounting again (0.6.0: the app closed here). The rest of the gallery runs in that view.
+# The gallery's 320 view: a press lays the components out for v46's narrow screen (0.6.0: the app
+# closed here on the owner's phone). CI's emulator is 320 dp wide already, so here the press does
+# not change the width the components read. The rest of the gallery runs in that view.
 - tapOn:
     id: v46-gallery-narrow
 - extendedWaitUntil:
@@ -519,18 +520,16 @@ appId: app.kabuk.mobile
       id: gal-colors
     timeout: 10000
 - takeScreenshot: 04v-v46-gallery-narrow
-# With the buttons in it (step 3b) the gallery is heavier: a swipe takes ~5 s on CI's emulator at
-# the largest text size, and reaching the first type style took longer than 30 s (e2e run
-# 39414633633, large-1; ~4 s a swipe and 24 s in step 3a).
+# The gallery is one list that mounts the rows near the screen only (app/(app)/v46-gallery.tsx):
+# with every component mounted at once a scroll step took 6–14 s here and the step to the first
+# component ran out of its 120 s in dark (WazzupDevs/Kabuk#202, the nightly run of 21 Ekim).
 - scrollUntilVisible:
     element:
       id: gal-type-t13w600l18
     centerElement: true
     timeout: 60000
 - takeScreenshot: 04v-v46-gallery-type
-# The 60 type styles, on their line boxes, stand before the components: at 320 dp a 30 s scroll from
-# the first one ended at the 55th on CI's emulator (e2e run 39394778370); at the largest text size
-# in step 3a it took 46 s.
+# The 60 type styles, on their line boxes, stand before the components.
 - scrollUntilVisible:
     element:
       id: gal-birincil-52
