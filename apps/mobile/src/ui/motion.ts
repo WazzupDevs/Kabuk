@@ -4,7 +4,6 @@ import {
   Easing,
   ReduceMotion,
   withDelay,
-  withRepeat,
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
@@ -103,19 +102,4 @@ function keyframeSteps(motion: Keyframes, channel: V46Channel, scale: number) {
       withTiming(at(s.to), { duration: s.ms, easing, reduceMotion: ReduceMotion.Never }),
     ),
   );
-}
-
-// The same, played over and over (`animation-iteration-count`: as many times as v46's rule says,
-// for ever when it says `infinite`, null): the delay once, then the steps again from the first
-// keyframe each round, as CSS repeats it. `delayMs` in place of the animation's own, where the
-// part sets its own (`style="animation-delay:.6s"`).
-export function keyframeLoop(
-  motion: Keyframes & { iterations?: number | null },
-  channel: V46Channel,
-  { scale = 1, delayMs = motion.delayMs }: { scale?: number; delayMs?: number } = {},
-) {
-  const run = keyframeSteps(motion, channel, scale);
-  if (!run) return undefined;
-  const loop = withRepeat(run, motion.iterations ?? -1, false, undefined, ReduceMotion.Never);
-  return delayMs ? withDelay(delayMs, loop, ReduceMotion.Never) : loop;
 }

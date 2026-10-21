@@ -14,7 +14,16 @@ import {
   styled,
 } from './buttons.ts';
 import type { Inventory } from './inventory.ts';
-import type { Element, MotionMatch, Part, Pressed, SvgNode, Transition } from './measured.ts';
+import {
+  type Bezier,
+  type Element,
+  type MotionMatch,
+  type Part,
+  type Pressed,
+  parseEase,
+  type SvgNode,
+  type Transition,
+} from './measured.ts';
 import { pressScale, text, type Text } from './navigation.ts';
 
 type Sides = readonly [number, number, number, number];
@@ -46,6 +55,8 @@ export function listScheme(el: Element): { card: CardLook; padding: Sides } {
 }
 
 export type SearchScheme = {
+  // Below the title's row (`.dsearch{margin-top:12px}`).
+  marginTop: number;
   height: number;
   padding: Sides;
   gap: number;
@@ -72,6 +83,7 @@ export function searchScheme(idle: Element, focus: Element): SearchScheme {
     throw new Error('arama: parts');
   }
   return {
+    marginTop: idle.margin[0],
     height: idle.box[1],
     padding: idle.padding,
     gap: idle.gap,
@@ -423,4 +435,70 @@ export function exploreMotions(inventory: Inventory, list: Element): ExploreMoti
     // that stops the beat), so reduce motion does not turn it off.
     liveFade: { ...played(animation(inventory, 'liveFade', '.live', true)), offWhenReduced: false },
   };
+}
+
+// v46's pull to refresh (`.ptr-ind`, `.dbody.settle` and the script after "çek ve yenile"): the
+// capsules come together as the list is pulled, lock into the mark at `lockAt` and turn (Dönüş)
+// while it refreshes, the mark `restAt` down. The gallery measures no gesture, so the numbers are
+// read from v46's own script and CSS; a pattern that no longer matches stops the build.
+export type PullScheme = {
+  // The indicator's side (its SVG: the mark's 340-unit window).
+  size: number;
+  // The pull where the mark locks and a release refreshes; where the list rests while it does.
+  lockAt: number;
+  restAt: number;
+  // Past the lock the list follows the finger by this share.
+  stretch: number;
+  // The indicator fades in over this much pull and rides at half the pull less `lift`.
+  fadeOver: number;
+  lift: number;
+  // The capsules at the lock (the mark) and how far apart and how small they start.
+  capsule: { w: number; h: number; dx: number; dy: number };
+  gap: number;
+  scaleFrom: number;
+  // The list settling back (`.dbody.settle`); with reduce motion it does not ease.
+  settle: { ms: number; ease: Bezier; offWhenReduced: boolean };
+};
+
+export function pullRefresh(html: string): PullScheme {
+  const from = html.indexOf('// ---- çek ve yenile');
+  const to = html.indexOf('function addVenue', from);
+  if (from < 0 || to < 0) throw new Error("v46's pull to refresh: no script");
+  const script = html.slice(from, to);
+  const num = (source: string, re: RegExp, what: string) => {
+    const m = re.exec(source);
+    if (!m?.[1]) throw new Error(`v46's pull to refresh: no ${what}`);
+    return Number(m[1]);
+  };
+  const settle = /\.dbody\.settle\{transition:transform ([\d.]+)s ([^}]+)\}/.exec(html);
+  if (!settle?.[1] || !settle[2]) throw new Error("v46's pull to refresh: no settle");
+  return {
+    size: num(html, /<div class="ptr-ind"[^>]*><svg viewBox="86 86 340 340" width="(\d+)"/, 'size'),
+    lockAt: num(script, /\bTH = (\d+)/, 'lock'),
+    restAt: num(script, /\bREST = (\d+)/, 'rest'),
+    stretch: num(script, /TH \+ \(d - TH\) \* ([\d.]+)/, 'stretch'),
+    fadeOver: num(script, /Math\.min\(1, y \/ (\d+)\)/, 'fade'),
+    lift: num(script, /\(y \/ 2 - (\d+)\)/, 'lift'),
+    capsule: {
+      w: num(script, /\bw = (\d+), h = \d+/, 'capsule width'),
+      h: num(script, /\bw = \d+, h = (\d+)/, 'capsule height'),
+      dx: num(script, /\+ \((\d+) - \(w \+ \d+\)\) \* e/, 'offset'),
+      dy: num(script, /\bdy = (\d+) \* e/, 'drop'),
+    },
+    gap: num(script, /\bdx = \(w \+ (\d+)\)/, 'gap'),
+    scaleFrom: num(script, /\bs = ([\d.]+) \+ [\d.]+ \* e/, 'scale'),
+    settle: {
+      ms: Math.round(Number(settle[1]) * 1000),
+      ease: parseEase(settle[2]),
+      offWhenReduced: reducedOff(html, '.dbody.settle{transition:none}'),
+    },
+  };
+}
+
+// Whether a rule stands in v46's `prefers-reduced-motion: reduce` block.
+function reducedOff(html: string, rule: string): boolean {
+  const at = html.indexOf(rule);
+  if (at < 0) return false;
+  const media = html.lastIndexOf('@media', at);
+  return media >= 0 && html.slice(media, at).startsWith('@media (prefers-reduced-motion:reduce)');
 }

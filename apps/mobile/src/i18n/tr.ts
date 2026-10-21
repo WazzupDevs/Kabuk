@@ -281,6 +281,15 @@ export const tr = {
     venue: 'Mekan',
     messages: 'Mesajlar',
     profile: 'Profil',
+    // The Mesajlar tab read out with its dot: unread DMs and waiting requests (the bell's).
+    messagesWith: (unread: number, requests: number) =>
+      [
+        'Mesajlar',
+        unread > 0 ? `${unread} okunmamış` : null,
+        requests > 0 ? `${requests} yeni bildirim` : null,
+      ]
+        .filter((part) => part !== null)
+        .join(', '),
   },
   // Mesajlar (docs/SPEC_V3.md §18.3).
   messages: {
@@ -419,7 +428,8 @@ export const tr = {
     search: 'Mekan ara',
     kinds: { all: 'Tümü', campus: 'Kampüs', cafe: 'Kafe ve mekan' },
     kindsLabel: 'Mekan türü',
-    kindLabel: { campus: 'Kampüs', cafe: 'Kafe' },
+    // A venue's type in words (v46's `data-vtype`; lib/venueType.ts).
+    typeLabel: { kampus: 'Kampüs', kafe: 'Kafe', cay: 'Çay bahçesi', yemek: 'Restoran' },
     venueSub: (kind: string, district: string) => `${kind} · ${district}`,
     // City and district (v44: .vloc; K-38): chosen, never the phone's position (rule 6).
     place: (city: string, district: string | null) => `${city} · ${district ?? 'Tüm semtler'}`,

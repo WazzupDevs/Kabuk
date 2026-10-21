@@ -221,6 +221,7 @@ export type V46ChipLook = { bg: string; border: V46Edge; color: string };
 export type V46ExploreScheme = {
   list: { card: V46Card; padding: V46Sides };
   search: {
+    marginTop: number;
     height: number;
     padding: V46Sides;
     gap: number;
@@ -325,6 +326,20 @@ export type V46Animation = {
   offWhenReduced: boolean;
   iterations: number | null;
   holdsBefore: boolean;
+};
+
+// Keşfet's pull to refresh, read from v46's script (scripts/v46/explore.ts → pullRefresh).
+export type V46PullScheme = {
+  size: number;
+  lockAt: number;
+  restAt: number;
+  stretch: number;
+  fadeOver: number;
+  lift: number;
+  capsule: { w: number; h: number; dx: number; dy: number };
+  gap: number;
+  scaleFrom: number;
+  settle: { ms: number; ease: V46Bezier; offWhenReduced: boolean };
 };
 
 // v46's one small-screen breakpoint (`@media (max-width: …px)` in its CSS).
@@ -2678,6 +2693,7 @@ export const V46_EXPLORE: Record<'light' | 'dark', V46ExploreScheme> = {
       padding: [6, 0, 6, 0],
     },
     search: {
+      marginTop: 12,
       height: 48,
       padding: [0, 16, 0, 16],
       gap: 10,
@@ -2797,6 +2813,7 @@ export const V46_EXPLORE: Record<'light' | 'dark', V46ExploreScheme> = {
       padding: [6, 0, 6, 0],
     },
     search: {
+      marginTop: 12,
       height: 48,
       padding: [0, 16, 0, 16],
       gap: 10,
@@ -3357,4 +3374,18 @@ export const V46_EXPLORE_MOTION: {
     iterations: null,
     holdsBefore: false,
   },
+};
+
+// Keşfet's pull to refresh (scripts/v46/explore.ts → pullRefresh).
+export const V46_PULL: V46PullScheme = {
+  size: 44,
+  lockAt: 72,
+  restAt: 64,
+  stretch: 0.35,
+  fadeOver: 30,
+  lift: 26,
+  capsule: { w: 96, h: 236, dx: 56, dy: 54 },
+  gap: 70,
+  scaleFrom: 0.55,
+  settle: { ms: 450, ease: [0.2, 0.8, 0.2, 1], offWhenReduced: true },
 };

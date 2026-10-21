@@ -3,7 +3,7 @@ import { router, Tabs } from 'expo-router';
 
 import { TabBar, TabBarSpace, TabScene } from '@/components/TabBar';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
-import { useInbox, useUnreadTotal } from '@/features/friends/queries';
+import { useInbox, useRequestCount, useUnreadTotal } from '@/features/friends/queries';
 import { tr } from '@/i18n/tr';
 
 export { RouteError as ErrorBoundary } from '@/components/RouteError';
@@ -18,6 +18,9 @@ export default function TabsLayout() {
   const table = useActiveTable();
   useInbox();
   const unread = useUnreadTotal();
+  // The bell is in Mesajlar only (K-6): the tab's dot is there for unread DMs and for waiting
+  // requests alike.
+  const requests = useRequestCount();
 
   return (
     <TabBarSpace>
@@ -60,7 +63,8 @@ export default function TabsLayout() {
           options={{
             title: tr.tabs.messages,
             tabBarButtonTestID: 'tab-messages',
-            tabBarBadge: unread > 0 ? unread : undefined,
+            tabBarBadge: unread + requests > 0 ? unread + requests : undefined,
+            tabBarAccessibilityLabel: tr.tabs.messagesWith(unread, requests),
           }}
         />
         <Tabs.Screen

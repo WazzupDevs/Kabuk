@@ -120,9 +120,13 @@ function Line({ text, children }: { text: V46Text; children: ReactNode }) {
   );
 }
 
+// The longest a row waits to come in (docs/SPEC_V4.md §4.C, the owner's decision): v46's largest
+// delay. v46's script puts no limit on its `i * 40` ms; rows past it come in together.
+const ROW_DELAY_MAX_MS = 200;
+
 // v46's `rowIn` for the row at `index`: from 10 dp below and transparent to its place, after
-// `index` steps. While it waits it holds the first keyframe when the rule says so (`holdsBefore`,
-// `animation-fill-mode: backwards`), else its own place.
+// `index` steps, at most ROW_DELAY_MAX_MS. While it waits it holds the first keyframe when the rule
+// says so (`holdsBefore`, `animation-fill-mode: backwards`), else its own place.
 function useComeIn(index: number) {
   const reduce = useReduceMotion();
   const m = V46_EXPLORE_MOTION.rowIn;
@@ -136,7 +140,8 @@ function useComeIn(index: number) {
   );
   useEffect(() => {
     if (!plays) return;
-    const motion = { ...m, delayMs: m.delayMs + index * V46_EXPLORE_MOTION.rowStaggerMs };
+    const wait = Math.min(index * V46_EXPLORE_MOTION.rowStaggerMs, ROW_DELAY_MAX_MS);
+    const motion = { ...m, delayMs: m.delayMs + wait };
     const rise = keyframeSequence(motion, 'translateY');
     const show = keyframeSequence(motion, 'opacity');
     if (rise) y.set(rise);

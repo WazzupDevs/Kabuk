@@ -12,6 +12,7 @@ import { useCheckinDraft } from '@/features/checkin/draft';
 import { useExploreVenue } from '@/features/explore/useExploreVenues';
 import { BucketLine, EventTag, VenueTile } from '@/features/explore/VenueTags';
 import { tr } from '@/i18n/tr';
+import { venueType } from '@/lib/venueType';
 
 // A venue from Keşfet: its bucket, its event, and check-in. Choosing the venue here is the manual
 // selection; the position is taken next only to verify it (docs/SPEC_V2.md §4). In v44's look until
@@ -57,7 +58,7 @@ export default function VenueDetailScreen() {
               {venue.name}
             </Text>
             <Text variant="fine">
-              {tr.explore.venueSub(tr.explore.kindLabel[venue.kind], venue.district)}
+              {tr.explore.venueSub(tr.explore.typeLabel[venueType(venue)], venue.district)}
             </Text>
           </View>
         </View>

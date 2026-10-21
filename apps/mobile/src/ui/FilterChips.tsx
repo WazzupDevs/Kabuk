@@ -13,6 +13,8 @@ type Props<K extends string> = {
   value: K;
   onChange: (key: K) => void;
   pressedPreview?: K;
+  // The group's name for a screen reader ("Mekan türü").
+  accessibilityLabel?: string;
   // The row's own (its box without the margins: the visual gate crops to it).
   testID?: string;
 };
@@ -27,6 +29,7 @@ export function FilterChips<K extends string>({
   value,
   onChange,
   pressedPreview,
+  accessibilityLabel,
   testID,
 }: Props<K>) {
   const { scheme } = useTheme();
@@ -34,6 +37,8 @@ export function FilterChips<K extends string>({
   return (
     <ScrollView
       testID={testID}
+      accessibilityRole="radiogroup"
+      accessibilityLabel={accessibilityLabel}
       horizontal
       showsHorizontalScrollIndicator={false}
       style={{
@@ -87,8 +92,8 @@ function Chip<K extends string>({
   const pressed = pressing || pressedPreview;
   return (
     <Pressable
-      accessibilityRole="button"
-      accessibilityState={{ selected: on }}
+      accessibilityRole="radio"
+      accessibilityState={{ checked: on }}
       testID={item.testID}
       hitSlop={chip.hitSlop}
       onPress={onPress}

@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
@@ -6,11 +6,13 @@ import { describe, expect, it } from 'vitest';
 import {
   V46_EXPLORE as explore,
   V46_EXPLORE_MOTION as motion,
+  V46_PULL,
   V46_VENUE_THUMBS as thumbs,
   type V46Animation,
   type V46Transition,
 } from '../../apps/mobile/src/theme/parts.generated.ts';
 import { V46_COMPONENTS } from '../../apps/mobile/src/theme/tokens.generated.ts';
+import { pullRefresh } from './explore.ts';
 import { readInventory } from './inventory.ts';
 import { keyframeChannels, parseKeyframes } from './keyframes.ts';
 import { parseEase, readMeasured } from './measured.ts';
@@ -153,7 +155,8 @@ describe("v46's Keşfet motions", () => {
     }
     expect(motion.rowIn.iterations).toBe(1);
     expect(motion.rowIn.holdsBefore).toBe(true);
-    expect(source('motion.ts')).toMatch(/withRepeat\(run, motion\.iterations \?\? -1,/);
+    expect(source('nativeLoop.ts')).toMatch(/const iterations = motion\.iterations \?\? -1;/);
+    expect(source('nativeLoop.ts')).toMatch(/\{ iterations \},/);
     expect(source('VenueRow.tsx')).toMatch(/const waits = plays && m\.holdsBefore;/);
   });
 
@@ -165,6 +168,16 @@ describe("v46's Keşfet motions", () => {
     const row = source('VenueRow.tsx');
     expect(row).toMatch(/index \* V46_EXPLORE_MOTION\.rowStaggerMs/);
     expect(row).toMatch(/V46_EXPLORE_MOTION\.rowIn/);
+  });
+
+  it('let a row wait at most 200 ms, the rest coming in together (§4.C, the owner)', () => {
+    // v46's script puts no limit on the delay.
+    expect(html).toContain("r.style.animationDelay = (i * 40) + 'ms'");
+    const spec = readFileSync(resolve(root, 'docs/SPEC_V4.md'), 'utf8');
+    expect(spec).toContain('Keşfet satırlarının girişi en çok 200 ms bekler');
+    const row = source('VenueRow.tsx');
+    expect(row).toMatch(/const ROW_DELAY_MAX_MS = 200;/);
+    expect(row).toMatch(/Math\.min\(index \* V46_EXPLORE_MOTION\.rowStaggerMs, ROW_DELAY_MAX_MS\)/);
   });
 
   it('stop the rows, the steam and the beat with reduce motion, and fade the dot instead', () => {
@@ -188,10 +201,11 @@ describe("v46's Keşfet motions", () => {
     }
     expect(motion.liveFade.offWhenReduced).toBe(false);
     const dot = source('LiveDot.tsx');
-    expect(dot).toMatch(/if \(reduce\) \{\s*const fade = keyframeLoop\(m\.liveFade, 'opacity'\)/);
-    expect(dot).toMatch(/keyframeLoop\(m\.livePulse, 'scale'\)/);
-    expect(dot).toMatch(/keyframeLoop\(m\.liveHalo, 'scale'\)/);
-    expect(dot).toMatch(/keyframeLoop\(m\.liveHalo, 'opacity'\)/);
+    expect(dot).toMatch(/const beats = active && !reduce;\s*const fades = active && reduce;/);
+    expect(dot).toMatch(/useKeyframeLoop\(m\.livePulse, 'scale', beats,/);
+    expect(dot).toMatch(/useKeyframeLoop\(m\.liveFade, 'opacity', fades,/);
+    expect(dot).toMatch(/useKeyframeLoop\(m\.liveHalo, 'scale', beats,/);
+    expect(dot).toMatch(/useKeyframeLoop\(m\.liveHalo, 'opacity', beats,/);
     expect(source('VenueThumb.tsx')).toMatch(/!\(reduce && steam\.offWhenReduced\)/);
     expect(source('VenueRow.tsx')).toMatch(/!\(reduce && m\.offWhenReduced\)/);
   });
@@ -206,5 +220,148 @@ describe("v46's Keşfet motions", () => {
   it("hold the loops where they rest, as the visual gate draws v46's still page", () => {
     expect(source('LiveDot.tsx')).toMatch(/useLoopActive\(\)/);
     expect(source('VenueThumb.tsx')).toMatch(/useLoopActive\(\)/);
+  });
+
+  it('loop on the native driver, not Reanimated (a Reanimated loop commits the UI tree every frame on Android)', () => {
+    const loop = source('nativeLoop.ts');
+    expect(loop).toMatch(/import \{ Animated, Easing \} from 'react-native';/);
+    expect(loop).toMatch(/useNativeDriver: true/);
+    for (const file of ['LiveDot.tsx', 'VenueThumb.tsx']) {
+      expect(source(file), file).toMatch(/from '\.\/nativeLoop'/);
+      expect(source(file), file).not.toMatch(/react-native-reanimated/);
+    }
+    // No other part of src/ui loops on Reanimated: its one-off motions (a press, a row coming in)
+    // end by themselves.
+    const ui = readdirSync(resolve(root, 'apps/mobile/src/ui')).filter((f) => /\.tsx?$/.test(f));
+    for (const file of ui) {
+      expect(source(file), file).not.toMatch(/withRepeat|useFrameCallback/);
+    }
+  });
+});
+
+describe("the app's Keşfet", () => {
+  const screen = readFileSync(
+    resolve(root, 'apps/mobile/app/(app)/(tabs)/explore/index.tsx'),
+    'utf8',
+  );
+
+  it("is built from v46's parts", () => {
+    for (const part of [
+      'TopBar',
+      'ViewModeToggle',
+      'SearchField',
+      'FilterChips',
+      'CityButton',
+      'HereCard',
+      'VenueRow',
+    ]) {
+      expect(screen, part).toMatch(new RegExp(`from '@/ui/${part}'`));
+    }
+    expect(screen).toMatch(/<TopBar\s+kind="explore"/);
+  });
+
+  it('leaves the bell to Mesajlar alone, its dot on the tab for unread DMs and waiting requests (K-6)', () => {
+    const tab = (file: string) =>
+      readFileSync(resolve(root, 'apps/mobile/app/(app)/(tabs)', file), 'utf8');
+    for (const file of ['explore/index.tsx', 'activities.tsx', 'profile/index.tsx']) {
+      expect(tab(file), file).not.toMatch(/NotificationsBell|BellButton/);
+    }
+    expect(tab('messages/index.tsx')).toMatch(/<NotificationsBell \/>/);
+    const layout = tab('_layout.tsx');
+    expect(layout).toMatch(/tabBarBadge: unread \+ requests > 0 \? unread \+ requests : undefined/);
+    expect(layout).toMatch(/tabBarAccessibilityLabel: tr\.tabs\.messagesWith\(unread, requests\)/);
+  });
+
+  it('names the chips and the switch for a screen reader, as the old ones did', () => {
+    expect(screen).toMatch(/accessibilityLabel=\{tr\.explore\.viewSwitch\}/);
+    expect(screen).toMatch(/accessibilityLabel=\{tr\.explore\.kindsLabel\}/);
+    expect(source('FilterChips.tsx')).toMatch(
+      /accessibilityRole="radiogroup"\s*accessibilityLabel=\{accessibilityLabel\}/,
+    );
+    expect(source('ViewModeToggle.tsx')).toMatch(
+      /accessibilityRole="tablist"\s*accessibilityLabel=\{accessibilityLabel\}/,
+    );
+  });
+
+  it('feels a new view, the list or the map (haptics.ts → selection)', () => {
+    expect(screen).toMatch(/onChange=\{\(mode\) => \{\s*haptic\('selection'\);\s*setView\(mode\);/);
+  });
+
+  it("names each type in v46's words, under the icon v46 draws for it", () => {
+    // v46's list rows: the venue's type in words (`data-vtype`) and its icon, whose ground is the
+    // drawing's first rect. The app's word for a type (tr.ts → explore.typeLabel) is the word of
+    // the row whose icon is that type's drawing (lib/venueType.ts maps the categories onto them).
+    const words = /typeLabel: \{([^}]*)\}/.exec(
+      readFileSync(resolve(root, 'apps/mobile/src/i18n/tr.ts'), 'utf8'),
+    )?.[1];
+    if (!words) throw new Error('no typeLabel in tr.ts');
+    const typeLabel = Object.fromEntries(
+      [...words.matchAll(/(\w+): '([^']+)'/g)].map(([, key, word]) => [key, word]),
+    );
+    const rows = [
+      ...html.matchAll(
+        /class="vrow"[^>]*data-vtype="([^"]+)"[^>]*><span class="vthumb"><svg[^>]*><rect[^>]*fill="(#[0-9A-Fa-f]{6})"/g,
+      ),
+    ];
+    expect(rows.length).toBeGreaterThanOrEqual(3);
+    const seen = new Set<string>();
+    for (const [, word, ground] of rows) {
+      const type = Object.entries(thumbs).find(([, t]) => t.drawing.nodes[0]?.fill === ground)?.[0];
+      if (!type) throw new Error(`no icon with v46's ground ${ground} (${word})`);
+      seen.add(type);
+      expect(typeLabel[type], type).toBe(word);
+    }
+    // v46's list has a cafe, a tea garden and a place to eat; a campus is in "Şu an buradasın".
+    expect([...seen].sort()).toEqual(['cay', 'kafe', 'yemek']);
+    expect(typeLabel.kampus).toBe('Kampüs');
+  });
+
+  it("takes each venue's icon and type from its category (lib/venueType.ts)", () => {
+    // The list row, "Şu an buradasın" and the venue page; the mapping is tested in venueType.test.ts.
+    expect(screen).toMatch(/const type = venueType\(v\);/);
+    expect(screen).toMatch(/thumb=\{type\}/);
+    expect(screen).toMatch(/tr\.explore\.typeLabel\[type\]/);
+    expect(screen).toMatch(/type: hereVenue \? venueType\(hereVenue\) : 'kafe'/);
+    expect(screen).toMatch(/thumb=\{here\.type\}/);
+    expect(
+      readFileSync(resolve(root, 'apps/mobile/app/(app)/(tabs)/explore/[venueId].tsx'), 'utf8'),
+    ).toMatch(/tr\.explore\.typeLabel\[venueType\(venue\)\]/);
+  });
+
+  it('keeps the search 12 below the title, as `.dsearch` does', () => {
+    for (const s of SCHEMES) expect(explore[s].search.marginTop).toBe(12);
+    expect(html).toContain(
+      '.dsearch{display:flex;align-items:center;gap:10px;height:48px;margin-top:12px',
+    );
+    // The screen keeps it, so the field is its own box (the visual gate crops to it).
+    expect(screen).toMatch(/marginTop: V46_EXPLORE\[scheme\]\.search\.marginTop/);
+    expect(source('SearchField.tsx')).not.toMatch(/marginTop/);
+  });
+
+  it("fetches the list again when pulled at its top, with v46's indicator (`.ptr-ind`)", () => {
+    // v46's numbers, read from its script (the generator stops when a pattern no longer matches).
+    expect(V46_PULL).toEqual(pullRefresh(html));
+    expect(html).toContain(
+      'function ease(t) { return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }',
+    );
+    expect(html).toContain(
+      "function topOk() { return window.scrollY <= 0 && mode === 'idle' && vm === 'list'; }",
+    );
+    // The list view only, fetching the venues and their cities.
+    expect(screen).toMatch(/<PullScroll\s+onRefresh=\{onRefresh\}/);
+    expect(screen).toMatch(
+      /onRefresh=\{\(\) => Promise\.all\(\[venues\.refetch\(\), cities\.refetch\(\)\]\)\}/,
+    );
+    const pull = source('PullScroll.tsx');
+    // At the top and not already refreshing (v46's `topOk`).
+    expect(pull).toMatch(/pulling\.set\(atTop\.get\(\) && !busy\.get\(\)\)/);
+    // A release past the lock refreshes; the mark turns (Dönüş) at least as long as a loader stays.
+    expect(pull).toMatch(/if \(finger\.get\(\) >= p\.lockAt\) \{/);
+    expect(pull).toMatch(/<Loader kind="spin" size=\{p\.size\} delay=\{0\} \/>/);
+    expect(pull).toMatch(/wait\(LOADER_MIN_VISIBLE_MS\)/);
+    // The list settles with v46's transition, at once with reduce motion; it does not stretch.
+    expect(pull).toMatch(/const still = reduce && p\.settle\.offWhenReduced;/);
+    expect(pull).toMatch(/Easing\.bezier\(\.\.\.p\.settle\.ease\)/);
+    expect(pull).toMatch(/overScrollMode="never"/);
   });
 });

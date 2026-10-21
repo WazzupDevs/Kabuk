@@ -1,6 +1,12 @@
 import { EVENT_WINDOW_DAYS, isActivityBucket } from '@shared/explore.ts';
 import type { LngLat } from '@shared/geo.ts';
-import { isVenueKind, type VenueKind } from '@shared/venueKind.ts';
+import {
+  DEFAULT_VENUE_CATEGORY,
+  isVenueCategory,
+  isVenueKind,
+  type VenueCategory,
+  type VenueKind,
+} from '@shared/venueKind.ts';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo } from 'react';
 
@@ -14,6 +20,9 @@ export type ExploreVenue = {
   district: string;
   // Cafe or campus (docs/SPEC_V3.md §18.1): the map pin and the list row.
   kind: VenueKind;
+  // A cafe-kind venue's sort (kafe, çay bahçesi, yemek; docs/SPEC_V4.md §4.C): the list row's icon
+  // and type. None for a campus.
+  category: VenueCategory | null;
   lat: number;
   lng: number;
   bucket: 'calm' | 'lively' | 'buzzing';
@@ -63,11 +72,18 @@ export function useExploreVenues() {
       if (error) throw error;
       return data.map((v) => {
         const events = toEvents(v.events);
+        const kind = isVenueKind(v.kind) ? v.kind : 'cafe';
         return {
           id: v.venue_id,
           name: v.name,
           district: v.district,
-          kind: isVenueKind(v.kind) ? v.kind : 'cafe',
+          kind,
+          category:
+            kind === 'campus'
+              ? null
+              : isVenueCategory(v.category)
+                ? v.category
+                : DEFAULT_VENUE_CATEGORY,
           lat: v.lat,
           lng: v.lng,
           bucket: isActivityBucket(v.bucket) ? v.bucket : 'calm',
