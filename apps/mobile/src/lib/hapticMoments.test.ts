@@ -68,6 +68,7 @@ describe('haptic table', () => {
   it('matches the design system', () => {
     expect(HAPTICS).toEqual({
       selection: { kind: 'selection' },
+      tabChanged: { kind: 'selection' },
       tableOpened: { kind: 'notification', type: 'success' },
       requestAccepted: { kind: 'notification', type: 'success' },
       proposalAccepted: { kind: 'notification', type: 'success' },
@@ -176,6 +177,31 @@ describe('haptic rate limits (K-30)', () => {
         [700, 'incomingRequest'],
       ]),
     ).toEqual(['500:failed']);
+  });
+
+  // The 0.6.0 phone test: going from tab to tab quickly, every other change was silent (the same
+  // moment's 600 ms). Every tab change plays, however close, and while typing too.
+  it('plays every tab change, however close to the last touch', () => {
+    expect(
+      played([
+        [0, 'tabChanged'],
+        [120, 'tabChanged'],
+        [200, 'selection'],
+        [260, 'tabChanged'],
+        [300, 'key'],
+        [400, 'tabChanged'],
+      ]),
+    ).toEqual(['0:tabChanged', '120:tabChanged', '260:tabChanged', '400:tabChanged']);
+  });
+
+  it('a tab change still counts as a touch: the next other one keeps 150 ms from it', () => {
+    expect(
+      played([
+        [0, 'tabChanged'],
+        [100, 'requestAccepted'],
+        [150, 'requestAccepted'],
+      ]),
+    ).toEqual(['0:tabChanged', '150:requestAccepted']);
   });
 
   it('every moment has its own 600 ms window', () => {
