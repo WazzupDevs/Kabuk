@@ -17,11 +17,14 @@ appId: app.kabuk.mobile
       BODY: '{"spot":"kutuphane"}'
 - tapOn:
     id: tab-venue
-# Centred: at the bottom of a 320 × 640 screen the card's middle sits under the Mekan tile, which
-# rises out of the floating tab bar; a tap there lands on the tab.
+# Up: the card sits above the table card, and the spot change before this flow (spot-kutuphane)
+# leaves Mekan scrolled down to "Değiştir"; at the largest text size the card is then above the
+# screen. Centred: at the bottom of a 320 × 640 screen the card's middle sits under the Mekan
+# tile, which rises out of the floating tab bar; a tap there lands on the tab.
 - scrollUntilVisible:
     element:
       id: venue-chat-open
+    direction: UP
     centerElement: true
     timeout: 15000
 - tapOn:
