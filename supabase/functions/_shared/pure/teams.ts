@@ -1,6 +1,7 @@
-// Teams (docs/SPEC_V3.md §22.B): a room has two sides, each its leader and up to 3 members. The SQL
-// functions have their own copies of these numbers (private.max_side_phones,
-// private.side_headcount); supabase/tests/teams.test.ts checks that they agree.
+// Teams (docs/SPEC_V3.md §22.B): a room has two sides, each its leader and up to 3 members. Today's
+// app still reads these; from step 4.5 tables are of people (docs/SPEC_V4.md §4.E, pure/tables.ts)
+// and the side model, its SQL copies (private.max_side_phones, private.side_headcount) included, goes
+// in step 4.8.
 export const SIDES = ['owner', 'guest'] as const;
 export type Side = (typeof SIDES)[number];
 

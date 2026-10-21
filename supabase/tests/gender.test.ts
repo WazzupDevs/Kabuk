@@ -1,7 +1,9 @@
 // Faz 3 step 23.2, server (docs/SPEC_V3.md §23.D, §23.E, §23.M, rule 12): the gender, a closed
 // column like the birth date; the asymmetric anonymity rule of the game flow; the request card's
 // profile; "yanlış cinsiyet beyanı" reports. Step 23.2b (the app asks for it): sign-up without it is
-// bad_request, and an account from before the step meets gender_required in the game flow.
+// bad_request, and an account from before the step meets gender_required in the game flow. From step
+// 4.5 (docs/SPEC_V4.md §4.D, §4.E) a seat takes the check-in's identity: a man and "Belirtmek
+// istemiyorum" always sit profiled, and nobody chooses per table.
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { istanbulToday } from '../functions/_shared/pure/age.ts';
@@ -19,14 +21,15 @@ import {
 } from './helpers.ts';
 import { deleteUserByPhone, invoke, signIn, sql, userIdOf } from './local.ts';
 import {
-  createRoom,
   FIXTURE_VENUE,
-  join,
-  type Phone,
+  openTable,
+  type Person as Phone,
+  person,
   rooms,
-  table,
-  TEAM_PHONES,
-} from './teamRoom.ts';
+  sit,
+  TABLE_PHONES,
+  tableWith,
+} from './people.ts';
 
 let venue: Record<string, string> = {};
 const OK = { status: 200, body: { ok: true } };
@@ -37,7 +40,7 @@ beforeAll(async () => {
 });
 
 afterEach(async () => {
-  for (const phone of TEAM_PHONES) await deleteUserByPhone(phone);
+  for (const phone of TABLE_PHONES) await deleteUserByPhone(phone);
 });
 
 afterAll(async () => {
@@ -55,7 +58,7 @@ async function at(
   gender: Gender | null,
   opts: { photo?: boolean } = {},
 ): Promise<Phone> {
-  const p = await table(venue, n, gender ? { gender } : {});
+  const p = await person(venue, n, gender ? { gender } : {});
   if (gender === null) await clearGender(p.client);
   if (opts.photo) await setTestPhoto(p.client);
   return p;
@@ -203,12 +206,11 @@ describe('the gender column (§23.D, rule 12)', () => {
     }
   });
 
-  it('goes to nobody else, even in a room where both joined with their profile', async () => {
+  it('goes to nobody else, even at a table where the other sat with their profile', async () => {
     const owner = await at(0, 'female', { photo: true });
     const guest = await at(1, 'male', { photo: true });
-    const created = await rooms(owner, { action: 'create', profiled: true });
-    const roomId = (created.body as { roomId: string }).roomId;
-    const asked = await rooms(guest, { action: 'request-join', roomId, profiled: true });
+    const roomId = await openTable(owner);
+    const asked = await rooms(guest, { action: 'request-join', roomId });
     expect(asked.status, JSON.stringify(asked.body)).toBe(200);
     const card = await rooms(owner, {
       action: 'request-profile',
@@ -222,7 +224,7 @@ describe('the gender column (§23.D, rule 12)', () => {
       }),
     ).toEqual(OK);
 
-    // The other side's profile as a room member sees it (rule 4, Faz 2): no gender.
+    // The other's profile as a person at the table sees it (rule 4): no gender.
     const [other] = await sql`select public_id from public.profiles where id = ${guest.userId}`;
     const seen = await invoke(owner.client, 'profile', {
       action: 'get',
@@ -236,92 +238,84 @@ describe('the gender column (§23.D, rule 12)', () => {
 });
 
 describe('the game flow (§23.D)', () => {
-  it('refuses an anonymous room, "Katıl" and "Bu masadayım" from a man and from "Belirtmek istemiyorum"', async () => {
+  it('seats a man and "Belirtmek istemiyorum" profiled, whatever a table or a request says', async () => {
     const owner = await at(0, 'female');
     const man = await at(1, 'male', { photo: true });
     const unsaid = await at(2, 'unspecified', { photo: true });
-    const roomId = await createRoom(owner);
-    const refused = { status: 409, body: errorBody('anonymous_not_allowed') };
+    const roomId = await openTable(owner);
 
-    for (const p of [man, unsaid]) {
-      expect(await rooms(p, { action: 'create', profiled: false })).toEqual(refused);
-      expect(await rooms(p, { action: 'request-join', roomId, profiled: false })).toEqual(refused);
-      expect(
-        await rooms(p, { action: 'request-join', roomId, profiled: false, side: 'owner' }),
-      ).toEqual(refused);
-    }
-    // Never turned into a profiled entry behind their back: nothing was written.
-    const [count] = await sql`
-      select count(*)::int as n from public.join_requests where room_id = ${roomId}
-    `;
-    expect(count?.n).toBe(0);
-
-    // With the profile they join as anyone does.
-    const asked = await rooms(man, { action: 'request-join', roomId, profiled: true });
+    // Today's app's anonymous choice changes nothing; nobody is refused for it.
+    const asked = await rooms(man, { action: 'request-join', roomId, profiled: false });
     expect(asked.status, JSON.stringify(asked.body)).toBe(200);
+    expect(
+      await sql`select requester_alias, requester_profiled from public.join_requests
+                where room_id = ${roomId}`,
+    ).toEqual([{ requester_alias: man.name, requester_profiled: true }]);
+    const own = await openTable(unsaid, { profiled: false });
+    expect(
+      await sql`select alias, profiled from public.room_members where room_id = ${own}`,
+    ).toEqual([{ alias: unsaid.name, profiled: true }]);
   });
 
-  it('asks the photo of the profiled entry they must make', async () => {
-    const man = await at(0, 'male');
-    expect(await rooms(man, { action: 'create', profiled: true })).toEqual({
-      status: 409,
-      body: errorBody('photo_required'),
-    });
+  it('asks the photo of the profiled seat they must take', async () => {
+    const owner = await at(0, 'female');
+    const man = await at(1, 'male');
+    const roomId = await openTable(owner);
+    const noPhoto = { status: 409, body: errorBody('photo_required') };
+    expect(await rooms(man, { action: 'create' })).toEqual(noPhoto);
+    expect(await rooms(man, { action: 'request-join', roomId })).toEqual(noPhoto);
     await setTestPhoto(man.client);
-    expect((await rooms(man, { action: 'create', profiled: true })).status).toBe(200);
+    expect((await rooms(man, { action: 'request-join', roomId })).status).toBe(200);
   });
 
-  it('lets a woman choose', async () => {
+  it('lets a woman sit with the identity she chose at check-in', async () => {
     const owner = await at(0, 'female');
     const woman = await at(1, 'female', { photo: true });
     const other = await at(2, 'female');
-    const roomId = await createRoom(owner);
-    for (const [p, profiled] of [
-      [woman, true],
-      [other, false],
-    ] as const) {
-      const asked = await rooms(p, { action: 'request-join', roomId, profiled });
+    expect(
+      await invoke(woman.client, 'checkin', { action: 'set-identity', anonymous: false }),
+    ).toEqual(expect.objectContaining({ status: 200 }));
+    const roomId = await openTable(owner);
+    for (const p of [woman, other]) {
+      const asked = await rooms(p, { action: 'request-join', roomId });
       expect(asked.status, JSON.stringify(asked.body)).toBe(200);
     }
+    const rows = await sql`
+      select requester_session_id, requester_profiled from public.join_requests
+      where room_id = ${roomId}
+    `;
+    const profiledOf = (p: Phone) =>
+      rows.find((r) => r.requester_session_id === p.sessionId)?.requester_profiled;
+    expect([profiledOf(woman), profiledOf(other)]).toEqual([true, false]);
   });
 
-  it('refuses an empty gender with gender_required, anonymous or profiled, and writes nothing', async () => {
+  it('refuses an empty gender with gender_required on both roads and writes nothing', async () => {
     const owner = await at(0, 'female');
-    const empty = await at(1, null, { photo: true });
-    const roomId = await createRoom(owner);
+    const running = await at(1, 'female');
+    const empty = await at(2, null, { photo: true });
+    const lobbyTable = await openTable(owner);
+    const runningTable = await openTable(running, { open: false });
     const refused = { status: 409, body: errorBody('gender_required') };
 
-    for (const profiled of [false, true]) {
-      expect(await rooms(empty, { action: 'create', profiled })).toEqual(refused);
-      expect(await rooms(empty, { action: 'request-join', roomId, profiled })).toEqual(refused);
-      expect(
-        await rooms(empty, { action: 'request-join', roomId, profiled, side: 'owner' }),
-      ).toEqual(refused);
-    }
+    expect(await rooms(empty, { action: 'create' })).toEqual(refused);
+    expect(await rooms(empty, { action: 'request-join', roomId: lobbyTable })).toEqual(refused);
+    expect(
+      await rooms(empty, { action: 'request-join', roomId: runningTable, asMember: true }),
+    ).toEqual(refused);
     const [count] = await sql`
-      select count(*)::int as n from public.join_requests where room_id = ${roomId}
+      select count(*)::int as n from public.join_requests
+      where requester_session_id = ${empty.sessionId}
     `;
     expect(count?.n).toBe(0);
-    const [own] = await sql`
-      select count(*)::int as n from public.rooms where owner_session_id = ${empty.sessionId}
+    const [seats] = await sql`
+      select count(*)::int as n from public.room_members where session_id = ${empty.sessionId}
     `;
-    expect(own?.n).toBe(0);
+    expect(seats?.n).toBe(0);
 
     // Once answered, the game flow opens.
     expect(await account(empty, { action: 'set-gender', gender: 'female' })).toEqual(OK);
-    const asked = await rooms(empty, { action: 'request-join', roomId, profiled: false });
+    const asked = await rooms(empty, { action: 'request-join', roomId: lobbyTable });
     expect(asked.status, JSON.stringify(asked.body)).toBe(200);
-  });
-
-  it('does not count "Masanla oyna": a man, "Belirtmek istemiyorum" and an empty gender, without a photo', async () => {
-    for (const [n, gender] of [
-      [0, 'male'],
-      [1, 'unspecified'],
-      [2, null],
-    ] as const) {
-      const p = await at(n, gender);
-      expect((await rooms(p, { action: 'create-solo' })).status).toBe(200);
-    }
   });
 
   it('keeps the venue chat anonymous for everyone (§22.G)', async () => {
@@ -337,12 +331,12 @@ describe('the game flow (§23.D)', () => {
 });
 
 describe('rooms/request-profile (§23.E)', () => {
-  it('gives the leader who can answer the name, age and photo of a profiled requester, while it waits', async () => {
+  it('gives the owner the name, age and photo of a profiled requester, while it waits', async () => {
     const owner = await at(0, 'female');
     const man = await at(1, 'male', { photo: true });
     const stranger = await at(2, 'female');
-    const roomId = await createRoom(owner);
-    expect((await rooms(man, { action: 'request-join', roomId, profiled: true })).status).toBe(200);
+    const roomId = await openTable(owner);
+    expect((await rooms(man, { action: 'request-join', roomId })).status).toBe(200);
     const requestId = await requestIdOf(man, roomId);
 
     const card = await rooms(owner, { action: 'request-profile', requestId });
@@ -362,12 +356,10 @@ describe('rooms/request-profile (§23.E)', () => {
     const owner = await at(0, 'female');
     const woman = await at(1, 'female', { photo: true });
     const man = await at(2, 'male', { photo: true });
-    const roomId = await createRoom(owner);
+    const roomId = await openTable(owner);
     const notFound = { status: 404, body: errorBody('not_found') };
 
-    expect((await rooms(woman, { action: 'request-join', roomId, profiled: false })).status).toBe(
-      200,
-    );
+    expect((await rooms(woman, { action: 'request-join', roomId })).status).toBe(200);
     expect(
       await rooms(owner, {
         action: 'request-profile',
@@ -375,7 +367,7 @@ describe('rooms/request-profile (§23.E)', () => {
       }),
     ).toEqual(notFound);
 
-    expect((await rooms(man, { action: 'request-join', roomId, profiled: true })).status).toBe(200);
+    expect((await rooms(man, { action: 'request-join', roomId })).status).toBe(200);
     const requestId = await requestIdOf(man, roomId);
     await sql`
       update public.join_requests set expires_at = now() - interval '1 second' where id = ${requestId}
@@ -383,23 +375,18 @@ describe('rooms/request-profile (§23.E)', () => {
     expect(await rooms(owner, { action: 'request-profile', requestId })).toEqual(notFound);
   });
 
-  it('gives "Bu masadayım" to the leader of that side only', async () => {
+  it('gives "Bu masadayım" to the owner only, not to a person at the table', async () => {
     const owner = await at(0, 'female');
     const guest = await at(1, 'female');
     const man = await at(2, 'male', { photo: true });
-    const roomId = await createRoom(owner);
-    await join(guest, owner, roomId);
-    const asked = await rooms(man, {
-      action: 'request-join',
-      roomId,
-      profiled: true,
-      side: 'guest',
-    });
+    const roomId = await openTable(owner, { open: false });
+    await sit(guest, owner, roomId);
+    const asked = await rooms(man, { action: 'request-join', roomId, asMember: true });
     expect(asked.status, JSON.stringify(asked.body)).toBe(200);
     const requestId = await requestIdOf(man, roomId);
 
-    expect((await rooms(guest, { action: 'request-profile', requestId })).status).toBe(200);
-    expect(await rooms(owner, { action: 'request-profile', requestId })).toEqual({
+    expect((await rooms(owner, { action: 'request-profile', requestId })).status).toBe(200);
+    expect(await rooms(guest, { action: 'request-profile', requestId })).toEqual({
       status: 404,
       body: errorBody('not_found'),
     });
@@ -407,17 +394,16 @@ describe('rooms/request-profile (§23.E)', () => {
 });
 
 describe('"yanlış cinsiyet beyanı" reports (§23.D)', () => {
-  it('are written for a phone in the room and a history row, and refused for the rest', async () => {
+  it('are written for a person at the table and a history row, and refused for the rest', async () => {
     const owner = await at(0, 'female');
     const guest = await at(1, 'female');
-    const roomId = await createRoom(owner);
-    await join(guest, owner, roomId);
+    const roomId = await tableWith(owner, [guest]);
 
     const report = (body: Record<string, unknown>) =>
       invoke(owner.client, 'safety', { action: 'report', reason: 'wrong_gender', ...body });
     expect(await report({ roomId, sessionId: guest.sessionId })).toEqual(OK);
 
-    // An encounter of 3 minutes, then the room ends: a history row for each side.
+    // An encounter of 3 minutes, then the table ends: a history row for each of the pair.
     await sql`
       update public.room_members set joined_at = joined_at - interval '10 minutes'
       where room_id = ${roomId}

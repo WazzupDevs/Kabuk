@@ -1,7 +1,7 @@
 # FIELD_TEST.md P0 order, automated. Screenshots go to --test-output-dir. Env: INSIDE_LAT/INSIDE_LNG and
 # OUTSIDE_LAT/OUTSIDE_LNG (the E2E venue and a point 310 m away; printed by `bot-table.ts setup`),
 # SCHEME (light or dark, picked in Ayarlar → Tasarım (test)).
-# The bot table (scripts/e2e/bot-table.ts serve) plays the second table; 13-teams also uses a second
+# The bot table (scripts/e2e/bot-table.ts serve) sits at the table with this phone; 13-join-table also uses a second
 # bot server on port 8788 (BOT_PORT=8788 BOT_PHONE=+905550000004).
 appId: app.kabuk.mobile
 name: P0 kritik yol
@@ -13,15 +13,10 @@ name: P0 kritik yol
 - runFlow: flows/01d-returning.yaml
 - runFlow: flows/02-checkin.yaml
 - runFlow: flows/03-name.yaml
-- runFlow: flows/04-room-tabu.yaml
+- runFlow: flows/04-table.yaml
 - runFlow: flows/05-table-end-friend-dm.yaml
 - runFlow: flows/05b-dm-ticks-typing.yaml
 - runFlow: flows/06-white-screen.yaml
-- runFlow: flows/06b-tabu-coop.yaml
-- runFlow: flows/09-sahtekar.yaml
-- runFlow: flows/10-harf.yaml
-- runFlow: flows/11-sarki.yaml
-- runFlow: flows/12-ibre.yaml
 - runFlow: flows/07-history-block.yaml
 - runFlow: flows/08-venue-chat.yaml
-- runFlow: flows/13-teams.yaml
+- runFlow: flows/13-join-table.yaml

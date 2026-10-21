@@ -37,7 +37,7 @@ export function useRoomSafety(roomId: string) {
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: roomKeys.current });
       void queryClient.invalidateQueries({ queryKey: roomKeys.room(roomId) });
-      void queryClient.invalidateQueries({ queryKey: roomKeys.phones(roomId) });
+      void queryClient.invalidateQueries({ queryKey: roomKeys.people(roomId) });
     },
   });
 

@@ -9,26 +9,25 @@ import type { TabuMode } from './tabu.ts';
 export type AnalyticsEventProps = {
   // Sent after the optional photo/bio step; nothing is sent for a sign-up under 18 (rule 11).
   onboarding_completed: { with_photo: boolean; with_bio: boolean };
-  // 1–4; 4 means "4+".
-  check_in: { headcount: number };
-  // v3 (docs/SPEC_V3.md §15): the intent ('none' without one). Faz 3 (§23.L, step 23.1): "Masanı
-  // lobiye aç", with the game tag ('none': "fark etmez"). No anonymous or profiled choice (step
-  // 23.2): only a woman can stay anonymous in the game flow, so the choice would stand in for the
-  // gender, which no event carries (rule 12).
-  room_created: { intent: RoomIntentLabel; game_tag: Concept | 'none' };
-  // A proposal and its acceptance; the game only, never the other table.
-  game_proposed: { concept: Concept };
-  game_accepted: { concept: Concept };
-  alias_rerolled: Record<string, never>;
-  // Faz 2 (docs/SPEC_V3.md §22.L): as_member is "Bu masadayım" (a member of a side), not "Katıl".
-  // Faz 3 (§23.L, step 23.1): in_lobby is "Katıl" from the table's own waiting room.
-  join_requested: { as_member: boolean; in_lobby: boolean };
+  // The person is at the venue (docs/SPEC_V4.md §4.E): no headcount, no table.
+  check_in: Record<string, never>;
+  // "Masa kur" (docs/SPEC_V4.md §4.L, step 4.5). `table_opened`: into the lobby, with the intent
+  // and the game tag ('none' without one). No anonymous or profiled choice: only a woman can stay
+  // anonymous in the game flow, so the choice would stand in for the gender, which no event
+  // carries (rule 12).
+  table_created: Record<string, never>;
+  table_opened: { intent: RoomIntentLabel; game_tag: Concept | 'none' };
+  // How a person came to sit at a table: an accepted "Katıl" or "Bu masadayım", or an invite.
+  table_joined: { via: 'request' | 'here' | 'invite' };
+  // as_member is "Bu masadayım", not "Katıl".
+  join_requested: { as_member: boolean };
   join_accepted: { as_member: boolean };
   join_unavailable: { as_member: boolean };
-  // "Odadan çık" by a member or a leader, and this phone becoming its side's leader.
-  team_left: Record<string, never>;
-  leader_transferred: Record<string, never>;
-  room_two_tables: Record<string, never>;
+  // Oyun Seç → the owner's "Başlat", the game's start and a participant's "Oyundan çık" (§4.F):
+  // the game and the counts only, never who.
+  game_opened: { concept: string };
+  game_started: { concept: string; players: number; observers: number };
+  game_left: { concept: string };
   // v2: + mode (docs/SPEC_V2.md §13); for voice Tabu the owner table's score (cooperative: the
   // team's) and, v3, the Tabu mode (docs/SPEC_V3.md §15).
   game_completed: {
@@ -79,17 +78,16 @@ export type AnalyticsEvent = keyof AnalyticsEventProps;
 
 const ALLOWED: { [E in AnalyticsEvent]: readonly (keyof AnalyticsEventProps[E])[] } = {
   onboarding_completed: ['with_photo', 'with_bio'],
-  check_in: ['headcount'],
-  room_created: ['intent', 'game_tag'],
-  game_proposed: ['concept'],
-  game_accepted: ['concept'],
-  alias_rerolled: [],
-  join_requested: ['as_member', 'in_lobby'],
+  check_in: [],
+  table_created: [],
+  table_opened: ['intent', 'game_tag'],
+  table_joined: ['via'],
+  join_requested: ['as_member'],
   join_accepted: ['as_member'],
   join_unavailable: ['as_member'],
-  team_left: [],
-  leader_transferred: [],
-  room_two_tables: [],
+  game_opened: ['concept'],
+  game_started: ['concept', 'players', 'observers'],
+  game_left: ['concept'],
   game_completed: [
     'concept',
     'score',

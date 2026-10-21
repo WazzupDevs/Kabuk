@@ -895,7 +895,7 @@ Tasarımın "Aşama 5" PR'ı main'e girmeden başlamaz: `TabBar.tsx`, `profile/i
 
 ### 18.3a Uygulamada netleşenler (PR 3 notu)
 
-- **Bildirim düğmesi** yalnızca Mesajlar'ın kök ekranında (SPEC_V4 K-6, §4.G; proje sahibi 20 Ekim'de öne aldı). Bekleyen istek ya da okunmamış mesaj varken alt çubuktaki Mesajlar sekmesinde nokta görünür. Önceden her sekmenin kök ekranındaydı, Profil dahil.
+- **Bildirim düğmesi** (Faz 4 adım 4.7 ile değişti, `docs/SPEC_V4.md` §4.G, K-6): zil yalnızca Mesajlar'dadır; okunmamış bildirim varken alt çubuktaki Mesajlar sekmesinde nokta görünür. Diğer sekmelerin köklerinden kalkar. Liste salt okunur `my_notifications`'tan gelir (`friends/notifications`), rozet `profiles.notifications_seen_at`'tan; yeni bildirim tablosu yine yoktur. 4.7'den önceki metin: "her sekmenin kök ekranında, Profil dahil (tuvalin Profil çiziminde yok; proje sahibinin kuralı "sekmelerin kök ekranları"). Keşfet'te başlık haritanın üstünde durduğu için düğme iki görünümde de sağ üstte."
 - **Son oyunların:** kayıt yoksa bölüm hiç görünmez (tuvalin "mekanda değil" çiziminde boş metin var; proje sahibinin kuralı geçerli). Satırda karşı masanın adı kendi oyun geçmişinden, puan kendi puanın; kazanılan oyun vurgulu. Karşı masanın puanı okunabilir değil (`game_results` yalnızca kendi satırı), gösterilmez.
 - **"Bu oyunla oda kur":** Sesli Tabu kartı "Oyun", Sohbet kartları kartı "Sohbet" niyetiyle açar.
 - **Arkadaşlar listesi:** satır kişinin profilini, satırdaki mesaj düğmesi DM'i açar.

@@ -6,6 +6,7 @@ import { requireUser, serviceClient } from './auth.ts';
 import { dbError } from './db.ts';
 import { z } from './deps.ts';
 import { handle } from './http.ts';
+import { AppError } from './pure/errors.ts';
 import type { GameOkResponse, SayStartResponse } from './pure/api/games.ts';
 import type { SayKind } from './pure/sayChallenge.ts';
 import { HARF_LETTERS } from './pure/sayChallenge.ts';
@@ -46,11 +47,10 @@ export function serveSay(kind: SayKind) {
       const target = { target_user_id: user.id, target_room_id: body.roomId, kind };
 
       switch (body.action) {
-        case 'start': {
-          const { data, error } = await db.rpc('say_local_deck', target);
-          if (error) throw dbError('say_local_deck', error);
-          return { prompts: data as string[] };
-        }
+        // The side model's games do not run at a table of people (docs/SPEC_V4.md §4.E);
+        // today's app hears update_required until the game comes back in step 4.6.4.
+        case 'start':
+          throw new AppError('update_required', 'This version of the app is too old. Update it.');
         case 'begin': {
           const { error } = await db.rpc('say_begin', target);
           if (error) throw dbError('say_begin', error);

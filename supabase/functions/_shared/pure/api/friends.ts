@@ -1,4 +1,5 @@
 import type { ReportReason } from '../chat.ts';
+import type { InviteState } from '../notifications.ts';
 import type { Reaction } from '../reactions.ts';
 
 // `friends` and `dm` Edge Functions (docs/SPEC_V2.md §6, §9), shared with the mobile app. No
@@ -19,7 +20,9 @@ export type FriendsRequest =
   // is ignored and the answer says so. The other side sees neither.
   | { action: 'add-from-room'; historyId: string }
   | { action: 'withdraw-add'; historyId: string }
-  | { action: 'remove'; publicId: string; report?: ReportReason };
+  | { action: 'remove'; publicId: string; report?: ReportReason }
+  // The bell's list (docs/SPEC_V4.md §4.G, step 4.7), newest first.
+  | { action: 'notifications' };
 
 export type Friend = {
   publicId: string;
@@ -44,6 +47,56 @@ export type VenueChatIncoming = {
   createdAt: string;
 };
 export type FriendsIncomingResponse = { requests: VenueChatIncoming[] };
+// The bell's rows (docs/SPEC_V4.md §4.G). `isNew`: after the list was last opened
+// (account/notifications-seen). Photos are signed for an hour; null without one or when hidden. A
+// public_id only once the two are friends (rule 4).
+type NotificationBase = { createdAt: string; isNew: boolean };
+// A friend request to the caller, waiting or accepted. From the venue chat: the sender's name, age
+// and photo, and the venue (docs/SPEC_V3.md §7.5). From a play history ("İstek gönder"): the name
+// the sender had at the table and the history row, nothing more until accepted.
+export type FriendRequestNotification = NotificationBase & {
+  kind: 'request';
+  requestId: string;
+  state: 'pending' | 'accepted';
+  source: 'venue_chat' | 'encounter';
+  venueName: string | null;
+  historyId: string | null;
+  otherAlias: string | null;
+  displayName: string | null;
+  age: number | null;
+  photoUrl: string | null;
+  publicId: string | null;
+};
+// The caller's request a friend accepted: tapping opens the DM.
+export type AcceptedNotification = NotificationBase & {
+  kind: 'accepted';
+  requestId: string;
+  publicId: string;
+  displayName: string | null;
+  photoUrl: string | null;
+};
+// K-70: the silent "Arkadaş ekle" matched; only in the first presser's list.
+export type MatchNotification = NotificationBase & {
+  kind: 'match';
+  publicId: string;
+  displayName: string | null;
+  photoUrl: string | null;
+};
+// A friend's table invite: the table's name and phones, never the venue (§4.B-8).
+export type InviteNotification = NotificationBase & {
+  kind: 'invite';
+  inviteId: string;
+  state: InviteState;
+  publicId: string;
+  displayName: string | null;
+  photoUrl: string | null;
+  tableName: string | null;
+  phones: number;
+  expiresAt: string;
+};
+export type NotificationItem =
+  FriendRequestNotification | AcceptedNotification | MatchNotification | InviteNotification;
+export type NotificationsResponse = { notifications: NotificationItem[]; unseen: number };
 export type FriendsOkResponse = { ok: true };
 export type FriendsAddResponse = { ok: true; friends: boolean };
 

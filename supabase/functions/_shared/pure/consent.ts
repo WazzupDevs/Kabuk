@@ -1,8 +1,10 @@
 // Bump a version when its text changes; users with an older accepted version are asked again.
 // draft-1: Kabuk v1 (docs/SPEC_V3.md §3.3): birth date, required display name, venue chat.
 // KVKK draft-2: the gender and its rule in the game flow (docs/SPEC_V3.md §23.D, §23.L).
+// KVKK draft-3: the capsule identity, table invites and the bell (docs/SPEC_V4.md §4.D, §4.G, §4.L);
+// raised once, with the 4.5 client.
 export const CURRENT_TERMS_VERSION = 'draft-1';
-export const CURRENT_KVKK_VERSION = 'draft-2';
+export const CURRENT_KVKK_VERSION = 'draft-3';
 // Explicit consent for location use at check-in (stored on the first check-in).
 export const CURRENT_LOCATION_CONSENT_VERSION = 'draft-0';
 

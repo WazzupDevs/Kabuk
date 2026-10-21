@@ -34,7 +34,9 @@ export default function ChangeSpotScreen() {
       track('spot_changed', {});
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['activeTable'] }),
-        queryClient.invalidateQueries({ queryKey: roomKeys.lobby(table.data?.venue_id ?? '') }),
+        queryClient.invalidateQueries({
+          queryKey: roomKeys.venueTables(table.data?.venue_id ?? ''),
+        }),
       ]);
       router.back();
     },

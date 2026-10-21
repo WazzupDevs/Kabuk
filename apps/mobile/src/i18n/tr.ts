@@ -1154,21 +1154,17 @@ export const tr = {
     changeSpotHint:
       'Aynı noktadaki masalarla oynarsın. Masan lobideyken, oyundayken ya da bir isteğin beklerken değiştiremezsin.',
     changeSpotSave: 'Bu noktadayım',
-    // "Masa adını değiştir" (docs/SPEC_V3.md §5.6).
-    rerollAlias: 'Adı değiştir',
+    // The table's name (docs/SPEC_V4.md §4.E): the owner renews it 3 times a table (v46: "Başka ad").
+    rerollName: 'Başka ad',
     rerollsLeft: (n: number) =>
-      n > 0 ? `${n} hakkın kaldı` : 'Bu masada adı değiştirme hakkın bitti',
-    // The table card's state (docs/SPEC_V3.md §23.C; canvas: Faz 3 · 23.1 Masa ve lobi).
+      n > 0 ? `${n} yenileme hakkın var` : 'Bu masada adı yenileme hakkın bitti',
+    // The card's lobby state (v46: .mine-head small).
     lobbyOff: 'Lobide değil',
     lobbyOpen: 'Lobide açık',
-    merged: 'Birleşti',
-    // Kabul is the meeting (docs/SPEC_V3.md §23.E; canvas: Faz 3 · 23.3): until this phone opens the
-    // merged table once, then "Birleşti".
-    acceptedGoTo: (host: string) => `Kabul edildi, ${host} masasının yanına git`,
-    coming: (guest: string, people: number) => `${guest} geliyor, ${headcountLabel(people)} kişi`,
-    solo: 'Masanla oynuyorsun',
-    memberOf: (leader: string) =>
-      `${inflectTr(leader, 'genitive')} tarafındasın. Lobiden yalnızca o çekebilir.`,
+    // No table yet (v46: .nomasa).
+    noTable: 'Henüz masan yok',
+    noTableHint: 'Masa kur, arkadaşlarını çağır. Ya da açık bir masaya katıl.',
+    createTable: 'Masa kur',
     withdraw: 'Lobiden çek',
     // The top row (v45: .top): the own photo opens Profil.
     openProfile: 'Profilini aç',
@@ -1176,35 +1172,111 @@ export const tr = {
     // minutes (K-12).
     chatCard: 'Mekana giriş yapan herkes okur ve yazar.',
     chatActive: 'şu an aktif',
-    // The card's head opens the table (K-36): the room if there is one, else the table's games. A
-    // screen reader hears the name, the people and the state, then what the head does.
+    // The card's head opens the table. A screen reader hears the name, the people and the state,
+    // then what the head does.
     openTable: 'Masanı aç',
     tableHead: (alias: string, people: number, state: string) =>
       `${alias}, ${headcountLabel(people)} kişi, ${state}, Masanı aç`,
     openLobby: 'Lobiye aç',
-    // "Davet et" (docs/SPEC_V4.md §4.C, 4.3): how a friend at the venue joins the table today; the
-    // real invite comes with step 4.7.
     invite: 'Davet et',
-    inviteTitle: 'Arkadaşını masana çağır',
-    inviteName: (alias: string) => `Arkadaşın bu mekandaysa ona masanın adını söyle: ${alias}.`,
-    inviteHow:
-      'Masan lobideyken arkadaşın Mekan’daki "Açık masalar"da masanı bulup "Bu masadayım"a basar. Sen onaylayınca masana katılır.',
-    inviteOpenFirst: 'Masan şu an lobide değil. Önce lobiye aç.',
+  },
+  // The table screen (v46 "masa"; docs/SPEC_V4.md §4.E, §4.F).
+  table: {
+    back: 'Mekana dön',
+    whoLabel: (n: number) => `Masadakileri gör, ${headcountLabel(n)} kişi`,
+    end: 'Bitir',
+    leave: 'Masadan ayrıl',
+    tabGames: (n: number) => `Oyun Seç (${n})`,
+    tabChat: (n: number) => `Masa Sohbeti (${n})`,
+    categoryAll: (n: number) => `Tümü ${n}`,
+    category: (name: string, n: number) => `${name} ${n}`,
+    // A game before its step (4.6): its poster is faded and not pressed.
+    soon: 'Yakında',
+    soloTitle: 'Masada yalnızca sensin',
+    soloBody:
+      'Arkadaşlarını davet et ya da masanı lobiye aç. Oyunların çoğu en az 2 kişiyle başlar.',
+    endTitle: 'Masayı bitir?',
+    endBody: 'Masa herkes için kapanır. Oyun ve sohbet biter.',
+    endConfirm: 'Masayı bitir',
+    leaveTitle: 'Masadan ayrıl?',
+    leaveBody: 'Mekana dönersin. Masa diğerleri için sürer.',
+    // Masadakiler (v46 data-msheet).
+    people: (n: number) => `Masadakiler · ${headcountLabel(n)} kişi`,
+    peopleNote: 'Herkes kendi telefonuyla katılır. Masada en çok 12 kişi olur.',
+    you: (alias: string) => `${alias} (sen)`,
+    ownerTag: 'Masa sahibi',
+    nameLabel: 'Masanın adı',
+    viewProfile: 'Profili gör',
+  },
+  // "Masa kur" (v46 data-kur; docs/SPEC_V4.md §4.E).
+  createTable: {
+    title: 'Masa kur',
+    hint: 'Masaya herkes kendi telefonuyla katılır. Masada en çok 12 kişi olur.',
+    iconLabel: 'Masa simgesi',
+    iconChange: 'Simgeyi değiştir',
+    iconDone: 'Tamam',
+    iconNote: 'Soluk olanlar mekandaki başka bir masada.',
+    iconTaken: (name: string) => `${name}, başka bir masada`,
+    lobby: 'Lobide görünsün',
+    lobbyHint: 'Mekandakiler masanı görür ve katılmak isteyebilir. Sonra da değiştirebilirsin.',
+    youAre: (name: string) => `Masada ${name} olarak görünürsün.`,
+    confirm: 'Masayı kur',
+    failed: 'Masa kurulamadı. Bağlantını kontrol edip yeniden dene.',
+  },
+  // Mekan's lobby (v46 "mekan"; docs/SPEC_V4.md §4.E).
+  lobby: {
+    openTitle: 'Açık masalar',
+    runningTitle: 'Süren masalar',
+    tables: (n: number) => `${n} masa`,
+    loading: 'Açık masalar yükleniyor',
+    emptyTitle: 'Açık masa yok',
+    emptyBody: 'Masa kurup lobiye açarsan mekandakiler katılmak isteyebilir.',
+    join: 'Katıl',
+    here: 'Bu masadayım',
+    runningNote:
+      'Lobide değiller. Oturduğun masa buysa "Bu masadayım"a bas, masa sahibi onaylasın.',
+    runningNoteShort: 'Lobide değiller.',
+    leaveFirst: 'Başka bir masaya geçmek için önce masandan ayrıl.',
+    needsPhoto: 'Masalara katılmak için profil fotoğrafı ekle.',
+    bringsTable: (n: number) => `Katılırsan masandaki ${n} kişi de seninle gelir.`,
+    waiting: (seconds: number) => `İsteğin gönderildi. Yanıt bekleniyor (${seconds} sn).`,
+    // A refusal and a time-out look the same (rule 5).
+    unavailable: 'Masa şu an müsait değil.',
+    accepted: (table: string) => `Kabul edildi, ${table} masasının yanına git.`,
+  },
+  // "Masana davet et" (v46 data-sheet; docs/SPEC_V4.md §4.G): every sent invite looks the same.
+  invite: {
+    title: 'Masana davet et',
+    how: 'Davet yalnızca şu an bu mekanda olan arkadaşına ulaşır. Kimin burada olduğu görünmez; her davette "Davet gönderildi" yazar. Davet 2 dakika geçerli.',
+    send: 'Davet et',
+    sent: 'Davet gönderildi',
+    valid: (seconds: number) =>
+      `Geçerli · ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`,
+    full: 'Masa dolu. Masada en çok 12 kişi olur.',
+    failed: 'Arkadaşların yüklenemedi',
+    failedHint: 'Bağlantını kontrol edip yeniden dene.',
+    empty: 'Henüz arkadaşın yok',
+    emptyHint:
+      'Masa bitince oynadığın kişileri arkadaş olarak ekleyebilirsin. Masanı lobiye açarsan mekandakiler katılmak isteyebilir.',
+    done: 'Tamam',
   },
   // The table's end (docs/SPEC_V3.md §23.G; canvas: Faz 3 · 23.3 → masa sonu): the other side's
   // phones and each pair's own "Arkadaş ekle".
+  // Masa bitti (v46 "masa-bitti"; docs/SPEC_V4.md §4.E, K-56, K-64, K-67, K-68).
   tableEnd: {
     title: 'Masa bitti',
-    subtitle: (alias: string) => `${alias} masasıyla oynadınız.`,
-    otherSide: 'Karşı taraf',
+    leftTitle: 'Masadan ayrıldın',
+    subtitle: (table: string, people: number) =>
+      `${table} · ${headcountLabel(people)} kişi. Beğendiğin kişileri ekle.`,
     addFriend: 'Arkadaş ekle',
-    pressed: 'Sen bastın',
-    pressedHint: 'O da basarsa arkadaş olursunuz.',
+    added: 'Eklendi',
     friends: 'Arkadaş oldunuz',
-    message: 'Mesajlaş',
-    short: `Birlikte ${ENCOUNTER_MIN_MINUTES} dakikadan az kaldınız.`,
-    body: 'İkiniz de basarsanız arkadaş olursunuz. O basmazsa hiçbir şey olmaz.',
-    later: 'Sonra da Bildirimler’deki oyun geçmişinden ekleyebilirsin.',
+    message: 'Mesaj',
+    anonymous: 'Anonim katıldı',
+    note: 'Eklediğin kişi bunu görmez. O da seni eklerse ikinize de haber gelir ve arkadaş olursunuz.',
+    anonymousNote:
+      'Arkadaş olursanız anonim adının sen olduğunu görür. İstersen Profil’den adını yenileyebilirsin.',
+    back: 'Mekana dön',
   },
   design: {
     title: 'Tasarım (test)',
@@ -1492,7 +1564,7 @@ export const tr = {
     profanity_rejected: 'Mesajın uygun olmayan bir ifade içeriyor.',
     wrong_concept: 'Bu masa başka bir oyun için.',
     two_tables: 'Masana başka bir masa katıldı.',
-    not_owner: 'Oyunu lobiye açan masa başlatır.',
+    not_owner: 'Bunu masanın sahibi yapar.',
     needs_two_tables: 'Bu oyun için ikinci masa gerekiyor.',
     game_in_progress: 'Oyun zaten sürüyor.',
     no_game: 'Şu an oyun yok.',
@@ -1500,7 +1572,9 @@ export const tr = {
     turn_over: 'Tur bitti.',
     turn_not_started: 'Tur henüz başlamadı.',
     not_your_seat: 'Bu sıra masanızın değil.',
-    not_enough_players: `Bu oyun için en az ${SAHTEKAR.minPlayers} oyuncu gerekiyor.`,
+    not_player: 'Bu oyunda oynamıyorsun.',
+    not_enough_players: 'Bu oyun için yeterli oyuncu yok.',
+    too_many_players: 'Bu oyun için oyuncu sayısı fazla.',
     no_objections_left: 'İtiraz hakkınız kalmadı.',
     no_passes_left: 'Pas hakkınız kalmadı.',
     too_soon: 'Biraz bekle.',
@@ -1517,6 +1591,9 @@ export const tr = {
       'Anonim ile profilli arasında bu girişte bir kez geçebilirsin; hakkını kullandın.',
     nick_refresh_too_soon: 'Anonim adını 30 günde bir yenileyebilirsin.',
     icon_taken: 'Bu simge mekandaki başka bir masada. Başka bir simge seç.',
+    already_in_table: 'Zaten bir masadasın.',
+    table_full: 'Masa dolu.',
+    invite_unavailable: 'Davet artık geçerli değil.',
     wrong_side: 'Bu masaya yalnızca daha önce bulunduğun taraftan katılabilirsin.',
     not_leader: 'Bunu yalnızca masanın lideri yapabilir.',
     already_friends: 'Zaten arkadaşsınız.',

@@ -1,0 +1,142 @@
+# A table of three (docs/SPEC_V4.md §4.E, K-13): this phone sets up a table in the lobby, bot A
+# (port 8787) and bot B (port 8788) ask with "Katıl" and this phone accepts both. The owner leaves:
+# the table goes on, handed to the earliest person there (bot A), and this phone sees "Masadan
+# ayrıldın". Then "Bu masadayım" to that table, now out of the lobby: bot A accepts, and its
+# "Masayı bitir" brings this phone to Masa bitti.
+appId: app.kabuk.mobile
+---
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: login
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: checkin
+      BODY: '{"spot":"kutuphane"}'
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: login
+      BOT_PORT: '8788'
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: checkin
+      BODY: '{"spot":"kutuphane"}'
+      BOT_PORT: '8788'
+# "Masa kur" with "Lobide görünsün" on.
+- tapOn:
+    id: tab-venue
+- scrollUntilVisible:
+    element:
+      id: table-create-open
+    centerElement: true
+    timeout: 15000
+- tapOn:
+    id: table-create-open
+- extendedWaitUntil:
+    visible:
+      id: table-lobby
+    timeout: 10000
+- tapOn:
+    id: table-lobby
+- scrollUntilVisible:
+    element:
+      id: table-create
+    timeout: 10000
+- tapOn:
+    id: table-create
+- extendedWaitUntil:
+    visible:
+      id: table-withdraw
+    timeout: 15000
+# Bot A first, then bot B: each request on its own card.
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: request-join
+- extendedWaitUntil:
+    visible:
+      id: join-accept
+    timeout: 20000
+- tapOn:
+    id: join-accept
+- extendedWaitUntil:
+    visible: 2 kişi
+    timeout: 20000
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: request-join
+      BOT_PORT: '8788'
+- extendedWaitUntil:
+    visible:
+      id: join-accept
+    timeout: 20000
+- tapOn:
+    id: join-accept
+- extendedWaitUntil:
+    visible: 3 kişi
+    timeout: 20000
+- tapOn:
+    id: table-who
+- extendedWaitUntil:
+    visible: Masadakiler · 3 kişi
+    timeout: 10000
+- takeScreenshot: 19-table-three
+- back
+- extendedWaitUntil:
+    notVisible: Masadakiler · 3 kişi
+    timeout: 10000
+# The owner's "Masadan ayrıl" sits in the end sheet, under "Masayı bitir" (§4.C).
+- tapOn:
+    id: table-end-open
+- extendedWaitUntil:
+    visible:
+      id: table-owner-leave
+    timeout: 10000
+- tapOn:
+    id: table-owner-leave
+- extendedWaitUntil:
+    visible: Masadan ayrıldın
+    timeout: 20000
+- takeScreenshot: 20-table-left
+- runFlow:
+    file: table-end-close.yaml
+# Bot A owns the table now; out of the lobby it is under "Süren masalar" with "Bu masadayım".
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: set-visibility
+      BODY: '{"open":false}'
+- scrollUntilVisible:
+    element:
+      id: here-.*
+    centerElement: true
+    timeout: 20000
+- tapOn:
+    id: here-.*
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: accept-request
+- extendedWaitUntil:
+    visible:
+      id: table-top
+    timeout: 20000
+- assertVisible: 3 kişi
+- assertVisible:
+    id: table-leave-open
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: end-room
+- runFlow:
+    file: table-end-close.yaml
+# Bot B's check-in ends here; its table seat went with the table.
+- runScript:
+    file: ../scripts/bot.js
+    env:
+      ACTION: leave
+      BOT_PORT: '8788'

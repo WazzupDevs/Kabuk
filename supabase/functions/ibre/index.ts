@@ -7,6 +7,7 @@ import { requireUser, serviceClient } from '../_shared/auth.ts';
 import { dbError } from '../_shared/db.ts';
 import { z } from '../_shared/deps.ts';
 import { handle } from '../_shared/http.ts';
+import { AppError } from '../_shared/pure/errors.ts';
 import type {
   GameOkResponse,
   IbreRequest,
@@ -47,11 +48,10 @@ Deno.serve(
     const target = { target_user_id: user.id, target_room_id: body.roomId };
 
     switch (body.action) {
-      case 'start': {
-        const { data, error } = await db.rpc('ibre_local_deck', target);
-        if (error) throw dbError('ibre_local_deck', error);
-        return { scales: data as IbreStartResponse['scales'] };
-      }
+      // The side model's games do not run at a table of people (docs/SPEC_V4.md §4.E); today's app
+      // hears update_required until the game comes back in step 4.6.
+      case 'start':
+        throw new AppError('update_required', 'This version of the app is too old. Update it.');
 
       case 'begin': {
         const { error } = await db.rpc('ibre_begin', target);

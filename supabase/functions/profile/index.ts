@@ -42,6 +42,7 @@ const Body: z.ZodType<ProfileRequest> = z.union([
     bio: z.string().max(2000).optional(),
     notifyDm: z.boolean().optional(),
     notifyFriendRequests: z.boolean().optional(),
+    notifyInvites: z.boolean().optional(),
   }),
   z.object({ action: z.literal('photo-upload-url') }),
   z.object({ action: z.literal('photo-commit'), path: z.string().max(200) }),
@@ -222,6 +223,7 @@ Deno.serve(
           bio?: string | null;
           notify_dm?: boolean;
           notify_friend_requests?: boolean;
+          notify_invites?: boolean;
         } = {};
         let name = me.display_name;
 
@@ -247,6 +249,7 @@ Deno.serve(
         if (body.notifyFriendRequests !== undefined) {
           changes.notify_friend_requests = body.notifyFriendRequests;
         }
+        if (body.notifyInvites !== undefined) changes.notify_invites = body.notifyInvites;
 
         if (Object.keys(changes).length === 0) return { ok: true };
         const { error } = await db.from('profiles').update(changes).eq('id', user.id);

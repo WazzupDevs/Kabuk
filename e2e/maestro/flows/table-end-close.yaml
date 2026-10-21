@@ -1,5 +1,5 @@
-# The merged table ended (docs/SPEC_V3.md §23.G): this phone sees the table's end, and "Kapat"
-# goes back to the venue.
+# The table ended (docs/SPEC_V4.md §4.E): this phone sees Masa bitti, and "Mekana dön" goes back
+# to the venue, which has no table now.
 appId: app.kabuk.mobile
 ---
 - extendedWaitUntil:
@@ -15,5 +15,5 @@ appId: app.kabuk.mobile
     id: table-end-close
 - extendedWaitUntil:
     visible:
-      id: lobby-open
+      id: table-create-open
     timeout: 15000

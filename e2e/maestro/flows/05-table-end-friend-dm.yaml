@@ -1,5 +1,5 @@
-# T6, F1, F3 (docs/SPEC_V3.md §23.G): end the table; on the table's end "Arkadaş ekle" from both
-# tables makes friends at once, with "Mesajlaş"; then a DM both ways.
+# T6, F1, F3 (docs/SPEC_V4.md §4.E, K-56): the owner ends the table; on Masa bitti "Arkadaş ekle"
+# from both people makes friends at once, with "Mesaj"; then a DM both ways.
 appId: app.kabuk.mobile
 ---
 # The pair must have played at least 3 minutes for a record (and "Arkadaş ekle").
@@ -7,13 +7,15 @@ appId: app.kabuk.mobile
     file: ../scripts/bot.js
     env:
       ACTION: backdate-encounter
-# By id: on the 320 dp emulator "Masayı bitir" is an icon (NARROW_SCREEN).
-- scrollUntilVisible:
-    element:
-      id: end-room
-    timeout: 20000
+# "Masayı bitir" from the owner's bar asks first (v46 data-msheet "bitir").
 - tapOn:
-    id: end-room
+    id: table-end-open
+- extendedWaitUntil:
+    visible:
+      id: table-end-confirm
+    timeout: 10000
+- tapOn:
+    id: table-end-confirm
 # The table's end at once (docs/SPEC_V3.md §23.G), one row for the bot's phone.
 - extendedWaitUntil:
     visible:

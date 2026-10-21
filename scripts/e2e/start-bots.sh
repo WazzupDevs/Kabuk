@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# The E2E venues and the two bot tables on the local stack (.github/workflows/e2e.yml), before a
+# The E2E venues and the two bot people on the local stack (.github/workflows/e2e.yml), before a
 # shard's flows and again before its retry: `setup` deletes the test accounts and sets up the
 # venues (its output, setup.json, has the check-in coordinates), then the bots listen for Maestro
-# in the background: 8787, and 8788 for 13-teams (another account). Their process ids go to
+# in the background: 8787, and 8788 for a third person at a table (another account). Their process ids go to
 # $OUT/bots.pid, for the retry to stop them. Env: OUT.
 set -euo pipefail
 node --experimental-strip-types scripts/e2e/bot-table.ts setup > "$OUT/setup.json"
