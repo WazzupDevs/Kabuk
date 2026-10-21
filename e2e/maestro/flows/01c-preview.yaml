@@ -510,6 +510,15 @@ appId: app.kabuk.mobile
       id: gal-colors
     timeout: 10000
 - takeScreenshot: 04v-v46-gallery-colors
+# The gallery's 320 view: a press lays the components out for v46's narrow screen, the whole list
+# mounting again (0.6.0: the app closed here). The rest of the gallery runs in that view.
+- tapOn:
+    id: v46-gallery-narrow
+- extendedWaitUntil:
+    visible:
+      id: gal-colors
+    timeout: 10000
+- takeScreenshot: 04v-v46-gallery-narrow
 # With the buttons in it (step 3b) the gallery is heavier: a swipe takes ~5 s on CI's emulator at
 # the largest text size, and reaching the first type style took longer than 30 s (e2e run
 # 39414633633, large-1; ~4 s a swipe and 24 s in step 3a).
