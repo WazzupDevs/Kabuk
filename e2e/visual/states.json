@@ -1003,6 +1003,261 @@
         ],
         "kirp": ".vhere"
       }
+    },
+    {
+      "id": "v46-alan-isim",
+      "app": "galeri/v46/alan-isim",
+      "uygulamaKirp": "gorsel-oge",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "page=galeri&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 1000
+          }
+        ],
+        "kirp": "[data-gal-el=\"alan-isim\"]",
+        "genislik": 480
+      }
+    },
+    {
+      "id": "v46-alan-isim-dolu",
+      "app": "galeri/v46/alan-isim-dolu",
+      "uygulamaKirp": "gorsel-oge",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "page=galeri&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 1000
+          }
+        ],
+        "kirp": "[data-gal-el=\"alan-isim-dolu\"]",
+        "genislik": 480
+      }
+    },
+    {
+      "id": "v46-alan-telefon",
+      "app": "galeri/v46/alan-telefon",
+      "uygulamaKirp": "gorsel-oge",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "page=galeri&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 1000
+          }
+        ],
+        "kirp": "[data-gal-el=\"alan-telefon\"]",
+        "genislik": 480
+      }
+    },
+    {
+      "id": "v46-alan-kod",
+      "app": "galeri/v46/alan-kod",
+      "uygulamaKirp": "gorsel-oge",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "page=galeri&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 1000
+          }
+        ],
+        "kirp": "[data-gal-el=\"alan-kod\"]",
+        "genislik": 480
+      }
+    },
+    {
+      "id": "v46-alan-hata",
+      "app": "galeri/v46/alan-hata",
+      "uygulamaKirp": "gorsel-oge",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "page=galeri&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 1000
+          }
+        ],
+        "kirp": "[data-gal-el=\"alan-hata\"]",
+        "genislik": 480
+      }
+    },
+    {
+      "id": "v46-uyari",
+      "app": "galeri/v46/uyari",
+      "uygulamaKirp": "gorsel-oge",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "page=galeri&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 1000
+          }
+        ],
+        "kirp": "[data-gal-el=\"uyari\"]",
+        "genislik": 480
+      }
+    },
+    {
+      "id": "v46-alan-secim",
+      "app": "galeri/v46/alan-secim",
+      "uygulamaKirp": "gorsel-oge",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "page=galeri&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 1000
+          }
+        ],
+        "kirp": "[data-gal-el=\"alan-secim\"]",
+        "genislik": 480
+      }
+    },
+    {
+      "id": "v46-alan-cok-satir",
+      "app": "galeri/v46/alan-cok-satir",
+      "uygulamaKirp": "gorsel-oge",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "page=galeri&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 1000
+          }
+        ],
+        "kirp": "[data-gal-el=\"alan-cok-satir\"]",
+        "genislik": 480
+      }
+    },
+    {
+      "id": "v46-anahtar-kapali",
+      "app": "galeri/v46/anahtar-kapali",
+      "uygulamaKirp": "gorsel-oge",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "page=galeri&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 1000
+          }
+        ],
+        "kirp": "[data-gal-el=\"anahtar-kapali\"]",
+        "genislik": 480
+      }
+    },
+    {
+      "id": "v46-anahtar-acik",
+      "app": "galeri/v46/anahtar-acik",
+      "uygulamaKirp": "gorsel-oge",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "page=galeri&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 1000
+          }
+        ],
+        "kirp": "[data-gal-el=\"anahtar-acik\"]",
+        "genislik": 480
+      }
+    },
+    {
+      "id": "v46-anonim-anahtari",
+      "app": "galeri/v46/anonim-anahtari",
+      "uygulamaKirp": "gorsel-oge",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "page=galeri&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 1000
+          }
+        ],
+        "kirp": "[data-gal-el=\"anonim-anahtari\"]",
+        "genislik": 480
+      }
+    },
+    {
+      "id": "v46-alan-isim-320",
+      "app": "galeri/v46/alan-isim",
+      "genislik": 320,
+      "uygulamaKirp": "gorsel-oge",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "s=kayit-isim&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 6000
+          }
+        ],
+        "kirp": ".sup-field:has([data-sup-name])"
+      }
+    },
+    {
+      "id": "v46-alan-telefon-320",
+      "app": "galeri/v46/alan-telefon",
+      "genislik": 320,
+      "uygulamaKirp": "gorsel-oge",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "s=kayit-telefon&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 6000
+          }
+        ],
+        "kirp": ".sup-phone"
+      }
+    },
+    {
+      "id": "v46-alan-kod-320",
+      "app": "galeri/v46/alan-kod",
+      "genislik": 320,
+      "uygulamaKirp": "gorsel-oge",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "s=kayit-kod&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 6000
+          }
+        ],
+        "kirp": "[data-otp]"
+      }
+    },
+    {
+      "id": "v46-uyari-320",
+      "app": "galeri/v46/uyari",
+      "genislik": 320,
+      "uygulamaKirp": "gorsel-oge",
+      "baz": false,
+      "prototip": {
+        "dosya": "docs/design/v46/skall-masa-deneme-v46-galeri.html",
+        "sorgu": "s=kayit-foto-erkek&theme={tema}&demo=0&anim=0",
+        "adimlar": [
+          {
+            "bekle": 6000
+          }
+        ],
+        "kirp": "[data-sup-warn]"
+      }
     }
   ]
 }

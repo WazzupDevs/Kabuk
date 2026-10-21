@@ -49,6 +49,19 @@ import {
   THUMBS,
   venueThumb,
 } from './explore.ts';
+import {
+  anonIcons,
+  anonSwitchScheme,
+  codeFieldScheme,
+  errorText,
+  lockDrawing,
+  noticeScheme,
+  phoneFieldScheme,
+  selectScheme,
+  switchScheme,
+  textAreaScheme,
+  textFieldScheme,
+} from './form.ts';
 import { element, narrowBreakpoint, pressed, readMeasured } from './measured.ts';
 import {
   type BarReading,
@@ -559,6 +572,47 @@ const PARTS_TYPES = [
   '  scaleFrom: number;',
   '  settle: { ms: number; ease: V46Bezier; offWhenReduced: boolean };',
   '};',
+  '',
+  '// The form parts (scripts/v46/form.ts).',
+  'export type V46FieldLook = { border: V46Edge; shadow: string | null };',
+  "export type V46FieldText = { font: V46Font; letterSpacing: number; color: string; placeholderColor: string; align: 'left' | 'center' | 'right'; tabular: boolean; caret: string };",
+  'export type V46FieldBox = { height: number; padding: V46Sides; radius: number; bg: string; idle: V46FieldLook; focus: V46FieldLook; transitions: V46Transition[] };',
+  'export type V46IconState = { opacity: number; scale: number; rotate: number };',
+  'export type V46FormScheme = {',
+  '  textField: { marginTop: number; gap: number; label: V46Text; box: V46FieldBox; text: V46FieldText };',
+  '  phone: { marginTop: number; box: V46FieldBox; gap: number; prefix: V46Text; text: V46FieldText };',
+  '  code: { marginTop: number; cells: number; gap: number; cell: V46FieldBox; text: V46FieldText };',
+  '  error: V46Text;',
+  '  notice: { bg: string; radius: number; padding: V46Sides; text: V46Text };',
+  '  select: { box: V46FieldBox; text: { font: V46Font; color: string } };',
+  '  textArea: V46FieldBox & { text: V46FieldText };',
+  '  switch: {',
+  '    width: number;',
+  '    height: number;',
+  '    radius: number;',
+  '    off: string;',
+  '    on: string;',
+  '    transitions: V46Transition[];',
+  '    hitSlop: V46Insets;',
+  '    disabledOpacity: number;',
+  '    knob: { size: number; inset: number; radius: number; bg: string; shadow: string | null; onX: number; transitions: V46Transition[]; reduced: V46Transition[] };',
+  '  };',
+  '  anon: {',
+  '    width: number;',
+  '    height: number;',
+  '    radius: number;',
+  '    off: { bg: string; border: V46Edge };',
+  '    on: { bg: string; border: V46Edge };',
+  '    transitions: V46Transition[];',
+  '    hitSlop: V46Insets;',
+  '    pressedScale: number;',
+  '    knob: { size: number; inset: number; off: string; on: string; onX: number; transitions: V46Transition[]; reduced: V46Transition[] };',
+  '    icon: { size: number; transitions: V46Transition[]; reduced: V46Transition[] };',
+  '    photo: { off: V46IconState; on: V46IconState };',
+  '    anon: { off: V46IconState; on: V46IconState };',
+  '    used: { border: V46Edge; lock: { size: number; right: number; bottom: number; border: V46Edge; bg: string; image: number; color: string } };',
+  '  };',
+  '};',
 ];
 
 // The measurement (scripts/v46/measured.ts) as parts.generated.ts: per component only the values its
@@ -745,6 +799,55 @@ export async function buildPartsModule(root: string): Promise<string> {
     '',
     "// Keşfet's pull to refresh (scripts/v46/explore.ts → pullRefresh).",
     `export const V46_PULL: V46PullScheme = ${json(pullRefresh(html))};`,
+    '',
+  );
+
+  // The form parts (scripts/v46/form.ts).
+  const still = (id: string) => element(reading(id).reduced, metrics);
+  const form = (s: 'light' | 'dark') => {
+    const phone = phoneFieldScheme(el('alan-telefon', s), el('alan-telefon-odak', s));
+    return {
+      textField: textFieldScheme(
+        el('alan-isim', s),
+        el('alan-isim-odak', s),
+        phone.text.placeholderColor,
+      ),
+      phone,
+      code: codeFieldScheme(el('alan-kod', s), el('alan-kod-odak', s)),
+      error: errorText(el('alan-hata-kendi', s)),
+      notice: noticeScheme(el('uyari', s)),
+      select: selectScheme(el('alan-secim', s), el('alan-secim-odak', s)),
+      textArea: textAreaScheme(el('alan-cok-satir', s), el('alan-cok-satir-odak', s)),
+      switch: switchScheme(
+        el('anahtar-kapali', s),
+        el('anahtar-acik', s),
+        el('anahtar-pasif', s),
+        still('anahtar-kapali'),
+      ),
+      anon: anonSwitchScheme(
+        el('anonim-anahtari', s),
+        el('anonim-anahtari-acik', s),
+        el('anonim-anahtari-kilitli', s),
+        pressed(reading('anonim-anahtari')[s].pressed),
+        still('anonim-anahtari'),
+      ),
+    };
+  };
+  const lock = (s: 'light' | 'dark') => {
+    const image = el('anonim-anahtari-kilitli', s).look.badge?.image;
+    if (!image) throw new Error('no lock on the used anonymous switch');
+    return lockDrawing(image).drawing;
+  };
+  lines.push(
+    "// The form parts: text, phone and code fields, a field's error, the warning box, the select, the many-line field, the switches.",
+    'export const V46_FORM: Record<"light" | "dark", V46FormScheme> = {',
+    `light: ${json(form('light'))},`,
+    `dark: ${json(form('dark'))},`,
+    '};',
+    '',
+    "// The anonymous switch's faces and the used one's lock (in currentColor).",
+    'export const V46_FORM_ICONS: { photo: V46Drawing; anon: V46Drawing; lock: V46Drawing } = ' +
+      `${json(once('form icons', (s) => ({ ...anonIcons(el('anonim-anahtari-acik', s)), lock: lock(s) })))};`,
     '',
   );
   const target = resolve(root, PARTS_MODULE);

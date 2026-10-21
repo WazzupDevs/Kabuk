@@ -342,6 +342,97 @@ export type V46PullScheme = {
   settle: { ms: number; ease: V46Bezier; offWhenReduced: boolean };
 };
 
+// The form parts (scripts/v46/form.ts).
+export type V46FieldLook = { border: V46Edge; shadow: string | null };
+export type V46FieldText = {
+  font: V46Font;
+  letterSpacing: number;
+  color: string;
+  placeholderColor: string;
+  align: 'left' | 'center' | 'right';
+  tabular: boolean;
+  caret: string;
+};
+export type V46FieldBox = {
+  height: number;
+  padding: V46Sides;
+  radius: number;
+  bg: string;
+  idle: V46FieldLook;
+  focus: V46FieldLook;
+  transitions: V46Transition[];
+};
+export type V46IconState = { opacity: number; scale: number; rotate: number };
+export type V46FormScheme = {
+  textField: {
+    marginTop: number;
+    gap: number;
+    label: V46Text;
+    box: V46FieldBox;
+    text: V46FieldText;
+  };
+  phone: { marginTop: number; box: V46FieldBox; gap: number; prefix: V46Text; text: V46FieldText };
+  code: { marginTop: number; cells: number; gap: number; cell: V46FieldBox; text: V46FieldText };
+  error: V46Text;
+  notice: { bg: string; radius: number; padding: V46Sides; text: V46Text };
+  select: { box: V46FieldBox; text: { font: V46Font; color: string } };
+  textArea: V46FieldBox & { text: V46FieldText };
+  switch: {
+    width: number;
+    height: number;
+    radius: number;
+    off: string;
+    on: string;
+    transitions: V46Transition[];
+    hitSlop: V46Insets;
+    disabledOpacity: number;
+    knob: {
+      size: number;
+      inset: number;
+      radius: number;
+      bg: string;
+      shadow: string | null;
+      onX: number;
+      transitions: V46Transition[];
+      reduced: V46Transition[];
+    };
+  };
+  anon: {
+    width: number;
+    height: number;
+    radius: number;
+    off: { bg: string; border: V46Edge };
+    on: { bg: string; border: V46Edge };
+    transitions: V46Transition[];
+    hitSlop: V46Insets;
+    pressedScale: number;
+    knob: {
+      size: number;
+      inset: number;
+      off: string;
+      on: string;
+      onX: number;
+      transitions: V46Transition[];
+      reduced: V46Transition[];
+    };
+    icon: { size: number; transitions: V46Transition[]; reduced: V46Transition[] };
+    photo: { off: V46IconState; on: V46IconState };
+    anon: { off: V46IconState; on: V46IconState };
+    used: {
+      border: V46Edge;
+      lock: {
+        size: number;
+        right: number;
+        bottom: number;
+        border: V46Edge;
+        bg: string;
+        image: number;
+        color: string;
+      };
+    };
+  };
+};
+
 // v46's one small-screen breakpoint (`@media (max-width: …px)` in its CSS).
 export const V46_NARROW_MAX_WIDTH = 350;
 
@@ -1996,7 +2087,18 @@ export type V46ScreenPartId =
   | 'mekan-simgesi-yemek'
   | 'mekan-simgesi-kampus'
   | 'su-an-buradasin'
-  | 'canli-nokta';
+  | 'canli-nokta'
+  | 'alan-isim-odak'
+  | 'alan-telefon-odak'
+  | 'alan-telefon-dolu'
+  | 'alan-kod-odak'
+  | 'alan-kod-dolu'
+  | 'alan-hata-kendi'
+  | 'alan-secim-odak'
+  | 'alan-cok-satir-odak'
+  | 'anahtar-pasif'
+  | 'anonim-anahtari-acik'
+  | 'anonim-anahtari-kilitli';
 
 // The parts of v46's screens the inventory does not list (scripts/v46/screenParts.ts): their
 // name, group and measured box, for the app's v46 gallery.
@@ -2076,6 +2178,32 @@ export const V46_SCREEN_PARTS: Record<
   'mekan-simgesi-kampus': { name: 'Mekan simgesi, kampüs', group: 'Keşfet', width: 56, height: 56 },
   'su-an-buradasin': { name: 'Şu an buradasın', group: 'Keşfet', width: 328, height: 177 },
   'canli-nokta': { name: 'Canlı nokta', group: 'Keşfet', width: 8, height: 8 },
+  'alan-isim-odak': { name: 'Metin alanı, yazarken', group: 'Form', width: 320, height: 78 },
+  'alan-telefon-odak': { name: 'Telefon alanı, yazarken', group: 'Form', width: 320, height: 60 },
+  'alan-telefon-dolu': { name: 'Telefon alanı, dolu', group: 'Form', width: 320, height: 60 },
+  'alan-kod-odak': { name: 'Kod alanı, yazarken', group: 'Form', width: 320, height: 58 },
+  'alan-kod-dolu': { name: 'Kod alanı, üç hane yazılmış', group: 'Form', width: 320, height: 58 },
+  'alan-hata-kendi': {
+    name: 'Alan hatası metni, kendi kuralıyla',
+    group: 'Form',
+    width: 320,
+    height: 36,
+  },
+  'alan-secim-odak': { name: 'Seçim, açıkken', group: 'Form', width: 80.469, height: 56 },
+  'alan-cok-satir-odak': {
+    name: 'Çok satırlı alan, yazarken',
+    group: 'Form',
+    width: 298,
+    height: 89,
+  },
+  'anahtar-pasif': { name: 'Anahtar, pasif', group: 'Form', width: 52, height: 32 },
+  'anonim-anahtari-acik': { name: 'Anonim anahtarı, açık', group: 'Form', width: 46, height: 28 },
+  'anonim-anahtari-kilitli': {
+    name: 'Anonim anahtarı, bu girişte değişti',
+    group: 'Form',
+    width: 46,
+    height: 28,
+  },
 };
 
 // v46's tab bar (`nav.nav`), each tab as it is selected and not (scripts/v46/navigation.ts).
@@ -3388,4 +3516,527 @@ export const V46_PULL: V46PullScheme = {
   gap: 70,
   scaleFrom: 0.55,
   settle: { ms: 450, ease: [0.2, 0.8, 0.2, 1], offWhenReduced: true },
+};
+
+// The form parts: text, phone and code fields, a field's error, the warning box, the select, the many-line field, the switches.
+export const V46_FORM: Record<'light' | 'dark', V46FormScheme> = {
+  light: {
+    textField: {
+      marginTop: 8,
+      gap: 6,
+      label: {
+        font: { size: 12, weight: 800, lineHeight: 16 },
+        color: '#5E5878',
+        letterSpacing: 0,
+      },
+      box: {
+        height: 56,
+        padding: [0, 16, 0, 16],
+        radius: 16,
+        bg: '#FFFFFF',
+        idle: { border: { width: 1, color: '#DAD3F2' }, shadow: null },
+        focus: {
+          border: { width: 1, color: '#6A47F5' },
+          shadow: '0px 0px 0px 4px rgba(106, 71, 245, 0.16)',
+        },
+        transitions: [],
+      },
+      text: {
+        font: { size: 18, weight: 700, lineHeight: 23 },
+        letterSpacing: 0,
+        color: '#14112B',
+        placeholderColor: '#6E6890',
+        align: 'left',
+        tabular: false,
+        caret: '#14112B',
+      },
+    },
+    phone: {
+      marginTop: 8,
+      box: {
+        height: 60,
+        padding: [0, 16, 0, 16],
+        radius: 20,
+        bg: '#FFFFFF',
+        idle: { border: { width: 1, color: '#DAD3F2' }, shadow: null },
+        focus: {
+          border: { width: 1, color: '#6A47F5' },
+          shadow: '0px 0px 0px 4px rgba(106, 71, 245, 0.16)',
+        },
+        transitions: [],
+      },
+      gap: 10,
+      prefix: {
+        font: { size: 18, weight: 800, lineHeight: 23 },
+        color: '#5E5878',
+        letterSpacing: 0,
+      },
+      text: {
+        font: { size: 20, weight: 800, lineHeight: 25 },
+        letterSpacing: 0.3,
+        color: '#14112B',
+        placeholderColor: '#6E6890',
+        align: 'left',
+        tabular: true,
+        caret: '#14112B',
+      },
+    },
+    code: {
+      marginTop: 8,
+      cells: 6,
+      gap: 8,
+      cell: {
+        height: 58,
+        padding: [0, 0, 0, 0],
+        radius: 16,
+        bg: '#FFFFFF',
+        idle: { border: { width: 1, color: '#DAD3F2' }, shadow: null },
+        focus: {
+          border: { width: 1, color: '#6A47F5' },
+          shadow: '0px 0px 0px 4px rgba(106, 71, 245, 0.16)',
+        },
+        transitions: [],
+      },
+      text: {
+        font: { size: 24, weight: 800, lineHeight: 30 },
+        letterSpacing: 0,
+        color: '#14112B',
+        placeholderColor: '#14112B',
+        align: 'center',
+        tabular: true,
+        caret: '#14112B',
+      },
+    },
+    error: { font: { size: 13, weight: 700, lineHeight: 18 }, color: '#B4281A', letterSpacing: 0 },
+    notice: {
+      bg: '#FFF1D6',
+      radius: 16,
+      padding: [10, 12, 10, 12],
+      text: { font: { size: 13, weight: 700, lineHeight: 18 }, color: '#5C3A00', letterSpacing: 0 },
+    },
+    select: {
+      box: {
+        height: 56,
+        padding: [0, 8, 0, 8],
+        radius: 16,
+        bg: '#FFFFFF',
+        idle: { border: { width: 1, color: '#DAD3F2' }, shadow: null },
+        focus: {
+          border: { width: 1, color: '#6A47F5' },
+          shadow: '0px 0px 0px 4px rgba(106, 71, 245, 0.16)',
+        },
+        transitions: [],
+      },
+      text: { font: { size: 16, weight: 700, lineHeight: 21 }, color: '#14112B' },
+    },
+    textArea: {
+      height: 89,
+      padding: [12, 14, 12, 14],
+      radius: 16,
+      bg: '#FFFFFF',
+      idle: { border: { width: 1, color: '#DAD3F2' }, shadow: null },
+      focus: {
+        border: { width: 1, color: '#7B5CFF' },
+        shadow: '0px 0px 0px 3px rgba(123, 92, 255, 0.15)',
+      },
+      transitions: [
+        { prop: 'border-color', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+        { prop: 'box-shadow', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+      ],
+      text: {
+        font: { size: 15, weight: 600, lineHeight: 21 },
+        letterSpacing: 0,
+        color: '#14112B',
+        placeholderColor: '#6E6890',
+        align: 'left',
+        tabular: false,
+        caret: '#14112B',
+      },
+    },
+    switch: {
+      width: 52,
+      height: 32,
+      radius: 999,
+      off: '#CFC8E6',
+      on: '#6A47F5',
+      transitions: [{ prop: 'background-color', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] }],
+      hitSlop: { top: 6, right: 2, bottom: 6, left: 2 },
+      disabledOpacity: 0.45,
+      knob: {
+        size: 26,
+        inset: 3,
+        radius: 13,
+        bg: '#FFFFFF',
+        shadow: '0px 2px 6px 0px rgba(20, 17, 43, 0.18)',
+        onX: 20,
+        transitions: [{ prop: 'transform', ms: 250, delayMs: 0, ease: [0.34, 1.56, 0.64, 1] }],
+        reduced: [],
+      },
+    },
+    anon: {
+      width: 46,
+      height: 28,
+      radius: 14,
+      off: { bg: '#FFFFFF', border: { width: 1, color: '#E3DEF2' } },
+      on: { bg: '#6A47F5', border: { width: 1, color: '#6A47F5' } },
+      transitions: [
+        { prop: 'background-color', ms: 250, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+        { prop: 'border-color', ms: 250, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+      ],
+      hitSlop: { top: 8, right: 2, bottom: 8, left: 2 },
+      pressedScale: 0.97,
+      knob: {
+        size: 22,
+        inset: 2,
+        off: '#EEEBF8',
+        on: '#FFFFFF',
+        onX: 18,
+        transitions: [
+          { prop: 'transform', ms: 380, delayMs: 0, ease: [0.34, 1.56, 0.64, 1] },
+          { prop: 'background-color', ms: 250, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+        ],
+        reduced: [],
+      },
+      icon: {
+        size: 16,
+        transitions: [
+          { prop: 'opacity', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+          { prop: 'transform', ms: 300, delayMs: 0, ease: [0.34, 1.56, 0.64, 1] },
+        ],
+        reduced: [],
+      },
+      photo: {
+        off: { opacity: 1, scale: 1, rotate: 0 },
+        on: { opacity: 0, scale: 0.4, rotate: 20 },
+      },
+      anon: {
+        off: { opacity: 0, scale: 0.4, rotate: -20 },
+        on: { opacity: 1, scale: 1, rotate: 0 },
+      },
+      used: {
+        border: { width: 1, color: '#C9C3DA' },
+        lock: {
+          size: 16,
+          right: -5,
+          bottom: -5,
+          border: { width: 2, color: '#F5F3FC' },
+          bg: '#14112B',
+          image: 10,
+          color: '#FFFFFF',
+        },
+      },
+    },
+  },
+  dark: {
+    textField: {
+      marginTop: 8,
+      gap: 6,
+      label: {
+        font: { size: 12, weight: 800, lineHeight: 16 },
+        color: '#B8B3D2',
+        letterSpacing: 0,
+      },
+      box: {
+        height: 56,
+        padding: [0, 16, 0, 16],
+        radius: 16,
+        bg: '#1C1838',
+        idle: { border: { width: 1, color: '#3A3563' }, shadow: null },
+        focus: {
+          border: { width: 1, color: '#6A47F5' },
+          shadow: '0px 0px 0px 4px rgba(0, 0, 0, 0.08)',
+        },
+        transitions: [],
+      },
+      text: {
+        font: { size: 18, weight: 700, lineHeight: 23 },
+        letterSpacing: 0,
+        color: '#F3F0FF',
+        placeholderColor: '#ADA8C8',
+        align: 'left',
+        tabular: false,
+        caret: '#F3F0FF',
+      },
+    },
+    phone: {
+      marginTop: 8,
+      box: {
+        height: 60,
+        padding: [0, 16, 0, 16],
+        radius: 20,
+        bg: '#1C1838',
+        idle: { border: { width: 1, color: '#3A3563' }, shadow: null },
+        focus: {
+          border: { width: 1, color: '#6A47F5' },
+          shadow: '0px 0px 0px 4px rgba(0, 0, 0, 0.08)',
+        },
+        transitions: [],
+      },
+      gap: 10,
+      prefix: {
+        font: { size: 18, weight: 800, lineHeight: 23 },
+        color: '#B8B3D2',
+        letterSpacing: 0,
+      },
+      text: {
+        font: { size: 20, weight: 800, lineHeight: 25 },
+        letterSpacing: 0.3,
+        color: '#F3F0FF',
+        placeholderColor: '#ADA8C8',
+        align: 'left',
+        tabular: true,
+        caret: '#F3F0FF',
+      },
+    },
+    code: {
+      marginTop: 8,
+      cells: 6,
+      gap: 8,
+      cell: {
+        height: 58,
+        padding: [0, 0, 0, 0],
+        radius: 16,
+        bg: '#1C1838',
+        idle: { border: { width: 1, color: '#3A3563' }, shadow: null },
+        focus: {
+          border: { width: 1, color: '#6A47F5' },
+          shadow: '0px 0px 0px 4px rgba(0, 0, 0, 0.08)',
+        },
+        transitions: [],
+      },
+      text: {
+        font: { size: 24, weight: 800, lineHeight: 30 },
+        letterSpacing: 0,
+        color: '#F3F0FF',
+        placeholderColor: '#F3F0FF',
+        align: 'center',
+        tabular: true,
+        caret: '#F3F0FF',
+      },
+    },
+    error: { font: { size: 13, weight: 700, lineHeight: 18 }, color: '#FF9C8A', letterSpacing: 0 },
+    notice: {
+      bg: '#3A2A10',
+      radius: 16,
+      padding: [10, 12, 10, 12],
+      text: { font: { size: 13, weight: 700, lineHeight: 18 }, color: '#FFE2B3', letterSpacing: 0 },
+    },
+    select: {
+      box: {
+        height: 56,
+        padding: [0, 8, 0, 8],
+        radius: 16,
+        bg: '#1C1838',
+        idle: { border: { width: 1, color: '#3A3563' }, shadow: null },
+        focus: {
+          border: { width: 1, color: '#6A47F5' },
+          shadow: '0px 0px 0px 4px rgba(0, 0, 0, 0.08)',
+        },
+        transitions: [],
+      },
+      text: { font: { size: 16, weight: 700, lineHeight: 21 }, color: '#F3F0FF' },
+    },
+    textArea: {
+      height: 89,
+      padding: [12, 14, 12, 14],
+      radius: 16,
+      bg: '#1C1838',
+      idle: { border: { width: 1, color: '#3A3563' }, shadow: null },
+      focus: {
+        border: { width: 1, color: '#7B5CFF' },
+        shadow: '0px 0px 0px 3px rgba(0, 0, 0, 0.075)',
+      },
+      transitions: [
+        { prop: 'border-color', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+        { prop: 'box-shadow', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+      ],
+      text: {
+        font: { size: 15, weight: 600, lineHeight: 21 },
+        letterSpacing: 0,
+        color: '#F3F0FF',
+        placeholderColor: '#ADA8C8',
+        align: 'left',
+        tabular: false,
+        caret: '#F3F0FF',
+      },
+    },
+    switch: {
+      width: 52,
+      height: 32,
+      radius: 999,
+      off: '#3A3563',
+      on: '#8F78FF',
+      transitions: [{ prop: 'background-color', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] }],
+      hitSlop: { top: 6, right: 2, bottom: 6, left: 2 },
+      disabledOpacity: 0.45,
+      knob: {
+        size: 26,
+        inset: 3,
+        radius: 13,
+        bg: '#F3F0FF',
+        shadow: '0px 2px 6px 0px rgba(0, 0, 0, 0.4)',
+        onX: 20,
+        transitions: [{ prop: 'transform', ms: 250, delayMs: 0, ease: [0.34, 1.56, 0.64, 1] }],
+        reduced: [],
+      },
+    },
+    anon: {
+      width: 46,
+      height: 28,
+      radius: 14,
+      off: { bg: '#1C1838', border: { width: 1, color: '#34305A' } },
+      on: { bg: '#6A47F5', border: { width: 1, color: '#6A47F5' } },
+      transitions: [
+        { prop: 'background-color', ms: 250, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+        { prop: 'border-color', ms: 250, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+      ],
+      hitSlop: { top: 8, right: 2, bottom: 8, left: 2 },
+      pressedScale: 0.97,
+      knob: {
+        size: 22,
+        inset: 2,
+        off: '#262148',
+        on: '#1C1838',
+        onX: 18,
+        transitions: [
+          { prop: 'transform', ms: 380, delayMs: 0, ease: [0.34, 1.56, 0.64, 1] },
+          { prop: 'background-color', ms: 250, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+        ],
+        reduced: [],
+      },
+      icon: {
+        size: 16,
+        transitions: [
+          { prop: 'opacity', ms: 200, delayMs: 0, ease: [0.25, 0.1, 0.25, 1] },
+          { prop: 'transform', ms: 300, delayMs: 0, ease: [0.34, 1.56, 0.64, 1] },
+        ],
+        reduced: [],
+      },
+      photo: {
+        off: { opacity: 1, scale: 1, rotate: 0 },
+        on: { opacity: 0, scale: 0.4, rotate: 20 },
+      },
+      anon: {
+        off: { opacity: 0, scale: 0.4, rotate: -20 },
+        on: { opacity: 1, scale: 1, rotate: 0 },
+      },
+      used: {
+        border: { width: 1, color: '#413C4D' },
+        lock: {
+          size: 16,
+          right: -5,
+          bottom: -5,
+          border: { width: 2, color: '#0D0B1E' },
+          bg: '#F3F0FF',
+          image: 10,
+          color: '#14112B',
+        },
+      },
+    },
+  },
+};
+
+// The anonymous switch's faces and the used one's lock (in currentColor).
+export const V46_FORM_ICONS: { photo: V46Drawing; anon: V46Drawing; lock: V46Drawing } = {
+  photo: {
+    viewBox: [0, 0, 20, 20],
+    clips: [],
+    gradients: [],
+    nodes: [
+      {
+        tag: 'circle',
+        attrs: { cx: 10, cy: 7.2, r: 3.4 },
+        fill: '#8A85A0',
+        stroke: null,
+        strokeWidth: 1,
+        lineCap: 'butt',
+        lineJoin: 'miter',
+        opacity: 1,
+      },
+      {
+        tag: 'path',
+        attrs: { d: 'M3.6 17.2c0-3.6 2.9-5.8 6.4-5.8s6.4 2.2 6.4 5.8z' },
+        fill: '#8A85A0',
+        stroke: null,
+        strokeWidth: 1,
+        lineCap: 'butt',
+        lineJoin: 'miter',
+        opacity: 1,
+      },
+    ],
+  },
+  anon: {
+    viewBox: [0, 0, 20, 20],
+    clips: [],
+    gradients: [],
+    nodes: [
+      {
+        tag: 'rect',
+        attrs: { x: 5, y: 2.5, width: 10, height: 17, rx: 5 },
+        fill: '#7B5CFF',
+        stroke: null,
+        strokeWidth: 1,
+        lineCap: 'butt',
+        lineJoin: 'miter',
+        opacity: 1,
+      },
+      {
+        tag: 'rect',
+        attrs: { x: 6.4, y: 6, width: 7.2, height: 4.2, rx: 2.1 },
+        fill: '#FFFFFF',
+        stroke: null,
+        strokeWidth: 1,
+        lineCap: 'butt',
+        lineJoin: 'miter',
+        opacity: 1,
+      },
+      {
+        tag: 'circle',
+        attrs: { cx: 8.6, cy: 8.1, r: '.9' },
+        fill: '#14112B',
+        stroke: null,
+        strokeWidth: 1,
+        lineCap: 'butt',
+        lineJoin: 'miter',
+        opacity: 1,
+      },
+      {
+        tag: 'circle',
+        attrs: { cx: 11.4, cy: 8.1, r: '.9' },
+        fill: '#14112B',
+        stroke: null,
+        strokeWidth: 1,
+        lineCap: 'butt',
+        lineJoin: 'miter',
+        opacity: 1,
+      },
+    ],
+  },
+  lock: {
+    viewBox: [0, 0, 12, 12],
+    clips: [],
+    gradients: [],
+    nodes: [
+      {
+        tag: 'rect',
+        attrs: { x: 2.5, y: 5.2, width: 7, height: 5, rx: 1.4 },
+        fill: 'currentColor',
+        stroke: null,
+        strokeWidth: 1,
+        lineCap: 'butt',
+        lineJoin: 'miter',
+        opacity: 1,
+      },
+      {
+        tag: 'path',
+        attrs: { d: 'M4.2 5.4V4a1.8 1.8 0 0 1 3.6 0v1.4' },
+        fill: null,
+        stroke: 'currentColor',
+        strokeWidth: 1.3,
+        lineCap: 'butt',
+        lineJoin: 'miter',
+        opacity: 1,
+      },
+    ],
+  },
 };

@@ -21,6 +21,11 @@ export const TAB_BAR_GROUP = 'Sekme çubuğu';
 export const TOP_BAR_GROUP = 'Üst çubuk';
 // Keşfet's own parts (the filter chips are the inventory's suzgec-cipleri).
 export const EXPLORE_GROUP = 'Keşfet';
+// The fields and switches in the states the inventory does not copy (it has each at rest), with
+// its own (Form).
+export const FORM_GROUP = 'Form';
+
+const focus = (selector: string) => `js:document.querySelector('${selector}').focus()`;
 
 export const SCREEN_PARTS: readonly ScreenPart[] = [
   // The tab bar with each tab selected that the inventory does not have (it has Mekan, Mesajlar
@@ -208,5 +213,110 @@ export const SCREEN_PARTS: readonly ScreenPart[] = [
     source_state: 'kesfet',
     selector_in_state: '.vh-lbl .live',
     extra_steps: [],
+  },
+  // The fields while typing (`:focus` / `:focus-within`: the purple edge and its ring) and with
+  // something typed in.
+  {
+    id: 'alan-isim-odak',
+    group: FORM_GROUP,
+    name: 'Metin alanı, yazarken',
+    source_state: 'kayit-isim',
+    selector_in_state: '.sup-field:has([data-sup-name])',
+    extra_steps: [focus('[data-sup-name]')],
+  },
+  {
+    id: 'alan-telefon-odak',
+    group: FORM_GROUP,
+    name: 'Telefon alanı, yazarken',
+    source_state: 'kayit-telefon',
+    selector_in_state: '.sup-phone',
+    extra_steps: [focus('[data-sup-phone]')],
+  },
+  {
+    id: 'alan-telefon-dolu',
+    group: FORM_GROUP,
+    name: 'Telefon alanı, dolu',
+    source_state: 'kayit-telefon',
+    selector_in_state: '.sup-phone',
+    extra_steps: ['f:[data-sup-phone]::532 123 45 67'],
+  },
+  {
+    id: 'alan-kod-odak',
+    group: FORM_GROUP,
+    name: 'Kod alanı, yazarken',
+    source_state: 'kayit-kod',
+    selector_in_state: '[data-otp]',
+    extra_steps: [focus('[data-otp] input')],
+  },
+  {
+    id: 'alan-kod-dolu',
+    group: FORM_GROUP,
+    name: 'Kod alanı, üç hane yazılmış',
+    source_state: 'kayit-kod',
+    selector_in_state: '[data-otp]',
+    extra_steps: [
+      'f:[data-otp] input@@0::4',
+      'f:[data-otp] input@@1::8',
+      'f:[data-otp] input@@2::2',
+      "js:document.querySelectorAll('[data-otp] input')[3].focus()",
+    ],
+  },
+  // The field's error text by its own rule (`.sup-err`): on the sign-up screen v46's paragraph rule
+  // (`.sup-pane>p`, more specific) draws it as a plain muted line, so it is read out of the
+  // pane, in the same app frame (docs/SPEC_V4.md §4.C: the intent of a rule that another overrides).
+  {
+    id: 'alan-hata-kendi',
+    group: FORM_GROUP,
+    name: 'Alan hatası metni, kendi kuralıyla',
+    source_state: 'kayit-telefon-hata',
+    selector_in_state: '[data-sup-err="phone"]',
+    extra_steps: [
+      "js:var e=document.querySelector('[data-sup-err=\"phone\"]');e.closest('.sup-pane').parentNode.appendChild(e)",
+    ],
+  },
+  {
+    id: 'alan-secim-odak',
+    group: FORM_GROUP,
+    name: 'Seçim, açıkken',
+    source_state: 'kayit-dogum',
+    selector_in_state: '[data-dob="d"]',
+    extra_steps: [focus('[data-dob="d"]')],
+  },
+  {
+    id: 'alan-cok-satir-odak',
+    group: FORM_GROUP,
+    name: 'Çok satırlı alan, yazarken',
+    source_state: 'profil-duzenle',
+    selector_in_state: '[data-ebio]',
+    extra_steps: [focus('[data-ebio]')],
+  },
+  // A switch that cannot change now (Bildirimler with the phone's permission off).
+  {
+    id: 'anahtar-pasif',
+    group: FORM_GROUP,
+    name: 'Anahtar, pasif',
+    source_state: 'bildirim-izin-kapali',
+    selector_in_state: '[data-nk]',
+    extra_steps: [],
+  },
+  // The anonymous switch on, and after this check-in's one change (`.used`: the lock on its
+  // corner), as v46 shows it once the sheet's "Anonim görün" is pressed.
+  {
+    id: 'anonim-anahtari-acik',
+    group: FORM_GROUP,
+    name: 'Anonim anahtarı, açık',
+    source_state: 'mekan',
+    selector_in_state: '[data-anon-sw]',
+    extra_steps: [
+      "js:document.querySelector('[data-anon-sw]').setAttribute('aria-checked','true')",
+    ],
+  },
+  {
+    id: 'anonim-anahtari-kilitli',
+    group: FORM_GROUP,
+    name: 'Anonim anahtarı, bu girişte değişti',
+    source_state: 'mekan',
+    selector_in_state: '[data-anon-sw]',
+    extra_steps: ['c:[data-anon-sw]', 'c:[data-anx-yes]', 'w:900'],
   },
 ];
