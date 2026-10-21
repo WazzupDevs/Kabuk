@@ -36,9 +36,11 @@ appId: app.kabuk.mobile
     file: ../scripts/bot.js
     env:
       ACTION: decline-request
+# Rule 5: a declined request looks like one that timed out, so the row says so only once the
+# request's 60 s are up.
 - extendedWaitUntil:
     visible: Masa şu an müsait değil.
-    timeout: 20000
+    timeout: 80000
 - takeScreenshot: 14c-lobby-unavailable
 # A new table of the bot's this time; the bot accepts and the table opens after the row's note.
 - runScript:

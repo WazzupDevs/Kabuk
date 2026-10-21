@@ -56,11 +56,15 @@ export function TableEnd({ roomId, left, tableName, phones, profiled, anonymous,
 
   return (
     <Screen>
-      <ScreenHeader
-        title={left ? tr.tableEnd.leftTitle : tr.tableEnd.title}
-        subtitle={tr.tableEnd.subtitle(tableName, phones)}
-      />
-      <View className="mt-4 gap-2.5" testID="table-end">
+      {/* On the header, which always has content: with no record (nobody sat 3 minutes) the
+          list below is empty and has no size. */}
+      <View testID="table-end">
+        <ScreenHeader
+          title={left ? tr.tableEnd.leftTitle : tr.tableEnd.title}
+          subtitle={tr.tableEnd.subtitle(tableName, phones)}
+        />
+      </View>
+      <View className="mt-4 gap-2.5">
         {records.isPending ? (
           <View className="items-center py-6">
             <Loader />
