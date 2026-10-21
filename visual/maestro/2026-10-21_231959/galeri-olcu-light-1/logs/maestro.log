@@ -1,0 +1,29 @@
+23:44:25.725 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Define variables RUNNING
+23:44:25.726 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Define variables COMPLETED
+23:44:25.726 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Apply configuration RUNNING
+23:44:25.726 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Apply configuration COMPLETED
+23:44:25.726 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Open masa:///gorsel?durum=galeri/measure&tema=light&sayfa=0&sayfalar=2&n=11 RUNNING
+23:44:25.726 [ INFO] maestro.Maestro.openLink: Opening link masa:///gorsel?durum=galeri/measure&tema=light&sayfa=0&sayfalar=2&n=11 for app: app.kabuk.mobile with autoVerify config as false
+23:44:25.799 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Open masa:///gorsel?durum=galeri/measure&tema=light&sayfa=0&sayfalar=2&n=11 COMPLETED
+23:44:25.800 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: launch-curtain is not visible RUNNING
+23:44:27.422 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: launch-curtain is not visible COMPLETED
+23:44:27.422 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that (Optional) id: gorsel-hazir-11 is visible RUNNING
+23:44:27.809 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that (Optional) id: gorsel-hazir-11 is visible COMPLETED
+23:44:27.809 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Run flow when id: gorsel-hazir-11 is not visible RUNNING
+23:44:32.808 [ INFO] maestro.orchestra.Orchestra.executeCommands: [Command execution] CommandSkipped: null
+23:44:32.808 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Run flow when id: gorsel-hazir-11 is not visible SKIPPED
+23:44:32.808 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: gorsel-yok is not visible RUNNING
+23:44:33.474 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: gorsel-yok is not visible COMPLETED
+23:44:33.474 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: gorsel-eksik-sayfa is not visible RUNNING
+23:44:34.124 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: gorsel-eksik-sayfa is not visible COMPLETED
+23:44:34.124 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Run flow when id: android:id/aerr_wait is visible RUNNING
+23:44:34.287 [ INFO] maestro.orchestra.Orchestra.executeCommands: [Command execution] CommandSkipped: null
+23:44:34.287 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Run flow when id: android:id/aerr_wait is visible SKIPPED
+23:44:34.287 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Take screenshot aday__galeri-olcu-light-1, cropped to id: gorsel-cerceve RUNNING
+23:44:34.371 [ INFO] maestro.Maestro.takeScreenshot: Taking screenshot (cropped to bounds)
+23:44:34.371 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+23:44:34.559 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Take screenshot aday__galeri-olcu-light-1, cropped to id: gorsel-cerceve COMPLETED
+23:44:34.560 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert screenshot matches /home/runner/work/Kabuk/Kabuk/e2e/visual/baz/galeri-olcu-light-1.png (threshold: 99.7%) (cropped on id: gorsel-cerceve) RUNNING
+23:44:34.643 [ INFO] maestro.Maestro.takeScreenshot: Taking screenshot (cropped to bounds)
+23:44:34.644 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+23:44:34.839 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert screenshot matches /home/runner/work/Kabuk/Kabuk/e2e/visual/baz/galeri-olcu-light-1.png (threshold: 99.7%) (cropped on id: gorsel-cerceve) COMPLETED
