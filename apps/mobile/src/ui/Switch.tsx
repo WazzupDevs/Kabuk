@@ -1,7 +1,6 @@
 import { Pressable } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { haptic } from '@/lib/haptics';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { V46_FORM } from '@/theme/parts.generated';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -43,7 +42,6 @@ export function Switch({
           onDisabledPress?.();
           return;
         }
-        haptic('selection');
         onChange(!value);
       }}
       hitSlop={w.hitSlop}

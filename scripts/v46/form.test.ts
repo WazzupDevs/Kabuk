@@ -222,8 +222,10 @@ describe("v46's form parts", () => {
     // One that cannot change now is faded (v46's last `.vsw[aria-disabled]` rule).
     expect(form.light.switch.disabledOpacity).toBeLessThan(1);
     expect(reading('anahtar-pasif', 'light').opacity).toBe(form.light.switch.disabledOpacity);
+    // No vibration on a change, as in v46 (the owner, 21 Oct); nor on the filter chips.
     const sw = source('Switch.tsx');
-    expect(sw).toMatch(/haptic\('selection'\)/);
+    expect(sw).not.toMatch(/haptic\(/);
+    expect(source('FilterChips.tsx')).not.toMatch(/haptic\(/);
     expect(sw).toMatch(/reduce \? k\.reduced : k\.transitions/);
   });
 

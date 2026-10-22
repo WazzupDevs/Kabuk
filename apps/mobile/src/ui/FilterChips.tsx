@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, Text } from 'react-native';
 
-import { haptic } from '@/lib/haptics';
 import { V46_EXPLORE } from '@/theme/parts.generated';
 import { useTheme } from '@/theme/ThemeProvider';
 import { v46FontStyle } from '@/theme/v46Type';
@@ -23,7 +22,7 @@ type Props<K extends string> = {
 // that scrolls sideways from edge to edge of the screen (it reaches past the screen's side padding
 // and pads itself back). The chip on is ink with white text, the others white with an edge; each
 // takes a touch 4 dp past its top and bottom (`.cat::after`) and shrinks when pressed. A new choice
-// is felt (haptics.ts → selection).
+// is not felt: v46 has none there (the owner, 21 Oct).
 export function FilterChips<K extends string>({
   items,
   value,
@@ -65,7 +64,6 @@ export function FilterChips<K extends string>({
           pressedPreview={pressedPreview === item.key}
           onPress={() => {
             if (item.key === value) return;
-            haptic('selection');
             onChange(item.key);
           }}
         />
