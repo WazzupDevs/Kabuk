@@ -157,29 +157,36 @@ function EditForm({
     <Screen>
       <ScreenHeader title={tr.profile.editTitle} onBack={() => router.back()} />
 
-      <View className="mt-4 gap-6">
-        <PhotoEditor publicId={publicId} hasName={initialName !== ''} />
-        <Input
-          testID="name-input"
-          label={tr.profile.nameLabel}
-          hint={tr.profile.nameHint}
-          value={name}
-          onChangeText={setName}
-          error={nameContact ? tr.errors.contact_not_allowed : null}
-          maxLength={maxLengthFor(name, DISPLAY_NAME_MAX)}
-          autoCapitalize="words"
-          autoCorrect={false}
-        />
-        <Input
-          label={tr.profile.bioLabel}
-          counter={tr.profile.bioHint([...bio].length, BIO_MAX)}
-          value={bio}
-          onChangeText={setBio}
-          error={bioError}
-          maxLength={maxLengthFor(bio, bioLimit)}
-          multiline
-          tall
-        />
+      <View className="mt-4 gap-3">
+        {/* skall tuvali (ProfilDuzenle): the photo and the fields in cards. */}
+        <Card>
+          <PhotoEditor publicId={publicId} hasName={initialName !== ''} />
+        </Card>
+        <Card>
+          <View className="gap-4">
+            <Input
+              testID="name-input"
+              label={tr.profile.nameLabel}
+              hint={tr.profile.nameHint}
+              value={name}
+              onChangeText={setName}
+              error={nameContact ? tr.errors.contact_not_allowed : null}
+              maxLength={maxLengthFor(name, DISPLAY_NAME_MAX)}
+              autoCapitalize="words"
+              autoCorrect={false}
+            />
+            <Input
+              label={tr.profile.bioLabel}
+              counter={tr.profile.bioHint([...bio].length, BIO_MAX)}
+              value={bio}
+              onChangeText={setBio}
+              error={bioError}
+              maxLength={maxLengthFor(bio, bioLimit)}
+              multiline
+              tall
+            />
+          </View>
+        </Card>
         <Card tone="note">
           <View className="flex-row items-start gap-2">
             <Ionicons name="calendar-outline" size={ICON.md} color={colors.text} />
@@ -197,6 +204,7 @@ function EditForm({
       ) : null}
       <View className="mt-auto gap-3 pt-8">
         <Button
+          size="lg"
           label={tr.profile.save}
           onPress={() => save.mutate()}
           disabled={!nameValid || !bioValid || (!nameChanged && !bioChanged)}
