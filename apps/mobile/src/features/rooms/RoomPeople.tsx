@@ -7,6 +7,7 @@ import { Pressable, View } from 'react-native';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
+import { Menu, MenuItem } from '@/components/Menu';
 import { Sheet } from '@/components/Sheet';
 import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
@@ -128,34 +129,37 @@ export function PeopleSheet({ visible, onClose, roomId, people, me, owner, profi
         onClose={() => setPerson(null)}
         title={person?.alias ?? ''}
       >
-        {publicId ? (
-          <Button
-            variant="neutral"
-            testID="person-profile"
-            label={tr.table.viewProfile}
+        <Menu>
+          {publicId ? (
+            <MenuItem
+              icon="person-outline"
+              testID="person-profile"
+              label={tr.table.viewProfile}
+              onPress={() => {
+                close();
+                router.push({ pathname: '/people/[publicId]', params: { publicId } });
+              }}
+            />
+          ) : null}
+          <MenuItem
+            icon="flag-outline"
+            testID="person-report"
+            label={tr.safety.report}
             onPress={() => {
+              const target = person;
               close();
-              router.push({ pathname: '/people/[publicId]', params: { publicId } });
+              if (target) safety.startReport(target.sessionId);
             }}
           />
-        ) : null}
-        <Button
-          variant="neutral"
-          testID="person-report"
-          label={tr.safety.report}
-          onPress={() => {
-            const target = person;
-            close();
-            if (target) safety.startReport(target.sessionId);
-          }}
-        />
-        <Button
-          variant="danger"
-          testID="person-block"
-          label={tr.safety.block}
-          loading={safety.blocking}
-          onPress={() => person && safety.block(person.sessionId, close)}
-        />
+          <MenuItem
+            negative
+            icon="ban-outline"
+            testID="person-block"
+            label={tr.safety.block}
+            loading={safety.blocking}
+            onPress={() => person && safety.block(person.sessionId, close)}
+          />
+        </Menu>
         {safety.blockError ? (
           <Text variant="fine" tone="danger">
             {errorMessage(safety.blockError)}

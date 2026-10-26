@@ -11,6 +11,7 @@ import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
 import { IconButton, MoreDots } from '@/components/IconButton';
 import { Loader } from '@/components/Loader';
+import { Menu, MenuItem } from '@/components/Menu';
 import { Screen } from '@/components/Screen';
 import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
@@ -110,16 +111,17 @@ export default function PersonScreen() {
         </View>
       ) : null}
       <Sheet visible={menu} onClose={() => setMenu(false)} title={tr.profile.moreTitle}>
-        <Button
-          variant="neutral"
-          icon="flag-outline"
-          label={tr.profile.report}
-          testID="profile-report"
-          onPress={() => {
-            setMenu(false);
-            setReporting(true);
-          }}
-        />
+        <Menu>
+          <MenuItem
+            icon="flag-outline"
+            label={tr.profile.report}
+            testID="profile-report"
+            onPress={() => {
+              setMenu(false);
+              setReporting(true);
+            }}
+          />
+        </Menu>
         <Button
           size="lg"
           variant="neutral"
