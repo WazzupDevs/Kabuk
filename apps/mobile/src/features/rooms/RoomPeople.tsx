@@ -6,6 +6,7 @@ import { Pressable, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
+import { Card } from '@/components/Card';
 import { Sheet } from '@/components/Sheet';
 import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
@@ -14,7 +15,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { roomsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
-import { TOUCH } from '@/theme/tokens';
+import { SPACING, TOUCH } from '@/theme/tokens';
 
 import { roomKeys, type TablePerson } from './queries';
 
@@ -74,15 +75,15 @@ export function PeopleSheet({ visible, onClose, roomId, people, me, owner, profi
                 disabled={mine}
                 onPress={() => setPerson(p)}
                 className="flex-row items-center gap-3"
-                style={{ minHeight: TOUCH.min }}
+                style={{ minHeight: TOUCH.min + SPACING[1] }}
               >
                 {p.profiled ? (
-                  <Avatar kind="profile" name={p.alias} size="sm" />
+                  <Avatar kind="profile" name={p.alias} size="md" />
                 ) : (
-                  <Avatar kind="default" size="sm" />
+                  <Avatar kind="default" size="md" />
                 )}
                 <View className="flex-1 flex-row flex-wrap items-center gap-1.5">
-                  <Text variant="bodyStrong">{mine ? tr.table.you(p.alias) : p.alias}</Text>
+                  <Text variant="heading">{mine ? tr.table.you(p.alias) : p.alias}</Text>
                   {p.owner ? <Tag label={tr.table.ownerTag} /> : null}
                 </View>
               </Pressable>
@@ -90,32 +91,36 @@ export function PeopleSheet({ visible, onClose, roomId, people, me, owner, profi
           })}
         </View>
         {owner ? (
-          <View className="gap-1.5" testID="table-rename">
-            <Text variant="label">{tr.table.nameLabel}</Text>
-            <View className="flex-row items-center gap-3">
-              <Text variant="bodyStrong" className="flex-1">
-                {owner.name}
+          <Card tone="note">
+            <View className="gap-1.5" testID="table-rename">
+              <Text variant="caption" tone="muted">
+                {tr.table.nameLabel}
               </Text>
-              {rerollsLeft > 0 ? (
-                <Button
-                  size="sm"
-                  variant="neutral"
-                  testID="table-reroll"
-                  label={tr.venue.rerollName}
-                  loading={reroll.isPending}
-                  onPress={() => reroll.mutate()}
-                />
+              <View className="flex-row items-center gap-3">
+                <Text variant="heading" className="flex-1">
+                  {owner.name}
+                </Text>
+                {rerollsLeft > 0 ? (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    testID="table-reroll"
+                    label={tr.venue.rerollName}
+                    loading={reroll.isPending}
+                    onPress={() => reroll.mutate()}
+                  />
+                ) : null}
+              </View>
+              <Text variant="fine">{tr.venue.rerollsLeft(rerollsLeft)}</Text>
+              {reroll.isError ? (
+                <Text variant="fine" tone="danger">
+                  {errorMessage(reroll.error)}
+                </Text>
               ) : null}
             </View>
-            <Text variant="fine">{tr.venue.rerollsLeft(rerollsLeft)}</Text>
-            {reroll.isError ? (
-              <Text variant="fine" tone="danger">
-                {errorMessage(reroll.error)}
-              </Text>
-            ) : null}
-          </View>
+          </Card>
         ) : null}
-        <Button variant="neutral" label={tr.common.close} onPress={close} />
+        <Button size="lg" variant="neutral" label={tr.common.close} onPress={close} />
       </Sheet>
 
       <Sheet

@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import { Button } from '@/components/Button';
-import { Pills } from '@/components/Pills';
+import { Card } from '@/components/Card';
+import { Chips } from '@/components/Chips';
 import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
 import { registerForPush } from '@/features/push/push';
@@ -70,60 +71,57 @@ export function OpenLobbySheet({
 
   return (
     <Sheet visible onClose={onClose} title={tr.rooms.newTitle}>
-      <Text variant="fine" tone="text">
-        {tr.rooms.newHint}
-      </Text>
-      <View className="gap-2">
-        <Text variant="overline" tone="muted">
-          {tr.rooms.intentLabel}
-        </Text>
-        <Pills<IntentChoice>
-          value={intent ?? 'none'}
-          onChange={(v) => setIntent(v === 'none' ? null : v)}
-          options={[
-            { value: 'none', label: tr.rooms.intentNone, testID: 'intent-none' },
-            ...INTENTS.map((i) => ({ value: i, label: tr.intents[i], testID: `intent-${i}` })),
-          ]}
-        />
-        {intent ? (
-          <Text variant="fine" className="px-1">
-            {tr.rooms.intentHint[intent]}
+      <Text variant="fine">{tr.rooms.newHint}</Text>
+      {/* skall tuvali (MasaLobiyeAc): both choices in one soft card, as chips. */}
+      <Card tone="note">
+        <View className="gap-2">
+          <Text variant="label">{tr.rooms.intentLabel}</Text>
+          <Chips<IntentChoice>
+            wrap
+            accessibilityLabel={tr.rooms.intentLabel}
+            value={intent ?? 'none'}
+            onChange={(v) => setIntent(v === 'none' ? null : v)}
+            options={[
+              { value: 'none', label: tr.rooms.intentNone, testID: 'intent-none' },
+              ...INTENTS.map((i) => ({ value: i, label: tr.intents[i], testID: `intent-${i}` })),
+            ]}
+          />
+          {intent ? <Text variant="fine">{tr.rooms.intentHint[intent]}</Text> : null}
+          <Text variant="label" className="mt-2">
+            {tr.rooms.gameTagLabel}
           </Text>
-        ) : null}
-      </View>
-      <View className="gap-2">
-        <Text variant="overline" tone="muted">
-          {tr.rooms.gameTagLabel}
-        </Text>
-        <Pills<TagChoice>
-          wrap
-          value={tag ?? 'none'}
-          onChange={(v) => setTag(v === 'none' ? null : v)}
-          options={[
-            { value: 'none', label: tr.rooms.gameTagNone, testID: 'game-tag-none' },
-            ...CONCEPTS.map((c) => ({
-              value: c,
-              label: tr.concepts[c],
-              testID: `game-tag-${c}`,
-            })),
-          ]}
-        />
-        <Text variant="fine" className="px-1">
-          {tr.rooms.gameTagHint}
-        </Text>
-      </View>
+          <Chips<TagChoice>
+            wrap
+            accessibilityLabel={tr.rooms.gameTagLabel}
+            value={tag ?? 'none'}
+            onChange={(v) => setTag(v === 'none' ? null : v)}
+            options={[
+              { value: 'none', label: tr.rooms.gameTagNone, testID: 'game-tag-none' },
+              ...CONCEPTS.map((c) => ({
+                value: c,
+                label: tr.concepts[c],
+                testID: `game-tag-${c}`,
+              })),
+            ]}
+          />
+          <Text variant="fine">{tr.rooms.gameTagHint}</Text>
+        </View>
+      </Card>
       {open.isError ? (
         <Text variant="fine" tone="danger">
           {errorMessage(open.error)}
         </Text>
       ) : null}
-      <Button
-        size="lg"
-        testID="lobby-confirm"
-        label={tr.venue.openLobby}
-        onPress={() => open.mutate()}
-        loading={open.isPending}
-      />
+      <View className="gap-2.5">
+        <Button
+          size="lg"
+          testID="lobby-confirm"
+          label={tr.venue.openLobby}
+          onPress={() => open.mutate()}
+          loading={open.isPending}
+        />
+        <Button size="lg" variant="neutral" label={tr.common.cancel} onPress={onClose} />
+      </View>
     </Sheet>
   );
 }

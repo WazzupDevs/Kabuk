@@ -3,11 +3,11 @@ import { TABLE_ICON_THEMES, TABLE_ICONS } from '@shared/tableIcons.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
-import { Pills } from '@/components/Pills';
+import { Chips } from '@/components/Chips';
 import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
 import { Toggle } from '@/components/Toggle';
@@ -140,7 +140,9 @@ export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Pro
 
       {lobby ? (
         <View className="gap-2">
-          <Pills<IntentChoice>
+          <Chips<IntentChoice>
+            wrap
+            accessibilityLabel={tr.rooms.intentLabel}
             value={intent ?? 'none'}
             onChange={(v) => setIntent(v === 'none' ? null : v)}
             options={[
@@ -148,8 +150,9 @@ export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Pro
               ...INTENTS.map((i) => ({ value: i, label: tr.intents[i], testID: `intent-${i}` })),
             ]}
           />
-          <Pills<TagChoice>
+          <Chips<TagChoice>
             wrap
+            accessibilityLabel={tr.rooms.gameTagLabel}
             value={tag ?? 'none'}
             onChange={(v) => setTag(v === 'none' ? null : v)}
             options={[
@@ -213,13 +216,12 @@ function IconPicker({
   const scenes = TABLE_ICONS.filter((i) => i.theme === theme);
   return (
     <View className="gap-2" testID="table-icon-picker">
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <Pills
-          value={theme}
-          onChange={onTheme}
-          options={TABLE_ICON_THEMES.map((t) => ({ value: t, label: t }))}
-        />
-      </ScrollView>
+      <Chips
+        accessibilityLabel={tr.createTable.iconLabel}
+        value={theme}
+        onChange={onTheme}
+        options={TABLE_ICON_THEMES.map((t) => ({ value: t, label: t }))}
+      />
       <View
         accessibilityRole="radiogroup"
         className="flex-row flex-wrap"
