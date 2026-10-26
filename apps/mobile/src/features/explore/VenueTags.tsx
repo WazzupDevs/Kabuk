@@ -1,17 +1,17 @@
-import { Ionicons } from '@expo/vector-icons';
 import { type ActivityBucket, describeEventTime } from '@shared/explore.ts';
 import type { VenueKind } from '@shared/venueKind.ts';
 import { View } from 'react-native';
 
 import { KindIcon } from '@/components/Glyph';
+import { GlyphDisc } from '@/components/GlyphDisc';
 import { ListRow } from '@/components/ListRow';
 import { LiveDot } from '@/components/LiveDot';
-import { Tag, type TagVariant } from '@/components/Tag';
+import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
 import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, SPACING, TOUCH } from '@/theme/tokens';
+import { SPACING } from '@/theme/tokens';
 
 import type { ExploreEvent, ExploreVenue } from './useExploreVenues';
 
@@ -22,9 +22,13 @@ export const BUCKET_TAG: Record<ActivityBucket, 'calm' | 'lively' | 'buzz'> = {
   buzzing: 'buzz',
 };
 
+// skall tuvali (KesfetTekMekan): a busy venue's bucket is the soft green tag with the live dot; a
+// calm one the plain tag.
 export function BucketBadge({ bucket }: { bucket: ActivityBucket }) {
-  const variant: TagVariant = BUCKET_TAG[bucket];
-  return <Tag variant={variant} label={tr.explore.buckets[bucket]} />;
+  const calm = bucket === 'calm';
+  return (
+    <Tag variant={calm ? 'neutral' : 'positive'} live={!calm} label={tr.explore.buckets[bucket]} />
+  );
 }
 
 export function EventTag({ event }: { event: NonNullable<ExploreVenue['event']> }) {
@@ -79,33 +83,17 @@ export function VenueTile({ kind }: { kind: VenueKind }) {
 
 // One event in the single-venue Keşfet (canvas: Etkinlikler): a calendar tile, the title and when.
 // The tile is in the event colour while the event is on.
+// A venue's event as a row of the events card (skall tuvali, KesfetTekMekan): the calendar disc,
+// pink while it is on.
 export function EventRow({ event }: { event: ExploreEvent }) {
-  const { colors, shape } = useTheme();
   const now = useNow(60_000);
   const when = describeEventTime(event.startsAt, event.endsAt, now);
-  const on = when.kind === 'now';
   return (
     <ListRow
-      card
+      inset
       title={event.title}
       meta={tr.explore.eventTime(when)}
-      leading={
-        <View
-          className="items-center justify-center"
-          style={{
-            width: TOUCH.button,
-            height: TOUCH.button,
-            borderRadius: shape.radius.pill,
-            backgroundColor: on ? colors.event : colors.surface2,
-          }}
-        >
-          <Ionicons
-            name="calendar-outline"
-            size={ICON.md}
-            color={on ? colors.onEvent : colors.text}
-          />
-        </View>
-      }
+      leading={<GlyphDisc icon="calendar-outline" hot={when.kind === 'now'} />}
     />
   );
 }

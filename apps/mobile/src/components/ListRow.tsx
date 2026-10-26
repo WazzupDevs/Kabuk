@@ -20,6 +20,8 @@ type Props = {
   // A card of its own (Keşfet venues, friends, room lists): a picture on the left, the name and one
   // line in the middle, a status chip on the right. Otherwise a row on a hairline (settings).
   card?: boolean;
+  // A row inside a ListCard (skall.css → `.list .item`): 16 px sides, no line of its own.
+  inset?: boolean;
   testID?: string;
 };
 
@@ -33,6 +35,7 @@ export function ListRow({
   onPress,
   accessibilityRole = 'button',
   card,
+  inset,
   testID,
 }: Props) {
   const { colors, shape } = useTheme();
@@ -40,9 +43,9 @@ export function ListRow({
   const content = (
     <>
       {leading}
-      <View className={card ? 'flex-1 gap-0.5' : 'flex-1 gap-1'}>
+      <View className={card || inset ? 'flex-1 gap-0.5' : 'flex-1 gap-1'}>
         {/* Wraps rather than ending in "…" ("Sakarya Üniversitesi"). */}
-        <Text variant="bodyStrong">{title}</Text>
+        <Text variant={card || inset ? 'heading' : 'bodyStrong'}>{title}</Text>
         {meta ? <Text variant="fine">{meta}</Text> : null}
         {below}
       </View>
@@ -54,7 +57,7 @@ export function ListRow({
       ) : null}
     </>
   );
-  const style = card
+  const style = inset
     ? {
         flexDirection: 'row' as const,
         alignItems: 'center' as const,
@@ -62,21 +65,30 @@ export function ListRow({
         minHeight: TOUCH.large + SPACING[2],
         paddingVertical: SPACING[3],
         paddingHorizontal: SPACING[4],
-        borderRadius: shape.radius.lg,
-        backgroundColor: colors.surface,
-        borderWidth: shape.stroke.card,
-        borderColor: colors.cardLine,
-        boxShadow: shape.shadow.card,
       }
-    : {
-        flexDirection: 'row' as const,
-        alignItems: 'center' as const,
-        gap: SPACING[3] + SPACING[0.5],
-        minHeight: TOUCH.large + SPACING[2],
-        paddingVertical: SPACING[3],
-        borderBottomWidth: shape.stroke.hairline,
-        borderBottomColor: colors.divider,
-      };
+    : card
+      ? {
+          flexDirection: 'row' as const,
+          alignItems: 'center' as const,
+          gap: SPACING[3] + SPACING[0.5],
+          minHeight: TOUCH.large + SPACING[2],
+          paddingVertical: SPACING[3],
+          paddingHorizontal: SPACING[4],
+          borderRadius: shape.radius.lg,
+          backgroundColor: colors.surface,
+          borderWidth: shape.stroke.card,
+          borderColor: colors.cardLine,
+          boxShadow: shape.shadow.card,
+        }
+      : {
+          flexDirection: 'row' as const,
+          alignItems: 'center' as const,
+          gap: SPACING[3] + SPACING[0.5],
+          minHeight: TOUCH.large + SPACING[2],
+          paddingVertical: SPACING[3],
+          borderBottomWidth: shape.stroke.hairline,
+          borderBottomColor: colors.divider,
+        };
   if (!onPress)
     return (
       <View style={style} testID={testID}>
@@ -86,7 +98,13 @@ export function ListRow({
   return (
     <Pressable accessibilityRole={accessibilityRole} onPress={onPress} testID={testID}>
       {({ pressed }) => (
-        <View style={[style, card ? pressScale(pressed) : pressed ? { opacity: 0.7 } : null]}>
+        <View
+          style={[
+            style,
+            card ? pressScale(pressed) : pressed ? { opacity: 0.7 } : null,
+            inset && pressed ? { backgroundColor: colors.surface2, opacity: 1 } : null,
+          ]}
+        >
           {content}
         </View>
       )}
