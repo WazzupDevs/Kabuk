@@ -116,6 +116,7 @@ export default function NotificationsScreen() {
                   </View>
                   <View className="flex-1">
                     <Button
+                      variant="positive"
                       label={tr.friends.accept}
                       loading={respond.isPending && respond.variables.requestId === r.request_id}
                       disabled={respond.isPending}

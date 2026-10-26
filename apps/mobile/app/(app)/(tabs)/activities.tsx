@@ -293,17 +293,17 @@ function HistoryRow({
         <View
           className="flex-row items-center"
           style={{
-            gap: SPACING[3],
+            gap: SPACING[3] + SPACING[0.5],
             minHeight: SPACING[16] + SPACING[2],
-            paddingVertical: SPACING[2],
+            paddingVertical: SPACING[3],
             paddingHorizontal: SPACING[4],
-            backgroundColor: pressed ? colors.canvas : undefined,
+            backgroundColor: pressed ? colors.surface2 : undefined,
           }}
         >
           <Thumb concept={concept} />
           <View className="flex-1" style={{ gap: SPACING[0.5] }}>
             <View className="flex-row items-baseline justify-between" style={{ gap: SPACING[2] }}>
-              <Text variant="bodyStrong" className="shrink">
+              <Text variant="heading" className="shrink">
                 {game}
               </Text>
               <Text variant="fine" tone="muted">
