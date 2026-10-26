@@ -150,12 +150,12 @@ export function SignupStep({
     <Screen>
       <View testID={testID} collapsable={false} className="flex-1">
         <View
-          className="-mx-3 flex-row items-center gap-3"
+          className="flex-row items-center gap-2.5"
           style={{ minHeight: SPACING[11] }}
           onLayout={onLayout('row')}
         >
           {onBack ? (
-            <IconButton icon="chevron-back" label={tr.common.back} onPress={onBack} />
+            <IconButton round icon="chevron-back" label={tr.common.back} onPress={onBack} />
           ) : (
             <View style={{ width: SPACING[11] }} />
           )}
@@ -172,17 +172,15 @@ export function SignupStep({
                     key={s}
                     className="flex-1"
                     style={{
-                      height: SPACING[1.5],
+                      // skall tuvali (skall.css → `.steps`): 5 high on the track, done ones primary.
+                      height: SPACING[1] + 1,
                       borderRadius: shape.radius.pill,
-                      backgroundColor: i < n ? colors.accent : colors.divider,
+                      backgroundColor: i < n ? colors.primary : colors.track,
                     }}
                   />
                 ))}
               </View>
-              <View
-                style={{ minWidth: SPACING[8], marginRight: SPACING[3] }}
-                onLayout={onLayout('counter')}
-              >
+              <View style={{ minWidth: SPACING[8] }} onLayout={onLayout('counter')}>
                 <Text
                   variant="label"
                   tone="muted"
@@ -209,7 +207,7 @@ export function SignupStep({
             </View>
             {body ? (
               <View onLayout={onLayout('body')} style={{ paddingRight: inset }}>
-                <Text tone="muted" onTextLayout={(e) => keep('bodyLines')(e.nativeEvent.lines)}>
+                <Text variant="fine" onTextLayout={(e) => keep('bodyLines')(e.nativeEvent.lines)}>
                   {body}
                 </Text>
               </View>
@@ -242,6 +240,7 @@ export function SignupStep({
           ) : null}
           <View className="mt-auto pt-8">
             <Button
+              size="lg"
               testID={action.testID}
               label={action.label}
               onPress={action.onPress}
