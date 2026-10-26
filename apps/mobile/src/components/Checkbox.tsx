@@ -36,7 +36,9 @@ export function Checkbox({ label, checked, onToggle }: Props) {
       >
         {checked ? <Ionicons name="checkmark" size={ICON.sm} color={colors.onPrimary} /> : null}
       </View>
-      <Text className="flex-1">{label}</Text>
+      <Text variant="bodyStrong" className="flex-1">
+        {label}
+      </Text>
     </Pressable>
   );
 }

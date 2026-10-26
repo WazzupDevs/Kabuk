@@ -1,10 +1,11 @@
 import { Link } from 'expo-router';
-import { Pressable } from 'react-native';
+import { Pressable, View } from 'react-native';
 
-import { Card } from '@/components/Card';
 import { Checkbox } from '@/components/Checkbox';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
+import { useTheme } from '@/theme/ThemeProvider';
+import { SPACING, TOUCH } from '@/theme/tokens';
 
 type Props = {
   terms: boolean;
@@ -13,28 +14,52 @@ type Props = {
   onKvkk: () => void;
 };
 
-// The two consents with their "Oku" links (the terms and the KVKK notice), on "Başlamadan önce"
-// before the phone and again after the code when the texts changed.
+// The two consents (skall tuvali, KayitOnay): each a choice box with its check, its line and "Oku".
 export function ConsentBoxes({ terms, kvkk, onTerms, onKvkk }: Props) {
   return (
-    <Card className="gap-1">
-      <Checkbox label={tr.consents.terms} checked={terms} onToggle={onTerms} />
-      <ReadLink href="/terms" />
-      <Checkbox label={tr.consents.kvkk} checked={kvkk} onToggle={onKvkk} />
-      <ReadLink href="/kvkk" />
-    </Card>
+    <View style={{ gap: SPACING[2] }}>
+      <ConsentBox label={tr.consents.terms} checked={terms} onToggle={onTerms} href="/terms" />
+      <ConsentBox label={tr.consents.kvkk} checked={kvkk} onToggle={onKvkk} href="/kvkk" />
+    </View>
   );
 }
 
-// "Oku" under a consent, aligned with the checkbox label; 44 high for the finger.
-function ReadLink({ href }: { href: '/terms' | '/kvkk' }) {
+function ConsentBox({
+  label,
+  checked,
+  onToggle,
+  href,
+}: {
+  label: string;
+  checked: boolean;
+  onToggle: () => void;
+  href: '/terms' | '/kvkk';
+}) {
+  const { colors, shape } = useTheme();
   return (
-    <Link href={href} asChild>
-      <Pressable accessibilityRole="link" className="ml-9 min-h-11 justify-center self-start">
-        <Text tone="accent" variant="bodyStrong">
-          {tr.consents.read}
-        </Text>
-      </Pressable>
-    </Link>
+    <View
+      className="flex-row items-center"
+      style={{
+        gap: SPACING[3],
+        minHeight: TOUCH.tab,
+        paddingLeft: checked ? SPACING[4] - 1 : SPACING[4],
+        paddingRight: checked ? SPACING[3] - 1 : SPACING[3],
+        borderRadius: shape.radius.md,
+        borderWidth: checked ? 2 : 1,
+        borderColor: checked ? colors.primary : colors.control,
+        backgroundColor: colors.surface,
+      }}
+    >
+      <View className="flex-1">
+        <Checkbox label={label} checked={checked} onToggle={onToggle} />
+      </View>
+      <Link href={href} asChild>
+        <Pressable accessibilityRole="link" className="min-h-11 justify-center px-1">
+          <Text tone="accent" variant="label">
+            {tr.consents.read}
+          </Text>
+        </Pressable>
+      </Link>
+    </View>
   );
 }
