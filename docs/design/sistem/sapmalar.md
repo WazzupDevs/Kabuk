@@ -23,7 +23,7 @@ Tuvalin yazdığı, spec'te ve v46'da olmayan metinler. Onaylanmadan uygulamaya 
 
 ## Görünüşte v46'dan ayrılan yapılar
 
-Tuval v46'nın üstüne kurulmuş yeni bir sistemdir; v46 ile piksel karşılaştırması anlamlı değildir. Bilinen yapısal farklar:
+Tuval v46'nın üstüne kurulmuş yeni bir sistemdir ve arayüz ondan temiz sayfa kurulur; v46 ile piksel karşılaştırması anlamlı değildir. Bilinen yapısal farklar (bugünkü uygulama v46'yı izlediği için ekran PR'larında bu farklar görünür):
 
 | Yer | v46 | Tuval |
 | --- | --- | --- |
@@ -39,4 +39,4 @@ Tuval v46'nın üstüne kurulmuş yeni bir sistemdir; v46 ile piksel karşılaş
 - **Geçmiş satırı "X masasıyla":** 4.5'ten sonra kayıt kişi başınadır; tuval uygulamanın bugünkü metnini çizer ("Ece masasıyla"). Metin 4.6'da kişi modeline göre netleşmeli.
 - **Kampüs noktaları:** panolardaki Kantin, Kütüphane, Mühendislik, Çimler örnektir; içerikte noktalar bugün "Örnek nokta 1–3".
 - **Oyunlar:** Harf Kapmaca, Şarkıda Geçsin, İbre ve Sohbet kartları ekranları tuvalde yok; 4.6'da her oyun kendi adımında çizilir. Oyun sayfası (Kapsül Anlat, Sahtekar) bugünkü kurallarla çizilmiştir, 4.6'da yeniden bakılır.
-- **Hareket:** tuvalde hareket panosu yok; hareket ve titreşimde v46 geçerli.
+- **Hareket:** tuvalde hareket panosu yok; hareket ve titreşim koddaki bugünkü değerlerdir (proje sahibinin kararı, 27 Ekim). Kodda karşılığı olmayan yeni bir parçanın (ör. push önizlemesi) hareketi hareket panosunda tanımlanır.

@@ -1,6 +1,6 @@
 # skall tuvali (görsel kaynak)
 
-Uygulamanın görünüşünün kaynağı bu klasördür: Claude Design tuvalinin repodaki kopyası. Proje sahibinin kararı (26 Ekim): "Kaynak bu tuval olsun, birebir." Karar kaydı: `docs/decisions/sistem-kaynak.md`.
+Uygulamanın görünüşünün kaynağı bu klasördür: Claude Design tuvalinin repodaki kopyası. Proje sahibinin kararları: "Kaynak bu tuval olsun, birebir." (26 Ekim) ve arayüz tuvalden temiz sayfa kurulur (27 Ekim). Karar kaydı: `docs/decisions/sistem-kaynak.md`.
 
 - Tuval (düzenlenen yer): https://claude.ai/artifact/3Ur2iwacMTbqUt23GvRB38
 - Bu klasör tuvalin son yayınından aktarılır; burada elle düzenlenmez.
@@ -10,8 +10,8 @@ Uygulamanın görünüşünün kaynağı bu klasördür: Claude Design tuvalinin
 | Konu | Geçerli kaynak |
 | --- | --- |
 | İçerik, davranış, kurallar (ne görünür, kime görünür, hangi metin) | `docs/SPEC_V4.md`: K kararları ve §4.C "v46'dan farklı uygulananlar" |
-| Görünüş (renk, yazı, şekil, boşluk, bileşen, düzen) | Bu tuval |
-| Hareket ve dokunuş, tuvalin henüz çizmediği ekranlar | v46 (`docs/design/v46/`), sonra v45, v44, v43 |
+| Görünüş (renk, yazı, şekil, boşluk, bileşen, düzen) | Yalnızca bu tuval; çizilmemiş ekran önce tuvale çizilir |
+| Hareket ve dokunuş | Koddaki bugünkü değerler; tuvale hareket panosu eklenince o |
 
 Tuvaldeki bir metin spec'le çelişirse spec geçerlidir ve tuval düzeltilir. Spec'te karşılığı olmayan tuval metinleri `sapmalar.md` → "Onay bekleyen metinler"dedir; onaylanmadan uygulamaya girmez.
 
@@ -34,7 +34,7 @@ Panolar 360 × 780 dp telefon çerçevesidir (sistem sayfası 1400 × 800). Her 
 ## Bir oturum nasıl kullanır
 
 - Oturuma yalnızca işiyle ilgili panolar verilir (`ekran/<Pano>.html`), klasörün tamamı verilmez.
-- Ekran bu panolardan yeniden kurulur; renk ve ölçü `skall.css`'teki adlarla eşleşir. Hareket ve titreşim için v46'nın aynı ekranına bakılır.
+- Ekran bu panolardan, tuvalin bileşen kitiyle yeniden kurulur; renk ve ölçü `skall.css`'teki adlarla eşleşir. Hareket ve titreşim ekranın koddaki bugünkü değerleridir.
 - Panodaki örnek veri (adlar, saatler, mekanlar) uygulamaya girmez.
 
 ## Güncelleme (tuvalden repoya)
@@ -47,11 +47,13 @@ Tuval değişince aynı gün bir belge PR'ıyla aktarılır.
 
 Betikler Node 22 ile bağımlılıksız çalışır; kapsül çizimi ve masa simgeleri `docs/design/v46/kaynak/`'tan okunur.
 
-## Henüz tuvale geçmeyenler
+## Geçiş (temiz sayfa)
 
-| Ne | Bugün | Geçiş |
+| Sıra | İş | Ne zaman biter |
 | --- | --- | --- |
-| Token üretimi (`pnpm tokens`) | v46 envanterinden | Tuvalin `tokens.json`'ına geçer (`docs/decisions/sistem-kaynak.md`, adım 2) |
-| Görsel kapının yumuşak raporu | v46 prototipine karşı | Tuvalin `ekran/` sayfalarına karşı (adım 3) |
-| Hareket panosu | Yok; v46 geçerli | Tuvale eklenir (adım 4) |
-| Oyunlar | Kapsül Anlat ve Sahtekar çizili, dördü değil | 4.6'da oyun oyun |
+| 1 | Bu klasör ve kurallar | Bu PR |
+| 2 | Temel: tema `skall.css`'ten; tuvale karşı testler (tema ve `tokens.json` eşitliği, `aktar.cjs` çıktısı repodakiyle aynı); görsel kapının yumuşak raporu `ekran/`'a | Temel PR'ı |
+| 3 | Bileşen kiti: Sistem sayfasının parçaları | 3–4 PR |
+| 4 | Ekranlar sayfa sayfa; v46 hattı (envanter, ölçüm, `scripts/v46/`, v46 galerisi, `src/ui`'nin v46 bileşenleri) son kullanıcısı gidince kalkar | 8–10 PR |
+| Paralel | Tuvale hareket panosu (koddaki değerlerle) | Tuvalde |
+| 4.6 | Oyunlar: önce tuvale çizilir, sonra oyun oyun | 4.6 adımları |
