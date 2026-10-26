@@ -1,15 +1,14 @@
 import { venueChatActive } from '@shared/venueChat.ts';
 import { router } from 'expo-router';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
-import { Card } from '@/components/Card';
-import { Icon } from '@/components/Icon';
+import { GlyphDisc } from '@/components/GlyphDisc';
+import { ListCard } from '@/components/ListCard';
+import { ListRow } from '@/components/ListRow';
 import { LiveDot } from '@/components/LiveDot';
-import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
-import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, OPACITY, SPACING, TOUCH } from '@/theme/tokens';
+import { SPACING } from '@/theme/tokens';
 
 import { useVenueChatLastAt } from './queries';
 
@@ -20,55 +19,31 @@ const BEAT_MS = 1600;
 // who reads it, a dot only while the chat is active (a message in the last 10 minutes, K-12), and
 // the arrow. The page is read once; then a new message only marks its time (useVenueChatLastAt).
 export function VenueChatCard({ venueId, sessionId }: { venueId: string; sessionId: string }) {
-  const { colors, shape } = useTheme();
   const last = useVenueChatLastAt(venueId, sessionId);
   const now = useNow(30_000);
   const active = venueChatActive(last, now);
+  // skall tuvali (Mekan): one row in a list card, the chat disc, the live dot while people write.
   return (
-    <Pressable
-      testID="venue-chat-open"
-      accessibilityRole="button"
-      accessibilityLabel={
-        active ? `${tr.venueChat.open}, ${tr.venue.chatActive}` : tr.venueChat.open
-      }
-      onPress={() => router.push('/venue-chat')}
-    >
-      {({ pressed }) => (
-        <Card flush>
-          <View
-            className="flex-row items-center"
-            style={{
-              gap: SPACING[3],
-              paddingVertical: SPACING[2.5],
-              paddingLeft: SPACING[2.5],
-              paddingRight: SPACING[3],
-              opacity: pressed ? OPACITY.pressed : 1,
-            }}
-          >
-            <View
-              className="items-center justify-center"
-              style={{
-                width: TOUCH.min + SPACING[0.5],
-                height: TOUCH.min + SPACING[0.5],
-                borderRadius: shape.radius.pill,
-                backgroundColor: colors.calm,
-              }}
-            >
-              <Icon name="chatbubbles-outline" size={ICON.lg} tone="accent" />
+    <ListCard>
+      <ListRow
+        inset
+        noChevron
+        testID="venue-chat-open"
+        accessibilityLabel={
+          active ? `${tr.venueChat.open}, ${tr.venue.chatActive}` : tr.venueChat.open
+        }
+        onPress={() => router.push('/venue-chat')}
+        leading={<GlyphDisc icon="chatbubbles-outline" />}
+        title={tr.venueChat.open}
+        meta={tr.venue.chatCard}
+        trailing={
+          active ? (
+            <View testID="venue-chat-live">
+              <LiveDot tone="success" periodMs={BEAT_MS} size={SPACING[2]} />
             </View>
-            <View className="flex-1" style={{ gap: SPACING[0.5] }}>
-              <Text variant="bodyStrong">{tr.venueChat.open}</Text>
-              <Text variant="fine">{tr.venue.chatCard}</Text>
-            </View>
-            {active ? (
-              <View testID="venue-chat-live">
-                <LiveDot tone="success" periodMs={BEAT_MS} />
-              </View>
-            ) : null}
-            <Icon name="chevron-forward" size={ICON.md} tone="muted" />
-          </View>
-        </Card>
-      )}
-    </Pressable>
+          ) : undefined
+        }
+      />
+    </ListCard>
   );
 }

@@ -1192,6 +1192,17 @@ export const tr = {
     category: (name: string, n: number) => `${name} ${n}`,
     // A game before its step (4.6): its poster is faded and not pressed.
     soon: 'Yakında',
+    // The posters (skall tuvali, Masa): the least headcount and a game's line.
+    minPeople: (n: number) => `${n}+ kişi`,
+    allGames: 'Tümü',
+    taglines: {
+      tabu: 'Yasak kelimeyi söyleme',
+      ibre: 'Frekansı tuttur',
+      sahtekar: 'Aramızdaki kim?',
+      harf: 'Harfi ilk sen kap',
+      sarki: 'Dizeyi yakala',
+      sohbet: 'Masada muhabbet',
+    } as Record<string, string>,
     soloTitle: 'Masada yalnızca sensin',
     soloBody:
       'Arkadaşlarını davet et ya da masanı lobiye aç. Oyunların çoğu en az 2 kişiyle başlar.',

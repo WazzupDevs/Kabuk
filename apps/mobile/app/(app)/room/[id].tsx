@@ -1,5 +1,4 @@
 import { isTableGame } from '@shared/gameFrame.ts';
-import type { Concept } from '@shared/rooms.ts';
 import { GAME_CATEGORIES, TABLE_GAMES } from '@shared/tableGames.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
@@ -10,14 +9,15 @@ import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { ChatScreen } from '@/components/ChatScreen';
 import { Loader } from '@/components/Loader';
-import { Pills } from '@/components/Pills';
+import { Chips } from '@/components/Chips';
+import { IconButton } from '@/components/IconButton';
 import { Screen } from '@/components/Screen';
 import { Segmented } from '@/components/Segmented';
 import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
 import { RoomComposer, RoomMessages, useRoomChat } from '@/features/chat/ChatPanel';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
-import { GameCard, GameCell, GameGrid } from '@/features/games/GameCard';
+import { PosterCard, PosterGrid } from '@/features/rooms/PosterCard';
 import { useRoomMemberProfiles } from '@/features/profile/queries';
 import { InviteSheet } from '@/features/rooms/InviteSheet';
 import { OpenLobbySheet } from '@/features/rooms/OpenLobbySheet';
@@ -30,6 +30,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { roomsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { useTheme } from '@/theme/ThemeProvider';
 import { NARROW_SCREEN, SPACING, TOUCH } from '@/theme/tokens';
 
 type Category = 'all' | (typeof GAME_CATEGORIES)[number]['id'];
@@ -41,6 +42,7 @@ type Category = 'all' | (typeof GAME_CATEGORIES)[number]['id'];
 // "Masadan ayrıldın".
 export default function TableScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { colors, shape } = useTheme();
   const queryClient = useQueryClient();
   const checkIn = useActiveTable();
   const room = useRoom(id);
@@ -153,11 +155,9 @@ export default function TableScreen() {
   const top = (
     <View className="gap-3 pb-2" testID="table-top">
       <View className="flex-row items-center gap-3">
-        <Button
-          variant="ghost"
-          size="sm"
+        <IconButton
+          round
           icon="chevron-back"
-          iconOnly
           label={tr.table.back}
           onPress={() => (router.canGoBack() ? router.back() : router.replace('/venue'))}
         />
@@ -171,10 +171,20 @@ export default function TableScreen() {
         >
           <TableIcon icon={r.icon} size="row" />
           <View className="flex-1">
-            <Text variant="bodyStrong" testID="table-title">
+            <Text variant="heading" testID="table-title">
               {r.name ?? ''}
             </Text>
-            <Text variant="fine">{tr.venue.people(r.phones)}</Text>
+            <View className="flex-row items-center gap-1.5">
+              <View
+                style={{
+                  width: SPACING[2],
+                  height: SPACING[2],
+                  borderRadius: shape.radius.pill,
+                  backgroundColor: colors.success,
+                }}
+              />
+              <Text variant="fine">{tr.venue.people(r.phones)}</Text>
+            </View>
           </View>
         </Pressable>
         <Button
@@ -188,12 +198,13 @@ export default function TableScreen() {
         />
       </View>
       {owner ? (
-        <View className="flex-row gap-2.5">
+        <View className="flex-row gap-2">
           <View className="flex-1">
             {inLobby ? (
               <Button
                 tight
-                variant="neutral"
+                size="sm"
+                variant="secondary"
                 testID="table-withdraw"
                 label={tr.venue.withdraw}
                 loading={withdraw.isPending}
@@ -202,6 +213,7 @@ export default function TableScreen() {
             ) : (
               <Button
                 tight
+                size="sm"
                 testID="table-lobby"
                 label={tr.venue.openLobby}
                 onPress={() => setSheet('lobby')}
@@ -211,7 +223,8 @@ export default function TableScreen() {
           <View className="flex-1">
             <Button
               tight
-              variant="neutral"
+              size="sm"
+              variant="secondary"
               testID="table-invite"
               label={tr.venue.invite}
               onPress={() => setSheet('invite')}
@@ -220,6 +233,7 @@ export default function TableScreen() {
         </View>
       ) : null}
       <Segmented<'games' | 'chat'>
+        fill
         value={tab}
         onChange={setTab}
         accessibilityLabel={tr.rooms.tabsLabel}
@@ -322,38 +336,37 @@ export default function TableScreen() {
             <Text variant="fine">{tr.table.soloBody}</Text>
           </Card>
         ) : null}
-        <Pills<Category>
-          wrap
+        <Chips<Category>
+          bleed={shape.screenPadding}
+          accessibilityLabel={tr.table.tabGames(TABLE_GAMES.length)}
           value={category}
           onChange={setCategory}
           options={[
-            { value: 'all', label: tr.table.categoryAll(TABLE_GAMES.length) },
+            { value: 'all', label: tr.table.allGames, count: TABLE_GAMES.length },
             ...GAME_CATEGORIES.map((c) => ({
               value: c.id,
-              label: tr.table.category(
-                c.name,
-                TABLE_GAMES.filter((g) => (g.categories as readonly string[]).includes(c.id))
-                  .length,
-              ),
+              label: c.name,
+              count: TABLE_GAMES.filter((g) => (g.categories as readonly string[]).includes(c.id))
+                .length,
             })),
           ]}
         />
-        <GameGrid>
+        <PosterGrid>
           {games.map((g) =>
             isTableGame(g.id) ? (
-              <GameCell key={g.id}>
-                {/* 4.5: every game waits for its step (4.6); a "Yakında" poster is not pressed. */}
-                <GameCard
-                  concept={g.id as Concept}
-                  testID={`poster-${g.id}`}
-                  disabled={!g.available}
-                  reason={g.available ? undefined : tr.table.soon}
-                  onPress={() => undefined}
-                />
-              </GameCell>
+              // 4.5: every game waits for its step (4.6); a "Yakında" poster is not pressed.
+              <PosterCard
+                key={g.id}
+                poster={g.poster}
+                name={g.name}
+                tagline={tr.table.taglines[g.id] ?? ''}
+                minPlayers={g.minPlayers}
+                soon={!g.available}
+                testID={`poster-${g.id}`}
+              />
             ) : null,
           )}
-        </GameGrid>
+        </PosterGrid>
       </View>
       {sheets}
     </ChatScreen>

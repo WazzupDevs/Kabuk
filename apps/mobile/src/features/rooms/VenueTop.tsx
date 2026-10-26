@@ -11,7 +11,7 @@ import { Wordmark } from '@/components/Wordmark';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { tr } from '@/i18n/tr';
 import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, SPACING, TOUCH } from '@/theme/tokens';
+import { ICON, TOUCH } from '@/theme/tokens';
 
 // The wordmark in the middle of the row (v45: .va .logo svg, 22 px high).
 const LOGO_HEIGHT = 22;
@@ -35,7 +35,6 @@ export function VenueTop({
       <View className="flex-row items-center justify-between" style={{ minHeight: TOUCH.min }}>
         <IconButton
           round
-          danger
           icon="close"
           testID="venue-leave"
           label={tr.venue.leave}
@@ -85,11 +84,12 @@ function OwnPhoto() {
               height: TOUCH.min,
               alignItems: 'center',
               justifyContent: 'center',
+              // skall tuvali (Mekan): the round button's face, the photo inside it.
               borderRadius: shape.radius.pill,
-              borderWidth: SPACING[0.5],
-              borderColor: colors.surface,
+              borderWidth: shape.stroke.hairline,
+              borderColor: colors.divider,
               backgroundColor: colors.surface,
-              boxShadow: shape.shadow.card,
+              overflow: 'hidden',
             },
             pressScale(pressed),
           ]}

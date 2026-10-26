@@ -7,7 +7,7 @@ import { SPACING, TOUCH } from '@/theme/tokens';
 import { usePressScale } from './motion';
 import { Text } from './Text';
 
-type Option<T extends string> = { value: T; label: string; testID?: string };
+type Option<T extends string> = { value: T; label: string; testID?: string; count?: number };
 
 type Props<T extends string> = {
   options: readonly Option<T>[];
@@ -16,6 +16,9 @@ type Props<T extends string> = {
   accessibilityLabel: string;
   // Wrapping onto more lines (a sheet's choices) instead of one row that scrolls sideways.
   wrap?: boolean;
+  // A scrolling row that reaches past the screen's side padding by this much (skall.css →
+  // `.chips.scroller`).
+  bleed?: number;
 };
 
 // The chip's height (v44: .cat, 36); its touch area grows to TOUCH.min.
@@ -30,6 +33,7 @@ export function Chips<T extends string>({
   onChange,
   accessibilityLabel,
   wrap = false,
+  bleed = 0,
 }: Props<T>) {
   const { colors, shape } = useTheme();
   const pressScale = usePressScale();
@@ -49,7 +53,7 @@ export function Chips<T extends string>({
       >
         {({ pressed }) => (
           <View
-            className="items-center justify-center"
+            className="flex-row items-center justify-center"
             style={[
               {
                 minHeight: CHIP,
@@ -66,6 +70,21 @@ export function Chips<T extends string>({
             <Text variant="label" tone={on ? 'surface' : 'text'}>
               {o.label}
             </Text>
+            {o.count !== undefined ? (
+              <View
+                style={{
+                  marginLeft: SPACING[1.5],
+                  paddingHorizontal: SPACING[1.5] + 1,
+                  paddingVertical: SPACING[0.5],
+                  borderRadius: shape.radius.pill,
+                  backgroundColor: on ? colors.surface : colors.surface2,
+                }}
+              >
+                <Text variant="caption" tone="text">
+                  {o.count}
+                </Text>
+              </View>
+            ) : null}
           </View>
         )}
       </Pressable>
@@ -88,7 +107,8 @@ export function Chips<T extends string>({
       showsHorizontalScrollIndicator={false}
       accessibilityRole="radiogroup"
       accessibilityLabel={accessibilityLabel}
-      contentContainerStyle={{ gap: SPACING[2], paddingVertical: SLOP }}
+      style={bleed ? { marginHorizontal: -bleed } : undefined}
+      contentContainerStyle={{ gap: SPACING[2], paddingVertical: SLOP, paddingHorizontal: bleed }}
     >
       {chips}
     </ScrollView>

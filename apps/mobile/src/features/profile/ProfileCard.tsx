@@ -36,10 +36,10 @@ export function ProfileHead({ profile, children }: { profile: Profile; children?
   return (
     <View className="items-center gap-2">
       <ProfilePhoto url={profile.photoUrl} name={profile.displayName} size="hero" />
-      <Text variant="alias" align="center" accessibilityRole="header" className="mt-1">
+      <Text variant="title" align="center" accessibilityRole="header" className="mt-1">
         {profile.displayName ?? tr.profile.noName}
         {profile.displayName && profile.age !== null ? (
-          <Text variant="alias" tone="muted">
+          <Text variant="title" tone="muted">
             {tr.profile.ageAfterName(profile.age)}
           </Text>
         ) : null}

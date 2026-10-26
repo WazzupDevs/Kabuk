@@ -36,7 +36,7 @@ export function ChatTopBar({
   titleAccessibilityLabel,
   actions,
 }: Props) {
-  const { colors, shape } = useTheme();
+  const { colors } = useTheme();
   const who = (
     <>
       {leading}
@@ -65,10 +65,10 @@ export function ChatTopBar({
     <View
       className="flex-row items-center gap-2.5"
       style={{
+        // skall tuvali (skall.css → `.topbar.inner`): 68 high, no line under it.
         paddingHorizontal: SPACING[4],
-        paddingVertical: SPACING[2.5],
-        borderBottomWidth: shape.stroke.hairline,
-        borderBottomColor: colors.divider,
+        paddingVertical: SPACING[3],
+        minHeight: SPACING[16] + SPACING[1],
         backgroundColor: colors.canvas,
       }}
     >

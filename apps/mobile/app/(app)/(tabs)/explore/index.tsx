@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import {
   EXPLORE_KINDS,
   type ExploreCity,
@@ -21,6 +20,8 @@ import { Card } from '@/components/Card';
 import { Chips } from '@/components/Chips';
 import { EmptyState } from '@/components/EmptyState';
 import { Icon } from '@/components/Icon';
+import { GlyphDisc } from '@/components/GlyphDisc';
+import { ListCard } from '@/components/ListCard';
 import { Loader } from '@/components/Loader';
 import { Mark } from '@/components/Mark';
 import { Rise } from '@/components/motion';
@@ -45,7 +46,7 @@ import { venueType, type VenueType } from '@/lib/venueType';
 import { V46_EXPLORE } from '@/theme/parts.generated';
 import { useTheme } from '@/theme/ThemeProvider';
 import { V46_PALETTE } from '@/theme/tokens.generated';
-import { ICON, SPACING, TOUCH } from '@/theme/tokens';
+import { SPACING } from '@/theme/tokens';
 import { CityButton } from '@/ui/CityButton';
 import { FilterChips } from '@/ui/FilterChips';
 import { HereCard } from '@/ui/HereCard';
@@ -59,7 +60,7 @@ import { ViewModeToggle } from '@/ui/ViewModeToggle';
 type View_ = 'list' | 'map';
 
 // The single venue's colour block (canvas: Keşfet · tek mekan).
-const HERO_HEIGHT = SPACING[16] * 2 + SPACING[8];
+const HERO_HEIGHT = SPACING[16] * 2 + SPACING[5] + SPACING[0.5];
 const HERO_MARK = SPACING[16] + SPACING[10];
 
 type Here = { name: string; spot: string | null; type: VenueType };
@@ -400,11 +401,11 @@ function SingleVenue({
         paddingHorizontal: shape.screenPadding,
         paddingBottom: SPACING[8] + bottomSpace,
       }}
-      contentContainerClassName="gap-4 pt-2"
+      contentContainerClassName="gap-3 pt-2"
     >
       {here ? <HereNow here={here} /> : null}
       <Rise>
-        <Card tone="feature" flush>
+        <Card flush>
           <View
             style={{ height: HERO_HEIGHT, backgroundColor: colors.surface2 }}
             className="flex-row items-end justify-between px-4 pb-3 pt-4"
@@ -444,32 +445,24 @@ function SingleVenue({
       </Rise>
       <Rise index={1}>
         <View className="gap-3">
-          <Text variant="heading" accessibilityRole="header">
+          <Text variant="heading" accessibilityRole="header" className="px-0.5 pt-3">
             {tr.explore.eventsTitle}
           </Text>
           {venue.events.length === 0 ? (
             <Card>
               <View className="flex-row items-center gap-3">
-                <View
-                  className="items-center justify-center"
-                  style={{
-                    width: TOUCH.button,
-                    height: TOUCH.button,
-                    borderRadius: shape.radius.pill,
-                    backgroundColor: colors.surface2,
-                  }}
-                >
-                  <Ionicons name="calendar-outline" size={ICON.lg} color={colors.text} />
-                </View>
+                <GlyphDisc icon="calendar-outline" />
                 <Text tone="muted" className="flex-1">
                   {tr.explore.noEvents}
                 </Text>
               </View>
             </Card>
           ) : (
-            venue.events.map((event) => (
-              <EventRow key={`${event.startsAt}-${event.title}`} event={event} />
-            ))
+            <ListCard>
+              {venue.events.map((event) => (
+                <EventRow key={`${event.startsAt}-${event.title}`} event={event} />
+              ))}
+            </ListCard>
           )}
         </View>
       </Rise>
@@ -477,7 +470,7 @@ function SingleVenue({
         <Card tone="note">
           <View className="flex-row items-center gap-3">
             <Mark size={SPACING[11]} label={null} />
-            <Text variant="bodyStrong" className="flex-1">
+            <Text variant="heading" className="flex-1">
               {tr.explore.comingSoon}
             </Text>
           </View>

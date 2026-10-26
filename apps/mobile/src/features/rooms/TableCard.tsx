@@ -7,6 +7,7 @@ import { Pressable, View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
+import { GlyphDisc } from '@/components/GlyphDisc';
 import { Icon } from '@/components/Icon';
 import { LiveDot } from '@/components/LiveDot';
 import { Loader } from '@/components/Loader';
@@ -81,8 +82,8 @@ export function TableCard({
     <Card testID="table-card">
       {state === 'none' || !room ? (
         <View className="gap-3" testID="no-table">
-          <View className="flex-row items-center gap-3">
-            <Icon name="people-outline" tone="muted" />
+          <View className="flex-row items-center" style={{ gap: SPACING[3] + SPACING[0.5] }}>
+            <GlyphDisc icon="people-outline" />
             <View className="flex-1 gap-0.5">
               <Text variant="heading">{tr.venue.noTable}</Text>
               <Text variant="fine">{tr.venue.noTableHint}</Text>
@@ -101,8 +102,8 @@ export function TableCard({
               state === 'open' ? tr.venue.lobbyOpen : tr.venue.lobbyOff,
             )}
             onPress={() => router.push({ pathname: '/room/[id]', params: { id: room.id } })}
-            className="flex-row items-center gap-3"
-            style={{ minHeight: TOUCH.min }}
+            className="flex-row items-center"
+            style={{ minHeight: TOUCH.min, gap: SPACING[3] + SPACING[0.5] }}
           >
             <TableIcon icon={room.icon} size="mine" />
             <View className="flex-1 gap-0.5">
@@ -135,7 +136,7 @@ export function TableCard({
                 ) : (
                   <Button
                     tight
-                    variant="neutral"
+                    variant="secondary"
                     testID="withdraw-table"
                     label={tr.venue.withdraw}
                     onPress={() => withdraw.mutate()}
@@ -146,7 +147,7 @@ export function TableCard({
               <View className="flex-1">
                 <Button
                   tight
-                  variant="neutral"
+                  variant="secondary"
                   testID="invite-open"
                   label={tr.venue.invite}
                   onPress={() => setInvite(true)}
@@ -223,14 +224,12 @@ function Status({ people, live }: { people: number; live: boolean }) {
           }}
         />
       )}
-      <Text variant="label" tone="muted">
-        {tr.venue.people(people)}
-      </Text>
+      <Text variant="fine">{tr.venue.people(people)}</Text>
       <View className="shrink flex-row gap-x-1.5" style={{ maxWidth: '100%' }}>
-        <Text variant="label" tone="muted" accessible={false}>
+        <Text variant="fine" accessible={false}>
           {tr.common.separator}
         </Text>
-        <Text variant="label" tone="muted" className="shrink">
+        <Text variant="fine" className="shrink">
           {live ? tr.venue.lobbyOpen : tr.venue.lobbyOff}
         </Text>
       </View>
