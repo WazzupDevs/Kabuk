@@ -1,5 +1,6 @@
 import { View } from 'react-native';
 
+import { Card } from '@/components/Card';
 import { Segmented } from '@/components/Segmented';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
@@ -14,22 +15,25 @@ export function AppearanceSetting() {
   const scheme = useSchemePreference() ?? THEME.defaultScheme;
 
   return (
-    <View className="gap-2">
-      <Text variant="overline" tone="muted" accessibilityRole="header">
-        {tr.settings.appearance.title}
-      </Text>
-      <Segmented
-        fill
-        accessibilityLabel={tr.settings.appearance.title}
-        value={scheme}
-        onChange={(value) => setSchemePreference(value)}
-        options={SCHEME_PREFERENCES.map((value) => ({
-          value,
-          label: tr.settings.appearance.options[value],
-          testID: `appearance-${value}`,
-        }))}
-      />
-      <Text variant="fine">{tr.settings.appearance.notes[scheme]}</Text>
-    </View>
+    // skall tuvali: the setting in a soft card, its title, the switch and the note.
+    <Card tone="note">
+      <View className="gap-2.5">
+        <Text variant="heading" accessibilityRole="header">
+          {tr.settings.appearance.title}
+        </Text>
+        <Segmented
+          fill
+          accessibilityLabel={tr.settings.appearance.title}
+          value={scheme}
+          onChange={(value) => setSchemePreference(value)}
+          options={SCHEME_PREFERENCES.map((value) => ({
+            value,
+            label: tr.settings.appearance.options[value],
+            testID: `appearance-${value}`,
+          }))}
+        />
+        <Text variant="fine">{tr.settings.appearance.notes[scheme]}</Text>
+      </View>
+    </Card>
   );
 }

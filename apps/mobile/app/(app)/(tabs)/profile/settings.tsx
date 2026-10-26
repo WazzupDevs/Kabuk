@@ -3,8 +3,9 @@ import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { Alert, Linking, View } from 'react-native';
 
-import { Button } from '@/components/Button';
-import { ListRow } from '@/components/ListRow';
+import { Card } from '@/components/Card';
+import { Menu, MenuItem } from '@/components/Menu';
+import { SectionTitle } from '@/components/SectionTitle';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Text } from '@/components/Text';
@@ -29,10 +30,6 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 // privacy URL the in-app draft texts are shown.
 const privacyUrl = process.env.EXPO_PUBLIC_PRIVACY_URL;
 const contactEmail = process.env.EXPO_PUBLIC_CONTACT_EMAIL;
-
-function Row({ label, onPress }: { label: string; onPress: () => void }) {
-  return <ListRow title={label} onPress={onPress} accessibilityRole="link" />;
-}
 
 async function signOutLocally() {
   // After deletion the server session no longer exists, so only local state is cleared.
@@ -83,15 +80,17 @@ export default function SettingsScreen() {
         </View>
       ) : null}
       {birthDate ? (
-        <View className="mt-4">
-          <Text variant="overline" tone="muted" accessibilityRole="header">
-            {tr.settings.accountSection}
-          </Text>
-          <ListRow
-            title={tr.settings.birthDate}
-            meta={tr.settings.birthDateValue(birthDate)}
-            below={<Text variant="fine">{tr.settings.birthDateHint}</Text>}
-          />
+        <View className="mt-4 gap-3">
+          <SectionTitle title={tr.settings.accountSection} />
+          <Card>
+            <View className="gap-0.5">
+              <Text variant="label" tone="muted">
+                {tr.settings.birthDate}
+              </Text>
+              <Text variant="heading">{tr.settings.birthDateValue(birthDate)}</Text>
+            </View>
+          </Card>
+          <Text variant="fine">{tr.settings.birthDateHint}</Text>
         </View>
       ) : null}
       <View className="mt-4">
@@ -100,28 +99,31 @@ export default function SettingsScreen() {
       <View className="mt-8">
         <BlockedList />
       </View>
-      <View className="mt-8">
-        <Text variant="overline" tone="muted" accessibilityRole="header">
-          {tr.settings.legalSection}
-        </Text>
-        <Row
-          label={tr.settings.privacy}
-          onPress={() =>
-            privacyUrl
-              ? void Linking.openURL(privacyUrl)
-              : router.push({ pathname: '/legal/[doc]', params: { doc: 'kvkk' } })
-          }
-        />
-        <Row
-          label={tr.settings.terms}
-          onPress={() => router.push({ pathname: '/legal/[doc]', params: { doc: 'terms' } })}
-        />
-        {contactEmail ? (
-          <Row
-            label={tr.settings.contact}
-            onPress={() => void Linking.openURL(`mailto:${contactEmail}`)}
+      <View className="mt-8 gap-3">
+        <SectionTitle title={tr.settings.legalSection} />
+        <Menu>
+          <MenuItem
+            icon="shield-checkmark-outline"
+            label={tr.settings.privacy}
+            onPress={() =>
+              privacyUrl
+                ? void Linking.openURL(privacyUrl)
+                : router.push({ pathname: '/legal/[doc]', params: { doc: 'kvkk' } })
+            }
           />
-        ) : null}
+          <MenuItem
+            icon="document-text-outline"
+            label={tr.settings.terms}
+            onPress={() => router.push({ pathname: '/legal/[doc]', params: { doc: 'terms' } })}
+          />
+          {contactEmail ? (
+            <MenuItem
+              icon="mail-outline"
+              label={tr.settings.contact}
+              onPress={() => void Linking.openURL(`mailto:${contactEmail}`)}
+            />
+          ) : null}
+        </Menu>
       </View>
       <View className="mt-auto gap-3 pt-8">
         {deleteAccount.isError ? (
@@ -129,25 +131,23 @@ export default function SettingsScreen() {
             {errorMessage(deleteAccount.error)}
           </Text>
         ) : null}
-        <View className="flex-row gap-2.5">
-          <View className="flex-1">
-            <Button
-              testID="settings-sign-out"
-              variant="neutral"
-              label={tr.settings.signOut}
-              onPress={() => signOut.mutate()}
-              loading={signOut.isPending}
-            />
-          </View>
-          <View className="flex-1">
-            <Button
-              variant="dangerText"
-              label={tr.settings.deleteAccount}
-              onPress={confirmDelete}
-              loading={deleteAccount.isPending}
-            />
-          </View>
-        </View>
+        {/* skall tuvali (Hesap): sign-out and deletion as menu rows, deletion red. */}
+        <Menu>
+          <MenuItem
+            icon="log-out-outline"
+            testID="settings-sign-out"
+            label={tr.settings.signOut}
+            onPress={() => signOut.mutate()}
+            loading={signOut.isPending}
+          />
+          <MenuItem
+            negative
+            icon="trash-outline"
+            label={tr.settings.deleteAccount}
+            onPress={confirmDelete}
+            loading={deleteAccount.isPending}
+          />
+        </Menu>
         <View className="items-center gap-2">
           <Wordmark height={SPACING[5]} />
           <Text variant="fine" align="center">

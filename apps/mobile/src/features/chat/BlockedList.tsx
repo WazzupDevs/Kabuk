@@ -2,9 +2,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { View } from 'react-native';
 
 import { Button } from '@/components/Button';
+import { Avatar } from '@/components/Avatar';
+import { ListCard } from '@/components/ListCard';
 import { ListRow } from '@/components/ListRow';
+import { SectionTitle } from '@/components/SectionTitle';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
+import { SPACING } from '@/theme/tokens';
 import { safetyApi } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
 
@@ -30,31 +34,36 @@ export function BlockedList() {
     onSettled: () => void queryClient.invalidateQueries({ queryKey: blocksKey }),
   });
 
+  // skall tuvali (Engellenenler): the list card, the quiet "Engeli kaldır" in the 108 wide slot.
   return (
-    <View>
-      <Text variant="overline" tone="muted" accessibilityRole="header">
-        {tr.safety.blockedTitle}
-      </Text>
-      {blocks.data?.length === 0 ? (
-        <Text variant="fine" className="mt-2">
-          {tr.safety.blockedEmpty}
-        </Text>
-      ) : null}
-      {blocks.data?.map((b) => (
-        <ListRow
-          key={b.id}
-          title={b.blocked_alias}
-          meta={tr.safety.blockedSince(new Date(b.created_at).toLocaleDateString('tr-TR'))}
-          trailing={
-            <Button
-              variant="neutral"
-              label={tr.safety.unblock}
-              onPress={() => unblock.mutate(b.id)}
-              disabled={unblock.isPending}
+    <View className="gap-3">
+      <SectionTitle title={tr.safety.blockedTitle} />
+      {blocks.data?.length === 0 ? <Text variant="fine">{tr.safety.blockedEmpty}</Text> : null}
+      {blocks.data && blocks.data.length > 0 ? (
+        <ListCard>
+          {blocks.data.map((b) => (
+            <ListRow
+              key={b.id}
+              inset
+              leading={<Avatar kind="default" size="xl" />}
+              title={b.blocked_alias}
+              meta={tr.safety.blockedSince(new Date(b.created_at).toLocaleDateString('tr-TR'))}
+              trailing={
+                <View style={{ width: SPACING[16] + SPACING[10] + SPACING[1] }}>
+                  <Button
+                    size="sm"
+                    tight
+                    variant="neutral"
+                    label={tr.safety.unblock}
+                    onPress={() => unblock.mutate(b.id)}
+                    disabled={unblock.isPending}
+                  />
+                </View>
+              }
             />
-          }
-        />
-      ))}
+          ))}
+        </ListCard>
+      ) : null}
     </View>
   );
 }

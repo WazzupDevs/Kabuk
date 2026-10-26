@@ -2,6 +2,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Switch, View } from 'react-native';
 
 import { ListRow } from '@/components/ListRow';
+import { Card } from '@/components/Card';
+import { SectionTitle } from '@/components/SectionTitle';
 import { Text } from '@/components/Text';
 import { useProfile } from '@/features/account/useProfile';
 import { errorMessage } from '@/i18n/errors';
@@ -30,22 +32,24 @@ export function ProfileSettings() {
 
   return (
     <View className="gap-6">
-      <View>
-        <Text variant="overline" tone="muted" accessibilityRole="header">
-          {tr.settings.notificationsSection}
-        </Text>
-        <ToggleRow
-          label={tr.settings.notifyDm}
-          value={profile.notify_dm}
-          disabled={update.isPending}
-          onChange={(value) => update.mutate({ notifyDm: value })}
-        />
-        <ToggleRow
-          label={tr.settings.notifyFriendRequests}
-          value={profile.notify_friend_requests}
-          disabled={update.isPending}
-          onChange={(value) => update.mutate({ notifyFriendRequests: value })}
-        />
+      <View className="gap-3">
+        <SectionTitle title={tr.settings.notificationsSection} />
+        <Card>
+          <View className="gap-1">
+            <ToggleRow
+              label={tr.settings.notifyDm}
+              value={profile.notify_dm}
+              disabled={update.isPending}
+              onChange={(value) => update.mutate({ notifyDm: value })}
+            />
+            <ToggleRow
+              label={tr.settings.notifyFriendRequests}
+              value={profile.notify_friend_requests}
+              disabled={update.isPending}
+              onChange={(value) => update.mutate({ notifyFriendRequests: value })}
+            />
+          </View>
+        </Card>
       </View>
 
       {update.isError ? (
