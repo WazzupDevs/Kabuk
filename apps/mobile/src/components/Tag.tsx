@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
 
 import { BRAND } from '@/theme/brand';
+import { withAlpha } from '@/theme/contrast';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
@@ -26,9 +27,13 @@ export type TagVariant =
   | 'warn'
   | 'danger'
   | 'brand'
-  | 'light';
+  | 'light'
+  | 'glass';
 
 type Props = { label: string; variant?: TagVariant; icon?: IconName; live?: boolean };
+
+// skall.css → `.tag.glass`: ink at 62 % over a drawing.
+const GLASS_ALPHA = 0.62;
 
 // A chip (the skall design system → Chip): a filled capsule label, never outlined or tilted.
 // Keşfet's liveliness is calm / lively / buzz, an event `event`; a table's intent is `calm`.
@@ -53,6 +58,7 @@ export function Tag({ label, variant = 'neutral', icon, live }: Props) {
     danger: { bg: colors.dangerSoft, fg: colors.onDangerSoft },
     brand: { bg: colors.surface2, fg: colors.accent },
     light: { bg: BRAND.white, fg: BRAND.ink },
+    glass: { bg: withAlpha(BRAND.ink, GLASS_ALPHA), fg: BRAND.white },
   };
   const { bg, fg } = fill[variant];
 
