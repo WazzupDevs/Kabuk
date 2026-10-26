@@ -342,7 +342,7 @@ function PlaceSheet({
     <Sheet visible={visible} onClose={onClose} title={tr.explore.placeTitle}>
       <Text variant="fine">{tr.explore.placeNote}</Text>
       <View className="gap-2">
-        <Text variant="bodyStrong">{tr.explore.city}</Text>
+        <Text variant="label">{tr.explore.city}</Text>
         <Chips
           wrap
           accessibilityLabel={tr.explore.city}
@@ -356,7 +356,7 @@ function PlaceSheet({
         />
       </View>
       <View className="gap-2">
-        <Text variant="bodyStrong">{tr.explore.district}</Text>
+        <Text variant="label">{tr.explore.district}</Text>
         <Chips
           wrap
           accessibilityLabel={tr.explore.district}
@@ -368,14 +368,18 @@ function PlaceSheet({
           ]}
         />
       </View>
-      <Button
-        label={tr.explore.showPlace}
-        testID="place-show"
-        onPress={() => {
-          choose(pick);
-          onClose();
-        }}
-      />
+      <View className="gap-2.5">
+        <Button
+          size="lg"
+          label={tr.explore.showPlace}
+          testID="place-show"
+          onPress={() => {
+            choose(pick);
+            onClose();
+          }}
+        />
+        <Button size="lg" variant="neutral" label={tr.common.cancel} onPress={onClose} />
+      </View>
     </Sheet>
   );
 }

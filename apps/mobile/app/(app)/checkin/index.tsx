@@ -2,18 +2,16 @@ import { BOUNDARY_TOLERANCE_M, isWithinCheckinRadius } from '@shared/checkin.ts'
 import { CURRENT_LOCATION_CONSENT_VERSION } from '@shared/consent.ts';
 import { distanceMeters } from '@shared/explore.ts';
 import { withinBoundary } from '@shared/geo.ts';
-import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
 import { Linking, View } from 'react-native';
 
+import { Banner } from '@/components/Banner';
 import { Button } from '@/components/Button';
 import { Checkbox } from '@/components/Checkbox';
-import { Card } from '@/components/Card';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { Text } from '@/components/Text';
 import { useProfile } from '@/features/account/useProfile';
 import { useCheckinDraft } from '@/features/checkin/draft';
 import { useSkipLocation } from '@/features/checkin/locationMode';
@@ -22,8 +20,6 @@ import { useCheckIn } from '@/features/checkin/useCheckIn';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
-import { useTheme } from '@/theme/ThemeProvider';
-import { ICON } from '@/theme/tokens';
 
 type Problem = 'denied' | 'failed' | 'tooFar' | 'outsideBoundary' | null;
 
@@ -34,7 +30,6 @@ type Problem = 'denied' | 'failed' | 'tooFar' | 'outsideBoundary' | null;
 // the venue nor a missing one (no permission, no fix indoors) stops the flow: the server skips the
 // check there, and the venue's own point stands in for a missing position (never stored).
 export default function LocationScreen() {
-  const { colors } = useTheme();
   const profile = useProfile();
   const venue = useCheckinDraft((s) => s.venue);
   const setPosition = useCheckinDraft((s) => s.setPosition);
@@ -101,12 +96,9 @@ export default function LocationScreen() {
         title={tr.checkin.locationTitle}
         onBack={() => router.back()}
       />
-      <Card className="mt-4">
-        <View className="flex-row gap-3">
-          <Ionicons name="shield-checkmark-outline" size={ICON.md} color={colors.text} />
-          <Text className="flex-1">{tr.checkin.locationBody}</Text>
-        </View>
-      </Card>
+      <View className="mt-4">
+        <Banner tone="info" body={tr.checkin.locationBody} />
+      </View>
       {consentGiven ? null : (
         <View className="mt-4">
           <Checkbox
@@ -118,38 +110,37 @@ export default function LocationScreen() {
       )}
       {problem === 'denied' ? (
         <View className="mt-4 gap-3">
-          <Text variant="fine" tone="danger">
-            {tr.checkin.permissionDenied}
-          </Text>
+          <Banner tone="danger" body={tr.checkin.permissionDenied} />
           <Button
-            variant="neutral"
+            variant="secondary"
             label={tr.checkin.openSettings}
             onPress={() => void Linking.openSettings()}
           />
         </View>
       ) : null}
       {problem === 'tooFar' ? (
-        <Text variant="fine" tone="danger" className="mt-4">
-          {tr.errors.too_far}
-        </Text>
+        <View className="mt-4">
+          <Banner tone="danger" body={tr.errors.too_far} />
+        </View>
       ) : null}
       {problem === 'outsideBoundary' ? (
-        <Text variant="fine" tone="danger" className="mt-4">
-          {tr.checkin.outsideBoundary(venue.kind)}
-        </Text>
+        <View className="mt-4">
+          <Banner tone="danger" body={tr.checkin.outsideBoundary(venue.kind)} />
+        </View>
       ) : null}
       {problem === 'failed' ? (
-        <Text variant="fine" tone="danger" className="mt-4">
-          {tr.checkin.locationFailed}
-        </Text>
+        <View className="mt-4">
+          <Banner tone="danger" body={tr.checkin.locationFailed} />
+        </View>
       ) : null}
       {checkIn.isError ? (
-        <Text variant="fine" tone="danger" className="mt-4">
-          {errorMessage(checkIn.error)}
-        </Text>
+        <View className="mt-4">
+          <Banner tone="danger" body={errorMessage(checkIn.error)} />
+        </View>
       ) : null}
       <View className="mt-auto pt-8">
         <Button
+          size="lg"
           label={locating ? tr.checkin.locating : tr.checkin.useLocation}
           onPress={() => void locate()}
           disabled={!(consentGiven || consent) || spots.isPending}
