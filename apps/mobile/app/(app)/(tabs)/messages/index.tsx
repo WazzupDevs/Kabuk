@@ -237,10 +237,10 @@ function UnreadCount({ count }: { count: number }) {
         height: SPACING[5] + SPACING[0.5],
         paddingHorizontal: SPACING[1.5],
         borderRadius: shape.radius.pill,
-        backgroundColor: colors.accent,
+        backgroundColor: colors.primary,
       }}
     >
-      <Text variant="caption" tone="onAccent">
+      <Text variant="caption" tone="onPrimary">
         {String(count)}
       </Text>
     </View>

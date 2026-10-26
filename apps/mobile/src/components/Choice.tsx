@@ -21,7 +21,7 @@ type Props = {
   testID?: string;
 };
 
-const DOT = SPACING[6];
+const DOT = SPACING[5] + SPACING[0.5];
 
 // One option of a single choice (canvas: Bileşenler): a card with the radio mark first; the
 // selected one fills with the quiet colour, its outline in the accent, and lifts a little.
@@ -40,11 +40,12 @@ export function Choice({
     flexDirection: 'row',
     alignItems: hint || unavailable ? 'flex-start' : 'center',
     gap: SPACING[3],
+    // skall tuvali (skall.css → `.choice`): 56 high, 16 px corners, 1 px control; on, 2 px primary.
     minHeight: TOUCH.tab,
     paddingHorizontal: SPACING[4],
-    paddingVertical: SPACING[3] + SPACING[0.5],
-    borderRadius: shape.radius.lg,
-    borderWidth: Math.max(shape.stroke.control, 1),
+    paddingVertical: SPACING[3],
+    borderRadius: shape.radius.md,
+    borderWidth: 1,
   } as const;
   const title = (tone?: 'muted') => (
     <View className="flex-row items-center gap-2">
@@ -94,9 +95,11 @@ export function Choice({
       }}
       style={{
         ...frame,
-        backgroundColor: selected ? colors.surface2 : colors.surface,
-        borderColor: selected ? colors.accent : colors.border,
-        boxShadow: selected ? shape.shadow.raised : undefined,
+        backgroundColor: colors.surface,
+        borderWidth: selected ? 2 : 1,
+        borderColor: selected ? colors.primary : colors.control,
+        paddingHorizontal: selected ? SPACING[4] - 1 : SPACING[4],
+        paddingVertical: selected ? SPACING[3] - 1 : SPACING[3],
         opacity: disabled ? 0.4 : 1,
       }}
     >
@@ -106,22 +109,12 @@ export function Choice({
           width: DOT,
           height: DOT,
           borderRadius: shape.radius.pill,
-          borderWidth: 2,
-          borderColor: colors.border,
+          // skall.css → `.radio`: 2 px control; on, a 7 px primary ring.
+          borderWidth: selected ? 7 : 2,
+          borderColor: selected ? colors.primary : colors.control,
           backgroundColor: colors.surface,
         }}
-      >
-        {selected ? (
-          <View
-            style={{
-              width: DOT / 2,
-              height: DOT / 2,
-              borderRadius: shape.radius.pill,
-              backgroundColor: colors.accent,
-            }}
-          />
-        ) : null}
-      </View>
+      ></View>
       <View className="flex-1 gap-1">
         {title()}
         {hint ? <Text variant="fine">{hint}</Text> : null}

@@ -1,6 +1,6 @@
 import { Pressable, View } from 'react-native';
 
-import { switchColors } from '@/theme/switch';
+import { switchColors, THUMB_SHADOW } from '@/theme/switch';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING, TOUCH } from '@/theme/tokens';
 
@@ -18,9 +18,9 @@ type Props = {
   testID?: string;
 };
 
-// The canvas switch: a 52 × 32 outlined track and an outlined thumb (`switchColors`).
+// The canvas switch (skall.css → "Anahtar"): a 52 × 32 track, a 26 thumb 3 px in (`switchColors`).
 const TRACK = { width: SPACING[12] + SPACING[1], height: SPACING[8] } as const;
-const THUMB = SPACING[5] + SPACING[0.5];
+const THUMB = SPACING[6] + SPACING[0.5];
 const TRACK_COMPACT = { width: SPACING[10], height: SPACING[6] } as const;
 const THUMB_COMPACT = SPACING[4];
 
@@ -39,10 +39,8 @@ export function Toggle({ label, value, onChange, hint, disabled, compact, testID
         width: track.width,
         height: track.height,
         borderRadius: shape.radius.pill,
-        borderWidth: shape.stroke.control,
-        borderColor: c.trackBorder,
         backgroundColor: c.track,
-        paddingHorizontal: SPACING[0.5],
+        paddingHorizontal: (track.height - thumb) / 2,
         justifyContent: 'center',
         alignItems: value ? 'flex-end' : 'flex-start',
         opacity: disabled ? 0.4 : 1,
@@ -53,9 +51,8 @@ export function Toggle({ label, value, onChange, hint, disabled, compact, testID
           width: thumb,
           height: thumb,
           borderRadius: shape.radius.pill,
-          borderWidth: shape.stroke.control,
-          borderColor: c.thumbBorder,
           backgroundColor: c.thumb,
+          boxShadow: THUMB_SHADOW,
         }}
       />
     </View>

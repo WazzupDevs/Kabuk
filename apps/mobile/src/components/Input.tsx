@@ -2,7 +2,6 @@ import { forwardRef, useState } from 'react';
 import { TextInput, type TextInputProps, View } from 'react-native';
 
 import { noteTyping } from '@/lib/haptics';
-import { AA_LARGE, contrastRatio } from '@/theme/contrast';
 import { typeStyle, useTheme } from '@/theme/ThemeProvider';
 import { SPACING, TOUCH } from '@/theme/tokens';
 
@@ -36,8 +35,9 @@ export const Input = forwardRef<TextInput, Props>(function Input(
   const theme = useTheme();
   const { colors, shape } = theme;
   const [focused, setFocused] = useState(false);
-  const outline =
-    contrastRatio(colors.border, colors.surface) >= AA_LARGE ? colors.border : colors.muted;
+  // skall tuvali (skall.css → "Alan"): the control outline; focused 2 px primary with the soft
+  // ring; an error 2 px danger.
+  const outline = colors.control;
 
   return (
     <View className="gap-2">
@@ -45,12 +45,13 @@ export const Input = forwardRef<TextInput, Props>(function Input(
       <View
         className="flex-row items-center"
         style={{
-          minHeight: TOUCH.button,
-          borderRadius: search ? shape.radius.pill : shape.radius.md,
-          borderWidth: focused ? Math.max(shape.stroke.control, 2) : shape.stroke.control,
-          borderColor: error ? colors.danger : focused ? colors.accent : outline,
+          minHeight: SPACING[12] + SPACING[1],
+          borderRadius: tall ? shape.radius.lg : shape.radius.pill,
+          borderWidth: focused || error ? 2 : shape.stroke.control,
+          borderColor: error ? colors.danger : focused ? colors.primary : outline,
           backgroundColor: colors.surface,
-          paddingHorizontal: SPACING[4],
+          paddingHorizontal: SPACING[4] + SPACING[0.5],
+          boxShadow: focused && !error ? shape.shadow.focus : undefined,
         }}
       >
         {search ? (

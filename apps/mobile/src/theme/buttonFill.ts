@@ -11,12 +11,14 @@ export type ButtonVariant =
 // ground it sits on.
 export type ButtonFill = { bg: PaletteKey | null; fg: PaletteKey };
 
+// skall tuvali (skall.css → "Düğme"): primary filled, secondary a surface capsule with the control
+// outline, neutral the quiet soft fill, positive and danger the soft green and red fills.
 const FILLS: Record<ButtonVariant, ButtonFill> = {
-  primary: { bg: 'accent', fg: 'onAccent' },
-  secondary: { bg: 'raised', fg: 'text' },
-  positive: { bg: 'success', fg: 'onSuccess' },
-  danger: { bg: 'danger', fg: 'onDanger' },
-  neutral: { bg: 'raised', fg: 'text' },
+  primary: { bg: 'primary', fg: 'onPrimary' },
+  secondary: { bg: 'surface', fg: 'text' },
+  positive: { bg: 'successSoft', fg: 'onSuccessSoft' },
+  danger: { bg: 'dangerSoft', fg: 'onDangerSoft' },
+  neutral: { bg: 'surface2', fg: 'text' },
   ghost: { bg: null, fg: 'accent' },
   dangerText: { bg: null, fg: 'danger' },
 };
@@ -32,5 +34,5 @@ export function isTextOnly(variant: ButtonVariant): boolean {
 // schemes, contrast.test.ts). A text-only role takes no fill, only the muted label.
 export function buttonFill(variant: ButtonVariant, disabled: boolean): ButtonFill {
   if (!disabled) return FILLS[variant];
-  return { bg: isTextOnly(variant) ? null : 'surface2', fg: 'muted' };
+  return isTextOnly(variant) ? { bg: null, fg: 'muted' } : { bg: 'disabled', fg: 'onDisabled' };
 }

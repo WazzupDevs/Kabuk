@@ -35,7 +35,7 @@ export function Tag({ label, variant = 'neutral', icon }: Props) {
     event: { bg: colors.event, fg: colors.onEvent },
     neutral: { bg: colors.surface2, fg: colors.text },
     profiled: { bg: colors.violet, fg: colors.onViolet },
-    won: { bg: colors.successSoft, fg: colors.text },
+    won: { bg: colors.successSoft, fg: colors.onSuccessSoft },
     lost: { bg: colors.lively, fg: colors.onLively },
     done: { bg: colors.surface2, fg: colors.muted },
     game: { bg: colors.calm, fg: colors.onCalm },
@@ -48,14 +48,16 @@ export function Tag({ label, variant = 'neutral', icon }: Props) {
     <View
       className="flex-row items-center self-start"
       style={{
-        gap: SPACING[1.5],
+        gap: SPACING[1],
         backgroundColor: bg,
         borderRadius: shape.radius.pill,
-        paddingHorizontal: SPACING[3],
-        paddingVertical: SPACING[1],
+        // skall tuvali (skall.css → `.tag`): 24 high, 9 px sides, 11 px 800.
+        minHeight: SPACING[6],
+        paddingHorizontal: SPACING[2] + 1,
+        paddingVertical: SPACING[0.5],
       }}
     >
-      {icon ? <Ionicons name={icon} size={ICON.sm} color={fg} /> : null}
+      {icon ? <Ionicons name={icon} size={ICON.xs} color={fg} /> : null}
       <Text variant="tag" color={fg}>
         {label}
       </Text>

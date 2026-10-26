@@ -55,14 +55,15 @@ export function Chips<T extends string>({
                 minHeight: CHIP,
                 paddingHorizontal: SPACING[3] + SPACING[0.5],
                 borderRadius: shape.radius.pill,
-                backgroundColor: on ? colors.accent : colors.raised,
-                borderWidth: on ? 0 : shape.stroke.hairline * 1.5,
-                borderColor: colors.border,
+                // skall tuvali (skall.css → `.chip`): surface with the control outline; on, ink.
+                backgroundColor: on ? colors.text : colors.surface,
+                borderWidth: shape.stroke.hairline * 1.5,
+                borderColor: on ? colors.text : colors.control,
               },
               pressScale(pressed),
             ]}
           >
-            <Text variant="label" tone={on ? 'onAccent' : 'text'}>
+            <Text variant="label" tone={on ? 'surface' : 'text'}>
               {o.label}
             </Text>
           </View>

@@ -1,29 +1,14 @@
-import { contrastRatio, luminance, readableOn } from './contrast';
 import type { Palette } from './tokens';
 
+// The skall tuvali's switch (skall.css → "Anahtar"): the control track off, the primary track on,
+// a white thumb with a soft shadow, no outlines. The thumb's side says the state as well.
 export type SwitchColors = {
   track: string;
-  trackBorder: string;
   thumb: string;
-  thumbBorder: string;
 };
 
-// The switch as the canvas draws it ("Profilimle yaz"): an outlined track, accent when on and
-// surface2 when off, and an outlined thumb. On, the thumb is the lighter of the accent's text colour
-// and the text colour (white in both schemes); its outline is whichever ink reads best on the
-// track, so the thumb always stands 3:1 apart from the track.
 export function switchColors(palette: Palette, on: boolean): SwitchColors {
-  const track = on ? palette.accent : palette.surface2;
-  const thumb = on
-    ? luminance(palette.onAccent) >= luminance(palette.text)
-      ? palette.onAccent
-      : palette.text
-    : palette.surface;
-  const thumbBorder = readableOn(track, [palette.border, palette.onAccent]);
-  return { track, trackBorder: palette.border, thumb, thumbBorder };
+  return { track: on ? palette.primary : palette.control, thumb: palette.onPrimary };
 }
 
-// For the test: how far apart the thumb's outline and the track are.
-export function thumbContrast(colors: SwitchColors): number {
-  return contrastRatio(colors.thumbBorder, colors.track);
-}
+export const THUMB_SHADOW = '0px 1px 3px 0px rgba(20, 17, 43, 0.2)';

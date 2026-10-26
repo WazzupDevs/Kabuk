@@ -1,7 +1,6 @@
 import { forwardRef, useState } from 'react';
 import { TextInput, type TextInputProps, View } from 'react-native';
 
-import { AA_LARGE, contrastRatio } from '@/theme/contrast';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING, TOUCH } from '@/theme/tokens';
 
@@ -22,8 +21,9 @@ export const CodeInput = forwardRef<TextInput, Props>(function CodeInput(
 ) {
   const { colors, shape } = useTheme();
   const [focused, setFocused] = useState(false);
-  const outline =
-    contrastRatio(colors.border, colors.surface) >= AA_LARGE ? colors.border : colors.muted;
+  // skall tuvali (skall.css → `.otp`): 56 high, 16 px corners, 1 px control; the next box 2 px
+  // primary with the soft ring; an error 2 px danger.
+  const outline = colors.control;
   const next = Math.min(value.length, length - 1);
 
   return (
@@ -37,10 +37,10 @@ export const CodeInput = forwardRef<TextInput, Props>(function CodeInput(
                 key={i}
                 className="flex-1 items-center justify-center"
                 style={{
-                  height: TOUCH.large - SPACING[1.5],
-                  borderRadius: shape.radius.sm,
-                  borderWidth: shape.stroke.control,
-                  borderColor: error ? colors.danger : active ? colors.accent : outline,
+                  height: TOUCH.tab,
+                  borderRadius: shape.radius.md,
+                  borderWidth: error || active ? 2 : shape.stroke.control,
+                  borderColor: error ? colors.danger : active ? colors.primary : outline,
                   backgroundColor: colors.surface,
                   boxShadow: active ? shape.shadow.focus : undefined,
                 }}

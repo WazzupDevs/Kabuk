@@ -113,7 +113,7 @@ export function ChatBubble({
   const big = shape.radius.lg - SPACING[1];
   const small = SPACING[1.5];
   const top = first ? big : small;
-  const fg = mine ? colors.onAccent : colors.text;
+  const fg = mine ? colors.onPrimary : colors.text;
   const inside = !mine && nameInk !== undefined;
   const bubble = (
     <Pressable
@@ -159,7 +159,7 @@ export function ChatBubble({
           borderTopRightRadius: mine ? top : big,
           borderBottomLeftRadius: mine || inside ? big : small,
           borderBottomRightRadius: mine ? small : big,
-          backgroundColor: mine ? colors.accent : colors.surface,
+          backgroundColor: mine ? colors.primary : colors.surface,
           borderWidth: mine ? 0 : shape.stroke.hairline,
           borderColor: colors.divider,
           opacity: state === 'sending' ? 0.6 : 1,
@@ -189,7 +189,7 @@ export function ChatBubble({
           <Text color={fg}>{text}</Text>
           {time && !state ? (
             <View className="flex-row items-center gap-1">
-              <Text variant="fine" color={mine ? colors.onAccent : colors.muted}>
+              <Text variant="fine" color={mine ? colors.onPrimary : colors.muted}>
                 {time}
               </Text>
               {mine && delivery ? <DeliveryTicks delivery={delivery} onAccent /> : null}
@@ -348,16 +348,16 @@ function QuoteBlock({
         paddingVertical: SPACING[1.5],
         borderRadius: shape.radius.sm,
         borderLeftWidth: SPACING[1],
-        borderLeftColor: mine ? colors.onAccent : (quote.color ?? colors.violet),
-        backgroundColor: mine ? withAlpha(colors.onAccent, 0.16) : colors.surface2,
+        borderLeftColor: mine ? colors.onPrimary : (quote.color ?? colors.violet),
+        backgroundColor: mine ? withAlpha(colors.onPrimary, 0.16) : colors.surface2,
       }}
     >
-      <Text variant="label" color={mine ? colors.onAccent : (quote.color ?? colors.violet)}>
+      <Text variant="label" color={mine ? colors.onPrimary : (quote.color ?? colors.violet)}>
         {quote.name}
       </Text>
       {quote.text ? (
         // An excerpt of the answered message: one line, like the inbox's last-message line.
-        <Text variant="fine" color={mine ? colors.onAccent : colors.text} numberOfLines={1}>
+        <Text variant="fine" color={mine ? colors.onPrimary : colors.text} numberOfLines={1}>
           {quote.text}
         </Text>
       ) : null}
@@ -550,7 +550,7 @@ function ReactionChips({
 export function DeliveryTicks({ delivery, onAccent }: { delivery: Delivery; onAccent?: boolean }) {
   const { colors } = useTheme();
   const read = onAccent ? colors.readOnAccent : colors.read;
-  const plain = onAccent ? colors.onAccent : colors.muted;
+  const plain = onAccent ? colors.onPrimary : colors.muted;
   return (
     <View accessible accessibilityLabel={tr.dm.delivery[delivery]} testID={`tick-${delivery}`}>
       <Ionicons
