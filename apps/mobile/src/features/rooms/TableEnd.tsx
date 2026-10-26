@@ -5,7 +5,8 @@ import { useWindowDimensions, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
+import { GlyphDisc } from '@/components/GlyphDisc';
+import { ListCard } from '@/components/ListCard';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
@@ -24,7 +25,7 @@ import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { friendsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
-import { NARROW_SCREEN } from '@/theme/tokens';
+import { NARROW_SCREEN, SPACING } from '@/theme/tokens';
 
 type Props = {
   roomId: string;
@@ -38,6 +39,9 @@ type Props = {
   anonymous: boolean;
   onClose: () => void;
 };
+
+// skall.css → `.act`.
+const ACTION_SLOT = SPACING[16] + SPACING[10] + SPACING[1];
 
 type EndRecord = {
   id: string;
@@ -58,13 +62,14 @@ export function TableEnd({ roomId, left, tableName, phones, profiled, anonymous,
     <Screen>
       {/* On the header, which always has content: with no record (nobody sat 3 minutes) the
           list below is empty and has no size. */}
-      <View testID="table-end">
+      <View testID="table-end" className="gap-3 pt-4">
+        <GlyphDisc icon="checkmark-done-outline" />
         <ScreenHeader
           title={left ? tr.tableEnd.leftTitle : tr.tableEnd.title}
           subtitle={tr.tableEnd.subtitle(tableName, phones)}
         />
       </View>
-      <View className="mt-4 gap-2.5">
+      <View className="mt-4">
         {records.isPending ? (
           <View className="items-center py-6">
             <Loader />
@@ -75,16 +80,18 @@ export function TableEnd({ roomId, left, tableName, phones, profiled, anonymous,
             body={errorMessage(records.error)}
             action={{ label: tr.common.retry, onPress: () => void records.refetch() }}
           />
-        ) : (
-          records.data.map((r) => (
-            <EndRow
-              key={r.id}
-              record={r}
-              profiled={profiled.includes(r.other_alias)}
-              friend={friends.data?.get(r.id)}
-            />
-          ))
-        )}
+        ) : records.data.length > 0 ? (
+          <ListCard>
+            {records.data.map((r) => (
+              <EndRow
+                key={r.id}
+                record={r}
+                profiled={profiled.includes(r.other_alias)}
+                friend={friends.data?.get(r.id)}
+              />
+            ))}
+          </ListCard>
+        ) : null}
       </View>
       <Text variant="fine" className="mt-4">
         {tr.tableEnd.note}
@@ -134,14 +141,14 @@ function EndRow({
 
   const state = pairFriendState(record, friend !== undefined);
   const who = (
-    <View className="flex-row items-center gap-3">
+    <View className="flex-row items-center" style={{ gap: SPACING[3] + SPACING[0.5] }}>
       {profiled ? (
-        <Avatar kind="profile" name={record.other_alias} size="lg" />
+        <Avatar kind="profile" name={record.other_alias} size="xl" />
       ) : (
-        <Avatar kind="default" size="lg" />
+        <Avatar kind="default" size="xl" />
       )}
       <View className="flex-1 gap-0.5">
-        <Text variant="bodyStrong">{record.other_alias}</Text>
+        <Text variant="heading">{record.other_alias}</Text>
         {state === 'friends' ? (
           <Text variant="label" tone="success">
             {tr.tableEnd.friends}
@@ -156,8 +163,9 @@ function EndRow({
   const action =
     state === 'add' ? (
       <Button
-        variant="neutral"
+        variant="positive"
         size="sm"
+        tight
         testID={`table-end-add-${record.other_alias}`}
         label={tr.tableEnd.addFriend}
         loading={busy}
@@ -165,8 +173,9 @@ function EndRow({
       />
     ) : state === 'pressed' ? (
       <Button
-        variant="positive"
+        variant="neutral"
         size="sm"
+        tight
         testID={`table-end-pressed-${record.other_alias}`}
         label={tr.tableEnd.added}
         loading={busy}
@@ -174,8 +183,8 @@ function EndRow({
       />
     ) : state === 'friends' && friend?.threadId ? (
       <Button
-        variant="neutral"
         size="sm"
+        tight
         testID={`table-end-message-${record.other_alias}`}
         label={tr.tableEnd.message}
         onPress={() =>
@@ -186,16 +195,28 @@ function EndRow({
   const error = add.error ?? withdraw.error;
 
   return (
-    <Card>
+    // skall tuvali (MasaBitti): a row of the list card, the action in the 108 wide slot.
+    <View
+      style={{
+        minHeight: SPACING[16] + SPACING[2],
+        paddingVertical: SPACING[3],
+        paddingHorizontal: SPACING[4],
+        justifyContent: 'center',
+      }}
+    >
       {narrow ? (
         <View className="gap-2.5">
           {who}
-          {action ? <View className="items-end">{action}</View> : null}
+          {action ? (
+            <View className="items-end">
+              <View style={{ width: ACTION_SLOT }}>{action}</View>
+            </View>
+          ) : null}
         </View>
       ) : (
-        <View className="flex-row items-center gap-3">
+        <View className="flex-row items-center" style={{ gap: SPACING[3] + SPACING[0.5] }}>
           <View className="flex-1">{who}</View>
-          {action}
+          {action ? <View style={{ width: ACTION_SLOT }}>{action}</View> : null}
         </View>
       )}
       {error ? (
@@ -203,6 +224,6 @@ function EndRow({
           {errorMessage(error)}
         </Text>
       ) : null}
-    </Card>
+    </View>
   );
 }

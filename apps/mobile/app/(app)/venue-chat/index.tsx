@@ -6,14 +6,14 @@ import {
   type VenueChatMessage,
 } from '@shared/venueChat.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Ionicons } from '@expo/vector-icons';
 import { toRuns } from '@shared/chatRuns.ts';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Alert, View } from 'react-native';
 
-import { Avatar, AVATAR_SIZE } from '@/components/Avatar';
+import { Avatar } from '@/components/Avatar';
 import { Card } from '@/components/Card';
+import { GlyphDisc } from '@/components/GlyphDisc';
 import { ChatBubble } from '@/components/ChatBubble';
 import { ChatRow, ChatScreen, DayLine, dayLabel } from '@/components/ChatScreen';
 import { ChatTopBar } from '@/components/ChatTopBar';
@@ -46,7 +46,7 @@ import { ApiError, safetyApi, venueChatApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { nameInk } from '@/theme/nameInk';
 import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, SPACING } from '@/theme/tokens';
+import { SPACING } from '@/theme/tokens';
 
 // The venue's chat room (docs/SPEC_V3.md §7): everyone with a live table at the venue reads and
 // writes; a message goes with the table alias, or with the display name and no alias. Which one is
@@ -191,19 +191,7 @@ export default function VenueChatScreen() {
           onBack={() => router.back()}
           title={tr.venueChat.title(venueName)}
           subtitle={tr.venueChat.open}
-          leading={
-            <View
-              className="items-center justify-center"
-              style={{
-                width: AVATAR_SIZE.md,
-                height: AVATAR_SIZE.md,
-                borderRadius: shape.radius.pill,
-                backgroundColor: colors.signal,
-              }}
-            >
-              <Ionicons name="chatbubbles-outline" size={ICON.md} color={colors.onSignal} />
-            </View>
-          }
+          leading={<GlyphDisc icon="chatbubbles-outline" />}
         />
       }
       composer={
@@ -232,15 +220,25 @@ export default function VenueChatScreen() {
                 {mode ? (
                   <View
                     testID="venue-chat-mode"
-                    className="flex-row items-center gap-2"
-                    style={{ minHeight: SPACING[8] }}
+                    className="flex-row items-center"
+                    // skall tuvali (skall.css → `.idrow`): who you write as, in a pill.
+                    style={{
+                      gap: SPACING[2.5],
+                      minHeight: SPACING[8],
+                      paddingVertical: SPACING[2],
+                      paddingHorizontal: SPACING[3],
+                      borderRadius: shape.radius.pill,
+                      borderWidth: shape.stroke.hairline,
+                      borderColor: colors.divider,
+                      backgroundColor: colors.surface,
+                    }}
                   >
                     {mode === 'profiled' ? (
                       <Avatar kind="profile" name={photo.name} photoUrl={photo.url} size="sm" />
                     ) : (
                       <Avatar kind="default" size="sm" />
                     )}
-                    <Text variant="label" tone="muted" className="flex-1">
+                    <Text variant="label" className="flex-1">
                       {mode === 'profiled'
                         ? tr.venueChat.writingProfile
                         : tr.venueChat.writingAnonymous}

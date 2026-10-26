@@ -199,6 +199,7 @@ function Welcome() {
             style={{ gap: SPACING[2], paddingTop: SPACING[4] }}
           >
             <Button
+              size="lg"
               testID="welcome-start"
               label={tr.signup.start}
               onPress={() => {

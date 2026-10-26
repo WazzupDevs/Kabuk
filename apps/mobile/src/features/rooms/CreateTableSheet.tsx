@@ -11,6 +11,7 @@ import { Pills } from '@/components/Pills';
 import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
 import { Toggle } from '@/components/Toggle';
+import { Card } from '@/components/Card';
 import { useProfile } from '@/features/account/useProfile';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { registerForPush } from '@/features/push/push';
@@ -29,6 +30,7 @@ import {
   TABLE_ICON_SIZE,
   TABLE_ICON_TAKEN_OPACITY,
   TableIcon,
+  tableIconName,
 } from './TableIcon';
 
 type IntentChoice = Intent | 'none';
@@ -91,23 +93,30 @@ export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Pro
 
   return (
     <Sheet visible onClose={onClose} title={tr.createTable.title}>
-      <Text variant="fine" tone="text">
-        {tr.createTable.hint}
-      </Text>
+      <Text variant="fine">{tr.createTable.hint}</Text>
 
-      <Pressable
-        testID="table-icon-pick"
-        accessibilityRole="button"
-        accessibilityState={{ expanded: picking }}
-        accessibilityLabel={tr.createTable.iconLabel}
-        onPress={() => setPicking((v) => !v)}
-        className="flex-row items-center gap-3"
-      >
-        <TableIcon icon={icon} size="picker" />
-        <Text variant="label" tone="accent">
-          {picking ? tr.createTable.iconDone : tr.createTable.iconChange}
-        </Text>
-      </Pressable>
+      {/* skall tuvali (MekanMasaKur): the icon in a soft card, its name and the link. */}
+      <Card tone="note">
+        <Pressable
+          testID="table-icon-pick"
+          accessibilityRole="button"
+          accessibilityState={{ expanded: picking }}
+          accessibilityLabel={tr.createTable.iconLabel}
+          onPress={() => setPicking((v) => !v)}
+          className="flex-row items-center gap-3"
+        >
+          <TableIcon icon={icon} size="picker" />
+          <View className="flex-1 gap-0.5">
+            <Text variant="caption" tone="muted">
+              {tr.createTable.iconLabel}
+            </Text>
+            <Text variant="heading">{tableIconName(icon) ?? ''}</Text>
+          </View>
+          <Text variant="label" tone="accent">
+            {picking ? tr.createTable.iconDone : tr.createTable.iconChange}
+          </Text>
+        </Pressable>
+      </Card>
 
       {picking ? (
         <IconPicker
@@ -119,13 +128,15 @@ export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Pro
         />
       ) : null}
 
-      <Toggle
-        testID="table-lobby"
-        label={tr.createTable.lobby}
-        hint={tr.createTable.lobbyHint}
-        value={lobby}
-        onChange={setLobby}
-      />
+      <Card tone="note">
+        <Toggle
+          testID="table-lobby"
+          label={tr.createTable.lobby}
+          hint={tr.createTable.lobbyHint}
+          value={lobby}
+          onChange={setLobby}
+        />
+      </Card>
 
       {lobby ? (
         <View className="gap-2">
@@ -159,7 +170,9 @@ export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Pro
         ) : (
           <Avatar kind="profile" name={name} photoUrl={photo.url} size="sm" />
         )}
-        <Text className="flex-1">{tr.createTable.youAre(name)}</Text>
+        <Text variant="fine" className="flex-1">
+          {tr.createTable.youAre(name)}
+        </Text>
       </View>
 
       {create.isError ? (
@@ -167,13 +180,16 @@ export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Pro
           {errorMessage(create.error)}
         </Text>
       ) : null}
-      <Button
-        size="lg"
-        testID="table-create"
-        label={tr.createTable.confirm}
-        onPress={() => create.mutate()}
-        loading={create.isPending}
-      />
+      <View className="gap-2.5">
+        <Button
+          size="lg"
+          testID="table-create"
+          label={tr.createTable.confirm}
+          onPress={() => create.mutate()}
+          loading={create.isPending}
+        />
+        <Button size="lg" variant="neutral" label={tr.common.cancel} onPress={onClose} />
+      </View>
     </Sheet>
   );
 }

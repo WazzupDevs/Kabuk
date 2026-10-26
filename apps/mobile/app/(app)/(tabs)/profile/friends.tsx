@@ -5,6 +5,7 @@ import { Pressable, View } from 'react-native';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
+import { ListCard } from '@/components/ListCard';
 import { EmptyState } from '@/components/EmptyState';
 import { Icon } from '@/components/Icon';
 import { useLoaderHold } from '@/components/Loader';
@@ -63,15 +64,13 @@ export default function FriendsScreen() {
           {friends.data.length === 0 ? (
             <EmptyState kind="empty" body={tr.friends.empty} />
           ) : (
-            <Card flush>
-              <View style={{ paddingVertical: SPACING[1.5] }}>
-                {friends.data.map((f, i) => (
-                  <Rise key={f.publicId} index={i}>
-                    <FriendRow friend={f} />
-                  </Rise>
-                ))}
-              </View>
-            </Card>
+            <ListCard>
+              {friends.data.map((f, i) => (
+                <Rise key={f.publicId} index={i}>
+                  <FriendRow friend={f} />
+                </Rise>
+              ))}
+            </ListCard>
           )}
         </View>
       )}
@@ -105,12 +104,12 @@ function FriendRow({ friend: f }: { friend: Friend }) {
               paddingVertical: SPACING[2.5],
               paddingLeft: SPACING[4],
               paddingRight: SPACING[2],
-              backgroundColor: pressed ? colors.canvas : undefined,
+              backgroundColor: pressed ? colors.surface2 : undefined,
             }}
           >
             <Avatar kind="profile" size="xl" name={name} photoUrl={f.photoUrl} />
             <View className="flex-1" style={{ gap: SPACING[0.5] }}>
-              <Text variant="bodyStrong">{name}</Text>
+              <Text variant="heading">{name}</Text>
               <Text variant="fine">{tr.friends.since(f.since)}</Text>
             </View>
           </View>
@@ -140,13 +139,13 @@ function MessagePill({ name, onPress }: { name: string; onPress: () => void }) {
     >
       {({ pressed }) => (
         <View
-          className="flex-row items-center"
+          className="flex-row items-center justify-center"
+          // skall tuvali (Arkadaslar): the quiet small button in the 108 wide slot.
           style={[
             {
-              gap: SPACING[1],
+              gap: SPACING[1.5],
               height,
-              paddingLeft: SPACING[2.5],
-              paddingRight: SPACING[3] + SPACING[0.5],
+              width: SPACING[16] + SPACING[10] + SPACING[1],
               borderRadius: shape.radius.pill,
               backgroundColor: colors.surface2,
             },
@@ -154,7 +153,7 @@ function MessagePill({ name, onPress }: { name: string; onPress: () => void }) {
           ]}
         >
           <Icon name="chatbubble-outline" size={ICON.sm} tone="accent" />
-          <Text variant="label" tone="accent">
+          <Text variant="label" tone="text">
             {tr.friends.messageShort}
           </Text>
         </View>

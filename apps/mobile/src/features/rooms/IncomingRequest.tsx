@@ -199,6 +199,7 @@ export function IncomingRequest({ roomId, ownerSessionId }: Props) {
         </View>
         <View className="flex-1">
           <Button
+            variant="positive"
             testID="join-accept"
             label={tr.rooms.accept}
             onPress={() => respond.mutate({ id: request.id, accept: true, member })}

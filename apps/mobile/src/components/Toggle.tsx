@@ -93,7 +93,7 @@ export function Toggle({ label, value, onChange, hint, disabled, compact, testID
       style={{ minHeight: TOUCH.min }}
     >
       <View className="flex-1">
-        <Text variant="bodyStrong">{label}</Text>
+        <Text variant="heading">{label}</Text>
         {hint ? <Text variant="fine">{hint}</Text> : null}
       </View>
       {knob}
