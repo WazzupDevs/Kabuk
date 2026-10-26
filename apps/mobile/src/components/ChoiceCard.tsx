@@ -60,7 +60,7 @@ export function ChoiceCard({
               backgroundColor: unavailable ? 'transparent' : colors.surface,
               borderWidth: shape.stroke.feature + 1,
               borderStyle: unavailable ? 'dashed' : 'solid',
-              borderColor: unavailable ? colors.muted : selected ? colors.accent : 'transparent',
+              borderColor: unavailable ? colors.muted : selected ? colors.primary : colors.cardLine,
               boxShadow: unavailable ? undefined : shape.shadow.card,
               opacity: disabled ? 0.5 : 1,
             },

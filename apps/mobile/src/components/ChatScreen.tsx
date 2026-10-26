@@ -285,13 +285,13 @@ export function ChatScroll({
                     minHeight: SPACING[10],
                     paddingHorizontal: SPACING[4],
                     borderRadius: shape.radius.pill,
-                    backgroundColor: colors.accent,
+                    backgroundColor: colors.primary,
                   },
                   pressScale(pressed),
                 ]}
               >
-                <Ionicons name="arrow-down" size={ICON.sm} color={colors.onAccent} />
-                <Text variant="buttonSmall" tone="onAccent">
+                <Ionicons name="arrow-down" size={ICON.sm} color={colors.onPrimary} />
+                <Text variant="buttonSmall" tone="onPrimary">
                   {tr.chat.newMessages(pending)}
                 </Text>
               </View>

@@ -47,19 +47,20 @@ export function Pills<T extends string>({ options, value, onChange, wrap = false
                 className="items-center justify-center"
                 style={[
                   {
-                    minHeight: TOUCH.button,
+                    minHeight: TOUCH.min,
                     paddingHorizontal: wrap ? SPACING[4] : SPACING[2],
                     borderRadius: shape.radius.pill,
-                    backgroundColor: on ? colors.accent : colors.raised,
-                    borderWidth: on ? 0 : shape.stroke.hairline * 1.5,
-                    borderColor: colors.border,
+                    // skall tuvali: the chip's look at button height (on: ink).
+                    backgroundColor: on ? colors.text : colors.surface,
+                    borderWidth: shape.stroke.hairline * 1.5,
+                    borderColor: on ? colors.text : colors.control,
                   },
                   pressScale(pressed),
                 ]}
               >
                 <Text
                   variant="button"
-                  color={on ? colors.onAccent : colors.text}
+                  color={on ? colors.surface : colors.text}
                   numberOfLines={1}
                   adjustsFontSizeToFit={!wrap}
                   minimumFontScale={0.5}

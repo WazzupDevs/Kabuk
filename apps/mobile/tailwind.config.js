@@ -42,6 +42,18 @@ const COLORS = [
   'feature-muted',
   'overlap',
   'focus',
+  'primary',
+  'on-primary',
+  'primary-pressed',
+  'control',
+  'track',
+  'card-line',
+  'on-danger-soft',
+  'on-success-soft',
+  'warn-soft',
+  'on-warn-soft',
+  'disabled',
+  'on-disabled',
 ];
 
 const SPACING = {

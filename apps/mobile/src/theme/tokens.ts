@@ -56,6 +56,21 @@ export type Palette = {
   overlap: string;
   // The focus ring (the code box that takes the next digit).
   focus: string;
+  // skall tuvali (docs/design/sistem/skall.css): the filled action colour (`--primary`) apart from
+  // the link colour (`accent` = `--link`), the soft control outline, the quiet track (segments,
+  // steps), the card's edge, the soft fills' ink and the disabled fill.
+  primary: string;
+  onPrimary: string;
+  primaryPressed: string;
+  control: string;
+  track: string;
+  cardLine: string;
+  onDangerSoft: string;
+  onSuccessSoft: string;
+  warnSoft: string;
+  onWarnSoft: string;
+  disabled: string;
+  onDisabled: string;
 };
 
 export const PALETTE_KEYS = [
@@ -96,6 +111,18 @@ export const PALETTE_KEYS = [
   'featureMuted',
   'overlap',
   'focus',
+  'primary',
+  'onPrimary',
+  'primaryPressed',
+  'control',
+  'track',
+  'cardLine',
+  'onDangerSoft',
+  'onSuccessSoft',
+  'warnSoft',
+  'onWarnSoft',
+  'disabled',
+  'onDisabled',
 ] as const satisfies readonly (keyof Palette)[];
 
 export type PaletteKey = (typeof PALETTE_KEYS)[number];
@@ -282,12 +309,13 @@ export const MAP_PIN = {
 } as const;
 export const MAP_FONTS = { regular: ['Noto Sans Regular'], bold: ['Noto Sans Bold'] } as const;
 
-// The skall type scale in Plus Jakarta Sans: headings 800 and 700, body 500, strong 600, labels 700.
+// The skall type scale (skall tuvali, skall.css → "Yazı ölçeği"): headings 800, body and notes 600,
+// buttons and labels 700, small 800.
 export function baseTypography(overrides: Partial<Typography> = {}): Typography {
   return {
-    display: { font: 'display', size: 28, lineHeight: 34, letterSpacing: -0.4 },
-    title: { font: 'displayBold', size: 22, lineHeight: 28, letterSpacing: -0.2 },
-    heading: { font: 'displayBold', size: 18, lineHeight: 24 },
+    display: { font: 'display', size: 28, lineHeight: 34, letterSpacing: -0.8 },
+    title: { font: 'display', size: 21, lineHeight: 27, letterSpacing: -0.5 },
+    heading: { font: 'display', size: 16, lineHeight: 21, letterSpacing: -0.2 },
     gameName: { font: 'displayBold', size: 16, lineHeight: 20 },
     alias: { font: 'display', size: 26, lineHeight: 32, letterSpacing: -0.3 },
     word: { font: 'display', size: 38, lineHeight: 44, letterSpacing: -0.6 },
@@ -295,18 +323,18 @@ export function baseTypography(overrides: Partial<Typography> = {}): Typography 
     score: { font: 'display', size: 30, lineHeight: 34 },
     hero: { font: 'display', size: 52, lineHeight: 56, letterSpacing: -1 },
     mark: { font: 'displayBold', size: 20, lineHeight: 24 },
-    body: { font: 'regular', size: 16, lineHeight: 24 },
-    bodyStrong: { font: 'semibold', size: 16, lineHeight: 24 },
-    subtitle: { font: 'regular', size: 14, lineHeight: 20 },
-    eyebrow: { font: 'bold', size: 13, lineHeight: 18, letterSpacing: 0.2 },
+    body: { font: 'semibold', size: 14, lineHeight: 20 },
+    bodyStrong: { font: 'bold', size: 14, lineHeight: 20 },
+    subtitle: { font: 'semibold', size: 14, lineHeight: 20 },
+    eyebrow: { font: 'bold', size: 13, lineHeight: 18 },
     label: { font: 'bold', size: 13, lineHeight: 18 },
-    fine: { font: 'regular', size: 13, lineHeight: 18 },
-    button: { font: 'bold', size: 16, lineHeight: 20 },
-    buttonLarge: { font: 'bold', size: 17, lineHeight: 22 },
-    buttonDetail: { font: 'semibold', size: 16, lineHeight: 20 },
-    buttonSmall: { font: 'bold', size: 14, lineHeight: 18 },
-    tag: { font: 'bold', size: 13, lineHeight: 16 },
-    caption: { font: 'bold', size: 11, lineHeight: 14 },
+    fine: { font: 'semibold', size: 13, lineHeight: 18 },
+    button: { font: 'bold', size: 15, lineHeight: 20 },
+    buttonLarge: { font: 'bold', size: 16, lineHeight: 21 },
+    buttonDetail: { font: 'semibold', size: 15, lineHeight: 20 },
+    buttonSmall: { font: 'bold', size: 13, lineHeight: 18 },
+    tag: { font: 'display', size: 11, lineHeight: 14 },
+    caption: { font: 'display', size: 11, lineHeight: 14 },
     overline: { font: 'bold', size: 12, lineHeight: 16, letterSpacing: 1, uppercase: true },
     signalMark: { font: 'regular', size: 104, lineHeight: 126 },
     gameButton: { font: 'display', size: 16, lineHeight: 20 },

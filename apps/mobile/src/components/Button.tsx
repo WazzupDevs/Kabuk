@@ -25,7 +25,7 @@ type Props = {
   // place; a second press does nothing.
   loading?: boolean;
   variant?: ButtonVariant;
-  // sm: a header button ("Mekandan ayrıl"), 40 high with the touch area grown to 48.
+  // skall tuvali (skall.css → "Düğme"): sm 36, md 44, lg 52; sm's touch area grows to 44.
   size?: 'sm' | 'md' | 'lg';
   icon?: IconName;
   // A drawing in the icon's place (the profile's "Arkadaşlar": the friends' photos).
@@ -45,7 +45,8 @@ type Props = {
   iconOnly?: boolean;
 };
 
-const SMALL_HEIGHT = SPACING[10];
+const SMALL_HEIGHT = SPACING[9];
+const HEIGHT = { md: TOUCH.min, lg: SPACING[12] + SPACING[1] } as const;
 // The busy mark per size (px) and its cross-fade with the label (hareket.md → "Düğmede bekleme").
 const BUSY_MARK = { sm: 20, md: 24, lg: 28 } as const;
 const LABEL_OUT_MS = 120;
@@ -129,8 +130,8 @@ export function Button({
   // The raised capsules carry an outline: they sit on the canvas, on cards and on fills alike.
   // Disabled, every filled role is the same neutral fill, without one.
   const edge: ViewStyle | null =
-    !disabled && (variant === 'secondary' || variant === 'neutral')
-      ? { borderWidth: shape.stroke.hairline * 1.5, borderColor: colors.border }
+    !disabled && variant === 'secondary'
+      ? { borderWidth: shape.stroke.hairline * 1.5, borderColor: colors.control }
       : null;
   const small = size === 'sm';
   const labelVariant: TypeVariant = small
@@ -152,13 +153,21 @@ export function Button({
         ? SPACING[3] + SPACING[0.5]
         : detail || tight
           ? SPACING[3]
-          : SPACING[5],
+          : size === 'lg'
+            ? SPACING[6]
+            : SPACING[5],
     justifyContent: flush ? 'flex-start' : 'center',
     paddingVertical: small ? SPACING[1] : SPACING[2],
-    minHeight: small ? SMALL_HEIGHT : size === 'lg' ? TOUCH.large : TOUCH.button,
+    minHeight: small ? SMALL_HEIGHT : HEIGHT[size],
     borderRadius: shape.radius.pill,
     backgroundColor: bg,
   };
+  const pressedFill: ViewStyle | null =
+    variant === 'primary' && !disabled
+      ? { backgroundColor: colors.primaryPressed }
+      : variant === 'secondary' && !disabled
+        ? { backgroundColor: colors.surface2 }
+        : null;
   if (iconOnly) {
     style.width = style.minHeight;
     style.paddingHorizontal = 0;
@@ -172,8 +181,8 @@ export function Button({
       accessibilityState={{ disabled: !!inactive, busy: loading }}
       disabled={inactive}
       onPress={onPress}
-      // The small button's face is 40 high; its touch area is 48.
-      hitSlop={small ? (TOUCH.button - SMALL_HEIGHT) / 2 : undefined}
+      // The small button's face is 36 high; its touch area is 44.
+      hitSlop={small ? (TOUCH.min - SMALL_HEIGHT) / 2 : undefined}
     >
       {({ pressed }) => (
         <View
@@ -181,6 +190,7 @@ export function Button({
             style,
             edge,
             textOnly && pressed ? { opacity: OPACITY.pressed } : null,
+            pressed && !inactive ? pressedFill : null,
             pressScale(pressed && !inactive),
           ]}
         >

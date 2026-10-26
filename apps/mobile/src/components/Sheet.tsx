@@ -83,8 +83,8 @@ export function Sheet({ visible, onClose, title, icon, centered, children }: Pro
             borderTopLeftRadius: shape.radius.xl,
             borderTopRightRadius: shape.radius.xl,
             boxShadow: shape.shadow.sheet,
-            paddingTop: SPACING[3],
-            paddingHorizontal: shape.screenPadding,
+            paddingTop: SPACING[2.5],
+            paddingHorizontal: SPACING[5],
             paddingBottom: SPACING[6] + insets.bottom,
             maxHeight: '90%',
             transform: [

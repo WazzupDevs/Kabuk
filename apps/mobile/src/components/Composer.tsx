@@ -5,7 +5,7 @@ import { Pressable, TextInput, View } from 'react-native';
 import { tr } from '@/i18n/tr';
 import { noteTyping } from '@/lib/haptics';
 import { typeStyle, useTheme } from '@/theme/ThemeProvider';
-import { ICON, SPACING, TOUCH } from '@/theme/tokens';
+import { ICON, SPACING } from '@/theme/tokens';
 
 import type { ChatQuote } from './ChatBubble';
 import { IconButton } from './IconButton';
@@ -75,13 +75,15 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
         <View
           className="flex-1 justify-center"
           style={{
-            minHeight: TOUCH.button,
+            // skall tuvali (skall.css → `.composer`): the field on the float shadow, the round
+            // send button beside it.
+            minHeight: SPACING[12] + SPACING[1],
             borderRadius: shape.radius.lg,
-            backgroundColor: colors.raised,
+            backgroundColor: colors.surface,
             borderWidth: shape.stroke.hairline,
-            borderColor: colors.divider,
-            boxShadow: shape.shadow.card,
-            paddingHorizontal: SPACING[4],
+            borderColor: colors.control,
+            boxShadow: shape.shadow.sheet,
+            paddingHorizontal: SPACING[4] + SPACING[0.5],
           }}
         >
           <TextInput
@@ -116,13 +118,13 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
             <View
               style={[
                 {
-                  width: TOUCH.button,
-                  height: TOUCH.button,
+                  width: SPACING[12] + SPACING[1],
+                  height: SPACING[12] + SPACING[1],
                   borderRadius: shape.radius.pill,
                   alignItems: 'center',
                   justifyContent: 'center',
-                  backgroundColor: inactive ? colors.surface : colors.accent,
-                  boxShadow: shape.shadow.card,
+                  backgroundColor: inactive ? colors.surface : colors.primary,
+                  boxShadow: shape.shadow.sheet,
                 },
                 pressScale(pressed),
               ]}
@@ -133,7 +135,7 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
                 <Ionicons
                   name="send"
                   size={ICON.md}
-                  color={inactive ? colors.muted : colors.onAccent}
+                  color={inactive ? colors.muted : colors.onPrimary}
                 />
               )}
             </View>

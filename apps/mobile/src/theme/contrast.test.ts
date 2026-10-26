@@ -42,12 +42,17 @@ const PAIRS: readonly Pair[] = [
   ['read', 'canvas', AA_TEXT], // DM: read ticks next to the time
   ['read', 'surface', AA_TEXT],
   // Inside the viewer's own bubble: the time in on-accent, a read tick in its own colour.
-  ['readOnAccent', 'accent', AA_LARGE],
+  ['readOnAccent', 'primary', AA_LARGE],
   ['danger', 'canvas', AA_TEXT], // error messages
   ['danger', 'surface', AA_TEXT],
   ['success', 'surface', AA_TEXT], // turn summary counts (Doğru)
   ['success', 'canvas', AA_TEXT],
   ['onAccent', 'accent', AA_TEXT],
+  ['onPrimary', 'primary', AA_TEXT], // filled actions, own bubbles, badges
+  ['onDangerSoft', 'dangerSoft', AA_TEXT],
+  ['onSuccessSoft', 'successSoft', AA_TEXT],
+  ['onWarnSoft', 'warnSoft', AA_TEXT],
+  ['onDisabled', 'disabled', AA_TEXT],
   ['onDanger', 'danger', AA_TEXT],
   ['onSuccess', 'success', AA_TEXT],
   ['onSignal', 'signal', AA_TEXT],
@@ -107,6 +112,11 @@ const FEATURE_PAIRS: readonly Pair[] = [
   ['text', 'raised', AA_TEXT],
   ['muted', 'raised', AA_TEXT],
   ['onAccent', 'accent', AA_TEXT],
+  ['onPrimary', 'primary', AA_TEXT], // filled actions, own bubbles, badges
+  ['onDangerSoft', 'dangerSoft', AA_TEXT],
+  ['onSuccessSoft', 'successSoft', AA_TEXT],
+  ['onWarnSoft', 'warnSoft', AA_TEXT],
+  ['onDisabled', 'disabled', AA_TEXT],
   ['onViolet', 'violet', AA_TEXT],
   ['onSuccess', 'success', AA_TEXT],
   ['onDanger', 'danger', AA_TEXT],
@@ -149,12 +159,14 @@ describe('request buttons (WCAG AA graphics)', () => {
 });
 
 describe('disabled button', () => {
-  // Not a faded role: one neutral fill for every filled role, the muted label on it; a text-only
-  // role stays clear. Its label reports a state too ("Gönderildi"), so it is checked as text above.
+  // Not a faded role: the canvas's one disabled fill for every filled role (skall.css →
+  // `.btn.disabled`); a text-only role stays clear with the muted label. Its label reports a state
+  // too ("Gönderildi"), so it is checked as text above.
   it.each(BUTTON_VARIANTS)('%s', (variant) => {
     const fill = buttonFill(variant, true);
-    expect(fill.fg).toBe('muted');
-    expect(fill.bg).toBe(buttonFill(variant, false).bg === null ? null : 'surface2');
+    const textOnly = buttonFill(variant, false).bg === null;
+    expect(fill.fg).toBe(textOnly ? 'muted' : 'onDisabled');
+    expect(fill.bg).toBe(textOnly ? null : 'disabled');
   });
 });
 

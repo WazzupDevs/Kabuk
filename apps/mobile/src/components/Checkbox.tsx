@@ -25,15 +25,16 @@ export function Checkbox({ label, checked, onToggle }: Props) {
       <View
         className="items-center justify-center"
         style={{
-          width: SPACING[6] + SPACING[0.5],
-          height: SPACING[6] + SPACING[0.5],
-          borderRadius: shape.radius.sm - SPACING[1],
-          borderWidth: Math.max(shape.stroke.control, 2),
-          borderColor: colors.border,
-          backgroundColor: checked ? colors.accent : colors.surface,
+          // skall tuvali (skall.css → `.check`): 22, 6 px corners, 2 px control; on, primary.
+          width: SPACING[5] + SPACING[0.5],
+          height: SPACING[5] + SPACING[0.5],
+          borderRadius: shape.radius.xs,
+          borderWidth: 2,
+          borderColor: checked ? colors.primary : colors.control,
+          backgroundColor: checked ? colors.primary : colors.surface,
         }}
       >
-        {checked ? <Ionicons name="checkmark" size={ICON.sm} color={colors.onAccent} /> : null}
+        {checked ? <Ionicons name="checkmark" size={ICON.sm} color={colors.onPrimary} /> : null}
       </View>
       <Text className="flex-1">{label}</Text>
     </Pressable>

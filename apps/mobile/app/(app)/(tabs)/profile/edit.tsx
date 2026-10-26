@@ -78,12 +78,12 @@ function PhotoEditor({ publicId, hasName }: { publicId: string; hasName: boolean
               width: SPACING[10],
               height: SPACING[10],
               borderRadius: shape.radius.pill,
-              backgroundColor: colors.accent,
+              backgroundColor: colors.primary,
               borderWidth: SPACING[1],
               borderColor: colors.canvas,
             }}
           >
-            <Ionicons name="camera-outline" size={ICON.md} color={colors.onAccent} />
+            <Ionicons name="camera-outline" size={ICON.md} color={colors.onPrimary} />
           </View>
         </View>
         <View style={{ minHeight: SPACING[11], justifyContent: 'center' }}>

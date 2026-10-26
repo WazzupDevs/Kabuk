@@ -46,10 +46,11 @@ export function Segmented<T extends string>({
       accessibilityLabel={accessibilityLabel}
       className={fill ? 'flex-row self-stretch' : 'flex-row self-start'}
       style={{
-        padding: SPACING[0.5],
-        gap: SPACING[0.5],
+        // skall tuvali (skall.css → `.seg`): the track, 3 px inset, 4 px between.
+        padding: 3,
+        gap: SPACING[1],
         borderRadius: shape.radius.pill,
-        backgroundColor: colors.surface2,
+        backgroundColor: colors.track,
       }}
     >
       {options.map((o) => {
@@ -87,7 +88,7 @@ export function Segmented<T extends string>({
               />
             ) : null}
             {iconOnly ? null : (
-              <Text variant="tag" tone={on ? 'text' : 'muted'}>
+              <Text variant="label" tone={on ? 'text' : 'muted'}>
                 {o.label}
               </Text>
             )}

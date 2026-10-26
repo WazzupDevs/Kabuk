@@ -30,7 +30,7 @@ export function Countdown({ secondsLeft, totalSeconds, label }: Props) {
             width: `${share * 100}%`,
             height: '100%',
             borderRadius: shape.radius.pill,
-            backgroundColor: colors.accent,
+            backgroundColor: colors.primary,
           }}
         />
       </View>

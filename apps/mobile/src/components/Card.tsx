@@ -45,8 +45,7 @@ export function Card({
           {
             backgroundColor: colors.surface2,
             borderRadius: shape.radius.lg,
-            paddingHorizontal: SPACING[3],
-            paddingVertical: SPACING[2.5],
+            padding: SPACING[4],
           },
         ]
       : [
@@ -55,8 +54,9 @@ export function Card({
             borderRadius: shape.radius.lg,
             padding: flush ? 0 : SPACING[4],
             overflow: flush ? 'hidden' : undefined,
-            borderWidth: quiet ? shape.stroke.hairline : 0,
-            borderColor: colors.divider,
+            // skall tuvali (skall.css → `.card`): a 1 px card line and the soft card shadow.
+            borderWidth: feature ? 0 : quiet ? shape.stroke.hairline : shape.stroke.card,
+            borderColor: quiet ? colors.divider : colors.cardLine,
             boxShadow: quiet || feature ? undefined : shape.shadow.card,
           },
           feature ? (colorVars(featureTheme.colors) as ViewStyle) : {},

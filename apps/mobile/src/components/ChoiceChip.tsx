@@ -33,14 +33,14 @@ export function ChoiceChip({ label, selected, onPress, testID }: Props) {
               alignItems: 'center',
               justifyContent: 'center',
               borderRadius: shape.radius.pill,
-              backgroundColor: selected ? colors.accent : colors.raised,
-              borderWidth: selected ? 0 : shape.stroke.hairline * 1.5,
-              borderColor: colors.border,
+              backgroundColor: selected ? colors.text : colors.surface,
+              borderWidth: shape.stroke.hairline * 1.5,
+              borderColor: selected ? colors.text : colors.control,
             },
             pressScale(pressed),
           ]}
         >
-          <Text variant="mark" tone={selected ? 'onAccent' : 'text'}>
+          <Text variant="mark" tone={selected ? 'surface' : 'text'}>
             {label}
           </Text>
         </View>
