@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Temel: renk, yazı, şekil</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="../skall.css">
+<style>
+body{margin:0;background:#FFFFFF}
+
+
+</style>
+
+</head>
+<body>
+<div class="sk paper" style="width: 1100px; height: 860px;">
+  <div style="display: flex; align-items: baseline; justify-content: space-between;">
+    <h1>Temel</h1>
+    <span class="t-note">18 renk görevi · 8 yazı biçimi · 6 köşe · 7 boşluk adımı</span>
+  </div>
+  <div style="display: flex; gap: 40px; flex: 1; min-height: 0;">
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 14px;">
+      <span class="lab">RENK GÖREVLERİ · ÜST AÇIK, ALT KOYU</span>
+      <div class="grid" style="grid-template-columns: repeat(6, minmax(0, 1fr));">
+        <div class="swatch"><div style="height: 30px; background: #F5F3FC;"></div><div style="height: 26px; background: #0D0B1E;"></div><div class="lbl"><span class="t-label">Zemin</span><span class="t-small muted">canvas</span></div></div>
+        <div class="swatch"><div style="height: 30px; background: #FFFFFF; border-bottom: 1px solid #ECE8F7;"></div><div style="height: 26px; background: #1C1838;"></div><div class="lbl"><span class="t-label">Kart</span><span class="t-small muted">surface</span></div></div>
+        <div class="swatch"><div style="height: 30px; background: #EEEBF8;"></div><div style="height: 26px; background: #262148;"></div><div class="lbl"><span class="t-label">Sessiz dolgu</span><span class="t-small muted">soft</span></div></div>
+        <div class="swatch"><div style="height: 30px; background: #14112B;"></div><div style="height: 26px; background: #F3F0FF;"></div><div class="lbl"><span class="t-label">Yazı</span><span class="t-small muted">ink</span></div></div>
+        <div class="swatch"><div style="height: 30px; background: #5E5878;"></div><div style="height: 26px; background: #B8B3D2;"></div><div class="lbl"><span class="t-label">İkincil yazı</span><span class="t-small muted">muted</span></div></div>
+        <div class="swatch"><div style="height: 30px; background: #5A3AE6;"></div><div style="height: 26px; background: #AFB0FF;"></div><div class="lbl"><span class="t-label">Bağlantı</span><span class="t-small muted">link</span></div></div>
+        <div class="swatch"><div style="height: 30px; background: #6A47F5;"></div><div style="height: 26px; background: #6A47F5;"></div><div class="lbl"><span class="t-label">Birincil</span><span class="t-small muted">primary</span></div></div>
+        <div class="swatch"><div style="height: 30px; background: #E6E2F2;"></div><div style="height: 26px; background: #29283A;"></div><div class="lbl"><span class="t-label">Pasif</span><span class="t-small muted">disabled</span></div></div>
+        <div class="swatch"><div style="height: 30px; background: #DAD3F2;"></div><div style="height: 26px; background: #3A3563;"></div><div class="lbl"><span class="t-label">Denetim çizgisi</span><span class="t-small muted">control</span></div></div>
+        <div class="swatch"><div style="height: 30px; background: #E3DEF2;"></div><div style="height: 26px; background: #34305A;"></div><div class="lbl"><span class="t-label">İnce çizgi</span><span class="t-small muted">hairline</span></div></div>
+        <div class="swatch"><div style="height: 30px; background: #C8331F;"></div><div style="height: 26px; background: #C8331F;"></div><div class="lbl"><span class="t-label">Tehlike</span><span class="t-small muted">danger</span></div></div>
+        <div class="swatch"><div style="height: 30px; background: #FBE1DB;"></div><div style="height: 26px; background: #3A1E22;"></div><div class="lbl"><span class="t-label">Olumsuz dolgu</span><span class="t-small muted">danger-soft</span></div></div>
+        <div class="swatch"><div style="height: 30px; background: #CDEFD9;"></div><div style="height: 26px; background: #173022;"></div><div class="lbl"><span class="t-label">Olumlu dolgu</span><span class="t-small muted">success-soft</span></div></div>
+        <div class="swatch"><div style="height: 30px; background: #FFF1D6;"></div><div style="height: 26px; background: #3A2A10;"></div><div class="lbl"><span class="t-label">Uyarı dolgu</span><span class="t-small muted">warn-soft</span></div></div>
+        <div class="swatch"><div style="height: 30px; background: #C51F62;"></div><div style="height: 26px; background: #FF5C93;"></div><div class="lbl"><span class="t-label">Okunmamış</span><span class="t-small muted">unread</span></div></div>
+        <div class="swatch"><div style="height: 56px; background: #7B5CFF;"></div><div class="lbl"><span class="t-label">Marka moru</span><span class="t-small muted">brand-purple</span></div></div>
+        <div class="swatch"><div style="height: 56px; background: #FF4F8B;"></div><div class="lbl"><span class="t-label">Marka pembesi</span><span class="t-small muted">brand-pink</span></div></div>
+        <div class="swatch"><div style="height: 56px; background: #FFB547;"></div><div class="lbl"><span class="t-label">Kesişim</span><span class="t-small muted">overlap</span></div></div>
+      </div>
+      <span class="lab" style="margin-top: 10px;">KÖŞE</span>
+      <div style="display: flex; gap: 14px; align-items: flex-end;">
+        <div style="display: flex; flex-direction: column; gap: 6px; align-items: center;"><div style="width: 52px; height: 52px; background: #FFFFFF; border: 1.5px solid #DAD3F2; border-radius: 18px 18px 18px 6px;"></div><span class="t-small muted">6 balon ucu</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px; align-items: center;"><div style="width: 52px; height: 52px; background: #FFFFFF; border: 1.5px solid #DAD3F2; border-radius: 12px;"></div><span class="t-small muted">12 küçük görsel</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px; align-items: center;"><div style="width: 52px; height: 52px; background: #FFFFFF; border: 1.5px solid #DAD3F2; border-radius: 16px;"></div><span class="t-small muted">16 görsel</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px; align-items: center;"><div style="width: 52px; height: 52px; background: #FFFFFF; border: 1.5px solid #DAD3F2; border-radius: 22px;"></div><span class="t-small muted">22 kart</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px; align-items: center;"><div style="width: 52px; height: 52px; background: #FFFFFF; border: 1.5px solid #DAD3F2; border-radius: 28px 28px 0 0;"></div><span class="t-small muted">28 alt sayfa</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px; align-items: center;"><div style="width: 88px; height: 52px; background: #FFFFFF; border: 1.5px solid #DAD3F2; border-radius: 999px;"></div><span class="t-small muted">kapsül: dokunulan her şey</span></div>
+      </div>
+      <span class="lab" style="margin-top: 10px;">BOŞLUK · 4'ÜN KATLARI · EKRAN KENARI 16 · DOKUNMA EN AZ 44</span>
+      <div style="display: flex; gap: 18px; align-items: flex-end;">
+        <div style="display: flex; flex-direction: column; gap: 6px; align-items: center;"><div style="width: 4px; height: 28px; background: #7B5CFF; border-radius: 2px;"></div><span class="t-small muted">4</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px; align-items: center;"><div style="width: 8px; height: 28px; background: #7B5CFF; border-radius: 2px;"></div><span class="t-small muted">8</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px; align-items: center;"><div style="width: 12px; height: 28px; background: #7B5CFF; border-radius: 2px;"></div><span class="t-small muted">12</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px; align-items: center;"><div style="width: 16px; height: 28px; background: #7B5CFF; border-radius: 2px;"></div><span class="t-small muted">16</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px; align-items: center;"><div style="width: 20px; height: 28px; background: #7B5CFF; border-radius: 2px;"></div><span class="t-small muted">20</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px; align-items: center;"><div style="width: 24px; height: 28px; background: #7B5CFF; border-radius: 2px;"></div><span class="t-small muted">24</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px; align-items: center;"><div style="width: 32px; height: 28px; background: #7B5CFF; border-radius: 2px;"></div><span class="t-small muted">32</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px; align-items: center; margin-left: 18px;"><div style="width: 44px; height: 44px; border: 1.5px dashed #FF4F8B; border-radius: 22px;"></div><span class="t-small muted">44 dokunma</span></div>
+      </div>
+    </div>
+    <div style="width: 340px; display: flex; flex-direction: column; gap: 14px;">
+      <span class="lab">YAZI ÖLÇEĞİ · PLUS JAKARTA SANS</span>
+      <div class="card" style="gap: 14px; padding: 18px;">
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px;"><span class="t-h1">Ekran başlığı</span><span class="t-small muted">28 · 800</span></div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px;"><span class="t-h2">Pencere başlığı</span><span class="t-small muted">21 · 800</span></div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px;"><span class="t-h3">Kart ve satır başlığı</span><span class="t-small muted">16 · 800</span></div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px;"><span class="t-btn">Düğme yazısı</span><span class="t-small muted">15 · 700</span></div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px;"><span class="t-body">Gövde ve sohbet balonu</span><span class="t-small muted">14 · 600</span></div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px;"><span class="t-label">Çip, sekme, küçük düğme</span><span class="t-small muted">13 · 700</span></div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px;"><span class="t-note">Açıklama, saat, bilgi satırı</span><span class="t-small muted">13 · 600</span></div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px;"><span class="t-small">ROZET, SEKME ETİKETİ, AD</span><span class="t-small muted">11 · 800</span></div>
+      </div>
+      <span class="lab" style="margin-top: 6px;">GÖLGE · YALNIZCA ÜÇ</span>
+      <div style="display: flex; gap: 14px;">
+        <div style="flex: 1; height: 64px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 10px 22px rgba(20, 17, 43, 0.07); border: 1px solid rgba(20, 17, 43, 0.06); display: flex; align-items: center; justify-content: center;"><span class="t-note">Kart</span></div>
+        <div style="flex: 1; height: 64px; border-radius: 999px; background: #FFFFFF; box-shadow: 0 8px 22px rgba(20, 17, 43, 0.13); display: flex; align-items: center; justify-content: center;"><span class="t-note">Yüzen</span></div>
+        <div style="flex: 1; height: 64px; border-radius: 999px; background: #FFFFFF; box-shadow: 0 2px 8px rgba(20, 17, 43, 0.08); display: flex; align-items: center; justify-content: center;"><span class="t-note">Seçili çip</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

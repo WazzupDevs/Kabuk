@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Koyu: masa sohbeti</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+.wall{background:url(/_blob/87cc46f82206b95f4520a29b2812b24d) 0 0/300px 300px repeat,#F0E3D9}
+.dark .wall{background:url(/_blob/b87337ee9d7ede835c94ef4408ffed8a) 0 0/300px 300px repeat,#150C1A}
+</style>
+</helmet>
+<div style="width: 360px; height: 780px; background: #0D0B1E;">
+  <dc-import name="MasaSohbeti" theme="dark" hint-size="360px,780px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":360,"height":780}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>
