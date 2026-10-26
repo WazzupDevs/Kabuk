@@ -79,8 +79,7 @@ export default function ProfileScreen() {
             <View className="flex-row gap-2.5">
               <View className="flex-1">
                 <Button
-                  variant="neutral"
-                  size="sm"
+                  variant="secondary"
                   icon="people-outline"
                   leading={someFriends ? <FriendStack friends={someFriends} /> : undefined}
                   label={tr.profile.friends}
@@ -93,8 +92,7 @@ export default function ProfileScreen() {
               </View>
               <View className="flex-1">
                 <Button
-                  variant="neutral"
-                  size="sm"
+                  variant="secondary"
                   icon={hasName ? 'create-outline' : 'add'}
                   label={
                     hasName ? (narrow ? tr.profile.editShort : tr.profile.edit) : tr.profile.addName

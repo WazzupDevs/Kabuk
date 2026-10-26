@@ -4,7 +4,7 @@ import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
-import { Card } from '@/components/Card';
+import { ListCard } from '@/components/ListCard';
 import { DeliveryTicks } from '@/components/ChatBubble';
 import { EmptyState } from '@/components/EmptyState';
 import { useLoaderHold } from '@/components/Loader';
@@ -93,15 +93,13 @@ function Chats({ now }: { now: Date }) {
   }
   return (
     <View className="mt-3">
-      <Card flush>
-        <View style={{ paddingVertical: SPACING[1.5] }}>
-          {inbox.data.map((t, i) => (
-            <Rise key={t.publicId} index={i}>
-              <InboxRow thread={t} now={now} listen={i < TYPING_ROWS} />
-            </Rise>
-          ))}
-        </View>
-      </Card>
+      <ListCard>
+        {inbox.data.map((t, i) => (
+          <Rise key={t.publicId} index={i}>
+            <InboxRow thread={t} now={now} listen={i < TYPING_ROWS} />
+          </Rise>
+        ))}
+      </ListCard>
     </View>
   );
 }
@@ -139,28 +137,19 @@ function InboxRow({
       {({ pressed }) => (
         <View
           className="flex-row items-center"
+          // skall tuvali (Mesajlar): a row of the list card; the name, the last line (ink and bold
+          // while unread), and the time over the unread count on the right.
           style={{
             gap: SPACING[3] + SPACING[0.5],
-            paddingVertical: SPACING[2.5],
+            minHeight: SPACING[16] + SPACING[2],
+            paddingVertical: SPACING[3],
             paddingHorizontal: SPACING[4],
-            backgroundColor: pressed ? colors.canvas : undefined,
+            backgroundColor: pressed ? colors.surface2 : undefined,
           }}
         >
           <Avatar kind="profile" size="xl" name={name} photoUrl={t.photoUrl} />
           <View className="flex-1" style={{ gap: SPACING[0.5] }}>
-            <View className="flex-row items-baseline gap-2">
-              <Text variant={unread ? 'heading' : 'bodyStrong'} className="flex-1">
-                {name}
-              </Text>
-              {t.lastMessageAt ? (
-                <Text
-                  variant={unread ? 'label' : 'fine'}
-                  color={unread ? colors.accent : undefined}
-                >
-                  {tr.messages.stamp(t.lastMessageAt, inboxStamp(t.lastMessageAt, now))}
-                </Text>
-              ) : null}
-            </View>
+            <Text variant="heading">{name}</Text>
             <View className="flex-row items-center gap-2">
               {threadId && listen ? (
                 <TypingOr threadId={threadId} lastMessageAt={t.lastMessageAt}>
@@ -169,8 +158,15 @@ function InboxRow({
               ) : (
                 preview
               )}
-              {unread ? <UnreadCount count={t.unreadCount} /> : null}
             </View>
+          </View>
+          <View className="items-end" style={{ gap: SPACING[1.5] }}>
+            {t.lastMessageAt ? (
+              <Text variant="fine">
+                {tr.messages.stamp(t.lastMessageAt, inboxStamp(t.lastMessageAt, now))}
+              </Text>
+            ) : null}
+            {unread ? <UnreadCount count={t.unreadCount} /> : null}
           </View>
         </View>
       )}
@@ -185,7 +181,7 @@ function Preview({ thread: t, unread }: { thread: DmInboxThread; unread: boolean
       {t.lastFromMe && t.lastStatus ? <DeliveryTicks delivery={t.lastStatus} /> : null}
       <Text
         variant={unread ? 'label' : 'fine'}
-        tone={unread ? 'accent' : t.lastBody ? undefined : 'muted'}
+        tone={unread ? 'text' : 'muted'}
         numberOfLines={1}
         className="flex-1"
       >

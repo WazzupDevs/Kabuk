@@ -10,13 +10,13 @@ import { Mark } from './Mark';
 import { Text } from './Text';
 
 // xs 20 (the friends' photos on the profile's "Arkadaşlar"), sm 32 (chat), md 40 (top bars), lg 48,
-// xl 56 (list rows and room cards), hero 72 (the table card).
+// xl 48 (list rows; skall tuvali `.av.s48`), hero 72 (the table card).
 export const AVATAR_SIZE = {
   xs: SPACING[5],
   sm: SPACING[8],
   md: SPACING[10],
   lg: TOUCH.button,
-  xl: SPACING[14],
+  xl: SPACING[12],
   hero: SPACING[16] + SPACING[2],
 } as const;
 

@@ -1,22 +1,21 @@
 import { describeEventTime } from '@shared/explore.ts';
 import { Pressable, View } from 'react-native';
 
-import { Icon } from '@/components/Icon';
+import { Card } from '@/components/Card';
 import { usePressScale } from '@/components/motion';
+import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
 import type { ExploreEvent } from '@/features/explore/useExploreVenues';
 import { tr } from '@/i18n/tr';
-import { type CoverKind, EVENT_COVER_HEIGHT } from '@/theme/eventCovers';
-import { withAlpha } from '@/theme/contrast';
-import { useTheme } from '@/theme/ThemeProvider';
-import { OPACITY, type PaletteKey, SPACING } from '@/theme/tokens';
+import type { CoverKind } from '@/theme/eventCovers';
+import { SPACING } from '@/theme/tokens';
 
 import { EventCover } from './EventCover';
 
-// One of today's events (v44: .evc): the venue kind's cover with "Etkinlik" and the time on top and
-// a plate with the title and the venue at the bottom. No "ilgileniyorum" and no count (K-15). It
-// opens the venue's page in Keşfet (K-43). The card grows past the cover's height when the plate
-// needs it (a long title, large text), so the plate never covers the tags.
+// One of today's events (skall tuvali, Aktiviteler): the venue kind's cover with "Etkinlik" and the
+// time on it, the title and the venue under it. No "ilgileniyorum" and no count (K-15). It opens the
+// venue's page in Keşfet (K-43).
+const EVENT_ART_HEIGHT = SPACING[16] * 2 + SPACING[5] + SPACING[0.5];
 export function EventCard({
   venue,
   event,
@@ -28,7 +27,6 @@ export function EventCard({
   now: number;
   onPress: () => void;
 }) {
-  const { colors, shape } = useTheme();
   const pressScale = usePressScale();
   const when = tr.explore.eventTime(describeEventTime(event.startsAt, event.endsAt, now));
   return (
@@ -39,71 +37,39 @@ export function EventCard({
       onPress={onPress}
     >
       {({ pressed }) => (
-        <View
-          style={[
-            {
-              minHeight: EVENT_COVER_HEIGHT,
-              justifyContent: 'space-between',
-              gap: SPACING[2],
-              padding: SPACING[2],
-              borderRadius: shape.radius.lg,
-              overflow: 'hidden',
-              backgroundColor: colors.surface,
-              boxShadow: shape.shadow.card,
-            },
-            pressScale(pressed),
-          ]}
-        >
-          <EventCover kind={venue.kind} />
-          <View
-            className="flex-row flex-wrap justify-between"
-            style={{ gap: SPACING[1.5], padding: SPACING[0.5] }}
-          >
-            <Pill label={tr.activities.eventKind} bg={colors.surface} fg="accent" />
-            <Pill label={when} bg={withAlpha(colors.feature, OPACITY.onCover)} fg="onFeature" />
-          </View>
-          <View
-            className="flex-row items-center"
-            style={{
-              gap: SPACING[2.5],
-              paddingVertical: SPACING[2],
-              paddingLeft: SPACING[3],
-              paddingRight: SPACING[2],
-              borderRadius: shape.radius.md,
-              backgroundColor: withAlpha(colors.surface, OPACITY.coverPlate),
-              boxShadow: shape.shadow.raised,
-            }}
-          >
-            <View className="flex-1" style={{ gap: SPACING[0.5] }}>
-              <Text variant="bodyStrong">{event.title}</Text>
+        // skall tuvali (Aktiviteler): a picture card, the cover 150 high with its two tags, the
+        // title and the venue under it.
+        <View style={pressScale(pressed)}>
+          <Card flush>
+            <View style={{ height: EVENT_ART_HEIGHT, overflow: 'hidden' }}>
+              <EventCover kind={venue.kind} />
+              <View
+                className="absolute flex-row"
+                style={{ top: SPACING[3], left: SPACING[3], right: SPACING[3], gap: SPACING[1.5] }}
+              >
+                <Tag variant="light" label={tr.activities.eventKind} />
+                <View style={{ marginLeft: 'auto' }}>
+                  <Tag variant="glass" label={when} />
+                </View>
+              </View>
+            </View>
+            <View
+              style={{
+                gap: SPACING[0.5],
+                paddingTop: SPACING[3],
+                paddingRight: SPACING[3] + SPACING[0.5],
+                paddingBottom: SPACING[3] + SPACING[0.5],
+                paddingLeft: SPACING[4],
+              }}
+            >
+              <Text variant="heading">{event.title}</Text>
               <Text variant="label" tone="accent">
                 {venue.name}
               </Text>
             </View>
-            <Icon name="chevron-forward" tone="muted" />
-          </View>
+          </Card>
         </View>
       )}
     </Pressable>
-  );
-}
-
-// v44: .etype, .ewhen: a small capsule on the cover.
-function Pill({ label, bg, fg }: { label: string; bg: string; fg: PaletteKey }) {
-  const { shape } = useTheme();
-  return (
-    <View
-      className="justify-center"
-      style={{
-        minHeight: SPACING[6],
-        paddingHorizontal: SPACING[2.5],
-        borderRadius: shape.radius.pill,
-        backgroundColor: bg,
-      }}
-    >
-      <Text variant="caption" tone={fg}>
-        {label}
-      </Text>
-    </View>
   );
 }
