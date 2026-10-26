@@ -542,6 +542,10 @@ appId: app.kabuk.mobile
       id: v46-gallery-open
     timeout: 10000
 - back
+- extendedWaitUntil:
+    notVisible:
+      id: settings
+    timeout: 10000
 # Aktiviteler (docs/SPEC_V4.md K-15): the E2E venues have no events and a new account no history,
 # so both tabs show their empty state here; the event card is in the preview's covers above, a
 # record in 07-history-block.

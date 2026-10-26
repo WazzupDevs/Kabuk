@@ -53,7 +53,12 @@ appId: app.kabuk.mobile
 - extendedWaitUntil:
     notVisible: Bu kişiyi engellemek istiyor musun\?
     timeout: 10000
-- tapOn: Geri
+# Bildirimler is a sheet over Mesajlar (skall tuvali): Android's back closes it.
+- back
+- extendedWaitUntil:
+    notVisible:
+      id: notifications
+    timeout: 10000
 - extendedWaitUntil:
     visible: Henüz mesajın yok.
     timeout: 15000

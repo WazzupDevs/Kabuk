@@ -273,14 +273,17 @@ export default function TableScreen() {
         onConfirm={() => end.mutate()}
         extra={
           r.phones > 1 ? (
-            <Button
-              size="lg"
-              variant="secondary"
-              testID="table-owner-leave"
-              label={tr.table.leave}
-              loading={leave.isPending}
-              onPress={() => leave.mutate()}
-            />
+            <View className="gap-2.5">
+              <Button
+                size="lg"
+                variant="secondary"
+                testID="table-owner-leave"
+                label={tr.table.leave}
+                loading={leave.isPending}
+                onPress={() => leave.mutate()}
+              />
+              <Text variant="fine">{tr.table.leaveNote}</Text>
+            </View>
           ) : null
         }
       />

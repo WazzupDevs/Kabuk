@@ -324,6 +324,8 @@ export const tr = {
   // Aktiviteler (docs/SPEC_V4.md K-15; v44: .acts): today's events and Geçmiş. Each game's rules
   // below are its intro's and, from the table's games (4.3), its page's.
   activities: {
+    // skall tuvali (AktivitelerGecmisKayit): "Sahtekar · bugün 19:30"; approved 27 Ekim.
+    sheetLine: (game: string, when: string) => `${game} · ${when}`,
     tabs: 'Aktiviteler ve geçmiş',
     events: 'Aktiviteler',
     history: 'Geçmiş',
@@ -482,6 +484,9 @@ export const tr = {
     message: (name: string) => `${name} ile mesajlaş`,
     // The friend row's button (v45: .fmsg).
     messageShort: 'Mesaj',
+    // skall tuvali (AktivitelerGecmisEklendi); approved 27 Ekim.
+    addedNote: (name: string) =>
+      `${name} bunu görmez. O da seni eklerse arkadaş olursunuz. Yeniden basarsan geri alırsın.`,
     newRequests: (n: number) => `${n} yeni arkadaşlık isteği`,
     unread: 'Yeni mesaj',
     noMessagesYet: 'Henüz mesaj yok. İlk mesajı sen yaz.',
@@ -627,6 +632,9 @@ export const tr = {
       'Mekanda olduğunu doğrulamak için konumunu bir kez kullanıyoruz. Konumun saklanmaz.',
     locationConsent: 'Konumumun bu amaçla kullanılmasına açık rıza veriyorum.',
     useLocation: 'Konumumu kullan',
+    // skall tuvali (KesfetKonumIzin, KesfetMekan); approved 27 Ekim.
+    deniedTitle: 'Konum izni yok',
+    replaces: (venue: string) => `${venue} girişin biter; bulunduğun masadan ayrılırsın.`,
     locating: 'Konum alınıyor…',
     permissionDenied:
       'Konum izni olmadan mekanda olduğunu doğrulayamıyoruz. İzni ayarlardan verebilirsin.',
@@ -1194,6 +1202,10 @@ export const tr = {
     category: (name: string, n: number) => `${name} ${n}`,
     // A game before its step (4.6): its poster is faded and not pressed.
     soon: 'Yakında',
+    // skall tuvali (MasaBitir, MasaKisiSecenekler); approved 27 Ekim.
+    leaveNote: 'Ayrılırsan masa sürer; sahiplik masaya en erken katılana geçer.',
+    blockOwnerNote: 'Masadan çıkarılır. Karşı tarafa bildirilmez.',
+    blockMemberNote: 'Masadan çıkarsın. Karşı tarafa bildirilmez.',
     // The posters (skall tuvali, Masa): the least headcount and a game's line.
     minPeople: (n: number) => `${n}+ kişi`,
     allGames: 'Tümü',

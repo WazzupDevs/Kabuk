@@ -6,6 +6,7 @@ import { type ReactNode, useCallback, useState } from 'react';
 import { Alert, View } from 'react-native';
 
 import { Button } from '@/components/Button';
+import { Menu, MenuItem } from '@/components/Menu';
 import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
 import { ReportModal } from '@/features/chat/ReportModal';
@@ -20,7 +21,7 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON } from '@/theme/tokens';
 
-type Action = { kind: 'request' | 'add'; historyId: string };
+type Action = { kind: 'request' | 'add' | 'withdraw'; historyId: string };
 export type HistoryAct = UseMutationResult<unknown, Error, Action>;
 
 // What a play history record offers, on Bildirimler and on Aktiviteler → Geçmiş (docs/SPEC_V3.md
@@ -36,11 +37,15 @@ export function useHistoryActions() {
   const act = useMutation({
     meta: FEEL_ERROR,
     mutationFn: ({ kind, historyId }: Action) =>
-      kind === 'request' ? friendsApi.request(historyId) : friendsApi.addFromRoom(historyId),
-    onSuccess: (_data, { kind }) =>
       kind === 'request'
-        ? track('friend_request_sent', { source: 'history' })
-        : track('friend_add_pressed', {}),
+        ? friendsApi.request(historyId)
+        : kind === 'withdraw'
+          ? friendsApi.withdrawAdd(historyId)
+          : friendsApi.addFromRoom(historyId),
+    onSuccess: (_data, { kind }) => {
+      if (kind === 'request') track('friend_request_sent', { source: 'history' });
+      else if (kind === 'add') track('friend_add_pressed', {});
+    },
     onError: (err, action) => void askName(err, action),
     onSettled: refresh,
   });
@@ -76,24 +81,34 @@ export function useHistoryActions() {
         onClose={() => setMenuFor(null)}
         title={tr.friends.moreTitle}
       >
+        {/* skall tuvali (AktivitelerGecmisKayit): both in the menu card, written red. */}
+        <Menu>
+          <MenuItem
+            negative
+            icon="flag-outline"
+            label={tr.friends.report}
+            onPress={() => {
+              setReporting(menuFor);
+              setMenuFor(null);
+            }}
+          />
+          <MenuItem
+            negative
+            testID="menu-block"
+            icon="ban-outline"
+            label={tr.friends.block}
+            onPress={() => {
+              setBlocking(menuFor);
+              setMenuFor(null);
+            }}
+          />
+        </Menu>
         <Button
+          size="lg"
           variant="neutral"
-          label={tr.friends.report}
-          onPress={() => {
-            setReporting(menuFor);
-            setMenuFor(null);
-          }}
+          label={tr.common.cancel}
+          onPress={() => setMenuFor(null)}
         />
-        <Button
-          testID="menu-block"
-          variant="danger"
-          label={tr.friends.block}
-          onPress={() => {
-            setBlocking(menuFor);
-            setMenuFor(null);
-          }}
-        />
-        <Button variant="ghost" label={tr.common.cancel} onPress={() => setMenuFor(null)} />
       </Sheet>
 
       <ReportModal
@@ -123,6 +138,7 @@ export function useHistoryActions() {
 
 type HistoryRecord = Parameters<typeof historyAction>[0] & {
   id: string;
+  other_alias: string;
   reveal_mutual: boolean;
   friend_open: boolean;
 };
@@ -161,11 +177,23 @@ export function HistoryActions({
         })
       }
     />
+  ) : action === 'done' && silent ? (
+    // A silent press is taken back by pressing again (rule 5; skall tuvali, AktivitelerGecmisEklendi).
+    <Button
+      variant="neutral"
+      size="sm"
+      icon="checkmark"
+      testID="history-added"
+      label={tr.tableEnd.added}
+      disabled={act.isPending}
+      loading={pending}
+      onPress={() => act.mutate({ kind: 'withdraw', historyId: h.id })}
+    />
   ) : action === 'done' ? (
     <View className="flex-row items-center gap-1.5 self-center">
       <Ionicons name="checkmark" size={ICON.sm} color={colors.muted} />
       <Text variant="label" tone="muted">
-        {silent ? tr.tableEnd.added : tr.friends.actionDone}
+        {tr.friends.actionDone}
       </Text>
     </View>
   ) : (
@@ -197,7 +225,7 @@ export function HistoryActions({
     </Text>
   ) : action === 'done' && silent ? (
     <Text variant="fine" className="mt-1">
-      {tr.tableEnd.note}
+      {tr.friends.addedNote(h.other_alias)}
     </Text>
   ) : null;
   return (

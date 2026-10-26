@@ -44,6 +44,7 @@ export function MenuItem({
   onPress,
   negative,
   loading,
+  note,
   testID,
 }: {
   label: string;
@@ -51,6 +52,8 @@ export function MenuItem({
   onPress: () => void;
   negative?: boolean;
   loading?: boolean;
+  // A line under the label (skall tuvali, MasaKisiSecenekler: what "Engelle" does).
+  note?: string;
   testID?: string;
 }) {
   const { colors } = useTheme();
@@ -76,9 +79,15 @@ export function MenuItem({
           {icon ? (
             <Ionicons name={icon} size={ICON.md} color={negative ? ink : colors.muted} />
           ) : null}
-          <Text variant="button" color={ink} className="flex-1">
-            {label}
-          </Text>
+          <View
+            className="flex-1"
+            style={{ gap: SPACING[0.5], paddingVertical: note ? SPACING[2.5] : 0 }}
+          >
+            <Text variant="button" color={ink}>
+              {label}
+            </Text>
+            {note ? <Text variant="fine">{note}</Text> : null}
+          </View>
           {loading ? <Loader kind="meet" size={ICON.md} delay={0} label={null} /> : null}
         </View>
       )}
