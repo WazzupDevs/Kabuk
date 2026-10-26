@@ -6,7 +6,7 @@ import { Pressable, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
 import { BarIcon } from '@/components/BarIcon';
-import { Card } from '@/components/Card';
+import { ListCard } from '@/components/ListCard';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader, useLoaderHold } from '@/components/Loader';
 import { usePressScale } from '@/components/motion';
@@ -112,19 +112,17 @@ export function RequestList({ now }: { now: Date }) {
 
   return (
     <View className="mt-3 gap-3">
-      <Card flush>
-        <View style={{ paddingVertical: SPACING[1.5] }}>
-          {rows.map((r) => (
-            <RequestRow
-              key={r.id}
-              row={r}
-              now={now}
-              busy={respond.isPending ? (respond.variables ?? null) : null}
-              onAnswer={(accept) => respond.mutate({ requestId: r.id, accept })}
-            />
-          ))}
-        </View>
-      </Card>
+      <ListCard>
+        {rows.map((r) => (
+          <RequestRow
+            key={r.id}
+            row={r}
+            now={now}
+            busy={respond.isPending ? (respond.variables ?? null) : null}
+            onAnswer={(accept) => respond.mutate({ requestId: r.id, accept })}
+          />
+        ))}
+      </ListCard>
       {respond.isError ? (
         <Text variant="fine" tone="danger">
           {errorMessage(respond.error)}
@@ -152,8 +150,9 @@ function RequestRow({
       testID={`request-${r.name}`}
       className="flex-row items-center"
       style={{
-        gap: SPACING[3],
-        paddingVertical: SPACING[2.5],
+        gap: SPACING[3] + SPACING[0.5],
+        minHeight: SPACING[16] + SPACING[2],
+        paddingVertical: SPACING[3],
         paddingHorizontal: SPACING[4],
       }}
     >
@@ -172,7 +171,7 @@ function RequestRow({
           className="flex-row flex-wrap items-baseline justify-between"
           style={{ columnGap: SPACING[2] }}
         >
-          <Text variant="bodyStrong" className="shrink">
+          <Text variant="heading" className="shrink">
             {r.name}
           </Text>
           <Text variant="fine">{tr.messages.stamp(r.at, inboxStamp(r.at, now))}</Text>
