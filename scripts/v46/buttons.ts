@@ -20,6 +20,18 @@ import {
 } from './measured.ts';
 
 export const BUTTONS_GROUP = 'Düğmeler';
+// Mekan's "Katıl" and "Bu masadayım" (gallery group Katıl: `.join`, `.join.ghost`) are drawn as
+// buttons too: a ground, one label, the same press. "Katıl" at a full table (katil-12) has v46's
+// resting look; the app gives it the shared disabled look (docs/SPEC_V4.md §4.C).
+export const JOIN_LOOKS = ['katil', 'katil-burada'] as const;
+
+// Every look parts.generated.ts writes as a button, in the inventory's order.
+export function buttonIds(inventory: Inventory): string[] {
+  return [
+    ...inventory.components.filter((c) => c.group === BUTTONS_GROUP).map((c) => c.id),
+    ...JOIN_LOOKS,
+  ];
+}
 
 // The properties a button animates that React Native has a style for.
 const STYLED = new Set([

@@ -433,6 +433,73 @@ export type V46FormScheme = {
   };
 };
 
+// Mekan's parts (scripts/v46/venue.ts).
+export type V46VenueScheme = {
+  title: V46Text & { marginBottom: number };
+  pin: { padding: V46Sides; gap: number };
+  section: { margin: V46Sides; title: V46Text; count: V46Text };
+  note: V46Text & { margin: V46Sides };
+  card: V46Card;
+  glow: { size: number; right: number; top: number; gradient: string };
+  link: {
+    padding: V46Sides;
+    gap: number;
+    pressedScale: number;
+    disc: { size: number; gradient: string; icon: { size: number; color: string } };
+    title: V46Text;
+    body: V46Text;
+    dot: { size: number; marginRight: number };
+    chevron: { size: number; color: string };
+  };
+  noTable: {
+    padding: V46Sides;
+    gap: number;
+    head: { gap: number };
+    icon: { size: number };
+    middle: { gap: number };
+    title: V46Text;
+    body: V46Text;
+  };
+  mine: {
+    padding: V46Sides;
+    head: { gap: number; pressedScale: number };
+    icon: { size: number };
+    title: V46Text;
+    status: V46Text & { gap: number };
+    dot: { size: number; off: string; on: string };
+    go: { size: number; bg: string; chevron: { size: number; color: string } };
+    actions: { marginTop: number; gap: number };
+  };
+  empty: {
+    padding: V46Sides;
+    gap: number;
+    mark: number;
+    title: V46Text;
+    body: V46Text & { marginTop: number };
+  };
+  list: { gap: number };
+  row: {
+    padding: V46Sides;
+    gap: number;
+    icon: { size: number };
+    title: V46Text;
+    note: V46Text & { marginTop: number };
+    meta: { marginTop: number; gap: number };
+    wait: { size: number; loader: number };
+  };
+  chip: {
+    padding: V46Sides;
+    gap: number;
+    radius: number;
+    gradient: string;
+    border: V46Edge;
+    shadow: string;
+    text: V46Text;
+    icon: { size: number; color: string };
+  };
+  here: { marginTop: number };
+};
+
 // v46's one small-screen breakpoint (`@media (max-width: …px)` in its CSS).
 export const V46_NARROW_MAX_WIDTH = 350;
 
@@ -455,9 +522,11 @@ export type V46ButtonId =
   | 'baglanti'
   | 'yuvarlak-geri'
   | 'yuvarlak-simge'
-  | 'gonder';
+  | 'gonder'
+  | 'katil'
+  | 'katil-burada';
 
-// v46's buttons (gallery group Düğmeler): scripts/v46/buttons.ts.
+// v46's buttons (gallery group Düğmeler, and Katıl's two): scripts/v46/buttons.ts.
 export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
   'birincil-52': {
     light: {
@@ -1926,6 +1995,106 @@ export const V46_BUTTONS: Record<V46ButtonId, V46ButtonParts> = {
       iconShown: true,
     },
   },
+  katil: {
+    light: {
+      gap: 0,
+      justify: 'center',
+      padding: [0, 18, 0, 18],
+      pressedScale: 0.97,
+      transitions: [],
+      label: {
+        font: { size: 14, weight: 700, lineHeight: 18 },
+        color: '#0F5C31',
+        letterSpacing: 0,
+        opacity: 1,
+        translateY: 0,
+        transitions: [
+          { prop: 'opacity', ms: 120, delayMs: 0, ease: [0.2, 0.8, 0.2, 1] },
+          { prop: 'transform', ms: 120, delayMs: 0, ease: [0.2, 0.8, 0.2, 1] },
+        ],
+      },
+      icon: null,
+      loader: null,
+      loaderSize: null,
+      badge: null,
+    },
+    dark: {
+      gap: 0,
+      justify: 'center',
+      padding: [0, 18, 0, 18],
+      pressedScale: 0.97,
+      transitions: [],
+      label: {
+        font: { size: 14, weight: 700, lineHeight: 18 },
+        color: '#8AD19F',
+        letterSpacing: 0,
+        opacity: 1,
+        translateY: 0,
+        transitions: [
+          { prop: 'opacity', ms: 120, delayMs: 0, ease: [0.2, 0.8, 0.2, 1] },
+          { prop: 'transform', ms: 120, delayMs: 0, ease: [0.2, 0.8, 0.2, 1] },
+        ],
+      },
+      icon: null,
+      loader: null,
+      loaderSize: null,
+      badge: null,
+    },
+    narrow: {
+      width: 65.859,
+      gap: 0,
+      padding: [0, 18, 0, 18],
+      font: { size: 14, weight: 700, lineHeight: 18 },
+      iconShown: false,
+    },
+  },
+  'katil-burada': {
+    light: {
+      gap: 0,
+      justify: 'center',
+      padding: [0, 18, 0, 18],
+      pressedScale: 0.97,
+      transitions: [],
+      label: {
+        font: { size: 14, weight: 700, lineHeight: 18 },
+        color: '#14112B',
+        letterSpacing: 0,
+        opacity: 1,
+        translateY: 0,
+        transitions: [],
+      },
+      icon: null,
+      loader: null,
+      loaderSize: null,
+      badge: null,
+    },
+    dark: {
+      gap: 0,
+      justify: 'center',
+      padding: [0, 18, 0, 18],
+      pressedScale: 0.97,
+      transitions: [],
+      label: {
+        font: { size: 14, weight: 700, lineHeight: 18 },
+        color: '#F3F0FF',
+        letterSpacing: 0,
+        opacity: 1,
+        translateY: 0,
+        transitions: [],
+      },
+      icon: null,
+      loader: null,
+      loaderSize: null,
+      badge: null,
+    },
+    narrow: {
+      width: 264,
+      gap: 0,
+      padding: [0, 18, 0, 18],
+      font: { size: 14, weight: 700, lineHeight: 18 },
+      iconShown: false,
+    },
+  },
 };
 
 // v46's button motions that play in a state (scripts/v46/buttons.ts → buttonMotions), by the
@@ -2098,7 +2267,15 @@ export type V46ScreenPartId =
   | 'alan-cok-satir-odak'
   | 'anahtar-pasif'
   | 'anonim-anahtari-acik'
-  | 'anonim-anahtari-kilitli';
+  | 'anonim-anahtari-kilitli'
+  | 'mekan-basligi'
+  | 'mekan-bolum'
+  | 'mekan-notu'
+  | 'lobi-cipi'
+  | 'masa-durum-noktasi'
+  | 'masa-durum-noktasi-acik'
+  | 'mekan-sabit'
+  | 'lobi-listesi';
 
 // The parts of v46's screens the inventory does not list (scripts/v46/screenParts.ts): their
 // name, group and measured box, for the app's v46 gallery.
@@ -2204,6 +2381,34 @@ export const V46_SCREEN_PARTS: Record<
     width: 46,
     height: 28,
   },
+  'mekan-basligi': { name: 'Mekanın adı', group: 'Mekan', width: 328, height: 50.594 },
+  'mekan-bolum': {
+    name: 'Liste başı (Açık masalar ve sayısı)',
+    group: 'Mekan',
+    width: 324,
+    height: 19,
+  },
+  'mekan-notu': { name: 'Liste başının altındaki not', group: 'Mekan', width: 324, height: 36 },
+  'lobi-cipi': {
+    name: 'Lobi satırının çipi (kişi sayısı)',
+    group: 'Mekan',
+    width: 65.047,
+    height: 23,
+  },
+  'masa-durum-noktasi': {
+    name: 'Masa kartının noktası, lobide değil',
+    group: 'Mekan',
+    width: 8,
+    height: 8,
+  },
+  'masa-durum-noktasi-acik': {
+    name: 'Masa kartının noktası, lobide',
+    group: 'Mekan',
+    width: 8,
+    height: 8,
+  },
+  'mekan-sabit': { name: 'Üstte sabit kalan iki kart', group: 'Mekan', width: 328, height: 253 },
+  'lobi-listesi': { name: 'Açık masalar listesi', group: 'Mekan', width: 328, height: 305 },
 };
 
 // v46's tab bar (`nav.nav`), each tab as it is selected and not (scripts/v46/navigation.ts).
@@ -4038,5 +4243,461 @@ export const V46_FORM_ICONS: { photo: V46Drawing; anon: V46Drawing; lock: V46Dra
         opacity: 1,
       },
     ],
+  },
+};
+
+// Mekan's parts: the venue's name, the pinned cards, a list's head and note, the lobby's rows and chips, the empty lobby.
+export const V46_VENUE: Record<'light' | 'dark', V46VenueScheme> = {
+  light: {
+    title: {
+      font: { size: 22, weight: 800, lineHeight: 25.3 },
+      color: '#14112B',
+      letterSpacing: -0.6,
+      marginBottom: 6,
+    },
+    pin: { padding: [8, 0, 6, 0], gap: 10 },
+    section: {
+      margin: [18, 2, 8, 2],
+      title: {
+        font: { size: 15, weight: 800, lineHeight: 19 },
+        color: '#14112B',
+        letterSpacing: 0,
+      },
+      count: {
+        font: { size: 13, weight: 700, lineHeight: 16 },
+        color: '#5E5878',
+        letterSpacing: 0,
+      },
+    },
+    note: {
+      font: { size: 13, weight: 600, lineHeight: 18 },
+      color: '#5E5878',
+      letterSpacing: 0,
+      margin: [-2, 2, 8, 2],
+    },
+    card: {
+      bg: '#FFFFFF',
+      border: { width: 1, color: 'rgba(20, 17, 43, 0.06)' },
+      radius: 22,
+      shadow: '0px 10px 22px 0px rgba(20, 17, 43, 0.07)',
+    },
+    glow: {
+      size: 130,
+      right: -30,
+      top: -50,
+      gradient:
+        'radial-gradient(circle, rgba(255, 79, 139, 0.2), rgba(123, 92, 255, 0.1) 45%, rgba(0, 0, 0, 0) 70%)',
+    },
+    link: {
+      padding: [10, 12, 10, 10],
+      gap: 12,
+      pressedScale: 0.97,
+      disc: {
+        size: 46,
+        gradient: 'linear-gradient(135deg, rgb(237, 230, 255), rgb(216, 204, 255))',
+        icon: { size: 24, color: '#7B5CFF' },
+      },
+      title: {
+        font: { size: 15, weight: 800, lineHeight: 20 },
+        color: '#14112B',
+        letterSpacing: 0,
+      },
+      body: { font: { size: 13, weight: 600, lineHeight: 18 }, color: '#5E5878', letterSpacing: 0 },
+      dot: { size: 8, marginRight: -4 },
+      chevron: { size: 20, color: '#6E6C78' },
+    },
+    noTable: {
+      padding: [14, 14, 14, 14],
+      gap: 12,
+      head: { gap: 12 },
+      icon: { size: 48 },
+      middle: { gap: 3 },
+      title: {
+        font: { size: 17, weight: 800, lineHeight: 22 },
+        color: '#14112B',
+        letterSpacing: -0.3,
+      },
+      body: { font: { size: 13, weight: 600, lineHeight: 18 }, color: '#5E5878', letterSpacing: 0 },
+    },
+    mine: {
+      padding: [12, 12, 12, 12],
+      head: { gap: 12, pressedScale: 0.97 },
+      icon: { size: 72 },
+      title: {
+        font: { size: 17, weight: 800, lineHeight: 22 },
+        color: '#14112B',
+        letterSpacing: -0.3,
+      },
+      status: {
+        font: { size: 13, weight: 600, lineHeight: 18 },
+        color: '#5E5878',
+        letterSpacing: 0,
+        gap: 6,
+      },
+      dot: { size: 8, off: '#A9A6B8', on: '#16A34A' },
+      go: { size: 36, bg: '#EEEBF8', chevron: { size: 20, color: '#6E6C78' } },
+      actions: { marginTop: 12, gap: 10 },
+    },
+    empty: {
+      padding: [14, 16, 14, 16],
+      gap: 14,
+      mark: 64,
+      title: {
+        font: { size: 15, weight: 800, lineHeight: 20 },
+        color: '#14112B',
+        letterSpacing: 0,
+      },
+      body: {
+        font: { size: 13, weight: 600, lineHeight: 18 },
+        color: '#5E5878',
+        letterSpacing: 0,
+        marginTop: 2,
+      },
+    },
+    list: { gap: 9 },
+    row: {
+      padding: [6, 12, 6, 6],
+      gap: 11,
+      icon: { size: 80 },
+      title: {
+        font: { size: 15, weight: 800, lineHeight: 20 },
+        color: '#14112B',
+        letterSpacing: -0.3,
+      },
+      note: {
+        font: { size: 13, weight: 600, lineHeight: 18 },
+        color: '#5E5878',
+        letterSpacing: 0,
+        marginTop: 1,
+      },
+      meta: { marginTop: 5, gap: 6 },
+      wait: { size: 44, loader: 28 },
+    },
+    chip: {
+      padding: [3, 9, 3, 7],
+      gap: 5,
+      radius: 999,
+      gradient: 'linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(185, 166, 255, 0.3))',
+      border: { width: 1, color: 'rgba(255, 255, 255, 0.9)' },
+      shadow: '0px 3px 8px 0px rgba(123, 92, 255, 0.12)',
+      text: { font: { size: 12, weight: 700, lineHeight: 15 }, color: '#14112B', letterSpacing: 0 },
+      icon: { size: 14, color: '#7B5CFF' },
+    },
+    here: { marginTop: 4 },
+  },
+  dark: {
+    title: {
+      font: { size: 22, weight: 800, lineHeight: 25.3 },
+      color: '#F3F0FF',
+      letterSpacing: -0.6,
+      marginBottom: 6,
+    },
+    pin: { padding: [8, 0, 6, 0], gap: 10 },
+    section: {
+      margin: [18, 2, 8, 2],
+      title: {
+        font: { size: 15, weight: 800, lineHeight: 19 },
+        color: '#F3F0FF',
+        letterSpacing: 0,
+      },
+      count: {
+        font: { size: 13, weight: 700, lineHeight: 16 },
+        color: '#B8B3D2',
+        letterSpacing: 0,
+      },
+    },
+    note: {
+      font: { size: 13, weight: 600, lineHeight: 18 },
+      color: '#B8B3D2',
+      letterSpacing: 0,
+      margin: [-2, 2, 8, 2],
+    },
+    card: {
+      bg: '#1C1838',
+      border: { width: 1, color: 'rgba(48, 47, 72, 0.06)' },
+      radius: 22,
+      shadow: '0px 10px 22px 0px rgba(0, 0, 0, 0.118)',
+    },
+    glow: {
+      size: 130,
+      right: -30,
+      top: -50,
+      gradient:
+        'radial-gradient(circle, rgba(255, 79, 139, 0.2), rgba(123, 92, 255, 0.1) 45%, rgba(0, 0, 0, 0) 70%)',
+    },
+    link: {
+      padding: [10, 12, 10, 10],
+      gap: 12,
+      pressedScale: 0.97,
+      disc: {
+        size: 46,
+        gradient: 'linear-gradient(135deg, rgb(41, 35, 52), rgb(56, 46, 83))',
+        icon: { size: 24, color: '#7B5CFF' },
+      },
+      title: {
+        font: { size: 15, weight: 800, lineHeight: 20 },
+        color: '#F3F0FF',
+        letterSpacing: 0,
+      },
+      body: { font: { size: 13, weight: 600, lineHeight: 18 }, color: '#B8B3D2', letterSpacing: 0 },
+      dot: { size: 8, marginRight: -4 },
+      chevron: { size: 20, color: '#6E6C78' },
+    },
+    noTable: {
+      padding: [14, 14, 14, 14],
+      gap: 12,
+      head: { gap: 12 },
+      icon: { size: 48 },
+      middle: { gap: 3 },
+      title: {
+        font: { size: 17, weight: 800, lineHeight: 22 },
+        color: '#F3F0FF',
+        letterSpacing: -0.3,
+      },
+      body: { font: { size: 13, weight: 600, lineHeight: 18 }, color: '#B8B3D2', letterSpacing: 0 },
+    },
+    mine: {
+      padding: [12, 12, 12, 12],
+      head: { gap: 12, pressedScale: 0.97 },
+      icon: { size: 72 },
+      title: {
+        font: { size: 17, weight: 800, lineHeight: 22 },
+        color: '#F3F0FF',
+        letterSpacing: -0.3,
+      },
+      status: {
+        font: { size: 13, weight: 600, lineHeight: 18 },
+        color: '#B8B3D2',
+        letterSpacing: 0,
+        gap: 6,
+      },
+      dot: { size: 8, off: '#555468', on: '#16A34A' },
+      go: { size: 36, bg: '#262148', chevron: { size: 20, color: '#6E6C78' } },
+      actions: { marginTop: 12, gap: 10 },
+    },
+    empty: {
+      padding: [14, 16, 14, 16],
+      gap: 14,
+      mark: 64,
+      title: {
+        font: { size: 15, weight: 800, lineHeight: 20 },
+        color: '#F3F0FF',
+        letterSpacing: 0,
+      },
+      body: {
+        font: { size: 13, weight: 600, lineHeight: 18 },
+        color: '#B8B3D2',
+        letterSpacing: 0,
+        marginTop: 2,
+      },
+    },
+    list: { gap: 9 },
+    row: {
+      padding: [6, 12, 6, 6],
+      gap: 11,
+      icon: { size: 80 },
+      title: {
+        font: { size: 15, weight: 800, lineHeight: 20 },
+        color: '#F3F0FF',
+        letterSpacing: -0.3,
+      },
+      note: {
+        font: { size: 13, weight: 600, lineHeight: 18 },
+        color: '#B8B3D2',
+        letterSpacing: 0,
+        marginTop: 1,
+      },
+      meta: { marginTop: 5, gap: 6 },
+      wait: { size: 44, loader: 28 },
+    },
+    chip: {
+      padding: [3, 9, 3, 7],
+      gap: 5,
+      radius: 999,
+      gradient: 'linear-gradient(135deg, rgba(28, 24, 56, 0.8), rgba(185, 166, 255, 0.3))',
+      border: { width: 1, color: 'rgba(28, 24, 56, 0.9)' },
+      shadow: '0px 3px 8px 0px rgba(0, 0, 0, 0.06)',
+      text: { font: { size: 12, weight: 700, lineHeight: 15 }, color: '#F3F0FF', letterSpacing: 0 },
+      icon: { size: 14, color: '#7B5CFF' },
+    },
+    here: { marginTop: 4 },
+  },
+};
+
+// Mekan's drawings: the venue chat's icon, the no-table mark, the chip's people, the arrow.
+export const V46_VENUE_ICONS: {
+  chat: V46Drawing;
+  noTable: V46Drawing;
+  people: V46Drawing;
+  chevron: V46Drawing;
+} = {
+  chat: {
+    viewBox: [0, 0, 24, 24],
+    clips: [],
+    gradients: [],
+    nodes: [
+      {
+        tag: 'path',
+        attrs: {
+          d: 'M6.5 9.5h5a3 3 0 0 1 3 3v2a3 3 0 0 1-3 3H9.2L6 20v-2.6a3 3 0 0 1-2.5-2.9v-2a3 3 0 0 1 3-3z',
+        },
+        fill: null,
+        stroke: 'currentColor',
+        strokeWidth: 2,
+        lineCap: 'round',
+        lineJoin: 'round',
+        opacity: 1,
+      },
+      {
+        tag: 'path',
+        attrs: {
+          d: 'M10 9.5V8a3 3 0 0 1 3-3h4.5a3 3 0 0 1 3 3v2a3 3 0 0 1-2.5 2.96v2.54L15.6 13h-1.1',
+        },
+        fill: null,
+        stroke: 'currentColor',
+        strokeWidth: 2,
+        lineCap: 'round',
+        lineJoin: 'round',
+        opacity: 1,
+      },
+    ],
+  },
+  noTable: {
+    viewBox: [0, 0, 64, 64],
+    clips: [],
+    gradients: [],
+    nodes: [
+      {
+        tag: 'circle',
+        attrs: { cx: 32, cy: 32, r: 29 },
+        fill: '#F3F0FF',
+        stroke: '#B9A6FF',
+        strokeWidth: 2.4,
+        lineCap: 'butt',
+        lineJoin: 'miter',
+        opacity: 1,
+      },
+      {
+        tag: 'rect',
+        attrs: { x: 28, y: 17, width: 8, height: 30, rx: 4 },
+        fill: '#7B5CFF',
+        stroke: null,
+        strokeWidth: 1,
+        lineCap: 'butt',
+        lineJoin: 'miter',
+        opacity: 1,
+      },
+      {
+        tag: 'rect',
+        attrs: { x: 17, y: 28, width: 30, height: 8, rx: 4 },
+        fill: '#FF4F8B',
+        stroke: null,
+        strokeWidth: 1,
+        lineCap: 'butt',
+        lineJoin: 'miter',
+        opacity: 1,
+      },
+      {
+        tag: 'rect',
+        attrs: { x: 28, y: 28, width: 8, height: 8 },
+        fill: '#FFB547',
+        stroke: null,
+        strokeWidth: 1,
+        lineCap: 'butt',
+        lineJoin: 'miter',
+        opacity: 1,
+      },
+    ],
+  },
+  people: {
+    viewBox: [0, 0, 24, 24],
+    clips: [],
+    gradients: [],
+    nodes: [
+      {
+        tag: 'circle',
+        attrs: { cx: 9, cy: 8, r: 3.2 },
+        fill: null,
+        stroke: 'currentColor',
+        strokeWidth: 2.2,
+        lineCap: 'round',
+        lineJoin: 'round',
+        opacity: 1,
+      },
+      {
+        tag: 'path',
+        attrs: { d: 'M3 19c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5' },
+        fill: null,
+        stroke: 'currentColor',
+        strokeWidth: 2.2,
+        lineCap: 'round',
+        lineJoin: 'round',
+        opacity: 1,
+      },
+      {
+        tag: 'circle',
+        attrs: { cx: 17, cy: 9, r: 2.4 },
+        fill: null,
+        stroke: 'currentColor',
+        strokeWidth: 2.2,
+        lineCap: 'round',
+        lineJoin: 'round',
+        opacity: 1,
+      },
+      {
+        tag: 'path',
+        attrs: { d: 'M16.5 14c2.6.1 4.5 1.9 4.5 4.5' },
+        fill: null,
+        stroke: 'currentColor',
+        strokeWidth: 2.2,
+        lineCap: 'round',
+        lineJoin: 'round',
+        opacity: 1,
+      },
+    ],
+  },
+  chevron: {
+    viewBox: [0, 0, 24, 24],
+    clips: [],
+    gradients: [],
+    nodes: [
+      {
+        tag: 'polyline',
+        attrs: { points: '9 5 16 12 9 19' },
+        fill: null,
+        stroke: 'currentColor',
+        strokeWidth: 2,
+        lineCap: 'round',
+        lineJoin: 'round',
+        opacity: 1,
+      },
+    ],
+  },
+};
+
+// Mekan's motion: the own table's icon bobs (scripts/v46/venue.ts).
+export const V46_VENUE_MOTION: { bob: V46Animation } = {
+  bob: {
+    delayMs: 0,
+    ease: [0.42, 0, 0.58, 1],
+    channels: {
+      translateY: {
+        from: 0,
+        steps: [
+          { to: -2, ms: 1700 },
+          { to: 0, ms: 1700 },
+        ],
+      },
+      rotate: {
+        from: 0,
+        steps: [
+          { to: -2, ms: 1700 },
+          { to: 0, ms: 1700 },
+        ],
+      },
+    },
+    offWhenReduced: true,
+    iterations: null,
+    holdsBefore: false,
   },
 };

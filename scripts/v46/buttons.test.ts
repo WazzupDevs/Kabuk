@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { V46_BUTTONS as buttons } from '../../apps/mobile/src/theme/parts.generated.ts';
-import { BUTTONS_GROUP } from './buttons.ts';
+import { buttonIds } from './buttons.ts';
 import { readInventory } from './inventory.ts';
 
 const root = resolve(import.meta.dirname, '../..');
@@ -26,9 +26,7 @@ const fills = (icon: (typeof buttons)['gonder']['light']['icon']) => {
 // what `pnpm tokens` writes: tokens.test.ts), checked on the values v46 has.
 describe('v46 buttons in parts.generated.ts', () => {
   it('has every button of the gallery group, and nothing else', () => {
-    expect(Object.keys(buttons)).toEqual(
-      inventory.components.filter((c) => c.group === BUTTONS_GROUP).map((c) => c.id),
-    );
+    expect(Object.keys(buttons)).toEqual(buttonIds(inventory));
   });
 
   // `.va button:active { transform: scale(.97) }` outranks `.send:active` (.94) and

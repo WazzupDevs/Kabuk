@@ -39,7 +39,14 @@ const galleryFile = join(root, GALLERY);
 const BUTTONS = 'Düğmeler';
 // The groups whose real screen is read too (transitions where used, the motion rules that reach
 // them): their motion test reads it.
-const REAL_GROUPS = new Set([BUTTONS, 'Sekme çubuğu', 'Form', ...SCREEN_PARTS.map((p) => p.group)]);
+const REAL_GROUPS = new Set([
+  BUTTONS,
+  'Sekme çubuğu',
+  'Form',
+  'Katıl',
+  'Kartlar',
+  ...SCREEN_PARTS.map((p) => p.group),
+]);
 // v46's state classes read as a look of their own (the gallery copies only the resting look).
 const STATE_CLASSES: Record<string, string[]> = { gonder: ['ready'] };
 // Every motion rule of the inventory, by its selector: transitions, animations (and their

@@ -27,7 +27,7 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useNow } from '@/lib/useNow';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { useTheme } from '@/theme/ThemeProvider';
-import { SPACING } from '@/theme/tokens';
+import { V46_VENUE } from '@/theme/parts.generated';
 
 // Above this share of the screen the venue's two cards scroll with the page (v45: .pin.unpin).
 const PIN_SHARE = 0.45;
@@ -44,7 +44,8 @@ function endSession(checkInId: string, startedAt: string) {
 // and "Masa kur", or its table), the venue chat and the lobby. Without a check-in it sends the
 // person to Keşfet. The card's head opens the table.
 export default function VenueScreen() {
-  const { colors } = useTheme();
+  const { colors, scheme } = useTheme();
+  const pin = V46_VENUE[scheme].pin;
   const queryClient = useQueryClient();
   const checkIn = useActiveTable();
   const currentRoom = useCurrentRoom(checkIn.data?.id);
@@ -119,7 +120,7 @@ export default function VenueScreen() {
     ]);
   }
 
-  // The two cards stay at the top while the lobby scrolls under them (v45: .pin), unless they would
+  // The two cards stay at the top while the lobby scrolls under them (v46: .pin), unless they would
   // take close to half the screen (a small phone, the largest text): then they scroll too. Pinned
   // until measured, so the usual case never changes the sticky index (which rebuilds both cards).
   const pinned = pinHeight === null || pinHeight < height * PIN_SHARE;
@@ -143,13 +144,13 @@ export default function VenueScreen() {
       <View
         onLayout={(e) => setPinHeight(e.nativeEvent.layout.height)}
         style={{
-          paddingTop: SPACING[2],
-          paddingBottom: SPACING[1.5],
+          paddingTop: pin.padding[0],
+          paddingBottom: pin.padding[2],
           backgroundColor: colors.canvas,
         }}
         testID="venue-pin"
       >
-        <View className="gap-3">
+        <View style={{ gap: pin.gap }}>
           <VenueChatCard venueId={checkIn.data.venue_id} sessionId={checkIn.data.id} />
           <TableCard
             checkIn={checkIn.data}

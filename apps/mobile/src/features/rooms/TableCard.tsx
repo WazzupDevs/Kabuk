@@ -5,12 +5,8 @@ import { router } from 'expo-router';
 import { type ReactNode, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
-import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
 import { Icon } from '@/components/Icon';
-import { LiveDot } from '@/components/LiveDot';
 import { Loader } from '@/components/Loader';
-import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -18,6 +14,9 @@ import { roomsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, OPACITY, SPACING, TOUCH } from '@/theme/tokens';
+import { Button } from '@/ui/Button';
+import { LobbyChip } from '@/ui/LobbyRow';
+import { MyTableCard, NoTableCard } from '@/ui/VenueCards';
 
 import { InviteSheet } from './InviteSheet';
 import { roomKeys, type TableRoomRow } from './queries';
@@ -40,9 +39,6 @@ type Props = {
   onCreate: () => void;
   onOpenLobby: () => void;
 };
-
-// The lobby's dot: beats while the table is open to it.
-const LOBBY_BEAT_MS = 1600;
 
 // The person's card at the top of Mekan (v46: .card.mine and .nomasa; docs/SPEC_V4.md §4.E).
 // Without a table: "Henüz masan yok" and "Masa kur". With one: its icon, name, people and lobby
@@ -77,65 +73,99 @@ export function TableCard({
   const tag = room ? gameTag(room.game_tag) : null;
   const owner = state === 'private' || state === 'open';
 
+  // The quiet line (K-35): the time left, and without a table the spot. Each part wraps inside
+  // itself, so nothing leaves the card at 320 dp and the largest text size.
+  const quiet = (
+    <View
+      className="mt-2 flex-row flex-wrap items-center"
+      style={{ columnGap: SPACING[3], rowGap: SPACING[2] }}
+    >
+      <QuietPart>
+        <Icon name="time-outline" size={ICON.sm} tone="muted" />
+        <Text variant="fine" className="shrink">
+          {tr.venue.remaining(Math.floor(minutesLeft / 60), minutesLeft % 60)}
+        </Text>
+      </QuietPart>
+      {state === 'none' && venueHasSpots ? (
+        <QuietPart>
+          <Icon name="location-outline" size={ICON.sm} tone="muted" />
+          <Text variant="fine" className="shrink">
+            {checkIn.spot?.name ? tr.venue.spot(checkIn.spot.name) : tr.venue.noSpot}
+          </Text>
+          <QuietLink
+            testID="change-spot"
+            label={checkIn.spot_id ? tr.venue.changeSpot : tr.venue.chooseSpot}
+            onPress={() => router.push('/spot')}
+          />
+        </QuietPart>
+      ) : null}
+    </View>
+  );
+
+  if (state === 'none' || !room) {
+    return (
+      <View testID="table-card">
+        <NoTableCard
+          testID="no-table"
+          title={tr.venue.noTable}
+          body={tr.venue.noTableHint}
+          action={
+            <Button
+              look="birincil-48-15"
+              block
+              testID="table-create-open"
+              label={tr.venue.createTable}
+              onPress={onCreate}
+            />
+          }
+          footer={quiet}
+        />
+      </View>
+    );
+  }
+
+  const live = state === 'open';
   return (
-    <Card testID="table-card">
-      {state === 'none' || !room ? (
-        <View className="gap-3" testID="no-table">
-          <View className="flex-row items-center gap-3">
-            <Icon name="people-outline" tone="muted" />
-            <View className="flex-1 gap-0.5">
-              <Text variant="heading">{tr.venue.noTable}</Text>
-              <Text variant="fine">{tr.venue.noTableHint}</Text>
+    <View testID="table-card">
+      <MyTableCard
+        headTestID="go-to-table"
+        nameTestID="table-name"
+        statusTestID="table-state"
+        openLabel={tr.venue.tableHead(
+          room.name ?? '',
+          room.phones,
+          live ? tr.venue.lobbyOpen : tr.venue.lobbyOff,
+        )}
+        onOpen={() => router.push({ pathname: '/room/[id]', params: { id: room.id } })}
+        icon={<TableIcon icon={room.icon} size="mine" />}
+        name={room.name ?? ''}
+        status={tr.venue.status(room.phones, live ? tr.venue.lobbyOpen : tr.venue.lobbyOff)}
+        inLobby={live}
+        extra={
+          live && (intent || tag) ? (
+            <View className="mt-2 flex-row flex-wrap items-center gap-1.5">
+              {intent ? <LobbyChip label={tr.intents[intent]} /> : null}
+              {tag ? <LobbyChip label={tr.concepts[tag]} /> : null}
             </View>
-          </View>
-          <Button testID="table-create-open" label={tr.venue.createTable} onPress={onCreate} />
-        </View>
-      ) : (
-        <>
-          <Pressable
-            testID="go-to-table"
-            accessibilityRole="button"
-            accessibilityLabel={tr.venue.tableHead(
-              room.name ?? '',
-              room.phones,
-              state === 'open' ? tr.venue.lobbyOpen : tr.venue.lobbyOff,
-            )}
-            onPress={() => router.push({ pathname: '/room/[id]', params: { id: room.id } })}
-            className="flex-row items-center gap-3"
-            style={{ minHeight: TOUCH.min }}
-          >
-            <TableIcon icon={room.icon} size="mine" />
-            <View className="flex-1 gap-0.5">
-              <Text variant="heading" testID="table-name">
-                {room.name ?? ''}
-              </Text>
-              <Status people={room.phones} live={state === 'open'} />
-            </View>
-            <Icon name="chevron-forward" tone="muted" />
-          </Pressable>
-
-          {state === 'open' && (intent || tag) ? (
-            <View className="mt-1 flex-row flex-wrap items-center gap-1.5">
-              {intent ? <Tag variant={intent} label={tr.intents[intent]} /> : null}
-              {tag ? <Tag icon="dice-outline" label={tr.concepts[tag]} /> : null}
-            </View>
-          ) : null}
-
-          {owner ? (
+          ) : null
+        }
+        actions={
+          owner ? (
             // The owner: into the lobby or out of it, and how a friend joins (v46: .two).
-            <View className="mt-3 flex-row gap-2.5">
-              <View className="flex-1">
+            <>
+              <View style={{ flex: 1 }}>
                 {state === 'private' ? (
                   <Button
-                    tight
+                    look="birincil-48"
+                    block
                     testID="lobby-open"
                     label={tr.venue.openLobby}
                     onPress={onOpenLobby}
                   />
                 ) : (
                   <Button
-                    tight
-                    variant="neutral"
+                    look="yumusak-beyaz"
+                    block
                     testID="withdraw-table"
                     label={tr.venue.withdraw}
                     onPress={() => withdraw.mutate()}
@@ -143,54 +173,30 @@ export function TableCard({
                   />
                 )}
               </View>
-              <View className="flex-1">
+              <View style={{ flex: 1 }}>
                 <Button
-                  tight
-                  variant="neutral"
+                  look="yumusak-beyaz"
+                  block
                   testID="invite-open"
                   label={tr.venue.invite}
                   onPress={() => setInvite(true)}
                 />
               </View>
-            </View>
-          ) : null}
-        </>
-      )}
-
-      {/* The quiet line (K-35): the time left, and without a table the spot. Each part wraps
-          inside itself, so nothing leaves the card at 320 dp and the largest text size. */}
-      <View
-        className="mt-2 flex-row flex-wrap items-center"
-        style={{ columnGap: SPACING[3], rowGap: SPACING[2] }}
-      >
-        <QuietPart>
-          <Icon name="time-outline" size={ICON.sm} tone="muted" />
-          <Text variant="fine" className="shrink">
-            {tr.venue.remaining(Math.floor(minutesLeft / 60), minutesLeft % 60)}
-          </Text>
-        </QuietPart>
-        {state === 'none' && venueHasSpots ? (
-          <QuietPart>
-            <Icon name="location-outline" size={ICON.sm} tone="muted" />
-            <Text variant="fine" className="shrink">
-              {checkIn.spot?.name ? tr.venue.spot(checkIn.spot.name) : tr.venue.noSpot}
-            </Text>
-            <QuietLink
-              testID="change-spot"
-              label={checkIn.spot_id ? tr.venue.changeSpot : tr.venue.chooseSpot}
-              onPress={() => router.push('/spot')}
-            />
-          </QuietPart>
-        ) : null}
-      </View>
-
-      {withdraw.error ? (
-        <Text variant="fine" tone="danger" className="mt-2">
-          {errorMessage(withdraw.error)}
-        </Text>
-      ) : null}
-
-      {room && owner ? (
+            </>
+          ) : null
+        }
+        footer={
+          <>
+            {quiet}
+            {withdraw.error ? (
+              <Text variant="fine" tone="danger" className="mt-2">
+                {errorMessage(withdraw.error)}
+              </Text>
+            ) : null}
+          </>
+        }
+      />
+      {owner ? (
         <InviteSheet
           visible={invite}
           onClose={() => setInvite(false)}
@@ -198,42 +204,6 @@ export function TableCard({
           phones={room.phones}
         />
       ) : null}
-    </Card>
-  );
-}
-
-// The head's second line (v46: .mine-head small): the lobby's dot, the people and the lobby state.
-// The dot is hollow off the lobby and beats in it. The separator and the state wrap as one, so a
-// narrow card never leaves the "·" at a line's end.
-function Status({ people, live }: { people: number; live: boolean }) {
-  const { colors, shape } = useTheme();
-  const size = SPACING[2];
-  return (
-    <View className="flex-row flex-wrap items-center gap-x-1.5" testID="table-state">
-      {live ? (
-        <LiveDot tone="success" periodMs={LOBBY_BEAT_MS} size={size} />
-      ) : (
-        <View
-          style={{
-            width: size,
-            height: size,
-            borderRadius: shape.radius.pill,
-            borderWidth: shape.stroke.control,
-            borderColor: colors.muted,
-          }}
-        />
-      )}
-      <Text variant="label" tone="muted">
-        {tr.venue.people(people)}
-      </Text>
-      <View className="shrink flex-row gap-x-1.5" style={{ maxWidth: '100%' }}>
-        <Text variant="label" tone="muted" accessible={false}>
-          {tr.common.separator}
-        </Text>
-        <Text variant="label" tone="muted" className="shrink">
-          {live ? tr.venue.lobbyOpen : tr.venue.lobbyOff}
-        </Text>
-      </View>
     </View>
   );
 }

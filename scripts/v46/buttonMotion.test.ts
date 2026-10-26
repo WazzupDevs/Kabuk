@@ -12,7 +12,7 @@ import {
   type V46RuleTransition,
   type V46Transition,
 } from '../../apps/mobile/src/theme/parts.generated.ts';
-import { BUTTONS_GROUP } from './buttons.ts';
+import { buttonIds } from './buttons.ts';
 import { readInventory } from './inventory.ts';
 import { keyframeChannels, parseKeyframes } from './keyframes.ts';
 import { parseEase, readMeasured } from './measured.ts';
@@ -20,7 +20,7 @@ import { parseEase, readMeasured } from './measured.ts';
 const root = resolve(import.meta.dirname, '../..');
 const inventory = readInventory(root);
 const measured = readMeasured(root);
-const ids = inventory.components.filter((c) => c.group === BUTTONS_GROUP).map((c) => c.id);
+const ids = buttonIds(inventory);
 
 const REDUCED = /prefers-reduced-motion:\s*reduce/;
 const seconds = (v: string | undefined) =>
@@ -56,7 +56,8 @@ type Target = { generated: (s: V46ButtonScheme) => V46Transition[] | undefined; 
 const target = (id: V46ButtonId, label: string): Target => {
   if (label === 'self')
     return { generated: (s) => s.transitions, reads: /transitionStyle\(p\.transitions\)/ };
-  if (label === 'span') {
+  // Katıl's label (`.join>.jl`) is the label, as a `.btn`'s span.
+  if (label === 'span' || label === 'span.jl') {
     return {
       generated: (s) => s.label?.transitions,
       reads: /transitionStyle\(text\?\.transitions/,

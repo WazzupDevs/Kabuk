@@ -1161,6 +1161,7 @@ export const tr = {
     // The card's lobby state (v46: .mine-head small).
     lobbyOff: 'Lobide değil',
     lobbyOpen: 'Lobide açık',
+    status: (people: number, state: string) => `${headcountLabel(people)} kişi · ${state}`,
     // No table yet (v46: .nomasa).
     noTable: 'Henüz masan yok',
     noTableHint: 'Masa kur, arkadaşlarını çağır. Ya da açık bir masaya katıl.',
@@ -1337,6 +1338,29 @@ export const tr = {
         ],
         hereName: 'Sakarya Üniversitesi Esentepe Kampüsü',
         hereSub: 'Kantin · giriş yaptın',
+        // Mekan (v46's sample data on its venue screen).
+        venue: {
+          join: 'Katıl',
+          here: 'Bu masadayım',
+          venueName: 'Sakarya Üniversitesi\nEsentepe Kampüsü',
+          mine: 'Mor Dalga',
+          mineStatus: '1 kişi · Lobide değil',
+          openLobby: 'Lobiye aç',
+          rows: [
+            {
+              name: 'Neşeli Panda',
+              icon: 'kis-kardanadam',
+              chips: ['3 kişi', 'Oyun', 'Kapsül Anlat'],
+            },
+            { name: 'Gece Baykuşu', icon: 'kafe-cezve', chips: ['2 kişi', 'Sohbet'] },
+          ],
+          unavailable: 'Masa şu an müsait değil.',
+          accepted: 'Kabul edildi, Gece Baykuşu masasının yanına git.',
+          openTitle: 'Açık masalar',
+          openCount: '3 masa',
+          runningNote:
+            'Lobide değiller. Oturduğun masa buysa "Bu masadayım"a bas, masa sahibi onaylasın.',
+        },
         // Form (v46's sample data in its sign-up, profile and venue screens).
         form: {
           nameLabel: 'Görünen ad',

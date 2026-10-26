@@ -32,6 +32,17 @@ import { TabBar, type TabBarItem, UnreadDot } from '@/ui/TabBar';
 import { TextArea } from '@/ui/TextArea';
 import { TextField } from '@/ui/TextField';
 import { TopBar } from '@/ui/TopBar';
+import { TableIcon } from '@/features/rooms/TableIcon';
+import { LobbyChip, LobbyRow } from '@/ui/LobbyRow';
+import {
+  EmptyLobbyCard,
+  MyTableCard,
+  NoTableCard,
+  SectionHead,
+  VenueLinkCard,
+  VenueNote,
+  VenueTitle,
+} from '@/ui/VenueCards';
 import { VenueList } from '@/ui/VenueList';
 import { VenueRow } from '@/ui/VenueRow';
 import { VenueThumb } from '@/ui/VenueThumb';
@@ -91,6 +102,8 @@ const BUTTONS: Record<
   'kenarli-36': { look: 'kenarli-36', label: s.invite },
   'kenarli-44': { look: 'kenarli-44', label: s.editProfile, wide: true },
   baglanti: { look: 'baglanti', label: s.read },
+  katil: { look: 'katil', label: s.venue.join },
+  'katil-burada': { look: 'katil-burada', label: s.venue.here, wide: true },
 };
 
 function pressable(id: V46ButtonId, draw: (pressed: boolean) => ReactNode): GalleryState[] {
@@ -463,6 +476,83 @@ function SampleSelect({ open = false }: { open?: boolean }) {
   );
 }
 
+// Mekan's parts with v46's sample data (its venue screen): the cards, the lobby's rows and chips,
+// a list's head and note. "Katıl" at a full table takes the shared disabled look (§4.C).
+const v = s.venue;
+const sampleRow = (i: 0 | 1, note: string | null, waiting: boolean) => {
+  const row = v.rows[i];
+  return (
+    <LobbyRow
+      icon={<TableIcon icon={row.icon} size="lobby" />}
+      name={row.name}
+      note={note}
+      waiting={waiting}
+      chips={row.chips.map((c, k) => (
+        <LobbyChip key={c} label={c} people={k === 0} />
+      ))}
+      action={<Button look="katil" label={v.join} onPress={noop} />}
+    />
+  );
+};
+
+const VENUE: Partial<Record<GalleryId, readonly GalleryState[]>> = {
+  'katil-12': [
+    { key: 'normal', render: () => <Button look="katil" label={v.join} onPress={noop} disabled /> },
+  ],
+  'lobi-satiri': [padded(() => sampleRow(0, null, false))],
+  'lobi-satiri-bekliyor': [padded(() => sampleRow(1, v.unavailable, true))],
+  'lobi-satiri-kabul': [padded(() => sampleRow(1, v.accepted, true))],
+  'kart-masasiz': [
+    padded(() => (
+      <NoTableCard
+        title={tr.venue.noTable}
+        body={tr.venue.noTableHint}
+        action={<Button look="birincil-48-15" label={tr.venue.createTable} onPress={noop} block />}
+      />
+    )),
+  ],
+  'kart-masam': [
+    padded(() => (
+      <MyTableCard
+        icon={<TableIcon icon="parti-disko" size="mine" />}
+        name={v.mine}
+        status={v.mineStatus}
+        inLobby={false}
+        onOpen={noop}
+        openLabel={tr.venue.openTable}
+        actions={
+          <>
+            <View style={{ flex: 1 }}>
+              <Button look="birincil-48" label={v.openLobby} onPress={noop} block />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Button look="yumusak-beyaz" label={tr.venue.invite} onPress={noop} block />
+            </View>
+          </>
+        }
+      />
+    )),
+  ],
+  'kart-baglanti': [
+    padded(() => (
+      <VenueLinkCard
+        title={tr.venueChat.open}
+        body={tr.venue.chatCard}
+        live
+        onPress={noop}
+        accessibilityLabel={tr.venueChat.open}
+      />
+    )),
+  ],
+  'kart-bos': [
+    padded(() => <EmptyLobbyCard title={tr.lobby.emptyTitle} body={tr.lobby.emptyBody} />),
+  ],
+  'mekan-basligi': [padded(() => <VenueTitle name={v.venueName} />)],
+  'mekan-bolum': [padded(() => <SectionHead title={v.openTitle} count={v.openCount} />)],
+  'mekan-notu': [padded(() => <VenueNote>{v.runningNote}</VenueNote>)],
+  'lobi-cipi': [{ key: 'normal', render: () => <LobbyChip people label={v.rows[0].chips[0]} /> }],
+};
+
 export const UI_GALLERY: Partial<Record<GalleryId, readonly GalleryState[]>> = {
   ...Object.fromEntries(
     (Object.entries(BUTTONS) as [V46ButtonId, ButtonSample][]).map(([id, b]) => [
@@ -491,6 +581,7 @@ export const UI_GALLERY: Partial<Record<GalleryId, readonly GalleryState[]>> = {
   ...NAVIGATION,
   ...EXPLORE,
   ...FORM,
+  ...VENUE,
 };
 
 // The bell with v46's sample count; each press is a new notice: it swings and the count grows.

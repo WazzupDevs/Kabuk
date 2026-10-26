@@ -30,7 +30,7 @@ type Sides = readonly [number, number, number, number];
 type Edge = { width: number; color: string };
 
 const classes = (p: Part) => p.part.split('.').slice(1);
-const find = (el: Element, label: string, id: string) => {
+export const find = (el: Element, label: string, id: string) => {
   const p = el.parts.find((x) => x.part === label);
   if (!p) throw new Error(`${id}: no ${label}`);
   return p;
@@ -43,7 +43,7 @@ const edge = (e: Edge | null | undefined, what: string): Edge => {
 // v46's `.va .card`: the list's card and "Şu an buradasın".
 export type CardLook = { bg: string; border: Edge; radius: number; shadow: string };
 
-function card(el: Element, id: string): CardLook {
+export function card(el: Element, id: string): CardLook {
   const l = el.look;
   if (!l.bg || l.radius === null || !l.shadow) throw new Error(`${id}: not a card`);
   return { bg: l.bg, border: edge(l.border, id), radius: l.radius, shadow: l.shadow };
@@ -318,7 +318,7 @@ function inColor(nodes: readonly SvgNode[], c: string): SvgNode[] {
   }));
 }
 
-const tinted = (p: Part): Drawing => {
+export const tinted = (p: Part): Drawing => {
   if (!p.svg) throw new Error(`${p.part}: not a drawing`);
   return drawingOf(p, inColor(p.svg.nodes, p.svg.color));
 };
@@ -404,7 +404,7 @@ export type ExploreMotions = {
   liveFade: Played;
 };
 
-const played = (a: Animation): Played => ({
+export const played = (a: Animation): Played => ({
   delayMs: a.delayMs,
   ease: a.ease,
   channels: a.channels,

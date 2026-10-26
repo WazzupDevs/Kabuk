@@ -6,17 +6,15 @@ import { BarIcon } from '@/components/BarIcon';
 import { IconButton } from '@/components/IconButton';
 import { Loader } from '@/components/Loader';
 import { usePressScale } from '@/components/motion';
-import { Text } from '@/components/Text';
 import { Wordmark } from '@/components/Wordmark';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { tr } from '@/i18n/tr';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
+import { VenueTitle } from '@/ui/VenueCards';
 
 // The wordmark in the middle of the row (v45: .va .logo svg, 22 px high).
 const LOGO_HEIGHT = 22;
-// Longer venue names (a campus's full name) take the smaller title style, as ScreenHeader does.
-const LONG_NAME = 22;
 
 // The venue screen's top (v45: .top): "Mekandan ayrıl" on the left, a round button with the red
 // bars' cross; the wordmark in the middle; the own photo on the right, which opens Profil. The
@@ -54,13 +52,7 @@ export function VenueTop({
         </View>
         <OwnPhoto />
       </View>
-      <Text
-        variant={venueName.length > LONG_NAME ? 'title' : 'display'}
-        accessibilityRole="header"
-        testID="venue-name"
-      >
-        {venueName}
-      </Text>
+      <VenueTitle name={venueName} testID="venue-name" />
     </View>
   );
 }

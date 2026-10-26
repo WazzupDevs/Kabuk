@@ -24,6 +24,8 @@ export const EXPLORE_GROUP = 'Keşfet';
 // The fields and switches in the states the inventory does not copy (it has each at rest), with
 // its own (Form).
 export const FORM_GROUP = 'Form';
+// Mekan's own parts around the inventory's cards and lobby rows (Kartlar, Katıl).
+export const VENUE_GROUP = 'Mekan';
 
 const focus = (selector: string) => `js:document.querySelector('${selector}').focus()`;
 
@@ -318,5 +320,74 @@ export const SCREEN_PARTS: readonly ScreenPart[] = [
     source_state: 'mekan',
     selector_in_state: '[data-anon-sw]',
     extra_steps: ['c:[data-anon-sw]', 'c:[data-anx-yes]', 'w:900'],
+  },
+  // Mekan around its cards: the venue's name, a list's head ("Açık masalar" and its count), the
+  // line under it, a lobby row's chip with its icon (the inventory's lobby row stops above it), and
+  // the dot on the own table's card, off and in the lobby (`.dot.open`).
+  {
+    id: 'mekan-basligi',
+    group: VENUE_GROUP,
+    name: 'Mekanın adı',
+    source_state: 'mekan',
+    selector_in_state: 'section[data-page="venue"] h1.venue',
+    extra_steps: [],
+  },
+  {
+    id: 'mekan-bolum',
+    group: VENUE_GROUP,
+    name: 'Liste başı (Açık masalar ve sayısı)',
+    source_state: 'mekan',
+    selector_in_state: 'section[data-page="venue"] .sec',
+    extra_steps: [],
+  },
+  {
+    id: 'mekan-notu',
+    group: VENUE_GROUP,
+    name: 'Liste başının altındaki not',
+    source_state: 'mekan',
+    selector_in_state: '[data-here-note]',
+    extra_steps: [],
+  },
+  {
+    id: 'lobi-cipi',
+    group: VENUE_GROUP,
+    name: 'Lobi satırının çipi (kişi sayısı)',
+    source_state: 'mekan',
+    selector_in_state: '[data-lobby-list] .meta .chip',
+    extra_steps: [],
+  },
+  {
+    id: 'masa-durum-noktasi',
+    group: VENUE_GROUP,
+    name: 'Masa kartının noktası, lobide değil',
+    source_state: 'mekan-masam-var',
+    selector_in_state: '[data-mine] [data-dot]',
+    extra_steps: [],
+  },
+  {
+    id: 'masa-durum-noktasi-acik',
+    group: VENUE_GROUP,
+    name: 'Masa kartının noktası, lobide',
+    source_state: 'mekan-masam-var',
+    selector_in_state: '[data-mine] [data-dot]',
+    extra_steps: ["js:document.querySelector('[data-mine] [data-dot]').classList.add('open')"],
+  },
+  // The two cards pinned at the top (`.pin`: its padding, the gap below the chat card) and the
+  // lobby's list (`.list`: the gap between its rows).
+  {
+    id: 'mekan-sabit',
+    group: VENUE_GROUP,
+    name: 'Üstte sabit kalan iki kart',
+    source_state: 'mekan',
+    selector_in_state: 'section[data-page="venue"] .pin',
+    extra_steps: [],
+  },
+  {
+    id: 'lobi-listesi',
+    group: VENUE_GROUP,
+    name: 'Açık masalar listesi',
+    source_state: 'mekan',
+    selector_in_state: '[data-lobby-list]',
+    extra_steps: [],
   },
 ];

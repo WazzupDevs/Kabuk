@@ -22,7 +22,8 @@ import { useNarrow } from './narrow';
 // v46's text buttons, by their gallery ids (docs/design/v46/skall-masa-deneme-v46-galeri.html
 // ?page=galeri#<id>): `.btn.btn-room` in three sizes (the primary; `.btn-primary` is not used),
 // `.ntf-chip.main` and `.ghost` (36), `.btn-soft`, `.sheet .close`, `.btn-danger`, `.endbtn`,
-// `.pa-friend`, `.hb`, `.pedit`, `.link`.
+// `.pa-friend`, `.hb`, `.pedit`, `.link`; Mekan's `.join` ("Katıl") and `.join.ghost`
+// ("Bu masadayım").
 export type ButtonLook =
   | 'birincil-52'
   | 'birincil-48'
@@ -36,7 +37,9 @@ export type ButtonLook =
   | 'basari'
   | 'kenarli-36'
   | 'kenarli-44'
-  | 'baglanti';
+  | 'baglanti'
+  | 'katil'
+  | 'katil-burada';
 
 // Where v46 measures a disabled look of its own (the primary, 52 and 48: `aria-disabled`). Every
 // other button takes the one disabled look of the palette (docs/SPEC_V4.md §4.C: "Katıl'a ortak

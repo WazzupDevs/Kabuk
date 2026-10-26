@@ -317,6 +317,10 @@ Değişmez kabul edilir.
   - **Sahibin "Masadan ayrıl"ı** (K-13, K-40) "Masayı bitir?" sayfasında ikinci düğmedir; v46'da bu yol çizilmemiş.
   - **Gelen istek** v46'da masa ekranının üstündeki satırdır (`data-req`); uygulama bugünkü genel istek kartını korur (her sekmede 60 saniye kaçmaz). Satır görsel adımda gelir.
   - **Kapsül görünüşü:** anonim kişinin kapsülü (4.4'ün katalogu) uygulamada henüz çizilmiyor; anonim kişi adıyla ve varsayılan yüzle görünür. Kapsül çizimi 4.4'ün istemci adımıyla gelir.
+- **Mekan (v46 native 3h):**
+  - **Masa kartındaki iki düğme 48 yüksekliğinde ve simgesiz:** v46'da sahibin "Lobiye aç" ve "Davet et"i kartın içinde 44 yüksekliğinde ve simgeli (`.bi-lb`, `.bi-plus`). Uygulama ortak düğmenin galerideki boylarını kullanır (`birincil-48`, `yumusak-beyaz`); ortak bileşen tek tanımdır.
+  - **Dolu masada Katıl'a basınca bildirim yok:** v46 "Birlikte 12 kişiyi geçersiniz" bildirimini gösterir. Uygulamada Katıl ortak pasif görünümdedir ve basış bir şey yapmaz; uygulamada genel bir bildirim (toast) bileşeni yok.
+  - **Lobideki masanın noktası atmaz:** v46'nın `.dot.open`'ı `pulseG` ile saydam bir halkayı büyütür; görünen bir hareket yok. Nokta yeşil durur.
 
 ## 4.D Kimlik ve mekan sohbeti (adım 4.4)
 
