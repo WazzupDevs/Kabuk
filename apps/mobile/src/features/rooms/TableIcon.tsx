@@ -13,7 +13,7 @@ export const TABLE_ICON_SIZE = {
   // The person's own table card on Mekan.
   mine: 48,
   // Masa kur's name row (the pencil button) and the picker's grid.
-  picker: 52,
+  picker: 56,
   // A join request row.
   request: 40,
   // The table screen's top line and a row in Masadakiler.
@@ -26,6 +26,10 @@ export const TABLE_ICON_TAKEN_OPACITY = 0.32;
 type Size = keyof typeof TABLE_ICON_SIZE;
 
 const NAMES = new Map(TABLE_ICONS.map((i) => [i.id, i.name]));
+
+export function tableIconName(icon: string | null): string | undefined {
+  return icon ? NAMES.get(icon) : undefined;
+}
 
 // `icon` null or unknown (a table from before 4.5, an icon taken out of the list): a plain tile.
 // The icon tells nothing about anyone; the screen reader reads the scene's name.
