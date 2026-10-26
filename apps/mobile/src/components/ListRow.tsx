@@ -22,6 +22,9 @@ type Props = {
   card?: boolean;
   // A row inside a ListCard (skall.css → `.list .item`): 16 px sides, no line of its own.
   inset?: boolean;
+  // No chevron on a pressable row without a trailing part (Mekan sohbeti).
+  noChevron?: boolean;
+  accessibilityLabel?: string;
   testID?: string;
 };
 
@@ -36,6 +39,8 @@ export function ListRow({
   accessibilityRole = 'button',
   card,
   inset,
+  noChevron,
+  accessibilityLabel,
   testID,
 }: Props) {
   const { colors, shape } = useTheme();
@@ -52,7 +57,7 @@ export function ListRow({
       {trailing ? (
         // Centred beside the text (a tag aligns itself to the top of a row otherwise).
         <View className="justify-center">{trailing}</View>
-      ) : onPress ? (
+      ) : onPress && !noChevron ? (
         <Ionicons name="chevron-forward" size={ICON.md} color={colors.muted} />
       ) : null}
     </>
@@ -96,7 +101,12 @@ export function ListRow({
       </View>
     );
   return (
-    <Pressable accessibilityRole={accessibilityRole} onPress={onPress} testID={testID}>
+    <Pressable
+      accessibilityRole={accessibilityRole}
+      accessibilityLabel={accessibilityLabel}
+      onPress={onPress}
+      testID={testID}
+    >
       {({ pressed }) => (
         <View
           style={[

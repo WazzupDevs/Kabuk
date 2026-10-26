@@ -7,8 +7,8 @@ import { type ReactNode, useEffect, useState } from 'react';
 import { View } from 'react-native';
 
 import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
 import { EmptyState } from '@/components/EmptyState';
+import { ListCard } from '@/components/ListCard';
 import { Loader } from '@/components/Loader';
 import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
@@ -18,6 +18,7 @@ import { track } from '@/lib/analytics';
 import { ApiError, roomsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useNow } from '@/lib/useNow';
+import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING, TOUCH } from '@/theme/tokens';
 
 import { roomKeys, useMyRequest, useVenueTables, type VenueTable } from './queries';
@@ -159,32 +160,35 @@ export function Lobby({
             {venueHasSpots ? (
               <SpotHeading spotId={group.spotId} spotName={group.spotName} mine={group.mine} />
             ) : null}
-            {group.rooms.map((table) => {
-              const actions = lobbyActions(state, myPhones, table.phones);
-              const busy = request.isPending && request.variables?.table.roomId === table.roomId;
-              const waiting = waitingOn === table.roomId;
-              return (
-                <LobbyRow
-                  key={table.roomId}
-                  table={table}
-                  note={rowNote(table)}
-                  action={
-                    actions.join && !needsPhoto && !waiting && accepted !== table.roomId ? (
-                      <Button
-                        size="sm"
-                        testID={`join-${table.name}`}
-                        label={tr.lobby.join}
-                        disabled={actions.full || waitingOn !== null}
-                        loading={busy}
-                        onPress={() => request.mutate({ table, asMember: false })}
-                      />
-                    ) : waiting ? (
-                      <Loader kind="swap" label={null} />
-                    ) : null
-                  }
-                />
-              );
-            })}
+            <ListCard>
+              {group.rooms.map((table) => {
+                const actions = lobbyActions(state, myPhones, table.phones);
+                const busy = request.isPending && request.variables?.table.roomId === table.roomId;
+                const waiting = waitingOn === table.roomId;
+                return (
+                  <LobbyRow
+                    key={table.roomId}
+                    table={table}
+                    note={rowNote(table)}
+                    action={
+                      actions.join && !needsPhoto && !waiting && accepted !== table.roomId ? (
+                        <Button
+                          size="sm"
+                          variant="positive"
+                          testID={`join-${table.name}`}
+                          label={tr.lobby.join}
+                          disabled={actions.full || waitingOn !== null}
+                          loading={busy}
+                          onPress={() => request.mutate({ table, asMember: false })}
+                        />
+                      ) : waiting ? (
+                        <WaitingSlot />
+                      ) : null
+                    }
+                  />
+                );
+              })}
+            </ListCard>
           </View>
         ))
       )}
@@ -193,30 +197,38 @@ export function Lobby({
       <Text variant="fine">
         {state === 'none' && !needsPhoto ? tr.lobby.runningNote : tr.lobby.runningNoteShort}
       </Text>
-      {running.map((table) => {
-        const actions = lobbyActions(state, myPhones, table.phones);
-        const busy = request.isPending && request.variables?.table.roomId === table.roomId;
-        const waiting = waitingOn === table.roomId;
-        return (
-          <LobbyRow
-            key={table.roomId}
-            table={table}
-            note={rowNote(table)}
-            below={
-              actions.member && !needsPhoto && !waiting && accepted !== table.roomId ? (
-                <Button
-                  variant="neutral"
-                  testID={`here-${table.name}`}
-                  label={tr.lobby.here}
-                  disabled={waitingOn !== null}
-                  loading={busy}
-                  onPress={() => request.mutate({ table, asMember: true })}
-                />
-              ) : null
-            }
-          />
-        );
-      })}
+      {running.length > 0 ? (
+        <ListCard>
+          {running.map((table) => {
+            const actions = lobbyActions(state, myPhones, table.phones);
+            const busy = request.isPending && request.variables?.table.roomId === table.roomId;
+            const waiting = waitingOn === table.roomId;
+            return (
+              <LobbyRow
+                key={table.roomId}
+                table={table}
+                note={rowNote(table)}
+                action={
+                  actions.member && !needsPhoto && !waiting && accepted !== table.roomId ? (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      tight
+                      testID={`here-${table.name}`}
+                      label={tr.lobby.here}
+                      disabled={waitingOn !== null}
+                      loading={busy}
+                      onPress={() => request.mutate({ table, asMember: true })}
+                    />
+                  ) : waiting ? (
+                    <WaitingSlot />
+                  ) : null
+                }
+              />
+            );
+          })}
+        </ListCard>
+      ) : null}
 
       {request.isError ? (
         <Text variant="fine" tone="danger">
@@ -229,69 +241,74 @@ export function Lobby({
 
 function SectionHead({ title, count }: { title: string; count: number }) {
   return (
-    <View className="mt-2 flex-row items-baseline justify-between">
+    <View className="flex-row items-baseline justify-between px-0.5 pt-3">
       <Text variant="heading" accessibilityRole="header">
         {title}
       </Text>
-      <Text variant="label" tone="muted">
-        {tr.lobby.tables(count)}
-      </Text>
+      <Text variant="fine">{tr.lobby.tables(count)}</Text>
     </View>
   );
 }
 
-// A table in the lobby (v46: .card.row): its icon, name and the request's note, the people, intent
-// and game tag; its button beside it ("Katıl") or under it ("Bu masadayım"). No person's name.
+// A table in the lobby (skall tuvali, Mekan): a row of the list card, its picture, name, headcount
+// and the request's note or the tags; its action in the 108 wide slot. No person's name.
 function LobbyRow({
   table,
   note,
   action,
-  below,
 }: {
   table: VenueTable;
   note: string | null;
   action?: ReactNode;
-  below?: ReactNode;
 }) {
   const intent = isIntent(table.intent) ? table.intent : null;
   return (
-    <Card flush testID={`lobby-row-${table.name}`}>
-      <View
-        style={{
-          gap: SPACING[2.5],
-          paddingVertical: SPACING[2.5],
-          paddingLeft: SPACING[2.5],
-          paddingRight: SPACING[3],
-        }}
-      >
-        <View className="flex-row items-center" style={{ gap: SPACING[3] }}>
-          <TableIcon icon={table.icon} size="lobby" />
-          <View className="flex-1 gap-1">
-            <Text variant="bodyStrong">{table.name}</Text>
-            {note ? (
-              <Text variant="fine" accessibilityLiveRegion="polite">
-                {note}
-              </Text>
-            ) : null}
-            <View className="flex-row flex-wrap items-center gap-1.5">
-              <Tag icon="people-outline" label={tr.venue.people(table.phones)} />
-              {intent ? <Tag variant={intent} label={tr.intents[intent]} /> : null}
-              {table.gameTag ? (
-                <Tag icon="dice-outline" label={tr.concepts[table.gameTag]} />
-              ) : null}
-            </View>
+    <View
+      testID={`lobby-row-${table.name}`}
+      className="flex-row items-center"
+      style={{
+        gap: SPACING[3] + SPACING[0.5],
+        minHeight: TOUCH.large + SPACING[2],
+        paddingVertical: SPACING[3],
+        paddingHorizontal: SPACING[4],
+      }}
+    >
+      <TableIcon icon={table.icon} size="lobby" />
+      <View className="flex-1" style={{ gap: SPACING[0.5] }}>
+        <Text variant="heading">{table.name}</Text>
+        <Text variant="fine">{tr.venue.people(table.phones)}</Text>
+        {note ? (
+          <Text variant="fine" accessibilityLiveRegion="polite">
+            {note}
+          </Text>
+        ) : intent || table.gameTag ? (
+          <View className="mt-1 flex-row flex-wrap items-center gap-1.5">
+            {intent ? <Tag variant={intent} label={tr.intents[intent]} /> : null}
+            {table.gameTag ? <Tag label={tr.concepts[table.gameTag]} /> : null}
           </View>
-          {action ? (
-            <View
-              className="items-center justify-center"
-              style={{ minWidth: TOUCH.min, minHeight: TOUCH.min }}
-            >
-              {action}
-            </View>
-          ) : null}
-        </View>
-        {below}
+        ) : null}
       </View>
-    </Card>
+      {action ? <View style={{ width: ACTION_SLOT }}>{action}</View> : null}
+    </View>
+  );
+}
+
+// skall.css → `.act`: every row's action is 108 wide.
+const ACTION_SLOT = SPACING[16] + SPACING[10] + SPACING[1];
+
+// The pending request in the action slot (skall.css → `.status` with the brand's busy dots).
+function WaitingSlot() {
+  const { colors, shape } = useTheme();
+  return (
+    <View
+      className="items-center justify-center"
+      style={{
+        height: SPACING[9],
+        borderRadius: shape.radius.pill,
+        backgroundColor: colors.surface2,
+      }}
+    >
+      <Loader kind="meet" size={SPACING[5]} delay={0} label={null} />
+    </View>
   );
 }
