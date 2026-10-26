@@ -1,0 +1,1358 @@
+{
+ "sayfalar": [
+  {
+   "id": "sistem",
+   "name": "Sistem"
+  },
+  {
+   "id": "kayit",
+   "name": "Kayıt ve açılış"
+  },
+  {
+   "id": "kesfet",
+   "name": "Keşfet ve Aktiviteler"
+  },
+  {
+   "id": "mekan",
+   "name": "Mekan"
+  },
+  {
+   "id": "mekansohbeti",
+   "name": "Mekan sohbeti"
+  },
+  {
+   "id": "masa",
+   "name": "Masa"
+  },
+  {
+   "id": "oyun",
+   "name": "Oyunlar"
+  },
+  {
+   "id": "mesaj",
+   "name": "Mesajlar"
+  },
+  {
+   "id": "profil",
+   "name": "Profil ve kapsül"
+  },
+  {
+   "id": "ayarlar",
+   "name": "Ayarlar"
+  }
+ ],
+ "panolar": [
+  {
+   "id": "Main",
+   "sayfa": "sistem",
+   "baslik": "Temel: renk, yazı, şekil",
+   "tema": false,
+   "genislik": 1100,
+   "yukseklik": 860
+  },
+  {
+   "id": "Ikonlar",
+   "sayfa": "sistem",
+   "baslik": "Eylem sözlüğü",
+   "tema": false,
+   "genislik": 760,
+   "yukseklik": 980
+  },
+  {
+   "id": "Bilesenler",
+   "sayfa": "sistem",
+   "baslik": "Bileşenler",
+   "tema": false,
+   "genislik": 1100,
+   "yukseklik": 860
+  },
+  {
+   "id": "Bilesenler2",
+   "sayfa": "sistem",
+   "baslik": "Bileşenler 2: form, uyarı, menü, oyun",
+   "tema": false,
+   "genislik": 1400,
+   "yukseklik": 800
+  },
+  {
+   "id": "KayitHosgeldin",
+   "sayfa": "kayit",
+   "baslik": "Hoş geldin",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KayitOnay",
+   "sayfa": "kayit",
+   "baslik": "Onaylar",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KayitTelefon",
+   "sayfa": "kayit",
+   "baslik": "Telefon",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KayitTelefonGecersiz",
+   "sayfa": "kayit",
+   "baslik": "Telefon: geçersiz numara",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KayitTelefonHata",
+   "sayfa": "kayit",
+   "baslik": "Telefon: kod gönderilemedi",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KayitKod",
+   "sayfa": "kayit",
+   "baslik": "Doğrulama kodu",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KayitKodHata",
+   "sayfa": "kayit",
+   "baslik": "Doğrulama kodu yanlış",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KayitIsim",
+   "sayfa": "kayit",
+   "baslik": "İsim",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KayitDogum",
+   "sayfa": "kayit",
+   "baslik": "Doğum tarihi",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KayitDogumOnay",
+   "sayfa": "kayit",
+   "baslik": "Doğum tarihi onayı",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KayitCinsiyet",
+   "sayfa": "kayit",
+   "baslik": "Cinsiyet",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KayitFoto",
+   "sayfa": "kayit",
+   "baslik": "Fotoğraf, kadın",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KayitFotoErkek",
+   "sayfa": "kayit",
+   "baslik": "Fotoğraf, erkek",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "Kayit18Alti",
+   "sayfa": "kayit",
+   "baslik": "18 yaş altı",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KayitCinsiyetKapisi",
+   "sayfa": "kayit",
+   "baslik": "Cinsiyet kapısı (eski hesap)",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "Kesfet",
+   "sayfa": "kesfet",
+   "baslik": "Keşfet",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KesfetHarita",
+   "sayfa": "kesfet",
+   "baslik": "Keşfet: harita",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KesfetKonum",
+   "sayfa": "kesfet",
+   "baslik": "Keşfet: şehir ve semt",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KesfetTekMekan",
+   "sayfa": "kesfet",
+   "baslik": "Keşfet: tek aktif mekan",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KesfetTekMekanBos",
+   "sayfa": "kesfet",
+   "baslik": "Keşfet: tek mekan, etkinlik yok",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KesfetMekan",
+   "sayfa": "kesfet",
+   "baslik": "Giriş alt sayfası: kafe",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KesfetGirisKampus",
+   "sayfa": "kesfet",
+   "baslik": "Giriş alt sayfası: kampüs, nokta seçimi",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KesfetKonumRiza",
+   "sayfa": "kesfet",
+   "baslik": "İlk girişte konum rızası",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KesfetKonumIzin",
+   "sayfa": "kesfet",
+   "baslik": "Konum izni yok",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KesfetKonumDisarida",
+   "sayfa": "kesfet",
+   "baslik": "Mekanın dışındasın",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "Aktiviteler",
+   "sayfa": "kesfet",
+   "baslik": "Aktiviteler: bugünün etkinlikleri",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "AktivitelerBos",
+   "sayfa": "kesfet",
+   "baslik": "Aktiviteler: bugün etkinlik yok",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "AktivitelerGecmis",
+   "sayfa": "kesfet",
+   "baslik": "Aktiviteler: geçmiş",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "AktivitelerGecmisKayit",
+   "sayfa": "kesfet",
+   "baslik": "Geçmişte kayda basınca (anonim kişi)",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "AktivitelerGecmisEklendi",
+   "sayfa": "kesfet",
+   "baslik": "Geçmişte: eklendi",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MekanMasasiz",
+   "sayfa": "mekan",
+   "baslik": "Masasız, lobi dolu",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MekanLobiYukleniyor",
+   "sayfa": "mekan",
+   "baslik": "Lobi yükleniyor",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MekanLobiBos",
+   "sayfa": "mekan",
+   "baslik": "Lobi boş",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MekanIstekMusaitDegil",
+   "sayfa": "mekan",
+   "baslik": "Katılma isteği: müsait değil",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MekanIstekKabul",
+   "sayfa": "mekan",
+   "baslik": "Katılma isteği: kabul edildi",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "Mekan",
+   "sayfa": "mekan",
+   "baslik": "Masa sahibi, mekana dönmüş",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MekanLobide",
+   "sayfa": "mekan",
+   "baslik": "Masan lobide açık",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MekanKatilimci",
+   "sayfa": "mekan",
+   "baslik": "Katılımcı, mekana dönmüş",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "Mekan12Kisi",
+   "sayfa": "mekan",
+   "baslik": "Masan 12 kişi",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MekanKampus",
+   "sayfa": "mekan",
+   "baslik": "Kampüste: süre ve nokta",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MekanNoktaDegistir",
+   "sayfa": "mekan",
+   "baslik": "Noktanı değiştir",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MekanFotosuz",
+   "sayfa": "mekan",
+   "baslik": "Fotoğrafı kaldırılmış kadın (K-20)",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MekanFotosuzErkek",
+   "sayfa": "mekan",
+   "baslik": "Fotoğrafsız erkek: yalnızca Fotoğraf ekle",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MekanAnonim",
+   "sayfa": "mekan",
+   "baslik": "Anonim görünüyorsun",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MekanAnonimGecis",
+   "sayfa": "mekan",
+   "baslik": "Anonim görün penceresi",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MekanAnonimGecisErkek",
+   "sayfa": "mekan",
+   "baslik": "Erkek: mekan sohbetinde anonim yaz",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MekanProfilGecis",
+   "sayfa": "mekan",
+   "baslik": "Anonimken profile dön",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MekanProfilGecisFotosuz",
+   "sayfa": "mekan",
+   "baslik": "Profile dönmek fotoğraf ister",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MekanGecisKullanildi",
+   "sayfa": "mekan",
+   "baslik": "Değişiklik hakkı kullanıldı",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MekanMasaKur",
+   "sayfa": "mekan",
+   "baslik": "Masa kur",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MekanMasaKurSimge",
+   "sayfa": "mekan",
+   "baslik": "Masa kur: simge seçici (K-45, K-59)",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MekanMasaKurulamadi",
+   "sayfa": "mekan",
+   "baslik": "Masa kurulamadı",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "Haller",
+   "sayfa": "mekan",
+   "baslik": "Yükleniyor, boş, hata",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MekanSohbeti",
+   "sayfa": "mekansohbeti",
+   "baslik": "Mekan sohbeti",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MekanSohbetiBos",
+   "sayfa": "mekansohbeti",
+   "baslik": "Mekan sohbeti: günün ilk mesajı",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MekanSohbetiSecenekler",
+   "sayfa": "mekansohbeti",
+   "baslik": "Mekan sohbeti seçenekleri",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MekanSohbetiKisi",
+   "sayfa": "mekansohbeti",
+   "baslik": "Mesajdaki kişi: anonim",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MekanSohbetiKisiProfilli",
+   "sayfa": "mekansohbeti",
+   "baslik": "Mesajdaki kişi: profilli",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MekanSohbetiKimlik",
+   "sayfa": "mekansohbeti",
+   "baslik": "Kimliği değiştir: kadın",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MekanSohbetiKimlikErkek",
+   "sayfa": "mekansohbeti",
+   "baslik": "Kimliği değiştir: erkek, yalnızca sohbette",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MekanSohbetiAnonim",
+   "sayfa": "mekansohbeti",
+   "baslik": "Anonim yazıyorsun, hak kullanıldı",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "SohbetBasiliTut",
+   "sayfa": "mekansohbeti",
+   "baslik": "Mesaja basılı tut",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "SohbetKendiMesaj",
+   "sayfa": "mekansohbeti",
+   "baslik": "Kendi mesajına basılı tut",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "SohbetYanit",
+   "sayfa": "mekansohbeti",
+   "baslik": "Yanıt yazarken",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "SohbetYeniMesaj",
+   "sayfa": "mekansohbeti",
+   "baslik": "Yukarıdayken yeni mesaj",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "Masa",
+   "sayfa": "masa",
+   "baslik": "Masa sahibi: oyun seç",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MasaSohbeti",
+   "sayfa": "masa",
+   "baslik": "Masa sahibi: masa sohbeti",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MasaLobide",
+   "sayfa": "masa",
+   "baslik": "Masa sahibi: masa lobide (K-39)",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MasaYalniz",
+   "sayfa": "masa",
+   "baslik": "Masada yalnızca sen",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "Masa12Kisi",
+   "sayfa": "masa",
+   "baslik": "Masa sahibi: 12 kişi",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MasaPosterlerYakinda",
+   "sayfa": "masa",
+   "baslik": "Oyunlar 4.6 öncesi: Yakında",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MasaIstekGelsin",
+   "sayfa": "masa",
+   "baslik": "İstek: profilli kişi",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MasaIstekAnonim",
+   "sayfa": "masa",
+   "baslik": "İstek: anonim kişi",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MasaIstekMasa",
+   "sayfa": "masa",
+   "baslik": "İstek: başka masa",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MasaIstekDolu",
+   "sayfa": "masa",
+   "baslik": "İstek: 12 kişiyi geçer",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MasaIstekGeliyor",
+   "sayfa": "masa",
+   "baslik": "Kabul: \"geliyor\", tek sefer",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MasaKatilimci",
+   "sayfa": "masa",
+   "baslik": "Katılımcı: oyun seç",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MasaKatilimciSohbet",
+   "sayfa": "masa",
+   "baslik": "Katılımcı: masa sohbeti",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MasaKisilerKatilimci",
+   "sayfa": "masa",
+   "baslik": "Masadakiler: katılımcı",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MasaKisiler",
+   "sayfa": "masa",
+   "baslik": "Masadakiler: sahip",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MasaKisiSecenekler",
+   "sayfa": "masa",
+   "baslik": "Kişiye dokununca: profilli",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MasaKisiSeceneklerAnonim",
+   "sayfa": "masa",
+   "baslik": "Kişiye dokununca: anonim",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MasaSimgeDegistir",
+   "sayfa": "masa",
+   "baslik": "Simgeye dokununca (K-59)",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MasaLobiyeAc",
+   "sayfa": "masa",
+   "baslik": "Lobiye aç penceresi",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MasaBitir",
+   "sayfa": "masa",
+   "baslik": "Masayı bitir: sahibin Ayrılı da burada",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MasaAyril",
+   "sayfa": "masa",
+   "baslik": "Masadan ayrıl penceresi",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "Davet",
+   "sayfa": "masa",
+   "baslik": "Davet: arkadaş listesi",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MasaDavetDolu",
+   "sayfa": "masa",
+   "baslik": "Davet: masa dolu",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MasaDavetYukleniyor",
+   "sayfa": "masa",
+   "baslik": "Davet: yükleniyor",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MasaDavetHata",
+   "sayfa": "masa",
+   "baslik": "Davet: hata",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MasaDavetBos",
+   "sayfa": "masa",
+   "baslik": "Davet: arkadaş yok",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MasaBitti",
+   "sayfa": "masa",
+   "baslik": "Masa bitti",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MasaBittiEklendi",
+   "sayfa": "masa",
+   "baslik": "Masa bitti: eklediğin kişi",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MasaBittiEslesti",
+   "sayfa": "masa",
+   "baslik": "Masa bitti: ikiniz de ekledi",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MasaBittiAnonim",
+   "sayfa": "masa",
+   "baslik": "Masa bitti: anonim katıldın (K-68)",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MasaBittiAyrildin",
+   "sayfa": "masa",
+   "baslik": "Masadan ayrıldın",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KaTakimlar",
+   "sayfa": "oyun",
+   "baslik": "Kapsül Anlat: takımlar",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KaAnlatici",
+   "sayfa": "oyun",
+   "baslik": "Kapsül Anlat: anlatıcı",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KaTahminci",
+   "sayfa": "oyun",
+   "baslik": "Kapsül Anlat: tahminci",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KaRakip",
+   "sayfa": "oyun",
+   "baslik": "Kapsül Anlat: rakip",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KaGozlemci",
+   "sayfa": "oyun",
+   "baslik": "Kapsül Anlat: gözlemci",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KaTurSonu",
+   "sayfa": "oyun",
+   "baslik": "Kapsül Anlat: tur sonu",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KaOyunSonu",
+   "sayfa": "oyun",
+   "baslik": "Kapsül Anlat: oyun sonu",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "SgOyuncular",
+   "sayfa": "oyun",
+   "baslik": "Sahtekar: oyuncular",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "SgKalabalik",
+   "sayfa": "oyun",
+   "baslik": "Sahtekar: 7 ve üstü kişi",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "SgRol",
+   "sayfa": "oyun",
+   "baslik": "Sahtekar: rol kartı",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "SgRolKelime",
+   "sayfa": "oyun",
+   "baslik": "Sahtekar: kelimen",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "SgRolSahtekar",
+   "sayfa": "oyun",
+   "baslik": "Sahtekar: sahtekarsın",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "SgRolGozlemci",
+   "sayfa": "oyun",
+   "baslik": "Sahtekar: gözlemci",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "SgSiraSende",
+   "sayfa": "oyun",
+   "baslik": "Sahtekar: sıra sende",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "SgIpucu",
+   "sayfa": "oyun",
+   "baslik": "Sahtekar: ipucu",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "SgOylama",
+   "sayfa": "oyun",
+   "baslik": "Sahtekar: oylama",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "SgSonuc",
+   "sayfa": "oyun",
+   "baslik": "Sahtekar: sonuç",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "SgSonSans",
+   "sayfa": "oyun",
+   "baslik": "Sahtekar: son şans (sahtekarın ekranı)",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "SgOyunSonu",
+   "sayfa": "oyun",
+   "baslik": "Sahtekar: oyun sonu",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "Mesajlar",
+   "sayfa": "mesaj",
+   "baslik": "Mesajlar dolu",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MesajlarBos",
+   "sayfa": "mesaj",
+   "baslik": "Mesajlar boş",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "MesajlarIstekler",
+   "sayfa": "mesaj",
+   "baslik": "Arkadaşlık istekleri",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "Bildirimler",
+   "sayfa": "mesaj",
+   "baslik": "Bildirimler: dört tür",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "BildirimlerKabul",
+   "sayfa": "mesaj",
+   "baslik": "Bildirimler: istek ve davet kabul edilince",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "BildirimlerBos",
+   "sayfa": "mesaj",
+   "baslik": "Bildirimler boş",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "BildirimIstek",
+   "sayfa": "mesaj",
+   "baslik": "Push: arkadaşlık isteği",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "BildirimEslesme",
+   "sayfa": "mesaj",
+   "baslik": "Push: eşleşme, yalnızca ilk basana (K-70)",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "BildirimDavet",
+   "sayfa": "mesaj",
+   "baslik": "Push: masa daveti",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "Dm",
+   "sayfa": "mesaj",
+   "baslik": "Birebir sohbet",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "DmYaziyor",
+   "sayfa": "mesaj",
+   "baslik": "Birebir sohbet: yazıyor",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "DmSecenekler",
+   "sayfa": "mesaj",
+   "baslik": "Sohbet seçenekleri",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "Profil",
+   "sayfa": "profil",
+   "baslik": "Kendi profilin, kadın",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "ProfilAnonim",
+   "sayfa": "profil",
+   "baslik": "Kendi profilin, anonimken (kadın)",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "ProfilErkek",
+   "sayfa": "profil",
+   "baslik": "Kendi profilin, erkek",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "ProfilFotoKaldirildi",
+   "sayfa": "profil",
+   "baslik": "Fotoğrafı kaldırılmış: hayalet kapsül",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "ProfilYeniKisi",
+   "sayfa": "profil",
+   "baslik": "Yeni kişi: başka başlangıç kapsülü",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "ProfilAyarlar",
+   "sayfa": "profil",
+   "baslik": "Ayarlar penceresi",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "ProfilAyarlarErkek",
+   "sayfa": "profil",
+   "baslik": "Ayarlar: erkek ve belirtmeyen (K-22)",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "ProfilNickYenile",
+   "sayfa": "profil",
+   "baslik": "Nick yenilenebilir (30 gün doldu)",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "ProfilNickYenilendi",
+   "sayfa": "profil",
+   "baslik": "Nick yenilendi",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "ProfilNickBekle",
+   "sayfa": "profil",
+   "baslik": "Nick: 30 gün dolmadı",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "ProfilBaskasi",
+   "sayfa": "profil",
+   "baslik": "Başkasının profili",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "ProfilBaskasiSecenekler",
+   "sayfa": "profil",
+   "baslik": "Başkasının profili: seçenekler",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "ProfilYabanci",
+   "sayfa": "profil",
+   "baslik": "Mekan sohbetinden açılan profil",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "ProfilYabanciGonderildi",
+   "sayfa": "profil",
+   "baslik": "Mekan sohbetinden: istek gönderildi",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "ProfilYabanciSecenekler",
+   "sayfa": "profil",
+   "baslik": "Arkadaş olmayan: seçenekler",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "ProfilMasaIci",
+   "sayfa": "profil",
+   "baslik": "Masa içinde profil: yalnızca görüntülenir (K-14)",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "Arkadaslar",
+   "sayfa": "profil",
+   "baslik": "Arkadaşlar",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "ProfilDuzenle",
+   "sayfa": "profil",
+   "baslik": "Profili düzenle",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "ProfilDuzenleFoto",
+   "sayfa": "profil",
+   "baslik": "Fotoğraf penceresi",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "ProfilDuzenleCikis",
+   "sayfa": "profil",
+   "baslik": "Kaydetmeden çık penceresi",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KapsulGaleri",
+   "sayfa": "profil",
+   "baslik": "Kapsül galerisi",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KapsulSusle",
+   "sayfa": "profil",
+   "baslik": "Kapsülü süsle",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KapsulSusleIlk",
+   "sayfa": "profil",
+   "baslik": "Kapsülü süsle, ilk açılış",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KapsulSusleDegisti",
+   "sayfa": "profil",
+   "baslik": "Kapsülü süsle, değişiklik var",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "KapsulSusleCikis",
+   "sayfa": "profil",
+   "baslik": "Süsleme: kaydetmeden çık",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "BildirimAyarlari",
+   "sayfa": "ayarlar",
+   "baslik": "Bildirim ayarları",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "BildirimIzinKapali",
+   "sayfa": "ayarlar",
+   "baslik": "Bildirim izni kapalı",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "Gizlilik",
+   "sayfa": "ayarlar",
+   "baslik": "Gizlilik",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "Hesap",
+   "sayfa": "ayarlar",
+   "baslik": "Hesap",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "HesapSil",
+   "sayfa": "ayarlar",
+   "baslik": "Hesabı sil penceresi",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "Engellenenler",
+   "sayfa": "ayarlar",
+   "baslik": "Engellenenler",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "EngellenenlerBos",
+   "sayfa": "ayarlar",
+   "baslik": "Engellenenler boş",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  },
+  {
+   "id": "SessizeAlinanlar",
+   "sayfa": "ayarlar",
+   "baslik": "Sessize alınanlar",
+   "tema": true,
+   "genislik": 360,
+   "yukseklik": 780
+  }
+ ]
+}

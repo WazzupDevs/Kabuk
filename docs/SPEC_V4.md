@@ -224,6 +224,11 @@ Değişmez kabul edilir.
   - Kabul edilen kişiler kabul anında Masadakiler'e normal üye olarak girer; masa ekranının üst satırı "N kişi" yazar.
   - §4.E'deki tek seferlik "Y geliyor, N kişi" bildirimi kalır.
   - v46'da kabul edilen masa, telefonları katılana kadar Masadakiler'de "Geliyor" olarak durur ve üst satır "6 kişi · 3 geliyor" yazar.
+- **Görünüşün kaynağı skall tuvali** (proje sahibinin kararı, 26 Ekim; `docs/decisions/sistem-kaynak.md`).
+  - Görünüşte (ekranlar, renk, yazı, şekil, bileşen) `docs/design/sistem/` v46'nın önüne geçer ve birebir uygulanır. İçerik, davranış ve kurallarda bu spec geçerlidir; hareket, dokunuş ve tuvalin çizmediği ekranlarda v46.
+  - Tuval bu listeyle ve K kararlarıyla uzlaştırıldı. Spec'te karşılığı olmayan tuval metinleri `docs/design/sistem/sapmalar.md`'de onay bekler.
+  - Token üretimi, görsel kapının yumuşak raporu ve hareket panosu tuvale adım adım geçer (karar kaydı, adım 2–4).
+- **Tepki seti altı kapsül ifadesi** (proje sahibinin kararı, 26 Ekim). DM, masa ve mekan sohbetinde Beğendim, Bayıldım, Kahkaha, Şaşırdım, Üzüldüm, Kızdım; çizim tuvalden. Bugünkü altı emojiden (`_shared/pure/reactions.ts`) geçiş migration'la; eski tepkilerin eşlemesi tepki PR'ında proje sahibinin onayına gelir.
 
 **Tasarım sistemi (adım 4.2).** Sunucu değişmez; istemci OTA ile gider.
 
