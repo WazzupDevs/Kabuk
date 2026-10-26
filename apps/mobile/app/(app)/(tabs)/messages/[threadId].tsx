@@ -17,6 +17,7 @@ import { ChatTopBar } from '@/components/ChatTopBar';
 import { Composer } from '@/components/Composer';
 import { EmptyState } from '@/components/EmptyState';
 import { IconButton, MoreDots } from '@/components/IconButton';
+import { Menu, MenuItem } from '@/components/Menu';
 import { Sheet } from '@/components/Sheet';
 import { useHideTabBar } from '@/components/TabBar';
 import { quoteJump, toChatQuote, useReplyTarget } from '@/features/chat/messageExtras';
@@ -284,31 +285,39 @@ export default function DmScreen() {
       ) : null}
 
       <Sheet visible={menu} onClose={() => setMenu(false)} title={tr.friends.friendMenuTitle}>
+        <Menu>
+          <MenuItem
+            icon="flag-outline"
+            label={tr.dm.report}
+            onPress={() => {
+              setMenu(false);
+              setReporting(true);
+            }}
+          />
+          <MenuItem
+            icon="person-remove-outline"
+            label={tr.friends.removeFriend}
+            onPress={() => {
+              setMenu(false);
+              setConfirm('remove');
+            }}
+          />
+          <MenuItem
+            negative
+            icon="ban-outline"
+            label={tr.friends.block}
+            onPress={() => {
+              setMenu(false);
+              setConfirm('block');
+            }}
+          />
+        </Menu>
         <Button
+          size="lg"
           variant="neutral"
-          label={tr.dm.report}
-          onPress={() => {
-            setMenu(false);
-            setReporting(true);
-          }}
+          label={tr.common.cancel}
+          onPress={() => setMenu(false)}
         />
-        <Button
-          variant="neutral"
-          label={tr.friends.removeFriend}
-          onPress={() => {
-            setMenu(false);
-            setConfirm('remove');
-          }}
-        />
-        <Button
-          variant="danger"
-          label={tr.friends.block}
-          onPress={() => {
-            setMenu(false);
-            setConfirm('block');
-          }}
-        />
-        <Button variant="ghost" label={tr.common.cancel} onPress={() => setMenu(false)} />
       </Sheet>
 
       <ReportModal

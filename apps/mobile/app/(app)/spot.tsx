@@ -76,6 +76,7 @@ export default function ChangeSpotScreen() {
       ) : null}
       <View className="mt-auto pt-8">
         <Button
+          size="lg"
           label={tr.venue.changeSpotSave}
           onPress={() => selected && change.mutate(selected)}
           disabled={!selected || selected === table.data.spot_id}

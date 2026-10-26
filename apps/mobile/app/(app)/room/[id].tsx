@@ -274,7 +274,8 @@ export default function TableScreen() {
         extra={
           r.phones > 1 ? (
             <Button
-              variant="neutral"
+              size="lg"
+              variant="secondary"
               testID="table-owner-leave"
               label={tr.table.leave}
               loading={leave.isPending}
@@ -398,16 +399,17 @@ function ConfirmSheet({
   extra?: ReactNode;
 }) {
   return (
-    <Sheet visible={visible} onClose={onClose} title={title} icon="exit-outline">
-      <Text variant="fine" tone="text">
-        {body}
-      </Text>
+    // skall tuvali (MasaBitir): the title, the note, then the red soft action, the other choice and
+    // "Vazgeç", all large.
+    <Sheet visible={visible} onClose={onClose} title={title}>
+      <Text variant="fine">{body}</Text>
       {error ? (
         <Text variant="fine" tone="danger">
           {errorMessage(error)}
         </Text>
       ) : null}
       <Button
+        size="lg"
         variant="danger"
         testID={testID}
         label={confirm}
@@ -415,7 +417,7 @@ function ConfirmSheet({
         onPress={onConfirm}
       />
       {extra}
-      <Button variant="neutral" label={tr.common.cancel} onPress={onClose} />
+      <Button size="lg" variant="neutral" label={tr.common.cancel} onPress={onClose} />
       <View style={{ height: SPACING[1] }} />
     </Sheet>
   );

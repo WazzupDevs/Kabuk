@@ -1,6 +1,5 @@
-import { View } from 'react-native';
-
-import { Choice } from '@/components/Choice';
+import { Chips } from '@/components/Chips';
+import { tr } from '@/i18n/tr';
 
 import type { VenueSpot } from './spots';
 
@@ -10,19 +9,24 @@ type Props = {
   onSelect: (spot: VenueSpot) => void;
 };
 
-// "Neredesin?": the venue's spots as a single choice. Shared by check-in and the spot change.
+// "Neredesin?": the venue's spots as a single choice (skall tuvali, MekanNoktaDegistir: chips).
+// Shared by check-in and the spot change.
 export function SpotPicker({ spots, selectedId, onSelect }: Props) {
+  const NONE = '';
   return (
-    <View accessibilityRole="radiogroup" className="gap-2.5">
-      {spots.map((spot) => (
-        <Choice
-          key={spot.id}
-          testID={`spot-${spot.ref}`}
-          label={spot.name}
-          selected={selectedId === spot.id}
-          onPress={() => onSelect(spot)}
-        />
-      ))}
-    </View>
+    <Chips
+      wrap
+      accessibilityLabel={tr.checkin.spotTitle}
+      value={selectedId ?? NONE}
+      onChange={(id) => {
+        const spot = spots.find((s) => s.id === id);
+        if (spot) onSelect(spot);
+      }}
+      options={spots.map((spot) => ({
+        value: spot.id,
+        label: spot.name,
+        testID: `spot-${spot.ref}`,
+      }))}
+    />
   );
 }

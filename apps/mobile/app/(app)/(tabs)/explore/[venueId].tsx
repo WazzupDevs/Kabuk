@@ -72,8 +72,8 @@ export default function VenueDetailScreen() {
       </Card>
       <View className="mt-auto gap-3 pt-8">
         <Button
+          size="lg"
           label={tr.explore.checkInHere}
-          icon="location-outline"
           onPress={() => {
             setVenue({
               id: venue.id,
