@@ -53,6 +53,7 @@ export default function SpotScreen() {
       ) : null}
       <View className="mt-auto pt-8">
         <Button
+          size="lg"
           label={tr.checkin.continue}
           onPress={() => spot && checkIn.mutate({ position, spot })}
           disabled={!spot}
