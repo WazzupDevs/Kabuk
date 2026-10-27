@@ -1,9 +1,10 @@
 import { StyleSheet, View } from 'react-native';
 
 import { BUTTON_GLASS } from '@/theme/glass';
-import { gradientStyle } from '@/theme/gradient';
 import { V46_TAB_BAR } from '@/theme/parts.generated';
 import { useTheme } from '@/theme/ThemeProvider';
+
+import { GradientFill } from './GradientFill';
 
 // A button's glass (theme/glass.ts → BUTTON_GLASS), laid under its content: `clear` the tab bar's
 // glass over the button's own fill (`fill`, drawn here at the glass's share), `tinted` a gloss over
@@ -30,9 +31,7 @@ export function GlassFace({
             ]}
           />
         ) : null}
-        <View
-          style={[StyleSheet.absoluteFill, gradientStyle(t.gradient), { borderRadius: radius }]}
-        />
+        <GradientFill css={t.gradient} radius={radius} />
         <View
           style={[
             StyleSheet.absoluteFill,
@@ -49,13 +48,7 @@ export function GlassFace({
   }
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      <View
-        style={[
-          StyleSheet.absoluteFill,
-          gradientStyle(BUTTON_GLASS.gloss[scheme]),
-          { borderRadius: radius },
-        ]}
-      />
+      <GradientFill css={BUTTON_GLASS.gloss[scheme]} radius={radius} />
       <View
         style={[
           StyleSheet.absoluteFill,

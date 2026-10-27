@@ -20,7 +20,7 @@ import { tr } from '@/i18n/tr';
 import { roomsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useRoomMemberProfiles } from '@/features/profile/queries';
-import { gradientStyle } from '@/theme/gradient';
+import { GradientFill } from '@/components/GradientFill';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, OPACITY, SPACING, TABLE_CARD, TOUCH } from '@/theme/tokens';
 
@@ -314,16 +314,14 @@ function TimeBar({ minutesLeft }: { minutesLeft: number }) {
         overflow: 'hidden',
       }}
     >
-      <View
-        style={[
-          {
-            width: `${share * 100}%`,
-            height: '100%',
-            borderRadius: shape.radius.pill,
-          },
-          gradientStyle(`linear-gradient(90deg, ${colors.accent}, ${colors.buzz})`),
-        ]}
-      />
+      {share > 0 ? (
+        <View style={{ width: `${share * 100}%`, height: '100%' }}>
+          <GradientFill
+            css={`linear-gradient(90deg, ${colors.accent}, ${colors.buzz})`}
+            radius={shape.radius.pill}
+          />
+        </View>
+      ) : null}
     </View>
   );
 }

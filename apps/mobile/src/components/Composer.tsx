@@ -14,7 +14,6 @@ import { haptic, noteTyping } from '@/lib/haptics';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { BRAND } from '@/theme/brand';
 import { TAB_GLASS } from '@/theme/glass';
-import { gradientStyle } from '@/theme/gradient';
 import { V46_TAB_BAR } from '@/theme/parts.generated';
 import { typeStyle, useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
@@ -23,6 +22,7 @@ import { LiquidGlass } from '@/ui/LiquidGlass';
 
 import type { ChatQuote } from './ChatBubble';
 import { useChatEnd, useComposerGlass } from './ChatScreen';
+import { GradientFill } from './GradientFill';
 import { IconButton } from './IconButton';
 import { usePressScale } from './motion';
 import { Text } from './Text';
@@ -247,13 +247,9 @@ function GlassFill({ targetId, radius }: { targetId: string; radius: number }) {
         highlight={TAB_GLASS.highlight}
         style={StyleSheet.absoluteFill}
       />
-      <View
-        style={[
-          StyleSheet.absoluteFill,
-          gradientStyle(t.gradient),
-          { borderRadius: radius, opacity: TAB_GLASS.overlay },
-        ]}
-      />
+      <View style={[StyleSheet.absoluteFill, { opacity: TAB_GLASS.overlay }]}>
+        <GradientFill css={t.gradient} radius={radius} />
+      </View>
       <View
         style={[
           StyleSheet.absoluteFill,
