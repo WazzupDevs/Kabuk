@@ -9,7 +9,6 @@ import Reanimated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { SvgXml } from 'react-native-svg';
 
 import { Text } from '@/components/Text';
 import { useReduceMotion } from '@/lib/useReduceMotion';
@@ -18,6 +17,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
 import { BEAT, type Channel, type Move, sample } from './motion';
+import { CachedSvg } from '@/components/CachedSvg';
 
 // The stage (v46 `.ced-fig` in `.ced-ring`): 60 × 57 units, the circle (48) 6 in from the left and 8
 // down, the head free to rise over it.
@@ -172,11 +172,11 @@ export function CapsuleStage({
             ]}
           >
             <Reanimated.View style={[figure, moveStyle]}>
-              <SvgXml xml={xml} width="100%" height="100%" />
+              <CachedSvg xml={xml} width="100%" height="100%" />
             </Reanimated.View>
             {oldXml ? (
               <Reanimated.View pointerEvents="none" style={[figure, fadeStyle]}>
-                <SvgXml xml={oldXml} width="100%" height="100%" />
+                <CachedSvg xml={oldXml} width="100%" height="100%" />
               </Reanimated.View>
             ) : null}
           </Reanimated.View>

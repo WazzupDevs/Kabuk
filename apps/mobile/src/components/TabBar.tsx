@@ -20,6 +20,7 @@ import { haptic } from '@/lib/haptics';
 import { V46_TAB_BAR, type V46TabKey } from '@/theme/parts.generated';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
+import { TAB_BAR_BLUR } from '@/ui/backdrop';
 import { TabBar as V46TabBar, type TabBarItem } from '@/ui/TabBar';
 
 // The tabs' navigator and v46's bar (src/ui/TabBar.tsx): the bar floats 12 above the bottom (above
@@ -110,9 +111,14 @@ export function TabScene({
     };
   }, [navigation]);
   return (
-    <BlurTargetView ref={ref} style={{ flex: 1, backgroundColor: colors.canvas }}>
-      {children}
-    </BlurTargetView>
+    // A plain ground when the bar does not blur (TAB_BAR_BLUR): no second drawing of the screen.
+    TAB_BAR_BLUR ? (
+      <BlurTargetView ref={ref} style={{ flex: 1, backgroundColor: colors.canvas }}>
+        {children}
+      </BlurTargetView>
+    ) : (
+      <View style={{ flex: 1, backgroundColor: colors.canvas }}>{children}</View>
+    )
   );
 }
 
