@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 
@@ -19,6 +18,7 @@ import { Button, type IconName } from './Button';
 import { useLoopActive } from './Loader';
 import { MotionMark } from './Mark';
 import { Text } from './Text';
+import { AppIcon } from './AppIcon';
 
 export type { StateKind };
 
@@ -93,7 +93,7 @@ export function EmptyState({ kind, icon, title, body, action }: Props) {
       {kind ? (
         <StateMark kind={kind} size={DISC_MARK} />
       ) : (
-        <Ionicons name={icon ?? 'ellipsis-horizontal'} size={ICON.md} color={BRAND.purple} />
+        <AppIcon name={icon ?? 'ellipsis-horizontal'} size={ICON.md} color={BRAND.purple} />
       )}
     </View>
   );

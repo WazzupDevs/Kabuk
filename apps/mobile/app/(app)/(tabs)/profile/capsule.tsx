@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import type { LookSlot } from '@shared/capsule.ts';
 import { CAPSULE_CATALOG } from '@shared/capsuleCatalog.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -41,11 +40,13 @@ import { profileViewKeys, useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { haptic } from '@/lib/haptics';
+import { useAfterSlide } from '@/lib/useAfterSlide';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { profileApi } from '@/lib/api';
 import { FEELINGS } from '@/theme/capsuleLook';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
+import { AppIcon } from '@/components/AppIcon';
 
 // "Kafama dokun" shows until the first tap on the capsule, while the app runs.
 const useHint = create<{ seen: boolean }>(() => ({ seen: false }));
@@ -66,14 +67,14 @@ export default function CapsuleScreen() {
   const saved = view.data?.capsuleLook ?? null;
   if (view.isPending || own.isPending) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center">
+      <SafeAreaView className="flex-1 items-center justify-center bg-canvas">
         <Loader />
       </SafeAreaView>
     );
   }
   if (!saved) {
     return (
-      <SafeAreaView className="flex-1 justify-center p-4">
+      <SafeAreaView className="flex-1 justify-center bg-canvas p-4">
         <EmptyState
           kind="error"
           body={errorMessage(view.error)}
@@ -159,6 +160,9 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
 
   const side = shape.screenPadding;
   const tile = (width - side * 2 - SPACING[2] * (COLUMNS - 1)) / COLUMNS;
+  // The parts' tiles (dozens of drawings) come right after the screen's slide, so the slide and
+  // the capsule draw at once (the owner's report, 27 Ekim: a white screen, then a stutter).
+  const ready = useAfterSlide();
   const items: { pack: string | null; items: Item[] }[] =
     slot === 'c' ? [{ pack: null, items: colorItems() }] : packsFor(rack, slot);
   const slotName = CAPSULE_CATALOG.slots.find((s) => s.id === slot)?.name ?? '';
@@ -222,7 +226,7 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
                 }}
               >
                 <Text variant="label">{w.name}</Text>
-                <Ionicons name="close" size={ICON.sm} color={colors.text} />
+                <AppIcon name="close" size={ICON.sm} color={colors.text} />
               </Pressable>
             ))}
           </View>
@@ -252,7 +256,7 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
             />
           </View>
         ) : null}
-        {items.map((group) => (
+        {(ready ? items : []).map((group) => (
           <View key={group.pack ?? 'colors'} className="gap-2">
             {group.pack ? (
               <View className="flex-row items-center gap-3">

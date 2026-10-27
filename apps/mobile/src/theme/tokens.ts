@@ -289,23 +289,25 @@ export const NARROW_SCREEN = 360;
 // session's pin image; colours come from the palette. MAP_FONTS must be font stacks served by the
 // map style's glyph server (OpenFreeMap "liberty" serves Noto Sans), not the app's fonts.
 export const MAP_PIN = {
-  radius: 16,
+  // Bigger and in full colour (the owner's report, 27 Ekim: the pins were faint).
+  radius: 21,
   // The selected venue grows and gets a hard shadow (canvas: Aşama 5 · Harita işaretçileri).
-  selectedRadius: 22,
+  selectedRadius: 27,
   shadow: 3,
   // The kind glyph inside the circle (24 pt in its image): 18 pt, 24 when selected.
-  glyphScale: 0.75,
-  selectedGlyphScale: 1,
+  glyphScale: 1,
+  selectedGlyphScale: 1.25,
   ring: 3,
   outline: 2,
   eventDot: 6,
-  eventOffset: 12,
+  eventOffset: 16,
   clusterRadius: [18, 22, 26],
   clusterSteps: [10, 30],
-  labelSize: 12,
+  labelSize: 13,
   countSize: 14,
-  labelOffset: 1.4,
-  labelHalo: 2,
+  // Clear of the pin: the pin's radius, its rings and a gap, in the label's ems.
+  labelOffset: 2.4,
+  labelHalo: 2.5,
 } as const;
 export const MAP_FONTS = { regular: ['Noto Sans Regular'], bold: ['Noto Sans Bold'] } as const;
 

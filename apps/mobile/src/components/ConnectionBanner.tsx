@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { View } from 'react-native';
@@ -12,6 +11,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
 import { Text } from './Text';
+import { AppIcon } from './AppIcon';
 
 const CHECK_MS = 4000;
 
@@ -63,7 +63,7 @@ export function ConnectionBanner() {
           boxShadow: shape.shadow.sheet,
         }}
       >
-        <Ionicons name="alert" size={ICON.md} color={colors.onWarnSoft} />
+        <AppIcon name="alert" size={ICON.md} color={colors.onWarnSoft} />
         <View className="flex-1 gap-0.5">
           <Text variant="label" tone="onWarnSoft">
             {tr.connection.offlineTitle}

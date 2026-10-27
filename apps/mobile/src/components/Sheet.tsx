@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { type ReactNode, useEffect, useState } from 'react';
 import { Animated, Modal, Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,6 +13,7 @@ import type { IconName } from './Button';
 import { Quiet } from './Quiet';
 import { useSheetDrag } from './sheetDrag';
 import { Text } from './Text';
+import { AppIcon } from './AppIcon';
 
 // hareket.md → "Alt sayfa": in and out in 320 ms on the design system's ease out.
 const SLIDE_MS = 320;
@@ -135,7 +135,7 @@ export function Sheet({ visible, onClose, title, titleNote, icon, centered, chil
                       backgroundColor: colors.surface2,
                     }}
                   >
-                    <Ionicons name={icon} size={ICON.lg} color={colors.accent} />
+                    <AppIcon name={icon} size={ICON.lg} color={colors.accent} />
                   </View>
                 ) : null}
                 {title ? (

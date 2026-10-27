@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import {
   createContext,
   type ReactNode,
@@ -40,6 +39,7 @@ import { CountBadge } from './CountBadge';
 import { useTabBarSpace } from './TabBar';
 import { Text } from './Text';
 import { usePressScale } from './motion';
+import { AppIcon } from './AppIcon';
 
 // How close to the end counts as "at the bottom" (a message's last line may sit under the edge).
 const BOTTOM_SLACK = SPACING[12];
@@ -343,7 +343,7 @@ export function ChatScroll({
                   pressScale(pressed),
                 ]}
               >
-                <Ionicons name="chevron-down" size={ICON.md} color={colors.text} />
+                <AppIcon name="chevron-down" size={ICON.md} color={colors.text} />
                 <View className="absolute" style={{ top: -SPACING[1.5], right: -SPACING[1.5] }}>
                   <CountBadge count={pending} />
                 </View>

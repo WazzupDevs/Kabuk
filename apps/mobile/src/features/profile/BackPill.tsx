@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
@@ -7,6 +6,7 @@ import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
+import { AppIcon } from '@/components/AppIcon';
 
 // "Geri dön" over the profile photo (canvas: Profil kartı): a pill on the surface colour.
 export function BackPill() {
@@ -29,7 +29,7 @@ export function BackPill() {
             pressScale(pressed),
           ]}
         >
-          <Ionicons name="chevron-back" size={ICON.md} color={colors.text} />
+          <AppIcon name="chevron-back" size={ICON.md} color={colors.text} />
           <Text variant="button">{tr.profile.back}</Text>
         </View>
       )}

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { TextInput, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
+import { Text as AppText } from '@/components/Text';
 import { noteTyping } from '@/lib/haptics';
 import { V46_EXPLORE, V46_EXPLORE_ICONS } from '@/theme/parts.generated';
 import { typeStyle, useTheme } from '@/theme/ThemeProvider';
@@ -62,8 +63,6 @@ export function SearchField({
             noteTyping();
             onChangeText(text);
           }}
-          placeholder={placeholder}
-          placeholderTextColor={s.field.placeholderColor}
           accessibilityLabel={placeholder}
           returnKeyType="search"
           autoCorrect={false}
@@ -83,6 +82,25 @@ export function SearchField({
             },
           ]}
         />
+        {/* The hint is drawn by the app, in the app's type: Android drew the field's own hint in
+            another face (the owner's report, 27 Ekim). */}
+        {value.length === 0 ? (
+          <View
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: 0,
+              bottom: 0,
+              justifyContent: 'center',
+            }}
+          >
+            <AppText variant="body" color={s.field.placeholderColor}>
+              {placeholder}
+            </AppText>
+          </View>
+        ) : null}
       </View>
     </Animated.View>
   );

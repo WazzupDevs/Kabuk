@@ -41,6 +41,8 @@ export function TableIcon({ icon, size }: { icon: string | null; size: Size }) {
   if (!source) return <View style={[style, { backgroundColor: colors.surface2 }]} />;
   return (
     <Image
+      // No fade-in: a photo drawn again does not blink (Android fades 300 ms by default).
+      fadeDuration={0}
       source={source}
       style={style}
       accessibilityLabel={icon ? NAMES.get(icon) : undefined}

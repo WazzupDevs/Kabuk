@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { Children, type ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 
@@ -8,6 +7,7 @@ import { ICON, OPACITY, SPACING } from '@/theme/tokens';
 import type { IconName } from './Button';
 import { Loader } from './Loader';
 import { Text } from './Text';
+import { AppIcon } from './AppIcon';
 
 // skall tuvali (skall.css → "Menü"): a sheet's actions as rows of one soft card, a hairline
 // between them; a negative row is written red.
@@ -94,7 +94,7 @@ export function MenuItem({
           }}
         >
           {icon ? (
-            <Ionicons name={icon} size={ICON.md} color={negative ? ink : colors.muted} />
+            <AppIcon name={icon} size={ICON.md} color={negative ? ink : colors.muted} />
           ) : null}
           <View
             className="flex-1"
@@ -112,7 +112,7 @@ export function MenuItem({
             </Text>
           ) : null}
           {!loading && chevron ? (
-            <Ionicons name="chevron-forward" size={ICON.md} color={colors.muted} />
+            <AppIcon name="chevron-forward" size={ICON.md} color={colors.muted} />
           ) : null}
         </View>
       )}

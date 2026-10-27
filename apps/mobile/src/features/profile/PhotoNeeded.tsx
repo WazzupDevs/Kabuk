@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
 
 import { AVATAR_SIZE } from '@/components/Avatar';
@@ -7,6 +6,7 @@ import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON } from '@/theme/tokens';
+import { AppIcon } from '@/components/AppIcon';
 
 type Props = {
   // The server's photo_required: its text in place of the plain reason, in red.
@@ -52,7 +52,7 @@ export function NoPhotoPicture({ size = 'xl' }: { size?: keyof typeof AVATAR_SIZ
         borderColor: colors.muted,
       }}
     >
-      <Ionicons name="camera-outline" size={ICON.md} color={colors.muted} />
+      <AppIcon name="camera-outline" size={ICON.md} color={colors.muted} />
     </View>
   );
 }

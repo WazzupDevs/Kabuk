@@ -9,6 +9,7 @@ import { RouteSheet, useCloseSheet } from '@/components/RouteSheet';
 import { Segmented } from '@/components/Segmented';
 import { Text } from '@/components/Text';
 import { useProfile } from '@/features/account/useProfile';
+import { patchProfile } from '@/features/account/patchProfile';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { DesignPicker } from '@/features/design/DesignPicker';
 import { AppearanceSetting } from '@/features/profile/AppearanceSetting';
@@ -51,9 +52,10 @@ function Body() {
   const participation = useMutation({
     meta: FEEL_ERROR,
     mutationFn: (next: Participation) => profileApi.update({ defaultParticipation: next }),
+    onMutate: (next) => patchProfile(queryClient, { default_participation: next }),
     onSettled: () => void queryClient.invalidateQueries({ queryKey: ['profile'] }),
   });
-  const shown = participation.isPending ? participation.variables : value;
+  const shown = value;
   const signOut = useMutation({
     mutationFn: async () => {
       await unregisterPush();

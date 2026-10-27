@@ -1,5 +1,3 @@
-import { isTableGame } from '@shared/gameFrame.ts';
-import { GAME_CATEGORIES, TABLE_GAMES } from '@shared/tableGames.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { type ReactNode, useEffect, useState } from 'react';
@@ -17,7 +15,7 @@ import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
 import { RoomComposer, RoomMessages, useRoomChat } from '@/features/chat/ChatPanel';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
-import { PosterCard, PosterGrid } from '@/features/rooms/PosterCard';
+import { GAME_CARDS, GameCard, type GameCategory, PosterGrid } from '@/features/rooms/PosterCard';
 import { useRoomMemberProfiles } from '@/features/profile/queries';
 import { IncomingRequest, useMarkTableScreen } from '@/features/rooms/IncomingRequest';
 import { InviteSheet } from '@/features/rooms/InviteSheet';
@@ -36,7 +34,8 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
 import { NARROW_SCREEN, SPACING, TOUCH } from '@/theme/tokens';
 
-type Category = 'all' | (typeof GAME_CATEGORIES)[number]['id'];
+type Category = 'all' | GameCategory;
+const CATEGORIES: readonly GameCategory[] = ['teams', 'multi'];
 
 // The table (v46 "masa"; docs/SPEC_V4.md §4.E, §4.F): the top line (back, the table's icon and name
 // with "N kişi", which open Masadakiler; the owner's "Bitir", a participant's "Ayrıl"), the owner's
@@ -147,9 +146,7 @@ export default function TableScreen() {
 
   const owner = r.owner_session_id === sessionId;
   const inLobby = r.visibility === 'open';
-  const games = TABLE_GAMES.filter(
-    (g) => category === 'all' || (g.categories as readonly string[]).includes(category),
-  );
+  const games = GAME_CARDS.filter((g) => category === 'all' || g.category === category);
   const messages = chat.messages.data ?? [];
   const newestOut = chat.outbox[chat.outbox.length - 1];
   const newestIn = messages.at(-1);
@@ -235,7 +232,7 @@ export default function TableScreen() {
               <Button
                 tight
                 size="sm"
-                icon="flag-outline"
+                icon="megaphone-outline"
                 testID="table-lobby"
                 label={tr.venue.openLobby}
                 onPress={() => setSheet('lobby')}
@@ -263,7 +260,7 @@ export default function TableScreen() {
         onChange={setTab}
         accessibilityLabel={tr.rooms.tabsLabel}
         options={[
-          { value: 'games', label: tr.table.tabGames(TABLE_GAMES.length), testID: 'tab-games' },
+          { value: 'games', label: tr.table.tabGames(GAME_CARDS.length), testID: 'tab-games' },
           { value: 'chat', label: tr.table.tabChat(messages.length), testID: 'tab-chat' },
         ]}
       />
@@ -382,34 +379,22 @@ export default function TableScreen() {
         ) : null}
         <Chips<Category>
           bleed={shape.screenPadding}
-          accessibilityLabel={tr.table.tabGames(TABLE_GAMES.length)}
+          accessibilityLabel={tr.table.tabGames(GAME_CARDS.length)}
           value={category}
           onChange={setCategory}
           options={[
-            { value: 'all', label: tr.table.allGames, count: TABLE_GAMES.length },
-            ...GAME_CATEGORIES.map((c) => ({
-              value: c.id,
-              label: c.name,
-              count: TABLE_GAMES.filter((g) => (g.categories as readonly string[]).includes(c.id))
-                .length,
+            { value: 'all', label: tr.table.allGames, count: GAME_CARDS.length },
+            ...CATEGORIES.map((c) => ({
+              value: c,
+              label: tr.table.gameCategories[c],
+              count: GAME_CARDS.filter((g) => g.category === c).length,
             })),
           ]}
         />
         <PosterGrid>
-          {games.map((g) =>
-            isTableGame(g.id) ? (
-              // 4.5: every game waits for its step (4.6); a "Yakında" poster is not pressed.
-              <PosterCard
-                key={g.id}
-                poster={g.poster}
-                name={g.name}
-                tagline={tr.table.taglines[g.id] ?? ''}
-                minPlayers={g.minPlayers}
-                soon={!g.available}
-                testID={`poster-${g.id}`}
-              />
-            ) : null,
-          )}
+          {games.map((g) => (
+            <GameCard key={g.id} id={g.id} art={g.art} testID={`poster-${g.id}`} />
+          ))}
         </PosterGrid>
       </View>
       {sheets}

@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, View } from 'react-native';
 
@@ -9,6 +8,7 @@ import { tr } from '@/i18n/tr';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
+import { AppIcon } from '@/components/AppIcon';
 
 // Seconds at which the clock turns urgent (canvas: Aşama 6 · Oyunlar → Geri bildirim).
 export const URGENT_SECONDS = 10;
@@ -57,7 +57,7 @@ export function ClockPill({ seconds }: { seconds: number }) {
         transform: [{ scale }],
       }}
     >
-      <Ionicons name="time-outline" size={urgent ? ICON.md : ICON.sm} color={fg} />
+      <AppIcon name="time-outline" size={urgent ? ICON.md : ICON.sm} color={fg} />
       <Text variant={urgent ? 'title' : 'bodyStrong'} color={fg} tabular>
         {tr.games.clock(seconds)}
       </Text>
@@ -178,7 +178,7 @@ export function RoleNote({ icon, text }: { icon: IconName; text: string }) {
   return (
     <Card tone="note">
       <View className="flex-row items-start gap-2">
-        <Ionicons name={icon} size={ICON.sm} color={colors.text} />
+        <AppIcon name={icon} size={ICON.sm} color={colors.text} />
         <Text variant="fine" tone="text" className="flex-1">
           {text}
         </Text>

@@ -23,8 +23,7 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useNow } from '@/lib/useNow';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
-
-import { Ionicons } from '@expo/vector-icons';
+import { AppIcon } from '@/components/AppIcon';
 
 // Bildirimler (docs/SPEC_V4.md §4.G; skall tuvali: Bildirimler, BildirimlerKabul, BildirimlerBos):
 // friends/notifications's rows, the new ones (after the list was last opened) on soft cards under
@@ -311,7 +310,7 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
             borderColor: colors.divider,
           }}
         >
-          <Ionicons
+          <AppIcon
             name={badge === 'plus' ? 'add' : badge === 'check' ? 'checkmark' : 'people'}
             size={ICON.xs}
             color={badge === 'table' ? colors.accent : colors.success}

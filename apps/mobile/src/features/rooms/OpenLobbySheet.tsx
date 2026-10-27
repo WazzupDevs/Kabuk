@@ -115,7 +115,7 @@ export function OpenLobbySheet({
       <View className="gap-2.5">
         <Button
           size="lg"
-          icon="flag-outline"
+          icon="megaphone-outline"
           testID="lobby-confirm"
           label={tr.venue.openLobby}
           onPress={() => open.mutate()}

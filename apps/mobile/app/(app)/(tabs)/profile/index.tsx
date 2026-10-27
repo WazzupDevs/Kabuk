@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { useWindowDimensions, View } from 'react-native';
@@ -21,6 +20,7 @@ import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { tr } from '@/i18n/tr';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, NARROW_SCREEN } from '@/theme/tokens';
+import { AppIcon } from '@/components/AppIcon';
 
 // The own profile (docs/SPEC_V2.md §5; v45: .prof, self). The photo, the name and the bio change on
 // the edit screen; settings open only from the round sliders button (top right), beside the bell
@@ -124,7 +124,7 @@ export default function ProfileScreen() {
           {view.data.photoHidden ? (
             <Card tone="note">
               <View className="flex-row items-start gap-2">
-                <Ionicons name="eye-off-outline" size={ICON.md} color={colors.text} />
+                <AppIcon name="eye-off-outline" size={ICON.md} color={colors.text} />
                 <Text variant="fine" tone="text" className="flex-1">
                   {tr.profile.photoHidden}
                 </Text>

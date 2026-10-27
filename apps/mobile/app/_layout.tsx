@@ -20,6 +20,7 @@ import { pingUpdateGate } from '@/lib/api';
 import { initErrorReporting } from '@/lib/errorReporting';
 import { queryClient } from '@/lib/queryClient';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+import { useStackOptions } from '@/lib/stackOptions';
 
 export { RouteError as ErrorBoundary } from '@/components/RouteError';
 
@@ -29,6 +30,8 @@ initErrorReporting();
 void SplashScreen.preventAutoHideAsync();
 
 function RootNavigator() {
+  // Sign-in, onboarding and the app replace each other with a fade, on the canvas.
+  const stackOptions = { ...useStackOptions(), animation: 'fade' } as const;
   const updateRequired = useUpdateGate((s) => s.required);
   const initialized = useSessionStore((s) => s.initialized);
   const signedIn = useSessionStore((s) => s.session !== null);
@@ -57,7 +60,7 @@ function RootNavigator() {
     signedIn && profile.isSuccess && !needsOnboarding(profile.data) && !extrasPending;
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    <Stack screenOptions={stackOptions}>
       <Stack.Protected guard={!signedIn}>
         <Stack.Screen name="(auth)" />
       </Stack.Protected>

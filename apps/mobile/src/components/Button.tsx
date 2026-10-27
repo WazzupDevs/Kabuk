@@ -11,6 +11,7 @@ import { ICON, OPACITY, type PaletteKey, SPACING, TOUCH, type TypeVariant } from
 import { Loader } from './Loader';
 import { usePressScale } from './motion';
 import { Text } from './Text';
+import { AppIcon } from './AppIcon';
 
 // The skall design system → Button: the roles and their fills are in theme/buttonFill.ts. No
 // outlined, hard-shadowed "3D" face: pressed, a button shrinks to 97 %. Disabled, it takes a
@@ -206,12 +207,12 @@ export function Button({
             className="shrink"
           >
             {iconOnly && icon ? (
-              <Ionicons name={icon} size={ICON.md} color={fg} />
+              <AppIcon name={icon} size={ICON.md} color={fg} />
             ) : (
               <>
                 {leading ??
                   (icon ? (
-                    <Ionicons
+                    <AppIcon
                       name={icon}
                       size={ICON.md}
                       color={iconTone && !disabled ? colors[iconTone] : fg}

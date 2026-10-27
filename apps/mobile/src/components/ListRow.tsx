@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { type ReactNode, useContext } from 'react';
 import { Pressable, View } from 'react-native';
 
@@ -9,6 +8,7 @@ import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 import { CardPressContext } from './ListCard';
 import { usePressScale } from './motion';
 import { Text } from './Text';
+import { AppIcon } from './AppIcon';
 
 type Props = {
   title: string;
@@ -62,7 +62,7 @@ export function ListRow({
         // Centred beside the text (a tag aligns itself to the top of a row otherwise).
         <View className="justify-center">{trailing}</View>
       ) : onPress && !noChevron ? (
-        <Ionicons name="chevron-forward" size={ICON.md} color={colors.muted} />
+        <AppIcon name="chevron-forward" size={ICON.md} color={colors.muted} />
       ) : null}
     </>
   );

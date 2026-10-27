@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { containsContact } from '@shared/profanity.ts';
 import { BIO_MAX, DISPLAY_NAME_MAX, DISPLAY_NAME_MIN } from '@shared/profile.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -27,6 +26,7 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { maxLengthFor } from '@/lib/textLimit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
+import { AppIcon } from '@/components/AppIcon';
 
 // The photo, the display name and the bio (docs/SPEC_V2.md §5.1; canvas: Aşama 5 · Geri bildirim →
 // Profili düzenle). Length is checked here; the profile function checks length and profanity
@@ -208,7 +208,7 @@ function EditForm({
         </Card>
         <Card tone="note">
           <View className="flex-row items-start gap-2">
-            <Ionicons name="calendar-outline" size={ICON.md} color={colors.text} />
+            <AppIcon name="calendar-outline" size={ICON.md} color={colors.text} />
             <Text variant="fine" tone="text" className="flex-1">
               {tr.profile.birthDateNote}
             </Text>

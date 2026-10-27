@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { isReaction, type Reaction } from '@shared/reactions.ts';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, View } from 'react-native';
@@ -15,6 +14,7 @@ import { AVATAR_SIZE } from './Avatar';
 import { type BubbleAction, MessagePop, type PopAnchor } from './MessagePop';
 import { ReactionFace } from './ReactionFace';
 import { Text } from './Text';
+import { AppIcon } from './AppIcon';
 
 // color: the quoted sender's name colour in the venue chat (v45: --qc); otherwise the second accent.
 export type ChatQuote = { name: string; text: string; color?: string };
@@ -451,7 +451,7 @@ function SwipeToReply({ onReply, children }: { onReply?: () => void; children: R
             backgroundColor: colors.surface2,
           }}
         >
-          <Ionicons name="arrow-undo" size={ICON.sm} color={colors.text} />
+          <AppIcon name="arrow-undo" size={ICON.sm} color={colors.text} />
         </View>
       </Animated.View>
       <Animated.View style={{ transform: [{ translateX: dx }] }}>{children}</Animated.View>
@@ -531,7 +531,7 @@ export function DeliveryTicks({ delivery, onAccent }: { delivery: Delivery; onAc
   const plain = onAccent ? colors.onPrimary : colors.muted;
   return (
     <View accessible accessibilityLabel={tr.dm.delivery[delivery]} testID={`tick-${delivery}`}>
-      <Ionicons
+      <AppIcon
         name={delivery === 'sent' ? 'checkmark' : 'checkmark-done'}
         size={ICON.sm}
         color={delivery === 'read' ? read : plain}

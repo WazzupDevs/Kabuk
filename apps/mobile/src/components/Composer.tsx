@@ -96,8 +96,7 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
               noteTyping();
               onChangeText(text);
             }}
-            placeholder={placeholder}
-            placeholderTextColor={colors.placeholder}
+            accessibilityLabel={placeholder}
             selectionColor={colors.accent}
             maxLength={maxLength}
             multiline
@@ -114,6 +113,19 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
               },
             ]}
           />
+          {/* The hint is drawn by the app, in the app's type: Android drew the field's own hint in
+              another face (the owner's report, 27 Ekim). */}
+          {value.length === 0 ? (
+            <View
+              pointerEvents="none"
+              className="absolute inset-0 justify-center"
+              style={{ paddingHorizontal: SPACING[4] + SPACING[0.5] }}
+            >
+              <Text variant="body" color={colors.placeholder}>
+                {placeholder}
+              </Text>
+            </View>
+          ) : null}
         </View>
         <Pressable
           testID={sendTestID}
