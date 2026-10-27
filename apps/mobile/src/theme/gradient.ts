@@ -6,3 +6,5 @@ import type { ViewStyle } from 'react-native';
 export function gradientStyle(css: string): ViewStyle {
   return { experimental_backgroundImage: css };
 }
+
+export { svgGradient, type SvgGradient } from './svgGradient';
