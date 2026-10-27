@@ -10,9 +10,8 @@ import { LookAvatar } from '@/components/LookAvatar';
 import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
 import { PhotoSheet } from '@/features/profile/PhotoSheet';
-import { useProfileView } from '@/features/profile/queries';
+import { useOwnLook } from '@/features/profile/useOwnLook';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
-import { useProfile } from '@/features/account/useProfile';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { callSetIdentity } from '@/lib/api';
@@ -29,6 +28,7 @@ export function IdentitySheet({
   onClose,
   toAnonymous,
   atTable,
+  onChanged,
 }: {
   visible: boolean;
   onClose: () => void;
@@ -36,19 +36,20 @@ export function IdentitySheet({
   toAnonymous: boolean;
   // A table now: its identity stays until it ends.
   atTable: boolean;
+  // After the change: the screen reads what shows the identity again (the venue chat's page).
+  onChanged?: () => void;
 }) {
   const { colors } = useTheme();
   const queryClient = useQueryClient();
   const photo = useOwnPhoto();
-  const own = useProfile();
-  const view = useProfileView(own.data?.public_id);
-  const look = view.data?.capsuleLook ?? null;
+  const look = useOwnLook();
   const [photoSheet, setPhotoSheet] = useState(false);
   const change = useMutation({
     meta: FEEL_ERROR,
     mutationFn: () => callSetIdentity(toAnonymous),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['activeTable'] });
+      onChanged?.();
       onClose();
     },
   });

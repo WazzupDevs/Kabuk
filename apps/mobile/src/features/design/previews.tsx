@@ -495,8 +495,8 @@ function IbreSet() {
 // and "Yeni mesaj" when a message comes in while the reader is up the stream.
 function ChatSet() {
   const [reactions, setReactions] = useState<ChatReaction[]>([
-    { emoji: '😂', count: 2, mine: true },
-    { emoji: '🔥', count: 1, mine: false },
+    { emoji: 'kahkaha', count: 2, mine: true },
+    { emoji: 'kizgin', count: 1, mine: false },
   ]);
   const [replyTo, setReplyTo] = useState<ChatQuote | undefined>({
     name: 'Deniz',

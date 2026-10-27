@@ -35,58 +35,58 @@ describe('reaction lists', () => {
   it('counts the DM rows per emoji and keeps the reader’s own', () => {
     expect(
       parseDmReactions([
-        { emoji: '👍', from_me: false },
-        { emoji: '👍', from_me: true },
+        { emoji: 'begen', from_me: false },
+        { emoji: 'begen', from_me: true },
         { emoji: '💩', from_me: false },
       ]),
-    ).toEqual([{ emoji: '👍', count: 2, mine: true }]);
+    ).toEqual([{ emoji: 'begen', count: 2, mine: true }]);
     expect(parseDmReactions('x')).toEqual([]);
   });
 
   it('reads counts, with the room’s aliases, and leaves out an emoji outside the set', () => {
     expect(
       parseReactionCounts([
-        { emoji: '🔥', count: 2, mine: false, aliases: ['Mor Kedi', 'Sarı Ayı'] },
-        { emoji: '👍', count: 1, mine: true },
+        { emoji: 'kizgin', count: 2, mine: false, aliases: ['Mor Kedi', 'Sarı Ayı'] },
+        { emoji: 'begen', count: 1, mine: true },
         { emoji: '💩', count: 3, mine: false },
       ]),
     ).toEqual([
-      { emoji: '🔥', count: 2, mine: false, aliases: ['Mor Kedi', 'Sarı Ayı'] },
-      { emoji: '👍', count: 1, mine: true },
+      { emoji: 'kizgin', count: 2, mine: false, aliases: ['Mor Kedi', 'Sarı Ayı'] },
+      { emoji: 'begen', count: 1, mine: true },
     ]);
   });
 });
 
 describe('a tap on an emoji', () => {
   it('takes the same emoji back and replaces another', () => {
-    expect(nextReaction(null, '👍')).toBe('👍');
-    expect(nextReaction('👍', '👍')).toBeNull();
-    expect(nextReaction('👍', '🔥')).toBe('🔥');
+    expect(nextReaction(null, 'begen')).toBe('begen');
+    expect(nextReaction('begen', 'begen')).toBeNull();
+    expect(nextReaction('begen', 'kizgin')).toBe('kizgin');
   });
 
   it('moves the reader’s reaction in the list at once', () => {
     const list = [
-      { emoji: '👍' as const, count: 2, mine: true },
-      { emoji: '🔥' as const, count: 1, mine: false },
+      { emoji: 'begen' as const, count: 2, mine: true },
+      { emoji: 'kizgin' as const, count: 1, mine: false },
     ];
-    expect(myReaction(list)).toBe('👍');
-    expect(withMyReaction(list, '🔥')).toEqual([
-      { emoji: '👍', count: 1, mine: false },
-      { emoji: '🔥', count: 2, mine: true },
+    expect(myReaction(list)).toBe('begen');
+    expect(withMyReaction(list, 'kizgin')).toEqual([
+      { emoji: 'begen', count: 1, mine: false },
+      { emoji: 'kizgin', count: 2, mine: true },
     ]);
     expect(withMyReaction(list, null)).toEqual([
-      { emoji: '👍', count: 1, mine: false },
-      { emoji: '🔥', count: 1, mine: false },
+      { emoji: 'begen', count: 1, mine: false },
+      { emoji: 'kizgin', count: 1, mine: false },
     ]);
-    expect(withMyReaction([], '😂')).toEqual([{ emoji: '😂', count: 1, mine: true }]);
+    expect(withMyReaction([], 'kahkaha')).toEqual([{ emoji: 'kahkaha', count: 1, mine: true }]);
     expect(myReaction([])).toBeNull();
   });
 
   it('moves the reader’s table alias with it in the room chat', () => {
-    const list = [{ emoji: '👍' as const, count: 2, mine: true, aliases: ['Mor Kedi', 'Ben'] }];
-    expect(withMyReaction(list, '🔥', 'Ben')).toEqual([
-      { emoji: '👍', count: 1, mine: false, aliases: ['Mor Kedi'] },
-      { emoji: '🔥', count: 1, mine: true, aliases: ['Ben'] },
+    const list = [{ emoji: 'begen' as const, count: 2, mine: true, aliases: ['Mor Kedi', 'Ben'] }];
+    expect(withMyReaction(list, 'kizgin', 'Ben')).toEqual([
+      { emoji: 'begen', count: 1, mine: false, aliases: ['Mor Kedi'] },
+      { emoji: 'kizgin', count: 1, mine: true, aliases: ['Ben'] },
     ]);
   });
 });
@@ -102,8 +102,8 @@ describe('a page without replies and reactions', () => {
 
   it('takes a tap on an emoji over a missing list', () => {
     expect(myReaction(undefined)).toBeNull();
-    expect(nextReaction(myReaction(undefined), '👍')).toBe('👍');
-    expect(withMyReaction(undefined, '👍')).toEqual([{ emoji: '👍', count: 1, mine: true }]);
+    expect(nextReaction(myReaction(undefined), 'begen')).toBe('begen');
+    expect(withMyReaction(undefined, 'begen')).toEqual([{ emoji: 'begen', count: 1, mine: true }]);
     expect(withMyReaction(undefined, null)).toEqual([]);
   });
 });

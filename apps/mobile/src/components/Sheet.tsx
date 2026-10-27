@@ -23,7 +23,8 @@ type Props = {
   visible: boolean;
   // Without it the sheet can only be left through its own buttons (the join request).
   onClose?: () => void;
-  title: string;
+  // Unset: the content starts under the handle (a person's card opens with their face).
+  title?: string;
   icon?: IconName;
   // Centered text for a single decision (the join request); menus stay left-aligned.
   centered?: boolean;
@@ -119,15 +120,17 @@ export function Sheet({ visible, onClose, title, icon, centered, children }: Pro
                     <Ionicons name={icon} size={ICON.lg} color={colors.accent} />
                   </View>
                 ) : null}
-                <Text
-                  variant="title"
-                  align={centered ? 'center' : undefined}
-                  accessibilityRole="header"
-                >
-                  {title}
-                </Text>
+                {title ? (
+                  <Text
+                    variant="title"
+                    align={centered ? 'center' : undefined}
+                    accessibilityRole="header"
+                  >
+                    {title}
+                  </Text>
+                ) : null}
               </View>
-              <View className="mt-3 gap-3">{children}</View>
+              <View className={`${title || icon ? 'mt-3 ' : ''}gap-3`}>{children}</View>
             </Quiet>
           </ScrollView>
         </Animated.View>

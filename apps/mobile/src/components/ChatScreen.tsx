@@ -28,11 +28,12 @@ import { sameDay } from '@shared/chatRuns.ts';
 
 import { tr } from '@/i18n/tr';
 import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, SPACING } from '@/theme/tokens';
+import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 
 import type { ChatWallKind } from '@/theme/chatWallpaper';
 
 import { ChatWallpaper } from './ChatWallpaper';
+import { CountBadge } from './CountBadge';
 import { useTabBarSpace } from './TabBar';
 import { Text } from './Text';
 import { usePressScale } from './motion';
@@ -267,10 +268,12 @@ export function ChatScroll({
         </ChatBarContext.Provider>
       </ScrollView>
       {pending > 0 ? (
+        // skall tuvali (SohbetYeniMesaj, skall.css → `.jump`): a round surface button at the right,
+        // the count of new messages in a badge on its corner.
         <View
           pointerEvents="box-none"
-          className="absolute inset-x-0 items-center"
-          style={{ bottom: SPACING[3] }}
+          className="absolute"
+          style={{ right: SPACING[4], bottom: SPACING[3] }}
         >
           <Pressable
             testID="chat-new-messages"
@@ -280,22 +283,22 @@ export function ChatScroll({
           >
             {({ pressed }) => (
               <View
-                className="flex-row items-center"
+                className="items-center justify-center"
                 style={[
                   {
-                    gap: SPACING[1.5],
-                    minHeight: SPACING[10],
-                    paddingHorizontal: SPACING[4],
+                    width: TOUCH.min,
+                    height: TOUCH.min,
                     borderRadius: shape.radius.pill,
-                    backgroundColor: colors.primary,
+                    backgroundColor: pressed ? colors.surface2 : colors.surface,
+                    boxShadow: shape.shadow.sheet,
                   },
                   pressScale(pressed),
                 ]}
               >
-                <Ionicons name="arrow-down" size={ICON.sm} color={colors.onPrimary} />
-                <Text variant="buttonSmall" tone="onPrimary">
-                  {tr.chat.newMessages(pending)}
-                </Text>
+                <Ionicons name="chevron-down" size={ICON.md} color={colors.text} />
+                <View className="absolute" style={{ top: -SPACING[1.5], right: -SPACING[1.5] }}>
+                  <CountBadge count={pending} />
+                </View>
               </View>
             )}
           </Pressable>
@@ -372,8 +375,9 @@ export function ChatScreen({
   );
 }
 
-// "Bugün" or "3 Ekim" over a day's first message.
-export function DayLine({ label }: { label: string }) {
+// "Bugün" or "3 Ekim" over a day's first message; fresh: "Yeni mesajlar" over the first message
+// that came while the chat was closed, in the link colour (skall.css → `.day.new`).
+export function DayLine({ label, fresh }: { label: string; fresh?: boolean }) {
   const { colors, shape } = useTheme();
   return (
     <View
@@ -389,7 +393,7 @@ export function DayLine({ label }: { label: string }) {
         paddingVertical: SPACING[1],
       }}
     >
-      <Text variant="caption" tone="muted">
+      <Text variant="caption" tone={fresh ? 'accent' : 'muted'}>
         {label}
       </Text>
     </View>

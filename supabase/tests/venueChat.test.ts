@@ -471,16 +471,17 @@ describe('venue chat replies and reactions (docs/SPEC_V3.md §21)', () => {
       VENUE_CHAT_REACTION_BROADCAST,
     );
     await heard.subscribed;
-    expect(await react(b, messageId, '👍')).toEqual(OK);
+    expect(await react(b, messageId, 'begen')).toEqual(OK);
     await heard.received;
     await heard.close();
-    expect(await react(b, messageId, '👍')).toEqual(OK);
+    expect(await react(b, messageId, 'begen')).toEqual(OK);
+    // An app from before the faces sends 👍: it counts as Beğendim (docs/SPEC_V4.md §4.C).
     expect(await react(c, messageId, '👍')).toEqual(OK);
-    expect(await react(a, messageId, '🔥')).toEqual(OK);
+    expect(await react(a, messageId, 'kizgin')).toEqual(OK);
     const forC = (await byBody(c)).merhaba;
     expect(forC?.reactions).toEqual([
-      { emoji: '👍', count: 2, mine: true },
-      { emoji: '🔥', count: 1, mine: false },
+      { emoji: 'begen', count: 2, mine: true },
+      { emoji: 'kizgin', count: 1, mine: false },
     ]);
     const [ids, names] = [
       await Promise.all([a, b, c].map((x) => userIdOf(x))),
@@ -496,21 +497,21 @@ describe('venue chat replies and reactions (docs/SPEC_V3.md §21)', () => {
 
     expect(await react(c, messageId, null)).toEqual(OK);
     expect((await byBody(b)).merhaba?.reactions).toEqual([
-      { emoji: '👍', count: 1, mine: true },
-      { emoji: '🔥', count: 1, mine: false },
+      { emoji: 'begen', count: 1, mine: true },
+      { emoji: 'kizgin', count: 1, mine: false },
     ]);
 
     // The limit: b has sent 2 so far; 8 more pass, the 11th is rate_limited and changes nothing.
     await sql`delete from public.venue_chat_reaction_rate`;
     for (let i = 0; i < VENUE_CHAT.reactionWindowMax; i += 1) {
-      expect(await react(b, messageId, i % 2 ? '😂' : '👍')).toEqual(OK);
+      expect(await react(b, messageId, i % 2 ? 'kahkaha' : 'begen')).toEqual(OK);
     }
-    expect(await react(b, messageId, '🔥')).toEqual({
+    expect(await react(b, messageId, 'kizgin')).toEqual({
       status: 429,
       body: errorBody('rate_limited'),
     });
     expect((await byBody(b)).merhaba?.reactions).toContainEqual({
-      emoji: '😂',
+      emoji: 'kahkaha',
       count: 1,
       mine: true,
     });
@@ -518,8 +519,8 @@ describe('venue chat replies and reactions (docs/SPEC_V3.md §21)', () => {
     // Hidden, gone or out of reach: not_found; no table at the venue: not_found.
     const notFound = { status: 404, body: errorBody('not_found') };
     await sql`update public.venue_chat_messages set hidden_at = now() where id = ${messageId}`;
-    expect(await react(a, messageId, '👍')).toEqual(notFound);
-    expect(await react(c, randomUUID(), '👍')).toEqual(notFound);
+    expect(await react(a, messageId, 'begen')).toEqual(notFound);
+    expect(await react(c, randomUUID(), 'begen')).toEqual(notFound);
 
     // Deleted after 24 hours with the message.
     await sql`update public.venue_chat_messages set created_at = now() - interval '25 hours'`;
@@ -533,7 +534,7 @@ describe('venue chat replies and reactions (docs/SPEC_V3.md §21)', () => {
   it('reacts only after taking the table', async () => {
     const { a, b } = await threeAtVenue();
     const messageId = (await send(a, 'merhaba')).body.messageId;
-    expect(await react(b, messageId, '👍')).toEqual(OK);
+    expect(await react(b, messageId, 'begen')).toEqual(OK);
     const bId = await userIdOf(b);
 
     const holder = postgres(dbUrl, { max: 1, onnotice: () => {} });
@@ -546,7 +547,7 @@ describe('venue chat replies and reactions (docs/SPEC_V3.md §21)', () => {
           where user_id = ${bId} and status = 'active' for no key update
         `;
         reacted = reacting`
-          select changed from public.venue_chat_react(${bId}, ${messageId}, '🔥', 10, 10)
+          select changed from public.venue_chat_react(${bId}, ${messageId}, 'kizgin', 10, 10)
         `
           .execute()
           .catch((err: unknown) => err);

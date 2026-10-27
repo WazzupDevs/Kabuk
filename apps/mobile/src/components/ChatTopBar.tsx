@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { tr } from '@/i18n/tr';
+import { LiveDot } from '@/ui/LiveDot';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING, TOUCH } from '@/theme/tokens';
 
@@ -14,6 +15,8 @@ type Props = {
   // name at 320 dp). Unset: it wraps freely.
   titleLines?: number;
   subtitle?: string;
+  // A live dot before the subtitle (skall tuvali: Mekan sohbeti, `.sub i.live`).
+  live?: boolean;
   // An avatar (or two) before the name.
   leading?: ReactNode;
   onBack?: () => void;
@@ -30,6 +33,7 @@ export function ChatTopBar({
   title,
   titleLines,
   subtitle,
+  live,
   leading,
   onBack,
   onPressTitle,
@@ -52,7 +56,14 @@ export function ChatTopBar({
         >
           {title}
         </Text>
-        {subtitle ? <Text variant="fine">{subtitle}</Text> : null}
+        {subtitle ? (
+          <View className="flex-row items-center" style={{ gap: SPACING[1.5] }}>
+            {live ? <LiveDot size={SPACING[2]} /> : null}
+            <Text variant="fine" className="shrink">
+              {subtitle}
+            </Text>
+          </View>
+        ) : null}
       </View>
     </>
   );

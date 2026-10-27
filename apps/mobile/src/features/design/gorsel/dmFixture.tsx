@@ -55,7 +55,7 @@ export function DmFixture() {
         time="22:12"
         delivery="read"
         quote={{ name: NAME, text: FIRST }}
-        reactions={[{ emoji: '❤️', count: 1, mine: false }]}
+        reactions={[{ emoji: 'ask', count: 1, mine: false }]}
       />
       <DayLine label="Bugün" />
       <ChatBubble text="Yarın Kapsül Anlat'a var mısın?" mine={false} first time="21:39" />

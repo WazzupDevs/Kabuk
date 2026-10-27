@@ -2,6 +2,7 @@ import {
   VENUE_CHAT_BROADCAST,
   VENUE_CHAT_REACTION_BROADCAST,
   type VenueChatMessage,
+  type CheckinIdentity,
   type VenueChatMode,
   venueChatChannel,
   venueChatLastAt,
@@ -23,7 +24,12 @@ export const venueChatKeys = {
   profile: (messageId: string) => ['venueChatProfile', messageId] as const,
 };
 
-export type VenueChatPage = { messages: VenueChatMessage[]; mode: VenueChatMode | null };
+export type VenueChatPage = {
+  messages: VenueChatMessage[];
+  mode: VenueChatMode | null;
+  // The check-in's identity (docs/SPEC_V4.md §4.D); null without a table.
+  identity: CheckinIdentity | null;
+};
 
 // The venue chat, oldest first for the screen (venue-chat/page returns newest first, with the
 // photos of profiled messages signed), and this check-in's mode (null until the first message,
@@ -39,6 +45,7 @@ function venueChatPage(venueId: string | undefined, sessionId: string | undefine
           .map((m) => withVenueChatExtras({ ...m, photoUrl: stablePhoto(m.photoUrl) }))
           .reverse(),
         mode: page.mode,
+        identity: page.identity ?? null,
       };
     },
   };

@@ -2,6 +2,7 @@ import type { CalendarDate } from '@shared/age.ts';
 import { APP_NAME, GAME_NAMES } from '@shared/brand.ts';
 import { headcountLabel } from '@shared/checkin.ts';
 import type { InboxStamp } from '@shared/dmInbox.ts';
+import type { Reaction } from '@shared/reactions.ts';
 import type { HistoryDay, HistoryResult } from '@shared/activities.ts';
 import type { EventTime } from '@shared/explore.ts';
 import { ENCOUNTER_MIN_MINUTES } from '@shared/friends.ts';
@@ -826,7 +827,21 @@ export const tr = {
     quoteLabel: (name: string, text: string) => `${name} mesajına yanıt: ${text}`,
     reactionChip: (emoji: string, n: number, mine: boolean) =>
       `${emoji} ${n}${mine ? ', senin tepkin' : ''}`,
-    reactWith: (emoji: string) => `${emoji} ile tepki ver`,
+    reactWith: (face: string) => `${face} ile tepki ver`,
+    // The six capsule faces (docs/SPEC_V4.md §4.C; skall tuvali, uretec/veri/emotes.json).
+    reactions: {
+      begen: 'Beğendim',
+      ask: 'Bayıldım',
+      kahkaha: 'Kahkaha',
+      saskin: 'Şaşırdım',
+      uzgun: 'Üzüldüm',
+      kizgin: 'Kızdım',
+    } satisfies Record<Reaction, string>,
+    report: 'Bildir',
+    delete: 'Sil',
+    // Over the first message that came while the chat was closed (skall tuvali: `.day.new`).
+    newLine: 'Yeni mesajlar',
+    jumpDown: 'En alta in',
     openProfile: (name: string) => `${name}, profili aç`,
   },
   // Mekan sohbeti (docs/SPEC_V3.md §7).
@@ -849,6 +864,27 @@ export const tr = {
     writingProfile: 'Profilinle yazıyorsun',
     you: 'Sen',
     messageMenu: 'Mesaj',
+    // skall tuvali (Mekan sohbeti panoları, docs/SPEC_V4.md §4.D).
+    options: 'Mekan sohbeti seçenekleri',
+    writingAs: 'olarak yazıyorsun',
+    change: 'Değiştir',
+    changeLabel: 'Kimliğini değiştir',
+    changed: 'Bu girişte değişti',
+    emptyTitle: 'Mekandaki herkes okur',
+    emptyProfiled: 'Mesajların adınla ve fotoğrafınla görünür. 24 saat sonra silinir.',
+    emptyAnonymous: (nick: string) =>
+      `Mesajların ${nick} adıyla, kapsül karakterinle görünür. 24 saat sonra silinir.`,
+    mutedTitle: 'Sessize aldıkların',
+    mutedNone: 'Sessize aldığın kimse yok.',
+    unmute: 'Sesi aç',
+    done: 'Tamam',
+    mute: 'Sessize al',
+    mutedToast: (name: string) => `${name} sessize alındı. Mesajları sana görünmez.`,
+    anonymousPerson: 'Anonim katılıyor',
+    profiledPerson: 'Profilli katılıyor',
+    anonymousNote: 'Anonim kişinin profili görünmez.',
+    seeProfile: 'Profili gör',
+    deleted: 'Mesaj silindi.',
     sendRequest: 'Arkadaşlık isteği gönder',
     requestConfirmTitle: 'İstek gönderilsin mi?',
     requestConfirmBody: 'İstek gönderirsen profilin ona görünür: adın, yaşın ve fotoğrafın.',

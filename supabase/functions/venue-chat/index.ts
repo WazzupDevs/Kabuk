@@ -29,7 +29,7 @@ import type {
 import { AppError } from '../_shared/pure/errors.ts';
 import { parseQuote, parseReactionCounts } from '../_shared/pure/messageExtras.ts';
 import { containsProfanity } from '../_shared/pure/profanity.ts';
-import { isReaction, type Reaction } from '../_shared/pure/reactions.ts';
+import { toReaction } from '../_shared/pure/reactions.ts';
 import {
   checkinIdentity,
   prepareVenueMessage,
@@ -39,6 +39,12 @@ import {
   venueChatChannel,
   venueChatMode,
 } from '../_shared/pure/venueChat.ts';
+
+// A reaction: one of the six faces, or an emoji of the app before them (reactions.ts); null takes
+// the caller's back.
+const ReactionInput = z
+  .custom<string | null>((v) => v === null || toReaction(v) !== null)
+  .transform((v) => (v === null ? null : toReaction(v)));
 
 const Body: z.ZodType<VenueChatRequest> = z.discriminatedUnion('action', [
   // A message says which identity it goes with: today's app with `profiled`, the new app with
@@ -56,7 +62,7 @@ const Body: z.ZodType<VenueChatRequest> = z.discriminatedUnion('action', [
   z.object({
     action: z.literal('react'),
     messageId: z.uuid(),
-    emoji: z.custom<Reaction>(isReaction).nullable(),
+    emoji: ReactionInput,
   }),
   z.object({
     action: z.literal('page'),

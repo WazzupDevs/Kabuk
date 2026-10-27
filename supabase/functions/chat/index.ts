@@ -14,10 +14,14 @@ import type { ChatRequest, ChatResponse, ReactResponse } from '../_shared/pure/a
 import { MIN_MESSAGE_INTERVAL_MS, prepareMessage } from '../_shared/pure/chat.ts';
 import { AppError } from '../_shared/pure/errors.ts';
 import { containsProfanity } from '../_shared/pure/profanity.ts';
-import { isReaction, type Reaction } from '../_shared/pure/reactions.ts';
+import { toReaction } from '../_shared/pure/reactions.ts';
 import { BROADCAST, messagesChannel } from '../_shared/pure/rooms.ts';
 
-const Emoji = z.custom<Reaction>(isReaction).nullable();
+// A reaction: one of the six faces, or an emoji of the app before them (reactions.ts); null takes
+// the caller's back.
+const ReactionInput = z
+  .custom<string | null>((v) => v === null || toReaction(v) !== null)
+  .transform((v) => (v === null ? null : toReaction(v)));
 
 const Body: z.ZodType<ChatRequest> = z.discriminatedUnion('action', [
   z.object({
@@ -26,7 +30,7 @@ const Body: z.ZodType<ChatRequest> = z.discriminatedUnion('action', [
     body: z.string().max(1000),
     replyTo: z.uuid().optional(),
   }),
-  z.object({ action: z.literal('react'), messageId: z.uuid(), emoji: Emoji }),
+  z.object({ action: z.literal('react'), messageId: z.uuid(), emoji: ReactionInput }),
 ]);
 
 const db = serviceClient();
