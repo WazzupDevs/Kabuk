@@ -140,46 +140,49 @@ export function CapsuleStage({
 
   return (
     <View style={{ paddingTop: STAGE.top * unit, alignItems: 'center' }}>
-      <Pressable
-        testID={testID}
-        accessibilityRole="button"
-        accessibilityLabel={label}
-        onPress={onPress}
-      >
-        <Animated.View
-          style={{
-            width: size + ring * 2,
-            height: size + ring * 2,
-            borderRadius: shape.radius.pill,
-            borderWidth: ring,
-            borderColor: colors.surface,
-            backgroundColor: lookGround(shownLook),
-            boxShadow: shape.shadow.card,
-            transform: [{ scale: beatScale }],
-          }}
+      <View style={{ width: size + ring * 2 }}>
+        <Pressable
+          testID={testID}
+          accessibilityRole="button"
+          accessibilityLabel={label}
+          onPress={onPress}
         >
-          <Animated.View style={[figure, { transformOrigin: FEET }, moveStyle]}>
-            <SvgXml xml={xml} width="100%" height="100%" />
-          </Animated.View>
-          {oldXml ? (
-            <Animated.View pointerEvents="none" style={[figure, { opacity: fade }]}>
-              <SvgXml xml={oldXml} width="100%" height="100%" />
+          <Animated.View
+            style={{
+              width: size + ring * 2,
+              height: size + ring * 2,
+              borderRadius: shape.radius.pill,
+              borderWidth: ring,
+              borderColor: colors.surface,
+              backgroundColor: lookGround(shownLook),
+              boxShadow: shape.shadow.card,
+              transform: [{ scale: beatScale }],
+            }}
+          >
+            <Animated.View style={[figure, { transformOrigin: FEET }, moveStyle]}>
+              <SvgXml xml={xml} width="100%" height="100%" />
             </Animated.View>
-          ) : null}
-        </Animated.View>
-      </Pressable>
-      {feeling ? (
-        <Bubble key={feeling.key} text={feeling.name} reduce={reduce} />
-      ) : hint ? (
-        <Bubble text={hint} reduce />
-      ) : null}
+            {oldXml ? (
+              <Animated.View pointerEvents="none" style={[figure, { opacity: fade }]}>
+                <SvgXml xml={oldXml} width="100%" height="100%" />
+              </Animated.View>
+            ) : null}
+          </Animated.View>
+        </Pressable>
+        {feeling ? (
+          <Bubble key={feeling.key} text={feeling.name} reduce={reduce} top={-STAGE.top * unit} />
+        ) : hint ? (
+          <Bubble text={hint} reduce top={-STAGE.top * unit} />
+        ) : null}
+      </View>
     </View>
   );
 }
 
-// v46 `.ced-bub`: a white bubble at the circle's top right, its tail at the bottom left; it pops in
+// v46 `.ced-bub` (left 74% of the circle, at the stage's top): a white bubble at the circle's top
+// right, its tail at the bottom left; it pops in
 // (scale .5 → 1, .34s cubic-bezier(.34,1.56,.64,1)).
-function Bubble({ text, reduce }: { text: string; reduce: boolean }) {
+function Bubble({ text, reduce, top }: { text: string; reduce: boolean; top: number }) {
   const { colors, shape } = useTheme();
   const [shown] = useState(() => new Animated.Value(reduce ? 1 : 0));
   useEffect(() => {
@@ -198,8 +201,8 @@ function Bubble({ text, reduce }: { text: string; reduce: boolean }) {
       pointerEvents="none"
       style={{
         position: 'absolute',
-        top: 0,
-        right: SPACING[2],
+        top,
+        left: '74%',
         paddingHorizontal: SPACING[3],
         paddingVertical: SPACING[1.5],
         borderRadius: shape.radius.lg,
