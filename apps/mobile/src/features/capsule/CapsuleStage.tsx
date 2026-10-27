@@ -1,5 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Animated, Easing, Pressable, View } from 'react-native';
+import Reanimated, {
+  Easing as ReEasing,
+  Extrapolation,
+  interpolate,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import { SvgXml } from 'react-native-svg';
 
 import { Text } from '@/components/Text';
@@ -13,8 +22,9 @@ import { BEAT, type Channel, type Move, sample } from './motion';
 // The stage (v46 `.ced-fig` in `.ced-ring`): 60 × 57 units, the circle (48) 6 in from the left and 8
 // down, the head free to rise over it.
 const STAGE = { width: 60, height: 57, circle: 48, left: 6, top: 8 } as const;
-// The feet the capsule moves about (`.cp-b`: transform-origin 24px 48px).
-const FEET = `${((24 + STAGE.left) / STAGE.width) * 100}% ${((48 + STAGE.top) / STAGE.height) * 100}%`;
+// The feet the capsule moves about (`.cp-b`: transform-origin 24px 48px), as a share of the stage's
+// height (the stage's middle across).
+const FEET_Y = (48 + STAGE.top) / STAGE.height;
 const FADE_MS = 240;
 const BUBBLE_MS = 340;
 
@@ -62,71 +72,71 @@ export function CapsuleStage({
     setOldLook(reduce ? null : shownLook);
     setShownLook(look);
   }
-  const [fade] = useState(() => new Animated.Value(0));
+  // Reanimated, not Animated's native driver: on Android the SVG inside a view moved by the native
+  // driver was not drawn until the move ended (the owner's video, 27 Ekim: an empty circle).
+  const fade = useSharedValue(0);
   useEffect(() => {
-    if (!oldLook) return undefined;
-    fade.setValue(1);
-    const anim = Animated.timing(fade, {
-      toValue: 0,
-      duration: FADE_MS,
-      easing: Easing.out(Easing.quad),
-      useNativeDriver: true,
-    });
-    anim.start(({ finished }) => {
-      if (finished) setOldLook(null);
-    });
-    return () => anim.stop();
+    if (!oldLook) return;
+    fade.set(1);
+    fade.set(
+      withTiming(0, { duration: FADE_MS, easing: ReEasing.out(ReEasing.quad) }, (done) => {
+        if (done) runOnJS(setOldLook)(null);
+      }),
+    );
   }, [oldLook, fade]);
+  const fadeStyle = useAnimatedStyle(() => ({ opacity: fade.value }));
 
-  // The move playing (0 → 1 over its length).
-  const [progress] = useState(() => new Animated.Value(1));
-  useEffect(() => {
-    if (!play || reduce) return undefined;
-    progress.setValue(0);
-    const anim = Animated.timing(progress, {
-      toValue: 1,
-      duration: play.move.ms,
-      easing: Easing.linear,
-      useNativeDriver: true,
-    });
-    anim.start();
-    return () => anim.stop();
-  }, [play, reduce, progress]);
-  const moveStyle = useMemo(() => {
+  // The move playing (0 → 1 over its length), about the feet: the pivot is set by moving there and
+  // back, since transformOrigin did not hold on Android.
+  const t = useSharedValue(1);
+  const curves = useMemo(() => {
     if (!play) return null;
-    const of = (c: Channel) => progress.interpolate(sample(play.move, c, unit));
-    const rot = sample(play.move, 'rot');
+    const of = (c: Channel) => sample(play.move, c, unit);
+    return { tx: of('tx'), ty: of('ty'), rot: of('rot'), sx: of('sx'), sy: of('sy') };
+  }, [play, unit]);
+  useEffect(() => {
+    if (!play || reduce) return;
+    t.set(0);
+    t.set(withTiming(1, { duration: play.move.ms, easing: ReEasing.linear }));
+  }, [play, reduce, t]);
+  const pivot = (FEET_Y - 0.5) * STAGE.height * unit;
+  const moveStyle = useAnimatedStyle(() => {
+    if (!curves) return {};
+    const v = (c: { inputRange: number[]; outputRange: number[] }) =>
+      interpolate(t.value, c.inputRange, c.outputRange, Extrapolation.CLAMP);
     return {
       transform: [
-        { translateX: of('tx') },
-        { translateY: of('ty') },
-        {
-          rotate: progress.interpolate({
-            inputRange: rot.inputRange,
-            outputRange: rot.outputRange.map((v) => `${v}deg`),
-          }),
-        },
-        { scaleX: of('sx') },
-        { scaleY: of('sy') },
+        { translateY: pivot },
+        { translateX: v(curves.tx) },
+        { translateY: v(curves.ty) },
+        { rotate: `${v(curves.rot)}deg` },
+        { scaleX: v(curves.sx) },
+        { scaleY: v(curves.sy) },
+        { translateY: -pivot },
       ],
     };
-  }, [play, progress, unit]);
+  });
 
   // The circle's beat.
-  const [beating] = useState(() => new Animated.Value(1));
+  const beating = useSharedValue(1);
+  const beatCurve = useMemo(() => sample(BEAT, 'sx'), []);
   useEffect(() => {
-    if (beat === 0 || reduce) return undefined;
-    beating.setValue(0);
-    const anim = Animated.timing(beating, {
-      toValue: 1,
-      duration: BEAT.ms,
-      easing: Easing.linear,
-      useNativeDriver: true,
-    });
-    anim.start();
-    return () => anim.stop();
+    if (beat === 0 || reduce) return;
+    beating.set(0);
+    beating.set(withTiming(1, { duration: BEAT.ms, easing: ReEasing.linear }));
   }, [beat, reduce, beating]);
-  const beatScale = useMemo(() => beating.interpolate(sample(BEAT, 'sx')), [beating]);
+  const beatStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        scale: interpolate(
+          beating.value,
+          beatCurve.inputRange,
+          beatCurve.outputRange,
+          Extrapolation.CLAMP,
+        ),
+      },
+    ],
+  }));
 
   const xml = useMemo(() => lookPop(shownLook, feeling?.id ?? ''), [shownLook, feeling?.id]);
   const oldXml = useMemo(() => (oldLook ? lookPop(oldLook) : null), [oldLook]);
@@ -147,27 +157,29 @@ export function CapsuleStage({
           accessibilityLabel={label}
           onPress={onPress}
         >
-          <Animated.View
-            style={{
-              width: size + ring * 2,
-              height: size + ring * 2,
-              borderRadius: shape.radius.pill,
-              borderWidth: ring,
-              borderColor: colors.surface,
-              backgroundColor: lookGround(shownLook),
-              boxShadow: shape.shadow.card,
-              transform: [{ scale: beatScale }],
-            }}
+          <Reanimated.View
+            style={[
+              {
+                width: size + ring * 2,
+                height: size + ring * 2,
+                borderRadius: shape.radius.pill,
+                borderWidth: ring,
+                borderColor: colors.surface,
+                backgroundColor: lookGround(shownLook),
+                boxShadow: shape.shadow.card,
+              },
+              beatStyle,
+            ]}
           >
-            <Animated.View style={[figure, { transformOrigin: FEET }, moveStyle]}>
+            <Reanimated.View style={[figure, moveStyle]}>
               <SvgXml xml={xml} width="100%" height="100%" />
-            </Animated.View>
+            </Reanimated.View>
             {oldXml ? (
-              <Animated.View pointerEvents="none" style={[figure, { opacity: fade }]}>
+              <Reanimated.View pointerEvents="none" style={[figure, fadeStyle]}>
                 <SvgXml xml={oldXml} width="100%" height="100%" />
-              </Animated.View>
+              </Reanimated.View>
             ) : null}
-          </Animated.View>
+          </Reanimated.View>
         </Pressable>
         {feeling ? (
           <Bubble key={feeling.key} text={feeling.name} reduce={reduce} top={-STAGE.top * unit} />
