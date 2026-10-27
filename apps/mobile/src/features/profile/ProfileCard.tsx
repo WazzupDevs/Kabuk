@@ -1,7 +1,8 @@
 import type { ProfileView } from '@shared/api/profile.ts';
 import { BADGES, type BadgeId } from '@shared/badges.ts';
 import type { ReactNode } from 'react';
-import { Image, type ImageSourcePropType, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { Image, type ImageSourcePropType, Pressable, View } from 'react-native';
 
 import { Card } from '@/components/Card';
 import { LookAvatar } from '@/components/LookAvatar';
@@ -12,7 +13,7 @@ import { tr } from '@/i18n/tr';
 import { usePhoto } from '@/lib/usePhoto';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/tokens';
-import { SPACING } from '@/theme/tokens';
+import { ICON, SPACING } from '@/theme/tokens';
 
 type Profile = Pick<ProfileView, 'photoUrl' | 'displayName' | 'age' | 'bio' | 'badges'>;
 
@@ -36,33 +37,75 @@ function nameLine(profile: Profile): string {
 export function ProfileHead({
   profile,
   capsule,
+  anonymous,
+  onEditCapsule,
   children,
 }: {
   profile: Profile;
-  // The own profile only (K-49): the capsule beside the photo (skall tuvali, Profil).
+  // The own profile only (K-49): the capsule beside the photo (skall tuvali, Profil, ProfilAnonim).
   capsule?: string | null;
+  // The check-in's identity is anonymous: the capsule is what the table sees (ringed).
+  anonymous?: boolean;
+  onEditCapsule?: () => void;
   children?: ReactNode;
 }) {
+  const { colors, shape } = useTheme();
+  const ring = (on: boolean) => ({
+    padding: SPACING[0.5],
+    borderRadius: shape.radius.pill,
+    borderWidth: SPACING[0.5],
+    borderColor: on ? colors.primary : 'transparent',
+  });
   return (
     <View className="items-center gap-2">
       {capsule ? (
-        <View className="flex-row justify-center" style={{ gap: SPACING[6] }}>
+        <View className="flex-row justify-center" style={{ gap: SPACING[4] }}>
           <View className="items-center gap-2">
-            <ProfilePhoto url={profile.photoUrl} name={profile.displayName} size="hero" />
+            <View style={ring(!anonymous)}>
+              <ProfilePhoto url={profile.photoUrl} name={profile.displayName} size="hero" />
+            </View>
             <View className="items-center">
               <Text variant="label">{tr.profile.ownPhoto}</Text>
-              <Text variant="fine">{tr.profile.ownPhotoNote}</Text>
+              <Text variant="fine" tone={anonymous ? 'muted' : 'accent'}>
+                {anonymous ? tr.profile.whenProfiled : tr.profile.ownPhotoNote}
+              </Text>
             </View>
           </View>
           <View className="items-center gap-2">
-            <LookAvatar
-              look={capsule}
-              size={PROFILE_PHOTO_SIZES.hero}
-              accessibilityLabel={tr.profile.ownCapsule}
-            />
+            <View style={ring(!!anonymous)}>
+              <LookAvatar
+                look={capsule}
+                size={PROFILE_PHOTO_SIZES.hero}
+                accessibilityLabel={tr.profile.ownCapsule}
+              />
+              {onEditCapsule ? (
+                <Pressable
+                  testID="capsule-edit"
+                  accessibilityRole="button"
+                  accessibilityLabel={tr.capsule.edit}
+                  onPress={onEditCapsule}
+                  hitSlop={SPACING[1.5]}
+                  className="absolute items-center justify-center"
+                  style={{
+                    right: 0,
+                    bottom: 0,
+                    width: SPACING[9],
+                    height: SPACING[9],
+                    borderRadius: shape.radius.pill,
+                    backgroundColor: colors.primary,
+                    borderWidth: SPACING[0.5] + SPACING[0.5] / 2,
+                    borderColor: colors.canvas,
+                  }}
+                >
+                  <Ionicons name="pencil" size={ICON.sm} color={colors.onPrimary} />
+                </Pressable>
+              ) : null}
+            </View>
             <View className="items-center">
               <Text variant="label">{tr.profile.ownCapsule}</Text>
-              <Text variant="fine">{tr.profile.ownCapsuleNote}</Text>
+              <Text variant="fine" tone={anonymous ? 'accent' : 'muted'}>
+                {anonymous ? tr.profile.ownPhotoNote : tr.profile.ownCapsuleNote}
+              </Text>
             </View>
           </View>
         </View>

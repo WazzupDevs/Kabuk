@@ -18,6 +18,7 @@ import { NickCard } from '@/features/profile/NickCard';
 import { Badges, ProfileHead } from '@/features/profile/ProfileCard';
 import { useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
+import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { tr } from '@/i18n/tr';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, NARROW_SCREEN } from '@/theme/tokens';
@@ -27,6 +28,8 @@ import { ICON, NARROW_SCREEN } from '@/theme/tokens';
 // (every tab root keeps it until step 4.7). The badges stay under the head (today's data; v45 has
 // none on the profile).
 export default function ProfileScreen() {
+  // The check-in's identity: the face the table sees is ringed (skall tuvali, ProfilAnonim).
+  const anonymous = useActiveTable().data?.identity.mode === 'anonymous';
   const { colors } = useTheme();
   const own = useProfile();
   const publicId = own.data?.public_id;
@@ -73,7 +76,18 @@ export default function ProfileScreen() {
         />
       ) : (
         <View className="mt-2 gap-4">
-          <ProfileHead profile={view.data} capsule={view.data.capsuleLook}>
+          <ProfileHead
+            profile={view.data}
+            capsule={view.data.capsuleLook}
+            anonymous={anonymous}
+            onEditCapsule={() => router.push('/profile/capsule')}
+          >
+            {anonymous && view.data.capsuleNick ? (
+              <Text variant="fine" align="center" className="mb-2">
+                {tr.profile.seenAsLead} <Text variant="label">{view.data.capsuleNick}</Text>{' '}
+                {tr.profile.seenAs}
+              </Text>
+            ) : null}
             {/* v45: .pbtns, two quiet capsules in v45's 14 px (the small size, so "Profili düzenle"
                 fits half a row from 360 dp; "Düzenle" below); "Arkadaşlar" with the first friends'
                 photos. */}

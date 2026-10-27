@@ -1,6 +1,6 @@
 import type { Friend } from '@shared/api/friends.ts';
 import { REPORT_REASONS, type ReportReason } from '@shared/chat.ts';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Alert, View } from 'react-native';
@@ -17,13 +17,14 @@ import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { openDm } from '@/features/friends/openDm';
-import { useFriends } from '@/features/friends/queries';
+import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
+import { friendKeys, useFriends } from '@/features/friends/queries';
 import { Badges, ProfileHead } from '@/features/profile/ProfileCard';
 import { useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
-import { ApiError, safetyApi } from '@/lib/api';
+import { ApiError, friendsApi, safetyApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
@@ -41,6 +42,22 @@ export default function PersonScreen() {
   const friend = friends.data?.find((f) => f.publicId === publicId) ?? null;
   const [menu, setMenu] = useState(false);
   const [reporting, setReporting] = useState(false);
+  const [ending, setEnding] = useState<'remove' | 'block' | null>(null);
+  const queryClient = useQueryClient();
+  const end = useMutation({
+    meta: FEEL_ERROR,
+    mutationFn: ({ kind, reason }: { kind: 'remove' | 'block'; reason?: ReportReason }) =>
+      kind === 'remove'
+        ? friendsApi.remove(publicId, reason)
+        : safetyApi.blockFriend(publicId, reason),
+    onSuccess: (_data, { kind, reason }) => {
+      if (kind === 'block') track('block_created', {});
+      if (reason) track('report_submitted', {});
+      setEnding(null);
+      void queryClient.invalidateQueries({ queryKey: friendKeys.all });
+      router.back();
+    },
+  });
   const failed =
     view.isError && !(view.error instanceof ApiError && view.error.code === 'not_found');
   const hidden = !view.isPending && !view.data && !failed;
@@ -110,11 +127,40 @@ export default function PersonScreen() {
           <Button label={tr.profile.back} onPress={() => router.back()} />
         </View>
       ) : null}
-      <Sheet visible={menu} onClose={() => setMenu(false)} title={tr.profile.moreTitle}>
+      {/* skall tuvali (ProfilBaskasiSecenekler, ProfilYabanciSecenekler). */}
+      <Sheet
+        visible={menu}
+        onClose={() => setMenu(false)}
+        title={view.data?.displayName ?? tr.profile.moreTitle}
+      >
         <Menu>
+          {friend ? (
+            <MenuItem
+              icon="person-remove-outline"
+              label={tr.friends.removeFriend}
+              testID="profile-remove"
+              onPress={() => {
+                setMenu(false);
+                setEnding('remove');
+              }}
+            />
+          ) : null}
+          {friend ? (
+            <MenuItem
+              negative
+              icon="ban-outline"
+              label={tr.friends.block}
+              testID="profile-block"
+              onPress={() => {
+                setMenu(false);
+                setEnding('block');
+              }}
+            />
+          ) : null}
           <MenuItem
-            icon="flag-outline"
-            label={tr.profile.report}
+            negative
+            icon="alert"
+            label={tr.chat.report}
             testID="profile-report"
             onPress={() => {
               setMenu(false);
@@ -129,6 +175,17 @@ export default function PersonScreen() {
           onPress={() => setMenu(false)}
         />
       </Sheet>
+      <ConfirmWithReport
+        reasons={REPORT_REASONS}
+        visible={ending !== null}
+        title={ending === 'block' ? tr.friends.block : tr.friends.removeFriend}
+        hint={ending === 'block' ? tr.friends.blockHint : tr.friends.removeHint}
+        confirmLabel={ending === 'block' ? tr.friends.blockConfirm : tr.friends.removeConfirm}
+        pending={end.isPending}
+        error={end.error}
+        onConfirm={(reason) => ending && end.mutate({ kind: ending, reason })}
+        onClose={() => setEnding(null)}
+      />
       <ReportModal
         reasons={REPORT_REASONS}
         visible={reporting}
@@ -164,7 +221,7 @@ function FriendActions({ friend }: { friend: Friend }) {
       {threadId ? (
         <View className="flex-1">
           <Button
-            icon="chatbubble-outline"
+            icon="chevron-forward"
             label={tr.friends.messageShort}
             onPress={() =>
               openDm({ threadId, publicId: friend.publicId, name: friend.displayName })
