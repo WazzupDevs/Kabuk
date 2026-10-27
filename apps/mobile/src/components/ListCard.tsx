@@ -14,7 +14,17 @@ const DIVIDER_LEFT = SPACING[16] + SPACING[3] + SPACING[0.5];
 // like a button (skall.css → `.btn.pressed`) instead of the row painting a block inside it.
 export const CardPressContext = createContext<((pressed: boolean) => void) | null>(null);
 
-export function ListCard({ children, testID }: { children: ReactNode; testID?: string }) {
+// `bare`: the rows on the screen's ground, no card (the owner's call, 27 Ekim: Arkadaşlar and
+// Mesajlar), their content in line with the screen's edge; the hairlines stay.
+export function ListCard({
+  children,
+  testID,
+  bare = false,
+}: {
+  children: ReactNode;
+  testID?: string;
+  bare?: boolean;
+}) {
   const { colors, shape } = useTheme();
   const pressScale = usePressScale();
   const [pressed, setPressed] = useState(false);
@@ -24,14 +34,16 @@ export function ListCard({ children, testID }: { children: ReactNode; testID?: s
     <View
       testID={testID}
       style={[
-        {
-          backgroundColor: colors.surface,
-          borderWidth: shape.stroke.card,
-          borderColor: colors.cardLine,
-          borderRadius: shape.radius.lg,
-          boxShadow: shape.shadow.card,
-          paddingVertical: SPACING[1],
-        },
+        bare
+          ? { marginHorizontal: -SPACING[4] }
+          : {
+              backgroundColor: colors.surface,
+              borderWidth: shape.stroke.card,
+              borderColor: colors.cardLine,
+              borderRadius: shape.radius.lg,
+              boxShadow: shape.shadow.card,
+              paddingVertical: SPACING[1],
+            },
         single ? pressScale(pressed) : null,
       ]}
     >

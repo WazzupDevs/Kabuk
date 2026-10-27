@@ -299,6 +299,11 @@ export const MAP_PIN = {
   selectedGlyphScale: 1.25,
   ring: 3,
   outline: 2,
+  // A lively or crowded venue glows in its colour around the pin (the owner's call, 27 Ekim).
+  halo: 8,
+  haloOpacity: 0.28,
+  // The second line under the name: how lively, and the event when there is one.
+  statusScale: 0.82,
   eventDot: 6,
   eventOffset: 16,
   clusterRadius: [18, 22, 26],
@@ -308,6 +313,17 @@ export const MAP_PIN = {
   // Clear of the pin: the pin's radius, its rings and a gap, in the label's ems.
   labelOffset: 2.4,
   labelHalo: 2.5,
+} as const;
+// The person's table card on Mekan (the owner's call, 27 Ekim: fuller): the table's icon blurred
+// large behind it, under the card's ground at `veil`; the people as small capsules; the time left
+// as a bar.
+export const TABLE_CARD = {
+  backdropBlur: 28,
+  backdropOpacity: 0.55,
+  veil: 0.6,
+  capsule: [9, 20] as const,
+  capsuleOverlap: 3,
+  bar: 6,
 } as const;
 export const MAP_FONTS = { regular: ['Noto Sans Regular'], bold: ['Noto Sans Bold'] } as const;
 

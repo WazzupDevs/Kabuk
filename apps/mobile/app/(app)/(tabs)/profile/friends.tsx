@@ -66,7 +66,7 @@ export default function FriendsScreen() {
           {friends.data.length === 0 ? (
             <EmptyState kind="empty" body={tr.friends.empty} />
           ) : (
-            <ListCard>
+            <ListCard bare>
               {friends.data.map((f, i) => (
                 <Rise key={f.publicId} index={i}>
                   <FriendRow friend={f} />
