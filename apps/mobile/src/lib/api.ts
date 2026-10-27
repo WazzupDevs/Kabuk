@@ -43,6 +43,7 @@ import type {
   ProfileRequest,
   ProfileUploadUrl,
   ProfileView,
+  RefreshNickResponse,
 } from '@shared/api/profile.ts';
 import type { VenueChatPageResponse, VenueChatResponse } from '@shared/api/venueChat.ts';
 import type { GameFlowReportReason, ReportReason } from '@shared/chat.ts';
@@ -311,6 +312,8 @@ export const profileApi = {
   photoUploadUrl: () => invoke<ProfileUploadUrl>('profile', { action: 'photo-upload-url' }),
   photoCommit: (path: string) => invoke<{ ok: true }>('profile', { action: 'photo-commit', path }),
   photoRemove: () => invoke<{ ok: true }>('profile', { action: 'photo-remove' }),
+  // K-9: a new anonymous nick once in 30 days.
+  refreshNick: () => invoke<RefreshNickResponse>('profile', { action: 'refresh-nick' }),
 };
 
 export const friendsApi = {

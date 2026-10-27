@@ -20,6 +20,8 @@ export default defineConfig([
     'supabase/functions/_shared/pure/database.ts',
     // Design handoff files, kept exactly as the design session delivered them (as in .prettierignore).
     'docs/design/',
+    // A copy of the v46 capsule drawing library (src/theme/capsuleDrawing.test.ts).
+    'apps/mobile/src/theme/capsuleDrawing.js',
   ]),
 
   // Everything outside the mobile app: scripts, shared pure code, root configs.

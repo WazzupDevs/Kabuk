@@ -5,3 +5,5 @@ CLAUDE.md
 MVP_SPEC.md
 # Design handoff files, kept exactly as the design session delivered them.
 docs/design/
+# A copy of the v46 capsule drawing library (apps/mobile/src/theme/capsuleDrawing.test.ts).
+apps/mobile/src/theme/capsuleDrawing.js

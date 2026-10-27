@@ -542,6 +542,15 @@ export const tr = {
     typing: 'yazıyor',
   },
   profile: {
+    // skall tuvali (Profil, ProfilNick*): the photo and the capsule side by side, the nick card.
+    ownPhoto: 'Profilin',
+    ownPhotoNote: 'Masada görünen',
+    ownCapsule: 'Kapsülün',
+    ownCapsuleNote: 'Anonimken',
+    nickNote: 'Anonim adın. Yenilersen yeni bir ad alırsın; kapsülün aynı kalır.',
+    nickNoteWait: 'Anonim adın. 30 günde bir yenileyebilirsin; kapsülün aynı kalır.',
+    nickRefresh: "Nick'i yenile",
+    nickWait: (days: number) => `${days} gün sonra yenileyebilirsin.`,
     // A friend's profile (skall tuvali, ProfilBaskasi): the status beside "Mesaj".
     friendsStatus: 'Arkadaşsınız',
     noName: 'Henüz bir adın yok',
