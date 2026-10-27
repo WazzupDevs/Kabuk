@@ -36,6 +36,8 @@ export function PeopleSheet({ visible, onClose, roomId, people, me, profiles }: 
   const [person, setPerson] = useState<TablePerson | null>(null);
   const safety = useRoomSafety(roomId);
   const publicId = person ? profiles?.get(person.sessionId) : undefined;
+  // Whether this phone owns the table: its block takes the person off (K-13).
+  const iOwn = people.some((p) => p.owner && p.sessionId === me);
   const close = () => {
     setPerson(null);
     onClose();
@@ -122,7 +124,7 @@ export function PeopleSheet({ visible, onClose, roomId, people, me, profiles }: 
             icon="ban-outline"
             testID="person-block"
             label={tr.safety.block}
-            note={owner ? tr.table.blockOwnerNote : tr.table.blockMemberNote}
+            note={iOwn ? tr.table.blockOwnerNote : tr.table.blockMemberNote}
             loading={safety.blocking}
             onPress={() => person && safety.block(person.sessionId, close)}
           />
