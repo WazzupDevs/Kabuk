@@ -76,6 +76,7 @@ const SWIPE_MAX = SPACING[16] + SPACING[4];
 // for the read ticks.
 const TIME_GAP = '\u2003';
 const TICKS_ROOM = '\u2003\u2002';
+const INVISIBLE = 'transparent';
 
 export function ChatBubble({
   text,
@@ -195,7 +196,7 @@ export function ChatBubble({
           <Text color={fg}>
             {text}
             {time && !state ? (
-              <Text variant="fine" color="transparent" accessible={false}>
+              <Text variant="fine" color={INVISIBLE} accessible={false}>
                 {`${TIME_GAP}${time}${mine && delivery ? TICKS_ROOM : ''}`}
               </Text>
             ) : null}
