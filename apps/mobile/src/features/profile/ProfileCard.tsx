@@ -14,6 +14,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/tokens';
 import { ICON, SPACING } from '@/theme/tokens';
 import { AppIcon } from '@/components/AppIcon';
+import { PhotoImage } from '@/components/PhotoImage';
 
 type Profile = Pick<ProfileView, 'photoUrl' | 'displayName' | 'age' | 'bio' | 'badges'>;
 
@@ -155,13 +156,9 @@ export function ProfileHero({ profile, overlay }: { profile: Profile; overlay?: 
         }}
       >
         {photo.url ? (
-          <Image
-            // No fade-in: a photo drawn again does not blink (Android fades 300 ms by default).
-            fadeDuration={0}
-            source={{ uri: photo.url }}
+          <PhotoImage
+            url={photo.url}
             onError={photo.onError}
-            accessibilityIgnoresInvertColors
-            resizeMode="cover"
             style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }}
           />
         ) : letters ? (

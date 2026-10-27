@@ -3,7 +3,7 @@
     "name": "skall",
     "slug": "masa",
     "scheme": "masa",
-    "version": "0.6.0",
+    "version": "0.7.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "platforms": ["android", "ios"],
@@ -63,6 +63,15 @@
           "photosPermission": "Profil fotoğrafı seçebilmen için galerine erişim gerekiyor.",
           "cameraPermission": "Profil fotoğrafı çekebilmen için kameraya erişim gerekiyor.",
           "microphonePermission": false
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableMinifyInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
+          }
         }
       ]
     ],

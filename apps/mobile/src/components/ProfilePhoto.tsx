@@ -1,4 +1,4 @@
-import { Image, View } from 'react-native';
+import { View } from 'react-native';
 
 import { usePhoto } from '@/lib/usePhoto';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -6,6 +6,7 @@ import { SPACING, TOUCH } from '@/theme/tokens';
 
 import { Text } from './Text';
 import { AppIcon } from './AppIcon';
+import { PhotoImage } from './PhotoImage';
 
 // Row avatar (48), the sign-up preview beside its buttons (72), the sign-up photo step and the edit
 // screen (104), and the profile's head (116, v45: .pav), which sits in a ring on a soft shadow.
@@ -45,12 +46,9 @@ export function ProfilePhoto({ url, name, size = 'large' }: Props) {
 
   if (photo.url) {
     return (
-      <Image
-        // No fade-in: a photo drawn again does not blink (Android fades 300 ms by default).
-        fadeDuration={0}
-        source={{ uri: photo.url }}
+      <PhotoImage
+        url={photo.url}
         onError={photo.onError}
-        accessibilityIgnoresInvertColors
         style={[frame, { backgroundColor: colors.surface2 }]}
       />
     );

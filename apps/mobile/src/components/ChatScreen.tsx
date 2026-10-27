@@ -13,7 +13,6 @@ import {
 import {
   BackHandler,
   Keyboard,
-  KeyboardAvoidingView,
   type LayoutChangeEvent,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
@@ -40,6 +39,8 @@ import { useTabBarSpace } from './TabBar';
 import { Text } from './Text';
 import { usePressScale } from './motion';
 import { AppIcon } from './AppIcon';
+// Frame by frame with the keyboard (react-native-keyboard-controller): the bar rises with it.
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 
 // How close to the end counts as "at the bottom" (a message's last line may sit under the edge).
 const BOTTOM_SLACK = SPACING[12];
@@ -403,7 +404,7 @@ export function ChatScreen({
           onTouchStart={reactions.onTouchStart}
         >
           {top}
-          <KeyboardAvoidingView className="flex-1" behavior="padding">
+          <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
             {/* The wallpaper under the stream and the message bar (v45: .chatpane); the bar floats on
               it, over the stream. */}
             <View className="flex-1">

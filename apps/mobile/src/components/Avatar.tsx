@@ -8,6 +8,7 @@ import { SPACING, TOUCH } from '@/theme/tokens';
 import { TABLE_AVATAR_IMAGES } from './Glyph';
 import { Mark } from './Mark';
 import { Text } from './Text';
+import { PhotoImage } from './PhotoImage';
 
 // xs 20 (the friends' photos on the profile's "Arkadaşlar"), sm 32 (chat), md 40 (top bars), lg 48,
 // xl 48 (list rows; skall tuvali `.av.s48`), hero 72 (the table card).
@@ -92,14 +93,7 @@ export function Avatar(props: Props) {
   }
 
   const inner = photo.url ? (
-    <Image
-      // No fade-in: a photo drawn again does not blink (Android fades 300 ms by default).
-      fadeDuration={0}
-      source={{ uri: photo.url }}
-      onError={photo.onError}
-      accessibilityIgnoresInvertColors
-      style={{ width: side, height: side }}
-    />
+    <PhotoImage url={photo.url} onError={photo.onError} style={{ width: side, height: side }} />
   ) : (
     <Text
       // The heading weight (700), about 38 % of the disc.

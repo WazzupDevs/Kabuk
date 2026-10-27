@@ -7,6 +7,11 @@ import { useState } from 'react';
 const KEEP_MS = 45 * 60 * 1000;
 const kept = new Map<string, { url: string; at: number }>();
 
+// The photo's path, its address without the signature: the same photo, whatever its signature.
+export function photoCacheKey(url: string): string {
+  return url.split('?')[0] ?? url;
+}
+
 export function stablePhotoUrl(url: string, now: number = Date.now()): string {
   const key = url.split('?')[0] ?? url;
   const hit = kept.get(key);
