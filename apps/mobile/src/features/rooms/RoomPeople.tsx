@@ -52,7 +52,9 @@ export function PeopleSheet({ visible, onClose, roomId, people, me, profiles }: 
         titleNote={tr.venue.people(people.length)}
       >
         <Text variant="fine">{tr.table.peopleNote}</Text>
-        <View className="flex-row flex-wrap" style={{ rowGap: SPACING[2] }} testID="table-people">
+        {/* One person a row: in two columns a nick and the owner's tag broke over two lines at
+            360 dp (E2E, 27 Ekim). */}
+        <View style={{ rowGap: SPACING[2] }} testID="table-people">
           {people.map((p) => {
             const mine = p.sessionId === me;
             return (
@@ -64,21 +66,13 @@ export function PeopleSheet({ visible, onClose, roomId, people, me, profiles }: 
                 disabled={mine}
                 onPress={() => setPerson(p)}
                 className="flex-row items-center gap-3"
-                style={{
-                  width: '50%',
-                  minHeight: TOUCH.min + SPACING[1],
-                  paddingRight: SPACING[2],
-                }}
+                style={{ minHeight: TOUCH.min + SPACING[1] }}
               >
                 <PersonFace person={p} publicId={profiles?.get(p.sessionId)} size="md" />
-                <View className="flex-1 gap-1">
+                <View className="flex-1 flex-row flex-wrap items-center gap-2">
                   <Text variant="heading">{p.alias}</Text>
-                  {p.owner || mine ? (
-                    <View className="flex-row flex-wrap gap-1">
-                      {p.owner ? <Tag variant="leader" label={tr.table.ownerTag} /> : null}
-                      {mine ? <Tag label={tr.table.youTag} /> : null}
-                    </View>
-                  ) : null}
+                  {p.owner ? <Tag variant="leader" label={tr.table.ownerTag} /> : null}
+                  {mine ? <Tag label={tr.table.youTag} /> : null}
                 </View>
               </Pressable>
             );

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { TextInput, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Keyboard, TextInput, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { Text as AppText } from '@/components/Text';
@@ -23,7 +23,8 @@ type Props = {
 // Keşfet's search (v46 `.dsearch`): a round field with a magnifier. While typing its edge turns
 // purple and a soft ring grows around it (`:focus-within`), both easing 200 ms. The keyboard's
 // action key searches. A keystroke holds the phone's touches (haptics.ts → noteTyping), as in
-// every field.
+// every field. When the keyboard goes (Android's back, a sheet over it) the field lets go of the
+// typing too, so a sheet closing does not bring the keyboard back (E2E, 27 Ekim).
 export function SearchField({
   value,
   onChangeText,
@@ -35,6 +36,11 @@ export function SearchField({
   const { scheme } = theme;
   const s = V46_EXPLORE[scheme].search;
   const [focused, setFocused] = useState(false);
+  const input = useRef<TextInput>(null);
+  useEffect(() => {
+    const sub = Keyboard.addListener('keyboardDidHide', () => input.current?.blur());
+    return () => sub.remove();
+  }, []);
   const look = focused || focusedPreview ? s.focus : s.idle;
   return (
     <Animated.View
@@ -58,6 +64,7 @@ export function SearchField({
       <V46Svg drawing={V46_EXPLORE_ICONS.search} size={s.icon.size} color={s.icon.color} />
       <View style={{ flex: 1, minWidth: 0 }}>
         <TextInput
+          ref={input}
           value={value}
           onChangeText={(text) => {
             noteTyping();
