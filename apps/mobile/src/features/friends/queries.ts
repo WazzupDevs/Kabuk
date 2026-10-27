@@ -22,7 +22,16 @@ export const friendKeys = {
   inbox: ['friends', 'inbox'] as const,
   dms: ['friends', 'dm'] as const,
   dm: (threadId: string) => ['friends', 'dm', threadId] as const,
+  notifications: ['friends', 'notifications'] as const,
 };
+
+// The bell's list and its count of new rows (docs/SPEC_V4.md §4.G).
+export function useNotifications() {
+  return useQuery({
+    queryKey: friendKeys.notifications,
+    queryFn: () => friendsApi.notifications(),
+  });
+}
 
 export function useFriends() {
   return useQuery({
@@ -172,6 +181,11 @@ export function useRequestCount(): number {
   const incoming = useIncomingFriendRequests();
   const chatIncoming = useVenueChatRequests();
   return (incoming.data?.length ?? 0) + (chatIncoming.data?.length ?? 0);
+}
+
+// The bell's badge: what came after the list was last opened.
+export function useUnseenCount(): number {
+  return useNotifications().data?.unseen ?? 0;
 }
 
 // The inbox and the friends list (both sign photos) are read again at most once per

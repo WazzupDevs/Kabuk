@@ -38,6 +38,7 @@ import type {
   FriendsIncomingResponse,
   FriendsListResponse,
   FriendsOkResponse,
+  NotificationsResponse,
 } from '@shared/api/friends.ts';
 import type {
   ChatProfileView,
@@ -330,6 +331,8 @@ export const profileApi = {
 
 export const friendsApi = {
   list: () => invoke<FriendsListResponse>('friends', { action: 'list' }),
+  // The bell's list (docs/SPEC_V4.md §4.G): requests, accepted requests, matches and invites.
+  notifications: () => invoke<NotificationsResponse>('friends', { action: 'notifications' }),
   request: (historyId: string) =>
     invoke<FriendsOkResponse>('friends', { action: 'request', historyId }),
   requestFromVenueChat: (venueChatMessageId: string) =>

@@ -173,6 +173,15 @@ export const tr = {
     genericError: 'Bir şeyler ters gitti. Tekrar dener misin?',
     close: 'Kapat',
     back: 'Geri',
+    // How long ago (skall tuvali, Bildirimler): "Şimdi", "5 dk", "2 sa", "Dün", then the date.
+    ago: (iso: string, now: number) => {
+      const minutes = Math.floor((now - Date.parse(iso)) / 60000);
+      if (minutes < 1) return 'Şimdi';
+      if (minutes < 60) return `${minutes} dk`;
+      if (minutes < 24 * 60) return `${Math.floor(minutes / 60)} sa`;
+      if (minutes < 48 * 60) return 'Dün';
+      return dayMonth(iso);
+    },
     // Between two short facts on one line ("2 kişi · Lobide değil").
     separator: '·',
   },
@@ -531,8 +540,26 @@ export const tr = {
   notifications: {
     title: 'Bildirimler',
     withCount: (n: number) => `Bildirimler, ${n} yeni`,
-    empty: 'Yeni bildirim yok.',
-    emptyHint: `Başka bir masayla en az ${ENCOUNTER_MIN_MINUTES} dakika oynadığınızda burada görünür.`,
+    empty: 'Henüz bildirim yok',
+    emptyHint: 'Arkadaşlık istekleri ve arkadaşlarının masa davetleri burada görünür.',
+    // skall tuvali (Bildirimler, BildirimlerKabul): the name in bold, then the rest.
+    fresh: 'Yeni',
+    earlier: 'Önceki',
+    requestRest: 'sana arkadaşlık isteği gönderdi',
+    friendsNow: 'ile artık arkadaşsınız',
+    acceptedRest: 'arkadaşlık isteğini kabul etti',
+    acceptedMeta: 'Artık mesajlaşabilirsiniz',
+    matchRest: 'ile arkadaş oldunuz',
+    matchMeta: 'Masa sonunda ikiniz de eklediniz',
+    inviteRest: 'seni masasına çağırıyor',
+    invitePastRest: 'seni masasına çağırmıştı',
+    inviteMeta: (table: string, people: number, clock: string) =>
+      `${table} · ${headcountLabel(people)} kişi · ${clock} kaldı`,
+    inviteJoined: (table: string) => `Kabul edildi, ${table} masasının yanına git.`,
+    inviteGone: 'Davet artık geçerli değil',
+    inviteDeclined: 'Reddettin',
+    join: 'Katıl',
+    writeMessage: 'Mesaj yaz',
   },
   dm: {
     placeholder: 'Mesaj yaz…',
