@@ -6,7 +6,7 @@ import { useReduceMotion } from '@/lib/useReduceMotion';
 import { buttonFill, type ButtonVariant, isTextOnly } from '@/theme/buttonFill';
 import { EASE_OUT } from '@/theme/markMotion';
 import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, OPACITY, SPACING, TOUCH, type TypeVariant } from '@/theme/tokens';
+import { ICON, OPACITY, type PaletteKey, SPACING, TOUCH, type TypeVariant } from '@/theme/tokens';
 
 import { Loader } from './Loader';
 import { usePressScale } from './motion';
@@ -28,6 +28,10 @@ type Props = {
   // skall tuvali (skall.css → "Düğme"): sm 36, md 44, lg 52; sm's touch area grows to 44.
   size?: 'sm' | 'md' | 'lg';
   icon?: IconName;
+  // The icon in its own colour (skall tuvali: the quiet "Reddet" with its red cross).
+  iconTone?: PaletteKey;
+  // What the press does, for screen readers.
+  accessibilityHint?: string;
   // A drawing in the icon's place (the profile's "Arkadaşlar": the friends' photos).
   leading?: ReactNode;
   // A short addition after the label ("+1", "2 hak").
@@ -109,6 +113,8 @@ export function Button({
   variant = 'primary',
   size = 'md',
   icon,
+  iconTone,
+  accessibilityHint,
   leading,
   detail,
   accessibilityLabel,
@@ -178,6 +184,7 @@ export function Button({
       accessibilityRole="button"
       testID={testID}
       accessibilityLabel={accessibilityLabel ?? (detail ? `${label} ${detail}` : label)}
+      accessibilityHint={accessibilityHint}
       accessibilityState={{ disabled: !!inactive, busy: loading }}
       disabled={inactive}
       onPress={onPress}
@@ -202,7 +209,14 @@ export function Button({
               <Ionicons name={icon} size={ICON.md} color={fg} />
             ) : (
               <>
-                {leading ?? (icon ? <Ionicons name={icon} size={ICON.md} color={fg} /> : null)}
+                {leading ??
+                  (icon ? (
+                    <Ionicons
+                      name={icon}
+                      size={ICON.md}
+                      color={iconTone && !disabled ? colors[iconTone] : fg}
+                    />
+                  ) : null)}
                 {stack ? (
                   <View className="shrink items-center">
                     <Label variant={labelVariant} color={fg}>

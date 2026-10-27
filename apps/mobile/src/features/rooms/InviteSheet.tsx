@@ -15,6 +15,12 @@ import { tr } from '@/i18n/tr';
 import { roomsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useNow } from '@/lib/useNow';
+import { BRAND } from '@/theme/brand';
+import { useTheme } from '@/theme/ThemeProvider';
+import { SPACING } from '@/theme/tokens';
+
+// The brand's three colours on a sent invite's clock (skall tuvali, Davet).
+const INVITE_DOTS = [BRAND.purple, BRAND.pink, BRAND.orange] as const;
 
 type Props = {
   visible: boolean;
@@ -28,6 +34,7 @@ type Props = {
 // accepted, declined or expired invite and a friend who is not at the venue are never told apart,
 // and who is at the venue is never shown (rule 4).
 export function InviteSheet({ visible, onClose, roomId, phones }: Props) {
+  const { colors, shape } = useTheme();
   const friends = useFriends();
   const now = useNow(1000);
   // When each invite went out, by the friend's public id; this sheet's memory only.
@@ -46,9 +53,10 @@ export function InviteSheet({ visible, onClose, roomId, phones }: Props) {
   };
 
   return (
-    <Sheet visible={visible} onClose={onClose} title={tr.invite.title} icon="people-outline">
+    // skall tuvali (Davet, MasaDavetDolu, MasaDavetYukleniyor, MasaDavetHata, MasaDavetBos).
+    <Sheet visible={visible} onClose={onClose} title={tr.invite.title}>
       <View className="gap-3" testID="invite-sheet">
-        <Text tone="muted">{tr.invite.how}</Text>
+        <Text variant="fine">{tr.invite.how}</Text>
         {friends.isPending ? (
           <View className="items-center py-4">
             <Loader />
@@ -63,14 +71,19 @@ export function InviteSheet({ visible, onClose, roomId, phones }: Props) {
         ) : friends.data.length === 0 ? (
           <EmptyState kind="empty" title={tr.invite.empty} body={tr.invite.emptyHint} />
         ) : (
-          <View className="gap-2">
-            {friends.data.map((f) => {
+          <View>
+            {friends.data.map((f, i) => {
               const seconds = left(f.publicId);
               return (
                 <View
                   key={f.publicId}
                   className="flex-row items-center gap-3"
                   testID={`invite-row-${f.displayName ?? ''}`}
+                  style={{
+                    minHeight: SPACING[16] - SPACING[1],
+                    borderTopWidth: i > 0 ? shape.stroke.hairline : 0,
+                    borderTopColor: colors.divider,
+                  }}
                 >
                   <Avatar
                     kind="profile"
@@ -79,16 +92,48 @@ export function InviteSheet({ visible, onClose, roomId, phones }: Props) {
                     size="md"
                   />
                   <View className="flex-1 gap-0.5">
-                    <Text variant="bodyStrong">{f.displayName ?? ''}</Text>
-                    {seconds > 0 ? <Text variant="fine">{tr.invite.valid(seconds)}</Text> : null}
+                    <Text variant="heading">{f.displayName ?? ''}</Text>
+                    {seconds > 0 ? (
+                      <Text variant="fine" testID="invite-sent">
+                        {tr.invite.sent}
+                      </Text>
+                    ) : null}
                   </View>
                   {seconds > 0 ? (
-                    <Text variant="label" tone="muted" testID="invite-sent">
-                      {tr.invite.sent}
-                    </Text>
+                    <View
+                      className="flex-row items-center"
+                      accessibilityLabel={tr.invite.valid(seconds)}
+                      style={{
+                        gap: SPACING[2],
+                        height: SPACING[9],
+                        paddingHorizontal: SPACING[3],
+                        borderRadius: shape.radius.pill,
+                        backgroundColor: colors.surface2,
+                      }}
+                    >
+                      <View className="flex-row" style={{ gap: SPACING[0.5] }}>
+                        {INVITE_DOTS.map((c) => (
+                          <View
+                            key={c}
+                            style={{
+                              width: SPACING[1.5],
+                              height: SPACING[1.5],
+                              borderRadius: shape.radius.pill,
+                              backgroundColor: c,
+                            }}
+                          />
+                        ))}
+                      </View>
+                      <Text variant="label" tabular>
+                        {tr.invite.clock(seconds)}
+                      </Text>
+                    </View>
                   ) : (
                     <Button
                       size="sm"
+                      variant="secondary"
+                      icon="add"
+                      iconTone="success"
                       label={tr.invite.send}
                       disabled={full}
                       loading={invite.isPending && invite.variables === f.publicId}
@@ -106,7 +151,7 @@ export function InviteSheet({ visible, onClose, roomId, phones }: Props) {
             {errorMessage(invite.error)}
           </Text>
         ) : null}
-        <Button variant="neutral" label={tr.invite.done} onPress={onClose} />
+        <Button size="lg" variant="neutral" label={tr.invite.done} onPress={onClose} />
       </View>
     </Sheet>
   );

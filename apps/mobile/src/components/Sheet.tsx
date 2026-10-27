@@ -25,6 +25,8 @@ type Props = {
   onClose?: () => void;
   // Unset: the content starts under the handle (a person's card opens with their face).
   title?: string;
+  // Beside the title, small (skall tuvali, MasaKisiler: "Masadakiler 6 kişi").
+  titleNote?: string;
   icon?: IconName;
   // Centered text for a single decision (the join request); menus stay left-aligned.
   centered?: boolean;
@@ -34,7 +36,7 @@ type Props = {
 // A bottom sheet over a scrim: menus, confirmations and the join request. Always a trust surface
 // (`Quiet`): hairlines, one clear action. It slides up and the scrim fades in; with reduce motion
 // it appears at once. It closes the same way, then leaves the screen.
-export function Sheet({ visible, onClose, title, icon, centered, children }: Props) {
+export function Sheet({ visible, onClose, title, titleNote, icon, centered, children }: Props) {
   const { colors, shape } = useTheme();
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
@@ -127,6 +129,7 @@ export function Sheet({ visible, onClose, title, icon, centered, children }: Pro
                     accessibilityRole="header"
                   >
                     {title}
+                    {titleNote ? <Text variant="fine" tone="muted">{`  ${titleNote}`}</Text> : null}
                   </Text>
                 ) : null}
               </View>
