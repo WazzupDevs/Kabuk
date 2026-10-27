@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import type { ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 
+import { rowPress } from '@/theme/rowPress';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 
@@ -43,7 +44,8 @@ export function ListRow({
   accessibilityLabel,
   testID,
 }: Props) {
-  const { colors, shape } = useTheme();
+  const theme = useTheme();
+  const { colors, shape } = theme;
   const pressScale = usePressScale();
   const content = (
     <>
@@ -111,8 +113,8 @@ export function ListRow({
         <View
           style={[
             style,
-            card ? pressScale(pressed) : pressed ? { opacity: 0.7 } : null,
-            inset && pressed ? { backgroundColor: colors.surface2, opacity: 1 } : null,
+            card ? pressScale(pressed) : pressed && !inset ? { opacity: 0.7 } : null,
+            inset ? rowPress(theme, pressed) : null,
           ]}
         >
           {content}

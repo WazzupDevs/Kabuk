@@ -134,7 +134,7 @@ export function RoomMessages({
         const counts = parseReactionCounts(extra?.reactions);
         const quote = m.replied ? parseQuote(extra?.reply_to) : null;
         return (
-          <ChatRow key={m.id} id={m.id} className={first ? 'mt-1.5 gap-2' : 'gap-2'}>
+          <ChatRow key={m.id} id={m.id} first={first}>
             {(jumpTo) => (
               <>
                 {day ? <DayLine label={dayLabel(day)} /> : null}

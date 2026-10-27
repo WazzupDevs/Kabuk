@@ -73,7 +73,7 @@ export default function PersonScreen() {
   });
 
   return (
-    <Screen>
+    <Screen refreshable>
       <View className="mb-2 flex-row items-center justify-between">
         <IconButton
           round

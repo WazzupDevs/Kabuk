@@ -278,7 +278,7 @@ export default function VenueChatScreen() {
         </View>
       ) : (
         runs.map(({ item: m, first, day }) => (
-          <ChatRow key={m.id} id={m.id} className={first ? 'mt-1.5 gap-2' : 'gap-2'}>
+          <ChatRow key={m.id} id={m.id} first={first}>
             {(jumpTo) => (
               <>
                 {day ? <DayLine label={dayLabel(day)} /> : null}

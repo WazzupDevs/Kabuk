@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, View } from 'react-native';
 
+import { haptic } from '@/lib/haptics';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 
@@ -14,7 +15,10 @@ export function Checkbox({ label, checked, onToggle }: Props) {
     <Pressable
       accessibilityRole="checkbox"
       accessibilityState={{ checked }}
-      onPress={onToggle}
+      onPress={() => {
+        haptic('selection');
+        onToggle();
+      }}
       style={{
         flexDirection: 'row',
         alignItems: 'center',

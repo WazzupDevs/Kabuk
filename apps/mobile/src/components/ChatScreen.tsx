@@ -22,11 +22,13 @@ import {
   View,
   type ViewStyle,
 } from 'react-native';
+import Reanimated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { sameDay } from '@shared/chatRuns.ts';
 
 import { tr } from '@/i18n/tr';
+import { useReduceMotion } from '@/lib/useReduceMotion';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 
@@ -53,22 +55,37 @@ export function useChatJump(): ChatJump | null {
   return useContext(ChatJumpContext);
 }
 
+// Whether the stream has settled after opening: a row that comes after it is a new message and
+// rises in (the ones the page opened with stand still).
+const ChatLiveContext = createContext(false);
+const SETTLE_MS = 800;
+const ARRIVE_MS = 220;
+
 // One message's row in the stream: reports its place for jumpTo and hands jumpTo to its bubble
-// (a quote's tap). Outside a ChatScroll it is a plain View and jumpTo does nothing.
+// (a quote's tap). Outside a ChatScroll it is a plain View and jumpTo does nothing. A message that
+// arrives while the chat is open fades up into place (none with reduce motion).
 export function ChatRow({
   id,
-  className,
+  first,
   children,
 }: {
   id: string;
-  className?: string;
+  // A run's first message: a little more room above it.
+  first?: boolean;
   children: (jumpTo: (id: string) => void) => ReactNode;
 }) {
   const jump = useChatJump();
+  const live = useContext(ChatLiveContext);
+  const reduce = useReduceMotion();
+  const [arriving] = useState(live && !reduce);
   return (
-    <View className={className} onLayout={jump?.row(id)}>
+    <Reanimated.View
+      entering={arriving ? FadeInDown.duration(ARRIVE_MS) : undefined}
+      onLayout={jump?.row(id)}
+      style={{ gap: SPACING[2], marginTop: first ? SPACING[1.5] : 0 }}
+    >
       {children((target) => void jump?.jumpTo(target))}
-    </View>
+    </Reanimated.View>
   );
 }
 
@@ -155,6 +172,11 @@ export function ChatScroll({
   const followed = useRef(newestKey);
   const [atBottom, setAtBottom] = useState(true);
   const [pending, setPending] = useState(0);
+  const [live, setLive] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setLive(true), SETTLE_MS);
+    return () => clearTimeout(timer);
+  }, []);
   const rows = useRef(new Map<string, number>());
   const jump = useMemo<ChatJump>(
     () => ({
@@ -245,6 +267,8 @@ export function ChatScroll({
       <ScrollView
         ref={scroll}
         testID={testID}
+        // Dragging the messages puts the keyboard away, like any chat app.
+        keyboardDismissMode="on-drag"
         className="flex-1"
         contentContainerStyle={contentContainerStyle}
         keyboardShouldPersistTaps="handled"
@@ -264,7 +288,9 @@ export function ChatScroll({
         }}
       >
         <ChatBarContext.Provider value={bar}>
-          <ChatJumpContext.Provider value={jump}>{children}</ChatJumpContext.Provider>
+          <ChatJumpContext.Provider value={jump}>
+            <ChatLiveContext.Provider value={live}>{children}</ChatLiveContext.Provider>
+          </ChatJumpContext.Provider>
         </ChatBarContext.Provider>
       </ScrollView>
       {pending > 0 ? (

@@ -17,6 +17,7 @@ import { useFriends } from '@/features/friends/queries';
 import { openDm } from '@/features/friends/openDm';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
+import { rowPress } from '@/theme/rowPress';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 
@@ -34,7 +35,7 @@ export default function FriendsScreen() {
   };
 
   return (
-    <Screen>
+    <Screen refreshable>
       <ScreenHeader
         title={tr.profile.friends}
         titleDetail={friends.data ? String(friends.data.length) : undefined}
@@ -81,7 +82,7 @@ export default function FriendsScreen() {
 // A friend (v45: .frow): the photo, the name and since when, and "Mesaj" when there is a
 // conversation.
 function FriendRow({ friend: f }: { friend: Friend }) {
-  const { colors } = useTheme();
+  const theme = useTheme();
   const name = f.displayName ?? tr.profile.noName;
   const threadId = f.threadId;
   return (
@@ -102,9 +103,7 @@ function FriendRow({ friend: f }: { friend: Friend }) {
               gap: SPACING[3] + SPACING[0.5],
               minHeight: TOUCH.large + SPACING[2],
               paddingVertical: SPACING[2.5],
-              paddingLeft: SPACING[4],
-              paddingRight: SPACING[2],
-              backgroundColor: pressed ? colors.surface2 : undefined,
+              ...rowPress(theme, pressed, SPACING[4], SPACING[2]),
             }}
           >
             <Avatar kind="profile" size="xl" name={name} photoUrl={f.photoUrl} />

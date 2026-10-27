@@ -22,6 +22,7 @@ import { NotificationsBell } from '@/features/notifications/Bell';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
+import { rowPress } from '@/theme/rowPress';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
@@ -37,7 +38,7 @@ export default function MessagesScreen() {
   const now = useNow(60_000);
 
   return (
-    <Screen edges={['top']}>
+    <Screen edges={['top']} refreshable>
       <ScreenHeader title={tr.tabs.messages} trailing={<NotificationsBell />} />
       <View className="mt-3">
         <Segmented<Tab>
@@ -119,7 +120,7 @@ function InboxRow({
   now: Date;
   listen: boolean;
 }) {
-  const { colors } = useTheme();
+  const theme = useTheme();
   const name = t.displayName ?? tr.profile.noName;
   const unread = t.unreadCount > 0;
   const threadId = t.threadId;
@@ -143,8 +144,7 @@ function InboxRow({
             gap: SPACING[3] + SPACING[0.5],
             minHeight: SPACING[16] + SPACING[2],
             paddingVertical: SPACING[3],
-            paddingHorizontal: SPACING[4],
-            backgroundColor: pressed ? colors.surface2 : undefined,
+            ...rowPress(theme, pressed),
           }}
         >
           <Avatar kind="profile" size="xl" name={name} photoUrl={t.photoUrl} />

@@ -3,7 +3,7 @@ import { Pressable, TextInput, View } from 'react-native';
 import Svg, { Rect } from 'react-native-svg';
 
 import { tr } from '@/i18n/tr';
-import { noteTyping } from '@/lib/haptics';
+import { haptic, noteTyping } from '@/lib/haptics';
 import { BRAND } from '@/theme/brand';
 import { typeStyle, useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
@@ -114,7 +114,10 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
           accessibilityLabel={sendLabel}
           accessibilityState={{ disabled: !!inactive, busy: !!sending }}
           disabled={inactive}
-          onPress={onSend}
+          onPress={() => {
+            haptic('sent');
+            onSend();
+          }}
         >
           {({ pressed }) => (
             <View

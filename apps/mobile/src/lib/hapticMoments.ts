@@ -19,7 +19,8 @@ export type HapticMoment =
   | 'replyThreshold' // a chat: a swiped message passed the point where letting go answers it (v43)
   | 'failed' // an action the person pressed failed, and its error shows (FEEL_ERROR)
   | 'friendsMade' // the end of the table: "Arkadaş oldunuz"
-  | 'accountReady'; // sign-up finished: the photo step's "Bitir" (K-30, v45)
+  | 'accountReady' // sign-up finished: the photo step's "Bitir" (K-30, v45)
+  | 'sent'; // a chat message went (DM, room, venue chat)
 
 export type HapticCall =
   | { kind: 'selection' }
@@ -43,6 +44,7 @@ export const HAPTICS: Record<HapticMoment, HapticCall> = {
   failed: { kind: 'notification', type: 'error' },
   friendsMade: { kind: 'notification', type: 'success' },
   accountReady: { kind: 'notification', type: 'success' },
+  sent: { kind: 'impact', style: 'light' },
 };
 
 // The requester's touch when their join request's visible status changes. Only an acceptance is
