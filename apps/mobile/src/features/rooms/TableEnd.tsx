@@ -5,12 +5,11 @@ import { useWindowDimensions, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
-import { GlyphDisc } from '@/components/GlyphDisc';
 import { ListCard } from '@/components/ListCard';
+import { Mark } from '@/components/Mark';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
-import { ScreenHeader } from '@/components/ScreenHeader';
 import { Text } from '@/components/Text';
 import { openDm } from '@/features/friends/openDm';
 import {
@@ -22,6 +21,7 @@ import {
 import { useRetryAfterName } from '@/features/friends/useRetryAfterName';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
+import { useTheme } from '@/theme/ThemeProvider';
 import { track } from '@/lib/analytics';
 import { friendsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
@@ -55,6 +55,7 @@ type EndRecord = {
 // pressed: "Arkadaş oldunuz" and "Mesaj". No table length, no game count. Built from this person's
 // own records (play_history); nothing about the others is read again (rule 4).
 export function TableEnd({ roomId, left, tableName, phones, profiled, anonymous, onClose }: Props) {
+  const { colors, shape } = useTheme();
   const records = useTableHistory(roomId, true);
   const friends = useHistoryFriends();
 
@@ -62,12 +63,26 @@ export function TableEnd({ roomId, left, tableName, phones, profiled, anonymous,
     <Screen>
       {/* On the header, which always has content: with no record (nobody sat 3 minutes) the
           list below is empty and has no size. */}
-      <View testID="table-end" className="gap-3 pt-4">
-        <GlyphDisc icon="checkmark-done-outline" />
-        <ScreenHeader
-          title={left ? tr.tableEnd.leftTitle : tr.tableEnd.title}
-          subtitle={tr.tableEnd.subtitle(tableName, phones)}
-        />
+      {/* skall tuvali (MasaBitti): the mark on a soft square, the title and the line, centred. */}
+      <View testID="table-end" className="items-center gap-2 pt-8">
+        <View
+          className="items-center justify-center"
+          style={{
+            width: SPACING[16] + SPACING[6],
+            height: SPACING[16] + SPACING[6],
+            borderRadius: shape.radius.xl,
+            backgroundColor: colors.surface2,
+            marginBottom: SPACING[2],
+          }}
+        >
+          <Mark size={SPACING[12]} label={null} />
+        </View>
+        <Text variant="display" align="center" accessibilityRole="header">
+          {left ? tr.tableEnd.leftTitle : tr.tableEnd.title}
+        </Text>
+        <Text variant="fine" align="center">
+          {tr.tableEnd.subtitle(tableName, phones)}
+        </Text>
       </View>
       <View className="mt-4">
         {records.isPending ? (
@@ -93,11 +108,11 @@ export function TableEnd({ roomId, left, tableName, phones, profiled, anonymous,
           </ListCard>
         ) : null}
       </View>
-      <Text variant="fine" className="mt-4">
+      <Text variant="fine" align="center" className="mt-4">
         {tr.tableEnd.note}
       </Text>
       {anonymous ? (
-        <Text variant="fine" className="mt-1.5">
+        <Text variant="fine" align="center" className="mt-1.5">
           {tr.tableEnd.anonymousNote}
         </Text>
       ) : null}

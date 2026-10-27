@@ -82,12 +82,14 @@ appId: app.kabuk.mobile
 - tapOn:
     id: table-who
 - extendedWaitUntil:
-    visible: Masadakiler · 3 kişi
+    visible:
+      id: table-people
     timeout: 10000
 - takeScreenshot: 19-table-three
 - back
 - extendedWaitUntil:
-    notVisible: Masadakiler · 3 kişi
+    notVisible:
+      id: table-people
     timeout: 10000
 # The owner's "Masadan ayrıl" sits in the end sheet, under "Masayı bitir" (§4.C).
 - tapOn:

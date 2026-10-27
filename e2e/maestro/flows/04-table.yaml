@@ -114,7 +114,8 @@ appId: app.kabuk.mobile
     env:
       ACTION: request-join
 - extendedWaitUntil:
-    visible: Katılma isteği
+    visible:
+      id: request-card
     timeout: 20000
 - takeScreenshot: 15-join-request
 - tapOn:
@@ -129,10 +130,12 @@ appId: app.kabuk.mobile
 - tapOn:
     id: table-who
 - extendedWaitUntil:
-    visible: Masadakiler · 2 kişi
+    visible:
+      id: table-people
     timeout: 10000
 - takeScreenshot: 18-table
 - back
 - extendedWaitUntil:
-    notVisible: Masadakiler · 2 kişi
+    notVisible:
+      id: table-people
     timeout: 10000

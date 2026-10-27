@@ -199,7 +199,7 @@ export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Pro
 
 // The icon picker (v46 .mk-pick): the themes as tabs that scroll, the theme's five scenes in five
 // columns; a scene at another table of the venue is faded and not chosen ("…, başka bir masada").
-function IconPicker({
+export function IconPicker({
   theme,
   onTheme,
   selected,

@@ -716,7 +716,7 @@ export const tr = {
     incomingMemberTitle: 'Masana katılmak istiyor',
     incomingMemberBody:
       'Bu adı söyleyen arkadaşınsa kabul et. Kabul edersen senin tarafına katılır.',
-    declineMemberNote: 'Geçersen o yalnızca "Masa şu an müsait değil" görür.',
+    declineMemberNote: 'Reddedersen o yalnızca "Masa şu an müsait değil" görür.',
     peopleTitle: 'Masadakiler',
     mySide: (phones: number) => `Senin tarafın · ${phones} telefon`,
     otherSide: (phones: number) => `Karşı taraf · ${phones} telefon`,
@@ -781,14 +781,24 @@ export const tr = {
     incomingTitle: 'Katılma isteği',
     incomingBody: (alias: string, headcount: number) =>
       `${alias} (${headcountLabel(headcount)} kişi) masana katılmak istiyor.`,
-    accept: 'Kabul',
-    decline: 'Geç',
-    declineNote: 'Geçersen karşı masa yalnızca "Masa şu an müsait değil" görür.',
+    accept: 'Kabul et',
+    decline: 'Reddet',
+    declineNote: 'Reddedersen karşı masa yalnızca "Masa şu an müsait değil" görür.',
     // The profiled requester's card (docs/SPEC_V3.md §23.E) while its profile loads.
     requestProfileLoading: 'Profil yükleniyor',
     // The leader's "Kabul" came too late: the requester's table merged with another meanwhile
     // (room_not_available) or the request ended (docs/SPEC_V3.md §23.C).
     requestGone: 'Bu masa artık müsait değil.',
+    // skall tuvali (MasaIstek… panoları).
+    wantsToJoin: (who: string) => `${who} katılmak istiyor`,
+    withProfile: 'Profiliyle',
+    anonymous: 'Anonim',
+    memberAsk: 'Bu masadayım diyor',
+    askedBy: (who: string) => `isteyen ${who}`,
+    askedByAnonymous: 'isteyen anonim',
+    tooMany: 'Birlikte 12 kişiyi geçersiniz. Masada en çok 12 kişi olur.',
+    comingTitle: (alias: string, people: number) => `${alias} geliyor, ${people} kişi`,
+    comingBody: 'Masanın yanına geliyorlar.',
     viewPeople: 'Masadakileri gör',
     secondsLeft: (s: number) => `${s} sn`,
   },
@@ -1265,6 +1275,7 @@ export const tr = {
     whoLabel: (n: number) => `Masadakileri gör, ${headcountLabel(n)} kişi`,
     end: 'Bitir',
     leave: 'Masadan ayrıl',
+    leaveShort: 'Ayrıl',
     tabGames: (n: number) => `Oyun Seç (${n})`,
     tabChat: (n: number) => `Masa Sohbeti (${n})`,
     categoryAll: (n: number) => `Tümü ${n}`,
@@ -1299,6 +1310,8 @@ export const tr = {
     peopleNote: 'Herkes kendi telefonuyla katılır. Masada en çok 12 kişi olur.',
     you: (alias: string) => `${alias} (sen)`,
     ownerTag: 'Masa sahibi',
+    peopleTitle: 'Masadakiler',
+    youTag: 'Sen',
     nameLabel: 'Masanın adı',
     viewProfile: 'Profili gör',
   },
@@ -1346,6 +1359,8 @@ export const tr = {
     sent: 'Davet gönderildi',
     valid: (seconds: number) =>
       `Geçerli · ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`,
+    clock: (seconds: number) =>
+      `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`,
     full: 'Masa dolu. Masada en çok 12 kişi olur.',
     failed: 'Arkadaşların yüklenemedi',
     failedHint: 'Bağlantını kontrol edip yeniden dene.',

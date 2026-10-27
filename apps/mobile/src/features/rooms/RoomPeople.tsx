@@ -4,7 +4,8 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 
-import { Avatar } from '@/components/Avatar';
+import { Avatar, AVATAR_SIZE } from '@/components/Avatar';
+import { LookAvatar } from '@/components/LookAvatar';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Menu, MenuItem } from '@/components/Menu';
@@ -12,10 +13,13 @@ import { Sheet } from '@/components/Sheet';
 import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
 import { useRoomSafety } from '@/features/chat/RoomSafety';
+import { useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { roomsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { BRAND } from '@/theme/brand';
+import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING, TOUCH } from '@/theme/tokens';
 
 import { roomKeys, type TablePerson } from './queries';
@@ -32,11 +36,13 @@ type Props = {
   profiles: ReadonlyMap<string, string> | undefined;
 };
 
-// Masadakiler (v46 data-msheet; docs/SPEC_V4.md §4.E, K-40): everyone at the table, the owner
-// marked, "N kişi"; a person opens the profile (profiled) and Şikayet and Engelle (K-13: the
-// owner's block takes the person off the table, a participant's takes the participant off). The
-// owner renews the table's name here, 3 times a table.
+// Masadakiler (skall tuvali: MasaKisiler, MasaKisilerKatilimci; docs/SPEC_V4.md §4.E, K-40):
+// everyone at the table in two columns, the owner and the viewer marked; a person opens their
+// card (MasaKisiSecenekler): the profile (profiled), Şikayet et and Engelle (K-13: the owner's
+// block takes the person off the table, a participant's takes the participant off). The owner
+// renews the table's name here, 3 times a table.
 export function PeopleSheet({ visible, onClose, roomId, people, me, owner, profiles }: Props) {
+  const { colors, shape } = useTheme();
   const queryClient = useQueryClient();
   const [person, setPerson] = useState<TablePerson | null>(null);
   const safety = useRoomSafety(roomId);
@@ -62,10 +68,11 @@ export function PeopleSheet({ visible, onClose, roomId, people, me, owner, profi
       <Sheet
         visible={visible && person === null}
         onClose={close}
-        title={tr.table.people(people.length)}
+        title={tr.table.peopleTitle}
+        titleNote={tr.venue.people(people.length)}
       >
         <Text variant="fine">{tr.table.peopleNote}</Text>
-        <View className="gap-1" testID="table-people">
+        <View className="flex-row flex-wrap" style={{ rowGap: SPACING[2] }} testID="table-people">
           {people.map((p) => {
             const mine = p.sessionId === me;
             return (
@@ -73,19 +80,25 @@ export function PeopleSheet({ visible, onClose, roomId, people, me, owner, profi
                 key={p.sessionId}
                 testID={`person-${p.alias}`}
                 accessibilityRole="button"
+                accessibilityLabel={mine ? tr.table.you(p.alias) : p.alias}
                 disabled={mine}
                 onPress={() => setPerson(p)}
                 className="flex-row items-center gap-3"
-                style={{ minHeight: TOUCH.min + SPACING[1] }}
+                style={{
+                  width: '50%',
+                  minHeight: TOUCH.min + SPACING[1],
+                  paddingRight: SPACING[2],
+                }}
               >
-                {p.profiled ? (
-                  <Avatar kind="profile" name={p.alias} size="md" />
-                ) : (
-                  <Avatar kind="default" size="md" />
-                )}
-                <View className="flex-1 flex-row flex-wrap items-center gap-1.5">
-                  <Text variant="heading">{mine ? tr.table.you(p.alias) : p.alias}</Text>
-                  {p.owner ? <Tag label={tr.table.ownerTag} /> : null}
+                <PersonFace person={p} publicId={profiles?.get(p.sessionId)} size="md" />
+                <View className="flex-1 gap-1">
+                  <Text variant="heading">{p.alias}</Text>
+                  {p.owner || mine ? (
+                    <View className="flex-row flex-wrap gap-1">
+                      {p.owner ? <Tag variant="leader" label={tr.table.ownerTag} /> : null}
+                      {mine ? <Tag label={tr.table.youTag} /> : null}
+                    </View>
+                  ) : null}
                 </View>
               </Pressable>
             );
@@ -93,42 +106,62 @@ export function PeopleSheet({ visible, onClose, roomId, people, me, owner, profi
         </View>
         {owner ? (
           <Card tone="note">
-            <View className="gap-1.5" testID="table-rename">
-              <Text variant="caption" tone="muted">
-                {tr.table.nameLabel}
-              </Text>
-              <View className="flex-row items-center gap-3">
-                <Text variant="heading" className="flex-1">
-                  {owner.name}
+            <View className="flex-row items-center gap-3" testID="table-rename">
+              <View className="flex-1 gap-0.5">
+                <Text variant="caption" tone="muted">
+                  {tr.table.nameLabel}
                 </Text>
-                {rerollsLeft > 0 ? (
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    testID="table-reroll"
-                    label={tr.venue.rerollName}
-                    loading={reroll.isPending}
-                    onPress={() => reroll.mutate()}
-                  />
-                ) : null}
+                <Text variant="heading">{owner.name}</Text>
+                <View className="flex-row items-center gap-2">
+                  <View className="flex-row" style={{ gap: SPACING[0.5] }}>
+                    {Array.from({ length: TABLE_NAME_REROLLS }, (_, i) => (
+                      <View
+                        key={i}
+                        style={{
+                          width: SPACING[1.5],
+                          height: SPACING[1.5],
+                          borderRadius: shape.radius.pill,
+                          backgroundColor: i < rerollsLeft ? DOTS[i % DOTS.length] : colors.control,
+                        }}
+                      />
+                    ))}
+                  </View>
+                  <Text variant="fine" className="shrink">
+                    {tr.venue.rerollsLeft(rerollsLeft)}
+                  </Text>
+                </View>
               </View>
-              <Text variant="fine">{tr.venue.rerollsLeft(rerollsLeft)}</Text>
-              {reroll.isError ? (
-                <Text variant="fine" tone="danger">
-                  {errorMessage(reroll.error)}
-                </Text>
+              {rerollsLeft > 0 ? (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  icon="refresh"
+                  testID="table-reroll"
+                  label={tr.venue.rerollName}
+                  loading={reroll.isPending}
+                  onPress={() => reroll.mutate()}
+                />
               ) : null}
             </View>
+            {reroll.isError ? (
+              <Text variant="fine" tone="danger">
+                {errorMessage(reroll.error)}
+              </Text>
+            ) : null}
           </Card>
         ) : null}
         <Button size="lg" variant="neutral" label={tr.common.close} onPress={close} />
       </Sheet>
 
-      <Sheet
-        visible={visible && person !== null}
-        onClose={() => setPerson(null)}
-        title={person?.alias ?? ''}
-      >
+      <Sheet visible={visible && person !== null} onClose={() => setPerson(null)}>
+        {person ? (
+          <View className="flex-row items-center gap-3">
+            <PersonFace person={person} publicId={publicId} size="xl" />
+            <Text variant="title" className="flex-1">
+              {person.alias}
+            </Text>
+          </View>
+        ) : null}
         <Menu>
           {publicId ? (
             <MenuItem
@@ -142,7 +175,8 @@ export function PeopleSheet({ visible, onClose, roomId, people, me, owner, profi
             />
           ) : null}
           <MenuItem
-            icon="flag-outline"
+            negative
+            icon="alert"
             testID="person-report"
             label={tr.safety.report}
             onPress={() => {
@@ -166,8 +200,38 @@ export function PeopleSheet({ visible, onClose, roomId, people, me, owner, profi
             {errorMessage(safety.blockError)}
           </Text>
         ) : null}
+        <Button
+          size="lg"
+          variant="neutral"
+          label={tr.common.cancel}
+          onPress={() => setPerson(null)}
+        />
       </Sheet>
       {safety.reportForm}
     </>
+  );
+}
+
+// The brand's three colours on the name's renewal dots (skall tuvali, MasaKisiler).
+const DOTS = [BRAND.purple, BRAND.pink, BRAND.orange] as const;
+
+// A person's face at the table: the profile photo (read through the profile), or the anonymous
+// seat's capsule.
+function PersonFace({
+  person,
+  publicId,
+  size,
+}: {
+  person: TablePerson;
+  publicId: string | undefined;
+  size: 'md' | 'xl';
+}) {
+  const view = useProfileView(person.profiled ? publicId : undefined);
+  if (!person.profiled && person.look)
+    return <LookAvatar look={person.look} size={AVATAR_SIZE[size]} />;
+  return person.profiled ? (
+    <Avatar kind="profile" name={person.alias} photoUrl={view.data?.photoUrl ?? null} size={size} />
+  ) : (
+    <Avatar kind="default" size={size} />
   );
 }

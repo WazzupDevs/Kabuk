@@ -5,7 +5,7 @@ import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { type ReactNode, useEffect, useState } from 'react';
 import { Pressable, useWindowDimensions, View } from 'react-native';
 
-import { Button } from '@/components/Button';
+import { Button, type IconName } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { ChatScreen } from '@/components/ChatScreen';
 import { Loader } from '@/components/Loader';
@@ -19,7 +19,10 @@ import { RoomComposer, RoomMessages, useRoomChat } from '@/features/chat/ChatPan
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { PosterCard, PosterGrid } from '@/features/rooms/PosterCard';
 import { useRoomMemberProfiles } from '@/features/profile/queries';
+import { IncomingRequest, useMarkTableScreen } from '@/features/rooms/IncomingRequest';
 import { InviteSheet } from '@/features/rooms/InviteSheet';
+import { TableIconSheet } from '@/features/rooms/TableIconSheet';
+import { GlyphDisc } from '@/components/GlyphDisc';
 import { OpenLobbySheet } from '@/features/rooms/OpenLobbySheet';
 import { roomKeys, useRoom, useTablePeople } from '@/features/rooms/queries';
 import { PeopleSheet } from '@/features/rooms/RoomPeople';
@@ -55,7 +58,10 @@ export default function TableScreen() {
   ).data;
   const [tab, setTab] = useState<'games' | 'chat'>('games');
   const [category, setCategory] = useState<Category>('all');
-  const [sheet, setSheet] = useState<'people' | 'end' | 'leave' | 'lobby' | 'invite' | null>(null);
+  const [sheet, setSheet] = useState<
+    'people' | 'end' | 'leave' | 'lobby' | 'invite' | 'icon' | null
+  >(null);
+  useMarkTableScreen();
   const { width, fontScale } = useWindowDimensions();
   const narrow = width < NARROW_SCREEN * Math.max(1, fontScale);
 
@@ -161,6 +167,16 @@ export default function TableScreen() {
           label={tr.table.back}
           onPress={() => (router.canGoBack() ? router.back() : router.replace('/venue'))}
         />
+        {/* The owner changes the icon from it (skall tuvali, MasaSimgeDegistir). */}
+        <Pressable
+          testID="table-icon"
+          accessibilityRole={owner ? 'button' : undefined}
+          accessibilityLabel={owner ? tr.createTable.iconChange : undefined}
+          disabled={!owner}
+          onPress={() => setSheet('icon')}
+        >
+          <TableIcon icon={r.icon} size="row" />
+        </Pressable>
         <Pressable
           testID="table-who"
           accessibilityRole="button"
@@ -169,7 +185,6 @@ export default function TableScreen() {
           className="flex-1 flex-row items-center gap-2.5"
           style={{ minHeight: TOUCH.min }}
         >
-          <TableIcon icon={r.icon} size="row" />
           <View className="flex-1">
             <Text variant="heading" testID="table-title">
               {r.name ?? ''}
@@ -191,8 +206,8 @@ export default function TableScreen() {
           variant="danger"
           size="sm"
           testID={owner ? 'table-end-open' : 'table-leave-open'}
-          label={owner ? tr.table.end : tr.table.leave}
-          icon={narrow ? 'exit-outline' : undefined}
+          label={owner ? tr.table.end : tr.table.leaveShort}
+          icon={owner ? 'close' : 'exit-outline'}
           iconOnly={narrow}
           onPress={() => setSheet(owner ? 'end' : 'leave')}
         />
@@ -205,6 +220,7 @@ export default function TableScreen() {
                 tight
                 size="sm"
                 variant="secondary"
+                icon="eye-off-outline"
                 testID="table-withdraw"
                 label={tr.venue.withdraw}
                 loading={withdraw.isPending}
@@ -214,6 +230,7 @@ export default function TableScreen() {
               <Button
                 tight
                 size="sm"
+                icon="flag-outline"
                 testID="table-lobby"
                 label={tr.venue.openLobby}
                 onPress={() => setSheet('lobby')}
@@ -225,6 +242,8 @@ export default function TableScreen() {
               tight
               size="sm"
               variant="secondary"
+              icon="add"
+              iconTone="success"
               testID="table-invite"
               label={tr.venue.invite}
               onPress={() => setSheet('invite')}
@@ -232,6 +251,7 @@ export default function TableScreen() {
           </View>
         </View>
       ) : null}
+      {owner ? <IncomingRequest roomId={id} ownerSessionId={sessionId} phones={r.phones} /> : null}
       <Segmented<'games' | 'chat'>
         fill
         value={tab}
@@ -267,6 +287,7 @@ export default function TableScreen() {
         title={tr.table.endTitle}
         body={tr.table.endBody}
         confirm={tr.table.endConfirm}
+        icon="close"
         testID="table-end-confirm"
         pending={end.isPending}
         error={end.error}
@@ -277,6 +298,7 @@ export default function TableScreen() {
               <Button
                 size="lg"
                 variant="secondary"
+                icon="exit-outline"
                 testID="table-owner-leave"
                 label={tr.table.leave}
                 loading={leave.isPending}
@@ -293,6 +315,7 @@ export default function TableScreen() {
         title={tr.table.leaveTitle}
         body={tr.table.leaveBody}
         confirm={tr.table.leave}
+        icon="exit-outline"
         testID="table-leave-confirm"
         pending={leave.isPending}
         error={leave.error}
@@ -306,6 +329,13 @@ export default function TableScreen() {
           venueId={r.venue_id}
         />
       ) : null}
+      <TableIconSheet
+        visible={sheet === 'icon'}
+        onClose={() => setSheet(null)}
+        roomId={id}
+        venueId={r.venue_id}
+        icon={r.icon}
+      />
       <InviteSheet
         visible={sheet === 'invite'}
         onClose={() => setSheet(null)}
@@ -337,8 +367,13 @@ export default function TableScreen() {
       <View className="gap-3 pt-2">
         {r.phones === 1 ? (
           <Card tone="note" testID="table-solo">
-            <Text variant="bodyStrong">{tr.table.soloTitle}</Text>
-            <Text variant="fine">{tr.table.soloBody}</Text>
+            <View className="flex-row items-center gap-3">
+              <GlyphDisc icon="person-outline" />
+              <View className="flex-1 gap-0.5">
+                <Text variant="heading">{tr.table.soloTitle}</Text>
+                <Text variant="fine">{tr.table.soloBody}</Text>
+              </View>
+            </View>
           </Card>
         ) : null}
         <Chips<Category>
@@ -385,6 +420,7 @@ function ConfirmSheet({
   title,
   body,
   confirm,
+  icon,
   testID,
   pending,
   error,
@@ -396,6 +432,7 @@ function ConfirmSheet({
   title: string;
   body: string;
   confirm: string;
+  icon: IconName;
   testID: string;
   pending: boolean;
   error: unknown;
@@ -415,6 +452,7 @@ function ConfirmSheet({
       <Button
         size="lg"
         variant="danger"
+        icon={icon}
         testID={testID}
         label={confirm}
         loading={pending}
