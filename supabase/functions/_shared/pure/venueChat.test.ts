@@ -98,7 +98,7 @@ describe('withVenueChatExtras', () => {
 
   it('keeps what the server sent', () => {
     const replyTo = { gone: true } as const;
-    const reactions = [{ emoji: '👍' as const, count: 1, mine: true }];
+    const reactions = [{ emoji: 'begen' as const, count: 1, mine: true }];
     expect(withVenueChatExtras({ ...base, replyTo, reactions })).toEqual({
       ...base,
       replyTo,

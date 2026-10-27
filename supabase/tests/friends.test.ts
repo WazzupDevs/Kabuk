@@ -1225,20 +1225,20 @@ describe('DM replies and reactions (docs/SPEC_V3.md §21)', () => {
 
     const heard = waitForBroadcast(b, dmChannel(threadId), BROADCAST.dmReaction);
     await heard.subscribed;
-    expect(await react(b, messageId, '👍')).toEqual(OK);
+    expect(await react(b, messageId, 'begen')).toEqual(OK);
     await heard.received;
     await heard.close();
-    expect(await react(b, messageId, '👍')).toEqual(OK);
+    expect(await react(b, messageId, 'begen')).toEqual(OK);
     // Own messages take reactions too.
-    expect(await react(a, messageId, '🔥')).toEqual(OK);
+    expect(await react(a, messageId, 'kizgin')).toEqual(OK);
     expect((await page(a, threadId))[0]?.reactions).toEqual([
-      { emoji: '👍', from_me: false },
-      { emoji: '🔥', from_me: true },
+      { emoji: 'begen', from_me: false },
+      { emoji: 'kizgin', from_me: true },
     ]);
-    expect(await react(b, messageId, '🔥')).toEqual(OK);
+    expect(await react(b, messageId, 'kizgin')).toEqual(OK);
     expect(await react(a, messageId, null)).toEqual(OK);
     expect(await react(a, messageId, null)).toEqual(OK);
-    expect((await page(b, threadId))[0]?.reactions).toEqual([{ emoji: '🔥', from_me: true }]);
+    expect((await page(b, threadId))[0]?.reactions).toEqual([{ emoji: 'kizgin', from_me: true }]);
     expect(await sql`select count(*)::int as n from public.dm_reactions`).toEqual([{ n: 1 }]);
 
     // Only the six; only the two members; a reaction leaves the unread count alone.
@@ -1247,11 +1247,11 @@ describe('DM replies and reactions (docs/SPEC_V3.md §21)', () => {
       body: errorBody('bad_request'),
     });
     const stranger = await onboarded(PHONES[2]);
-    expect(await react(stranger, messageId, '👍')).toEqual({
+    expect(await react(stranger, messageId, 'begen')).toEqual({
       status: 404,
       body: errorBody('not_found'),
     });
-    expect(await react(b, randomUUID(), '👍')).toEqual({
+    expect(await react(b, randomUUID(), 'begen')).toEqual({
       status: 404,
       body: errorBody('not_found'),
     });
@@ -1311,7 +1311,7 @@ describe('locks', () => {
     const threadId = (await friendList(a))[0]?.threadId ?? '';
     const sentA = await dm(a, { action: 'send', threadId, body: 'selam' });
     const messageId = (sentA.body as { messageId: string }).messageId;
-    expect(await dm(b, { action: 'react', messageId, emoji: '👍' })).toEqual(OK);
+    expect(await dm(b, { action: 'react', messageId, emoji: 'begen' })).toEqual(OK);
     const bId = await userIdOf(b);
 
     const holder = postgres(dbUrl, { max: 1, onnotice: () => {} });
@@ -1320,7 +1320,7 @@ describe('locks', () => {
       let reacted: Promise<unknown> = Promise.resolve();
       await holder.begin(async (tx) => {
         await tx`select id from public.dm_threads where id = ${threadId} for update`;
-        reacted = reacting`select changed from public.dm_react(${bId}, ${messageId}, '🔥')`
+        reacted = reacting`select changed from public.dm_react(${bId}, ${messageId}, 'kizgin')`
           .execute()
           .catch((err: unknown) => err);
         await waitUntilBlocked('dm_react');

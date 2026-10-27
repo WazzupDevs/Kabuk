@@ -127,8 +127,14 @@ export default function BirthStep() {
       >
         <Text variant="fine">{confirmed ? tr.signup.birthConfirmBody(confirmed) : ''}</Text>
         <View className="gap-2.5">
-          <Button testID="birth-confirm" label={tr.signup.birthConfirm} onPress={onConfirm} />
           <Button
+            size="lg"
+            testID="birth-confirm"
+            label={tr.signup.birthConfirm}
+            onPress={onConfirm}
+          />
+          <Button
+            size="lg"
             variant="neutral"
             testID="birth-confirm-fix"
             label={tr.signup.birthFix}
@@ -158,8 +164,11 @@ function Field({
   friend: { onFocus: () => void; onBlur: () => void };
 }) {
   return (
-    <View className={wide ? 'flex-[1.6] gap-1' : 'flex-1 gap-1'}>
+    // skall tuvali (KayitDogum): the label over a 16-cornered box.
+    <View className={wide ? 'flex-[1.6] gap-2' : 'flex-1 gap-2'}>
+      <Text variant="label">{label}</Text>
       <Input
+        box
         testID={testID}
         accessibilityLabel={label}
         keyboardType="number-pad"
@@ -170,9 +179,6 @@ function Field({
         onBlur={friend.onBlur}
         centered
       />
-      <Text variant="fine" align="center">
-        {label}
-      </Text>
     </View>
   );
 }

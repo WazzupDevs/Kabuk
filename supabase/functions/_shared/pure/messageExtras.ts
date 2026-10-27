@@ -1,7 +1,7 @@
 // Replies and reactions on chat messages (docs/SPEC_V3.md §21), the same in the DM, the room chat
 // and the venue chat. The pages send quotes and reactions as JSON; these turn them into the shapes
 // the app shows, and decide what a tap on an emoji means.
-import { isReaction, type Reaction } from './reactions.ts';
+import { type Reaction, toReaction } from './reactions.ts';
 
 // The message a reply answers: its start, whether it is the reader's own, and its sender's label
 // in that chat (the table alias, or a profiled venue message's display name; none in a DM). Gone
@@ -33,29 +33,31 @@ export function parseDmReactions(raw: unknown): ReactionCount[] {
   if (!Array.isArray(raw)) return [];
   const out: ReactionCount[] = [];
   for (const row of raw) {
-    if (!isObject(row) || !isReaction(row.emoji)) continue;
+    const emoji = isObject(row) ? toReaction(row.emoji) : null;
+    if (!isObject(row) || !emoji) continue;
     const mine = row.from_me === true;
-    const seen = out.find((r) => r.emoji === row.emoji);
+    const seen = out.find((r) => r.emoji === emoji);
     if (seen) {
       seen.count += 1;
       seen.mine ||= mine;
-    } else out.push({ emoji: row.emoji, count: 1, mine });
+    } else out.push({ emoji, count: 1, mine });
   }
   return out;
 }
 
-// The room and venue chats send counts ([{ emoji, count, mine, aliases? }]). An emoji no longer in
-// the set is left out.
+// The room and venue chats send counts ([{ emoji, count, mine, aliases? }]). An emoji of the app
+// before the faces counts as its face; anything else is left out.
 export function parseReactionCounts(raw: unknown): ReactionCount[] {
   if (!Array.isArray(raw)) return [];
   const out: ReactionCount[] = [];
   for (const row of raw) {
-    if (!isObject(row) || !isReaction(row.emoji) || typeof row.count !== 'number') continue;
+    const emoji = isObject(row) ? toReaction(row.emoji) : null;
+    if (!isObject(row) || !emoji || typeof row.count !== 'number') continue;
     const aliases = Array.isArray(row.aliases)
       ? row.aliases.filter((a): a is string => typeof a === 'string')
       : undefined;
     out.push({
-      emoji: row.emoji,
+      emoji,
       count: row.count,
       mine: row.mine === true,
       ...(aliases ? { aliases } : {}),

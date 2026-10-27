@@ -11,14 +11,16 @@ import { Text } from './Text';
 
 // skall tuvali (skall.css → "Menü"): a sheet's actions as rows of one soft card, a hairline
 // between them; a negative row is written red.
-export function Menu({ children }: { children: ReactNode }) {
+// float: over a scrim, beside a held message (skall.css → `.pop .menu`): the surface on the float
+// shadow, 210 wide.
+export function Menu({ children, float }: { children: ReactNode; float?: boolean }) {
   const { colors, shape } = useTheme();
   const rows = Children.toArray(children).filter(Boolean);
-  return (
+  const card = (
     <View
       style={{
         borderRadius: shape.radius.lg,
-        backgroundColor: colors.surface2,
+        backgroundColor: float ? colors.surface : colors.surface2,
         overflow: 'hidden',
       }}
     >
@@ -36,7 +38,17 @@ export function Menu({ children }: { children: ReactNode }) {
       ))}
     </View>
   );
+  if (!float) return card;
+  return (
+    <View
+      style={{ width: FLOAT_WIDTH, borderRadius: shape.radius.lg, boxShadow: shape.shadow.sheet }}
+    >
+      {card}
+    </View>
+  );
 }
+
+const FLOAT_WIDTH = SPACING[16] * 3 + SPACING[4] + SPACING[0.5];
 
 export function MenuItem({
   label,

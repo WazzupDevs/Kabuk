@@ -13,15 +13,25 @@ import { SPACING } from '@/theme/tokens';
 export function UnderAge() {
   return (
     <Screen>
-      <View testID="under-age" collapsable={false} className="flex-1 justify-center gap-4">
-        <Mark size={SPACING[16] + SPACING[5]} label={null} />
-        <Text variant="display" accessibilityRole="header">
+      {/* skall tuvali (Kayit18Alti, `.hero-empty`): the mark, the title and the note centred. */}
+      <View
+        testID="under-age"
+        collapsable={false}
+        className="flex-1 items-center justify-center gap-2.5 px-6"
+      >
+        <View className="mb-1.5">
+          <Mark size={SPACING[16] + SPACING[5]} label={null} />
+        </View>
+        <Text variant="title" align="center" accessibilityRole="header">
           {tr.underAge.title}
         </Text>
-        <Text tone="muted">{tr.underAge.body}</Text>
+        <Text variant="fine" align="center">
+          {tr.underAge.body}
+        </Text>
       </View>
       <View className="pt-8">
         <Button
+          size="lg"
           variant="neutral"
           label={tr.common.close}
           onPress={() => useOnboardingStore.setState({ underAge: false })}

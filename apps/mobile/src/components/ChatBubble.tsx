@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { REACTIONS, type Reaction } from '@shared/reactions.ts';
-import { type ReactNode, useEffect, useId, useRef, useState } from 'react';
+import { isReaction, type Reaction } from '@shared/reactions.ts';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, View } from 'react-native';
 
 import { tr } from '@/i18n/tr';
@@ -12,7 +12,8 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 
 import { AVATAR_SIZE } from './Avatar';
-import { useChatBar } from './ChatScreen';
+import { type BubbleAction, MessagePop, type PopAnchor } from './MessagePop';
+import { ReactionFace } from './ReactionFace';
 import { Text } from './Text';
 
 // color: the quoted sender's name colour in the venue chat (v45: --qc); otherwise the second accent.
@@ -57,6 +58,8 @@ type Props = {
   onToggleReaction?: (emoji: string) => void;
   onReply?: () => void;
   onReact?: (emoji: Reaction) => void;
+  // The held message's actions under it (skall tuvali: Yanıtla, Bildir; the viewer's own Sil).
+  actions?: readonly BubbleAction[];
   testID?: string;
 };
 
@@ -77,7 +80,10 @@ const SWIPE_MAX = SPACING[16] + SPACING[4];
 // for the read ticks.
 const TIME_GAP = '\u2003';
 const TICKS_ROOM = '\u2003\u2002';
-const INVISIBLE = 'transparent';
+// The room's copy of the time is drawn at alpha 1/255: Android takes a nested text's fully
+// transparent colour (0) as "no colour" and draws it in the bubble's colour, so the copy showed
+// under the time (04:24 over 04:24).
+const HIDDEN_ALPHA = 0.004;
 // skall.css → `.typing i`: the brand's purple, pink and orange.
 const TYPING_DOTS = [BRAND.purple, BRAND.pink, BRAND.orange] as const;
 
@@ -102,23 +108,21 @@ export function ChatBubble({
   onToggleReaction,
   onReply,
   onReact,
+  actions = [],
   testID,
 }: Props) {
   const { colors, shape } = useTheme();
-  // The reaction bar: the screen's one (open on one bubble at a time, closed by a tap outside, a
-  // scroll, the keyboard or back; ChatScreen), or this bubble's own outside a chat screen.
-  const sharedBar = useChatBar();
-  const barId = useId();
-  const [ownPicking, setOwnPicking] = useState(false);
-  const picking = sharedBar ? sharedBar.open === barId : ownPicking;
-  const setPicking = (next: boolean) => {
-    if (sharedBar) sharedBar.setOpen(next ? barId : null);
-    else setOwnPicking(next);
+  // A long press lifts the message over a scrim with the faces and its actions (MessagePop), from
+  // where it sits on the screen.
+  const faceRef = useRef<View>(null);
+  const [pop, setPop] = useState<PopAnchor | null>(null);
+  const holdable = !!onReact || actions.length > 0;
+  const lift = () => {
+    faceRef.current?.measureInWindow((x, y, width, height) => {
+      haptic('grabbed');
+      setPop({ x, y, width, height });
+    });
   };
-  // A long press opens the bar when the finger lifts, not while it is still down: the bar makes the
-  // stream taller, and a stream that turned scrollable under a held finger took the next press for
-  // itself (the next long press was lost).
-  const longPressed = useRef(false);
   // skall tuvali (skall.css → `.bub`): 18 all round; a run's first bubble points at its author with
   // a 6 corner at the top (left for others, right for the viewer's own).
   const big = shape.radius.lg - SPACING[1];
@@ -141,28 +145,20 @@ export function ChatBubble({
       ]}
       onAccessibilityAction={(e) => {
         if (e.nativeEvent.actionName === 'reply') onReply?.();
-        if (e.nativeEvent.actionName === 'react') setPicking(true);
+        if (e.nativeEvent.actionName === 'react') lift();
         if (e.nativeEvent.actionName === 'quote') onPressQuote?.();
       }}
-      onLongPress={
-        onReact
-          ? () => {
-              longPressed.current = true;
-            }
-          : undefined
-      }
-      onPressOut={
-        onReact
-          ? () => {
-              if (!longPressed.current) return;
-              longPressed.current = false;
-              setPicking(!picking);
-            }
-          : undefined
-      }
+      onLongPress={holdable ? lift : undefined}
       style={{ maxWidth: '100%' }}
     >
+      {face(false)}
+    </Pressable>
+  );
+  function face(lifted: boolean) {
+    return (
       <View
+        ref={lifted ? undefined : faceRef}
+        collapsable={false}
         style={{
           paddingHorizontal: SPACING[3],
           paddingVertical: SPACING[2],
@@ -174,6 +170,7 @@ export function ChatBubble({
           borderWidth: mine ? 0 : shape.stroke.hairline,
           borderColor: colors.divider,
           opacity: state === 'sending' ? 0.6 : 1,
+          boxShadow: lifted ? shape.shadow.focus : undefined,
         }}
       >
         {inside && first && name ? (
@@ -201,7 +198,7 @@ export function ChatBubble({
           <Text color={fg}>
             {text}
             {time && !state ? (
-              <Text variant="caption" color={INVISIBLE} accessible={false}>
+              <Text variant="caption" color={withAlpha(fg, HIDDEN_ALPHA)} accessible={false}>
                 {`${TIME_GAP}${time}${mine && delivery ? TICKS_ROOM : ''}`}
               </Text>
             ) : null}
@@ -220,23 +217,29 @@ export function ChatBubble({
           ) : null}
         </View>
       </View>
-    </Pressable>
-  );
+    );
+  }
   const chips =
     reactions && reactions.length > 0 ? (
       <ReactionChips reactions={reactions} onToggle={onToggleReaction} mine={mine} />
     ) : null;
-  const bar =
-    picking && onReact ? (
-      <ReactionBar
-        mine={mine}
-        onTouchInside={() => sharedBar?.markInside()}
-        onPick={(emoji) => {
-          setPicking(false);
-          onReact(emoji);
-        }}
-      />
-    ) : null;
+  const bar = pop ? (
+    <MessagePop
+      at={pop}
+      mine={mine}
+      current={reactions?.find((r) => r.mine)?.emoji ?? null}
+      onClose={() => setPop(null)}
+      onReact={onReact}
+      actions={[
+        ...(onReply
+          ? [{ label: tr.chat.reply, icon: 'arrow-undo' as const, onPress: onReply }]
+          : []),
+        ...actions,
+      ]}
+    >
+      {face(true)}
+    </MessagePop>
+  ) : null;
 
   if (mine) {
     return (
@@ -456,63 +459,6 @@ function SwipeToReply({ onReply, children }: { onReply?: () => void; children: R
   );
 }
 
-// The long-press bar: the six reactions, 3D like the buttons.
-function ReactionBar({
-  onPick,
-  mine,
-  onTouchInside,
-}: {
-  onPick: (emoji: Reaction) => void;
-  mine: boolean;
-  // A touch on the bar, before the screen's "tap outside closes it" sees it.
-  onTouchInside: () => void;
-}) {
-  const { colors, shape } = useTheme();
-  return (
-    <View
-      accessibilityRole="menu"
-      accessibilityLabel={tr.chat.react}
-      testID="reaction-bar"
-      onTouchStart={onTouchInside}
-      className="flex-row"
-      style={[
-        {
-          // Six 44 dp targets, tight: 272 dp, within a 320 dp screen's chat column.
-          padding: SPACING[0.5],
-          alignSelf: mine ? 'flex-end' : 'flex-start',
-          borderRadius: shape.radius.pill,
-          backgroundColor: colors.surface,
-          boxShadow: shape.shadow.raised,
-        },
-      ]}
-    >
-      {REACTIONS.map((emoji) => (
-        <Pressable
-          key={emoji}
-          accessibilityRole="menuitem"
-          accessibilityLabel={tr.chat.reactWith(emoji)}
-          testID={`react-${REACTIONS.indexOf(emoji)}`}
-          onPress={() => onPick(emoji)}
-        >
-          {({ pressed }) => (
-            <View
-              className="items-center justify-center"
-              style={{
-                width: TOUCH.min,
-                height: TOUCH.min,
-                borderRadius: shape.radius.pill,
-                backgroundColor: pressed ? colors.surface2 : 'transparent',
-              }}
-            >
-              <Text variant="title">{emoji}</Text>
-            </View>
-          )}
-        </Pressable>
-      ))}
-    </View>
-  );
-}
-
 // Under a bubble: each reaction with its count; the viewer's own is marked and can be taken back.
 function ReactionChips({
   reactions,
@@ -528,10 +474,11 @@ function ReactionChips({
   return (
     <View
       className="flex-row flex-wrap"
+      // skall.css → `.reacts`: tucked 8 under the bubble, 10 in from its side.
       style={{
         gap: SPACING[1],
-        marginTop: -SPACING[1.5],
-        paddingHorizontal: SPACING[2],
+        marginTop: -SPACING[2],
+        paddingHorizontal: SPACING[2.5],
         justifyContent: mine ? 'flex-end' : 'flex-start',
       }}
     >
@@ -540,25 +487,33 @@ function ReactionChips({
           key={r.emoji}
           accessibilityRole="button"
           accessibilityState={{ selected: r.mine }}
-          accessibilityLabel={tr.chat.reactionChip(r.emoji, r.count, r.mine)}
+          accessibilityLabel={tr.chat.reactionChip(
+            isReaction(r.emoji) ? tr.chat.reactions[r.emoji] : r.emoji,
+            r.count,
+            r.mine,
+          )}
           disabled={!onToggle}
           onPress={() => onToggle?.(r.emoji)}
           hitSlop={(TOUCH.min - chipHeight) / 2}
         >
+          {/* skall.css → `.react`: the face and the count on the surface, on the chip shadow; the
+              viewer's own in the violet. */}
           <View
             className="flex-row items-center"
             style={{
               gap: SPACING[1],
               height: chipHeight,
-              paddingHorizontal: SPACING[2],
+              paddingLeft: SPACING[1],
+              paddingRight: SPACING[2],
               borderRadius: shape.radius.pill,
               borderWidth: shape.stroke.hairline,
               borderColor: r.mine ? colors.violet : colors.divider,
               backgroundColor: r.mine ? withAlpha(colors.violet, 0.16) : colors.surface,
+              boxShadow: shape.shadow.raised,
             }}
           >
-            <Text variant="caption">{r.emoji}</Text>
-            <Text variant="caption" tabular>
+            <ReactionFace emoji={r.emoji} size="chip" />
+            <Text variant="tag" tabular>
               {String(r.count)}
             </Text>
           </View>

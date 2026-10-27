@@ -1,130 +1,106 @@
 import { REPORT_REASONS, type ReportReason } from '@shared/chat.ts';
+import { toRuns } from '@shared/chatRuns.ts';
 import {
   prepareVenueMessage,
   senderLabel,
   VENUE_CHAT,
   type VenueChatMessage,
 } from '@shared/venueChat.ts';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toRuns } from '@shared/chatRuns.ts';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { useState } from 'react';
-import { Alert, View } from 'react-native';
+import { type ReactNode, useState } from 'react';
+import { Pressable, View } from 'react-native';
 
-import { Avatar } from '@/components/Avatar';
+import { Avatar, AVATAR_SIZE } from '@/components/Avatar';
+import { Banner } from '@/components/Banner';
+import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
-import { GlyphDisc } from '@/components/GlyphDisc';
 import { ChatBubble } from '@/components/ChatBubble';
 import { ChatRow, ChatScreen, DayLine, dayLabel } from '@/components/ChatScreen';
 import { ChatTopBar } from '@/components/ChatTopBar';
 import { Composer } from '@/components/Composer';
 import { EmptyState } from '@/components/EmptyState';
-import { ListRow } from '@/components/ListRow';
+import { GlyphDisc } from '@/components/GlyphDisc';
+import { IconButton, MoreDots } from '@/components/IconButton';
+import { Loader } from '@/components/Loader';
+import { LookAvatar } from '@/components/LookAvatar';
+import { Menu, MenuItem } from '@/components/Menu';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Sheet } from '@/components/Sheet';
-import { Mark } from '@/components/Mark';
 import { Text } from '@/components/Text';
-import { Loader } from '@/components/Loader';
 import { ReportModal } from '@/features/chat/ReportModal';
-import { useActiveTable } from '@/features/checkin/useActiveTable';
-import { PhotoSheet } from '@/features/profile/PhotoSheet';
-import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
-import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
+import { useFreshLine } from '@/features/chat/fresh';
 import { quoteJump, toChatQuote, useReplyTarget } from '@/features/chat/messageExtras';
-import { ModeSheet } from '@/features/venueChat/ModeSheet';
-import {
-  useVenueChat,
-  useVenueChatReactions,
-  type VenueChatPage,
-  venueChatKeys,
-} from '@/features/venueChat/queries';
+import { IdentitySheet } from '@/features/checkin/IdentitySheet';
+import { useActiveTable } from '@/features/checkin/useActiveTable';
+import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
+import { useOwnLook } from '@/features/profile/useOwnLook';
+import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
+import { useCurrentRoom } from '@/features/rooms/queries';
+import { useVenueChat, useVenueChatReactions, venueChatKeys } from '@/features/venueChat/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { ApiError, safetyApi, venueChatApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { useFlash } from '@/lib/useFlash';
 import { nameInk } from '@/theme/nameInk';
 import { useTheme } from '@/theme/ThemeProvider';
-import { SPACING } from '@/theme/tokens';
+import { SPACING, TOUCH } from '@/theme/tokens';
 
-// The venue's chat room (docs/SPEC_V3.md §7): everyone with a live table at the venue reads and
-// writes; a message goes with the table alias, or with the display name and no alias. Which one is
-// chosen once per check-in, at the first "Gönder" (§22.G), and then only named over the message
-// bar. Tapping a profiled sender opens their profile through the message; any other sender offers
-// report and block.
+// The venue's chat room (docs/SPEC_V3.md §7; skall tuvali, Mekan sohbeti panoları): everyone with a
+// live table at the venue reads and writes, with the check-in's identity (docs/SPEC_V4.md §4.D):
+// the capsule and its nick, or the name and the photo. The line over the message bar says which,
+// and changes it once per check-in. A sender's face opens their card (profile, mute, report,
+// block); a held message its faces and actions (reply; report, or delete one's own).
 export default function VenueChatScreen() {
-  const { colors, shape, scheme } = useTheme();
+  const { colors, scheme } = useTheme();
   const queryClient = useQueryClient();
   const table = useActiveTable();
   const venueId = table.data?.venue_id;
   const venueName = table.data?.venue?.name ?? '';
   const sessionId = table.data?.id;
   const page = useVenueChat(venueId, sessionId);
-  const mode = page.data?.mode;
+  const currentRoom = useCurrentRoom(sessionId);
+  const identity = page.data?.identity ?? table.data?.identity ?? null;
   const photo = useOwnPhoto();
-  // The anonymous identity's name is the capsule nick (docs/SPEC_V4.md §4.D).
+  const look = useOwnLook();
   const [draft, setDraft] = useState('');
-  // The first-message choice and, from it, the photo sheet: one at a time.
-  const [sheet, setSheet] = useState<'mode' | 'photo' | null>(null);
-  const [menuFor, setMenuFor] = useState<VenueChatMessage | null>(null);
+  const [sheet, setSheet] = useState<'options' | 'identity' | null>(null);
+  const [person, setPerson] = useState<VenueChatMessage | null>(null);
   const [reporting, setReporting] = useState<VenueChatMessage | null>(null);
   const [blocking, setBlocking] = useState<VenueChatMessage | null>(null);
-  // docs/SPEC_V3.md §21: swipe a message to answer it, long press it for a reaction.
+  const [note, flash] = useFlash();
+  // docs/SPEC_V3.md §21: swipe a message to answer it, hold it for a face.
   const reply = useReplyTarget();
   const reactions = useVenueChatReactions(venueId);
+  const messages = page.data?.messages;
+  const fresh = useFreshLine(venueId && `venue:${venueId}`, messages);
 
   const refresh = () => {
     if (venueId) void queryClient.invalidateQueries({ queryKey: venueChatKeys.messages(venueId) });
   };
+  const body = prepareVenueMessage(draft);
   const send = useMutation({
     meta: FEEL_ERROR,
-    mutationFn: ({ text, profiled }: { text: string; profiled: boolean; first: boolean }) =>
-      reply.target
-        ? venueChatApi.reply(venueId ?? '', text, profiled, reply.target.id)
-        : venueChatApi.send(venueId ?? '', text, profiled),
-    onSuccess: (_data, { profiled, first }) => {
+    mutationFn: (text: string) =>
+      venueChatApi.sendAs(venueId ?? '', text, identity?.mode ?? 'anonymous', reply.target?.id),
+    onSuccess: () => {
       setDraft('');
       reply.clear();
-      setSheet(null);
-      track('venue_chat_sent', { profiled });
-      if (first) {
-        track('venue_chat_mode_chosen', { profiled });
-        // The next "Gönder" must not ask again before the page comes back with the mode.
-        if (venueId && sessionId) {
-          queryClient.setQueryData<VenueChatPage>(
-            venueChatKeys.page(venueId, sessionId),
-            (old) => old && { ...old, mode: profiled ? 'profiled' : 'anonymous' },
-          );
-        }
-      }
+      track('venue_chat_sent', { profiled: identity?.mode === 'profiled' });
       refresh();
     },
     onError: (err) => {
-      if (!(err instanceof ApiError)) return;
-      // The server has this check-in's mode already (the page was read before it): nothing sent;
-      // the bar shows that mode and what was typed stays for the next "Gönder".
-      if (err.code === 'venue_chat_mode_locked') {
-        setSheet(null);
+      // The identity changed elsewhere (or the photo went): nothing was sent; the line over the
+      // bar shows the identity again and what was typed stays.
+      if (err instanceof ApiError && ['identity_mismatch', 'photo_required'].includes(err.code)) {
+        void queryClient.invalidateQueries({ queryKey: ['activeTable'] });
         refresh();
       }
-      // The photo went (or was hidden): the sheet stays, "Profilimle" turns unavailable.
-      if (err.code === 'photo_required') void photo.refresh();
     },
   });
-  const press = () => {
-    if (!body || mode === undefined) return;
-    if (mode === null) {
-      send.reset();
-      setSheet('mode');
-    } else {
-      send.mutate({ text: body, profiled: mode === 'profiled', first: false });
-    }
-  };
-  const closeSheet = () => {
-    setSheet(null);
-    send.reset();
-  };
   const report = useMutation({
     meta: FEEL_ERROR,
     mutationFn: ({ id, reason }: { id: string; reason: ReportReason }) =>
@@ -132,7 +108,7 @@ export default function VenueChatScreen() {
     onSuccess: () => {
       track('venue_chat_reported', {});
       setReporting(null);
-      Alert.alert(tr.safety.reportSent);
+      flash(tr.safety.reportSent);
       refresh();
     },
   });
@@ -145,23 +121,46 @@ export default function VenueChatScreen() {
       refresh();
     },
   });
+  const mute = useMutation({
+    meta: FEEL_ERROR,
+    mutationFn: (m: VenueChatMessage) => venueChatApi.mute(m.id),
+    onSuccess: (_data, m) => {
+      setPerson(null);
+      flash(tr.venueChat.mutedToast(senderLabel(m)));
+      void queryClient.invalidateQueries({ queryKey: MUTES_KEY });
+      refresh();
+    },
+  });
+  const remove = useMutation({
+    meta: FEEL_ERROR,
+    mutationFn: (id: string) => venueChatApi.remove(id),
+    onSuccess: () => {
+      flash(tr.venueChat.deleted);
+      refresh();
+    },
+  });
 
-  const body = prepareVenueMessage(draft);
-  // Each sender's name keeps one colour, in their bubbles and in quotes of them (v45: VC.col); the
-  // viewer's own name in a quote is in the accent.
+  // Each sender's name keeps one colour, in their bubbles and in quotes of them; the viewer's own
+  // name in a quote is in the accent.
   const inkOf = (sender: string) => nameInk(scheme, sender);
   const quoteOf = (q: VenueChatMessage['replyTo']) => {
     const base = toChatQuote(q);
     if (!base || !q || q.gone) return base;
     return { ...base, color: q.fromMe ? colors.accent : inkOf(base.name) };
   };
-  const openSender = (m: VenueChatMessage) => {
-    if (m.profiled) {
-      router.push({ pathname: '/venue-chat/[messageId]', params: { messageId: m.id } });
-    } else {
-      setMenuFor(m);
-    }
-  };
+  const faceOf = (m: VenueChatMessage, size: number) =>
+    m.profiled ? (
+      <Avatar
+        kind="profile"
+        name={senderLabel(m)}
+        photoUrl={m.photoUrl}
+        size={size === AVATAR_SIZE.sm ? 'sm' : 'xl'}
+      />
+    ) : m.senderLook ? (
+      <LookAvatar look={m.senderLook} size={size} />
+    ) : (
+      <Avatar kind="table" alias={senderLabel(m)} size={size === AVATAR_SIZE.sm ? 'sm' : 'xl'} />
+    );
 
   if (!table.isPending && !venueId) {
     return (
@@ -172,12 +171,20 @@ export default function VenueChatScreen() {
     );
   }
 
-  const messages = page.data?.messages;
   const newest = messages?.[messages.length - 1];
   const runs = toRuns(
     messages ?? [],
-    (m) => (m.fromMe ? '' : `${m.profiled ? 'p' : 'a'}:${senderLabel(m)}`),
+    (m) => (m.fromMe ? '' : (m.senderKey ?? `${m.profiled ? 'p' : 'a'}:${senderLabel(m)}`)),
     (m) => m.createdAt,
+  );
+  const profiled = identity?.mode === 'profiled';
+  const ownName = profiled ? photo.name : photo.nick;
+  const ownFace = profiled ? (
+    <Avatar kind="profile" name={photo.name} photoUrl={photo.url} size="sm" />
+  ) : look ? (
+    <LookAvatar look={look} size={AVATAR_SIZE.sm} />
+  ) : (
+    <Avatar kind="default" size="sm" />
   );
 
   return (
@@ -190,9 +197,20 @@ export default function VenueChatScreen() {
       top={
         <ChatTopBar
           onBack={() => router.back()}
-          title={tr.venueChat.title(venueName)}
-          subtitle={tr.venueChat.open}
+          title={tr.venueChat.open}
+          subtitle={venueName}
+          live
           leading={<GlyphDisc icon="chatbubbles-outline" />}
+          actions={
+            <IconButton
+              round
+              icon="ellipsis-vertical"
+              glyph={<MoreDots />}
+              label={tr.venueChat.options}
+              testID="venue-chat-options"
+              onPress={() => setSheet('options')}
+            />
+          }
         />
       }
       composer={
@@ -204,69 +222,59 @@ export default function VenueChatScreen() {
           value={draft}
           onChangeText={setDraft}
           maxLength={VENUE_CHAT.maxLength}
-          sendDisabled={!body || mode === undefined}
+          sendDisabled={!body || !identity}
           sending={send.isPending}
-          onSend={press}
+          onSend={() => body && send.mutate(body)}
           replyTo={reply.target?.quote}
           onCancelReply={reply.clear}
           counter={draft ? tr.chat.counter([...draft].length, VENUE_CHAT.maxLength) : undefined}
           above={
-            mode || (send.isError && sheet === null) ? (
-              <View className="gap-1.5">
-                {send.isError && sheet === null ? (
-                  <Text variant="fine" tone="danger" accessibilityLiveRegion="polite">
-                    {errorMessage(send.error)}
-                  </Text>
-                ) : null}
-                {mode ? (
-                  <View
-                    testID="venue-chat-mode"
-                    className="flex-row items-center"
-                    // skall tuvali (skall.css → `.idrow`): who you write as, in a pill.
-                    style={{
-                      gap: SPACING[2.5],
-                      minHeight: SPACING[8],
-                      paddingVertical: SPACING[2],
-                      paddingHorizontal: SPACING[3],
-                      borderRadius: shape.radius.pill,
-                      borderWidth: shape.stroke.hairline,
-                      borderColor: colors.divider,
-                      backgroundColor: colors.surface,
-                    }}
-                  >
-                    {mode === 'profiled' ? (
-                      <Avatar kind="profile" name={photo.name} photoUrl={photo.url} size="sm" />
-                    ) : (
-                      <Avatar kind="default" size="sm" />
-                    )}
-                    <Text variant="label" className="flex-1">
-                      {mode === 'profiled'
-                        ? tr.venueChat.writingProfile
-                        : tr.venueChat.writingAnonymous}
-                    </Text>
-                  </View>
-                ) : null}
-              </View>
-            ) : undefined
+            <View className="gap-1.5">
+              {note ? <Banner tone="info" body={note} testID="venue-chat-note" /> : null}
+              {send.isError ? (
+                <Text variant="fine" tone="danger" accessibilityLiveRegion="polite">
+                  {errorMessage(send.error)}
+                </Text>
+              ) : null}
+              {identity ? (
+                <IdentityRow
+                  face={ownFace}
+                  name={ownName}
+                  used={identity.switchUsed}
+                  onChange={() => setSheet('identity')}
+                />
+              ) : null}
+            </View>
           }
         />
       }
     >
-      <Card tone="note">
-        <View className="flex-row items-center gap-3">
-          <Mark size={SPACING[9]} label={null} />
-          <Text variant="fine" tone="text" className="flex-1">
-            {tr.venueChat.hint}
-          </Text>
-        </View>
-      </Card>
       {page.isPending ? (
-        <View className="items-center">
+        <View className="flex-1 items-center justify-center">
           <Loader />
         </View>
-      ) : messages?.length === 0 ? (
+      ) : page.isError ? (
         <View className="flex-1 justify-center">
-          <EmptyState kind="empty" body={tr.venueChat.empty} />
+          <EmptyState
+            kind="error"
+            body={errorMessage(page.error)}
+            action={{ label: tr.common.retry, onPress: () => void page.refetch() }}
+          />
+        </View>
+      ) : messages?.length === 0 ? (
+        <View className="flex-1 justify-end gap-2">
+          <Card>
+            <View className="items-center" style={{ gap: SPACING[2] }}>
+              <GlyphDisc icon="chatbubbles-outline" />
+              <Text variant="heading" className="text-center">
+                {tr.venueChat.emptyTitle}
+              </Text>
+              <Text variant="fine" className="text-center">
+                {profiled ? tr.venueChat.emptyProfiled : tr.venueChat.emptyAnonymous(photo.nick)}
+              </Text>
+            </View>
+          </Card>
+          <DayLine label={tr.chat.today} />
         </View>
       ) : (
         runs.map(({ item: m, first, day }) => (
@@ -274,6 +282,7 @@ export default function VenueChatScreen() {
             {(jumpTo) => (
               <>
                 {day ? <DayLine label={dayLabel(day)} /> : null}
+                {m.id === fresh ? <DayLine fresh label={tr.chat.newLine} /> : null}
                 <ChatBubble
                   testID={m.fromMe ? 'venue-chat-mine' : 'venue-chat-theirs'}
                   text={m.body}
@@ -293,23 +302,33 @@ export default function VenueChatScreen() {
                       },
                     })
                   }
+                  actions={
+                    m.fromMe
+                      ? [
+                          {
+                            label: tr.chat.delete,
+                            icon: 'close',
+                            negative: true,
+                            testID: 'venue-chat-delete',
+                            onPress: () => remove.mutate(m.id),
+                          },
+                        ]
+                      : [
+                          {
+                            label: tr.chat.report,
+                            icon: 'alert',
+                            negative: true,
+                            testID: 'venue-chat-report',
+                            onPress: () => setReporting(m),
+                          },
+                        ]
+                  }
                   first={first}
                   time={tr.chat.time(m.createdAt)}
-                  name={m.fromMe ? tr.venueChat.you : senderLabel(m)}
-                  avatar={
-                    m.fromMe ? undefined : m.profiled ? (
-                      <Avatar
-                        kind="profile"
-                        name={senderLabel(m)}
-                        photoUrl={m.photoUrl}
-                        size="sm"
-                      />
-                    ) : (
-                      <Avatar kind="table" alias={senderLabel(m)} size="sm" />
-                    )
-                  }
+                  name={m.fromMe ? undefined : senderLabel(m)}
+                  avatar={m.fromMe ? undefined : faceOf(m, AVATAR_SIZE.sm)}
                   nameInk={m.fromMe ? undefined : inkOf(senderLabel(m))}
-                  onPressSender={m.fromMe ? undefined : () => openSender(m)}
+                  onPressSender={m.fromMe ? undefined : () => setPerson(m)}
                 />
               </>
             )}
@@ -317,46 +336,82 @@ export default function VenueChatScreen() {
         ))
       )}
 
-      <ModeSheet
-        visible={sheet === 'mode'}
-        onClose={closeSheet}
-        alias={photo.nick}
-        photo={photo}
-        sending={send.isPending}
-        error={send.error}
-        onSend={(profiled) => body && send.mutate({ text: body, profiled, first: true })}
-        onAddPhoto={() => setSheet('photo')}
-      />
-      {/* From the choice: back to it once the photo sheet closes, uploaded or not. */}
-      <PhotoSheet
-        visible={sheet === 'photo'}
-        onClose={() => {
-          setSheet('mode');
-          send.reset();
-        }}
-      />
-      <Sheet
-        visible={menuFor !== null}
-        onClose={() => setMenuFor(null)}
-        title={tr.venueChat.messageMenu}
-        icon="chatbubble-outline"
-      >
-        <ListRow
-          title={tr.safety.report}
-          accessibilityRole="button"
-          onPress={() => {
-            setReporting(menuFor);
-            setMenuFor(null);
-          }}
+      {identity ? (
+        <IdentitySheet
+          visible={sheet === 'identity'}
+          onClose={() => setSheet(null)}
+          toAnonymous={identity.mode === 'profiled'}
+          atTable={!!currentRoom.data}
+          onChanged={refresh}
         />
-        <ListRow
-          title={tr.safety.block}
-          accessibilityRole="button"
-          onPress={() => {
-            setBlocking(menuFor);
-            setMenuFor(null);
-          }}
-        />
+      ) : null}
+      <OptionsSheet
+        visible={sheet === 'options'}
+        onClose={() => setSheet(null)}
+        onChanged={refresh}
+      />
+      <Sheet visible={person !== null} onClose={() => setPerson(null)}>
+        {person ? (
+          <>
+            <View className="flex-row items-center" style={{ gap: SPACING[3] }}>
+              {faceOf(person, AVATAR_SIZE.xl)}
+              <View className="flex-1">
+                <Text variant="title">{senderLabel(person)}</Text>
+                <Text variant="fine">
+                  {person.profiled ? tr.venueChat.profiledPerson : tr.venueChat.anonymousPerson}
+                </Text>
+              </View>
+            </View>
+            {person.profiled ? (
+              <Button
+                size="lg"
+                label={tr.venueChat.seeProfile}
+                testID="venue-chat-see-profile"
+                onPress={() => {
+                  const id = person.id;
+                  setPerson(null);
+                  router.push({ pathname: '/venue-chat/[messageId]', params: { messageId: id } });
+                }}
+              />
+            ) : (
+              <Text variant="fine">{tr.venueChat.anonymousNote}</Text>
+            )}
+            <Menu>
+              <MenuItem
+                label={tr.venueChat.mute}
+                icon="volume-mute-outline"
+                testID="venue-chat-mute"
+                loading={mute.isPending}
+                onPress={() => mute.mutate(person)}
+              />
+              <MenuItem
+                label={tr.safety.report}
+                icon="alert"
+                negative
+                onPress={() => {
+                  setReporting(person);
+                  setPerson(null);
+                }}
+              />
+              <MenuItem
+                label={tr.safety.block}
+                icon="ban-outline"
+                negative
+                onPress={() => {
+                  setBlocking(person);
+                  setPerson(null);
+                }}
+              />
+            </Menu>
+            {mute.isError ? <Banner tone="danger" body={errorMessage(mute.error)} /> : null}
+            <Button
+              size="lg"
+              variant="neutral"
+              label={tr.common.close}
+              onPress={() => setPerson(null)}
+            />
+          </>
+        ) : null}
       </Sheet>
       <ReportModal
         reasons={REPORT_REASONS}
@@ -378,5 +433,118 @@ export default function VenueChatScreen() {
         onClose={() => setBlocking(null)}
       />
     </ChatScreen>
+  );
+}
+
+const MUTES_KEY = ['venueChatMutes'] as const;
+
+// skall.css → `.idrow`: who the viewer writes as, in a pill over the message bar, and the one
+// change of the check-in (spent: "Bu girişte değişti").
+function IdentityRow({
+  face,
+  name,
+  used,
+  onChange,
+}: {
+  face: ReactNode;
+  name: string;
+  used: boolean;
+  onChange: () => void;
+}) {
+  const { colors, shape } = useTheme();
+  return (
+    <View
+      testID="venue-chat-mode"
+      className="flex-row items-center"
+      style={{
+        gap: SPACING[2.5],
+        minHeight: SPACING[8],
+        paddingVertical: SPACING[2],
+        paddingLeft: SPACING[3],
+        paddingRight: SPACING[1],
+        borderRadius: shape.radius.pill,
+        borderWidth: shape.stroke.hairline,
+        borderColor: colors.divider,
+        backgroundColor: colors.surface,
+      }}
+    >
+      {face}
+      <Text variant="fine" tone="text" className="flex-1">
+        <Text variant="label">{name}</Text> {tr.venueChat.writingAs}
+      </Text>
+      {used ? (
+        <View style={{ paddingRight: SPACING[2] }}>
+          <Text variant="fine" tone="muted">
+            {tr.venueChat.changed}
+          </Text>
+        </View>
+      ) : (
+        <Pressable
+          testID="venue-chat-change"
+          accessibilityRole="button"
+          accessibilityLabel={tr.venueChat.changeLabel}
+          onPress={onChange}
+          hitSlop={SPACING[1]}
+          style={{ minHeight: TOUCH.min, justifyContent: 'center', paddingHorizontal: SPACING[2] }}
+        >
+          <Text variant="label" tone="accent">
+            {tr.venueChat.change}
+          </Text>
+        </Pressable>
+      )}
+    </View>
+  );
+}
+
+// skall tuvali (MekanSohbetiSecenekler): the people the viewer muted, each with "Sesi aç".
+function OptionsSheet({
+  visible,
+  onClose,
+  onChanged,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  onChanged: () => void;
+}) {
+  const queryClient = useQueryClient();
+  const mutes = useQuery({
+    queryKey: MUTES_KEY,
+    queryFn: () => venueChatApi.mutes(),
+    enabled: visible,
+  });
+  const unmute = useMutation({
+    meta: FEEL_ERROR,
+    mutationFn: (id: string) => venueChatApi.unmute(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: MUTES_KEY });
+      onChanged();
+    },
+  });
+  const list = mutes.data?.mutes ?? [];
+  return (
+    <Sheet visible={visible} onClose={onClose} title={tr.venueChat.open}>
+      <View style={{ gap: SPACING[1.5] }}>
+        <Text variant="label">{tr.venueChat.mutedTitle}</Text>
+        {mutes.isPending ? (
+          <Loader />
+        ) : list.length === 0 ? (
+          <Text variant="fine">{tr.venueChat.mutedNone}</Text>
+        ) : (
+          <Menu>
+            {list.map((m) => (
+              <MenuItem
+                key={m.id}
+                label={m.label}
+                note={tr.venueChat.unmute}
+                icon={m.profiled ? 'person-outline' : 'happy-outline'}
+                loading={unmute.isPending && unmute.variables === m.id}
+                onPress={() => unmute.mutate(m.id)}
+              />
+            ))}
+          </Menu>
+        )}
+      </View>
+      <Button size="lg" variant="neutral" label={tr.venueChat.done} onPress={onClose} />
+    </Sheet>
   );
 }

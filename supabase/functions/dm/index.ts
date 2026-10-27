@@ -24,8 +24,14 @@ import { AppError } from '../_shared/pure/errors.ts';
 import { DM_MIN_INTERVAL_MS, prepareDm } from '../_shared/pure/friends.ts';
 import { containsProfanity } from '../_shared/pure/profanity.ts';
 import { dmPush, PUSH_PREFERENCE } from '../_shared/pure/push.ts';
-import { isReaction, type Reaction } from '../_shared/pure/reactions.ts';
+import { toReaction } from '../_shared/pure/reactions.ts';
 import { BROADCAST, dmChannel } from '../_shared/pure/rooms.ts';
+
+// A reaction: one of the six faces, or an emoji of the app before them (reactions.ts); null takes
+// the caller's back.
+const ReactionInput = z
+  .custom<string | null>((v) => v === null || toReaction(v) !== null)
+  .transform((v) => (v === null ? null : toReaction(v)));
 
 const Body: z.ZodType<DmRequest> = z.discriminatedUnion('action', [
   z.object({
@@ -37,7 +43,7 @@ const Body: z.ZodType<DmRequest> = z.discriminatedUnion('action', [
   z.object({
     action: z.literal('react'),
     messageId: z.uuid(),
-    emoji: z.custom<Reaction>(isReaction).nullable(),
+    emoji: ReactionInput,
   }),
   z.object({ action: z.literal('read'), threadId: z.uuid() }),
   z.object({ action: z.literal('inbox') }),

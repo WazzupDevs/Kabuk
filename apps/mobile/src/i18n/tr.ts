@@ -2,6 +2,7 @@ import type { CalendarDate } from '@shared/age.ts';
 import { APP_NAME, GAME_NAMES } from '@shared/brand.ts';
 import { headcountLabel } from '@shared/checkin.ts';
 import type { InboxStamp } from '@shared/dmInbox.ts';
+import type { Reaction } from '@shared/reactions.ts';
 import type { HistoryDay, HistoryResult } from '@shared/activities.ts';
 import type { EventTime } from '@shared/explore.ts';
 import { ENCOUNTER_MIN_MINUTES } from '@shared/friends.ts';
@@ -826,7 +827,21 @@ export const tr = {
     quoteLabel: (name: string, text: string) => `${name} mesajına yanıt: ${text}`,
     reactionChip: (emoji: string, n: number, mine: boolean) =>
       `${emoji} ${n}${mine ? ', senin tepkin' : ''}`,
-    reactWith: (emoji: string) => `${emoji} ile tepki ver`,
+    reactWith: (face: string) => `${face} ile tepki ver`,
+    // The six capsule faces (docs/SPEC_V4.md §4.C; skall tuvali, uretec/veri/emotes.json).
+    reactions: {
+      begen: 'Beğendim',
+      ask: 'Bayıldım',
+      kahkaha: 'Kahkaha',
+      saskin: 'Şaşırdım',
+      uzgun: 'Üzüldüm',
+      kizgin: 'Kızdım',
+    } satisfies Record<Reaction, string>,
+    report: 'Bildir',
+    delete: 'Sil',
+    // Over the first message that came while the chat was closed (skall tuvali: `.day.new`).
+    newLine: 'Yeni mesajlar',
+    jumpDown: 'En alta in',
     openProfile: (name: string) => `${name}, profili aç`,
   },
   // Mekan sohbeti (docs/SPEC_V3.md §7).
@@ -849,6 +864,27 @@ export const tr = {
     writingProfile: 'Profilinle yazıyorsun',
     you: 'Sen',
     messageMenu: 'Mesaj',
+    // skall tuvali (Mekan sohbeti panoları, docs/SPEC_V4.md §4.D).
+    options: 'Mekan sohbeti seçenekleri',
+    writingAs: 'olarak yazıyorsun',
+    change: 'Değiştir',
+    changeLabel: 'Kimliğini değiştir',
+    changed: 'Bu girişte değişti',
+    emptyTitle: 'Mekandaki herkes okur',
+    emptyProfiled: 'Mesajların adınla ve fotoğrafınla görünür. 24 saat sonra silinir.',
+    emptyAnonymous: (nick: string) =>
+      `Mesajların ${nick} adıyla, kapsül karakterinle görünür. 24 saat sonra silinir.`,
+    mutedTitle: 'Sessize aldıkların',
+    mutedNone: 'Sessize aldığın kimse yok.',
+    unmute: 'Sesi aç',
+    done: 'Tamam',
+    mute: 'Sessize al',
+    mutedToast: (name: string) => `${name} sessize alındı. Mesajları sana görünmez.`,
+    anonymousPerson: 'Anonim katılıyor',
+    profiledPerson: 'Profilli katılıyor',
+    anonymousNote: 'Anonim kişinin profili görünmez.',
+    seeProfile: 'Profili gör',
+    deleted: 'Mesaj silindi.',
     sendRequest: 'Arkadaşlık isteği gönder',
     requestConfirmTitle: 'İstek gönderilsin mi?',
     requestConfirmBody: 'İstek gönderirsen profilin ona görünür: adın, yaşın ve fotoğrafın.',
@@ -1155,6 +1191,30 @@ export const tr = {
     dealing: 'Yeni kelime geliyor…',
     votesDone: 'Masanızın oyları verildi. Diğer masa bekleniyor.',
     notEnough: `Kartına bakmayanlar oyundan çıktı; ${SAHTEKAR.minPlayers} kişi kalmadı. Oyun bitti.`,
+  },
+  identity: {
+    // Mekan's anonymous switch and its sheets (skall tuvali: MekanAnonimGecis, …Erkek,
+    // MekanProfilGecis, …Fotosuz, MekanGecisKullanildi; docs/SPEC_V4.md §4.D).
+    switchOn: 'Anonim görünüyorsun',
+    switchOff: 'Profilinle görünüyorsun',
+    anonTitle: 'Anonim görün?',
+    anonBody: (nick: string) =>
+      `Adın ve fotoğrafın görünmez. Mekan sohbetinde ve masada ${nick} adıyla, kapsül karakterinle görünürsün.`,
+    anonConfirm: 'Anonim görün',
+    chatAnonTitle: 'Mekan sohbetinde anonim yaz?',
+    chatAnonBody: (nick: string) =>
+      `Mekan sohbetinde adın ve fotoğrafın görünmez; ${nick} adıyla, kapsül karakterinle yazarsın. Masada ve oyunlarda her zaman profilinle görünürsün.`,
+    chatAnonConfirm: 'Anonim yaz',
+    profileTitle: 'Profilinle görün?',
+    profileBody: 'Mekan sohbetinde ve masada adın ve fotoğrafın görünür.',
+    profileConfirm: 'Profilimle görün',
+    photoNeeded: 'Profilinle görünmek için önce fotoğraf eklemelisin.',
+    addPhoto: 'Fotoğraf ekle',
+    onceTitle: 'Bu girişte tek değişiklik hakkın var.',
+    onceBody:
+      'Değiştirince bu girişte geri dönemezsin. Yeni mesajların yeni kimlikle görünür, öncekiler eski kimlikte kalır; mekan sohbetini o an izleyen biri iki kimliği eşleştirebilir.',
+    onceTable: ' Masadaki kimliğin bu masa bitene kadar değişmez.',
+    used: 'Bu girişteki değişiklik hakkını kullandın',
   },
   venue: {
     here: 'Mekandasın',

@@ -86,9 +86,11 @@ export default function OtpStep() {
           onBlur={friend.onBlur}
           error={error}
         />
-        <View className="flex-row flex-wrap gap-x-4">
+        {/* skall tuvali (KayitKod): the two links under the boxes, one each side. */}
+        <View className="flex-row flex-wrap justify-between gap-x-4">
           <Button
             variant="ghost"
+            size="sm"
             flush
             label={secondsLeft > 0 ? tr.auth.resendIn(secondsLeft) : tr.auth.resend}
             onPress={() => void resend()}
@@ -96,6 +98,7 @@ export default function OtpStep() {
           />
           <Button
             variant="ghost"
+            size="sm"
             flush
             label={tr.auth.changeNumber}
             onPress={() => router.back()}

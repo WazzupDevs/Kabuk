@@ -257,32 +257,32 @@ describe('room chat replies and reactions (docs/SPEC_V3.md §21)', () => {
 
     const heard = waitForBroadcast(owner, messagesChannel(roomId), BROADCAST.reaction);
     await heard.subscribed;
-    expect(await react(guest, messageId, '👍')).toEqual(OK);
+    expect(await react(guest, messageId, 'begen')).toEqual(OK);
     await heard.received;
     await heard.close();
-    expect(await react(guest, messageId, '👍')).toEqual(OK);
-    expect(await react(owner, messageId, '👍')).toEqual(OK);
+    expect(await react(guest, messageId, 'begen')).toEqual(OK);
+    expect(await react(owner, messageId, 'begen')).toEqual(OK);
     expect((await extras(owner, roomId))[messageId]?.reactions).toEqual([
-      { emoji: '👍', count: 2, aliases: [names.guest, names.owner], mine: true },
+      { emoji: 'begen', count: 2, aliases: [names.guest, names.owner], mine: true },
     ]);
-    expect(await react(guest, messageId, '🔥')).toEqual(OK);
+    expect(await react(guest, messageId, 'kizgin')).toEqual(OK);
     expect(await react(owner, messageId, null)).toEqual(OK);
     expect((await extras(owner, roomId))[messageId]?.reactions).toEqual([
-      { emoji: '🔥', count: 1, aliases: [names.guest], mine: false },
+      { emoji: 'kizgin', count: 1, aliases: [names.guest], mine: false },
     ]);
     expect((await extras(guest, roomId))[messageId]?.reactions).toEqual([
-      { emoji: '🔥', count: 1, aliases: [names.guest], mine: true },
+      { emoji: 'kizgin', count: 1, aliases: [names.guest], mine: true },
     ]);
 
     expect(await react(guest, messageId, '💩')).toEqual({
       status: 400,
       body: errorBody('bad_request'),
     });
-    expect(await react(third, messageId, '👍')).toEqual({
+    expect(await react(third, messageId, 'begen')).toEqual({
       status: 403,
       body: errorBody('not_in_room'),
     });
-    expect(await react(guest, randomUUID(), '👍')).toEqual({
+    expect(await react(guest, randomUUID(), 'begen')).toEqual({
       status: 404,
       body: errorBody('not_found'),
     });
@@ -299,7 +299,7 @@ describe('room chat replies and reactions (docs/SPEC_V3.md §21)', () => {
     const { owner, guest, roomId } = await roomWithGuest();
     const sentOwner = await send(owner, roomId, 'selam');
     const messageId = (sentOwner.body as { messageId: string }).messageId;
-    expect(await react(guest, messageId, '👍')).toEqual(OK);
+    expect(await react(guest, messageId, 'begen')).toEqual(OK);
     const guestId = await userIdOf(guest);
 
     const holder = postgres(dbUrl, { max: 1, onnotice: () => {} });
@@ -308,9 +308,10 @@ describe('room chat replies and reactions (docs/SPEC_V3.md §21)', () => {
       let reacted: Promise<unknown> = Promise.resolve();
       await holder.begin(async (tx) => {
         await tx`select id from public.rooms where id = ${roomId} for update`;
-        reacted = reacting`select changed from public.chat_react(${guestId}, ${messageId}, '🔥')`
-          .execute()
-          .catch((err: unknown) => err);
+        reacted =
+          reacting`select changed from public.chat_react(${guestId}, ${messageId}, 'kizgin')`
+            .execute()
+            .catch((err: unknown) => err);
         await waitUntilBlocked('chat_react');
         await tx`set local lock_timeout = '2s'`;
         const held = await tx`

@@ -54,7 +54,7 @@ appId: app.kabuk.mobile
       id: dm-typing
     timeout: 10000
 - takeScreenshot: 27d-dm-answer
-# §21.2: a long press opens the six reactions; 👍 (the first) shows under the bubble.
+# §21.2: a long press opens the six reactions; the first face (Beğendim) shows under the bubble.
 - longPressOn: Okudum
 - extendedWaitUntil:
     visible:
@@ -92,7 +92,7 @@ appId: app.kabuk.mobile
     env:
       ACTION: dm-last
       EXPECT_DM: Okudum
-      EXPECT_REACTION: 👍
+      EXPECT_REACTION: begen
 # §21.1: a swipe to the right answers the message; the quote shows over the bar, then in the bubble.
 - swipe:
     from:

@@ -29,6 +29,7 @@ import type {
   LeaveResponse,
   LocationModeResponse,
   RerollAliasResponse,
+  SetIdentityResponse,
 } from '@shared/api/checkin.ts';
 import type {
   DmInboxResponse,
@@ -45,7 +46,13 @@ import type {
   ProfileView,
   RefreshNickResponse,
 } from '@shared/api/profile.ts';
-import type { VenueChatPageResponse, VenueChatResponse } from '@shared/api/venueChat.ts';
+import type {
+  VenueChatMuteResponse,
+  VenueChatMutesResponse,
+  VenueChatPageResponse,
+  VenueChatResponse,
+} from '@shared/api/venueChat.ts';
+import type { VenueChatMode } from '@shared/venueChat.ts';
 import type { GameFlowReportReason, ReportReason } from '@shared/chat.ts';
 import type { Concept, Intent } from '@shared/rooms.ts';
 import type { SayKind } from '@shared/sayChallenge.ts';
@@ -129,6 +136,11 @@ export function callChangeSpot(spotId: string): Promise<ChangeSpotResponse> {
 // "Masa adını değiştir" (docs/SPEC_V3.md §5.6).
 export function callRerollAlias(): Promise<RerollAliasResponse> {
   return invoke<RerollAliasResponse>('checkin', { action: 'reroll-alias' });
+}
+
+// Anonymous or profiled, once per check-in (docs/SPEC_V4.md §4.D).
+export function callSetIdentity(anonymous: boolean): Promise<SetIdentityResponse> {
+  return invoke<SetIdentityResponse>('checkin', { action: 'set-identity', anonymous });
 }
 
 export function callLeave(): Promise<LeaveResponse> {
@@ -348,6 +360,22 @@ export const venueChatApi = {
     invoke<ReactResponse>('venue-chat', { action: 'react', messageId, emoji }),
   page: (venueId: string) =>
     invoke<VenueChatPageResponse>('venue-chat', { action: 'page', venueId }),
+  // docs/SPEC_V4.md §4.D: a message goes with the check-in's identity; another one here is
+  // identity_mismatch and nothing is written.
+  sendAs: (venueId: string, body: string, identity: VenueChatMode, replyTo?: string) =>
+    invoke<VenueChatResponse>('venue-chat', {
+      action: 'send',
+      venueId,
+      body,
+      identity,
+      ...(replyTo ? { replyTo } : {}),
+    }),
+  remove: (messageId: string) =>
+    invoke<{ ok: true }>('venue-chat', { action: 'delete', messageId }),
+  mute: (messageId: string) =>
+    invoke<VenueChatMuteResponse>('venue-chat', { action: 'mute', messageId }),
+  unmute: (muteId: string) => invoke<{ ok: true }>('venue-chat', { action: 'unmute', muteId }),
+  mutes: () => invoke<VenueChatMutesResponse>('venue-chat', { action: 'mutes' }),
 };
 
 export const dmApi = {

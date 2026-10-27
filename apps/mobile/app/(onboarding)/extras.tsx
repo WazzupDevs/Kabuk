@@ -4,10 +4,9 @@ import { Stack, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { BackHandler, View } from 'react-native';
 
+import { Banner } from '@/components/Banner';
 import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
 import { ProfilePhoto, PROFILE_PHOTO_SIZES } from '@/components/ProfilePhoto';
-import { Text } from '@/components/Text';
 import { useProfile } from '@/features/account/useProfile';
 import { SignupStep } from '@/features/onboarding/SignupStep';
 import { resetOnboarding, useOnboardingStore } from '@/features/onboarding/store';
@@ -18,6 +17,7 @@ import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { haptic } from '@/lib/haptics';
 import { finishLabel } from '@/lib/signupSteps';
+import { BRAND } from '@/theme/brand';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON } from '@/theme/tokens';
 
@@ -40,7 +40,7 @@ export default function PhotoStep() {
   // circle, the button and the finish label say the same thing.
   const hasPhoto = photoSet || photoUrl !== null;
   const photoNote = gender !== null && !mayStayAnonymous(gender) && !hasPhoto;
-  const side = PROFILE_PHOTO_SIZES.large;
+  const side = PROFILE_PHOTO_SIZES.hero;
 
   // The profile is sent: Android's back would step into the birth date and the gender again,
   // which have nothing left to do. This is the last step, so back does nothing here.
@@ -81,7 +81,7 @@ export default function PhotoStep() {
         <View className="gap-4">
           <View className="items-center gap-3">
             {photoUrl ? (
-              <ProfilePhoto url={photoUrl} name={own.data?.display_name} />
+              <ProfilePhoto url={photoUrl} name={own.data?.display_name} size="hero" />
             ) : (
               <View
                 accessible={false}
@@ -89,34 +89,29 @@ export default function PhotoStep() {
                   width: side,
                   height: side,
                   borderRadius: shape.radius.pill,
+                  // skall tuvali (KayitFoto, `.picker`): a dashed control ring on the surface.
                   borderWidth: shape.stroke.feature,
                   borderStyle: 'dashed',
-                  borderColor: colors.accent,
-                  backgroundColor: colors.surface2,
+                  borderColor: colors.control,
+                  backgroundColor: colors.surface,
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <Ionicons name="person-outline" size={ICON.xl} color={colors.accent} />
+                <Ionicons name="camera-outline" size={ICON.xl} color={BRAND.purple} />
               </View>
             )}
             <Button
               testID="signup-photo-add"
-              variant="neutral"
+              size="sm"
+              variant="secondary"
               icon="camera-outline"
               label={hasPhoto ? tr.profile.photoChange : tr.profile.photoAdd}
               onPress={() => setSheet(true)}
             />
           </View>
           {photoNote ? (
-            <Card tone="note" testID="photo-needed-note">
-              <View className="flex-row items-start gap-2.5">
-                <Ionicons name="information-circle-outline" size={ICON.md} color={colors.accent} />
-                <Text variant="bodyStrong" className="flex-1">
-                  {tr.signup.photoNeededNote}
-                </Text>
-              </View>
-            </Card>
+            <Banner tone="warn" testID="photo-needed-note" body={tr.signup.photoNeededNote} />
           ) : null}
         </View>
         <PhotoSheet
