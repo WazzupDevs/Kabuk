@@ -82,6 +82,24 @@ export function useVenueChatLastAt(
   return venueChatLastAt(first.data?.messages.at(-1)?.createdAt ?? null, heardAt);
 }
 
+// The venue screen's chat card (the owner's call, 27 Ekim: a fuller card): the last messages of the
+// page it already reads (useVenueChatLastAt's rule: once, then only the broadcast's moment), and
+// whether a message came after them.
+const CARD_PREVIEW = 2;
+export function useVenueChatCard(venueId: string | undefined, sessionId: string | undefined) {
+  const first = useQuery({ ...venueChatPage(venueId, sessionId), staleTime: CARD_STALE_MS });
+  const [heardAt, setHeardAt] = useState<string | null>(null);
+  const heard = useCallback(() => setHeardAt(new Date().toISOString()), []);
+  useBroadcast(venueId ? venueChatChannel(venueId) : null, VENUE_CHAT_BROADCAST, heard);
+  const messages = first.data?.messages ?? [];
+  const newest = messages.at(-1)?.createdAt ?? null;
+  return {
+    lastAt: venueChatLastAt(newest, heardAt),
+    recent: messages.slice(-CARD_PREVIEW),
+    fresh: heardAt !== null && (newest === null || heardAt > newest),
+  };
+}
+
 // The sender of a profiled message, opened through the message (no public_id).
 export function useVenueChatProfile(messageId: string | undefined) {
   return useQuery({

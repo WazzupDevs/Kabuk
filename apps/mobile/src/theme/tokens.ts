@@ -315,16 +315,17 @@ export const MAP_PIN = {
   labelHalo: 2.5,
 } as const;
 // The person's table card on Mekan (the owner's call, 27 Ekim: fuller): the table's icon blurred
-// large behind it, under the card's ground at `veil`; the people as small capsules; the time left
+// large behind it, under the card's ground at `veil`; the people's faces overlapping; the time left
 // as a bar.
 export const TABLE_CARD = {
   backdropBlur: 28,
   backdropOpacity: 0.55,
   veil: 0.6,
-  capsule: [9, 20] as const,
-  capsuleOverlap: 3,
+  faceOverlap: 8,
   bar: 6,
 } as const;
+// The venue chat card on Mekan: the chat's wall under a veil of the card's ground.
+export const VENUE_CHAT_CARD = { veil: 0.55 } as const;
 export const MAP_FONTS = { regular: ['Noto Sans Regular'], bold: ['Noto Sans Bold'] } as const;
 
 // The skall type scale (skall tuvali, skall.css → "Yazı ölçeği"): headings 800, body and notes 600,

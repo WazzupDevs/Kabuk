@@ -22,3 +22,22 @@ export const TAB_GLASS = {
 // 27 Ekim): what scrolls under them only blurred, under the screen's ground at `tint` of its
 // strength; no lens.
 export const PANEL_GLASS = { blur: 14, tint: 0.78 } as const;
+
+// Every button's glass look (the owner's call, 27 Ekim: one design language). A clear button (on
+// the screen's ground) takes the tab bar's glass: its own fill at `clearFill`, v46's light gradient
+// over it, the white edge and the inner light (parts.generated.ts → V46_TAB_BAR). A coloured one
+// keeps its colour whole, so its label reads, with a gloss from the top, a light edge and the inner
+// light. Drawn, not live: the ground behind an in-page button is still (only floating parts carry
+// the live lens, ui/LiquidGlass.tsx).
+export const BUTTON_GLASS = {
+  clearFill: 0.55,
+  gloss: {
+    light: 'linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0) 58%)',
+    dark: 'linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0) 58%)',
+  },
+  edge: { light: 'rgba(255, 255, 255, 0.42)', dark: 'rgba(255, 255, 255, 0.16)' },
+  inner: {
+    light: 'inset 0px 1px 0px 0px rgba(255, 255, 255, 0.55)',
+    dark: 'inset 0px 1px 0px 0px rgba(255, 255, 255, 0.22)',
+  },
+} as const;

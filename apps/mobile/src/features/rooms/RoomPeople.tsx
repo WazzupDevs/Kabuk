@@ -142,14 +142,14 @@ export function PeopleSheet({ visible, onClose, roomId, people, me, profiles }: 
 
 // A person's face at the table: the profile photo (read through the profile), or the anonymous
 // seat's capsule.
-function PersonFace({
+export function PersonFace({
   person,
   publicId,
   size,
 }: {
   person: TablePerson;
   publicId: string | undefined;
-  size: 'md' | 'xl';
+  size: 'sm' | 'md' | 'xl';
 }) {
   const view = useProfileView(person.profiled ? publicId : undefined);
   if (!person.profiled && person.look)

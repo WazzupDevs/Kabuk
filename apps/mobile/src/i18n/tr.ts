@@ -1327,6 +1327,8 @@ export const tr = {
     // The venue chat card (v45: .linkcard.chat); its dot only with a message in the last 10
     // minutes (K-12).
     chatCard: 'Mekana giriş yapan herkes okur ve yazar.',
+    chatEmpty: 'Henüz kimse yazmadı. İlk mesajı sen yaz.',
+    chatNew: 'Yeni mesaj',
     chatActive: 'şu an aktif',
     // The card's head opens the table. A screen reader hears the name, the people and the state,
     // then what the head does.

@@ -3,7 +3,7 @@ import { TABLE_SESSION_HOURS } from '@shared/checkin.ts';
 import { gameTag, type TableState } from '@shared/tableCard.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
 
 import { Button } from '@/components/Button';
@@ -19,13 +19,14 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { roomsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
-import { BRAND } from '@/theme/brand';
+import { useRoomMemberProfiles } from '@/features/profile/queries';
 import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, OPACITY, SPACING, TABLE_CARD, TOUCH } from '@/theme/tokens';
 
 import { InviteSheet } from './InviteSheet';
-import { roomKeys, type TableRoomRow } from './queries';
+import { roomKeys, type TableRoomRow, useTablePeople } from './queries';
+import { PersonFace } from './RoomPeople';
 import { TableIcon } from './TableIcon';
 import { TABLE_ICON_IMAGES } from './tableIconImages';
 
@@ -55,7 +56,7 @@ const LOBBY_BEAT_MS = 1600;
 // state; the head opens the table. The owner gets "Lobiye aç" or "Lobiden çek" and "Davet et"; the
 // owner's icon opens the picker (K-59). Under it a quiet line: the time left and, without a table,
 // the spot to change (the server refuses it at a table). Fuller since the owner's call (27 Ekim):
-// the table's icon blurred large behind the card, a larger icon, the people as capsules, the
+// the table's icon blurred large behind the card, a larger icon, the people's faces, the
 // buttons with the family's icons and the time left as a bar.
 export function TableCard({
   checkIn,
@@ -121,7 +122,7 @@ export function TableCard({
                   {room.name ?? ''}
                 </Text>
                 <Status people={room.phones} live={state === 'open'} />
-                <PeopleCapsules count={room.phones} />
+                <PeopleFaces roomId={room.id} phones={room.phones} />
               </View>
               <Icon name="chevron-forward" tone="muted" />
             </Pressable>
@@ -224,15 +225,32 @@ export function TableCard({
 // the card's own so the text reads.
 function Backdrop({ source }: { source: (typeof TABLE_ICON_IMAGES)[string] }) {
   const { colors } = useTheme();
+  // A square as large as the card's longer side, centred: with `cover` on the card's own box the
+  // blurred image stopped short of its right edge on Android (the owner's report, 27 Ekim).
+  const [box, setBox] = useState<{ width: number; height: number } | null>(null);
+  const side = box ? Math.max(box.width, box.height) : 0;
   return (
-    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      <Image
-        source={source}
-        blurRadius={TABLE_CARD.backdropBlur}
-        fadeDuration={0}
-        resizeMode="cover"
-        style={[StyleSheet.absoluteFill, { opacity: TABLE_CARD.backdropOpacity }]}
-      />
+    <View
+      pointerEvents="none"
+      style={StyleSheet.absoluteFill}
+      onLayout={(e) => setBox(e.nativeEvent.layout)}
+    >
+      {box ? (
+        <Image
+          source={source}
+          blurRadius={TABLE_CARD.backdropBlur}
+          fadeDuration={0}
+          resizeMode="stretch"
+          style={{
+            position: 'absolute',
+            width: side,
+            height: side,
+            left: (box.width - side) / 2,
+            top: (box.height - side) / 2,
+            opacity: TABLE_CARD.backdropOpacity,
+          }}
+        />
+      ) : null}
       <View
         style={[
           StyleSheet.absoluteFill,
@@ -243,26 +261,38 @@ function Backdrop({ source }: { source: (typeof TABLE_ICON_IMAGES)[string] }) {
   );
 }
 
-// The people at the table as small capsules in the family's two colours, one for each phone,
-// overlapping a little; the count itself is on the line above.
-function PeopleCapsules({ count }: { count: number }) {
+// The people at the table (the owner's call, 27 Ekim), in the order they sat: a profiled person's
+// photo, an anonymous one's capsule, overlapping a little, each on a ring of the card's ground. The
+// people's faces go to everyone at the table while it runs (rule 4); the list is read again when
+// the count changes.
+function PeopleFaces({ roomId, phones }: { roomId: string; phones: number }) {
   const { colors, shape } = useTheme();
-  const [w, h] = TABLE_CARD.capsule;
+  const people = useTablePeople(roomId);
+  const ids = (people.data ?? []).map((p) => p.sessionId).join(',');
+  const profiles = useRoomMemberProfiles(roomId, ids).data;
+  const refetch = people.refetch;
+  const seen = useRef(phones);
+  useEffect(() => {
+    if (seen.current === phones) return;
+    seen.current = phones;
+    void refetch();
+  }, [phones, refetch]);
+  const sorted = [...(people.data ?? [])].sort((a, b) => a.joinedAt.localeCompare(b.joinedAt));
+  if (sorted.length === 0) return null;
   return (
     <View className="flex-row" accessible={false} importantForAccessibility="no-hide-descendants">
-      {Array.from({ length: count }, (_, i) => (
+      {sorted.map((p, i) => (
         <View
-          key={i}
+          key={p.sessionId}
           style={{
-            width: w,
-            height: h,
-            marginLeft: i === 0 ? 0 : -TABLE_CARD.capsuleOverlap,
+            marginLeft: i === 0 ? 0 : -TABLE_CARD.faceOverlap,
             borderRadius: shape.radius.pill,
             borderWidth: shape.stroke.control,
             borderColor: colors.surface,
-            backgroundColor: i % 2 === 0 ? BRAND.purple : BRAND.pink,
           }}
-        />
+        >
+          <PersonFace person={p} publicId={profiles?.get(p.sessionId)} size="sm" />
+        </View>
       ))}
     </View>
   );

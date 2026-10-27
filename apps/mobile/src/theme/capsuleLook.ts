@@ -41,3 +41,22 @@ export function lookGround(code: string): string {
 
 // The feelings a tap on the head cycles through: [id, name] (v46 LOOK.EMOS).
 export const FEELINGS: readonly (readonly [string, string])[] = LOOK.EMOS;
+
+// The eyes posed (the profile's living capsule, the owner's call, 27 Ekim): closed for a blink,
+// squashed to a line about the eye line, or turned aside, moved along it (`look` in drawing units,
+// negative to the left). Every eye shape is one self-closing element with class "eye"
+// (capsuleDrawing.js); they are gathered into one group where the first one stood.
+const EYE = /<(?:circle|ellipse|path)\b[^>]*\bclass="eye"[^>]*\/>/g;
+const EYE_LINE = 20.5;
+const BLINK_SQUASH = 0.12;
+
+export function posedEyes(svg: string, pose: { blink?: boolean; look?: number }): string {
+  if (!pose.blink && !pose.look) return svg;
+  const eyes = svg.match(EYE);
+  const first = svg.search(EYE);
+  if (!eyes || first < 0) return svg;
+  const rest = svg.replace(EYE, '');
+  const squash = pose.blink ? BLINK_SQUASH : 1;
+  const group = `<g transform="translate(${pose.look ?? 0} ${EYE_LINE}) scale(1 ${squash}) translate(0 ${-EYE_LINE})">${eyes.join('')}</g>`;
+  return rest.slice(0, first) + group + rest.slice(first);
+}

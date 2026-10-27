@@ -27,17 +27,29 @@ const USED_NOTE_MS = 2600;
 // Longer venue names (a campus's full name) take the smaller title style, as ScreenHeader does.
 const LONG_NAME = 22;
 
-// The venue screen's top (v45: .top): "Mekandan ayrıl" on the left, a round button with the red
-// bars' cross; the wordmark in the middle; the own photo on the right, which opens Profil. The
-// anonymous switch beside the photo comes with step 4.4. Under the row the venue's name.
+// The venue's name, under the bar; longer names (a campus's full name) in the title style.
+export function VenueName({ name }: { name: string }) {
+  return (
+    <Text
+      variant={name.length > LONG_NAME ? 'title' : 'display'}
+      accessibilityRole="header"
+      testID="venue-name"
+    >
+      {name}
+    </Text>
+  );
+}
+
+// The venue screen's bar (v45: .top), fixed at the top while the page scrolls (the owner's call, 27
+// Ekim): "Mekandan ayrıl" on the left, a round button with the red bars' cross; the wordmark in
+// the screen's very middle (the owner's report: it sat left of it, the right side being wider); the
+// anonymous switch and the own photo on the right, which opens Profil.
 export function VenueTop({
-  venueName,
   onLeave,
   leaving,
   identity,
   atTable,
 }: {
-  venueName: string;
   onLeave: () => void;
   leaving: boolean;
   // The check-in's identity (docs/SPEC_V4.md §4.D): the switch beside the photo.
@@ -70,7 +82,11 @@ export function VenueTop({
             )
           }
         />
-        <View pointerEvents="none" accessible={false}>
+        <View
+          pointerEvents="none"
+          accessible={false}
+          className="absolute inset-0 items-center justify-center"
+        >
           <Wordmark height={LOGO_HEIGHT} />
         </View>
         <View className="flex-row items-center" style={{ gap: SPACING[1.5] }}>
@@ -92,13 +108,6 @@ export function VenueTop({
         atTable={atTable}
       />
       {usedNote ? <Banner tone="info" testID="identity-used" body={tr.identity.used} /> : null}
-      <Text
-        variant={venueName.length > LONG_NAME ? 'title' : 'display'}
-        accessibilityRole="header"
-        testID="venue-name"
-      >
-        {venueName}
-      </Text>
     </View>
   );
 }

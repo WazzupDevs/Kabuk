@@ -8,6 +8,7 @@ import { EASE_OUT } from '@/theme/markMotion';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, OPACITY, type PaletteKey, SPACING, TOUCH, type TypeVariant } from '@/theme/tokens';
 
+import { GlassFace } from './GlassFace';
 import { Loader } from './Loader';
 import { usePressScale } from './motion';
 import { Text } from './Text';
@@ -134,12 +135,16 @@ export function Button({
   const fill = buttonFill(variant, !!disabled);
   const bg = fill.bg ? colors[fill.bg] : 'transparent';
   const fg = colors[fill.fg];
-  // The raised capsules carry an outline: they sit on the canvas, on cards and on fills alike.
-  // Disabled, every filled role is the same neutral fill, without one.
-  const edge: ViewStyle | null =
-    !disabled && variant === 'secondary'
-      ? { borderWidth: shape.stroke.hairline * 1.5, borderColor: colors.control }
-      : null;
+  // Every filled button is glass (theme/glass.ts → BUTTON_GLASS, the owner's call, 27 Ekim): the
+  // quiet ones clear, the coloured ones tinted; a soft shadow sets the clear ones off the ground.
+  // Disabled, every filled role is the same neutral fill, flat.
+  const glass: 'clear' | 'tinted' | null =
+    textOnly || disabled
+      ? null
+      : variant === 'secondary' || variant === 'neutral'
+        ? 'clear'
+        : 'tinted';
+  const edge: ViewStyle | null = glass === 'clear' ? { boxShadow: shape.shadow.card } : null;
   const small = size === 'sm';
   const labelVariant: TypeVariant = small
     ? 'buttonSmall'
@@ -147,7 +152,7 @@ export function Button({
       ? 'buttonLarge'
       : 'button';
   // The busy mark: one colour on a filled button, the logo's colours on a raised or clear one.
-  const filled = !textOnly && !edge;
+  const filled = !textOnly && glass !== 'clear';
 
   const style: ViewStyle = {
     flexDirection: 'row',
@@ -167,14 +172,10 @@ export function Button({
     paddingVertical: small ? SPACING[1] : SPACING[2],
     minHeight: small ? SMALL_HEIGHT : HEIGHT[size],
     borderRadius: shape.radius.pill,
-    backgroundColor: bg,
+    backgroundColor: glass === 'clear' ? 'transparent' : bg,
   };
   const pressedFill: ViewStyle | null =
-    variant === 'primary' && !disabled
-      ? { backgroundColor: colors.primaryPressed }
-      : variant === 'secondary' && !disabled
-        ? { backgroundColor: colors.surface2 }
-        : null;
+    variant === 'primary' && !disabled ? { backgroundColor: colors.primaryPressed } : null;
   if (iconOnly) {
     style.width = style.minHeight;
     style.paddingHorizontal = 0;
@@ -202,6 +203,13 @@ export function Button({
             pressScale(pressed && !inactive),
           ]}
         >
+          {glass ? (
+            <GlassFace
+              kind={glass}
+              fill={glass === 'clear' ? bg : undefined}
+              radius={shape.radius.pill}
+            />
+          ) : null}
           <Animated.View
             style={[{ flexDirection: 'row', alignItems: 'center', gap: style.gap }, busy.label]}
             className="shrink"

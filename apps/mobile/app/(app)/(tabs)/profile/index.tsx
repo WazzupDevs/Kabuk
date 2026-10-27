@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useWindowDimensions, View } from 'react-native';
 
 import { Button } from '@/components/Button';
+import { CanvasBar } from '@/components/CanvasIcon';
 import { Card } from '@/components/Card';
 import { EmptyState } from '@/components/EmptyState';
 import { IconButton, SlidersGlyph } from '@/components/IconButton';
@@ -111,7 +112,7 @@ export default function ProfileScreen() {
               <View className="flex-1">
                 <Button
                   variant="secondary"
-                  icon={hasName ? 'create-outline' : 'add'}
+                  leading={<CanvasBar name={hasName ? 'edit' : 'add'} size={ICON.md} />}
                   label={
                     hasName ? (narrow ? tr.profile.editShort : tr.profile.edit) : tr.profile.addName
                   }

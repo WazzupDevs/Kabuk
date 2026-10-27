@@ -17,6 +17,7 @@ import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 import type { IconName } from './Button';
 import { usePressScale } from './motion';
 import { AppIcon } from './AppIcon';
+import { GlassFace } from './GlassFace';
 
 type Props = {
   icon: IconName;
@@ -67,15 +68,19 @@ export function IconButton({
             round && danger
               ? { backgroundColor: colors.dangerSoft }
               : round
-                ? {
-                    backgroundColor: colors.surface,
-                    borderWidth: shape.stroke.hairline,
-                    borderColor: colors.divider,
-                  }
+                ? { boxShadow: shape.shadow.card }
                 : { backgroundColor: pressed ? colors.surface2 : 'transparent' },
             round ? pressScale(pressed && !disabled) : null,
           ]}
         >
+          {/* A round button is glass too (theme/glass.ts → BUTTON_GLASS). */}
+          {round ? (
+            <GlassFace
+              kind={danger ? 'tinted' : 'clear'}
+              fill={danger ? undefined : colors.surface}
+              radius={shape.radius.pill}
+            />
+          ) : null}
           {glyph ?? <AppIcon name={icon} size={ICON.lg} color={colors.text} />}
         </View>
       )}

@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import type { ReactNode, RefObject } from 'react';
-import { ScrollView } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { type Edge, SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTheme } from '@/theme/ThemeProvider';
@@ -23,6 +23,9 @@ type Props = {
   onRefresh?: () => Promise<unknown>;
   // Pull to refresh that fetches again every list the screen shows.
   refreshable?: boolean;
+  // A bar that stays at the top while the page scrolls (Mekan's top row, the owner's call, 27
+  // Ekim), on the screen's ground.
+  top?: ReactNode;
 };
 
 // A scrolling screen on the canvas with the theme's side padding. Under the tabs the floating tab
@@ -34,6 +37,7 @@ export function Screen({
   stickyHeaderIndices,
   onRefresh,
   refreshable,
+  top,
 }: Props) {
   const queryClient = useQueryClient();
   const refresh =
@@ -51,6 +55,17 @@ export function Screen({
   };
   return (
     <SafeAreaView edges={safe} style={{ flex: 1, backgroundColor: colors.canvas }}>
+      {top ? (
+        <View
+          style={{
+            paddingHorizontal: shape.screenPadding,
+            paddingTop: SPACING[2],
+            paddingBottom: SPACING[1],
+          }}
+        >
+          {top}
+        </View>
+      ) : null}
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         // Android is edge-to-edge: the window no longer resizes for the keyboard, so pad here too.
