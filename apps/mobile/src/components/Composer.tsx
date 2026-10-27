@@ -1,9 +1,10 @@
-import { Ionicons } from '@expo/vector-icons';
 import { forwardRef, type ReactNode } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
+import Svg, { Rect } from 'react-native-svg';
 
 import { tr } from '@/i18n/tr';
 import { noteTyping } from '@/lib/haptics';
+import { BRAND } from '@/theme/brand';
 import { typeStyle, useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
@@ -63,22 +64,23 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
   return (
     <View
       style={{
-        paddingHorizontal: shape.screenPadding - SPACING[1],
-        paddingTop: above ? SPACING[1] : SPACING[2.5],
-        paddingBottom: SPACING[2.5],
+        // skall tuvali (skall.css → `.composer`): 8 16 18.
+        paddingHorizontal: shape.screenPadding,
+        paddingTop: above ? SPACING[1] : SPACING[2],
+        paddingBottom: SPACING[4] + SPACING[0.5],
         gap: SPACING[1.5],
       }}
     >
       {above}
       {replyTo ? <ReplyStrip quote={replyTo} onCancel={onCancelReply} /> : null}
-      <View className="flex-row items-end gap-2.5">
+      <View className="flex-row items-end gap-2">
         <View
           className="flex-1 justify-center"
           style={{
             // skall tuvali (skall.css → `.composer`): the field on the float shadow, the round
             // send button beside it.
             minHeight: SPACING[12] + SPACING[1],
-            borderRadius: shape.radius.lg,
+            borderRadius: shape.radius.xl,
             backgroundColor: colors.surface,
             borderWidth: shape.stroke.hairline,
             borderColor: colors.control,
@@ -123,7 +125,7 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
                   borderRadius: shape.radius.pill,
                   alignItems: 'center',
                   justifyContent: 'center',
-                  backgroundColor: inactive ? colors.surface : colors.primary,
+                  backgroundColor: colors.surface,
                   boxShadow: shape.shadow.sheet,
                 },
                 pressScale(pressed),
@@ -132,11 +134,7 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
               {sending ? (
                 <Loader kind="meet" size={ICON.lg} delay={0} />
               ) : (
-                <Ionicons
-                  name="send"
-                  size={ICON.md}
-                  color={inactive ? colors.muted : colors.onPrimary}
-                />
+                <SendGlyph muted={!!inactive} />
               )}
             </View>
           )}
@@ -185,5 +183,35 @@ function ReplyStrip({ quote, onCancel }: { quote: ChatQuote; onCancel?: () => vo
         />
       ) : null}
     </View>
+  );
+}
+
+// skall tuvali (skall.css → `.send .bi`): the arrow as two capsules in the brand's purple and pink;
+// muted while there is nothing to send.
+function SendGlyph({ muted }: { muted: boolean }) {
+  const { colors } = useTheme();
+  const a = muted ? colors.control : BRAND.purple;
+  const b = muted ? colors.control : BRAND.pink;
+  return (
+    <Svg width={ICON.lg} height={ICON.lg} viewBox="0 0 24 24">
+      <Rect
+        x={5}
+        y={9.8}
+        width={14}
+        height={4.4}
+        rx={2.2}
+        fill={a}
+        transform="rotate(36 12 12) translate(-0.6 -3.6)"
+      />
+      <Rect
+        x={5}
+        y={9.8}
+        width={14}
+        height={4.4}
+        rx={2.2}
+        fill={b}
+        transform="rotate(-36 12 12) translate(-0.6 3.6)"
+      />
+    </Svg>
   );
 }

@@ -7,6 +7,7 @@ import { tr } from '@/i18n/tr';
 import { haptic } from '@/lib/haptics';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { withAlpha } from '@/theme/contrast';
+import { BRAND } from '@/theme/brand';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 
@@ -77,6 +78,8 @@ const SWIPE_MAX = SPACING[16] + SPACING[4];
 const TIME_GAP = '\u2003';
 const TICKS_ROOM = '\u2003\u2002';
 const INVISIBLE = 'transparent';
+// skall.css → `.typing i`: the brand's purple, pink and orange.
+const TYPING_DOTS = [BRAND.purple, BRAND.pink, BRAND.orange] as const;
 
 export function ChatBubble({
   text,
@@ -116,9 +119,11 @@ export function ChatBubble({
   // stream taller, and a stream that turned scrollable under a held finger took the next press for
   // itself (the next long press was lost).
   const longPressed = useRef(false);
+  // skall tuvali (skall.css → `.bub`): 18 all round; a run's first bubble points at its author with
+  // a 6 corner at the top (left for others, right for the viewer's own).
   const big = shape.radius.lg - SPACING[1];
   const small = SPACING[1.5];
-  const top = first ? big : small;
+  const top = first ? small : big;
   const fg = mine ? colors.onPrimary : colors.text;
   const inside = !mine && nameInk !== undefined;
   const bubble = (
@@ -159,12 +164,12 @@ export function ChatBubble({
     >
       <View
         style={{
-          paddingHorizontal: SPACING[3] + SPACING[0.5],
+          paddingHorizontal: SPACING[3],
           paddingVertical: SPACING[2],
-          borderTopLeftRadius: mine ? big : inside ? shape.radius.xs : top,
+          borderTopLeftRadius: mine ? big : top,
           borderTopRightRadius: mine ? top : big,
-          borderBottomLeftRadius: mine || inside ? big : small,
-          borderBottomRightRadius: mine ? small : big,
+          borderBottomLeftRadius: big,
+          borderBottomRightRadius: big,
           backgroundColor: mine ? colors.primary : colors.surface,
           borderWidth: mine ? 0 : shape.stroke.hairline,
           borderColor: colors.divider,
@@ -196,7 +201,7 @@ export function ChatBubble({
           <Text color={fg}>
             {text}
             {time && !state ? (
-              <Text variant="fine" color={INVISIBLE} accessible={false}>
+              <Text variant="caption" color={INVISIBLE} accessible={false}>
                 {`${TIME_GAP}${time}${mine && delivery ? TICKS_ROOM : ''}`}
               </Text>
             ) : null}
@@ -207,7 +212,7 @@ export function ChatBubble({
               style={{ right: 0, bottom: 0 }}
               importantForAccessibility="no-hide-descendants"
             >
-              <Text variant="fine" color={mine ? colors.onPrimary : colors.muted}>
+              <Text variant="caption" color={mine ? colors.onPrimary : colors.muted}>
                 {time}
               </Text>
               {mine && delivery ? <DeliveryTicks delivery={delivery} onAccent /> : null}
@@ -235,7 +240,7 @@ export function ChatBubble({
 
   if (mine) {
     return (
-      <View className="items-end gap-1 self-end" style={{ maxWidth: '82%' }}>
+      <View className="items-end gap-1 self-end" style={{ maxWidth: '76%' }}>
         {bar}
         <SwipeToReply onReply={onReply}>{bubble}</SwipeToReply>
         {chips}
@@ -625,12 +630,11 @@ export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: 
           gap: SPACING[1],
           paddingHorizontal: SPACING[3] + SPACING[0.5],
           paddingVertical: SPACING[3],
-          borderTopLeftRadius: big,
-          borderTopRightRadius: big,
-          borderBottomRightRadius: big,
-          borderBottomLeftRadius: SPACING[1.5],
-          backgroundColor: colors.raised,
-          boxShadow: shape.shadow.raised,
+          // skall tuvali (Dm): a plain bubble with the brand's three dots.
+          borderRadius: big,
+          borderWidth: shape.stroke.hairline,
+          borderColor: colors.divider,
+          backgroundColor: colors.surface,
         }}
       >
         {dots.map((d, i) => (
@@ -640,7 +644,7 @@ export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: 
               width: DOT,
               height: DOT,
               borderRadius: shape.radius.pill,
-              backgroundColor: colors.muted,
+              backgroundColor: TYPING_DOTS[i],
               opacity: d.interpolate({ inputRange: [0, 1], outputRange: [0.45, 1] }),
               transform: [
                 {

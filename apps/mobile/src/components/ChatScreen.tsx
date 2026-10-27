@@ -30,6 +30,8 @@ import { tr } from '@/i18n/tr';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
+import type { ChatWallKind } from '@/theme/chatWallpaper';
+
 import { ChatWallpaper } from './ChatWallpaper';
 import { useTabBarSpace } from './TabBar';
 import { Text } from './Text';
@@ -313,6 +315,8 @@ type Props = {
   newestMine?: boolean;
   startAtEnd?: boolean;
   testID?: string;
+  // The chat's wall (skall tuvali: dm, masa, mekan); null: none (the table's games).
+  wall?: ChatWallKind | null;
 };
 
 // A chat app's screen (v45: .dm): the top bar, the stream scrolling over the wallpaper, the
@@ -325,6 +329,7 @@ export function ChatScreen({
   newestMine,
   startAtEnd,
   testID,
+  wall = 'dm',
 }: Props) {
   const { colors, shape } = useTheme();
   // Under the tabs (a DM) the floating tab bar covers the bottom: the message bar sits above it.
@@ -343,7 +348,7 @@ export function ChatScreen({
         <KeyboardAvoidingView className="flex-1" behavior="padding">
           {/* The wallpaper under the stream and the message bar (v45: .chatpane); the bar floats on
               it. */}
-          <ChatWallpaper />
+          {wall ? <ChatWallpaper kind={wall} /> : null}
           <ChatScroll
             testID={testID}
             newestKey={newestKey}
@@ -351,10 +356,11 @@ export function ChatScreen({
             startAtEnd={startAtEnd}
             contentContainerStyle={{
               flexGrow: 1,
-              paddingHorizontal: shape.screenPadding - SPACING[1],
-              paddingTop: SPACING[4],
-              paddingBottom: SPACING[4],
-              gap: SPACING[2],
+              // skall tuvali (skall.css → `.stream`): 16 at the sides, 6 between messages.
+              paddingHorizontal: shape.screenPadding,
+              paddingTop: SPACING[2],
+              paddingBottom: SPACING[3],
+              gap: SPACING[1.5],
             }}
           >
             {children}
@@ -371,12 +377,16 @@ export function DayLine({ label }: { label: string }) {
   const { colors, shape } = useTheme();
   return (
     <View
-      className="my-1 self-center"
+      className="self-center"
+      // skall tuvali (skall.css → `.day`): a surface pill on the chip shadow.
       style={{
-        backgroundColor: colors.surface2,
+        marginTop: SPACING[2.5],
+        marginBottom: SPACING[1.5],
+        backgroundColor: colors.surface,
         borderRadius: shape.radius.pill,
-        paddingHorizontal: SPACING[2.5],
-        paddingVertical: SPACING[0.5],
+        boxShadow: shape.shadow.raised,
+        paddingHorizontal: SPACING[3],
+        paddingVertical: SPACING[1],
       }}
     >
       <Text variant="caption" tone="muted">

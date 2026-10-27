@@ -2,7 +2,12 @@ import { memo, useMemo, useState } from 'react';
 import { useWindowDimensions, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 
-import { type WallpaperCanvas, wallpaperCanvas, wallpaperSvg } from '@/theme/chatWallpaper';
+import {
+  type ChatWallKind,
+  type WallpaperCanvas,
+  wallpaperCanvas,
+  wallpaperSvg,
+} from '@/theme/chatWallpaper';
 import { useTheme } from '@/theme/ThemeProvider';
 
 // The chat wallpaper (src/theme/chatWallpaper.ts) behind a chat's messages: one picture under
@@ -10,7 +15,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 // (docs/SPEC_V4.md §4.C). It is drawn once at the area's width and the window's height and clipped
 // to the area: the keyboard shortening the area does not redraw it, nor does a new message (memo).
 // Only a new width or theme builds it again.
-export const ChatWallpaper = memo(function ChatWallpaper() {
+export const ChatWallpaper = memo(function ChatWallpaper({ kind = 'dm' }: { kind?: ChatWallKind }) {
   const { scheme } = useTheme();
   const { height: windowHeight } = useWindowDimensions();
   const [areaWidth, setAreaWidth] = useState<number | null>(null);
@@ -18,8 +23,8 @@ export const ChatWallpaper = memo(function ChatWallpaper() {
   const next = areaWidth === null ? null : wallpaperCanvas(canvas, areaWidth, windowHeight);
   if (next !== canvas) setCanvas(next);
   const xml = useMemo(
-    () => (canvas ? wallpaperSvg(scheme, canvas.w, canvas.h) : null),
-    [scheme, canvas],
+    () => (canvas ? wallpaperSvg(scheme, canvas.w, canvas.h, kind) : null),
+    [scheme, canvas, kind],
   );
   return (
     <View

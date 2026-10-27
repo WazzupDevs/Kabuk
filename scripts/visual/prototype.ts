@@ -9,7 +9,7 @@
 // design file itself is never changed.
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { dirname, join } from 'node:path';
+import { dirname, join, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import { chromium, type Page } from 'playwright';
@@ -142,10 +142,15 @@ async function openState(
   id: string,
   theme: Theme,
   query?: string,
+  width?: number,
 ): Promise<void> {
   const more = query ? `&${query.replaceAll('{tema}', theme)}` : '';
+  // The skall tuvali's boards (docs/design/sistem/ekran/) read `tema=koyu` and `genislik`.
+  const board = file.includes(`${sep}docs${sep}design${sep}sistem${sep}`);
+  const tema = board ? (theme === 'dark' ? 'koyu' : 'acik') : theme;
+  const wide = board && width ? `&genislik=${width}` : '';
   await page.goto(
-    `${pathToFileURL(file).href}?gorsel=${encodeURIComponent(id)}&tema=${theme}${more}`,
+    `${pathToFileURL(file).href}?gorsel=${encodeURIComponent(id)}&tema=${tema}${wide}${more}`,
   );
   await page.waitForFunction(() => document.documentElement.dataset.gorselHazir === '1', null, {
     timeout: 30_000,
@@ -202,7 +207,7 @@ export async function renderPrototype(
       const page = await context.newPage();
       await page.exposeFunction('__gorselBekle', (ms: number) => page.clock.runFor(ms));
       await page.addInitScript(pageScript, { seed: GATE_SEED, states } satisfies PageArg);
-      await openState(page, documentFile, id, theme, state.sorgu);
+      await openState(page, documentFile, id, theme, state.sorgu, state.genislik ?? width);
       await page.evaluate(() => document.fonts.ready);
       await checkFonts(page, fonts);
       const file = join(out, `${id}-${theme}.png`);

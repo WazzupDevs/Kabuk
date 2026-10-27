@@ -186,7 +186,6 @@ export default function DmScreen() {
         <ChatTopBar
           onBack={() => router.back()}
           title={name}
-          subtitle={friend ? tr.friends.since(friend.since) : undefined}
           leading={<Avatar kind="profile" name={name} size="md" photoUrl={photoUrl} />}
           onPressTitle={openProfile}
           titleAccessibilityLabel={name}
@@ -247,14 +246,8 @@ export default function DmScreen() {
                   first={first}
                   time={tr.chat.time(m.created_at)}
                   delivery={m.from_me && isDelivery(m.status) ? m.status : undefined}
-                  name={m.from_me ? undefined : name}
-                  avatar={
-                    m.from_me ? undefined : (
-                      <Avatar kind="profile" name={name} size="sm" photoUrl={photoUrl} />
-                    )
-                  }
-                  // The photo opens the profile ("Profili gör" left the menu).
-                  onPressSender={m.from_me ? undefined : openProfile}
+                  // A DM shows no photo or name by the bubbles (skall tuvali, Dm): the top bar
+                  // says who it is and opens the profile.
                 />
               </>
             )}
@@ -277,12 +270,7 @@ export default function DmScreen() {
           }
         />
       ))}
-      {typing ? (
-        <TypingBubble
-          testID="dm-typing"
-          avatar={<Avatar kind="profile" name={name} size="sm" photoUrl={photoUrl} />}
-        />
-      ) : null}
+      {typing ? <TypingBubble testID="dm-typing" /> : null}
 
       <Sheet visible={menu} onClose={() => setMenu(false)} title={tr.friends.friendMenuTitle}>
         <Menu>

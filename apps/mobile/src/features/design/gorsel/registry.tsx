@@ -5,6 +5,8 @@ import { UI_GALLERY } from '@/features/gallery/registry';
 
 import { PREVIEW_SETS } from '../previews';
 
+import { DmFixture } from './dmFixture';
+
 // `full`: the state draws the whole screen itself (a game's stage), one page, no side padding.
 // `bare`: in the frame without its side padding, so a component as wide as v46 makes it in its own
 // place (328 for the disabled primaries) is not narrowed to the padded 320.
@@ -37,4 +39,6 @@ export const GATE_STATES: Record<string, GateEntry> = {
       return [[`galeri/v46/${id}`, entry]];
     }),
   ),
+  // The screens rebuilt from the skall tuvali, with its sample data.
+  'ekran/dm': { full: true, render: () => <DmFixture /> },
 };
