@@ -6,6 +6,7 @@ import { SplashScreen, Stack } from 'expo-router';
 import { useEffect } from 'react';
 import { View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 import { Loader } from '@/components/Loader';
 import { useProfile } from '@/features/account/useProfile';
@@ -84,6 +85,8 @@ export default function RootLayout() {
   // Gestures (react-native-gesture-handler) work only under its root view: it wraps the whole app.
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      {/* The keyboard's own motion, frame by frame (react-native-keyboard-controller, 0.7.0). */}
+      <KeyboardProvider>
       <QueryClientProvider client={queryClient}>
         <LaunchCurtain>
           <ThemeProvider>
@@ -91,6 +94,7 @@ export default function RootLayout() {
           </ThemeProvider>
         </LaunchCurtain>
       </QueryClientProvider>
+      </KeyboardProvider>
     </GestureHandlerRootView>
   );
 }

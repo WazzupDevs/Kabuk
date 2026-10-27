@@ -80,7 +80,9 @@ describe('skall mark', () => {
     ]) {
       expect(svg).toContain(`width="1024" height="1024" viewBox="0 0 ${ADAPTIVE} ${ADAPTIVE}"`);
     }
-    expect(adaptiveBackgroundSvg(108)).toContain(`fill="${COLORS.night}"`);
+    // The night ground with its glow, as on the store icons (lit since 0.7.0).
+    expect(adaptiveBackgroundSvg(108)).toContain(`fill="url(#bg)"`);
+    expect(adaptiveBackgroundSvg(108)).toContain(`fill="url(#glow)"`);
     for (const svg of [
       adaptiveForegroundSvg(108),
       adaptiveMonochromeSvg(108),
@@ -92,9 +94,14 @@ describe('skall mark', () => {
   });
 
   it('colours the flat drawing purple, pink and a white intersection on the night ground', () => {
-    for (const svg of [adaptiveForegroundSvg(108), splashSvg(288)]) {
-      for (const c of [COLORS.purple, COLORS.pink, COLORS.crossDark]) expect(svg).toContain(c);
+    for (const c of [COLORS.purple, COLORS.pink, COLORS.crossDark]) {
+      expect(splashSvg(288)).toContain(c);
     }
+  });
+
+  it('lights the launcher mark like the store icons: lit capsules, intersection and shadow', () => {
+    const fg = adaptiveForegroundSvg(108);
+    for (const id of ['url(#pa)', 'url(#pb)', 'url(#px)', 'url(#blur)']) expect(fg).toContain(id);
   });
 
   it('draws the themed and notification icons in one colour, the first capsule cut with a gap', () => {

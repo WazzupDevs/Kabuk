@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { KeyboardAvoidingView, Pressable, ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ConfirmSheet } from '@/components/ConfirmSheet';
@@ -18,6 +18,8 @@ import { withAlpha } from '@/theme/contrast';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 import { AppIcon } from '@/components/AppIcon';
+// Frame by frame with the keyboard (react-native-keyboard-controller): the bar rises with it.
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 
 // A timed screen on the stage (StageFit) turns the stage's scrolling off while it shows.
 const StageFitContext = createContext<(change: 1 | -1) => void>(() => undefined);
@@ -175,7 +177,7 @@ export function GameStage({
           />
           <KeyboardAvoidingView
             behavior="padding"
-            className="flex-1 justify-end"
+            style={{ flex: 1, justifyContent: 'flex-end' }}
             pointerEvents="box-none"
           >
             <SafeAreaView

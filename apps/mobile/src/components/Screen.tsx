@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import type { ReactNode, RefObject } from 'react';
-import { KeyboardAvoidingView, ScrollView } from 'react-native';
+import { ScrollView } from 'react-native';
 import { type Edge, SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTheme } from '@/theme/ThemeProvider';
@@ -8,6 +8,8 @@ import { SPACING } from '@/theme/tokens';
 import { PullScroll } from '@/ui/PullScroll';
 
 import { useTabBarSpace } from './TabBar';
+// Frame by frame with the keyboard (react-native-keyboard-controller): the bar rises with it.
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 
 type Props = {
   children: ReactNode;
@@ -50,7 +52,7 @@ export function Screen({
   return (
     <SafeAreaView edges={safe} style={{ flex: 1, backgroundColor: colors.canvas }}>
       <KeyboardAvoidingView
-        className="flex-1"
+        style={{ flex: 1 }}
         // Android is edge-to-edge: the window no longer resizes for the keyboard, so pad here too.
         behavior="padding"
       >

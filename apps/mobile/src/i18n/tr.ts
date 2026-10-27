@@ -892,6 +892,7 @@ export const tr = {
     newMessagesLabel: (n: number) =>
       n > 1 ? `${n} yeni mesaj, en alta in` : 'Yeni mesaj, en alta in',
     reply: 'Yanıtla',
+    copy: 'Kopyala',
     react: 'Tepki ver',
     replyingTo: (name: string) => `Yanıtlanan: ${name}`,
     cancelReply: 'Yanıtı kaldır',

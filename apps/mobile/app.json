@@ -64,6 +64,15 @@
           "cameraPermission": "Profil fotoğrafı çekebilmen için kameraya erişim gerekiyor.",
           "microphonePermission": false
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableMinifyInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
+          }
+        }
       ]
     ],
     "experiments": {

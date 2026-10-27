@@ -1,4 +1,5 @@
 import { isReaction, type Reaction } from '@shared/reactions.ts';
+import * as Clipboard from 'expo-clipboard';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, View } from 'react-native';
 
@@ -116,7 +117,7 @@ export function ChatBubble({
   // where it sits on the screen.
   const faceRef = useRef<View>(null);
   const [pop, setPop] = useState<PopAnchor | null>(null);
-  const holdable = !!onReact || actions.length > 0;
+  const holdable = !!onReact || actions.length > 0 || text.length > 0;
   const lift = () => {
     faceRef.current?.measureInWindow((x, y, width, height) => {
       haptic('grabbed');
@@ -233,6 +234,17 @@ export function ChatBubble({
       actions={[
         ...(onReply
           ? [{ label: tr.chat.reply, icon: 'arrow-undo' as const, onPress: onReply }]
+          : []),
+        // The message's text to the clipboard (0.7.0; Android 13 and later says so itself).
+        ...(text
+          ? [
+              {
+                label: tr.chat.copy,
+                icon: 'copy-outline' as const,
+                testID: 'message-copy',
+                onPress: () => void Clipboard.setStringAsync(text),
+              },
+            ]
           : []),
         ...actions,
       ]}
