@@ -5,9 +5,9 @@ import { toRuns } from '@shared/chatRuns.ts';
 import { parseDmReactions, parseQuote } from '@shared/messageExtras.ts';
 import { BROADCAST, dmChannel } from '@shared/rooms.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
-import { Alert, View } from 'react-native';
+import { Alert, BackHandler, View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { Avatar } from '@/components/Avatar';
@@ -52,6 +52,13 @@ let nextLocalId = 0;
 // v3 step 6 (docs/SPEC_V3.md §18.3): ticks on the own messages from their status (dm_status asks
 // for a reread), a message on its way shows at once with the waiting state, and "yazıyor"
 // (dm_typing) shows the other side's dots.
+// Back from a conversation is Mesajlar (skall tuvali, Dm): opened from another tab, the bell or a
+// profile, the conversation was the Mesajlar stack's only screen and a plain back left the tab, so
+// the other conversations could not be seen.
+function backToInbox(): void {
+  router.dismissTo('/messages');
+}
+
 export default function DmScreen() {
   const { threadId, publicId, name } = useLocalSearchParams<Params>();
   useHideTabBar();
@@ -142,8 +149,18 @@ export default function DmScreen() {
 
   const leave = () => {
     void queryClient.invalidateQueries({ queryKey: friendKeys.all });
-    router.back();
+    backToInbox();
   };
+  // Android's back key too (a sheet or the reaction bar, when open, takes it first).
+  useFocusEffect(
+    useCallback(() => {
+      const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+        backToInbox();
+        return true;
+      });
+      return () => sub.remove();
+    }, []),
+  );
   const end = useMutation({
     meta: FEEL_ERROR,
     mutationFn: ({ kind, reason }: { kind: 'remove' | 'block'; reason?: ReportReason }) =>
@@ -184,7 +201,7 @@ export default function DmScreen() {
       newestMine={newestOut ? true : newestIn?.from_me}
       top={
         <ChatTopBar
-          onBack={() => router.back()}
+          onBack={backToInbox}
           title={name}
           leading={<Avatar kind="profile" name={name} size="md" photoUrl={photoUrl} />}
           onPressTitle={openProfile}
