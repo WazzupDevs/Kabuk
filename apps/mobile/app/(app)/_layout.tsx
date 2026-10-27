@@ -23,6 +23,9 @@ export default function GroupLayout() {
   return (
     <>
       <Stack screenOptions={stackOptions}>
+        {/* Listed first: a group opened by its guard (after sign-up or sign-in, with no address)
+            opens on its first listed screen, which was the Ayarlar sheet. */}
+        <Stack.Screen name="(tabs)" />
         <Stack.Screen name="settings" options={SHEET} />
         <Stack.Screen name="notifications" options={SHEET} />
         <Stack.Screen name="checkin/index" options={SHEET} />
