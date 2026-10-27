@@ -80,7 +80,10 @@ const SWIPE_MAX = SPACING[16] + SPACING[4];
 // for the read ticks.
 const TIME_GAP = '\u2003';
 const TICKS_ROOM = '\u2003\u2002';
-const INVISIBLE = 'transparent';
+// The room's copy of the time is drawn at alpha 1/255: Android takes a nested text's fully
+// transparent colour (0) as "no colour" and draws it in the bubble's colour, so the copy showed
+// under the time (04:24 over 04:24).
+const HIDDEN_ALPHA = 0.004;
 // skall.css → `.typing i`: the brand's purple, pink and orange.
 const TYPING_DOTS = [BRAND.purple, BRAND.pink, BRAND.orange] as const;
 
@@ -195,7 +198,7 @@ export function ChatBubble({
           <Text color={fg}>
             {text}
             {time && !state ? (
-              <Text variant="caption" color={INVISIBLE} accessible={false}>
+              <Text variant="caption" color={withAlpha(fg, HIDDEN_ALPHA)} accessible={false}>
                 {`${TIME_GAP}${time}${mine && delivery ? TICKS_ROOM : ''}`}
               </Text>
             ) : null}
