@@ -14,7 +14,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { ApiError, roomsApi } from '@/lib/api';
-import { useNow } from '@/lib/useNow';
+import { useNowUntil } from '@/lib/useNow';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
@@ -72,7 +72,13 @@ export function IncomingRequest({ roomId, ownerSessionId, phones, floating }: Pr
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const requests = useIncomingRequests(roomId, ownerSessionId);
-  const now = useNow(1000);
+  // The clock runs only while a request's window is open (the latest one's end).
+  const latest = (requests.data ?? []).reduce<string | null>(
+    (last, r) =>
+      last === null || Date.parse(r.expires_at) > Date.parse(last) ? r.expires_at : last,
+    null,
+  );
+  const now = useNowUntil(latest, 1000);
   // Requests whose "Kabul" came too late, and the one whose card says so now.
   const [closed, setClosed] = useState<ReadonlySet<string>>(new Set());
   const [gone, setGone] = useState<string | null>(null);
