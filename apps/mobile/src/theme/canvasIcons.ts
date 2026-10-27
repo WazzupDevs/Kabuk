@@ -6,13 +6,16 @@ export { CANVAS_LINE } from './canvasIcons.generated';
 
 // The bar icons, with those the canvas has not drawn yet drawn in its manner (capsule bars in its
 // two colours, their crossing in the overlap colour; the owner's call, 27 Ekim): "Karıştır" two
-// crossing arrows, "Davet et" a person and a plus.
+// crossing arrows, "Davet et" a person and a plus, "Mekan sohbeti" two speech bubbles, "Düzenle" a
+// pencil.
 export const CANVAS_BAR = {
   ...DRAWN_BAR,
   shuffle:
     '<rect class="b" x="1.3" y="9.8" width="21.4" height="4.4" rx="2.2" transform="rotate(45 12 12)"/><rect class="a" x="1.3" y="9.8" width="21.4" height="4.4" rx="2.2" transform="rotate(-45 12 12)"/><rect class="x" x="9.8" y="9.8" width="4.4" height="4.4" transform="rotate(45 12 12)"/><rect class="a" x="13.4" y="2.2" width="8.4" height="4.4" rx="2.2"/><rect class="a" x="17.4" y="2.2" width="4.4" height="8.4" rx="2.2"/><rect class="b" x="13.4" y="17.4" width="8.4" height="4.4" rx="2.2"/><rect class="b" x="17.4" y="13.4" width="4.4" height="8.4" rx="2.2"/>',
   invite:
     '<rect class="a" x="5" y="2.6" width="7.4" height="7.4" rx="3.7"/><path class="a" d="M1.8 20.6a6.9 6.9 0 0 1 13.8 0z"/><rect class="b" x="16.9" y="8.6" width="4.2" height="11" rx="2.1"/><rect class="b" x="13.5" y="12" width="11" height="4.2" rx="2.1"/><rect class="x" x="16.9" y="12" width="4.2" height="4.2"/>',
+  chat: '<clipPath id="c"><rect x="2.4" y="3.4" width="13.4" height="10.4" rx="5.2"/></clipPath><rect class="b" x="8.2" y="8.6" width="13.4" height="10.4" rx="5.2"/><path class="b" d="M17.4 17.6 L20.6 21.4 L14.2 18.6 Z"/><rect class="a" x="2.4" y="3.4" width="13.4" height="10.4" rx="5.2"/><path class="a" d="M6.6 12.4 L3.4 16.2 L9.8 13.4 Z"/><rect class="x" x="8.2" y="8.6" width="13.4" height="10.4" rx="5.2" clip-path="url(#c)"/>',
+  edit: '<g transform="rotate(-45 12 12)"><rect class="a" x="5.6" y="9.6" width="11.4" height="4.8" rx="1.2"/><path class="b" d="M16.6 9.6 L21.6 12 L16.6 14.4 Z"/><rect class="b" x="2.4" y="9.6" width="4.4" height="4.8" rx="2.2"/><rect class="x" x="5.6" y="9.6" width="1.6" height="4.8"/></g>',
 } as const;
 
 // skall.css → `--bar-in-primary`: the overlap of a bar icon on a primary fill.

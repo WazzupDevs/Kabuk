@@ -17,7 +17,7 @@ import { Lobby } from '@/features/rooms/Lobby';
 import { OpenLobbySheet } from '@/features/rooms/OpenLobbySheet';
 import { useCurrentRoom, useRoom, useVenueTables } from '@/features/rooms/queries';
 import { TableCard } from '@/features/rooms/TableCard';
-import { VenueTop } from '@/features/rooms/VenueTop';
+import { VenueName, VenueTop } from '@/features/rooms/VenueTop';
 import { VenueChatCard } from '@/features/venueChat/VenueChatCard';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -125,17 +125,23 @@ export default function VenueScreen() {
   const pinned = pinHeight === null || pinHeight < height * PIN_SHARE;
 
   return (
-    <Screen edges={['top']} scrollRef={scroll} stickyHeaderIndices={pinned ? [1] : undefined}>
-      <View className="gap-1">
-        {/* The table's changes reach the card while it is on screen (Realtime and the check). */}
-        {room ? <RoomWatch roomId={room.id} /> : null}
+    <Screen
+      edges={['top']}
+      scrollRef={scroll}
+      stickyHeaderIndices={pinned ? [1] : undefined}
+      top={
         <VenueTop
-          venueName={checkIn.data.venue?.name ?? ''}
           onLeave={confirmLeave}
           leaving={leave.isPending}
           identity={checkIn.data.identity}
           atTable={!!room}
         />
+      }
+    >
+      <View className="gap-1">
+        {/* The table's changes reach the card while it is on screen (Realtime and the check). */}
+        {room ? <RoomWatch roomId={room.id} /> : null}
+        <VenueName name={checkIn.data.venue?.name ?? ''} />
         {leave.isError ? (
           <Text variant="fine" tone="danger">
             {errorMessage(leave.error)}

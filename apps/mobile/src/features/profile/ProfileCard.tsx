@@ -4,7 +4,6 @@ import type { ReactNode } from 'react';
 import { Image, type ImageSourcePropType, Pressable, View } from 'react-native';
 
 import { Card } from '@/components/Card';
-import { LookAvatar } from '@/components/LookAvatar';
 import { PROFILE_PHOTO_SIZES, ProfilePhoto } from '@/components/ProfilePhoto';
 import { Mark } from '@/components/Mark';
 import { Text } from '@/components/Text';
@@ -12,9 +11,10 @@ import { tr } from '@/i18n/tr';
 import { usePhoto } from '@/lib/usePhoto';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/tokens';
-import { ICON, SPACING } from '@/theme/tokens';
-import { AppIcon } from '@/components/AppIcon';
+import { SPACING } from '@/theme/tokens';
 import { PhotoImage } from '@/components/PhotoImage';
+
+import { LivePencil, LivingLook } from './LivingLook';
 
 type Profile = Pick<ProfileView, 'photoUrl' | 'displayName' | 'age' | 'bio' | 'badges'>;
 
@@ -74,7 +74,7 @@ export function ProfileHead({
           </View>
           <View className="items-center gap-2">
             <View style={ring(!!anonymous)}>
-              <LookAvatar
+              <LivingLook
                 look={capsule}
                 size={PROFILE_PHOTO_SIZES.hero}
                 accessibilityLabel={tr.profile.ownCapsule}
@@ -93,12 +93,13 @@ export function ProfileHead({
                     width: SPACING[9],
                     height: SPACING[9],
                     borderRadius: shape.radius.pill,
-                    backgroundColor: colors.primary,
+                    backgroundColor: colors.surface,
                     borderWidth: SPACING[0.5] + SPACING[0.5] / 2,
                     borderColor: colors.canvas,
+                    boxShadow: shape.shadow.card,
                   }}
                 >
-                  <AppIcon name="pencil" size={ICON.sm} color={colors.onPrimary} />
+                  <LivePencil />
                 </Pressable>
               ) : null}
             </View>

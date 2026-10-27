@@ -328,7 +328,12 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
             }}
           />
         </View>
-        <View style={{ paddingHorizontal: side, paddingBottom: SPACING[3], gap: SPACING[2] }}>
+        {/* The capsule and, beside it, what is worn (the owner's call, 27 Ekim: the fixed part
+            shorter, the capsule as large). */}
+        <View
+          className="flex-row items-center"
+          style={{ paddingHorizontal: side, paddingBottom: SPACING[2], gap: SPACING[3] }}
+        >
           <CapsuleStage
             testID="capsule-preview"
             look={now}
@@ -340,7 +345,7 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
             hint={hintSeen ? null : tr.capsule.tapHead}
             onPress={feel}
           />
-          <View className="flex-row flex-wrap justify-center" style={{ gap: SPACING[2] }}>
+          <View className="flex-1 items-start" style={{ gap: SPACING[1.5] }}>
             {worn(look).map((w) => (
               <Pressable
                 key={w.slot}
@@ -349,16 +354,20 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
                 onPress={() => put(takeOff(look, w.slot))}
                 className="flex-row items-center"
                 style={{
-                  gap: SPACING[2],
-                  height: SPACING[9],
+                  maxWidth: '100%',
+                  gap: SPACING[1.5],
+                  minHeight: SPACING[8],
                   paddingHorizontal: SPACING[3],
+                  paddingVertical: SPACING[1],
                   borderRadius: shape.radius.pill,
                   borderWidth: shape.stroke.control,
                   borderColor: colors.control,
                   backgroundColor: colors.surface,
                 }}
               >
-                <Text variant="label">{w.name}</Text>
+                <Text variant="label" className="shrink">
+                  {w.name}
+                </Text>
                 <AppIcon name="close" size={ICON.sm} color={colors.text} />
               </Pressable>
             ))}
