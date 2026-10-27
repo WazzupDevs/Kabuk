@@ -1156,6 +1156,30 @@ export const tr = {
     votesDone: 'Masanızın oyları verildi. Diğer masa bekleniyor.',
     notEnough: `Kartına bakmayanlar oyundan çıktı; ${SAHTEKAR.minPlayers} kişi kalmadı. Oyun bitti.`,
   },
+  identity: {
+    // Mekan's anonymous switch and its sheets (skall tuvali: MekanAnonimGecis, …Erkek,
+    // MekanProfilGecis, …Fotosuz, MekanGecisKullanildi; docs/SPEC_V4.md §4.D).
+    switchOn: 'Anonim görünüyorsun',
+    switchOff: 'Profilinle görünüyorsun',
+    anonTitle: 'Anonim görün?',
+    anonBody: (nick: string) =>
+      `Adın ve fotoğrafın görünmez. Mekan sohbetinde ve masada ${nick} adıyla, kapsül karakterinle görünürsün.`,
+    anonConfirm: 'Anonim görün',
+    chatAnonTitle: 'Mekan sohbetinde anonim yaz?',
+    chatAnonBody: (nick: string) =>
+      `Mekan sohbetinde adın ve fotoğrafın görünmez; ${nick} adıyla, kapsül karakterinle yazarsın. Masada ve oyunlarda her zaman profilinle görünürsün.`,
+    chatAnonConfirm: 'Anonim yaz',
+    profileTitle: 'Profilinle görün?',
+    profileBody: 'Mekan sohbetinde ve masada adın ve fotoğrafın görünür.',
+    profileConfirm: 'Profilimle görün',
+    photoNeeded: 'Profilinle görünmek için önce fotoğraf eklemelisin.',
+    addPhoto: 'Fotoğraf ekle',
+    onceTitle: 'Bu girişte tek değişiklik hakkın var.',
+    onceBody:
+      'Değiştirince bu girişte geri dönemezsin. Yeni mesajların yeni kimlikle görünür, öncekiler eski kimlikte kalır; mekan sohbetini o an izleyen biri iki kimliği eşleştirebilir.',
+    onceTable: ' Masadaki kimliğin bu masa bitene kadar değişmez.',
+    used: 'Bu girişteki değişiklik hakkını kullandın',
+  },
   venue: {
     here: 'Mekandasın',
     yourTable: 'Masanın adı',

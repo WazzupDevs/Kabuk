@@ -29,6 +29,7 @@ import type {
   LeaveResponse,
   LocationModeResponse,
   RerollAliasResponse,
+  SetIdentityResponse,
 } from '@shared/api/checkin.ts';
 import type {
   DmInboxResponse,
@@ -129,6 +130,11 @@ export function callChangeSpot(spotId: string): Promise<ChangeSpotResponse> {
 // "Masa adını değiştir" (docs/SPEC_V3.md §5.6).
 export function callRerollAlias(): Promise<RerollAliasResponse> {
   return invoke<RerollAliasResponse>('checkin', { action: 'reroll-alias' });
+}
+
+// Anonymous or profiled, once per check-in (docs/SPEC_V4.md §4.D).
+export function callSetIdentity(anonymous: boolean): Promise<SetIdentityResponse> {
+  return invoke<SetIdentityResponse>('checkin', { action: 'set-identity', anonymous });
 }
 
 export function callLeave(): Promise<LeaveResponse> {

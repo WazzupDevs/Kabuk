@@ -133,6 +133,8 @@ export default function VenueScreen() {
           venueName={checkIn.data.venue?.name ?? ''}
           onLeave={confirmLeave}
           leaving={leave.isPending}
+          identity={checkIn.data.identity}
+          atTable={!!room}
         />
         {leave.isError ? (
           <Text variant="fine" tone="danger">
