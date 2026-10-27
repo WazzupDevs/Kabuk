@@ -21,6 +21,8 @@ export default defineConfig({
       'apps/mobile/src/lib/**/*.test.ts',
       // The sign-up store (what a sign-out clears).
       'apps/mobile/src/features/onboarding/**/*.test.ts',
+      // The capsule editor's model.
+      'apps/mobile/src/features/capsule/**/*.test.ts',
     ],
   },
 });

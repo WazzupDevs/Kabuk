@@ -327,6 +327,8 @@ export const profileApi = {
   photoRemove: () => invoke<{ ok: true }>('profile', { action: 'photo-remove' }),
   // K-9: a new anonymous nick once in 30 days.
   refreshNick: () => invoke<RefreshNickResponse>('profile', { action: 'refresh-nick' }),
+  // K-46: the capsule's look; unknown parts are dropped on the server.
+  setLook: (look: string) => invoke<{ ok: true }>('profile', { action: 'set-look', look }),
 };
 
 export const friendsApi = {

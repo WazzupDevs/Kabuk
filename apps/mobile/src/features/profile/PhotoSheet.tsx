@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Linking, View } from 'react-native';
 
 import { Button } from '@/components/Button';
+import { Menu, MenuItem } from '@/components/Menu';
 import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
 import { errorMessage } from '@/i18n/errors';
@@ -59,37 +60,32 @@ export function PhotoSheet({ visible, onClose, canRemove = false, onSet }: Props
   const busy = setPhoto.isPending || removePhoto.isPending;
 
   return (
-    <Sheet
-      visible={visible}
-      onClose={busy ? undefined : onClose}
-      title={tr.profile.photo}
-      icon="image-outline"
-    >
-      <Text variant="fine">{tr.profile.photoPrivacy}</Text>
-      <Button
-        variant="neutral"
-        testID="photo-from-library"
-        label={tr.profile.photoFromLibrary}
-        onPress={() => setPhoto.mutate('library')}
-        loading={setPhoto.isPending && setPhoto.variables === 'library'}
-        disabled={busy}
-      />
-      <Button
-        variant="neutral"
-        label={tr.profile.photoFromCamera}
-        onPress={() => setPhoto.mutate('camera')}
-        loading={setPhoto.isPending && setPhoto.variables === 'camera'}
-        disabled={busy}
-      />
-      {canRemove ? (
-        <Button
-          variant="danger"
-          label={tr.profile.photoRemove}
-          onPress={() => removePhoto.mutate()}
-          loading={removePhoto.isPending}
-          disabled={busy}
+    <Sheet visible={visible} onClose={busy ? undefined : onClose} title={tr.profile.photo}>
+      {/* skall tuvali (ProfilDuzenleFoto): the three ways in one menu, removing in red. */}
+      <Menu>
+        <MenuItem
+          icon="camera-outline"
+          label={tr.profile.photoFromCamera}
+          onPress={() => !busy && setPhoto.mutate('camera')}
+          loading={setPhoto.isPending && setPhoto.variables === 'camera'}
         />
-      ) : null}
+        <MenuItem
+          icon="images-outline"
+          testID="photo-from-library"
+          label={tr.profile.photoFromLibrary}
+          onPress={() => !busy && setPhoto.mutate('library')}
+          loading={setPhoto.isPending && setPhoto.variables === 'library'}
+        />
+        {canRemove ? (
+          <MenuItem
+            negative
+            icon="trash-outline"
+            label={tr.profile.photoRemove}
+            onPress={() => !busy && removePhoto.mutate()}
+            loading={removePhoto.isPending}
+          />
+        ) : null}
+      </Menu>
       {setPhoto.isError ? (
         <View className="gap-2">
           <Text variant="fine" tone="danger">
@@ -110,7 +106,8 @@ export function PhotoSheet({ visible, onClose, canRemove = false, onSet }: Props
         </Text>
       ) : null}
       <Button
-        variant="ghost"
+        size="lg"
+        variant="neutral"
         testID="photo-cancel"
         label={tr.common.cancel}
         onPress={onClose}

@@ -2,9 +2,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { containsContact } from '@shared/profanity.ts';
 import { BIO_MAX, DISPLAY_NAME_MAX, DISPLAY_NAME_MIN } from '@shared/profile.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { router } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { BackHandler, Pressable, View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
@@ -16,6 +16,7 @@ import { Text } from '@/components/Text';
 import { Loader } from '@/components/Loader';
 import { useProfile } from '@/features/account/useProfile';
 import { PhotoSheet } from '@/features/profile/PhotoSheet';
+import { Sheet } from '@/components/Sheet';
 import { profileViewKeys, useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -153,9 +154,24 @@ function EditForm({
     },
   });
 
+  // skall tuvali (ProfilDuzenleCikis): leaving with changes asks first, back key too.
+  const [leaving, setLeaving] = useState(false);
+  const dirty = (nameChanged || bioChanged) && !save.isSuccess;
+  const leave = useCallback(() => (dirty ? setLeaving(true) : router.back()), [dirty]);
+  useFocusEffect(
+    useCallback(() => {
+      const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+        if (!dirty) return false;
+        setLeaving(true);
+        return true;
+      });
+      return () => sub.remove();
+    }, [dirty]),
+  );
+
   return (
     <Screen>
-      <ScreenHeader title={tr.profile.editTitle} onBack={() => router.back()} />
+      <ScreenHeader title={tr.profile.editTitle} onBack={leave} />
 
       <View className="mt-4 gap-3">
         {/* skall tuvali (ProfilDuzenle): the photo and the fields in cards. */}
@@ -210,8 +226,25 @@ function EditForm({
           disabled={!nameValid || !bioValid || (!nameChanged && !bioChanged)}
           loading={save.isPending}
         />
-        <Button variant="ghost" label={tr.common.cancel} onPress={() => router.back()} />
       </View>
+      <Sheet visible={leaving} onClose={() => setLeaving(false)} title={tr.profile.leaveTitle}>
+        <Text variant="fine">{tr.profile.leaveBody}</Text>
+        <Button
+          size="lg"
+          variant="danger"
+          label={tr.profile.leaveConfirm}
+          onPress={() => {
+            setLeaving(false);
+            router.back();
+          }}
+        />
+        <Button
+          size="lg"
+          variant="neutral"
+          label={tr.profile.leaveBack}
+          onPress={() => setLeaving(false)}
+        />
+      </Sheet>
     </Screen>
   );
 }
