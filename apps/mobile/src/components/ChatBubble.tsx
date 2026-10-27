@@ -72,6 +72,11 @@ const SWIPE_MAX = SPACING[16] + SPACING[4];
 // and name on one line and the bubbles under them, on the surface with a hairline; the viewer's own
 // are right, in the accent colour. The time (and the ticks) sit in the bubble's corner after the
 // text, or under it when the last line is full.
+// The room the time takes at the end of the text: an em space before it, and an em and an en space
+// for the read ticks.
+const TIME_GAP = '\u2003';
+const TICKS_ROOM = '\u2003\u2002';
+
 export function ChatBubble({
   text,
   mine,
@@ -182,13 +187,25 @@ export function ChatBubble({
           </Pressable>
         ) : null}
         {quote ? <QuoteBlock quote={quote} mine={mine} onPress={onPressQuote} /> : null}
-        <View
-          className="flex-row flex-wrap items-end justify-end"
-          style={{ columnGap: SPACING[2.5] }}
-        >
-          <Text color={fg}>{text}</Text>
+        {/* The time sits in the text's last line, bottom right (skall.css → `.bub .tm`, a float).
+            React Native has no float, and a wrapping row measured the bubble wrong (bubbles ran
+            into each other): the text ends with an invisible copy of the time, which makes the
+            room, and the time is laid over that room. */}
+        <View>
+          <Text color={fg}>
+            {text}
+            {time && !state ? (
+              <Text variant="fine" color="transparent" accessible={false}>
+                {`${TIME_GAP}${time}${mine && delivery ? TICKS_ROOM : ''}`}
+              </Text>
+            ) : null}
+          </Text>
           {time && !state ? (
-            <View className="flex-row items-center gap-1">
+            <View
+              className="absolute flex-row items-center gap-1"
+              style={{ right: 0, bottom: 0 }}
+              importantForAccessibility="no-hide-descendants"
+            >
               <Text variant="fine" color={mine ? colors.onPrimary : colors.muted}>
                 {time}
               </Text>
