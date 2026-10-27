@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { mayStayAnonymous } from '@shared/gender.ts';
 import { Stack, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
@@ -20,6 +19,7 @@ import { finishLabel } from '@/lib/signupSteps';
 import { BRAND } from '@/theme/brand';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON } from '@/theme/tokens';
+import { AppIcon } from '@/components/AppIcon';
 
 // The photo, the last sign-up step (7/7; v45 §1): optional and addable later from Profil. An empty
 // dashed circle and "Fotoğraf ekle", which opens the library or camera sheet (v45: .sup-ph). The
@@ -98,7 +98,7 @@ export default function PhotoStep() {
                   justifyContent: 'center',
                 }}
               >
-                <Ionicons name="camera-outline" size={ICON.xl} color={BRAND.purple} />
+                <AppIcon name="camera-outline" size={ICON.xl} color={BRAND.purple} />
               </View>
             )}
             <Button

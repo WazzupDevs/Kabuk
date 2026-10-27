@@ -1,7 +1,6 @@
 import type { ProfileView } from '@shared/api/profile.ts';
 import { BADGES, type BadgeId } from '@shared/badges.ts';
 import type { ReactNode } from 'react';
-import { Ionicons } from '@expo/vector-icons';
 import { Image, type ImageSourcePropType, Pressable, View } from 'react-native';
 
 import { Card } from '@/components/Card';
@@ -14,6 +13,7 @@ import { usePhoto } from '@/lib/usePhoto';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/tokens';
 import { ICON, SPACING } from '@/theme/tokens';
+import { AppIcon } from '@/components/AppIcon';
 
 type Profile = Pick<ProfileView, 'photoUrl' | 'displayName' | 'age' | 'bio' | 'badges'>;
 
@@ -97,7 +97,7 @@ export function ProfileHead({
                     borderColor: colors.canvas,
                   }}
                 >
-                  <Ionicons name="pencil" size={ICON.sm} color={colors.onPrimary} />
+                  <AppIcon name="pencil" size={ICON.sm} color={colors.onPrimary} />
                 </Pressable>
               ) : null}
             </View>
@@ -156,6 +156,8 @@ export function ProfileHero({ profile, overlay }: { profile: Profile; overlay?: 
       >
         {photo.url ? (
           <Image
+            // No fade-in: a photo drawn again does not blink (Android fades 300 ms by default).
+            fadeDuration={0}
             source={{ uri: photo.url }}
             onError={photo.onError}
             accessibilityIgnoresInvertColors
@@ -220,6 +222,8 @@ export function BadgeIcon({ badge, earned }: { badge: BadgeId; earned: boolean }
       style={{ width: BADGE, height: BADGE, borderRadius: shape.radius.pill, backgroundColor: bg }}
     >
       <Image
+        // No fade-in: a photo drawn again does not blink (Android fades 300 ms by default).
+        fadeDuration={0}
         source={look.icon}
         accessible={false}
         style={{
@@ -242,6 +246,8 @@ export function BadgeIcon({ badge, earned }: { badge: BadgeId; earned: boolean }
           }}
         >
           <Image
+            // No fade-in: a photo drawn again does not blink (Android fades 300 ms by default).
+            fadeDuration={0}
             source={LOCK_ICON}
             accessible={false}
             style={{

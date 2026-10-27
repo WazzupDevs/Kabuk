@@ -5,8 +5,6 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Alert, View } from 'react-native';
 
-import { Ionicons } from '@expo/vector-icons';
-
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
 import { IconButton, MoreDots } from '@/components/IconButton';
@@ -28,6 +26,7 @@ import { ApiError, friendsApi, safetyApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
+import { AppIcon } from '@/components/AppIcon';
 
 // Another account's profile: only while the viewer may see it (a friend, or the other table of
 // the current room). Anything else, including a room that just ended, reads as "not visible"
@@ -205,7 +204,7 @@ function FriendActions({ friend }: { friend: Friend }) {
           backgroundColor: colors.surface2,
         }}
       >
-        <Ionicons name="checkmark" size={ICON.sm} color={colors.onSuccessSoft} />
+        <AppIcon name="checkmark" size={ICON.sm} color={colors.onSuccessSoft} />
         <Text variant="label" color={colors.onSuccessSoft}>
           {tr.profile.friendsStatus}
         </Text>

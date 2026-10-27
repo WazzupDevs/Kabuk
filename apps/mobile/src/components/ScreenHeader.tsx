@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
 
 import { tr } from '@/i18n/tr';
@@ -8,6 +7,7 @@ import { ICON } from '@/theme/tokens';
 import type { IconName } from './Button';
 import { IconButton } from './IconButton';
 import { Text } from './Text';
+import { AppIcon } from './AppIcon';
 
 type Props = {
   title: string;
@@ -48,7 +48,7 @@ export function ScreenHeader({
       ) : null}
       {eyebrow ? (
         <View className="mb-1.5 mt-1 flex-row items-center gap-1.5">
-          {eyebrowIcon ? <Ionicons name={eyebrowIcon} size={ICON.sm} color={colors.muted} /> : null}
+          {eyebrowIcon ? <AppIcon name={eyebrowIcon} size={ICON.sm} color={colors.muted} /> : null}
           <Text variant="eyebrow">{eyebrow}</Text>
         </View>
       ) : null}

@@ -8,7 +8,6 @@ import {
 } from '@shared/sahtekar.ts';
 import type { TableSide } from '@shared/tabu.ts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 
@@ -35,6 +34,7 @@ import {
   SeatList,
   VoteGrid,
 } from './Sahtekar';
+import { AppIcon } from '@/components/AppIcon';
 
 type Props = {
   roomId: string;
@@ -201,7 +201,7 @@ function MemberWatch({
       }
     >
       <View className="items-center gap-3">
-        <Ionicons name="eye-outline" size={ICON.xl} color={colors.muted} />
+        <AppIcon name="eye-outline" size={ICON.xl} color={colors.muted} />
         <Text variant="title" align="center">
           {tr.sahtekar.memberTitle}
         </Text>

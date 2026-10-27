@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { Pressable, View } from 'react-native';
 
 import { useTheme } from '@/theme/ThemeProvider';
@@ -7,6 +6,7 @@ import { haptic } from '@/lib/haptics';
 
 import type { IconName } from './Button';
 import { Text } from './Text';
+import { AppIcon } from './AppIcon';
 
 type Option<T extends string> = {
   value: T;
@@ -84,7 +84,7 @@ export function Segmented<T extends string>({
             }}
           >
             {o.icon ? (
-              <Ionicons
+              <AppIcon
                 name={o.icon}
                 size={iconOnly ? ICON.md : ICON.sm}
                 color={on ? colors.text : colors.muted}

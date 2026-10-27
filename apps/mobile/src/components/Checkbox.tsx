@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { Pressable, View } from 'react-native';
 
 import { haptic } from '@/lib/haptics';
@@ -6,6 +5,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 
 import { Text } from './Text';
+import { AppIcon } from './AppIcon';
 
 type Props = { label: string; checked: boolean; onToggle: () => void };
 
@@ -38,7 +38,7 @@ export function Checkbox({ label, checked, onToggle }: Props) {
           backgroundColor: checked ? colors.primary : colors.surface,
         }}
       >
-        {checked ? <Ionicons name="checkmark" size={ICON.sm} color={colors.onPrimary} /> : null}
+        {checked ? <AppIcon name="checkmark" size={ICON.sm} color={colors.onPrimary} /> : null}
       </View>
       <Text variant="bodyStrong" className="flex-1">
         {label}

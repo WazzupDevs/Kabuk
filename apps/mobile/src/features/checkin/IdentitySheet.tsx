@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { View } from 'react-native';
@@ -18,6 +17,7 @@ import { callSetIdentity } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
+import { AppIcon } from '@/components/AppIcon';
 
 // The one change of identity a check-in allows (docs/SPEC_V4.md §4.D; skall tuvali MekanAnonimGecis,
 // MekanAnonimGecisErkek, MekanProfilGecis, MekanProfilGecisFotosuz): the two faces, what changes,
@@ -80,7 +80,7 @@ export function IdentitySheet({
     <Sheet visible={visible} onClose={onClose} title={title}>
       <View className="flex-row items-center self-start" style={{ gap: SPACING[2] }}>
         {toAnonymous ? face : capsule}
-        <Ionicons name="arrow-forward" size={ICON.md} color={colors.muted} />
+        <AppIcon name="arrow-forward" size={ICON.md} color={colors.muted} />
         {toAnonymous ? capsule : face}
       </View>
       <Text variant="fine">{body}</Text>

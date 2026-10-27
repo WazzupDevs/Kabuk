@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
 
 import { BRAND } from '@/theme/brand';
@@ -8,6 +7,7 @@ import { ICON, SPACING } from '@/theme/tokens';
 
 import type { IconName } from './Button';
 import { Text } from './Text';
+import { AppIcon } from './AppIcon';
 
 export type TagVariant =
   | 'calm'
@@ -85,7 +85,7 @@ export function Tag({ label, variant = 'neutral', icon, live }: Props) {
           }}
         />
       ) : null}
-      {icon ? <Ionicons name={icon} size={ICON.xs} color={fg} /> : null}
+      {icon ? <AppIcon name={icon} size={ICON.xs} color={fg} /> : null}
       <Text variant="tag" color={fg}>
         {label}
       </Text>

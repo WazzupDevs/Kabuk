@@ -80,6 +80,8 @@ export function Avatar(props: Props) {
         style={[frame, { backgroundColor: face.color }]}
       >
         <Image
+          // No fade-in: a photo drawn again does not blink (Android fades 300 ms by default).
+          fadeDuration={0}
           source={TABLE_AVATAR_IMAGES[face.icon]}
           accessible={false}
           style={{ width: icon, height: icon, tintColor: TABLE_AVATAR_INK }}
@@ -91,6 +93,8 @@ export function Avatar(props: Props) {
 
   const inner = photo.url ? (
     <Image
+      // No fade-in: a photo drawn again does not blink (Android fades 300 ms by default).
+      fadeDuration={0}
       source={{ uri: photo.url }}
       onError={photo.onError}
       accessibilityIgnoresInvertColors

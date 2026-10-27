@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import {
   createContext,
   type ReactNode,
@@ -18,6 +17,7 @@ import { tr } from '@/i18n/tr';
 import { withAlpha } from '@/theme/contrast';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
+import { AppIcon } from '@/components/AppIcon';
 
 // A timed screen on the stage (StageFit) turns the stage's scrolling off while it shows.
 const StageFitContext = createContext<(change: 1 | -1) => void>(() => undefined);
@@ -290,7 +290,7 @@ function RoundButton({
             backgroundColor: pressed ? colors.raised : colors.surface2,
           }}
         >
-          <Ionicons name={icon} size={ICON.md} color={colors.text} />
+          <AppIcon name={icon} size={ICON.md} color={colors.text} />
         </View>
       )}
     </Pressable>

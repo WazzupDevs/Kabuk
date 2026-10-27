@@ -16,7 +16,6 @@ import {
 } from '@shared/tabu.ts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Ionicons } from '@expo/vector-icons';
 import { Pressable, View } from 'react-native';
 
 import { Button } from '@/components/Button';
@@ -37,6 +36,7 @@ import { StageFit } from './GameStage';
 import { TabuCardView } from './TabuCardView';
 import { tabuStats, TurnReady } from './TurnReady';
 import { useTurnFeedback } from './useTurnFeedback';
+import { AppIcon } from '@/components/AppIcon';
 
 // Doğru is felt lightly; Tabu and Pas firmly (hareket.md).
 const MARK_HAPTIC: Record<MarkResult, HapticMoment> = {
@@ -493,7 +493,7 @@ function Turn({
             borderColor: colors.muted,
           }}
         >
-          <Ionicons name="lock-closed-outline" size={ICON.xl} color={colors.muted} />
+          <AppIcon name="lock-closed-outline" size={ICON.xl} color={colors.muted} />
           <Text variant="title" align="center">
             {tr.games.cardWithDescriber}
           </Text>
@@ -522,7 +522,7 @@ function Turn({
                 pressScale(pressed),
               ]}
             >
-              <Ionicons name="eye-outline" size={ICON.xl} color={colors.onAccent} />
+              <AppIcon name="eye-outline" size={ICON.xl} color={colors.onAccent} />
               <Text variant="title" tone="onAccent" align="center">
                 {tr.games.tapToReveal}
               </Text>

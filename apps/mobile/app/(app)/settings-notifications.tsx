@@ -17,6 +17,7 @@ import { profileApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
+import { patchProfile } from '@/features/account/patchProfile';
 
 type Changes = { notifyDm?: boolean; notifyFriendRequests?: boolean; notifyInvites?: boolean };
 
@@ -40,6 +41,14 @@ export default function NotificationSettingsScreen() {
   const update = useMutation({
     meta: FEEL_ERROR,
     mutationFn: (changes: Changes) => profileApi.update(changes),
+    onMutate: (changes) =>
+      patchProfile(queryClient, {
+        ...(changes.notifyDm !== undefined ? { notify_dm: changes.notifyDm } : {}),
+        ...(changes.notifyFriendRequests !== undefined
+          ? { notify_friend_requests: changes.notifyFriendRequests }
+          : {}),
+        ...(changes.notifyInvites !== undefined ? { notify_invites: changes.notifyInvites } : {}),
+      }),
     onSettled: () => void queryClient.invalidateQueries({ queryKey: ['profile'] }),
   });
   const p = own.data;

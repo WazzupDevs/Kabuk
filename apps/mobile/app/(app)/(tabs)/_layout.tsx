@@ -37,7 +37,9 @@ export default function TabsLayout() {
   return (
     <TabBarSpace>
       <Tabs
-        screenOptions={{ headerShown: false }}
+        // A tab out of sight stops drawing until it is opened again (react-native-screens'
+        // freeze): its queries and channels keep running, the open screen keeps the frames.
+        screenOptions={{ headerShown: false, freezeOnBlur: true }}
         // Without an active table the Mekan tab opens Keşfet instead.
         tabBar={(props) => (
           <TabBar {...props} opens={(tab) => tabOpenedBy(tab, table.data, Date.now())} />

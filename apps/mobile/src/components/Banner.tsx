@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
 
@@ -6,6 +5,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
 import { Text } from './Text';
+import { AppIcon } from './AppIcon';
 
 // skall tuvali (skall.css → "Uyarı şeridi"): information, warning, error and success are one strip,
 // a soft fill, its icon and its ink; a label over a note.
@@ -53,7 +53,7 @@ export function Banner({
         backgroundColor: bg,
       }}
     >
-      <Ionicons name={ICONS[tone]} size={ICON.md} color={fg} />
+      <AppIcon name={ICONS[tone]} size={ICON.md} color={fg} />
       <View className="flex-1" style={{ gap: SPACING[0.5] }}>
         {title ? (
           <Text variant="label" color={fg}>

@@ -110,7 +110,7 @@ export function ExploreMap({
   const label: { layout: NonNullable<SymbolLayer['layout']>; paint: SymbolLayer['paint'] } = {
     layout: {
       'text-field': ['get', 'name'],
-      'text-font': [...MAP_FONTS.regular],
+      'text-font': [...MAP_FONTS.bold],
       'text-size': MAP_PIN.labelSize,
       'text-anchor': 'top',
       'text-offset': [0, MAP_PIN.labelOffset],
@@ -230,14 +230,16 @@ export function ExploreMap({
             type="circle"
             filter={IS_VENUE}
             paint={{
+              // Full colour (the owner's report, 27 Ekim): quiet in the accent, lively in the
+              // overlap's orange, buzzing in pink.
               'circle-color': [
                 'match',
                 ['get', 'bucket'],
                 'lively',
-                colors.lively,
+                colors.overlap,
                 'buzzing',
                 colors.buzz,
-                colors.calm,
+                colors.accent,
               ],
               'circle-radius': [
                 'case',
@@ -269,10 +271,10 @@ export function ExploreMap({
                 'match',
                 ['get', 'bucket'],
                 'lively',
-                colors.onLively,
+                colors.onBuzz,
                 'buzzing',
                 colors.onBuzz,
-                colors.onCalm,
+                colors.onAccent,
               ],
             }}
           />

@@ -1355,6 +1355,18 @@ export const tr = {
     // The posters (skall tuvali, Masa): the least headcount and a game's line.
     minPeople: (n: number) => `${n}+ kişi`,
     allGames: 'Tümü',
+    // The games' cards (the owner's file skall-oyun-kartlari, 27 Ekim): name, line, headcount.
+    gameCards: {
+      vampir: { name: 'Vampir Köylü', sub: 'Vampirleri bul', people: '5-12' },
+      signum: { name: 'Signum', sub: 'Kodu çöz', people: '4+' },
+      kinshi: { name: 'Kinshi', sub: 'Yasaklıyı söyleme', people: '4+' },
+      krot: { name: 'Krot', sub: 'Aramızdaki kim?', people: '3+' },
+      sprengja: { name: 'Sprengja', sub: 'Bombayı çabuk at', people: '3+' },
+      kaupholl: { name: 'Kaupholl', sub: 'En yakına yatır', people: '3+' },
+    },
+    gameCardLabel: (name: string, sub: string, people: string) =>
+      `${name}, ${sub}, ${people} kişi, Yakında`,
+    gameCategories: { teams: 'Takımlı', multi: 'Çok oyunculu' },
     taglines: {
       tabu: 'Yasak kelimeyi söyleme',
       ibre: 'Frekansı tuttur',

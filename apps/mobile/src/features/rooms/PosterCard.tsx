@@ -1,96 +1,76 @@
 import { Children, type ReactNode } from 'react';
 import { Image, type ImageSourcePropType, Pressable, View } from 'react-native';
 
-import { Card } from '@/components/Card';
 import { usePressScale } from '@/components/motion';
 import { Tag } from '@/components/Tag';
-import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { SPACING } from '@/theme/tokens';
 
-// The games' posters on the table (skall tuvali, Masa): the canvas's drawings, exported at 4.5×
-// (assets/poster/). A game waiting for its step keeps its full colours with the "Yakında" tag (the
-// owner's call, 27 Ekim: the faded copies looked worn).
-const POSTERS: Record<string, ImageSourcePropType> = {
-  'kapsul-anlat': require('../../../assets/poster/kapsul-anlat.jpg'),
-  ibre: require('../../../assets/poster/ibre.jpg'),
-  sahtekar: require('../../../assets/poster/sahtekar.jpg'),
-  'harf-kapmaca': require('../../../assets/poster/harf-kapmaca.jpg'),
-  'sarkida-gecsin': require('../../../assets/poster/sarkida-gecsin.jpg'),
-  'sohbet-kartlari': require('../../../assets/poster/sohbet-kartlari.jpg'),
-};
+// The games' cards on the table (the owner's file skall-oyun-kartlari, 27 Ekim; the table's games
+// part made anew): each card is the file's drawing whole (scene, logo, line and headcount),
+// exported at 4× with its rounded corners (assets/game-card/). Every game waits for its step (4.6):
+// "Yakında" in the vote's corner, not pressed.
+export const GAME_CARDS = [
+  { id: 'vampir', category: 'multi', art: require('../../../assets/game-card/vampir.webp') },
+  { id: 'signum', category: 'teams', art: require('../../../assets/game-card/signum.webp') },
+  { id: 'kinshi', category: 'teams', art: require('../../../assets/game-card/kinshi.webp') },
+  { id: 'krot', category: 'multi', art: require('../../../assets/game-card/krot.webp') },
+  { id: 'sprengja', category: 'multi', art: require('../../../assets/game-card/sprengja.webp') },
+  { id: 'kaupholl', category: 'multi', art: require('../../../assets/game-card/kaupholl.webp') },
+] as const satisfies readonly {
+  id: keyof typeof tr.table.gameCards;
+  category: keyof typeof tr.table.gameCategories;
+  art: ImageSourcePropType;
+}[];
 
-// skall.css → `.media .art`: 150 high; the drawing (160 × 200) covers it from the top.
-const ART_HEIGHT = SPACING[16] * 2 + SPACING[5] + SPACING[0.5];
-const POSTER_RATIO = 160 / 200;
+export type GameCardId = (typeof GAME_CARDS)[number]['id'];
+export type GameCategory = keyof typeof tr.table.gameCategories;
 
-type Props = {
-  poster: string;
-  name: string;
-  tagline: string;
-  minPlayers: number;
-  soon?: boolean;
+// The file's card: 158 × 211.
+const CARD_RATIO = 158 / 211;
+
+export function GameCard({
+  id,
+  art,
+  onPress,
+  testID,
+}: {
+  id: GameCardId;
+  art: ImageSourcePropType;
   onPress?: () => void;
   testID?: string;
-};
-
-export function PosterCard({ poster, name, tagline, minPlayers, soon, onPress, testID }: Props) {
+}) {
   const pressScale = usePressScale();
-  const art = POSTERS[poster];
-  const face = (pressed: boolean) => (
-    <View style={pressScale(pressed && !soon)}>
-      <Card flush>
-        <View style={{ height: ART_HEIGHT, overflow: 'hidden' }}>
-          {art ? (
-            <Image
-              source={art}
-              resizeMode="cover"
-              accessible={false}
-              style={{ width: '100%', aspectRatio: POSTER_RATIO }}
-            />
-          ) : null}
-          <View
-            className="absolute flex-row"
-            style={{ top: SPACING[3], left: SPACING[3], right: SPACING[3], gap: SPACING[1.5] }}
-          >
-            <Tag variant="light" label={tr.table.minPeople(minPlayers)} />
-            {soon ? (
-              <View style={{ marginLeft: 'auto' }}>
-                <Tag variant="glass" label={tr.table.soon} />
-              </View>
-            ) : null}
-          </View>
-        </View>
-        <View
-          style={{
-            gap: SPACING[0.5],
-            paddingTop: SPACING[3],
-            paddingRight: SPACING[3] + SPACING[0.5],
-            paddingBottom: SPACING[3] + SPACING[0.5],
-            paddingLeft: SPACING[4],
-          }}
-        >
-          <Text variant="heading">{name}</Text>
-          <Text variant="fine">{tagline}</Text>
-        </View>
-      </Card>
-    </View>
-  );
+  const text = tr.table.gameCards[id];
   return (
     <Pressable
       testID={testID}
       accessibilityRole="button"
-      accessibilityLabel={soon ? `${name}, ${tr.table.soon}` : name}
-      accessibilityState={{ disabled: !!soon }}
-      disabled={soon || !onPress}
+      accessibilityLabel={tr.table.gameCardLabel(text.name, text.sub, text.people)}
+      accessibilityState={{ disabled: !onPress }}
+      disabled={!onPress}
       onPress={onPress}
     >
-      {({ pressed }) => face(pressed)}
+      {({ pressed }) => (
+        <View style={pressScale(pressed && !!onPress)}>
+          <Image
+            // No fade-in: a photo drawn again does not blink (Android fades 300 ms by default).
+            fadeDuration={0}
+            source={art}
+            accessible={false}
+            resizeMode="contain"
+            style={{ width: '100%', aspectRatio: CARD_RATIO }}
+          />
+          <View className="absolute" style={{ top: SPACING[2.5], left: SPACING[2.5] }}>
+            <Tag variant="glass" label={tr.table.soon} />
+          </View>
+        </View>
+      )}
     </Pressable>
   );
 }
 
-// Two posters a row, 12 apart (the canvas's grid).
+// Two cards a row, 12 apart (the file's grid).
 export function PosterGrid({ children }: { children: ReactNode }) {
   const cells = Children.toArray(children);
   const rows: ReactNode[][] = [];

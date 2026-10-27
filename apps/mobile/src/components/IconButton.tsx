@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { type ReactNode, useEffect } from 'react';
 import { Pressable, View } from 'react-native';
 import Animated, {
@@ -17,6 +16,7 @@ import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 
 import type { IconName } from './Button';
 import { usePressScale } from './motion';
+import { AppIcon } from './AppIcon';
 
 type Props = {
   icon: IconName;
@@ -76,7 +76,7 @@ export function IconButton({
             round ? pressScale(pressed && !disabled) : null,
           ]}
         >
-          {glyph ?? <Ionicons name={icon} size={ICON.lg} color={colors.text} />}
+          {glyph ?? <AppIcon name={icon} size={ICON.lg} color={colors.text} />}
         </View>
       )}
     </Pressable>

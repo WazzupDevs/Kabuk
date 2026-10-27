@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import { ConnectionBanner } from '@/components/ConnectionBanner';
 import { usePushNavigation } from '@/features/push/push';
 import { IncomingRequestHost } from '@/features/rooms/IncomingRequest';
+import { useStackOptions } from '@/lib/stackOptions';
 
 export { RouteError as ErrorBoundary } from '@/components/RouteError';
 
@@ -17,10 +18,11 @@ const SHEET = {
 } as const;
 
 export default function GroupLayout() {
+  const stackOptions = useStackOptions();
   usePushNavigation();
   return (
     <>
-      <Stack screenOptions={{ headerShown: false }}>
+      <Stack screenOptions={stackOptions}>
         <Stack.Screen name="settings" options={SHEET} />
         <Stack.Screen name="notifications" options={SHEET} />
         <Stack.Screen name="checkin/index" options={SHEET} />

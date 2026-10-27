@@ -1,7 +1,6 @@
 import { GAME_FLOW_REPORT_REASONS, type GameFlowReportReason } from '@shared/chat.ts';
 import { historyAction } from '@shared/friends.ts';
 import { useMutation, useQueryClient, type UseMutationResult } from '@tanstack/react-query';
-import { Ionicons } from '@expo/vector-icons';
 import { type ReactNode, useCallback, useState } from 'react';
 import { Alert, View } from 'react-native';
 
@@ -20,6 +19,7 @@ import { friendsApi, safetyApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON } from '@/theme/tokens';
+import { AppIcon } from '@/components/AppIcon';
 
 type Action = { kind: 'request' | 'add' | 'withdraw'; historyId: string };
 export type HistoryAct = UseMutationResult<unknown, Error, Action>;
@@ -191,7 +191,7 @@ export function HistoryActions({
     />
   ) : action === 'done' ? (
     <View className="flex-row items-center gap-1.5 self-center">
-      <Ionicons name="checkmark" size={ICON.sm} color={colors.muted} />
+      <AppIcon name="checkmark" size={ICON.sm} color={colors.muted} />
       <Text variant="label" tone="muted">
         {tr.friends.actionDone}
       </Text>
@@ -214,7 +214,7 @@ export function HistoryActions({
   );
   const hint = friend ? (
     <View className="mt-1 flex-row items-center gap-1.5">
-      <Ionicons name="checkmark-circle" size={ICON.sm} color={colors.success} />
+      <AppIcon name="checkmark-circle" size={ICON.sm} color={colors.success} />
       <Text variant="label" tone="success">
         {tr.tableEnd.friends}
       </Text>
