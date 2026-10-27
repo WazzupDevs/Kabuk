@@ -629,6 +629,7 @@ export const tr = {
     birthDateNote: 'Doğum tarihin değiştirilemez; profilinde yalnızca yaşın görünür.',
     friends: 'Arkadaşlar',
     friendsCount: (n: number) => `Arkadaşlar, ${n}`,
+    friendsSub: (n: number) => `${n} arkadaş`,
     editTitle: 'Profili düzenle',
     nameLabel: 'Görünen ad',
     nameHint:
@@ -1385,6 +1386,7 @@ export const tr = {
     title: 'Masa kur',
     hint: 'Masaya herkes kendi telefonuyla katılır. Masada en çok 12 kişi olur.',
     iconLabel: 'Masa simgesi',
+    nameLabel: 'Masanın adı',
     iconChange: 'Simgeyi değiştir',
     iconDone: 'Tamam',
     iconNote: 'Soluk olanlar mekandaki başka bir masada.',
@@ -1674,6 +1676,7 @@ export const tr = {
     badge: (n: number) => (n > 99 ? '99+' : String(n)),
   },
   settings: {
+    nickTitle: 'Anonim adın',
     title: 'Ayarlar',
     accountSection: 'Hesap',
     birthDate: 'Doğum tarihin',

@@ -60,24 +60,17 @@ appId: app.kabuk.mobile
     id: table-lobby
 - assertVisible: Yakında
 - takeScreenshot: 13-table
-# Masadakiler from the table's head: this phone, the owner's tag and the rename box; "Başka ad"
-# renews the name, 3 times a table.
+# Masadakiler from the table's head: this phone and the owner's tag (the table is called by its
+# icon, K-76: no other name to draw).
 - tapOn:
     id: table-who
 - extendedWaitUntil:
-    visible:
-      id: table-rename
+    visible: Masadakiler
     timeout: 10000
-- tapOn:
-    id: table-reroll
-- extendedWaitUntil:
-    visible: 2 yenileme hakkın var
-    timeout: 15000
 - takeScreenshot: 13b-people
 - back
 - extendedWaitUntil:
-    notVisible:
-      id: table-rename
+    notVisible: Masadakiler
     timeout: 10000
 # "Davet et": the friends at the venue; this phone has none yet.
 - tapOn:

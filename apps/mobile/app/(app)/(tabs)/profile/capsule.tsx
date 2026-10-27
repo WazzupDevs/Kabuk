@@ -3,12 +3,13 @@ import type { LookSlot } from '@shared/capsule.ts';
 import { CAPSULE_CATALOG } from '@shared/capsuleCatalog.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { BackHandler, Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { create } from 'zustand';
 
 import { Button } from '@/components/Button';
+import { CanvasLine } from '@/components/CanvasIcon';
 import { Chips } from '@/components/Chips';
 import { EmptyState } from '@/components/EmptyState';
 import { IconButton } from '@/components/IconButton';
@@ -24,7 +25,6 @@ import {
   colors as colorItems,
   type Item,
   type Look,
-  nextPart,
   packItems,
   packsFor,
   parse,
@@ -35,12 +35,15 @@ import {
   wearPack,
   worn,
 } from '@/features/capsule/look';
+import { CapsuleStage, type Play } from '@/features/capsule/CapsuleStage';
+import { FEELING_MOVES, JUMP, type Move, SHUFFLE } from '@/features/capsule/motion';
 import { profileViewKeys, useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { haptic } from '@/lib/haptics';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { profileApi } from '@/lib/api';
+import { FEELINGS } from '@/theme/capsuleLook';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
@@ -48,10 +51,12 @@ import { ICON, SPACING } from '@/theme/tokens';
 const useHint = create<{ seen: boolean }>(() => ({ seen: false }));
 
 const PREVIEW = SPACING[16] * 2 + SPACING[12];
+// v46 feel(): the feeling's face stays 1850 ms.
+const FEELING_MS = 1850;
 const COLUMNS = 4;
 
 // Kapsülün (skall tuvali: KapsulSusle, KapsulSusleIlk, KapsulSusleDegisti, KapsulSusleCikis;
-// docs/SPEC_V4.md §4.D, K-46): the capsule large (a tap on its head puts on the next head part),
+// docs/SPEC_V4.md §4.D, K-46): the capsule large (a tap on it shows the next feeling, v46),
 // what is worn as chips that take it off, then the racks (Şık, Karakter, Tema), the slots, the
 // slot's packs ("Paketi tak") and their parts; "Karıştır", "Hepsini çıkar" and "Kaydet". Leaving
 // with changes asks first.
@@ -95,6 +100,7 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
   const [slot, setSlot] = useState<LookSlot>('h');
   const [leaving, setLeaving] = useState(false);
   const hintSeen = useHint((s) => s.seen);
+  const feelingAt = useRef(-1);
   const now = code(look);
   const changed = now !== code(parse(saved));
 
@@ -119,10 +125,36 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
       return () => sub.remove();
     }, [leave]),
   );
-  const put = (next: Look) => {
+  // What the stage plays: a jump for a part, a wobble for "Karıştır", a feeling for a tap.
+  const [play, setPlay] = useState<Play | null>(null);
+  const [beat, setBeat] = useState(0);
+  const [feeling, setFeeling] = useState<{ id: string; name: string; key: number } | null>(null);
+  useEffect(() => {
+    if (!feeling) return undefined;
+    const timer = setTimeout(() => setFeeling(null), FEELING_MS);
+    return () => clearTimeout(timer);
+  }, [feeling]);
+  const put = (next: Look, move: Move = JUMP) => {
     haptic('selection');
     save.reset();
+    setFeeling(null);
     setLook(next);
+    setPlay({ move, key: Date.now() });
+  };
+  // A tap on the capsule (v46 feel()): the next feeling for a moment; it is never saved.
+  const feel = () => {
+    useHint.setState({ seen: true });
+    haptic('selection');
+    const at = feeling ? FEELINGS.findIndex(([id]) => id === feeling.id) : feelingAt.current;
+    const next = FEELINGS[(at + 1) % FEELINGS.length];
+    if (!next) return;
+    feelingAt.current = (at + 1) % FEELINGS.length;
+    const [id, name] = next;
+    const key = Date.now();
+    setFeeling({ id, name, key });
+    setBeat(key);
+    const move = FEELING_MOVES[id];
+    if (move) setPlay({ move, key });
   };
 
   const side = shape.screenPadding;
@@ -141,13 +173,14 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
           </Text>
           <Text variant="fine">{nick}</Text>
         </View>
+        {/* The canvas's shuffle line icon (skall tuvali, KapsulSusle). */}
         <Button
           size="sm"
           variant="neutral"
-          icon="shuffle"
+          leading={<CanvasLine name="shuffle" size={ICON.md} />}
           testID="capsule-shuffle"
           label={tr.capsule.shuffle}
-          onPress={() => put(shuffle(Math.random))}
+          onPress={() => put(shuffle(Math.random), SHUFFLE)}
         />
       </View>
       <ScrollView
@@ -157,42 +190,17 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
           gap: SPACING[3],
         }}
       >
-        <View className="items-center">
-          <Pressable
-            testID="capsule-preview"
-            accessibilityRole="button"
-            accessibilityLabel={tr.capsule.tapHead}
-            onPress={() => {
-              useHint.setState({ seen: true });
-              put(nextPart(look, 'h'));
-            }}
-            style={{
-              borderRadius: shape.radius.pill,
-              borderWidth: SPACING[1.5],
-              borderColor: colors.surface,
-              boxShadow: shape.shadow.card,
-            }}
-          >
-            <LookAvatar look={now} size={PREVIEW} />
-          </Pressable>
-          {!hintSeen ? (
-            <View
-              pointerEvents="none"
-              className="absolute"
-              style={{
-                top: SPACING[2],
-                right: SPACING[2],
-                paddingHorizontal: SPACING[3],
-                paddingVertical: SPACING[1.5],
-                borderRadius: shape.radius.pill,
-                backgroundColor: colors.surface,
-                boxShadow: shape.shadow.sheet,
-              }}
-            >
-              <Text variant="label">{tr.capsule.tapHead}</Text>
-            </View>
-          ) : null}
-        </View>
+        <CapsuleStage
+          testID="capsule-preview"
+          look={now}
+          feeling={feeling}
+          play={play}
+          beat={beat}
+          size={PREVIEW}
+          label={tr.capsule.tapHead}
+          hint={hintSeen ? null : tr.capsule.tapHead}
+          onPress={feel}
+        />
         <View className="items-center gap-2">
           <Text variant="fine">{tr.capsule.worn}</Text>
           <View className="flex-row flex-wrap justify-center" style={{ gap: SPACING[2] }}>

@@ -8,39 +8,21 @@ import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { SPACING } from '@/theme/tokens';
 
-// The games' posters on the table (skall tuvali, Masa and MasaPosterlerYakinda): the canvas's
-// drawings, exported at 3× (assets/poster/), and their faded "Yakında" copies (grayscale 0.7).
-const POSTERS: Record<string, { on: ImageSourcePropType; soon: ImageSourcePropType }> = {
-  'kapsul-anlat': {
-    on: require('../../../assets/poster/kapsul-anlat.jpg'),
-    soon: require('../../../assets/poster/kapsul-anlat-soon.jpg'),
-  },
-  ibre: {
-    on: require('../../../assets/poster/ibre.jpg'),
-    soon: require('../../../assets/poster/ibre-soon.jpg'),
-  },
-  sahtekar: {
-    on: require('../../../assets/poster/sahtekar.jpg'),
-    soon: require('../../../assets/poster/sahtekar-soon.jpg'),
-  },
-  'harf-kapmaca': {
-    on: require('../../../assets/poster/harf-kapmaca.jpg'),
-    soon: require('../../../assets/poster/harf-kapmaca-soon.jpg'),
-  },
-  'sarkida-gecsin': {
-    on: require('../../../assets/poster/sarkida-gecsin.jpg'),
-    soon: require('../../../assets/poster/sarkida-gecsin-soon.jpg'),
-  },
-  'sohbet-kartlari': {
-    on: require('../../../assets/poster/sohbet-kartlari.jpg'),
-    soon: require('../../../assets/poster/sohbet-kartlari-soon.jpg'),
-  },
+// The games' posters on the table (skall tuvali, Masa): the canvas's drawings, exported at 4.5×
+// (assets/poster/). A game waiting for its step keeps its full colours with the "Yakında" tag (the
+// owner's call, 27 Ekim: the faded copies looked worn).
+const POSTERS: Record<string, ImageSourcePropType> = {
+  'kapsul-anlat': require('../../../assets/poster/kapsul-anlat.jpg'),
+  ibre: require('../../../assets/poster/ibre.jpg'),
+  sahtekar: require('../../../assets/poster/sahtekar.jpg'),
+  'harf-kapmaca': require('../../../assets/poster/harf-kapmaca.jpg'),
+  'sarkida-gecsin': require('../../../assets/poster/sarkida-gecsin.jpg'),
+  'sohbet-kartlari': require('../../../assets/poster/sohbet-kartlari.jpg'),
 };
 
 // skall.css → `.media .art`: 150 high; the drawing (160 × 200) covers it from the top.
 const ART_HEIGHT = SPACING[16] * 2 + SPACING[5] + SPACING[0.5];
 const POSTER_RATIO = 160 / 200;
-const SOON_OPACITY = 0.6;
 
 type Props = {
   poster: string;
@@ -56,12 +38,13 @@ export function PosterCard({ poster, name, tagline, minPlayers, soon, onPress, t
   const pressScale = usePressScale();
   const art = POSTERS[poster];
   const face = (pressed: boolean) => (
-    <View style={[{ opacity: soon ? SOON_OPACITY : 1 }, pressScale(pressed && !soon)]}>
+    <View style={pressScale(pressed && !soon)}>
       <Card flush>
         <View style={{ height: ART_HEIGHT, overflow: 'hidden' }}>
           {art ? (
             <Image
-              source={soon ? art.soon : art.on}
+              source={art}
+              resizeMode="cover"
               accessible={false}
               style={{ width: '100%', aspectRatio: POSTER_RATIO }}
             />

@@ -1,22 +1,21 @@
 import type { AppTheme } from './ThemeProvider';
-import { SPACING } from './tokens';
+import { OPACITY, SPACING } from './tokens';
 
-// A row inside a list card when pressed (skall.css → `.list .item:active`): the highlight sits 4 in
-// from the card's sides, its corners following the card's, so it never shows as a square block
-// running past the card's rounded edge. The row keeps its text where it was.
-export const ROW_INSET = SPACING[1];
+// A row inside a list card when pressed: its content dims, like a menu row (Menu.tsx), and nothing
+// is painted behind it: a highlight block never matched the card's rounded edge (the owner's
+// report, 27 Ekim). A card of one row presses as a whole (ListCard: it scales like a button,
+// skall.css → `.btn.pressed`). The row keeps its text where it was.
+export const ROW_INSET = 0;
 
 export function rowPress(
-  theme: Pick<AppTheme, 'colors' | 'shape'>,
+  _theme: Pick<AppTheme, 'colors' | 'shape'>,
   pressed: boolean,
   padLeft: number = SPACING[4],
   padRight: number = SPACING[4],
 ) {
   return {
-    marginHorizontal: ROW_INSET,
-    paddingLeft: padLeft - ROW_INSET,
-    paddingRight: padRight - ROW_INSET,
-    borderRadius: theme.shape.radius.lg - ROW_INSET,
-    backgroundColor: pressed ? theme.colors.surface2 : 'transparent',
+    paddingLeft: padLeft,
+    paddingRight: padRight,
+    opacity: pressed ? OPACITY.pressed : 1,
   };
 }

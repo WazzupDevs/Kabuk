@@ -9,6 +9,7 @@ import { typeStyle, useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
 import type { ChatQuote } from './ChatBubble';
+import { useChatEnd } from './ChatScreen';
 import { IconButton } from './IconButton';
 import { usePressScale } from './motion';
 import { Text } from './Text';
@@ -24,8 +25,6 @@ type Props = {
   sendLabel: string;
   sendDisabled?: boolean;
   sending?: boolean;
-  // Right-aligned over the field while typing ("12/200").
-  counter?: string;
   // A compact row over the field: the venue chat's "Profilimle yaz" switch.
   above?: ReactNode;
   // Aşama 8 · Saha: the message being answered, as a strip over the field, with a ×.
@@ -48,7 +47,6 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
     sendLabel,
     sendDisabled,
     sending,
-    counter,
     above,
     replyTo,
     onCancelReply,
@@ -61,6 +59,7 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
   const { colors, shape } = theme;
   const pressScale = usePressScale();
   const inactive = sendDisabled || sending;
+  const followEnd = useChatEnd();
   return (
     <View
       style={{
@@ -102,9 +101,17 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
             selectionColor={colors.accent}
             maxLength={maxLength}
             multiline
+            // The canvas's field type (skall.css → `.field`: 14/20, 600). Android's extra font
+            // padding would sit the line low in the pill.
             style={[
               typeStyle(theme, 'body'),
-              { color: colors.text, paddingVertical: SPACING[2.5], maxHeight: SPACING[16] * 2 },
+              {
+                color: colors.text,
+                paddingVertical: SPACING[2.5],
+                maxHeight: SPACING[16] * 2,
+                includeFontPadding: false,
+                textAlignVertical: 'center',
+              },
             ]}
           />
         </View>
@@ -117,6 +124,8 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
           onPress={() => {
             haptic('sent');
             onSend();
+            // The stream goes to its end with the message (every chat).
+            followEnd?.();
           }}
         >
           {({ pressed }) => (
@@ -143,11 +152,6 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
           )}
         </Pressable>
       </View>
-      {counter ? (
-        <Text variant="fine" align="right">
-          {counter}
-        </Text>
-      ) : null}
     </View>
   );
 });

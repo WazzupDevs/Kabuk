@@ -88,7 +88,9 @@ describe("v46's Keşfet parts", () => {
     }
     const row = source('VenueRow.tsx');
     expect(row).toMatch(/transitionStyle\(r\.transitions\)/);
-    expect(row).toMatch(/r\.pressed\.bg/);
+    // Pressed, the row dims instead of v46's highlight block (theme/rowPress.ts; the owner's report,
+    // 27 Ekim: the block never matched the card's rounded edge).
+    expect(row).toMatch(/OPACITY\.pressed/);
     expect(row).toMatch(/r\.pressed\.scale/);
     expect(source('FilterChips.tsx')).toMatch(/chip\.pressedScale/);
     expect(source('CityButton.tsx')).toMatch(/b\.pressedScale/);

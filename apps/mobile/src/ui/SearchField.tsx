@@ -4,8 +4,7 @@ import Animated from 'react-native-reanimated';
 
 import { noteTyping } from '@/lib/haptics';
 import { V46_EXPLORE, V46_EXPLORE_ICONS } from '@/theme/parts.generated';
-import { useTheme } from '@/theme/ThemeProvider';
-import { v46FontStyle } from '@/theme/v46Type';
+import { typeStyle, useTheme } from '@/theme/ThemeProvider';
 
 import { transitionStyle } from './motion';
 import { V46Svg } from './V46Svg';
@@ -31,7 +30,8 @@ export function SearchField({
   testID,
   focusedPreview = false,
 }: Props) {
-  const { scheme } = useTheme();
+  const theme = useTheme();
+  const { scheme } = theme;
   const s = V46_EXPLORE[scheme].search;
   const [focused, setFocused] = useState(false);
   const look = focused || focusedPreview ? s.focus : s.idle;
@@ -70,9 +70,17 @@ export function SearchField({
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           testID={testID}
+          // The canvas's field type (skall.css → `.field`: 14/20, 600), without Android's font
+          // padding: a one-line field set its line low and looked off.
           style={[
-            v46FontStyle(s.field.font, s.field.letterSpacing),
-            { height: s.field.height, padding: 0, color: s.field.color },
+            typeStyle(theme, 'body'),
+            {
+              height: s.field.height,
+              padding: 0,
+              color: s.field.color,
+              includeFontPadding: false,
+              textAlignVertical: 'center',
+            },
           ]}
         />
       </View>

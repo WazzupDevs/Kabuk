@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { BADGES } from '@shared/badges.ts';
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { useWindowDimensions, View } from 'react-native';
 
 import { Button } from '@/components/Button';
@@ -14,8 +14,7 @@ import { Text } from '@/components/Text';
 import { useProfile } from '@/features/account/useProfile';
 import { useFriends } from '@/features/friends/queries';
 import { FriendStack } from '@/features/profile/FriendStack';
-import { NickCard } from '@/features/profile/NickCard';
-import { Badges, ProfileHead } from '@/features/profile/ProfileCard';
+import { ProfileHead } from '@/features/profile/ProfileCard';
 import { useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
@@ -25,12 +24,13 @@ import { ICON, NARROW_SCREEN } from '@/theme/tokens';
 
 // The own profile (docs/SPEC_V2.md §5; v45: .prof, self). The photo, the name and the bio change on
 // the edit screen; settings open only from the round sliders button (top right), beside the bell
-// (every tab root keeps it until step 4.7). The badges stay under the head (today's data; v45 has
-// none on the profile).
+// (every tab root keeps it until step 4.7); its knobs slide as it opens. No badges (the owner's
+// call, 27 Ekim); the nick is renewed in Ayarlar.
 export default function ProfileScreen() {
   // The check-in's identity: the face the table sees is ringed (skall tuvali, ProfilAnonim).
   const anonymous = useActiveTable().data?.identity.mode === 'anonymous';
   const { colors } = useTheme();
+  const [slide, setSlide] = useState(0);
   const own = useProfile();
   const publicId = own.data?.public_id;
   const view = useProfileView(publicId);
@@ -53,9 +53,12 @@ export default function ProfileScreen() {
           <IconButton
             round
             icon="options-outline"
-            glyph={<SlidersGlyph />}
+            glyph={<SlidersGlyph go={slide} />}
             label={tr.settings.title}
-            onPress={() => router.push('/settings')}
+            onPress={() => {
+              setSlide((n) => n + 1);
+              router.push('/settings');
+            }}
           />
         }
       />
@@ -118,9 +121,6 @@ export default function ProfileScreen() {
               </View>
             </View>
           </ProfileHead>
-          {view.data.capsuleNick ? (
-            <NickCard nick={view.data.capsuleNick} refreshAt={view.data.nickRefreshAt ?? null} />
-          ) : null}
           {view.data.photoHidden ? (
             <Card tone="note">
               <View className="flex-row items-start gap-2">
@@ -131,15 +131,6 @@ export default function ProfileScreen() {
               </View>
             </Card>
           ) : null}
-          <View className="mt-2 flex-row items-baseline justify-between">
-            <Text variant="heading" accessibilityRole="header">
-              {tr.profile.badgesTitle}
-            </Text>
-            <Text variant="fine">
-              {tr.profile.badgeCount(view.data.badges.length, BADGES.length)}
-            </Text>
-          </View>
-          <Badges badges={view.data.badges} all />
         </View>
       )}
     </Screen>

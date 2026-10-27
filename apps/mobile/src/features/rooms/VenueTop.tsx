@@ -1,8 +1,9 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Animated, Easing, Pressable, View } from 'react-native';
 
-import { Avatar } from '@/components/Avatar';
+import { Avatar, AVATAR_SIZE } from '@/components/Avatar';
+import { LookAvatar } from '@/components/LookAvatar';
 import { Banner } from '@/components/Banner';
 import { BarIcon } from '@/components/BarIcon';
 import { IconButton } from '@/components/IconButton';
@@ -11,7 +12,9 @@ import { usePressScale } from '@/components/motion';
 import { Text } from '@/components/Text';
 import { Wordmark } from '@/components/Wordmark';
 import { IdentitySheet } from '@/features/checkin/IdentitySheet';
+import { useOwnLook } from '@/features/profile/useOwnLook';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
+import { useReduceMotion } from '@/lib/useReduceMotion';
 import { tr } from '@/i18n/tr';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
@@ -79,7 +82,7 @@ export function VenueTop({
             onPress={() => setAsking(true)}
             onUsedPress={() => setUsedNote(true)}
           />
-          <OwnPhoto />
+          <OwnPhoto anonymous={anonymous} />
         </View>
       </View>
       <IdentitySheet
@@ -100,11 +103,35 @@ export function VenueTop({
   );
 }
 
-// The own photo in a ring on a soft shadow (v45: .top .me); the initials without one.
-function OwnPhoto() {
+// The face this check-in shows (the owner's call, 27 Ekim): the capsule while anonymous, the photo
+// while profiled; a switch turns one into the other (the old face shrinks and fades, the new one
+// grows in with a little overshoot; at once with reduce motion).
+const SWAP_MS = 280;
+
+function OwnPhoto({ anonymous }: { anonymous: boolean }) {
   const { colors, shape } = useTheme();
   const pressScale = usePressScale();
   const photo = useOwnPhoto();
+  const look = useOwnLook();
+  const reduce = useReduceMotion();
+  const [shown] = useState(() => new Animated.Value(anonymous ? 1 : 0));
+  useEffect(() => {
+    const anim = Animated.timing(shown, {
+      toValue: anonymous ? 1 : 0,
+      duration: reduce ? 0 : SWAP_MS,
+      easing: Easing.bezier(0.34, 1.56, 0.64, 1),
+      useNativeDriver: true,
+    });
+    anim.start();
+    return () => anim.stop();
+  }, [anonymous, reduce, shown]);
+  const face = (on: Animated.AnimatedInterpolation<number>) => ({
+    position: 'absolute' as const,
+    opacity: on.interpolate({ inputRange: [0, 1], outputRange: [0, 1], extrapolate: 'clamp' }),
+    transform: [{ scale: on.interpolate({ inputRange: [0, 1], outputRange: [0.6, 1] }) }],
+  });
+  const capsuleOn = shown.interpolate({ inputRange: [0, 1], outputRange: [0, 1] });
+  const photoOn = shown.interpolate({ inputRange: [0, 1], outputRange: [1, 0] });
   return (
     <Pressable
       accessibilityRole="button"
@@ -120,7 +147,6 @@ function OwnPhoto() {
               height: TOUCH.min,
               alignItems: 'center',
               justifyContent: 'center',
-              // skall tuvali (Mekan): the round button's face, the photo inside it.
               borderRadius: shape.radius.pill,
               borderWidth: shape.stroke.hairline,
               borderColor: colors.divider,
@@ -130,11 +156,23 @@ function OwnPhoto() {
             pressScale(pressed),
           ]}
         >
-          {photo.name ? (
-            <Avatar kind="profile" size="md" name={photo.name} photoUrl={photo.url} />
-          ) : (
-            <Avatar kind="default" size="md" />
-          )}
+          <Animated.View style={face(photoOn)}>
+            {photo.name ? (
+              <Avatar kind="profile" size="md" name={photo.name} photoUrl={photo.url} />
+            ) : (
+              <Avatar kind="default" size="md" />
+            )}
+          </Animated.View>
+          <Animated.View
+            style={face(capsuleOn)}
+            testID={anonymous ? 'venue-face-capsule' : undefined}
+          >
+            {look ? (
+              <LookAvatar look={look} size={AVATAR_SIZE.md} />
+            ) : (
+              <Avatar kind="default" size="md" />
+            )}
+          </Animated.View>
         </View>
       )}
     </Pressable>

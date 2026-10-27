@@ -77,9 +77,9 @@ export function ChatTopBar({
       className="flex-row items-center gap-2.5"
       style={{
         // skall tuvali (skall.css → `.topbar.inner`): 68 high, no line under it.
+        // Narrower than the canvas's 68 (the owner's call, 27 Ekim): 6 over and under the 44 row.
         paddingHorizontal: SPACING[4],
-        paddingVertical: SPACING[3],
-        minHeight: SPACING[16] + SPACING[1],
+        paddingVertical: SPACING[1.5],
         backgroundColor: colors.canvas,
       }}
     >

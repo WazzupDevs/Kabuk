@@ -107,7 +107,8 @@ export type InviteRequest = { action: 'invite'; roomId: string; friendPublicId: 
 // "Masadan ayrıl" rule (K-13) and sits down with the check-in's identity; an invite that ran out, a
 // closed or full table are invite_unavailable alike.
 export type AnswerInviteRequest = { action: 'answer-invite'; inviteId: string; accept: boolean };
-export type SetIconResponse = { icon: string };
+// The table is called by its icon (K-76): the new name comes back with it.
+export type SetIconResponse = { icon: string; name: string };
 export type RerollNameResponse = { name: string; rerollsLeft: number };
 
 export type RoomsRequest =

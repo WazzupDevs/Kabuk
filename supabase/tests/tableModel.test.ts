@@ -34,6 +34,7 @@ import {
 
 let venue: Record<string, string> = {};
 const ICON_IDS = TABLE_ICONS.map((i) => i.id);
+const iconName = (id: string | null) => TABLE_ICONS.find((i) => i.id === id)?.name;
 const UPDATE_REQUIRED = { status: 426, body: errorBody('update_required') };
 
 beforeAll(async () => {
@@ -1292,7 +1293,8 @@ describe('a table’s name and icon (K-45)', () => {
     const r1 = await roomRow(await openTable(a));
     const r2 = await roomRow(await openTable(b, { open: false }));
     for (const r of [r1, r2]) {
-      expect(r.name).toMatch(/^\S+ \S+$/);
+      // Called by its icon (K-76).
+      expect(r.name).toBe(iconName(r.icon));
       expect(ICON_IDS).toContain(r.icon);
       expect(r.name_rerolls).toBe(0);
     }
@@ -1303,7 +1305,7 @@ describe('a table’s name and icon (K-45)', () => {
   it('takes the owner’s icon at creation, and refuses one another table has', async () => {
     const [a, b] = await all(2);
     const roomId = await openTable(a, { icon: 'kis-kardanadam' });
-    expect((await roomRow(roomId)).icon).toBe('kis-kardanadam');
+    expect(await roomRow(roomId)).toMatchObject({ icon: 'kis-kardanadam', name: 'Kardan adam' });
     expect(await rooms(b, { action: 'create', icon: 'kis-kardanadam' })).toEqual({
       status: 409,
       body: errorBody('icon_taken'),
@@ -1330,7 +1332,12 @@ describe('a table’s name and icon (K-45)', () => {
     });
     expect(await rooms(a, { action: 'set-icon', roomId, icon: free })).toEqual({
       status: 200,
-      body: { icon: free },
+      body: { icon: free, name: iconName(free) },
+    });
+    // The name follows the icon, and the old owner_alias copy the name (§4.H).
+    expect(await roomRow(roomId)).toMatchObject({
+      name: iconName(free),
+      owner_alias: iconName(free),
     });
     // Its own icon again is no clash.
     expect((await rooms(a, { action: 'set-icon', roomId, icon: free })).status).toBe(200);
@@ -1347,7 +1354,7 @@ describe('a table’s name and icon (K-45)', () => {
     });
     expect((await roomRow(roomId)).icon).toBe(free);
 
-    const names = [before.name];
+    const names = [iconName(free)];
     for (let left = 2; left >= 0; left--) {
       const res = await rooms(a, { action: 'reroll-name', roomId });
       expect(res).toEqual({

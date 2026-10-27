@@ -23,6 +23,7 @@ export function AppearanceSetting() {
         </Text>
         <Segmented
           fill
+          onSoft
           accessibilityLabel={tr.settings.appearance.title}
           value={scheme}
           onChange={(value) => setSchemePreference(value)}

@@ -1,5 +1,3 @@
-import { TABLE_NAME_REROLLS } from '@shared/tables.ts';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -7,7 +5,6 @@ import { Pressable, View } from 'react-native';
 import { Avatar, AVATAR_SIZE } from '@/components/Avatar';
 import { LookAvatar } from '@/components/LookAvatar';
 import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
 import { Menu, MenuItem } from '@/components/Menu';
 import { Sheet } from '@/components/Sheet';
 import { Tag } from '@/components/Tag';
@@ -16,13 +13,9 @@ import { useRoomSafety } from '@/features/chat/RoomSafety';
 import { useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
-import { roomsApi } from '@/lib/api';
-import { FEEL_ERROR } from '@/lib/hapticMoments';
-import { BRAND } from '@/theme/brand';
-import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING, TOUCH } from '@/theme/tokens';
 
-import { roomKeys, type TablePerson } from './queries';
+import { type TablePerson } from './queries';
 
 type Props = {
   visible: boolean;
@@ -30,8 +23,6 @@ type Props = {
   roomId: string;
   people: readonly TablePerson[];
   me: string;
-  // The owner's rename box (v46: .renamebox, owner only).
-  owner: { name: string; rerolls: number } | null;
   // A profiled person's public id at this table (room_member_profiles); none for an anonymous one.
   profiles: ReadonlyMap<string, string> | undefined;
 };
@@ -39,25 +30,14 @@ type Props = {
 // Masadakiler (skall tuvali: MasaKisiler, MasaKisilerKatilimci; docs/SPEC_V4.md §4.E, K-40):
 // everyone at the table in two columns, the owner and the viewer marked; a person opens their
 // card (MasaKisiSecenekler): the profile (profiled), Şikayet et and Engelle (K-13: the owner's
-// block takes the person off the table, a participant's takes the participant off). The owner
-// renews the table's name here, 3 times a table.
-export function PeopleSheet({ visible, onClose, roomId, people, me, owner, profiles }: Props) {
-  const { colors, shape } = useTheme();
-  const queryClient = useQueryClient();
+// block takes the person off the table, a participant's takes the participant off). The table is
+// called by its icon (K-76): no other name to draw.
+export function PeopleSheet({ visible, onClose, roomId, people, me, profiles }: Props) {
   const [person, setPerson] = useState<TablePerson | null>(null);
   const safety = useRoomSafety(roomId);
-  const rerollsLeft = owner ? TABLE_NAME_REROLLS - owner.rerolls : 0;
-
-  const reroll = useMutation({
-    meta: FEEL_ERROR,
-    mutationFn: () => roomsApi.rerollName(roomId),
-    onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: roomKeys.room(roomId) });
-      void queryClient.invalidateQueries({ queryKey: roomKeys.current });
-    },
-  });
-
   const publicId = person ? profiles?.get(person.sessionId) : undefined;
+  // Whether this phone owns the table: its block takes the person off (K-13).
+  const iOwn = people.some((p) => p.owner && p.sessionId === me);
   const close = () => {
     setPerson(null);
     onClose();
@@ -104,52 +84,6 @@ export function PeopleSheet({ visible, onClose, roomId, people, me, owner, profi
             );
           })}
         </View>
-        {owner ? (
-          <Card tone="note">
-            <View className="flex-row items-center gap-3" testID="table-rename">
-              <View className="flex-1 gap-0.5">
-                <Text variant="caption" tone="muted">
-                  {tr.table.nameLabel}
-                </Text>
-                <Text variant="heading">{owner.name}</Text>
-                <View className="flex-row items-center gap-2">
-                  <View className="flex-row" style={{ gap: SPACING[0.5] }}>
-                    {Array.from({ length: TABLE_NAME_REROLLS }, (_, i) => (
-                      <View
-                        key={i}
-                        style={{
-                          width: SPACING[1.5],
-                          height: SPACING[1.5],
-                          borderRadius: shape.radius.pill,
-                          backgroundColor: i < rerollsLeft ? DOTS[i % DOTS.length] : colors.control,
-                        }}
-                      />
-                    ))}
-                  </View>
-                  <Text variant="fine" className="shrink">
-                    {tr.venue.rerollsLeft(rerollsLeft)}
-                  </Text>
-                </View>
-              </View>
-              {rerollsLeft > 0 ? (
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  icon="refresh"
-                  testID="table-reroll"
-                  label={tr.venue.rerollName}
-                  loading={reroll.isPending}
-                  onPress={() => reroll.mutate()}
-                />
-              ) : null}
-            </View>
-            {reroll.isError ? (
-              <Text variant="fine" tone="danger">
-                {errorMessage(reroll.error)}
-              </Text>
-            ) : null}
-          </Card>
-        ) : null}
         <Button size="lg" variant="neutral" label={tr.common.close} onPress={close} />
       </Sheet>
 
@@ -190,7 +124,7 @@ export function PeopleSheet({ visible, onClose, roomId, people, me, owner, profi
             icon="ban-outline"
             testID="person-block"
             label={tr.safety.block}
-            note={owner ? tr.table.blockOwnerNote : tr.table.blockMemberNote}
+            note={iOwn ? tr.table.blockOwnerNote : tr.table.blockMemberNote}
             loading={safety.blocking}
             onPress={() => person && safety.block(person.sessionId, close)}
           />
@@ -211,9 +145,6 @@ export function PeopleSheet({ visible, onClose, roomId, people, me, owner, profi
     </>
   );
 }
-
-// The brand's three colours on the name's renewal dots (skall tuvali, MasaKisiler).
-const DOTS = [BRAND.purple, BRAND.pink, BRAND.orange] as const;
 
 // A person's face at the table: the profile photo (read through the profile), or the anonymous
 // seat's capsule.
