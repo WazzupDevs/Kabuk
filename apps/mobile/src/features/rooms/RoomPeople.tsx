@@ -156,6 +156,7 @@ export function PeopleSheet({ visible, onClose, roomId, people, me, owner, profi
             icon="ban-outline"
             testID="person-block"
             label={tr.safety.block}
+            note={owner ? tr.table.blockOwnerNote : tr.table.blockMemberNote}
             loading={safety.blocking}
             onPress={() => person && safety.block(person.sessionId, close)}
           />

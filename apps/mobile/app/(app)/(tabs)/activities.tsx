@@ -222,19 +222,17 @@ function History({ now }: { now: number }) {
       <Sheet
         visible={record !== null}
         onClose={() => setOpen(null)}
-        title={
-          record
-            ? tr.friends.historyRow(
-                record.other_alias,
-                historyConcept(record.concept),
-                record.played_at,
-              )
-            : ''
-        }
+        // skall tuvali (AktivitelerGecmisKayit): the person, then the game and the time.
+        title={record ? record.other_alias : ''}
       >
         {record ? (
           <View>
-            <Text variant="fine">{tr.friends.people(record.other_headcount)}</Text>
+            <Text variant="fine">
+              {tr.activities.sheetLine(
+                tr.activities.game(historyConcept(record.concept)),
+                tr.activities.when(record.played_at, historyDay(record.played_at, today)),
+              )}
+            </Text>
             <HistoryActions
               record={record}
               friend={friends.data?.get(record.id)}
@@ -253,7 +251,8 @@ function History({ now }: { now: number }) {
           </View>
         ) : null}
         <Button
-          variant="ghost"
+          size="lg"
+          variant="neutral"
           label={tr.common.close}
           onPress={() => setOpen(null)}
           testID="history-sheet-close"

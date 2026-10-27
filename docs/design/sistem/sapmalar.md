@@ -4,18 +4,7 @@
 
 ## Onay bekleyen metinler
 
-Tuvalin yazdığı, spec'te ve v46'da olmayan metinler. Onaylanmadan uygulamaya girmez; uygulama o yerde bugünkü metnini korur.
-
-| Pano | Metin | Neden gerekti |
-| --- | --- | --- |
-| ProfilNickBekle, ProfilNickYenilendi | "Anonim adın. 30 günde bir yenileyebilirsin; kapsülün aynı kalır." ve düğmenin altında "12 gün sonra yenileyebilirsin." | K-9: yenileme 30 günde bir. v46'nın "Karar bekliyor" hâli kalktı, bekleme hâlinin metni yok |
-| MasaBitir | "Ayrılırsan masa sürer; sahiplik masaya en erken katılana geçer." | §4.C: sahibin "Masadan ayrıl"ı "Masayı bitir?" sayfasında ikinci düğme; iki düğmenin farkı yazmıyor |
-| MasaKisiSecenekler | Engelle'nin altında "Masadan çıkarılır. Karşı tarafa bildirilmez." | K-13: sahibin engeli kişiyi masadan çıkarır. Katılımcının menüsünde metin "Masadan çıkarsın. Karşı tarafa bildirilmez." olmalı (pano yok) |
-| Bildirimler | Eşleşme satırı: "Can ile arkadaş oldunuz", altında "Masa sonunda ikiniz de eklediniz" | K-70: satır var, metni yok |
-| Bildirimler | Süresi geçen davet: "Burak seni masasına çağırmıştı" | §4.G: satır soluk görünür; metni yok ("Davet artık geçerli değil" spec'ten) |
-| KesfetMekan | "Esentepe Kampüsü girişin biter; bulunduğun masadan ayrılırsın." | §4.E: yeni check-in eskisini bitirir; uyarının metni yok |
-| KesfetKonumIzin | Başlık "Konum izni yok" | Gövde uygulamanın bugünkü metni; başlık yok |
-| AktivitelerGecmisKayit, AktivitelerGecmisEklendi | Alt sayfanın alt satırı "Sahtekar · bugün 19:30"; eklenince "kapsul-vf61 bunu görmez. O da seni eklerse arkadaş olursunuz. Yeniden basarsan geri alırsın." | 4.3o: kayda basınca alt sayfa; v46'da çizilmemiş |
+Yok. Tuvalin yazdığı sekiz metin 27 Ekim'de onaylandı ve `docs/SPEC_V4.md` §4.C'ye taşındı.
 
 ## Kararla gelen değişiklik
 

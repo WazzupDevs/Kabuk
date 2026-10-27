@@ -11,7 +11,12 @@ appId: app.kabuk.mobile
 - tapOn:
     id: appearance-${SCHEME}
 - takeScreenshot: 04b-design
-- tapOn: Geri
+# Ayarlar is a sheet over Profil (skall tuvali): Android's back closes it.
+- back
+- extendedWaitUntil:
+    notVisible:
+      id: settings
+    timeout: 10000
 - tapOn:
     id: tab-explore
 - extendedWaitUntil:

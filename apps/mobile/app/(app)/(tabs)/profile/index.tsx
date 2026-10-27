@@ -51,7 +51,7 @@ export default function ProfileScreen() {
             icon="options-outline"
             glyph={<SlidersGlyph />}
             label={tr.settings.title}
-            onPress={() => router.push('/profile/settings')}
+            onPress={() => router.push('/settings')}
           />
         }
       />

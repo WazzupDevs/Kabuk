@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { router } from 'expo-router';
 import { useCallback } from 'react';
 import { useWindowDimensions, View } from 'react-native';
 
@@ -8,8 +7,8 @@ import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { EmptyState } from '@/components/EmptyState';
 import { Quiet } from '@/components/Quiet';
-import { Screen } from '@/components/Screen';
-import { ScreenHeader } from '@/components/ScreenHeader';
+import { RouteSheet } from '@/components/RouteSheet';
+import { SectionTitle } from '@/components/SectionTitle';
 import { Text } from '@/components/Text';
 import { HistoryActions, useHistoryActions } from '@/features/friends/historyActions';
 import {
@@ -73,23 +72,15 @@ export default function NotificationsScreen() {
     );
   if (nothing) {
     return (
-      <Screen>
-        <ScreenHeader title={tr.notifications.title} onBack={() => router.back()} />
-        <View className="flex-1 justify-center">
-          <EmptyState
-            kind="empty"
-            title={tr.notifications.empty}
-            body={tr.notifications.emptyHint}
-          />
-        </View>
-      </Screen>
+      <RouteSheet title={tr.notifications.title} testID="notifications">
+        <EmptyState kind="empty" title={tr.notifications.empty} body={tr.notifications.emptyHint} />
+      </RouteSheet>
     );
   }
 
   return (
-    <Screen>
-      <ScreenHeader title={tr.notifications.title} onBack={() => router.back()} />
-
+    // skall tuvali (Bildirimler): a sheet over Mesajlar (RouteSheet).
+    <RouteSheet title={tr.notifications.title} testID="notifications">
       <Section title={tr.friends.incomingTitle}>
         {incoming.data?.length === 0 && chatIncoming.data?.length === 0 ? (
           <Text tone="muted">{tr.friends.noIncoming}</Text>
@@ -194,16 +185,14 @@ export default function NotificationsScreen() {
       </Section>
 
       {sheets}
-    </Screen>
+    </RouteSheet>
   );
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <View className="mt-6 gap-3">
-      <Text variant="heading" accessibilityRole="header">
-        {title}
-      </Text>
+    <View className="gap-3">
+      <SectionTitle title={title} />
       {children}
     </View>
   );

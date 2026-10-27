@@ -4,8 +4,8 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import { Button } from '@/components/Button';
-import { Screen } from '@/components/Screen';
-import { ScreenHeader } from '@/components/ScreenHeader';
+import { Banner } from '@/components/Banner';
+import { RouteSheet, useCloseSheet } from '@/components/RouteSheet';
 import { Text } from '@/components/Text';
 import { Loader } from '@/components/Loader';
 import { SpotPicker } from '@/features/checkin/SpotPicker';
@@ -44,37 +44,26 @@ export default function ChangeSpotScreen() {
 
   if (table.isPending) {
     return (
-      <Screen>
-        <View className="mt-16 items-center">
+      <RouteSheet>
+        <View className="items-center py-6">
           <Loader />
         </View>
-      </Screen>
+      </RouteSheet>
     );
   }
   if (!table.data) return <Redirect href="/explore" />;
 
+  // skall tuvali (MekanNoktaDegistir): a sheet over Mekan, the spots as chips.
   return (
-    <Screen>
-      <ScreenHeader
-        eyebrow={table.data.venue?.name ?? ''}
-        eyebrowIcon="location-outline"
-        title={tr.venue.changeSpotTitle}
-        subtitle={tr.venue.changeSpotHint}
-        onBack={() => router.back()}
+    <RouteSheet title={tr.venue.changeSpotTitle} testID="change-spot-sheet">
+      <Text variant="fine">{tr.venue.changeSpotHint}</Text>
+      <SpotPicker
+        spots={spots.data ?? []}
+        selectedId={selected}
+        onSelect={(s) => setChosen(s.id)}
       />
-      <View className="mt-4">
-        <SpotPicker
-          spots={spots.data ?? []}
-          selectedId={selected}
-          onSelect={(s) => setChosen(s.id)}
-        />
-      </View>
-      {change.isError ? (
-        <Text variant="fine" tone="danger" className="mt-4">
-          {errorMessage(change.error)}
-        </Text>
-      ) : null}
-      <View className="mt-auto pt-8">
+      {change.isError ? <Banner tone="danger" body={errorMessage(change.error)} /> : null}
+      <View className="gap-2.5 pt-1">
         <Button
           size="lg"
           label={tr.venue.changeSpotSave}
@@ -82,7 +71,13 @@ export default function ChangeSpotScreen() {
           disabled={!selected || selected === table.data.spot_id}
           loading={change.isPending}
         />
+        <CancelButton />
       </View>
-    </Screen>
+    </RouteSheet>
   );
+}
+
+function CancelButton() {
+  const close = useCloseSheet();
+  return <Button size="lg" variant="neutral" label={tr.common.cancel} onPress={close} />;
 }

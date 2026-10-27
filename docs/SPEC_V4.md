@@ -230,6 +230,16 @@ Değişmez kabul edilir.
   - Hareket ve dokunuş koddaki bugünkü değerlerdir; tuvale hareket panosu eklenince kaynak o olur.
   - Tuval bu listeyle ve K kararlarıyla uzlaştırıldı. Spec'te karşılığı olmayan tuval metinleri `docs/design/sistem/sapmalar.md`'de onay bekler.
 - **Tepki seti altı kapsül ifadesi** (proje sahibinin kararı, 26 Ekim). DM, masa ve mekan sohbetinde Beğendim, Bayıldım, Kahkaha, Şaşırdım, Üzüldüm, Kızdım; çizim tuvalden. Bugünkü altı emojiden (`_shared/pure/reactions.ts`) geçiş migration'la; eski tepkilerin eşlemesi tepki PR'ında proje sahibinin onayına gelir.
+- **Ayarlar, Bildirimler, mekana giriş ve "Neredesin?" alt sayfa** (proje sahibinin kararı, 27 Ekim). Tuvaldeki gibi açıldıkları ekranın üstünde alt sayfadır (`src/components/RouteSheet.tsx`; rotalar `(app)/_layout.tsx`'te saydam modal). Geri tuşu, perdeye dokunmak ve "Vazgeç" sayfayı kapatır. Ayarlar'ın yolu `/settings`. Mekana giriş tek sayfadır: mekan, noktası varsa "Neredesin?" çipleri, konum rızası, sorun şeritte, sonra "Konumumu kullan"; nokta konumdan önce seçilir (`checkin/spot` kalktı).
+- **Tuvalin metinleri onaylandı** (proje sahibinin kararı, 27 Ekim; `docs/design/sistem/sapmalar.md`'den taşındı):
+  - Profil, anonim ad: "Anonim adın. 30 günde bir yenileyebilirsin; kapsülün aynı kalır." ve beklerken "N gün sonra yenileyebilirsin."
+  - Masayı bitir: "Ayrılırsan masa sürer; sahiplik masaya en erken katılana geçer."
+  - Kişi seçenekleri, Engelle: sahipte "Masadan çıkarılır. Karşı tarafa bildirilmez.", katılımcıda "Masadan çıkarsın. Karşı tarafa bildirilmez."
+  - Bildirimler, eşleşme satırı: "X ile arkadaş oldunuz", altında "Masa sonunda ikiniz de eklediniz" (satır geldiğinde).
+  - Bildirimler, süresi geçen davet: "X seni masasına çağırmıştı" (4.7 ile).
+  - Başka mekana giriş: "X girişin biter; bulunduğun masadan ayrılırsın."
+  - Konum izni yok: şeridin başlığı "Konum izni yok".
+  - Geçmiş kaydının alt sayfası: başlık kişinin adı, altında "Oyun · zaman"; eklenince "X bunu görmez. O da seni eklerse arkadaş olursunuz. Yeniden basarsan geri alırsın." ("Eklendi"ye yeniden basmak eklemeyi geri alır, kural 5).
 
 **Tasarım sistemi (adım 4.2).** Sunucu değişmez; istemci OTA ile gider.
 

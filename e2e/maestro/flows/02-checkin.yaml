@@ -123,6 +123,11 @@ appId: app.kabuk.mobile
     visible: Konumumu kullan
     timeout: 10000
 - tapOn: Konumumun bu amaçla kullanılmasına açık rıza veriyorum.
+# "Neredesin?" is in the same sheet (skall tuvali, KesfetGirisKampus): the spot comes first, then the
+# position. A check-in opens no table and asks no headcount (docs/SPEC_V4.md §4.E).
+- assertVisible: Neredesin\?
+- tapOn:
+    id: spot-kantin
 - takeScreenshot: 07-location-consent
 - setLocation:
     latitude: ${OUTSIDE_LAT}
@@ -136,15 +141,7 @@ appId: app.kabuk.mobile
     latitude: ${INSIDE_LAT}
     longitude: ${INSIDE_LNG}
 - tapOn: Konumumu kullan
-# "Neredesin?": the venue's spots. A check-in opens no table and asks no headcount (docs/SPEC_V4.md
-# §4.E): Mekan follows with the card that sets up a table ("Masa kur").
-- extendedWaitUntil:
-    visible: Neredesin\?
-    timeout: 30000
-- takeScreenshot: 08b-spot
-- tapOn:
-    id: spot-kantin
-- tapOn: Devam
+# Mekan follows with the card that sets up a table ("Masa kur").
 - extendedWaitUntil:
     visible:
       id: table-create-open

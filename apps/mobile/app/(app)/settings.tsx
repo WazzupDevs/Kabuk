@@ -6,8 +6,7 @@ import { Alert, Linking, View } from 'react-native';
 import { Card } from '@/components/Card';
 import { Menu, MenuItem } from '@/components/Menu';
 import { SectionTitle } from '@/components/SectionTitle';
-import { Screen } from '@/components/Screen';
-import { ScreenHeader } from '@/components/ScreenHeader';
+import { RouteSheet } from '@/components/RouteSheet';
 import { Text } from '@/components/Text';
 import { Wordmark } from '@/components/Wordmark';
 import { BlockedList } from '@/features/chat/BlockedList';
@@ -68,10 +67,10 @@ export default function SettingsScreen() {
     ]);
   }
 
+  // skall tuvali (ProfilAyarlar): Ayarlar is a sheet over Profil (RouteSheet).
   return (
-    <Screen>
-      <ScreenHeader title={tr.settings.title} onBack={() => router.back()} />
-      <View className="mt-4">
+    <RouteSheet title={tr.settings.title} testID="settings">
+      <View>
         <AppearanceSetting />
       </View>
       {designPickerEnabled ? (
@@ -80,7 +79,7 @@ export default function SettingsScreen() {
         </View>
       ) : null}
       {birthDate ? (
-        <View className="mt-4 gap-3">
+        <View className="gap-3">
           <SectionTitle title={tr.settings.accountSection} />
           <Card>
             <View className="gap-0.5">
@@ -93,13 +92,13 @@ export default function SettingsScreen() {
           <Text variant="fine">{tr.settings.birthDateHint}</Text>
         </View>
       ) : null}
-      <View className="mt-4">
+      <View>
         <ProfileSettings />
       </View>
-      <View className="mt-8">
+      <View className="mt-2">
         <BlockedList />
       </View>
-      <View className="mt-8 gap-3">
+      <View className="mt-2 gap-3">
         <SectionTitle title={tr.settings.legalSection} />
         <Menu>
           <MenuItem
@@ -125,7 +124,7 @@ export default function SettingsScreen() {
           ) : null}
         </Menu>
       </View>
-      <View className="mt-auto gap-3 pt-8">
+      <View className="gap-3 pt-6">
         {deleteAccount.isError ? (
           <Text variant="fine" tone="danger">
             {errorMessage(deleteAccount.error)}
@@ -158,6 +157,6 @@ export default function SettingsScreen() {
           {tr.settings.osm}
         </Text>
       </View>
-    </Screen>
+    </RouteSheet>
   );
 }
