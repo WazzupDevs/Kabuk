@@ -53,14 +53,18 @@ export function GameCard({
     >
       {({ pressed }) => (
         <View style={pressScale(pressed && !!onPress)}>
-          <Image
-            // No fade-in: a photo drawn again does not blink (Android fades 300 ms by default).
-            fadeDuration={0}
-            source={art}
-            accessible={false}
-            resizeMode="contain"
-            style={{ width: '100%', aspectRatio: CARD_RATIO }}
-          />
+          {/* The card's box first, then the drawing filling it: given only a width, Android kept the
+              file's own height and drew it far too large (the owner's report, 27 Ekim). */}
+          <View style={{ width: '100%', aspectRatio: CARD_RATIO }}>
+            <Image
+              // No fade-in: a drawing shown again does not blink.
+              fadeDuration={0}
+              source={art}
+              accessible={false}
+              resizeMode="contain"
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+            />
+          </View>
           <View className="absolute" style={{ top: SPACING[2.5], left: SPACING[2.5] }}>
             <Tag variant="glass" label={tr.table.soon} />
           </View>
