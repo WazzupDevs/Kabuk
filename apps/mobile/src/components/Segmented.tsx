@@ -28,6 +28,8 @@ type Props<T extends string> = {
   iconOnly?: boolean;
   // The track spans the width and the options share it (Mesajlar: Sohbet and İstekler).
   fill?: boolean;
+  // On a soft card (skall tuvali, ProfilAyarlar): the track is the surface, the chosen one soft.
+  onSoft?: boolean;
 };
 
 // A pill switch on a quiet track, no outline (Keşfet list/map, the design picker).
@@ -38,6 +40,7 @@ export function Segmented<T extends string>({
   accessibilityLabel,
   iconOnly,
   fill,
+  onSoft,
 }: Props<T>) {
   const { colors, shape } = useTheme();
   return (
@@ -50,7 +53,7 @@ export function Segmented<T extends string>({
         padding: 3,
         gap: SPACING[1],
         borderRadius: shape.radius.pill,
-        backgroundColor: colors.track,
+        backgroundColor: onSoft ? colors.surface : colors.track,
       }}
     >
       {options.map((o) => {
@@ -76,8 +79,8 @@ export function Segmented<T extends string>({
               minWidth: iconOnly ? TOUCH.min : undefined,
               paddingHorizontal: iconOnly ? 0 : SPACING[3],
               borderRadius: shape.radius.pill,
-              backgroundColor: on ? colors.surface : 'transparent',
-              boxShadow: on ? shape.shadow.raised : undefined,
+              backgroundColor: on ? (onSoft ? colors.surface2 : colors.surface) : 'transparent',
+              boxShadow: on && !onSoft ? shape.shadow.raised : undefined,
             }}
           >
             {o.icon ? (

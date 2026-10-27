@@ -6,14 +6,15 @@ import { Alert, View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
+import { IconButton, MoreDots } from '@/components/IconButton';
+import { Menu, MenuItem } from '@/components/Menu';
 import { Screen } from '@/components/Screen';
 import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
 import { Loader } from '@/components/Loader';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
-import { BackPill } from '@/features/profile/BackPill';
-import { Badges, ProfileHero } from '@/features/profile/ProfileCard';
+import { ProfileHead } from '@/features/profile/ProfileCard';
 import { useVenueChatProfile } from '@/features/venueChat/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -28,6 +29,7 @@ export default function VenueChatProfileScreen() {
   const { messageId } = useLocalSearchParams<{ messageId: string }>();
   const view = useVenueChatProfile(messageId);
   const [confirming, setConfirming] = useState(false);
+  const [menu, setMenu] = useState(false);
   const [sent, setSent] = useState(false);
   const [reporting, setReporting] = useState(false);
   const [blocking, setBlocking] = useState(false);
@@ -62,6 +64,27 @@ export default function VenueChatProfileScreen() {
 
   return (
     <Screen>
+      {/* Like a friend's profile (the owner's call, 27 Ekim; skall tuvali, ProfilYabanci): the
+          round back and "Seçenekler" on top, the profile's head, the request under it. */}
+      <View className="mb-2 flex-row items-center justify-between">
+        <IconButton
+          round
+          icon="chevron-back"
+          label={tr.common.back}
+          onPress={() => router.back()}
+          testID="profile-back"
+        />
+        {view.data ? (
+          <IconButton
+            round
+            icon="ellipsis-vertical"
+            glyph={<MoreDots />}
+            label={tr.profile.more}
+            onPress={() => setMenu(true)}
+            testID="profile-more"
+          />
+        ) : null}
+      </View>
       {view.isPending ? (
         <View className="mt-16 items-center">
           <Loader />
@@ -69,54 +92,62 @@ export default function VenueChatProfileScreen() {
       ) : !view.data ? (
         <EmptyState icon="eye-off-outline" body={tr.profile.notVisible} />
       ) : (
-        <View className="flex-1 gap-5" testID="venue-chat-profile">
-          <ProfileHero profile={view.data} overlay={<BackPill />} />
-          <View className="gap-3">
-            <Text variant="overline" tone="muted">
-              {tr.profile.badgesTitle}
-            </Text>
-            <Badges badges={view.data.badges} />
-          </View>
-          <View className="mt-auto gap-2.5 pt-4">
+        <View testID="venue-chat-profile">
+          <ProfileHead profile={view.data}>
             {sent ? (
               <Text variant="fine" align="center" testID="venue-chat-request-sent">
                 {tr.venueChat.requestSent}
               </Text>
             ) : (
               <Button
-                size="lg"
                 testID="venue-chat-request"
                 icon="person-add-outline"
                 label={tr.venueChat.sendRequest}
                 onPress={() => setConfirming(true)}
               />
             )}
-            <View className="flex-row gap-2.5">
-              <View className="flex-1">
-                <Button
-                  variant="neutral"
-                  tight
-                  label={tr.profile.report}
-                  onPress={() => setReporting(true)}
-                />
-              </View>
-              <View className="flex-1">
-                <Button
-                  variant="neutral"
-                  tight
-                  label={tr.safety.block}
-                  onPress={() => setBlocking(true)}
-                />
-              </View>
-            </View>
-          </View>
+          </ProfileHead>
         </View>
       )}
-      {!view.data ? (
+      {!view.isPending && !view.data ? (
         <View className="mt-auto pt-8">
           <Button label={tr.profile.back} onPress={() => router.back()} />
         </View>
       ) : null}
+      <Sheet
+        visible={menu}
+        onClose={() => setMenu(false)}
+        title={view.data?.displayName ?? tr.profile.moreTitle}
+      >
+        <Menu>
+          <MenuItem
+            negative
+            icon="alert"
+            label={tr.chat.report}
+            testID="profile-report"
+            onPress={() => {
+              setMenu(false);
+              setReporting(true);
+            }}
+          />
+          <MenuItem
+            negative
+            icon="ban-outline"
+            label={tr.safety.block}
+            testID="profile-block"
+            onPress={() => {
+              setMenu(false);
+              setBlocking(true);
+            }}
+          />
+        </Menu>
+        <Button
+          size="lg"
+          variant="neutral"
+          label={tr.common.cancel}
+          onPress={() => setMenu(false)}
+        />
+      </Sheet>
       <Sheet
         visible={confirming}
         onClose={() => setConfirming(false)}

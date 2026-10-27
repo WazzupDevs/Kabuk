@@ -2,15 +2,15 @@ import { Pressable, View } from 'react-native';
 
 import { tr } from '@/i18n/tr';
 import { useTheme } from '@/theme/ThemeProvider';
-import { SPACING, TOUCH } from '@/theme/tokens';
+import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 
-import { BellIcon } from './Glyph';
+import { CanvasBar } from './CanvasIcon';
 import { Text } from './Text';
 
 const BADGE = SPACING[4] + SPACING[0.5];
 
-// The notification button at the top right of the tab screens (canvas: Aşama 5 · Geri bildirim):
-// the bell on a surface disc, the count in a danger badge when there is something new.
+// The notification button at the top right of the tab screens (skall tuvali, Mesajlar): the canvas's
+// two-tone bell (`.round .bi`, 22) on a surface disc, the count in a danger badge when there is something new.
 export function BellButton({
   count,
   onPress,
@@ -38,7 +38,7 @@ export function BellButton({
             backgroundColor: pressed ? colors.surface2 : colors.surface,
           }}
         >
-          <BellIcon color={colors.text} />
+          <CanvasBar name="bell" size={ICON.lg - 2} />
           {count > 0 ? (
             <View
               className="absolute items-center justify-center"

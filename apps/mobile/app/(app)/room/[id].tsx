@@ -159,7 +159,12 @@ export default function TableScreen() {
   };
 
   const top = (
-    <View className="gap-3 pb-2" testID="table-top">
+    <View
+      className="gap-3 pb-2"
+      testID="table-top"
+      // The screen's sides, like every other screen (skall tuvali, Masa: 16).
+      style={{ paddingHorizontal: shape.screenPadding, paddingTop: SPACING[1] }}
+    >
       <View className="flex-row items-center gap-3">
         <IconButton
           round
@@ -278,7 +283,6 @@ export default function TableScreen() {
         roomId={id}
         people={people.data ?? []}
         me={sessionId}
-        owner={owner ? { name: r.name ?? '', rerolls: r.name_rerolls } : null}
         profiles={profiles}
       />
       <ConfirmSheet

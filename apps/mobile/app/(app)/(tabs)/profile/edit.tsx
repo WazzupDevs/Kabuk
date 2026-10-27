@@ -7,6 +7,7 @@ import { useCallback, useState } from 'react';
 import { BackHandler, Pressable, View } from 'react-native';
 
 import { Button } from '@/components/Button';
+import { CanvasBar } from '@/components/CanvasIcon';
 import { Card } from '@/components/Card';
 import { Input } from '@/components/Input';
 import { ProfilePhoto } from '@/components/ProfilePhoto';
@@ -79,12 +80,14 @@ function PhotoEditor({ publicId, hasName }: { publicId: string; hasName: boolean
               width: SPACING[10],
               height: SPACING[10],
               borderRadius: shape.radius.pill,
-              backgroundColor: colors.primary,
+              backgroundColor: colors.surface,
               borderWidth: SPACING[1],
               borderColor: colors.canvas,
+              boxShadow: shape.shadow.card,
             }}
           >
-            <Ionicons name="camera-outline" size={ICON.md} color={colors.onPrimary} />
+            {/* skall tuvali (ProfilDuzenle): the canvas's two-tone photo icon. */}
+            <CanvasBar name="photo" size={ICON.md} />
           </View>
         </View>
         <View style={{ minHeight: SPACING[11], justifyContent: 'center' }}>

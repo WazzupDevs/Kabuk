@@ -11,7 +11,7 @@ import { Icon } from '@/components/Icon';
 import { useLoaderHold } from '@/components/Loader';
 import { Rise, usePressScale } from '@/components/motion';
 import { Screen } from '@/components/Screen';
-import { ScreenHeader } from '@/components/ScreenHeader';
+import { PageTop } from '@/components/PageTop';
 import { Text } from '@/components/Text';
 import { useFriends } from '@/features/friends/queries';
 import { openDm } from '@/features/friends/openDm';
@@ -36,9 +36,10 @@ export default function FriendsScreen() {
 
   return (
     <Screen refreshable>
-      <ScreenHeader
+      {/* skall tuvali (Arkadaslar): the round back, the title and "N arkadaş" under it. */}
+      <PageTop
         title={tr.profile.friends}
-        titleDetail={friends.data ? String(friends.data.length) : undefined}
+        sub={friends.data ? tr.profile.friendsSub(friends.data.length) : undefined}
         onBack={() => router.back()}
       />
 

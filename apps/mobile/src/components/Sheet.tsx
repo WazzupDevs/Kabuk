@@ -12,6 +12,7 @@ import { ICON, OPACITY, SPACING } from '@/theme/tokens';
 
 import type { IconName } from './Button';
 import { Quiet } from './Quiet';
+import { useSheetDrag } from './sheetDrag';
 import { Text } from './Text';
 
 // hareket.md → "Alt sayfa": in and out in 320 ms on the design system's ease out.
@@ -44,6 +45,12 @@ export function Sheet({ visible, onClose, title, titleNote, icon, centered, chil
   const [mounted, setMounted] = useState(visible);
   const [progress] = useState(() => new Animated.Value(0));
   if (visible && !mounted) setMounted(true);
+  // Pulled down, it closes like a tap outside (useSheetDrag); the next opening starts unpulled.
+  const drag = useSheetDrag(onClose);
+  const { reset } = drag;
+  useEffect(() => {
+    if (visible) reset();
+  }, [visible, reset]);
 
   useEffect(() => {
     if (!mounted) return undefined;
@@ -92,10 +99,14 @@ export function Sheet({ visible, onClose, title, titleNote, icon, centered, chil
             maxHeight: '90%',
             transform: [
               {
-                translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [height, 0] }),
+                translateY: Animated.add(
+                  progress.interpolate({ inputRange: [0, 1], outputRange: [height, 0] }),
+                  drag.offset,
+                ),
               },
             ],
           }}
+          {...drag.handlers}
         >
           <View
             className="mb-2 self-center"
@@ -106,7 +117,12 @@ export function Sheet({ visible, onClose, title, titleNote, icon, centered, chil
               backgroundColor: colors.divider,
             }}
           />
-          <ScrollView bounces={false} keyboardShouldPersistTaps="handled">
+          <ScrollView
+            bounces={false}
+            keyboardShouldPersistTaps="handled"
+            onScroll={drag.onScroll}
+            scrollEventThrottle={16}
+          >
             <Quiet value>
               <View className={`gap-3 ${centered ? 'items-center' : ''}`}>
                 {icon ? (

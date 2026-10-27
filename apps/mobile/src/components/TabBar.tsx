@@ -168,6 +168,13 @@ export function TabBar({
     if (moves) haptic('tabChanged');
     if (opened !== key) router.navigate(ROUTES[opened]);
     else if (moves) navigation.navigate(route.name, route.params);
+    else {
+      // The tab already open: back to its first screen (Profil from Kapsül karakterler).
+      const nested = route.state;
+      if (nested?.key && (nested.index ?? 0) > 0) {
+        navigation.dispatch({ type: 'POP_TO_TOP', target: nested.key });
+      }
+    }
   };
 
   return (

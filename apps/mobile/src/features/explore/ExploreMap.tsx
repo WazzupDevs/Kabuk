@@ -27,11 +27,13 @@ import { tr } from '@/i18n/tr';
 import { useTheme } from '@/theme/ThemeProvider';
 import { MAP_FONTS, MAP_PIN, SPACING } from '@/theme/tokens';
 
+import { useMapStyle } from './mapStyle';
 import type { ExploreVenue } from './useExploreVenues';
 import { BucketBadge, EventTag } from './VenueTags';
 
 // OpenFreeMap by default: no API key in the app and no per-load cost (DECISIONS: map library). The
-// dark theme draws a dark map (v46 §8, K-65), OpenFreeMap's own dark style.
+// dark theme draws a dark map (v46 §8, K-65), OpenFreeMap's own dark style; both repainted in
+// skall's colours (mapStyle.ts).
 const MAP_STYLE_URL = {
   light: process.env.EXPO_PUBLIC_MAP_STYLE_URL ?? 'https://tiles.openfreemap.org/styles/liberty',
   dark: process.env.EXPO_PUBLIC_MAP_STYLE_URL_DARK ?? 'https://tiles.openfreemap.org/styles/dark',
@@ -72,6 +74,7 @@ export function ExploreMap({
   tabBarHeight: number;
 }) {
   const { colors, shape, scheme } = useTheme();
+  const mapStyle = useMapStyle(MAP_STYLE_URL[scheme], scheme);
   const camera = useRef<CameraRef>(null);
   const source = useRef<GeoJSONSourceRef>(null);
   const [selected, setSelected] = useState<string | null>(null);
@@ -142,7 +145,7 @@ export function ExploreMap({
       testID={ready ? 'explore-map-ready' : 'explore-map'}
     >
       <Map
-        mapStyle={MAP_STYLE_URL[scheme]}
+        mapStyle={mapStyle}
         style={{ flex: 1 }}
         logo={false}
         // A TextureView, not MapLibre's default GLSurfaceView: a SurfaceView makes Android keep the

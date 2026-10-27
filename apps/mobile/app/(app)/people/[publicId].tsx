@@ -19,7 +19,7 @@ import { ReportModal } from '@/features/chat/ReportModal';
 import { openDm } from '@/features/friends/openDm';
 import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
 import { friendKeys, useFriends } from '@/features/friends/queries';
-import { Badges, ProfileHead } from '@/features/profile/ProfileCard';
+import { ProfileHead } from '@/features/profile/ProfileCard';
 import { useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -34,7 +34,7 @@ import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 // (`not_found`, the same for a removed friend and a block: rule 5); a failed load (no connection)
 // says so and offers "Tekrar dene".
 // v45 (.prof, other): a round back button and "Seçenekler" on top, the same head as the own
-// profile, then the badges they earned; reporting is in "Seçenekler".
+// profile; reporting is in "Seçenekler". No badges (the owner's call, 27 Ekim).
 export default function PersonScreen() {
   const { publicId } = useLocalSearchParams<{ publicId: string }>();
   const view = useProfileView(publicId);
@@ -110,17 +110,9 @@ export default function PersonScreen() {
       ) : !view.data ? (
         <EmptyState icon="eye-off-outline" body={tr.profile.notVisible} />
       ) : (
-        <View className="gap-5">
-          <ProfileHead profile={view.data}>
-            {friend ? <FriendActions friend={friend} /> : null}
-          </ProfileHead>
-          <View className="gap-3">
-            <Text variant="overline" tone="muted">
-              {tr.profile.badgesTitle}
-            </Text>
-            <Badges badges={view.data.badges} />
-          </View>
-        </View>
+        <ProfileHead profile={view.data}>
+          {friend ? <FriendActions friend={friend} /> : null}
+        </ProfileHead>
       )}
       {hidden ? (
         <View className="mt-auto pt-8">

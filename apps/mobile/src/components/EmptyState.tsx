@@ -16,7 +16,6 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
 import { Button, type IconName } from './Button';
-import { Card } from './Card';
 import { useLoopActive } from './Loader';
 import { MotionMark } from './Mark';
 import { Text } from './Text';
@@ -69,9 +68,8 @@ export function StateMark({ kind, size = MARK_SIZE }: { kind: StateKind; size?: 
 
 // A screen's empty, error, offline or loading state: the living mark (or an icon disc), a short
 // explanation and at most one action.
-// skall tuvali (skall.css → `.card.state`): empty, loading and error are the same card, the state's
-// disc on the left (the moving mark, or an icon) and the title and note beside it; with an action the
-// card stacks (`.state.col`) and the button takes the width.
+// Empty, loading and error look alike: the state's disc (the moving mark, or an icon), the title and
+// the note under it, centred, and the action under them; no card around it.
 const DISC_MARK = SPACING[10];
 
 export function EmptyState({ kind, icon, title, body, action }: Props) {
@@ -105,28 +103,34 @@ export function EmptyState({ kind, icon, title, body, action }: Props) {
       accessibilityRole={kind === 'loading' ? 'progressbar' : undefined}
       accessibilityLabel={kind === 'loading' ? body : undefined}
     >
-      <Card>
-        <View
-          className={action ? 'items-start' : 'flex-row items-center'}
-          style={{ gap: action ? SPACING[3] : SPACING[3] + SPACING[0.5] }}
-        >
-          {disc}
-          <View className={action ? 'self-stretch' : 'flex-1'} style={{ gap: SPACING[0.5] }}>
-            {title ? <Text variant="heading">{title}</Text> : null}
-            <Text variant={title ? 'fine' : 'bodyStrong'}>{body}</Text>
-          </View>
-          {action ? (
-            <View className="self-stretch">
-              <Button
-                variant="secondary"
-                label={action.label}
-                onPress={action.onPress}
-                loading={action.loading}
-              />
-            </View>
+      {/* No frame, centred (the owner's call, 27 Ekim: an empty or warning note sits on the screen,
+          not in a card). */}
+      <View
+        className="items-center"
+        style={{ gap: SPACING[3], paddingVertical: SPACING[6], paddingHorizontal: SPACING[4] }}
+      >
+        {disc}
+        <View className="items-center self-stretch" style={{ gap: SPACING[1] }}>
+          {title ? (
+            <Text variant="heading" align="center">
+              {title}
+            </Text>
           ) : null}
+          <Text variant={title ? 'fine' : 'bodyStrong'} align="center">
+            {body}
+          </Text>
         </View>
-      </Card>
+        {action ? (
+          <View className="mt-1 self-center">
+            <Button
+              variant="secondary"
+              label={action.label}
+              onPress={action.onPress}
+              loading={action.loading}
+            />
+          </View>
+        ) : null}
+      </View>
     </View>
   );
 }

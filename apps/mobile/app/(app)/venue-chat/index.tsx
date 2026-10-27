@@ -227,7 +227,6 @@ export default function VenueChatScreen() {
           onSend={() => body && send.mutate(body)}
           replyTo={reply.target?.quote}
           onCancelReply={reply.clear}
-          counter={draft ? tr.chat.counter([...draft].length, VENUE_CHAT.maxLength) : undefined}
           above={
             <View className="gap-1.5">
               {note ? <Banner tone="info" body={note} testID="venue-chat-note" /> : null}

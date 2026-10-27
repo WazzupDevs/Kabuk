@@ -1,11 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
-import type { ReactNode } from 'react';
+import { type ReactNode, useContext } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { rowPress } from '@/theme/rowPress';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 
+import { CardPressContext } from './ListCard';
 import { usePressScale } from './motion';
 import { Text } from './Text';
 
@@ -45,6 +46,7 @@ export function ListRow({
   testID,
 }: Props) {
   const theme = useTheme();
+  const cardPress = useContext(CardPressContext);
   const { colors, shape } = theme;
   const pressScale = usePressScale();
   const content = (
@@ -107,6 +109,8 @@ export function ListRow({
       accessibilityRole={accessibilityRole}
       accessibilityLabel={accessibilityLabel}
       onPress={onPress}
+      onPressIn={inset && cardPress ? () => cardPress(true) : undefined}
+      onPressOut={inset && cardPress ? () => cardPress(false) : undefined}
       testID={testID}
     >
       {({ pressed }) => (
@@ -114,7 +118,7 @@ export function ListRow({
           style={[
             style,
             card ? pressScale(pressed) : pressed && !inset ? { opacity: 0.7 } : null,
-            inset ? rowPress(theme, pressed) : null,
+            inset ? rowPress(theme, pressed && !cardPress) : null,
           ]}
         >
           {content}

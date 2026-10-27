@@ -27,13 +27,14 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { OPACITY, SPACING } from '@/theme/tokens';
 
 import { Quiet } from './Quiet';
+import { useSheetDrag } from './sheetDrag';
 import { Text } from './Text';
 
 // A route drawn as a bottom sheet over the screen it opened from (skall tuvali: Ayarlar,
 // Bildirimler, mekana giriş and "Neredesin?" are sheets; the owner's decision, 27 Ekim). The route
 // is a transparent modal ((app)/_layout.tsx → SHEET); the screen under it stays as it was. The
 // sheet slides in like Sheet (the same 320 ms ease-out); a tap on the scrim, Android's back button
-// and useCloseSheet() slide it out, then the route pops. Being part of the route, a screen pushed
+// useCloseSheet() and a pull down slide it out, then the route pops. Being part of the route, a screen pushed
 // from it opens on top of it, unlike a Modal.
 const SLIDE_MS = 320;
 const HANDLE = { width: 40, height: 5 } as const;
@@ -85,6 +86,9 @@ export function RouteSheet({
     });
   }, [progress, reduce]);
 
+  // Pulled down, it closes (useSheetDrag).
+  const drag = useSheetDrag(close);
+
   useFocusEffect(
     useCallback(() => {
       const sub = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -126,13 +130,14 @@ export function RouteSheet({
               maxHeight: '90%',
               transform: [
                 {
-                  translateY: progress.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [height, 0],
-                  }),
+                  translateY: Animated.add(
+                    progress.interpolate({ inputRange: [0, 1], outputRange: [height, 0] }),
+                    drag.offset,
+                  ),
                 },
               ],
             }}
+            {...drag.handlers}
           >
             <View
               className="mb-2 self-center"
@@ -143,14 +148,22 @@ export function RouteSheet({
                 backgroundColor: colors.divider,
               }}
             />
-            <ScrollView bounces={false} keyboardShouldPersistTaps="handled">
+            <ScrollView
+              bounces={false}
+              keyboardShouldPersistTaps="handled"
+              onScroll={drag.onScroll}
+              scrollEventThrottle={16}
+            >
               <Quiet value>
                 {title ? (
                   <Text variant="title" accessibilityRole="header">
                     {title}
                   </Text>
                 ) : null}
-                <View className={title ? 'mt-3 gap-3.5' : 'gap-3.5'}>{children}</View>
+                {/* skall tuvali (skall.css → `.sheet`): 12 between the title and every block. */}
+                <View style={{ gap: SPACING[3], marginTop: title ? SPACING[3] : 0 }}>
+                  {children}
+                </View>
               </Quiet>
             </ScrollView>
           </Animated.View>

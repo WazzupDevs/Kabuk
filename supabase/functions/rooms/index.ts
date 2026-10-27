@@ -228,7 +228,8 @@ Deno.serve(
           // A change is news to the venue (the lobby and the running tables both show the icon);
           // the same icon again changes nothing.
           if (before.data?.icon !== data.icon) lobbyChanged(data);
-          return { icon: data.icon ?? body.icon };
+          // The table is called by its icon (K-76).
+          return { icon: data.icon ?? body.icon, name: data.name ?? '' };
         }
 
         // Only the owner, TABLE_NAME_REROLLS times per table; the icon stays.

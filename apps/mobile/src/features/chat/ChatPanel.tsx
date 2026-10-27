@@ -193,7 +193,6 @@ export function RoomComposer({ chat }: { chat: RoomChat }) {
       onSend={chat.submit}
       replyTo={chat.reply.target?.quote}
       onCancelReply={chat.reply.clear}
-      counter={chat.draft ? tr.chat.counter([...chat.draft].length, MAX_MESSAGE_LENGTH) : undefined}
     />
   );
 }

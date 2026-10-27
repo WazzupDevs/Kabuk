@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useLayoutEffect,
+  type RefObject,
   useMemo,
   useRef,
   useState,
@@ -53,6 +54,14 @@ const ChatJumpContext = createContext<ChatJump | null>(null);
 
 export function useChatJump(): ChatJump | null {
   return useContext(ChatJumpContext);
+}
+
+// Sending goes to the end of the stream (every chat; the owner's call, 27 Ekim): the message bar
+// calls it after its send, the stream follows its end from then on.
+const ChatEndContext = createContext<(() => void) | null>(null);
+
+export function useChatEnd(): (() => void) | null {
+  return useContext(ChatEndContext);
 }
 
 // Whether the stream has settled after opening: a row that comes after it is a new message and
@@ -143,6 +152,10 @@ type ScrollProps = {
   startAtEnd?: boolean;
   contentContainerStyle?: ViewStyle;
   testID?: string;
+  // The message bar floating over the stream's bottom: the "Yeni mesaj" button stays above it.
+  bottomInset?: number;
+  // Set to this stream's "go to the end" (ChatScreen hands it to the message bar).
+  endRef?: RefObject<(() => void) | null>;
 };
 
 // A chat's message stream (canvas: Aşama 8 · Saha → Sohbet): at the bottom (the keyboard open too)
@@ -154,6 +167,8 @@ export function ChatScroll({
   startAtEnd,
   contentContainerStyle,
   testID,
+  bottomInset = 0,
+  endRef,
 }: ScrollProps) {
   const { colors, shape } = useTheme();
   const pressScale = usePressScale();
@@ -209,6 +224,13 @@ export function ChatScroll({
     setAtBottom(true);
     setPending(0);
   };
+  useEffect(() => {
+    if (!endRef) return undefined;
+    endRef.current = () => toEnd(true);
+    return () => {
+      endRef.current = null;
+    };
+  });
 
   // The reaction bar opening over a message makes the stream taller, but it is not new content: the
   // stream stays where it is, so the message under the finger does not jump, and closing the bar
@@ -299,7 +321,7 @@ export function ChatScroll({
         <View
           pointerEvents="box-none"
           className="absolute"
-          style={{ right: SPACING[4], bottom: SPACING[3] }}
+          style={{ right: SPACING[4], bottom: SPACING[3] + bottomInset }}
         >
           <Pressable
             testID="chat-new-messages"
@@ -366,38 +388,58 @@ export function ChatScreen({
   // The reaction bar's state for the whole screen: a tap on the top bar or the message bar closes it
   // too.
   const reactions = useChatBarState();
+  // The message bar floats over the stream (the owner's call, 27 Ekim: the messages run on under
+  // it); the stream keeps its last message clear of it.
+  const [barHeight, setBarHeight] = useState(0);
+  const end = useRef<(() => void) | null>(null);
+  const followEnd = useCallback(() => end.current?.(), []);
+  const under = composer ? barHeight : barSpace;
   return (
-    <ChatBarContext.Provider value={reactions.bar}>
-      <SafeAreaView
-        edges={barSpace ? ['top', 'left', 'right'] : ['top', 'left', 'right', 'bottom']}
-        style={{ flex: 1, backgroundColor: colors.canvas }}
-        onTouchStart={reactions.onTouchStart}
-      >
-        {top}
-        <KeyboardAvoidingView className="flex-1" behavior="padding">
-          {/* The wallpaper under the stream and the message bar (v45: .chatpane); the bar floats on
-              it. */}
-          {wall ? <ChatWallpaper kind={wall} /> : null}
-          <ChatScroll
-            testID={testID}
-            newestKey={newestKey}
-            newestMine={newestMine}
-            startAtEnd={startAtEnd}
-            contentContainerStyle={{
-              flexGrow: 1,
-              // skall tuvali (skall.css → `.stream`): 16 at the sides, 6 between messages.
-              paddingHorizontal: shape.screenPadding,
-              paddingTop: SPACING[2],
-              paddingBottom: SPACING[3],
-              gap: SPACING[1.5],
-            }}
-          >
-            {children}
-          </ChatScroll>
-          <View style={{ paddingBottom: barSpace }}>{composer}</View>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </ChatBarContext.Provider>
+    <ChatEndContext.Provider value={followEnd}>
+      <ChatBarContext.Provider value={reactions.bar}>
+        <SafeAreaView
+          edges={barSpace ? ['top', 'left', 'right'] : ['top', 'left', 'right', 'bottom']}
+          style={{ flex: 1, backgroundColor: colors.canvas }}
+          onTouchStart={reactions.onTouchStart}
+        >
+          {top}
+          <KeyboardAvoidingView className="flex-1" behavior="padding">
+            {/* The wallpaper under the stream and the message bar (v45: .chatpane); the bar floats on
+              it, over the stream. */}
+            <View className="flex-1">
+              {wall ? <ChatWallpaper kind={wall} /> : null}
+              <ChatScroll
+                testID={testID}
+                newestKey={newestKey}
+                newestMine={newestMine}
+                startAtEnd={startAtEnd}
+                bottomInset={under}
+                endRef={end}
+                contentContainerStyle={{
+                  flexGrow: 1,
+                  // skall tuvali (skall.css → `.stream`): 16 at the sides, 6 between messages.
+                  paddingHorizontal: shape.screenPadding,
+                  paddingTop: SPACING[2],
+                  paddingBottom: SPACING[3] + under,
+                  gap: SPACING[1.5],
+                }}
+              >
+                {children}
+              </ChatScroll>
+              {composer ? (
+                <View
+                  className="absolute bottom-0 left-0 right-0"
+                  style={{ paddingBottom: barSpace }}
+                  onLayout={(e) => setBarHeight(e.nativeEvent.layout.height)}
+                >
+                  {composer}
+                </View>
+              ) : null}
+            </View>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </ChatBarContext.Provider>
+    </ChatEndContext.Provider>
   );
 }
 

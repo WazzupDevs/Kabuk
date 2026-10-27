@@ -47,8 +47,8 @@ type Props = {
 
 // "Masa kur" (v46 data-kur; docs/SPEC_V4.md §4.E): the table's icon (one of the free scenes,
 // changed with the picker), whether it goes into the lobby (with the intent and game tag then), and
-// the name the person sits with. The server names the table and checks the icon; an icon taken
-// meanwhile is swapped for a free one. Then the table opens.
+// the name the person sits with. The table is called by its icon (K-76); the server checks the
+// icon, and an icon taken meanwhile is swapped for a free one. Then the table opens.
 export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Props) {
   const queryClient = useQueryClient();
   const profile = useProfile();
@@ -107,10 +107,13 @@ export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Pro
         >
           <TableIcon icon={icon} size="picker" />
           <View className="flex-1 gap-0.5">
+            {/* The table is called by its icon (K-76). */}
             <Text variant="caption" tone="muted">
-              {tr.createTable.iconLabel}
+              {tr.createTable.nameLabel}
             </Text>
-            <Text variant="heading">{tableIconName(icon) ?? ''}</Text>
+            <Text variant="heading" testID="table-name-preview">
+              {tableIconName(icon) ?? ''}
+            </Text>
           </View>
           <Text variant="label" tone="accent">
             {picking ? tr.createTable.iconDone : tr.createTable.iconChange}

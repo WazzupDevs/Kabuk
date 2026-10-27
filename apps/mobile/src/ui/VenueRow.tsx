@@ -10,7 +10,7 @@ import {
   type V46Text,
   type V46ThumbKind,
 } from '@/theme/parts.generated';
-import { ROW_INSET } from '@/theme/rowPress';
+import { OPACITY } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 import { v46FontStyle } from '@/theme/v46Type';
 
@@ -47,7 +47,7 @@ export function VenueRow({
   testID,
   pressedPreview = false,
 }: Props) {
-  const { scheme, shape } = useTheme();
+  const { scheme } = useTheme();
   const r = V46_EXPLORE[scheme].row;
   const [pressing, setPressing] = useState(false);
   const pressed = pressing || pressedPreview;
@@ -70,13 +70,12 @@ export function VenueRow({
               gap: r.gap,
               minHeight: r.minHeight,
               paddingTop: r.padding[0],
-              // The pressed highlight sits inside the list card with rounded corners (theme/rowPress).
-              marginHorizontal: ROW_INSET,
-              paddingRight: r.padding[1] - ROW_INSET,
+              // Pressed, the row dims and gives a little (theme/rowPress): no highlight block
+              // against the card's rounded edge.
+              paddingRight: r.padding[1],
               paddingBottom: r.padding[2],
-              paddingLeft: r.padding[3] - ROW_INSET,
-              borderRadius: shape.radius.lg - ROW_INSET,
-              backgroundColor: pressed ? r.pressed.bg : 'transparent',
+              paddingLeft: r.padding[3],
+              opacity: pressed ? OPACITY.pressed : 1,
               transform: [{ scale: pressed ? r.pressed.scale : 1 }],
             },
             transitionStyle(r.transitions),

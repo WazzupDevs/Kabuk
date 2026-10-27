@@ -12,10 +12,13 @@ import { Text } from './Text';
 // title on one line, something on the right.
 export function PageTop({
   title,
+  sub,
   onBack,
   trailing,
 }: {
   title: string;
+  // Under the title, quieter (skall tuvali, Arkadaslar: "4 arkadaş").
+  sub?: string;
   onBack?: () => void;
   trailing?: ReactNode;
 }) {
@@ -30,9 +33,12 @@ export function PageTop({
         label={tr.common.back}
         onPress={onBack ?? (() => router.back())}
       />
-      <Text variant="heading" accessibilityRole="header" className="flex-1">
-        {title}
-      </Text>
+      <View className="flex-1">
+        <Text variant="heading" accessibilityRole="header">
+          {title}
+        </Text>
+        {sub ? <Text variant="fine">{sub}</Text> : null}
+      </View>
       {trailing}
     </View>
   );
