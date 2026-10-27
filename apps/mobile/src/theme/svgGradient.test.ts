@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { svgGradient } from './gradient';
+import { svgGradient } from './svgGradient';
 import { BUTTON_GLASS } from './glass';
 import { V46_TAB_BAR } from './parts.generated';
 
