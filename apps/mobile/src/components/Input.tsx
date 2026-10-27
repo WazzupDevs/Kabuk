@@ -20,6 +20,8 @@ type Props = Omit<TextInputProps, 'style' | 'placeholderTextColor'> & {
   code?: boolean;
   // A multi-line field that starts several lines high (the bio).
   tall?: boolean;
+  // skall.css → `.field.box`: 16 px corners instead of the capsule.
+  box?: boolean;
   // Short fields centred in their box (the birth date's day, month and year).
   centered?: boolean;
   // A search field (v44: .dsearch): a capsule with the magnifier before the text.
@@ -29,7 +31,7 @@ type Props = Omit<TextInputProps, 'style' | 'placeholderTextColor'> & {
 // A text field. Its outline is the theme's border where that reads 3:1 against the surface, the
 // secondary text colour otherwise; focus draws it in the accent.
 export const Input = forwardRef<TextInput, Props>(function Input(
-  { label, hint, error, prefix, counter, code, tall, centered, search, multiline, ...rest },
+  { label, hint, error, prefix, counter, code, tall, box, centered, search, multiline, ...rest },
   ref,
 ) {
   const theme = useTheme();
@@ -46,7 +48,7 @@ export const Input = forwardRef<TextInput, Props>(function Input(
         className="flex-row items-center"
         style={{
           minHeight: SPACING[12] + SPACING[1],
-          borderRadius: tall ? shape.radius.lg : shape.radius.pill,
+          borderRadius: tall ? shape.radius.lg : box ? shape.radius.md : shape.radius.pill,
           borderWidth: focused || error ? 2 : shape.stroke.control,
           borderColor: error ? colors.danger : focused ? colors.primary : outline,
           backgroundColor: colors.surface,
