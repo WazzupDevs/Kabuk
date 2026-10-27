@@ -54,6 +54,8 @@ const AnimatedEllipse = Animated.createAnimatedComponent(Ellipse);
 const [S, K, A] = SKA_LETTERS.map(parsePath) as [ParsedPath, ParsedPath, ParsedPath];
 // The kind is read from storage; if that takes longer, the launch goes on as a cold one.
 const KIND_TIMEOUT_MS = 300;
+// Android's splash leaving (its own fade) before the curtain moves.
+const SPLASH_HANDOFF_MS = 420;
 const KIND_INDEX: Record<LaunchKind, number> = { cold: 0, first: 1, quick: 2 };
 const KINDS: readonly LaunchKind[] = ['cold', 'first', 'quick'];
 // E2E flows wait until this view is gone before they look at the first screen.
@@ -156,11 +158,18 @@ export function LaunchCurtain({ children }: Props) {
   const [drawn, setDrawn] = useState(false);
   useEffect(() => {
     if (!drawn || !kindKnown || !shown) return undefined;
+    // The system splash goes first; the curtain holds its first frame (the same mark on the same
+    // ink) while Android takes the splash away, then moves. Started together, the splash's mark
+    // stayed over the moving curtain for a moment (the owner's report, 27 Ekim: a double picture).
+    let hold: ReturnType<typeof setTimeout> | undefined;
     const id = requestAnimationFrame(() => {
       launchGuard.begin();
-      clock.setActive(true);
+      hold = setTimeout(() => clock.setActive(true), SPLASH_HANDOFF_MS);
     });
-    return () => cancelAnimationFrame(id);
+    return () => {
+      cancelAnimationFrame(id);
+      if (hold) clearTimeout(hold);
+    };
   }, [drawn, kindKnown, shown, clock]);
 
   // Dropped (the guard) or failed: the clock stops and the app keeps its own size.

@@ -10,7 +10,7 @@ import { V46_PALETTE } from '@/theme/tokens.generated';
 import { useTheme } from '@/theme/ThemeProvider';
 import { v46FontStyle } from '@/theme/v46Type';
 
-import { androidBlur, blursBehind } from './backdrop';
+import { TAB_BAR_BLUR, androidBlur, blursBehind } from './backdrop';
 import { transitionStyle } from './motion';
 import { useLayoutWidth } from './narrow';
 import { V46Svg } from './V46Svg';
@@ -53,7 +53,7 @@ export function TabBar({ items, selected, onPress, blurTarget, opaque = false }:
   const t = V46_TAB_BAR[scheme];
   const width = Math.min(t.maxWidth, useLayoutWidth() - 2 * t.inset);
   const blur = androidBlur(t.backdrop.blur, PixelRatio.get());
-  const solid = opaque || !blursBehind(Platform.OS, Platform.Version);
+  const solid = opaque || !TAB_BAR_BLUR || !blursBehind(Platform.OS, Platform.Version);
   return (
     <View
       accessibilityRole="tablist"

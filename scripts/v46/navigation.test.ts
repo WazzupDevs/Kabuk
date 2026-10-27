@@ -99,8 +99,9 @@ describe('v46 tab bar', () => {
     expect(blursBehind('ios', '17.4')).toBe(true);
     for (const s of SCHEMES) expect(V46_PALETTE[s].canvas).toBe(heads[s].explore.bg);
     const tabBar = source('TabBar.tsx');
+    // TAB_BAR_BLUR (ui/backdrop.ts) turns the blur off everywhere (the owner's report, 27 Ekim).
     expect(tabBar).toMatch(
-      /const solid = opaque \|\| !blursBehind\(Platform\.OS, Platform\.Version\)/,
+      /const solid =\s*opaque \|\| !TAB_BAR_BLUR \|\| !blursBehind\(Platform\.OS, Platform\.Version\)/,
     );
     expect(tabBar).toMatch(
       /solid \? \(\s*<View\s+style=\{\[StyleSheet\.absoluteFill, \{ backgroundColor: V46_PALETTE\[scheme\]\.canvas \}\]\}/,

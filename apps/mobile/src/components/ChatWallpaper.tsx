@@ -1,20 +1,35 @@
-import { memo, useMemo, useState } from 'react';
-import { useWindowDimensions, View } from 'react-native';
-import { SvgXml } from 'react-native-svg';
+import { memo, useState } from 'react';
+import { Image, type ImageSourcePropType, useWindowDimensions, View } from 'react-native';
 
 import {
   type ChatWallKind,
+  WALL_TILE,
   type WallpaperCanvas,
   wallpaperCanvas,
-  wallpaperSvg,
 } from '@/theme/chatWallpaper';
+import type { ColorScheme } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 
-// The chat wallpaper (src/theme/chatWallpaper.ts) behind a chat's messages: one picture under
-// everything, not touchable. ChatScroll scrolls the messages over it; the composer floats above
-// (docs/SPEC_V4.md §4.C). It is drawn once at the area's width and the window's height and clipped
-// to the area: the keyboard shortening the area does not redraw it, nor does a new message (memo).
-// Only a new width or theme builds it again.
+// The chat walls (skall tuvali: Dm, MasaSohbeti, MekanSohbeti): each wall's 300 dp tile (its ground
+// and its lines, chatWalls.generated.ts) drawn once at 3× into assets/wall/ and laid edge to edge
+// behind the messages. A picture per tile, not an SVG pattern over the whole screen: opening a
+// chat no longer reads and draws the pattern each time (the owner's report, 27 Ekim: the app felt
+// heavy). The size follows wallpaperCanvas: the keyboard only shortens the area.
+const TILES: Record<ChatWallKind, Record<ColorScheme, ImageSourcePropType>> = {
+  dm: {
+    light: require('../../assets/wall/dm-light.webp'),
+    dark: require('../../assets/wall/dm-dark.webp'),
+  },
+  masa: {
+    light: require('../../assets/wall/masa-light.webp'),
+    dark: require('../../assets/wall/masa-dark.webp'),
+  },
+  mekan: {
+    light: require('../../assets/wall/mekan-light.webp'),
+    dark: require('../../assets/wall/mekan-dark.webp'),
+  },
+};
+
 export const ChatWallpaper = memo(function ChatWallpaper({ kind = 'dm' }: { kind?: ChatWallKind }) {
   const { scheme } = useTheme();
   const { height: windowHeight } = useWindowDimensions();
@@ -22,10 +37,9 @@ export const ChatWallpaper = memo(function ChatWallpaper({ kind = 'dm' }: { kind
   const [canvas, setCanvas] = useState<WallpaperCanvas | null>(null);
   const next = areaWidth === null ? null : wallpaperCanvas(canvas, areaWidth, windowHeight);
   if (next !== canvas) setCanvas(next);
-  const xml = useMemo(
-    () => (canvas ? wallpaperSvg(scheme, canvas.w, canvas.h, kind) : null),
-    [scheme, canvas, kind],
-  );
+  const cols = canvas ? Math.ceil(canvas.w / WALL_TILE) : 0;
+  const rows = canvas ? Math.ceil(canvas.h / WALL_TILE) : 0;
+  const tile = TILES[kind][scheme];
   return (
     <View
       pointerEvents="none"
@@ -37,7 +51,19 @@ export const ChatWallpaper = memo(function ChatWallpaper({ kind = 'dm' }: { kind
         setAreaWidth((w) => (w === width ? w : width));
       }}
     >
-      {xml && canvas ? <SvgXml xml={xml} width={canvas.w} height={canvas.h} /> : null}
+      {Array.from({ length: rows }, (_, r) => (
+        <View key={r} className="flex-row">
+          {Array.from({ length: cols }, (__, c) => (
+            <Image
+              key={c}
+              source={tile}
+              fadeDuration={0}
+              accessible={false}
+              style={{ width: WALL_TILE, height: WALL_TILE }}
+            />
+          ))}
+        </View>
+      ))}
     </View>
   );
 });

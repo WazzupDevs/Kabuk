@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
-import { SvgXml } from 'react-native-svg';
 
 import { BRAND } from '@/theme/brand';
 import { BAR_IN_PRIMARY, BAR_TONES, CANVAS_BAR, CANVAS_LINE } from '@/theme/canvasIcons';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON } from '@/theme/tokens';
+import { CachedSvg } from './CachedSvg';
 
 // The skall tuvali's icons, drawn as the canvas draws them (theme/canvasIcons.ts).
 export type CanvasBarIcon = keyof typeof CANVAS_BAR;
@@ -45,7 +45,7 @@ export function CanvasBar({
       );
     return `<svg viewBox="0 0 24 24">${body}</svg>`;
   }, [name, tone, colors, scheme]);
-  return <SvgXml xml={xml} width={size} height={size} />;
+  return <CachedSvg xml={xml} width={size} height={size} />;
 }
 
 // A line icon in one colour (skall.css → `.ico`: 1.8 wide, round ends; 2 at the small size).
@@ -66,5 +66,5 @@ export function CanvasLine({
       `<svg viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round">${CANVAS_LINE[name]}</svg>`,
     [name, stroke, width],
   );
-  return <SvgXml xml={xml} width={size} height={size} />;
+  return <CachedSvg xml={xml} width={size} height={size} />;
 }

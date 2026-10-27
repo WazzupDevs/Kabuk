@@ -30,3 +30,9 @@ export const ANDROID_BLUR_SDK = 31;
 export function blursBehind(os: string, version: number | string): boolean {
   return os !== 'android' || Number(version) >= ANDROID_BLUR_SDK;
 }
+
+// Whether the tab bar blurs the screen behind it at all (the owner's report, 27 Ekim: the app felt
+// heavy). On Android the blur draws every tab screen a second time, into the blur's buffer, on each
+// frame it changes (scrolling, every animation); off, the bar is its solid ground under the same
+// gradient and edge, as below Android 12. One switch: true brings the frosted bar back.
+export const TAB_BAR_BLUR = false;
