@@ -1706,6 +1706,56 @@ export const tr = {
     about: 'Hakkında',
     version: (v: string) => `Sürüm ${v}`,
     osm: 'Mekan verileri © OpenStreetMap katkıda bulunanlar (ODbL).',
+    // skall tuvali (ProfilAyarlar, BildirimAyarlari, BildirimIzinKapali, Gizlilik, Hesap, HesapSil,
+    // Engellenenler, SessizeAlinanlar).
+    participation: {
+      title: 'Oyunlara katılım',
+      sub: 'Her girişte bununla başlarsın.',
+      profile: 'Profilli',
+      anonymous: 'Anonim',
+      nowProfiled:
+        'Bu girişte profilinle görünüyorsun. Değiştirmek için mekan ekranındaki anahtarı kullan; hakkın bir kez.',
+      nowAnonymous:
+        'Bu girişte anonim görünüyorsun. Değiştirmek için mekan ekranındaki anahtarı kullan; hakkın bir kez.',
+      photoNeeded: 'Profilli başlamak için profil fotoğrafı gerekiyor.',
+    },
+    notificationSettings: 'Bildirim ayarları',
+    privacyTitle: 'Gizlilik',
+    accountTitle: 'Hesap',
+    done: 'Tamam',
+    phone: {
+      title: 'Telefon bildirimleri',
+      on: 'Açık. Kapatırsan telefonun ayarlarından yeniden açabilirsin.',
+      onTag: 'Açık',
+      off: 'Kapalı. Masa davetleri 2 dakika geçerli olduğu için kaçırabilirsin.',
+      open: 'Telefon ayarlarını aç',
+    },
+    friendsSection: 'Arkadaşlar',
+    requestsNote: 'Biri seni arkadaş olarak eklemek istediğinde',
+    invitesTitle: 'Masa davetleri',
+    invitesNote: 'Davetler 2 dakika geçerli; kapatırsan kaçırabilirsin',
+    messagesSection: 'Mesajlar',
+    dmTitle: 'Birebir mesajlar',
+    dmNote: 'Arkadaşlarından gelen mesajlar',
+    notifyFootnote:
+      'Masa davetinin bildiriminde ad, masa adı ve mekan yazmaz: "Bir arkadaşın seni masasına çağırıyor". Mekan sohbeti bildirim göndermez.',
+    blocked: 'Engellenenler',
+    muted: 'Sessize alınanlar',
+    capsules: 'Kapsül karakterler',
+    nickPrivacy:
+      'Anonim adın hesabına sabittir: anonimken ziyaretler arasında aynı adla tanınabilirsin. Adın, fotoğrafın ve profil kimliğin yalnızca profilinle göründüğünde ya da arkadaş olduğunda açılır.',
+    phoneLabel: 'Telefon numaran',
+    fixedNote:
+      "Doğum tarihin ve cinsiyetin uygulamadan değiştirilemez ve kimseye gösterilmez. Yanlış girdiysen İletişim'den bize yaz.",
+    deleteBody:
+      'Profilin, fotoğrafların, arkadaşlıkların, mesajların ve oyun geçmişin silinir. Masadaysan masadan çıkarsın. Bu geri alınamaz.',
+    deleteBackups: 'Yedeklerden de 7 gün içinde silinir.',
+    blockedNote: 'Engellediğin kişi bunu görmez.',
+    mutedNote:
+      'Sessize aldığın kişi bunu görmez. Sessize alma o kimliğe bağlıdır: bir kişinin anonim adını sessize almak profilli mesajlarını gizlemez.',
+    mutedEmpty: 'Sessize aldığın kimse yok.',
+    mutedAnonymous: 'Anonim',
+    mutedProfiled: 'Profiliyle',
   },
   errors: {
     bad_request: 'İstek geçersiz.',

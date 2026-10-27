@@ -43,6 +43,7 @@ const Body: z.ZodType<ProfileRequest> = z.union([
     notifyDm: z.boolean().optional(),
     notifyFriendRequests: z.boolean().optional(),
     notifyInvites: z.boolean().optional(),
+    defaultParticipation: z.enum(['anonymous', 'profile']).optional(),
   }),
   z.object({ action: z.literal('photo-upload-url') }),
   z.object({ action: z.literal('photo-commit'), path: z.string().max(200) }),
@@ -224,6 +225,7 @@ Deno.serve(
           notify_dm?: boolean;
           notify_friend_requests?: boolean;
           notify_invites?: boolean;
+          default_participation?: 'anonymous' | 'profile';
         } = {};
         let name = me.display_name;
 
@@ -250,6 +252,11 @@ Deno.serve(
           changes.notify_friend_requests = body.notifyFriendRequests;
         }
         if (body.notifyInvites !== undefined) changes.notify_invites = body.notifyInvites;
+        // Ayarlar → "Oyunlara katılım": the identity each check-in starts with (start_table_session;
+        // a profiled start needs a visible photo there). Rule 12 still decides the table seat.
+        if (body.defaultParticipation !== undefined) {
+          changes.default_participation = body.defaultParticipation;
+        }
 
         if (Object.keys(changes).length === 0) return { ok: true };
         const { error } = await db.from('profiles').update(changes).eq('id', user.id);
