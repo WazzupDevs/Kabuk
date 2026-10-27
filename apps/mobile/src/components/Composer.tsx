@@ -1,15 +1,28 @@
-import { forwardRef, type ReactNode } from 'react';
-import { Pressable, TextInput, View } from 'react-native';
+import { forwardRef, type ReactNode, useEffect, useState } from 'react';
+import { Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
 import Svg, { Rect } from 'react-native-svg';
 
 import { tr } from '@/i18n/tr';
 import { haptic, noteTyping } from '@/lib/haptics';
+import { useReduceMotion } from '@/lib/useReduceMotion';
 import { BRAND } from '@/theme/brand';
+import { TAB_GLASS } from '@/theme/glass';
+import { gradientStyle } from '@/theme/gradient';
+import { V46_TAB_BAR } from '@/theme/parts.generated';
 import { typeStyle, useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
+import { TAB_BAR_GLASS, blursBehind } from '@/ui/backdrop';
+import { LiquidGlass } from '@/ui/LiquidGlass';
 
 import type { ChatQuote } from './ChatBubble';
-import { useChatEnd } from './ChatScreen';
+import { useChatEnd, useComposerGlass } from './ChatScreen';
 import { IconButton } from './IconButton';
 import { usePressScale } from './motion';
 import { Text } from './Text';
@@ -36,7 +49,12 @@ type Props = {
 
 // The message bar of a chat screen (v45: .dbar): it floats at the bottom over the chat's wallpaper, a
 // raised pill field and a round send button, both on a soft shadow; the button fills with the accent
-// once there is something to send.
+// once there is something to send. Over a chat's stream the field and the button are the tab bar's
+// liquid glass (the owner's call, 27 Ekim); a sent message flies off with the arrow.
+const SIZE = SPACING[12] + SPACING[1];
+// The arrow's flight: out to the right, then back in from the left.
+const FLY_OUT_MS = 150;
+const FLY_IN_MS = 230;
 export const Composer = forwardRef<TextInput, Props>(function Composer(
   {
     value,
@@ -60,6 +78,9 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
   const pressScale = usePressScale();
   const inactive = sendDisabled || sending;
   const followEnd = useChatEnd();
+  const glassId = useComposerGlass();
+  const glass = glassId !== null && TAB_BAR_GLASS && blursBehind(Platform.OS, Platform.Version);
+  const [flights, setFlights] = useState(0);
   return (
     <View
       style={{
@@ -78,15 +99,16 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
           style={{
             // skall tuvali (skall.css → `.composer`): the field on the float shadow, the round
             // send button beside it.
-            minHeight: SPACING[12] + SPACING[1],
+            minHeight: SIZE,
             borderRadius: shape.radius.xl,
-            backgroundColor: colors.surface,
-            borderWidth: shape.stroke.hairline,
+            backgroundColor: glass ? undefined : colors.surface,
+            borderWidth: glass ? 0 : shape.stroke.hairline,
             borderColor: colors.control,
             boxShadow: shape.shadow.sheet,
             paddingHorizontal: SPACING[4] + SPACING[0.5],
           }}
         >
+          {glass && glassId ? <GlassFill targetId={glassId} radius={shape.radius.xl} /> : null}
           <TextInput
             ref={ref}
             testID={inputTestID}
@@ -135,6 +157,7 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
           disabled={inactive}
           onPress={() => {
             haptic('sent');
+            setFlights((n) => n + 1);
             onSend();
             // The stream goes to its end with the message (every chat).
             followEnd?.();
@@ -144,21 +167,22 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
             <View
               style={[
                 {
-                  width: SPACING[12] + SPACING[1],
-                  height: SPACING[12] + SPACING[1],
+                  width: SIZE,
+                  height: SIZE,
                   borderRadius: shape.radius.pill,
                   alignItems: 'center',
                   justifyContent: 'center',
-                  backgroundColor: colors.surface,
+                  backgroundColor: glass ? undefined : colors.surface,
                   boxShadow: shape.shadow.sheet,
                 },
                 pressScale(pressed),
               ]}
             >
+              {glass && glassId ? <GlassFill targetId={glassId} radius={SIZE / 2} /> : null}
               {sending ? (
                 <Loader kind="meet" size={ICON.lg} delay={0} />
               ) : (
-                <SendGlyph muted={!!inactive} />
+                <FlyingArrow flights={flights} muted={!!inactive} />
               )}
             </View>
           )}
@@ -202,6 +226,76 @@ function ReplyStrip({ quote, onCancel }: { quote: ChatQuote; onCancel?: () => vo
         />
       ) : null}
     </View>
+  );
+}
+
+// The tab bar's glass (ui/TabBar.tsx) under the field or the button: the stream behind through the
+// lens, v46's light gradient at the glass's share, the white edge and its inner light.
+function GlassFill({ targetId, radius }: { targetId: string; radius: number }) {
+  const { scheme, colors } = useTheme();
+  const t = V46_TAB_BAR[scheme];
+  return (
+    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+      <LiquidGlass
+        targetId={targetId}
+        cornerRadius={radius}
+        ground={colors.canvas}
+        blurRadius={TAB_GLASS.blur}
+        refraction={TAB_GLASS.refraction}
+        depth={TAB_GLASS.depth}
+        dispersion={TAB_GLASS.dispersion}
+        highlight={TAB_GLASS.highlight}
+        style={StyleSheet.absoluteFill}
+      />
+      <View
+        style={[
+          StyleSheet.absoluteFill,
+          gradientStyle(t.gradient),
+          { borderRadius: radius, opacity: TAB_GLASS.overlay },
+        ]}
+      />
+      <View
+        style={[
+          StyleSheet.absoluteFill,
+          {
+            borderRadius: radius,
+            borderWidth: t.border.width,
+            borderColor: t.border.color,
+            boxShadow: t.shadow.inset ?? undefined,
+          },
+        ]}
+      />
+    </View>
+  );
+}
+
+// The send arrow; each send (`flights`) it flies out to the right and comes back in from the left.
+// Still with reduce motion.
+function FlyingArrow({ flights, muted }: { flights: number; muted: boolean }) {
+  const reduce = useReduceMotion();
+  const x = useSharedValue(0);
+  const fade = useSharedValue(1);
+  useEffect(() => {
+    if (flights === 0 || reduce) return;
+    const out = { duration: FLY_OUT_MS, easing: Easing.in(Easing.quad) };
+    const back = { duration: FLY_IN_MS, easing: Easing.out(Easing.back(1.6)) };
+    x.set(
+      withSequence(
+        withTiming(SPACING[6], out),
+        withTiming(-SPACING[6], { duration: 0 }),
+        withTiming(0, back),
+      ),
+    );
+    fade.set(withSequence(withTiming(0, out), withTiming(1, back)));
+  }, [flights, reduce, x, fade]);
+  const style = useAnimatedStyle(() => ({
+    opacity: fade.value,
+    transform: [{ translateX: x.value }],
+  }));
+  return (
+    <Animated.View style={style}>
+      <SendGlyph muted={muted} />
+    </Animated.View>
   );
 }
 

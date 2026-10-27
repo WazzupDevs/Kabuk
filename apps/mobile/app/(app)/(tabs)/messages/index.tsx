@@ -94,7 +94,7 @@ function Chats({ now }: { now: Date }) {
   }
   return (
     <View className="mt-3">
-      <ListCard>
+      <ListCard bare>
         {inbox.data.map((t, i) => (
           <Rise key={t.publicId} index={i}>
             <InboxRow thread={t} now={now} listen={i < TYPING_ROWS} />

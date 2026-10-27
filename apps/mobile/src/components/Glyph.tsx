@@ -26,6 +26,13 @@ export const MARKER_IMAGES = {
   campus: require('../../assets/glyph/marker-campus.png') as ImageSourcePropType,
 };
 
+// The Keşfet map's pin glyphs in the capsule family's colours (scripts/build-pins.ts), drawn as
+// they are on the pin's white disc.
+export const PIN_IMAGES = {
+  cafe: require('../../assets/pin/pin-cafe.png') as ImageSourcePropType,
+  campus: require('../../assets/pin/pin-campus.png') as ImageSourcePropType,
+};
+
 // The live dot's blurred halo (src/components/LiveDot.tsx), white, tinted by the app.
 export const HALO_IMAGE: ImageSourcePropType = require('../../assets/glyph/halo.png');
 

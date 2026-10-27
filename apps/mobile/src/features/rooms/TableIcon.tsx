@@ -10,8 +10,8 @@ import { TABLE_ICON_IMAGES } from './tableIconImages';
 export const TABLE_ICON_SIZE = {
   // Açık masalar and Süren masalar.
   lobby: 48, // skall tuvali: `.thumb.s48`
-  // The person's own table card on Mekan.
-  mine: 48,
+  // The person's own table card on Mekan (larger since the owner's call, 27 Ekim).
+  mine: 64,
   // Masa kur's name row (the pencil button) and the picker's grid.
   picker: 56,
   // A join request row.

@@ -1,11 +1,13 @@
 import { isIntent } from '@shared/rooms.ts';
+import { TABLE_SESSION_HOURS } from '@shared/checkin.ts';
 import { gameTag, type TableState } from '@shared/tableCard.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { type ReactNode, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
 
 import { Button } from '@/components/Button';
+import { CanvasBar } from '@/components/CanvasIcon';
 import { Card } from '@/components/Card';
 import { GlyphDisc } from '@/components/GlyphDisc';
 import { Icon } from '@/components/Icon';
@@ -17,12 +19,15 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { roomsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { BRAND } from '@/theme/brand';
+import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, OPACITY, SPACING, TOUCH } from '@/theme/tokens';
+import { ICON, OPACITY, SPACING, TABLE_CARD, TOUCH } from '@/theme/tokens';
 
 import { InviteSheet } from './InviteSheet';
 import { roomKeys, type TableRoomRow } from './queries';
 import { TableIcon } from './TableIcon';
+import { TABLE_ICON_IMAGES } from './tableIconImages';
 
 type CheckIn = {
   id: string;
@@ -49,7 +54,9 @@ const LOBBY_BEAT_MS = 1600;
 // Without a table: "Henüz masan yok" and "Masa kur". With one: its icon, name, people and lobby
 // state; the head opens the table. The owner gets "Lobiye aç" or "Lobiden çek" and "Davet et"; the
 // owner's icon opens the picker (K-59). Under it a quiet line: the time left and, without a table,
-// the spot to change (the server refuses it at a table).
+// the spot to change (the server refuses it at a table). Fuller since the owner's call (27 Ekim):
+// the table's icon blurred large behind the card, a larger icon, the people as capsules, the
+// buttons with the family's icons and the time left as a bar.
 export function TableCard({
   checkIn,
   room,
@@ -78,118 +85,128 @@ export function TableCard({
   const tag = room ? gameTag(room.game_tag) : null;
   const owner = state === 'private' || state === 'open';
 
+  const backdrop = room?.icon ? TABLE_ICON_IMAGES[room.icon] : undefined;
   return (
-    <Card testID="table-card">
-      {state === 'none' || !room ? (
-        <View className="gap-3" testID="no-table">
-          <View className="flex-row items-center" style={{ gap: SPACING[3] + SPACING[0.5] }}>
-            <GlyphDisc icon="people-outline" />
-            <View className="flex-1 gap-0.5">
-              <Text variant="heading">{tr.venue.noTable}</Text>
-              <Text variant="fine">{tr.venue.noTableHint}</Text>
+    <Card testID="table-card" flush>
+      {backdrop && state !== 'none' ? <Backdrop source={backdrop} /> : null}
+      <View style={{ padding: SPACING[4] }}>
+        {state === 'none' || !room ? (
+          <View className="gap-3" testID="no-table">
+            <View className="flex-row items-center" style={{ gap: SPACING[3] + SPACING[0.5] }}>
+              <GlyphDisc icon="people-outline" />
+              <View className="flex-1 gap-0.5">
+                <Text variant="heading">{tr.venue.noTable}</Text>
+                <Text variant="fine">{tr.venue.noTableHint}</Text>
+              </View>
             </View>
+            <Button testID="table-create-open" label={tr.venue.createTable} onPress={onCreate} />
           </View>
-          <Button testID="table-create-open" label={tr.venue.createTable} onPress={onCreate} />
-        </View>
-      ) : (
-        <>
-          <Pressable
-            testID="go-to-table"
-            accessibilityRole="button"
-            accessibilityLabel={tr.venue.tableHead(
-              room.name ?? '',
-              room.phones,
-              state === 'open' ? tr.venue.lobbyOpen : tr.venue.lobbyOff,
-            )}
-            onPress={() => router.push({ pathname: '/room/[id]', params: { id: room.id } })}
-            className="flex-row items-center"
-            style={{ minHeight: TOUCH.min, gap: SPACING[3] + SPACING[0.5] }}
-          >
-            <TableIcon icon={room.icon} size="mine" />
-            <View className="flex-1 gap-0.5">
-              <Text variant="heading" testID="table-name">
-                {room.name ?? ''}
-              </Text>
-              <Status people={room.phones} live={state === 'open'} />
-            </View>
-            <Icon name="chevron-forward" tone="muted" />
-          </Pressable>
+        ) : (
+          <>
+            <Pressable
+              testID="go-to-table"
+              accessibilityRole="button"
+              accessibilityLabel={tr.venue.tableHead(
+                room.name ?? '',
+                room.phones,
+                state === 'open' ? tr.venue.lobbyOpen : tr.venue.lobbyOff,
+              )}
+              onPress={() => router.push({ pathname: '/room/[id]', params: { id: room.id } })}
+              className="flex-row items-center"
+              style={{ minHeight: TOUCH.min, gap: SPACING[3] + SPACING[0.5] }}
+            >
+              <TableIcon icon={room.icon} size="mine" />
+              <View className="flex-1 gap-1">
+                <Text variant="title" testID="table-name">
+                  {room.name ?? ''}
+                </Text>
+                <Status people={room.phones} live={state === 'open'} />
+                <PeopleCapsules count={room.phones} />
+              </View>
+              <Icon name="chevron-forward" tone="muted" />
+            </Pressable>
 
-          {state === 'open' && (intent || tag) ? (
-            <View className="mt-1 flex-row flex-wrap items-center gap-1.5">
-              {intent ? <Tag variant={intent} label={tr.intents[intent]} /> : null}
-              {tag ? <Tag icon="dice-outline" label={tr.concepts[tag]} /> : null}
-            </View>
-          ) : null}
+            {state === 'open' && (intent || tag) ? (
+              <View className="mt-1 flex-row flex-wrap items-center gap-1.5">
+                {intent ? <Tag variant={intent} label={tr.intents[intent]} /> : null}
+                {tag ? <Tag icon="dice-outline" label={tr.concepts[tag]} /> : null}
+              </View>
+            ) : null}
 
-          {owner ? (
-            // The owner: into the lobby or out of it, and how a friend joins (v46: .two).
-            <View className="mt-3 flex-row gap-2.5">
-              <View className="flex-1">
-                {state === 'private' ? (
-                  <Button
-                    tight
-                    testID="lobby-open"
-                    label={tr.venue.openLobby}
-                    onPress={onOpenLobby}
-                  />
-                ) : (
+            {owner ? (
+              // The owner: into the lobby or out of it, and how a friend joins (v46: .two).
+              <View className="mt-3 flex-row gap-2.5">
+                <View className="flex-1">
+                  {state === 'private' ? (
+                    <Button
+                      tight
+                      testID="lobby-open"
+                      leading={<CanvasBar name="lobby" tone="onPrimary" size={ICON.md} />}
+                      label={tr.venue.openLobby}
+                      onPress={onOpenLobby}
+                    />
+                  ) : (
+                    <Button
+                      tight
+                      variant="secondary"
+                      testID="withdraw-table"
+                      leading={<CanvasBar name="end" size={ICON.md} />}
+                      label={tr.venue.withdraw}
+                      onPress={() => withdraw.mutate()}
+                      loading={withdraw.isPending}
+                    />
+                  )}
+                </View>
+                <View className="flex-1">
                   <Button
                     tight
                     variant="secondary"
-                    testID="withdraw-table"
-                    label={tr.venue.withdraw}
-                    onPress={() => withdraw.mutate()}
-                    loading={withdraw.isPending}
+                    testID="invite-open"
+                    leading={<CanvasBar name="invite" size={ICON.md} />}
+                    label={tr.venue.invite}
+                    onPress={() => setInvite(true)}
                   />
-                )}
+                </View>
               </View>
-              <View className="flex-1">
-                <Button
-                  tight
-                  variant="secondary"
-                  testID="invite-open"
-                  label={tr.venue.invite}
-                  onPress={() => setInvite(true)}
-                />
-              </View>
-            </View>
-          ) : null}
-        </>
-      )}
+            ) : null}
+          </>
+        )}
 
-      {/* The quiet line (K-35): the time left, and without a table the spot. Each part wraps
+        {/* The quiet line (K-35): the time left, and without a table the spot. Each part wraps
           inside itself, so nothing leaves the card at 320 dp and the largest text size. */}
-      <View
-        className="mt-2 flex-row flex-wrap items-center"
-        style={{ columnGap: SPACING[3], rowGap: SPACING[2] }}
-      >
-        <QuietPart>
-          <Icon name="time-outline" size={ICON.sm} tone="muted" />
-          <Text variant="fine" className="shrink">
-            {tr.venue.remaining(Math.floor(minutesLeft / 60), minutesLeft % 60)}
-          </Text>
-        </QuietPart>
-        {state === 'none' && venueHasSpots ? (
+        <View
+          className="mt-2 flex-row flex-wrap items-center"
+          style={{ columnGap: SPACING[3], rowGap: SPACING[2] }}
+        >
           <QuietPart>
-            <Icon name="location-outline" size={ICON.sm} tone="muted" />
+            <Icon name="time-outline" size={ICON.sm} tone="muted" />
             <Text variant="fine" className="shrink">
-              {checkIn.spot?.name ? tr.venue.spot(checkIn.spot.name) : tr.venue.noSpot}
+              {tr.venue.remaining(Math.floor(minutesLeft / 60), minutesLeft % 60)}
             </Text>
-            <QuietLink
-              testID="change-spot"
-              label={checkIn.spot_id ? tr.venue.changeSpot : tr.venue.chooseSpot}
-              onPress={() => router.push('/spot')}
-            />
           </QuietPart>
+          {state === 'none' && venueHasSpots ? (
+            <QuietPart>
+              <Icon name="location-outline" size={ICON.sm} tone="muted" />
+              <Text variant="fine" className="shrink">
+                {checkIn.spot?.name ? tr.venue.spot(checkIn.spot.name) : tr.venue.noSpot}
+              </Text>
+              <QuietLink
+                testID="change-spot"
+                label={checkIn.spot_id ? tr.venue.changeSpot : tr.venue.chooseSpot}
+                onPress={() => router.push('/spot')}
+              />
+            </QuietPart>
+          ) : null}
+        </View>
+
+        <TimeBar minutesLeft={minutesLeft} />
+
+        {withdraw.error ? (
+          <Text variant="fine" tone="danger" className="mt-2">
+            {errorMessage(withdraw.error)}
+          </Text>
         ) : null}
       </View>
-
-      {withdraw.error ? (
-        <Text variant="fine" tone="danger" className="mt-2">
-          {errorMessage(withdraw.error)}
-        </Text>
-      ) : null}
 
       {room && owner ? (
         <InviteSheet
@@ -200,6 +217,84 @@ export function TableCard({
         />
       ) : null}
     </Card>
+  );
+}
+
+// The table's icon, blurred large behind the card: its colours as the card's ground, under a veil of
+// the card's own so the text reads.
+function Backdrop({ source }: { source: (typeof TABLE_ICON_IMAGES)[string] }) {
+  const { colors } = useTheme();
+  return (
+    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+      <Image
+        source={source}
+        blurRadius={TABLE_CARD.backdropBlur}
+        fadeDuration={0}
+        resizeMode="cover"
+        style={[StyleSheet.absoluteFill, { opacity: TABLE_CARD.backdropOpacity }]}
+      />
+      <View
+        style={[
+          StyleSheet.absoluteFill,
+          { backgroundColor: colors.surface, opacity: TABLE_CARD.veil },
+        ]}
+      />
+    </View>
+  );
+}
+
+// The people at the table as small capsules in the family's two colours, one for each phone,
+// overlapping a little; the count itself is on the line above.
+function PeopleCapsules({ count }: { count: number }) {
+  const { colors, shape } = useTheme();
+  const [w, h] = TABLE_CARD.capsule;
+  return (
+    <View className="flex-row" accessible={false} importantForAccessibility="no-hide-descendants">
+      {Array.from({ length: count }, (_, i) => (
+        <View
+          key={i}
+          style={{
+            width: w,
+            height: h,
+            marginLeft: i === 0 ? 0 : -TABLE_CARD.capsuleOverlap,
+            borderRadius: shape.radius.pill,
+            borderWidth: shape.stroke.control,
+            borderColor: colors.surface,
+            backgroundColor: i % 2 === 0 ? BRAND.purple : BRAND.pink,
+          }}
+        />
+      ))}
+    </View>
+  );
+}
+
+// The check-in's time left as a bar (the whole is TABLE_SESSION_HOURS), filling from the accent to
+// pink.
+function TimeBar({ minutesLeft }: { minutesLeft: number }) {
+  const { colors, shape } = useTheme();
+  const share = Math.max(0, Math.min(1, minutesLeft / (TABLE_SESSION_HOURS * 60)));
+  return (
+    <View
+      accessible={false}
+      style={{
+        marginTop: SPACING[2],
+        height: TABLE_CARD.bar,
+        borderRadius: shape.radius.pill,
+        backgroundColor: colors.control,
+        overflow: 'hidden',
+      }}
+    >
+      <View
+        style={[
+          {
+            width: `${share * 100}%`,
+            height: '100%',
+            borderRadius: shape.radius.pill,
+          },
+          gradientStyle(`linear-gradient(90deg, ${colors.accent}, ${colors.buzz})`),
+        ]}
+      />
+    </View>
   );
 }
 

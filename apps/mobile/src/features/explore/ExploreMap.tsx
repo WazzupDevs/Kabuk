@@ -16,14 +16,16 @@ import {
   venueCollection,
 } from '@shared/exploreMap.ts';
 import { router } from 'expo-router';
+import { describeEventTime } from '@shared/explore.ts';
 import { useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
-import { MARKER_IMAGES } from '@/components/Glyph';
+import { PIN_IMAGES } from '@/components/Glyph';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
+import { useNow } from '@/lib/useNow';
 import { useTheme } from '@/theme/ThemeProvider';
 import { MAP_FONTS, MAP_PIN, SPACING } from '@/theme/tokens';
 
@@ -40,16 +42,17 @@ const MAP_STYLE_URL = {
 } as const;
 
 type SymbolLayer = Extract<LayerProps, { type: 'symbol' }>;
+type CircleLayer = Extract<LayerProps, { type: 'circle' }>;
 type Filter = NonNullable<SymbolLayer['filter']>;
 
 const IS_CLUSTER: Filter = ['has', 'point_count'];
 const IS_VENUE: Filter = ['!', ['has', 'point_count']];
 
-// The venue's kind glyph inside its circle (signed distance fields, coloured per bucket), picked by
-// the feature's `kind` ('cafe' | 'campus').
+// The venue's kind inside its white disc, in the capsule family's colours (the owner's call, 27
+// Ekim), picked by the feature's `kind` ('cafe' | 'campus').
 const MAP_IMAGES = {
-  'marker-cafe': { source: MARKER_IMAGES.cafe, sdf: true },
-  'marker-campus': { source: MARKER_IMAGES.campus, sdf: true },
+  'pin-cafe': { source: PIN_IMAGES.cafe },
+  'pin-campus': { source: PIN_IMAGES.campus },
 };
 
 type PressedFeature = {
@@ -81,21 +84,36 @@ export function ExploreMap({
   // E2E waits on this (testID below): the style, its glyphs and the venue layers are drawn.
   const [ready, setReady] = useState(false);
 
-  const data = useMemo(
-    () =>
-      venueCollection(
-        venues.map((v) => ({
-          id: v.id,
-          name: v.name,
-          lat: v.lat,
-          lng: v.lng,
-          bucket: v.bucket,
-          hasEvent: v.event !== null,
-          kind: v.kind,
-        })),
-      ),
-    [venues],
-  );
+  const now = useNow(60_000);
+  const data = useMemo(() => {
+    const collection = venueCollection(
+      venues.map((v) => ({
+        id: v.id,
+        name: v.name,
+        lat: v.lat,
+        lng: v.lng,
+        bucket: v.bucket,
+        hasEvent: v.event !== null,
+        kind: v.kind,
+      })),
+    );
+    // Under the name, what the list says of the venue: how lively, and its event's time.
+    const status: Record<string, string> = Object.fromEntries(
+      venues.map((v) => [
+        v.id,
+        v.event
+          ? `${tr.explore.buckets[v.bucket]} · ${tr.explore.eventTime(describeEventTime(v.event.startsAt, v.event.endsAt, now))}`
+          : tr.explore.buckets[v.bucket],
+      ]),
+    );
+    return {
+      ...collection,
+      features: collection.features.map((f) => ({
+        ...f,
+        properties: { ...f.properties, status: status[f.id] ?? '' },
+      })),
+    };
+  }, [venues, now]);
   // The opening view only: later data refreshes do not move the map under the user's finger.
   const [opening] = useState<Bounds | null>(() => venueBounds(venues));
   const padding = mapPadding(headerHeight, tabBarHeight, SPACING[6]);
@@ -107,9 +125,27 @@ export function ExploreMap({
   const ring = shape.stroke.feature > 1 ? colors.border : colors.accent;
   const id = selected ?? '';
   const outer = MAP_PIN.ring + MAP_PIN.outline;
+  // The venue's colour: quiet in the brand's purple, lively in the overlap's orange, crowded in pink.
+  const live: NonNullable<CircleLayer['paint']>['circle-color'] = [
+    'match',
+    ['get', 'bucket'],
+    'lively',
+    colors.overlap,
+    'buzzing',
+    colors.buzz,
+    colors.accent,
+  ];
   const label: { layout: NonNullable<SymbolLayer['layout']>; paint: SymbolLayer['paint'] } = {
     layout: {
-      'text-field': ['get', 'name'],
+      'text-field': [
+        'format',
+        ['get', 'name'],
+        {},
+        '\n',
+        {},
+        ['get', 'status'],
+        { 'font-scale': MAP_PIN.statusScale },
+      ],
       'text-font': [...MAP_FONTS.bold],
       'text-size': MAP_PIN.labelSize,
       'text-anchor': 'top',
@@ -212,6 +248,21 @@ export function ExploreMap({
             }}
           />
           <Layer
+            id="venue-halo"
+            type="circle"
+            filter={['all', ['!', ['has', 'point_count']], ['!=', ['get', 'bucket'], 'calm']]}
+            paint={{
+              'circle-color': live,
+              'circle-opacity': MAP_PIN.haloOpacity,
+              'circle-radius': [
+                'case',
+                ['==', ['get', 'id'], id],
+                MAP_PIN.selectedRadius + outer + MAP_PIN.halo,
+                MAP_PIN.radius + outer + MAP_PIN.halo,
+              ],
+            }}
+          />
+          <Layer
             id="venue-ring"
             type="circle"
             filter={IS_VENUE}
@@ -230,17 +281,8 @@ export function ExploreMap({
             type="circle"
             filter={IS_VENUE}
             paint={{
-              // Full colour (the owner's report, 27 Ekim): quiet in the accent, lively in the
-              // overlap's orange, buzzing in pink.
-              'circle-color': [
-                'match',
-                ['get', 'bucket'],
-                'lively',
-                colors.overlap,
-                'buzzing',
-                colors.buzz,
-                colors.accent,
-              ],
+              // A white disc for the coloured glyph, ringed in the venue's colour.
+              'circle-color': colors.surface,
               'circle-radius': [
                 'case',
                 ['==', ['get', 'id'], id],
@@ -248,7 +290,7 @@ export function ExploreMap({
                 MAP_PIN.radius,
               ],
               'circle-stroke-width': MAP_PIN.ring,
-              'circle-stroke-color': colors.surface,
+              'circle-stroke-color': live,
             }}
           />
           <Layer
@@ -256,7 +298,7 @@ export function ExploreMap({
             type="symbol"
             filter={IS_VENUE}
             layout={{
-              'icon-image': ['match', ['get', 'kind'], 'campus', 'marker-campus', 'marker-cafe'],
+              'icon-image': ['match', ['get', 'kind'], 'campus', 'pin-campus', 'pin-cafe'],
               'icon-size': [
                 'case',
                 ['==', ['get', 'id'], id],
@@ -265,17 +307,6 @@ export function ExploreMap({
               ],
               'icon-allow-overlap': true,
               'icon-ignore-placement': true,
-            }}
-            paint={{
-              'icon-color': [
-                'match',
-                ['get', 'bucket'],
-                'lively',
-                colors.onBuzz,
-                'buzzing',
-                colors.onBuzz,
-                colors.onAccent,
-              ],
             }}
           />
           <Layer

@@ -4,6 +4,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useId,
   useLayoutEffect,
   type RefObject,
   useMemo,
@@ -41,6 +42,8 @@ import { usePressScale } from './motion';
 import { AppIcon } from './AppIcon';
 // Frame by frame with the keyboard (react-native-keyboard-controller): the bar rises with it.
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
+
+import { GlassTarget } from '@/ui/LiquidGlass';
 
 // How close to the end counts as "at the bottom" (a message's last line may sit under the edge).
 const BOTTOM_SLACK = SPACING[12];
@@ -357,6 +360,14 @@ export function ChatScroll({
   );
 }
 
+// The stream a chat's message bar shows through its glass (the owner's call, 27 Ekim): the id of
+// the GlassTarget around the wallpaper and the stream; null where there is none.
+const ComposerGlassContext = createContext<string | null>(null);
+
+export function useComposerGlass(): string | null {
+  return useContext(ComposerGlassContext);
+}
+
 type Props = {
   top: ReactNode;
   children: ReactNode;
@@ -395,6 +406,7 @@ export function ChatScreen({
   const end = useRef<(() => void) | null>(null);
   const followEnd = useCallback(() => end.current?.(), []);
   const under = composer ? barHeight : barSpace;
+  const glassId = useId();
   return (
     <ChatEndContext.Provider value={followEnd}>
       <ChatBarContext.Provider value={reactions.bar}>
@@ -408,32 +420,36 @@ export function ChatScreen({
             {/* The wallpaper under the stream and the message bar (v45: .chatpane); the bar floats on
               it, over the stream. */}
             <View className="flex-1">
-              {wall ? <ChatWallpaper kind={wall} /> : null}
-              <ChatScroll
-                testID={testID}
-                newestKey={newestKey}
-                newestMine={newestMine}
-                startAtEnd={startAtEnd}
-                bottomInset={under}
-                endRef={end}
-                contentContainerStyle={{
-                  flexGrow: 1,
-                  // skall tuvali (skall.css → `.stream`): 16 at the sides, 6 between messages.
-                  paddingHorizontal: shape.screenPadding,
-                  paddingTop: SPACING[2],
-                  paddingBottom: SPACING[3] + under,
-                  gap: SPACING[1.5],
-                }}
-              >
-                {children}
-              </ChatScroll>
+              <GlassTarget targetId={glassId} style={{ flex: 1 }}>
+                {wall ? <ChatWallpaper kind={wall} /> : null}
+                <ChatScroll
+                  testID={testID}
+                  newestKey={newestKey}
+                  newestMine={newestMine}
+                  startAtEnd={startAtEnd}
+                  bottomInset={under}
+                  endRef={end}
+                  contentContainerStyle={{
+                    flexGrow: 1,
+                    // skall tuvali (skall.css → `.stream`): 16 at the sides, 6 between messages.
+                    paddingHorizontal: shape.screenPadding,
+                    paddingTop: SPACING[2],
+                    paddingBottom: SPACING[3] + under,
+                    gap: SPACING[1.5],
+                  }}
+                >
+                  {children}
+                </ChatScroll>
+              </GlassTarget>
               {composer ? (
                 <View
                   className="absolute bottom-0 left-0 right-0"
                   style={{ paddingBottom: barSpace }}
                   onLayout={(e) => setBarHeight(e.nativeEvent.layout.height)}
                 >
-                  {composer}
+                  <ComposerGlassContext.Provider value={glassId}>
+                    {composer}
+                  </ComposerGlassContext.Provider>
                 </View>
               ) : null}
             </View>
