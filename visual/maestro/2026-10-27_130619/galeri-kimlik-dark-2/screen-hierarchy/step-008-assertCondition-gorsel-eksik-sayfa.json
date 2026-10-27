@@ -1,0 +1,2365 @@
+{
+  "children" : [ {
+    "attributes" : {
+      "ignoreBoundsFiltering" : "false"
+    },
+    "children" : [ {
+      "attributes" : {
+        "ignoreBoundsFiltering" : "false",
+        "clickable" : "false",
+        "bounds" : "[0,0][720,48]",
+        "enabled" : "true",
+        "focused" : "false",
+        "checked" : "false",
+        "scrollable" : "false",
+        "selected" : "false",
+        "class" : "android.widget.FrameLayout",
+        "important-for-accessibility" : "true"
+      },
+      "children" : [ {
+        "attributes" : {
+          "ignoreBoundsFiltering" : "false",
+          "resource-id" : "com.android.systemui:id/status_bar_launch_animation_container",
+          "clickable" : "false",
+          "bounds" : "[0,0][720,48]",
+          "enabled" : "true",
+          "focused" : "false",
+          "checked" : "false",
+          "scrollable" : "false",
+          "selected" : "false",
+          "class" : "android.widget.FrameLayout",
+          "important-for-accessibility" : "false"
+        },
+        "clickable" : false,
+        "enabled" : true,
+        "focused" : false,
+        "checked" : false,
+        "selected" : false
+      }, {
+        "attributes" : {
+          "ignoreBoundsFiltering" : "false",
+          "resource-id" : "com.android.systemui:id/status_bar_container",
+          "clickable" : "false",
+          "bounds" : "[0,0][720,48]",
+          "enabled" : "true",
+          "focused" : "false",
+          "checked" : "false",
+          "scrollable" : "false",
+          "selected" : "false",
+          "class" : "android.widget.FrameLayout",
+          "important-for-accessibility" : "false"
+        },
+        "children" : [ {
+          "attributes" : {
+            "ignoreBoundsFiltering" : "false",
+            "resource-id" : "com.android.systemui:id/status_bar",
+            "clickable" : "false",
+            "bounds" : "[0,0][720,48]",
+            "enabled" : "true",
+            "focused" : "false",
+            "checked" : "false",
+            "scrollable" : "false",
+            "selected" : "false",
+            "class" : "android.widget.FrameLayout",
+            "important-for-accessibility" : "true"
+          },
+          "children" : [ {
+            "attributes" : {
+              "ignoreBoundsFiltering" : "false",
+              "resource-id" : "com.android.systemui:id/status_bar_contents",
+              "clickable" : "false",
+              "bounds" : "[0,0][680,48]",
+              "enabled" : "true",
+              "focused" : "false",
+              "checked" : "false",
+              "scrollable" : "false",
+              "selected" : "false",
+              "class" : "android.widget.LinearLayout",
+              "important-for-accessibility" : "false"
+            },
+            "children" : [ {
+              "attributes" : {
+                "ignoreBoundsFiltering" : "false",
+                "resource-id" : "com.android.systemui:id/status_bar_start_side_container",
+                "clickable" : "false",
+                "bounds" : "[16,0][340,48]",
+                "enabled" : "true",
+                "focused" : "false",
+                "checked" : "false",
+                "scrollable" : "false",
+                "selected" : "false",
+                "class" : "android.widget.FrameLayout",
+                "important-for-accessibility" : "false"
+              },
+              "children" : [ {
+                "attributes" : {
+                  "ignoreBoundsFiltering" : "false",
+                  "resource-id" : "com.android.systemui:id/status_bar_start_side_content",
+                  "clickable" : "false",
+                  "bounds" : "[16,0][126,48]",
+                  "enabled" : "true",
+                  "focused" : "false",
+                  "checked" : "false",
+                  "scrollable" : "false",
+                  "selected" : "false",
+                  "class" : "android.widget.FrameLayout",
+                  "important-for-accessibility" : "false"
+                },
+                "children" : [ {
+                  "attributes" : {
+                    "ignoreBoundsFiltering" : "false",
+                    "resource-id" : "com.android.systemui:id/status_bar_start_side_except_heads_up",
+                    "clickable" : "false",
+                    "bounds" : "[16,0][126,48]",
+                    "enabled" : "true",
+                    "focused" : "false",
+                    "checked" : "false",
+                    "scrollable" : "false",
+                    "selected" : "false",
+                    "class" : "android.widget.LinearLayout",
+                    "important-for-accessibility" : "false"
+                  },
+                  "children" : [ {
+                    "attributes" : {
+                      "text" : "4:11 ",
+                      "accessibilityText" : "4:11 PM",
+                      "ignoreBoundsFiltering" : "false",
+                      "resource-id" : "com.android.systemui:id/clock",
+                      "clickable" : "false",
+                      "bounds" : "[16,0][82,48]",
+                      "enabled" : "true",
+                      "focused" : "false",
+                      "checked" : "false",
+                      "scrollable" : "false",
+                      "selected" : "false",
+                      "class" : "android.widget.TextView",
+                      "important-for-accessibility" : "true"
+                    },
+                    "clickable" : false,
+                    "enabled" : true,
+                    "focused" : false,
+                    "checked" : false,
+                    "selected" : false
+                  }, {
+                    "attributes" : {
+                      "ignoreBoundsFiltering" : "false",
+                      "resource-id" : "com.android.systemui:id/notification_icon_area",
+                      "clickable" : "false",
+                      "bounds" : "[82,0][126,48]",
+                      "enabled" : "true",
+                      "focused" : "false",
+                      "checked" : "false",
+                      "scrollable" : "false",
+                      "selected" : "false",
+                      "class" : "android.widget.FrameLayout",
+                      "important-for-accessibility" : "false"
+                    },
+                    "children" : [ {
+                      "attributes" : {
+                        "ignoreBoundsFiltering" : "false",
+                        "resource-id" : "com.android.systemui:id/notificationIcons",
+                        "clickable" : "false",
+                        "bounds" : "[82,0][126,48]",
+                        "enabled" : "true",
+                        "focused" : "false",
+                        "checked" : "false",
+                        "scrollable" : "false",
+                        "selected" : "false",
+                        "class" : "android.view.ViewGroup",
+                        "important-for-accessibility" : "false"
+                      },
+                      "children" : [ {
+                        "attributes" : {
+                          "accessibilityText" : "Android System notification: ",
+                          "ignoreBoundsFiltering" : "false",
+                          "clickable" : "false",
+                          "bounds" : "[82,0][126,48]",
+                          "enabled" : "true",
+                          "focused" : "false",
+                          "checked" : "false",
+                          "scrollable" : "false",
+                          "selected" : "false",
+                          "class" : "android.widget.ImageView",
+                          "important-for-accessibility" : "true"
+                        },
+                        "clickable" : false,
+                        "enabled" : true,
+                        "focused" : false,
+                        "checked" : false,
+                        "selected" : false
+                      } ],
+                      "clickable" : false,
+                      "enabled" : true,
+                      "focused" : false,
+                      "checked" : false,
+                      "selected" : false
+                    } ],
+                    "clickable" : false,
+                    "enabled" : true,
+                    "focused" : false,
+                    "checked" : false,
+                    "selected" : false
+                  } ],
+                  "clickable" : false,
+                  "enabled" : true,
+                  "focused" : false,
+                  "checked" : false,
+                  "selected" : false
+                } ],
+                "clickable" : false,
+                "enabled" : true,
+                "focused" : false,
+                "checked" : false,
+                "selected" : false
+              } ],
+              "clickable" : false,
+              "enabled" : true,
+              "focused" : false,
+              "checked" : false,
+              "selected" : false
+            }, {
+              "attributes" : {
+                "ignoreBoundsFiltering" : "false",
+                "resource-id" : "com.android.systemui:id/status_bar_end_side_container",
+                "clickable" : "false",
+                "bounds" : "[340,0][664,48]",
+                "enabled" : "true",
+                "focused" : "false",
+                "checked" : "false",
+                "scrollable" : "false",
+                "selected" : "false",
+                "class" : "android.widget.FrameLayout",
+                "important-for-accessibility" : "false"
+              },
+              "children" : [ {
+                "attributes" : {
+                  "ignoreBoundsFiltering" : "false",
+                  "resource-id" : "com.android.systemui:id/status_bar_end_side_content",
+                  "clickable" : "false",
+                  "bounds" : "[571,0][664,48]",
+                  "enabled" : "true",
+                  "focused" : "false",
+                  "checked" : "false",
+                  "scrollable" : "false",
+                  "selected" : "false",
+                  "class" : "android.widget.LinearLayout",
+                  "important-for-accessibility" : "false"
+                },
+                "children" : [ {
+                  "attributes" : {
+                    "ignoreBoundsFiltering" : "false",
+                    "resource-id" : "com.android.systemui:id/system_icons",
+                    "clickable" : "false",
+                    "bounds" : "[571,0][664,48]",
+                    "enabled" : "true",
+                    "focused" : "false",
+                    "checked" : "false",
+                    "scrollable" : "false",
+                    "selected" : "false",
+                    "class" : "android.widget.LinearLayout",
+                    "important-for-accessibility" : "false"
+                  },
+                  "children" : [ {
+                    "attributes" : {
+                      "ignoreBoundsFiltering" : "false",
+                      "resource-id" : "com.android.systemui:id/statusIcons",
+                      "clickable" : "false",
+                      "bounds" : "[571,0][648,48]",
+                      "enabled" : "true",
+                      "focused" : "false",
+                      "checked" : "false",
+                      "scrollable" : "false",
+                      "selected" : "false",
+                      "class" : "android.widget.LinearLayout",
+                      "important-for-accessibility" : "false"
+                    },
+                    "children" : [ {
+                      "attributes" : {
+                        "ignoreBoundsFiltering" : "false",
+                        "resource-id" : "com.android.systemui:id/wifi_combo",
+                        "clickable" : "false",
+                        "bounds" : "[571,2][606,46]",
+                        "enabled" : "true",
+                        "focused" : "false",
+                        "checked" : "false",
+                        "scrollable" : "false",
+                        "selected" : "false",
+                        "class" : "android.widget.FrameLayout",
+                        "important-for-accessibility" : "false"
+                      },
+                      "children" : [ {
+                        "attributes" : {
+                          "ignoreBoundsFiltering" : "false",
+                          "resource-id" : "com.android.systemui:id/wifi_group",
+                          "clickable" : "false",
+                          "bounds" : "[576,2][606,46]",
+                          "enabled" : "true",
+                          "focused" : "false",
+                          "checked" : "false",
+                          "scrollable" : "false",
+                          "selected" : "false",
+                          "class" : "android.widget.LinearLayout",
+                          "important-for-accessibility" : "false"
+                        },
+                        "children" : [ {
+                          "attributes" : {
+                            "ignoreBoundsFiltering" : "false",
+                            "resource-id" : "com.android.systemui:id/wifi_combo",
+                            "clickable" : "false",
+                            "bounds" : "[576,9][606,39]",
+                            "enabled" : "true",
+                            "focused" : "false",
+                            "checked" : "false",
+                            "scrollable" : "false",
+                            "selected" : "false",
+                            "class" : "android.widget.FrameLayout",
+                            "important-for-accessibility" : "false"
+                          },
+                          "children" : [ {
+                            "attributes" : {
+                              "accessibilityText" : "Wifi signal full.",
+                              "ignoreBoundsFiltering" : "false",
+                              "resource-id" : "com.android.systemui:id/wifi_signal",
+                              "clickable" : "false",
+                              "bounds" : "[576,9][606,39]",
+                              "enabled" : "true",
+                              "focused" : "false",
+                              "checked" : "false",
+                              "scrollable" : "false",
+                              "selected" : "false",
+                              "class" : "android.widget.ImageView",
+                              "important-for-accessibility" : "true"
+                            },
+                            "clickable" : false,
+                            "enabled" : true,
+                            "focused" : false,
+                            "checked" : false,
+                            "selected" : false
+                          } ],
+                          "clickable" : false,
+                          "enabled" : true,
+                          "focused" : false,
+                          "checked" : false,
+                          "selected" : false
+                        } ],
+                        "clickable" : false,
+                        "enabled" : true,
+                        "focused" : false,
+                        "checked" : false,
+                        "selected" : false
+                      } ],
+                      "clickable" : false,
+                      "enabled" : true,
+                      "focused" : false,
+                      "checked" : false,
+                      "selected" : false
+                    }, {
+                      "attributes" : {
+                        "accessibilityText" : "Phone signal full.",
+                        "ignoreBoundsFiltering" : "false",
+                        "resource-id" : "com.android.systemui:id/mobile_combo",
+                        "clickable" : "false",
+                        "bounds" : "[606,2][636,46]",
+                        "enabled" : "true",
+                        "focused" : "false",
+                        "checked" : "false",
+                        "scrollable" : "false",
+                        "selected" : "false",
+                        "class" : "android.widget.FrameLayout",
+                        "important-for-accessibility" : "true"
+                      },
+                      "children" : [ {
+                        "attributes" : {
+                          "ignoreBoundsFiltering" : "false",
+                          "resource-id" : "com.android.systemui:id/mobile_group",
+                          "clickable" : "false",
+                          "bounds" : "[606,2][636,46]",
+                          "enabled" : "true",
+                          "focused" : "false",
+                          "checked" : "false",
+                          "scrollable" : "false",
+                          "selected" : "false",
+                          "class" : "android.widget.LinearLayout",
+                          "important-for-accessibility" : "false"
+                        },
+                        "children" : [ {
+                          "attributes" : {
+                            "ignoreBoundsFiltering" : "false",
+                            "clickable" : "false",
+                            "bounds" : "[606,9][636,39]",
+                            "enabled" : "true",
+                            "focused" : "false",
+                            "checked" : "false",
+                            "scrollable" : "false",
+                            "selected" : "false",
+                            "class" : "android.widget.FrameLayout",
+                            "important-for-accessibility" : "false"
+                          },
+                          "children" : [ {
+                            "attributes" : {
+                              "ignoreBoundsFiltering" : "false",
+                              "resource-id" : "com.android.systemui:id/mobile_signal",
+                              "clickable" : "false",
+                              "bounds" : "[606,9][636,39]",
+                              "enabled" : "true",
+                              "focused" : "false",
+                              "checked" : "false",
+                              "scrollable" : "false",
+                              "selected" : "false",
+                              "class" : "android.widget.ImageView",
+                              "important-for-accessibility" : "false"
+                            },
+                            "clickable" : false,
+                            "enabled" : true,
+                            "focused" : false,
+                            "checked" : false,
+                            "selected" : false
+                          } ],
+                          "clickable" : false,
+                          "enabled" : true,
+                          "focused" : false,
+                          "checked" : false,
+                          "selected" : false
+                        } ],
+                        "clickable" : false,
+                        "enabled" : true,
+                        "focused" : false,
+                        "checked" : false,
+                        "selected" : false
+                      } ],
+                      "clickable" : false,
+                      "enabled" : true,
+                      "focused" : false,
+                      "checked" : false,
+                      "selected" : false
+                    } ],
+                    "clickable" : false,
+                    "enabled" : true,
+                    "focused" : false,
+                    "checked" : false,
+                    "selected" : false
+                  }, {
+                    "attributes" : {
+                      "accessibilityText" : "Battery charging, 100 percent.",
+                      "ignoreBoundsFiltering" : "false",
+                      "resource-id" : "com.android.systemui:id/battery",
+                      "clickable" : "false",
+                      "bounds" : "[648,0][664,48]",
+                      "enabled" : "true",
+                      "focused" : "false",
+                      "checked" : "false",
+                      "scrollable" : "false",
+                      "selected" : "false",
+                      "class" : "android.widget.LinearLayout",
+                      "important-for-accessibility" : "true"
+                    },
+                    "children" : [ {
+                      "attributes" : {
+                        "ignoreBoundsFiltering" : "false",
+                        "clickable" : "false",
+                        "bounds" : "[648,11][664,37]",
+                        "enabled" : "true",
+                        "focused" : "false",
+                        "checked" : "false",
+                        "scrollable" : "false",
+                        "selected" : "false",
+                        "class" : "android.widget.ImageView",
+                        "important-for-accessibility" : "false"
+                      },
+                      "clickable" : false,
+                      "enabled" : true,
+                      "focused" : false,
+                      "checked" : false,
+                      "selected" : false
+                    } ],
+                    "clickable" : false,
+                    "enabled" : true,
+                    "focused" : false,
+                    "checked" : false,
+                    "selected" : false
+                  } ],
+                  "clickable" : false,
+                  "enabled" : true,
+                  "focused" : false,
+                  "checked" : false,
+                  "selected" : false
+                } ],
+                "clickable" : false,
+                "enabled" : true,
+                "focused" : false,
+                "checked" : false,
+                "selected" : false
+              } ],
+              "clickable" : false,
+              "enabled" : true,
+              "focused" : false,
+              "checked" : false,
+              "selected" : false
+            } ],
+            "clickable" : false,
+            "enabled" : true,
+            "focused" : false,
+            "checked" : false,
+            "selected" : false
+          } ],
+          "clickable" : false,
+          "enabled" : true,
+          "focused" : false,
+          "checked" : false,
+          "selected" : false
+        } ],
+        "clickable" : false,
+        "enabled" : true,
+        "focused" : false,
+        "checked" : false,
+        "selected" : false
+      } ],
+      "clickable" : false,
+      "enabled" : true,
+      "focused" : false,
+      "checked" : false,
+      "selected" : false
+    }, {
+      "attributes" : {
+        "ignoreBoundsFiltering" : "false",
+        "clickable" : "false",
+        "bounds" : "[0,0][720,1280]",
+        "enabled" : "true",
+        "focused" : "false",
+        "checked" : "false",
+        "scrollable" : "false",
+        "selected" : "false",
+        "class" : "android.widget.FrameLayout",
+        "important-for-accessibility" : "true"
+      },
+      "children" : [ {
+        "attributes" : {
+          "ignoreBoundsFiltering" : "false",
+          "clickable" : "false",
+          "bounds" : "[0,0][720,1280]",
+          "enabled" : "true",
+          "focused" : "false",
+          "checked" : "false",
+          "scrollable" : "false",
+          "selected" : "false",
+          "class" : "android.widget.LinearLayout",
+          "important-for-accessibility" : "false"
+        },
+        "children" : [ {
+          "attributes" : {
+            "ignoreBoundsFiltering" : "false",
+            "clickable" : "false",
+            "bounds" : "[0,0][720,1280]",
+            "enabled" : "true",
+            "focused" : "false",
+            "checked" : "false",
+            "scrollable" : "false",
+            "selected" : "false",
+            "class" : "android.widget.FrameLayout",
+            "important-for-accessibility" : "false"
+          },
+          "children" : [ {
+            "attributes" : {
+              "ignoreBoundsFiltering" : "false",
+              "resource-id" : "app.kabuk.mobile:id/action_bar_root",
+              "clickable" : "false",
+              "bounds" : "[0,0][720,1280]",
+              "enabled" : "true",
+              "focused" : "false",
+              "checked" : "false",
+              "scrollable" : "false",
+              "selected" : "false",
+              "class" : "android.widget.LinearLayout",
+              "important-for-accessibility" : "false"
+            },
+            "children" : [ {
+              "attributes" : {
+                "ignoreBoundsFiltering" : "false",
+                "resource-id" : "android:id/content",
+                "clickable" : "false",
+                "bounds" : "[0,0][720,1280]",
+                "enabled" : "true",
+                "focused" : "false",
+                "checked" : "false",
+                "scrollable" : "false",
+                "selected" : "false",
+                "class" : "android.widget.FrameLayout",
+                "important-for-accessibility" : "false"
+              },
+              "children" : [ {
+                "attributes" : {
+                  "ignoreBoundsFiltering" : "false",
+                  "clickable" : "false",
+                  "bounds" : "[0,0][720,1280]",
+                  "enabled" : "true",
+                  "focused" : "false",
+                  "checked" : "false",
+                  "scrollable" : "false",
+                  "selected" : "false",
+                  "class" : "android.widget.FrameLayout",
+                  "important-for-accessibility" : "false"
+                },
+                "children" : [ {
+                  "attributes" : {
+                    "ignoreBoundsFiltering" : "false",
+                    "clickable" : "false",
+                    "bounds" : "[0,0][720,1280]",
+                    "enabled" : "true",
+                    "focused" : "false",
+                    "checked" : "false",
+                    "scrollable" : "false",
+                    "selected" : "false",
+                    "class" : "android.view.ViewGroup",
+                    "important-for-accessibility" : "false"
+                  },
+                  "children" : [ {
+                    "attributes" : {
+                      "ignoreBoundsFiltering" : "false",
+                      "clickable" : "false",
+                      "bounds" : "[0,0][720,1280]",
+                      "enabled" : "true",
+                      "focused" : "false",
+                      "checked" : "false",
+                      "scrollable" : "false",
+                      "selected" : "false",
+                      "class" : "android.view.ViewGroup",
+                      "important-for-accessibility" : "false"
+                    },
+                    "children" : [ {
+                      "attributes" : {
+                        "ignoreBoundsFiltering" : "false",
+                        "clickable" : "false",
+                        "bounds" : "[0,0][720,1280]",
+                        "enabled" : "true",
+                        "focused" : "false",
+                        "checked" : "false",
+                        "scrollable" : "false",
+                        "selected" : "false",
+                        "class" : "android.view.ViewGroup",
+                        "important-for-accessibility" : "false"
+                      },
+                      "children" : [ {
+                        "attributes" : {
+                          "ignoreBoundsFiltering" : "false",
+                          "clickable" : "false",
+                          "bounds" : "[0,0][720,1280]",
+                          "enabled" : "true",
+                          "focused" : "false",
+                          "checked" : "false",
+                          "scrollable" : "false",
+                          "selected" : "false",
+                          "class" : "android.view.ViewGroup",
+                          "important-for-accessibility" : "false"
+                        },
+                        "children" : [ {
+                          "attributes" : {
+                            "ignoreBoundsFiltering" : "false",
+                            "clickable" : "false",
+                            "bounds" : "[0,0][720,1280]",
+                            "enabled" : "true",
+                            "focused" : "false",
+                            "checked" : "false",
+                            "scrollable" : "false",
+                            "selected" : "false",
+                            "class" : "android.view.ViewGroup",
+                            "important-for-accessibility" : "false"
+                          },
+                          "clickable" : false,
+                          "enabled" : true,
+                          "focused" : false,
+                          "checked" : false,
+                          "selected" : false
+                        }, {
+                          "attributes" : {
+                            "ignoreBoundsFiltering" : "false",
+                            "clickable" : "false",
+                            "bounds" : "[0,0][720,1280]",
+                            "enabled" : "true",
+                            "focused" : "false",
+                            "checked" : "false",
+                            "scrollable" : "false",
+                            "selected" : "false",
+                            "class" : "android.view.ViewGroup",
+                            "important-for-accessibility" : "false"
+                          },
+                          "children" : [ {
+                            "attributes" : {
+                              "ignoreBoundsFiltering" : "false",
+                              "clickable" : "false",
+                              "bounds" : "[0,0][720,1280]",
+                              "enabled" : "true",
+                              "focused" : "false",
+                              "checked" : "false",
+                              "scrollable" : "false",
+                              "selected" : "false",
+                              "class" : "android.widget.ScrollView",
+                              "important-for-accessibility" : "true"
+                            },
+                            "children" : [ {
+                              "attributes" : {
+                                "ignoreBoundsFiltering" : "false",
+                                "clickable" : "false",
+                                "bounds" : "[0,0][720,1280]",
+                                "enabled" : "true",
+                                "focused" : "false",
+                                "checked" : "false",
+                                "scrollable" : "false",
+                                "selected" : "false",
+                                "class" : "android.view.ViewGroup",
+                                "important-for-accessibility" : "false"
+                              },
+                              "children" : [ {
+                                "attributes" : {
+                                  "ignoreBoundsFiltering" : "false",
+                                  "clickable" : "false",
+                                  "bounds" : "[0,0][720,1280]",
+                                  "enabled" : "true",
+                                  "focused" : "false",
+                                  "checked" : "false",
+                                  "scrollable" : "false",
+                                  "selected" : "false",
+                                  "class" : "android.view.ViewGroup",
+                                  "important-for-accessibility" : "false"
+                                },
+                                "children" : [ {
+                                  "attributes" : {
+                                    "ignoreBoundsFiltering" : "false",
+                                    "clickable" : "false",
+                                    "bounds" : "[0,0][720,1280]",
+                                    "enabled" : "true",
+                                    "focused" : "false",
+                                    "checked" : "false",
+                                    "scrollable" : "false",
+                                    "selected" : "false",
+                                    "class" : "android.view.ViewGroup",
+                                    "important-for-accessibility" : "false"
+                                  },
+                                  "children" : [ {
+                                    "attributes" : {
+                                      "ignoreBoundsFiltering" : "false",
+                                      "resource-id" : "gorsel-cerceve",
+                                      "clickable" : "false",
+                                      "bounds" : "[0,48][720,1280]",
+                                      "enabled" : "true",
+                                      "focused" : "false",
+                                      "checked" : "false",
+                                      "scrollable" : "false",
+                                      "selected" : "false",
+                                      "class" : "android.view.ViewGroup",
+                                      "important-for-accessibility" : "true"
+                                    },
+                                    "children" : [ {
+                                      "attributes" : {
+                                        "ignoreBoundsFiltering" : "false",
+                                        "clickable" : "false",
+                                        "bounds" : "[0,48][720,1280]",
+                                        "enabled" : "true",
+                                        "focused" : "false",
+                                        "checked" : "false",
+                                        "scrollable" : "false",
+                                        "selected" : "false",
+                                        "class" : "android.view.ViewGroup",
+                                        "important-for-accessibility" : "false"
+                                      },
+                                      "children" : [ {
+                                        "attributes" : {
+                                          "ignoreBoundsFiltering" : "false",
+                                          "clickable" : "false",
+                                          "bounds" : "[32,48][688,682]",
+                                          "enabled" : "true",
+                                          "focused" : "false",
+                                          "checked" : "false",
+                                          "scrollable" : "false",
+                                          "selected" : "false",
+                                          "class" : "android.view.ViewGroup",
+                                          "important-for-accessibility" : "false"
+                                        },
+                                        "clickable" : false,
+                                        "enabled" : true,
+                                        "focused" : false,
+                                        "checked" : false,
+                                        "selected" : false
+                                      }, {
+                                        "attributes" : {
+                                          "ignoreBoundsFiltering" : "false",
+                                          "resource-id" : "preview-identity-covers",
+                                          "clickable" : "false",
+                                          "bounds" : "[58,48][662,656]",
+                                          "enabled" : "true",
+                                          "focused" : "false",
+                                          "checked" : "false",
+                                          "scrollable" : "false",
+                                          "selected" : "false",
+                                          "class" : "android.view.ViewGroup",
+                                          "important-for-accessibility" : "true"
+                                        },
+                                        "clickable" : false,
+                                        "enabled" : true,
+                                        "focused" : false,
+                                        "checked" : false,
+                                        "selected" : false
+                                      }, {
+                                        "attributes" : {
+                                          "accessibilityText" : "Canlı müzik, Hush Coffee, Şimdi",
+                                          "ignoreBoundsFiltering" : "false",
+                                          "resource-id" : "activities-event-Hush Coffee",
+                                          "clickable" : "true",
+                                          "bounds" : "[58,48][662,152]",
+                                          "enabled" : "true",
+                                          "focused" : "false",
+                                          "checked" : "false",
+                                          "scrollable" : "false",
+                                          "selected" : "false",
+                                          "class" : "android.widget.Button",
+                                          "important-for-accessibility" : "true"
+                                        },
+                                        "children" : [ {
+                                          "attributes" : {
+                                            "ignoreBoundsFiltering" : "false",
+                                            "clickable" : "false",
+                                            "bounds" : "[58,48][662,152]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "checked" : "false",
+                                            "scrollable" : "false",
+                                            "selected" : "false",
+                                            "class" : "android.view.ViewGroup",
+                                            "important-for-accessibility" : "false"
+                                          },
+                                          "children" : [ {
+                                            "attributes" : {
+                                              "text" : "Canlı müzik",
+                                              "ignoreBoundsFiltering" : "false",
+                                              "clickable" : "false",
+                                              "bounds" : "[92,48][632,82]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "checked" : "false",
+                                              "scrollable" : "false",
+                                              "selected" : "false",
+                                              "class" : "android.widget.TextView",
+                                              "important-for-accessibility" : "true"
+                                            },
+                                            "clickable" : false,
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          }, {
+                                            "attributes" : {
+                                              "text" : "Hush Coffee",
+                                              "ignoreBoundsFiltering" : "false",
+                                              "clickable" : "false",
+                                              "bounds" : "[92,86][632,122]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "checked" : "false",
+                                              "scrollable" : "false",
+                                              "selected" : "false",
+                                              "class" : "android.widget.TextView",
+                                              "important-for-accessibility" : "true"
+                                            },
+                                            "clickable" : false,
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          } ],
+                                          "clickable" : false,
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        } ],
+                                        "clickable" : true,
+                                        "enabled" : true,
+                                        "focused" : false,
+                                        "checked" : false,
+                                        "selected" : false
+                                      }, {
+                                        "attributes" : {
+                                          "accessibilityText" : "Kapsül Anlat gecesi: ikinci çay bizden, kazanan masaya tatlı, Gelişim Üniversitesi Kamp Kulübü, Bugün 15.00",
+                                          "ignoreBoundsFiltering" : "false",
+                                          "resource-id" : "activities-event-Gelişim Üniversitesi Kamp Kulübü",
+                                          "clickable" : "true",
+                                          "bounds" : "[58,176][662,656]",
+                                          "enabled" : "true",
+                                          "focused" : "false",
+                                          "checked" : "false",
+                                          "scrollable" : "false",
+                                          "selected" : "false",
+                                          "class" : "android.widget.Button",
+                                          "important-for-accessibility" : "true"
+                                        },
+                                        "children" : [ {
+                                          "attributes" : {
+                                            "ignoreBoundsFiltering" : "false",
+                                            "clickable" : "false",
+                                            "bounds" : "[58,176][662,656]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "checked" : "false",
+                                            "scrollable" : "false",
+                                            "selected" : "false",
+                                            "class" : "android.view.ViewGroup",
+                                            "important-for-accessibility" : "false"
+                                          },
+                                          "children" : [ {
+                                            "attributes" : {
+                                              "ignoreBoundsFiltering" : "false",
+                                              "clickable" : "false",
+                                              "bounds" : "[60,178][660,478]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "checked" : "false",
+                                              "scrollable" : "false",
+                                              "selected" : "false",
+                                              "class" : "android.view.ViewGroup",
+                                              "important-for-accessibility" : "false"
+                                            },
+                                            "children" : [ {
+                                              "attributes" : {
+                                                "ignoreBoundsFiltering" : "false",
+                                                "clickable" : "false",
+                                                "bounds" : "[60,178][660,478]",
+                                                "enabled" : "true",
+                                                "focused" : "false",
+                                                "checked" : "false",
+                                                "scrollable" : "false",
+                                                "selected" : "false",
+                                                "class" : "android.view.ViewGroup",
+                                                "important-for-accessibility" : "false"
+                                              },
+                                              "children" : [ {
+                                                "attributes" : {
+                                                  "ignoreBoundsFiltering" : "false",
+                                                  "clickable" : "false",
+                                                  "bounds" : "[60,178][660,478]",
+                                                  "enabled" : "true",
+                                                  "focused" : "false",
+                                                  "checked" : "false",
+                                                  "scrollable" : "false",
+                                                  "selected" : "false",
+                                                  "class" : "com.horcrux.svg.SvgView",
+                                                  "important-for-accessibility" : "false"
+                                                },
+                                                "children" : [ {
+                                                  "attributes" : {
+                                                    "ignoreBoundsFiltering" : "false",
+                                                    "clickable" : "false",
+                                                    "bounds" : "[60,178][660,478]",
+                                                    "enabled" : "true",
+                                                    "focused" : "false",
+                                                    "checked" : "false",
+                                                    "scrollable" : "false",
+                                                    "selected" : "false",
+                                                    "class" : "com.horcrux.svg.B",
+                                                    "important-for-accessibility" : "false"
+                                                  },
+                                                  "children" : [ {
+                                                    "attributes" : {
+                                                      "ignoreBoundsFiltering" : "false",
+                                                      "clickable" : "false",
+                                                      "bounds" : "[60,178][660,478]",
+                                                      "enabled" : "true",
+                                                      "focused" : "false",
+                                                      "checked" : "false",
+                                                      "scrollable" : "false",
+                                                      "selected" : "false",
+                                                      "class" : "com.horcrux.svg.Q",
+                                                      "important-for-accessibility" : "false"
+                                                    },
+                                                    "clickable" : false,
+                                                    "enabled" : true,
+                                                    "focused" : false,
+                                                    "checked" : false,
+                                                    "selected" : false
+                                                  }, {
+                                                    "attributes" : {
+                                                      "ignoreBoundsFiltering" : "false",
+                                                      "clickable" : "false",
+                                                      "bounds" : "[281,264][364,401]",
+                                                      "enabled" : "true",
+                                                      "focused" : "false",
+                                                      "checked" : "false",
+                                                      "scrollable" : "false",
+                                                      "selected" : "false",
+                                                      "class" : "com.horcrux.svg.B",
+                                                      "important-for-accessibility" : "false"
+                                                    },
+                                                    "children" : [ {
+                                                      "attributes" : {
+                                                        "ignoreBoundsFiltering" : "false",
+                                                        "clickable" : "false",
+                                                        "bounds" : "[281,264][364,388]",
+                                                        "enabled" : "true",
+                                                        "focused" : "false",
+                                                        "checked" : "false",
+                                                        "scrollable" : "false",
+                                                        "selected" : "false",
+                                                        "class" : "com.horcrux.svg.J",
+                                                        "important-for-accessibility" : "false"
+                                                      },
+                                                      "clickable" : false,
+                                                      "enabled" : true,
+                                                      "focused" : false,
+                                                      "checked" : false,
+                                                      "selected" : false
+                                                    }, {
+                                                      "attributes" : {
+                                                        "ignoreBoundsFiltering" : "false",
+                                                        "clickable" : "false",
+                                                        "bounds" : "[292,298][352,381]",
+                                                        "enabled" : "true",
+                                                        "focused" : "false",
+                                                        "checked" : "false",
+                                                        "scrollable" : "false",
+                                                        "selected" : "false",
+                                                        "class" : "com.horcrux.svg.J",
+                                                        "important-for-accessibility" : "false"
+                                                      },
+                                                      "clickable" : false,
+                                                      "enabled" : true,
+                                                      "focused" : false,
+                                                      "checked" : false,
+                                                      "selected" : false
+                                                    }, {
+                                                      "attributes" : {
+                                                        "ignoreBoundsFiltering" : "false",
+                                                        "clickable" : "false",
+                                                        "bounds" : "[296,388][349,402]",
+                                                        "enabled" : "true",
+                                                        "focused" : "false",
+                                                        "checked" : "false",
+                                                        "scrollable" : "false",
+                                                        "selected" : "false",
+                                                        "class" : "com.horcrux.svg.Q",
+                                                        "important-for-accessibility" : "false"
+                                                      },
+                                                      "clickable" : false,
+                                                      "enabled" : true,
+                                                      "focused" : false,
+                                                      "checked" : false,
+                                                      "selected" : false
+                                                    } ],
+                                                    "clickable" : false,
+                                                    "enabled" : true,
+                                                    "focused" : false,
+                                                    "checked" : false,
+                                                    "selected" : false
+                                                  }, {
+                                                    "attributes" : {
+                                                      "ignoreBoundsFiltering" : "false",
+                                                      "clickable" : "false",
+                                                      "bounds" : "[348,245][386,283]",
+                                                      "enabled" : "true",
+                                                      "focused" : "false",
+                                                      "checked" : "false",
+                                                      "scrollable" : "false",
+                                                      "selected" : "false",
+                                                      "class" : "com.horcrux.svg.B",
+                                                      "important-for-accessibility" : "false"
+                                                    },
+                                                    "children" : [ {
+                                                      "attributes" : {
+                                                        "ignoreBoundsFiltering" : "false",
+                                                        "clickable" : "false",
+                                                        "bounds" : "[348,245][386,283]",
+                                                        "enabled" : "true",
+                                                        "focused" : "false",
+                                                        "checked" : "false",
+                                                        "scrollable" : "false",
+                                                        "selected" : "false",
+                                                        "class" : "com.horcrux.svg.J",
+                                                        "important-for-accessibility" : "false"
+                                                      },
+                                                      "clickable" : false,
+                                                      "enabled" : true,
+                                                      "focused" : false,
+                                                      "checked" : false,
+                                                      "selected" : false
+                                                    } ],
+                                                    "clickable" : false,
+                                                    "enabled" : true,
+                                                    "focused" : false,
+                                                    "checked" : false,
+                                                    "selected" : false
+                                                  }, {
+                                                    "attributes" : {
+                                                      "ignoreBoundsFiltering" : "false",
+                                                      "clickable" : "false",
+                                                      "bounds" : "[375,264][458,401]",
+                                                      "enabled" : "true",
+                                                      "focused" : "false",
+                                                      "checked" : "false",
+                                                      "scrollable" : "false",
+                                                      "selected" : "false",
+                                                      "class" : "com.horcrux.svg.B",
+                                                      "important-for-accessibility" : "false"
+                                                    },
+                                                    "children" : [ {
+                                                      "attributes" : {
+                                                        "ignoreBoundsFiltering" : "false",
+                                                        "clickable" : "false",
+                                                        "bounds" : "[375,264][458,388]",
+                                                        "enabled" : "true",
+                                                        "focused" : "false",
+                                                        "checked" : "false",
+                                                        "scrollable" : "false",
+                                                        "selected" : "false",
+                                                        "class" : "com.horcrux.svg.J",
+                                                        "important-for-accessibility" : "false"
+                                                      },
+                                                      "clickable" : false,
+                                                      "enabled" : true,
+                                                      "focused" : false,
+                                                      "checked" : false,
+                                                      "selected" : false
+                                                    }, {
+                                                      "attributes" : {
+                                                        "ignoreBoundsFiltering" : "false",
+                                                        "clickable" : "false",
+                                                        "bounds" : "[386,298][446,381]",
+                                                        "enabled" : "true",
+                                                        "focused" : "false",
+                                                        "checked" : "false",
+                                                        "scrollable" : "false",
+                                                        "selected" : "false",
+                                                        "class" : "com.horcrux.svg.J",
+                                                        "important-for-accessibility" : "false"
+                                                      },
+                                                      "clickable" : false,
+                                                      "enabled" : true,
+                                                      "focused" : false,
+                                                      "checked" : false,
+                                                      "selected" : false
+                                                    }, {
+                                                      "attributes" : {
+                                                        "ignoreBoundsFiltering" : "false",
+                                                        "clickable" : "false",
+                                                        "bounds" : "[390,388][443,402]",
+                                                        "enabled" : "true",
+                                                        "focused" : "false",
+                                                        "checked" : "false",
+                                                        "scrollable" : "false",
+                                                        "selected" : "false",
+                                                        "class" : "com.horcrux.svg.Q",
+                                                        "important-for-accessibility" : "false"
+                                                      },
+                                                      "clickable" : false,
+                                                      "enabled" : true,
+                                                      "focused" : false,
+                                                      "checked" : false,
+                                                      "selected" : false
+                                                    } ],
+                                                    "clickable" : false,
+                                                    "enabled" : true,
+                                                    "focused" : false,
+                                                    "checked" : false,
+                                                    "selected" : false
+                                                  }, {
+                                                    "attributes" : {
+                                                      "ignoreBoundsFiltering" : "false",
+                                                      "clickable" : "false",
+                                                      "bounds" : "[483,179][611,334]",
+                                                      "enabled" : "true",
+                                                      "focused" : "false",
+                                                      "checked" : "false",
+                                                      "scrollable" : "false",
+                                                      "selected" : "false",
+                                                      "class" : "com.horcrux.svg.B",
+                                                      "important-for-accessibility" : "false"
+                                                    },
+                                                    "children" : [ {
+                                                      "attributes" : {
+                                                        "ignoreBoundsFiltering" : "false",
+                                                        "clickable" : "false",
+                                                        "bounds" : "[483,179][611,334]",
+                                                        "enabled" : "true",
+                                                        "focused" : "false",
+                                                        "checked" : "false",
+                                                        "scrollable" : "false",
+                                                        "selected" : "false",
+                                                        "class" : "com.horcrux.svg.Q",
+                                                        "important-for-accessibility" : "false"
+                                                      },
+                                                      "clickable" : false,
+                                                      "enabled" : true,
+                                                      "focused" : false,
+                                                      "checked" : false,
+                                                      "selected" : false
+                                                    }, {
+                                                      "attributes" : {
+                                                        "ignoreBoundsFiltering" : "false",
+                                                        "clickable" : "false",
+                                                        "bounds" : "[483,179][592,229]",
+                                                        "enabled" : "true",
+                                                        "focused" : "false",
+                                                        "checked" : "false",
+                                                        "scrollable" : "false",
+                                                        "selected" : "false",
+                                                        "class" : "com.horcrux.svg.J",
+                                                        "important-for-accessibility" : "false"
+                                                      },
+                                                      "clickable" : false,
+                                                      "enabled" : true,
+                                                      "focused" : false,
+                                                      "checked" : false,
+                                                      "selected" : false
+                                                    }, {
+                                                      "attributes" : {
+                                                        "ignoreBoundsFiltering" : "false",
+                                                        "clickable" : "false",
+                                                        "bounds" : "[511,238][580,259]",
+                                                        "enabled" : "true",
+                                                        "focused" : "false",
+                                                        "checked" : "false",
+                                                        "scrollable" : "false",
+                                                        "selected" : "false",
+                                                        "class" : "com.horcrux.svg.Q",
+                                                        "important-for-accessibility" : "false"
+                                                      },
+                                                      "clickable" : false,
+                                                      "enabled" : true,
+                                                      "focused" : false,
+                                                      "checked" : false,
+                                                      "selected" : false
+                                                    }, {
+                                                      "attributes" : {
+                                                        "ignoreBoundsFiltering" : "false",
+                                                        "clickable" : "false",
+                                                        "bounds" : "[515,259][569,278]",
+                                                        "enabled" : "true",
+                                                        "focused" : "false",
+                                                        "checked" : "false",
+                                                        "scrollable" : "false",
+                                                        "selected" : "false",
+                                                        "class" : "com.horcrux.svg.Q",
+                                                        "important-for-accessibility" : "false"
+                                                      },
+                                                      "clickable" : false,
+                                                      "enabled" : true,
+                                                      "focused" : false,
+                                                      "checked" : false,
+                                                      "selected" : false
+                                                    }, {
+                                                      "attributes" : {
+                                                        "ignoreBoundsFiltering" : "false",
+                                                        "clickable" : "false",
+                                                        "bounds" : "[518,276][579,296]",
+                                                        "enabled" : "true",
+                                                        "focused" : "false",
+                                                        "checked" : "false",
+                                                        "scrollable" : "false",
+                                                        "selected" : "false",
+                                                        "class" : "com.horcrux.svg.Q",
+                                                        "important-for-accessibility" : "false"
+                                                      },
+                                                      "clickable" : false,
+                                                      "enabled" : true,
+                                                      "focused" : false,
+                                                      "checked" : false,
+                                                      "selected" : false
+                                                    } ],
+                                                    "clickable" : false,
+                                                    "enabled" : true,
+                                                    "focused" : false,
+                                                    "checked" : false,
+                                                    "selected" : false
+                                                  }, {
+                                                    "attributes" : {
+                                                      "ignoreBoundsFiltering" : "false",
+                                                      "clickable" : "false",
+                                                      "bounds" : "[240,189][480,429]",
+                                                      "enabled" : "true",
+                                                      "focused" : "false",
+                                                      "checked" : "false",
+                                                      "scrollable" : "false",
+                                                      "selected" : "false",
+                                                      "class" : "com.horcrux.svg.b",
+                                                      "important-for-accessibility" : "false"
+                                                    },
+                                                    "clickable" : false,
+                                                    "enabled" : true,
+                                                    "focused" : false,
+                                                    "checked" : false,
+                                                    "selected" : false
+                                                  }, {
+                                                    "attributes" : {
+                                                      "ignoreBoundsFiltering" : "false",
+                                                      "clickable" : "false",
+                                                      "bounds" : "[307,215][319,249]",
+                                                      "enabled" : "true",
+                                                      "focused" : "false",
+                                                      "checked" : "false",
+                                                      "scrollable" : "false",
+                                                      "selected" : "false",
+                                                      "class" : "com.horcrux.svg.Q",
+                                                      "important-for-accessibility" : "false"
+                                                    },
+                                                    "clickable" : false,
+                                                    "enabled" : true,
+                                                    "focused" : false,
+                                                    "checked" : false,
+                                                    "selected" : false
+                                                  }, {
+                                                    "attributes" : {
+                                                      "ignoreBoundsFiltering" : "false",
+                                                      "clickable" : "false",
+                                                      "bounds" : "[333,215][345,249]",
+                                                      "enabled" : "true",
+                                                      "focused" : "false",
+                                                      "checked" : "false",
+                                                      "scrollable" : "false",
+                                                      "selected" : "false",
+                                                      "class" : "com.horcrux.svg.Q",
+                                                      "important-for-accessibility" : "false"
+                                                    },
+                                                    "clickable" : false,
+                                                    "enabled" : true,
+                                                    "focused" : false,
+                                                    "checked" : false,
+                                                    "selected" : false
+                                                  }, {
+                                                    "attributes" : {
+                                                      "ignoreBoundsFiltering" : "false",
+                                                      "clickable" : "false",
+                                                      "bounds" : "[405,215][417,249]",
+                                                      "enabled" : "true",
+                                                      "focused" : "false",
+                                                      "checked" : "false",
+                                                      "scrollable" : "false",
+                                                      "selected" : "false",
+                                                      "class" : "com.horcrux.svg.Q",
+                                                      "important-for-accessibility" : "false"
+                                                    },
+                                                    "clickable" : false,
+                                                    "enabled" : true,
+                                                    "focused" : false,
+                                                    "checked" : false,
+                                                    "selected" : false
+                                                  }, {
+                                                    "attributes" : {
+                                                      "ignoreBoundsFiltering" : "false",
+                                                      "clickable" : "false",
+                                                      "bounds" : "[431,215][443,249]",
+                                                      "enabled" : "true",
+                                                      "focused" : "false",
+                                                      "checked" : "false",
+                                                      "scrollable" : "false",
+                                                      "selected" : "false",
+                                                      "class" : "com.horcrux.svg.Q",
+                                                      "important-for-accessibility" : "false"
+                                                    },
+                                                    "clickable" : false,
+                                                    "enabled" : true,
+                                                    "focused" : false,
+                                                    "checked" : false,
+                                                    "selected" : false
+                                                  } ],
+                                                  "clickable" : false,
+                                                  "enabled" : true,
+                                                  "focused" : false,
+                                                  "checked" : false,
+                                                  "selected" : false
+                                                } ],
+                                                "clickable" : false,
+                                                "enabled" : true,
+                                                "focused" : false,
+                                                "checked" : false,
+                                                "selected" : false
+                                              } ],
+                                              "clickable" : false,
+                                              "enabled" : true,
+                                              "focused" : false,
+                                              "checked" : false,
+                                              "selected" : false
+                                            }, {
+                                              "attributes" : {
+                                                "ignoreBoundsFiltering" : "false",
+                                                "clickable" : "false",
+                                                "bounds" : "[84,202][199,250]",
+                                                "enabled" : "true",
+                                                "focused" : "false",
+                                                "checked" : "false",
+                                                "scrollable" : "false",
+                                                "selected" : "false",
+                                                "class" : "android.view.ViewGroup",
+                                                "important-for-accessibility" : "false"
+                                              },
+                                              "clickable" : false,
+                                              "enabled" : true,
+                                              "focused" : false,
+                                              "checked" : false,
+                                              "selected" : false
+                                            }, {
+                                              "attributes" : {
+                                                "text" : "Etkinlik",
+                                                "ignoreBoundsFiltering" : "false",
+                                                "clickable" : "false",
+                                                "bounds" : "[102,212][181,240]",
+                                                "enabled" : "true",
+                                                "focused" : "false",
+                                                "checked" : "false",
+                                                "scrollable" : "false",
+                                                "selected" : "false",
+                                                "class" : "android.widget.TextView",
+                                                "important-for-accessibility" : "true"
+                                              },
+                                              "clickable" : false,
+                                              "enabled" : true,
+                                              "focused" : false,
+                                              "checked" : false,
+                                              "selected" : false
+                                            }, {
+                                              "attributes" : {
+                                                "ignoreBoundsFiltering" : "false",
+                                                "clickable" : "false",
+                                                "bounds" : "[464,202][636,250]",
+                                                "enabled" : "true",
+                                                "focused" : "false",
+                                                "checked" : "false",
+                                                "scrollable" : "false",
+                                                "selected" : "false",
+                                                "class" : "android.view.ViewGroup",
+                                                "important-for-accessibility" : "false"
+                                              },
+                                              "clickable" : false,
+                                              "enabled" : true,
+                                              "focused" : false,
+                                              "checked" : false,
+                                              "selected" : false
+                                            }, {
+                                              "attributes" : {
+                                                "text" : "Bugün 15.00",
+                                                "ignoreBoundsFiltering" : "false",
+                                                "clickable" : "false",
+                                                "bounds" : "[482,212][618,240]",
+                                                "enabled" : "true",
+                                                "focused" : "false",
+                                                "checked" : "false",
+                                                "scrollable" : "false",
+                                                "selected" : "false",
+                                                "class" : "android.widget.TextView",
+                                                "important-for-accessibility" : "true"
+                                              },
+                                              "clickable" : false,
+                                              "enabled" : true,
+                                              "focused" : false,
+                                              "checked" : false,
+                                              "selected" : false
+                                            } ],
+                                            "clickable" : false,
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          }, {
+                                            "attributes" : {
+                                              "text" : "Kapsül Anlat gecesi: ikinci çay bizden, kazanan masaya tatlı",
+                                              "ignoreBoundsFiltering" : "false",
+                                              "clickable" : "false",
+                                              "bounds" : "[92,502][632,586]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "checked" : "false",
+                                              "scrollable" : "false",
+                                              "selected" : "false",
+                                              "class" : "android.widget.TextView",
+                                              "important-for-accessibility" : "true"
+                                            },
+                                            "clickable" : false,
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          }, {
+                                            "attributes" : {
+                                              "text" : "Gelişim Üniversitesi Kamp Kulübü",
+                                              "ignoreBoundsFiltering" : "false",
+                                              "clickable" : "false",
+                                              "bounds" : "[92,590][632,626]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "checked" : "false",
+                                              "scrollable" : "false",
+                                              "selected" : "false",
+                                              "class" : "android.widget.TextView",
+                                              "important-for-accessibility" : "true"
+                                            },
+                                            "clickable" : false,
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          } ],
+                                          "clickable" : false,
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        } ],
+                                        "clickable" : true,
+                                        "enabled" : true,
+                                        "focused" : false,
+                                        "checked" : false,
+                                        "selected" : false
+                                      }, {
+                                        "attributes" : {
+                                          "ignoreBoundsFiltering" : "false",
+                                          "clickable" : "false",
+                                          "bounds" : "[32,714][688,1280]",
+                                          "enabled" : "true",
+                                          "focused" : "false",
+                                          "checked" : "false",
+                                          "scrollable" : "false",
+                                          "selected" : "false",
+                                          "class" : "android.view.ViewGroup",
+                                          "important-for-accessibility" : "false"
+                                        },
+                                        "clickable" : false,
+                                        "enabled" : true,
+                                        "focused" : false,
+                                        "checked" : false,
+                                        "selected" : false
+                                      }, {
+                                        "attributes" : {
+                                          "text" : "SOHBET DUVAR KAĞIDI",
+                                          "ignoreBoundsFiltering" : "false",
+                                          "clickable" : "false",
+                                          "bounds" : "[58,740][662,772]",
+                                          "enabled" : "true",
+                                          "focused" : "false",
+                                          "checked" : "false",
+                                          "scrollable" : "false",
+                                          "selected" : "false",
+                                          "class" : "android.widget.TextView",
+                                          "important-for-accessibility" : "true"
+                                        },
+                                        "clickable" : false,
+                                        "enabled" : true,
+                                        "focused" : false,
+                                        "checked" : false,
+                                        "selected" : false
+                                      }, {
+                                        "attributes" : {
+                                          "ignoreBoundsFiltering" : "false",
+                                          "resource-id" : "preview-identity-wallpaper",
+                                          "clickable" : "false",
+                                          "bounds" : "[58,796][662,1280]",
+                                          "enabled" : "true",
+                                          "focused" : "false",
+                                          "checked" : "false",
+                                          "scrollable" : "false",
+                                          "selected" : "false",
+                                          "class" : "android.view.ViewGroup",
+                                          "important-for-accessibility" : "true"
+                                        },
+                                        "children" : [ {
+                                          "attributes" : {
+                                            "ignoreBoundsFiltering" : "false",
+                                            "clickable" : "false",
+                                            "bounds" : "[58,796][662,1280]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "checked" : "false",
+                                            "scrollable" : "false",
+                                            "selected" : "false",
+                                            "class" : "android.view.ViewGroup",
+                                            "important-for-accessibility" : "false"
+                                          },
+                                          "children" : [ {
+                                            "attributes" : {
+                                              "ignoreBoundsFiltering" : "false",
+                                              "clickable" : "false",
+                                              "bounds" : "[58,796][658,1280]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "checked" : "false",
+                                              "scrollable" : "false",
+                                              "selected" : "false",
+                                              "class" : "android.widget.ImageView",
+                                              "important-for-accessibility" : "false"
+                                            },
+                                            "clickable" : false,
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          }, {
+                                            "attributes" : {
+                                              "ignoreBoundsFiltering" : "false",
+                                              "clickable" : "false",
+                                              "bounds" : "[658,796][662,1280]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "checked" : "false",
+                                              "scrollable" : "false",
+                                              "selected" : "false",
+                                              "class" : "android.widget.ImageView",
+                                              "important-for-accessibility" : "false"
+                                            },
+                                            "clickable" : false,
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          } ],
+                                          "clickable" : false,
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        }, {
+                                          "attributes" : {
+                                            "ignoreBoundsFiltering" : "false",
+                                            "clickable" : "false",
+                                            "bounds" : "[82,1032][146,1096]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "checked" : "false",
+                                            "scrollable" : "false",
+                                            "selected" : "false",
+                                            "class" : "android.view.ViewGroup",
+                                            "important-for-accessibility" : "false"
+                                          },
+                                          "children" : [ {
+                                            "attributes" : {
+                                              "ignoreBoundsFiltering" : "false",
+                                              "clickable" : "false",
+                                              "bounds" : "[82,1032][146,1096]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "checked" : "false",
+                                              "scrollable" : "false",
+                                              "selected" : "false",
+                                              "class" : "com.horcrux.svg.SvgView",
+                                              "important-for-accessibility" : "false"
+                                            },
+                                            "children" : [ {
+                                              "attributes" : {
+                                                "ignoreBoundsFiltering" : "false",
+                                                "clickable" : "false",
+                                                "bounds" : "[82,1032][146,1096]",
+                                                "enabled" : "true",
+                                                "focused" : "false",
+                                                "checked" : "false",
+                                                "scrollable" : "false",
+                                                "selected" : "false",
+                                                "class" : "com.horcrux.svg.B",
+                                                "important-for-accessibility" : "false"
+                                              },
+                                              "children" : [ {
+                                                "attributes" : {
+                                                  "ignoreBoundsFiltering" : "false",
+                                                  "clickable" : "false",
+                                                  "bounds" : "[82,1032][146,1096]",
+                                                  "enabled" : "true",
+                                                  "focused" : "false",
+                                                  "checked" : "false",
+                                                  "scrollable" : "false",
+                                                  "selected" : "false",
+                                                  "class" : "com.horcrux.svg.B",
+                                                  "important-for-accessibility" : "false"
+                                                },
+                                                "children" : [ {
+                                                  "attributes" : {
+                                                    "ignoreBoundsFiltering" : "false",
+                                                    "clickable" : "false",
+                                                    "bounds" : "[82,1032][146,1096]",
+                                                    "enabled" : "true",
+                                                    "focused" : "false",
+                                                    "checked" : "false",
+                                                    "scrollable" : "false",
+                                                    "selected" : "false",
+                                                    "class" : "com.horcrux.svg.b",
+                                                    "important-for-accessibility" : "false"
+                                                  },
+                                                  "clickable" : false,
+                                                  "enabled" : true,
+                                                  "focused" : false,
+                                                  "checked" : false,
+                                                  "selected" : false
+                                                }, {
+                                                  "attributes" : {
+                                                    "ignoreBoundsFiltering" : "false",
+                                                    "clickable" : "false",
+                                                    "bounds" : "[87,1034][141,1051]",
+                                                    "enabled" : "true",
+                                                    "focused" : "false",
+                                                    "checked" : "false",
+                                                    "scrollable" : "false",
+                                                    "selected" : "false",
+                                                    "class" : "com.horcrux.svg.J",
+                                                    "important-for-accessibility" : "false"
+                                                  },
+                                                  "clickable" : false,
+                                                  "enabled" : true,
+                                                  "focused" : false,
+                                                  "checked" : false,
+                                                  "selected" : false
+                                                }, {
+                                                  "attributes" : {
+                                                    "ignoreBoundsFiltering" : "false",
+                                                    "clickable" : "false",
+                                                    "bounds" : "[110,1036][117,1043]",
+                                                    "enabled" : "true",
+                                                    "focused" : "false",
+                                                    "checked" : "false",
+                                                    "scrollable" : "false",
+                                                    "selected" : "false",
+                                                    "class" : "com.horcrux.svg.b",
+                                                    "important-for-accessibility" : "false"
+                                                  },
+                                                  "clickable" : false,
+                                                  "enabled" : true,
+                                                  "focused" : false,
+                                                  "checked" : false,
+                                                  "selected" : false
+                                                }, {
+                                                  "attributes" : {
+                                                    "ignoreBoundsFiltering" : "false",
+                                                    "clickable" : "false",
+                                                    "bounds" : "[112,1035][122,1041]",
+                                                    "enabled" : "true",
+                                                    "focused" : "false",
+                                                    "checked" : "false",
+                                                    "scrollable" : "false",
+                                                    "selected" : "false",
+                                                    "class" : "com.horcrux.svg.Q",
+                                                    "important-for-accessibility" : "false"
+                                                  },
+                                                  "clickable" : false,
+                                                  "enabled" : true,
+                                                  "focused" : false,
+                                                  "checked" : false,
+                                                  "selected" : false
+                                                }, {
+                                                  "attributes" : {
+                                                    "ignoreBoundsFiltering" : "false",
+                                                    "clickable" : "false",
+                                                    "bounds" : "[90,1044][137,1049]",
+                                                    "enabled" : "true",
+                                                    "focused" : "false",
+                                                    "checked" : "false",
+                                                    "scrollable" : "false",
+                                                    "selected" : "false",
+                                                    "class" : "com.horcrux.svg.J",
+                                                    "important-for-accessibility" : "false"
+                                                  },
+                                                  "clickable" : false,
+                                                  "enabled" : true,
+                                                  "focused" : false,
+                                                  "checked" : false,
+                                                  "selected" : false
+                                                }, {
+                                                  "attributes" : {
+                                                    "ignoreBoundsFiltering" : "false",
+                                                    "clickable" : "false",
+                                                    "bounds" : "[95,1042][133,1096]",
+                                                    "enabled" : "true",
+                                                    "focused" : "false",
+                                                    "checked" : "false",
+                                                    "scrollable" : "false",
+                                                    "selected" : "false",
+                                                    "class" : "com.horcrux.svg.Q",
+                                                    "important-for-accessibility" : "false"
+                                                  },
+                                                  "clickable" : false,
+                                                  "enabled" : true,
+                                                  "focused" : false,
+                                                  "checked" : false,
+                                                  "selected" : false
+                                                }, {
+                                                  "attributes" : {
+                                                    "ignoreBoundsFiltering" : "false",
+                                                    "clickable" : "false",
+                                                    "bounds" : "[100,1052][127,1067]",
+                                                    "enabled" : "true",
+                                                    "focused" : "false",
+                                                    "checked" : "false",
+                                                    "scrollable" : "false",
+                                                    "selected" : "false",
+                                                    "class" : "com.horcrux.svg.Q",
+                                                    "important-for-accessibility" : "false"
+                                                  },
+                                                  "clickable" : false,
+                                                  "enabled" : true,
+                                                  "focused" : false,
+                                                  "checked" : false,
+                                                  "selected" : false
+                                                }, {
+                                                  "attributes" : {
+                                                    "ignoreBoundsFiltering" : "false",
+                                                    "clickable" : "false",
+                                                    "bounds" : "[108,1047][118,1053]",
+                                                    "enabled" : "true",
+                                                    "focused" : "false",
+                                                    "checked" : "false",
+                                                    "scrollable" : "false",
+                                                    "selected" : "false",
+                                                    "class" : "com.horcrux.svg.Q",
+                                                    "important-for-accessibility" : "false"
+                                                  },
+                                                  "clickable" : false,
+                                                  "enabled" : true,
+                                                  "focused" : false,
+                                                  "checked" : false,
+                                                  "selected" : false
+                                                }, {
+                                                  "attributes" : {
+                                                    "ignoreBoundsFiltering" : "false",
+                                                    "clickable" : "false",
+                                                    "bounds" : "[105,1056][111,1062]",
+                                                    "enabled" : "true",
+                                                    "focused" : "false",
+                                                    "checked" : "false",
+                                                    "scrollable" : "false",
+                                                    "selected" : "false",
+                                                    "class" : "com.horcrux.svg.b",
+                                                    "important-for-accessibility" : "false"
+                                                  },
+                                                  "clickable" : false,
+                                                  "enabled" : true,
+                                                  "focused" : false,
+                                                  "checked" : false,
+                                                  "selected" : false
+                                                }, {
+                                                  "attributes" : {
+                                                    "ignoreBoundsFiltering" : "false",
+                                                    "clickable" : "false",
+                                                    "bounds" : "[116,1056][122,1062]",
+                                                    "enabled" : "true",
+                                                    "focused" : "false",
+                                                    "checked" : "false",
+                                                    "scrollable" : "false",
+                                                    "selected" : "false",
+                                                    "class" : "com.horcrux.svg.b",
+                                                    "important-for-accessibility" : "false"
+                                                  },
+                                                  "clickable" : false,
+                                                  "enabled" : true,
+                                                  "focused" : false,
+                                                  "checked" : false,
+                                                  "selected" : false
+                                                }, {
+                                                  "attributes" : {
+                                                    "ignoreBoundsFiltering" : "false",
+                                                    "clickable" : "false",
+                                                    "bounds" : "[122,1045][133,1096]",
+                                                    "enabled" : "true",
+                                                    "focused" : "false",
+                                                    "checked" : "false",
+                                                    "scrollable" : "false",
+                                                    "selected" : "false",
+                                                    "class" : "com.horcrux.svg.J",
+                                                    "important-for-accessibility" : "false"
+                                                  },
+                                                  "clickable" : false,
+                                                  "enabled" : true,
+                                                  "focused" : false,
+                                                  "checked" : false,
+                                                  "selected" : false
+                                                } ],
+                                                "clickable" : false,
+                                                "enabled" : true,
+                                                "focused" : false,
+                                                "checked" : false,
+                                                "selected" : false
+                                              } ],
+                                              "clickable" : false,
+                                              "enabled" : true,
+                                              "focused" : false,
+                                              "checked" : false,
+                                              "selected" : false
+                                            } ],
+                                            "clickable" : false,
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          } ],
+                                          "clickable" : false,
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        }, {
+                                          "attributes" : {
+                                            "text" : "kapsul-ab12",
+                                            "ignoreBoundsFiltering" : "false",
+                                            "clickable" : "false",
+                                            "bounds" : "[162,1046][320,1082]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "checked" : "false",
+                                            "scrollable" : "false",
+                                            "selected" : "false",
+                                            "class" : "android.widget.TextView",
+                                            "important-for-accessibility" : "true"
+                                          },
+                                          "clickable" : false,
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        }, {
+                                          "attributes" : {
+                                            "accessibilityText" : "Masa kurduk, gelir misiniz?",
+                                            "ignoreBoundsFiltering" : "false",
+                                            "clickable" : "true",
+                                            "bounds" : "[162,1104][571,1220]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "checked" : "false",
+                                            "scrollable" : "false",
+                                            "selected" : "false",
+                                            "class" : "android.view.ViewGroup",
+                                            "important-for-accessibility" : "true"
+                                          },
+                                          "children" : [ {
+                                            "attributes" : {
+                                              "ignoreBoundsFiltering" : "false",
+                                              "clickable" : "false",
+                                              "bounds" : "[162,1104][571,1220]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "checked" : "false",
+                                              "scrollable" : "false",
+                                              "selected" : "false",
+                                              "class" : "android.view.ViewGroup",
+                                              "important-for-accessibility" : "false"
+                                            },
+                                            "children" : [ {
+                                              "attributes" : {
+                                                "text" : "Masa kurduk, gelir misiniz? 21:40",
+                                                "ignoreBoundsFiltering" : "false",
+                                                "clickable" : "false",
+                                                "bounds" : "[188,1122][545,1202]",
+                                                "enabled" : "true",
+                                                "focused" : "false",
+                                                "checked" : "false",
+                                                "scrollable" : "false",
+                                                "selected" : "false",
+                                                "class" : "android.widget.TextView",
+                                                "important-for-accessibility" : "true"
+                                              },
+                                              "clickable" : false,
+                                              "enabled" : true,
+                                              "focused" : false,
+                                              "checked" : false,
+                                              "selected" : false
+                                            }, {
+                                              "attributes" : {
+                                                "ignoreBoundsFiltering" : "false",
+                                                "clickable" : "false",
+                                                "bounds" : "[483,1174][545,1202]",
+                                                "enabled" : "true",
+                                                "focused" : "false",
+                                                "checked" : "false",
+                                                "scrollable" : "false",
+                                                "selected" : "false",
+                                                "class" : "android.view.ViewGroup",
+                                                "important-for-accessibility" : "false"
+                                              },
+                                              "children" : [ {
+                                                "attributes" : {
+                                                  "text" : "21:40",
+                                                  "ignoreBoundsFiltering" : "false",
+                                                  "clickable" : "false",
+                                                  "bounds" : "[483,1174][545,1202]",
+                                                  "enabled" : "true",
+                                                  "focused" : "false",
+                                                  "checked" : "false",
+                                                  "scrollable" : "false",
+                                                  "selected" : "false",
+                                                  "class" : "android.widget.TextView",
+                                                  "important-for-accessibility" : "false"
+                                                },
+                                                "clickable" : false,
+                                                "enabled" : true,
+                                                "focused" : false,
+                                                "checked" : false,
+                                                "selected" : false
+                                              } ],
+                                              "clickable" : false,
+                                              "enabled" : true,
+                                              "focused" : false,
+                                              "checked" : false,
+                                              "selected" : false
+                                            } ],
+                                            "clickable" : false,
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          } ],
+                                          "clickable" : true,
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        }, {
+                                          "attributes" : {
+                                            "accessibilityText" : "Geliyoruz, iki kişiyiz",
+                                            "ignoreBoundsFiltering" : "false",
+                                            "clickable" : "true",
+                                            "bounds" : "[224,1220][638,1280]",
+                                            "enabled" : "true",
+                                            "focused" : "false",
+                                            "checked" : "false",
+                                            "scrollable" : "false",
+                                            "selected" : "false",
+                                            "class" : "android.view.ViewGroup",
+                                            "important-for-accessibility" : "true"
+                                          },
+                                          "children" : [ {
+                                            "attributes" : {
+                                              "ignoreBoundsFiltering" : "false",
+                                              "clickable" : "false",
+                                              "bounds" : "[224,1220][638,1280]",
+                                              "enabled" : "true",
+                                              "focused" : "false",
+                                              "checked" : "false",
+                                              "scrollable" : "false",
+                                              "selected" : "false",
+                                              "class" : "android.view.ViewGroup",
+                                              "important-for-accessibility" : "false"
+                                            },
+                                            "children" : [ {
+                                              "attributes" : {
+                                                "text" : "Geliyoruz, iki kişiyiz 21:41  ",
+                                                "ignoreBoundsFiltering" : "false",
+                                                "clickable" : "false",
+                                                "bounds" : "[248,1236][614,1276]",
+                                                "enabled" : "true",
+                                                "focused" : "false",
+                                                "checked" : "false",
+                                                "scrollable" : "false",
+                                                "selected" : "false",
+                                                "class" : "android.widget.TextView",
+                                                "important-for-accessibility" : "true"
+                                              },
+                                              "clickable" : false,
+                                              "enabled" : true,
+                                              "focused" : false,
+                                              "checked" : false,
+                                              "selected" : false
+                                            }, {
+                                              "attributes" : {
+                                                "ignoreBoundsFiltering" : "false",
+                                                "clickable" : "false",
+                                                "bounds" : "[519,1244][614,1276]",
+                                                "enabled" : "true",
+                                                "focused" : "false",
+                                                "checked" : "false",
+                                                "scrollable" : "false",
+                                                "selected" : "false",
+                                                "class" : "android.view.ViewGroup",
+                                                "important-for-accessibility" : "false"
+                                              },
+                                              "children" : [ {
+                                                "attributes" : {
+                                                  "text" : "21:41",
+                                                  "ignoreBoundsFiltering" : "false",
+                                                  "clickable" : "false",
+                                                  "bounds" : "[519,1246][574,1274]",
+                                                  "enabled" : "true",
+                                                  "focused" : "false",
+                                                  "checked" : "false",
+                                                  "scrollable" : "false",
+                                                  "selected" : "false",
+                                                  "class" : "android.widget.TextView",
+                                                  "important-for-accessibility" : "false"
+                                                },
+                                                "clickable" : false,
+                                                "enabled" : true,
+                                                "focused" : false,
+                                                "checked" : false,
+                                                "selected" : false
+                                              }, {
+                                                "attributes" : {
+                                                  "accessibilityText" : "Okundu",
+                                                  "ignoreBoundsFiltering" : "false",
+                                                  "resource-id" : "tick-read",
+                                                  "clickable" : "false",
+                                                  "bounds" : "[582,1244][614,1276]",
+                                                  "enabled" : "true",
+                                                  "focused" : "false",
+                                                  "checked" : "false",
+                                                  "scrollable" : "false",
+                                                  "selected" : "false",
+                                                  "class" : "android.view.ViewGroup",
+                                                  "important-for-accessibility" : "false"
+                                                },
+                                                "children" : [ {
+                                                  "attributes" : {
+                                                    "ignoreBoundsFiltering" : "false",
+                                                    "clickable" : "false",
+                                                    "bounds" : "[582,1244][614,1276]",
+                                                    "enabled" : "true",
+                                                    "focused" : "false",
+                                                    "checked" : "false",
+                                                    "scrollable" : "false",
+                                                    "selected" : "false",
+                                                    "class" : "com.horcrux.svg.SvgView",
+                                                    "important-for-accessibility" : "false"
+                                                  },
+                                                  "children" : [ {
+                                                    "attributes" : {
+                                                      "ignoreBoundsFiltering" : "false",
+                                                      "clickable" : "false",
+                                                      "bounds" : "[585,1254][609,1266]",
+                                                      "enabled" : "true",
+                                                      "focused" : "false",
+                                                      "checked" : "false",
+                                                      "scrollable" : "false",
+                                                      "selected" : "false",
+                                                      "class" : "com.horcrux.svg.B",
+                                                      "important-for-accessibility" : "false"
+                                                    },
+                                                    "children" : [ {
+                                                      "attributes" : {
+                                                        "ignoreBoundsFiltering" : "false",
+                                                        "clickable" : "false",
+                                                        "bounds" : "[585,1254][601,1266]",
+                                                        "enabled" : "true",
+                                                        "focused" : "false",
+                                                        "checked" : "false",
+                                                        "scrollable" : "false",
+                                                        "selected" : "false",
+                                                        "class" : "com.horcrux.svg.J",
+                                                        "important-for-accessibility" : "false"
+                                                      },
+                                                      "clickable" : false,
+                                                      "enabled" : true,
+                                                      "focused" : false,
+                                                      "checked" : false,
+                                                      "selected" : false
+                                                    }, {
+                                                      "attributes" : {
+                                                        "ignoreBoundsFiltering" : "false",
+                                                        "clickable" : "false",
+                                                        "bounds" : "[596,1254][609,1266]",
+                                                        "enabled" : "true",
+                                                        "focused" : "false",
+                                                        "checked" : "false",
+                                                        "scrollable" : "false",
+                                                        "selected" : "false",
+                                                        "class" : "com.horcrux.svg.J",
+                                                        "important-for-accessibility" : "false"
+                                                      },
+                                                      "clickable" : false,
+                                                      "enabled" : true,
+                                                      "focused" : false,
+                                                      "checked" : false,
+                                                      "selected" : false
+                                                    } ],
+                                                    "clickable" : false,
+                                                    "enabled" : true,
+                                                    "focused" : false,
+                                                    "checked" : false,
+                                                    "selected" : false
+                                                  } ],
+                                                  "clickable" : false,
+                                                  "enabled" : true,
+                                                  "focused" : false,
+                                                  "checked" : false,
+                                                  "selected" : false
+                                                } ],
+                                                "clickable" : false,
+                                                "enabled" : true,
+                                                "focused" : false,
+                                                "checked" : false,
+                                                "selected" : false
+                                              } ],
+                                              "clickable" : false,
+                                              "enabled" : true,
+                                              "focused" : false,
+                                              "checked" : false,
+                                              "selected" : false
+                                            } ],
+                                            "clickable" : false,
+                                            "enabled" : true,
+                                            "focused" : false,
+                                            "checked" : false,
+                                            "selected" : false
+                                          } ],
+                                          "clickable" : true,
+                                          "enabled" : true,
+                                          "focused" : false,
+                                          "checked" : false,
+                                          "selected" : false
+                                        } ],
+                                        "clickable" : false,
+                                        "enabled" : true,
+                                        "focused" : false,
+                                        "checked" : false,
+                                        "selected" : false
+                                      } ],
+                                      "clickable" : false,
+                                      "enabled" : true,
+                                      "focused" : false,
+                                      "checked" : false,
+                                      "selected" : false
+                                    }, {
+                                      "attributes" : {
+                                        "ignoreBoundsFiltering" : "false",
+                                        "resource-id" : "gorsel-hazir-10",
+                                        "clickable" : "false",
+                                        "bounds" : "[0,48][720,1280]",
+                                        "enabled" : "true",
+                                        "focused" : "false",
+                                        "checked" : "false",
+                                        "scrollable" : "false",
+                                        "selected" : "false",
+                                        "class" : "android.view.ViewGroup",
+                                        "important-for-accessibility" : "true"
+                                      },
+                                      "clickable" : false,
+                                      "enabled" : true,
+                                      "focused" : false,
+                                      "checked" : false,
+                                      "selected" : false
+                                    }, {
+                                      "attributes" : {
+                                        "ignoreBoundsFiltering" : "false",
+                                        "resource-id" : "gorsel-eksik-sayfa",
+                                        "clickable" : "false",
+                                        "bounds" : "[0,1160][720,1280]",
+                                        "enabled" : "true",
+                                        "focused" : "false",
+                                        "checked" : "false",
+                                        "scrollable" : "false",
+                                        "selected" : "false",
+                                        "class" : "android.view.ViewGroup",
+                                        "important-for-accessibility" : "true"
+                                      },
+                                      "clickable" : false,
+                                      "enabled" : true,
+                                      "focused" : false,
+                                      "checked" : false,
+                                      "selected" : false
+                                    }, {
+                                      "attributes" : {
+                                        "text" : "Bu durum 3 sayfa, listede 2: e2e/visual/states.json'da sayfa sayısını 3 yap.",
+                                        "ignoreBoundsFiltering" : "false",
+                                        "clickable" : "false",
+                                        "bounds" : "[24,1184][696,1256]",
+                                        "enabled" : "true",
+                                        "focused" : "false",
+                                        "checked" : "false",
+                                        "scrollable" : "false",
+                                        "selected" : "false",
+                                        "class" : "android.widget.TextView",
+                                        "important-for-accessibility" : "true"
+                                      },
+                                      "clickable" : false,
+                                      "enabled" : true,
+                                      "focused" : false,
+                                      "checked" : false,
+                                      "selected" : false
+                                    } ],
+                                    "clickable" : false,
+                                    "enabled" : true,
+                                    "focused" : false,
+                                    "checked" : false,
+                                    "selected" : false
+                                  } ],
+                                  "clickable" : false,
+                                  "enabled" : true,
+                                  "focused" : false,
+                                  "checked" : false,
+                                  "selected" : false
+                                } ],
+                                "clickable" : false,
+                                "enabled" : true,
+                                "focused" : false,
+                                "checked" : false,
+                                "selected" : false
+                              } ],
+                              "clickable" : false,
+                              "enabled" : true,
+                              "focused" : false,
+                              "checked" : false,
+                              "selected" : false
+                            } ],
+                            "clickable" : false,
+                            "enabled" : true,
+                            "focused" : false,
+                            "checked" : false,
+                            "selected" : false
+                          } ],
+                          "clickable" : false,
+                          "enabled" : true,
+                          "focused" : false,
+                          "checked" : false,
+                          "selected" : false
+                        } ],
+                        "clickable" : false,
+                        "enabled" : true,
+                        "focused" : false,
+                        "checked" : false,
+                        "selected" : false
+                      } ],
+                      "clickable" : false,
+                      "enabled" : true,
+                      "focused" : false,
+                      "checked" : false,
+                      "selected" : false
+                    } ],
+                    "clickable" : false,
+                    "enabled" : true,
+                    "focused" : false,
+                    "checked" : false,
+                    "selected" : false
+                  } ],
+                  "clickable" : false,
+                  "enabled" : true,
+                  "focused" : false,
+                  "checked" : false,
+                  "selected" : false
+                } ],
+                "clickable" : false,
+                "enabled" : true,
+                "focused" : false,
+                "checked" : false,
+                "selected" : false
+              } ],
+              "clickable" : false,
+              "enabled" : true,
+              "focused" : false,
+              "checked" : false,
+              "selected" : false
+            } ],
+            "clickable" : false,
+            "enabled" : true,
+            "focused" : false,
+            "checked" : false,
+            "selected" : false
+          } ],
+          "clickable" : false,
+          "enabled" : true,
+          "focused" : false,
+          "checked" : false,
+          "selected" : false
+        } ],
+        "clickable" : false,
+        "enabled" : true,
+        "focused" : false,
+        "checked" : false,
+        "selected" : false
+      } ],
+      "clickable" : false,
+      "enabled" : true,
+      "focused" : false,
+      "checked" : false,
+      "selected" : false
+    } ],
+    "clickable" : false,
+    "enabled" : false,
+    "focused" : false,
+    "checked" : false,
+    "selected" : false
+  } ]
+}

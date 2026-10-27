@@ -1,0 +1,432 @@
+[ {
+  "command" : {
+    "defineVariablesCommand" : {
+      "env" : {
+        "MAESTRO_FILENAME" : "001-galeri-sohbet-light-1",
+        "MAESTRO_DEVICE_UDID" : "emulator-5554",
+        "MAESTRO_SHARD_ID" : "1",
+        "MAESTRO_SHARD_INDEX" : "0"
+      },
+      "optional" : false
+    }
+  },
+  "metadata" : {
+    "status" : "COMPLETED",
+    "timestamp" : 1793107897534,
+    "duration" : 0,
+    "sequenceNumber" : 0,
+    "depth" : 0,
+    "evaluatedCommand" : {
+      "defineVariablesCommand" : {
+        "env" : {
+          "MAESTRO_FILENAME" : "001-galeri-sohbet-light-1",
+          "MAESTRO_DEVICE_UDID" : "emulator-5554",
+          "MAESTRO_SHARD_ID" : "1",
+          "MAESTRO_SHARD_INDEX" : "0"
+        },
+        "optional" : false
+      }
+    }
+  }
+}, {
+  "command" : {
+    "applyConfigurationCommand" : {
+      "config" : {
+        "appId" : "app.kabuk.mobile",
+        "name" : "galeri-sohbet-light-1"
+      },
+      "optional" : false
+    }
+  },
+  "metadata" : {
+    "status" : "COMPLETED",
+    "timestamp" : 1793107897534,
+    "duration" : 0,
+    "sequenceNumber" : 1,
+    "depth" : 0,
+    "evaluatedCommand" : {
+      "applyConfigurationCommand" : {
+        "config" : {
+          "appId" : "app.kabuk.mobile",
+          "name" : "galeri-sohbet-light-1"
+        },
+        "optional" : false
+      }
+    }
+  }
+}, {
+  "command" : {
+    "openLinkCommand" : {
+      "link" : "masa:///gorsel?durum=galeri/chat&tema=light&sayfa=0&sayfalar=2&n=1",
+      "autoVerify" : false,
+      "browser" : false,
+      "optional" : false
+    }
+  },
+  "metadata" : {
+    "status" : "COMPLETED",
+    "timestamp" : 1793107897534,
+    "duration" : 2033,
+    "sequenceNumber" : 2,
+    "depth" : 0,
+    "evaluatedCommand" : {
+      "openLinkCommand" : {
+        "link" : "masa:///gorsel?durum=galeri/chat&tema=light&sayfa=0&sayfalar=2&n=1",
+        "autoVerify" : false,
+        "browser" : false,
+        "optional" : false
+      }
+    }
+  }
+}, {
+  "command" : {
+    "assertConditionCommand" : {
+      "condition" : {
+        "notVisible" : {
+          "idRegex" : "launch-curtain",
+          "optional" : false
+        }
+      },
+      "timeout" : "60000",
+      "optional" : false
+    }
+  },
+  "metadata" : {
+    "status" : "COMPLETED",
+    "timestamp" : 1793107899567,
+    "duration" : 636,
+    "sequenceNumber" : 3,
+    "depth" : 0,
+    "evaluatedCommand" : {
+      "assertConditionCommand" : {
+        "condition" : {
+          "notVisible" : {
+            "idRegex" : "launch-curtain",
+            "optional" : false
+          }
+        },
+        "timeout" : "60000",
+        "optional" : false
+      }
+    }
+  }
+}, {
+  "command" : {
+    "assertConditionCommand" : {
+      "condition" : {
+        "visible" : {
+          "idRegex" : "gorsel-hazir-1",
+          "optional" : false
+        }
+      },
+      "timeout" : "20000",
+      "optional" : true
+    }
+  },
+  "metadata" : {
+    "status" : "COMPLETED",
+    "timestamp" : 1793107900203,
+    "duration" : 113,
+    "sequenceNumber" : 4,
+    "depth" : 0,
+    "evaluatedCommand" : {
+      "assertConditionCommand" : {
+        "condition" : {
+          "visible" : {
+            "idRegex" : "gorsel-hazir-1",
+            "optional" : false
+          }
+        },
+        "timeout" : "20000",
+        "optional" : true
+      }
+    }
+  }
+}, {
+  "command" : {
+    "runFlowCommand" : {
+      "commands" : [ {
+        "stopAppCommand" : {
+          "appId" : "app.kabuk.mobile",
+          "optional" : false
+        }
+      }, {
+        "openLinkCommand" : {
+          "link" : "masa:///gorsel?durum=galeri/chat&tema=light&sayfa=0&sayfalar=2&n=1",
+          "autoVerify" : false,
+          "browser" : false,
+          "optional" : false
+        }
+      }, {
+        "assertConditionCommand" : {
+          "condition" : {
+            "notVisible" : {
+              "idRegex" : "launch-curtain",
+              "optional" : false
+            }
+          },
+          "timeout" : "60000",
+          "optional" : false
+        }
+      }, {
+        "assertConditionCommand" : {
+          "condition" : {
+            "visible" : {
+              "idRegex" : "gorsel-hazir-1",
+              "optional" : false
+            }
+          },
+          "timeout" : "60000",
+          "optional" : false
+        }
+      } ],
+      "condition" : {
+        "notVisible" : {
+          "idRegex" : "gorsel-hazir-1",
+          "optional" : false
+        }
+      },
+      "optional" : false
+    }
+  },
+  "metadata" : {
+    "status" : "SKIPPED",
+    "timestamp" : 1793107900316,
+    "duration" : 6292,
+    "sequenceNumber" : 5,
+    "depth" : 0,
+    "evaluatedCommand" : {
+      "runFlowCommand" : {
+        "commands" : [ {
+          "stopAppCommand" : {
+            "appId" : "app.kabuk.mobile",
+            "optional" : false
+          }
+        }, {
+          "openLinkCommand" : {
+            "link" : "masa:///gorsel?durum=galeri/chat&tema=light&sayfa=0&sayfalar=2&n=1",
+            "autoVerify" : false,
+            "browser" : false,
+            "optional" : false
+          }
+        }, {
+          "assertConditionCommand" : {
+            "condition" : {
+              "notVisible" : {
+                "idRegex" : "launch-curtain",
+                "optional" : false
+              }
+            },
+            "timeout" : "60000",
+            "optional" : false
+          }
+        }, {
+          "assertConditionCommand" : {
+            "condition" : {
+              "visible" : {
+                "idRegex" : "gorsel-hazir-1",
+                "optional" : false
+              }
+            },
+            "timeout" : "60000",
+            "optional" : false
+          }
+        } ],
+        "condition" : {
+          "notVisible" : {
+            "idRegex" : "gorsel-hazir-1",
+            "optional" : false
+          }
+        },
+        "optional" : false
+      }
+    }
+  }
+}, {
+  "command" : {
+    "assertConditionCommand" : {
+      "condition" : {
+        "notVisible" : {
+          "idRegex" : "gorsel-yok",
+          "optional" : false
+        }
+      },
+      "optional" : false
+    }
+  },
+  "metadata" : {
+    "status" : "COMPLETED",
+    "timestamp" : 1793107906608,
+    "duration" : 651,
+    "sequenceNumber" : 6,
+    "depth" : 0,
+    "evaluatedCommand" : {
+      "assertConditionCommand" : {
+        "condition" : {
+          "notVisible" : {
+            "idRegex" : "gorsel-yok",
+            "optional" : false
+          }
+        },
+        "optional" : false
+      }
+    }
+  }
+}, {
+  "command" : {
+    "assertConditionCommand" : {
+      "condition" : {
+        "notVisible" : {
+          "idRegex" : "gorsel-eksik-sayfa",
+          "optional" : false
+        }
+      },
+      "optional" : false
+    }
+  },
+  "metadata" : {
+    "status" : "COMPLETED",
+    "timestamp" : 1793107907259,
+    "duration" : 608,
+    "sequenceNumber" : 7,
+    "depth" : 0,
+    "evaluatedCommand" : {
+      "assertConditionCommand" : {
+        "condition" : {
+          "notVisible" : {
+            "idRegex" : "gorsel-eksik-sayfa",
+            "optional" : false
+          }
+        },
+        "optional" : false
+      }
+    }
+  }
+}, {
+  "command" : {
+    "runFlowCommand" : {
+      "commands" : [ {
+        "tapOnElement" : {
+          "selector" : {
+            "idRegex" : "android:id/aerr_wait",
+            "optional" : false
+          },
+          "retryIfNoChange" : false,
+          "waitUntilVisible" : false,
+          "longPress" : false,
+          "optional" : false
+        }
+      } ],
+      "condition" : {
+        "visible" : {
+          "idRegex" : "android:id/aerr_wait",
+          "optional" : false
+        }
+      },
+      "optional" : false
+    }
+  },
+  "metadata" : {
+    "status" : "SKIPPED",
+    "timestamp" : 1793107907867,
+    "duration" : 180,
+    "sequenceNumber" : 8,
+    "depth" : 0,
+    "evaluatedCommand" : {
+      "runFlowCommand" : {
+        "commands" : [ {
+          "tapOnElement" : {
+            "selector" : {
+              "idRegex" : "android:id/aerr_wait",
+              "optional" : false
+            },
+            "retryIfNoChange" : false,
+            "waitUntilVisible" : false,
+            "longPress" : false,
+            "optional" : false
+          }
+        } ],
+        "condition" : {
+          "visible" : {
+            "idRegex" : "android:id/aerr_wait",
+            "optional" : false
+          }
+        },
+        "optional" : false
+      }
+    }
+  }
+}, {
+  "command" : {
+    "takeScreenshotCommand" : {
+      "path" : "aday__galeri-sohbet-light-1",
+      "cropOn" : {
+        "idRegex" : "gorsel-cerceve",
+        "optional" : false
+      },
+      "optional" : false
+    }
+  },
+  "metadata" : {
+    "status" : "COMPLETED",
+    "timestamp" : 1793107908047,
+    "duration" : 247,
+    "sequenceNumber" : 9,
+    "depth" : 0,
+    "evaluatedCommand" : {
+      "takeScreenshotCommand" : {
+        "path" : "aday__galeri-sohbet-light-1",
+        "cropOn" : {
+          "idRegex" : "gorsel-cerceve",
+          "optional" : false
+        },
+        "optional" : false
+      }
+    },
+    "artifacts" : [ {
+      "type" : "TAKE_SCREENSHOT",
+      "path" : "takeScreenshot/aday__galeri-sohbet-light-1.png"
+    } ]
+  }
+}, {
+  "command" : {
+    "assertScreenshotCommand" : {
+      "path" : "/home/runner/work/Kabuk/Kabuk/e2e/visual/baz/galeri-sohbet-light-1.png",
+      "thresholdPercentage" : "99.7",
+      "cropOn" : {
+        "idRegex" : "gorsel-cerceve",
+        "optional" : false
+      },
+      "optional" : false
+    }
+  },
+  "metadata" : {
+    "status" : "FAILED",
+    "timestamp" : 1793107908294,
+    "duration" : 509,
+    "error" : {
+      "message" : "Comparison error: Assert screenshot matches /home/runner/work/Kabuk/Kabuk/e2e/visual/baz/galeri-sohbet-light-1.png (threshold: 99.7%) (cropped on id: gorsel-cerceve) - threshold not met, current: 85.11014159451659%",
+      "debugMessage" : "Screenshot comparison failed. Check the diff image at /home/runner/work/Kabuk/Kabuk/e2e/visual/baz/galeri-sohbet-light-1_diff.png to see the differences. Adjust the thresholdPercentage if the differences are acceptable."
+    },
+    "sequenceNumber" : 10,
+    "depth" : 0,
+    "evaluatedCommand" : {
+      "assertScreenshotCommand" : {
+        "path" : "/home/runner/work/Kabuk/Kabuk/e2e/visual/baz/galeri-sohbet-light-1.png",
+        "thresholdPercentage" : "99.7",
+        "cropOn" : {
+          "idRegex" : "gorsel-cerceve",
+          "optional" : false
+        },
+        "optional" : false
+      }
+    },
+    "artifacts" : [ {
+      "type" : "SCREEN_HIERARCHY",
+      "path" : "screen-hierarchy/step-011-assertScreenshot.json"
+    }, {
+      "type" : "SCREENSHOT",
+      "path" : "screenshots/step-011-assertScreenshot.png"
+    } ]
+  }
+} ]

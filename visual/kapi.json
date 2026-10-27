@@ -1,0 +1,27 @@
+{
+ "ok": false,
+ "failed": [
+  "galeri-sohbet-dark-1",
+  "galeri-olcu-dark-1",
+  "galeri-kimlik-dark-2",
+  "galeri-kimlik-light-2",
+  "galeri-renkler-light-1",
+  "galeri-kimlik-dark-1",
+  "galeri-sohbet-light-2",
+  "galeri-sohbet-dark-2",
+  "galeri-olcu-light-2",
+  "galeri-olcu-light-1",
+  "galeri-olcu-dark-2",
+  "galeri-sohbet-light-1",
+  "galeri-kimlik-light-1",
+  "galeri-renkler-dark-1"
+ ],
+ "noCandidate": [
+  "galeri-kimlik-light-1",
+  "galeri-kimlik-light-2",
+  "galeri-kimlik-dark-1",
+  "galeri-kimlik-dark-2"
+ ],
+ "noBaseline": [],
+ "worstNoise": null
+}
