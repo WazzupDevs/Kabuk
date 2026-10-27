@@ -2,7 +2,7 @@
 appId: app.kabuk.mobile
 ---
 # Aktiviteler → Geçmiş (docs/SPEC_V4.md K-15): the record with the bot table, under its day; it
-# opens what Bildirimler offers for it.
+# opens the record's actions (Bildirimler lists friend requests and invites, skall tuvali).
 - tapOn:
     id: tab-activities
 - tapOn:
@@ -21,21 +21,6 @@ appId: app.kabuk.mobile
     timeout: 10000
 - takeScreenshot: 30b-activities-record
 - tapOn:
-    id: history-sheet-close
-- extendedWaitUntil:
-    notVisible:
-      id: history-sheet-close
-    timeout: 10000
-# Bildirimler opens from the bell on a tab screen (docs/SPEC_V3.md §18.3).
-- tapOn:
-    id: tab-messages
-- tapOn:
-    id: bell
-- extendedWaitUntil:
-    visible: .*masasıyla Sohbet.*
-    timeout: 15000
-- takeScreenshot: 30-history
-- tapOn:
     id: history-more
     index: 0
 - extendedWaitUntil:
@@ -53,12 +38,16 @@ appId: app.kabuk.mobile
 - extendedWaitUntil:
     notVisible: Bu kişiyi engellemek istiyor musun\?
     timeout: 10000
-# Bildirimler is a sheet over Mesajlar (skall tuvali): Android's back closes it.
-- back
+# The block may close the record's sheet by itself.
+- tapOn:
+    id: history-sheet-close
+    optional: true
 - extendedWaitUntil:
     notVisible:
-      id: notifications
+      id: history-sheet-close
     timeout: 10000
+- tapOn:
+    id: tab-messages
 - extendedWaitUntil:
     visible: Henüz mesajın yok.
     timeout: 15000

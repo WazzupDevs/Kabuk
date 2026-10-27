@@ -1,8 +1,7 @@
 # Venue chat room (docs/SPEC_V3.md §7): an anonymous message from this phone; a second bot account
-# (the first is blocked since 07) writes with its profile; this phone opens its profile through the
-# message and sends a friend request, which the bot accepts. A check-in has one venue chat mode
-# (§22.G): the first "Gönder" asks for it once (anonymous; this phone has no photo, so "Profilimle"
-# cannot be chosen), and after it the bar only names it.
+# (the first is blocked since 07) writes with its profile; this phone opens its card through the
+# message, then its profile, and sends a friend request, which the bot accepts. A message goes with
+# the check-in's identity (docs/SPEC_V4.md §4.D): the line over the message bar names it.
 appId: app.kabuk.mobile
 ---
 - runScript:
@@ -33,7 +32,8 @@ appId: app.kabuk.mobile
 - tapOn:
     id: venue-chat-open
 - extendedWaitUntil:
-    visible: E2E Kafe sohbeti
+    visible:
+      id: venue-chat-mode
     timeout: 15000
 - scrollUntilVisible:
     element:
@@ -46,16 +46,8 @@ appId: app.kabuk.mobile
 - tapOn:
     id: venue-chat-send
 - extendedWaitUntil:
-    visible: Bu mekanda kaldığın sürece mekan sohbetinde nasıl görüneceksin?
-    timeout: 10000
-- extendedWaitUntil:
-    visible: Profilinle görünmek için profil fotoğrafı gerekiyor.
-    timeout: 10000
-- takeScreenshot: 35b-venue-chat-mode
-- tapOn:
-    id: venue-chat-mode-send
-- extendedWaitUntil:
-    visible: Anonim yazıyorsun
+    visible:
+      id: venue-chat-mine
     timeout: 15000
 - assertVisible:
     id: venue-chat-mine
@@ -73,6 +65,12 @@ appId: app.kabuk.mobile
     timeout: 20000
 - takeScreenshot: 37-venue-chat-profiled
 - tapOn: Bot İki
+- extendedWaitUntil:
+    visible:
+      id: venue-chat-see-profile
+    timeout: 10000
+- tapOn:
+    id: venue-chat-see-profile
 - extendedWaitUntil:
     visible:
       id: venue-chat-profile
