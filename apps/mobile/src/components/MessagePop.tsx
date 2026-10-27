@@ -4,6 +4,7 @@ import { Modal, Pressable, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { tr } from '@/i18n/tr';
+import { haptic } from '@/lib/haptics';
 import { withAlpha } from '@/theme/contrast';
 import { useTheme } from '@/theme/ThemeProvider';
 import { OPACITY, SPACING } from '@/theme/tokens';
@@ -102,6 +103,7 @@ export function MessagePop({
                 accessibilityLabel={tr.chat.reactWith(tr.chat.reactions[emoji])}
                 accessibilityState={{ selected: current === emoji }}
                 onPress={() => {
+                  haptic('selection');
                   onClose();
                   onReact(emoji);
                 }}

@@ -46,7 +46,7 @@ export default function ProfileScreen() {
   const someFriends = friends.data && friends.data.length > 0 ? friends.data : null;
 
   return (
-    <Screen>
+    <Screen refreshable>
       <ScreenHeader
         title={tr.tabs.profile}
         trailing={

@@ -242,7 +242,7 @@ export default function DmScreen() {
         const counts = parseDmReactions(m.reactions);
         const quote = parseQuote(m.reply_to);
         return (
-          <ChatRow key={m.id} id={m.id} className={first ? 'mt-1.5 gap-2' : 'gap-2'}>
+          <ChatRow key={m.id} id={m.id} first={first}>
             {(jumpTo) => (
               <>
                 {day ? <DayLine label={dayLabel(day)} /> : null}

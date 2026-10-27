@@ -1,4 +1,5 @@
 import { FunctionsHttpError } from '@supabase/supabase-js';
+
 import type { AccountRequest, AccountResponse } from '@shared/api/account.ts';
 import type { ChatResponse, ReactResponse, SafetyResponse } from '@shared/api/chat.ts';
 import type { Reaction } from '@shared/reactions.ts';
@@ -61,6 +62,7 @@ import type { Mark } from '@shared/tabu.ts';
 import { callName, RETRY_DELAY_MS, retriesAfter } from '@shared/apiRetry.ts';
 import { type ErrorCode, isApiErrorBody } from '@shared/errors.ts';
 
+import { isNetworkError } from '@/lib/connection';
 import { useUpdateGate } from '@/features/update/updateGate';
 
 import { appBuildHeaders } from './appBuild';
@@ -113,6 +115,15 @@ export function pingUpdateGate(): Promise<void> {
   return invoke<{ ok: true }>('ping', {}).then(
     () => undefined,
     () => undefined,
+  );
+}
+
+// Whether the server answers at all (the connection banner's check while offline): any answer,
+// even an error, is a connection.
+export function probeConnection(): Promise<boolean> {
+  return invoke<{ ok: true }>('ping', {}).then(
+    () => true,
+    (err: unknown) => !isNetworkError(err),
   );
 }
 

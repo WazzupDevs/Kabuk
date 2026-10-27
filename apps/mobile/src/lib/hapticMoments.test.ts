@@ -83,6 +83,7 @@ describe('haptic table', () => {
       failed: { kind: 'notification', type: 'error' },
       friendsMade: { kind: 'notification', type: 'success' },
       accountReady: { kind: 'notification', type: 'success' },
+      sent: { kind: 'impact', style: 'light' },
     });
   });
 });

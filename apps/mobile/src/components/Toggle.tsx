@@ -1,6 +1,7 @@
 import { Pressable, View } from 'react-native';
 
 import { switchColors, THUMB_SHADOW } from '@/theme/switch';
+import { haptic } from '@/lib/haptics';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING, TOUCH } from '@/theme/tokens';
 
@@ -65,7 +66,10 @@ export function Toggle({ label, value, onChange, hint, disabled, compact, testID
         accessibilityLabel={label}
         accessibilityState={{ checked: value, disabled: !!disabled }}
         disabled={disabled}
-        onPress={() => onChange(!value)}
+        onPress={() => {
+          haptic('selection');
+          onChange(!value);
+        }}
         className="flex-row items-center gap-2.5"
         style={{ minHeight: TOUCH.min }}
       >
@@ -88,7 +92,10 @@ export function Toggle({ label, value, onChange, hint, disabled, compact, testID
       accessibilityLabel={label}
       accessibilityState={{ checked: value, disabled: !!disabled }}
       disabled={disabled}
-      onPress={() => onChange(!value)}
+      onPress={() => {
+        haptic('selection');
+        onChange(!value);
+      }}
       className="flex-row items-center gap-3"
       style={{ minHeight: TOUCH.min }}
     >

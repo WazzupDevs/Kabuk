@@ -27,6 +27,7 @@ import { GAME_GLYPH } from '@/features/games/GameCard';
 import { errorMessage } from '@/i18n/errors';
 import { type HistoryConcept, historyConcept, tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
+import { rowPress } from '@/theme/rowPress';
 import { useTheme } from '@/theme/ThemeProvider';
 import { NARROW_SCREEN, SPACING } from '@/theme/tokens';
 
@@ -45,7 +46,7 @@ export default function ActivitiesScreen() {
   const [tab, setTab] = useState<Tab>('events');
   const now = useNow(60_000);
   return (
-    <Screen edges={['top']}>
+    <Screen edges={['top']} refreshable>
       <ScreenHeader title={tr.tabs.activities} />
       <View className="mt-3">
         <Segmented<Tab>
@@ -279,7 +280,7 @@ function HistoryRow({
   variant: 'won' | 'lost' | 'done' | undefined;
   onPress: () => void;
 }) {
-  const { colors } = useTheme();
+  const theme = useTheme();
   const game = tr.activities.game(concept);
   return (
     <Pressable
@@ -295,8 +296,7 @@ function HistoryRow({
             gap: SPACING[3] + SPACING[0.5],
             minHeight: SPACING[16] + SPACING[2],
             paddingVertical: SPACING[3],
-            paddingHorizontal: SPACING[4],
-            backgroundColor: pressed ? colors.surface2 : undefined,
+            ...rowPress(theme, pressed),
           }}
         >
           <Thumb concept={concept} />

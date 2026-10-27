@@ -1,9 +1,16 @@
+import * as Notifications from 'expo-notifications';
 import { tabOpenedBy } from '@shared/navigation.ts';
 import { Tabs } from 'expo-router';
+import { useEffect } from 'react';
 
 import { TabBar, TabBarSpace, TabScene } from '@/components/TabBar';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
-import { useInbox, useRequestCount, useUnreadTotal } from '@/features/friends/queries';
+import {
+  useInbox,
+  useRequestCount,
+  useUnreadTotal,
+  useUnseenCount,
+} from '@/features/friends/queries';
 import { tr } from '@/i18n/tr';
 
 export { RouteError as ErrorBoundary } from '@/components/RouteError';
@@ -21,6 +28,11 @@ export default function TabsLayout() {
   // The bell is in Mesajlar only (K-6): the tab's dot is there for unread DMs and for waiting
   // requests alike.
   const requests = useRequestCount();
+  // The launcher's badge: unread DMs and the bell's new rows (where the launcher shows one).
+  const unseen = useUnseenCount();
+  useEffect(() => {
+    void Notifications.setBadgeCountAsync(unread + unseen).catch(() => undefined);
+  }, [unread, unseen]);
 
   return (
     <TabBarSpace>

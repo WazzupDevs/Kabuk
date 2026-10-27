@@ -1757,6 +1757,11 @@ export const tr = {
     mutedAnonymous: 'Anonim',
     mutedProfiled: 'Profiliyle',
   },
+  // skall tuvali (Haller): no connection, over any screen.
+  connection: {
+    offlineTitle: 'Bağlantı yok',
+    offlineBody: 'Tekrar bağlanınca liste kendiliğinden güncellenir.',
+  },
   errors: {
     bad_request: 'İstek geçersiz.',
     unauthorized: 'Oturumun sona ermiş. Tekrar giriş yap.',

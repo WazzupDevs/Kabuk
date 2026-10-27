@@ -1,5 +1,6 @@
 import { Stack } from 'expo-router';
 
+import { ConnectionBanner } from '@/components/ConnectionBanner';
 import { usePushNavigation } from '@/features/push/push';
 import { IncomingRequestHost } from '@/features/rooms/IncomingRequest';
 
@@ -27,6 +28,7 @@ export default function GroupLayout() {
       </Stack>
       {/* A request to the table opens over any screen (docs/SPEC_V3.md §23.C). */}
       <IncomingRequestHost />
+      <ConnectionBanner />
     </>
   );
 }
