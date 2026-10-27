@@ -4,7 +4,8 @@ import type { ReactNode } from 'react';
 import { Image, type ImageSourcePropType, View } from 'react-native';
 
 import { Card } from '@/components/Card';
-import { ProfilePhoto } from '@/components/ProfilePhoto';
+import { LookAvatar } from '@/components/LookAvatar';
+import { PROFILE_PHOTO_SIZES, ProfilePhoto } from '@/components/ProfilePhoto';
 import { Mark } from '@/components/Mark';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
@@ -32,10 +33,42 @@ function nameLine(profile: Profile): string {
 // A profile's head (v45: .phero), the own one and another person's: the photo in its ring, the name
 // with the age in the quiet colour (never the birth date, rule 11) and the bio, centred; then the
 // actions.
-export function ProfileHead({ profile, children }: { profile: Profile; children?: ReactNode }) {
+export function ProfileHead({
+  profile,
+  capsule,
+  children,
+}: {
+  profile: Profile;
+  // The own profile only (K-49): the capsule beside the photo (skall tuvali, Profil).
+  capsule?: string | null;
+  children?: ReactNode;
+}) {
   return (
     <View className="items-center gap-2">
-      <ProfilePhoto url={profile.photoUrl} name={profile.displayName} size="hero" />
+      {capsule ? (
+        <View className="flex-row justify-center" style={{ gap: SPACING[6] }}>
+          <View className="items-center gap-2">
+            <ProfilePhoto url={profile.photoUrl} name={profile.displayName} size="hero" />
+            <View className="items-center">
+              <Text variant="label">{tr.profile.ownPhoto}</Text>
+              <Text variant="fine">{tr.profile.ownPhotoNote}</Text>
+            </View>
+          </View>
+          <View className="items-center gap-2">
+            <LookAvatar
+              look={capsule}
+              size={PROFILE_PHOTO_SIZES.hero}
+              accessibilityLabel={tr.profile.ownCapsule}
+            />
+            <View className="items-center">
+              <Text variant="label">{tr.profile.ownCapsule}</Text>
+              <Text variant="fine">{tr.profile.ownCapsuleNote}</Text>
+            </View>
+          </View>
+        </View>
+      ) : (
+        <ProfilePhoto url={profile.photoUrl} name={profile.displayName} size="hero" />
+      )}
       <Text variant="title" align="center" accessibilityRole="header" className="mt-1">
         {profile.displayName ?? tr.profile.noName}
         {profile.displayName && profile.age !== null ? (

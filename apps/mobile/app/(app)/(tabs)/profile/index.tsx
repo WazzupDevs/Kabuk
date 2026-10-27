@@ -14,6 +14,7 @@ import { Text } from '@/components/Text';
 import { useProfile } from '@/features/account/useProfile';
 import { useFriends } from '@/features/friends/queries';
 import { FriendStack } from '@/features/profile/FriendStack';
+import { NickCard } from '@/features/profile/NickCard';
 import { Badges, ProfileHead } from '@/features/profile/ProfileCard';
 import { useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
@@ -72,7 +73,7 @@ export default function ProfileScreen() {
         />
       ) : (
         <View className="mt-2 gap-4">
-          <ProfileHead profile={view.data}>
+          <ProfileHead profile={view.data} capsule={view.data.capsuleLook}>
             {/* v45: .pbtns, two quiet capsules in v45's 14 px (the small size, so "Profili düzenle"
                 fits half a row from 360 dp; "Düzenle" below); "Arkadaşlar" with the first friends'
                 photos. */}
@@ -103,6 +104,9 @@ export default function ProfileScreen() {
               </View>
             </View>
           </ProfileHead>
+          {view.data.capsuleNick ? (
+            <NickCard nick={view.data.capsuleNick} refreshAt={view.data.nickRefreshAt ?? null} />
+          ) : null}
           {view.data.photoHidden ? (
             <Card tone="note">
               <View className="flex-row items-start gap-2">
