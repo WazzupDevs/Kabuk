@@ -319,6 +319,7 @@ export default function TableScreen() {
     return (
       <ChatScreen
         key="chat"
+        wall="masa"
         top={top}
         composer={<RoomComposer chat={chat} />}
         newestKey={newest.key}
@@ -332,7 +333,7 @@ export default function TableScreen() {
   }
 
   return (
-    <ChatScreen key="games" top={top} composer={null}>
+    <ChatScreen key="games" top={top} composer={null} wall={null}>
       <View className="gap-3 pt-2">
         {r.phones === 1 ? (
           <Card tone="note" testID="table-solo">

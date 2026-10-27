@@ -182,6 +182,7 @@ export default function VenueChatScreen() {
 
   return (
     <ChatScreen
+      wall="mekan"
       testID="venue-chat-messages"
       startAtEnd
       newestKey={newest?.id}
