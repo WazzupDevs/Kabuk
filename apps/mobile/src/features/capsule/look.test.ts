@@ -29,7 +29,7 @@ describe('capsule editor', () => {
 
   it('shuffles to canonical looks', () => {
     let seed = 1;
-    const random = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
     for (let i = 0; i < 20; i++) {
       const look = shuffle(random);
       expect(code(parse(code(look)))).toBe(code(look));

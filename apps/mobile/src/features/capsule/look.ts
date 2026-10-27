@@ -20,9 +20,7 @@ export function parse(code: string): Look {
 }
 
 export function code(look: Look): string {
-  return normalizeLook(
-    LOOK_SLOTS.flatMap((s) => (look[s] ? [`${s}:${look[s]}`] : [])).join(' '),
-  );
+  return normalizeLook(LOOK_SLOTS.flatMap((s) => (look[s] ? [`${s}:${look[s]}`] : [])).join(' '));
 }
 
 export function wear(look: Look, slot: LookSlot, id: string | null): Look {
