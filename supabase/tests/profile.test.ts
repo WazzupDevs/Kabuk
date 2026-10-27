@@ -289,8 +289,9 @@ describe('profile/update', () => {
     });
   });
 
-  // The default participation is gone (docs/SPEC_V3.md §5.4): an old app sending it changes nothing.
-  it('stores the notification choices and no default participation', async () => {
+  // docs/SPEC_V4.md §4.D, K-22: Ayarlar → "Oyunlara katılım" is back (SPEC_V3 §5.4 had dropped it);
+  // each check-in starts with it.
+  it('stores the notification choices and the default participation', async () => {
     const client = await named(PHONES[0], 'Deniz');
     await profile(client, {
       action: 'update',
@@ -303,7 +304,7 @@ describe('profile/update', () => {
       .select('default_participation, notify_dm, notify_friend_requests')
       .single();
     expect(data).toEqual({
-      default_participation: 'anonymous',
+      default_participation: 'profile',
       notify_dm: false,
       notify_friend_requests: false,
     });

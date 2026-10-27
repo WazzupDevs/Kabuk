@@ -48,6 +48,8 @@ export type ProfileRequest =
       notifyFriendRequests?: boolean;
       // "Masa davetleri" (docs/SPEC_V4.md §4.G, K-53, K-62).
       notifyInvites?: boolean;
+      // Ayarlar → "Oyunlara katılım": the identity a check-in starts with (§4.D).
+      defaultParticipation?: 'anonymous' | 'profile';
     }
   | { action: 'photo-upload-url' }
   | { action: 'photo-commit'; path: string }

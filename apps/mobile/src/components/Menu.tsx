@@ -58,6 +58,8 @@ export function MenuItem({
   loading,
   note,
   testID,
+  chevron,
+  count,
 }: {
   label: string;
   icon?: IconName;
@@ -67,6 +69,9 @@ export function MenuItem({
   // A line under the label (skall tuvali, MasaKisiSecenekler: what "Engelle" does).
   note?: string;
   testID?: string;
+  // A row that opens a page (skall tuvali, Ayarlar): a chevron, with a count before it.
+  chevron?: boolean;
+  count?: number;
 }) {
   const { colors } = useTheme();
   const ink = negative ? colors.onDangerSoft : colors.text;
@@ -101,6 +106,14 @@ export function MenuItem({
             {note ? <Text variant="fine">{note}</Text> : null}
           </View>
           {loading ? <Loader kind="meet" size={ICON.md} delay={0} label={null} /> : null}
+          {!loading && count !== undefined ? (
+            <Text variant="label" tone="muted" tabular>
+              {String(count)}
+            </Text>
+          ) : null}
+          {!loading && chevron ? (
+            <Ionicons name="chevron-forward" size={ICON.md} color={colors.muted} />
+          ) : null}
         </View>
       )}
     </Pressable>

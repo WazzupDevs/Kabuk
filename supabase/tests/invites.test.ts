@@ -628,6 +628,23 @@ describe('notification settings (K-53, K-62)', () => {
   });
 });
 
+describe('Oyunlara katılım (docs/SPEC_V4.md §4.D)', () => {
+  it('saves the identity a check-in starts with, read by the account itself', async () => {
+    const me = await at(0);
+    for (const value of ['anonymous', 'profile'] as const) {
+      expect(
+        await invoke(me.client, 'profile', { action: 'update', defaultParticipation: value }),
+      ).toEqual(OK);
+      const { data, error } = await me.client
+        .from('profiles')
+        .select('default_participation')
+        .single();
+      expect(error).toBeNull();
+      expect(data).toEqual({ default_participation: value });
+    }
+  });
+});
+
 describe('locks (§4.K)', () => {
   // The 12th seat: an invite's join and a request's accept at once. Both hold the inviting table
   // first; the second sees it full.
