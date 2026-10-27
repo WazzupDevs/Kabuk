@@ -87,13 +87,13 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       {/* The keyboard's own motion, frame by frame (react-native-keyboard-controller, 0.7.0). */}
       <KeyboardProvider>
-      <QueryClientProvider client={queryClient}>
-        <LaunchCurtain>
-          <ThemeProvider>
-            <RootNavigator />
-          </ThemeProvider>
-        </LaunchCurtain>
-      </QueryClientProvider>
+        <QueryClientProvider client={queryClient}>
+          <LaunchCurtain>
+            <ThemeProvider>
+              <RootNavigator />
+            </ThemeProvider>
+          </LaunchCurtain>
+        </QueryClientProvider>
       </KeyboardProvider>
     </GestureHandlerRootView>
   );

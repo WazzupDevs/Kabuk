@@ -1,16 +1,17 @@
-import { BlurView } from 'expo-blur';
-import { type RefObject, useState } from 'react';
-import { PixelRatio, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { V46_TAB_BAR, type V46TabKey } from '@/theme/parts.generated';
+import { TAB_GLASS } from '@/theme/glass';
 import { gradientStyle } from '@/theme/gradient';
 import { V46_PALETTE } from '@/theme/tokens.generated';
 import { useTheme } from '@/theme/ThemeProvider';
 import { v46FontStyle } from '@/theme/v46Type';
 
-import { TAB_BAR_BLUR, androidBlur, blursBehind } from './backdrop';
+import { TAB_BAR_GLASS, blursBehind } from './backdrop';
+import { LiquidGlass } from './LiquidGlass';
 import { transitionStyle } from './motion';
 import { useLayoutWidth } from './narrow';
 import { V46Svg } from './V46Svg';
@@ -29,31 +30,31 @@ type Props = {
   items: readonly TabBarItem[];
   selected: V46TabKey | null;
   onPress: (key: V46TabKey) => void;
-  // What the bar blurs behind it (an expo-blur `BlurTargetView` around the screen; Android blurs
-  // only a target). Without one the bar is its ground alone, as over an empty screen.
-  blurTarget?: RefObject<View | null>;
-  // Nothing behind that can be blurred (the Keşfet map: a GL surface Dimezis cannot capture): the
-  // bar is drawn opaque, as below Android 12.
+  // The screen the glass shows (the focused tab's GlassTarget, by its id). Without one the bar is
+  // its ground alone, as over an empty screen.
+  glassTarget?: string | null;
+  // Nothing behind that the glass can show (the Keşfet map: a GL surface): the bar is drawn
+  // opaque, as below Android 12.
   opaque?: boolean;
 };
 
 // v46's tab bar (`nav.nav`, docs/design/v46: the inventory's alt-sekme-* and the measured Keşfet
-// and Aktiviteler bars): a frosted pill as wide as the screen less its inset on each side, up to
-// v46's widest; the screen behind it blurred (`backdrop-filter: blur(20px)`; expo-blur, see
-// backdrop.ts), under a light gradient, a white edge and its shadows. Five tabs share it evenly:
+// and Aktiviteler bars): a glass pill as wide as the screen less its inset on each side, up to
+// v46's widest; the screen behind it seen through skall's liquid glass (backdrop.ts,
+// theme/glass.ts), under v46's light gradient (lighter over the glass), a white edge and its
+// shadows. Five tabs share it evenly:
 // an icon in a pill (`.ic`) over a label. The selected tab's pill takes its gradient, edge and
 // shadow (the shadow eases, 200 ms), its icon and label the ink colour and the label a heavier
 // weight; Mekan's icon is the mark (VenueGlyph). A pressed tab shrinks (`.va button:active`). The
 // bar sits where the caller puts it (v46: 12 above the bottom, above the safe area). Below Android
 // 12 nothing blurs, so the bar is opaque: v46's screen ground under the gradient (backdrop.ts); so
 // is it over what cannot be blurred (`opaque`).
-export function TabBar({ items, selected, onPress, blurTarget, opaque = false }: Props) {
+export function TabBar({ items, selected, onPress, glassTarget, opaque = false }: Props) {
   const { scheme } = useTheme();
   const reduce = useReduceMotion();
   const t = V46_TAB_BAR[scheme];
   const width = Math.min(t.maxWidth, useLayoutWidth() - 2 * t.inset);
-  const blur = androidBlur(t.backdrop.blur, PixelRatio.get());
-  const solid = opaque || !TAB_BAR_BLUR || !blursBehind(Platform.OS, Platform.Version);
+  const solid = opaque || !TAB_BAR_GLASS || !blursBehind(Platform.OS, Platform.Version);
   return (
     <View
       accessibilityRole="tablist"
@@ -69,13 +70,16 @@ export function TabBar({ items, selected, onPress, blurTarget, opaque = false }:
           <View
             style={[StyleSheet.absoluteFill, { backgroundColor: V46_PALETTE[scheme].canvas }]}
           />
-        ) : blurTarget ? (
-          <BlurView
-            blurTarget={blurTarget}
-            blurMethod="dimezisBlurViewSdk31Plus"
-            intensity={blur.intensity}
-            blurReductionFactor={blur.reductionFactor}
-            tint={scheme}
+        ) : glassTarget ? (
+          <LiquidGlass
+            targetId={glassTarget}
+            cornerRadius={t.radius}
+            ground={V46_PALETTE[scheme].canvas}
+            blurRadius={TAB_GLASS.blur}
+            refraction={TAB_GLASS.refraction}
+            depth={TAB_GLASS.depth}
+            dispersion={TAB_GLASS.dispersion}
+            highlight={TAB_GLASS.highlight}
             style={StyleSheet.absoluteFill}
           />
         ) : null}
@@ -83,6 +87,12 @@ export function TabBar({ items, selected, onPress, blurTarget, opaque = false }:
           style={[
             StyleSheet.absoluteFill,
             gradientStyle(t.gradient),
+            { borderRadius: t.radius, opacity: solid ? undefined : TAB_GLASS.overlay },
+          ]}
+        />
+        <View
+          style={[
+            StyleSheet.absoluteFill,
             {
               borderRadius: t.radius,
               borderWidth: t.border.width,

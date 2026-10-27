@@ -134,8 +134,14 @@ function litMark([a, b]: [Rect, Rect], u: number, canvas: number): { defs: strin
       rect(a, 'fill="url(#pa)"') +
       rect(b, 'fill="url(#pb)"') +
       rect(b, 'fill="url(#px)" clip-path="url(#a)"') +
-      rect(inset(a), `fill="none" stroke="#FFFFFF" stroke-opacity=".18" stroke-width="${f(3 * u)}"`) +
-      rect(inset(b), `fill="none" stroke="#FFFFFF" stroke-opacity=".14" stroke-width="${f(3 * u)}"`),
+      rect(
+        inset(a),
+        `fill="none" stroke="#FFFFFF" stroke-opacity=".18" stroke-width="${f(3 * u)}"`,
+      ) +
+      rect(
+        inset(b),
+        `fill="none" stroke="#FFFFFF" stroke-opacity=".14" stroke-width="${f(3 * u)}"`,
+      ),
   };
 }
 

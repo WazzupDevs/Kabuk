@@ -1,16 +1,14 @@
 import { ROUTES, type TabKey } from '@shared/navigation.ts';
-import { BlurTargetView } from 'expo-blur';
 import { router, useFocusEffect } from 'expo-router';
 import type { BottomTabBarProps } from 'expo-router/tabs';
 import {
   createContext,
   type ReactElement,
   type ReactNode,
-  type RefObject,
   useCallback,
   useContext,
   useEffect,
-  useRef,
+  useId,
 } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -20,13 +18,14 @@ import { haptic } from '@/lib/haptics';
 import { V46_TAB_BAR, type V46TabKey } from '@/theme/parts.generated';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
-import { TAB_BAR_BLUR } from '@/ui/backdrop';
+import { TAB_BAR_GLASS } from '@/ui/backdrop';
+import { GlassTarget } from '@/ui/LiquidGlass';
 import { TabBar as V46TabBar, type TabBarItem } from '@/ui/TabBar';
 
 // The tabs' navigator and v46's bar (src/ui/TabBar.tsx): the bar floats 12 above the bottom (above
-// the safe area), centred, and blurs the focused tab's screen behind it. Each tab screen is a
-// blur target (TabScene, the navigator's `screenLayout`); the bar is drawn outside them, as
-// Dimezis needs. Over the Keşfet map, which cannot be blurred, the bar is opaque.
+// the safe area), centred, and shows the focused tab's screen through its liquid glass. Each tab
+// screen is a glass target (TabScene, the navigator's `screenLayout`); the bar is drawn outside
+// them. Over the Keşfet map, which the glass cannot show, the bar is opaque.
 
 // The tab of each route; other routes (the hidden index) have none.
 const TAB_OF: Partial<Record<string, V46TabKey>> = {
@@ -39,11 +38,11 @@ const TAB_OF: Partial<Record<string, V46TabKey>> = {
 
 // Screens that change the bar while focused: a DM hides it (its message bar sits at the bottom),
 // the Keşfet map makes it opaque. Counters, so a screen that blurs late cannot undo the next one's
-// request. `target` is the focused tab screen, the one the bar blurs.
+// request. `target` is the focused tab screen's glass id, the one the bar shows.
 const useBarMode = create<{
   hidden: number;
   overMap: number;
-  target: RefObject<View | null> | null;
+  target: string | null;
 }>(() => ({ hidden: 0, overMap: 0, target: null }));
 
 function useBarModeWhileFocused(key: 'hidden' | 'overMap', on: boolean) {
@@ -90,8 +89,8 @@ type SceneNavigation = {
   addListener: (type: 'focus', callback: () => void) => () => void;
 };
 
-// A tab screen as what the bar blurs (expo-blur's `BlurTargetView`, on the screen's ground): the
-// focused one is the bar's target.
+// A tab screen as what the bar's glass shows (a GlassTarget on the screen's ground): the focused
+// one is the bar's target.
 export function TabScene({
   navigation,
   children,
@@ -100,22 +99,22 @@ export function TabScene({
   children: ReactElement;
 }) {
   const { colors } = useTheme();
-  const ref = useRef<View>(null);
+  const id = useId();
   useEffect(() => {
-    const own = () => useBarMode.setState({ target: ref });
+    const own = () => useBarMode.setState({ target: id });
     if (navigation.isFocused()) own();
     const off = navigation.addListener('focus', own);
     return () => {
       off();
-      useBarMode.setState((s) => (s.target === ref ? { target: null } : s));
+      useBarMode.setState((s) => (s.target === id ? { target: null } : s));
     };
-  }, [navigation]);
+  }, [navigation, id]);
   return (
-    // A plain ground when the bar does not blur (TAB_BAR_BLUR): no second drawing of the screen.
-    TAB_BAR_BLUR ? (
-      <BlurTargetView ref={ref} style={{ flex: 1, backgroundColor: colors.canvas }}>
+    // A plain ground when the bar has no glass (TAB_BAR_GLASS).
+    TAB_BAR_GLASS ? (
+      <GlassTarget targetId={id} style={{ flex: 1, backgroundColor: colors.canvas }}>
         {children}
-      </BlurTargetView>
+      </GlassTarget>
     ) : (
       <View style={{ flex: 1, backgroundColor: colors.canvas }}>{children}</View>
     )
@@ -198,7 +197,7 @@ export function TabBar({
         items={tabs.map((t) => t.item)}
         selected={focused ? (TAB_OF[focused.name] ?? null) : null}
         onPress={onPress}
-        blurTarget={target ?? undefined}
+        glassTarget={target}
         opaque={overMap}
       />
     </View>
