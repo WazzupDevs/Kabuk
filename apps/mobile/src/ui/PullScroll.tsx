@@ -1,5 +1,5 @@
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
-import { type ScrollViewProps, View } from 'react-native';
+import { type ScrollViewProps, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   Easing,
@@ -53,6 +53,8 @@ export function PullScroll({ onRefresh, children, contentContainerStyle, ...scro
   const list = useSharedValue(0);
   const [refreshing, setRefreshing] = useState(false);
   const still = reduce && p.settle.offWhenReduced;
+  const flat = StyleSheet.flatten(contentContainerStyle) ?? {};
+  const gaps = { gap: flat.gap, rowGap: flat.rowGap, columnGap: flat.columnGap };
 
   const settleTo = useCallback(
     (to: number) => {
@@ -136,10 +138,13 @@ export function PullScroll({ onRefresh, children, contentContainerStyle, ...scro
               scrollEventThrottle={16}
               // v46's list does not stretch at its ends; the pull is the only overscroll.
               overScrollMode="never"
+              showsVerticalScrollIndicator={false}
               contentContainerStyle={contentContainerStyle}
               {...scroll}
             >
-              <Animated.View style={listStyle}>{children}</Animated.View>
+              {/* The list moves as one view; the screen's gaps are between its children, so they
+                  go on it (the content's own gap would sit around this one view only). */}
+              <Animated.View style={[gaps, listStyle]}>{children}</Animated.View>
             </Animated.ScrollView>
           </GestureDetector>
         </View>

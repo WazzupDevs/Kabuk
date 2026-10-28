@@ -101,6 +101,7 @@ export function Screen({
         ) : (
           <ScrollView
             ref={scrollRef}
+            showsVerticalScrollIndicator={false}
             contentContainerStyle={content}
             keyboardShouldPersistTaps="handled"
             stickyHeaderIndices={stickyHeaderIndices}
@@ -133,7 +134,7 @@ function FixedBody({
       scrollEnabled={overflows}
       bounces={false}
       overScrollMode="never"
-      showsVerticalScrollIndicator={overflows}
+      showsVerticalScrollIndicator={false}
       onLayout={(e) => setBox(e.nativeEvent.layout.height)}
       onContentSizeChange={(_w, h) => setInner(h)}
     >

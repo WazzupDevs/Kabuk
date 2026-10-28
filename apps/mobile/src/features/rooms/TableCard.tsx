@@ -136,7 +136,7 @@ export function TableCard({ checkIn, room, state, onCreate, onOpenLobby }: Props
         )}
       </Pressable>
 
-      <PeopleFaces roomId={room.id} phones={room.phones} />
+      <PeopleFaces roomId={room.id} phones={room.phones} me={checkIn.id} />
 
       {live && (intent || tag) ? (
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: KIT.size.chipGap }}>
@@ -217,7 +217,7 @@ const FACE_OVERLAP = 8;
 // The people at the table, in the order they sat: a profiled person's photo, an anonymous one's
 // capsule. The people's faces go to everyone at the table while it runs (rule 4); the list is read
 // again when the count changes.
-function PeopleFaces({ roomId, phones }: { roomId: string; phones: number }) {
+function PeopleFaces({ roomId, phones, me }: { roomId: string; phones: number; me: string }) {
   const people = useTablePeople(roomId);
   const ids = (people.data ?? []).map((p) => p.sessionId).join(',');
   const profiles = useRoomMemberProfiles(roomId, ids).data;
@@ -247,7 +247,12 @@ function PeopleFaces({ roomId, phones }: { roomId: string; phones: number }) {
             boxShadow: KIT.avShadow,
           }}
         >
-          <PersonFace person={p} publicId={profiles?.get(p.sessionId)} size="sm" />
+          <PersonFace
+            person={p}
+            publicId={profiles?.get(p.sessionId)}
+            size="sm"
+            self={p.sessionId === me}
+          />
         </View>
       ))}
     </View>

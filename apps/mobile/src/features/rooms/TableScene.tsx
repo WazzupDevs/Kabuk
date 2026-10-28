@@ -5,6 +5,7 @@ import { Buddy } from '@/aura/Buddy';
 import { Av, Disk, Tag } from '@/aura/kit';
 import { springConfig } from '@/aura/motion';
 import { SceneGround } from '@/aura/Scene';
+import { useProfile } from '@/features/account/useProfile';
 import { useProfileView } from '@/features/profile/queries';
 import { tr } from '@/i18n/tr';
 import { useReduceMotion } from '@/lib/useReduceMotion';
@@ -174,7 +175,7 @@ function Seat({
           </View>
         ) : (
           <Centered x={x} bottom={FRONT_FACE * k}>
-            <Face person={person} publicId={publicId} delay={delay} late={late} />
+            <Face person={person} publicId={publicId} delay={delay} late={late} you={you} />
           </Centered>
         )}
         <Centered x={x} bottom={FRONT_TAG * k}>
@@ -189,7 +190,7 @@ function Seat({
         {buddy ? (
           <Buddy look={buddy} height={BUDDY_BACK * k} delay={delay} phase={index * PHASE} />
         ) : (
-          <Face person={person} publicId={publicId} delay={delay} late={late} />
+          <Face person={person} publicId={publicId} delay={delay} late={late} you={you} />
         )}
         {label}
       </View>
@@ -220,13 +221,19 @@ function Face({
   publicId,
   delay,
   late,
+  you,
 }: {
   person: TablePerson;
   publicId: string | undefined;
   delay: number;
   late: boolean;
+  // The phone's own seat: its photo from the own profile (the table's list holds the others).
+  you: boolean;
 }) {
-  const view = useProfileView(person.profiled ? publicId : undefined);
+  const own = useProfile();
+  const view = useProfileView(
+    person.profiled ? (publicId ?? (you ? own.data?.public_id : undefined)) : undefined,
+  );
   const reduce = useReduceMotion();
   const [pop] = useState(() => new Animated.Value(reduce ? 1 : 0));
   const [ring] = useState(() => new Animated.Value(0));

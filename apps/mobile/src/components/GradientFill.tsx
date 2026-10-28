@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { svgGradient } from '@/theme/gradient';
+import { stopPaint } from '@/theme/svgStop';
 
 // A theme's CSS linear gradient (theme/gradient.ts → svgGradient) filling its parent, drawn with
 // react-native-svg once the box has a size, its corners rounded to `radius`. For the buttons'
@@ -24,7 +25,7 @@ export function GradientFill({ css, radius = 0 }: { css: string; radius?: number
           <Defs>
             <LinearGradient id="fill" x1={g.x1} y1={g.y1} x2={g.x2} y2={g.y2}>
               {g.stops.map((s, i) => (
-                <Stop key={i} offset={s.offset} stopColor={s.color} />
+                <Stop key={i} offset={s.offset} {...stopPaint(s.color)} />
               ))}
             </LinearGradient>
           </Defs>

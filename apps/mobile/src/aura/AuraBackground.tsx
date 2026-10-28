@@ -4,6 +4,7 @@ import Svg, { Defs, Ellipse, RadialGradient, Stop } from 'react-native-svg';
 
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { AURA, type AuraBlob } from '@/theme/aura';
+import { stopPaint } from '@/theme/svgStop';
 import { useTheme } from '@/theme/ThemeProvider';
 
 // The colour clouds behind a screen (docs/design/aura/project/aura.css → `.aura`): five soft
@@ -80,10 +81,10 @@ function Cloud({
       <Svg width={w} height={h}>
         <Defs>
           <RadialGradient id={id} cx="50%" cy="50%" rx="50%" ry="50%">
-            <Stop offset={0} stopColor={blob.color} stopOpacity={1} />
-            <Stop offset={inner} stopColor={blob.color} stopOpacity={1} />
-            <Stop offset={edge} stopColor={blob.color} stopOpacity={0.5} />
-            <Stop offset={1} stopColor={blob.color} stopOpacity={0} />
+            <Stop offset={0} {...stopPaint(blob.color)} />
+            <Stop offset={inner} {...stopPaint(blob.color)} />
+            <Stop offset={edge} {...stopPaint(blob.color, 0.5)} />
+            <Stop offset={1} {...stopPaint(blob.color, 0)} />
           </RadialGradient>
         </Defs>
         <Ellipse cx={w / 2} cy={h / 2} rx={w / 2} ry={h / 2} fill={`url(#${id})`} />

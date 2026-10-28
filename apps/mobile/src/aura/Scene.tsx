@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import Svg, { Defs, Ellipse, LinearGradient, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import { AURA } from '@/theme/aura';
+import { stopPaint } from '@/theme/svgStop';
 import { useTheme } from '@/theme/ThemeProvider';
 
 import { Buddy, Placed } from './Buddy';
@@ -20,13 +21,13 @@ export function SceneGround({ top, bottom }: { top?: number; bottom?: number } =
       <Svg width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 100 100">
         <Defs>
           <LinearGradient id={`g${id}`} x1="0" y1="0" x2="0" y2="1">
-            <Stop offset={0} stopColor={c.top} />
-            <Stop offset={1} stopColor={c.bottom} />
+            <Stop offset={0} {...stopPaint(c.top)} />
+            <Stop offset={1} {...stopPaint(c.bottom)} />
           </LinearGradient>
           {c.glows.map((g, i) => (
             <RadialGradient key={i} id={`r${i}${id}`} cx={g.cx} cy={g.cy} rx={g.rx} ry={g.ry}>
-              <Stop offset={0} stopColor={g.color} />
-              <Stop offset={GLOW_END} stopColor={g.color} stopOpacity={0} />
+              <Stop offset={0} {...stopPaint(g.color)} />
+              <Stop offset={GLOW_END} {...stopPaint(g.color, 0)} />
             </RadialGradient>
           ))}
         </Defs>
@@ -68,8 +69,8 @@ function Floor() {
       <Svg width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 100 100">
         <Defs>
           <RadialGradient id={`f${id}`} cx="50%" cy="50%" rx="50%" ry="50%">
-            <Stop offset={0} stopColor={c.floor} />
-            <Stop offset={1} stopColor={c.floor} stopOpacity={0} />
+            <Stop offset={0} {...stopPaint(c.floor)} />
+            <Stop offset={1} {...stopPaint(c.floor, 0)} />
           </RadialGradient>
         </Defs>
         <Ellipse cx={50} cy={50} rx={50} ry={50} fill={`url(#f${id})`} />

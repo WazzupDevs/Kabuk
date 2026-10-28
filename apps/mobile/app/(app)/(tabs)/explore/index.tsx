@@ -219,22 +219,21 @@ export default function ExploreScreen() {
 // "Şu an buradasın" (v46 `.vhere`): the own check-in and the way back to Mekan. The phone's own
 // data; nobody else sees it.
 function HereNow({ here }: { here: Here }) {
-  // docs/design/aura: a glass row with the live dot, the venue and "Mekana dön".
+  // docs/design/aura: a glass card with the live dot, the venue and "Mekana dön" under it (a long
+  // venue name keeps its width; beside the button it broke into four lines).
   return (
-    <Glass sm testID="explore-here" style={{ padding: KIT.size.rowGap }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.rowGap }}>
-        <View style={{ flex: 1, gap: SPACING[0.5] }}>
-          <Live label={tr.explore.here} />
-          <T v="h3">{here.name}</T>
-          <T v="fine">{tr.explore.hereAt(here.spot)}</T>
-        </View>
-        <Btn
-          sm
-          icon="forward"
-          label={tr.explore.backToVenue}
-          onPress={() => router.navigate('/venue')}
-        />
+    <Glass sm testID="explore-here" style={{ padding: KIT.size.pad, gap: KIT.size.rowGap }}>
+      <View style={{ gap: SPACING[0.5] }}>
+        <Live label={tr.explore.here} />
+        <T v="h3">{here.name}</T>
+        <T v="fine">{tr.explore.hereAt(here.spot)}</T>
       </View>
+      <Btn
+        sm
+        icon="forward"
+        label={tr.explore.backToVenue}
+        onPress={() => router.navigate('/venue')}
+      />
     </Glass>
   );
 }
@@ -284,6 +283,7 @@ function VenueList({
           flexDirection: 'row',
           alignItems: 'baseline',
           justifyContent: 'space-between',
+          paddingTop: KIT.size.secPadTop,
           paddingHorizontal: KIT.size.secPadX,
         }}
       >
@@ -657,15 +657,30 @@ function SearchGlass({
       }}
     >
       <CapIcon name="search" color={c.muted} size={KIT.size.iconSm} />
-      <TextInput
-        testID="explore-search"
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={tr.explore.search}
-        placeholderTextColor={c.muted}
-        accessibilityLabel={tr.explore.search}
-        style={[KIT_TYPE.body, { flex: 1, color: c.ink, paddingVertical: 0 }]}
-      />
+      <View style={{ flex: 1, justifyContent: 'center' }}>
+        <TextInput
+          testID="explore-search"
+          value={value}
+          onChangeText={onChangeText}
+          accessibilityLabel={tr.explore.search}
+          style={[
+            KIT_TYPE.body,
+            { color: c.ink, paddingVertical: 0, paddingHorizontal: 0, includeFontPadding: false },
+          ]}
+        />
+        {/* The hint is drawn by the app, in the app's type: Android draws a field's own hint in
+            the phone's system face (the owner's report, 27 and 28 Ekim). */}
+        {value.length === 0 ? (
+          <View
+            pointerEvents="none"
+            style={[StyleSheet.absoluteFill, { justifyContent: 'center' }]}
+          >
+            <T v="body" color={c.muted}>
+              {tr.explore.search}
+            </T>
+          </View>
+        ) : null}
+      </View>
     </Glass>
   );
 }

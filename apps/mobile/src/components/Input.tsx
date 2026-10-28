@@ -34,7 +34,21 @@ type Props = Omit<TextInputProps, 'style' | 'placeholderTextColor'> & {
 // A text field. Its outline is the theme's border where that reads 3:1 against the surface, the
 // secondary text colour otherwise; focus draws it in the accent.
 export const Input = forwardRef<TextInput, Props>(function Input(
-  { label, hint, error, prefix, counter, code, tall, box, centered, search, multiline, ...rest },
+  {
+    label,
+    hint,
+    error,
+    prefix,
+    counter,
+    code,
+    tall,
+    box,
+    centered,
+    search,
+    multiline,
+    placeholder,
+    ...rest
+  },
   ref,
 ) {
   const theme = useTheme();
@@ -88,39 +102,67 @@ export const Input = forwardRef<TextInput, Props>(function Input(
             />
           </>
         ) : null}
-        <TextInput
-          ref={ref}
-          {...rest}
-          multiline={multiline}
-          // No touch while the person types (K-30).
-          onChangeText={(text) => {
-            noteTyping();
-            rest.onChangeText?.(text);
-          }}
-          onFocus={(e) => {
-            setFocused(true);
-            rest.onFocus?.(e);
-          }}
-          onBlur={(e) => {
-            setFocused(false);
-            rest.onBlur?.(e);
-          }}
-          placeholderTextColor={colors.placeholder}
-          selectionColor={colors.accent}
-          cursorColor={colors.accent}
-          textAlignVertical={multiline ? 'top' : 'center'}
-          style={[
-            prefix ? KIT_TYPE.phone : typeStyle(theme, code ? 'title' : 'body'),
-            {
-              flex: 1,
-              color: k.c.ink,
-              paddingVertical: SPACING[3],
-              minHeight: tall ? TOUCH.large + SPACING[8] : undefined,
-            },
-            code ? { textAlign: 'center', letterSpacing: SPACING[2] } : null,
-            centered ? { textAlign: 'center' } : null,
-          ]}
-        />
+        <View style={{ flex: 1, justifyContent: 'center' }}>
+          <TextInput
+            ref={ref}
+            {...rest}
+            multiline={multiline}
+            // No touch while the person types (K-30).
+            onChangeText={(text) => {
+              noteTyping();
+              rest.onChangeText?.(text);
+            }}
+            onFocus={(e) => {
+              setFocused(true);
+              rest.onFocus?.(e);
+            }}
+            onBlur={(e) => {
+              setFocused(false);
+              rest.onBlur?.(e);
+            }}
+            accessibilityHint={rest.accessibilityHint ?? placeholder}
+            selectionColor={colors.accent}
+            cursorColor={colors.accent}
+            textAlignVertical={multiline ? 'top' : 'center'}
+            style={[
+              prefix ? KIT_TYPE.phone : typeStyle(theme, code ? 'title' : 'body'),
+              {
+                color: k.c.ink,
+                paddingVertical: SPACING[3],
+                paddingHorizontal: 0,
+                minHeight: tall ? TOUCH.large + SPACING[8] : undefined,
+              },
+              code ? { textAlign: 'center', letterSpacing: SPACING[2] } : null,
+              centered ? { textAlign: 'center' } : null,
+            ]}
+          />
+          {/* The hint is drawn by the app, in the app's type: Android draws a field's own hint
+              in the phone's system face (the owner's report, 27 and 28 Ekim). */}
+          {placeholder && !rest.value ? (
+            <View
+              pointerEvents="none"
+              style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                top: 0,
+                bottom: 0,
+                paddingVertical: SPACING[3],
+                justifyContent: multiline ? 'flex-start' : 'center',
+              }}
+            >
+              <RNText
+                style={[
+                  prefix ? KIT_TYPE.phone : typeStyle(theme, code ? 'title' : 'body'),
+                  { color: colors.placeholder },
+                  code || centered ? { textAlign: 'center' } : null,
+                ]}
+              >
+                {placeholder}
+              </RNText>
+            </View>
+          ) : null}
+        </View>
       </View>
       {error ? (
         <Text variant="fine" tone="danger" accessibilityLiveRegion="polite">
