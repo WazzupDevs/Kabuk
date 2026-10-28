@@ -36,7 +36,6 @@ import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 import type { ChatWallKind } from '@/theme/chatWallpaper';
 
 import { AuraBackground } from '@/aura/AuraBackground';
-import { useTabFocus } from '@/aura/motion';
 import { AURA } from '@/theme/aura';
 import { useKit } from '@/aura/kit';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
@@ -404,7 +403,6 @@ export function ChatScreen({
   wall = 'dm',
 }: Props) {
   const { shape, scheme } = useTheme();
-  const focus = useTabFocus();
   // Under the tabs (a DM) the floating tab bar covers the bottom: the message bar sits above it.
   const barSpace = useTabBarSpace();
   // The reaction bar's state for the whole screen: a tap on the top bar or the message bar closes it
@@ -426,7 +424,7 @@ export function ChatScreen({
           onTouchStart={reactions.onTouchStart}
         >
           {/* The colour clouds under the whole chat (docs/design/aura → DM, Mekan sohbeti, Masa). */}
-          <AuraBackground running={focus.focused} />
+          <AuraBackground />
           {top}
           <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
             {/* The wallpaper under the stream and the message bar (v45: .chatpane); the bar floats on

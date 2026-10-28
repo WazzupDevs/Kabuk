@@ -71,7 +71,7 @@ export function Screen({
   };
   return (
     <SafeAreaView edges={safe} style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
-      <AuraBackground running={focus.focused} />
+      <AuraBackground />
       {top ? (
         <View
           style={{

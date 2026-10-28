@@ -24,6 +24,7 @@ import { useNow } from '@/lib/useNow';
 import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { SPACING } from '@/theme/tokens';
+import { firstRows, useAfterTransition } from '@/lib/afterTransition';
 
 // Bildirimler (docs/SPEC_V4.md §4.G; skall tuvali: Bildirimler, BildirimlerKabul, BildirimlerBos):
 // friends/notifications's rows, the new ones (after the list was last opened) on soft cards under
@@ -58,6 +59,8 @@ export default function NotificationsScreen() {
     [queryClient],
   );
 
+  // Opened light: the first rows while the sheet comes up, the rest after.
+  const settled = useAfterTransition();
   if (list.isPending) {
     return (
       <RouteSheet title={tr.notifications.title} testID="notifications" peek="notifications">
@@ -103,7 +106,7 @@ export default function NotificationsScreen() {
         <View style={{ gap: KIT.size.rowGap }}>
           <T v="eyebrow">{tr.notifications.earlier}</T>
           <GlassList>
-            {older.map((n) => (
+            {firstRows(older, settled).map((n) => (
               <Row key={keyOf(n)} item={n} />
             ))}
           </GlassList>

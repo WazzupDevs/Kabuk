@@ -20,6 +20,7 @@ import { tr } from '@/i18n/tr';
 import { rowPress } from '@/theme/rowPress';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
+import { firstRows, useAfterTransition } from '@/lib/afterTransition';
 
 // Arkadaşlar, under Profil (docs/SPEC_V3.md §18.3; v45: .frs): the count beside the title, the
 // friends in one card. A row opens the friend's profile, its "Mesaj" the DM. Removing and blocking
@@ -27,6 +28,8 @@ import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 // anywhere. A failed reload keeps the list it had, with the error and "Tekrar dene" over it.
 export default function FriendsScreen() {
   const friends = useFriends();
+  // Opened light: the first rows while the screen slides in, the rest after.
+  const settled = useAfterTransition();
   const loading = useLoaderHold(friends.isPending);
   const retry = {
     label: tr.common.retry,
@@ -67,7 +70,7 @@ export default function FriendsScreen() {
             <EmptyState kind="empty" body={tr.friends.empty} />
           ) : (
             <ListCard bare>
-              {friends.data.map((f, i) => (
+              {firstRows(friends.data, settled).map((f, i) => (
                 <Rise key={f.publicId} index={i}>
                   <FriendRow friend={f} />
                 </Rise>

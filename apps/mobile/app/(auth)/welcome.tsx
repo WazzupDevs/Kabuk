@@ -142,7 +142,7 @@ function Welcome() {
       style={[styles.fill, { backgroundColor: AURA[scheme].ground }]}
     >
       {/* docs/design/aura → Main: the colour clouds. */}
-      <AuraBackground running />
+      <AuraBackground />
       <SafeAreaView edges={['top', 'left', 'right', 'bottom']} style={styles.fill}>
         <ScrollView
           contentContainerStyle={{

@@ -165,16 +165,16 @@ export function ChatBubble({
         ref={lifted ? undefined : faceRef}
         collapsable={false}
         // docs/design/aura → Dm (`.msg`): 22 round, the corner towards the author 8 at the
-        // bottom; another's on glass, the own in the primary.
+        // bottom; another's on glass, the own in the primary. No soft shadow: Android draws each
+        // blurred shadow on a layer of its own, and a chat opened with dozens of them late.
         style={[
           mine
-            ? { backgroundColor: KIT.primary, boxShadow: KIT.meShadow }
+            ? { backgroundColor: KIT.primary }
             : [
                 gradientStyle(c.glass),
                 {
                   borderWidth: KIT.size.edge,
                   borderColor: c.glassEdge,
-                  boxShadow: c.glassShadow,
                 },
               ],
           {
@@ -535,7 +535,6 @@ function ReactionChips({
               borderWidth: shape.stroke.hairline,
               borderColor: r.mine ? colors.violet : colors.divider,
               backgroundColor: r.mine ? withAlpha(colors.violet, 0.16) : colors.surface,
-              boxShadow: shape.shadow.raised,
             }}
           >
             <ReactionFace emoji={r.emoji} size="chip" />
@@ -619,7 +618,6 @@ export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: 
           borderBottomLeftRadius: KIT.size.msgTail,
           borderWidth: KIT.size.edge,
           borderColor: c.glassEdge,
-          boxShadow: c.glassShadow,
         }}
       >
         {dots.map((d, i) => (

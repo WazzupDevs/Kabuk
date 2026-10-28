@@ -394,7 +394,7 @@ export default function TableScreen() {
   // scrolls as one (the cards are a list).
   return (
     <View style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
-      <AuraBackground running />
+      <AuraBackground />
       <ScrollView
         contentContainerStyle={{ paddingBottom: insets.bottom + SPACING[8] }}
         showsVerticalScrollIndicator={false}
