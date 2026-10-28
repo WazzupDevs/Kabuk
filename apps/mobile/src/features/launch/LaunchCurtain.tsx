@@ -32,6 +32,7 @@ import {
   glintPath,
   launchFrame,
   type LaunchGeometry,
+  LAUNCH_BAND,
   launchGeometry,
   type LaunchKind,
   type LaunchScene,
@@ -245,6 +246,14 @@ class CurtainBoundary extends Component<{ children: ReactNode }, { failed: boole
   }
 }
 
+// The curtain in three parts, so that a frame redraws as little as it can (the owner's report, 29
+// Ekim: the launch stuttered; react-native-svg draws each changed picture again in software, and
+// the one picture of the whole screen with its mask was drawn again on every frame). Until the
+// window opens: the ink and the glow are a view and a still picture (only their opacity moves),
+// and the marks, the ring and the flare move in a band around the centre. While the window opens:
+// everything once more, cut by the window, in the whole screen's picture, which is still before
+// (its props do not change, so it is never drawn again). The same drawing as before, in the same
+// places.
 function CurtainArt({
   scene,
   g,
@@ -258,143 +267,239 @@ function CurtainArt({
   h: number;
   onDrawn: () => void;
 }) {
-  const curtain = useAnimatedProps(() => ({ opacity: scene.value.curtain }));
-  const windowA = useAnimatedProps(() => rectProps(scene.value.window?.a ?? NOTHING));
-  const windowB = useAnimatedProps(() => rectProps(scene.value.window?.b ?? NOTHING));
-  const windowA2 = useAnimatedProps(() => rectProps(scene.value.window?.a ?? NOTHING));
-  const windowB2 = useAnimatedProps(() => rectProps(scene.value.window?.b ?? NOTHING));
-  const rimA = useAnimatedProps(() => rectProps(scene.value.window?.a ?? NOTHING));
-  const rimB = useAnimatedProps(() => rectProps(scene.value.window?.b ?? NOTHING));
-  const rimClipA = useAnimatedProps(() => rectProps(scene.value.window?.a ?? NOTHING));
-  const rimClipB = useAnimatedProps(() => rectProps(scene.value.window?.b ?? NOTHING));
-  const white = useAnimatedProps(() => ({ opacity: scene.value.window?.white ?? 0 }));
-  const rim = useAnimatedProps(() => ({ opacity: scene.value.window?.rim ?? 0 }));
-  const glow = useAnimatedProps(() => ({ opacity: scene.value.glow }));
-  const marks = useAnimatedProps(() => ({ opacity: scene.value.marks }));
-  const pillA = useAnimatedProps(() => rectProps(scene.value.a));
-  const pillB = useAnimatedProps(() => rectProps(scene.value.b));
-  const overlap = useAnimatedProps(() => rectProps(scene.value.b));
-  const clipA = useAnimatedProps(() => rectProps(scene.value.a));
-  const llA = useAnimatedProps(() => rectProps(scene.value.a));
-  const llB = useAnimatedProps(() => rectProps(scene.value.b));
-  const lettersClip = useAnimatedProps(() => ({
-    width: Math.max(0, scene.value.lettersClip + 10),
+  const root = useAnimatedStyle(() => ({ opacity: scene.value.curtain }));
+  const before = useAnimatedStyle(() => ({ opacity: scene.value.window ? 0 : 1 }));
+  const glowView = useAnimatedStyle(() => ({
+    opacity: scene.value.window ? 0 : scene.value.glow,
   }));
-  const letter0 = useAnimatedProps(() => ({ d: shiftedPath(S, scene.value.letters[0]) }));
-  const letter1 = useAnimatedProps(() => ({ d: shiftedPath(K, scene.value.letters[1]) }));
-  const letter2 = useAnimatedProps(() => ({ d: shiftedPath(A, scene.value.letters[2]) }));
+  const opening = useAnimatedStyle(() => ({ opacity: scene.value.window ? 1 : 0 }));
+  const bandTop = g.cy - BAND / 2;
+  return (
+    <Animated.View
+      testID={TEST_ID}
+      collapsable={false}
+      pointerEvents="none"
+      style={[StyleSheet.absoluteFill, root]}
+      onLayout={onDrawn}
+    >
+      <StatusBar style="light" />
+      <Animated.View style={[StyleSheet.absoluteFill, styles.ink, before]} />
+      <Animated.View
+        style={[
+          {
+            position: 'absolute',
+            left: g.cx - GLOW_RX,
+            top: g.cy - GLOW_RY,
+            width: GLOW_RX * 2,
+            height: GLOW_RY * 2,
+          },
+          glowView,
+        ]}
+      >
+        <Svg width={GLOW_RX * 2} height={GLOW_RY * 2}>
+          <Defs>
+            <RadialGradient id="launch-glow-still">
+              <Stop offset="0" stopColor={LAUNCH_LIGHT.glow} stopOpacity={0.8} />
+              <Stop offset="1" stopColor={LAUNCH_LIGHT.glow} stopOpacity={0} />
+            </RadialGradient>
+          </Defs>
+          <Ellipse
+            cx={GLOW_RX}
+            cy={GLOW_RY}
+            rx={GLOW_RX}
+            ry={GLOW_RY}
+            fill="url(#launch-glow-still)"
+          />
+        </Svg>
+      </Animated.View>
+      <Animated.View
+        style={[{ position: 'absolute', left: 0, top: bandTop, width: w, height: BAND }, before]}
+      >
+        <Svg width={w} height={BAND} viewBox={`0 ${bandTop} ${w} ${BAND}`}>
+          <Marks scene={scene} g={g} h={h} id="band" phase="before" />
+        </Svg>
+      </Animated.View>
+      <Animated.View style={[StyleSheet.absoluteFill, opening]}>
+        <WindowArt scene={scene} g={g} w={w} h={h} />
+      </Animated.View>
+    </Animated.View>
+  );
+}
+
+// The glow's ellipse around the centre and the band the marks move in (theme/launchMotion.ts).
+const GLOW_RX = 240;
+const GLOW_RY = 270;
+const BAND = LAUNCH_BAND;
+
+// The marks (the letters, the capsules, the glint), the ring and the flare. They move only in their
+// `phase` (before the window, or while it opens); otherwise their props stay as they are and their
+// picture is not drawn again.
+function Marks({
+  scene,
+  g,
+  h,
+  id,
+  phase,
+}: {
+  scene: SharedValue<LaunchScene>;
+  g: LaunchGeometry;
+  h: number;
+  id: string;
+  phase: 'before' | 'window';
+}) {
+  const before = phase === 'before';
+  const on = (s: LaunchScene) => {
+    'worklet';
+    return (s.window === null) === before ? s : CLEAR_SCENE;
+  };
+  const marks = useAnimatedProps(() => ({ opacity: on(scene.value).marks }));
+  const pillA = useAnimatedProps(() => rectProps(on(scene.value).a));
+  const pillB = useAnimatedProps(() => rectProps(on(scene.value).b));
+  const overlap = useAnimatedProps(() => rectProps(on(scene.value).b));
+  const clipA = useAnimatedProps(() => rectProps(on(scene.value).a));
+  const llA = useAnimatedProps(() => rectProps(on(scene.value).a));
+  const llB = useAnimatedProps(() => rectProps(on(scene.value).b));
+  const lettersClip = useAnimatedProps(() => ({
+    width: Math.max(0, on(scene.value).lettersClip + 10),
+  }));
+  const letter0 = useAnimatedProps(() => ({ d: shiftedPath(S, on(scene.value).letters[0]) }));
+  const letter1 = useAnimatedProps(() => ({ d: shiftedPath(K, on(scene.value).letters[1]) }));
+  const letter2 = useAnimatedProps(() => ({ d: shiftedPath(A, on(scene.value).letters[2]) }));
   const glint = useAnimatedProps(() => {
-    const s = scene.value;
+    const s = on(scene.value);
     const gl = s.glint;
     return gl
       ? { d: glintPath(gl.x, g.cy, s.a[1] - 2, s.a[1] + s.a[3] + 2), opacity: gl.opacity }
       : { d: 'M0 0Z', opacity: 0 };
   });
   const ring = useAnimatedProps(() => {
-    const r = scene.value.ring;
+    const r = on(scene.value).ring;
     return r
       ? { cx: r.cx, cy: r.cy, r: r.r, strokeWidth: r.width, opacity: r.opacity }
       : { cx: 0, cy: 0, r: 0, strokeWidth: 0, opacity: 0 };
   });
-  const flare = useAnimatedProps(() => flareCircle(scene.value.flare));
-
+  const flare = useAnimatedProps(() => flareCircle(on(scene.value).flare));
   return (
-    <View
-      testID={TEST_ID}
-      collapsable={false}
-      pointerEvents="none"
-      style={StyleSheet.absoluteFill}
-      onLayout={onDrawn}
-    >
-      <StatusBar style="light" />
-      <Svg width={w} height={h}>
-        <Defs>
-          <RadialGradient id="launch-glow">
-            <Stop offset="0" stopColor={LAUNCH_LIGHT.glow} stopOpacity={0.8} />
-            <Stop offset="1" stopColor={LAUNCH_LIGHT.glow} stopOpacity={0} />
-          </RadialGradient>
-          <RadialGradient id="launch-flare">
-            <Stop offset="0" stopColor={BRAND.white} stopOpacity={0.95} />
-            <Stop offset="0.3" stopColor={LAUNCH_LIGHT.flash} stopOpacity={0.5} />
-            <Stop offset="1" stopColor={BRAND.pink} stopOpacity={0} />
-          </RadialGradient>
-          <LinearGradient id="launch-glint" x1="0" y1="0" x2="1" y2="0">
-            <Stop offset="0" stopColor={BRAND.white} stopOpacity={0} />
-            <Stop offset="0.5" stopColor={BRAND.white} stopOpacity={0.85} />
-            <Stop offset="1" stopColor={BRAND.white} stopOpacity={0} />
-          </LinearGradient>
-          <ClipPath id="launch-first">
-            <AnimatedRect animatedProps={clipA} />
-          </ClipPath>
-          <ClipPath id="launch-ll">
-            <AnimatedRect animatedProps={llA} />
-            <AnimatedRect animatedProps={llB} />
-          </ClipPath>
-          <ClipPath id="launch-letters">
-            <AnimatedRect x={-10} y={0} height={h} animatedProps={lettersClip} />
-          </ClipPath>
-          <ClipPath id="launch-rim-a">
-            <AnimatedRect animatedProps={rimClipA} />
-          </ClipPath>
-          <ClipPath id="launch-rim-b">
-            <AnimatedRect animatedProps={rimClipB} />
-          </ClipPath>
-          {/* The window: the curtain is cut where its capsules are. */}
-          <Mask id="launch-window" maskUnits="userSpaceOnUse" x={0} y={0} width={w} height={h}>
-            <Rect x={0} y={0} width={w} height={h} fill={LAUNCH_MASK.keep} />
-            <AnimatedRect animatedProps={windowA} fill={LAUNCH_MASK.cut} />
-            <AnimatedRect animatedProps={windowB} fill={LAUNCH_MASK.cut} />
-          </Mask>
-        </Defs>
-        <AnimatedG animatedProps={curtain}>
-          <G mask="url(#launch-window)">
-            <Rect x={0} y={0} width={w} height={h} fill={BRAND.ink} />
-            <AnimatedEllipse
-              cx={g.cx}
-              cy={g.cy}
-              rx={240}
-              ry={270}
-              fill="url(#launch-glow)"
-              animatedProps={glow}
-            />
-            <AnimatedG animatedProps={marks}>
-              <G clipPath="url(#launch-letters)">
-                <G translateX={g.wordX} translateY={g.wordY} scale={g.wordScale} fill={BRAND.white}>
-                  <AnimatedPath animatedProps={letter0} />
-                  <AnimatedPath animatedProps={letter1} />
-                  <AnimatedPath animatedProps={letter2} />
-                </G>
-              </G>
-              <AnimatedRect animatedProps={pillA} fill={BRAND.purple} />
-              <AnimatedRect animatedProps={pillB} fill={BRAND.pink} />
-              <AnimatedRect
-                animatedProps={overlap}
-                fill={BRAND.white}
-                clipPath="url(#launch-first)"
-              />
-              <G clipPath="url(#launch-ll)">
-                <AnimatedPath animatedProps={glint} fill="url(#launch-glint)" />
-              </G>
-            </AnimatedG>
-            <AnimatedCircle animatedProps={ring} fill="none" stroke={BRAND.white} />
-            <AnimatedCircle animatedProps={flare} fill="url(#launch-flare)" />
+    <>
+      <Defs>
+        <RadialGradient id={`${id}-flare`}>
+          <Stop offset="0" stopColor={BRAND.white} stopOpacity={0.95} />
+          <Stop offset="0.3" stopColor={LAUNCH_LIGHT.flash} stopOpacity={0.5} />
+          <Stop offset="1" stopColor={BRAND.pink} stopOpacity={0} />
+        </RadialGradient>
+        <LinearGradient id={`${id}-glint`} x1="0" y1="0" x2="1" y2="0">
+          <Stop offset="0" stopColor={BRAND.white} stopOpacity={0} />
+          <Stop offset="0.5" stopColor={BRAND.white} stopOpacity={0.85} />
+          <Stop offset="1" stopColor={BRAND.white} stopOpacity={0} />
+        </LinearGradient>
+        <ClipPath id={`${id}-first`}>
+          <AnimatedRect animatedProps={clipA} />
+        </ClipPath>
+        <ClipPath id={`${id}-ll`}>
+          <AnimatedRect animatedProps={llA} />
+          <AnimatedRect animatedProps={llB} />
+        </ClipPath>
+        <ClipPath id={`${id}-letters`}>
+          <AnimatedRect x={-10} y={0} height={h} animatedProps={lettersClip} />
+        </ClipPath>
+      </Defs>
+      <AnimatedG animatedProps={marks}>
+        <G clipPath={`url(#${id}-letters)`}>
+          <G translateX={g.wordX} translateY={g.wordY} scale={g.wordScale} fill={BRAND.white}>
+            <AnimatedPath animatedProps={letter0} />
+            <AnimatedPath animatedProps={letter1} />
+            <AnimatedPath animatedProps={letter2} />
           </G>
-          {/* The window fills white as it opens, with a thin light where its capsules meet. */}
-          <AnimatedG animatedProps={white} fill={BRAND.white}>
-            <AnimatedRect animatedProps={windowA2} />
-            <AnimatedRect animatedProps={windowB2} />
-          </AnimatedG>
-          <AnimatedG animatedProps={rim} fill="none" stroke={BRAND.white} strokeWidth={2.4}>
-            <G clipPath="url(#launch-rim-b)">
-              <AnimatedRect animatedProps={rimA} />
-            </G>
-            <G clipPath="url(#launch-rim-a)">
-              <AnimatedRect animatedProps={rimB} />
-            </G>
-          </AnimatedG>
-        </AnimatedG>
-      </Svg>
-    </View>
+        </G>
+        <AnimatedRect animatedProps={pillA} fill={BRAND.purple} />
+        <AnimatedRect animatedProps={pillB} fill={BRAND.pink} />
+        <AnimatedRect animatedProps={overlap} fill={BRAND.white} clipPath={`url(#${id}-first)`} />
+        <G clipPath={`url(#${id}-ll)`}>
+          <AnimatedPath animatedProps={glint} fill={`url(#${id}-glint)`} />
+        </G>
+      </AnimatedG>
+      <AnimatedCircle animatedProps={ring} fill="none" stroke={BRAND.white} />
+      <AnimatedCircle animatedProps={flare} fill={`url(#${id}-flare)`} />
+    </>
+  );
+}
+
+// The whole screen cut by the window, with the white that fills it and its rim: drawn only while
+// the window opens.
+function WindowArt({
+  scene,
+  g,
+  w,
+  h,
+}: {
+  scene: SharedValue<LaunchScene>;
+  g: LaunchGeometry;
+  w: number;
+  h: number;
+}) {
+  const open = (s: LaunchScene) => {
+    'worklet';
+    return s.window;
+  };
+  const windowA = useAnimatedProps(() => rectProps(open(scene.value)?.a ?? NOTHING));
+  const windowB = useAnimatedProps(() => rectProps(open(scene.value)?.b ?? NOTHING));
+  const windowA2 = useAnimatedProps(() => rectProps(open(scene.value)?.a ?? NOTHING));
+  const windowB2 = useAnimatedProps(() => rectProps(open(scene.value)?.b ?? NOTHING));
+  const rimA = useAnimatedProps(() => rectProps(open(scene.value)?.a ?? NOTHING));
+  const rimB = useAnimatedProps(() => rectProps(open(scene.value)?.b ?? NOTHING));
+  const rimClipA = useAnimatedProps(() => rectProps(open(scene.value)?.a ?? NOTHING));
+  const rimClipB = useAnimatedProps(() => rectProps(open(scene.value)?.b ?? NOTHING));
+  const white = useAnimatedProps(() => ({ opacity: open(scene.value)?.white ?? 0 }));
+  const rim = useAnimatedProps(() => ({ opacity: open(scene.value)?.rim ?? 0 }));
+  const glow = useAnimatedProps(() => ({
+    opacity: open(scene.value) ? scene.value.glow : 0,
+  }));
+  return (
+    <Svg width={w} height={h}>
+      <Defs>
+        <RadialGradient id="launch-glow">
+          <Stop offset="0" stopColor={LAUNCH_LIGHT.glow} stopOpacity={0.8} />
+          <Stop offset="1" stopColor={LAUNCH_LIGHT.glow} stopOpacity={0} />
+        </RadialGradient>
+        <ClipPath id="launch-rim-a">
+          <AnimatedRect animatedProps={rimClipA} />
+        </ClipPath>
+        <ClipPath id="launch-rim-b">
+          <AnimatedRect animatedProps={rimClipB} />
+        </ClipPath>
+        {/* The window: the curtain is cut where its capsules are. */}
+        <Mask id="launch-window" maskUnits="userSpaceOnUse" x={0} y={0} width={w} height={h}>
+          <Rect x={0} y={0} width={w} height={h} fill={LAUNCH_MASK.keep} />
+          <AnimatedRect animatedProps={windowA} fill={LAUNCH_MASK.cut} />
+          <AnimatedRect animatedProps={windowB} fill={LAUNCH_MASK.cut} />
+        </Mask>
+      </Defs>
+      <G mask="url(#launch-window)">
+        <Rect x={0} y={0} width={w} height={h} fill={BRAND.ink} />
+        <AnimatedEllipse
+          cx={g.cx}
+          cy={g.cy}
+          rx={GLOW_RX}
+          ry={GLOW_RY}
+          fill="url(#launch-glow)"
+          animatedProps={glow}
+        />
+        <Marks scene={scene} g={g} h={h} id="window" phase="window" />
+      </G>
+      {/* The window fills white as it opens, with a thin light where its capsules meet. */}
+      <AnimatedG animatedProps={white} fill={BRAND.white}>
+        <AnimatedRect animatedProps={windowA2} />
+        <AnimatedRect animatedProps={windowB2} />
+      </AnimatedG>
+      <AnimatedG animatedProps={rim} fill="none" stroke={BRAND.white} strokeWidth={2.4}>
+        <G clipPath="url(#launch-rim-b)">
+          <AnimatedRect animatedProps={rimA} />
+        </G>
+        <G clipPath="url(#launch-rim-a)">
+          <AnimatedRect animatedProps={rimB} />
+        </G>
+      </AnimatedG>
+    </Svg>
   );
 }
 

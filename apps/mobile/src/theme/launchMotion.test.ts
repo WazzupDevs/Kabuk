@@ -5,6 +5,7 @@ import { MAIN, reach, SPLASH, SPLASH_REACH } from '../../../../scripts/icon/mark
 import {
   flareCircle,
   glintPath,
+  LAUNCH_BAND,
   launchFrame,
   launchKindFrom,
   launchRecord,
@@ -136,6 +137,33 @@ describe('motion', () => {
       s.b.forEach((v, i) => expect(v).toBeCloseTo(g.llB[i] ?? 0, 0));
       s.letters.forEach((v) => expect(Math.abs(v)).toBeLessThan(2));
     }
+  });
+});
+
+// LaunchCurtain draws the frames before the window only in a band around the centre: everything
+// that shows on them stays inside it (the capsules, the letters' height, the ring and the flare).
+describe('the band before the window', () => {
+  it(`holds every mark, ring and flare within ${LAUNCH_BAND / 2} dp of the centre`, () => {
+    const half = LAUNCH_BAND / 2;
+    for (const kind of KINDS)
+      for (const reduce of [false, true])
+        for (const wait of [0, 1200, 1400])
+          for (const [t, s] of frames(kind, reduce, wait)) {
+            if (s.window) continue;
+            const at = `${kind} ${reduce} ${wait} ${t}`;
+            if (s.marks > 0)
+              for (const r of [s.a, s.b]) {
+                if (r[2] <= 0) continue;
+                expect(Math.abs(r[1] - g.cy), at).toBeLessThanOrEqual(half);
+                expect(Math.abs(r[1] + r[3] - g.cy), at).toBeLessThanOrEqual(half);
+              }
+            if (s.ring && s.ring.opacity > 0)
+              expect(Math.abs(s.ring.cy - g.cy) + s.ring.r + s.ring.width, at).toBeLessThanOrEqual(
+                half,
+              );
+            if (s.flare && s.flare.opacity > 0)
+              expect(Math.abs(s.flare.cy - g.cy) + s.flare.r, at).toBeLessThanOrEqual(half);
+          }
   });
 });
 
