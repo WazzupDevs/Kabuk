@@ -153,6 +153,7 @@ export const KIT = {
   primaryRing: 'rgba(106, 71, 245, 0.14)',
   glassInset: 'inset 0px 1px 0px #FFFFFF',
   pink: '#FF4F8B',
+  pinkRing: 'rgba(255, 79, 139, 0.18)',
   success: '#1C8C4E',
   successRing: 'rgba(28, 140, 78, 0.16)',
   danger: '#C8331F',
