@@ -35,7 +35,8 @@ import { AppIcon } from '@/components/AppIcon';
 // v45 (.prof, other): a round back button and "Seçenekler" on top, the same head as the own
 // profile; reporting is in "Seçenekler". No badges (the owner's call, 27 Ekim).
 export default function PersonScreen() {
-  const { publicId } = useLocalSearchParams<{ publicId: string }>();
+  // `from: 'dm'`: opened from the DM with this person (CHAT-6).
+  const { publicId, from } = useLocalSearchParams<{ publicId: string; from?: string }>();
   const view = useProfileView(publicId);
   const friends = useFriends();
   const friend = friends.data?.find((f) => f.publicId === publicId) ?? null;
@@ -54,7 +55,9 @@ export default function PersonScreen() {
       if (reason) track('report_submitted', {});
       setEnding(null);
       void queryClient.invalidateQueries({ queryKey: friendKeys.all });
-      router.back();
+      // The DM behind this profile is gone with the friendship: back to Mesajlar, not to it.
+      if (from === 'dm') router.dismissTo('/messages');
+      else router.back();
     },
   });
   const failed =

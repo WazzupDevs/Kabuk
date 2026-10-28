@@ -4,6 +4,7 @@ import { parseQuote, parseReactionCounts } from '@shared/messageExtras.ts';
 import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useReducer } from 'react';
+import { View } from 'react-native';
 
 import { toRuns } from '@shared/chatRuns.ts';
 
@@ -11,7 +12,10 @@ import { Avatar } from '@/components/Avatar';
 import { ChatBubble } from '@/components/ChatBubble';
 import { ChatRow, DayLine, dayLabel } from '@/components/ChatScreen';
 import { DraftComposer } from '@/components/Composer';
+import { EmptyState } from '@/components/EmptyState';
+import { Loader } from '@/components/Loader';
 import { Text } from '@/components/Text';
+import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { ApiError, chatApi } from '@/lib/api';
 
@@ -117,7 +121,18 @@ export function RoomMessages({
   );
   return (
     <>
-      {list.length === 0 && chat.outbox.length === 0 ? (
+      {/* Loading and its error (audit CHAT-8). */}
+      {chat.messages.isPending && chat.outbox.length === 0 ? (
+        <View className="mt-2 items-center">
+          <Loader />
+        </View>
+      ) : chat.messages.isError && !chat.messages.data ? (
+        <EmptyState
+          kind="error"
+          body={errorMessage(chat.messages.error)}
+          action={{ label: tr.common.retry, onPress: () => void chat.messages.refetch() }}
+        />
+      ) : list.length === 0 && chat.outbox.length === 0 ? (
         <Text variant="fine" align="center" className="mt-2">
           {tr.chat.empty}
         </Text>

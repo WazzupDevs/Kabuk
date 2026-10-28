@@ -24,7 +24,7 @@ import { InviteSheet } from '@/features/rooms/InviteSheet';
 import { TableIconSheet } from '@/features/rooms/TableIconSheet';
 import { GlyphDisc } from '@/components/GlyphDisc';
 import { OpenLobbySheet } from '@/features/rooms/OpenLobbySheet';
-import { roomKeys, useRoom, useTablePeople } from '@/features/rooms/queries';
+import { roomKeys, useCurrentRoom, useRoom, useTablePeople } from '@/features/rooms/queries';
 import { PeopleSheet } from '@/features/rooms/RoomPeople';
 import { TableEnd } from '@/features/rooms/TableEnd';
 import { useTableEndStore } from '@/features/rooms/tableEnd';
@@ -82,6 +82,20 @@ export default function TableScreen() {
       remember(id, name, phones, profiledKey ? profiledKey.split('\n') : []);
   }, [open, id, name, phones, profiledKey, remember]);
 
+  // The table joined another one (its owner's "Katıl", §4.E): it closed and the person sits at the
+  // other table now, which opens in its place instead of Masa bitti (audit VEN-6).
+  const current = useCurrentRoom(checkIn.data?.id).data;
+  const movedTo =
+    room.data?.status === 'closed' &&
+    current &&
+    current.id !== id &&
+    (current.status === 'waiting' || current.status === 'active')
+      ? current.id
+      : null;
+  useEffect(() => {
+    if (movedTo) router.replace({ pathname: '/room/[id]', params: { id: movedTo } });
+  }, [movedTo]);
+
   const settle = () => {
     void queryClient.invalidateQueries({ queryKey: roomKeys.current });
     void queryClient.invalidateQueries({ queryKey: roomKeys.room(id) });
@@ -102,7 +116,7 @@ export default function TableScreen() {
     onSettled: settle,
   });
 
-  if (room.isPending || checkIn.isPending) {
+  if (room.isPending || checkIn.isPending || movedTo) {
     return (
       <Screen>
         <View className="mt-16 items-center">

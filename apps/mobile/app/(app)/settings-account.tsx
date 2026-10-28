@@ -13,8 +13,8 @@ import { Text } from '@/components/Text';
 import { Wordmark } from '@/components/Wordmark';
 import { useProfile } from '@/features/account/useProfile';
 import { useSessionStore } from '@/features/auth/session';
+import { signOutOfApp } from '@/features/auth/signOut';
 import { useProfileView } from '@/features/profile/queries';
-import { unregisterPush } from '@/features/push/push';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { callAccount } from '@/lib/api';
@@ -40,13 +40,7 @@ export default function AccountScreen() {
   const view = useProfileView(own.data?.public_id);
   const birthDate = view.data?.birthDate ?? null;
   const [deleting, setDeleting] = useState(false);
-  const signOut = useMutation({
-    mutationFn: async () => {
-      await unregisterPush();
-      await supabase.auth.signOut();
-      queryClient.clear();
-    },
-  });
+  const signOut = useMutation({ mutationFn: signOutOfApp });
   const remove = useMutation({
     meta: FEEL_ERROR,
     mutationFn: async () => {

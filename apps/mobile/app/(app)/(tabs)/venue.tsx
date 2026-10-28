@@ -9,6 +9,7 @@ import { Alert, type ScrollView, useWindowDimensions, View } from 'react-native'
 
 import { Loader } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
+import { EmptyState } from '@/components/EmptyState';
 import { Text } from '@/components/Text';
 import { useVenueSpots } from '@/features/checkin/spots';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
@@ -98,6 +99,22 @@ export default function VenueScreen() {
       <Screen edges={['top']}>
         <View className="mt-16 items-center">
           <Loader />
+        </View>
+      </Screen>
+    );
+  }
+
+  // Not read (no network): the check-in may well be there; Keşfet would say it is gone (audit
+  // UI-10).
+  if (checkIn.isError && !checkIn.data) {
+    return (
+      <Screen edges={['top']}>
+        <View className="flex-1 justify-center">
+          <EmptyState
+            kind="error"
+            body={errorMessage(checkIn.error)}
+            action={{ label: tr.common.retry, onPress: () => void checkIn.refetch() }}
+          />
         </View>
       </Screen>
     );

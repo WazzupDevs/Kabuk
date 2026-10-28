@@ -3,7 +3,7 @@ import { groupRoomsBySpot } from '@shared/spots.ts';
 import { lobbyActions, requestGone, type TableState } from '@shared/tableCard.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useReducer, useState } from 'react';
 import { View } from 'react-native';
 
 import { Button } from '@/components/Button';
@@ -28,6 +28,10 @@ import { TableIcon } from './TableIcon';
 
 // After "Kabul edildi" the table opens by itself (v46: the row's note, then the table).
 const OPEN_AFTER_ACCEPT_MS = 1800;
+// An accept is news only this long after its 60 s window: a request is answered inside it.
+const ACCEPT_NEWS_MS = 30_000;
+// Accepts already acted on, or found old (this run of the app).
+const doneAccepts = new Set<string>();
 
 type Props = {
   venueId: string;
@@ -94,20 +98,32 @@ export function Lobby({
 
   const status = mine.data ? requesterStatus(mine.data.status, mine.data.expiresAt, now) : null;
   const waitingOn = mine.data && status === 'pending' ? mine.data.roomId : null;
-  const accepted = mine.data && status === 'accepted' ? mine.data.roomId : null;
   const unavailable = mine.data && status === 'unavailable' ? mine.data.roomId : null;
+  // An accept counts once, while it is news (audit VEN-3): an old one sent the person back to a
+  // table it had left on every visit, counted again, and kept "Kabul edildi" on its row with no
+  // "Katıl" for the whole check-in.
+  const [, recheck] = useReducer((n: number) => n + 1, 0);
+  const acceptedId = mine.data && status === 'accepted' ? mine.data.id : null;
+  const acceptedEnds = mine.data?.expiresAt;
+  const accepted =
+    mine.data && acceptedId && !doneAccepts.has(acceptedId) ? mine.data.roomId : null;
 
   // Accepted: the person sits at that table now (Masadakiler, K-69); it opens after the note.
   useEffect(() => {
-    if (!accepted) return;
+    if (!accepted || !acceptedId || !acceptedEnds) return;
+    if (Date.now() > Date.parse(acceptedEnds) + ACCEPT_NEWS_MS) {
+      doneAccepts.add(acceptedId);
+      recheck();
+      return;
+    }
     track('table_joined', { via: 'request' });
     void queryClient.invalidateQueries({ queryKey: roomKeys.current });
-    const timer = setTimeout(
-      () => router.push({ pathname: '/room/[id]', params: { id: accepted } }),
-      OPEN_AFTER_ACCEPT_MS,
-    );
+    const timer = setTimeout(() => {
+      doneAccepts.add(acceptedId);
+      router.push({ pathname: '/room/[id]', params: { id: accepted } });
+    }, OPEN_AFTER_ACCEPT_MS);
     return () => clearTimeout(timer);
-  }, [accepted, queryClient]);
+  }, [accepted, acceptedId, acceptedEnds, queryClient]);
   const askedRoom = asked?.roomId;
   useEffect(() => {
     if (unavailable && unavailable === askedRoom) track('join_unavailable', { as_member: false });
@@ -135,7 +151,8 @@ export function Lobby({
       const left = Math.max(0, Math.ceil((Date.parse(mine.data.expiresAt) - now) / 1000));
       return tr.lobby.waiting(Math.min(left, JOIN_REQUEST_TTL_SECONDS));
     }
-    if (status === 'accepted') return tr.lobby.accepted(table.name);
+    if (status === 'accepted')
+      return accepted === table.roomId ? tr.lobby.accepted(table.name) : null;
     if (asked?.roomId === table.roomId) return tr.lobby.unavailable;
     return null;
   };
@@ -205,38 +222,45 @@ export function Lobby({
       <Text variant="fine">
         {state === 'none' && !needsPhoto ? tr.lobby.runningNote : tr.lobby.runningNoteShort}
       </Text>
-      {running.length > 0 ? (
-        <ListCard>
-          {running.map((table) => {
-            const actions = lobbyActions(state, myPhones, table.phones);
-            const busy = request.isPending && request.variables?.table.roomId === table.roomId;
-            const waiting = waitingOn === table.roomId;
-            return (
-              <LobbyRow
-                key={table.roomId}
-                table={table}
-                note={rowNote(table)}
-                action={
-                  actions.member && !needsPhoto && !waiting && accepted !== table.roomId ? (
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      tight
-                      testID={`here-${table.name}`}
-                      label={tr.lobby.here}
-                      disabled={waitingOn !== null}
-                      loading={busy}
-                      onPress={() => request.mutate({ table, asMember: true })}
-                    />
-                  ) : waiting ? (
-                    <WaitingSlot />
-                  ) : null
-                }
-              />
-            );
-          })}
-        </ListCard>
-      ) : null}
+      {/* By spot as well, the person's own first (audit VEN-13): "Bu masadayım" to a table at
+          another spot only met different_spot. */}
+      {groups(running).map((group) => (
+        <View key={group.spotId ?? 'none'} className="gap-2.5">
+          {venueHasSpots ? (
+            <SpotHeading spotId={group.spotId} spotName={group.spotName} mine={group.mine} />
+          ) : null}
+          <ListCard>
+            {group.rooms.map((table) => {
+              const actions = lobbyActions(state, myPhones, table.phones);
+              const busy = request.isPending && request.variables?.table.roomId === table.roomId;
+              const waiting = waitingOn === table.roomId;
+              return (
+                <LobbyRow
+                  key={table.roomId}
+                  table={table}
+                  note={rowNote(table)}
+                  action={
+                    actions.member && !needsPhoto && !waiting && accepted !== table.roomId ? (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        tight
+                        testID={`here-${table.name}`}
+                        label={tr.lobby.here}
+                        disabled={waitingOn !== null}
+                        loading={busy}
+                        onPress={() => request.mutate({ table, asMember: true })}
+                      />
+                    ) : waiting ? (
+                      <WaitingSlot />
+                    ) : null
+                  }
+                />
+              );
+            })}
+          </ListCard>
+        </View>
+      ))}
 
       {request.isError ? (
         <Text variant="fine" tone="danger">

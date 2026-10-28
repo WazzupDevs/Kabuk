@@ -18,6 +18,7 @@ import { DraftComposer } from '@/components/Composer';
 import { EmptyState } from '@/components/EmptyState';
 import { IconButton, MoreDots } from '@/components/IconButton';
 import { Menu, MenuItem } from '@/components/Menu';
+import { Loader } from '@/components/Loader';
 import { Sheet } from '@/components/Sheet';
 import { useHideTabBar } from '@/components/TabBar';
 import { quoteJump, toChatQuote, useReplyTarget } from '@/features/chat/messageExtras';
@@ -33,10 +34,12 @@ import {
 } from '@/features/friends/queries';
 import { useDmTyping } from '@/features/friends/useDmTyping';
 import { useBroadcast } from '@/features/rooms/useBroadcast';
+import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { ApiError, friendsApi, safetyApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { useSeen } from '@/lib/useSeen';
 
 type Params = { threadId: string; publicId: string; name: string };
 
@@ -73,14 +76,17 @@ export default function DmScreen() {
   const { typing, notifyTyping, clearTyping } = useDmTyping(threadId);
 
   const markRead = useMarkThreadRead(threadId);
+  // Read only while seen: what arrives behind the home screen stays unread until the DM is seen
+  // again (audit CHAT-2). Being seen, the first time and every time after, marks it read.
+  const seen = useSeen(markRead);
   const sendDm = useSendDm(threadId);
   // docs/SPEC_V3.md §21: swipe a message to answer it, long press it for a reaction.
   const reply = useReplyTarget();
   const reactions = useDmReactions(threadId);
   const refetch = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: friendKeys.dm(threadId) });
-    markRead();
-  }, [queryClient, threadId, markRead]);
+    if (seen()) markRead();
+  }, [queryClient, threadId, markRead, seen]);
   useBroadcast(dmChannel(threadId), BROADCAST.dmMessage, refetch);
   // A tick moved (delivered or read): only the page is read again.
   const rereadPage = useCallback(
@@ -99,10 +105,6 @@ export default function DmScreen() {
     seenFromThem.current = newestFromThem;
     clearTyping();
   }, [newestFromThem, clearTyping]);
-
-  useEffect(() => {
-    markRead();
-  }, [markRead]);
 
   // Sending is optimistic, as in the room chat (@shared/chatOutbox.ts): the message shows at once
   // with the waiting state and is replaced by the server's copy on the reply, with the sent tick.
@@ -186,7 +188,9 @@ export default function DmScreen() {
     (m) => (m.from_me ? 'me' : 'them'),
     (m) => m.created_at,
   );
-  const openProfile = () => router.push({ pathname: '/people/[publicId]', params: { publicId } });
+  // From the DM: removing or blocking there goes back to Mesajlar, not to this DM (audit CHAT-6).
+  const openProfile = () =>
+    router.push({ pathname: '/people/[publicId]', params: { publicId, from: 'dm' } });
   // The newest message, for following it (ChatScroll): one on its way, else the newest read.
   const newestOut = outbox[outbox.length - 1];
   const newestIn = list[list.length - 1];
@@ -228,7 +232,21 @@ export default function DmScreen() {
         />
       }
     >
-      {list.length === 0 && outbox.length === 0 && !messages.isPending ? (
+      {/* Loading and its error (audit CHAT-8): the DM is never shown empty while it loads or when
+          it could not be read. */}
+      {messages.isPending && outbox.length === 0 ? (
+        <View className="flex-1 items-center justify-center">
+          <Loader />
+        </View>
+      ) : messages.isError && !messages.data ? (
+        <View className="flex-1 justify-center">
+          <EmptyState
+            kind="error"
+            body={errorMessage(messages.error)}
+            action={{ label: tr.common.retry, onPress: () => void messages.refetch() }}
+          />
+        </View>
+      ) : list.length === 0 && outbox.length === 0 ? (
         <View className="flex-1 justify-center">
           <EmptyState kind="empty" body={tr.friends.noMessagesYet} />
         </View>

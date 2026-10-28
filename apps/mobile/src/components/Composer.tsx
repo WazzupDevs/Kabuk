@@ -200,7 +200,8 @@ type DraftProps = Omit<Props, 'value' | 'onChangeText' | 'onSend' | 'sendDisable
   blocked?: boolean;
   // Each change of the draft, for what follows typing ("yazıyor").
   onDraftChange?: (text: string) => void;
-  // Sends the prepared text; `clear` empties the bar: at once, or once the server took it.
+  // Sends the prepared text; `clear` empties the bar: at once, or once the server took it. Typed
+  // on meanwhile, the bar keeps the new text (audit CHAT-13).
   onSend: (body: string, clear: () => void) => void;
 };
 
@@ -220,7 +221,9 @@ export function DraftComposer({ prepare, blocked, onDraftChange, onSend, ...prop
       }}
       sendDisabled={!body || !!blocked}
       onSend={() => {
-        if (body && !blocked) onSend(body, () => setDraft(''));
+        if (!body || blocked) return;
+        const sent = draft;
+        onSend(body, () => setDraft((now) => (now === sent ? '' : now)));
       }}
     />
   );
