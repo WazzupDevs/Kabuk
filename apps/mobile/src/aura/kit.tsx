@@ -40,6 +40,7 @@ export function T({
   color,
   center,
   lines,
+  fit,
   style,
   children,
   testID,
@@ -52,6 +53,8 @@ export function T({
   color?: string;
   center?: boolean;
   lines?: number;
+  // Shrinks to fit its lines rather than ending in "…" (CLAUDE.md → Ekran davranışı).
+  fit?: boolean;
   style?: StyleProp<TextStyle>;
   children: ReactNode;
   testID?: string;
@@ -66,6 +69,8 @@ export function T({
       accessibilityRole={accessibilityRole}
       accessibilityLiveRegion={accessibilityLiveRegion}
       numberOfLines={lines}
+      adjustsFontSizeToFit={fit}
+      minimumFontScale={fit ? MIN_FIT : undefined}
       maxFontSizeMultiplier={MAX_FONT_SCALE}
       style={[
         KIT_TYPE[v],
@@ -80,6 +85,7 @@ export function T({
 }
 // The canvas's type grows with the system's text size up to this much.
 const MAX_FONT_SCALE = 1.3;
+const MIN_FIT = 0.5;
 
 // .glass (.sm, .pad, .pad-lg): frosted white, a white edge, the soft violet shadow and a light top
 // line.

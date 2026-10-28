@@ -1,13 +1,11 @@
 import type { ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 
+import { Glass, Round, T } from '@/aura/kit';
 import { tr } from '@/i18n/tr';
+import { KIT } from '@/theme/auraKit';
 import { LiveDot } from '@/ui/LiveDot';
-import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING, TOUCH } from '@/theme/tokens';
-
-import { IconButton } from './IconButton';
-import { Text } from './Text';
 
 type Props = {
   title: string;
@@ -40,28 +38,21 @@ export function ChatTopBar({
   titleAccessibilityLabel,
   actions,
 }: Props) {
-  const { colors } = useTheme();
   const who = (
     <>
       {leading}
       <View className="flex-1">
         {/* Wraps rather than ending in "…" (CLAUDE.md → Ekran davranışı): "12 Ekim'den beri
             arkadaşsınız". */}
-        <Text
-          variant="heading"
-          accessibilityRole="header"
-          numberOfLines={titleLines}
-          adjustsFontSizeToFit={titleLines !== undefined}
-          minimumFontScale={0.5}
-        >
+        <T v="h3" accessibilityRole="header" lines={titleLines} fit={titleLines !== undefined}>
           {title}
-        </Text>
+        </T>
         {subtitle ? (
           <View className="flex-row items-center" style={{ gap: SPACING[1.5] }}>
             {live ? <LiveDot size={SPACING[2]} /> : null}
-            <Text variant="fine" className="shrink">
+            <T v="fine" style={{ flexShrink: 1 }}>
               {subtitle}
-            </Text>
+            </T>
           </View>
         ) : null}
       </View>
@@ -73,41 +64,44 @@ export function ChatTopBar({
   const whoStyle = { minHeight: TOUCH.min };
   const whoClass = 'flex-1 flex-row items-center gap-2.5';
   return (
-    <View
-      className="flex-row items-center gap-2.5"
-      style={{
-        // skall tuvali (skall.css → `.topbar.inner`): 68 high, no line under it.
-        // Narrower than the canvas's 68 (the owner's call, 27 Ekim): 6 over and under the 44 row.
-        paddingHorizontal: SPACING[4],
-        paddingVertical: SPACING[1.5],
-        backgroundColor: colors.canvas,
-      }}
-    >
-      {onBack ? (
-        <IconButton
-          round
-          icon="chevron-back"
-          label={tr.common.back}
-          onPress={onBack}
-          testID="chat-back"
-        />
-      ) : null}
-      {onPressTitle ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={titleAccessibilityLabel}
-          onPress={onPressTitle}
-          className={whoClass}
-          style={whoStyle}
-        >
-          {who}
-        </Pressable>
-      ) : (
-        <View className={whoClass} style={whoStyle}>
-          {who}
-        </View>
-      )}
-      {actions}
+    // docs/design/aura → Dm: the bar is a glass capsule (8 inside, 30 round), the back and the
+    // actions bare round buttons in it.
+    <View style={{ paddingHorizontal: SPACING[4], paddingVertical: SPACING[1.5] }}>
+      <Glass
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          padding: KIT.size.barPad,
+          gap: KIT.size.barGap,
+          borderRadius: KIT.size.barRadius,
+        }}
+      >
+        {onBack ? (
+          <Round
+            glassy={false}
+            icon="back"
+            label={tr.common.back}
+            onPress={onBack}
+            testID="chat-back"
+          />
+        ) : null}
+        {onPressTitle ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={titleAccessibilityLabel}
+            onPress={onPressTitle}
+            className={whoClass}
+            style={whoStyle}
+          >
+            {who}
+          </Pressable>
+        ) : (
+          <View className={whoClass} style={whoStyle}>
+            {who}
+          </View>
+        )}
+        {actions}
+      </Glass>
     </View>
   );
 }
