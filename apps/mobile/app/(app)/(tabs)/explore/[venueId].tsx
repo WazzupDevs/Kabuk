@@ -6,8 +6,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
 import { Btn, Glass, Round, T, Tag } from '@/aura/kit';
-import { MarkDisk } from '@/aura/MarkDisk';
-import { Gathering, SceneGround } from '@/aura/Scene';
+import { SceneGround } from '@/aura/Scene';
+import { VenueScene } from '@/aura/VenueScene';
 import { EmptyState } from '@/components/EmptyState';
 import { Screen } from '@/components/Screen';
 import { useTabBarSpace } from '@/components/TabBar';
@@ -24,6 +24,7 @@ import { useNow } from '@/lib/useNow';
 import { AURA } from '@/theme/aura';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
+import { VENUE_FRAME } from '@/theme/venueScene';
 import { SPACING } from '@/theme/tokens';
 
 // The buddies come in after the screen's own arrival.
@@ -84,11 +85,11 @@ export default function VenueDetailScreen() {
   }
 
   const here = active.data?.venue_id === venue.id;
-  const g = AURA.gatherings.venue;
-  const k = sceneWidth > 0 ? sceneWidth / g.frame : 1;
+  const k = sceneWidth > 0 ? sceneWidth / VENUE_FRAME.width : 1;
   const calm = venue.bucket === 'calm';
-  // docs/design/aura → KesfetMekan: the venue as a scene under the status bar (buddies around its
-  // mark), back and its tags over it; the name and district, today's event, then check-in. Not a
+  // docs/design/aura → KesfetMekan: the venue as a scene under the status bar (the buddies at a
+  // table doing what the place is for, theme/venueScene.ts; no disk with the mark, the owner's
+  // call, 29 Ekim), back and its tags over it; the name and district, today's event, then check-in. Not a
   // list: the screen stays still (CLAUDE.md → Ekran davranışı).
   return (
     <View style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
@@ -104,7 +105,7 @@ export default function VenueDetailScreen() {
         <View
           onLayout={(e) => setSceneWidth(e.nativeEvent.layout.width)}
           style={{
-            height: g.height * k + insets.top,
+            height: VENUE_FRAME.height * k + insets.top,
             borderBottomLeftRadius: KIT.stage.radius,
             borderBottomRightRadius: KIT.stage.radius,
             overflow: 'hidden',
@@ -112,12 +113,7 @@ export default function VenueDetailScreen() {
         >
           <SceneGround top={0} bottom={KIT.stage.radius} />
           {sceneWidth > 0 ? (
-            <Gathering
-              kind="venue"
-              width={sceneWidth}
-              delay={SCENE_CAST_DELAY}
-              center={<MarkDisk size={g.disk.size * k} />}
-            />
+            <VenueScene kind={venueType(venue)} width={sceneWidth} delay={SCENE_CAST_DELAY} />
           ) : null}
           <View
             className="flex-row items-center justify-between"

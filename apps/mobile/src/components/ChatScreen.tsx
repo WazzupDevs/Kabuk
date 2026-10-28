@@ -49,6 +49,7 @@ import { AppIcon } from './AppIcon';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 
 import { GlassTarget } from '@/ui/LiquidGlass';
+import { ChatKindContext } from './chatKind';
 
 // How close to the end counts as "at the bottom" (a message's last line may sit under the edge).
 const BOTTOM_SLACK = SPACING[12];
@@ -414,57 +415,59 @@ export function ChatScreen({
   const glassId = useId();
   return (
     <ChatEndContext.Provider value={followEnd}>
-      <ChatBarContext.Provider value={reactions.bar}>
-        <SafeAreaView
-          edges={barSpace ? ['top', 'left', 'right'] : ['top', 'left', 'right', 'bottom']}
-          style={{ flex: 1, backgroundColor: AURA[scheme].ground }}
-          onTouchStart={reactions.onTouchStart}
-        >
-          {/* The colour clouds under the whole chat (docs/design/aura → DM, Mekan sohbeti, Masa). */}
-          <AuraBackground />
-          {top}
-          <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-            {/* The wallpaper under the stream and the message bar (v45: .chatpane); the bar floats on
+      <ChatKindContext.Provider value={wall ?? 'dm'}>
+        <ChatBarContext.Provider value={reactions.bar}>
+          <SafeAreaView
+            edges={barSpace ? ['top', 'left', 'right'] : ['top', 'left', 'right', 'bottom']}
+            style={{ flex: 1, backgroundColor: AURA[scheme].ground }}
+            onTouchStart={reactions.onTouchStart}
+          >
+            {/* The colour clouds under the whole chat (docs/design/aura → DM, Mekan sohbeti, Masa). */}
+            <AuraBackground />
+            {top}
+            <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+              {/* The wallpaper under the stream and the message bar (v45: .chatpane); the bar floats on
               it, over the stream. */}
-            <View className="flex-1">
-              <GlassTarget targetId={glassId} style={{ flex: 1 }}>
-                {/* Each chat's dense doodles over the clouds (DM, Masa, Mekan; light and dark; the
+              <View className="flex-1">
+                <GlassTarget targetId={glassId} style={{ flex: 1 }}>
+                  {/* Each chat's dense doodles over the clouds (DM, Masa, Mekan; light and dark; the
                     owner's call, 28 Ekim). */}
-                {wall ? <ChatWallpaper kind={wall} /> : null}
-                <ChatScroll
-                  testID={testID}
-                  newestKey={newestKey}
-                  newestMine={newestMine}
-                  startAtEnd={startAtEnd}
-                  bottomInset={under}
-                  endRef={end}
-                  contentContainerStyle={{
-                    flexGrow: 1,
-                    // skall tuvali (skall.css → `.stream`): 16 at the sides, 6 between messages.
-                    paddingHorizontal: shape.screenPadding,
-                    paddingTop: SPACING[2],
-                    paddingBottom: SPACING[3] + under,
-                    gap: SPACING[1.5],
-                  }}
-                >
-                  {children}
-                </ChatScroll>
-              </GlassTarget>
-              {composer ? (
-                <View
-                  className="absolute bottom-0 left-0 right-0"
-                  style={{ paddingBottom: barSpace }}
-                  onLayout={(e) => setBarHeight(e.nativeEvent.layout.height)}
-                >
-                  <ComposerGlassContext.Provider value={glassId}>
-                    {composer}
-                  </ComposerGlassContext.Provider>
-                </View>
-              ) : null}
-            </View>
-          </KeyboardAvoidingView>
-        </SafeAreaView>
-      </ChatBarContext.Provider>
+                  {wall ? <ChatWallpaper kind={wall} /> : null}
+                  <ChatScroll
+                    testID={testID}
+                    newestKey={newestKey}
+                    newestMine={newestMine}
+                    startAtEnd={startAtEnd}
+                    bottomInset={under}
+                    endRef={end}
+                    contentContainerStyle={{
+                      flexGrow: 1,
+                      // skall tuvali (skall.css → `.stream`): 16 at the sides, 6 between messages.
+                      paddingHorizontal: shape.screenPadding,
+                      paddingTop: SPACING[2],
+                      paddingBottom: SPACING[3] + under,
+                      gap: SPACING[1.5],
+                    }}
+                  >
+                    {children}
+                  </ChatScroll>
+                </GlassTarget>
+                {composer ? (
+                  <View
+                    className="absolute bottom-0 left-0 right-0"
+                    style={{ paddingBottom: barSpace }}
+                    onLayout={(e) => setBarHeight(e.nativeEvent.layout.height)}
+                  >
+                    <ComposerGlassContext.Provider value={glassId}>
+                      {composer}
+                    </ComposerGlassContext.Provider>
+                  </View>
+                ) : null}
+              </View>
+            </KeyboardAvoidingView>
+          </SafeAreaView>
+        </ChatBarContext.Provider>
+      </ChatKindContext.Provider>
     </ChatEndContext.Provider>
   );
 }

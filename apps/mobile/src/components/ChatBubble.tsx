@@ -5,13 +5,11 @@ import { Animated, Pressable, Text as RNText, View } from 'react-native';
 
 import { useKit } from '@/aura/kit';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
-import { gradientStyle } from '@/theme/gradient';
 
 import { tr } from '@/i18n/tr';
 import { haptic } from '@/lib/haptics';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { withAlpha } from '@/theme/contrast';
-import { BRAND } from '@/theme/brand';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 
@@ -20,6 +18,7 @@ import { type BubbleAction, MessagePop, type PopAnchor } from './MessagePop';
 import { ReactionFace } from './ReactionFace';
 import { Text } from './Text';
 import { AppIcon } from './AppIcon';
+import { useChatKind } from './chatKind';
 
 // color: the quoted sender's name colour in the venue chat (v45: --qc); otherwise the second accent.
 export type ChatQuote = { name: string; text: string; color?: string };
@@ -89,8 +88,6 @@ const TICKS_ROOM = '\u2003\u2002';
 // transparent colour (0) as "no colour" and draws it in the bubble's colour, so the copy showed
 // under the time (04:24 over 04:24).
 const HIDDEN_ALPHA = 0.004;
-// skall.css → `.typing i`: the brand's purple, pink and orange.
-const TYPING_DOTS = [BRAND.purple, BRAND.pink, BRAND.orange] as const;
 
 const NAME_GAP = 3;
 
@@ -132,8 +129,10 @@ export function ChatBubble({
   };
   // skall tuvali (skall.css → `.bub`): 18 all round; a run's first bubble points at its author with
   // a 6 corner at the top (left for others, right for the viewer's own).
-  const { c } = useKit();
-  const fg = mine ? KIT.onPrimary : c.ink;
+  const { scheme } = useKit();
+  const kind = useChatKind();
+  const paint = KIT.bubble[scheme];
+  const fg = mine ? paint.mineInk : paint.themInk;
   const inside = !mine && nameInk !== undefined;
   const bubble = (
     <Pressable
@@ -165,18 +164,17 @@ export function ChatBubble({
         ref={lifted ? undefined : faceRef}
         collapsable={false}
         // docs/design/aura → Dm (`.msg`): 22 round, the corner towards the author 8 at the
-        // bottom; another's on glass, the own in the primary.
+        // bottom. Never see-through (the owner's call, 29 Ekim): the own white, another's in the
+        // chat's colour (DM blue, Mekan sohbeti green, Masa sohbeti purple).
         style={[
           mine
-            ? { backgroundColor: KIT.primary, boxShadow: KIT.meShadow }
-            : [
-                gradientStyle(c.glass),
-                {
-                  borderWidth: KIT.size.edge,
-                  borderColor: c.glassEdge,
-                  boxShadow: c.glassShadow,
-                },
-              ],
+            ? {
+                backgroundColor: paint.mine,
+                borderWidth: KIT.size.edge,
+                borderColor: paint.mineEdge,
+                boxShadow: paint.mineShadow,
+              }
+            : { backgroundColor: paint[kind], boxShadow: KIT.chatShadow[kind] },
           {
             paddingHorizontal: KIT.size.msgPadX,
             paddingVertical: KIT.size.msgPadY,
@@ -202,10 +200,12 @@ export function ChatBubble({
             className="self-start"
             style={{ marginBottom: NAME_GAP }}
           >
-            <RNText style={[KIT_TYPE.fine, KIT_TYPE.strong, { color: nameInk }]}>{name}</RNText>
+            <RNText style={[KIT_TYPE.fine, KIT_TYPE.strong, { color: paint.themInk }]}>
+              {name}
+            </RNText>
           </Pressable>
         ) : null}
-        {quote ? <QuoteBlock quote={quote} mine={mine} onPress={onPressQuote} /> : null}
+        {quote ? <QuoteBlock quote={quote} onColor={!mine} onPress={onPressQuote} /> : null}
         {/* The time sits in the text's last line, bottom right (skall.css → `.bub .tm`, a float).
             React Native has no float, and a wrapping row measured the bubble wrong (bubbles ran
             into each other): the text ends with an invisible copy of the time, which makes the
@@ -225,10 +225,10 @@ export function ChatBubble({
               style={{ right: 0, bottom: 0 }}
               importantForAccessibility="no-hide-descendants"
             >
-              <Text variant="caption" color={mine ? KIT.onPrimary : c.muted}>
+              <Text variant="caption" color={mine ? paint.mineMuted : paint.themMuted}>
                 {time}
               </Text>
-              {mine && delivery ? <DeliveryTicks delivery={delivery} onAccent /> : null}
+              {mine && delivery ? <DeliveryTicks delivery={delivery} /> : null}
             </View>
           ) : null}
         </View>
@@ -383,13 +383,15 @@ export function ChatBubble({
 // The answered message inside a bubble: a bar on the left, the sender's name and one line of text.
 function QuoteBlock({
   quote,
-  mine,
+  onColor,
   onPress,
 }: {
   quote: ChatQuote;
-  mine: boolean;
+  // In another's bubble (the chat's colour): the quote in white.
+  onColor: boolean;
   onPress?: () => void;
 }) {
+  const mine = onColor;
   const { colors, shape } = useTheme();
   return (
     <Pressable
@@ -598,7 +600,9 @@ export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: 
     return () => loop.stop();
   }, [reduce, dots]);
 
-  const { c } = useKit();
+  const { scheme } = useKit();
+  const kind = useChatKind();
+  const paint = KIT.bubble[scheme];
   return (
     <View
       className="flex-row items-end gap-2 self-start"
@@ -614,15 +618,13 @@ export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: 
           gap: SPACING[1],
           paddingHorizontal: SPACING[3] + SPACING[0.5],
           paddingVertical: SPACING[3],
-          // docs/design/aura → Dm: a glass bubble with the brand's three dots.
-          ...gradientStyle(c.glass),
+          // Another's bubble in the chat's colour with three white dots (the owner's call, 29 Ekim).
+          backgroundColor: paint[kind],
+          boxShadow: KIT.chatShadow[kind],
           borderTopLeftRadius: KIT.size.msgRadius,
           borderTopRightRadius: KIT.size.msgRadius,
           borderBottomRightRadius: KIT.size.msgRadius,
           borderBottomLeftRadius: KIT.size.msgTail,
-          borderWidth: KIT.size.edge,
-          borderColor: c.glassEdge,
-          boxShadow: c.glassShadow,
         }}
       >
         {dots.map((d, i) => (
@@ -632,7 +634,7 @@ export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: 
               width: DOT,
               height: DOT,
               borderRadius: shape.radius.pill,
-              backgroundColor: TYPING_DOTS[i],
+              backgroundColor: paint.themInk,
               opacity: d.interpolate({ inputRange: [0, 1], outputRange: [0.45, 1] }),
               transform: [
                 {
