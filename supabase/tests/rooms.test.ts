@@ -249,6 +249,19 @@ describe('push tokens and closed helpers', () => {
     ).toBeNull();
   });
 
+  it("takes a phone's token from the account that had it before (audit AUTH-12)", async () => {
+    const first = await onboarded(PHONES[0]);
+    const second = await onboarded(PHONES[1]);
+    const token = 'ExponentPushToken[integration-shared]';
+    const tokenOf = async (client: typeof first) =>
+      (await sql`select push_token from public.profiles where id = ${await userIdOf(client)}`)[0]
+        ?.push_token;
+    await invoke(first, 'account', { action: 'register-push', token });
+    await invoke(second, 'account', { action: 'register-push', token });
+    expect(await tokenOf(first)).toBeNull();
+    expect(await tokenOf(second)).toBe(token);
+  });
+
   it('keeps table state changes server-side only', async () => {
     const client = await onboarded(PHONES[0]);
     const id = await userIdOf(client);
