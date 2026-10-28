@@ -193,6 +193,39 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
 });
 
 // The message being answered, over the message bar: a bar on the left, the name and one line.
+type DraftProps = Omit<Props, 'value' | 'onChangeText' | 'onSend' | 'sendDisabled'> & {
+  // What a draft would send (trimmed, within the limit), or null.
+  prepare: (raw: string) => string | null;
+  // Nothing can be sent now, whatever is typed (the venue chat before its identity is known).
+  blocked?: boolean;
+  // Each change of the draft, for what follows typing ("yazıyor").
+  onDraftChange?: (text: string) => void;
+  // Sends the prepared text; `clear` empties the bar: at once, or once the server took it.
+  onSend: (body: string, clear: () => void) => void;
+};
+
+// The message bar holding what is typed itself (performance audit, 28 Ekim): with the draft on the
+// chat screen, every key drew the whole screen again with its hundred messages; here a key draws
+// the bar only.
+export function DraftComposer({ prepare, blocked, onDraftChange, onSend, ...props }: DraftProps) {
+  const [draft, setDraft] = useState('');
+  const body = prepare(draft);
+  return (
+    <Composer
+      {...props}
+      value={draft}
+      onChangeText={(text) => {
+        setDraft(text);
+        onDraftChange?.(text);
+      }}
+      sendDisabled={!body || !!blocked}
+      onSend={() => {
+        if (body && !blocked) onSend(body, () => setDraft(''));
+      }}
+    />
+  );
+}
+
 function ReplyStrip({ quote, onCancel }: { quote: ChatQuote; onCancel?: () => void }) {
   const { colors, shape } = useTheme();
   return (

@@ -1,4 +1,5 @@
 import { sessionDurationMinutes } from '@shared/analytics.ts';
+import { seatsAnonymously } from '@shared/gender.ts';
 import type { Concept, Intent } from '@shared/rooms.ts';
 import { tableState } from '@shared/tableCard.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -108,7 +109,9 @@ export default function VenueScreen() {
 
   const state = tableState(room, !!room && room.owner_session_id === checkIn.data.id);
   const minutesLeft = Math.max(0, Math.ceil((expiresAt - now) / 60_000));
-  const anonymous = checkIn.data.identity.mode === 'anonymous';
+  // How the person sits at a table: a man and "Belirtmek istemiyorum" always with the profile,
+  // whatever the check-in's identity (audit VEN-1).
+  const anonymous = seatsAnonymously(checkIn.data.identity.mode, photo.gender);
   // A profiled person without a visible photo can neither set up a table nor ask (photo_required).
   const needsPhoto = !anonymous && photo.known && !photo.has;
 

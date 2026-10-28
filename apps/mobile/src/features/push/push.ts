@@ -29,8 +29,10 @@ function easProjectId(): string | null {
 
 // Asked at the first meaningful moment (opening a room to the venue, sending a join request),
 // never during onboarding (MVP_SPEC §9 Push). Without an EAS project id, or on any failure, it
-// silently does nothing: push is optional and must never block the flow.
-export async function registerForPush(): Promise<void> {
+// silently does nothing: push is optional and must never block the flow. `ask: false` registers
+// only when the permission is already given (each launch, after every sign-in): a guest who only
+// joined other tables never got a token before (audit AUTH-2, 28 Ekim).
+export async function registerForPush({ ask = true }: { ask?: boolean } = {}): Promise<void> {
   try {
     const projectId = easProjectId();
     if (!projectId) return;
@@ -43,7 +45,7 @@ export async function registerForPush(): Promise<void> {
     }
 
     let { granted } = await Notifications.getPermissionsAsync();
-    if (!granted) ({ granted } = await Notifications.requestPermissionsAsync());
+    if (!granted && ask) ({ granted } = await Notifications.requestPermissionsAsync());
     if (!granted) return;
 
     const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId });
@@ -74,6 +76,15 @@ function open(response: Notifications.NotificationResponse): void {
   handled = id;
   const route = pushRoute(response.notification.request.content.data);
   if (route) router.navigate(route);
+}
+
+// Once per signed-in app session (the (app) group mounts after sign-in and sign-up): the token
+// is registered again without asking, so sign-out's unregister and a new install heal by
+// themselves.
+export function useSilentPushRegistration(): void {
+  useEffect(() => {
+    void registerForPush({ ask: false });
+  }, []);
 }
 
 export function usePushNavigation(): void {

@@ -8,6 +8,9 @@ export type CheckInRequest = {
   lng: number;
   // Accuracy radius reported by the device, in metres. Stored; the coordinates are not.
   accuracyM: number | null;
+  // The phone reports the position as coming from a mock location app (Android); refused outside
+  // the local stack unless the location check is skipped (pure/devProject.ts). Older apps leave it out.
+  mocked?: boolean;
   // Today's app; ignored: a check-in opens no table and asks no headcount (docs/SPEC_V4.md §4.E).
   headcount?: number;
   locationConsentVersion: string;

@@ -41,7 +41,8 @@ type Props = {
   venueId: string;
   // Icons of the venue's other open and running tables: shown faded and not chosen (K-45).
   usedIcons: ReadonlySet<string>;
-  // The check-in's identity: the name the person sits with (docs/SPEC_V4.md §4.D).
+  // Whether the person sits anonymously: the check-in's identity, and for a man and "Belirtmek
+  // istemiyorum" always the profile (docs/SPEC_V4.md §4.D; @shared/gender.ts → seatsAnonymously).
   anonymous: boolean;
 };
 
@@ -180,6 +181,13 @@ export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Pro
           {tr.createTable.youAre(name)}
         </Text>
       </View>
+      {/* With the profile and no visible photo the server refuses (photo_required): said before
+          the press, not after. */}
+      {!anonymous && photo.known && !photo.has ? (
+        <Text variant="fine" tone="danger">
+          {tr.errors.photo_required}
+        </Text>
+      ) : null}
 
       {create.isError ? (
         <Text variant="fine" tone="danger" accessibilityLiveRegion="polite">

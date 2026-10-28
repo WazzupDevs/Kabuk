@@ -1,7 +1,7 @@
 import { Stack } from 'expo-router';
 
 import { ConnectionBanner } from '@/components/ConnectionBanner';
-import { usePushNavigation } from '@/features/push/push';
+import { usePushNavigation, useSilentPushRegistration } from '@/features/push/push';
 import { IncomingRequestHost } from '@/features/rooms/IncomingRequest';
 import { useStackOptions } from '@/lib/stackOptions';
 
@@ -20,6 +20,7 @@ const SHEET = {
 export default function GroupLayout() {
   const stackOptions = useStackOptions();
   usePushNavigation();
+  useSilentPushRegistration();
   return (
     <>
       <Stack screenOptions={stackOptions}>

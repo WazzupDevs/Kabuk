@@ -9,6 +9,7 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { Text } from '@/components/Text';
 import { Loader } from '@/components/Loader';
 import { useCheckinDraft } from '@/features/checkin/draft';
+import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { useExploreVenue } from '@/features/explore/useExploreVenues';
 import { BucketLine, EventTag, VenueTile } from '@/features/explore/VenueTags';
 import { tr } from '@/i18n/tr';
@@ -21,6 +22,9 @@ export default function VenueDetailScreen() {
   const { venueId } = useLocalSearchParams<{ venueId: string }>();
   const { venue, isPending } = useExploreVenue(venueId);
   const setVenue = useCheckinDraft((s) => s.setVenue);
+  // Already checked in here: back to Mekan, not a new check-in that would end this one and take
+  // the person off its table (audit VEN-2).
+  const active = useActiveTable();
 
   if (isPending) {
     return (
@@ -73,8 +77,14 @@ export default function VenueDetailScreen() {
       <View className="mt-auto gap-3 pt-8">
         <Button
           size="lg"
-          label={tr.explore.checkInHere}
+          label={
+            active.data?.venue_id === venue.id ? tr.explore.backToVenue : tr.explore.checkInHere
+          }
           onPress={() => {
+            if (active.data?.venue_id === venue.id) {
+              router.navigate('/venue');
+              return;
+            }
             setVenue({
               id: venue.id,
               name: venue.name,

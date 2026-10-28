@@ -322,8 +322,15 @@ export function useInbox(): void {
     refreshInboxSoon(queryClient);
     markDelivered();
   }, [queryClient, markDelivered]);
+  // A table invite (2 minutes) shows on the bell at once; nothing else listened for it, so an
+  // invite to a phone with the app open waited for the next foreground (audit CHAT-1, 28 Ekim).
+  const refetchNotifications = useCallback(
+    () => void queryClient.invalidateQueries({ queryKey: friendKeys.notifications }),
+    [queryClient],
+  );
   const topic = userId ? inboxChannel(userId) : null;
   useBroadcast(topic, BROADCAST.friendRequest, refetch);
+  useBroadcast(topic, BROADCAST.tableInvite, refetchNotifications);
   useBroadcast(topic, BROADCAST.friendshipChanged, refetch);
   useBroadcast(topic, BROADCAST.dm, onDm);
 }

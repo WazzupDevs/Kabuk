@@ -16,8 +16,9 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { ApiError, roomsApi } from '@/lib/api';
+import { registerForPush } from '@/features/push/push';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
-import { useNow } from '@/lib/useNow';
+import { useNowUntil } from '@/lib/useNow';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING, TOUCH } from '@/theme/tokens';
 
@@ -63,7 +64,12 @@ export function Lobby({
   const queryClient = useQueryClient();
   const tables = useVenueTables(venueId);
   const mine = useMyRequest(sessionId, since);
-  const now = useNow(1000);
+  // The clock runs only while the person's request waits (its countdown, then its time-out); the
+  // rest of the time the lobby is not drawn again each second.
+  const now = useNowUntil(
+    mine.data && mine.data.status !== 'accepted' ? mine.data.expiresAt : null,
+    1000,
+  );
   // The request this screen sent, and to which table; the plain row once it is gone.
   const [asked, setAsked] = useState<{ roomId: string; name: string } | null>(null);
 
@@ -73,6 +79,8 @@ export function Lobby({
       roomsApi.requestJoin(table.roomId, asMember),
     onSuccess: (_data, { table, asMember }) => {
       track('join_requested', { as_member: asMember });
+      // The spec's second moment to ask for push (MVP_SPEC §9): sending a join request.
+      void registerForPush();
       setAsked({ roomId: table.roomId, name: table.name });
       void queryClient.invalidateQueries({ queryKey: roomKeys.myRequest });
     },

@@ -11,6 +11,18 @@ export function mayStayAnonymous(gender: Gender): boolean {
   return gender === 'female';
 }
 
+// How the person sits at a table with the check-in's identity (docs/SPEC_V4.md §4.D, rules 4 and
+// 12; the server's seat identity): a woman as her check-in chose, a man and "Belirtmek istemiyorum"
+// always with the profile, whatever the check-in says. An unknown gender (undefined: the own profile
+// on its way; null: an account from before the gender step) counts as with the profile, so a screen
+// never promises an anonymity the server will not give (audit VEN-1, 28 Ekim).
+export function seatsAnonymously(
+  identity: 'anonymous' | 'profiled',
+  gender: Gender | null | undefined,
+): boolean {
+  return identity === 'anonymous' && gender === 'female';
+}
+
 // Why the server refuses a game-flow entry with this participation, or null. An account from
 // before the gender step answers the one-time question first (gender_required), whatever it chose. A
 // profiled entry still needs a visible photo (photo_required, checked after this).

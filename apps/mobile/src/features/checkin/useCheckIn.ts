@@ -29,6 +29,7 @@ export function useCheckIn() {
         lat: position.lat,
         lng: position.lng,
         accuracyM: position.accuracyM,
+        ...(position.mocked ? { mocked: true } : {}),
         locationConsentVersion: CURRENT_LOCATION_CONSENT_VERSION,
         ...(spot ? { spotId: spot.id } : {}),
         requestId: key,

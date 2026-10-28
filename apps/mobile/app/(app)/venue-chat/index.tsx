@@ -18,7 +18,7 @@ import { Card } from '@/components/Card';
 import { ChatBubble } from '@/components/ChatBubble';
 import { ChatRow, ChatScreen, DayLine, dayLabel } from '@/components/ChatScreen';
 import { ChatTopBar } from '@/components/ChatTopBar';
-import { Composer } from '@/components/Composer';
+import { DraftComposer } from '@/components/Composer';
 import { EmptyState } from '@/components/EmptyState';
 import { GlyphDisc } from '@/components/GlyphDisc';
 import { IconButton, MoreDots } from '@/components/IconButton';
@@ -66,7 +66,6 @@ export default function VenueChatScreen() {
   const identity = page.data?.identity ?? table.data?.identity ?? null;
   const photo = useOwnPhoto();
   const look = useOwnLook();
-  const [draft, setDraft] = useState('');
   const [sheet, setSheet] = useState<'options' | 'identity' | null>(null);
   const [person, setPerson] = useState<VenueChatMessage | null>(null);
   const [reporting, setReporting] = useState<VenueChatMessage | null>(null);
@@ -81,13 +80,11 @@ export default function VenueChatScreen() {
   const refresh = () => {
     if (venueId) void queryClient.invalidateQueries({ queryKey: venueChatKeys.messages(venueId) });
   };
-  const body = prepareVenueMessage(draft);
   const send = useMutation({
     meta: FEEL_ERROR,
     mutationFn: (text: string) =>
       venueChatApi.sendAs(venueId ?? '', text, identity?.mode ?? 'anonymous', reply.target?.id),
     onSuccess: () => {
-      setDraft('');
       reply.clear();
       track('venue_chat_sent', { profiled: identity?.mode === 'profiled' });
       refresh();
@@ -214,17 +211,17 @@ export default function VenueChatScreen() {
         />
       }
       composer={
-        <Composer
+        <DraftComposer
           inputTestID="venue-chat-input"
           sendTestID="venue-chat-send"
           sendLabel={tr.venueChat.send}
           placeholder={tr.venueChat.placeholder}
-          value={draft}
-          onChangeText={setDraft}
+          prepare={prepareVenueMessage}
+          blocked={!identity}
           maxLength={VENUE_CHAT.maxLength}
-          sendDisabled={!body || !identity}
           sending={send.isPending}
-          onSend={() => body && send.mutate(body)}
+          // What was typed stays when nothing was sent (the identity changed elsewhere).
+          onSend={(body, clear) => send.mutate(body, { onSuccess: clear })}
           replyTo={reply.target?.quote}
           onCancelReply={reply.clear}
           above={

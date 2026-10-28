@@ -14,7 +14,7 @@ import { Avatar } from '@/components/Avatar';
 import { ChatBubble, type Delivery, TypingBubble } from '@/components/ChatBubble';
 import { ChatRow, ChatScreen, DayLine, dayLabel } from '@/components/ChatScreen';
 import { ChatTopBar } from '@/components/ChatTopBar';
-import { Composer } from '@/components/Composer';
+import { DraftComposer } from '@/components/Composer';
 import { EmptyState } from '@/components/EmptyState';
 import { IconButton, MoreDots } from '@/components/IconButton';
 import { Menu, MenuItem } from '@/components/Menu';
@@ -66,7 +66,6 @@ export default function DmScreen() {
   const friend = useFriends().data?.find((f) => f.publicId === publicId);
   const photoUrl = friend?.photoUrl ?? null;
   const messages = useDmMessages(threadId);
-  const [draft, setDraft] = useState('');
   const [menu, setMenu] = useState(false);
   const [confirm, setConfirm] = useState<'remove' | 'block' | null>(null);
   const [reporting, setReporting] = useState(false);
@@ -105,7 +104,6 @@ export default function DmScreen() {
     markRead();
   }, [markRead]);
 
-  const body = prepareDm(draft);
   // Sending is optimistic, as in the room chat (@shared/chatOutbox.ts): the message shows at once
   // with the waiting state and is replaced by the server's copy on the reply, with the sent tick.
   // The answered message from the loaded page, for the quote shown at once.
@@ -124,13 +122,12 @@ export default function DmScreen() {
         dispatch({ type: 'failed', localId, errorCode: err instanceof ApiError ? err.code : null }),
       );
   };
-  const submit = () => {
-    if (!body) return;
+  const submit = (body: string, clear: () => void) => {
     nextLocalId += 1;
     const localId = `dm-${nextLocalId}`;
     const replyTo = reply.target?.id;
     dispatch({ type: 'send', localId, body, ...(replyTo ? { replyTo } : {}) });
-    setDraft('');
+    clear();
     reply.clear();
     deliver(localId, body, replyTo);
   };
@@ -143,7 +140,6 @@ export default function DmScreen() {
     return r ? toChatQuote({ gone: false, ...r, name: null }, name) : undefined;
   };
   const onChangeDraft = (text: string) => {
-    setDraft(text);
     if (text.trim()) notifyTyping();
   };
 
@@ -218,15 +214,14 @@ export default function DmScreen() {
         />
       }
       composer={
-        <Composer
+        <DraftComposer
           inputTestID="dm-input"
           sendTestID="dm-send"
           sendLabel={tr.dm.send}
           placeholder={tr.dm.placeholder}
-          value={draft}
-          onChangeText={onChangeDraft}
+          prepare={prepareDm}
+          onDraftChange={onChangeDraft}
           maxLength={DM_MAX_LENGTH}
-          sendDisabled={!body}
           onSend={submit}
           replyTo={reply.target?.quote}
           onCancelReply={reply.clear}

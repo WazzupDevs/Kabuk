@@ -3,14 +3,14 @@ import { canRetry, type OutboxMessage, outboxReducer } from '@shared/chatOutbox.
 import { parseQuote, parseReactionCounts } from '@shared/messageExtras.ts';
 import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { useReducer, useState } from 'react';
+import { useReducer } from 'react';
 
 import { toRuns } from '@shared/chatRuns.ts';
 
 import { Avatar } from '@/components/Avatar';
 import { ChatBubble } from '@/components/ChatBubble';
 import { ChatRow, DayLine, dayLabel } from '@/components/ChatScreen';
-import { Composer } from '@/components/Composer';
+import { DraftComposer } from '@/components/Composer';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { ApiError, chatApi } from '@/lib/api';
@@ -27,7 +27,6 @@ export function useRoomChat(roomId: string) {
   const queryClient = useQueryClient();
   const messages = useMessages(roomId);
   const extras = useRoomChatExtras(roomId);
-  const [draft, setDraft] = useState('');
   const [outbox, dispatch] = useReducer(outboxReducer, []);
   const reply = useReplyTarget();
   const reactions = useReactions(chatApi.react, () =>
@@ -50,14 +49,12 @@ export function useRoomChat(roomId: string) {
       });
   };
 
-  const body = prepareMessage(draft);
-  const submit = () => {
-    if (!body) return;
+  const submit = (body: string, clear: () => void) => {
     nextLocalId += 1;
     const localId = `local-${nextLocalId}`;
     const replyTo = reply.target?.id;
     dispatch({ type: 'send', localId, body, ...(replyTo ? { replyTo } : {}) });
-    setDraft('');
+    clear();
     reply.clear();
     deliver(localId, body, replyTo);
   };
@@ -70,9 +67,6 @@ export function useRoomChat(roomId: string) {
     messages,
     extras,
     outbox,
-    draft,
-    setDraft,
-    body,
     submit,
     retry,
     discard,
@@ -183,13 +177,11 @@ export function RoomMessages({
 
 export function RoomComposer({ chat }: { chat: RoomChat }) {
   return (
-    <Composer
+    <DraftComposer
       sendLabel={tr.chat.send}
       placeholder={tr.chat.placeholder}
-      value={chat.draft}
-      onChangeText={chat.setDraft}
+      prepare={prepareMessage}
       maxLength={MAX_MESSAGE_LENGTH}
-      sendDisabled={!chat.body}
       onSend={chat.submit}
       replyTo={chat.reply.target?.quote}
       onCancelReply={chat.reply.clear}

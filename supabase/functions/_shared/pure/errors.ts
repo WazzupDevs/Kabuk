@@ -8,6 +8,7 @@ export type ErrorCode =
   | 'birth_date_invalid'
   | 'venue_not_found'
   | 'too_far'
+  | 'location_mocked'
   | 'alias_exhausted'
   | 'spot_required'
   | 'spot_invalid'

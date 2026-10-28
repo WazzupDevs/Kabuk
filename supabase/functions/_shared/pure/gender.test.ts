@@ -1,10 +1,33 @@
 import { describe, expect, it } from 'vitest';
 
-import { gameFlowView, GENDERS, mayStayAnonymous, participationError } from './gender.ts';
+import {
+  gameFlowView,
+  GENDERS,
+  mayStayAnonymous,
+  participationError,
+  seatsAnonymously,
+} from './gender.ts';
 
 describe('mayStayAnonymous', () => {
   it('lets only a woman stay anonymous in the game flow', () => {
     expect(GENDERS.filter(mayStayAnonymous)).toEqual(['female']);
+  });
+});
+
+describe('seatsAnonymously', () => {
+  it('seats a woman as her check-in chose', () => {
+    expect(seatsAnonymously('anonymous', 'female')).toBe(true);
+    expect(seatsAnonymously('profiled', 'female')).toBe(false);
+  });
+
+  it('seats a man and "Belirtmek istemiyorum" with the profile, anonymous check-in or not', () => {
+    expect(seatsAnonymously('anonymous', 'male')).toBe(false);
+    expect(seatsAnonymously('anonymous', 'unspecified')).toBe(false);
+  });
+
+  it('promises no anonymity while the gender is unknown', () => {
+    expect(seatsAnonymously('anonymous', undefined)).toBe(false);
+    expect(seatsAnonymously('anonymous', null)).toBe(false);
   });
 });
 
