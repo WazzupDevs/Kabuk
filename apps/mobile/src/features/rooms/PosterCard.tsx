@@ -1,6 +1,7 @@
 import { Children, type ReactNode } from 'react';
 import { Image, type ImageSourcePropType, Pressable, View } from 'react-native';
 
+import { FrostIn } from '@/aura/FrostIn';
 import { usePressScale } from '@/components/motion';
 import { Tag } from '@/components/Tag';
 import { tr } from '@/i18n/tr';
@@ -26,8 +27,9 @@ export const GAME_CARDS = [
 export type GameCardId = (typeof GAME_CARDS)[number]['id'];
 export type GameCategory = keyof typeof tr.table.gameCategories;
 
-// The file's card: 158 × 211.
+// The file's card: 158 × 211; its drawn corners are 15 % of its width (measured on the 4× file).
 const CARD_RATIO = 158 / 211;
+const CARD_CORNER = 0.15;
 
 export function GameCard({
   id,
@@ -88,7 +90,10 @@ export function PosterGrid({ children }: { children: ReactNode }) {
         <View key={i} className="flex-row" style={{ gap: SPACING[3] }}>
           {row.map((c, j) => (
             <View key={j} className="flex-1">
-              {c}
+              {/* Frosted first, then the drawing (docs/design/aura → Masa). */}
+              <FrostIn index={i * 2 + j} radius={CARD_CORNER}>
+                {c}
+              </FrostIn>
             </View>
           ))}
           {row.length === 1 ? <View className="flex-1" /> : null}

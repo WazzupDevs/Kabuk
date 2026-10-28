@@ -6,6 +6,7 @@ import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { create } from 'zustand';
 
+import { PopIn } from '@/aura/PopIn';
 import { Avatar, AVATAR_SIZE } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { GlyphDisc } from '@/components/GlyphDisc';
@@ -16,6 +17,7 @@ import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { ApiError, roomsApi } from '@/lib/api';
 import { useNowUntil } from '@/lib/useNow';
+import { AURA } from '@/theme/aura';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
@@ -69,7 +71,7 @@ export function IncomingRequestHost() {
 // name, age and photo, read while the request waits (rule 4); the seconds and the buttons never
 // wait for it.
 export function IncomingRequest({ roomId, ownerSessionId, phones, floating }: Props) {
-  const { colors, shape } = useTheme();
+  const { colors, shape, scheme } = useTheme();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const requests = useIncomingRequests(roomId, ownerSessionId);
@@ -145,19 +147,22 @@ export function IncomingRequest({ roomId, ownerSessionId, phones, floating }: Pr
           : undefined
       }
     >
-      <View
-        style={{
-          gap: SPACING[3],
-          padding: SPACING[4],
-          borderRadius: shape.radius.lg,
-          backgroundColor: colors.surface,
-          borderWidth: shape.stroke.card,
-          borderColor: colors.cardLine,
-          boxShadow: floating ? shape.shadow.sheet : shape.shadow.card,
-        }}
-      >
-        {children}
-      </View>
+      {/* It comes up with a bounce, a near-opaque glass pane (docs/design/aura → Gelen istek). */}
+      <PopIn key={testID}>
+        <View
+          style={{
+            gap: SPACING[3],
+            padding: SPACING[4],
+            borderRadius: AURA.card.radius,
+            backgroundColor: colors.surface,
+            borderWidth: AURA.card.edgeWidth,
+            borderColor: AURA[scheme].glass.edge,
+            boxShadow: floating ? shape.shadow.sheet : AURA[scheme].glass.shadow,
+          }}
+        >
+          {children}
+        </View>
+      </PopIn>
     </View>
   );
 
