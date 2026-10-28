@@ -1,6 +1,9 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { View } from 'react-native';
 
+import { MarkDisk } from '@/aura/MarkDisk';
+import { Gathering, SceneGround } from '@/aura/Scene';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { EmptyState } from '@/components/EmptyState';
@@ -15,6 +18,11 @@ import { BucketLine, EventTag, VenueTile } from '@/features/explore/VenueTags';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { venueType } from '@/lib/venueType';
+import { AURA } from '@/theme/aura';
+import { SPACING } from '@/theme/tokens';
+
+// The buddies come in after the screen's own arrival.
+const SCENE_CAST_DELAY = 240;
 
 // A venue from Keşfet: its bucket, its event, and check-in. Choosing the venue here is the manual
 // selection; the position is taken next only to verify it (docs/SPEC_V2.md §4). In v44's look until
@@ -26,6 +34,7 @@ export default function VenueDetailScreen() {
   // Already checked in here: back to Mekan, not a new check-in that would end this one and take
   // the person off its table (audit VEN-2).
   const active = useActiveTable();
+  const [sceneWidth, setSceneWidth] = useState(0);
 
   if (isPending) {
     return (
@@ -67,6 +76,30 @@ export default function VenueDetailScreen() {
   return (
     <Screen>
       <ScreenHeader title={tr.tabs.explore} onBack={() => router.back()} />
+      {/* The venue as a scene (docs/design/aura → Mekan sayfası): buddies around its mark. */}
+      <View
+        onLayout={(e) => setSceneWidth(e.nativeEvent.layout.width)}
+        style={{
+          marginTop: SPACING[3],
+          height: AURA.gatherings.venue.height * (sceneWidth / AURA.gatherings.venue.frame),
+          borderRadius: AURA.scene.radius,
+          overflow: 'hidden',
+        }}
+      >
+        <SceneGround />
+        {sceneWidth > 0 ? (
+          <Gathering
+            kind="venue"
+            width={sceneWidth}
+            delay={SCENE_CAST_DELAY}
+            center={
+              <MarkDisk
+                size={AURA.gatherings.venue.disk.size * (sceneWidth / AURA.gatherings.venue.frame)}
+              />
+            }
+          />
+        ) : null}
+      </View>
       {/* v44's venue head (.ci-head): its kind on a tile, the name, the kind and district, the
           bucket in words (K-41) and today's event. */}
       <Card className="mt-3">

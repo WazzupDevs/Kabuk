@@ -324,6 +324,13 @@ export const tr = {
     tabs: 'Mesajlar ve istekler',
     chats: 'Sohbet',
     requests: (n: number) => (n > 0 ? `İstekler (${n})` : 'İstekler'),
+    // The scene above the chats while friend requests wait (docs/design/aura → Mesajlar); a press
+    // opens İstekler.
+    incomingTitle: 'Gelen istekler',
+    incomingBody: (n: number) =>
+      n === 1
+        ? 'Biri sana arkadaşlık isteği gönderdi'
+        : `${n} kişi sana arkadaşlık isteği gönderdi`,
     requestKind: 'Arkadaşlık isteği',
     noRequests: 'Bekleyen istek yok',
     noRequestsHint: 'Biri seni arkadaş olarak eklemek isterse burada görürsün.',

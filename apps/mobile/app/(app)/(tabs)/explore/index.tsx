@@ -15,6 +15,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AuraBackground } from '@/aura/AuraBackground';
+import { MarkDisk } from '@/aura/MarkDisk';
+import { useTabFocus } from '@/aura/motion';
+import { Gathering, SceneGround } from '@/aura/Scene';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Chips } from '@/components/Chips';
@@ -43,9 +47,9 @@ import { track } from '@/lib/analytics';
 import { haptic } from '@/lib/haptics';
 import { useNow } from '@/lib/useNow';
 import { venueType, type VenueType } from '@/lib/venueType';
+import { AURA } from '@/theme/aura';
 import { V46_EXPLORE } from '@/theme/parts.generated';
 import { useTheme } from '@/theme/ThemeProvider';
-import { V46_PALETTE } from '@/theme/tokens.generated';
 import { SPACING } from '@/theme/tokens';
 import { CityButton } from '@/ui/CityButton';
 import { FilterChips } from '@/ui/FilterChips';
@@ -60,8 +64,8 @@ import { ViewModeToggle } from '@/ui/ViewModeToggle';
 type View_ = 'list' | 'map';
 
 // The single venue's colour block (canvas: Keşfet · tek mekan).
-const HERO_HEIGHT = SPACING[16] * 2 + SPACING[5] + SPACING[0.5];
-const HERO_MARK = SPACING[16] + SPACING[10];
+// The buddies come in after the card's own arrival.
+const HERO_CAST_DELAY = 240;
 
 type Here = { name: string; spot: string | null; type: VenueType };
 
@@ -75,6 +79,7 @@ type Here = { name: string; spot: string | null; type: VenueType };
 // page (K-43). The bell is in Mesajlar only (K-6).
 export default function ExploreScreen() {
   const { scheme, shape } = useTheme();
+  const focus = useTabFocus();
   const table = useActiveTable();
   const now = useNow(30_000);
   const { venues, cities, listed } = useCityVenues();
@@ -115,7 +120,9 @@ export default function ExploreScreen() {
     : null;
 
   return (
-    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: V46_PALETTE[scheme].canvas }}>
+    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
+      {/* The colour clouds (docs/design/aura → Keşfet); the map covers them when it is open. */}
+      <AuraBackground running={focus.focused} />
       <View style={{ flex: 1 }}>
         {showMap && headerHeight > 0 ? (
           <View style={StyleSheet.absoluteFill}>
@@ -405,7 +412,8 @@ function SingleVenue({
   checkedInHere: boolean;
   bottomSpace: number;
 }) {
-  const { colors, shape } = useTheme();
+  const { shape } = useTheme();
+  const [heroWidth, setHeroWidth] = useState(0);
   const setVenue = useCheckinDraft((s) => s.setVenue);
   return (
     <ScrollView
@@ -419,14 +427,24 @@ function SingleVenue({
       {here ? <HereNow here={here} /> : null}
       <Rise>
         <Card flush>
+          {/* The venue as a scene (docs/design/aura → Keşfet): capsule buddies gathered around
+              its mark, how lively it is at the top. */}
           <View
-            style={{ height: HERO_HEIGHT, backgroundColor: colors.surface2 }}
-            className="flex-row items-end justify-between px-4 pb-3 pt-4"
+            onLayout={(e) => setHeroWidth(e.nativeEvent.layout.width)}
+            style={{ height: AURA.gatherings.explore.height, overflow: 'hidden' }}
           >
-            <View className="self-start">
+            <SceneGround />
+            {heroWidth > 0 ? (
+              <Gathering
+                kind="explore"
+                width={heroWidth}
+                delay={HERO_CAST_DELAY}
+                center={<MarkDisk size={AURA.gatherings.explore.disk.size} />}
+              />
+            ) : null}
+            <View style={{ position: 'absolute', left: SPACING[3], top: SPACING[3] }}>
               <BucketBadge bucket={venue.bucket} />
             </View>
-            <Mark size={HERO_MARK} label={null} />
           </View>
           <View className="gap-4 p-4">
             <View className="gap-1">

@@ -5,6 +5,7 @@ import { type ReactNode, useState } from 'react';
 import { ScrollView, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AuraBackground } from '@/aura/AuraBackground';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
@@ -12,6 +13,7 @@ import { IconButton } from '@/components/IconButton';
 import { LookAvatar } from '@/components/LookAvatar';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
+import { AURA } from '@/theme/aura';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
@@ -22,14 +24,16 @@ const looks = CAPSULE_CATALOG.readyLooks;
 // table, the three faces a person can have, and the ready capsules with sample names ("İsimleri
 // yenile" draws new ones; they are examples, nobody's).
 export default function CapsulesScreen() {
-  const { colors, shape } = useTheme();
+  const { colors, shape, scheme } = useTheme();
   const { width } = useWindowDimensions();
   const [names, setNames] = useState(() => looks.map(() => randomNick(2, Math.random)));
   const side = shape.screenPadding;
   const tile = (width - side * 2 - SPACING[2] * (COLUMNS - 1)) / COLUMNS;
   const sample = looks[looks.length - 2]?.code ?? '';
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.canvas }}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: AURA[scheme].ground }}>
+      {/* The colour clouds (docs/design/aura → Kapsülün). */}
+      <AuraBackground />
       <View className="flex-row items-center gap-3" style={{ padding: SPACING[4] }}>
         <IconButton
           round

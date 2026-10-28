@@ -3,6 +3,7 @@ import type { DmInboxThread } from '@shared/api/friends.ts';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
+import { Gathering, SceneGround } from '@/aura/Scene';
 import { Avatar } from '@/components/Avatar';
 import { ListCard } from '@/components/ListCard';
 import { DeliveryTicks } from '@/components/ChatBubble';
@@ -22,6 +23,7 @@ import { NotificationsBell } from '@/features/notifications/Bell';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
+import { AURA } from '@/theme/aura';
 import { rowPress } from '@/theme/rowPress';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
@@ -56,6 +58,9 @@ export default function MessagesScreen() {
           ]}
         />
       </View>
+      {tab === 'chats' && requests > 0 ? (
+        <IncomingScene count={requests} onPress={() => setTab('requests')} />
+      ) : null}
       {tab === 'chats' ? <Chats now={new Date(now)} /> : <RequestList now={new Date(now)} />}
     </Screen>
   );
@@ -243,3 +248,35 @@ function UnreadCount({ count }: { count: number }) {
     </View>
   );
 }
+
+// Waiting friend requests as a scene above the chats (docs/design/aura → Mesajlar): two buddies at
+// the right; a press opens İstekler.
+function IncomingScene({ count, onPress }: { count: number; onPress: () => void }) {
+  const [width, setWidth] = useState(0);
+  const g = AURA.gatherings.messages;
+  return (
+    <Pressable
+      testID="messages-incoming"
+      accessibilityRole="button"
+      accessibilityLabel={`${tr.messages.incomingTitle}, ${tr.messages.incomingBody(count)}`}
+      onPress={onPress}
+      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+      style={{
+        marginTop: SPACING[3],
+        height: g.height,
+        borderRadius: AURA.scene.radius,
+        overflow: 'hidden',
+      }}
+    >
+      <SceneGround />
+      {width > 0 ? <Gathering kind="messages" width={width} delay={INCOMING_CAST_DELAY} /> : null}
+      <View style={{ padding: SPACING[4], width: '62%', gap: SPACING[1] }}>
+        <Text variant="heading">{tr.messages.incomingTitle}</Text>
+        <Text variant="fine">{tr.messages.incomingBody(count)}</Text>
+      </View>
+    </Pressable>
+  );
+}
+
+// The buddies come in after the screen's own arrival.
+const INCOMING_CAST_DELAY = 200;

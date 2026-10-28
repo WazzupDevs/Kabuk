@@ -21,6 +21,7 @@ import Animated, {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { create } from 'zustand';
 
+import { AuraBackground } from '@/aura/AuraBackground';
 import { Button } from '@/components/Button';
 import { CanvasBar } from '@/components/CanvasIcon';
 import { Chips } from '@/components/Chips';
@@ -63,6 +64,7 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { profileApi } from '@/lib/api';
 import { FEELINGS } from '@/theme/capsuleLook';
 import { packTone } from '@/theme/capsulePacks';
+import { AURA } from '@/theme/aura';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 import { AppIcon } from '@/components/AppIcon';
@@ -208,7 +210,9 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
   const slotName = CAPSULE_CATALOG.slots.find((s) => s.id === slot)?.name ?? '';
 
   return (
-    <View className="flex-1" style={{ backgroundColor: colors.canvas }}>
+    <View className="flex-1" style={{ backgroundColor: AURA[scheme].ground }}>
+      {/* The colour clouds (docs/design/aura → Kapsülün). */}
+      <AuraBackground />
       <GlassTarget targetId={listId} style={StyleSheet.absoluteFill}>
         <ScrollView
           contentContainerStyle={{

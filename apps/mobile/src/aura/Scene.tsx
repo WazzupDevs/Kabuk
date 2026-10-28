@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { type ReactNode, useId } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Defs, Ellipse, LinearGradient, RadialGradient, Rect, Stop } from 'react-native-svg';
 
@@ -72,6 +72,56 @@ export function Crew({ height, delay = 0 }: { height: number; delay?: number }) 
           <Buddy look={b.look} height={b.height * k} delay={delay + i * 80} phase={b.phase} />
         </Placed>
       ))}
+    </View>
+  );
+}
+
+export type GatheringKind = keyof typeof AURA.gatherings;
+
+// Buddies standing around the middle of a scene `width` wide (docs/design/aura → Keşfet, Mekan
+// sayfası, Mesajlar): the ones behind first, the disk (`center`, a round white-ringed frame) over
+// them, the ones in front last; each arrives with a bounce, a step after the one before.
+export function Gathering({
+  kind,
+  width,
+  center,
+  delay = 0,
+}: {
+  kind: GatheringKind;
+  width: number;
+  center?: ReactNode;
+  delay?: number;
+}) {
+  const g = AURA.gatherings[kind];
+  const k = width / g.frame;
+  const place = (c: (typeof g.cast)[number], i: number) => (
+    <View key={c.look + i} style={{ position: 'absolute', left: c.x * k, bottom: c.bottom * k }}>
+      <Buddy look={c.look} height={c.height * k} delay={delay + i * 80} phase={i * 530} />
+    </View>
+  );
+  const behind = g.cast.filter((c) => 'behind' in c && c.behind);
+  const front = g.cast.filter((c) => !('behind' in c && c.behind));
+  return (
+    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+      {behind.map(place)}
+      {g.disk && center ? (
+        <View
+          style={{
+            position: 'absolute',
+            left: g.disk.x * k,
+            bottom: g.disk.bottom * k,
+            width: g.disk.size * k,
+            height: g.disk.size * k,
+            borderRadius: g.disk.size,
+            overflow: 'hidden',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {center}
+        </View>
+      ) : null}
+      {front.map((c, i) => place(c, i + behind.length))}
     </View>
   );
 }

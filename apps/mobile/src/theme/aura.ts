@@ -142,6 +142,48 @@ export const AURA = {
     { look: 'c:mor e:klasik f:maske', height: 121, right: -12, bottom: -6, phase: 1900 },
   ],
   heroHeight: 196,
+  // Gatherings: buddies standing around something in a scene (docs/design/aura → Keşfet, Mekan
+  // sayfası, Mesajlar), as drawn on a scene `frame` wide and `height` high; `x` is from the left
+  // (or from the right with `fromRight`), `bottom` from the scene's floor. `disk` is the round thing
+  // in the middle (a venue's mark), where there is one.
+  gatherings: {
+    explore: {
+      frame: 334,
+      height: 168,
+      disk: { x: 132, bottom: 14, size: 94 },
+      cast: [
+        { look: 'c:nane e:koyu h:anten', x: 150, bottom: 54, height: 76, behind: true },
+        { look: 'c:mercan e:klasik h:korsan', x: 76, bottom: -12, height: 100 },
+        { look: 'c:pembe e:klasik h:kedi', x: 206, bottom: -12, height: 100 },
+        { look: 'c:gok e:klasik h:parti', x: 10, bottom: -6, height: 84 },
+        { look: 'c:turkuaz e:klasik h:kovboy', x: 274, bottom: -6, height: 84 },
+      ],
+    },
+    venue: {
+      frame: 390,
+      height: 300,
+      disk: { x: 128, bottom: 34, size: 134 },
+      cast: [
+        { look: 'c:hardal e:klasik h:sihirbaz', x: 116, bottom: 120, height: 81, behind: true },
+        { look: 'c:krem e:koyu h:hale m:gulumse', x: 212, bottom: 120, height: 81, behind: true },
+        { look: 'c:pembe e:klasik h:korsan f:gozbandi', x: 40, bottom: -14, height: 126 },
+        { look: 'c:gok e:klasik h:parti', x: 254, bottom: -14, height: 126 },
+        { look: 'c:gok e:klasik f:yuvarlak', x: -16, bottom: 30, height: 92 },
+        { look: 'c:krem e:koyu h:tavsan', x: 334, bottom: 30, height: 92 },
+      ],
+    },
+    messages: {
+      frame: 350,
+      height: 112,
+      disk: null,
+      cast: [
+        { look: 'c:yesil e:klasik h:papatya m:gulumse', x: 218, bottom: -14, height: 92 },
+        { look: 'c:krem e:koyu h:tavsan', x: 282, bottom: -10, height: 84 },
+      ],
+    },
+  },
+  // Game cards arrive frosted, then resolve (docs/design/aura/project/hareket.json → frostedFirst).
+  frost: { fill: 'rgba(255, 255, 255, 0.86)', fillDark: 'rgba(36, 30, 74, 0.86)' },
   // The table's scene (docs/design/aura → Masa): the table in the middle, the people around it.
   // Seats as fractions of the scene (x of its width, y of its height), the first ones nearest the
   // table's sides; anonymous people stand as capsule buddies, profiled ones sit as photos.
