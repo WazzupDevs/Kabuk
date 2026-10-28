@@ -293,7 +293,7 @@ describe("the app's tabs", () => {
     expect(tabs).toMatch(/<GlassTarget targetId=\{id\}/);
     expect(tabs).toMatch(/glassTarget=\{target\}\s*opaque=\{overMap\}/);
     expect(app('app/(app)/(tabs)/_layout.tsx')).toMatch(
-      /screenLayout=\{\(\{ navigation, children \}\) => \(\s*<TabScene navigation=\{navigation\}>\{children\}<\/TabScene>/,
+      /screenLayout=\{\(\{ navigation, route, children \}\) => \(\s*<TabScene navigation=\{navigation\} routeKey=\{route\.key\}>\s*\{children\}\s*<\/TabScene>/,
     );
   });
 });

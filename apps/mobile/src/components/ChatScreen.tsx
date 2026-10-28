@@ -50,9 +50,6 @@ import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 
 import { GlassTarget } from '@/ui/LiquidGlass';
 
-// The chats on the colour clouds instead of the wallpapers (docs/design/aura, 28 Ekim).
-const AURA_CHAT = true;
-
 // How close to the end counts as "at the bottom" (a message's last line may sit under the edge).
 const BOTTOM_SLACK = SPACING[12];
 
@@ -431,8 +428,9 @@ export function ChatScreen({
               it, over the stream. */}
             <View className="flex-1">
               <GlassTarget targetId={glassId} style={{ flex: 1 }}>
-                {/* The airy look draws no wallpaper: the clouds are the chat's ground. */}
-                {wall && !AURA_CHAT ? <ChatWallpaper kind={wall} /> : null}
+                {/* Each chat's dense doodles over the clouds (DM, Masa, Mekan; light and dark; the
+                    owner's call, 28 Ekim). */}
+                {wall ? <ChatWallpaper kind={wall} /> : null}
                 <ChatScroll
                   testID={testID}
                   newestKey={newestKey}

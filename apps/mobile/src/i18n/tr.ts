@@ -577,6 +577,17 @@ export const tr = {
     inviteDeclined: 'Reddettin',
     join: 'Katıl',
     writeMessage: 'Mesaj yaz',
+    // One short line under the name, the same height for every kind (the owner's call, 28 Ekim).
+    short: {
+      request: 'Arkadaşlık isteği',
+      friends: 'Arkadaşsınız',
+      accepted: 'Kabul edildi',
+      match: 'Arkadaş oldunuz',
+      invite: (clock: string) => `Masa daveti · ${clock}`,
+      joined: 'Katıldın',
+      declined: 'Reddettin',
+      gone: 'Süresi doldu',
+    },
   },
   dm: {
     placeholder: 'Mesaj yaz…',
@@ -618,6 +629,7 @@ export const tr = {
     sampleNames: ['Ece', 'Selin'] as const,
   },
   profile: {
+    photoOpen: 'Fotoğrafı büyüt',
     // skall tuvali (Profil, ProfilNick*): the photo and the capsule side by side, the nick card.
     ownPhoto: 'Profilin',
     ownPhotoNote: 'Masada görünen',
@@ -1377,6 +1389,10 @@ export const tr = {
     games: 'Oyunlar',
     chat: 'Sohbet',
     peopleTag: 'Masadakiler',
+    // Masa sohbeti on its own screen, from the bar's button (the owner's call, 28 Ekim).
+    chatTitle: 'Masa sohbeti',
+    chatOpen: (unread: number) =>
+      unread > 0 ? `Masa sohbeti, ${unread} yeni mesaj` : 'Masa sohbeti',
     status: (people: string, lobby: string) => `${people} · ${lobby}`,
     tabChat: (n: number) => `Masa Sohbeti (${n})`,
     categoryAll: (n: number) => `Tümü ${n}`,

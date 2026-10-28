@@ -1,10 +1,9 @@
 import type { ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 
-import { Glass, Round, T } from '@/aura/kit';
+import { Glass, PulseDot, Round, T } from '@/aura/kit';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
-import { LiveDot } from '@/ui/LiveDot';
 import { SPACING, TOUCH } from '@/theme/tokens';
 
 type Props = {
@@ -49,7 +48,7 @@ export function ChatTopBar({
         </T>
         {subtitle ? (
           <View className="flex-row items-center" style={{ gap: SPACING[1.5] }}>
-            {live ? <LiveDot size={SPACING[2]} /> : null}
+            {live ? <PulseDot /> : null}
             <T v="fine" style={{ flexShrink: 1 }}>
               {subtitle}
             </T>

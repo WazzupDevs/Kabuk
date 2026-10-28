@@ -10,9 +10,10 @@ import {
 import type { ColorScheme } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 
-// The chat walls (skall tuvali: Dm, MasaSohbeti, MekanSohbeti): each wall's 300 dp tile (its ground
-// and its lines, chatWalls.generated.ts) drawn once at 3× into assets/wall/ and laid edge to edge
-// behind the messages. A picture per tile, not an SVG pattern over the whole screen: opening a
+// The chat walls, WhatsApp-like (the owner's call, 28 Ekim): each chat's line drawings
+// (chatWalls.generated.ts: the DM's, the table's, the venue's) laid densely, eleven a row with a
+// little turn each, on a see-through 300 dp tile in the chat's soft tint (light and dark), drawn
+// once at 3× into assets/wall/ and laid edge to edge over the clouds, behind the messages. A picture per tile, not an SVG pattern over the whole screen: opening a
 // chat no longer reads and draws the pattern each time (the owner's report, 27 Ekim: the app felt
 // heavy). The size follows wallpaperCanvas: the keyboard only shortens the area.
 const TILES: Record<ChatWallKind, Record<ColorScheme, ImageSourcePropType>> = {

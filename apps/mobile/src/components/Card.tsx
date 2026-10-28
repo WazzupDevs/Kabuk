@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { Pressable, View, type ViewStyle } from 'react-native';
 
 import { colorVars, ThemeScope, useFeatureTheme, useTheme } from '@/theme/ThemeProvider';
-import { KIT } from '@/theme/auraKit';
+import { KIT, shadowList } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { SPACING } from '@/theme/tokens';
 
@@ -63,7 +63,7 @@ export function Card({
             overflow: flush ? 'hidden' : undefined,
             borderWidth: feature ? 0 : KIT.size.edge,
             borderColor: k.glassEdge,
-            boxShadow: quiet || feature ? undefined : `${k.glassShadow}, ${KIT.glassInset}`,
+            boxShadow: quiet || feature ? undefined : shadowList(k.glassShadow, k.glassInset),
           },
           feature ? (colorVars(featureTheme.colors) as ViewStyle) : {},
         ];

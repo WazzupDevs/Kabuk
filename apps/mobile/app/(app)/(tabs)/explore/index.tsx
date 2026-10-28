@@ -14,9 +14,9 @@ import { hasActiveTable } from '@shared/navigation.ts';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AuraBackground } from '@/aura/AuraBackground';
+import { AuraBackground, AuraBand } from '@/aura/AuraBackground';
 import { CapIcon } from '@/aura/CapIcon';
 import { Btn, Chip, Glass, GlassList, Li, Live, Sec, T, Tag, useKit } from '@/aura/kit';
 import { MarkDisk } from '@/aura/MarkDisk';
@@ -82,6 +82,7 @@ export default function ExploreScreen() {
   const [headerHeight, setHeaderHeight] = useState(0);
   // The floating tab bar covers the bottom of the map and the list.
   const barSpace = useTabBarSpace();
+  const insets = useSafeAreaInsets();
 
   const layout = venues.isSuccess ? exploreLayout(venues.data.length) : 'list';
   const ready = venues.isSuccess && (layout === 'single' || cities.isSuccess);
@@ -112,12 +113,26 @@ export default function ExploreScreen() {
     <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
       {/* The colour clouds (docs/design/aura → Keşfet); the map covers them when it is open. */}
       <AuraBackground />
-      <View style={{ flex: 1 }}>
-        {showMap && headerHeight > 0 ? (
+      {/* The map from the very top, under the status bar, fading into the ground towards the top
+          under the head (the owner's call, 28 Ekim: the status bar's flat band looked odd). */}
+      {showMap && headerHeight > 0 ? (
+        <>
           <View style={StyleSheet.absoluteFill}>
-            <ExploreMap venues={shown.venues} headerHeight={headerHeight} tabBarHeight={barSpace} />
+            <ExploreMap
+              venues={shown.venues}
+              headerHeight={insets.top + headerHeight}
+              tabBarHeight={barSpace}
+            />
           </View>
-        ) : null}
+          <AuraBand
+            top={0}
+            height={insets.top + headerHeight * MAP_SOLID}
+            fade={headerHeight * (1 - MAP_SOLID) + SPACING[6]}
+            direction="down"
+          />
+        </>
+      ) : null}
+      <View style={{ flex: 1 }}>
         {/* One venue: its head scrolls with the card (docs/design/aura → Keşfet). */}
         {layout === 'single' && ready ? null : (
           <View
@@ -626,6 +641,8 @@ function SingleVenue({
 }
 
 const EXPLORE_GAP = 14;
+// Over the map: the head's top part on the plain ground, the rest a fade.
+const MAP_SOLID = 0.35;
 const CARD_PAD = 8;
 const SCENE_RADIUS = 22;
 

@@ -2,7 +2,7 @@ import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Animated, Modal, Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { T, useKit } from '@/aura/kit';
+import { InSheet, T, useKit } from '@/aura/kit';
 import { Peek, type PeekKind } from '@/aura/Peek';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
@@ -156,37 +156,39 @@ export function Sheet({
               onScroll={drag.onScroll}
               scrollEventThrottle={16}
             >
-              <Quiet value>
-                <View className={`gap-3 ${centered ? 'items-center' : ''}`}>
-                  {icon ? (
-                    <View
-                      className="mt-2 items-center justify-center"
-                      style={{
-                        width: ICON_DISC,
-                        height: ICON_DISC,
-                        borderRadius: shape.radius.pill,
-                        backgroundColor: colors.surface2,
-                      }}
-                    >
-                      <AppIcon name={icon} size={ICON.lg} color={colors.accent} />
-                    </View>
-                  ) : null}
-                  {title ? (
-                    <T v="title" center={centered} accessibilityRole="header">
-                      {title}
-                      {titleNote ? <T v="fine">{`  ${titleNote}`}</T> : null}
-                    </T>
-                  ) : null}
-                </View>
-                <View
-                  style={{
-                    marginTop: title || icon ? KIT.size.sheetGap : 0,
-                    gap: KIT.size.rowGap,
-                  }}
-                >
-                  {children}
-                </View>
-              </Quiet>
+              <InSheet>
+                <Quiet value>
+                  <View className={`gap-3 ${centered ? 'items-center' : ''}`}>
+                    {icon ? (
+                      <View
+                        className="mt-2 items-center justify-center"
+                        style={{
+                          width: ICON_DISC,
+                          height: ICON_DISC,
+                          borderRadius: shape.radius.pill,
+                          backgroundColor: colors.surface2,
+                        }}
+                      >
+                        <AppIcon name={icon} size={ICON.lg} color={colors.accent} />
+                      </View>
+                    ) : null}
+                    {title ? (
+                      <T v="title" center={centered} accessibilityRole="header">
+                        {title}
+                        {titleNote ? <T v="fine">{`  ${titleNote}`}</T> : null}
+                      </T>
+                    ) : null}
+                  </View>
+                  <View
+                    style={{
+                      marginTop: title || icon ? KIT.size.sheetGap : 0,
+                      gap: KIT.size.rowGap,
+                    }}
+                  >
+                    {children}
+                  </View>
+                </Quiet>
+              </InSheet>
             </ScrollView>
           </View>
         </Animated.View>

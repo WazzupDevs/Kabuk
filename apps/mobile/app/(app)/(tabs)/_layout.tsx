@@ -44,8 +44,10 @@ export default function TabsLayout() {
         tabBar={(props) => (
           <TabBar {...props} opens={(tab) => tabOpenedBy(tab, table.data, Date.now())} />
         )}
-        screenLayout={({ navigation, children }) => (
-          <TabScene navigation={navigation}>{children}</TabScene>
+        screenLayout={({ navigation, route, children }) => (
+          <TabScene navigation={navigation} routeKey={route.key}>
+            {children}
+          </TabScene>
         )}
       >
         <Tabs.Screen name="index" options={{ href: null }} />

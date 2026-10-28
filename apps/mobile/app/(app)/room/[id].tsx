@@ -6,12 +6,12 @@ import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, type IconName } from '@/components/Button';
-import { ChatScreen } from '@/components/ChatScreen';
 import { Loader } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
 import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
-import { RoomComposer, RoomMessages, useRoomChat } from '@/features/chat/ChatPanel';
+import { unreadCount, useRoomChatSeen } from '@/features/chat/roomChatSeen';
+import { useMessages } from '@/features/chat/useMessages';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { GAME_CARDS, GameCard, PosterGrid } from '@/features/rooms/PosterCard';
 import { useRoomMemberProfiles } from '@/features/profile/queries';
@@ -34,7 +34,7 @@ import { AURA } from '@/theme/aura';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { SPACING } from '@/theme/tokens';
 import { AuraBackground } from '@/aura/AuraBackground';
-import { Btn, Glass, Round, Seg, T, Tag } from '@/aura/kit';
+import { Btn, Glass, Round, T, Tag } from '@/aura/kit';
 
 // The table (v46 "masa"; docs/SPEC_V4.md §4.E, §4.F): the top line (back, the table's icon and name
 // with "N kişi", which open Masadakiler; the owner's "Bitir", a participant's "Ayrıl"), the owner's
@@ -43,20 +43,21 @@ import { Btn, Glass, Round, Seg, T, Tag } from '@/aura/kit';
 // "Masadan ayrıldın".
 export default function TableScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { shape, scheme } = useTheme();
+  const { scheme } = useTheme();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const checkIn = useActiveTable();
   const ownPhoto = useOwnPhoto();
   const room = useRoom(id);
-  const chat = useRoomChat(id);
+  // The chat's count for the bar's button; the chat itself is its own screen (room-chat).
+  const messages = useMessages(id).data ?? [];
+  const seenAt = useRoomChatSeen((s) => s.seen[id]);
   const open = !!room.data && room.data.status !== 'closed';
   const people = useTablePeople(id, open);
   const profiles = useRoomMemberProfiles(
     id,
     (people.data ?? []).map((p) => p.sessionId).join(','),
   ).data;
-  const [tab, setTab] = useState<'games' | 'chat'>('games');
   const [sheet, setSheet] = useState<
     'people' | 'end' | 'leave' | 'lobby' | 'invite' | 'icon' | null
   >(null);
@@ -160,17 +161,12 @@ export default function TableScreen() {
 
   const owner = r.owner_session_id === sessionId;
   const inLobby = r.visibility === 'open';
-  const messages = chat.messages.data ?? [];
-  const newestOut = chat.outbox[chat.outbox.length - 1];
-  const newestIn = messages.at(-1);
-  const newest = {
-    key: newestOut?.localId ?? newestIn?.id,
-    mine: newestOut ? true : newestIn?.session_id === sessionId,
-  };
+  const unread = unreadCount(messages, seenAt, sessionId);
 
   const endInk = scheme === 'dark' ? KIT.endInkDark : KIT.endInk;
-  // The bar (docs/design/aura → Masa): back at the left; at the right the owner's "Davet et" and
-  // "Bitir", a participant's "Ayrıl".
+  // The bar (docs/design/aura → Masa): back at the left; at the right the chat with its unread
+  // count (its own screen, the owner's call, 28 Ekim), the owner's "Davet et" and "Bitir", a
+  // participant's "Ayrıl".
   const bar = (
     <View
       testID="table-top"
@@ -188,6 +184,13 @@ export default function TableScreen() {
         onPress={() => (router.canGoBack() ? router.back() : router.replace('/venue'))}
       />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.chipsGap }}>
+        <Round
+          icon="chat"
+          label={tr.table.chatOpen(unread)}
+          badge={unread}
+          testID="table-chat"
+          onPress={() => router.push({ pathname: '/room-chat/[id]', params: { id } })}
+        />
         {owner ? (
           <Round
             icon="invite"
@@ -240,18 +243,6 @@ export default function TableScreen() {
         <Tag tone="purple" label={tr.table.peopleTag} height={PEOPLE_TAG} />
       </Pressable>
     </View>
-  );
-
-  const tabs = (
-    <Seg<'games' | 'chat'>
-      value={tab}
-      onChange={setTab}
-      accessibilityLabel={tr.rooms.tabsLabel}
-      options={[
-        { value: 'games', label: tr.table.games, testID: 'tab-games' },
-        { value: 'chat', label: tr.table.chat, badge: messages.length, testID: 'tab-chat' },
-      ]}
-    />
   );
 
   // The owner's lobby action and the incoming requests, under the name.
@@ -363,33 +354,6 @@ export default function TableScreen() {
     </>
   );
 
-  if (tab === 'chat') {
-    return (
-      <ChatScreen
-        key="chat"
-        wall="masa"
-        top={
-          <View style={{ gap: KIT.size.rowGap, paddingBottom: KIT.size.chipsGap }}>
-            <View style={{ marginHorizontal: -shape.screenPadding }}>{bar}</View>
-            {title}
-            {owner ? (
-              <IncomingRequest roomId={id} ownerSessionId={sessionId} phones={r.phones} />
-            ) : null}
-            {tabs}
-            {failed}
-          </View>
-        }
-        composer={<RoomComposer chat={chat} />}
-        newestKey={newest.key}
-        newestMine={newest.mine}
-        startAtEnd
-      >
-        <RoomMessages chat={chat} sessionId={sessionId} profiles={profiles} />
-        {sheets}
-      </ChatScreen>
-    );
-  }
-
   // The games: the stage under the status bar, the name, the tabs and the game cards; the page
   // scrolls as one (the cards are a list).
   return (
@@ -425,7 +389,6 @@ export default function TableScreen() {
               <T v="fine">{tr.table.soloBody}</T>
             </Glass>
           ) : null}
-          {tabs}
           {failed}
           <PosterGrid>
             {GAME_CARDS.map((g) => (

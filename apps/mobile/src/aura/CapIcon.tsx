@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import Svg, { Circle, Rect } from 'react-native-svg';
+import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
 import { KIT } from '@/theme/auraKit';
 
@@ -27,6 +27,8 @@ export type CapIconName =
 
 type Part =
   | { k: 'cap'; x1: number; y1: number; x2: number; y2: number; tone: 'a' | 'b'; t?: number }
+  // A line drawing (the tab bar's: 1.9 wide, round ends), or a filled shape.
+  | { k: 'line'; d: string; tone: 'a' | 'b'; fill?: boolean }
   | { k: 'rect'; x: number; y: number; w: number; h: number; r: number; tone: 'a' | 'b' }
   | { k: 'circ'; cx: number; cy: number; r: number; tone: 'a' | 'b' | 'o' };
 
@@ -49,6 +51,7 @@ const rect = (x: number, y: number, w: number, h: number, r: number, tone: 'a' |
   r,
   tone,
 });
+const line = (d: string, tone: 'a' | 'b', fill?: boolean): Part => ({ k: 'line', d, tone, fill });
 const circ = (cx: number, cy: number, r: number, tone: 'a' | 'b' | 'o'): Part => ({
   k: 'circ',
   cx,
@@ -70,8 +73,26 @@ const ICONS: Record<CapIconName, Part[]> = {
   ],
   search: [circ(10.5, 10.5, 6, 'o'), cap(15.2, 15.2, 19.5, 19.5, 'b')],
   pin: [rect(7, 3, 10, 14, 5, 'a'), cap(12, 18.4, 12, 20.6, 'b')],
-  bell: [rect(6, 3.5, 12, 13.5, 6, 'a'), cap(4.5, 17.4, 19.5, 17.4, 'b'), circ(12, 21, 1.7, 'a')],
-  chat: [rect(3, 4.5, 18, 12.5, 6.25, 'a'), cap(7.4, 16, 5.4, 20.2, 'b')],
+  // A bell as the tab bar draws (the owner's call, 28 Ekim): its outline, the clapper under it and
+  // a little knob on top.
+  bell: [
+    line(
+      'M12 4.6c-3.3 0-5.6 2.5-5.6 5.8v3.5l-1.7 2.6c-.4.6 0 1.4.8 1.4h13c.8 0 1.2-.8.8-1.4l-1.7-2.6v-3.5c0-3.3-2.3-5.8-5.6-5.8Z',
+      'a',
+    ),
+    line('M9.9 20.2c.5.8 1.2 1.2 2.1 1.2s1.6-.4 2.1-1.2', 'a'),
+    circ(12, 3.3, 1.3, 'b'),
+  ],
+  // A speech bubble with its tail and three dots (the owner's call, 28 Ekim).
+  chat: [
+    line(
+      'M7.6 4.5h8.8c2.6 0 4.6 2 4.6 4.6v3.8c0 2.6-2 4.6-4.6 4.6H11l-4.1 3.1c-.5.4-1.2 0-1.2-.6v-2.6c-1.6-.7-2.7-2.3-2.7-4.2V9.1c0-2.6 2-4.6 4.6-4.6Z',
+      'a',
+    ),
+    circ(8.4, 11, 1.25, 'b'),
+    circ(12, 11, 1.25, 'b'),
+    circ(15.6, 11, 1.25, 'b'),
+  ],
   user: [circ(12, 7.5, 3.9, 'a'), rect(4.5, 13.5, 15, 7.5, 3.75, 'b')],
   invite: [
     circ(9, 7.8, 3.5, 'a'),
@@ -109,14 +130,21 @@ const ICONS: Record<CapIconName, Part[]> = {
     cap(4.6, 12, 5, 12, 'b'),
     cap(4.6, 17.5, 5, 17.5, 'b'),
   ],
+  // A folded map with its pin (the owner's call, 28 Ekim: the old one was small and unclear).
   map: [
-    rect(3, 4, 18, 16, 5, 'b'),
-    rect(9.5, 6.5, 5, 8.5, 2.5, 'a'),
-    cap(12, 16.4, 12, 17, 'a', 2.4),
+    line('M3.4 6.5 8.9 4.4l6.2 2.2 5.5-2.1v13l-5.5 2.1-6.2-2.2-5.5 2.1Z', 'a'),
+    line('M8.9 4.4v13M15.1 6.6v13', 'b'),
+    line(
+      'M12 7.6c-1.5 0-2.6 1.1-2.6 2.6 0 1.7 2.6 4.2 2.6 4.2s2.6-2.5 2.6-4.2c0-1.5-1.1-2.6-2.6-2.6Z',
+      'a',
+      true,
+    ),
   ],
 };
 
 const OUTLINE = 2.8;
+// The tab bar's line (aura.css `.ti`).
+const LINE = 1.9;
 
 export function CapIcon({
   name,
@@ -136,6 +164,22 @@ export function CapIcon({
   const parts = ICONS[name].map((p, i): ReactElement => {
     const fill = p.tone === 'b' ? b : color;
     const opacity = p.tone === 'b' ? soft : 1;
+    if (p.k === 'line') {
+      return p.fill ? (
+        <Path key={i} d={p.d} fill={fill} opacity={opacity} />
+      ) : (
+        <Path
+          key={i}
+          d={p.d}
+          fill="none"
+          stroke={fill}
+          strokeWidth={LINE}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          opacity={opacity}
+        />
+      );
+    }
     if (p.k === 'circ') {
       return p.tone === 'o' ? (
         <Circle

@@ -19,28 +19,30 @@ const t = (w: keyof typeof F, size: number, line: number, em = 0): TextStyle => 
   letterSpacing: em * size,
 });
 
+// The large lines are at least the face's own height (ascent 1.038 + descent 0.222 of the size):
+// lower, Android cut the tails off (j, g, y, ş, ç; "Mesajlar", the owner's report, 28 Ekim).
 export const KIT_TYPE = {
-  display: t(500, 32, 38, -0.025),
+  display: t(500, 32, 42, -0.025),
   // Keşfet's question (.display at 30).
-  displaySm: t(500, 30, 36, -0.025),
+  displaySm: t(500, 30, 38, -0.025),
   title: t(600, 21, 27, -0.015),
   // The first screen's line (Main: 36, 500, -0.03em) and its wordmark (24, 800).
-  welcome: t(500, 36, 42, -0.03),
+  welcome: t(500, 36, 46, -0.03),
   wordmarkSm: t(800, 24, 28, -0.04),
   // A scene's title (Mekan: .title at 20).
   hero: t(600, 20, 26, -0.015),
   // A digit of the code (Kod: 26, 600).
-  code: t(600, 26, 32),
+  code: t(600, 26, 33),
   // The phone number as it is typed (Telefon: 21, 600, 0.04em).
   phone: t(600, 21, 26, 0.04),
   // The incoming request's line (MasaIstek: .h3 at 17).
   requestTitle: t(600, 17, 23, -0.005),
   // A game's name on its card (Masa: 24, 700, -0.02em).
-  gameName: t(700, 24, 28, -0.02),
+  gameName: t(700, 24, 31, -0.02),
   // A venue's name on its page (KesfetMekan: .display at 28).
-  venueTitle: t(500, 28, 34, -0.025),
+  venueTitle: t(500, 28, 36, -0.025),
   // The table's name on Masa (.title at 26, 500).
-  tableTitle: t(500, 26, 32, -0.015),
+  tableTitle: t(500, 26, 33, -0.015),
   h3: t(600, 16, 22, -0.005),
   // A section's heading (.sec .h3 at 18).
   sec: t(600, 18, 24, -0.005),
@@ -93,6 +95,10 @@ export const KIT = {
     glass: 'linear-gradient(180deg, rgba(255, 255, 255, 0.80), rgba(255, 255, 255, 0.54))',
     glassEdge: 'rgba(255, 255, 255, 0.86)',
     glassShadow: SHADOW.glass,
+    // The light top edge of glass and of the primary (none in the dark: a white line on every
+    // object, the owner's call, 28 Ekim).
+    glassInset: 'inset 0px 1px 0px #FFFFFF',
+    primaryInset: 'inset 0px 1px 0px rgba(255, 255, 255, 0.28)',
     // A raised white (buttons, chips, round buttons, glassy tags).
     raised: 'rgba(255, 255, 255, 0.74)',
     raisedRound: 'rgba(255, 255, 255, 0.72)',
@@ -119,8 +125,11 @@ export const KIT = {
     glass: 'linear-gradient(180deg, rgba(40, 33, 82, 0.72), rgba(28, 24, 56, 0.56))',
     glassEdge: 'rgba(255, 255, 255, 0.14)',
     glassShadow: SHADOW.glassDark,
+    glassInset: '',
+    primaryInset: '',
     raised: 'rgba(255, 255, 255, 0.10)',
-    raisedRound: 'rgba(255, 255, 255, 0.10)',
+    // A shade stronger than the canvas: the round buttons on Masa's dark stage were hard to see.
+    raisedRound: 'rgba(255, 255, 255, 0.14)',
     raisedChip: 'rgba(255, 255, 255, 0.10)',
     raisedEdge: 'rgba(255, 255, 255, 0.16)',
     raisedShadow: '',
@@ -139,7 +148,6 @@ export const KIT = {
   primary: '#6A47F5',
   onPrimary: '#FFFFFF',
   primaryShadow: SHADOW.primary,
-  primaryInset: 'inset 0px 1px 0px rgba(255, 255, 255, 0.28)',
   // The send button's arrow on the ink (Dm: send-capsule.svg).
   sendA: '#B9A6FF',
   sendB: '#FF8FB6',
@@ -149,9 +157,10 @@ export const KIT = {
   inviteGround: 'linear-gradient(135deg, rgba(123, 92, 255, 0.14), rgba(255, 79, 139, 0.10))',
   // The incoming request's card floats deeper (MasaIstek).
   requestShadow: '0px 30px 60px rgba(54, 36, 140, 0.22)',
+  // A photo opened large over the screen (Profil, a person's profile).
+  photoScrim: 'rgba(8, 6, 20, 0.90)',
   // A chosen row's ring (CheckIn: the spot).
   primaryRing: 'rgba(106, 71, 245, 0.14)',
-  glassInset: 'inset 0px 1px 0px #FFFFFF',
   pink: '#FF4F8B',
   pinkRing: 'rgba(255, 79, 139, 0.18)',
   success: '#1C8C4E',
@@ -191,7 +200,7 @@ export const KIT = {
   endInk: '#A8301A',
   endInkDark: '#FF9B8A',
   // Masa's header: the stage's height (under the status bar), its bottom corners and the table.
-  stage: { height: 330, radius: 36, disk: 140, diskRadius: 44, diskBottom: 54, frame: 390 },
+  stage: { height: 250, radius: 36, disk: 140, diskRadius: 44, diskBottom: 54, frame: 390 },
   // A nick's colour in a line of the venue chat (Mekan: kapsul-sn19 in amber's ink).
   nickInk: '#9A4A00',
   nameInk: '#B0124F',
@@ -266,3 +275,9 @@ export const KIT = {
     edge: 1,
   },
 } as const;
+
+// Shadows in one `boxShadow`, the empty ones left out (a scheme without a top edge).
+export function shadowList(...parts: (string | undefined)[]): string | undefined {
+  const list = parts.filter((p): p is string => !!p);
+  return list.length > 0 ? list.join(', ') : undefined;
+}

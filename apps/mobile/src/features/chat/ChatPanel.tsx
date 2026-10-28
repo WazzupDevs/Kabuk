@@ -19,6 +19,8 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { ApiError, chatApi } from '@/lib/api';
 import { lastRows, useAfterTransition } from '@/lib/afterTransition';
+import { nameInk } from '@/theme/nameInk';
+import { useTheme } from '@/theme/ThemeProvider';
 
 import { quoteJump, toChatQuote, useReactions, useReplyTarget } from './messageExtras';
 import { messagesKey, useMessages, useRoomChatExtras } from './useMessages';
@@ -117,6 +119,7 @@ export function RoomMessages({
   };
   // Opened light: the newest messages while the screen slides in, the rest after.
   const settled = useAfterTransition();
+  const { scheme } = useTheme();
   const runs = toRuns(
     list,
     (m) => m.session_id,
@@ -167,6 +170,9 @@ export function RoomMessages({
                   first={first}
                   time={tr.chat.time(m.created_at)}
                   name={mine ? undefined : m.sender_alias}
+                  // The name inside the bubble, level with the face, as in Mekan sohbeti (the
+                  // owner's call, 28 Ekim).
+                  nameInk={mine ? undefined : nameInk(scheme, m.sender_alias)}
                   avatar={
                     mine ? undefined : <Avatar kind="table" alias={m.sender_alias} size="sm" />
                   }

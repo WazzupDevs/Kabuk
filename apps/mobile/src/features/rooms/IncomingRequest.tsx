@@ -19,7 +19,7 @@ import { track } from '@/lib/analytics';
 import { ApiError, roomsApi } from '@/lib/api';
 import { useNowUntil } from '@/lib/useNow';
 import { AURA } from '@/theme/aura';
-import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { KIT, KIT_TYPE, shadowList } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
@@ -164,7 +164,7 @@ export function IncomingRequest({ roomId, ownerSessionId, phones, floating }: Pr
             borderRadius: KIT.size.glassRadius,
             borderWidth: KIT.size.edge,
             borderColor: k.c.glassEdge,
-            boxShadow: `${KIT.requestShadow}, ${KIT.glassInset}`,
+            boxShadow: shadowList(KIT.requestShadow, k.c.glassInset),
           }}
         >
           {children}
