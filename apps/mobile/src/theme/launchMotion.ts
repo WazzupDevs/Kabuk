@@ -15,6 +15,9 @@ export type LaunchKind = 'cold' | 'first' | 'quick';
 // centre. The wordmark the mark turns into is 264 dp wide.
 export const SPLASH_REACH_DP = 70;
 export const LAUNCH_WORD_WIDTH = 264;
+// How high the band around the centre is that the marks, the ring and the flare move in until the
+// window opens (LaunchCurtain draws only that band on those frames; launchMotion.test.ts).
+export const LAUNCH_BAND = 340;
 // The window's last scale: the mark's or the ll's capsules grown past the screen.
 const WORD_WINDOW = 90;
 const MARK_WINDOW = 60;
