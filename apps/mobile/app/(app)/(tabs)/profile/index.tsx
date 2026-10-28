@@ -1,68 +1,49 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
-import { useWindowDimensions, View } from 'react-native';
+import type { ReactNode } from 'react';
+import { Pressable, View } from 'react-native';
 
-import { Button } from '@/components/Button';
-import { CanvasBar } from '@/components/CanvasIcon';
-import { Card } from '@/components/Card';
+import { CapIcon } from '@/aura/CapIcon';
+import { Av, Btn, Glass, GlassList, Li, Round, T, useKit } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
-import { IconButton, SlidersGlyph } from '@/components/IconButton';
 import { useLoaderHold } from '@/components/Loader';
+import { LookAvatar } from '@/components/LookAvatar';
 import { Screen } from '@/components/Screen';
-import { ScreenHeader } from '@/components/ScreenHeader';
-import { Text } from '@/components/Text';
 import { useProfile } from '@/features/account/useProfile';
 import { useFriends } from '@/features/friends/queries';
-import { FriendStack } from '@/features/profile/FriendStack';
-import { ProfileHead } from '@/features/profile/ProfileCard';
 import { useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
-import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { tr } from '@/i18n/tr';
-import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, NARROW_SCREEN } from '@/theme/tokens';
-import { AppIcon } from '@/components/AppIcon';
+import { KIT, KIT_TYPE } from '@/theme/auraKit';
 
-// The own profile (docs/SPEC_V2.md §5; v45: .prof, self). The photo, the name and the bio change on
-// the edit screen; settings open only from the round sliders button (top right), beside the bell
-// (every tab root keeps it until step 4.7); its knobs slide as it opens. No badges (the owner's
+// The own profile (docs/SPEC_V2.md §5; docs/design/aura → Profil): "Profil" and the settings at the
+// top; the two faces side by side, the photo the table sees and the capsule while anonymous; the
+// name and age, the bio; "Profili düzenle" and "Kapsülünü süsle"; the nick and the friends in a
+// glass list. The capsule and the nick show on the own profile only (rule 4). No badges (the owner's
 // call, 27 Ekim); the nick is renewed in Ayarlar.
 export default function ProfileScreen() {
-  // The check-in's identity: the face the table sees is ringed (skall tuvali, ProfilAnonim).
-  const anonymous = useActiveTable().data?.identity.mode === 'anonymous';
-  const { colors } = useTheme();
-  const [slide, setSlide] = useState(0);
+  const { c } = useKit();
   const own = useProfile();
   const publicId = own.data?.public_id;
   const view = useProfileView(publicId);
   const friends = useFriends();
   const loading = useLoaderHold(view.isPending);
-  // Half a row is too narrow for "Profili düzenle" under 360 dp (times the font scale): "Düzenle",
-  // the full name still read out.
-  const { width, fontScale } = useWindowDimensions();
-  const narrow = width < NARROW_SCREEN * Math.max(1, fontScale);
 
   const hasName = !!own.data?.display_name;
-  const friendCount = friends.data?.length;
-  const someFriends = friends.data && friends.data.length > 0 ? friends.data : null;
+  const friendList = friends.data ?? [];
 
   return (
-    <Screen refreshable>
-      <ScreenHeader
-        title={tr.tabs.profile}
-        trailing={
-          <IconButton
-            round
-            icon="options-outline"
-            glyph={<SlidersGlyph go={slide} />}
-            label={tr.settings.title}
-            onPress={() => {
-              setSlide((n) => n + 1);
-              router.push('/settings');
-            }}
-          />
-        }
-      />
+    <Screen gap={GAP}>
+      <View style={ROW}>
+        <T v="eyebrow" accessibilityRole="header">
+          {tr.tabs.profile}
+        </T>
+        <Round
+          icon="settings"
+          label={tr.settings.title}
+          testID="profile-settings"
+          onPress={() => router.push('/settings')}
+        />
+      </View>
 
       {view.isPending || loading ? (
         <View className="mt-16">
@@ -79,61 +60,159 @@ export default function ProfileScreen() {
           }}
         />
       ) : (
-        <View className="mt-2 gap-4">
-          <ProfileHead
-            profile={view.data}
-            capsule={view.data.capsuleLook}
-            anonymous={anonymous}
-            onEditCapsule={() => router.push('/profile/capsule')}
-          >
-            {anonymous && view.data.capsuleNick ? (
-              <Text variant="fine" align="center" className="mb-2">
-                {tr.profile.seenAsLead} <Text variant="label">{view.data.capsuleNick}</Text>{' '}
-                {tr.profile.seenAs}
-              </Text>
-            ) : null}
-            {/* v45: .pbtns, two quiet capsules in v45's 14 px (the small size, so "Profili düzenle"
-                fits half a row from 360 dp; "Düzenle" below); "Arkadaşlar" with the first friends'
-                photos. */}
-            <View className="flex-row gap-2.5">
-              <View className="flex-1">
-                <Button
-                  variant="secondary"
-                  icon="people-outline"
-                  leading={someFriends ? <FriendStack friends={someFriends} /> : undefined}
-                  label={tr.profile.friends}
-                  testID="profile-friends"
-                  accessibilityLabel={
-                    friendCount !== undefined ? tr.profile.friendsCount(friendCount) : undefined
-                  }
-                  onPress={() => router.push('/profile/friends')}
-                />
-              </View>
-              <View className="flex-1">
-                <Button
-                  variant="secondary"
-                  leading={<CanvasBar name={hasName ? 'edit' : 'add'} size={ICON.md} />}
-                  label={
-                    hasName ? (narrow ? tr.profile.editShort : tr.profile.edit) : tr.profile.addName
-                  }
-                  accessibilityLabel={hasName ? tr.profile.edit : undefined}
-                  onPress={() => router.push('/profile/edit')}
-                />
-              </View>
-            </View>
-          </ProfileHead>
+        <View style={{ gap: GAP }}>
+          <View style={{ flexDirection: 'row', gap: KIT.size.rowGap }}>
+            <FaceCard
+              label={tr.profile.ownPhoto}
+              note={tr.profile.ownPhotoNote}
+              onPress={() => router.push('/profile/edit')}
+              testID="profile-photo"
+            >
+              <Av
+                size="big"
+                name={view.data.displayName ?? tr.profile.noName}
+                photoUrl={view.data.photoHidden ? null : view.data.photoUrl}
+              />
+            </FaceCard>
+            <FaceCard
+              label={tr.profile.ownCapsule}
+              note={tr.profile.ownCapsuleNote}
+              onPress={() => router.push('/profile/capsule')}
+              testID="profile-capsule"
+            >
+              <Av size="big" name="">
+                {view.data.capsuleLook ? (
+                  <LookAvatar look={view.data.capsuleLook} size={KIT.size.av.big} />
+                ) : null}
+              </Av>
+            </FaceCard>
+          </View>
+
+          <View style={{ gap: KIT.size.tagGap, paddingHorizontal: KIT.size.secPadX }}>
+            <T v="display" style={KIT_TYPE.displaySm} accessibilityRole="header">
+              {view.data.displayName
+                ? view.data.age
+                  ? tr.profile.nameWithAge(view.data.displayName, view.data.age)
+                  : view.data.displayName
+                : tr.profile.noName}
+            </T>
+            {view.data.bio ? <T v="body">{view.data.bio}</T> : null}
+          </View>
+
+          <View style={{ flexDirection: 'row', gap: BTN_GAP }}>
+            <Btn
+              sm
+              variant="glassy"
+              label={hasName ? tr.profile.edit : tr.profile.addName}
+              onPress={() => router.push('/profile/edit')}
+              style={{ flex: 1 }}
+              block
+            />
+            <Btn
+              sm
+              label={tr.capsule.edit}
+              onPress={() => router.push('/profile/capsule')}
+              style={{ flex: 1 }}
+              block
+            />
+          </View>
+
           {view.data.photoHidden ? (
-            <Card tone="note">
-              <View className="flex-row items-start gap-2">
-                <AppIcon name="eye-off-outline" size={ICON.md} color={colors.text} />
-                <Text variant="fine" tone="text" className="flex-1">
-                  {tr.profile.photoHidden}
-                </Text>
-              </View>
-            </Card>
+            <Glass pad="pad">
+              <T v="fine" ink>
+                {tr.profile.photoHidden}
+              </T>
+            </Glass>
           ) : null}
+
+          <GlassList>
+            {view.data.capsuleNick ? (
+              <Li>
+                <View style={{ flex: 1 }}>
+                  <T v="fine">{tr.profile.nickLabel}</T>
+                  <T v="h3">{view.data.capsuleNick}</T>
+                </View>
+              </Li>
+            ) : null}
+            <Li
+              testID="profile-friends"
+              accessibilityLabel={tr.profile.friendsCount(friendList.length)}
+              onPress={() => router.push('/profile/friends')}
+            >
+              <View style={{ flex: 1 }}>
+                <T v="h3">{tr.profile.friends}</T>
+                <T v="fine">{tr.profile.friendsPeople(friendList.length)}</T>
+              </View>
+              <View
+                style={{ flexDirection: 'row' }}
+                importantForAccessibility="no-hide-descendants"
+              >
+                {friendList.slice(0, STACK).map((f, i) => (
+                  <View
+                    key={f.publicId}
+                    style={{ marginLeft: i === 0 ? 0 : -KIT.size.stackOverlap }}
+                  >
+                    <Av size="sm" name={f.displayName ?? tr.profile.noName} photoUrl={f.photoUrl} />
+                  </View>
+                ))}
+              </View>
+              <CapIcon name="forward" color={c.muted} size={KIT.size.iconSm} />
+            </Li>
+          </GlassList>
         </View>
       )}
     </Screen>
   );
 }
+
+const GAP = 14;
+const BTN_GAP = 10;
+const STACK = 3;
+const ROW = {
+  flexDirection: 'row' as const,
+  alignItems: 'center' as const,
+  justifyContent: 'space-between' as const,
+};
+
+// One of the two faces: a glass card 196 high, the face in the middle, its name and note under it.
+function FaceCard({
+  label,
+  note,
+  onPress,
+  testID,
+  children,
+}: {
+  label: string;
+  note: string;
+  onPress: () => void;
+  testID?: string;
+  children: ReactNode;
+}) {
+  return (
+    <Pressable
+      testID={testID}
+      accessibilityRole="button"
+      accessibilityLabel={`${label}, ${note}`}
+      onPress={onPress}
+      style={({ pressed }) => ({ flex: 1, opacity: pressed ? PRESSED : 1 })}
+    >
+      <Glass
+        style={{
+          height: KIT.size.faceCard,
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: BTN_GAP,
+        }}
+      >
+        {children}
+        <View style={{ alignItems: 'center' }}>
+          <T v="fine" strong>
+            {label}
+          </T>
+          <T v="fine">{note}</T>
+        </View>
+      </Glass>
+    </Pressable>
+  );
+}
+const PRESSED = 0.8;

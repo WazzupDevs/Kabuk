@@ -19,16 +19,15 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { T, useKit } from '@/aura/kit';
 import { tr } from '@/i18n/tr';
+import { KIT } from '@/theme/auraKit';
+import { gradientStyle } from '@/theme/gradient';
 import { useReduceMotion } from '@/lib/useReduceMotion';
-import { withAlpha } from '@/theme/contrast';
 import { EASE_OUT } from '@/theme/markMotion';
-import { useTheme } from '@/theme/ThemeProvider';
-import { OPACITY, SPACING } from '@/theme/tokens';
 
 import { Quiet } from './Quiet';
 import { useSheetDrag } from './sheetDrag';
-import { Text } from './Text';
 
 // A route drawn as a bottom sheet over the screen it opened from (skall tuvali: Ayarlar,
 // Bildirimler, mekana giriş and "Neredesin?" are sheets; the owner's decision, 27 Ekim). The route
@@ -37,7 +36,6 @@ import { Text } from './Text';
 // useCloseSheet() and a pull down slide it out, then the route pops. Being part of the route, a screen pushed
 // from it opens on top of it, unlike a Modal.
 const SLIDE_MS = 320;
-const HANDLE = { width: 40, height: 5 } as const;
 
 const CloseContext = createContext<() => void>(() => undefined);
 
@@ -54,7 +52,7 @@ export function RouteSheet({
   children: ReactNode;
   testID?: string;
 }) {
-  const { colors, shape } = useTheme();
+  const k = useKit();
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   const reduce = useReduceMotion();
@@ -104,10 +102,7 @@ export function RouteSheet({
       <View style={StyleSheet.absoluteFill}>
         <Animated.View
           pointerEvents="none"
-          style={[
-            StyleSheet.absoluteFill,
-            { backgroundColor: withAlpha(colors.scrim, OPACITY.scrim), opacity: progress },
-          ]}
+          style={[StyleSheet.absoluteFill, { backgroundColor: k.c.scrim, opacity: progress }]}
         />
         <Pressable
           accessibilityRole="button"
@@ -119,14 +114,18 @@ export function RouteSheet({
           <Animated.View
             testID={testID}
             accessibilityViewIsModal
+            // docs/design/aura (`.sheet`): a frosted card floating 10 from the edges, 36 round.
             style={{
-              backgroundColor: colors.surface,
-              borderTopLeftRadius: shape.radius.xl,
-              borderTopRightRadius: shape.radius.xl,
-              boxShadow: shape.shadow.sheet,
-              paddingTop: SPACING[2.5],
-              paddingHorizontal: SPACING[5],
-              paddingBottom: SPACING[6] + insets.bottom,
+              ...gradientStyle(k.c.sheet),
+              marginHorizontal: KIT.size.sheetInset,
+              marginBottom: KIT.size.sheetInset + insets.bottom,
+              borderRadius: KIT.size.sheetRadius,
+              borderWidth: KIT.size.edge,
+              borderColor: k.c.glassEdge,
+              boxShadow: k.c.glassShadow,
+              paddingTop: KIT.size.sheetPadTop,
+              paddingHorizontal: KIT.size.sheetPadX,
+              paddingBottom: KIT.size.sheetPadBottom,
               maxHeight: '90%',
               transform: [
                 {
@@ -140,12 +139,13 @@ export function RouteSheet({
             {...drag.handlers}
           >
             <View
-              className="mb-2 self-center"
+              className="self-center"
               style={{
-                width: HANDLE.width,
-                height: HANDLE.height,
-                borderRadius: shape.radius.pill,
-                backgroundColor: colors.divider,
+                width: KIT.size.grabW,
+                height: KIT.size.grabH,
+                borderRadius: KIT.size.grabH,
+                backgroundColor: k.c.grab,
+                marginBottom: KIT.size.sheetGap,
               }}
             />
             <ScrollView
@@ -156,12 +156,12 @@ export function RouteSheet({
             >
               <Quiet value>
                 {title ? (
-                  <Text variant="title" accessibilityRole="header">
+                  <T v="title" accessibilityRole="header">
                     {title}
-                  </Text>
+                  </T>
                 ) : null}
-                {/* skall tuvali (skall.css → `.sheet`): 12 between the title and every block. */}
-                <View style={{ gap: SPACING[3], marginTop: title ? SPACING[3] : 0 }}>
+                {/* docs/design/aura (`.sheet`): 14 under the title, 12 between the blocks. */}
+                <View style={{ gap: KIT.size.rowGap, marginTop: title ? KIT.size.sheetGap : 0 }}>
                   {children}
                 </View>
               </Quiet>

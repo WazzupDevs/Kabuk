@@ -620,6 +620,9 @@ export const tr = {
     ownPhotoNote: 'Masada görünen',
     ownCapsule: 'Kapsülün',
     ownCapsuleNote: 'Anonimken',
+    // docs/design/aura → Profil.
+    nickLabel: 'Anonim adın',
+    friendsPeople: (n: number) => `${n} kişi`,
     whenProfiled: 'Profilliyken',
     leaveTitle: 'Kaydetmeden çıkılsın mı?',
     leaveBody: 'Yaptığın değişiklikler silinir.',

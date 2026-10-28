@@ -2,23 +2,23 @@ import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Animated, Modal, Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { T, useKit } from '@/aura/kit';
 import { tr } from '@/i18n/tr';
+import { KIT } from '@/theme/auraKit';
+import { gradientStyle } from '@/theme/gradient';
 import { useReduceMotion } from '@/lib/useReduceMotion';
-import { withAlpha } from '@/theme/contrast';
 import { EASE_OUT } from '@/theme/markMotion';
 import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, OPACITY, SPACING } from '@/theme/tokens';
+import { ICON } from '@/theme/tokens';
 
 import type { IconName } from './Button';
 import { Quiet } from './Quiet';
 import { useSheetCloser } from './sheetCloser';
 import { useSheetDrag } from './sheetDrag';
-import { Text } from './Text';
 import { AppIcon } from './AppIcon';
 
 // hareket.md → "Alt sayfa": in and out in 320 ms on the design system's ease out.
 const SLIDE_MS = 320;
-const HANDLE = { width: 40, height: 5 } as const;
 const ICON_DISC = 56;
 
 type Props = {
@@ -40,6 +40,7 @@ type Props = {
 // it appears at once. It closes the same way, then leaves the screen.
 export function Sheet({ visible, onClose, title, titleNote, icon, centered, children }: Props) {
   const { colors, shape } = useTheme();
+  const k = useKit();
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   const reduce = useReduceMotion();
@@ -86,7 +87,7 @@ export function Sheet({ visible, onClose, title, titleNote, icon, centered, chil
         <Animated.View
           pointerEvents="box-none"
           className="absolute inset-0"
-          style={{ backgroundColor: withAlpha(colors.scrim, OPACITY.scrim), opacity: progress }}
+          style={{ backgroundColor: k.c.scrim, opacity: progress }}
         />
         <Pressable
           accessibilityRole={onClose ? 'button' : undefined}
@@ -97,14 +98,18 @@ export function Sheet({ visible, onClose, title, titleNote, icon, centered, chil
         />
         <Animated.View
           accessibilityViewIsModal
+          // docs/design/aura (`.sheet`): a frosted card floating 10 from the edges, 36 round.
           style={{
-            backgroundColor: colors.surface,
-            borderTopLeftRadius: shape.radius.xl,
-            borderTopRightRadius: shape.radius.xl,
-            boxShadow: shape.shadow.sheet,
-            paddingTop: SPACING[2.5],
-            paddingHorizontal: SPACING[5],
-            paddingBottom: SPACING[6] + insets.bottom,
+            ...gradientStyle(k.c.sheet),
+            marginHorizontal: KIT.size.sheetInset,
+            marginBottom: KIT.size.sheetInset + insets.bottom,
+            borderRadius: KIT.size.sheetRadius,
+            borderWidth: KIT.size.edge,
+            borderColor: k.c.glassEdge,
+            boxShadow: k.c.glassShadow,
+            paddingTop: KIT.size.sheetPadTop,
+            paddingHorizontal: KIT.size.sheetPadX,
+            paddingBottom: KIT.size.sheetPadBottom,
             maxHeight: '90%',
             transform: [
               {
@@ -118,12 +123,13 @@ export function Sheet({ visible, onClose, title, titleNote, icon, centered, chil
           {...drag.handlers}
         >
           <View
-            className="mb-2 self-center"
+            className="self-center"
             style={{
-              width: HANDLE.width,
-              height: HANDLE.height,
-              borderRadius: shape.radius.pill,
-              backgroundColor: colors.divider,
+              width: KIT.size.grabW,
+              height: KIT.size.grabH,
+              borderRadius: KIT.size.grabH,
+              backgroundColor: k.c.grab,
+              marginBottom: KIT.size.sheetGap,
             }}
           />
           <ScrollView
@@ -148,17 +154,20 @@ export function Sheet({ visible, onClose, title, titleNote, icon, centered, chil
                   </View>
                 ) : null}
                 {title ? (
-                  <Text
-                    variant="title"
-                    align={centered ? 'center' : undefined}
-                    accessibilityRole="header"
-                  >
+                  <T v="title" center={centered} accessibilityRole="header">
                     {title}
-                    {titleNote ? <Text variant="fine" tone="muted">{`  ${titleNote}`}</Text> : null}
-                  </Text>
+                    {titleNote ? <T v="fine">{`  ${titleNote}`}</T> : null}
+                  </T>
                 ) : null}
               </View>
-              <View className={`${title || icon ? 'mt-3 ' : ''}gap-3`}>{children}</View>
+              <View
+                style={{
+                  marginTop: title || icon ? KIT.size.sheetGap : 0,
+                  gap: KIT.size.rowGap,
+                }}
+              >
+                {children}
+              </View>
             </Quiet>
           </ScrollView>
         </Animated.View>

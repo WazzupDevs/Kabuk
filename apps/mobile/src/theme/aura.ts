@@ -179,6 +179,18 @@ export const AURA = {
         { look: 'c:krem e:koyu h:tavsan', x: 334, bottom: 30, height: 92 },
       ],
     },
+    // Masa kur (docs/design/aura → MasaKur): the chosen table's picture, one buddy behind it, two
+    // in front.
+    create: {
+      frame: 350,
+      height: 214,
+      disk: { x: 109, bottom: 26, size: 132, radius: 40 },
+      cast: [
+        { look: 'c:nane e:koyu h:anten', x: 132, bottom: 112, height: 79, behind: true },
+        { look: 'c:pembe e:klasik h:korsan f:gozbandi', x: 18, bottom: -14, height: 136 },
+        { look: 'c:gok e:klasik h:parti', x: 236, bottom: -10, height: 121 },
+      ],
+    },
     messages: {
       frame: 350,
       height: 112,
