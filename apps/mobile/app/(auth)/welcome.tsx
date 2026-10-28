@@ -229,18 +229,24 @@ function Welcome() {
             testID="intro-skip"
             accessibilityRole="button"
             onPress={skip}
-            style={({ pressed }) => [
-              styles.skip,
-              {
-                borderRadius: KIT.size.btnSm,
-                backgroundColor: KIT[scheme].raised,
-                borderWidth: KIT.size.edge,
-                borderColor: KIT[scheme].raisedEdge,
-                opacity: pressed ? OPACITY.pressed : 1,
-              },
-            ]}
+            style={styles.skipSpot}
           >
-            <T v="btnSm">{tr.signup.skip}</T>
+            {({ pressed }) => (
+              <View
+                style={[
+                  styles.skip,
+                  {
+                    borderRadius: KIT.size.btnSm,
+                    backgroundColor: KIT[scheme].raised,
+                    borderWidth: KIT.size.edge,
+                    borderColor: KIT[scheme].raisedEdge,
+                    opacity: pressed ? OPACITY.pressed : 1,
+                  },
+                ]}
+              >
+                <T v="btnSm">{tr.signup.skip}</T>
+              </View>
+            )}
           </Pressable>
         ) : null}
       </SafeAreaView>
@@ -278,10 +284,12 @@ const WELCOME_TABLE = 'kamp-ates';
 
 const styles = StyleSheet.create({
   fill: { flex: 1 },
-  skip: {
+  skipSpot: {
     position: 'absolute',
     top: SPACING[3],
     right: SPACING[3],
+  },
+  skip: {
     minWidth: SPACING[16],
     minHeight: TOUCH.min,
     paddingHorizontal: SPACING[4],

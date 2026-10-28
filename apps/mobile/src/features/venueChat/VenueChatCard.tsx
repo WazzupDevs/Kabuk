@@ -27,37 +27,45 @@ export function VenueChatCard({ venueId, sessionId }: { venueId: string; session
         active ? `${tr.venueChat.open}, ${tr.venue.chatActive}` : tr.venueChat.open
       }
       onPress={() => router.push('/venue-chat')}
-      style={({ pressed }) => ({ opacity: pressed ? PRESSED : 1 })}
     >
-      <Glass style={{ paddingVertical: PAD_Y, paddingHorizontal: PAD_X, gap: GAP }}>
-        <View
+      {({ pressed }) => (
+        <Glass
           style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            paddingVertical: PAD_Y,
+            paddingHorizontal: PAD_X,
             gap: GAP,
+            opacity: pressed ? PRESSED : 1,
           }}
         >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: GAP, flexShrink: 1 }}>
-            <T v="h3">{tr.venueChat.open}</T>
-            {active ? (
-              <View testID="venue-chat-live">
-                <Live label={tr.venue.chatActive} />
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: GAP,
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: GAP, flexShrink: 1 }}>
+              <T v="h3">{tr.venueChat.open}</T>
+              {active ? (
+                <View testID="venue-chat-live">
+                  <Live label={tr.venue.chatActive} />
+                </View>
+              ) : null}
+            </View>
+            {card.unread > 0 ? (
+              <View accessible accessibilityLabel={tr.messages.unread(card.unread)}>
+                <Badge count={card.unread} />
               </View>
             ) : null}
           </View>
-          {card.unread > 0 ? (
-            <View accessible accessibilityLabel={tr.messages.unread(card.unread)}>
-              <Badge count={card.unread} />
-            </View>
-          ) : null}
-        </View>
-        {card.recent.length > 0 ? (
-          card.recent.map((m) => <Line key={m.id} message={m} />)
-        ) : (
-          <T v="fine">{tr.venue.chatEmpty}</T>
-        )}
-      </Glass>
+          {card.recent.length > 0 ? (
+            card.recent.map((m) => <Line key={m.id} message={m} />)
+          ) : (
+            <T v="fine">{tr.venue.chatEmpty}</T>
+          )}
+        </Glass>
+      )}
     </Pressable>
   );
 }

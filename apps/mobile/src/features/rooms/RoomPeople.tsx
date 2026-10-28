@@ -10,6 +10,7 @@ import { Sheet } from '@/components/Sheet';
 import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
 import { useRoomSafety } from '@/features/chat/RoomSafety';
+import { useProfile } from '@/features/account/useProfile';
 import { useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -68,7 +69,12 @@ export function PeopleSheet({ visible, onClose, roomId, people, me, profiles }: 
                 className="flex-row items-center gap-3"
                 style={{ minHeight: TOUCH.min + SPACING[1] }}
               >
-                <PersonFace person={p} publicId={profiles?.get(p.sessionId)} size="md" />
+                <PersonFace
+                  person={p}
+                  publicId={profiles?.get(p.sessionId)}
+                  size="md"
+                  self={mine}
+                />
                 <View className="flex-1 flex-row flex-wrap items-center gap-2">
                   <Text variant="heading">{p.alias}</Text>
                   {p.owner ? <Tag variant="leader" label={tr.table.ownerTag} /> : null}
@@ -84,7 +90,12 @@ export function PeopleSheet({ visible, onClose, roomId, people, me, profiles }: 
       <Sheet visible={visible && person !== null} onClose={() => setPerson(null)}>
         {person ? (
           <View className="flex-row items-center gap-3">
-            <PersonFace person={person} publicId={publicId} size="xl" />
+            <PersonFace
+              person={person}
+              publicId={publicId}
+              size="xl"
+              self={person.sessionId === me}
+            />
             <Text variant="title" className="flex-1">
               {person.alias}
             </Text>
@@ -146,12 +157,18 @@ export function PersonFace({
   person,
   publicId,
   size,
+  self,
 }: {
   person: TablePerson;
   publicId: string | undefined;
   size: 'sm' | 'md' | 'xl';
+  // The phone's own seat: the table's profile list holds the others only, so its photo comes from
+  // the own profile.
+  self?: boolean;
 }) {
-  const view = useProfileView(person.profiled ? publicId : undefined);
+  const own = useProfile();
+  const id = publicId ?? (self ? own.data?.public_id : undefined);
+  const view = useProfileView(person.profiled ? id : undefined);
   if (!person.profiled && person.look)
     return <LookAvatar look={person.look} size={AVATAR_SIZE[size]} />;
   return person.profiled ? (

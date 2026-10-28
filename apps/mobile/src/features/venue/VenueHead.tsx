@@ -1,17 +1,14 @@
-import { APP_NAME } from '@shared/brand.ts';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
-import Svg, { ClipPath, Defs, Rect } from 'react-native-svg';
 
 import { Live, Round, T, Tag } from '@/aura/kit';
 import { Banner } from '@/components/Banner';
 import { Menu, MenuItem } from '@/components/Menu';
 import { Sheet } from '@/components/Sheet';
+import { Wordmark } from '@/components/Wordmark';
 import { IdentitySheet } from '@/features/checkin/IdentitySheet';
 import { tr } from '@/i18n/tr';
-import { BRAND } from '@/theme/brand';
-import { KIT_TYPE } from '@/theme/auraKit';
 import { SPACING } from '@/theme/tokens';
 
 // Mekan's head (docs/design/aura → Mekan): the skall wordmark at the left; at the right the spot
@@ -55,9 +52,12 @@ export function VenueHead({
                 accessibilityRole="button"
                 accessibilityLabel={`${spot}, ${tr.venue.changeSpot}`}
                 onPress={onSpot}
-                style={({ pressed }) => ({ opacity: pressed ? PRESSED : 1 })}
               >
-                <Tag label={spot} height={TAG_HEIGHT} />
+                {({ pressed }) => (
+                  <View style={{ opacity: pressed ? PRESSED : 1 }}>
+                    <Tag label={spot} height={TAG_HEIGHT} />
+                  </View>
+                )}
               </Pressable>
             ) : (
               <Tag label={spot} height={TAG_HEIGHT} />
@@ -129,42 +129,13 @@ const PRESSED = 0.7;
 // The note that the one change is spent stays this long.
 const USED_NOTE_MS = 2600;
 
-// The mark (two capsules, their overlap amber) and the app's name in 800 (aura.css, Mekan).
+// The app's written logo (src/components/Wordmark.tsx), the owner's choice over the board's mark
+// and word (28 Ekim).
 export function WordmarkRow({ small }: { small?: boolean } = {}) {
-  return (
-    <View
-      accessible
-      accessibilityRole="image"
-      accessibilityLabel={APP_NAME}
-      className="flex-row items-center"
-      style={{ gap: SPACING[2] }}
-    >
-      <Svg width={MARK_W} height={MARK_H} viewBox="0 0 132 300">
-        <Defs>
-          <ClipPath id="wordmarkClip">
-            <Rect x={0} y={0} width={80} height={240} rx={40} />
-          </ClipPath>
-        </Defs>
-        <Rect x={0} y={0} width={80} height={240} rx={40} fill={BRAND.purple} />
-        <Rect x={52} y={60} width={80} height={240} rx={40} fill={BRAND.pink} />
-        <Rect
-          x={52}
-          y={60}
-          width={80}
-          height={240}
-          rx={40}
-          fill={BRAND.orange}
-          clipPath="url(#wordmarkClip)"
-        />
-      </Svg>
-      <T v="h3" ink style={small ? KIT_TYPE.wordmarkSm : KIT_TYPE.wordmark}>
-        {APP_NAME}
-      </T>
-    </View>
-  );
+  return <Wordmark height={small ? WORDMARK_SMALL : WORDMARK_HEIGHT} />;
 }
-const MARK_W = 14;
-const MARK_H = 32;
+const WORDMARK_HEIGHT = 30;
+const WORDMARK_SMALL = 26;
 
 // The venue's name and "Mekandasın" with its live dot.
 export function VenueNameRow({ name }: { name: string }) {

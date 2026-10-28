@@ -193,24 +193,27 @@ function FaceCard({
       accessibilityRole="button"
       accessibilityLabel={`${label}, ${note}`}
       onPress={onPress}
-      style={({ pressed }) => ({ flex: 1, opacity: pressed ? PRESSED : 1 })}
+      style={{ flex: 1 }}
     >
-      <Glass
-        style={{
-          height: KIT.size.faceCard,
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: BTN_GAP,
-        }}
-      >
-        {children}
-        <View style={{ alignItems: 'center' }}>
-          <T v="fine" strong>
-            {label}
-          </T>
-          <T v="fine">{note}</T>
-        </View>
-      </Glass>
+      {({ pressed }) => (
+        <Glass
+          style={{
+            height: KIT.size.faceCard,
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: BTN_GAP,
+            opacity: pressed ? PRESSED : 1,
+          }}
+        >
+          {children}
+          <View style={{ alignItems: 'center' }}>
+            <T v="fine" strong>
+              {label}
+            </T>
+            <T v="fine">{note}</T>
+          </View>
+        </Glass>
+      )}
     </Pressable>
   );
 }

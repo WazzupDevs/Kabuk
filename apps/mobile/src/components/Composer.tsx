@@ -135,6 +135,8 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
               {
                 color: colors.text,
                 paddingVertical: SPACING[2.5],
+                // The hint drawn over it starts at the field's edge: so does the text.
+                paddingHorizontal: 0,
                 maxHeight: SPACING[16] * 2,
                 includeFontPadding: false,
                 textAlignVertical: 'center',

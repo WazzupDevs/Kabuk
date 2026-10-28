@@ -1,6 +1,6 @@
 import { upperTr } from '@shared/trText.ts';
 import { Image as PhotoView } from 'expo-image';
-import { Children, type ReactNode, useState } from 'react';
+import { Children, createContext, type ReactNode, useContext, useState } from 'react';
 import {
   Animated,
   Image,
@@ -141,6 +141,13 @@ function usePress() {
 
 // .btn (.primary, .glassy, .dark; .sm; .block): a capsule, its icon before its label. Busy: the
 // label stays, the meeting capsules turn beside it, a second press is ignored.
+// A button sits in a row's middle (Li, Row): its own `alignSelf` would otherwise put it at the
+// row's top. In a column it keeps to the start, its own width.
+const InRow = createContext(false);
+export function RowAlign({ children }: { children: ReactNode }) {
+  return <InRow.Provider value>{children}</InRow.Provider>;
+}
+
 export function Btn({
   label,
   onPress,
@@ -171,6 +178,7 @@ export function Btn({
 }) {
   const { c } = useKit();
   const press = usePress();
+  const inRow = useContext(InRow);
   const fg =
     tint ?? (variant === 'primary' ? KIT.onPrimary : variant === 'dark' ? c.onChipOn : c.ink);
   const ground: ViewStyle =
@@ -198,7 +206,7 @@ export function Btn({
       onPress={onPress}
       onPressIn={press.onPressIn}
       onPressOut={press.onPressOut}
-      style={[block ? { alignSelf: 'stretch' } : { alignSelf: 'flex-start' }, style]}
+      style={[{ alignSelf: block ? 'stretch' : inRow ? 'center' : 'flex-start' }, style]}
     >
       <Animated.View
         style={[
@@ -504,10 +512,11 @@ export function Li({
     paddingVertical: KIT.size.liPadY,
     paddingHorizontal: KIT.size.liPadX,
   };
+  const row = <InRow.Provider value>{children}</InRow.Provider>;
   if (!onPress)
     return (
       <View testID={testID} style={style}>
-        {children}
+        {row}
       </View>
     );
   return (
@@ -516,9 +525,12 @@ export function Li({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       onPress={onPress}
-      style={({ pressed }) => [style, pressed ? { opacity: PRESSED_ROW } : null]}
     >
-      {children}
+      {/* The style on an inner View: NativeWind drops a function `style` on Pressable in release
+          (docs/DECISIONS.md). */}
+      {({ pressed }) => (
+        <View style={[style, pressed ? { opacity: PRESSED_ROW } : null]}>{row}</View>
+      )}
     </Pressable>
   );
 }
