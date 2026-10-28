@@ -109,17 +109,12 @@ function cascade(children: ReactNode, replay: number) {
       key={isValidElement(child) && child.key !== null ? child.key : i}
       index={i}
       replay={replay}
-      blur={i < BLURRED_PARTS && replay === 0}
       style={fills(child) ? { flexGrow: 1 } : undefined}
     >
       {child}
     </Reveal>
   ));
 }
-
-// The first parts arrive through blur as well the first time (a tab opened again is blurred whole
-// by TabScene); the rest without, since each blur costs a layer.
-const BLURRED_PARTS = 2;
 
 function fills(child: ReactNode): boolean {
   if (!isValidElement<{ className?: unknown; style?: unknown }>(child)) return false;

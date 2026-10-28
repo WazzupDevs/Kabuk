@@ -1,19 +1,12 @@
 import type { TabKey } from '@shared/navigation.ts';
-import { useEffect, useId } from 'react';
-import { View } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
+import { useEffect, useId, useState } from 'react';
+import { Animated, View } from 'react-native';
 import Svg, { Circle, ClipPath, Defs, G, Mask, Path, Rect } from 'react-native-svg';
 
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { AURA, MOTION } from '@/theme/aura';
 
-import { ARRIVE, LEAVE, SPRING } from './motion';
+import { ARRIVE_RN, LEAVE_RN, springConfig } from './motion';
 
 // The tab icons (docs/design/aura → the tab bars of Keşfet, Mekan, Mesajlar, Profil), in the
 // mark's language: rounded shapes, one in front of the other. Off: outlined, the front shape
@@ -141,47 +134,77 @@ function On({ tab, uid }: { tab: TabKey; uid: string }) {
 export function TabGlyph({ tab, active, color }: { tab: TabKey; active: boolean; color: string }) {
   const reduce = useReduceMotion();
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
-  const onOp = useSharedValue(active ? 1 : 0);
-  const onScale = useSharedValue(active ? 1 : MOTION.tab.iconPopFrom);
-  const offOp = useSharedValue(active ? 0 : 1);
+  const [onOp] = useState(() => new Animated.Value(active ? 1 : 0));
+  const [onScale] = useState(() => new Animated.Value(active ? 1 : MOTION.tab.iconPopFrom));
+  const [offOp] = useState(() => new Animated.Value(active ? 0 : 1));
   useEffect(() => {
     const t = MOTION.tab;
     if (reduce) {
-      onOp.value = active ? 1 : 0;
-      onScale.value = 1;
-      offOp.value = active ? 0 : 1;
-      return;
+      onOp.setValue(active ? 1 : 0);
+      onScale.setValue(1);
+      offOp.setValue(active ? 0 : 1);
+      return undefined;
     }
-    if (active) {
-      onScale.value = t.iconPopFrom;
-      onOp.value = withDelay(
-        t.iconInDelay,
-        withTiming(1, { duration: t.iconFadeMs, easing: ARRIVE }),
-      );
-      onScale.value = withDelay(t.iconInDelay, withSpring(1, SPRING.pop));
-      offOp.value = withTiming(0, { duration: t.iconFadeMs, easing: ARRIVE });
-    } else {
-      onOp.value = withTiming(0, { duration: t.oldIconOutMs, easing: LEAVE });
-      onScale.value = withTiming(0.8, { duration: t.oldIconOutMs, easing: LEAVE });
-      offOp.value = withDelay(80, withTiming(1, { duration: 200, easing: ARRIVE }));
-    }
+    const native = { useNativeDriver: true };
+    if (active) onScale.setValue(t.iconPopFrom);
+    const anim = active
+      ? Animated.parallel([
+          Animated.timing(onOp, {
+            ...native,
+            toValue: 1,
+            duration: t.iconFadeMs,
+            delay: t.iconInDelay,
+            easing: ARRIVE_RN,
+          }),
+          Animated.spring(onScale, {
+            ...springConfig(MOTION.springs.pop),
+            toValue: 1,
+            delay: t.iconInDelay,
+          }),
+          Animated.timing(offOp, {
+            ...native,
+            toValue: 0,
+            duration: t.iconFadeMs,
+            easing: ARRIVE_RN,
+          }),
+        ])
+      : Animated.parallel([
+          Animated.timing(onOp, {
+            ...native,
+            toValue: 0,
+            duration: t.oldIconOutMs,
+            easing: LEAVE_RN,
+          }),
+          Animated.timing(onScale, {
+            ...native,
+            toValue: 0.8,
+            duration: t.oldIconOutMs,
+            easing: LEAVE_RN,
+          }),
+          Animated.timing(offOp, {
+            ...native,
+            toValue: 1,
+            duration: t.offInMs,
+            delay: t.offInDelay,
+            easing: ARRIVE_RN,
+          }),
+        ]);
+    anim.start();
+    return () => anim.stop();
   }, [active, reduce, onOp, onScale, offOp]);
-  const onStyle = useAnimatedStyle(() => ({
-    opacity: onOp.value,
-    transform: [{ scale: onScale.value }],
-  }));
-  const offStyle = useAnimatedStyle(() => ({ opacity: offOp.value }));
   const s = AURA.tabBar;
   return (
     <View
       style={{ width: s.iconOn, height: s.iconOn, alignItems: 'center', justifyContent: 'center' }}
     >
-      <Animated.View style={[{ position: 'absolute' }, offStyle]}>
+      <Animated.View style={{ position: 'absolute', opacity: offOp }}>
         <Svg width={s.icon} height={s.icon} viewBox="0 0 24 24">
           <Off tab={tab} color={color} uid={`m${uid}`} />
         </Svg>
       </Animated.View>
-      <Animated.View style={[{ position: 'absolute' }, onStyle]}>
+      <Animated.View
+        style={{ position: 'absolute', opacity: onOp, transform: [{ scale: onScale }] }}
+      >
         <Svg width={s.iconOn} height={s.iconOn} viewBox="0 0 24 24">
           <On tab={tab} uid={`c${uid}`} />
         </Svg>

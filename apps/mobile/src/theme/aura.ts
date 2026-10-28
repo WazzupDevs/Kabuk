@@ -132,7 +132,14 @@ export const MOTION = {
   },
   dissolve: { blur: 12, rise: 12, fromScale: 0.97, inMs: 450, outMs: 220 },
   stagger: { row: 60, part: 70, max: 8 },
-  tab: { iconPopFrom: 0.5, iconInDelay: 60, iconFadeMs: 140, oldIconOutMs: 160 },
+  tab: {
+    iconPopFrom: 0.5,
+    iconInDelay: 60,
+    iconFadeMs: 140,
+    oldIconOutMs: 160,
+    offInMs: 200,
+    offInDelay: 80,
+  },
   press: { scale: 0.96, downMs: 100 },
   idle: { floatPx: 4, floatMs: 1300, blinkMs: 160, blinkEveryMs: [4000, 6000], blinkClosed: 0.12 },
 } as const;

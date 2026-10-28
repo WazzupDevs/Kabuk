@@ -11,13 +11,12 @@ import {
   useId,
   useState,
 } from 'react';
-import { View } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { Animated, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { create } from 'zustand';
 
 import { AuraTabBar, type AuraTabItem } from '@/aura/AuraTabBar';
-import { ARRIVE, BLURS, TabFocusContext } from '@/aura/motion';
+import { ARRIVE_RN, TabFocusContext, useSteppedBlur } from '@/aura/motion';
 import { haptic } from '@/lib/haptics';
 import { useLeaveGuard } from '@/lib/leaveGuard';
 import { useReduceMotion } from '@/lib/useReduceMotion';
@@ -107,9 +106,10 @@ export function TabScene({
   const reduce = useReduceMotion();
   const id = useId();
   const [focus, setFocus] = useState({ focused: navigation.isFocused(), opened: 0 });
-  // The tab's screen arrives each time it is opened (the film's tab switch): from a little below
-  // and through blur. The first opening is the screen's own arrival (Screen's cascade).
-  const p = useSharedValue(1);
+  // The tab's screen arrives each time it is opened (the film's tab switch): from a little below,
+  // faded in on the native driver, its blur stepping down (useSteppedBlur). The first opening is
+  // the screen's own arrival (Screen's cascade).
+  const [p] = useState(() => new Animated.Value(1));
   useEffect(() => {
     const own = () => useBarMode.setState({ target: id });
     if (navigation.isFocused()) own();
@@ -117,8 +117,13 @@ export function TabScene({
       own();
       setFocus((f) => ({ focused: true, opened: f.opened + 1 }));
       if (!reduce) {
-        p.value = 0;
-        p.value = withTiming(1, { duration: MOTION.dissolve.inMs, easing: ARRIVE });
+        p.setValue(0);
+        Animated.timing(p, {
+          toValue: 1,
+          duration: MOTION.dissolve.inMs,
+          easing: ARRIVE_RN,
+          useNativeDriver: true,
+        }).start();
       }
     });
     const offBlur = navigation.addListener('blur', () =>
@@ -130,12 +135,15 @@ export function TabScene({
       useBarMode.setState((s) => (s.target === id ? { target: null } : s));
     };
   }, [navigation, id, reduce, p]);
-  const arrive = useAnimatedStyle(() => {
-    const v = p.value;
-    const d = MOTION.dissolve;
-    const moved = { flex: 1, opacity: v, transform: [{ translateY: (1 - v) * d.rise }] };
-    return BLURS ? { ...moved, filter: v < 0.99 ? [{ blur: (1 - v) * d.blur }] : [] } : moved;
-  });
+  const blur = useSteppedBlur(focus.opened, !reduce);
+  const arrive = {
+    flex: 1,
+    opacity: p,
+    transform: [
+      { translateY: p.interpolate({ inputRange: [0, 1], outputRange: [MOTION.dissolve.rise, 0] }) },
+    ],
+    filter: blur > 0 ? [{ blur }] : undefined,
+  };
   const ground = AURA[scheme].ground;
   const scene = (
     <TabFocusContext.Provider value={focus}>

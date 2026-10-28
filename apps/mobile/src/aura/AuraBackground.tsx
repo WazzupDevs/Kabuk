@@ -1,13 +1,5 @@
-import { useEffect, useId } from 'react';
-import { StyleSheet, useWindowDimensions, View } from 'react-native';
-import Animated, {
-  cancelAnimation,
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withTiming,
-} from 'react-native-reanimated';
+import { useEffect, useId, useState } from 'react';
+import { Animated, Easing, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Svg, { Defs, Ellipse, RadialGradient, Stop } from 'react-native-svg';
 
 import { useReduceMotion } from '@/lib/useReduceMotion';
@@ -16,7 +8,8 @@ import { useTheme } from '@/theme/ThemeProvider';
 
 // The colour clouds behind a screen (docs/design/aura/project/aura.css → `.aura`): five soft
 // ellipses, each blurred by 64 px (drawn as a radial fade, so nothing is blurred at run time), that
-// drift slowly around their places while `running`. Still when motion is reduced.
+// drift slowly around their places while `running`. Still when motion is reduced. The drift loops
+// on the native driver, as every motion that goes on by itself (loopGuard.test.ts).
 export function AuraBackground({ running = true }: { running?: boolean }) {
   const { scheme } = useTheme();
   const { width, height } = useWindowDimensions();
@@ -54,32 +47,33 @@ function Cloud({
   const inner = Math.max(0, (r - B) / (r + B));
   const edge = r / (r + B);
 
-  const x = useSharedValue(0);
-  const y = useSharedValue(0);
+  const [x] = useState(() => new Animated.Value(0));
+  const [y] = useState(() => new Animated.Value(0));
   useEffect(() => {
-    if (!moving) {
-      cancelAnimation(x);
-      cancelAnimation(y);
-      return;
-    }
+    if (!moving) return undefined;
     const ease = Easing.inOut(Easing.sin);
-    x.value = -blob.dx / 2;
-    y.value = -blob.dy / 2;
-    x.value = withRepeat(withTiming(blob.dx / 2, { duration: blob.ms, easing: ease }), -1, true);
+    const swing = (v: Animated.Value, ms: number) =>
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(v, { toValue: 1, duration: ms, easing: ease, useNativeDriver: true }),
+          Animated.timing(v, { toValue: 0, duration: ms, easing: ease, useNativeDriver: true }),
+        ]),
+      );
     // The other axis on its own beat, so the cloud wanders instead of going back and forth.
-    y.value = withRepeat(
-      withTiming(blob.dy / 2, { duration: Math.round(blob.ms * 1.17), easing: ease }),
-      -1,
-      true,
-    );
-    return () => {
-      cancelAnimation(x);
-      cancelAnimation(y);
-    };
+    const loops = [swing(x, blob.ms), swing(y, Math.round(blob.ms * 1.17))];
+    loops.forEach((l) => l.start());
+    return () => loops.forEach((l) => l.stop());
   }, [moving, blob, x, y]);
-  const drift = useAnimatedStyle(() => ({
-    transform: [{ translateX: x.value }, { translateY: y.value }],
-  }));
+  const drift = {
+    transform: [
+      {
+        translateX: x.interpolate({ inputRange: [0, 1], outputRange: [-blob.dx / 2, blob.dx / 2] }),
+      },
+      {
+        translateY: y.interpolate({ inputRange: [0, 1], outputRange: [-blob.dy / 2, blob.dy / 2] }),
+      },
+    ],
+  };
 
   return (
     <Animated.View style={[{ position: 'absolute', left, top, width: w, height: h }, drift]}>

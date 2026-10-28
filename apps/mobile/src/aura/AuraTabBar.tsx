@@ -1,12 +1,6 @@
 import type { TabKey } from '@shared/navigation.ts';
-import { useEffect } from 'react';
-import { Platform, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
+import { useEffect, useRef, useState } from 'react';
+import { Animated, Platform, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { AURA, MOTION } from '@/theme/aura';
@@ -15,7 +9,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { TAB_BAR_GLASS, blursBehind } from '@/ui/backdrop';
 import { LiquidGlass } from '@/ui/LiquidGlass';
 
-import { ARRIVE, SPRING } from './motion';
+import { ARRIVE_RN, springConfig } from './motion';
 import { TabGlyph } from './TabGlyph';
 
 export type AuraTabItem = {
@@ -52,38 +46,64 @@ export function AuraTabBar({ items, selected, onPress, glassTarget, opaque = fal
   const index = items.findIndex((i) => i.key === selected);
   const at = (i: number) => s.padding + i * step;
 
-  const left = useSharedValue(index < 0 ? at(0) : at(index));
-  const right = useSharedValue(left.value + s.tab);
-  const shown = useSharedValue(index < 0 ? 0 : 1);
+  // The disc's two edges, each on its own spring (native driver): the disc is drawn as wide as a
+  // tab and stretched between them.
+  const [left] = useState(() => new Animated.Value(at(Math.max(0, index))));
+  const [right] = useState(() => new Animated.Value(at(Math.max(0, index)) + s.tab));
+  const [shown] = useState(() => new Animated.Value(index < 0 ? 0 : 1));
+  const was = useRef(index);
   useEffect(() => {
-    if (index < 0) {
-      shown.value = withTiming(0, { duration: MOTION.dissolve.outMs });
-      return;
-    }
+    const fade = Animated.timing(shown, {
+      toValue: index < 0 ? 0 : 1,
+      duration: MOTION.dissolve.outMs,
+      easing: ARRIVE_RN,
+      useNativeDriver: true,
+    });
+    fade.start();
+    if (index < 0) return () => fade.stop();
     const L = s.padding + index * step;
     const R = L + s.tab;
-    shown.value = withTiming(1, { duration: MOTION.dissolve.outMs, easing: ARRIVE });
-    if (reduce) {
-      left.value = L;
-      right.value = R;
-      return;
+    const from = was.current;
+    was.current = index;
+    if (reduce || from < 0 || from === index) {
+      left.setValue(L);
+      right.setValue(R);
+      return () => fade.stop();
     }
     // The edge that leads is the fast one.
-    const toRight = L > left.value;
-    left.value = withSpring(L, toRight ? SPRING.tabTrail : SPRING.tabLead);
-    right.value = withSpring(R, toRight ? SPRING.tabLead : SPRING.tabTrail);
+    const toRight = index > from;
+    const move = Animated.parallel([
+      Animated.spring(left, {
+        ...springConfig(toRight ? MOTION.springs.tabTrail : MOTION.springs.tabLead),
+        toValue: L,
+      }),
+      Animated.spring(right, {
+        ...springConfig(toRight ? MOTION.springs.tabLead : MOTION.springs.tabTrail),
+        toValue: R,
+      }),
+    ]);
+    move.start();
+    return () => {
+      fade.stop();
+      move.stop();
+    };
   }, [index, step, reduce, left, right, shown]);
 
-  const disc = useAnimatedStyle(() => {
-    const w = right.value - left.value;
-    const stretch = Math.min(1, Math.max(0, (w - s.tab) / s.stretchFull));
-    return {
-      opacity: shown.value,
-      left: left.value,
-      width: w,
-      transform: [{ scaleY: 1 - s.squash * stretch }],
-    };
-  });
+  const width2 = Animated.subtract(right, left);
+  const disc = {
+    opacity: shown,
+    transform: [
+      { translateX: Animated.add(Animated.multiply(Animated.add(left, right), 0.5), -s.tab / 2) },
+      { scaleX: Animated.multiply(width2, 1 / s.tab) },
+      {
+        scaleY: width2.interpolate({
+          inputRange: [s.tab, s.tab + s.stretchFull],
+          outputRange: [1, 1 - s.squash],
+          extrapolate: 'clamp',
+        }),
+      },
+    ],
+  };
 
   const glass = !opaque && TAB_BAR_GLASS && blursBehind(Platform.OS, Platform.Version);
   return (
@@ -122,7 +142,9 @@ export function AuraTabBar({ items, selected, onPress, glassTarget, opaque = fal
         style={[
           {
             position: 'absolute',
+            left: 0,
             top: (s.height - s.tab) / 2,
+            width: s.tab,
             height: s.tab,
             borderRadius: s.tab / 2,
             backgroundColor: a.disc,
@@ -166,8 +188,15 @@ function Tab({
   onPress: () => void;
 }) {
   const { colors } = useTheme();
-  const scale = useSharedValue(1);
-  const pressed = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  const [scale] = useState(() => new Animated.Value(1));
+  const press = (to: number) =>
+    to < 1
+      ? Animated.timing(scale, {
+          toValue: to,
+          duration: MOTION.press.downMs,
+          useNativeDriver: true,
+        }).start()
+      : Animated.spring(scale, { ...springConfig(MOTION.springs.press), toValue: 1 }).start();
   return (
     <Pressable
       accessibilityRole="tab"
@@ -175,17 +204,13 @@ function Tab({
       accessibilityLabel={item.accessibilityLabel ?? item.label}
       testID={item.testID}
       onPress={onPress}
-      onPressIn={() => {
-        scale.set(withTiming(MOTION.press.scale, { duration: MOTION.press.downMs }));
-      }}
-      onPressOut={() => {
-        scale.set(withSpring(1, SPRING.press));
-      }}
+      onPressIn={() => press(MOTION.press.scale)}
+      onPressOut={() => press(1)}
     >
       <Animated.View
         style={[
           { width: s.tab, height: s.tab, alignItems: 'center', justifyContent: 'center' },
-          pressed,
+          { transform: [{ scale }] },
         ]}
       >
         <TabGlyph tab={item.key} active={active} color={color} />
