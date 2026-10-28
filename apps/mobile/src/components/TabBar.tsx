@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { create } from 'zustand';
 
 import { haptic } from '@/lib/haptics';
+import { useLeaveGuard } from '@/lib/leaveGuard';
 import { V46_TAB_BAR, type V46TabKey } from '@/theme/parts.generated';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
@@ -174,9 +175,12 @@ export function TabBar({
     if (opened !== key) router.navigate(ROUTES[opened]);
     else if (moves) navigation.navigate(route.name, route.params);
     else {
-      // The tab already open: back to its first screen (Profil from Kapsül karakterler).
+      // The tab already open: back to its first screen (Profil from Kapsül karakterler). A screen
+      // with changes asks first (leaveGuard).
       const nested = route.state;
-      if (nested?.key && (nested.index ?? 0) > 0) {
+      const ask = useLeaveGuard.getState().ask;
+      if (ask && nested?.key && (nested.index ?? 0) > 0) ask();
+      else if (nested?.key && (nested.index ?? 0) > 0) {
         navigation.dispatch({ type: 'POP_TO_TOP', target: nested.key });
       }
     }

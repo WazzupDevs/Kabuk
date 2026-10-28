@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Animated, Modal, Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -11,6 +11,7 @@ import { ICON, OPACITY, SPACING } from '@/theme/tokens';
 
 import type { IconName } from './Button';
 import { Quiet } from './Quiet';
+import { useSheetCloser } from './sheetCloser';
 import { useSheetDrag } from './sheetDrag';
 import { Text } from './Text';
 import { AppIcon } from './AppIcon';
@@ -48,6 +49,14 @@ export function Sheet({ visible, onClose, title, titleNote, icon, centered, chil
   // Pulled down, it closes like a tap outside (useSheetDrag); the next opening starts unpulled.
   const drag = useSheetDrag(onClose);
   const { reset } = drag;
+  // closeAllSheets: an open sheet closes as if tapped outside.
+  const round = useSheetCloser((s) => s.round);
+  const handled = useRef(round);
+  useEffect(() => {
+    if (round === handled.current) return;
+    handled.current = round;
+    if (visible) onClose?.();
+  }, [round, visible, onClose]);
   useEffect(() => {
     if (visible) reset();
   }, [visible, reset]);

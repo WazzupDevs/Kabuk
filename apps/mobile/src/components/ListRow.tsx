@@ -1,6 +1,7 @@
 import { type ReactNode, useContext } from 'react';
 import { Pressable, View } from 'react-native';
 
+import { useSinglePress } from '@/lib/useSinglePress';
 import { rowPress } from '@/theme/rowPress';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
@@ -47,6 +48,7 @@ export function ListRow({
 }: Props) {
   const theme = useTheme();
   const cardPress = useContext(CardPressContext);
+  const press = useSinglePress(onPress);
   const { colors, shape } = theme;
   const pressScale = usePressScale();
   const content = (
@@ -98,7 +100,7 @@ export function ListRow({
           borderBottomWidth: shape.stroke.hairline,
           borderBottomColor: colors.divider,
         };
-  if (!onPress)
+  if (!press)
     return (
       <View style={style} testID={testID}>
         {content}
@@ -108,7 +110,7 @@ export function ListRow({
     <Pressable
       accessibilityRole={accessibilityRole}
       accessibilityLabel={accessibilityLabel}
-      onPress={onPress}
+      onPress={press}
       onPressIn={inset && cardPress ? () => cardPress(true) : undefined}
       onPressOut={inset && cardPress ? () => cardPress(false) : undefined}
       testID={testID}

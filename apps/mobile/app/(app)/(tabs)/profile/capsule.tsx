@@ -55,6 +55,7 @@ import { FEELING_MOVES, JUMP, type Move, SHUFFLE } from '@/features/capsule/moti
 import { profileViewKeys, useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
+import { useAskBeforeLeaving } from '@/lib/leaveGuard';
 import { haptic } from '@/lib/haptics';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { useAfterSlide } from '@/lib/useAfterSlide';
@@ -146,6 +147,8 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
     if (changed && !save.isSuccess) setLeaving(true);
     else router.back();
   }, [changed, save.isSuccess]);
+  const askToLeave = useCallback(() => setLeaving(true), []);
+  useAskBeforeLeaving(changed && !save.isSuccess, askToLeave);
   useFocusEffect(
     useCallback(() => {
       const sub = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -415,8 +418,20 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
           </Text>
         ) : null}
       </View>
-      <Sheet visible={leaving} onClose={() => setLeaving(false)} title={tr.capsule.unsavedTitle}>
+      {/* Saving, the sheet stays; a failed save says so here, over the bar (audit PRO-3). */}
+      <Sheet
+        visible={leaving}
+        onClose={() => {
+          if (!save.isPending) setLeaving(false);
+        }}
+        title={tr.capsule.unsavedTitle}
+      >
         <Text variant="fine">{tr.capsule.unsavedBody}</Text>
+        {save.isError ? (
+          <Text variant="fine" tone="danger">
+            {errorMessage(save.error)}
+          </Text>
+        ) : null}
         <Button
           size="lg"
           label={tr.capsule.saveAndLeave}

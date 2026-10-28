@@ -9,6 +9,7 @@ import { create } from 'zustand';
 import { Avatar, AVATAR_SIZE } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { GlyphDisc } from '@/components/GlyphDisc';
+import { closeAllSheets } from '@/components/sheetCloser';
 import { Text } from '@/components/Text';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -120,6 +121,8 @@ export function IncomingRequest({ roomId, ownerSessionId, phones, floating }: Pr
     if (!requestId || felt.current === requestId) return;
     felt.current = requestId;
     haptic('incomingRequest');
+    // No sheet over the card while its seconds run.
+    closeAllSheets();
   }, [requestId]);
   useEffect(() => {
     if (!coming) return undefined;
