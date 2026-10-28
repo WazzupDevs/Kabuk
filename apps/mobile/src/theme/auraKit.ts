@@ -21,6 +21,8 @@ const t = (w: keyof typeof F, size: number, line: number, em = 0): TextStyle => 
 
 export const KIT_TYPE = {
   display: t(500, 32, 38, -0.025),
+  // Keşfet's question (.display at 30).
+  displaySm: t(500, 30, 36, -0.025),
   title: t(600, 21, 27, -0.015),
   // A scene's title (Mekan: .title at 20).
   hero: t(600, 20, 26, -0.015),
@@ -142,6 +144,8 @@ export const KIT = {
     amber: { bg: 'rgba(255, 181, 71, 0.22)', fg: '#FFE2B8' },
     green: { bg: 'rgba(95, 198, 160, 0.20)', fg: '#C9F2DF' },
   },
+  // Today's event on Keşfet's card: a soft amber ground.
+  eventGround: 'rgba(255, 181, 71, 0.14)',
   // Bitir and Ayrıl on Masa's bar.
   endInk: '#A8301A',
   endInkDark: '#FF9B8A',
@@ -189,6 +193,10 @@ export const KIT = {
     iconSm: 18,
     disk: 4,
     seg: 26,
+    pill: 44,
+    pillPadX: 14,
+    eventCard: 210,
+    eventPad: 12,
     segPad: 5,
     segGap: 4,
     hair: 1,

@@ -1,4 +1,5 @@
 import {
+  describeEventTime,
   EXPLORE_KINDS,
   type ExploreCity,
   type ExploreKind,
@@ -16,6 +17,8 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
+import { CapIcon } from '@/aura/CapIcon';
+import { Btn, Glass, Sec, T, Tag } from '@/aura/kit';
 import { MarkDisk } from '@/aura/MarkDisk';
 import { useTabFocus } from '@/aura/motion';
 import { Gathering, SceneGround } from '@/aura/Scene';
@@ -23,12 +26,7 @@ import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Chips } from '@/components/Chips';
 import { EmptyState } from '@/components/EmptyState';
-import { Icon } from '@/components/Icon';
-import { GlyphDisc } from '@/components/GlyphDisc';
-import { ListCard } from '@/components/ListCard';
 import { Loader } from '@/components/Loader';
-import { Mark } from '@/components/Mark';
-import { Rise } from '@/components/motion';
 import { Sheet } from '@/components/Sheet';
 import { useTabBarOverMap, useTabBarSpace } from '@/components/TabBar';
 import { Text } from '@/components/Text';
@@ -41,13 +39,13 @@ import {
   type ExploreVenue,
   useCityVenues,
 } from '@/features/explore/useExploreVenues';
-import { BucketBadge, EventRow } from '@/features/explore/VenueTags';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { haptic } from '@/lib/haptics';
 import { useNow } from '@/lib/useNow';
 import { venueType, type VenueType } from '@/lib/venueType';
 import { AURA } from '@/theme/aura';
+import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { V46_EXPLORE } from '@/theme/parts.generated';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
@@ -129,50 +127,56 @@ export default function ExploreScreen() {
             <ExploreMap venues={shown.venues} headerHeight={headerHeight} tabBarHeight={barSpace} />
           </View>
         ) : null}
-        <View onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)} style={{ zIndex: 1 }}>
-          <TopBar
-            kind="explore"
-            title={tr.tabs.explore}
-            testID="explore-head"
-            right={
-              layout === 'single' ? undefined : (
-                <ViewModeToggle
-                  value={view}
-                  labels={tr.explore.views}
-                  accessibilityLabel={tr.explore.viewSwitch}
-                  onChange={(mode) => {
-                    haptic('selection');
-                    setView(mode);
-                  }}
-                />
-              )
-            }
+        {/* One venue: its head scrolls with the card (docs/design/aura → Keşfet). */}
+        {layout === 'single' && ready ? null : (
+          <View
+            onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}
+            style={{ zIndex: 1 }}
           >
-            {ready && layout === 'list' ? (
-              <>
-                {/* 12 below the title's row (`.dsearch{margin-top:12px}`). */}
-                <View style={{ marginTop: V46_EXPLORE[scheme].search.marginTop }}>
-                  <SearchField
-                    value={query}
-                    onChangeText={setQuery}
-                    placeholder={tr.explore.search}
-                    testID="explore-search"
+            <TopBar
+              kind="explore"
+              title={tr.tabs.explore}
+              testID="explore-head"
+              right={
+                layout === 'single' ? undefined : (
+                  <ViewModeToggle
+                    value={view}
+                    labels={tr.explore.views}
+                    accessibilityLabel={tr.explore.viewSwitch}
+                    onChange={(mode) => {
+                      haptic('selection');
+                      setView(mode);
+                    }}
                   />
-                </View>
-                <FilterChips
-                  items={EXPLORE_KINDS.map((k) => ({
-                    key: k,
-                    label: tr.explore.kinds[k],
-                    testID: `explore-kind-${k}`,
-                  }))}
-                  value={kind}
-                  onChange={setKind}
-                  accessibilityLabel={tr.explore.kindsLabel}
-                />
-              </>
-            ) : null}
-          </TopBar>
-        </View>
+                )
+              }
+            >
+              {ready && layout === 'list' ? (
+                <>
+                  {/* 12 below the title's row (`.dsearch{margin-top:12px}`). */}
+                  <View style={{ marginTop: V46_EXPLORE[scheme].search.marginTop }}>
+                    <SearchField
+                      value={query}
+                      onChangeText={setQuery}
+                      placeholder={tr.explore.search}
+                      testID="explore-search"
+                    />
+                  </View>
+                  <FilterChips
+                    items={EXPLORE_KINDS.map((k) => ({
+                      key: k,
+                      label: tr.explore.kinds[k],
+                      testID: `explore-kind-${k}`,
+                    }))}
+                    value={kind}
+                    onChange={setKind}
+                    accessibilityLabel={tr.explore.kindsLabel}
+                  />
+                </>
+              ) : null}
+            </TopBar>
+          </View>
+        )}
 
         {!ready && !venues.isError && !cities.isError ? (
           <View className="mt-8 items-center">
@@ -396,9 +400,10 @@ function PlaceSheet({
   );
 }
 
-// The pilot's Keşfet: the one venue as the featured card (a colour block with the mark, the name,
-// check-in), all its events within the week, then "Yeni mekanlar yakında". A second active venue
-// brings the list and the map back (content only).
+// The pilot's Keşfet (docs/design/aura → Keşfet): the district on a glass pill, the question, the
+// venue as the featured glass card (its scene with buddies gathered around the mark, its kind and how
+// lively it is; its name and district; today's event; "Buraya giriş yap"), then the week's events in
+// a row. A second active venue brings the list and the map back (content only).
 function SingleVenue({
   venue,
   here,
@@ -412,105 +417,180 @@ function SingleVenue({
   checkedInHere: boolean;
   bottomSpace: number;
 }) {
-  const { shape } = useTheme();
+  const now = useNow(60_000);
   const [heroWidth, setHeroWidth] = useState(0);
   const setVenue = useCheckinDraft((s) => s.setVenue);
+  const calm = venue.bucket === 'calm';
+  const today = venue.event;
   return (
     <ScrollView
-      // The floating tab bar covers the bottom: the card and the note end above it.
+      // The floating tab bar covers the bottom: the card and the events end above it.
       contentContainerStyle={{
-        paddingHorizontal: shape.screenPadding,
+        paddingHorizontal: KIT.size.side,
+        paddingTop: SPACING[2],
         paddingBottom: SPACING[8] + bottomSpace,
+        gap: EXPLORE_GAP,
       }}
-      contentContainerClassName="gap-3 pt-2"
     >
+      <View style={{ flexDirection: 'row' }}>
+        <Glass
+          sm
+          style={{
+            height: KIT.size.pill,
+            paddingHorizontal: KIT.size.pillPadX,
+            borderRadius: KIT.size.pill / 2,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: KIT.size.chipsGap,
+          }}
+        >
+          <CapIcon name="pin" color={KIT.primary} size={KIT.size.iconSm} />
+          <T v="fine" strong>
+            {venue.district}
+          </T>
+        </Glass>
+      </View>
+      <T v="display" style={KIT_TYPE.displaySm} accessibilityRole="header">
+        {tr.explore.question}
+      </T>
       {here ? <HereNow here={here} /> : null}
-      <Rise>
-        <Card flush>
-          {/* The venue as a scene (docs/design/aura → Keşfet): capsule buddies gathered around
-              its mark, how lively it is at the top. */}
+      <Glass style={{ padding: CARD_PAD }} testID="explore-venue-card">
+        <View
+          onLayout={(e) => setHeroWidth(e.nativeEvent.layout.width)}
+          style={{
+            height: AURA.gatherings.explore.height,
+            borderRadius: SCENE_RADIUS,
+            overflow: 'hidden',
+          }}
+        >
+          <SceneGround top={SCENE_RADIUS} bottom={SCENE_RADIUS} />
+          {heroWidth > 0 ? (
+            <Gathering
+              kind="explore"
+              width={heroWidth}
+              delay={HERO_CAST_DELAY}
+              center={<MarkDisk size={AURA.gatherings.explore.disk.size} />}
+            />
+          ) : null}
           <View
-            onLayout={(e) => setHeroWidth(e.nativeEvent.layout.width)}
-            style={{ height: AURA.gatherings.explore.height, overflow: 'hidden' }}
+            style={{
+              position: 'absolute',
+              left: SPACING[3],
+              top: SPACING[3],
+              flexDirection: 'row',
+              gap: KIT.size.chipGap,
+            }}
           >
-            <SceneGround />
-            {heroWidth > 0 ? (
-              <Gathering
-                kind="explore"
-                width={heroWidth}
-                delay={HERO_CAST_DELAY}
-                center={<MarkDisk size={AURA.gatherings.explore.disk.size} />}
-              />
-            ) : null}
-            <View style={{ position: 'absolute', left: SPACING[3], top: SPACING[3] }}>
-              <BucketBadge bucket={venue.bucket} />
-            </View>
-          </View>
-          <View className="gap-4 p-4">
-            <View className="gap-1">
-              <Text variant="title" accessibilityRole="header">
-                {venue.name}
-              </Text>
-              <View className="flex-row items-center gap-1.5">
-                <Icon name="location-outline" tone="muted" />
-                <Text variant="fine">{venue.district}</Text>
-              </View>
-            </View>
-            <Button
-              size="lg"
-              label={checkedInHere ? tr.explore.backToVenue : tr.explore.checkInHere}
-              onPress={() => {
-                if (checkedInHere) {
-                  router.navigate('/venue');
-                  return;
-                }
-                setVenue({
-                  id: venue.id,
-                  name: venue.name,
-                  lat: venue.lat,
-                  lng: venue.lng,
-                  boundary: venue.boundary,
-                  kind: venue.kind,
-                });
-                router.push('/checkin');
-              }}
+            <Tag label={tr.explore.kinds[venue.kind === 'campus' ? 'campus' : 'cafe']} />
+            <Tag
+              label={tr.explore.buckets[venue.bucket]}
+              lead={
+                calm ? undefined : (
+                  <View
+                    style={{
+                      width: KIT.size.dot,
+                      height: KIT.size.dot,
+                      borderRadius: KIT.size.dot / 2,
+                      backgroundColor: KIT.pink,
+                    }}
+                  />
+                )
+              }
             />
           </View>
-        </Card>
-      </Rise>
-      <Rise index={1}>
-        <View className="gap-3">
-          <Text variant="heading" accessibilityRole="header" className="px-0.5 pt-3">
-            {tr.explore.eventsTitle}
-          </Text>
-          {venue.events.length === 0 ? (
-            <Card>
-              <View className="flex-row items-center gap-3">
-                <GlyphDisc icon="calendar-outline" />
-                <Text tone="muted" className="flex-1">
-                  {tr.explore.noEvents}
-                </Text>
-              </View>
-            </Card>
-          ) : (
-            <ListCard>
-              {venue.events.map((event) => (
-                <EventRow key={`${event.startsAt}-${event.title}`} event={event} />
-              ))}
-            </ListCard>
-          )}
         </View>
-      </Rise>
-      <Rise index={2}>
-        <Card tone="note">
-          <View className="flex-row items-center gap-3">
-            <Mark size={SPACING[11]} label={null} />
-            <Text variant="heading" className="flex-1">
-              {tr.explore.comingSoon}
-            </Text>
+        <View
+          style={{
+            gap: EXPLORE_GAP,
+            paddingTop: EXPLORE_GAP,
+            paddingHorizontal: SPACING[2.5],
+            paddingBottom: SPACING[2.5],
+          }}
+        >
+          <View style={{ gap: SPACING[0.5] }}>
+            <T v="title" accessibilityRole="header">
+              {venue.name}
+            </T>
+            <T v="fine">{venue.district}</T>
           </View>
-        </Card>
-      </Rise>
+          {today ? (
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: SPACING[2.5],
+                paddingVertical: SPACING[2.5],
+                paddingHorizontal: SPACING[3],
+                borderRadius: KIT.size.thumbRadius,
+                backgroundColor: KIT.eventGround,
+              }}
+            >
+              <Tag tone="amber" label={tr.explore.eventTagShort} />
+              <T v="fine" ink style={{ flex: 1 }}>
+                <T v="fine" strong>
+                  {today.title}
+                </T>
+                {` ${tr.common.separator} ${tr.explore.eventTime(
+                  describeEventTime(today.startsAt, today.endsAt, now),
+                )}`}
+              </T>
+            </View>
+          ) : null}
+          <Btn
+            block
+            icon={checkedInHere ? 'forward' : 'pin'}
+            label={checkedInHere ? tr.explore.backToVenue : tr.explore.checkInHere}
+            onPress={() => {
+              if (checkedInHere) {
+                router.navigate('/venue');
+                return;
+              }
+              setVenue({
+                id: venue.id,
+                name: venue.name,
+                lat: venue.lat,
+                lng: venue.lng,
+                boundary: venue.boundary,
+                kind: venue.kind,
+              });
+              router.push('/checkin');
+            }}
+          />
+        </View>
+      </Glass>
+      <Sec title={tr.explore.eventsTitle} note={tr.explore.weekNote} />
+      {venue.events.length === 0 ? (
+        <T v="fine">{tr.explore.noEvents}</T>
+      ) : (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={{ marginHorizontal: -KIT.size.side }}
+          contentContainerStyle={{ paddingHorizontal: KIT.size.side, gap: KIT.size.rowGap }}
+        >
+          {venue.events.map((event, i) => (
+            <Glass
+              sm
+              key={`${event.startsAt}-${event.title}`}
+              style={{
+                width: KIT.size.eventCard,
+                padding: KIT.size.eventPad,
+                gap: KIT.size.chipsGap,
+              }}
+            >
+              <Tag
+                tone={i % 2 === 0 ? 'purple' : 'pink'}
+                label={tr.explore.eventTime(describeEventTime(event.startsAt, event.endsAt, now))}
+              />
+              <T v="h3">{event.title}</T>
+            </Glass>
+          ))}
+        </ScrollView>
+      )}
     </ScrollView>
   );
 }
+
+const EXPLORE_GAP = 14;
+const CARD_PAD = 8;
+const SCENE_RADIUS = 22;

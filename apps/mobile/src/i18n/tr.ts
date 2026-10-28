@@ -491,6 +491,10 @@ export const tr = {
     checkInHint:
       'Mekanı sen seçtin; konumun yalnızca mekanda olduğunu doğrulamak için bir kez alınır.',
     checkInHere: 'Buraya giriş yap',
+    // Keşfet's question (docs/design/aura → Keşfet).
+    question: 'Bu akşam\nnerede oturuyorsun?',
+    eventTagShort: 'Etkinlik',
+    weekNote: 'Bu hafta',
     eventsTitle: 'Etkinlikler',
     noEvents: 'Bu hafta planlı etkinlik yok.',
     comingSoon: 'Yeni mekanlar yakında.',
