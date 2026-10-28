@@ -1,6 +1,7 @@
 # Yeni görünüm: renk bulutları, buzlu cam, kapsül kankiler ve hareket (28 Ekim)
 
 ## Karar
+
 Proje sahibi, referans videodaki akıcı ve havadar görünümü uygulamanın çalışma ilkesini bozmadan
 istedi. Ön izleme tuvali (Claude Design, https://claude.ai/artifact/Fcdza7SJs4i7xyYQJnhRVe) üç
 turda düzeltildi: kapsül kankiler her ekrana yerleşti, düğme ikonları uygulamanın dilinde
@@ -10,6 +11,7 @@ denendi, panolar tuvalde bozuk oynadığı için kare kare çizilmiş bir filme 
 28 Ekim'de "her şey iyi görünüyor, uygulamaya aktar" dedi.
 
 ## Kaynak
+
 - Görünüş: `docs/design/aura/project/` (tuvalin panoları, `aura.css`, `canvas.json`). Panolardaki
   görseller `/_blob/<id>` adresindedir; hangi dosya olduğu `docs/design/aura/blobs.json`'da.
 - Hareket: `docs/design/aura/project/hareket.json` ve `docs/design/aura/skall-hareket.mp4`
@@ -19,6 +21,7 @@ denendi, panolar tuvalde bozuk oynadığı için kare kare çizilmiş bir filme 
   eşitliği denetler), bileşenler `apps/mobile/src/aura/`.
 
 ## Aktarım sırası
+
 1. Temel: renk bulutlu zemin (her ekran, yalnızca açık ekranda kayar), buzlu cam kartlar, yeni
    sekme çubuğu (iki şekilli ikonlar, uzayıp toparlanan beyaz disk, ikonun zıplaması), sekme
    açılınca ekranın bulanıklıktan gelişi, ekran parçalarının sıralı gelişi.
@@ -32,6 +35,7 @@ denendi, panolar tuvalde bozuk oynadığı için kare kare çizilmiş bir filme 
 7. Açılış ve kayıt.
 
 ## Maliyet
+
 - Bulanıklık Android 12 ve üstünde sistem çizer; altında geçiş sade solmadır.
 - Bulanıklık her görünümde ayrı bir katman ister: yalnızca ekranın tamamında ve ilk iki parçada
   kullanılır, listelerin satırları bulanıklıksız yükselir.
