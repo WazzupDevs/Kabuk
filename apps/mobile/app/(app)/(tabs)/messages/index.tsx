@@ -4,16 +4,13 @@ import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { Gathering, SceneGround } from '@/aura/Scene';
-import { Avatar } from '@/components/Avatar';
-import { ListCard } from '@/components/ListCard';
+import { CapIcon } from '@/aura/CapIcon';
+import { Av, Badge, GlassList, Li, Seg, T, useKit } from '@/aura/kit';
 import { DeliveryTicks } from '@/components/ChatBubble';
 import { EmptyState } from '@/components/EmptyState';
 import { useLoaderHold } from '@/components/Loader';
 import { Rise } from '@/components/motion';
 import { Screen } from '@/components/Screen';
-import { ScreenHeader } from '@/components/ScreenHeader';
-import { Segmented } from '@/components/Segmented';
-import { Text } from '@/components/Text';
 import { TypingDots } from '@/components/TypingDots';
 import { openDm } from '@/features/friends/openDm';
 import { useDmInbox, useRequestCount } from '@/features/friends/queries';
@@ -24,9 +21,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
 import { AURA } from '@/theme/aura';
-import { rowPress } from '@/theme/rowPress';
-import { useTheme } from '@/theme/ThemeProvider';
-import { SPACING } from '@/theme/tokens';
+import { KIT } from '@/theme/auraKit';
 
 type Tab = 'chats' | 'requests';
 
@@ -40,24 +35,29 @@ export default function MessagesScreen() {
   const now = useNow(60_000);
 
   return (
-    <Screen edges={['top']} refreshable>
-      <ScreenHeader title={tr.tabs.messages} trailing={<NotificationsBell />} />
-      <View className="mt-3">
-        <Segmented<Tab>
-          fill
-          value={tab}
-          onChange={setTab}
-          accessibilityLabel={tr.messages.tabs}
-          options={[
-            { value: 'chats', label: tr.messages.chats, testID: 'messages-tab-chats' },
-            {
-              value: 'requests',
-              label: tr.messages.requests(requests),
-              testID: 'messages-tab-requests',
-            },
-          ]}
-        />
+    <Screen edges={['top']} refreshable gap={KIT.size.rowGap}>
+      {/* docs/design/aura → Mesajlar: the title, the bell, the two tabs, the incoming requests'
+          scene, the conversations in one glass list. */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <T v="display" accessibilityRole="header">
+          {tr.tabs.messages}
+        </T>
+        <NotificationsBell />
       </View>
+      <Seg<Tab>
+        value={tab}
+        onChange={setTab}
+        accessibilityLabel={tr.messages.tabs}
+        options={[
+          { value: 'chats', label: tr.messages.chatsTab, testID: 'messages-tab-chats' },
+          {
+            value: 'requests',
+            label: tr.messages.requestsTab,
+            badge: requests,
+            testID: 'messages-tab-requests',
+          },
+        ]}
+      />
       {tab === 'chats' && requests > 0 ? (
         <IncomingScene count={requests} onPress={() => setTab('requests')} />
       ) : null}
@@ -99,15 +99,13 @@ function Chats({ now }: { now: Date }) {
     );
   }
   return (
-    <View className="mt-3">
-      <ListCard bare>
-        {inbox.data.map((t, i) => (
-          <Rise key={t.publicId} index={i}>
-            <InboxRow thread={t} now={now} listen={i < TYPING_ROWS} />
-          </Rise>
-        ))}
-      </ListCard>
-    </View>
+    <GlassList>
+      {inbox.data.map((t, i) => (
+        <Rise key={t.publicId} index={i}>
+          <InboxRow thread={t} now={now} listen={i < TYPING_ROWS} />
+        </Rise>
+      ))}
+    </GlassList>
   );
 }
 
@@ -115,8 +113,8 @@ function Chats({ now }: { now: Date }) {
 // of channels, and the rows further down are off screen.
 const TYPING_ROWS = 30;
 
-// A conversation (v45: .crow): the photo, the name and the time on top, the last message or
-// "yazıyor" below. Unread: the name bolder, the time, the line and the counter in the accent.
+// A conversation (docs/design/aura → Mesajlar: `.li`): the face, the name and the time on top, the
+// last message or "yazıyor" below, the unread count as a pink badge.
 function InboxRow({
   thread: t,
   now,
@@ -126,73 +124,62 @@ function InboxRow({
   now: Date;
   listen: boolean;
 }) {
-  const theme = useTheme();
   const name = t.displayName ?? tr.profile.noName;
   const unread = t.unreadCount > 0;
   const threadId = t.threadId;
   const preview = <Preview thread={t} unread={unread} />;
   return (
-    <Pressable
+    <Li
       testID={`inbox-${name}`}
-      accessibilityRole="button"
       accessibilityLabel={tr.messages.row(name, t.lastBody ?? tr.messages.noMessage, t.unreadCount)}
-      disabled={!threadId}
       onPress={
         threadId ? () => openDm({ threadId, publicId: t.publicId, name: t.displayName }) : undefined
       }
     >
-      {({ pressed }) => (
-        <View
-          className="flex-row items-center"
-          // skall tuvali (Mesajlar): a row of the list card; the name, the last line (ink and bold
-          // while unread), and the time over the unread count on the right.
-          style={{
-            gap: SPACING[3] + SPACING[0.5],
-            minHeight: SPACING[16] + SPACING[2],
-            paddingVertical: SPACING[3],
-            ...rowPress(theme, pressed),
-          }}
-        >
-          <Avatar kind="profile" size="xl" name={name} photoUrl={t.photoUrl} />
-          <View className="flex-1" style={{ gap: SPACING[0.5] }}>
-            <Text variant="heading">{name}</Text>
-            <View className="flex-row items-center gap-2">
-              {threadId && listen ? (
-                <TypingOr threadId={threadId} lastMessageAt={t.lastMessageAt}>
-                  {preview}
-                </TypingOr>
-              ) : (
-                preview
-              )}
-            </View>
-          </View>
-          <View className="items-end" style={{ gap: SPACING[1.5] }}>
-            {t.lastMessageAt ? (
-              <Text variant="fine">
-                {tr.messages.stamp(t.lastMessageAt, inboxStamp(t.lastMessageAt, now))}
-              </Text>
-            ) : null}
-            {unread ? <UnreadCount count={t.unreadCount} /> : null}
-          </View>
+      <Av size="row" name={name} photoUrl={t.photoUrl} />
+      <View style={{ flex: 1, gap: ROW_GAP }}>
+        <View style={BETWEEN}>
+          <T v="h3" style={{ flexShrink: 1 }}>
+            {name}
+          </T>
+          {t.lastMessageAt ? (
+            <T v="stamp">{tr.messages.stamp(t.lastMessageAt, inboxStamp(t.lastMessageAt, now))}</T>
+          ) : null}
         </View>
-      )}
-    </Pressable>
+        <View style={BETWEEN}>
+          {threadId && listen ? (
+            <TypingOr threadId={threadId} lastMessageAt={t.lastMessageAt}>
+              {preview}
+            </TypingOr>
+          ) : (
+            preview
+          )}
+          {unread ? (
+            <View accessible accessibilityLabel={tr.messages.unread(t.unreadCount)}>
+              <Badge count={t.unreadCount} />
+            </View>
+          ) : null}
+        </View>
+      </View>
+    </Li>
   );
 }
+const ROW_GAP = 3;
+const BETWEEN = {
+  flexDirection: 'row' as const,
+  alignItems: 'center' as const,
+  justifyContent: 'space-between' as const,
+  gap: KIT.size.chipsGap,
+};
 
-// The last message: the ticks on the own one, in the accent when unread.
+// The last message: the ticks on the own one; ink while unread.
 function Preview({ thread: t, unread }: { thread: DmInboxThread; unread: boolean }) {
   return (
-    <View className="flex-1 flex-row items-center gap-1">
+    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: KIT.size.tagGap }}>
       {t.lastFromMe && t.lastStatus ? <DeliveryTicks delivery={t.lastStatus} /> : null}
-      <Text
-        variant={unread ? 'label' : 'fine'}
-        tone={unread ? 'text' : 'muted'}
-        numberOfLines={1}
-        className="flex-1"
-      >
+      <T v="fine" ink={unread} strong={unread} lines={1} style={{ flex: 1 }}>
         {t.lastBody ?? tr.messages.noMessage}
-      </Text>
+      </T>
     </View>
   );
 }
@@ -218,39 +205,20 @@ function TypingOr({
   }, [lastMessageAt, clearTyping]);
   if (!typing) return children;
   return (
-    <View className="flex-1 flex-row items-center" testID="inbox-typing">
-      <Text variant="label" tone="accent">
-        {tr.messages.typing}
-      </Text>
-      <TypingDots />
-    </View>
-  );
-}
-
-function UnreadCount({ count }: { count: number }) {
-  const { colors, shape } = useTheme();
-  return (
     <View
-      accessible
-      accessibilityLabel={tr.messages.unread(count)}
-      className="items-center justify-center"
-      style={{
-        minWidth: SPACING[5] + SPACING[0.5],
-        height: SPACING[5] + SPACING[0.5],
-        paddingHorizontal: SPACING[1.5],
-        borderRadius: shape.radius.pill,
-        backgroundColor: colors.primary,
-      }}
+      style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: KIT.size.chipGap }}
+      testID="inbox-typing"
     >
-      <Text variant="caption" tone="onPrimary">
-        {String(count)}
-      </Text>
+      <TypingDots />
+      <T v="fine" strong color={KIT.primary}>
+        {tr.messages.typing}
+      </T>
     </View>
   );
 }
 
 // Waiting friend requests as a scene above the chats (docs/design/aura → Mesajlar): two buddies at
-// the right; a press opens İstekler.
+// the right, the words and a small round "forward" at the left; a press opens İstekler.
 function IncomingScene({ count, onPress }: { count: number; onPress: () => void }) {
   const [width, setWidth] = useState(0);
   const g = AURA.gatherings.messages;
@@ -261,18 +229,24 @@ function IncomingScene({ count, onPress }: { count: number; onPress: () => void 
       accessibilityLabel={`${tr.messages.incomingTitle}, ${tr.messages.incomingBody(count)}`}
       onPress={onPress}
       onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
-      style={{
-        marginTop: SPACING[3],
-        height: g.height,
-        borderRadius: AURA.scene.radius,
-        overflow: 'hidden',
-      }}
+      style={{ height: g.height, borderRadius: AURA.scene.radius, overflow: 'hidden' }}
     >
       <SceneGround />
       {width > 0 ? <Gathering kind="messages" width={width} delay={INCOMING_CAST_DELAY} /> : null}
-      <View style={{ padding: SPACING[4], width: '62%', gap: SPACING[1] }}>
-        <Text variant="heading">{tr.messages.incomingTitle}</Text>
-        <Text variant="fine">{tr.messages.incomingBody(count)}</Text>
+      <View
+        style={{
+          position: 'absolute',
+          left: KIT.size.pad,
+          top: INCOMING_TOP,
+          width: INCOMING_WIDTH,
+          gap: KIT.size.tagGap,
+        }}
+      >
+        <T v="h3">{tr.messages.incomingTitle}</T>
+        <T v="fine">{tr.messages.incomingBody(count)}</T>
+        <View style={{ marginTop: KIT.size.tagGap }}>
+          <SmallRound />
+        </View>
       </View>
     </Pressable>
   );
@@ -280,3 +254,26 @@ function IncomingScene({ count, onPress }: { count: number; onPress: () => void 
 
 // The buddies come in after the screen's own arrival.
 const INCOMING_CAST_DELAY = 200;
+const INCOMING_TOP = 16;
+const INCOMING_WIDTH = 196;
+const SMALL_ROUND = 30;
+
+function SmallRound() {
+  const { c } = useKit();
+  return (
+    <View
+      style={{
+        width: SMALL_ROUND,
+        height: SMALL_ROUND,
+        borderRadius: SMALL_ROUND / 2,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: c.raisedRound,
+        borderWidth: KIT.size.edge,
+        borderColor: c.raisedEdge,
+      }}
+    >
+      <CapIcon name="forward" color={c.ink} size={KIT.size.iconSm} />
+    </View>
+  );
+}

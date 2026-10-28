@@ -588,7 +588,7 @@ export function Av({
 }: {
   name: string;
   photoUrl?: string | null;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'sm' | 'md' | 'row' | 'lg' | 'xl';
   // Something else in the ring (a capsule).
   children?: ReactNode;
 }) {

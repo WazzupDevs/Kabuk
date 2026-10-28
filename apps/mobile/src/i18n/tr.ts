@@ -324,6 +324,9 @@ export const tr = {
     tabs: 'Mesajlar ve istekler',
     chats: 'Sohbet',
     requests: (n: number) => (n > 0 ? `İstekler (${n})` : 'İstekler'),
+    // The tabs of docs/design/aura → Mesajlar; the count is the badge.
+    chatsTab: 'Sohbetler',
+    requestsTab: 'İstekler',
     // The scene above the chats while friend requests wait (docs/design/aura → Mesajlar); a press
     // opens İstekler.
     incomingTitle: 'Gelen istekler',

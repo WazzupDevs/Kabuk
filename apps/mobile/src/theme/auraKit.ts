@@ -45,7 +45,14 @@ export const KIT_TYPE = {
   msg: t(500, 15, 21),
   day: t(600, 12, 16),
   wordmark: t(800, 26, 30, -0.04),
-  av: { md: t(700, 15, 19), sm: t(700, 12, 16), lg: t(700, 22, 26), xl: t(700, 32, 38) },
+  av: {
+    md: t(700, 15, 19),
+    sm: t(700, 12, 16),
+    // A conversation's face in Mesajlar (52).
+    row: t(700, 18, 22),
+    lg: t(700, 22, 26),
+    xl: t(700, 32, 38),
+  },
 } as const;
 
 export type KitTextVariant = Exclude<keyof typeof KIT_TYPE, 'av' | 'strong'>;
@@ -172,7 +179,7 @@ export const KIT = {
     tagPadX: 9,
     tagGap: 4,
     round: 44,
-    av: { sm: 32, md: 44, lg: 64, xl: 96 },
+    av: { sm: 32, md: 44, row: 52, lg: 64, xl: 96 },
     avRing: 2,
     avRingXl: 3,
     thumb: 60,
