@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { StyleProp, TextStyle } from 'react-native';
 
+import { CapIcon, type CapIconName } from '@/aura/CapIcon';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON } from '@/theme/tokens';
 
@@ -80,6 +81,38 @@ const BAR: Partial<Record<IconName, CanvasBarIcon>> = {
   'map-outline': 'map',
 };
 
+// The airy look's capsule icons (docs/design/aura → `.ci`; the owner's call, 28 Ekim): where the
+// new canvas draws an icon, it wins over the earlier families.
+const CAP: Partial<Record<IconName, CapIconName>> = {
+  'chevron-back': 'back',
+  'chevron-forward': 'forward',
+  'arrow-forward': 'forward',
+  close: 'close',
+  add: 'plus',
+  checkmark: 'check',
+  'ellipsis-vertical': 'more',
+  'ellipsis-horizontal': 'more',
+  search: 'search',
+  'search-outline': 'search',
+  location: 'pin',
+  'location-outline': 'pin',
+  notifications: 'bell',
+  'notifications-outline': 'bell',
+  'chatbubble-outline': 'chat',
+  'chatbubbles-outline': 'chat',
+  'chatbubble-ellipses-outline': 'chat',
+  person: 'user',
+  'person-outline': 'user',
+  'person-add-outline': 'invite',
+  'calendar-outline': 'calendar',
+  'compass-outline': 'compass',
+  'options-outline': 'settings',
+  'settings-outline': 'settings',
+  shuffle: 'shuffle',
+  list: 'list',
+  'map-outline': 'map',
+};
+
 export function canvasIconFor(name: IconName): 'line' | 'bar' | null {
   return LINE[name] ? 'line' : BAR[name] ? 'bar' : null;
 }
@@ -96,6 +129,8 @@ export function AppIcon({
   style?: StyleProp<TextStyle>;
 }) {
   const { colors } = useTheme();
+  const cap = CAP[name];
+  if (cap) return <CapIcon name={cap} color={color ?? colors.text} size={size} />;
   const bar = BAR[name];
   if (bar) {
     const tone: CanvasTone =

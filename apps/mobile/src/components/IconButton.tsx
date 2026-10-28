@@ -11,13 +11,13 @@ import Svg, { Rect } from 'react-native-svg';
 
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { BRAND } from '@/theme/brand';
+import { KIT } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 
 import type { IconName } from './Button';
 import { usePressScale } from './motion';
 import { AppIcon } from './AppIcon';
-import { GlassFace } from './GlassFace';
 
 type Props = {
   icon: IconName;
@@ -44,7 +44,7 @@ export function IconButton({
   danger = false,
   disabled = false,
 }: Props) {
-  const { colors, shape } = useTheme();
+  const { colors, shape, scheme } = useTheme();
   const pressScale = usePressScale();
   return (
     <Pressable
@@ -65,22 +65,21 @@ export function IconButton({
               alignItems: 'center',
               justifyContent: 'center',
             },
+            // docs/design/aura (`.round.glassy`): a raised white circle with a white edge.
             round && danger
               ? { backgroundColor: colors.dangerSoft }
               : round
-                ? { boxShadow: shape.shadow.card }
+                ? {
+                    backgroundColor: KIT[scheme].raisedRound,
+                    borderWidth: KIT.size.edge,
+                    borderColor: KIT[scheme].raisedEdge,
+                    boxShadow: KIT[scheme].raisedShadow || undefined,
+                  }
                 : { backgroundColor: pressed ? colors.surface2 : 'transparent' },
             round ? pressScale(pressed && !disabled) : null,
           ]}
         >
           {/* A round button is glass too (theme/glass.ts → BUTTON_GLASS). */}
-          {round ? (
-            <GlassFace
-              kind={danger ? 'tinted' : 'clear'}
-              fill={danger ? undefined : colors.surface}
-              radius={shape.radius.pill}
-            />
-          ) : null}
           {glyph ?? <AppIcon name={icon} size={ICON.lg} color={colors.text} />}
         </View>
       )}

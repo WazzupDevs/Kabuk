@@ -2,6 +2,7 @@ import { View } from 'react-native';
 
 import { BRAND } from '@/theme/brand';
 import { withAlpha } from '@/theme/contrast';
+import { KIT } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
@@ -38,25 +39,29 @@ const GLASS_ALPHA = 0.62;
 // A chip (the skall design system → Chip): a filled capsule label, never outlined or tilted.
 // Keşfet's liveliness is calm / lively / buzz, an event `event`; a table's intent is `calm`.
 export function Tag({ label, variant = 'neutral', icon, live }: Props) {
-  const { colors, shape } = useTheme();
+  const { colors, shape, scheme } = useTheme();
 
+  // docs/design/aura (`.tag`): purple, pink, amber and green on their soft grounds, the plain one
+  // raised white.
+  const t = scheme === 'dark' ? KIT.tagsDark : KIT.tags;
+  const glassy = { bg: KIT[scheme].raisedRound, fg: colors.text };
   const fill: Record<TagVariant, { bg: string; fg: string }> = {
-    calm: { bg: colors.calm, fg: colors.onCalm },
-    lively: { bg: colors.lively, fg: colors.onLively },
-    buzz: { bg: colors.buzz, fg: colors.onBuzz },
-    event: { bg: colors.event, fg: colors.onEvent },
-    neutral: { bg: colors.surface2, fg: colors.text },
-    profiled: { bg: colors.violet, fg: colors.onViolet },
-    won: { bg: colors.successSoft, fg: colors.onSuccessSoft },
-    lost: { bg: colors.lively, fg: colors.onLively },
-    done: { bg: colors.surface2, fg: colors.muted },
-    game: { bg: colors.calm, fg: colors.onCalm },
-    chat: { bg: colors.calm, fg: colors.onCalm },
+    calm: t.purple,
+    lively: t.amber,
+    buzz: t.pink,
+    event: t.amber,
+    neutral: glassy,
+    profiled: t.pink,
+    won: t.green,
+    lost: t.amber,
+    done: { bg: KIT[scheme].raisedRound, fg: colors.muted },
+    game: t.purple,
+    chat: t.pink,
     leader: { bg: colors.text, fg: colors.canvas },
-    positive: { bg: colors.successSoft, fg: colors.onSuccessSoft },
-    warn: { bg: colors.warnSoft, fg: colors.onWarnSoft },
+    positive: t.green,
+    warn: t.amber,
     danger: { bg: colors.dangerSoft, fg: colors.onDangerSoft },
-    brand: { bg: colors.surface2, fg: colors.accent },
+    brand: t.purple,
     light: { bg: BRAND.white, fg: BRAND.ink },
     glass: { bg: withAlpha(BRAND.ink, GLASS_ALPHA), fg: BRAND.white },
   };

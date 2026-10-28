@@ -1,7 +1,10 @@
 import { Image, Pressable, View } from 'react-native';
 
 import { usePhoto } from '@/lib/usePhoto';
+import { avatarGround } from '@/aura/kit';
 import { initials, TABLE_AVATAR_INK, tableAvatarOf } from '@/theme/avatar';
+import { KIT } from '@/theme/auraKit';
+import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING, TOUCH } from '@/theme/tokens';
 
@@ -116,8 +119,16 @@ export function Avatar(props: Props) {
       {initials(props.name)}
     </Text>
   );
+  // docs/design/aura (`.av`): a white ring and a soft shadow; without a photo the name's colour.
+  const ring = side >= AVATAR_SIZE.md ? KIT.size.avRing : KIT.size.edge;
   const face = (
-    <View style={[frame, { backgroundColor: photo.url ? colors.surface2 : colors.violet }]}>
+    <View
+      style={[
+        frame,
+        photo.url ? { backgroundColor: colors.surface2 } : gradientStyle(avatarGround(props.name)),
+        { borderWidth: ring, borderColor: KIT.white, boxShadow: KIT.avShadow },
+      ]}
+    >
       {inner}
     </View>
   );

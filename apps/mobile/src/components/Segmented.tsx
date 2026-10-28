@@ -1,7 +1,9 @@
 import { Pressable, View } from 'react-native';
 
+import { KIT } from '@/theme/auraKit';
+import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, SPACING, TOUCH } from '@/theme/tokens';
+import { ICON, SPACING } from '@/theme/tokens';
 import { haptic } from '@/lib/haptics';
 
 import type { IconName } from './Button';
@@ -42,19 +44,26 @@ export function Segmented<T extends string>({
   fill,
   onSoft,
 }: Props<T>) {
-  const { colors, shape } = useTheme();
+  const { colors, shape, scheme } = useTheme();
+  const k = KIT[scheme];
   return (
     <View
       accessibilityRole="tablist"
       accessibilityLabel={accessibilityLabel}
       className={fill ? 'flex-row self-stretch' : 'flex-row self-start'}
-      style={{
-        // skall tuvali (skall.css → `.seg`): the track, 3 px inset, 4 px between.
-        padding: 3,
-        gap: SPACING[1],
-        borderRadius: shape.radius.pill,
-        backgroundColor: onSoft ? colors.surface : colors.track,
-      }}
+      // docs/design/aura (Masa, Mesajlar): a glass capsule, 5 inside, 4 between; the chosen tab
+      // raised white.
+      style={[
+        gradientStyle(k.glass),
+        {
+          padding: KIT.size.segPad,
+          gap: KIT.size.segGap,
+          borderRadius: KIT.size.seg,
+          borderWidth: KIT.size.edge,
+          borderColor: k.glassEdge,
+          boxShadow: k.glassShadow,
+        },
+      ]}
     >
       {options.map((o) => {
         const on = o.value === value;
@@ -75,12 +84,12 @@ export function Segmented<T extends string>({
               alignItems: 'center',
               justifyContent: 'center',
               gap: SPACING[1],
-              minHeight: TOUCH.min,
-              minWidth: iconOnly ? TOUCH.min : undefined,
+              minHeight: KIT.size.btnSm,
+              minWidth: iconOnly ? KIT.size.btnSm : undefined,
               paddingHorizontal: iconOnly ? 0 : SPACING[3],
-              borderRadius: shape.radius.pill,
-              backgroundColor: on ? (onSoft ? colors.surface2 : colors.surface) : 'transparent',
-              boxShadow: on && !onSoft ? shape.shadow.raised : undefined,
+              borderRadius: KIT.size.btnSm,
+              backgroundColor: on ? k.segOn : 'transparent',
+              boxShadow: on ? k.segShadow || undefined : undefined,
             }}
           >
             {o.icon ? (
@@ -91,7 +100,7 @@ export function Segmented<T extends string>({
               />
             ) : null}
             {iconOnly ? null : (
-              <Text variant="label" tone={on ? 'text' : 'muted'}>
+              <Text variant="buttonSmall" tone={on ? 'text' : 'muted'} numberOfLines={1}>
                 {o.label}
               </Text>
             )}

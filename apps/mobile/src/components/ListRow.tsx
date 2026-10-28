@@ -3,8 +3,10 @@ import { Pressable, View } from 'react-native';
 
 import { useSinglePress } from '@/lib/useSinglePress';
 import { rowPress } from '@/theme/rowPress';
+import { KIT } from '@/theme/auraKit';
+import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, SPACING, TOUCH } from '@/theme/tokens';
+import { ICON, TOUCH } from '@/theme/tokens';
 
 import { CardPressContext } from './ListCard';
 import { usePressScale } from './motion';
@@ -49,7 +51,7 @@ export function ListRow({
   const theme = useTheme();
   const cardPress = useContext(CardPressContext);
   const press = useSinglePress(onPress);
-  const { colors, shape } = theme;
+  const { colors } = theme;
   const pressScale = usePressScale();
   const content = (
     <>
@@ -68,38 +70,29 @@ export function ListRow({
       ) : null}
     </>
   );
+  // docs/design/aura (`.li`): 12 over and under, 16 at the sides, 12 between; a row on its own
+  // is the smaller glass.
+  const k = KIT[theme.scheme];
+  const row = {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: KIT.size.liGap,
+    minHeight: TOUCH.large,
+    paddingVertical: KIT.size.liPadY,
+  };
   const style = inset
-    ? {
-        flexDirection: 'row' as const,
-        alignItems: 'center' as const,
-        gap: SPACING[3] + SPACING[0.5],
-        minHeight: TOUCH.large + SPACING[2],
-        paddingVertical: SPACING[3],
-        paddingHorizontal: SPACING[4],
-      }
+    ? { ...row, paddingHorizontal: KIT.size.liPadX }
     : card
       ? {
-          flexDirection: 'row' as const,
-          alignItems: 'center' as const,
-          gap: SPACING[3] + SPACING[0.5],
-          minHeight: TOUCH.large + SPACING[2],
-          paddingVertical: SPACING[3],
-          paddingHorizontal: SPACING[4],
-          borderRadius: shape.radius.lg,
-          backgroundColor: colors.surface,
-          borderWidth: shape.stroke.card,
-          borderColor: colors.cardLine,
-          boxShadow: shape.shadow.card,
+          ...row,
+          ...gradientStyle(k.glass),
+          paddingHorizontal: KIT.size.liPadX,
+          borderRadius: KIT.size.glassRadiusSm,
+          borderWidth: KIT.size.edge,
+          borderColor: k.glassEdge,
+          boxShadow: k.glassShadow,
         }
-      : {
-          flexDirection: 'row' as const,
-          alignItems: 'center' as const,
-          gap: SPACING[3] + SPACING[0.5],
-          minHeight: TOUCH.large + SPACING[2],
-          paddingVertical: SPACING[3],
-          borderBottomWidth: shape.stroke.hairline,
-          borderBottomColor: colors.divider,
-        };
+      : { ...row, borderBottomWidth: KIT.size.hair, borderBottomColor: k.hair };
   if (!press)
     return (
       <View style={style} testID={testID}>

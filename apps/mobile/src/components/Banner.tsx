@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
 
+import { KIT } from '@/theme/auraKit';
+import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
@@ -31,7 +33,7 @@ export function Banner({
   children?: ReactNode;
   testID?: string;
 }) {
-  const { colors, shape } = useTheme();
+  const { colors, scheme } = useTheme();
   const [bg, fg, note] =
     tone === 'danger'
       ? [colors.dangerSoft, colors.onDangerSoft, colors.onDangerSoft]
@@ -45,13 +47,18 @@ export function Banner({
       testID={testID}
       accessibilityLiveRegion="polite"
       className="flex-row items-start"
-      style={{
-        gap: SPACING[3],
-        paddingVertical: SPACING[3],
-        paddingHorizontal: SPACING[3] + SPACING[0.5],
-        borderRadius: shape.radius.md,
-        backgroundColor: bg,
-      }}
+      // docs/design/aura: a note is a soft capsule-cornered card (20 round); the plain one glass.
+      style={[
+        tone === 'info' ? gradientStyle(KIT[scheme].glass) : { backgroundColor: bg },
+        {
+          gap: SPACING[3],
+          paddingVertical: SPACING[3],
+          paddingHorizontal: SPACING[3] + SPACING[0.5],
+          borderRadius: KIT.size.glassRadiusSm,
+          borderWidth: tone === 'info' ? KIT.size.edge : 0,
+          borderColor: KIT[scheme].glassEdge,
+        },
+      ]}
     >
       <AppIcon name={ICONS[tone]} size={ICON.md} color={fg} />
       <View className="flex-1" style={{ gap: SPACING[0.5] }}>

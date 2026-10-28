@@ -11,6 +11,7 @@ import {
   STILL_MOTION,
 } from '@/theme/markMotion';
 import { BRAND } from '@/theme/brand';
+import { KIT } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
@@ -73,7 +74,7 @@ export function StateMark({ kind, size = MARK_SIZE }: { kind: StateKind; size?: 
 const DISC_MARK = SPACING[10];
 
 export function EmptyState({ kind, icon, title, body, action }: Props) {
-  const { colors, shape } = useTheme();
+  const { shape, scheme } = useTheme();
   const [shown, setShown] = useState(kind !== 'loading');
   useEffect(() => {
     if (kind !== 'loading') return undefined;
@@ -84,10 +85,14 @@ export function EmptyState({ kind, icon, title, body, action }: Props) {
     <View
       className="items-center justify-center"
       style={{
-        width: SPACING[12],
-        height: SPACING[12],
+        // docs/design/aura (`.round.glassy`, larger): a raised white disc with a white edge.
+        width: SPACING[16],
+        height: SPACING[16],
         borderRadius: shape.radius.pill,
-        backgroundColor: colors.surface2,
+        backgroundColor: KIT[scheme].raisedRound,
+        borderWidth: KIT.size.edge,
+        borderColor: KIT[scheme].raisedEdge,
+        boxShadow: KIT[scheme].raisedShadow || undefined,
       }}
     >
       {kind ? (
