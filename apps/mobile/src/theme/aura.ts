@@ -116,8 +116,12 @@ export const AURA = {
     light: {
       top: '#F3EEFF',
       bottom: '#FCF1F7',
-      glowA: 'rgba(123, 92, 255, 0.30)',
-      glowB: 'rgba(255, 79, 139, 0.22)',
+      // aura.css `.scene`: three soft glows over the violet-to-pink ground.
+      glows: [
+        { color: 'rgba(185, 166, 255, 0.55)', cx: '15%', cy: '0%', rx: '90%', ry: '80%' },
+        { color: 'rgba(255, 159, 192, 0.45)', cx: '95%', cy: '10%', rx: '80%', ry: '80%' },
+        { color: 'rgba(255, 208, 138, 0.45)', cx: '50%', cy: '110%', rx: '70%', ry: '60%' },
+      ],
       floor: 'rgba(255, 255, 255, 0.95)',
       shadow: 'rgba(40, 25, 110, 0.24)',
       edge: 'rgba(255, 255, 255, 0.70)',
@@ -125,8 +129,11 @@ export const AURA = {
     dark: {
       top: '#221A4C',
       bottom: '#2A1636',
-      glowA: 'rgba(123, 92, 255, 0.40)',
-      glowB: 'rgba(255, 79, 139, 0.26)',
+      glows: [
+        { color: 'rgba(123, 92, 255, 0.45)', cx: '15%', cy: '0%', rx: '90%', ry: '80%' },
+        { color: 'rgba(255, 79, 139, 0.30)', cx: '95%', cy: '10%', rx: '80%', ry: '80%' },
+        { color: 'rgba(255, 181, 71, 0.20)', cx: '50%', cy: '110%', rx: '70%', ry: '60%' },
+      ],
       floor: 'rgba(255, 255, 255, 0.16)',
       shadow: 'rgba(0, 0, 0, 0.45)',
       edge: 'rgba(255, 255, 255, 0.12)',

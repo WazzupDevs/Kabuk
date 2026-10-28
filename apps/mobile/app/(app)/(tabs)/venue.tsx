@@ -3,14 +3,13 @@ import { seatsAnonymously } from '@shared/gender.ts';
 import type { Concept, Intent } from '@shared/rooms.ts';
 import { tableState } from '@shared/tableCard.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Redirect } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, type ScrollView, View } from 'react-native';
 
 import { Loader } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
 import { EmptyState } from '@/components/EmptyState';
-import { Text } from '@/components/Text';
 import { useVenueSpots } from '@/features/checkin/spots';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
@@ -19,7 +18,7 @@ import { Lobby } from '@/features/rooms/Lobby';
 import { OpenLobbySheet } from '@/features/rooms/OpenLobbySheet';
 import { useCurrentRoom, useRoom, useVenueTables } from '@/features/rooms/queries';
 import { TableCard } from '@/features/rooms/TableCard';
-import { VenueName, VenueTop } from '@/features/rooms/VenueTop';
+import { VenueHead, VenueNameRow } from '@/features/venue/VenueHead';
 import { VenueChatCard } from '@/features/venueChat/VenueChatCard';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -28,7 +27,8 @@ import { callLeave } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useNow } from '@/lib/useNow';
 import { useReduceMotion } from '@/lib/useReduceMotion';
-import { SPACING } from '@/theme/tokens';
+import { KIT } from '@/theme/auraKit';
+import { T } from '@/aura/kit';
 
 type LobbySheet = { intent: Intent | null; gameTag: Concept | null };
 
@@ -132,45 +132,46 @@ export default function VenueScreen() {
     ]);
   }
 
+  // The spot at the top right; while there is no table a press changes it (the server refuses it
+  // at a table).
+  const spotName = venueHasSpots ? (checkIn.data.spot?.name ?? tr.venue.chooseSpot) : null;
   return (
     <Screen
       edges={['top']}
       scrollRef={scroll}
+      gap={KIT.size.rowGap}
       top={
-        <VenueTop
-          onLeave={confirmLeave}
-          leaving={leave.isPending}
+        <VenueHead
+          spot={spotName}
+          onSpot={state === 'none' ? () => router.push('/spot') : undefined}
           identity={checkIn.data.identity}
           atTable={!!room}
+          minutesLeft={minutesLeft}
+          onLeave={confirmLeave}
+          leaving={leave.isPending}
         />
       }
     >
-      <View className="gap-1">
+      {/* The order of Mekan's board (docs/design/aura → Mekan): the venue's name, the person's
+          scene, the venue chat, the lobby. */}
+      <View>
         {/* The table's changes reach the card while it is on screen (Realtime and the check). */}
         {room ? <RoomWatch roomId={room.id} /> : null}
-        <VenueName name={checkIn.data.venue?.name ?? ''} />
+        <VenueNameRow name={checkIn.data.venue?.name ?? ''} />
         {leave.isError ? (
-          <Text variant="fine" tone="danger">
+          <T v="fine" color={KIT.danger}>
             {errorMessage(leave.error)}
-          </Text>
+          </T>
         ) : null}
       </View>
-      {/* The venue chat and the person's table card scroll with the lobby on the clouds
-          (docs/design/aura → Mekan). */}
-      <View style={{ paddingTop: SPACING[2], paddingBottom: SPACING[1.5] }} testID="venue-pin">
-        <View className="gap-3">
-          <VenueChatCard venueId={checkIn.data.venue_id} sessionId={checkIn.data.id} />
-          <TableCard
-            checkIn={checkIn.data}
-            room={room}
-            state={state}
-            minutesLeft={minutesLeft}
-            venueHasSpots={venueHasSpots}
-            onCreate={() => setCreating(true)}
-            onOpenLobby={() => setLobbySheet({ intent: null, gameTag: null })}
-          />
-        </View>
-      </View>
+      <TableCard
+        checkIn={checkIn.data}
+        room={room}
+        state={state}
+        onCreate={() => setCreating(true)}
+        onOpenLobby={() => setLobbySheet({ intent: null, gameTag: null })}
+      />
+      <VenueChatCard venueId={checkIn.data.venue_id} sessionId={checkIn.data.id} />
       <View>
         <Lobby
           venueId={checkIn.data.venue_id}

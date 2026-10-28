@@ -32,7 +32,7 @@ export default function MutedScreen() {
   const now = useNow(60000);
   const list = mutes.data?.mutes ?? [];
   return (
-    <Screen>
+    <Screen list>
       <PageTop title={tr.settings.muted} />
       <View className="gap-3">
         <Text variant="fine">{tr.settings.mutedNote}</Text>

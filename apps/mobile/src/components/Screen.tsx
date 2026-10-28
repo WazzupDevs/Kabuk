@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Children, isValidElement, type ReactNode, type RefObject } from 'react';
+import { Children, isValidElement, type ReactNode, type RefObject, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { type Edge, SafeAreaView } from 'react-native-safe-area-context';
 
@@ -30,6 +30,13 @@ type Props = {
   // A bar that stays at the top while the page scrolls (Mekan's top row, the owner's call, 27
   // Ekim), on the screen's ground.
   top?: ReactNode;
+  // The space between the screen's parts (the canvas's `.content` gap).
+  gap?: number;
+  // A screen whose content is a list (rows one under another: the lobby, Keşfet, Mesajlar). Only
+  // these scroll; every other screen stays still (the owner's call, 28 Ekim). A fixed screen
+  // scrolls only when its content does not fit (the keyboard up, the largest text size), so nothing
+  // is cut. A screen that refreshes or moves its own scroll is a list.
+  list?: boolean;
 };
 
 // A scrolling screen on the colour clouds (docs/design/aura) with the theme's side padding. Under
@@ -43,6 +50,8 @@ export function Screen({
   onRefresh,
   refreshable,
   top,
+  gap,
+  list,
 }: Props) {
   const queryClient = useQueryClient();
   const refresh =
@@ -58,6 +67,7 @@ export function Screen({
     paddingHorizontal: shape.screenPadding,
     paddingTop: SPACING[3],
     paddingBottom: SPACING[8] + barSpace,
+    gap,
   };
   return (
     <SafeAreaView edges={safe} style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
@@ -78,7 +88,9 @@ export function Screen({
         // Android is edge-to-edge: the window no longer resizes for the keyboard, so pad here too.
         behavior="padding"
       >
-        {refresh && !scrollRef && !stickyHeaderIndices ? (
+        {!(list || refresh || scrollRef || stickyHeaderIndices) ? (
+          <FixedBody content={content}>{cascade(children, focus.opened)}</FixedBody>
+        ) : refresh && !scrollRef && !stickyHeaderIndices ? (
           <PullScroll
             onRefresh={refresh}
             contentContainerStyle={content}
@@ -98,6 +110,35 @@ export function Screen({
         )}
       </KeyboardAvoidingView>
     </SafeAreaView>
+  );
+}
+
+// A screen that is not a list: still, no bounce and no scroll bar. It scrolls only while its content
+// is taller than the screen (the keyboard up, the largest text size: nothing is cut, CLAUDE.md →
+// Ekran davranışı).
+function FixedBody({
+  content,
+  children,
+}: {
+  content: { flexGrow: number; gap?: number };
+  children: ReactNode;
+}) {
+  const [box, setBox] = useState(0);
+  const [inner, setInner] = useState(0);
+  const overflows = box > 0 && inner > box + 1;
+  return (
+    <ScrollView
+      contentContainerStyle={content}
+      keyboardShouldPersistTaps="handled"
+      scrollEnabled={overflows}
+      bounces={false}
+      overScrollMode="never"
+      showsVerticalScrollIndicator={overflows}
+      onLayout={(e) => setBox(e.nativeEvent.layout.height)}
+      onContentSizeChange={(_w, h) => setInner(h)}
+    >
+      {children}
+    </ScrollView>
   );
 }
 

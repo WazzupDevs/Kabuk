@@ -22,23 +22,36 @@ export function SceneGround() {
             <Stop offset={0} stopColor={c.top} />
             <Stop offset={1} stopColor={c.bottom} />
           </LinearGradient>
-          <RadialGradient id={`a${id}`} cx="18%" cy="0%" rx="70%" ry="60%">
-            <Stop offset={0} stopColor={c.glowA} />
-            <Stop offset={1} stopColor={c.glowA} stopOpacity={0} />
-          </RadialGradient>
-          <RadialGradient id={`b${id}`} cx="90%" cy="10%" rx="55%" ry="50%">
-            <Stop offset={0} stopColor={c.glowB} />
-            <Stop offset={1} stopColor={c.glowB} stopOpacity={0} />
-          </RadialGradient>
+          {c.glows.map((g, i) => (
+            <RadialGradient key={i} id={`r${i}${id}`} cx={g.cx} cy={g.cy} rx={g.rx} ry={g.ry}>
+              <Stop offset={0} stopColor={g.color} />
+              <Stop offset={GLOW_END} stopColor={g.color} stopOpacity={0} />
+            </RadialGradient>
+          ))}
         </Defs>
         <Rect x={0} y={0} width={100} height={100} fill={`url(#g${id})`} />
-        <Rect x={0} y={0} width={100} height={100} fill={`url(#a${id})`} />
-        <Rect x={0} y={0} width={100} height={100} fill={`url(#b${id})`} />
+        {c.glows.map((_, i) => (
+          <Rect key={i} x={0} y={0} width={100} height={100} fill={`url(#r${i}${id})`} />
+        ))}
       </Svg>
       <Floor />
+      {/* aura.css `.scene::after`: a light inner edge. */}
+      <View
+        style={[
+          StyleSheet.absoluteFill,
+          {
+            borderWidth: AURA.card.edgeWidth,
+            borderColor: c.edge,
+            borderRadius: AURA.scene.radius,
+          },
+        ]}
+      />
     </View>
   );
 }
+
+// A glow fades out by 70 % of its radius (aura.css `.scene`).
+const GLOW_END = 0.7;
 
 // The white floor glow under the buddies.
 function Floor() {
