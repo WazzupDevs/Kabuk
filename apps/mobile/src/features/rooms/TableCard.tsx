@@ -6,10 +6,10 @@ import { router } from 'expo-router';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
 
+import { Crew, SceneGround } from '@/aura/Scene';
 import { Button } from '@/components/Button';
 import { CanvasBar } from '@/components/CanvasIcon';
 import { Card } from '@/components/Card';
-import { GlyphDisc } from '@/components/GlyphDisc';
 import { Icon } from '@/components/Icon';
 import { LiveDot } from '@/components/LiveDot';
 import { Loader } from '@/components/Loader';
@@ -21,6 +21,7 @@ import { roomsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useRoomMemberProfiles } from '@/features/profile/queries';
 import { GradientFill } from '@/components/GradientFill';
+import { AURA } from '@/theme/aura';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, OPACITY, SPACING, TABLE_CARD, TOUCH } from '@/theme/tokens';
 
@@ -58,6 +59,11 @@ const LOBBY_BEAT_MS = 1600;
 // the spot to change (the server refuses it at a table). Fuller since the owner's call (27 Ekim):
 // the table's icon blurred large behind the card, a larger icon, the people's faces, the
 // buttons with the family's icons and the time left as a bar.
+// The words' part of the empty card: tall enough for the crew's scene (its text is 58 % wide).
+const HERO_TEXT_HEIGHT = AURA.heroHeight - 2 * SPACING[4];
+// The crew comes in after the card's own arrival.
+const HERO_CREW_DELAY = 260;
+
 export function TableCard({
   checkIn,
   room,
@@ -90,17 +96,30 @@ export function TableCard({
   return (
     <Card testID="table-card" flush>
       {backdrop && state !== 'none' ? <Backdrop source={backdrop} /> : null}
+      {state === 'none' || !room ? (
+        <>
+          <SceneGround />
+          <Crew height={AURA.heroHeight} delay={HERO_CREW_DELAY} />
+        </>
+      ) : null}
       <View style={{ padding: SPACING[4] }}>
         {state === 'none' || !room ? (
-          <View className="gap-3" testID="no-table">
-            <View className="flex-row items-center" style={{ gap: SPACING[3] + SPACING[0.5] }}>
-              <GlyphDisc icon="people-outline" />
-              <View className="flex-1 gap-0.5">
-                <Text variant="heading">{tr.venue.noTable}</Text>
-                <Text variant="fine">{tr.venue.noTableHint}</Text>
+          // The airy look's Mekan card (docs/design/aura → Mekan): the capsule buddies stand at the
+          // right of the scene, the words and "Masa kur" at the left.
+          <View testID="no-table" style={{ minHeight: HERO_TEXT_HEIGHT }}>
+            <View style={{ width: '58%', gap: SPACING[1.5] }}>
+              <Text variant="heading">{tr.venue.noTable}</Text>
+              <Text variant="fine">{tr.venue.noTableHint}</Text>
+              <View style={{ alignSelf: 'flex-start', marginTop: SPACING[1.5] }}>
+                <Button
+                  tight
+                  size="sm"
+                  testID="table-create-open"
+                  label={tr.venue.createTable}
+                  onPress={onCreate}
+                />
               </View>
             </View>
-            <Button testID="table-create-open" label={tr.venue.createTable} onPress={onCreate} />
           </View>
         ) : (
           <>

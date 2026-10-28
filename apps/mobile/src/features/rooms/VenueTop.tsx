@@ -7,6 +7,7 @@ import { LookAvatar } from '@/components/LookAvatar';
 import { Banner } from '@/components/Banner';
 import { BarIcon } from '@/components/BarIcon';
 import { IconButton } from '@/components/IconButton';
+import { LiveDot } from '@/components/LiveDot';
 import { Loader } from '@/components/Loader';
 import { usePressScale } from '@/components/motion';
 import { Text } from '@/components/Text';
@@ -20,30 +21,42 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 import { AnonSwitch } from '@/ui/AnonSwitch';
 
-// The wordmark in the middle of the row (v45: .va .logo svg, 22 px high).
-const LOGO_HEIGHT = 22;
+// The wordmark at the head of the row (docs/design/aura → Mekan: the mark and "skall").
+const LOGO_HEIGHT = 30;
 // The note that the one change is spent stays this long.
 const USED_NOTE_MS = 2600;
 // Longer venue names (a campus's full name) take the smaller title style, as ScreenHeader does.
 const LONG_NAME = 22;
 
-// The venue's name, under the bar; longer names (a campus's full name) in the title style.
+// The venue's name under the bar, "Mekandasın" with a live dot beside it (docs/design/aura →
+// Mekan); longer names (a campus's full name) in the heading style.
 export function VenueName({ name }: { name: string }) {
   return (
-    <Text
-      variant={name.length > LONG_NAME ? 'title' : 'display'}
-      accessibilityRole="header"
-      testID="venue-name"
-    >
-      {name}
-    </Text>
+    <View className="flex-row items-center justify-between" style={{ gap: SPACING[3] }}>
+      <Text
+        variant={name.length > LONG_NAME ? 'heading' : 'title'}
+        accessibilityRole="header"
+        testID="venue-name"
+        className="shrink"
+      >
+        {name}
+      </Text>
+      <View className="flex-row items-center" style={{ gap: SPACING[1.5] }}>
+        <LiveDot tone="success" periodMs={HERE_BEAT_MS} size={SPACING[2]} />
+        <Text variant="fine" tone="text">
+          {tr.venue.here}
+        </Text>
+      </View>
+    </View>
   );
 }
 
-// The venue screen's bar (v45: .top), fixed at the top while the page scrolls (the owner's call, 27
-// Ekim): "Mekandan ayrıl" on the left, a round button with the red bars' cross; the wordmark in
-// the screen's very middle (the owner's report: it sat left of it, the right side being wider); the
-// anonymous switch and the own photo on the right, which opens Profil.
+// The live dot's beat beside "Mekandasın".
+const HERE_BEAT_MS = 1600;
+
+// The venue screen's bar, fixed at the top while the page scrolls (the owner's call, 27 Ekim): the
+// skall wordmark at its head (docs/design/aura → Mekan); on the right the anonymous switch, the own
+// photo, which opens Profil, and "Mekandan ayrıl", a round button with the red bars' cross.
 export function VenueTop({
   onLeave,
   leaving,
@@ -67,26 +80,7 @@ export function VenueTop({
   return (
     <View className="gap-2">
       <View className="flex-row items-center justify-between" style={{ minHeight: TOUCH.min }}>
-        <IconButton
-          round
-          icon="close"
-          testID="venue-leave"
-          label={tr.venue.leave}
-          onPress={onLeave}
-          disabled={leaving}
-          glyph={
-            leaving ? (
-              <Loader kind="meet" size={ICON.md} delay={0} label={null} />
-            ) : (
-              <BarIcon kind="cross" size={ICON.md} />
-            )
-          }
-        />
-        <View
-          pointerEvents="none"
-          accessible={false}
-          className="absolute inset-0 items-center justify-center"
-        >
+        <View pointerEvents="none" accessible={false}>
           <Wordmark height={LOGO_HEIGHT} />
         </View>
         <View className="flex-row items-center" style={{ gap: SPACING[1.5] }}>
@@ -99,6 +93,21 @@ export function VenueTop({
             onUsedPress={() => setUsedNote(true)}
           />
           <OwnPhoto anonymous={anonymous} />
+          <IconButton
+            round
+            icon="close"
+            testID="venue-leave"
+            label={tr.venue.leave}
+            onPress={onLeave}
+            disabled={leaving}
+            glyph={
+              leaving ? (
+                <Loader kind="meet" size={ICON.md} delay={0} label={null} />
+              ) : (
+                <BarIcon kind="cross" size={ICON.md} />
+              )
+            }
+          />
         </View>
       </View>
       <IdentitySheet

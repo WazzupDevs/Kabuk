@@ -110,6 +110,40 @@ export const AURA = {
   },
   // The tab icons' colours when selected: the mark's (purple back, pink front, amber overlap).
   mark: { back: BRAND.purple, front: BRAND.pink, overlap: BRAND.orange, light: BRAND.white },
+  // A scene (aura.css `.scene`): a soft violet-to-pink ground with a white floor glow at the bottom,
+  // where the capsule buddies stand, each with a small shadow under its feet.
+  scene: {
+    light: {
+      top: '#F3EEFF',
+      bottom: '#FCF1F7',
+      glowA: 'rgba(123, 92, 255, 0.30)',
+      glowB: 'rgba(255, 79, 139, 0.22)',
+      floor: 'rgba(255, 255, 255, 0.95)',
+      shadow: 'rgba(40, 25, 110, 0.24)',
+      edge: 'rgba(255, 255, 255, 0.70)',
+    },
+    dark: {
+      top: '#221A4C',
+      bottom: '#2A1636',
+      glowA: 'rgba(123, 92, 255, 0.40)',
+      glowB: 'rgba(255, 79, 139, 0.26)',
+      floor: 'rgba(255, 255, 255, 0.16)',
+      shadow: 'rgba(0, 0, 0, 0.45)',
+      edge: 'rgba(255, 255, 255, 0.12)',
+    },
+    radius: 26,
+    floorHeight: 96,
+  },
+  // The hero card's crew (aura.css, Mekan): three buddies at the right, the far one smaller and
+  // higher. Heights in px on a 196 high scene; `right` and `bottom` from its corner.
+  crew: [
+    { look: 'c:nane e:koyu h:anten', height: 84, right: 64, bottom: 70, phase: 400 },
+    { look: 'c:pembe e:koyu h:kulaklik', height: 136, right: 86, bottom: -14, phase: 1100 },
+    { look: 'c:mor e:klasik f:maske', height: 121, right: -12, bottom: -6, phase: 1900 },
+  ],
+  heroHeight: 196,
+  // The headcount as capsules (aura.css `.pips`), colours in turn; at most `max` drawn.
+  pips: { colors: ['#9C86FF', '#FF7EA8', '#FFB547'], w: 6, h: 12, gap: 3, max: 8 },
   // An SVG mask: white shows, black hides (the outlined icons' gap).
   mask: { show: '#FFFFFF', hide: '#000000' },
 } as const;
