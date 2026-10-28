@@ -20,7 +20,6 @@ import { AuraBackground } from '@/aura/AuraBackground';
 import { CapIcon } from '@/aura/CapIcon';
 import { Btn, Chip, Glass, GlassList, Li, Live, Sec, T, Tag, useKit } from '@/aura/kit';
 import { MarkDisk } from '@/aura/MarkDisk';
-import { useTabFocus } from '@/aura/motion';
 import { Gathering, SceneGround } from '@/aura/Scene';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
@@ -70,7 +69,6 @@ type Here = { name: string; spot: string | null; type: VenueType };
 // page (K-43). The bell is in Mesajlar only (K-6).
 export default function ExploreScreen() {
   const { scheme, shape } = useTheme();
-  const focus = useTabFocus();
   const table = useActiveTable();
   const now = useNow(30_000);
   const { venues, cities, listed } = useCityVenues();
@@ -113,7 +111,7 @@ export default function ExploreScreen() {
   return (
     <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
       {/* The colour clouds (docs/design/aura → Keşfet); the map covers them when it is open. */}
-      <AuraBackground running={focus.focused} />
+      <AuraBackground />
       <View style={{ flex: 1 }}>
         {showMap && headerHeight > 0 ? (
           <View style={StyleSheet.absoluteFill}>

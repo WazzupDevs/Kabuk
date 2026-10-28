@@ -92,7 +92,7 @@ export default function VenueDetailScreen() {
   // list: the screen stays still (CLAUDE.md → Ekran davranışı).
   return (
     <View style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
-      <AuraBackground running />
+      <AuraBackground />
       <ScrollView
         bounces={false}
         overScrollMode="never"
