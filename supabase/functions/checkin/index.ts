@@ -23,7 +23,7 @@ import {
   needsConsent,
   needsProfile,
 } from '../_shared/pure/consent.ts';
-import { locationCheck } from '../_shared/pure/devProject.ts';
+import { locationCheck, refusesMockedPosition } from '../_shared/pure/devProject.ts';
 import { AppError } from '../_shared/pure/errors.ts';
 import { checkinIdentity } from '../_shared/pure/venueChat.ts';
 
@@ -34,6 +34,7 @@ const Body: z.ZodType<CheckinRequest> = z.discriminatedUnion('action', [
     lat: z.number().min(-90).max(90),
     lng: z.number().min(-180).max(180),
     accuracyM: z.number().nonnegative().max(100_000).nullable(),
+    mocked: z.boolean().optional(),
     // Today's app sends a headcount and `teams`; both are ignored.
     headcount: z.number().int().optional(),
     locationConsentVersion: z.string(),
@@ -87,6 +88,9 @@ async function checkIn(userId: string, body: CheckInRequest): Promise<CheckInRes
   await assignCapsuleIdentity(db, userId);
   if (body.locationConsentVersion !== CURRENT_LOCATION_CONSENT_VERSION) {
     throw new AppError('consent_outdated', 'Location consent is not the current version.');
+  }
+  if (refusesMockedPosition(body.mocked, currentLocationCheck(), Deno.env.get('SUPABASE_URL'))) {
+    throw new AppError('location_mocked', 'The position comes from a mock location app.');
   }
 
   // Inside the boundary (with its tolerance), or near the point of a venue without one.

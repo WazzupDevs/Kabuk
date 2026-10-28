@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { seatsAnonymously } from '@shared/gender.ts';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { type ReactNode, useEffect, useState } from 'react';
 import { Pressable, useWindowDimensions, View } from 'react-native';
@@ -17,6 +18,7 @@ import { RoomComposer, RoomMessages, useRoomChat } from '@/features/chat/ChatPan
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { GAME_CARDS, GameCard, type GameCategory, PosterGrid } from '@/features/rooms/PosterCard';
 import { useRoomMemberProfiles } from '@/features/profile/queries';
+import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { IncomingRequest, useMarkTableScreen } from '@/features/rooms/IncomingRequest';
 import { InviteSheet } from '@/features/rooms/InviteSheet';
 import { TableIconSheet } from '@/features/rooms/TableIconSheet';
@@ -47,6 +49,7 @@ export default function TableScreen() {
   const { colors, shape } = useTheme();
   const queryClient = useQueryClient();
   const checkIn = useActiveTable();
+  const ownPhoto = useOwnPhoto();
   const room = useRoom(id);
   const chat = useRoomChat(id);
   const open = !!room.data && room.data.status !== 'closed';
@@ -127,7 +130,9 @@ export default function TableScreen() {
           tableName={seen.name}
           phones={seen.phones}
           profiled={seen.profiled}
-          anonymous={checkIn.data?.identity.mode === 'anonymous'}
+          anonymous={
+            !!checkIn.data && seatsAnonymously(checkIn.data.identity.mode, ownPhoto.gender)
+          }
           onClose={backToVenue}
         />
       );

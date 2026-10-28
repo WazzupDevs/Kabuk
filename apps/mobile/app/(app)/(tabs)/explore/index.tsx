@@ -202,7 +202,12 @@ export default function ExploreScreen() {
           />
         ) : null}
         {ready && layout === 'single' && venues.data[0] ? (
-          <SingleVenue venue={venues.data[0]} here={hereCard} bottomSpace={barSpace} />
+          <SingleVenue
+            venue={venues.data[0]}
+            here={hereCard}
+            checkedInHere={here?.venue_id === venues.data[0].id}
+            bottomSpace={barSpace}
+          />
         ) : null}
       </View>
     </SafeAreaView>
@@ -390,10 +395,14 @@ function PlaceSheet({
 function SingleVenue({
   venue,
   here,
+  checkedInHere,
   bottomSpace,
 }: {
   venue: ExploreVenue;
   here: Here | null;
+  // Already checked in at this venue: a new check-in would end the current one and take the
+  // person off its table (audit VEN-2), so the button goes back to Mekan instead.
+  checkedInHere: boolean;
   bottomSpace: number;
 }) {
   const { colors, shape } = useTheme();
@@ -431,8 +440,12 @@ function SingleVenue({
             </View>
             <Button
               size="lg"
-              label={tr.explore.checkInHere}
+              label={checkedInHere ? tr.explore.backToVenue : tr.explore.checkInHere}
               onPress={() => {
+                if (checkedInHere) {
+                  router.navigate('/venue');
+                  return;
+                }
                 setVenue({
                   id: venue.id,
                   name: venue.name,

@@ -16,6 +16,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { ApiError, roomsApi } from '@/lib/api';
+import { registerForPush } from '@/features/push/push';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useNowUntil } from '@/lib/useNow';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -78,6 +79,8 @@ export function Lobby({
       roomsApi.requestJoin(table.roomId, asMember),
     onSuccess: (_data, { table, asMember }) => {
       track('join_requested', { as_member: asMember });
+      // The spec's second moment to ask for push (MVP_SPEC §9): sending a join request.
+      void registerForPush();
       setAsked({ roomId: table.roomId, name: table.name });
       void queryClient.invalidateQueries({ queryKey: roomKeys.myRequest });
     },

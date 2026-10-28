@@ -6,6 +6,7 @@ import {
   isDevProjectUrl,
   isLocalUrl,
   locationCheck,
+  refusesMockedPosition,
 } from './devProject.ts';
 
 const DEV = `https://${DEV_PROJECT_HOST}`;
@@ -75,5 +76,22 @@ describe('deviceReachableUrl', () => {
     expect(
       deviceReachableUrl('http://kong:80001/x', 'http://kong:8000', 'http://10.0.2.2:54321'),
     ).toBe('http://kong:80001/x');
+  });
+});
+
+describe('refusesMockedPosition', () => {
+  const PILOT = 'https://abcdefghijklmnop.supabase.co';
+  it('refuses a mocked position where the check is enforced or ignored', () => {
+    expect(refusesMockedPosition(true, 'enforced', PILOT)).toBe(true);
+    expect(refusesMockedPosition(true, 'ignored', PILOT)).toBe(true);
+    expect(refusesMockedPosition(true, 'enforced', DEV)).toBe(true);
+  });
+  it('lets a real position or a phone without the flag through', () => {
+    expect(refusesMockedPosition(false, 'enforced', PILOT)).toBe(false);
+    expect(refusesMockedPosition(undefined, 'enforced', PILOT)).toBe(false);
+  });
+  it('lets a mocked position through when the check is skipped or on the local stack', () => {
+    expect(refusesMockedPosition(true, 'skipped', DEV)).toBe(false);
+    expect(refusesMockedPosition(true, 'enforced', 'http://kong:8000')).toBe(false);
   });
 });

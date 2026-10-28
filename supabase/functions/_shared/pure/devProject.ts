@@ -35,6 +35,18 @@ export function locationCheck(
   return isLocalUrl(url) || isDevProjectUrl(url) ? 'skipped' : 'ignored';
 }
 
+// A position the phone reports as coming from a mock location app (Android) is refused at check-in
+// (audit SRV-1): with a fake GPS app anyone could sit at any venue. Not when the location check is
+// skipped, and not on the local stack, whose emulator (E2E: Maestro's setLocation) reports every
+// position as mocked. The flag is the phone's word; a phone that leaves it out is not refused.
+export function refusesMockedPosition(
+  mocked: boolean | undefined,
+  check: LocationCheck,
+  supabaseUrl: string | undefined,
+): boolean {
+  return mocked === true && check !== 'skipped' && !isLocalUrl(supabaseUrl ?? '');
+}
+
 // The local stack signs storage URLs on its internal address (SUPABASE_URL in `functions serve` is
 // http://kong:8000), which neither the host nor the Android emulator can reach, so a profile photo
 // never loads there. LOCAL_DEVICE_URL (a local-only setting; E2E: http://10.0.2.2:54321) is the

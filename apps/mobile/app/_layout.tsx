@@ -56,9 +56,11 @@ function RootNavigator() {
   }
 
   // Consents, a display name, a birth date and the gender (docs/SPEC_V3.md §3, §23.D), then the
-  // optional photo step.
+  // optional photo step. On the profile read, not its last fetch: a background read that fails
+  // (no network) keeps the data but is no longer a success, and took the person to the first
+  // onboarding screen (audit AUTH-1).
   const onboarded =
-    signedIn && profile.isSuccess && !needsOnboarding(profile.data) && !extrasPending;
+    signedIn && profile.data !== undefined && !needsOnboarding(profile.data) && !extrasPending;
 
   return (
     <Stack screenOptions={stackOptions}>

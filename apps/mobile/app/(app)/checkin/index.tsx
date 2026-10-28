@@ -13,7 +13,7 @@ import { Checkbox } from '@/components/Checkbox';
 import { RouteSheet, useCloseSheet } from '@/components/RouteSheet';
 import { Text } from '@/components/Text';
 import { useProfile } from '@/features/account/useProfile';
-import { useCheckinDraft } from '@/features/checkin/draft';
+import { type Position, useCheckinDraft } from '@/features/checkin/draft';
 import { useSkipLocation } from '@/features/checkin/locationMode';
 import { SpotPicker } from '@/features/checkin/SpotPicker';
 import { useVenueSpots } from '@/features/checkin/spots';
@@ -52,7 +52,7 @@ export default function LocationScreen() {
 
   const hasSpots = (spots.data ?? []).length > 0;
 
-  function proceed(position: { lat: number; lng: number; accuracyM: number | null }) {
+  function proceed(position: Position) {
     setPosition(position);
     checkIn.mutate({ position, spot: hasSpots ? spot : null });
   }
@@ -73,7 +73,7 @@ export default function LocationScreen() {
     }
     setLocating(true);
     try {
-      const { coords } = await Location.getCurrentPositionAsync({
+      const { coords, mocked } = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.High,
       });
       if (!venue) return;
@@ -86,7 +86,7 @@ export default function LocationScreen() {
         setProblem(venue.boundary ? 'outsideBoundary' : 'tooFar');
         return;
       }
-      proceed({ ...here, accuracyM: coords.accuracy });
+      proceed({ ...here, accuracyM: coords.accuracy, mocked: mocked === true });
     } catch {
       if (!proceedWithoutPosition()) setProblem('failed');
     } finally {

@@ -11,6 +11,7 @@ const STATUS: Record<ErrorCode, number> = {
   birth_date_invalid: 422,
   venue_not_found: 404,
   too_far: 403,
+  location_mocked: 403,
   alias_exhausted: 409,
   spot_required: 422,
   spot_invalid: 422,

@@ -1790,6 +1790,7 @@ export const tr = {
     birth_date_invalid: 'Geçerli bir doğum tarihi gir. Kayıtlı doğum tarihi değiştirilemez.',
     venue_not_found: 'Bu mekan artık listede değil.',
     too_far: 'Bu mekana çok uzaktasın. Mekandayken tekrar dene.',
+    location_mocked: 'Konumun sahte bir uygulamadan geliyor. Onu kapatıp tekrar dene.',
     alias_exhausted: 'Şu an bu mekanda masa açılamıyor. Biraz sonra tekrar dene.',
     spot_required: 'Önce nerede olduğunu seç.',
     spot_invalid: 'Bu nokta artık seçilemiyor. Listeden başka bir nokta seç.',

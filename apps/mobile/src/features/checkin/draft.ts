@@ -5,7 +5,8 @@ import { create } from 'zustand';
 // The check-in in progress (docs/SPEC_V2.md §4): the venue is chosen by hand in Keşfet first; the
 // position only verifies it. Memory only: cleared after the check-in request and never persisted
 // (MVP_SPEC §4.2).
-export type Position = { lat: number; lng: number; accuracyM: number | null };
+// `mocked`: the phone says a mock location app gave the position (Android); the server refuses it.
+export type Position = { lat: number; lng: number; accuracyM: number | null; mocked?: boolean };
 // A venue with a boundary (the campus) is checked against it, others against their point.
 export type DraftVenue = {
   id: string;
