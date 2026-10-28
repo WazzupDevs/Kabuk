@@ -66,6 +66,7 @@ export function Chips<T extends string>({
                 backgroundColor: on ? k.chipOn : k.raisedChip,
                 borderWidth: KIT.size.edge,
                 borderColor: on ? k.chipOn : k.raisedEdge,
+                boxShadow: on ? undefined : k.chipShadow || undefined,
               },
               pressScale(pressed),
             ]}

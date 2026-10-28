@@ -244,6 +244,7 @@ function PeopleFaces({ roomId, phones, me }: { roomId: string; phones: number; m
             borderRadius: KIT.size.av.sm,
             borderWidth: KIT.size.avRing,
             borderColor: KIT.white,
+            boxShadow: KIT.avShadow,
           }}
         >
           <PersonFace

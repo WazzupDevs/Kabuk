@@ -241,6 +241,7 @@ function SpotTile({ source }: { source: ImageSourcePropType | undefined }) {
         height: SPOT_TILE,
         borderRadius: KIT.size.thumbRadius,
         overflow: 'hidden',
+        boxShadow: KIT.thumbShadow,
       }}
     >
       {source ? (
