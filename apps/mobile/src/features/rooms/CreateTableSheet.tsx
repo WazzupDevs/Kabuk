@@ -37,7 +37,6 @@ import {
 } from './TableIcon';
 import { TABLE_ICON_IMAGES } from './tableIconImages';
 
-
 type Props = {
   onClose: () => void;
   venueId: string;
