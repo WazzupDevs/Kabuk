@@ -326,9 +326,7 @@ export function ChatBubble({
                 hitSlop={SPACING[1.5]}
                 className="self-start"
               >
-                <RNText style={[KIT_TYPE.fine, KIT_TYPE.strong, { color: nameInk }]}>
-                  {name}
-                </RNText>
+                <RNText style={[KIT_TYPE.fine, KIT_TYPE.strong, { color: nameInk }]}>{name}</RNText>
               </Pressable>
             ) : null}
             <SwipeToReply onReply={onReply}>{bubble}</SwipeToReply>
