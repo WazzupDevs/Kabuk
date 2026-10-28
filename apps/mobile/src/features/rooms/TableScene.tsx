@@ -16,6 +16,10 @@ import { type TablePerson } from './queries';
 import { TABLE_ICON_IMAGES } from './tableIconImages';
 
 const S = KIT.stage;
+// The board's stage is 330 high; Masa's is lower (the owner's call, 28 Ekim) and everything on it
+// stands lower and smaller by as much.
+const BOARD_HEIGHT = 330;
+const V = S.height / BOARD_HEIGHT;
 
 // Where the people stand on Masa's stage (docs/design/aura → Masa), in the board's 390 wide frame:
 // the centre and, for the two in front, the feet below the floor; the two behind stand higher at
@@ -76,8 +80,9 @@ export function TableScene({
   const shown = ordered.slice(0, SEATS.length);
   const more = ordered.length - shown.length;
   const k = width > 0 ? Math.min(1, width / S.frame) : 1;
+  const kv = k * V;
   const picture = icon ? TABLE_ICON_IMAGES[icon] : undefined;
-  const disk = S.disk * k;
+  const disk = S.disk * kv;
   return (
     <View
       onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
@@ -105,6 +110,7 @@ export function TableScene({
                 publicId={profiles?.get(p.sessionId)}
                 index={i}
                 k={k}
+                kv={kv}
                 late={first !== null && !first.has(p.sessionId)}
               />
             ))
@@ -112,14 +118,14 @@ export function TableScene({
         {more > 0 ? (
           <View
             pointerEvents="none"
-            style={{ position: 'absolute', right: MORE_RIGHT * k, bottom: MORE_BOTTOM * k }}
+            style={{ position: 'absolute', right: MORE_RIGHT * k, bottom: MORE_BOTTOM * kv }}
           >
             <Tag label={tr.table.more(more)} />
           </View>
         ) : null}
       </Pressable>
       {/* The table's picture; the owner changes it from here (MasaSimgeDegistir). */}
-      <View style={{ position: 'absolute', left: (width - disk) / 2, bottom: S.diskBottom * k }}>
+      <View style={{ position: 'absolute', left: (width - disk) / 2, bottom: S.diskBottom * kv }}>
         <Pressable
           testID="table-icon"
           accessibilityRole={onIcon ? 'button' : undefined}
@@ -127,7 +133,7 @@ export function TableScene({
           disabled={!onIcon}
           onPress={onIcon}
         >
-          <Disk size={disk} radius={S.diskRadius * k}>
+          <Disk size={disk} radius={S.diskRadius * kv}>
             {picture ? (
               <Image source={picture} fadeDuration={0} style={{ width: disk, height: disk }} />
             ) : (
@@ -147,13 +153,16 @@ function Seat({
   publicId,
   index,
   k,
+  kv,
   late,
 }: {
   person: TablePerson;
   you: boolean;
   publicId: string | undefined;
   index: number;
+  // Across (the frame's width) and up (the frame's width and the stage's lowering).
   k: number;
+  kv: number;
   late: boolean;
 }) {
   const seat = SEATS[index] ?? SEATS[0];
@@ -163,32 +172,32 @@ function Seat({
   const delay = late ? 0 : SEAT_DELAY + index * MOTION.stagger.part;
   const label = <Tag label={name} />;
   if (seat.front) {
-    const h = BUDDY_FRONT * k;
+    const h = BUDDY_FRONT * kv;
     return (
       <>
         {buddy ? (
           <View
             pointerEvents="none"
-            style={{ position: 'absolute', left: x - (h * FIG_RATIO) / 2, bottom: FRONT_FEET * k }}
+            style={{ position: 'absolute', left: x - (h * FIG_RATIO) / 2, bottom: FRONT_FEET * kv }}
           >
             <Buddy look={buddy} height={h} delay={delay} phase={index * PHASE} />
           </View>
         ) : (
-          <Centered x={x} bottom={FRONT_FACE * k}>
+          <Centered x={x} bottom={FRONT_FACE * kv}>
             <Face person={person} publicId={publicId} delay={delay} late={late} you={you} />
           </Centered>
         )}
-        <Centered x={x} bottom={FRONT_TAG * k}>
+        <Centered x={x} bottom={FRONT_TAG * kv}>
           {label}
         </Centered>
       </>
     );
   }
   return (
-    <Centered x={x} bottom={BACK_BOTTOM * k}>
+    <Centered x={x} bottom={BACK_BOTTOM * kv}>
       <View style={{ alignItems: 'center', gap: COL_GAP }}>
         {buddy ? (
-          <Buddy look={buddy} height={BUDDY_BACK * k} delay={delay} phase={index * PHASE} />
+          <Buddy look={buddy} height={BUDDY_BACK * kv} delay={delay} phase={index * PHASE} />
         ) : (
           <Face person={person} publicId={publicId} delay={delay} late={late} you={you} />
         )}

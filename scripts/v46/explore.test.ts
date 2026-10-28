@@ -208,7 +208,6 @@ describe("v46's Keşfet motions", () => {
     expect(dot).toMatch(/useKeyframeLoop\(m\.liveFade, 'opacity', fades,/);
     expect(dot).toMatch(/useKeyframeLoop\(m\.liveHalo, 'scale', beats,/);
     expect(dot).toMatch(/useKeyframeLoop\(m\.liveHalo, 'opacity', beats,/);
-    expect(source('VenueThumb.tsx')).toMatch(/!\(reduce && steam\.offWhenReduced\)/);
     expect(source('VenueRow.tsx')).toMatch(/!\(reduce && m\.offWhenReduced\)/);
   });
 
@@ -216,19 +215,26 @@ describe("v46's Keşfet motions", () => {
     expect(thumbs.kafe.steam.map((b) => b.delayMs)).toEqual([0, 600]);
     expect(html).toContain('<rect class="th-steam" style="animation-delay:.6s"');
     for (const kind of ['cay', 'yemek', 'kampus'] as const) expect(thumbs[kind].steam).toEqual([]);
-    expect(source('VenueThumb.tsx')).toMatch(/delayMs: bar\.delayMs/);
+  });
+
+  // The app's venue icons are the type's pictures (the owner's call, 28 Ekim): no drawing, no
+  // steam; the picture is still.
+  it("draw a venue as its type's picture", () => {
+    const thumb = source('VenueThumb.tsx');
+    expect(thumb).toMatch(/kafe: 'kafe-espresso'/);
+    expect(thumb).toMatch(/kampus: 'kampus-saatkulesi'/);
+    expect(thumb).not.toMatch(/Animated/);
   });
 
   it("hold the loops where they rest, as the visual gate draws v46's still page", () => {
     expect(source('LiveDot.tsx')).toMatch(/useLoopActive\(\)/);
-    expect(source('VenueThumb.tsx')).toMatch(/useLoopActive\(\)/);
   });
 
   it('loop on the native driver, not Reanimated (a Reanimated loop commits the UI tree every frame on Android)', () => {
     const loop = source('nativeLoop.ts');
     expect(loop).toMatch(/import \{ Animated, Easing \} from 'react-native';/);
     expect(loop).toMatch(/useNativeDriver: true/);
-    for (const file of ['LiveDot.tsx', 'VenueThumb.tsx']) {
+    for (const file of ['LiveDot.tsx']) {
       expect(source(file), file).toMatch(/from '\.\/nativeLoop'/);
       expect(source(file), file).not.toMatch(/react-native-reanimated/);
     }

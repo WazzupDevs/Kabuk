@@ -91,15 +91,20 @@ export function TabBarSpace({ children }: { children: ReactNode }) {
 type SceneNavigation = {
   isFocused: () => boolean;
   addListener: (type: 'focus' | 'blur', callback: () => void) => () => void;
+  getState: () => { index: number; routes: readonly { key: string }[] };
 };
 
 // A tab screen as what the bar's glass shows (a GlassTarget on the screen's ground): the focused
 // one is the bar's target.
 export function TabScene({
   navigation,
+  routeKey,
   children,
 }: {
   navigation: SceneNavigation;
+  // The tab's own route: a focus after another tab counts as an opening, a focus after a sheet
+  // or a screen over the tabs closed does not.
+  routeKey: string;
   children: ReactElement;
 }) {
   const { scheme } = useTheme();
@@ -113,8 +118,17 @@ export function TabScene({
   useEffect(() => {
     const own = () => useBarMode.setState({ target: id });
     if (navigation.isFocused()) own();
+    // Whether the tab lost the focus to another tab (an opening when it comes back) or to a sheet
+    // or a screen over the tabs (Bildirimler, Ayarlar: closing it showed the tab arrive again, the
+    // owner's report, 28 Ekim).
+    let leftTab = false;
     const offFocus = navigation.addListener('focus', () => {
       own();
+      if (!leftTab) {
+        setFocus((f) => ({ ...f, focused: true }));
+        return;
+      }
+      leftTab = false;
       setFocus((f) => ({ focused: true, opened: f.opened + 1 }));
       if (!reduce) {
         p.setValue(0);
@@ -126,15 +140,17 @@ export function TabScene({
         }).start();
       }
     });
-    const offBlur = navigation.addListener('blur', () =>
-      setFocus((f) => ({ ...f, focused: false })),
-    );
+    const offBlur = navigation.addListener('blur', () => {
+      const state = navigation.getState();
+      leftTab = state.routes[state.index]?.key !== routeKey;
+      setFocus((f) => ({ ...f, focused: false }));
+    });
     return () => {
       offFocus();
       offBlur();
       useBarMode.setState((s) => (s.target === id ? { target: null } : s));
     };
-  }, [navigation, id, reduce, p]);
+  }, [navigation, routeKey, id, reduce, p]);
   const blur = useSteppedBlur(focus.opened, !reduce);
   const arrive = {
     flex: 1,

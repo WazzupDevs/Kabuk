@@ -19,7 +19,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { T, useKit } from '@/aura/kit';
+import { InSheet, T, useKit } from '@/aura/kit';
 import { Peek, type PeekKind } from '@/aura/Peek';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
@@ -164,17 +164,21 @@ export function RouteSheet({
                 onScroll={drag.onScroll}
                 scrollEventThrottle={16}
               >
-                <Quiet value>
-                  {title ? (
-                    <T v="title" accessibilityRole="header">
-                      {title}
-                    </T>
-                  ) : null}
-                  {/* docs/design/aura (`.sheet`): 14 under the title, 12 between the blocks. */}
-                  <View style={{ gap: KIT.size.rowGap, marginTop: title ? KIT.size.sheetGap : 0 }}>
-                    {children}
-                  </View>
-                </Quiet>
+                <InSheet>
+                  <Quiet value>
+                    {title ? (
+                      <T v="title" accessibilityRole="header">
+                        {title}
+                      </T>
+                    ) : null}
+                    {/* docs/design/aura (`.sheet`): 14 under the title, 12 between the blocks. */}
+                    <View
+                      style={{ gap: KIT.size.rowGap, marginTop: title ? KIT.size.sheetGap : 0 }}
+                    >
+                      {children}
+                    </View>
+                  </Quiet>
+                </InSheet>
               </ScrollView>
             </View>
           </Animated.View>

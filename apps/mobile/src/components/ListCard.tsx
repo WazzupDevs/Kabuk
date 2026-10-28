@@ -1,7 +1,7 @@
 import { Children, createContext, type ReactNode, useState } from 'react';
 import { View } from 'react-native';
 
-import { KIT } from '@/theme/auraKit';
+import { KIT, shadowList } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -44,7 +44,7 @@ export function ListCard({
                 borderWidth: KIT.size.edge,
                 borderColor: k.glassEdge,
                 borderRadius: KIT.size.glassRadius,
-                boxShadow: `${k.glassShadow}, ${KIT.glassInset}`,
+                boxShadow: shadowList(k.glassShadow, k.glassInset),
                 paddingVertical: KIT.size.listPadY,
               },
             ],

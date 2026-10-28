@@ -1,15 +1,13 @@
 import type { Friend } from '@shared/api/friends.ts';
 import { router } from 'expo-router';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
-import { Avatar } from '@/components/Avatar';
+import { Av, GlassList, Li, Round, T } from '@/aura/kit';
+
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
-import { ListCard } from '@/components/ListCard';
 import { EmptyState } from '@/components/EmptyState';
-import { Icon } from '@/components/Icon';
 import { useLoaderHold } from '@/components/Loader';
-import { Rise, usePressScale } from '@/components/motion';
 import { Screen } from '@/components/Screen';
 import { PageTop } from '@/components/PageTop';
 import { Text } from '@/components/Text';
@@ -17,9 +15,7 @@ import { useFriends } from '@/features/friends/queries';
 import { openDm } from '@/features/friends/openDm';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
-import { rowPress } from '@/theme/rowPress';
-import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, SPACING, TOUCH } from '@/theme/tokens';
+import { SPACING } from '@/theme/tokens';
 import { firstRows, useAfterTransition } from '@/lib/afterTransition';
 
 // Arkadaşlar, under Profil (docs/SPEC_V3.md §18.3; v45: .frs): the count beside the title, the
@@ -69,13 +65,11 @@ export default function FriendsScreen() {
           {friends.data.length === 0 ? (
             <EmptyState kind="empty" body={tr.friends.empty} />
           ) : (
-            <ListCard bare>
-              {firstRows(friends.data, settled).map((f, i) => (
-                <Rise key={f.publicId} index={i}>
-                  <FriendRow friend={f} />
-                </Rise>
+            <GlassList>
+              {firstRows(friends.data, settled).map((f) => (
+                <FriendRow key={f.publicId} friend={f} />
               ))}
-            </ListCard>
+            </GlassList>
           )}
         </View>
       )}
@@ -83,84 +77,32 @@ export default function FriendsScreen() {
   );
 }
 
-// A friend (v45: .frow): the photo, the name and since when, and "Mesaj" when there is a
-// conversation.
+// A friend as a row of the glass list (docs/design/aura, the lists of Profil and Mesajlar; the
+// owner's call, 28 Ekim): the photo, the name and since when, and the round chat button when
+// there is a conversation. The row opens the friend's profile.
 function FriendRow({ friend: f }: { friend: Friend }) {
-  const theme = useTheme();
   const name = f.displayName ?? tr.profile.noName;
   const threadId = f.threadId;
   return (
-    <View className="flex-row items-center" style={{ paddingRight: SPACING[4] }}>
-      <Pressable
-        className="flex-1"
-        testID={`friend-${name}`}
-        accessibilityRole="button"
-        accessibilityLabel={`${name}, ${tr.friends.since(f.since)}`}
-        onPress={() =>
-          router.push({ pathname: '/people/[publicId]', params: { publicId: f.publicId } })
-        }
-      >
-        {({ pressed }) => (
-          <View
-            className="flex-row items-center"
-            style={{
-              gap: SPACING[3] + SPACING[0.5],
-              minHeight: TOUCH.large + SPACING[2],
-              paddingVertical: SPACING[2.5],
-              ...rowPress(theme, pressed, SPACING[4], SPACING[2]),
-            }}
-          >
-            <Avatar kind="profile" size="xl" name={name} photoUrl={f.photoUrl} />
-            <View className="flex-1" style={{ gap: SPACING[0.5] }}>
-              <Text variant="heading">{name}</Text>
-              <Text variant="fine">{tr.friends.since(f.since)}</Text>
-            </View>
-          </View>
-        )}
-      </Pressable>
+    <Li
+      testID={`friend-${name}`}
+      accessibilityLabel={`${name}, ${tr.friends.since(f.since)}`}
+      onPress={() =>
+        router.push({ pathname: '/people/[publicId]', params: { publicId: f.publicId } })
+      }
+    >
+      <Av size="row" name={name} photoUrl={f.photoUrl} />
+      <View style={{ flex: 1, gap: SPACING[0.5] }}>
+        <T v="h3">{name}</T>
+        <T v="fine">{tr.friends.since(f.since)}</T>
+      </View>
       {threadId ? (
-        <MessagePill
-          name={name}
+        <Round
+          icon="chat"
+          label={tr.friends.message(name)}
           onPress={() => openDm({ threadId, publicId: f.publicId, name: f.displayName })}
         />
       ) : null}
-    </View>
-  );
-}
-
-// "Mesaj" (v45: .fmsg): a small capsule on the quiet fill, the touch area grown to 44.
-function MessagePill({ name, onPress }: { name: string; onPress: () => void }) {
-  const { colors, shape } = useTheme();
-  const pressScale = usePressScale();
-  const height = SPACING[9];
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={tr.friends.message(name)}
-      hitSlop={(TOUCH.min - height) / 2}
-      onPress={onPress}
-    >
-      {({ pressed }) => (
-        <View
-          className="flex-row items-center justify-center"
-          // skall tuvali (Arkadaslar): the quiet small button in the 108 wide slot.
-          style={[
-            {
-              gap: SPACING[1.5],
-              height,
-              width: SPACING[16] + SPACING[10] + SPACING[1],
-              borderRadius: shape.radius.pill,
-              backgroundColor: colors.surface2,
-            },
-            pressScale(pressed),
-          ]}
-        >
-          <Icon name="chatbubble-outline" size={ICON.sm} tone="accent" />
-          <Text variant="label" tone="text">
-            {tr.friends.messageShort}
-          </Text>
-        </View>
-      )}
-    </Pressable>
+    </Li>
   );
 }

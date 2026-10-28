@@ -20,11 +20,10 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { create } from 'zustand';
 
-import { AuraBackground } from '@/aura/AuraBackground';
+import { AuraBackground, AuraBand } from '@/aura/AuraBackground';
 import { CapIcon } from '@/aura/CapIcon';
-import { Btn, Chip, Round, Seg, T, Tag, useKit } from '@/aura/kit';
+import { Btn, Chip, Round, T, Tag, useKit } from '@/aura/kit';
 import { SceneGround } from '@/aura/Scene';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
@@ -70,16 +69,15 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 import { GlassTarget } from '@/ui/LiquidGlass';
 
-// "Kafama dokun" shows until the first tap on the capsule, while the app runs.
-const useHint = create<{ seen: boolean }>(() => ({ seen: false }));
-
-const PREVIEW = SPACING[16] * 2 + SPACING[8];
-// docs/design/aura → Kapsül: the scene's height under the status bar, how far its parts stand above
-// its bottom, the worn parts' tags.
-const CAPSULE_SCENE = 360;
-const SCENE_FOOT = 22;
-const WORN_TAG = 30;
-const WORN_ICON = 14;
+const PREVIEW = SPACING[16] * 2 + SPACING[1];
+// docs/design/aura → Kapsül, made low (the owner's call, 28 Ekim): the scene's height under the
+// status bar, how far its parts stand above its bottom, the worn parts' tags beside the capsule.
+const CAPSULE_SCENE = 236;
+const SCENE_FOOT = 14;
+const WORN_TAG = 28;
+const WORN_ICON = 12;
+// The soft edge under the fixed head and over the fixed buttons.
+const BAND_FADE = SPACING[6];
 // v46 feel(): the feeling's face stays 1850 ms.
 const FEELING_MS = 1850;
 // The colours four to a row, a pack's parts three (the owner's call, 27 Ekim: larger, in order).
@@ -132,14 +130,11 @@ export default function CapsuleScreen() {
 
 function Editor({ saved, nick, publicId }: { saved: string; nick: string; publicId: string }) {
   const { shape, scheme } = useTheme();
-  const { c } = useKit();
   const { width } = useWindowDimensions();
   const queryClient = useQueryClient();
   const [look, setLook] = useState<Look>(() => parse(saved));
-  const [rack, setRack] = useState<RackId>('tema');
   const [slot, setSlot] = useState<LookSlot>('h');
   const [leaving, setLeaving] = useState(false);
-  const hintSeen = useHint((s) => s.seen);
   const feelingAt = useRef(-1);
   const now = code(look);
   const changed = now !== code(parse(saved));
@@ -185,7 +180,6 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
   };
   // A tap on the capsule (v46 feel()): the next feeling for a moment; it is never saved.
   const feel = () => {
-    useHint.setState({ seen: true });
     haptic('selection');
     const at = feeling ? FEELINGS.findIndex(([id]) => id === feeling.id) : feelingAt.current;
     const next = FEELINGS[(at + 1) % FEELINGS.length];
@@ -212,8 +206,20 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
   // The parts' tiles (dozens of drawings) come right after the screen's slide, so the slide and
   // the capsule draw at once (the owner's report, 27 Ekim: a white screen, then a stutter).
   const ready = useAfterSlide();
-  const items: { pack: string | null; items: Item[] }[] =
-    slot === 'c' ? [{ pack: null, items: colorItems() }] : packsFor(rack, slot);
+  // Every rack's packs for the slot, one list (the racks' tabs went, the owner's call, 28 Ekim).
+  const items: { rack: RackId | null; pack: string | null; items: Item[] }[] =
+    slot === 'c'
+      ? [{ rack: null, pack: null, items: colorItems() }]
+      : CAPSULE_CATALOG.racks.flatMap((r) =>
+          packsFor(r.id, slot).map((g) => ({ rack: r.id, pack: g.pack, items: g.items })),
+        );
+  const { height: screen } = useWindowDimensions();
+  const [bar, setBar] = useState({ y: 0, height: 0 });
+  const wornList = worn(look);
+  const wornLeft = wornList.filter((_, i) => i % 2 === 0);
+  const wornRight = wornList.filter((_, i) => i % 2 === 1);
+  // Beside the capsule, never over it: a column each side of it.
+  const wornWidth = (width - PREVIEW) / 2 - (KIT.size.side - SPACING[1]) - SPACING[2];
   const slotName = CAPSULE_CATALOG.slots.find((s) => s.id === slot)?.name ?? '';
 
   return (
@@ -222,36 +228,14 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
       <AuraBackground />
       <GlassTarget targetId={listId} style={StyleSheet.absoluteFill}>
         <ScrollView
+          showsVerticalScrollIndicator={false}
           contentContainerStyle={{
-            paddingTop: top + SPACING[3],
-            paddingBottom: bottom + SPACING[4],
+            paddingTop: top + BAND_FADE,
+            paddingBottom: bottom + BAND_FADE,
             paddingHorizontal: side,
             gap: SPACING[4],
           }}
-          scrollIndicatorInsets={{ top, bottom }}
         >
-          {/* docs/design/aura → Kapsül: the racks as glass tabs, the parts as chips. */}
-          <Seg<RackId>
-            value={rack}
-            onChange={setRack}
-            accessibilityLabel={tr.capsule.edit}
-            options={CAPSULE_CATALOG.racks.map((r) => ({ value: r.id, label: r.name }))}
-          />
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={{ marginHorizontal: -side }}
-            contentContainerStyle={{ paddingHorizontal: side, gap: KIT.size.chipsGap }}
-          >
-            {CAPSULE_CATALOG.slots.map((s) => (
-              <Chip
-                key={s.id}
-                label={s.name}
-                on={slot === s.id}
-                onPress={() => setSlot(s.id as LookSlot)}
-              />
-            ))}
-          </ScrollView>
           {slot !== 'c' && slot !== 'e' ? (
             <View className="flex-row">
               <Tile
@@ -264,9 +248,9 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
             </View>
           ) : null}
           {(ready ? items : []).map((group, index) =>
-            group.pack ? (
+            group.pack && group.rack ? (
               <View
-                key={group.pack}
+                key={`${group.rack}-${group.pack}`}
                 style={{
                   gap: SPACING[3],
                   padding: SPACING[3],
@@ -277,13 +261,15 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
                 <View className="flex-row items-center gap-3">
                   <View className="flex-1">
                     <T v="h3">{tr.capsule.pack(group.pack)}</T>
-                    <T v="fine">{tr.capsule.packSlots(packItems(rack, group.pack).length)}</T>
+                    <T v="fine">{tr.capsule.packSlots(packItems(group.rack, group.pack).length)}</T>
                   </View>
                   <Btn
                     sm
                     variant="glassy"
                     label={tr.capsule.wearPack}
-                    onPress={() => group.pack && put(wearPack(look, rack, group.pack))}
+                    onPress={() =>
+                      group.pack && group.rack && put(wearPack(look, group.rack, group.pack))
+                    }
                   />
                 </View>
                 <View className="flex-row flex-wrap" style={{ gap: SPACING[2] }}>
@@ -315,116 +301,122 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
             ),
           )}
         </ScrollView>
+        {/* The fixed head's and buttons' ground: what scrolls hides under them, with a soft edge
+            (the owner's report, 28 Ekim: a pack's name read through the buttons). */}
+        <AuraBand top={0} height={top} fade={BAND_FADE} direction="down" />
+        {bar.height > 0 ? (
+          <AuraBand top={bar.y} height={screen - bar.y} fade={BAND_FADE} direction="up" />
+        ) : null}
       </GlassTarget>
 
-      {/* docs/design/aura → Kapsül: the capsule on a scene under the status bar, what is worn on
-          glass tags at its left, "Kafama dokun" at its right; back, the title and "Karıştır" over
-          it. */}
+      {/* docs/design/aura → Kapsül: the capsule on a low scene under the status bar, what is worn
+          on glass tags beside it, never over it; back, the title and "Karıştır" over it. The
+          slots' chips under it stay with it (the owner's call, 28 Ekim). */}
       <View
         onLayout={(e) => setTop(e.nativeEvent.layout.height)}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: CAPSULE_SCENE + insets.top,
-          borderBottomLeftRadius: KIT.stage.radius,
-          borderBottomRightRadius: KIT.stage.radius,
-          overflow: 'hidden',
-        }}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, gap: SPACING[3] }}
       >
-        <SceneGround top={0} bottom={KIT.stage.radius} />
         <View
-          className="flex-row items-center justify-between"
-          style={{ paddingHorizontal: side, paddingTop: insets.top + SPACING[3] }}
+          style={{
+            height: CAPSULE_SCENE + insets.top,
+            borderBottomLeftRadius: KIT.stage.radius,
+            borderBottomRightRadius: KIT.stage.radius,
+            overflow: 'hidden',
+          }}
         >
-          <Round icon="back" label={tr.common.back} onPress={leave} />
-          <T v="h3" accessibilityRole="header">
-            {tr.capsule.title}
-          </T>
-          <Round
-            testID="capsule-shuffle"
-            label={tr.capsule.shuffle}
-            onPress={() => {
-              setTurn((n) => n + 1);
-              put(shuffle(Math.random), SHUFFLE);
+          <SceneGround top={0} bottom={KIT.stage.radius} />
+          <View
+            className="flex-row items-center justify-between"
+            style={{ paddingHorizontal: side, paddingTop: insets.top + SPACING[3] }}
+          >
+            <Round icon="back" label={tr.common.back} onPress={leave} />
+            <T v="h3" accessibilityRole="header">
+              {tr.capsule.title}
+            </T>
+            <Round
+              testID="capsule-shuffle"
+              label={tr.capsule.shuffle}
+              onPress={() => {
+                setTurn((n) => n + 1);
+                put(shuffle(Math.random), SHUFFLE);
+              }}
+            >
+              <ShuffleGlyph turn={turn} />
+            </Round>
+          </View>
+          <View
+            pointerEvents="box-none"
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: SCENE_FOOT,
+              alignItems: 'center',
             }}
           >
-            <ShuffleGlyph turn={turn} />
-          </Round>
-        </View>
-        <View
-          pointerEvents="box-none"
-          style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            bottom: SCENE_FOOT,
-            alignItems: 'center',
-          }}
-        >
-          <CapsuleStage
-            testID="capsule-preview"
-            look={now}
-            feeling={feeling}
-            play={play}
-            beat={beat}
-            size={PREVIEW}
-            label={tr.capsule.tapHead}
-            hint={null}
-            onPress={feel}
+            <CapsuleStage
+              testID="capsule-preview"
+              look={now}
+              feeling={feeling}
+              play={play}
+              beat={beat}
+              size={PREVIEW}
+              label={tr.capsule.tapHead}
+              hint={null}
+              onPress={feel}
+            />
+          </View>
+          <WornColumn
+            items={wornLeft}
+            width={wornWidth}
+            side="left"
+            onTakeOff={(slot) => put(takeOff(look, slot))}
+          />
+          <WornColumn
+            items={wornRight}
+            width={wornWidth}
+            side="right"
+            onTakeOff={(slot) => put(takeOff(look, slot))}
           />
         </View>
-        <View
-          style={{
-            position: 'absolute',
-            left: KIT.size.side - SPACING[1],
-            bottom: SCENE_FOOT,
-            gap: KIT.size.chipGap,
-            maxWidth: '34%',
-          }}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: side, gap: KIT.size.chipsGap }}
         >
-          {worn(look).map((w) => (
-            <Pressable
-              key={w.slot}
-              accessibilityRole="button"
-              accessibilityLabel={tr.capsule.remove(w.name)}
-              onPress={() => put(takeOff(look, w.slot))}
-            >
-              <Tag
-                label={w.name}
-                height={WORN_TAG}
-                lead={<CapIcon name="close" color={c.ink} size={WORN_ICON} />}
-              />
-            </Pressable>
+          {CAPSULE_CATALOG.slots.map((s) => (
+            <Chip
+              key={s.id}
+              label={s.name}
+              on={slot === s.id}
+              onPress={() => setSlot(s.id as LookSlot)}
+            />
           ))}
-        </View>
-        {hintSeen ? null : (
-          <View
-            pointerEvents="none"
-            style={{ position: 'absolute', right: KIT.size.side - SPACING[1], bottom: SCENE_FOOT }}
-          >
-            <Tag label={tr.capsule.tapHead} height={WORN_TAG} />
-          </View>
-        )}
+        </ScrollView>
       </View>
 
       <View
-        onLayout={(e) => setBottom(e.nativeEvent.layout.height)}
+        onLayout={(e) => {
+          const { y, height } = e.nativeEvent.layout;
+          setBottom(height);
+          setBar({ y, height });
+        }}
         style={{
           position: 'absolute',
           left: 0,
           right: 0,
           bottom: 0,
-          paddingTop: SPACING[3],
+          paddingTop: SPACING[2],
           paddingHorizontal: side,
           paddingBottom: Math.max(tabSpace - SPACING[2], insets.bottom + SPACING[3]),
           gap: SPACING[2],
         }}
       >
+        {/* Small buttons (the owner's call, 28 Ekim). */}
         <View className="flex-row gap-2.5">
           <View className="flex-1">
             <Btn
+              sm
               block
               variant="glassy"
               label={tr.capsule.clearAll}
@@ -433,6 +425,7 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
           </View>
           <View className="flex-1">
             <Btn
+              sm
               block
               icon="check"
               testID="capsule-save"
@@ -486,6 +479,52 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
           }}
         />
       </Sheet>
+    </View>
+  );
+}
+
+// What is worn, as tags that take it off, in a column beside the capsule (left or right), each
+// tag kept within the column (its words shrink rather than run over the capsule).
+function WornColumn({
+  items,
+  width,
+  side,
+  onTakeOff,
+}: {
+  items: { slot: LookSlot; name: string }[];
+  width: number;
+  side: 'left' | 'right';
+  onTakeOff: (slot: LookSlot) => void;
+}) {
+  const { c } = useKit();
+  if (items.length === 0) return null;
+  return (
+    <View
+      style={{
+        position: 'absolute',
+        [side]: KIT.size.side - SPACING[1],
+        bottom: SCENE_FOOT,
+        width,
+        gap: KIT.size.chipGap,
+        alignItems: side === 'left' ? 'flex-start' : 'flex-end',
+      }}
+    >
+      {items.map((w) => (
+        <Pressable
+          key={w.slot}
+          accessibilityRole="button"
+          accessibilityLabel={tr.capsule.remove(w.name)}
+          onPress={() => onTakeOff(w.slot)}
+          style={{ maxWidth: width }}
+        >
+          <Tag
+            label={w.name}
+            height={WORN_TAG}
+            fit
+            lead={<CapIcon name="close" color={c.ink} size={WORN_ICON} />}
+          />
+        </Pressable>
+      ))}
     </View>
   );
 }

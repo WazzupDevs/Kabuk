@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { View } from 'react-native';
 
-import { Av, Btn, Glass, GlassList, T, Thumb, useKit } from '@/aura/kit';
+import { Av, Glass, GlassList, Round, T, Thumb, useKit } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
 import { RouteSheet } from '@/components/RouteSheet';
@@ -171,11 +171,12 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
   };
 
   let name = item.displayName ?? '';
-  let rest = '';
-  let meta = tr.common.ago(item.createdAt, now);
+  let status = '';
+  let time = tr.common.ago(item.createdAt, now);
   let faded = false;
+  let joined = false;
   let actions: ReactNode = null;
-  let note: ReactNode = null;
+  let error: unknown = null;
   switch (item.kind) {
     case 'request': {
       name =
@@ -184,56 +185,42 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
           : (item.otherAlias ?? item.displayName ?? '');
       const accepted = item.state === 'accepted' || (respond.isSuccess && respond.variables.accept);
       if (accepted) {
-        rest = tr.notifications.friendsNow;
+        status = tr.notifications.short.friends;
         actions = item.publicId ? (
-          <MessageButton onPress={() => message(item.publicId ?? '', item.displayName)} />
+          <MessageRound onPress={() => message(item.publicId ?? '', item.displayName)} />
         ) : null;
       } else {
-        rest = tr.notifications.requestRest;
-        if (item.source === 'venue_chat' && item.venueName) {
-          meta = [item.venueName, meta].join(` ${tr.common.separator} `);
-        }
+        status = tr.notifications.short.request;
         actions = (
-          <Pair
-            left={
-              <Btn
-                sm
-                block
-                variant="glassy"
-                style={{ flex: 1 }}
-                label={tr.friends.decline}
-                disabled={respond.isPending}
-                onPress={() => respond.mutate({ requestId: item.requestId, accept: false })}
-              />
-            }
-            right={
-              <Btn
-                sm
-                block
-                icon="check"
-                style={{ flex: 1 }}
-                testID="notification-accept"
-                label={tr.friends.accept}
-                loading={respond.isPending && respond.variables.accept}
-                disabled={respond.isPending}
-                onPress={() => respond.mutate({ requestId: item.requestId, accept: true })}
-              />
-            }
-          />
+          <>
+            <Round
+              icon="close"
+              label={tr.friends.decline}
+              disabled={respond.isPending}
+              onPress={() => respond.mutate({ requestId: item.requestId, accept: false })}
+            />
+            <Round
+              primary
+              icon="check"
+              testID="notification-accept"
+              label={tr.friends.accept}
+              loading={respond.isPending && respond.variables.accept}
+              disabled={respond.isPending}
+              onPress={() => respond.mutate({ requestId: item.requestId, accept: true })}
+            />
+          </>
         );
       }
-      if (respond.isError) note = <Error error={respond.error} />;
+      if (respond.isError) error = respond.error;
       break;
     }
     case 'accepted':
-      rest = tr.notifications.acceptedRest;
-      meta = [tr.notifications.acceptedMeta, meta].join(` ${tr.common.separator} `);
-      actions = <MessageButton onPress={() => message(item.publicId, item.displayName)} />;
+      status = tr.notifications.short.accepted;
+      actions = <MessageRound onPress={() => message(item.publicId, item.displayName)} />;
       break;
     case 'match':
-      rest = tr.notifications.matchRest;
-      meta = [tr.notifications.matchMeta, meta].join(` ${tr.common.separator} `);
-      actions = <MessageButton onPress={() => message(item.publicId, item.displayName)} />;
+      status = tr.notifications.short.match;
+      actions = <MessageRound onPress={() => message(item.publicId, item.displayName)} />;
       break;
     case 'invite': {
       const state = answer.isSuccess
@@ -241,70 +228,54 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
           ? 'joined'
           : 'declined'
         : inviteState(item.state, item.expiresAt, now);
-      const table = item.tableName ?? '';
       if (state === 'open') {
-        rest = tr.notifications.inviteRest;
         const seconds = Math.max(0, Math.ceil((Date.parse(item.expiresAt) - now) / 1000));
-        meta = tr.notifications.inviteMeta(table, item.phones, tr.invite.clock(seconds));
+        status = tr.notifications.short.invite(tr.invite.clock(seconds));
+        time = '';
         actions = (
-          <Pair
-            left={
-              <Btn
-                sm
-                block
-                variant="glassy"
-                style={{ flex: 1 }}
-                label={tr.friends.decline}
-                disabled={answer.isPending}
-                onPress={() => answer.mutate({ inviteId: item.inviteId, accept: false })}
-              />
-            }
-            right={
-              <Btn
-                sm
-                block
-                icon="forward"
-                style={{ flex: 1 }}
-                testID="invite-join"
-                label={tr.notifications.join}
-                loading={answer.isPending && answer.variables.accept}
-                disabled={answer.isPending || !checkIn.data}
-                onPress={() => answer.mutate({ inviteId: item.inviteId, accept: true })}
-              />
-            }
-          />
+          <>
+            <Round
+              icon="close"
+              label={tr.friends.decline}
+              disabled={answer.isPending}
+              onPress={() => answer.mutate({ inviteId: item.inviteId, accept: false })}
+            />
+            <Round
+              primary
+              icon="forward"
+              testID="invite-join"
+              label={tr.notifications.join}
+              loading={answer.isPending && answer.variables.accept}
+              disabled={answer.isPending || !checkIn.data}
+              onPress={() => answer.mutate({ inviteId: item.inviteId, accept: true })}
+            />
+          </>
         );
       } else if (state === 'joined') {
-        rest = tr.notifications.inviteRest;
-        meta = '';
-        note = (
-          <T v="fine" strong color={KIT.success}>
-            {tr.notifications.inviteJoined(table)}
-          </T>
-        );
+        status = tr.notifications.short.joined;
+        joined = true;
+        time = '';
       } else {
-        rest = tr.notifications.invitePastRest;
+        status =
+          state === 'declined' ? tr.notifications.short.declined : tr.notifications.short.gone;
         faded = true;
-        meta = [
-          state === 'declined' ? tr.notifications.inviteDeclined : tr.notifications.inviteGone,
-          meta,
-        ].join(` ${tr.common.separator} `);
       }
-      if (answer.isError) note = <Error error={answer.error} />;
+      if (answer.isError) error = answer.error;
       break;
     }
   }
 
+  // docs/design/aura → Bildirimler, kept short (the owner's call, 28 Ekim): the face, the name
+  // and one line of state on a row of one height, the answers as round buttons at the right.
   const words = (
     <View style={{ flex: 1, gap: SPACING[0.5] }}>
-      <T v="fine" ink>
-        <T v="fine" strong>
-          {name}
-        </T>{' '}
-        {rest}
+      <T v="fine" strong lines={1} fit>
+        {name}
       </T>
-      {meta ? <T v="fine">{meta}</T> : null}
-      {note}
+      <T v="fine" lines={1} fit color={joined ? KIT.success : undefined}>
+        {time ? [status, time].join(` ${tr.common.separator} `) : status}
+      </T>
+      {error ? <Error error={error} /> : null}
     </View>
   );
   // An invite shows the table's picture with the inviter's face on its corner (Bildirimler).
@@ -315,11 +286,7 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
   const tablePicture = tableIcon ? TABLE_ICON_IMAGES[tableIcon] : undefined;
   const face = tablePicture ? (
     <View>
-      <Thumb
-        source={tablePicture}
-        size={fresh ? INVITE_THUMB : INVITE_THUMB_OLD}
-        radius={INVITE_RADIUS}
-      />
+      <Thumb source={tablePicture} size={INVITE_THUMB} radius={INVITE_RADIUS} />
       <View style={{ position: 'absolute', right: -INVITE_BADGE_OUT, bottom: -INVITE_BADGE_OUT }}>
         <Av size="sm" name={name} photoUrl={item.photoUrl} />
       </View>
@@ -327,83 +294,74 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
   ) : (
     <Av name={name} photoUrl={item.photoUrl} />
   );
-  // docs/design/aura → Bildirimler: a new one as its own card (an invite on the brand's soft
-  // gradient), the actions under it; an earlier one as a row of the list, its action at the right.
+  const row = (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: KIT.size.liGap,
+        minHeight: ROW_HEIGHT,
+      }}
+    >
+      {face}
+      {words}
+      {actions ? (
+        <View style={{ flexDirection: 'row', gap: KIT.size.chipsGap }}>{actions}</View>
+      ) : null}
+    </View>
+  );
+  // A new one as its own card (an invite on the brand's soft gradient), an earlier one as a row
+  // of the list.
   if (!fresh) {
     return (
-      <View testID={`notification-${item.kind}`} style={{ opacity: faded ? FADED : 1 }}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: KIT.size.liGap,
-            paddingVertical: OLD_PAD_Y,
-            paddingHorizontal: KIT.size.rowGap,
-          }}
-        >
-          {face}
-          {words}
-          {actions}
-        </View>
+      <View
+        testID={`notification-${item.kind}`}
+        style={{
+          opacity: faded ? FADED : 1,
+          paddingVertical: OLD_PAD_Y,
+          paddingHorizontal: KIT.size.rowGap,
+        }}
+      >
+        {row}
       </View>
     );
   }
-  const body = (
-    <>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.liGap }}>
-        {face}
-        {words}
-      </View>
-      {actions}
-    </>
-  );
   return item.kind === 'invite' ? (
     <View
       testID={`notification-${item.kind}`}
       style={{
         ...gradientStyle(KIT.inviteGround),
         padding: FRESH_PAD,
-        gap: KIT.size.rowGap,
         borderRadius: KIT.size.glassRadiusSm + 2,
         borderWidth: KIT.size.edge,
         borderColor: c.glassEdge,
         opacity: faded ? FADED : 1,
       }}
     >
-      {body}
+      {row}
     </View>
   ) : (
     <Glass
       sm
       testID={`notification-${item.kind}`}
-      style={{ padding: FRESH_PAD, gap: KIT.size.rowGap, opacity: faded ? FADED : 1 }}
+      style={{ padding: FRESH_PAD, opacity: faded ? FADED : 1 }}
     >
-      {body}
+      {row}
     </Glass>
   );
 }
 
 const FADED = 0.6;
-const INVITE_THUMB = 50;
-const INVITE_THUMB_OLD = 44;
+const INVITE_THUMB = 48;
+// Every row one height: the face's.
+const ROW_HEIGHT = 52;
 const INVITE_RADIUS = 16;
 const INVITE_BADGE_OUT = 8;
 const FRESH_PAD = 14;
 const OLD_PAD_Y = 10;
 
-function Pair({ left, right }: { left: ReactNode; right: ReactNode }) {
-  return (
-    <View style={{ flexDirection: 'row', gap: KIT.size.chipsGap }}>
-      {left}
-      {right}
-    </View>
-  );
-}
-
-function MessageButton({ onPress }: { onPress: () => void }) {
-  return (
-    <Btn sm variant="glassy" icon="chat" label={tr.notifications.writeMessage} onPress={onPress} />
-  );
+function MessageRound({ onPress }: { onPress: () => void }) {
+  return <Round icon="chat" label={tr.notifications.writeMessage} onPress={onPress} />;
 }
 
 function Error({ error }: { error: unknown }) {

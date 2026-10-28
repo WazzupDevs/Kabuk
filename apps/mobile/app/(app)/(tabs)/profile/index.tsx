@@ -1,16 +1,17 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
 import { Av, Btn, Glass, GlassList, Li, Round, T, useKit } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
 import { useLoaderHold } from '@/components/Loader';
-import { LookAvatar } from '@/components/LookAvatar';
+import { PhotoPreview } from '@/components/PhotoPreview';
 import { Screen } from '@/components/Screen';
 import { useProfile } from '@/features/account/useProfile';
 import { useFriends } from '@/features/friends/queries';
+import { LivingLook } from '@/features/profile/LivingLook';
 import { profileViewKeys, useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -34,11 +35,13 @@ export default function ProfileScreen() {
 
   const hasName = !!own.data?.display_name;
   const friendList = friends.data ?? [];
+  const [preview, setPreview] = useState(false);
 
   return (
     <Screen gap={GAP}>
       <View style={ROW}>
-        <T v="eyebrow" accessibilityRole="header">
+        {/* The tab's title as large as the others' ("Mesajlar"; the owner's call, 28 Ekim). */}
+        <T v="display" accessibilityRole="header">
           {tr.tabs.profile}
         </T>
         <Round
@@ -66,10 +69,15 @@ export default function ProfileScreen() {
       ) : (
         <View style={{ gap: GAP }}>
           <View style={{ flexDirection: 'row', gap: KIT.size.rowGap }}>
+            {/* The photo opens large; the capsule lives (blinks, looks at the photo, rolls its
+                eyes, answers a tap). Editing is the two buttons under the name (the owner's call,
+                28 Ekim). */}
             <FaceCard
               label={tr.profile.ownPhoto}
               note={tr.profile.ownPhotoNote}
-              onPress={() => router.push('/profile/edit')}
+              onPress={
+                view.data.photoUrl && !view.data.photoHidden ? () => setPreview(true) : undefined
+              }
               testID="profile-photo"
             >
               <Av
@@ -81,16 +89,24 @@ export default function ProfileScreen() {
             <FaceCard
               label={tr.profile.ownCapsule}
               note={tr.profile.ownCapsuleNote}
-              onPress={() => router.push('/profile/capsule')}
               testID="profile-capsule"
             >
               <Av size="big" name="">
                 {view.data.capsuleLook ? (
-                  <LookAvatar look={view.data.capsuleLook} size={KIT.size.av.big} />
+                  <LivingLook
+                    look={view.data.capsuleLook}
+                    size={KIT.size.av.big}
+                    accessibilityLabel={tr.profile.ownCapsule}
+                  />
                 ) : null}
               </Av>
             </FaceCard>
           </View>
+          <PhotoPreview
+            url={view.data.photoHidden ? null : view.data.photoUrl}
+            visible={preview}
+            onClose={() => setPreview(false)}
+          />
 
           <View style={{ gap: KIT.size.tagGap, paddingHorizontal: KIT.size.secPadX }}>
             <T v="display" style={KIT_TYPE.displaySm} accessibilityRole="header">
@@ -183,10 +199,36 @@ function FaceCard({
 }: {
   label: string;
   note: string;
-  onPress: () => void;
+  // Without it the card is still and its face takes the taps (the living capsule).
+  onPress?: () => void;
   testID?: string;
   children: ReactNode;
 }) {
+  const card = (pressed: boolean) => (
+    <Glass
+      style={{
+        height: KIT.size.faceCard,
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: BTN_GAP,
+        opacity: pressed ? PRESSED : 1,
+      }}
+    >
+      {children}
+      <View style={{ alignItems: 'center' }}>
+        <T v="fine" strong>
+          {label}
+        </T>
+        <T v="fine">{note}</T>
+      </View>
+    </Glass>
+  );
+  if (!onPress)
+    return (
+      <View testID={testID} style={{ flex: 1 }}>
+        {card(false)}
+      </View>
+    );
   return (
     <Pressable
       testID={testID}
@@ -195,25 +237,7 @@ function FaceCard({
       onPress={onPress}
       style={{ flex: 1 }}
     >
-      {({ pressed }) => (
-        <Glass
-          style={{
-            height: KIT.size.faceCard,
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: BTN_GAP,
-            opacity: pressed ? PRESSED : 1,
-          }}
-        >
-          {children}
-          <View style={{ alignItems: 'center' }}>
-            <T v="fine" strong>
-              {label}
-            </T>
-            <T v="fine">{note}</T>
-          </View>
-        </Glass>
-      )}
+      {({ pressed }) => card(pressed)}
     </Pressable>
   );
 }

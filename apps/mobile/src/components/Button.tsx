@@ -5,7 +5,7 @@ import { Animated, Pressable, View, type ViewStyle } from 'react-native';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { buttonFill, type ButtonVariant, isTextOnly } from '@/theme/buttonFill';
 import { EASE_OUT } from '@/theme/markMotion';
-import { KIT } from '@/theme/auraKit';
+import { KIT, shadowList } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, OPACITY, type PaletteKey, SPACING, TOUCH, type TypeVariant } from '@/theme/tokens';
 
@@ -152,7 +152,7 @@ export function Button({
   const edge: ViewStyle | null = textOnly
     ? null
     : variant === 'primary' && !disabled
-      ? { boxShadow: `${KIT.primaryShadow}, ${KIT.primaryInset}` }
+      ? { boxShadow: shadowList(KIT.primaryShadow, k.primaryInset) }
       : glass === 'clear' || variant === 'danger'
         ? {
             backgroundColor: k.raised,

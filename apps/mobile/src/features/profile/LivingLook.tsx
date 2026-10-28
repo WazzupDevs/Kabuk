@@ -18,16 +18,29 @@ import { useReduceMotion } from '@/lib/useReduceMotion';
 import { lookSvg, posedEyes } from '@/theme/capsuleLook';
 import { ICON } from '@/theme/tokens';
 
-// The profile's capsule alive (the owner's call, 27 Ekim): now and then it blinks (sometimes
-// twice), every while it turns its eyes to the photo beside it on the left and looks there a long
-// moment, and a tap makes it jump and wink. Still with reduce motion; a tap is still felt.
+// The profile's capsule alive (the owner's call, 27 and 28 Ekim): now and then it blinks
+// (sometimes twice), every while it turns its eyes to the photo beside it on the left, looks there
+// a moment and rolls its eyes (up, across and back), and a tap makes it jump and wink. Still with
+// reduce motion; a tap is still felt.
 const BLINK_MS = 110;
 const BLINK_EVERY: readonly [number, number] = [2600, 5600];
 const TWICE = 0.25;
-const LOOK_MS = 2600;
-const LOOK_EVERY: readonly [number, number] = [8000, 15000];
+const LOOK_MS = 1500;
+const LOOK_EVERY: readonly [number, number] = [7000, 13000];
 // How far the eyes turn, in the drawing's units (its disc is 48 across).
 const LOOK_SHIFT = -1.8;
+const ROLL_UP = -1.6;
+// The roll: from the photo up over the top to the other side and home, a step each ROLL_MS.
+const ROLL: readonly { look: number; up: number }[] = [
+  { look: LOOK_SHIFT, up: ROLL_UP / 2 },
+  { look: LOOK_SHIFT / 2, up: ROLL_UP },
+  { look: 0, up: ROLL_UP },
+  { look: -LOOK_SHIFT / 2, up: ROLL_UP },
+  { look: -LOOK_SHIFT, up: ROLL_UP / 2 },
+  { look: 0, up: 0 },
+];
+const ROLL_MS = 110;
+const REST = { look: 0, up: 0 };
 
 function between([lo, hi]: readonly [number, number]): number {
   return lo + Math.random() * (hi - lo);
@@ -44,7 +57,7 @@ export function LivingLook({
 }) {
   const reduce = useReduceMotion();
   const [blink, setBlink] = useState(false);
-  const [aside, setAside] = useState(false);
+  const [pose, setPose] = useState(REST);
 
   useEffect(() => {
     if (reduce) return undefined;
@@ -65,10 +78,10 @@ export function LivingLook({
       );
     const lookLoop = () =>
       later(between(LOOK_EVERY), () => {
-        setAside(true);
+        setPose({ look: LOOK_SHIFT, up: 0 });
         later(LOOK_MS, () => {
-          setAside(false);
-          lookLoop();
+          ROLL.forEach((step, i) => later(i * ROLL_MS, () => setPose(step)));
+          later(ROLL.length * ROLL_MS, lookLoop);
         });
       });
     blinkLoop();
@@ -78,8 +91,8 @@ export function LivingLook({
 
   const base = useMemo(() => lookSvg(look, 'av'), [look]);
   const xml = useMemo(
-    () => posedEyes(base, { blink, look: aside ? LOOK_SHIFT : 0 }),
-    [base, blink, aside],
+    () => posedEyes(base, { blink, look: pose.look, up: pose.up }),
+    [base, blink, pose],
   );
 
   // A tap: the jump of the editor (features/capsule/motion.ts → JUMP) and a wink.

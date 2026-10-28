@@ -33,11 +33,12 @@ export const BUTTON_GLASS = {
   clearFill: 0.55,
   gloss: {
     light: 'linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0) 58%)',
-    dark: 'linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0) 58%)',
+    // No gloss in the dark (the owner's call, 28 Ekim: no white shine on objects).
+    dark: 'linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0) 58%)',
   },
   edge: { light: 'rgba(255, 255, 255, 0.42)', dark: 'rgba(255, 255, 255, 0.16)' },
   inner: {
     light: 'inset 0px 1px 0px 0px rgba(255, 255, 255, 0.55)',
-    dark: 'inset 0px 1px 0px 0px rgba(255, 255, 255, 0.22)',
+    dark: 'inset 0px 1px 0px 0px rgba(255, 255, 255, 0)',
   },
 } as const;

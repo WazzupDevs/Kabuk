@@ -1,6 +1,6 @@
 import type { ProfileView } from '@shared/api/profile.ts';
 import { BADGES, type BadgeId } from '@shared/badges.ts';
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { Image, type ImageSourcePropType, Pressable, View } from 'react-native';
 
 import { Card } from '@/components/Card';
@@ -15,6 +15,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/tokens';
 import { SPACING } from '@/theme/tokens';
 import { PhotoImage } from '@/components/PhotoImage';
+import { PhotoPreview } from '@/components/PhotoPreview';
 
 import { LivePencil, LivingLook } from './LivingLook';
 
@@ -53,6 +54,7 @@ export function ProfileHead({
   children?: ReactNode;
 }) {
   const { colors, shape } = useTheme();
+  const [preview, setPreview] = useState(false);
   const ring = (on: boolean) => ({
     padding: SPACING[0.5],
     borderRadius: shape.radius.pill,
@@ -123,7 +125,21 @@ export function ProfileHead({
             justifyContent: 'center',
           }}
         >
-          <ProfilePhoto url={profile.photoUrl} name={profile.displayName} size="hero" />
+          {/* The photo opens large (the owner's call, 28 Ekim). */}
+          <Pressable
+            testID="profile-photo-open"
+            accessibilityRole="button"
+            accessibilityLabel={tr.profile.photoOpen}
+            disabled={!profile.photoUrl}
+            onPress={() => setPreview(true)}
+          >
+            <ProfilePhoto url={profile.photoUrl} name={profile.displayName} size="hero" />
+          </Pressable>
+          <PhotoPreview
+            url={profile.photoUrl}
+            visible={preview}
+            onClose={() => setPreview(false)}
+          />
         </Glass>
       )}
       <View

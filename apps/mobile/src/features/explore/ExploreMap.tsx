@@ -22,12 +22,13 @@ import { View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
-import { PIN_IMAGES } from '@/components/Glyph';
+import { TYPE_PIN_IMAGES } from '@/components/Glyph';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
 import { useTheme } from '@/theme/ThemeProvider';
 import { MAP_FONTS, MAP_PIN, SPACING } from '@/theme/tokens';
+import { venueType } from '@/lib/venueType';
 
 import { useMapStyle } from './mapStyle';
 import type { ExploreVenue } from './useExploreVenues';
@@ -51,8 +52,10 @@ const IS_VENUE: Filter = ['!', ['has', 'point_count']];
 // The venue's kind inside its white disc, in the capsule family's colours (the owner's call, 27
 // Ekim), picked by the feature's `kind` ('cafe' | 'campus').
 const MAP_IMAGES = {
-  'pin-cafe': { source: PIN_IMAGES.cafe },
-  'pin-campus': { source: PIN_IMAGES.campus },
+  'pin-kafe': { source: TYPE_PIN_IMAGES.kafe },
+  'pin-cay': { source: TYPE_PIN_IMAGES.cay },
+  'pin-yemek': { source: TYPE_PIN_IMAGES.yemek },
+  'pin-kampus': { source: TYPE_PIN_IMAGES.kampus },
 };
 
 type PressedFeature = {
@@ -106,11 +109,14 @@ export function ExploreMap({
           : tr.explore.buckets[v.bucket],
       ]),
     );
+    const types: Record<string, string> = Object.fromEntries(
+      venues.map((v) => [v.id, venueType(v)]),
+    );
     return {
       ...collection,
       features: collection.features.map((f) => ({
         ...f,
-        properties: { ...f.properties, status: status[f.id] ?? '' },
+        properties: { ...f.properties, status: status[f.id] ?? '', type: types[f.id] ?? 'kafe' },
       })),
     };
   }, [venues, now]);
@@ -203,6 +209,9 @@ export function ExploreMap({
         // navigation bar on every screen (0.6.0; the owner, 21 Oct). Its native side is in the APK.
         androidView="texture"
         attribution
+        // Over the tab bar, not pressed against its edge (the owner's report, 28 Ekim).
+        attributionPosition={{ bottom: tabBarHeight + SPACING[2], right: SPACING[4] }}
+        tintColor={colors.muted}
         accessibilityLabel={tr.explore.mapLabel}
         onPress={() => setSelected(null)}
         onDidFinishRenderingMapFully={() => setReady(true)}
@@ -312,7 +321,18 @@ export function ExploreMap({
             type="symbol"
             filter={IS_VENUE}
             layout={{
-              'icon-image': ['match', ['get', 'kind'], 'campus', 'pin-campus', 'pin-cafe'],
+              // The venue's type picture over the disc (the list's thumbs, the owner's call, 28 Ekim).
+              'icon-image': [
+                'match',
+                ['get', 'type'],
+                'cay',
+                'pin-cay',
+                'yemek',
+                'pin-yemek',
+                'kampus',
+                'pin-kampus',
+                'pin-kafe',
+              ],
               'icon-size': [
                 'case',
                 ['==', ['get', 'id'], id],

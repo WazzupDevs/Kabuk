@@ -33,6 +33,16 @@ export const PIN_IMAGES = {
   campus: require('../../assets/pin/pin-campus.png') as ImageSourcePropType,
 };
 
+// The Keşfet map's pins by the venue's type (the owner's call, 28 Ekim): the type's picture from
+// the table pictures (kafe: espresso, çay bahçesi: demlik, yemek: kantin tepsisi, kampüs: saat
+// kulesi) cut round, 40 pt, the same as the list's thumbs (ui/VenueThumb.tsx).
+export const TYPE_PIN_IMAGES = {
+  kafe: require('../../assets/pin/pin-kafe.png') as ImageSourcePropType,
+  cay: require('../../assets/pin/pin-cay.png') as ImageSourcePropType,
+  yemek: require('../../assets/pin/pin-yemek.png') as ImageSourcePropType,
+  kampus: require('../../assets/pin/pin-kampus.png') as ImageSourcePropType,
+};
+
 // The live dot's blurred halo (src/components/LiveDot.tsx), white, tinted by the app.
 export const HALO_IMAGE: ImageSourcePropType = require('../../assets/glyph/halo.png');
 

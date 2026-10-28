@@ -3,7 +3,7 @@ import { Children, isValidElement, type ReactNode, type RefObject, useState } fr
 import { ScrollView, View } from 'react-native';
 import { type Edge, SafeAreaView } from 'react-native-safe-area-context';
 
-import { AuraBackground } from '@/aura/AuraBackground';
+import { AuraBackground, AuraBand } from '@/aura/AuraBackground';
 import { useTabFocus } from '@/aura/motion';
 import { Reveal } from '@/aura/Reveal';
 import { AURA } from '@/theme/aura';
@@ -42,6 +42,8 @@ type Props = {
 // A scrolling screen on the colour clouds (docs/design/aura) with the theme's side padding. Under
 // the tabs the floating tab bar covers the bottom: the content scrolls behind it and ends above it.
 // Its parts arrive one after another (the film's cascade), again each time its tab is opened.
+const TOP_FADE = SPACING[5];
+
 export function Screen({
   children,
   edges,
@@ -62,10 +64,13 @@ export function Screen({
   const safe: readonly Edge[] = barSpace
     ? (edges ?? ['top', 'left', 'right', 'bottom']).filter((e) => e !== 'bottom')
     : (edges ?? ['top', 'left', 'right', 'bottom']);
+  // Under a fixed top the page fades out softly instead of being cut at the bar's foot (the
+  // owner's report, 28 Ekim); it starts below the fade, so nothing is faded at rest.
+  const [topFoot, setTopFoot] = useState(0);
   const content = {
     flexGrow: 1,
     paddingHorizontal: shape.screenPadding,
-    paddingTop: SPACING[3],
+    paddingTop: top ? TOP_FADE : SPACING[3],
     paddingBottom: SPACING[8] + barSpace,
     gap,
   };
@@ -74,6 +79,10 @@ export function Screen({
       <AuraBackground />
       {top ? (
         <View
+          onLayout={(e) => {
+            const { y, height } = e.nativeEvent.layout;
+            setTopFoot(y + height);
+          }}
           style={{
             paddingHorizontal: shape.screenPadding,
             paddingTop: SPACING[2],
@@ -110,6 +119,9 @@ export function Screen({
           </ScrollView>
         )}
       </KeyboardAvoidingView>
+      {top && topFoot > 0 ? (
+        <AuraBand top={topFoot} height={0} fade={TOP_FADE} direction="down" />
+      ) : null}
     </SafeAreaView>
   );
 }

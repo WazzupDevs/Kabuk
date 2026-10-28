@@ -294,9 +294,10 @@ export const MAP_PIN = {
   // The selected venue grows and gets a hard shadow (canvas: Aşama 5 · Harita işaretçileri).
   selectedRadius: 27,
   shadow: 3,
-  // The kind glyph inside the circle (24 pt in its image): 18 pt, 24 when selected.
+  // The type's picture filling the circle (40 pt in its image, the disc 42): grown with it when
+  // selected (27 / 21).
   glyphScale: 1,
-  selectedGlyphScale: 1.25,
+  selectedGlyphScale: 1.29,
   ring: 3,
   outline: 2,
   // A lively or crowded venue glows in its colour around the pin (the owner's call, 27 Ekim).

@@ -1,8 +1,9 @@
 import { upperTr } from '@shared/trText.ts';
 import { Image as PhotoView } from 'expo-image';
-import { Children, createContext, type ReactNode, useContext, useState } from 'react';
+import { Children, createContext, type ReactNode, useContext, useEffect, useState } from 'react';
 import {
   Animated,
+  Easing,
   Image,
   type ImageSourcePropType,
   Pressable,
@@ -13,9 +14,10 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { Loader } from '@/components/Loader';
+import { Loader, useLoopActive } from '@/components/Loader';
+import { useReduceMotion } from '@/lib/useReduceMotion';
 import { MOTION } from '@/theme/aura';
-import { KIT, KIT_TYPE, type KitTextVariant } from '@/theme/auraKit';
+import { KIT, KIT_TYPE, type KitTextVariant, shadowList } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -89,6 +91,13 @@ const MIN_FIT = 0.5;
 
 // .glass (.sm, .pad, .pad-lg): frosted white, a white edge, the soft violet shadow and a light top
 // line.
+// Inside a sheet a glass card lies flat: the sheet is the surface, and its scroll clips a card's
+// soft shadow into square corners outside the round ones (the owner's report, 28 Ekim).
+const FlatGlass = createContext(false);
+export function InSheet({ children }: { children: ReactNode }) {
+  return <FlatGlass.Provider value>{children}</FlatGlass.Provider>;
+}
+
 export function Glass({
   sm,
   pad,
@@ -103,6 +112,7 @@ export function Glass({
   testID?: string;
 }) {
   const { c } = useKit();
+  const flat = useContext(FlatGlass);
   return (
     <View
       testID={testID}
@@ -112,7 +122,7 @@ export function Glass({
           borderRadius: sm ? KIT.size.glassRadiusSm : KIT.size.glassRadius,
           borderWidth: KIT.size.edge,
           borderColor: c.glassEdge,
-          boxShadow: `${c.glassShadow}, ${KIT.glassInset}`,
+          boxShadow: flat ? c.glassInset || undefined : shadowList(c.glassShadow, c.glassInset),
           padding: pad === 'pad' ? KIT.size.pad : pad === 'lg' ? KIT.size.padLg : undefined,
         },
         style,
@@ -185,7 +195,7 @@ export function Btn({
     variant === 'primary'
       ? {
           backgroundColor: KIT.primary,
-          boxShadow: `${KIT.primaryShadow}, ${KIT.primaryInset}`,
+          boxShadow: shadowList(KIT.primaryShadow, c.primaryInset),
         }
       : variant === 'dark'
         ? { backgroundColor: c.chipOn }
@@ -261,6 +271,8 @@ export function Round({
   badge,
   testID,
   disabled,
+  loading,
+  primary,
   children,
 }: {
   icon?: CapIconName;
@@ -271,18 +283,24 @@ export function Round({
   badge?: number;
   testID?: string;
   disabled?: boolean;
+  // Pressed and waiting: the meeting capsules in its place, a second press does nothing.
+  loading?: boolean;
+  // The main action of a row (accept, join): the primary's round.
+  primary?: boolean;
   children?: ReactNode;
 }) {
   const { c } = useKit();
   const press = usePress();
   const s = KIT.size.round;
+  const fg = primary ? KIT.onPrimary : (color ?? c.ink);
   return (
     <Pressable
       testID={testID}
       accessibilityRole="button"
       accessibilityLabel={label}
+      accessibilityState={{ disabled: !!disabled || !!loading, busy: !!loading }}
       onPress={onPress}
-      disabled={disabled}
+      disabled={disabled || loading}
       onPressIn={press.onPressIn}
       onPressOut={press.onPressOut}
     >
@@ -295,18 +313,28 @@ export function Round({
             alignItems: 'center',
             justifyContent: 'center',
             transform: [{ scale: press.scale }],
+            opacity: disabled && !loading ? DISABLED : 1,
           },
-          glassy
+          primary
             ? {
-                backgroundColor: c.raisedRound,
-                borderWidth: KIT.size.edge,
-                borderColor: c.raisedEdge,
-                boxShadow: c.raisedShadow || undefined,
+                backgroundColor: KIT.primary,
+                boxShadow: shadowList(KIT.primaryShadow, c.primaryInset),
               }
-            : null,
+            : glassy
+              ? {
+                  backgroundColor: c.raisedRound,
+                  borderWidth: KIT.size.edge,
+                  borderColor: c.raisedEdge,
+                  boxShadow: c.raisedShadow || undefined,
+                }
+              : null,
         ]}
       >
-        {children ?? (icon ? <CapIcon name={icon} color={color ?? c.ink} /> : null)}
+        {loading ? (
+          <Loader kind="meet" size={KIT.size.iconSm} delay={0} label={null} />
+        ) : (
+          (children ?? (icon ? <CapIcon name={icon} color={fg} /> : null))
+        )}
         {badge ? (
           <View style={{ position: 'absolute', top: -BADGE_OUT, right: -BADGE_OUT }}>
             <Badge count={badge} />
@@ -390,11 +418,14 @@ export function Tag({
   tone = 'glassy',
   lead,
   height,
+  fit,
 }: {
   label: string;
   tone?: TagTone;
   lead?: ReactNode;
   height?: number;
+  // Within a narrow place: the words shrink to fit rather than end in "…".
+  fit?: boolean;
 }) {
   const { c, tags } = useKit();
   const colors =
@@ -417,8 +448,10 @@ export function Tag({
       {lead}
       <Text
         numberOfLines={1}
+        adjustsFontSizeToFit={fit}
+        minimumFontScale={fit ? MIN_TAG_SCALE : undefined}
         maxFontSizeMultiplier={MAX_FONT_SCALE}
-        style={[KIT_TYPE.tag, { color: colors.fg }]}
+        style={[KIT_TYPE.tag, { color: colors.fg }, fit ? { flexShrink: 1 } : null]}
       >
         {label}
       </Text>
@@ -426,7 +459,11 @@ export function Tag({
   );
 }
 
-// .live: a dot with a soft ring and its words.
+const MIN_TAG_SCALE = 0.7;
+
+// .live: a glowing dot and its words. The dot beats: two rings spread from it and fade, one after
+// the other, like a pulse (the owner's call, 28 Ekim). Still with reduce motion, and while the
+// screen is out of sight.
 export function Live({
   label,
   color = KIT.success,
@@ -439,21 +476,88 @@ export function Live({
   const { c } = useKit();
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.chipGap }}>
-      <View
-        style={{
-          width: KIT.size.dot,
-          height: KIT.size.dot,
-          borderRadius: KIT.size.dot / 2,
-          backgroundColor: color,
-          boxShadow: `0px 0px 0px ${KIT.size.dotRing}px ${ring}`,
-        }}
-      />
+      <PulseDot color={color} ring={ring} />
       <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[KIT_TYPE.live, { color: c.ink }]}>
         {label}
       </Text>
     </View>
   );
 }
+
+export function PulseDot({
+  color = KIT.success,
+  ring = KIT.successRing,
+  size = KIT.size.dot,
+}: {
+  color?: string;
+  ring?: string;
+  size?: number;
+}) {
+  const reduce = useReduceMotion();
+  const active = useLoopActive();
+  const [waves] = useState(() => [new Animated.Value(0), new Animated.Value(0)]);
+  useEffect(() => {
+    if (reduce || !active) {
+      waves.forEach((w) => w.setValue(0));
+      return undefined;
+    }
+    const loops = waves.map((w, i) =>
+      Animated.loop(
+        Animated.sequence([
+          Animated.delay(i * (PULSE_MS / 2)),
+          Animated.timing(w, {
+            toValue: 1,
+            duration: PULSE_MS,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: true,
+          }),
+          Animated.timing(w, { toValue: 0, duration: 0, useNativeDriver: true }),
+          Animated.delay((1 - i) * (PULSE_MS / 2)),
+        ]),
+      ),
+    );
+    loops.forEach((l) => l.start());
+    return () => loops.forEach((l) => l.stop());
+  }, [reduce, active, waves]);
+  return (
+    <View
+      style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}
+      accessible={false}
+    >
+      {reduce
+        ? null
+        : waves.map((w, i) => (
+            <Animated.View
+              key={i}
+              style={{
+                position: 'absolute',
+                width: size,
+                height: size,
+                borderRadius: size / 2,
+                backgroundColor: color,
+                opacity: w.interpolate({ inputRange: [0, 1], outputRange: [PULSE_FROM, 0] }),
+                transform: [
+                  { scale: w.interpolate({ inputRange: [0, 1], outputRange: [1, PULSE_TO] }) },
+                ],
+              }}
+            />
+          ))}
+      <View
+        style={{
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          backgroundColor: color,
+          // A soft glow round the core.
+          boxShadow: `0px 0px ${size}px ${ring}, 0px 0px 0px ${KIT.size.dotRing / 2}px ${ring}`,
+        }}
+      />
+    </View>
+  );
+}
+const PULSE_MS = 1800;
+const PULSE_FROM = 0.45;
+const PULSE_TO = 2.8;
 
 // .sec: a section's heading and its note at the right, on a baseline.
 export function Sec({ title, note }: { title: string; note?: string }) {

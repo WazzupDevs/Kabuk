@@ -11,8 +11,6 @@ import {
   STILL_MOTION,
 } from '@/theme/markMotion';
 import { BRAND } from '@/theme/brand';
-import { KIT } from '@/theme/auraKit';
-import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
 import { Button, type IconName } from './Button';
@@ -74,7 +72,6 @@ export function StateMark({ kind, size = MARK_SIZE }: { kind: StateKind; size?: 
 const DISC_MARK = SPACING[10];
 
 export function EmptyState({ kind, icon, title, body, action }: Props) {
-  const { shape, scheme } = useTheme();
   const [shown, setShown] = useState(kind !== 'loading');
   useEffect(() => {
     if (kind !== 'loading') return undefined;
@@ -84,16 +81,8 @@ export function EmptyState({ kind, icon, title, body, action }: Props) {
   const disc = (
     <View
       className="items-center justify-center"
-      style={{
-        // docs/design/aura (`.round.glassy`, larger): a raised white disc with a white edge.
-        width: SPACING[16],
-        height: SPACING[16],
-        borderRadius: shape.radius.pill,
-        backgroundColor: KIT[scheme].raisedRound,
-        borderWidth: KIT.size.edge,
-        borderColor: KIT[scheme].raisedEdge,
-        boxShadow: KIT[scheme].raisedShadow || undefined,
-      }}
+      // The mark or icon on its own, no disc behind it (the owner's call, 28 Ekim).
+      style={{ width: SPACING[16], height: SPACING[16] }}
     >
       {kind ? (
         <StateMark kind={kind} size={DISC_MARK} />

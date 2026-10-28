@@ -27,7 +27,10 @@ export function Peek({ kind, delay = 0 }: { kind: PeekKind; delay?: number }) {
         left: 0,
         right: 0,
         top: -AURA.peek.up,
-        height: AURA.peek.height,
+        // Only what stands over the card's edge: the card is see-through glass, and the buddies'
+        // bodies showed through it (the owner's report, 28 Ekim).
+        height: AURA.peek.up,
+        overflow: 'hidden',
       }}
     >
       {width > 0

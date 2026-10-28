@@ -189,6 +189,22 @@ export function ChatBubble({
           lifted ? { boxShadow: shape.shadow.focus } : null,
         ]}
       >
+        {/* Mekan and masa sohbeti: the writer's name inside the bubble, on its first line, level
+            with the face beside it (the owner's call, 28 Ekim). */}
+        {inside && first && name ? (
+          <Pressable
+            testID={testID ? `${testID}-name` : undefined}
+            accessibilityRole="button"
+            accessibilityLabel={tr.chat.openProfile(name)}
+            disabled={!onPressSender}
+            onPress={onPressSender}
+            hitSlop={SPACING[1.5]}
+            className="self-start"
+            style={{ marginBottom: NAME_GAP }}
+          >
+            <RNText style={[KIT_TYPE.fine, KIT_TYPE.strong, { color: nameInk }]}>{name}</RNText>
+          </Pressable>
+        ) : null}
         {quote ? <QuoteBlock quote={quote} mine={mine} onPress={onPressQuote} /> : null}
         {/* The time sits in the text's last line, bottom right (skall.css → `.bub .tm`, a float).
             React Native has no float, and a wrapping row measured the bubble wrong (bubbles ran
@@ -310,25 +326,12 @@ export function ChatBubble({
     return (
       <View className="gap-1 self-start" style={{ maxWidth: '88%' }}>
         {bar}
-        {/* docs/design/aura → Mekan sohbeti: the face at the bubble's foot, the name in its
-            colour over the bubble. */}
-        <View className="flex-row items-end" style={{ columnGap: SPACING[2] }}>
+        {/* The face at the bubble's top, level with the name inside it (the owner's call, 28
+            Ekim). */}
+        <View className="flex-row items-start" style={{ columnGap: SPACING[2] }}>
           {/* Kept empty beside the run's later bubbles, so they stay in one column. */}
           <View style={{ width: AVATAR_SIZE.sm }}>{photo}</View>
           <View className="shrink items-start" style={{ gap: NAME_GAP }}>
-            {first && name ? (
-              <Pressable
-                testID={testID ? `${testID}-name` : undefined}
-                accessibilityRole="button"
-                accessibilityLabel={tr.chat.openProfile(name)}
-                disabled={!onPressSender}
-                onPress={onPressSender}
-                hitSlop={SPACING[1.5]}
-                className="self-start"
-              >
-                <RNText style={[KIT_TYPE.fine, KIT_TYPE.strong, { color: nameInk }]}>{name}</RNText>
-              </Pressable>
-            ) : null}
             <SwipeToReply onReply={onReply}>{bubble}</SwipeToReply>
             {chips}
           </View>
