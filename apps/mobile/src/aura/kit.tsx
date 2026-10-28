@@ -640,6 +640,11 @@ function initial(name: string): string {
   return upperTr(name.trim().charAt(0)) || '?';
 }
 
+// A face without a photo: its colour from the name (aura.css `.av` c1 … c5).
+export function avatarGround(name: string): string {
+  return KIT.avColors[colorIndex(name)] ?? KIT.avColors[0];
+}
+
 function colorIndex(name: string): number {
   let h = 0;
   for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;

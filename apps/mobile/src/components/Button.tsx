@@ -5,10 +5,10 @@ import { Animated, Pressable, View, type ViewStyle } from 'react-native';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { buttonFill, type ButtonVariant, isTextOnly } from '@/theme/buttonFill';
 import { EASE_OUT } from '@/theme/markMotion';
+import { KIT } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, OPACITY, type PaletteKey, SPACING, TOUCH, type TypeVariant } from '@/theme/tokens';
 
-import { GlassFace } from './GlassFace';
 import { Loader } from './Loader';
 import { usePressScale } from './motion';
 import { Text } from './Text';
@@ -51,8 +51,9 @@ type Props = {
   iconOnly?: boolean;
 };
 
-const SMALL_HEIGHT = SPACING[9];
-const HEIGHT = { md: TOUCH.min, lg: SPACING[12] + SPACING[1] } as const;
+// docs/design/aura (`.btn`): 54 high, 38 small; 24 and 16 at the sides.
+const SMALL_HEIGHT = KIT.size.btnSm;
+const HEIGHT = { md: TOUCH.min, lg: KIT.size.btn } as const;
 // The busy mark per size (px) and its cross-fade with the label (hareket.md → "Düğmede bekleme").
 const BUSY_MARK = { sm: 20, md: 24, lg: 28 } as const;
 const LABEL_OUT_MS = 120;
@@ -126,7 +127,7 @@ export function Button({
   tight,
   iconOnly,
 }: Props) {
-  const { colors, shape } = useTheme();
+  const { colors, shape, scheme } = useTheme();
   const pressScale = usePressScale();
   const busy = useBusy(loading);
   const inactive = disabled || loading;
@@ -134,7 +135,8 @@ export function Button({
   const textOnly = isTextOnly(variant);
   const fill = buttonFill(variant, !!disabled);
   const bg = fill.bg ? colors[fill.bg] : 'transparent';
-  const fg = colors[fill.fg];
+  // A danger action reads red on the raised capsule (aura: Bitir, Ayrıl).
+  const fg = variant === 'danger' && !disabled ? colors.danger : colors[fill.fg];
   // Every filled button is glass (theme/glass.ts → BUTTON_GLASS, the owner's call, 27 Ekim): the
   // quiet ones clear, the coloured ones tinted; a soft shadow sets the clear ones off the ground.
   // Disabled, every filled role is the same neutral fill, flat.
@@ -144,7 +146,21 @@ export function Button({
       : variant === 'secondary' || variant === 'neutral'
         ? 'clear'
         : 'tinted';
-  const edge: ViewStyle | null = glass === 'clear' ? { boxShadow: shape.shadow.card } : null;
+  // docs/design/aura (`.btn.primary`, `.btn.glassy`): the primary filled with its violet shadow and
+  // a light top line; every other role a raised white capsule with a white edge.
+  const k = KIT[scheme];
+  const edge: ViewStyle | null = textOnly
+    ? null
+    : variant === 'primary' && !disabled
+      ? { boxShadow: `${KIT.primaryShadow}, ${KIT.primaryInset}` }
+      : glass === 'clear' || variant === 'danger'
+        ? {
+            backgroundColor: k.raised,
+            borderWidth: KIT.size.edge,
+            borderColor: k.raisedEdge,
+            boxShadow: k.raisedShadow || undefined,
+          }
+        : null;
   const small = size === 'sm';
   const labelVariant: TypeVariant = small
     ? 'buttonSmall'
@@ -162,17 +178,17 @@ export function Button({
     paddingHorizontal: flush
       ? 0
       : small
-        ? SPACING[3] + SPACING[0.5]
+        ? KIT.size.btnPadXSm
         : detail || tight
           ? SPACING[3]
           : size === 'lg'
-            ? SPACING[6]
+            ? KIT.size.btnPadX
             : SPACING[5],
     justifyContent: flush ? 'flex-start' : 'center',
     paddingVertical: small ? SPACING[1] : SPACING[2],
     minHeight: small ? SMALL_HEIGHT : HEIGHT[size],
     borderRadius: shape.radius.pill,
-    backgroundColor: glass === 'clear' ? 'transparent' : bg,
+    backgroundColor: glass === 'clear' || (variant === 'danger' && !disabled) ? undefined : bg,
   };
   const pressedFill: ViewStyle | null =
     variant === 'primary' && !disabled ? { backgroundColor: colors.primaryPressed } : null;
@@ -203,13 +219,6 @@ export function Button({
             pressScale(pressed && !inactive),
           ]}
         >
-          {glass ? (
-            <GlassFace
-              kind={glass}
-              fill={glass === 'clear' ? bg : undefined}
-              radius={shape.radius.pill}
-            />
-          ) : null}
           <Animated.View
             style={[{ flexDirection: 'row', alignItems: 'center', gap: style.gap }, busy.label]}
             className="shrink"

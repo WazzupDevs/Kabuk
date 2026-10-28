@@ -2,7 +2,8 @@ import type { ReactNode } from 'react';
 import { Pressable, View, type ViewStyle } from 'react-native';
 
 import { colorVars, ThemeScope, useFeatureTheme, useTheme } from '@/theme/ThemeProvider';
-import { AURA } from '@/theme/aura';
+import { KIT } from '@/theme/auraKit';
+import { gradientStyle } from '@/theme/gradient';
 import { SPACING } from '@/theme/tokens';
 
 import { usePressScale } from './motion';
@@ -34,33 +35,35 @@ export function Card({
   className,
   testID,
 }: Props) {
-  const { colors, shape, scheme } = useTheme();
-  const glass = AURA[scheme].glass;
+  const { colors, scheme } = useTheme();
   const featureTheme = useFeatureTheme();
   const quiet = useQuiet();
   const pressScale = usePressScale();
 
   const feature = tone === 'feature' && !quiet;
+  const k = KIT[scheme];
+  // docs/design/aura (`.glass`, `.glass.sm`): a card is frosted glass, 28 round, 18 inside; a note
+  // the smaller, softer glass. The featured card keeps its dark palette.
   const style: ViewStyle[] =
     tone === 'note'
       ? [
           {
-            backgroundColor: colors.surface2,
-            borderRadius: shape.radius.lg,
-            padding: SPACING[4],
+            backgroundColor: k.raised,
+            borderRadius: KIT.size.glassRadiusSm,
+            borderWidth: KIT.size.edge,
+            borderColor: k.raisedEdge,
+            padding: KIT.size.pad - SPACING[1],
           },
         ]
       : [
+          feature ? { backgroundColor: colors.feature } : gradientStyle(k.glass),
           {
-            // The airy look (docs/design/aura → `.glass`): a frosted pane on the clouds, a white
-            // edge and a soft violet shadow; on trust screens (`Quiet`) no shadow.
-            backgroundColor: feature ? colors.feature : glass.fill,
-            borderRadius: AURA.card.radius,
-            padding: flush ? 0 : SPACING[4],
+            borderRadius: KIT.size.glassRadius,
+            padding: flush ? 0 : KIT.size.pad,
             overflow: flush ? 'hidden' : undefined,
-            borderWidth: feature ? 0 : AURA.card.edgeWidth,
-            borderColor: glass.edge,
-            boxShadow: quiet || feature ? undefined : glass.shadow,
+            borderWidth: feature ? 0 : KIT.size.edge,
+            borderColor: k.glassEdge,
+            boxShadow: quiet || feature ? undefined : `${k.glassShadow}, ${KIT.glassInset}`,
           },
           feature ? (colorVars(featureTheme.colors) as ViewStyle) : {},
         ];

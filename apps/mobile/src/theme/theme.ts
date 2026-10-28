@@ -145,7 +145,8 @@ export const THEME: ThemeDefinition = {
     },
     stroke: { card: 1, feature: 2, control: 1, tag: 0, hairline: 1 },
     selectedTeam: 'fill',
-    screenPadding: 16,
+    // aura.css `.content`: 20 at the sides.
+    screenPadding: 20,
   },
   shadows: {
     light: {
@@ -163,5 +164,23 @@ export const THEME: ThemeDefinition = {
       focus: '0px 0px 0px 4px rgba(175, 176, 255, 0.22)',
     },
   },
-  typography: baseTypography(),
+  // The airy look's type (docs/design/aura/project/aura.css; the owner's call, 28 Ekim): the
+  // canvas's sizes and weights for every screen, games' own styles as they were.
+  typography: baseTypography({
+    display: { font: 'regular', size: 32, lineHeight: 38, letterSpacing: -0.8 },
+    title: { font: 'semibold', size: 21, lineHeight: 27, letterSpacing: -0.3 },
+    heading: { font: 'semibold', size: 16, lineHeight: 22, letterSpacing: -0.1 },
+    body: { font: 'regular', size: 15, lineHeight: 22 },
+    bodyStrong: { font: 'semibold', size: 15, lineHeight: 22 },
+    subtitle: { font: 'regular', size: 15, lineHeight: 22 },
+    eyebrow: { font: 'semibold', size: 12, lineHeight: 16, letterSpacing: 0.24 },
+    label: { font: 'semibold', size: 13, lineHeight: 17 },
+    fine: { font: 'regular', size: 13, lineHeight: 18 },
+    button: { font: 'semibold', size: 16, lineHeight: 20 },
+    buttonLarge: { font: 'semibold', size: 16, lineHeight: 20 },
+    buttonDetail: { font: 'semibold', size: 15, lineHeight: 20 },
+    buttonSmall: { font: 'semibold', size: 14, lineHeight: 18 },
+    tag: { font: 'semibold', size: 12, lineHeight: 16 },
+    caption: { font: 'semibold', size: 11, lineHeight: 14 },
+  }),
 };

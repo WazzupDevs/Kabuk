@@ -1,6 +1,7 @@
 import { Pressable, ScrollView, View } from 'react-native';
 
 import { haptic } from '@/lib/haptics';
+import { KIT } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING, TOUCH } from '@/theme/tokens';
 
@@ -22,7 +23,7 @@ type Props<T extends string> = {
 };
 
 // The chip's height (v44: .cat, 36); its touch area grows to TOUCH.min.
-const CHIP = SPACING[9];
+const CHIP = KIT.size.chip;
 const SLOP = (TOUCH.min - CHIP) / 2;
 
 // Filter chips, one chosen (v44: .cats, .ci-chips): capsules as wide as their label, the chosen one
@@ -35,7 +36,8 @@ export function Chips<T extends string>({
   wrap = false,
   bleed = 0,
 }: Props<T>) {
-  const { colors, shape } = useTheme();
+  const { colors, shape, scheme } = useTheme();
+  const k = KIT[scheme];
   const pressScale = usePressScale();
   const chips = options.map((o) => {
     const on = o.value === value;
@@ -57,12 +59,14 @@ export function Chips<T extends string>({
             style={[
               {
                 minHeight: CHIP,
-                paddingHorizontal: SPACING[3] + SPACING[0.5],
-                borderRadius: shape.radius.pill,
-                // skall tuvali (skall.css → `.chip`): surface with the control outline; on, ink.
-                backgroundColor: on ? colors.text : colors.surface,
-                borderWidth: shape.stroke.hairline * 1.5,
-                borderColor: on ? colors.text : colors.control,
+                paddingHorizontal: KIT.size.chipPadX,
+                borderRadius: CHIP,
+                // docs/design/aura (`.chip`): raised white with a white edge and a soft shadow; on,
+                // ink.
+                backgroundColor: on ? k.chipOn : k.raisedChip,
+                borderWidth: KIT.size.edge,
+                borderColor: on ? k.chipOn : k.raisedEdge,
+                boxShadow: on ? undefined : k.chipShadow || undefined,
               },
               pressScale(pressed),
             ]}

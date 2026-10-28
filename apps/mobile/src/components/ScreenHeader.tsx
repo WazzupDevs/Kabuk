@@ -41,9 +41,10 @@ export function ScreenHeader({
   const { colors } = useTheme();
   return (
     <View className="mb-2">
+      {/* docs/design/aura (`.topbar`): the round glass back button, the title under it. */}
       {onBack ? (
-        <View className="-ml-3 mb-1 self-start">
-          <IconButton icon="chevron-back" label={tr.common.back} onPress={onBack} />
+        <View className="mb-3 self-start">
+          <IconButton round icon="chevron-back" label={tr.common.back} onPress={onBack} />
         </View>
       ) : null}
       {eyebrow ? (
@@ -71,9 +72,7 @@ export function ScreenHeader({
         </Text>
         {trailing}
         {action ? (
-          <View className="-mr-3">
-            <IconButton icon={action.icon} label={action.label} onPress={action.onPress} />
-          </View>
+          <IconButton round icon={action.icon} label={action.label} onPress={action.onPress} />
         ) : null}
       </View>
       {subtitle ? (

@@ -1,15 +1,14 @@
 import { Children, createContext, type ReactNode, useState } from 'react';
 import { View } from 'react-native';
 
-import { AURA } from '@/theme/aura';
+import { KIT } from '@/theme/auraKit';
+import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
-import { SPACING } from '@/theme/tokens';
 
 import { usePressScale } from './motion';
 
 // skall tuvali (skall.css → `.list`): rows in one card, a hairline between them inset to the text
 // (78 from the left, 16 from the right). The rows are ListRow `inset`.
-const DIVIDER_LEFT = SPACING[16] + SPACING[3] + SPACING[0.5];
 
 // A card of one row presses as a whole: its row tells it (ListRow `inset`), and the card scales
 // like a button (skall.css → `.btn.pressed`) instead of the row painting a block inside it.
@@ -26,8 +25,8 @@ export function ListCard({
   testID?: string;
   bare?: boolean;
 }) {
-  const { colors, shape, scheme } = useTheme();
-  const glass = AURA[scheme].glass;
+  const { scheme } = useTheme();
+  const k = KIT[scheme];
   const pressScale = usePressScale();
   const [pressed, setPressed] = useState(false);
   const rows = Children.toArray(children).filter(Boolean);
@@ -37,16 +36,18 @@ export function ListCard({
       testID={testID}
       style={[
         bare
-          ? { marginHorizontal: -SPACING[4] }
-          : {
-              // A frosted pane on the clouds (docs/design/aura → `.glass.list`).
-              backgroundColor: glass.fill,
-              borderWidth: AURA.card.edgeWidth,
-              borderColor: glass.edge,
-              borderRadius: AURA.card.radius,
-              boxShadow: glass.shadow,
-              paddingVertical: SPACING[1],
-            },
+          ? { marginHorizontal: -KIT.size.liPadX }
+          : [
+              // docs/design/aura (`.glass.list`): frosted, 28 round, a hairline between rows.
+              gradientStyle(k.glass),
+              {
+                borderWidth: KIT.size.edge,
+                borderColor: k.glassEdge,
+                borderRadius: KIT.size.glassRadius,
+                boxShadow: `${k.glassShadow}, ${KIT.glassInset}`,
+                paddingVertical: KIT.size.listPadY,
+              },
+            ],
         single ? pressScale(pressed) : null,
       ]}
     >
@@ -58,10 +59,10 @@ export function ListCard({
                 style={{
                   position: 'absolute',
                   top: 0,
-                  left: DIVIDER_LEFT,
-                  right: SPACING[4],
-                  height: shape.stroke.hairline,
-                  backgroundColor: colors.divider,
+                  left: 0,
+                  right: 0,
+                  height: KIT.size.hair,
+                  backgroundColor: k.hair,
                 }}
               />
             ) : null}
