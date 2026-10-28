@@ -20,6 +20,7 @@ import { Sheet } from '@/components/Sheet';
 import { profileViewKeys, useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
+import { useAskBeforeLeaving } from '@/lib/leaveGuard';
 import { track } from '@/lib/analytics';
 import { profileApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
@@ -161,6 +162,8 @@ function EditForm({
   const [leaving, setLeaving] = useState(false);
   const dirty = (nameChanged || bioChanged) && !save.isSuccess;
   const leave = useCallback(() => (dirty ? setLeaving(true) : router.back()), [dirty]);
+  const askToLeave = useCallback(() => setLeaving(true), []);
+  useAskBeforeLeaving(dirty, askToLeave);
   useFocusEffect(
     useCallback(() => {
       const sub = BackHandler.addEventListener('hardwareBackPress', () => {

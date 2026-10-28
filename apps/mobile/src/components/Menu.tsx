@@ -1,6 +1,7 @@
 import { Children, type ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 
+import { useSinglePress } from '@/lib/useSinglePress';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, OPACITY, SPACING } from '@/theme/tokens';
 
@@ -74,6 +75,7 @@ export function MenuItem({
   count?: number;
 }) {
   const { colors } = useTheme();
+  const press = useSinglePress(onPress);
   const ink = negative ? colors.onDangerSoft : colors.text;
   return (
     <Pressable
@@ -81,7 +83,7 @@ export function MenuItem({
       accessibilityRole="button"
       accessibilityState={{ disabled: !!loading, busy: !!loading }}
       disabled={loading}
-      onPress={onPress}
+      onPress={press}
     >
       {({ pressed }) => (
         <View
