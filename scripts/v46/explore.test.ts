@@ -247,19 +247,14 @@ describe("the app's Keşfet", () => {
     'utf8',
   );
 
-  it("is built from v46's parts", () => {
-    for (const part of [
-      'TopBar',
-      'ViewModeToggle',
-      'SearchField',
-      'FilterChips',
-      'CityButton',
-      'HereCard',
-      'VenueRow',
-    ]) {
-      expect(screen, part).toMatch(new RegExp(`from '@/ui/${part}'`));
+  // Since 28 Ekim the screen is the airy canvas's (docs/design/aura → Keşfet; CLAUDE.md → Kod
+  // kuralları): the question, the search and the switch on glass, chips, the venues in a glass list.
+  it("is built from the canvas's kit", () => {
+    expect(screen).toMatch(/from '@\/aura\/kit'/);
+    for (const part of ['<SearchGlass', '<ViewSwitch', '<Chip', '<GlassList>', '<Li']) {
+      expect(screen, part).toContain(part);
     }
-    expect(screen).toMatch(/<TopBar\s+kind="explore"/);
+    expect(screen).not.toMatch(/from '@\/ui\/TopBar'/);
   });
 
   it('leaves the bell to Mesajlar alone, its dot on the tab for unread DMs and waiting requests (K-6)', () => {
@@ -321,10 +316,9 @@ describe("the app's Keşfet", () => {
   it("takes each venue's icon and type from its category (lib/venueType.ts)", () => {
     // The list row, "Şu an buradasın" and the venue page; the mapping is tested in venueType.test.ts.
     expect(screen).toMatch(/const type = venueType\(v\);/);
-    expect(screen).toMatch(/thumb=\{type\}/);
+    expect(screen).toMatch(/<VenueThumb kind=\{type\} \/>/);
     expect(screen).toMatch(/tr\.explore\.typeLabel\[type\]/);
     expect(screen).toMatch(/type: hereVenue \? venueType\(hereVenue\) : 'kafe'/);
-    expect(screen).toMatch(/thumb=\{here\.type\}/);
     expect(
       readFileSync(resolve(root, 'apps/mobile/app/(app)/(tabs)/explore/[venueId].tsx'), 'utf8'),
     ).toMatch(/tr\.explore\.typeLabel\[venueType\(venue\)\]/);
@@ -335,8 +329,8 @@ describe("the app's Keşfet", () => {
     expect(html).toContain(
       '.dsearch{display:flex;align-items:center;gap:10px;height:48px;margin-top:12px',
     );
-    // The screen keeps it, so the field is its own box (the visual gate crops to it).
-    expect(screen).toMatch(/marginTop: V46_EXPLORE\[scheme\]\.search\.marginTop/);
+    // The canvas puts 14 between the question and the search (docs/design/aura → Keşfet).
+    expect(screen).toMatch(/const EXPLORE_GAP = 14;/);
     expect(source('SearchField.tsx')).not.toMatch(/marginTop/);
   });
 

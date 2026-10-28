@@ -13,12 +13,12 @@ import {
 import { hasActiveTable } from '@shared/navigation.ts';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
 import { CapIcon } from '@/aura/CapIcon';
-import { Btn, Glass, Sec, T, Tag } from '@/aura/kit';
+import { Btn, Chip, Glass, GlassList, Li, Live, Sec, T, Tag, useKit } from '@/aura/kit';
 import { MarkDisk } from '@/aura/MarkDisk';
 import { useTabFocus } from '@/aura/motion';
 import { Gathering, SceneGround } from '@/aura/Scene';
@@ -47,18 +47,10 @@ import { useNow } from '@/lib/useNow';
 import { venueType, type VenueType } from '@/lib/venueType';
 import { AURA } from '@/theme/aura';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
-import { V46_EXPLORE } from '@/theme/parts.generated';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
-import { CityButton } from '@/ui/CityButton';
-import { FilterChips } from '@/ui/FilterChips';
-import { HereCard } from '@/ui/HereCard';
 import { PullScroll } from '@/ui/PullScroll';
-import { SearchField } from '@/ui/SearchField';
-import { TopBar } from '@/ui/TopBar';
-import { VenueList as VenueCard } from '@/ui/VenueList';
-import { VenueRow } from '@/ui/VenueRow';
-import { ViewModeToggle } from '@/ui/ViewModeToggle';
+import { VenueThumb } from '@/ui/VenueThumb';
 
 type View_ = 'list' | 'map';
 
@@ -134,48 +126,45 @@ export default function ExploreScreen() {
             onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}
             style={{ zIndex: 1 }}
           >
-            <TopBar
-              kind="explore"
-              title={tr.tabs.explore}
+            {/* docs/design/aura → Keşfet: the question, the search field and the list/map switch
+                on glass, the kind chips. */}
+            <View
               testID="explore-head"
-              right={
-                layout === 'single' ? undefined : (
-                  <ViewModeToggle
-                    value={view}
-                    labels={tr.explore.views}
-                    accessibilityLabel={tr.explore.viewSwitch}
-                    onChange={(mode) => {
-                      haptic('selection');
-                      setView(mode);
-                    }}
-                  />
-                )
-              }
+              style={{ paddingHorizontal: KIT.size.side, paddingTop: SPACING[2], gap: EXPLORE_GAP }}
             >
+              <T v="display" style={KIT_TYPE.displaySm} accessibilityRole="header">
+                {tr.explore.question}
+              </T>
               {ready && layout === 'list' ? (
                 <>
-                  {/* 12 below the title's row (`.dsearch{margin-top:12px}`). */}
-                  <View style={{ marginTop: V46_EXPLORE[scheme].search.marginTop }}>
-                    <SearchField
-                      value={query}
-                      onChangeText={setQuery}
-                      placeholder={tr.explore.search}
-                      testID="explore-search"
+                  <View style={{ flexDirection: 'row', gap: SEARCH_GAP }}>
+                    <SearchGlass value={query} onChangeText={setQuery} />
+                    <ViewSwitch
+                      value={view}
+                      onChange={(mode) => {
+                        haptic('selection');
+                        setView(mode);
+                      }}
                     />
                   </View>
-                  <FilterChips
-                    items={EXPLORE_KINDS.map((k) => ({
-                      key: k,
-                      label: tr.explore.kinds[k],
-                      testID: `explore-kind-${k}`,
-                    }))}
-                    value={kind}
-                    onChange={setKind}
+                  <View
+                    accessibilityRole="radiogroup"
                     accessibilityLabel={tr.explore.kindsLabel}
-                  />
+                    style={{ flexDirection: 'row', flexWrap: 'wrap', gap: KIT.size.chipsGap }}
+                  >
+                    {EXPLORE_KINDS.map((k) => (
+                      <Chip
+                        key={k}
+                        testID={`explore-kind-${k}`}
+                        label={tr.explore.kinds[k]}
+                        on={kind === k}
+                        onPress={() => setKind(k)}
+                      />
+                    ))}
+                  </View>
                 </>
               ) : null}
-            </TopBar>
+            </View>
           </View>
         )}
 
@@ -230,16 +219,23 @@ export default function ExploreScreen() {
 // "Şu an buradasın" (v46 `.vhere`): the own check-in and the way back to Mekan. The phone's own
 // data; nobody else sees it.
 function HereNow({ here }: { here: Here }) {
+  // docs/design/aura: a glass row with the live dot, the venue and "Mekana dön".
   return (
-    <HereCard
-      label={tr.explore.here}
-      thumb={here.type}
-      name={here.name}
-      sub={tr.explore.hereAt(here.spot)}
-      action={tr.explore.backToVenue}
-      onPress={() => router.navigate('/venue')}
-      testID="explore-here"
-    />
+    <Glass sm testID="explore-here" style={{ padding: KIT.size.rowGap }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.rowGap }}>
+        <View style={{ flex: 1, gap: SPACING[0.5] }}>
+          <Live label={tr.explore.here} />
+          <T v="h3">{here.name}</T>
+          <T v="fine">{tr.explore.hereAt(here.spot)}</T>
+        </View>
+        <Btn
+          sm
+          icon="forward"
+          label={tr.explore.backToVenue}
+          onPress={() => router.navigate('/venue')}
+        />
+      </View>
+    </Glass>
   );
 }
 
@@ -264,8 +260,7 @@ function VenueList({
   bottomSpace: number;
   onRefresh: () => Promise<unknown>;
 }) {
-  const { scheme } = useTheme();
-  const side = -V46_EXPLORE[scheme].chips.margin[3];
+  const side = KIT.size.side;
   const [placeSheet, setPlaceSheet] = useState(false);
   const [sheetKey, setSheetKey] = useState(0);
   const cityList = useMemo(() => exploreCities(listed), [listed]);
@@ -275,21 +270,43 @@ function VenueList({
       onRefresh={onRefresh}
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"
-      contentContainerStyle={{ paddingHorizontal: side, paddingBottom: SPACING[8] + bottomSpace }}
+      contentContainerStyle={{
+        paddingHorizontal: side,
+        paddingTop: EXPLORE_GAP,
+        paddingBottom: SPACING[8] + bottomSpace,
+        gap: KIT.size.rowGap,
+      }}
     >
       {here ? <HereNow here={here} /> : null}
-      <CityButton
-        // One city with active venues: no city to choose, the count alone (K-38).
-        label={place && cityList.length > 1 ? tr.explore.place(place.city, place.district) : null}
-        accessibilityLabel={place ? tr.explore.placeLabel(place.city, place.district) : undefined}
-        count={tr.explore.countLine(venues.length, eventsFirst)}
-        onPress={() => {
-          setSheetKey((k) => k + 1);
-          setPlaceSheet(true);
+      {/* The city and district, and how many venues (K-38): a section's head. */}
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'baseline',
+          justifyContent: 'space-between',
+          paddingHorizontal: KIT.size.secPadX,
         }}
-        testID="explore-place"
-        countTestID="explore-count"
-      />
+      >
+        {place && cityList.length > 1 ? (
+          <Pressable
+            testID="explore-place"
+            accessibilityRole="button"
+            accessibilityLabel={tr.explore.placeLabel(place.city, place.district)}
+            onPress={() => {
+              setSheetKey((k) => k + 1);
+              setPlaceSheet(true);
+            }}
+            hitSlop={KIT.size.chipsGap}
+          >
+            <T v="sec">{tr.explore.place(place.city, place.district)}</T>
+          </Pressable>
+        ) : (
+          <View />
+        )}
+        <T v="fine" testID="explore-count">
+          {tr.explore.countLine(venues.length, eventsFirst)}
+        </T>
+      </View>
       {listed.length === 0 ? (
         <EmptyState icon="cafe-outline" body={tr.explore.empty} />
       ) : venues.length === 0 ? (
@@ -302,25 +319,33 @@ function VenueList({
           </View>
         </Card>
       ) : (
-        <VenueCard>
-          {venues.map((v, i) => {
+        <GlassList>
+          {venues.map((v) => {
             const type = venueType(v);
+            const calm = v.bucket === 'calm';
             return (
-              <VenueRow
+              <Li
                 key={v.id}
-                thumb={type}
-                name={v.name}
-                sub={tr.explore.venueSub(tr.explore.typeLabel[type], v.district)}
-                status={{ text: tr.explore.buckets[v.bucket], live: v.bucket !== 'calm' }}
-                index={i}
+                testID={`explore-venue-${v.name}`}
+                accessibilityLabel={`${v.name}, ${tr.explore.typeLabel[type]}, ${tr.explore.buckets[v.bucket]}`}
                 onPress={() =>
                   router.push({ pathname: '/explore/[venueId]', params: { venueId: v.id } })
                 }
-                testID={`explore-venue-${v.name}`}
-              />
+              >
+                <VenueThumb kind={type} />
+                <View style={{ flex: 1, gap: SPACING[0.5] }}>
+                  <T v="h3">{v.name}</T>
+                  <T v="fine">{tr.explore.venueSub(tr.explore.typeLabel[type], v.district)}</T>
+                </View>
+                {calm ? (
+                  <T v="fine">{tr.explore.buckets[v.bucket]}</T>
+                ) : (
+                  <Live label={tr.explore.buckets[v.bucket]} color={KIT.pink} ring={KIT.pinkRing} />
+                )}
+              </Li>
             );
           })}
-        </VenueCard>
+        </GlassList>
       )}
       <Text variant="fine" align="center" className="pt-5">
         {tr.checkin.osmAttribution}
@@ -605,3 +630,87 @@ function SingleVenue({
 const EXPLORE_GAP = 14;
 const CARD_PAD = 8;
 const SCENE_RADIUS = 22;
+
+const SEARCH_GAP = 10;
+const FIELD_H = 50;
+const SWITCH_ROUND = 42;
+
+// "Mekan ara" on glass (Keşfet: 50 high, 25 round, the search icon first).
+function SearchGlass({
+  value,
+  onChangeText,
+}: {
+  value: string;
+  onChangeText: (text: string) => void;
+}) {
+  const { c } = useKit();
+  return (
+    <Glass
+      style={{
+        flex: 1,
+        height: FIELD_H,
+        borderRadius: FIELD_H / 2,
+        paddingHorizontal: KIT.size.liPadX,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: SEARCH_GAP,
+      }}
+    >
+      <CapIcon name="search" color={c.muted} size={KIT.size.iconSm} />
+      <TextInput
+        testID="explore-search"
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={tr.explore.search}
+        placeholderTextColor={c.muted}
+        accessibilityLabel={tr.explore.search}
+        style={[KIT_TYPE.body, { flex: 1, color: c.ink, paddingVertical: 0 }]}
+      />
+    </Glass>
+  );
+}
+
+// The list/map switch (Keşfet): two round buttons in a glass capsule, the chosen one raised white.
+function ViewSwitch({ value, onChange }: { value: View_; onChange: (v: View_) => void }) {
+  const { c } = useKit();
+  return (
+    <Glass
+      style={{
+        height: FIELD_H,
+        borderRadius: FIELD_H / 2,
+        padding: (FIELD_H - SWITCH_ROUND) / 2 - KIT.size.edge,
+      }}
+    >
+      <View
+        accessibilityRole="tablist"
+        accessibilityLabel={tr.explore.viewSwitch}
+        style={{ flexDirection: 'row', gap: 2 }}
+      >
+        {(['list', 'map'] as const).map((mode) => {
+          const on = value === mode;
+          return (
+            <Pressable
+              key={mode}
+              testID={`explore-view-${mode}`}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: on }}
+              accessibilityLabel={tr.explore.views[mode]}
+              onPress={() => onChange(mode)}
+              style={{
+                width: SWITCH_ROUND,
+                height: SWITCH_ROUND,
+                borderRadius: SWITCH_ROUND / 2,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: on ? c.segOn : undefined,
+                boxShadow: on ? c.segShadow || undefined : undefined,
+              }}
+            >
+              <CapIcon name={mode} color={on ? c.ink : c.muted} size={KIT.size.iconSm} />
+            </Pressable>
+          );
+        })}
+      </View>
+    </Glass>
+  );
+}

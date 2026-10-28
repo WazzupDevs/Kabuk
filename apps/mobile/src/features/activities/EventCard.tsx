@@ -1,21 +1,22 @@
 import { describeEventTime } from '@shared/explore.ts';
+import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 
-import { Card } from '@/components/Card';
+import { Glass, T, Tag } from '@/aura/kit';
+import { MarkDisk } from '@/aura/MarkDisk';
+import { Gathering, SceneGround } from '@/aura/Scene';
 import { usePressScale } from '@/components/motion';
-import { Tag } from '@/components/Tag';
-import { Text } from '@/components/Text';
 import type { ExploreEvent } from '@/features/explore/useExploreVenues';
 import { tr } from '@/i18n/tr';
+import { AURA } from '@/theme/aura';
+import { KIT } from '@/theme/auraKit';
 import type { CoverKind } from '@/theme/eventCovers';
 import { SPACING } from '@/theme/tokens';
 
-import { EventCover } from './EventCover';
-
-// One of today's events (skall tuvali, Aktiviteler): the venue kind's cover with "Etkinlik" and the
-// time on it, the title and the venue under it. No "ilgileniyorum" and no count (K-15). It opens the
-// venue's page in Keşfet (K-43).
-const EVENT_ART_HEIGHT = SPACING[16] * 2 + SPACING[5] + SPACING[0.5];
+// One of today's events, in the manner of Keşfet's venue card (docs/design/aura → Keşfet): a glass
+// card, a scene with buddies gathered round the mark and "Etkinlik" and the time on it, the title
+// and the venue under it. No "ilgileniyorum" and no count (K-15). It opens the venue's page in
+// Keşfet (K-43).
 export function EventCard({
   venue,
   event,
@@ -28,7 +29,10 @@ export function EventCard({
   onPress: () => void;
 }) {
   const pressScale = usePressScale();
+  const [width, setWidth] = useState(0);
   const when = tr.explore.eventTime(describeEventTime(event.startsAt, event.endsAt, now));
+  const g = AURA.gatherings.explore;
+  const k = width > 0 ? width / g.frame : 1;
   return (
     <Pressable
       testID={`activities-event-${venue.name}`}
@@ -37,39 +41,49 @@ export function EventCard({
       onPress={onPress}
     >
       {({ pressed }) => (
-        // skall tuvali (Aktiviteler): a picture card, the cover 150 high with its two tags, the
-        // title and the venue under it.
         <View style={pressScale(pressed)}>
-          <Card flush>
-            <View style={{ height: EVENT_ART_HEIGHT, overflow: 'hidden' }}>
-              <EventCover kind={venue.kind} />
+          <Glass style={{ padding: CARD_PAD }}>
+            <View
+              onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+              style={{ height: g.height * k, borderRadius: SCENE_RADIUS, overflow: 'hidden' }}
+            >
+              <SceneGround top={SCENE_RADIUS} bottom={SCENE_RADIUS} />
+              {width > 0 ? (
+                <Gathering
+                  kind="explore"
+                  width={width}
+                  center={<MarkDisk size={g.disk.size * k} />}
+                />
+              ) : null}
               <View
                 className="absolute flex-row"
                 style={{ top: SPACING[3], left: SPACING[3], right: SPACING[3], gap: SPACING[1.5] }}
               >
-                <Tag variant="light" label={tr.activities.eventKind} />
+                <Tag tone="amber" label={tr.activities.eventKind} />
                 <View style={{ marginLeft: 'auto' }}>
-                  <Tag variant="glass" label={when} />
+                  <Tag label={when} />
                 </View>
               </View>
             </View>
             <View
               style={{
                 gap: SPACING[0.5],
-                paddingTop: SPACING[3],
-                paddingRight: SPACING[3] + SPACING[0.5],
-                paddingBottom: SPACING[3] + SPACING[0.5],
-                paddingLeft: SPACING[4],
+                paddingTop: KIT.size.rowGap,
+                paddingHorizontal: SPACING[2.5],
+                paddingBottom: SPACING[2],
               }}
             >
-              <Text variant="heading">{event.title}</Text>
-              <Text variant="label" tone="accent">
+              <T v="h3">{event.title}</T>
+              <T v="fine" strong color={KIT.primary}>
                 {venue.name}
-              </Text>
+              </T>
             </View>
-          </Card>
+          </Glass>
         </View>
       )}
     </Pressable>
   );
 }
+
+const CARD_PAD = 8;
+const SCENE_RADIUS = 22;

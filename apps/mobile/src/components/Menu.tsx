@@ -2,6 +2,8 @@ import { Children, type ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { useSinglePress } from '@/lib/useSinglePress';
+import { KIT } from '@/theme/auraKit';
+import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, OPACITY, SPACING } from '@/theme/tokens';
 
@@ -15,23 +17,26 @@ import { AppIcon } from './AppIcon';
 // float: over a scrim, beside a held message (skall.css → `.pop .menu`): the surface on the float
 // shadow, 210 wide.
 export function Menu({ children, float }: { children: ReactNode; float?: boolean }) {
-  const { colors, shape } = useTheme();
+  const { colors, shape, scheme } = useTheme();
   const rows = Children.toArray(children).filter(Boolean);
   const card = (
     <View
-      style={{
-        borderRadius: shape.radius.lg,
-        backgroundColor: float ? colors.surface : colors.surface2,
-        overflow: 'hidden',
-      }}
+      // docs/design/aura (`.glass.list`): the rows in one glass card, a hairline between them.
+      style={[
+        float ? { backgroundColor: colors.surface } : gradientStyle(KIT[scheme].glass),
+        {
+          borderRadius: KIT.size.glassRadiusSm,
+          borderWidth: float ? 0 : KIT.size.edge,
+          borderColor: KIT[scheme].glassEdge,
+          overflow: 'hidden',
+        },
+      ]}
     >
       {rows.map((row, i) => (
         <View
           key={i}
           style={
-            i > 0
-              ? { borderTopWidth: shape.stroke.hairline, borderTopColor: colors.divider }
-              : undefined
+            i > 0 ? { borderTopWidth: KIT.size.hair, borderTopColor: KIT[scheme].hair } : undefined
           }
         >
           {row}
