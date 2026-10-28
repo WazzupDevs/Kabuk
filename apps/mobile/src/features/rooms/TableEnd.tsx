@@ -60,7 +60,7 @@ export function TableEnd({ roomId, left, tableName, phones, profiled, anonymous,
   const friends = useHistoryFriends();
 
   return (
-    <Screen>
+    <Screen list>
       {/* On the header, which always has content: with no record (nobody sat 3 minutes) the
           list below is empty and has no size. */}
       {/* skall tuvali (MasaBitti): the mark on a soft square, the title and the line, centred. */}

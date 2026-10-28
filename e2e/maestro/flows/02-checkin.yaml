@@ -151,6 +151,8 @@ appId: app.kabuk.mobile
 # The top row (v45: .top): the own photo opens Profil, Mekan's tab brings it back; "Mekandan ayrıl"
 # asks first and "Vazgeç" keeps the check-in (Android may write the dialog's buttons in capitals).
 - tapOn:
+    id: venue-more
+- tapOn:
     id: venue-profile
 - extendedWaitUntil:
     visible:
@@ -160,8 +162,10 @@ appId: app.kabuk.mobile
     id: tab-venue
 - extendedWaitUntil:
     visible:
-      id: venue-leave
+      id: venue-more
     timeout: 10000
+- tapOn:
+    id: venue-more
 - tapOn:
     id: venue-leave
 - extendedWaitUntil:

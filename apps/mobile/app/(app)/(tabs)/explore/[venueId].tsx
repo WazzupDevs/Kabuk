@@ -38,7 +38,7 @@ export default function VenueDetailScreen() {
 
   if (isPending) {
     return (
-      <Screen>
+      <Screen list>
         <View className="mt-16 items-center">
           <Loader />
         </View>
@@ -48,7 +48,7 @@ export default function VenueDetailScreen() {
   // The list could not be read: not "bulunamadı" (audit UI-10).
   if (!venue && isError) {
     return (
-      <Screen>
+      <Screen list>
         <View className="flex-1 justify-center">
           <EmptyState
             kind="error"
@@ -61,7 +61,7 @@ export default function VenueDetailScreen() {
   }
   if (!venue) {
     return (
-      <Screen>
+      <Screen list>
         <View className="flex-1 justify-center">
           <EmptyState
             icon="cafe-outline"
@@ -74,7 +74,7 @@ export default function VenueDetailScreen() {
   }
 
   return (
-    <Screen>
+    <Screen list>
       <ScreenHeader title={tr.tabs.explore} onBack={() => router.back()} />
       {/* The venue as a scene (docs/design/aura → Mekan sayfası): buddies around its mark. */}
       <View

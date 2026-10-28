@@ -6,13 +6,10 @@ import { router } from 'expo-router';
 import { type ReactNode, useEffect, useReducer, useState } from 'react';
 import { View } from 'react-native';
 
+import { Btn, GlassList, Li, Sec, T, Tag, Thumb, useKit } from '@/aura/kit';
 import { Pips } from '@/aura/Pips';
-import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
-import { ListCard } from '@/components/ListCard';
 import { Loader } from '@/components/Loader';
-import { Tag } from '@/components/Tag';
-import { Text } from '@/components/Text';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
@@ -20,12 +17,12 @@ import { ApiError, roomsApi } from '@/lib/api';
 import { registerForPush } from '@/features/push/push';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useNowUntil } from '@/lib/useNow';
-import { useTheme } from '@/theme/ThemeProvider';
-import { SPACING, TOUCH } from '@/theme/tokens';
+import { KIT } from '@/theme/auraKit';
+import { SPACING } from '@/theme/tokens';
 
 import { roomKeys, useMyRequest, useVenueTables, type VenueTable } from './queries';
 import { SpotHeading } from './SpotHeading';
-import { TableIcon } from './TableIcon';
+import { TABLE_ICON_IMAGES } from './tableIconImages';
 
 // After "Kabul edildi" the table opens by itself (v46: the row's note, then the table).
 const OPEN_AFTER_ACCEPT_MS = 1800;
@@ -167,7 +164,7 @@ export function Lobby({
   return (
     <View className="gap-3" testID="lobby">
       <SectionHead title={tr.lobby.openTitle} count={open.length} />
-      {note ? <Text variant="fine">{note}</Text> : null}
+      {note ? <T v="fine">{note}</T> : null}
       {tables.isPending ? (
         <View className="items-center py-4" accessibilityLabel={tr.lobby.loading}>
           <Loader />
@@ -186,7 +183,7 @@ export function Lobby({
             {venueHasSpots ? (
               <SpotHeading spotId={group.spotId} spotName={group.spotName} mine={group.mine} />
             ) : null}
-            <ListCard>
+            <GlassList>
               {group.rooms.map((table) => {
                 const actions = lobbyActions(state, myPhones, table.phones);
                 const busy = request.isPending && request.variables?.table.roomId === table.roomId;
@@ -198,9 +195,9 @@ export function Lobby({
                     note={rowNote(table)}
                     action={
                       actions.join && !needsPhoto && !waiting && accepted !== table.roomId ? (
-                        <Button
-                          size="sm"
-                          variant="positive"
+                        <Btn
+                          sm
+                          icon="forward"
                           testID={`join-${table.name}`}
                           label={tr.lobby.join}
                           disabled={actions.full || waitingOn !== null}
@@ -214,15 +211,15 @@ export function Lobby({
                   />
                 );
               })}
-            </ListCard>
+            </GlassList>
           </View>
         ))
       )}
 
       <SectionHead title={tr.lobby.runningTitle} count={running.length} />
-      <Text variant="fine">
+      <T v="fine">
         {state === 'none' && !needsPhoto ? tr.lobby.runningNote : tr.lobby.runningNoteShort}
-      </Text>
+      </T>
       {/* By spot as well, the person's own first (audit VEN-13): "Bu masadayım" to a table at
           another spot only met different_spot. */}
       {groups(running).map((group) => (
@@ -230,7 +227,7 @@ export function Lobby({
           {venueHasSpots ? (
             <SpotHeading spotId={group.spotId} spotName={group.spotName} mine={group.mine} />
           ) : null}
-          <ListCard>
+          <GlassList>
             {group.rooms.map((table) => {
               const actions = lobbyActions(state, myPhones, table.phones);
               const busy = request.isPending && request.variables?.table.roomId === table.roomId;
@@ -242,10 +239,9 @@ export function Lobby({
                   note={rowNote(table)}
                   action={
                     actions.member && !needsPhoto && !waiting && accepted !== table.roomId ? (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        tight
+                      <Btn
+                        sm
+                        variant="glassy"
                         testID={`here-${table.name}`}
                         label={tr.lobby.here}
                         disabled={waitingOn !== null}
@@ -259,32 +255,25 @@ export function Lobby({
                 />
               );
             })}
-          </ListCard>
+          </GlassList>
         </View>
       ))}
 
       {request.isError ? (
-        <Text variant="fine" tone="danger">
+        <T v="fine" color={KIT.danger}>
           {errorMessage(request.error)}
-        </Text>
+        </T>
       ) : null}
     </View>
   );
 }
 
 function SectionHead({ title, count }: { title: string; count: number }) {
-  return (
-    <View className="flex-row items-baseline justify-between px-0.5 pt-3">
-      <Text variant="heading" accessibilityRole="header">
-        {title}
-      </Text>
-      <Text variant="fine">{tr.lobby.tables(count)}</Text>
-    </View>
-  );
+  return <Sec title={title} note={tr.lobby.tables(count)} />;
 }
 
-// A table in the lobby (skall tuvali, Mekan): a row of the list card, its picture, name, headcount
-// and the request's note or the tags; its action in the 108 wide slot. No person's name.
+// A table in the lobby (docs/design/aura → Mekan: `.li`): its picture, name, headcount as pips and
+// the request's note or the tags; its action at the right. No person's name.
 function LobbyRow({
   table,
   note,
@@ -296,55 +285,54 @@ function LobbyRow({
 }) {
   const intent = isIntent(table.intent) ? table.intent : null;
   return (
-    <View
-      testID={`lobby-row-${table.name}`}
-      className="flex-row items-center"
-      style={{
-        gap: SPACING[3] + SPACING[0.5],
-        minHeight: TOUCH.large + SPACING[2],
-        paddingVertical: SPACING[3],
-        paddingHorizontal: SPACING[4],
-      }}
-    >
-      <TableIcon icon={table.icon} size="lobby" />
-      <View className="flex-1" style={{ gap: SPACING[0.5] }}>
-        <Text variant="heading">{table.name}</Text>
-        <View className="flex-row items-center" style={{ gap: SPACING[2] }}>
+    <Li testID={`lobby-row-${table.name}`}>
+      <Thumb source={table.icon ? TABLE_ICON_IMAGES[table.icon] : undefined} />
+      <View style={{ flex: 1, gap: ROW_GAP }}>
+        <T v="h3">{table.name}</T>
+        <View
+          style={{
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: KIT.size.chipsGap,
+          }}
+        >
           <Pips count={table.phones} />
-          <Text variant="fine">{tr.venue.people(table.phones)}</Text>
+          <T v="fine">{tr.venue.people(table.phones)}</T>
+          {note ? null : intent ? (
+            <Tag tone={intent === 'game' ? 'purple' : 'pink'} label={tr.intents[intent]} />
+          ) : null}
+          {note || !table.gameTag ? null : <Tag label={tr.concepts[table.gameTag]} />}
         </View>
         {note ? (
-          <Text variant="fine" accessibilityLiveRegion="polite">
+          <T v="fine" accessibilityLiveRegion="polite">
             {note}
-          </Text>
-        ) : intent || table.gameTag ? (
-          <View className="mt-1 flex-row flex-wrap items-center gap-1.5">
-            {intent ? <Tag variant={intent} label={tr.intents[intent]} /> : null}
-            {table.gameTag ? <Tag label={tr.concepts[table.gameTag]} /> : null}
-          </View>
+          </T>
         ) : null}
       </View>
-      {action ? <View style={{ width: ACTION_SLOT }}>{action}</View> : null}
-    </View>
+      {action}
+    </Li>
   );
 }
+const ROW_GAP = 5;
 
-// skall.css → `.act`: every row's action is 108 wide.
-const ACTION_SLOT = SPACING[16] + SPACING[10] + SPACING[1];
-
-// The pending request in the action slot (skall.css → `.status` with the brand's busy dots).
+// The pending request in the action's place: the meeting capsules on a raised capsule.
 function WaitingSlot() {
-  const { colors, shape } = useTheme();
+  const { c } = useKit();
   return (
     <View
-      className="items-center justify-center"
       style={{
-        height: SPACING[9],
-        borderRadius: shape.radius.pill,
-        backgroundColor: colors.surface2,
+        height: KIT.size.btnSm,
+        paddingHorizontal: KIT.size.btnPadXSm + SPACING[2],
+        borderRadius: KIT.size.btnSm,
+        backgroundColor: c.raised,
+        borderWidth: KIT.size.edge,
+        borderColor: c.raisedEdge,
+        alignItems: 'center',
+        justifyContent: 'center',
       }}
     >
-      <Loader kind="meet" size={SPACING[5]} delay={0} label={null} />
+      <Loader kind="meet" size={KIT.size.iconSm} delay={0} label={null} />
     </View>
   );
 }

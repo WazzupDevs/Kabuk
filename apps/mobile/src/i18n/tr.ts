@@ -1302,6 +1302,8 @@ export const tr = {
   },
   venue: {
     here: 'Mekandasın',
+    // The round button at the top right of Mekan (docs/design/aura → Mekan) and its sheet.
+    more: 'Seçenekler',
     yourTable: 'Masanın adı',
     people: (n: number) => `${headcountLabel(n)} kişi`,
     remaining: (h: number, m: number) => (h > 0 ? `${h} sa ${m} dk kaldı` : `${m} dk kaldı`),

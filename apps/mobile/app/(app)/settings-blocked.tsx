@@ -9,7 +9,7 @@ import { tr } from '@/i18n/tr';
 // Engellenenler (skall tuvali, Engellenenler, EngellenenlerBos).
 export default function BlockedScreen() {
   return (
-    <Screen>
+    <Screen list>
       <PageTop title={tr.settings.blocked} />
       <View className="gap-3">
         <Text variant="fine">{tr.settings.blockedNote}</Text>
