@@ -18,7 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
 import { CapIcon } from '@/aura/CapIcon';
-import { Btn, Glass, Sec, T, Tag } from '@/aura/kit';
+import { Btn, Glass, Live, Sec, T, Tag } from '@/aura/kit';
 import { MarkDisk } from '@/aura/MarkDisk';
 import { useTabFocus } from '@/aura/motion';
 import { Gathering, SceneGround } from '@/aura/Scene';
@@ -52,7 +52,6 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 import { CityButton } from '@/ui/CityButton';
 import { FilterChips } from '@/ui/FilterChips';
-import { HereCard } from '@/ui/HereCard';
 import { PullScroll } from '@/ui/PullScroll';
 import { SearchField } from '@/ui/SearchField';
 import { TopBar } from '@/ui/TopBar';
@@ -230,16 +229,23 @@ export default function ExploreScreen() {
 // "Şu an buradasın" (v46 `.vhere`): the own check-in and the way back to Mekan. The phone's own
 // data; nobody else sees it.
 function HereNow({ here }: { here: Here }) {
+  // docs/design/aura: a glass row with the live dot, the venue and "Mekana dön".
   return (
-    <HereCard
-      label={tr.explore.here}
-      thumb={here.type}
-      name={here.name}
-      sub={tr.explore.hereAt(here.spot)}
-      action={tr.explore.backToVenue}
-      onPress={() => router.navigate('/venue')}
-      testID="explore-here"
-    />
+    <Glass sm testID="explore-here" style={{ padding: KIT.size.rowGap }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.rowGap }}>
+        <View style={{ flex: 1, gap: SPACING[0.5] }}>
+          <Live label={tr.explore.here} />
+          <T v="h3">{here.name}</T>
+          <T v="fine">{tr.explore.hereAt(here.spot)}</T>
+        </View>
+        <Btn
+          sm
+          icon="forward"
+          label={tr.explore.backToVenue}
+          onPress={() => router.navigate('/venue')}
+        />
+      </View>
+    </Glass>
   );
 }
 
