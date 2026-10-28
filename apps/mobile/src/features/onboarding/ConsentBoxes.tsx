@@ -4,6 +4,8 @@ import { Pressable, View } from 'react-native';
 import { Checkbox } from '@/components/Checkbox';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
+import { KIT } from '@/theme/auraKit';
+import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING, TOUCH } from '@/theme/tokens';
 
@@ -35,7 +37,7 @@ function ConsentBox({
   onToggle: () => void;
   href: '/terms' | '/kvkk';
 }) {
-  const { colors, shape } = useTheme();
+  const { scheme } = useTheme();
   return (
     <View
       className="flex-row items-center"
@@ -44,10 +46,12 @@ function ConsentBox({
         minHeight: TOUCH.tab,
         paddingLeft: checked ? SPACING[4] - 1 : SPACING[4],
         paddingRight: checked ? SPACING[3] - 1 : SPACING[3],
-        borderRadius: shape.radius.md,
-        borderWidth: checked ? 2 : 1,
-        borderColor: checked ? colors.primary : colors.control,
-        backgroundColor: colors.surface,
+        // docs/design/aura (CheckIn's rows): a glass row; ticked, ringed in the primary.
+        ...gradientStyle(KIT[scheme].glass),
+        borderRadius: KIT.size.glassRadiusSm,
+        borderWidth: checked ? 2 : KIT.size.edge,
+        borderColor: checked ? KIT.primary : KIT[scheme].glassEdge,
+        boxShadow: KIT[scheme].glassShadow,
       }}
     >
       <View className="flex-1">

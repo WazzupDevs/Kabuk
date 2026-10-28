@@ -9,6 +9,8 @@ import { Mark } from '@/components/Mark';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { usePhoto } from '@/lib/usePhoto';
+import { Glass, T } from '@/aura/kit';
+import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/tokens';
 import { SPACING } from '@/theme/tokens';
@@ -112,21 +114,32 @@ export function ProfileHead({
           </View>
         </View>
       ) : (
-        <ProfilePhoto url={profile.photoUrl} name={profile.displayName} size="hero" />
+        // docs/design/aura → Profil: the face on its glass card, the name and age under it.
+        <Glass
+          style={{
+            alignSelf: 'stretch',
+            height: KIT.size.faceCard,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <ProfilePhoto url={profile.photoUrl} name={profile.displayName} size="hero" />
+        </Glass>
       )}
-      <Text variant="title" align="center" accessibilityRole="header" className="mt-1">
-        {profile.displayName ?? tr.profile.noName}
-        {profile.displayName && profile.age !== null ? (
-          <Text variant="title" tone="muted">
-            {tr.profile.ageAfterName(profile.age)}
-          </Text>
-        ) : null}
-      </Text>
-      {profile.bio ? (
-        <Text variant="subtitle" align="center">
-          {profile.bio}
-        </Text>
-      ) : null}
+      <View
+        style={{
+          alignSelf: 'stretch',
+          gap: KIT.size.tagGap,
+          paddingHorizontal: KIT.size.secPadX,
+          marginTop: SPACING[1.5],
+        }}
+      >
+        <T v="display" style={KIT_TYPE.displaySm} accessibilityRole="header">
+          {profile.displayName ?? tr.profile.noName}
+          {profile.displayName && profile.age !== null ? tr.profile.ageAfterName(profile.age) : ''}
+        </T>
+        {profile.bio ? <T v="body">{profile.bio}</T> : null}
+      </View>
       {children ? <View className="mt-1.5 self-stretch">{children}</View> : null}
     </View>
   );

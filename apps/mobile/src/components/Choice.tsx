@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 
+import { KIT } from '@/theme/auraKit';
+import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING, TOUCH } from '@/theme/tokens';
 import { haptic } from '@/lib/haptics';
@@ -35,7 +37,7 @@ export function Choice({
   unavailable,
   testID,
 }: Props) {
-  const { colors, shape } = useTheme();
+  const { colors, shape, scheme } = useTheme();
   const frame = {
     flexDirection: 'row',
     alignItems: hint || unavailable ? 'flex-start' : 'center',
@@ -93,11 +95,16 @@ export function Choice({
         if (!selected) haptic('selection');
         onPress();
       }}
+      // docs/design/aura (CheckIn's rows): a glass row; chosen, ringed in the primary.
       style={{
         ...frame,
-        backgroundColor: colors.surface,
-        borderWidth: selected ? 2 : 1,
-        borderColor: selected ? colors.primary : colors.control,
+        ...gradientStyle(KIT[scheme].glass),
+        borderRadius: KIT.size.glassRadiusSm,
+        borderWidth: selected ? 2 : KIT.size.edge,
+        borderColor: selected ? KIT.primary : KIT[scheme].glassEdge,
+        boxShadow: selected
+          ? `0px 0px 0px ${KIT.size.dotRing}px ${KIT.primaryRing}`
+          : KIT[scheme].glassShadow,
         paddingHorizontal: selected ? SPACING[4] - 1 : SPACING[4],
         paddingVertical: selected ? SPACING[3] - 1 : SPACING[3],
         opacity: disabled ? 0.4 : 1,
