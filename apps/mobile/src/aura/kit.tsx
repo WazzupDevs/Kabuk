@@ -368,7 +368,6 @@ export function Chip({
         backgroundColor: on ? c.chipOn : c.raisedChip,
         borderWidth: KIT.size.edge,
         borderColor: on ? c.chipOn : c.raisedEdge,
-        boxShadow: on ? undefined : c.chipShadow || undefined,
       }}
     >
       <Text
@@ -536,7 +535,8 @@ export function Li({
 }
 const PRESSED_ROW = 0.7;
 
-// .thumb: a picture with rounded corners and a soft shadow (60, 18).
+// .thumb: a picture with rounded corners (60, 18). Without the canvas's soft shadow: on Android
+// each blurred shadow is a layer of its own, and lists repeat these (the owner's video, 28 Ekim).
 export function Thumb({
   source,
   size = KIT.size.thumb,
@@ -555,7 +555,6 @@ export function Thumb({
         width: size,
         height: size,
         borderRadius: radius,
-        boxShadow: KIT.thumbShadow,
         backgroundColor: c.raisedRound,
       }}
     >
@@ -622,7 +621,6 @@ export function Av({
           borderRadius: side / 2,
           borderWidth: ring,
           borderColor: KIT.white,
-          boxShadow: KIT.avShadow,
           overflow: 'hidden',
           alignItems: 'center',
           justifyContent: 'center',

@@ -92,7 +92,7 @@ export default function VenueDetailScreen() {
   // list: the screen stays still (CLAUDE.md → Ekran davranışı).
   return (
     <View style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
-      <AuraBackground running />
+      <AuraBackground />
       <ScrollView
         bounces={false}
         overScrollMode="never"
@@ -241,7 +241,6 @@ function SpotTile({ source }: { source: ImageSourcePropType | undefined }) {
         height: SPOT_TILE,
         borderRadius: KIT.size.thumbRadius,
         overflow: 'hidden',
-        boxShadow: KIT.thumbShadow,
       }}
     >
       {source ? (

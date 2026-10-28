@@ -126,7 +126,7 @@ export function Avatar(props: Props) {
       style={[
         frame,
         photo.url ? { backgroundColor: colors.surface2 } : gradientStyle(avatarGround(props.name)),
-        { borderWidth: ring, borderColor: KIT.white, boxShadow: KIT.avShadow },
+        { borderWidth: ring, borderColor: KIT.white },
       ]}
     >
       {inner}

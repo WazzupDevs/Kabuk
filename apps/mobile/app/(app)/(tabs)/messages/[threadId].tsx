@@ -41,6 +41,7 @@ import { ApiError, friendsApi, safetyApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useSeen } from '@/lib/useSeen';
 import { SPACING } from '@/theme/tokens';
+import { lastRows, useAfterTransition } from '@/lib/afterTransition';
 
 type Params = { threadId: string; publicId: string; name: string };
 
@@ -184,6 +185,8 @@ export default function DmScreen() {
   });
 
   const list = [...(messages.data ?? [])].reverse();
+  // Opened light: the newest messages while the screen slides in, the rest after.
+  const settled = useAfterTransition();
   const runs = toRuns(
     list,
     (m) => (m.from_me ? 'me' : 'them'),
@@ -263,7 +266,7 @@ export default function DmScreen() {
           />
         </View>
       ) : null}
-      {runs.map(({ item: m, first, day }) => {
+      {lastRows(runs, settled).map(({ item: m, first, day }) => {
         const counts = parseDmReactions(m.reactions);
         const quote = parseQuote(m.reply_to);
         return (
