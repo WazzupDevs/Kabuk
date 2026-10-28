@@ -12,6 +12,7 @@ import { useCheckinDraft } from '@/features/checkin/draft';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { useExploreVenue } from '@/features/explore/useExploreVenues';
 import { BucketLine, EventTag, VenueTile } from '@/features/explore/VenueTags';
+import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { venueType } from '@/lib/venueType';
 
@@ -20,7 +21,7 @@ import { venueType } from '@/lib/venueType';
 // 4.5 brings v44's check-in sheet in its place (docs/SPEC_V4.md K-43).
 export default function VenueDetailScreen() {
   const { venueId } = useLocalSearchParams<{ venueId: string }>();
-  const { venue, isPending } = useExploreVenue(venueId);
+  const { venue, isPending, isError, error, refetch } = useExploreVenue(venueId);
   const setVenue = useCheckinDraft((s) => s.setVenue);
   // Already checked in here: back to Mekan, not a new check-in that would end this one and take
   // the person off its table (audit VEN-2).
@@ -31,6 +32,20 @@ export default function VenueDetailScreen() {
       <Screen>
         <View className="mt-16 items-center">
           <Loader />
+        </View>
+      </Screen>
+    );
+  }
+  // The list could not be read: not "bulunamadı" (audit UI-10).
+  if (!venue && isError) {
+    return (
+      <Screen>
+        <View className="flex-1 justify-center">
+          <EmptyState
+            kind="error"
+            body={errorMessage(error)}
+            action={{ label: tr.common.retry, onPress: () => void refetch() }}
+          />
         </View>
       </Screen>
     );

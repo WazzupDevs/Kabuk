@@ -8,6 +8,7 @@ import { assignCapsuleIdentity } from '../_shared/capsule.ts';
 import { dbError as domainError } from '../_shared/db.ts';
 import { z } from '../_shared/deps.ts';
 import { handle } from '../_shared/http.ts';
+import { lobbyChanged } from '../_shared/lobby.ts';
 import type {
   ChangeSpotResponse,
   CheckInRequest,
@@ -81,6 +82,18 @@ async function requireOnboarded(db: Db, userId: string): Promise<void> {
   if (needsProfile(data)) throw new AppError('profile_required', 'Complete your profile first.');
 }
 
+// The venues of the person's active check-ins (one, in practice): a new check-in or leaving ends
+// them, and their lobbies hear of it (audit VEN-4).
+async function activeVenues(userId: string): Promise<string[]> {
+  const { data, error } = await db
+    .from('table_sessions')
+    .select('venue_id')
+    .eq('user_id', userId)
+    .eq('status', 'active');
+  if (error) throw dbError('table_sessions', error);
+  return [...new Set(data.map((s) => s.venue_id))];
+}
+
 async function checkIn(userId: string, body: CheckInRequest): Promise<CheckInResponse> {
   await requireOnboarded(db, userId);
   // An anonymous message and seat need the nick (docs/SPEC_V4.md §4.D); venue_chat_send never falls
@@ -114,6 +127,7 @@ async function checkIn(userId: string, body: CheckInRequest): Promise<CheckInRes
     throw new AppError('too_far', 'You are too far from this venue.');
   }
 
+  const before = await activeVenues(userId);
   for (let attempt = 0; ; attempt++) {
     const { data, error } = await db.rpc('start_table_session', {
       target_user_id: userId,
@@ -125,6 +139,7 @@ async function checkIn(userId: string, body: CheckInRequest): Promise<CheckInRes
       new_checkin_key: body.requestId,
     });
     if (!error) {
+      for (const venueId of before) lobbyChanged({ venue_id: venueId });
       return {
         sessionId: data.id,
         alias: '',
@@ -176,9 +191,13 @@ Deno.serve(
         case 'location-mode':
           return { skipLocation: currentLocationCheck() === 'skipped' };
 
+        // The venue's lobby hears of it: the table the person sat at lost a phone or closed
+        // (audit VEN-4). The venue is read before, without a lock (rule 10).
         case 'leave': {
+          const before = await activeVenues(user.id);
           const { error } = await db.rpc('end_table_session', { target_user_id: user.id });
           if (error) throw dbError('end_table_session', error);
+          for (const venueId of before) lobbyChanged({ venue_id: venueId });
           return { ok: true };
         }
 

@@ -35,6 +35,7 @@ import { quoteJump, toChatQuote, useReplyTarget } from '@/features/chat/messageE
 import { IdentitySheet } from '@/features/checkin/IdentitySheet';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
+import { friendKeys } from '@/features/friends/queries';
 import { useOwnLook } from '@/features/profile/useOwnLook';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { useCurrentRoom } from '@/features/rooms/queries';
@@ -82,10 +83,11 @@ export default function VenueChatScreen() {
   };
   const send = useMutation({
     meta: FEEL_ERROR,
-    mutationFn: (text: string) =>
-      venueChatApi.sendAs(venueId ?? '', text, identity?.mode ?? 'anonymous', reply.target?.id),
-    onSuccess: () => {
-      reply.clear();
+    mutationFn: ({ text, replyTo }: { text: string; replyTo: string | undefined }) =>
+      venueChatApi.sendAs(venueId ?? '', text, identity?.mode ?? 'anonymous', replyTo),
+    onSuccess: (_data, { replyTo }) => {
+      // A new answer picked while it was sending stays (audit CHAT-13).
+      if (reply.target?.id === replyTo) reply.clear();
       track('venue_chat_sent', { profiled: identity?.mode === 'profiled' });
       refresh();
     },
@@ -116,6 +118,8 @@ export default function VenueChatScreen() {
     onSuccess: () => {
       setBlocking(null);
       refresh();
+      // Blocking a friend also ends the friendship (audit CHAT-5).
+      void queryClient.invalidateQueries({ queryKey: friendKeys.all });
     },
   });
   const mute = useMutation({
@@ -221,7 +225,9 @@ export default function VenueChatScreen() {
           maxLength={VENUE_CHAT.maxLength}
           sending={send.isPending}
           // What was typed stays when nothing was sent (the identity changed elsewhere).
-          onSend={(body, clear) => send.mutate(body, { onSuccess: clear })}
+          onSend={(body, clear) =>
+            send.mutate({ text: body, replyTo: reply.target?.id }, { onSuccess: clear })
+          }
           replyTo={reply.target?.quote}
           onCancelReply={reply.clear}
           above={

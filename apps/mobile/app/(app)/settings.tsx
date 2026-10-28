@@ -10,19 +10,17 @@ import { Segmented } from '@/components/Segmented';
 import { Text } from '@/components/Text';
 import { useProfile } from '@/features/account/useProfile';
 import { patchProfile } from '@/features/account/patchProfile';
+import { signOutOfApp } from '@/features/auth/signOut';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { DesignPicker } from '@/features/design/DesignPicker';
 import { AppearanceSetting } from '@/features/profile/AppearanceSetting';
 import { NickCard } from '@/features/profile/NickCard';
 import { useProfileView } from '@/features/profile/queries';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
-import { unregisterPush } from '@/features/push/push';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { profileApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
-import { queryClient as appQueryClient } from '@/lib/queryClient';
-import { supabase } from '@/lib/supabase';
 import { designPickerEnabled } from '@/theme/ThemeProvider';
 
 type Participation = 'profile' | 'anonymous';
@@ -56,13 +54,7 @@ function Body() {
     onSettled: () => void queryClient.invalidateQueries({ queryKey: ['profile'] }),
   });
   const shown = value;
-  const signOut = useMutation({
-    mutationFn: async () => {
-      await unregisterPush();
-      await supabase.auth.signOut();
-      appQueryClient.clear();
-    },
-  });
+  const signOut = useMutation({ mutationFn: signOutOfApp });
   const open = (path: Parameters<typeof router.push>[0]) => router.push(path);
 
   return (

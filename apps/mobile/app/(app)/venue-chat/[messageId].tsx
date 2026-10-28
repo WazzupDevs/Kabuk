@@ -1,5 +1,5 @@
 import { REPORT_REASONS, type ReportReason } from '@shared/chat.ts';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Alert, View } from 'react-native';
@@ -14,6 +14,7 @@ import { Text } from '@/components/Text';
 import { Loader } from '@/components/Loader';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
+import { friendKeys } from '@/features/friends/queries';
 import { ProfileHead } from '@/features/profile/ProfileCard';
 import { useVenueChatProfile } from '@/features/venueChat/queries';
 import { errorMessage } from '@/i18n/errors';
@@ -43,6 +44,7 @@ export default function VenueChatProfileScreen() {
       setSent(true);
     },
   });
+  const queryClient = useQueryClient();
   const report = useMutation({
     meta: FEEL_ERROR,
     mutationFn: (reason: ReportReason) => safetyApi.reportVenueChat(messageId, reason),
@@ -57,6 +59,9 @@ export default function VenueChatProfileScreen() {
     mutationFn: (reason: ReportReason | undefined) => safetyApi.blockVenueChat(messageId, reason),
     onSuccess: () => {
       track('block_created', {});
+      // The blocked person's messages go from the chat, and a friend from the lists (audit CHAT-5).
+      void queryClient.invalidateQueries({ queryKey: ['venueChat'] });
+      void queryClient.invalidateQueries({ queryKey: friendKeys.all });
       setBlocking(false);
       router.back();
     },

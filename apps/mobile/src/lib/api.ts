@@ -1,4 +1,4 @@
-import { FunctionsHttpError } from '@supabase/supabase-js';
+import { FunctionsHttpError, isAuthApiError } from '@supabase/supabase-js';
 
 import type { AccountRequest, AccountResponse } from '@shared/api/account.ts';
 import type { ChatResponse, ReactResponse, SafetyResponse } from '@shared/api/chat.ts';
@@ -87,6 +87,9 @@ async function invoke<T>(fn: string, body: Record<string, unknown>, attempt = 1)
   const { data, error } = await supabase.functions.invoke<T>(fn, {
     body,
     headers: appBuildHeaders,
+    // A call on a stalled connection ends (audit AUTH-7): its button stops waiting and the
+    // connection banner hears of it. Deleting an account removes photos and more: it gets longer.
+    timeout: fn === 'account' ? ACCOUNT_TIMEOUT_MS : CALL_TIMEOUT_MS,
   });
   if (error instanceof FunctionsHttpError) {
     const status = (error.context as Response).status;
@@ -101,12 +104,36 @@ async function invoke<T>(fn: string, body: Record<string, unknown>, attempt = 1)
     const payload: unknown = await error.context.json().catch(() => null);
     if (isApiErrorBody(payload)) {
       if (payload.error.code === 'update_required') useUpdateGate.getState().markRequired();
+      if (payload.error.code === 'unauthorized') void signOutIfRejected();
       throw new ApiError(payload.error.code, payload.error.message);
     }
     throw new ApiError('internal', error.message);
   }
   if (error || data === null) throw new ApiError('internal', error?.message ?? 'Empty response');
   return data;
+}
+
+const CALL_TIMEOUT_MS = 20_000;
+const ACCOUNT_TIMEOUT_MS = 60_000;
+
+// A function said the token is not valid: a deleted or banned account's token stays usable for up
+// to an hour, and the app went round its sign-up screens, each saying "Oturumun sona ermiş" (audit
+// AUTH-5). The Auth server decides: only when it rejects the token too is the phone signed out
+// (locally; the server session is gone), never on a network failure. One check at a time.
+let checking: Promise<void> | null = null;
+function signOutIfRejected(): Promise<void> {
+  checking ??= supabase.auth
+    .getUser()
+    .then(async ({ error }) => {
+      if (error && isAuthApiError(error) && [401, 403, 404].includes(error.status)) {
+        await supabase.auth.signOut({ scope: 'local' });
+      }
+    })
+    .catch(() => undefined)
+    .finally(() => {
+      checking = null;
+    });
+  return checking;
 }
 
 // Update gate check on launch and foreground (the ping function does nothing else). Failures other

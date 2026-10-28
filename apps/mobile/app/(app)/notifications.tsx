@@ -35,10 +35,17 @@ export default function NotificationsScreen() {
   const queryClient = useQueryClient();
   const list = useNotifications();
   const items = list.data?.notifications;
-  // What was new when the list opened; the mark below would otherwise move it on the next read.
-  const [fresh, setFresh] = useState<ReadonlySet<string> | null>(null);
-  if (items && fresh === null) {
-    setFresh(new Set(items.filter((n) => n.isNew).map(keyOf)));
+  // What was new when the list opened, and what was there at all; the mark below would otherwise
+  // move it on the next read. What comes in while the list is open is new too (audit VEN-19).
+  const [opened, setOpened] = useState<{
+    fresh: ReadonlySet<string>;
+    known: ReadonlySet<string>;
+  } | null>(null);
+  if (items && opened === null) {
+    setOpened({
+      fresh: new Set(items.filter((n) => n.isNew).map(keyOf)),
+      known: new Set(items.map(keyOf)),
+    });
   }
   const newest = items?.[0]?.createdAt;
   useEffect(() => {
@@ -78,7 +85,8 @@ export default function NotificationsScreen() {
       </RouteSheet>
     );
   }
-  const isFresh = (n: NotificationItem) => fresh?.has(keyOf(n)) ?? n.isNew;
+  const isFresh = (n: NotificationItem) =>
+    opened ? opened.fresh.has(keyOf(n)) || !opened.known.has(keyOf(n)) : n.isNew;
   const newer = items.filter(isFresh);
   const older = items.filter((n) => !isFresh(n));
   return (
