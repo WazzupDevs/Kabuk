@@ -41,14 +41,16 @@ import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { useCurrentRoom } from '@/features/rooms/queries';
 import { useVenueChat, useVenueChatReactions, venueChatKeys } from '@/features/venueChat/queries';
 import { errorMessage } from '@/i18n/errors';
+import { Glass, T } from '@/aura/kit';
 import { tr } from '@/i18n/tr';
+import { KIT } from '@/theme/auraKit';
 import { track } from '@/lib/analytics';
 import { ApiError, safetyApi, venueChatApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useFlash } from '@/lib/useFlash';
 import { nameInk } from '@/theme/nameInk';
 import { useTheme } from '@/theme/ThemeProvider';
-import { SPACING, TOUCH } from '@/theme/tokens';
+import { SPACING } from '@/theme/tokens';
 
 // The venue's chat room (docs/SPEC_V3.md §7; skall tuvali, Mekan sohbeti panoları): everyone with a
 // live table at the venue reads and writes, with the check-in's identity (docs/SPEC_V4.md §4.D):
@@ -440,8 +442,8 @@ export default function VenueChatScreen() {
 
 const MUTES_KEY = ['venueChatMutes'] as const;
 
-// skall.css → `.idrow`: who the viewer writes as, in a pill over the message bar, and the one
-// change of the check-in (spent: "Bu girişte değişti").
+// docs/design/aura → Mekan sohbeti: who the viewer writes as, a glass pill over the message bar,
+// and the one change of the check-in (spent: "Bu girişte değişti").
 function IdentityRow({
   face,
   name,
@@ -453,47 +455,45 @@ function IdentityRow({
   used: boolean;
   onChange: () => void;
 }) {
-  const { colors, shape } = useTheme();
   return (
-    <View
-      testID="venue-chat-mode"
-      className="flex-row items-center"
-      style={{
-        gap: SPACING[2.5],
-        minHeight: SPACING[8],
-        paddingVertical: SPACING[2],
-        paddingLeft: SPACING[3],
-        paddingRight: SPACING[1],
-        borderRadius: shape.radius.pill,
-        borderWidth: shape.stroke.hairline,
-        borderColor: colors.divider,
-        backgroundColor: colors.surface,
-      }}
-    >
-      {face}
-      <Text variant="fine" tone="text" className="flex-1">
-        <Text variant="label">{name}</Text> {tr.venueChat.writingAs}
-      </Text>
-      {used ? (
-        <View style={{ paddingRight: SPACING[2] }}>
-          <Text variant="fine" tone="muted">
-            {tr.venueChat.changed}
-          </Text>
-        </View>
-      ) : (
-        <Pressable
-          testID="venue-chat-change"
-          accessibilityRole="button"
-          accessibilityLabel={tr.venueChat.changeLabel}
-          onPress={onChange}
-          hitSlop={SPACING[1]}
-          style={{ minHeight: TOUCH.min, justifyContent: 'center', paddingHorizontal: SPACING[2] }}
-        >
-          <Text variant="label" tone="accent">
-            {tr.venueChat.change}
-          </Text>
-        </Pressable>
-      )}
+    <View style={{ flexDirection: 'row' }}>
+      <Glass
+        sm
+        testID="venue-chat-mode"
+        style={{
+          flexShrink: 1,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: SPACING[2.5],
+          paddingVertical: SPACING[1.5],
+          paddingLeft: SPACING[1.5],
+          paddingRight: SPACING[3],
+          borderRadius: KIT.size.glassRadiusSm + 2,
+        }}
+      >
+        {face}
+        <T v="fine" style={{ flexShrink: 1 }}>
+          <T v="fine" strong>
+            {name}
+          </T>{' '}
+          {tr.venueChat.writingAs}
+        </T>
+        {used ? (
+          <T v="fine">{tr.venueChat.changed}</T>
+        ) : (
+          <Pressable
+            testID="venue-chat-change"
+            accessibilityRole="button"
+            accessibilityLabel={tr.venueChat.changeLabel}
+            onPress={onChange}
+            hitSlop={SPACING[3]}
+          >
+            <T v="fine" strong color={KIT.primary}>
+              {tr.venueChat.change}
+            </T>
+          </Pressable>
+        )}
+      </Glass>
     </View>
   );
 }

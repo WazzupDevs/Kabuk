@@ -1,24 +1,27 @@
+import { describeEventTime } from '@shared/explore.ts';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AuraBackground } from '@/aura/AuraBackground';
+import { Btn, Glass, Round, T, Tag } from '@/aura/kit';
 import { MarkDisk } from '@/aura/MarkDisk';
 import { Gathering, SceneGround } from '@/aura/Scene';
-import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
 import { EmptyState } from '@/components/EmptyState';
 import { Screen } from '@/components/Screen';
-import { ScreenHeader } from '@/components/ScreenHeader';
-import { Text } from '@/components/Text';
+import { useTabBarSpace } from '@/components/TabBar';
 import { Loader } from '@/components/Loader';
 import { useCheckinDraft } from '@/features/checkin/draft';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { useExploreVenue } from '@/features/explore/useExploreVenues';
-import { BucketLine, EventTag, VenueTile } from '@/features/explore/VenueTags';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { venueType } from '@/lib/venueType';
+import { useNow } from '@/lib/useNow';
 import { AURA } from '@/theme/aura';
+import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
 // The buddies come in after the screen's own arrival.
@@ -35,10 +38,14 @@ export default function VenueDetailScreen() {
   // the person off its table (audit VEN-2).
   const active = useActiveTable();
   const [sceneWidth, setSceneWidth] = useState(0);
+  const { scheme } = useTheme();
+  const insets = useSafeAreaInsets();
+  const barSpace = useTabBarSpace();
+  const now = useNow(60_000);
 
   if (isPending) {
     return (
-      <Screen list>
+      <Screen>
         <View className="mt-16 items-center">
           <Loader />
         </View>
@@ -48,7 +55,7 @@ export default function VenueDetailScreen() {
   // The list could not be read: not "bulunamadı" (audit UI-10).
   if (!venue && isError) {
     return (
-      <Screen list>
+      <Screen>
         <View className="flex-1 justify-center">
           <EmptyState
             kind="error"
@@ -61,7 +68,7 @@ export default function VenueDetailScreen() {
   }
   if (!venue) {
     return (
-      <Screen list>
+      <Screen>
         <View className="flex-1 justify-center">
           <EmptyState
             icon="cafe-outline"
@@ -73,78 +80,123 @@ export default function VenueDetailScreen() {
     );
   }
 
+  const here = active.data?.venue_id === venue.id;
+  const g = AURA.gatherings.venue;
+  const k = sceneWidth > 0 ? sceneWidth / g.frame : 1;
+  const calm = venue.bucket === 'calm';
+  // docs/design/aura → KesfetMekan: the venue as a scene under the status bar (buddies around its
+  // mark), back and its tags over it; the name and district, today's event, then check-in. Not a
+  // list: the screen stays still (CLAUDE.md → Ekran davranışı).
   return (
-    <Screen list>
-      <ScreenHeader title={tr.tabs.explore} onBack={() => router.back()} />
-      {/* The venue as a scene (docs/design/aura → Mekan sayfası): buddies around its mark. */}
-      <View
-        onLayout={(e) => setSceneWidth(e.nativeEvent.layout.width)}
-        style={{
-          marginTop: SPACING[3],
-          height: AURA.gatherings.venue.height * (sceneWidth / AURA.gatherings.venue.frame),
-          borderRadius: AURA.scene.radius,
-          overflow: 'hidden',
+    <View style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
+      <AuraBackground running />
+      <ScrollView
+        bounces={false}
+        overScrollMode="never"
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingBottom: insets.bottom + SPACING[8] + barSpace,
         }}
       >
-        <SceneGround />
-        {sceneWidth > 0 ? (
-          <Gathering
-            kind="venue"
-            width={sceneWidth}
-            delay={SCENE_CAST_DELAY}
-            center={
-              <MarkDisk
-                size={AURA.gatherings.venue.disk.size * (sceneWidth / AURA.gatherings.venue.frame)}
+        <View
+          onLayout={(e) => setSceneWidth(e.nativeEvent.layout.width)}
+          style={{
+            height: g.height * k + insets.top,
+            borderBottomLeftRadius: KIT.stage.radius,
+            borderBottomRightRadius: KIT.stage.radius,
+            overflow: 'hidden',
+          }}
+        >
+          <SceneGround top={0} bottom={KIT.stage.radius} />
+          {sceneWidth > 0 ? (
+            <Gathering
+              kind="venue"
+              width={sceneWidth}
+              delay={SCENE_CAST_DELAY}
+              center={<MarkDisk size={g.disk.size * k} />}
+            />
+          ) : null}
+          <View
+            className="flex-row items-center justify-between"
+            style={{ paddingHorizontal: KIT.size.side, paddingTop: insets.top + SPACING[3] }}
+          >
+            <Round icon="back" label={tr.explore.back} onPress={() => router.back()} />
+            <View style={{ flexDirection: 'row', gap: KIT.size.chipGap }}>
+              <Tag label={tr.explore.typeLabel[venueType(venue)]} />
+              <Tag
+                label={tr.explore.buckets[venue.bucket]}
+                lead={
+                  calm ? undefined : (
+                    <View
+                      style={{
+                        width: KIT.size.dot,
+                        height: KIT.size.dot,
+                        borderRadius: KIT.size.dot / 2,
+                        backgroundColor: KIT.pink,
+                      }}
+                    />
+                  )
+                }
               />
-            }
-          />
-        ) : null}
-      </View>
-      {/* v44's venue head (.ci-head): its kind on a tile, the name, the kind and district, the
-          bucket in words (K-41) and today's event. */}
-      <Card className="mt-3">
-        <View className="flex-row items-center gap-3">
-          <VenueTile kind={venue.kind} />
-          <View className="flex-1 gap-0.5">
-            <Text variant="title" accessibilityRole="header">
-              {venue.name}
-            </Text>
-            <Text variant="fine">
-              {tr.explore.venueSub(tr.explore.typeLabel[venueType(venue)], venue.district)}
-            </Text>
+            </View>
           </View>
         </View>
-        <View className="mt-3 flex-row flex-wrap items-center gap-x-3 gap-y-2">
-          <BucketLine bucket={venue.bucket} />
-          {venue.event ? <EventTag event={venue.event} /> : null}
-        </View>
-      </Card>
-      <Card tone="note" className="mt-3">
-        <Text variant="fine">{tr.explore.checkInHint}</Text>
-      </Card>
-      <View className="mt-auto gap-3 pt-8">
-        <Button
-          size="lg"
-          label={
-            active.data?.venue_id === venue.id ? tr.explore.backToVenue : tr.explore.checkInHere
-          }
-          onPress={() => {
-            if (active.data?.venue_id === venue.id) {
-              router.navigate('/venue');
-              return;
-            }
-            setVenue({
-              id: venue.id,
-              name: venue.name,
-              lat: venue.lat,
-              lng: venue.lng,
-              boundary: venue.boundary,
-              kind: venue.kind,
-            });
-            router.push('/checkin');
+        <View
+          style={{
+            flexGrow: 1,
+            paddingHorizontal: KIT.size.side,
+            paddingTop: GAP,
+            gap: GAP,
           }}
-        />
-      </View>
-    </Screen>
+        >
+          <View style={{ gap: KIT.size.tagGap }}>
+            <T v="display" style={KIT_TYPE.venueTitle} accessibilityRole="header">
+              {venue.name}
+            </T>
+            <T v="body">{venue.district}</T>
+          </View>
+          {venue.event ? (
+            <Glass
+              pad="pad"
+              style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.rowGap }}
+            >
+              <Tag tone="amber" label={tr.explore.eventTagShort} />
+              <T v="fine" ink style={{ flex: 1 }}>
+                <T v="fine" strong>
+                  {venue.event.title}
+                </T>
+                {` ${tr.common.separator} ${tr.explore.eventTime(
+                  describeEventTime(venue.event.startsAt, venue.event.endsAt, now),
+                )}`}
+              </T>
+            </Glass>
+          ) : null}
+          <T v="fine">{tr.explore.checkInHint}</T>
+          <View style={{ flexGrow: 1 }} />
+          <Btn
+            block
+            icon={here ? 'forward' : 'pin'}
+            label={here ? tr.explore.backToVenue : tr.explore.checkInHere}
+            onPress={() => {
+              if (here) {
+                router.navigate('/venue');
+                return;
+              }
+              setVenue({
+                id: venue.id,
+                name: venue.name,
+                lat: venue.lat,
+                lng: venue.lng,
+                boundary: venue.boundary,
+                kind: venue.kind,
+              });
+              router.push('/checkin');
+            }}
+          />
+        </View>
+      </ScrollView>
+    </View>
   );
 }
+
+const GAP = 14;

@@ -476,7 +476,27 @@ export function ChatScreen({
 // "Bugün" or "3 Ekim" over a day's first message; fresh: "Yeni mesajlar" over the first message
 // that came while the chat was closed, in the link colour (skall.css → `.day.new`).
 export function DayLine({ label, fresh }: { label: string; fresh?: boolean }) {
-  const { c } = useKit();
+  const { c, scheme, tags } = useKit();
+  if (fresh) {
+    // docs/design/aura → Mekan sohbeti: "Yeni mesaj" in pink between two soft pink lines.
+    const ink = scheme === 'dark' ? tags.pink.fg : KIT.nameInk;
+    const line = { flex: 1, height: KIT.size.hair, backgroundColor: KIT.freshLine };
+    return (
+      <View
+        className="flex-row items-center"
+        style={{ gap: KIT.size.barGap, marginVertical: SPACING[1.5] }}
+      >
+        <View style={line} />
+        <RNText
+          maxFontSizeMultiplier={DAY_SCALE}
+          style={[KIT_TYPE.fine, KIT_TYPE.strong, { color: ink }]}
+        >
+          {label}
+        </RNText>
+        <View style={line} />
+      </View>
+    );
+  }
   return (
     <View
       className="self-center"
