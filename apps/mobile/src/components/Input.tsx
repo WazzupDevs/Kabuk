@@ -1,7 +1,10 @@
 import { forwardRef, useState } from 'react';
-import { TextInput, type TextInputProps, View } from 'react-native';
+import { Text as RNText, TextInput, type TextInputProps, View } from 'react-native';
 
 import { noteTyping } from '@/lib/haptics';
+import { useKit } from '@/aura/kit';
+import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { gradientStyle } from '@/theme/gradient';
 import { typeStyle, useTheme } from '@/theme/ThemeProvider';
 import { SPACING, TOUCH } from '@/theme/tokens';
 
@@ -35,25 +38,36 @@ export const Input = forwardRef<TextInput, Props>(function Input(
   ref,
 ) {
   const theme = useTheme();
+  // The phone number's divider.
+  const PREFIX_LINE = 26;
   const { colors, shape } = theme;
   const [focused, setFocused] = useState(false);
-  // skall tuvali (skall.css → "Alan"): the control outline; focused 2 px primary with the soft
-  // ring; an error 2 px danger.
-  const outline = colors.control;
+  const k = useKit();
 
   return (
     <View className="gap-2">
       {label ? <Text variant="label">{label}</Text> : null}
       <View
         className="flex-row items-center"
+        // docs/design/aura (Telefon, `.glass`): a frosted field, its edge white; focused the
+        // primary with its soft ring, an error in red. The phone's field 72 high, 28 round.
         style={{
-          minHeight: SPACING[12] + SPACING[1],
-          borderRadius: tall ? shape.radius.lg : box ? shape.radius.md : shape.radius.pill,
-          borderWidth: focused || error ? 2 : shape.stroke.control,
-          borderColor: error ? colors.danger : focused ? colors.primary : outline,
-          backgroundColor: colors.surface,
-          paddingHorizontal: SPACING[4] + SPACING[0.5],
-          boxShadow: focused && !error ? shape.shadow.focus : undefined,
+          ...gradientStyle(k.c.glass),
+          minHeight: prefix ? KIT.size.phoneField : KIT.size.field,
+          borderRadius: prefix
+            ? KIT.size.glassRadius
+            : tall
+              ? shape.radius.lg
+              : box
+                ? shape.radius.md
+                : KIT.size.field / 2,
+          borderWidth: focused || error ? 2 : KIT.size.edge,
+          borderColor: error ? KIT.danger : focused ? KIT.primary : k.c.glassEdge,
+          paddingHorizontal: prefix ? KIT.size.padLg : KIT.size.fieldPadX,
+          boxShadow:
+            focused && !error
+              ? `0px 0px 0px ${KIT.size.dotRing}px ${KIT.primaryRing}`
+              : k.c.glassShadow,
         }}
       >
         {search ? (
@@ -62,9 +76,17 @@ export const Input = forwardRef<TextInput, Props>(function Input(
           </View>
         ) : null}
         {prefix ? (
-          <Text tone="muted" className="mr-2">
-            {prefix}
-          </Text>
+          <>
+            <RNText style={[KIT_TYPE.h3, { color: k.c.muted }]}>{prefix}</RNText>
+            <View
+              style={{
+                width: KIT.size.hair,
+                height: PREFIX_LINE,
+                marginHorizontal: KIT.size.pad - SPACING[1],
+                backgroundColor: k.c.hair,
+              }}
+            />
+          </>
         ) : null}
         <TextInput
           ref={ref}
@@ -88,10 +110,10 @@ export const Input = forwardRef<TextInput, Props>(function Input(
           cursorColor={colors.accent}
           textAlignVertical={multiline ? 'top' : 'center'}
           style={[
-            typeStyle(theme, code ? 'title' : 'body'),
+            prefix ? KIT_TYPE.phone : typeStyle(theme, code ? 'title' : 'body'),
             {
               flex: 1,
-              color: colors.text,
+              color: k.c.ink,
               paddingVertical: SPACING[3],
               minHeight: tall ? TOUCH.large + SPACING[8] : undefined,
             },

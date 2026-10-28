@@ -2,17 +2,17 @@ import { type ReactNode, useState } from 'react';
 import {
   type LayoutChangeEvent,
   type LayoutRectangle,
+  Text,
   type TextLayoutLine,
   View,
 } from 'react-native';
 
-import { Button } from '@/components/Button';
-import { IconButton } from '@/components/IconButton';
+import { Btn, Round, T, useKit } from '@/aura/kit';
 import { Screen } from '@/components/Screen';
-import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { FRIEND, FRIEND_LOOKS, placeFriend, type Rect } from '@/lib/signupFriend';
 import { SIGNUP_STEPS, SIGNUP_TOTAL, type SignupStep as Step, stepNumber } from '@/lib/signupSteps';
+import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
@@ -50,6 +50,9 @@ type Props = {
 };
 
 const NO_MOVES = { jump: false, shake: false, nod: false } as const;
+const STEP_ON = 22;
+const STEP_DOT = 6;
+const STEP_SCALE = 1.3;
 
 // The friend's box rests this far above the title's first line (v45: 64 px against the title at
 // 72), and may not rise into the top row.
@@ -84,7 +87,8 @@ export function SignupStep({
   children,
   testID,
 }: Props) {
-  const { colors, shape } = useTheme();
+  const { shape } = useTheme();
+  const k = useKit();
   const n = step ? stepNumber(step) : 0;
   const withFriend = step !== undefined;
   const [layouts, setLayouts] = useState<Layouts>({});
@@ -155,38 +159,37 @@ export function SignupStep({
           onLayout={onLayout('row')}
         >
           {onBack ? (
-            <IconButton round icon="chevron-back" label={tr.common.back} onPress={onBack} />
+            <Round icon="back" label={tr.common.back} onPress={onBack} />
           ) : (
             <View style={{ width: SPACING[11] }} />
           )}
           {step ? (
             <>
               <View
-                className="flex-1 flex-row"
-                style={{ gap: SPACING[1.5] }}
+                className="flex-1 flex-row items-center justify-center"
+                style={{ gap: KIT.size.chipGap }}
                 importantForAccessibility="no-hide-descendants"
                 accessibilityElementsHidden
               >
                 {SIGNUP_STEPS.map((s, i) => (
                   <View
                     key={s}
-                    className="flex-1"
                     style={{
-                      // skall tuvali (skall.css → `.steps`): 5 high on the track, done ones primary.
-                      height: SPACING[1] + 1,
-                      borderRadius: shape.radius.pill,
-                      backgroundColor: i < n ? colors.primary : colors.track,
+                      // docs/design/aura → Telefon: the step a 22 long capsule, the others dots,
+                      // the done ones in the primary.
+                      width: i === n - 1 ? STEP_ON : STEP_DOT,
+                      height: STEP_DOT,
+                      borderRadius: STEP_DOT / 2,
+                      backgroundColor: i < n ? KIT.primary : k.c.grab,
                     }}
                   />
                 ))}
               </View>
               <View style={{ minWidth: SPACING[8] }} onLayout={onLayout('counter')}>
                 <Text
-                  variant="label"
-                  tone="muted"
-                  tabular
-                  align="right"
                   accessibilityLabel={tr.signup.stepLabel(n, SIGNUP_TOTAL)}
+                  maxFontSizeMultiplier={STEP_SCALE}
+                  style={[KIT_TYPE.stamp, { color: k.c.muted, textAlign: 'right' }]}
                 >
                   {tr.signup.step(n, SIGNUP_TOTAL)}
                 </Text>
@@ -198,16 +201,21 @@ export function SignupStep({
           <View className="gap-2.5 pt-4" onLayout={onLayout('head')}>
             <View onLayout={onLayout('title')} style={{ paddingRight: inset }}>
               <Text
-                variant="display"
                 accessibilityRole="header"
+                maxFontSizeMultiplier={STEP_SCALE}
                 onTextLayout={(e) => keep('titleLines')(e.nativeEvent.lines)}
+                style={[KIT_TYPE.display, { color: k.c.ink }]}
               >
                 {title}
               </Text>
             </View>
             {body ? (
               <View onLayout={onLayout('body')} style={{ paddingRight: inset }}>
-                <Text variant="fine" onTextLayout={(e) => keep('bodyLines')(e.nativeEvent.lines)}>
+                <Text
+                  maxFontSizeMultiplier={STEP_SCALE}
+                  onTextLayout={(e) => keep('bodyLines')(e.nativeEvent.lines)}
+                  style={[KIT_TYPE.body, { color: k.c.muted }]}
+                >
                   {body}
                 </Text>
               </View>
@@ -218,9 +226,9 @@ export function SignupStep({
           </View>
           {error ? (
             <View onLayout={onLayout('error')} className="mt-4">
-              <Text variant="fine" tone="danger">
+              <T v="fine" color={KIT.danger}>
                 {error}
-              </Text>
+              </T>
             </View>
           ) : null}
           {withFriend && measured && friendTop !== null ? (
@@ -239,8 +247,8 @@ export function SignupStep({
             />
           ) : null}
           <View className="mt-auto pt-8">
-            <Button
-              size="lg"
+            <Btn
+              block
               testID={action.testID}
               label={action.label}
               onPress={action.onPress}

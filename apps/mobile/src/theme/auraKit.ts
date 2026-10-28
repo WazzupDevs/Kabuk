@@ -26,6 +26,10 @@ export const KIT_TYPE = {
   title: t(600, 21, 27, -0.015),
   // A scene's title (Mekan: .title at 20).
   hero: t(600, 20, 26, -0.015),
+  // A digit of the code (Kod: 26, 600).
+  code: t(600, 26, 32),
+  // The phone number as it is typed (Telefon: 21, 600, 0.04em).
+  phone: t(600, 21, 26, 0.04),
   // The incoming request's line (MasaIstek: .h3 at 17).
   requestTitle: t(600, 17, 23, -0.005),
   // The table's name on Masa (.title at 26, 500).
@@ -232,6 +236,7 @@ export const KIT = {
     msgPadX: 15,
     msgPadY: 11,
     field: 54,
+    phoneField: 72,
     fieldPadX: 20,
     dayPadX: 12,
     dayPadY: 4,
