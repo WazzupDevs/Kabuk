@@ -21,6 +21,7 @@ import { useRoomMemberProfiles } from '@/features/profile/queries';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { IncomingRequest, useMarkTableScreen } from '@/features/rooms/IncomingRequest';
 import { InviteSheet } from '@/features/rooms/InviteSheet';
+import { TableScene } from '@/features/rooms/TableScene';
 import { TableIconSheet } from '@/features/rooms/TableIconSheet';
 import { GlyphDisc } from '@/components/GlyphDisc';
 import { OpenLobbySheet } from '@/features/rooms/OpenLobbySheet';
@@ -233,6 +234,16 @@ export default function TableScreen() {
           onPress={() => setSheet(owner ? 'end' : 'leave')}
         />
       </View>
+      {/* The table as a scene, the people around it (docs/design/aura → Masa); on the games tab,
+          the chat keeps its room. */}
+      {tab === 'games' ? (
+        <TableScene
+          icon={r.icon}
+          people={people.data ?? []}
+          profiles={profiles}
+          onPress={() => setSheet('people')}
+        />
+      ) : null}
       {owner ? (
         <View className="flex-row gap-2">
           <View className="flex-1">

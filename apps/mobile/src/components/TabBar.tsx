@@ -9,27 +9,31 @@ import {
   useContext,
   useEffect,
   useId,
+  useState,
 } from 'react';
-import { View } from 'react-native';
+import { Animated, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { create } from 'zustand';
 
+import { AuraTabBar, type AuraTabItem } from '@/aura/AuraTabBar';
+import { ARRIVE_RN, TabFocusContext, useSteppedBlur } from '@/aura/motion';
 import { haptic } from '@/lib/haptics';
 import { useLeaveGuard } from '@/lib/leaveGuard';
-import { V46_TAB_BAR, type V46TabKey } from '@/theme/parts.generated';
+import { useReduceMotion } from '@/lib/useReduceMotion';
+import { AURA, MOTION } from '@/theme/aura';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 import { TAB_BAR_GLASS } from '@/ui/backdrop';
 import { GlassTarget } from '@/ui/LiquidGlass';
-import { TabBar as V46TabBar, type TabBarItem } from '@/ui/TabBar';
 
-// The tabs' navigator and v46's bar (src/ui/TabBar.tsx): the bar floats 12 above the bottom (above
-// the safe area), centred, and shows the focused tab's screen through its liquid glass. Each tab
+// The tabs' navigator and the airy look's bar (src/aura/AuraTabBar.tsx, docs/design/aura): the bar
+// floats above the bottom (above the safe area), centred, and shows the focused tab's screen
+// through its liquid glass. Each tab
 // screen is a glass target (TabScene, the navigator's `screenLayout`); the bar is drawn outside
 // them. Over the Keşfet map, which the glass cannot show, the bar is opaque.
 
 // The tab of each route; other routes (the hidden index) have none.
-const TAB_OF: Partial<Record<string, V46TabKey>> = {
+const TAB_OF: Partial<Record<string, TabKey>> = {
   explore: 'explore',
   activities: 'activities',
   venue: 'venue',
@@ -73,8 +77,7 @@ export function useTabBarSpace(): number {
 
 export function TabBarSpace({ children }: { children: ReactNode }) {
   const insets = useSafeAreaInsets();
-  const { scheme } = useTheme();
-  const t = V46_TAB_BAR[scheme];
+  const t = AURA.tabBar;
   const hidden = useBarMode((s) => s.hidden > 0);
   return (
     <TabBarSpaceContext.Provider
@@ -87,7 +90,7 @@ export function TabBarSpace({ children }: { children: ReactNode }) {
 
 type SceneNavigation = {
   isFocused: () => boolean;
-  addListener: (type: 'focus', callback: () => void) => () => void;
+  addListener: (type: 'focus' | 'blur', callback: () => void) => () => void;
 };
 
 // A tab screen as what the bar's glass shows (a GlassTarget on the screen's ground): the focused
@@ -99,25 +102,62 @@ export function TabScene({
   navigation: SceneNavigation;
   children: ReactElement;
 }) {
-  const { colors } = useTheme();
+  const { scheme } = useTheme();
+  const reduce = useReduceMotion();
   const id = useId();
+  const [focus, setFocus] = useState({ focused: navigation.isFocused(), opened: 0 });
+  // The tab's screen arrives each time it is opened (the film's tab switch): from a little below,
+  // faded in on the native driver, its blur stepping down (useSteppedBlur). The first opening is
+  // the screen's own arrival (Screen's cascade).
+  const [p] = useState(() => new Animated.Value(1));
   useEffect(() => {
     const own = () => useBarMode.setState({ target: id });
     if (navigation.isFocused()) own();
-    const off = navigation.addListener('focus', own);
+    const offFocus = navigation.addListener('focus', () => {
+      own();
+      setFocus((f) => ({ focused: true, opened: f.opened + 1 }));
+      if (!reduce) {
+        p.setValue(0);
+        Animated.timing(p, {
+          toValue: 1,
+          duration: MOTION.dissolve.inMs,
+          easing: ARRIVE_RN,
+          useNativeDriver: true,
+        }).start();
+      }
+    });
+    const offBlur = navigation.addListener('blur', () =>
+      setFocus((f) => ({ ...f, focused: false })),
+    );
     return () => {
-      off();
+      offFocus();
+      offBlur();
       useBarMode.setState((s) => (s.target === id ? { target: null } : s));
     };
-  }, [navigation, id]);
+  }, [navigation, id, reduce, p]);
+  const blur = useSteppedBlur(focus.opened, !reduce);
+  const arrive = {
+    flex: 1,
+    opacity: p,
+    transform: [
+      { translateY: p.interpolate({ inputRange: [0, 1], outputRange: [MOTION.dissolve.rise, 0] }) },
+    ],
+    filter: blur > 0 ? [{ blur }] : undefined,
+  };
+  const ground = AURA[scheme].ground;
+  const scene = (
+    <TabFocusContext.Provider value={focus}>
+      <Animated.View style={arrive}>{children}</Animated.View>
+    </TabFocusContext.Provider>
+  );
   return (
     // A plain ground when the bar has no glass (TAB_BAR_GLASS).
     TAB_BAR_GLASS ? (
-      <GlassTarget targetId={id} style={{ flex: 1, backgroundColor: colors.canvas }}>
-        {children}
+      <GlassTarget targetId={id} style={{ flex: 1, backgroundColor: ground }}>
+        {scene}
       </GlassTarget>
     ) : (
-      <View style={{ flex: 1, backgroundColor: colors.canvas }}>{children}</View>
+      <View style={{ flex: 1, backgroundColor: ground }}>{scene}</View>
     )
   );
 }
@@ -133,7 +173,6 @@ export function TabBar({
   insets,
   opens,
 }: BottomTabBarProps & { opens: (tab: TabKey) => TabKey }) {
-  const { scheme } = useTheme();
   const hidden = useBarMode((s) => s.hidden > 0);
   const overMap = useBarMode((s) => s.overMap > 0);
   const target = useBarMode((s) => s.target);
@@ -146,7 +185,7 @@ export function TabBar({
     if (!key || !options) return [];
     const label = options.title ?? route.name;
     const badge = options.tabBarBadge;
-    const item: TabBarItem = {
+    const item: AuraTabItem = {
       key,
       label,
       unread: badge !== undefined,
@@ -157,8 +196,8 @@ export function TabBar({
     return [{ route, item }];
   });
 
-  const routeOf = (key: V46TabKey) => tabs.find((t) => t.item.key === key)?.route;
-  const onPress = (key: V46TabKey) => {
+  const routeOf = (key: TabKey) => tabs.find((t) => t.item.key === key)?.route;
+  const onPress = (key: TabKey) => {
     const pressed = routeOf(key);
     if (!pressed) return;
     const event = navigation.emit({
@@ -193,11 +232,11 @@ export function TabBar({
         position: 'absolute',
         left: 0,
         right: 0,
-        bottom: insets.bottom + V46_TAB_BAR[scheme].bottom,
+        bottom: insets.bottom + AURA.tabBar.bottom,
         alignItems: 'center',
       }}
     >
-      <V46TabBar
+      <AuraTabBar
         items={tabs.map((t) => t.item)}
         selected={focused ? (TAB_OF[focused.name] ?? null) : null}
         onPress={onPress}

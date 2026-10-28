@@ -1342,6 +1342,8 @@ export const tr = {
   table: {
     back: 'Mekana dön',
     whoLabel: (n: number) => `Masadakileri gör, ${headcountLabel(n)} kişi`,
+    // The people the table's scene has no seat for (docs/design/aura → Masa).
+    more: (n: number) => `+${n}`,
     end: 'Bitir',
     leave: 'Masadan ayrıl',
     leaveShort: 'Ayrıl',

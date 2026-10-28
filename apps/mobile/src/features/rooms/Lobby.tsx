@@ -6,6 +6,7 @@ import { router } from 'expo-router';
 import { type ReactNode, useEffect, useReducer, useState } from 'react';
 import { View } from 'react-native';
 
+import { Pips } from '@/aura/Pips';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
 import { ListCard } from '@/components/ListCard';
@@ -308,7 +309,10 @@ function LobbyRow({
       <TableIcon icon={table.icon} size="lobby" />
       <View className="flex-1" style={{ gap: SPACING[0.5] }}>
         <Text variant="heading">{table.name}</Text>
-        <Text variant="fine">{tr.venue.people(table.phones)}</Text>
+        <View className="flex-row items-center" style={{ gap: SPACING[2] }}>
+          <Pips count={table.phones} />
+          <Text variant="fine">{tr.venue.people(table.phones)}</Text>
+        </View>
         {note ? (
           <Text variant="fine" accessibilityLiveRegion="polite">
             {note}

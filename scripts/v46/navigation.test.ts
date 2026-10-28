@@ -274,11 +274,12 @@ describe('v46 list/map switch', () => {
 describe("the app's tabs", () => {
   const app = (file: string) => readFileSync(resolve(root, 'apps/mobile', file), 'utf8');
 
-  it("float v46's bar above the bottom, feel a new tab and blur the focused screen", () => {
+  it("float the airy look's bar above the bottom, feel a new tab and blur the focused screen", () => {
     for (const s of SCHEMES) expect(bar[s].bottom).toBe(bar.light.bottom);
     const tabs = app('src/components/TabBar.tsx');
-    expect(tabs).toMatch(/import \{ TabBar as V46TabBar, type TabBarItem \} from '@\/ui\/TabBar'/);
-    expect(tabs).toMatch(/bottom: insets\.bottom \+ V46_TAB_BAR\[scheme\]\.bottom/);
+    // The airy look's bar (docs/decisions/aura-gorunum.md) took v46's place on 28 Ekim.
+    expect(tabs).toMatch(/import \{ AuraTabBar, type AuraTabItem \} from '@\/aura\/AuraTabBar'/);
+    expect(tabs).toMatch(/bottom: insets\.bottom \+ AURA\.tabBar\.bottom/);
     // The room the bar takes at the bottom of a tab screen: the bar, its distance, a little more.
     expect(tabs).toMatch(/t\.height \+ t\.bottom \+ insets\.bottom \+ SPACING\[4\]/);
     // Every press that changes the tab is felt, the Mekan tab's redirect to Keşfet too.

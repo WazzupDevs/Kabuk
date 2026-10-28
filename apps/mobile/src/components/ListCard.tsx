@@ -1,6 +1,7 @@
 import { Children, createContext, type ReactNode, useState } from 'react';
 import { View } from 'react-native';
 
+import { AURA } from '@/theme/aura';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
@@ -25,7 +26,8 @@ export function ListCard({
   testID?: string;
   bare?: boolean;
 }) {
-  const { colors, shape } = useTheme();
+  const { colors, shape, scheme } = useTheme();
+  const glass = AURA[scheme].glass;
   const pressScale = usePressScale();
   const [pressed, setPressed] = useState(false);
   const rows = Children.toArray(children).filter(Boolean);
@@ -37,11 +39,12 @@ export function ListCard({
         bare
           ? { marginHorizontal: -SPACING[4] }
           : {
-              backgroundColor: colors.surface,
-              borderWidth: shape.stroke.card,
-              borderColor: colors.cardLine,
-              borderRadius: shape.radius.lg,
-              boxShadow: shape.shadow.card,
+              // A frosted pane on the clouds (docs/design/aura → `.glass.list`).
+              backgroundColor: glass.fill,
+              borderWidth: AURA.card.edgeWidth,
+              borderColor: glass.edge,
+              borderRadius: AURA.card.radius,
+              boxShadow: glass.shadow,
               paddingVertical: SPACING[1],
             },
         single ? pressScale(pressed) : null,

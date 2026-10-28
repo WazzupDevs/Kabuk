@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<style>{{FONTS}}</style>
+<link rel="stylesheet" href="{{CSS}}">
+<style>
+html, body { margin: 0; background: #F7F5FD; }
+#ph { position: relative; width: 390px; height: 844px; overflow: hidden; background: var(--ground); }
+.L { position: absolute; inset: 0; }
+.A { position: absolute; }
+#touch { position: absolute; width: 48px; height: 48px; margin: -24px 0 0 -24px; border-radius: 50%; background: rgba(124, 108, 255, 0.26); box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.85), 0 6px 18px rgba(54, 36, 140, 0.20); z-index: 90; opacity: 0; }
+.eye { transform-box: fill-box; transform-origin: center; }
+.stand svg { position: relative; display: block; width: 100%; height: 100%; }
+#fly { object-fit: cover; }
+#m-scene { overflow: hidden; background: radial-gradient(120% 80% at 18% 0%, rgba(123, 92, 255, 0.30), rgba(123, 92, 255, 0) 60%), radial-gradient(90% 70% at 90% 10%, rgba(255, 79, 139, 0.22), rgba(255, 79, 139, 0) 60%), linear-gradient(180deg, #F3EEFF, #FCF1F7); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.7); }
+.frost { position: absolute; inset: 0; border-radius: 28px; background: linear-gradient(180deg, rgba(255,255,255,.86), rgba(255,255,255,.58)); border: 1px solid rgba(255,255,255,.9); box-shadow: 0 18px 44px rgba(54,36,140,.12); }
+.gcard { position: absolute; inset: 0; border-radius: 28px; overflow: hidden; color: #FFFFFF; }
+.typing { display: inline-flex; gap: 3px; align-items: flex-end; height: 12px; }
+.typing i { width: 5px; height: 10px; border-radius: 3px; display: block; }
+.ring { position: absolute; border-radius: 50%; border: 2.5px solid #FFB547; pointer-events: none; }
+.mo-pill { position: absolute; top: 8px; height: 52px; border-radius: 26px; background: rgba(255, 255, 255, 0.96); box-shadow: 0 6px 16px rgba(54, 36, 140, 0.13); }
+#bar .tab { position: relative; z-index: 1; }
+#bar .tab .ti { position: absolute; left: 13px; top: 13px; }
+#bar .tab .ti.big { width: 30px; height: 30px; left: 11px; top: 11px; }
+</style>
+</head>
+<body>
+<div id="ph">
+  <div class="aura" id="aura"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i><i class="a5"></i></div>
+
+  <!-- Lobby -->
+  <div id="lobby" class="L">
+    <div id="l-head" class="A topbar between" style="left: 20px; right: 20px; top: 60px; height: 44px">
+      {{WORDMARK}}
+      <span class="live" style="position: relative"><span style="position: relative; display: inline-flex"><span id="live-ring" class="dot" style="position: absolute; inset: 0; background: rgba(28,140,78,.45)"></span><span class="dot" style="background: #1C8C4E"></span></span>Mekandasın</span>
+    </div>
+    <div id="l-scene" class="A scene" style="left: 20px; right: 20px; top: 116px; height: 196px">
+      <div class="floor"></div>
+      <div id="heroB" style="position: absolute; inset: 0; opacity: 0">
+        <img id="heroT" src="{{IMG:8ddd576983d47cc910f39d929f93487f}}" alt="" style="position: absolute; left: 18px; top: 18px; width: 64px; height: 64px; border-radius: 20px; object-fit: cover; box-shadow: 0 8px 18px rgba(54,36,140,.18)">
+        <div class="col" style="position: absolute; left: 96px; top: 20px; gap: 3px"><span class="eyebrow">Masan</span><p class="title" style="font-size: 20px">Kamp Ateşi</p><div class="row" style="gap: 8px"><span class="pips"><i></i><i></i><i></i><i></i><i></i></span><span class="fine">5 kişi</span></div></div>
+      </div>
+      <div class="col" id="heroA" style="position: absolute; left: 18px; top: 18px; width: 170px; gap: 6px">
+        <p class="title" style="font-size: 20px">Henüz masan yok</p>
+        <p class="fine">Masa kur, arkadaşlarını çağır. Ya da açık bir masaya katıl.</p>
+        <button class="btn primary sm" type="button" style="align-self: flex-start; margin-top: 4px">{{PLUS}}Masa kur</button>
+      </div>
+      <div id="lb1" class="stand" style="right: 64px; bottom: 70px; width: 64px; height: 84px"><i></i>{{FIG:uzayli}}</div>
+      <div id="lb2" class="stand" style="right: 86px; bottom: -14px; width: 104px; height: 136px"><i></i>{{FIG:kulaklik}}</div>
+      <div id="lb3" class="stand" style="right: -12px; bottom: -6px; width: 92px; height: 121px"><i></i>{{FIG:kahraman}}</div>
+    </div>
+    <div id="l-sec" class="A sec" style="left: 20px; right: 20px; top: 328px"><h2 class="h3" style="font-size: 18px">Açık masalar</h2><span class="fine">3 masa</span></div>
+    <div id="l-list" class="A glass list" style="left: 20px; right: 20px; top: 364px">{{ROWS}}</div>
+  </div>
+
+  <!-- Masa -->
+  <div id="masa" class="L" style="display: none">
+    <div id="m-scene" class="A"><div class="floor"></div></div>
+    <img id="fly" class="A" src="{{IMG:8ddd576983d47cc910f39d929f93487f}}" alt="">
+    <div id="mE" class="A col" style="left: 30px; top: 112px; align-items: center; gap: 4px"><span class="av lg c1">E</span><span class="tag glassy">Elif</span></div>
+    <div id="mM" class="A col" style="right: 30px; top: 112px; align-items: center; gap: 4px"><span class="av lg c3">M</span><span class="tag glassy">Mert</span></div>
+    <div id="mB1" class="A stand" style="left: 24px; top: 199px; width: 112px; height: 147px"><i></i>{{FIG:kulaklik}}</div>
+    <div id="mB2" class="A stand" style="left: 254px; top: 199px; width: 112px; height: 147px"><i></i>{{FIG:korsan}}</div>
+    <span id="mT1" class="A tag glassy" style="left: 62px; top: 300px">Sen</span>
+    <span id="mT2" class="A tag glassy" style="right: 52px; top: 300px">kapsul-mb07</span>
+    <span id="zring" class="ring" style="left: 165px; top: 64px; width: 60px; height: 60px; opacity: 0"></span>
+    <div id="m-top" class="A topbar between" style="left: 20px; right: 20px; top: 60px">
+      <button class="round glassy" type="button" aria-label="Mekana dön"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect class="a" x="5.45" y="6.9" width="13.1" height="3.2" rx="1.6" transform="rotate(135 12 8.5)"></rect><rect class="b" x="5.45" y="13.9" width="13.1" height="3.2" rx="1.6" transform="rotate(45 12 15.5)"></rect></svg></button>
+      <div class="row" style="gap: 8px">
+        <button class="round glassy" type="button" aria-label="Davet et"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><circle class="a" cx="9" cy="7.8" r="3.5"></circle><rect class="b" x="2.8" y="13.6" width="12.4" height="7" rx="3.5"></rect><rect class="a" x="14.2" y="8.6" width="8.8" height="2.8" rx="1.4" transform="rotate(90 18.6 10)"></rect><rect class="a" x="14.2" y="8.6" width="8.8" height="2.8" rx="1.4"></rect></svg></button>
+        <button class="btn glassy sm" type="button" style="color: #A8301A">Ayrıl</button>
+      </div>
+    </div>
+    <div id="m-title" class="A row between" style="left: 22px; right: 22px; top: 350px">
+      <div class="col"><h1 class="title" style="font-size: 26px; font-weight: 500">Kamp Ateşi</h1>
+        <p class="fine" style="position: relative; height: 18px"><span id="cnt4" style="position: absolute; left: 0; white-space: nowrap">4 kişi · Lobide açık</span><span id="cnt5" style="position: absolute; left: 0; white-space: nowrap; opacity: 0">5 kişi · Lobide açık</span></p></div>
+      <span class="tag purple" style="height: 30px; padding: 0 12px">Masadakiler</span>
+    </div>
+    <div id="m-seg" class="A glass row" style="left: 20px; right: 20px; top: 418px; padding: 5px; border-radius: 26px; gap: 4px">
+      <span class="btn sm grow" style="background: #FFFFFF; box-shadow: 0 4px 12px rgba(54,36,140,.12)">Oyunlar</span>
+      <span class="btn sm grow" style="color: #5E5878">Sohbet <span class="badge" style="margin-left: 4px">2</span></span>
+    </div>
+    <div id="m-c1" class="A" style="left: 20px; top: 482px; width: 169px; height: 200px">
+      <div class="frost" id="m-c1f"></div>
+      <div class="gcard" id="m-c1in" style="background: radial-gradient(120% 90% at 20% 10%, #6A50E6 0%, #2A2068 55%, #120F2C 100%); box-shadow: 0 18px 36px rgba(33,26,82,.30)">
+        <div style="position: absolute; left: -10%; right: -10%; bottom: -60px; height: 120px; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,181,71,.35), rgba(255,181,71,0))"></div>
+        <div class="stand" style="right: -18px; bottom: 40px; width: 86px; height: 113px">{{FIG:kahraman}}</div>
+        <span class="tag" style="position: absolute; left: 12px; top: 12px; background: rgba(255,255,255,.16); color: #FFFFFF">2 oy</span>
+        <div class="col" style="position: absolute; left: 14px; bottom: 14px; gap: 2px"><p style="font-size: 24px; font-weight: 700; letter-spacing: -0.02em">Kinshi</p><p class="fine" style="color: #DCD6FF">Yasak kelimeyi<br>söyleme</p></div>
+      </div>
+    </div>
+    <div id="m-c2" class="A" style="left: 201px; top: 482px; width: 169px; height: 200px">
+      <div class="frost" id="m-c2f"></div>
+      <div class="gcard" id="m-c2in" style="background: radial-gradient(120% 90% at 80% 10%, #E8467F 0%, #5A1A45 55%, #1A0C20 100%); box-shadow: 0 18px 36px rgba(90,26,69,.28)">
+        <div style="position: absolute; left: -10%; right: -10%; bottom: -60px; height: 120px; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,255,255,.18), rgba(255,255,255,0))"></div>
+        <div class="stand" style="right: -18px; bottom: 40px; width: 86px; height: 113px">{{FIG:ninja}}</div>
+        <span class="tag" style="position: absolute; left: 12px; top: 12px; background: rgba(255,255,255,.16); color: #FFFFFF">1 oy</span>
+        <div class="col" style="position: absolute; left: 14px; bottom: 14px; gap: 2px"><p style="font-size: 24px; font-weight: 700; letter-spacing: -0.02em">Krot</p><p class="fine" style="color: #FFD6E5">Aramızdaki<br>kim?</p></div>
+      </div>
+    </div>
+    <button id="m-btn" class="A btn primary" type="button" style="left: 20px; right: 20px; top: 700px">{{PLUS}}Oyun öner</button>
+  </div>
+
+  <!-- Mesajlar -->
+  <div id="msgs" class="L" style="display: none">
+    <div id="g-head" class="A topbar between" style="left: 20px; right: 20px; top: 60px">
+      <h1 class="display">Mesajlar</h1>
+      <button class="round glassy" type="button" aria-label="Bildirimler"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect class="a" x="6" y="3.5" width="12" height="13.5" rx="6"></rect><rect class="b" x="2.9" y="15.8" width="18.2" height="3.2" rx="1.6"></rect><circle class="a" cx="12" cy="21" r="1.7"></circle></svg></button>
+    </div>
+    <div id="g-seg" class="A glass row" style="left: 20px; right: 20px; top: 118px; padding: 5px; border-radius: 26px; gap: 4px">
+      <span class="btn sm grow" style="background: #FFFFFF; box-shadow: 0 4px 12px rgba(54,36,140,.12)">Sohbetler</span>
+      <span class="btn sm grow" style="color: #5E5878">İstekler</span>
+    </div>
+    <div id="g-list" class="A glass list" style="left: 20px; right: 20px; top: 184px">{{MSGROWS}}</div>
+  </div>
+
+  <!-- Profil -->
+  <div id="prof" class="L" style="display: none">
+    <div id="p-head" class="A topbar between" style="left: 20px; right: 20px; top: 60px; height: 44px">
+      <span class="eyebrow">Profil</span>
+      <button class="round glassy" type="button" aria-label="Ayarlar"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect class="b" x="2.7" y="5.2" width="18.6" height="2.6" rx="1.3"></rect><rect class="b" x="2.7" y="10.7" width="18.6" height="2.6" rx="1.3"></rect><rect class="b" x="2.7" y="16.2" width="18.6" height="2.6" rx="1.3"></rect><circle class="a" cx="15" cy="6.5" r="2.7"></circle><circle class="a" cx="8.5" cy="12" r="2.7"></circle><circle class="a" cx="14" cy="17.5" r="2.7"></circle></svg></button>
+    </div>
+    <div id="p-c1" class="A glass col" style="left: 20px; top: 116px; width: 169px; height: 196px; align-items: center; justify-content: center; gap: 10px"><span class="av xl c1" style="width: 104px; height: 104px; font-size: 38px">A</span><div class="col" style="align-items: center"><p class="fine strong">Profilin</p><p class="fine">Masada görünen</p></div></div>
+    <div id="p-c2" class="A glass col" style="left: 201px; top: 116px; width: 169px; height: 196px; align-items: center; justify-content: center; gap: 10px"><span id="p-cap" class="av xl capsule" style="width: 104px; height: 104px"><img src="{{IMG:341343f7873d17c5e6e7ac5768bfbdd5}}" alt=""></span><div class="col" style="align-items: center"><p class="fine strong">Kapsülün</p><p class="fine">Anonimken</p></div></div>
+    <div id="p-name" class="A col" style="left: 22px; right: 22px; top: 328px; gap: 4px"><h1 class="display" style="font-size: 30px">Ayşe, 23</h1><p class="body">Kantinde Kinshi ustası. Krot'ta hep yakalanırım.</p></div>
+    <div id="p-btns" class="A row" style="left: 20px; right: 20px; top: 424px; gap: 10px"><button class="btn glassy sm grow" type="button">Profili düzenle</button><button class="btn primary sm grow" type="button">Kapsülünü süsle</button></div>
+    <div id="p-sec" class="A sec" style="left: 20px; right: 20px; top: 478px"><h2 class="h3" style="font-size: 18px">Rozetler</h2><span class="fine">3 / 4</span></div>
+    <div class="A" style="left: 20px; right: 20px; top: 514px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px">{{MEDALS}}</div>
+  </div>
+
+  <!-- Tab bar -->
+  {{TABS}}
+
+  <!-- Request notice -->
+  <div id="note" class="A glass row" style="left: 20px; right: 20px; top: 668px; min-height: 60px; padding: 10px 16px; gap: 12px; z-index: 45; opacity: 0">
+    <span style="position: relative; width: 26px; height: 26px; flex: none">
+      <span id="nload" class="typing" style="position: absolute; left: 3px; top: 8px"><i id="nl0" style="background: #7B5CFF"></i><i id="nl1" style="background: #FF4F8B"></i><i id="nl2" style="background: #FFB547"></i></span>
+      <span id="nok" class="round" style="position: absolute; inset: 0; width: 26px; height: 26px; background: #1C8C4E; color: #FFFFFF; opacity: 0">{{CHECKSM}}</span>
+    </span>
+    <span style="position: relative; flex: 1; min-height: 36px; display: flex; align-items: center">
+      <span id="n1" class="fine strong" style="position: absolute; left: 0; right: 0">İsteğin gönderildi. Yanıt bekleniyor (<span id="nsec">42</span> sn).</span>
+      <span id="n2" class="fine strong" style="position: absolute; left: 0; right: 0; opacity: 0">Kabul edildi, Kamp Ateşi masasının yanına git.</span>
+    </span>
+  </div>
+  <span id="zfly" class="A av c2" style="width: 56px; height: 56px; font-size: 20px; z-index: 62; opacity: 0">Z</span>
+
+  <span id="touch"></span>
+</div>
+<script src="{{JS}}"></script>
+</body>
+</html>

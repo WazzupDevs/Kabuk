@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Check-in</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="aura.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div class="phone">
+  <div class="aura"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i></div>
+  <div class="scene" aria-hidden="true" style="position: absolute; left: 0; right: 0; top: 0; height: 330px; border-radius: 0 0 36px 36px">
+    <div class="floor"></div>
+    <img class="disk" src="/_blob/f3e487916eabb78ab6cb96187367f420" alt="" style="left: 128px; bottom: 34px; width: 134px; height: 134px">
+  </div>
+  <div class="scrim"></div>
+  <div style="position: absolute; left: 0; right: 0; top: 160px; height: 120px">
+    <div class="stand" style="left: 36px; top: 0; width: 84px; height: 110px"><img src="/_blob/1e1befe90ae6c76edcd7fece45813e41" alt=""></div>
+    <div class="stand" style="left: 156px; top: -14px; width: 84px; height: 110px"><img src="/_blob/6f419d231e787719dcb5a35cc8a47579" alt=""></div>
+    <div class="stand" style="left: 270px; top: 4px; width: 84px; height: 110px"><img src="/_blob/1a80a98c7f884f2abd26235936594b94" alt=""></div>
+  </div>
+  <div class="glass sheet" role="dialog" aria-label="Giriş" style="top: 226px; background: linear-gradient(180deg, rgba(255,255,255,.90), rgba(255,255,255,.84))">
+    <div class="grab"></div>
+    <div class="col" style="gap: 6px">
+      <h2 class="title">Neredesin?</h2>
+      <p class="fine">Aynı noktadaki masalarla oynarsın. Noktanı sonra da değiştirebilirsin.</p>
+    </div>
+    <div class="col" style="gap: 8px">
+      <div class="row glass sm" style="padding: 10px 12px; border-color: #6A47F5; box-shadow: 0 0 0 4px rgba(106,71,245,.14)">
+        <img class="thumb" src="/_blob/8ddd576983d47cc910f39d929f93487f" alt="" style="width: 44px; height: 44px; border-radius: 14px">
+        <span class="h3 grow">Kantin</span>
+        <span class="round" style="width: 28px; height: 28px; background: #6A47F5"><img src="/_blob/c5a72a6b6fc089cfed2a4ae34f42c8fe" alt="" style="width: 7px; height: 16px"></span>
+      </div>
+      <div class="row glass sm" style="padding: 10px 12px">
+        <img class="thumb" src="/_blob/f3e487916eabb78ab6cb96187367f420" alt="" style="width: 44px; height: 44px; border-radius: 14px">
+        <span class="h3 grow">Kütüphane</span>
+        <span class="round" style="width: 28px; height: 28px; border: 2px solid #DAD3F2"></span>
+      </div>
+      <div class="row glass sm" style="padding: 10px 12px">
+        <img class="thumb" src="/_blob/819f7247f665cbc9b60f6982dff16458" alt="" style="width: 44px; height: 44px; border-radius: 14px">
+        <span class="h3 grow">Çim alan</span>
+        <span class="round" style="width: 28px; height: 28px; border: 2px solid #DAD3F2"></span>
+      </div>
+    </div>
+    <label class="row" style="gap: 12px; align-items: flex-start; padding: 2px 4px">
+      <span class="round" style="width: 24px; height: 24px; border-radius: 8px; background: #6A47F5; color: #FFFFFF; margin-top: 1px"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true" style="width: 15px; height: 15px"><rect class="b" x="2.41" y="13.3" width="9.99" height="3.2" rx="1.6" transform="rotate(45 7.4 14.9)"></rect><rect class="a" x="5.89" y="10.55" width="17.01" height="3.2" rx="1.6" transform="rotate(-48.23 14.4 12.15)"></rect></svg></span>
+      <span class="fine" style="color: #14112B">Konumumun bu amaçla kullanılmasına açık rıza veriyorum.</span>
+    </label>
+    <div style="flex: 1"></div>
+    <button class="btn primary block" type="button"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect class="a" x="7" y="3" width="10" height="14" rx="5"></rect><rect class="b" x="9.3" y="17.9" width="5.4" height="3.2" rx="1.6" transform="rotate(90 12 19.5)"></rect></svg>Konumumu kullan</button>
+    <button class="btn glassy block" type="button">Vazgeç</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

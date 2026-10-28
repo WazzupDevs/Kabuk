@@ -1,0 +1,221 @@
+{
+  "v": 3,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-10-28T10:50:00Z"
+  },
+  "title": "skall yeni görünüm ön izleme",
+  "launch": {
+    "view": "canvas"
+  },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {
+      "x": 0,
+      "y": 300,
+      "w": 390,
+      "h": 844,
+      "title": "Açılış"
+    },
+    "Telefon.dc.html": {
+      "x": 470,
+      "y": 300,
+      "w": 390,
+      "h": 844,
+      "title": "Kayıt: telefon"
+    },
+    "Kod.dc.html": {
+      "x": 940,
+      "y": 300,
+      "w": 390,
+      "h": 844,
+      "title": "Kayıt: kod"
+    },
+    "Kesfet.dc.html": {
+      "x": 0,
+      "y": 1524,
+      "w": 390,
+      "h": 844,
+      "title": "Keşfet"
+    },
+    "KesfetMekan.dc.html": {
+      "x": 470,
+      "y": 1524,
+      "w": 390,
+      "h": 844,
+      "title": "Mekan sayfası"
+    },
+    "CheckIn.dc.html": {
+      "x": 940,
+      "y": 1524,
+      "w": 390,
+      "h": 844,
+      "title": "Check-in"
+    },
+    "Mekan.dc.html": {
+      "x": 0,
+      "y": 2748,
+      "w": 390,
+      "h": 844,
+      "title": "Mekan ve lobi"
+    },
+    "MasaKur.dc.html": {
+      "x": 470,
+      "y": 2748,
+      "w": 390,
+      "h": 844,
+      "title": "Masa kur"
+    },
+    "Masa.dc.html": {
+      "x": 940,
+      "y": 2748,
+      "w": 390,
+      "h": 844,
+      "title": "Masa"
+    },
+    "MasaIstek.dc.html": {
+      "x": 1410,
+      "y": 2748,
+      "w": 390,
+      "h": 844,
+      "title": "Gelen istek"
+    },
+    "MasaBitti.dc.html": {
+      "x": 1880,
+      "y": 2748,
+      "w": 390,
+      "h": 844,
+      "title": "Masa bitti"
+    },
+    "Mesajlar.dc.html": {
+      "x": 0,
+      "y": 3972,
+      "w": 390,
+      "h": 844,
+      "title": "Mesajlar"
+    },
+    "Dm.dc.html": {
+      "x": 470,
+      "y": 3972,
+      "w": 390,
+      "h": 844,
+      "title": "DM"
+    },
+    "MekanSohbeti.dc.html": {
+      "x": 940,
+      "y": 3972,
+      "w": 390,
+      "h": 844,
+      "title": "Mekan sohbeti"
+    },
+    "Bildirimler.dc.html": {
+      "x": 1410,
+      "y": 3972,
+      "w": 390,
+      "h": 844,
+      "title": "Bildirimler"
+    },
+    "Profil.dc.html": {
+      "x": 0,
+      "y": 5196,
+      "w": 390,
+      "h": 844,
+      "title": "Profil"
+    },
+    "Kapsul.dc.html": {
+      "x": 470,
+      "y": 5196,
+      "w": 390,
+      "h": 844,
+      "title": "Kapsülün"
+    },
+    "Kinshi.dc.html": {
+      "x": 940,
+      "y": 5196,
+      "w": 390,
+      "h": 844,
+      "title": "Oyun: Kinshi"
+    },
+    "Krot.dc.html": {
+      "x": 1410,
+      "y": 5196,
+      "w": 390,
+      "h": 844,
+      "title": "Oyun: Krot"
+    },
+    "Hareket.dc.html": {
+      "x": 0,
+      "y": 6680,
+      "w": 390,
+      "h": 844,
+      "title": "Hareket filmi"
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Telefon.dc.html",
+    "Kod.dc.html",
+    "Kesfet.dc.html",
+    "KesfetMekan.dc.html",
+    "CheckIn.dc.html",
+    "Mekan.dc.html",
+    "MasaKur.dc.html",
+    "Masa.dc.html",
+    "MasaIstek.dc.html",
+    "MasaBitti.dc.html",
+    "Mesajlar.dc.html",
+    "Dm.dc.html",
+    "MekanSohbeti.dc.html",
+    "Bildirimler.dc.html",
+    "Profil.dc.html",
+    "Kapsul.dc.html",
+    "Kinshi.dc.html",
+    "Krot.dc.html",
+    "Hareket.dc.html"
+  ],
+  "notes": {
+    "rowA": {
+      "x": 0,
+      "y": 40,
+      "text": "Açılış ve kayıt",
+      "kind": "title1",
+      "maxW": 1330
+    },
+    "rowB": {
+      "x": 0,
+      "y": 1264,
+      "text": "Keşfet ve giriş",
+      "kind": "title1",
+      "maxW": 1330
+    },
+    "rowC": {
+      "x": 0,
+      "y": 2488,
+      "text": "Mekan ve masa",
+      "kind": "title1",
+      "maxW": 2270
+    },
+    "rowD": {
+      "x": 0,
+      "y": 3712,
+      "text": "Sohbetler",
+      "kind": "title1",
+      "maxW": 1800
+    },
+    "rowE": {
+      "x": 0,
+      "y": 4936,
+      "text": "Profil ve oyunlar",
+      "kind": "title1",
+      "maxW": 1800
+    },
+    "rowF": {
+      "x": 0,
+      "y": 6420,
+      "text": "Hareket",
+      "kind": "title1",
+      "maxW": 1330
+    }
+  },
+  "designSystems": []
+}
