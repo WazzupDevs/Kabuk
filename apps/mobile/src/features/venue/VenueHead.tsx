@@ -55,9 +55,12 @@ export function VenueHead({
                 accessibilityRole="button"
                 accessibilityLabel={`${spot}, ${tr.venue.changeSpot}`}
                 onPress={onSpot}
-                style={({ pressed }) => ({ opacity: pressed ? PRESSED : 1 })}
               >
-                <Tag label={spot} height={TAG_HEIGHT} />
+                {({ pressed }) => (
+                  <View style={{ opacity: pressed ? PRESSED : 1 }}>
+                    <Tag label={spot} height={TAG_HEIGHT} />
+                  </View>
+                )}
               </Pressable>
             ) : (
               <Tag label={spot} height={TAG_HEIGHT} />

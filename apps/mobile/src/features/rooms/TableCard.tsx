@@ -96,39 +96,44 @@ export function TableCard({ checkIn, room, state, onCreate, onOpenLobby }: Props
           live ? tr.venue.lobbyOpen : tr.venue.lobbyOff,
         )}
         onPress={() => router.push({ pathname: '/room/[id]', params: { id: room.id } })}
-        style={({ pressed }) => ({
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: ROW_GAP,
-          opacity: pressed ? PRESSED : 1,
-        })}
       >
-        <View style={{ flex: 1, gap: WORDS_GAP }}>
-          <T v="eyebrow">{tr.rooms.roomEyebrow(null)}</T>
-          <T v="title" style={HERO_TITLE} testID="table-name">
-            {room.name ?? ''}
-          </T>
+        {({ pressed }) => (
           <View
-            testID="table-state"
             style={{
               flexDirection: 'row',
-              flexWrap: 'wrap',
               alignItems: 'center',
-              gap: KIT.size.chipsGap,
+              gap: ROW_GAP,
+              opacity: pressed ? PRESSED : 1,
             }}
           >
-            <Pips count={room.phones} />
-            <T v="fine">{tr.venue.people(room.phones)}</T>
-            {live ? <Live label={tr.venue.lobbyOpen} /> : <T v="fine">{tr.venue.lobbyOff}</T>}
+            <View style={{ flex: 1, gap: WORDS_GAP }}>
+              <T v="eyebrow">{tr.rooms.roomEyebrow(null)}</T>
+              <T v="title" style={HERO_TITLE} testID="table-name">
+                {room.name ?? ''}
+              </T>
+              <View
+                testID="table-state"
+                style={{
+                  flexDirection: 'row',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  gap: KIT.size.chipsGap,
+                }}
+              >
+                <Pips count={room.phones} />
+                <T v="fine">{tr.venue.people(room.phones)}</T>
+                {live ? <Live label={tr.venue.lobbyOpen} /> : <T v="fine">{tr.venue.lobbyOff}</T>}
+              </View>
+            </View>
+            <Disk size={DISK}>
+              {picture ? (
+                <Image source={picture} fadeDuration={0} style={{ width: DISK, height: DISK }} />
+              ) : (
+                <View style={{ width: DISK, height: DISK, backgroundColor: KIT.white }} />
+              )}
+            </Disk>
           </View>
-        </View>
-        <Disk size={DISK}>
-          {picture ? (
-            <Image source={picture} fadeDuration={0} style={{ width: DISK, height: DISK }} />
-          ) : (
-            <View style={{ width: DISK, height: DISK, backgroundColor: KIT.white }} />
-          )}
-        </Disk>
+        )}
       </Pressable>
 
       <PeopleFaces roomId={room.id} phones={room.phones} />
