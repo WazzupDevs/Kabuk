@@ -26,6 +26,8 @@ export const KIT_TYPE = {
   title: t(600, 21, 27, -0.015),
   // A scene's title (Mekan: .title at 20).
   hero: t(600, 20, 26, -0.015),
+  // The incoming request's line (MasaIstek: .h3 at 17).
+  requestTitle: t(600, 17, 23, -0.005),
   // The table's name on Masa (.title at 26, 500).
   tableTitle: t(500, 26, 32, -0.015),
   h3: t(600, 16, 22, -0.005),
@@ -127,6 +129,10 @@ export const KIT = {
   onPrimary: '#FFFFFF',
   primaryShadow: SHADOW.primary,
   primaryInset: 'inset 0px 1px 0px rgba(255, 255, 255, 0.28)',
+  // A new invite in Bildirimler: the brand's soft gradient.
+  inviteGround: 'linear-gradient(135deg, rgba(123, 92, 255, 0.14), rgba(255, 79, 139, 0.10))',
+  // The incoming request's card floats deeper (MasaIstek).
+  requestShadow: '0px 30px 60px rgba(54, 36, 140, 0.22)',
   // A chosen row's ring (CheckIn: the spot).
   primaryRing: 'rgba(106, 71, 245, 0.14)',
   glassInset: 'inset 0px 1px 0px #FFFFFF',
