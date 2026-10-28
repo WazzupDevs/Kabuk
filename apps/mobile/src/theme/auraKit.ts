@@ -32,6 +32,8 @@ export const KIT_TYPE = {
   phone: t(600, 21, 26, 0.04),
   // The incoming request's line (MasaIstek: .h3 at 17).
   requestTitle: t(600, 17, 23, -0.005),
+  // A venue's name on its page (KesfetMekan: .display at 28).
+  venueTitle: t(500, 28, 34, -0.025),
   // The table's name on Masa (.title at 26, 500).
   tableTitle: t(500, 26, 32, -0.015),
   h3: t(600, 16, 22, -0.005),
@@ -133,6 +135,8 @@ export const KIT = {
   onPrimary: '#FFFFFF',
   primaryShadow: SHADOW.primary,
   primaryInset: 'inset 0px 1px 0px rgba(255, 255, 255, 0.28)',
+  // The lines beside "Yeni mesaj" in a chat.
+  freshLine: 'rgba(255, 79, 139, 0.40)',
   // A new invite in Bildirimler: the brand's soft gradient.
   inviteGround: 'linear-gradient(135deg, rgba(123, 92, 255, 0.14), rgba(255, 79, 139, 0.10))',
   // The incoming request's card floats deeper (MasaIstek).

@@ -8,6 +8,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Text as RNText,
   useWindowDimensions,
   View,
 } from 'react-native';
@@ -22,15 +23,13 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { create } from 'zustand';
 
 import { AuraBackground } from '@/aura/AuraBackground';
+import { CapIcon } from '@/aura/CapIcon';
+import { Btn, Chip, Round, Seg, T, Tag, useKit } from '@/aura/kit';
+import { SceneGround } from '@/aura/Scene';
 import { Button } from '@/components/Button';
-import { CanvasBar } from '@/components/CanvasIcon';
-import { Chips } from '@/components/Chips';
 import { EmptyState } from '@/components/EmptyState';
-import { GlassPanel } from '@/components/GlassPanel';
-import { IconButton } from '@/components/IconButton';
 import { Loader } from '@/components/Loader';
 import { LookAvatar } from '@/components/LookAvatar';
-import { Segmented } from '@/components/Segmented';
 import { Sheet } from '@/components/Sheet';
 import { useTabBarSpace } from '@/components/TabBar';
 import { Text } from '@/components/Text';
@@ -65,15 +64,22 @@ import { profileApi } from '@/lib/api';
 import { FEELINGS } from '@/theme/capsuleLook';
 import { packTone } from '@/theme/capsulePacks';
 import { AURA } from '@/theme/aura';
+import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, SPACING } from '@/theme/tokens';
-import { AppIcon } from '@/components/AppIcon';
+import { SPACING } from '@/theme/tokens';
 import { GlassTarget } from '@/ui/LiquidGlass';
 
 // "Kafama dokun" shows until the first tap on the capsule, while the app runs.
 const useHint = create<{ seen: boolean }>(() => ({ seen: false }));
 
 const PREVIEW = SPACING[16] * 2 + SPACING[8];
+// docs/design/aura → Kapsül: the scene's height under the status bar, how far its parts stand above
+// its bottom, the worn parts' tags.
+const CAPSULE_SCENE = 360;
+const SCENE_FOOT = 22;
+const WORN_TAG = 30;
+const WORN_ICON = 14;
 // v46 feel(): the feeling's face stays 1850 ms.
 const FEELING_MS = 1850;
 // The colours four to a row, a pack's parts three (the owner's call, 27 Ekim: larger, in order).
@@ -125,7 +131,8 @@ export default function CapsuleScreen() {
 }
 
 function Editor({ saved, nick, publicId }: { saved: string; nick: string; publicId: string }) {
-  const { colors, shape, scheme } = useTheme();
+  const { shape, scheme } = useTheme();
+  const { c } = useKit();
   const { width } = useWindowDimensions();
   const queryClient = useQueryClient();
   const [look, setLook] = useState<Look>(() => parse(saved));
@@ -223,23 +230,28 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
           }}
           scrollIndicatorInsets={{ top, bottom }}
         >
-          <Segmented<RackId>
-            fill
+          {/* docs/design/aura → Kapsül: the racks as glass tabs, the parts as chips. */}
+          <Seg<RackId>
             value={rack}
             onChange={setRack}
             accessibilityLabel={tr.capsule.edit}
             options={CAPSULE_CATALOG.racks.map((r) => ({ value: r.id, label: r.name }))}
           />
-          <Chips<LookSlot>
-            bleed={side}
-            value={slot}
-            onChange={setSlot}
-            accessibilityLabel={tr.capsule.edit}
-            options={CAPSULE_CATALOG.slots.map((s) => ({
-              value: s.id as LookSlot,
-              label: s.name,
-            }))}
-          />
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={{ marginHorizontal: -side }}
+            contentContainerStyle={{ paddingHorizontal: side, gap: KIT.size.chipsGap }}
+          >
+            {CAPSULE_CATALOG.slots.map((s) => (
+              <Chip
+                key={s.id}
+                label={s.name}
+                on={slot === s.id}
+                onPress={() => setSlot(s.id as LookSlot)}
+              />
+            ))}
+          </ScrollView>
           {slot !== 'c' && slot !== 'e' ? (
             <View className="flex-row">
               <Tile
@@ -264,14 +276,12 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
               >
                 <View className="flex-row items-center gap-3">
                   <View className="flex-1">
-                    <Text variant="heading">{tr.capsule.pack(group.pack)}</Text>
-                    <Text variant="fine">
-                      {tr.capsule.packSlots(packItems(rack, group.pack).length)}
-                    </Text>
+                    <T v="h3">{tr.capsule.pack(group.pack)}</T>
+                    <T v="fine">{tr.capsule.packSlots(packItems(rack, group.pack).length)}</T>
                   </View>
-                  <Button
-                    size="sm"
-                    variant="secondary"
+                  <Btn
+                    sm
+                    variant="glassy"
                     label={tr.capsule.wearPack}
                     onPress={() => group.pack && put(wearPack(look, rack, group.pack))}
                   />
@@ -307,39 +317,51 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
         </ScrollView>
       </GlassTarget>
 
+      {/* docs/design/aura → Kapsül: the capsule on a scene under the status bar, what is worn on
+          glass tags at its left, "Kafama dokun" at its right; back, the title and "Karıştır" over
+          it. */}
       <View
         onLayout={(e) => setTop(e.nativeEvent.layout.height)}
-        style={{ position: 'absolute', top: 0, left: 0, right: 0, paddingTop: insets.top }}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: CAPSULE_SCENE + insets.top,
+          borderBottomLeftRadius: KIT.stage.radius,
+          borderBottomRightRadius: KIT.stage.radius,
+          overflow: 'hidden',
+        }}
       >
-        <GlassPanel targetId={listId} edge="bottom" />
+        <SceneGround top={0} bottom={KIT.stage.radius} />
         <View
-          className="flex-row items-center gap-3"
-          style={{ paddingHorizontal: side, paddingVertical: SPACING[2] }}
+          className="flex-row items-center justify-between"
+          style={{ paddingHorizontal: side, paddingTop: insets.top + SPACING[3] }}
         >
-          <IconButton round icon="chevron-back" label={tr.common.back} onPress={leave} />
-          <View className="flex-1">
-            <Text variant="heading" accessibilityRole="header">
-              {tr.capsule.title}
-            </Text>
-            <Text variant="fine">{nick}</Text>
-          </View>
-          <IconButton
-            round
-            icon="shuffle"
+          <Round icon="back" label={tr.common.back} onPress={leave} />
+          <T v="h3" accessibilityRole="header">
+            {tr.capsule.title}
+          </T>
+          <Round
             testID="capsule-shuffle"
             label={tr.capsule.shuffle}
-            glyph={<ShuffleGlyph turn={turn} />}
             onPress={() => {
               setTurn((n) => n + 1);
               put(shuffle(Math.random), SHUFFLE);
             }}
-          />
+          >
+            <ShuffleGlyph turn={turn} />
+          </Round>
         </View>
-        {/* The capsule and, beside it, what is worn (the owner's call, 27 Ekim: the fixed part
-            shorter, the capsule as large). */}
         <View
-          className="flex-row items-center"
-          style={{ paddingHorizontal: side, paddingBottom: SPACING[2], gap: SPACING[3] }}
+          pointerEvents="box-none"
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: SCENE_FOOT,
+            alignItems: 'center',
+          }}
         >
           <CapsuleStage
             testID="capsule-preview"
@@ -349,37 +371,42 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
             beat={beat}
             size={PREVIEW}
             label={tr.capsule.tapHead}
-            hint={hintSeen ? null : tr.capsule.tapHead}
+            hint={null}
             onPress={feel}
           />
-          <View className="flex-1 items-start" style={{ gap: SPACING[1.5] }}>
-            {worn(look).map((w) => (
-              <Pressable
-                key={w.slot}
-                accessibilityRole="button"
-                accessibilityLabel={tr.capsule.remove(w.name)}
-                onPress={() => put(takeOff(look, w.slot))}
-                className="flex-row items-center"
-                style={{
-                  maxWidth: '100%',
-                  gap: SPACING[1.5],
-                  minHeight: SPACING[8],
-                  paddingHorizontal: SPACING[3],
-                  paddingVertical: SPACING[1],
-                  borderRadius: shape.radius.pill,
-                  borderWidth: shape.stroke.control,
-                  borderColor: colors.control,
-                  backgroundColor: colors.surface,
-                }}
-              >
-                <Text variant="label" className="shrink">
-                  {w.name}
-                </Text>
-                <AppIcon name="close" size={ICON.sm} color={colors.text} />
-              </Pressable>
-            ))}
-          </View>
         </View>
+        <View
+          style={{
+            position: 'absolute',
+            left: KIT.size.side - SPACING[1],
+            bottom: SCENE_FOOT,
+            gap: KIT.size.chipGap,
+            maxWidth: '34%',
+          }}
+        >
+          {worn(look).map((w) => (
+            <Pressable
+              key={w.slot}
+              accessibilityRole="button"
+              accessibilityLabel={tr.capsule.remove(w.name)}
+              onPress={() => put(takeOff(look, w.slot))}
+            >
+              <Tag
+                label={w.name}
+                height={WORN_TAG}
+                lead={<CapIcon name="close" color={c.ink} size={WORN_ICON} />}
+              />
+            </Pressable>
+          ))}
+        </View>
+        {hintSeen ? null : (
+          <View
+            pointerEvents="none"
+            style={{ position: 'absolute', right: KIT.size.side - SPACING[1], bottom: SCENE_FOOT }}
+          >
+            <Tag label={tr.capsule.tapHead} height={WORN_TAG} />
+          </View>
+        )}
       </View>
 
       <View
@@ -395,19 +422,19 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
           gap: SPACING[2],
         }}
       >
-        <GlassPanel targetId={listId} edge="top" />
         <View className="flex-row gap-2.5">
           <View className="flex-1">
-            <Button
-              size="lg"
-              variant="secondary"
+            <Btn
+              block
+              variant="glassy"
               label={tr.capsule.clearAll}
               onPress={() => put(bare(look))}
             />
           </View>
           <View className="flex-1">
-            <Button
-              size="lg"
+            <Btn
+              block
+              icon="check"
               testID="capsule-save"
               label={save.isSuccess && !changed ? tr.capsule.saved : tr.capsule.save}
               disabled={!changed || save.isSuccess}
@@ -417,9 +444,9 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
           </View>
         </View>
         {save.isError ? (
-          <Text variant="fine" tone="danger">
+          <T v="fine" color={KIT.danger}>
             {errorMessage(save.error)}
-          </Text>
+          </T>
         ) : null}
       </View>
       {/* Saving, the sheet stays; a failed save says so here, over the bar (audit PRO-3). */}
@@ -466,6 +493,7 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
 // "Karıştır" (the owner's call, 27 Ekim): the family's crossing arrows, which turn once round and
 // swell a little with each shuffle; still with reduce motion.
 function ShuffleGlyph({ turn }: { turn: number }) {
+  const { c } = useKit();
   const reduce = useReduceMotion();
   const spin = useSharedValue(0);
   const swell = useSharedValue(1);
@@ -485,7 +513,7 @@ function ShuffleGlyph({ turn }: { turn: number }) {
   }));
   return (
     <Animated.View style={style}>
-      <CanvasBar name="shuffle" size={ICON.md} />
+      <CapIcon name="shuffle" color={c.ink} />
     </Animated.View>
   );
 }
@@ -506,8 +534,10 @@ function Tile({
   on: boolean;
   onPress: () => void;
 }) {
-  const { colors, shape } = useTheme();
+  const { scheme } = useTheme();
+  const { c } = useKit();
   const [pressed, setPressed] = useState(false);
+  const ground = AURA.scene[scheme];
   return (
     <Pressable
       accessibilityRole="radio"
@@ -516,23 +546,32 @@ function Tile({
       onPress={onPress}
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
-      style={{
-        width: size,
-        alignItems: 'center',
-        gap: SPACING[1],
-        paddingVertical: SPACING[2],
-        paddingHorizontal: SPACING[1],
-        borderRadius: shape.radius.md,
-        borderWidth: on ? SPACING[0.5] : shape.stroke.hairline,
-        borderColor: on ? colors.primary : colors.cardLine,
-        backgroundColor: colors.surface,
-        transform: [{ scale: pressed ? TILE_PRESSED : 1 }],
-      }}
+      style={{ width: size, alignItems: 'center', gap: SPACING[1] }}
     >
-      <LookAvatar look={look} size={size * AVATAR_SHARE} />
-      <Text variant="caption" align="center">
+      {/* docs/design/aura → Kapsül: each part on a little scene, the chosen one ringed. */}
+      <View
+        style={{
+          ...gradientStyle(`linear-gradient(180deg, ${ground.top}, ${ground.bottom})`),
+          width: size,
+          height: size,
+          borderRadius: KIT.size.glassRadiusSm,
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: on ? `0px 0px 0px ${TILE_RING}px ${KIT.primary}` : undefined,
+          transform: [{ scale: pressed ? TILE_PRESSED : 1 }],
+        }}
+      >
+        <LookAvatar look={look} size={size * AVATAR_SHARE} />
+      </View>
+      <RNText
+        numberOfLines={2}
+        maxFontSizeMultiplier={TILE_SCALE}
+        style={[KIT_TYPE.stamp, { color: c.ink, textAlign: 'center' }]}
+      >
         {label}
-      </Text>
+      </RNText>
     </Pressable>
   );
 }
+const TILE_RING = 3;
+const TILE_SCALE = 1.3;
