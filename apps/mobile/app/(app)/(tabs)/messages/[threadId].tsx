@@ -40,6 +40,7 @@ import { track } from '@/lib/analytics';
 import { ApiError, friendsApi, safetyApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useSeen } from '@/lib/useSeen';
+import { SPACING } from '@/theme/tokens';
 
 type Params = { threadId: string; publicId: string; name: string };
 
@@ -249,6 +250,17 @@ export default function DmScreen() {
       ) : list.length === 0 && outbox.length === 0 ? (
         <View className="flex-1 justify-center">
           <EmptyState kind="empty" body={tr.friends.noMessagesYet} />
+        </View>
+      ) : null}
+      {messages.hasNextPage ? (
+        <View className="items-center" style={{ paddingVertical: SPACING[2] }}>
+          <Button
+            size="sm"
+            variant="neutral"
+            label={tr.dm.olderMessages}
+            loading={messages.isFetchingNextPage}
+            onPress={() => void messages.fetchNextPage()}
+          />
         </View>
       ) : null}
       {runs.map(({ item: m, first, day }) => {

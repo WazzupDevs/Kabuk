@@ -68,7 +68,7 @@ export default function ProfileScreen() {
         <View className="mt-16">
           <EmptyState kind="loading" body={tr.common.loading} />
         </View>
-      ) : view.isError || !view.data ? (
+      ) : !view.data ? (
         <EmptyState
           icon="cloud-offline-outline"
           body={errorMessage(view.error)}

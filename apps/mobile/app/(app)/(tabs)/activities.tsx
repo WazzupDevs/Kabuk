@@ -154,7 +154,8 @@ function History({ now }: { now: number }) {
   const loading = useLoaderHold(history.isPending);
   const today = new Date(now);
 
-  if (history.isError) {
+  // A failed refresh keeps the history (audit PRO-2).
+  if (history.isError && !history.data) {
     return (
       <EmptyState
         icon="cloud-offline-outline"

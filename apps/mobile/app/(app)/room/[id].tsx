@@ -310,7 +310,8 @@ export default function TableScreen() {
         icon="close"
         testID="table-end-confirm"
         pending={end.isPending}
-        error={end.error}
+        busy={leave.isPending}
+        error={end.error ?? leave.error}
         onConfirm={() => end.mutate()}
         extra={
           r.phones > 1 ? (
@@ -322,6 +323,7 @@ export default function TableScreen() {
                 testID="table-owner-leave"
                 label={tr.table.leave}
                 loading={leave.isPending}
+                disabled={end.isPending}
                 onPress={() => leave.mutate()}
               />
               <Text variant="fine">{tr.table.leaveNote}</Text>
@@ -431,6 +433,7 @@ function ConfirmSheet({
   icon,
   testID,
   pending,
+  busy,
   error,
   onConfirm,
   extra,
@@ -443,14 +446,21 @@ function ConfirmSheet({
   icon: IconName;
   testID: string;
   pending: boolean;
+  // The other action of the sheet (`extra`) is on its way: this one waits (audit VEN-9).
+  busy?: boolean;
   error: unknown;
   onConfirm: () => void;
   extra?: ReactNode;
 }) {
+  // While either action is on its way the sheet stays, and neither can be pressed again.
+  const locked = pending || !!busy;
+  const close = () => {
+    if (!locked) onClose();
+  };
   return (
     // skall tuvali (MasaBitir): the title, the note, then the red soft action, the other choice and
     // "Vazgeç", all large.
-    <Sheet visible={visible} onClose={onClose} title={title}>
+    <Sheet visible={visible} onClose={close} title={title}>
       <Text variant="fine">{body}</Text>
       {error ? (
         <Text variant="fine" tone="danger">
@@ -464,10 +474,17 @@ function ConfirmSheet({
         testID={testID}
         label={confirm}
         loading={pending}
+        disabled={!!busy}
         onPress={onConfirm}
       />
       {extra}
-      <Button size="lg" variant="neutral" label={tr.common.cancel} onPress={onClose} />
+      <Button
+        size="lg"
+        variant="neutral"
+        label={tr.common.cancel}
+        disabled={locked}
+        onPress={close}
+      />
       <View style={{ height: SPACING[1] }} />
     </Sheet>
   );

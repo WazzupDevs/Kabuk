@@ -60,8 +60,11 @@ export default function PersonScreen() {
       else router.back();
     },
   });
+  // A failed refresh keeps what was read (audit PRO-2).
   const failed =
-    view.isError && !(view.error instanceof ApiError && view.error.code === 'not_found');
+    view.isError &&
+    !view.data &&
+    !(view.error instanceof ApiError && view.error.code === 'not_found');
   const hidden = !view.isPending && !view.data && !failed;
 
   const report = useMutation({

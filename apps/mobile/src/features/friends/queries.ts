@@ -1,7 +1,13 @@
 import type { DmInboxThread } from '@shared/api/friends.ts';
 import { type DmPageRow, totalUnread, withSentDm, withThreadRead } from '@shared/dmInbox.ts';
 import { BROADCAST, inboxChannel } from '@shared/rooms.ts';
-import { type QueryClient, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  type InfiniteData,
+  type QueryClient,
+  useInfiniteQuery,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { AppState } from 'react-native';
 
@@ -222,17 +228,28 @@ export function useMarkThreadRead(threadId: string): () => void {
   }, [queryClient, threadId]);
 }
 
-// Newest first, 50 at a time (dm_messages_page), with the status of the caller's own messages.
+// dm_messages_page's size.
+const DM_PAGE_SIZE = 50;
+type DmPages = InfiniteData<DmPageRow[], string | null>;
+
+// Newest first, 50 at a time (dm_messages_page), with the status of the caller's own messages;
+// "Daha eski mesajlar" reads the page before the oldest one (audit CHAT-7: the 51st message and
+// older could never be seen). `data` is every page read, newest first.
 export function useDmMessages(threadId: string) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: friendKeys.dm(threadId),
-    queryFn: async (): Promise<DmPageRow[]> => {
+    initialPageParam: null as string | null,
+    queryFn: async ({ pageParam }): Promise<DmPageRow[]> => {
       const { data, error } = await supabase.rpc('dm_messages_page', {
         target_thread_id: threadId,
+        ...(pageParam ? { before: pageParam } : {}),
       });
       if (error) throw error;
       return data;
     },
+    getNextPageParam: (last) =>
+      last.length === DM_PAGE_SIZE ? (last[last.length - 1]?.created_at ?? null) : null,
+    select: (data: DmPages) => data.pages.flat(),
   });
 }
 
@@ -247,16 +264,31 @@ export function useSendDm(
     async (body: string, reply?: { id: string; body: string; fromMe: boolean }) => {
       const sent = await dmApi.send(threadId, body, reply?.id);
       if (sent.messageId) {
-        queryClient.setQueryData<DmPageRow[]>(friendKeys.dm(threadId), (page) =>
-          withSentDm(page ?? [], {
-            id: sent.messageId,
-            body,
-            created_at: sent.createdAt,
-            // The quote as the page will send it (docs/SPEC_V3.md §21.1).
-            ...(reply
-              ? { reply_to: { id: reply.id, body: reply.body.slice(0, 80), from_me: reply.fromMe } }
-              : {}),
-          }),
+        // Into the newest page; not read yet, the DM reads it with the message in it.
+        queryClient.setQueryData<DmPages>(friendKeys.dm(threadId), (data) =>
+          data
+            ? {
+                ...data,
+                pages: [
+                  withSentDm(data.pages[0] ?? [], {
+                    id: sent.messageId,
+                    body,
+                    created_at: sent.createdAt,
+                    // The quote as the page will send it (docs/SPEC_V3.md §21.1).
+                    ...(reply
+                      ? {
+                          reply_to: {
+                            id: reply.id,
+                            body: reply.body.slice(0, 80),
+                            from_me: reply.fromMe,
+                          },
+                        }
+                      : {}),
+                  }),
+                  ...data.pages.slice(1),
+                ],
+              }
+            : data,
         );
       } else {
         // A function from before this answer carried the message.

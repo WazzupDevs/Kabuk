@@ -114,13 +114,27 @@ export function ExploreMap({
       })),
     };
   }, [venues, now]);
-  // The opening view only: later data refreshes do not move the map under the user's finger.
-  const [opening] = useState<Bounds | null>(() => venueBounds(venues));
+  // The opening view only: later data refreshes do not move the map under the user's finger. It
+  // is the first set with a venue in it: a search that matched nothing kept the map blank for
+  // good (audit VEN-8).
+  const [opening, setOpening] = useState<Bounds | null>(() => venueBounds(venues));
+  if (!opening && venues.length > 0) {
+    const first = venueBounds(venues);
+    if (first) setOpening(first);
+  }
   const padding = mapPadding(headerHeight, tabBarHeight, SPACING[6]);
   // A venue that left the data (deactivated) closes its card.
   const card = selected ? (venues.find((v) => v.id === selected) ?? null) : null;
 
-  if (!opening) return null;
+  // Nothing matches the search: the list's words, on the map too.
+  if (!opening || venues.length === 0) {
+    return (
+      <View className="flex-1 items-center justify-center" style={{ gap: SPACING[1] }}>
+        <Text variant="bodyStrong">{tr.explore.noMatch}</Text>
+        <Text variant="fine">{tr.explore.noMatchHint}</Text>
+      </View>
+    );
+  }
   // Pale pins on a pale map need a ring to stay findable (3:1 for UI shapes).
   const ring = shape.stroke.feature > 1 ? colors.border : colors.accent;
   const id = selected ?? '';

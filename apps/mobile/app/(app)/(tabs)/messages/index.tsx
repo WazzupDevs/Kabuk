@@ -72,7 +72,8 @@ function Chats({ now }: { now: Date }) {
       </View>
     );
   }
-  if (inbox.isError) {
+  // A failed refresh keeps the list (audit PRO-2): the error only stands in for no list at all.
+  if (!inbox.data) {
     return (
       <EmptyState
         icon="cloud-offline-outline"

@@ -69,7 +69,8 @@ export function RequestList({ now }: { now: Date }) {
       </View>
     );
   }
-  if (fromTables.isError || fromChat.isError) {
+  // A failed refresh keeps the lists (audit PRO-2).
+  if (!fromTables.data || !fromChat.data) {
     return (
       <EmptyState
         icon="cloud-offline-outline"
