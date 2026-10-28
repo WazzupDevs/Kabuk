@@ -5,7 +5,7 @@ import { tableState } from '@shared/tableCard.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Redirect } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, type ScrollView, useWindowDimensions, View } from 'react-native';
+import { Alert, type ScrollView, View } from 'react-native';
 
 import { Loader } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
@@ -28,11 +28,7 @@ import { callLeave } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useNow } from '@/lib/useNow';
 import { useReduceMotion } from '@/lib/useReduceMotion';
-import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
-
-// Above this share of the screen the venue's two cards scroll with the page (v45: .pin.unpin).
-const PIN_SHARE = 0.45;
 
 type LobbySheet = { intent: Intent | null; gameTag: Concept | null };
 
@@ -46,7 +42,6 @@ function endSession(checkInId: string, startedAt: string) {
 // and "Masa kur", or its table), the venue chat and the lobby. Without a check-in it sends the
 // person to Keşfet. The card's head opens the table.
 export default function VenueScreen() {
-  const { colors } = useTheme();
   const queryClient = useQueryClient();
   const checkIn = useActiveTable();
   const currentRoom = useCurrentRoom(checkIn.data?.id);
@@ -59,8 +54,6 @@ export default function VenueScreen() {
   const [creating, setCreating] = useState(false);
   const scroll = useRef<ScrollView>(null);
   const reduceMotion = useReduceMotion();
-  const { height } = useWindowDimensions();
-  const [pinHeight, setPinHeight] = useState<number | null>(null);
 
   const leave = useMutation({
     meta: FEEL_ERROR,
@@ -139,16 +132,10 @@ export default function VenueScreen() {
     ]);
   }
 
-  // The two cards stay at the top while the lobby scrolls under them (v45: .pin), unless they would
-  // take close to half the screen (a small phone, the largest text): then they scroll too. Pinned
-  // until measured, so the usual case never changes the sticky index (which rebuilds both cards).
-  const pinned = pinHeight === null || pinHeight < height * PIN_SHARE;
-
   return (
     <Screen
       edges={['top']}
       scrollRef={scroll}
-      stickyHeaderIndices={pinned ? [1] : undefined}
       top={
         <VenueTop
           onLeave={confirmLeave}
@@ -168,15 +155,9 @@ export default function VenueScreen() {
           </Text>
         ) : null}
       </View>
-      <View
-        onLayout={(e) => setPinHeight(e.nativeEvent.layout.height)}
-        style={{
-          paddingTop: SPACING[2],
-          paddingBottom: SPACING[1.5],
-          backgroundColor: colors.canvas,
-        }}
-        testID="venue-pin"
-      >
+      {/* The venue chat and the person's table card scroll with the lobby on the clouds
+          (docs/design/aura → Mekan). */}
+      <View style={{ paddingTop: SPACING[2], paddingBottom: SPACING[1.5] }} testID="venue-pin">
         <View className="gap-3">
           <VenueChatCard venueId={checkIn.data.venue_id} sessionId={checkIn.data.id} />
           <TableCard

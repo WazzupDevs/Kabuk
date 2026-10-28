@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Gelen istek</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="aura.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div class="phone">
+  <div class="aura"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i><i class="a5"></i></div>
+  <div class="scene" aria-hidden="true" style="position: absolute; left: 0; right: 0; top: 0; height: 330px; border-radius: 0 0 36px 36px">
+    <div class="floor"></div>
+    <img class="disk" src="/_blob/8ddd576983d47cc910f39d929f93487f" alt="" style="left: 125px; bottom: 54px; width: 140px; height: 140px; border-radius: 44px">
+  </div>
+  <div class="content" aria-hidden="true" style="gap: 12px; opacity: .5">
+    <div style="height: 266px"></div>
+    <p class="title" style="font-size: 26px; font-weight: 500">Kamp Ateşi</p>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 70px">
+      <div style="height: 200px; border-radius: 28px; background: #2A2068"></div>
+      <div style="height: 200px; border-radius: 28px; background: #5A1A45"></div>
+    </div>
+  </div>
+  <div class="scrim" style="background: rgba(20,17,43,.10)"></div>
+  <div class="behind" style="position: absolute; left: 14px; right: 14px; top: 290px">
+    <div class="peek">
+      <div class="stand" style="left: 18px; top: 2px; width: 92px; height: 121px"><img src="/_blob/6f419d231e787719dcb5a35cc8a47579" alt=""></div>
+      <div class="stand" style="left: 128px; top: -12px; width: 92px; height: 121px"><img src="/_blob/af811fdad65298a41d3a03fb7bbe8b8b" alt=""></div>
+      <div class="stand" style="right: 22px; top: 2px; width: 92px; height: 121px"><img src="/_blob/d2fbb590c4a8ebe6a7504dabdf02db7c" alt=""></div>
+    </div>
+    <div class="glass" role="alertdialog" aria-label="Gelen istek" style="padding: 18px; display: flex; flex-direction: column; gap: 16px; background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.84)); box-shadow: 0 30px 60px rgba(54,36,140,.22), inset 0 1px 0 #FFFFFF">
+      <div class="row" style="gap: 14px">
+        <div style="position: relative; width: 72px; height: 72px; flex: none">
+          <svg viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" style="position: absolute; inset: 0"><circle cx="36" cy="36" r="33" fill="none" stroke="#EEEBF8" stroke-width="5"></circle><circle cx="36" cy="36" r="33" fill="none" stroke="#6A47F5" stroke-width="5" stroke-linecap="round" stroke-dasharray="207.3" stroke-dashoffset="62" transform="rotate(-90 36 36)"></circle></svg>
+          <span class="av c2" style="position: absolute; left: 9px; top: 9px; width: 54px; height: 54px; font-size: 20px">Z</span>
+        </div>
+        <div class="col grow" style="gap: 4px">
+          <p class="h3" style="font-size: 17px">Zeynep, 22 katılmak istiyor</p>
+          <div class="row" style="gap: 6px"><span class="tag purple">Profiliyle</span><span class="tag glassy">42 sn</span></div>
+        </div>
+      </div>
+      <div class="row" style="gap: 10px">
+        <button class="btn glassy grow" type="button" style="height: 52px"><svg class="ci sm" viewBox="0 0 24 24" aria-hidden="true" style="color: #C8331F"><rect class="a" x="1.91" y="10.4" width="20.17" height="3.2" rx="1.6" transform="rotate(45 12 12)"></rect><rect class="b" x="1.91" y="10.4" width="20.17" height="3.2" rx="1.6" transform="rotate(135 12 12)"></rect></svg>Reddet</button>
+        <button class="btn primary grow" type="button" style="height: 52px"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect class="b" x="2.41" y="13.3" width="9.99" height="3.2" rx="1.6" transform="rotate(45 7.4 14.9)"></rect><rect class="a" x="5.89" y="10.55" width="17.01" height="3.2" rx="1.6" transform="rotate(-48.23 14.4 12.15)"></rect></svg>Kabul et</button>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

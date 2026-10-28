@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Pressable, View, type ViewStyle } from 'react-native';
 
 import { colorVars, ThemeScope, useFeatureTheme, useTheme } from '@/theme/ThemeProvider';
+import { AURA } from '@/theme/aura';
 import { SPACING } from '@/theme/tokens';
 
 import { usePressScale } from './motion';
@@ -33,7 +34,8 @@ export function Card({
   className,
   testID,
 }: Props) {
-  const { colors, shape } = useTheme();
+  const { colors, shape, scheme } = useTheme();
+  const glass = AURA[scheme].glass;
   const featureTheme = useFeatureTheme();
   const quiet = useQuiet();
   const pressScale = usePressScale();
@@ -50,14 +52,15 @@ export function Card({
         ]
       : [
           {
-            backgroundColor: feature ? colors.feature : colors.surface,
-            borderRadius: shape.radius.lg,
+            // The airy look (docs/design/aura → `.glass`): a frosted pane on the clouds, a white
+            // edge and a soft violet shadow; on trust screens (`Quiet`) no shadow.
+            backgroundColor: feature ? colors.feature : glass.fill,
+            borderRadius: AURA.card.radius,
             padding: flush ? 0 : SPACING[4],
             overflow: flush ? 'hidden' : undefined,
-            // skall tuvali (skall.css → `.card`): a 1 px card line and the soft card shadow.
-            borderWidth: feature ? 0 : quiet ? shape.stroke.hairline : shape.stroke.card,
-            borderColor: quiet ? colors.divider : colors.cardLine,
-            boxShadow: quiet || feature ? undefined : shape.shadow.card,
+            borderWidth: feature ? 0 : AURA.card.edgeWidth,
+            borderColor: glass.edge,
+            boxShadow: quiet || feature ? undefined : glass.shadow,
           },
           feature ? (colorVars(featureTheme.colors) as ViewStyle) : {},
         ];

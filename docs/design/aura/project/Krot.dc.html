@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Oyun: Krot</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="aura.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div class="phone night">
+  <div class="aura"><i class="a2" style="right: -60px; top: -40px; width: 380px; height: 320px"></i><i class="a1" style="opacity: .6"></i><i class="a4"></i></div>
+  <div class="content" style="padding-bottom: 30px; gap: 12px">
+    <div class="topbar between">
+      <button class="round glassy" type="button" aria-label="Oyundan çık"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect class="a" x="1.91" y="10.4" width="20.17" height="3.2" rx="1.6" transform="rotate(45 12 12)"></rect><rect class="b" x="1.91" y="10.4" width="20.17" height="3.2" rx="1.6" transform="rotate(135 12 12)"></rect></svg></button>
+      <span class="chip" style="height: 36px">Krot · Oylama</span>
+      <span class="chip" style="height: 36px">0:28</span>
+    </div>
+    <div class="col" style="gap: 6px; padding-top: 4px">
+      <h1 class="display" style="color: #FFFFFF">Aramızdaki kim?</h1>
+      <p class="body">Gizli oy: kimse göremez.</p>
+    </div>
+    <div class="behind" style="margin-top: 62px">
+      <div class="peek">
+        <div class="stand" style="right: 18px; top: -4px; width: 92px; height: 121px"><img src="/_blob/98edaeff4eacd017be0f9328f50d805a" alt=""></div>
+        <div class="stand" style="right: 112px; top: 8px; width: 80px; height: 105px"><img src="/_blob/37372fac23bbc6913b006620d0f28fc2" alt=""></div>
+      </div>
+      <div class="glass row" style="padding: 16px; gap: 12px; background: linear-gradient(180deg, rgba(255,79,139,.34), rgba(40,20,50,.70)); border-color: rgba(255,255,255,.18)">
+        <div class="col grow"><p class="eyebrow">Kategori</p><p class="h3" style="color: #FFFFFF">Kampüste bir yer</p></div>
+        <div class="col" style="align-items: flex-end"><p class="eyebrow">Kelimen</p><p class="h3" style="color: #FFFFFF">KANTİN</p></div>
+      </div>
+    </div>
+    <p class="eyebrow" style="padding-top: 4px">Bir koltuk seç</p>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+      <div class="glass col" style="align-items: center; gap: 8px; padding: 14px 6px"><span class="av lg c1">E</span><span class="fine strong" style="color: #F3F0FF">Elif</span></div>
+      <div class="glass col" style="align-items: center; gap: 8px; padding: 14px 6px; border-color: #FF7EA8; box-shadow: 0 0 0 3px rgba(255,79,139,.35), 0 18px 40px rgba(0,0,0,.35)"><span class="av lg c3">M</span><span class="fine strong" style="color: #F3F0FF">Mert</span></div>
+      <div class="glass col" style="align-items: center; gap: 8px; padding: 14px 6px"><span class="av lg capsule"><img src="/_blob/4629f33d8c1b47e83a612407df50ca07" alt=""></span><span class="fine strong" style="color: #F3F0FF">kapsul-mb07</span></div>
+      <div class="glass col" style="align-items: center; gap: 8px; padding: 14px 6px"><span class="av lg c2">Z</span><span class="fine strong" style="color: #F3F0FF">Zeynep</span></div>
+      <div class="glass col" style="align-items: center; gap: 8px; padding: 14px 6px"><span class="av lg capsule"><img src="/_blob/5c0423e57135c520f3a5cda13e424e4a" alt=""></span><span class="fine strong" style="color: #F3F0FF">kapsul-sn19</span></div>
+      <div class="glass col" style="align-items: center; gap: 8px; padding: 14px 6px; opacity: .5"><span class="av lg capsule"><img src="/_blob/341343f7873d17c5e6e7ac5768bfbdd5" alt=""></span><span class="fine strong" style="color: #F3F0FF">sen</span></div>
+    </div>
+    <div style="flex: 1"></div>
+    <button class="btn primary block" type="button" style="background: #FF4F8B; box-shadow: 0 12px 26px rgba(255,79,139,.40)"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect class="b" x="2.41" y="13.3" width="9.99" height="3.2" rx="1.6" transform="rotate(45 7.4 14.9)"></rect><rect class="a" x="5.89" y="10.55" width="17.01" height="3.2" rx="1.6" transform="rotate(-48.23 14.4 12.15)"></rect></svg>Mert'e oy ver</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

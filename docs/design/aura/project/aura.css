@@ -1,0 +1,193 @@
+/* skall Aura: the preview's shared look. Brand colours, type and mark from the skall sources; the
+   airy glass language is the new direction under review. */
+:root {
+  --ink: #14112B;
+  --muted: #5E5878;
+  --purple: #7B5CFF;
+  --primary: #6A47F5;
+  --pink: #FF4F8B;
+  --amber: #FFB547;
+  --ground: #F7F5FD;
+  --line: rgba(255, 255, 255, 0.86);
+  --hair: rgba(20, 17, 43, 0.07);
+  --success: #1C8C4E;
+  --danger: #C8331F;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: "Plus Jakarta Sans", system-ui, sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; }
+p, h1, h2, h3 { margin: 0; }
+
+.phone { position: relative; width: 390px; height: 844px; overflow: hidden; background: var(--ground); }
+.aura { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.aura i { position: absolute; border-radius: 50%; filter: blur(64px); }
+.a1 { width: 360px; height: 300px; left: -110px; top: -70px; background: rgba(123, 92, 255, 0.40); }
+.a2 { width: 300px; height: 280px; right: -120px; top: 30px; background: rgba(255, 79, 139, 0.30); }
+.a3 { width: 280px; height: 210px; left: 80px; top: 220px; background: rgba(255, 181, 71, 0.24); }
+.a4 { width: 420px; height: 320px; left: -60px; bottom: -150px; background: rgba(123, 92, 255, 0.20); }
+.a5 { width: 260px; height: 260px; right: -90px; bottom: 120px; background: rgba(255, 79, 139, 0.16); }
+.quiet .aura i { opacity: 0.55; }
+
+.content { position: relative; height: 100%; padding: 60px 20px 0; display: flex; flex-direction: column; gap: 16px; }
+.scroll-pad { padding-bottom: 120px; }
+
+.glass {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.80), rgba(255, 255, 255, 0.54));
+  -webkit-backdrop-filter: blur(24px) saturate(170%);
+  backdrop-filter: blur(24px) saturate(170%);
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  box-shadow: 0 18px 44px rgba(54, 36, 140, 0.10), 0 2px 6px rgba(54, 36, 140, 0.05), inset 0 1px 0 #FFFFFF;
+}
+.glass.sm { border-radius: 20px; }
+.pad { padding: 18px; }
+.pad-lg { padding: 22px; }
+
+.eyebrow { font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.02em; color: var(--muted); }
+.display { font-size: 32px; line-height: 38px; font-weight: 500; letter-spacing: -0.025em; }
+.title { font-size: 21px; line-height: 27px; font-weight: 600; letter-spacing: -0.015em; }
+.h3 { font-size: 16px; line-height: 22px; font-weight: 600; letter-spacing: -0.005em; }
+.body { font-size: 15px; line-height: 22px; font-weight: 500; color: var(--muted); }
+.fine { font-size: 13px; line-height: 18px; font-weight: 500; color: var(--muted); }
+.strong { color: var(--ink); font-weight: 600; }
+
+.row { display: flex; align-items: center; gap: 12px; }
+.col { display: flex; flex-direction: column; }
+.grow { flex: 1; min-width: 0; }
+.between { justify-content: space-between; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 54px; padding: 0 24px; border-radius: 999px; border: 0; font: 600 16px/1 "Plus Jakarta Sans", system-ui, sans-serif; color: var(--ink); text-decoration: none; cursor: pointer; white-space: nowrap; }
+.btn.primary { background: var(--primary); color: #FFFFFF; box-shadow: 0 12px 26px rgba(106, 71, 245, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.28); }
+.btn.glassy { background: rgba(255, 255, 255, 0.74); border: 1px solid #FFFFFF; box-shadow: 0 6px 16px rgba(54, 36, 140, 0.10); }
+.btn.dark { background: var(--ink); color: #FFFFFF; }
+.btn.sm { height: 38px; padding: 0 16px; font-size: 14px; }
+.btn.block { width: 100%; }
+
+.chip { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 13px; border-radius: 999px; background: rgba(255, 255, 255, 0.70); border: 1px solid #FFFFFF; font-size: 13px; font-weight: 600; color: var(--ink); box-shadow: 0 4px 12px rgba(54, 36, 140, 0.07); white-space: nowrap; }
+.chip.on { background: var(--ink); color: #FFFFFF; border-color: var(--ink); }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+
+.icon { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.icon.sm { width: 18px; height: 18px; }
+.round { width: 44px; height: 44px; border-radius: 22px; display: inline-flex; align-items: center; justify-content: center; border: 0; color: var(--ink); padding: 0; cursor: pointer; flex: none; }
+.round.glassy { background: rgba(255, 255, 255, 0.72); border: 1px solid #FFFFFF; box-shadow: 0 6px 16px rgba(54, 36, 140, 0.10); }
+
+.av { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; color: #FFFFFF; flex: none; border: 2px solid #FFFFFF; box-shadow: 0 4px 12px rgba(54, 36, 140, 0.14); }
+.av.sm { width: 32px; height: 32px; font-size: 12px; }
+.av.lg { width: 64px; height: 64px; font-size: 22px; }
+.av.xl { width: 96px; height: 96px; font-size: 32px; border-width: 3px; }
+.av.capsule { background: linear-gradient(180deg, #F1EDFF, #E3DBFF); }
+.c1 { background: linear-gradient(145deg, #8F75FF, #6A47F5); }
+.c2 { background: linear-gradient(145deg, #FF7EA8, #E83C78); }
+.c3 { background: linear-gradient(145deg, #FFC66E, #F09A1F); }
+.c4 { background: linear-gradient(145deg, #5FC6A0, #1C8C4E); }
+.c5 { background: linear-gradient(145deg, #6FB7E8, #2F7FC0); }
+.stack { display: flex; }
+.stack .av { margin-left: -10px; }
+.stack .av:first-child { margin-left: 0; }
+
+.thumb { width: 60px; height: 60px; border-radius: 18px; object-fit: cover; flex: none; box-shadow: 0 6px 14px rgba(54, 36, 140, 0.16); }
+.thumb.lg { width: 100%; height: 150px; border-radius: 22px; }
+.sep { height: 1px; background: var(--hair); }
+
+.tabbar { position: absolute; left: 18px; right: 18px; bottom: 24px; height: 70px; border-radius: 35px; display: flex; align-items: center; justify-content: space-between; padding: 0 9px; }
+.tab { width: 52px; height: 52px; border-radius: 26px; display: flex; align-items: center; justify-content: center; color: var(--muted); }
+.tab.on { background: rgba(255, 255, 255, 0.96); color: var(--ink); box-shadow: 0 6px 16px rgba(54, 36, 140, 0.13); }
+
+.scrim { position: absolute; inset: 0; background: rgba(20, 17, 43, 0.20); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.sheet { position: absolute; left: 10px; right: 10px; bottom: 10px; border-radius: 36px; padding: 12px 20px 22px; display: flex; flex-direction: column; gap: 14px; }
+.grab { width: 40px; height: 5px; border-radius: 3px; background: rgba(20, 17, 43, 0.16); margin: 0 auto 2px; }
+
+.composer { position: absolute; left: 16px; right: 16px; bottom: 24px; display: flex; gap: 10px; align-items: center; }
+.field { flex: 1; height: 54px; border-radius: 27px; display: flex; align-items: center; padding: 0 20px; font-size: 15px; font-weight: 500; color: var(--muted); }
+.send { width: 54px; height: 54px; border-radius: 27px; background: var(--ink); color: #FFFFFF; display: flex; align-items: center; justify-content: center; flex: none; box-shadow: 0 10px 22px rgba(20, 17, 43, 0.24); }
+
+.msg { max-width: 76%; padding: 11px 15px; font-size: 15px; line-height: 21px; font-weight: 500; }
+.msg.them { align-self: flex-start; border-radius: 22px 22px 22px 8px; color: var(--ink); }
+.msg.me { align-self: flex-end; border-radius: 22px 22px 8px 22px; background: var(--primary); color: #FFFFFF; box-shadow: 0 10px 22px rgba(106, 71, 245, 0.24); }
+.stamp { font-size: 11px; line-height: 14px; font-weight: 600; color: var(--muted); }
+.day { align-self: center; font-size: 12px; font-weight: 600; color: var(--muted); padding: 4px 12px; border-radius: 999px; background: rgba(255, 255, 255, 0.6); }
+
+.topbar { display: flex; align-items: center; gap: 12px; }
+.badge { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--pink); color: #FFFFFF; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.live { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--ink); }
+.live .dot { background: var(--pink); box-shadow: 0 0 0 4px rgba(255, 79, 139, 0.18); }
+
+/* Capsule buddies (kapsül kankiler): the real capsules from the skall capsule library, everywhere. */
+.av.capsule { background: none; overflow: hidden; }
+.av.capsule img { width: 100%; height: 100%; display: block; }
+.buddy { position: absolute; pointer-events: none; display: block; filter: drop-shadow(0 8px 10px rgba(54, 36, 140, 0.18)); }
+.night .buddy { filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.45)); }
+/* The skall mark on buttons: the two capsules, the brand's "go" on every main action. */
+.mk { width: 9px; height: 20px; flex: none; }
+.btn.sm .mk { width: 7px; height: 16px; }
+/* Headcount as capsules: one per phone, all alike (no one's look). */
+.pips { display: inline-flex; gap: 3px; align-items: center; }
+.pips i { width: 6px; height: 12px; border-radius: 3px; background: #9C86FF; }
+.pips i:nth-child(3n+2) { background: #FF7EA8; }
+.pips i:nth-child(3n) { background: #FFB547; }
+/* The open tab: a capsule under its icon. */
+.tab.on { position: relative; }
+.tab.on::after { content: ""; position: absolute; bottom: 5px; width: 14px; height: 4px; border-radius: 2px; background: var(--primary); }
+
+/* Scenes: the buddies live inside a panel, standing on its floor, cut by its edges. */
+.scene { position: relative; overflow: hidden; border-radius: 26px;
+  background:
+    radial-gradient(90% 80% at 15% 0%, rgba(185, 166, 255, 0.55), rgba(185, 166, 255, 0) 70%),
+    radial-gradient(80% 80% at 95% 10%, rgba(255, 159, 192, 0.45), rgba(255, 159, 192, 0) 70%),
+    radial-gradient(70% 60% at 50% 110%, rgba(255, 208, 138, 0.45), rgba(255, 208, 138, 0) 70%),
+    linear-gradient(180deg, #F3EEFF, #FCF1F7); }
+.scene::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.7); pointer-events: none; }
+.floor { position: absolute; left: -10%; right: -10%; bottom: -46px; height: 96px; border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0)); }
+.stand { position: absolute; bottom: 0; }
+.stand i { position: absolute; left: 25%; right: 25%; bottom: 2.5%; height: 7%; border-radius: 50%; background: rgba(40, 25, 110, 0.24); filter: blur(3px); }
+.stand img { position: relative; display: block; width: 100%; height: 100%; }
+.disk { position: absolute; border-radius: 50%; object-fit: cover; box-shadow: 0 14px 30px rgba(54, 36, 140, 0.22), 0 0 0 4px rgba(255, 255, 255, 0.9); }
+
+/* Peekers: buddies standing behind a glass card, their bodies seen through the frost. */
+.behind { position: relative; }
+.behind > .peek { position: absolute; left: 0; right: 0; top: -58px; height: 120px; z-index: 0; }
+.behind > .glass { position: relative; z-index: 1; }
+
+/* A buddy talking: a glass bubble with its tail towards the buddy. */
+.say { position: relative; padding: 14px 16px; border-radius: 22px 22px 22px 8px; }
+
+/* Lists in glass. */
+.list { padding: 4px 0; }
+.li { display: flex; align-items: center; gap: 12px; padding: 12px 16px; }
+.li + .li { border-top: 1px solid var(--hair); }
+.night .li + .li { border-top-color: rgba(255, 255, 255, 0.08); }
+.sec { display: flex; align-items: baseline; justify-content: space-between; padding: 4px 2px 0; }
+.tag { display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 9px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.tag.purple { background: rgba(123, 92, 255, 0.12); color: #4A2FD0; }
+.tag.pink { background: rgba(255, 79, 139, 0.12); color: #B0124F; }
+.tag.amber { background: rgba(255, 181, 71, 0.18); color: #7A4300; }
+.tag.green { background: rgba(28, 140, 78, 0.12); color: #0F5C31; }
+.tag.glassy { background: rgba(255, 255, 255, 0.72); color: var(--ink); border: 1px solid #FFFFFF; }
+.hrow { display: flex; gap: 12px; overflow: hidden; margin-right: -20px; }
+.medal { width: 64px; height: 64px; border-radius: 22px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+
+/* Game screens: the night side of the same language. */
+.night { background: #0D0B1E; color: #F3F0FF; }
+.night .aura .a1 { background: rgba(123, 92, 255, 0.55); }
+.night .aura .a2 { background: rgba(255, 79, 139, 0.34); }
+.night .aura .a3 { background: rgba(255, 181, 71, 0.16); }
+.night .aura .a4 { background: rgba(90, 58, 230, 0.34); }
+.night .body, .night .fine, .night .eyebrow { color: #C9C3E6; }
+.night .glass { background: linear-gradient(180deg, rgba(40, 33, 82, 0.72), rgba(28, 24, 56, 0.56)); border-color: rgba(255, 255, 255, 0.14); box-shadow: 0 18px 44px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.10); }
+.night .chip { background: rgba(255, 255, 255, 0.10); border-color: rgba(255, 255, 255, 0.16); color: #F3F0FF; box-shadow: none; }
+.night .round.glassy { background: rgba(255, 255, 255, 0.10); border-color: rgba(255, 255, 255, 0.16); color: #F3F0FF; box-shadow: none; }
+
+/* skall icons: drawn from capsules, two tones (the second softer); the open tab in the brand's two. */
+.ci { width: 22px; height: 22px; flex: none; }
+.ci.sm { width: 18px; height: 18px; }
+.ci .a { fill: var(--ci-a, currentColor); }
+.ci .b { fill: var(--ci-b, currentColor); opacity: var(--ci-bo, 0.5); }
+.ci .o { fill: none; stroke: var(--ci-a, currentColor); stroke-width: 2.8; }
+.tab.on .ci { --ci-a: #7B5CFF; --ci-b: #FF4F8B; --ci-bo: 1; }
+.btn.primary .ci { --ci-bo: 0.62; }
+
+/* Tab icons in the mark's language: outlined when off, the mark's purple, pink and amber when on. */
+.tab .ti { width: 26px; height: 26px; display: block; }
+.tab.on .ti { width: 30px; height: 30px; }
+.tab.on::after { content: none; }

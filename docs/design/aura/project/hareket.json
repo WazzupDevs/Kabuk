@@ -1,0 +1,23 @@
+{
+  "film": "Hareket.dc.html",
+  "springs": {
+    "morph": { "stiffness": 170, "damping": 26, "mass": 1, "use": "a card or row grows into its screen" },
+    "morphBack": { "stiffness": 260, "damping": 30, "mass": 1, "use": "the screen shrinks back into its card" },
+    "pop": { "stiffness": 260, "damping": 17, "mass": 1, "use": "people, capsule buddies, badges and cards arriving (scale 0.3 to 1)" },
+    "press": { "stiffness": 500, "damping": 22, "mass": 1, "use": "a pressed button springing back (pressed scale 0.94, 100 ms)" },
+    "tabLead": { "stiffness": 420, "damping": 30, "mass": 1, "use": "the tab disc's leading edge" },
+    "tabTrail": { "stiffness": 200, "damping": 24, "mass": 1, "use": "the tab disc's trailing edge, so the disc stretches on the way" }
+  },
+  "curves": {
+    "arrive": [0.2, 0.9, 0.25, 1],
+    "leave": [0.4, 0, 1, 1],
+    "swap": [0.4, 0, 0.2, 1]
+  },
+  "dissolve": { "use": "every screen part comes in and goes out through blur", "blurPx": 12, "risePx": 12, "fromScale": 0.97, "inMs": 450, "outMs": 220 },
+  "stagger": { "listRowMs": 60, "screenPartMs": 70 },
+  "tabSwitch": { "oldScreenOutMs": 200, "newScreenInAfterMs": 70, "iconPopFrom": 0.5 },
+  "cardOpen": { "behindScale": 0.94, "behindBlurPx": 14, "contentAfterMs": 300 },
+  "frostedFirst": { "use": "game cards and pictures appear as frosted glass, then resolve out of a 16 px blur", "resolveAfterMs": 320, "resolveMs": 500 },
+  "idle": { "buddyFloatPx": 4, "buddyFloatS": 2.6, "blinkMs": 160, "blinkEveryS": "4 to 6", "auraDriftPx": 30, "auraDriftS": "20 to 28" },
+  "reduceMotion": "nothing moves; parts appear at once"
+}
