@@ -128,9 +128,11 @@ const GAME_CARD = {
   radius: 28,
   glow: 120,
   glowDrop: 60,
-  buddy: 113,
-  buddyOut: 18,
-  buddyFoot: 40,
+  // The buddy stands over the name, not on it (the owner's report, 29 Ekim: "Vampir Köylü" under
+  // the yellow buddy).
+  buddy: 96,
+  buddyOut: 14,
+  buddyFoot: 66,
   inset: 12,
 } as const;
 

@@ -11,9 +11,11 @@ import {
   parseTableIcons,
   TABLE_ICON_ASSET_DIR,
   TABLE_ICON_IMAGES_MODULE,
+  TABLE_ICON_AURA_DIR,
   TABLE_ICON_SOURCE_DIR,
   TABLE_ICONS_MODULE,
   tableIconAssetFiles,
+  tableIconSource,
 } from './tableIcons.ts';
 
 const root = resolve(import.meta.dirname, '../..');
@@ -41,16 +43,29 @@ describe(TABLE_ICON_IMAGES_MODULE, () => {
     );
   });
 
-  // The app's files are v46's, byte for byte, and only the listed ones.
-  it(`ships v46's files in ${TABLE_ICON_ASSET_DIR}`, () => {
+  // The app's files are v46's (or the aura ones drawn in their place), byte for byte, and only the
+  // listed ones.
+  it(`ships the source files in ${TABLE_ICON_ASSET_DIR}`, () => {
     const ids = parseTableIcons(content).icons.map((i) => i.id);
     expect(tableIconAssetFiles(root)).toEqual(ids.map((id) => `${id}.webp`).sort());
     const hash = (path: string) => createHash('sha256').update(readFileSync(path)).digest('hex');
     for (const id of ids) {
       expect(hash(resolve(root, TABLE_ICON_ASSET_DIR, `${id}.webp`))).toBe(
-        hash(resolve(root, TABLE_ICON_SOURCE_DIR, `${id}.webp`)),
+        hash(tableIconSource(root, id)),
       );
     }
+  });
+});
+
+describe(TABLE_ICON_AURA_DIR, () => {
+  // A picture drawn anew replaces one of the list's; none stands alone.
+  it('holds only listed icons', () => {
+    const ids = new Set(parseTableIcons(content).icons.map((i) => i.id));
+    const files = readdirSync(resolve(root, TABLE_ICON_AURA_DIR)).filter((f) =>
+      f.endsWith('.webp'),
+    );
+    expect(files.length).toBeGreaterThan(0);
+    for (const f of files) expect(ids.has(f.replace(/\.webp$/, '')), f).toBe(true);
   });
 });
 

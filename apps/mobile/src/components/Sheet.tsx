@@ -130,6 +130,7 @@ export function Sheet({
           <View
             style={{
               ...gradientStyle(k.c.sheet),
+              backgroundColor: k.c.sheetBase,
               flexShrink: 1,
               borderRadius: KIT.size.sheetRadius,
               borderWidth: KIT.size.edge,

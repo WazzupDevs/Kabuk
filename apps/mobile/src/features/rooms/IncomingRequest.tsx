@@ -159,6 +159,7 @@ export function IncomingRequest({ roomId, ownerSessionId, phones, floating }: Pr
         <View
           style={{
             ...gradientStyle(k.c.sheet),
+            backgroundColor: k.c.sheetBase,
             gap: KIT.size.padLg - SPACING[1.5],
             padding: KIT.size.pad,
             borderRadius: KIT.size.glassRadius,

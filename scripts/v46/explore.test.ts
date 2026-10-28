@@ -217,12 +217,12 @@ describe("v46's Keşfet motions", () => {
     for (const kind of ['cay', 'yemek', 'kampus'] as const) expect(thumbs[kind].steam).toEqual([]);
   });
 
-  // The app's venue icons are the type's pictures (the owner's call, 28 Ekim): no drawing, no
-  // steam; the picture is still.
+  // The app's venue icons are the type's pictures in the aura look (the owner's calls, 28 and 29
+  // Ekim; scripts/art/art.ts): no drawing, no steam; the picture is still.
   it("draw a venue as its type's picture", () => {
     const thumb = source('VenueThumb.tsx');
-    expect(thumb).toMatch(/kafe: 'kafe-espresso'/);
-    expect(thumb).toMatch(/kampus: 'kampus-saatkulesi'/);
+    for (const kind of ['kafe', 'cay', 'yemek', 'kampus'])
+      expect(thumb).toContain(`${kind}: require('../../assets/venue/${kind}.webp')`);
     expect(thumb).not.toMatch(/Animated/);
   });
 

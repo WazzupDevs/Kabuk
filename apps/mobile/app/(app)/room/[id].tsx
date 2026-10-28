@@ -223,9 +223,20 @@ export default function TableScreen() {
       }}
     >
       <View style={{ flex: 1 }}>
-        <T v="title" style={KIT_TYPE.tableTitle} testID="table-title">
-          {r.name ?? ''}
-        </T>
+        {/* The owner changes the table's picture and name from its name (the picture left the
+            scene, the owner's call, 29 Ekim). */}
+        <Pressable
+          testID="table-icon"
+          accessibilityRole={owner ? 'button' : undefined}
+          accessibilityLabel={owner ? tr.createTable.iconChange : undefined}
+          disabled={!owner}
+          onPress={() => setSheet('icon')}
+          className="self-start"
+        >
+          <T v="title" style={KIT_TYPE.tableTitle} testID="table-title">
+            {r.name ?? ''}
+          </T>
+        </Pressable>
         <T v="fine">
           {tr.table.status(
             tr.venue.people(r.phones),
@@ -245,9 +256,9 @@ export default function TableScreen() {
     </View>
   );
 
-  // The owner's lobby action and the incoming requests, under the name.
-  const ownerPart = owner ? (
-    <View style={{ gap: KIT.size.rowGap }}>
+  // The owner's lobby action, on the head under the name.
+  const lobbyButton = owner ? (
+    <View style={{ flexDirection: 'row' }}>
       {inLobby ? (
         <Btn
           sm
@@ -267,7 +278,6 @@ export default function TableScreen() {
           onPress={() => setSheet('lobby')}
         />
       )}
-      <IncomingRequest roomId={id} ownerSessionId={sessionId} phones={r.phones} />
     </View>
   ) : null;
 
@@ -354,48 +364,51 @@ export default function TableScreen() {
     </>
   );
 
-  // The games: the stage under the status bar, the name, the tabs and the game cards; the page
-  // scrolls as one (the cards are a list).
+  // The head stays (the people, the name and the owner's lobby button on a low scene); only the
+  // requests, the note and the game cards scroll, under it (the owner's call, 29 Ekim).
   return (
     <View style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
       <AuraBackground />
+      <TableScene
+        people={people.data ?? []}
+        profiles={profiles}
+        me={sessionId}
+        inset={insets.top}
+        onPress={() => setSheet('people')}
+        footer={
+          <>
+            {title}
+            {lobbyButton}
+          </>
+        }
+      >
+        {bar}
+      </TableScene>
       <ScrollView
-        contentContainerStyle={{ paddingBottom: insets.bottom + SPACING[8] }}
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          paddingHorizontal: KIT.size.side,
+          paddingTop: KIT.size.rowGap,
+          paddingBottom: insets.bottom + SPACING[8],
+          gap: KIT.size.rowGap,
+        }}
         showsVerticalScrollIndicator={false}
       >
-        <TableScene
-          icon={r.icon}
-          people={people.data ?? []}
-          profiles={profiles}
-          me={sessionId}
-          inset={insets.top}
-          onPress={() => setSheet('people')}
-          onIcon={owner ? () => setSheet('icon') : undefined}
-        >
-          {bar}
-        </TableScene>
-        <View
-          style={{
-            paddingHorizontal: KIT.size.side,
-            paddingTop: KIT.size.rowGap,
-            gap: KIT.size.rowGap,
-          }}
-        >
-          {title}
-          {ownerPart}
-          {r.phones === 1 ? (
-            <Glass pad="pad" testID="table-solo" style={{ gap: SOLO_GAP }}>
-              <T v="h3">{tr.table.soloTitle}</T>
-              <T v="fine">{tr.table.soloBody}</T>
-            </Glass>
-          ) : null}
-          {failed}
-          <PosterGrid>
-            {GAME_CARDS.map((g) => (
-              <GameCard key={g.id} id={g.id} art={g.art} testID={`poster-${g.id}`} />
-            ))}
-          </PosterGrid>
-        </View>
+        {owner ? (
+          <IncomingRequest roomId={id} ownerSessionId={sessionId} phones={r.phones} />
+        ) : null}
+        {r.phones === 1 ? (
+          <Glass pad="pad" testID="table-solo" style={{ gap: SOLO_GAP }}>
+            <T v="h3">{tr.table.soloTitle}</T>
+            <T v="fine">{tr.table.soloBody}</T>
+          </Glass>
+        ) : null}
+        {failed}
+        <PosterGrid>
+          {GAME_CARDS.map((g) => (
+            <GameCard key={g.id} id={g.id} art={g.art} testID={`poster-${g.id}`} />
+          ))}
+        </PosterGrid>
       </ScrollView>
       {sheets}
     </View>

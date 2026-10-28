@@ -114,9 +114,12 @@ export const KIT = {
     segOn: '#FFFFFF',
     segShadow: '0px 4px 12px rgba(54, 36, 140, 0.12)',
     // .sheet over .scrim (Masa kur, Giriş): a frosted white card floating 10 from the edges.
-    sheet: 'linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.88))',
+    // Opaque (the owner's call, 29 Ekim: Bildirimler and Ayarlar showed too much of the screen
+    // under them); sheetBase under the gradient keeps it so.
+    sheet: 'linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(248, 246, 255, 1))',
+    sheetBase: '#FBFAFF',
     grab: 'rgba(20, 17, 43, 0.16)',
-    scrim: 'rgba(20, 17, 43, 0.20)',
+    scrim: 'rgba(20, 17, 43, 0.30)',
   },
   dark: {
     ink: '#F3F0FF',
@@ -140,9 +143,10 @@ export const KIT = {
     field: 'rgba(255, 255, 255, 0.10)',
     segOn: 'rgba(255, 255, 255, 0.16)',
     segShadow: '',
-    sheet: 'linear-gradient(180deg, rgba(40, 33, 82, 0.97), rgba(28, 24, 56, 0.95))',
+    sheet: 'linear-gradient(180deg, rgba(40, 33, 82, 1), rgba(28, 24, 56, 1))',
+    sheetBase: '#221C48',
     grab: 'rgba(255, 255, 255, 0.20)',
-    scrim: 'rgba(8, 6, 20, 0.45)',
+    scrim: 'rgba(8, 6, 20, 0.55)',
   },
   // The same in both schemes.
   primary: '#6A47F5',
@@ -157,6 +161,41 @@ export const KIT = {
   inviteGround: 'linear-gradient(135deg, rgba(123, 92, 255, 0.14), rgba(255, 79, 139, 0.10))',
   // The incoming request's card floats deeper (MasaIstek).
   requestShadow: '0px 30px 60px rgba(54, 36, 140, 0.22)',
+  // Message bubbles, never see-through (the owner's call, 29 Ekim): the person's own white (a soft
+  // off-white in the dark) with ink words; the others' in the chat's colour, white words: the DM
+  // blue, the venue chat green, the table chat purple (deeper in the dark).
+  bubble: {
+    light: {
+      mine: '#FFFFFF',
+      mineInk: '#14112B',
+      mineMuted: '#6E6890',
+      mineEdge: 'rgba(20, 17, 43, 0.06)',
+      mineShadow: '0px 4px 12px rgba(54, 36, 140, 0.10)',
+      dm: '#2F7CF6',
+      mekan: '#1E9A5C',
+      masa: '#6A47F5',
+      themInk: '#FFFFFF',
+      themMuted: 'rgba(255, 255, 255, 0.80)',
+    },
+    dark: {
+      mine: '#ECE9F8',
+      mineInk: '#14112B',
+      mineMuted: '#5E5878',
+      mineEdge: 'rgba(255, 255, 255, 0)',
+      mineShadow: '0px 4px 12px rgba(0, 0, 0, 0.30)',
+      dm: '#1E56B8',
+      mekan: '#146B42',
+      masa: '#4B33B8',
+      themInk: '#FFFFFF',
+      themMuted: 'rgba(255, 255, 255, 0.74)',
+    },
+  },
+  // Another's bubble's soft shadow, in its colour.
+  chatShadow: {
+    dm: '0px 4px 12px rgba(47, 124, 246, 0.22)',
+    mekan: '0px 4px 12px rgba(30, 154, 92, 0.22)',
+    masa: '0px 4px 12px rgba(106, 71, 245, 0.22)',
+  },
   // A photo opened large over the screen (Profil, a person's profile).
   photoScrim: 'rgba(8, 6, 20, 0.90)',
   // A chosen row's ring (CheckIn: the spot).
