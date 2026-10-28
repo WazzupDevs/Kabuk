@@ -142,6 +142,28 @@ export const AURA = {
     { look: 'c:mor e:klasik f:maske', height: 121, right: -12, bottom: -6, phase: 1900 },
   ],
   heroHeight: 196,
+  // The table's scene (docs/design/aura → Masa): the table in the middle, the people around it.
+  // Seats as fractions of the scene (x of its width, y of its height), the first ones nearest the
+  // table's sides; anonymous people stand as capsule buddies, profiled ones sit as photos.
+  table: {
+    height: 212,
+    tableTop: 28,
+    ring: 4,
+    face: 48,
+    buddy: 78,
+    seats: [
+      [0.14, 0.34],
+      [0.86, 0.34],
+      [0.14, 0.78],
+      [0.86, 0.78],
+      [0.36, 0.86],
+      [0.64, 0.86],
+      [0.3, 0.12],
+      [0.7, 0.12],
+    ],
+    // Drawn at most this many; the rest as "+n".
+    max: 8,
+  },
   // The headcount as capsules (aura.css `.pips`), colours in turn; at most `max` drawn.
   pips: { colors: ['#9C86FF', '#FF7EA8', '#FFB547'], w: 6, h: 12, gap: 3, max: 8 },
   // An SVG mask: white shows, black hides (the outlined icons' gap).

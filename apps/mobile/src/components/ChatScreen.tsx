@@ -34,6 +34,10 @@ import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 
 import type { ChatWallKind } from '@/theme/chatWallpaper';
 
+import { AuraBackground } from '@/aura/AuraBackground';
+import { useTabFocus } from '@/aura/motion';
+import { AURA } from '@/theme/aura';
+
 import { ChatWallpaper } from './ChatWallpaper';
 import { CountBadge } from './CountBadge';
 import { useTabBarSpace } from './TabBar';
@@ -44,6 +48,9 @@ import { AppIcon } from './AppIcon';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 
 import { GlassTarget } from '@/ui/LiquidGlass';
+
+// The chats on the colour clouds instead of the wallpapers (docs/design/aura, 28 Ekim).
+const AURA_CHAT = true;
 
 // How close to the end counts as "at the bottom" (a message's last line may sit under the edge).
 const BOTTOM_SLACK = SPACING[12];
@@ -394,7 +401,8 @@ export function ChatScreen({
   testID,
   wall = 'dm',
 }: Props) {
-  const { colors, shape } = useTheme();
+  const { shape, scheme } = useTheme();
+  const focus = useTabFocus();
   // Under the tabs (a DM) the floating tab bar covers the bottom: the message bar sits above it.
   const barSpace = useTabBarSpace();
   // The reaction bar's state for the whole screen: a tap on the top bar or the message bar closes it
@@ -412,16 +420,19 @@ export function ChatScreen({
       <ChatBarContext.Provider value={reactions.bar}>
         <SafeAreaView
           edges={barSpace ? ['top', 'left', 'right'] : ['top', 'left', 'right', 'bottom']}
-          style={{ flex: 1, backgroundColor: colors.canvas }}
+          style={{ flex: 1, backgroundColor: AURA[scheme].ground }}
           onTouchStart={reactions.onTouchStart}
         >
+          {/* The colour clouds under the whole chat (docs/design/aura → DM, Mekan sohbeti, Masa). */}
+          <AuraBackground running={focus.focused} />
           {top}
           <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
             {/* The wallpaper under the stream and the message bar (v45: .chatpane); the bar floats on
               it, over the stream. */}
             <View className="flex-1">
               <GlassTarget targetId={glassId} style={{ flex: 1 }}>
-                {wall ? <ChatWallpaper kind={wall} /> : null}
+                {/* The airy look draws no wallpaper: the clouds are the chat's ground. */}
+                {wall && !AURA_CHAT ? <ChatWallpaper kind={wall} /> : null}
                 <ChatScroll
                   testID={testID}
                   newestKey={newestKey}

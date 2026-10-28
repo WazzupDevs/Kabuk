@@ -18,6 +18,8 @@ export const TABLE_ICON_SIZE = {
   request: 40,
   // The table screen's top line and a row in Masadakiler.
   row: 36,
+  // The table in the middle of its scene (docs/design/aura → Masa).
+  stage: 104,
 } as const;
 export const TABLE_ICON_RADIUS_SHARE = 0.28;
 // A scene at another table of the venue in Masa kur's picker (v46: .mk-g[aria-disabled]).
