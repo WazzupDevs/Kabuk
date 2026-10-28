@@ -76,42 +76,53 @@ export function IdentitySheet({
   ) : (
     <Avatar kind="default" size="lg" />
   );
+  // Closed, it opens next time without the last error.
+  const close = () => {
+    change.reset();
+    onClose();
+  };
   return (
-    <Sheet visible={visible} onClose={onClose} title={title}>
-      <View className="flex-row items-center self-start" style={{ gap: SPACING[2] }}>
-        {toAnonymous ? face : capsule}
-        <AppIcon name="arrow-forward" size={ICON.md} color={colors.muted} />
-        {toAnonymous ? capsule : face}
-      </View>
-      <Text variant="fine">{body}</Text>
-      {needsPhoto ? null : (
-        <Banner
-          tone="warn"
-          title={tr.identity.onceTitle}
-          body={tr.identity.onceBody + (!toAnonymous && atTable ? tr.identity.onceTable : '')}
-        />
-      )}
-      {change.isError ? <Banner tone="danger" body={errorMessage(change.error)} /> : null}
-      <View className="gap-2.5">
-        {needsPhoto ? (
-          <Button
-            size="lg"
-            icon="camera-outline"
-            label={tr.identity.addPhoto}
-            onPress={() => setPhotoSheet(true)}
-          />
-        ) : (
-          <Button
-            size="lg"
-            testID="identity-confirm"
-            label={confirm}
-            loading={change.isPending}
-            onPress={() => change.mutate()}
+    <>
+      <Sheet visible={visible} onClose={close} title={title}>
+        <View className="flex-row items-center self-start" style={{ gap: SPACING[2] }}>
+          {toAnonymous ? face : capsule}
+          <AppIcon name="arrow-forward" size={ICON.md} color={colors.muted} />
+          {toAnonymous ? capsule : face}
+        </View>
+        <Text variant="fine">{body}</Text>
+        {needsPhoto ? null : (
+          <Banner
+            tone="warn"
+            title={tr.identity.onceTitle}
+            body={tr.identity.onceBody + (!toAnonymous && atTable ? tr.identity.onceTable : '')}
           />
         )}
-        <Button size="lg" variant="neutral" label={tr.common.cancel} onPress={onClose} />
-      </View>
+        {change.isError ? <Banner tone="danger" body={errorMessage(change.error)} /> : null}
+        <View className="gap-2.5">
+          {needsPhoto ? (
+            <Button
+              size="lg"
+              icon="camera-outline"
+              label={tr.identity.addPhoto}
+              onPress={() => {
+                // One sheet at a time: this one goes, the photo's comes (audit VEN-20).
+                close();
+                setPhotoSheet(true);
+              }}
+            />
+          ) : (
+            <Button
+              size="lg"
+              testID="identity-confirm"
+              label={confirm}
+              loading={change.isPending}
+              onPress={() => change.mutate()}
+            />
+          )}
+          <Button size="lg" variant="neutral" label={tr.common.cancel} onPress={close} />
+        </View>
+      </Sheet>
       <PhotoSheet visible={photoSheet} onClose={() => setPhotoSheet(false)} />
-    </Sheet>
+    </>
   );
 }

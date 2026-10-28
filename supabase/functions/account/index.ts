@@ -169,8 +169,19 @@ Deno.serve(
         return { ok: true };
       }
 
+      // A phone's token belongs to the account signed in on it now: another account that had it
+      // (signed out without the network, or a reinstall) loses it, so its pushes never reach
+      // this phone (audit AUTH-12).
       case 'register-push': {
         const user = await requireUser(req, db);
+        if (body.token) {
+          const cleared = await db
+            .from('profiles')
+            .update({ push_token: null })
+            .eq('push_token', body.token)
+            .neq('id', user.id);
+          if (cleared.error) throw dbError('profiles', cleared.error);
+        }
         const { error } = await db
           .from('profiles')
           .update({ push_token: body.token })

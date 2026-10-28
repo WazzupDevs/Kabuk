@@ -969,6 +969,22 @@ describe('pair records (K-66)', () => {
     expect(pairs).toHaveLength(6);
   });
 
+  it('writes the pairs of a table that joins another before it closes (audit VEN-7)', async () => {
+    const [owner, a, a2] = await all(3);
+    const ownTable = await tableWith(a, [a2]);
+    await backdate(ownTable, 5);
+    const hostTable = await openTable(owner);
+    await accept(owner, await ask(a, hostTable));
+    expect((await roomRow(ownTable)).status).toBe('closed');
+    const pairs = (await recordsOf(ownTable)).map((r) =>
+      [r.user_id, r.other_user_id].sort().join(),
+    );
+    expect(pairs).toEqual([
+      [a.userId, a2.userId].sort().join(),
+      [a.userId, a2.userId].sort().join(),
+    ]);
+  });
+
   it("writes a leaver's pairs as it leaves, and none for less than 3 minutes", async () => {
     const [owner, a, b] = await all(3);
     const roomId = await tableWith(owner, [a]);
