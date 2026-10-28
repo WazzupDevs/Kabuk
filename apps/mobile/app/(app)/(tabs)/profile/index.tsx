@@ -1,3 +1,4 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import type { ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
@@ -10,9 +11,12 @@ import { LookAvatar } from '@/components/LookAvatar';
 import { Screen } from '@/components/Screen';
 import { useProfile } from '@/features/account/useProfile';
 import { useFriends } from '@/features/friends/queries';
-import { useProfileView } from '@/features/profile/queries';
+import { profileViewKeys, useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
+import { profileApi } from '@/lib/api';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { useNow } from '@/lib/useNow';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 
 // The own profile (docs/SPEC_V2.md §5; docs/design/aura → Profil): "Profil" and the settings at the
@@ -127,12 +131,7 @@ export default function ProfileScreen() {
 
           <GlassList>
             {view.data.capsuleNick ? (
-              <Li>
-                <View style={{ flex: 1 }}>
-                  <T v="fine">{tr.profile.nickLabel}</T>
-                  <T v="h3">{view.data.capsuleNick}</T>
-                </View>
-              </Li>
+              <NickRow nick={view.data.capsuleNick} refreshAt={view.data.nickRefreshAt ?? null} />
             ) : null}
             <Li
               testID="profile-friends"
@@ -216,3 +215,43 @@ function FaceCard({
   );
 }
 const PRESSED = 0.8;
+
+// The nick and "Yenile" (docs/design/aura → Profil): a new nick once in 30 days (K-9); while it
+// waits the button is off and the days left are under the nick.
+function NickRow({ nick, refreshAt }: { nick: string; refreshAt: string | null }) {
+  const queryClient = useQueryClient();
+  const now = useNow(60_000);
+  const waitMs = refreshAt ? Date.parse(refreshAt) - now : 0;
+  const waiting = waitMs > 0;
+  const refresh = useMutation({
+    meta: FEEL_ERROR,
+    mutationFn: profileApi.refreshNick,
+    onSettled: () => queryClient.invalidateQueries({ queryKey: profileViewKeys.all }),
+  });
+  return (
+    <Li>
+      <View style={{ flex: 1 }}>
+        <T v="fine">{tr.profile.nickLabel}</T>
+        <T v="h3" testID="nick">
+          {nick}
+        </T>
+        {waiting ? <T v="fine">{tr.profile.nickWait(Math.ceil(waitMs / DAY_MS))}</T> : null}
+        {refresh.isError ? (
+          <T v="fine" color={KIT.danger}>
+            {errorMessage(refresh.error)}
+          </T>
+        ) : null}
+      </View>
+      <Btn
+        sm
+        variant="glassy"
+        testID="nick-refresh"
+        label={tr.profile.nickRenew}
+        disabled={waiting}
+        loading={refresh.isPending}
+        onPress={() => refresh.mutate()}
+      />
+    </Li>
+  );
+}
+const DAY_MS = 24 * 60 * 60 * 1000;

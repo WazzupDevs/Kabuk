@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { create } from 'zustand';
 
 import { Av, Btn, T, Tag, useKit } from '@/aura/kit';
+import { Peek } from '@/aura/Peek';
 import { PopIn } from '@/aura/PopIn';
 import { AVATAR_SIZE } from '@/components/Avatar';
 import { closeAllSheets } from '@/components/sheetCloser';
@@ -17,6 +18,7 @@ import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { ApiError, roomsApi } from '@/lib/api';
 import { useNowUntil } from '@/lib/useNow';
+import { AURA } from '@/theme/aura';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -146,11 +148,14 @@ export function IncomingRequest({ roomId, ownerSessionId, phones, floating }: Pr
               right: shape.screenPadding,
               top: insets.top + SPACING[2],
             }
-          : undefined
+          : // Room for the buddies over the card.
+            { marginTop: AURA.peek.up }
       }
     >
       {/* It comes up with a bounce, a near-opaque glass pane (docs/design/aura → Gelen istek). */}
       <PopIn key={testID}>
+        {/* docs/design/aura → MasaIstek: the table's buddies look over the card. */}
+        {floating ? null : <Peek kind="request" />}
         <View
           style={{
             ...gradientStyle(k.c.sheet),

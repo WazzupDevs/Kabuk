@@ -9,7 +9,8 @@ import {
   withVenueChatExtras,
 } from '@shared/venueChat.ts';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { create } from 'zustand';
 
 import { useBroadcast } from '@/features/rooms/useBroadcast';
 import { useReactions } from '@/features/chat/messageExtras';
@@ -86,17 +87,37 @@ export function useVenueChatLastAt(
 // page it already reads (useVenueChatLastAt's rule: once, then only the broadcast's moment), and
 // whether a message came after them.
 const CARD_PREVIEW = 2;
+// When the person last read the venue chat, per check-in (this run of the app): Mekan's card counts
+// the messages after it (docs/design/aura → Mekan: the pink count).
+const useVenueChatSeen = create<{ seen: Record<string, string> }>(() => ({ seen: {} }));
+
+export function markVenueChatSeen(sessionId: string) {
+  useVenueChatSeen.setState((s) => ({
+    seen: { ...s.seen, [sessionId]: new Date().toISOString() },
+  }));
+}
+
 export function useVenueChatCard(venueId: string | undefined, sessionId: string | undefined) {
   const first = useQuery({ ...venueChatPage(venueId, sessionId), staleTime: CARD_STALE_MS });
   const [heardAt, setHeardAt] = useState<string | null>(null);
   const heard = useCallback(() => setHeardAt(new Date().toISOString()), []);
   useBroadcast(venueId ? venueChatChannel(venueId) : null, VENUE_CHAT_BROADCAST, heard);
+  const seenAt = useVenueChatSeen((s) => (sessionId ? s.seen[sessionId] : undefined));
+  // The first sight of the card counts as read: the count is what came after.
+  useEffect(() => {
+    if (sessionId && seenAt === undefined) markVenueChatSeen(sessionId);
+  }, [sessionId, seenAt]);
   const messages = first.data?.messages ?? [];
   const newest = messages.at(-1)?.createdAt ?? null;
+  const fresh = heardAt !== null && (newest === null || heardAt > newest);
+  const counted = seenAt ? messages.filter((m) => !m.fromMe && m.createdAt > seenAt).length : 0;
   return {
     lastAt: venueChatLastAt(newest, heardAt),
     recent: messages.slice(-CARD_PREVIEW),
-    fresh: heardAt !== null && (newest === null || heardAt > newest),
+    fresh,
+    // A message heard but not yet read in the page counts as one.
+    unread:
+      counted === 0 && fresh && heardAt !== null && (!seenAt || heardAt > seenAt) ? 1 : counted,
   };
 }
 

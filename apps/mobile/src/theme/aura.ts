@@ -191,18 +191,32 @@ export const AURA = {
         { look: 'c:gok e:klasik h:parti', x: 236, bottom: -10, height: 121 },
       ],
     },
-    // Masa bitti (docs/design/aura → MasaBitti): the table's picture, two buddies at the sides
-    // behind, three in front.
+    // Masa bitti (docs/design/aura → MasaBitti): the table's picture and three buddies in front;
+    // the profiled people's faces at its sides (TableEnd).
     end: {
       frame: 390,
       height: 320,
       disk: { x: 135, bottom: 74, size: 120, radius: 38 },
       cast: [
-        { look: 'c:hardal e:klasik h:sihirbaz', x: 44, bottom: 132, height: 80, behind: true },
-        { look: 'c:krem e:koyu h:hale m:gulumse', x: 286, bottom: 132, height: 80, behind: true },
         { look: 'c:gok e:klasik h:parti', x: 20, bottom: -16, height: 144 },
         { look: 'c:turkuaz e:klasik h:kovboy', x: 260, bottom: -16, height: 144 },
         { look: 'c:pembe e:klasik h:korsan f:gozbandi', x: 139, bottom: -26, height: 147 },
+      ],
+    },
+    // The first screen (docs/design/aura → Main): a table on a disk, three buddies behind it, four
+    // in front.
+    welcome: {
+      frame: 350,
+      height: 400,
+      disk: { x: 97, bottom: 66, size: 156 },
+      cast: [
+        { look: 'c:hardal e:klasik h:sihirbaz', x: 50, bottom: 176, height: 95, behind: true },
+        { look: 'c:krem e:koyu h:hale m:gulumse', x: 228, bottom: 176, height: 95, behind: true },
+        { look: 'c:nane e:koyu h:anten', x: 139, bottom: 206, height: 95, behind: true },
+        { look: 'c:gok e:klasik h:parti', x: -10, bottom: 62, height: 126 },
+        { look: 'c:pembe e:klasik h:kedi', x: 264, bottom: 62, height: 126 },
+        { look: 'c:pembe e:koyu h:kulaklik', x: 34, bottom: -18, height: 155 },
+        { look: 'c:turkuaz e:klasik h:kovboy', x: 198, bottom: -18, height: 155 },
       ],
     },
     messages: {
@@ -213,6 +227,82 @@ export const AURA = {
         { look: 'c:yesil e:klasik h:papatya m:gulumse', x: 218, bottom: -14, height: 92 },
         { look: 'c:krem e:koyu h:tavsan', x: 282, bottom: -10, height: 84 },
       ],
+    },
+  },
+  // Buddies peeking over a card's top edge (aura.css `.behind > .peek`: 58 above it, 120 high, the
+  // card hiding their lower half), in a 350 wide frame: x, how far down they start, height.
+  peek: {
+    up: 58,
+    height: 120,
+    checkin: [
+      { look: 'c:turkuaz e:klasik h:kovboy', x: 26, top: 0, height: 110 },
+      { look: 'c:pembe e:koyu h:kulaklik', x: 146, top: -14, height: 110 },
+      { look: 'c:gok e:klasik f:yuvarlak', x: 260, top: 4, height: 110 },
+    ],
+    notifications: [
+      { look: 'c:yesil e:klasik h:papatya m:gulumse', x: 20, top: 0, height: 110 },
+      { look: 'c:krem e:koyu h:tavsan', x: 256, top: 6, height: 105 },
+    ],
+    request: [
+      { look: 'c:pembe e:koyu h:kulaklik', x: 18, top: 2, height: 121 },
+      { look: 'c:mor e:klasik f:maske', x: 128, top: -12, height: 121 },
+      { look: 'c:pembe e:klasik h:korsan f:gozbandi', x: 236, top: 2, height: 121 },
+    ],
+    phone: [{ look: 'c:gok e:klasik f:yuvarlak', x: 226, top: 0, height: 110 }],
+    code: [
+      { look: 'c:hardal e:klasik h:sihirbaz', x: 12, top: 0, height: 110 },
+      { look: 'c:pembe e:klasik h:kedi', x: 252, top: 6, height: 102 },
+    ],
+  },
+  // A buddy talking in a scene under a step's field (docs/design/aura → Telefon, Kod).
+  say: {
+    minHeight: 168,
+    buddy: 126,
+  },
+  // Each game's card (docs/design/aura → Masa: Kinshi violet, Krot pink; the others alike): its
+  // ground, the glow at its foot, its shadow, its line's colour and its buddy.
+  gameCards: {
+    kinshi: {
+      ground: 'radial-gradient(120% 90% at 20% 10%, #6A50E6 0%, #2A2068 55%, #120F2C 100%)',
+      glow: 'rgba(255, 181, 71, 0.35)',
+      shadow: '0px 18px 36px rgba(33, 26, 82, 0.30)',
+      sub: '#DCD6FF',
+      buddy: 'c:mor e:klasik f:maske',
+    },
+    krot: {
+      ground: 'radial-gradient(120% 90% at 80% 10%, #E8467F 0%, #5A1A45 55%, #1A0C20 100%)',
+      glow: 'rgba(255, 255, 255, 0.18)',
+      shadow: '0px 18px 36px rgba(90, 26, 69, 0.28)',
+      sub: '#FFD6E5',
+      buddy: 'c:pembe e:koyu h:kulaklik',
+    },
+    vampir: {
+      ground: 'radial-gradient(120% 90% at 20% 10%, #D2453A 0%, #5A1414 55%, #1C0708 100%)',
+      glow: 'rgba(255, 181, 71, 0.30)',
+      shadow: '0px 18px 36px rgba(90, 20, 20, 0.28)',
+      sub: '#FFD3CC',
+      buddy: 'c:hardal e:klasik h:sihirbaz',
+    },
+    signum: {
+      ground: 'radial-gradient(120% 90% at 80% 10%, #3E8BD6 0%, #15305E 55%, #08132A 100%)',
+      glow: 'rgba(255, 255, 255, 0.18)',
+      shadow: '0px 18px 36px rgba(21, 48, 94, 0.28)',
+      sub: '#D3E6FF',
+      buddy: 'c:gok e:klasik f:yuvarlak',
+    },
+    sprengja: {
+      ground: 'radial-gradient(120% 90% at 20% 10%, #F09A1F 0%, #6A3810 55%, #1E1206 100%)',
+      glow: 'rgba(255, 79, 139, 0.30)',
+      shadow: '0px 18px 36px rgba(106, 56, 16, 0.28)',
+      sub: '#FFE2B8',
+      buddy: 'c:pembe e:klasik h:korsan f:gozbandi',
+    },
+    kaupholl: {
+      ground: 'radial-gradient(120% 90% at 80% 10%, #2FA866 0%, #0F4A2C 55%, #061A10 100%)',
+      glow: 'rgba(255, 181, 71, 0.30)',
+      shadow: '0px 18px 36px rgba(15, 74, 44, 0.28)',
+      sub: '#CFF2DE',
+      buddy: 'c:turkuaz e:klasik h:kovboy',
     },
   },
   // Masa bitti's confetti: capsules in the mark's colours, in the board's 390 frame (x, y, turn).

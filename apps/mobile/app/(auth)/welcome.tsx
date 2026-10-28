@@ -1,6 +1,7 @@
 import { router, useFocusEffect } from 'expo-router';
-import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import {
+  Image,
   type LayoutChangeEvent,
   Pressable,
   ScrollView,
@@ -18,27 +19,21 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Svg, { Defs, LinearGradient, RadialGradient, Rect, Stop } from 'react-native-svg';
 
-import { Button } from '@/components/Button';
-import { Text } from '@/components/Text';
-import { Wordmark } from '@/components/Wordmark';
+import { AuraBackground } from '@/aura/AuraBackground';
+import { Btn, T } from '@/aura/kit';
+import { Gathering, SceneGround } from '@/aura/Scene';
+import { TABLE_ICON_IMAGES } from '@/features/rooms/tableIconImages';
+import { WordmarkRow } from '@/features/venue/VenueHead';
 import { useLaunchStore } from '@/features/launch/launchStore';
 import { introCopy } from '@/features/onboarding/introGate';
-import { IntroScene } from '@/features/onboarding/IntroScene';
 import { useOnboardingStore } from '@/features/onboarding/store';
 import { UnderAge } from '@/features/onboarding/UnderAge';
 import { tr } from '@/i18n/tr';
 import { useReduceMotion } from '@/lib/useReduceMotion';
-import {
-  copyFrame,
-  type CopyPart,
-  INTRO,
-  INTRO_COLORS,
-  INTRO_SHAPE,
-  introMinHeight,
-  introScene,
-} from '@/theme/introScene';
+import { copyFrame, type CopyPart, INTRO, introMinHeight } from '@/theme/introScene';
+import { AURA } from '@/theme/aura';
+import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { OPACITY, SPACING, TOUCH } from '@/theme/tokens';
 
@@ -65,7 +60,6 @@ export default function WelcomeScreen() {
 
 function Welcome() {
   const { scheme, shape } = useTheme();
-  const pal = INTRO_COLORS[scheme];
   const reduce = useReduceMotion();
   const { height: windowHeight } = useWindowDimensions();
   // The scene waits for the launch curtain to open (src/features/launch/LaunchCurtain.tsx).
@@ -74,7 +68,6 @@ function Welcome() {
   const [seen] = useState(() => played);
   const t = useSharedValue<number>(seen || reduce ? INTRO.endMs : 0);
   const [box, setBox] = useState<{ w: number; h: number } | null>(null);
-  const scene = useMemo(() => (box ? introScene(box.w, box.h) : null), [box]);
 
   // The words, "Başla" and "Geç" on React's side (introGate.ts): each stands still once its
   // motion ends, all of them at once with reduce motion, and at the cap if the curtain never opens.
@@ -146,20 +139,24 @@ function Welcome() {
     <View
       testID="welcome"
       collapsable={false}
-      style={[styles.fill, { backgroundColor: pal.sky.stops[2] }]}
+      style={[styles.fill, { backgroundColor: AURA[scheme].ground }]}
     >
-      <Sky scheme={scheme} />
+      {/* docs/design/aura → Main: the colour clouds. */}
+      <AuraBackground running />
       <SafeAreaView edges={['top', 'left', 'right', 'bottom']} style={styles.fill}>
         <ScrollView
           contentContainerStyle={{
             flexGrow: 1,
             paddingHorizontal: shape.screenPadding,
-            paddingTop: SPACING[5],
-            paddingBottom: SPACING[2.5],
+            paddingTop: SPACING[3],
+            paddingBottom: SPACING[6],
+            gap: WELCOME_GAP,
           }}
+          bounces={false}
+          overScrollMode="never"
         >
-          <Words part="logo" t={t} still={copy.shown.includes('logo')} style={styles.logo}>
-            <Wordmark height={INTRO_SHAPE.logo} />
+          <Words part="logo" t={t} still={copy.shown.includes('logo')}>
+            <WordmarkRow small />
           </Words>
           <View
             onLayout={onSceneLayout}
@@ -168,38 +165,53 @@ function Welcome() {
             style={{
               flexGrow: 1,
               minHeight: introMinHeight(windowHeight),
-              marginTop: SPACING[3],
-              marginHorizontal: -shape.screenPadding,
+              borderRadius: AURA.scene.radius,
+              overflow: 'hidden',
             }}
           >
-            {scene ? <IntroScene scene={scene} t={t} still={reduce} /> : null}
+            {/* The table and the buddies around it (Main); each comes in with its bounce. */}
+            <SceneGround />
+            {box ? (
+              <Gathering
+                kind="welcome"
+                width={box.w}
+                delay={SCENE_DELAY}
+                center={
+                  <Image
+                    source={TABLE_ICON_IMAGES[WELCOME_TABLE]}
+                    fadeDuration={0}
+                    style={{ width: '100%', height: '100%' }}
+                  />
+                }
+              />
+            ) : null}
           </View>
-          <View style={{ gap: SPACING[2], paddingTop: SPACING[1.5] }}>
-            <View
-              accessible
-              accessibilityRole="header"
-              accessibilityLabel={tr.signup.welcomeTitle}
-              style={styles.title}
-            >
+          <View style={{ gap: SPACING[3] }}>
+            <View accessible accessibilityRole="header" accessibilityLabel={tr.signup.welcomeTitle}>
               <Words part="line1" t={t} still={copy.shown.includes('line1')}>
-                <Text variant="display">{tr.signup.welcomeHalves[0]}</Text>
+                <T v="display" style={KIT_TYPE.welcome}>
+                  {tr.signup.welcomeHalves[0]}
+                </T>
               </Words>
               <Words part="line2" t={t} still={copy.shown.includes('line2')}>
-                <Text variant="display">{tr.signup.welcomeHalves[1]}</Text>
+                <T v="display" style={KIT_TYPE.welcome}>
+                  {tr.signup.welcomeHalves[1]}
+                </T>
               </Words>
             </View>
             <Words part="body" t={t} still={copy.shown.includes('body')}>
-              <Text tone="muted">{tr.signup.welcomeBody}</Text>
+              <T v="body">{tr.signup.welcomeBody}</T>
             </Words>
           </View>
           <Words
             part="foot"
             t={t}
             still={copy.shown.includes('foot')}
-            style={{ gap: SPACING[2], paddingTop: SPACING[4] }}
+            style={{ gap: SPACING[3], alignItems: 'center' }}
           >
-            <Button
-              size="lg"
+            <Btn
+              block
+              icon="forward"
               testID="welcome-start"
               label={tr.signup.start}
               onPress={() => {
@@ -207,9 +219,9 @@ function Welcome() {
                 router.push('/agree');
               }}
             />
-            <Text variant="fine" tone="muted" align="center">
+            <T v="fine" center>
               {tr.signup.adultsOnly}
-            </Text>
+            </T>
           </Words>
         </ScrollView>
         {copy.skip ? (
@@ -220,15 +232,15 @@ function Welcome() {
             style={({ pressed }) => [
               styles.skip,
               {
-                borderRadius: shape.radius.pill,
-                backgroundColor: pal.skip.fill,
+                borderRadius: KIT.size.btnSm,
+                backgroundColor: KIT[scheme].raised,
+                borderWidth: KIT.size.edge,
+                borderColor: KIT[scheme].raisedEdge,
                 opacity: pressed ? OPACITY.pressed : 1,
               },
             ]}
           >
-            <Text variant="buttonSmall" color={pal.skip.text}>
-              {tr.signup.skip}
-            </Text>
+            <T v="btnSm">{tr.signup.skip}</T>
           </Pressable>
         ) : null}
       </SafeAreaView>
@@ -260,32 +272,12 @@ function Words({
   return <Animated.View style={[style, motion]}>{children}</Animated.View>;
 }
 
-// The screen's sky (v45: .obf): a pink glow at the top over a soft vertical wash.
-function Sky({ scheme }: { scheme: 'light' | 'dark' }) {
-  const { sky } = INTRO_COLORS[scheme];
-  return (
-    <Svg style={StyleSheet.absoluteFill} width="100%" height="100%">
-      <Defs>
-        <LinearGradient id="wash" x1="0" y1="0" x2="0" y2="1">
-          {sky.stops.map((color, i) => (
-            <Stop key={i} offset={sky.at[i]} stopColor={color} />
-          ))}
-        </LinearGradient>
-        <RadialGradient id="glow" cx="50%" cy="0%" rx="120%" ry="60%" fx="50%" fy="0%">
-          <Stop offset="0" stopColor={sky.glow} stopOpacity={1} />
-          <Stop offset="0.7" stopColor={sky.glow} stopOpacity={0} />
-        </RadialGradient>
-      </Defs>
-      <Rect width="100%" height="100%" fill="url(#wash)" />
-      <Rect width="100%" height="100%" fill="url(#glow)" />
-    </Svg>
-  );
-}
+const WELCOME_GAP = 22;
+const SCENE_DELAY = 200;
+const WELCOME_TABLE = 'kamp-ates';
 
 const styles = StyleSheet.create({
   fill: { flex: 1 },
-  logo: { alignItems: 'center' },
-  title: { flexDirection: 'row', flexWrap: 'wrap', columnGap: SPACING[2] },
   skip: {
     position: 'absolute',
     top: SPACING[3],

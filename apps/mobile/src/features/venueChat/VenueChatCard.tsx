@@ -2,7 +2,7 @@ import { senderLabel, venueChatActive, type VenueChatMessage } from '@shared/ven
 import { router } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 
-import { Av, Glass, Live, T, Tag, useKit } from '@/aura/kit';
+import { Av, Badge, Glass, Live, T, useKit } from '@/aura/kit';
 import { LookAvatar } from '@/components/LookAvatar';
 import { tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
@@ -46,7 +46,11 @@ export function VenueChatCard({ venueId, sessionId }: { venueId: string; session
               </View>
             ) : null}
           </View>
-          {card.fresh ? <Tag tone="pink" label={tr.venue.chatNew} /> : null}
+          {card.unread > 0 ? (
+            <View accessible accessibilityLabel={tr.messages.unread(card.unread)}>
+              <Badge count={card.unread} />
+            </View>
+          ) : null}
         </View>
         {card.recent.length > 0 ? (
           card.recent.map((m) => <Line key={m.id} message={m} />)

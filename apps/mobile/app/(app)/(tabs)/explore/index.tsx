@@ -31,6 +31,7 @@ import { Sheet } from '@/components/Sheet';
 import { useTabBarOverMap, useTabBarSpace } from '@/components/TabBar';
 import { Text } from '@/components/Text';
 import { useCheckinDraft } from '@/features/checkin/draft';
+import { useVenueSpots } from '@/features/checkin/spots';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { ExploreMap } from '@/features/explore/ExploreMap';
 import { useExplorePlace } from '@/features/explore/placeStore';
@@ -215,6 +216,7 @@ export default function ExploreScreen() {
         {ready && layout === 'single' && venues.data[0] ? (
           <SingleVenue
             venue={venues.data[0]}
+            city={listed.find((v) => v.id === venues.data[0]?.id)?.city ?? null}
             here={hereCard}
             checkedInHere={here?.venue_id === venues.data[0].id}
             bottomSpace={barSpace}
@@ -406,11 +408,13 @@ function PlaceSheet({
 // a row. A second active venue brings the list and the map back (content only).
 function SingleVenue({
   venue,
+  city,
   here,
   checkedInHere,
   bottomSpace,
 }: {
   venue: ExploreVenue;
+  city: string | null;
   here: Here | null;
   // Already checked in at this venue: a new check-in would end the current one and take the
   // person off its table (audit VEN-2), so the button goes back to Mekan instead.
@@ -418,7 +422,14 @@ function SingleVenue({
   bottomSpace: number;
 }) {
   const now = useNow(60_000);
+  const spots = useVenueSpots(venue.id).data ?? [];
   const [heroWidth, setHeroWidth] = useState(0);
+  const where = city ? tr.explore.cityDistrict(city, venue.district) : venue.district;
+  const place = city ? tr.explore.districtCity(venue.district, city) : venue.district;
+  const line =
+    spots.length > 0
+      ? `${place} ${tr.common.separator} ${spots.map((sp) => sp.name).join(', ')}`
+      : place;
   const setVenue = useCheckinDraft((s) => s.setVenue);
   const calm = venue.bucket === 'calm';
   const today = venue.event;
@@ -446,7 +457,7 @@ function SingleVenue({
         >
           <CapIcon name="pin" color={KIT.primary} size={KIT.size.iconSm} />
           <T v="fine" strong>
-            {venue.district}
+            {where}
           </T>
         </Glass>
       </View>
@@ -511,7 +522,7 @@ function SingleVenue({
             <T v="title" accessibilityRole="header">
               {venue.name}
             </T>
-            <T v="fine">{venue.district}</T>
+            <T v="fine">{line}</T>
           </View>
           {today ? (
             <View

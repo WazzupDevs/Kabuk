@@ -1,10 +1,11 @@
 import type { NotificationItem } from '@shared/api/friends.ts';
 import { inviteState, seenMark } from '@shared/notifications.ts';
+import { TABLE_ICONS } from '@shared/tableIcons.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { View } from 'react-native';
 
-import { Av, Btn, Glass, GlassList, T, useKit } from '@/aura/kit';
+import { Av, Btn, Glass, GlassList, T, Thumb, useKit } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
 import { RouteSheet } from '@/components/RouteSheet';
@@ -13,6 +14,7 @@ import { openDm } from '@/features/friends/openDm';
 import { friendKeys, useFriends, useNotifications } from '@/features/friends/queries';
 import { useRetryAfterName } from '@/features/friends/useRetryAfterName';
 import { roomKeys } from '@/features/rooms/queries';
+import { TABLE_ICON_IMAGES } from '@/features/rooms/tableIconImages';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
@@ -58,7 +60,7 @@ export default function NotificationsScreen() {
 
   if (list.isPending) {
     return (
-      <RouteSheet title={tr.notifications.title} testID="notifications">
+      <RouteSheet title={tr.notifications.title} testID="notifications" peek="notifications">
         <View className="items-center py-6">
           <Loader />
         </View>
@@ -67,7 +69,7 @@ export default function NotificationsScreen() {
   }
   if (list.isError) {
     return (
-      <RouteSheet title={tr.notifications.title} testID="notifications">
+      <RouteSheet title={tr.notifications.title} testID="notifications" peek="notifications">
         <EmptyState
           kind="error"
           body={errorMessage(list.error)}
@@ -78,7 +80,7 @@ export default function NotificationsScreen() {
   }
   if (!items || items.length === 0) {
     return (
-      <RouteSheet title={tr.notifications.title} testID="notifications">
+      <RouteSheet title={tr.notifications.title} testID="notifications" peek="notifications">
         <EmptyState kind="empty" title={tr.notifications.empty} body={tr.notifications.emptyHint} />
       </RouteSheet>
     );
@@ -88,7 +90,7 @@ export default function NotificationsScreen() {
   const newer = items.filter(isFresh);
   const older = items.filter((n) => !isFresh(n));
   return (
-    <RouteSheet title={tr.notifications.title} testID="notifications">
+    <RouteSheet title={tr.notifications.title} testID="notifications" peek="notifications">
       {newer.length > 0 ? (
         <View style={{ gap: KIT.size.rowGap }}>
           <T v="eyebrow">{tr.notifications.fresh}</T>
@@ -302,7 +304,26 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
       {note}
     </View>
   );
-  const face = <Av name={name} photoUrl={item.photoUrl} />;
+  // An invite shows the table's picture with the inviter's face on its corner (Bildirimler).
+  const tableIcon =
+    item.kind === 'invite'
+      ? TABLE_ICONS.find((i) => (item.tableName ?? '').startsWith(i.name))?.id
+      : undefined;
+  const tablePicture = tableIcon ? TABLE_ICON_IMAGES[tableIcon] : undefined;
+  const face = tablePicture ? (
+    <View>
+      <Thumb
+        source={tablePicture}
+        size={fresh ? INVITE_THUMB : INVITE_THUMB_OLD}
+        radius={INVITE_RADIUS}
+      />
+      <View style={{ position: 'absolute', right: -INVITE_BADGE_OUT, bottom: -INVITE_BADGE_OUT }}>
+        <Av size="sm" name={name} photoUrl={item.photoUrl} />
+      </View>
+    </View>
+  ) : (
+    <Av name={name} photoUrl={item.photoUrl} />
+  );
   // docs/design/aura → Bildirimler: a new one as its own card (an invite on the brand's soft
   // gradient), the actions under it; an earlier one as a row of the list, its action at the right.
   if (!fresh) {
@@ -360,6 +381,10 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
 }
 
 const FADED = 0.6;
+const INVITE_THUMB = 50;
+const INVITE_THUMB_OLD = 44;
+const INVITE_RADIUS = 16;
+const INVITE_BADGE_OUT = 8;
 const FRESH_PAD = 14;
 const OLD_PAD_Y = 10;
 

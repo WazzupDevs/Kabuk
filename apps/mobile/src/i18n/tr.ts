@@ -497,6 +497,9 @@ export const tr = {
     // Keşfet's question (docs/design/aura → Keşfet).
     question: 'Bu akşam\nnerede oturuyorsun?',
     eventTagShort: 'Etkinlik',
+    cityDistrict: (city: string, district: string) => `${city} · ${district}`,
+    spotCount: (n: number) => `${n} nokta`,
+    districtCity: (district: string, city: string) => `${district}, ${city}`,
     weekNote: 'Bu hafta',
     eventsTitle: 'Etkinlikler',
     noEvents: 'Bu hafta planlı etkinlik yok.',
@@ -633,6 +636,7 @@ export const tr = {
     nickNote: 'Anonim adın. Yenilersen yeni bir ad alırsın; kapsülün aynı kalır.',
     nickNoteWait: 'Anonim adın. 30 günde bir yenileyebilirsin; kapsülün aynı kalır.',
     nickRefresh: "Nick'i yenile",
+    nickRenew: 'Yenile',
     nickWait: (days: number) => `${days} gün sonra yenileyebilirsin.`,
     // A friend's profile (skall tuvali, ProfilBaskasi): the status beside "Mesaj".
     friendsStatus: 'Arkadaşsınız',
@@ -1346,6 +1350,8 @@ export const tr = {
     // The venue chat card (v45: .linkcard.chat); its dot only with a message in the last 10
     // minutes (K-12).
     chatCard: 'Mekana giriş yapan herkes okur ve yazar.',
+    // docs/design/aura → Mekan sohbeti: under its name in the bar.
+    chatReaders: 'Mekandaki herkes okur',
     chatEmpty: 'Henüz kimse yazmadı. İlk mesajı sen yaz.',
     chatNew: 'Yeni mesaj',
     chatActive: 'şu an aktif',

@@ -24,6 +24,9 @@ export const KIT_TYPE = {
   // Keşfet's question (.display at 30).
   displaySm: t(500, 30, 36, -0.025),
   title: t(600, 21, 27, -0.015),
+  // The first screen's line (Main: 36, 500, -0.03em) and its wordmark (24, 800).
+  welcome: t(500, 36, 42, -0.03),
+  wordmarkSm: t(800, 24, 28, -0.04),
   // A scene's title (Mekan: .title at 20).
   hero: t(600, 20, 26, -0.015),
   // A digit of the code (Kod: 26, 600).
@@ -32,6 +35,8 @@ export const KIT_TYPE = {
   phone: t(600, 21, 26, 0.04),
   // The incoming request's line (MasaIstek: .h3 at 17).
   requestTitle: t(600, 17, 23, -0.005),
+  // A game's name on its card (Masa: 24, 700, -0.02em).
+  gameName: t(700, 24, 28, -0.02),
   // A venue's name on its page (KesfetMekan: .display at 28).
   venueTitle: t(500, 28, 34, -0.025),
   // The table's name on Masa (.title at 26, 500).
@@ -135,6 +140,9 @@ export const KIT = {
   onPrimary: '#FFFFFF',
   primaryShadow: SHADOW.primary,
   primaryInset: 'inset 0px 1px 0px rgba(255, 255, 255, 0.28)',
+  // The send button's arrow on the ink (Dm: send-capsule.svg).
+  sendA: '#B9A6FF',
+  sendB: '#FF8FB6',
   // The lines beside "Yeni mesaj" in a chat.
   freshLine: 'rgba(255, 79, 139, 0.40)',
   // A new invite in Bildirimler: the brand's soft gradient.

@@ -1,22 +1,15 @@
-import { type ReactNode, useState } from 'react';
-import {
-  type LayoutChangeEvent,
-  type LayoutRectangle,
-  Text,
-  type TextLayoutLine,
-  View,
-} from 'react-native';
+import { type ReactNode } from 'react';
+import { Text, View } from 'react-native';
 
 import { Btn, Round, T, useKit } from '@/aura/kit';
+import { Peek, type PeekKind, SayScene } from '@/aura/Peek';
 import { Screen } from '@/components/Screen';
 import { tr } from '@/i18n/tr';
-import { FRIEND, FRIEND_LOOKS, placeFriend, type Rect } from '@/lib/signupFriend';
 import { SIGNUP_STEPS, SIGNUP_TOTAL, type SignupStep as Step, stepNumber } from '@/lib/signupSteps';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
-import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
-import { type FriendReaction, SignupFriend } from './SignupFriend';
+import { type FriendReaction } from './SignupFriend';
 
 type Action = {
   label: string;
@@ -49,33 +42,28 @@ type Props = {
   testID?: string;
 };
 
-const NO_MOVES = { jump: false, shake: false, nod: false } as const;
 const STEP_ON = 22;
 const STEP_DOT = 6;
 const STEP_SCALE = 1.3;
+// docs/design/aura → Telefon, Kod: the field 70 under the title, the buddies looking over it.
+const FIELD_TOP = 70;
 
-// The friend's box rests this far above the title's first line (v45: 64 px against the title at
-// 72), and may not rise into the top row.
-const FRIEND_ABOVE_TITLE = 8;
-
-type Layouts = {
-  // The top row and its "2/7" (the friend's jump must not cover it).
-  row?: LayoutRectangle;
-  counter?: LayoutRectangle;
-  wrapper?: LayoutRectangle;
-  head?: LayoutRectangle;
-  title?: LayoutRectangle;
-  body?: LayoutRectangle;
-  fields?: LayoutRectangle;
-  error?: LayoutRectangle;
-  titleLines?: TextLayoutLine[];
-  bodyLines?: TextLayoutLine[];
+// The step's buddy in the scene under the field, the scene's side and who looks over the field.
+const SCENE: Record<Step, { look: string; side: 'left' | 'right'; peek?: PeekKind }> = {
+  consents: { look: 'c:gok e:klasik f:yuvarlak', side: 'left' },
+  phone: { look: 'c:yesil e:klasik h:papatya m:gulumse', side: 'left', peek: 'phone' },
+  code: { look: 'c:mor e:klasik f:maske', side: 'right', peek: 'code' },
+  name: { look: 'c:pembe e:klasik h:kedi', side: 'left' },
+  birth: { look: 'c:gok e:klasik h:parti', side: 'right' },
+  gender: { look: 'c:krem e:koyu h:tavsan', side: 'left' },
+  photo: { look: 'c:turkuaz e:klasik h:kovboy', side: 'right' },
 };
 
-// One sign-up step (v44/v45: .sup): the back button, seven bars that fill up to this step and
-// "2/7"; the title and a line under it; the step's fields; the button at the bottom. The bars are
-// decoration: a screen reader hears "Adım 2/7". On the seven steps a capsule friend peeks from the
-// right edge, kept off every word, field and error (v45 report §3).
+// One sign-up step (docs/design/aura → Telefon, Kod): the round back button, the step's dots and
+// "2/7"; the title; the step's fields with the buddies looking over them; a scene where the step's
+// buddy says the step's line (or its own words: "Merhaba"), jumping when it goes right and shaking
+// when it goes wrong; the button at the bottom. The dots are decoration: a screen reader hears "Adım
+// 2/7".
 export function SignupStep({
   step,
   title,
@@ -87,81 +75,19 @@ export function SignupStep({
   children,
   testID,
 }: Props) {
-  const { shape } = useTheme();
   const k = useKit();
   const n = step ? stepNumber(step) : 0;
-  const withFriend = step !== undefined;
-  const [layouts, setLayouts] = useState<Layouts>({});
-  const keep =
-    <K extends keyof Layouts>(key: K) =>
-    (value: Layouts[K]) =>
-      setLayouts((l) => ({ ...l, [key]: value }));
-  const onLayout =
-    (key: 'row' | 'counter' | 'wrapper' | 'head' | 'title' | 'body' | 'fields' | 'error') =>
-    (e: LayoutChangeEvent) =>
-      keep(key)(e.nativeEvent.layout);
-
-  // Everything the friend must stay off, in the wrapper's coordinates.
-  const head = layouts.head;
-  const lines = (box: LayoutRectangle | undefined, list: TextLayoutLine[] | undefined): Rect[] =>
-    box && head && list
-      ? list.map((l) => ({
-          x: head.x + box.x + l.x,
-          y: head.y + box.y + l.y,
-          width: l.width,
-          height: l.height,
-        }))
-      : [];
-  const titleRects = lines(layouts.title, layouts.titleLines);
-  // The counter, from the top row into the wrapper's coordinates.
-  const { row, counter, wrapper } = layouts;
-  const counterRect: Rect[] =
-    row && counter && wrapper
-      ? [
-          {
-            x: row.x + counter.x - wrapper.x,
-            y: row.y + counter.y - wrapper.y,
-            width: counter.width,
-            height: counter.height,
-          },
-        ]
-      : [];
-  const blockers: Rect[] = [
-    ...titleRects,
-    ...lines(layouts.body, layouts.bodyLines),
-    ...(layouts.fields ? [toRect(layouts.fields)] : []),
-    ...(error && layouts.error ? [toRect(layouts.error)] : []),
-    ...counterRect,
-  ];
-  const right = (wrapper?.width ?? 0) + shape.screenPadding;
-  const friendTop = head && layouts.title ? head.y + layouts.title.y - FRIEND_ABOVE_TITLE : null;
-  // Placed only once every word it must stay off has been measured: the title's lines, the body's,
-  // the counter. Before that it could show over the title for a frame (with reduce motion there is
-  // no slide in to hide it).
-  const measured =
-    layouts.titleLines !== undefined &&
-    (!body || layouts.bodyLines !== undefined) &&
-    counterRect.length > 0;
-  const place =
-    withFriend && measured && friendTop !== null && wrapper && layouts.fields
-      ? placeFriend(right, friendTop, blockers, head?.y ?? 0)
-      : null;
-  const shift = place?.shift ?? null;
-  const moves = place?.moves ?? NO_MOVES;
-  const inset = withFriend ? FRIEND.textInset : 0;
+  const scene = step ? SCENE[step] : null;
+  const say = friend?.bubble ?? body ?? null;
 
   return (
     <Screen>
       <View testID={testID} collapsable={false} className="flex-1">
-        <View
-          className="flex-row items-center gap-2.5"
-          style={{ minHeight: SPACING[11] }}
-          onLayout={onLayout('row')}
-        >
+        <View className="flex-row items-center gap-2.5" style={{ minHeight: KIT.size.round }}>
           {onBack ? (
             <Round icon="back" label={tr.common.back} onPress={onBack} />
           ) : (
-            <View style={{ width: SPACING[11] }} />
+            <View style={{ width: KIT.size.round }} />
           )}
           {step ? (
             <>
@@ -175,8 +101,6 @@ export function SignupStep({
                   <View
                     key={s}
                     style={{
-                      // docs/design/aura → Telefon: the step a 22 long capsule, the others dots,
-                      // the done ones in the primary.
                       width: i === n - 1 ? STEP_ON : STEP_DOT,
                       height: STEP_DOT,
                       borderRadius: STEP_DOT / 2,
@@ -185,7 +109,7 @@ export function SignupStep({
                   />
                 ))}
               </View>
-              <View style={{ minWidth: SPACING[8] }} onLayout={onLayout('counter')}>
+              <View style={{ width: KIT.size.round }}>
                 <Text
                   accessibilityLabel={tr.signup.stepLabel(n, SIGNUP_TOTAL)}
                   maxFontSizeMultiplier={STEP_SCALE}
@@ -197,56 +121,44 @@ export function SignupStep({
             </>
           ) : null}
         </View>
-        <View className="flex-1" onLayout={onLayout('wrapper')}>
-          <View className="gap-2.5 pt-4" onLayout={onLayout('head')}>
-            <View onLayout={onLayout('title')} style={{ paddingRight: inset }}>
-              <Text
-                accessibilityRole="header"
-                maxFontSizeMultiplier={STEP_SCALE}
-                onTextLayout={(e) => keep('titleLines')(e.nativeEvent.lines)}
-                style={[KIT_TYPE.display, { color: k.c.ink }]}
-              >
-                {title}
-              </Text>
-            </View>
-            {body ? (
-              <View onLayout={onLayout('body')} style={{ paddingRight: inset }}>
-                <Text
-                  maxFontSizeMultiplier={STEP_SCALE}
-                  onTextLayout={(e) => keep('bodyLines')(e.nativeEvent.lines)}
-                  style={[KIT_TYPE.body, { color: k.c.muted }]}
-                >
-                  {body}
-                </Text>
-              </View>
-            ) : null}
-          </View>
-          <View className="mt-5" onLayout={onLayout('fields')}>
+        <View className="flex-1" style={{ paddingTop: SPACING[7] }}>
+          <Text
+            accessibilityRole="header"
+            maxFontSizeMultiplier={STEP_SCALE}
+            style={[KIT_TYPE.display, { color: k.c.ink }]}
+          >
+            {title}
+          </Text>
+          {/* Outside sign-up (the gender gate, new consents) the line stays under the title. */}
+          {!scene && body ? (
+            <T v="body" style={{ marginTop: SPACING[2.5] }}>
+              {body}
+            </T>
+          ) : null}
+          <View style={{ marginTop: scene?.peek ? FIELD_TOP : SPACING[5] }}>
+            {scene?.peek ? <Peek kind={scene.peek} /> : null}
             {children}
           </View>
           {error ? (
-            <View onLayout={onLayout('error')} className="mt-4">
+            <View className="mt-4">
               <T v="fine" color={KIT.danger}>
                 {error}
               </T>
             </View>
           ) : null}
-          {withFriend && measured && friendTop !== null ? (
-            <SignupFriend
-              look={FRIEND_LOOKS[step]}
-              top={friendTop}
-              right={right}
-              shift={shift}
-              moves={moves}
-              reaction={friend?.reaction ?? null}
-              looking={friend?.looking ?? false}
-              bubble={friend?.bubble ?? null}
-              titleLine={titleRects[0] ?? null}
-              blockers={blockers}
-              puffKey={friend?.puffKey}
-            />
-          ) : null}
-          <View className="mt-auto pt-8">
+          {scene ? (
+            <View style={{ flexGrow: 1, marginTop: SPACING[3] }}>
+              <SayScene
+                look={scene.look}
+                side={scene.side}
+                text={say ?? ''}
+                reaction={friend?.reaction ?? null}
+              />
+            </View>
+          ) : (
+            <View style={{ flexGrow: 1 }} />
+          )}
+          <View style={{ paddingTop: SPACING[5] }}>
             <Btn
               block
               testID={action.testID}
@@ -260,8 +172,4 @@ export function SignupStep({
       </View>
     </Screen>
   );
-}
-
-function toRect(l: LayoutRectangle): Rect {
-  return { x: l.x, y: l.y, width: l.width, height: l.height };
 }

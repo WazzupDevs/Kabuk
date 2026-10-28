@@ -1,7 +1,7 @@
 import { describeEventTime } from '@shared/explore.ts';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { Image, type ImageSourcePropType, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
@@ -13,6 +13,8 @@ import { Screen } from '@/components/Screen';
 import { useTabBarSpace } from '@/components/TabBar';
 import { Loader } from '@/components/Loader';
 import { useCheckinDraft } from '@/features/checkin/draft';
+import { spotPicture } from '@/features/checkin/SpotPicker';
+import { useVenueSpots } from '@/features/checkin/spots';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { useExploreVenue } from '@/features/explore/useExploreVenues';
 import { errorMessage } from '@/i18n/errors';
@@ -42,6 +44,7 @@ export default function VenueDetailScreen() {
   const insets = useSafeAreaInsets();
   const barSpace = useTabBarSpace();
   const now = useNow(60_000);
+  const spots = useVenueSpots(venueId).data ?? [];
 
   if (isPending) {
     return (
@@ -155,6 +158,31 @@ export default function VenueDetailScreen() {
             </T>
             <T v="body">{venue.district}</T>
           </View>
+          {spots.length > 0 ? (
+            <Glass pad="pad" style={{ gap: KIT.size.rowGap }}>
+              <View className="flex-row items-baseline justify-between">
+                <T v="h3">{tr.checkin.spotTitle}</T>
+                <T v="fine">{tr.explore.spotCount(spots.length)}</T>
+              </View>
+              <View className="flex-row flex-wrap" style={{ gap: SPOT_GAP }}>
+                {spots.map((spot) => (
+                  <View
+                    key={spot.id}
+                    style={{
+                      width: `${100 / SPOT_COLUMNS - 3}%`,
+                      alignItems: 'center',
+                      gap: SPACING[1.5],
+                    }}
+                  >
+                    <SpotTile source={spotPicture(spot.ref)} />
+                    <T v="fine" strong center>
+                      {spot.name}
+                    </T>
+                  </View>
+                ))}
+              </View>
+            </Glass>
+          ) : null}
           {venue.event ? (
             <Glass
               pad="pad"
@@ -200,3 +228,25 @@ export default function VenueDetailScreen() {
 }
 
 const GAP = 14;
+const SPOT_COLUMNS = 3;
+const SPOT_GAP = 10;
+const SPOT_TILE = 76;
+
+// A spot's picture filling its column (KesfetMekan: `.thumb`, 76 high).
+function SpotTile({ source }: { source: ImageSourcePropType | undefined }) {
+  return (
+    <View
+      style={{
+        alignSelf: 'stretch',
+        height: SPOT_TILE,
+        borderRadius: KIT.size.thumbRadius,
+        overflow: 'hidden',
+        boxShadow: KIT.thumbShadow,
+      }}
+    >
+      {source ? (
+        <Image source={source} fadeDuration={0} style={{ width: '100%', height: '100%' }} />
+      ) : null}
+    </View>
+  );
+}

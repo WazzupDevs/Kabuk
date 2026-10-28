@@ -101,7 +101,7 @@ export default function LocationScreen() {
   const elsewhere =
     active.data && active.data.venue_id !== venue.id ? (active.data.venue?.name ?? null) : null;
   return (
-    <RouteSheet testID="checkin">
+    <RouteSheet testID="checkin" peek="checkin">
       {/* docs/design/aura → CheckIn: "Neredesin?" and its line, the spots as glass rows, the
           consent, "Konumumu kullan" and "Vazgeç". */}
       <View style={{ gap: KIT.size.chipGap }}>
