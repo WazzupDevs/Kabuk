@@ -26,6 +26,12 @@ export const KIT_TYPE = {
   title: t(600, 21, 27, -0.015),
   // A scene's title (Mekan: .title at 20).
   hero: t(600, 20, 26, -0.015),
+  // A digit of the code (Kod: 26, 600).
+  code: t(600, 26, 32),
+  // The phone number as it is typed (Telefon: 21, 600, 0.04em).
+  phone: t(600, 21, 26, 0.04),
+  // The incoming request's line (MasaIstek: .h3 at 17).
+  requestTitle: t(600, 17, 23, -0.005),
   // The table's name on Masa (.title at 26, 500).
   tableTitle: t(500, 26, 32, -0.015),
   h3: t(600, 16, 22, -0.005),
@@ -52,6 +58,8 @@ export const KIT_TYPE = {
     row: t(700, 18, 22),
     lg: t(700, 22, 26),
     xl: t(700, 32, 38),
+    // Profil's two faces (104).
+    big: t(700, 38, 44),
   },
 } as const;
 
@@ -92,6 +100,10 @@ export const KIT = {
     // Masa's tabs: the chosen one raised white.
     segOn: '#FFFFFF',
     segShadow: '0px 4px 12px rgba(54, 36, 140, 0.12)',
+    // .sheet over .scrim (Masa kur, Giriş): a frosted white card floating 10 from the edges.
+    sheet: 'linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.88))',
+    grab: 'rgba(20, 17, 43, 0.16)',
+    scrim: 'rgba(20, 17, 43, 0.20)',
   },
   dark: {
     ink: '#F3F0FF',
@@ -112,12 +124,21 @@ export const KIT = {
     field: 'rgba(255, 255, 255, 0.10)',
     segOn: 'rgba(255, 255, 255, 0.16)',
     segShadow: '',
+    sheet: 'linear-gradient(180deg, rgba(40, 33, 82, 0.97), rgba(28, 24, 56, 0.95))',
+    grab: 'rgba(255, 255, 255, 0.20)',
+    scrim: 'rgba(8, 6, 20, 0.45)',
   },
   // The same in both schemes.
   primary: '#6A47F5',
   onPrimary: '#FFFFFF',
   primaryShadow: SHADOW.primary,
   primaryInset: 'inset 0px 1px 0px rgba(255, 255, 255, 0.28)',
+  // A new invite in Bildirimler: the brand's soft gradient.
+  inviteGround: 'linear-gradient(135deg, rgba(123, 92, 255, 0.14), rgba(255, 79, 139, 0.10))',
+  // The incoming request's card floats deeper (MasaIstek).
+  requestShadow: '0px 30px 60px rgba(54, 36, 140, 0.22)',
+  // A chosen row's ring (CheckIn: the spot).
+  primaryRing: 'rgba(106, 71, 245, 0.14)',
   glassInset: 'inset 0px 1px 0px #FFFFFF',
   pink: '#FF4F8B',
   success: '#1C8C4E',
@@ -179,7 +200,9 @@ export const KIT = {
     tagPadX: 9,
     tagGap: 4,
     round: 44,
-    av: { sm: 32, md: 44, row: 52, lg: 64, xl: 96 },
+    av: { sm: 32, md: 44, row: 52, lg: 64, xl: 96, big: 104 },
+    stackOverlap: 10,
+    faceCard: 196,
     avRing: 2,
     avRingXl: 3,
     thumb: 60,
@@ -200,11 +223,20 @@ export const KIT = {
     iconSm: 18,
     disk: 4,
     seg: 26,
+    sheetInset: 10,
+    sheetRadius: 36,
+    sheetPadTop: 12,
+    sheetPadX: 20,
+    sheetPadBottom: 22,
+    sheetGap: 14,
+    grabW: 40,
+    grabH: 5,
     msgRadius: 22,
     msgTail: 8,
     msgPadX: 15,
     msgPadY: 11,
     field: 54,
+    phoneField: 72,
     fieldPadX: 20,
     dayPadX: 12,
     dayPadY: 4,

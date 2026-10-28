@@ -129,7 +129,7 @@ export function Gathering({
             bottom: g.disk.bottom * k,
             width: g.disk.size * k,
             height: g.disk.size * k,
-            borderRadius: g.disk.size,
+            borderRadius: ('radius' in g.disk ? g.disk.radius : g.disk.size) * k,
             overflow: 'hidden',
             alignItems: 'center',
             justifyContent: 'center',

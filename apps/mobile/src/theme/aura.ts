@@ -179,6 +179,32 @@ export const AURA = {
         { look: 'c:krem e:koyu h:tavsan', x: 334, bottom: 30, height: 92 },
       ],
     },
+    // Masa kur (docs/design/aura → MasaKur): the chosen table's picture, one buddy behind it, two
+    // in front.
+    create: {
+      frame: 350,
+      height: 214,
+      disk: { x: 109, bottom: 26, size: 132, radius: 40 },
+      cast: [
+        { look: 'c:nane e:koyu h:anten', x: 132, bottom: 112, height: 79, behind: true },
+        { look: 'c:pembe e:klasik h:korsan f:gozbandi', x: 18, bottom: -14, height: 136 },
+        { look: 'c:gok e:klasik h:parti', x: 236, bottom: -10, height: 121 },
+      ],
+    },
+    // Masa bitti (docs/design/aura → MasaBitti): the table's picture, two buddies at the sides
+    // behind, three in front.
+    end: {
+      frame: 390,
+      height: 320,
+      disk: { x: 135, bottom: 74, size: 120, radius: 38 },
+      cast: [
+        { look: 'c:hardal e:klasik h:sihirbaz', x: 44, bottom: 132, height: 80, behind: true },
+        { look: 'c:krem e:koyu h:hale m:gulumse', x: 286, bottom: 132, height: 80, behind: true },
+        { look: 'c:gok e:klasik h:parti', x: 20, bottom: -16, height: 144 },
+        { look: 'c:turkuaz e:klasik h:kovboy', x: 260, bottom: -16, height: 144 },
+        { look: 'c:pembe e:klasik h:korsan f:gozbandi', x: 139, bottom: -26, height: 147 },
+      ],
+    },
     messages: {
       frame: 350,
       height: 112,
@@ -189,6 +215,15 @@ export const AURA = {
       ],
     },
   },
+  // Masa bitti's confetti: capsules in the mark's colours, in the board's 390 frame (x, y, turn).
+  confetti: [
+    [40, 74, -24, '#7B5CFF'],
+    [92, 46, 30, '#FF4F8B'],
+    [300, 58, -38, '#FFB547'],
+    [338, 112, 18, '#7B5CFF'],
+    [196, 34, -8, '#FF4F8B'],
+    [24, 150, 40, '#FFB547'],
+  ],
   // Game cards arrive frosted, then resolve (docs/design/aura/project/hareket.json → frostedFirst).
   frost: { fill: 'rgba(255, 255, 255, 0.86)', fillDark: 'rgba(36, 30, 74, 0.86)' },
   // The table's scene (docs/design/aura → Masa): the table in the middle, the people around it.

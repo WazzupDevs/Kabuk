@@ -4,12 +4,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { View } from 'react-native';
 
-import { Avatar } from '@/components/Avatar';
-import { Button } from '@/components/Button';
+import { Av, Btn, Glass, GlassList, T, useKit } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
 import { RouteSheet } from '@/components/RouteSheet';
-import { Text } from '@/components/Text';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { openDm } from '@/features/friends/openDm';
 import { friendKeys, useFriends, useNotifications } from '@/features/friends/queries';
@@ -21,9 +19,9 @@ import { track } from '@/lib/analytics';
 import { callAccount, friendsApi, roomsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useNow } from '@/lib/useNow';
-import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, SPACING } from '@/theme/tokens';
-import { AppIcon } from '@/components/AppIcon';
+import { KIT } from '@/theme/auraKit';
+import { gradientStyle } from '@/theme/gradient';
+import { SPACING } from '@/theme/tokens';
 
 // Bildirimler (docs/SPEC_V4.md §4.G; skall tuvali: Bildirimler, BildirimlerKabul, BildirimlerBos):
 // friends/notifications's rows, the new ones (after the list was last opened) on soft cards under
@@ -92,23 +90,21 @@ export default function NotificationsScreen() {
   return (
     <RouteSheet title={tr.notifications.title} testID="notifications">
       {newer.length > 0 ? (
-        <View className="gap-2">
-          <Text variant="label" tone="muted">
-            {tr.notifications.fresh}
-          </Text>
+        <View style={{ gap: KIT.size.rowGap }}>
+          <T v="eyebrow">{tr.notifications.fresh}</T>
           {newer.map((n) => (
             <Row key={keyOf(n)} item={n} fresh />
           ))}
         </View>
       ) : null}
       {older.length > 0 ? (
-        <View className="gap-2">
-          <Text variant="label" tone="muted">
-            {tr.notifications.earlier}
-          </Text>
-          {older.map((n) => (
-            <Row key={keyOf(n)} item={n} />
-          ))}
+        <View style={{ gap: KIT.size.rowGap }}>
+          <T v="eyebrow">{tr.notifications.earlier}</T>
+          <GlassList>
+            {older.map((n) => (
+              <Row key={keyOf(n)} item={n} />
+            ))}
+          </GlassList>
         </View>
       ) : null}
     </RouteSheet>
@@ -129,7 +125,7 @@ function keyOf(n: NotificationItem): string {
 }
 
 function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
-  const { colors, shape } = useTheme();
+  const { c } = useKit();
   const now = useNow(item.kind === 'invite' ? 1000 : 30000);
   const queryClient = useQueryClient();
   const friends = useFriends();
@@ -172,7 +168,6 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
   let name = item.displayName ?? '';
   let rest = '';
   let meta = tr.common.ago(item.createdAt, now);
-  let badge: 'plus' | 'check' | 'table' = 'check';
   let faded = false;
   let actions: ReactNode = null;
   let note: ReactNode = null;
@@ -190,26 +185,28 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
         ) : null;
       } else {
         rest = tr.notifications.requestRest;
-        badge = 'plus';
         if (item.source === 'venue_chat' && item.venueName) {
           meta = [item.venueName, meta].join(` ${tr.common.separator} `);
         }
         actions = (
           <Pair
             left={
-              <Button
-                size="sm"
-                variant="neutral"
+              <Btn
+                sm
+                block
+                variant="glassy"
+                style={{ flex: 1 }}
                 label={tr.friends.decline}
                 disabled={respond.isPending}
                 onPress={() => respond.mutate({ requestId: item.requestId, accept: false })}
               />
             }
             right={
-              <Button
-                size="sm"
-                variant="positive"
-                icon="checkmark"
+              <Btn
+                sm
+                block
+                icon="check"
+                style={{ flex: 1 }}
                 testID="notification-accept"
                 label={tr.friends.accept}
                 loading={respond.isPending && respond.variables.accept}
@@ -234,7 +231,6 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
       actions = <MessageButton onPress={() => message(item.publicId, item.displayName)} />;
       break;
     case 'invite': {
-      badge = 'table';
       const state = answer.isSuccess
         ? answer.variables.accept
           ? 'joined'
@@ -248,18 +244,22 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
         actions = (
           <Pair
             left={
-              <Button
-                size="sm"
-                variant="neutral"
+              <Btn
+                sm
+                block
+                variant="glassy"
+                style={{ flex: 1 }}
                 label={tr.friends.decline}
                 disabled={answer.isPending}
                 onPress={() => answer.mutate({ inviteId: item.inviteId, accept: false })}
               />
             }
             right={
-              <Button
-                size="sm"
-                variant="positive"
+              <Btn
+                sm
+                block
+                icon="forward"
+                style={{ flex: 1 }}
                 testID="invite-join"
                 label={tr.notifications.join}
                 loading={answer.isPending && answer.variables.accept}
@@ -273,9 +273,9 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
         rest = tr.notifications.inviteRest;
         meta = '';
         note = (
-          <Text variant="label" tone="onSuccessSoft">
+          <T v="fine" strong color={KIT.success}>
             {tr.notifications.inviteJoined(table)}
-          </Text>
+          </T>
         );
       } else {
         rest = tr.notifications.invitePastRest;
@@ -290,71 +290,82 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
     }
   }
 
-  return (
-    <View
-      testID={`notification-${item.kind}`}
-      className="flex-row"
-      style={{
-        gap: SPACING[3],
-        padding: fresh ? SPACING[3] : 0,
-        paddingVertical: fresh ? SPACING[3] : SPACING[2],
-        borderRadius: shape.radius.lg,
-        backgroundColor: fresh ? colors.surface2 : 'transparent',
-        opacity: faded ? 0.6 : 1,
-      }}
-    >
-      <View>
-        <Avatar kind="profile" name={name} photoUrl={item.photoUrl} size="md" />
+  const words = (
+    <View style={{ flex: 1, gap: SPACING[0.5] }}>
+      <T v="fine" ink>
+        <T v="fine" strong>
+          {name}
+        </T>{' '}
+        {rest}
+      </T>
+      {meta ? <T v="fine">{meta}</T> : null}
+      {note}
+    </View>
+  );
+  const face = <Av name={name} photoUrl={item.photoUrl} />;
+  // docs/design/aura → Bildirimler: a new one as its own card (an invite on the brand's soft
+  // gradient), the actions under it; an earlier one as a row of the list, its action at the right.
+  if (!fresh) {
+    return (
+      <View testID={`notification-${item.kind}`} style={{ opacity: faded ? FADED : 1 }}>
         <View
-          className="absolute items-center justify-center"
           style={{
-            right: -SPACING[1],
-            bottom: -SPACING[1],
-            width: SPACING[5],
-            height: SPACING[5],
-            borderRadius: shape.radius.pill,
-            backgroundColor: colors.surface,
-            borderWidth: shape.stroke.hairline,
-            borderColor: colors.divider,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: KIT.size.liGap,
+            paddingVertical: OLD_PAD_Y,
+            paddingHorizontal: KIT.size.rowGap,
           }}
         >
-          <AppIcon
-            name={badge === 'plus' ? 'add' : badge === 'check' ? 'checkmark' : 'people'}
-            size={ICON.xs}
-            color={badge === 'table' ? colors.accent : colors.success}
-          />
+          {face}
+          {words}
+          {actions}
         </View>
       </View>
-      <View className="flex-1 gap-1">
-        <Text variant="fine" tone="text">
-          <Text variant="label">{name}</Text> {rest}
-        </Text>
-        {meta ? (
-          <Text variant="caption" tone="muted" tabular>
-            {meta}
-          </Text>
-        ) : null}
-        {note}
-        {actions ? <View style={{ marginTop: SPACING[1] }}>{actions}</View> : null}
+    );
+  }
+  const body = (
+    <>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.liGap }}>
+        {face}
+        {words}
       </View>
-      {fresh ? (
-        <View
-          style={{
-            marginTop: SPACING[1.5],
-            width: SPACING[2],
-            height: SPACING[2],
-            borderRadius: shape.radius.pill,
-            backgroundColor: colors.primary,
-          }}
-        />
-      ) : null}
+      {actions}
+    </>
+  );
+  return item.kind === 'invite' ? (
+    <View
+      testID={`notification-${item.kind}`}
+      style={{
+        ...gradientStyle(KIT.inviteGround),
+        padding: FRESH_PAD,
+        gap: KIT.size.rowGap,
+        borderRadius: KIT.size.glassRadiusSm + 2,
+        borderWidth: KIT.size.edge,
+        borderColor: c.glassEdge,
+        opacity: faded ? FADED : 1,
+      }}
+    >
+      {body}
     </View>
+  ) : (
+    <Glass
+      sm
+      testID={`notification-${item.kind}`}
+      style={{ padding: FRESH_PAD, gap: KIT.size.rowGap, opacity: faded ? FADED : 1 }}
+    >
+      {body}
+    </Glass>
   );
 }
 
+const FADED = 0.6;
+const FRESH_PAD = 14;
+const OLD_PAD_Y = 10;
+
 function Pair({ left, right }: { left: ReactNode; right: ReactNode }) {
   return (
-    <View className="flex-row flex-wrap" style={{ gap: SPACING[2] }}>
+    <View style={{ flexDirection: 'row', gap: KIT.size.chipsGap }}>
       {left}
       {right}
     </View>
@@ -363,21 +374,14 @@ function Pair({ left, right }: { left: ReactNode; right: ReactNode }) {
 
 function MessageButton({ onPress }: { onPress: () => void }) {
   return (
-    <View className="self-start">
-      <Button
-        size="sm"
-        icon="chevron-forward"
-        label={tr.notifications.writeMessage}
-        onPress={onPress}
-      />
-    </View>
+    <Btn sm variant="glassy" icon="chat" label={tr.notifications.writeMessage} onPress={onPress} />
   );
 }
 
 function Error({ error }: { error: unknown }) {
   return (
-    <Text variant="fine" tone="danger">
+    <T v="fine" color={KIT.danger}>
       {errorMessage(error)}
-    </Text>
+    </T>
   );
 }

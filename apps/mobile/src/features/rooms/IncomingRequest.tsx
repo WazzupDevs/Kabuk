@@ -1,23 +1,24 @@
+import { JOIN_REQUEST_TTL_SECONDS } from '@shared/rooms.ts';
 import { requestGone } from '@shared/tableCard.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { MAX_TABLE_PHONES } from '@shared/tables.ts';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
+import Svg, { Circle } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { create } from 'zustand';
 
+import { Av, Btn, T, Tag, useKit } from '@/aura/kit';
 import { PopIn } from '@/aura/PopIn';
-import { Avatar, AVATAR_SIZE } from '@/components/Avatar';
-import { Button } from '@/components/Button';
-import { GlyphDisc } from '@/components/GlyphDisc';
+import { AVATAR_SIZE } from '@/components/Avatar';
 import { closeAllSheets } from '@/components/sheetCloser';
-import { Text } from '@/components/Text';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { ApiError, roomsApi } from '@/lib/api';
 import { useNowUntil } from '@/lib/useNow';
-import { AURA } from '@/theme/aura';
+import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
@@ -71,7 +72,8 @@ export function IncomingRequestHost() {
 // name, age and photo, read while the request waits (rule 4); the seconds and the buttons never
 // wait for it.
 export function IncomingRequest({ roomId, ownerSessionId, phones, floating }: Props) {
-  const { colors, shape, scheme } = useTheme();
+  const { shape } = useTheme();
+  const k = useKit();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const requests = useIncomingRequests(roomId, ownerSessionId);
@@ -151,13 +153,13 @@ export function IncomingRequest({ roomId, ownerSessionId, phones, floating }: Pr
       <PopIn key={testID}>
         <View
           style={{
-            gap: SPACING[3],
-            padding: SPACING[4],
-            borderRadius: AURA.card.radius,
-            backgroundColor: colors.surface,
-            borderWidth: AURA.card.edgeWidth,
-            borderColor: AURA[scheme].glass.edge,
-            boxShadow: floating ? shape.shadow.sheet : AURA[scheme].glass.shadow,
+            ...gradientStyle(k.c.sheet),
+            gap: KIT.size.padLg - SPACING[1.5],
+            padding: KIT.size.pad,
+            borderRadius: KIT.size.glassRadius,
+            borderWidth: KIT.size.edge,
+            borderColor: k.c.glassEdge,
+            boxShadow: `${KIT.requestShadow}, ${KIT.glassInset}`,
           }}
         >
           {children}
@@ -169,12 +171,9 @@ export function IncomingRequest({ roomId, ownerSessionId, phones, floating }: Pr
   if (!request) {
     return coming
       ? frame(
-          <View className="flex-row items-center gap-3">
-            <GlyphDisc icon="walk-outline" />
-            <View className="flex-1 gap-0.5">
-              <Text variant="heading">{tr.rooms.comingTitle(coming.alias, coming.phones)}</Text>
-              <Text variant="fine">{tr.rooms.comingBody}</Text>
-            </View>
+          <View style={{ gap: KIT.size.tagGap }}>
+            <T v="h3">{tr.rooms.comingTitle(coming.alias, coming.phones)}</T>
+            <T v="fine">{tr.rooms.comingBody}</T>
           </View>,
           'request-coming',
         )
@@ -186,11 +185,12 @@ export function IncomingRequest({ roomId, ownerSessionId, phones, floating }: Pr
   if (request.id === gone) {
     return frame(
       <>
-        <Text variant="heading" testID="request-gone">
+        <T v="h3" testID="request-gone">
           {tr.rooms.requestGone}
-        </Text>
-        <Button
-          variant="neutral"
+        </T>
+        <Btn
+          block
+          variant="glassy"
           label={tr.common.close}
           onPress={() => {
             setClosed((ids) => new Set([...ids, request.id]));
@@ -216,90 +216,120 @@ export function IncomingRequest({ roomId, ownerSessionId, phones, floating }: Pr
   const title = tr.rooms.wantsToJoin(
     group ? request.requester_alias : (person ?? request.requester_alias),
   );
-  const meta = [
-    ...(group
-      ? [
-          tr.venue.people(request.requester_phones),
-          person ? tr.rooms.askedBy(person) : tr.rooms.askedByAnonymous,
-        ]
-      : [member ? tr.rooms.memberAsk : profiled ? tr.rooms.withProfile : tr.rooms.anonymous]),
-    tr.rooms.secondsLeft(seconds),
-  ].join(` ${tr.common.separator} `);
+  // How the person asks (docs/design/aura → MasaIstek: a purple tag), and the seconds left.
+  const how = group
+    ? tr.venue.people(request.requester_phones)
+    : member
+      ? tr.rooms.memberAsk
+      : profiled
+        ? tr.rooms.withProfile
+        : tr.rooms.anonymous;
+  const faceName = profile.data?.displayName ?? request.requester_alias;
   const face =
     profiled && profile.data ? (
-      <Avatar
-        kind="profile"
-        name={profile.data.displayName ?? request.requester_alias}
-        photoUrl={profile.data.photoUrl}
-        size={group ? 'sm' : 'xl'}
-      />
+      <Av size="row" name={faceName} photoUrl={profile.data.photoUrl} />
     ) : profiled && profile.isPending ? (
       <Placeholder round label={tr.rooms.requestProfileLoading} />
     ) : (
-      <Avatar kind="default" size={group ? 'sm' : 'xl'} />
+      <Av size="row" name={request.requester_alias} />
     );
 
   return frame(
     <>
       <View
-        className="flex-row items-center gap-3"
+        style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.pad - SPACING[1] }}
         testID={profiled ? 'request-profile' : undefined}
       >
-        {group ? (
-          <View style={{ width: AVATAR_SIZE.xl, height: AVATAR_SIZE.xl }}>
-            <GlyphDisc icon="people-outline" />
-            <View className="absolute" style={{ right: -SPACING[1.5], bottom: -SPACING[1.5] }}>
-              {face}
-            </View>
+        <Countdown share={seconds / JOIN_REQUEST_TTL_SECONDS}>{face}</Countdown>
+        <View style={{ flex: 1, gap: KIT.size.tagGap }}>
+          <T v="h3" style={KIT_TYPE.requestTitle}>
+            {title}
+          </T>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: KIT.size.chipGap }}>
+            <Tag tone="purple" label={how} />
+            {group ? (
+              <Tag
+                tone="purple"
+                label={person ? tr.rooms.askedBy(person) : tr.rooms.askedByAnonymous}
+              />
+            ) : null}
+            <Tag label={tr.rooms.secondsLeft(seconds)} />
           </View>
-        ) : (
-          face
-        )}
-        <View className="flex-1 gap-0.5">
-          <Text variant="heading">{title}</Text>
-          <Text variant="fine" tabular>
-            {meta}
-          </Text>
         </View>
       </View>
       {full ? (
-        <Text variant="fine" tone="danger">
+        <T v="fine" color={KIT.danger}>
           {tr.rooms.tooMany}
-        </Text>
+        </T>
       ) : null}
       {respond.isError ? (
-        <Text variant="fine" tone="danger">
+        <T v="fine" color={KIT.danger}>
           {errorMessage(respond.error)}
-        </Text>
+        </T>
       ) : null}
-      <View className="flex-row gap-2.5">
-        <View className="flex-1">
-          <Button
-            variant="neutral"
-            icon="close"
-            iconTone="danger"
-            label={tr.rooms.decline}
-            accessibilityHint={member ? tr.rooms.declineMemberNote : tr.rooms.declineNote}
-            onPress={() => respond.mutate({ id: request.id, accept: false, member })}
-            disabled={respond.isPending}
-          />
-        </View>
-        <View className="flex-1">
-          <Button
-            variant="positive"
-            icon="checkmark"
-            testID="join-accept"
-            label={tr.rooms.accept}
-            onPress={() => respond.mutate({ id: request.id, accept: true, member })}
-            loading={respond.isPending}
-            disabled={full}
-          />
-        </View>
+      <View style={{ flexDirection: 'row', gap: KIT.size.chipGap + SPACING[1] }}>
+        <Btn
+          block
+          variant="glassy"
+          icon="close"
+          label={tr.rooms.decline}
+          accessibilityLabel={`${tr.rooms.decline}. ${member ? tr.rooms.declineMemberNote : tr.rooms.declineNote}`}
+          onPress={() => respond.mutate({ id: request.id, accept: false, member })}
+          disabled={respond.isPending}
+          style={{ flex: 1 }}
+        />
+        <Btn
+          block
+          icon="check"
+          testID="join-accept"
+          label={tr.rooms.accept}
+          onPress={() => respond.mutate({ id: request.id, accept: true, member })}
+          loading={respond.isPending}
+          disabled={full}
+          style={{ flex: 1 }}
+        />
       </View>
     </>,
     'request-card',
   );
 }
+
+// The face inside a ring that empties with the request's 60 seconds (MasaIstek).
+function Countdown({ share, children }: { share: number; children: ReactNode }) {
+  const { c } = useKit();
+  const side = RING_SIDE;
+  const r = (side - RING_STROKE) / 2;
+  const around = 2 * Math.PI * r;
+  const left = Math.max(0, Math.min(1, share));
+  return (
+    <View style={{ width: side, height: side, alignItems: 'center', justifyContent: 'center' }}>
+      <Svg width={side} height={side} style={{ position: 'absolute' }}>
+        <Circle
+          cx={side / 2}
+          cy={side / 2}
+          r={r}
+          stroke={c.hair}
+          strokeWidth={RING_STROKE}
+          fill="none"
+        />
+        <Circle
+          cx={side / 2}
+          cy={side / 2}
+          r={r}
+          stroke={KIT.primary}
+          strokeWidth={RING_STROKE}
+          fill="none"
+          strokeLinecap="round"
+          strokeDasharray={`${around * left} ${around}`}
+          transform={`rotate(-90 ${side / 2} ${side / 2})`}
+        />
+      </Svg>
+      {children}
+    </View>
+  );
+}
+const RING_SIDE = 72;
+const RING_STROKE = 4;
 
 // An accepted table's "geliyor" note stays this long.
 const COMING_MS = 6000;

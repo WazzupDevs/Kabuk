@@ -594,12 +594,12 @@ export function Av({
 }: {
   name: string;
   photoUrl?: string | null;
-  size?: 'sm' | 'md' | 'row' | 'lg' | 'xl';
+  size?: 'sm' | 'md' | 'row' | 'lg' | 'xl' | 'big';
   // Something else in the ring (a capsule).
   children?: ReactNode;
 }) {
   const side = KIT.size.av[size];
-  const ring = size === 'xl' ? KIT.size.avRingXl : KIT.size.avRing;
+  const ring = size === 'xl' || size === 'big' ? KIT.size.avRingXl : KIT.size.avRing;
   const pick = KIT.avColors[colorIndex(name)] ?? KIT.avColors[0];
   return (
     <View

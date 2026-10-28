@@ -5,13 +5,12 @@ import { withinBoundary } from '@shared/geo.ts';
 import * as Location from 'expo-location';
 import { Redirect } from 'expo-router';
 import { useState } from 'react';
-import { Linking, View } from 'react-native';
+import { Linking, Pressable, View } from 'react-native';
 
+import { CapIcon } from '@/aura/CapIcon';
+import { Btn, T, useKit } from '@/aura/kit';
 import { Banner } from '@/components/Banner';
-import { Button } from '@/components/Button';
-import { Checkbox } from '@/components/Checkbox';
 import { RouteSheet, useCloseSheet } from '@/components/RouteSheet';
-import { Text } from '@/components/Text';
 import { useProfile } from '@/features/account/useProfile';
 import { type Position, useCheckinDraft } from '@/features/checkin/draft';
 import { useSkipLocation } from '@/features/checkin/locationMode';
@@ -19,12 +18,10 @@ import { SpotPicker } from '@/features/checkin/SpotPicker';
 import { useVenueSpots } from '@/features/checkin/spots';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { useCheckIn } from '@/features/checkin/useCheckIn';
-import { VenueTile } from '@/features/explore/VenueTags';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
-import { useTheme } from '@/theme/ThemeProvider';
-import { SPACING } from '@/theme/tokens';
+import { KIT } from '@/theme/auraKit';
 
 type Problem = 'denied' | 'failed' | 'tooFar' | 'outsideBoundary' | null;
 
@@ -35,7 +32,7 @@ type Problem = 'denied' | 'failed' | 'tooFar' | 'outsideBoundary' | null;
 // the venue nor a missing one (no permission, no fix indoors) stops the flow: the server skips the
 // check there, and the venue's own point stands in for a missing position (never stored).
 export default function LocationScreen() {
-  const { colors, shape } = useTheme();
+  const { c } = useKit();
   const profile = useProfile();
   const venue = useCheckinDraft((s) => s.venue);
   const setPosition = useCheckinDraft((s) => s.setPosition);
@@ -105,48 +102,58 @@ export default function LocationScreen() {
     active.data && active.data.venue_id !== venue.id ? (active.data.venue?.name ?? null) : null;
   return (
     <RouteSheet testID="checkin">
-      <View className="flex-row items-center gap-3">
-        <VenueTile kind={venue.kind} />
-        <Text variant="title" accessibilityRole="header" className="flex-1">
-          {venue.name}
-        </Text>
+      {/* docs/design/aura → CheckIn: "Neredesin?" and its line, the spots as glass rows, the
+          consent, "Konumumu kullan" and "Vazgeç". */}
+      <View style={{ gap: KIT.size.chipGap }}>
+        {hasSpots ? <T v="eyebrow">{venue.name}</T> : null}
+        <T v="title" accessibilityRole="header">
+          {hasSpots ? tr.checkin.spotTitle : venue.name}
+        </T>
+        <T v="fine">{hasSpots ? tr.checkin.spotHint : tr.checkin.locationBody}</T>
       </View>
       {hasSpots ? (
-        <View className="gap-2">
-          <Text variant="label">{tr.checkin.spotTitle}</Text>
-          <SpotPicker
-            spots={spots.data ?? []}
-            selectedId={spot?.id ?? null}
-            onSelect={(s) => setSpot({ id: s.id, name: s.name })}
-          />
-          <Text variant="fine">{tr.checkin.spotHint}</Text>
-        </View>
+        <SpotPicker
+          spots={spots.data ?? []}
+          selectedId={spot?.id ?? null}
+          onSelect={(s) => setSpot({ id: s.id, name: s.name })}
+        />
       ) : null}
-      <Text variant="fine">{tr.checkin.locationBody}</Text>
+      {hasSpots ? <T v="fine">{tr.checkin.locationBody}</T> : null}
       {consentGiven ? null : (
-        <View
-          style={{
-            paddingHorizontal: SPACING[4],
-            borderRadius: shape.radius.md,
-            borderWidth: consent ? 2 : 1,
-            borderColor: consent ? colors.primary : colors.control,
-            backgroundColor: colors.surface,
-          }}
+        <Pressable
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: consent }}
+          accessibilityLabel={tr.checkin.locationConsent}
+          onPress={() => setConsent((v) => !v)}
+          style={{ flexDirection: 'row', alignItems: 'flex-start', gap: KIT.size.rowGap }}
         >
-          <Checkbox
-            label={tr.checkin.locationConsent}
-            checked={consent}
-            onToggle={() => setConsent((v) => !v)}
-          />
-        </View>
+          <View
+            style={{
+              width: BOX,
+              height: BOX,
+              borderRadius: BOX_RADIUS,
+              marginTop: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: consent ? KIT.primary : undefined,
+              borderWidth: consent ? 0 : BOX_RING,
+              borderColor: c.hair,
+            }}
+          >
+            {consent ? <CapIcon name="check" color={KIT.white} size={KIT.size.iconSm} /> : null}
+          </View>
+          <T v="fine" ink style={{ flex: 1 }}>
+            {tr.checkin.locationConsent}
+          </T>
+        </Pressable>
       )}
       {elsewhere ? <Banner tone="warn" body={tr.checkin.replaces(elsewhere)} /> : null}
       {problem === 'denied' ? (
         <View className="gap-3">
           <Banner tone="danger" title={tr.checkin.deniedTitle} body={tr.checkin.permissionDenied} />
-          <Button
-            size="lg"
-            variant="secondary"
+          <Btn
+            block
+            variant="glassy"
             label={tr.checkin.openSettings}
             onPress={() => void Linking.openSettings()}
           />
@@ -158,9 +165,10 @@ export default function LocationScreen() {
       ) : null}
       {problem === 'failed' ? <Banner tone="danger" body={tr.checkin.locationFailed} /> : null}
       {checkIn.isError ? <Banner tone="danger" body={errorMessage(checkIn.error)} /> : null}
-      <View className="gap-2.5 pt-1">
-        <Button
-          size="lg"
+      <View style={{ gap: KIT.size.chipGap + 2, paddingTop: KIT.size.tagGap }}>
+        <Btn
+          block
+          icon="pin"
           label={locating ? tr.checkin.locating : tr.checkin.useLocation}
           onPress={() => void locate()}
           disabled={!(consentGiven || consent) || spots.isPending || (hasSpots && !spot)}
@@ -172,7 +180,11 @@ export default function LocationScreen() {
   );
 }
 
+const BOX = 24;
+const BOX_RADIUS = 8;
+const BOX_RING = 2;
+
 function CancelButton() {
   const close = useCloseSheet();
-  return <Button size="lg" variant="neutral" label={tr.common.cancel} onPress={close} />;
+  return <Btn block variant="glassy" label={tr.common.cancel} onPress={close} />;
 }
