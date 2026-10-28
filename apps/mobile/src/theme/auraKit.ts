@@ -24,6 +24,8 @@ export const KIT_TYPE = {
   title: t(600, 21, 27, -0.015),
   // A scene's title (Mekan: .title at 20).
   hero: t(600, 20, 26, -0.015),
+  // The table's name on Masa (.title at 26, 500).
+  tableTitle: t(500, 26, 32, -0.015),
   h3: t(600, 16, 22, -0.005),
   // A section's heading (.sec .h3 at 18).
   sec: t(600, 18, 24, -0.005),
@@ -78,6 +80,9 @@ export const KIT = {
     onChipOn: '#FFFFFF',
     day: 'rgba(255, 255, 255, 0.60)',
     field: 'rgba(255, 255, 255, 0.74)',
+    // Masa's tabs: the chosen one raised white.
+    segOn: '#FFFFFF',
+    segShadow: '0px 4px 12px rgba(54, 36, 140, 0.12)',
   },
   dark: {
     ink: '#F3F0FF',
@@ -96,6 +101,8 @@ export const KIT = {
     onChipOn: '#14112B',
     day: 'rgba(255, 255, 255, 0.10)',
     field: 'rgba(255, 255, 255, 0.10)',
+    segOn: 'rgba(255, 255, 255, 0.16)',
+    segShadow: '',
   },
   // The same in both schemes.
   primary: '#6A47F5',
@@ -135,6 +142,11 @@ export const KIT = {
     amber: { bg: 'rgba(255, 181, 71, 0.22)', fg: '#FFE2B8' },
     green: { bg: 'rgba(95, 198, 160, 0.20)', fg: '#C9F2DF' },
   },
+  // Bitir and Ayrıl on Masa's bar.
+  endInk: '#A8301A',
+  endInkDark: '#FF9B8A',
+  // Masa's header: the stage's height (under the status bar), its bottom corners and the table.
+  stage: { height: 330, radius: 36, disk: 140, diskRadius: 44, diskBottom: 54, frame: 390 },
   // A nick's colour in a line of the venue chat (Mekan: kapsul-sn19 in amber's ink).
   nickInk: '#9A4A00',
   nameInk: '#B0124F',
@@ -176,6 +188,9 @@ export const KIT = {
     icon: 22,
     iconSm: 18,
     disk: 4,
+    seg: 26,
+    segPad: 5,
+    segGap: 4,
     hair: 1,
     edge: 1,
   },

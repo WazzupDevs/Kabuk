@@ -1357,6 +1357,11 @@ export const tr = {
     leave: 'Masadan ayrıl',
     leaveShort: 'Ayrıl',
     tabGames: (n: number) => `Oyun Seç (${n})`,
+    // Masa's two tabs (docs/design/aura → Masa).
+    games: 'Oyunlar',
+    chat: 'Sohbet',
+    peopleTag: 'Masadakiler',
+    status: (people: string, lobby: string) => `${people} · ${lobby}`,
     tabChat: (n: number) => `Masa Sohbeti (${n})`,
     categoryAll: (n: number) => `Tümü ${n}`,
     category: (name: string, n: number) => `${name} ${n}`,

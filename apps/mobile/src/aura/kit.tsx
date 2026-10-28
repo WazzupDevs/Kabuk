@@ -639,3 +639,70 @@ function colorIndex(name: string): number {
   for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
   return h % KIT.avColors.length;
 }
+
+// Masa's tabs (docs/design/aura → Masa): a glass capsule, the chosen tab raised white, the other's
+// words muted; a count as a pink badge.
+export function Seg<V extends string>({
+  value,
+  onChange,
+  options,
+  accessibilityLabel,
+}: {
+  value: V;
+  onChange: (v: V) => void;
+  options: readonly { value: V; label: string; badge?: number; testID?: string }[];
+  accessibilityLabel?: string;
+}) {
+  const { c } = useKit();
+  return (
+    <Glass
+      style={{
+        flexDirection: 'row',
+        padding: KIT.size.segPad,
+        gap: KIT.size.segGap,
+        borderRadius: KIT.size.seg,
+      }}
+    >
+      <View
+        accessibilityRole="tablist"
+        accessibilityLabel={accessibilityLabel}
+        style={{ flex: 1, flexDirection: 'row', gap: KIT.size.segGap }}
+      >
+        {options.map((o) => {
+          const on = o.value === value;
+          return (
+            <Pressable
+              key={o.value}
+              testID={o.testID}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: on }}
+              onPress={() => onChange(o.value)}
+              style={{
+                flex: 1,
+                height: KIT.size.btnSm,
+                borderRadius: KIT.size.btnSm,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: KIT.size.tagGap,
+                backgroundColor: on ? c.segOn : undefined,
+                boxShadow: on ? c.segShadow || undefined : undefined,
+              }}
+            >
+              <Text
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={MIN_LABEL_SCALE}
+                maxFontSizeMultiplier={MAX_FONT_SCALE}
+                style={[KIT_TYPE.btnSm, { color: on ? c.ink : c.muted, flexShrink: 1 }]}
+              >
+                {o.label}
+              </Text>
+              {o.badge ? <Badge count={o.badge} /> : null}
+            </Pressable>
+          );
+        })}
+      </View>
+    </Glass>
+  );
+}
