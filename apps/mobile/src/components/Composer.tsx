@@ -340,10 +340,11 @@ function FlyingArrow({ flights, muted }: { flights: number; muted: boolean }) {
 // skall tuvali (skall.css → `.send .bi`): the arrow as two capsules in the brand's purple and pink;
 // muted while there is nothing to send.
 function SendGlyph({ muted }: { muted: boolean }) {
-  const { c, scheme } = useKit();
-  // On the ink's button: white and pink by day, the primary and pink by night.
-  const a = scheme === 'dark' ? BRAND.purple : c.onChipOn;
-  const b = BRAND.pink;
+  const { scheme } = useKit();
+  // On the ink's button: lavender and soft pink by day (Dm: send-capsule.svg), the brand's two by
+  // night.
+  const a = scheme === 'dark' ? BRAND.purple : KIT.sendA;
+  const b = scheme === 'dark' ? BRAND.pink : KIT.sendB;
   return (
     <Svg width={ICON.lg} height={ICON.lg} viewBox="0 0 24 24" opacity={muted ? MUTED_SEND : 1}>
       <Rect

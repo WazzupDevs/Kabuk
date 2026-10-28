@@ -3,6 +3,7 @@ import { Animated, Modal, Pressable, ScrollView, useWindowDimensions, View } fro
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { T, useKit } from '@/aura/kit';
+import { Peek, type PeekKind } from '@/aura/Peek';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
@@ -32,13 +33,24 @@ type Props = {
   icon?: IconName;
   // Centered text for a single decision (the join request); menus stay left-aligned.
   centered?: boolean;
+  // Buddies looking over the sheet's top edge (docs/design/aura → CheckIn, Bildirimler).
+  peek?: PeekKind;
   children: ReactNode;
 };
 
 // A bottom sheet over a scrim: menus, confirmations and the join request. Always a trust surface
 // (`Quiet`): hairlines, one clear action. It slides up and the scrim fades in; with reduce motion
 // it appears at once. It closes the same way, then leaves the screen.
-export function Sheet({ visible, onClose, title, titleNote, icon, centered, children }: Props) {
+export function Sheet({
+  visible,
+  onClose,
+  title,
+  titleNote,
+  icon,
+  centered,
+  peek,
+  children,
+}: Props) {
   const { colors, shape } = useTheme();
   const k = useKit();
   const insets = useSafeAreaInsets();
@@ -100,16 +112,8 @@ export function Sheet({ visible, onClose, title, titleNote, icon, centered, chil
           accessibilityViewIsModal
           // docs/design/aura (`.sheet`): a frosted card floating 10 from the edges, 36 round.
           style={{
-            ...gradientStyle(k.c.sheet),
             marginHorizontal: KIT.size.sheetInset,
             marginBottom: KIT.size.sheetInset + insets.bottom,
-            borderRadius: KIT.size.sheetRadius,
-            borderWidth: KIT.size.edge,
-            borderColor: k.c.glassEdge,
-            boxShadow: k.c.glassShadow,
-            paddingTop: KIT.size.sheetPadTop,
-            paddingHorizontal: KIT.size.sheetPadX,
-            paddingBottom: KIT.size.sheetPadBottom,
             maxHeight: '90%',
             transform: [
               {
@@ -122,54 +126,69 @@ export function Sheet({ visible, onClose, title, titleNote, icon, centered, chil
           }}
           {...drag.handlers}
         >
+          {peek ? <Peek kind={peek} /> : null}
           <View
-            className="self-center"
             style={{
-              width: KIT.size.grabW,
-              height: KIT.size.grabH,
-              borderRadius: KIT.size.grabH,
-              backgroundColor: k.c.grab,
-              marginBottom: KIT.size.sheetGap,
+              ...gradientStyle(k.c.sheet),
+              flexShrink: 1,
+              borderRadius: KIT.size.sheetRadius,
+              borderWidth: KIT.size.edge,
+              borderColor: k.c.glassEdge,
+              boxShadow: k.c.glassShadow,
+              paddingTop: KIT.size.sheetPadTop,
+              paddingHorizontal: KIT.size.sheetPadX,
+              paddingBottom: KIT.size.sheetPadBottom,
             }}
-          />
-          <ScrollView
-            bounces={false}
-            keyboardShouldPersistTaps="handled"
-            onScroll={drag.onScroll}
-            scrollEventThrottle={16}
           >
-            <Quiet value>
-              <View className={`gap-3 ${centered ? 'items-center' : ''}`}>
-                {icon ? (
-                  <View
-                    className="mt-2 items-center justify-center"
-                    style={{
-                      width: ICON_DISC,
-                      height: ICON_DISC,
-                      borderRadius: shape.radius.pill,
-                      backgroundColor: colors.surface2,
-                    }}
-                  >
-                    <AppIcon name={icon} size={ICON.lg} color={colors.accent} />
-                  </View>
-                ) : null}
-                {title ? (
-                  <T v="title" center={centered} accessibilityRole="header">
-                    {title}
-                    {titleNote ? <T v="fine">{`  ${titleNote}`}</T> : null}
-                  </T>
-                ) : null}
-              </View>
-              <View
-                style={{
-                  marginTop: title || icon ? KIT.size.sheetGap : 0,
-                  gap: KIT.size.rowGap,
-                }}
-              >
-                {children}
-              </View>
-            </Quiet>
-          </ScrollView>
+            <View
+              className="self-center"
+              style={{
+                width: KIT.size.grabW,
+                height: KIT.size.grabH,
+                borderRadius: KIT.size.grabH,
+                backgroundColor: k.c.grab,
+                marginBottom: KIT.size.sheetGap,
+              }}
+            />
+            <ScrollView
+              bounces={false}
+              keyboardShouldPersistTaps="handled"
+              onScroll={drag.onScroll}
+              scrollEventThrottle={16}
+            >
+              <Quiet value>
+                <View className={`gap-3 ${centered ? 'items-center' : ''}`}>
+                  {icon ? (
+                    <View
+                      className="mt-2 items-center justify-center"
+                      style={{
+                        width: ICON_DISC,
+                        height: ICON_DISC,
+                        borderRadius: shape.radius.pill,
+                        backgroundColor: colors.surface2,
+                      }}
+                    >
+                      <AppIcon name={icon} size={ICON.lg} color={colors.accent} />
+                    </View>
+                  ) : null}
+                  {title ? (
+                    <T v="title" center={centered} accessibilityRole="header">
+                      {title}
+                      {titleNote ? <T v="fine">{`  ${titleNote}`}</T> : null}
+                    </T>
+                  ) : null}
+                </View>
+                <View
+                  style={{
+                    marginTop: title || icon ? KIT.size.sheetGap : 0,
+                    gap: KIT.size.rowGap,
+                  }}
+                >
+                  {children}
+                </View>
+              </Quiet>
+            </ScrollView>
+          </View>
         </Animated.View>
       </View>
     </Modal>

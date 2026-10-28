@@ -8,7 +8,7 @@ import {
 } from '@shared/venueChat.ts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useState, useEffect } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { Avatar, AVATAR_SIZE } from '@/components/Avatar';
@@ -39,9 +39,14 @@ import { friendKeys } from '@/features/friends/queries';
 import { useOwnLook } from '@/features/profile/useOwnLook';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { useCurrentRoom } from '@/features/rooms/queries';
-import { useVenueChat, useVenueChatReactions, venueChatKeys } from '@/features/venueChat/queries';
+import {
+  useVenueChat,
+  useVenueChatReactions,
+  venueChatKeys,
+  markVenueChatSeen,
+} from '@/features/venueChat/queries';
 import { errorMessage } from '@/i18n/errors';
-import { Glass, T } from '@/aura/kit';
+import { Av, Glass, T } from '@/aura/kit';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
 import { track } from '@/lib/analytics';
@@ -62,9 +67,14 @@ export default function VenueChatScreen() {
   const queryClient = useQueryClient();
   const table = useActiveTable();
   const venueId = table.data?.venue_id;
-  const venueName = table.data?.venue?.name ?? '';
   const sessionId = table.data?.id;
   const page = useVenueChat(venueId, sessionId);
+  // Read while open: Mekan's count starts again from leaving.
+  useEffect(() => {
+    if (!sessionId) return undefined;
+    markVenueChatSeen(sessionId);
+    return () => markVenueChatSeen(sessionId);
+  }, [sessionId]);
   const currentRoom = useCurrentRoom(sessionId);
   const identity = page.data?.identity ?? table.data?.identity ?? null;
   const photo = useOwnPhoto();
@@ -201,18 +211,20 @@ export default function VenueChatScreen() {
         <ChatTopBar
           onBack={() => router.back()}
           title={tr.venueChat.open}
-          subtitle={venueName}
+          subtitle={tr.venue.chatReaders}
           live
-          leading={<GlyphDisc icon="chatbubbles-outline" />}
           actions={
-            <IconButton
-              round
-              icon="ellipsis-vertical"
-              glyph={<MoreDots />}
-              label={tr.venueChat.options}
-              testID="venue-chat-options"
-              onPress={() => setSheet('options')}
-            />
+            <View className="flex-row items-center" style={{ gap: SPACING[2] }}>
+              <Writers messages={messages ?? []} />
+              <IconButton
+                round
+                icon="ellipsis-vertical"
+                glyph={<MoreDots />}
+                label={tr.venueChat.options}
+                testID="venue-chat-options"
+                onPress={() => setSheet('options')}
+              />
+            </View>
           }
         />
       }
@@ -550,3 +562,37 @@ function OptionsSheet({
     </Sheet>
   );
 }
+
+// The last writers' faces in the bar (docs/design/aura → Mekan sohbeti: `.stack`): a capsule for an
+// anonymous message, the photo or initial for a profiled one; one face per writer and identity.
+function Writers({ messages }: { messages: readonly VenueChatMessage[] }) {
+  const seen = new Set<string>();
+  const last: VenueChatMessage[] = [];
+  for (let i = messages.length - 1; i >= 0 && last.length < WRITERS; i--) {
+    const m = messages[i];
+    if (!m || m.fromMe) continue;
+    const key = m.senderKey ?? `${m.profiled ? 'p' : 'a'}:${senderLabel(m)}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    last.push(m);
+  }
+  if (last.length === 0) return null;
+  return (
+    <View className="flex-row" accessible={false} importantForAccessibility="no-hide-descendants">
+      {last.map((m, i) => (
+        <View key={m.id} style={{ marginLeft: i === 0 ? 0 : -KIT.size.stackOverlap }}>
+          {m.profiled ? (
+            <Av size="sm" name={senderLabel(m)} photoUrl={m.photoUrl} />
+          ) : m.senderLook ? (
+            <Av size="sm" name={senderLabel(m)}>
+              <LookAvatar look={m.senderLook} size={KIT.size.av.sm} />
+            </Av>
+          ) : (
+            <Av size="sm" name={senderLabel(m)} />
+          )}
+        </View>
+      ))}
+    </View>
+  );
+}
+const WRITERS = 3;

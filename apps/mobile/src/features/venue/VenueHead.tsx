@@ -130,7 +130,7 @@ const PRESSED = 0.7;
 const USED_NOTE_MS = 2600;
 
 // The mark (two capsules, their overlap amber) and the app's name in 800 (aura.css, Mekan).
-export function WordmarkRow() {
+export function WordmarkRow({ small }: { small?: boolean } = {}) {
   return (
     <View
       accessible
@@ -157,7 +157,7 @@ export function WordmarkRow() {
           clipPath="url(#wordmarkClip)"
         />
       </Svg>
-      <T v="h3" ink style={KIT_TYPE.wordmark}>
+      <T v="h3" ink style={small ? KIT_TYPE.wordmarkSm : KIT_TYPE.wordmark}>
         {APP_NAME}
       </T>
     </View>

@@ -20,6 +20,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { T, useKit } from '@/aura/kit';
+import { Peek, type PeekKind } from '@/aura/Peek';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
@@ -47,10 +48,13 @@ export function RouteSheet({
   title,
   children,
   testID,
+  peek,
 }: {
   title?: string;
   children: ReactNode;
   testID?: string;
+  // Buddies looking over the sheet's top edge (docs/design/aura → CheckIn, Bildirimler).
+  peek?: PeekKind;
 }) {
   const k = useKit();
   const insets = useSafeAreaInsets();
@@ -116,16 +120,8 @@ export function RouteSheet({
             accessibilityViewIsModal
             // docs/design/aura (`.sheet`): a frosted card floating 10 from the edges, 36 round.
             style={{
-              ...gradientStyle(k.c.sheet),
               marginHorizontal: KIT.size.sheetInset,
               marginBottom: KIT.size.sheetInset + insets.bottom,
-              borderRadius: KIT.size.sheetRadius,
-              borderWidth: KIT.size.edge,
-              borderColor: k.c.glassEdge,
-              boxShadow: k.c.glassShadow,
-              paddingTop: KIT.size.sheetPadTop,
-              paddingHorizontal: KIT.size.sheetPadX,
-              paddingBottom: KIT.size.sheetPadBottom,
               maxHeight: '90%',
               transform: [
                 {
@@ -138,34 +134,49 @@ export function RouteSheet({
             }}
             {...drag.handlers}
           >
+            {peek ? <Peek kind={peek} /> : null}
             <View
-              className="self-center"
               style={{
-                width: KIT.size.grabW,
-                height: KIT.size.grabH,
-                borderRadius: KIT.size.grabH,
-                backgroundColor: k.c.grab,
-                marginBottom: KIT.size.sheetGap,
+                ...gradientStyle(k.c.sheet),
+                flexShrink: 1,
+                borderRadius: KIT.size.sheetRadius,
+                borderWidth: KIT.size.edge,
+                borderColor: k.c.glassEdge,
+                boxShadow: k.c.glassShadow,
+                paddingTop: KIT.size.sheetPadTop,
+                paddingHorizontal: KIT.size.sheetPadX,
+                paddingBottom: KIT.size.sheetPadBottom,
               }}
-            />
-            <ScrollView
-              bounces={false}
-              keyboardShouldPersistTaps="handled"
-              onScroll={drag.onScroll}
-              scrollEventThrottle={16}
             >
-              <Quiet value>
-                {title ? (
-                  <T v="title" accessibilityRole="header">
-                    {title}
-                  </T>
-                ) : null}
-                {/* docs/design/aura (`.sheet`): 14 under the title, 12 between the blocks. */}
-                <View style={{ gap: KIT.size.rowGap, marginTop: title ? KIT.size.sheetGap : 0 }}>
-                  {children}
-                </View>
-              </Quiet>
-            </ScrollView>
+              <View
+                className="self-center"
+                style={{
+                  width: KIT.size.grabW,
+                  height: KIT.size.grabH,
+                  borderRadius: KIT.size.grabH,
+                  backgroundColor: k.c.grab,
+                  marginBottom: KIT.size.sheetGap,
+                }}
+              />
+              <ScrollView
+                bounces={false}
+                keyboardShouldPersistTaps="handled"
+                onScroll={drag.onScroll}
+                scrollEventThrottle={16}
+              >
+                <Quiet value>
+                  {title ? (
+                    <T v="title" accessibilityRole="header">
+                      {title}
+                    </T>
+                  ) : null}
+                  {/* docs/design/aura (`.sheet`): 14 under the title, 12 between the blocks. */}
+                  <View style={{ gap: KIT.size.rowGap, marginTop: title ? KIT.size.sheetGap : 0 }}>
+                    {children}
+                  </View>
+                </Quiet>
+              </ScrollView>
+            </View>
           </Animated.View>
         </View>
       </View>

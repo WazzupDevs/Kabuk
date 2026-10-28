@@ -60,6 +60,10 @@ export function TableEnd({ roomId, left, tableName, phones, profiled, anonymous,
   const icon = TABLE_ICONS.find((i) => tableName.startsWith(i.name))?.id;
   const picture = icon ? TABLE_ICON_IMAGES[icon] : undefined;
   const g = AURA.gatherings.end;
+  const faces = (records.data ?? [])
+    .map((r) => r.other_alias)
+    .filter((name) => profiled.includes(name))
+    .slice(0, 2);
   const k = width > 0 ? width / g.frame : 1;
 
   return (
@@ -94,6 +98,21 @@ export function TableEnd({ roomId, left, tableName, phones, profiled, anonymous,
                     transform: [{ rotate: `${turn}deg` }],
                   }}
                 />
+              ))
+            : null}
+          {/* Two of the people who sat with their profile, at the table's sides (MasaBitti). */}
+          {width > 0
+            ? faces.map((name, i) => (
+                <View
+                  key={name}
+                  style={{
+                    position: 'absolute',
+                    bottom: FACE_BOTTOM * k,
+                    [i === 0 ? 'left' : 'right']: FACE_SIDE * k,
+                  }}
+                >
+                  <Av size="lg" name={name} />
+                </View>
               ))
             : null}
           {width > 0 ? (
@@ -168,6 +187,8 @@ export function TableEnd({ roomId, left, tableName, phones, profiled, anonymous,
 }
 
 const GAP = 14;
+const FACE_BOTTOM = 150;
+const FACE_SIDE = 48;
 const CONFETTI_W = 8;
 const CONFETTI_H = 18;
 

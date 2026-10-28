@@ -1,7 +1,10 @@
 import { Pressable, View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
-import { Glass, T, useKit } from '@/aura/kit';
+import { Glass, T, Thumb, useKit } from '@/aura/kit';
+import { TABLE_ICON_IMAGES } from '@/features/rooms/tableIconImages';
+import { TABLE_ICONS } from '@shared/tableIcons.ts';
+
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
 
@@ -53,6 +56,7 @@ export function SpotPicker({ spots, selectedId, onSelect }: Props) {
                   : null,
               ]}
             >
+              <Thumb source={spotPicture(spot.ref)} size={THUMB} radius={THUMB_RADIUS} />
               <T v="h3" style={{ flex: 1 }}>
                 {spot.name}
               </T>
@@ -79,6 +83,17 @@ export function SpotPicker({ spots, selectedId, onSelect }: Props) {
 }
 
 const GAP = 8;
+const THUMB = 44;
+const THUMB_RADIUS = 14;
+
+// A spot's picture (docs/design/aura → CheckIn, KesfetMekan): one of the table pictures, always the
+// same for a spot. It says nothing about who is there.
+export function spotPicture(ref: string) {
+  let h = 0;
+  for (let i = 0; i < ref.length; i++) h = (h * 31 + ref.charCodeAt(i)) >>> 0;
+  const icon = TABLE_ICONS[h % TABLE_ICONS.length];
+  return icon ? TABLE_ICON_IMAGES[icon.id] : undefined;
+}
 const PAD_Y = 10;
 const ROW = 64;
 const MARK = 28;

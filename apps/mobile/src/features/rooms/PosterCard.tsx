@@ -1,16 +1,19 @@
 import { Children, type ReactNode } from 'react';
-import { Image, type ImageSourcePropType, Pressable, View } from 'react-native';
+import { type ImageSourcePropType, Pressable, Text, View } from 'react-native';
 
+import { Buddy } from '@/aura/Buddy';
 import { FrostIn } from '@/aura/FrostIn';
 import { usePressScale } from '@/components/motion';
 import { Tag } from '@/components/Tag';
 import { tr } from '@/i18n/tr';
+import { AURA } from '@/theme/aura';
+import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { gradientStyle } from '@/theme/gradient';
 import { SPACING } from '@/theme/tokens';
 
-// The games' cards on the table (the owner's file skall-oyun-kartlari, 27 Ekim; the table's games
-// part made anew): each card is the file's drawing whole (scene, logo, line and headcount),
-// exported at 4× with its rounded corners (assets/game-card/). Every game waits for its step (4.6):
-// "Yakında" in the vote's corner, not pressed.
+// The games on the table: since 28 Ekim drawn as docs/design/aura → Masa's cards (GameCard); the
+// earlier drawings (the owner's file skall-oyun-kartlari, assets/game-card/) stay with the list.
+// Every game waits for its step (4.6): "Yakında" in the vote's corner, not pressed.
 export const GAME_CARDS = [
   { id: 'vampir', category: 'multi', art: require('../../../assets/game-card/vampir.webp') },
   { id: 'signum', category: 'teams', art: require('../../../assets/game-card/signum.webp') },
@@ -27,23 +30,22 @@ export const GAME_CARDS = [
 export type GameCardId = (typeof GAME_CARDS)[number]['id'];
 export type GameCategory = keyof typeof tr.table.gameCategories;
 
-// The file's card: 158 × 211; its drawn corners are 15 % of its width (measured on the 4× file).
-const CARD_RATIO = 158 / 211;
-const CARD_CORNER = 0.15;
+// The frost over a card while it arrives: the card's 28 corner at its width on a 390 wide phone.
+const CARD_CORNER = 0.165;
 
 export function GameCard({
   id,
-  art,
   onPress,
   testID,
 }: {
   id: GameCardId;
-  art: ImageSourcePropType;
+  art?: ImageSourcePropType;
   onPress?: () => void;
   testID?: string;
 }) {
   const pressScale = usePressScale();
   const text = tr.table.gameCards[id];
+  const look = AURA.gameCards[id];
   return (
     <Pressable
       testID={testID}
@@ -54,27 +56,83 @@ export function GameCard({
       onPress={onPress}
     >
       {({ pressed }) => (
-        <View style={pressScale(pressed && !!onPress)}>
-          {/* The card's box first, then the drawing filling it: given only a width, Android kept the
-              file's own height and drew it far too large (the owner's report, 27 Ekim). */}
-          <View style={{ width: '100%', aspectRatio: CARD_RATIO }}>
-            <Image
-              // No fade-in: a drawing shown again does not blink.
-              fadeDuration={0}
-              source={art}
-              accessible={false}
-              resizeMode="contain"
-              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
-            />
+        // docs/design/aura → Masa: a deep card of the game's colour, a warm glow at its foot, the
+        // game's buddy at the right, the corner tag, the name and its line at the bottom left.
+        <View
+          style={[
+            gradientStyle(look.ground),
+            {
+              height: GAME_CARD.height,
+              borderRadius: GAME_CARD.radius,
+              overflow: 'hidden',
+              boxShadow: look.shadow,
+            },
+            pressScale(pressed && !!onPress),
+          ]}
+        >
+          <View
+            style={[
+              gradientStyle(`radial-gradient(closest-side, ${look.glow}, transparent)`),
+              {
+                position: 'absolute',
+                left: '-10%',
+                right: '-10%',
+                bottom: -GAME_CARD.glowDrop,
+                height: GAME_CARD.glow,
+                borderRadius: GAME_CARD.glow,
+              },
+            ]}
+          />
+          <View
+            style={{
+              position: 'absolute',
+              right: -GAME_CARD.buddyOut,
+              bottom: GAME_CARD.buddyFoot,
+            }}
+          >
+            <Buddy look={look.buddy} height={GAME_CARD.buddy} />
           </View>
-          <View className="absolute" style={{ top: SPACING[2.5], left: SPACING[2.5] }}>
+          <View style={{ position: 'absolute', left: GAME_CARD.inset, top: GAME_CARD.inset }}>
             <Tag variant="glass" label={tr.table.soon} />
+          </View>
+          <View
+            style={{
+              position: 'absolute',
+              left: GAME_CARD.inset + 2,
+              bottom: GAME_CARD.inset + 2,
+              right: GAME_CARD.inset,
+              gap: 2,
+            }}
+          >
+            <Text
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.6}
+              maxFontSizeMultiplier={1.3}
+              style={[KIT_TYPE.gameName, { color: KIT.white }]}
+            >
+              {text.name}
+            </Text>
+            <Text maxFontSizeMultiplier={1.3} style={[KIT_TYPE.fine, { color: look.sub }]}>
+              {text.sub}
+            </Text>
           </View>
         </View>
       )}
     </Pressable>
   );
 }
+
+const GAME_CARD = {
+  height: 200,
+  radius: 28,
+  glow: 120,
+  glowDrop: 60,
+  buddy: 113,
+  buddyOut: 18,
+  buddyFoot: 40,
+  inset: 12,
+} as const;
 
 // Two cards a row, 12 apart (the file's grid).
 export function PosterGrid({ children }: { children: ReactNode }) {
