@@ -12,7 +12,10 @@ import Svg, { Rect } from 'react-native-svg';
 import { tr } from '@/i18n/tr';
 import { haptic, noteTyping } from '@/lib/haptics';
 import { useReduceMotion } from '@/lib/useReduceMotion';
+import { useKit } from '@/aura/kit';
+import { KIT } from '@/theme/auraKit';
 import { BRAND } from '@/theme/brand';
+import { gradientStyle } from '@/theme/gradient';
 import { TAB_GLASS } from '@/theme/glass';
 import { V46_TAB_BAR } from '@/theme/parts.generated';
 import { typeStyle, useTheme } from '@/theme/ThemeProvider';
@@ -51,7 +54,8 @@ type Props = {
 // raised pill field and a round send button, both on a soft shadow; the button fills with the accent
 // once there is something to send. Over a chat's stream the field and the button are the tab bar's
 // liquid glass (the owner's call, 27 Ekim); a sent message flies off with the arrow.
-const SIZE = SPACING[12] + SPACING[1];
+const SIZE = KIT.size.field;
+const MUTED_SEND = 0.45;
 // The arrow's flight: out to the right, then back in from the left.
 const FLY_OUT_MS = 150;
 const FLY_IN_MS = 230;
@@ -75,6 +79,7 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
 ) {
   const theme = useTheme();
   const { colors, shape } = theme;
+  const k = useKit();
   const pressScale = usePressScale();
   const inactive = sendDisabled || sending;
   const followEnd = useChatEnd();
@@ -99,16 +104,17 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
           style={{
             // skall tuvali (skall.css → `.composer`): the field on the float shadow, the round
             // send button beside it.
+            // docs/design/aura → Dm (`.glass.field`): 54 high, round, frosted.
             minHeight: SIZE,
-            borderRadius: shape.radius.xl,
-            backgroundColor: glass ? undefined : colors.surface,
-            borderWidth: glass ? 0 : shape.stroke.hairline,
-            borderColor: colors.control,
-            boxShadow: shape.shadow.sheet,
-            paddingHorizontal: SPACING[4] + SPACING[0.5],
+            borderRadius: SIZE / 2,
+            ...(glass ? null : gradientStyle(k.c.glass)),
+            borderWidth: KIT.size.edge,
+            borderColor: k.c.glassEdge,
+            boxShadow: k.c.glassShadow,
+            paddingHorizontal: KIT.size.fieldPadX,
           }}
         >
-          {glass && glassId ? <GlassFill targetId={glassId} radius={shape.radius.xl} /> : null}
+          {glass && glassId ? <GlassFill targetId={glassId} radius={SIZE / 2} /> : null}
           <TextInput
             ref={ref}
             testID={inputTestID}
@@ -141,7 +147,7 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
             <View
               pointerEvents="none"
               className="absolute inset-0 justify-center"
-              style={{ paddingHorizontal: SPACING[4] + SPACING[0.5] }}
+              style={{ paddingHorizontal: KIT.size.fieldPadX }}
             >
               <Text variant="body" color={colors.placeholder}>
                 {placeholder}
@@ -169,16 +175,16 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
                 {
                   width: SIZE,
                   height: SIZE,
-                  borderRadius: shape.radius.pill,
+                  borderRadius: SIZE / 2,
                   alignItems: 'center',
                   justifyContent: 'center',
-                  backgroundColor: glass ? undefined : colors.surface,
-                  boxShadow: shape.shadow.sheet,
+                  // docs/design/aura → Dm (`.send`): the ink's round button.
+                  backgroundColor: k.c.chipOn,
+                  boxShadow: KIT.sendShadow,
                 },
                 pressScale(pressed),
               ]}
             >
-              {glass && glassId ? <GlassFill targetId={glassId} radius={SIZE / 2} /> : null}
               {sending ? (
                 <Loader kind="meet" size={ICON.lg} delay={0} />
               ) : (
@@ -334,11 +340,12 @@ function FlyingArrow({ flights, muted }: { flights: number; muted: boolean }) {
 // skall tuvali (skall.css → `.send .bi`): the arrow as two capsules in the brand's purple and pink;
 // muted while there is nothing to send.
 function SendGlyph({ muted }: { muted: boolean }) {
-  const { colors } = useTheme();
-  const a = muted ? colors.control : BRAND.purple;
-  const b = muted ? colors.control : BRAND.pink;
+  const { c, scheme } = useKit();
+  // On the ink's button: white and pink by day, the primary and pink by night.
+  const a = scheme === 'dark' ? BRAND.purple : c.onChipOn;
+  const b = BRAND.pink;
   return (
-    <Svg width={ICON.lg} height={ICON.lg} viewBox="0 0 24 24">
+    <Svg width={ICON.lg} height={ICON.lg} viewBox="0 0 24 24" opacity={muted ? MUTED_SEND : 1}>
       <Rect
         x={5}
         y={9.8}

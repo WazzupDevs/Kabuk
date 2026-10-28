@@ -324,6 +324,9 @@ export const tr = {
     tabs: 'Mesajlar ve istekler',
     chats: 'Sohbet',
     requests: (n: number) => (n > 0 ? `İstekler (${n})` : 'İstekler'),
+    // The tabs of docs/design/aura → Mesajlar; the count is the badge.
+    chatsTab: 'Sohbetler',
+    requestsTab: 'İstekler',
     // The scene above the chats while friend requests wait (docs/design/aura → Mesajlar); a press
     // opens İstekler.
     incomingTitle: 'Gelen istekler',
@@ -491,6 +494,10 @@ export const tr = {
     checkInHint:
       'Mekanı sen seçtin; konumun yalnızca mekanda olduğunu doğrulamak için bir kez alınır.',
     checkInHere: 'Buraya giriş yap',
+    // Keşfet's question (docs/design/aura → Keşfet).
+    question: 'Bu akşam\nnerede oturuyorsun?',
+    eventTagShort: 'Etkinlik',
+    weekNote: 'Bu hafta',
     eventsTitle: 'Etkinlikler',
     noEvents: 'Bu hafta planlı etkinlik yok.',
     comingSoon: 'Yeni mekanlar yakında.',
@@ -1357,6 +1364,11 @@ export const tr = {
     leave: 'Masadan ayrıl',
     leaveShort: 'Ayrıl',
     tabGames: (n: number) => `Oyun Seç (${n})`,
+    // Masa's two tabs (docs/design/aura → Masa).
+    games: 'Oyunlar',
+    chat: 'Sohbet',
+    peopleTag: 'Masadakiler',
+    status: (people: string, lobby: string) => `${people} · ${lobby}`,
     tabChat: (n: number) => `Masa Sohbeti (${n})`,
     categoryAll: (n: number) => `Tümü ${n}`,
     category: (name: string, n: number) => `${name} ${n}`,

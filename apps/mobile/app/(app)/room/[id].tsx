@@ -2,43 +2,39 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { seatsAnonymously } from '@shared/gender.ts';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { type ReactNode, useEffect, useState } from 'react';
-import { Pressable, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, type IconName } from '@/components/Button';
-import { Card } from '@/components/Card';
 import { ChatScreen } from '@/components/ChatScreen';
 import { Loader } from '@/components/Loader';
-import { Chips } from '@/components/Chips';
-import { IconButton } from '@/components/IconButton';
 import { Screen } from '@/components/Screen';
-import { Segmented } from '@/components/Segmented';
 import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
 import { RoomComposer, RoomMessages, useRoomChat } from '@/features/chat/ChatPanel';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
-import { GAME_CARDS, GameCard, type GameCategory, PosterGrid } from '@/features/rooms/PosterCard';
+import { GAME_CARDS, GameCard, PosterGrid } from '@/features/rooms/PosterCard';
 import { useRoomMemberProfiles } from '@/features/profile/queries';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { IncomingRequest, useMarkTableScreen } from '@/features/rooms/IncomingRequest';
 import { InviteSheet } from '@/features/rooms/InviteSheet';
 import { TableScene } from '@/features/rooms/TableScene';
 import { TableIconSheet } from '@/features/rooms/TableIconSheet';
-import { GlyphDisc } from '@/components/GlyphDisc';
 import { OpenLobbySheet } from '@/features/rooms/OpenLobbySheet';
 import { roomKeys, useCurrentRoom, useRoom, useTablePeople } from '@/features/rooms/queries';
 import { PeopleSheet } from '@/features/rooms/RoomPeople';
 import { TableEnd } from '@/features/rooms/TableEnd';
 import { useTableEndStore } from '@/features/rooms/tableEnd';
-import { TableIcon } from '@/features/rooms/TableIcon';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { roomsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
-import { NARROW_SCREEN, SPACING, TOUCH } from '@/theme/tokens';
-
-type Category = 'all' | GameCategory;
-const CATEGORIES: readonly GameCategory[] = ['teams', 'multi'];
+import { AURA } from '@/theme/aura';
+import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { SPACING } from '@/theme/tokens';
+import { AuraBackground } from '@/aura/AuraBackground';
+import { Btn, Glass, Round, Seg, T, Tag } from '@/aura/kit';
 
 // The table (v46 "masa"; docs/SPEC_V4.md §4.E, §4.F): the top line (back, the table's icon and name
 // with "N kişi", which open Masadakiler; the owner's "Bitir", a participant's "Ayrıl"), the owner's
@@ -47,7 +43,8 @@ const CATEGORIES: readonly GameCategory[] = ['teams', 'multi'];
 // "Masadan ayrıldın".
 export default function TableScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { colors, shape } = useTheme();
+  const { shape, scheme } = useTheme();
+  const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const checkIn = useActiveTable();
   const ownPhoto = useOwnPhoto();
@@ -60,13 +57,10 @@ export default function TableScreen() {
     (people.data ?? []).map((p) => p.sessionId).join(','),
   ).data;
   const [tab, setTab] = useState<'games' | 'chat'>('games');
-  const [category, setCategory] = useState<Category>('all');
   const [sheet, setSheet] = useState<
     'people' | 'end' | 'leave' | 'lobby' | 'invite' | 'icon' | null
   >(null);
   useMarkTableScreen();
-  const { width, fontScale } = useWindowDimensions();
-  const narrow = width < NARROW_SCREEN * Math.max(1, fontScale);
 
   const remember = useTableEndStore((s) => s.remember);
   const markLeft = useTableEndStore((s) => s.markLeft);
@@ -166,7 +160,6 @@ export default function TableScreen() {
 
   const owner = r.owner_session_id === sessionId;
   const inLobby = r.visibility === 'open';
-  const games = GAME_CARDS.filter((g) => category === 'all' || g.category === category);
   const messages = chat.messages.data ?? [];
   const newestOut = chat.outbox[chat.outbox.length - 1];
   const newestIn = messages.at(-1);
@@ -175,132 +168,124 @@ export default function TableScreen() {
     mine: newestOut ? true : newestIn?.session_id === sessionId,
   };
 
-  const top = (
+  const endInk = scheme === 'dark' ? KIT.endInkDark : KIT.endInk;
+  // The bar (docs/design/aura → Masa): back at the left; at the right the owner's "Davet et" and
+  // "Bitir", a participant's "Ayrıl".
+  const bar = (
     <View
-      className="gap-3 pb-2"
       testID="table-top"
-      // The screen's sides, like every other screen (skall tuvali, Masa: 16).
-      style={{ paddingHorizontal: shape.screenPadding, paddingTop: SPACING[1] }}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: KIT.size.side,
+        paddingTop: BAR_TOP,
+      }}
     >
-      <View className="flex-row items-center gap-3">
-        <IconButton
-          round
-          icon="chevron-back"
-          label={tr.table.back}
-          onPress={() => (router.canGoBack() ? router.back() : router.replace('/venue'))}
-        />
-        {/* The owner changes the icon from it (skall tuvali, MasaSimgeDegistir). */}
-        <Pressable
-          testID="table-icon"
-          accessibilityRole={owner ? 'button' : undefined}
-          accessibilityLabel={owner ? tr.createTable.iconChange : undefined}
-          disabled={!owner}
-          onPress={() => setSheet('icon')}
-        >
-          <TableIcon icon={r.icon} size="row" />
-        </Pressable>
-        <Pressable
-          testID="table-who"
-          accessibilityRole="button"
-          accessibilityLabel={tr.table.whoLabel(r.phones)}
-          onPress={() => setSheet('people')}
-          className="flex-1 flex-row items-center gap-2.5"
-          style={{ minHeight: TOUCH.min }}
-        >
-          <View className="flex-1">
-            <Text variant="heading" testID="table-title">
-              {r.name ?? ''}
-            </Text>
-            <View className="flex-row items-center gap-1.5">
-              <View
-                style={{
-                  width: SPACING[2],
-                  height: SPACING[2],
-                  borderRadius: shape.radius.pill,
-                  backgroundColor: colors.success,
-                }}
-              />
-              <Text variant="fine">{tr.venue.people(r.phones)}</Text>
-            </View>
-          </View>
-        </Pressable>
-        <Button
-          variant="danger"
-          size="sm"
+      <Round
+        icon="back"
+        label={tr.table.back}
+        onPress={() => (router.canGoBack() ? router.back() : router.replace('/venue'))}
+      />
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.chipsGap }}>
+        {owner ? (
+          <Round
+            icon="invite"
+            label={tr.venue.invite}
+            testID="table-invite"
+            onPress={() => setSheet('invite')}
+          />
+        ) : null}
+        <Btn
+          sm
+          variant="glassy"
+          tint={endInk}
           testID={owner ? 'table-end-open' : 'table-leave-open'}
           label={owner ? tr.table.end : tr.table.leaveShort}
-          icon={owner ? 'close' : 'exit-outline'}
-          iconOnly={narrow}
           onPress={() => setSheet(owner ? 'end' : 'leave')}
         />
       </View>
-      {/* The table as a scene, the people around it (docs/design/aura → Masa); on the games tab,
-          the chat keeps its room. */}
-      {tab === 'games' ? (
-        <TableScene
-          icon={r.icon}
-          people={people.data ?? []}
-          profiles={profiles}
-          onPress={() => setSheet('people')}
-        />
-      ) : null}
-      {owner ? (
-        <View className="flex-row gap-2">
-          <View className="flex-1">
-            {inLobby ? (
-              <Button
-                tight
-                size="sm"
-                variant="secondary"
-                icon="eye-off-outline"
-                testID="table-withdraw"
-                label={tr.venue.withdraw}
-                loading={withdraw.isPending}
-                onPress={() => withdraw.mutate()}
-              />
-            ) : (
-              <Button
-                tight
-                size="sm"
-                icon="megaphone-outline"
-                testID="table-lobby"
-                label={tr.venue.openLobby}
-                onPress={() => setSheet('lobby')}
-              />
-            )}
-          </View>
-          <View className="flex-1">
-            <Button
-              tight
-              size="sm"
-              variant="secondary"
-              icon="add"
-              iconTone="success"
-              testID="table-invite"
-              label={tr.venue.invite}
-              onPress={() => setSheet('invite')}
-            />
-          </View>
-        </View>
-      ) : null}
-      {owner ? <IncomingRequest roomId={id} ownerSessionId={sessionId} phones={r.phones} /> : null}
-      <Segmented<'games' | 'chat'>
-        fill
-        value={tab}
-        onChange={setTab}
-        accessibilityLabel={tr.rooms.tabsLabel}
-        options={[
-          { value: 'games', label: tr.table.tabGames(GAME_CARDS.length), testID: 'tab-games' },
-          { value: 'chat', label: tr.table.tabChat(messages.length), testID: 'tab-chat' },
-        ]}
-      />
-      {(withdraw.error ?? end.error) ? (
-        <Text variant="fine" tone="danger">
-          {errorMessage(withdraw.error ?? end.error)}
-        </Text>
-      ) : null}
     </View>
   );
+
+  // The table's name, its people and lobby state; "Masadakiler" opens the list.
+  const title = (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: KIT.size.rowGap,
+        paddingHorizontal: KIT.size.secPadX,
+      }}
+    >
+      <View style={{ flex: 1 }}>
+        <T v="title" style={KIT_TYPE.tableTitle} testID="table-title">
+          {r.name ?? ''}
+        </T>
+        <T v="fine">
+          {tr.table.status(
+            tr.venue.people(r.phones),
+            inLobby ? tr.venue.lobbyOpen : tr.venue.lobbyOff,
+          )}
+        </T>
+      </View>
+      <Pressable
+        testID="table-who"
+        accessibilityRole="button"
+        accessibilityLabel={tr.table.whoLabel(r.phones)}
+        onPress={() => setSheet('people')}
+        hitSlop={KIT.size.chipsGap}
+      >
+        <Tag tone="purple" label={tr.table.peopleTag} height={PEOPLE_TAG} />
+      </Pressable>
+    </View>
+  );
+
+  const tabs = (
+    <Seg<'games' | 'chat'>
+      value={tab}
+      onChange={setTab}
+      accessibilityLabel={tr.rooms.tabsLabel}
+      options={[
+        { value: 'games', label: tr.table.games, testID: 'tab-games' },
+        { value: 'chat', label: tr.table.chat, badge: messages.length, testID: 'tab-chat' },
+      ]}
+    />
+  );
+
+  // The owner's lobby action and the incoming requests, under the name.
+  const ownerPart = owner ? (
+    <View style={{ gap: KIT.size.rowGap }}>
+      {inLobby ? (
+        <Btn
+          sm
+          variant="glassy"
+          icon="close"
+          testID="table-withdraw"
+          label={tr.venue.withdraw}
+          loading={withdraw.isPending}
+          onPress={() => withdraw.mutate()}
+        />
+      ) : (
+        <Btn
+          sm
+          icon="list"
+          testID="table-lobby"
+          label={tr.venue.openLobby}
+          onPress={() => setSheet('lobby')}
+        />
+      )}
+      <IncomingRequest roomId={id} ownerSessionId={sessionId} phones={r.phones} />
+    </View>
+  ) : null;
+
+  const failed =
+    (withdraw.error ?? end.error) ? (
+      <T v="fine" color={KIT.danger}>
+        {errorMessage(withdraw.error ?? end.error)}
+      </T>
+    ) : null;
 
   const sheets = (
     <>
@@ -383,7 +368,17 @@ export default function TableScreen() {
       <ChatScreen
         key="chat"
         wall="masa"
-        top={top}
+        top={
+          <View style={{ gap: KIT.size.rowGap, paddingBottom: KIT.size.chipsGap }}>
+            <View style={{ marginHorizontal: -shape.screenPadding }}>{bar}</View>
+            {title}
+            {owner ? (
+              <IncomingRequest roomId={id} ownerSessionId={sessionId} phones={r.phones} />
+            ) : null}
+            {tabs}
+            {failed}
+          </View>
+        }
         composer={<RoomComposer chat={chat} />}
         newestKey={newest.key}
         newestMine={newest.mine}
@@ -395,44 +390,59 @@ export default function TableScreen() {
     );
   }
 
+  // The games: the stage under the status bar, the name, the tabs and the game cards; the page
+  // scrolls as one (the cards are a list).
   return (
-    <ChatScreen key="games" top={top} composer={null} wall={null}>
-      <View className="gap-3 pt-2">
-        {r.phones === 1 ? (
-          <Card tone="note" testID="table-solo">
-            <View className="flex-row items-center gap-3">
-              <GlyphDisc icon="person-outline" />
-              <View className="flex-1 gap-0.5">
-                <Text variant="heading">{tr.table.soloTitle}</Text>
-                <Text variant="fine">{tr.table.soloBody}</Text>
-              </View>
-            </View>
-          </Card>
-        ) : null}
-        <Chips<Category>
-          bleed={shape.screenPadding}
-          accessibilityLabel={tr.table.tabGames(GAME_CARDS.length)}
-          value={category}
-          onChange={setCategory}
-          options={[
-            { value: 'all', label: tr.table.allGames, count: GAME_CARDS.length },
-            ...CATEGORIES.map((c) => ({
-              value: c,
-              label: tr.table.gameCategories[c],
-              count: GAME_CARDS.filter((g) => g.category === c).length,
-            })),
-          ]}
-        />
-        <PosterGrid>
-          {games.map((g) => (
-            <GameCard key={g.id} id={g.id} art={g.art} testID={`poster-${g.id}`} />
-          ))}
-        </PosterGrid>
-      </View>
+    <View style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
+      <AuraBackground running />
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: insets.bottom + SPACING[8] }}
+        showsVerticalScrollIndicator={false}
+      >
+        <TableScene
+          icon={r.icon}
+          people={people.data ?? []}
+          profiles={profiles}
+          me={sessionId}
+          inset={insets.top}
+          onPress={() => setSheet('people')}
+          onIcon={owner ? () => setSheet('icon') : undefined}
+        >
+          {bar}
+        </TableScene>
+        <View
+          style={{
+            paddingHorizontal: KIT.size.side,
+            paddingTop: KIT.size.rowGap,
+            gap: KIT.size.rowGap,
+          }}
+        >
+          {title}
+          {ownerPart}
+          {r.phones === 1 ? (
+            <Glass pad="pad" testID="table-solo" style={{ gap: SOLO_GAP }}>
+              <T v="h3">{tr.table.soloTitle}</T>
+              <T v="fine">{tr.table.soloBody}</T>
+            </Glass>
+          ) : null}
+          {tabs}
+          {failed}
+          <PosterGrid>
+            {GAME_CARDS.map((g) => (
+              <GameCard key={g.id} id={g.id} art={g.art} testID={`poster-${g.id}`} />
+            ))}
+          </PosterGrid>
+        </View>
+      </ScrollView>
       {sheets}
-    </ChatScreen>
+    </View>
   );
 }
+
+// The bar sits this far under the status bar (the board: 60 from the top).
+const BAR_TOP = 16;
+const PEOPLE_TAG = 30;
+const SOLO_GAP = 4;
 
 // "Masayı bitir" and "Masadan ayrıl" (v46 data-csheet): what it does, the button and "Vazgeç".
 function ConfirmSheet({

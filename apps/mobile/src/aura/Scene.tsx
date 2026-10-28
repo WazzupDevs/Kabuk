@@ -9,8 +9,9 @@ import { Buddy, Placed } from './Buddy';
 
 // A scene's ground (docs/design/aura/project/aura.css → `.scene`, `.floor`): violet to pink, two
 // soft glows at the top and a white floor glow at the bottom where buddies stand. Fills its parent;
-// the parent rounds and clips it.
-export function SceneGround() {
+// the parent rounds and clips it. `top` and `bottom`: its corners when they are not the scene's 26
+// (Masa's header: square at the top, 36 at the bottom).
+export function SceneGround({ top, bottom }: { top?: number; bottom?: number } = {}) {
   const { scheme } = useTheme();
   const c = AURA.scene[scheme];
   const id = useId().replace(/[^a-zA-Z0-9]/g, '');
@@ -42,7 +43,10 @@ export function SceneGround() {
           {
             borderWidth: AURA.card.edgeWidth,
             borderColor: c.edge,
-            borderRadius: AURA.scene.radius,
+            borderTopLeftRadius: top ?? AURA.scene.radius,
+            borderTopRightRadius: top ?? AURA.scene.radius,
+            borderBottomLeftRadius: bottom ?? AURA.scene.radius,
+            borderBottomRightRadius: bottom ?? AURA.scene.radius,
           },
         ]}
       />

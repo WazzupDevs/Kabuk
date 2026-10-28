@@ -21,9 +21,13 @@ const t = (w: keyof typeof F, size: number, line: number, em = 0): TextStyle => 
 
 export const KIT_TYPE = {
   display: t(500, 32, 38, -0.025),
+  // Keşfet's question (.display at 30).
+  displaySm: t(500, 30, 36, -0.025),
   title: t(600, 21, 27, -0.015),
   // A scene's title (Mekan: .title at 20).
   hero: t(600, 20, 26, -0.015),
+  // The table's name on Masa (.title at 26, 500).
+  tableTitle: t(500, 26, 32, -0.015),
   h3: t(600, 16, 22, -0.005),
   // A section's heading (.sec .h3 at 18).
   sec: t(600, 18, 24, -0.005),
@@ -41,7 +45,14 @@ export const KIT_TYPE = {
   msg: t(500, 15, 21),
   day: t(600, 12, 16),
   wordmark: t(800, 26, 30, -0.04),
-  av: { md: t(700, 15, 19), sm: t(700, 12, 16), lg: t(700, 22, 26), xl: t(700, 32, 38) },
+  av: {
+    md: t(700, 15, 19),
+    sm: t(700, 12, 16),
+    // A conversation's face in Mesajlar (52).
+    row: t(700, 18, 22),
+    lg: t(700, 22, 26),
+    xl: t(700, 32, 38),
+  },
 } as const;
 
 export type KitTextVariant = Exclude<keyof typeof KIT_TYPE, 'av' | 'strong'>;
@@ -78,6 +89,9 @@ export const KIT = {
     onChipOn: '#FFFFFF',
     day: 'rgba(255, 255, 255, 0.60)',
     field: 'rgba(255, 255, 255, 0.74)',
+    // Masa's tabs: the chosen one raised white.
+    segOn: '#FFFFFF',
+    segShadow: '0px 4px 12px rgba(54, 36, 140, 0.12)',
   },
   dark: {
     ink: '#F3F0FF',
@@ -96,6 +110,8 @@ export const KIT = {
     onChipOn: '#14112B',
     day: 'rgba(255, 255, 255, 0.10)',
     field: 'rgba(255, 255, 255, 0.10)',
+    segOn: 'rgba(255, 255, 255, 0.16)',
+    segShadow: '',
   },
   // The same in both schemes.
   primary: '#6A47F5',
@@ -135,6 +151,13 @@ export const KIT = {
     amber: { bg: 'rgba(255, 181, 71, 0.22)', fg: '#FFE2B8' },
     green: { bg: 'rgba(95, 198, 160, 0.20)', fg: '#C9F2DF' },
   },
+  // Today's event on Keşfet's card: a soft amber ground.
+  eventGround: 'rgba(255, 181, 71, 0.14)',
+  // Bitir and Ayrıl on Masa's bar.
+  endInk: '#A8301A',
+  endInkDark: '#FF9B8A',
+  // Masa's header: the stage's height (under the status bar), its bottom corners and the table.
+  stage: { height: 330, radius: 36, disk: 140, diskRadius: 44, diskBottom: 54, frame: 390 },
   // A nick's colour in a line of the venue chat (Mekan: kapsul-sn19 in amber's ink).
   nickInk: '#9A4A00',
   nameInk: '#B0124F',
@@ -156,7 +179,7 @@ export const KIT = {
     tagPadX: 9,
     tagGap: 4,
     round: 44,
-    av: { sm: 32, md: 44, lg: 64, xl: 96 },
+    av: { sm: 32, md: 44, row: 52, lg: 64, xl: 96 },
     avRing: 2,
     avRingXl: 3,
     thumb: 60,
@@ -176,6 +199,24 @@ export const KIT = {
     icon: 22,
     iconSm: 18,
     disk: 4,
+    seg: 26,
+    msgRadius: 22,
+    msgTail: 8,
+    msgPadX: 15,
+    msgPadY: 11,
+    field: 54,
+    fieldPadX: 20,
+    dayPadX: 12,
+    dayPadY: 4,
+    barPad: 8,
+    barRadius: 30,
+    barGap: 10,
+    pill: 44,
+    pillPadX: 14,
+    eventCard: 210,
+    eventPad: 12,
+    segPad: 5,
+    segGap: 4,
     hair: 1,
     edge: 1,
   },

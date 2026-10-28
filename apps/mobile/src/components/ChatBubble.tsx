@@ -1,7 +1,11 @@
 import { isReaction, type Reaction } from '@shared/reactions.ts';
 import * as Clipboard from 'expo-clipboard';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { Animated, Pressable, View } from 'react-native';
+import { Animated, Pressable, Text as RNText, View } from 'react-native';
+
+import { useKit } from '@/aura/kit';
+import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { gradientStyle } from '@/theme/gradient';
 
 import { tr } from '@/i18n/tr';
 import { haptic } from '@/lib/haptics';
@@ -112,7 +116,7 @@ export function ChatBubble({
   actions = [],
   testID,
 }: Props) {
-  const { colors, shape } = useTheme();
+  const { shape } = useTheme();
   // A long press lifts the message over a scrim with the faces and its actions (MessagePop), from
   // where it sits on the screen.
   const faceRef = useRef<View>(null);
@@ -126,10 +130,8 @@ export function ChatBubble({
   };
   // skall tuvali (skall.css → `.bub`): 18 all round; a run's first bubble points at its author with
   // a 6 corner at the top (left for others, right for the viewer's own).
-  const big = shape.radius.lg - SPACING[1];
-  const small = SPACING[1.5];
-  const top = first ? small : big;
-  const fg = mine ? colors.onPrimary : colors.text;
+  const { c } = useKit();
+  const fg = mine ? KIT.onPrimary : c.ink;
   const inside = !mine && nameInk !== undefined;
   const bubble = (
     <Pressable
@@ -160,19 +162,30 @@ export function ChatBubble({
       <View
         ref={lifted ? undefined : faceRef}
         collapsable={false}
-        style={{
-          paddingHorizontal: SPACING[3],
-          paddingVertical: SPACING[2],
-          borderTopLeftRadius: mine ? big : top,
-          borderTopRightRadius: mine ? top : big,
-          borderBottomLeftRadius: big,
-          borderBottomRightRadius: big,
-          backgroundColor: mine ? colors.primary : colors.surface,
-          borderWidth: mine ? 0 : shape.stroke.hairline,
-          borderColor: colors.divider,
-          opacity: state === 'sending' ? 0.6 : 1,
-          boxShadow: lifted ? shape.shadow.focus : undefined,
-        }}
+        // docs/design/aura → Dm (`.msg`): 22 round, the corner towards the author 8 at the
+        // bottom; another's on glass, the own in the primary.
+        style={[
+          mine
+            ? { backgroundColor: KIT.primary, boxShadow: KIT.meShadow }
+            : [
+                gradientStyle(c.glass),
+                {
+                  borderWidth: KIT.size.edge,
+                  borderColor: c.glassEdge,
+                  boxShadow: c.glassShadow,
+                },
+              ],
+          {
+            paddingHorizontal: KIT.size.msgPadX,
+            paddingVertical: KIT.size.msgPadY,
+            borderTopLeftRadius: KIT.size.msgRadius,
+            borderTopRightRadius: KIT.size.msgRadius,
+            borderBottomLeftRadius: mine ? KIT.size.msgRadius : KIT.size.msgTail,
+            borderBottomRightRadius: mine ? KIT.size.msgTail : KIT.size.msgRadius,
+            opacity: state === 'sending' ? 0.6 : 1,
+          },
+          lifted ? { boxShadow: shape.shadow.focus } : null,
+        ]}
       >
         {inside && first && name ? (
           <Pressable
@@ -196,21 +209,21 @@ export function ChatBubble({
             into each other): the text ends with an invisible copy of the time, which makes the
             room, and the time is laid over that room. */}
         <View>
-          <Text color={fg}>
+          <RNText style={[KIT_TYPE.msg, { color: fg }]}>
             {text}
             {time && !state ? (
               <Text variant="caption" color={withAlpha(fg, HIDDEN_ALPHA)} accessible={false}>
                 {`${TIME_GAP}${time}${mine && delivery ? TICKS_ROOM : ''}`}
               </Text>
             ) : null}
-          </Text>
+          </RNText>
           {time && !state ? (
             <View
               className="absolute flex-row items-center gap-1"
               style={{ right: 0, bottom: 0 }}
               importantForAccessibility="no-hide-descendants"
             >
-              <Text variant="caption" color={mine ? colors.onPrimary : colors.muted}>
+              <Text variant="caption" color={mine ? KIT.onPrimary : c.muted}>
                 {time}
               </Text>
               {mine && delivery ? <DeliveryTicks delivery={delivery} onAccent /> : null}
@@ -557,7 +570,7 @@ const TYPING_MS = 400;
 
 // The other side is typing: three dots in a left bubble, rising in turn; still under reduce motion.
 export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: string }) {
-  const { colors, shape } = useTheme();
+  const { shape } = useTheme();
   const reduce = useReduceMotion();
   const [dots] = useState(() => [0, 1, 2].map(() => new Animated.Value(0)));
 
@@ -581,7 +594,7 @@ export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: 
     return () => loop.stop();
   }, [reduce, dots]);
 
-  const big = shape.radius.lg - SPACING[1];
+  const { c } = useKit();
   return (
     <View
       className="flex-row items-end gap-2 self-start"
@@ -597,11 +610,15 @@ export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: 
           gap: SPACING[1],
           paddingHorizontal: SPACING[3] + SPACING[0.5],
           paddingVertical: SPACING[3],
-          // skall tuvali (Dm): a plain bubble with the brand's three dots.
-          borderRadius: big,
-          borderWidth: shape.stroke.hairline,
-          borderColor: colors.divider,
-          backgroundColor: colors.surface,
+          // docs/design/aura → Dm: a glass bubble with the brand's three dots.
+          ...gradientStyle(c.glass),
+          borderTopLeftRadius: KIT.size.msgRadius,
+          borderTopRightRadius: KIT.size.msgRadius,
+          borderBottomRightRadius: KIT.size.msgRadius,
+          borderBottomLeftRadius: KIT.size.msgTail,
+          borderWidth: KIT.size.edge,
+          borderColor: c.glassEdge,
+          boxShadow: c.glassShadow,
         }}
       >
         {dots.map((d, i) => (

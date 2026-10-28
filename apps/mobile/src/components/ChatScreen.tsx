@@ -21,6 +21,7 @@ import {
   ScrollView,
   View,
   type ViewStyle,
+  Text as RNText,
 } from 'react-native';
 import Reanimated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -37,11 +38,12 @@ import type { ChatWallKind } from '@/theme/chatWallpaper';
 import { AuraBackground } from '@/aura/AuraBackground';
 import { useTabFocus } from '@/aura/motion';
 import { AURA } from '@/theme/aura';
+import { useKit } from '@/aura/kit';
+import { KIT, KIT_TYPE } from '@/theme/auraKit';
 
 import { ChatWallpaper } from './ChatWallpaper';
 import { CountBadge } from './CountBadge';
 import { useTabBarSpace } from './TabBar';
-import { Text } from './Text';
 import { usePressScale } from './motion';
 import { AppIcon } from './AppIcon';
 // Frame by frame with the keyboard (react-native-keyboard-controller): the bar rises with it.
@@ -474,27 +476,30 @@ export function ChatScreen({
 // "Bugün" or "3 Ekim" over a day's first message; fresh: "Yeni mesajlar" over the first message
 // that came while the chat was closed, in the link colour (skall.css → `.day.new`).
 export function DayLine({ label, fresh }: { label: string; fresh?: boolean }) {
-  const { colors, shape } = useTheme();
+  const { c } = useKit();
   return (
     <View
       className="self-center"
-      // skall tuvali (skall.css → `.day`): a surface pill on the chip shadow.
+      // docs/design/aura → Dm (`.day`): a soft white pill.
       style={{
         marginTop: SPACING[2.5],
         marginBottom: SPACING[1.5],
-        backgroundColor: colors.surface,
-        borderRadius: shape.radius.pill,
-        boxShadow: shape.shadow.raised,
-        paddingHorizontal: SPACING[3],
-        paddingVertical: SPACING[1],
+        backgroundColor: c.day,
+        borderRadius: KIT.size.chip,
+        paddingHorizontal: KIT.size.dayPadX,
+        paddingVertical: KIT.size.dayPadY,
       }}
     >
-      <Text variant="caption" tone={fresh ? 'accent' : 'muted'}>
+      <RNText
+        maxFontSizeMultiplier={DAY_SCALE}
+        style={[KIT_TYPE.day, { color: fresh ? KIT.primary : c.muted }]}
+      >
         {label}
-      </Text>
+      </RNText>
     </View>
   );
 }
+const DAY_SCALE = 1.3;
 
 export function dayLabel(day: Date, now = new Date()): string {
   return sameDay(day, now) ? tr.chat.today : tr.chat.day(day.toISOString());
