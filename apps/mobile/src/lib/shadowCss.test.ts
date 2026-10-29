@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { KIT } from './auraKit';
+import { KIT } from '../theme/auraKit';
 import { parseShadows } from './shadowCss';
 
 describe('parseShadows', () => {
