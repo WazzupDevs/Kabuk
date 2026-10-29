@@ -62,8 +62,8 @@ class DissolveView(context: Context, appContext: AppContext) : ExpoView(context,
     invalidate()
     animator =
       ValueAnimator.ofFloat(0f, 1f).apply {
-        duration = durationMs
-        interpolator = PathInterpolator(curve[0], curve[1], curve[2], curve[3])
+        setDuration(durationMs)
+        setInterpolator(PathInterpolator(curve[0], curve[1], curve[2], curve[3]))
         addUpdateListener {
           progress = it.animatedValue as Float
           invalidate()
@@ -72,7 +72,7 @@ class DissolveView(context: Context, appContext: AppContext) : ExpoView(context,
           object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
               progress = 1f
-              node.discardDisplayList()
+              node?.discardDisplayList()
               invalidate()
             }
           },
