@@ -1524,6 +1524,26 @@ export const tr = {
     previewOpen: 'Bileşen önizlemesini aç',
     // v46 native, step 2: the app's v46 gallery, next to v46's own (docs/design/v46/).
     galleryOpen: 'v46 galerisini aç',
+    // Çizim ölçümü (lib/drawLab.ts): parts of the screen off one by one, each a few seconds, while
+    // the phone's frame bars are recorded.
+    drawLab: {
+      title: 'Çizim ölçümü',
+      open: 'Çizim ölçümünü aç',
+      hint: 'Geliştirici seçeneklerinde "HWUI oluşturma profili" çubuk olarak açıkken ekranı kaydet, sonra Başlat.',
+      start: 'Başlat',
+      close: 'Kapat',
+      step: (n: number, total: number, name: string) => `${n}/${total} ${name}`,
+      steps: {
+        all: 'Hepsi açık',
+        cam: 'Cam kapalı',
+        golge: 'Gölgeler kapalı',
+        kart: 'Kart zemini düz',
+        zemin: 'Arka plan düz',
+        four: 'Dördü kapalı',
+        hareket: 'Hareket durdu',
+        end: 'Hepsi açık',
+      },
+    },
     gallery: {
       title: 'v46 galeri',
       light: 'Açık',

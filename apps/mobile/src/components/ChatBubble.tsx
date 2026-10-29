@@ -13,6 +13,7 @@ import { withAlpha } from '@/theme/contrast';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 import { shadowParts } from '@/components/NativeShadow';
+import { useLabOff } from '@/lib/drawLab';
 
 import { AVATAR_SIZE } from './Avatar';
 import { type BubbleAction, MessagePop, type PopAnchor } from './MessagePop';
@@ -133,6 +134,7 @@ export function ChatBubble({
   const { scheme } = useKit();
   const kind = useChatKind();
   const paint = KIT.bubble[scheme];
+  useLabOff('golge');
   const fg = mine ? paint.mineInk : paint.themInk;
   const inside = !mine && nameInk !== undefined;
   // Before `bubble` below: it draws the face (which reads the shadow) as it is built.
@@ -619,6 +621,7 @@ export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: 
   const { scheme } = useKit();
   const kind = useChatKind();
   const paint = KIT.bubble[scheme];
+  useLabOff('golge');
   const typingShadow = shadowParts(KIT.chatShadow[kind], undefined, [
     KIT.size.msgRadius,
     KIT.size.msgRadius,

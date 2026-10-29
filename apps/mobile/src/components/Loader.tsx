@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState } from 
 import { AppState, View } from 'react-native';
 
 import { tr } from '@/i18n/tr';
+import { useLabOff } from '@/lib/drawLab';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import {
   drawingFor,
@@ -32,7 +33,8 @@ export function useLoopActive(): boolean {
     const sub = AppState.addEventListener('change', (s) => setForeground(s === 'active'));
     return () => sub.remove();
   }, []);
-  return !held && focused && foreground;
+  const still = useLabOff('hareket');
+  return !held && focused && foreground && !still;
 }
 
 type Props = {

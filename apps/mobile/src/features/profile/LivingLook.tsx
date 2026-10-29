@@ -12,6 +12,7 @@ import Animated, {
 
 import { CachedSvg } from '@/components/CachedSvg';
 import { CanvasBar } from '@/components/CanvasIcon';
+import { useLoopActive } from '@/components/Loader';
 import { JUMP, sample } from '@/features/capsule/motion';
 import { haptic } from '@/lib/haptics';
 import { useReduceMotion } from '@/lib/useReduceMotion';
@@ -56,11 +57,13 @@ export function LivingLook({
   accessibilityLabel?: string;
 }) {
   const reduce = useReduceMotion();
+  // Only while its screen is on top and the app in front, as every loop (Loader.tsx).
+  const active = useLoopActive();
   const [blink, setBlink] = useState(false);
   const [pose, setPose] = useState(REST);
 
   useEffect(() => {
-    if (reduce) return undefined;
+    if (reduce || !active) return undefined;
     const timers: ReturnType<typeof setTimeout>[] = [];
     const later = (ms: number, run: () => void) => timers.push(setTimeout(run, ms));
     const close = (then: () => void) => {
@@ -87,7 +90,7 @@ export function LivingLook({
     blinkLoop();
     lookLoop();
     return () => timers.forEach(clearTimeout);
-  }, [reduce]);
+  }, [reduce, active]);
 
   const base = useMemo(() => lookSvg(look, 'av'), [look]);
   const xml = useMemo(
