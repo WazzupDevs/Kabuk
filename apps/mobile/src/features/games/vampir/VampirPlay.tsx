@@ -23,12 +23,13 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { haptic } from '@/lib/haptics';
 import { useNow } from '@/lib/useNow';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
-import { MOON_SVG, SUN_SVG, VAMPIR_CLOCK, VAMPIR_LOOK as L } from '@/theme/vampir';
+import { MOON_SVG, SUN_SVG, VAMPIR_LOOK as L } from '@/theme/vampir';
 
 import { PeekRole, RoleCard } from './RoleCard';
 import {
   ClockBar,
   CloseRound,
+  DayClock,
   type Faces,
   nameOf,
   NextBar,
@@ -37,6 +38,7 @@ import {
   ResultCard,
   type TileState,
   VampirGround,
+  type VampirTime,
   VBtn,
   VText,
 } from './VampirParts';
@@ -54,6 +56,16 @@ const TOTAL: Record<VampirPhase, number> = {
 };
 
 const DAYTIME: readonly VampirPhase[] = ['morning', 'day', 'vote', 'verdict'];
+
+// Each phase's time of day on the ground (the owner's call, 29 Ekim).
+const TIME_OF: Record<VampirPhase, VampirTime> = {
+  role: 'night',
+  night: 'night',
+  morning: 'dawn',
+  day: 'day',
+  vote: 'day',
+  verdict: 'dusk',
+};
 
 export const vampirKeys = {
   view: (roomId: string, gameNo: number, step: number) =>
@@ -372,15 +384,9 @@ export function VampirPlay({
       />
     );
   } else if (state.phase === 'day') {
-    const clock = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
     body = (
       <Middle>
-        <Text
-          maxFontSizeMultiplier={1}
-          style={[VAMPIR_CLOCK, { color: left <= L.motion.lowSeconds ? L.team : L.ink }]}
-        >
-          {clock}
-        </Text>
+        <DayClock left={left} endsAt={Date.parse(state.endsAt)} total={total} now={now} />
         <VText v="title">{tr.vampir.whoIs}</VText>
         <VText v="body" soft>
           {tr.vampir.talk}
@@ -483,7 +489,7 @@ export function VampirPlay({
 
   return (
     <View style={{ flex: 1 }} testID="vampir-game">
-      <VampirGround day={day} />
+      <VampirGround time={TIME_OF[state.phase]} />
       <View
         style={{
           flex: 1,
@@ -539,9 +545,9 @@ function Chip({ label }: { label: string }) {
   return (
     <View
       style={{
-        height: L.size.peek,
-        paddingHorizontal: 14,
-        borderRadius: L.size.peek / 2,
+        height: KIT.size.round,
+        paddingHorizontal: 16,
+        borderRadius: KIT.size.round / 2,
         backgroundColor: L.deadChip,
         justifyContent: 'center',
       }}

@@ -46,7 +46,7 @@ import { AURA } from '@/theme/aura';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { SPACING } from '@/theme/tokens';
 import { AuraBackground } from '@/aura/AuraBackground';
-import { Btn, Glass, Round, T, Tag } from '@/aura/kit';
+import { Btn, Glass, Round, T } from '@/aura/kit';
 
 // The table (v46 "masa"; docs/SPEC_V4.md §4.E, §4.F): the top line (back, the table's icon and name
 // with "N kişi", which open Masadakiler; the owner's "Bitir", a participant's "Ayrıl"), the owner's
@@ -256,6 +256,18 @@ export default function TableScreen() {
             onPress={() => setSheet('invite')}
           />
         ) : null}
+        {/* The owner's lobby button, round, in the bar (the owner's call, 29 Ekim): lit while the
+            table is in the lobby, a press takes it out; dark, a press opens "Lobiye aç". */}
+        {owner ? (
+          <Round
+            icon="list"
+            primary={inLobby}
+            label={inLobby ? tr.venue.withdraw : tr.venue.openLobby}
+            testID={inLobby ? 'table-withdraw' : 'table-lobby'}
+            loading={withdraw.isPending}
+            onPress={() => (inLobby ? withdraw.mutate() : setSheet('lobby'))}
+          />
+        ) : null}
         <Btn
           sm
           bar
@@ -269,75 +281,31 @@ export default function TableScreen() {
     </View>
   );
 
-  // The table's name, its people and lobby state; "Masadakiler" opens the list.
+  // The table's name with its people and lobby state, under the faces (the owner's call, 29 Ekim:
+  // no "Masadakiler", the faces open it).
   const title = (
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: KIT.size.rowGap,
-        paddingHorizontal: KIT.size.secPadX,
-      }}
-    >
-      <View style={{ flex: 1 }}>
-        {/* The owner changes the table's picture and name from its name (the picture left the
-            scene, the owner's call, 29 Ekim). */}
-        <Pressable
-          testID="table-icon"
-          accessibilityRole={owner ? 'button' : undefined}
-          accessibilityLabel={owner ? tr.createTable.iconChange : undefined}
-          disabled={!owner}
-          onPress={() => setSheet('icon')}
-          className="self-start"
-        >
-          <T v="title" style={KIT_TYPE.tableTitle} testID="table-title">
-            {r.name ?? ''}
-          </T>
-        </Pressable>
-        <T v="fine">
-          {tr.table.status(
-            tr.venue.people(r.phones),
-            inLobby ? tr.venue.lobbyOpen : tr.venue.lobbyOff,
-          )}
-        </T>
-      </View>
+    <View style={{ alignItems: 'center' }}>
+      {/* The owner changes the table's picture and name from its name (the picture left the
+          scene, the owner's call, 29 Ekim). */}
       <Pressable
-        testID="table-who"
-        accessibilityRole="button"
-        accessibilityLabel={tr.table.whoLabel(r.phones)}
-        onPress={() => setSheet('people')}
-        hitSlop={KIT.size.chipsGap}
+        testID="table-icon"
+        accessibilityRole={owner ? 'button' : undefined}
+        accessibilityLabel={owner ? tr.createTable.iconChange : undefined}
+        disabled={!owner}
+        onPress={() => setSheet('icon')}
       >
-        <Tag tone="purple" label={tr.table.peopleTag} height={PEOPLE_TAG} />
+        <T v="title" center style={KIT_TYPE.tableTitle} testID="table-title">
+          {r.name ?? ''}
+        </T>
       </Pressable>
+      <T v="fine" center>
+        {tr.table.status(
+          tr.venue.people(r.phones),
+          inLobby ? tr.venue.lobbyOpen : tr.venue.lobbyOff,
+        )}
+      </T>
     </View>
   );
-
-  // The owner's lobby action, on the head under the name.
-  const lobbyButton = owner ? (
-    <View style={{ flexDirection: 'row' }}>
-      {inLobby ? (
-        <Btn
-          sm
-          variant="glassy"
-          icon="close"
-          testID="table-withdraw"
-          label={tr.venue.withdraw}
-          loading={withdraw.isPending}
-          onPress={() => withdraw.mutate()}
-        />
-      ) : (
-        <Btn
-          sm
-          icon="list"
-          testID="table-lobby"
-          label={tr.venue.openLobby}
-          onPress={() => setSheet('lobby')}
-        />
-      )}
-    </View>
-  ) : null;
 
   const failed =
     (withdraw.error ?? end.error ?? openGame.error ?? vote.error) ? (
@@ -526,12 +494,7 @@ export default function TableScreen() {
           me={sessionId}
           inset={insets.top}
           onPress={() => setSheet('people')}
-          footer={
-            <>
-              {title}
-              {lobbyButton}
-            </>
-          }
+          footer={title}
         >
           {bar}
         </TableScene>
@@ -543,7 +506,6 @@ export default function TableScreen() {
 
 // The bar sits this far under the status bar (the board: 60 from the top).
 const BAR_TOP = 16;
-const PEOPLE_TAG = 30;
 const SOLO_GAP = 4;
 
 // "Masayı bitir" and "Masadan ayrıl" (v46 data-csheet): what it does, the button and "Vazgeç".

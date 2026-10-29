@@ -9,7 +9,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 // Ekim). Drawn by Chromium from aura.css at the canvas's 390 × 844 and kept as one image per theme:
 // five live clouds per screen, ten during a slide, held the phone at 12 to 15 frames a second and
 // kept it drawing at rest. One opaque picture is one layer, read once and kept in memory.
-const GROUND = {
+export const GROUND_PICTURE = {
   light: require('../../assets/aura/ground-light.webp'),
   dark: require('../../assets/aura/ground-dark.webp'),
 } as const;
@@ -21,7 +21,7 @@ export function AuraBackground() {
   }
   return (
     <Image
-      source={GROUND[scheme]}
+      source={GROUND_PICTURE[scheme]}
       fadeDuration={0}
       resizeMode="cover"
       style={StyleSheet.absoluteFill}
@@ -74,7 +74,7 @@ function Slice({ top, height, opacity }: { top: number; height: number; opacity:
       style={{ position: 'absolute', left: 0, right: 0, top, height, overflow: 'hidden', opacity }}
     >
       <Image
-        source={GROUND[scheme]}
+        source={GROUND_PICTURE[scheme]}
         fadeDuration={0}
         resizeMode="cover"
         style={{ position: 'absolute', left: 0, top: -top, width, height: screen }}
