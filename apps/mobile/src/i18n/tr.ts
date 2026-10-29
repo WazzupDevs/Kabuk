@@ -599,8 +599,12 @@ export const tr = {
     placeholder: 'Mesaj yaz…',
     send: 'Gönder',
     report: 'Konuşmayı şikayet et',
-    olderMessages: 'Daha eski mesajlar',
-    delivery: { sent: 'Gönderildi', delivered: 'İletildi', read: 'Okundu' },
+    delivery: {
+      sending: 'Gönderiliyor',
+      sent: 'Gönderildi',
+      delivered: 'İletildi',
+      read: 'Okundu',
+    },
     typing: 'yazıyor',
   },
   // skall tuvali (KapsulSusle…, KapsulGaleri; docs/SPEC_V4.md §4.D, K-46, K-61).

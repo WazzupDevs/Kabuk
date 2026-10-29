@@ -2,17 +2,18 @@ import { REPORT_REASONS, type ReportReason } from '@shared/chat.ts';
 import { DM_MAX_LENGTH, prepareDm } from '@shared/friends.ts';
 import { canRetry, type OutboxMessage, outboxReducer } from '@shared/chatOutbox.ts';
 import { toRuns } from '@shared/chatRuns.ts';
+import type { DmPageRow } from '@shared/dmInbox.ts';
 import { parseDmReactions, parseQuote } from '@shared/messageExtras.ts';
 import { BROADCAST, dmChannel } from '@shared/rooms.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { Alert, BackHandler, View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { Avatar } from '@/components/Avatar';
 import { ChatBubble, type Delivery, TypingBubble } from '@/components/ChatBubble';
-import { ChatRow, ChatScreen, DayLine, dayLabel } from '@/components/ChatScreen';
+import { type ChatListItem, ChatRow, ChatScreen, DayLine, dayLabel } from '@/components/ChatScreen';
 import { ChatTopBar } from '@/components/ChatTopBar';
 import { DraftComposer } from '@/components/Composer';
 import { EmptyState } from '@/components/EmptyState';
@@ -26,6 +27,7 @@ import { ReportModal } from '@/features/chat/ReportModal';
 import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
 import {
   friendKeys,
+  refreshDm,
   useDmMessages,
   useDmReactions,
   useFriends,
@@ -41,7 +43,7 @@ import { ApiError, friendsApi, safetyApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useSeen } from '@/lib/useSeen';
 import { SPACING } from '@/theme/tokens';
-import { lastRows, useAfterTransition, useOpenRows } from '@/lib/afterTransition';
+import { useAfterTransition } from '@/lib/afterTransition';
 
 type Params = { threadId: string; publicId: string; name: string };
 
@@ -49,6 +51,18 @@ const isDelivery = (status: string | null): status is Delivery =>
   status === 'sent' || status === 'delivered' || status === 'read';
 
 let nextLocalId = 0;
+
+// A row of the stream: a message from the page, or one of the reader's on its way. `key` stays the
+// same from the bubble's first draw: a message sent from here keeps its waiting bubble's key when
+// the server's copy takes its place, so only its mark changes (Telegram Android).
+type Row = ChatListItem & {
+  m?: DmPageRow;
+  out?: OutboxMessage;
+  first: boolean;
+  day: number | null;
+};
+
+type Pages = readonly (readonly DmPageRow[])[];
 
 // A DM thread with a friend (docs/SPEC_V2.md §6.4). The dm: channel carries no data; the page is
 // reread through dm_messages_page (`from_me`, never the sender's account id). Read state stays
@@ -99,22 +113,38 @@ export default function DmScreen() {
   // docs/SPEC_V3.md §21: swipe a message to answer it, long press it for a reaction.
   const reply = useReplyTarget();
   const reactions = useDmReactions(threadId);
-  const refetch = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: friendKeys.dm(threadId) });
+  // Each broadcast reads only the newest page and puts it in place (refreshDm); a reaction, which
+  // may be on an older message, the pages loaded.
+  const onMessage = useCallback(() => {
+    void refreshDm(queryClient, threadId);
     if (seen()) markRead();
   }, [queryClient, threadId, markRead, seen]);
-  useBroadcast(dmChannel(threadId), BROADCAST.dmMessage, refetch);
-  // A tick moved (delivered or read): only the page is read again.
-  const rereadPage = useCallback(
-    () => void queryClient.invalidateQueries({ queryKey: friendKeys.dm(threadId) }),
+  useBroadcast(dmChannel(threadId), BROADCAST.dmMessage, onMessage);
+  // A tick moved (delivered or read).
+  const onStatus = useCallback(
+    () => void refreshDm(queryClient, threadId),
     [queryClient, threadId],
   );
-  useBroadcast(dmChannel(threadId), BROADCAST.dmStatus, rereadPage);
-  // A reaction moved: the page again.
-  useBroadcast(dmChannel(threadId), BROADCAST.dmReaction, rereadPage);
+  useBroadcast(dmChannel(threadId), BROADCAST.dmStatus, onStatus);
+  const onReaction = useCallback(
+    () => void refreshDm(queryClient, threadId, 'all'),
+    [queryClient, threadId],
+  );
+  useBroadcast(dmChannel(threadId), BROADCAST.dmReaction, onReaction);
+
+  // While the DM slides in it shows what it opened with; what changed meanwhile comes once it is
+  // in (Telegram Android holds a chat's updates during its opening animation).
+  const livePages = messages.data?.pages;
+  const [heldPages, setHeldPages] = useState<Pages | undefined>(livePages);
+  if (!settled && heldPages === undefined && livePages !== undefined) setHeldPages(livePages);
+  const pages: Pages | undefined = settled ? livePages : (heldPages ?? livePages);
+  const server = useMemo(() => (pages ?? []).flat(), [pages]);
+
+  // The reader's messages sent from here: the server's id to the waiting bubble's key.
+  const [sentKeys, setSentKeys] = useState<ReadonlyMap<string, string>>(() => new Map());
 
   // The other side's newest message: when it changes, their typing dots go.
-  const newestFromThem = messages.data?.find((m) => !m.from_me)?.id;
+  const newestFromThem = server.find((m) => !m.from_me)?.id;
   const seenFromThem = useRef(newestFromThem);
   useEffect(() => {
     if (newestFromThem === seenFromThem.current) return;
@@ -127,14 +157,17 @@ export default function DmScreen() {
   // The answered message from the loaded page, for the quote shown at once.
   const replyOf = (id: string | undefined) => {
     if (!id) return undefined;
-    const m = messages.data?.find((x) => x.id === id);
+    const m = server.find((x) => x.id === id);
     return m ? { id, body: m.body, fromMe: m.from_me } : { id, body: '', fromMe: false };
   };
   const deliver = (localId: string, text: string, replyTo?: string) => {
     sendDm(text, replyOf(replyTo))
-      .then(() => {
+      .then((id) => {
         track('dm_sent', {});
-        dispatch({ type: 'sent', localId });
+        // The server's copy takes the waiting bubble's place (and key); the waiting one goes once
+        // the copy is on the page.
+        if (id) setSentKeys((keys) => new Map(keys).set(id, localId));
+        else dispatch({ type: 'sent', localId });
       })
       .catch((err: unknown) =>
         dispatch({ type: 'failed', localId, errorCode: err instanceof ApiError ? err.code : null }),
@@ -144,7 +177,13 @@ export default function DmScreen() {
     nextLocalId += 1;
     const localId = `dm-${nextLocalId}`;
     const replyTo = reply.target?.id;
-    dispatch({ type: 'send', localId, body, ...(replyTo ? { replyTo } : {}) });
+    dispatch({
+      type: 'send',
+      localId,
+      body,
+      at: new Date().toISOString(),
+      ...(replyTo ? { replyTo } : {}),
+    });
     clear();
     reply.clear();
     deliver(localId, body, replyTo);
@@ -198,26 +237,146 @@ export default function DmScreen() {
     },
   });
 
-  const list = [...(messages.data ?? [])].reverse();
-  // Opened light: the newest messages while the screen slides in, the rest after.
-  const runs = toRuns(
-    list,
-    (m) => (m.from_me ? 'me' : 'them'),
-    (m) => m.created_at,
+  // The waiting bubbles whose server copy is on the page leave the outbox (they were drawn as the
+  // copy already).
+  const sentLocal = useMemo(
+    () => new Map([...sentKeys].map(([id, local]) => [local, id])),
+    [sentKeys],
   );
-  const shown = useOpenRows(runs.length);
+  useEffect(() => {
+    const onPage = new Set(server.map((m) => m.id));
+    for (const [local, id] of sentLocal) {
+      if (onPage.has(id) && outbox.some((o) => o.localId === local)) {
+        dispatch({ type: 'sent', localId: local });
+      }
+    }
+  }, [server, sentLocal, outbox]);
+
+  // Newest first (the stream is drawn from the bottom up), runs and day lines worked out oldest
+  // first.
+  const rows = useMemo(() => {
+    const onPage = new Set(server.map((m) => m.id));
+    const waiting = outbox.filter((o) => {
+      const id = sentLocal.get(o.localId);
+      return !(id && onPage.has(id));
+    });
+    type Entry = {
+      key: string;
+      id: string;
+      mine: boolean;
+      at: string;
+      m?: DmPageRow;
+      out?: OutboxMessage;
+    };
+    const oldestFirst: Entry[] = [
+      ...[...server].reverse().map((m) => ({
+        key: sentKeys.get(m.id) ?? m.id,
+        id: m.id,
+        mine: m.from_me,
+        at: m.created_at,
+        m,
+      })),
+      ...waiting.map((o) => ({
+        key: o.localId,
+        id: o.localId,
+        mine: true,
+        at: o.at ?? new Date().toISOString(),
+        out: o,
+      })),
+    ];
+    return toRuns(
+      oldestFirst,
+      (e) => (e.mine ? 'me' : 'them'),
+      (e) => e.at,
+    )
+      .map(({ item, first, day }): Row => ({
+        key: item.key,
+        id: item.id,
+        ...(item.m ? { m: item.m } : {}),
+        ...(item.out ? { out: item.out } : {}),
+        first,
+        day: day ? day.getTime() : null,
+      }))
+      .reverse();
+  }, [server, outbox, sentKeys, sentLocal]);
+
   // From the DM: removing or blocking there goes back to Mesajlar, not to this DM (audit CHAT-6).
   const openProfile = () =>
     router.push({ pathname: '/people/[publicId]', params: { publicId, from: 'dm' } });
-  // The newest message, for following it (ChatScroll): one on its way, else the newest read.
-  const newestOut = outbox[outbox.length - 1];
-  const newestIn = list[list.length - 1];
+  // The newest message, for following it: the reader's own goes to the end.
+  const newest = rows[0];
+  const newestMine = newest ? (newest.out ? true : newest.m?.from_me) : undefined;
+  const onReply = useCallback(
+    (m: DmPageRow) =>
+      reply.setTarget({ id: m.id, quote: { name: m.from_me ? tr.chat.you : name, text: m.body } }),
+    [reply, name],
+  );
+  const onDiscard = useCallback(
+    (m: OutboxMessage) => dispatch({ type: 'remove', localId: m.localId }),
+    [],
+  );
+  const renderRow = (row: Row) => (
+    <DmRow
+      row={row}
+      name={name}
+      view={reactions.view}
+      pick={reactions.pick}
+      onReply={onReply}
+      quoteOf={outboxQuote}
+      onRetry={retry}
+      onDiscard={onDiscard}
+    />
+  );
+  const loadOlder = () => {
+    if (messages.hasNextPage && !messages.isFetchingNextPage && !messages.isFetchNextPageError) {
+      void messages.fetchNextPage();
+    }
+  };
   return (
     <ChatScreen
       startAtEnd
       hidesTabBar
-      newestKey={newestOut?.localId ?? newestIn?.id}
-      newestMine={newestOut ? true : newestIn?.from_me}
+      newestKey={newest?.key}
+      newestMine={newestMine}
+      list={{
+        items: rows,
+        renderItem: renderRow,
+        onReachOld: loadOlder,
+        latest: typing ? <TypingBubble testID="dm-typing" /> : null,
+        older: messages.isFetchingNextPage ? (
+          <View className="items-center" style={{ paddingVertical: SPACING[2] }}>
+            <Loader size={SPACING[8]} />
+          </View>
+        ) : messages.isFetchNextPageError ? (
+          <View className="items-center" style={{ paddingVertical: SPACING[2] }}>
+            <Button
+              size="sm"
+              variant="neutral"
+              label={tr.common.retry}
+              onPress={() => void messages.fetchNextPage()}
+            />
+          </View>
+        ) : null,
+        // Loading and its error (audit CHAT-8): the DM is never shown empty while it loads or
+        // when it could not be read.
+        empty: messages.isPending ? (
+          <View className="flex-1 items-center justify-center">
+            <Loader />
+          </View>
+        ) : messages.isError ? (
+          <View className="flex-1 justify-center">
+            <EmptyState
+              kind="error"
+              body={errorMessage(messages.error)}
+              action={{ label: tr.common.retry, onPress: () => void messages.refetch() }}
+            />
+          </View>
+        ) : (
+          <View className="flex-1 justify-center">
+            <EmptyState kind="empty" body={tr.friends.noMessagesYet} />
+          </View>
+        ),
+      }}
       top={
         <ChatTopBar
           onBack={backToInbox}
@@ -251,87 +410,6 @@ export default function DmScreen() {
         />
       }
     >
-      {/* Loading and its error (audit CHAT-8): the DM is never shown empty while it loads or when
-          it could not be read. */}
-      {messages.isPending && outbox.length === 0 ? (
-        <View className="flex-1 items-center justify-center">
-          <Loader />
-        </View>
-      ) : messages.isError && !messages.data ? (
-        <View className="flex-1 justify-center">
-          <EmptyState
-            kind="error"
-            body={errorMessage(messages.error)}
-            action={{ label: tr.common.retry, onPress: () => void messages.refetch() }}
-          />
-        </View>
-      ) : list.length === 0 && outbox.length === 0 ? (
-        <View className="flex-1 justify-center">
-          <EmptyState kind="empty" body={tr.friends.noMessagesYet} />
-        </View>
-      ) : null}
-      {messages.hasNextPage ? (
-        <View className="items-center" style={{ paddingVertical: SPACING[2] }}>
-          <Button
-            size="sm"
-            variant="neutral"
-            label={tr.dm.olderMessages}
-            loading={messages.isFetchingNextPage}
-            onPress={() => void messages.fetchNextPage()}
-          />
-        </View>
-      ) : null}
-      {lastRows(runs, shown).map(({ item: m, first, day }) => {
-        const counts = parseDmReactions(m.reactions);
-        const quote = parseQuote(m.reply_to);
-        return (
-          <ChatRow key={m.id} id={m.id} first={first}>
-            {(jumpTo) => (
-              <>
-                {day ? <DayLine label={dayLabel(day)} /> : null}
-                <ChatBubble
-                  text={m.body}
-                  mine={m.from_me}
-                  quote={toChatQuote(quote, name)}
-                  onPressQuote={quoteJump(quote, jumpTo)}
-                  reactions={reactions.view(m.id, counts)}
-                  onToggleReaction={(emoji) => reactions.pick(m.id, counts, emoji)}
-                  onReact={(emoji) => reactions.pick(m.id, counts, emoji)}
-                  onReply={() =>
-                    reply.setTarget({
-                      id: m.id,
-                      quote: { name: m.from_me ? tr.chat.you : name, text: m.body },
-                    })
-                  }
-                  first={first}
-                  time={tr.chat.time(m.created_at)}
-                  delivery={m.from_me && isDelivery(m.status) ? m.status : undefined}
-                  // A DM shows no photo or name by the bubbles (skall tuvali, Dm): the top bar
-                  // says who it is and opens the profile.
-                />
-              </>
-            )}
-          </ChatRow>
-        );
-      })}
-      {outbox.map((m) => (
-        <ChatBubble
-          key={m.localId}
-          text={m.body}
-          mine
-          quote={outboxQuote(m.replyTo)}
-          state={m.status === 'sending' ? 'sending' : 'failed'}
-          failedText={m.status === 'failed' && m.errorCode ? tr.errors[m.errorCode] : undefined}
-          onRetry={m.status === 'failed' && canRetry(m) ? () => retry(m) : undefined}
-          onDiscard={
-            m.status === 'failed'
-              ? () => dispatch({ type: 'remove', localId: m.localId })
-              : undefined
-          }
-        />
-      ))}
-      {typing ? <TypingBubble testID="dm-typing" /> : null}
-
       <Sheet visible={menu} onClose={() => setMenu(false)} title={tr.friends.friendMenuTitle}>
         <Menu>
           <MenuItem
@@ -388,5 +466,108 @@ export default function DmScreen() {
         onClose={() => setConfirm(null)}
       />
     </ChatScreen>
+  );
+}
+
+// One message of the stream. The server's copy of a message sent from here is the same row as its
+// waiting bubble (the same key and component): only its mark changes, the clock to the tick. A row
+// whose message did not change is not drawn again (memo: the message is the same object, from
+// @shared/dmPages.ts).
+const DmRow = memo(function DmRow({
+  row,
+  name,
+  view,
+  pick,
+  onReply,
+  quoteOf,
+  onRetry,
+  onDiscard,
+}: {
+  row: Row;
+  name: string;
+  view: ReturnType<typeof useDmReactions>['view'];
+  pick: ReturnType<typeof useDmReactions>['pick'];
+  onReply: (m: DmPageRow) => void;
+  quoteOf: (id: string | undefined) => ReturnType<typeof toChatQuote> | undefined;
+  onRetry: (m: OutboxMessage) => void;
+  onDiscard: (m: OutboxMessage) => void;
+}) {
+  const { m, out, first, day } = row;
+  return (
+    <ChatRow id={row.key} first={first}>
+      {(jumpTo) => (
+        <>
+          {day !== null ? <DayLine label={dayLabel(new Date(day))} /> : null}
+          {m ? (
+            <ServerBubble
+              m={m}
+              name={name}
+              first={first}
+              jumpTo={jumpTo}
+              view={view}
+              pick={pick}
+              onReply={onReply}
+            />
+          ) : out ? (
+            <ChatBubble
+              text={out.body}
+              mine
+              first={first}
+              quote={quoteOf(out.replyTo)}
+              // On its way: its time and a clock where the ticks go (Telegram Android).
+              {...(out.status === 'sending'
+                ? {
+                    time: tr.chat.time(out.at ?? new Date().toISOString()),
+                    delivery: 'sending' as const,
+                  }
+                : {
+                    state: 'failed' as const,
+                    failedText: out.errorCode ? tr.errors[out.errorCode] : undefined,
+                    onRetry: canRetry(out) ? () => onRetry(out) : undefined,
+                    onDiscard: () => onDiscard(out),
+                  })}
+            />
+          ) : null}
+        </>
+      )}
+    </ChatRow>
+  );
+});
+
+function ServerBubble({
+  m,
+  name,
+  first,
+  jumpTo,
+  view,
+  pick,
+  onReply,
+}: {
+  m: DmPageRow;
+  name: string;
+  first: boolean;
+  jumpTo: (id: string) => void;
+  view: ReturnType<typeof useDmReactions>['view'];
+  pick: ReturnType<typeof useDmReactions>['pick'];
+  onReply: (m: DmPageRow) => void;
+}) {
+  const counts = parseDmReactions(m.reactions);
+  const quote = parseQuote(m.reply_to);
+  return (
+    <ChatBubble
+      text={m.body}
+      mine={m.from_me}
+      quote={toChatQuote(quote, name)}
+      onPressQuote={quoteJump(quote, jumpTo)}
+      reactions={view(m.id, counts)}
+      onToggleReaction={(emoji) => pick(m.id, counts, emoji)}
+      onReact={(emoji) => pick(m.id, counts, emoji)}
+      onReply={() => onReply(m)}
+      first={first}
+      time={tr.chat.time(m.created_at)}
+      delivery={m.from_me && isDelivery(m.status) ? m.status : undefined}
+      // A DM shows no photo or name by the bubbles (skall tuvali, Dm): the top bar says who it is
+      // and opens the profile.
+    />
   );
 }

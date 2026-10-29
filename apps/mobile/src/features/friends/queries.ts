@@ -1,5 +1,6 @@
 import type { DmInboxThread } from '@shared/api/friends.ts';
 import { type DmPageRow, totalUnread, withSentDm, withThreadRead } from '@shared/dmInbox.ts';
+import { withNewestPage, withSamePage } from '@shared/dmPages.ts';
 import { BROADCAST, inboxChannel } from '@shared/rooms.ts';
 import {
   type InfiniteData,
@@ -8,10 +9,11 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 
 import { useSessionStore } from '@/features/auth/session';
+import { readDmCache, writeDmCache } from '@/features/friends/dmCache';
 import { useBroadcast } from '@/features/rooms/useBroadcast';
 import { useReactions } from '@/features/chat/messageExtras';
 import { dmApi, friendsApi } from '@/lib/api';
@@ -230,83 +232,235 @@ export function useMarkThreadRead(threadId: string): () => void {
 
 // dm_messages_page's size.
 const DM_PAGE_SIZE = 50;
+// A conversation left stays in memory this long: back in it, it shows at once.
+const DM_KEEP_MS = 30 * 60_000;
+// Older messages being read: a refresh waits for them (their answer is written over the cache as it
+// was when they began, and would drop what the refresh put in).
+const BUSY_MS = 150;
+// Not past this: a read that hangs does not hold the conversation back.
+const BUSY_MAX_MS = 10_000;
 type DmPages = InfiniteData<DmPageRow[], string | null>;
+// Which loaded pages to read again: the newest only, some, or all of them.
+type Want = 'all' | ReadonlySet<number>;
+const NEWEST: Want = new Set([0]);
 
-// Newest first, 50 at a time (dm_messages_page), with the status of the caller's own messages;
-// "Daha eski mesajlar" reads the page before the oldest one (audit CHAT-7: the 51st message and
-// older could never be seen). `data` is every page read, newest first.
+async function readDmPage(threadId: string, before: string | null): Promise<DmPageRow[]> {
+  const { data, error } = await supabase.rpc('dm_messages_page', {
+    target_thread_id: threadId,
+    ...(before ? { before } : {}),
+  });
+  if (error) throw error;
+  return data;
+}
+
+function joinWant(a: Want | null, b: Want): Want {
+  if (a === null) return b;
+  if (a === 'all' || b === 'all') return 'all';
+  return new Set([...a, ...b]);
+}
+
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// One conversation's refresh at a time: what is asked for meanwhile is read once more after it.
+const runs = new Map<string, { again: Want | null; done: Promise<void> }>();
+
+// A conversation as Telegram Android keeps its chat (the owner's call, 29 Ekim): a new message, a
+// tick or a reaction reads only the page it is in and puts it in place (@shared/dmPages.ts); the
+// other pages, and every row that did not change, stay as they are, so nothing else is drawn again.
+export function refreshDm(
+  queryClient: QueryClient,
+  threadId: string,
+  want: Want = NEWEST,
+): Promise<void> {
+  const running = runs.get(threadId);
+  if (running) {
+    running.again = joinWant(running.again, want);
+    return running.done;
+  }
+  const run: { again: Want | null; done: Promise<void> } = {
+    again: null,
+    done: Promise.resolve(),
+  };
+  runs.set(threadId, run);
+  run.done = (async () => {
+    let next: Want | null = want;
+    try {
+      while (next !== null) {
+        run.again = null;
+        await refreshOnce(queryClient, threadId, next).catch(() => undefined);
+        next = run.again;
+      }
+    } finally {
+      runs.delete(threadId);
+    }
+  })();
+  return run.done;
+}
+
+async function refreshOnce(queryClient: QueryClient, threadId: string, want: Want): Promise<void> {
+  const key = friendKeys.dm(threadId);
+  for (
+    let waited = 0;
+    waited < BUSY_MAX_MS && queryClient.getQueryState(key)?.fetchStatus === 'fetching';
+    waited += BUSY_MS
+  ) {
+    await wait(BUSY_MS);
+  }
+  const data = queryClient.getQueryData<DmPages>(key);
+  // Not read yet: its first read brings it.
+  if (!data) return;
+  const indexes =
+    want === 'all'
+      ? data.pageParams.map((_, i) => i)
+      : [...want].filter((i) => i < data.pageParams.length);
+  const fresh = await Promise.all(
+    indexes.map((i) => readDmPage(threadId, data.pageParams[i] ?? null)),
+  );
+  queryClient.setQueryData<DmPages>(key, (d) => {
+    if (!d) return d;
+    let pages = d.pages;
+    indexes.forEach((index, n) => {
+      const rows = fresh[n];
+      if (!rows) return;
+      pages =
+        index === 0
+          ? withNewestPage(pages, rows, DM_PAGE_SIZE)
+          : pages.map((page, i) => (i === index ? withSamePage(page, rows) : page));
+    });
+    return { ...d, pages };
+  });
+  // Older messages asked for meanwhile: their answer goes over this one; once more after them.
+  if (queryClient.getQueryState(key)?.fetchStatus === 'fetching') {
+    const run = runs.get(threadId);
+    if (run) run.again = joinWant(run.again, want);
+  }
+}
+
+// A conversation kept on the phone (dmCache.ts) into memory, if it is not there yet: Mesajlar does
+// it for its rows, so a DM opens with its messages already drawn.
+export async function restoreDm(
+  queryClient: QueryClient,
+  userId: string,
+  threadId: string,
+): Promise<void> {
+  const key = friendKeys.dm(threadId);
+  if (queryClient.getQueryData(key)) return;
+  const rows = await readDmCache(userId, threadId);
+  if (!rows || queryClient.getQueryData(key)) return;
+  queryClient.setQueryData<DmPages>(key, { pages: [rows], pageParams: [null] });
+}
+
+// Newest first, DM_PAGE_SIZE at a time (dm_messages_page), with the status of the caller's own
+// messages; the page before the oldest one is read as the reader nears it (fetchNextPage). Shown at
+// once from memory or the phone's copy and brought up to date behind it, the newest page only
+// (refreshDm): opening, coming back to the foreground and each broadcast read nothing else. Left,
+// only the newest page stays; older ones are read again when reached.
 export function useDmMessages(threadId: string) {
-  return useInfiniteQuery({
+  const queryClient = useQueryClient();
+  const userId = useSessionStore((s) => s.session?.user.id);
+  const [kept] = useState(() => queryClient.getQueryData(friendKeys.dm(threadId)) !== undefined);
+  useEffect(() => {
+    if (kept) void refreshDm(queryClient, threadId);
+    else if (userId) void restoreDm(queryClient, userId, threadId);
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') void refreshDm(queryClient, threadId);
+    });
+    return () => {
+      sub.remove();
+      queryClient.setQueryData<DmPages>(friendKeys.dm(threadId), (d) =>
+        d && d.pages.length > 1
+          ? { pages: d.pages.slice(0, 1), pageParams: d.pageParams.slice(0, 1) }
+          : d,
+      );
+    };
+  }, [kept, queryClient, threadId, userId]);
+  const query = useInfiniteQuery({
     queryKey: friendKeys.dm(threadId),
     initialPageParam: null as string | null,
     queryFn: async ({ pageParam }): Promise<DmPageRow[]> => {
-      const { data, error } = await supabase.rpc('dm_messages_page', {
-        target_thread_id: threadId,
-        ...(pageParam ? { before: pageParam } : {}),
-      });
-      if (error) throw error;
-      return data;
+      const rows = await readDmPage(threadId, pageParam);
+      if (pageParam !== null) return rows;
+      // The newest page over what memory or the phone already showed.
+      const shown = queryClient.getQueryData<DmPages>(friendKeys.dm(threadId))?.pages[0];
+      return shown ? (withNewestPage([shown], rows, DM_PAGE_SIZE)[0] ?? rows) : rows;
     },
+    // The newest page grows with new messages: a page is full at DM_PAGE_SIZE or more.
     getNextPageParam: (last) =>
-      last.length === DM_PAGE_SIZE ? (last[last.length - 1]?.created_at ?? null) : null,
-    select: (data: DmPages) => data.pages.flat(),
+      last.length >= DM_PAGE_SIZE ? (last[last.length - 1]?.created_at ?? null) : null,
+    // Brought up to date by refreshDm, never by reading every page again.
+    staleTime: Infinity,
+    gcTime: DM_KEEP_MS,
   });
+  // The phone's copy follows the newest page.
+  const newest = query.data?.pages[0];
+  useEffect(() => {
+    if (userId && newest) writeDmCache(userId, threadId, newest);
+  }, [userId, threadId, newest]);
+  return query;
 }
 
 // Sends a DM. On the reply the message goes into the cached page with the 'sent' tick (adım 9.1:
-// the clock used to wait for the page to be read again); the caller drops its waiting bubble then.
-// A failure rejects with the ApiError, for "Tekrar dene".
+// the clock used to wait for the page to be read again); the caller puts the server's copy in its
+// waiting bubble's place then. Resolves with the message's id (null from a function before it). A
+// failure rejects with the ApiError, for "Tekrar dene".
 export function useSendDm(
   threadId: string,
-): (body: string, reply?: { id: string; body: string; fromMe: boolean }) => Promise<void> {
+): (body: string, reply?: { id: string; body: string; fromMe: boolean }) => Promise<string | null> {
   const queryClient = useQueryClient();
   return useCallback(
     async (body: string, reply?: { id: string; body: string; fromMe: boolean }) => {
       const sent = await dmApi.send(threadId, body, reply?.id);
-      if (sent.messageId) {
-        // Into the newest page; not read yet, the DM reads it with the message in it.
-        queryClient.setQueryData<DmPages>(friendKeys.dm(threadId), (data) =>
-          data
-            ? {
-                ...data,
-                pages: [
-                  withSentDm(data.pages[0] ?? [], {
-                    id: sent.messageId,
-                    body,
-                    created_at: sent.createdAt,
-                    // The quote as the page will send it (docs/SPEC_V3.md §21.1).
-                    ...(reply
-                      ? {
-                          reply_to: {
-                            id: reply.id,
-                            body: reply.body.slice(0, 80),
-                            from_me: reply.fromMe,
-                          },
-                        }
-                      : {}),
-                  }),
-                  ...data.pages.slice(1),
-                ],
-              }
-            : data,
-        );
-      } else {
-        // A function from before this answer carried the message.
-        await queryClient.invalidateQueries({ queryKey: friendKeys.dm(threadId) });
-      }
       refreshInboxSoon(queryClient);
+      if (!sent.messageId) {
+        // A function from before this answer carried the message.
+        await refreshDm(queryClient, threadId);
+        return null;
+      }
+      // Into the newest page; not read yet, the DM reads it with the message in it.
+      queryClient.setQueryData<DmPages>(friendKeys.dm(threadId), (data) =>
+        data
+          ? {
+              ...data,
+              pages: [
+                withSentDm(data.pages[0] ?? [], {
+                  id: sent.messageId,
+                  body,
+                  created_at: sent.createdAt,
+                  // The quote as the page will send it (docs/SPEC_V3.md §21.1).
+                  ...(reply
+                    ? {
+                        reply_to: {
+                          id: reply.id,
+                          body: reply.body.slice(0, 80),
+                          from_me: reply.fromMe,
+                        },
+                      }
+                    : {}),
+                }),
+                ...data.pages.slice(1),
+              ],
+            }
+          : data,
+      );
+      return sent.messageId;
     },
     [queryClient, threadId],
   );
 }
 
-// docs/SPEC_V3.md §21.2: the reader's reaction shows at once; the page is read again after the
-// server took it (and on the dm_reaction broadcast).
+// docs/SPEC_V3.md §21.2: the reader's reaction shows at once; then the page it is in is read again
+// (and every loaded page on the dm_reaction broadcast).
 export function useDmReactions(threadId: string) {
   const queryClient = useQueryClient();
-  return useReactions(dmApi.react, () =>
-    queryClient.invalidateQueries({ queryKey: friendKeys.dm(threadId) }),
-  );
+  const react = async (messageId: string, emoji: Parameters<typeof dmApi.react>[1]) => {
+    await dmApi.react(messageId, emoji);
+    const pages = queryClient.getQueryData<DmPages>(friendKeys.dm(threadId))?.pages ?? [];
+    const index = pages.findIndex((page) => page.some((m) => m.id === messageId));
+    await refreshDm(queryClient, threadId, new Set([Math.max(index, 0)]));
+  };
+  return useReactions(react, () => Promise.resolve());
 }
 
 // Ticks (docs/SPEC_V3.md §18.2): while the app is open, the messages it has been told about count
@@ -339,8 +493,8 @@ function useMarkDelivered(): () => void {
 
 // The account's inbox channel: requests and friendships refetch every friends/* query when told to.
 // Mounted once, in the tab layout, so the Mesajlar and bell badges stay current. A DM refreshes only
-// the inbox and the list, soon (refreshInboxSoon); the open conversation reads its own page on
-// dm:{thread_id}, and the other pages are only marked stale, read when opened.
+// the inbox and the list, soon (refreshInboxSoon); the open conversation reads its own newest page
+// on dm:{thread_id}, and another one reads it when it is opened (useDmMessages).
 export function useInbox(): void {
   const queryClient = useQueryClient();
   const userId = useSessionStore((s) => s.session?.user.id);
@@ -350,7 +504,6 @@ export function useInbox(): void {
     [queryClient],
   );
   const onDm = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: friendKeys.dms, refetchType: 'none' });
     refreshInboxSoon(queryClient);
     markDelivered();
   }, [queryClient, markDelivered]);

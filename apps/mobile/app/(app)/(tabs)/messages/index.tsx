@@ -1,5 +1,6 @@
 import { inboxStamp } from '@shared/dmInbox.ts';
 import type { DmInboxThread } from '@shared/api/friends.ts';
+import { useQueryClient } from '@tanstack/react-query';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
@@ -13,7 +14,8 @@ import { Rise } from '@/components/motion';
 import { Screen } from '@/components/Screen';
 import { TypingDots } from '@/components/TypingDots';
 import { openDm } from '@/features/friends/openDm';
-import { useDmInbox, useRequestCount } from '@/features/friends/queries';
+import { useSessionStore } from '@/features/auth/session';
+import { restoreDm, useDmInbox, useRequestCount } from '@/features/friends/queries';
 import { RequestList } from '@/features/friends/RequestList';
 import { useDmTyping } from '@/features/friends/useDmTyping';
 import { NotificationsBell } from '@/features/notifications/Bell';
@@ -69,6 +71,18 @@ export default function MessagesScreen() {
 function Chats({ now }: { now: Date }) {
   const inbox = useDmInbox();
   const loading = useLoaderHold(inbox.isPending);
+  // The conversations' copies on the phone into memory (useDmMessages): a DM opened from here
+  // shows its messages as it slides in, as Telegram Android opens a chat.
+  const queryClient = useQueryClient();
+  const userId = useSessionStore((s) => s.session?.user.id);
+  const threadIds = (inbox.data ?? [])
+    .slice(0, WARM_ROWS)
+    .flatMap((t) => (t.threadId ? [t.threadId] : []))
+    .join(' ');
+  useEffect(() => {
+    if (!userId || !threadIds) return;
+    for (const id of threadIds.split(' ')) void restoreDm(queryClient, userId, id);
+  }, [queryClient, userId, threadIds]);
 
   if (inbox.isPending || loading) {
     return (
@@ -108,6 +122,9 @@ function Chats({ now }: { now: Date }) {
     </GlassList>
   );
 }
+
+// The conversations brought into memory from the phone: the first screenfuls.
+const WARM_ROWS = 20;
 
 // Rows past this many don't listen for "yazıyor": a Realtime connection carries a limited number
 // of channels, and the rows further down are off screen.

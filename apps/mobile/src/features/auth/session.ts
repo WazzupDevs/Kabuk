@@ -3,6 +3,7 @@ import { Image } from 'expo-image';
 import { AppState } from 'react-native';
 import { create } from 'zustand';
 
+import { clearDmCache } from '@/features/friends/dmCache';
 import { resetOnboarding } from '@/features/onboarding/store';
 import { identify, resetAnalytics } from '@/lib/analytics';
 import { setReportingUser } from '@/lib/errorReporting';
@@ -26,6 +27,8 @@ let lastUser: string | null | undefined;
 function noteUser(user: string | null): void {
   const previous = lastUser;
   lastUser = user;
+  // The conversations kept on the phone (dmCache.ts) go with the account, and with no account.
+  if (user === null || (previous && previous !== user)) void clearDmCache();
   if (!previous || previous === user) return;
   queryClient.clear();
   void Image.clearMemoryCache();
