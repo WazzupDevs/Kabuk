@@ -447,6 +447,10 @@ function SwipeToReply({ onReply, children }: { onReply?: () => void; children: R
   const [dx] = useState(() => new Animated.Value(0));
   const start = useRef<{ x: number; y: number } | null>(null);
   const moved = useRef(0);
+  // The reply sign behind the bubble is put on the screen only once a swipe starts: unseen at rest,
+  // it was a view and an icon in every bubble, paid for when a chat opened (the owner's videos, 29
+  // Ekim: a DM's 50 bubbles stalled its opening).
+  const [armed, setArmed] = useState(false);
   if (!onReply) return children;
   const settle = () => {
     moved.current = 0;
@@ -465,6 +469,9 @@ function SwipeToReply({ onReply, children }: { onReply?: () => void; children: R
         return x > SWIPE_SLOP && x > Math.abs(y) * 1.5;
       }}
       onResponderTerminationRequest={() => false}
+      onResponderGrant={() => {
+        if (!armed) setArmed(true);
+      }}
       onResponderMove={(e) => {
         const s = start.current;
         if (!s) return;
@@ -481,28 +488,30 @@ function SwipeToReply({ onReply, children }: { onReply?: () => void; children: R
       onResponderTerminate={settle}
       style={{ maxWidth: '100%' }}
     >
-      <Animated.View
-        pointerEvents="none"
-        className="absolute items-center justify-center"
-        style={{
-          left: -SPACING[10],
-          top: 0,
-          bottom: 0,
-          opacity: dx.interpolate({ inputRange: [0, SWIPE_TRIGGER], outputRange: [0, 1] }),
-        }}
-      >
-        <View
-          className="items-center justify-center"
+      {armed ? (
+        <Animated.View
+          pointerEvents="none"
+          className="absolute items-center justify-center"
           style={{
-            width: SPACING[8],
-            height: SPACING[8],
-            borderRadius: shape.radius.pill,
-            backgroundColor: colors.surface2,
+            left: -SPACING[10],
+            top: 0,
+            bottom: 0,
+            opacity: dx.interpolate({ inputRange: [0, SWIPE_TRIGGER], outputRange: [0, 1] }),
           }}
         >
-          <AppIcon name="arrow-undo" size={ICON.sm} color={colors.text} />
-        </View>
-      </Animated.View>
+          <View
+            className="items-center justify-center"
+            style={{
+              width: SPACING[8],
+              height: SPACING[8],
+              borderRadius: shape.radius.pill,
+              backgroundColor: colors.surface2,
+            }}
+          >
+            <AppIcon name="arrow-undo" size={ICON.sm} color={colors.text} />
+          </View>
+        </Animated.View>
+      ) : null}
       <Animated.View style={{ transform: [{ translateX: dx }] }}>{children}</Animated.View>
     </View>
   );
