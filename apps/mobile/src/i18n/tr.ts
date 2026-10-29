@@ -540,7 +540,7 @@ export const tr = {
     // The last game played in the room, or the chat (docs/SPEC_V3.md §5.5).
     historyRow: (alias: string, concept: HistoryConcept, playedAt: string) =>
       `${alias} masasıyla ${HISTORY_CONCEPTS[concept]} · ${dayMonth(playedAt)}`,
-    people: (n: number) => `${headcountLabel(n)} kişi`,
+    people: (n: number) => `${n} kişi`,
     sendRequest: 'İstek gönder',
     addFriend: 'Arkadaş ekle',
     actionDone: 'Gönderildi',
@@ -577,7 +577,7 @@ export const tr = {
     inviteRest: 'seni masasına çağırıyor',
     invitePastRest: 'seni masasına çağırmıştı',
     inviteMeta: (table: string, people: number, clock: string) =>
-      `${table} · ${headcountLabel(people)} kişi · ${clock} kaldı`,
+      `${table} · ${people} kişi · ${clock} kaldı`,
     inviteJoined: (table: string) => `Kabul edildi, ${table} masasının yanına git.`,
     inviteGone: 'Davet artık geçerli değil',
     inviteDeclined: 'Reddettin',
@@ -800,7 +800,7 @@ export const tr = {
     lobbyTitle: 'Açık masalar',
     roomCount: (n: number) => `${n} masa`,
     profiled: 'profilli',
-    people: (n: number) => `${headcountLabel(n)} kişi`,
+    people: (n: number) => `${n} kişi`,
     requestJoin: 'Katıl',
     // Faz 2 (docs/SPEC_V3.md §22.C; canvas: Faz 2 · 22.5 Takımlar): a member of a side.
     requestMember: 'Bu masadayım',
@@ -1322,7 +1322,7 @@ export const tr = {
     watch: 'Gözlemci ol',
     play: 'Oyuna katıl',
     count: (n: number) => `${n} kişi`,
-    how: 'Herkes gizli bir rol alır: vampir, doktor, gözcü ya da köylü. Gece herkes telefonundan bir seçim yapar, böylece kimin rolü olduğu dışarıdan anlaşılmaz; vampirler birini ısırır, doktor birini korur, gözcü birinin rolüne bakar. Gündüz tartışır, oyla birini elersiniz. Elenen ve ısırılanın rolü açılır. Vampirlerin hepsi elenirse köylüler, vampirler köylüler kadar kalırsa vampirler kazanır.',
+    how: 'Herkes gizli bir rol alır: vampir, doktor, gözcü ya da köylü; 6 kişiden itibaren bir de soytarı. Gece herkes telefonundan bir seçim yapar: vampirler birini ısırır, doktor birini korur, gözcü birine bakar. Gündüz tartışıp oyla birini elersiniz. Vampirler biterse köylüler, vampirler köylüler kadar kalırsa vampirler kazanır; soytarı elenirse tek başına o kazanır.',
     hintOwner: 'Herkes hazırsa oyunu başlat.',
     hintGuest: 'Oyunu masa sahibi başlatır.',
     needs: (n: number) => `En az ${n} oyuncu gerekir.`,
@@ -1496,7 +1496,7 @@ export const tr = {
     // The round button at the top right of Mekan (docs/design/aura → Mekan) and its sheet.
     more: 'Seçenekler',
     yourTable: 'Masanın adı',
-    people: (n: number) => `${headcountLabel(n)} kişi`,
+    people: (n: number) => `${n} kişi`,
     remaining: (h: number, m: number) => (h > 0 ? `${h} sa ${m} dk kaldı` : `${m} dk kaldı`),
     leave: 'Mekandan ayrıl',
     leaveConfirmTitle: 'Mekandan ayrılıyor musun?',

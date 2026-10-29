@@ -1,8 +1,5 @@
 import type { VampirRole } from '@shared/vampir.ts';
 
-import type { TextStyle } from 'react-native';
-
-import { KIT_TYPE } from './auraKit';
 import type { ColorScheme } from './tokens';
 
 // Vampir Köylü's look (the owner's file skall-oyun-vampir-koylu, 29 Ekim): the night deep blue,
@@ -54,6 +51,9 @@ export const VAMPIR_LOOK = {
   // The day clock's face and the glow breathing behind it.
   clockFace: 'rgba(20, 17, 43, 0.22)',
   clockGlow: 'rgba(255, 210, 122, 0.42)',
+  // A digital digit's unlit segments, and the clock's pill.
+  digitOff: 'rgba(255, 255, 255, 0.10)',
+  timerPill: 'rgba(20, 17, 43, 0.28)',
   // The role card's caption: clear at its top, dark under the words (.ra-cap).
   capShade: 'linear-gradient(rgba(10, 8, 24, 0), rgba(10, 8, 24, 0.88) 30%, rgba(10, 8, 24, 0.95))',
   label: 'rgba(10, 8, 24, 0.60)',
@@ -97,6 +97,11 @@ export const VAMPIR_LOOK = {
     tickLong: 9,
     tickShort: 5,
     ringDot: 14,
+    digit: {
+      sm: { width: 13, height: 22, t: 3.4, gap: 3 },
+      lg: { width: 30, height: 52, t: 7, gap: 6 },
+    },
+    timerPill: 38,
     moon: 56,
     sun: 92,
     peek: 36,
@@ -144,11 +149,3 @@ export const CROSS_SVG =
 // "Rolüm" (the owner's call, 29 Ekim: its size and mark were out of place): a round like the
 // game's close, with the role card's back in it, a little turned.
 export const PEEK_SVG = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="5.5" y="3" width="13" height="18" rx="3" transform="rotate(-10 12 12)" fill="#fff"/><path d="M10.3 9.2c0-1.3.9-2 1.9-2 1.1 0 1.9.7 1.9 1.7 0 1.4-1.7 1.6-1.7 3" fill="none" stroke="#5A3AE6" stroke-width="1.9" stroke-linecap="round" transform="rotate(-10 12 12)"/><circle cx="12.2" cy="14.6" r="1.1" fill="#5A3AE6" transform="rotate(-10 12 12)"/></svg>`;
-
-// The day's big clock (.vk-clock): the display face, 60 high, its figures one width.
-export const VAMPIR_CLOCK: TextStyle = {
-  ...KIT_TYPE.display,
-  fontSize: VAMPIR_LOOK.size.clock,
-  lineHeight: VAMPIR_LOOK.size.clock,
-  fontVariant: ['tabular-nums'],
-};

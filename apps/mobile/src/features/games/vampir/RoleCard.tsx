@@ -95,7 +95,7 @@ export function RoleCard({
       style={{ width: cardWidth, height: cardHeight, alignSelf: 'center' }}
     >
       <Animated.View style={face('back')}>
-        <Image source={ROLE_ART.arka} style={StyleSheet.absoluteFill} resizeMode="cover" />
+        <Image source={ROLE_ART.arka} style={styles.art} resizeMode="cover" />
         <View style={styles.foot}>
           <View style={styles.shade} />
           <Text maxFontSizeMultiplier={MAX_FONT} style={[KIT_TYPE.h3, styles.white]}>
@@ -110,7 +110,7 @@ export function RoleCard({
         </View>
       </Animated.View>
       <Animated.View style={face('front')}>
-        <Image source={ROLE_ART[role]} style={StyleSheet.absoluteFill} resizeMode="cover" />
+        <Image source={ROLE_ART[role]} style={styles.art} resizeMode="cover" />
         <View style={styles.label}>
           <Text maxFontSizeMultiplier={1} style={[KIT_TYPE.eyebrow, styles.white]}>
             {tr.vampir.yourRole}
@@ -199,6 +199,8 @@ export function PeekRole({ role }: { role: VampirRole }) {
 const PEEK_ICON = 24;
 
 const styles = StyleSheet.create({
+  // Its own size, or it draws at the picture's pixels (Image takes a required source's size).
+  art: { position: 'absolute', left: 0, top: 0, width: '100%', height: '100%' },
   white: { color: L.ink },
   center: { textAlign: 'center' },
   foot: {

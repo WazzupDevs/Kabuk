@@ -228,19 +228,27 @@ function PeopleFaces({ roomId, phones, me }: { roomId: string; phones: number; m
     seen.current = phones;
     void refetch();
   }, [phones, refetch]);
+  const [width, setWidth] = useState(0);
   const sorted = [...(people.data ?? [])].sort((a, b) => a.joinedAt.localeCompare(b.joinedAt));
   if (sorted.length === 0) return null;
+  // All of them in the card's width, whatever their number (the owner's report, 29 Ekim: twelve
+  // ran off the card): they overlap more when they must.
+  const side = KIT.size.av.sm + 2 * KIT.size.avRing;
+  const n = sorted.length;
+  const overlap =
+    width > 0 && n > 1 ? Math.max(FACE_OVERLAP, (n * side - width) / (n - 1)) : FACE_OVERLAP;
   return (
     <View
       style={{ flexDirection: 'row' }}
       accessible={false}
       importantForAccessibility="no-hide-descendants"
+      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
     >
       {sorted.map((p, i) => (
         <View
           key={p.sessionId}
           style={{
-            marginLeft: i === 0 ? 0 : -FACE_OVERLAP,
+            marginLeft: i === 0 ? 0 : -overlap,
             borderRadius: KIT.size.av.sm,
             borderWidth: KIT.size.avRing,
             borderColor: KIT.white,

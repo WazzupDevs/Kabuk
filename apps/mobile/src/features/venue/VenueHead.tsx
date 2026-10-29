@@ -9,6 +9,7 @@ import { Sheet } from '@/components/Sheet';
 import { Wordmark } from '@/components/Wordmark';
 import { IdentitySheet } from '@/features/checkin/IdentitySheet';
 import { tr } from '@/i18n/tr';
+import { KIT } from '@/theme/auraKit';
 import { SPACING } from '@/theme/tokens';
 
 // Mekan's head (docs/design/aura → Mekan): the skall wordmark at the left; at the right the spot
@@ -124,7 +125,7 @@ export function VenueHead({
 
 // The canvas's head row and its spot tag.
 const HEAD_HEIGHT = 44;
-const TAG_HEIGHT = 36;
+const TAG_HEIGHT = KIT.size.round;
 const PRESSED = 0.7;
 // The note that the one change is spent stays this long.
 const USED_NOTE_MS = 2600;

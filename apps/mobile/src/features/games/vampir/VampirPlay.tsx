@@ -12,6 +12,7 @@ import {
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 
 import { CachedSvg } from '@/components/CachedSvg';
 import { Loader } from '@/components/Loader';
@@ -27,7 +28,6 @@ import { MOON_SVG, SUN_SVG, VAMPIR_LOOK as L } from '@/theme/vampir';
 
 import { PeekRole, RoleCard } from './RoleCard';
 import {
-  ClockBar,
   CloseRound,
   DayClock,
   type Faces,
@@ -37,6 +37,7 @@ import {
   ReadyRow,
   ResultCard,
   type TileState,
+  TimerPill,
   VampirGround,
   type VampirTime,
   VBtn,
@@ -376,13 +377,7 @@ export function VampirPlay({
         )}
       </Middle>
     );
-    foot = (
-      <NextBar
-        label={state.winner ? tr.vampir.result : tr.vampir.dayStarts}
-        left={left}
-        total={total}
-      />
-    );
+    foot = <NextBar label={state.winner ? tr.vampir.result : tr.vampir.dayStarts} left={left} />;
   } else if (state.phase === 'day') {
     body = (
       <Middle>
@@ -478,17 +473,13 @@ export function VampirPlay({
         )}
       </Middle>
     );
-    foot = (
-      <NextBar
-        label={state.winner ? tr.vampir.result : tr.vampir.nightComes}
-        left={left}
-        total={total}
-      />
-    );
+    foot = <NextBar label={state.winner ? tr.vampir.result : tr.vampir.nightComes} left={left} />;
   }
 
   return (
     <View style={{ flex: 1 }} testID="vampir-game">
+      {/* The ground is dark in every phase and theme: light clock and battery over it. */}
+      <StatusBar style="light" />
       <VampirGround time={TIME_OF[state.phase]} />
       <View
         style={{
@@ -520,7 +511,7 @@ export function VampirPlay({
         </View>
         {timed ? (
           <View style={{ marginTop: BAR_GAP }}>
-            <ClockBar left={left} total={total} />
+            <TimerPill left={left} />
           </View>
         ) : null}
         <View style={{ flex: 1 }}>{body}</View>

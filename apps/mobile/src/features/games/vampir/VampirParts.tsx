@@ -26,7 +26,9 @@ import { useReduceMotion } from '@/lib/useReduceMotion';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { gradientStyle } from '@/theme/gradient';
-import { CROSS_SVG, ROLE_ICON, VAMPIR_CLOCK, VAMPIR_LOOK as L } from '@/theme/vampir';
+import { CROSS_SVG, ROLE_ICON, VAMPIR_LOOK as L } from '@/theme/vampir';
+
+import { DigitalTimer } from './DigitalTimer';
 import { NIGHT_SKY, SKY_HEIGHT, VENUE_FRAME } from '@/theme/venueScene';
 
 const MAX_FONT = 1.3;
@@ -133,7 +135,8 @@ function Picture({ source }: { source: ImageSourcePropType }) {
       source={source}
       fadeDuration={0}
       resizeMode="cover"
-      style={StyleSheet.absoluteFill}
+      // Its own size, or it draws at the picture's pixels (Image takes a required source's size).
+      style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%' }}
       accessible={false}
     />
   );
@@ -250,34 +253,9 @@ export function VText({
   );
 }
 
-// The phase's clock as a thin bar under the top (.vk-prog): it empties over the phase; amber in
-// the last seconds.
-export function ClockBar({ left, total }: { left: number; total: number }) {
-  const low = left <= L.motion.lowSeconds && left > 0;
-  return (
-    <View
-      style={{
-        height: L.size.bar,
-        borderRadius: L.size.bar / 2,
-        backgroundColor: L.bar,
-        overflow: 'hidden',
-      }}
-    >
-      <View
-        style={{
-          width: `${Math.max(0, Math.min(1, total > 0 ? left / total : 0)) * 100}%`,
-          height: '100%',
-          borderRadius: L.size.bar / 2,
-          backgroundColor: low ? L.barLow : L.tileOn,
-        }}
-      />
-    </View>
-  );
-}
-
-// The day's clock (the owner's call, 29 Ekim: richer, and moving): the minutes and seconds in a
-// ring that empties smoothly with the talk, a light running at its end, ticks round its face and a
-// warm glow breathing behind it; the last seconds in amber, each one a small beat. The ring follows
+// The day's clock (the owner's call, 29 Ekim: richer, and moving): the minutes and seconds on a
+// digital display in a ring that empties smoothly with the talk, a light running at its end, ticks
+// round its face and a warm glow breathing behind it; the last seconds in amber. The ring follows
 // the phone's clock (`now`, four times a second: a step too small to see), the glow and the beat
 // run on the native driver; still with reduce motion.
 export function DayClock({
@@ -322,19 +300,6 @@ export function DayClock({
     loop.start();
     return () => loop.stop();
   }, [reduce, active, breath]);
-  const [beat] = useState(() => new Animated.Value(1));
-  useEffect(() => {
-    if (!low || reduce) return undefined;
-    beat.setValue(BEAT);
-    const anim = Animated.spring(beat, {
-      toValue: 1,
-      useNativeDriver: true,
-      speed: BEAT_SPEED,
-      bounciness: BEAT_BOUNCE,
-    });
-    anim.start();
-    return () => anim.stop();
-  }, [left, low, reduce, beat]);
   const ticks = useMemo(() => {
     let d = '';
     for (let i = 0; i < CLOCK_TICKS; i++) {
@@ -346,14 +311,9 @@ export function DayClock({
     }
     return d;
   }, [mid, r, stroke]);
-  const clock = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
   const ink = low ? L.barLow : L.tileOn;
   return (
-    <View
-      accessible
-      accessibilityLabel={tr.vampir.timeLeftLabel(clock)}
-      style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}
-    >
+    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
       <Animated.View
         style={[
           gradientStyle(`radial-gradient(closest-side, ${L.clockGlow}, transparent)`),
@@ -408,37 +368,56 @@ export function DayClock({
           }}
         />
       </View>
-      <Animated.View style={{ alignItems: 'center', transform: [{ scale: beat }] }}>
-        <Text maxFontSizeMultiplier={1} style={[VAMPIR_CLOCK, { color: low ? L.team : L.ink }]}>
-          {clock}
-        </Text>
+      <View style={{ alignItems: 'center', gap: 6 }}>
+        <DigitalTimer seconds={left} size="lg" />
         <Text
           maxFontSizeMultiplier={MAX_FONT}
           style={[KIT_TYPE.fine, KIT_TYPE.strong, { color: L.inkSoft }]}
         >
           {tr.vampir.timeLeft}
         </Text>
-      </Animated.View>
+      </View>
     </View>
   );
 }
 const CLOCK_TICKS = 24;
 const BREATH_MS = 1800;
 const GLOW_SCALE = 1.4;
-const BEAT = 1.08;
-const BEAT_SPEED = 14;
-const BEAT_BOUNCE = 10;
 
-// "Gündüz başlıyor" and its emptying bar, at the foot of the morning and the verdict.
-export function NextBar({ label, left, total }: { label: string; left: number; total: number }) {
+// The phase's clock on the ground (the owner's call, 29 Ekim: digital, in place of a bar): the
+// display in a dark pill.
+export function TimerPill({ left }: { left: number }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.rowGap }}>
+    <View
+      style={{
+        alignSelf: 'center',
+        height: L.size.timerPill,
+        paddingHorizontal: 14,
+        borderRadius: L.size.timerPill / 2,
+        backgroundColor: L.timerPill,
+        justifyContent: 'center',
+      }}
+    >
+      <DigitalTimer seconds={left} size="sm" />
+    </View>
+  );
+}
+
+// "Gündüz başlıyor" and the time to it, at the foot of the morning and the verdict.
+export function NextBar({ label, left }: { label: string; left: number }) {
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: KIT.size.rowGap,
+      }}
+    >
       <VText v="fine" center={false}>
         {label}
       </VText>
-      <View style={{ flex: 1 }}>
-        <ClockBar left={left} total={total} />
-      </View>
+      <TimerPill left={left} />
     </View>
   );
 }

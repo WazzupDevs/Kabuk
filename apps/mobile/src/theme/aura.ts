@@ -340,7 +340,7 @@ export const AURA = {
     max: 8,
   },
   // The headcount as capsules (aura.css `.pips`), colours in turn; at most `max` drawn.
-  pips: { colors: ['#9C86FF', '#FF7EA8', '#FFB547'], w: 6, h: 12, gap: 3, max: 8 },
+  pips: { colors: ['#9C86FF', '#FF7EA8', '#FFB547'], w: 6, h: 12, gap: 3, max: 12 },
   // An SVG mask: white shows, black hides (the outlined icons' gap).
   mask: { show: '#FFFFFF', hide: '#000000' },
 } as const;
