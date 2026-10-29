@@ -186,6 +186,16 @@ function loop(m: SceneMotion, v: Animated.Value): Animated.CompositeAnimation {
       return Animated.loop(
         Animated.sequence([t(v, 1, m.ms, Easing.linear), Animated.delay(m.rest), t(v, 0, 0)]),
       );
+    case 'toss':
+      return Animated.loop(
+        Animated.sequence([
+          t(v, 1, m.ms, Easing.linear),
+          Animated.delay(m.rest),
+          t(v, 2, m.ms, Easing.linear),
+          Animated.delay(m.rest),
+          t(v, 0, 0),
+        ]),
+      );
   }
 }
 
@@ -268,8 +278,32 @@ function motionStyle(m: SceneMotion, v: Animated.Value, k: number) {
           },
         ],
       };
+    case 'toss':
+      // Over and back: across on an arc, the same arc home.
+      return {
+        transform: [
+          {
+            translateX: v.interpolate({ inputRange: [0, 1, 2], outputRange: [0, m.dx * k, 0] }),
+          },
+          {
+            translateY: v.interpolate({
+              inputRange: [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
+              outputRange: [0, ...ARC, 0, ...ARC, 0].map((a) => -a * m.y * k),
+            }),
+          },
+          {
+            rotate: v.interpolate({
+              inputRange: [0, 1, 2],
+              outputRange: [deg(0), deg(m.spin), deg(0)],
+            }),
+          },
+        ],
+      };
   }
 }
+
+// A throw's height at a quarter, half and three quarters of the way.
+const ARC = [0.75, 1, 0.75];
 
 // The page's turn seen from a little in front.
 const PERSPECTIVE = 320;

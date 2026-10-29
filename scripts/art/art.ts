@@ -373,110 +373,82 @@ export const TABLE_ART: Record<string, () => string> = {
 
 type VenueKind = 'kafe' | 'cay' | 'yemek' | 'kampus';
 
-const VENUE_GROUND: Record<VenueKind, Ground> = {
-  kafe: { top: '#FFE6D8', bottom: '#FFC9DC', glowA: '#FFC489', glowB: '#CDB8FF' },
-  cay: { top: '#E2F8EC', bottom: '#BFEBD6', glowA: '#FFE08A', glowB: '#9FE3C6' },
-  yemek: { top: '#FFF0D6', bottom: '#FFD0B0', glowA: '#FFE08A', glowB: '#FFB0A0' },
-  kampus: { top: '#E8E4FF', bottom: '#CFE3FF', glowA: '#C9B8FF', glowB: '#A8D8FF' },
+export const VENUE_KINDS: VenueKind[] = ['kafe', 'cay', 'yemek', 'kampus'];
+
+// The venue kinds as app icons (the owner's call, 29 Ekim: "more colourful, like an icon"): a
+// saturated two-colour ground with a soft light at the top, one bold flat glyph in white with a
+// tinted shade, a little shadow under it. The list's icon (square; the app rounds it) and the
+// map's pin (round, a white ring) are the same picture.
+type IconGround = { from: string; to: string; shade: string };
+const VENUE_ICON: Record<VenueKind, IconGround> = {
+  kampus: { from: '#9B7BFF', to: '#5A33E6', shade: '#C9B8FF' },
+  kafe: { from: '#FFB547', to: '#FF6A3D', shade: '#FFD9A8' },
+  cay: { from: '#3FD6A5', to: '#16946A', shade: '#BFF3DF' },
+  yemek: { from: '#FF7DAA', to: '#E8366F', shade: '#FFC6D8' },
 };
 
-function venueKafe(): string {
+function iconGround(g: IconGround): string {
   return (
-    halo(60, 64, 44) +
-    `<ellipse cx="58" cy="90" rx="34" ry="8" fill="#FFFFFF"/><ellipse cx="58" cy="88.5" rx="30" ry="6" fill="#F4EEFF"/>` +
-    `<path d="M84 58Q100 58 100 70Q100 82 84 80" fill="none" stroke="#FFFFFF" stroke-width="7"/>` +
-    `<path d="M30 52H86V72Q86 89 58 89Q30 89 30 72Z" fill="#FFFFFF"/>` +
-    `<path d="M74 52H86V72Q86 88 66 88.8Q76 80 74 52Z" fill="#E9E2FA"/>` +
-    `<ellipse cx="58" cy="52" rx="28" ry="6" fill="${C.coffee}"/>` +
-    `<ellipse cx="58" cy="52.6" rx="22" ry="4" fill="${C.crema}"/>` +
-    `<g transform="translate(58 52.6) scale(1 0.5) translate(-58 -52.6)">${heart(58, 52.6, 6, C.cream)}</g>` +
-    `<path d="M36 60Q35 70 38 78" stroke="#FFFFFF" stroke-width="3" fill="none" stroke-linecap="round" stroke-opacity="0.9"/>` +
-    steam(50, 40, 1.15) +
-    steam(66, 42, 1, 0.75) +
-    sparkle(96, 26, 5)
+    `<defs>` +
+    `<linearGradient id="ig" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${g.from}"/><stop offset="1" stop-color="${g.to}"/></linearGradient>` +
+    `<radialGradient id="il" cx="0.3" cy="0.12" r="0.75"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.38"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient>` +
+    `<filter id="is" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#1A0F40" flood-opacity="0.28"/></filter>` +
+    `</defs>` +
+    `<rect width="120" height="120" fill="url(#ig)"/>` +
+    `<rect width="120" height="120" fill="url(#il)"/>`
   );
 }
 
-function venueCay(): string {
-  return (
-    halo(60, 62, 44) +
-    `<ellipse cx="60" cy="92" rx="30" ry="7" fill="#FFFFFF"/><ellipse cx="60" cy="90.6" rx="26" ry="5" fill="#F0FFF7"/>` +
-    `<path d="M44 34H76Q76 46 69 55Q65 62 69 69Q76 79 74.5 90H45.5Q44 79 51 69Q55 62 51 55Q44 46 44 34Z" fill="#FFFFFF" fill-opacity="0.65"/>` +
-    `<path d="M45.4 43H74.6Q73.4 49 69 55Q65 62 69 69Q76 79 74.5 90H45.5Q44 79 51 69Q55 62 51 55Q46.6 49 45.4 43Z" fill="${C.tea}"/>` +
-    `<path d="M66 43H74.6Q73.4 49 69 55Q65 62 69 69Q76 79 74.5 90H64Q71 80 64 69Q60 62 64 55Q68 49 66 43Z" fill="#000000" fill-opacity="0.12"/>` +
-    `<ellipse cx="60" cy="43" rx="14.6" ry="3" fill="${C.teaTop}"/>` +
-    `<path d="M50 71Q47 79 48 87" stroke="#FFFFFF" stroke-opacity="0.75" stroke-width="2.6" fill="none" stroke-linecap="round"/>` +
-    `<path d="M44 34H76" stroke="#FFFFFF" stroke-width="1.8"/>` +
-    steam(56, 30, 1) +
-    steam(66, 31, 0.9, 0.75) +
-    sparkle(96, 28, 5) +
-    sparkle(22, 52, 3)
-  );
-}
-
-function venueYemek(): string {
-  return (
-    halo(60, 62, 46) +
-    // fork and knife
-    `<path d="M20 34V56Q20 60 24 60V92" stroke="${C.steel}" stroke-width="3.4" stroke-linecap="round" fill="none"/>` +
-    `<path d="M16 34V52M24 34V52M28 34V54Q28 60 24 60" stroke="${C.steel}" stroke-width="2.4" stroke-linecap="round" fill="none"/>` +
-    `<path d="M98 34Q90 46 92 62H96V92" stroke="${C.steel}" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>` +
-    // plate
-    `<ellipse cx="60" cy="66" rx="30" ry="30" fill="#FFFFFF"/>` +
-    `<circle cx="60" cy="66" r="22" fill="#F4EEFF"/>` +
-    `<path d="M82 52A26 26 0 0 1 72 90" stroke="#E2D8FA" stroke-width="3" fill="none"/>` +
-    // food: köfte, rice, salad
-    `<ellipse cx="50" cy="70" rx="9" ry="7" fill="${C.cream}"/>` +
-    `<ellipse cx="66" cy="62" rx="6" ry="5" fill="${C.wood}"/><ellipse cx="72" cy="70" rx="6" ry="5" fill="${C.wood}"/><ellipse cx="63" cy="73" rx="5.6" ry="4.6" fill="${C.wood}"/>` +
-    `<ellipse cx="64.6" cy="60.6" rx="2" ry="1" fill="${C.crema}"/><ellipse cx="70.6" cy="68.6" rx="2" ry="1" fill="${C.crema}"/>` +
-    `<circle cx="54" cy="58" r="4" fill="${C.mint}"/><circle cx="49" cy="61" r="3.4" fill="${C.mintDeep}"/><circle cx="57" cy="78" r="2.8" fill="${C.red}"/>` +
-    steam(60, 40, 1) +
-    sparkle(100, 22, 4.4)
-  );
-}
-
-function venueKampus(): string {
-  const book = (y: number, x: number, w: number, color: string, side: string) =>
-    `<rect x="${x}" y="${y}" width="${w}" height="13" rx="2.6" fill="${color}"/>` +
-    `<rect x="${x + 4}" y="${y + 2.4}" width="${w - 7}" height="8" rx="1.2" fill="#FFFFFF"/>` +
-    `<path d="M${x + 7} ${y + 5}H${x + w - 6}M${x + 7} ${y + 8}H${x + w - 6}" stroke="#D9D2F2" stroke-width="1"/>` +
-    `<rect x="${x + w - 7}" y="${y}" width="7" height="13" rx="2.6" fill="${side}"/>`;
-  return (
-    halo(60, 64, 46) +
-    book(78, 24, 72, C.purple, '#5434D6') +
-    book(65, 30, 62, C.pink, '#E03A74') +
-    book(52, 26, 66, C.orange, '#E39A2E') +
-    // the cap
-    `<path d="M60 22L92 34L60 46L28 34Z" fill="${C.ink}"/>` +
-    `<path d="M44 40V48Q60 56 76 48V40L60 46Z" fill="${C.steel}"/>` +
-    `<path d="M88 35.5V48" stroke="${C.gold}" stroke-width="2"/><circle cx="88" cy="50" r="3" fill="${C.gold}"/>` +
-    `<path d="M60 22L92 34L88 35.5L60 25Z" fill="#FFFFFF" fill-opacity="0.18"/>` +
-    sparkle(100, 64, 4.4) +
-    sparkle(20, 40, 3)
-  );
-}
-
-const VENUE_DRAW: Record<VenueKind, () => string> = {
-  kafe: venueKafe,
-  cay: venueCay,
-  yemek: venueYemek,
-  kampus: venueKampus,
+// Each glyph centred in the 120 canvas, about 64 across: white body, the kind's shade as its
+// second tone.
+const VENUE_GLYPH: Record<VenueKind, (shade: string) => string> = {
+  // A mortarboard with its tassel.
+  kampus: (t) =>
+    `<g filter="url(#is)">` +
+    `<path d="M38 60V74Q38 84 60 84Q82 84 82 74V60L60 70Z" fill="${t}"/>` +
+    `<path d="M24 50L60 34L96 50L60 66Z" fill="#FFFFFF"/>` +
+    `<path d="M60 50L88 56V74" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>` +
+    `<circle cx="88" cy="78" r="5" fill="#FFFFFF"/>` +
+    `</g>`,
+  // A cup with steam.
+  kafe: (t) =>
+    `<g filter="url(#is)">` +
+    `<path d="M80 60Q94 60 94 70Q94 80 80 79" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>` +
+    `<path d="M30 54H84V70Q84 88 57 88Q30 88 30 70Z" fill="#FFFFFF"/>` +
+    `<rect x="30" y="54" width="54" height="8" rx="4" fill="${t}"/>` +
+    `<path d="M46 30Q42 36 46 42M58 26Q54 33 58 40M70 30Q66 36 70 42" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-opacity="0.85"/>` +
+    `</g>`,
+  // A tulip tea glass on its saucer.
+  cay: (t) =>
+    `<g filter="url(#is)">` +
+    `<ellipse cx="60" cy="88" rx="28" ry="6" fill="#FFFFFF"/>` +
+    `<path d="M44 34H76Q74 46 68 52Q66 56 68 62Q74 72 72 84H48Q46 72 52 62Q54 56 52 52Q46 46 44 34Z" fill="#FFFFFF"/>` +
+    `<path d="M50 50H70Q68 54 66 56Q64 60 66 64Q70 72 69 80H51Q50 72 54 64Q56 60 54 56Q52 54 50 50Z" fill="#C2361C"/>` +
+    `<rect x="42" y="31" width="36" height="6" rx="3" fill="${t}"/>` +
+    `</g>`,
+  // A plate with a fork and a knife.
+  yemek: (t) =>
+    `<g filter="url(#is)">` +
+    `<circle cx="60" cy="62" r="24" fill="#FFFFFF"/>` +
+    `<circle cx="60" cy="62" r="15" fill="${t}"/>` +
+    `<path d="M24 38V54M20 38V48Q20 54 24 56Q28 54 28 48V38M24 56V88" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>` +
+    `<path d="M96 88V38Q88 44 88 60Q88 66 96 66" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>` +
+    `</g>`,
 };
 
-export const VENUE_KINDS = Object.keys(VENUE_DRAW) as VenueKind[];
-
-// The list's icon (square; the app rounds it) and the map's pin (round, a white ring).
 export function venueIcon(kind: VenueKind): string {
-  return svg(ground(VENUE_GROUND[kind]) + VENUE_DRAW[kind]());
+  const g = VENUE_ICON[kind];
+  return svg(iconGround(g) + VENUE_GLYPH[kind](g.shade));
 }
 
 export function venuePin(kind: VenueKind): string {
+  const g = VENUE_ICON[kind];
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">` +
     `<defs><clipPath id="round"><circle cx="60" cy="60" r="52"/></clipPath></defs>` +
     `<circle cx="60" cy="62" r="57" fill="#2A1A5E" fill-opacity="0.18"/>` +
     `<circle cx="60" cy="60" r="58" fill="#FFFFFF"/>` +
-    `<g clip-path="url(#round)">${ground(VENUE_GROUND[kind])}${VENUE_DRAW[kind]()}</g>` +
+    `<g clip-path="url(#round)">${iconGround(g)}<g transform="translate(60 60) scale(0.92) translate(-60 -60)">${VENUE_GLYPH[kind](g.shade)}</g></g>` +
     `</svg>`
   );
 }
