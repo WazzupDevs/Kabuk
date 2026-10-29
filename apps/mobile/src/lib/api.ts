@@ -55,6 +55,8 @@ import type {
   VenueChatResponse,
 } from '@shared/api/venueChat.ts';
 import type { VenueChatMode } from '@shared/venueChat.ts';
+import type { VampirView } from '@shared/vampir.ts';
+import type { Pick } from '@shared/gameFrame.ts';
 import type { GameFlowReportReason, ReportReason } from '@shared/chat.ts';
 import type { Concept, Intent } from '@shared/rooms.ts';
 import type { SayKind } from '@shared/sayChallenge.ts';
@@ -219,6 +221,17 @@ export const roomsApi = {
   // Oyun Seç: one vote a person; null takes it back (docs/SPEC_V4.md §4.F).
   vote: (roomId: string, concept: string | null) =>
     invoke<RoomsOkResponse>('rooms', { action: 'vote', roomId, concept }),
+  // The owner opens a game's pre-game page; `again`: "Yeniden oyna", the last game's picks.
+  openGame: (roomId: string, concept: string, again = false) =>
+    invoke<RoomsOkResponse>('rooms', {
+      action: 'open-game',
+      roomId,
+      concept,
+      ...(again ? { again } : {}),
+    }),
+  // On the pre-game page: watch ('obs') or play (null).
+  pick: (roomId: string, pick: Pick | null) =>
+    invoke<RoomsOkResponse>('rooms', { action: 'pick', roomId, pick }),
   endGame: (roomId: string) => invoke<RoomsOkResponse>('rooms', { action: 'end-game', roomId }),
   leaveGame: (roomId: string) => invoke<RoomsOkResponse>('rooms', { action: 'leave-game', roomId }),
   // "Masayı bitir": the owner's, for everyone.
@@ -436,4 +449,22 @@ export const dmApi = {
   inbox: () => invoke<DmInboxResponse>('dm', { action: 'inbox' }),
   // The app is open: messages so far count as delivered, in every conversation.
   delivered: () => invoke<DmOkResponse>('dm', { action: 'delivered' }),
+};
+
+// Vampir Köylü (docs/SPEC_V4.md §4.F "Adım 4.6.6"): targets are table session ids; `step` is the
+// phase's number, so a press from a phase already over changes nothing.
+export const vampirApi = {
+  start: (roomId: string) => invoke<GameOkResponse>('vampir', { action: 'start', roomId }),
+  view: (roomId: string) => invoke<VampirView>('vampir', { action: 'view', roomId }),
+  ready: (roomId: string, step: number) =>
+    invoke<GameOkResponse>('vampir', { action: 'ready', roomId, step }),
+  begin: (roomId: string, step: number) =>
+    invoke<GameOkResponse>('vampir', { action: 'begin', roomId, step }),
+  pick: (roomId: string, step: number, target: string) =>
+    invoke<VampirView>('vampir', { action: 'pick', roomId, step, target }),
+  toVote: (roomId: string, step: number) =>
+    invoke<GameOkResponse>('vampir', { action: 'to-vote', roomId, step }),
+  vote: (roomId: string, step: number, target: string) =>
+    invoke<GameOkResponse>('vampir', { action: 'vote', roomId, step, target }),
+  advance: (roomId: string) => invoke<GameOkResponse>('vampir', { action: 'advance', roomId }),
 };

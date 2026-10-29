@@ -21,6 +21,8 @@ describe('IDEMPOTENT_CALLS', () => {
         'friends/notifications',
         'ping',
         'profile/get',
+        'vampir/advance',
+        'vampir/view',
         'venue-chat/page',
       ].sort(),
     );

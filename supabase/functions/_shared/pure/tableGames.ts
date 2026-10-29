@@ -9,6 +9,17 @@ export const GAME_CATEGORIES = [
 
 export const TABLE_GAMES = [
   {
+    id: 'vampir',
+    name: 'Vampir Köylü',
+    minPlayers: 5,
+    maxPlayers: 12,
+    teams: false,
+    pregame: true,
+    categories: ['multi'],
+    poster: 'vampir',
+    available: true,
+  },
+  {
     id: 'tabu',
     name: 'Kapsül Anlat',
     minPlayers: 4,

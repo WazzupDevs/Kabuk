@@ -71,3 +71,21 @@ export type IbreRequest =
   | { action: 'advance'; roomId: string };
 export type IbreStartResponse = { scales: { left: string; right: string }[] };
 export type IbreTargetResponse = { roundNo: number; target: number };
+
+// `vampir` (docs/SPEC_V4.md §4.F "Adım 4.6.6"). Targets are table session ids (rule 4); `step` is
+// the phase's number in rooms.game_state, so a press from a phase already over changes nothing.
+export type VampirRequest =
+  // The owner, from the pre-game page.
+  | { action: 'start'; roomId: string }
+  // What only the caller's phone may know; idempotent.
+  | { action: 'view'; roomId: string }
+  // The role card: ready; the owner starts the night early.
+  | { action: 'ready'; roomId: string; step: number }
+  | { action: 'begin'; roomId: string; step: number }
+  // A living player's one choice tonight; the answer is the caller's view.
+  | { action: 'pick'; roomId: string; step: number; target: string }
+  // The owner ends the day's talk; a living player's one vote.
+  | { action: 'to-vote'; roomId: string; step: number }
+  | { action: 'vote'; roomId: string; step: number; target: string }
+  // Anyone at the table once the phase's time is up; idempotent.
+  | { action: 'advance'; roomId: string };

@@ -1,11 +1,31 @@
 {
-  "source": "docs/SPEC_V4.md §4.F (v43 posterleri ve kategorileri; K-17)",
+  "source": "docs/SPEC_V4.md §4.F (v43 posterleri ve kategorileri; K-17), §4.6.6 (Vampir Köylü, K-77, K-78)",
   "categories": [
-    { "id": "teams", "name": "Takımlı" },
-    { "id": "duel", "name": "Bire bir" },
-    { "id": "multi", "name": "Çok oyunculu" }
+    {
+      "id": "teams",
+      "name": "Takımlı"
+    },
+    {
+      "id": "duel",
+      "name": "Bire bir"
+    },
+    {
+      "id": "multi",
+      "name": "Çok oyunculu"
+    }
   ],
   "games": [
+    {
+      "id": "vampir",
+      "name": "Vampir Köylü",
+      "minPlayers": 5,
+      "maxPlayers": 12,
+      "teams": false,
+      "pregame": true,
+      "categories": ["multi"],
+      "poster": "vampir",
+      "available": true
+    },
     {
       "id": "tabu",
       "name": "Kapsül Anlat",

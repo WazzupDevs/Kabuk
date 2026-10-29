@@ -2,7 +2,7 @@ import { groupHistory, historyDay, historyResult } from '@shared/activities.ts';
 import { explorePlace, todayEvents } from '@shared/explore.ts';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, useWindowDimensions, View } from 'react-native';
+import { Image, Pressable, useWindowDimensions, View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
@@ -326,9 +326,21 @@ function HistoryRow({
   );
 }
 
+const VAMPIR_THUMB = require('../../../assets/game-card/vampir.webp');
+
 // The game's disc; a chat without a game has the speech bubbles.
 function Thumb({ concept }: { concept: HistoryConcept }) {
   const { colors, shape } = useTheme();
+  // The new games (K-77) have their card's drawing, round.
+  if (concept === 'vampir') {
+    return (
+      <Image
+        source={VAMPIR_THUMB}
+        accessible={false}
+        style={{ width: THUMB, height: THUMB, borderRadius: shape.radius.pill }}
+      />
+    );
+  }
   if (concept !== 'chat') return <GameDisc name={GAME_GLYPH[concept]} size={THUMB} />;
   return (
     <View

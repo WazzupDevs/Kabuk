@@ -112,7 +112,7 @@ Katılma isteği, kabul, sohbet ve oyun olayları **uygulama önde ve ekran aç�
 ## Test öncesi (evde, bir kez)
 
 - [ ] Dev projesi main ile güncel. main'e birleşen her PR `deploy-dev` ile dev'e kendiliğinden gider (CLAUDE.md → "main'den dev projesine yayın" → "Otomatik yayın"); son `deploy-dev` koşusu yeşil.
-- [ ] `pnpm supabase functions list`: **17 fonksiyon**, hepsi `ACTIVE`, listede `reveal` **yok** (23.4a'dan sonra elle silinir; CLAUDE.md → "main'den dev projesine yayın" adım 6).
+- [ ] `pnpm supabase functions list`: **18 fonksiyon**, hepsi `ACTIVE`, listede `reveal` **yok** (23.4a'dan sonra elle silinir; CLAUDE.md → "main'den dev projesine yayın" adım 6).
 - [ ] Panel → Realtime → Settings → **Allow public access kapalı**.
 - [ ] Dört numara test numarası olarak tanımlı ve "Valid Until" test gününden sonra (CLAUDE.md → "Barındırılan projede SMS'siz giriş"). Kodlar repoda değil.
 - [ ] `content/venues-test.json` içinde test mekanının koordinatı var, seed edildi (CLAUDE.md → "Saha testi mekanı"). Noktaları olan mekanda iki masa **aynı noktayı** seçmeli: yalnızca aynı noktadaki masalar birlikte oynar.

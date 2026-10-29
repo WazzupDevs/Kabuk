@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { tableGameAvailability } from '@shared/gameFrame.ts';
 import { seatsAnonymously } from '@shared/gender.ts';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
@@ -14,6 +15,8 @@ import { Text } from '@/components/Text';
 import { unreadCount, useRoomChatSeen } from '@/features/chat/roomChatSeen';
 import { useMessages } from '@/features/chat/useMessages';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
+import { gameNoOf, VampirGame, vampirMode } from '@/features/games/vampir/VampirGame';
+import { useVampirHidden } from '@/features/games/vampir/vampirHidden';
 import { GAME_CARDS, GameCard, PosterGrid } from '@/features/rooms/PosterCard';
 import { useRoomMemberProfiles } from '@/features/profile/queries';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
@@ -22,7 +25,13 @@ import { InviteSheet } from '@/features/rooms/InviteSheet';
 import { TableScene } from '@/features/rooms/TableScene';
 import { TableIconSheet } from '@/features/rooms/TableIconSheet';
 import { OpenLobbySheet } from '@/features/rooms/OpenLobbySheet';
-import { roomKeys, useCurrentRoom, useRoom, useTablePeople } from '@/features/rooms/queries';
+import {
+  roomKeys,
+  useCurrentRoom,
+  useRoom,
+  useTablePeople,
+  useTableVotes,
+} from '@/features/rooms/queries';
 import { PeopleSheet } from '@/features/rooms/RoomPeople';
 import { TableEnd } from '@/features/rooms/TableEnd';
 import { useTableEndStore } from '@/features/rooms/tableEnd';
@@ -78,6 +87,10 @@ export default function TableScreen() {
     'people' | 'end' | 'leave' | 'lobby' | 'invite' | 'icon' | null
   >(null);
   useMarkTableScreen();
+  const votes = useTableVotes(id, open);
+  const hiddenGame = useVampirHidden((s) => s.hidden[id]);
+  const hideGame = useVampirHidden((s) => s.hide);
+  const showGame = useVampirHidden((s) => s.show);
 
   const remember = useTableEndStore((s) => s.remember);
   const markLeft = useTableEndStore((s) => s.markLeft);
@@ -126,6 +139,18 @@ export default function TableScreen() {
     meta: FEEL_ERROR,
     mutationFn: () => roomsApi.setVisibility(id, false),
     onSettled: settle,
+  });
+  // Oyun Seç (docs/SPEC_V4.md §4.F): the owner opens a playable game's page; the others vote, a
+  // second press takes the vote back.
+  const openGame = useMutation({
+    meta: FEEL_ERROR,
+    mutationFn: (concept: string) => roomsApi.openGame(id, concept),
+    onSettled: settle,
+  });
+  const vote = useMutation({
+    meta: FEEL_ERROR,
+    mutationFn: (concept: string | null) => roomsApi.vote(id, concept),
+    onSettled: () => void queryClient.invalidateQueries({ queryKey: roomKeys.votes(id) }),
   });
 
   if (room.isPending || checkIn.isPending || movedTo) {
@@ -176,6 +201,21 @@ export default function TableScreen() {
   }
 
   const owner = r.owner_session_id === sessionId;
+  // Vampir Köylü's page, game or end takes the screen (docs/SPEC_V4.md §4.F "Adım 4.6.6"); one sent
+  // back to the table stays back until a new page comes.
+  const gameMode = vampirMode(r);
+  const gameKey = `${gameMode}:${gameNoOf(r.game_state)}`;
+  if (gameMode && hiddenGame !== gameKey) {
+    return (
+      <VampirGame
+        room={r}
+        me={sessionId}
+        people={people.data ?? []}
+        profiles={profiles}
+        onHide={() => hideGame(id, gameKey)}
+      />
+    );
+  }
   const inLobby = r.visibility === 'open';
   const unread = unreadCount(messages, seenAt, sessionId);
 
@@ -299,11 +339,57 @@ export default function TableScreen() {
   ) : null;
 
   const failed =
-    (withdraw.error ?? end.error) ? (
+    (withdraw.error ?? end.error ?? openGame.error ?? vote.error) ? (
       <T v="fine" color={KIT.danger}>
-        {errorMessage(withdraw.error ?? end.error)}
+        {errorMessage(withdraw.error ?? end.error ?? openGame.error ?? vote.error)}
       </T>
     ) : null;
+
+  // A game sent away runs on (or its page waits): a card to look in again.
+  const rejoin =
+    gameMode === 'play' || gameMode === 'pregame' ? (
+      <Glass
+        pad="pad"
+        testID="table-game-running"
+        style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.rowGap }}
+      >
+        <T v="h3" style={{ flex: 1 }}>
+          {gameMode === 'play' ? tr.vampir.running : tr.vampir.runningPage}
+        </T>
+        <Btn
+          sm
+          label={gameMode === 'play' ? tr.vampir.rejoin : tr.vampir.rejoinPage}
+          onPress={() => showGame(id)}
+        />
+      </Glass>
+    ) : null;
+
+  const poster = (gameId: (typeof GAME_CARDS)[number]['id']) => {
+    const state = tableGameAvailability(gameId, r.phones);
+    if (state.state === 'soon') return { tag: tr.table.soon };
+    const count = votes.data?.counts[gameId] ?? 0;
+    const mine = votes.data?.mine === gameId;
+    // While a game or its page is open the table cannot vote or open another.
+    const busy =
+      openGame.isPending || vote.isPending || gameMode === 'play' || gameMode === 'pregame';
+    return {
+      dim: state.state === 'needs_players',
+      lit: mine,
+      tag:
+        state.state === 'needs_players'
+          ? tr.table.posterNeeds(state.minPlayers)
+          : count > 0
+            ? tr.table.posterVotes(count, mine)
+            : owner
+              ? tr.table.posterOpen
+              : tr.table.posterVote,
+      onPress: busy
+        ? undefined
+        : owner && state.state === 'open'
+          ? () => openGame.mutate(gameId)
+          : () => vote.mutate(mine ? null : gameId),
+    };
+  };
 
   const sheets = (
     <>
@@ -409,10 +495,17 @@ export default function TableScreen() {
             <T v="fine">{tr.table.soloBody}</T>
           </Glass>
         ) : null}
+        {rejoin}
         {failed}
         <PosterGrid>
           {GAME_CARDS.map((g) => (
-            <GameCard key={g.id} id={g.id} art={g.art} testID={`poster-${g.id}`} />
+            <GameCard
+              key={g.id}
+              id={g.id}
+              art={g.art}
+              testID={`poster-${g.id}`}
+              {...poster(g.id)}
+            />
           ))}
         </PosterGrid>
       </Reanimated.ScrollView>

@@ -397,17 +397,18 @@ update public.table_icons set is_active = false where is_active and id <> all (a
 
 -- content/games.json
 insert into public.games (id, name, min_players, max_players, teams, pregame, is_available, sort_order) values
-  ('tabu', 'Kapsül Anlat', 4, 12, true, true, false, 0),
-  ('ibre', 'İbre', 4, 12, true, true, false, 1),
-  ('sahtekar', 'Sahtekar', 3, 12, false, true, false, 2),
-  ('harf', 'Harf Kapmaca', 2, 12, false, true, false, 3),
-  ('sarki', 'Şarkıda Geçsin', 2, 12, false, true, false, 4),
-  ('sohbet', 'Sohbet kartları', 1, 12, false, false, false, 5)
+  ('vampir', 'Vampir Köylü', 5, 12, false, true, true, 0),
+  ('tabu', 'Kapsül Anlat', 4, 12, true, true, false, 1),
+  ('ibre', 'İbre', 4, 12, true, true, false, 2),
+  ('sahtekar', 'Sahtekar', 3, 12, false, true, false, 3),
+  ('harf', 'Harf Kapmaca', 2, 12, false, true, false, 4),
+  ('sarki', 'Şarkıda Geçsin', 2, 12, false, true, false, 5),
+  ('sohbet', 'Sohbet kartları', 1, 12, false, false, false, 6)
 on conflict (id) do update set
   name = excluded.name, min_players = excluded.min_players, max_players = excluded.max_players,
   teams = excluded.teams, pregame = excluded.pregame, is_available = excluded.is_available,
   sort_order = excluded.sort_order;
-update public.games set is_available = false where is_available and id <> all (array['tabu', 'ibre', 'sahtekar', 'harf', 'sarki', 'sohbet']::text[]);
+update public.games set is_available = false where is_available and id <> all (array['vampir', 'tabu', 'ibre', 'sahtekar', 'harf', 'sarki', 'sohbet']::text[]);
 
 -- content/tabu-cards.json, content/sohbet-cards.json, content/sahtekar-words.json, content/harf-categories.json, content/sarki-words.json, content/ibre-scales.json
 insert into public.cards (deck, source_key, word, forbidden, theme, prompt) values

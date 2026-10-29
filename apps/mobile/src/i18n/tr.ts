@@ -88,8 +88,13 @@ function dayMonthAt(iso: string): string {
 }
 
 // play_history.concept: the last game played in the room, or 'chat' (docs/SPEC_V3.md §5.5).
-export type HistoryConcept = 'tabu' | 'sohbet' | 'sahtekar' | 'harf' | 'sarki' | 'ibre' | 'chat';
-const HISTORY_CONCEPTS: Record<HistoryConcept, string> = { ...GAME_NAMES, chat: 'Sohbet' };
+export type HistoryConcept =
+  'tabu' | 'sohbet' | 'sahtekar' | 'harf' | 'sarki' | 'ibre' | 'vampir' | 'chat';
+const HISTORY_CONCEPTS: Record<HistoryConcept, string> = {
+  ...GAME_NAMES,
+  vampir: 'Vampir Köylü',
+  chat: 'Sohbet',
+};
 
 // A record's concept (play_history.concept): one of the games, otherwise the chat.
 export function historyConcept(concept: string): HistoryConcept {
@@ -112,6 +117,7 @@ const PLAYED_WITH: Record<HistoryConcept, string> = {
   harf: `${GAME_NAMES.harf} oynadığınız`,
   sarki: `${GAME_NAMES.sarki} oynadığınız`,
   ibre: `${GAME_NAMES.ibre} oynadığınız`,
+  vampir: 'Vampir Köylü oynadığınız',
   chat: 'sohbet ettiğiniz',
 };
 
@@ -1302,6 +1308,162 @@ export const tr = {
     votesDone: 'Masanızın oyları verildi. Diğer masa bekleniyor.',
     notEnough: `Kartına bakmayanlar oyundan çıktı; ${SAHTEKAR.minPlayers} kişi kalmadı. Oyun bitti.`,
   },
+  // Vampir Köylü (docs/SPEC_V4.md §4.F "Adım 4.6.6", the owner's file skall-oyun-vampir-koylu).
+  vampir: {
+    name: 'Vampir Köylü',
+    whoPlays: 'Kimler oynuyor',
+    rules: ['5 ile 12 kişi', 'Gizli roller', 'Gece ve gündüz'],
+    players: 'Oyuncular',
+    watchers: 'Gözlemciler',
+    watchersNote: 'İzler, puan almaz.',
+    watch: 'Gözlemci ol',
+    play: 'Oyuna katıl',
+    count: (n: number) => `${n} kişi`,
+    how: 'Herkes gizli bir rol alır: vampir, doktor, gözcü ya da köylü. Gece herkes telefonundan bir seçim yapar, böylece kimin rolü olduğu dışarıdan anlaşılmaz; vampirler birini ısırır, doktor birini korur, gözcü birinin rolüne bakar. Gündüz tartışır, oyla birini elersiniz. Elenen ve ısırılanın rolü açılır. Vampirlerin hepsi elenirse köylüler, vampirler köylüler kadar kalırsa vampirler kazanır.',
+    hintOwner: 'Herkes hazırsa oyunu başlat.',
+    hintGuest: 'Oyunu masa sahibi başlatır.',
+    needs: (n: number) => `En az ${n} oyuncu gerekir.`,
+    start: 'Oyunu başlat',
+    closePage: 'Sayfayı kapat',
+    // The game's top line.
+    seeRole: 'Rolünü gör',
+    night: (n: number) => `Gece ${n}`,
+    morningTitle: 'Sabah',
+    day: (n: number) => `Gündüz ${n}`,
+    voting: 'Oylama',
+    over: 'Oyun bitti',
+    myRole: 'Rolüm',
+    myRoleLabel: 'Rolüne bakmak için basılı tut',
+    dead: 'Öldün',
+    watching: 'İzliyorsun',
+    exit: 'Oyundan çık',
+    // The role card.
+    holdTitle: 'Basılı tut',
+    holdNote: 'Rolünü yalnızca sen gör',
+    yourRole: 'ROLÜN',
+    cardHint: 'Kartı basılı tut, rolünü gör. Kimse görmesin.',
+    cardLabel: 'Rolünü görmek için basılı tut',
+    ready: 'Hazırım',
+    waitingOthers: 'Diğerleri bekleniyor',
+    readyCount: (n: number, of: number) => `Hazır: ${n}/${of}`,
+    beginNight: 'Geceyi başlat',
+    dealing: 'Roller dağıtılıyor',
+    dealingNote: 'Gözlemcisin; rolleri oyun sonunda görürsün.',
+    // Roles.
+    roles: {
+      vampir: {
+        name: 'Vampir',
+        about: 'Her gece diğer vampirlerle birini ısırırsın. Gündüz köylü gibi davran.',
+        ask: 'Bu gece kimi ısırıyorsunuz?',
+        askNote: 'Vampirler birlikte seçer. Çoğunluğun seçtiği ısırılır.',
+      },
+      doktor: {
+        name: 'Doktor',
+        about: 'Her gece birini korursun. Aynı kişiyi iki gece üst üste koruyamazsın.',
+        ask: 'Bu gece kimi koruyorsun?',
+        askNote: 'Kendini de koruyabilirsin.',
+      },
+      gozcu: {
+        name: 'Gözcü',
+        about: 'Her gece birinin vampir olup olmadığını öğrenirsin.',
+        ask: 'Kimin rolüne bakıyorsun?',
+        askNote: 'Yalnızca vampir olup olmadığını görürsün.',
+      },
+      soytari: {
+        name: 'Soytarı',
+        about:
+          'Gündüz oyla elenirsen tek başına kazanırsın. Gece ölürsen kaybedersin. Şüpheli görün ama belli etme.',
+        ask: 'Bu gece kimden şüpheleniyorsun?',
+        askNote: 'Seçimin kimseye gösterilmez.',
+      },
+      koylu: {
+        name: 'Köylü',
+        about: 'Gücün yok ama oyun senin. Gündüz vampirleri bul ve oyla.',
+        ask: 'Bu gece kimden şüpheleniyorsun?',
+        askNote: 'Seçimin kimseye gösterilmez.',
+      },
+    },
+    teams: { v: 'Vampir takımı', k: 'Köylü takımı', j: 'Tek başına' },
+    // Night.
+    choose: 'Seç',
+    choiceOf: (name: string) => `Seçimin: ${name}`,
+    choiceVampir: 'Diğer vampirler de seçiyor.',
+    choiceDoktor: 'Bu gece onu koruyorsun.',
+    choiceHidden: 'Seçimin kimseye gösterilmez.',
+    seerYes: (name: string) => `${name} vampir`,
+    seerNo: (name: string) => `${name} vampir değil`,
+    seerYesNote: 'Bunu masaya nasıl söyleyeceğini iyi düşün.',
+    seerNoNote: 'Gündüz bunu kullanabilirsin.',
+    everyoneChooses: 'Herkes seçimini yapıyor.',
+    deadTalk: 'Ölüler konuşmaz',
+    deadNight: 'Gece sürüyor. Sabahı bekle; bildiklerini masaya söyleme.',
+    nightGoesOn: 'Gece sürüyor',
+    // Morning.
+    morning: 'Sabah oldu',
+    youDied: 'Gece öldün',
+    died: (name: string) => `Gece ${name} öldü`,
+    youDiedNote: 'Artık oy veremezsin. Ölüler konuşmaz.',
+    roleOpened: 'Rolü herkese açıldı.',
+    nobodyDied: 'Bu gece kimse ölmedi',
+    nobodyDiedNote: 'Doktor birini kurtarmış olabilir.',
+    dayStarts: 'Gündüz başlıyor',
+    result: 'Sonuç',
+    // Day.
+    whoIs: 'Vampir kim?',
+    talk: 'Tartışın. Süre bitince oylama açılır.',
+    toVote: 'Oylamaya geç',
+    voteOpensNote: 'Süre bitince ya da masa sahibi başlatınca oylama açılır.',
+    deadWatch: 'Ölüler konuşmaz. Tartışmayı izle.',
+    watchTalk: 'Tartışmayı izliyorsun.',
+    // Vote.
+    whoOut: 'Kimi eliyorsunuz?',
+    voteNote: 'Oylar herkese görünür. En çok oy alan elenir; eşitlikte kimse elenmez.',
+    giveVote: 'Oyumu ver',
+    yourVote: (name: string) => `Oyun: ${name}`,
+    deadNoVote: 'Ölüler oy vermez',
+    voteGoesOn: 'Oylama sürüyor',
+    everyoneVotes: 'Herkes oyunu veriyor.',
+    votes: (n: number) => `${n} oy`,
+    // Verdict.
+    voteOver: 'Oylama bitti',
+    youOut: 'Elendin',
+    out: (name: string) => `${name} elendi`,
+    jesterOut: 'Soytarı tam da bunu istiyordu.',
+    vampirOut: 'Bir vampir eksildi.',
+    innocentOut: 'Masum biri elendi.',
+    tie: 'Oylar eşit',
+    tieNote: 'Bugün kimse elenmedi.',
+    nightComes: 'Gece geliyor',
+    left: 'Oyundan çıktı',
+    // The end.
+    won: { k: 'Köylüler kazandı', v: 'Vampirler kazandı', j: 'Soytarı kazandı' },
+    mine: (role: string, line: string) => `Rolün ${role}. ${line}`,
+    lineFooledAll: 'Herkesi kandırdın, kazandın.',
+    lineJesterWon: 'Soytarı herkesi kandırdı.',
+    lineJesterLost: 'Oyla elenemedin, kaybettin.',
+    lineWon: 'Takımın kazandı.',
+    lineLost: 'Takımın kaybetti.',
+    alive: 'hayatta',
+    gone: 'öldü',
+    backToTable: 'Masaya dön',
+    again: 'Yeniden oyna',
+    // Leaving.
+    endTitle: 'Oyunu bitir?',
+    endBody: 'Oyun herkes için biter, masaya dönülür.',
+    endConfirm: 'Oyunu bitir',
+    leaveTitle: 'Oyundan çık?',
+    leaveBody: 'Masaya dönersin. Oyun diğerleri için sürer.',
+    leaveConfirm: 'Oyundan çık',
+    watchTitle: 'Masaya dön?',
+    watchBody: 'Oyun sürer; masadan yeniden izleyebilirsin.',
+    watchConfirm: 'Masaya dön',
+    // On the table while a game runs that the person does not see.
+    running: 'Vampir Köylü sürüyor',
+    runningPage: 'Vampir Köylü açık',
+    rejoin: 'İzle',
+    rejoinPage: 'Aç',
+    you: 'Sen',
+  },
   identity: {
     // Mekan's anonymous switch and its sheets (skall tuvali: MekanAnonimGecis, …Erkek,
     // MekanProfilGecis, …Fotosuz, MekanGecisKullanildi; docs/SPEC_V4.md §4.D).
@@ -1415,8 +1577,13 @@ export const tr = {
       sprengja: { name: 'Sprengja', sub: 'Bombayı çabuk at', people: '3+' },
       kaupholl: { name: 'Kaupholl', sub: 'En yakına yatır', people: '3+' },
     },
-    gameCardLabel: (name: string, sub: string, people: string) =>
-      `${name}, ${sub}, ${people} kişi, Yakında`,
+    gameCardLabel: (name: string, sub: string, people: string, tag: string) =>
+      `${name}, ${sub}, ${people} kişi, ${tag}`,
+    // A playable game's poster (docs/SPEC_V4.md §4.F): the owner opens it, the others vote for it.
+    posterOpen: 'Aç',
+    posterVote: 'Oyla',
+    posterVotes: (n: number, mine: boolean) => (mine ? `Oyun · ${n}` : `${n} oy`),
+    posterNeeds: (n: number) => `${n}+ kişi`,
     gameCategories: { teams: 'Takımlı', multi: 'Çok oyunculu' },
     taglines: {
       tabu: 'Yasak kelimeyi söyleme',

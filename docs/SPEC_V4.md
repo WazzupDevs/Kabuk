@@ -712,6 +712,39 @@ Değişmez kabul edilir.
 - **Çıkış:** ipucu veren turda çıkarsa tur sürer, kilit tahmincilerle olur. Tahminci çıkarsa hazır onayları kalanlarla sayılır.
 - **Sunucu:** `ibre` fonksiyonu kişi bazlı yeniden yazılır; `ibre/lock`'un taraf yetkisi (`lockBy`) kalkar.
 
+### Adım 4.6.6: Vampir Köylü
+
+K-77'nin altı oyunundan ilki; kaynak proje sahibinin dosyası `skall-oyun-vampir-koylu.html` (29 Ekim), kararlar K-78. Masada telefon anlatıcıdır: gece herkes kendi telefonunda bir seçim yapar, gündüz masa sesli tartışır ve oylar.
+
+- **Oyuncular:** 5 ile 12; gözlemciler (oyun öncesi sayfada "Gözlemci ol"). `content/games.json`: `vampir`, takımsız, oyun öncesi sayfası var, Çok oyunculu.
+- **Roller** (oyun başında sunucuda dağıtılır, `game_players.role`; oyun bitene kadar değişmez):
+
+  | Rol     | Sayı                                 | Gece                                                                                           | Takım      |
+  | ------- | ------------------------------------ | ---------------------------------------------------------------------------------------------- | ---------- |
+  | Vampir  | 5–6 oyuncuda 1, 7–9'da 2, 10–12'de 3 | Vampir olmayan yaşayan birini seçer; vampirlerin çoğunluğunun seçtiği ısırılır, eşitlikte kura | Vampirler  |
+  | Doktor  | 1                                    | Yaşayan birini korur, kendini de; önceki gece koruduğunu koruyamaz                             | Köylüler   |
+  | Gözcü   | 1                                    | Kendisi dışında yaşayan birine bakar; yalnızca vampir olup olmadığını öğrenir                  | Köylüler   |
+  | Soytarı | 6 ve üstü oyuncuda 1                 | Göstermelik seçim                                                                              | Tek başına |
+  | Köylü   | Kalanlar                             | Göstermelik seçim                                                                              | Köylüler   |
+
+  Gece yaşayan herkes bir seçim yapar: rolü olanla olmayan dışarıdan ayırt edilemez.
+
+- **Aşamalar** (süre sunucu saatindendir, `endsAt`; her aşama `step` ile numaralanır):
+  1. **Rol kartı (30 sn):** kart basılı tutunca döner ve rol görünür; vampirin kartında diğer vampirler. Oyuncu "Hazırım" der (`vampir/ready`). Herkes hazır olunca, sahip "Geceyi başlat"a basınca (`vampir/begin`) ya da 30 sn sonra gece başlar (K-78).
+  2. **Gece (30 sn):** yaşayan her oyuncu bir kişi seçer, seçim değişmez (`vampir/pick`). Gözcünün sonucu ona seçimin yanıtıyla hemen gider. Vampirler gece diğer vampirlerin kimi seçtiğini canlı görür. Yaşayanların hepsi seçince ya da süre dolunca gece çözülür.
+  3. **Sabah (6 sn):** ısırılan, doktor korumadıysa ölür; ölen ve rolü herkese açılır. Kimse ölmediyse "Bu gece kimse ölmedi" yazar; kurtarıldığı söylenmez.
+  4. **Gündüz (2 dk):** masa sesli tartışır. Sahip "Oylamaya geç"e basabilir (`vampir/to-vote`).
+  5. **Oylama (45 sn):** yaşayanlar kendileri dışında yaşayan birine oy verir, oy değişmez (`vampir/vote`). Oylar açıktır: kim kime oy verdi herkes canlı görür (K-78). En çok oy alan elenir; eşitlikte ya da hiç oy yoksa kimse elenmez. Yaşayanların hepsi oy verince ya da süre dolunca çözülür.
+  6. **Eleme (6 sn):** elenen ve rolü herkese açılır. Sonra yeni gece.
+  7. **Oyun sonu:** kazanan, herkesin rolü ve hayatta mı öldü mü; kazananlara konfeti. "Masaya dön" herkeste, "Yeniden oyna" sahipte (çerçeve).
+- **Kazanma:** sabahtan ve elemeden sonra bakılır. Yaşayan vampir kalmazsa köylüler; yaşayan vampirler diğer yaşayanlar kadar ya da fazla olursa vampirler kazanır. Soytarı oylamayla elenirse oyun hemen biter ve soytarı tek başına kazanır; gece ölürse kaybeder, oyun sürer. Takımı kazanan herkes, ölmüş olsa da kazanmış sayılır.
+- **Ölüler:** oy vermez, gece seçim yapmaz; ekranları "Ölüler konuşmaz" der (masada konuşmamak oyunun kuralıdır, uygulama denetlemez).
+- **Gizli bilgi:** rol, vampir arkadaşları, kişinin kendi gece seçimi, gözcünün öğrendikleri ve vampirlerin gece seçimleri yalnızca hak eden telefona `vampir/view` ve `vampir/pick` yanıtıyla gider; `game_state`'e ve Realtime yüküne girmez (kural 3). Gece seçimi `rooms`'ta yalnızca seçen sayısını değiştirir; vampir telefonları bu değişiklikle görünümlerini yeniden ister. Gözlemci rolleri oyun sonunda görür.
+- **Çıkış** (K-78): oyundan ya da masadan çıkan oyuncu ölmüş sayılır, rolü açılmaz ("Oyundan çıktı"); oyun sonunda da açılmaz ve sonuç yazılmaz. Kazanma hemen yeniden hesaplanır; aşama çıkanla tamamlanıyorsa (herkes hazır, herkes seçti, herkes oy verdi) ya da kazanan belli olduysa süre o an dolar ve sıradaki `advance` çözer. Çıkanın verdiği ve aldığı oylar silinir. Sahip masadan ayrılırsa sahiplik çerçevedeki gibi geçer; oyun sürer.
+- **Sonuç:** `game_results` (`concept` ve `mode` `vampir`) oyunun sonunda oyunda olan her oyuncuya: kazandı ya da kaybetti. Oyun sonu bilgisi `game_state.lastGame.vampir`'dedir (kazanan, roller, ölenler, çıkanlar).
+- **Sunucu:** `vampir` fonksiyonu: `start`, `view`, `ready`, `begin`, `pick { step, target }`, `to-vote`, `vote { step, target }`, `advance`. Hedefler masa oturum kimliğidir (kural 4). Süre dolunca herhangi bir telefon `advance` çağırır; sunucu süreyi denetler ve idempotenttir (`view` ve `advance` `IDEMPOTENT_CALLS`'ta). Kilitler: check-in → `rooms` → `game_players` → `game_secrets`; oyundan çıkanın tetikleyicisi (`game_players.left_at`) masa tutulurken `game_state`'i günceller ve yeni kilit almaz.
+- **Görünüş:** dosyanın ekranları ve renk hikayesi (gece lacivert, gündüz bordo), skall'ın diliyle: renk bulutları, cam kartlar, kitin düğmeleri ve ikonları, kişilerin avatarları; gecede mekan sahnesinin ayı, yıldızları ve yarasaları. Rol kartı resimleri dosyadandır.
+
 ## 4.G Bildirim, davet ve arkadaşlık (adım 4.7)
 
 **Zil ve liste.**
@@ -1165,6 +1198,7 @@ Bu PR yalnızca proje paragrafını ve görsel kaynak kod kuralını değiştiri
 - **4.6.3** ekler: "Sahtekar'da rol ve kelime kişiye özeldir; oylar sonuca kadar gizlidir."
 - **4.6.4** ekler: "Kapışma oyunlarında ilk basanı sunucu belirler; itirazı oyuncular verir."
 - **4.6.5** ekler: "İbre'de hedef ipucu verene ve gözlemcilere gider; kilit ve puan sunucudaki ibre değerindendir."
+- **4.6.6** ekler: "Vampir Köylü'de rol kişiye özeldir: vampirler birbirini ve gece birbirlerinin seçimini görür; kişinin gece seçimi ve gözcünün öğrendiği yalnızca kendi telefonuna gider. Ölenin ve elenenin rolü herkese açılır, oyundan çıkanınki açılmaz. Gündüz oyları açıktır: kim kime oy verdi herkes görür (K-78)."
 
 **Kural 4:**
 
@@ -1307,6 +1341,7 @@ Bu PR yalnızca proje paragrafını ve görsel kaynak kod kuralını değiştiri
 | K-75        | K-66 düzeltmesi (kural 4; CTO incelemesi, WazzupDevs/Kabuk#182): "Arkadaşsınız" yalnızca kişi masada profilliyse görünür (uygulama kendi arkadaş listesinden `public_id` ile bilir). Anonim oturan kişide düğme normaldir ve basış arkadaşlıkta hiçbir şey değiştirmez. Sunucu masadan önceki arkadaşlığı `add-from-room`'da ve `withdraw-add`'de eşleşmeyen basıştan ayırt edilemez döndürür (`friends: false`); `friends: true` yalnızca arkadaşlık bu karşılaşmada kurulduysa (iki taraf da bastı). Eski "İstek gönder" yolunda (`friends/request { historyId }`) kayıttaki kişi masada anonimse zaten arkadaş olmak `ok` döner ve hiçbir şey olmaz (kural 5'in sessiz yutma kalıbı); `already_friends` yalnızca profilli oturan kişide (CTO tekrar kontrolü, proje sahibi)                                                                                  | §4.E, §4.M, kural 4          |
 | K-76        | Masanın adı simgesidir (proje sahibinin kararı, 27 Ekim): kurarken ve simge değişince masanın adı seçilen simgenin adı olur (ör. "Uzay istasyonu"). Simge mekanda açık ve süren masalarda benzersiz olduğundan ad da benzersizdir. Hiç boş simge kalmazsa sunucu "Sıfat İsim" çeker. Masadakiler'deki "Başka ad" kalkar (`reroll-name` sunucuda kalır, uygulama çağırmaz). K-45'in "ad değişince simge kalır" cümlesi bu kararla "simge değişince ad da değişir" olur                                                                                                                                                                                                                                                                                                                                                                                           | §4.E                         |
 | K-77        | Masa ekranının oyun kısmı sıfırdan (proje sahibinin dosyası skall-oyun-kartlari, 27 Ekim): altı kart, adları ve satırları Vampir Köylü (Vampirleri bul, 5-12), Signum (Kodu çöz, 4+), Kinshi (Yasaklıyı söyleme, 4+), Krot (Aramızdaki kim?, 3+), Sprengja (Bombayı çabuk at, 3+), Kaupholl (En yakına yatır, 3+); süzgeç Tümü, Takımlı, Çok oyunculu. Kartlar dosyanın çizimidir (`apps/mobile/assets/game-card/`). Oyunların kendisi 4.6'daki adımlarıyla gelir; o zamana kadar her kart "Yakında" ve basılmaz. Sunucunun oyun listesi (`_shared/pure/tableGames.ts`) ve oyun etiketleri 4.6'da bu adlarla eşlenir                                                                                                                                                                                                                                            | §4.E                         |
+| K-78        | Vampir Köylü (adım 4.6.6; proje sahibinin kararları, 29 Ekim): gündüz oyları açık ve canlı (kim kime oy verdi herkes görür; kural 3 eki); oyundan ya da masadan çıkan oyuncu ölmüş sayılır, rolü açılmaz; rol kartında 30 sn sınırı, herkes hazır olunca ya da sahip başlatınca gece erken başlar                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | §4.F                         |
 
 **Fırat paketi (v46).** Proje sahibinin onayladığı kararlar K-45–K-57'dir; pakette K-41–K-53 diye numaralanmışlardı. K-41–K-44 o sırada Keşfet ve Aktiviteler kararlarına verildiği için numaralar dört kaydı (proje sahibinin kuralı: çakışmada main'deki son K'dan devam; Fırat paketi en son).
 
