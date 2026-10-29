@@ -114,6 +114,11 @@ describe('readVampirState', () => {
     expect(readVampirState(null)).toBeNull();
   });
 
+  it('reads a death without its role while the game runs (K-80)', () => {
+    const state = readVampirState({ ...BASE, dead: [{ sid: 'f', when: 'vote', round: 2 }] });
+    expect(state?.dead).toEqual([{ sid: 'f', when: 'vote', round: 2 }]);
+  });
+
   it('drops a death it cannot read', () => {
     const state = readVampirState({ ...BASE, dead: [{ sid: 'f', role: 'king', when: 'night' }] });
     expect(state?.dead).toEqual([]);
