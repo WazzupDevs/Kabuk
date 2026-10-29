@@ -69,7 +69,9 @@ type Props = {
   testID?: string;
 };
 
-export type Delivery = 'sent' | 'delivered' | 'read';
+// 'sending': on its way, a clock in the ticks' place (Telegram Android: only the mark changes when
+// the server takes it).
+export type Delivery = 'sending' | 'sent' | 'delivered' | 'read';
 
 // The others' messages sit under the photo's column.
 const INDENT = AVATAR_SIZE.sm + SPACING[2];
@@ -613,7 +615,13 @@ export function DeliveryTicks({ delivery, onAccent }: { delivery: Delivery; onAc
   return (
     <View accessible accessibilityLabel={tr.dm.delivery[delivery]} testID={`tick-${delivery}`}>
       <AppIcon
-        name={delivery === 'sent' ? 'checkmark' : 'checkmark-done'}
+        name={
+          delivery === 'sending'
+            ? 'time-outline'
+            : delivery === 'sent'
+              ? 'checkmark'
+              : 'checkmark-done'
+        }
         size={ICON.sm}
         color={delivery === 'read' ? read : plain}
       />

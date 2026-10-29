@@ -1,5 +1,6 @@
 import {
   createContext,
+  type ReactElement,
   type ReactNode,
   useCallback,
   useContext,
@@ -17,13 +18,15 @@ import {
   type LayoutChangeEvent,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
+  FlatList,
   Pressable,
   ScrollView,
+  type ScrollViewProps,
   View,
   type ViewStyle,
   Text as RNText,
 } from 'react-native';
-import Reanimated, { FadeInDown } from 'react-native-reanimated';
+import Reanimated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { sameDay } from '@shared/chatRuns.ts';
@@ -87,6 +90,9 @@ const ChatLiveContext = createContext(false);
 // owner's video, 29 Ekim: 0.9 s).
 const ChatNewestContext = createContext<string | undefined>(undefined);
 const SETTLE_MS = 800;
+// Whether the stream is drawn from the bottom up: a row's arrival then rises from below in its
+// flipped cell.
+const ChatInvertedContext = createContext(false);
 const KEEP_VISIBLE = { minIndexForVisible: 0 } as const;
 const ARRIVE_MS = 220;
 
@@ -106,11 +112,14 @@ export function ChatRow({
   const jump = useChatJump();
   const live = useContext(ChatLiveContext);
   const newest = useContext(ChatNewestContext);
+  const inverted = useContext(ChatInvertedContext);
   const reduce = useReduceMotion();
   const [arriving] = useState(live && !reduce && id === newest);
+  // In a list drawn from the bottom up the cell is flipped: the same rise from below is FadeInUp.
+  const arrive = inverted ? FadeInUp : FadeInDown;
   return (
     <Reanimated.View
-      entering={arriving ? FadeInDown.duration(ARRIVE_MS) : undefined}
+      entering={arriving ? arrive.duration(ARRIVE_MS) : undefined}
       onLayout={jump?.row(id)}
       style={{ gap: SPACING[2], marginTop: first ? SPACING[1.5] : 0 }}
     >
@@ -196,11 +205,6 @@ export function ChatScroll({
   endRef,
   keyboardOffset,
 }: ScrollProps) {
-  const { colors, shape } = useTheme();
-  const pressScale = usePressScale();
-  // The "new messages" button's soft shadow natively (NativeShadow.tsx).
-  const shadowOff = useLabOff('golge');
-  const endShadow = boxShadowParts(shadowOff, shape.shadow.sheet, TOUCH.min / 2);
   const scroll = useRef<ScrollView>(null);
   // The screen's reaction bar (ChatScreen), or this stream's own (the game's chat panel).
   const outerBar = useChatBar();
@@ -404,49 +408,274 @@ export function ChatScroll({
           {stream}
         </ScrollView>
       )}
-      {pending > 0 ? (
-        // skall tuvali (SohbetYeniMesaj, skall.css → `.jump`): a round surface button at the right,
-        // the count of new messages in a badge on its corner.
-        // Over the message bar, rising with it when the keyboard opens.
-        <KeyboardStickyView
-          pointerEvents="box-none"
-          enabled={keyboardOffset !== undefined}
-          offset={{ closed: 0, opened: keyboardOffset ?? 0 }}
-          style={{ position: 'absolute', right: SPACING[4], bottom: SPACING[3] + bottomInset }}
-        >
-          <Pressable
-            testID="chat-new-messages"
-            accessibilityRole="button"
-            accessibilityLabel={tr.chat.newMessagesLabel(pending)}
-            onPress={() => toEnd(true)}
-          >
-            {({ pressed }) => (
-              <View
-                className="items-center justify-center"
-                style={[
-                  {
-                    width: TOUCH.min,
-                    height: TOUCH.min,
-                    borderRadius: shape.radius.pill,
-                    backgroundColor: pressed ? colors.surface2 : colors.surface,
-                    boxShadow: endShadow.boxShadow,
-                  },
-                  pressScale(pressed),
-                ]}
-              >
-                {endShadow.node}
-                <AppIcon name="chevron-down" size={ICON.md} color={colors.text} />
-                <View className="absolute" style={{ top: -SPACING[1.5], right: -SPACING[1.5] }}>
-                  <CountBadge count={pending} />
-                </View>
-              </View>
-            )}
-          </Pressable>
-        </KeyboardStickyView>
-      ) : null}
+      <NewMessages
+        count={pending}
+        bottom={SPACING[3] + bottomInset}
+        keyboardOffset={keyboardOffset}
+        onPress={() => toEnd(true)}
+      />
     </View>
   );
 }
+
+// "Yeni mesaj" (skall tuvali: SohbetYeniMesaj, skall.css → `.jump`): a round surface button at the
+// right over the message bar, the count of new messages in a badge on its corner; it rises with the
+// message bar when the keyboard opens.
+function NewMessages({
+  count,
+  bottom,
+  keyboardOffset,
+  onPress,
+}: {
+  count: number;
+  bottom: number;
+  keyboardOffset: number | undefined;
+  onPress: () => void;
+}) {
+  const { colors, shape } = useTheme();
+  const pressScale = usePressScale();
+  // Its soft shadow natively (NativeShadow.tsx).
+  const shadowOff = useLabOff('golge');
+  const shadow = boxShadowParts(shadowOff, shape.shadow.sheet, TOUCH.min / 2);
+  if (count <= 0) return null;
+  return (
+    <KeyboardStickyView
+      pointerEvents="box-none"
+      enabled={keyboardOffset !== undefined}
+      offset={{ closed: 0, opened: keyboardOffset ?? 0 }}
+      style={{ position: 'absolute', right: SPACING[4], bottom }}
+    >
+      <Pressable
+        testID="chat-new-messages"
+        accessibilityRole="button"
+        accessibilityLabel={tr.chat.newMessagesLabel(count)}
+        onPress={onPress}
+      >
+        {({ pressed }) => (
+          <View
+            className="items-center justify-center"
+            style={[
+              {
+                width: TOUCH.min,
+                height: TOUCH.min,
+                borderRadius: shape.radius.pill,
+                backgroundColor: pressed ? colors.surface2 : colors.surface,
+                boxShadow: shadow.boxShadow,
+              },
+              pressScale(pressed),
+            ]}
+          >
+            {shadow.node}
+            <AppIcon name="chevron-down" size={ICON.md} color={colors.text} />
+            <View className="absolute" style={{ top: -SPACING[1.5], right: -SPACING[1.5] }}>
+              <CountBadge count={count} />
+            </View>
+          </View>
+        )}
+      </Pressable>
+    </KeyboardStickyView>
+  );
+}
+
+// A row of a ChatList: `key` stays the same for a message from its first draw (a message being
+// sent keeps the key it was drawn with when the server's copy takes its place); `id` is what a
+// quote jumps to.
+export type ChatListItem = { key: string; id: string };
+
+export type ChatListProps<T extends ChatListItem> = {
+  // Newest first: the list is drawn from the bottom up (Telegram Android's chat).
+  items: readonly T[];
+  renderItem: (item: T) => ReactElement;
+  // Near the oldest loaded message: the caller loads the page before it.
+  onReachOld?: () => void;
+  // Over the oldest message (its loading mark).
+  older?: ReactNode;
+  // Under the newest message (the other side's typing dots).
+  latest?: ReactNode;
+  // Instead of the list when there are no items (loading, an error, empty).
+  empty?: ReactNode;
+};
+
+// A chat's message stream as Telegram Android draws it (the owner's call, 29 Ekim): from the
+// newest message up, only the rows on the screen and a little round it drawn, older messages loaded
+// as the reader nears them, each message keeping its row while it changes. At the bottom (the
+// keyboard open too) the stream follows each new message; scrolled up it stays where the reader is
+// (the list keeps the first row on the screen in place) and offers "Yeni mesaj". Its scroll view
+// keeps its end above the keyboard (KeyboardChatScrollView).
+function ChatList<T extends ChatListItem>({
+  items,
+  renderItem,
+  onReachOld,
+  older,
+  latest,
+  empty,
+  newestKey,
+  newestMine,
+  contentContainerStyle,
+  testID,
+  bottomInset = 0,
+  endRef,
+  keyboardOffset = 0,
+}: ChatListProps<T> &
+  Omit<ScrollProps, 'children' | 'startAtEnd' | 'keyboardOffset'> & {
+    keyboardOffset?: number;
+  }) {
+  const list = useRef<FlatList<T>>(null);
+  const outerBar = useChatBar();
+  const ownBar = useChatBarState();
+  const bar = outerBar ?? ownBar.bar;
+  const [atBottom, setAtBottom] = useState(true);
+  const [pending, setPending] = useState(0);
+  const [live, setLive] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setLive(true), SETTLE_MS);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const toEnd = (animated: boolean) => {
+    list.current?.scrollToOffset({ offset: 0, animated });
+    setAtBottom(true);
+    setPending(0);
+  };
+  useEffect(() => {
+    if (!endRef) return undefined;
+    endRef.current = () => toEnd(true);
+    return () => {
+      endRef.current = null;
+    };
+  });
+
+  // A new message: the reader's own goes to the end; another's, with the reader up the stream, is
+  // counted for the button (at the bottom the list follows it by itself).
+  const [seenKey, setSeenKey] = useState(newestKey);
+  if (newestKey !== seenKey) {
+    setSeenKey(newestKey);
+    if (seenKey !== undefined && newestKey !== undefined && !atBottom && !newestMine) {
+      setPending((n) => n + 1);
+    }
+  }
+  const followed = useRef(newestKey);
+  useEffect(() => {
+    if (newestKey === followed.current) return;
+    followed.current = newestKey;
+    if (newestMine) list.current?.scrollToOffset({ offset: 0, animated: true });
+  }, [newestKey, newestMine]);
+
+  // The same for the whole list (a new one would draw every row again): it reads the rows as they
+  // are when a quote is tapped.
+  const shownItems = useRef(items);
+  useEffect(() => {
+    shownItems.current = items;
+  });
+  const jump = useMemo<ChatJump>(
+    () => ({
+      row: () => () => undefined,
+      jumpTo: (id) => {
+        const index = shownItems.current.findIndex((i) => i.id === id);
+        if (index < 0) return false;
+        list.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 });
+        return true;
+      },
+    }),
+    [],
+  );
+
+  const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const bottom = e.nativeEvent.contentOffset.y <= BOTTOM_SLACK;
+    if (bottom !== atBottom) setAtBottom(bottom);
+    if (bottom && pending > 0) setPending(0);
+  };
+
+  const renderScroll = useCallback(
+    (props: ScrollViewProps) => (
+      <KeyboardChatScrollView
+        {...props}
+        inverted
+        // At the end it rises with the keyboard; scrolled up it stays (the reader's place).
+        keyboardLiftBehavior="whenAtEnd"
+        offset={keyboardOffset}
+      />
+    ),
+    [keyboardOffset],
+  );
+
+  return (
+    <View className="flex-1" onTouchStart={outerBar ? undefined : ownBar.onTouchStart}>
+      <ChatBarContext.Provider value={bar}>
+        <ChatJumpContext.Provider value={jump}>
+          <ChatLiveContext.Provider value={live}>
+            <ChatNewestContext.Provider value={newestKey}>
+              <ChatInvertedContext.Provider value>
+                {items.length === 0 && empty ? (
+                  <View style={{ flex: 1 }}>{empty}</View>
+                ) : (
+                  <FlatList
+                    ref={list}
+                    testID={testID}
+                    data={items}
+                    inverted
+                    keyExtractor={(item) => item.key}
+                    renderItem={({ item }) => renderItem(item)}
+                    renderScrollComponent={renderScroll}
+                    showsVerticalScrollIndicator={false}
+                    showsHorizontalScrollIndicator={false}
+                    // The first screenful at once, from the newest up; the rest as it nears.
+                    initialNumToRender={INITIAL_ROWS}
+                    maxToRenderPerBatch={BATCH_ROWS}
+                    windowSize={WINDOW}
+                    // Rows added under the reader leave what is shown where it is; at the bottom the
+                    // list goes on to the new one.
+                    maintainVisibleContentPosition={FOLLOW}
+                    onEndReached={onReachOld}
+                    onEndReachedThreshold={OLD_THRESHOLD}
+                    ListFooterComponent={older ? <>{older}</> : null}
+                    ListHeaderComponent={latest ? <>{latest}</> : null}
+                    // Dragging the messages puts the keyboard away, like any chat app.
+                    keyboardDismissMode="on-drag"
+                    keyboardShouldPersistTaps="handled"
+                    contentContainerStyle={contentContainerStyle}
+                    scrollEventThrottle={64}
+                    onScroll={onScroll}
+                    onScrollBeginDrag={() => bar.setOpen(null)}
+                    onScrollToIndexFailed={(info) => {
+                      // A row not drawn yet: near it first, then to it.
+                      list.current?.scrollToOffset({
+                        offset: info.averageItemLength * info.index,
+                        animated: true,
+                      });
+                      setTimeout(
+                        () =>
+                          list.current?.scrollToIndex({
+                            index: info.index,
+                            animated: true,
+                            viewPosition: 0.5,
+                          }),
+                        JUMP_RETRY_MS,
+                      );
+                    }}
+                  />
+                )}
+              </ChatInvertedContext.Provider>
+            </ChatNewestContext.Provider>
+          </ChatLiveContext.Provider>
+        </ChatJumpContext.Provider>
+      </ChatBarContext.Provider>
+      <NewMessages
+        count={pending}
+        bottom={SPACING[3] + bottomInset}
+        keyboardOffset={keyboardOffset}
+        onPress={() => toEnd(true)}
+      />
+    </View>
+  );
+}
+
+const INITIAL_ROWS = 15;
+const BATCH_ROWS = 10;
+const WINDOW = 11;
+const OLD_THRESHOLD = 0.6;
+const JUMP_RETRY_MS = 120;
+const FOLLOW = { minIndexForVisible: 0, autoscrollToTopThreshold: BOTTOM_SLACK } as const;
 
 // The stream a chat's message bar shows through its glass (the owner's call, 27 Ekim): the id of
 // the GlassTarget around the wallpaper and the stream; null where there is none.
@@ -456,9 +685,13 @@ export function useComposerGlass(): string | null {
   return useContext(ComposerGlassContext);
 }
 
-type Props = {
+type Props<T extends ChatListItem> = {
   top: ReactNode;
-  children: ReactNode;
+  // The stream's rows; with `list`, what lies over the screen instead (its sheets).
+  children?: ReactNode;
+  // The stream drawn as Telegram Android draws its chat (ChatList): from the newest message up,
+  // only the rows on the screen.
+  list?: ChatListProps<T>;
   // The message bar, fixed at the bottom.
   composer: ReactNode;
   // See ChatScroll.
@@ -475,9 +708,10 @@ type Props = {
 
 // A chat app's screen (v45: .dm): the top bar, the stream scrolling over the wallpaper, the
 // message bar floating at the bottom above the keyboard.
-export function ChatScreen({
+export function ChatScreen<T extends ChatListItem>({
   top,
   children,
+  list,
   composer,
   newestKey,
   newestMine,
@@ -485,7 +719,7 @@ export function ChatScreen({
   testID,
   wall = 'dm',
   hidesTabBar = false,
-}: Props) {
+}: Props<T>) {
   const { shape, scheme } = useTheme();
   // Under the tabs (a DM) the floating tab bar covers the bottom: the message bar sits above it.
   const tabSpace = useTabBarSpace();
@@ -547,25 +781,45 @@ export function ChatScreen({
                   {/* Each chat's dense doodles over the clouds (DM, Masa, Mekan; light and dark; the
                     owner's call, 28 Ekim). */}
                   {wall ? <ChatWallpaper kind={wall} shift={streamTop} /> : null}
-                  <ChatScroll
-                    testID={testID}
-                    newestKey={newestKey}
-                    newestMine={newestMine}
-                    startAtEnd={startAtEnd}
-                    bottomInset={under}
-                    endRef={end}
-                    keyboardOffset={bottomPad}
-                    contentContainerStyle={{
-                      flexGrow: 1,
-                      // skall tuvali (skall.css → `.stream`): 16 at the sides, 6 between messages.
-                      paddingHorizontal: shape.screenPadding,
-                      paddingTop: SPACING[2],
-                      paddingBottom: SPACING[3] + under,
-                      gap: SPACING[1.5],
-                    }}
-                  >
-                    {children}
-                  </ChatScroll>
+                  {list ? (
+                    <ChatList
+                      {...list}
+                      testID={testID}
+                      newestKey={newestKey}
+                      newestMine={newestMine}
+                      bottomInset={under}
+                      endRef={end}
+                      keyboardOffset={bottomPad}
+                      // Drawn from the bottom up: its start is the screen's foot.
+                      contentContainerStyle={{
+                        flexGrow: 1,
+                        paddingHorizontal: shape.screenPadding,
+                        paddingTop: SPACING[3] + under,
+                        paddingBottom: SPACING[2],
+                        gap: SPACING[1.5],
+                      }}
+                    />
+                  ) : (
+                    <ChatScroll
+                      testID={testID}
+                      newestKey={newestKey}
+                      newestMine={newestMine}
+                      startAtEnd={startAtEnd}
+                      bottomInset={under}
+                      endRef={end}
+                      keyboardOffset={bottomPad}
+                      contentContainerStyle={{
+                        flexGrow: 1,
+                        // skall tuvali (skall.css → `.stream`): 16 at the sides, 6 between messages.
+                        paddingHorizontal: shape.screenPadding,
+                        paddingTop: SPACING[2],
+                        paddingBottom: SPACING[3] + under,
+                        gap: SPACING[1.5],
+                      }}
+                    >
+                      {children}
+                    </ChatScroll>
+                  )}
                 </GlassTarget>
                 {composer ? (
                   <KeyboardStickyView
@@ -586,6 +840,7 @@ export function ChatScreen({
                 ) : null}
               </View>
             </View>
+            {list ? children : null}
           </SafeAreaView>
         </ChatBarContext.Provider>
       </ChatKindContext.Provider>

@@ -14,12 +14,15 @@ export type OutboxMessage = {
   errorCode: ErrorCode | null;
   // The message this one answers (docs/SPEC_V3.md §21.1), sent again on "Tekrar dene".
   replyTo?: string;
+  // When it was written (ISO): its time while it is on its way (the DM shows it at once, as
+  // Telegram Android does).
+  at?: string;
 };
 
 export type Outbox = readonly OutboxMessage[];
 
 export type OutboxAction =
-  | { type: 'send'; localId: string; body: string; replyTo?: string }
+  | { type: 'send'; localId: string; body: string; replyTo?: string; at?: string }
   | { type: 'sent'; localId: string }
   | { type: 'failed'; localId: string; errorCode: ErrorCode | null }
   | { type: 'retry'; localId: string }
@@ -43,6 +46,7 @@ export function outboxReducer(outbox: Outbox, action: OutboxAction): Outbox {
           status: 'sending',
           errorCode: null,
           ...(action.replyTo ? { replyTo: action.replyTo } : {}),
+          ...(action.at ? { at: action.at } : {}),
         },
       ];
     case 'sent':
