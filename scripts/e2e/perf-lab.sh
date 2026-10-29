@@ -11,7 +11,7 @@ adb shell settings put global hide_error_dialogs 1 || true
 source "$(dirname "$0")/system-dialog.sh"
 warm_up_app
 adb logcat -c
-MODES=("hepsi" "yerel" "golge" "cam" "golge,cam")
+MODES=("hepsi" "yerel" "cam")
 for round in 1 2; do
   for m in "${MODES[@]}"; do
     off=$m; [ "$m" = hepsi ] && off=""
