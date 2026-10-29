@@ -41,7 +41,7 @@ import { ApiError, friendsApi, safetyApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useSeen } from '@/lib/useSeen';
 import { SPACING } from '@/theme/tokens';
-import { lastRows, useAfterTransition } from '@/lib/afterTransition';
+import { lastRows, useOpenRows } from '@/lib/afterTransition';
 
 type Params = { threadId: string; publicId: string; name: string };
 
@@ -186,12 +186,12 @@ export default function DmScreen() {
 
   const list = [...(messages.data ?? [])].reverse();
   // Opened light: the newest messages while the screen slides in, the rest after.
-  const settled = useAfterTransition();
   const runs = toRuns(
     list,
     (m) => (m.from_me ? 'me' : 'them'),
     (m) => m.created_at,
   );
+  const shown = useOpenRows(runs.length);
   // From the DM: removing or blocking there goes back to Mesajlar, not to this DM (audit CHAT-6).
   const openProfile = () =>
     router.push({ pathname: '/people/[publicId]', params: { publicId, from: 'dm' } });
@@ -266,7 +266,7 @@ export default function DmScreen() {
           />
         </View>
       ) : null}
-      {lastRows(runs, settled).map(({ item: m, first, day }) => {
+      {lastRows(runs, shown).map(({ item: m, first, day }) => {
         const counts = parseDmReactions(m.reactions);
         const quote = parseQuote(m.reply_to);
         return (
