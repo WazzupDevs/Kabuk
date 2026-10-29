@@ -8,6 +8,7 @@ import { TAB_GLASS } from '@/theme/glass';
 import { useTheme } from '@/theme/ThemeProvider';
 import { TAB_BAR_GLASS, blursBehind } from '@/ui/backdrop';
 import { shadowParts } from '@/components/NativeShadow';
+import { perfOff } from '@/lib/perfLab';
 import { LiquidGlass } from '@/ui/LiquidGlass';
 
 import { ARRIVE_RN, springConfig } from './motion';
@@ -107,7 +108,7 @@ export function AuraTabBar({ items, selected, onPress, glassTarget, opaque = fal
   };
 
   const barShadow = shadowParts(a.shadow || undefined, undefined, s.height / 2);
-  const glass = !opaque && TAB_BAR_GLASS && blursBehind(Platform.OS, Platform.Version);
+  const glass = !perfOff('cam') && !opaque && TAB_BAR_GLASS && blursBehind(Platform.OS, Platform.Version);
   return (
     <View
       accessibilityRole="tablist"

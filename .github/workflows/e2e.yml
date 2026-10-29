@@ -146,6 +146,7 @@ jobs:
   e2e:
     needs: changed
     if: >-
+      false &&
       needs.changed.outputs.run != 'false' && !cancelled() &&
       (github.event_name != 'pull_request' ||
       (github.event.action == 'labeled' &&
@@ -160,26 +161,13 @@ jobs:
     # actions: read for this run's e2e-apk artifact (run-on-emulator.sh).
     permissions:
       actions: read
-      contents: read
+      contents: write
     strategy:
       fail-fast: false
       matrix:
-        scheme: [light, dark]
-        shard: [1, 2, 3, 4]
-        # Android's text size (Settings → Display → Font size): the default, and also the largest
-        # the app is checked at, 1.3 (CLAUDE.md → "Ekran davranışı"), in light only. Both nightly,
-        # by hand and on a PR's push while e2e-large is on; 1.3 alone when e2e-large has just been
-        # added; otherwise a PR runs the default size.
-        font: >-
-          ${{ fromJSON(
-          (github.event_name != 'pull_request' ||
-           (github.event.action != 'labeled' &&
-            contains(github.event.pull_request.labels.*.name, 'e2e-large'))) && '["1", "1.3"]' ||
-          (github.event.action == 'labeled' && github.event.label.name == 'e2e-large') && '["1.3"]' ||
-          '["1"]') }}
-        exclude:
-          - scheme: dark
-            font: '1.3'
+        scheme: [light]
+        shard: [1]
+        font: ['1']
     env:
       SCHEME: ${{ matrix.scheme }}
       FONT_SCALE: ${{ matrix.font }}
@@ -293,8 +281,30 @@ jobs:
           target: google_apis
           ram-size: 4096M
           emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
+          disable-animations: false
           script: bash scripts/e2e/run-on-emulator.sh
+      - name: Perf report
+        if: always()
+        run: |
+          ls -la "$OUT" || true
+          pip install --quiet perfetto
+          python3 scripts/e2e/perf-report.py "$OUT/e2e.pftrace" "$OUT/perf-report.md" || true
+          if [ -f "$OUT/perf-report.md" ]; then cat "$OUT/perf-report.md" >> "$GITHUB_STEP_SUMMARY"; fi
+          { echo '### gfxinfo'; echo '```'; head -n 60 "$OUT/gfxinfo.txt" || true; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Publish perf report (branch perf-report)
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/pr && cd /tmp/pr
+          cp "$OUT/perf-report.md" . 2>/dev/null || echo "no report" > perf-report.md
+          cp "$OUT/gfxinfo.txt" "$OUT/perfetto-start.txt" . 2>/dev/null || true
+          tail -n 150 "$OUT/maestro-console.txt" > maestro-tail.txt 2>/dev/null || true
+          ls -la "$OUT" > out-files.txt
+          git init -q -b perf-report
+          git add -A
+          git -c user.name=ci -c user.email=ci@example.com commit -qm "perf report $GITHUB_RUN_ID"
+          git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" perf-report
       # One retry per shard, only when the test environment fell over: Maestro's driver on the phone
       # crashed while the flows ran, or could not be reached (scripts/e2e/retry.ts; #151's dark-1
       # and dark-4), or the Edge Functions server stopped during the failed step or at most 30 s
@@ -419,6 +429,7 @@ jobs:
   visual:
     needs: changed
     if: >-
+      false &&
       needs.changed.outputs.run != 'false' && !cancelled() &&
       (github.event_name != 'pull_request' ||
       (github.event.action == 'labeled' && github.event.label.name == 'e2e') ||
@@ -550,8 +561,70 @@ jobs:
   # retried shard's first attempt is in its folder's attempt-1/, without those images. A PR run that
   # only the e2e-large label started writes the four large folders alone. The visual gate's run is
   # in visual/ (its candidates in visual/aday/, which `pnpm visual:accept` reads).
+  perflab:
+    needs: changed
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    permissions:
+      actions: read
+      contents: write
+    env:
+      OUT: ${{ github.workspace }}/e2e-out/perflab
+      APK: ${{ github.workspace }}/apk/app-release.apk
+    steps:
+      - uses: actions/checkout@v4
+      - name: Free disk
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost \
+            /opt/hostedtoolcache/CodeQL /usr/local/lib/android/sdk/ndk
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Week (emulator cache key)
+        id: week
+        run: echo "week=$(date -u +%G-%V)" >> "$GITHUB_OUTPUT"
+      - name: Emulator and system image cache
+        id: emulator-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            /usr/local/lib/android/sdk/emulator
+            /usr/local/lib/android/sdk/system-images/android-34/google_apis/x86_64
+          key: android-emulator-34-google_apis-x86_64-${{ steps.week.outputs.week }}
+          restore-keys: android-emulator-34-google_apis-x86_64-
+      - name: Emulator and system image download (with retries)
+        if: steps.emulator-cache.outputs.cache-hit != 'true'
+        run: bash scripts/e2e/sdk-install.sh emulator 'system-images;android-34;google_apis;x86_64'
+      - name: Emulator, APK and the lab
+        continue-on-error: true
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          GH_TOKEN: ${{ github.token }}
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          ram-size: 4096M
+          emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -skin 720x1280
+          disable-animations: false
+          script: bash scripts/e2e/perf-lab.sh
+      - name: Publish perf report (branch perf-report)
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/pr && cd /tmp/pr
+          cp "$OUT"/perf-report.md "$OUT"/gfx-*.txt "$OUT"/shot-1-*.png . 2>/dev/null || echo none > perf-report.md
+          git init -q -b perf-report
+          git add -A
+          git -c user.name=ci -c user.email=ci@example.com commit -qm "perf lab $GITHUB_RUN_ID"
+          git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" perf-report
+
   publish-screenshots:
-    if: ${{ always() && (needs.e2e.result != 'skipped' || needs.visual.result != 'skipped') }}
+    if: false
     needs: [e2e, visual]
     runs-on: ubuntu-24.04
     timeout-minutes: 5

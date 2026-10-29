@@ -2,6 +2,7 @@ import { requireNativeView } from 'expo';
 import { type ComponentType, type ReactNode, useMemo } from 'react';
 import { Platform, processColor, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 
+import { perfOff } from '@/lib/perfLab';
 import { shadowList } from '@/theme/auraKit';
 import { parseShadows } from '@/theme/shadowCss';
 
@@ -44,7 +45,8 @@ export function shadowParts(
   radius: Radii,
   child = true,
 ): { boxShadow: string | undefined; node: ReactNode } {
-  const native = !!Native && child && !!outer && parseShadows(outer) !== null;
+  if (perfOff('golge')) return { boxShadow: undefined, node: null };
+  const native = !perfOff('yerel') && !!Native && child && !!outer && parseShadows(outer) !== null;
   return native && outer
     ? { boxShadow: inset || undefined, node: <NativeShadow css={outer} radius={radius} /> }
     : { boxShadow: shadowList(outer, inset), node: null };

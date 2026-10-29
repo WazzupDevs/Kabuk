@@ -24,6 +24,16 @@ adb shell settings put global hide_error_dialogs 1 || true
 source "$(dirname "$0")/system-dialog.sh"
 warm_up_app
 
+# Perf trace (perf/trace branch only): Skia's own slices on the RenderThread, frame timeline.
+adb root >/dev/null 2>&1 || true
+adb wait-for-device
+adb shell setprop debug.hwui.skia_atrace_enabled true || true
+adb shell setprop debug.hwui.profile true || true
+adb shell am force-stop app.kabuk.mobile || true
+adb shell 'perfetto --background --txt -c - -o /data/misc/perfetto-traces/e2e.pftrace' < "$(dirname "$0")/perf.cfg" > "$OUT/perfetto-start.txt" 2>&1 || true
+PERF_PID=$(tr -d '\r' < "$OUT/perfetto-start.txt" | grep -E '^[0-9]+$' | tail -n 1 || true)
+echo "perfetto pid $PERF_PID"
+
 adb logcat -c
 adb logcat '*:W' > "$OUT/logcat.txt" 2>&1 &
 adb emu screenrecord start --time-limit 1800 "$OUT/video.webm" || true
@@ -39,6 +49,11 @@ maestro test "${FLOW:-e2e/maestro/p0.yaml}" \
   --debug-output "$OUT/maestro" 2>&1 | tee "$OUT/maestro-console.txt" || status=$?
 
 adb emu screenrecord stop || true
+adb shell dumpsys gfxinfo app.kabuk.mobile > "$OUT/gfxinfo.txt" 2>&1 || true
+adb shell kill -TERM "$PERF_PID" || true
+for _ in $(seq 1 30); do adb shell "kill -0 $PERF_PID" 2>/dev/null || break; sleep 2; done
+adb pull /data/misc/perfetto-traces/e2e.pftrace "$OUT/e2e.pftrace" || true
+ls -la "$OUT/e2e.pftrace" || true
 # Android's crash buffer: an app's Java or native crash with its stack (01c-gallery-wide's 320 press
 # closed the app on two phones in 0.6.0). In the job's artifact and the screenshot branch.
 adb logcat -b crash -d > "$OUT/logcat-crash.txt" 2>&1 || true
