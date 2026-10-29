@@ -468,6 +468,34 @@ const vampireCardXml = (s: SceneScheme) =>
       `<rect x="8" y="26" width="10" height="2.4" rx="1.2" fill="${C.red}"/>`,
   );
 
+// Vampir Köylü's night sky (src/features/games/vampir): the Kampüs night's stars and bats over the
+// game's ground, in a frame as wide as the venue's and SKY_HEIGHT high, from its top.
+export const SKY_HEIGHT = 300;
+export const NIGHT_SKY: ScenePiece[] = [
+  star('sky-star-1', 34, 96, 0),
+  star('sky-star-2', 352, 120, 700),
+  star('sky-star-3', 70, 230, 1500),
+  star('sky-star-4', 318, 250, 2300),
+  {
+    id: 'sky-bat-1',
+    x: -40,
+    y: 150,
+    w: 36,
+    h: 18,
+    xml: batXml,
+    motion: { kind: 'glide', ms: 9000, delay: 1200, rest: 5200, dx: 470, dy: 10 },
+  },
+  {
+    id: 'sky-bat-2',
+    x: -40,
+    y: 200,
+    w: 36,
+    h: 18,
+    xml: batXml,
+    motion: { kind: 'glide', ms: 10400, delay: 6400, rest: 4600, dx: 470, dy: 7 },
+  },
+];
+
 const KAMPUS: VenueScene = {
   back: [
     { id: 'tree', x: -24, y: 66, w: 100, h: 170, xml: treeXml },

@@ -36,11 +36,20 @@ const CARD_CORNER = 0.165;
 export function GameCard({
   id,
   onPress,
+  tag = tr.table.soon,
+  lit,
+  dim,
   testID,
 }: {
   id: GameCardId;
   art?: ImageSourcePropType;
   onPress?: () => void;
+  // The corner tag: "Yakında" until the game's step; a playable game's votes or "Aç".
+  tag?: string;
+  // The person's own vote is on it.
+  lit?: boolean;
+  // Fewer phones at the table than the game needs (K-17).
+  dim?: boolean;
   testID?: string;
 }) {
   const pressScale = usePressScale();
@@ -50,7 +59,7 @@ export function GameCard({
     <Pressable
       testID={testID}
       accessibilityRole="button"
-      accessibilityLabel={tr.table.gameCardLabel(text.name, text.sub, text.people)}
+      accessibilityLabel={tr.table.gameCardLabel(text.name, text.sub, text.people, tag)}
       accessibilityState={{ disabled: !onPress }}
       disabled={!onPress}
       onPress={onPress}
@@ -66,6 +75,7 @@ export function GameCard({
               borderRadius: GAME_CARD.radius,
               overflow: 'hidden',
               boxShadow: look.shadow,
+              opacity: dim ? DIMMED : 1,
             },
             pressScale(pressed && !!onPress),
           ]}
@@ -93,7 +103,7 @@ export function GameCard({
             <Buddy look={look.buddy} height={GAME_CARD.buddy} />
           </View>
           <View style={{ position: 'absolute', left: GAME_CARD.inset, top: GAME_CARD.inset }}>
-            <Tag variant="glass" label={tr.table.soon} />
+            <Tag variant={lit ? 'light' : 'glass'} label={tag} />
           </View>
           <View
             style={{
@@ -122,6 +132,8 @@ export function GameCard({
     </Pressable>
   );
 }
+
+const DIMMED = 0.55;
 
 const GAME_CARD = {
   height: 200,

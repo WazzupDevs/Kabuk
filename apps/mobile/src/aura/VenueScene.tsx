@@ -88,16 +88,20 @@ const CAST_STEP = 80;
 const ARRIVE_AFTER_MS = 120;
 const ARRIVE_MS = 420;
 
-function Piece({
+// One piece of a scene, placed in a frame `frameHeight` high (the venue's by default) scaled by
+// `k`, from its bottom; its motion loops while `moving`. Vampir Köylü's night sky uses it too.
+export function Piece({
   piece,
   k,
   scheme,
   moving,
+  frameHeight = VENUE_FRAME.height,
 }: {
   piece: ScenePiece;
   k: number;
   scheme: SceneScheme;
   moving: boolean;
+  frameHeight?: number;
 }) {
   const xml = useMemo(() => piece.xml(scheme), [piece, scheme]);
   const m = piece.motion;
@@ -119,7 +123,7 @@ function Piece({
         {
           position: 'absolute',
           left: piece.x * k,
-          bottom: (VENUE_FRAME.height - piece.y - piece.h) * k,
+          bottom: (frameHeight - piece.y - piece.h) * k,
           width: piece.w * k,
           height: piece.h * k,
         },

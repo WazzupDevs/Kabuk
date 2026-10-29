@@ -148,7 +148,7 @@ export function Glass({
 }
 
 // A press that sinks a little and springs back (hareket.json → press), on the native driver.
-function usePress() {
+export function usePress() {
   const [scale] = useState(() => new Animated.Value(1));
   return {
     scale,

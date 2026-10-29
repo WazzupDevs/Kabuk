@@ -24,11 +24,12 @@ describe(TABLE_GAMES_MODULE, () => {
 });
 
 describe('content/games.json', () => {
-  it('holds the six games of §4.F with their lower limits (K-17)', () => {
+  it('holds the games of §4.F and Vampir Köylü (§4.6.6) with their lower limits (K-17)', () => {
     const limits = Object.fromEntries(
       parseGames(content).games.map((g) => [g.id, [g.minPlayers, g.teams]]),
     );
     expect(limits).toEqual({
+      vampir: [5, false],
       tabu: [4, true],
       ibre: [4, true],
       sahtekar: [3, false],
@@ -38,9 +39,14 @@ describe('content/games.json', () => {
     });
   });
 
-  // §4.E: after step 4.5 today's games are "Yakında"; each comes back with its step of 4.6.
-  it('has no game open to play before its step of 4.6', () => {
-    expect(parseGames(content).games.filter((g) => g.available)).toEqual([]);
+  // §4.E: after step 4.5 today's games are "Yakında"; each comes with its step of 4.6 (Vampir Köylü:
+  // 4.6.6).
+  it('opens only the games whose step of 4.6 has come', () => {
+    expect(
+      parseGames(content)
+        .games.filter((g) => g.available)
+        .map((g) => g.id),
+    ).toEqual(['vampir']);
   });
 
   it('refuses a game twice, an unknown category, and a team game under four', () => {
