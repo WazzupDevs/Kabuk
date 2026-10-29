@@ -20,6 +20,8 @@ const FRAME_LOOPS: Record<string, string> = {
   'src/components/game/Vinyl.tsx': 'old game, goes in 4.5',
   // Only while the launch curtain plays; its clock stops when the curtain goes.
   'src/features/launch/LaunchCurtain.tsx': 'launch only',
+  // Çizim ölçümü's frame counter: only while the lab is open, in test builds.
+  'src/features/design/DrawLabPanel.tsx': 'draw lab only',
 };
 
 function files(dir: string): string[] {

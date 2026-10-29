@@ -1718,6 +1718,9 @@ export const tr = {
       start: 'Başlat',
       close: 'Kapat',
       step: (n: number, total: number, name: string) => `${n}/${total} ${name}`,
+      // FrameMeter: the last second's frames on the JS thread and on the screen (the UI thread).
+      meterJs: (fps: number, worst: number) => `JS ${fps} kare/sn, en uzun ${worst} ms`,
+      meterUi: (fps: number, worst: number) => `Ekran ${fps} kare/sn, en uzun ${worst} ms`,
       steps: {
         all: 'Hepsi açık',
         cam: 'Cam kapalı',
