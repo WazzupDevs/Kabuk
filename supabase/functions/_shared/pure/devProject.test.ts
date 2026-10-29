@@ -7,6 +7,7 @@ import {
   isLocalUrl,
   locationCheck,
   refusesMockedPosition,
+  testBotsAllowed,
 } from './devProject.ts';
 
 const DEV = `https://${DEV_PROJECT_HOST}`;
@@ -93,5 +94,16 @@ describe('refusesMockedPosition', () => {
   it('lets a mocked position through when the check is skipped or on the local stack', () => {
     expect(refusesMockedPosition(true, 'skipped', DEV)).toBe(false);
     expect(refusesMockedPosition(true, 'enforced', 'http://kong:8000')).toBe(false);
+  });
+});
+
+describe('testBotsAllowed', () => {
+  it('seats test bots on the local stack and the dev project only', () => {
+    expect(testBotsAllowed('http://kong:8000')).toBe(true);
+    expect(testBotsAllowed('http://127.0.0.1:54321')).toBe(true);
+    expect(testBotsAllowed(DEV)).toBe(true);
+    expect(testBotsAllowed('https://abcdefghijklmnop.supabase.co')).toBe(false);
+    expect(testBotsAllowed(`http://${DEV_PROJECT_HOST}`)).toBe(false);
+    expect(testBotsAllowed(undefined)).toBe(false);
   });
 });

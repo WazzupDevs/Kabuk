@@ -35,6 +35,14 @@ export function locationCheck(
   return isLocalUrl(url) || isDevProjectUrl(url) ? 'skipped' : 'ignored';
 }
 
+// Test bots (rooms/add-bots, the owner's call, 29 Ekim): a table's owner seats bots that play by
+// themselves, to try a game with one phone. Only where the functions run on the local stack or the
+// dev project; never on the pilot.
+export function testBotsAllowed(supabaseUrl: string | undefined): boolean {
+  const url = supabaseUrl ?? '';
+  return isLocalUrl(url) || isDevProjectUrl(url);
+}
+
 // A position the phone reports as coming from a mock location app (Android) is refused at check-in
 // (audit SRV-1): with a fake GPS app anyone could sit at any venue. Not when the location check is
 // skipped, and not on the local stack, whose emulator (E2E: Maestro's setLocation) reports every

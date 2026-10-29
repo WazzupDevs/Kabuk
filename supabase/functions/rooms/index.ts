@@ -19,6 +19,7 @@ import { notifyInbox, pushIfAllowed } from '../_shared/inbox.ts';
 import { AppError } from '../_shared/pure/errors.ts';
 import { lobbyChanged } from '../_shared/lobby.ts';
 import { sendPush } from '../_shared/push.ts';
+import { addTestBots, removeTestBots, testBots } from '../_shared/testBots.ts';
 import type {
   CreateRoomResponse,
   RequestJoinResponse,
@@ -27,6 +28,7 @@ import type {
   RoomsOkResponse,
   RoomsRequest,
   SetIconResponse,
+  TestBotsResponse,
 } from '../_shared/pure/api/rooms.ts';
 import { ageOn, istanbulToday, parseIsoDate } from '../_shared/pure/age.ts';
 import { isTableGame, PICKS } from '../_shared/pure/gameFrame.ts';
@@ -50,6 +52,7 @@ import { SAHTEKAR } from '../_shared/pure/sahtekar.ts';
 import {
   isTableIcon,
   MAX_TABLE_INVITES_PER_HOUR,
+  MAX_TABLE_PHONES,
   TABLE_INVITE_TTL_SECONDS,
   TABLE_NAME_REROLLS,
 } from '../_shared/pure/tables.ts';
@@ -121,6 +124,17 @@ const Body: z.ZodType<RoomsRequest> = z.discriminatedUnion('action', [
   z.object({ action: z.literal('request-profile'), requestId: z.uuid() }),
   z.object({ action: z.literal('invite'), roomId: z.uuid(), friendPublicId: z.uuid() }),
   z.object({ action: z.literal('answer-invite'), inviteId: z.uuid(), accept: z.boolean() }),
+  z.object({ action: z.literal('test-bots'), roomId: z.uuid() }),
+  z.object({
+    action: z.literal('add-bots'),
+    roomId: z.uuid(),
+    count: z
+      .number()
+      .int()
+      .min(1)
+      .max(MAX_TABLE_PHONES - 1),
+  }),
+  z.object({ action: z.literal('remove-bots'), roomId: z.uuid() }),
 ]);
 
 const db = serviceClient();
@@ -181,6 +195,7 @@ Deno.serve(
       | RoomsOkResponse
       | SetIconResponse
       | RerollNameResponse
+      | TestBotsResponse
     > => {
       const body = Body.parse(raw);
       const user = await requireUser(req, db);
@@ -447,6 +462,14 @@ Deno.serve(
           }
           return { ok: true };
         }
+
+        // Test bots: the dev project and the local stack only (_shared/testBots.ts).
+        case 'test-bots':
+          return testBots(db, user.id, body.roomId);
+        case 'add-bots':
+          return addTestBots(db, user.id, body.roomId, body.count);
+        case 'remove-bots':
+          return removeTestBots(db, user.id, body.roomId);
       }
     },
   ),

@@ -1612,6 +1612,15 @@ export const tr = {
     viewProfile: 'Profili gör',
   },
   // "Masa kur" (v46 data-kur; docs/SPEC_V4.md §4.E).
+  // Test bots (dev project only): the owner seats bots that play by themselves.
+  testBots: {
+    title: 'Test botları',
+    body: 'Tek telefonla denemek için masaya bot oturt. Botlar oyunda kendiliğinden oynar.',
+    seated: (n: number) => `Masada ${n} bot var. Oyunda kendiliğinden oynarlar.`,
+    addOne: 'Bot ekle',
+    addFour: '4 bot ekle',
+    remove: 'Botları kaldır',
+  },
   createTable: {
     title: 'Masa kur',
     hint: 'Masaya herkes kendi telefonuyla katılır. Masada en çok 12 kişi olur.',

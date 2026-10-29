@@ -23,6 +23,7 @@ import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { IncomingRequest, useMarkTableScreen } from '@/features/rooms/IncomingRequest';
 import { InviteSheet } from '@/features/rooms/InviteSheet';
 import { TableScene } from '@/features/rooms/TableScene';
+import { TestBots } from '@/features/rooms/TestBots';
 import { TableIconSheet } from '@/features/rooms/TableIconSheet';
 import { OpenLobbySheet } from '@/features/rooms/OpenLobbySheet';
 import {
@@ -495,6 +496,7 @@ export default function TableScreen() {
             <T v="fine">{tr.table.soloBody}</T>
           </Glass>
         ) : null}
+        {owner ? <TestBots roomId={id} phones={r.phones} /> : null}
         {rejoin}
         {failed}
         <PosterGrid>

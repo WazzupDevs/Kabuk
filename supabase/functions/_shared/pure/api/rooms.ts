@@ -107,6 +107,13 @@ export type InviteRequest = { action: 'invite'; roomId: string; friendPublicId: 
 // "Masadan ayrıl" rule (K-13) and sits down with the check-in's identity; an invite that ran out, a
 // closed or full table are invite_unavailable alike.
 export type AnswerInviteRequest = { action: 'answer-invite'; inviteId: string; accept: boolean };
+// Test bots (dev project and local stack only, pure/devProject.ts → testBotsAllowed): whether this
+// server seats them and how many sit at the table; the owner seats `count` more (not_owner,
+// table_full) or takes them all away. Elsewhere available is false and the others bad_request.
+export type TestBotsRequest = { action: 'test-bots'; roomId: string };
+export type AddBotsRequest = { action: 'add-bots'; roomId: string; count: number };
+export type RemoveBotsRequest = { action: 'remove-bots'; roomId: string };
+export type TestBotsResponse = { available: boolean; seated: number };
 // The table is called by its icon (K-76): the new name comes back with it.
 export type SetIconResponse = { icon: string; name: string };
 export type RerollNameResponse = { name: string; rerollsLeft: number };
@@ -131,7 +138,10 @@ export type RoomsRequest =
   | SetIconRequest
   | RerollNameRequest
   | InviteRequest
-  | AnswerInviteRequest;
+  | AnswerInviteRequest
+  | TestBotsRequest
+  | AddBotsRequest
+  | RemoveBotsRequest;
 
 export type CreateRoomResponse = { roomId: string };
 // Identical for every request: nothing in it depends on the owner's later answer.

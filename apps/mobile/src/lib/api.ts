@@ -22,6 +22,7 @@ import type {
   RerollNameResponse,
   RoomsOkResponse,
   SetIconResponse,
+  TestBotsResponse,
 } from '@shared/api/rooms.ts';
 import type {
   ChangeSpotResponse,
@@ -243,6 +244,12 @@ export const roomsApi = {
     invoke<RoomsOkResponse>('rooms', { action: 'invite', roomId, friendPublicId }),
   answerInvite: (inviteId: string, accept: boolean) =>
     invoke<RoomsOkResponse>('rooms', { action: 'answer-invite', inviteId, accept }),
+  // Test bots (dev project only): whether the server seats them, and the owner's "Bot ekle".
+  testBots: (roomId: string) => invoke<TestBotsResponse>('rooms', { action: 'test-bots', roomId }),
+  addBots: (roomId: string, count: number) =>
+    invoke<TestBotsResponse>('rooms', { action: 'add-bots', roomId, count }),
+  removeBots: (roomId: string) =>
+    invoke<TestBotsResponse>('rooms', { action: 'remove-bots', roomId }),
 };
 
 export const chatApi = {
