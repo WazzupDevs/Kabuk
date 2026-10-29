@@ -14,6 +14,7 @@ import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CachedSvg } from '@/components/CachedSvg';
+import { Loader } from '@/components/Loader';
 import { roomKeys } from '@/features/rooms/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -188,14 +189,13 @@ export function VampirPlay({
             ? tr.vampir.voting
             : tr.vampir.day(state.round);
 
-  const right =
-    role === null ? (
-      <Chip label={tr.vampir.watching} />
-    ) : !amAlive && state.phase !== 'role' ? (
-      <Chip label={tr.vampir.dead} />
-    ) : state.phase === 'role' ? null : (
-      <PeekRole role={role} />
-    );
+  const right = !my ? null : role === null ? (
+    <Chip label={tr.vampir.watching} />
+  ) : !amAlive && state.phase !== 'role' ? (
+    <Chip label={tr.vampir.dead} />
+  ) : state.phase === 'role' ? null : (
+    <PeekRole role={role} />
+  );
 
   const dead = (sid: string) => !alive.includes(sid);
   const seated = state.seats.filter(
@@ -208,7 +208,14 @@ export function VampirPlay({
   let foot: ReactNode = null;
   let timed = false;
 
-  if (state.phase === 'role') {
+  if (!my) {
+    // The phone's own view is on its way: nothing that would show a watcher's screen to a player.
+    body = (
+      <Middle>
+        <Loader />
+      </Middle>
+    );
+  } else if (state.phase === 'role') {
     if (role === null) {
       body = (
         <Middle>
