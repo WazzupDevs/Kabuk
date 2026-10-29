@@ -9,6 +9,7 @@ import {
 } from '@shared/vampir.ts';
 import { useMemo, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
@@ -213,31 +214,46 @@ function Pregame({
     onSettled: reread,
   });
   const failed = pick.error ?? start.error;
-  const list = (sids: string[]) => (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: KIT.size.chipGap }}>
-      {sids.map((s) => (
-        <View
-          key={s}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 6,
-            paddingRight: 10,
-            borderRadius: KIT.size.chip,
-          }}
-        >
-          <Face faces={faces} sid={s} size="sm" />
-          <T v="fine" strong>
-            {nameOf(faces, s)}
-          </T>
-        </View>
-      ))}
-    </View>
-  );
+  // Two even columns, the same in every count (the owner's report, 29 Ekim).
+  const list = (sids: string[]) => {
+    const rows: string[][] = [];
+    for (let i = 0; i < sids.length; i += 2) rows.push(sids.slice(i, i + 2));
+    return (
+      <View style={{ gap: LIST_GAP }}>
+        {rows.map((row, i) => (
+          <View key={i} style={{ flexDirection: 'row', gap: KIT.size.rowGap }}>
+            {[0, 1].map((j) => {
+              const s = row[j];
+              return (
+                <View
+                  key={j}
+                  style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}
+                >
+                  {s ? (
+                    <>
+                      <Face faces={faces} sid={s} size="sm" />
+                      <View style={{ flex: 1 }}>
+                        <T v="fine" strong ink lines={1} fit>
+                          {nameOf(faces, s)}
+                        </T>
+                      </View>
+                    </>
+                  ) : null}
+                </View>
+              );
+            })}
+          </View>
+        ))}
+      </View>
+    );
+  };
   return (
     <View testID="vampir-pregame" style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
       <AuraBackground />
+      {/* Still: it scrolls only when it does not fit (the largest text), without a bounce. */}
       <ScrollView
+        bounces={false}
+        overScrollMode="never"
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{
@@ -373,6 +389,7 @@ function End({
   const seats = result.seats.filter((s) => result.roles[s]);
   return (
     <View testID="vampir-end" style={{ flex: 1 }}>
+      <StatusBar style="light" />
       <VampirGround
         time={result.winner === 'v' ? 'night' : result.winner === 'j' ? 'dusk' : 'day'}
       />
@@ -486,3 +503,4 @@ function End({
     </View>
   );
 }
+const LIST_GAP = 6;

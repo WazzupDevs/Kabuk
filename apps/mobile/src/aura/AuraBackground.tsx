@@ -24,7 +24,8 @@ export function AuraBackground() {
       source={GROUND_PICTURE[scheme]}
       fadeDuration={0}
       resizeMode="cover"
-      style={StyleSheet.absoluteFill}
+      // Its own size, or it draws at the picture's pixels (Image takes a required source's size).
+      style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%' }}
       accessible={false}
     />
   );

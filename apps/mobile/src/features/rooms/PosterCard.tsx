@@ -1,26 +1,23 @@
 import { Children, type ReactNode } from 'react';
-import { type ImageSourcePropType, Pressable, Text, View } from 'react-native';
+import { Image, type ImageSourcePropType, Pressable, View } from 'react-native';
 
-import { Buddy } from '@/aura/Buddy';
 import { FrostIn } from '@/aura/FrostIn';
 import { usePressScale } from '@/components/motion';
 import { Tag } from '@/components/Tag';
 import { tr } from '@/i18n/tr';
 import { AURA } from '@/theme/aura';
-import { KIT, KIT_TYPE } from '@/theme/auraKit';
-import { gradientStyle } from '@/theme/gradient';
 import { SPACING } from '@/theme/tokens';
 
-// The games on the table: since 28 Ekim drawn as docs/design/aura → Masa's cards (GameCard); the
-// earlier drawings (the owner's file skall-oyun-kartlari, assets/game-card/) stay with the list.
-// Every game waits for its step (4.6): "Yakında" in the vote's corner, not pressed.
+// The games on the table: since 29 Ekim each its comic poster in a small landscape card
+// (scripts/art/posters.ts, after the owner's earlier posters in assets/game-card/), the game's
+// name lettered on it. Every game waits for its step (4.6): "Yakında" in the corner, not pressed.
 export const GAME_CARDS = [
-  { id: 'vampir', category: 'multi', art: require('../../../assets/game-card/vampir.webp') },
-  { id: 'signum', category: 'teams', art: require('../../../assets/game-card/signum.webp') },
-  { id: 'kinshi', category: 'teams', art: require('../../../assets/game-card/kinshi.webp') },
-  { id: 'krot', category: 'multi', art: require('../../../assets/game-card/krot.webp') },
-  { id: 'sprengja', category: 'multi', art: require('../../../assets/game-card/sprengja.webp') },
-  { id: 'kaupholl', category: 'multi', art: require('../../../assets/game-card/kaupholl.webp') },
+  { id: 'vampir', category: 'multi', art: require('../../../assets/game-poster/vampir.webp') },
+  { id: 'signum', category: 'teams', art: require('../../../assets/game-poster/signum.webp') },
+  { id: 'kinshi', category: 'teams', art: require('../../../assets/game-poster/kinshi.webp') },
+  { id: 'krot', category: 'multi', art: require('../../../assets/game-poster/krot.webp') },
+  { id: 'sprengja', category: 'multi', art: require('../../../assets/game-poster/sprengja.webp') },
+  { id: 'kaupholl', category: 'multi', art: require('../../../assets/game-poster/kaupholl.webp') },
 ] as const satisfies readonly {
   id: keyof typeof tr.table.gameCards;
   category: keyof typeof tr.table.gameCategories;
@@ -35,6 +32,7 @@ const CARD_CORNER = 0.13;
 
 export function GameCard({
   id,
+  art,
   onPress,
   tag = tr.table.soon,
   lit,
@@ -42,7 +40,7 @@ export function GameCard({
   testID,
 }: {
   id: GameCardId;
-  art?: ImageSourcePropType;
+  art: ImageSourcePropType;
   onPress?: () => void;
   // The corner tag: "Yakında" until the game's step; a playable game's votes or "Aç".
   tag?: string;
@@ -65,14 +63,12 @@ export function GameCard({
       onPress={onPress}
     >
       {({ pressed }) => (
-        // docs/design/aura → Masa, as a small landscape card (the owner's call, 29 Ekim: more of
-        // them on the screen): a deep card of the game's colour, a warm glow at its foot, the
-        // game's buddy at the right, the corner tag, the name and its line at the bottom left.
+        // The poster fills the card (its name is in the drawing; the owner's call, 29 Ekim); only
+        // the corner tag lies over it.
         <View
           style={[
-            gradientStyle(look.ground),
             {
-              height: GAME_CARD.height,
+              aspectRatio: POSTER_RATIO,
               borderRadius: GAME_CARD.radius,
               overflow: 'hidden',
               boxShadow: look.shadow,
@@ -81,57 +77,15 @@ export function GameCard({
             pressScale(pressed && !!onPress),
           ]}
         >
-          <View
-            style={[
-              gradientStyle(`radial-gradient(closest-side, ${look.glow}, transparent)`),
-              {
-                position: 'absolute',
-                left: '-10%',
-                right: '-10%',
-                bottom: -GAME_CARD.glowDrop,
-                height: GAME_CARD.glow,
-                borderRadius: GAME_CARD.glow,
-              },
-            ]}
+          <Image
+            source={art}
+            fadeDuration={0}
+            resizeMode="cover"
+            style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%' }}
+            accessible={false}
           />
-          <View
-            style={{
-              position: 'absolute',
-              right: -GAME_CARD.buddyOut,
-              bottom: GAME_CARD.buddyFoot,
-            }}
-          >
-            <Buddy look={look.buddy} height={GAME_CARD.buddy} />
-          </View>
           <View style={{ position: 'absolute', left: GAME_CARD.inset, top: GAME_CARD.inset }}>
             <Tag variant={lit ? 'light' : 'glass'} label={tag} />
-          </View>
-          <View
-            style={{
-              position: 'absolute',
-              left: GAME_CARD.inset + 2,
-              bottom: GAME_CARD.inset,
-              right: GAME_CARD.textRight,
-            }}
-          >
-            <Text
-              numberOfLines={1}
-              adjustsFontSizeToFit
-              minimumFontScale={0.6}
-              maxFontSizeMultiplier={1.3}
-              style={[KIT_TYPE.h3, KIT_TYPE.strong, { color: KIT.white }]}
-            >
-              {text.name}
-            </Text>
-            <Text
-              numberOfLines={1}
-              adjustsFontSizeToFit
-              minimumFontScale={0.7}
-              maxFontSizeMultiplier={1.3}
-              style={[KIT_TYPE.fine, { color: look.sub }]}
-            >
-              {text.sub}
-            </Text>
           </View>
         </View>
       )}
@@ -141,19 +95,9 @@ export function GameCard({
 
 const DIMMED = 0.55;
 
-const GAME_CARD = {
-  height: 104,
-  radius: 22,
-  glow: 90,
-  glowDrop: 48,
-  // The buddy at the right, past the edge a little, standing on the card's foot.
-  buddy: 70,
-  buddyOut: 8,
-  buddyFoot: 6,
-  inset: 10,
-  // The name and its line keep clear of the buddy.
-  textRight: 50,
-} as const;
+// The poster's 3 : 2 (480 × 320), its corner and the tag's inset.
+const POSTER_RATIO = 1.5;
+const GAME_CARD = { radius: 22, inset: 8 } as const;
 
 // Two cards a row, 12 apart (the file's grid).
 export function PosterGrid({ children }: { children: ReactNode }) {
