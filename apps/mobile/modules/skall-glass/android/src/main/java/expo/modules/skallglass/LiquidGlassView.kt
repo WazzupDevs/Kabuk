@@ -43,6 +43,16 @@ class LiquidGlassView(context: Context, appContext: AppContext) : ExpoView(conte
 
   private val glass: RenderNode? =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) RenderNode("skallGlass") else null
+  // The glass drawn once into a layer of its own and kept: the system applies a RenderEffect
+  // again every time its node is drawn on some GPUs (its cache is off there), which made the bar
+  // blur and bend on every frame anything on the screen moved. The layer is drawn again only when
+  // the glass is (a change under it: GlassTargetView).
+  private val kept: RenderNode? =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+      RenderNode("skallGlassKept").apply { setUseCompositingLayer(true, null) }
+    } else {
+      null
+    }
   private var effectKey: List<Float>? = null
   private var watched: GlassTargetView? = null
   private val here = IntArray(2)
@@ -74,6 +84,7 @@ class LiquidGlassView(context: Context, appContext: AppContext) : ExpoView(conte
     GlassTargets.unwatch(this)
     watch(null)
     glass?.discardDisplayList()
+    kept?.discardDisplayList()
     super.onDetachedFromWindow()
   }
 
@@ -122,7 +133,8 @@ class LiquidGlassView(context: Context, appContext: AppContext) : ExpoView(conte
     val h = height + margin * 2
     getLocationInWindow(here)
     target.getLocationInWindow(there)
-    node.setPosition(-margin, -margin, width + margin, height + margin)
+    val keep = kept ?: return
+    node.setPosition(0, 0, w, h)
     applyEffect(node, w, h, margin)
     val recording = node.beginRecording(w, h)
     try {
@@ -135,7 +147,14 @@ class LiquidGlassView(context: Context, appContext: AppContext) : ExpoView(conte
     } finally {
       node.endRecording()
     }
-    canvas.drawRenderNode(node)
+    keep.setPosition(-margin, -margin, width + margin, height + margin)
+    val outer = keep.beginRecording(w, h)
+    try {
+      outer.drawRenderNode(node)
+    } finally {
+      keep.endRecording()
+    }
+    canvas.drawRenderNode(keep)
   }
 
   @TargetApi(Build.VERSION_CODES.S)

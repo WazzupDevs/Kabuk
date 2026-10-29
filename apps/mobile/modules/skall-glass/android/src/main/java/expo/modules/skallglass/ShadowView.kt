@@ -61,20 +61,23 @@ class ShadowView(context: Context, appContext: AppContext) : ExpoView(context, a
 
   private var logged = 0
 
-  override fun onDraw(canvas: Canvas) {
-    super.onDraw(canvas)
+  // In dispatchDraw, which runs for a view group even when it is told it draws nothing (onDraw then
+  // never ran: React Native's views say so when they have no background of their own).
+  override fun dispatchDraw(canvas: Canvas) {
     val w = width
     val h = height
     if (logged < 3) {
       logged++
-      android.util.Log.i("SkallShadow", "draw w=$w h=$h specs=$specs radii=${radii.toList()} hw=${canvas.isHardwareAccelerated}")
+      android.util.Log.i("SkallShadow", "draw w=$w h=$h specs=${specs.size}")
     }
-    if (w <= 0 || h <= 0) return
-    // The first shadow is on top, as in CSS.
-    for (spec in specs.asReversed()) {
-      val piece = ShadowPictures.get(spec, radii, density, w, h) ?: continue
-      draw(canvas, piece, w, h)
+    if (w > 0 && h > 0) {
+      // The first shadow is on top, as in CSS.
+      for (spec in specs.asReversed()) {
+        val piece = ShadowPictures.get(spec, radii, density, w, h) ?: continue
+        draw(canvas, piece, w, h)
+      }
     }
+    super.dispatchDraw(canvas)
   }
 
   private fun draw(canvas: Canvas, p: ShadowPicture, w: Int, h: Int) {
