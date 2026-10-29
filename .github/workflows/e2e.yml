@@ -617,7 +617,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p /tmp/pr && cd /tmp/pr
-          cp "$OUT"/perf-report.md "$OUT"/gfx-*.txt "$OUT"/shot-1-*.png . 2>/dev/null || echo none > perf-report.md
+          cp "$OUT"/perf-report.md "$OUT"/gfx-*.txt "$OUT"/shot-1-*.png "$OUT"/logcat-lab.txt . 2>/dev/null || echo none > perf-report.md
           git init -q -b perf-report
           git add -A
           git -c user.name=ci -c user.email=ci@example.com commit -qm "perf lab $GITHUB_RUN_ID"

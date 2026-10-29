@@ -102,8 +102,12 @@ class LiquidGlassView(context: Context, appContext: AppContext) : ExpoView(conte
     )
   }
 
+  private var draws = 0
+
   override fun onDraw(canvas: Canvas) {
     super.onDraw(canvas)
+    draws++
+    if (draws % 60 == 1) android.util.Log.i("SkallGlass", "glass onDraw #$draws")
     val node = glass ?: return
     val target = GlassTargets.find(targetId)
     watch(target)

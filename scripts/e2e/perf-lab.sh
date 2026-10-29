@@ -7,13 +7,17 @@ mkdir -p "$OUT"
 source "$(dirname "$0")/fetch-apk.sh"
 adb install -r -g "$APK"
 adb shell settings put global hide_error_dialogs 1 || true
+# shellcheck source=system-dialog.sh
+source "$(dirname "$0")/system-dialog.sh"
+warm_up_app
+adb logcat -c
 MODES=("hepsi" "yerel" "golge" "cam" "golge,cam")
 for round in 1 2; do
   for m in "${MODES[@]}"; do
     off=$m; [ "$m" = hepsi ] && off=""
     adb shell am force-stop app.kabuk.mobile
     adb shell am start -W -a android.intent.action.VIEW -d "masa:///perf?kapali=$off\&n=$round" app.kabuk.mobile > /dev/null
-    sleep 10
+    press_wait_on_not_responding 10
     adb shell dumpsys gfxinfo app.kabuk.mobile reset > /dev/null
     sleep 15
     adb shell dumpsys gfxinfo app.kabuk.mobile > "$OUT/gfx-$round-${m//,/+}.txt"
@@ -31,4 +35,5 @@ done
     echo "| $round | $m | $(g 'Total frames rendered') | $(g '50th percentile') | $(g '90th percentile') | $(g '50th gpu percentile') | $(g '90th gpu percentile') |"
   done
 } > "$OUT/perf-report.md"
+adb logcat -d -s SkallShadow SkallGlass AndroidRuntime ReactNativeJS > "$OUT/logcat-lab.txt" || true
 cat "$OUT/perf-report.md"

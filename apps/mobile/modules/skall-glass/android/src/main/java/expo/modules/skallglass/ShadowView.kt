@@ -40,6 +40,7 @@ class ShadowView(context: Context, appContext: AppContext) : ExpoView(context, a
   }
 
   fun setShadows(list: List<Map<String, Any?>>) {
+    android.util.Log.i("SkallShadow", "setShadows $list")
     specs = list.map {
       Spec(
         x = (it["x"] as? Number)?.toFloat() ?: 0f,
@@ -58,10 +59,16 @@ class ShadowView(context: Context, appContext: AppContext) : ExpoView(context, a
     invalidate()
   }
 
+  private var logged = 0
+
   override fun onDraw(canvas: Canvas) {
     super.onDraw(canvas)
     val w = width
     val h = height
+    if (logged < 3) {
+      logged++
+      android.util.Log.i("SkallShadow", "draw w=$w h=$h specs=$specs radii=${radii.toList()} hw=${canvas.isHardwareAccelerated}")
+    }
     if (w <= 0 || h <= 0) return
     // The first shadow is on top, as in CSS.
     for (spec in specs.asReversed()) {
