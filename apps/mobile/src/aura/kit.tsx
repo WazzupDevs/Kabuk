@@ -8,6 +8,7 @@ import {
   type ImageSourcePropType,
   Pressable,
   type StyleProp,
+  StyleSheet,
   Text,
   type TextStyle,
   View,
@@ -15,9 +16,10 @@ import {
 } from 'react-native';
 
 import { Loader, useLoopActive } from '@/components/Loader';
+import { shadowParts } from '@/components/NativeShadow';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { MOTION } from '@/theme/aura';
-import { KIT, KIT_TYPE, type KitTextVariant, shadowList } from '@/theme/auraKit';
+import { KIT, KIT_TYPE, type KitTextVariant } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -113,21 +115,29 @@ export function Glass({
 }) {
   const { c } = useKit();
   const flat = useContext(FlatGlass);
+  const radius = sm ? KIT.size.glassRadiusSm : KIT.size.glassRadius;
+  const shadow = shadowParts(
+    flat ? undefined : c.glassShadow,
+    c.glassInset,
+    radius,
+    StyleSheet.flatten(style)?.overflow !== 'hidden',
+  );
   return (
     <View
       testID={testID}
       style={[
         gradientStyle(c.glass),
         {
-          borderRadius: sm ? KIT.size.glassRadiusSm : KIT.size.glassRadius,
+          borderRadius: radius,
           borderWidth: KIT.size.edge,
           borderColor: c.glassEdge,
-          boxShadow: flat ? c.glassInset || undefined : shadowList(c.glassShadow, c.glassInset),
+          boxShadow: shadow.boxShadow,
           padding: pad === 'pad' ? KIT.size.pad : pad === 'lg' ? KIT.size.padLg : undefined,
         },
         style,
       ]}
     >
+      {shadow.node}
       {children}
     </View>
   );
@@ -191,19 +201,22 @@ export function Btn({
   const inRow = useContext(InRow);
   const fg =
     tint ?? (variant === 'primary' ? KIT.onPrimary : variant === 'dark' ? c.onChipOn : c.ink);
+  const shadow =
+    variant === 'primary'
+      ? shadowParts(KIT.primaryShadow, c.primaryInset, KIT.size.btn)
+      : variant === 'dark'
+        ? null
+        : shadowParts(c.raisedShadow || undefined, undefined, KIT.size.btn);
   const ground: ViewStyle =
     variant === 'primary'
-      ? {
-          backgroundColor: KIT.primary,
-          boxShadow: shadowList(KIT.primaryShadow, c.primaryInset),
-        }
+      ? { backgroundColor: KIT.primary, boxShadow: shadow?.boxShadow }
       : variant === 'dark'
         ? { backgroundColor: c.chipOn }
         : {
             backgroundColor: c.raised,
             borderWidth: KIT.size.edge,
             borderColor: c.raisedEdge,
-            boxShadow: c.raisedShadow || undefined,
+            boxShadow: shadow?.boxShadow,
           };
   const off = disabled && !loading;
   return (
@@ -234,6 +247,7 @@ export function Btn({
           },
         ]}
       >
+        {shadow?.node}
         {loading ? (
           <Loader kind="meet" size={sm ? KIT.size.iconSm : KIT.size.icon} delay={0} label={null} />
         ) : icon ? (
@@ -293,6 +307,11 @@ export function Round({
   const press = usePress();
   const s = KIT.size.round;
   const fg = primary ? KIT.onPrimary : (color ?? c.ink);
+  const shadow = primary
+    ? shadowParts(KIT.primaryShadow, c.primaryInset, s / 2)
+    : glassy
+      ? shadowParts(c.raisedShadow || undefined, undefined, s / 2)
+      : null;
   return (
     <Pressable
       testID={testID}
@@ -316,20 +335,18 @@ export function Round({
             opacity: disabled && !loading ? DISABLED : 1,
           },
           primary
-            ? {
-                backgroundColor: KIT.primary,
-                boxShadow: shadowList(KIT.primaryShadow, c.primaryInset),
-              }
+            ? { backgroundColor: KIT.primary, boxShadow: shadow?.boxShadow }
             : glassy
               ? {
                   backgroundColor: c.raisedRound,
                   borderWidth: KIT.size.edge,
                   borderColor: c.raisedEdge,
-                  boxShadow: c.raisedShadow || undefined,
+                  boxShadow: shadow?.boxShadow,
                 }
               : null,
         ]}
       >
+        {shadow?.node}
         {loading ? (
           <Loader kind="meet" size={KIT.size.iconSm} delay={0} label={null} />
         ) : (
@@ -717,7 +734,9 @@ export function Av({
   const side = KIT.size.av[size];
   const ring = size === 'xl' || size === 'big' ? KIT.size.avRingXl : KIT.size.avRing;
   const pick = KIT.avColors[colorIndex(name)] ?? KIT.avColors[0];
-  return (
+  // The face clips its photo, so its native shadow sits beside it in a box of the same size.
+  const shadow = shadowParts(KIT.avShadow, undefined, side / 2);
+  const face = (
     <View
       style={[
         {
@@ -726,7 +745,7 @@ export function Av({
           borderRadius: side / 2,
           borderWidth: ring,
           borderColor: KIT.white,
-          boxShadow: KIT.avShadow,
+          boxShadow: shadow.boxShadow,
           overflow: 'hidden',
           alignItems: 'center',
           justifyContent: 'center',
@@ -749,6 +768,14 @@ export function Av({
         </Text>
       )}
     </View>
+  );
+  return shadow.node ? (
+    <View style={{ width: side, height: side }}>
+      {shadow.node}
+      {face}
+    </View>
+  ) : (
+    face
   );
 }
 

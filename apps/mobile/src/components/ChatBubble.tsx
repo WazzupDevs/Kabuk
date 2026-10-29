@@ -12,6 +12,7 @@ import { useReduceMotion } from '@/lib/useReduceMotion';
 import { withAlpha } from '@/theme/contrast';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
+import { shadowParts } from '@/components/NativeShadow';
 
 import { AVATAR_SIZE } from './Avatar';
 import { type BubbleAction, MessagePop, type PopAnchor } from './MessagePop';
@@ -158,6 +159,17 @@ export function ChatBubble({
       {face(false)}
     </Pressable>
   );
+  const radii = [
+    KIT.size.msgRadius,
+    KIT.size.msgRadius,
+    mine ? KIT.size.msgTail : KIT.size.msgRadius,
+    mine ? KIT.size.msgRadius : KIT.size.msgTail,
+  ] as const;
+  const bubbleShadow = shadowParts(
+    mine ? paint.mineShadow : KIT.chatShadow[kind],
+    undefined,
+    radii,
+  );
   function face(lifted: boolean) {
     return (
       <View
@@ -172,9 +184,9 @@ export function ChatBubble({
                 backgroundColor: paint.mine,
                 borderWidth: KIT.size.edge,
                 borderColor: paint.mineEdge,
-                boxShadow: paint.mineShadow,
+                boxShadow: bubbleShadow.boxShadow,
               }
-            : { backgroundColor: paint[kind], boxShadow: KIT.chatShadow[kind] },
+            : { backgroundColor: paint[kind], boxShadow: bubbleShadow.boxShadow },
           {
             paddingHorizontal: KIT.size.msgPadX,
             paddingVertical: KIT.size.msgPadY,
@@ -187,6 +199,7 @@ export function ChatBubble({
           lifted ? { boxShadow: shape.shadow.focus } : null,
         ]}
       >
+        {lifted ? null : bubbleShadow.node}
         {/* Mekan and masa sohbeti: the writer's name inside the bubble, on its first line, level
             with the face beside it (the owner's call, 28 Ekim). */}
         {inside && first && name ? (
@@ -603,6 +616,12 @@ export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: 
   const { scheme } = useKit();
   const kind = useChatKind();
   const paint = KIT.bubble[scheme];
+  const typingShadow = shadowParts(KIT.chatShadow[kind], undefined, [
+    KIT.size.msgRadius,
+    KIT.size.msgRadius,
+    KIT.size.msgRadius,
+    KIT.size.msgTail,
+  ]);
   return (
     <View
       className="flex-row items-end gap-2 self-start"
@@ -620,13 +639,14 @@ export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: 
           paddingVertical: SPACING[3],
           // Another's bubble in the chat's colour with three white dots (the owner's call, 29 Ekim).
           backgroundColor: paint[kind],
-          boxShadow: KIT.chatShadow[kind],
+          boxShadow: typingShadow.boxShadow,
           borderTopLeftRadius: KIT.size.msgRadius,
           borderTopRightRadius: KIT.size.msgRadius,
           borderBottomRightRadius: KIT.size.msgRadius,
           borderBottomLeftRadius: KIT.size.msgTail,
         }}
       >
+        {typingShadow.node}
         {dots.map((d, i) => (
           <Animated.View
             key={i}

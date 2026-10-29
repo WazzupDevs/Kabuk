@@ -15,6 +15,12 @@ class SkallGlassModule : Module() {
       Prop("targetId") { view: GlassTargetView, id: String? -> view.setTargetId(id) }
     }
 
+    View(ShadowView::class) {
+      Name("ShadowView")
+      Prop("shadows") { view: ShadowView, list: List<Map<String, Any?>> -> view.setShadows(list) }
+      Prop("radii") { view: ShadowView, list: List<Double> -> view.setRadii(list) }
+    }
+
     View(LiquidGlassView::class) {
       Name("LiquidGlassView")
       Prop("targetId") { view: LiquidGlassView, id: String? -> view.targetId = id }

@@ -4,6 +4,7 @@ import android.annotation.TargetApi
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Rect
 import android.graphics.RenderEffect
 import android.graphics.RenderNode
 import android.graphics.RuntimeShader
@@ -11,6 +12,7 @@ import android.graphics.Shader
 import android.os.Build
 import expo.modules.kotlin.AppContext
 import expo.modules.kotlin.views.ExpoView
+import kotlin.math.abs
 import kotlin.math.max
 
 // skall's liquid glass: the screen behind (a GlassTargetView, found by its id) drawn under this
@@ -80,6 +82,24 @@ class LiquidGlassView(context: Context, appContext: AppContext) : ExpoView(conte
     watched?.removeGlass(this)
     watched = target
     target?.addGlass(this)
+  }
+
+  private val sampledHere = IntArray(2)
+
+  // Whether a change in this window area shows in the glass: its box with what it bends in.
+  fun samples(area: Rect): Boolean {
+    if (!isAttachedToWindow || width <= 0 || height <= 0) return true
+    getLocationInWindow(sampledHere)
+    val margin = max(abs(refraction) + blur, 1f).toInt() + 1
+    return Rect.intersects(
+      area,
+      Rect(
+        sampledHere[0] - margin,
+        sampledHere[1] - margin,
+        sampledHere[0] + width + margin,
+        sampledHere[1] + height + margin,
+      ),
+    )
   }
 
   override fun onDraw(canvas: Canvas) {
@@ -176,6 +196,9 @@ class LiquidGlassView(context: Context, appContext: AppContext) : ExpoView(conte
         float d = edge(p);
         float cover = clamp(0.5 - d, 0.0, 1.0);
         if (cover <= 0.0) return half4(0.0);
+        // Deep inside: no bend, no light, nothing split; the blurred screen as it is (the same
+        // colour the full path gives there, without its work).
+        if (d < -max(depth, 7.0 * px) - 1.0) return content.eval(coord);
 
         float2 n = float2(edge(p + float2(1.0, 0.0)) - edge(p - float2(1.0, 0.0)),
                           edge(p + float2(0.0, 1.0)) - edge(p - float2(0.0, 1.0)));
