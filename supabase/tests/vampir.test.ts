@@ -147,7 +147,7 @@ describe('the roles (§4.6.6)', () => {
       const roomId = await tableWith(owner, others);
       expect(await rooms(owner, { action: 'open-game', roomId, concept: 'vampir' })).toEqual(OK);
       expect(await vampir(others[0] as Person, { action: 'start', roomId })).toEqual({
-        status: 400,
+        status: 403,
         body: errorBody('not_owner'),
       });
       const watcher = others[4] as Person;
@@ -155,7 +155,7 @@ describe('the roles (§4.6.6)', () => {
       expect(await vampir(owner, { action: 'start', roomId })).toEqual(OK);
       expect(await view(watcher, roomId)).toEqual({ role: null });
       expect(await vampir(watcher, { action: 'ready', roomId, step: await step(roomId) })).toEqual({
-        status: 400,
+        status: 403,
         body: errorBody('not_player'),
       });
     },
@@ -171,7 +171,7 @@ describe('the roles (§4.6.6)', () => {
       expect(await rooms(owner, { action: 'open-game', roomId, concept: 'vampir' })).toEqual(OK);
       expect(await rooms(others[0] as Person, { action: 'pick', roomId, pick: 'obs' })).toEqual(OK);
       expect(await vampir(owner, { action: 'start', roomId })).toEqual({
-        status: 400,
+        status: 409,
         body: errorBody('not_enough_players'),
       });
     },
@@ -191,7 +191,7 @@ describe('the role card (K-78)', () => {
       const h = await game(5);
       const guest = h.people[1] as Person;
       expect(await vampir(guest, { action: 'begin', roomId: h.roomId, step: 1 })).toEqual({
-        status: 400,
+        status: 403,
         body: errorBody('not_owner'),
       });
       expect(await vampir(h.owner, { action: 'begin', roomId: h.roomId, step: 1 })).toEqual(OK);
@@ -296,7 +296,7 @@ describe('the day (K-78)', () => {
       expect((await runOut(g)).phase).toBe('day');
       let at = await step(g.roomId);
       expect(await vampir(guest, { action: 'to-vote', roomId: g.roomId, step: at })).toEqual({
-        status: 400,
+        status: 403,
         body: errorBody('not_owner'),
       });
       expect(await vampir(g.owner, { action: 'to-vote', roomId: g.roomId, step: at })).toEqual(OK);
