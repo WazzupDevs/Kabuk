@@ -14,6 +14,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 import { shadowParts } from '@/components/NativeShadow';
 import { useLabOff } from '@/lib/drawLab';
+import { perfOff } from '@/lib/perfLab';
 
 import { AVATAR_SIZE } from './Avatar';
 import { type BubbleAction, MessagePop, type PopAnchor } from './MessagePop';
@@ -237,7 +238,7 @@ export function ChatBubble({
               </Text>
             ) : null}
           </RNText>
-          {time && !state ? (
+          {time && !state && !perfOff('time') ? (
             <View
               className="absolute flex-row items-center gap-1"
               style={{ right: 0, bottom: 0 }}
@@ -246,7 +247,7 @@ export function ChatBubble({
               <Text variant="caption" color={mine ? paint.mineMuted : paint.themMuted}>
                 {time}
               </Text>
-              {mine && delivery ? <DeliveryTicks delivery={delivery} /> : null}
+              {mine && delivery && !perfOff('ticks') ? <DeliveryTicks delivery={delivery} /> : null}
             </View>
           ) : null}
         </View>
@@ -447,7 +448,7 @@ function SwipeToReply({ onReply, children }: { onReply?: () => void; children: R
   const [dx] = useState(() => new Animated.Value(0));
   const start = useRef<{ x: number; y: number } | null>(null);
   const moved = useRef(0);
-  if (!onReply) return children;
+  if (!onReply || perfOff('swipe')) return children;
   const settle = () => {
     moved.current = 0;
     Animated.spring(dx, { toValue: 0, useNativeDriver: true, bounciness: 6 }).start();
@@ -481,28 +482,30 @@ function SwipeToReply({ onReply, children }: { onReply?: () => void; children: R
       onResponderTerminate={settle}
       style={{ maxWidth: '100%' }}
     >
-      <Animated.View
-        pointerEvents="none"
-        className="absolute items-center justify-center"
-        style={{
-          left: -SPACING[10],
-          top: 0,
-          bottom: 0,
-          opacity: dx.interpolate({ inputRange: [0, SWIPE_TRIGGER], outputRange: [0, 1] }),
-        }}
-      >
-        <View
-          className="items-center justify-center"
+      {perfOff('arrow') ? null : (
+        <Animated.View
+          pointerEvents="none"
+          className="absolute items-center justify-center"
           style={{
-            width: SPACING[8],
-            height: SPACING[8],
-            borderRadius: shape.radius.pill,
-            backgroundColor: colors.surface2,
+            left: -SPACING[10],
+            top: 0,
+            bottom: 0,
+            opacity: dx.interpolate({ inputRange: [0, SWIPE_TRIGGER], outputRange: [0, 1] }),
           }}
         >
-          <AppIcon name="arrow-undo" size={ICON.sm} color={colors.text} />
-        </View>
-      </Animated.View>
+          <View
+            className="items-center justify-center"
+            style={{
+              width: SPACING[8],
+              height: SPACING[8],
+              borderRadius: shape.radius.pill,
+              backgroundColor: colors.surface2,
+            }}
+          >
+            <AppIcon name="arrow-undo" size={ICON.sm} color={colors.text} />
+          </View>
+        </Animated.View>
+      )}
       <Animated.View style={{ transform: [{ translateX: dx }] }}>{children}</Animated.View>
     </View>
   );

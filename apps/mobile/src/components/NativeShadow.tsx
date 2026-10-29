@@ -4,6 +4,7 @@ import { Platform, processColor, StyleSheet, type StyleProp, type ViewStyle } fr
 
 import { shadowList } from '@/theme/auraKit';
 import { labOff } from '@/lib/drawLab';
+import { perfOff } from '@/lib/perfLab';
 import { parseShadows } from '@/lib/shadowCss';
 
 // A box's soft outer shadow drawn by the app's own native view from a picture made once
@@ -67,7 +68,7 @@ export function shadowParts(
   border = 0,
 ): { boxShadow: string | undefined; node: ReactNode } {
   // Çizim ölçümü (lib/drawLab.ts) turns the outer shadows off; the caller calls useLabOff('golge').
-  if (labOff('golge')) return { boxShadow: inset || undefined, node: null };
+  if (labOff('golge') || perfOff('golge')) return { boxShadow: inset || undefined, node: null };
   const native = !!Native && child && !!outer && parseShadows(outer) !== null;
   return native && outer
     ? {
