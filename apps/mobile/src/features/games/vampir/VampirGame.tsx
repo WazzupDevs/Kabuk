@@ -8,14 +8,13 @@ import {
   wonGame,
 } from '@shared/vampir.ts';
 import { useMemo, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
 import { Btn, Glass, Round, T, Tag } from '@/aura/kit';
 import { Button } from '@/components/Button';
-import { CachedSvg } from '@/components/CachedSvg';
 import { Sheet } from '@/components/Sheet';
 import { Text as AppText } from '@/components/Text';
 import { roomKeys, type TablePerson } from '@/features/rooms/queries';
@@ -24,15 +23,14 @@ import { tr } from '@/i18n/tr';
 import { roomsApi, vampirApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { AURA } from '@/theme/aura';
-import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { KIT } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
-import { ROLE_ICON, VAMPIR_LOOK as L } from '@/theme/vampir';
+import { TABLE } from '@/theme/vampirTable';
 
-import { Confetti, type Faces, Face, nameOf, VampirGround, VBtn, VText } from './VampirParts';
-import { VampirPlay } from './VampirPlay';
-
-const MAX_FONT = 1.3;
+import { RoundTable, type SeatMark, StillCard, TableBtn, TableGround } from './RoundTable';
+import { Confetti, type Faces, Face, nameOf } from './VampirParts';
+import { TablePage, VampirPlay } from './VampirPlay';
 
 type Room = {
   id: string;
@@ -349,8 +347,9 @@ function Pregame({
   );
 }
 
-// The end (the file's .tgf): the winner, the person's own line, everyone's role and whether they
-// lived; confetti for the winners; "Masaya dön", and the owner's "Yeniden oyna".
+// The end at the round table (the file's Sonuç): who won and the person's own line, everyone with
+// their role (those who left without), the winners' card at the middle; confetti for the winners;
+// "Yeniden oyna" for the owner and "Masaya dön".
 function End({
   roomId,
   result,
@@ -385,121 +384,54 @@ function End({
         : won
           ? tr.vampir.lineWon
           : tr.vampir.lineLost;
-  const winIcon = result.winner === 'j' ? 'soytari' : result.winner === 'k' ? 'koylu' : 'vampir';
-  const seats = result.seats.filter((s) => result.roles[s]);
+  const winCard = result.winner === 'j' ? 'soytari' : result.winner === 'k' ? 'koylu' : 'vampir';
+  const time = result.winner === 'v' ? 'night' : result.winner === 'j' ? 'dusk' : 'day';
+  const seats: SeatMark[] = result.seats.flatMap((s) => {
+    const role = result.roles[s];
+    return role ? [{ sid: s, role, dead: dead.has(s) }] : [];
+  });
   return (
     <View testID="vampir-end" style={{ flex: 1 }}>
       <StatusBar style="light" />
-      <VampirGround
-        time={result.winner === 'v' ? 'night' : result.winner === 'j' ? 'dusk' : 'day'}
-      />
+      <TableGround time={time} />
       {won ? <Confetti /> : null}
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{
-          flexGrow: 1,
-          justifyContent: 'center',
-          paddingTop: insets.top + SPACING[6],
-          paddingHorizontal: KIT.size.side,
-          paddingBottom: SPACING[4],
-          gap: SPACING[3],
+      <TablePage
+        insetTop={insets.top}
+        insetBottom={insets.bottom}
+        title={tr.vampir.over}
+        onExit={onBack}
+        prompt={{
+          title: tr.vampir.won[result.winner],
+          note: myRole && line ? tr.vampir.mine(tr.vampir.roles[myRole].name, line) : undefined,
         }}
-      >
-        <View
-          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}
-        >
-          <View
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              padding: 5,
-              backgroundColor: L.tileOn,
-            }}
-          >
-            <CachedSvg xml={ROLE_ICON[winIcon]} width="100%" height="100%" />
-          </View>
-          <Text maxFontSizeMultiplier={MAX_FONT} style={[KIT_TYPE.displaySm, { color: L.ink }]}>
-            {tr.vampir.won[result.winner]}
-          </Text>
-        </View>
-        {myRole && line ? (
-          <VText v="body">{tr.vampir.mine(tr.vampir.roles[myRole].name, line)}</VText>
-        ) : null}
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-          {seats.map((s) => {
-            const role = result.roles[s];
-            if (!role) return null;
-            return (
-              <View
-                key={s}
-                style={{
-                  width: '48.5%',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 8,
-                  minHeight: 44,
-                  paddingVertical: 4,
-                  paddingLeft: 4,
-                  paddingRight: 10,
-                  borderRadius: 16,
-                  backgroundColor: L.tile,
-                }}
-              >
-                <Face faces={faces} sid={s} size="sm" dim={dead.has(s)} />
-                <View style={{ flex: 1 }}>
-                  <Text
-                    maxFontSizeMultiplier={MAX_FONT}
-                    style={[KIT_TYPE.fine, KIT_TYPE.strong, { color: L.ink }]}
-                  >
-                    {nameOf(faces, s)}
-                  </Text>
-                  <Text
-                    maxFontSizeMultiplier={MAX_FONT}
-                    style={[KIT_TYPE.eyebrow, { color: L.inkSoft }]}
-                  >
-                    {`${tr.vampir.roles[role].name} · ${dead.has(s) ? tr.vampir.gone : tr.vampir.alive}`}
-                  </Text>
-                </View>
-                <View
-                  style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: L.roles[role] }}
-                />
-              </View>
-            );
-          })}
-        </View>
-        {again.error ? <VText v="fine">{errorMessage(again.error)}</VText> : null}
-      </ScrollView>
-      <View
-        style={{
-          flexDirection: 'row',
-          gap: 10,
-          paddingHorizontal: KIT.size.side,
-          paddingBottom: insets.bottom + KIT.size.side,
-        }}
-      >
-        <View style={{ flex: 1 }}>
-          <VBtn
-            ghost
-            tint={result.winner === 'v' ? L.night.tint : L.day.tint}
-            testID="vampir-back"
-            label={tr.vampir.backToTable}
-            onPress={onBack}
+        table={
+          <RoundTable
+            faces={faces}
+            seats={seats}
+            time={time}
+            center={<StillCard role={winCard} />}
           />
-        </View>
-        {owner ? (
-          <View style={{ flex: 1 }}>
-            <VBtn
-              tint={result.winner === 'v' ? L.night.tint : L.day.tint}
-              testID="vampir-again"
-              label={tr.vampir.again}
-              loading={again.isPending}
-              onPress={() => again.mutate()}
+        }
+        error={again.error ? errorMessage(again.error) : null}
+        foot={
+          <View style={{ flexDirection: 'row', gap: TABLE.footGap }}>
+            {owner ? (
+              <TableBtn
+                testID="vampir-again"
+                label={tr.vampir.again}
+                loading={again.isPending}
+                onPress={() => again.mutate()}
+              />
+            ) : null}
+            <TableBtn
+              ghost={owner}
+              testID="vampir-back"
+              label={tr.vampir.backToTable}
+              onPress={onBack}
             />
           </View>
-        ) : null}
-      </View>
+        }
+      />
     </View>
   );
 }

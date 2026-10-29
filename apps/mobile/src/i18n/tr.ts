@@ -1345,6 +1345,11 @@ export const tr = {
     holdNote: 'Rolünü yalnızca sen gör',
     yourRole: 'ROLÜN',
     cardHint: 'Kartı basılı tut, rolünü gör. Kimse görmesin.',
+    // The round table's line over the card, and a vampire's mates while it is held.
+    cardTitle: 'Kartı basılı tut',
+    cardNote: 'Rolünü yalnızca sen gör. Kimse görmesin.',
+    mates: (names: readonly string[]) =>
+      names.length === 1 ? `Diğer vampir: ${names[0]}` : `Diğer vampirler: ${names.join(', ')}`,
     cardLabel: 'Rolünü görmek için basılı tut',
     ready: 'Hazırım',
     waitingOthers: 'Diğerleri bekleniyor',

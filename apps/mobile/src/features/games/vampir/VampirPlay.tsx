@@ -4,17 +4,17 @@ import {
   nightTargets,
   VAMPIR,
   type VampirPhase,
+  type VampirRole,
   type VampirState,
   type VampirView,
   voteTally,
   votersFor,
 } from '@shared/vampir.ts';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 
-import { CachedSvg } from '@/components/CachedSvg';
 import { Loader } from '@/components/Loader';
 import { roomKeys } from '@/features/rooms/queries';
 import { errorMessage } from '@/i18n/errors';
@@ -22,27 +22,29 @@ import { tr } from '@/i18n/tr';
 import { vampirApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { haptic } from '@/lib/haptics';
-import { useNow } from '@/lib/useNow';
-import { KIT, KIT_TYPE } from '@/theme/auraKit';
-import { MOON_SVG, SUN_SVG, VAMPIR_LOOK as L } from '@/theme/vampir';
-
-import { PeekRole, RoleCard } from './RoleCard';
+import { MOON_SVG, SUN_SVG } from '@/theme/vampir';
 import {
-  CloseRound,
-  DayClock,
-  type Faces,
-  nameOf,
-  NextBar,
-  PeopleGrid,
-  ReadyRow,
-  ResultCard,
-  type TileState,
-  TimerPill,
-  VampirGround,
-  type VampirTime,
-  VBtn,
-  VText,
-} from './VampirParts';
+  type SandTone,
+  TABLE,
+  TABLE_INK as INK,
+  TABLE_TYPE,
+  type TableTime,
+} from '@/theme/vampirTable';
+
+import { Medal, MiniGlass } from './Hourglass';
+import { PeekRole } from './RoleCard';
+import {
+  MedalWith,
+  RoundTable,
+  type SeatMark,
+  TableBtn,
+  TableCard,
+  TableGround,
+  type TableLine,
+  TableRound,
+  X_SVG,
+} from './RoundTable';
+import { type Faces, nameOf } from './VampirParts';
 
 const MAX_FONT = 1.3;
 
@@ -56,16 +58,22 @@ const TOTAL: Record<VampirPhase, number> = {
   verdict: VAMPIR.verdictSeconds,
 };
 
-const DAYTIME: readonly VampirPhase[] = ['morning', 'day', 'vote', 'verdict'];
-
-// Each phase's time of day on the ground (the owner's call, 29 Ekim).
-const TIME_OF: Record<VampirPhase, VampirTime> = {
+// Each phase's room (the file's .m.night, .dawn, .day, .dusk) and its sand.
+const TIME_OF: Record<VampirPhase, TableTime> = {
   role: 'night',
   night: 'night',
   morning: 'dawn',
   day: 'day',
   vote: 'day',
   verdict: 'dusk',
+};
+const SAND_OF: Record<VampirPhase, SandTone> = {
+  role: 'night',
+  night: 'night',
+  morning: 'day',
+  day: 'day',
+  vote: 'vote',
+  verdict: 'night',
 };
 
 export const vampirKeys = {
@@ -95,24 +103,34 @@ function useView(roomId: string, state: VampirState) {
 
 // The server's clock: when the phase's time is up any phone moves it on (vampir/advance,
 // idempotent); while the phase stays, again every few seconds (a phone's clock a little ahead
-// asks before the server's time is up).
-function useAdvance(roomId: string, state: VampirState, now: number) {
+// asks before the server's time is up). Nothing on the screen counts, so nothing draws again.
+function useAdvance(roomId: string, state: VampirState) {
   const queryClient = useQueryClient();
-  const asked = useRef<{ step: number; at: number } | null>(null);
-  const due = now >= Date.parse(state.endsAt);
   useEffect(() => {
-    if (!due) return;
-    const last = asked.current;
-    if (last && last.step === state.step && now - last.at < ADVANCE_AGAIN_MS) return;
-    asked.current = { step: state.step, at: now };
-    void vampirApi
-      .advance(roomId)
-      .catch(() => undefined)
-      .finally(() => void queryClient.invalidateQueries({ queryKey: roomKeys.room(roomId) }));
-  }, [due, now, roomId, state.step, queryClient]);
+    const ask = () =>
+      void vampirApi
+        .advance(roomId)
+        .catch(() => undefined)
+        .finally(() => void queryClient.invalidateQueries({ queryKey: roomKeys.room(roomId) }));
+    let again: ReturnType<typeof setInterval> | undefined;
+    const first = setTimeout(
+      () => {
+        ask();
+        again = setInterval(ask, ADVANCE_AGAIN_MS);
+      },
+      Math.max(0, Date.parse(state.endsAt) - Date.now()),
+    );
+    return () => {
+      clearTimeout(first);
+      clearInterval(again);
+    };
+  }, [roomId, state.step, state.endsAt, queryClient]);
 }
 const ADVANCE_AGAIN_MS = 2500;
 
+// The game at the round table (the owner's choice, 29 Ekim: docs/design/vampir/yuvarlak-masa.html):
+// the round's name at the top, what to do now under it, the table with everyone round it and the
+// hourglass at its middle, the buttons at the foot.
 export function VampirPlay({
   roomId,
   state,
@@ -128,18 +146,15 @@ export function VampirPlay({
 }) {
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
-  const now = useNow(250);
-  useAdvance(roomId, state, now);
+  useAdvance(roomId, state);
   const view = useView(roomId, state);
   const my = view.data;
   const role = my?.role ?? null;
   const me = faces.me;
   const alive = aliveSeats(state);
   const amAlive = role !== null && alive.includes(me);
-  const left = Math.max(0, Math.ceil((Date.parse(state.endsAt) - now) / 1000));
-  const total = TOTAL[state.phase];
-  const day = DAYTIME.includes(state.phase);
-  const tint = day ? L.day.tint : L.night.tint;
+  const endsAt = Date.parse(state.endsAt);
+  const totalMs = TOTAL[state.phase] * 1000;
 
   // The person's own death or elimination is felt once.
   const gone = state.dead.some((d) => d.sid === me);
@@ -149,16 +164,23 @@ export function VampirPlay({
     wasGone.current = gone;
   }, [gone]);
 
-  // A choice in the grid, for the night's pick or the day's vote; a new phase clears it.
+  // A choice at the table, for the night's pick or the day's vote; a new phase clears it.
   const [sel, setSel] = useState<string | null>(null);
   const [selStep, setSelStep] = useState(state.step);
+  // The role card held.
+  const [holding, setHolding] = useState(false);
   if (selStep !== state.step) {
     setSelStep(state.step);
     setSel(null);
+    setHolding(false);
   }
   const choose = (sid: string) => {
     setSel(sid);
     haptic('selection');
+  };
+  const hold = (held: boolean) => {
+    setHolding(held);
+    if (held) haptic('selection');
   };
 
   const reread = () => void queryClient.invalidateQueries({ queryKey: roomKeys.room(roomId) });
@@ -191,7 +213,7 @@ export function VampirPlay({
   });
   const failed = ready.error ?? begin.error ?? pick.error ?? toVote.error ?? vote.error;
 
-  const roundTitle =
+  const barTitle =
     state.phase === 'role'
       ? tr.vampir.seeRole
       : state.phase === 'night'
@@ -200,7 +222,9 @@ export function VampirPlay({
           ? tr.vampir.morningTitle
           : state.phase === 'vote'
             ? tr.vampir.voting
-            : tr.vampir.day(state.round);
+            : state.phase === 'verdict'
+              ? tr.vampir.voteOver
+              : tr.vampir.day(state.round);
 
   const right = !my ? null : role === null ? (
     <Chip label={tr.vampir.watching} />
@@ -210,235 +234,200 @@ export function VampirPlay({
     <PeekRole role={role} />
   );
 
-  const dead = (sid: string) => !alive.includes(sid);
-  const seated = state.seats.filter(
-    (s) => faces.people.has(s) || state.dead.some((d) => d.sid === s),
-  );
-  const everyone = (extra?: (sid: string) => Partial<TileState>): TileState[] =>
-    seated.map((sid) => ({ sid, dead: dead(sid), ...(extra ? extra(sid) : {}) }));
+  const deadSet = new Set(state.dead.map((d) => d.sid));
+  const seated = state.seats.filter((s) => faces.people.has(s) || deadSet.has(s));
+  const mates = my && my.role !== null ? my.mates : [];
+  const mark = (sid: string, extra?: Partial<SeatMark>): SeatMark => ({
+    sid,
+    dead: deadSet.has(sid),
+    ...extra,
+  });
+  const medal = <Medal endsAt={endsAt} totalMs={totalMs} tone={SAND_OF[state.phase]} />;
+  const mini = <MiniGlass endsAt={endsAt} totalMs={totalMs} tone={SAND_OF[state.phase]} />;
 
-  let body: ReactNode = null;
+  let prompt: Prompt = { title: '' };
+  let seats: SeatMark[] = seated.map((s) => mark(s));
+  let lines: TableLine[] = [];
+  let center: ReactNode = medal;
   let foot: ReactNode = null;
-  let timed = false;
+  let onChoose: ((sid: string) => void) | undefined;
 
   if (!my) {
     // The phone's own view is on its way: nothing that would show a watcher's screen to a player.
-    body = (
-      <Middle>
-        <Loader />
-      </Middle>
-    );
+    center = <Loader />;
   } else if (state.phase === 'role') {
     if (role === null) {
-      body = (
-        <Middle>
-          <CachedSvg xml={MOON_SVG} width={L.size.moon} height={L.size.moon} />
-          <VText v="title">{tr.vampir.dealing}</VText>
-          <VText v="body" soft>
-            {tr.vampir.dealingNote}
-          </VText>
-        </Middle>
-      );
+      prompt = { title: tr.vampir.dealing, note: tr.vampir.dealingNote };
     } else {
       const amReady = state.ready.includes(me);
-      body = (
-        <Middle>
-          <RoleCard role={role} mates={my?.role === 'vampir' ? my.mates : []} faces={faces} />
-          <VText v="fine">{tr.vampir.cardHint}</VText>
-          <ReadyRow faces={faces} seats={seated} ready={state.ready} />
-        </Middle>
+      const vampire = role === 'vampir';
+      prompt = holding
+        ? { role, note: tr.vampir.roles[role].about }
+        : { title: tr.vampir.cardTitle, note: tr.vampir.cardNote };
+      seats = seated.map((s) =>
+        mark(s, {
+          tick: state.ready.includes(s),
+          ally: holding && vampire && (s === me || mates.includes(s)),
+          fang: holding && vampire && mates.includes(s),
+        }),
       );
+      center = <TableCard role={role} open={holding} onHold={hold} label={tr.vampir.cardLabel} />;
       foot = (
-        <View style={{ gap: KIT.size.rowGap }}>
-          <VBtn
-            tint={tint}
-            testID="vampir-ready"
-            label={amReady ? tr.vampir.waitingOthers : tr.vampir.ready}
-            disabled={amReady}
-            loading={ready.isPending}
-            onPress={() => ready.mutate()}
-          />
-          {owner ? (
-            <VBtn
-              ghost
-              tint={tint}
-              testID="vampir-begin"
-              label={tr.vampir.beginNight}
-              loading={begin.isPending}
-              onPress={() => begin.mutate()}
+        <>
+          <Note>
+            {holding && vampire && mates.length > 0
+              ? tr.vampir.mates(mates.map((m) => nameOf(faces, m)))
+              : tr.vampir.readyCount(state.ready.length, seated.length)}
+          </Note>
+          <View style={{ flexDirection: 'row', gap: TABLE.footGap }}>
+            <TableBtn
+              testID="vampir-ready"
+              label={amReady ? tr.vampir.waitingOthers : tr.vampir.ready}
+              disabled={amReady}
+              loading={ready.isPending}
+              onPress={() => ready.mutate()}
             />
-          ) : null}
-        </View>
+            {owner ? (
+              <TableBtn
+                ghost
+                testID="vampir-begin"
+                label={tr.vampir.beginNight}
+                loading={begin.isPending}
+                onPress={() => begin.mutate()}
+              />
+            ) : null}
+          </View>
+        </>
       );
     }
-    timed = true;
   } else if (state.phase === 'night') {
-    timed = true;
-    if (!amAlive || !my || my.role === null) {
-      body = (
-        <Middle>
-          <CachedSvg xml={MOON_SVG} width={L.size.moon} height={L.size.moon} />
-          <VText v="title">{role === null ? tr.vampir.nightGoesOn : tr.vampir.deadTalk}</VText>
-          <VText v="body" soft>
-            {role === null ? tr.vampir.everyoneChooses : tr.vampir.deadNight}
-          </VText>
-          <PeopleGrid faces={faces} tiles={everyone()} />
-        </Middle>
-      );
-    } else if (my.pick) {
-      const target = my.pick;
-      const seen = my.role === 'gozcu' ? my.seen.find((s) => s.sid === target) : undefined;
-      body = (
-        <Middle>
-          {seen ? (
-            <ResultCard
-              faces={faces}
-              sid={target}
-              title={
-                seen.vampire
-                  ? tr.vampir.seerYes(nameOf(faces, target))
-                  : tr.vampir.seerNo(nameOf(faces, target))
-              }
-              note={seen.vampire ? tr.vampir.seerYesNote : tr.vampir.seerNoNote}
-            />
-          ) : (
-            <ResultCard
-              faces={faces}
-              sid={target}
-              title={tr.vampir.choiceOf(nameOf(faces, target))}
-              note={
-                my.role === 'vampir'
-                  ? tr.vampir.choiceVampir
-                  : my.role === 'doktor'
-                    ? tr.vampir.choiceDoktor
-                    : tr.vampir.choiceHidden
-              }
-            />
-          )}
-          <VText v="fine">{tr.vampir.everyoneChooses}</VText>
-        </Middle>
-      );
+    if (!amAlive || my.role === null) {
+      prompt =
+        role === null
+          ? { title: tr.vampir.nightGoesOn, note: tr.vampir.everyoneChooses }
+          : { title: tr.vampir.deadTalk, note: tr.vampir.deadNight };
     } else {
-      const targets = nightTargets(state, me, my.role, my.mates, my.lastSave);
-      const matesOn = (sid: string) =>
-        Object.entries(my.matePicks)
-          .filter(([, t]) => t === sid)
-          .map(([v]) => v);
-      body = (
-        <Top>
-          <CachedSvg xml={MOON_SVG} width={L.size.moon} height={L.size.moon} />
-          <VText v="title">{tr.vampir.roles[my.role].ask}</VText>
-          <VText v="body" soft>
-            {tr.vampir.roles[my.role].askNote}
-          </VText>
-          <PeopleGrid
-            faces={faces}
-            tiles={alive
-              .filter((s) => seated.includes(s))
-              .map((sid) => ({
-                sid,
-                chosen: sel === sid,
-                off: !targets.includes(sid),
-                small: my.role === 'vampir' ? matesOn(sid) : undefined,
-              }))}
-            onChoose={choose}
+      const myRole = my.role;
+      const vampire = myRole === 'vampir';
+      const mateLines: TableLine[] = vampire
+        ? Object.entries(my.matePicks).map(([v, t]) => ({ from: v, to: t, color: INK.line.mate }))
+        : [];
+      if (my.pick) {
+        const target = my.pick;
+        const seen = myRole === 'gozcu' ? my.seen.find((s) => s.sid === target) : undefined;
+        prompt = seen
+          ? {
+              title: seen.vampire
+                ? tr.vampir.seerYes(nameOf(faces, target))
+                : tr.vampir.seerNo(nameOf(faces, target)),
+              note: seen.vampire ? tr.vampir.seerYesNote : tr.vampir.seerNoNote,
+            }
+          : {
+              title: tr.vampir.choiceOf(nameOf(faces, target)),
+              note: vampire
+                ? tr.vampir.choiceVampir
+                : myRole === 'doktor'
+                  ? tr.vampir.choiceDoktor
+                  : tr.vampir.choiceHidden,
+            };
+        seats = seated.map((s) =>
+          mark(s, {
+            pick: s === target,
+            ally: vampire && (s === me || mates.includes(s)),
+            fang: vampire && mates.includes(s),
+          }),
+        );
+        lines = [...mateLines, { from: me, to: target, color: INK.line.mine }];
+        foot = <Note>{tr.vampir.everyoneChooses}</Note>;
+      } else {
+        const targets = nightTargets(state, me, myRole, my.mates, my.lastSave);
+        prompt = { title: tr.vampir.roles[myRole].ask, note: tr.vampir.roles[myRole].askNote };
+        seats = seated.map((s) => {
+          const ally = vampire && (s === me || mates.includes(s));
+          return mark(s, {
+            pick: sel === s,
+            ally,
+            fang: vampire && mates.includes(s),
+            dim: !ally && !deadSet.has(s) && !targets.includes(s),
+            choosable: targets.includes(s),
+          });
+        });
+        lines = [
+          ...mateLines,
+          ...(sel ? [{ from: me, to: sel, color: INK.line.mine, flow: true }] : []),
+        ];
+        onChoose = choose;
+        foot = (
+          <TableBtn
+            testID="vampir-pick"
+            label={tr.vampir.choose}
+            disabled={!sel || !targets.includes(sel)}
+            loading={pick.isPending}
+            onPress={() => sel && pick.mutate(sel)}
           />
-        </Top>
-      );
-      foot = (
-        <VBtn
-          tint={tint}
-          testID="vampir-pick"
-          label={tr.vampir.choose}
-          disabled={!sel || !targets.includes(sel)}
-          loading={pick.isPending}
-          onPress={() => sel && pick.mutate(sel)}
-        />
-      );
+        );
+      }
     }
   } else if (state.phase === 'morning') {
     // The dead person's role stays hidden until the end (K-80).
     const v = state.victim;
-    body = (
-      <Middle>
-        <CachedSvg xml={SUN_SVG} width={L.size.sun} height={L.size.sun / 2} />
-        <VText v="title">{tr.vampir.morning}</VText>
-        {v ? (
-          <ResultCard
-            faces={faces}
-            sid={v}
-            dead
-            title={v === me ? tr.vampir.youDied : tr.vampir.died(nameOf(faces, v))}
-            note={v === me ? tr.vampir.youDiedNote : tr.vampir.roleHidden}
-          />
-        ) : (
-          <ResultCard faces={faces} title={tr.vampir.nobodyDied} note={tr.vampir.nobodyDiedNote} />
-        )}
-      </Middle>
+    prompt = v
+      ? v === me
+        ? { title: tr.vampir.youDied, note: tr.vampir.youDiedNote }
+        : { title: tr.vampir.died(nameOf(faces, v)), note: tr.vampir.roleHidden }
+      : { title: tr.vampir.nobodyDied, note: tr.vampir.nobodyDiedNote };
+    center = v ? (
+      <MedalWith faces={faces} sid={v} label={tr.vampir.gone} />
+    ) : (
+      <MedalWith faces={faces} mark={SUN_SVG} />
     );
-    foot = <NextBar label={state.winner ? tr.vampir.result : tr.vampir.dayStarts} left={left} />;
+    foot = <Note after={mini}>{state.winner ? tr.vampir.result : tr.vampir.dayStarts}</Note>;
   } else if (state.phase === 'day') {
-    body = (
-      <Middle>
-        <DayClock left={left} endsAt={Date.parse(state.endsAt)} total={total} now={now} />
-        <VText v="title">{tr.vampir.whoIs}</VText>
-        <VText v="body" soft>
-          {tr.vampir.talk}
-        </VText>
-        <PeopleGrid faces={faces} tiles={everyone()} />
-      </Middle>
-    );
+    prompt = { title: tr.vampir.whoIs, note: tr.vampir.talk };
     foot =
       role === null || !amAlive ? (
-        <VText v="fine">{role === null ? tr.vampir.watchTalk : tr.vampir.deadWatch}</VText>
+        <Note>{role === null ? tr.vampir.watchTalk : tr.vampir.deadWatch}</Note>
       ) : owner ? (
-        <VBtn
-          tint={tint}
+        <TableBtn
           testID="vampir-to-vote"
           label={tr.vampir.toVote}
           loading={toVote.isPending}
           onPress={() => toVote.mutate()}
         />
       ) : (
-        <VText v="fine">{tr.vampir.voteOpensNote}</VText>
+        <Note>{tr.vampir.voteOpensNote}</Note>
       );
   } else if (state.phase === 'vote') {
-    timed = true;
     const tally = voteTally(state);
     const mine = state.votes[me];
     const canVote = amAlive && !mine;
-    body = (
-      <Top>
-        <VText v="title">
-          {canVote
-            ? tr.vampir.whoOut
-            : mine
-              ? tr.vampir.yourVote(nameOf(faces, mine))
-              : role === null
-                ? tr.vampir.voteGoesOn
-                : tr.vampir.deadNoVote}
-        </VText>
-        <VText v="body" soft>
-          {canVote ? tr.vampir.voteNote : tr.vampir.everyoneVotes}
-        </VText>
-        <PeopleGrid
-          faces={faces}
-          tiles={alive
-            .filter((s) => seated.includes(s))
-            .map((sid) => ({
-              sid,
-              chosen: canVote ? sel === sid : mine === sid,
-              off: canVote && sid === me,
-              count: tally[sid] ?? 0,
-              small: votersFor(state, sid),
-            }))}
-          onChoose={canVote ? choose : undefined}
-        />
-      </Top>
+    const living = new Set(alive);
+    prompt = {
+      title: canVote
+        ? tr.vampir.whoOut
+        : mine
+          ? tr.vampir.yourVote(nameOf(faces, mine))
+          : role === null
+            ? tr.vampir.voteGoesOn
+            : tr.vampir.deadNoVote,
+      note: canVote ? tr.vampir.voteNote : tr.vampir.everyoneVotes,
+    };
+    seats = seated.map((s) =>
+      mark(s, {
+        pick: canVote ? sel === s : mine === s,
+        count: tally[s] ?? 0,
+        choosable: canVote && living.has(s) && s !== me,
+      }),
     );
+    lines = [
+      ...Object.entries(state.votes)
+        .filter(([v, t]) => living.has(v) && living.has(t))
+        .map(([v, t]) => ({ from: v, to: t, color: INK.line.vote })),
+      ...(canVote && sel ? [{ from: me, to: sel, color: INK.line.myVote, flow: true }] : []),
+    ];
+    onChoose = canVote ? choose : undefined;
     foot = canVote ? (
-      <VBtn
-        tint={tint}
+      <TableBtn
         testID="vampir-vote"
         label={tr.vampir.giveVote}
         disabled={!sel || sel === me}
@@ -449,133 +438,219 @@ export function VampirPlay({
   } else if (state.phase === 'verdict') {
     // The one voted out keeps their role hidden until the end (K-80).
     const o = state.out;
-    body = (
-      <Middle>
-        <VText v="title">{tr.vampir.voteOver}</VText>
-        {o ? (
-          <ResultCard
-            faces={faces}
-            sid={o}
-            dead
-            title={o === me ? tr.vampir.youOut : tr.vampir.out(nameOf(faces, o))}
-            note={tr.vampir.roleHidden}
-          />
-        ) : (
-          <ResultCard faces={faces} title={tr.vampir.tie} note={tr.vampir.tieNote} />
-        )}
-      </Middle>
+    prompt = o
+      ? {
+          title: o === me ? tr.vampir.youOut : tr.vampir.out(nameOf(faces, o)),
+          note: tr.vampir.roleHidden,
+        }
+      : { title: tr.vampir.tie, note: tr.vampir.tieNote };
+    center = o ? (
+      <MedalWith faces={faces} sid={o} label={tr.vampir.votes(votersFor(state, o).length)} />
+    ) : (
+      <MedalWith faces={faces} mark={MOON_SVG} />
     );
-    foot = <NextBar label={state.winner ? tr.vampir.result : tr.vampir.nightComes} left={left} />;
+    foot = <Note after={mini}>{state.winner ? tr.vampir.result : tr.vampir.nightComes}</Note>;
   }
 
   return (
     <View style={{ flex: 1 }} testID="vampir-game">
-      {/* The ground is dark in every phase and theme: light clock and battery over it. */}
+      {/* The room is dark in every phase and theme: light clock and battery over it. */}
       <StatusBar style="light" />
-      <VampirGround time={TIME_OF[state.phase]} />
+      <TableGround time={TIME_OF[state.phase]} />
+      <TablePage
+        insetTop={insets.top}
+        insetBottom={insets.bottom}
+        title={barTitle}
+        onExit={onExit}
+        right={right}
+        prompt={prompt}
+        table={
+          <RoundTable
+            faces={faces}
+            seats={seats}
+            lines={lines}
+            time={TIME_OF[state.phase]}
+            center={center}
+            onChoose={onChoose}
+          />
+        }
+        error={failed ? errorMessage(failed) : null}
+        foot={foot}
+      />
+    </View>
+  );
+}
+
+// What to do now, over the table: a line and a note under it; while the role card is held, the
+// role's name in its colour instead of the line.
+export type Prompt = { title?: string; role?: VampirRole; note?: string };
+
+// The page (the file's .m): the bar, the prompt, the table in the room left, the foot. The prompt's
+// room only grows in a game, so the table does not jump when a shorter line comes.
+export function TablePage({
+  insetTop,
+  insetBottom,
+  title,
+  onExit,
+  right,
+  prompt,
+  table,
+  error,
+  foot,
+}: {
+  insetTop: number;
+  insetBottom: number;
+  title: string;
+  onExit?: () => void;
+  right?: ReactNode;
+  prompt: Prompt;
+  table: ReactNode;
+  error?: string | null;
+  foot?: ReactNode;
+}) {
+  const [room, setRoom] = useState(0);
+  return (
+    <View
+      style={{
+        flex: 1,
+        paddingTop: insetTop + TABLE.barTop,
+        paddingBottom: insetBottom + TABLE.footBottom,
+      }}
+    >
       <View
         style={{
-          flex: 1,
-          paddingTop: insets.top + TOP_GAP,
-          paddingBottom: insets.bottom + KIT.size.side,
-          paddingHorizontal: KIT.size.side,
+          height: TABLE.bar,
+          marginHorizontal: TABLE.side,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          // "Rolüm"'s card opens over what is under it.
+          zIndex: 3,
         }}
       >
+        {onExit ? (
+          <TableRound label={tr.vampir.exit} xml={X_SVG} onPress={onExit} testID="vampir-exit" />
+        ) : (
+          <View style={{ width: TABLE.bar }} />
+        )}
         <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            // "Rolüm"'s card opens over the phase under it.
-            zIndex: 3,
-          }}
+          pointerEvents="none"
+          style={{ position: 'absolute', left: TABLE.bar + 8, right: TABLE.bar + 8 }}
         >
-          <CloseRound label={tr.vampir.exit} onPress={onExit} />
-          <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0 }}>
-            <Text
-              maxFontSizeMultiplier={MAX_FONT}
-              style={[KIT_TYPE.h3, { color: L.ink, textAlign: 'center' }]}
-            >
-              {roundTitle}
-            </Text>
-          </View>
-          <View style={{ zIndex: 2 }}>{right}</View>
-        </View>
-        {timed ? (
-          <View style={{ marginTop: BAR_GAP }}>
-            <TimerPill left={left} />
-          </View>
-        ) : null}
-        <View style={{ flex: 1 }}>{body}</View>
-        {failed ? (
           <Text
             maxFontSizeMultiplier={MAX_FONT}
-            style={[KIT_TYPE.fine, KIT_TYPE.strong, { color: L.team, textAlign: 'center' }]}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.7}
+            style={[TABLE_TYPE.bar, { color: INK.white, textAlign: 'center' }]}
           >
-            {errorMessage(failed)}
+            {title}
+          </Text>
+        </View>
+        <View style={{ zIndex: 2 }}>{right ?? <View style={{ width: TABLE.bar }} />}</View>
+      </View>
+      <View
+        onLayout={(e) => {
+          const h = e.nativeEvent.layout.height;
+          setRoom((r) => (h > r ? h : r));
+        }}
+        style={{
+          marginTop: TABLE.promptTop,
+          paddingHorizontal: TABLE.promptSide,
+          minHeight: room,
+          alignItems: 'center',
+        }}
+      >
+        {prompt.role ? (
+          <View
+            style={{
+              paddingHorizontal: 16,
+              paddingVertical: 4,
+              borderRadius: 999,
+              backgroundColor: INK.roles[prompt.role],
+              marginBottom: 2,
+            }}
+          >
+            <Text
+              maxFontSizeMultiplier={MAX_FONT}
+              style={[TABLE_TYPE.roleName, { color: INK.white }]}
+            >
+              {tr.vampir.roles[prompt.role].name}
+            </Text>
+          </View>
+        ) : prompt.title ? (
+          <Text
+            maxFontSizeMultiplier={MAX_FONT}
+            style={[TABLE_TYPE.title, { color: INK.white, textAlign: 'center' }]}
+          >
+            {prompt.title}
           </Text>
         ) : null}
-        {foot ? <View style={{ marginTop: KIT.size.rowGap }}>{foot}</View> : null}
+        {prompt.note ? (
+          <Text
+            maxFontSizeMultiplier={MAX_FONT}
+            style={[
+              TABLE_TYPE.note,
+              { color: INK.white, textAlign: 'center', marginTop: prompt.role ? 2 : 6 },
+            ]}
+          >
+            {prompt.note}
+          </Text>
+        ) : null}
+      </View>
+      {table}
+      <View style={{ marginHorizontal: TABLE.side, gap: TABLE.footGap }}>
+        {error ? (
+          <Text
+            maxFontSizeMultiplier={MAX_FONT}
+            style={[TABLE_TYPE.foot, { color: INK.danger, textAlign: 'center' }]}
+          >
+            {error}
+          </Text>
+        ) : null}
+        {foot}
       </View>
     </View>
   );
 }
-const TOP_GAP = 8;
-const BAR_GAP = 10;
 
-// A white chip at the top right: "Öldün", "İzliyorsun".
+// The foot's note (the file's .note), with a small hourglass after it when the next phase comes.
+export function Note({ children, after }: { children: ReactNode; after?: ReactNode }) {
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+      }}
+    >
+      <Text
+        maxFontSizeMultiplier={MAX_FONT}
+        style={[TABLE_TYPE.foot, { color: INK.white, textAlign: 'center', flexShrink: 1 }]}
+      >
+        {children}
+      </Text>
+      {after}
+    </View>
+  );
+}
+
+// A chip at the top right in place of "Rolüm": "Öldün", "İzliyorsun".
 function Chip({ label }: { label: string }) {
   return (
     <View
       style={{
-        height: KIT.size.round,
+        height: TABLE.bar,
         paddingHorizontal: 16,
-        borderRadius: KIT.size.round / 2,
-        backgroundColor: L.deadChip,
+        borderRadius: TABLE.bar / 2,
+        backgroundColor: INK.round,
         justifyContent: 'center',
       }}
     >
-      <Text maxFontSizeMultiplier={1} style={[KIT_TYPE.fine, KIT_TYPE.strong, { color: L.ink }]}>
+      <Text maxFontSizeMultiplier={1} style={[TABLE_TYPE.foot, { color: INK.white }]}>
         {label}
       </Text>
     </View>
   );
 }
-
-// The phase's content in the middle, or from the top (a grid to choose from); it scrolls only when
-// it does not fit (the largest text, a full table).
-function Middle({ children }: { children: ReactNode }) {
-  return (
-    <ScrollView
-      style={{ flex: 1 }}
-      contentContainerStyle={{
-        flexGrow: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        gap: GAP,
-      }}
-      showsVerticalScrollIndicator={false}
-      showsHorizontalScrollIndicator={false}
-      bounces={false}
-      overScrollMode="never"
-    >
-      {children}
-    </ScrollView>
-  );
-}
-
-function Top({ children }: { children: ReactNode }) {
-  return (
-    <ScrollView
-      style={{ flex: 1 }}
-      contentContainerStyle={{ flexGrow: 1, alignItems: 'center', gap: GAP, paddingTop: GAP * 2 }}
-      showsVerticalScrollIndicator={false}
-      showsHorizontalScrollIndicator={false}
-      bounces={false}
-      overScrollMode="never"
-    >
-      {children}
-    </ScrollView>
-  );
-}
-const GAP = 10;
