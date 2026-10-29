@@ -1,0 +1,68 @@
+Setting up Edge Functions runtime...
+Error response from daemon: toomanyrequests: Data limit exceeded
+Retrying after 4s: public.ecr.aws/supabase/edge-runtime:v1.74.3
+Error response from daemon: toomanyrequests: Data limit exceeded
+Retrying after 8s: public.ecr.aws/supabase/edge-runtime:v1.74.3
+Error response from daemon: toomanyrequests: Data limit exceeded
+v1.74.3: Pulling from supabase/edge-runtime
+597c6c618d36: Pulling fs layer
+c39190ba742d: Pulling fs layer
+60414ed24b30: Pulling fs layer
+0d29c829782d: Pulling fs layer
+662b1f44f1ee: Pulling fs layer
+ba9e24d39072: Pulling fs layer
+662b1f44f1ee: Waiting
+ba9e24d39072: Waiting
+0d29c829782d: Waiting
+60414ed24b30: Verifying Checksum
+60414ed24b30: Download complete
+597c6c618d36: Verifying Checksum
+597c6c618d36: Download complete
+c39190ba742d: Verifying Checksum
+c39190ba742d: Download complete
+0d29c829782d: Verifying Checksum
+0d29c829782d: Download complete
+ba9e24d39072: Verifying Checksum
+ba9e24d39072: Download complete
+662b1f44f1ee: Verifying Checksum
+662b1f44f1ee: Download complete
+597c6c618d36: Pull complete
+c39190ba742d: Pull complete
+60414ed24b30: Pull complete
+0d29c829782d: Pull complete
+662b1f44f1ee: Pull complete
+ba9e24d39072: Pull complete
+Digest: sha256:c52405002a890ca9fcf77978671c57f3a988e03174afb277f84ac65bc917013c
+Status: Downloaded newer image for ghcr.io/supabase/edge-runtime:v1.74.3
+ghcr.io/supabase/edge-runtime:v1.74.3
+2026-10-29T22:13:06.650838819Z Serving functions on http://127.0.0.1:54321/functions/v1/<function-name>
+2026-10-29T22:13:06.650877732Z  - http://127.0.0.1:54321/functions/v1/account
+2026-10-29T22:13:06.650881499Z  - http://127.0.0.1:54321/functions/v1/chat
+2026-10-29T22:13:06.650883894Z  - http://127.0.0.1:54321/functions/v1/checkin
+2026-10-29T22:13:06.650885918Z  - http://127.0.0.1:54321/functions/v1/dm
+2026-10-29T22:13:06.650887912Z  - http://127.0.0.1:54321/functions/v1/friends
+2026-10-29T22:13:06.650889955Z ... and 13 more functions
+2026-10-29T22:13:06.650892230Z Using supabase-edge-runtime-1.74.3 (compatible with Deno v2.1.4)
+2026-10-29T22:13:08.654991446Z serving the request with supabase/functions/ping
+2026-10-29T22:16:29.303835295Z wall clock duration warning: isolate: fcec4428-c7da-45e1-a166-adae93223e7f
+2026-10-29T22:16:29.323556328Z early termination has been triggered: isolate: fcec4428-c7da-45e1-a166-adae93223e7f
+2026-10-29T22:22:05.892642493Z serving the request with supabase/functions/ping
+2026-10-29T22:22:41.263321801Z serving the request with supabase/functions/ping
+2026-10-29T22:24:06.707719115Z serving the request with supabase/functions/account
+2026-10-29T22:25:19.618798587Z serving the request with supabase/functions/account
+2026-10-29T22:25:19.937823103Z serving the request with supabase/functions/profile
+2026-10-29T22:25:26.415239941Z wall clock duration warning: isolate: 10536b95-ed38-4b25-ae25-3bcfacb4c88d
+2026-10-29T22:25:26.434336406Z early termination has been triggered: isolate: 10536b95-ed38-4b25-ae25-3bcfacb4c88d
+2026-10-29T22:25:31.683912465Z serving the request with supabase/functions/dm
+2026-10-29T22:25:31.761005397Z serving the request with supabase/functions/friends
+2026-10-29T22:25:31.761034532Z serving the request with supabase/functions/friends
+2026-10-29T22:25:32.600802101Z serving the request with supabase/functions/dm
+2026-10-29T22:25:32.757868160Z serving the request with supabase/functions/dm
+2026-10-29T22:25:35.769259815Z serving the request with supabase/functions/profile
+2026-10-29T22:25:35.779236937Z serving the request with supabase/functions/friends
+2026-10-29T22:26:45.348535906Z serving the request with supabase/functions/ping
+2026-10-29T22:26:46.156811703Z serving the request with supabase/functions/friends
+2026-10-29T22:26:46.166837902Z serving the request with supabase/functions/friends
+2026-10-29T22:26:46.166860414Z serving the request with supabase/functions/dm
+2026-10-29T22:26:47.122347712Z serving the request with supabase/functions/dm
+2026-10-29T22:26:47.890296740Z serving the request with supabase/functions/dm

@@ -1,0 +1,6 @@
+
+Waiting for flows to complete...
+[Failed] P0 kritik yol, parça 1 (4m 35s) (Assertion is false: "Yeni mekanlar yakında." is visible)
+
+1/1 Flow Failed
+

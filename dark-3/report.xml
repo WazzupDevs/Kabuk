@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuites>
+  <testsuite name="Test Suite" device="test" tests="1" failures="1" time="275.402" timestamp="2026-10-29T22:22:44">
+    <testcase id="P0 kritik yol, parça 3" name="P0 kritik yol, parça 3" classname="P0 kritik yol, parça 3" file="e2e/maestro/shard-3.yaml" time="275.302" timestamp="2026-10-29T22:22:44" status="ERROR">
+      <failure>Assertion is false: "Yeni mekanlar yakında." is visible</failure>
+    </testcase>
+  </testsuite>
+</testsuites>
