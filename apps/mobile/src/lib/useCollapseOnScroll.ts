@@ -23,8 +23,13 @@ const SWAP = MOTION.curves.swap;
 const FOLD_MS = 240;
 
 // `onFold`: told on the JS thread when the head folds (true) or opens, for what must stop taking
-// touches while it is away.
-export function useCollapseOnScroll(onFold?: (folded: boolean) => void): {
+// touches while it is away. `reach`: how far the content must have scrolled before the head may
+// fold, for a head laid over the content: there, folding before the content has gone that far
+// under it would leave an empty band between the folded head and the content.
+export function useCollapseOnScroll(
+  onFold?: (folded: boolean) => void,
+  reach?: SharedValue<number>,
+): {
   progress: SharedValue<number>;
   onScroll: ReturnType<typeof useAnimatedScrollHandler>;
 } {
@@ -52,7 +57,8 @@ export function useCollapseOnScroll(onFold?: (folded: boolean) => void): {
       const y = e.contentOffset.y;
       const dy = y - last.value;
       last.value = y;
-      const to = y <= TOP ? 0 : !moving.value ? target.value : dy > STEP ? 1 : dy < -STEP ? 0 : -1;
+      const top = reach ? Math.max(TOP, reach.value) : TOP;
+      const to = y <= top ? 0 : !moving.value ? target.value : dy > STEP ? 1 : dy < -STEP ? 0 : -1;
       if (to < 0 || to === target.value) return;
       target.value = to;
       if (onFold) runOnJS(onFold)(to === 1);

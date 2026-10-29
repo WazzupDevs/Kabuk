@@ -8,18 +8,18 @@ import Reanimated, {
 
 // A part of a head that folds away (useCollapseOnScroll): its height goes to nothing and it fades,
 // on the UI thread, as `progress` goes from 0 to 1. Without a progress it is a plain view.
-export function Fold({
-  progress,
-  style,
-  children,
-}: {
+// `onHeight`: told its unfolded height (what folding takes away), whenever that changes.
+type FoldProps = {
   progress?: SharedValue<number>;
   style?: StyleProp<ViewStyle>;
+  onHeight?: (height: number) => void;
   children: ReactNode;
-}) {
+};
+
+export function Fold({ progress, style, onHeight, children }: FoldProps) {
   if (!progress) return <View style={style}>{children}</View>;
   return (
-    <Folding progress={progress} style={style}>
+    <Folding progress={progress} style={style} onHeight={onHeight}>
       {children}
     </Folding>
   );
@@ -28,12 +28,9 @@ export function Fold({
 function Folding({
   progress,
   style,
+  onHeight,
   children,
-}: {
-  progress: SharedValue<number>;
-  style?: StyleProp<ViewStyle>;
-  children: ReactNode;
-}) {
+}: FoldProps & { progress: SharedValue<number> }) {
   // Its own height, measured unfolded inside the folding box.
   const height = useSharedValue(0);
   const fold = useAnimatedStyle(() => {
@@ -46,6 +43,7 @@ function Folding({
         style={style}
         onLayout={(e) => {
           height.value = e.nativeEvent.layout.height;
+          onHeight?.(e.nativeEvent.layout.height);
         }}
       >
         {children}

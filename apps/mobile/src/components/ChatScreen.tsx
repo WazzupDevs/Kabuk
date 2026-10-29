@@ -24,7 +24,7 @@ import {
   Text as RNText,
 } from 'react-native';
 import Reanimated, { FadeInDown } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { sameDay } from '@shared/chatRuns.ts';
 
@@ -452,6 +452,12 @@ export function ChatScreen({
   const followEnd = useCallback(() => end.current?.(), []);
   const under = composer ? barHeight : barSpace;
   const glassId = useId();
+  // The wall covers the whole screen (the owner's report, 29 Ekim): the stream's own, and strips
+  // above it (the status bar and the top bar) and below it (the system bar), lined up.
+  const insets = useSafeAreaInsets();
+  const [streamTop, setStreamTop] = useState(0);
+  const [screenHeight, setScreenHeight] = useState(0);
+  const bottomPad = barSpace ? 0 : insets.bottom;
   return (
     <ChatEndContext.Provider value={followEnd}>
       <ChatKindContext.Provider value={wall ?? 'dm'}>
@@ -460,10 +466,31 @@ export function ChatScreen({
             edges={barSpace ? ['top', 'left', 'right'] : ['top', 'left', 'right', 'bottom']}
             style={{ flex: 1, backgroundColor: AURA[scheme].ground }}
             onTouchStart={reactions.onTouchStart}
+            onLayout={(e) => setScreenHeight(e.nativeEvent.layout.height)}
           >
             {/* The colour clouds under the whole chat (docs/design/aura → DM, Mekan sohbeti, Masa). */}
             <AuraBackground />
-            {top}
+            {wall && streamTop > 0 ? (
+              <ChatWallpaper
+                kind={wall}
+                place={{ position: 'absolute', left: 0, right: 0, top: 0, height: streamTop }}
+              />
+            ) : null}
+            {wall && bottomPad > 0 && screenHeight > 0 ? (
+              <ChatWallpaper
+                kind={wall}
+                shift={screenHeight - bottomPad}
+                place={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: bottomPad }}
+              />
+            ) : null}
+            <View
+              onLayout={(e) => {
+                const { y, height } = e.nativeEvent.layout;
+                setStreamTop(y + height);
+              }}
+            >
+              {top}
+            </View>
             <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
               {/* The wallpaper under the stream and the message bar (v45: .chatpane); the bar floats on
               it, over the stream. */}
@@ -471,7 +498,7 @@ export function ChatScreen({
                 <GlassTarget targetId={glassId} style={{ flex: 1 }}>
                   {/* Each chat's dense doodles over the clouds (DM, Masa, Mekan; light and dark; the
                     owner's call, 28 Ekim). */}
-                  {wall ? <ChatWallpaper kind={wall} /> : null}
+                  {wall ? <ChatWallpaper kind={wall} shift={streamTop} /> : null}
                   <ChatScroll
                     testID={testID}
                     newestKey={newestKey}

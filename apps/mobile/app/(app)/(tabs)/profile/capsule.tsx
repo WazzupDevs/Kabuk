@@ -199,20 +199,22 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
   // Scrolling the parts on folds the head to the capsule and takes the buttons away; scrolling
   // back brings them (the owner's call, 29 Ekim).
   const [folded, setFolded] = useState(false);
-  const collapse = useCollapseOnScroll(setFolded);
+  // Only the progress goes into the worklets: the whole result would take the scroll handler
+  // with it, which cannot be copied to the UI thread (Sentry MASA-6, the screen crashed).
+  const { progress: fold, onScroll } = useCollapseOnScroll(setFolded);
   const chipsHeight = useSharedValue(0);
   const barHeight = useSharedValue(0);
-  const fadeAway = useAnimatedStyle(() => ({ opacity: 1 - collapse.progress.value }));
+  const fadeAway = useAnimatedStyle(() => ({ opacity: 1 - fold.value }));
   const chipsAway = useAnimatedStyle(() => ({
-    opacity: 1 - collapse.progress.value,
-    transform: [{ translateY: -chipsHeight.value * collapse.progress.value }],
+    opacity: 1 - fold.value,
+    transform: [{ translateY: -chipsHeight.value * fold.value }],
   }));
   const barAway = useAnimatedStyle(() => ({
-    opacity: 1 - collapse.progress.value,
-    transform: [{ translateY: barHeight.value * collapse.progress.value }],
+    opacity: 1 - fold.value,
+    transform: [{ translateY: barHeight.value * fold.value }],
   }));
   const topBandAway = useAnimatedStyle(() => ({
-    transform: [{ translateY: -(chipsHeight.value + SPACING[3]) * collapse.progress.value }],
+    transform: [{ translateY: -(chipsHeight.value + SPACING[3]) * fold.value }],
   }));
   const listId = useId();
   const [top, setTop] = useState(0);
@@ -247,7 +249,7 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
       <AuraBackground />
       <GlassTarget targetId={listId} style={StyleSheet.absoluteFill}>
         <Animated.ScrollView
-          onScroll={collapse.onScroll}
+          onScroll={onScroll}
           scrollEventThrottle={16}
           showsHorizontalScrollIndicator={false}
           showsVerticalScrollIndicator={false}
