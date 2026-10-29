@@ -3,13 +3,15 @@ import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import {
   Animated,
   Easing,
+  Image,
+  type ImageSourcePropType,
   Pressable,
   StyleSheet,
   Text,
   useWindowDimensions,
   View,
 } from 'react-native';
-import Svg, { Defs, LinearGradient, RadialGradient, Rect, Stop } from 'react-native-svg';
+import Svg, { Circle, Path } from 'react-native-svg';
 
 import { Av, usePress } from '@/aura/kit';
 import { Piece } from '@/aura/VenueScene';
@@ -22,9 +24,9 @@ import type { TablePerson } from '@/features/rooms/queries';
 import { tr } from '@/i18n/tr';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
-import { stopPaint } from '@/theme/svgStop';
 import { useTheme } from '@/theme/ThemeProvider';
-import { CROSS_SVG, ROLE_ICON, VAMPIR_LOOK as L } from '@/theme/vampir';
+import { gradientStyle } from '@/theme/gradient';
+import { CROSS_SVG, ROLE_ICON, VAMPIR_CLOCK, VAMPIR_LOOK as L } from '@/theme/vampir';
 import { NIGHT_SKY, SKY_HEIGHT, VENUE_FRAME } from '@/theme/venueScene';
 
 const MAX_FONT = 1.3;
@@ -76,64 +78,64 @@ export function Face({
 }
 const DIM = 0.5;
 
-// The game's ground: the night blue or the day red under skall's colour clouds, the dark theme's
-// veil, and at night the stars and bats of the venue scene's sky. Day and night cross over.
-export function VampirGround({ day }: { day: boolean }) {
+// The game's ground (the owner's call, 29 Ekim: fuller, yet easy on the eyes): a still picture of
+// the time of day (scripts/art/vampirGround.ts: the sky, the moon or the sun, the village at the
+// foot), the dark theme's veil, and at night the venue scene's stars and bats moving. A new time
+// fades in over the one before; only the two are drawn.
+export type VampirTime = 'night' | 'dawn' | 'day' | 'dusk';
+
+const GROUNDS: Record<VampirTime, ImageSourcePropType> = {
+  night: require('../../../../assets/vampir/ground-night.webp'),
+  dawn: require('../../../../assets/vampir/ground-dawn.webp'),
+  day: require('../../../../assets/vampir/ground-day.webp'),
+  dusk: require('../../../../assets/vampir/ground-dusk.webp'),
+};
+
+export function VampirGround({ time }: { time: VampirTime }) {
   const { scheme } = useTheme();
   const reduce = useReduceMotion();
-  const [mix] = useState(() => new Animated.Value(day ? 1 : 0));
+  const [shown, setShown] = useState<{ now: VampirTime; before: VampirTime | null }>({
+    now: time,
+    before: null,
+  });
+  if (shown.now !== time) setShown({ now: time, before: shown.now });
+  const [mix] = useState(() => new Animated.Value(1));
   useEffect(() => {
+    if (shown.before === null) return undefined;
+    mix.setValue(0);
     const anim = Animated.timing(mix, {
-      toValue: day ? 1 : 0,
+      toValue: 1,
       duration: reduce ? 0 : L.motion.groundMs,
       easing: Easing.inOut(Easing.quad),
       useNativeDriver: true,
     });
-    anim.start();
+    anim.start(({ finished }) => {
+      if (finished) setShown((s) => ({ now: s.now, before: null }));
+    });
     return () => anim.stop();
-  }, [day, mix, reduce]);
+  }, [shown.now, shown.before, mix, reduce]);
+  const veil = time === 'day' || time === 'dawn' ? L.veil[scheme].day : L.veil[scheme].night;
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      <Layer look="night" veil={L.veil[scheme].night} />
-      <Animated.View style={[StyleSheet.absoluteFill, { opacity: mix }]}>
-        <Layer look="day" veil={L.veil[scheme].day} />
+      {shown.before ? <Picture source={GROUNDS[shown.before]} /> : null}
+      <Animated.View style={[StyleSheet.absoluteFill, { opacity: shown.before ? mix : 1 }]}>
+        <Picture source={GROUNDS[shown.now]} />
       </Animated.View>
-      <Animated.View
-        style={[
-          StyleSheet.absoluteFill,
-          { opacity: mix.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }) },
-        ]}
-      >
-        <NightSky />
-      </Animated.View>
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: veil }]} />
+      {time === 'night' ? <NightSky /> : null}
     </View>
   );
 }
 
-function Layer({ look, veil }: { look: 'night' | 'day'; veil: string }) {
-  const g = L[look];
+function Picture({ source }: { source: ImageSourcePropType }) {
   return (
-    <View style={StyleSheet.absoluteFill}>
-      <Svg width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 100 100">
-        <Defs>
-          <LinearGradient id={`vg-${look}`} x1="0" y1="0" x2="0" y2="1">
-            <Stop offset={0} {...stopPaint(g.top)} />
-            <Stop offset={1} {...stopPaint(g.bottom)} />
-          </LinearGradient>
-          {g.glows.map((c, i) => (
-            <RadialGradient key={i} id={`vr-${look}-${i}`} cx={c.cx} cy={c.cy} rx={c.rx} ry={c.ry}>
-              <Stop offset={0} {...stopPaint(c.color)} />
-              <Stop offset={1} {...stopPaint(c.color, 0)} />
-            </RadialGradient>
-          ))}
-        </Defs>
-        <Rect x={0} y={0} width={100} height={100} fill={`url(#vg-${look})`} />
-        {g.glows.map((_, i) => (
-          <Rect key={i} x={0} y={0} width={100} height={100} fill={`url(#vr-${look}-${i})`} />
-        ))}
-      </Svg>
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: veil }]} />
-    </View>
+    <Image
+      source={source}
+      fadeDuration={0}
+      resizeMode="cover"
+      style={StyleSheet.absoluteFill}
+      accessible={false}
+    />
   );
 }
 
@@ -272,6 +274,160 @@ export function ClockBar({ left, total }: { left: number; total: number }) {
     </View>
   );
 }
+
+// The day's clock (the owner's call, 29 Ekim: richer, and moving): the minutes and seconds in a
+// ring that empties smoothly with the talk, a light running at its end, ticks round its face and a
+// warm glow breathing behind it; the last seconds in amber, each one a small beat. The ring follows
+// the phone's clock (`now`, four times a second: a step too small to see), the glow and the beat
+// run on the native driver; still with reduce motion.
+export function DayClock({
+  left,
+  endsAt,
+  total,
+  now,
+}: {
+  left: number;
+  endsAt: number;
+  total: number;
+  now: number;
+}) {
+  const reduce = useReduceMotion();
+  const active = useLoopActive();
+  const low = left <= L.motion.lowSeconds && left > 0;
+  const size = L.size.dayClock;
+  const stroke = L.size.dayRing;
+  const mid = size / 2;
+  const r = mid - stroke / 2 - L.size.dayRingIn;
+  const round = 2 * Math.PI * r;
+  const share = Math.max(0, Math.min(1, (endsAt - now) / (total * 1000)));
+  const [breath] = useState(() => new Animated.Value(0));
+  useEffect(() => {
+    if (reduce || !active) return undefined;
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(breath, {
+          toValue: 1,
+          duration: BREATH_MS,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+        Animated.timing(breath, {
+          toValue: 0,
+          duration: BREATH_MS,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [reduce, active, breath]);
+  const [beat] = useState(() => new Animated.Value(1));
+  useEffect(() => {
+    if (!low || reduce) return undefined;
+    beat.setValue(BEAT);
+    const anim = Animated.spring(beat, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: BEAT_SPEED,
+      bounciness: BEAT_BOUNCE,
+    });
+    anim.start();
+    return () => anim.stop();
+  }, [left, low, reduce, beat]);
+  const ticks = useMemo(() => {
+    let d = '';
+    for (let i = 0; i < CLOCK_TICKS; i++) {
+      const a = (i / CLOCK_TICKS) * Math.PI * 2;
+      const long = i % 3 === 0;
+      const r1 = r - stroke / 2 - L.size.tickGap;
+      const r2 = r1 - (long ? L.size.tickLong : L.size.tickShort);
+      d += `M${mid + Math.sin(a) * r1} ${mid - Math.cos(a) * r1}L${mid + Math.sin(a) * r2} ${mid - Math.cos(a) * r2}`;
+    }
+    return d;
+  }, [mid, r, stroke]);
+  const clock = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
+  const ink = low ? L.barLow : L.tileOn;
+  return (
+    <View
+      accessible
+      accessibilityLabel={tr.vampir.timeLeftLabel(clock)}
+      style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}
+    >
+      <Animated.View
+        style={[
+          gradientStyle(`radial-gradient(closest-side, ${L.clockGlow}, transparent)`),
+          {
+            position: 'absolute',
+            width: size * GLOW_SCALE,
+            height: size * GLOW_SCALE,
+            borderRadius: size,
+            opacity: breath.interpolate({ inputRange: [0, 1], outputRange: [0.55, 1] }),
+            transform: [
+              { scale: breath.interpolate({ inputRange: [0, 1], outputRange: [0.94, 1.06] }) },
+            ],
+          },
+        ]}
+      />
+      <Svg width={size} height={size} style={StyleSheet.absoluteFill}>
+        <Circle cx={mid} cy={mid} r={r} fill={L.clockFace} stroke={L.bar} strokeWidth={stroke} />
+        <Path d={ticks} stroke={L.inkSoft} strokeWidth={2} strokeLinecap="round" opacity={0.5} />
+        <Circle
+          cx={mid}
+          cy={mid}
+          r={r}
+          fill="none"
+          stroke={ink}
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={`${round} ${round}`}
+          strokeDashoffset={round * (1 - share)}
+          transform={`rotate(-90 ${mid} ${mid})`}
+        />
+      </Svg>
+      {/* The light at the ring's end, going round with it. */}
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          width: size,
+          height: size,
+          transform: [{ rotate: `${share * 360}deg` }],
+        }}
+      >
+        <View
+          style={{
+            position: 'absolute',
+            left: mid - L.size.ringDot / 2,
+            top: mid - r - L.size.ringDot / 2,
+            width: L.size.ringDot,
+            height: L.size.ringDot,
+            borderRadius: L.size.ringDot / 2,
+            backgroundColor: ink,
+            boxShadow: L.shadow.ringDot,
+          }}
+        />
+      </View>
+      <Animated.View style={{ alignItems: 'center', transform: [{ scale: beat }] }}>
+        <Text maxFontSizeMultiplier={1} style={[VAMPIR_CLOCK, { color: low ? L.team : L.ink }]}>
+          {clock}
+        </Text>
+        <Text
+          maxFontSizeMultiplier={MAX_FONT}
+          style={[KIT_TYPE.fine, KIT_TYPE.strong, { color: L.inkSoft }]}
+        >
+          {tr.vampir.timeLeft}
+        </Text>
+      </Animated.View>
+    </View>
+  );
+}
+const CLOCK_TICKS = 24;
+const BREATH_MS = 1800;
+const GLOW_SCALE = 1.4;
+const BEAT = 1.08;
+const BEAT_SPEED = 14;
+const BEAT_BOUNCE = 10;
 
 // "Gündüz başlıyor" and its emptying bar, at the foot of the morning and the verdict.
 export function NextBar({ label, left, total }: { label: string; left: number; total: number }) {
@@ -416,6 +572,9 @@ export function PeopleGrid({
   onChoose?: (sid: string) => void;
 }) {
   const cols = tiles.length <= 6 ? L.size.fewCols : L.size.cols;
+  // Every tile as tall as the others (the owner's report, 29 Ekim: the votes made them uneven):
+  // when any shows faces under its name, all keep the room for them.
+  const reserve = tiles.some((t) => t.small !== undefined);
   const rows: TileState[][] = [];
   tiles.forEach((t, i) => {
     if (i % cols === 0) rows.push([t]);
@@ -427,7 +586,7 @@ export function PeopleGrid({
         <View key={i} style={{ flexDirection: 'row', gap: 6 }}>
           {row.map((t) => (
             <View key={t.sid} style={{ flex: 1 }}>
-              <Tile faces={faces} tile={t} onChoose={onChoose} />
+              <Tile faces={faces} tile={t} onChoose={onChoose} reserve={reserve} />
             </View>
           ))}
           {Array.from({ length: cols - row.length }, (_, j) => (
@@ -443,10 +602,12 @@ function Tile({
   faces,
   tile,
   onChoose,
+  reserve,
 }: {
   faces: Faces;
   tile: TileState;
   onChoose?: (sid: string) => void;
+  reserve: boolean;
 }) {
   const press = usePress();
   const can = !!onChoose && !tile.off && !tile.dead;
@@ -456,7 +617,6 @@ function Tile({
       style={{
         alignItems: 'center',
         gap: 4,
-        minHeight: 44,
         paddingVertical: L.size.tilePad,
         paddingHorizontal: 2,
         borderRadius: L.size.tile,
@@ -468,11 +628,15 @@ function Tile({
     >
       <Face faces={faces} sid={tile.sid} size="md" dim={tile.dead} />
       <Text
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.7}
         maxFontSizeMultiplier={MAX_FONT}
         style={[
           KIT_TYPE.fine,
           KIT_TYPE.strong,
           {
+            alignSelf: 'stretch',
             color: tile.chosen ? L.dark : L.ink,
             textAlign: 'center',
             textDecorationLine: tile.dead ? 'line-through' : 'none',
@@ -481,15 +645,7 @@ function Tile({
       >
         {name}
       </Text>
-      {tile.small && tile.small.length > 0 ? (
-        <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
-          {tile.small.slice(0, 4).map((s, i) => (
-            <View key={s} style={{ marginLeft: i === 0 ? 0 : -5 }}>
-              <Face faces={faces} sid={s} size="sm" />
-            </View>
-          ))}
-        </View>
-      ) : null}
+      {reserve ? <Voters faces={faces} sids={tile.small ?? []} /> : null}
       {tile.count ? (
         <View
           style={{
@@ -549,6 +705,39 @@ function Tile({
     </Pressable>
   );
 }
+
+// The faces under a name (who voted for this person; the vampires' choices at night): up to three
+// overlapping, then "+n"; a row of the same height when nobody.
+function Voters({ faces, sids }: { faces: Faces; sids: readonly string[] }) {
+  const shown = sids.slice(0, VOTERS_SHOWN);
+  const more = sids.length - shown.length;
+  return (
+    <View
+      style={{
+        height: KIT.size.av.sm,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      {shown.map((s, i) => (
+        <View key={s} style={{ marginLeft: i === 0 ? 0 : -VOTERS_OVERLAP }}>
+          <Face faces={faces} sid={s} size="sm" />
+        </View>
+      ))}
+      {more > 0 ? (
+        <Text
+          maxFontSizeMultiplier={1}
+          style={[KIT_TYPE.fine, KIT_TYPE.strong, { color: L.ink, marginLeft: 4 }]}
+        >
+          {tr.vampir.moreVoters(more)}
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+const VOTERS_SHOWN = 3;
+const VOTERS_OVERLAP = 10;
 
 // The ready row under the role card: everyone's small face, lit when ready.
 export function ReadyRow({

@@ -30,8 +30,8 @@ export const GAME_CARDS = [
 export type GameCardId = (typeof GAME_CARDS)[number]['id'];
 export type GameCategory = keyof typeof tr.table.gameCategories;
 
-// The frost over a card while it arrives: the card's 28 corner at its width on a 390 wide phone.
-const CARD_CORNER = 0.165;
+// The frost over a card while it arrives: the card's 22 corner at its width on a 390 wide phone.
+const CARD_CORNER = 0.13;
 
 export function GameCard({
   id,
@@ -65,7 +65,8 @@ export function GameCard({
       onPress={onPress}
     >
       {({ pressed }) => (
-        // docs/design/aura → Masa: a deep card of the game's colour, a warm glow at its foot, the
+        // docs/design/aura → Masa, as a small landscape card (the owner's call, 29 Ekim: more of
+        // them on the screen): a deep card of the game's colour, a warm glow at its foot, the
         // game's buddy at the right, the corner tag, the name and its line at the bottom left.
         <View
           style={[
@@ -109,9 +110,8 @@ export function GameCard({
             style={{
               position: 'absolute',
               left: GAME_CARD.inset + 2,
-              bottom: GAME_CARD.inset + 2,
-              right: GAME_CARD.inset,
-              gap: 2,
+              bottom: GAME_CARD.inset,
+              right: GAME_CARD.textRight,
             }}
           >
             <Text
@@ -119,11 +119,17 @@ export function GameCard({
               adjustsFontSizeToFit
               minimumFontScale={0.6}
               maxFontSizeMultiplier={1.3}
-              style={[KIT_TYPE.gameName, { color: KIT.white }]}
+              style={[KIT_TYPE.h3, KIT_TYPE.strong, { color: KIT.white }]}
             >
               {text.name}
             </Text>
-            <Text maxFontSizeMultiplier={1.3} style={[KIT_TYPE.fine, { color: look.sub }]}>
+            <Text
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.7}
+              maxFontSizeMultiplier={1.3}
+              style={[KIT_TYPE.fine, { color: look.sub }]}
+            >
               {text.sub}
             </Text>
           </View>
@@ -136,16 +142,17 @@ export function GameCard({
 const DIMMED = 0.55;
 
 const GAME_CARD = {
-  height: 200,
-  radius: 28,
-  glow: 120,
-  glowDrop: 60,
-  // The buddy stands over the name, not on it (the owner's report, 29 Ekim: "Vampir Köylü" under
-  // the yellow buddy).
-  buddy: 96,
-  buddyOut: 14,
-  buddyFoot: 66,
-  inset: 12,
+  height: 104,
+  radius: 22,
+  glow: 90,
+  glowDrop: 48,
+  // The buddy at the right, past the edge a little, standing on the card's foot.
+  buddy: 70,
+  buddyOut: 8,
+  buddyFoot: 6,
+  inset: 10,
+  // The name and its line keep clear of the buddy.
+  textRight: 50,
 } as const;
 
 // Two cards a row, 12 apart (the file's grid).

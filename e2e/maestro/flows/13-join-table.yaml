@@ -80,7 +80,7 @@ appId: app.kabuk.mobile
     visible: 3 kişi
     timeout: 20000
 - tapOn:
-    id: table-who
+    id: table-scene
 - extendedWaitUntil:
     visible:
       id: table-people

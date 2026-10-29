@@ -373,7 +373,9 @@ function End({
   const seats = result.seats.filter((s) => result.roles[s]);
   return (
     <View testID="vampir-end" style={{ flex: 1 }}>
-      <VampirGround day={result.winner !== 'v'} />
+      <VampirGround
+        time={result.winner === 'v' ? 'night' : result.winner === 'j' ? 'dusk' : 'day'}
+      />
       {won ? <Confetti /> : null}
       <ScrollView
         showsVerticalScrollIndicator={false}

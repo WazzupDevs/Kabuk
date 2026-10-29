@@ -63,7 +63,7 @@ appId: app.kabuk.mobile
 # Masadakiler from the table's head: this phone and the owner's tag (the table is called by its
 # icon, K-76: no other name to draw).
 - tapOn:
-    id: table-who
+    id: table-scene
 - extendedWaitUntil:
     visible: Masadakiler
     timeout: 10000
@@ -121,7 +121,7 @@ appId: app.kabuk.mobile
     timeout: 20000
 - assertVisible: 2 kişi
 - tapOn:
-    id: table-who
+    id: table-scene
 - extendedWaitUntil:
     visible:
       id: table-people

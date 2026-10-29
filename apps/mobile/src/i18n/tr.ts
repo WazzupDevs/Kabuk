@@ -1310,6 +1310,9 @@ export const tr = {
   },
   // Vampir Köylü (docs/SPEC_V4.md §4.F "Adım 4.6.6", the owner's file skall-oyun-vampir-koylu).
   vampir: {
+    timeLeft: 'kalan süre',
+    timeLeftLabel: (clock: string) => `Kalan süre ${clock}`,
+    moreVoters: (n: number) => `+${n}`,
     name: 'Vampir Köylü',
     whoPlays: 'Kimler oynuyor',
     rules: ['5 ile 12 kişi', 'Gizli roller', 'Gece ve gündüz'],

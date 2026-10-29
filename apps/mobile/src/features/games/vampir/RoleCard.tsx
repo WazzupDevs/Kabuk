@@ -16,9 +16,9 @@ import { CachedSvg } from '@/components/CachedSvg';
 import { tr } from '@/i18n/tr';
 import { haptic } from '@/lib/haptics';
 import { useReduceMotion } from '@/lib/useReduceMotion';
-import { KIT_TYPE } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
-import { EYE_SVG, VAMPIR_LOOK as L } from '@/theme/vampir';
+import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { PEEK_SVG, VAMPIR_LOOK as L } from '@/theme/vampir';
 
 import { type Faces, Face, nameOf } from './VampirParts';
 
@@ -157,7 +157,8 @@ const CARD_SHARE = 0.5;
 const CARD_MAX = 380;
 const PERSPECTIVE = 1000;
 
-// "Rolüm" at the top right (.vk-peek): held, a small card with the role's picture, name and side.
+// "Rolüm" at the top right: a round like the game's close (the owner's call, 29 Ekim), the card's
+// back in it; held, a small card with the role's picture, name and side.
 export function PeekRole({ role }: { role: VampirRole }) {
   const [open, setOpen] = useState(false);
   return (
@@ -165,15 +166,16 @@ export function PeekRole({ role }: { role: VampirRole }) {
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={tr.vampir.myRoleLabel}
-        onPressIn={() => setOpen(true)}
+        onPressIn={() => {
+          setOpen(true);
+          haptic('selection');
+        }}
         onPressOut={() => setOpen(false)}
         hitSlop={4}
-        style={styles.peek}
+        testID="vampir-peek"
+        style={[styles.peek, open ? styles.peekOn : null]}
       >
-        <CachedSvg xml={EYE_SVG} width={18} height={18} />
-        <Text maxFontSizeMultiplier={1} style={[KIT_TYPE.fine, KIT_TYPE.strong, { color: L.dark }]}>
-          {tr.vampir.myRole}
-        </Text>
+        <CachedSvg xml={PEEK_SVG} width={PEEK_ICON} height={PEEK_ICON} />
       </Pressable>
       {open ? (
         <View pointerEvents="none" style={styles.pop}>
@@ -194,6 +196,7 @@ export function PeekRole({ role }: { role: VampirRole }) {
     </View>
   );
 }
+const PEEK_ICON = 24;
 
 const styles = StyleSheet.create({
   white: { color: L.ink },
@@ -239,19 +242,18 @@ const styles = StyleSheet.create({
     backgroundColor: L.chip,
   },
   peek: {
-    flexDirection: 'row',
+    width: KIT.size.round,
+    height: KIT.size.round,
+    borderRadius: KIT.size.round / 2,
     alignItems: 'center',
-    gap: 6,
-    height: L.size.peek,
-    paddingLeft: 10,
-    paddingRight: 12,
-    borderRadius: L.size.peek / 2,
-    backgroundColor: L.tileOn,
+    justifyContent: 'center',
+    backgroundColor: L.chip,
   },
+  peekOn: { backgroundColor: L.chipOn },
   pop: {
     position: 'absolute',
     right: 0,
-    top: L.size.peek + 8,
+    top: KIT.size.round + 8,
     zIndex: 5,
     flexDirection: 'row',
     alignItems: 'center',
@@ -263,5 +265,5 @@ const styles = StyleSheet.create({
     backgroundColor: L.tileOn,
     boxShadow: L.shadow.pop,
   },
-  popArt: { width: 40, height: L.size.popArt, borderRadius: 8 },
+  popArt: { width: L.size.popArt * 0.75, height: L.size.popArt, borderRadius: 8 },
 });
