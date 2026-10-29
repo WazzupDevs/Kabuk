@@ -12,7 +12,7 @@ import { Alert, BackHandler, View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { Avatar } from '@/components/Avatar';
-import { ChatBubble, type Delivery, TypingBubble } from '@/components/ChatBubble';
+import { ChatBubble, type ChatQuote, type Delivery, TypingBubble } from '@/components/ChatBubble';
 import { type ChatListItem, ChatRow, ChatScreen, DayLine, dayLabel } from '@/components/ChatScreen';
 import { ChatTopBar } from '@/components/ChatTopBar';
 import { DraftComposer } from '@/components/Composer';
@@ -58,6 +58,8 @@ let nextLocalId = 0;
 type Row = ChatListItem & {
   m?: DmPageRow;
   out?: OutboxMessage;
+  // The quote of a message on its way.
+  outQuote?: ChatQuote;
   first: boolean;
   day: number | null;
 };
@@ -192,10 +194,14 @@ export default function DmScreen() {
     dispatch({ type: 'retry', localId: m.localId });
     deliver(m.localId, m.body, m.replyTo);
   };
-  const outboxQuote = (id: string | undefined) => {
-    const r = replyOf(id);
-    return r ? toChatQuote({ gone: false, ...r, name: null }, name) : undefined;
-  };
+
+  // The same function for every row (a new one would draw every bubble again): it calls the
+  // newest retry.
+  const retryNow = useRef(retry);
+  useEffect(() => {
+    retryNow.current = retry;
+  });
+  const onRetry = useCallback((m: OutboxMessage) => retryNow.current(m), []);
   const onChangeDraft = (text: string) => {
     if (text.trim()) notifyTyping();
   };
@@ -256,6 +262,14 @@ export default function DmScreen() {
   // first.
   const rows = useMemo(() => {
     const onPage = new Set(server.map((m) => m.id));
+    // The answered message from the loaded page, for the quote of a message on its way.
+    const quoteOf = (id: string) => {
+      const q = server.find((x) => x.id === id);
+      return toChatQuote(
+        { gone: false, id, body: q?.body ?? '', fromMe: q?.from_me ?? false, name: null },
+        name,
+      );
+    };
     const waiting = outbox.filter((o) => {
       const id = sentLocal.get(o.localId);
       return !(id && onPage.has(id));
@@ -294,11 +308,12 @@ export default function DmScreen() {
         id: item.id,
         ...(item.m ? { m: item.m } : {}),
         ...(item.out ? { out: item.out } : {}),
+        ...(item.out?.replyTo ? { outQuote: quoteOf(item.out.replyTo) } : {}),
         first,
         day: day ? day.getTime() : null,
       }))
       .reverse();
-  }, [server, outbox, sentKeys, sentLocal]);
+  }, [server, outbox, sentKeys, sentLocal, name]);
 
   // From the DM: removing or blocking there goes back to Mesajlar, not to this DM (audit CHAT-6).
   const openProfile = () =>
@@ -306,10 +321,11 @@ export default function DmScreen() {
   // The newest message, for following it: the reader's own goes to the end.
   const newest = rows[0];
   const newestMine = newest ? (newest.out ? true : newest.m?.from_me) : undefined;
+  const setReply = reply.setTarget;
   const onReply = useCallback(
     (m: DmPageRow) =>
-      reply.setTarget({ id: m.id, quote: { name: m.from_me ? tr.chat.you : name, text: m.body } }),
-    [reply, name],
+      setReply({ id: m.id, quote: { name: m.from_me ? tr.chat.you : name, text: m.body } }),
+    [setReply, name],
   );
   const onDiscard = useCallback(
     (m: OutboxMessage) => dispatch({ type: 'remove', localId: m.localId }),
@@ -317,13 +333,17 @@ export default function DmScreen() {
   );
   const renderRow = (row: Row) => (
     <DmRow
-      row={row}
+      rowKey={row.key}
+      m={row.m}
+      out={row.out}
+      outQuote={row.outQuote}
+      first={row.first}
+      day={row.day}
       name={name}
       view={reactions.view}
       pick={reactions.pick}
       onReply={onReply}
-      quoteOf={outboxQuote}
-      onRetry={retry}
+      onRetry={onRetry}
       onDiscard={onDiscard}
     />
   );
@@ -474,27 +494,34 @@ export default function DmScreen() {
 // whose message did not change is not drawn again (memo: the message is the same object, from
 // @shared/dmPages.ts).
 const DmRow = memo(function DmRow({
-  row,
+  rowKey,
+  m,
+  out,
+  outQuote,
+  first,
+  day,
   name,
   view,
   pick,
   onReply,
-  quoteOf,
   onRetry,
   onDiscard,
 }: {
-  row: Row;
+  rowKey: string;
+  m: DmPageRow | undefined;
+  out: OutboxMessage | undefined;
+  outQuote: ChatQuote | undefined;
+  first: boolean;
+  day: number | null;
   name: string;
   view: ReturnType<typeof useDmReactions>['view'];
   pick: ReturnType<typeof useDmReactions>['pick'];
   onReply: (m: DmPageRow) => void;
-  quoteOf: (id: string | undefined) => ReturnType<typeof toChatQuote> | undefined;
   onRetry: (m: OutboxMessage) => void;
   onDiscard: (m: OutboxMessage) => void;
 }) {
-  const { m, out, first, day } = row;
   return (
-    <ChatRow id={row.key} first={first}>
+    <ChatRow id={rowKey} first={first}>
       {(jumpTo) => (
         <>
           {day !== null ? <DayLine label={dayLabel(new Date(day))} /> : null}
@@ -513,7 +540,7 @@ const DmRow = memo(function DmRow({
               text={out.body}
               mine
               first={first}
-              quote={quoteOf(out.replyTo)}
+              quote={outQuote}
               // On its way: its time and a clock where the ticks go (Telegram Android).
               {...(out.status === 'sending'
                 ? {
