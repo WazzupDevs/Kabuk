@@ -169,6 +169,8 @@ export function ChatBubble({
     mine ? paint.mineShadow : KIT.chatShadow[kind],
     undefined,
     radii,
+    true,
+    mine ? KIT.size.edge : 0,
   );
   function face(lifted: boolean) {
     return (

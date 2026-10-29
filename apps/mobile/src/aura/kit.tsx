@@ -121,6 +121,7 @@ export function Glass({
     c.glassInset,
     radius,
     StyleSheet.flatten(style)?.overflow !== 'hidden',
+    KIT.size.edge,
   );
   return (
     <View
@@ -206,7 +207,7 @@ export function Btn({
       ? shadowParts(KIT.primaryShadow, c.primaryInset, KIT.size.btn)
       : variant === 'dark'
         ? null
-        : shadowParts(c.raisedShadow || undefined, undefined, KIT.size.btn);
+        : shadowParts(c.raisedShadow || undefined, undefined, KIT.size.btn, true, KIT.size.edge);
   const ground: ViewStyle =
     variant === 'primary'
       ? { backgroundColor: KIT.primary, boxShadow: shadow?.boxShadow }
@@ -310,7 +311,7 @@ export function Round({
   const shadow = primary
     ? shadowParts(KIT.primaryShadow, c.primaryInset, s / 2)
     : glassy
-      ? shadowParts(c.raisedShadow || undefined, undefined, s / 2)
+      ? shadowParts(c.raisedShadow || undefined, undefined, s / 2, true, KIT.size.edge)
       : null;
   return (
     <Pressable

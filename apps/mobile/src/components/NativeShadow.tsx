@@ -22,7 +22,17 @@ const Native: ComponentType<NativeProps> | null =
 
 export type Radii = number | readonly [number, number, number, number];
 
-export function NativeShadow({ css, radius }: { css: string; radius: Radii }) {
+// Laid over its box's padding box, which is inside the box's border: `border` (its width) takes it
+// out to the box's outer edge, where the shadow starts.
+export function NativeShadow({
+  css,
+  radius,
+  border = 0,
+}: {
+  css: string;
+  radius: Radii;
+  border?: number;
+}) {
   const shadows = useMemo(
     () =>
       (parseShadows(css) ?? []).map((s) => ({ ...s, color: Number(processColor(s.color) ?? 0) })),
@@ -31,21 +41,35 @@ export function NativeShadow({ css, radius }: { css: string; radius: Radii }) {
   if (!Native || shadows.length === 0) return null;
   const radii = typeof radius === 'number' ? [radius, radius, radius, radius] : [...radius];
   return (
-    <Native pointerEvents="none" style={StyleSheet.absoluteFill} shadows={shadows} radii={radii} />
+    <Native
+      pointerEvents="none"
+      style={
+        border > 0
+          ? { position: 'absolute', left: -border, top: -border, right: -border, bottom: -border }
+          : StyleSheet.absoluteFill
+      }
+      shadows={shadows}
+      radii={radii}
+    />
   );
 }
 
 // A box's shadows split: `outer` (soft, blurred) natively where it can be, `inset` (a light top
 // edge, cheap) and anything else as boxShadow. `child` is false where the box clips its children
-// (overflow hidden): there the native shadow would be cut, and boxShadow stays.
+// (overflow hidden): there the native shadow would be cut, and boxShadow stays. `border`: the box's
+// border width.
 export function shadowParts(
   outer: string | undefined,
   inset: string | undefined,
   radius: Radii,
   child = true,
+  border = 0,
 ): { boxShadow: string | undefined; node: ReactNode } {
   const native = !!Native && child && !!outer && parseShadows(outer) !== null;
   return native && outer
-    ? { boxShadow: inset || undefined, node: <NativeShadow css={outer} radius={radius} /> }
+    ? {
+        boxShadow: inset || undefined,
+        node: <NativeShadow css={outer} radius={radius} border={border} />,
+      }
     : { boxShadow: shadowList(outer, inset), node: null };
 }
