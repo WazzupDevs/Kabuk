@@ -12,6 +12,8 @@ import { ICON, SPACING } from '@/theme/tokens';
 
 import { Text } from './Text';
 import { AppIcon } from './AppIcon';
+import { useLabOff } from '@/lib/drawLab';
+import { boxShadowParts } from './NativeShadow';
 
 const CHECK_MS = 4000;
 
@@ -20,6 +22,9 @@ const CHECK_MS = 4000;
 // ("Tekrar bağlanınca liste kendiliğinden güncellenir"). It takes no touches.
 export function ConnectionBanner() {
   const { colors, shape } = useTheme();
+  // Its soft shadow natively (NativeShadow.tsx): the banner slides in.
+  const shadowOff = useLabOff('golge');
+  const shadow = boxShadowParts(shadowOff, shape.shadow.sheet, shape.radius.lg);
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const offline = useConnection((s) => s.offline);
@@ -60,9 +65,10 @@ export function ConnectionBanner() {
           padding: SPACING[4],
           borderRadius: shape.radius.lg,
           backgroundColor: colors.warnSoft,
-          boxShadow: shape.shadow.sheet,
+          boxShadow: shadow.boxShadow,
         }}
       >
+        {shadow.node}
         <AppIcon name="alert" size={ICON.md} color={colors.onWarnSoft} />
         <View className="flex-1 gap-0.5">
           <Text variant="label" tone="onWarnSoft">

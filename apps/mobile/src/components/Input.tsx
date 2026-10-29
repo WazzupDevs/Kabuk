@@ -10,6 +10,8 @@ import { SPACING, TOUCH } from '@/theme/tokens';
 
 import { Icon } from './Icon';
 import { Text } from './Text';
+import { useLabOff } from '@/lib/drawLab';
+import { shadowParts } from './NativeShadow';
 
 type Props = Omit<TextInputProps, 'style' | 'placeholderTextColor'> & {
   label?: string;
@@ -57,6 +59,26 @@ export const Input = forwardRef<TextInput, Props>(function Input(
   const { colors, shape } = theme;
   const [focused, setFocused] = useState(false);
   const k = useKit();
+  const radius = prefix
+    ? KIT.size.glassRadius
+    : tall
+      ? shape.radius.lg
+      : box
+        ? shape.radius.md
+        : KIT.size.field / 2;
+  const edge = focused || error ? 2 : KIT.size.edge;
+  // Focused, a hard ring (no blur, cheap) as boxShadow; otherwise the soft glass shadow natively
+  // (NativeShadow.tsx).
+  const shadowOff = useLabOff('golge');
+  const ring = focused && !error;
+  const shadow = shadowParts(
+    shadowOff,
+    ring ? undefined : k.c.glassShadow,
+    undefined,
+    radius,
+    true,
+    edge,
+  );
 
   return (
     <View className="gap-2">
@@ -68,22 +90,16 @@ export const Input = forwardRef<TextInput, Props>(function Input(
         style={{
           ...gradientStyle(k.c.glass),
           minHeight: prefix ? KIT.size.phoneField : KIT.size.field,
-          borderRadius: prefix
-            ? KIT.size.glassRadius
-            : tall
-              ? shape.radius.lg
-              : box
-                ? shape.radius.md
-                : KIT.size.field / 2,
-          borderWidth: focused || error ? 2 : KIT.size.edge,
+          borderRadius: radius,
+          borderWidth: edge,
           borderColor: error ? KIT.danger : focused ? KIT.primary : k.c.glassEdge,
           paddingHorizontal: prefix ? KIT.size.padLg : KIT.size.fieldPadX,
-          boxShadow:
-            focused && !error
-              ? `0px 0px 0px ${KIT.size.dotRing}px ${KIT.primaryRing}`
-              : k.c.glassShadow,
+          boxShadow: ring
+            ? `0px 0px 0px ${KIT.size.dotRing}px ${KIT.primaryRing}`
+            : shadow.boxShadow,
         }}
       >
+        {shadow.node}
         {search ? (
           <View className="mr-2.5">
             <Icon name="search" tone="muted" />

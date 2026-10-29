@@ -31,6 +31,7 @@ import { IconButton } from './IconButton';
 import { usePressScale } from './motion';
 import { Text } from './Text';
 import { Loader } from './Loader';
+import { shadowParts } from './NativeShadow';
 
 type Props = {
   value: string;
@@ -81,6 +82,17 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
   const theme = useTheme();
   const { colors, shape } = theme;
   const k = useKit();
+  // The field's and the send button's soft shadows natively (NativeShadow.tsx).
+  const shadowOff = useLabOff('golge');
+  const fieldShadow = shadowParts(
+    shadowOff,
+    k.c.glassShadow,
+    undefined,
+    SIZE / 2,
+    true,
+    KIT.size.edge,
+  );
+  const sendShadow = shadowParts(shadowOff, KIT.sendShadow, undefined, SIZE / 2);
   const pressScale = usePressScale();
   const inactive = sendDisabled || sending;
   const followEnd = useChatEnd();
@@ -111,10 +123,11 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
             ...(glass ? null : gradientStyle(k.c.glass)),
             borderWidth: KIT.size.edge,
             borderColor: k.c.glassEdge,
-            boxShadow: k.c.glassShadow,
+            boxShadow: fieldShadow.boxShadow,
             paddingHorizontal: KIT.size.fieldPadX,
           }}
         >
+          {fieldShadow.node}
           {glass && glassId ? <GlassFill targetId={glassId} radius={SIZE / 2} /> : null}
           <TextInput
             ref={ref}
@@ -183,11 +196,12 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
                   justifyContent: 'center',
                   // docs/design/aura → Dm (`.send`): the ink's round button.
                   backgroundColor: k.c.chipOn,
-                  boxShadow: KIT.sendShadow,
+                  boxShadow: sendShadow.boxShadow,
                 },
                 pressScale(pressed),
               ]}
             >
+              {sendShadow.node}
               {sending ? (
                 <Loader kind="meet" size={ICON.lg} delay={0} />
               ) : (

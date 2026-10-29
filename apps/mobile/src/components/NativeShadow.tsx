@@ -3,8 +3,7 @@ import { type ComponentType, type ReactNode, useMemo } from 'react';
 import { Platform, processColor, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 
 import { shadowList } from '@/theme/auraKit';
-import { labOff } from '@/lib/drawLab';
-import { parseShadows } from '@/lib/shadowCss';
+import { parseShadows, splitShadows } from '@/lib/shadowCss';
 
 // A box's soft outer shadow drawn by the app's own native view from a picture made once
 // (modules/skall-glass → ShadowView; the owner's report, 29 Ekim: React Native's boxShadow blurs
@@ -58,16 +57,18 @@ export function NativeShadow({
 // A box's shadows split: `outer` (soft, blurred) natively where it can be, `inset` (a light top
 // edge, cheap) and anything else as boxShadow. `child` is false where the box clips its children
 // (overflow hidden): there the native shadow would be cut, and boxShadow stays. `border`: the box's
-// border width.
+// border width. `off`: the Çizim ölçümü's shadow step (`useLabOff('golge')`), passed in so the
+// React Compiler sees it as an input (a value read here would be memoized away).
 export function shadowParts(
+  off: boolean,
   outer: string | undefined,
   inset: string | undefined,
   radius: Radii,
   child = true,
   border = 0,
 ): { boxShadow: string | undefined; node: ReactNode } {
-  // Çizim ölçümü (lib/drawLab.ts) turns the outer shadows off; the caller calls useLabOff('golge').
-  if (labOff('golge')) return { boxShadow: inset || undefined, node: null };
+  // Çizim ölçümü (lib/drawLab.ts) turns the outer shadows off.
+  if (off) return { boxShadow: inset || undefined, node: null };
   const native = !!Native && child && !!outer && parseShadows(outer) !== null;
   return native && outer
     ? {
@@ -75,4 +76,17 @@ export function shadowParts(
         node: <NativeShadow css={outer} radius={radius} border={border} />,
       }
     : { boxShadow: shadowList(outer, inset), node: null };
+}
+
+// The same for one boxShadow string that holds both (a theme token, a v46 part): its outer shadows
+// natively, its inset ones as boxShadow.
+export function boxShadowParts(
+  off: boolean,
+  css: string | null | undefined,
+  radius: Radii,
+  child = true,
+  border = 0,
+): { boxShadow: string | undefined; node: ReactNode } {
+  const { outer, inset } = splitShadows(css);
+  return shadowParts(off, outer, inset, radius, child, border);
 }

@@ -63,3 +63,27 @@ export function posedEyes(
   const group = `<g transform="translate(${pose.look ?? 0} ${EYE_LINE + (pose.up ?? 0)}) scale(1 ${squash}) translate(0 ${-EYE_LINE})">${eyes.join('')}</g>`;
   return rest.slice(0, first) + group + rest.slice(first);
 }
+
+// The same drawing in layers, so a blink or a look moves a picture instead of drawing the capsule
+// again (react-native-svg draws on the main thread on Android, on every change): what lies under
+// the eyes, the open eyes, the closed ones (squashed as posedEyes squashes them), and what lies over
+// them, each its own SVG with the drawing's own box. Null when the drawing has no eyes. The eyes are
+// never inside a group (capsuleDrawing.js; capsuleLook.test.ts checks every part).
+export type EyeLayers = { below: string; open: string; closed: string; above: string | null };
+
+export function eyeLayers(svg: string): EyeLayers | null {
+  const root = svg.match(/^<svg\b[^>]*>/)?.[0];
+  const eyes = svg.match(EYE);
+  const first = svg.search(EYE);
+  const end = '</svg>';
+  if (!root || !eyes || first < 0 || !svg.endsWith(end)) return null;
+  const rest = svg.replace(EYE, '');
+  const after = rest.slice(first, rest.length - end.length);
+  const shut = `<g transform="translate(0 ${EYE_LINE}) scale(1 ${BLINK_SQUASH}) translate(0 ${-EYE_LINE})">${eyes.join('')}</g>`;
+  return {
+    below: rest.slice(0, first) + end,
+    open: root + eyes.join('') + end,
+    closed: root + shut + end,
+    above: after.trim() ? root + after + end : null,
+  };
+}

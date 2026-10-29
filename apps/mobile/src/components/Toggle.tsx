@@ -6,6 +6,8 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING, TOUCH } from '@/theme/tokens';
 
 import { Text } from './Text';
+import { useLabOff } from '@/lib/drawLab';
+import { boxShadowParts } from './NativeShadow';
 
 type Props = {
   label: string;
@@ -32,6 +34,9 @@ export function Toggle({ label, value, onChange, hint, disabled, compact, testID
   const c = switchColors(colors, value);
   const track = compact ? TRACK_COMPACT : TRACK;
   const thumb = compact ? THUMB_COMPACT : THUMB;
+  // The thumb's soft shadow natively (NativeShadow.tsx).
+  const shadowOff = useLabOff('golge');
+  const shadow = boxShadowParts(shadowOff, THUMB_SHADOW, thumb / 2);
   const knob = (
     <View
       importantForAccessibility="no-hide-descendants"
@@ -53,9 +58,11 @@ export function Toggle({ label, value, onChange, hint, disabled, compact, testID
           height: thumb,
           borderRadius: shape.radius.pill,
           backgroundColor: c.thumb,
-          boxShadow: THUMB_SHADOW,
+          boxShadow: shadow.boxShadow,
         }}
-      />
+      >
+        {shadow.node}
+      </View>
     </View>
   );
   if (compact) {

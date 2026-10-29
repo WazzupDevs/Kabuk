@@ -7,7 +7,7 @@ import { AURA, MOTION } from '@/theme/aura';
 import { TAB_GLASS } from '@/theme/glass';
 import { useTheme } from '@/theme/ThemeProvider';
 import { TAB_BAR_GLASS, blursBehind } from '@/ui/backdrop';
-import { shadowParts } from '@/components/NativeShadow';
+import { boxShadowParts, shadowParts } from '@/components/NativeShadow';
 import { useLabOff } from '@/lib/drawLab';
 import { LiquidGlass } from '@/ui/LiquidGlass';
 
@@ -107,9 +107,11 @@ export function AuraTabBar({ items, selected, onPress, glassTarget, opaque = fal
     ],
   };
 
-  useLabOff('golge');
+  const shadowOff = useLabOff('golge');
   const glassOff = useLabOff('cam');
-  const barShadow = shadowParts(a.shadow || undefined, undefined, s.height / 2);
+  const barShadow = shadowParts(shadowOff, a.shadow || undefined, undefined, s.height / 2);
+  // The sliding disc's shadow natively too: it moves on every tab change.
+  const discShadow = boxShadowParts(shadowOff, a.discShadow, s.tab / 2);
   const glass = !opaque && !glassOff && TAB_BAR_GLASS && blursBehind(Platform.OS, Platform.Version);
   return (
     <View
@@ -159,11 +161,13 @@ export function AuraTabBar({ items, selected, onPress, glassTarget, opaque = fal
             height: s.tab,
             borderRadius: s.tab / 2,
             backgroundColor: a.disc,
-            boxShadow: a.discShadow,
+            boxShadow: discShadow.boxShadow,
           },
           disc,
         ]}
-      />
+      >
+        {discShadow.node}
+      </Animated.View>
       <View
         style={{
           flex: 1,

@@ -2,14 +2,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { type ComponentProps, type ReactNode, useEffect, useState } from 'react';
 import { Animated, Pressable, View, type ViewStyle } from 'react-native';
 
+import { useLabOff } from '@/lib/drawLab';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { buttonFill, type ButtonVariant, isTextOnly } from '@/theme/buttonFill';
 import { EASE_OUT } from '@/theme/markMotion';
-import { KIT, shadowList } from '@/theme/auraKit';
+import { KIT } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, OPACITY, type PaletteKey, SPACING, TOUCH, type TypeVariant } from '@/theme/tokens';
 
 import { Loader } from './Loader';
+import { shadowParts } from './NativeShadow';
 import { usePressScale } from './motion';
 import { Text } from './Text';
 import { AppIcon } from './AppIcon';
@@ -149,16 +151,33 @@ export function Button({
   // docs/design/aura (`.btn.primary`, `.btn.glassy`): the primary filled with its violet shadow and
   // a light top line; every other role a raised white capsule with a white edge.
   const k = KIT[scheme];
+  // The soft outer shadows drawn natively from a picture made once (NativeShadow.tsx).
+  const shadowOff = useLabOff('golge');
+  const raised = glass === 'clear' || variant === 'danger';
+  const shadow = textOnly
+    ? null
+    : variant === 'primary' && !disabled
+      ? shadowParts(shadowOff, KIT.primaryShadow, k.primaryInset, shape.radius.pill)
+      : raised
+        ? shadowParts(
+            shadowOff,
+            k.raisedShadow || undefined,
+            undefined,
+            shape.radius.pill,
+            true,
+            KIT.size.edge,
+          )
+        : null;
   const edge: ViewStyle | null = textOnly
     ? null
     : variant === 'primary' && !disabled
-      ? { boxShadow: shadowList(KIT.primaryShadow, k.primaryInset) }
-      : glass === 'clear' || variant === 'danger'
+      ? { boxShadow: shadow?.boxShadow }
+      : raised
         ? {
             backgroundColor: k.raised,
             borderWidth: KIT.size.edge,
             borderColor: k.raisedEdge,
-            boxShadow: k.raisedShadow || undefined,
+            boxShadow: shadow?.boxShadow,
           }
         : null;
   const small = size === 'sm';
@@ -219,6 +238,7 @@ export function Button({
             pressScale(pressed && !inactive),
           ]}
         >
+          {shadow?.node}
           <Animated.View
             style={[{ flexDirection: 'row', alignItems: 'center', gap: style.gap }, busy.label]}
             className="shrink"

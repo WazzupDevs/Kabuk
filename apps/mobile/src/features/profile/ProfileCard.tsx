@@ -18,6 +18,8 @@ import { PhotoImage } from '@/components/PhotoImage';
 import { PhotoPreview } from '@/components/PhotoPreview';
 
 import { LivePencil, LivingLook } from './LivingLook';
+import { useLabOff } from '@/lib/drawLab';
+import { boxShadowParts } from '@/components/NativeShadow';
 
 type Profile = Pick<ProfileView, 'photoUrl' | 'displayName' | 'age' | 'bio' | 'badges'>;
 
@@ -54,6 +56,14 @@ export function ProfileHead({
   children?: ReactNode;
 }) {
   const { colors, shape } = useTheme();
+  // The capsule's edit badge's soft shadow natively (NativeShadow.tsx).
+  const badgeShadow = boxShadowParts(
+    useLabOff('golge'),
+    shape.shadow.card,
+    SPACING[9] / 2,
+    true,
+    SPACING[0.5] + SPACING[0.5] / 2,
+  );
   const [preview, setPreview] = useState(false);
   const ring = (on: boolean) => ({
     padding: SPACING[0.5],
@@ -100,9 +110,10 @@ export function ProfileHead({
                     backgroundColor: colors.surface,
                     borderWidth: SPACING[0.5] + SPACING[0.5] / 2,
                     borderColor: colors.canvas,
-                    boxShadow: shape.shadow.card,
+                    boxShadow: badgeShadow.boxShadow,
                   }}
                 >
+                  {badgeShadow.node}
                   <LivePencil />
                 </Pressable>
               ) : null}

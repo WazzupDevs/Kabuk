@@ -49,6 +49,8 @@ import {
 import { useTheme } from '@/theme/ThemeProvider';
 
 import { figureDrawing } from './figureDrawing';
+import { useLabOff } from '@/lib/drawLab';
+import { boxShadowParts } from '@/components/NativeShadow';
 
 type Palette = (typeof INTRO_COLORS)['light'];
 
@@ -277,6 +279,8 @@ const Lamp = memo(function Lamp({
     height: bulb,
     borderRadius: bulb / 2,
   };
+  // The glows natively (NativeShadow.tsx): the scene redraws on every frame while it plays.
+  const litGlow = boxShadowParts(useLabOff('golge'), pal.lamp.glow, bulb / 2);
   const foot = INTRO_SHAPE.lampFoot;
   return (
     <Animated.View
@@ -325,8 +329,10 @@ const Lamp = memo(function Lamp({
         </Animated.View>
         <View style={[bulbBox, { backgroundColor: pal.lamp.bulb }]} />
         <Animated.View
-          style={[bulbBox, { backgroundColor: pal.lamp.lit, boxShadow: pal.lamp.glow }, lit]}
-        />
+          style={[bulbBox, { backgroundColor: pal.lamp.lit, boxShadow: litGlow.boxShadow }, lit]}
+        >
+          {litGlow.node}
+        </Animated.View>
       </Animated.View>
     </Animated.View>
   );
@@ -359,6 +365,11 @@ const Phone = memo(function Phone({
     height: sh,
     borderRadius: sw * INTRO_SHAPE.screenCorner,
   };
+  const screenGlow = boxShadowParts(
+    useLabOff('golge'),
+    pal.phone.glow,
+    sw * INTRO_SHAPE.screenCorner,
+  );
   return (
     <Animated.View
       style={[
@@ -379,8 +390,14 @@ const Phone = memo(function Phone({
     >
       <View style={[screen, { backgroundColor: pal.phone.screen }]} />
       <Animated.View
-        style={[screen, { backgroundColor: pal.phone.lit[1], boxShadow: pal.phone.glow }, glow]}
-      />
+        style={[
+          screen,
+          { backgroundColor: pal.phone.lit[1], boxShadow: screenGlow.boxShadow },
+          glow,
+        ]}
+      >
+        {screenGlow.node}
+      </Animated.View>
       <Animated.View style={[screen, { overflow: 'hidden' }, lit]}>
         <Svg width={sw} height={sh}>
           <Defs>
@@ -410,6 +427,9 @@ const Ring = memo(function Ring({
   const style = useAnimatedStyle(() => ({ opacity: f.value.opacity }));
   const glow = useAnimatedStyle(() => ({ opacity: f.value.glow }));
   const pill = { borderRadius: shape.radius.pill, backgroundColor: pal.ring.fill };
+  const shadowOff = useLabOff('golge');
+  const edge = boxShadowParts(shadowOff, pal.ring.edge, INTRO_SHAPE.ring / 2);
+  const ringGlow = boxShadowParts(shadowOff, pal.ring.glow, INTRO_SHAPE.ring / 2);
   return (
     <Animated.View
       style={[
@@ -420,13 +440,18 @@ const Ring = memo(function Ring({
           width: rg.w,
           height: INTRO_SHAPE.ring,
           zIndex: rg.z,
-          boxShadow: pal.ring.edge,
+          boxShadow: edge.boxShadow,
         },
         pill,
         style,
       ]}
     >
-      <Animated.View style={[StyleSheet.absoluteFill, pill, { boxShadow: pal.ring.glow }, glow]} />
+      {edge.node}
+      <Animated.View
+        style={[StyleSheet.absoluteFill, pill, { boxShadow: ringGlow.boxShadow }, glow]}
+      >
+        {ringGlow.node}
+      </Animated.View>
     </Animated.View>
   );
 });

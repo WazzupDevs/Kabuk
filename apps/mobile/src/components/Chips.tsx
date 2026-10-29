@@ -7,6 +7,8 @@ import { SPACING, TOUCH } from '@/theme/tokens';
 
 import { usePressScale } from './motion';
 import { Text } from './Text';
+import { useLabOff } from '@/lib/drawLab';
+import { shadowParts } from './NativeShadow';
 
 type Option<T extends string> = { value: T; label: string; testID?: string; count?: number };
 
@@ -39,6 +41,16 @@ export function Chips<T extends string>({
   const { colors, shape, scheme } = useTheme();
   const k = KIT[scheme];
   const pressScale = usePressScale();
+  // An unchosen chip's soft shadow natively (NativeShadow.tsx).
+  const shadowOff = useLabOff('golge');
+  const chipShadow = shadowParts(
+    shadowOff,
+    k.chipShadow || undefined,
+    undefined,
+    CHIP / 2,
+    true,
+    KIT.size.edge,
+  );
   const chips = options.map((o) => {
     const on = o.value === value;
     return (
@@ -66,11 +78,12 @@ export function Chips<T extends string>({
                 backgroundColor: on ? k.chipOn : k.raisedChip,
                 borderWidth: KIT.size.edge,
                 borderColor: on ? k.chipOn : k.raisedEdge,
-                boxShadow: on ? undefined : k.chipShadow || undefined,
+                boxShadow: on ? undefined : chipShadow.boxShadow,
               },
               pressScale(pressed),
             ]}
           >
+            {on ? null : chipShadow.node}
             <Text variant="label" tone={on ? 'surface' : 'text'}>
               {o.label}
             </Text>

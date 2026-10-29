@@ -41,7 +41,7 @@ import { ApiError, friendsApi, safetyApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useSeen } from '@/lib/useSeen';
 import { SPACING } from '@/theme/tokens';
-import { lastRows, useOpenRows } from '@/lib/afterTransition';
+import { lastRows, useAfterTransition, useOpenRows } from '@/lib/afterTransition';
 
 type Params = { threadId: string; publicId: string; name: string };
 
@@ -78,9 +78,23 @@ export default function DmScreen() {
   const { typing, notifyTyping, clearTyping } = useDmTyping(threadId);
 
   const markRead = useMarkThreadRead(threadId);
+  // Opening the DM marks it read once it has slid in (the owner's report, 29 Ekim: marking it on
+  // the tap changed the Mesajlar list and its count under the slide); the row is under the DM by
+  // then. Later, while it is seen, at once.
+  const settled = useAfterTransition();
+  const readWhenSettled = useRef(false);
+  const markSeen = useCallback(() => {
+    if (settled) markRead();
+    else readWhenSettled.current = true;
+  }, [settled, markRead]);
+  useEffect(() => {
+    if (!settled || !readWhenSettled.current) return;
+    readWhenSettled.current = false;
+    markRead();
+  }, [settled, markRead]);
   // Read only while seen: what arrives behind the home screen stays unread until the DM is seen
   // again (audit CHAT-2). Being seen, the first time and every time after, marks it read.
-  const seen = useSeen(markRead);
+  const seen = useSeen(markSeen);
   const sendDm = useSendDm(threadId);
   // docs/SPEC_V3.md §21: swipe a message to answer it, long press it for a reaction.
   const reply = useReplyTarget();
@@ -201,6 +215,7 @@ export default function DmScreen() {
   return (
     <ChatScreen
       startAtEnd
+      hidesTabBar
       newestKey={newestOut?.localId ?? newestIn?.id}
       newestMine={newestOut ? true : newestIn?.from_me}
       top={

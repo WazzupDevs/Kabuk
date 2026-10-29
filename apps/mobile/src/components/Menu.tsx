@@ -1,6 +1,7 @@
 import { Children, type ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 
+import { useLabOff } from '@/lib/drawLab';
 import { useSinglePress } from '@/lib/useSinglePress';
 import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
@@ -9,6 +10,7 @@ import { ICON, OPACITY, SPACING } from '@/theme/tokens';
 
 import type { IconName } from './Button';
 import { Loader } from './Loader';
+import { boxShadowParts } from './NativeShadow';
 import { Text } from './Text';
 import { AppIcon } from './AppIcon';
 
@@ -19,6 +21,8 @@ import { AppIcon } from './AppIcon';
 export function Menu({ children, float }: { children: ReactNode; float?: boolean }) {
   const { colors, shape, scheme } = useTheme();
   const rows = Children.toArray(children).filter(Boolean);
+  const shadowOff = useLabOff('golge');
+  const shadow = boxShadowParts(shadowOff, float ? shape.shadow.sheet : null, shape.radius.lg);
   const card = (
     <View
       // docs/design/aura (`.glass.list`): the rows in one glass card, a hairline between them.
@@ -47,8 +51,9 @@ export function Menu({ children, float }: { children: ReactNode; float?: boolean
   if (!float) return card;
   return (
     <View
-      style={{ width: FLOAT_WIDTH, borderRadius: shape.radius.lg, boxShadow: shape.shadow.sheet }}
+      style={{ width: FLOAT_WIDTH, borderRadius: shape.radius.lg, boxShadow: shadow.boxShadow }}
     >
+      {shadow.node}
       {card}
     </View>
   );

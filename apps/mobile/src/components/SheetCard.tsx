@@ -4,6 +4,8 @@ import { type NativeScrollEvent, type NativeSyntheticEvent, ScrollView, View } f
 import { useKit } from '@/aura/kit';
 import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
+import { useLabOff } from '@/lib/drawLab';
+import { shadowParts } from './NativeShadow';
 
 // A bottom sheet's card (Sheet, RouteSheet): docs/design/aura `.sheet`, 36 round. Its content
 // scrolls edge to edge inside the round card, clipped by the card's own corners, so nothing in it
@@ -19,8 +21,15 @@ export function SheetCard({
 }) {
   const k = useKit();
   const head = KIT.size.sheetPadTop + KIT.size.grabH + KIT.size.sheetGap;
+  // The sheet's soft shadow natively (NativeShadow.tsx): it slides in, and React Native would blur
+  // its shadow again on every frame of the slide.
+  const shadowOff = useLabOff('golge');
+  const shadow = shadowParts(shadowOff, k.c.glassShadow, undefined, KIT.size.sheetRadius);
   return (
-    <View style={{ flexShrink: 1, borderRadius: KIT.size.sheetRadius, boxShadow: k.c.glassShadow }}>
+    <View
+      style={{ flexShrink: 1, borderRadius: KIT.size.sheetRadius, boxShadow: shadow.boxShadow }}
+    >
+      {shadow.node}
       <View
         style={{
           ...gradientStyle(k.c.sheet),

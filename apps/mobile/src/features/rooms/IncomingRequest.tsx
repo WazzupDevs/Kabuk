@@ -19,7 +19,7 @@ import { track } from '@/lib/analytics';
 import { ApiError, roomsApi } from '@/lib/api';
 import { useNowUntil } from '@/lib/useNow';
 import { AURA } from '@/theme/aura';
-import { KIT, KIT_TYPE, shadowList } from '@/theme/auraKit';
+import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
@@ -28,6 +28,8 @@ import { haptic } from '@/lib/haptics';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 import { roomKeys, useCurrentRoom, useIncomingRequests, useRequestProfile } from './queries';
+import { useLabOff } from '@/lib/drawLab';
+import { shadowParts } from '@/components/NativeShadow';
 
 // `ownerSessionId`: this person, when it owns the table; null otherwise (no requests to answer).
 type Props = { roomId: string; ownerSessionId: string | null; phones: number; floating?: boolean };
@@ -136,6 +138,15 @@ export function IncomingRequest({ roomId, ownerSessionId, phones, floating }: Pr
     return () => clearTimeout(timer);
   }, [coming]);
 
+  // The card's soft shadow natively (NativeShadow.tsx): it pops in with a bounce.
+  const shadow = shadowParts(
+    useLabOff('golge'),
+    KIT.requestShadow,
+    k.c.glassInset,
+    KIT.size.glassRadius,
+    true,
+    KIT.size.edge,
+  );
   const frame = (children: ReactNode, testID: string) => (
     <View
       testID={testID}
@@ -165,9 +176,10 @@ export function IncomingRequest({ roomId, ownerSessionId, phones, floating }: Pr
             borderRadius: KIT.size.glassRadius,
             borderWidth: KIT.size.edge,
             borderColor: k.c.glassEdge,
-            boxShadow: shadowList(KIT.requestShadow, k.c.glassInset),
+            boxShadow: shadow.boxShadow,
           }}
         >
+          {shadow.node}
           {children}
         </View>
       </PopIn>

@@ -2,11 +2,13 @@ import type { ReactNode } from 'react';
 import { Pressable, View, type ViewStyle } from 'react-native';
 
 import { colorVars, ThemeScope, useFeatureTheme, useTheme } from '@/theme/ThemeProvider';
-import { KIT, shadowList } from '@/theme/auraKit';
+import { useLabOff } from '@/lib/drawLab';
+import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { SPACING } from '@/theme/tokens';
 
 import { usePressScale } from './motion';
+import { shadowParts } from './NativeShadow';
 import { useQuiet } from './Quiet';
 
 type Props = {
@@ -42,6 +44,20 @@ export function Card({
 
   const feature = tone === 'feature' && !quiet;
   const k = KIT[scheme];
+  // The soft outer shadow natively, from a picture made once (NativeShadow.tsx); a flush card
+  // clips its content, so its shadow sits on a box around it.
+  const shadowOff = useLabOff('golge');
+  const shadow =
+    tone === 'note' || quiet || feature
+      ? null
+      : shadowParts(
+          shadowOff,
+          k.glassShadow,
+          k.glassInset,
+          KIT.size.glassRadius,
+          true,
+          flush ? 0 : KIT.size.edge,
+        );
   // docs/design/aura (`.glass`, `.glass.sm`): a card is frosted glass, 28 round, 18 inside; a note
   // the smaller, softer glass. The featured card keeps its dark palette.
   const style: ViewStyle[] =
@@ -63,11 +79,24 @@ export function Card({
             overflow: flush ? 'hidden' : undefined,
             borderWidth: feature ? 0 : KIT.size.edge,
             borderColor: k.glassEdge,
-            boxShadow: quiet || feature ? undefined : shadowList(k.glassShadow, k.glassInset),
+            boxShadow: shadow?.boxShadow,
           },
           feature ? (colorVars(featureTheme.colors) as ViewStyle) : {},
         ];
   const content = feature ? <ThemeScope theme={featureTheme}>{children}</ThemeScope> : children;
+  const wrapped = flush && !!shadow?.node;
+  const face = (extra: ViewStyle | null) =>
+    wrapped ? (
+      <View style={[{ borderRadius: KIT.size.glassRadius }, extra]}>
+        {shadow?.node}
+        <View style={style}>{content}</View>
+      </View>
+    ) : (
+      <View style={[...style, extra]}>
+        {shadow?.node}
+        {content}
+      </View>
+    );
 
   if (onPress) {
     return (
@@ -78,13 +107,18 @@ export function Card({
           accessibilityLabel={accessibilityLabel}
           onPress={onPress}
         >
-          {({ pressed }) => <View style={[...style, pressScale(pressed)]}>{content}</View>}
+          {({ pressed }) => face(pressScale(pressed))}
         </Pressable>
       </View>
     );
   }
-  return (
+  return wrapped ? (
+    <View className={className} testID={testID}>
+      {face(null)}
+    </View>
+  ) : (
     <View className={className} style={style} testID={testID}>
+      {shadow?.node}
       {content}
     </View>
   );

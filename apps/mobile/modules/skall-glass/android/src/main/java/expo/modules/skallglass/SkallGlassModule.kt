@@ -15,6 +15,14 @@ class SkallGlassModule : Module() {
       Prop("targetId") { view: GlassTargetView, id: String? -> view.setTargetId(id) }
     }
 
+    View(DissolveView::class) {
+      Name("DissolveView")
+      Prop("run") { view: DissolveView, value: Int -> view.setRun(value) }
+      Prop("blur") { view: DissolveView, dp: Float -> view.setBlurDp(dp) }
+      Prop("durationMs") { view: DissolveView, ms: Int -> view.setDurationMs(ms) }
+      Prop("curve") { view: DissolveView, list: List<Double> -> view.setCurve(list) }
+    }
+
     View(ShadowView::class) {
       Name("ShadowView")
       Prop("shadows") { view: ShadowView, list: List<Map<String, Any?>> -> view.setShadows(list) }

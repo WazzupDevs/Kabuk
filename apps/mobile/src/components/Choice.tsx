@@ -8,6 +8,8 @@ import { SPACING, TOUCH } from '@/theme/tokens';
 import { haptic } from '@/lib/haptics';
 
 import { Text } from './Text';
+import { useLabOff } from '@/lib/drawLab';
+import { shadowParts } from './NativeShadow';
 
 type Props = {
   label: string;
@@ -38,6 +40,7 @@ export function Choice({
   testID,
 }: Props) {
   const { colors, shape, scheme } = useTheme();
+  const shadowOff = useLabOff('golge');
   const frame = {
     flexDirection: 'row',
     alignItems: hint || unavailable ? 'flex-start' : 'center',
@@ -85,6 +88,15 @@ export function Choice({
     );
   }
 
+  // Unchosen, the soft glass shadow natively (NativeShadow.tsx); chosen, a hard ring (cheap).
+  const shadow = shadowParts(
+    shadowOff,
+    selected ? undefined : KIT[scheme].glassShadow,
+    undefined,
+    KIT.size.glassRadiusSm,
+    true,
+    selected ? 2 : KIT.size.edge,
+  );
   return (
     <Pressable
       accessibilityRole="radio"
@@ -104,12 +116,13 @@ export function Choice({
         borderColor: selected ? KIT.primary : KIT[scheme].glassEdge,
         boxShadow: selected
           ? `0px 0px 0px ${KIT.size.dotRing}px ${KIT.primaryRing}`
-          : KIT[scheme].glassShadow,
+          : shadow.boxShadow,
         paddingHorizontal: selected ? SPACING[4] - 1 : SPACING[4],
         paddingVertical: selected ? SPACING[3] - 1 : SPACING[3],
         opacity: disabled ? 0.4 : 1,
       }}
     >
+      {shadow.node}
       <View
         className="items-center justify-center"
         style={{

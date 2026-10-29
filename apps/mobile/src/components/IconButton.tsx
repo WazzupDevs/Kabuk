@@ -2,7 +2,7 @@ import { type ReactNode, useEffect } from 'react';
 import { Pressable, View } from 'react-native';
 import Animated, {
   Easing,
-  useAnimatedProps,
+  useAnimatedStyle,
   useSharedValue,
   withSequence,
   withTiming,
@@ -18,6 +18,8 @@ import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 import type { IconName } from './Button';
 import { usePressScale } from './motion';
 import { AppIcon } from './AppIcon';
+import { useLabOff } from '@/lib/drawLab';
+import { shadowParts } from './NativeShadow';
 
 type Props = {
   icon: IconName;
@@ -46,6 +48,18 @@ export function IconButton({
 }: Props) {
   const { colors, shape, scheme } = useTheme();
   const pressScale = usePressScale();
+  const shadowOff = useLabOff('golge');
+  const shadow =
+    round && !danger
+      ? shadowParts(
+          shadowOff,
+          KIT[scheme].raisedShadow || undefined,
+          undefined,
+          TOUCH.min / 2,
+          true,
+          KIT.size.edge,
+        )
+      : null;
   return (
     <Pressable
       accessibilityRole="button"
@@ -73,12 +87,13 @@ export function IconButton({
                     backgroundColor: KIT[scheme].raisedRound,
                     borderWidth: KIT.size.edge,
                     borderColor: KIT[scheme].raisedEdge,
-                    boxShadow: KIT[scheme].raisedShadow || undefined,
+                    boxShadow: shadow?.boxShadow,
                   }
                 : { backgroundColor: pressed ? colors.surface2 : 'transparent' },
             round ? pressScale(pressed && !disabled) : null,
           ]}
         >
+          {shadow?.node}
           {/* A round button is glass too (theme/glass.ts → BUTTON_GLASS). */}
           {glyph ?? <AppIcon name={icon} size={ICON.lg} color={colors.text} />}
         </View>
@@ -117,7 +132,9 @@ export function MoreDots() {
 const KNOB_SLIDE = 6;
 const KNOB_MS = 450;
 const KNOB_EASE = Easing.bezier(0.34, 1.56, 0.64, 1);
-const AnimatedRect = Animated.createAnimatedComponent(Rect);
+// The knobs slide as views over the drawn tracks (the owner's report, 29 Ekim: react-native-svg
+// draws again on the main thread on every frame an animated prop moves); the same rounded rects.
+const KNOB = { width: 5, height: 9, radius: 2.5 } as const;
 
 export function SlidersGlyph({ go = 0 }: { go?: number }) {
   const { colors } = useTheme();
@@ -132,14 +149,32 @@ export function SlidersGlyph({ go = 0 }: { go?: number }) {
       ),
     );
   }, [go, reduce, shift]);
-  const k1 = useAnimatedProps(() => ({ x: 13 - KNOB_SLIDE * shift.value }));
-  const k2 = useAnimatedProps(() => ({ x: 6 + KNOB_SLIDE * shift.value }));
+  const side = ICON.lg - 2;
+  // The drawing's 24 units in pixels.
+  const u = side / 24;
+  const k1 = useAnimatedStyle(() => ({
+    transform: [{ translateX: -KNOB_SLIDE * u * shift.value }],
+  }));
+  const k2 = useAnimatedStyle(() => ({
+    transform: [{ translateX: KNOB_SLIDE * u * shift.value }],
+  }));
+  const knob = (x: number, y: number, color: string) => ({
+    position: 'absolute' as const,
+    left: x * u,
+    top: y * u,
+    width: KNOB.width * u,
+    height: KNOB.height * u,
+    borderRadius: KNOB.radius * u,
+    backgroundColor: color,
+  });
   return (
-    <Svg width={ICON.lg - 2} height={ICON.lg - 2} viewBox="0 0 24 24">
-      <Rect x={3} y={6.8} width={18} height={2.6} rx={1.3} fill={colors.control} />
-      <Rect x={3} y={14.6} width={18} height={2.6} rx={1.3} fill={colors.control} />
-      <AnimatedRect animatedProps={k1} y={3.6} width={5} height={9} rx={2.5} fill={BRAND.purple} />
-      <AnimatedRect animatedProps={k2} y={11.4} width={5} height={9} rx={2.5} fill={BRAND.pink} />
-    </Svg>
+    <View style={{ width: side, height: side }}>
+      <Svg width={side} height={side} viewBox="0 0 24 24">
+        <Rect x={3} y={6.8} width={18} height={2.6} rx={1.3} fill={colors.control} />
+        <Rect x={3} y={14.6} width={18} height={2.6} rx={1.3} fill={colors.control} />
+      </Svg>
+      <Animated.View style={[knob(13, 3.6, BRAND.purple), k1]} />
+      <Animated.View style={[knob(6, 11.4, BRAND.pink), k2]} />
+    </View>
   );
 }

@@ -1,11 +1,11 @@
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { Animated, Easing, View } from 'react-native';
 
-import { CachedSvg } from '@/components/CachedSvg';
+import { LayeredLook, snapTo } from '@/components/LayeredLook';
 import { useLoopActive } from '@/components/Loader';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { AURA, MOTION } from '@/theme/aura';
-import { lookSvg, posedEyes } from '@/theme/capsuleLook';
+import { lookSvg } from '@/theme/capsuleLook';
 import { useTheme } from '@/theme/ThemeProvider';
 
 import { springConfig } from './motion';
@@ -42,8 +42,9 @@ export function Buddy({
   const active = useLoopActive();
   const width = height * FIG_RATIO;
   const base = useMemo(() => lookSvg(look, 'fig').replace(/viewBox="[^"]*"/, FIG_BOX), [look]);
-  const [blink, setBlink] = useState(false);
-  const xml = useMemo(() => posedEyes(base, { blink }), [base, blink]);
+  // The blink swaps two pictures on the native driver (LayeredLook): the drawing is not drawn
+  // again.
+  const [blink] = useState(() => new Animated.Value(0));
 
   const [pop] = useState(() => new Animated.Value(reduce ? 1 : 0));
   const [float] = useState(() => new Animated.Value(0));
@@ -80,16 +81,19 @@ export function Buddy({
     let timer: ReturnType<typeof setTimeout>;
     const next = () => {
       timer = setTimeout(() => {
-        setBlink(true);
+        snapTo(blink, 1);
         timer = setTimeout(() => {
-          setBlink(false);
+          snapTo(blink, 0);
           next();
         }, MOTION.idle.blinkMs);
       }, between(MOTION.idle.blinkEveryMs));
     };
     next();
-    return () => clearTimeout(timer);
-  }, [reduce, active]);
+    return () => {
+      clearTimeout(timer);
+      snapTo(blink, 0);
+    };
+  }, [reduce, active, blink]);
 
   const rise = float.interpolate({ inputRange: [0, 1], outputRange: [0, -MOTION.idle.floatPx] });
   return (
@@ -120,7 +124,7 @@ export function Buddy({
         }}
       />
       <Animated.View style={{ transform: [{ translateY: rise }] }}>
-        <CachedSvg xml={xml} width={width} height={height} />
+        <LayeredLook xml={base} width={width} height={height} blink={blink} />
       </Animated.View>
     </Animated.View>
   );

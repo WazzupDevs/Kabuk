@@ -10,6 +10,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import { Image as ExpoImage } from 'expo-image';
 import Svg, { Circle, Path } from 'react-native-svg';
 
 import { usePress } from '@/aura/kit';
@@ -19,10 +20,11 @@ import { NativeShadow } from '@/components/NativeShadow';
 import { tr } from '@/i18n/tr';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { KIT } from '@/theme/auraKit';
+import { gradientStyle } from '@/theme/gradient';
 import {
   FANG_SVG,
-  groundSvg,
-  medalSvg,
+  groundCss,
+  GROUND_BOARDS,
   PEEK_CARD_SVG,
   SEAT_X_SVG,
   TABLE,
@@ -30,13 +32,12 @@ import {
   TABLE_MOTION as M,
   TABLE_SHADOW,
   TABLE_TYPE,
-  tableSvg,
   type TableTime,
   TICK_SVG,
   X_SVG,
 } from '@/theme/vampirTable';
 
-import { ROLE_ART } from './roleArt';
+import { MEDAL_PICTURE, ROLE_ART, TABLE_PICTURE } from './roleArt';
 import {
   type Curve,
   curveBetween,
@@ -57,7 +58,7 @@ const CY = TABLE.frame.cy;
 // The room behind the table (the file's .m.night, .dawn, .day, .dusk): a new time of day fades in
 // over the one before, on the native driver.
 export function TableGround({ time }: { time: TableTime }) {
-  const { width, height } = useWindowDimensions();
+  const { width } = useWindowDimensions();
   const reduce = useReduceMotion();
   const [shown, setShown] = useState<{ now: TableTime; before: TableTime | null }>({
     now: time,
@@ -79,14 +80,39 @@ export function TableGround({ time }: { time: TableTime }) {
     });
     return () => anim.stop();
   }, [shown.now, shown.before, mix, reduce]);
-  const w = Math.ceil(width);
-  const h = Math.ceil(height);
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      {shown.before ? <CachedSvg xml={groundSvg(shown.before, w, h)} width={w} height={h} /> : null}
+      {shown.before ? <Ground time={shown.before} width={width} /> : null}
       <Animated.View style={[StyleSheet.absoluteFill, { opacity: shown.before ? mix : 1 }]}>
-        <CachedSvg xml={groundSvg(shown.now, w, h)} width={w} height={h} />
+        <Ground time={shown.now} width={width} />
       </Animated.View>
+    </View>
+  );
+}
+
+// One time's ground: React Native's own gradients on the GPU (theme/vampirArt.ts → groundCss), at
+// night the floor's boards over them.
+function Ground({ time, width }: { time: TableTime; width: number }) {
+  const style = useMemo(() => gradientStyle(groundCss(time)), [time]);
+  const boards =
+    time === 'night'
+      ? Array.from({ length: Math.ceil(width / GROUND_BOARDS.every) }, (_, i) => i)
+      : [];
+  return (
+    <View style={[StyleSheet.absoluteFill, style]}>
+      {boards.map((i) => (
+        <View
+          key={i}
+          style={{
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: i * GROUND_BOARDS.every,
+            width: GROUND_BOARDS.width,
+            backgroundColor: GROUND_BOARDS.color,
+          }}
+        />
+      ))}
     </View>
   );
 }
@@ -153,9 +179,14 @@ export function RoundTable({
             transform: [{ scale: k }],
           }}
         >
-          <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-            <CachedSvg xml={tableSvg(time)} width={FW} height={FH} />
-          </View>
+          <ExpoImage
+            pointerEvents="none"
+            source={TABLE_PICTURE[time]}
+            style={StyleSheet.absoluteFill}
+            contentFit="fill"
+            transition={0}
+            accessible={false}
+          />
           <Lines lines={lines} where={where} face={face} />
           <View
             pointerEvents="box-none"
@@ -633,9 +664,20 @@ export function MedalWith({
   const f = TABLE.medalFace;
   return (
     <View style={{ width: m, height: m, alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-      <View style={{ position: 'absolute', left: -pad, top: -pad }} pointerEvents="none">
-        <CachedSvg xml={medalSvg()} width={m + pad * 2} height={m + pad * 2} />
-      </View>
+      <ExpoImage
+        pointerEvents="none"
+        source={MEDAL_PICTURE}
+        style={{
+          position: 'absolute',
+          left: -pad,
+          top: -pad,
+          width: m + pad * 2,
+          height: m + pad * 2,
+        }}
+        contentFit="fill"
+        transition={0}
+        accessible={false}
+      />
       {sid ? (
         <View style={{ width: f, height: f }}>
           <View

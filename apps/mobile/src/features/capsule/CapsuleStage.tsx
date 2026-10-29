@@ -18,6 +18,8 @@ import { SPACING } from '@/theme/tokens';
 
 import { BEAT, type Channel, type Move, sample } from './motion';
 import { CachedSvg } from '@/components/CachedSvg';
+import { useLabOff } from '@/lib/drawLab';
+import { boxShadowParts } from '@/components/NativeShadow';
 
 // The stage (v46 `.ced-fig` in `.ced-ring`): 60 × 57 units, the circle (48) 6 in from the left and 8
 // down, the head free to rise over it.
@@ -61,9 +63,12 @@ export function CapsuleStage({
   testID?: string;
 }) {
   const { colors, shape } = useTheme();
+  const shadowOff = useLabOff('golge');
   const reduce = useReduceMotion();
   const unit = size / STAGE.circle;
   const ring = SPACING[1.5];
+  // The disc's soft shadow natively (NativeShadow.tsx): it beats on every change.
+  const discShadow = boxShadowParts(shadowOff, shape.shadow.card, size / 2 + ring, true, ring);
 
   // The look before a change, fading out over the new one.
   const [shownLook, setShownLook] = useState(look);
@@ -166,11 +171,12 @@ export function CapsuleStage({
                 borderWidth: ring,
                 borderColor: colors.surface,
                 backgroundColor: lookGround(shownLook),
-                boxShadow: shape.shadow.card,
+                boxShadow: discShadow.boxShadow,
               },
               beatStyle,
             ]}
           >
+            {discShadow.node}
             <Reanimated.View style={[figure, moveStyle]}>
               <CachedSvg xml={xml} width="100%" height="100%" />
             </Reanimated.View>
@@ -196,6 +202,13 @@ export function CapsuleStage({
 // (scale .5 → 1, .34s cubic-bezier(.34,1.56,.64,1)).
 function Bubble({ text, reduce, top }: { text: string; reduce: boolean; top: number }) {
   const { colors, shape } = useTheme();
+  // Its soft shadow natively (NativeShadow.tsx): the bubble pops in.
+  const shadow = boxShadowParts(useLabOff('golge'), shape.shadow.sheet, [
+    shape.radius.lg,
+    shape.radius.lg,
+    shape.radius.lg,
+    SPACING[1],
+  ]);
   const [shown] = useState(() => new Animated.Value(reduce ? 1 : 0));
   useEffect(() => {
     if (reduce) return undefined;
@@ -220,7 +233,7 @@ function Bubble({ text, reduce, top }: { text: string; reduce: boolean; top: num
         borderRadius: shape.radius.lg,
         borderBottomLeftRadius: SPACING[1],
         backgroundColor: colors.surface,
-        boxShadow: shape.shadow.sheet,
+        boxShadow: shadow.boxShadow,
         opacity: shown.interpolate({
           inputRange: [0, 1],
           outputRange: [0, 1],
@@ -233,6 +246,7 @@ function Bubble({ text, reduce, top }: { text: string; reduce: boolean; top: num
         ],
       }}
     >
+      {shadow.node}
       <Text variant="label">{text}</Text>
     </Animated.View>
   );

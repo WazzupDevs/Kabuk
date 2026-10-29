@@ -1,5 +1,5 @@
 import { ROUTES, type TabKey } from '@shared/navigation.ts';
-import { router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect, useIsFocused } from 'expo-router';
 import type { BottomTabBarProps } from 'expo-router/tabs';
 import {
   createContext,
@@ -16,7 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { create } from 'zustand';
 
 import { AuraTabBar, type AuraTabItem } from '@/aura/AuraTabBar';
-import { ARRIVE_RN, TabFocusContext, useSteppedBlur } from '@/aura/motion';
+import { ARRIVE_RN, BLURS, TabFocusContext } from '@/aura/motion';
 import { haptic } from '@/lib/haptics';
 import { useLeaveGuard } from '@/lib/leaveGuard';
 import { useReduceMotion } from '@/lib/useReduceMotion';
@@ -25,6 +25,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 import { TAB_BAR_GLASS } from '@/ui/backdrop';
 import { GlassTarget } from '@/ui/LiquidGlass';
+import { Dissolve } from './Dissolve';
 
 // The tabs' navigator and the airy look's bar (src/aura/AuraTabBar.tsx, docs/design/aura): the bar
 // floats above the bottom (above the safe area), centred, and shows the focused tab's screen
@@ -72,7 +73,13 @@ export function useTabBarOverMap(on: boolean): void {
 const TabBarSpaceContext = createContext(0);
 
 export function useTabBarSpace(): number {
-  return useContext(TabBarSpaceContext);
+  const space = useContext(TabBarSpaceContext);
+  // A screen that is not on top keeps the room it had (the owner's report, 29 Ekim): a DM hiding
+  // the bar laid out the Mesajlar list under it again in the middle of the DM's slide.
+  const focused = useIsFocused();
+  const [kept, setKept] = useState(space);
+  if (focused && kept !== space) setKept(space);
+  return focused ? space : kept;
 }
 
 export function TabBarSpace({ children }: { children: ReactNode }) {
@@ -112,8 +119,9 @@ export function TabScene({
   const id = useId();
   const [focus, setFocus] = useState({ focused: navigation.isFocused(), opened: 0 });
   // The tab's screen arrives each time it is opened (the film's tab switch): from a little below,
-  // faded in on the native driver, its blur stepping down (useSteppedBlur). The first opening is
-  // the screen's own arrival (Screen's cascade).
+  // faded in on the native driver, its blur clearing on the same curve (Dissolve: drawn natively,
+  // small, every frame, as the film has it). The first opening is the screen's own arrival
+  // (Screen's cascade).
   const [p] = useState(() => new Animated.Value(1));
   useEffect(() => {
     const own = () => useBarMode.setState({ target: id });
@@ -151,19 +159,25 @@ export function TabScene({
       useBarMode.setState((s) => (s.target === id ? { target: null } : s));
     };
   }, [navigation, routeKey, id, reduce, p]);
-  const blur = useSteppedBlur(focus.opened, !reduce);
   const arrive = {
     flex: 1,
     opacity: p,
     transform: [
       { translateY: p.interpolate({ inputRange: [0, 1], outputRange: [MOTION.dissolve.rise, 0] }) },
     ],
-    filter: blur > 0 ? [{ blur }] : undefined,
   };
   const ground = AURA[scheme].ground;
   const scene = (
     <TabFocusContext.Provider value={focus}>
-      <Animated.View style={arrive}>{children}</Animated.View>
+      <Dissolve
+        run={BLURS && !reduce ? focus.opened : 0}
+        blur={MOTION.dissolve.blur}
+        durationMs={MOTION.dissolve.inMs}
+        curve={MOTION.curves.arrive}
+        style={{ flex: 1 }}
+      >
+        <Animated.View style={arrive}>{children}</Animated.View>
+      </Dissolve>
     </TabFocusContext.Provider>
   );
   return (

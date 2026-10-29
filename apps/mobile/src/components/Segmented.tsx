@@ -9,6 +9,8 @@ import { haptic } from '@/lib/haptics';
 import type { IconName } from './Button';
 import { Text } from './Text';
 import { AppIcon } from './AppIcon';
+import { useLabOff } from '@/lib/drawLab';
+import { shadowParts } from './NativeShadow';
 
 type Option<T extends string> = {
   value: T;
@@ -46,6 +48,17 @@ export function Segmented<T extends string>({
 }: Props<T>) {
   const { colors, shape, scheme } = useTheme();
   const k = KIT[scheme];
+  // The capsule's and the chosen tab's soft shadows natively (NativeShadow.tsx).
+  const shadowOff = useLabOff('golge');
+  const shadow = shadowParts(
+    shadowOff,
+    k.glassShadow,
+    undefined,
+    KIT.size.seg,
+    true,
+    KIT.size.edge,
+  );
+  const onShadow = shadowParts(shadowOff, k.segShadow || undefined, undefined, KIT.size.btnSm);
   return (
     <View
       accessibilityRole="tablist"
@@ -61,10 +74,11 @@ export function Segmented<T extends string>({
           borderRadius: KIT.size.seg,
           borderWidth: KIT.size.edge,
           borderColor: k.glassEdge,
-          boxShadow: k.glassShadow,
+          boxShadow: shadow.boxShadow,
         },
       ]}
     >
+      {shadow.node}
       {options.map((o) => {
         const on = o.value === value;
         return (
@@ -89,9 +103,10 @@ export function Segmented<T extends string>({
               paddingHorizontal: iconOnly ? 0 : SPACING[3],
               borderRadius: KIT.size.btnSm,
               backgroundColor: on ? k.segOn : 'transparent',
-              boxShadow: on ? k.segShadow || undefined : undefined,
+              boxShadow: on ? onShadow.boxShadow : undefined,
             }}
           >
+            {on ? onShadow.node : null}
             {o.icon ? (
               <AppIcon
                 name={o.icon}
