@@ -6,6 +6,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { type PaletteKey, SPACING } from '@/theme/tokens';
 
 import { HALO_IMAGE } from './Glyph';
+import { useLoopActive } from './Loader';
 
 type Props = {
   tone: PaletteKey;
@@ -24,10 +25,12 @@ const GROW = 1.35;
 export function LiveDot({ tone, periodMs, size = SPACING[3], accessibilityLabel }: Props) {
   const { colors, shape } = useTheme();
   const reduce = useReduceMotion();
+  // Beating only while its screen is on top and the app in front.
+  const active = useLoopActive();
   const [beat] = useState(() => new Animated.Value(0.5));
 
   useEffect(() => {
-    if (reduce) {
+    if (reduce || !active) {
       beat.setValue(0.5);
       return undefined;
     }
@@ -41,7 +44,7 @@ export function LiveDot({ tone, periodMs, size = SPACING[3], accessibilityLabel 
     );
     loop.start();
     return () => loop.stop();
-  }, [reduce, periodMs, beat]);
+  }, [reduce, active, periodMs, beat]);
 
   const box = size * 3;
   const color = colors[tone];

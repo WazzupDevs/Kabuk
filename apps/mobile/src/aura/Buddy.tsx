@@ -2,6 +2,7 @@ import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { Animated, Easing, View } from 'react-native';
 
 import { CachedSvg } from '@/components/CachedSvg';
+import { useLoopActive } from '@/components/Loader';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { AURA, MOTION } from '@/theme/aura';
 import { lookSvg, posedEyes } from '@/theme/capsuleLook';
@@ -36,6 +37,9 @@ export function Buddy({
 }) {
   const { scheme } = useTheme();
   const reduce = useReduceMotion();
+  // Floating and blinking only while its screen is on top and the app in front: a buddy on a
+  // screen under another (or with the app away) kept the phone drawing frames for nothing.
+  const active = useLoopActive();
   const width = height * FIG_RATIO;
   const base = useMemo(() => lookSvg(look, 'fig').replace(/viewBox="[^"]*"/, FIG_BOX), [look]);
   const [blink, setBlink] = useState(false);
@@ -51,6 +55,11 @@ export function Buddy({
     pop.setValue(0);
     const arrive = Animated.spring(pop, { ...springConfig(MOTION.springs.pop), toValue: 1, delay });
     arrive.start();
+    return () => arrive.stop();
+  }, [reduce, delay, pop]);
+
+  useEffect(() => {
+    if (reduce || !active) return undefined;
     const ease = Easing.inOut(Easing.sin);
     const ms = MOTION.idle.floatMs;
     const loop = Animated.loop(
@@ -61,14 +70,13 @@ export function Buddy({
     );
     const start = setTimeout(() => loop.start(), delay + (phase % (2 * ms)));
     return () => {
-      arrive.stop();
       clearTimeout(start);
       loop.stop();
     };
-  }, [reduce, delay, phase, pop, float]);
+  }, [reduce, active, delay, phase, float]);
 
   useEffect(() => {
-    if (reduce) return undefined;
+    if (reduce || !active) return undefined;
     let timer: ReturnType<typeof setTimeout>;
     const next = () => {
       timer = setTimeout(() => {
@@ -81,7 +89,7 @@ export function Buddy({
     };
     next();
     return () => clearTimeout(timer);
-  }, [reduce]);
+  }, [reduce, active]);
 
   const rise = float.interpolate({ inputRange: [0, 1], outputRange: [0, -MOTION.idle.floatPx] });
   return (
