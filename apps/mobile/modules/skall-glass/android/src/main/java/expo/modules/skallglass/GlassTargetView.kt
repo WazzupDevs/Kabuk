@@ -55,10 +55,22 @@ class GlassTargetView(context: Context, appContext: AppContext) : ExpoView(conte
   private fun changedArea(view: View): Rect? {
     if (!view.isAttachedToWindow) return null
     val area = Rect()
-    val shown = view.getGlobalVisibleRect(moved)
-    view.getLocationInWindow(laidOut)
-    area.set(laidOut[0], laidOut[1], laidOut[0] + view.width, laidOut[1] + view.height)
-    if (shown) area.union(moved)
+    // Its own box without its own move (where a slide or a float starts or ends)…
+    val parent = view.parent as? View
+    if (parent != null) {
+      parent.getLocationInWindow(laidOut)
+      area.set(
+        laidOut[0] + view.left,
+        laidOut[1] + view.top,
+        laidOut[0] + view.right,
+        laidOut[1] + view.bottom,
+      )
+    } else {
+      view.getLocationInWindow(laidOut)
+      area.set(laidOut[0], laidOut[1], laidOut[0] + view.width, laidOut[1] + view.height)
+    }
+    // …and where it shows now.
+    if (view.getGlobalVisibleRect(moved)) area.union(moved)
     val margin = (CHANGE_MARGIN_DP * resources.displayMetrics.density).toInt()
     area.inset(-margin, -margin)
     return area
