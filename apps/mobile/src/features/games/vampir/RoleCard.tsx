@@ -10,13 +10,18 @@ import { PEEK_CARD_SVG, TABLE } from '@/theme/vampirTable';
 
 import { ROLE_ART } from './roleArt';
 import { TableRound } from './RoundTable';
+import { useLabOff } from '@/lib/drawLab';
+import { boxShadowParts } from '@/components/NativeShadow';
 
 const MAX_FONT = 1.3;
+const POP_RADIUS = 18;
 
 // "Rolüm" at the top right: the table's round with the card in it (the file's ICON.card); held, a
 // small card with the role's picture, name and side.
 export function PeekRole({ role }: { role: VampirRole }) {
   const [open, setOpen] = useState(false);
+  // Its soft shadow natively (NativeShadow.tsx): the hourglass redraws the screen on every frame.
+  const shadow = boxShadowParts(useLabOff('golge'), L.shadow.pop, POP_RADIUS);
   return (
     <View>
       <TableRound
@@ -31,7 +36,8 @@ export function PeekRole({ role }: { role: VampirRole }) {
         testID="vampir-peek"
       />
       {open ? (
-        <View pointerEvents="none" style={styles.pop}>
+        <View pointerEvents="none" style={[styles.pop, { boxShadow: shadow.boxShadow }]}>
+          {shadow.node}
           <Image source={ROLE_ART[role]} style={styles.popArt} resizeMode="cover" />
           <View>
             <Text maxFontSizeMultiplier={MAX_FONT} style={[KIT_TYPE.h3, { color: L.dark }]}>
@@ -62,9 +68,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingLeft: 10,
     paddingRight: 14,
-    borderRadius: 18,
+    borderRadius: POP_RADIUS,
     backgroundColor: L.tileOn,
-    boxShadow: L.shadow.pop,
   },
   popArt: { width: L.size.popArt * 0.75, height: L.size.popArt, borderRadius: 8 },
 });

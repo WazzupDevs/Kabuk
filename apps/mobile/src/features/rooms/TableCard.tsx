@@ -20,6 +20,8 @@ import { InviteSheet } from './InviteSheet';
 import { roomKeys, type TableRoomRow, useTablePeople } from './queries';
 import { PersonFace } from './RoomPeople';
 import { TABLE_ICON_IMAGES } from './tableIconImages';
+import { useLabOff } from '@/lib/drawLab';
+import { shadowParts } from '@/components/NativeShadow';
 
 type CheckIn = {
   id: string;
@@ -229,11 +231,21 @@ function PeopleFaces({ roomId, phones, me }: { roomId: string; phones: number; m
     void refetch();
   }, [phones, refetch]);
   const [width, setWidth] = useState(0);
+  const shadowOff = useLabOff('golge');
   const sorted = [...(people.data ?? [])].sort((a, b) => a.joinedAt.localeCompare(b.joinedAt));
   if (sorted.length === 0) return null;
   // All of them in the card's width, whatever their number (the owner's report, 29 Ekim: twelve
   // ran off the card): they overlap more when they must.
   const side = KIT.size.av.sm + 2 * KIT.size.avRing;
+  // Each face's soft shadow natively (NativeShadow.tsx): the lobby scrolls.
+  const faceShadow = shadowParts(
+    shadowOff,
+    KIT.avShadow,
+    undefined,
+    side / 2,
+    true,
+    KIT.size.avRing,
+  );
   const n = sorted.length;
   const overlap =
     width > 0 && n > 1 ? Math.max(FACE_OVERLAP, (n * side - width) / (n - 1)) : FACE_OVERLAP;
@@ -252,9 +264,10 @@ function PeopleFaces({ roomId, phones, me }: { roomId: string; phones: number; m
             borderRadius: KIT.size.av.sm,
             borderWidth: KIT.size.avRing,
             borderColor: KIT.white,
-            boxShadow: KIT.avShadow,
+            boxShadow: faceShadow.boxShadow,
           }}
         >
+          {faceShadow.node}
           <PersonFace
             person={p}
             publicId={profiles?.get(p.sessionId)}

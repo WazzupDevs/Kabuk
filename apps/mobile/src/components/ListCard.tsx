@@ -1,11 +1,13 @@
 import { Children, createContext, type ReactNode, useState } from 'react';
 import { View } from 'react-native';
 
-import { KIT, shadowList } from '@/theme/auraKit';
+import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
 
 import { usePressScale } from './motion';
+import { useLabOff } from '@/lib/drawLab';
+import { shadowParts } from './NativeShadow';
 
 // skall tuvali (skall.css → `.list`): rows in one card, a hairline between them inset to the text
 // (78 from the left, 16 from the right). The rows are ListRow `inset`.
@@ -31,6 +33,18 @@ export function ListCard({
   const [pressed, setPressed] = useState(false);
   const rows = Children.toArray(children).filter(Boolean);
   const single = rows.length === 1;
+  // The card's soft shadow natively (NativeShadow.tsx); its inset light edge as boxShadow.
+  const shadowOff = useLabOff('golge');
+  const shadow = bare
+    ? null
+    : shadowParts(
+        shadowOff,
+        k.glassShadow,
+        k.glassInset,
+        KIT.size.glassRadius,
+        true,
+        KIT.size.edge,
+      );
   return (
     <View
       testID={testID}
@@ -44,13 +58,14 @@ export function ListCard({
                 borderWidth: KIT.size.edge,
                 borderColor: k.glassEdge,
                 borderRadius: KIT.size.glassRadius,
-                boxShadow: shadowList(k.glassShadow, k.glassInset),
+                boxShadow: shadow?.boxShadow,
                 paddingVertical: KIT.size.listPadY,
               },
             ],
         single ? pressScale(pressed) : null,
       ]}
     >
+      {shadow?.node}
       <CardPressContext.Provider value={single ? setPressed : null}>
         {rows.map((row, i) => (
           <View key={i}>

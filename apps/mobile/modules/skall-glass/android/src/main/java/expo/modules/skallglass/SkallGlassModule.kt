@@ -4,8 +4,10 @@ import android.graphics.Color
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 
-// skall's liquid glass (the owner's call, 27 Ekim): a tab screen records what it draws
-// (GlassTargetView), the tab bar draws that record under itself through a lens (LiquidGlassView).
+// skall's glass: a tab screen records what it draws (GlassTargetView), the tab bar and the message
+// bar draw that record under themselves, frosted (LiquidGlassView; frosted since 29 Ekim, the
+// owner's call), a tab screen's arrival blurs and clears (DissolveView), and soft shadows are drawn
+// from pictures made once (ShadowView).
 class SkallGlassModule : Module() {
   override fun definition() = ModuleDefinition {
     Name("SkallGlass")
@@ -13,6 +15,14 @@ class SkallGlassModule : Module() {
     View(GlassTargetView::class) {
       Name("GlassTargetView")
       Prop("targetId") { view: GlassTargetView, id: String? -> view.setTargetId(id) }
+    }
+
+    View(DissolveView::class) {
+      Name("DissolveView")
+      Prop("run") { view: DissolveView, value: Int -> view.setRun(value) }
+      Prop("blur") { view: DissolveView, dp: Float -> view.setBlurDp(dp) }
+      Prop("durationMs") { view: DissolveView, ms: Int -> view.setDurationMs(ms) }
+      Prop("curve") { view: DissolveView, list: List<Double> -> view.setCurve(list) }
     }
 
     View(ShadowView::class) {
@@ -26,11 +36,8 @@ class SkallGlassModule : Module() {
       Prop("targetId") { view: LiquidGlassView, id: String? -> view.targetId = id }
       Prop("cornerRadius") { view: LiquidGlassView, radius: Float -> view.setCornerRadiusDp(radius) }
       Prop("ground") { view: LiquidGlassView, color: Color? -> view.ground = color?.toArgb() }
-      Prop("blurRadius") { view: LiquidGlassView, radius: Float -> view.setBlurDp(radius) }
-      Prop("refraction") { view: LiquidGlassView, px: Float -> view.setRefractionDp(px) }
-      Prop("depth") { view: LiquidGlassView, px: Float -> view.setDepthDp(px) }
-      Prop("dispersion") { view: LiquidGlassView, value: Float -> view.setDispersion(value) }
-      Prop("highlight") { view: LiquidGlassView, value: Float -> view.setHighlight(value) }
+      Prop("blur") { view: LiquidGlassView, dp: Float -> view.setBlurDp(dp) }
+      Prop("saturation") { view: LiquidGlassView, value: Float -> view.setSaturation(value) }
     }
   }
 }

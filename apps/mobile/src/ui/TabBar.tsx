@@ -75,11 +75,8 @@ export function TabBar({ items, selected, onPress, glassTarget, opaque = false }
             targetId={glassTarget}
             cornerRadius={t.radius}
             ground={V46_PALETTE[scheme].canvas}
-            blurRadius={TAB_GLASS.blur}
-            refraction={TAB_GLASS.refraction}
-            depth={TAB_GLASS.depth}
-            dispersion={TAB_GLASS.dispersion}
-            highlight={TAB_GLASS.highlight}
+            blur={TAB_GLASS.blur}
+            saturation={TAB_GLASS.saturation}
             style={StyleSheet.absoluteFill}
           />
         ) : null}

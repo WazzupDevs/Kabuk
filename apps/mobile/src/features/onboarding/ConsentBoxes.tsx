@@ -8,6 +8,8 @@ import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING, TOUCH } from '@/theme/tokens';
+import { useLabOff } from '@/lib/drawLab';
+import { shadowParts } from '@/components/NativeShadow';
 
 type Props = {
   terms: boolean;
@@ -38,6 +40,15 @@ function ConsentBox({
   href: '/terms' | '/kvkk';
 }) {
   const { scheme } = useTheme();
+  // Its soft shadow natively (NativeShadow.tsx).
+  const shadow = shadowParts(
+    useLabOff('golge'),
+    KIT[scheme].glassShadow,
+    undefined,
+    KIT.size.glassRadiusSm,
+    true,
+    checked ? 2 : KIT.size.edge,
+  );
   return (
     <View
       className="flex-row items-center"
@@ -51,9 +62,10 @@ function ConsentBox({
         borderRadius: KIT.size.glassRadiusSm,
         borderWidth: checked ? 2 : KIT.size.edge,
         borderColor: checked ? KIT.primary : KIT[scheme].glassEdge,
-        boxShadow: KIT[scheme].glassShadow,
+        boxShadow: shadow.boxShadow,
       }}
     >
+      {shadow.node}
       <View className="flex-1">
         <Checkbox label={label} checked={checked} onToggle={onToggle} />
       </View>

@@ -12,6 +12,8 @@ import { CardPressContext } from './ListCard';
 import { usePressScale } from './motion';
 import { Text } from './Text';
 import { AppIcon } from './AppIcon';
+import { useLabOff } from '@/lib/drawLab';
+import { shadowParts } from './NativeShadow';
 
 type Props = {
   title: string;
@@ -73,6 +75,19 @@ export function ListRow({
   // docs/design/aura (`.li`): 12 over and under, 16 at the sides, 12 between; a row on its own
   // is the smaller glass.
   const k = KIT[theme.scheme];
+  // A card row's soft shadow natively (NativeShadow.tsx).
+  const shadowOff = useLabOff('golge');
+  const shadow =
+    card && !inset
+      ? shadowParts(
+          shadowOff,
+          k.glassShadow,
+          undefined,
+          KIT.size.glassRadiusSm,
+          true,
+          KIT.size.edge,
+        )
+      : null;
   const row = {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
@@ -90,12 +105,13 @@ export function ListRow({
           borderRadius: KIT.size.glassRadiusSm,
           borderWidth: KIT.size.edge,
           borderColor: k.glassEdge,
-          boxShadow: k.glassShadow,
+          boxShadow: shadow?.boxShadow,
         }
       : { ...row, borderBottomWidth: KIT.size.hair, borderBottomColor: k.hair };
   if (!press)
     return (
       <View style={style} testID={testID}>
+        {shadow?.node}
         {content}
       </View>
     );
@@ -116,6 +132,7 @@ export function ListRow({
             inset ? rowPress(theme, pressed && !cardPress) : null,
           ]}
         >
+          {shadow?.node}
           {content}
         </View>
       )}

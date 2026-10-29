@@ -1,3 +1,4 @@
+import { Image as ExpoImage } from 'expo-image';
 import { useEffect, useState } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 
@@ -11,7 +12,6 @@ import {
   GLASS_IN_MEDAL,
   glassBackSvg,
   glassFrontSvg,
-  medalSvg,
   rimHalfSvg,
   type SandTone,
   sandSvg,
@@ -20,6 +20,8 @@ import {
   TABLE_MOTION as M,
   TABLE_SHADOW,
 } from '@/theme/vampirTable';
+
+import { GLASS_PICTURE, MEDAL_PICTURE } from './roleArt';
 
 // The game's time as an hourglass (the owner's call, 29 Ekim: not digital; the file's .timer).
 // Its sand runs with the server's clock (`endsAt`), on the native driver from its share now to the
@@ -162,9 +164,20 @@ export function Medal({ endsAt, totalMs, tone }: Clock & { tone: SandTone }) {
       accessibilityLabel={tr.vampir.timeLeftLabel(clockText(endsAt))}
       style={{ width: m, height: m }}
     >
-      <View style={{ position: 'absolute', left: -pad, top: -pad }} pointerEvents="none">
-        <CachedSvg xml={medalSvg()} width={m + pad * 2} height={m + pad * 2} />
-      </View>
+      <ExpoImage
+        pointerEvents="none"
+        source={MEDAL_PICTURE}
+        style={{
+          position: 'absolute',
+          left: -pad,
+          top: -pad,
+          width: m + pad * 2,
+          height: m + pad * 2,
+        }}
+        contentFit="fill"
+        transition={0}
+        accessible={false}
+      />
       {/* The last seconds: the medallion's edge throbs red. */}
       <Animated.View pointerEvents="none" style={[styles.fill, { opacity: pulse }]}>
         <NativeShadow css={TABLE_SHADOW.low} radius={m / 2} />
@@ -317,9 +330,14 @@ function MedalGlass({ p, tone }: { p: Animated.Value; tone: SandTone }) {
           <Grain key={i} tone={tone} ox={ox} oy={oy} k={k} grain={g} delay={i * M.grainDelay} />
         ))}
       </Animated.View>
-      <View style={styles.fill} pointerEvents="none">
-        <CachedSvg xml={glassFrontSvg(tone, false)} width={m} height={m} />
-      </View>
+      <ExpoImage
+        pointerEvents="none"
+        source={GLASS_PICTURE[tone]}
+        style={[styles.fill, { width: m, height: m }]}
+        contentFit="fill"
+        transition={0}
+        accessible={false}
+      />
     </>
   );
 }

@@ -3,7 +3,8 @@
 // shadow does not draw (an inset shadow, a unit other than px), so the caller keeps boxShadow.
 export type ShadowSpec = { x: number; y: number; blur: number; spread: number; color: string };
 
-export function parseShadows(css: string): ShadowSpec[] | null {
+// A boxShadow list split at its top-level commas.
+function shadowItems(css: string): string[] {
   const parts: string[] = [];
   let depth = 0;
   let start = 0;
@@ -17,6 +18,26 @@ export function parseShadows(css: string): ShadowSpec[] | null {
     }
   }
   parts.push(css.slice(start));
+  return parts.map((p) => p.trim()).filter((p) => p.length > 0);
+}
+
+// A boxShadow string in its outer shadows and its inset ones, each kept in order (the native
+// shadow draws the outer ones, boxShadow keeps the inset light edges).
+export function splitShadows(css: string | null | undefined): {
+  outer: string | undefined;
+  inset: string | undefined;
+} {
+  const items = css ? shadowItems(css) : [];
+  const outer = items.filter((p) => !/\binset\b/.test(p));
+  const inset = items.filter((p) => /\binset\b/.test(p));
+  return {
+    outer: outer.length > 0 ? outer.join(', ') : undefined,
+    inset: inset.length > 0 ? inset.join(', ') : undefined,
+  };
+}
+
+export function parseShadows(css: string): ShadowSpec[] | null {
+  const parts = shadowItems(css);
   const out: ShadowSpec[] = [];
   for (const raw of parts) {
     const part = raw.trim();

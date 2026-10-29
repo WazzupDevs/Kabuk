@@ -81,10 +81,12 @@ describe('v46 tab bar', () => {
     expect(b.backdrop).toEqual({ blur: 20 });
   });
 
-  it("shows the screen behind through the liquid glass (the owner's call, 27 Ekim)", () => {
+  it("shows the screen behind through the frosted glass (the owner's call, 29 Ekim)", () => {
     const tabBar = source('TabBar.tsx');
-    // The glass: a light blur, a lens at the rim, v46's gradient lighter over it.
-    expect(TAB_GLASS.blur).toBeLessThan(bar.light.backdrop.blur);
+    // The glass: docs/design/aura's `.glass`, backdrop-filter: blur(24px) saturate(170%); v46's
+    // gradient lighter over it.
+    expect(TAB_GLASS.blur).toBe(24);
+    expect(TAB_GLASS.saturation).toBe(1.7);
     expect(TAB_GLASS.overlay).toBeGreaterThan(0);
     expect(TAB_GLASS.overlay).toBeLessThan(1);
     expect(tabBar).toMatch(/<LiquidGlass\s+targetId=\{glassTarget\}\s+cornerRadius=\{t\.radius\}/);

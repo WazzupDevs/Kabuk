@@ -3,7 +3,7 @@
     "name": "skall",
     "slug": "masa",
     "scheme": "masa",
-    "version": "0.8.0",
+    "version": "0.9.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "platforms": ["android", "ios"],
@@ -76,7 +76,8 @@
       ]
     ],
     "experiments": {
-      "typedRoutes": true
+      "typedRoutes": true,
+      "reactCompiler": true
     },
     "icon": "./assets/icon/icon.png"
   }

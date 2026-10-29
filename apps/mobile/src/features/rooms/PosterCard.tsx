@@ -7,6 +7,8 @@ import { Tag } from '@/components/Tag';
 import { tr } from '@/i18n/tr';
 import { AURA } from '@/theme/aura';
 import { SPACING } from '@/theme/tokens';
+import { useLabOff } from '@/lib/drawLab';
+import { boxShadowParts } from '@/components/NativeShadow';
 
 // The games on the table: since 29 Ekim each its comic poster in a small landscape card
 // (scripts/art/posters.ts, after the owner's earlier posters in assets/game-card/), the game's
@@ -53,6 +55,8 @@ export function GameCard({
   const pressScale = usePressScale();
   const text = tr.table.gameCards[id];
   const look = AURA.gameCards[id];
+  // The poster clips its picture, so its native shadow (NativeShadow.tsx) sits on a box around it.
+  const shadow = boxShadowParts(useLabOff('golge'), look.shadow, GAME_CARD.radius);
   return (
     <Pressable
       testID={testID}
@@ -67,25 +71,29 @@ export function GameCard({
         // the corner tag lies over it.
         <View
           style={[
-            {
-              aspectRatio: POSTER_RATIO,
-              borderRadius: GAME_CARD.radius,
-              overflow: 'hidden',
-              boxShadow: look.shadow,
-              opacity: dim ? DIMMED : 1,
-            },
+            { borderRadius: GAME_CARD.radius, opacity: dim ? DIMMED : 1 },
             pressScale(pressed && !!onPress),
           ]}
         >
-          <Image
-            source={art}
-            fadeDuration={0}
-            resizeMode="cover"
-            style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%' }}
-            accessible={false}
-          />
-          <View style={{ position: 'absolute', left: GAME_CARD.inset, top: GAME_CARD.inset }}>
-            <Tag variant={lit ? 'light' : 'glass'} label={tag} />
+          {shadow.node}
+          <View
+            style={{
+              aspectRatio: POSTER_RATIO,
+              borderRadius: GAME_CARD.radius,
+              overflow: 'hidden',
+              boxShadow: shadow.boxShadow,
+            }}
+          >
+            <Image
+              source={art}
+              fadeDuration={0}
+              resizeMode="cover"
+              style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%' }}
+              accessible={false}
+            />
+            <View style={{ position: 'absolute', left: GAME_CARD.inset, top: GAME_CARD.inset }}>
+              <Tag variant={lit ? 'light' : 'glass'} label={tag} />
+            </View>
           </View>
         </View>
       )}

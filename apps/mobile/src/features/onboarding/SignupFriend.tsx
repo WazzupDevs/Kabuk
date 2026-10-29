@@ -31,6 +31,8 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
 import { figureDrawing } from './figureDrawing';
+import { useLabOff } from '@/lib/drawLab';
+import { boxShadowParts } from '@/components/NativeShadow';
 
 export type FriendReaction = { kind: 'ok' | 'err' | 'nod'; key: number };
 
@@ -83,6 +85,13 @@ export function SignupFriend({
 }: Props) {
   const { scheme, colors, shape } = useTheme();
   const reduce = useReduceMotion();
+  // The speech bubble's soft shadow natively (NativeShadow.tsx).
+  const bubbleShadow = boxShadowParts(useLabOff('golge'), GAME_SHADOW.toast, [
+    shape.radius.sm + 2,
+    shape.radius.sm + 2,
+    shape.radius.xs - 2,
+    shape.radius.sm + 2,
+  ]);
   // The eyes squint for a moment after a shake: until that reaction's key is marked done.
   const [squintDone, setSquintDone] = useState<number | null>(null);
   const squint = reaction?.kind === 'err' && reaction.key !== squintDone;
@@ -253,10 +262,11 @@ export function SignupFriend({
             borderRadius: shape.radius.sm + 2,
             borderBottomRightRadius: shape.radius.xs - 2,
             backgroundColor: colors.surface,
-            boxShadow: GAME_SHADOW.toast,
+            boxShadow: bubbleShadow.boxShadow,
             opacity: bubbleTop === null ? 0 : 1,
           }}
         >
+          {bubbleShadow.node}
           <Text variant="label">{bubble}</Text>
         </View>
       ) : null}

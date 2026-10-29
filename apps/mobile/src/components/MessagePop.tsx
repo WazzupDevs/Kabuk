@@ -12,6 +12,8 @@ import { OPACITY, SPACING } from '@/theme/tokens';
 import type { IconName } from './Button';
 import { Menu, MenuItem } from './Menu';
 import { ReactionFace } from './ReactionFace';
+import { useLabOff } from '@/lib/drawLab';
+import { boxShadowParts } from './NativeShadow';
 
 export type BubbleAction = {
   label: string;
@@ -50,6 +52,9 @@ export function MessagePop({
   children: ReactNode;
 }) {
   const { colors, shape } = useTheme();
+  // The reaction bar's soft shadow natively (NativeShadow.tsx): it pops in.
+  const shadowOff = useLabOff('golge');
+  const barShadow = boxShadowParts(shadowOff, shape.shadow.sheet, shape.radius.pill);
   const screen = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [height, setHeight] = useState<number | null>(null);
@@ -92,9 +97,10 @@ export function MessagePop({
               padding: SPACING[1],
               borderRadius: shape.radius.pill,
               backgroundColor: colors.surface,
-              boxShadow: shape.shadow.sheet,
+              boxShadow: barShadow.boxShadow,
             }}
           >
+            {barShadow.node}
             {REACTIONS.map((emoji, i) => (
               <Pressable
                 key={emoji}

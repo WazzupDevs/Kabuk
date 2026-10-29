@@ -45,11 +45,15 @@ import { CountBadge } from './CountBadge';
 import { useTabBarSpace } from './TabBar';
 import { usePressScale } from './motion';
 import { AppIcon } from './AppIcon';
-// Frame by frame with the keyboard (react-native-keyboard-controller): the bar rises with it.
-import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
+// Frame by frame with the keyboard (react-native-keyboard-controller), on the UI thread: the
+// message bar rises with it (KeyboardStickyView) and the stream keeps its end above it
+// (KeyboardChatScrollView), without laying the screen out again on every frame of the keyboard.
+import { KeyboardChatScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
 
 import { GlassTarget } from '@/ui/LiquidGlass';
 import { ChatKindContext } from './chatKind';
+import { useLabOff } from '@/lib/drawLab';
+import { boxShadowParts } from './NativeShadow';
 
 // How close to the end counts as "at the bottom" (a message's last line may sit under the edge).
 const BOTTOM_SLACK = SPACING[12];
@@ -173,6 +177,10 @@ type ScrollProps = {
   bottomInset?: number;
   // Set to this stream's "go to the end" (ChatScreen hands it to the message bar).
   endRef?: RefObject<(() => void) | null>;
+  // A chat screen's stream above the keyboard: the distance from its bottom to the screen's bottom
+  // (ChatScreen). At its end it rises with the keyboard; scrolled up it stays where the reader is
+  // and the keyboard covers its foot, as the screen shrinking did. Without it a plain stream.
+  keyboardOffset?: number;
 };
 
 // A chat's message stream (canvas: Aşama 8 · Saha → Sohbet): at the bottom (the keyboard open too)
@@ -186,16 +194,21 @@ export function ChatScroll({
   testID,
   bottomInset = 0,
   endRef,
+  keyboardOffset,
 }: ScrollProps) {
   const { colors, shape } = useTheme();
   const pressScale = usePressScale();
+  // The "new messages" button's soft shadow natively (NativeShadow.tsx).
+  const shadowOff = useLabOff('golge');
+  const endShadow = boxShadowParts(shadowOff, shape.shadow.sheet, TOUCH.min / 2);
   const scroll = useRef<ScrollView>(null);
   // The screen's reaction bar (ChatScreen), or this stream's own (the game's chat panel).
   const outerBar = useChatBar();
   const ownBar = useChatBarState();
   const bar = outerBar ?? ownBar.bar;
-  // Where the reader is: offset, visible height and content height, from the last events.
-  const metrics = useRef({ offset: 0, height: 0, content: 0 });
+  // Where the reader is: offset, visible height and content height, from the last events, and the
+  // room the keyboard adds under the content (KeyboardChatScrollView; not in the scroll events).
+  const metrics = useRef({ offset: 0, height: 0, content: 0, inset: 0 });
   // Following the end: from the start for a stream that opens at the newest message, again after
   // the reader comes back down or sends. Only the reader's own drag away from the end lets go, so
   // late content (the first page, photos, quotes) never leaves the stream half way.
@@ -234,7 +247,8 @@ export function ChatScroll({
   }
 
   const bottomOf = (content: number) =>
-    metrics.current.offset + metrics.current.height >= content - BOTTOM_SLACK;
+    metrics.current.offset + metrics.current.height >=
+    content + metrics.current.inset - BOTTOM_SLACK;
   // To the end now, and again two frames later: on Android a scroll asked for in the same breath as
   // new content can run before the content's new height reaches the screen, and stops at the old
   // end, somewhere up the stream (the owner's report, 29 Ekim: chats opened in the middle). Not
@@ -300,6 +314,7 @@ export function ChatScroll({
       offset: contentOffset.y,
       height: layoutMeasurement.height,
       content: contentSize.height,
+      inset: metrics.current.inset,
     };
     const bottom = bottomOf(contentSize.height);
     if (bottom !== atBottom) setAtBottom(bottom);
@@ -324,53 +339,80 @@ export function ChatScroll({
     else setAtBottom(bottomOf(h));
   };
 
+  const streamProps = {
+    testID,
+    // Rows put above what is shown (the rest of the first page, "Daha eski mesajlar") leave what
+    // is shown where it is, in the same frame: the stream opened at its end and showed older
+    // messages for a frame or two before coming back (the owner's video, 29 Ekim).
+    maintainVisibleContentPosition: startAtEnd ? KEEP_VISIBLE : undefined,
+    // Dragging the messages puts the keyboard away, like any chat app.
+    keyboardDismissMode: 'on-drag' as const,
+    style: { flex: 1 },
+    contentContainerStyle,
+    keyboardShouldPersistTaps: 'handled' as const,
+    scrollEventThrottle: 64,
+    onScroll,
+    onScrollBeginDrag: () => {
+      dragging.current = true;
+      touched.current = true;
+      bar.setOpen(null);
+    },
+    onScrollEndDrag: onDragEnd,
+    onMomentumScrollEnd: onDragEnd,
+    onContentSizeChange,
+    // A new height (a stream not under the keyboard shrinks with it): one following the end stays
+    // at the end.
+    onLayout: (e: LayoutChangeEvent) => {
+      metrics.current.height = e.nativeEvent.layout.height;
+      if (pinned.current) stayAtEnd();
+    },
+  };
+  const stream = (
+    <ChatBarContext.Provider value={bar}>
+      <ChatJumpContext.Provider value={jump}>
+        <ChatLiveContext.Provider value={live}>
+          <ChatNewestContext.Provider value={newestKey}>{children}</ChatNewestContext.Provider>
+        </ChatLiveContext.Provider>
+      </ChatJumpContext.Provider>
+    </ChatBarContext.Provider>
+  );
+
   return (
     <View className="flex-1" onTouchStart={outerBar ? undefined : ownBar.onTouchStart}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        showsHorizontalScrollIndicator={false}
-        ref={scroll}
-        testID={testID}
-        // Rows put above what is shown (the rest of the first page, "Daha eski mesajlar") leave
-        // what is shown where it is, in the same frame: the stream opened at its end and showed
-        // older messages for a frame or two before coming back (the owner's video, 29 Ekim).
-        maintainVisibleContentPosition={startAtEnd ? KEEP_VISIBLE : undefined}
-        // Dragging the messages puts the keyboard away, like any chat app.
-        keyboardDismissMode="on-drag"
-        className="flex-1"
-        contentContainerStyle={contentContainerStyle}
-        keyboardShouldPersistTaps="handled"
-        scrollEventThrottle={64}
-        onScroll={onScroll}
-        onScrollBeginDrag={() => {
-          dragging.current = true;
-          touched.current = true;
-          bar.setOpen(null);
-        }}
-        onScrollEndDrag={onDragEnd}
-        onMomentumScrollEnd={onDragEnd}
-        onContentSizeChange={onContentSizeChange}
-        // The keyboard shrinks the stream: a stream following the end stays at the end.
-        onLayout={(e) => {
-          metrics.current.height = e.nativeEvent.layout.height;
-          if (pinned.current) stayAtEnd();
-        }}
-      >
-        <ChatBarContext.Provider value={bar}>
-          <ChatJumpContext.Provider value={jump}>
-            <ChatLiveContext.Provider value={live}>
-              <ChatNewestContext.Provider value={newestKey}>{children}</ChatNewestContext.Provider>
-            </ChatLiveContext.Provider>
-          </ChatJumpContext.Provider>
-        </ChatBarContext.Provider>
-      </ScrollView>
+      {keyboardOffset !== undefined ? (
+        <KeyboardChatScrollView
+          // At the end it rises with the keyboard; scrolled up it stays (the reader's place).
+          keyboardLiftBehavior="whenAtEnd"
+          offset={keyboardOffset}
+          onContentInsetChange={(inset) => {
+            metrics.current.inset = inset.bottom;
+          }}
+          ref={scroll as RefObject<never>}
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
+          {...streamProps}
+        >
+          {stream}
+        </KeyboardChatScrollView>
+      ) : (
+        <ScrollView
+          ref={scroll}
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
+          {...streamProps}
+        >
+          {stream}
+        </ScrollView>
+      )}
       {pending > 0 ? (
         // skall tuvali (SohbetYeniMesaj, skall.css → `.jump`): a round surface button at the right,
         // the count of new messages in a badge on its corner.
-        <View
+        // Over the message bar, rising with it when the keyboard opens.
+        <KeyboardStickyView
           pointerEvents="box-none"
-          className="absolute"
-          style={{ right: SPACING[4], bottom: SPACING[3] + bottomInset }}
+          enabled={keyboardOffset !== undefined}
+          offset={{ closed: 0, opened: keyboardOffset ?? 0 }}
+          style={{ position: 'absolute', right: SPACING[4], bottom: SPACING[3] + bottomInset }}
         >
           <Pressable
             testID="chat-new-messages"
@@ -387,11 +429,12 @@ export function ChatScroll({
                     height: TOUCH.min,
                     borderRadius: shape.radius.pill,
                     backgroundColor: pressed ? colors.surface2 : colors.surface,
-                    boxShadow: shape.shadow.sheet,
+                    boxShadow: endShadow.boxShadow,
                   },
                   pressScale(pressed),
                 ]}
               >
+                {endShadow.node}
                 <AppIcon name="chevron-down" size={ICON.md} color={colors.text} />
                 <View className="absolute" style={{ top: -SPACING[1.5], right: -SPACING[1.5] }}>
                   <CountBadge count={pending} />
@@ -399,7 +442,7 @@ export function ChatScroll({
               </View>
             )}
           </Pressable>
-        </View>
+        </KeyboardStickyView>
       ) : null}
     </View>
   );
@@ -425,6 +468,9 @@ type Props = {
   testID?: string;
   // The chat's wall (skall tuvali: dm, masa, mekan); null: none (the table's games).
   wall?: ChatWallKind | null;
+  // The screen hides the tab bar while it is open (a DM, useHideTabBar): laid out without the
+  // bar's room from its first frame, not again once the bar has gone (mid-slide).
+  hidesTabBar?: boolean;
 };
 
 // A chat app's screen (v45: .dm): the top bar, the stream scrolling over the wallpaper, the
@@ -438,10 +484,12 @@ export function ChatScreen({
   startAtEnd,
   testID,
   wall = 'dm',
+  hidesTabBar = false,
 }: Props) {
   const { shape, scheme } = useTheme();
   // Under the tabs (a DM) the floating tab bar covers the bottom: the message bar sits above it.
-  const barSpace = useTabBarSpace();
+  const tabSpace = useTabBarSpace();
+  const barSpace = hidesTabBar ? 0 : tabSpace;
   // The reaction bar's state for the whole screen: a tap on the top bar or the message bar closes it
   // too.
   const reactions = useChatBarState();
@@ -491,9 +539,9 @@ export function ChatScreen({
             >
               {top}
             </View>
-            <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-              {/* The wallpaper under the stream and the message bar (v45: .chatpane); the bar floats on
-              it, over the stream. */}
+            {/* The wallpaper under the stream and the message bar (v45: .chatpane); the bar floats on
+              it, over the stream, and rises with the keyboard. */}
+            <View style={{ flex: 1 }}>
               <View className="flex-1">
                 <GlassTarget targetId={glassId} style={{ flex: 1 }}>
                   {/* Each chat's dense doodles over the clouds (DM, Masa, Mekan; light and dark; the
@@ -506,6 +554,7 @@ export function ChatScreen({
                     startAtEnd={startAtEnd}
                     bottomInset={under}
                     endRef={end}
+                    keyboardOffset={bottomPad}
                     contentContainerStyle={{
                       flexGrow: 1,
                       // skall tuvali (skall.css → `.stream`): 16 at the sides, 6 between messages.
@@ -519,18 +568,24 @@ export function ChatScreen({
                   </ChatScroll>
                 </GlassTarget>
                 {composer ? (
-                  <View
-                    className="absolute bottom-0 left-0 right-0"
-                    style={{ paddingBottom: barSpace }}
+                  <KeyboardStickyView
+                    offset={{ closed: 0, opened: bottomPad }}
+                    style={{
+                      position: 'absolute',
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      paddingBottom: barSpace,
+                    }}
                     onLayout={(e) => setBarHeight(e.nativeEvent.layout.height)}
                   >
                     <ComposerGlassContext.Provider value={glassId}>
                       {composer}
                     </ComposerGlassContext.Provider>
-                  </View>
+                  </KeyboardStickyView>
                 ) : null}
               </View>
-            </KeyboardAvoidingView>
+            </View>
           </SafeAreaView>
         </ChatBarContext.Provider>
       </ChatKindContext.Provider>

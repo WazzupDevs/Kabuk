@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 
 import { Loader, useLoopActive } from '@/components/Loader';
-import { shadowParts } from '@/components/NativeShadow';
+import { boxShadowParts, shadowParts } from '@/components/NativeShadow';
 import { useLabOff } from '@/lib/drawLab';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { MOTION } from '@/theme/aura';
@@ -26,6 +26,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 
 import { CapIcon, type CapIconName } from './CapIcon';
 import { springConfig } from './motion';
+import { photoCacheKey } from '@/lib/usePhoto';
 
 // The canvas's component kit (docs/design/aura/project/aura.css), class for class. Values from
 // theme/auraKit.ts; nothing is measured here.
@@ -116,10 +117,11 @@ export function Glass({
 }) {
   const { c } = useKit();
   const flat = useContext(FlatGlass);
-  useLabOff('golge');
+  const shadowOff = useLabOff('golge');
   const flatFill = useLabOff('kart');
   const radius = sm ? KIT.size.glassRadiusSm : KIT.size.glassRadius;
   const shadow = shadowParts(
+    shadowOff,
     flat ? undefined : c.glassShadow,
     c.glassInset,
     radius,
@@ -207,15 +209,22 @@ export function Btn({
   const { c } = useKit();
   const press = usePress();
   const inRow = useContext(InRow);
-  useLabOff('golge');
+  const shadowOff = useLabOff('golge');
   const fg =
     tint ?? (variant === 'primary' ? KIT.onPrimary : variant === 'dark' ? c.onChipOn : c.ink);
   const shadow =
     variant === 'primary'
-      ? shadowParts(KIT.primaryShadow, c.primaryInset, KIT.size.btn)
+      ? shadowParts(shadowOff, KIT.primaryShadow, c.primaryInset, KIT.size.btn)
       : variant === 'dark'
         ? null
-        : shadowParts(c.raisedShadow || undefined, undefined, KIT.size.btn, true, KIT.size.edge);
+        : shadowParts(
+            shadowOff,
+            c.raisedShadow || undefined,
+            undefined,
+            KIT.size.btn,
+            true,
+            KIT.size.edge,
+          );
   const ground: ViewStyle =
     variant === 'primary'
       ? { backgroundColor: KIT.primary, boxShadow: shadow?.boxShadow }
@@ -315,12 +324,12 @@ export function Round({
   const { c } = useKit();
   const press = usePress();
   const s = KIT.size.round;
-  useLabOff('golge');
+  const shadowOff = useLabOff('golge');
   const fg = primary ? KIT.onPrimary : (color ?? c.ink);
   const shadow = primary
-    ? shadowParts(KIT.primaryShadow, c.primaryInset, s / 2)
+    ? shadowParts(shadowOff, KIT.primaryShadow, c.primaryInset, s / 2)
     : glassy
-      ? shadowParts(c.raisedShadow || undefined, undefined, s / 2, true, KIT.size.edge)
+      ? shadowParts(shadowOff, c.raisedShadow || undefined, undefined, s / 2, true, KIT.size.edge)
       : null;
   return (
     <Pressable
@@ -407,6 +416,16 @@ export function Chip({
   testID?: string;
 }) {
   const { c } = useKit();
+  // Its soft shadow natively (NativeShadow.tsx).
+  const shadowOff = useLabOff('golge');
+  const shadow = shadowParts(
+    shadowOff,
+    on ? undefined : c.chipShadow || undefined,
+    undefined,
+    KIT.size.chip / 2,
+    true,
+    KIT.size.edge,
+  );
   return (
     <Pressable
       testID={testID}
@@ -423,9 +442,10 @@ export function Chip({
         backgroundColor: on ? c.chipOn : c.raisedChip,
         borderWidth: KIT.size.edge,
         borderColor: on ? c.chipOn : c.raisedEdge,
-        boxShadow: on ? undefined : c.chipShadow || undefined,
+        boxShadow: shadow.boxShadow,
       }}
     >
+      {shadow.node}
       <Text
         numberOfLines={1}
         maxFontSizeMultiplier={MAX_FONT_SCALE}
@@ -522,6 +542,13 @@ export function PulseDot({
 }) {
   const reduce = useReduceMotion();
   const active = useLoopActive();
+  // The core's glow natively (NativeShadow.tsx): the waves redraw the screen on every frame, and
+  // React Native would blur this glow again on each one.
+  const glow = boxShadowParts(
+    useLabOff('golge'),
+    `0px 0px ${size}px ${ring}, 0px 0px 0px ${KIT.size.dotRing / 2}px ${ring}`,
+    size / 2,
+  );
   const [waves] = useState(() => [new Animated.Value(0), new Animated.Value(0)]);
   useEffect(() => {
     if (reduce || !active) {
@@ -575,10 +602,11 @@ export function PulseDot({
           height: size,
           borderRadius: size / 2,
           backgroundColor: color,
-          // A soft glow round the core.
-          boxShadow: `0px 0px ${size}px ${ring}, 0px 0px 0px ${KIT.size.dotRing / 2}px ${ring}`,
+          boxShadow: glow.boxShadow,
         }}
-      />
+      >
+        {glow.node}
+      </View>
     </View>
   );
 }
@@ -680,16 +708,19 @@ export function Thumb({
   accessibilityLabel?: string;
 }) {
   const { c } = useKit();
+  // Its soft shadow natively (NativeShadow.tsx).
+  const shadow = boxShadowParts(useLabOff('golge'), KIT.thumbShadow, radius);
   return (
     <View
       style={{
         width: size,
         height: size,
         borderRadius: radius,
-        boxShadow: KIT.thumbShadow,
+        boxShadow: shadow.boxShadow,
         backgroundColor: c.raisedRound,
       }}
     >
+      {shadow.node}
       {source ? (
         <Image
           fadeDuration={0}
@@ -712,17 +743,27 @@ export function Disk({
   radius?: number;
   children: ReactNode;
 }) {
+  // The disk clips its picture, so its native shadow and ring (NativeShadow.tsx) sit beside it in a
+  // box of the same size.
+  const shadow = boxShadowParts(
+    useLabOff('golge'),
+    `${KIT.diskShadow}, 0px 0px 0px ${KIT.size.disk}px ${KIT.diskRing}`,
+    radius ?? size / 2,
+  );
   return (
-    <View
-      style={{
-        width: size,
-        height: size,
-        borderRadius: radius ?? size / 2,
-        overflow: 'hidden',
-        boxShadow: `${KIT.diskShadow}, 0px 0px 0px ${KIT.size.disk}px ${KIT.diskRing}`,
-      }}
-    >
-      {children}
+    <View style={{ width: size, height: size }}>
+      {shadow.node}
+      <View
+        style={{
+          width: size,
+          height: size,
+          borderRadius: radius ?? size / 2,
+          overflow: 'hidden',
+          boxShadow: shadow.boxShadow,
+        }}
+      >
+        {children}
+      </View>
     </View>
   );
 }
@@ -744,9 +785,9 @@ export function Av({
   const side = KIT.size.av[size];
   const ring = size === 'xl' || size === 'big' ? KIT.size.avRingXl : KIT.size.avRing;
   const pick = KIT.avColors[colorIndex(name)] ?? KIT.avColors[0];
-  useLabOff('golge');
+  const shadowOff = useLabOff('golge');
   // The face clips its photo, so its native shadow sits beside it in a box of the same size.
-  const shadow = shadowParts(KIT.avShadow, undefined, side / 2);
+  const shadow = shadowParts(shadowOff, KIT.avShadow, undefined, side / 2);
   const face = (
     <View
       style={[
@@ -767,9 +808,12 @@ export function Av({
       {children ? (
         children
       ) : photoUrl ? (
+        // Kept in memory and on disk under the photo's own path, not its signed address
+        // (PhotoImage): a new signature or a new render never loads it again or blinks it white.
         <PhotoView
-          source={{ uri: photoUrl }}
-          cachePolicy="disk"
+          source={{ uri: photoUrl, cacheKey: photoCacheKey(photoUrl) }}
+          cachePolicy="memory-disk"
+          transition={0}
           style={{ width: side, height: side }}
           accessibilityIgnoresInvertColors
         />
@@ -780,13 +824,14 @@ export function Av({
       )}
     </View>
   );
-  return shadow.node ? (
+  // The same structure with or without the shadow (the Çizim ölçümü's shadow step turns it off):
+  // a wrapper that came and went remounted the photo, which went white and loaded again (the
+  // owner's report, 29 Ekim).
+  return (
     <View style={{ width: side, height: side }}>
       {shadow.node}
       {face}
     </View>
-  ) : (
-    face
   );
 }
 
@@ -819,6 +864,13 @@ export function Seg<V extends string>({
   accessibilityLabel?: string;
 }) {
   const { c } = useKit();
+  // The chosen tab's soft shadow natively (NativeShadow.tsx).
+  const onShadow = shadowParts(
+    useLabOff('golge'),
+    c.segShadow || undefined,
+    undefined,
+    KIT.size.btnSm / 2,
+  );
   return (
     <Glass
       style={{
@@ -851,9 +903,10 @@ export function Seg<V extends string>({
                 justifyContent: 'center',
                 gap: KIT.size.tagGap,
                 backgroundColor: on ? c.segOn : undefined,
-                boxShadow: on ? c.segShadow || undefined : undefined,
+                boxShadow: on ? onShadow.boxShadow : undefined,
               }}
             >
+              {on ? onShadow.node : null}
               <Text
                 numberOfLines={1}
                 adjustsFontSizeToFit

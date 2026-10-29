@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { KIT } from '../theme/auraKit';
-import { parseShadows } from './shadowCss';
+import { parseShadows, splitShadows } from './shadowCss';
 
 describe('parseShadows', () => {
   it('reads the glass shadow (two layers) as numbers', () => {
@@ -31,5 +31,23 @@ describe('parseShadows', () => {
       KIT.avShadow,
     ])
       expect(parseShadows(css), css).not.toBeNull();
+  });
+});
+
+describe('splitShadows', () => {
+  it('splits outer shadows from inset ones, keeping their order', () => {
+    expect(
+      splitShadows(
+        '0px 4px 10px 0px rgba(123, 92, 255, 0.22), inset 0px 1px 1px 0px #FFFFFF, inset 0px -2px 6px 0px rgba(123, 92, 255, 0.18)',
+      ),
+    ).toEqual({
+      outer: '0px 4px 10px 0px rgba(123, 92, 255, 0.22)',
+      inset: 'inset 0px 1px 1px 0px #FFFFFF, inset 0px -2px 6px 0px rgba(123, 92, 255, 0.18)',
+    });
+  });
+
+  it('gives nothing for nothing', () => {
+    expect(splitShadows(undefined)).toEqual({ outer: undefined, inset: undefined });
+    expect(splitShadows('')).toEqual({ outer: undefined, inset: undefined });
   });
 });

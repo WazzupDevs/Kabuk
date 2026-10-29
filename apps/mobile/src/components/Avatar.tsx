@@ -1,5 +1,6 @@
 import { Image, Pressable, View } from 'react-native';
 
+import { useLabOff } from '@/lib/drawLab';
 import { usePhoto } from '@/lib/usePhoto';
 import { avatarGround } from '@/aura/kit';
 import { initials, TABLE_AVATAR_INK, tableAvatarOf } from '@/theme/avatar';
@@ -10,6 +11,7 @@ import { SPACING, TOUCH } from '@/theme/tokens';
 
 import { TABLE_AVATAR_IMAGES } from './Glyph';
 import { Mark } from './Mark';
+import { shadowParts } from './NativeShadow';
 import { Text } from './Text';
 import { PhotoImage } from './PhotoImage';
 
@@ -53,6 +55,8 @@ export function Avatar(props: Props) {
   const { colors, shape } = useTheme();
   const photo = usePhoto(props.kind === 'profile' ? props.photoUrl : null);
   const side = AVATAR_SIZE[props.size ?? 'md'];
+  const shadowOff = useLabOff('golge');
+  const shadow = shadowParts(shadowOff, KIT.avShadow, undefined, side / 2);
   const frame = {
     width: side,
     height: side,
@@ -121,15 +125,22 @@ export function Avatar(props: Props) {
   );
   // docs/design/aura (`.av`): a white ring and a soft shadow; without a photo the name's colour.
   const ring = side >= AVATAR_SIZE.md ? KIT.size.avRing : KIT.size.edge;
+  // The face clips its photo, so its native shadow (NativeShadow.tsx) sits beside it in a box of
+  // the same size; the same structure with or without it, so the photo never remounts.
   const face = (
-    <View
-      style={[
-        frame,
-        photo.url ? { backgroundColor: colors.surface2 } : gradientStyle(avatarGround(props.name)),
-        { borderWidth: ring, borderColor: KIT.white, boxShadow: KIT.avShadow },
-      ]}
-    >
-      {inner}
+    <View style={{ width: side, height: side }}>
+      {shadow.node}
+      <View
+        style={[
+          frame,
+          photo.url
+            ? { backgroundColor: colors.surface2 }
+            : gradientStyle(avatarGround(props.name)),
+          { borderWidth: ring, borderColor: KIT.white, boxShadow: shadow.boxShadow },
+        ]}
+      >
+        {inner}
+      </View>
     </View>
   );
   if (!props.onPress) {

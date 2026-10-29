@@ -1,9 +1,9 @@
-import { type ReactNode, useId } from 'react';
+import { type ReactNode, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
-import Svg, { Defs, Ellipse, LinearGradient, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import { AURA } from '@/theme/aura';
-import { stopPaint } from '@/theme/svgStop';
+import { gradientStyle } from '@/theme/gradient';
+import { floorCss, sceneCss } from '@/theme/sceneGradient';
 import { useTheme } from '@/theme/ThemeProvider';
 
 import { Buddy, Placed } from './Buddy';
@@ -15,27 +15,11 @@ import { Buddy, Placed } from './Buddy';
 export function SceneGround({ top, bottom }: { top?: number; bottom?: number } = {}) {
   const { scheme } = useTheme();
   const c = AURA.scene[scheme];
-  const id = useId().replace(/[^a-zA-Z0-9]/g, '');
+  // The ground and its glows as React Native's own gradients, on the GPU (theme/sceneGradient.ts).
+  const ground = useMemo(() => gradientStyle(sceneCss(c)), [c]);
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      <Svg width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 100 100">
-        <Defs>
-          <LinearGradient id={`g${id}`} x1="0" y1="0" x2="0" y2="1">
-            <Stop offset={0} {...stopPaint(c.top)} />
-            <Stop offset={1} {...stopPaint(c.bottom)} />
-          </LinearGradient>
-          {c.glows.map((g, i) => (
-            <RadialGradient key={i} id={`r${i}${id}`} cx={g.cx} cy={g.cy} rx={g.rx} ry={g.ry}>
-              <Stop offset={0} {...stopPaint(g.color)} />
-              <Stop offset={GLOW_END} {...stopPaint(g.color, 0)} />
-            </RadialGradient>
-          ))}
-        </Defs>
-        <Rect x={0} y={0} width={100} height={100} fill={`url(#g${id})`} />
-        {c.glows.map((_, i) => (
-          <Rect key={i} x={0} y={0} width={100} height={100} fill={`url(#r${i}${id})`} />
-        ))}
-      </Svg>
+      <View style={[StyleSheet.absoluteFill, ground]} />
       <Floor />
       {/* aura.css `.scene::after`: a light inner edge. */}
       <View
@@ -55,27 +39,19 @@ export function SceneGround({ top, bottom }: { top?: number; bottom?: number } =
   );
 }
 
-// A glow fades out by 70 % of its radius (aura.css `.scene`).
-const GLOW_END = 0.7;
-
 // The white floor glow under the buddies.
 function Floor() {
   const { scheme } = useTheme();
   const c = AURA.scene[scheme];
-  const id = useId().replace(/[^a-zA-Z0-9]/g, '');
   const h = AURA.scene.floorHeight;
+  const glow = useMemo(() => gradientStyle(floorCss(c.floor)), [c.floor]);
   return (
-    <View style={{ position: 'absolute', left: '-10%', right: '-10%', bottom: -h / 2, height: h }}>
-      <Svg width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 100 100">
-        <Defs>
-          <RadialGradient id={`f${id}`} cx="50%" cy="50%" rx="50%" ry="50%">
-            <Stop offset={0} {...stopPaint(c.floor)} />
-            <Stop offset={1} {...stopPaint(c.floor, 0)} />
-          </RadialGradient>
-        </Defs>
-        <Ellipse cx={50} cy={50} rx={50} ry={50} fill={`url(#f${id})`} />
-      </Svg>
-    </View>
+    <View
+      style={[
+        { position: 'absolute', left: '-10%', right: '-10%', bottom: -h / 2, height: h },
+        glow,
+      ]}
+    />
   );
 }
 

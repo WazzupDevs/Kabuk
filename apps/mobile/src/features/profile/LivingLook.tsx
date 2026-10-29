@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable } from 'react-native';
+import { Animated as RNAnimated, Pressable } from 'react-native';
 import Animated, {
   Easing,
   Extrapolation,
@@ -10,13 +10,13 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { CachedSvg } from '@/components/CachedSvg';
+import { LayeredLook, snapTo } from '@/components/LayeredLook';
 import { CanvasBar } from '@/components/CanvasIcon';
 import { useLoopActive } from '@/components/Loader';
 import { JUMP, sample } from '@/features/capsule/motion';
 import { haptic } from '@/lib/haptics';
 import { useReduceMotion } from '@/lib/useReduceMotion';
-import { lookSvg, posedEyes } from '@/theme/capsuleLook';
+import { lookSvg } from '@/theme/capsuleLook';
 import { ICON } from '@/theme/tokens';
 
 // The profile's capsule alive (the owner's call, 27 and 28 Ekim): now and then it blinks
@@ -59,17 +59,30 @@ export function LivingLook({
   const reduce = useReduceMotion();
   // Only while its screen is on top and the app in front, as every loop (Loader.tsx).
   const active = useLoopActive();
-  const [blink, setBlink] = useState(false);
-  const [pose, setPose] = useState(REST);
+  // The blink and the look move pictures on the native driver (LayeredLook), in the same steps as
+  // the drawing posed them: the capsule is not drawn again.
+  const [blink] = useState(() => new RNAnimated.Value(0));
+  const [eyeX] = useState(() => new RNAnimated.Value(0));
+  const [eyeY] = useState(() => new RNAnimated.Value(0));
+  // The drawing's units in pixels (its disc is 48 across).
+  const unit = size / 48;
 
   useEffect(() => {
-    if (reduce || !active) return undefined;
+    const setPose = (pose: { look: number; up: number }) => {
+      snapTo(eyeX, pose.look * unit);
+      snapTo(eyeY, pose.up * unit);
+    };
+    if (reduce || !active) {
+      snapTo(blink, 0);
+      setPose(REST);
+      return undefined;
+    }
     const timers: ReturnType<typeof setTimeout>[] = [];
     const later = (ms: number, run: () => void) => timers.push(setTimeout(run, ms));
     const close = (then: () => void) => {
-      setBlink(true);
+      snapTo(blink, 1);
       later(BLINK_MS, () => {
-        setBlink(false);
+        snapTo(blink, 0);
         then();
       });
     };
@@ -89,14 +102,14 @@ export function LivingLook({
       });
     blinkLoop();
     lookLoop();
-    return () => timers.forEach(clearTimeout);
-  }, [reduce, active]);
+    return () => {
+      timers.forEach(clearTimeout);
+      snapTo(blink, 0);
+      setPose(REST);
+    };
+  }, [reduce, active, blink, eyeX, eyeY, unit]);
 
   const base = useMemo(() => lookSvg(look, 'av'), [look]);
-  const xml = useMemo(
-    () => posedEyes(base, { blink, look: pose.look, up: pose.up }),
-    [base, blink, pose],
-  );
 
   // A tap: the jump of the editor (features/capsule/motion.ts → JUMP) and a wink.
   const t = useSharedValue(1);
@@ -113,8 +126,8 @@ export function LivingLook({
     if (reduce) return;
     t.set(0);
     t.set(withTiming(1, { duration: JUMP.ms, easing: Easing.linear }));
-    setBlink(true);
-    setTimeout(() => setBlink(false), BLINK_MS * 2);
+    snapTo(blink, 1);
+    setTimeout(() => snapTo(blink, 0), BLINK_MS * 2);
   };
 
   return (
@@ -125,7 +138,14 @@ export function LivingLook({
       style={{ width: size, height: size, borderRadius: size / 2, overflow: 'hidden' }}
     >
       <Animated.View style={style}>
-        <CachedSvg xml={xml} width={size} height={size} />
+        <LayeredLook
+          xml={base}
+          width={size}
+          height={size}
+          blink={blink}
+          lookX={eyeX}
+          lookY={eyeY}
+        />
       </Animated.View>
     </Pressable>
   );

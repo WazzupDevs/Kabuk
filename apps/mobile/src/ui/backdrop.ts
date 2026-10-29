@@ -1,11 +1,12 @@
-// What the tab bar shows behind it. From 0.7.0 it is skall's liquid glass (the owner's call, 27
-// Ekim; modules/skall-glass, theme/glass.ts): the screen behind drawn under the bar, lightly
-// blurred and bent at the rim. It replaces expo-blur's frosted glass (Dimezis BlurView, which drew
-// every tab screen a second time into its buffer and laid a grain over it).
+// What the tab bar shows behind it: skall's own glass (modules/skall-glass, theme/glass.ts), the
+// screen behind drawn under the bar, frosted (0.9.0, the owner's call, 29 Ekim; 0.7.0 to 0.8.0 a
+// liquid lens). It replaced expo-blur's frosted glass (Dimezis BlurView, which drew every tab screen
+// a second time into its buffer and laid a grain over it): this one replays the screen's own
+// drawing, small.
 //
-// Android draws the glass from 12 (API 31: RenderEffect; the lens itself from 13, an AGSL shader;
-// 12 blurs only). Below 12 nothing shows through, so the bar is drawn opaque there: v46's screen
-// ground under its gradient (the owner's decision, docs/SPEC_V4.md §4.C).
+// Android draws the glass from 12 (API 31: RenderEffect). Below 12 nothing shows through, so the
+// bar is drawn opaque there: v46's screen ground under its gradient (the owner's decision,
+// docs/SPEC_V4.md §4.C).
 export const ANDROID_BLUR_SDK = 31;
 
 export function blursBehind(os: string, version: number | string): boolean {

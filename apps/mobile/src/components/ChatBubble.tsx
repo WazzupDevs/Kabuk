@@ -12,7 +12,7 @@ import { useReduceMotion } from '@/lib/useReduceMotion';
 import { withAlpha } from '@/theme/contrast';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
-import { shadowParts } from '@/components/NativeShadow';
+import { boxShadowParts, shadowParts } from '@/components/NativeShadow';
 import { useLabOff } from '@/lib/drawLab';
 
 import { AVATAR_SIZE } from './Avatar';
@@ -134,7 +134,7 @@ export function ChatBubble({
   const { scheme } = useKit();
   const kind = useChatKind();
   const paint = KIT.bubble[scheme];
-  useLabOff('golge');
+  const shadowOff = useLabOff('golge');
   const fg = mine ? paint.mineInk : paint.themInk;
   const inside = !mine && nameInk !== undefined;
   // Before `bubble` below: it draws the face (which reads the shadow) as it is built.
@@ -145,6 +145,7 @@ export function ChatBubble({
     mine ? KIT.size.msgRadius : KIT.size.msgTail,
   ] as const;
   const bubbleShadow = shadowParts(
+    shadowOff,
     mine ? paint.mineShadow : KIT.chatShadow[kind],
     undefined,
     radii,
@@ -215,8 +216,7 @@ export function ChatBubble({
             disabled={!onPressSender}
             onPress={onPressSender}
             hitSlop={SPACING[1.5]}
-            className="self-start"
-            style={{ marginBottom: NAME_GAP }}
+            style={{ alignSelf: 'flex-start', marginBottom: NAME_GAP }}
           >
             <RNText style={[KIT_TYPE.fine, KIT_TYPE.strong, { color: paint.themInk }]}>
               {name}
@@ -239,8 +239,14 @@ export function ChatBubble({
           </RNText>
           {time && !state ? (
             <View
-              className="absolute flex-row items-center gap-1"
-              style={{ right: 0, bottom: 0 }}
+              style={{
+                position: 'absolute',
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: SPACING[1],
+                right: 0,
+                bottom: 0,
+              }}
               importantForAccessibility="no-hide-descendants"
             >
               <Text variant="caption" color={mine ? paint.mineMuted : paint.themMuted}>
@@ -288,12 +294,14 @@ export function ChatBubble({
 
   if (mine) {
     return (
-      <View className="items-end gap-1 self-end" style={{ maxWidth: '76%' }}>
+      <View
+        style={{ alignItems: 'flex-end', gap: SPACING[1], alignSelf: 'flex-end', maxWidth: '76%' }}
+      >
         {bar}
         <SwipeToReply onReply={onReply}>{bubble}</SwipeToReply>
         {chips}
         {state ? (
-          <View className="flex-row items-center gap-3">
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING[3] }}>
             <Text variant="fine" tone={state === 'failed' ? 'danger' : 'muted'}>
               {state === 'failed' ? (failedText ?? tr.chat.notSent) : tr.chat.sending}
             </Text>
@@ -342,14 +350,14 @@ export function ChatBubble({
         )
       ) : null;
     return (
-      <View className="gap-1 self-start" style={{ maxWidth: '88%' }}>
+      <View style={{ gap: SPACING[1], alignSelf: 'flex-start', maxWidth: '88%' }}>
         {bar}
         {/* The face at the bubble's top, level with the name inside it (the owner's call, 28
             Ekim). */}
-        <View className="flex-row items-start" style={{ columnGap: SPACING[2] }}>
+        <View style={{ flexDirection: 'row', alignItems: 'flex-start', columnGap: SPACING[2] }}>
           {/* Kept empty beside the run's later bubbles, so they stay in one column. */}
           <View style={{ width: AVATAR_SIZE.sm }}>{photo}</View>
-          <View className="shrink items-start" style={{ gap: NAME_GAP }}>
+          <View style={{ flexShrink: 1, alignItems: 'flex-start', gap: NAME_GAP }}>
             <SwipeToReply onReply={onReply}>{bubble}</SwipeToReply>
             {chips}
           </View>
@@ -361,7 +369,7 @@ export function ChatBubble({
   // The run's head: the photo and the name on one line; both open the profile when there is one.
   const headRow =
     first && (avatar || name || tag) ? (
-      <View className="flex-row items-center gap-2">
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING[2] }}>
         {avatar}
         {name ? (
           <Text variant="label" tone="muted" className="shrink">
@@ -378,7 +386,7 @@ export function ChatBubble({
         accessibilityLabel={tr.chat.openProfile(name ?? '')}
         onPress={onPressSender}
         hitSlop={SPACING[1]}
-        className="self-start"
+        style={{ alignSelf: 'flex-start' }}
       >
         {headRow}
       </Pressable>
@@ -386,11 +394,11 @@ export function ChatBubble({
       headRow
     );
   return (
-    <View className="gap-1 self-start" style={{ maxWidth: '88%' }}>
+    <View style={{ gap: SPACING[1], alignSelf: 'flex-start', maxWidth: '88%' }}>
       {head}
       {/* Not under the photo's indent: the bar is wider than the column there. */}
       {bar}
-      <View className="items-start gap-1" style={{ paddingLeft: avatar ? INDENT : 0 }}>
+      <View style={{ alignItems: 'flex-start', gap: SPACING[1], paddingLeft: avatar ? INDENT : 0 }}>
         <SwipeToReply onReply={onReply}>{bubble}</SwipeToReply>
         {chips}
       </View>
@@ -491,8 +499,10 @@ function SwipeToReply({ onReply, children }: { onReply?: () => void; children: R
       {armed ? (
         <Animated.View
           pointerEvents="none"
-          className="absolute items-center justify-center"
           style={{
+            position: 'absolute',
+            alignItems: 'center',
+            justifyContent: 'center',
             left: -SPACING[10],
             top: 0,
             bottom: 0,
@@ -500,8 +510,9 @@ function SwipeToReply({ onReply, children }: { onReply?: () => void; children: R
           }}
         >
           <View
-            className="items-center justify-center"
             style={{
+              alignItems: 'center',
+              justifyContent: 'center',
               width: SPACING[8],
               height: SPACING[8],
               borderRadius: shape.radius.pill,
@@ -529,11 +540,21 @@ function ReactionChips({
 }) {
   const { colors, shape } = useTheme();
   const chipHeight = SPACING[7];
+  // Each chip's soft shadow natively (NativeShadow.tsx): chips scroll with the chat.
+  const shadowOff = useLabOff('golge');
+  const chipShadow = boxShadowParts(
+    shadowOff,
+    shape.shadow.raised,
+    chipHeight / 2,
+    true,
+    shape.stroke.hairline,
+  );
   return (
     <View
-      className="flex-row flex-wrap"
       // skall.css → `.reacts`: tucked 8 under the bubble, 10 in from its side.
       style={{
+        flexDirection: 'row',
+        flexWrap: 'wrap',
         gap: SPACING[1],
         marginTop: -SPACING[2],
         paddingHorizontal: SPACING[2.5],
@@ -557,8 +578,9 @@ function ReactionChips({
           {/* skall.css → `.react`: the face and the count on the surface, on the chip shadow; the
               viewer's own in the violet. */}
           <View
-            className="flex-row items-center"
             style={{
+              flexDirection: 'row',
+              alignItems: 'center',
               gap: SPACING[1],
               height: chipHeight,
               paddingLeft: SPACING[1],
@@ -567,9 +589,10 @@ function ReactionChips({
               borderWidth: shape.stroke.hairline,
               borderColor: r.mine ? colors.violet : colors.divider,
               backgroundColor: r.mine ? withAlpha(colors.violet, 0.16) : colors.surface,
-              boxShadow: shape.shadow.raised,
+              boxShadow: chipShadow.boxShadow,
             }}
           >
+            {chipShadow.node}
             <ReactionFace emoji={r.emoji} size="chip" />
             <Text variant="tag" tabular>
               {String(r.count)}
@@ -630,8 +653,8 @@ export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: 
   const { scheme } = useKit();
   const kind = useChatKind();
   const paint = KIT.bubble[scheme];
-  useLabOff('golge');
-  const typingShadow = shadowParts(KIT.chatShadow[kind], undefined, [
+  const shadowOff = useLabOff('golge');
+  const typingShadow = shadowParts(shadowOff, KIT.chatShadow[kind], undefined, [
     KIT.size.msgRadius,
     KIT.size.msgRadius,
     KIT.size.msgRadius,
@@ -639,7 +662,12 @@ export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: 
   ]);
   return (
     <View
-      className="flex-row items-end gap-2 self-start"
+      style={{
+        flexDirection: 'row',
+        alignItems: 'flex-end',
+        gap: SPACING[2],
+        alignSelf: 'flex-start',
+      }}
       accessible
       accessibilityLiveRegion="polite"
       accessibilityLabel={tr.dm.typing}
@@ -647,8 +675,9 @@ export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: 
     >
       {avatar}
       <View
-        className="flex-row items-center"
         style={{
+          flexDirection: 'row',
+          alignItems: 'center',
           gap: SPACING[1],
           paddingHorizontal: SPACING[3] + SPACING[0.5],
           paddingVertical: SPACING[3],
