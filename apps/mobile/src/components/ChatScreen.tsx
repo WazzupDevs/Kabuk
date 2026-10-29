@@ -77,6 +77,11 @@ export function useChatEnd(): (() => void) | null {
 // Whether the stream has settled after opening: a row that comes after it is a new message and
 // rises in (the ones the page opened with stand still).
 const ChatLiveContext = createContext(false);
+// The stream's newest message: the only row that arrives with a slide. Rows put on the screen in a
+// batch (older messages from "Daha eski mesajlar", the rest of the first page) come up above the
+// reader and are not watched arriving; each one animating made the batch stall the screen (the
+// owner's video, 29 Ekim: 0.9 s).
+const ChatNewestContext = createContext<string | undefined>(undefined);
 const SETTLE_MS = 800;
 const ARRIVE_MS = 220;
 
@@ -95,8 +100,9 @@ export function ChatRow({
 }) {
   const jump = useChatJump();
   const live = useContext(ChatLiveContext);
+  const newest = useContext(ChatNewestContext);
   const reduce = useReduceMotion();
-  const [arriving] = useState(live && !reduce);
+  const [arriving] = useState(live && !reduce && id === newest);
   return (
     <Reanimated.View
       entering={arriving ? FadeInDown.duration(ARRIVE_MS) : undefined}
@@ -321,7 +327,9 @@ export function ChatScroll({
       >
         <ChatBarContext.Provider value={bar}>
           <ChatJumpContext.Provider value={jump}>
-            <ChatLiveContext.Provider value={live}>{children}</ChatLiveContext.Provider>
+            <ChatLiveContext.Provider value={live}>
+              <ChatNewestContext.Provider value={newestKey}>{children}</ChatNewestContext.Provider>
+            </ChatLiveContext.Provider>
           </ChatJumpContext.Provider>
         </ChatBarContext.Provider>
       </ScrollView>
