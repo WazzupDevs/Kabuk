@@ -21,11 +21,11 @@ export function DmFixture() {
       top={
         <ChatTopBar
           onBack={noop}
+          split
           title={NAME}
-          leading={<Avatar kind="profile" name={NAME} size="md" photoUrl={null} />}
+          leading={<Avatar kind="profile" name={NAME} size="lg" photoUrl={null} />}
           actions={
             <IconButton
-              round
               icon="ellipsis-horizontal"
               glyph={<MoreDots />}
               label={tr.friends.more}

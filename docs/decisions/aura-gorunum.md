@@ -41,3 +41,12 @@ denendi, panolar tuvalde bozuk oynadığı için kare kare çizilmiş bir filme 
   kullanılır, listelerin satırları bulanıklıksız yükselir.
 - Bulutlar bulanıklık değil radyal geçişle çizilir; yalnızca açık sekmede kayar, "hareketi azalt"
   açıkken durur.
+
+## DM'in üst çubuğu (proje sahibinin kararı, 29 Ekim)
+
+- Telegram Android'in sohbet üstü gibi üç ayrı cam: yuvarlak geri düğmesi, fotoğraf ve adın
+  hapı, eylemlerin hapı (bugün yalnızca "Daha fazla", yuvarlak). Fotoğraf hapı neredeyse doldurur
+  (48 dp, 3 dp kenar), üç parça aynı yükseklikte (54 dp), aralar ve yanlar 8 dp.
+- Simgeler bizim (CapIcon, MoreDots); arama düğmesi yok. "son görülme" satırı yok: spec'te ve
+  veride yok.
+- Yalnızca DM (`ChatTopBar` → `split`); mekan ve masa sohbetinin çubuğu aynı kalır.

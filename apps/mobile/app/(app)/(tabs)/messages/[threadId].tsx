@@ -221,13 +221,13 @@ export default function DmScreen() {
       top={
         <ChatTopBar
           onBack={backToInbox}
+          split
           title={name}
-          leading={<Avatar kind="profile" name={name} size="md" photoUrl={photoUrl} />}
+          leading={<Avatar kind="profile" name={name} size="lg" photoUrl={photoUrl} />}
           onPressTitle={openProfile}
           titleAccessibilityLabel={name}
           actions={
             <IconButton
-              round
               icon="ellipsis-horizontal"
               glyph={<MoreDots />}
               label={tr.friends.more}
