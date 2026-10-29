@@ -30,12 +30,34 @@ export function useAfterTransition(): boolean {
   return settled;
 }
 
-// A chat's newest rows (its end) while the screen slides in; all of them after.
-export function lastRows<T>(rows: readonly T[], settled: boolean): readonly T[] {
-  return settled || rows.length <= FIRST_ROWS ? rows : rows.slice(-FIRST_ROWS);
+// After the slide the rest comes in steps of MORE_ROWS, each in its own frame (MORE_MS apart), so
+// no single frame puts every row on the screen (the owner's video, 29 Ekim: a DM's remaining rows
+// stalled it for a quarter second right after it slid in). Returns how many rows to draw;
+// Infinity once all of them are (later rows, new or older, come at once).
+const MORE_ROWS = 10;
+const MORE_MS = 50;
+
+export function useOpenRows(total: number): number {
+  const settled = useAfterTransition();
+  const [limit, setLimit] = useState(() => (settled ? Infinity : FIRST_ROWS));
+  useEffect(() => {
+    // Rows that load after the slide come in the same steps.
+    if (!settled || limit === Infinity || total === 0) return undefined;
+    const timer = setTimeout(
+      () => setLimit((l) => (l >= total ? Infinity : l + MORE_ROWS)),
+      limit >= total ? 0 : MORE_MS,
+    );
+    return () => clearTimeout(timer);
+  }, [settled, limit, total]);
+  return limit;
 }
 
-// A list's first rows (its top) while the screen slides in; all of them after.
-export function firstRows<T>(rows: readonly T[], settled: boolean): readonly T[] {
-  return settled || rows.length <= FIRST_ROWS ? rows : rows.slice(0, FIRST_ROWS);
+// A chat's newest rows (its end): `limit` of them (useOpenRows).
+export function lastRows<T>(rows: readonly T[], limit: number): readonly T[] {
+  return rows.length <= limit ? rows : rows.slice(-limit);
+}
+
+// A list's first rows (its top): `limit` of them (useOpenRows).
+export function firstRows<T>(rows: readonly T[], limit: number): readonly T[] {
+  return rows.length <= limit ? rows : rows.slice(0, limit);
 }

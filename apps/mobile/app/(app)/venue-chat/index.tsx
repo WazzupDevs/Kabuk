@@ -56,7 +56,7 @@ import { useFlash } from '@/lib/useFlash';
 import { nameInk } from '@/theme/nameInk';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
-import { lastRows, useAfterTransition } from '@/lib/afterTransition';
+import { lastRows, useOpenRows } from '@/lib/afterTransition';
 
 // The venue's chat room (docs/SPEC_V3.md §7; skall tuvali, Mekan sohbeti panoları): everyone with a
 // live table at the venue reads and writes, with the check-in's identity (docs/SPEC_V4.md §4.D):
@@ -88,7 +88,6 @@ export default function VenueChatScreen() {
   // docs/SPEC_V3.md §21: swipe a message to answer it, hold it for a face.
   const reply = useReplyTarget();
   // Opened light: the newest messages while the screen slides in, the rest after.
-  const settled = useAfterTransition();
   const reactions = useVenueChatReactions(venueId);
   const messages = page.data?.messages;
   const fresh = useFreshLine(venueId && `venue:${venueId}`, messages);
@@ -178,6 +177,8 @@ export default function VenueChatScreen() {
       <Avatar kind="table" alias={senderLabel(m)} size={size === AVATAR_SIZE.sm ? 'sm' : 'xl'} />
     );
 
+  // Opened light: the newest messages while the screen slides in, the rest after in steps.
+  const shown = useOpenRows(messages?.length ?? 0);
   if (!table.isPending && !venueId) {
     return (
       <Screen>
@@ -296,7 +297,7 @@ export default function VenueChatScreen() {
           <DayLine label={tr.chat.today} />
         </View>
       ) : (
-        lastRows(runs, settled).map(({ item: m, first, day }) => (
+        lastRows(runs, shown).map(({ item: m, first, day }) => (
           <ChatRow key={m.id} id={m.id} first={first}>
             {(jumpTo) => (
               <>

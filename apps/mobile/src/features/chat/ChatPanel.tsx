@@ -18,7 +18,7 @@ import { Text } from '@/components/Text';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { ApiError, chatApi } from '@/lib/api';
-import { lastRows, useAfterTransition } from '@/lib/afterTransition';
+import { lastRows, useOpenRows } from '@/lib/afterTransition';
 import { nameInk } from '@/theme/nameInk';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -118,13 +118,13 @@ export function RoomMessages({
       : undefined;
   };
   // Opened light: the newest messages while the screen slides in, the rest after.
-  const settled = useAfterTransition();
   const { scheme } = useTheme();
   const runs = toRuns(
     list,
     (m) => m.session_id,
     (m) => m.created_at,
   );
+  const shown = useOpenRows(runs.length);
   return (
     <>
       {/* Loading and its error (audit CHAT-8). */}
@@ -143,7 +143,7 @@ export function RoomMessages({
           {tr.chat.empty}
         </Text>
       ) : null}
-      {lastRows(runs, settled).map(({ item: m, first, day }) => {
+      {lastRows(runs, shown).map(({ item: m, first, day }) => {
         const mine = m.session_id === sessionId;
         const extra = extras?.get(m.id);
         const counts = parseReactionCounts(extra?.reactions);

@@ -234,6 +234,28 @@ export function ChatScroll({
 
   const bottomOf = (content: number) =>
     metrics.current.offset + metrics.current.height >= content - BOTTOM_SLACK;
+  // To the end now, and again two frames later: on Android a scroll asked for in the same breath as
+  // new content can run before the content's new height reaches the screen, and stops at the old
+  // end, somewhere up the stream (the owner's report, 29 Ekim: chats opened in the middle). Not
+  // while the reader's finger is on it.
+  const dragging = useRef(false);
+  const settleFrame = useRef<number | null>(null);
+  const stayAtEnd = () => {
+    scroll.current?.scrollToEnd({ animated: false });
+    if (settleFrame.current !== null) cancelAnimationFrame(settleFrame.current);
+    settleFrame.current = requestAnimationFrame(() => {
+      settleFrame.current = requestAnimationFrame(() => {
+        settleFrame.current = null;
+        if (pinned.current && !dragging.current) scroll.current?.scrollToEnd({ animated: false });
+      });
+    });
+  };
+  useEffect(
+    () => () => {
+      if (settleFrame.current !== null) cancelAnimationFrame(settleFrame.current);
+    },
+    [],
+  );
   const toEnd = (animated: boolean) => {
     pinned.current = true;
     scroll.current?.scrollToEnd({ animated });
@@ -268,7 +290,7 @@ export function ChatScroll({
   useEffect(() => {
     if (!startAtEnd || touched.current) return;
     pinned.current = true;
-    scroll.current?.scrollToEnd({ animated: false });
+    stayAtEnd();
   }, [startAtEnd]);
 
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -284,13 +306,14 @@ export function ChatScroll({
   };
   // The reader's own drag: lets go of the end, or takes it again when it ends at the bottom.
   const onDragEnd = () => {
+    dragging.current = false;
     pinned.current = bottomOf(metrics.current.content);
   };
 
   const onContentSizeChange = (_w: number, h: number) => {
     metrics.current.content = h;
     if (pinned.current) {
-      scroll.current?.scrollToEnd({ animated: false });
+      stayAtEnd();
       if (!atBottom) setAtBottom(true);
       return;
     }
@@ -313,6 +336,7 @@ export function ChatScroll({
         scrollEventThrottle={64}
         onScroll={onScroll}
         onScrollBeginDrag={() => {
+          dragging.current = true;
           touched.current = true;
           bar.setOpen(null);
         }}
@@ -322,7 +346,7 @@ export function ChatScroll({
         // The keyboard shrinks the stream: a stream following the end stays at the end.
         onLayout={(e) => {
           metrics.current.height = e.nativeEvent.layout.height;
-          if (pinned.current) scroll.current?.scrollToEnd({ animated: false });
+          if (pinned.current) stayAtEnd();
         }}
       >
         <ChatBarContext.Provider value={bar}>
