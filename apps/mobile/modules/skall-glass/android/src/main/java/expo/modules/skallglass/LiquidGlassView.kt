@@ -4,6 +4,7 @@ import android.annotation.TargetApi
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Rect
 import android.graphics.RenderEffect
 import android.graphics.RenderNode
 import android.graphics.RuntimeShader
@@ -11,6 +12,7 @@ import android.graphics.Shader
 import android.os.Build
 import expo.modules.kotlin.AppContext
 import expo.modules.kotlin.views.ExpoView
+import kotlin.math.abs
 import kotlin.math.max
 
 // skall's liquid glass: the screen behind (a GlassTargetView, found by its id) drawn under this
@@ -41,6 +43,16 @@ class LiquidGlassView(context: Context, appContext: AppContext) : ExpoView(conte
 
   private val glass: RenderNode? =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) RenderNode("skallGlass") else null
+  // The glass drawn once into a layer of its own and kept: the system applies a RenderEffect
+  // again every time its node is drawn on some GPUs (its cache is off there), which made the bar
+  // blur and bend on every frame anything on the screen moved. The layer is drawn again only when
+  // the glass is (a change under it: GlassTargetView).
+  private val kept: RenderNode? =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+      RenderNode("skallGlassKept").apply { setUseCompositingLayer(true, null) }
+    } else {
+      null
+    }
   private var effectKey: List<Float>? = null
   private var watched: GlassTargetView? = null
   private val here = IntArray(2)
@@ -72,6 +84,7 @@ class LiquidGlassView(context: Context, appContext: AppContext) : ExpoView(conte
     GlassTargets.unwatch(this)
     watch(null)
     glass?.discardDisplayList()
+    kept?.discardDisplayList()
     super.onDetachedFromWindow()
   }
 
@@ -80,6 +93,24 @@ class LiquidGlassView(context: Context, appContext: AppContext) : ExpoView(conte
     watched?.removeGlass(this)
     watched = target
     target?.addGlass(this)
+  }
+
+  private val sampledHere = IntArray(2)
+
+  // Whether a change in this window area shows in the glass: its box with what it bends in.
+  fun samples(area: Rect): Boolean {
+    if (!isAttachedToWindow || width <= 0 || height <= 0) return true
+    getLocationInWindow(sampledHere)
+    val margin = max(abs(refraction) + blur, 1f).toInt() + 1
+    return Rect.intersects(
+      area,
+      Rect(
+        sampledHere[0] - margin,
+        sampledHere[1] - margin,
+        sampledHere[0] + width + margin,
+        sampledHere[1] + height + margin,
+      ),
+    )
   }
 
   override fun onDraw(canvas: Canvas) {
@@ -98,7 +129,8 @@ class LiquidGlassView(context: Context, appContext: AppContext) : ExpoView(conte
     val h = height + margin * 2
     getLocationInWindow(here)
     target.getLocationInWindow(there)
-    node.setPosition(-margin, -margin, width + margin, height + margin)
+    val keep = kept ?: return
+    node.setPosition(0, 0, w, h)
     applyEffect(node, w, h, margin)
     val recording = node.beginRecording(w, h)
     try {
@@ -111,7 +143,14 @@ class LiquidGlassView(context: Context, appContext: AppContext) : ExpoView(conte
     } finally {
       node.endRecording()
     }
-    canvas.drawRenderNode(node)
+    keep.setPosition(-margin, -margin, width + margin, height + margin)
+    val outer = keep.beginRecording(w, h)
+    try {
+      outer.drawRenderNode(node)
+    } finally {
+      keep.endRecording()
+    }
+    canvas.drawRenderNode(keep)
   }
 
   @TargetApi(Build.VERSION_CODES.S)
@@ -176,6 +215,9 @@ class LiquidGlassView(context: Context, appContext: AppContext) : ExpoView(conte
         float d = edge(p);
         float cover = clamp(0.5 - d, 0.0, 1.0);
         if (cover <= 0.0) return half4(0.0);
+        // Deep inside: no bend, no light, nothing split; the blurred screen as it is (the same
+        // colour the full path gives there, without its work).
+        if (d < -max(depth, 7.0 * px) - 1.0) return content.eval(coord);
 
         float2 n = float2(edge(p + float2(1.0, 0.0)) - edge(p - float2(1.0, 0.0)),
                           edge(p + float2(0.0, 1.0)) - edge(p - float2(0.0, 1.0)));

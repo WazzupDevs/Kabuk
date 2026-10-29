@@ -7,6 +7,7 @@ import { AURA, MOTION } from '@/theme/aura';
 import { TAB_GLASS } from '@/theme/glass';
 import { useTheme } from '@/theme/ThemeProvider';
 import { TAB_BAR_GLASS, blursBehind } from '@/ui/backdrop';
+import { shadowParts } from '@/components/NativeShadow';
 import { LiquidGlass } from '@/ui/LiquidGlass';
 
 import { ARRIVE_RN, springConfig } from './motion';
@@ -105,12 +106,19 @@ export function AuraTabBar({ items, selected, onPress, glassTarget, opaque = fal
     ],
   };
 
+  const barShadow = shadowParts(a.shadow || undefined, undefined, s.height / 2);
   const glass = !opaque && TAB_BAR_GLASS && blursBehind(Platform.OS, Platform.Version);
   return (
     <View
       accessibilityRole="tablist"
-      style={{ width, height: s.height, borderRadius: s.height / 2, boxShadow: a.shadow }}
+      style={{
+        width,
+        height: s.height,
+        borderRadius: s.height / 2,
+        boxShadow: barShadow.boxShadow,
+      }}
     >
+      {barShadow.node}
       <View style={[StyleSheet.absoluteFill, { borderRadius: s.height / 2, overflow: 'hidden' }]}>
         {glass && glassTarget ? (
           <LiquidGlass

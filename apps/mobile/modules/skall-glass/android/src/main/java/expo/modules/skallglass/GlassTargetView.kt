@@ -2,6 +2,7 @@ package expo.modules.skallglass
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Rect
 import android.graphics.RenderNode
 import android.os.Build
 import android.view.View
@@ -34,11 +35,45 @@ class GlassTargetView(context: Context, appContext: AppContext) : ExpoView(conte
     glasses.remove(glass)
   }
 
-  // Something on the screen changed (a scroll, a move, new text): the glasses showing it draw
-  // again in the same frame. A glass is never inside its screen, so this cannot come back here.
+  // Something on the screen changed (a scroll, a move, new text): the glasses showing that part
+  // draw again in the same frame. Only those whose sampled area the change reaches (the owner's
+  // report, 29 Ekim: a buddy floating at the top made the tab bar's glass blur again on every
+  // frame, the largest part of each frame on the Mekan screen). The changed view's place counts with
+  // its transforms and without them (where it moves from and to), and a margin around it. A glass
+  // is never inside its screen, so this cannot come back here.
   override fun onDescendantInvalidated(child: View, target: View) {
     super.onDescendantInvalidated(child, target)
-    if (glasses.isNotEmpty()) glasses.keys.toList().forEach { it.invalidate() }
+    if (glasses.isEmpty()) return
+    val reach = changedArea(target)
+    glasses.keys.toList().forEach { if (reach == null || it.samples(reach)) it.invalidate() }
+  }
+
+  private val moved = Rect()
+  private val laidOut = IntArray(2)
+
+  // The window area a change of `view` may have touched; null when it cannot be told.
+  private fun changedArea(view: View): Rect? {
+    if (!view.isAttachedToWindow) return null
+    val area = Rect()
+    // Its own box without its own move (where a slide or a float starts or ends)…
+    val parent = view.parent as? View
+    if (parent != null) {
+      parent.getLocationInWindow(laidOut)
+      area.set(
+        laidOut[0] + view.left,
+        laidOut[1] + view.top,
+        laidOut[0] + view.right,
+        laidOut[1] + view.bottom,
+      )
+    } else {
+      view.getLocationInWindow(laidOut)
+      area.set(laidOut[0], laidOut[1], laidOut[0] + view.width, laidOut[1] + view.height)
+    }
+    // …and where it shows now.
+    if (view.getGlobalVisibleRect(moved)) area.union(moved)
+    val margin = (CHANGE_MARGIN_DP * resources.displayMetrics.density).toInt()
+    area.inset(-margin, -margin)
+    return area
   }
 
   override fun onAttachedToWindow() {
@@ -70,3 +105,6 @@ class GlassTargetView(context: Context, appContext: AppContext) : ExpoView(conte
     if (glasses.isNotEmpty()) glasses.keys.toList().forEach { it.invalidate() }
   }
 }
+
+// Around a changed view: a glow, a shadow or a small move past its box still reaches the glass.
+private const val CHANGE_MARGIN_DP = 48f
