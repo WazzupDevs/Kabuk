@@ -37,9 +37,12 @@ export default function TabsLayout() {
   return (
     <TabBarSpace>
       <Tabs
-        // A tab out of sight stops drawing until it is opened again (react-native-screens'
-        // freeze): its queries and channels keep running, the open screen keeps the frames.
-        screenOptions={{ headerShown: false, freezeOnBlur: true }}
+        // Every tab stays alive as Telegram Android keeps its tabs (the owner's recording, 30 Ekim:
+        // each switch stalled the JS thread 100 to 230 ms). Freezing a tab out of sight hid it in a
+        // Suspense boundary: coming back, React took down and set up again every animated view and
+        // layout effect in it and laid the whole tab out again. A tab out of sight still draws
+        // nothing (react-native-screens detaches it) and its loops stop (useLoopActive).
+        screenOptions={{ headerShown: false }}
         // Without an active table the Mekan tab opens Keşfet instead.
         tabBar={(props) => (
           <TabBar {...props} opens={(tab) => tabOpenedBy(tab, table.data, Date.now())} />
