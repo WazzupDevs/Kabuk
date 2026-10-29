@@ -3,7 +3,7 @@
     "name": "skall",
     "slug": "masa",
     "scheme": "masa",
-    "version": "0.9.0",
+    "version": "0.9.1",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "platforms": ["android", "ios"],

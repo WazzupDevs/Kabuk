@@ -2,6 +2,7 @@ import type { ReactElement } from 'react';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
 import { KIT } from '@/theme/auraKit';
+import { svgKey } from '@/lib/svgKey';
 
 // The canvas's icons (docs/design/aura → `.ci`): drawn from capsules, two tones, the second softer
 // (`soft`: its opacity; 0.62 on a primary button, 1 for the brand's two colours). On a 24 grid.
@@ -300,7 +301,13 @@ export function CapIcon({
     );
   });
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24">
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      // One picture for every icon drawn the same (lib/svgKey.ts).
+      nativeID={svgKey('cap', name, color, b, soft)}
+    >
       {parts}
     </Svg>
   );
