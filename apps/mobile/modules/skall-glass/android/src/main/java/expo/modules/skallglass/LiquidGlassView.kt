@@ -20,9 +20,10 @@ import kotlin.math.max
 // the glass was): the screen behind (a GlassTargetView, found by its id) drawn under this view,
 // blurred as CSS's backdrop-filter blurs (`blur` the deviation in dp, docs/design/aura's
 // blur(24px)) and its colours made richer (`saturation`, saturate(170%)), cut to the view's rounded
-// box. A strong blur keeps nothing small, so the screen is drawn small into the glass (a quarter
-// of the size at most) before it is blurred: the same picture for a sixteenth of the work. Android
-// 12 and later; below it the view draws nothing and the caller draws its solid ground instead.
+// box. A strong blur keeps nothing small, so the screen is drawn small into the glass (an eighth
+// of the size at most, as Telegram Android draws its frosted bars) before it is blurred: the same
+// picture for a sixty-fourth of the work. Android 12 and later; below it the view draws nothing and
+// the caller draws its solid ground instead.
 class LiquidGlassView(context: Context, appContext: AppContext) : ExpoView(context, appContext) {
   var targetId: String? = null
     set(value) {
@@ -96,14 +97,16 @@ class LiquidGlassView(context: Context, appContext: AppContext) : ExpoView(conte
 
   private val sampledHere = IntArray(2)
 
-  // The blur reaches about three deviations out: what lies that far outside the glass shows in it.
+  // The blur reaches about three deviations out: what lies that far outside the glass is drawn in.
   private fun reach(): Int = ceil(max(sigma * REACH, 1f)).toInt() + 1
 
-  // Whether a change in this window area shows in the glass: its box with what the blur draws in.
+  // Whether a change in this window area shows in the glass: its box with what the blur draws in,
+  // to two deviations (past that a change weighs a few per cent of the edge's colour; the glass does
+  // not draw again for it).
   fun samples(area: Rect): Boolean {
     if (!isAttachedToWindow || width <= 0 || height <= 0) return true
     getLocationInWindow(sampledHere)
-    val margin = reach()
+    val margin = ceil(max(sigma * SEEN, 1f)).toInt() + 1
     return Rect.intersects(
       area,
       Rect(
@@ -140,16 +143,18 @@ class LiquidGlassView(context: Context, appContext: AppContext) : ExpoView(conte
     val margin = reach()
     val fullW = width + margin * 2
     val fullH = height + margin * 2
-    // React Native's sigma to radius (FilterHelper.sigmaToRadius), as the old glass and the
-    // dissolve take it.
-    val radius = if (sigma > MIN_SIGMA_PX) (sigma - MIN_SIGMA_PX) / SIGMA_TO_RADIUS else 0f
-    val scale = if (radius > 0f) (SMALL_RADIUS_PX / radius).coerceIn(MIN_SCALE, 1f) else 1f
+    // Small enough that the small picture's blur still spans a few pixels, never under an eighth.
+    val scale = if (sigma > 0f) (SMALL_SIGMA_PX / sigma).coerceIn(MIN_SCALE, 1f) else 1f
+    // The deviation in the small picture, as a radius (React Native's and Telegram's conversion:
+    // deviation 0.57735 × radius + 0.5).
+    val smallSigma = sigma * scale
+    val radius = if (smallSigma > MIN_SIGMA_PX) (smallSigma - MIN_SIGMA_PX) / SIGMA_TO_RADIUS else 0f
     val w = ceil(fullW * scale).toInt().coerceAtLeast(1)
     val h = ceil(fullH * scale).toInt().coerceAtLeast(1)
     getLocationInWindow(here)
     target.getLocationInWindow(there)
     node.setPosition(0, 0, w, h)
-    applyEffect(node, w, h, radius * scale)
+    applyEffect(node, w, h, radius)
     val recording = node.beginRecording(w, h)
     try {
       recording.scale(scale, scale)
@@ -200,10 +205,12 @@ class LiquidGlassView(context: Context, appContext: AppContext) : ExpoView(conte
   }
 }
 
-// How far the blur draws in from outside, in deviations.
+// How far the blur draws in from outside, and how far a change counts, in deviations.
 private const val REACH = 3f
+private const val SEEN = 2f
 private const val MIN_SIGMA_PX = 0.5f
 private const val SIGMA_TO_RADIUS = 0.57735f
-// The small picture still blurs over a few pixels; never smaller than a quarter.
-private const val SMALL_RADIUS_PX = 6f
-private const val MIN_SCALE = 0.25f
+// The small picture's deviation at least this (its blur spans a dozen pixels or more); never
+// smaller than an eighth (Telegram Android's frosted bars).
+private const val SMALL_SIGMA_PX = 4f
+private const val MIN_SCALE = 0.125f
