@@ -1,0 +1,94 @@
+diff --git a/android/src/main/java/com/horcrux/svg/SvgView.java b/android/src/main/java/com/horcrux/svg/SvgView.java
+index f04da14fcbc42f05e36839f71256363528169f0b..63322e7806182cd94ce9f14cc308b028813ba59a 100644
+--- a/android/src/main/java/com/horcrux/svg/SvgView.java
++++ b/android/src/main/java/com/horcrux/svg/SvgView.java
+@@ -18,6 +18,7 @@ import android.graphics.Rect;
+ import android.graphics.RectF;
+ import android.graphics.Typeface;
+ import android.util.Base64;
++import android.util.LruCache;
+ import android.view.View;
+ import android.view.ViewParent;
+ import android.view.accessibility.AccessibilityNodeInfo;
+@@ -62,6 +63,29 @@ public class SvgView extends ReactViewGroup implements ReactCompoundView, ReactC
+   private @Nullable Bitmap mCurrentBitmap;
+   private boolean mRemovalTransitionStarted;
+ 
++  // skall: an SVG is drawn on the main thread into a bitmap, and it was drawn again every time its
++  // view came back on the screen (a tab opened again: every icon and capsule in it) and in every
++  // place the same picture shows. A view that names its picture (nativeID "svgc:...", the same for
++  // the same drawing) shares one bitmap with every view of the same name and size, and a view keeps
++  // its bitmap while it is off the screen. A shared bitmap is never recycled: other views draw it.
++  private static final String SHARED_PREFIX = "svgc:";
++  private static final LruCache<String, Bitmap> SHARED =
++      new LruCache<String, Bitmap>(24 * 1024 * 1024) {
++        @Override
++        protected int sizeOf(String key, Bitmap value) {
++          return value.getByteCount();
++        }
++      };
++  private boolean mShared;
++
++  private @Nullable String sharedKey(int width, int height) {
++    Object id = getTag(com.facebook.react.R.id.view_tag_native_id);
++    if (!(id instanceof String) || !((String) id).startsWith(SHARED_PREFIX)) {
++      return null;
++    }
++    return id + "|" + width + "x" + height;
++  }
++
+   public SvgView(ReactContext reactContext) {
+     super(reactContext);
+     mScale = DisplayMetricsHolder.getScreenDisplayMetrics().density;
+@@ -104,10 +128,11 @@ public class SvgView extends ReactViewGroup implements ReactCompoundView, ReactC
+       // when view is removed from the view hierarchy, we want to recycle the mBitmap when
+       // the view is detached from window, in order to preserve it for during animation, see
+       // https://github.com/react-native-svg/react-native-svg/pull/1542
+-      if (mBitmap != null) {
++      if (mBitmap != null && !mShared) {
+         mBitmap.recycle();
+       }
+       mBitmap = null;
++      mShared = false;
+     }
+   }
+ 
+@@ -116,13 +141,11 @@ public class SvgView extends ReactViewGroup implements ReactCompoundView, ReactC
+     mRemovalTransitionStarted = true;
+   }
+ 
++  // skall: the bitmap stays with the view off the screen (a tab out of sight is detached and comes
++  // back); it goes with the view.
+   @Override
+   protected void onDetachedFromWindow() {
+     super.onDetachedFromWindow();
+-    if (mBitmap != null) {
+-      mBitmap.recycle();
+-    }
+-    mBitmap = null;
+   }
+ 
+   @Override
+@@ -277,9 +300,22 @@ public class SvgView extends ReactViewGroup implements ReactCompoundView, ReactC
+     if (invalid) {
+       return null;
+     }
++    String key = sharedKey((int) width, (int) height);
++    if (key != null) {
++      Bitmap hit = SHARED.get(key);
++      if (hit != null && !hit.isRecycled()) {
++        mShared = true;
++        mCurrentBitmap = hit;
++        return hit;
++      }
++    }
+     Bitmap bitmap = Bitmap.createBitmap((int) width, (int) height, Bitmap.Config.ARGB_8888);
+     mCurrentBitmap = bitmap;
+     drawChildren(new Canvas(bitmap));
++    if (key != null) {
++      SHARED.put(key, bitmap);
++      mShared = true;
++    }
+     return bitmap;
+   }
+ 

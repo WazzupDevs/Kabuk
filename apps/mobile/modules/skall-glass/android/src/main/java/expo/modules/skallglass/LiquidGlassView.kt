@@ -5,7 +5,7 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
-import android.graphics.Outline
+import android.graphics.Path
 import android.graphics.Rect
 import android.graphics.RenderEffect
 import android.graphics.RenderNode
@@ -45,21 +45,11 @@ class LiquidGlassView(context: Context, appContext: AppContext) : ExpoView(conte
 
   private val glass: RenderNode? =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) RenderNode("skallGlass") else null
-  // The glass drawn once into a layer of its own and kept: the system applies a RenderEffect
-  // again every time its node is drawn on some GPUs (its cache is off there), which made the bar
-  // blur on every frame anything on the screen moved. The layer is drawn again only when the glass
-  // is (a change under it: GlassTargetView). It also cuts the glass to its rounded box.
-  private val kept: RenderNode? =
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-      RenderNode("skallGlassKept").apply { setUseCompositingLayer(true, null) }
-    } else {
-      null
-    }
   private var effectKey: List<Float>? = null
   private var watched: GlassTargetView? = null
   private val here = IntArray(2)
   private val there = IntArray(2)
-  private val outline = Outline()
+  private val edge = Path()
 
   init {
     setWillNotDraw(false)
@@ -84,7 +74,6 @@ class LiquidGlassView(context: Context, appContext: AppContext) : ExpoView(conte
     GlassTargets.unwatch(this)
     watch(null)
     glass?.discardDisplayList()
-    kept?.discardDisplayList()
     super.onDetachedFromWindow()
   }
 
@@ -121,24 +110,17 @@ class LiquidGlassView(context: Context, appContext: AppContext) : ExpoView(conte
   override fun onDraw(canvas: Canvas) {
     super.onDraw(canvas)
     val node = glass ?: return
-    val keep = kept ?: return
     val target = GlassTargets.find(targetId)
     watch(target)
     if (target == null || !target.isAttachedToWindow) return
     val content = target.content ?: return
     if (!canvas.isHardwareAccelerated || width <= 0 || height <= 0) return
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
-    drawFrost(canvas, node, keep, content, target)
+    drawFrost(canvas, node, content, target)
   }
 
   @TargetApi(Build.VERSION_CODES.S)
-  private fun drawFrost(
-    canvas: Canvas,
-    node: RenderNode,
-    keep: RenderNode,
-    content: RenderNode,
-    target: GlassTargetView,
-  ) {
+  private fun drawFrost(canvas: Canvas, node: RenderNode, content: RenderNode, target: GlassTargetView) {
     // The glass draws a little more of the screen than it covers, as far as the blur reaches.
     val margin = reach()
     val fullW = width + margin * 2
@@ -167,19 +149,17 @@ class LiquidGlassView(context: Context, appContext: AppContext) : ExpoView(conte
     } finally {
       node.endRecording()
     }
-    keep.setPosition(-margin, -margin, width + margin, height + margin)
-    // Cut to the view's rounded box (in the kept layer's own place, which starts `margin` out).
-    outline.setRoundRect(margin, margin, margin + width, margin + height, cornerRadius)
-    keep.setOutline(outline)
-    keep.setClipToOutline(true)
-    val outer = keep.beginRecording(fullW, fullH)
-    try {
-      outer.scale(1f / scale, 1f / scale)
-      outer.drawRenderNode(node)
-    } finally {
-      keep.endRecording()
-    }
-    canvas.drawRenderNode(keep)
+    // Straight onto the screen, cut to the view's rounded box at full size (the owner's trace, 30
+    // Ekim: a second layer kept around it was drawn again with it on every frame, a whole pass for
+    // nothing; the glass is drawn again whenever anything on the screen changes, as the screen is).
+    edge.reset()
+    edge.addRoundRect(0f, 0f, width.toFloat(), height.toFloat(), cornerRadius, cornerRadius, Path.Direction.CW)
+    val saved = canvas.save()
+    canvas.clipPath(edge)
+    canvas.translate(-margin.toFloat(), -margin.toFloat())
+    canvas.scale(1f / scale, 1f / scale)
+    canvas.drawRenderNode(node)
+    canvas.restoreToCount(saved)
   }
 
   @TargetApi(Build.VERSION_CODES.S)

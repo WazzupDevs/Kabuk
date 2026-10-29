@@ -42,6 +42,9 @@
       "ignoreMissing": [
         "react-dom"
       ]
+    },
+    "patchedDependencies": {
+      "react-native-svg@15.15.4": "patches/react-native-svg@15.15.4.patch"
     }
   },
   "devDependencies": {

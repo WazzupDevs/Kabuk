@@ -96,7 +96,7 @@ class DissolveView(context: Context, appContext: AppContext) : ExpoView(context,
       n == null ||
         Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
         progress >= 1f ||
-        sigma <= MIN_SIGMA_PX ||
+        sigma <= SEEN_SIGMA_PX ||
         !canvas.isHardwareAccelerated ||
         width <= 0 ||
         height <= 0
@@ -112,8 +112,11 @@ class DissolveView(context: Context, appContext: AppContext) : ExpoView(context,
     // React Native's conversion (FilterHelper.sigmaToRadius).
     val radius = (sigma - MIN_SIGMA_PX) / SIGMA_TO_RADIUS
     // Small enough that the small picture still blurs over a few pixels, never smaller than a
-    // quarter: the upscaled blur is as smooth as the full one.
-    val scale = (SMALL_RADIUS_PX / radius).coerceIn(MIN_SCALE, 1f)
+    // quarter: the upscaled blur is as smooth as the full one. Never at full size either (the
+    // owner's trace, 30 Ekim: the last part of every dissolve drew and blurred the whole screen at
+    // 1080 x 2400, a full blur pass on each of its frames): at half size a blur of a few pixels
+    // looks the same.
+    val scale = (SMALL_RADIUS_PX / radius).coerceIn(MIN_SCALE, MAX_SCALE)
     val w = ceil(width * scale).toInt()
     val h = ceil(height * scale).toInt()
     n.setPosition(0, 0, w, h)
@@ -135,6 +138,10 @@ class DissolveView(context: Context, appContext: AppContext) : ExpoView(context,
 }
 
 private const val MIN_SIGMA_PX = 0.5f
+// Below this the blur is no longer seen (a pixel and a half on a 1080 px screen): the screen draws
+// as it is from here.
+private const val SEEN_SIGMA_PX = 1.5f
+private const val MAX_SCALE = 0.5f
 private const val SIGMA_TO_RADIUS = 0.57735f
 private const val SMALL_RADIUS_PX = 6f
 private const val MIN_SCALE = 0.25f
