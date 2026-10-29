@@ -83,6 +83,7 @@ const ChatLiveContext = createContext(false);
 // owner's video, 29 Ekim: 0.9 s).
 const ChatNewestContext = createContext<string | undefined>(undefined);
 const SETTLE_MS = 800;
+const KEEP_VISIBLE = { minIndexForVisible: 0 } as const;
 const ARRIVE_MS = 220;
 
 // One message's row in the stream: reports its place for jumpTo and hands jumpTo to its bubble
@@ -326,8 +327,14 @@ export function ChatScroll({
   return (
     <View className="flex-1" onTouchStart={outerBar ? undefined : ownBar.onTouchStart}>
       <ScrollView
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
         ref={scroll}
         testID={testID}
+        // Rows put above what is shown (the rest of the first page, "Daha eski mesajlar") leave
+        // what is shown where it is, in the same frame: the stream opened at its end and showed
+        // older messages for a frame or two before coming back (the owner's video, 29 Ekim).
+        maintainVisibleContentPosition={startAtEnd ? KEEP_VISIBLE : undefined}
         // Dragging the messages puts the keyboard away, like any chat app.
         keyboardDismissMode="on-drag"
         className="flex-1"

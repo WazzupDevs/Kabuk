@@ -48,7 +48,11 @@ export function FirstGameIntro({ visible, onClose }: Props) {
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <SafeAreaView testID="first-game-intro" style={{ flex: 1, backgroundColor: colors.canvas }}>
-        <ScrollView contentContainerStyle={{ padding: shape.screenPadding, gap: SPACING[4] }}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ padding: shape.screenPadding, gap: SPACING[4] }}
+        >
           <View className="flex-row items-center justify-between">
             <Text variant="overline" tone="muted">
               {tr.games.introEyebrow}

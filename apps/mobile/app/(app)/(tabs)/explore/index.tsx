@@ -473,6 +473,8 @@ function SingleVenue({
   const today = venue.event;
   return (
     <ScrollView
+      showsVerticalScrollIndicator={false}
+      showsHorizontalScrollIndicator={false}
       // The floating tab bar covers the bottom: the card and the events end above it.
       contentContainerStyle={{
         paddingHorizontal: KIT.size.side,
@@ -612,6 +614,7 @@ function SingleVenue({
         <T v="fine">{tr.explore.noEvents}</T>
       ) : (
         <ScrollView
+          showsVerticalScrollIndicator={false}
           horizontal
           showsHorizontalScrollIndicator={false}
           style={{ marginHorizontal: -KIT.size.side }}

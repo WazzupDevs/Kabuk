@@ -141,6 +141,8 @@ export function GameStage({
       ) : null}
 
       <ScrollView
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
         ref={scroll}
         testID="game-stage"
         className="flex-1"
@@ -243,6 +245,8 @@ export function StageFit({
     <View style={{ flexGrow: 1, gap: SPACING[2.5] }} testID={testID}>
       {status}
       <ScrollView
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
         className="flex-1"
         // The cards' hard shadows need a little room inside the scroll's clip.
         style={{ marginHorizontal: -SPACING[1] }}

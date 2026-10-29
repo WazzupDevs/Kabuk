@@ -133,6 +133,7 @@ export function PullScroll({ onRefresh, children, contentContainerStyle, ...scro
         <View style={{ flex: 1 }} collapsable={false}>
           <GestureDetector gesture={native}>
             <Animated.ScrollView
+              showsHorizontalScrollIndicator={false}
               ref={scroller}
               onScroll={onScroll}
               scrollEventThrottle={16}

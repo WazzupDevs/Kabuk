@@ -12,7 +12,6 @@ import {
   Animated,
   BackHandler,
   Pressable,
-  ScrollView,
   StyleSheet,
   useWindowDimensions,
   View,
@@ -23,11 +22,11 @@ import { InSheet, T, useKit } from '@/aura/kit';
 import { Peek, type PeekKind } from '@/aura/Peek';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
-import { gradientStyle } from '@/theme/gradient';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { EASE_OUT } from '@/theme/markMotion';
 
 import { Quiet } from './Quiet';
+import { SheetCard } from './SheetCard';
 import { useSheetDrag } from './sheetDrag';
 
 // A route drawn as a bottom sheet over the screen it opened from (skall tuvali: Ayarlar,
@@ -135,53 +134,21 @@ export function RouteSheet({
             {...drag.handlers}
           >
             {peek ? <Peek kind={peek} /> : null}
-            <View
-              style={{
-                ...gradientStyle(k.c.sheet),
-                backgroundColor: k.c.sheetBase,
-                flexShrink: 1,
-                borderRadius: KIT.size.sheetRadius,
-                borderWidth: KIT.size.edge,
-                borderColor: k.c.glassEdge,
-                boxShadow: k.c.glassShadow,
-                paddingTop: KIT.size.sheetPadTop,
-                paddingHorizontal: KIT.size.sheetPadX,
-                paddingBottom: KIT.size.sheetPadBottom,
-              }}
-            >
-              <View
-                className="self-center"
-                style={{
-                  width: KIT.size.grabW,
-                  height: KIT.size.grabH,
-                  borderRadius: KIT.size.grabH,
-                  backgroundColor: k.c.grab,
-                  marginBottom: KIT.size.sheetGap,
-                }}
-              />
-              <ScrollView
-                bounces={false}
-                keyboardShouldPersistTaps="handled"
-                onScroll={drag.onScroll}
-                scrollEventThrottle={16}
-              >
-                <InSheet>
-                  <Quiet value>
-                    {title ? (
-                      <T v="title" accessibilityRole="header">
-                        {title}
-                      </T>
-                    ) : null}
-                    {/* docs/design/aura (`.sheet`): 14 under the title, 12 between the blocks. */}
-                    <View
-                      style={{ gap: KIT.size.rowGap, marginTop: title ? KIT.size.sheetGap : 0 }}
-                    >
-                      {children}
-                    </View>
-                  </Quiet>
-                </InSheet>
-              </ScrollView>
-            </View>
+            <SheetCard onScroll={drag.onScroll}>
+              <InSheet>
+                <Quiet value>
+                  {title ? (
+                    <T v="title" accessibilityRole="header">
+                      {title}
+                    </T>
+                  ) : null}
+                  {/* docs/design/aura (`.sheet`): 14 under the title, 12 between the blocks. */}
+                  <View style={{ gap: KIT.size.rowGap, marginTop: title ? KIT.size.sheetGap : 0 }}>
+                    {children}
+                  </View>
+                </Quiet>
+              </InSheet>
+            </SheetCard>
           </Animated.View>
         </View>
       </View>

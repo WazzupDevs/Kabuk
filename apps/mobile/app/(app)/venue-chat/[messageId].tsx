@@ -14,7 +14,8 @@ import { Text } from '@/components/Text';
 import { Loader } from '@/components/Loader';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
-import { friendKeys } from '@/features/friends/queries';
+import { FriendActions } from '@/features/friends/FriendActions';
+import { friendKeys, useFriends } from '@/features/friends/queries';
 import { ProfileHead } from '@/features/profile/ProfileCard';
 import { useVenueChatProfile } from '@/features/venueChat/queries';
 import { errorMessage } from '@/i18n/errors';
@@ -29,6 +30,10 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 export default function VenueChatProfileScreen() {
   const { messageId } = useLocalSearchParams<{ messageId: string }>();
   const view = useVenueChatProfile(messageId);
+  // A friend: "Arkadaşsınız" and the DM, not a request (the owner's report, 29 Ekim).
+  const friends = useFriends();
+  const friendId = view.data?.friendPublicId;
+  const friend = friendId ? friends.data?.find((f) => f.publicId === friendId) : undefined;
   const [confirming, setConfirming] = useState(false);
   const [menu, setMenu] = useState(false);
   const [sent, setSent] = useState(false);
@@ -99,7 +104,9 @@ export default function VenueChatProfileScreen() {
       ) : (
         <View testID="venue-chat-profile">
           <ProfileHead profile={view.data}>
-            {sent ? (
+            {friend ? (
+              <FriendActions friend={friend} />
+            ) : sent ? (
               <Text variant="fine" align="center" testID="venue-chat-request-sent">
                 {tr.venueChat.requestSent}
               </Text>

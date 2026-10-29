@@ -145,6 +145,8 @@ function Welcome() {
       <AuraBackground />
       <SafeAreaView edges={['top', 'left', 'right', 'bottom']} style={styles.fill}>
         <ScrollView
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
           contentContainerStyle={{
             flexGrow: 1,
             paddingHorizontal: shape.screenPadding,

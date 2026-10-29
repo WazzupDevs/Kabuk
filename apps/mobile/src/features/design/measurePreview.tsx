@@ -63,6 +63,8 @@ export function MeasureSet() {
           <Button size="sm" variant="neutral" label={t.reset} onPress={meter.reset} />
         </View>
         <FlatList
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
           testID="measure-chat"
           data={looks}
           keyExtractor={(_, i) => String(i)}
@@ -78,6 +80,8 @@ export function MeasureSet() {
 
       <PreviewBlock title={t.table}>
         <FlatList
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
           testID="measure-table"
           data={looks.slice(0, PEOPLE)}
           keyExtractor={(_, i) => String(i)}
