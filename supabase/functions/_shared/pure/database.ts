@@ -3882,6 +3882,19 @@ export type Database = {
           word: string;
         }[];
       };
+      test_bot_add: {
+        Args: { target_bot: string; target_owner: string };
+        Returns: undefined;
+      };
+      test_bots_of: {
+        Args: { target_owner: string };
+        Returns: {
+          room_id: string;
+          session_id: string;
+          user_id: string;
+        }[];
+      };
+      test_bots_vampir: { Args: { target_room_id: string }; Returns: number };
       user_stats: {
         Args: { target_user_id: string };
         Returns: {
