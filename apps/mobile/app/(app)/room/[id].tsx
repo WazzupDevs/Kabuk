@@ -1,9 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { seatsAnonymously } from '@shared/gender.ts';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
-import Reanimated from 'react-native-reanimated';
+import Reanimated, { useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, type IconName } from '@/components/Button';
@@ -47,8 +47,20 @@ export default function TableScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { scheme } = useTheme();
   const insets = useSafeAreaInsets();
-  // The head folds to the faces while the games scroll on (the owner's call, 29 Ekim).
-  const collapse = useCollapseOnScroll();
+  // The head folds to the faces while the games scroll on and comes back when they scroll back
+  // (the owner's call, 29 Ekim). It lies over the games, so folding never changes how far they
+  // scroll (as a row above them, folding lengthened the list, a short list sprang back and the
+  // head opened again); they start under its unfolded height and it folds only once they have
+  // gone that far under it.
+  const reach = useSharedValue(0);
+  const { progress: fold, onScroll } = useCollapseOnScroll(undefined, reach);
+  const [headHeight, setHeadHeight] = useState(0);
+  const onFoldReach = useCallback(
+    (px: number) => {
+      reach.set(px);
+    },
+    [reach],
+  );
   const queryClient = useQueryClient();
   const checkIn = useActiveTable();
   const ownPhoto = useOwnPhoto();
@@ -374,30 +386,15 @@ export default function TableScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
       <AuraBackground />
-      <TableScene
-        fold={collapse.progress}
-        people={people.data ?? []}
-        profiles={profiles}
-        me={sessionId}
-        inset={insets.top}
-        onPress={() => setSheet('people')}
-        footer={
-          <>
-            {title}
-            {lobbyButton}
-          </>
-        }
-      >
-        {bar}
-      </TableScene>
       <Reanimated.ScrollView
-        onScroll={collapse.onScroll}
+        onScroll={onScroll}
         scrollEventThrottle={16}
         showsHorizontalScrollIndicator={false}
-        style={{ flex: 1 }}
+        // Shown once the head is measured: the games start under it, not behind it.
+        style={{ flex: 1, opacity: headHeight > 0 ? 1 : 0 }}
         contentContainerStyle={{
           paddingHorizontal: KIT.size.side,
-          paddingTop: KIT.size.rowGap,
+          paddingTop: headHeight + KIT.size.rowGap,
           paddingBottom: insets.bottom + SPACING[8],
           gap: KIT.size.rowGap,
         }}
@@ -419,6 +416,31 @@ export default function TableScreen() {
           ))}
         </PosterGrid>
       </Reanimated.ScrollView>
+      <View
+        style={{ position: 'absolute', top: 0, left: 0, right: 0 }}
+        onLayout={(e) => {
+          // Only the unfolded height places the games (folding changes the layout every frame).
+          if (fold.value === 0) setHeadHeight(e.nativeEvent.layout.height);
+        }}
+      >
+        <TableScene
+          fold={fold}
+          onFoldReach={onFoldReach}
+          people={people.data ?? []}
+          profiles={profiles}
+          me={sessionId}
+          inset={insets.top}
+          onPress={() => setSheet('people')}
+          footer={
+            <>
+              {title}
+              {lobbyButton}
+            </>
+          }
+        >
+          {bar}
+        </TableScene>
+      </View>
       {sheets}
     </View>
   );

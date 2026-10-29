@@ -1,4 +1,4 @@
-import { createContext, type ReactNode, useContext, useEffect, useState } from 'react';
+import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 import { Animated, Pressable, View } from 'react-native';
 import type { SharedValue } from 'react-native-reanimated';
 
@@ -40,6 +40,7 @@ export function TableScene({
   children,
   footer,
   fold,
+  onFoldReach,
 }: {
   people: readonly TablePerson[];
   profiles: ReadonlyMap<string, string> | undefined;
@@ -52,7 +53,18 @@ export function TableScene({
   // Folds the names and the footer away while the games scroll on (useCollapseOnScroll): only
   // the faces stay under the buttons (the owner's call, 29 Ekim).
   fold?: SharedValue<number>;
+  // Told how much shorter the scene is folded (the footer and a name tag), whenever that changes.
+  onFoldReach?: (px: number) => void;
 }) {
+  const [footerHeight, setFooterHeight] = useState(0);
+  const [tagHeight, setTagHeight] = useState(0);
+  useEffect(() => {
+    onFoldReach?.(footerHeight + tagHeight);
+  }, [footerHeight, tagHeight, onFoldReach]);
+  const folding = useMemo(
+    () => (fold ? { progress: fold, onTag: setTagHeight } : undefined),
+    [fold],
+  );
   // Who was here when the scene first drew: they arrive in a row, later ones with a ring.
   const [first, setFirst] = useState<ReadonlySet<string> | null>(null);
   if (first === null && people.length > 0) setFirst(new Set(people.map((p) => p.sessionId)));
@@ -64,7 +76,7 @@ export function TableScene({
   const shown = overflow ? ordered.slice(0, ROW_MAX - 1) : ordered;
   const more = ordered.length - shown.length;
   return (
-    <FoldContext.Provider value={fold}>
+    <FoldContext.Provider value={folding}>
       <View
         style={{
           paddingTop: inset,
@@ -101,14 +113,20 @@ export function TableScene({
           ))}
           {more > 0 ? <MoreFace count={more} /> : null}
         </Pressable>
-        <Fold progress={fold} style={{ paddingHorizontal: KIT.size.side, gap: KIT.size.rowGap }}>
+        <Fold
+          progress={fold}
+          onHeight={setFooterHeight}
+          style={{ paddingHorizontal: KIT.size.side, gap: KIT.size.rowGap }}
+        >
           {footer}
         </Fold>
       </View>
     </FoldContext.Provider>
   );
 }
-const FoldContext = createContext<SharedValue<number> | undefined>(undefined);
+const FoldContext = createContext<
+  { progress: SharedValue<number>; onTag: (height: number) => void } | undefined
+>(undefined);
 const SEAT_DELAY = 160;
 const SEAT_STEP = MOTION.stagger.part;
 
@@ -214,7 +232,7 @@ function Seat({
           )}
         </Animated.View>
       </View>
-      <Fold progress={fold}>
+      <Fold progress={fold?.progress} onHeight={fold?.onTag}>
         <Tag label={name} fit />
       </Fold>
     </View>
