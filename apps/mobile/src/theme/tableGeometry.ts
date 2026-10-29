@@ -1,4 +1,4 @@
-import { TABLE } from './vampirTable';
+import { TABLE } from './vampirTableSize';
 
 // Where the round table's people sit and how its lines run (docs/design/vampir/yuvarlak-masa.html:
 // ring() and lines()), in the table's frame.

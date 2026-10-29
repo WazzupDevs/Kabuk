@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { TABLE } from './vampirTable';
+import { TABLE } from './vampirTableSize';
 
 import { curveBetween, measure, ring } from './tableGeometry';
 
