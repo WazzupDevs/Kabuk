@@ -47,9 +47,11 @@ export function roleDeck(players: number): VampirRole[] {
 export const VAMPIR_PHASES = ['role', 'night', 'morning', 'day', 'vote', 'verdict'] as const;
 export type VampirPhase = (typeof VAMPIR_PHASES)[number];
 
+// A death: at night or by the vote. The role only after the game (lastGame.vampir); while it
+// runs, nobody's role opens (K-80).
 export type VampirDeath = {
   sid: string;
-  role: VampirRole;
+  role?: VampirRole;
   when: 'night' | 'vote';
   round: number;
 };
@@ -76,7 +78,7 @@ export type VampirState = {
   winner: VampirSide | null;
 };
 
-// The end screen's facts (game_state.lastGame.vampir): the roles of those still in the game.
+// The end screen's facts (game_state.lastGame.vampir): every role but of those who left (K-80).
 export type VampirResult = {
   winner: VampirSide;
   roles: Record<string, VampirRole>;
@@ -107,12 +109,12 @@ function deaths(value: unknown): VampirDeath[] {
   return value.flatMap((d): VampirDeath[] =>
     isRecord(d) &&
     typeof d.sid === 'string' &&
-    isRole(d.role) &&
+    (d.role === undefined || isRole(d.role)) &&
     (d.when === 'night' || d.when === 'vote')
       ? [
           {
             sid: d.sid,
-            role: d.role,
+            ...(isRole(d.role) ? { role: d.role } : {}),
             when: d.when,
             round: typeof d.round === 'number' ? d.round : 1,
           },

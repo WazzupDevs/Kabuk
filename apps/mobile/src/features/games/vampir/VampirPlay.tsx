@@ -357,8 +357,8 @@ export function VampirPlay({
       );
     }
   } else if (state.phase === 'morning') {
+    // The dead person's role stays hidden until the end (K-80).
     const v = state.victim;
-    const death = v ? state.dead.find((d) => d.sid === v) : undefined;
     body = (
       <Middle>
         <CachedSvg xml={SUN_SVG} width={L.size.sun} height={L.size.sun / 2} />
@@ -369,8 +369,7 @@ export function VampirPlay({
             sid={v}
             dead
             title={v === me ? tr.vampir.youDied : tr.vampir.died(nameOf(faces, v))}
-            role={death?.role}
-            note={v === me ? tr.vampir.youDiedNote : tr.vampir.roleOpened}
+            note={v === me ? tr.vampir.youDiedNote : tr.vampir.roleHidden}
           />
         ) : (
           <ResultCard faces={faces} title={tr.vampir.nobodyDied} note={tr.vampir.nobodyDiedNote} />
@@ -448,8 +447,8 @@ export function VampirPlay({
       />
     ) : null;
   } else if (state.phase === 'verdict') {
+    // The one voted out keeps their role hidden until the end (K-80).
     const o = state.out;
-    const death = o ? state.dead.find((d) => d.sid === o) : undefined;
     body = (
       <Middle>
         <VText v="title">{tr.vampir.voteOver}</VText>
@@ -459,14 +458,7 @@ export function VampirPlay({
             sid={o}
             dead
             title={o === me ? tr.vampir.youOut : tr.vampir.out(nameOf(faces, o))}
-            role={death?.role}
-            note={
-              death?.role === 'soytari'
-                ? tr.vampir.jesterOut
-                : death?.role === 'vampir'
-                  ? tr.vampir.vampirOut
-                  : tr.vampir.innocentOut
-            }
+            note={tr.vampir.roleHidden}
           />
         ) : (
           <ResultCard faces={faces} title={tr.vampir.tie} note={tr.vampir.tieNote} />

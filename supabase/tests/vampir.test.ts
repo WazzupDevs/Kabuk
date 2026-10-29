@@ -250,8 +250,10 @@ describe('the night (rule 3)', () => {
       expect(morning).toMatchObject({
         phase: 'morning',
         victim: victim.sessionId,
-        dead: [{ sid: victim.sessionId, role: g.role(victim), when: 'night', round: 1 }],
+        dead: [{ sid: victim.sessionId, when: 'night', round: 1 }],
       });
+      // The dead person's role stays hidden while the game runs (K-80).
+      expect(JSON.stringify(morning.dead)).not.toContain(g.role(victim));
     },
     SLOW,
   );
@@ -326,16 +328,19 @@ describe('the day (K-78)', () => {
         phase: 'verdict',
         out: jester.sessionId,
         winner: 'j',
-        dead: [{ sid: jester.sessionId, role: 'soytari', when: 'vote' }],
+        dead: [{ sid: jester.sessionId, when: 'vote' }],
       });
+      expect(JSON.stringify((await state(g.roomId)).dead)).not.toContain('soytari');
       await runOut(g);
       const row = await roomRow(g.roomId);
       expect(row.concept).toBeNull();
       expect(row.game_state.lastGame).toMatchObject({
         concept: 'vampir',
         abandoned: false,
-        vampir: { winner: 'j' },
+        vampir: { winner: 'j', dead: [{ sid: jester.sessionId, role: 'soytari', when: 'vote' }] },
       });
+      // The end shows every role.
+      expect(Object.keys(row.game_state.lastGame.vampir.roles)).toHaveLength(6);
       const results = await sql`
       select ts.id as session_id, gr.won from public.game_results gr
       join public.table_sessions ts on ts.user_id = gr.user_id
