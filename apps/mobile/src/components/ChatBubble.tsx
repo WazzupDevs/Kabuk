@@ -135,6 +135,20 @@ export function ChatBubble({
   const paint = KIT.bubble[scheme];
   const fg = mine ? paint.mineInk : paint.themInk;
   const inside = !mine && nameInk !== undefined;
+  // Before `bubble` below: it draws the face (which reads the shadow) as it is built.
+  const radii = [
+    KIT.size.msgRadius,
+    KIT.size.msgRadius,
+    mine ? KIT.size.msgTail : KIT.size.msgRadius,
+    mine ? KIT.size.msgRadius : KIT.size.msgTail,
+  ] as const;
+  const bubbleShadow = shadowParts(
+    mine ? paint.mineShadow : KIT.chatShadow[kind],
+    undefined,
+    radii,
+    true,
+    mine ? KIT.size.edge : 0,
+  );
   const bubble = (
     <Pressable
       testID={testID}
@@ -158,19 +172,6 @@ export function ChatBubble({
     >
       {face(false)}
     </Pressable>
-  );
-  const radii = [
-    KIT.size.msgRadius,
-    KIT.size.msgRadius,
-    mine ? KIT.size.msgTail : KIT.size.msgRadius,
-    mine ? KIT.size.msgRadius : KIT.size.msgTail,
-  ] as const;
-  const bubbleShadow = shadowParts(
-    mine ? paint.mineShadow : KIT.chatShadow[kind],
-    undefined,
-    radii,
-    true,
-    mine ? KIT.size.edge : 0,
   );
   function face(lifted: boolean) {
     return (
