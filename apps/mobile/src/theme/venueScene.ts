@@ -1,11 +1,13 @@
 import type { V46ThumbKind } from './parts.generated';
 
-// The venue page's scene (the owner's call, 29 Ekim: no disk with the logo in the middle; the
-// buddies do what the place is for): a table in the middle with the type's things on it, two
-// buddies behind it and two at its sides, each busy, small things moving on their own (steam,
-// a page turning, dice, a lamp swinging). Drawn flat like the buddies (no outlines, a darker side).
-// Everything in a 390 × 300 frame, y from its top; the screen scales it to its width and anchors
-// it at the scene's bottom (the status bar is above the frame).
+// The venue page's scene (the owner's calls, 29 Ekim: no disk with the logo in the middle; the
+// buddies play one of skall's games at a table, a different game for each kind of place): Kampüs
+// plays Vampir Köylü in the campus garden at night, Kafe Kinshi, Çay bahçesi Krot, Yemek Sprengja.
+// A table in the middle with the place's things and the game's on it, two buddies behind it and
+// two at its sides, small things moving on their own (steam, bats, the bomb going hand to hand).
+// Drawn flat like the buddies (no outlines, a darker side). Everything in a 390 × 300 frame, y from
+// its top; the screen scales it to its width and anchors it at the scene's bottom (the status bar
+// is above the frame).
 export type SceneScheme = 'light' | 'dark';
 export type SceneKind = V46ThumbKind;
 
@@ -14,22 +16,25 @@ export const VENUE_FRAME = { width: 390, height: 300 } as const;
 // How a piece moves on its own, on the native driver (src/aura/VenueScene.tsx). Times in ms;
 // `delay` before the first round; `rest` still between rounds.
 export type SceneMotion =
-  // Rises and fades (steam, notes): `rise` up over `ms`, again and again.
+  // Rises and fades (steam, notes, question marks): `rise` up over `ms`, again and again.
   | { kind: 'steam'; ms: number; delay: number; rise: number }
-  // Up `y` and back (a cup to the mouth, a fork), turning `turn` degrees on the way.
+  // Up `y` and back (a cup to the mouth, a card held up), turning `turn` degrees on the way.
   | { kind: 'bob'; ms: number; delay: number; rest: number; y: number; turn: number }
-  // Swings `turn` degrees each way about its top (a lamp, the flags).
+  // Swings `turn` degrees each way about its top (a lamp, the flags, a lantern).
   | { kind: 'swing'; ms: number; delay: number; turn: number }
-  // Glows and dims to `low` (the bulbs).
+  // Glows and dims to `low` (the bulbs, the moon, the stars).
   | { kind: 'twinkle'; ms: number; delay: number; low: number }
-  // Pops up from its bottom, stays, goes (a speech bubble, a heart).
+  // Pops up from its bottom, stays, goes (a speech bubble, a card shown, a drop of sweat).
   | { kind: 'pop'; ms: number; delay: number; rest: number }
   // Turns over about its left edge (a page).
   | { kind: 'flip'; ms: number; delay: number; rest: number }
-  // Jumps `y` and spins `spin` degrees (dice, the pan's köfte).
+  // Jumps `y` and spins `spin` degrees (the sand timer turned over).
   | { kind: 'hop'; ms: number; delay: number; rest: number; y: number; spin: number }
-  // Flies `dx` across on a gentle wave `dy` high (the paper plane).
-  | { kind: 'glide'; ms: number; delay: number; rest: number; dx: number; dy: number };
+  // Flies `dx` across on a gentle wave `dy` high (the bats).
+  | { kind: 'glide'; ms: number; delay: number; rest: number; dx: number; dy: number }
+  // Thrown `dx` across on an arc `y` high and back again, spinning `spin` degrees each way (the
+  // bomb).
+  | { kind: 'toss'; ms: number; delay: number; rest: number; dx: number; y: number; spin: number };
 
 export type ScenePiece = {
   id: string;
@@ -43,11 +48,11 @@ export type ScenePiece = {
 export type SceneBuddy = { look: string; x: number; bottom: number; height: number };
 
 export type VenueScene = {
-  // Behind everything: lamps, lights, flags, the plane.
+  // Behind everything: the moon, trees, lamps, lights, flags, bats.
   back: ScenePiece[];
   // The two behind the table.
   rear: SceneBuddy[];
-  // The table, what is on it and what the two behind hold.
+  // The table, what is on it and what the two behind hold or say.
   table: ScenePiece[];
   // The two at the table's sides.
   side: SceneBuddy[];
@@ -62,7 +67,6 @@ const PAL = {
     steamOp: 0.42,
     plain: { top: '#FFFFFF', edge: '#E3DAFF', leg: '#CFC2F5', shine: '#F4F0FF' },
     wood: { top: '#EDC48E', edge: '#C98D50', leg: '#A86F3B', shine: '#F6D9AE' },
-    desk: { top: '#F6F1FF', edge: '#D6C8FF', leg: '#C2B3F0', shine: '#FFFFFF' },
     cloth: { top: '#FFFFFF', edge: '#FF8796', leg: '#CFC2F5', shine: '#FFFFFF' },
     check: '#FF6B7A',
     checkOp: 0.3,
@@ -70,12 +74,16 @@ const PAL = {
     cupSide: '#E6E0FA',
     saucer: '#EFEAFF',
     paper: '#FFFFFF',
-    paperSide: '#ECE6FB',
     line: '#CFC6EE',
-    ink: '#3A2F6E',
     bubble: '#FFFFFF',
     bubbleDot: '#7B5CFF',
-    lid: '#BFB3EA',
+    bat: '#3A2F6E',
+    star: '#FFB547',
+    canopy: '#6FCF9E',
+    canopyDeep: '#3FAE7E',
+    canopyShine: '#A6E8C4',
+    trunk: '#A86F3B',
+    post: '#6B5BA8',
   },
   dark: {
     cord: '#B9A9F0',
@@ -83,7 +91,6 @@ const PAL = {
     steamOp: 0.34,
     plain: { top: '#463B86', edge: '#30286A', leg: '#272058', shine: '#5A4E9E' },
     wood: { top: '#A97646', edge: '#7E522C', leg: '#664222', shine: '#BD8B58' },
-    desk: { top: '#433983', edge: '#2F2768', leg: '#262056', shine: '#544A98' },
     cloth: { top: '#4A3F8C', edge: '#C2475A', leg: '#272058', shine: '#5A4E9E' },
     check: '#FF7A8A',
     checkOp: 0.26,
@@ -91,12 +98,16 @@ const PAL = {
     cupSide: '#CDC4F0',
     saucer: '#DDD6F7',
     paper: '#F4F1FF',
-    paperSide: '#CFC6EE',
     line: '#A99DD6',
-    ink: '#2A2257',
     bubble: '#F4F1FF',
     bubbleDot: '#6A47F5',
-    lid: '#8B6CFF',
+    bat: '#0E0A22',
+    star: '#FFE9A8',
+    canopy: '#2F8A68',
+    canopyDeep: '#1F6450',
+    canopyShine: '#47A983',
+    trunk: '#6A4426',
+    post: '#8C7DD6',
   },
 } as const;
 
@@ -112,9 +123,12 @@ const C = {
   mint: '#35C9A0',
   mintDeep: '#22A07D',
   sky: '#3DA9FF',
+  skySoft: '#CFEBFF',
   red: '#E5483B',
   redDeep: '#B9322A',
   warm: '#FFD66B',
+  moon: '#FFF3C9',
+  moonSide: '#F4DE9A',
   coffee: '#6B3E26',
   crema: '#C9895A',
   tea: '#B5361A',
@@ -122,6 +136,8 @@ const C = {
   brown: '#8E5529',
   brownDeep: '#6E3F1C',
   cream: '#F7E3BC',
+  garlic: '#FFF8EC',
+  garlicSide: '#EBDDC6',
   white: '#FFFFFF',
   dark: '#2E2748',
   steel: '#3A3350',
@@ -133,7 +149,7 @@ const svg = (w: number, h: number, body: string) =>
 
 // --- The table -----------------------------------------------------------------------------------
 
-type TableKind = 'plain' | 'wood' | 'desk' | 'cloth';
+type TableKind = 'plain' | 'wood' | 'cloth';
 const TABLE_W = 180;
 const TABLE_H = 80;
 
@@ -190,20 +206,33 @@ const steam = (id: string, x: number, y: number, delay: number, ms = 2600): Scen
   motion: { kind: 'steam', ms, delay, rise: 12 },
 });
 
-const heartPath = (cx: number, cy: number, r: number) =>
-  `M${cx} ${cy + r * 0.9}C${cx - r * 1.6} ${cy - r * 0.1} ${cx - r * 0.9} ${cy - r * 1.3} ${cx} ${cy - r * 0.45}C${cx + r * 0.9} ${cy - r * 1.3} ${cx + r * 1.6} ${cy - r * 0.1} ${cx} ${cy + r * 0.9}Z`;
+// What a speech bubble says, drawn in its 32 × 19 body (centre 16, 10.5).
+type Say = (s: SceneScheme) => string;
 
-const heart = (id: string, x: number, y: number, delay: number): ScenePiece => ({
-  id,
-  x,
-  y,
-  w: 18,
-  h: 16,
-  xml: () => svg(18, 16, `<path d="${heartPath(9, 8, 6)}" fill="${C.pink}"/>`),
-  motion: { kind: 'steam', ms: 3000, delay, rise: 18 },
-});
+const ask: Say = (s) =>
+  `<path d="M12.6 7.6Q12.6 4.2 16 4.2Q19.4 4.2 19.4 7.2Q19.4 9.3 17 10.5Q16 11.1 16 12.6" fill="none" stroke="${PAL[s].bubbleDot}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>` +
+  `<circle cx="16" cy="16" r="1.5" fill="${PAL[s].bubbleDot}"/>`;
 
-// A speech bubble over a buddy, its tail down to the `tail` side; `inner` drawn in it.
+const bang: Say = () =>
+  `<path d="M16 4.6V11.6" stroke="${C.pink}" stroke-width="2.8" stroke-linecap="round"/>` +
+  `<circle cx="16" cy="15.8" r="1.6" fill="${C.pink}"/>`;
+
+// "Vampir!": a mouth with two fangs.
+const fangs: Say = () =>
+  `<path d="M8.5 6H23.5Q23.5 15.6 16 15.6Q8.5 15.6 8.5 6Z" fill="${C.redDeep}"/>` +
+  `<path d="M10.8 6L12.5 10.8L14.2 6ZM17.8 6L19.5 10.8L21.2 6Z" fill="${C.white}"/>`;
+
+// Kinshi: the word that must not be said, struck out.
+const forbidden: Say = (s) =>
+  `<rect x="4.5" y="8.5" width="10" height="4" rx="2" fill="${PAL[s].line}"/>` +
+  `<circle cx="22" cy="10.5" r="5.2" fill="none" stroke="${C.red}" stroke-width="2"/>` +
+  `<path d="M18.3 14.2L25.7 6.8" stroke="${C.red}" stroke-width="2"/>`;
+
+// Sprengja: a syllable said fast before the bomb goes on ("KA"), drawn in strokes.
+const syllable: Say = (s) =>
+  `<path d="M8 4.8V16.2M8 11L13.6 4.8M9.9 9.2L13.9 16.2M16.4 16.2L20.4 4.8L24.4 16.2M17.9 12.4H22.9" fill="none" stroke="${PAL[s].bubbleDot}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`;
+
+// A speech bubble over a buddy, its tail down to the `tail` side.
 function bubbleXml(s: SceneScheme, tail: 'left' | 'right', inner: string): string {
   const p = PAL[s];
   const tx = tail === 'left' ? 7 : 25;
@@ -217,19 +246,22 @@ function bubbleXml(s: SceneScheme, tail: 'left' | 'right', inner: string): strin
   );
 }
 
-const dots = (s: SceneScheme) =>
-  [10, 16, 22]
-    .map((x) => `<circle cx="${x}" cy="10.5" r="2" fill="${PAL[s].bubbleDot}"/>`)
-    .join('');
-
-const talk = (id: string, x: number, y: number, tail: 'left' | 'right', delay: number) => ({
+const talk = (
+  id: string,
+  x: number,
+  y: number,
+  tail: 'left' | 'right',
+  say: Say,
+  delay: number,
+  rest = 2400,
+): ScenePiece => ({
   id,
   x,
   y,
   w: 32,
   h: 26,
-  xml: (s: SceneScheme) => bubbleXml(s, tail, dots(s)),
-  motion: { kind: 'pop', ms: 1500, delay, rest: 1500 } as const,
+  xml: (s) => bubbleXml(s, tail, say(s)),
+  motion: { kind: 'pop', ms: 1600, delay, rest },
 });
 
 function cupXml(s: SceneScheme, handle: 'left' | 'right', top: string): string {
@@ -260,17 +292,273 @@ function teaGlassXml(s: SceneScheme): string {
   );
 }
 
-function dieXml(pips: number[][]): string {
-  return svg(
-    12,
-    12,
-    `<rect x="0.5" y="0.5" width="11" height="11" rx="2.6" fill="${C.white}"/>` +
-      `<path d="M9 0.5H9Q11.5 0.5 11.5 3V9Q11.5 11.5 9 11.5H8Q10 10 10 7V0.5Z" fill="${C.dark}" fill-opacity="0.12"/>` +
-      pips.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.15" fill="${C.dark}"/>`).join(''),
-  );
+// Game cards lying face down on the table, seen from the side: three, fanned.
+function cardsDownXml(back: string, backSide: string): string {
+  const card = (x: number, turn: number) =>
+    `<g transform="translate(${x} 4) rotate(${turn} 11 8)">` +
+    `<path d="M4 1H20Q22 1 21.4 3L19 14Q18.6 15.6 16.6 15.6H2.6Q0.6 15.6 1 13.8L3.4 2.6Q3.8 1 4 1Z" fill="${backSide}"/>` +
+    `<path d="M4.6 0H20.4Q22.4 0 21.9 2L19.6 12.4Q19.2 14 17.2 14H2.4Q0.4 14 0.9 12L3 1.6Q3.4 0 4.6 0Z" fill="${back}"/>` +
+    `<rect x="8.6" y="3.6" width="3.2" height="8" rx="1.6" fill="${C.white}" fill-opacity="0.85" transform="skewX(-12)"/>` +
+    `<rect x="12.8" y="5.4" width="2.4" height="5.6" rx="1.2" fill="${C.white}" fill-opacity="0.6" transform="skewX(-12)"/>` +
+    `</g>`;
+  return svg(66, 24, card(2, -8) + card(22, 2) + card(42, 10));
 }
 
-// --- Kafe ---------------------------------------------------------------------------------------
+// A question mark on its own, rising over the table (Krot: who is it?).
+const questionXml = (color: string) => () =>
+  svg(
+    16,
+    22,
+    `<path d="M4.4 7Q4.4 2.4 8.5 2.4Q12.6 2.4 12.6 6.4Q12.6 9.2 9.6 10.7Q8.5 11.3 8.5 13.8" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>` +
+      `<circle cx="8.5" cy="18.6" r="1.9" fill="${color}"/>`,
+  );
+
+const sweatXml = () =>
+  svg(
+    10,
+    14,
+    `<path d="M5 1Q9 7 9 9.6A4 4 0 0 1 1 9.6Q1 7 5 1Z" fill="${C.sky}"/>` +
+      `<ellipse cx="3.6" cy="9.4" rx="1" ry="1.6" fill="${C.white}" fill-opacity="0.7"/>`,
+  );
+
+const sweat = (id: string, x: number, y: number, delay: number): ScenePiece => ({
+  id,
+  x,
+  y,
+  w: 10,
+  h: 14,
+  xml: sweatXml,
+  motion: { kind: 'pop', ms: 1200, delay, rest: 2200 },
+});
+
+const noteXml = (color: string) => () =>
+  svg(
+    16,
+    22,
+    `<path d="M6 3L14 1V15" stroke="${color}" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>` +
+      `<path d="M6 3V18" stroke="${color}" stroke-width="2" stroke-linecap="round"/>` +
+      `<ellipse cx="3.6" cy="18.5" rx="3.4" ry="2.6" fill="${color}"/>` +
+      `<ellipse cx="11.6" cy="15.5" rx="3.4" ry="2.6" fill="${color}"/>`,
+  );
+
+// --- Kampüs: Vampir Köylü in the campus garden, at night -----------------------------------------
+
+const MOON = 56;
+
+const moonXml = () =>
+  svg(
+    MOON,
+    MOON,
+    `<circle cx="28" cy="28" r="19" fill="${C.moon}"/>` +
+      `<path d="M28 9A19 19 0 0 1 28 47A13 19 0 0 0 28 9Z" fill="${C.moonSide}"/>` +
+      `<circle cx="21.5" cy="21" r="3.6" fill="${C.moonSide}"/>` +
+      `<circle cx="30" cy="35" r="2.8" fill="${C.moonSide}"/>` +
+      `<circle cx="20" cy="33.5" r="1.8" fill="${C.moonSide}"/>`,
+  );
+
+const moonGlowXml = (s: SceneScheme) =>
+  svg(
+    80,
+    80,
+    `<circle cx="40" cy="40" r="38" fill="${C.warm}" fill-opacity="${s === 'dark' ? 0.16 : 0.2}"/>` +
+      `<circle cx="40" cy="40" r="29" fill="${C.warm}" fill-opacity="${s === 'dark' ? 0.2 : 0.24}"/>`,
+  );
+
+const starXml = (s: SceneScheme) =>
+  svg(14, 14, `<path d="M7 0Q8 6 14 7Q8 8 7 14Q6 8 0 7Q6 6 7 0Z" fill="${PAL[s].star}"/>`);
+
+const star = (id: string, x: number, y: number, delay: number): ScenePiece => ({
+  id,
+  x,
+  y,
+  w: 14,
+  h: 14,
+  xml: starXml,
+  motion: { kind: 'twinkle', ms: 2200, delay, low: 0.2 },
+});
+
+const batXml = (s: SceneScheme) => {
+  const b = PAL[s].bat;
+  return svg(
+    36,
+    18,
+    `<path d="M15 9Q10 2 1 4Q4.5 7 3.5 10.5Q6.5 8.5 8.5 11.5Q10.5 9 12.5 12.5Q14 10.5 15 11Z" fill="${b}"/>` +
+      `<path d="M21 9Q26 2 35 4Q31.5 7 32.5 10.5Q29.5 8.5 27.5 11.5Q25.5 9 23.5 12.5Q22 10.5 21 11Z" fill="${b}"/>` +
+      `<path d="M15.4 6.6L15.6 3.2L17.4 5.6ZM20.6 6.6L20.4 3.2L18.6 5.6Z" fill="${b}"/>` +
+      `<ellipse cx="18" cy="10" rx="3.8" ry="4.8" fill="${b}"/>` +
+      `<circle cx="16.6" cy="9" r="0.95" fill="${C.warm}"/>` +
+      `<circle cx="19.4" cy="9" r="0.95" fill="${C.warm}"/>`,
+  );
+};
+
+const treeXml = (s: SceneScheme) => {
+  const p = PAL[s];
+  return svg(
+    100,
+    170,
+    `<path d="M44 92H56L59 170H41Z" fill="${p.trunk}"/>` +
+      `<path d="M50 120L66 100" stroke="${p.trunk}" stroke-width="5" stroke-linecap="round"/>` +
+      `<circle cx="50" cy="60" r="42" fill="${p.canopyDeep}"/>` +
+      `<circle cx="34" cy="70" r="27" fill="${p.canopy}"/>` +
+      `<circle cx="68" cy="66" r="25" fill="${p.canopy}"/>` +
+      `<circle cx="48" cy="40" r="28" fill="${p.canopy}"/>` +
+      `<circle cx="38" cy="30" r="10" fill="${p.canopyShine}"/>` +
+      `<circle cx="24" cy="58" r="6" fill="${p.canopyShine}"/>`,
+  );
+};
+
+const lampPostXml = (s: SceneScheme) => {
+  const p = PAL[s];
+  return svg(
+    40,
+    200,
+    `<rect x="18" y="34" width="4" height="160" fill="${p.post}"/>` +
+      `<rect x="13" y="188" width="14" height="12" rx="3" fill="${p.post}"/>` +
+      `<rect x="15.5" y="32" width="9" height="5" rx="1.5" fill="${p.post}"/>` +
+      `<path d="M11 14H29L26.5 33H13.5Z" fill="${p.post}"/>` +
+      `<path d="M13.6 16H26.4L24.6 31H15.4Z" fill="${C.warm}"/>` +
+      `<path d="M8 15L20 4L32 15Z" fill="${p.post}"/>` +
+      `<circle cx="20" cy="3.5" r="2.5" fill="${p.post}"/>`,
+  );
+};
+
+const glowXml = (r: number, s: SceneScheme) =>
+  svg(
+    r * 2,
+    r * 2,
+    `<circle cx="${r}" cy="${r}" r="${r}" fill="${C.warm}" fill-opacity="${s === 'dark' ? 0.34 : 0.3}"/>` +
+      `<circle cx="${r}" cy="${r}" r="${r * 0.6}" fill="${C.warm}" fill-opacity="${s === 'dark' ? 0.3 : 0.26}"/>`,
+  );
+
+// Held by its handle, so it swings about its top.
+const lanternXml = (s: SceneScheme) =>
+  svg(
+    26,
+    40,
+    `<circle cx="13" cy="22" r="12" fill="${C.warm}" fill-opacity="${s === 'dark' ? 0.36 : 0.32}"/>` +
+      `<path d="M8 10Q13 0 18 10" stroke="${C.steel}" stroke-width="1.8" fill="none" stroke-linecap="round"/>` +
+      `<rect x="6" y="9" width="14" height="4" rx="1.6" fill="${C.steel}"/>` +
+      `<rect x="7" y="13" width="12" height="17" rx="3" fill="${C.warm}"/>` +
+      `<path d="M13 16Q16 20.5 13 26Q10 20.5 13 16Z" fill="${C.orange}"/>` +
+      `<path d="M10.2 13V30M15.8 13V30" stroke="${C.steel}" stroke-opacity="0.5" stroke-width="1"/>` +
+      `<rect x="6" y="29" width="14" height="4" rx="1.6" fill="${C.steel}"/>`,
+  );
+
+const garlicXml = () =>
+  svg(
+    26,
+    30,
+    `<path d="M13 6Q13.4 2 16 1" stroke="${C.mintDeep}" stroke-width="1.8" fill="none" stroke-linecap="round"/>` +
+      `<path d="M13 5Q3.5 10 3.5 18.5Q3.5 27 13 27Q22.5 27 22.5 18.5Q22.5 10 13 5Z" fill="${C.garlic}"/>` +
+      `<path d="M13 5Q22.5 10 22.5 18.5Q22.5 27 13 27Q18.5 24 18.5 17Q18.5 10 13 5Z" fill="${C.garlicSide}"/>` +
+      `<path d="M13 6.5Q8.6 13 9.6 26M13 6.5Q16.6 13 16 26" stroke="${C.garlicSide}" stroke-width="1.2" fill="none"/>` +
+      `<path d="M10 27.2L9 29.4M13 27.4V29.8M16 27.2L17 29.4" stroke="${C.garlicSide}" stroke-width="1.1" stroke-linecap="round"/>`,
+  );
+
+// The card turned over at the end of the night: "Vampir".
+const vampireCardXml = (s: SceneScheme) =>
+  svg(
+    26,
+    34,
+    `<rect x="1" y="1" width="24" height="32" rx="4" fill="${PAL[s].paper}"/>` +
+      `<rect x="2.6" y="2.6" width="20.8" height="28.8" rx="3" fill="none" stroke="${C.red}" stroke-width="1.4"/>` +
+      `<path d="M5 9Q13 4 21 9L19 23Q13 27 7 23Z" fill="${C.redDeep}"/>` +
+      `<path d="M6.4 11H19.6Q19.6 20 13 20Q6.4 20 6.4 11Z" fill="${C.dark}"/>` +
+      `<path d="M8.6 11L10.2 15.2L11.8 11ZM14.2 11L15.8 15.2L17.4 11Z" fill="${C.white}"/>` +
+      `<rect x="8" y="26" width="10" height="2.4" rx="1.2" fill="${C.red}"/>`,
+  );
+
+const KAMPUS: VenueScene = {
+  back: [
+    { id: 'tree', x: -24, y: 66, w: 100, h: 170, xml: treeXml },
+    {
+      id: 'post-glow',
+      x: 328,
+      y: 60,
+      w: 60,
+      h: 60,
+      xml: (s) => glowXml(30, s),
+      motion: { kind: 'twinkle', ms: 2600, delay: 300, low: 0.55 },
+    },
+    { id: 'post', x: 338, y: 70, w: 40, h: 200, xml: lampPostXml },
+    {
+      id: 'moon-glow',
+      x: 210,
+      y: 46,
+      w: 80,
+      h: 80,
+      xml: moonGlowXml,
+      motion: { kind: 'twinkle', ms: 3600, delay: 0, low: 0.45 },
+    },
+    { id: 'moon', x: 222, y: 58, w: MOON, h: MOON, xml: moonXml },
+    star('star-1', 98, 66, 0),
+    star('star-2', 176, 90, 900),
+    star('star-3', 306, 128, 1700),
+    {
+      id: 'bat-1',
+      x: -40,
+      y: 92,
+      w: 36,
+      h: 18,
+      xml: batXml,
+      motion: { kind: 'glide', ms: 7200, delay: 400, rest: 1800, dx: 470, dy: 10 },
+    },
+    {
+      id: 'bat-2',
+      x: -40,
+      y: 132,
+      w: 36,
+      h: 18,
+      xml: batXml,
+      motion: { kind: 'glide', ms: 8400, delay: 3800, rest: 1200, dx: 470, dy: 7 },
+    },
+  ],
+  rear: [
+    { look: 'c:limon e:mutlu h:hasir', x: 122, bottom: 72, height: 92 },
+    { look: 'c:mor e:kirp m:vampir n:pelerin', x: 198, bottom: 72, height: 92 },
+  ],
+  table: [
+    table('wood'),
+    { id: 'cards', x: 124, y: 214, w: 66, h: 24, xml: () => cardsDownXml(C.purple, C.dark) },
+    {
+      id: 'reveal',
+      x: 214,
+      y: 188,
+      w: 26,
+      h: 34,
+      xml: vampireCardXml,
+      motion: { kind: 'pop', ms: 1800, delay: 2600, rest: 2800 },
+    },
+    talk('ask', 160, 116, 'left', ask, 0),
+  ],
+  side: [
+    { look: 'c:gok e:sert h:kasket f:monokl', x: 18, bottom: -6, height: 132 },
+    { look: 'c:nane e:saskin m:ohh h:bere', x: 272, bottom: -6, height: 132 },
+  ],
+  held: [
+    {
+      id: 'lantern',
+      x: 96,
+      y: 208,
+      w: 26,
+      h: 40,
+      xml: lanternXml,
+      motion: { kind: 'swing', ms: 3000, delay: 0, turn: 7 },
+    },
+    talk('accuse', 80, 150, 'left', fangs, 1500, 2600),
+    {
+      id: 'garlic',
+      x: 282,
+      y: 234,
+      w: 26,
+      h: 30,
+      xml: garlicXml,
+      motion: { kind: 'bob', ms: 1400, delay: 900, rest: 2200, y: 8, turn: -12 },
+    },
+  ],
+};
+
+// --- Kafe: Kinshi (don't say the forbidden words) ------------------------------------------------
 
 function lampXml(s: SceneScheme, shade: string, shadeSide: string): string {
   return svg(
@@ -285,14 +573,55 @@ function lampXml(s: SceneScheme, shade: string, shadeSide: string): string {
   );
 }
 
-const croissantXml = (s: SceneScheme) =>
+// The card the describer holds up: the word to get across on top, the forbidden ones under it.
+const kinshiCardXml = (s: SceneScheme) =>
   svg(
-    40,
+    32,
+    44,
+    `<rect x="1" y="1" width="30" height="42" rx="4.5" fill="${PAL[s].paper}"/>` +
+      `<path d="M1 5.5Q1 1 5.5 1H26.5Q31 1 31 5.5V12H1Z" fill="${C.purple}"/>` +
+      `<rect x="7" y="4.8" width="18" height="3.4" rx="1.7" fill="${C.white}"/>` +
+      [16, 21.5, 27, 32.5]
+        .map(
+          (y, i) =>
+            `<rect x="5.5" y="${y}" width="${[15, 12, 16, 11][i]}" height="2.6" rx="1.3" fill="${C.red}" fill-opacity="0.55"/>`,
+        )
+        .join('') +
+      `<circle cx="24.4" cy="36.4" r="4.4" fill="none" stroke="${C.red}" stroke-width="1.6"/>` +
+      `<path d="M21.3 39.5L27.5 33.3" stroke="${C.red}" stroke-width="1.6"/>`,
+  );
+
+const hourglassXml = () =>
+  svg(
     18,
-    `<ellipse cx="20" cy="12" rx="18" ry="5" fill="${PAL[s].saucer}"/>` +
-      `<path d="M6 10Q9 3 20 2Q31 3 34 10Q30 8 27 9Q24 5 20 5Q16 5 13 9Q10 8 6 10Z" fill="${C.gold}"/>` +
-      `<path d="M13 9Q16 5 20 5Q24 5 27 9Q24 11 20 11Q16 11 13 9Z" fill="${C.gold}"/>` +
-      `<path d="M16 5.5Q17 8 16.4 10.6M24 5.5Q23 8 23.6 10.6M20 5V11" stroke="${C.goldDeep}" stroke-width="1.1" fill="none" stroke-linecap="round"/>`,
+    28,
+    `<path d="M3.5 3.7H14.5Q14.5 10 10 14Q14.5 18 14.5 24.3H3.5Q3.5 18 8 14Q3.5 10 3.5 3.7Z" fill="${C.white}" fill-opacity="0.65"/>` +
+      `<path d="M5 7H13Q12.5 10.5 9 13Q5.5 10.5 5 7Z" fill="${C.gold}"/>` +
+      `<path d="M9 13V20" stroke="${C.gold}" stroke-width="0.9"/>` +
+      `<path d="M4.2 24.3Q5 19.6 9 18.6Q13 19.6 13.8 24.3Z" fill="${C.gold}"/>` +
+      `<path d="M2.2 3.7V24.3M15.8 3.7V24.3" stroke="${C.brownDeep}" stroke-width="1.3"/>` +
+      `<rect x="1" y="0.5" width="16" height="3.4" rx="1.5" fill="${C.brown}"/>` +
+      `<rect x="1" y="24.1" width="16" height="3.4" rx="1.5" fill="${C.brown}"/>`,
+  );
+
+const buzzerXml = () =>
+  svg(
+    30,
+    19,
+    `<ellipse cx="15" cy="15.6" rx="14" ry="3.2" fill="${C.steelSide}"/>` +
+      `<path d="M2 9.6H28V15.4Q28 18.2 15 18.2Q2 18.2 2 15.4Z" fill="${C.steel}"/>` +
+      `<ellipse cx="15" cy="9.6" rx="13" ry="3" fill="${C.steelSide}"/>` +
+      `<path d="M6 9.6Q6 2 15 2Q24 2 24 9.6Q24 11.6 15 11.6Q6 11.6 6 9.6Z" fill="${C.red}"/>` +
+      `<path d="M18 2.8Q24 4 24 9.6Q24 11.2 19 11.5Q20.4 7 18 2.8Z" fill="${C.redDeep}"/>` +
+      `<ellipse cx="11.4" cy="5.4" rx="3" ry="1.4" fill="${C.white}" fill-opacity="0.6"/>`,
+  );
+
+// The buzzer going off.
+const burstXml = () =>
+  svg(
+    34,
+    22,
+    `<path d="M17 12V2M9.4 14L4.4 7.4M24.6 14L29.6 7.4M5.4 19.6H0.8M28.6 19.6H33.2" stroke="${C.orange}" stroke-width="2.4" stroke-linecap="round"/>`,
   );
 
 const takeawayXml = () =>
@@ -317,16 +646,6 @@ const latteXml = () =>
       `<path d="M14 4V27" stroke="${C.white}" stroke-opacity="0.7" stroke-width="1.4" stroke-linecap="round"/>`,
   );
 
-const noteXml = (color: string) => () =>
-  svg(
-    16,
-    22,
-    `<path d="M6 3L14 1V15" stroke="${color}" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>` +
-      `<path d="M6 3V18" stroke="${color}" stroke-width="2" stroke-linecap="round"/>` +
-      `<ellipse cx="3.6" cy="18.5" rx="3.4" ry="2.6" fill="${color}"/>` +
-      `<ellipse cx="11.6" cy="15.5" rx="3.4" ry="2.6" fill="${color}"/>`,
-  );
-
 const KAFE: VenueScene = {
   back: [
     {
@@ -349,69 +668,50 @@ const KAFE: VenueScene = {
     },
   ],
   rear: [
-    { look: 'c:pembe e:koyu h:kulaklik', x: 122, bottom: 72, height: 92 },
-    { look: 'c:limon e:klasik h:berefr', x: 198, bottom: 72, height: 92 },
+    { look: 'c:pembe e:mutlu h:barista', x: 122, bottom: 72, height: 92 },
+    { look: 'c:limon e:saskin h:berefr', x: 198, bottom: 72, height: 92 },
   ],
   table: [
     table('plain'),
+    { id: 'cup', x: 116, y: 214, w: 30, h: 30, xml: (s) => cupXml(s, 'left', '') },
+    steam('steam-1', 120, 188, 0),
+    steam('steam-2', 129, 190, 1300),
     {
-      id: 'cup-a',
-      x: 132,
-      y: 212,
-      w: 30,
-      h: 30,
-      xml: (s) => cupXml(s, 'left', ''),
+      id: 'hourglass',
+      x: 212,
+      y: 204,
+      w: 18,
+      h: 28,
+      xml: hourglassXml,
+      motion: { kind: 'hop', ms: 700, delay: 1600, rest: 3800, y: 12, spin: 180 },
     },
-    steam('steam-a1', 136, 186, 0),
-    steam('steam-a2', 145, 188, 1300),
+    { id: 'buzzer', x: 238, y: 216, w: 30, h: 19, xml: buzzerXml },
     {
-      id: 'croissant',
-      x: 175,
-      y: 226,
-      w: 40,
-      h: 18,
-      xml: croissantXml,
-    },
-    {
-      id: 'cup-b',
-      x: 226,
-      y: 214,
-      w: 30,
-      h: 30,
-      xml: (s) =>
-        cupXml(
-          s,
-          'right',
-          `<ellipse cx="14" cy="12" rx="7.6" ry="1.9" fill="${C.crema}"/><path d="${heartPath(14, 12, 1.6)}" fill="${C.cream}" transform="translate(0 0) scale(1 0.7) translate(0 5.1)"/>`,
-        ),
-    },
-    steam('steam-b1', 234, 190, 700),
-    steam('steam-b2', 243, 192, 1900),
-    {
-      id: 'note-1',
-      x: 112,
-      y: 120,
-      w: 16,
+      id: 'burst',
+      x: 236,
+      y: 194,
+      w: 34,
       h: 22,
-      xml: noteXml(C.purple),
-      motion: { kind: 'steam', ms: 3200, delay: 400, rise: 22 },
+      xml: burstXml,
+      motion: { kind: 'pop', ms: 900, delay: 3200, rest: 3600 },
     },
     {
-      id: 'note-2',
-      x: 124,
-      y: 132,
-      w: 16,
-      h: 22,
-      xml: noteXml(C.pink),
-      motion: { kind: 'steam', ms: 3200, delay: 2000, rise: 22 },
+      id: 'card',
+      x: 174,
+      y: 174,
+      w: 32,
+      h: 44,
+      xml: kinshiCardXml,
+      motion: { kind: 'bob', ms: 1800, delay: 400, rest: 1400, y: 5, turn: -5 },
     },
-    heart('heart', 258, 124, 1200),
+    talk('ask', 252, 120, 'left', ask, 700),
   ],
   side: [
-    { look: 'c:mor e:klasik', x: 18, bottom: -6, height: 132 },
-    { look: 'c:mercan e:mutlu h:fotr', x: 272, bottom: -6, height: 132 },
+    { look: 'c:mor e:klasik f:maske', x: 18, bottom: -6, height: 132 },
+    { look: 'c:mercan e:mutlu m:kahkaha h:fotr', x: 272, bottom: -6, height: 132 },
   ],
   held: [
+    talk('forbidden', 80, 150, 'left', forbidden, 2400, 2600),
     steam('steam-take', 88, 210, 500, 2200),
     {
       id: 'takeaway',
@@ -434,7 +734,7 @@ const KAFE: VenueScene = {
   ],
 };
 
-// --- Çay bahçesi ---------------------------------------------------------------------------------
+// --- Çay bahçesi: Krot (who among us?) -----------------------------------------------------------
 
 const LIGHTS_W = 410;
 const LIGHTS_H = 56;
@@ -465,7 +765,7 @@ function lightsXml(s: SceneScheme): string {
 }
 
 // One third of the bulbs' glows (every third bulb from `g`): three layers twinkle out of step.
-function glowXml(g: number): (s: SceneScheme) => string {
+function bulbGlowXml(g: number): (s: SceneScheme) => string {
   return (s) => {
     const glows = Array.from({ length: BULBS }, (_, i) => i)
       .filter((i) => i % 3 === g)
@@ -476,50 +776,6 @@ function glowXml(g: number): (s: SceneScheme) => string {
       .join('');
     return svg(LIGHTS_W, LIGHTS_H, glows);
   };
-}
-
-function tavlaXml(): string {
-  const tri = (x: number, top: boolean, i: number) => {
-    const color = i % 2 === 0 ? C.red : C.purple;
-    return top
-      ? `<path d="M${x} 4.5L${x + 5.4} 4.5L${x + 2.7} 12Z" fill="${color}"/>`
-      : `<path d="M${x} 21.5L${x + 5.4} 21.5L${x + 2.7} 14Z" fill="${color}"/>`;
-  };
-  const left = [9, 15, 21, 27, 33].flatMap((x, i) => [tri(x, true, i), tri(x - 2, false, i + 1)]);
-  const right = [48, 54, 60, 66, 72].flatMap((x, i) => [tri(x, true, i), tri(x + 2, false, i + 1)]);
-  const checker = (x: number, y: number, light: boolean) =>
-    `<ellipse cx="${x}" cy="${y}" rx="2.8" ry="2" fill="${light ? C.white : C.dark}"/>`;
-  return svg(
-    88,
-    26,
-    `<path d="M8 0H80L88 26H0Z" fill="${C.brownDeep}"/>` +
-      `<path d="M10.5 3H42.5V23H4.5Z" fill="${C.cream}"/>` +
-      `<path d="M45.5 3H77.5L83.5 23H45.5Z" fill="${C.cream}"/>` +
-      left.join('') +
-      right.join('') +
-      checker(13, 7, true) +
-      checker(19, 7.5, true) +
-      checker(61, 18.5, false) +
-      checker(67, 19, false) +
-      checker(36, 18, false) +
-      checker(55, 7, true),
-  );
-}
-
-function simitXml(): string {
-  const seeds = Array.from({ length: 10 }, (_, i) => {
-    const a = (i / 10) * Math.PI * 2;
-    const x = 13 + Math.cos(a) * 10;
-    const y = 13 + Math.sin(a) * 10;
-    return `<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="1.1" ry="0.7" fill="${C.cream}" transform="rotate(${((a * 180) / Math.PI).toFixed(0)} ${x.toFixed(1)} ${y.toFixed(1)})"/>`;
-  }).join('');
-  return svg(
-    26,
-    26,
-    `<circle cx="13" cy="13" r="9.6" fill="none" stroke="${C.goldDeep}" stroke-width="7"/>` +
-      `<path d="M5 9A9.6 9.6 0 0 1 17 3.8" fill="none" stroke="${C.gold}" stroke-width="3" stroke-linecap="round"/>` +
-      seeds,
-  );
 }
 
 function teapotXml(): string {
@@ -541,26 +797,15 @@ function teapotXml(): string {
   );
 }
 
-const DIE_FIVE = [
-  [3.4, 3.4],
-  [8.6, 3.4],
-  [6, 6],
-  [3.4, 8.6],
-  [8.6, 8.6],
-];
-const DIE_THREE = [
-  [3.4, 3.4],
-  [6, 6],
-  [8.6, 8.6],
-];
-const DIE_SIX = [
-  [3.6, 3],
-  [3.6, 6],
-  [3.6, 9],
-  [8.4, 3],
-  [8.4, 6],
-  [8.4, 9],
-];
+const magnifierXml = () =>
+  svg(
+    34,
+    34,
+    `<path d="M20.5 20.5L31 31" stroke="${C.brown}" stroke-width="5" stroke-linecap="round"/>` +
+      `<circle cx="13" cy="13" r="10" fill="${C.skySoft}" fill-opacity="0.75"/>` +
+      `<circle cx="13" cy="13" r="10" fill="none" stroke="${C.gold}" stroke-width="3"/>` +
+      `<path d="M7.6 11Q8.6 7.4 12.4 6.8" stroke="${C.white}" stroke-width="1.8" fill="none" stroke-linecap="round"/>`,
+  );
 
 const CAY: VenueScene = {
   back: [
@@ -571,81 +816,80 @@ const CAY: VenueScene = {
       y: 62,
       w: LIGHTS_W,
       h: LIGHTS_H,
-      xml: glowXml(g),
+      xml: bulbGlowXml(g),
       motion: { kind: 'twinkle', ms: 1800, delay: g * 600, low: 0.15 },
     })),
+    {
+      id: 'q-1',
+      x: 36,
+      y: 132,
+      w: 16,
+      h: 22,
+      xml: questionXml(C.pink),
+      motion: { kind: 'steam', ms: 3400, delay: 0, rise: 26 },
+    },
+    {
+      id: 'q-2',
+      x: 346,
+      y: 124,
+      w: 16,
+      h: 22,
+      xml: questionXml(C.violet),
+      motion: { kind: 'steam', ms: 3400, delay: 1700, rise: 26 },
+    },
   ],
   rear: [
-    { look: 'c:nane e:mutlu h:bere', x: 122, bottom: 72, height: 92 },
-    { look: 'c:lavanta e:klasik h:fiyonk m:gulumse', x: 198, bottom: 72, height: 92 },
+    { look: 'c:nane e:sert h:bere', x: 122, bottom: 72, height: 92 },
+    { look: 'c:lavanta e:saskin h:fiyonk', x: 198, bottom: 72, height: 92 },
   ],
   table: [
     table('wood'),
-    { id: 'tavla', x: 151, y: 223, w: 88, h: 26, xml: tavlaXml },
-    {
-      id: 'die-a',
-      x: 228,
-      y: 214,
-      w: 12,
-      h: 12,
-      xml: () => dieXml(DIE_FIVE),
-      motion: { kind: 'hop', ms: 700, delay: 800, rest: 3000, y: 18, spin: 360 },
-    },
-    {
-      id: 'die-b',
-      x: 242,
-      y: 218,
-      w: 12,
-      h: 12,
-      xml: () => dieXml(DIE_THREE),
-      motion: { kind: 'hop', ms: 760, delay: 860, rest: 2940, y: 14, spin: -360 },
-    },
+    { id: 'cards', x: 162, y: 214, w: 66, h: 24, xml: () => cardsDownXml(C.pink, C.redDeep) },
     { id: 'tea-a', x: 124, y: 208, w: 16, h: 30, xml: teaGlassXml },
     steam('steam-a', 126, 184, 0),
     { id: 'tea-b', x: 256, y: 212, w: 16, h: 30, xml: teaGlassXml },
     steam('steam-b', 258, 188, 1300),
     {
-      id: 'simit',
-      x: 132,
-      y: 192,
-      w: 26,
-      h: 26,
-      xml: simitXml,
-      motion: { kind: 'bob', ms: 1500, delay: 1600, rest: 2400, y: 6, turn: -10 },
-    },
-    {
       id: 'teapot',
-      x: 238,
+      x: 236,
       y: 178,
       w: 34,
       h: 38,
       xml: teapotXml,
       motion: { kind: 'bob', ms: 1800, delay: 300, rest: 3200, y: 3, turn: -14 },
     },
+    talk('ask', 100, 124, 'right', ask, 0),
+    talk('bang', 252, 116, 'left', bang, 1600),
   ],
   side: [
-    { look: 'c:mercan e:klasik h:kasket m:biyik', x: 18, bottom: -6, height: 132 },
-    { look: 'c:turkuaz e:klasik h:fotr', x: 272, bottom: -6, height: 132 },
+    { look: 'c:mercan e:sert h:kasket m:biyik', x: 18, bottom: -6, height: 132 },
+    { look: 'c:turkuaz e:kirp f:gunes m:kivrik h:fotr', x: 272, bottom: -6, height: 132 },
   ],
   held: [
     {
-      id: 'duses',
-      x: 86,
-      y: 168,
-      w: 32,
-      h: 26,
-      xml: (s) =>
-        bubbleXml(
-          s,
-          'left',
-          `<g transform="translate(4.5 4.5) scale(0.95)">${dieXml(DIE_SIX).replace(/<\/?svg[^>]*>/g, '')}</g><g transform="translate(16 4.5) scale(0.95)">${dieXml(DIE_SIX).replace(/<\/?svg[^>]*>/g, '')}</g>`,
-        ),
-      motion: { kind: 'pop', ms: 1400, delay: 1700, rest: 2300 },
+      id: 'magnifier',
+      x: 92,
+      y: 198,
+      w: 34,
+      h: 34,
+      xml: magnifierXml,
+      motion: { kind: 'bob', ms: 1600, delay: 600, rest: 1600, y: 6, turn: -12 },
     },
+    // The one it is whistles, as if nothing.
+    {
+      id: 'whistle',
+      x: 276,
+      y: 214,
+      w: 16,
+      h: 22,
+      xml: noteXml(C.purple),
+      motion: { kind: 'steam', ms: 3000, delay: 800, rise: 24 },
+    },
+    sweat('sweat', 350, 200, 2200),
   ],
 };
 
-// --- Yemek ---------------------------------------------------------------------------------------
+// --- Yemek: Sprengja (throw the bomb on, fast) ---------------------------------------------------
 
 const FLAG_COLORS = [C.pink, C.orange, C.mint, C.sky, C.purple] as const;
 
@@ -709,44 +953,18 @@ function ayranXml(s: SceneScheme): string {
   );
 }
 
-function sliceXml(): string {
-  return svg(
-    22,
-    26,
-    `<path d="M11 25L1 4Q11 0 21 4Z" fill="${C.warm}"/>` +
-      `<path d="M1 4Q11 0 21 4L20 6.4Q11 2.6 2 6.4Z" fill="${C.goldDeep}"/>` +
-      `<ellipse cx="9" cy="10" rx="2.2" ry="1.8" fill="${C.redDeep}"/>` +
-      `<ellipse cx="14" cy="14" rx="2.2" ry="1.8" fill="${C.redDeep}"/>` +
-      `<ellipse cx="10.4" cy="18" rx="1.8" ry="1.5" fill="${C.redDeep}"/>`,
-  );
-}
-
-const panXml = () =>
+// The bomb, its fuse lit.
+const bombXml = () =>
   svg(
-    40,
-    16,
-    `<rect x="0" y="5" width="14" height="4" rx="2" fill="${C.steelSide}"/>` +
-      `<path d="M12 4H39Q38 15 25.5 15Q13 15 12 4Z" fill="${C.steel}"/>` +
-      `<ellipse cx="25.5" cy="4.5" rx="13.5" ry="2.6" fill="${C.steelSide}"/>`,
-  );
-
-const kofteXml = () =>
-  svg(
-    16,
-    8,
-    `<ellipse cx="8" cy="4" rx="7.4" ry="3.4" fill="${C.brown}"/>` +
-      `<ellipse cx="6" cy="2.8" rx="3" ry="1" fill="${C.crema}"/>`,
-  );
-
-const forkXml = () =>
-  svg(
-    14,
-    44,
-    `<rect x="5.8" y="16" width="2.4" height="27" rx="1.2" fill="${C.steel}"/>` +
-      `<path d="M3 7V13Q3 17 7 17Q11 17 11 13V7" stroke="${C.steel}" stroke-width="1.6" fill="none"/>` +
-      `<path d="M5.6 7V14M8.4 7V14" stroke="${C.steel}" stroke-width="1.2"/>` +
-      `<circle cx="7" cy="6" r="5.4" fill="${C.brown}"/>` +
-      `<ellipse cx="5.4" cy="4.4" rx="2" ry="1" fill="${C.crema}"/>`,
+    32,
+    36,
+    `<g transform="rotate(38 20 12.5)"><rect x="16.5" y="9.5" width="7" height="6.4" rx="1.6" fill="${C.steel}"/></g>` +
+      `<circle cx="13" cy="23" r="11.5" fill="${C.dark}"/>` +
+      `<circle cx="13" cy="23" r="11" fill="none" stroke="${C.white}" stroke-opacity="0.18" stroke-width="1.2"/>` +
+      `<ellipse cx="8.6" cy="18.6" rx="3.4" ry="2.2" fill="${C.white}" fill-opacity="0.38" transform="rotate(-34 8.6 18.6)"/>` +
+      `<path d="M22 9Q23.6 4.4 27.6 5" stroke="${C.cream}" stroke-width="1.7" fill="none" stroke-linecap="round"/>` +
+      `<path d="M27.6 0.6L28.7 3.9L32 5L28.7 6.1L27.6 9.4L26.5 6.1L23.2 5L26.5 3.9Z" fill="${C.orange}"/>` +
+      `<circle cx="27.6" cy="5" r="1.4" fill="${C.warm}"/>`,
   );
 
 const YEMEK: VenueScene = {
@@ -762,8 +980,8 @@ const YEMEK: VenueScene = {
     },
   ],
   rear: [
-    { look: 'c:nane e:mutlu', x: 122, bottom: 72, height: 92 },
-    { look: 'c:lavanta e:klasik h:fiyonk m:gulumse', x: 198, bottom: 72, height: 92 },
+    { look: 'c:nane e:saskin m:ohh', x: 122, bottom: 72, height: 92 },
+    { look: 'c:lavanta e:mutlu h:fiyonk m:gulumse', x: 198, bottom: 72, height: 92 },
   ],
   table: [
     table('cloth'),
@@ -773,200 +991,23 @@ const YEMEK: VenueScene = {
     steam('steam-p1', 182, 198, 600),
     steam('steam-p2', 198, 200, 1700),
     { id: 'ayran', x: 250, y: 212, w: 14, h: 28, xml: ayranXml },
-    {
-      id: 'slice',
-      x: 134,
-      y: 188,
-      w: 22,
-      h: 26,
-      xml: sliceXml,
-      motion: { kind: 'bob', ms: 1500, delay: 1200, rest: 2500, y: 8, turn: -12 },
-    },
-    heart('yum-1', 252, 124, 800),
-    heart('yum-2', 262, 136, 2400),
+    sweat('sweat-rear', 116, 146, 1400),
   ],
   side: [
-    { look: 'c:krem e:klasik h:ascisapka', x: 18, bottom: -6, height: 132 },
-    { look: 'c:gok e:klasik h:terssapka', x: 272, bottom: -6, height: 132 },
+    { look: 'c:krem e:saskin h:ascisapka', x: 18, bottom: -6, height: 132 },
+    { look: 'c:pembe e:klasik h:korsan f:gozbandi', x: 272, bottom: -6, height: 132 },
   ],
   held: [
-    { id: 'pan', x: 76, y: 250, w: 40, h: 16, xml: panXml },
+    talk('syllable', 80, 146, 'left', syllable, 300, 2200),
+    sweat('sweat-chef', 104, 186, 900),
     {
-      id: 'kofte',
-      x: 94,
-      y: 247,
-      w: 16,
-      h: 8,
-      xml: kofteXml,
-      motion: { kind: 'hop', ms: 820, delay: 900, rest: 2400, y: 30, spin: 180 },
-    },
-    {
-      id: 'fork',
-      x: 288,
-      y: 226,
-      w: 14,
-      h: 44,
-      xml: forkXml,
-      motion: { kind: 'bob', ms: 1200, delay: 2000, rest: 2000, y: 12, turn: 10 },
-    },
-  ],
-};
-
-// --- Kampüs --------------------------------------------------------------------------------------
-
-const planeXml = () =>
-  svg(
-    32,
-    20,
-    `<path d="M1 10L31 1L13 13Z" fill="${C.white}"/>` +
-      `<path d="M13 13L31 1L16 19Z" fill="${C.cream}"/>` +
-      `<path d="M13 13L15 18L16 19Z" fill="${C.violet}" fill-opacity="0.5"/>` +
-      `<path d="M1 10L31 1" stroke="${C.violet}" stroke-width="0.8" stroke-opacity="0.5"/>`,
-  );
-
-function stackXml(s: SceneScheme): string {
-  const p = PAL[s];
-  const book = (y: number, x: number, w: number, color: string) =>
-    `<rect x="${x}" y="${y}" width="${w}" height="8" rx="1.6" fill="${color}"/>` +
-    `<rect x="${x + 3}" y="${y + 1.6}" width="${w - 5}" height="4.8" rx="0.8" fill="${p.paper}"/>` +
-    `<path d="M${x + 5} ${y + 3.2}H${x + w - 4}M${x + 5} ${y + 4.8}H${x + w - 4}" stroke="${p.line}" stroke-width="0.6"/>`;
-  return svg(
-    36,
-    30,
-    book(21, 1, 34, C.purple) + book(13, 4, 29, C.pink) + book(5, 2, 31, C.orange),
-  );
-}
-
-function openBookXml(s: SceneScheme, cover: string): string {
-  const p = PAL[s];
-  const lines = (x0: number, x1: number) =>
-    [5, 8, 11]
-      .map((y) => `<path d="M${x0} ${y}H${x1}" stroke="${p.line}" stroke-width="0.9"/>`)
-      .join('');
-  return svg(
-    40,
-    20,
-    `<path d="M0 3L20 5L40 3V18L20 20L0 18Z" fill="${cover}"/>` +
-      `<path d="M2 2Q11 0 20 4V18Q11 15 2 16Z" fill="${p.paper}"/>` +
-      `<path d="M38 2Q29 0 20 4V18Q29 15 38 16Z" fill="${p.paperSide}"/>` +
-      lines(5, 17),
-  );
-}
-
-// The right page that turns over about the spine (its left edge).
-function pageXml(s: SceneScheme): string {
-  const p = PAL[s];
-  return svg(
-    20,
-    20,
-    `<path d="M0 4Q9 0 18 2V16Q9 15 0 18Z" fill="${p.paper}"/>` +
-      [6, 9, 12]
-        .map((y) => `<path d="M3 ${y}H15" stroke="${p.line}" stroke-width="0.9"/>`)
-        .join(''),
-  );
-}
-
-function laptopXml(s: SceneScheme): string {
-  const p = PAL[s];
-  return svg(
-    42,
-    36,
-    `<path d="M0 32H42L39 35H3Z" fill="${p.cupSide}"/>` +
-      `<path d="M5 2H37L39 32H3Z" fill="${p.lid}"/>` +
-      `<path d="M30 2H37L39 32H33Z" fill="${C.dark}" fill-opacity="0.12"/>` +
-      `<circle cx="20" cy="16" r="5.5" fill="${C.pink}"/>` +
-      `<path d="${heartPath(20, 16, 2.2)}" fill="${C.white}"/>`,
-  );
-}
-
-function notebookXml(s: SceneScheme): string {
-  const p = PAL[s];
-  const rings = [4, 9, 14, 19]
-    .map(
-      (x) =>
-        `<circle cx="${x}" cy="2.6" r="1.4" fill="none" stroke="${C.steel}" stroke-width="1"/>`,
-    )
-    .join('');
-  return svg(
-    24,
-    20,
-    `<rect x="0.5" y="2" width="23" height="17.5" rx="2" fill="${C.sky}"/>` +
-      `<rect x="2" y="3.4" width="20" height="15" rx="1.2" fill="${p.paper}"/>` +
-      [7, 10, 13, 16]
-        .map((y) => `<path d="M4 ${y}H20" stroke="${p.line}" stroke-width="0.7"/>`)
-        .join('') +
-      rings,
-  );
-}
-
-const pencilXml = () =>
-  svg(
-    10,
-    28,
-    `<rect x="3" y="0" width="4" height="4" rx="1" fill="${C.pinkSoft}"/>` +
-      `<rect x="3" y="3.6" width="4" height="2" fill="${C.steel}" fill-opacity="0.5"/>` +
-      `<rect x="3" y="5.6" width="4" height="16" fill="${C.orange}"/>` +
-      `<path d="M3 21.6H7L5 26.5Z" fill="${C.cream}"/>` +
-      `<path d="M4.3 24.4H5.7L5 26.5Z" fill="${C.dark}"/>`,
-  );
-
-const KAMPUS: VenueScene = {
-  back: [
-    {
-      id: 'plane',
-      x: -34,
-      y: 76,
+      id: 'bomb',
+      x: 88,
+      y: 212,
       w: 32,
-      h: 20,
-      xml: planeXml,
-      motion: { kind: 'glide', ms: 6800, delay: 600, rest: 2600, dx: 460, dy: 9 },
-    },
-  ],
-  rear: [
-    { look: 'c:nane e:koyu h:anten', x: 122, bottom: 72, height: 92 },
-    { look: 'c:hardal e:klasik h:sihirbaz', x: 198, bottom: 72, height: 92 },
-  ],
-  table: [
-    table('desk'),
-    { id: 'stack', x: 120, y: 206, w: 36, h: 30, xml: stackXml },
-    { id: 'open', x: 176, y: 224, w: 40, h: 20, xml: (s) => openBookXml(s, C.mint) },
-    {
-      id: 'open-page',
-      x: 196,
-      y: 224,
-      w: 20,
-      h: 20,
-      xml: pageXml,
-      motion: { kind: 'flip', ms: 900, delay: 1800, rest: 3200 },
-    },
-    { id: 'laptop', x: 226, y: 202, w: 42, h: 36, xml: laptopXml },
-    talk('talk-l', 108, 130, 'right', 0),
-    talk('talk-r', 250, 126, 'left', 1500),
-  ],
-  side: [
-    { look: 'c:gok e:klasik f:yuvarlak', x: 18, bottom: -6, height: 132 },
-    { look: 'c:pembe e:koyu h:kulaklik', x: 272, bottom: -6, height: 132 },
-  ],
-  held: [
-    { id: 'held-book', x: 72, y: 244, w: 40, h: 20, xml: (s) => openBookXml(s, C.purple) },
-    {
-      id: 'held-page',
-      x: 92,
-      y: 244,
-      w: 20,
-      h: 20,
-      xml: pageXml,
-      motion: { kind: 'flip', ms: 900, delay: 400, rest: 3600 },
-    },
-    { id: 'notebook', x: 282, y: 252, w: 24, h: 20, xml: notebookXml },
-    {
-      id: 'pencil',
-      x: 296,
-      y: 232,
-      w: 10,
-      h: 28,
-      xml: pencilXml,
-      motion: { kind: 'bob', ms: 420, delay: 0, rest: 380, y: 2, turn: 12 },
+      h: 36,
+      xml: bombXml,
+      motion: { kind: 'toss', ms: 1000, delay: 600, rest: 900, dx: 192, y: 86, spin: 300 },
     },
   ],
 };
