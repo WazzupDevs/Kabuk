@@ -22,6 +22,7 @@ import { typeStyle, useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 import { TAB_BAR_GLASS, blursBehind } from '@/ui/backdrop';
 import { LiquidGlass } from '@/ui/LiquidGlass';
+import { useLabOff } from '@/lib/drawLab';
 
 import type { ChatQuote } from './ChatBubble';
 import { useChatEnd, useComposerGlass } from './ChatScreen';
@@ -278,19 +279,22 @@ function ReplyStrip({ quote, onCancel }: { quote: ChatQuote; onCancel?: () => vo
 function GlassFill({ targetId, radius }: { targetId: string; radius: number }) {
   const { scheme, colors } = useTheme();
   const t = V46_TAB_BAR[scheme];
+  const glassOff = useLabOff('cam');
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      <LiquidGlass
-        targetId={targetId}
-        cornerRadius={radius}
-        ground={colors.canvas}
-        blurRadius={TAB_GLASS.blur}
-        refraction={TAB_GLASS.refraction}
-        depth={TAB_GLASS.depth}
-        dispersion={TAB_GLASS.dispersion}
-        highlight={TAB_GLASS.highlight}
-        style={StyleSheet.absoluteFill}
-      />
+      {glassOff ? null : (
+        <LiquidGlass
+          targetId={targetId}
+          cornerRadius={radius}
+          ground={colors.canvas}
+          blurRadius={TAB_GLASS.blur}
+          refraction={TAB_GLASS.refraction}
+          depth={TAB_GLASS.depth}
+          dispersion={TAB_GLASS.dispersion}
+          highlight={TAB_GLASS.highlight}
+          style={StyleSheet.absoluteFill}
+        />
+      )}
       <View style={[StyleSheet.absoluteFill, { opacity: TAB_GLASS.overlay }]}>
         <GradientFill css={t.gradient} radius={radius} />
       </View>

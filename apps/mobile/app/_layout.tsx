@@ -11,6 +11,7 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { Loader } from '@/components/Loader';
 import { useProfile } from '@/features/account/useProfile';
 import { startSessionSync, useSessionStore } from '@/features/auth/session';
+import { DrawLabPanel } from '@/features/design/DrawLabPanel';
 import { LaunchCurtain } from '@/features/launch/LaunchCurtain';
 import { markLaunchReady } from '@/features/launch/launchStore';
 import { useOnboardingStore } from '@/features/onboarding/store';
@@ -93,6 +94,7 @@ export default function RootLayout() {
           <LaunchCurtain>
             <ThemeProvider>
               <RootNavigator />
+              <DrawLabPanel />
             </ThemeProvider>
           </LaunchCurtain>
         </QueryClientProvider>

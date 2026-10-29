@@ -17,6 +17,7 @@ import {
 
 import { Loader, useLoopActive } from '@/components/Loader';
 import { shadowParts } from '@/components/NativeShadow';
+import { useLabOff } from '@/lib/drawLab';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { MOTION } from '@/theme/aura';
 import { KIT, KIT_TYPE, type KitTextVariant } from '@/theme/auraKit';
@@ -115,6 +116,8 @@ export function Glass({
 }) {
   const { c } = useKit();
   const flat = useContext(FlatGlass);
+  useLabOff('golge');
+  const flatFill = useLabOff('kart');
   const radius = sm ? KIT.size.glassRadiusSm : KIT.size.glassRadius;
   const shadow = shadowParts(
     flat ? undefined : c.glassShadow,
@@ -127,7 +130,7 @@ export function Glass({
     <View
       testID={testID}
       style={[
-        gradientStyle(c.glass),
+        flatFill ? { backgroundColor: c.sheetBase } : gradientStyle(c.glass),
         {
           borderRadius: radius,
           borderWidth: KIT.size.edge,
@@ -200,6 +203,7 @@ export function Btn({
   const { c } = useKit();
   const press = usePress();
   const inRow = useContext(InRow);
+  useLabOff('golge');
   const fg =
     tint ?? (variant === 'primary' ? KIT.onPrimary : variant === 'dark' ? c.onChipOn : c.ink);
   const shadow =
@@ -307,6 +311,7 @@ export function Round({
   const { c } = useKit();
   const press = usePress();
   const s = KIT.size.round;
+  useLabOff('golge');
   const fg = primary ? KIT.onPrimary : (color ?? c.ink);
   const shadow = primary
     ? shadowParts(KIT.primaryShadow, c.primaryInset, s / 2)
@@ -735,6 +740,7 @@ export function Av({
   const side = KIT.size.av[size];
   const ring = size === 'xl' || size === 'big' ? KIT.size.avRingXl : KIT.size.avRing;
   const pick = KIT.avColors[colorIndex(name)] ?? KIT.avColors[0];
+  useLabOff('golge');
   // The face clips its photo, so its native shadow sits beside it in a box of the same size.
   const shadow = shadowParts(KIT.avShadow, undefined, side / 2);
   const face = (

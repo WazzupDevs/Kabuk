@@ -1,5 +1,7 @@
 import { Image, StyleSheet, useWindowDimensions, View } from 'react-native';
 
+import { useLabOff } from '@/lib/drawLab';
+import { AURA } from '@/theme/aura';
 import { useTheme } from '@/theme/ThemeProvider';
 
 // The colour clouds behind a screen (docs/design/aura/project/aura.css → `.aura`, the five clouds
@@ -14,6 +16,9 @@ const GROUND = {
 
 export function AuraBackground() {
   const { scheme } = useTheme();
+  if (useLabOff('zemin')) {
+    return <View style={[StyleSheet.absoluteFill, { backgroundColor: AURA[scheme].ground }]} />;
+  }
   return (
     <Image
       source={GROUND[scheme]}
@@ -44,11 +49,13 @@ export function AuraBand({
   fade: number;
   direction: 'down' | 'up';
 }) {
+  const off = useLabOff('zemin');
   const strip = fade / FADE_STEPS;
   const strips = Array.from({ length: FADE_STEPS }, (_, i) => ({
     top: direction === 'down' ? top + height + i * strip : top - (i + 1) * strip,
     opacity: 1 - (i + 1) / (FADE_STEPS + 1),
   }));
+  if (off) return null;
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
       {height > 0 ? <Slice top={top} height={height} opacity={1} /> : null}
