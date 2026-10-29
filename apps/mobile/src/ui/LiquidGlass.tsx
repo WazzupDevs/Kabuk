@@ -2,18 +2,17 @@ import { requireNativeView } from 'expo';
 import type { ComponentType, ReactNode } from 'react';
 import { type ColorValue, Platform, type StyleProp, View, type ViewStyle } from 'react-native';
 
-// The native side of skall's liquid glass (modules/skall-glass, Android): a screen a glass can see
-// through (GlassTarget) and the glass itself (LiquidGlass), joined by an id.
+// The native side of skall's glass (modules/skall-glass, Android; frosted since 0.9.0, the owner's
+// call, 29 Ekim): a screen a glass can see through (GlassTarget) and the glass itself
+// (LiquidGlass), joined by an id.
 type TargetProps = { targetId: string; style?: StyleProp<ViewStyle>; children?: ReactNode };
 type GlassProps = {
   targetId: string;
   cornerRadius: number;
   ground: ColorValue;
-  blurRadius: number;
-  refraction: number;
-  depth: number;
-  dispersion: number;
-  highlight: number;
+  // The blur's deviation (CSS's blur length) in dp and the colours' strength (CSS's saturate).
+  blur: number;
+  saturation: number;
   pointerEvents?: 'none';
   style?: StyleProp<ViewStyle>;
 };

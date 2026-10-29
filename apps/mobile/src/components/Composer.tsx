@@ -288,8 +288,8 @@ function ReplyStrip({ quote, onCancel }: { quote: ChatQuote; onCancel?: () => vo
   );
 }
 
-// The tab bar's glass (ui/TabBar.tsx) under the field or the button: the stream behind through the
-// lens, v46's light gradient at the glass's share, the white edge and its inner light.
+// The tab bar's glass (ui/TabBar.tsx) under the field or the button: the stream behind frosted,
+// v46's light gradient at the glass's share, the white edge and its inner light.
 function GlassFill({ targetId, radius }: { targetId: string; radius: number }) {
   const { scheme, colors } = useTheme();
   const t = V46_TAB_BAR[scheme];
@@ -301,11 +301,8 @@ function GlassFill({ targetId, radius }: { targetId: string; radius: number }) {
           targetId={targetId}
           cornerRadius={radius}
           ground={colors.canvas}
-          blurRadius={TAB_GLASS.blur}
-          refraction={TAB_GLASS.refraction}
-          depth={TAB_GLASS.depth}
-          dispersion={TAB_GLASS.dispersion}
-          highlight={TAB_GLASS.highlight}
+          blur={TAB_GLASS.blur}
+          saturation={TAB_GLASS.saturation}
           style={StyleSheet.absoluteFill}
         />
       )}

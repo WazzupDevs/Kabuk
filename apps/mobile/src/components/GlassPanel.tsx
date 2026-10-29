@@ -18,11 +18,8 @@ export function GlassPanel({ targetId, edge }: { targetId: string; edge?: 'top' 
           targetId={targetId}
           cornerRadius={0}
           ground={colors.canvas}
-          blurRadius={PANEL_GLASS.blur}
-          refraction={0}
-          depth={1}
-          dispersion={0}
-          highlight={0}
+          blur={PANEL_GLASS.blur}
+          saturation={1}
           style={StyleSheet.absoluteFill}
         />
       ) : null}
