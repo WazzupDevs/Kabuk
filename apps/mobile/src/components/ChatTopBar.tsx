@@ -1,10 +1,13 @@
 import type { ReactNode } from 'react';
-import { Pressable, View } from 'react-native';
+import { Animated, Pressable, View } from 'react-native';
 
-import { Glass, PulseDot, Round, T } from '@/aura/kit';
+import { CapIcon } from '@/aura/CapIcon';
+import { Glass, PulseDot, Round, T, useKit, usePress } from '@/aura/kit';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
 import { SPACING, TOUCH } from '@/theme/tokens';
+
+import { AVATAR_SIZE } from './Avatar';
 
 type Props = {
   title: string;
@@ -22,6 +25,10 @@ type Props = {
   titleAccessibilityLabel?: string;
   // Text or icon buttons on the right.
   actions?: ReactNode;
+  // Telegram Android's chat top (the DM; the owner's call, 29 Ekim): the back button, the avatar
+  // with the name and the actions each a glass pill of their own, the avatar (`lg`) filling its pill
+  // but for a thin edge; bare icon buttons in the actions.
+  split?: boolean;
 };
 
 // The compact top of a chat screen (v45: .dpin): a round back button, the avatar, the name and a
@@ -36,6 +43,7 @@ export function ChatTopBar({
   onPressTitle,
   titleAccessibilityLabel,
   actions,
+  split = false,
 }: Props) {
   const who = (
     <>
@@ -43,7 +51,12 @@ export function ChatTopBar({
       <View className="flex-1">
         {/* Wraps rather than ending in "…" (CLAUDE.md → Ekran davranışı): "12 Ekim'den beri
             arkadaşsınız". */}
-        <T v="h3" accessibilityRole="header" lines={titleLines} fit={titleLines !== undefined}>
+        <T
+          v={split ? 'sec' : 'h3'}
+          accessibilityRole="header"
+          lines={titleLines}
+          fit={titleLines !== undefined}
+        >
           {title}
         </T>
         {subtitle ? (
@@ -62,6 +75,17 @@ export function ChatTopBar({
   // spilled out of the bar.
   const whoStyle = { minHeight: TOUCH.min };
   const whoClass = 'flex-1 flex-row items-center gap-2.5';
+  if (split) {
+    return (
+      <SplitBar
+        who={who}
+        onBack={onBack}
+        onPressTitle={onPressTitle}
+        titleAccessibilityLabel={titleAccessibilityLabel}
+        actions={actions}
+      />
+    );
+  }
   return (
     // docs/design/aura → Dm: the bar is a glass capsule (8 inside, 30 round), the back and the
     // actions bare round buttons in it.
@@ -101,6 +125,105 @@ export function ChatTopBar({
         )}
         {actions}
       </Glass>
+    </View>
+  );
+}
+
+// The pills' height: the `lg` avatar and its edge.
+const PILL = AVATAR_SIZE.lg + KIT.size.splitInset * 2;
+
+function SplitBar({
+  who,
+  onBack,
+  onPressTitle,
+  titleAccessibilityLabel,
+  actions,
+}: {
+  who: ReactNode;
+  onBack?: () => void;
+  onPressTitle?: () => void;
+  titleAccessibilityLabel?: string;
+  actions?: ReactNode;
+}) {
+  const { c } = useKit();
+  const press = usePress();
+  const pill = {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    minHeight: PILL,
+  };
+  // Wrapped in its button, the button takes the row's room and the pill only its content's height
+  // (flex 1 in a column would size it by the button, a two-line name spilling out).
+  const whoPill = (
+    <Glass
+      radius={PILL / 2}
+      style={{
+        ...pill,
+        ...(onPressTitle ? null : { flex: 1 }),
+        padding: KIT.size.splitInset,
+        paddingRight: SPACING[4],
+        gap: SPACING[2.5],
+      }}
+    >
+      {who}
+    </Glass>
+  );
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: SPACING[2],
+        paddingHorizontal: SPACING[2],
+        paddingVertical: SPACING[1.5],
+      }}
+    >
+      {onBack ? (
+        // The whole circle is the button and sinks as one.
+        <Pressable
+          testID="chat-back"
+          accessibilityRole="button"
+          accessibilityLabel={tr.common.back}
+          onPress={onBack}
+          onPressIn={press.onPressIn}
+          onPressOut={press.onPressOut}
+        >
+          <Animated.View style={{ transform: [{ scale: press.scale }] }}>
+            <Glass
+              radius={PILL / 2}
+              style={{ width: PILL, height: PILL, alignItems: 'center', justifyContent: 'center' }}
+            >
+              <CapIcon name="back" color={c.ink} />
+            </Glass>
+          </Animated.View>
+        </Pressable>
+      ) : null}
+      {onPressTitle ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={titleAccessibilityLabel}
+          onPress={onPressTitle}
+          style={{ flex: 1 }}
+        >
+          {whoPill}
+        </Pressable>
+      ) : (
+        whoPill
+      )}
+      {actions ? (
+        <Glass
+          radius={PILL / 2}
+          style={{
+            ...pill,
+            height: PILL,
+            minWidth: PILL,
+            justifyContent: 'center',
+            paddingHorizontal: (PILL - TOUCH.min) / 2,
+          }}
+        >
+          {actions}
+        </Glass>
+      ) : null}
     </View>
   );
 }

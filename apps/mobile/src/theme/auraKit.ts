@@ -314,6 +314,9 @@ export const KIT = {
     barPad: 8,
     barRadius: 30,
     barGap: 10,
+    // The DM's top as Telegram Android draws it (the owner's call, 29 Ekim): the avatar this far
+    // inside its pill, the pills all as tall as it.
+    splitInset: 3,
     pill: 44,
     pillPadX: 14,
     eventCard: 210,

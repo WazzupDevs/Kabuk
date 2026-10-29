@@ -105,12 +105,15 @@ export function InSheet({ children }: { children: ReactNode }) {
 export function Glass({
   sm,
   pad,
+  radius: round,
   style,
   children,
   testID,
 }: {
   sm?: boolean;
   pad?: 'pad' | 'lg';
+  // Its own roundness (a pill: half its height), the shadow drawn to the same.
+  radius?: number;
   style?: StyleProp<ViewStyle>;
   children?: ReactNode;
   testID?: string;
@@ -119,7 +122,7 @@ export function Glass({
   const flat = useContext(FlatGlass);
   const shadowOff = useLabOff('golge');
   const flatFill = useLabOff('kart');
-  const radius = sm ? KIT.size.glassRadiusSm : KIT.size.glassRadius;
+  const radius = round ?? (sm ? KIT.size.glassRadiusSm : KIT.size.glassRadius);
   const shadow = shadowParts(
     shadowOff,
     flat ? undefined : c.glassShadow,
