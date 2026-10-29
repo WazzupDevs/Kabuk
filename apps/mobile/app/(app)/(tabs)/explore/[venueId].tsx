@@ -95,6 +95,8 @@ export default function VenueDetailScreen() {
     <View style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
       <AuraBackground />
       <ScrollView
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
         bounces={false}
         overScrollMode="never"
         contentContainerStyle={{

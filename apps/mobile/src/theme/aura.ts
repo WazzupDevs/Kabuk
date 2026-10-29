@@ -94,9 +94,10 @@ export const AURA = {
   // The tab bar: a glass capsule 18 in from each side, five round tabs; the selected one sits on a
   // white disc that slides to it. Icons are 26, the selected one 30 (aura.css `.tab .ti`).
   tabBar: {
-    height: 70,
+    // A little lower than the canvas's 70 (the owner's call, 29 Ekim); the discs keep their size.
+    height: 64,
     inset: 18,
-    padding: 9,
+    padding: 6,
     tab: 52,
     icon: 26,
     iconOn: 30,

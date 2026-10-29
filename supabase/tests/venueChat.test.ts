@@ -368,6 +368,21 @@ describe('venue chat: profile through the message', () => {
     });
   });
 
+  it("gives a friend the sender's public_id, for the DM", async () => {
+    const { a, b } = await threeAtVenue();
+    const [ida, idb] = [await userIdOf(a), await userIdOf(b)];
+    const [x, y] = ida < idb ? [ida, idb] : [idb, ida];
+    await sql`insert into public.friendships (user_a, user_b, source) values (${x}, ${y}, 'request')`;
+    const rows = await sql<{ public_id: string }[]>`
+      select public_id from public.profiles where id = ${ida}`;
+    const publicId = rows[0]?.public_id;
+    const { messageId } = (await send(a, 'merhaba', true)).body;
+    const res = await invoke(b, 'profile', { action: 'get', venueChatMessageId: messageId });
+    expect(res.body).toEqual(
+      expect.objectContaining({ displayName: 'Ayşe', friendPublicId: publicId }),
+    );
+  });
+
   it('answers not_found alike for anonymous, hidden, blocked, absent and unknown', async () => {
     const { a, b, c } = await threeAtVenue();
     const notFound = await invoke(b, 'profile', {

@@ -58,6 +58,7 @@ import { useAskBeforeLeaving } from '@/lib/leaveGuard';
 import { haptic } from '@/lib/haptics';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { useAfterSlide } from '@/lib/useAfterSlide';
+import { useCollapseOnScroll } from '@/lib/useCollapseOnScroll';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { profileApi } from '@/lib/api';
 import { FEELINGS } from '@/theme/capsuleLook';
@@ -195,6 +196,24 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
 
   const insets = useSafeAreaInsets();
   const tabSpace = useTabBarSpace();
+  // Scrolling the parts on folds the head to the capsule and takes the buttons away; scrolling
+  // back brings them (the owner's call, 29 Ekim).
+  const [folded, setFolded] = useState(false);
+  const collapse = useCollapseOnScroll(setFolded);
+  const chipsHeight = useSharedValue(0);
+  const barHeight = useSharedValue(0);
+  const fadeAway = useAnimatedStyle(() => ({ opacity: 1 - collapse.progress.value }));
+  const chipsAway = useAnimatedStyle(() => ({
+    opacity: 1 - collapse.progress.value,
+    transform: [{ translateY: -chipsHeight.value * collapse.progress.value }],
+  }));
+  const barAway = useAnimatedStyle(() => ({
+    opacity: 1 - collapse.progress.value,
+    transform: [{ translateY: barHeight.value * collapse.progress.value }],
+  }));
+  const topBandAway = useAnimatedStyle(() => ({
+    transform: [{ translateY: -(chipsHeight.value + SPACING[3]) * collapse.progress.value }],
+  }));
   const listId = useId();
   const [top, setTop] = useState(0);
   const [bottom, setBottom] = useState(0);
@@ -227,7 +246,10 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
       {/* The colour clouds (docs/design/aura → Kapsülün). */}
       <AuraBackground />
       <GlassTarget targetId={listId} style={StyleSheet.absoluteFill}>
-        <ScrollView
+        <Animated.ScrollView
+          onScroll={collapse.onScroll}
+          scrollEventThrottle={16}
+          showsHorizontalScrollIndicator={false}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
             paddingTop: top + BAND_FADE,
@@ -300,12 +322,16 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
               </View>
             ),
           )}
-        </ScrollView>
+        </Animated.ScrollView>
         {/* The fixed head's and buttons' ground: what scrolls hides under them, with a soft edge
             (the owner's report, 28 Ekim: a pack's name read through the buttons). */}
-        <AuraBand top={0} height={top} fade={BAND_FADE} direction="down" />
+        <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, topBandAway]}>
+          <AuraBand top={0} height={top} fade={BAND_FADE} direction="down" />
+        </Animated.View>
         {bar.height > 0 ? (
-          <AuraBand top={bar.y} height={screen - bar.y} fade={BAND_FADE} direction="up" />
+          <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, barAway]}>
+            <AuraBand top={bar.y} height={screen - bar.y} fade={BAND_FADE} direction="up" />
+          </Animated.View>
         ) : null}
       </GlassTarget>
 
@@ -366,51 +392,70 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
               onPress={feel}
             />
           </View>
-          <WornColumn
-            items={wornLeft}
-            width={wornWidth}
-            side="left"
-            onTakeOff={(slot) => put(takeOff(look, slot))}
-          />
-          <WornColumn
-            items={wornRight}
-            width={wornWidth}
-            side="right"
-            onTakeOff={(slot) => put(takeOff(look, slot))}
-          />
-        </View>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: side, gap: KIT.size.chipsGap }}
-        >
-          {CAPSULE_CATALOG.slots.map((s) => (
-            <Chip
-              key={s.id}
-              label={s.name}
-              on={slot === s.id}
-              onPress={() => setSlot(s.id as LookSlot)}
+          <Animated.View
+            pointerEvents={folded ? 'none' : 'box-none'}
+            style={[StyleSheet.absoluteFill, fadeAway]}
+          >
+            <WornColumn
+              items={wornLeft}
+              width={wornWidth}
+              side="left"
+              onTakeOff={(slot) => put(takeOff(look, slot))}
             />
-          ))}
-        </ScrollView>
+            <WornColumn
+              items={wornRight}
+              width={wornWidth}
+              side="right"
+              onTakeOff={(slot) => put(takeOff(look, slot))}
+            />
+          </Animated.View>
+        </View>
+        <Animated.View
+          pointerEvents={folded ? 'none' : 'auto'}
+          style={chipsAway}
+          onLayout={(e) => {
+            chipsHeight.value = e.nativeEvent.layout.height;
+          }}
+        >
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: side, gap: KIT.size.chipsGap }}
+          >
+            {CAPSULE_CATALOG.slots.map((s) => (
+              <Chip
+                key={s.id}
+                label={s.name}
+                on={slot === s.id}
+                onPress={() => setSlot(s.id as LookSlot)}
+              />
+            ))}
+          </ScrollView>
+        </Animated.View>
       </View>
 
-      <View
+      <Animated.View
+        pointerEvents={folded ? 'none' : 'box-none'}
         onLayout={(e) => {
           const { y, height } = e.nativeEvent.layout;
           setBottom(height);
           setBar({ y, height });
+          barHeight.value = height;
         }}
-        style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          bottom: 0,
-          paddingTop: SPACING[2],
-          paddingHorizontal: side,
-          paddingBottom: Math.max(tabSpace - SPACING[2], insets.bottom + SPACING[3]),
-          gap: SPACING[2],
-        }}
+        style={[
+          barAway,
+          {
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            paddingTop: SPACING[2],
+            paddingHorizontal: side,
+            paddingBottom: Math.max(tabSpace - SPACING[2], insets.bottom + SPACING[3]),
+            gap: SPACING[2],
+          },
+        ]}
       >
         {/* Small buttons (the owner's call, 28 Ekim). */}
         <View className="flex-row gap-2.5">
@@ -441,7 +486,7 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
             {errorMessage(save.error)}
           </T>
         ) : null}
-      </View>
+      </Animated.View>
       {/* Saving, the sheet stays; a failed save says so here, over the bar (audit PRO-3). */}
       <Sheet
         visible={leaving}

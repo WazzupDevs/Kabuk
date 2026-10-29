@@ -2,7 +2,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { seatsAnonymously } from '@shared/gender.ts';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { type ReactNode, useEffect, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import Reanimated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, type IconName } from '@/components/Button';
@@ -29,6 +30,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { roomsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { useCollapseOnScroll } from '@/lib/useCollapseOnScroll';
 import { useTheme } from '@/theme/ThemeProvider';
 import { AURA } from '@/theme/aura';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
@@ -45,6 +47,8 @@ export default function TableScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { scheme } = useTheme();
   const insets = useSafeAreaInsets();
+  // The head folds to the faces while the games scroll on (the owner's call, 29 Ekim).
+  const collapse = useCollapseOnScroll();
   const queryClient = useQueryClient();
   const checkIn = useActiveTable();
   const ownPhoto = useOwnPhoto();
@@ -201,6 +205,7 @@ export default function TableScreen() {
         ) : null}
         <Btn
           sm
+          bar
           variant="glassy"
           tint={endInk}
           testID={owner ? 'table-end-open' : 'table-leave-open'}
@@ -370,6 +375,7 @@ export default function TableScreen() {
     <View style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
       <AuraBackground />
       <TableScene
+        fold={collapse.progress}
         people={people.data ?? []}
         profiles={profiles}
         me={sessionId}
@@ -384,7 +390,10 @@ export default function TableScreen() {
       >
         {bar}
       </TableScene>
-      <ScrollView
+      <Reanimated.ScrollView
+        onScroll={collapse.onScroll}
+        scrollEventThrottle={16}
+        showsHorizontalScrollIndicator={false}
         style={{ flex: 1 }}
         contentContainerStyle={{
           paddingHorizontal: KIT.size.side,
@@ -409,7 +418,7 @@ export default function TableScreen() {
             <GameCard key={g.id} id={g.id} art={g.art} testID={`poster-${g.id}`} />
           ))}
         </PosterGrid>
-      </ScrollView>
+      </Reanimated.ScrollView>
       {sheets}
     </View>
   );

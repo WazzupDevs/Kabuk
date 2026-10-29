@@ -107,6 +107,7 @@ export function Chips<T extends string>({
   }
   return (
     <ScrollView
+      showsVerticalScrollIndicator={false}
       horizontal
       showsHorizontalScrollIndicator={false}
       accessibilityRole="radiogroup"

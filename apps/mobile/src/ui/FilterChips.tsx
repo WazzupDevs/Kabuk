@@ -35,6 +35,7 @@ export function FilterChips<K extends string>({
   const c = V46_EXPLORE[scheme].chips;
   return (
     <ScrollView
+      showsVerticalScrollIndicator={false}
       testID={testID}
       accessibilityRole="radiogroup"
       accessibilityLabel={accessibilityLabel}

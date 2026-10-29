@@ -33,7 +33,10 @@ export type ChatProfileView = Omit<
   | 'capsuleNick'
   | 'capsuleLook'
   | 'nickRefreshAt'
->;
+> & {
+  // Only when the sender is the viewer's friend (friends see each other's public_id, rule 4).
+  friendPublicId?: string;
+};
 
 export type ProfileRequest =
   | { action: 'get'; publicId: string }

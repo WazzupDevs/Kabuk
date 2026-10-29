@@ -103,12 +103,17 @@ async function getChatProfile(viewer: string, messageId: string): Promise<ChatPr
   });
   if (owner.error) throw dbError('venue_chat_profile_owner', owner.error);
   if (!owner.data) throw new AppError('not_found', 'Profile not found.');
-  const { data, error } = await db
-    .from('profiles')
-    .select('display_name, bio, photo_path, photo_hidden_at')
-    .eq('id', owner.data)
-    .single();
+  const [a, b] = viewer < owner.data ? [viewer, owner.data] : [owner.data, viewer];
+  const [{ data, error }, friendship] = await Promise.all([
+    db
+      .from('profiles')
+      .select('public_id, display_name, bio, photo_path, photo_hidden_at')
+      .eq('id', owner.data)
+      .single(),
+    db.from('friendships').select('user_a').eq('user_a', a).eq('user_b', b).maybeSingle(),
+  ]);
   if (error) throw dbError('profiles', error);
+  if (friendship.error) throw dbError('friendships', friendship.error);
   let photoUrl: string | null = null;
   if (data.photo_path && !data.photo_hidden_at) {
     const signed = await photos().createSignedUrl(data.photo_path, PHOTO_URL_SECONDS);
@@ -120,6 +125,9 @@ async function getChatProfile(viewer: string, messageId: string): Promise<ChatPr
     bio: data.bio,
     photoUrl,
     ...(await ageAndBadges(owner.data)),
+    // A friend's profile kimliği goes to the friend (rule 4): the screen offers the DM, not a
+    // request (the owner's report, 29 Ekim).
+    ...(friendship.data ? { friendPublicId: data.public_id } : {}),
   };
 }
 

@@ -49,6 +49,8 @@ export default function CapsulesScreen() {
         </View>
       </View>
       <ScrollView
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
         contentContainerStyle={{
           paddingHorizontal: side,
           paddingBottom: SPACING[8],

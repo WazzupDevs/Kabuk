@@ -1,6 +1,8 @@
-import { type ReactNode, useEffect, useState } from 'react';
+import { createContext, type ReactNode, useContext, useEffect, useState } from 'react';
 import { Animated, Pressable, View } from 'react-native';
+import type { SharedValue } from 'react-native-reanimated';
 
+import { Fold } from '@/aura/Fold';
 import { Av, T, Tag, useKit } from '@/aura/kit';
 import { springConfig } from '@/aura/motion';
 import { SceneGround } from '@/aura/Scene';
@@ -37,6 +39,7 @@ export function TableScene({
   onPress,
   children,
   footer,
+  fold,
 }: {
   people: readonly TablePerson[];
   profiles: ReadonlyMap<string, string> | undefined;
@@ -46,6 +49,9 @@ export function TableScene({
   onPress: () => void;
   children?: ReactNode;
   footer?: ReactNode;
+  // Folds the names and the footer away while the games scroll on (useCollapseOnScroll): only
+  // the faces stay under the buttons (the owner's call, 29 Ekim).
+  fold?: SharedValue<number>;
 }) {
   // Who was here when the scene first drew: they arrive in a row, later ones with a ring.
   const [first, setFirst] = useState<ReadonlySet<string> | null>(null);
@@ -58,46 +64,51 @@ export function TableScene({
   const shown = overflow ? ordered.slice(0, ROW_MAX - 1) : ordered;
   const more = ordered.length - shown.length;
   return (
-    <View
-      style={{
-        paddingTop: inset,
-        paddingBottom: KIT.size.pad,
-        gap: KIT.size.rowGap,
-        borderBottomLeftRadius: S.radius,
-        borderBottomRightRadius: S.radius,
-        overflow: 'hidden',
-      }}
-    >
-      <SceneGround top={0} bottom={S.radius} />
-      {children}
-      <Pressable
-        testID="table-scene"
-        accessibilityRole="button"
-        accessibilityLabel={tr.table.whoLabel(people.length)}
-        onPress={onPress}
+    <FoldContext.Provider value={fold}>
+      <View
         style={{
-          flexDirection: 'row',
-          justifyContent: 'center',
-          gap: FACE_GAP,
-          paddingHorizontal: KIT.size.side,
+          paddingTop: inset,
+          paddingBottom: KIT.size.pad,
+          gap: KIT.size.rowGap,
+          borderBottomLeftRadius: S.radius,
+          borderBottomRightRadius: S.radius,
+          overflow: 'hidden',
         }}
       >
-        {shown.map((p, i) => (
-          <Seat
-            key={p.sessionId}
-            person={p}
-            you={p.sessionId === me}
-            publicId={profiles?.get(p.sessionId)}
-            delay={first !== null && !first.has(p.sessionId) ? 0 : SEAT_DELAY + i * SEAT_STEP}
-            late={first !== null && !first.has(p.sessionId)}
-          />
-        ))}
-        {more > 0 ? <MoreFace count={more} /> : null}
-      </Pressable>
-      <View style={{ paddingHorizontal: KIT.size.side, gap: KIT.size.rowGap }}>{footer}</View>
-    </View>
+        <SceneGround top={0} bottom={S.radius} />
+        {children}
+        <Pressable
+          testID="table-scene"
+          accessibilityRole="button"
+          accessibilityLabel={tr.table.whoLabel(people.length)}
+          onPress={onPress}
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'center',
+            gap: FACE_GAP,
+            paddingHorizontal: KIT.size.side,
+          }}
+        >
+          {shown.map((p, i) => (
+            <Seat
+              key={p.sessionId}
+              person={p}
+              you={p.sessionId === me}
+              publicId={profiles?.get(p.sessionId)}
+              delay={first !== null && !first.has(p.sessionId) ? 0 : SEAT_DELAY + i * SEAT_STEP}
+              late={first !== null && !first.has(p.sessionId)}
+            />
+          ))}
+          {more > 0 ? <MoreFace count={more} /> : null}
+        </Pressable>
+        <Fold progress={fold} style={{ paddingHorizontal: KIT.size.side, gap: KIT.size.rowGap }}>
+          {footer}
+        </Fold>
+      </View>
+    </FoldContext.Provider>
   );
 }
+const FoldContext = createContext<SharedValue<number> | undefined>(undefined);
 const SEAT_DELAY = 160;
 const SEAT_STEP = MOTION.stagger.part;
 
@@ -165,6 +176,7 @@ function Seat({
     return () => anim.stop();
   }, [reduce, delay, late, pop, ring]);
   const name = you ? tr.table.youTag : person.alias;
+  const fold = useContext(FoldContext);
   return (
     <View style={{ alignItems: 'center', gap: NAME_GAP }} pointerEvents="none">
       <View>
@@ -202,7 +214,9 @@ function Seat({
           )}
         </Animated.View>
       </View>
-      <Tag label={name} fit />
+      <Fold progress={fold}>
+        <Tag label={name} fit />
+      </Fold>
     </View>
   );
 }

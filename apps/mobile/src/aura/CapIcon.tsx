@@ -23,7 +23,18 @@ export type CapIconName =
   | 'settings'
   | 'shuffle'
   | 'list'
-  | 'map';
+  | 'map'
+  | 'report'
+  | 'block'
+  | 'mute'
+  | 'shield'
+  | 'logout'
+  | 'trash'
+  | 'doc'
+  | 'refresh'
+  | 'photo'
+  | 'eyeOff'
+  | 'personRemove';
 
 type Part =
   | { k: 'cap'; x1: number; y1: number; x2: number; y2: number; tone: 'a' | 'b'; t?: number }
@@ -139,6 +150,66 @@ const ICONS: Record<CapIconName, Part[]> = {
       'a',
       true,
     ),
+  ],
+  // The menu's icons in the same family (the owner's report, 29 Ekim: Bildir, Engelle, Sessize al,
+  // Gizlilik, Çıkış yap looked unrelated): capsule strokes and soft shapes, the strong tone on what
+  // the action does.
+  // A flag on its pole.
+  report: [
+    cap(6.4, 4, 6.4, 20.4, 'a'),
+    line('M8 4.6h10.2c.7 0 1.1.8.7 1.3l-2.1 3.1 2.1 3.1c.4.5 0 1.3-.7 1.3H8Z', 'b', true),
+  ],
+  // A soft disc with the bar across it (a ring would read as the compass).
+  block: [circ(12, 12, 8.6, 'b'), cap(7.6, 16.4, 16.4, 7.6, 'a')],
+  // The speaker, silenced.
+  mute: [
+    line('M3.8 9.4h3.1L11.6 5.6v12.8l-4.7-3.8H3.8Z', 'a', true),
+    cap(15.2, 9.4, 20.2, 14.6, 'b', 2.6),
+    cap(20.2, 9.4, 15.2, 14.6, 'b', 2.6),
+  ],
+  // A shield with a check in it.
+  shield: [
+    line('M12 3.4 19.2 6v5.6c0 4.3-3 7.7-7.2 9-4.2-1.3-7.2-4.7-7.2-9V6Z', 'b', true),
+    cap(9, 12.2, 11.2, 14.4, 'a', 2.6),
+    cap(11.2, 14.4, 15.4, 10.2, 'a', 2.6),
+  ],
+  // A door and the way out of it.
+  logout: [
+    rect(3.6, 4, 9, 16, 3.5, 'b'),
+    cap(9.6, 12, 20, 12, 'a', 2.8),
+    cap(16.6, 8.6, 20, 12, 'a', 2.8),
+    cap(20, 12, 16.6, 15.4, 'a', 2.8),
+  ],
+  trash: [
+    rect(6, 8, 12, 12.6, 3.4, 'b'),
+    cap(4.6, 5.6, 19.4, 5.6, 'a'),
+    cap(10.2, 3.4, 13.8, 3.4, 'a', 2.6),
+  ],
+  doc: [
+    rect(5, 3, 14, 18, 4, 'b'),
+    cap(8.8, 9, 15.2, 9, 'a', 2.4),
+    cap(8.8, 12.8, 15.2, 12.8, 'a', 2.4),
+    cap(8.8, 16.6, 12.6, 16.6, 'a', 2.4),
+  ],
+  // Round arrow.
+  refresh: [line('M19.2 12a7.2 7.2 0 1 1-2.1-5.1', 'a'), line('M17.6 3.6v3.8h-3.8', 'b')],
+  // A camera.
+  photo: [
+    rect(3.4, 7.2, 17.2, 12.6, 4, 'b'),
+    rect(8.4, 4.4, 7.2, 3.6, 1.8, 'b'),
+    circ(12, 13.4, 3.3, 'a'),
+  ],
+  // An eye, crossed out.
+  eyeOff: [
+    line('M2.8 12s3.4-6 9.2-6 9.2 6 9.2 6-3.4 6-9.2 6-9.2-6-9.2-6Z', 'b'),
+    circ(12, 12, 2.7, 'b'),
+    cap(5, 19, 19, 5, 'a', 2.6),
+  ],
+  // A person, taken off: the invite's figure with a minus.
+  personRemove: [
+    circ(9, 7.8, 3.5, 'a'),
+    rect(2.8, 13.6, 12.4, 7, 3.5, 'b'),
+    cap(15.6, 10, 21.6, 10, 'a', 2.8),
   ],
 };
 

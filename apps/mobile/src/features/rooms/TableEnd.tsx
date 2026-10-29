@@ -70,6 +70,7 @@ export function TableEnd({ roomId, left, tableName, phones, profiled, anonymous,
     <View testID="table-end" style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
       <AuraBackground />
       <ScrollView
+        showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + SPACING[6] }}
         showsVerticalScrollIndicator={false}
       >

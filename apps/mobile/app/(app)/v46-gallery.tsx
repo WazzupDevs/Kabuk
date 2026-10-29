@@ -136,6 +136,8 @@ function GalleryList({ scheme, header }: { scheme: ColorScheme; header: ReactEle
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.canvas }}>
       <KeyboardAvoidingView className="flex-1" behavior="padding">
         <FlatList
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
           data={ROWS}
           extraData={scheme}
           keyExtractor={(row) => row.key}

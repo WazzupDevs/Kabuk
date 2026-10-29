@@ -1,4 +1,3 @@
-import type { Friend } from '@shared/api/friends.ts';
 import { REPORT_REASONS, type ReportReason } from '@shared/chat.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -12,9 +11,8 @@ import { Loader } from '@/components/Loader';
 import { Menu, MenuItem } from '@/components/Menu';
 import { Screen } from '@/components/Screen';
 import { Sheet } from '@/components/Sheet';
-import { Text } from '@/components/Text';
 import { ReportModal } from '@/features/chat/ReportModal';
-import { openDm } from '@/features/friends/openDm';
+import { FriendActions } from '@/features/friends/FriendActions';
 import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
 import { friendKeys, useFriends } from '@/features/friends/queries';
 import { ProfileHead } from '@/features/profile/ProfileCard';
@@ -24,9 +22,6 @@ import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { ApiError, friendsApi, safetyApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
-import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, SPACING, TOUCH } from '@/theme/tokens';
-import { AppIcon } from '@/components/AppIcon';
 
 // Another account's profile: only while the viewer may see it (a friend, or the other table of
 // the current room). Anything else, including a room that just ended, reads as "not visible"
@@ -192,40 +187,5 @@ export default function PersonScreen() {
         onClose={() => setReporting(false)}
       />
     </Screen>
-  );
-}
-
-// A friend's profile (skall tuvali, ProfilBaskasi): "Arkadaşsınız" beside "Mesaj".
-function FriendActions({ friend }: { friend: Friend }) {
-  const { colors, shape } = useTheme();
-  const threadId = friend.threadId;
-  return (
-    <View className="flex-row" style={{ gap: SPACING[2] }}>
-      <View
-        className="flex-1 flex-row items-center justify-center"
-        style={{
-          gap: SPACING[1.5],
-          minHeight: TOUCH.min,
-          borderRadius: shape.radius.pill,
-          backgroundColor: colors.surface2,
-        }}
-      >
-        <AppIcon name="checkmark" size={ICON.sm} color={colors.onSuccessSoft} />
-        <Text variant="label" color={colors.onSuccessSoft}>
-          {tr.profile.friendsStatus}
-        </Text>
-      </View>
-      {threadId ? (
-        <View className="flex-1">
-          <Button
-            icon="chevron-forward"
-            label={tr.friends.messageShort}
-            onPress={() =>
-              openDm({ threadId, publicId: friend.publicId, name: friend.displayName })
-            }
-          />
-        </View>
-      ) : null}
-    </View>
   );
 }

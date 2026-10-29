@@ -109,6 +109,7 @@ export function Screen({
           </PullScroll>
         ) : (
           <ScrollView
+            showsHorizontalScrollIndicator={false}
             ref={scrollRef}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={content}
@@ -141,6 +142,7 @@ function FixedBody({
   const overflows = box > 0 && inner > box + 1;
   return (
     <ScrollView
+      showsHorizontalScrollIndicator={false}
       contentContainerStyle={content}
       keyboardShouldPersistTaps="handled"
       scrollEnabled={overflows}

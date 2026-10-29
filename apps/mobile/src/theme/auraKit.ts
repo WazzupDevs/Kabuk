@@ -116,8 +116,14 @@ export const KIT = {
     // .sheet over .scrim (Masa kur, Giriş): a frosted white card floating 10 from the edges.
     // Opaque (the owner's call, 29 Ekim: Bildirimler and Ayarlar showed too much of the screen
     // under them); sheetBase under the gradient keeps it so.
-    sheet: 'linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(248, 246, 255, 1))',
-    sheetBase: '#FBFAFF',
+    // A soft lilac, a shade under white (the owner's report, 29 Ekim: on a white sheet its white
+    // cards, lists and buttons ran together): the glass in it stands out as on a screen.
+    sheet: 'linear-gradient(180deg, rgba(244, 242, 251, 1), rgba(236, 233, 247, 1))',
+    sheetBase: '#F0EEF9',
+    // The sheet's top and bottom colours, for what scrolls under its edges to fade into.
+    sheetFadeTop:
+      'linear-gradient(180deg, rgba(244, 242, 251, 1) 0%, rgba(244, 242, 251, 1) 55%, rgba(244, 242, 251, 0) 100%)',
+    sheetFadeBottom: 'linear-gradient(180deg, rgba(236, 233, 247, 0), rgba(236, 233, 247, 1))',
     grab: 'rgba(20, 17, 43, 0.16)',
     scrim: 'rgba(20, 17, 43, 0.30)',
   },
@@ -143,8 +149,12 @@ export const KIT = {
     field: 'rgba(255, 255, 255, 0.10)',
     segOn: 'rgba(255, 255, 255, 0.16)',
     segShadow: '',
-    sheet: 'linear-gradient(180deg, rgba(40, 33, 82, 1), rgba(28, 24, 56, 1))',
-    sheetBase: '#221C48',
+    // A shade under the cards, as in the light (the cards' glass is the old sheet's colour).
+    sheet: 'linear-gradient(180deg, rgba(30, 25, 64, 1), rgba(21, 18, 45, 1))',
+    sheetBase: '#1B1739',
+    sheetFadeTop:
+      'linear-gradient(180deg, rgba(30, 25, 64, 1) 0%, rgba(30, 25, 64, 1) 55%, rgba(30, 25, 64, 0) 100%)',
+    sheetFadeBottom: 'linear-gradient(180deg, rgba(21, 18, 45, 0), rgba(21, 18, 45, 1))',
     grab: 'rgba(255, 255, 255, 0.20)',
     scrim: 'rgba(8, 6, 20, 0.55)',
   },

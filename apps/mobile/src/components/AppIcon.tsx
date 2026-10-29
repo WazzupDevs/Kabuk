@@ -111,6 +111,25 @@ const CAP: Partial<Record<IconName, CapIconName>> = {
   shuffle: 'shuffle',
   list: 'list',
   'map-outline': 'map',
+  // The menus' icons (the owner's report, 29 Ekim: one family for all of them).
+  alert: 'report',
+  'flag-outline': 'report',
+  'ban-outline': 'block',
+  'volume-mute-outline': 'mute',
+  'shield-outline': 'shield',
+  'shield-checkmark-outline': 'shield',
+  'log-out-outline': 'logout',
+  'exit-outline': 'logout',
+  'trash-outline': 'trash',
+  'document-text-outline': 'doc',
+  refresh: 'refresh',
+  'refresh-outline': 'refresh',
+  'camera-outline': 'photo',
+  'images-outline': 'photo',
+  'eye-off-outline': 'eyeOff',
+  'person-remove-outline': 'personRemove',
+  // "Lobiye aç": the list, as on Masa's own button.
+  'megaphone-outline': 'list',
 };
 
 export function canvasIconFor(name: IconName): 'line' | 'bar' | null {

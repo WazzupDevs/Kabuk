@@ -1,12 +1,11 @@
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { Animated, Modal, Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
+import { Animated, Modal, Pressable, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { InSheet, T, useKit } from '@/aura/kit';
 import { Peek, type PeekKind } from '@/aura/Peek';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
-import { gradientStyle } from '@/theme/gradient';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { EASE_OUT } from '@/theme/markMotion';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -15,6 +14,7 @@ import { ICON } from '@/theme/tokens';
 import type { IconName } from './Button';
 import { Quiet } from './Quiet';
 import { useSheetCloser } from './sheetCloser';
+import { SheetCard } from './SheetCard';
 import { useSheetDrag } from './sheetDrag';
 import { AppIcon } from './AppIcon';
 
@@ -127,71 +127,41 @@ export function Sheet({
           {...drag.handlers}
         >
           {peek ? <Peek kind={peek} /> : null}
-          <View
-            style={{
-              ...gradientStyle(k.c.sheet),
-              backgroundColor: k.c.sheetBase,
-              flexShrink: 1,
-              borderRadius: KIT.size.sheetRadius,
-              borderWidth: KIT.size.edge,
-              borderColor: k.c.glassEdge,
-              boxShadow: k.c.glassShadow,
-              paddingTop: KIT.size.sheetPadTop,
-              paddingHorizontal: KIT.size.sheetPadX,
-              paddingBottom: KIT.size.sheetPadBottom,
-            }}
-          >
-            <View
-              className="self-center"
-              style={{
-                width: KIT.size.grabW,
-                height: KIT.size.grabH,
-                borderRadius: KIT.size.grabH,
-                backgroundColor: k.c.grab,
-                marginBottom: KIT.size.sheetGap,
-              }}
-            />
-            <ScrollView
-              bounces={false}
-              keyboardShouldPersistTaps="handled"
-              onScroll={drag.onScroll}
-              scrollEventThrottle={16}
-            >
-              <InSheet>
-                <Quiet value>
-                  <View className={`gap-3 ${centered ? 'items-center' : ''}`}>
-                    {icon ? (
-                      <View
-                        className="mt-2 items-center justify-center"
-                        style={{
-                          width: ICON_DISC,
-                          height: ICON_DISC,
-                          borderRadius: shape.radius.pill,
-                          backgroundColor: colors.surface2,
-                        }}
-                      >
-                        <AppIcon name={icon} size={ICON.lg} color={colors.accent} />
-                      </View>
-                    ) : null}
-                    {title ? (
-                      <T v="title" center={centered} accessibilityRole="header">
-                        {title}
-                        {titleNote ? <T v="fine">{`  ${titleNote}`}</T> : null}
-                      </T>
-                    ) : null}
-                  </View>
-                  <View
-                    style={{
-                      marginTop: title || icon ? KIT.size.sheetGap : 0,
-                      gap: KIT.size.rowGap,
-                    }}
-                  >
-                    {children}
-                  </View>
-                </Quiet>
-              </InSheet>
-            </ScrollView>
-          </View>
+          <SheetCard onScroll={drag.onScroll}>
+            <InSheet>
+              <Quiet value>
+                <View className={`gap-3 ${centered ? 'items-center' : ''}`}>
+                  {icon ? (
+                    <View
+                      className="mt-2 items-center justify-center"
+                      style={{
+                        width: ICON_DISC,
+                        height: ICON_DISC,
+                        borderRadius: shape.radius.pill,
+                        backgroundColor: colors.surface2,
+                      }}
+                    >
+                      <AppIcon name={icon} size={ICON.lg} color={colors.accent} />
+                    </View>
+                  ) : null}
+                  {title ? (
+                    <T v="title" center={centered} accessibilityRole="header">
+                      {title}
+                      {titleNote ? <T v="fine">{`  ${titleNote}`}</T> : null}
+                    </T>
+                  ) : null}
+                </View>
+                <View
+                  style={{
+                    marginTop: title || icon ? KIT.size.sheetGap : 0,
+                    gap: KIT.size.rowGap,
+                  }}
+                >
+                  {children}
+                </View>
+              </Quiet>
+            </InSheet>
+          </SheetCard>
         </Animated.View>
       </View>
     </Modal>

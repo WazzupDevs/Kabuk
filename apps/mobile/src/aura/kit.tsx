@@ -177,6 +177,7 @@ export function Btn({
   onPress,
   variant = 'primary',
   sm,
+  bar,
   block,
   icon,
   loading,
@@ -190,6 +191,9 @@ export function Btn({
   onPress?: () => void;
   variant?: 'primary' | 'glassy' | 'dark';
   sm?: boolean;
+  // In a bar of round buttons: a small button as tall as they are (the owner's report, 29 Ekim:
+  // Masa's "Bitir" stood shorter than the rounds beside it).
+  bar?: boolean;
   block?: boolean;
   icon?: CapIconName;
   loading?: boolean;
@@ -240,7 +244,7 @@ export function Btn({
         style={[
           ground,
           {
-            height: sm ? KIT.size.btnSm : KIT.size.btn,
+            height: bar ? KIT.size.round : sm ? KIT.size.btnSm : KIT.size.btn,
             paddingHorizontal: sm ? KIT.size.btnPadXSm : KIT.size.btnPadX,
             borderRadius: KIT.size.btn,
             flexDirection: 'row',
