@@ -1,6 +1,6 @@
 # skall Faz 4: v43
 
-**Onaylı; §4.N sırasıyla uygulanır.** Proje sahibinin onayladığı hedef: uygulamanın tasarımı, arayüzü ve mantığı `docs/design/v43/`'teki denemeye (v43) çevrilir. **Pilot v43'ün tamamıyla çıkar; hazır olmadan Play'e çıkılmaz.**
+**Onaylı; §4.N sırasıyla uygulanır.** Faz 4'ün hedefi kişilerin masası ve bu belgedeki içerik, davranış ve kurallardır. Görünüşün kaynağı aura tuvalidir (CLAUDE.md → Kod kuralları); v43, v44, v45 ve v46 tasarım denemeleri tarih içindir. **Pilot Faz 4'ün tamamıyla çıkar; hazır olmadan Play'e çıkılmaz.** Pilotun oyunları Kapsül Anlat, Sahtekar ve Vampir Köylü'dür (proje sahibinin kararı, 31 Ekim 2026).
 
 - Her adım kendi dalı ve PR'ıyla gelir; "onaylandı" olmadan birleşmez.
 - Bu belgede olmayan bir karar gerekirse uygulama durur ve sorulur.
@@ -119,14 +119,8 @@ Değişmez kabul edilir.
    - kural 4'e açık istisna olarak yazılır.
 9. **Oyun adında "Tabu" geçmez.** Çalışma adı "Kapsül Anlat"; metinlere tek sabitten gelir.
 10. **Koyu tema vardır; yazı tipi Plus Jakarta Sans.**
-11. **Görsel kaynak v46'dır** (`docs/design/v46/`; öncelik §4.C); Claude Design tuvali arşiv olur. Karar v43 içindi (`docs/design/v43/`). "Kabuk tasarım denemeleri" oturumundan sırayla şunlar geldi:
-    - v44 (`docs/design/v44/`, 18 Ekim): koyu tema ve eksik ekranlar;
-    - v45 (18 Ekim): ilk ekran giriş animasyonu ve kayıt adımlarındaki kapsül dostları;
-    - v46 (19 Ekim): Fırat'ın paketinden alınan sekiz madde (masa simgeleri, kapsül süsleme ve diğerleri).
-
-    v43, v44 ve v45 tarih için kalır.
-
-12. **Pilot v43'ün tamamıyla çıkar;** hazır olmadan Play'e çıkılmaz.
+11. **Görsel kaynak aura tuvalidir** (CLAUDE.md → Kod kuralları; `docs/decisions/aura-gorunum.md`). v43, v44, v45 ve v46 denemeleri tarih içindir; v43 ile v45 git geçmişindedir.
+12. **Pilot Faz 4'ün tamamıyla çıkar;** hazır olmadan Play'e çıkılmaz. Pilotun oyunları Kapsül Anlat (4.6.1), Sahtekar (4.6.3) ve Vampir Köylü (4.6.6); diğer oyunlar pilottan sonra güncellemeyle gelir (proje sahibinin kararı, 31 Ekim 2026).
 
 **Kural metinleri için proje sahibinin verdiği ölçüler** (§4.O):
 
@@ -225,7 +219,7 @@ Değişmez kabul edilir.
   - §4.E'deki tek seferlik "Y geliyor, N kişi" bildirimi kalır.
   - v46'da kabul edilen masa, telefonları katılana kadar Masadakiler'de "Geliyor" olarak durur ve üst satır "6 kişi · 3 geliyor" yazar.
 - **Görünüşün kaynağı skall tuvali, arayüz temiz sayfa** (proje sahibinin kararları, 26 ve 27 Ekim; `docs/decisions/sistem-kaynak.md`).
-  - Görünüşte (ekranlar, renk, yazı, şekil, bileşen) yalnızca `docs/design/sistem/` geçerlidir ve birebir uygulanır; v46 ve öncekiler tarih için kalır. İçerik, davranış ve kurallarda bu spec geçerlidir.
+  - Görünüşte (ekranlar, renk, yazı, şekil, bileşen) aura tuvali (`docs/design/aura/`) birebir uygulanır; `docs/design/sistem/` aura'nın çizmediği yerde geçerlidir; v46 ve öncekiler tarih için kalır. İçerik, davranış ve kurallarda bu spec geçerlidir.
   - Arayüz tuvalden sıfırdan kurulur: tema, bileşen kiti, ekranlar. Veri, sunucu ve mantık korunur. v46'nın ölçüm hattı yeni kit kullanıldıkça kalkar.
   - Hareket ve dokunuş koddaki bugünkü değerlerdir; tuvale hareket panosu eklenince kaynak o olur.
   - Tuval bu listeyle ve K kararlarıyla uzlaştırıldı. Spec'te karşılığı olmayan tuval metinleri `docs/design/sistem/sapmalar.md`'de onay bekler.
@@ -1106,7 +1100,7 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
   - `docs/FIELD_TEST.md`'nin Faz 4 sürümü saha testinden önce ayrı bir belge PR'ıyla yazılır.
   - 4.8 saha testinden sonra gelir ve testte çıkan düzeltmeleri de alır.
 - **PR'lar küçük tutulur:** telefonda görünen bir hatayı saha testinde hangi adımın getirdiği bulunabilsin (aşağıda "Maliyet ve risk").
-- İstemci işi önce v46'ya bakılarak yapılır (öncelik §4.C); tasarım dosyalarında olmayan görünüm eklenmez.
+- İstemci işinde görünüş aura tuvalinden alınır; tuvalin çizmediği davranış ve hareket Telegram Android'den (CLAUDE.md → Kod kuralları).
 - **4.5'te sunucu ile OTA arası en kısa tutulur:** 4.5'in sunucusundan sonra eski istemci masa açamaz ve oynayamaz. Pilot kullanıcısı yoktur; dev projesindeki test telefonları etkilenir.
 - Büyük adımlar gerekirse 23.2 ve 23.3'teki a/b kalıbıyla bölünür (sunucu önce, bugünkü uygulamayı bozmadan; istemci sonra). Bölünme o adımın planında yazılır.
 - **Açık kararlar bekletir:** §4.P'deki her karar, yazılı olduğu adımdan önce.
