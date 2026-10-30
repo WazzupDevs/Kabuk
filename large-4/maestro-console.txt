@@ -1,0 +1,6 @@
+
+Waiting for flows to complete...
+[Failed] P0 kritik yol, parça 4 (12m 2s) (Assertion is false: "Keşfet" is visible)
+
+1/1 Flow Failed
+

@@ -1,0 +1,12 @@
+08:47:03.455 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Define variables RUNNING
+08:47:03.456 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Define variables COMPLETED
+08:47:03.456 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Apply configuration RUNNING
+08:47:03.456 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Apply configuration COMPLETED
+08:47:03.456 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Open masa:///gorsel?durum=galeri/v46/basari&tema=light&sayfa=0&sayfalar=1&n=39 RUNNING
+08:47:03.456 [ INFO] maestro.Maestro.openLink: Opening link masa:///gorsel?durum=galeri/v46/basari&tema=light&sayfa=0&sayfalar=1&n=39 for app: app.kabuk.mobile with autoVerify config as false
+08:47:04.220 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Open masa:///gorsel?durum=galeri/v46/basari&tema=light&sayfa=0&sayfalar=1&n=39 COMPLETED
+08:47:04.220 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that id: launch-curtain is not visible RUNNING
+08:47:05.070 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that id: launch-curtain is not visible COMPLETED
+08:47:05.070 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Assert that (Optional) id: gorsel-hazir-39 is visible RUNNING
+08:47:05.132 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandFinished: Assert that (Optional) id: gorsel-hazir-39 is visible COMPLETED
+08:47:05.132 [ INFO] maestro.cli.runner.CliConsoleListener.onCommandStart: Run flow when id: gorsel-hazir-39 is not visible RUNNING

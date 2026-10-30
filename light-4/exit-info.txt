@@ -1,0 +1,24 @@
+ACTIVITY MANAGER PROCESS EXIT INFO (dumpsys activity exit-info)
+Last Timestamp of Persistence Into Persistent Storage: 2026-10-30 08:30:30.454
+  package: app.kabuk.mobile
+    Historical Process Exit for uid=10192
+        ApplicationExitInfo #0:
+          timestamp=2026-10-30 08:29:28.730 pid=8467 realUid=10192 packageUid=10192 definingUid=10192 user=0
+          process=app.kabuk.mobile reason=10 (USER REQUESTED) subreason=21 (FORCE STOP) status=0
+          importance=100 pss=193MB rss=334MB description=stop app.kabuk.mobile due to from pid 8726 state=empty trace=null
+        ApplicationExitInfo #1:
+          timestamp=2026-10-30 08:29:15.336 pid=8141 realUid=10192 packageUid=10192 definingUid=10192 user=0
+          process=app.kabuk.mobile reason=10 (USER REQUESTED) subreason=21 (FORCE STOP) status=0
+          importance=100 pss=197MB rss=338MB description=stop app.kabuk.mobile due to from pid 8456 state=empty trace=null
+        ApplicationExitInfo #2:
+          timestamp=2026-10-30 08:28:18.428 pid=7785 realUid=10192 packageUid=10192 definingUid=10192 user=0
+          process=app.kabuk.mobile reason=10 (USER REQUESTED) subreason=21 (FORCE STOP) status=0
+          importance=100 pss=186MB rss=324MB description=stop app.kabuk.mobile due to from pid 7941 state=empty trace=null
+        ApplicationExitInfo #3:
+          timestamp=2026-10-30 08:27:47.937 pid=6677 realUid=10192 packageUid=10192 definingUid=10192 user=0
+          process=app.kabuk.mobile reason=10 (USER REQUESTED) subreason=21 (FORCE STOP) status=0
+          importance=100 pss=222MB rss=365MB description=stop app.kabuk.mobile due to from pid 7768 state=empty trace=null
+        ApplicationExitInfo #4:
+          timestamp=2026-10-30 08:18:29.835 pid=6037 realUid=10192 packageUid=10192 definingUid=10192 user=0
+          process=app.kabuk.mobile reason=10 (USER REQUESTED) subreason=21 (FORCE STOP) status=0
+          importance=100 pss=162MB rss=303MB description=stop app.kabuk.mobile due to from pid 6250 state=empty trace=null

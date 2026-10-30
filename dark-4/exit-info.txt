@@ -1,0 +1,24 @@
+ACTIVITY MANAGER PROCESS EXIT INFO (dumpsys activity exit-info)
+Last Timestamp of Persistence Into Persistent Storage: 2026-10-30 08:29:18.232
+  package: app.kabuk.mobile
+    Historical Process Exit for uid=10192
+        ApplicationExitInfo #0:
+          timestamp=2026-10-30 08:28:19.444 pid=8524 realUid=10192 packageUid=10192 definingUid=10192 user=0
+          process=app.kabuk.mobile reason=10 (USER REQUESTED) subreason=21 (FORCE STOP) status=0
+          importance=100 pss=0.00 rss=0.00 description=stop app.kabuk.mobile due to from pid 8785 state=empty trace=null
+        ApplicationExitInfo #1:
+          timestamp=2026-10-30 08:28:07.786 pid=8200 realUid=10192 packageUid=10192 definingUid=10192 user=0
+          process=app.kabuk.mobile reason=10 (USER REQUESTED) subreason=21 (FORCE STOP) status=0
+          importance=100 pss=166MB rss=291MB description=stop app.kabuk.mobile due to from pid 8514 state=empty trace=null
+        ApplicationExitInfo #2:
+          timestamp=2026-10-30 08:27:15.811 pid=7858 realUid=10192 packageUid=10192 definingUid=10192 user=0
+          process=app.kabuk.mobile reason=10 (USER REQUESTED) subreason=21 (FORCE STOP) status=0
+          importance=100 pss=190MB rss=330MB description=stop app.kabuk.mobile due to from pid 7998 state=empty trace=null
+        ApplicationExitInfo #3:
+          timestamp=2026-10-30 08:26:53.907 pid=6779 realUid=10192 packageUid=10192 definingUid=10192 user=0
+          process=app.kabuk.mobile reason=10 (USER REQUESTED) subreason=21 (FORCE STOP) status=0
+          importance=100 pss=227MB rss=371MB description=stop app.kabuk.mobile due to from pid 7843 state=empty trace=null
+        ApplicationExitInfo #4:
+          timestamp=2026-10-30 08:18:21.685 pid=6162 realUid=10192 packageUid=10192 definingUid=10192 user=0
+          process=app.kabuk.mobile reason=10 (USER REQUESTED) subreason=21 (FORCE STOP) status=0
+          importance=100 pss=163MB rss=305MB description=stop app.kabuk.mobile due to from pid 6348 state=empty trace=null

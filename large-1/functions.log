@@ -1,0 +1,61 @@
+Setting up Edge Functions runtime...
+Error response from daemon: toomanyrequests: Data limit exceeded
+Retrying after 4s: public.ecr.aws/supabase/edge-runtime:v1.74.3
+Error response from daemon: toomanyrequests: Data limit exceeded
+Retrying after 8s: public.ecr.aws/supabase/edge-runtime:v1.74.3
+Error response from daemon: toomanyrequests: Data limit exceeded
+v1.74.3: Pulling from supabase/edge-runtime
+597c6c618d36: Pulling fs layer
+c39190ba742d: Pulling fs layer
+60414ed24b30: Pulling fs layer
+0d29c829782d: Pulling fs layer
+662b1f44f1ee: Pulling fs layer
+ba9e24d39072: Pulling fs layer
+0d29c829782d: Waiting
+662b1f44f1ee: Waiting
+ba9e24d39072: Waiting
+60414ed24b30: Verifying Checksum
+60414ed24b30: Download complete
+597c6c618d36: Verifying Checksum
+597c6c618d36: Download complete
+c39190ba742d: Download complete
+0d29c829782d: Verifying Checksum
+0d29c829782d: Download complete
+ba9e24d39072: Verifying Checksum
+ba9e24d39072: Download complete
+662b1f44f1ee: Verifying Checksum
+662b1f44f1ee: Download complete
+597c6c618d36: Pull complete
+c39190ba742d: Pull complete
+60414ed24b30: Pull complete
+0d29c829782d: Pull complete
+662b1f44f1ee: Pull complete
+ba9e24d39072: Pull complete
+Digest: sha256:c52405002a890ca9fcf77978671c57f3a988e03174afb277f84ac65bc917013c
+Status: Downloaded newer image for ghcr.io/supabase/edge-runtime:v1.74.3
+ghcr.io/supabase/edge-runtime:v1.74.3
+2026-10-30T08:09:22.637819962Z Serving functions on http://127.0.0.1:54321/functions/v1/<function-name>
+2026-10-30T08:09:22.637905940Z  - http://127.0.0.1:54321/functions/v1/account
+2026-10-30T08:09:22.637909115Z  - http://127.0.0.1:54321/functions/v1/chat
+2026-10-30T08:09:22.637911108Z  - http://127.0.0.1:54321/functions/v1/checkin
+2026-10-30T08:09:22.637912911Z  - http://127.0.0.1:54321/functions/v1/dm
+2026-10-30T08:09:22.637914653Z  - http://127.0.0.1:54321/functions/v1/friends
+2026-10-30T08:09:22.637916476Z ... and 13 more functions
+2026-10-30T08:09:22.637918239Z Using supabase-edge-runtime-1.74.3 (compatible with Deno v2.1.4)
+2026-10-30T08:09:24.852256795Z serving the request with supabase/functions/ping
+2026-10-30T08:12:45.454457932Z wall clock duration warning: isolate: eeec8365-5745-4c52-8892-6c643dadbd8e
+2026-10-30T08:12:45.468006186Z early termination has been triggered: isolate: eeec8365-5745-4c52-8892-6c643dadbd8e
+2026-10-30T08:18:01.122924524Z serving the request with supabase/functions/ping
+2026-10-30T08:18:33.009074759Z serving the request with supabase/functions/ping
+2026-10-30T08:19:50.298536983Z serving the request with supabase/functions/account
+2026-10-30T08:20:59.063115372Z serving the request with supabase/functions/account
+2026-10-30T08:20:59.362930607Z serving the request with supabase/functions/profile
+2026-10-30T08:21:11.036452841Z serving the request with supabase/functions/dm
+2026-10-30T08:21:11.091783934Z serving the request with supabase/functions/friends
+2026-10-30T08:21:11.091808470Z serving the request with supabase/functions/friends
+2026-10-30T08:21:11.946603432Z serving the request with supabase/functions/dm
+2026-10-30T08:21:12.129264256Z serving the request with supabase/functions/dm
+2026-10-30T08:21:14.219673688Z serving the request with supabase/functions/friends
+2026-10-30T08:21:14.222558778Z serving the request with supabase/functions/profile
+2026-10-30T08:21:21.535228671Z wall clock duration warning: isolate: 86f0e58f-9d20-4786-80de-6699080fd1ea
+2026-10-30T08:21:21.553914036Z early termination has been triggered: isolate: 86f0e58f-9d20-4786-80de-6699080fd1ea
