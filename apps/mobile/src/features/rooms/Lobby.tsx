@@ -6,7 +6,7 @@ import { router } from 'expo-router';
 import { type ReactNode, useEffect, useReducer, useState } from 'react';
 import { View } from 'react-native';
 
-import { Btn, GlassList, Li, Sec, T, Tag, Thumb, useKit } from '@/aura/kit';
+import { Btn, Li, RowList, Sec, T, Tag, Thumb, useKit } from '@/aura/kit';
 import { Pips } from '@/aura/Pips';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
@@ -183,7 +183,7 @@ export function Lobby({
             {venueHasSpots ? (
               <SpotHeading spotId={group.spotId} spotName={group.spotName} mine={group.mine} />
             ) : null}
-            <GlassList>
+            <RowList>
               {group.rooms.map((table) => {
                 const actions = lobbyActions(state, myPhones, table.phones);
                 const busy = request.isPending && request.variables?.table.roomId === table.roomId;
@@ -211,7 +211,7 @@ export function Lobby({
                   />
                 );
               })}
-            </GlassList>
+            </RowList>
           </View>
         ))
       )}
@@ -227,7 +227,7 @@ export function Lobby({
           {venueHasSpots ? (
             <SpotHeading spotId={group.spotId} spotName={group.spotName} mine={group.mine} />
           ) : null}
-          <GlassList>
+          <RowList>
             {group.rooms.map((table) => {
               const actions = lobbyActions(state, myPhones, table.phones);
               const busy = request.isPending && request.variables?.table.roomId === table.roomId;
@@ -255,7 +255,7 @@ export function Lobby({
                 />
               );
             })}
-          </GlassList>
+          </RowList>
         </View>
       ))}
 
@@ -273,7 +273,8 @@ function SectionHead({ title, count }: { title: string; count: number }) {
 }
 
 // A table in the lobby (docs/design/aura → Mekan: `.li`): its picture, name, headcount as pips and
-// the request's note or the tags; its action at the right. No person's name.
+// the request's note or the tags; its action at the right. No person's name. A thin row of the one
+// list kind (RowList; the owner's call, 30 Ekim).
 function LobbyRow({
   table,
   note,
@@ -286,7 +287,11 @@ function LobbyRow({
   const intent = isIntent(table.intent) ? table.intent : null;
   return (
     <Li testID={`lobby-row-${table.name}`}>
-      <Thumb source={table.icon ? TABLE_ICON_IMAGES[table.icon] : undefined} />
+      <Thumb
+        source={table.icon ? TABLE_ICON_IMAGES[table.icon] : undefined}
+        size={KIT.size.av.row}
+        radius={ROW_THUMB_RADIUS}
+      />
       <View style={{ flex: 1, gap: ROW_GAP }}>
         <T v="h3">{table.name}</T>
         <View
@@ -314,7 +319,8 @@ function LobbyRow({
     </Li>
   );
 }
-const ROW_GAP = 5;
+const ROW_GAP = 3;
+const ROW_THUMB_RADIUS = 14;
 
 // The pending request in the action's place: the meeting capsules on a raised capsule.
 function WaitingSlot() {
