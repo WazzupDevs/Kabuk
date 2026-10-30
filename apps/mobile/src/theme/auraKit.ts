@@ -271,7 +271,8 @@ export const KIT = {
     tagPadX: 9,
     tagGap: 4,
     round: 44,
-    av: { sm: 32, md: 44, row: 52, lg: 64, xl: 96, big: 104 },
+    // A list row's picture: 48 (the owner's call, 30 Ekim: the rows were too thick at 52).
+    av: { sm: 32, md: 44, row: 48, lg: 64, xl: 96, big: 104 },
     stackOverlap: 10,
     faceCard: 196,
     avRing: 2,
@@ -282,7 +283,8 @@ export const KIT = {
     badgePadX: 6,
     dot: 8,
     dotRing: 4,
-    liPadY: 12,
+    // Telegram Android's thin rows (the owner's call, 30 Ekim): 48 picture, 9 above and under.
+    liPadY: 9,
     liPadX: 16,
     liGap: 12,
     listPadY: 4,

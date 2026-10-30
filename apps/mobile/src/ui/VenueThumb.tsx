@@ -14,18 +14,20 @@ const PICTURE: Record<V46ThumbKind, ImageSourcePropType> = {
   kampus: require('../../assets/venue/kampus.webp'),
 };
 
-export function VenueThumb({ kind }: { kind: V46ThumbKind }) {
+// `size`: a list row's (Keşfet's thin rows); the radius keeps v46's share of the side.
+export function VenueThumb({ kind, size }: { kind: V46ThumbKind; size?: number }) {
   const { scheme } = useTheme();
   const t = V46_EXPLORE[scheme].row.thumb;
+  const w = size ?? t.size[0];
+  const h = size ?? t.size[1];
+  const radius = size ? (t.radius * size) / t.size[0] : t.radius;
   return (
-    <View
-      style={{ width: t.size[0], height: t.size[1], borderRadius: t.radius, overflow: 'hidden' }}
-    >
+    <View style={{ width: w, height: h, borderRadius: radius, overflow: 'hidden' }}>
       <Image
         source={PICTURE[kind]}
         fadeDuration={0}
         accessible={false}
-        style={{ width: t.size[0], height: t.size[1] }}
+        style={{ width: w, height: h }}
       />
     </View>
   );

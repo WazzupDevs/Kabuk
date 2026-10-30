@@ -2,25 +2,29 @@ import { inboxStamp } from '@shared/dmInbox.ts';
 import type { DmInboxThread } from '@shared/api/friends.ts';
 import { useQueryClient } from '@tanstack/react-query';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Animated, Pressable, View } from 'react-native';
 
 import { Gathering, SceneGround } from '@/aura/Scene';
 import { CapIcon } from '@/aura/CapIcon';
-import { Av, Badge, GlassList, Li, Seg, T, useKit } from '@/aura/kit';
+import { Av, Badge, Li, RowList, Seg, T, useKit, usePress } from '@/aura/kit';
 import { DeliveryTicks } from '@/components/ChatBubble';
 import { EmptyState } from '@/components/EmptyState';
+import { shadowParts } from '@/components/NativeShadow';
 import { useLoaderHold } from '@/components/Loader';
 import { Rise } from '@/components/motion';
 import { Screen } from '@/components/Screen';
+import { Sheet } from '@/components/Sheet';
+import { useTabBarSpace } from '@/components/TabBar';
 import { TypingDots } from '@/components/TypingDots';
 import { openDm } from '@/features/friends/openDm';
 import { useSessionStore } from '@/features/auth/session';
-import { restoreDm, useDmInbox, useRequestCount } from '@/features/friends/queries';
+import { restoreDm, useDmInbox, useFriends, useRequestCount } from '@/features/friends/queries';
 import { RequestList } from '@/features/friends/RequestList';
 import { useDmTyping } from '@/features/friends/useDmTyping';
 import { NotificationsBell } from '@/features/notifications/Bell';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
+import { useLabOff } from '@/lib/drawLab';
 import { useNow } from '@/lib/useNow';
 import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
@@ -33,38 +37,127 @@ type Tab = 'chats' | 'requests';
 // requests waiting for the caller (RequestList). The bell stays where it is until step 4.7.
 export default function MessagesScreen() {
   const [tab, setTab] = useState<Tab>('chats');
+  const [picking, setPicking] = useState(false);
   const requests = useRequestCount();
   const now = useNow(60_000);
 
   return (
-    <Screen edges={['top']} refreshable gap={KIT.size.rowGap}>
-      {/* docs/design/aura → Mesajlar: the title, the bell, the two tabs, the incoming requests'
+    <View style={{ flex: 1 }}>
+      <Screen edges={['top']} refreshable gap={KIT.size.rowGap}>
+        {/* docs/design/aura → Mesajlar: the title, the bell, the two tabs, the incoming requests'
           scene, the conversations in one glass list. */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <T v="display" accessibilityRole="header">
-          {tr.tabs.messages}
-        </T>
-        <NotificationsBell />
-      </View>
-      <Seg<Tab>
-        value={tab}
-        onChange={setTab}
-        accessibilityLabel={tr.messages.tabs}
-        options={[
-          { value: 'chats', label: tr.messages.chatsTab, testID: 'messages-tab-chats' },
-          {
-            value: 'requests',
-            label: tr.messages.requestsTab,
-            badge: requests,
-            testID: 'messages-tab-requests',
-          },
-        ]}
-      />
-      {tab === 'chats' && requests > 0 ? (
-        <IncomingScene count={requests} onPress={() => setTab('requests')} />
-      ) : null}
-      {tab === 'chats' ? <Chats now={new Date(now)} /> : <RequestList now={new Date(now)} />}
-    </Screen>
+        <View
+          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+        >
+          <T v="display" accessibilityRole="header">
+            {tr.tabs.messages}
+          </T>
+          <NotificationsBell />
+        </View>
+        <Seg<Tab>
+          value={tab}
+          onChange={setTab}
+          accessibilityLabel={tr.messages.tabs}
+          options={[
+            { value: 'chats', label: tr.messages.chatsTab, testID: 'messages-tab-chats' },
+            {
+              value: 'requests',
+              label: tr.messages.requestsTab,
+              badge: requests,
+              testID: 'messages-tab-requests',
+            },
+          ]}
+        />
+        {tab === 'chats' && requests > 0 ? (
+          <IncomingScene count={requests} onPress={() => setTab('requests')} />
+        ) : null}
+        {tab === 'chats' ? <Chats now={new Date(now)} /> : <RequestList now={new Date(now)} />}
+      </Screen>
+      {/* A new message, as Telegram Android's pencil (the owner's call, 30 Ekim): a friend to
+          write to. */}
+      {tab === 'chats' ? <NewMessageButton onPress={() => setPicking(true)} /> : null}
+      <FriendPicker visible={picking} onClose={() => setPicking(false)} />
+    </View>
+  );
+}
+
+// The round "+" at the bottom right, over the list and above the tab bar.
+function NewMessageButton({ onPress }: { onPress: () => void }) {
+  const barSpace = useTabBarSpace();
+  const press = usePress();
+  const { c } = useKit();
+  const shadow = shadowParts(
+    useLabOff('golge'),
+    KIT.primaryShadow,
+    c.primaryInset,
+    KIT.size.btn / 2,
+  );
+  return (
+    <Pressable
+      testID="messages-new"
+      accessibilityRole="button"
+      accessibilityLabel={tr.messages.newMessage}
+      onPress={onPress}
+      onPressIn={press.onPressIn}
+      onPressOut={press.onPressOut}
+      style={{ position: 'absolute', right: KIT.size.side, bottom: barSpace }}
+    >
+      <Animated.View
+        style={{
+          width: KIT.size.btn,
+          height: KIT.size.btn,
+          borderRadius: KIT.size.btn / 2,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: KIT.primary,
+          boxShadow: shadow.boxShadow,
+          transform: [{ scale: press.scale }],
+        }}
+      >
+        {shadow.node}
+        <CapIcon name="plus" color={KIT.onPrimary} />
+      </Animated.View>
+    </Pressable>
+  );
+}
+
+// "Yeni mesaj": the friends to write to, as a list; a row opens the conversation.
+function FriendPicker({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+  const friends = useFriends();
+  const list = friends.data ?? [];
+  return (
+    <Sheet visible={visible} onClose={onClose} title={tr.messages.newMessage}>
+      {list.length === 0 ? (
+        <T v="fine">{friends.isPending ? tr.common.loading : tr.messages.emptyHint}</T>
+      ) : (
+        <RowList>
+          {list.map((f) => {
+            const name = f.displayName ?? tr.profile.noName;
+            const threadId = f.threadId;
+            return (
+              <Li
+                key={f.publicId}
+                testID={`new-message-${name}`}
+                accessibilityLabel={name}
+                onPress={
+                  threadId
+                    ? () => {
+                        onClose();
+                        openDm({ threadId, publicId: f.publicId, name: f.displayName });
+                      }
+                    : undefined
+                }
+              >
+                <Av size="row" name={name} photoUrl={f.photoUrl} />
+                <T v="h3" style={{ flex: 1 }}>
+                  {name}
+                </T>
+              </Li>
+            );
+          })}
+        </RowList>
+      )}
+    </Sheet>
   );
 }
 
@@ -113,13 +206,16 @@ function Chats({ now }: { now: Date }) {
     );
   }
   return (
-    <GlassList>
-      {inbox.data.map((t, i) => (
-        <Rise key={t.publicId} index={i}>
-          <InboxRow thread={t} now={now} listen={i < TYPING_ROWS} />
-        </Rise>
-      ))}
-    </GlassList>
+    <View style={{ paddingBottom: KIT.size.btn }}>
+      {/* The room under the last row for the "+" over it. */}
+      <RowList>
+        {inbox.data.map((t, i) => (
+          <Rise key={t.publicId} index={i}>
+            <InboxRow thread={t} now={now} listen={i < TYPING_ROWS} />
+          </Rise>
+        ))}
+      </RowList>
+    </View>
   );
 }
 
@@ -160,7 +256,13 @@ function InboxRow({
             {name}
           </T>
           {t.lastMessageAt ? (
-            <T v="stamp">{tr.messages.stamp(t.lastMessageAt, inboxStamp(t.lastMessageAt, now))}</T>
+            // The own last message's ticks by the time (Telegram Android).
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.tagGap }}>
+              {t.lastFromMe && t.lastStatus ? <DeliveryTicks delivery={t.lastStatus} /> : null}
+              <T v="stamp">
+                {tr.messages.stamp(t.lastMessageAt, inboxStamp(t.lastMessageAt, now))}
+              </T>
+            </View>
           ) : null}
         </View>
         <View style={BETWEEN}>
@@ -189,11 +291,10 @@ const BETWEEN = {
   gap: KIT.size.chipsGap,
 };
 
-// The last message: the ticks on the own one; ink while unread.
+// The last message, ink while unread (its ticks are by the time).
 function Preview({ thread: t, unread }: { thread: DmInboxThread; unread: boolean }) {
   return (
     <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: KIT.size.tagGap }}>
-      {t.lastFromMe && t.lastStatus ? <DeliveryTicks delivery={t.lastStatus} /> : null}
       <T v="fine" ink={unread} strong={unread} lines={1} style={{ flex: 1 }}>
         {t.lastBody ?? tr.messages.noMessage}
       </T>

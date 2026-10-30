@@ -311,6 +311,8 @@ export const tr = {
   messages: {
     empty: 'Henüz mesajın yok.',
     emptyHint: 'Arkadaş olduğun kişilerle burada yazışırsın.',
+    // The "+" and its list of friends (the owner's call, 30 Ekim).
+    newMessage: 'Yeni mesaj',
     noMessage: 'Henüz mesaj yok',
     // With the dots beside it (v45).
     typing: 'yazıyor',
@@ -377,12 +379,14 @@ export const tr = {
     game: (concept: HistoryConcept) => HISTORY_CONCEPTS[concept],
     // A person, not a table (the people's table, docs/SPEC_V4.md §4.E; the owner's report, 30 Ekim).
     withTable: (alias: string) => `${alias} ile`,
+    // One game with several people, one row (the owner's call, 30 Ekim).
+    withPeople: (n: number) => `${n} kişiyle`,
     results: { won: 'Kazandın', lost: 'Kaybettin', done: 'Bitti' } satisfies Record<
       HistoryResult,
       string
     >,
-    rowLabel: (game: string, alias: string, when: string, result: string | null) =>
-      [game, `${alias} ile`, when, result].filter(Boolean).join(', '),
+    rowLabel: (game: string, withWhom: string, when: string, result: string | null) =>
+      [game, withWhom, when, result].filter(Boolean).join(', '),
     tabu: {
       body: 'Masalar takım olur: anlatan masa kartı anlatır, diğer masa yasaklı kelimeleri dinler.',
       steps: [

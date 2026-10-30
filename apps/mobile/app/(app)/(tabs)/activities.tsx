@@ -1,11 +1,11 @@
-import { groupHistory, historyDay, historyResult } from '@shared/activities.ts';
+import { groupHistory, historyDay, historyResult, historySessions } from '@shared/activities.ts';
 import { explorePlace, todayEvents } from '@shared/explore.ts';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Image, Pressable, useWindowDimensions, View } from 'react-native';
+import { Image, useWindowDimensions, View } from 'react-native';
 
+import { Li, RowList } from '@/aura/kit';
 import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
 import { EmptyState } from '@/components/EmptyState';
 import { GameDisc } from '@/components/Glyph';
 import { Icon } from '@/components/Icon';
@@ -27,14 +27,14 @@ import { GAME_GLYPH } from '@/features/games/GameCard';
 import { errorMessage } from '@/i18n/errors';
 import { type HistoryConcept, historyConcept, tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
-import { rowPress } from '@/theme/rowPress';
 import { useTheme } from '@/theme/ThemeProvider';
+import { KIT } from '@/theme/auraKit';
 import { NARROW_SCREEN, SPACING } from '@/theme/tokens';
 
 type Tab = 'events' | 'history';
 
 // v44: .hthumb, a record's picture.
-const THUMB = SPACING[12] + SPACING[1];
+const THUMB = KIT.size.av.row;
 
 // Aktiviteler (docs/SPEC_V4.md §4.C, K-15; v44: .acts): "Aktiviteler" lists today's events at the
 // venues of Keşfet's city (K-38; the district is Keşfet's alone), earliest first, each opening the
@@ -183,68 +183,73 @@ function History({ now }: { now: number }) {
     );
   }
 
-  const record = history.data.find((h) => h.id === open) ?? null;
+  // One row a game (the owner's report, 30 Ekim): the records of one table and game in a day
+  // make one session, its people opened by a press (@shared/activities.ts → historySessions).
+  const groups = groupHistory(history.data, today).map((group) => ({
+    day: group.day,
+    sessions: historySessions(group.rows),
+  }));
+  const session = groups.flatMap((g) => g.sessions).find((x) => x.key === open) ?? null;
   return (
     <View className="mt-3">
-      <Card flush>
-        <View style={{ paddingTop: SPACING[1], paddingBottom: SPACING[2] }}>
-          {groupHistory(history.data, today).map((group) => (
-            <View key={group.day}>
-              <View
-                style={{
-                  paddingHorizontal: SPACING[4],
-                  paddingTop: SPACING[3],
-                  paddingBottom: SPACING[1],
-                }}
-              >
-                <Text variant="label" tone="muted" accessibilityRole="header">
-                  {tr.activities.days[group.day]}
-                </Text>
-              </View>
-              {group.rows.map((h, i) => {
-                const result = historyResult(h, results.data ?? []);
-                return (
-                  <Rise key={h.id} index={i}>
-                    <HistoryRow
-                      concept={historyConcept(h.concept)}
-                      alias={h.other_alias}
-                      when={tr.activities.when(h.played_at, historyDay(h.played_at, today))}
-                      result={result ? tr.activities.results[result] : null}
-                      variant={result ?? undefined}
-                      onPress={() => setOpen(h.id)}
-                    />
-                  </Rise>
-                );
-              })}
-            </View>
-          ))}
+      {groups.map((group) => (
+        <View key={group.day}>
+          <View style={{ paddingTop: SPACING[3], paddingBottom: SPACING[1] }}>
+            <Text variant="label" tone="muted" accessibilityRole="header">
+              {tr.activities.days[group.day]}
+            </Text>
+          </View>
+          <RowList>
+            {group.sessions.map((x, i) => {
+              const h = x.first;
+              const result = historyResult(h, results.data ?? []);
+              return (
+                <Rise key={x.key} index={i}>
+                  <HistoryRow
+                    concept={historyConcept(h.concept)}
+                    alias={h.other_alias}
+                    people={x.people.length}
+                    when={tr.activities.when(h.played_at, historyDay(h.played_at, today))}
+                    result={result ? tr.activities.results[result] : null}
+                    variant={result ?? undefined}
+                    onPress={() => setOpen(x.key)}
+                  />
+                </Rise>
+              );
+            })}
+          </RowList>
         </View>
-      </Card>
+      ))}
 
       <Sheet
-        visible={record !== null}
+        visible={session !== null}
         onClose={() => setOpen(null)}
-        // skall tuvali (AktivitelerGecmisKayit): the person, then the game and the time.
-        title={record ? record.other_alias : ''}
+        // The game and the time, then each person at that table with what can be done.
+        title={session ? tr.activities.game(historyConcept(session.first.concept)) : ''}
       >
-        {record ? (
-          <View>
+        {session ? (
+          <View style={{ gap: SPACING[3] }}>
             <Text variant="fine">
-              {tr.activities.sheetLine(
-                tr.activities.game(historyConcept(record.concept)),
-                tr.activities.when(record.played_at, historyDay(record.played_at, today)),
+              {tr.activities.when(
+                session.first.played_at,
+                historyDay(session.first.played_at, today),
               )}
             </Text>
-            <HistoryActions
-              record={record}
-              friend={friends.data?.get(record.id)}
-              act={act}
-              narrow={narrow}
-              onMore={() => {
-                setOpen(null);
-                openMenu(record.id);
-              }}
-            />
+            {session.people.map((record) => (
+              <View key={record.id} style={{ gap: SPACING[1] }}>
+                <Text variant="heading">{record.other_alias}</Text>
+                <HistoryActions
+                  record={record}
+                  friend={friends.data?.get(record.id)}
+                  act={act}
+                  narrow={narrow}
+                  onMore={() => {
+                    setOpen(null);
+                    openMenu(record.id);
+                  }}
+                />
+              </View>
+            ))}
             {act.isError ? (
               <Text variant="fine" tone="danger" className="mt-2">
                 {errorMessage(act.error)}
@@ -265,10 +270,11 @@ function History({ now }: { now: number }) {
   );
 }
 
-// A record (v44: .hrow): the game's picture, its name and the time, the other table and the result.
+// A game (v44: .hrow, as a thin row): its picture, its name and the time, with whom and the result.
 function HistoryRow({
   concept,
   alias,
+  people,
   when,
   result,
   variant,
@@ -276,57 +282,47 @@ function HistoryRow({
 }: {
   concept: HistoryConcept;
   alias: string;
+  people: number;
   when: string;
   result: string | null;
   variant: 'won' | 'lost' | 'done' | undefined;
   onPress: () => void;
 }) {
-  const theme = useTheme();
   const game = tr.activities.game(concept);
+  const with_ = people > 1 ? tr.activities.withPeople(people) : tr.activities.withTable(alias);
   return (
-    <Pressable
+    <Li
       testID={`history-row-${alias}`}
-      accessibilityRole="button"
-      accessibilityLabel={tr.activities.rowLabel(game, alias, when, result)}
+      accessibilityLabel={tr.activities.rowLabel(game, with_, when, result)}
       onPress={onPress}
     >
-      {({ pressed }) => (
-        <View
-          className="flex-row items-center"
-          style={{
-            gap: SPACING[3] + SPACING[0.5],
-            minHeight: SPACING[16] + SPACING[2],
-            paddingVertical: SPACING[3],
-            ...rowPress(theme, pressed),
-          }}
-        >
-          <Thumb concept={concept} />
-          <View className="flex-1" style={{ gap: SPACING[0.5] }}>
-            <View className="flex-row items-baseline justify-between" style={{ gap: SPACING[2] }}>
-              <Text variant="heading" className="shrink">
-                {game}
-              </Text>
-              <Text variant="fine" tone="muted">
-                {when}
-              </Text>
-            </View>
-            <View
-              className="flex-row flex-wrap items-center justify-between"
-              style={{ gap: SPACING[2] }}
-            >
-              <Text variant="fine" tone="muted" className="shrink">
-                {tr.activities.withTable(alias)}
-              </Text>
-              {result && variant ? <Tag variant={variant} label={result} /> : null}
-            </View>
-          </View>
+      <Thumb concept={concept} />
+      <View style={{ flex: 1, gap: SPACING[0.5] }}>
+        <View className="flex-row items-baseline justify-between" style={{ gap: SPACING[2] }}>
+          <Text variant="heading" className="shrink">
+            {game}
+          </Text>
+          <Text variant="fine" tone="muted">
+            {when}
+          </Text>
         </View>
-      )}
-    </Pressable>
+        <View
+          className="flex-row flex-wrap items-center justify-between"
+          style={{ gap: SPACING[2] }}
+        >
+          <Text variant="fine" tone="muted" className="shrink">
+            {with_}
+          </Text>
+          {result && variant ? <Tag variant={variant} label={result} /> : null}
+        </View>
+      </View>
+    </Li>
   );
 }
 
-const VAMPIR_THUMB = require('../../../assets/game-card/vampir.webp');
+// The game's picture without its title (the poster's words did not read this small, the owner's
+// report, 30 Ekim).
+const VAMPIR_THUMB = require('../../../assets/game-thumb/vampir.webp');
 
 // The game's disc; a chat without a game has the speech bubbles.
 function Thumb({ concept }: { concept: HistoryConcept }) {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { groupHistory, historyDay, historyResult } from './activities.ts';
+import { groupHistory, historyDay, historyResult, historySessions } from './activities.ts';
 
 // Local times: the groups follow the phone's calendar day, like Mesajlar's stamps.
 const now = new Date(2026, 9, 19, 14, 30);
@@ -75,5 +75,30 @@ describe('historyResult', () => {
   it('is "done" for Sohbet kartları, which has no winner, and nothing for a chat', () => {
     expect(historyResult({ room_id: 'r1', concept: 'sohbet' }, results)).toBe('done');
     expect(historyResult({ room_id: 'r1', concept: 'chat' }, results)).toBeNull();
+  });
+});
+
+describe('historySessions', () => {
+  const rec = (id: string, room: string | null, concept = 'vampir') => ({
+    id,
+    room_id: room,
+    concept,
+  });
+
+  it('makes one row of a table and game, its people in order', () => {
+    const rows = [rec('a', 'r1'), rec('b', 'r1'), rec('c', 'r2'), rec('d', 'r1')];
+    const sessions = historySessions(rows);
+    expect(sessions.map((s) => s.people.map((p) => p.id))).toEqual([['a', 'b', 'd'], ['c']]);
+    expect(sessions[0]?.first.id).toBe('a');
+  });
+
+  it('keeps two games of the same table apart, and records without a table alone', () => {
+    const rows = [rec('a', 'r1', 'vampir'), rec('b', 'r1', 'chat'), rec('c', null), rec('d', null)];
+    expect(historySessions(rows).map((s) => s.people.map((p) => p.id))).toEqual([
+      ['a'],
+      ['b'],
+      ['c'],
+      ['d'],
+    ]);
   });
 });
