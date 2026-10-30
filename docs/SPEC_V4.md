@@ -1122,7 +1122,7 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 
 - 4.0–4.7 birleşmiş; aura ekranları ve koyu tema uygulanmış;
 - saha testi yapılmış (31 Ekim);
-- pilot oyunları (Kapsül Anlat, Sahtekar, Vampir Köylü) aura tuvaline göre gözden geçirilmiş; şu anki iş Vampir Köylü (proje sahibinin kararı, 31 Ekim): önce tuvale çizilir, sonra ekranlarındaki hatalar, eksikler ve fazlalıklar düzeltilir;
+- pilot oyunlarının (Kapsül Anlat, Sahtekar, Vampir Köylü) arayüzü aura tuvaline göre gözden geçirilmiş; bu revizyonu ayrı bir tasarım oturumu yapar (proje sahibinin kararı, 31 Ekim);
 - 4.8 birleşmiş ve saha testinin bulguları kapatılmış;
 - "Kapsül Anlat" için hukuki kontrol;
 - mağaza metinleri, görüntüler ve Veri güvenliği formu;
