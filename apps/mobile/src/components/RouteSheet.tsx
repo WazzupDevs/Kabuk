@@ -27,7 +27,6 @@ import { EASE_OUT } from '@/theme/markMotion';
 
 import { Quiet } from './Quiet';
 import { SheetCard } from './SheetCard';
-import { useSheetDrag } from './sheetDrag';
 
 // A route drawn as a bottom sheet over the screen it opened from (skall tuvali: Ayarlar,
 // Bildirimler, mekana giriş and "Neredesin?" are sheets; the owner's decision, 27 Ekim). The route
@@ -87,9 +86,6 @@ export function RouteSheet({
     });
   }, [progress, reduce]);
 
-  // Pulled down, it closes (useSheetDrag).
-  const drag = useSheetDrag(close);
-
   useFocusEffect(
     useCallback(() => {
       const sub = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -117,24 +113,25 @@ export function RouteSheet({
           <Animated.View
             testID={testID}
             accessibilityViewIsModal
-            // docs/design/aura (`.sheet`): a frosted card floating 10 from the edges, 36 round.
+            // docs/design/aura (`.sheet`), down to the screen's foot as Telegram Android's sheets
+            // (the owner's call, 30 Ekim). Pulled down, it closes (SheetCard).
             style={{
-              marginHorizontal: KIT.size.sheetInset,
-              marginBottom: KIT.size.sheetInset + insets.bottom,
               maxHeight: '90%',
               transform: [
                 {
-                  translateY: Animated.add(
-                    progress.interpolate({ inputRange: [0, 1], outputRange: [height, 0] }),
-                    drag.offset,
-                  ),
+                  translateY: progress.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [height, 0],
+                  }),
                 },
               ],
             }}
-            {...drag.handlers}
           >
-            {peek ? <Peek kind={peek} /> : null}
-            <SheetCard onScroll={drag.onScroll}>
+            <SheetCard
+              onClose={close}
+              bottomInset={insets.bottom}
+              above={peek ? <Peek kind={peek} /> : null}
+            >
               <InSheet>
                 <Quiet value>
                   {title ? (
