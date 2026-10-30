@@ -502,6 +502,8 @@ export const tr = {
     empty: 'Şu an listede mekan yok.',
     viewSwitch: 'Görünüm',
     mapLabel: 'Mekan haritası. Bir mekana dokununca altta kartı açılır.',
+    // Venues at one address, one disc on the map (the owner's report, 30 Ekim).
+    stackTitle: (n: number) => `Burada ${n} mekan`,
     goToVenue: 'Mekana git',
     notFound: 'Bu mekan artık listede değil.',
     back: 'Geri dön',

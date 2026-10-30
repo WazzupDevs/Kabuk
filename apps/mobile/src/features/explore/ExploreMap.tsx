@@ -18,8 +18,9 @@ import {
 import { router } from 'expo-router';
 import { describeEventTime } from '@shared/explore.ts';
 import { useMemo, useRef, useState } from 'react';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
+import { AppIcon } from '@/components/AppIcon';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { TYPE_PIN_IMAGES } from '@/components/Glyph';
@@ -27,7 +28,7 @@ import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
 import { useTheme } from '@/theme/ThemeProvider';
-import { MAP_FONTS, MAP_PIN, SPACING } from '@/theme/tokens';
+import { ICON, MAP_FONTS, MAP_PIN, OPACITY, SPACING } from '@/theme/tokens';
 import { venueType } from '@/lib/venueType';
 
 import { useMapStyle } from './mapStyle';
@@ -46,8 +47,12 @@ type SymbolLayer = Extract<LayerProps, { type: 'symbol' }>;
 type CircleLayer = Extract<LayerProps, { type: 'circle' }>;
 type Filter = NonNullable<SymbolLayer['filter']>;
 
-const IS_CLUSTER: Filter = ['has', 'point_count'];
-const IS_VENUE: Filter = ['!', ['has', 'point_count']];
+// A cluster of venues, or a stack (venues at one address; @shared/exploreMap.ts → STACK_M): drawn
+// alike, a count in a disc. A venue is neither.
+const IS_CLUSTER: Filter = ['any', ['has', 'point_count'], ['has', 'stack']];
+const IS_VENUE: Filter = ['all', ['!', ['has', 'point_count']], ['!', ['has', 'stack']]];
+// How many venues a disc stands for (`['coalesce', ['get', 'venues'], ['get', 'count']]` below):
+// a cluster adds up its points' counts, a stack counts all its venues.
 
 // The venue's kind inside its white disc, in the capsule family's colours (the owner's call, 27
 // Ekim), picked by the feature's `kind` ('cafe' | 'campus').
@@ -88,8 +93,8 @@ export function ExploreMap({
   const [ready, setReady] = useState(false);
 
   const now = useNow(60_000);
-  const data = useMemo(() => {
-    const collection = venueCollection(
+  const { data, stacks } = useMemo(() => {
+    const { stacks: byStack, ...collection } = venueCollection(
       venues.map((v) => ({
         id: v.id,
         name: v.name,
@@ -113,13 +118,21 @@ export function ExploreMap({
       venues.map((v) => [v.id, venueType(v)]),
     );
     return {
-      ...collection,
-      features: collection.features.map((f) => ({
-        ...f,
-        properties: { ...f.properties, status: status[f.id] ?? '', type: types[f.id] ?? 'kafe' },
-      })),
+      stacks: byStack,
+      data: {
+        ...collection,
+        features: collection.features.map((f) => ({
+          ...f,
+          properties: { ...f.properties, status: status[f.id] ?? '', type: types[f.id] ?? 'kafe' },
+        })),
+      },
     };
   }, [venues, now]);
+  // A tapped stack: its venues listed at the bottom.
+  const [stack, setStack] = useState<string | null>(null);
+  const stackVenues = stack
+    ? (stacks[stack] ?? []).flatMap((id) => venues.find((v) => v.id === id) ?? [])
+    : [];
   // The opening view only: later data refreshes do not move the map under the user's finger. It
   // is the first set with a venue in it: a search that matched nothing kept the map blank for
   // good (audit VEN-8).
@@ -191,6 +204,12 @@ export function ExploreMap({
       return;
     }
     const id = typeof props?.id === 'string' ? props.id : null;
+    if (id && stacks[id]) {
+      setSelected(null);
+      setStack(id);
+      return;
+    }
+    setStack(null);
     if (id) setSelected(id);
   }
 
@@ -213,7 +232,10 @@ export function ExploreMap({
         attributionPosition={{ bottom: tabBarHeight + SPACING[2], right: SPACING[4] }}
         tintColor={colors.muted}
         accessibilityLabel={tr.explore.mapLabel}
-        onPress={() => setSelected(null)}
+        onPress={() => {
+          setSelected(null);
+          setStack(null);
+        }}
         onDidFinishRenderingMapFully={() => setReady(true)}
       >
         <Camera ref={camera} initialViewState={{ bounds: opening, padding }} />
@@ -224,6 +246,7 @@ export function ExploreMap({
           data={data as GeoJSON.FeatureCollection}
           cluster
           clusterMaxZoom={MAP_ZOOM.clusterMax}
+          clusterProperties={{ venues: ['+', ['get', 'count']] }}
           onPress={(event) => {
             event.stopPropagation();
             void onFeature(event.nativeEvent.features[0] as PressedFeature | undefined);
@@ -237,7 +260,7 @@ export function ExploreMap({
               'circle-color': colors.accent,
               'circle-radius': [
                 'step',
-                ['get', 'point_count'],
+                ['coalesce', ['get', 'venues'], ['get', 'count']],
                 MAP_PIN.clusterRadius[0],
                 MAP_PIN.clusterSteps[0],
                 MAP_PIN.clusterRadius[1],
@@ -253,7 +276,7 @@ export function ExploreMap({
             type="symbol"
             filter={IS_CLUSTER}
             layout={{
-              'text-field': ['get', 'point_count_abbreviated'],
+              'text-field': ['to-string', ['coalesce', ['get', 'venues'], ['get', 'count']]],
               'text-font': [...MAP_FONTS.bold],
               'text-size': MAP_PIN.countSize,
               'text-allow-overlap': true,
@@ -263,7 +286,12 @@ export function ExploreMap({
           <Layer
             id="venue-shadow"
             type="circle"
-            filter={['all', ['!', ['has', 'point_count']], ['==', ['get', 'id'], id]]}
+            filter={[
+              'all',
+              ['!', ['has', 'point_count']],
+              ['!', ['has', 'stack']],
+              ['==', ['get', 'id'], id],
+            ]}
             paint={{
               'circle-color': colors.border,
               'circle-radius': MAP_PIN.selectedRadius + outer,
@@ -273,7 +301,12 @@ export function ExploreMap({
           <Layer
             id="venue-halo"
             type="circle"
-            filter={['all', ['!', ['has', 'point_count']], ['!=', ['get', 'bucket'], 'calm']]}
+            filter={[
+              'all',
+              ['!', ['has', 'point_count']],
+              ['!', ['has', 'stack']],
+              ['!=', ['get', 'bucket'], 'calm'],
+            ]}
             paint={{
               'circle-color': live,
               'circle-opacity': MAP_PIN.haloOpacity,
@@ -346,7 +379,12 @@ export function ExploreMap({
           <Layer
             id="venue-events"
             type="circle"
-            filter={['all', ['!', ['has', 'point_count']], ['to-boolean', ['get', 'event']]]}
+            filter={[
+              'all',
+              ['!', ['has', 'point_count']],
+              ['!', ['has', 'stack']],
+              ['to-boolean', ['get', 'event']],
+            ]}
             paint={{
               'circle-color': colors.event,
               'circle-radius': MAP_PIN.eventDot,
@@ -366,13 +404,19 @@ export function ExploreMap({
           <Layer
             id="venue-label-selected"
             type="symbol"
-            filter={['all', ['!', ['has', 'point_count']], ['==', ['get', 'id'], selected ?? '']]}
+            filter={[
+              'all',
+              ['!', ['has', 'point_count']],
+              ['!', ['has', 'stack']],
+              ['==', ['get', 'id'], selected ?? ''],
+            ]}
             layout={{ ...label.layout, 'text-allow-overlap': true }}
             paint={label.paint}
           />
         </GeoJSONSource>
       </Map>
       {card ? <VenueCard venue={card} bottom={tabBarHeight} /> : null}
+      {stackVenues.length > 1 ? <StackCard venues={stackVenues} bottom={tabBarHeight} /> : null}
     </View>
   );
 }
@@ -397,6 +441,50 @@ function VenueCard({ venue, bottom }: { venue: ExploreVenue; bottom: number }) {
               router.push({ pathname: '/explore/[venueId]', params: { venueId: venue.id } })
             }
           />
+        </View>
+      </Card>
+    </View>
+  );
+}
+
+// A stack's venues (one address, one disc on the map): each a row to its page.
+function StackCard({ venues, bottom }: { venues: readonly ExploreVenue[]; bottom: number }) {
+  const { colors } = useTheme();
+  return (
+    <View className="absolute inset-x-0" style={{ bottom, paddingHorizontal: SPACING[4] }}>
+      <Card testID="explore-map-stack">
+        <Text variant="title">{tr.explore.stackTitle(venues.length)}</Text>
+        <View className="mt-2">
+          {venues.map((venue) => (
+            <Pressable
+              key={venue.id}
+              accessibilityRole="button"
+              accessibilityLabel={venue.name}
+              onPress={() =>
+                router.push({ pathname: '/explore/[venueId]', params: { venueId: venue.id } })
+              }
+            >
+              {({ pressed }) => (
+                <View
+                  className="flex-row items-center"
+                  style={{
+                    gap: SPACING[3],
+                    minHeight: SPACING[12],
+                    opacity: pressed ? OPACITY.pressed : 1,
+                  }}
+                >
+                  <View className="flex-1" style={{ gap: SPACING[1] }}>
+                    <Text variant="label">{venue.name}</Text>
+                    <View className="flex-row flex-wrap gap-1.5">
+                      <BucketBadge bucket={venue.bucket} />
+                      {venue.event ? <EventTag event={venue.event} /> : null}
+                    </View>
+                  </View>
+                  <AppIcon name="chevron-forward" size={ICON.md} color={colors.muted} />
+                </View>
+              )}
+            </Pressable>
+          ))}
         </View>
       </Card>
     </View>
