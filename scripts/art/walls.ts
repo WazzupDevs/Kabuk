@@ -170,11 +170,9 @@ function rgb(hex: string): Rgb {
 
 // The four-colour gradient at a point (fractions): each colour weighs by how near its point is,
 // falling off steeply, with a slight turn round the middle so the blend curves.
-function gradientAt(
-  colors: [number, number, number][],
-  u: number,
-  v: number,
-): [number, number, number] {
+type Rgb = [number, number, number];
+
+function gradientAt(colors: readonly Rgb[], u: number, v: number): Rgb {
   const cu = u - 0.5;
   const cv = v - 0.5;
   const turn = 0.9 * Math.hypot(cu, cv) ** 2;
