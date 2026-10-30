@@ -1088,7 +1088,7 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 | 4.5 Masa modeli                | `…_table_model.sql`; `checkin`, `rooms`                         | Check-in'siz masa, masa simgesi (K-45), çoklu masa, kişi bazlı katılım, oylama, oyun öncesi sayfa, takım ve gözlemci; eski oyunlar "Yakında"                                                                                | `db push` + deploy; **hemen ardından** OTA                           | 4.4                                |
 | 4.6.1–4.6.5 Oyunlar            | Oyun başına migration ve fonksiyon                              | Oyun başına v43 ekranları                                                                                                                                                                                                   | Oyun başına PR; `db push` + deploy; OTA                              | 4.5 ve 4.1                         |
 | 4.7 Bildirim ve davet          | `…_invites.sql`; `rooms`, `friends`, `account`                  | Zil, liste, davet gönderme ve katılma, push                                                                                                                                                                                 | Önce yasal metin ve Veri güvenliği; `db push` + deploy; OTA          | 4.5                                |
-| Saha testi                     | —                                                               | Önce `docs/FIELD_TEST.md`'nin Faz 4 sürümü (ayrı belge PR'ı); test 6–12 telefonla, dev projesinde, Faz 4'ün tamamı                                                                                                          | —                                                                    | 4.6 ve 4.7                         |
+| Saha testi                     | —                                                               | Yapıldı (proje sahibi, 31 Ekim); `docs/FIELD_TEST.md`'nin Faz 4 sürümü yazılmadı                                                                                                                                            | —                                                                    | 4.6 ve 4.7                         |
 | 4.8 Temizlik                   | 4.8a (fonksiyonlar), 4.8b (`…_v4_cleanup.sql`)                  | Ölü kod; saha testinin düzeltmeleri; mağaza metinleri ve görüntüleri                                                                                                                                                        | `db push` + deploy; OTA                                              | Saha testi                         |
 
 **Sıra ve birleşme.**
@@ -1097,7 +1097,7 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 - **Telefon kontrolü birleşme şartı değildir** (K-8). Birleşme şartı `ci`'ın ve E2E'nin son commit'te 8/8 yeşil olması ve proje sahibinin "onaylandı"sıdır. `e2e` etiketi taslaktan çıkarken eklenir (§4.M). Çalışma öncekinin yayınını beklemeden başlayabilir.
 - **Telefondaki kontrol saha testidir** (K-8). K-7'deki 0.5.0 APK kontrolü olduğu gibi kalır.
   - Zamanı: 4.6 ve 4.7 ikisi de birleştikten sonra. Push ve davet emülatörde sınanamaz ve başka telefon kontrolü olmadığı için saha testi Faz 4'ün tamamını kapsar.
-  - `docs/FIELD_TEST.md`'nin Faz 4 sürümü saha testinden önce ayrı bir belge PR'ıyla yazılır.
+  - Saha testi yapıldı (proje sahibinin bildirimi, 31 Ekim); `docs/FIELD_TEST.md`'nin Faz 4 sürümü yazılmadı.
   - 4.8 saha testinden sonra gelir ve testte çıkan düzeltmeleri de alır.
 - **PR'lar küçük tutulur:** telefonda görünen bir hatayı saha testinde hangi adımın getirdiği bulunabilsin (aşağıda "Maliyet ve risk").
 - İstemci işinde görünüş aura tuvalinden alınır; tuvalin çizmediği davranış ve hareket Telegram Android'den (CLAUDE.md → Kod kuralları).
@@ -1120,8 +1120,9 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 
 **Pilot ön koşulları** (§4.B-12):
 
-- 4.0–4.7 birleşmiş; v46 ekranları ve koyu tema uygulanmış;
-- saha testi (6–12 telefon, `docs/FIELD_TEST.md`'nin Faz 4 sürümüyle) 4.6 ve 4.7'den sonra yapılmış;
+- 4.0–4.7 birleşmiş; aura ekranları ve koyu tema uygulanmış;
+- saha testi yapılmış (31 Ekim);
+- pilot oyunları (Kapsül Anlat, Sahtekar, Vampir Köylü) aura tuvaline göre gözden geçirilmiş; şu anki iş Vampir Köylü (proje sahibinin kararı, 31 Ekim): önce tuvale çizilir, sonra ekranlarındaki hatalar, eksikler ve fazlalıklar düzeltilir;
 - 4.8 birleşmiş ve saha testinin bulguları kapatılmış;
 - "Kapsül Anlat" için hukuki kontrol;
 - mağaza metinleri, görüntüler ve Veri güvenliği formu;
