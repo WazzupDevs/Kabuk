@@ -1,6 +1,6 @@
 // The page script and the in-page callbacks below run in Chromium.
 /// <reference lib="dom" />
-// The design prototype (v46, docs/design/v46/skall-masa-deneme-v46.html) drawn the way the visual
+// A design prototype (states.json → `prototip.dosya`, under docs/design/) drawn the way the visual
 // gate's emulator draws the app (CLAUDE.md → Görsel kapı): 360 × 640 dp at 2×, the app's own font
 // files (appFonts) instead of Google Fonts, Roboto for system-ui as in the app, no network, motion reduced, the clock stopped at the
 // gate's moment and Math.random seeded as in the app (apps/mobile/src/features/design/gorsel/
@@ -15,7 +15,7 @@ import { pathToFileURL } from 'node:url';
 import { chromium, type Page } from 'playwright';
 
 import { GATE_NOW, GATE_SEED } from '../../apps/mobile/src/features/design/gorsel/deterministic.ts';
-import { type PrototypeState, PROTOTYPE_FILE, type Theme } from './states.ts';
+import { type PrototypeState, type Theme } from './states.ts';
 
 // The emulator's screen in the gate's job: 720 × 1280 px at density 320 (run-on-emulator.sh).
 export const VIEWPORT = { width: 360, height: 640 };
@@ -177,7 +177,7 @@ export async function renderPrototype(
   const done: Rendered[] = [];
   try {
     for (const { id, theme, state, width } of wanted) {
-      const documentFile = join(root, state.dosya ?? PROTOTYPE_FILE);
+      const documentFile = join(root, state.dosya);
       const documentUrl = pathToFileURL(documentFile).href;
       const context = await browser.newContext({
         viewport: { ...VIEWPORT, width: state.genislik ?? width ?? VIEWPORT.width },

@@ -30,14 +30,6 @@ export function DesignPicker() {
       <View>
         <Button
           variant="neutral"
-          testID="v46-gallery-open"
-          label={tr.design.galleryOpen}
-          onPress={() => router.push('/v46-gallery')}
-        />
-      </View>
-      <View>
-        <Button
-          variant="neutral"
           testID="draw-lab-open"
           label={tr.design.drawLab.open}
           onPress={() => openDrawLab(true)}

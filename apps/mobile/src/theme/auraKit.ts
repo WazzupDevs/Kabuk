@@ -90,6 +90,10 @@ const SHADOW = {
   disk: '0px 14px 30px rgba(54, 36, 140, 0.22)',
 } as const;
 
+// Keşfet's venue icon: v46's 56 with its 16 round (aura's 60/18 is not used), kept when v46 was
+// removed.
+export const VENUE_THUMB = { size: 56, radius: 16 } as const;
+
 export const KIT = {
   light: {
     ink: '#14112B',

@@ -49,8 +49,8 @@ import { AURA } from '@/theme/aura';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
-import { PullScroll } from '@/ui/PullScroll';
-import { VenueThumb } from '@/ui/VenueThumb';
+import { PullScroll } from '@/components/PullScroll';
+import { VenueThumb } from '@/aura/VenueThumb';
 
 type View_ = 'list' | 'map';
 

@@ -25,7 +25,7 @@ import { AURA } from '@/theme/aura';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { VENUE_FRAME } from '@/theme/venueScene';
-import { Frost, GlassTarget } from '@/ui/LiquidGlass';
+import { Frost, GlassTarget } from '@/components/LiquidGlass';
 import { SPACING } from '@/theme/tokens';
 
 // The buddies come in after the screen's own arrival.

@@ -1,5 +1,5 @@
 // A boxShadow string's outer shadows ("0px 18px 44px rgba(54, 36, 140, 0.10), 0px 2px 6px …") as
-// numbers, for the native shadow (src/ui/NativeShadow.tsx). Null when it holds anything the native
+// numbers, for the native shadow (components/NativeShadow.tsx). Null when it holds anything the native
 // shadow does not draw (an inset shadow, a unit other than px), so the caller keeps boxShadow.
 export type ShadowSpec = { x: number; y: number; blur: number; spread: number; color: string };
 

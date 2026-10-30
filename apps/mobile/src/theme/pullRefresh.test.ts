@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { MARK_SMALL, MARK_SMALL_MAX } from './markMotion';
-import { V46_PULL as p } from './parts.generated';
-import { pullEase, pullIndicator, pullMark, pullOffset } from './pullRefresh';
+import { PULL as p, pullEase, pullIndicator, pullMark, pullOffset } from './pullRefresh';
 
 describe('pull to refresh', () => {
   it('locks into the mark the loaders draw at its size, so the turning mark takes over unchanged', () => {

@@ -49,7 +49,11 @@ describe('visual gate: the states list', () => {
           id: 'oyun-x-anlat',
           app: 'oyun/x/anlat',
           baz: false,
-          prototip: { adimlar: [{ tikla: '[data-x]' }, { bekle: 300 }], kirp: '.tg' },
+          prototip: {
+            dosya: 'docs/design/x.html',
+            adimlar: [{ tikla: '[data-x]' }, { bekle: 300 }],
+            kirp: '.tg',
+          },
         },
       ],
     });
@@ -87,7 +91,11 @@ describe('visual gate: the states list', () => {
           {
             id: 'a',
             app: 'galeri/a',
-            prototip: { adimlar: [{ tikla: 'x', bekle: 1 }], kirp: 'x' },
+            prototip: {
+              dosya: 'docs/design/x.html',
+              adimlar: [{ tikla: 'x', bekle: 1 }],
+              kirp: 'x',
+            },
           },
         ],
       },
@@ -125,7 +133,12 @@ describe('visual gate: the states list', () => {
           {
             id: 'a',
             app: 'galeri/a',
-            prototip: { adimlar: [], kirp: 'x', sorgu: 'page=galeri&x' },
+            prototip: {
+              dosya: 'docs/design/x.html',
+              adimlar: [],
+              kirp: 'x',
+              sorgu: 'page=galeri&x',
+            },
           },
         ],
       },
@@ -135,7 +148,11 @@ describe('visual gate: the states list', () => {
       {
         esik: 99,
         durumlar: [
-          { id: 'a', app: 'galeri/a', prototip: { adimlar: [], kirp: 'x', genislik: 1200 } },
+          {
+            id: 'a',
+            app: 'galeri/a',
+            prototip: { dosya: 'docs/design/x.html', adimlar: [], kirp: 'x', genislik: 1200 },
+          },
         ],
       },
     ],
@@ -143,20 +160,19 @@ describe('visual gate: the states list', () => {
     expect(() => parseStates(raw)).toThrow(/states\.json/);
   });
 
-  // v46's components (src/ui) beside the same component in v46: cropped to it on both sides, at
-  // 360 and at v46's small-screen width.
+  // A component beside the same component in a prototype: cropped to it on both sides, at 320.
   it('takes a component state: a narrower layout, the app cropped to it, the prototype query', () => {
     const config = parseStates({
       esik: 99.5,
       durumlar: [
         {
-          id: 'v46-x-320',
-          app: 'galeri/v46/x',
+          id: 'x-320',
+          app: 'galeri/x',
           genislik: 320,
           uygulamaKirp: 'gorsel-oge',
           baz: false,
           prototip: {
-            dosya: 'docs/design/v46/skall-masa-deneme-v46-galeri.html',
+            dosya: 'docs/design/x.html',
             sorgu: 's=mekan&theme={tema}&demo=0',
             genislik: 480,
             adimlar: [{ bekle: 6000 }],
@@ -167,7 +183,7 @@ describe('visual gate: the states list', () => {
     });
     const [shot] = shots(config);
     expect(shot && shotLink(shot, 3)).toBe(
-      'masa:///gorsel?durum=galeri/v46/x&tema=light&sayfa=0&sayfalar=1&genislik=320&n=3',
+      'masa:///gorsel?durum=galeri/x&tema=light&sayfa=0&sayfalar=1&genislik=320&n=3',
     );
   });
 });
@@ -213,11 +229,11 @@ describe('visual gate: the Maestro flows', () => {
   it("crops to the state's own element when it names one, the photo and the comparison alike", () => {
     const own: GateConfig = {
       esik: 99.5,
-      durumlar: [{ id: 'v46-x', app: 'galeri/v46/x', uygulamaKirp: 'gorsel-oge' }],
+      durumlar: [{ id: 'x', app: 'galeri/x', uygulamaKirp: 'gorsel-oge' }],
     };
     const [shot] = shots(own);
     mkdirSync(join(root, 'e2e/visual/baz'), { recursive: true });
-    write(join(root, 'e2e/visual/baz/v46-x-light-1.png'), png(4, 4));
+    write(join(root, 'e2e/visual/baz/x-light-1.png'), png(4, 4));
     const flow = flowFor(root, shot ?? fail(), 1, 99.5, false);
     expect(flow).not.toContain('gorsel-cerceve');
     expect(flow.match(/cropOn:\n {6}id: gorsel-oge/g)).toHaveLength(2);
@@ -345,7 +361,12 @@ describe('visual gate: the report', () => {
         esik: 99.5,
         durumlar: [
           { id: 'galeri-oyun', app: 'galeri/games' },
-          { id: 'oyun-x', app: 'oyun/x/anlat', baz: false, prototip: { adimlar: [], kirp: '.tg' } },
+          {
+            id: 'oyun-x',
+            app: 'oyun/x/anlat',
+            baz: false,
+            prototip: { dosya: 'docs/design/x.html', adimlar: [], kirp: '.tg' },
+          },
         ],
       }),
     );
@@ -487,8 +508,9 @@ describe("visual gate: the prototype in the app's fonts", () => {
 });
 
 describe('visual gate: system-ui is Roboto, as in the app', () => {
-  it('serves v46 with Roboto wherever it says system-ui, and changes nothing else', () => {
-    const html = readFileSync(join(ROOT, 'docs/design/v46/skall-masa-deneme-v46.html'), 'utf8');
+  it('serves a prototype with Roboto wherever it says system-ui, and changes nothing else', () => {
+    const html =
+      '<style>.toast{font:700 14px/18px system-ui,sans-serif}.b{font-family:Roboto}</style>';
     const served = withRoboto(html);
     expect(html).toContain('font:700 14px/18px system-ui,sans-serif');
     expect(served).not.toContain('system-ui');
@@ -496,7 +518,7 @@ describe('visual gate: system-ui is Roboto, as in the app', () => {
     expect(served.replace(/Roboto/g, '')).toBe(html.replace(/system-ui|Roboto/g, ''));
   });
 
-  it("gives the app's notice (v46's .toast) Roboto 700 at 14/18", async () => {
+  it("gives the app's notice Roboto 700 at 14/18", async () => {
     const { baseTypography } = await import('../../apps/mobile/src/theme/tokens.ts');
     const { THEME } = await import('../../apps/mobile/src/theme/theme.ts');
     expect(baseTypography().notice).toEqual({ font: 'system', size: 14, lineHeight: 18 });

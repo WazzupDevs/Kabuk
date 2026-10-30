@@ -9,9 +9,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { TAB_GLASS } from '@/theme/glass';
-
-import { TAB_BAR_GLASS, blursBehind } from './backdrop';
+import { TAB_BAR_GLASS, TAB_GLASS, blursBehind } from '@/theme/glass';
 
 // The native side of skall's glass (modules/skall-glass, Android; frosted since 0.9.0, the owner's
 // call, 29 Ekim): a screen a glass can see through (GlassTarget) and the glass itself

@@ -16,18 +16,16 @@ import { useKit } from '@/aura/kit';
 import { KIT } from '@/theme/auraKit';
 import { BRAND } from '@/theme/brand';
 import { gradientStyle } from '@/theme/gradient';
-import { TAB_GLASS } from '@/theme/glass';
-import { V46_TAB_BAR } from '@/theme/parts.generated';
+import { GLASS_FACE, TAB_BAR_GLASS, TAB_GLASS, blursBehind } from '@/theme/glass';
 import { typeStyle, useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
-import { TAB_BAR_GLASS, blursBehind } from '@/ui/backdrop';
-import { LiquidGlass } from '@/ui/LiquidGlass';
 import { useLabOff } from '@/lib/drawLab';
 
 import type { ChatQuote } from './ChatBubble';
 import { useChatEnd, useComposerGlass } from './ChatScreen';
 import { GradientFill } from './GradientFill';
 import { IconButton } from './IconButton';
+import { LiquidGlass } from './LiquidGlass';
 import { usePressScale } from './motion';
 import { Text } from './Text';
 import { Loader } from './Loader';
@@ -292,7 +290,7 @@ function ReplyStrip({ quote, onCancel }: { quote: ChatQuote; onCancel?: () => vo
 // v46's light gradient at the glass's share, the white edge and its inner light.
 function GlassFill({ targetId, radius }: { targetId: string; radius: number }) {
   const { scheme, colors } = useTheme();
-  const t = V46_TAB_BAR[scheme];
+  const t = GLASS_FACE[scheme];
   const glassOff = useLabOff('cam');
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
@@ -316,7 +314,7 @@ function GlassFill({ targetId, radius }: { targetId: string; radius: number }) {
             borderRadius: radius,
             borderWidth: t.border.width,
             borderColor: t.border.color,
-            boxShadow: t.shadow.inset ?? undefined,
+            boxShadow: t.inset,
           },
         ]}
       />

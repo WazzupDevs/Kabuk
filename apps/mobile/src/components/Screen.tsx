@@ -9,7 +9,7 @@ import { Reveal } from '@/aura/Reveal';
 import { AURA } from '@/theme/aura';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
-import { PullScroll } from '@/ui/PullScroll';
+import { PullScroll } from '@/components/PullScroll';
 
 import { useTabBarSpace } from './TabBar';
 // Frame by frame with the keyboard (react-native-keyboard-controller): the bar rises with it.

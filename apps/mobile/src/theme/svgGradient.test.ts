@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import { svgGradient } from './svgGradient';
-import { BUTTON_GLASS } from './glass';
-import { V46_TAB_BAR } from './parts.generated';
+import { BUTTON_GLASS, GLASS_FACE } from './glass';
 
 describe('svgGradient', () => {
   it('reads the tab bar glass gradient: 135deg runs from the top left to the bottom right', () => {
-    const g = svgGradient(V46_TAB_BAR.light.gradient);
+    const g = svgGradient(GLASS_FACE.light.gradient);
     expect(g).not.toBeNull();
     expect(g?.x1).toBeCloseTo(0.5 - Math.SQRT1_2 / 2, 6);
     expect(g?.y1).toBeCloseTo(0.5 - Math.SQRT1_2 / 2, 6);

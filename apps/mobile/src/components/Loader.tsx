@@ -44,7 +44,7 @@ type Props = {
   size?: number;
   // One colour, with a gap in the ground's colour around the second capsule: inside a filled button.
   mono?: { color: string; ground: string };
-  // Each part's own colour (v46's loader inside a button; src/ui/Button.tsx).
+  // Each part's own colour.
   fills?: { a: string; b: string; overlap: string };
   onInk?: boolean;
   // Read by screen readers; null when a label next to it already says it.

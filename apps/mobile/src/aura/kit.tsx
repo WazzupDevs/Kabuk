@@ -30,7 +30,7 @@ import { useReduceMotion } from '@/lib/useReduceMotion';
 import { AURA, MOTION } from '@/theme/aura';
 import { KIT, KIT_TYPE, type KitTextVariant } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
-import { Frost, FROSTED } from '@/ui/LiquidGlass';
+import { Frost, FROSTED } from '@/components/LiquidGlass';
 import { useTheme } from '@/theme/ThemeProvider';
 
 import { CapIcon, type CapIconName } from './CapIcon';

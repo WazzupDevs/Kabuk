@@ -21,7 +21,7 @@ import { usePressScale } from './motion';
 import { AppIcon } from './AppIcon';
 import { useLabOff } from '@/lib/drawLab';
 import { shadowParts } from './NativeShadow';
-import { Frost } from '@/ui/LiquidGlass';
+import { Frost } from '@/components/LiquidGlass';
 import { useFrost } from '@/aura/kit';
 
 type Props = {

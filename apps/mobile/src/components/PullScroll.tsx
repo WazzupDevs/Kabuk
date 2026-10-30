@@ -17,8 +17,7 @@ import { Loader } from '@/components/Loader';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { BRAND } from '@/theme/brand';
 import { capsules, LOADER_MIN_VISIBLE_MS, MARK_WINDOW } from '@/theme/markMotion';
-import { V46_PULL } from '@/theme/parts.generated';
-import { pullIndicator, pullMark, pullOffset } from '@/theme/pullRefresh';
+import { PULL, pullIndicator, pullMark, pullOffset } from '@/theme/pullRefresh';
 import { useTheme } from '@/theme/ThemeProvider';
 
 type Props = Pick<
@@ -31,7 +30,7 @@ type Props = Pick<
   children: ReactNode;
 };
 
-const p = V46_PULL;
+const p = PULL;
 const wait = (ms: number) => new Promise((done) => setTimeout(done, ms));
 // A pull starts once the finger has gone this far down (v46: `d > 6`), and fails this far up.
 const START = 6;

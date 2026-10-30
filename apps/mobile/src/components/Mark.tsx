@@ -21,8 +21,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 type Num = Animated.AnimatedInterpolation<number> | number;
 
 // The capsules' colours: the logo's, or one colour with a gap in the ground's colour around the
-// second capsule (inside a filled button), or each part's own (v46's loader inside a button:
-// src/ui/Button.tsx, from theme/parts).
+// second capsule (inside a filled button), or each part's own.
 export type MarkColors =
   | { mono: string; ground: string }
   | { onInk?: boolean }

@@ -4,12 +4,11 @@ import { Animated, Platform, Pressable, StyleSheet, useWindowDimensions, View } 
 
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { AURA, MOTION } from '@/theme/aura';
-import { TAB_GLASS } from '@/theme/glass';
+import { TAB_BAR_GLASS, TAB_GLASS, blursBehind } from '@/theme/glass';
 import { useTheme } from '@/theme/ThemeProvider';
-import { TAB_BAR_GLASS, blursBehind } from '@/ui/backdrop';
 import { boxShadowParts, shadowParts } from '@/components/NativeShadow';
 import { useLabOff } from '@/lib/drawLab';
-import { LiquidGlass } from '@/ui/LiquidGlass';
+import { LiquidGlass } from '@/components/LiquidGlass';
 
 import { ARRIVE_RN, springConfig } from './motion';
 import { TabGlyph } from './TabGlyph';

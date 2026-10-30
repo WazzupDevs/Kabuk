@@ -2,7 +2,7 @@ import { createContext, useContext } from 'react';
 import { Easing, Platform } from 'react-native';
 
 import { MOTION, type Bezier } from '@/theme/aura';
-import { blursBehind } from '@/ui/backdrop';
+import { blursBehind } from '@/theme/glass';
 
 // The motion standard's curves (theme/aura.ts → MOTION) for React Native's Animated, whose native
 // driver plays them off the JavaScript thread and without committing the UI tree each frame

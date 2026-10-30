@@ -1,4 +1,4 @@
-// Generated copy of docs/design/v46/kaynak/kapsul/kapsul-cizim-kutuphanesi.js (the capsule
+// Generated copy of docs/design/kaynak/kapsul/kapsul-cizim-kutuphanesi.js (the capsule
 // drawing library). Do not edit; capsuleDrawing.test.ts checks it against the source.
   /* ---------- v46: kapsül aksesuarları (Fırat): üç raf (Şık, Karakter, Tema; adlar cinsiyetsiz), raflarda paketler; her yuvaya bir parça takılır, çıkarılır ---------- */
   var LOOK = (function () {
