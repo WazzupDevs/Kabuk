@@ -1,6 +1,7 @@
 import { Image, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { useLabOff } from '@/lib/drawLab';
+import { GlassTarget } from '@/ui/LiquidGlass';
 import { AURA } from '@/theme/aura';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -14,20 +15,26 @@ export const GROUND_PICTURE = {
   dark: require('../../assets/aura/ground-dark.webp'),
 } as const;
 
+// The screen's backdrop: the frosted buttons drawn after it blur it (ui/LiquidGlass → Frost).
 export function AuraBackground() {
   const { scheme } = useTheme();
-  if (useLabOff('zemin')) {
-    return <View style={[StyleSheet.absoluteFill, { backgroundColor: AURA[scheme].ground }]} />;
-  }
+  const off = useLabOff('zemin');
   return (
-    <Image
-      source={GROUND_PICTURE[scheme]}
-      fadeDuration={0}
-      resizeMode="cover"
-      // Its own size, or it draws at the picture's pixels (Image takes a required source's size).
-      style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%' }}
-      accessible={false}
-    />
+    <GlassTarget backdrop style={StyleSheet.absoluteFill}>
+      {off ? (
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: AURA[scheme].ground }]} />
+      ) : (
+        <Image
+          source={GROUND_PICTURE[scheme]}
+          fadeDuration={0}
+          resizeMode="cover"
+          // Its own size, or it draws at the picture's pixels (Image takes a required source's
+          // size).
+          style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%' }}
+          accessible={false}
+        />
+      )}
+    </GlassTarget>
   );
 }
 

@@ -1,7 +1,7 @@
 import { describeEventTime } from '@shared/explore.ts';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Image, type ImageSourcePropType, ScrollView, View } from 'react-native';
+import { Image, type ImageSourcePropType, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
@@ -25,6 +25,7 @@ import { AURA } from '@/theme/aura';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { VENUE_FRAME } from '@/theme/venueScene';
+import { Frost, GlassTarget } from '@/ui/LiquidGlass';
 import { SPACING } from '@/theme/tokens';
 
 // The buddies come in after the screen's own arrival.
@@ -113,10 +114,21 @@ export default function VenueDetailScreen() {
             overflow: 'hidden',
           }}
         >
-          <SceneGround top={0} bottom={KIT.stage.radius} />
-          {sceneWidth > 0 ? (
-            <VenueScene kind={venueType(venue)} width={sceneWidth} delay={SCENE_CAST_DELAY} />
-          ) : null}
+          {/* The scene is the backdrop of the buttons and tags over it: they frost it, a lamp's
+              cord blurred behind a tag instead of crossing its words (the owner's report, 30 Ekim). */}
+          <GlassTarget backdrop style={StyleSheet.absoluteFill}>
+            <SceneGround top={0} bottom={KIT.stage.radius} />
+            {sceneWidth > 0 ? (
+              <VenueScene kind={venueType(venue)} width={sceneWidth} delay={SCENE_CAST_DELAY} />
+            ) : null}
+          </GlassTarget>
+          {/* The status bar frosted over the scene: the cords pass under its words, blurred. */}
+          <View
+            pointerEvents="none"
+            style={{ position: 'absolute', left: 0, right: 0, top: 0, height: insets.top }}
+          >
+            <Frost radius={0} ground={AURA[scheme].ground} />
+          </View>
           <View
             className="flex-row items-center justify-between"
             style={{ paddingHorizontal: KIT.size.side, paddingTop: insets.top + SPACING[3] }}

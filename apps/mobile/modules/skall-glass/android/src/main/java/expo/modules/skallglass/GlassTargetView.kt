@@ -19,6 +19,9 @@ class GlassTargetView(context: Context, appContext: AppContext) : ExpoView(conte
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) RenderNode("skallGlassTarget") else null
   private var targetId: String? = null
   private val glasses = WeakHashMap<LiquidGlassView, Unit>()
+  // A screen's backdrop (its ground and still pictures, never its buttons): the frosted buttons
+  // over it find it themselves, without an id (LiquidGlassView.backdrop).
+  var backdrop = false
 
   fun setTargetId(id: String?) {
     if (id == targetId) return

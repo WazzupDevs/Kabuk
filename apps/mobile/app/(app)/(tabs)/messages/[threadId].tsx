@@ -402,7 +402,7 @@ export default function DmScreen() {
           onBack={backToInbox}
           split
           title={name}
-          leading={<Avatar kind="profile" name={name} size="lg" photoUrl={photoUrl} />}
+          leading={<Avatar kind="profile" name={name} size="md" photoUrl={photoUrl} />}
           onPressTitle={openProfile}
           titleAccessibilityLabel={name}
           actions={

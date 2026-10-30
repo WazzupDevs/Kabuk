@@ -1,29 +1,16 @@
-import { memo, useState } from 'react';
-import {
-  Image,
-  type ImageSourcePropType,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-  type ViewStyle,
-} from 'react-native';
+import { memo } from 'react';
+import { Image, type ImageSourcePropType, StyleSheet, View } from 'react-native';
 
-import {
-  type ChatWallKind,
-  WALL_TILE,
-  type WallpaperCanvas,
-  wallpaperCanvas,
-} from '@/theme/chatWallpaper';
+import type { ChatWallKind, WallpaperCanvas } from '@/theme/chatWallpaper';
 import type { ColorScheme } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 
-// The chat walls, WhatsApp-like (the owner's call, 28 Ekim): each chat's line drawings
-// (chatWalls.generated.ts: the DM's, the table's, the venue's) laid densely, eleven a row with a
-// little turn each, on a see-through 300 dp tile in the chat's soft tint (light and dark), drawn
-// once at 3× into assets/wall/ and laid edge to edge over the clouds, behind the messages. A picture per tile, not an SVG pattern over the whole screen: opening a
-// chat no longer reads and draws the pattern each time (the owner's report, 27 Ekim: the app felt
-// heavy). The size follows wallpaperCanvas: the keyboard only shortens the area.
-const TILES: Record<ChatWallKind, Record<ColorScheme, ImageSourcePropType>> = {
+// The chat walls as Telegram Android draws its chat backgrounds (the owner's call, 30 Ekim): one
+// picture from the top of the screen to its foot, a soft four-colour gradient with skall's quiet
+// pattern over it (scripts/art/walls.ts), each chat its own (DM, Masa, Mekan; light and dark). One
+// image for the whole screen: a tile laid edge to edge left seams where its edges fell between
+// pixels. It stays where it is while the messages scroll over it and the keyboard comes and goes.
+const WALLS: Record<ChatWallKind, Record<ColorScheme, ImageSourcePropType>> = {
   dm: {
     light: require('../../assets/wall/dm-light.webp'),
     dark: require('../../assets/wall/dm-dark.webp'),
@@ -38,55 +25,97 @@ const TILES: Record<ChatWallKind, Record<ColorScheme, ImageSourcePropType>> = {
   },
 };
 
-// `place`: where it lies in its parent (all of it by default). `shift`: how far below the screen's
-// top it starts, so its tiles line up with the screen's: the chat lays one under the stream and
-// strips of it above and below (the top bar, the system bars), and they meet without a seam (the
-// owner's report, 29 Ekim: the wall stopped under the top bar).
+// The picture over the chat's whole area (`canvas`: its width and the tallest height it has had,
+// so the keyboard never scales it), from the area's top.
 export const ChatWallpaper = memo(function ChatWallpaper({
-  kind = 'dm',
-  place = StyleSheet.absoluteFill,
-  shift = 0,
+  kind,
+  canvas,
 }: {
-  kind?: ChatWallKind;
-  // A strip gives its height: only the rows it shows are laid.
-  place?: ViewStyle & { height?: number };
-  shift?: number;
+  kind: ChatWallKind;
+  canvas: WallpaperCanvas;
 }) {
   const { scheme } = useTheme();
-  const { height: windowHeight } = useWindowDimensions();
-  const [areaWidth, setAreaWidth] = useState<number | null>(null);
-  const [canvas, setCanvas] = useState<WallpaperCanvas | null>(null);
-  const next = areaWidth === null ? null : wallpaperCanvas(canvas, areaWidth, windowHeight);
-  if (next !== canvas) setCanvas(next);
-  const offset = Math.round(shift) % WALL_TILE;
-  const cols = canvas ? Math.ceil(canvas.w / WALL_TILE) : 0;
-  const tall = typeof place.height === 'number' ? place.height : (canvas?.h ?? 0);
-  const rows = canvas ? Math.ceil((tall + offset) / WALL_TILE) : 0;
-  const tile = TILES[kind][scheme];
   return (
     <View
       pointerEvents="none"
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
-      style={[place, { overflow: 'hidden' }]}
-      onLayout={(e) => {
-        const width = Math.ceil(e.nativeEvent.layout.width);
-        setAreaWidth((w) => (w === width ? w : width));
-      }}
+      style={[StyleSheet.absoluteFill, { overflow: 'hidden' }]}
     >
-      {Array.from({ length: rows }, (_, r) => (
-        <View key={r} className="flex-row" style={r === 0 ? { marginTop: -offset } : undefined}>
-          {Array.from({ length: cols }, (__, c) => (
-            <Image
-              key={c}
-              source={tile}
-              fadeDuration={0}
-              accessible={false}
-              style={{ width: WALL_TILE, height: WALL_TILE }}
-            />
-          ))}
-        </View>
-      ))}
+      <Image
+        source={WALLS[kind][scheme]}
+        fadeDuration={0}
+        resizeMode="cover"
+        accessible={false}
+        style={{ position: 'absolute', left: 0, top: 0, width: canvas.w, height: canvas.h }}
+      />
     </View>
   );
 });
+
+// How many steps a band's soft edge takes; each a strip of the picture a little fainter.
+const FADE_STEPS = 8;
+
+// A strip of the same picture over what scrolls under the system bars (the status bar's words, the
+// navigation bar's buttons), lined up with the one behind; `fade` more of it fades out below
+// (`down`) or above (`up`) it. `top` and `height` on the chat's area.
+export function WallBand({
+  kind,
+  canvas,
+  top,
+  height,
+  fade,
+  direction,
+}: {
+  kind: ChatWallKind;
+  canvas: WallpaperCanvas;
+  top: number;
+  height: number;
+  fade: number;
+  direction: 'down' | 'up';
+}) {
+  const { scheme } = useTheme();
+  const strip = fade / FADE_STEPS;
+  const slices = [
+    { top, height, opacity: 1 },
+    ...Array.from({ length: FADE_STEPS }, (_, i) => ({
+      top: direction === 'down' ? top + height + i * strip : top - (i + 1) * strip,
+      height: strip,
+      opacity: 1 - (i + 1) / (FADE_STEPS + 1),
+    })),
+  ];
+  return (
+    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+      {slices.map((s, i) =>
+        s.height > 0 ? (
+          <View
+            key={i}
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: s.top,
+              height: s.height,
+              overflow: 'hidden',
+              opacity: s.opacity,
+            }}
+          >
+            <Image
+              source={WALLS[kind][scheme]}
+              fadeDuration={0}
+              resizeMode="cover"
+              accessible={false}
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: -s.top,
+                width: canvas.w,
+                height: canvas.h,
+              }}
+            />
+          </View>
+        ) : null,
+      )}
+    </View>
+  );
+}

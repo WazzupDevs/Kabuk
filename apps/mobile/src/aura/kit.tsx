@@ -27,9 +27,10 @@ import { Loader, useLoopActive } from '@/components/Loader';
 import { boxShadowParts, shadowParts } from '@/components/NativeShadow';
 import { useLabOff } from '@/lib/drawLab';
 import { useReduceMotion } from '@/lib/useReduceMotion';
-import { MOTION } from '@/theme/aura';
+import { AURA, MOTION } from '@/theme/aura';
 import { KIT, KIT_TYPE, type KitTextVariant } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
+import { Frost, FROSTED } from '@/ui/LiquidGlass';
 import { useTheme } from '@/theme/ThemeProvider';
 
 import { CapIcon, type CapIconName } from './CapIcon';
@@ -110,10 +111,23 @@ export function InSheet({ children }: { children: ReactNode }) {
   return <FlatGlass.Provider value>{children}</FlatGlass.Provider>;
 }
 
+// On a card (a Glass) a button lies on the card, not on the screen's backdrop: it keeps its own
+// fill over the card, unfrosted (a frost there would show the clouds through the card).
+const OnCard = createContext(false);
+
+// Whether a clear button here is frosted (ui/LiquidGlass → Frost): where the glass blurs, straight
+// on the screen (not on a card, not in a sheet).
+export function useFrost(): boolean {
+  const onCard = useContext(OnCard);
+  const flat = useContext(FlatGlass);
+  return FROSTED && !onCard && !flat;
+}
+
 export function Glass({
   sm,
   pad,
   radius: round,
+  frost,
   style,
   children,
   testID,
@@ -122,14 +136,19 @@ export function Glass({
   pad?: 'pad' | 'lg';
   // Its own roundness (a pill: half its height), the shadow drawn to the same.
   radius?: number;
+  // A control on glass (a field, a switch): the screen's backdrop frosted under its fill (the
+  // owner's call, 30 Ekim). A card stays as it is.
+  frost?: boolean;
   style?: StyleProp<ViewStyle>;
   children?: ReactNode;
   testID?: string;
 }) {
-  const { c } = useKit();
+  const { c, scheme } = useKit();
   const flat = useContext(FlatGlass);
   const shadowOff = useLabOff('golge');
   const flatFill = useLabOff('kart');
+  const canFrost = useFrost();
+  const frosted = !!frost && canFrost;
   const radius = round ?? (sm ? KIT.size.glassRadiusSm : KIT.size.glassRadius);
   const shadow = shadowParts(
     shadowOff,
@@ -143,7 +162,7 @@ export function Glass({
     <View
       testID={testID}
       style={[
-        flatFill ? { backgroundColor: c.sheetBase } : gradientStyle(c.glass),
+        frosted ? null : flatFill ? { backgroundColor: c.sheetBase } : gradientStyle(c.glass),
         {
           borderRadius: radius,
           borderWidth: KIT.size.edge,
@@ -155,9 +174,29 @@ export function Glass({
       ]}
     >
       {shadow.node}
-      {children}
+      {frosted ? (
+        <>
+          <Frost radius={radius} ground={AURA[scheme].ground} />
+          <View
+            pointerEvents="none"
+            style={[
+              StyleSheet.absoluteFill,
+              { borderRadius: radius },
+              flatFill ? { backgroundColor: c.sheetBase } : gradientStyle(c.glass),
+            ]}
+          />
+        </>
+      ) : null}
+      <OnCard.Provider value>{children}</OnCard.Provider>
     </View>
   );
+}
+
+// A clear button's frost (ui/LiquidGlass → Frost; the owner's call, 30 Ekim), round at its height.
+export function FrostOf({ height, fill }: { height: number; fill?: string }) {
+  const { scheme } = useTheme();
+  if (!useFrost()) return null;
+  return <Frost radius={height / 2} ground={AURA[scheme].ground} fill={fill} />;
 }
 
 // A press that sinks a little and springs back (hareket.json → press), on the native driver.
@@ -221,6 +260,7 @@ export function Btn({
   const press = usePress();
   const inRow = useContext(InRow);
   const shadowOff = useLabOff('golge');
+  const frosted = useFrost() && variant === 'glassy';
   const fg =
     tint ?? (variant === 'primary' ? KIT.onPrimary : variant === 'dark' ? c.onChipOn : c.ink);
   const shadow =
@@ -242,12 +282,13 @@ export function Btn({
       : variant === 'dark'
         ? { backgroundColor: c.chipOn }
         : {
-            backgroundColor: c.raised,
+            backgroundColor: frosted ? undefined : c.raised,
             borderWidth: KIT.size.edge,
             borderColor: c.raisedEdge,
             boxShadow: shadow?.boxShadow,
           };
   const off = disabled && !loading;
+  const height = bar ? KIT.size.round : sm ? KIT.size.btnSm : KIT.size.btn;
   return (
     <Pressable
       testID={testID}
@@ -264,7 +305,7 @@ export function Btn({
         style={[
           ground,
           {
-            height: bar ? KIT.size.round : sm ? KIT.size.btnSm : KIT.size.btn,
+            height,
             paddingHorizontal: sm ? KIT.size.btnPadXSm : KIT.size.btnPadX,
             borderRadius: KIT.size.btn,
             flexDirection: 'row',
@@ -277,6 +318,7 @@ export function Btn({
         ]}
       >
         {shadow?.node}
+        {variant === 'glassy' ? <FrostOf height={height} fill={c.raised} /> : null}
         {loading ? (
           <Loader kind="meet" size={sm ? KIT.size.iconSm : KIT.size.icon} delay={0} label={null} />
         ) : icon ? (
@@ -336,6 +378,7 @@ export function Round({
   const press = usePress();
   const s = KIT.size.round;
   const shadowOff = useLabOff('golge');
+  const frosted = useFrost() && glassy && !primary;
   const fg = primary ? KIT.onPrimary : (color ?? c.ink);
   const shadow = primary
     ? shadowParts(shadowOff, KIT.primaryShadow, c.primaryInset, s / 2)
@@ -368,7 +411,7 @@ export function Round({
             ? { backgroundColor: KIT.primary, boxShadow: shadow?.boxShadow }
             : glassy
               ? {
-                  backgroundColor: c.raisedRound,
+                  backgroundColor: frosted ? undefined : c.raisedRound,
                   borderWidth: KIT.size.edge,
                   borderColor: c.raisedEdge,
                   boxShadow: shadow?.boxShadow,
@@ -377,6 +420,7 @@ export function Round({
         ]}
       >
         {shadow?.node}
+        {glassy && !primary ? <FrostOf height={s} fill={c.raisedRound} /> : null}
         {loading ? (
           <Loader kind="meet" size={KIT.size.iconSm} delay={0} label={null} />
         ) : (
@@ -427,6 +471,7 @@ export function Chip({
   testID?: string;
 }) {
   const { c } = useKit();
+  const frosted = useFrost() && !on;
   // Its soft shadow natively (NativeShadow.tsx).
   const shadowOff = useLabOff('golge');
   const shadow = shadowParts(
@@ -450,13 +495,14 @@ export function Chip({
         flexDirection: 'row',
         alignItems: 'center',
         gap: KIT.size.chipGap,
-        backgroundColor: on ? c.chipOn : c.raisedChip,
+        backgroundColor: on ? c.chipOn : frosted ? undefined : c.raisedChip,
         borderWidth: KIT.size.edge,
         borderColor: on ? c.chipOn : c.raisedEdge,
         boxShadow: shadow.boxShadow,
       }}
     >
       {shadow.node}
+      {on ? null : <FrostOf height={KIT.size.chip} fill={c.raisedChip} />}
       <Text
         numberOfLines={1}
         maxFontSizeMultiplier={MAX_FONT_SCALE}
@@ -486,6 +532,7 @@ export function Tag({
   fit?: boolean;
 }) {
   const { c, tags } = useKit();
+  const frosted = useFrost() && tone === 'glassy';
   const colors =
     tone === 'glassy' ? { bg: c.raisedRound, fg: c.ink } : { bg: tags[tone].bg, fg: tags[tone].fg };
   return (
@@ -497,12 +544,13 @@ export function Tag({
         flexDirection: 'row',
         alignItems: 'center',
         gap: KIT.size.tagGap,
-        backgroundColor: colors.bg,
+        backgroundColor: frosted ? undefined : colors.bg,
         borderWidth: tone === 'glassy' ? KIT.size.edge : 0,
         borderColor: c.raisedEdge,
         alignSelf: 'flex-start',
       }}
     >
+      {tone === 'glassy' ? <FrostOf height={height ?? KIT.size.tag} fill={colors.bg} /> : null}
       {lead}
       <Text
         numberOfLines={1}
@@ -920,6 +968,8 @@ export function Seg<V extends string>({
   );
   return (
     <Glass
+      frost
+      radius={KIT.size.seg}
       style={{
         flexDirection: 'row',
         padding: KIT.size.segPad,

@@ -214,14 +214,14 @@ export default function VenueChatScreen() {
       top={
         <ChatTopBar
           onBack={() => router.back()}
+          split
           title={tr.venueChat.open}
           subtitle={tr.venue.chatReaders}
           live
           actions={
-            <View className="flex-row items-center" style={{ gap: SPACING[2] }}>
+            <View className="flex-row items-center" style={{ gap: SPACING[1] }}>
               <Writers messages={messages ?? []} />
               <IconButton
-                round
                 icon="ellipsis-vertical"
                 glyph={<MoreDots />}
                 label={tr.venueChat.options}
@@ -582,7 +582,13 @@ function Writers({ messages }: { messages: readonly VenueChatMessage[] }) {
   }
   if (last.length === 0) return null;
   return (
-    <View className="flex-row" accessible={false} importantForAccessibility="no-hide-descendants">
+    // In the actions' pill: clear of its round edge.
+    <View
+      className="flex-row"
+      style={{ paddingLeft: SPACING[2] }}
+      accessible={false}
+      importantForAccessibility="no-hide-descendants"
+    >
       {last.map((m, i) => (
         <View key={m.id} style={{ marginLeft: i === 0 ? 0 : -KIT.size.stackOverlap }}>
           {m.profiled ? (

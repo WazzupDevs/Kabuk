@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View } from 'react-native';
+import { View, useWindowDimensions } from 'react-native';
 
 import { BarIcon, BellIcon } from '@/components/BarIcon';
 import { CapsuleAvatar } from '@/components/CapsuleAvatar';
@@ -21,6 +21,7 @@ const WALL = 260;
 // ghost, the bar icons and the bell, and the chat wallpaper under two messages, in the run's scheme.
 export function IdentitySet() {
   const { colors, shape } = useTheme();
+  const window = useWindowDimensions();
   const t = tr.design.identity;
   // Made-up events: one running for another hour, one starting in three.
   const [now] = useState(() => Date.now());
@@ -80,7 +81,7 @@ export function IdentitySet() {
           }}
           testID="preview-identity-wallpaper"
         >
-          <ChatWallpaper />
+          <ChatWallpaper kind="dm" canvas={{ w: window.width, h: window.height }} />
           <ChatBubble
             text={t.sampleTheirs}
             mine={false}

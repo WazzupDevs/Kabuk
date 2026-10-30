@@ -64,6 +64,7 @@ export default function RoomChatScreen() {
       top={
         <ChatTopBar
           onBack={() => router.back()}
+          split
           title={tr.table.chatTitle}
           subtitle={room.data.name ?? undefined}
         />

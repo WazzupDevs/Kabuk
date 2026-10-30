@@ -19,14 +19,14 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
   FlatList,
-  Pressable,
   ScrollView,
   type ScrollViewProps,
+  StyleSheet,
   View,
   type ViewStyle,
   Text as RNText,
 } from 'react-native';
-import Reanimated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import Reanimated, { FadeIn, FadeInDown, FadeInUp, FadeOut } from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { sameDay } from '@shared/chatRuns.ts';
@@ -34,19 +34,18 @@ import { sameDay } from '@shared/chatRuns.ts';
 import { tr } from '@/i18n/tr';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, SPACING, TOUCH } from '@/theme/tokens';
+import { ICON, SPACING } from '@/theme/tokens';
 
-import type { ChatWallKind } from '@/theme/chatWallpaper';
+import { type ChatWallKind, type WallpaperCanvas, wallpaperCanvas } from '@/theme/chatWallpaper';
 
 import { AuraBackground } from '@/aura/AuraBackground';
 import { AURA } from '@/theme/aura';
-import { useKit } from '@/aura/kit';
+import { Round, useKit } from '@/aura/kit';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 
-import { ChatWallpaper } from './ChatWallpaper';
-import { CountBadge } from './CountBadge';
+import { ChatWallpaper, WallBand } from './ChatWallpaper';
+import { SPLIT_PILL } from './ChatTopBar';
 import { useTabBarSpace } from './TabBar';
-import { usePressScale } from './motion';
 import { AppIcon } from './AppIcon';
 // Frame by frame with the keyboard (react-native-keyboard-controller), on the UI thread: the
 // message bar rises with it (KeyboardStickyView) and the stream keeps its end above it
@@ -55,8 +54,6 @@ import { KeyboardChatScrollView, KeyboardStickyView } from 'react-native-keyboar
 
 import { GlassTarget } from '@/ui/LiquidGlass';
 import { ChatKindContext } from './chatKind';
-import { useLabOff } from '@/lib/drawLab';
-import { boxShadowParts } from './NativeShadow';
 
 // How close to the end counts as "at the bottom" (a message's last line may sit under the edge).
 const BOTTOM_SLACK = SPACING[12];
@@ -80,6 +77,12 @@ const ChatEndContext = createContext<(() => void) | null>(null);
 export function useChatEnd(): (() => void) | null {
   return useContext(ChatEndContext);
 }
+
+// The down arrow (Telegram Android's: shown whenever the reader is up the stream, the count of new
+// messages on its corner; the owner's call, 30 Ekim). A chat screen draws it over the stream, out of
+// the stream's glass so it can frost the messages under it; the stream reports to it here.
+type JumpState = { show: boolean; count: number };
+const JumpSlotContext = createContext<((state: JumpState) => void) | null>(null);
 
 // Whether the stream has settled after opening: a row that comes after it is a new message and
 // rises in (the ones the page opened with stand still).
@@ -324,6 +327,10 @@ export function ChatScroll({
     if (bottom !== atBottom) setAtBottom(bottom);
     if (bottom && pending > 0) setPending(0);
   };
+  const slot = useContext(JumpSlotContext);
+  useEffect(() => {
+    slot?.({ show: !atBottom, count: pending });
+  }, [slot, atBottom, pending]);
   // The reader's own drag: lets go of the end, or takes it again when it ends at the bottom.
   const onDragEnd = () => {
     dragging.current = false;
@@ -408,36 +415,37 @@ export function ChatScroll({
           {stream}
         </ScrollView>
       )}
-      <NewMessages
-        count={pending}
-        bottom={SPACING[3] + bottomInset}
-        keyboardOffset={keyboardOffset}
-        onPress={() => toEnd(true)}
-      />
+      {slot ? null : (
+        <NewMessages
+          show={!atBottom}
+          count={pending}
+          bottom={SPACING[3] + bottomInset}
+          keyboardOffset={keyboardOffset}
+          onPress={() => toEnd(true)}
+        />
+      )}
     </View>
   );
 }
 
-// "Yeni mesaj" (skall tuvali: SohbetYeniMesaj, skall.css → `.jump`): a round surface button at the
-// right over the message bar, the count of new messages in a badge on its corner; it rises with the
-// message bar when the keyboard opens.
+// The down arrow (Telegram Android's chat): a frosted round at the right over the message bar,
+// shown whenever the reader is up the stream; the count of new messages that came meanwhile in a
+// badge on its corner. It rises with the message bar when the keyboard opens.
 function NewMessages({
+  show,
   count,
   bottom,
   keyboardOffset,
   onPress,
 }: {
+  show: boolean;
   count: number;
   bottom: number;
   keyboardOffset: number | undefined;
   onPress: () => void;
 }) {
-  const { colors, shape } = useTheme();
-  const pressScale = usePressScale();
-  // Its soft shadow natively (NativeShadow.tsx).
-  const shadowOff = useLabOff('golge');
-  const shadow = boxShadowParts(shadowOff, shape.shadow.sheet, TOUCH.min / 2);
-  if (count <= 0) return null;
+  const { c } = useKit();
+  if (!show) return null;
   return (
     <KeyboardStickyView
       pointerEvents="box-none"
@@ -445,37 +453,23 @@ function NewMessages({
       offset={{ closed: 0, opened: keyboardOffset ?? 0 }}
       style={{ position: 'absolute', right: SPACING[4], bottom }}
     >
-      <Pressable
-        testID="chat-new-messages"
-        accessibilityRole="button"
-        accessibilityLabel={tr.chat.newMessagesLabel(count)}
-        onPress={onPress}
+      <Reanimated.View
+        entering={FadeIn.duration(JUMP_FADE_MS)}
+        exiting={FadeOut.duration(JUMP_FADE_MS)}
       >
-        {({ pressed }) => (
-          <View
-            className="items-center justify-center"
-            style={[
-              {
-                width: TOUCH.min,
-                height: TOUCH.min,
-                borderRadius: shape.radius.pill,
-                backgroundColor: pressed ? colors.surface2 : colors.surface,
-                boxShadow: shadow.boxShadow,
-              },
-              pressScale(pressed),
-            ]}
-          >
-            {shadow.node}
-            <AppIcon name="chevron-down" size={ICON.md} color={colors.text} />
-            <View className="absolute" style={{ top: -SPACING[1.5], right: -SPACING[1.5] }}>
-              <CountBadge count={count} />
-            </View>
-          </View>
-        )}
-      </Pressable>
+        <Round
+          testID="chat-new-messages"
+          label={count > 0 ? tr.chat.newMessagesLabel(count) : tr.chat.toLatest}
+          badge={count}
+          onPress={onPress}
+        >
+          <AppIcon name="chevron-down" size={ICON.md} color={c.ink} />
+        </Round>
+      </Reanimated.View>
     </KeyboardStickyView>
   );
 }
+const JUMP_FADE_MS = 150;
 
 // A row of a ChatList: `key` stays the same for a message from its first draw (a message being
 // sent keeps the key it was drawn with when the server's copy takes its place); `id` is what a
@@ -585,6 +579,10 @@ function ChatList<T extends ChatListItem>({
     if (bottom !== atBottom) setAtBottom(bottom);
     if (bottom && pending > 0) setPending(0);
   };
+  const slot = useContext(JumpSlotContext);
+  useEffect(() => {
+    slot?.({ show: !atBottom, count: pending });
+  }, [slot, atBottom, pending]);
 
   const renderScroll = useCallback(
     (props: ScrollViewProps) => (
@@ -660,12 +658,15 @@ function ChatList<T extends ChatListItem>({
           </ChatLiveContext.Provider>
         </ChatJumpContext.Provider>
       </ChatBarContext.Provider>
-      <NewMessages
-        count={pending}
-        bottom={SPACING[3] + bottomInset}
-        keyboardOffset={keyboardOffset}
-        onPress={() => toEnd(true)}
-      />
+      {slot ? null : (
+        <NewMessages
+          show={!atBottom}
+          count={pending}
+          bottom={SPACING[3] + bottomInset}
+          keyboardOffset={keyboardOffset}
+          onPress={() => toEnd(true)}
+        />
+      )}
     </View>
   );
 }
@@ -706,8 +707,10 @@ type Props<T extends ChatListItem> = {
   hidesTabBar?: boolean;
 };
 
-// A chat app's screen (v45: .dm): the top bar, the stream scrolling over the wallpaper, the
-// message bar floating at the bottom above the keyboard.
+// A chat app's screen as Telegram Android draws its chat (the owner's call, 30 Ekim): one wallpaper
+// from the top of the screen to its foot, the stream over all of it, running on under the top bar's
+// frosted pills and under the message bar; the down arrow over the stream; the message bar floating
+// at the bottom above the keyboard.
 export function ChatScreen<T extends ChatListItem>({
   top,
   children,
@@ -727,121 +730,139 @@ export function ChatScreen<T extends ChatListItem>({
   // The reaction bar's state for the whole screen: a tap on the top bar or the message bar closes it
   // too.
   const reactions = useChatBarState();
+  const insets = useSafeAreaInsets();
+  // The system's navigation bar under the message bar (none under the tab bar, which has its own).
+  const bottomPad = barSpace ? 0 : insets.bottom;
   // The message bar floats over the stream (the owner's call, 27 Ekim: the messages run on under
   // it); the stream keeps its last message clear of it.
   const [barHeight, setBarHeight] = useState(0);
+  const under = composer ? barHeight : barSpace + bottomPad;
+  // The top bar floats over the stream too (30 Ekim): the stream keeps its first message clear of
+  // it; before it is measured, the status bar and a bar of pills.
+  const [topHeight, setTopHeight] = useState(insets.top + SPLIT_PILL + SPACING[1.5] * 2);
   const end = useRef<(() => void) | null>(null);
   const followEnd = useCallback(() => end.current?.(), []);
-  const under = composer ? barHeight : barSpace;
   const glassId = useId();
-  // The wall covers the whole screen (the owner's report, 29 Ekim): the stream's own, and strips
-  // above it (the status bar and the top bar) and below it (the system bar), lined up.
-  const insets = useSafeAreaInsets();
-  const [streamTop, setStreamTop] = useState(0);
-  const [screenHeight, setScreenHeight] = useState(0);
-  const bottomPad = barSpace ? 0 : insets.bottom;
+  const [jump, setJump] = useState<JumpState>({ show: false, count: 0 });
+  // The wallpaper's size: the area's width and the tallest it has been (the keyboard never scales
+  // it), and the area's height now (the navigation bar's strip at its foot).
+  const [canvas, setCanvas] = useState<WallpaperCanvas | null>(null);
+  const [areaHeight, setAreaHeight] = useState(0);
   return (
     <ChatEndContext.Provider value={followEnd}>
       <ChatKindContext.Provider value={wall ?? 'dm'}>
         <ChatBarContext.Provider value={reactions.bar}>
-          <SafeAreaView
-            edges={barSpace ? ['top', 'left', 'right'] : ['top', 'left', 'right', 'bottom']}
-            style={{ flex: 1, backgroundColor: AURA[scheme].ground }}
-            onTouchStart={reactions.onTouchStart}
-            onLayout={(e) => setScreenHeight(e.nativeEvent.layout.height)}
-          >
-            {/* The colour clouds under the whole chat (docs/design/aura → DM, Mekan sohbeti, Masa). */}
-            <AuraBackground />
-            {wall && streamTop > 0 ? (
-              <ChatWallpaper
-                kind={wall}
-                place={{ position: 'absolute', left: 0, right: 0, top: 0, height: streamTop }}
-              />
-            ) : null}
-            {wall && bottomPad > 0 && screenHeight > 0 ? (
-              <ChatWallpaper
-                kind={wall}
-                shift={screenHeight - bottomPad}
-                place={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: bottomPad }}
-              />
-            ) : null}
-            <View
+          <JumpSlotContext.Provider value={setJump}>
+            <SafeAreaView
+              edges={['left', 'right']}
+              style={{ flex: 1, backgroundColor: AURA[scheme].ground }}
+              onTouchStart={reactions.onTouchStart}
               onLayout={(e) => {
-                const { y, height } = e.nativeEvent.layout;
-                setStreamTop(y + height);
+                const { width, height } = e.nativeEvent.layout;
+                setAreaHeight(height);
+                setCanvas((prev) => wallpaperCanvas(prev, width, height));
               }}
             >
-              {top}
-            </View>
-            {/* The wallpaper under the stream and the message bar (v45: .chatpane); the bar floats on
-              it, over the stream, and rises with the keyboard. */}
-            <View style={{ flex: 1 }}>
-              <View className="flex-1">
-                <GlassTarget targetId={glassId} style={{ flex: 1 }}>
-                  {/* Each chat's dense doodles over the clouds (DM, Masa, Mekan; light and dark; the
-                    owner's call, 28 Ekim). */}
-                  {wall ? <ChatWallpaper kind={wall} shift={streamTop} /> : null}
-                  {list ? (
-                    <ChatList
-                      {...list}
-                      testID={testID}
-                      newestKey={newestKey}
-                      newestMine={newestMine}
-                      bottomInset={under}
-                      endRef={end}
-                      keyboardOffset={bottomPad}
-                      // Drawn from the bottom up: its start is the screen's foot.
-                      contentContainerStyle={{
-                        flexGrow: 1,
-                        paddingHorizontal: shape.screenPadding,
-                        paddingTop: SPACING[3] + under,
-                        paddingBottom: SPACING[2],
-                        gap: SPACING[1.5],
-                      }}
-                    />
-                  ) : (
-                    <ChatScroll
-                      testID={testID}
-                      newestKey={newestKey}
-                      newestMine={newestMine}
-                      startAtEnd={startAtEnd}
-                      bottomInset={under}
-                      endRef={end}
-                      keyboardOffset={bottomPad}
-                      contentContainerStyle={{
-                        flexGrow: 1,
-                        // skall tuvali (skall.css → `.stream`): 16 at the sides, 6 between messages.
-                        paddingHorizontal: shape.screenPadding,
-                        paddingTop: SPACING[2],
-                        paddingBottom: SPACING[3] + under,
-                        gap: SPACING[1.5],
-                      }}
-                    >
-                      {children}
-                    </ChatScroll>
-                  )}
-                </GlassTarget>
-                {composer ? (
-                  <KeyboardStickyView
-                    offset={{ closed: 0, opened: bottomPad }}
-                    style={{
-                      position: 'absolute',
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      paddingBottom: barSpace,
+              {/* The stream and what lies under it: what the frosted pills, the message bar and the
+                  down arrow show through their glass. */}
+              <GlassTarget targetId={glassId} backdrop style={StyleSheet.absoluteFill}>
+                {wall && canvas ? <ChatWallpaper kind={wall} canvas={canvas} /> : null}
+                {wall ? null : <AuraBackground />}
+                {list ? (
+                  <ChatList
+                    {...list}
+                    testID={testID}
+                    newestKey={newestKey}
+                    newestMine={newestMine}
+                    bottomInset={under}
+                    endRef={end}
+                    keyboardOffset={bottomPad}
+                    // Drawn from the bottom up: its start is the screen's foot.
+                    contentContainerStyle={{
+                      flexGrow: 1,
+                      paddingHorizontal: shape.screenPadding,
+                      paddingTop: SPACING[3] + under,
+                      paddingBottom: SPACING[2] + topHeight,
+                      gap: SPACING[1.5],
                     }}
-                    onLayout={(e) => setBarHeight(e.nativeEvent.layout.height)}
+                  />
+                ) : (
+                  <ChatScroll
+                    testID={testID}
+                    newestKey={newestKey}
+                    newestMine={newestMine}
+                    startAtEnd={startAtEnd}
+                    bottomInset={under}
+                    endRef={end}
+                    keyboardOffset={bottomPad}
+                    contentContainerStyle={{
+                      flexGrow: 1,
+                      // skall tuvali (skall.css → `.stream`): 16 at the sides, 6 between messages.
+                      paddingHorizontal: shape.screenPadding,
+                      paddingTop: SPACING[2] + topHeight,
+                      paddingBottom: SPACING[3] + under,
+                      gap: SPACING[1.5],
+                    }}
                   >
-                    <ComposerGlassContext.Provider value={glassId}>
-                      {composer}
-                    </ComposerGlassContext.Provider>
-                  </KeyboardStickyView>
-                ) : null}
+                    {children}
+                  </ChatScroll>
+                )}
+              </GlassTarget>
+              {/* The wallpaper again under the status bar's words and the navigation bar's buttons,
+                  fading into the stream: messages pass under the system bars unseen. */}
+              {wall && canvas ? (
+                <WallBand
+                  kind={wall}
+                  canvas={canvas}
+                  top={0}
+                  height={insets.top}
+                  fade={SPACING[3]}
+                  direction="down"
+                />
+              ) : null}
+              {wall && canvas && bottomPad > 0 && areaHeight > 0 ? (
+                <WallBand
+                  kind={wall}
+                  canvas={canvas}
+                  top={areaHeight - bottomPad}
+                  height={bottomPad}
+                  fade={SPACING[3]}
+                  direction="up"
+                />
+              ) : null}
+              <View
+                style={{ position: 'absolute', left: 0, right: 0, top: 0, paddingTop: insets.top }}
+                onLayout={(e) => setTopHeight(e.nativeEvent.layout.height)}
+              >
+                {top}
               </View>
-            </View>
-            {list ? children : null}
-          </SafeAreaView>
+              {composer ? (
+                <KeyboardStickyView
+                  offset={{ closed: 0, opened: bottomPad }}
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    paddingBottom: barSpace + bottomPad,
+                  }}
+                  onLayout={(e) => setBarHeight(e.nativeEvent.layout.height)}
+                >
+                  <ComposerGlassContext.Provider value={glassId}>
+                    {composer}
+                  </ComposerGlassContext.Provider>
+                </KeyboardStickyView>
+              ) : null}
+              <NewMessages
+                show={jump.show}
+                count={jump.count}
+                bottom={SPACING[3] + under}
+                keyboardOffset={bottomPad}
+                onPress={followEnd}
+              />
+              {list ? children : null}
+            </SafeAreaView>
+          </JumpSlotContext.Provider>
         </ChatBarContext.Provider>
       </ChatKindContext.Provider>
     </ChatEndContext.Provider>

@@ -11,6 +11,9 @@ import android.graphics.RenderEffect
 import android.graphics.RenderNode
 import android.graphics.Shader
 import android.os.Build
+import android.view.View
+import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import expo.modules.kotlin.AppContext
 import expo.modules.kotlin.views.ExpoView
 import kotlin.math.ceil
@@ -33,6 +36,15 @@ class LiquidGlassView(context: Context, appContext: AppContext) : ExpoView(conte
     }
   var ground: Int? = null
     set(value) {
+      field = value
+      invalidate()
+    }
+  // A frosted button (the owner's call, 30 Ekim: every clear button frosted): it looks through the
+  // nearest backdrop drawn before it (GlassTargetView.backdrop), the screen's ground and still
+  // pictures, as Telegram Android's glass blurs what lies under it and never itself.
+  var backdrop = false
+    set(value) {
+      if (field == value) return
       field = value
       invalidate()
     }
@@ -65,12 +77,27 @@ class LiquidGlassView(context: Context, appContext: AppContext) : ExpoView(conte
     invalidate()
   }
 
+  // Moved on the screen (a scroll, a slide) without drawing again: the glass shows another part of
+  // what is behind it, so it draws again.
+  private val drawnAt = IntArray(2)
+  private val nowAt = IntArray(2)
+  private val moved =
+    ViewTreeObserver.OnPreDrawListener {
+      if (width > 0 && height > 0) {
+        getLocationInWindow(nowAt)
+        if (nowAt[0] != drawnAt[0] || nowAt[1] != drawnAt[1]) invalidate()
+      }
+      true
+    }
+
   override fun onAttachedToWindow() {
     super.onAttachedToWindow()
     GlassTargets.watch(this)
+    viewTreeObserver.addOnPreDrawListener(moved)
   }
 
   override fun onDetachedFromWindow() {
+    viewTreeObserver.removeOnPreDrawListener(moved)
     GlassTargets.unwatch(this)
     watch(null)
     glass?.discardDisplayList()
@@ -110,13 +137,30 @@ class LiquidGlassView(context: Context, appContext: AppContext) : ExpoView(conte
   override fun onDraw(canvas: Canvas) {
     super.onDraw(canvas)
     val node = glass ?: return
-    val target = GlassTargets.find(targetId)
+    val target = if (backdrop) findBackdrop() else GlassTargets.find(targetId)
     watch(target)
     if (target == null || !target.isAttachedToWindow) return
     val content = target.content ?: return
     if (!canvas.isHardwareAccelerated || width <= 0 || height <= 0) return
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
     drawFrost(canvas, node, content, target)
+  }
+
+  // The nearest backdrop drawn before this view: at each level up, the last sibling before the
+  // branch this view is in (a scene's backdrop over the screen's ground is the nearer one).
+  private fun findBackdrop(): GlassTargetView? {
+    var child: View = this
+    var parent = child.parent as? ViewGroup
+    while (parent != null) {
+      val upTo = parent.indexOfChild(child)
+      for (i in upTo - 1 downTo 0) {
+        val sibling = parent.getChildAt(i)
+        if (sibling is GlassTargetView && sibling.backdrop) return sibling
+      }
+      child = parent
+      parent = parent.parent as? ViewGroup
+    }
+    return null
   }
 
   @TargetApi(Build.VERSION_CODES.S)
@@ -134,6 +178,8 @@ class LiquidGlassView(context: Context, appContext: AppContext) : ExpoView(conte
     val w = ceil(fullW * scale).toInt().coerceAtLeast(1)
     val h = ceil(fullH * scale).toInt().coerceAtLeast(1)
     getLocationInWindow(here)
+    drawnAt[0] = here[0]
+    drawnAt[1] = here[1]
     target.getLocationInWindow(there)
     node.setPosition(0, 0, w, h)
     applyEffect(node, w, h, radius)

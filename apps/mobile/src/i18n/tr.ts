@@ -950,6 +950,8 @@ export const tr = {
     newMessages: (n: number) => (n > 1 ? `Yeni mesaj · ${n}` : 'Yeni mesaj'),
     newMessagesLabel: (n: number) =>
       n > 1 ? `${n} yeni mesaj, en alta in` : 'Yeni mesaj, en alta in',
+    // The down arrow with no new message (Telegram Android's chat).
+    toLatest: 'En alta in',
     reply: 'Yanıtla',
     copy: 'Kopyala',
     react: 'Tepki ver',
