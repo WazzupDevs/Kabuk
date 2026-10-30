@@ -1,5 +1,6 @@
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Animated, Modal, Pressable, useWindowDimensions, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { InSheet, T, useKit } from '@/aura/kit';
@@ -15,7 +16,6 @@ import type { IconName } from './Button';
 import { Quiet } from './Quiet';
 import { useSheetCloser } from './sheetCloser';
 import { SheetCard } from './SheetCard';
-import { useSheetDrag } from './sheetDrag';
 import { AppIcon } from './AppIcon';
 
 // hareket.md → "Alt sayfa": in and out in 320 ms on the design system's ease out.
@@ -59,9 +59,6 @@ export function Sheet({
   const [mounted, setMounted] = useState(visible);
   const [progress] = useState(() => new Animated.Value(0));
   if (visible && !mounted) setMounted(true);
-  // Pulled down, it closes like a tap outside (useSheetDrag); the next opening starts unpulled.
-  const drag = useSheetDrag(onClose);
-  const { reset } = drag;
   // closeAllSheets: an open sheet closes as if tapped outside.
   const round = useSheetCloser((s) => s.round);
   const handled = useRef(round);
@@ -70,9 +67,6 @@ export function Sheet({
     handled.current = round;
     if (visible) onClose?.();
   }, [round, visible, onClose]);
-  useEffect(() => {
-    if (visible) reset();
-  }, [visible, reset]);
 
   useEffect(() => {
     if (!mounted) return undefined;
@@ -95,7 +89,8 @@ export function Sheet({
       visible={mounted}
       onRequestClose={onClose ?? (() => undefined)}
     >
-      <View className="flex-1 justify-end">
+      {/* A Modal is a window of its own: the sheet's pull needs its own gesture root there. */}
+      <GestureHandlerRootView style={{ flex: 1, justifyContent: 'flex-end' }}>
         <Animated.View
           pointerEvents="box-none"
           className="absolute inset-0"
@@ -110,24 +105,22 @@ export function Sheet({
         />
         <Animated.View
           accessibilityViewIsModal
-          // docs/design/aura (`.sheet`): a frosted card floating 10 from the edges, 36 round.
+          // docs/design/aura (`.sheet`), down to the screen's foot as Telegram Android's sheets (the
+          // owner's call, 30 Ekim). Pulled down, it closes like a tap outside (SheetCard).
           style={{
-            marginHorizontal: KIT.size.sheetInset,
-            marginBottom: KIT.size.sheetInset + insets.bottom,
             maxHeight: '90%',
             transform: [
               {
-                translateY: Animated.add(
-                  progress.interpolate({ inputRange: [0, 1], outputRange: [height, 0] }),
-                  drag.offset,
-                ),
+                translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [height, 0] }),
               },
             ],
           }}
-          {...drag.handlers}
         >
-          {peek ? <Peek kind={peek} /> : null}
-          <SheetCard onScroll={drag.onScroll}>
+          <SheetCard
+            onClose={onClose}
+            bottomInset={insets.bottom}
+            above={peek ? <Peek kind={peek} /> : null}
+          >
             <InSheet>
               <Quiet value>
                 <View className={`gap-3 ${centered ? 'items-center' : ''}`}>
@@ -163,7 +156,7 @@ export function Sheet({
             </InSheet>
           </SheetCard>
         </Animated.View>
-      </View>
+      </GestureHandlerRootView>
     </Modal>
   );
 }
