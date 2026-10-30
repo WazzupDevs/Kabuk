@@ -1,4 +1,4 @@
-// v2 navigation (docs/SPEC_V2.md §2): the app opens on Keşfet; the Mekan tab goes to the venue
+// v2 navigation (docs/arsiv/SPEC_V2.md §2): the app opens on Keşfet; the Mekan tab goes to the venue
 // screen only while the table is active, otherwise to Keşfet. v3 step 6 (docs/SPEC_V3.md §18.3):
 // Keşfet · Aktiviteler · Mekan · Mesajlar · Profil; the friend list sits under Profil and the
 // requests and play history ("Bildirimler") open from the bell.

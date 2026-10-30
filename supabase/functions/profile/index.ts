@@ -1,4 +1,4 @@
-// Profiles (docs/SPEC_V2.md §5). `get` returns a profile only to the owner, friends and current
+// Profiles (docs/arsiv/SPEC_V2.md §5). `get` returns a profile only to the owner, friends and current
 // room members of a table that joined with its profile; every other case answers exactly like an
 // unknown public_id. Photos are re-encoded and stripped of metadata on the phone and checked here
 // again before they count (rule 6). A photo's path is random (p/{uuid}.jpg) and carries nothing of the

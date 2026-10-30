@@ -10,6 +10,7 @@ Alt bölümler harfle (§4.A, §4.B…), **adımlar** sayıyla numaralanır (ad�
 
 **Kaynaklar.**
 
+- `docs/design/v43`, `v44` ve `v45` 30 Ekim 2026'da repodan kaldırıldı; git geçmişindedir (`git show e6f67ea:docs/design/v45/…`). Görünüşün bugünkü kaynağı aura tuvalidir (CLAUDE.md → Kod kuralları).
 - `docs/design/v43/skall-masa-deneme-v43.html`: tek dosyalık deneme. Yalnızca "Senin görünümün" vardır; üstteki koyu deneme şeridi uygulamanın parçası değildir.
 - `docs/design/v43/skall-arayuz-devir-raporu-v43.md`: tasarım oturumunun devir raporu. Rapor karar vermez; önerileri ve 25 sorusu bu belgede karara bağlanır ya da §4.P'ye yazılır.
 - `docs/design/v44/skall-masa-deneme-v44.html` ve `skall-arayuz-devir-raporu-v44.md` (18 Ekim): koyu tema, v43'te olmayan ekranlar ve v43'ten düzeltmeler. Raporun §6'daki 17 sorusu proje sahibince cevaplandı (§4.P, K-9…K-25).
@@ -88,7 +89,7 @@ Bu yüzden Faz 4 Faz 3'ün devamı değil, yeni bir fazdır. Değişenler: masa 
 **Native değişiklik: tek build** (adım 4.1, `version` 0.5.0):
 
 - `react-native-gesture-handler` eklenir: kaydırıp yanıtlama, kart eğme, ibre sürükleme ve basılı tutma için.
-- Hermes için `<application android:gwpAsanMode="never">` (`docs/DECISIONS.md` → "Hermes çökmesi").
+- Hermes için `<application android:gwpAsanMode="never">` (`docs/arsiv/DECISIONS.md` → "Hermes çökmesi").
 - `expo-linear-gradient` eklenmez; gradyanlar kurulu `react-native-svg` ile çizilir.
 - `userInterfaceStyle` bugün `automatic`'tir; koyu tema için değişmez.
 

@@ -70,7 +70,7 @@ type Row = ChatListItem & {
 
 type Pages = readonly (readonly DmPageRow[])[];
 
-// A DM thread with a friend (docs/SPEC_V2.md §6.4). The dm: channel carries no data; the page is
+// A DM thread with a friend (docs/arsiv/SPEC_V2.md §6.4). The dm: channel carries no data; the page is
 // reread through dm_messages_page (`from_me`, never the sender's account id). Read state stays
 // with the reader. The friend's photo comes from the friends list (its signed URL expires, so it
 // never travels in the route). No tab bar here: the message bar sits at the bottom.

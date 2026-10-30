@@ -1,4 +1,4 @@
-// Keşfet map (docs/SPEC_V2.md §4): venues as GeoJSON points drawn by GL layers (clustered at low
+// Keşfet map (docs/arsiv/SPEC_V2.md §4): venues as GeoJSON points drawn by GL layers (clustered at low
 // zoom), and the opening camera that fits every venue between the header and the tab bar.
 
 import type { VenueKind } from './venueKind.ts';

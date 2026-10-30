@@ -3,7 +3,7 @@
 export const CHECKIN_RADIUS_M = 300;
 export const TABLE_SESSION_HOURS = 4;
 export const MIN_HEADCOUNT = 1;
-// "Kaç kişisiniz?" 1 / 2 / 3 / 4+: 4 is stored for four or more (docs/SPEC_V2.md §6.6).
+// "Kaç kişisiniz?" 1 / 2 / 3 / 4+: 4 is stored for four or more (docs/arsiv/SPEC_V2.md §6.6).
 export const MAX_HEADCOUNT = 4;
 export const HEADCOUNT_OPTIONS = [1, 2, 3, 4] as const;
 

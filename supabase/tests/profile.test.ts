@@ -1,4 +1,4 @@
-// Profiles, participation and photos (docs/SPEC_V2.md §5, §11).
+// Profiles, participation and photos (docs/arsiv/SPEC_V2.md §5, §11).
 import { randomUUID } from 'node:crypto';
 
 import { createClient } from '@supabase/supabase-js';

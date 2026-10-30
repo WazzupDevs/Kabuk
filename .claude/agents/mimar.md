@@ -19,7 +19,7 @@ Plan en çok 20 satırdır ve şunları söyler:
 Okuma kuralları:
 
 - Yalnızca sana verilen yolları ve onların doğrudan bağımlılıklarını oku.
-- `docs/DECISIONS.md`, `docs/SPEC_*.md` gibi büyük belgeleri bütün okuma; Grep ile ilgili bölümü bul, yalnızca onu oku.
+- `docs/SPEC_*.md` ve `docs/arsiv/` altındaki büyük belgeleri bütün okuma; Grep ile ilgili bölümü bul, yalnızca onu oku.
 - Kurallar `CLAUDE.md`'de; çalıştırma ayrıntısı `docs/OPS.md` ve `.claude/skills/` altında.
 
 Dönüşün yalnızca plandır; giriş, özet ya da tekrar yazma.

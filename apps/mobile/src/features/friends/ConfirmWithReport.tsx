@@ -22,7 +22,7 @@ type Props<R extends GameFlowReportReason> = {
   onClose: () => void;
 };
 
-// Block or unfriend with the "Şikayet de et" option (docs/SPEC_V2.md §6.4): the server copies the
+// Block or unfriend with the "Şikayet de et" option (docs/arsiv/SPEC_V2.md §6.4): the server copies the
 // report in the same transaction before anything is deleted.
 export function ConfirmWithReport<R extends GameFlowReportReason>(props: Props<R>) {
   const [alsoReport, setAlsoReport] = useState(false);

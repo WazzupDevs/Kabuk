@@ -23,7 +23,7 @@ export function joinAcceptedPush(): PushMessage {
   return { title: 'İsteğin kabul edildi', body: 'Masaya katılabilirsin.' };
 }
 
-// v2 (docs/SPEC_V2.md §6.4): no sender, no preview. The friend request text follows the DM one.
+// v2 (docs/arsiv/SPEC_V2.md §6.4): no sender, no preview. The friend request text follows the DM one.
 export function dmPush(): PushMessage {
   return { title: APP_NAME, body: 'Yeni bir mesajın var', target: 'messages' };
 }

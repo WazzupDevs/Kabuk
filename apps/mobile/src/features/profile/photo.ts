@@ -24,7 +24,7 @@ export class PhotoError extends Error {
 }
 
 // Re-encodes to a 512×512 JPEG (which drops EXIF, GPS, XMP and the rest), then strips and checks
-// the result with the same module photo-commit uses (docs/SPEC_V2.md §5.3). Nothing leaves the
+// the result with the same module photo-commit uses (docs/arsiv/SPEC_V2.md §5.3). Nothing leaves the
 // phone unless the check passes.
 async function reencode(uri: string, width: number, height: number): Promise<ArrayBuffer> {
   const side = Math.min(width, height);

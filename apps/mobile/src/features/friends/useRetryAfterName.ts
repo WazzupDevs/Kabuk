@@ -3,7 +3,7 @@ import { useCallback, useRef } from 'react';
 
 import { ApiError } from '@/lib/api';
 
-// Friend actions need a display name (docs/SPEC_V2.md §6.3): on display_name_required the app
+// Friend actions need a display name (docs/arsiv/SPEC_V2.md §6.3): on display_name_required the app
 // opens the name screen and, back on this screen, repeats the same action once.
 export function useRetryAfterName<T>(run: (arg: T) => void) {
   const pending = useRef<{ arg: T } | null>(null);

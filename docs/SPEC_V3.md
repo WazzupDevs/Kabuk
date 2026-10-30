@@ -1,8 +1,8 @@
 # Kabuk v1 (kod içi v3) — Teknik tasarım
 
-Durum: **onaylandı** (30.09.2026). Proje sahibinin S2–S14 cevapları ve ek düzeltmeleri (profilli mekan sohbeti mesajında masa adı yok, kampüs sınırına 50 m tolerans, tasarım dosyalarına dokunmama, FIELD_TEST) işlendi; kararlar §17'de. S1 (poligon ve nokta adları) proje sahibinden gelecek ve yalnızca adım 2'yi bekletir. Kararlar `MVP_SPEC.md`, `CLAUDE.md` ve `docs/DECISIONS.md`'ye de işlenir. Uygulama §14'teki sırayla yapılır; her adım kendi dalı, PR'ı ve güncel E2E akışıyla gelir. Bu belgede olmayan bir karar gerekirse uygulama durur ve proje sahibine sorulur.
+Durum: **onaylandı** (30.09.2026). Proje sahibinin S2–S14 cevapları ve ek düzeltmeleri (profilli mekan sohbeti mesajında masa adı yok, kampüs sınırına 50 m tolerans, tasarım dosyalarına dokunmama, FIELD_TEST) işlendi; kararlar §17'de. S1 (poligon ve nokta adları) proje sahibinden gelecek ve yalnızca adım 2'yi bekletir. Kararlar `docs/arsiv/MVP_SPEC.md`, `CLAUDE.md` ve `docs/arsiv/DECISIONS.md`'ye de işlenir. Uygulama §14'teki sırayla yapılır; her adım kendi dalı, PR'ı ve güncel E2E akışıyla gelir. Bu belgede olmayan bir karar gerekirse uygulama durur ve proje sahibine sorulur.
 
-Bu belge, Sakarya Üniversitesi pilotuna çıkacak **Kabuk v1**'in ürün kararlarını mevcut şemaya, RLS'e, Edge Function'lara ve Realtime'a oturtur. Kod içinde sürüm adı **v3**'tür (v1 = MVP, v2 = `docs/SPEC_V2.md`); kullanıcıya görünen sürüm Kabuk v1'dir.
+Bu belge, Sakarya Üniversitesi pilotuna çıkacak **Kabuk v1**'in ürün kararlarını mevcut şemaya, RLS'e, Edge Function'lara ve Realtime'a oturtur. Kod içinde sürüm adı **v3**'tür (v1 = MVP, v2 = `docs/arsiv/SPEC_V2.md`); kullanıcıya görünen sürüm Kabuk v1'dir.
 
 **v1 kapsamı:**
 
@@ -54,7 +54,7 @@ Bu belge, Sakarya Üniversitesi pilotuna çıkacak **Kabuk v1**'in ürün kararl
   - Her yanıt `Content-Type: application/json` olmalıdır.
   - HTTP hook birkaç saniyelik süre sınırıyla çalışır (belgedeki `auth.hook_timeouts.http_hooks`).
 - **Netgsm:** OTP servisi var (anlık gönderim, "3 dakika içinde iletilir"; kullanıcı kodu, parola ve onaylı başlık ile).
-  - Adım 1'de resmi Netgsm OTP paketiyle (`github.com/netgsm1/otp`, `src/otp.php`) karşılaştırıldı: adres, XML alanları, `text/xml`, yanıt ve belgelenen kodlar (`docs/DECISIONS.md`). Gerçek gönderim denemesi hesap açılınca yapılacak.
+  - Adım 1'de resmi Netgsm OTP paketiyle (`github.com/netgsm1/otp`, `src/otp.php`) karşılaştırıldı: adres, XML alanları, `text/xml`, yanıt ve belgelenen kodlar (`docs/arsiv/DECISIONS.md`). Gerçek gönderim denemesi hesap açılınca yapılacak.
 
 ### 2.2 Tasarım
 
@@ -334,7 +334,7 @@ Adım 1'in parçası, OTA'dan önce:
 
 ### 5.7 Uygulamada netleşenler (adım 3 notu)
 
-Spec'ten sapma değil, spec'in bıraktığı ayrıntılar; gerekçeler `docs/DECISIONS.md` → "Oda akışı (v3 adım 3)".
+Spec'ten sapma değil, spec'in bıraktığı ayrıntılar; gerekçeler `docs/arsiv/DECISIONS.md` → "Oda akışı (v3 adım 3)".
 
 - **`rooms/end-game { roomId }`** eklendi: §5.1'deki "Oyunu bitir". İki masadan biri basar, oyun biter, `concept = null`; tekrar çağrı sessizdir (idempotent). Sonuç yazılmaz; yalnızca 6 turu biten Tabu `game_results`'a yazılır.
 - **Oyunlar arası `game_state`:** §5.1 "yalnızca oyun sürerken dolu" diyor; oyun yokken `{ gameNo, lastGame: { concept, scores? } }` tutulur. Oyun numarası (tur satırları ve kartların anahtarı) sıfırlanmasın ve oda son oyunun sonucunu gösterebilsin diye. Kart ya da oyun durumu taşımaz.
@@ -382,7 +382,7 @@ Bugünkü iki masa sesli Tabu aynen kalır:
 
 ### 6.4 Uygulamada netleşenler (adım 4 notu)
 
-Gerekçeler `docs/DECISIONS.md` → "Tabu modları (v3 adım 4)".
+Gerekçeler `docs/arsiv/DECISIONS.md` → "Tabu modları (v3 adım 4)".
 
 - Kural SQL'de `private.tabu_mode(owner, guest)`; bir test 1–4 × 1–4 için `pure/tabu.ts` → `tabuMode` ile aynı sonucu verdiğini denetler. Mod oyun başlarken (`start_voice_tabu`) yazılır; oyun sürerken kişi sayısı değişse bile değişmez.
 - `game_results.mode`: hakemli mod `'voice'` olarak kalır (rozet sayımı aynı), iş birliği `'cooperative'`. "Sesli Tabu galibiyeti" yalnızca `mode = 'voice' and won` sayar; iş birliğinde `won = null`.
@@ -464,7 +464,7 @@ Gerekçeler `docs/DECISIONS.md` → "Tabu modları (v3 adım 4)".
 
 ### 7.6 Uygulamada netleşenler (adım 5 notu)
 
-Gerekçeler `docs/DECISIONS.md` → "Mekan sohbet odası (v3 adım 5)".
+Gerekçeler `docs/arsiv/DECISIONS.md` → "Mekan sohbet odası (v3 adım 5)".
 
 - **Gönderilenler:** `my_sent_requests()` yerine ayrı `my_sent_venue_chat_requests()`. Satırlar istek kayıtlarından değil, sunucuda tutulan basışlardan (`venue_chat_friend_presses`) gelir: engel, önceki red, günlük sınır ya da tekrar yüzünden yutulan istek de "bekliyor" görünür (kural 5). Oyun geçmişindeki `friend_action_at` ile aynı ilke.
 - **Gelen istekler:** `friends/incoming` yalnızca mekan sohbetinden gelen istekleri döner (adı, yaşı, imzalı fotoğrafı); karşılaşmadan gelenler `my_incoming_requests()`'te kalır. Uygulama ikisini aynı listede gösterir.
@@ -856,7 +856,7 @@ Sıralama son mesaj zamanına göredir; mesajı olmayan arkadaşlık, arkadaşl�
 - Durum gerçekten ilerlediğinde sunucu `dm:{thread_id}` kanalına verisiz bir `dm_status` yayını yapar; gönderen sayfayı yeniden okur.
 - `dm_messages_page` ve `dm_inbox` durumu döndürür.
 - _Uygulamada netleşen:_ `dm/delivered` teslim işaretini `now()`'a değil, çağıranın gördüğü en yeni gelen mesajın zamanına çeker. Böylece çağrıyla aynı anda yazılan bir mesaj teslim edilmiş sayılmaz. Yeni `dm_reads` satırı `last_read_at = -infinity` ile açılır: teslim okuma değildir. `dm/read` okunan bir mesaj yoksa yayın yapmaz. `dm/inbox` ve `dm/delivered` iki kez gönderilince aynı yanıtı verir (`IDEMPOTENT_CALLS`).
-- v2'deki "okundu bilgisi karşı tarafa gitmez" kuralının yerini bu alır (`docs/SPEC_V2.md` §7): karşı tarafa okunma zamanı değil, yalnızca durum gider.
+- v2'deki "okundu bilgisi karşı tarafa gitmez" kuralının yerini bu alır (`docs/arsiv/SPEC_V2.md` §7): karşı tarafa okunma zamanı değil, yalnızca durum gider.
 
 **Yazıyor kanalı.** Yeni kanal türü `dm_typing:{thread_id}`.
 

@@ -8,7 +8,7 @@ export const GRID = 24;
 export const STROKE = 1.8;
 
 // ------------------------------------------------------------------ the notification bell
-// The bell on Mesajlar's head (src/components/BellButton.tsx), a line drawing.
+// The bell on Mesajlar's head (was src/components/BellButton.tsx, removed), a line drawing.
 export const BELL =
   '<path d="M 6 16.6 V 11 C 6 7.5 8.6 4.8 12 4.8 C 15.4 4.8 18 7.5 18 11 V 16.6 L 19.6 18.2 H 4.4 Z"/>' +
   '<path d="M 10 20.6 C 10.4 21.4 11.1 21.8 12 21.8 C 12.9 21.8 13.6 21.4 14 20.6"/>' +

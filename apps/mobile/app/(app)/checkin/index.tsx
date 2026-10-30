@@ -26,7 +26,7 @@ import { KIT } from '@/theme/auraKit';
 type Problem = 'denied' | 'failed' | 'tooFar' | 'outsideBoundary' | null;
 
 // Check-in: consent and the position, which only verifies the venue chosen in Keşfet
-// (docs/SPEC_V2.md §4). Outside the radius, or the boundary with its tolerance (docs/SPEC_V3.md
+// (docs/arsiv/SPEC_V2.md §4). Outside the radius, or the boundary with its tolerance (docs/SPEC_V3.md
 // §4.2), the user is warned here; the server decides anyway. A venue with spots asks "Neredesin?"
 // in the same sheet, before the position (docs/SPEC_V4.md §4.E: no headcount). On the dev project with CHECKIN_SKIP_LOCATION (useSkipLocation) neither a position outside
 // the venue nor a missing one (no permission, no fix indoors) stops the flow: the server skips the

@@ -1,4 +1,4 @@
-// Keşfet (docs/SPEC_V2.md §4). The server buckets each venue's active tables; the app never sees a
+// Keşfet (docs/arsiv/SPEC_V2.md §4). The server buckets each venue's active tables; the app never sees a
 // count. A planned event shows as a label while it runs or when it starts within EVENT_WINDOW_DAYS.
 
 import { normalize } from './trText.ts';

@@ -1,4 +1,4 @@
-// Tabu rules (MVP_SPEC §5.1, docs/SPEC_V2.md §8.2). The SQL functions receive the numbers from
+// Tabu rules (MVP_SPEC §5.1, docs/arsiv/SPEC_V2.md §8.2). The SQL functions receive the numbers from
 // here and apply the same rules as applyMark; the integration tests check that they agree.
 import type { SohbetState, SohbetTheme } from './sohbet.ts';
 import { SOHBET_THEMES } from './sohbet.ts';
@@ -23,7 +23,7 @@ export const TABU = {
 
 export type TabuCard = { word: string; forbidden: readonly string[] };
 
-// Two-table Tabu, face to face (docs/SPEC_V2.md §8.2, docs/SPEC_V3.md §6). The mode is set for the
+// Two-table Tabu, face to face (docs/arsiv/SPEC_V2.md §8.2, docs/SPEC_V3.md §6). The mode is set for the
 // whole game from the two headcounts (S3):
 // - refereed: team = table, one score per table; the card list goes to both tables, the other
 //   table judges.

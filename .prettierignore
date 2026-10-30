@@ -2,7 +2,8 @@ pnpm-lock.yaml
 supabase/.temp/
 # Hand-maintained product docs.
 CLAUDE.md
-MVP_SPEC.md
+# Archived docs, kept as they were (docs/arsiv/).
+docs/arsiv/
 # Design handoff files, kept exactly as the design session delivered them.
 docs/design/
 # A copy of the v46 capsule drawing library (apps/mobile/src/theme/capsuleDrawing.test.ts).

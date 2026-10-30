@@ -2,7 +2,7 @@ import type { ReportReason } from '../chat.ts';
 import type { InviteState } from '../notifications.ts';
 import type { Reaction } from '../reactions.ts';
 
-// `friends` and `dm` Edge Functions (docs/SPEC_V2.md §6, §9), shared with the mobile app. No
+// `friends` and `dm` Edge Functions (docs/arsiv/SPEC_V2.md §6, §9), shared with the mobile app. No
 // response before a friendship carries a public_id.
 export type FriendsRequest =
   | { action: 'list' }

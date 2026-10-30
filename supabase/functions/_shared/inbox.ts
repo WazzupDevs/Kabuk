@@ -7,7 +7,7 @@ import type { PushMessage, PushPreference } from './pure/push.ts';
 import { inboxChannel } from './pure/rooms.ts';
 import { sendPush } from './push.ts';
 
-// Data-free inbox events (docs/SPEC_V2.md §7), sent after the response so timing tells nothing.
+// Data-free inbox events (docs/arsiv/SPEC_V2.md §7), sent after the response so timing tells nothing.
 export function notifyInbox(userIds: string[], event: string): void {
   for (const id of userIds) inBackground(broadcast(inboxChannel(id), event));
 }

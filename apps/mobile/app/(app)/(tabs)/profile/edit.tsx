@@ -29,7 +29,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 import { AppIcon } from '@/components/AppIcon';
 
-// The photo, the display name and the bio (docs/SPEC_V2.md §5.1; canvas: Aşama 5 · Geri bildirim →
+// The photo, the display name and the bio (docs/arsiv/SPEC_V2.md §5.1; canvas: Aşama 5 · Geri bildirim →
 // Profili düzenle). Length is checked here; the profile function checks length and profanity
 // again. The birth date cannot change (rule 11).
 export default function EditProfileScreen() {

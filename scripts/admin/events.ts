@@ -6,7 +6,7 @@ import {
   EVENT_TITLE_MAX,
 } from '../../supabase/functions/_shared/pure/explore.ts';
 
-// `pnpm admin:event` (docs/SPEC_V2.md §4): planned venue events for Keşfet.
+// `pnpm admin:event` (docs/arsiv/SPEC_V2.md §4): planned venue events for Keşfet.
 //   add <venue> "<title>" <start> [<end>]   venue: id, or source ref (node/123, test/hush-coffee)
 //   list                                    upcoming and running events
 //   remove <eventId>

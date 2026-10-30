@@ -19,7 +19,7 @@ import { tr } from '@/i18n/tr';
 // The birth date, step 5/7: never shown to anyone, the profile shows the age; it cannot be changed
 // later (rule 11). "Devam" asks once more in a sheet with the age and the date (K-55, K-63; v46
 // §6): Onayla goes on, Düzelt stays. The server decides under 18 when the profile is sent, after
-// the gender step: it asks for the gender first (docs/DECISIONS.md → "Faz 4 adım 4.3b").
+// the gender step: it asks for the gender first (docs/arsiv/DECISIONS.md → "Faz 4 adım 4.3b").
 export default function BirthStep() {
   const profile = useProfile();
   const name = useOnboardingStore((s) => s.name);

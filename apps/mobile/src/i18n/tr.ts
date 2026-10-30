@@ -799,7 +799,7 @@ export const tr = {
   },
   // The games (docs/SPEC_V3.md §5.1). "Sohbet" alone is the intent label, never a game.
   concepts: GAME_NAMES,
-  // How a game is shown with its type (docs/SPEC_V2.md §8.1): only voice games are marked, since
+  // How a game is shown with its type (docs/arsiv/SPEC_V2.md §8.1): only voice games are marked, since
   // they need the tables to come together.
   conceptWithMode: (concept: 'tabu' | 'sohbet' | 'sahtekar' | 'harf' | 'sarki' | 'ibre') =>
     concept === 'sohbet' ? 'Sohbet kartları' : `${VOICE_NAMES[concept]} · yüz yüze`,
@@ -882,7 +882,7 @@ export const tr = {
     gameTagHint: 'Yalnızca lobide görünür; oyunu başlatmaz.',
     createConfirm: 'Lobiye aç',
     // The room's eyebrow: the running game, else the chat; voice games say they are played face to
-    // face (docs/SPEC_V2.md §8.1).
+    // face (docs/arsiv/SPEC_V2.md §8.1).
     roomEyebrow: (concept: 'tabu' | 'sohbet' | 'sahtekar' | 'harf' | 'sarki' | 'ibre' | null) =>
       concept === null
         ? 'Masan'

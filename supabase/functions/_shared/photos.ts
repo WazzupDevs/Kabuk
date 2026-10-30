@@ -28,7 +28,7 @@ export async function deleteProfilePhotos(db: Db, userId: string): Promise<void>
   if (removed.error) throw new Error(`storage remove failed (${removed.error.message})`);
 }
 
-// A reported photo as hex bytea for the report row (docs/SPEC_V2.md §5.3: the copy lives in
+// A reported photo as hex bytea for the report row (docs/arsiv/SPEC_V2.md §5.3: the copy lives in
 // reports.photo_copy and goes with the row after 30 days). undefined if it cannot be read.
 export async function photoCopyHex(db: Db, path: string | null): Promise<string | undefined> {
   if (!path) return undefined;

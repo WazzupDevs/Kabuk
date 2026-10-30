@@ -1,7 +1,7 @@
 import type { BadgeId } from '../badges.ts';
 import type { Gender } from '../gender.ts';
 
-// `profile` Edge Function (docs/SPEC_V2.md §5), shared with the mobile app.
+// `profile` Edge Function (docs/arsiv/SPEC_V2.md §5), shared with the mobile app.
 export type ProfileView = {
   publicId: string;
   displayName: string | null;
