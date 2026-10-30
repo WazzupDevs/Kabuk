@@ -26,8 +26,9 @@ type Props = {
   // Text or icon buttons on the right.
   actions?: ReactNode;
   // Telegram Android's chat top (the DM; the owner's call, 29 Ekim): the back button, the avatar
-  // with the name and the actions each a glass pill of their own, the avatar (`lg`) filling its pill
-  // but for a thin edge; bare icon buttons in the actions.
+  // with the name and the actions each a frosted pill of their own over the stream, the avatar
+  // (`md`, thinner since 30 Ekim) filling its pill but for a thin edge; bare icon buttons in the
+  // actions.
   split?: boolean;
 };
 
@@ -79,6 +80,7 @@ export function ChatTopBar({
     return (
       <SplitBar
         who={who}
+        bare={!leading}
         onBack={onBack}
         onPressTitle={onPressTitle}
         titleAccessibilityLabel={titleAccessibilityLabel}
@@ -129,17 +131,22 @@ export function ChatTopBar({
   );
 }
 
-// The pills' height: the `lg` avatar and its edge.
-const PILL = AVATAR_SIZE.lg + KIT.size.splitInset * 2;
+// The pills' height: the `md` avatar and its edge (the owner's report, 30 Ekim: the `lg` pills
+// were heavy).
+export const SPLIT_PILL = AVATAR_SIZE.md + KIT.size.splitInset * 2;
+const PILL = SPLIT_PILL;
 
 function SplitBar({
   who,
+  bare,
   onBack,
   onPressTitle,
   titleAccessibilityLabel,
   actions,
 }: {
   who: ReactNode;
+  // No avatar: the name starts as far in as the pill's round.
+  bare: boolean;
   onBack?: () => void;
   onPressTitle?: () => void;
   titleAccessibilityLabel?: string;
@@ -156,11 +163,13 @@ function SplitBar({
   // (flex 1 in a column would size it by the button, a two-line name spilling out).
   const whoPill = (
     <Glass
+      frost
       radius={PILL / 2}
       style={{
         ...pill,
         ...(onPressTitle ? null : { flex: 1 }),
         padding: KIT.size.splitInset,
+        paddingLeft: bare ? SPACING[4] : KIT.size.splitInset,
         paddingRight: SPACING[4],
         gap: SPACING[2.5],
       }}
@@ -190,6 +199,7 @@ function SplitBar({
         >
           <Animated.View style={{ transform: [{ scale: press.scale }] }}>
             <Glass
+              frost
               radius={PILL / 2}
               style={{ width: PILL, height: PILL, alignItems: 'center', justifyContent: 'center' }}
             >
@@ -212,13 +222,14 @@ function SplitBar({
       )}
       {actions ? (
         <Glass
+          frost
           radius={PILL / 2}
           style={{
             ...pill,
             height: PILL,
             minWidth: PILL,
             justifyContent: 'center',
-            paddingHorizontal: (PILL - TOUCH.min) / 2,
+            paddingHorizontal: Math.max(0, (PILL - TOUCH.min) / 2),
           }}
         >
           {actions}

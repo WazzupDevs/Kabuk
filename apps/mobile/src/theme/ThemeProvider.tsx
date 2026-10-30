@@ -9,6 +9,7 @@ import { type TextStyle, useColorScheme, View } from 'react-native';
 import { create } from 'zustand';
 
 import { useLaunchStore } from '@/features/launch/launchStore';
+import { setLightNavigationBar } from '@/lib/navigationBar';
 
 import { rgbChannels } from './contrast';
 import { featurePalette } from './feature';
@@ -188,6 +189,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const theme = targetReady ? target : shown;
 
   const navTheme = useMemo(() => (theme ? navigationTheme(theme) : null), [theme]);
+  // The navigation buttons follow the scheme as the status bar does (lib/navigationBar.ts).
+  const dark = curtain || theme?.scheme === 'dark';
+  useEffect(() => setLightNavigationBar(!dark), [dark]);
   const style = useMemo(
     () =>
       theme ? [{ flex: 1, backgroundColor: theme.colors.canvas }, colorVars(theme.colors)] : null,

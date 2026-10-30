@@ -682,6 +682,8 @@ function SearchGlass({
   const { c } = useKit();
   return (
     <Glass
+      frost
+      radius={FIELD_H / 2}
       style={{
         flex: 1,
         height: FIELD_H,
@@ -726,6 +728,8 @@ function ViewSwitch({ value, onChange }: { value: View_; onChange: (v: View_) =>
   const { c } = useKit();
   return (
     <Glass
+      frost
+      radius={FIELD_H / 2}
       style={{
         height: FIELD_H,
         borderRadius: FIELD_H / 2,

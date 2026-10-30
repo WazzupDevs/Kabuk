@@ -10,6 +10,7 @@
 //   (docs/DECISIONS.md, "runtimeVersion").
 // - Android's GWP-ASan is off for this app (withGwpAsanOff below).
 // - Android draws the app at the screen's highest refresh rate (withHighRefreshRate below).
+// - Android draws no shade of its own behind the navigation buttons (withClearNavigationBar).
 // This file imports no other .ts file: Node before 22.18 cannot load one (the Expo CLI and the EAS
 // build server read this config with plain Node). The app name therefore lives in app.json;
 // scripts/app-name.test.ts keeps it equal to APP_NAME (supabase/functions/_shared/pure/brand.ts).
@@ -18,7 +19,13 @@ import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import type { ConfigContext, ExpoConfig } from 'expo/config';
-import { type ConfigPlugin, withAndroidManifest, withMainActivity } from 'expo/config-plugins';
+import {
+  AndroidConfig,
+  type ConfigPlugin,
+  withAndroidManifest,
+  withAndroidStyles,
+  withMainActivity,
+} from 'expo/config-plugins';
 
 const EAS_PROJECT_ID = '9692ae9b-7826-4f6b-a41e-a0506d5992c2';
 
@@ -74,26 +81,44 @@ export const withHighRefreshRate: ConfigPlugin = (config) =>
     return mod;
   });
 
+// <item name="android:enforceNavigationBarContrast">false</item> in the app's theme. Edge to edge,
+// Android shades the navigation buttons' strip unless the theme says not to, and React Native
+// reads the theme: every screen ended in a dark band at the bottom (the owner's report, 30 Ekim).
+// The buttons' colour follows the app's theme instead (SkallGlass → setLightNavigationBar).
+export const withClearNavigationBar: ConfigPlugin = (config) =>
+  withAndroidStyles(config, (mod) => {
+    mod.modResults = AndroidConfig.Styles.assignStylesValue(mod.modResults, {
+      add: true,
+      name: 'android:enforceNavigationBarContrast',
+      value: 'false',
+      targetApi: '29',
+      parent: AndroidConfig.Styles.getAppThemeGroup(),
+    });
+    return mod;
+  });
+
 export default ({ config }: ConfigContext): ExpoConfig => {
   const googleServicesFile = process.env.GOOGLE_SERVICES_JSON ?? './google-services.json';
   const hasGoogleServices = existsSync(resolve(__dirname, googleServicesFile));
   if (!config.name) throw new Error('app.json: expo.name is missing');
 
-  return withHighRefreshRate(
-    withGwpAsanOff({
-      ...config,
-      name: config.name,
-      slug: config.slug ?? 'masa',
-      android: {
-        ...config.android,
-        ...(hasGoogleServices ? { googleServicesFile } : {}),
-      },
-      extra: {
-        ...config.extra,
-        eas: { projectId: EAS_PROJECT_ID },
-      },
-      runtimeVersion: { policy: 'appVersion' },
-      updates: { url: `https://u.expo.dev/${EAS_PROJECT_ID}`, enabled: true },
-    }),
+  return withClearNavigationBar(
+    withHighRefreshRate(
+      withGwpAsanOff({
+        ...config,
+        name: config.name,
+        slug: config.slug ?? 'masa',
+        android: {
+          ...config.android,
+          ...(hasGoogleServices ? { googleServicesFile } : {}),
+        },
+        extra: {
+          ...config.extra,
+          eas: { projectId: EAS_PROJECT_ID },
+        },
+        runtimeVersion: { policy: 'appVersion' },
+        updates: { url: `https://u.expo.dev/${EAS_PROJECT_ID}`, enabled: true },
+      }),
+    ),
   );
 };

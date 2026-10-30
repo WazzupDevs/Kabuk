@@ -11,6 +11,7 @@ import Svg, { Rect } from 'react-native-svg';
 
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { BRAND } from '@/theme/brand';
+import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
@@ -20,6 +21,8 @@ import { usePressScale } from './motion';
 import { AppIcon } from './AppIcon';
 import { useLabOff } from '@/lib/drawLab';
 import { shadowParts } from './NativeShadow';
+import { Frost } from '@/ui/LiquidGlass';
+import { useFrost } from '@/aura/kit';
 
 type Props = {
   icon: IconName;
@@ -49,6 +52,7 @@ export function IconButton({
   const { colors, shape, scheme } = useTheme();
   const pressScale = usePressScale();
   const shadowOff = useLabOff('golge');
+  const frosted = useFrost() && !!round && !danger;
   const shadow =
     round && !danger
       ? shadowParts(
@@ -84,7 +88,7 @@ export function IconButton({
               ? { backgroundColor: colors.dangerSoft }
               : round
                 ? {
-                    backgroundColor: KIT[scheme].raisedRound,
+                    backgroundColor: frosted ? undefined : KIT[scheme].raisedRound,
                     borderWidth: KIT.size.edge,
                     borderColor: KIT[scheme].raisedEdge,
                     boxShadow: shadow?.boxShadow,
@@ -97,7 +101,14 @@ export function IconButton({
           ]}
         >
           {shadow?.node}
-          {/* A round button is glass too (theme/glass.ts → BUTTON_GLASS). */}
+          {/* Frosted (the owner's call, 30 Ekim: every clear button). */}
+          {frosted ? (
+            <Frost
+              radius={TOUCH.min / 2}
+              ground={AURA[scheme].ground}
+              fill={KIT[scheme].raisedRound}
+            />
+          ) : null}
           {glyph ?? <AppIcon name={icon} size={ICON.lg} color={colors.text} />}
         </View>
       )}

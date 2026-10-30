@@ -23,7 +23,7 @@ export function DmFixture() {
           onBack={noop}
           split
           title={NAME}
-          leading={<Avatar kind="profile" name={NAME} size="lg" photoUrl={null} />}
+          leading={<Avatar kind="profile" name={NAME} size="md" photoUrl={null} />}
           actions={
             <IconButton
               icon="ellipsis-horizontal"
