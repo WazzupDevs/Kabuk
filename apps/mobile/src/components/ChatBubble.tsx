@@ -1,5 +1,5 @@
 import { emojiOnly } from '@shared/emojiOnly.ts';
-import { isReaction, type Reaction } from '@shared/reactions.ts';
+import { isReaction, type Reaction, REACTIONS } from '@shared/reactions.ts';
 import * as Clipboard from 'expo-clipboard';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import {
@@ -22,7 +22,7 @@ import { useReduceMotion } from '@/lib/useReduceMotion';
 import { withAlpha } from '@/theme/contrast';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
-import { boxShadowParts, shadowParts } from '@/components/NativeShadow';
+import { shadowParts } from '@/components/NativeShadow';
 import { useLabOff } from '@/lib/drawLab';
 import { svgKey } from '@/lib/svgKey';
 
@@ -113,6 +113,10 @@ const MINE_SHARE = 0.84;
 const THEIRS_SHARE = 0.9;
 // Room for rounding when a one-line message keeps its time beside it.
 const WIDEN_SLACK = 4;
+// A reaction pill in the viewer's own (white) bubble and in another's (coloured) one.
+const CHIP_ALPHA = 0.12;
+const CHIP_ALPHA_ON = 0.22;
+const DOUBLE_TAP_MS = 280;
 
 export function ChatBubble({
   text,
@@ -205,6 +209,27 @@ export function ChatBubble({
     const need = Math.ceil(a.width + b.width + WIDEN_SLACK);
     if (need <= maxText) setWiden(need);
   };
+  // Telegram Android: the reactions inside the bubble, under the words, the time at the right of
+  // their row (the owner's call, 30 Ekim); under a big emoji, outside.
+  const hasChips = !!reactions && reactions.length > 0;
+  const chipsInside = hasChips && !big;
+  const chipPaint = mine
+    ? { bg: withAlpha(KIT.primary, CHIP_ALPHA), bgOn: KIT.primary, ink: fg, inkOn: KIT.onPrimary }
+    : { bg: withAlpha(paint.themInk, CHIP_ALPHA_ON), bgOn: paint.themInk, ink: fg, inkOn: fill };
+  // Telegram Android: a double tap leaves the first reaction (the owner's call, 30 Ekim).
+  const lastTap = useRef(0);
+  const onTap = onReact
+    ? () => {
+        const now = Date.now();
+        if (now - lastTap.current < DOUBLE_TAP_MS) {
+          lastTap.current = 0;
+          haptic('selection');
+          onReact(REACTIONS[0]);
+        } else {
+          lastTap.current = now;
+        }
+      }
+    : undefined;
   const bubble = (
     <Pressable
       testID={testID}
@@ -223,6 +248,7 @@ export function ChatBubble({
         if (e.nativeEvent.actionName === 'react') lift();
         if (e.nativeEvent.actionName === 'quote') onPressQuote?.();
       }}
+      onPress={onTap}
       onLongPress={holdable ? lift : undefined}
       style={{ maxWidth: '100%' }}
     >
@@ -298,6 +324,40 @@ export function ChatBubble({
             stamp={paint.stamp}
             stampInk={paint.stampInk}
           />
+        ) : chipsInside ? (
+          <>
+            <RNText style={[KIT_TYPE.msg, { color: fg }]}>{text}</RNText>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'flex-end',
+                gap: SPACING[2],
+                marginTop: SPACING[1.5],
+              }}
+            >
+              <ReactionChips
+                reactions={reactions ?? []}
+                onToggle={onToggleReaction}
+                paint={chipPaint}
+              />
+              {time && !state ? (
+                <View
+                  style={{
+                    marginLeft: 'auto',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: SPACING[1],
+                  }}
+                  importantForAccessibility="no-hide-descendants"
+                >
+                  <Text variant="caption" color={mine ? paint.mineMuted : paint.themMuted}>
+                    {time}
+                  </Text>
+                  {mine && delivery ? <DeliveryTicks delivery={delivery} /> : null}
+                </View>
+              ) : null}
+            </View>
+          </>
         ) : (
           <View style={widen ? { minWidth: widen } : undefined}>
             <RNText style={[KIT_TYPE.msg, { color: fg }]} onTextLayout={onTextLayout}>
@@ -332,8 +392,14 @@ export function ChatBubble({
     );
   }
   const chips =
-    reactions && reactions.length > 0 ? (
-      <ReactionChips reactions={reactions} onToggle={onToggleReaction} mine={mine} />
+    hasChips && big ? (
+      <View style={{ alignSelf: mine ? 'flex-end' : 'flex-start' }}>
+        <ReactionChips
+          reactions={reactions ?? []}
+          onToggle={onToggleReaction}
+          paint={{ bg: paint.stamp, bgOn: KIT.primary, ink: paint.stampInk, inkOn: KIT.onPrimary }}
+        />
+      </View>
     ) : null;
   const bar = pop ? (
     <MessagePop
@@ -691,39 +757,23 @@ function SwipeToReply({ onReply, children }: { onReply?: () => void; children: R
   );
 }
 
-// Under a bubble: each reaction with its count; the viewer's own is marked and can be taken back.
+// A message's reactions (Telegram Android's): each face and its count in a small pill, the
+// viewer's own filled; a tap takes the viewer's own back or leaves that one.
+type ChipPaint = { bg: string; bgOn: string; ink: string; inkOn: string };
+
 function ReactionChips({
   reactions,
   onToggle,
-  mine,
+  paint,
 }: {
   reactions: readonly ChatReaction[];
   onToggle?: (emoji: string) => void;
-  mine: boolean;
+  paint: ChipPaint;
 }) {
-  const { colors, shape } = useTheme();
+  const { shape } = useTheme();
   const chipHeight = SPACING[7];
-  // Each chip's soft shadow natively (NativeShadow.tsx): chips scroll with the chat.
-  const shadowOff = useLabOff('golge');
-  const chipShadow = boxShadowParts(
-    shadowOff,
-    shape.shadow.raised,
-    chipHeight / 2,
-    true,
-    shape.stroke.hairline,
-  );
   return (
-    <View
-      // skall.css → `.reacts`: tucked 8 under the bubble, 10 in from its side.
-      style={{
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: SPACING[1],
-        marginTop: -SPACING[2],
-        paddingHorizontal: SPACING[2.5],
-        justifyContent: mine ? 'flex-end' : 'flex-start',
-      }}
-    >
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: SPACING[1], flexShrink: 1 }}>
       {reactions.map((r) => (
         <Pressable
           key={r.emoji}
@@ -738,26 +788,20 @@ function ReactionChips({
           onPress={() => onToggle?.(r.emoji)}
           hitSlop={(TOUCH.min - chipHeight) / 2}
         >
-          {/* skall.css → `.react`: the face and the count on the surface, on the chip shadow; the
-              viewer's own in the violet. */}
           <View
             style={{
               flexDirection: 'row',
               alignItems: 'center',
               gap: SPACING[1],
               height: chipHeight,
-              paddingLeft: SPACING[1],
+              paddingLeft: SPACING[0.5] + 1,
               paddingRight: SPACING[2],
               borderRadius: shape.radius.pill,
-              borderWidth: shape.stroke.hairline,
-              borderColor: r.mine ? colors.violet : colors.divider,
-              backgroundColor: r.mine ? withAlpha(colors.violet, 0.16) : colors.surface,
-              boxShadow: chipShadow.boxShadow,
+              backgroundColor: r.mine ? paint.bgOn : paint.bg,
             }}
           >
-            {chipShadow.node}
             <ReactionFace emoji={r.emoji} size="chip" />
-            <Text variant="tag" tabular>
+            <Text variant="tag" tabular color={r.mine ? paint.inkOn : paint.ink}>
               {String(r.count)}
             </Text>
           </View>
