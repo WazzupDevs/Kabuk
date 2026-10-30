@@ -42,7 +42,7 @@ Uygulama üzerinden, elektronik ortamda; konum yalnızca açık rızanızla ve c
 
 ## 5. Saklama süreleri
 
-Oda sohbet mesajları oda kapandıktan 24 saat sonra, mekan sohbet odası mesajları 24 saat sonra, şikayet kayıtları (şikayet edilen fotoğraf ve mesaj kopyaları dahil) 30 gün sonra silinir. Arkadaşlar arası mesajlar arkadaşlık sürdükçe saklanır; arkadaşlık bittiğinde ya da hesap silindiğinde silinir. Profil fotoğrafı değiştirildiğinde ya da kaldırıldığında eski fotoğraf silinir. Diğer veriler hesap silinene kadar saklanır. Banlanan hesabın telefon numarasının geri döndürülemez özeti güvenlik amacıyla süresiz saklanır. 18 yaşından küçüklerin verisi işlenmez: kayıtta beyan edilen doğum tarihi 18 yaşın altındaysa hesap o anda silinir ve hiçbir veri saklanmaz.
+Oda sohbet mesajları oda kapandıktan 24 saat sonra, mekan sohbet odası mesajları 24 saat sonra, şikayet kayıtları (şikayet edilen fotoğraf ve mesaj kopyaları dahil) 30 gün sonra silinir. Arkadaşlar arası mesajlar arkadaşlık sürdükçe saklanır; arkadaşlık bittiğinde ya da hesap silindiğinde silinir. Her konuşmanın son 50 mesajı ve oturum bilgisi, konuşmalar hızlı açılsın diye kullanıcının telefonunda da tutulur; bu kopyalar telefon yedeğine alınmaz, arkadaşlık bittiğinde, uygulamadan çıkışta ya da hesap silindiğinde telefondan silinir. Profil fotoğrafı değiştirildiğinde ya da kaldırıldığında eski fotoğraf silinir. Diğer veriler hesap silinene kadar saklanır. Banlanan hesabın telefon numarasının geri döndürülemez özeti güvenlik amacıyla süresiz saklanır. 18 yaşından küçüklerin verisi işlenmez: kayıtta beyan edilen doğum tarihi 18 yaşın altındaysa hesap o anda silinir ve hiçbir veri saklanmaz.
 
 ## 6. Haklarınız (KVKK m. 11)
 

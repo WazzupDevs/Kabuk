@@ -3,7 +3,7 @@
     "name": "skall",
     "slug": "masa",
     "scheme": "masa",
-    "version": "0.9.2",
+    "version": "0.9.3",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "platforms": ["android", "ios"],
@@ -16,6 +16,7 @@
     },
     "android": {
       "package": "app.kabuk.mobile",
+      "allowBackup": false,
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon/adaptive-foreground.png",
         "backgroundImage": "./assets/icon/adaptive-background.png",

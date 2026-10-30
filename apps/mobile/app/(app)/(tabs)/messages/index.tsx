@@ -16,6 +16,7 @@ import { Screen } from '@/components/Screen';
 import { Sheet } from '@/components/Sheet';
 import { useTabBarSpace } from '@/components/TabBar';
 import { TypingDots } from '@/components/TypingDots';
+import { pruneDmCache } from '@/features/friends/dmCache';
 import { openDm } from '@/features/friends/openDm';
 import { useSessionStore } from '@/features/auth/session';
 import { restoreDm, useDmInbox, useFriends, useRequestCount } from '@/features/friends/queries';
@@ -176,6 +177,14 @@ function Chats({ now }: { now: Date }) {
     if (!userId || !threadIds) return;
     for (const id of threadIds.split(' ')) void restoreDm(queryClient, userId, id);
   }, [queryClient, userId, threadIds]);
+  // A conversation that left the inbox (the friendship ended) leaves the phone too (dmCache.ts).
+  const allThreads = inbox.data
+    ? inbox.data.flatMap((t) => (t.threadId ? [t.threadId] : [])).join(' ')
+    : null;
+  useEffect(() => {
+    if (!userId || allThreads === null) return;
+    void pruneDmCache(userId, new Set(allThreads ? allThreads.split(' ') : []));
+  }, [userId, allThreads]);
 
   if (inbox.isPending || loading) {
     return (
