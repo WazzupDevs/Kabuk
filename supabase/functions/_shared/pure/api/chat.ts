@@ -22,7 +22,7 @@ export type SafetyRequest =
       reason: GameFlowReportReason;
       sessionId?: string;
     }
-  // A profile the reporter can see now (docs/SPEC_V2.md §5.3); otherwise `not_found`, the same
+  // A profile the reporter can see now (docs/arsiv/SPEC_V2.md §5.3); otherwise `not_found`, the same
   // answer profile/get gives.
   | { action: 'report'; target: 'profile'; publicId: string; reason: ReportReason }
   // Step 4: a DM thread (last 50 messages) or an encounter of the caller's own history. A history

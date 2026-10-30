@@ -1,4 +1,4 @@
-// Friends (docs/SPEC_V2.md §6.2–§6.5, docs/SPEC_V3.md §7.5). Requests and "Arkadaş ekle" start
+// Friends (docs/arsiv/SPEC_V2.md §6.2–§6.5, docs/SPEC_V3.md §7.5). Requests and "Arkadaş ekle" start
 // from the caller's own history row (historyId) or a profiled venue chat message
 // (venueChatMessageId), never from a profile id; they answer { ok: true } whatever happens on
 // the other side (swallowed, blocked, declined earlier), except `already_friends`. A decline

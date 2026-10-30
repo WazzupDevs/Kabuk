@@ -1,4 +1,4 @@
-// DMs between friends (docs/SPEC_V2.md §6.4). The thread exists only while the friendship does.
+// DMs between friends (docs/arsiv/SPEC_V2.md §6.4). The thread exists only while the friendship does.
 // Broadcasts carry no data (clients reread through dm_messages_page); the push says only
 // "Yeni bir mesajın var". v3 step 6 (docs/SPEC_V3.md §18.2): the Mesajlar list and the ticks; a
 // status that really moves (delivered, read) is announced on dm:{thread_id} as dm_status.

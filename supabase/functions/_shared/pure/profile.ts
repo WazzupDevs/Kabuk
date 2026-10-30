@@ -1,4 +1,4 @@
-// Profile fields (docs/SPEC_V2.md §5.1; K-34 in docs/SPEC_V4.md §4.C). The same rules run on the
+// Profile fields (docs/arsiv/SPEC_V2.md §5.1; K-34 in docs/SPEC_V4.md §4.C). The same rules run on the
 // phone (length, contact details) and in the profile and account functions (length, contact
 // details and profanity).
 import { containsContact, containsProfanity, type PreparedTerms } from './profanity.ts';

@@ -1,4 +1,4 @@
-// The launch's two safeguards (docs/DECISIONS.md → "skall açılışı"). The system splash stays up
+// The launch's two safeguards (docs/arsiv/DECISIONS.md → "skall açılışı"). The system splash stays up
 // until the launch curtain hands over (SplashScreen.preventAutoHideAsync); if the curtain never
 // gets there, the app must not look frozen behind it:
 // - the cap: whatever the curtain does, the system splash goes at the latest `capMs` after launch,

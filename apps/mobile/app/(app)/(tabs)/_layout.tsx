@@ -67,7 +67,7 @@ export default function TabsLayout() {
           options={{
             title: tr.tabs.venue,
             tabBarButtonTestID: 'tab-venue',
-            // The Mekan tab (docs/SPEC_V2.md §2) with the mark, drawn by TabBar.
+            // The Mekan tab (docs/arsiv/SPEC_V2.md §2) with the mark, drawn by TabBar.
           }}
         />
         <Tabs.Screen

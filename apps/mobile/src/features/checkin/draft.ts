@@ -2,7 +2,7 @@ import type { LngLat } from '@shared/geo.ts';
 import type { VenueKind } from '@shared/venueKind.ts';
 import { create } from 'zustand';
 
-// The check-in in progress (docs/SPEC_V2.md §4): the venue is chosen by hand in Keşfet first; the
+// The check-in in progress (docs/arsiv/SPEC_V2.md §4): the venue is chosen by hand in Keşfet first; the
 // position only verifies it. Memory only: cleared after the check-in request and never persisted
 // (MVP_SPEC §4.2).
 // `mocked`: the phone says a mock location app gave the position (Android); the server refuses it.

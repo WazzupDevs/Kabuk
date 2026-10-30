@@ -8,7 +8,7 @@ import { bezier } from './launchMotion';
 // (K-27). Every part is a function of the scene's size and the time since it began, so the end is
 // one frame whether the scene ran, was skipped ("Geç", "Başla") or never ran (reduce motion; back
 // from "Başlamadan önce", K-28). Pure; introScene.test.ts pins it, and
-// src/features/onboarding/IntroScene.tsx draws it on the UI thread (the frame functions are
+// The old src/features/onboarding/IntroScene.tsx drew it on the UI thread (the frame functions are
 // worklets).
 
 export const INTRO_LOOKS: readonly CapsuleKey[] = [

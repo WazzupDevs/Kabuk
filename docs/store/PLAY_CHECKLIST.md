@@ -1,6 +1,6 @@
 # Google Play kapalı test kontrol listesi
 
-Kabuk'u Google Play'de **kapalı test** kanalına çıkarmak için Play Console'da yapılacaklar. Hesap ve panel adımlarını proje sahibi yapar. Metinler `docs/store/listing-tr.md`'de, yasal taslaklar `docs/legal/`'da.
+skall'ı Google Play'de **kapalı test** kanalına çıkarmak için Play Console'da yapılacaklar. Hesap ve panel adımlarını proje sahibi yapar. Metinler `docs/store/listing-tr.md`'de, yasal taslaklar `docs/legal/`'da.
 
 ## 0. Build
 
@@ -19,7 +19,7 @@ Kabuk'u Google Play'de **kapalı test** kanalına çıkarmak için Play Console'
 ## 2. Uygulamayı oluştur
 
 - [ ] Console → **Uygulama oluştur**:
-  - Ad: "Kabuk: Masadan Masaya Oyun" (Play başlığı, en fazla 30 karakter; `docs/store/listing-tr.md`). Uygulamanın kendi adı `APP_NAME` = "Kabuk".
+  - Ad: "skall: Masadan Masaya Oyun" (Play başlığı, en fazla 30 karakter; `docs/store/listing-tr.md`). Uygulamanın kendi adı `APP_NAME` = "skall".
   - Varsayılan dil: Türkçe.
   - Tür: Uygulama. Ücretsiz.
 - [ ] Beyanlar: geliştirici program politikaları ve ABD ihracat yasaları.

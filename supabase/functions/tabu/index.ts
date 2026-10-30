@@ -1,4 +1,4 @@
-// Tabu (MVP_SPEC §5.1, docs/SPEC_V2.md §8.2, docs/SPEC_V3.md §6). One table: the deck, then the
+// Tabu (MVP_SPEC §5.1, docs/arsiv/SPEC_V2.md §8.2, docs/SPEC_V3.md §6). One table: the deck, then the
 // phone runs the game. Two tables: face to face, server-authoritative, started by
 // rooms/answer-game, in the mode the server sets from the sides' headcounts. Each turn opens ready;
 // the phone that starts it (begin-turn) describes it (docs/SPEC_V3.md §22.E). Refereed: the

@@ -1,4 +1,4 @@
-// Profile photos carry no metadata (docs/SPEC_V2.md §5.3, rule 6). The phone re-encodes the photo,
+// Profile photos carry no metadata (docs/arsiv/SPEC_V2.md §5.3, rule 6). The phone re-encodes the photo,
 // strips any segment that is not image data, and checks the result before upload; photo-commit
 // runs the same check on the server. Accepted: a JPEG (FF D8 FF) whose only APPn segment is a JFIF
 // APP0, and no COM segment. EXIF and XMP (APP1), IPTC (APP13) and every other APPn are rejected.

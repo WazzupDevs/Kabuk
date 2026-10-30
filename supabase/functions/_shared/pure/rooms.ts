@@ -93,7 +93,7 @@ export function requesterStatus(
 // Realtime broadcast channels. Payloads are always empty: clients refetch through RLS.
 export const venueChannel = (venueId: string): string => `venue:${venueId}`;
 export const sessionChannel = (sessionId: string): string => `session:${sessionId}`;
-// v2 (docs/SPEC_V2.md §7): the account's own inbox and a DM thread. Server broadcasts only.
+// v2 (docs/arsiv/SPEC_V2.md §7): the account's own inbox and a DM thread. Server broadcasts only.
 export const inboxChannel = (userId: string): string => `inbox:${userId}`;
 export const dmChannel = (threadId: string): string => `dm:${threadId}`;
 // v3 step 6 (docs/SPEC_V3.md §18.2): the two members send here themselves, event TYPING with an

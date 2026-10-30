@@ -1,4 +1,4 @@
-# Pilot yayını (Kabuk v1, Sakarya Üniversitesi)
+# Pilot yayını (skall, Sakarya Üniversitesi)
 
 Pilotun yayın sırası: üretim Supabase projesi, production build, `MIN_APP_BUILD`, Play iç test ve kampüsün açılması. Adımlar sırayla yapılır; bir adım bitmeden sonrakine geçilmez. Kurulumun gerekçeleri ve dev/üretim farkları `CLAUDE.md` → "Üretim Supabase projesi" bölümündedir; burada yalnızca sıra ve komutlar var.
 

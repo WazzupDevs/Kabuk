@@ -781,7 +781,7 @@ export function Li({
       onPress={onPress}
     >
       {/* The style on an inner View: NativeWind drops a function `style` on Pressable in release
-          (docs/DECISIONS.md). */}
+          (docs/arsiv/DECISIONS.md). */}
       {({ pressed }) => (
         <View style={[style, pressed ? { opacity: PRESSED_ROW } : null]}>{row}</View>
       )}

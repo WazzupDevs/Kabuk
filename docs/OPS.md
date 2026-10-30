@@ -44,7 +44,7 @@ Gizlilik politikası, KVKK metni, kullanım koşulları ve hesap silme talebi he
 3. EAS `preview` ve `production` ortamlarında `EXPO_PUBLIC_PRIVACY_URL` = gizlilik sayfası adresi, sonra `eas update`.
 4. Yerelde bakmak için `pnpm site:build` ve `site/index.html`'i tarayıcıda aç.
 
-- Repo gizliye çevrilirse GitHub Pages ücretli plan ister (Pro/Team). O zaman Cloudflare Pages: panelde repoyu bağla, build komutu `pnpm site:build`, çıktı klasörü `site` (bkz. `docs/DECISIONS.md` → "Yasal sayfalar").
+- Repo gizliye çevrilirse GitHub Pages ücretli plan ister (Pro/Team). O zaman Cloudflare Pages: panelde repoyu bağla, build komutu `pnpm site:build`, çıktı klasörü `site` (bkz. `docs/arsiv/DECISIONS.md` → "Yasal sayfalar").
 
 ## Üretim Supabase projesi (tek seferlik)
 
@@ -79,7 +79,7 @@ Play inceleme hesabının kodu ve değiştirilmesi: `.claude/skills/supabase-ops
 
 ## Push (isteğe bağlı; hesaplar olmadan build kırılmaz)
 
-- Expo proje id'si (`@wazzupdevs/masa`) `app.config.ts`'te sabit (`EAS_PROJECT_ID`); push token kaydı ve OTA onu kullanır. Ortam değişkeninden okunmaz (bkz. `docs/DECISIONS.md` → "EAS proje kimliği").
+- Expo proje id'si (`@wazzupdevs/masa`) `app.config.ts`'te sabit (`EAS_PROJECT_ID`); push token kaydı ve OTA onu kullanır. Ortam değişkeninden okunmaz (bkz. `docs/arsiv/DECISIONS.md` → "EAS proje kimliği").
 - `GOOGLE_SERVICES_JSON`: Firebase'in `google-services.json` yolu (varsayılan `apps/mobile/google-services.json`, git'e girmez). Dosya yoksa Android build'e eklenmez. FCM V1 anahtarı Expo paneline yüklenir.
 - Gönderim Expo push API'si ile yapılır, sunucuda anahtar gerekmez.
 

@@ -10,17 +10,17 @@
 
 ## Kod ve yapılandırma (uygulandı)
 
-| Yer                                                  | Değişiklik                                                                                                                                                                                   |
-| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/mobile/app.json` → `android.package`           | `app.kabuk.mobile`                                                                                                                                                                           |
-| `apps/mobile/app.json` → `ios.bundleIdentifier`      | `app.kabuk.mobile`                                                                                                                                                                           |
-| `apps/mobile/app.json` → `version`                   | **0.3.0'da kaldı** (yukarıda gerekçe). Bundan sonraki native değişiklik yine artırır                                                                                                         |
-| `scheme` (`masa`), `slug` (`masa`)                   | **Değişmedi.** `slug` EAS projesinin adıdır (`@wazzupdevs/masa`); proje kimliği `app.config.ts`'te sabit                                                                                     |
-| `e2e/maestro/p0.yaml` ve `flows/*.yaml` → `appId`    | `app.kabuk.mobile`                                                                                                                                                                           |
-| `apps/mobile/src/lib/appBuild.ts`                    | "Güncelle" bağlantısının yedek paket adı (`Application.applicationId` yoksa): `app.kabuk.mobile`                                                                                             |
-| `scripts/e2e/run-on-emulator.sh`, `patch-android.sh` | Paket adı geçmiyor; değişiklik yok                                                                                                                                                           |
-| Belgeler                                             | CLAUDE.md, `MVP_SPEC.md`, `docs/DECISIONS.md`, `docs/store/PLAY_CHECKLIST.md`, `supabase/functions/_shared/pure/brand.ts` yorumu. `listing-tr.md` ve `FIELD_TEST.md`'de paket adı geçmiyordu |
-| Bildirim kanalları, `expo-notifications` ayarları    | Paket adına bağlı değil; yeni kurulumda kanallar yeniden oluşur                                                                                                                              |
+| Yer                                                  | Değişiklik                                                                                                                                                                                                    |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/mobile/app.json` → `android.package`           | `app.kabuk.mobile`                                                                                                                                                                                            |
+| `apps/mobile/app.json` → `ios.bundleIdentifier`      | `app.kabuk.mobile`                                                                                                                                                                                            |
+| `apps/mobile/app.json` → `version`                   | **0.3.0'da kaldı** (yukarıda gerekçe). Bundan sonraki native değişiklik yine artırır                                                                                                                          |
+| `scheme` (`masa`), `slug` (`masa`)                   | **Değişmedi.** `slug` EAS projesinin adıdır (`@wazzupdevs/masa`); proje kimliği `app.config.ts`'te sabit                                                                                                      |
+| `e2e/maestro/p0.yaml` ve `flows/*.yaml` → `appId`    | `app.kabuk.mobile`                                                                                                                                                                                            |
+| `apps/mobile/src/lib/appBuild.ts`                    | "Güncelle" bağlantısının yedek paket adı (`Application.applicationId` yoksa): `app.kabuk.mobile`                                                                                                              |
+| `scripts/e2e/run-on-emulator.sh`, `patch-android.sh` | Paket adı geçmiyor; değişiklik yok                                                                                                                                                                            |
+| Belgeler                                             | CLAUDE.md, `docs/arsiv/MVP_SPEC.md`, `docs/arsiv/DECISIONS.md`, `docs/store/PLAY_CHECKLIST.md`, `supabase/functions/_shared/pure/brand.ts` yorumu. `listing-tr.md` ve `FIELD_TEST.md`'de paket adı geçmiyordu |
+| Bildirim kanalları, `expo-notifications` ayarları    | Paket adına bağlı değil; yeni kurulumda kanallar yeniden oluşur                                                                                                                                               |
 
 ## Panel adımları (proje sahibi, bu sırayla)
 

@@ -81,7 +81,7 @@ export async function moveLegacyPhotos(admin: Admin): Promise<{ moved: number; r
   return { moved, removed };
 }
 
-// `pnpm admin:remove-photo <publicId>` after a report review (docs/SPEC_V2.md §5.3): deletes the
+// `pnpm admin:remove-photo <publicId>` after a report review (docs/arsiv/SPEC_V2.md §5.3): deletes the
 // current photo and empties photo_path. Report copies stay until their 30 days end. Returns false
 // if the profile had no photo.
 export async function removeProfilePhoto(admin: Admin, publicId: string): Promise<boolean> {

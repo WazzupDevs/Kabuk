@@ -1,4 +1,4 @@
-// Product analytics (MVP_SPEC §12, docs/SPEC_V2.md §13). Only these events, only these properties, and the user id as
+// Product analytics (MVP_SPEC §12, docs/arsiv/SPEC_V2.md §13). Only these events, only these properties, and the user id as
 // the distinct id: never a phone number, alias, message, venue or position.
 import type { GameMode } from './concepts.ts';
 import type { FriendRequestSource, FriendshipSource } from './friends.ts';
@@ -28,7 +28,7 @@ export type AnalyticsEventProps = {
   game_opened: { concept: string };
   game_started: { concept: string; players: number; observers: number };
   game_left: { concept: string };
-  // v2: + mode (docs/SPEC_V2.md §13); for voice Tabu the owner table's score (cooperative: the
+  // v2: + mode (docs/arsiv/SPEC_V2.md §13); for voice Tabu the owner table's score (cooperative: the
   // team's) and, v3, the Tabu mode (docs/SPEC_V3.md §15).
   game_completed: {
     concept: Concept;

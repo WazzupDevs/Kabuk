@@ -72,7 +72,7 @@ type PressedFeature = {
 // under the header (native marker views were drawn over it). Clustered at low zoom; names show from
 // MAP_ZOOM.labels on, or for the selected venue. A tap on a cluster zooms in; a tap on a venue
 // selects it and opens a short card at the bottom (name, bucket, event, "Mekana git"); a tap on the
-// empty map closes it. The user's own position is never shown (docs/SPEC_V2.md §4, rule 6). The
+// empty map closes it. The user's own position is never shown (docs/arsiv/SPEC_V2.md §4, rule 6). The
 // list view stays the screen reader path.
 export function ExploreMap({
   venues,

@@ -20,7 +20,7 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useNow } from '@/lib/useNow';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 
-// The own profile (docs/SPEC_V2.md §5; docs/design/aura → Profil): "Profil" and the settings at the
+// The own profile (docs/arsiv/SPEC_V2.md §5; docs/design/aura → Profil): "Profil" and the settings at the
 // top; the two faces side by side, the photo the table sees and the capsule while anonymous; the
 // name and age, the bio; "Profili düzenle" and "Kapsülünü süsle"; the nick and the friends in a
 // glass list. The capsule and the nick show on the own profile only (rule 4). No badges (the owner's

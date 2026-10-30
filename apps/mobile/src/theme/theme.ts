@@ -9,7 +9,7 @@ import { baseTypography, type ThemeDefinition } from './tokens';
 // violet accent and soft shadows. Dark: a deep ink ground, a lighter violet accent, and the surface
 // tones carry the separation instead of shadows. Plus Jakarta Sans throughout (500 to 800). No
 // outlined, hard-shadowed "3D" controls: a pressed control shrinks to 97 %. Visual source: v45
-// (docs/design/v45/; CLAUDE.md → "Kod kuralları"; docs/SPEC_V4.md §4.C, step 4.2). Every
+// (docs/design/v45/ at e6f67ea, removed since; CLAUDE.md → "Kod kuralları"; docs/SPEC_V4.md §4.C, step 4.2). Every
 // text/ground pair is AA (contrast.test.ts).
 //
 // v44's values (step 4.2a): canvas, quiet fill, divider and muted text in both schemes; the dark

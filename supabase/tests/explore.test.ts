@@ -1,4 +1,4 @@
-// Keşfet (docs/SPEC_V2.md §4): buckets instead of counts, refreshed only by cron, and planned
+// Keşfet (docs/arsiv/SPEC_V2.md §4): buckets instead of counts, refreshed only by cron, and planned
 // events within the window.
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 

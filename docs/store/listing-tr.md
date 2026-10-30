@@ -46,7 +46,7 @@ Birincil: Sosyal ağ (iOS) / Sosyal (Android). İkincil: Oyunlar → Kelime.
 
 ## Veri güvenliği (Play) / Uygulama gizliliği (Apple) özeti
 
-> **v2 taslağı.** Profil, arkadaşlık, DM ve hata raporları eklendi (`docs/SPEC_V2.md`). Play Console'daki form bu tabloya göre doldurulur (adımlar `docs/store/PLAY_CHECKLIST.md`). v2 yayınından önce hukuki kontrolden geçmeli. Başka kullanıcılara kullanıcının kendi isteğiyle gösterilen veriler (profil, DM) Play tanımında "paylaşım" sayılmaz; yine de formda "Toplanıyor" olarak işaretlenir.
+> **v2 taslağı.** Profil, arkadaşlık, DM ve hata raporları eklendi (`docs/arsiv/SPEC_V2.md`). Play Console'daki form bu tabloya göre doldurulur (adımlar `docs/store/PLAY_CHECKLIST.md`). v2 yayınından önce hukuki kontrolden geçmeli. Başka kullanıcılara kullanıcının kendi isteğiyle gösterilen veriler (profil, DM) Play tanımında "paylaşım" sayılmaz; yine de formda "Toplanıyor" olarak işaretlenir.
 >
 > **v3 (Kabuk v1):** Görünen ad ve doğum tarihi kayıtta zorunlu; mekan sohbet odası mesajları (24 saat). Form OTA'dan önce güncellenir (`docs/SPEC_V3.md` §3.3).
 >

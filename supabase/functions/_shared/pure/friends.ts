@@ -1,4 +1,4 @@
-// Friends, play history and DMs (docs/SPEC_V2.md §6). The SQL functions apply the same rules; the
+// Friends, play history and DMs (docs/arsiv/SPEC_V2.md §6). The SQL functions apply the same rules; the
 // integration tests check that both agree.
 
 // An encounter enters the history only if the room stayed two-table this long

@@ -4,7 +4,7 @@
 // Compared with the official Netgsm OTP package (github.com/netgsm1/otp, src/otp.php): endpoint,
 // XML fields (usercode, password, msgheader, msg, no) and the answer (<main> with <code> and
 // <jobID>). A real send is tried once the account is open; the hook stays disabled until then
-// (docs/DECISIONS.md → "SMS: Send SMS Hook").
+// (docs/arsiv/DECISIONS.md → "SMS: Send SMS Hook").
 //
 // Documented codes: 0 sent (with jobID); 20 message text or length; 30 username/password, API
 // permission or IP restriction; 40, 41 sender name; 50 number; 60 no OTP SMS package on the

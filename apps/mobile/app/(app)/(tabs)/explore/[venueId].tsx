@@ -32,7 +32,7 @@ import { SPACING } from '@/theme/tokens';
 const SCENE_CAST_DELAY = 240;
 
 // A venue from Keşfet: its bucket, its event, and check-in. Choosing the venue here is the manual
-// selection; the position is taken next only to verify it (docs/SPEC_V2.md §4). In v44's look until
+// selection; the position is taken next only to verify it (docs/arsiv/SPEC_V2.md §4). In v44's look until
 // 4.5 brings v44's check-in sheet in its place (docs/SPEC_V4.md K-43).
 export default function VenueDetailScreen() {
   const { venueId } = useLocalSearchParams<{ venueId: string }>();

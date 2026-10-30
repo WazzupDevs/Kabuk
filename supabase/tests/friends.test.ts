@@ -1,5 +1,5 @@
 // Play history, friend requests, "Arkadaş ekle", friendships, DMs and history/DM safety actions
-// (docs/SPEC_V2.md §6, §7, §11).
+// (docs/arsiv/SPEC_V2.md §6, §7, §11).
 import { randomUUID } from 'node:crypto';
 
 import type { RealtimeChannel } from '@supabase/supabase-js';

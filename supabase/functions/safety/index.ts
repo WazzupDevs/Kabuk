@@ -1,4 +1,4 @@
-// Report and block (MVP_SPEC §8, docs/SPEC_V2.md §5.3, §6.2, §6.4). Reports: a room, a profile
+// Report and block (MVP_SPEC §8, docs/arsiv/SPEC_V2.md §5.3, §6.2, §6.4). Reports: a room, a profile
 // visible now, a DM thread, or an encounter of the caller's own history (also after the room has
 // ended). Blocks: a phone of a room (by default the other side's leader), a friend, or the account
 // behind a history row.

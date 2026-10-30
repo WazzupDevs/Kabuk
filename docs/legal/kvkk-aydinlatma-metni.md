@@ -2,7 +2,7 @@
 
 > **HUKUKİ KONTROL GEREKLİ.** 6698 sayılı Kişisel Verilerin Korunması Kanunu m. 10 uyarınca hazırlanmış taslaktır; hukuki görüş alınmadan yayımlanmamalıdır. Köşeli parantezli alanlar doldurulmalıdır.
 >
-> **v2 taslağı:** Profil, arkadaşlık, DM, oyun geçmişi ve hata raporları (`docs/SPEC_V2.md`) eklendi. v2 yayınından önce hukuki kontrolden geçmeli; yayınla birlikte uygulama içi onay sürümü artırılır.
+> **v2 taslağı:** Profil, arkadaşlık, DM, oyun geçmişi ve hata raporları (`docs/arsiv/SPEC_V2.md`) eklendi. v2 yayınından önce hukuki kontrolden geçmeli; yayınla birlikte uygulama içi onay sürümü artırılır.
 >
 > **v3 taslağı ({{APP_NAME}} v1, sürüm `draft-1`):** Doğum tarihi ve zorunlu görünen ad, 18 yaş altında hesabın silinmesi, kampüs noktası, mekan sohbet odası ve yerli SMS sağlayıcısı (`docs/SPEC_V3.md` §3.3) eklendi.
 >

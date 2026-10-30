@@ -60,7 +60,7 @@ const HERO_CAST_DELAY = 240;
 
 type Here = { name: string; spot: string | null; type: VenueType };
 
-// Keşfet (docs/SPEC_V2.md §4, SPEC_V4 §4.C): the venues of a city, chosen by hand, never by the
+// Keşfet (docs/arsiv/SPEC_V2.md §4, SPEC_V4 §4.C): the venues of a city, chosen by hand, never by the
 // phone's position (rule 6). The venue is picked here; check-in then verifies the position. With one
 // active venue (the campus pilot) it is a single venue card with all its events and no list/map
 // switch, search, kind or city (docs/SPEC_V3.md §4.4, K-37). From two on, v46's Keşfet (`.disc`):

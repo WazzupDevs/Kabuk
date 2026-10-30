@@ -7,7 +7,7 @@
 //   of the same version. A change to native code (native dependency, config plugin, native field in
 //   app.json) therefore bumps `version` and ships as a new build. The native fingerprint was dropped:
 //   computed on Windows (where builds and updates start) and on the Linux build server it differed
-//   (docs/DECISIONS.md, "runtimeVersion").
+//   (docs/arsiv/DECISIONS.md, "runtimeVersion").
 // - Android's GWP-ASan is off for this app (withGwpAsanOff below).
 // - Android draws the app at the screen's highest refresh rate (withHighRefreshRate below).
 // - Android draws no shade of its own behind the navigation buttons (withClearNavigationBar).
@@ -32,7 +32,7 @@ const EAS_PROJECT_ID = '9692ae9b-7826-4f6b-a41e-a0506d5992c2';
 // <application android:gwpAsanMode="never">. Android 14's GWP-ASan samples allocations; when it
 // records a backtrace on a free inside Hermes, its frame-pointer walk runs off Hermes's fiber stack
 // and the app dies at launch now and then (facebook/hermes#1873; the fix is not in the Hermes
-// React Native ships). docs/DECISIONS.md → "Hermes çökmesi".
+// React Native ships). docs/arsiv/DECISIONS.md → "Hermes çökmesi".
 export const withGwpAsanOff: ConfigPlugin = (config) =>
   withAndroidManifest(config, (mod) => {
     const application = mod.modResults.manifest.application?.[0];

@@ -1,4 +1,4 @@
-// Badges and titles (docs/SPEC_V2.md §5.1): derived from what the server knows, never stored.
+// Badges and titles (docs/arsiv/SPEC_V2.md §5.1): derived from what the server knows, never stored.
 // Texts live in the app's tr.ts under the same ids.
 
 export type UserStats = {
