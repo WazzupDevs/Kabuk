@@ -162,22 +162,32 @@ export default function VenueDetailScreen() {
                 <T v="h3">{tr.checkin.spotTitle}</T>
                 <T v="fine">{tr.explore.spotCount(spots.length)}</T>
               </View>
-              <View className="flex-row flex-wrap" style={{ gap: SPOT_GAP }}>
-                {spots.map((spot) => (
-                  <View
-                    key={spot.id}
-                    style={{
-                      width: `${100 / SPOT_COLUMNS - 3}%`,
-                      alignItems: 'center',
-                      gap: SPACING[1.5],
-                    }}
-                  >
-                    <SpotTile source={spotPicture(spot.ref)} />
-                    <T v="fine" strong center>
-                      {spot.name}
-                    </T>
-                  </View>
-                ))}
+              <View className="flex-row" style={{ gap: SPOT_GAP }}>
+                {spots.map((spot) => {
+                  // The spot the reader sat at (the owner's report, 30 Ekim: nothing showed it).
+                  const mine = here && active.data?.spot_id === spot.id;
+                  return (
+                    <View
+                      key={spot.id}
+                      style={{
+                        // Two spots fill the card in two, three or more in thirds (the owner's
+                        // report: two sat at the left with the right third empty).
+                        flexBasis: 0,
+                        flexGrow: 1,
+                        maxWidth:
+                          spots.length >= SPOT_COLUMNS ? `${100 / SPOT_COLUMNS}%` : undefined,
+                        alignItems: 'center',
+                        gap: SPACING[1.5],
+                      }}
+                    >
+                      <SpotTile source={spotPicture(spot.ref)} mine={mine} />
+                      <T v="fine" strong center>
+                        {spot.name}
+                      </T>
+                      {mine ? <Tag tone="green" label={tr.explore.hereShort} /> : null}
+                    </View>
+                  );
+                })}
               </View>
             </Glass>
           ) : null}
@@ -197,7 +207,9 @@ export default function VenueDetailScreen() {
               </T>
             </Glass>
           ) : null}
-          <T v="fine">{tr.explore.checkInHint}</T>
+          {/* Before a check-in only: once here, the location was already checked (the owner's
+              report, 30 Ekim). */}
+          {here ? null : <T v="fine">{tr.explore.checkInHint}</T>}
           <View style={{ flexGrow: 1 }} />
           <Btn
             block
@@ -230,8 +242,9 @@ const SPOT_COLUMNS = 3;
 const SPOT_GAP = 10;
 const SPOT_TILE = 76;
 
-// A spot's picture filling its column (KesfetMekan: `.thumb`, 76 high).
-function SpotTile({ source }: { source: ImageSourcePropType | undefined }) {
+// A spot's picture filling its column (KesfetMekan: `.thumb`, 76 high); the reader's own spot in
+// a green ring.
+function SpotTile({ source, mine }: { source: ImageSourcePropType | undefined; mine: boolean }) {
   return (
     <View
       style={{
@@ -240,6 +253,8 @@ function SpotTile({ source }: { source: ImageSourcePropType | undefined }) {
         borderRadius: KIT.size.thumbRadius,
         overflow: 'hidden',
         boxShadow: KIT.thumbShadow,
+        borderWidth: mine ? KIT.size.avRing : 0,
+        borderColor: KIT.success,
       }}
     >
       {source ? (

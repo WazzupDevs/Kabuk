@@ -43,6 +43,7 @@ import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { haptic } from '@/lib/haptics';
 import { useNow } from '@/lib/useNow';
+import { dayPart } from '@/lib/dayPart';
 import { venueType, type VenueType } from '@/lib/venueType';
 import { AURA } from '@/theme/aura';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
@@ -146,7 +147,7 @@ export default function ExploreScreen() {
               style={{ paddingHorizontal: KIT.size.side, paddingTop: SPACING[2], gap: EXPLORE_GAP }}
             >
               <T v="display" style={KIT_TYPE.displaySm} accessibilityRole="header">
-                {tr.explore.question}
+                {tr.explore.question[dayPart(now)]}
               </T>
               {ready && layout === 'list' ? (
                 <>
@@ -232,11 +233,22 @@ export default function ExploreScreen() {
 // "Şu an buradasın" (v46 `.vhere`): the own check-in and the way back to Mekan. The phone's own
 // data; nobody else sees it.
 function HereNow({ here }: { here: Here }) {
-  // docs/design/aura: a glass card with the live dot, the venue and "Mekana dön" under it (a long
-  // venue name keeps its width; beside the button it broke into four lines).
+  // A thin row (the owner's report, 30 Ekim: the card stood tall with its right side empty): the
+  // live dot, the venue and the spot on the left, "Mekana dön" on the right. A long venue name
+  // wraps under itself rather than squeezing the button.
   return (
-    <Glass sm testID="explore-here" style={{ padding: KIT.size.pad, gap: KIT.size.rowGap }}>
-      <View style={{ gap: SPACING[0.5] }}>
+    <Glass
+      sm
+      testID="explore-here"
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: KIT.size.liPadY,
+        paddingHorizontal: KIT.size.liPadX,
+        gap: KIT.size.liGap,
+      }}
+    >
+      <View style={{ flex: 1, minWidth: 0, gap: SPACING[0.5] }}>
         <Live label={tr.explore.here} />
         <T v="h3">{here.name}</T>
         <T v="fine">{tr.explore.hereAt(here.spot)}</T>
@@ -294,8 +306,13 @@ function VenueList({
       <View
         style={{
           flexDirection: 'row',
+          flexWrap: 'wrap',
           alignItems: 'baseline',
           justifyContent: 'space-between',
+          // Side by side while both fit; the count goes under the place on a narrow screen (the
+          // owner's report, 30 Ekim: the two ran into each other).
+          columnGap: KIT.size.rowGap,
+          rowGap: SPACING[0.5],
           paddingTop: KIT.size.secPadTop,
           paddingHorizontal: KIT.size.secPadX,
         }}
@@ -502,7 +519,7 @@ function SingleVenue({
         </Glass>
       </View>
       <T v="display" style={KIT_TYPE.displaySm} accessibilityRole="header">
-        {tr.explore.question}
+        {tr.explore.question[dayPart(now)]}
       </T>
       {here ? <HereNow here={here} /> : null}
       <Glass style={{ padding: CARD_PAD }} testID="explore-venue-card">
@@ -644,8 +661,9 @@ function SingleVenue({
 }
 
 const EXPLORE_GAP = 14;
-// Over the map: the head's top part on the plain ground, the rest a fade.
-const MAP_SOLID = 0.35;
+// Over the map: the question and the search row on the plain ground, the fade only round the
+// chips (the owner's report, 30 Ekim: street names showed through the question).
+const MAP_SOLID = 0.74;
 const CARD_PAD = 8;
 const SCENE_RADIUS = 22;
 

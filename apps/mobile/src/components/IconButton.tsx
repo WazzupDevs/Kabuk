@@ -89,8 +89,11 @@ export function IconButton({
                     borderColor: KIT[scheme].raisedEdge,
                     boxShadow: shadow?.boxShadow,
                   }
-                : { backgroundColor: pressed ? colors.surface2 : 'transparent' },
-            round ? pressScale(pressed && !disabled) : null,
+                : null,
+            // A bare icon sinks when pressed, as a round one does (no fill: a fill from an earlier
+            // look showed as a box behind the chat's "more" in the dark, the owner's report, 30
+            // Ekim).
+            pressScale(pressed && !disabled),
           ]}
         >
           {shadow?.node}
