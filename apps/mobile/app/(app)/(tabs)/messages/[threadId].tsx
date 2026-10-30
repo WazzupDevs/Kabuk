@@ -2,6 +2,7 @@ import { REPORT_REASONS, type ReportReason } from '@shared/chat.ts';
 import { DM_MAX_LENGTH, prepareDm } from '@shared/friends.ts';
 import { canRetry, type OutboxMessage, outboxReducer } from '@shared/chatOutbox.ts';
 import { toRuns } from '@shared/chatRuns.ts';
+import type { DmInboxThread } from '@shared/api/friends.ts';
 import type { DmPageRow } from '@shared/dmInbox.ts';
 import { parseDmReactions, parseQuote } from '@shared/messageExtras.ts';
 import { BROADCAST, dmChannel } from '@shared/rooms.ts';
@@ -61,7 +62,10 @@ type Row = ChatListItem & {
   // The quote of a message on its way.
   outQuote?: ChatQuote;
   first: boolean;
+  last: boolean;
   day: number | null;
+  // When it was written (ms): the floating day.
+  at: number;
 };
 
 type Pages = readonly (readonly DmPageRow[])[];
@@ -93,6 +97,14 @@ export default function DmScreen() {
   const [outbox, dispatch] = useReducer(outboxReducer, []);
   const { typing, notifyTyping, clearTyping } = useDmTyping(threadId);
 
+  // How many of the friend's messages were unread when the DM opened (the inbox's count, read
+  // before opening marks them read): the DM opens at the first of them, under its line.
+  const [unreadAtOpen] = useState(
+    () =>
+      queryClient
+        .getQueryData<DmInboxThread[]>(friendKeys.inbox)
+        ?.find((t) => t.threadId === threadId)?.unreadCount ?? 0,
+  );
   const markRead = useMarkThreadRead(threadId);
   // Opening the DM marks it read once it has slid in (the owner's report, 29 Ekim: marking it on
   // the tap changed the Mesajlar list and its count under the slide); the row is under the DM by
@@ -141,6 +153,15 @@ export default function DmScreen() {
   if (!settled && heldPages === undefined && livePages !== undefined) setHeldPages(livePages);
   const pages: Pages | undefined = settled ? livePages : (heldPages ?? livePages);
   const server = useMemo(() => (pages ?? []).flat(), [pages]);
+
+  // The first unread message, worked out once from the first page shown.
+  const [freshId, setFreshId] = useState<string | null | undefined>(undefined);
+  if (freshId === undefined && pages !== undefined) {
+    const theirs = server.filter((m) => !m.from_me);
+    setFreshId(
+      unreadAtOpen > 0 ? (theirs[unreadAtOpen - 1]?.id ?? theirs.at(-1)?.id ?? null) : null,
+    );
+  }
 
   // The reader's messages sent from here: the server's id to the waiting bubble's key.
   const [sentKeys, setSentKeys] = useState<ReadonlyMap<string, string>>(() => new Map());
@@ -303,14 +324,16 @@ export default function DmScreen() {
       (e) => (e.mine ? 'me' : 'them'),
       (e) => e.at,
     )
-      .map(({ item, first, day }): Row => ({
+      .map(({ item, first, last, day }): Row => ({
         key: item.key,
         id: item.id,
         ...(item.m ? { m: item.m } : {}),
         ...(item.out ? { out: item.out } : {}),
         ...(item.out?.replyTo ? { outQuote: quoteOf(item.out.replyTo) } : {}),
         first,
+        last,
         day: day ? day.getTime() : null,
+        at: Date.parse(item.at),
       }))
       .reverse();
   }, [server, outbox, sentKeys, sentLocal, name]);
@@ -338,7 +361,9 @@ export default function DmScreen() {
       out={row.out}
       outQuote={row.outQuote}
       first={row.first}
+      last={row.last}
       day={row.day}
+      fresh={row.id === freshId}
       name={name}
       view={reactions.view}
       pick={reactions.pick}
@@ -361,6 +386,8 @@ export default function DmScreen() {
       list={{
         items: rows,
         renderItem: renderRow,
+        openAt: freshId,
+        timeOf: (row) => row.at,
         onReachOld: loadOlder,
         latest: typing ? <TypingBubble testID="dm-typing" /> : null,
         older: messages.isFetchingNextPage ? (
@@ -499,7 +526,9 @@ const DmRow = memo(function DmRow({
   out,
   outQuote,
   first,
+  last,
   day,
+  fresh,
   name,
   view,
   pick,
@@ -512,7 +541,9 @@ const DmRow = memo(function DmRow({
   out: OutboxMessage | undefined;
   outQuote: ChatQuote | undefined;
   first: boolean;
+  last: boolean;
   day: number | null;
+  fresh: boolean;
   name: string;
   view: ReturnType<typeof useDmReactions>['view'];
   pick: ReturnType<typeof useDmReactions>['pick'];
@@ -521,15 +552,17 @@ const DmRow = memo(function DmRow({
   onDiscard: (m: OutboxMessage) => void;
 }) {
   return (
-    <ChatRow id={rowKey} first={first}>
+    <ChatRow id={rowKey} first={first} mine={!!out || !!m?.from_me}>
       {(jumpTo) => (
         <>
           {day !== null ? <DayLine label={dayLabel(new Date(day))} /> : null}
+          {fresh ? <DayLine fresh label={tr.chat.newLine} /> : null}
           {m ? (
             <ServerBubble
               m={m}
               name={name}
               first={first}
+              last={last}
               jumpTo={jumpTo}
               view={view}
               pick={pick}
@@ -540,6 +573,7 @@ const DmRow = memo(function DmRow({
               text={out.body}
               mine
               first={first}
+              last={last}
               quote={outQuote}
               // On its way: its time and a clock where the ticks go (Telegram Android).
               {...(out.status === 'sending'
@@ -565,6 +599,7 @@ function ServerBubble({
   m,
   name,
   first,
+  last,
   jumpTo,
   view,
   pick,
@@ -573,6 +608,7 @@ function ServerBubble({
   m: DmPageRow;
   name: string;
   first: boolean;
+  last: boolean;
   jumpTo: (id: string) => void;
   view: ReturnType<typeof useDmReactions>['view'];
   pick: ReturnType<typeof useDmReactions>['pick'];
@@ -591,6 +627,7 @@ function ServerBubble({
       onReact={(emoji) => pick(m.id, counts, emoji)}
       onReply={() => onReply(m)}
       first={first}
+      last={last}
       time={tr.chat.time(m.created_at)}
       delivery={m.from_me && isDelivery(m.status) ? m.status : undefined}
       // A DM shows no photo or name by the bubbles (skall tuvali, Dm): the top bar says who it is

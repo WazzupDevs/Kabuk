@@ -58,6 +58,9 @@ export const KIT_TYPE = {
   badge: t(700, 11, 14),
   live: t(600, 13, 17),
   msg: t(500, 15, 21),
+  // A message of emoji only, without a bubble (Telegram Android): one, and two or three.
+  emojiOne: t(500, 40, 48),
+  emojiFew: t(500, 32, 40),
   day: t(600, 12, 16),
   wordmark: t(800, 26, 30, -0.04),
   av: {
@@ -186,6 +189,9 @@ export const KIT = {
       masa: '#6A47F5',
       themInk: '#FFFFFF',
       themMuted: 'rgba(255, 255, 255, 0.80)',
+      // A big emoji's time, on the wallpaper (Telegram Android's dark pill).
+      stamp: 'rgba(20, 17, 43, 0.32)',
+      stampInk: '#FFFFFF',
     },
     dark: {
       mine: '#ECE9F8',
@@ -198,6 +204,8 @@ export const KIT = {
       masa: '#4B33B8',
       themInk: '#FFFFFF',
       themMuted: 'rgba(255, 255, 255, 0.74)',
+      stamp: 'rgba(0, 0, 0, 0.40)',
+      stampInk: '#FFFFFF',
     },
   },
   // Another's bubble's soft shadow, in its colour.
@@ -306,6 +314,14 @@ export const KIT = {
     grabH: 5,
     msgRadius: 22,
     msgTail: 8,
+    // Chat bubbles as Telegram Android lays them (the owner's call, 30 Ekim): 18 round, 6 inside a
+    // run on the author's side, the run's last one with a tail 7 × 12; tighter padding.
+    bubbleRadius: 18,
+    bubbleInner: 6,
+    bubblePadX: 12,
+    bubblePadY: 7,
+    tailW: 7,
+    tailH: 12,
     msgPadX: 15,
     msgPadY: 11,
     field: 54,
