@@ -19,7 +19,10 @@ function tint(hex: string, amount: number): string {
   const n = parseInt(hex.slice(1), 16);
   const mix = (c: number) => Math.round(c + (255 - c) * amount);
   const rgb = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(mix);
-  return `#${rgb.map((c) => c.toString(16).padStart(2, '0')).join('').toUpperCase()}`;
+  return `#${rgb
+    .map((c) => c.toString(16).padStart(2, '0'))
+    .join('')
+    .toUpperCase()}`;
 }
 
 export function emotesSource(root: string): string {
@@ -35,7 +38,8 @@ export function emotesSource(root: string): string {
     if (at < 0) throw new Error(`emotes.json: ${key} has another clip`);
     const rest = svg.slice(at + open.length);
     const close = rest.indexOf('</g></g>');
-    if (close < 0 || !rest.startsWith('<g>')) throw new Error(`emotes.json: ${key} has another face`);
+    if (close < 0 || !rest.startsWith('<g>'))
+      throw new Error(`emotes.json: ${key} has another face`);
     const face = rest.slice(0, close + '</g>'.length);
     const body = /<rect x="10" y="8" width="28" height="56" rx="14" fill="(#[0-9A-Fa-f]{6})"/.exec(
       face,
