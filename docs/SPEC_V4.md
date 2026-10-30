@@ -138,10 +138,10 @@ Değişmez kabul edilir.
 
 **Kaynak.**
 
-- `docs/design/v46/`: deneme ve devir raporu. Ekranlar, renk, yazı, şekil, bileşen, hareket ve dokunuş buradan alınır.
+- `docs/design/v46/`: deneme ve devir raporu (30 Ekim'de repodan kaldırıldı, git geçmişinde; görünüşün kaynağı aura tuvali, CLAUDE.md → Kod kuralları; masa simgeleri ve kapsül çizimi `docs/design/kaynak/`'ta).
   - v46, v45'in üstüne Fırat'ın paketinden sekiz madde ekler (v46 raporu, bölüm 1–8). Diğer ekranları v45'le aynıdır.
   - v45, v44'ün üstüne ilk ekran giriş animasyonunu ve kayıt adımlarındaki kapsül dostlarını eklemiş ve kayıt sırasını K-19'a göre kurmuştu. Diğer ekranları v44'le aynıdır (v45 raporu, giriş).
-- `docs/design/v46/kaynak/`: masa simgeleri (100 WebP ve `masa-simgeleri.json`), kapsül kataloğu (`kapsul-katalogu.json`) ve çizim kütüphanesi (`kapsul-cizim-kutuphanesi.js`, başvuru).
+- `docs/design/kaynak/`: masa simgeleri (100 WebP ve `masa-simgeleri.json`), kapsül kataloğu (`kapsul-katalogu.json`) ve çizim kütüphanesi (`kapsul-cizim-kutuphanesi.js`, başvuru).
   - 4.4 ve 4.4b kataloğu `content/`'e, 4.5 simgeleri `apps/mobile/assets`'e ve listelerini `pure/`'a buradan üretir (§4.D, §4.E).
   - Dosyalar teslim edildiği gibi kalır: Prettier ve ESLint `docs/design/`'a bakmaz.
 - **Galeri katmanı ve envanter** (Fırat'ın tasarım oturumu, 20 Ekim; `docs/design/v46/`). Hepsi repodaki `skall-masa-deneme-v46.html`'in üstüne kuruludur (kaynak sha256 `1063519b…`, `skall-v46-galeri-notu.md`):
@@ -211,7 +211,7 @@ Değişmez kabul edilir.
 - **Alt sayfa kapanışı açılışın tersi; sürükleyip kapatma var** (envanter F10; proje sahibi, 20 Ekim; "Ekran davranışı"). v46'da sayfa 320 ms kayma ve 200 ms perdeyle açılıyor, ama kapanışta animasyon yok ve sayfa sürüklenerek kapanmıyor.
 - **Yüklenirken birincil düğme mor kalır, gösterge görünür** (envanter F13; proje sahibi, 20 Ekim; "Ekran davranışı": basılan düğme beklediğini gösterir). v46'da yüklenen düğme pasif görünüme düşüyor: gri zemin `#E6E2F2`, koyu temada `#29283A`.
 - **Hareket azaltılınca yüklenen düğmenin yazısı kalkmaz, yalnızca solar** (çelişki kuralı; proje sahibi, 20 Ekim). v46'nın `prefers-reduced-motion` bloğundaki `.busy>:not(.ld){transform:none}` kuralı, dosyada sonra gelen `.busy>:not(.ld){opacity:0;transform:translateY(-5px)}` kuralınca eziliyor; v46'da yazı hareket azaltılmışken de 5 px yukarı kayıyor. Uygulanan, v46'nın niyeti.
-- **Sekme çubuğu ve mesaj çubuğu buzlu cam (0.9.0; proje sahibi, 29 Ekim: sıvı camın yerine, sıvı cam kullanılan her yerde).** skall'ın kendi native modülü (`apps/mobile/modules/skall-glass` → `LiquidGlassView`): odaktaki ekran bir RenderNode'a çizilir ve çubuğun altında aynı çizim yeniden oynatılır (kopya yok), aura tuvalinin `.glass`'ı gibi bulanıklaştırılır ve doygunlaştırılır (`backdrop-filter: blur(24px) saturate(170%)`), çubuğun yuvarlak kutusuna kesilir. Güçlü bulanıklık küçük ayrıntı bırakmadığı için çizim en çok sekizde bir boyda yapılır (Telegram Android'in buzlu çubukları gibi; aynı görüntü, altmış dörtte bir iş). Cam yalnızca altındaki alanda (bulanıklığın iki sapma erimi dahil) bir şey değişince yeniden çizilir. Mercek, renk ayrışması ve kenar ışığı yok (0.7.0 ile 0.8.0 arasındaki sıvı cam). v46'nın gradyanı camın üstünde %45 gücünde, kenar ve içteki ışık tam. Değerler `apps/mobile/src/theme/glass.ts`'te. Android 12'den (API 31) eski telefonlarda cam yok: çubuk opak zeminle çizilir, v46'nın ekran rengi (`canvas`) ve üstünde çubuğun gradyanı (proje sahibi, 20 Ekim; `apps/mobile/src/ui/backdrop.ts` → `blursBehind`). Keşfet haritasının üstünde de opak. iOS'ta cam henüz yok.
+- **Sekme çubuğu ve mesaj çubuğu buzlu cam (0.9.0; proje sahibi, 29 Ekim: sıvı camın yerine, sıvı cam kullanılan her yerde).** skall'ın kendi native modülü (`apps/mobile/modules/skall-glass` → `LiquidGlassView`): odaktaki ekran bir RenderNode'a çizilir ve çubuğun altında aynı çizim yeniden oynatılır (kopya yok), aura tuvalinin `.glass`'ı gibi bulanıklaştırılır ve doygunlaştırılır (`backdrop-filter: blur(24px) saturate(170%)`), çubuğun yuvarlak kutusuna kesilir. Güçlü bulanıklık küçük ayrıntı bırakmadığı için çizim en çok sekizde bir boyda yapılır (Telegram Android'in buzlu çubukları gibi; aynı görüntü, altmış dörtte bir iş). Cam yalnızca altındaki alanda (bulanıklığın iki sapma erimi dahil) bir şey değişince yeniden çizilir. Mercek, renk ayrışması ve kenar ışığı yok (0.7.0 ile 0.8.0 arasındaki sıvı cam). v46'nın gradyanı camın üstünde %45 gücünde, kenar ve içteki ışık tam. Değerler `apps/mobile/src/theme/glass.ts`'te. Android 12'den (API 31) eski telefonlarda cam yok: çubuk opak zeminle çizilir, v46'nın ekran rengi (`canvas`) ve üstünde çubuğun gradyanı (proje sahibi, 20 Ekim; `apps/mobile/src/theme/glass.ts` → `blursBehind`). Keşfet haritasının üstünde de opak. iOS'ta cam henüz yok.
 - **Keşfet haritasının üstünde sekme çubuğu opak.** v46'da harita görünümünde çubuğun arkasında haritanın bulanığı görünür. Uygulamanın haritası MapLibre'nin GL yüzeyidir (`SurfaceView`); Dimezis onu bulanıklaştıramaz (README). Harita açıkken çubuk Android 12 öncesindeki gibi opak çizilir: v46'nın ekran rengi ve üstünde gradyanı (`useTabBarOverMap`, `src/ui/TabBar.tsx` → `opaque`). Harita `TextureView` ile çizilmez (proje sahibi, 21 Ekim): harita görünümünde çubuk opak kalır.
 - **Keşfet satırlarının girişi en çok 200 ms bekler** (proje sahibi, 21 Ekim; CTO incelemesi, WazzupDevs/Kabuk#198). v46'nın betiği satırları 40 ms arayla getirir ve gecikmeye sınır koymaz (`i * 40` ms; yedi satırlık listesinde son satır 240 ms bekler). Uygulamada sınır v46'nın en büyük gecikmesi olan 200 ms: sonraki satırlar beklemeden, 200 ms'de birlikte gelir (`apps/mobile/src/ui/VenueRow.tsx` → `ROW_DELAY_MAX_MS`).
 - **Keşfet'te aşağı çekip yenileme v46'nın göstergesiyle** (proje sahibi, 21 Ekim; CTO incelemesi, WazzupDevs/Kabuk#201). Liste görünümünde, listenin en üstünde aşağı çekince liste parmakla iner, göstergenin kapsülleri yaklaşır ve 72'de işaret olur; orada bırakınca liste 64 aşağıda durur, işaret döner (Dönüş) ve mekanlar ile şehirleri yeniden gelir. Sayılar v46'nın betiğinden okunur (`V46_PULL`, `scripts/v46/explore.ts` → `pullRefresh`; `apps/mobile/src/ui/PullScroll.tsx`). v46'dan farkları: dönüş v46'da deneme için 1,5 sn sabit, uygulamada liste yeniden gelene kadar ve en az 600 ms (yükleme göstergesinin en kısa süresi); dönen işaret uygulamanın Dönüş göstergesidir (aynı süreler; v46 dönüşü kübik eğriyle, uygulama tasarım sisteminin `cubic-bezier(.65,0,.35,1)`'iyle yapar). Hareket azaltılınca işaret v46'daki gibi dönmez, nefes alır; liste beklemeden yerine oturur.
@@ -344,7 +344,7 @@ Değişmez kabul edilir.
     - Çoğu bugünkü 28 varyantla aynı görünür.
     - Melek ve Tavşan krem gövdeli, Viking boynuzlu ve sakallıdır, v46'daki gibi.
     - Kütüphaneye beyaz renk ve miğfer eklenmez: her hazır görünüş kütüphanedeki parçalardan kurulur.
-  - Katalog (renkler, parçalar, raflar ve paketler) `content/` altında JSON'dur. 4.4 onu `docs/design/v46/kaynak/kapsul/kapsul-katalogu.json`'dan üretir.
+  - Katalog (renkler, parçalar, raflar ve paketler) `content/` altında JSON'dur. 4.4 onu `docs/design/kaynak/kapsul/kapsul-katalogu.json`'dan üretir.
     - İstemci çizim için, sunucu doğrulama için aynı listeyi `pure/` altında üretilmiş bir dosyadan okur; ikisinin eşitliği testlidir (`pnpm seed` kalıbı).
     - Sunucu kodu katalogla doğrular, bilinmeyen parçayı atar.
   - Nick: `kapsul-xx55` biçimi; iki harf (`abcdefghkmnprstuvyz`) ve iki rakam.
@@ -440,7 +440,7 @@ Değişmez kabul edilir.
 - **Masanın adı** masa kurulurken üretilir: `rooms.name` (bugünkü takma ad kelimeleri, `alias_words`). Sahip adı masa başına 3 kez yeniler (bugünkü `ALIAS_REROLLS_PER_CHECKIN`, artık masa başına: `rooms.name_rerolls`).
 - **Masa simgesi** (adım 4.5, K-45):
   - 20 temada 100 sahne; uygulamada 256 px WebP (`apps/mobile/assets` altında; SVG canlı çizilmez). Köşeleri yuvarlatılmış karedir (yarıçap kenarın %28'i); kişiler yuvarlaktır.
-  - WebP'ler ve liste `docs/design/v46/kaynak/masa-simgeleri/`'nden üretilir (görseller ve `masa-simgeleri.json`). Boyutlar v46 raporunun 1. bölümündedir.
+  - WebP'ler ve liste `docs/design/kaynak/masa-simgeleri/`'nden üretilir (görseller ve `masa-simgeleri.json`). Boyutlar v46 raporunun 1. bölümündedir.
   - `rooms.icon` simgenin kalıcı kimliğidir, metin (ör. `kis-kardanadam`). Sunucu kimliği `pure/` altındaki üretilmiş simge listesiyle doğrular; listede olmayan kimlik reddedilir.
   - Sunucu, mekandaki açık ve süren masalarda kullanılmayan bir simgeyi rastgele atar (`rooms.icon`). Aynı anda kurulan iki masada tekrar olmaz: mekan ve aktif masa üzerinde benzersizlik, çakışmada yeniden seçim.
   - Sahip kurarken seçebilir ve sonra değiştirebilir (`rooms/create { icon? }`, `rooms/set-icon`); ad değişince simge kalır.
@@ -880,7 +880,7 @@ K-77'nin altı oyunundan ilki; kaynak proje sahibinin dosyası `skall-oyun-vampi
 - Poppins ve Manrope paketleri, eski tokenlar;
 - kapsam PR açıklamasında tek tek yazılır.
 
-**Diğer.** `pnpm gen:types` her migration'dan sonra çalışır. Seed yalnızca 4.4 (nick'te üretilmeyecek kısaltmalar) ve 4.6.2'de (Sohbet kartları) değişir. Kapsül kataloğu (K-46) `content/` altında JSON'dur, seed'e girmez: `pure/` altındaki üretilmiş dosyadan okunur. Kataloğun (4.4) ve masa simgelerinin (4.5) kaynağı `docs/design/v46/kaynak/`'tır.
+**Diğer.** `pnpm gen:types` her migration'dan sonra çalışır. Seed yalnızca 4.4 (nick'te üretilmeyecek kısaltmalar) ve 4.6.2'de (Sohbet kartları) değişir. Kapsül kataloğu (K-46) `content/` altında JSON'dur, seed'e girmez: `pure/` altındaki üretilmiş dosyadan okunur. Kataloğun (4.4) ve masa simgelerinin (4.5) kaynağı `docs/design/kaynak/`'tır.
 
 ## 4.I RLS ve Realtime
 

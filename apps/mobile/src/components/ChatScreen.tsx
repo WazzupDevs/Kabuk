@@ -62,7 +62,7 @@ import { AppIcon } from './AppIcon';
 // (KeyboardChatScrollView), without laying the screen out again on every frame of the keyboard.
 import { KeyboardChatScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
 
-import { GlassTarget } from '@/ui/LiquidGlass';
+import { GlassTarget } from '@/components/LiquidGlass';
 import { ChatKindContext } from './chatKind';
 
 // How close to the end counts as "at the bottom" (a message's last line may sit under the edge).

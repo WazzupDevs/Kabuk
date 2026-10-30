@@ -23,8 +23,8 @@ import { useReduceMotion } from '@/lib/useReduceMotion';
 import { AURA, MOTION } from '@/theme/aura';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
-import { TAB_BAR_GLASS } from '@/ui/backdrop';
-import { GlassTarget } from '@/ui/LiquidGlass';
+import { TAB_BAR_GLASS } from '@/theme/glass';
+import { GlassTarget } from '@/components/LiquidGlass';
 import { Dissolve } from './Dissolve';
 
 // The tabs' navigator and the airy look's bar (src/aura/AuraTabBar.tsx, docs/design/aura): the bar

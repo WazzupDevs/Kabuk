@@ -461,8 +461,8 @@ export const actions: Record<string, (args: Json) => Promise<Json>> = {
     return setOwnProfile(args, 'gender');
   },
 
-  // The phone's screen, for a flow that needs another one than the emulator's (01c-gallery-wide: a
-  // Galaxy S23's): `{"size":"1080x2340","density":420}` sets it, `{}` sets the emulator's own back.
+  // The phone's screen, for a flow that needs another one than the emulator's (e.g. a Galaxy
+  // S23's): `{"size":"1080x2340","density":420}` sets it, `{}` sets the emulator's own back.
   // adb on the machine that runs the bot (CI's runner, a developer's computer): a flow cannot call
   // it. Nothing on the server.
   async screen(args) {

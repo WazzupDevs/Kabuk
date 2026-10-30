@@ -1,4 +1,4 @@
-import type { V46ThumbKind } from './parts.generated';
+import type { VenueType } from '@/lib/venueType';
 
 // The venue page's scene (the owner's calls, 29 Ekim: no disk with the logo in the middle; the
 // buddies play one of skall's games at a table, a different game for each kind of place): Kampüs
@@ -9,7 +9,7 @@ import type { V46ThumbKind } from './parts.generated';
 // its top; the screen scales it to its width and anchors it at the scene's bottom (the status bar
 // is above the frame).
 export type SceneScheme = 'light' | 'dark';
-export type SceneKind = V46ThumbKind;
+export type SceneKind = VenueType;
 
 export const VENUE_FRAME = { width: 390, height: 300 } as const;
 

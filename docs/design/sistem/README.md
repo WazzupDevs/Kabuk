@@ -45,7 +45,7 @@ Tuval değişince aynı gün bir belge PR'ıyla aktarılır.
 2. Tuvalde elle değişiklik yapıldıysa tuvalin `project/` dosyaları indirilir: `node docs/design/sistem/uretec/aktar.cjs --kaynak <indirilen project dizini>`. Elle çizilen panolar `tuval/`'e de kopyalanır.
 3. Üreteçte değişiklik yapıldıysa panolar tuvale de yayınlanır (`SISTEM_CIKTI=<tuval dizini> node docs/design/sistem/uretec/build.cjs <sayfa…>`, dizin için `uretec/layout.cjs`). Tuval ile bu klasör aynı kalır.
 
-Betikler Node 22 ile bağımlılıksız çalışır; kapsül çizimi ve masa simgeleri `docs/design/v46/kaynak/`'tan okunur.
+Betikler Node 22 ile bağımlılıksız çalışır; kapsül çizimi ve masa simgeleri `docs/design/kaynak/`'tan okunur.
 
 ## Geçiş (temiz sayfa)
 
@@ -54,6 +54,6 @@ Betikler Node 22 ile bağımlılıksız çalışır; kapsül çizimi ve masa sim
 | 1 | Bu klasör ve kurallar | Bu PR |
 | 2 | Temel: tema `skall.css`'ten; tuvale karşı testler (tema ve `tokens.json` eşitliği, `aktar.cjs` çıktısı repodakiyle aynı); görsel kapının yumuşak raporu `ekran/`'a | Temel PR'ı |
 | 3 | Bileşen kiti: Sistem sayfasının parçaları | 3–4 PR |
-| 4 | Ekranlar sayfa sayfa; v46 hattı (envanter, ölçüm, `scripts/v46/`, v46 galerisi, `src/ui`'nin v46 bileşenleri) son kullanıcısı gidince kalkar | 8–10 PR |
+| 4 | Ekranlar sayfa sayfa; v46 hattı (envanter, ölçüm, `scripts/v46/`, v46 galerisi, `src/ui`'nin v46 bileşenleri) son kullanıcısı gidince kalkar (söküldü, 30 Ekim) | 8–10 PR |
 | Paralel | Tuvale hareket panosu (koddaki değerlerle) | Tuvalde |
 | 4.6 | Oyunlar: önce tuvale çizilir, sonra oyun oyun | 4.6 adımları |

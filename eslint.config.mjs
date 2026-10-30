@@ -4,10 +4,6 @@ import { defineConfig, globalIgnores } from 'eslint/config';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
-// Style properties that take a size or a spacing (src/ui rule below).
-const SIDE = '(?:Top|Bottom|Left|Right|Horizontal|Vertical|Start|End)?';
-const UI_SIZES = `/^(?:margin${SIDE}|padding${SIDE}|gap|rowGap|columnGap|(?:min|max)?(?:Width|Height)|width|height|top|right|bottom|left|inset|start|end|size|borderRadius|border(?:Top|Bottom)(?:Left|Right)Radius|border(?:Top|Bottom|Left|Right)?Width|fontSize|lineHeight|letterSpacing|opacity|elevation)$/`;
-
 export default defineConfig([
   globalIgnores([
     '**/node_modules/',
@@ -20,7 +16,7 @@ export default defineConfig([
     'supabase/functions/_shared/pure/database.ts',
     // Design handoff files, kept exactly as the design session delivered them (as in .prettierignore).
     'docs/design/',
-    // A copy of the v46 capsule drawing library (src/theme/capsuleDrawing.test.ts).
+    // A copy of the capsule drawing library (src/theme/capsuleDrawing.test.ts).
     'apps/mobile/src/theme/capsuleDrawing.js',
   ]),
 
@@ -47,38 +43,6 @@ export default defineConfig([
     basePath: 'apps/mobile',
     files: ['*.config.js'],
     languageOptions: { globals: globals.node, sourceType: 'commonjs' },
-  },
-
-  // v46 native components (apps/mobile/src/ui; docs/decisions/v46-native-1-tokenlar.md): every
-  // colour, size and spacing comes from the theme (src/theme/tokens.generated.ts, generated from the
-  // v46 inventory), none is written in the component. 0 is allowed.
-  {
-    files: ['apps/mobile/src/ui/**/*.{ts,tsx}'],
-    rules: {
-      'no-restricted-syntax': [
-        'error',
-        {
-          selector: 'Literal[value=/^#[0-9a-fA-F]{3,8}$/]',
-          message: 'A colour comes from the theme (tokens.generated.ts), not a literal.',
-        },
-        {
-          selector: 'Literal[value=/^(?:rgba?|hsla?)\\(/]',
-          message: 'A colour comes from the theme (tokens.generated.ts), not a literal.',
-        },
-        {
-          selector: `Property[key.name=${UI_SIZES}] > Literal[value!=0]`,
-          message: 'A size or spacing comes from the theme (tokens.generated.ts), not a number.',
-        },
-        {
-          selector: `Property[key.name=${UI_SIZES}] > UnaryExpression > Literal`,
-          message: 'A size or spacing comes from the theme (tokens.generated.ts), not a number.',
-        },
-        {
-          selector: `JSXAttribute[name.name=${UI_SIZES}] Literal[value!=0]`,
-          message: 'A size or spacing comes from the theme (tokens.generated.ts), not a number.',
-        },
-      ],
-    },
   },
 
   // Shared by all TypeScript.

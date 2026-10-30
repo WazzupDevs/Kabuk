@@ -68,7 +68,7 @@ import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
-import { GlassTarget } from '@/ui/LiquidGlass';
+import { GlassTarget } from '@/components/LiquidGlass';
 
 const PREVIEW = SPACING[16] * 2 + SPACING[1];
 // docs/design/aura → Kapsül, made low (the owner's call, 28 Ekim): the scene's height under the

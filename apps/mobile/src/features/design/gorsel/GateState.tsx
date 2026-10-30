@@ -8,7 +8,6 @@ import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { setSchemePreference, useSchemePreference, useTheme } from '@/theme/ThemeProvider';
 import { type ColorScheme, SPACING } from '@/theme/tokens';
-import { WidthScope } from '@/ui/narrow';
 
 import { freezeWorld } from './deterministic';
 import { GATE_STATES } from './registry';
@@ -21,9 +20,9 @@ import { GATE_STATES } from './registry';
 // covers the frame, transparent, once the fonts, the scheme and the layout have settled (the shot
 // number, so no other screen answers for it). A 1 dp marker in the corner was there but Android
 // reported it invisible to Maestro (#184's first run). `width`: the state laid out that wide (dp)
-// at the frame's left edge, src/ui's narrow look included (states.json → `genislik`). Loops (the
+// at the frame's left edge (states.json → `genislik`). Loops (the
 // loaders, Loader.tsx → LoopsHeld) hold their first frame: a busy button's loader is the same
-// picture on every run, as v46's at its clock's start.
+// picture on every run.
 export function GateState({
   stateKey,
   scheme,
@@ -91,7 +90,7 @@ export function GateState({
         <View
           style={{
             transform: [{ translateY: -page * frame }],
-            paddingHorizontal: entry?.bare ? 0 : theme.shape.screenPadding,
+            paddingHorizontal: theme.shape.screenPadding,
             paddingTop: SPACING[3],
             paddingBottom: SPACING[8],
           }}
@@ -99,13 +98,7 @@ export function GateState({
         >
           {entry ? (
             <LoopsHeld.Provider value>
-              {width ? (
-                <WidthScope width={width}>
-                  <View style={{ width }}>{entry.render()}</View>
-                </WidthScope>
-              ) : (
-                entry.render()
-              )}
+              {width ? <View style={{ width }}>{entry.render()}</View> : entry.render()}
             </LoopsHeld.Provider>
           ) : (
             <Text testID="gorsel-yok">{tr.design.gate.unknown(stateKey)}</Text>

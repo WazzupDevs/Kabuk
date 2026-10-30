@@ -1,14 +1,11 @@
 // The visual gate's list (e2e/visual/states.json; CLAUDE.md → Görsel kapı): which app states it
-// photographs, page by page, in both schemes, and which of them it also sets beside the design
-// prototype (v46). One line per state: a new screen or game phase is one more line, once the app
+// photographs, page by page, in both schemes, and which of them it also sets beside a design
+// prototype. One line per state: a new screen or game phase is one more line, once the app
 // opens it in its hidden route (apps/mobile/src/features/design/gorsel/registry.tsx).
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-// The design prototype the app is set beside, unless a state names another (`prototip.dosya`).
-export const PROTOTYPE_FILE = 'docs/design/v46/skall-masa-deneme-v46.html';
-
-// How the prototype reaches the same state (scripts/visual/v46.ts opens it as
+// How the prototype reaches the same state (scripts/visual/prototype.ts opens it as
 // `?gorsel=<id>&tema=<theme>`): its own "Deneme durumları" buttons pressed in order, its clock run
 // on where a step says so, then `kirp`, the element the app's frame corresponds to, photographed.
 export type PrototypeStep =
@@ -20,15 +17,12 @@ export type PrototypeStep =
 export type PrototypeState = {
   adimlar: PrototypeStep[];
   kirp: string;
-  // Another prototype file, from the repo root (default PROTOTYPE_FILE).
-  dosya?: string;
-  // More of the address, after `?gorsel=…&tema=…`, `{tema}` standing for the scheme: v46's gallery
-  // layer opens its gallery (`page=galeri&theme={tema}`) or one of its states (`s=<state>&…`)
-  // itself (docs/design/v46/skall-v46-galeri-notu.md).
+  // The prototype file, from the repo root.
+  dosya: string;
+  // More of the address, after `?gorsel=…&tema=…`, `{tema}` standing for the scheme.
   sorgu?: string;
   // The prototype's page this wide (CSS px), for an element that its own page lays out at another
-  // width: v46's gallery copies each component in a 360-wide frame inside a card that, at 360,
-  // clips the full-width ones.
+  // width.
   genislik?: number;
 };
 
@@ -45,9 +39,8 @@ export type GateState = {
   // false: photographed and set beside the prototype, never compared with a baseline (a trial
   // entry).
   baz?: boolean;
-  // Drawn this wide (dp) on the 360 emulator, and the prototype at this width: v46's small-screen
-  // check is at 320 (its `max-width: 350px` rules). The app lays its content out for it (src/ui's
-  // WidthScope).
+  // Drawn this wide (dp) on the 360 emulator, and the prototype at this width (the small-screen
+  // check is at 320).
   genislik?: number;
   // Photographed cropped to this element of the frame (a testID), not the whole frame: a
   // component, beside the prototype's `kirp`.
@@ -151,8 +144,9 @@ function checkPrototype(id: string, p: PrototypeState): void {
     throw new Error(`states.json: ${id}: prototip.sorgu is key=value pairs joined by "&"`);
   }
   if (
-    p.dosya !== undefined &&
-    (!/^docs\/design\/[\w./-]+\.html$/.test(p.dosya) || p.dosya.split('/').includes('..'))
+    typeof p.dosya !== 'string' ||
+    !/^docs\/design\/[\w./-]+\.html$/.test(p.dosya) ||
+    p.dosya.split('/').includes('..')
   ) {
     throw new Error(`states.json: ${id}: prototip.dosya is an .html file under docs/design/`);
   }

@@ -99,7 +99,7 @@ export function buildReport(
     mkdirSync(join(out, 'fark'), { recursive: true });
     lines.push(
       '',
-      "### Prototip (v46) benzerliği: yumuşak eşik, karar CTO'da",
+      "### Prototip benzerliği: yumuşak eşik, karar CTO'da",
       '',
       'pixelmatch (renk eşiği 0,1, kenar yumuşatma hariç); boyut farkı fark sayılır.',
       '',

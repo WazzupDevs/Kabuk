@@ -3,7 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
-const V46 = path.resolve(ROOT, '../v46/kaynak');
+const V46 = path.resolve(ROOT, '../kaynak');
 const VERI = path.join(__dirname, 'veri');
 // Elle çizilen panolar ve tuvalin dizini; üretilen panolar PROJ'a yazılır
 const HAND = path.join(ROOT, 'tuval');

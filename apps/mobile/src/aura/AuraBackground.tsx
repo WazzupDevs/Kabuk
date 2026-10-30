@@ -1,7 +1,7 @@
 import { Image, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { useLabOff } from '@/lib/drawLab';
-import { GlassTarget } from '@/ui/LiquidGlass';
+import { GlassTarget } from '@/components/LiquidGlass';
 import { AURA } from '@/theme/aura';
 import { useTheme } from '@/theme/ThemeProvider';
 

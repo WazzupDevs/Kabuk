@@ -4,8 +4,6 @@ import { describe, expect, it } from 'vitest';
 import { tr } from '../i18n/tr';
 import { venueType } from './venueType';
 
-// v46's words and icons for these types are checked against its list rows in
-// scripts/v46/explore.test.ts ("names each type in v46's words").
 describe('venueType', () => {
   it("draws a cafe-kind venue by its category: v46's cafe, tea garden and food", () => {
     expect(VENUE_CATEGORIES.map((category) => venueType({ kind: 'cafe', category }))).toEqual([
