@@ -127,6 +127,8 @@ export const KIT = {
     sheetFadeTop:
       'linear-gradient(180deg, rgba(244, 242, 251, 1) 0%, rgba(244, 242, 251, 1) 55%, rgba(244, 242, 251, 0) 100%)',
     sheetFadeBottom: 'linear-gradient(180deg, rgba(236, 233, 247, 0), rgba(236, 233, 247, 1))',
+    // The sheet's foot under the navigation bar: its gradient's last colour.
+    sheetFoot: '#ECE9F7',
     grab: 'rgba(20, 17, 43, 0.16)',
     scrim: 'rgba(20, 17, 43, 0.30)',
   },
@@ -158,6 +160,7 @@ export const KIT = {
     sheetFadeTop:
       'linear-gradient(180deg, rgba(30, 25, 64, 1) 0%, rgba(30, 25, 64, 1) 55%, rgba(30, 25, 64, 0) 100%)',
     sheetFadeBottom: 'linear-gradient(180deg, rgba(21, 18, 45, 0), rgba(21, 18, 45, 1))',
+    sheetFoot: '#15122D',
     grab: 'rgba(255, 255, 255, 0.20)',
     scrim: 'rgba(8, 6, 20, 0.55)',
   },
