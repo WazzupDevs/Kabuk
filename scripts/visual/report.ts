@@ -1,7 +1,7 @@
 // node --experimental-strip-types scripts/visual/report.ts <repo root> <out dir>
 // The visual gate's report (gate-report.ts) on stdout, for the job summary, and its result in
-// <out>/kapi.json. GORSEL_URL: where <out> is served from (the run's e2e-screenshots branch,
-// `visual/`); GORSEL_BAZ_URL: where e2e/visual/baz/ is (the commit under test). Without them the
+// <out>/kapi.json. GORSEL_URL: where <out> is served from, if anywhere (the
+// run's images are in its artifact); GORSEL_BAZ_URL: where e2e/visual/baz/ is (the commit under test). Without them the
 // report names the files instead of showing them.
 import { writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
