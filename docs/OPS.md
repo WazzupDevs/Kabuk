@@ -61,7 +61,7 @@ Pilot ve Play kullanıcıları için ayrı proje. Pilotun baştan sona yayın s�
 | Realtime → Allow public access    | Kapalı                                                                                               | **Kapalı** (aynı)                                                                                                                                                                        |
 | Seed                              | Test mekanı olabilir                                                                                 | `db push --include-seed`'den önce `content/venues-test.json` boş ya da her mekanı `isActive: false` olmalı; yoksa test mekanı üretimde görünür                                           |
 | Mobil ortam                       | EAS `preview` → dev URL ve anahtar                                                                   | EAS `production` → üretim URL'i ve publishable key; `EXPO_PUBLIC_POSTHOG_KEY` (üretim PostHog projesi), `EXPO_PUBLIC_SENTRY_DSN`, `EXPO_PUBLIC_PRIVACY_URL`, `EXPO_PUBLIC_CONTACT_EMAIL` |
-| Fonksiyon sırları                 | İsteğe bağlı                                                                                         | `POSTHOG_PERSONAL_API_KEY` ve `POSTHOG_PROJECT_ID` (üretim PostHog projesi; hesap silmede kişi silme)                                                                                    |
+| Fonksiyon sırları                 | Üretimde zorunlu                                                                                     | `POSTHOG_PERSONAL_API_KEY` ve `POSTHOG_PROJECT_ID` (üretim PostHog projesi; hesap silmede kişi silme)                                                                                    |
 
 Sıra:
 
@@ -93,7 +93,7 @@ Play inceleme hesabının kodu ve değiştirilmesi: `.claude/skills/supabase-ops
 ## Analitik, yasal metinler, mağaza (M7)
 
 - Mobil `.env` (hepsi isteğe bağlı): `EXPO_PUBLIC_POSTHOG_KEY` (yoksa analitik hiçbir şey yapmaz), `EXPO_PUBLIC_POSTHOG_HOST` (varsayılan AB), `EXPO_PUBLIC_PRIVACY_URL` (yoksa uygulama içi taslak metin), `EXPO_PUBLIC_CONTACT_EMAIL`.
-- Fonksiyon sırları (hesap silmede PostHog kişi silme; yoksa atlanır): `pnpm supabase secrets set POSTHOG_PERSONAL_API_KEY=… POSTHOG_PROJECT_ID=…` (`POSTHOG_HOST` isteğe bağlı). `pnpm admin:ban` aynı değişkenleri ortamdan okur.
+- Fonksiyon sırları (hesap silmede PostHog kişi silme; yoksa atlanır, bu yüzden üretimde zorunludur: yasal metinler silindiğini söylüyor): `pnpm supabase secrets set POSTHOG_PERSONAL_API_KEY=… POSTHOG_PROJECT_ID=…` (`POSTHOG_HOST` isteğe bağlı). `pnpm admin:ban` aynı değişkenleri ortamdan okur.
 - Event kataloğu ve izinli özellikler: `_shared/pure/analytics.ts`. PostHog'a yalnızca kullanıcı id'si gider.
 - Yasal taslaklar `docs/legal/` (hukuki kontrol gerekli), mağaza metinleri `docs/store/listing-tr.md`, EAS profilleri `apps/mobile/eas.json`.
 

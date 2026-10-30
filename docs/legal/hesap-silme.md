@@ -38,8 +38,9 @@ Konumunuz hiçbir zaman saklanmadığı için silinecek bir konum verisi yoktur.
 
 ## Bir süre kalan veriler
 
-- **Şikayet kayıtları:** güvenlik ve moderasyon için oluşturulduktan sonra 30 gün saklanır, sonra silinir.
+- **Şikayet kayıtları:** sizin yaptığınız ya da size yapılan şikayetler (mesaj kopyaları dahil) güvenlik ve moderasyon için oluşturulduktan sonra 30 gün saklanır, sonra silinir.
 - **Hata raporları:** hesaba bağlı teknik hata kayıtları 30 gün sonunda silinir.
+- **Başkalarının oyun geçmişi:** karşılaştığınız kişilerin oyun geçmişinde tarih, oyun ve o masadaki adınız (profilliyseniz görünen adınız, anonimseniz kapsül adınız) onlar kendi hesaplarını silene kadar kalır.
 - **Kapsül adı:** eski kapsül adınızın metni, kimseye yeniden verilmesin diye hesabınızla bağı olmadan saklanır.
 - **Banlanan hesaplar:** kuralları ihlal ettiği için kapatılan bir hesabın telefon numarasının geri döndürülemez özeti, aynı numarayla yeniden kayıt olunmasını engellemek için süresiz saklanır. Numaranın kendisi saklanmaz.
 - **Yedekler:** veritabanı yedeklerinde kalan kopyalar [yedek saklama süresi: Supabase planına göre yazılacak] içinde kendiliğinden silinir.
