@@ -1,0 +1,62 @@
+# Native build check: when a PR changes the native side (the local Kotlin module, the app config
+# and its inline config plugins, the mobile dependencies, the patches), compile the Android app
+# once, before anyone spends an EAS build on it. Same Gradle steps as e2e.yml → build (one change
+# goes to both), without the E2E settings and without uploading the APK. Not a required check; a
+# PR it runs on is merged only after it passes too (.claude/skills/pr-akisi). No secrets.
+name: apk
+
+on:
+  pull_request:
+    paths:
+      - 'apps/mobile/modules/**'
+      - 'apps/mobile/app.config.ts'
+      - 'apps/mobile/app.json'
+      - 'apps/mobile/package.json'
+      - 'patches/**'
+      - '.github/workflows/apk.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: apk-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      # Reads the Gradle cache main's nightly E2E run writes (same architecture below).
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: true
+      - name: NDK (with retries)
+        run: |
+          ndk=$(sed -n 's/^ndkVersion = "\(.*\)"$/\1/p' node_modules/react-native/gradle/libs.versions.toml)
+          test -n "$ndk" || { echo "ndkVersion not found in react-native's libs.versions.toml"; exit 1; }
+          bash scripts/e2e/sdk-install.sh "ndk;$ndk"
+      - name: Prebuild
+        run: cd apps/mobile && npx expo prebuild --platform android --no-install --clean
+      # Release, as EAS builds it (R8 on): x86_64 only, the architecture the cache holds.
+      - name: Release APK, x86_64 only
+        env:
+          EXPO_PUBLIC_SUPABASE_URL: http://10.0.2.2:54321
+          EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH
+          SENTRY_DISABLE_AUTO_UPLOAD: 'true'
+          NODE_ENV: production
+        run: |
+          cd apps/mobile/android
+          ./gradlew assembleRelease -PreactNativeArchitectures=x86_64 --no-daemon --build-cache

@@ -22,7 +22,7 @@ export type Gate = {
 };
 
 export type Urls = {
-  // Where <out> is served from (the run's e2e-screenshots branch, `visual/`).
+  // Where <out> is served from, if anywhere (CI keeps it in the run's artifact).
   images?: string;
   // Where e2e/visual/baz/ is served from (the commit under test).
   baselines?: string;

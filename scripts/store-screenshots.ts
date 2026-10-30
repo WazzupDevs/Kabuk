@@ -1,10 +1,12 @@
 // Usage: pnpm store:screenshots <E2E screenshot folder> [output folder]
 // Play Store phone screenshots (1080 × 1920, 9:16) from the E2E screenshots: the shots and captions
 // in docs/store/screenshots.json, the output in dist/store-screenshots/ (git-ignored) by default.
-// The E2E folder is the `takeScreenshot` folder of a run (e2e-screenshots branch or the artifact).
+// The E2E folder is where a run's light artifacts were downloaded
+// (`gh run download <run> -p 'e2e-run-light-*' -D <folder>`): each shot is looked up in its shards'
+// takeScreenshot folders (a retried shard's attempt-1/ is skipped).
 // Rerun after the design direction and the app name are chosen.
-import { mkdirSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { mkdirSync, readdirSync, readFileSync } from 'node:fs';
+import { basename, resolve, sep } from 'node:path';
 
 import sharp from 'sharp';
 
@@ -30,9 +32,21 @@ const config = JSON.parse(
   readFileSync(resolve(root, 'docs/store/screenshots.json'), 'utf8'),
 ) as StoreConfig;
 
+const found = new Map<string, string>();
+for (const rel of readdirSync(input, { recursive: true, encoding: 'utf8' })) {
+  const parts = rel.split(sep);
+  if (parts.includes('attempt-1') || parts.at(-2) !== 'takeScreenshot') continue;
+  if (!found.has(basename(rel))) found.set(basename(rel), resolve(input, rel));
+}
+const sourceOf = (name: string) => {
+  const file = found.get(name);
+  if (!file) throw new Error(`${name} not found in a takeScreenshot folder under ${input}`);
+  return file;
+};
+
 mkdirSync(output, { recursive: true });
 for (const [index, shot] of config.shots.entries()) {
-  const source = sharp(resolve(input, shot.source));
+  const source = sharp(sourceOf(shot.source));
   const { width = 0, height = 0 } = await source.metadata();
   const place = placeScreen(width, height);
   const screen = await source.resize(place.width, place.height).png().toBuffer();

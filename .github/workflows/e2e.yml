@@ -314,8 +314,8 @@ jobs:
           fi
           echo "reason=$reason" >> "$GITHUB_OUTPUT"
           { echo "### $JOB: yeniden deneme"; echo; echo "- Sebep: $reason"; } | tee -a "$GITHUB_STEP_SUMMARY"
-      # Before the retry: the first attempt's outputs into attempt-1/ (the artifact and the
-      # screenshots branch keep them, except its takeScreenshot images), the local database back to
+      # Before the retry: the first attempt's outputs into attempt-1/ (the artifact keeps them),
+      # the local database back to
       # its start (test accounts, rooms, and the venues 02-checkin closed), and the bots anew. The
       # runner action then boots a new phone: it creates the AVD again.
       - name: Before the retry (outputs, local database, bots)
@@ -403,7 +403,7 @@ jobs:
         with:
           name: e2e-run-${{ matrix.font == '1' && format('{0}-{1}', matrix.scheme, matrix.shard) || format('large-{0}', matrix.shard) }}
           path: ${{ env.OUT }}
-          retention-days: 14
+          retention-days: 7
 
   # The visual gate (CLAUDE.md → Görsel kapı): the states of e2e/visual/states.json (the design
   # gallery's sets, game phases) opened in the app's hidden route with a fixed state (timers
@@ -517,12 +517,11 @@ jobs:
           emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -skin 720x1280
           disable-animations: true
           script: bash scripts/visual/run-on-emulator.sh
-      # The images point at this run's screenshots branch (publish-screenshots, below) and the
-      # baselines at the commit under test.
+      # The run's images are in its e2e-run-visual artifact, so the report names them; the baselines
+      # are shown from the commit under test.
       - name: Report
         if: always()
         env:
-          GORSEL_URL: https://raw.githubusercontent.com/${{ github.repository }}/${{ github.event_name == 'pull_request' && format('e2e-screenshots-pr-{0}', github.event.pull_request.number) || 'e2e-screenshots' }}/visual
           GORSEL_BAZ_URL: https://raw.githubusercontent.com/${{ github.repository }}/${{ github.event.pull_request.head.sha || github.sha }}/e2e/visual/baz
         run: node --experimental-strip-types scripts/visual/report.ts . "$OUT" | tee -a "$GITHUB_STEP_SUMMARY"
       # The hard gate: every shot photographed, every expected baseline there, every comparison
@@ -537,49 +536,8 @@ jobs:
         with:
           name: e2e-run-visual
           path: ${{ env.OUT }}
-          retention-days: 14
+          retention-days: 7
 
-  # Screenshots and logs (no video) on an e2e-screenshots branch, for readers without access to
-  # artifact storage: an orphan branch with a single commit, force-pushed by every run, so binaries
-  # never pile up in history. A PR run writes its own branch (e2e-screenshots-pr-<number>), so runs of
-  # two PRs do not overwrite each other; main, nightly and manual runs write e2e-screenshots. (Git
-  # cannot hold both e2e-screenshots and e2e-screenshots/pr-<number>, hence the dash.) Each shard's
-  # run is in its own folder (light-1 … dark-4, and large-1 … large-4 at the largest text size);
-  # light/takeScreenshot and dark/takeScreenshot hold the takeScreenshot images of the scheme's four
-  # shards together, for `pnpm store:screenshots` (large/takeScreenshot those of the large pass); a
-  # retried shard's first attempt is in its folder's attempt-1/, without those images. A PR run that
-  # only the e2e-large label started writes the four large folders alone. The visual gate's run is
-  # in visual/ (its candidates in visual/aday/, which `pnpm visual:accept` reads).
-  publish-screenshots:
-    if: ${{ always() && (needs.e2e.result != 'skipped' || needs.visual.result != 'skipped') }}
-    needs: [e2e, visual]
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: e2e-run-*
-          path: out
-      - name: Push to e2e-screenshots
-        env:
-          BRANCH: ${{ github.event_name == 'pull_request' && format('e2e-screenshots-pr-{0}', github.event.pull_request.number) || 'e2e-screenshots' }}
-        run: |
-          mkdir site
-          for dir in out/*; do
-            run=${dir#out/e2e-run-}
-            mkdir -p "site/$run"
-            (cd "$dir" && find . -type f ! -name '*.webm' ! -name 'logcat.txt' -exec cp --parents {} "../../site/$run/" \;)
-            tail -n 3000 "$dir/logcat.txt" > "site/$run/logcat-tail.txt" 2>/dev/null || true
-            if [ "$run" = visual ]; then continue; fi
-            mkdir -p "site/${run%-*}/takeScreenshot"
-            find "$dir" -path '*/takeScreenshot/*.png' ! -path '*/attempt-1/*' -exec cp {} "site/${run%-*}/takeScreenshot/" \;
-          done
-          cd site
-          git init -q -b "$BRANCH"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -q --allow-empty -m "E2E screenshots, run ${{ github.run_id }} (${{ github.sha }})"
-          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" "$BRANCH"
+  # Screenshots, logs and the visual gate's images stay in this run's artifacts only (e2e-run-*,
+  # kept 7 days): no screenshots branch, so no binaries in the repository. `pnpm visual:accept`
+  # and `pnpm store:screenshots` read them with `gh run download`.
