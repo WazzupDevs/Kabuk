@@ -7,14 +7,14 @@
 ## 1. Uygulama içinden (hemen)
 
 1. Uygulamada alttaki **Profil** sekmesini açın.
-2. Sağ üstteki dişli simgesiyle **Ayarlar**'a girin.
+2. **Ayarlar**'a girin.
 3. **Hesabımı sil**'e, ardından onay penceresinde **Sil**'e dokunun.
 
 Hesabınız ve aşağıdaki veriler aynı anda, geri alınamaz biçimde silinir. Uygulamadan çıkış yapılır.
 
 ## 2. E-postayla (uygulamaya erişemiyorsanız)
 
-Uygulamayı artık kullanmıyorsanız ya da telefonunuzda yüklü değilse [e-posta] adresine yazın:
+[e-posta] adresine yazın:
 
 - Konu: "Hesap silme talebi"
 - Hesabınıza kayıtlı telefon numarası
@@ -24,23 +24,26 @@ Talebin hesabın sahibinden geldiğini doğrulamak için sizinle iletişime geç
 ## Silinen veriler
 
 - Telefon numarası ve hesap
-- Onay kayıtları (18 yaş beyanı, Kullanım Koşulları, KVKK metni, konum rızası)
-- Profil: görünen ad, profil fotoğrafı, biyografi, rozetler, tercihler
-- Mekan ve masa kayıtları (seçilen mekan, kişi sayısı, masa takma adı, giriş ve çıkış zamanı)
-- Odalar ve odalardaki kayıtlarınız: odaya katılımınız, mesajlarınız, oyun hamleleriniz ve "Tanışalım mı?" cevaplarınız. Hesap silinirken odadan çıkarsınız; tarafınızda başka telefon varsa oda onlar için sürer.
-- Oyun geçmişi, arkadaşlık istekleri, arkadaşlıklar ve arkadaşlar arası mesajlar
-- Engelleme kayıtları
-- Bildirim anahtarı (push token)
+- Onay kayıtları (Kullanım Koşulları, KVKK metni, konum rızası)
+- Profil: görünen ad, doğum tarihi, cinsiyet, profil fotoğrafı, biyografi, rozetler, kapsül görünüşü
+- Check-in ve masa kayıtları; masadaysanız masadan çıkarsınız, masa diğerleri için sürer
+- Masa ve mekan sohbetindeki mesajlarınız ve tepkileriniz, oyun hamleleriniz
+- Oyun geçmişi, arkadaşlık istekleri, arkadaşlıklar, arkadaşlar arası mesajlar ve masa davetleri
+- Engelleme ve sessize alma kayıtları
+- Bildirim anahtarı (push token) ve bildirim tercihleri
 - Kullanım istatistiklerindeki kişi kaydı
 - Telefonunuzdaki kopyalar: oturum bilgisi ve birebir mesajlaşmalarınızın son mesajları
 
 Konumunuz hiçbir zaman saklanmadığı için silinecek bir konum verisi yoktur.
 
-## Silinmeyen ya da bir süre saklanan veriler
+## Bir süre kalan veriler
 
-- **Şikayet kayıtları:** güvenlik ve moderasyon için oluşturulduktan sonra 30 gün saklanır, sonra silinir.
+- **Şikayet kayıtları:** sizin yaptığınız ya da size yapılan şikayetler (mesaj kopyaları dahil) güvenlik ve moderasyon için oluşturulduktan sonra 30 gün saklanır, sonra silinir.
+- **Hata raporları:** hesaba bağlı teknik hata kayıtları 30 gün sonunda silinir.
+- **Başkalarının oyun geçmişi:** karşılaştığınız kişilerin oyun geçmişinde tarih, oyun ve o masadaki adınız (profilliyseniz görünen adınız, anonimseniz kapsül adınız) onlar kendi hesaplarını silene kadar kalır.
+- **Kapsül adı:** eski kapsül adınızın metni, kimseye yeniden verilmesin diye hesabınızla bağı olmadan saklanır.
 - **Banlanan hesaplar:** kuralları ihlal ettiği için kapatılan bir hesabın telefon numarasının geri döndürülemez özeti, aynı numarayla yeniden kayıt olunmasını engellemek için süresiz saklanır. Numaranın kendisi saklanmaz.
-- **Hata raporları:** hesaba bağlı teknik hata kayıtları 30 gün sonunda silinir (Sentry Developer planı).
-- **Yedekler:** veritabanı yedeklerinde kalan kopyalar 7 gün içinde kendiliğinden silinir (Supabase Pro planı günlük yedekleri).
+- **Yedekler:** veritabanı yedeklerinde kalan kopyalar [yedek saklama süresi: Supabase planına göre yazılacak] içinde kendiliğinden silinir.
+- **Yasal saklama:** hesap silindikten sonra yasal yükümlülük için saklanması gereken veri ve süresi: [hukuki görüşle belirlenecek].
 
 Ayrıntılar: [Gizlilik Politikası](gizlilik-politikasi.html) ve [KVKK Aydınlatma Metni](kvkk-aydinlatma-metni.html).
