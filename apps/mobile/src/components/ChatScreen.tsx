@@ -18,7 +18,9 @@ import {
   type LayoutChangeEvent,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
+  Animated,
   FlatList,
+  type ViewToken,
   ScrollView,
   type ScrollViewProps,
   StyleSheet,
@@ -26,13 +28,21 @@ import {
   type ViewStyle,
   Text as RNText,
 } from 'react-native';
-import Reanimated, { FadeIn, FadeInDown, FadeInUp, FadeOut } from 'react-native-reanimated';
+import Reanimated, {
+  Easing,
+  FadeIn,
+  FadeInDown,
+  FadeInUp,
+  FadeOut,
+  withTiming,
+} from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { sameDay } from '@shared/chatRuns.ts';
 
 import { tr } from '@/i18n/tr';
 import { useReduceMotion } from '@/lib/useReduceMotion';
+import { withAlpha } from '@/theme/contrast';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
@@ -96,6 +106,29 @@ const SETTLE_MS = 800;
 // Whether the stream is drawn from the bottom up: a row's arrival then rises from below in its
 // flipped cell.
 const ChatInvertedContext = createContext(false);
+// The message a quote's tap went to (the owner's call, 30 Ekim: Telegram Android flashes it); `n`
+// counts the jumps, so a second jump to the same message flashes it again.
+const ChatHighlightContext = createContext<{ id: string | null; n: number }>({ id: null, n: 0 });
+const FLASH_MS = 1400;
+// A message the reader sent rises from the message bar into its place (Telegram Android; the
+// owner's call, 30 Ekim); another's fades up a little.
+const SEND_RISE = SPACING[16];
+const SEND_MS = 260;
+
+function riseFrom(distance: number) {
+  return () => {
+    'worklet';
+    return {
+      initialValues: { opacity: 0, transform: [{ translateY: distance }] },
+      animations: {
+        opacity: withTiming(1, { duration: SEND_MS / 2 }),
+        transform: [
+          { translateY: withTiming(0, { duration: SEND_MS, easing: Easing.out(Easing.cubic) }) },
+        ],
+      },
+    };
+  };
+}
 const KEEP_VISIBLE = { minIndexForVisible: 0 } as const;
 const ARRIVE_MS = 220;
 
@@ -105,31 +138,71 @@ const ARRIVE_MS = 220;
 export function ChatRow({
   id,
   first,
+  mine,
   children,
 }: {
   id: string;
   // A run's first message: a little more room above it.
   first?: boolean;
+  // The reader's own: it rises from the message bar when sent.
+  mine?: boolean;
   children: (jumpTo: (id: string) => void) => ReactNode;
 }) {
   const jump = useChatJump();
   const live = useContext(ChatLiveContext);
   const newest = useContext(ChatNewestContext);
   const inverted = useContext(ChatInvertedContext);
+  const highlight = useContext(ChatHighlightContext);
   const reduce = useReduceMotion();
   const [arriving] = useState(live && !reduce && id === newest);
-  // In a list drawn from the bottom up the cell is flipped: the same rise from below is FadeInUp.
-  const arrive = inverted ? FadeInUp : FadeInDown;
+  // In a list drawn from the bottom up the cell is flipped: a rise from below is a move up in it.
+  const entering = !arriving
+    ? undefined
+    : mine
+      ? riseFrom(inverted ? -SEND_RISE : SEND_RISE)
+      : (inverted ? FadeInUp : FadeInDown).duration(ARRIVE_MS);
   return (
     <Reanimated.View
-      entering={arriving ? arrive.duration(ARRIVE_MS) : undefined}
+      entering={entering}
       onLayout={jump?.row(id)}
-      style={{ gap: SPACING[2], marginTop: first ? SPACING[1.5] : 0 }}
+      style={{ gap: SPACING[2], marginTop: first ? SPACING[2] : 0 }}
     >
+      {highlight.id === id && highlight.n > 0 ? <Flash key={highlight.n} /> : null}
       {children((target) => void jump?.jumpTo(target))}
     </Reanimated.View>
   );
 }
+
+// The flash over a message a quote's tap went to: the row's whole width in the accent, fading out.
+function Flash() {
+  const { shape } = useTheme();
+  const [fade] = useState(() => new Animated.Value(1));
+  useEffect(() => {
+    const anim = Animated.timing(fade, {
+      toValue: 0,
+      duration: FLASH_MS,
+      easing: (u) => u * u,
+      useNativeDriver: true,
+    });
+    anim.start();
+    return () => anim.stop();
+  }, [fade]);
+  return (
+    <Animated.View
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        top: -SPACING[1],
+        bottom: -SPACING[1],
+        left: -shape.screenPadding,
+        right: -shape.screenPadding,
+        backgroundColor: withAlpha(KIT.primary, FLASH_ALPHA),
+        opacity: fade,
+      }}
+    />
+  );
+}
+const FLASH_ALPHA = 0.22;
 
 // The reaction bar (CLAUDE.md → Ekran davranışı): one open at a time, closed by a tap outside it, a
 // scroll, the keyboard opening and the back button. A bubble opens it by its own id; the bar marks
@@ -193,6 +266,8 @@ type ScrollProps = {
   // (ChatScreen). At its end it rises with the keyboard; scrolled up it stays where the reader is
   // and the keyboard covers its foot, as the screen shrinking did. Without it a plain stream.
   keyboardOffset?: number;
+  // What lies over the stream's top (the chat's top bar): a jump stops under it.
+  topInset?: number;
 };
 
 // A chat's message stream (canvas: Aşama 8 · Saha → Sohbet): at the bottom (the keyboard open too)
@@ -207,6 +282,7 @@ export function ChatScroll({
   bottomInset = 0,
   endRef,
   keyboardOffset,
+  topInset = 0,
 }: ScrollProps) {
   const scroll = useRef<ScrollView>(null);
   // The screen's reaction bar (ChatScreen), or this stream's own (the game's chat panel).
@@ -230,6 +306,10 @@ export function ChatScroll({
     return () => clearTimeout(timer);
   }, []);
   const rows = useRef(new Map<string, number>());
+  const [highlight, setHighlight] = useState<{ id: string | null; n: number }>({
+    id: null,
+    n: 0,
+  });
   const jump = useMemo<ChatJump>(
     () => ({
       row: (id) => (e) => void rows.current.set(id, e.nativeEvent.layout.y),
@@ -237,11 +317,12 @@ export function ChatScroll({
         const y = rows.current.get(id);
         if (y === undefined) return false;
         pinned.current = false;
-        scroll.current?.scrollTo({ y: Math.max(0, y - SPACING[4]), animated: true });
+        scroll.current?.scrollTo({ y: Math.max(0, y - SPACING[4] - topInset), animated: true });
+        setHighlight((h) => ({ id, n: h.n + 1 }));
         return true;
       },
     }),
-    [],
+    [topInset],
   );
 
   // A new message while the reader is up the stream: count it for the button.
@@ -382,7 +463,11 @@ export function ChatScroll({
     <ChatBarContext.Provider value={bar}>
       <ChatJumpContext.Provider value={jump}>
         <ChatLiveContext.Provider value={live}>
-          <ChatNewestContext.Provider value={newestKey}>{children}</ChatNewestContext.Provider>
+          <ChatNewestContext.Provider value={newestKey}>
+            <ChatHighlightContext.Provider value={highlight}>
+              {children}
+            </ChatHighlightContext.Provider>
+          </ChatNewestContext.Provider>
         </ChatLiveContext.Provider>
       </ChatJumpContext.Provider>
     </ChatBarContext.Provider>
@@ -488,6 +573,12 @@ export type ChatListProps<T extends ChatListItem> = {
   latest?: ReactNode;
   // Instead of the list when there are no items (loading, an error, empty).
   empty?: ReactNode;
+  // The first unread message: the chat opens there, its "Okunmamış mesajlar" line under the top
+  // bar, instead of at the newest (the owner's call, 30 Ekim).
+  openAt?: string | null;
+  // A message's time (ms): while the reader scrolls, the day of the oldest one on the screen floats
+  // at the top (Telegram Android).
+  timeOf?: (item: T) => number;
 };
 
 // A chat's message stream as Telegram Android draws it (the owner's call, 29 Ekim): from the
@@ -503,6 +594,8 @@ function ChatList<T extends ChatListItem>({
   older,
   latest,
   empty,
+  openAt,
+  timeOf,
   newestKey,
   newestMine,
   contentContainerStyle,
@@ -510,6 +603,7 @@ function ChatList<T extends ChatListItem>({
   bottomInset = 0,
   endRef,
   keyboardOffset = 0,
+  topInset = 0,
 }: ChatListProps<T> &
   Omit<ScrollProps, 'children' | 'startAtEnd' | 'keyboardOffset'> & {
     keyboardOffset?: number;
@@ -561,6 +655,10 @@ function ChatList<T extends ChatListItem>({
   useEffect(() => {
     shownItems.current = items;
   });
+  const [highlight, setHighlight] = useState<{ id: string | null; n: number }>({
+    id: null,
+    n: 0,
+  });
   const jump = useMemo<ChatJump>(
     () => ({
       row: () => () => undefined,
@@ -568,9 +666,71 @@ function ChatList<T extends ChatListItem>({
         const index = shownItems.current.findIndex((i) => i.id === id);
         if (index < 0) return false;
         list.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 });
+        setHighlight((h) => ({ id, n: h.n + 1 }));
         return true;
       },
     }),
+    [],
+  );
+
+  // Opening at the first unread message: once, when it is among the rows, its top under the top
+  // bar (in a list drawn from the bottom up a negative offset puts it lower).
+  const opened = useRef(false);
+  useEffect(() => {
+    if (opened.current || !openAt || items.length === 0) return undefined;
+    opened.current = true;
+    const index = items.findIndex((i) => i.id === openAt);
+    if (index <= 0) return undefined;
+    const frame = requestAnimationFrame(() =>
+      list.current?.scrollToIndex({
+        index,
+        animated: false,
+        viewPosition: 1,
+        viewOffset: -(topInset + SPACING[2]),
+      }),
+    );
+    return () => cancelAnimationFrame(frame);
+  }, [openAt, items, topInset]);
+
+  // The floating day: the oldest message on the screen, shown while the reader scrolls and a
+  // moment after.
+  const [floatDay, setFloatDay] = useState<number | null>(null);
+  const [scrolling, setScrolling] = useState(false);
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timeOfRef = useRef(timeOf);
+  useEffect(() => {
+    timeOfRef.current = timeOf;
+  });
+  // The same function for the list's life (FlatList takes no new one).
+  const [onViewable] = useState(() => ({ viewableItems }: { viewableItems: ViewToken<T>[] }) => {
+    const time = timeOfRef.current;
+    if (!time) return;
+    let oldest: T | null = null;
+    let at = -1;
+    for (const v of viewableItems) {
+      if (v.index !== null && v.index > at) {
+        at = v.index;
+        oldest = v.item;
+      }
+    }
+    const ms = oldest ? time(oldest) : NaN;
+    if (oldest && Number.isFinite(ms)) {
+      const d = new Date(ms);
+      setFloatDay(new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime());
+    }
+  });
+  const showDay = () => {
+    if (hideTimer.current) clearTimeout(hideTimer.current);
+    setScrolling(true);
+  };
+  const hideDaySoon = () => {
+    if (hideTimer.current) clearTimeout(hideTimer.current);
+    hideTimer.current = setTimeout(() => setScrolling(false), DAY_HIDE_MS);
+  };
+  useEffect(
+    () => () => {
+      if (hideTimer.current) clearTimeout(hideTimer.current);
+    },
     [],
   );
 
@@ -604,60 +764,90 @@ function ChatList<T extends ChatListItem>({
           <ChatLiveContext.Provider value={live}>
             <ChatNewestContext.Provider value={newestKey}>
               <ChatInvertedContext.Provider value>
-                {items.length === 0 && empty ? (
-                  <View style={{ flex: 1 }}>{empty}</View>
-                ) : (
-                  <FlatList
-                    ref={list}
-                    testID={testID}
-                    data={items}
-                    inverted
-                    keyExtractor={(item) => item.key}
-                    renderItem={({ item }) => renderItem(item)}
-                    renderScrollComponent={renderScroll}
-                    showsVerticalScrollIndicator={false}
-                    showsHorizontalScrollIndicator={false}
-                    // The first screenful at once, from the newest up; the rest as it nears.
-                    initialNumToRender={INITIAL_ROWS}
-                    maxToRenderPerBatch={BATCH_ROWS}
-                    windowSize={WINDOW}
-                    // Rows added under the reader leave what is shown where it is; at the bottom the
-                    // list goes on to the new one.
-                    maintainVisibleContentPosition={FOLLOW}
-                    onEndReached={onReachOld}
-                    onEndReachedThreshold={OLD_THRESHOLD}
-                    ListFooterComponent={older ? <>{older}</> : null}
-                    ListHeaderComponent={latest ? <>{latest}</> : null}
-                    // Dragging the messages puts the keyboard away, like any chat app.
-                    keyboardDismissMode="on-drag"
-                    keyboardShouldPersistTaps="handled"
-                    contentContainerStyle={contentContainerStyle}
-                    scrollEventThrottle={64}
-                    onScroll={onScroll}
-                    onScrollBeginDrag={() => bar.setOpen(null)}
-                    onScrollToIndexFailed={(info) => {
-                      // A row not drawn yet: near it first, then to it.
-                      list.current?.scrollToOffset({
-                        offset: info.averageItemLength * info.index,
-                        animated: true,
-                      });
-                      setTimeout(
-                        () =>
-                          list.current?.scrollToIndex({
-                            index: info.index,
-                            animated: true,
-                            viewPosition: 0.5,
-                          }),
-                        JUMP_RETRY_MS,
-                      );
-                    }}
-                  />
-                )}
+                <ChatHighlightContext.Provider value={highlight}>
+                  {items.length === 0 && empty ? (
+                    // Clear of the top bar and the message bar (the list's own padding, unflipped).
+                    <View
+                      style={{
+                        flex: 1,
+                        paddingTop: contentContainerStyle?.paddingBottom,
+                        paddingBottom: contentContainerStyle?.paddingTop,
+                        paddingHorizontal: contentContainerStyle?.paddingHorizontal,
+                      }}
+                    >
+                      {empty}
+                    </View>
+                  ) : (
+                    <FlatList
+                      ref={list}
+                      testID={testID}
+                      data={items}
+                      inverted
+                      keyExtractor={(item) => item.key}
+                      renderItem={({ item }) => renderItem(item)}
+                      renderScrollComponent={renderScroll}
+                      showsVerticalScrollIndicator={false}
+                      showsHorizontalScrollIndicator={false}
+                      // The first screenful at once, from the newest up; the rest as it nears.
+                      initialNumToRender={INITIAL_ROWS}
+                      maxToRenderPerBatch={BATCH_ROWS}
+                      windowSize={WINDOW}
+                      // Rows added under the reader leave what is shown where it is; at the bottom the
+                      // list goes on to the new one.
+                      maintainVisibleContentPosition={FOLLOW}
+                      onEndReached={onReachOld}
+                      onEndReachedThreshold={OLD_THRESHOLD}
+                      ListFooterComponent={older ? <>{older}</> : null}
+                      ListHeaderComponent={latest ? <>{latest}</> : null}
+                      // Dragging the messages puts the keyboard away, like any chat app.
+                      keyboardDismissMode="on-drag"
+                      keyboardShouldPersistTaps="handled"
+                      contentContainerStyle={contentContainerStyle}
+                      scrollEventThrottle={64}
+                      onScroll={onScroll}
+                      onScrollBeginDrag={() => {
+                        bar.setOpen(null);
+                        showDay();
+                      }}
+                      onScrollEndDrag={hideDaySoon}
+                      onMomentumScrollBegin={showDay}
+                      onMomentumScrollEnd={hideDaySoon}
+                      onViewableItemsChanged={onViewable}
+                      viewabilityConfig={VIEWABLE}
+                      onScrollToIndexFailed={(info) => {
+                        // A row not drawn yet: near it first, then to it.
+                        list.current?.scrollToOffset({
+                          offset: info.averageItemLength * info.index,
+                          animated: true,
+                        });
+                        setTimeout(
+                          () =>
+                            list.current?.scrollToIndex({
+                              index: info.index,
+                              animated: true,
+                              viewPosition: 0.5,
+                            }),
+                          JUMP_RETRY_MS,
+                        );
+                      }}
+                    />
+                  )}
+                </ChatHighlightContext.Provider>
               </ChatInvertedContext.Provider>
             </ChatNewestContext.Provider>
           </ChatLiveContext.Provider>
         </ChatJumpContext.Provider>
       </ChatBarContext.Provider>
+      {timeOf && scrolling && floatDay !== null ? (
+        <Reanimated.View
+          pointerEvents="none"
+          entering={FadeIn.duration(JUMP_FADE_MS)}
+          exiting={FadeOut.duration(JUMP_FADE_MS)}
+          style={{ position: 'absolute', left: 0, right: 0, top: topInset, alignItems: 'center' }}
+        >
+          <DayLine label={dayLabel(new Date(floatDay))} />
+        </Reanimated.View>
+      ) : null}
       {slot ? null : (
         <NewMessages
           show={!atBottom}
@@ -670,6 +860,10 @@ function ChatList<T extends ChatListItem>({
     </View>
   );
 }
+
+// A row counts as on the screen when half of it shows.
+const VIEWABLE = { itemVisiblePercentThreshold: 50 } as const;
+const DAY_HIDE_MS = 1200;
 
 const INITIAL_ROWS = 15;
 const BATCH_ROWS = 10;
@@ -775,6 +969,7 @@ export function ChatScreen<T extends ChatListItem>({
                     newestKey={newestKey}
                     newestMine={newestMine}
                     bottomInset={under}
+                    topInset={topHeight}
                     endRef={end}
                     keyboardOffset={bottomPad}
                     // Drawn from the bottom up: its start is the screen's foot.
@@ -783,7 +978,8 @@ export function ChatScreen<T extends ChatListItem>({
                       paddingHorizontal: shape.screenPadding,
                       paddingTop: SPACING[3] + under,
                       paddingBottom: SPACING[2] + topHeight,
-                      gap: SPACING[1.5],
+                      // Telegram Android: a run's bubbles close together, runs apart (ChatRow).
+                      gap: SPACING[0.5],
                     }}
                   />
                 ) : (
@@ -793,6 +989,7 @@ export function ChatScreen<T extends ChatListItem>({
                     newestMine={newestMine}
                     startAtEnd={startAtEnd}
                     bottomInset={under}
+                    topInset={topHeight}
                     endRef={end}
                     keyboardOffset={bottomPad}
                     contentContainerStyle={{
@@ -801,7 +998,7 @@ export function ChatScreen<T extends ChatListItem>({
                       paddingHorizontal: shape.screenPadding,
                       paddingTop: SPACING[2] + topHeight,
                       paddingBottom: SPACING[3] + under,
-                      gap: SPACING[1.5],
+                      gap: SPACING[0.5],
                     }}
                   >
                     {children}

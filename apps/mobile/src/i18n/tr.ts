@@ -978,7 +978,8 @@ export const tr = {
     report: 'Bildir',
     delete: 'Sil',
     // Over the first message that came while the chat was closed (skall tuvali: `.day.new`).
-    newLine: 'Yeni mesajlar',
+    // Over the first unread message; the chat opens there (the owner's call, 30 Ekim).
+    newLine: 'Okunmamış mesajlar',
     jumpDown: 'En alta in',
     openProfile: (name: string) => `${name}, profili aç`,
   },

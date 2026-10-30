@@ -1,10 +1,12 @@
 import { REACTIONS, type Reaction } from '@shared/reactions.ts';
 import { type ReactNode, useState } from 'react';
 import { Modal, Pressable, useWindowDimensions, View } from 'react-native';
+import Reanimated, { withDelay, withSpring, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { tr } from '@/i18n/tr';
 import { haptic } from '@/lib/haptics';
+import { useReduceMotion } from '@/lib/useReduceMotion';
 import { withAlpha } from '@/theme/contrast';
 import { useTheme } from '@/theme/ThemeProvider';
 import { OPACITY, SPACING } from '@/theme/tokens';
@@ -14,6 +16,10 @@ import { Menu, MenuItem } from './Menu';
 import { ReactionFace } from './ReactionFace';
 import { useLabOff } from '@/lib/drawLab';
 import { boxShadowParts } from './NativeShadow';
+
+const BAR_FROM = 0.6;
+const FACE_FROM = 0.3;
+const MENU_FROM = 0.85;
 
 export type BubbleAction = {
   label: string;
@@ -28,6 +34,24 @@ export type PopAnchor = { x: number; y: number; width: number; height: number };
 
 // The picker's height: 40 high faces in 5 of padding (skall.css → `.emopick`).
 const PICK_HEIGHT = SPACING[10] + SPACING[2.5];
+
+// Telegram Android's message menu opening: the reaction bar grows from the message's side, its
+// faces pop in one after the other, the menu unfolds from its top corner (the owner's call, 30
+// Ekim). None with reduce motion.
+const POP_SPRING = { damping: 16, stiffness: 280, mass: 0.8 } as const;
+const FACE_STEP_MS = 28;
+function popIn(from: number, delay = 0) {
+  return () => {
+    'worklet';
+    return {
+      initialValues: { opacity: 0, transform: [{ scale: from }] },
+      animations: {
+        opacity: withDelay(delay, withTiming(1, { duration: 120 })),
+        transform: [{ scale: withDelay(delay, withSpring(1, POP_SPRING)) }],
+      },
+    };
+  };
+}
 
 // A held message (skall tuvali: SohbetBasiliTut, SohbetKendiMesaj): the screen dims, the message
 // stays where it was with a ring, the six faces over it and its actions under it; the viewer's own
@@ -52,6 +76,7 @@ export function MessagePop({
   children: ReactNode;
 }) {
   const { colors, shape } = useTheme();
+  const reduce = useReduceMotion();
   // The reaction bar's soft shadow natively (NativeShadow.tsx): it pops in.
   const shadowOff = useLabOff('golge');
   const barShadow = boxShadowParts(shadowOff, shape.shadow.sheet, shape.radius.pill);
@@ -87,17 +112,19 @@ export function MessagePop({
         }}
       >
         {onReact ? (
-          <View
+          <Reanimated.View
             testID="reaction-bar"
             accessibilityRole="menu"
             accessibilityLabel={tr.chat.react}
-            className="flex-row"
+            entering={reduce ? undefined : popIn(BAR_FROM)}
             style={{
+              flexDirection: 'row',
               gap: SPACING[0.5],
               padding: SPACING[1],
               borderRadius: shape.radius.pill,
               backgroundColor: colors.surface,
               boxShadow: barShadow.boxShadow,
+              transformOrigin: mine ? 'right bottom' : 'left bottom',
             }}
           >
             {barShadow.node}
@@ -115,7 +142,8 @@ export function MessagePop({
                 }}
               >
                 {({ pressed }) => (
-                  <View
+                  <Reanimated.View
+                    entering={reduce ? undefined : popIn(FACE_FROM, (i + 1) * FACE_STEP_MS)}
                     className="items-center justify-center"
                     style={{
                       width: SPACING[10] + SPACING[0.5],
@@ -127,11 +155,11 @@ export function MessagePop({
                     }}
                   >
                     <ReactionFace emoji={emoji} size="pick" />
-                  </View>
+                  </Reanimated.View>
                 )}
               </Pressable>
             ))}
-          </View>
+          </Reanimated.View>
         ) : null}
         <View
           pointerEvents="none"
@@ -144,21 +172,26 @@ export function MessagePop({
           {children}
         </View>
         {actions.length > 0 ? (
-          <Menu float>
-            {actions.map((a) => (
-              <MenuItem
-                key={a.label}
-                label={a.label}
-                icon={a.icon}
-                negative={a.negative}
-                testID={a.testID}
-                onPress={() => {
-                  onClose();
-                  a.onPress();
-                }}
-              />
-            ))}
-          </Menu>
+          <Reanimated.View
+            entering={reduce ? undefined : popIn(MENU_FROM)}
+            style={{ transformOrigin: mine ? 'right top' : 'left top' }}
+          >
+            <Menu float>
+              {actions.map((a) => (
+                <MenuItem
+                  key={a.label}
+                  label={a.label}
+                  icon={a.icon}
+                  negative={a.negative}
+                  testID={a.testID}
+                  onPress={() => {
+                    onClose();
+                    a.onPress();
+                  }}
+                />
+              ))}
+            </Menu>
+          </Reanimated.View>
         ) : null}
       </View>
     </Modal>

@@ -6,7 +6,7 @@ import { ChatScreen } from '@/components/ChatScreen';
 import { ChatTopBar } from '@/components/ChatTopBar';
 import { Loader } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
-import { RoomComposer, RoomMessages, useRoomChat } from '@/features/chat/ChatPanel';
+import { RoomComposer, useRoomChat, useRoomChatList } from '@/features/chat/ChatPanel';
 import { useRoomChatSeen } from '@/features/chat/roomChatSeen';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { useRoomMemberProfiles } from '@/features/profile/queries';
@@ -31,6 +31,7 @@ export default function RoomChatScreen() {
   const chat = useRoomChat(id);
   const mark = useRoomChatSeen((s) => s.mark);
   const sessionId = checkIn.data?.id;
+  const stream = useRoomChatList(chat, sessionId ?? '', profiles);
   const messages = chat.messages.data ?? [];
   const newestAt = messages.at(-1)?.created_at;
   useEffect(() => {
@@ -70,8 +71,7 @@ export default function RoomChatScreen() {
         />
       }
       composer={<RoomComposer chat={chat} />}
-    >
-      <RoomMessages chat={chat} sessionId={sessionId} profiles={profiles} />
-    </ChatScreen>
+      list={stream}
+    />
   );
 }

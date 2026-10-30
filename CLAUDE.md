@@ -281,7 +281,7 @@ Pilot listesinde olmayan bir yerde test için elle girilen mekan. Dosya boşsa (
 ## Ekran davranışı
 Her ekran buna uyar (tuvalde "Ekran davranışı" sayfası):
 - Açılan her çubuk, menü ve alt sayfa dışarı dokununca, kaydırınca ve Android geri tuşuyla kapanır. Aynı anda yalnızca biri açık olur.
-- Sohbetler (DM, oda, mekan) en son mesajdan açılır; fotoğraf ve alıntı yüklenince de en altta kalır. Kullanıcı yukarı kaydırdıysa yerinde kalır.
+- Sohbetler (DM, oda, mekan) en son mesajdan açılır; okunmamış mesaj varken ilk okunmamıştan, üstünde "Okunmamış mesajlar" çizgisiyle açılır (proje sahibinin kararı, 30 Ekim). Fotoğraf ve alıntı yüklenince de en altta kalır. Kullanıcı yukarı kaydırdıysa yerinde kalır; sağ altta aşağı inme oku çıkar.
 - Basılan düğme, işlem bitene kadar ikinci kez basılamaz ve beklediğini gösterir.
 - Her ekranın yükleniyor, boş ve hata hâli vardır.
 - 320 dp genişlikte ve en büyük yazı boyutunda hiçbir metin "..." ile kesilmez, hiçbir düğme yazısı iki satıra bölünmez; gerekirse metin kısalır ya da düzen değişir.
@@ -290,7 +290,7 @@ Her ekran buna uyar (tuvalde "Ekran davranışı" sayfası):
 - Yalnızca liste olan ekranlar kayar (alt alta satırlar: Mekan'ın lobisi, Keşfet, Mesajlar, DM ve sohbetler, bildirimler, arkadaşlar). Liste olmayan her ekran sabittir; içeriği sığmazsa (klavye açıkken, en büyük yazı boyutunda) yalnızca o zaman kayar, hiçbir şey kesilmez (proje sahibinin kararı, 28 Ekim).
 
 Kodda karşılıkları:
-- Sohbet akışı `ChatScroll` (`src/components/ChatScreen.tsx`): sona tutunur, yalnızca kullanıcının kendi kaydırması bırakır. Tepki çubuğu ekran başına tek (`useChatBar`).
+- Sohbet akışı `ChatList` (`src/components/ChatScreen.tsx`; DM, mekan ve masa sohbeti, Telegram Android'in sohbeti gibi en yeniden yukarı çizilen liste; `openAt` ilk okunmamış): sona tutunur, yalnızca kullanıcının kendi kaydırması bırakır; liste olmayan akış `ChatScroll`. Tepki çubuğu ekran başına tek (`useChatBar`).
 - Ekran `Screen` (`src/components/Screen.tsx`): varsayılanı sabit (`FixedBody`: zıplama ve kaydırma çubuğu yok, içerik sığmayınca kayar); liste ekranı `list` verir, yenilenen (`refreshable`, `onRefresh`) ya da kendi kaydırmasını taşıyan (`scrollRef`) ekran listedir.
 - Süreli oyun ekranı `StageFit` (`src/features/games/GameStage.tsx`): üstte süre ve skor, ortada istem, altta eylemler; yalnızca orta kendi içinde kayar. Oyun sahnesinde `flex-1` yerine `flexGrow: 1` (içerikten küçülmez, komşusunun üstüne taşmaz). Bağlantı uyarısı sahnenin `banner`'ında.
 - Açılış `LaunchCurtain` (`src/features/launch/`): sistem açılış ekranının karesinden devralır, uygulamayı bekletmez; ilk ekran `markLaunchReady` ile bildirilir (kök gezgin, güncelleme ve hata ekranı). Hareketin eğrileri `src/theme/launchMotion.ts`'te, testli. Sistem açılış ekranı ne olursa olsun en geç 3 sn'de kapanır; perde hata verirse atlanır ve hata Sentry'ye gider (`src/lib/launchGuard.ts`, testli). Bu kural perdenin bitiş sinyali (`curtain = false`) hiç gelmediği durumu da kapsar: ilk ekranın etkileşimli içeriği (başlık, açıklama, "Başla", "Geç") hiçbir harekete ve perde sinyaline bağlı değildir, React tarafında çizilir. Hareketi azaltta ilk karede, sahne oynarken her parça kendi hareketi bitince, perde açılmazsa en geç 3 sn'de görünür ve sahne sonuna gider (`src/features/onboarding/introGate.ts`, testli). UI iş parçacığındaki hareket yalnızca içeriğin gelişini süsler.

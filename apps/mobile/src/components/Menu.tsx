@@ -1,4 +1,4 @@
-import { Children, type ReactNode } from 'react';
+import { Children, createContext, type ReactNode, useContext } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { useLabOff } from '@/lib/drawLab';
@@ -17,7 +17,9 @@ import { AppIcon } from './AppIcon';
 // skall tuvali (skall.css → "Menü"): a sheet's actions as rows of one soft card, a hairline
 // between them; a negative row is written red.
 // float: over a scrim, beside a held message (skall.css → `.pop .menu`): the surface on the float
-// shadow, 210 wide.
+// shadow, 210 wide; as Telegram Android's message menu, its rows lower and without hairlines (the
+// owner's call, 30 Ekim).
+const Floating = createContext(false);
 export function Menu({ children, float }: { children: ReactNode; float?: boolean }) {
   const { colors, shape, scheme } = useTheme();
   const rows = Children.toArray(children).filter(Boolean);
@@ -40,7 +42,9 @@ export function Menu({ children, float }: { children: ReactNode; float?: boolean
         <View
           key={i}
           style={
-            i > 0 ? { borderTopWidth: KIT.size.hair, borderTopColor: KIT[scheme].hair } : undefined
+            i > 0 && !float
+              ? { borderTopWidth: KIT.size.hair, borderTopColor: KIT[scheme].hair }
+              : undefined
           }
         >
           {row}
@@ -54,7 +58,7 @@ export function Menu({ children, float }: { children: ReactNode; float?: boolean
       style={{ width: FLOAT_WIDTH, borderRadius: shape.radius.lg, boxShadow: shadow.boxShadow }}
     >
       {shadow.node}
-      {card}
+      <Floating.Provider value>{card}</Floating.Provider>
     </View>
   );
 }
@@ -85,6 +89,7 @@ export function MenuItem({
   count?: number;
 }) {
   const { colors } = useTheme();
+  const floating = useContext(Floating);
   const press = useSinglePress(onPress);
   const ink = negative ? colors.onDangerSoft : colors.text;
   return (
@@ -99,8 +104,8 @@ export function MenuItem({
         <View
           className="flex-row items-center"
           style={{
-            gap: SPACING[3],
-            minHeight: SPACING[12] + SPACING[1],
+            gap: floating ? SPACING[4] : SPACING[3],
+            minHeight: floating ? SPACING[11] : SPACING[12] + SPACING[1],
             paddingHorizontal: SPACING[4] + SPACING[0.5],
             opacity: pressed ? OPACITY.pressed : 1,
           }}

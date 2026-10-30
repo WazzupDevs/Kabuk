@@ -56,7 +56,6 @@ import { useFlash } from '@/lib/useFlash';
 import { nameInk } from '@/theme/nameInk';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
-import { lastRows, useOpenRows } from '@/lib/afterTransition';
 
 // The venue's chat room (docs/SPEC_V3.md §7; skall tuvali, Mekan sohbeti panoları): everyone with a
 // live table at the venue reads and writes, with the check-in's identity (docs/SPEC_V4.md §4.D):
@@ -177,8 +176,6 @@ export default function VenueChatScreen() {
       <Avatar kind="table" alias={senderLabel(m)} size={size === AVATAR_SIZE.sm ? 'sm' : 'xl'} />
     );
 
-  // Opened light: the newest messages while the screen slides in, the rest after in steps.
-  const shown = useOpenRows(messages?.length ?? 0);
   if (!table.isPending && !venueId) {
     return (
       <Screen>
@@ -204,6 +201,70 @@ export default function VenueChatScreen() {
     <Avatar kind="default" size="sm" />
   );
 
+  // Newest first: the stream is drawn from the bottom up, as the DM's (Telegram Android's chat; the
+  // owner's call, 30 Ekim). Runs and day lines worked out oldest first.
+  const rows = runs
+    .map(({ item, first, last, day }) => ({ key: item.id, id: item.id, m: item, first, last, day }))
+    .reverse();
+  const renderRow = ({ m, first, last, day }: (typeof rows)[number]) => (
+    <ChatRow id={m.id} first={first} mine={m.fromMe}>
+      {(jumpTo) => (
+        <>
+          {day ? <DayLine label={dayLabel(day)} /> : null}
+          {m.id === fresh ? <DayLine fresh label={tr.chat.newLine} /> : null}
+          <ChatBubble
+            testID={m.fromMe ? 'venue-chat-mine' : 'venue-chat-theirs'}
+            text={m.body}
+            mine={m.fromMe}
+            quote={quoteOf(m.replyTo)}
+            onPressQuote={quoteJump(m.replyTo, jumpTo)}
+            reactions={reactions.view(m.id, m.reactions)}
+            onToggleReaction={(emoji) => reactions.pick(m.id, m.reactions, emoji)}
+            onReact={(emoji) => reactions.pick(m.id, m.reactions, emoji)}
+            onReply={() =>
+              reply.setTarget({
+                id: m.id,
+                quote: {
+                  name: m.fromMe ? tr.chat.you : senderLabel(m),
+                  text: m.body,
+                  color: m.fromMe ? colors.accent : inkOf(senderLabel(m)),
+                },
+              })
+            }
+            actions={
+              m.fromMe
+                ? [
+                    {
+                      label: tr.chat.delete,
+                      icon: 'close',
+                      negative: true,
+                      testID: 'venue-chat-delete',
+                      onPress: () => remove.mutate(m.id),
+                    },
+                  ]
+                : [
+                    {
+                      label: tr.chat.report,
+                      icon: 'alert',
+                      negative: true,
+                      testID: 'venue-chat-report',
+                      onPress: () => setReporting(m),
+                    },
+                  ]
+            }
+            first={first}
+            last={last}
+            time={tr.chat.time(m.createdAt)}
+            name={m.fromMe ? undefined : senderLabel(m)}
+            avatar={m.fromMe ? undefined : faceOf(m, AVATAR_SIZE.sm)}
+            nameInk={m.fromMe ? undefined : inkOf(senderLabel(m))}
+            onPressSender={m.fromMe ? undefined : () => setPerson(m)}
+          />
+        </>
+      )}
+    </ChatRow>
+  );
+
   return (
     <ChatScreen
       wall="mekan"
@@ -211,6 +272,40 @@ export default function VenueChatScreen() {
       startAtEnd
       newestKey={newest?.id}
       newestMine={newest?.fromMe}
+      list={{
+        items: rows,
+        renderItem: renderRow,
+        openAt: fresh,
+        timeOf: (row) => Date.parse(row.m.createdAt),
+        empty: page.isPending ? (
+          <View className="flex-1 items-center justify-center">
+            <Loader />
+          </View>
+        ) : page.isError ? (
+          <View className="flex-1 justify-center">
+            <EmptyState
+              kind="error"
+              body={errorMessage(page.error)}
+              action={{ label: tr.common.retry, onPress: () => void page.refetch() }}
+            />
+          </View>
+        ) : (
+          <View className="flex-1 justify-end gap-2">
+            <Card>
+              <View className="items-center" style={{ gap: SPACING[2] }}>
+                <GlyphDisc icon="chatbubbles-outline" />
+                <Text variant="heading" className="text-center">
+                  {tr.venueChat.emptyTitle}
+                </Text>
+                <Text variant="fine" className="text-center">
+                  {profiled ? tr.venueChat.emptyProfiled : tr.venueChat.emptyAnonymous(photo.nick)}
+                </Text>
+              </View>
+            </Card>
+            <DayLine label={tr.chat.today} />
+          </View>
+        ),
+      }}
       top={
         <ChatTopBar
           onBack={() => router.back()}
@@ -269,93 +364,6 @@ export default function VenueChatScreen() {
         />
       }
     >
-      {page.isPending ? (
-        <View className="flex-1 items-center justify-center">
-          <Loader />
-        </View>
-      ) : page.isError ? (
-        <View className="flex-1 justify-center">
-          <EmptyState
-            kind="error"
-            body={errorMessage(page.error)}
-            action={{ label: tr.common.retry, onPress: () => void page.refetch() }}
-          />
-        </View>
-      ) : messages?.length === 0 ? (
-        <View className="flex-1 justify-end gap-2">
-          <Card>
-            <View className="items-center" style={{ gap: SPACING[2] }}>
-              <GlyphDisc icon="chatbubbles-outline" />
-              <Text variant="heading" className="text-center">
-                {tr.venueChat.emptyTitle}
-              </Text>
-              <Text variant="fine" className="text-center">
-                {profiled ? tr.venueChat.emptyProfiled : tr.venueChat.emptyAnonymous(photo.nick)}
-              </Text>
-            </View>
-          </Card>
-          <DayLine label={tr.chat.today} />
-        </View>
-      ) : (
-        lastRows(runs, shown).map(({ item: m, first, day }) => (
-          <ChatRow key={m.id} id={m.id} first={first}>
-            {(jumpTo) => (
-              <>
-                {day ? <DayLine label={dayLabel(day)} /> : null}
-                {m.id === fresh ? <DayLine fresh label={tr.chat.newLine} /> : null}
-                <ChatBubble
-                  testID={m.fromMe ? 'venue-chat-mine' : 'venue-chat-theirs'}
-                  text={m.body}
-                  mine={m.fromMe}
-                  quote={quoteOf(m.replyTo)}
-                  onPressQuote={quoteJump(m.replyTo, jumpTo)}
-                  reactions={reactions.view(m.id, m.reactions)}
-                  onToggleReaction={(emoji) => reactions.pick(m.id, m.reactions, emoji)}
-                  onReact={(emoji) => reactions.pick(m.id, m.reactions, emoji)}
-                  onReply={() =>
-                    reply.setTarget({
-                      id: m.id,
-                      quote: {
-                        name: m.fromMe ? tr.chat.you : senderLabel(m),
-                        text: m.body,
-                        color: m.fromMe ? colors.accent : inkOf(senderLabel(m)),
-                      },
-                    })
-                  }
-                  actions={
-                    m.fromMe
-                      ? [
-                          {
-                            label: tr.chat.delete,
-                            icon: 'close',
-                            negative: true,
-                            testID: 'venue-chat-delete',
-                            onPress: () => remove.mutate(m.id),
-                          },
-                        ]
-                      : [
-                          {
-                            label: tr.chat.report,
-                            icon: 'alert',
-                            negative: true,
-                            testID: 'venue-chat-report',
-                            onPress: () => setReporting(m),
-                          },
-                        ]
-                  }
-                  first={first}
-                  time={tr.chat.time(m.createdAt)}
-                  name={m.fromMe ? undefined : senderLabel(m)}
-                  avatar={m.fromMe ? undefined : faceOf(m, AVATAR_SIZE.sm)}
-                  nameInk={m.fromMe ? undefined : inkOf(senderLabel(m))}
-                  onPressSender={m.fromMe ? undefined : () => setPerson(m)}
-                />
-              </>
-            )}
-          </ChatRow>
-        ))
-      )}
-
       {identity ? (
         <IdentitySheet
           visible={sheet === 'identity'}

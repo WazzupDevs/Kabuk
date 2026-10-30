@@ -1,7 +1,17 @@
-import { isReaction, type Reaction } from '@shared/reactions.ts';
+import { emojiOnly } from '@shared/emojiOnly.ts';
+import { isReaction, type Reaction, REACTIONS } from '@shared/reactions.ts';
 import * as Clipboard from 'expo-clipboard';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { Animated, Pressable, Text as RNText, View } from 'react-native';
+import {
+  Animated,
+  Pressable,
+  Text as RNText,
+  type TextLayoutEventData,
+  type NativeSyntheticEvent,
+  useWindowDimensions,
+  View,
+} from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 
 import { useKit } from '@/aura/kit';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
@@ -12,8 +22,9 @@ import { useReduceMotion } from '@/lib/useReduceMotion';
 import { withAlpha } from '@/theme/contrast';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
-import { boxShadowParts, shadowParts } from '@/components/NativeShadow';
+import { shadowParts } from '@/components/NativeShadow';
 import { useLabOff } from '@/lib/drawLab';
+import { svgKey } from '@/lib/svgKey';
 
 import { AVATAR_SIZE } from './Avatar';
 import { type BubbleAction, MessagePop, type PopAnchor } from './MessagePop';
@@ -47,9 +58,11 @@ type Props = {
   failedText?: string;
   onRetry?: () => void;
   onDiscard?: () => void;
-  // A run of messages from one sender: the photo and the name over the first, tight corners inside
-  // the run. A lone message is the first.
+  // A run of messages from one sender (Telegram Android's grouping): the name in or over the first,
+  // the corners on the author's side tight inside the run, the last one's tail and (Mekan and Masa
+  // sohbeti) the photo beside the last. A lone message is first and last.
   first?: boolean;
+  last?: boolean;
   // In the bubble's bottom corner, after the text (v45: .bub time).
   time?: string;
   // Own DM messages (canvas: Aşama 5 · Geri bildirim → DM): one tick sent, two delivered, two in
@@ -94,6 +107,16 @@ const TICKS_ROOM = '\u2003\u2002';
 const HIDDEN_ALPHA = 0.004;
 
 const NAME_GAP = 3;
+// A bubble's share of the stream's width: the viewer's own (and a DM's other side), and a group
+// chat's others beside their photos.
+const MINE_SHARE = 0.84;
+const THEIRS_SHARE = 0.9;
+// Room for rounding when a one-line message keeps its time beside it.
+const WIDEN_SLACK = 4;
+// A reaction pill in the viewer's own (white) bubble and in another's (coloured) one.
+const CHIP_ALPHA = 0.12;
+const CHIP_ALPHA_ON = 0.22;
+const DOUBLE_TAP_MS = 280;
 
 export function ChatBubble({
   text,
@@ -108,6 +131,7 @@ export function ChatBubble({
   onRetry,
   onDiscard,
   first = true,
+  last = true,
   time,
   delivery,
   quote,
@@ -131,29 +155,81 @@ export function ChatBubble({
       setPop({ x, y, width, height });
     });
   };
-  // skall tuvali (skall.css → `.bub`): 18 all round; a run's first bubble points at its author with
-  // a 6 corner at the top (left for others, right for the viewer's own).
+  // Telegram Android's bubble (the owner's call, 30 Ekim): 18 round; on the author's side (left
+  // for others, right for the viewer's own) the corners inside a run are tight, and the run's last
+  // bubble has a tail at its foot.
   const { scheme } = useKit();
   const kind = useChatKind();
   const paint = KIT.bubble[scheme];
   const shadowOff = useLabOff('golge');
   const fg = mine ? paint.mineInk : paint.themInk;
   const inside = !mine && nameInk !== undefined;
+  const R = KIT.size.bubbleRadius;
+  const near = KIT.size.bubbleInner;
+  const sideTop = first ? R : near;
+  const sideFoot = last ? 0 : near;
+  // [top left, top right, bottom right, bottom left]
+  const radii = (mine ? [R, sideTop, sideFoot, R] : [sideTop, R, R, sideFoot]) as readonly [
+    number,
+    number,
+    number,
+    number,
+  ];
+  const big = quote ? 0 : emojiOnly(text);
+  const fill = mine ? paint.mine : paint[kind];
   // Before `bubble` below: it draws the face (which reads the shadow) as it is built.
-  const radii = [
-    KIT.size.msgRadius,
-    KIT.size.msgRadius,
-    mine ? KIT.size.msgTail : KIT.size.msgRadius,
-    mine ? KIT.size.msgRadius : KIT.size.msgTail,
-  ] as const;
   const bubbleShadow = shadowParts(
     shadowOff,
-    mine ? paint.mineShadow : KIT.chatShadow[kind],
+    big ? undefined : mine ? paint.mineShadow : KIT.chatShadow[kind],
     undefined,
     radii,
     true,
-    mine ? KIT.size.edge : 0,
+    mine && !big ? KIT.size.edge : 0,
   );
+  // The widest a bubble's words may run (the stream's width less the screen's padding, at the
+  // bubble's share of it), for keeping the time beside a one-line message (below).
+  const { width: screenWidth } = useWindowDimensions();
+  const maxText =
+    (screenWidth - 2 * shape.screenPadding) *
+      (mine ? MINE_SHARE : avatar ? THEIRS_SHARE : MINE_SHARE) -
+    (avatar ? INDENT : 0) -
+    2 * KIT.size.bubblePadX -
+    2 * KIT.size.edge;
+  // Android wraps a line that measured as fitting by a fraction of a point (React Native's
+  // measuring and drawing round apart): a one-line message then dropped its time to a second line
+  // and the bubble stayed narrow (the owner's report, 30 Ekim). When only the time went down and
+  // the two fit side by side, the words get that much room.
+  const [widen, setWiden] = useState(0);
+  const onTextLayout = (e: NativeSyntheticEvent<TextLayoutEventData>) => {
+    if (widen) return;
+    const lines = e.nativeEvent.lines;
+    const [a, b] = lines;
+    if (lines.length !== 2 || !a || !b || !time) return;
+    if (b.text.replace(/\s/g, '') !== time.replace(/\s/g, '')) return;
+    const need = Math.ceil(a.width + b.width + WIDEN_SLACK);
+    if (need <= maxText) setWiden(need);
+  };
+  // Telegram Android: the reactions inside the bubble, under the words, the time at the right of
+  // their row (the owner's call, 30 Ekim); under a big emoji, outside.
+  const hasChips = !!reactions && reactions.length > 0;
+  const chipsInside = hasChips && !big;
+  const chipPaint = mine
+    ? { bg: withAlpha(KIT.primary, CHIP_ALPHA), bgOn: KIT.primary, ink: fg, inkOn: KIT.onPrimary }
+    : { bg: withAlpha(paint.themInk, CHIP_ALPHA_ON), bgOn: paint.themInk, ink: fg, inkOn: fill };
+  // Telegram Android: a double tap leaves the first reaction (the owner's call, 30 Ekim).
+  const lastTap = useRef(0);
+  const onTap = onReact
+    ? () => {
+        const now = Date.now();
+        if (now - lastTap.current < DOUBLE_TAP_MS) {
+          lastTap.current = 0;
+          haptic('selection');
+          onReact(REACTIONS[0]);
+        } else {
+          lastTap.current = now;
+        }
+      }
+    : undefined;
   const bubble = (
     <Pressable
       testID={testID}
@@ -172,6 +248,7 @@ export function ChatBubble({
         if (e.nativeEvent.actionName === 'react') lift();
         if (e.nativeEvent.actionName === 'quote') onPressQuote?.();
       }}
+      onPress={onTap}
       onLongPress={holdable ? lift : undefined}
       style={{ maxWidth: '100%' }}
     >
@@ -187,27 +264,35 @@ export function ChatBubble({
         // bottom. Never see-through (the owner's call, 29 Ekim): the own white, another's in the
         // chat's colour (DM blue, Mekan sohbeti green, Masa sohbeti purple).
         style={[
-          mine
+          big
+            ? null
+            : mine
+              ? {
+                  backgroundColor: fill,
+                  borderWidth: KIT.size.edge,
+                  borderColor: paint.mineEdge,
+                  boxShadow: bubbleShadow.boxShadow,
+                }
+              : { backgroundColor: fill, boxShadow: bubbleShadow.boxShadow },
+          big
             ? {
-                backgroundColor: paint.mine,
-                borderWidth: KIT.size.edge,
-                borderColor: paint.mineEdge,
-                boxShadow: bubbleShadow.boxShadow,
+                opacity: state === 'sending' ? 0.6 : 1,
+                alignItems: mine ? 'flex-end' : 'flex-start',
               }
-            : { backgroundColor: paint[kind], boxShadow: bubbleShadow.boxShadow },
-          {
-            paddingHorizontal: KIT.size.msgPadX,
-            paddingVertical: KIT.size.msgPadY,
-            borderTopLeftRadius: KIT.size.msgRadius,
-            borderTopRightRadius: KIT.size.msgRadius,
-            borderBottomLeftRadius: mine ? KIT.size.msgRadius : KIT.size.msgTail,
-            borderBottomRightRadius: mine ? KIT.size.msgTail : KIT.size.msgRadius,
-            opacity: state === 'sending' ? 0.6 : 1,
-          },
-          lifted ? { boxShadow: shape.shadow.focus } : null,
+            : {
+                paddingHorizontal: KIT.size.bubblePadX,
+                paddingVertical: KIT.size.bubblePadY,
+                borderTopLeftRadius: radii[0],
+                borderTopRightRadius: radii[1],
+                borderBottomRightRadius: radii[2],
+                borderBottomLeftRadius: radii[3],
+                opacity: state === 'sending' ? 0.6 : 1,
+              },
+          lifted && !big ? { boxShadow: shape.shadow.focus } : null,
         ]}
       >
-        {lifted ? null : bubbleShadow.node}
+        {lifted || big ? null : bubbleShadow.node}
+        {last && !big ? <BubbleTail side={mine ? 'right' : 'left'} color={fill} /> : null}
         {/* Mekan and masa sohbeti: the writer's name inside the bubble, on its first line, level
             with the face beside it (the owner's call, 28 Ekim). */}
         {inside && first && name ? (
@@ -220,7 +305,7 @@ export function ChatBubble({
             hitSlop={SPACING[1.5]}
             style={{ alignSelf: 'flex-start', marginBottom: NAME_GAP }}
           >
-            <RNText style={[KIT_TYPE.fine, KIT_TYPE.strong, { color: paint.themInk }]}>
+            <RNText style={[KIT_TYPE.fine, KIT_TYPE.strong, { color: big ? fill : paint.themInk }]}>
               {name}
             </RNText>
           </Pressable>
@@ -230,40 +315,91 @@ export function ChatBubble({
             React Native has no float, and a wrapping row measured the bubble wrong (bubbles ran
             into each other): the text ends with an invisible copy of the time, which makes the
             room, and the time is laid over that room. */}
-        <View>
-          <RNText style={[KIT_TYPE.msg, { color: fg }]}>
-            {text}
-            {time && !state ? (
-              <Text variant="caption" color={withAlpha(fg, HIDDEN_ALPHA)} accessible={false}>
-                {`${TIME_GAP}${time}${mine && delivery ? TICKS_ROOM : ''}`}
-              </Text>
-            ) : null}
-          </RNText>
-          {time && !state ? (
+        {big ? (
+          <BigEmoji
+            text={text}
+            count={big}
+            time={time && !state ? time : undefined}
+            delivery={mine ? delivery : undefined}
+            stamp={paint.stamp}
+            stampInk={paint.stampInk}
+          />
+        ) : chipsInside ? (
+          <>
+            <RNText style={[KIT_TYPE.msg, { color: fg }]}>{text}</RNText>
             <View
               style={{
-                position: 'absolute',
                 flexDirection: 'row',
-                alignItems: 'center',
-                gap: SPACING[1],
-                right: 0,
-                bottom: 0,
+                alignItems: 'flex-end',
+                gap: SPACING[2],
+                marginTop: SPACING[1.5],
               }}
-              importantForAccessibility="no-hide-descendants"
             >
-              <Text variant="caption" color={mine ? paint.mineMuted : paint.themMuted}>
-                {time}
-              </Text>
-              {mine && delivery ? <DeliveryTicks delivery={delivery} /> : null}
+              <ReactionChips
+                reactions={reactions ?? []}
+                onToggle={onToggleReaction}
+                paint={chipPaint}
+              />
+              {time && !state ? (
+                <View
+                  style={{
+                    marginLeft: 'auto',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: SPACING[1],
+                  }}
+                  importantForAccessibility="no-hide-descendants"
+                >
+                  <Text variant="caption" color={mine ? paint.mineMuted : paint.themMuted}>
+                    {time}
+                  </Text>
+                  {mine && delivery ? <DeliveryTicks delivery={delivery} /> : null}
+                </View>
+              ) : null}
             </View>
-          ) : null}
-        </View>
+          </>
+        ) : (
+          <View style={widen ? { minWidth: widen } : undefined}>
+            <RNText style={[KIT_TYPE.msg, { color: fg }]} onTextLayout={onTextLayout}>
+              {text}
+              {time && !state ? (
+                <Text variant="caption" color={withAlpha(fg, HIDDEN_ALPHA)} accessible={false}>
+                  {`${TIME_GAP}${time}${mine && delivery ? TICKS_ROOM : ''}`}
+                </Text>
+              ) : null}
+            </RNText>
+            {time && !state ? (
+              <View
+                style={{
+                  position: 'absolute',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: SPACING[1],
+                  right: 0,
+                  bottom: 0,
+                }}
+                importantForAccessibility="no-hide-descendants"
+              >
+                <Text variant="caption" color={mine ? paint.mineMuted : paint.themMuted}>
+                  {time}
+                </Text>
+                {mine && delivery ? <DeliveryTicks delivery={delivery} /> : null}
+              </View>
+            ) : null}
+          </View>
+        )}
       </View>
     );
   }
   const chips =
-    reactions && reactions.length > 0 ? (
-      <ReactionChips reactions={reactions} onToggle={onToggleReaction} mine={mine} />
+    hasChips && big ? (
+      <View style={{ alignSelf: mine ? 'flex-end' : 'flex-start' }}>
+        <ReactionChips
+          reactions={reactions ?? []}
+          onToggle={onToggleReaction}
+          paint={{ bg: paint.stamp, bgOn: KIT.primary, ink: paint.stampInk, inkOn: KIT.onPrimary }}
+        />
+      </View>
     ) : null;
   const bar = pop ? (
     <MessagePop
@@ -297,7 +433,12 @@ export function ChatBubble({
   if (mine) {
     return (
       <View
-        style={{ alignItems: 'flex-end', gap: SPACING[1], alignSelf: 'flex-end', maxWidth: '76%' }}
+        style={{
+          alignItems: 'flex-end',
+          gap: SPACING[1],
+          alignSelf: 'flex-end',
+          maxWidth: `${MINE_SHARE * 100}%`,
+        }}
       >
         {bar}
         <SwipeToReply onReply={onReply}>{bubble}</SwipeToReply>
@@ -336,8 +477,10 @@ export function ChatBubble({
   }
 
   if (inside) {
+    // The photo beside the run's last bubble, at its foot (Telegram Android's groups; the owner's
+    // call, 30 Ekim); the name stays in the first.
     const photo =
-      first && avatar ? (
+      last && avatar ? (
         onPressSender ? (
           <Pressable
             accessibilityRole="button"
@@ -352,11 +495,11 @@ export function ChatBubble({
         )
       ) : null;
     return (
-      <View style={{ gap: SPACING[1], alignSelf: 'flex-start', maxWidth: '88%' }}>
+      <View
+        style={{ gap: SPACING[1], alignSelf: 'flex-start', maxWidth: `${THEIRS_SHARE * 100}%` }}
+      >
         {bar}
-        {/* The face at the bubble's top, level with the name inside it (the owner's call, 28
-            Ekim). */}
-        <View style={{ flexDirection: 'row', alignItems: 'flex-start', columnGap: SPACING[2] }}>
+        <View style={{ flexDirection: 'row', alignItems: 'flex-end', columnGap: SPACING[2] }}>
           {/* Kept empty beside the run's later bubbles, so they stay in one column. */}
           <View style={{ width: AVATAR_SIZE.sm }}>{photo}</View>
           <View style={{ flexShrink: 1, alignItems: 'flex-start', gap: NAME_GAP }}>
@@ -396,7 +539,13 @@ export function ChatBubble({
       headRow
     );
   return (
-    <View style={{ gap: SPACING[1], alignSelf: 'flex-start', maxWidth: '88%' }}>
+    <View
+      style={{
+        gap: SPACING[1],
+        alignSelf: 'flex-start',
+        maxWidth: `${(avatar ? THEIRS_SHARE : MINE_SHARE) * 100}%`,
+      }}
+    >
       {head}
       {/* Not under the photo's indent: the bar is wider than the column there. */}
       {bar}
@@ -405,6 +554,84 @@ export function ChatBubble({
         {chips}
       </View>
     </View>
+  );
+}
+
+// The tail at the foot of a run's last bubble (Telegram Android's), on the author's side: the
+// bubble's corner there is square and this curve carries on from it. One picture per colour and
+// side, shared by every tail (svgKey).
+function BubbleTail({ side, color }: { side: 'left' | 'right'; color: string }) {
+  const w = KIT.size.tailW;
+  const h = KIT.size.tailH;
+  // Overlapping the bubble by half a point: no hairline between them.
+  const overlap = 0.5;
+  return (
+    <View
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        bottom: 0,
+        width: w,
+        height: h,
+        ...(side === 'left' ? { left: -w + overlap } : { right: -w + overlap }),
+      }}
+    >
+      <Svg
+        width={w}
+        height={h}
+        viewBox="0 0 7 12"
+        nativeID={svgKey('tail', side, color)}
+        style={side === 'right' ? { transform: [{ scaleX: -1 }] } : undefined}
+      >
+        <Path d="M7 0C7 5.6 4.8 9.6 0.6 11.4C0.2 11.6 0.3 12 0.7 12H7Z" fill={color} />
+      </Svg>
+    </View>
+  );
+}
+
+// A message of emoji only, large and without a bubble (Telegram Android): one 40, two or three 32
+// (KIT_TYPE); its time in a small dark pill under it.
+function BigEmoji({
+  text,
+  count,
+  time,
+  delivery,
+  stamp,
+  stampInk,
+}: {
+  text: string;
+  count: number;
+  time?: string;
+  delivery?: Delivery;
+  stamp: string;
+  stampInk: string;
+}) {
+  return (
+    <>
+      <RNText maxFontSizeMultiplier={1} style={count === 1 ? KIT_TYPE.emojiOne : KIT_TYPE.emojiFew}>
+        {text.trim()}
+      </RNText>
+      {time ? (
+        <View
+          importantForAccessibility="no-hide-descendants"
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: SPACING[1],
+            marginTop: SPACING[0.5],
+            paddingHorizontal: SPACING[1.5],
+            paddingVertical: SPACING[0.5],
+            borderRadius: KIT.size.chip,
+            backgroundColor: stamp,
+          }}
+        >
+          <Text variant="caption" color={stampInk}>
+            {time}
+          </Text>
+          {delivery ? <DeliveryTicks delivery={delivery} onAccent /> : null}
+        </View>
+      ) : null}
+    </>
   );
 }
 
@@ -530,39 +757,23 @@ function SwipeToReply({ onReply, children }: { onReply?: () => void; children: R
   );
 }
 
-// Under a bubble: each reaction with its count; the viewer's own is marked and can be taken back.
+// A message's reactions (Telegram Android's): each face and its count in a small pill, the
+// viewer's own filled; a tap takes the viewer's own back or leaves that one.
+type ChipPaint = { bg: string; bgOn: string; ink: string; inkOn: string };
+
 function ReactionChips({
   reactions,
   onToggle,
-  mine,
+  paint,
 }: {
   reactions: readonly ChatReaction[];
   onToggle?: (emoji: string) => void;
-  mine: boolean;
+  paint: ChipPaint;
 }) {
-  const { colors, shape } = useTheme();
+  const { shape } = useTheme();
   const chipHeight = SPACING[7];
-  // Each chip's soft shadow natively (NativeShadow.tsx): chips scroll with the chat.
-  const shadowOff = useLabOff('golge');
-  const chipShadow = boxShadowParts(
-    shadowOff,
-    shape.shadow.raised,
-    chipHeight / 2,
-    true,
-    shape.stroke.hairline,
-  );
   return (
-    <View
-      // skall.css → `.reacts`: tucked 8 under the bubble, 10 in from its side.
-      style={{
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: SPACING[1],
-        marginTop: -SPACING[2],
-        paddingHorizontal: SPACING[2.5],
-        justifyContent: mine ? 'flex-end' : 'flex-start',
-      }}
-    >
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: SPACING[1], flexShrink: 1 }}>
       {reactions.map((r) => (
         <Pressable
           key={r.emoji}
@@ -577,26 +788,20 @@ function ReactionChips({
           onPress={() => onToggle?.(r.emoji)}
           hitSlop={(TOUCH.min - chipHeight) / 2}
         >
-          {/* skall.css → `.react`: the face and the count on the surface, on the chip shadow; the
-              viewer's own in the violet. */}
           <View
             style={{
               flexDirection: 'row',
               alignItems: 'center',
               gap: SPACING[1],
               height: chipHeight,
-              paddingLeft: SPACING[1],
+              paddingLeft: SPACING[0.5] + 1,
               paddingRight: SPACING[2],
               borderRadius: shape.radius.pill,
-              borderWidth: shape.stroke.hairline,
-              borderColor: r.mine ? colors.violet : colors.divider,
-              backgroundColor: r.mine ? withAlpha(colors.violet, 0.16) : colors.surface,
-              boxShadow: chipShadow.boxShadow,
+              backgroundColor: r.mine ? paint.bgOn : paint.bg,
             }}
           >
-            {chipShadow.node}
             <ReactionFace emoji={r.emoji} size="chip" />
-            <Text variant="tag" tabular>
+            <Text variant="tag" tabular color={r.mine ? paint.inkOn : paint.ink}>
               {String(r.count)}
             </Text>
           </View>
