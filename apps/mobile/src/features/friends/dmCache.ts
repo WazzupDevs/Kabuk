@@ -55,6 +55,26 @@ export function writeDmCache(userId: string, threadId: string, rows: readonly Dm
   );
 }
 
+// The copies of conversations that are no longer the account's (a friendship ended, a block): the
+// privacy policy says a DM goes when the friendship does, the phone's copy with it. `keep` is every
+// thread the inbox has (it lists them all).
+export async function pruneDmCache(userId: string, keep: ReadonlySet<string>): Promise<void> {
+  const mine = `${PREFIX}${userId}:`;
+  try {
+    const gone = (await AsyncStorage.getAllKeys()).filter(
+      (k) => k.startsWith(mine) && !keep.has(k.slice(mine.length)),
+    );
+    for (const k of gone) {
+      const pending = timers.get(k);
+      if (pending) clearTimeout(pending);
+      timers.delete(k);
+    }
+    if (gone.length > 0) await AsyncStorage.multiRemove(gone);
+  } catch {
+    // Storage away: the next inbox read tries again.
+  }
+}
+
 export async function clearDmCache(): Promise<void> {
   timers.forEach(clearTimeout);
   timers.clear();

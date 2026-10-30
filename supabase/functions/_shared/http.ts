@@ -112,7 +112,15 @@ export function handle(fn: (req: Request, body: unknown) => Promise<unknown>) {
     } catch (err) {
       if (err instanceof AppError) return errorResponse(err.code, err.message);
       if (err instanceof z.ZodError) return errorResponse('bad_request', 'Invalid request.');
-      console.error(err);
+      // What went wrong, without what was in it: a database error's `details` and `hint` carry the
+      // row's values ("Key (x)=(y)"), so only its code and message go to the log.
+      const e = (typeof err === 'object' && err !== null ? err : {}) as Record<string, unknown>;
+      console.error('internal', {
+        name: e.name,
+        code: e.code,
+        message: String(e.message ?? err).slice(0, 300),
+        stack: err instanceof Error ? err.stack : undefined,
+      });
       return errorResponse('internal', 'Unexpected error.');
     }
   };

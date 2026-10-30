@@ -32,6 +32,7 @@ Talebin hesabın sahibinden geldiğini doğrulamak için sizinle iletişime geç
 - Engelleme kayıtları
 - Bildirim anahtarı (push token)
 - Kullanım istatistiklerindeki kişi kaydı
+- Telefonunuzdaki kopyalar: oturum bilgisi ve birebir mesajlaşmalarınızın son mesajları
 
 Konumunuz hiçbir zaman saklanmadığı için silinecek bir konum verisi yoktur.
 

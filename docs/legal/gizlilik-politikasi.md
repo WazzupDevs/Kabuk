@@ -51,6 +51,8 @@ Son güncelleme: [tarih]
 
 **Cinsiyet hakkında:** Cinsiyetiniz hiçbir kullanıcıya gösterilmez ve uygulamadan değiştirilemez. Ancak masalara anonim katılım yalnızca kadın beyanıyla mümkün olduğundan, bir masada anonim görünmek cinsiyetiniz hakkında dolaylı bilgi verir. Yanlış beyan şikayet edilebilir; inceleme sonrası beyan düzeltilir. Mekan sohbetinde herkes anonim yazabilir.
 
+**Telefonunuzda tutulanlar:** Oturumunuz ve birebir mesajlaşmalarınızda her konuşmanın son 50 mesajı, konuşmalar hızlı açılsın diye telefonunuzda, uygulamanın kendi alanında saklanır. Bu kopyalar telefonun yedeğine (ör. Google Drive) alınmaz. Arkadaşlık bittiğinde o konuşmanın kopyası, uygulamadan çıkış yaptığınızda ya da hesabınızı sildiğinizde hepsi telefonunuzdan silinir. Görünüm tercihi ve Keşfet'te seçtiğiniz şehir gibi uygulama ayarları da yalnızca telefonunuzda durur, sunucuya gitmez.
+
 ## Hizmet sağlayıcılar ve yurt dışına aktarım
 
 | Sağlayıcı                                                   | Ne için                                            | Konum               |
