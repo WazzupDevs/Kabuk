@@ -28,10 +28,38 @@ describe('Keşfet map', () => {
           type: 'Feature',
           id: 'a',
           geometry: { type: 'Point', coordinates: [28.6, 41.0] },
-          properties: { id: 'a', name: 'Mekan a', bucket: 'calm', event: true, kind: 'cafe' },
+          properties: {
+            id: 'a',
+            name: 'Mekan a',
+            bucket: 'calm',
+            event: true,
+            kind: 'cafe',
+            count: 1,
+          },
         },
       ],
+      stacks: {},
     });
+  });
+
+  it('stacks venues at one address into one point with their count', () => {
+    const near = { ...venue('b', 41.00005, 28.60005), bucket: 'buzzing' as const };
+    const collection = venueCollection([
+      venue('a', 41.0, 28.6, true),
+      near,
+      venue('c', 41.01, 28.6),
+    ]);
+    expect(collection.features).toHaveLength(2);
+    const stack = collection.features[0];
+    expect(stack?.properties).toMatchObject({
+      id: 'stack:a',
+      count: 2,
+      stack: true,
+      bucket: 'buzzing',
+      event: true,
+    });
+    expect(collection.stacks).toEqual({ 'stack:a': ['a', 'b'] });
+    expect(collection.features[1]?.properties.count).toBe(1);
   });
 
   it('fits every venue, not the average point (the map opened on the sea)', () => {
