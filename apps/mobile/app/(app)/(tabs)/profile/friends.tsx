@@ -2,7 +2,7 @@ import type { Friend } from '@shared/api/friends.ts';
 import { router } from 'expo-router';
 import { View } from 'react-native';
 
-import { Av, GlassList, Li, Round, T } from '@/aura/kit';
+import { Av, RowList, Li, Round, T } from '@/aura/kit';
 
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
@@ -65,11 +65,11 @@ export default function FriendsScreen() {
           {friends.data.length === 0 ? (
             <EmptyState kind="empty" body={tr.friends.empty} />
           ) : (
-            <GlassList>
+            <RowList>
               {firstRows(friends.data, shown).map((f) => (
                 <FriendRow key={f.publicId} friend={f} />
               ))}
-            </GlassList>
+            </RowList>
           )}
         </View>
       )}

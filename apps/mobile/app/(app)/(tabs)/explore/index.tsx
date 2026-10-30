@@ -18,7 +18,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { AuraBackground, AuraBand } from '@/aura/AuraBackground';
 import { CapIcon } from '@/aura/CapIcon';
-import { Btn, Chip, Glass, GlassList, Li, Live, Sec, T, Tag, useKit } from '@/aura/kit';
+import { Btn, Chip, Glass, Li, Live, RowList, Sec, T, Tag, useKit } from '@/aura/kit';
 import { MarkDisk } from '@/aura/MarkDisk';
 import { Gathering, SceneGround } from '@/aura/Scene';
 import { Button } from '@/components/Button';
@@ -349,7 +349,7 @@ function VenueList({
           </View>
         </Card>
       ) : (
-        <GlassList>
+        <RowList inset={KIT.size.av.row + KIT.size.liGap}>
           {venues.map((v) => {
             const type = venueType(v);
             const calm = v.bucket === 'calm';
@@ -362,7 +362,7 @@ function VenueList({
                   router.push({ pathname: '/explore/[venueId]', params: { venueId: v.id } })
                 }
               >
-                <VenueThumb kind={type} />
+                <VenueThumb kind={type} size={KIT.size.av.row} />
                 <View style={{ flex: 1, gap: SPACING[0.5] }}>
                   <T v="h3">{v.name}</T>
                   <T v="fine">{tr.explore.venueSub(tr.explore.typeLabel[type], v.district)}</T>
@@ -375,7 +375,7 @@ function VenueList({
               </Li>
             );
           })}
-        </GlassList>
+        </RowList>
       )}
       <Text variant="fine" align="center" className="pt-5">
         {tr.checkin.osmAttribution}

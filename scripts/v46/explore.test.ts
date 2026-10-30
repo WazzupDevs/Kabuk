@@ -257,7 +257,8 @@ describe("the app's Keşfet", () => {
   // kuralları): the question, the search and the switch on glass, chips, the venues in a glass list.
   it("is built from the canvas's kit", () => {
     expect(screen).toMatch(/from '@\/aura\/kit'/);
-    for (const part of ['<SearchGlass', '<ViewSwitch', '<Chip', '<GlassList>', '<Li']) {
+    // The venues as Telegram Android's flat rows (the owner's call, 30 Ekim).
+    for (const part of ['<SearchGlass', '<ViewSwitch', '<Chip', '<RowList', '<Li']) {
       expect(screen, part).toContain(part);
     }
     expect(screen).not.toMatch(/from '@\/ui\/TopBar'/);
@@ -322,7 +323,7 @@ describe("the app's Keşfet", () => {
   it("takes each venue's icon and type from its category (lib/venueType.ts)", () => {
     // The list row, "Şu an buradasın" and the venue page; the mapping is tested in venueType.test.ts.
     expect(screen).toMatch(/const type = venueType\(v\);/);
-    expect(screen).toMatch(/<VenueThumb kind=\{type\} \/>/);
+    expect(screen).toMatch(/<VenueThumb kind=\{type\} size=\{KIT\.size\.av\.row\} \/>/);
     expect(screen).toMatch(/tr\.explore\.typeLabel\[type\]/);
     expect(screen).toMatch(/type: hereVenue \? venueType\(hereVenue\) : 'kafe'/);
     expect(

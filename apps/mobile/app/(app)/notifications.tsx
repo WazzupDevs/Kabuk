@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { View } from 'react-native';
 
-import { Av, Glass, GlassList, Round, T, Thumb, useKit } from '@/aura/kit';
+import { Av, Glass, RowList, Round, T, Thumb, useKit } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
 import { RouteSheet } from '@/components/RouteSheet';
@@ -105,11 +105,11 @@ export default function NotificationsScreen() {
       {older.length > 0 ? (
         <View style={{ gap: KIT.size.rowGap }}>
           <T v="eyebrow">{tr.notifications.earlier}</T>
-          <GlassList>
+          <RowList>
             {firstRows(older, shown).map((n) => (
               <Row key={keyOf(n)} item={n} />
             ))}
-          </GlassList>
+          </RowList>
         </View>
       ) : null}
     </RouteSheet>

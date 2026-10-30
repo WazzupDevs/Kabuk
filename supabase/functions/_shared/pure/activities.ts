@@ -61,3 +61,25 @@ export function historyResult(
   if (last === null || last.won === null) return null;
   return last.won ? 'won' : 'lost';
 }
+
+// One game, one row (the owner's report, 30 Ekim: a game of seven showed as seven rows): the
+// records of the same table and game in a day's group, in order, become one session with its
+// people. A record without a table stays alone.
+export function historySessions<T extends { id: string; room_id: string | null; concept: string }>(
+  rows: readonly T[],
+): { key: string; first: T; people: T[] }[] {
+  const sessions: { key: string; first: T; people: T[] }[] = [];
+  const byKey = new Map<string, { key: string; first: T; people: T[] }>();
+  for (const row of rows) {
+    const key = row.room_id === null ? `record:${row.id}` : `${row.room_id}:${row.concept}`;
+    const found = byKey.get(key);
+    if (found) {
+      found.people.push(row);
+      continue;
+    }
+    const session = { key, first: row, people: [row] };
+    byKey.set(key, session);
+    sessions.push(session);
+  }
+  return sessions;
+}

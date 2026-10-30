@@ -1,6 +1,14 @@
 import { upperTr } from '@shared/trText.ts';
 import { Image as PhotoView } from 'expo-image';
-import { Children, createContext, type ReactNode, useContext, useEffect, useState } from 'react';
+import {
+  Children,
+  createContext,
+  isValidElement,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import {
   Animated,
   Easing,
@@ -652,6 +660,42 @@ export function GlassList({ children, testID }: { children: ReactNode; testID?: 
         </View>
       ))}
     </Glass>
+  );
+}
+
+// A list as Telegram Android draws one (the owner's call, 30 Ekim: each row a card looked heavy):
+// the rows straight on the ground, the full width of the screen's padding, a hairline between them
+// from where the text starts. `inset`: how far in the hairline starts (the row's picture and the
+// gap after it).
+export function RowList({
+  children,
+  testID,
+  inset = KIT.size.av.row + KIT.size.liGap,
+}: {
+  children: ReactNode;
+  testID?: string;
+  inset?: number;
+}) {
+  const { c } = useKit();
+  const rows = Children.toArray(children).filter(Boolean);
+  return (
+    // The rows reach the screen's padding: their own padding is their touch area, not a margin.
+    <View testID={testID} style={{ marginHorizontal: -KIT.size.liPadX }}>
+      {rows.map((row, i) => (
+        <View key={isValidElement(row) && row.key !== null ? row.key : i}>
+          {i > 0 ? (
+            <View
+              style={{
+                height: KIT.size.hair,
+                marginLeft: KIT.size.liPadX + inset,
+                backgroundColor: c.hair,
+              }}
+            />
+          ) : null}
+          {row}
+        </View>
+      ))}
+    </View>
   );
 }
 
