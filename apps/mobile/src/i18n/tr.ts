@@ -352,8 +352,9 @@ export const tr = {
   activities: {
     // skall tuvali (AktivitelerGecmisKayit): "Sahtekar · bugün 19:30"; approved 27 Ekim.
     sheetLine: (game: string, when: string) => `${game} · ${when}`,
-    tabs: 'Aktiviteler ve geçmiş',
-    events: 'Aktiviteler',
+    tabs: 'Etkinlikler ve geçmiş',
+    // Not the page's own name again (the owner's call, 30 Ekim).
+    events: 'Etkinlikler',
     history: 'Geçmiş',
     fromVenues: (city: string) => `${inflectTr(city, 'locative')}ki mekanlardan`,
     eventKind: 'Etkinlik',
@@ -374,13 +375,14 @@ export const tr = {
           ? (WEEKDAYS_SHORT[new Date(iso).getDay()] ?? '')
           : dayMonth(iso),
     game: (concept: HistoryConcept) => HISTORY_CONCEPTS[concept],
-    withTable: (alias: string) => `${alias} masasıyla`,
+    // A person, not a table (the people's table, docs/SPEC_V4.md §4.E; the owner's report, 30 Ekim).
+    withTable: (alias: string) => `${alias} ile`,
     results: { won: 'Kazandın', lost: 'Kaybettin', done: 'Bitti' } satisfies Record<
       HistoryResult,
       string
     >,
     rowLabel: (game: string, alias: string, when: string, result: string | null) =>
-      [game, `${alias} masasıyla`, when, result].filter(Boolean).join(', '),
+      [game, `${alias} ile`, when, result].filter(Boolean).join(', '),
     tabu: {
       body: 'Masalar takım olur: anlatan masa kartı anlatır, diğer masa yasaklı kelimeleri dinler.',
       steps: [
@@ -447,6 +449,8 @@ export const tr = {
   explore: {
     // "Şu an buradasın" (v44: .vhere): the own check-in, kept on this phone only.
     here: 'Şu an buradasın',
+    // Under the reader's own spot on the venue page.
+    hereShort: 'Buradasın',
     hereAt: (spot: string | null) => (spot ? `${spot} · giriş yaptın` : 'Giriş yaptın'),
     backToVenue: 'Mekana dön',
     views: { list: 'Liste', map: 'Harita' },
@@ -500,8 +504,13 @@ export const tr = {
     checkInHint:
       'Mekanı sen seçtin; konumun yalnızca mekanda olduğunu doğrulamak için bir kez alınır.',
     checkInHere: 'Buraya giriş yap',
-    // Keşfet's question (docs/design/aura → Keşfet).
-    question: 'Bu akşam\nnerede oturuyorsun?',
+    // Keşfet's question (docs/design/aura → Keşfet), by the part of the day (lib/dayPart.ts; the
+    // owner's call, 30 Ekim).
+    question: {
+      morning: 'Bu sabah\nnerede oturuyorsun?',
+      day: 'Bugün\nnerede oturuyorsun?',
+      evening: 'Bu akşam\nnerede oturuyorsun?',
+    },
     eventTagShort: 'Etkinlik',
     cityDistrict: (city: string, district: string) => `${city} · ${district}`,
     spotCount: (n: number) => `${n} nokta`,
@@ -523,8 +532,10 @@ export const tr = {
     newRequests: (n: number) => `${n} yeni arkadaşlık isteği`,
     unread: 'Yeni mesaj',
     noMessagesYet: 'Henüz mesaj yok. İlk mesajı sen yaz.',
-    // Ablative: the locative suffix plus "n" (Eylül'den, Ocak'tan).
-    since: (iso: string) => `${dayMonthAt(iso)}n beri arkadaşsınız`,
+    // Ablative: the locative suffix plus "n" (Eylül'den, Ocak'tan). One line in the row (the
+    // owner's report, 30 Ekim: "arkadaşsınız" wrapped it to two); the whole sentence is read out.
+    since: (iso: string) => `${dayMonthAt(iso)}n beri`,
+    sinceLabel: (iso: string) => `${dayMonthAt(iso)}n beri arkadaşsınız`,
     incomingTitle: 'Gelen istekler',
     noIncoming: 'Yeni istek yok.',
     incoming: (playedAt: string, concept: HistoryConcept, alias: string) =>
@@ -655,8 +666,9 @@ export const tr = {
     leaveBack: 'Düzenlemeye dön',
     seenAs: 'olarak görünürsün',
     seenAsLead: 'Masada',
-    nickNote: 'Anonim adın. Yenilersen yeni bir ad alırsın; kapsülün aynı kalır.',
-    nickNoteWait: 'Anonim adın. 30 günde bir yenileyebilirsin; kapsülün aynı kalır.',
+    // Under the "Anonim adın" label: the label is not said again (the owner's report, 30 Ekim).
+    nickNote: 'Yenilersen yeni bir ad alırsın; kapsülün aynı kalır.',
+    nickNoteWait: '30 günde bir yenileyebilirsin; kapsülün aynı kalır.',
     nickRefresh: "Nick'i yenile",
     nickRenew: 'Yenile',
     nickWait: (days: number) => `${days} gün sonra yenileyebilirsin.`,

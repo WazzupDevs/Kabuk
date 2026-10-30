@@ -86,7 +86,7 @@ function FriendRow({ friend: f }: { friend: Friend }) {
   return (
     <Li
       testID={`friend-${name}`}
-      accessibilityLabel={`${name}, ${tr.friends.since(f.since)}`}
+      accessibilityLabel={`${name}, ${tr.friends.sinceLabel(f.since)}`}
       onPress={() =>
         router.push({ pathname: '/people/[publicId]', params: { publicId: f.publicId } })
       }
