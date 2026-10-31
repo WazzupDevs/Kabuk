@@ -225,6 +225,48 @@
       "w": 880,
       "x": 0,
       "y": 9128
+    },
+    "CheckInNokta.dc.html": {
+      "h": 844,
+      "title": "Check-in: nokta seçimi",
+      "w": 390,
+      "x": 0,
+      "y": 12408
+    },
+    "CheckInYukleniyor.dc.html": {
+      "h": 844,
+      "title": "Check-in: yükleniyor",
+      "w": 390,
+      "x": 470,
+      "y": 12408
+    },
+    "CheckInIzin.dc.html": {
+      "h": 844,
+      "title": "Check-in: izin reddi",
+      "w": 390,
+      "x": 940,
+      "y": 12408
+    },
+    "CheckInDisarida.dc.html": {
+      "h": 844,
+      "title": "Check-in: mekân sınırı dışında",
+      "w": 390,
+      "x": 1410,
+      "y": 12408
+    },
+    "CheckInDar.dc.html": {
+      "h": 844,
+      "title": "Check-in: 320 dp, en büyük yazı",
+      "w": 320,
+      "x": 1880,
+      "y": 12408
+    },
+    "GaleriCheckIn.dc.html": {
+      "h": 1740,
+      "title": "Galeri: Check-in düğmesi ve uyarılar",
+      "w": 880,
+      "x": 1600,
+      "y": 9128
     }
   },
   "createdOnFiles": {
@@ -294,7 +336,7 @@
     },
     "rowH": {
       "kind": "title1",
-      "maxW": 1840,
+      "maxW": 3200,
       "text": "Galeri",
       "w": 240,
       "x": 0,
@@ -315,6 +357,22 @@
       "text": "Hareket · Lobi\n\nYeni hareket yok. Süren masalar satırları ilk yüklemede listRowMs 60 ms aralıkla dissolve ile gelir (bugünkü dil). Kaydırma native; alt sekme çubuğu sabit, içerik camın altından geçer. Reduced Motion: satırlar anında görünür.",
       "size": "s",
       "fill": "purple"
+    },
+    "rowI": {
+      "kind": "title1",
+      "maxW": 2200,
+      "text": "Check-in: hâller",
+      "w": 240,
+      "x": 0,
+      "y": 12148
+    },
+    "motionCheckIn": {
+      "x": 2280,
+      "y": 12408,
+      "w": 560,
+      "text": "Hareket · Check-in (hareket.json ve uygulamanın bugünkü sheet dili; yeni efekt yok)\n\n1. Sheet açılır. Tetik: mekân sayfasında giriş. Perde 0 → 1 ve sheet alttan kayar, 320 ms, ease-out (0.2, 0.8, 0.2, 1), bugünkü gibi. Kankiler sheet kenarında pop yayıyla 80 ms arayla belirir. Reduced Motion: anında, kankiler durgun.\n2. Sheet kapanır. Tetik: Vazgeç, perdeye dokunuş, aşağı çekme, geri tuşu. Sheet aşağı iner, perde solar, 320 ms, aynı eğri. Reduced Motion: anında.\n3. Yükleme hâline geçiş. Tetik: izin verildikten sonra Konumumu kullan. Düğme press yayı; konum ikonu yerine buluşan kapsüller yükleyicisi, yazı \"Konum alınıyor…\": ikisi swap eğrisiyle 200 ms çapraz solar. Düğmenin boyu ve yeri değişmez. Sunucu doğrularken hiçbir şey değişmez. Reduced Motion: anında, yükleyici durgun.\n4. Uyarı gelir. Tetik: izin reddi, konum alınamadı, sınır dışı, çok uzak, sunucu hatası. Yükleme biter, düğme boşta hâline swap 200 ms döner. Sheet yukarı doğru swap 300 ms ile uzar; kankiler kenarla birlikte yükselir; kart dissolve ile 70 ms sonra gelir (450 ms, arrive). Reduced Motion: anında.\n5. Uyarı kaybolur. Tetik: yeni deneme (Konumumu kullan). Kart dissolve ile çıkar (220 ms, leave), sheet swap 300 ms ile kısalır, sonra 3. hareket. Reduced Motion: anında.\n6. Başarı. Tetik: sunucu onayı. Düğme yükleme hâlinde kalır, boşta hâline dönmez. Sheet ve perde 320 ms'de iner, aynı anda Mekân sekmesi açılır (bugünkü geçiş). Ara ekran ve bekleme yok. Reduced Motion: Mekân anında.\n7. Nokta seçimi. Tetik: satıra dokunuş. Satır press yayı; mor halka ve onay işareti pop yayıyla gelir; düğme pasiften (opaklık 0.45) etkine swap 200 ms. Reduced Motion: anında.\n\nKankiler: 350 genişlikte yerleşir, sheet genişliğine oranla ölçeklenir; şerit yüksekliği (390'da 61) onlarla ölçeklenir, sabit değildir. Sheet en yüksek boyuna (ekranın %90'ı) ulaşınca kankiler gösterilmez.\nKaydırma: sheet %90'a ulaşırsa başlık, metin ve uyarılar sheet içinde kayar; düğmeler sheet'in altında sabit kalır.\n\nTitreşim tanımlanmadı (karar açık).",
+      "size": "s",
+      "fill": "purple"
     }
   },
   "order": [
@@ -324,6 +382,11 @@
     "Kesfet.dc.html",
     "KesfetMekan.dc.html",
     "CheckIn.dc.html",
+    "CheckInNokta.dc.html",
+    "CheckInYukleniyor.dc.html",
+    "CheckInIzin.dc.html",
+    "CheckInDisarida.dc.html",
+    "CheckInDar.dc.html",
     "KesfetBos.dc.html",
     "Aktiviteler.dc.html",
     "AktivitelerBos.dc.html",
@@ -349,7 +412,8 @@
     "ProfilDuzenle.dc.html",
     "ProfilFoto.dc.html",
     "Hareket.dc.html",
-    "GaleriMekanSohbeti.dc.html"
+    "GaleriMekanSohbeti.dc.html",
+    "GaleriCheckIn.dc.html"
   ],
   "pages": [],
   "title": "skall yeni görünüm ön izleme"

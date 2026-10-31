@@ -1,6 +1,7 @@
 import { type ReactNode, useEffect, useState } from 'react';
 import { Animated, View } from 'react-native';
 
+import { peekScale } from '@/lib/sheetFit';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { AURA, MOTION } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
@@ -13,11 +14,14 @@ import { SceneGround } from './Scene';
 export type PeekKind = Exclude<keyof typeof AURA.peek, 'up' | 'height'>;
 
 // Buddies looking over a card's top edge (aura.css `.behind > .peek`): drawn before the card, so
-// the card hides their lower half. Placed in a 350 wide frame, scaled to the card.
-export function Peek({ kind, delay = 0 }: { kind: PeekKind; delay?: number }) {
+// the card hides their lower half. Placed in a 350 wide frame, scaled to the card. `fit` scales the
+// strip over the edge and how far down each starts too (Check-in, aura v37: 61 high on a 370 wide
+// sheet), not only their size and place.
+export function Peek({ kind, delay = 0, fit }: { kind: PeekKind; delay?: number; fit?: boolean }) {
   const [width, setWidth] = useState(0);
   const cast = AURA.peek[kind];
-  const k = width > 0 ? width / PEEK_FRAME : 1;
+  const { k, strip: fitted } = peekScale(width, AURA.peek.up);
+  const strip = fit ? fitted : AURA.peek.up;
   return (
     <View
       pointerEvents="none"
@@ -26,16 +30,19 @@ export function Peek({ kind, delay = 0 }: { kind: PeekKind; delay?: number }) {
         position: 'absolute',
         left: 0,
         right: 0,
-        top: -AURA.peek.up,
+        top: -strip,
         // Only what stands over the card's edge: the card is see-through glass, and the buddies'
         // bodies showed through it (the owner's report, 28 Ekim).
-        height: AURA.peek.up,
+        height: strip,
         overflow: 'hidden',
       }}
     >
       {width > 0
         ? cast.map((c, i) => (
-            <View key={c.look + i} style={{ position: 'absolute', left: c.x * k, top: c.top }}>
+            <View
+              key={c.look + i}
+              style={{ position: 'absolute', left: c.x * k, top: fit ? c.top * k : c.top }}
+            >
               <Buddy look={c.look} height={c.height * k} delay={delay + i * 80} phase={i * 530} />
             </View>
           ))
@@ -43,7 +50,6 @@ export function Peek({ kind, delay = 0 }: { kind: PeekKind; delay?: number }) {
     </View>
   );
 }
-const PEEK_FRAME = 350;
 
 // A card with buddies peeking over it (aura.css `.behind`).
 export function Behind({ kind, children }: { kind: PeekKind; children: ReactNode }) {

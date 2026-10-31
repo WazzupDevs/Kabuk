@@ -47,3 +47,10 @@ Sürüm 35, Grup 1 · Mekan ve lobi (31 Ekim; rapor `docs/design/aura/aktarim-35
 - **Sekme ekranlarının altı:** son satır sekme çubuğunun 26 üstünde biter (aura.css `.scroll-pad`), gezinme alanı ayrıca.
 
 Raporun açık sorularında (titreşim, lobideki ikinci bölüm başlığı, Profili düzenle'de Kaydet, geçmiş satırına dokunma, koyu tema / yükleniyor / hata hâlleri, galeri, Aktiviteler simgesi) uygulamanın bugünkü davranışı korunur.
+
+Sürüm 37, Grup 1 · Check-in (31 Ekim; rapor `docs/design/aura/aktarim-37-checkin.md`, değişmez kurala dokunan yok):
+
+- **Sabit alt düğmeler isteğe bağlı:** `RouteSheet` ve `SheetCard` `footer` alır; verilmezse diğer sheet'ler (Ayarlar, Bildirimler, nokta değiştirme, `Sheet`) aynen. Footer'lı sheet'te içerik yalnızca sığmayınca kayar, alt kenarı düz kesilir (alt solma yok), içerikle düğmeler arası 18, bloklar arası 14. Aşağı çekip kapatma aynı `useSheetDrag`.
+- **Sheet tam genişlik kalır** (30 Ekim kararı); tuvalin 10'luk kenar boşluğu alınmadı. Kankiler `Peek fit` ile sheet genişliğine ölçeklenir (şerit ve üst konum dahil), sheet %90'a varınca çizilmez. Karar sheet'in ölçülen boyundan verilir; kankiler sheet'in yerleşimine girmediği için gizlenmeleri kararı değiştirmez.
+- **Tek yükleniyor hâli:** konum alma, sunucu doğrulaması ve Mekân'a geçiş boyunca "Konum alınıyor…" (`features/checkin/checkinButton.ts`, testli). Başarıda `activeTable` yenilenmesi beklenmeye devam eder (Mekân doğru check-in'i görür); bekleme sırasında düğme yükleniyor kalır ve sheet mekân adını tutar. Yeni denemede `checkIn.reset()` eski sunucu hatasını kaldırır; istek anahtarı aynı kalır.
+- **Hareket:** uyarı kartı `Reveal` ile 70 ms sonra 450 ms arrive (Reduced Motion'da anında). Sheet boyunun 300 ms swap'ı, kartın 220 ms çıkışı ve düğmenin 200 ms ikon swap'ı yok: sheet bugünkü gibi anında boy değiştirir.

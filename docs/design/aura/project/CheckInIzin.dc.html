@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Check-in: izin reddi</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="aura.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.sheetbox{position:absolute;left:10px;right:10px;bottom:10px}
+.sheetbox .sheet{position:relative;left:auto;right:auto;bottom:auto;background:linear-gradient(180deg,rgba(255,255,255,.94),rgba(255,255,255,.88))}
+.peek{position:absolute;left:0;right:0;overflow:hidden;pointer-events:none}
+.peek .stand{position:absolute}
+.note{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:20px}
+.note.warn{background:#FFF1D6;color:#5C3A00}
+.note.danger{background:#FBE1DB;color:#A8301A}
+.note svg{flex:none;width:22px;height:22px}
+.note .nt{font-size:15px;line-height:20px;font-weight:600}
+.note .nb{font-size:14px;line-height:20px;font-weight:500}
+.spot{display:flex;align-items:center;gap:12px;min-height:64px;padding:10px 12px;border-radius:20px}
+.spot img{width:44px;height:44px;border-radius:14px;background:#FFFFFF;flex:none}
+.spot .mark{width:28px;height:28px;border-radius:14px;border:2px solid rgba(20,17,43,.07);flex:none;display:flex;align-items:center;justify-content:center}
+.spot.on{border-color:#6A47F5;box-shadow:0 0 0 3px rgba(106,71,245,.18)}
+.spot.on .mark{background:#6A47F5;border:0}
+.btn.off{opacity:.45}
+
+.night .scrim{background:rgba(8,6,20,.55)}
+.night .sheetbox .sheet{background:linear-gradient(180deg,rgba(30,25,64,1),rgba(21,18,45,1));border-color:rgba(255,255,255,.14)}
+.night .grab{background:rgba(255,255,255,.20)}
+.night .btn.glassy{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.16);color:#F3F0FF;box-shadow:none}
+.night .tag.glassy{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.16);color:#F3F0FF}
+.night .note.warn{background:#3A2A10;color:#FFE2B3}
+.night .note.danger{background:#3A1E22;color:#FF977E}
+.night .spot .mark{border-color:rgba(255,255,255,.16)}
+.night .scene{background:radial-gradient(90% 80% at 15% 0%,rgba(123,92,255,.45),rgba(123,92,255,0) 70%),radial-gradient(80% 80% at 95% 10%,rgba(255,79,139,.30),rgba(255,79,139,0) 70%),radial-gradient(70% 60% at 50% 110%,rgba(255,181,71,.20),rgba(255,181,71,0) 70%),linear-gradient(180deg,#221A4C,#2A1636)}
+</style>
+</helmet>
+<div class="phone" style="width: 390px">
+  <div class="aura"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i></div>
+  <div class="scene" aria-hidden="true" style="position: absolute; left: 0; right: 0; top: 0; height: 336px; border-radius: 0 0 36px 36px">
+    <img src="/_blob/aef6e426b18debae367e7ee5413d21ba" alt="" style="position: absolute; left: 0; bottom: 0; width: 100%; height: 233px; display: block; object-fit: cover">
+  </div>
+  <div class="content" aria-hidden="true" style="gap: 14px">
+    <div class="topbar between">
+      <span class="round glassy" style="width: 48px; height: 48px; border-radius: 24px"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect class="a" x="5.45" y="6.9" width="13.1" height="3.2" rx="1.6" transform="rotate(135 12 8.5)"></rect><rect class="b" x="5.45" y="13.9" width="13.1" height="3.2" rx="1.6" transform="rotate(45 12 15.5)"></rect></svg></span>
+      <div class="row" style="gap: 6px; align-self: flex-start"><span class="tag glassy" style="height: 30px; padding: 0 12px; font-size: 14px">Kampüs</span><span class="tag glassy" style="height: 30px; padding: 0 12px; font-size: 14px">Sessiz</span></div>
+    </div>
+    <div style="height: 218px; flex: none"></div>
+    <div class="col" style="gap: 6px">
+      <p class="display" style="font-size: 31px; line-height: 38px">Sakarya Üniversitesi Esentepe Kampüsü</p>
+      <p class="body" style="font-size: 17px">Serdivan</p>
+    </div>
+    <p class="body">Mekanı sen seçtin; konumun yalnızca mekanda olduğunu doğrulamak için bir kez alınır.</p>
+  </div>
+  <div class="scrim"></div>
+  <div class="sheetbox"><div class="peek" aria-hidden="true" style="top: -61px; height: 61px"><div class="stand" style="left: 27px; top: 0px; width: 89px; height: 116px"><img src="/_blob/1e1befe90ae6c76edcd7fece45813e41" alt=""></div><div class="stand" style="left: 154px; top: -15px; width: 89px; height: 116px"><img src="/_blob/6f419d231e787719dcb5a35cc8a47579" alt=""></div><div class="stand" style="left: 275px; top: 4px; width: 89px; height: 116px"><img src="/_blob/1a80a98c7f884f2abd26235936594b94" alt=""></div></div><div class="glass sheet" role="dialog" aria-label="Giriş" style=""><div class="grab"></div><div class="col" style="gap: 8px"><h2 class="title" style="font-size: 23px; line-height: 29px">Sakarya Üniversitesi Esentepe Kampüsü</h2><p class="body" style="font-size: 15px; line-height: 22px">“Konumumu kullan” düğmesine basarak konumunun yalnızca mekanda olduğunu doğrulamak için bir kez kullanılmasına açık rıza verirsin. Konumun saklanmaz.</p></div><div class="note danger" role="alert"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.6v5.2"></path><circle cx="12" cy="16.2" r=".6" fill="currentColor"></circle></svg><div class="col grow" style="gap: 2px"><p class="nt" style="font-size: 15px; line-height: 20px">Konum izni yok</p><p class="nb" style="font-size: 14px; line-height: 20px">Konum izni olmadan mekanda olduğunu doğrulayamıyoruz. İzni ayarlardan verebilirsin.</p></div></div><div class="col" style="gap: 10px; padding-top: 4px"><button class="btn glassy block" type="button" style="height: 58px; font-size: 16px">Ayarları aç</button><button class="btn primary block" type="button" style="height: 58px; font-size: 16px"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect class="a" x="7" y="3" width="10" height="14" rx="5"></rect><rect class="b" x="9.3" y="17.9" width="5.4" height="3.2" rx="1.6" transform="rotate(90 12 19.5)"></rect></svg>Konumumu kullan</button><button class="btn glassy block" type="button" style="height: 58px; font-size: 16px">Vazgeç</button></div></div></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
