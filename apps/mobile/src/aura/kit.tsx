@@ -229,6 +229,7 @@ export function Btn({
   onPress,
   variant = 'primary',
   sm,
+  tall,
   bar,
   block,
   icon,
@@ -243,6 +244,8 @@ export function Btn({
   onPress?: () => void;
   variant?: 'primary' | 'glassy' | 'dark';
   sm?: boolean;
+  // The venue page's and the check-in sheet's button: 58 high.
+  tall?: boolean;
   // In a bar of round buttons: a small button as tall as they are (the owner's report, 29 Ekim:
   // Masa's "Bitir" stood shorter than the rounds beside it).
   bar?: boolean;
@@ -288,7 +291,13 @@ export function Btn({
             boxShadow: shadow?.boxShadow,
           };
   const off = disabled && !loading;
-  const height = bar ? KIT.size.round : sm ? KIT.size.btnSm : KIT.size.btn;
+  const height = bar
+    ? KIT.size.round
+    : sm
+      ? KIT.size.btnSm
+      : tall
+        ? KIT.size.btnTall
+        : KIT.size.btn;
   return (
     <Pressable
       testID={testID}
@@ -358,6 +367,7 @@ export function Round({
   disabled,
   loading,
   primary,
+  big,
   children,
 }: {
   icon?: CapIconName;
@@ -372,11 +382,13 @@ export function Round({
   loading?: boolean;
   // The main action of a row (accept, join): the primary's round.
   primary?: boolean;
+  // The venue page's back button: 48.
+  big?: boolean;
   children?: ReactNode;
 }) {
   const { c } = useKit();
   const press = usePress();
-  const s = KIT.size.round;
+  const s = big ? KIT.size.roundLg : KIT.size.round;
   const shadowOff = useLabOff('golge');
   const frosted = useFrost() && glassy && !primary;
   const fg = primary ? KIT.onPrimary : (color ?? c.ink);
@@ -458,27 +470,32 @@ export function Badge({ count }: { count: number }) {
   );
 }
 
-// .chip (.on): a filter.
+// .chip (.on): a filter. `tall`: Keşfet's kind chips (38 high, 15). It sinks when pressed like every
+// button (hareket.json → press).
 export function Chip({
   label,
   on,
   onPress,
   testID,
+  tall,
 }: {
   label: string;
   on?: boolean;
   onPress?: () => void;
   testID?: string;
+  tall?: boolean;
 }) {
   const { c } = useKit();
+  const press = usePress();
   const frosted = useFrost() && !on;
+  const h = tall ? KIT.size.chipTall : KIT.size.chip;
   // Its soft shadow natively (NativeShadow.tsx).
   const shadowOff = useLabOff('golge');
   const shadow = shadowParts(
     shadowOff,
     on ? undefined : c.chipShadow || undefined,
     undefined,
-    KIT.size.chip / 2,
+    h / 2,
     true,
     KIT.size.edge,
   );
@@ -488,28 +505,34 @@ export function Chip({
       accessibilityRole="button"
       accessibilityState={{ selected: !!on }}
       onPress={onPress}
-      style={{
-        height: KIT.size.chip,
-        paddingHorizontal: KIT.size.chipPadX,
-        borderRadius: KIT.size.chip,
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: KIT.size.chipGap,
-        backgroundColor: on ? c.chipOn : frosted ? undefined : c.raisedChip,
-        borderWidth: KIT.size.edge,
-        borderColor: on ? c.chipOn : c.raisedEdge,
-        boxShadow: shadow.boxShadow,
-      }}
+      onPressIn={press.onPressIn}
+      onPressOut={press.onPressOut}
     >
-      {shadow.node}
-      {on ? null : <FrostOf height={KIT.size.chip} fill={c.raisedChip} />}
-      <Text
-        numberOfLines={1}
-        maxFontSizeMultiplier={MAX_FONT_SCALE}
-        style={[KIT_TYPE.chip, { color: on ? c.onChipOn : c.ink }]}
+      <Animated.View
+        style={{
+          height: h,
+          paddingHorizontal: tall ? KIT.size.chipTallPadX : KIT.size.chipPadX,
+          borderRadius: h,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: KIT.size.chipGap,
+          backgroundColor: on ? c.chipOn : frosted ? undefined : c.raisedChip,
+          borderWidth: KIT.size.edge,
+          borderColor: on ? c.chipOn : c.raisedEdge,
+          boxShadow: shadow.boxShadow,
+          transform: [{ scale: press.scale }],
+        }}
       >
-        {label}
-      </Text>
+        {shadow.node}
+        {on ? null : <FrostOf height={h} fill={c.raisedChip} />}
+        <Text
+          numberOfLines={1}
+          maxFontSizeMultiplier={MAX_FONT_SCALE}
+          style={[tall ? KIT_TYPE.chipLg : KIT_TYPE.chip, { color: on ? c.onChipOn : c.ink }]}
+        >
+          {label}
+        </Text>
+      </Animated.View>
     </Pressable>
   );
 }
@@ -522,12 +545,15 @@ export function Tag({
   tone = 'glassy',
   lead,
   height,
+  large,
   fit,
 }: {
   label: string;
   tone?: TagTone;
   lead?: ReactNode;
   height?: number;
+  // A venue page's tags over its scene: 30 high, 14.
+  large?: boolean;
   // Within a narrow place: the words shrink to fit rather than end in "…".
   fit?: boolean;
 }) {
@@ -538,8 +564,12 @@ export function Tag({
   return (
     <View
       style={{
-        height: height ?? KIT.size.tag,
-        paddingHorizontal: height ? KIT.size.chipPadX - 1 : KIT.size.tagPadX,
+        height: height ?? (large ? KIT.size.tagLg : KIT.size.tag),
+        paddingHorizontal: large
+          ? KIT.size.tagLgPadX
+          : height
+            ? KIT.size.chipPadX - 1
+            : KIT.size.tagPadX,
         borderRadius: KIT.size.chip,
         flexDirection: 'row',
         alignItems: 'center',
@@ -550,14 +580,20 @@ export function Tag({
         alignSelf: 'flex-start',
       }}
     >
-      {tone === 'glassy' ? <FrostOf height={height ?? KIT.size.tag} fill={colors.bg} /> : null}
+      {tone === 'glassy' ? (
+        <FrostOf height={height ?? (large ? KIT.size.tagLg : KIT.size.tag)} fill={colors.bg} />
+      ) : null}
       {lead}
       <Text
         numberOfLines={1}
         adjustsFontSizeToFit={fit}
         minimumFontScale={fit ? MIN_TAG_SCALE : undefined}
         maxFontSizeMultiplier={MAX_FONT_SCALE}
-        style={[KIT_TYPE.tag, { color: colors.fg }, fit ? { flexShrink: 1 } : null]}
+        style={[
+          large ? KIT_TYPE.tagLg : KIT_TYPE.tag,
+          { color: colors.fg },
+          fit ? { flexShrink: 1 } : null,
+        ]}
       >
         {label}
       </Text>

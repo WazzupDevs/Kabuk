@@ -1,39 +1,38 @@
 import { describeEventTime } from '@shared/explore.ts';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Image, type ImageSourcePropType, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
-import { Btn, Glass, Round, T, Tag } from '@/aura/kit';
+import { FrostResolve } from '@/aura/FrostIn';
+import { Btn, Glass, Round, Sec, T, Tag } from '@/aura/kit';
 import { SceneGround } from '@/aura/Scene';
 import { VenueScene } from '@/aura/VenueScene';
 import { EmptyState } from '@/components/EmptyState';
+import { Frost, GlassTarget } from '@/components/LiquidGlass';
+import { Loader } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
 import { useTabBarSpace } from '@/components/TabBar';
-import { Loader } from '@/components/Loader';
 import { useCheckinDraft } from '@/features/checkin/draft';
-import { spotPicture } from '@/features/checkin/SpotPicker';
-import { useVenueSpots } from '@/features/checkin/spots';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { useExploreVenue } from '@/features/explore/useExploreVenues';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
-import { venueType } from '@/lib/venueType';
 import { useNow } from '@/lib/useNow';
+import { venueType } from '@/lib/venueType';
 import { AURA } from '@/theme/aura';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
-import { VENUE_FRAME } from '@/theme/venueScene';
-import { Frost, GlassTarget } from '@/components/LiquidGlass';
 import { SPACING } from '@/theme/tokens';
+import { VENUE_FRAME } from '@/theme/venueScene';
 
 // The buddies come in after the screen's own arrival.
 const SCENE_CAST_DELAY = 240;
 
-// A venue from Keşfet: its bucket, its event, and check-in. Choosing the venue here is the manual
-// selection; the position is taken next only to verify it (docs/arsiv/SPEC_V2.md §4). In v44's look until
-// 4.5 brings v44's check-in sheet in its place (docs/SPEC_V4.md K-43).
+// A venue from Keşfet (docs/design/aura → KesfetMekan): its bucket, the week's events, and check-in.
+// Choosing the venue here is the manual selection; the position is taken next only to verify it
+// (docs/arsiv/SPEC_V2.md §4). The spot is chosen in the check-in sheet, not here.
 export default function VenueDetailScreen() {
   const { venueId } = useLocalSearchParams<{ venueId: string }>();
   const { venue, isPending, isError, error, refetch } = useExploreVenue(venueId);
@@ -46,7 +45,6 @@ export default function VenueDetailScreen() {
   const insets = useSafeAreaInsets();
   const barSpace = useTabBarSpace();
   const now = useNow(60_000);
-  const spots = useVenueSpots(venueId).data ?? [];
 
   if (isPending) {
     return (
@@ -90,8 +88,9 @@ export default function VenueDetailScreen() {
   const calm = venue.bucket === 'calm';
   // docs/design/aura → KesfetMekan: the venue as a scene under the status bar (the buddies at a
   // table doing what the place is for, theme/venueScene.ts; no disk with the mark, the owner's
-  // call, 29 Ekim), back and its tags over it; the name and district, today's event, then check-in. Not a
-  // list: the screen stays still (CLAUDE.md → Ekran davranışı).
+  // call, 29 Ekim), back and its tags over it; the name and district, why the position is asked,
+  // check-in, and under it the week's events (the owner's call, 31 Ekim: they stay). Not a list:
+  // the screen stays still (CLAUDE.md → Ekran davranışı).
   return (
     <View style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
       <AuraBackground />
@@ -122,6 +121,8 @@ export default function VenueDetailScreen() {
               <VenueScene kind={venueType(venue)} width={sceneWidth} delay={SCENE_CAST_DELAY} />
             ) : null}
           </GlassTarget>
+          {/* The picture appears frosted and resolves 320 ms later over 500 (hareket.json). */}
+          <FrostResolve />
           {/* The status bar frosted over the scene: the cords pass under its words, blurred. */}
           <View
             pointerEvents="none"
@@ -130,13 +131,14 @@ export default function VenueDetailScreen() {
             <Frost radius={0} ground={AURA[scheme].ground} />
           </View>
           <View
-            className="flex-row items-center justify-between"
+            className="flex-row items-start justify-between"
             style={{ paddingHorizontal: KIT.size.side, paddingTop: insets.top + SPACING[3] }}
           >
-            <Round icon="back" label={tr.explore.back} onPress={() => router.back()} />
+            <Round big icon="back" label={tr.explore.back} onPress={() => router.back()} />
             <View style={{ flexDirection: 'row', gap: KIT.size.chipGap }}>
-              <Tag label={tr.explore.typeLabel[venueType(venue)]} />
+              <Tag large label={tr.explore.typeLabel[venueType(venue)]} />
               <Tag
+                large
                 label={tr.explore.buckets[venue.bucket]}
                 lead={
                   calm ? undefined : (
@@ -158,75 +160,25 @@ export default function VenueDetailScreen() {
           style={{
             flexGrow: 1,
             paddingHorizontal: KIT.size.side,
-            paddingTop: GAP,
+            paddingTop: SPACING[5],
             gap: GAP,
           }}
         >
-          <View style={{ gap: KIT.size.tagGap }}>
+          <View style={{ gap: SPACING[1.5] }}>
             <T v="display" style={KIT_TYPE.venueTitle} accessibilityRole="header">
               {venue.name}
             </T>
-            <T v="body">{venue.district}</T>
+            <T v="bodyLg">{venue.district}</T>
           </View>
-          {spots.length > 0 ? (
-            <Glass pad="pad" style={{ gap: KIT.size.rowGap }}>
-              <View className="flex-row items-baseline justify-between">
-                <T v="h3">{tr.checkin.spotTitle}</T>
-                <T v="fine">{tr.explore.spotCount(spots.length)}</T>
-              </View>
-              <View className="flex-row" style={{ gap: SPOT_GAP }}>
-                {spots.map((spot) => {
-                  // The spot the reader sat at (the owner's report, 30 Ekim: nothing showed it).
-                  const mine = here && active.data?.spot_id === spot.id;
-                  return (
-                    <View
-                      key={spot.id}
-                      style={{
-                        // Two spots fill the card in two, three or more in thirds (the owner's
-                        // report: two sat at the left with the right third empty).
-                        flexBasis: 0,
-                        flexGrow: 1,
-                        maxWidth:
-                          spots.length >= SPOT_COLUMNS ? `${100 / SPOT_COLUMNS}%` : undefined,
-                        alignItems: 'center',
-                        gap: SPACING[1.5],
-                      }}
-                    >
-                      <SpotTile source={spotPicture(spot.ref)} mine={mine} />
-                      <T v="fine" strong center>
-                        {spot.name}
-                      </T>
-                      {mine ? <Tag tone="green" label={tr.explore.hereShort} /> : null}
-                    </View>
-                  );
-                })}
-              </View>
-            </Glass>
-          ) : null}
-          {venue.event ? (
-            <Glass
-              pad="pad"
-              style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.rowGap }}
-            >
-              <Tag tone="amber" label={tr.explore.eventTagShort} />
-              <T v="fine" ink style={{ flex: 1 }}>
-                <T v="fine" strong>
-                  {venue.event.title}
-                </T>
-                {` ${tr.common.separator} ${tr.explore.eventTime(
-                  describeEventTime(venue.event.startsAt, venue.event.endsAt, now),
-                )}`}
-              </T>
-            </Glass>
-          ) : null}
           {/* Before a check-in only: once here, the location was already checked (the owner's
               report, 30 Ekim). */}
-          {here ? null : <T v="fine">{tr.explore.checkInHint}</T>}
-          <View style={{ flexGrow: 1 }} />
+          {here ? null : <T v="body">{tr.explore.checkInHint}</T>}
           <Btn
             block
+            tall
             icon={here ? 'forward' : 'pin'}
             label={here ? tr.explore.backToVenue : tr.explore.checkInHere}
+            style={{ marginTop: SPACING[2.5] }}
             onPress={() => {
               if (here) {
                 router.navigate('/venue');
@@ -243,6 +195,39 @@ export default function VenueDetailScreen() {
               router.push('/checkin');
             }}
           />
+          {/* The week's events, under the button (the owner's call, 31 Ekim). */}
+          <Sec title={tr.explore.eventsTitle} note={tr.explore.weekNote} />
+          {venue.events.length === 0 ? (
+            <T v="fine">{tr.explore.noEvents}</T>
+          ) : (
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ marginHorizontal: -KIT.size.side }}
+              contentContainerStyle={{ paddingHorizontal: KIT.size.side, gap: KIT.size.rowGap }}
+            >
+              {venue.events.map((event, i) => (
+                <Glass
+                  sm
+                  key={`${event.startsAt}-${event.title}`}
+                  style={{
+                    width: KIT.size.eventCard,
+                    padding: KIT.size.eventPad,
+                    gap: KIT.size.chipsGap,
+                  }}
+                >
+                  <Tag
+                    tone={i % 2 === 0 ? 'purple' : 'pink'}
+                    label={tr.explore.eventTime(
+                      describeEventTime(event.startsAt, event.endsAt, now),
+                    )}
+                  />
+                  <T v="h3">{event.title}</T>
+                </Glass>
+              ))}
+            </ScrollView>
+          )}
         </View>
       </ScrollView>
     </View>
@@ -250,28 +235,3 @@ export default function VenueDetailScreen() {
 }
 
 const GAP = 14;
-const SPOT_COLUMNS = 3;
-const SPOT_GAP = 10;
-const SPOT_TILE = 76;
-
-// A spot's picture filling its column (KesfetMekan: `.thumb`, 76 high); the reader's own spot in
-// a green ring.
-function SpotTile({ source, mine }: { source: ImageSourcePropType | undefined; mine: boolean }) {
-  return (
-    <View
-      style={{
-        alignSelf: 'stretch',
-        height: SPOT_TILE,
-        borderRadius: KIT.size.thumbRadius,
-        overflow: 'hidden',
-        boxShadow: KIT.thumbShadow,
-        borderWidth: mine ? KIT.size.avRing : 0,
-        borderColor: KIT.success,
-      }}
-    >
-      {source ? (
-        <Image source={source} fadeDuration={0} style={{ width: '100%', height: '100%' }} />
-      ) : null}
-    </View>
-  );
-}

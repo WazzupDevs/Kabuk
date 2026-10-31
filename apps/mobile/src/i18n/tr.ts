@@ -453,8 +453,6 @@ export const tr = {
   explore: {
     // "Şu an buradasın" (v44: .vhere): the own check-in, kept on this phone only.
     here: 'Şu an buradasın',
-    // Under the reader's own spot on the venue page.
-    hereShort: 'Buradasın',
     hereAt: (spot: string | null) => (spot ? `${spot} · giriş yaptın` : 'Giriş yaptın'),
     backToVenue: 'Mekana dön',
     views: { list: 'Liste', map: 'Harita' },
@@ -517,14 +515,9 @@ export const tr = {
       day: 'Bugün\nnerede oturuyorsun?',
       evening: 'Bu akşam\nnerede oturuyorsun?',
     },
-    eventTagShort: 'Etkinlik',
-    cityDistrict: (city: string, district: string) => `${city} · ${district}`,
-    spotCount: (n: number) => `${n} nokta`,
-    districtCity: (district: string, city: string) => `${district}, ${city}`,
     weekNote: 'Bu hafta',
     eventsTitle: 'Etkinlikler',
     noEvents: 'Bu hafta planlı etkinlik yok.',
-    comingSoon: 'Yeni mekanlar yakında.',
   },
   friends: {
     empty: "Henüz arkadaşın yok. Birlikte oynadığın masaları Bildirimler'de bulabilirsin.",
@@ -767,7 +760,6 @@ export const tr = {
     locationTitle: 'Konumun',
     locationBody:
       'Mekanda olduğunu doğrulamak için konumunu bir kez kullanıyoruz. Konumun saklanmaz.',
-    locationConsent: 'Konumumun bu amaçla kullanılmasına açık rıza veriyorum.',
     useLocation: 'Konumumu kullan',
     // skall tuvali (KesfetKonumIzin, KesfetMekan); approved 27 Ekim.
     deniedTitle: 'Konum izni yok',

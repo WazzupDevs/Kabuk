@@ -23,8 +23,10 @@ const t = (w: keyof typeof F, size: number, line: number, em = 0): TextStyle => 
 // lower, Android cut the tails off (j, g, y, ş, ç; "Mesajlar", the owner's report, 28 Ekim).
 export const KIT_TYPE = {
   display: t(500, 32, 42, -0.025),
-  // Keşfet's question (.display at 30).
+  // Profil's title (.display at 30).
   displaySm: t(500, 30, 38, -0.025),
+  // Keşfet's question (.display at 34).
+  displayLg: t(500, 34, 41, -0.025),
   title: t(600, 21, 27, -0.015),
   // The first screen's line (Main: 36, 500, -0.03em) and its wordmark (24, 800).
   welcome: t(500, 36, 46, -0.03),
@@ -39,22 +41,34 @@ export const KIT_TYPE = {
   requestTitle: t(600, 17, 23, -0.005),
   // A game's name on its card (Masa: 24, 700, -0.02em).
   gameName: t(700, 24, 31, -0.02),
-  // A venue's name on its page (KesfetMekan: .display at 28).
-  venueTitle: t(500, 28, 36, -0.025),
+  // A venue's name on its page (KesfetMekan: .display at 31).
+  venueTitle: t(500, 31, 38, -0.025),
+  // A venue's name on the check-in sheet (CheckIn: .title at 23).
+  sheetTitle: t(600, 23, 29, -0.015),
   // The table's name on Masa (.title at 26, 500).
   tableTitle: t(500, 26, 33, -0.015),
   h3: t(600, 16, 22, -0.005),
   // A section's heading (.sec .h3 at 18).
   sec: t(600, 18, 24, -0.005),
+  // Keşfet's place line (.sec .h3 at 19).
+  secLg: t(600, 19, 24, -0.005),
   body: t(500, 15, 22),
+  // A venue's district under its name on its page (KesfetMekan: .body at 17).
+  bodyLg: t(500, 17, 22),
   fine: t(500, 13, 18),
+  // A venue row's second line and its bucket (Keşfet: .fine at 14).
+  fineLg: t(500, 14, 18),
   eyebrow: t(600, 12, 16, 0.02),
   stamp: t(600, 11, 14),
   strong: { fontFamily: F[600] } as TextStyle,
   btn: t(600, 16, 20),
   btnSm: t(600, 14, 18),
   chip: t(600, 13, 17),
+  // Keşfet's kind chips (15).
+  chipLg: t(600, 15, 19),
   tag: t(600, 12, 16),
+  // A venue page's tags (14).
+  tagLg: t(600, 14, 18),
   badge: t(700, 11, 14),
   live: t(600, 13, 17),
   msg: t(500, 15, 21),
@@ -90,9 +104,8 @@ const SHADOW = {
   disk: '0px 14px 30px rgba(54, 36, 140, 0.22)',
 } as const;
 
-// Keşfet's venue icon: v46's 56 with its 16 round (aura's 60/18 is not used), kept when v46 was
-// removed.
-export const VENUE_THUMB = { size: 56, radius: 16 } as const;
+// Keşfet's venue icon: 52 with its 16 round (Keşfet: the list row's picture).
+export const VENUE_THUMB = { size: 52, radius: 16 } as const;
 
 export const KIT = {
   light: {
@@ -274,18 +287,28 @@ export const KIT = {
     pad: 18,
     padLg: 22,
     btn: 54,
+    // The tall button of a venue's page and of the check-in sheet (58).
+    btnTall: 58,
     btnSm: 38,
     btnPadX: 24,
     btnPadXSm: 16,
     btnGap: 8,
     chip: 32,
+    // Keşfet's kind chips: 38 high, 16 inside.
+    chipTall: 38,
+    chipTallPadX: 16,
     chipPadX: 13,
     chipGap: 6,
     chipsGap: 8,
     tag: 24,
+    // A venue page's tags over its scene: 30 high, 12 inside.
+    tagLg: 30,
+    tagLgPadX: 12,
     tagPadX: 9,
     tagGap: 4,
     round: 44,
+    // The venue page's back button (48).
+    roundLg: 48,
     // A list row's picture: 48 (the owner's call, 30 Ekim: the rows were too thick at 52).
     av: { sm: 32, md: 44, row: 48, lg: 64, xl: 96, big: 104 },
     stackOverlap: 10,
@@ -332,6 +355,11 @@ export const KIT = {
     msgPadX: 15,
     msgPadY: 11,
     field: 54,
+    // Keşfet's search field (18 inside) and the round buttons of its list/map switch (46).
+    searchPadX: 18,
+    switchRound: 46,
+    // Keşfet's blocks: 16 apart.
+    exploreGap: 16,
     phoneField: 72,
     fieldPadX: 20,
     dayPadX: 12,
