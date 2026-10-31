@@ -495,13 +495,25 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
               block
               icon="check"
               testID="capsule-save"
-              label={save.isSuccess && !changed ? tr.capsule.saved : tr.capsule.save}
+              label={tr.capsule.save}
               disabled={!changed || save.isSuccess}
               loading={save.isPending}
               onPress={() => save.mutate()}
             />
           </View>
         </View>
+        {/* aura v50 (Kapsul): the button stays "Kaydet", off; the saved note is a line under it. */}
+        {save.isSuccess && !changed ? (
+          <View
+            accessibilityLiveRegion="polite"
+            style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.tagGap * 2 }}
+          >
+            <CapIcon name="check" color={KIT.success} size={KIT.size.iconSm} />
+            <T v="fine" ink style={{ flex: 1 }}>
+              {tr.capsule.saved}
+            </T>
+          </View>
+        ) : null}
         {save.isError ? (
           <T v="fine" color={c.warn}>
             {errorMessage(save.error)}
