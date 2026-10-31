@@ -67,6 +67,7 @@ import { GlassTarget } from '@/components/LiquidGlass';
 import { ChatKindContext } from './chatKind';
 import { ChatMetaContext } from './chatMeta';
 import { metaHiddenAt } from '@/lib/chatMeta';
+import { floatingDay, type StreamDay } from '@/lib/chatDay';
 
 // How close to the end counts as "at the bottom" (a message's last line may sit under the edge).
 const BOTTOM_SLACK = SPACING[12];
@@ -588,10 +589,50 @@ export type ChatListProps<T extends ChatListItem> = {
 type MetaCellReport = { cellHeight: number; metaTop: number | null };
 const MetaReportContext = createContext<((report: MetaCellReport) => void) | null>(null);
 
+// A cell's day line (P3): the cell's place in the list's content and the line's within the cell;
+// null when the cell has none or has gone.
+type DayCellReport = { y: number; h: number; lineTop: number; lineHeight: number; item: unknown };
+const DayReportContext = createContext<
+  ((key: string, report: DayCellReport | null) => void) | null
+>(null);
+// What a stream DayLine hands its view to (the cell measures it).
+const DayLineRefContext = createContext<((node: View | null) => void) | null>(null);
+
 // A stream cell (FlatList's own, its style and layout kept): the newest one (index 0, the bottom
 // row) hands its bubble a ref for the time line and reports the line's place.
-function MetaCell({ index, style, onLayout, children }: CellRendererProps<unknown>) {
+function MetaCell({ index, item, cellKey, style, onLayout, children }: CellRendererProps<unknown>) {
   const report = useContext(MetaReportContext);
+  const reportDay = useContext(DayReportContext);
+  const layout = useRef({ y: 0, h: 0 });
+  const dayNode = useRef<View | null>(null);
+  const measureDay = () => {
+    const c = cell.current;
+    const d = dayNode.current;
+    if (!reportDay || !c) return;
+    if (!d || layout.current.h <= 0) {
+      reportDay(cellKey, null);
+      return;
+    }
+    d.measureLayout(
+      c,
+      (_x, y, _w, h) => reportDay(cellKey, { ...layout.current, lineTop: y, lineHeight: h, item }),
+      () => reportDay(cellKey, null),
+    );
+  };
+  const measureDayRef = useRef(measureDay);
+  useEffect(() => {
+    measureDayRef.current = measureDay;
+  });
+  const [dayRef] = useState(() => (node: View | null) => {
+    dayNode.current = node;
+    measureDayRef.current();
+  });
+  useEffect(
+    () => () => {
+      reportDay?.(cellKey, null);
+    },
+    [reportDay, cellKey],
+  );
   const newest = index === 0 && report !== null;
   const cell = useRef<View>(null);
   const meta = useRef<View | null>(null);
@@ -623,17 +664,21 @@ function MetaCell({ index, style, onLayout, children }: CellRendererProps<unknow
   }, [newest]);
   return (
     <ChatMetaContext.Provider value={newest ? metaRef : null}>
-      <View
-        ref={cell}
-        style={style}
-        onLayout={(e) => {
-          height.current = e.nativeEvent.layout.height;
-          onLayout?.(e);
-          measure();
-        }}
-      >
-        {children}
-      </View>
+      <DayLineRefContext.Provider value={reportDay ? dayRef : null}>
+        <View
+          ref={cell}
+          style={style}
+          onLayout={(e) => {
+            height.current = e.nativeEvent.layout.height;
+            layout.current = { y: e.nativeEvent.layout.y, h: e.nativeEvent.layout.height };
+            onLayout?.(e);
+            measure();
+            measureDay();
+          }}
+        >
+          {children}
+        </View>
+      </DayLineRefContext.Provider>
     </ChatMetaContext.Provider>
   );
 }
@@ -661,9 +706,13 @@ function ChatList<T extends ChatListItem>({
   endRef,
   keyboardOffset = 0,
   topInset = 0,
+  band,
 }: ChatListProps<T> &
   Omit<ScrollProps, 'children' | 'startAtEnd' | 'keyboardOffset'> & {
     keyboardOffset?: number;
+    // Over the stream, under the floating day and the down arrow: the wallpaper again under the top
+    // bar (P2).
+    band?: ReactNode;
   }) {
   const list = useRef<FlatList<T>>(null);
   const outerBar = useChatBar();
@@ -818,6 +867,53 @@ function ChatList<T extends ChatListItem>({
     [],
   );
 
+  // P3: the stream's day lines on the screen and the floating line's own handoff (lib/chatDay.ts).
+  const dayCells = useRef(new Map<string, DayCellReport>());
+  const listHeight = useRef(0);
+  const [floatHeight, setFloatHeight] = useState(0);
+  const [handoff, setHandoff] = useState<{ show: boolean; day: number | null }>({
+    show: true,
+    day: null,
+  });
+  const dayOf = (ms: number) => {
+    const d = new Date(ms);
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  };
+  const placeDay = () => {
+    const time = timeOfRef.current;
+    if (!time || listHeight.current <= 0) return;
+    const lines: StreamDay[] = [];
+    for (const cell of dayCells.current.values()) {
+      const ms = time(cell.item as T);
+      if (!Number.isFinite(ms)) continue;
+      lines.push({
+        top: listHeight.current - (cell.y + cell.h - scrollY.current) + cell.lineTop,
+        height: cell.lineHeight,
+        day: dayOf(ms),
+      });
+    }
+    const floatTop = topInset + FLOAT_GAP;
+    const next = floatingDay({
+      lines,
+      headerBottom: topInset,
+      floatBottom: floatTop + (floatHeight || FLOAT_GUESS),
+      fallback: floatDay,
+    });
+    setHandoff((prev) => (prev.show === next.show && prev.day === next.day ? prev : next));
+  };
+  const placeDayRef = useRef(placeDay);
+  useEffect(() => {
+    placeDayRef.current = placeDay;
+  });
+  const [reportDay] = useState(() => (key: string, report: DayCellReport | null) => {
+    if (report) dayCells.current.set(key, report);
+    else dayCells.current.delete(key);
+    placeDayRef.current();
+  });
+  useEffect(() => {
+    placeDayRef.current();
+  }, [floatDay, topInset, floatHeight]);
+
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const y = e.nativeEvent.contentOffset.y;
     const bottom = y <= BOTTOM_SLACK;
@@ -826,6 +922,7 @@ function ChatList<T extends ChatListItem>({
     scrollY.current = y;
     const hidden = y >= hiddenAt;
     if (hidden !== metaHidden) setMetaHidden(hidden);
+    if (timeOf) placeDay();
   };
   const slot = useContext(JumpSlotContext);
   useEffect(() => {
@@ -867,66 +964,72 @@ function ChatList<T extends ChatListItem>({
                     </View>
                   ) : (
                     <MetaReportContext.Provider value={reportMeta}>
-                      <FlatList
-                        ref={list}
-                        testID={testID}
-                        data={items}
-                        inverted
-                        keyExtractor={(item) => item.key}
-                        renderItem={({ item }) => renderItem(item)}
-                        renderScrollComponent={renderScroll}
-                        CellRendererComponent={MetaCell}
-                        showsVerticalScrollIndicator={false}
-                        showsHorizontalScrollIndicator={false}
-                        // The first screenful at once, from the newest up; the rest as it nears.
-                        initialNumToRender={INITIAL_ROWS}
-                        maxToRenderPerBatch={BATCH_ROWS}
-                        windowSize={WINDOW}
-                        // Rows added under the reader leave what is shown where it is; at the bottom the
-                        // list goes on to the new one.
-                        maintainVisibleContentPosition={FOLLOW}
-                        onEndReached={onReachOld}
-                        onEndReachedThreshold={OLD_THRESHOLD}
-                        ListFooterComponent={older ? <>{older}</> : null}
-                        ListHeaderComponent={
-                          latest ? (
-                            <View onLayout={(e) => setLatestHeight(e.nativeEvent.layout.height)}>
-                              {latest}
-                            </View>
-                          ) : null
-                        }
-                        // Dragging the messages puts the keyboard away, like any chat app.
-                        keyboardDismissMode="on-drag"
-                        keyboardShouldPersistTaps="handled"
-                        contentContainerStyle={contentContainerStyle}
-                        scrollEventThrottle={64}
-                        onScroll={onScroll}
-                        onScrollBeginDrag={() => {
-                          bar.setOpen(null);
-                          showDay();
-                        }}
-                        onScrollEndDrag={hideDaySoon}
-                        onMomentumScrollBegin={showDay}
-                        onMomentumScrollEnd={hideDaySoon}
-                        onViewableItemsChanged={onViewable}
-                        viewabilityConfig={VIEWABLE}
-                        onScrollToIndexFailed={(info) => {
-                          // A row not drawn yet: near it first, then to it.
-                          list.current?.scrollToOffset({
-                            offset: info.averageItemLength * info.index,
-                            animated: true,
-                          });
-                          setTimeout(
-                            () =>
-                              list.current?.scrollToIndex({
-                                index: info.index,
-                                animated: true,
-                                viewPosition: 0.5,
-                              }),
-                            JUMP_RETRY_MS,
-                          );
-                        }}
-                      />
+                      <DayReportContext.Provider value={timeOf ? reportDay : null}>
+                        <FlatList
+                          ref={list}
+                          testID={testID}
+                          data={items}
+                          inverted
+                          keyExtractor={(item) => item.key}
+                          renderItem={({ item }) => renderItem(item)}
+                          renderScrollComponent={renderScroll}
+                          CellRendererComponent={MetaCell}
+                          onLayout={(e) => {
+                            listHeight.current = e.nativeEvent.layout.height;
+                            placeDay();
+                          }}
+                          showsVerticalScrollIndicator={false}
+                          showsHorizontalScrollIndicator={false}
+                          // The first screenful at once, from the newest up; the rest as it nears.
+                          initialNumToRender={INITIAL_ROWS}
+                          maxToRenderPerBatch={BATCH_ROWS}
+                          windowSize={WINDOW}
+                          // Rows added under the reader leave what is shown where it is; at the bottom the
+                          // list goes on to the new one.
+                          maintainVisibleContentPosition={FOLLOW}
+                          onEndReached={onReachOld}
+                          onEndReachedThreshold={OLD_THRESHOLD}
+                          ListFooterComponent={older ? <>{older}</> : null}
+                          ListHeaderComponent={
+                            latest ? (
+                              <View onLayout={(e) => setLatestHeight(e.nativeEvent.layout.height)}>
+                                {latest}
+                              </View>
+                            ) : null
+                          }
+                          // Dragging the messages puts the keyboard away, like any chat app.
+                          keyboardDismissMode="on-drag"
+                          keyboardShouldPersistTaps="handled"
+                          contentContainerStyle={contentContainerStyle}
+                          scrollEventThrottle={64}
+                          onScroll={onScroll}
+                          onScrollBeginDrag={() => {
+                            bar.setOpen(null);
+                            showDay();
+                          }}
+                          onScrollEndDrag={hideDaySoon}
+                          onMomentumScrollBegin={showDay}
+                          onMomentumScrollEnd={hideDaySoon}
+                          onViewableItemsChanged={onViewable}
+                          viewabilityConfig={VIEWABLE}
+                          onScrollToIndexFailed={(info) => {
+                            // A row not drawn yet: near it first, then to it.
+                            list.current?.scrollToOffset({
+                              offset: info.averageItemLength * info.index,
+                              animated: true,
+                            });
+                            setTimeout(
+                              () =>
+                                list.current?.scrollToIndex({
+                                  index: info.index,
+                                  animated: true,
+                                  viewPosition: 0.5,
+                                }),
+                              JUMP_RETRY_MS,
+                            );
+                          }}
+                        />
+                      </DayReportContext.Provider>
                     </MetaReportContext.Provider>
                   )}
                 </ChatHighlightContext.Provider>
@@ -935,14 +1038,23 @@ function ChatList<T extends ChatListItem>({
           </ChatLiveContext.Provider>
         </ChatJumpContext.Provider>
       </ChatBarContext.Provider>
-      {timeOf && scrolling && floatDay !== null ? (
+      {band}
+      {timeOf && scrolling && handoff.show && (handoff.day ?? floatDay) !== null ? (
+        // 8 under the top bar (P3); a stream day line near it takes its place.
         <Reanimated.View
           pointerEvents="none"
           entering={FadeIn.duration(JUMP_FADE_MS)}
           exiting={FadeOut.duration(JUMP_FADE_MS)}
-          style={{ position: 'absolute', left: 0, right: 0, top: topInset, alignItems: 'center' }}
+          onLayout={(e) => setFloatHeight(e.nativeEvent.layout.height)}
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: topInset + FLOAT_GAP,
+            alignItems: 'center',
+          }}
         >
-          <DayLine label={dayLabel(new Date(floatDay))} />
+          <DayLine floating label={dayLabel(new Date(handoff.day ?? floatDay ?? 0))} />
         </Reanimated.View>
       ) : null}
       {slot ? null : (
@@ -961,6 +1073,9 @@ function ChatList<T extends ChatListItem>({
 // A row counts as on the screen when half of it shows.
 const VIEWABLE = { itemVisiblePercentThreshold: 50 } as const;
 const DAY_HIDE_MS = 1200;
+// The floating day 8 under the top bar (P3), and its height before it is measured.
+const FLOAT_GAP = SPACING[2];
+const FLOAT_GUESS = SPACING[6];
 
 const INITIAL_ROWS = 15;
 const BATCH_ROWS = 10;
@@ -1039,6 +1154,11 @@ export function ChatScreen<T extends ChatListItem>({
   // it), and the area's height now (the navigation bar's strip at its foot).
   const [canvas, setCanvas] = useState<WallpaperCanvas | null>(null);
   const [areaHeight, setAreaHeight] = useState(0);
+  // P2 (Grup 3): in the DM and the venue chat the wallpaper is drawn again under the whole top bar,
+  // to its measured foot, fading over its last 12: no message shows through the bar's glass. It
+  // lies in the stream's glass target, so the bar's frosted pills show the wallpaper. The table chat
+  // keeps the band under the status bar only.
+  const bandUnderBar = wall === 'dm' || wall === 'mekan';
   return (
     <ChatEndContext.Provider value={followEnd}>
       <ChatKindContext.Provider value={wall ?? 'dm'}>
@@ -1069,6 +1189,18 @@ export function ChatScreen<T extends ChatListItem>({
                     topInset={topHeight}
                     endRef={end}
                     keyboardOffset={bottomPad}
+                    band={
+                      bandUnderBar && wall && canvas ? (
+                        <WallBand
+                          kind={wall}
+                          canvas={canvas}
+                          top={0}
+                          height={topHeight}
+                          fade={SPACING[3]}
+                          direction="down"
+                        />
+                      ) : null
+                    }
                     // Drawn from the bottom up: its start is the screen's foot.
                     contentContainerStyle={{
                       flexGrow: 1,
@@ -1104,7 +1236,7 @@ export function ChatScreen<T extends ChatListItem>({
               </GlassTarget>
               {/* The wallpaper again under the status bar's words and the navigation bar's buttons,
                   fading into the stream: messages pass under the system bars unseen. */}
-              {wall && canvas ? (
+              {wall && canvas && !(bandUnderBar && list) ? (
                 <WallBand
                   kind={wall}
                   canvas={canvas}
@@ -1165,8 +1297,18 @@ export function ChatScreen<T extends ChatListItem>({
 
 // "Bugün" or "3 Ekim" over a day's first message; fresh: "Yeni mesajlar" over the first message
 // that came while the chat was closed, in the link colour (skall.css → `.day.new`).
-export function DayLine({ label, fresh }: { label: string; fresh?: boolean }) {
+export function DayLine({
+  label,
+  fresh,
+  floating,
+}: {
+  label: string;
+  fresh?: boolean;
+  // Over the stream (ChatList's floating day): no margins, not one of the stream's lines.
+  floating?: boolean;
+}) {
   const { c, scheme, tags } = useKit();
+  const lineRef = useContext(DayLineRefContext);
   if (fresh) {
     // docs/design/aura → Mekan sohbeti: "Yeni mesaj" in pink between two soft pink lines.
     const ink = scheme === 'dark' ? tags.pink.fg : KIT.nameInk;
@@ -1189,11 +1331,12 @@ export function DayLine({ label, fresh }: { label: string; fresh?: boolean }) {
   }
   return (
     <View
+      ref={floating ? undefined : (lineRef ?? undefined)}
       className="self-center"
       // docs/design/aura → Dm (`.day`): a soft white pill.
       style={{
-        marginTop: SPACING[2.5],
-        marginBottom: SPACING[1.5],
+        marginTop: floating ? 0 : SPACING[2.5],
+        marginBottom: floating ? 0 : SPACING[1.5],
         backgroundColor: c.day,
         borderRadius: KIT.size.chip,
         paddingHorizontal: KIT.size.dayPadX,
