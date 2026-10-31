@@ -50,7 +50,6 @@ export type ErrorCode =
   | 'photo_required'
   | 'anonymous_not_allowed'
   | 'gender_required'
-  | 'venue_chat_mode_locked'
   | 'identity_mismatch'
   | 'identity_switch_used'
   | 'nick_refresh_too_soon'
@@ -148,7 +147,6 @@ export const DOMAIN_ERROR_CODES: readonly ErrorCode[] = [
   // "Profilimle" needs a visible profile photo; the venue chat mode is chosen once per check-in
   // (docs/SPEC_V3.md §22.G).
   'photo_required',
-  'venue_chat_mode_locked',
   // The check-in's identity (docs/SPEC_V4.md §4.D): one change per check-in; a message sent with a
   // stale identity is not written. The nick is refreshed once in 30 days (K-9).
   'identity_mismatch',

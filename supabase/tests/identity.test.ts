@@ -237,7 +237,8 @@ describe('nick and look (§4.D, K-9, K-46, K-50, K-61)', () => {
     // Still without one at the moment of writing: nothing is written.
     await sql`update public.profiles set capsule_nick = null where id = ${id}`;
     await expect(
-      sql`select id from public.venue_chat_send(${id}, ${venue[V] ?? ''}, 'adsız', 3000, 600, 20)`,
+      sql`select message_id from public.venue_chat_send_once(${id}, ${venue[V] ?? ''}, 'adsız',
+            3000, 600, 20, (select identity_mode from public.table_sessions where user_id = ${id} and status = 'active'))`,
     ).rejects.toMatchObject({ message: 'onboarding_required' });
     expect(
       await sql`select 1 from public.venue_chat_messages where sender_user_id = ${id}`,
@@ -724,7 +725,7 @@ describe('a table seat and a room message keep the identity they were written wi
     expect(profiledMessage).toEqual({ profiled: true, sender_look: null });
   });
   // §4.M: what the other table gets of a message and a seat (the Postgres Changes payload, the rows
-  // and room_phones) carries the identity it was written with, never an account or profile id.
+  // and table_people) carries the identity it was written with, never an account or profile id.
   it('gives the other table the identity, never an account or profile id', async () => {
     const a = await atVenue(PHONES[0], 'Ayşe');
     const b = await atVenue(PHONES[1], 'Burak');
@@ -765,7 +766,7 @@ describe('a table seat and a room message keep the identity they were written wi
       .select('id, session_id, sender_alias, body, profiled, sender_look, created_at')
       .eq('room_id', roomId);
     expect(rows.error).toBeNull();
-    const phones = await b.rpc('room_phones', { target_room_id: roomId });
+    const phones = await b.rpc('table_people', { target_room_id: roomId });
     expect(phones.error).toBeNull();
     const seen = JSON.stringify({ payloads, rows: rows.data, phones: phones.data });
     expect(seen).toContain((await capsuleOf(a)).capsule_look ?? 'missing');

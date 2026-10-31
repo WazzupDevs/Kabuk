@@ -2019,8 +2019,6 @@ export const tr = {
     photo_required: 'Profilinle görünmek için önce profil fotoğrafı ekle.',
     anonymous_not_allowed: 'Bu hesapla masalara yalnızca profilinle katılabilirsin.',
     gender_required: 'Devam etmek için önce cinsiyetini seçmen gerekiyor.',
-    venue_chat_mode_locked:
-      'Mekan sohbetinde nasıl görüneceğini bu girişte zaten seçtin. Değiştirmek için mekandan ayrılıp yeniden giriş yap.',
     identity_mismatch: 'Anonim ya da profilli görünüşün değişti. Mesajını tekrar gönder.',
     client_id_reused: 'Bu mesaj gönderilemedi. Yeniden yaz.',
     identity_switch_used:
