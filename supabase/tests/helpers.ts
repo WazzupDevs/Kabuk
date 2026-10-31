@@ -142,6 +142,27 @@ export async function withPhotoForChoice<T>(client: Client, choose: () => Promis
   }
 }
 
+// The check-in's identity for a venue chat message (docs/SPEC_V4.md §4.D): a profiled one is
+// chosen with checkin/set-identity (a temporary photo, if the account has none). Returns what the
+// message names.
+export async function venueChatIdentity(
+  client: Client,
+  profiled: boolean,
+): Promise<'anonymous' | 'profiled'> {
+  const identity = profiled ? 'profiled' : 'anonymous';
+  const [row] = await sql`
+    select identity_mode from public.table_sessions
+    where user_id = ${await userIdOf(client)} and status = 'active'
+  `;
+  if (row && row.identity_mode !== identity) {
+    const set = await withPhotoForChoice(client, () =>
+      invoke(client, 'checkin', { action: 'set-identity', anonymous: !profiled }),
+    );
+    expect(set.status, JSON.stringify(set.body)).toBe(200);
+  }
+  return identity;
+}
+
 export function errorBody(code: string) {
   return { error: { code, message: expect.any(String) } };
 }

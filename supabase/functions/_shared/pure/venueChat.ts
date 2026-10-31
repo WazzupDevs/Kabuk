@@ -93,13 +93,11 @@ export function withVenueChatExtras(
   };
 }
 
-// The caller's venue chat mode (docs/SPEC_V3.md §22.G): chosen once per check-in with the first
-// message and fixed until the table ends; null until then. venue-chat/page returns it. The column
-// is table_sessions.venue_chat_profiled; a server from before §22.G sends no mode (null).
+// How a venue chat message is written: anonymous or profiled (docs/SPEC_V4.md §4.D).
 export type VenueChatMode = 'anonymous' | 'profiled';
 
 // The check-in's identity (docs/SPEC_V4.md §4.D): anonymous or profiled, changed at most once per
-// check-in (K-3, K-48). Its venue chat side is the mode above.
+// check-in (K-3, K-48).
 export type CheckinIdentity = { mode: VenueChatMode; switchUsed: boolean };
 
 export function checkinIdentity(session: {
@@ -110,12 +108,6 @@ export function checkinIdentity(session: {
     mode: session.identity_mode === 'profiled' ? 'profiled' : 'anonymous',
     switchUsed: session.identity_switches >= 1,
   };
-}
-
-export function venueChatMode(profiled: boolean | null | undefined): VenueChatMode | null {
-  if (profiled === true) return 'profiled';
-  if (profiled === false) return 'anonymous';
-  return null;
 }
 
 // The name to show above a message.

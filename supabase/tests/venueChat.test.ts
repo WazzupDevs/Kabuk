@@ -23,7 +23,7 @@ import {
   TEST_AGE,
   waitForBroadcast,
   waitUntilBlocked,
-  withPhotoForChoice,
+  venueChatIdentity,
 } from './helpers.ts';
 import { type Client, dbUrl, deleteUserByPhone, invoke, sql, userIdOf } from './local.ts';
 
@@ -68,15 +68,13 @@ async function capsuleOf(client: Client): Promise<{ nick: string; look: string }
 // Sends without waiting out the 3-second limit (the limit has its own test).
 async function send(client: Client, body: string, profiled = false) {
   await sql`update public.venue_chat_rate set last_sent_at = '-infinity'`;
-  const sendIt = () =>
-    invoke(client, 'venue-chat', {
-      action: 'send',
-      venueId: venue[V],
-      body,
-      profiled,
-    });
-  // §22.G: a profiled choice needs a photo (a temporary one, if the account has none).
-  return (await (profiled ? withPhotoForChoice(client, sendIt) : sendIt())) as {
+  const identity = await venueChatIdentity(client, profiled);
+  return (await invoke(client, 'venue-chat', {
+    action: 'send',
+    venueId: venue[V],
+    body,
+    identity,
+  })) as {
     status: number;
     body: { messageId: string };
   };
@@ -116,7 +114,7 @@ describe('venue chat: who reads and writes', () => {
         action: 'send',
         venueId: venue[V],
         body: 'x',
-        profiled: false,
+        identity: 'anonymous',
       }),
     ).toEqual({ status: 409, body: errorBody('no_active_table') });
 
@@ -183,7 +181,7 @@ describe('venue chat: who reads and writes', () => {
       action: 'send',
       venueId: venue[V],
       body: 'bir',
-      profiled: false,
+      identity: 'anonymous',
     });
     expect(first.status).toBe(200);
     expect(
@@ -191,7 +189,7 @@ describe('venue chat: who reads and writes', () => {
         action: 'send',
         venueId: venue[V],
         body: 'iki',
-        profiled: false,
+        identity: 'anonymous',
       }),
     ).toEqual({ status: 429, body: errorBody('too_soon') });
 
@@ -203,7 +201,7 @@ describe('venue chat: who reads and writes', () => {
         action: 'send',
         venueId: venue[V],
         body: 'üç',
-        profiled: false,
+        identity: 'anonymous',
       }),
     ).toEqual({ status: 429, body: errorBody('rate_limited') });
     await sql`update public.venue_chat_rate set window_started_at = now() - interval '11 minutes'`;
@@ -353,7 +351,11 @@ describe('venue chat: photos (venue-chat/page)', () => {
     ]);
 
     expect(await invoke(b, 'checkin', { action: 'leave' })).toEqual(OK);
-    expect(await fnPage(b)).toEqual([]);
+    // The whole answer without a table: nothing else rides on it.
+    expect(await invoke(b, 'venue-chat', { action: 'page', venueId: venue[V] })).toEqual({
+      status: 200,
+      body: { messages: [], identity: null },
+    });
   });
 });
 
@@ -416,13 +418,13 @@ describe('venue chat: profile through the message', () => {
 });
 
 describe('venue chat replies and reactions (docs/SPEC_V3.md §21)', () => {
-  const reply = async (client: Client, body: string, replyTo: string, profiled = false) => {
+  const reply = async (client: Client, body: string, replyTo: string) => {
     await sql`update public.venue_chat_rate set last_sent_at = '-infinity'`;
     return invoke(client, 'venue-chat', {
       action: 'send',
       venueId: venue[V],
       body,
-      profiled,
+      identity: 'anonymous',
       replyTo,
     });
   };
@@ -869,7 +871,7 @@ describe('venue chat: one message per client id', () => {
       action: 'send',
       venueId: venue[V],
       body,
-      profiled: false,
+      identity: 'anonymous',
       ...(clientId ? { clientId } : {}),
       ...(replyTo ? { replyTo } : {}),
     }) as Promise<{ status: number; body: { messageId: string } }>;
