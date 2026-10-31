@@ -249,6 +249,7 @@ const PRESSED = 0.8;
 // The nick and "Yenile" (docs/design/aura → Profil): a new nick once in 30 days (K-9); while it
 // waits the button is off and the days left are under the nick.
 function NickRow({ nick, refreshAt }: { nick: string; refreshAt: string | null }) {
+  const { c } = useKit();
   const queryClient = useQueryClient();
   const now = useNow(60_000);
   const waitMs = refreshAt ? Date.parse(refreshAt) - now : 0;
@@ -267,7 +268,7 @@ function NickRow({ nick, refreshAt }: { nick: string; refreshAt: string | null }
         </T>
         {waiting ? <T v="fineLg">{tr.profile.nickWait(Math.ceil(waitMs / DAY_MS))}</T> : null}
         {refresh.isError ? (
-          <T v="fine" color={KIT.danger}>
+          <T v="fine" color={c.warn}>
             {errorMessage(refresh.error)}
           </T>
         ) : null}
