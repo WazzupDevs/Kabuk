@@ -1,5 +1,5 @@
 import { REPORT_REASONS, type ReportReason } from '@shared/chat.ts';
-import { canRetry, type OutboxMessage, outboxReducer } from '@shared/chatOutbox.ts';
+import { canRetry, mergeOutbox, type OutboxMessage, outboxReducer } from '@shared/chatOutbox.ts';
 import { toRuns } from '@shared/chatRuns.ts';
 import {
   prepareVenueMessage,
@@ -224,17 +224,14 @@ export default function VenueChatScreen() {
       }
     }
   }, [onPage, sentIds, outbox]);
-  const keyOf = new Map([...sentIds].map(([localId, id]) => [id, localId]));
-  type Entry = { key: string; at: string; m?: VenueChatMessage; out?: OutboxMessage };
-  const entries: Entry[] = [
-    ...(messages ?? []).map((m) => ({ key: keyOf.get(m.id) ?? m.id, at: m.createdAt, m })),
-    ...outbox
-      .filter((o) => {
-        const id = sentIds.get(o.localId);
-        return !(id && onPage.has(id));
-      })
-      .map((o) => ({ key: o.localId, at: o.at ?? new Date().toISOString(), out: o })),
-  ];
+  // In time order (a message from someone else can come while one of the viewer's waits).
+  const entries = mergeOutbox(
+    messages ?? [],
+    (m) => m.createdAt,
+    outbox,
+    sentIds,
+    new Date().toISOString(),
+  );
   // The answered message from the loaded page, for the quote of a message on its way.
   const outQuote = (id: string | undefined) => {
     if (!id) return undefined;

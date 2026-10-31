@@ -64,3 +64,38 @@ export function outboxReducer(outbox: Outbox, action: OutboxAction): Outbox {
       );
   }
 }
+
+// One stream of a chat's server messages and the outbox (Grup 3, P5: the venue chat), oldest
+// first by time. A message the server took keeps its outbox key (sentIds: localId → messageId), so
+// its bubble is not drawn anew; once its copy is in `server`, the outbox entry is left out. Equal
+// times keep their order: the server's first, then the outbox in the order written.
+export type MergedEntry<M> = { key: string; at: string; m?: M; out?: OutboxMessage };
+
+export function mergeOutbox<M extends { id: string }>(
+  server: readonly M[],
+  atOf: (m: M) => string,
+  outbox: Outbox,
+  sentIds: ReadonlyMap<string, string>,
+  now: string,
+): MergedEntry<M>[] {
+  const keyOf = new Map([...sentIds].map(([localId, id]) => [id, localId]));
+  const onPage = new Set(server.map((m) => m.id));
+  const entries: MergedEntry<M>[] = [
+    ...server.map((m) => ({ key: keyOf.get(m.id) ?? m.id, at: atOf(m), m })),
+    ...outbox
+      .filter((o) => {
+        const id = sentIds.get(o.localId);
+        return !(id && onPage.has(id));
+      })
+      .map((o) => ({ key: o.localId, at: o.at ?? now, out: o })),
+  ];
+  const time = (e: MergedEntry<M>) => {
+    const t = Date.parse(e.at);
+    return Number.isNaN(t) ? Number.POSITIVE_INFINITY : t;
+  };
+  // Array.prototype.sort is stable (ES2019): equal times keep the order above.
+  return entries
+    .map((e, i) => ({ e, i, t: time(e) }))
+    .sort((a, b) => (a.t === b.t ? a.i - b.i : a.t < b.t ? -1 : 1))
+    .map(({ e }) => e);
+}
