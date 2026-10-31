@@ -72,11 +72,11 @@ describe("the app's Keşfet", () => {
   });
 
   it("takes each venue's icon and type from its category (lib/venueType.ts)", () => {
-    // The list row, "Şu an buradasın" and the venue page; the mapping is tested in venueType.test.ts.
+    // The list row and the venue page; the mapping is tested in venueType.test.ts.
     expect(screen).toMatch(/const type = venueType\(v\);/);
-    expect(screen).toMatch(/<VenueThumb kind=\{type\} size=\{KIT\.size\.av\.row\} \/>/);
+    expect(screen).toMatch(/<VenueThumb kind=\{type\} size=\{VENUE_ROW_PICTURE\} \/>/);
+    expect(screen).toMatch(/const VENUE_ROW_PICTURE = 52;/);
     expect(screen).toMatch(/tr\.explore\.typeLabel\[type\]/);
-    expect(screen).toMatch(/type: hereVenue \? venueType\(hereVenue\) : 'kafe'/);
     expect(app('app/(app)/(tabs)/explore/[venueId].tsx')).toMatch(
       /tr\.explore\.typeLabel\[venueType\(venue\)\]/,
     );
@@ -85,8 +85,10 @@ describe("the app's Keşfet", () => {
     for (const word of ['Kafe', 'Çay bahçesi', 'Kampüs']) expect(tr).toContain(`'${word}'`);
   });
 
-  it('keeps 14 between the question and the search, as the canvas does', () => {
-    expect(screen).toMatch(/const EXPLORE_GAP = 14;/);
+  it('keeps 16 between its blocks, as the canvas does, and is always the list (no single venue)', () => {
+    expect(app('src/theme/auraKit.ts')).toMatch(/exploreGap: 16,/);
+    expect(screen).toMatch(/gap: KIT\.size\.exploreGap,/);
+    expect(screen).not.toMatch(/SingleVenue|exploreLayout/);
   });
 
   it('fetches the list again when pulled at its top', () => {

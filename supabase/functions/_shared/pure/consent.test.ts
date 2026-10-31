@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  acceptsLocationConsent,
   CURRENT_KVKK_VERSION,
+  CURRENT_LOCATION_CONSENT_VERSION,
   CURRENT_TERMS_VERSION,
   needsConsent,
   needsGender,
@@ -46,5 +48,18 @@ describe('needsOnboarding', () => {
     // The gender is asked after the profile, which still decides on its own.
     const withoutGender = { ...done, has_gender: false };
     expect(needsProfile(withoutGender)).toBe(false);
+  });
+});
+
+describe('acceptsLocationConsent', () => {
+  it("takes the button's consent and the box an older app still shows", () => {
+    expect(acceptsLocationConsent(CURRENT_LOCATION_CONSENT_VERSION)).toBe(true);
+    expect(acceptsLocationConsent('draft-1')).toBe(true);
+    expect(acceptsLocationConsent('draft-0')).toBe(true);
+  });
+
+  it('refuses a version no app ever showed', () => {
+    expect(acceptsLocationConsent('')).toBe(false);
+    expect(acceptsLocationConsent('draft-2')).toBe(false);
   });
 });

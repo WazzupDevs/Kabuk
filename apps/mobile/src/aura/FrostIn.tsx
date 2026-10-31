@@ -69,6 +69,40 @@ export function FrostIn({
   );
 }
 
+// A picture that appears as frosted glass and resolves out of it (hareket.json → frostedFirst: "game
+// cards and pictures"): laid over the picture, it holds for 320 ms, then fades off over 500 ms. Gone
+// at once when motion is reduced.
+export function FrostResolve() {
+  const { scheme } = useTheme();
+  const reduce = useReduceMotion();
+  const [frost] = useState(() => new Animated.Value(1));
+  useEffect(() => {
+    if (reduce) return undefined;
+    const anim = Animated.timing(frost, {
+      toValue: 0,
+      duration: RESOLVE_MS,
+      delay: RESOLVE_AFTER_MS,
+      easing: ARRIVE_RN,
+      useNativeDriver: true,
+    });
+    anim.start();
+    return () => anim.stop();
+  }, [reduce, frost]);
+  if (reduce) return null;
+  return (
+    <Animated.View
+      pointerEvents="none"
+      style={[
+        StyleSheet.absoluteFill,
+        {
+          opacity: frost,
+          backgroundColor: scheme === 'dark' ? AURA.frost.fillDark : AURA.frost.fill,
+        },
+      ]}
+    />
+  );
+}
+
 // From hareket.json → frostedFirst: the frost starts fading 320 ms after the card, over 500 ms.
 const RESOLVE_AFTER_MS = 320;
 const RESOLVE_MS = 500;

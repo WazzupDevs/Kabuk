@@ -81,7 +81,7 @@ export function VenueTile({ kind }: { kind: VenueKind }) {
   );
 }
 
-// One event in the single-venue Keşfet (canvas: Etkinlikler): a calendar tile, the title and when.
+// One event on the venue page (the week's events): a calendar tile, the title and when.
 // The tile is in the event colour while the event is on.
 // A venue's event as a row of the events card (skall tuvali, KesfetTekMekan): the calendar disc,
 // pink while it is on.

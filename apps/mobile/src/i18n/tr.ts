@@ -362,7 +362,8 @@ export const tr = {
     eventKind: 'Etkinlik',
     eventLabel: (title: string, venue: string, when: string) => `${title}, ${venue}, ${when}`,
     noEvents: 'Bugün etkinlik yok',
-    noEventsHint: 'Mekanların bugünkü etkinlikleri burada görünür; haftanın geri kalanı Keşfet’te.',
+    noEventsHint:
+      'Mekanların bugünkü etkinlikleri burada görünür; haftanın geri kalanı mekan sayfasında.',
     days: {
       today: 'Bugün',
       yesterday: 'Dün',
@@ -453,8 +454,6 @@ export const tr = {
   explore: {
     // "Şu an buradasın" (v44: .vhere): the own check-in, kept on this phone only.
     here: 'Şu an buradasın',
-    // Under the reader's own spot on the venue page.
-    hereShort: 'Buradasın',
     hereAt: (spot: string | null) => (spot ? `${spot} · giriş yaptın` : 'Giriş yaptın'),
     backToVenue: 'Mekana dön',
     views: { list: 'Liste', map: 'Harita' },
@@ -517,14 +516,9 @@ export const tr = {
       day: 'Bugün\nnerede oturuyorsun?',
       evening: 'Bu akşam\nnerede oturuyorsun?',
     },
-    eventTagShort: 'Etkinlik',
-    cityDistrict: (city: string, district: string) => `${city} · ${district}`,
-    spotCount: (n: number) => `${n} nokta`,
-    districtCity: (district: string, city: string) => `${district}, ${city}`,
     weekNote: 'Bu hafta',
     eventsTitle: 'Etkinlikler',
     noEvents: 'Bu hafta planlı etkinlik yok.',
-    comingSoon: 'Yeni mekanlar yakında.',
   },
   friends: {
     empty: "Henüz arkadaşın yok. Birlikte oynadığın masaları Bildirimler'de bulabilirsin.",
@@ -765,9 +759,9 @@ export const tr = {
   },
   checkin: {
     locationTitle: 'Konumun',
+    // The consent itself (location consent draft-1, _shared/pure/consent.ts): pressing the button.
     locationBody:
-      'Mekanda olduğunu doğrulamak için konumunu bir kez kullanıyoruz. Konumun saklanmaz.',
-    locationConsent: 'Konumumun bu amaçla kullanılmasına açık rıza veriyorum.',
+      '"Konumumu kullan" düğmesine basarak konumunun yalnızca mekanda olduğunu doğrulamak için bir kez kullanılmasına açık rıza verirsin. Konumun saklanmaz.',
     useLocation: 'Konumumu kullan',
     // skall tuvali (KesfetKonumIzin, KesfetMekan); approved 27 Ekim.
     deniedTitle: 'Konum izni yok',

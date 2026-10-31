@@ -86,9 +86,9 @@ const GAP = 8;
 const THUMB = 44;
 const THUMB_RADIUS = 14;
 
-// A spot's picture (docs/design/aura → CheckIn, KesfetMekan): one of the table pictures, always the
-// same for a spot. It says nothing about who is there.
-export function spotPicture(ref: string) {
+// A spot's picture (docs/design/aura → CheckIn): one of the table pictures, always the same for a
+// spot. It says nothing about who is there.
+function spotPicture(ref: string) {
   let h = 0;
   for (let i = 0; i < ref.length; i++) h = (h * 31 + ref.charCodeAt(i)) >>> 0;
   const icon = TABLE_ICONS[h % TABLE_ICONS.length];

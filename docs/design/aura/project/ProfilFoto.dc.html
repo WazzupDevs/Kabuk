@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Profil fotoğrafı</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="aura.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div class="phone">
+  <div class="aura"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i></div>
+  <div class="content" aria-hidden="true" style="gap: 14px">
+    <div class="topbar between">
+      <p class="display" style="font-size: 36px">Profil</p>
+      <span class="round glassy" style="width: 52px; height: 52px; border-radius: 26px"></span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+      <div class="glass col" style="align-items: center; justify-content: center; height: 210px"><span class="av xl c1" style="width: 112px; height: 112px; font-size: 40px">A</span></div>
+      <div class="glass col" style="align-items: center; justify-content: center; height: 210px"><span class="av xl capsule" style="width: 112px; height: 112px; background: #FFF1C2"><img src="/_blob/341343f7873d17c5e6e7ac5768bfbdd5" alt=""></span></div>
+    </div>
+  </div>
+  <div style="position: absolute; inset: 0; background: rgba(20,17,43,.86)"></div>
+  <div role="dialog" aria-label="Profil fotoğrafı" style="position: absolute; left: 22px; right: 22px; top: 249px; height: 346px; border-radius: 30px; background: #FFFFFF; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,.35)">
+    <div class="c1" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #FFFFFF; font-size: 140px; font-weight: 700">A</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

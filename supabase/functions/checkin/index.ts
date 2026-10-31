@@ -19,11 +19,7 @@ import type {
   SetIdentityResponse,
 } from '../_shared/pure/api/checkin.ts';
 import { BOUNDARY_TOLERANCE_M, CHECKIN_RADIUS_M } from '../_shared/pure/checkin.ts';
-import {
-  CURRENT_LOCATION_CONSENT_VERSION,
-  needsConsent,
-  needsProfile,
-} from '../_shared/pure/consent.ts';
+import { acceptsLocationConsent, needsConsent, needsProfile } from '../_shared/pure/consent.ts';
 import { locationCheck, refusesMockedPosition } from '../_shared/pure/devProject.ts';
 import { AppError } from '../_shared/pure/errors.ts';
 import { checkinIdentity } from '../_shared/pure/venueChat.ts';
@@ -99,7 +95,7 @@ async function checkIn(userId: string, body: CheckInRequest): Promise<CheckInRes
   // An anonymous message and seat need the nick (docs/SPEC_V4.md §4.D); venue_chat_send never falls
   // back to anything else.
   await assignCapsuleIdentity(db, userId);
-  if (body.locationConsentVersion !== CURRENT_LOCATION_CONSENT_VERSION) {
+  if (!acceptsLocationConsent(body.locationConsentVersion)) {
     throw new AppError('consent_outdated', 'Location consent is not the current version.');
   }
   if (refusesMockedPosition(body.mocked, currentLocationCheck(), Deno.env.get('SUPABASE_URL'))) {
