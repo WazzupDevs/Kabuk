@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (31 Ekim 2026, Grup 7 kod tamamlandı)
+
+- Grup 7 (Keşfet ve Ayarlar, aura v51): **kod tamamlandı**: K1 #324, K2 #325, K3 #326, K4 #327, K5 #328, K6 #329 (`guvenlik`: bulgu yok); native yok, yayın OTA. **Cihaz kabulü bekliyor** (kabul raporu §7), son toplu kabulde.
+- Cihazda bakılacak yeni seçimler: harita kartında etkinlik etiketi `Tag` amber; Engellenenler/Sessize alınanlar'da anonim kişi `Av` ile nick'in ilk harfi. Ayarlar'da `NickCard` ve `DesignPicker` eski bileşenle (rapor kapsamı dışı). `Btn`'ye `variant="danger"` eklendi (Hesabımı sil).
+- Temizlik adım 2–4 zaten birleşmişti (#291–#295). Birleşen `grup7-*` dalları ve eski dallar proje sahibinin bilgisayarından silinir (guard hook uzak dal silmeyi main push'u sanıp durduruyor).
+- Sıradaki: Grup 1–7 panolarının kodu bitti; bir sonraki paket PROGRESS ve SPEC_V4 sırasına göre yeni oturumda seçilir.
+
 ## Devir notu (31 Ekim 2026, Grup 7 planı onaylandı)
 
 - Grup 7 (Keşfet, aura v51; rapor: kabul raporu §6 ve §9) planı proje sahibince onaylandı. Sıra, her biri ayrı PR, OTA: **K1** boş sonuç nedene göre (saf fonksiyon + vitest; arama → tür → semt, veri yoksa `tr.explore.empty`; §9 metinleri birebir, yalnızca tür metni `tr.ts`'e eklenir; harita aynı fonksiyon) → **K2** harita mekan/yığın kartı aura opak kart (`ExploreMap.tsx:426–489`; `androidView="texture"` korunur) → **K3** 320 dp/1,3x: canlılık ve "Mekana dön" alta (ölçüt 360 dp ya da `fontScale > 1.15`) → **K4** `PlaceSheet` aura → **K5** Ayarlar: `RouteSheet` `footer`'da sabit "Tamam", segment/anahtar mevcut parçalarla (`segOn` ve Masa kur anahtarı token'larına dokunma), menü `cap` → **K6** Ayarlar alt sayfaları aura; Hesap gizliliği korunur, birleşmeden önce `guvenlik`.
