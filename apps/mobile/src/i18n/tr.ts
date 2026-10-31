@@ -2019,6 +2019,7 @@ export const tr = {
     venue_chat_mode_locked:
       'Mekan sohbetinde nasıl görüneceğini bu girişte zaten seçtin. Değiştirmek için mekandan ayrılıp yeniden giriş yap.',
     identity_mismatch: 'Anonim ya da profilli görünüşün değişti. Mesajını tekrar gönder.',
+    client_id_reused: 'Bu mesaj gönderilemedi. Yeniden yaz.',
     identity_switch_used:
       'Anonim ile profilli arasında bu girişte bir kez geçebilirsin; hakkını kullandın.',
     nick_refresh_too_soon: 'Anonim adını 30 günde bir yenileyebilirsin.',

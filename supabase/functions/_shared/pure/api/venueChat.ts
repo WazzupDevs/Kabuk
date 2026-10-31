@@ -16,6 +16,10 @@ export type VenueChatRequest =
       identity?: VenueChatMode;
       // A visible message of the same venue (§21.1).
       replyTo?: string;
+      // The app's own id for this message (Grup 3, P5): sent again with the same id, it is the same
+      // message (the first one's messageId; nothing written, counted or broadcast). The same id with
+      // another body, venue or reply is client_id_reused. Without it every send is a new message.
+      clientId?: string;
     }
   // The caller's one reaction on a message, at most 10 per 10 seconds (§21.2).
   | { action: 'react'; messageId: string; emoji: Reaction | null }

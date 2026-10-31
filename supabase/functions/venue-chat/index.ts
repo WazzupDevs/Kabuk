@@ -57,6 +57,7 @@ const Body: z.ZodType<VenueChatRequest> = z.discriminatedUnion('action', [
       profiled: z.boolean().optional(),
       identity: z.enum(['anonymous', 'profiled']).optional(),
       replyTo: z.uuid().optional(),
+      clientId: z.uuid().optional(),
     })
     .refine((m) => (m.profiled === undefined) !== (m.identity === undefined)),
   z.object({
@@ -205,7 +206,9 @@ Deno.serve(
         throw new AppError('profanity_rejected', 'Message contains inappropriate language.');
       }
 
-      const { data, error } = await db.rpc('venue_chat_send', {
+      // The same clientId again (its answer lost) is the same message: nothing written, counted or
+      // broadcast (venue_chat_send_once; Grup 3, P5).
+      const { data, error } = await db.rpc('venue_chat_send_once', {
         target_user_id: user.id,
         target_venue_id: body.venueId,
         new_body: text,
@@ -215,10 +218,15 @@ Deno.serve(
         window_seconds: VENUE_CHAT.windowSeconds,
         window_max: VENUE_CHAT.windowMax,
         ...(body.replyTo ? { reply_to: body.replyTo } : {}),
+        ...(body.clientId ? { new_client_id: body.clientId } : {}),
       });
-      if (error) throw dbError('venue_chat_send', error);
-      inBackground(broadcast(venueChatChannel(body.venueId), VENUE_CHAT_BROADCAST));
-      return { messageId: data.id };
+      if (error) throw dbError('venue_chat_send_once', error);
+      const [sent] = data;
+      if (!sent) throw new AppError('internal', 'venue_chat_send_once returned no row.');
+      if (!sent.replayed) {
+        inBackground(broadcast(venueChatChannel(body.venueId), VENUE_CHAT_BROADCAST));
+      }
+      return { messageId: sent.message_id };
     },
   ),
 );
