@@ -1,4 +1,5 @@
 import { REPORT_REASONS, type ReportReason } from '@shared/chat.ts';
+import { canRetry, type OutboxMessage, outboxReducer } from '@shared/chatOutbox.ts';
 import { toRuns } from '@shared/chatRuns.ts';
 import {
   prepareVenueMessage,
@@ -8,7 +9,7 @@ import {
 } from '@shared/venueChat.ts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { type ReactNode, useState, useEffect } from 'react';
+import { type ReactNode, useEffect, useMemo, useReducer, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { Avatar, AVATAR_SIZE } from '@/components/Avatar';
@@ -52,6 +53,7 @@ import { KIT } from '@/theme/auraKit';
 import { track } from '@/lib/analytics';
 import { ApiError, safetyApi, venueChatApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { requestKey } from '@/lib/requestKey';
 import { useFlash } from '@/lib/useFlash';
 import { nameInk } from '@/theme/nameInk';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -94,25 +96,62 @@ export default function VenueChatScreen() {
   const refresh = () => {
     if (venueId) void queryClient.invalidateQueries({ queryKey: venueChatKeys.messages(venueId) });
   };
+  // Sending is optimistic, one message at a time as in the DM (Grup 3, P5; @shared/chatOutbox.ts):
+  // the bubble shows at once, faded with "Gönderiliyor…", and the bar stays free. Each message has
+  // its own clientId (its localId); "Tekrar dene" sends it again with the same one, the same bubble
+  // goes back to sending, and the server writes it once.
+  const [outbox, dispatch] = useReducer(outboxReducer, []);
+  // clientId → the server's messageId: the waiting bubble keeps its key until the server's copy is
+  // on the page, then gives it to the copy.
+  const [sentIds, setSentIds] = useState<ReadonlyMap<string, string>>(new Map());
   const send = useMutation({
     meta: FEEL_ERROR,
-    mutationFn: ({ text, replyTo }: { text: string; replyTo: string | undefined }) =>
-      venueChatApi.sendAs(venueId ?? '', text, identity?.mode ?? 'anonymous', replyTo),
-    onSuccess: (_data, { replyTo }) => {
-      // A new answer picked while it was sending stays (audit CHAT-13).
-      if (reply.target?.id === replyTo) reply.clear();
-      track('venue_chat_sent', { profiled: identity?.mode === 'profiled' });
-      refresh();
-    },
-    onError: (err) => {
-      // The identity changed elsewhere (or the photo went): nothing was sent; the line over the
-      // bar shows the identity again and what was typed stays.
-      if (err instanceof ApiError && ['identity_mismatch', 'photo_required'].includes(err.code)) {
-        void queryClient.invalidateQueries({ queryKey: ['activeTable'] });
-        refresh();
-      }
-    },
+    mutationFn: ({
+      text,
+      replyTo,
+      clientId,
+    }: {
+      text: string;
+      replyTo?: string;
+      clientId: string;
+    }) =>
+      venueChatApi.sendAs(venueId ?? '', text, identity?.mode ?? 'anonymous', replyTo, clientId),
   });
+  const deliver = (m: { localId: string; body: string; replyTo?: string }) => {
+    send
+      .mutateAsync({
+        text: m.body,
+        clientId: m.localId,
+        ...(m.replyTo ? { replyTo: m.replyTo } : {}),
+      })
+      .then(({ messageId }) => {
+        track('venue_chat_sent', { profiled: identity?.mode === 'profiled' });
+        setSentIds((ids) => new Map(ids).set(m.localId, messageId));
+        refresh();
+      })
+      .catch((err: unknown) => {
+        const errorCode = err instanceof ApiError ? err.code : null;
+        dispatch({ type: 'failed', localId: m.localId, errorCode });
+        // The identity changed elsewhere (or the photo went): nothing was sent; the line over the
+        // bar shows the identity again, the bubble says why.
+        if (errorCode === 'identity_mismatch' || errorCode === 'photo_required') {
+          void queryClient.invalidateQueries({ queryKey: ['activeTable'] });
+          refresh();
+        }
+      });
+  };
+  const submit = (body: string, clear: () => void) => {
+    const replyTo = reply.target?.id;
+    const m = { localId: requestKey(), body, ...(replyTo ? { replyTo } : {}) };
+    dispatch({ type: 'send', ...m, at: new Date().toISOString() });
+    clear();
+    reply.clear();
+    deliver(m);
+  };
+  const retry = (m: OutboxMessage) => {
+    dispatch({ type: 'retry', localId: m.localId });
+    deliver(m);
+  };
   const report = useMutation({
     meta: FEEL_ERROR,
     mutationFn: ({ id, reason }: { id: string; reason: ReportReason }) =>
@@ -176,6 +215,43 @@ export default function VenueChatScreen() {
       <Avatar kind="table" alias={senderLabel(m)} size={size === AVATAR_SIZE.sm ? 'sm' : 'xl'} />
     );
 
+  // The waiting bubbles whose server copy is on the page leave the outbox (drawn as the copy now).
+  const onPage = useMemo(() => new Set((messages ?? []).map((m) => m.id)), [messages]);
+  useEffect(() => {
+    for (const [localId, id] of sentIds) {
+      if (onPage.has(id) && outbox.some((o) => o.localId === localId)) {
+        dispatch({ type: 'sent', localId });
+      }
+    }
+  }, [onPage, sentIds, outbox]);
+  const keyOf = new Map([...sentIds].map(([localId, id]) => [id, localId]));
+  type Entry = { key: string; at: string; m?: VenueChatMessage; out?: OutboxMessage };
+  const entries: Entry[] = [
+    ...(messages ?? []).map((m) => ({ key: keyOf.get(m.id) ?? m.id, at: m.createdAt, m })),
+    ...outbox
+      .filter((o) => {
+        const id = sentIds.get(o.localId);
+        return !(id && onPage.has(id));
+      })
+      .map((o) => ({ key: o.localId, at: o.at ?? new Date().toISOString(), out: o })),
+  ];
+  // The answered message from the loaded page, for the quote of a message on its way.
+  const outQuote = (id: string | undefined) => {
+    if (!id) return undefined;
+    const q = messages?.find((x) => x.id === id);
+    return quoteOf(
+      q
+        ? {
+            gone: false,
+            id,
+            body: q.body,
+            fromMe: q.fromMe,
+            name: q.fromMe ? null : senderLabel(q),
+          }
+        : { gone: false, id, body: '', fromMe: false, name: null },
+    );
+  };
+
   if (!table.isPending && !venueId) {
     return (
       <Screen>
@@ -185,11 +261,13 @@ export default function VenueChatScreen() {
     );
   }
 
-  const newest = messages?.[messages.length - 1];
   const runs = toRuns(
-    messages ?? [],
-    (m) => (m.fromMe ? '' : (m.senderKey ?? `${m.profiled ? 'p' : 'a'}:${senderLabel(m)}`)),
-    (m) => m.createdAt,
+    entries,
+    (e) =>
+      e.out || e.m?.fromMe
+        ? ''
+        : (e.m?.senderKey ?? `${e.m?.profiled ? 'p' : 'a'}:${e.m ? senderLabel(e.m) : ''}`),
+    (e) => e.at,
   );
   const profiled = identity?.mode === 'profiled';
   const ownName = profiled ? photo.name : photo.nick;
@@ -204,79 +282,118 @@ export default function VenueChatScreen() {
   // Newest first: the stream is drawn from the bottom up, as the DM's (Telegram Android's chat; the
   // owner's call, 30 Ekim). Runs and day lines worked out oldest first.
   const rows = runs
-    .map(({ item, first, last, day }) => ({ key: item.id, id: item.id, m: item, first, last, day }))
+    .map(({ item, first, last, day }) => ({
+      key: item.key,
+      id: item.m?.id ?? item.key,
+      m: item.m,
+      out: item.out,
+      first,
+      last,
+      day,
+    }))
     .reverse();
-  const renderRow = ({ m, first, last, day }: (typeof rows)[number]) => (
-    <ChatRow id={m.id} first={first} mine={m.fromMe}>
-      {(jumpTo) => (
-        <>
-          {day ? <DayLine label={dayLabel(day)} /> : null}
-          {m.id === fresh ? <DayLine fresh label={tr.chat.newLine} /> : null}
-          <ChatBubble
-            testID={m.fromMe ? 'venue-chat-mine' : 'venue-chat-theirs'}
-            text={m.body}
-            mine={m.fromMe}
-            quote={quoteOf(m.replyTo)}
-            onPressQuote={quoteJump(m.replyTo, jumpTo)}
-            reactions={reactions.view(m.id, m.reactions)}
-            onToggleReaction={(emoji) => reactions.pick(m.id, m.reactions, emoji)}
-            onReact={(emoji) => reactions.pick(m.id, m.reactions, emoji)}
-            onReply={() =>
-              reply.setTarget({
-                id: m.id,
-                quote: {
-                  name: m.fromMe ? tr.chat.you : senderLabel(m),
-                  text: m.body,
-                  color: m.fromMe ? colors.accent : inkOf(senderLabel(m)),
-                },
-              })
-            }
-            actions={
-              m.fromMe
-                ? [
-                    {
-                      label: tr.chat.delete,
-                      icon: 'close',
-                      negative: true,
-                      testID: 'venue-chat-delete',
-                      onPress: () => remove.mutate(m.id),
-                    },
-                  ]
-                : [
-                    {
-                      label: tr.chat.report,
-                      icon: 'alert',
-                      negative: true,
-                      testID: 'venue-chat-report',
-                      onPress: () => setReporting(m),
-                    },
-                  ]
-            }
-            first={first}
-            last={last}
-            time={tr.chat.time(m.createdAt)}
-            name={m.fromMe ? undefined : senderLabel(m)}
-            avatar={m.fromMe ? undefined : faceOf(m, AVATAR_SIZE.sm)}
-            nameInk={m.fromMe ? undefined : inkOf(senderLabel(m))}
-            onPressSender={m.fromMe ? undefined : () => setPerson(m)}
-          />
-        </>
-      )}
-    </ChatRow>
-  );
+  const newest = rows[0];
+  const renderRow = ({ m, out, first, last, day }: (typeof rows)[number]) =>
+    out ? (
+      <ChatRow id={out.localId} first={first} mine>
+        {() => (
+          <>
+            {day ? <DayLine label={dayLabel(day)} /> : null}
+            <ChatBubble
+              testID="venue-chat-pending"
+              text={out.body}
+              mine
+              first={first}
+              last={last}
+              quote={outQuote(out.replyTo)}
+              // Mekân: no ticks and no read; the time comes with the server's copy.
+              state={out.status === 'sending' ? 'sending' : 'failed'}
+              failedText={
+                out.status === 'failed' && out.errorCode ? tr.errors[out.errorCode] : undefined
+              }
+              onRetry={out.status === 'failed' && canRetry(out) ? () => retry(out) : undefined}
+              onDiscard={
+                out.status === 'failed'
+                  ? () => dispatch({ type: 'remove', localId: out.localId })
+                  : undefined
+              }
+            />
+          </>
+        )}
+      </ChatRow>
+    ) : m ? (
+      <ChatRow id={m.id} first={first} mine={m.fromMe}>
+        {(jumpTo) => (
+          <>
+            {day ? <DayLine label={dayLabel(day)} /> : null}
+            {m.id === fresh ? <DayLine fresh label={tr.chat.newLine} /> : null}
+            <ChatBubble
+              testID={m.fromMe ? 'venue-chat-mine' : 'venue-chat-theirs'}
+              text={m.body}
+              mine={m.fromMe}
+              quote={quoteOf(m.replyTo)}
+              onPressQuote={quoteJump(m.replyTo, jumpTo)}
+              reactions={reactions.view(m.id, m.reactions)}
+              onToggleReaction={(emoji) => reactions.pick(m.id, m.reactions, emoji)}
+              onReact={(emoji) => reactions.pick(m.id, m.reactions, emoji)}
+              onReply={() =>
+                reply.setTarget({
+                  id: m.id,
+                  quote: {
+                    name: m.fromMe ? tr.chat.you : senderLabel(m),
+                    text: m.body,
+                    color: m.fromMe ? colors.accent : inkOf(senderLabel(m)),
+                  },
+                })
+              }
+              actions={
+                m.fromMe
+                  ? [
+                      {
+                        label: tr.chat.delete,
+                        icon: 'close',
+                        negative: true,
+                        testID: 'venue-chat-delete',
+                        onPress: () => remove.mutate(m.id),
+                      },
+                    ]
+                  : [
+                      {
+                        label: tr.chat.report,
+                        icon: 'alert',
+                        negative: true,
+                        testID: 'venue-chat-report',
+                        onPress: () => setReporting(m),
+                      },
+                    ]
+              }
+              first={first}
+              last={last}
+              time={tr.chat.time(m.createdAt)}
+              name={m.fromMe ? undefined : senderLabel(m)}
+              avatar={m.fromMe ? undefined : faceOf(m, AVATAR_SIZE.sm)}
+              nameInk={m.fromMe ? undefined : inkOf(senderLabel(m))}
+              onPressSender={m.fromMe ? undefined : () => setPerson(m)}
+            />
+          </>
+        )}
+      </ChatRow>
+    ) : (
+      <View />
+    );
 
   return (
     <ChatScreen
       wall="mekan"
       testID="venue-chat-messages"
       startAtEnd
-      newestKey={newest?.id}
-      newestMine={newest?.fromMe}
+      newestKey={newest?.key}
+      newestMine={newest ? (newest.out ? true : newest.m?.fromMe) : undefined}
       list={{
         items: rows,
         renderItem: renderRow,
         openAt: fresh,
-        timeOf: (row) => Date.parse(row.m.createdAt),
+        timeOf: (row) => Date.parse(row.m?.createdAt ?? row.out?.at ?? ''),
         empty: page.isPending ? (
           <View className="flex-1 items-center justify-center">
             <Loader />
@@ -336,21 +453,12 @@ export default function VenueChatScreen() {
           prepare={prepareVenueMessage}
           blocked={!identity}
           maxLength={VENUE_CHAT.maxLength}
-          sending={send.isPending}
-          // What was typed stays when nothing was sent (the identity changed elsewhere).
-          onSend={(body, clear) =>
-            send.mutate({ text: body, replyTo: reply.target?.id }, { onSuccess: clear })
-          }
+          onSend={submit}
           replyTo={reply.target?.quote}
           onCancelReply={reply.clear}
           above={
             <View className="gap-1.5">
               {note ? <Banner tone="info" body={note} testID="venue-chat-note" /> : null}
-              {send.isError ? (
-                <Text variant="fine" tone="danger" accessibilityLiveRegion="polite">
-                  {errorMessage(send.error)}
-                </Text>
-              ) : null}
               {identity ? (
                 <IdentityRow
                   face={ownFace}

@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (31 Ekim 2026, Grup 3)
+
+- Grup 3 sohbet aktarımı: P1 #309, P2+P3 #311, P4 #312 main'de; P5 sunucusu (#310, `clientId` ile tekrar gönderim) dev'de yayında. Kararlar: docs/decisions/grup3-mekan-balonlari.md.
+- P5 istemci bu PR'da; birleşme dev'de canlı tekrar gönderim testine bağlı.
+- P1–P6 gerçek cihaz kabul testleri (iOS/Android, açık/koyu, 390 ve 320 dp/1,3x) proje sahibinde, henüz yapılmadı.
+- deploy-dev: OTA, `app.config.ts`'teki yorum değişikliği yüzünden bekletiliyor; proje sahibi `force_ota` ile elle yayınlayacak.
+
 ## Devir notu (31 Ekim 2026)
 
 - Temizlik bitti (#291–#295, #297); saha testi yapıldı (proje sahibi, 31 Ekim), `docs/FIELD_TEST.md`'nin Faz 4 sürümü yazılmayacak.
