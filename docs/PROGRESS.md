@@ -3,7 +3,8 @@
 ## Devir notu (31 Ekim 2026, Grup 4)
 
 - Grup 4 (Masa kur, aura v47): **kod tamamlandı** (M1 #314, M2 #315, M3 bu PR); **cihaz kabulü bekliyor** (K1–K6, Android 12+ ve altı, açık/koyu, 390 ve 320 dp/1,3x); **ürün olarak tamamlanma** son toplu kabul testinden sonra. Kararlar: docs/decisions/grup4-masa-kur.md.
-- Native değişiklik yok, yayın OTA. Sıradaki: Grup 5 (Alt menü, aura v48) planı.
+- Native değişiklik yok, yayın OTA.
+- Grup 5 (Alt menü ve geçişler, aura v48): **kod uyumlu** (raporun dokuz referans değeri kodla aynı; çubuk 64 dp, eski panolardaki 70 dp referans değil; koyu disk beyaz %94); yeni kod ve PR yok. **Cihaz kabulü bekliyor**: K1–K8 son toplu kabul aşamasında. Sıradaki: Grup 6 (Profil, aura v50) karşılaştırma ve plan.
 
 ## Devir notu (31 Ekim 2026, Grup 3)
 
