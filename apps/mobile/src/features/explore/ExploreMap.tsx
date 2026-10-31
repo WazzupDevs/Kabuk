@@ -17,23 +17,24 @@ import {
 } from '@shared/exploreMap.ts';
 import { router } from 'expo-router';
 import { describeEventTime } from '@shared/explore.ts';
-import { useMemo, useRef, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { type ReactNode, useMemo, useRef, useState } from 'react';
+import { View } from 'react-native';
 
-import { AppIcon } from '@/components/AppIcon';
-import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
+import { CapIcon } from '@/aura/CapIcon';
+import { Btn, Li, Live, RowList, T, Tag, useKit } from '@/aura/kit';
+import { VenueThumb } from '@/aura/VenueThumb';
 import { TYPE_PIN_IMAGES } from '@/components/Glyph';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
+import { KIT, VENUE_THUMB } from '@/theme/auraKit';
+import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, MAP_FONTS, MAP_PIN, OPACITY, SPACING } from '@/theme/tokens';
+import { MAP_FONTS, MAP_PIN, SPACING } from '@/theme/tokens';
 import { venueType } from '@/lib/venueType';
 
 import { useMapStyle } from './mapStyle';
 import type { ExploreVenue } from './useExploreVenues';
-import { BucketBadge, EventTag } from './VenueTags';
 
 // OpenFreeMap by default: no API key in the app and no per-load cost (DECISIONS: map library). The
 // dark theme draws a dark map (v46 §8, K-65), OpenFreeMap's own dark style; both repainted in
@@ -424,72 +425,121 @@ export function ExploreMap({
   );
 }
 
-// The selected venue, above the floating tab bar. Existing components for now; the design
-// session replaces the look.
-function VenueCard({ venue, bottom }: { venue: ExploreVenue; bottom: number }) {
+// The map's card (aura v51): an opaque page surface, as the sheets have (the map's GL surface
+// cannot be blurred), 12 above the tab bar.
+function MapCard({
+  bottom,
+  testID,
+  children,
+}: {
+  bottom: number;
+  testID: string;
+  children: ReactNode;
+}) {
+  const { c } = useKit();
   return (
-    <View className="absolute inset-x-0" style={{ bottom, paddingHorizontal: SPACING[4] }}>
-      <Card testID="explore-map-card">
-        <Text variant="title">{venue.name}</Text>
-        <View className="mt-2 flex-row flex-wrap gap-1.5">
-          <BucketBadge bucket={venue.bucket} />
-          {venue.event ? <EventTag event={venue.event} /> : null}
-        </View>
-        <View className="mt-3">
-          <Button
-            label={tr.explore.goToVenue}
-            icon="arrow-forward"
-            testID="explore-map-go"
-            onPress={() =>
-              router.push({ pathname: '/explore/[venueId]', params: { venueId: venue.id } })
-            }
-          />
-        </View>
-      </Card>
+    <View
+      pointerEvents="box-none"
+      style={{
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        bottom: bottom + SPACING[3],
+        paddingHorizontal: SPACING[4],
+      }}
+    >
+      <View
+        testID={testID}
+        style={{
+          ...gradientStyle(c.sheet),
+          backgroundColor: c.sheetBase,
+          borderRadius: KIT.size.glassRadius,
+          borderWidth: KIT.size.edge,
+          borderColor: c.glassEdge,
+          boxShadow: c.glassShadow,
+          padding: KIT.size.pad,
+          gap: SPACING[3],
+        }}
+      >
+        {children}
+      </View>
     </View>
+  );
+}
+
+// A venue's live tag and its event, as the list shows the live one (Keşfet's row).
+function VenueTags({ venue }: { venue: ExploreVenue }) {
+  const now = useNow(60_000);
+  const calm = venue.bucket === 'calm';
+  const when = venue.event
+    ? describeEventTime(venue.event.startsAt, venue.event.endsAt, now)
+    : null;
+  return (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: SPACING[2] }}>
+      {calm ? (
+        <T v="fineLg">{tr.explore.buckets[venue.bucket]}</T>
+      ) : (
+        <Live label={tr.explore.buckets[venue.bucket]} color={KIT.pink} ring={KIT.pinkRing} />
+      )}
+      {venue.event && when ? (
+        <Tag
+          tone="amber"
+          label={tr.explore.eventTag(tr.explore.eventTime(when), venue.event.title)}
+        />
+      ) : null}
+    </View>
+  );
+}
+
+function openVenue(id: string) {
+  router.push({ pathname: '/explore/[venueId]', params: { venueId: id } });
+}
+
+// The selected venue, above the floating tab bar.
+function VenueCard({ venue, bottom }: { venue: ExploreVenue; bottom: number }) {
+  const type = venueType(venue);
+  return (
+    <MapCard bottom={bottom} testID="explore-map-card">
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.liGap }}>
+        <VenueThumb kind={type} size={VENUE_THUMB.size} />
+        <View style={{ flex: 1, gap: SPACING[0.5] }}>
+          <T v="title">{venue.name}</T>
+          <T v="fineLg">{tr.explore.venueSub(tr.explore.typeLabel[type], venue.district)}</T>
+        </View>
+      </View>
+      <VenueTags venue={venue} />
+      <Btn
+        label={tr.explore.goToVenue}
+        icon="forward"
+        block
+        testID="explore-map-go"
+        onPress={() => openVenue(venue.id)}
+      />
+    </MapCard>
   );
 }
 
 // A stack's venues (one address, one disc on the map): each a row to its page.
 function StackCard({ venues, bottom }: { venues: readonly ExploreVenue[]; bottom: number }) {
-  const { colors } = useTheme();
+  const { c } = useKit();
   return (
-    <View className="absolute inset-x-0" style={{ bottom, paddingHorizontal: SPACING[4] }}>
-      <Card testID="explore-map-stack">
-        <Text variant="title">{tr.explore.stackTitle(venues.length)}</Text>
-        <View className="mt-2">
-          {venues.map((venue) => (
-            <Pressable
-              key={venue.id}
-              accessibilityRole="button"
-              accessibilityLabel={venue.name}
-              onPress={() =>
-                router.push({ pathname: '/explore/[venueId]', params: { venueId: venue.id } })
-              }
-            >
-              {({ pressed }) => (
-                <View
-                  className="flex-row items-center"
-                  style={{
-                    gap: SPACING[3],
-                    minHeight: SPACING[12],
-                    opacity: pressed ? OPACITY.pressed : 1,
-                  }}
-                >
-                  <View className="flex-1" style={{ gap: SPACING[1] }}>
-                    <Text variant="label">{venue.name}</Text>
-                    <View className="flex-row flex-wrap gap-1.5">
-                      <BucketBadge bucket={venue.bucket} />
-                      {venue.event ? <EventTag event={venue.event} /> : null}
-                    </View>
-                  </View>
-                  <AppIcon name="chevron-forward" size={ICON.md} color={colors.muted} />
-                </View>
-              )}
-            </Pressable>
-          ))}
-        </View>
-      </Card>
-    </View>
+    <MapCard bottom={bottom} testID="explore-map-stack">
+      <T v="sec">{tr.explore.stackTitle(venues.length)}</T>
+      <RowList inset={KIT.size.liGap + VENUE_THUMB.size}>
+        {venues.map((venue) => {
+          const type = venueType(venue);
+          return (
+            <Li key={venue.id} accessibilityLabel={venue.name} onPress={() => openVenue(venue.id)}>
+              <VenueThumb kind={type} size={VENUE_THUMB.size} />
+              <View style={{ flex: 1, gap: SPACING[0.5] }}>
+                <T v="sec">{venue.name}</T>
+                <T v="fineLg">{tr.explore.venueSub(tr.explore.typeLabel[type], venue.district)}</T>
+              </View>
+              <CapIcon name="forward" color={c.muted} />
+            </Li>
+          );
+        })}
+      </RowList>
+    </MapCard>
   );
 }
