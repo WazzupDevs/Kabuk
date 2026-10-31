@@ -2,10 +2,10 @@ import { Children, type ReactNode } from 'react';
 import { Image, type ImageSourcePropType, Pressable, View } from 'react-native';
 
 import { FrostIn } from '@/aura/FrostIn';
+import { Tag } from '@/aura/kit';
 import { usePressScale } from '@/components/motion';
-import { Tag } from '@/components/Tag';
 import { tr } from '@/i18n/tr';
-import { AURA } from '@/theme/aura';
+import { KIT } from '@/theme/auraKit';
 import { SPACING } from '@/theme/tokens';
 import { useLabOff } from '@/lib/drawLab';
 import { boxShadowParts } from '@/components/NativeShadow';
@@ -29,8 +29,8 @@ export const GAME_CARDS = [
 export type GameCardId = (typeof GAME_CARDS)[number]['id'];
 export type GameCategory = keyof typeof tr.table.gameCategories;
 
-// The frost over a card while it arrives: the card's 22 corner at its width on a 390 wide phone.
-const CARD_CORNER = 0.13;
+// The frost over a card while it arrives: the card's 24 corner at its width on a 390 wide phone.
+const CARD_CORNER = 0.14;
 
 export function GameCard({
   id,
@@ -54,9 +54,8 @@ export function GameCard({
 }) {
   const pressScale = usePressScale();
   const text = tr.table.gameCards[id];
-  const look = AURA.gameCards[id];
   // The poster clips its picture, so its native shadow (NativeShadow.tsx) sits on a box around it.
-  const shadow = boxShadowParts(useLabOff('golge'), look.shadow, GAME_CARD.radius);
+  const shadow = boxShadowParts(useLabOff('golge'), KIT.gameCardShadow, GAME_CARD.radius);
   return (
     <Pressable
       testID={testID}
@@ -68,7 +67,8 @@ export function GameCard({
     >
       {({ pressed }) => (
         // The poster fills the card (its name is in the drawing; the owner's call, 29 Ekim); only
-        // the corner tag lies over it.
+        // the corner tag lies over it, dark glass (docs/design/aura → Masa), white with the
+        // person's own vote.
         <View
           style={[
             { borderRadius: GAME_CARD.radius, opacity: dim ? DIMMED : 1 },
@@ -91,8 +91,8 @@ export function GameCard({
               style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%' }}
               accessible={false}
             />
-            <View style={{ position: 'absolute', left: GAME_CARD.inset, top: GAME_CARD.inset }}>
-              <Tag variant={lit ? 'light' : 'glass'} label={tag} />
+            <View style={{ position: 'absolute', left: GAME_CARD.tagX, top: GAME_CARD.tagY }}>
+              <Tag tone={lit ? 'artLit' : 'art'} label={tag} />
             </View>
           </View>
         </View>
@@ -103,9 +103,14 @@ export function GameCard({
 
 const DIMMED = 0.55;
 
-// The poster's 3 : 2 (480 × 320), its corner and the tag's inset.
+// The poster's 3 : 2 (480 × 320; 112 high on a 390 wide phone, as the board), its corner and the
+// tag's place.
 const POSTER_RATIO = 1.5;
-const GAME_CARD = { radius: 22, inset: 8 } as const;
+const GAME_CARD = {
+  radius: KIT.size.gameCardRadius,
+  tagX: KIT.size.gameTagX,
+  tagY: KIT.size.gameTagY,
+} as const;
 
 // Two cards a row, 12 apart (the file's grid).
 export function PosterGrid({ children }: { children: ReactNode }) {

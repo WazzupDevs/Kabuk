@@ -65,6 +65,7 @@ export function VenueHead({
             )
           ) : null}
           <Round
+            big
             icon="more"
             label={tr.venue.more}
             onPress={() => setMenu(true)}
@@ -123,32 +124,32 @@ export function VenueHead({
   );
 }
 
-// The canvas's head row and its spot tag.
-const HEAD_HEIGHT = 44;
-const TAG_HEIGHT = KIT.size.round;
+// The canvas's head row (its 48 round) and the spot tag as tall.
+const HEAD_HEIGHT = KIT.size.roundLg;
+const TAG_HEIGHT = KIT.size.roundLg;
 const PRESSED = 0.7;
 // The note that the one change is spent stays this long.
 const USED_NOTE_MS = 2600;
 
-// The app's written logo (src/components/Wordmark.tsx), the owner's choice over the board's mark
-// and word (28 Ekim).
+// The app's written logo (src/components/Wordmark.tsx: "ska" and the two capsules), the owner's
+// choice over the board's own drawing of it (28 Ekim); as tall as the board's, 38.
 export function WordmarkRow({ small }: { small?: boolean } = {}) {
   return <Wordmark height={small ? WORDMARK_SMALL : WORDMARK_HEIGHT} />;
 }
-const WORDMARK_HEIGHT = 30;
+const WORDMARK_HEIGHT = 38;
 const WORDMARK_SMALL = 26;
 
-// The venue's name and "Mekandasın" with its live dot.
+// The venue's name (18, on two lines when long) and "Mekandasın" (15) with its live dot.
 export function VenueNameRow({ name }: { name: string }) {
   return (
     <View
       className="flex-row items-center justify-between"
       style={{ gap: SPACING[3], paddingHorizontal: SPACING[0.5] }}
     >
-      <T v="h3" accessibilityRole="header" testID="venue-name" style={{ flexShrink: 1 }}>
+      <T v="sec" accessibilityRole="header" testID="venue-name" style={{ flexShrink: 1 }}>
         {name}
       </T>
-      <Live label={tr.venue.here} />
+      <Live large label={tr.venue.here} />
     </View>
   );
 }

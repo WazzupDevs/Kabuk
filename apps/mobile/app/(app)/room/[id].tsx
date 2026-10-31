@@ -3,7 +3,7 @@ import { tableGameAvailability } from '@shared/gameFrame.ts';
 import { seatsAnonymously } from '@shared/gender.ts';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { type ReactNode, useEffect, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, type IconName } from '@/components/Button';
@@ -43,20 +43,20 @@ import { roomsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
 import { AURA } from '@/theme/aura';
-import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { KIT } from '@/theme/auraKit';
 import { SPACING } from '@/theme/tokens';
 import { AuraBackground } from '@/aura/AuraBackground';
 import { Btn, Glass, Round, T } from '@/aura/kit';
 
-// The table (v46 "masa"; docs/SPEC_V4.md §4.E, §4.F): the top line (back, the table's icon and name
-// with "N kişi", which open Masadakiler; the owner's "Bitir", a participant's "Ayrıl"), the owner's
-// bar ("Lobiye aç" or "Lobiden çek", "Davet et"), then Oyun Seç and Masa Sohbeti. Until a game's
-// step (4.6) every poster is "Yakında". The table's end is Masa bitti; a participant who leaves sees
-// "Masadan ayrıldın".
+// The table (docs/design/aura → Masa; docs/SPEC_V4.md §4.E, §4.F): the bar (back; the chat, the
+// owner's "Davet et", Masadakiler, the owner's "Bitir" or a participant's "Ayrıl"), the table's card
+// (its people, name, headcount and lobby state, the owner's "Lobiye aç" or "Lobiden çek"), then the
+// games. The table's end is Masa bitti; a participant who leaves sees "Masadan ayrıldın".
 export default function TableScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { scheme } = useTheme();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   // The head stays put over the games and nothing in it folds (the owner's call, 29 Ekim): the
   // games start under its height and scroll under it.
   const [headHeight, setHeadHeight] = useState(0);
@@ -228,9 +228,11 @@ export default function TableScreen() {
   const unread = unreadCount(messages, seenAt, sessionId);
 
   const endInk = scheme === 'dark' ? KIT.endInkDark : KIT.endInk;
+  // The bar's rounds: 48, 44 on a narrow phone (five of them and "Bitir" in 280).
+  const barSide = width < NARROW_PHONE ? KIT.size.round : KIT.size.roundLg;
   // The bar (docs/design/aura → Masa): back at the left; at the right the chat with its unread
-  // count (its own screen, the owner's call, 28 Ekim), the owner's "Davet et" and "Bitir", a
-  // participant's "Ayrıl".
+  // count (its own screen, the owner's call, 28 Ekim), the owner's "Davet et", Masadakiler and the
+  // owner's "Bitir", a participant's "Ayrıl".
   const bar = (
     <View
       testID="table-top"
@@ -243,12 +245,14 @@ export default function TableScreen() {
       }}
     >
       <Round
+        side={barSide}
         icon="back"
         label={tr.table.back}
         onPress={() => (router.canGoBack() ? router.back() : router.replace('/venue'))}
       />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.chipsGap }}>
         <Round
+          side={barSide}
           icon="chat"
           label={tr.table.chatOpen(unread)}
           badge={unread}
@@ -257,27 +261,22 @@ export default function TableScreen() {
         />
         {owner ? (
           <Round
+            side={barSide}
             icon="invite"
             label={tr.venue.invite}
             testID="table-invite"
             onPress={() => setSheet('invite')}
           />
         ) : null}
-        {/* The owner's lobby button, round, in the bar (the owner's call, 29 Ekim): lit while the
-            table is in the lobby, a press takes it out; dark, a press opens "Lobiye aç". */}
-        {owner ? (
-          <Round
-            icon="list"
-            primary={inLobby}
-            label={inLobby ? tr.venue.withdraw : tr.venue.openLobby}
-            testID={inLobby ? 'table-withdraw' : 'table-lobby'}
-            loading={withdraw.isPending}
-            onPress={() => (inLobby ? withdraw.mutate() : setSheet('lobby'))}
-          />
-        ) : null}
+        <Round
+          side={barSide}
+          icon="list"
+          label={tr.table.peopleTitle}
+          testID="table-people-open"
+          onPress={() => setSheet('people')}
+        />
         <Btn
-          sm
-          bar
+          bar={barSide}
           variant="glassy"
           tint={endInk}
           testID={owner ? 'table-end-open' : 'table-leave-open'}
@@ -288,10 +287,11 @@ export default function TableScreen() {
     </View>
   );
 
-  // The table's name with its people and lobby state, under the faces (the owner's call, 29 Ekim:
-  // no "Masadakiler", the faces open it).
+  // The table's name with its people and lobby state, under the faces; the owner's lobby button
+  // under them (it left the bar for Masadakiler, docs/decisions/aura-31.md): "Lobiye aç" opens its
+  // sheet, "Lobiden çek" takes the table out.
   const title = (
-    <View style={{ alignItems: 'center' }}>
+    <View style={{ alignItems: 'center', gap: PANEL_GAP }}>
       {/* The owner changes the table's picture and name from its name (the picture left the
           scene, the owner's call, 29 Ekim). */}
       <Pressable
@@ -301,16 +301,28 @@ export default function TableScreen() {
         disabled={!owner}
         onPress={() => setSheet('icon')}
       >
-        <T v="title" center style={KIT_TYPE.tableTitle} testID="table-title">
+        <T v="display" center style={{ marginTop: NAME_TOP }} testID="table-title">
           {r.name ?? ''}
         </T>
       </Pressable>
-      <T v="fine" center>
+      <T v="fineLg" center>
         {tr.table.status(
           tr.venue.people(r.phones),
           inLobby ? tr.venue.lobbyOpen : tr.venue.lobbyOff,
         )}
       </T>
+      {owner ? (
+        <Btn
+          sm
+          variant={inLobby ? 'glassy' : 'primary'}
+          icon={inLobby ? 'close' : undefined}
+          testID={inLobby ? 'table-withdraw' : 'table-lobby'}
+          label={inLobby ? tr.venue.withdraw : tr.venue.openLobby}
+          loading={withdraw.isPending}
+          onPress={() => (inLobby ? withdraw.mutate() : setSheet('lobby'))}
+          style={{ alignSelf: 'center', marginTop: LOBBY_TOP }}
+        />
+      ) : null}
     </View>
   );
 
@@ -456,9 +468,9 @@ export default function TableScreen() {
         style={{ flex: 1, opacity: headHeight > 0 ? 1 : 0 }}
         contentContainerStyle={{
           paddingHorizontal: KIT.size.side,
-          paddingTop: headHeight + KIT.size.rowGap,
+          paddingTop: headHeight + KIT.size.venueGap,
           paddingBottom: insets.bottom + SPACING[8],
-          gap: KIT.size.rowGap,
+          gap: KIT.size.venueGap,
         }}
         showsVerticalScrollIndicator={false}
       >
@@ -466,9 +478,9 @@ export default function TableScreen() {
           <IncomingRequest roomId={id} ownerSessionId={sessionId} phones={r.phones} />
         ) : null}
         {r.phones === 1 ? (
-          <Glass pad="pad" testID="table-solo" style={{ gap: SOLO_GAP }}>
-            <T v="h3">{tr.table.soloTitle}</T>
-            <T v="fine">{tr.table.soloBody}</T>
+          <Glass pad="lg" testID="table-solo" style={{ gap: SOLO_GAP }}>
+            <T v="secLg">{tr.table.soloTitle}</T>
+            <T v="note">{tr.table.soloBody}</T>
           </Glass>
         ) : null}
         {owner ? <TestBots roomId={id} phones={r.phones} /> : null}
@@ -510,7 +522,13 @@ export default function TableScreen() {
 
 // The bar sits this far under the status bar (the board: 60 from the top).
 const BAR_TOP = 16;
-const SOLO_GAP = 4;
+const SOLO_GAP = 6;
+// Under 360 wide the bar's rounds are 44.
+const NARROW_PHONE = 360;
+// The card's lines: 4 apart, the name 6 further, the lobby button under them.
+const PANEL_GAP = 4;
+const NAME_TOP = 6;
+const LOBBY_TOP = 8;
 
 // "Masayı bitir" and "Masadan ayrıl" (v46 data-csheet): what it does, the button and "Vazgeç".
 function ConfirmSheet({

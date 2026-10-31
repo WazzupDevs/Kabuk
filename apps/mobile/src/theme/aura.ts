@@ -145,7 +145,7 @@ export const AURA = {
   // The hero card's crew (aura.css, Mekan): three buddies at the right, the far one smaller and
   // higher. Heights in px on a 196 high scene; `right` and `bottom` from its corner.
   crew: [
-    { look: 'c:nane e:koyu h:anten', height: 84, right: 64, bottom: 70, phase: 400 },
+    { look: 'c:nane e:koyu h:anten', height: 84, right: 64, bottom: 76, phase: 400 },
     { look: 'c:pembe e:koyu h:kulaklik', height: 136, right: 86, bottom: -14, phase: 1100 },
     { look: 'c:mor e:klasik f:maske', height: 121, right: -12, bottom: -6, phase: 1900 },
   ],
@@ -259,52 +259,6 @@ export const AURA = {
   say: {
     minHeight: 168,
     buddy: 126,
-  },
-  // Each game's card (docs/design/aura → Masa: Kinshi violet, Krot pink; the others alike): its
-  // ground, the glow at its foot, its shadow, its line's colour and its buddy.
-  gameCards: {
-    kinshi: {
-      ground: 'radial-gradient(120% 90% at 20% 10%, #6A50E6 0%, #2A2068 55%, #120F2C 100%)',
-      glow: 'rgba(255, 181, 71, 0.35)',
-      shadow: '0px 18px 36px rgba(33, 26, 82, 0.30)',
-      sub: '#DCD6FF',
-      buddy: 'c:mor e:klasik f:maske',
-    },
-    krot: {
-      ground: 'radial-gradient(120% 90% at 80% 10%, #E8467F 0%, #5A1A45 55%, #1A0C20 100%)',
-      glow: 'rgba(255, 255, 255, 0.18)',
-      shadow: '0px 18px 36px rgba(90, 26, 69, 0.28)',
-      sub: '#FFD6E5',
-      buddy: 'c:pembe e:koyu h:kulaklik',
-    },
-    vampir: {
-      ground: 'radial-gradient(120% 90% at 20% 10%, #D2453A 0%, #5A1414 55%, #1C0708 100%)',
-      glow: 'rgba(255, 181, 71, 0.30)',
-      shadow: '0px 18px 36px rgba(90, 20, 20, 0.28)',
-      sub: '#FFD3CC',
-      buddy: 'c:hardal e:klasik h:sihirbaz',
-    },
-    signum: {
-      ground: 'radial-gradient(120% 90% at 80% 10%, #3E8BD6 0%, #15305E 55%, #08132A 100%)',
-      glow: 'rgba(255, 255, 255, 0.18)',
-      shadow: '0px 18px 36px rgba(21, 48, 94, 0.28)',
-      sub: '#D3E6FF',
-      buddy: 'c:gok e:klasik f:yuvarlak',
-    },
-    sprengja: {
-      ground: 'radial-gradient(120% 90% at 20% 10%, #F09A1F 0%, #6A3810 55%, #1E1206 100%)',
-      glow: 'rgba(255, 79, 139, 0.30)',
-      shadow: '0px 18px 36px rgba(106, 56, 16, 0.28)',
-      sub: '#FFE2B8',
-      buddy: 'c:pembe e:klasik h:korsan f:gozbandi',
-    },
-    kaupholl: {
-      ground: 'radial-gradient(120% 90% at 80% 10%, #2FA866 0%, #0F4A2C 55%, #061A10 100%)',
-      glow: 'rgba(255, 181, 71, 0.30)',
-      shadow: '0px 18px 36px rgba(15, 74, 44, 0.28)',
-      sub: '#CFF2DE',
-      buddy: 'c:turkuaz e:klasik h:kovboy',
-    },
   },
   // Masa bitti's confetti: capsules in the mark's colours, in the board's 390 frame (x, y, turn).
   confetti: [

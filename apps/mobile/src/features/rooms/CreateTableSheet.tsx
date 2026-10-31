@@ -5,13 +5,12 @@ import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Image, Pressable, View } from 'react-native';
 
-import { Av, Btn, Chip, Glass, T, Tag } from '@/aura/kit';
+import { Av, Btn, Chip, Glass, Switch, T, Tag } from '@/aura/kit';
 import { Gathering, SceneGround } from '@/aura/Scene';
 import { Chips } from '@/components/Chips';
 import { LookAvatar } from '@/components/LookAvatar';
 import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
-import { Toggle } from '@/components/Toggle';
 import { useProfile } from '@/features/account/useProfile';
 import { useOwnLook } from '@/features/profile/useOwnLook';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
@@ -47,10 +46,12 @@ type Props = {
   anonymous: boolean;
 };
 
-// "Masa kur" (v46 data-kur; docs/SPEC_V4.md §4.E): the table's icon (one of the free scenes,
-// changed with the picker), whether it goes into the lobby (with the intent and game tag then), and
-// the name the person sits with. The table is called by its icon (K-76); the server checks the
-// icon, and an icon taken meanwhile is swapped for a free one. Then the table opens.
+// "Masa kur" (docs/design/aura → MasaKur; docs/SPEC_V4.md §4.E): the sheet from 96 under the
+// screen's top, the table's icon (one of the free scenes, changed with the picker), whether it goes
+// into the lobby (with the intent and game tag then: the board draws the switch off, where there
+// are none; docs/decisions/aura-31.md), the name the person sits with and "Masayı kur" at the foot.
+// The table is called by its icon (K-76); the server checks the icon, and an icon taken meanwhile
+// is swapped for a free one. Then the table opens.
 export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Props) {
   const queryClient = useQueryClient();
   const profile = useProfile();
@@ -103,7 +104,7 @@ export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Pro
   const picture = icon ? TABLE_ICON_IMAGES[icon] : undefined;
 
   return (
-    <Sheet visible onClose={onClose} title={tr.createTable.title}>
+    <Sheet visible onClose={onClose} title={tr.createTable.title} titleLarge top={SHEET_TOP}>
       {/* docs/design/aura → MasaKur: the chosen table as a scene, its name on a glass tag. */}
       <View
         onLayout={(e) => setSceneWidth(e.nativeEvent.layout.width)}
@@ -148,7 +149,14 @@ export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Pro
         </View>
       </View>
 
-      <View style={{ flexDirection: 'row', gap: QUICK_GAP }} accessibilityRole="radiogroup">
+      <View
+        style={{
+          flexDirection: 'row',
+          gap: KIT.size.iconTileGap,
+          paddingHorizontal: KIT.size.secPadX,
+        }}
+        accessibilityRole="radiogroup"
+      >
         {quick.map((id) => {
           const on = id === icon;
           const src = TABLE_ICON_IMAGES[id];
@@ -162,17 +170,17 @@ export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Pro
               style={{
                 flex: 1,
                 aspectRatio: 1,
-                borderRadius: KIT.size.thumbRadius + OUTLINE,
+                borderRadius: KIT.size.iconTileRadius + 2 * OUTLINE,
                 borderWidth: OUTLINE,
                 borderColor: on ? KIT.primary : 'transparent',
-                padding: OUTLINE - 1,
+                padding: OUTLINE,
               }}
             >
               {src ? (
                 <Image
                   source={src}
                   fadeDuration={0}
-                  style={{ width: '100%', height: '100%', borderRadius: KIT.size.thumbRadius }}
+                  style={{ width: '100%', height: '100%', borderRadius: KIT.size.iconTileRadius }}
                 />
               ) : null}
             </Pressable>
@@ -188,7 +196,7 @@ export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Pro
         hitSlop={KIT.size.chipsGap}
         style={{ alignSelf: 'flex-start' }}
       >
-        <T v="fine" strong color={KIT.primary}>
+        <T v="body" strong color={KIT.primary}>
           {picking ? tr.createTable.iconDone : tr.createTable.iconChange}
         </T>
       </Pressable>
@@ -203,15 +211,35 @@ export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Pro
         />
       ) : null}
 
-      <Glass sm style={{ paddingVertical: KIT.size.chipsGap, paddingHorizontal: KIT.size.rowGap }}>
-        <Toggle
-          testID="table-lobby"
-          label={tr.createTable.lobby}
-          hint={tr.createTable.lobbyHint}
-          value={lobby}
-          onChange={setLobby}
-        />
-      </Glass>
+      {/* "Lobide görünsün": the whole card is the switch. */}
+      <Pressable
+        testID="table-lobby"
+        accessibilityRole="switch"
+        accessibilityLabel={tr.createTable.lobby}
+        accessibilityHint={tr.createTable.lobbyHint}
+        accessibilityState={{ checked: lobby }}
+        onPress={() => {
+          haptic('selection');
+          setLobby((v) => !v);
+        }}
+      >
+        <Glass
+          sm
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: LOBBY_GAP,
+            paddingVertical: LOBBY_PAD_Y,
+            paddingHorizontal: LOBBY_PAD_X,
+          }}
+        >
+          <View style={{ flex: 1, gap: LOBBY_TEXT_GAP }}>
+            <T v="sec">{tr.createTable.lobby}</T>
+            <T v="note">{tr.createTable.lobbyHint}</T>
+          </View>
+          <Switch on={lobby} />
+        </Glass>
+      </Pressable>
 
       {lobby ? (
         <>
@@ -253,8 +281,8 @@ export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Pro
           flexDirection: 'row',
           alignItems: 'center',
           gap: KIT.size.rowGap,
-          paddingVertical: KIT.size.chipsGap + 2,
-          paddingHorizontal: KIT.size.rowGap,
+          paddingVertical: IDENTITY_PAD_Y,
+          paddingHorizontal: IDENTITY_PAD_X,
         }}
       >
         {anonymous && look ? (
@@ -264,7 +292,7 @@ export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Pro
         ) : (
           <Av size="sm" name={name} photoUrl={anonymous ? null : photo.url} />
         )}
-        <T v="fine" style={{ flex: 1 }}>
+        <T v="fineLg" ink style={{ flex: 1 }}>
           {tr.createTable.youAre(name)}
         </T>
       </Glass>
@@ -281,8 +309,11 @@ export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Pro
           {errorMessage(create.error)}
         </T>
       ) : null}
+      {/* "Masayı kur" at the sheet's foot. */}
+      <View style={{ flexGrow: 1 }} />
       <Btn
         block
+        tall
         icon="plus"
         testID="table-create"
         label={tr.createTable.confirm}
@@ -294,9 +325,16 @@ export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Pro
 }
 
 const QUICK = 5;
-const QUICK_GAP = 10;
 const OUTLINE = 3;
-const NAME_TAG = 30;
+const NAME_TAG = 32;
+const SHEET_TOP = 96;
+// The lobby switch's card (14 / 16 in, 14 between) and the identity's (10 / 14).
+const LOBBY_PAD_Y = 14;
+const LOBBY_PAD_X = 16;
+const LOBBY_GAP = 14;
+const LOBBY_TEXT_GAP = 2;
+const IDENTITY_PAD_Y = 10;
+const IDENTITY_PAD_X = 14;
 const CHIPS = { flexDirection: 'row' as const, flexWrap: 'wrap' as const, gap: KIT.size.chipsGap };
 
 export function IconPicker({

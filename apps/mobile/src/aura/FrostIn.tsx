@@ -26,7 +26,8 @@ export function FrostIn({
   const [frost] = useState(() => new Animated.Value(reduce ? 0 : 1));
   useEffect(() => {
     if (reduce) return undefined;
-    const delay = index * MOTION.stagger.row;
+    // Masa's game cards, 70 ms apart (aktarim-31: "70 ms arayla").
+    const delay = index * MOTION.stagger.part;
     const anim = Animated.parallel([
       Animated.spring(pop, { ...springConfig(MOTION.springs.pop), toValue: 1, delay }),
       Animated.timing(frost, {

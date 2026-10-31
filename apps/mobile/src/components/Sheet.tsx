@@ -35,6 +35,11 @@ type Props = {
   centered?: boolean;
   // Buddies looking over the sheet's top edge (docs/design/aura → CheckIn, Bildirimler).
   peek?: PeekKind;
+  // The title larger (Masa kur: 24).
+  titleLarge?: boolean;
+  // The sheet reaches this far from the screen's top whatever its content (Masa kur: 96), which
+  // then fills it; a `flexGrow` spacer in it keeps the last button at its foot.
+  top?: number;
   children: ReactNode;
 };
 
@@ -49,6 +54,8 @@ export function Sheet({
   icon,
   centered,
   peek,
+  titleLarge,
+  top,
   children,
 }: Props) {
   const { colors, shape } = useTheme();
@@ -108,7 +115,7 @@ export function Sheet({
           // docs/design/aura (`.sheet`), down to the screen's foot as Telegram Android's sheets (the
           // owner's call, 30 Ekim). Pulled down, it closes like a tap outside (SheetCard).
           style={{
-            maxHeight: '90%',
+            ...(top !== undefined ? { height: height - top } : { maxHeight: '90%' }),
             transform: [
               {
                 translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [height, 0] }),
@@ -120,6 +127,7 @@ export function Sheet({
             onClose={onClose}
             bottomInset={insets.bottom}
             above={peek ? <Peek kind={peek} /> : null}
+            fill={top !== undefined}
           >
             <InSheet>
               <Quiet value>
@@ -138,7 +146,11 @@ export function Sheet({
                     </View>
                   ) : null}
                   {title ? (
-                    <T v="title" center={centered} accessibilityRole="header">
+                    <T
+                      v={titleLarge ? 'sheetTitleLg' : 'title'}
+                      center={centered}
+                      accessibilityRole="header"
+                    >
                       {title}
                       {titleNote ? <T v="fine">{`  ${titleNote}`}</T> : null}
                     </T>
@@ -148,6 +160,7 @@ export function Sheet({
                   style={{
                     marginTop: title || icon ? KIT.size.sheetGap : 0,
                     gap: KIT.size.rowGap,
+                    flexGrow: top !== undefined ? 1 : undefined,
                   }}
                 >
                   {children}

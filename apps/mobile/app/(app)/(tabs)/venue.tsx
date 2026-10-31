@@ -139,7 +139,7 @@ export default function VenueScreen() {
     <Screen
       edges={['top']}
       scrollRef={scroll}
-      gap={KIT.size.rowGap}
+      gap={KIT.size.venueGap}
       top={
         <VenueHead
           spot={spotName}
