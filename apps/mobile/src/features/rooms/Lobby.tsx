@@ -4,10 +4,11 @@ import { lobbyActions, requestGone, type TableState } from '@shared/tableCard.ts
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { type ReactNode, useEffect, useReducer, useState } from 'react';
-import { View } from 'react-native';
+import { useWindowDimensions, View } from 'react-native';
 
 import { Btn, Li, RowList, Sec, T, Tag, Thumb, useKit } from '@/aura/kit';
 import { Pips } from '@/aura/Pips';
+import { Reveal } from '@/aura/Reveal';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
 import { errorMessage } from '@/i18n/errors';
@@ -17,6 +18,7 @@ import { ApiError, roomsApi } from '@/lib/api';
 import { registerForPush } from '@/features/push/push';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useNowUntil } from '@/lib/useNow';
+import { MOTION } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
 import { SPACING } from '@/theme/tokens';
 
@@ -127,6 +129,13 @@ export function Lobby({
     if (unavailable && unavailable === askedRoom) track('join_unavailable', { as_member: false });
   }, [unavailable, askedRoom]);
 
+  // 320 dp or the largest text: a row's action goes under its words (docs/design/aura → Mekan ve
+  // lobi: 320 dp, en büyük yazı), so neither the name nor the button is cut.
+  const { width, fontScale } = useWindowDimensions();
+  const narrow = width / Math.min(fontScale, MAX_FONT_SCALE) < NARROW_ROW_DP;
+  // Loading and on an error neither section has a count, and "Süren masalar" nothing under it: the
+  // lobby is one read, its loader and its error show once, under "Açık masalar".
+  const read = !tables.isPending && !tables.isError;
   const others = (list: VenueTable[]) => list.filter((t) => t.roomId !== roomId);
   const open = others(tables.data?.open ?? []);
   const running = others(tables.data?.running ?? []);
@@ -163,7 +172,7 @@ export function Lobby({
 
   return (
     <View className="gap-3" testID="lobby">
-      <SectionHead title={tr.lobby.openTitle} count={open.length} />
+      <SectionHead title={tr.lobby.openTitle} count={read ? open.length : null} />
       {note ? <T v="fine">{note}</T> : null}
       {tables.isPending ? (
         <View className="items-center py-4" accessibilityLabel={tr.lobby.loading}>
@@ -184,31 +193,33 @@ export function Lobby({
               <SpotHeading spotId={group.spotId} spotName={group.spotName} mine={group.mine} />
             ) : null}
             <RowList>
-              {group.rooms.map((table) => {
+              {group.rooms.map((table, i) => {
                 const actions = lobbyActions(state, myPhones, table.phones);
                 const busy = request.isPending && request.variables?.table.roomId === table.roomId;
                 const waiting = waitingOn === table.roomId;
                 return (
-                  <LobbyRow
-                    key={table.roomId}
-                    table={table}
-                    note={rowNote(table)}
-                    action={
-                      actions.join && !needsPhoto && !waiting && accepted !== table.roomId ? (
-                        <Btn
-                          sm
-                          icon="forward"
-                          testID={`join-${table.name}`}
-                          label={tr.lobby.join}
-                          disabled={actions.full || waitingOn !== null}
-                          loading={busy}
-                          onPress={() => request.mutate({ table, asMember: false })}
-                        />
-                      ) : waiting ? (
-                        <WaitingSlot />
-                      ) : null
-                    }
-                  />
+                  <Reveal key={table.roomId} index={i} step={MOTION.stagger.row}>
+                    <LobbyRow
+                      table={table}
+                      narrow={narrow}
+                      note={rowNote(table)}
+                      action={
+                        actions.join && !needsPhoto && !waiting && accepted !== table.roomId ? (
+                          <Btn
+                            sm
+                            icon="forward"
+                            testID={`join-${table.name}`}
+                            label={tr.lobby.join}
+                            disabled={actions.full || waitingOn !== null}
+                            loading={busy}
+                            onPress={() => request.mutate({ table, asMember: false })}
+                          />
+                        ) : waiting ? (
+                          <WaitingSlot />
+                        ) : null
+                      }
+                    />
+                  </Reveal>
                 );
               })}
             </RowList>
@@ -216,43 +227,48 @@ export function Lobby({
         ))
       )}
 
-      <SectionHead title={tr.lobby.runningTitle} count={running.length} />
-      <T v="fine">
-        {state === 'none' && !needsPhoto ? tr.lobby.runningNote : tr.lobby.runningNoteShort}
-      </T>
+      <SectionHead title={tr.lobby.runningTitle} count={read ? running.length : null} />
+      {/* No running table, no note (the canvas's call, 31 Ekim). */}
+      {read && running.length > 0 ? (
+        <T v="fine">
+          {state === 'none' && !needsPhoto ? tr.lobby.runningNote : tr.lobby.runningNoteShort}
+        </T>
+      ) : null}
       {/* By spot as well, the person's own first (audit VEN-13): "Bu masadayım" to a table at
           another spot only met different_spot. */}
-      {groups(running).map((group) => (
+      {(read ? groups(running) : []).map((group) => (
         <View key={group.spotId ?? 'none'} className="gap-2.5">
           {venueHasSpots ? (
             <SpotHeading spotId={group.spotId} spotName={group.spotName} mine={group.mine} />
           ) : null}
           <RowList>
-            {group.rooms.map((table) => {
+            {group.rooms.map((table, i) => {
               const actions = lobbyActions(state, myPhones, table.phones);
               const busy = request.isPending && request.variables?.table.roomId === table.roomId;
               const waiting = waitingOn === table.roomId;
               return (
-                <LobbyRow
-                  key={table.roomId}
-                  table={table}
-                  note={rowNote(table)}
-                  action={
-                    actions.member && !needsPhoto && !waiting && accepted !== table.roomId ? (
-                      <Btn
-                        sm
-                        variant="glassy"
-                        testID={`here-${table.name}`}
-                        label={tr.lobby.here}
-                        disabled={waitingOn !== null}
-                        loading={busy}
-                        onPress={() => request.mutate({ table, asMember: true })}
-                      />
-                    ) : waiting ? (
-                      <WaitingSlot />
-                    ) : null
-                  }
-                />
+                <Reveal key={table.roomId} index={i} step={MOTION.stagger.row}>
+                  <LobbyRow
+                    table={table}
+                    narrow={narrow}
+                    note={rowNote(table)}
+                    action={
+                      actions.member && !needsPhoto && !waiting && accepted !== table.roomId ? (
+                        <Btn
+                          sm
+                          variant="glassy"
+                          testID={`here-${table.name}`}
+                          label={tr.lobby.here}
+                          disabled={waitingOn !== null}
+                          loading={busy}
+                          onPress={() => request.mutate({ table, asMember: true })}
+                        />
+                      ) : waiting ? (
+                        <WaitingSlot />
+                      ) : null
+                    }
+                  />
+                </Reveal>
               );
             })}
           </RowList>
@@ -268,31 +284,38 @@ export function Lobby({
   );
 }
 
-function SectionHead({ title, count }: { title: string; count: number }) {
-  return <Sec large title={title} note={tr.lobby.tables(count)} />;
+function SectionHead({ title, count }: { title: string; count: number | null }) {
+  return <Sec large title={title} note={count === null ? undefined : tr.lobby.tables(count)} />;
 }
+
+// Under this width (in dp at the text's size) a row's action goes under its words.
+const NARROW_ROW_DP = 360;
+const MAX_FONT_SCALE = 1.3;
 
 // A table in the lobby (docs/design/aura → Mekan: `.li`): its picture, name, headcount as pips and
 // the request's note or the tags; its action at the right. No person's name. A thin row of the one
-// list kind (RowList; the owner's call, 30 Ekim).
+// list kind (RowList; the owner's call, 30 Ekim). `narrow`: the action under the words, in line
+// with them; the tags wrap.
 function LobbyRow({
   table,
   note,
   action,
+  narrow,
 }: {
   table: VenueTable;
   note: string | null;
   action?: ReactNode;
+  narrow: boolean;
 }) {
   const intent = isIntent(table.intent) ? table.intent : null;
   return (
-    <Li testID={`lobby-row-${table.name}`}>
+    <Li testID={`lobby-row-${table.name}`} top={narrow}>
       <Thumb
         source={table.icon ? TABLE_ICON_IMAGES[table.icon] : undefined}
         size={KIT.size.av.row}
         radius={ROW_THUMB_RADIUS}
       />
-      <View style={{ flex: 1, gap: ROW_GAP }}>
+      <View style={{ flex: 1, gap: narrow ? ROW_GAP_NARROW : ROW_GAP }}>
         <T v="h3">{table.name}</T>
         <View
           style={{
@@ -314,12 +337,17 @@ function LobbyRow({
             {note}
           </T>
         ) : null}
+        {narrow && action ? (
+          <View style={{ paddingTop: ROW_ACTION_TOP, alignItems: 'flex-start' }}>{action}</View>
+        ) : null}
       </View>
-      {action}
+      {narrow ? null : action}
     </Li>
   );
 }
 const ROW_GAP = 3;
+const ROW_GAP_NARROW = 6;
+const ROW_ACTION_TOP = 4;
 const ROW_THUMB_RADIUS = 14;
 
 // The pending request in the action's place: the meeting capsules on a raised capsule.

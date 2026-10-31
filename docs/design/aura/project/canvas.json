@@ -183,6 +183,48 @@
       "w": 390,
       "x": 470,
       "y": 300
+    },
+    "MekanKaydir.dc.html": {
+      "h": 844,
+      "title": "Mekan ve lobi: kaydırılmış",
+      "w": 390,
+      "x": 0,
+      "y": 7904
+    },
+    "MekanKoyu.dc.html": {
+      "h": 844,
+      "title": "Mekan ve lobi: koyu",
+      "w": 390,
+      "x": 470,
+      "y": 7904
+    },
+    "MekanYukleniyor.dc.html": {
+      "h": 844,
+      "title": "Mekan ve lobi: yükleniyor",
+      "w": 390,
+      "x": 940,
+      "y": 7904
+    },
+    "MekanHata.dc.html": {
+      "h": 844,
+      "title": "Mekan ve lobi: hata",
+      "w": 390,
+      "x": 1410,
+      "y": 7904
+    },
+    "MekanDar.dc.html": {
+      "h": 844,
+      "title": "Mekan ve lobi: 320 dp, en büyük yazı",
+      "w": 320,
+      "x": 1880,
+      "y": 7904
+    },
+    "GaleriMekanSohbeti.dc.html": {
+      "h": 2900,
+      "title": "Galeri: Mekan sohbeti kartı",
+      "w": 880,
+      "x": 0,
+      "y": 9128
     }
   },
   "createdOnFiles": {
@@ -241,6 +283,38 @@
       "w": 240,
       "x": 0,
       "y": 6420
+    },
+    "rowG": {
+      "kind": "title1",
+      "maxW": 2200,
+      "text": "Mekan ve lobi: hâller",
+      "w": 240,
+      "x": 0,
+      "y": 7644
+    },
+    "rowH": {
+      "kind": "title1",
+      "maxW": 1840,
+      "text": "Galeri",
+      "w": 240,
+      "x": 0,
+      "y": 8868
+    },
+    "motionVenueChat": {
+      "x": 960,
+      "y": 9128,
+      "w": 560,
+      "text": "Hareket · Mekan sohbeti kartı (hareket.json dili; yeni efekt yok)\n\n1. Rozet gelir. Tetik: okunmamış 0 → n. Rozet scale 0.3 → 1 ve 6 px aşağıdan yükselir, pop yayı (260 / 17). Reduced Motion: anında görünür.\n2. Rozet sayısı değişir. Tetik: n → n+1. Eski rakam leave 120 ms solar, yeni rakam arrive 180 ms gelir; rozet yerinde kalır. Reduced Motion: rakam anında değişir.\n3. Rozet gider. Tetik: sohbet okunup Mekan'a dönülür. scale 1 → 0.3 ve opaklık 0, leave eğrisi 220 ms. Reduced Motion: anında kaybolur.\n4. Aktiflik noktası. Tetik: son 10 dakikada ilk mesaj / son mesajın 10. dakikası. \"şu an aktif\" dissolve ile girer (450 ms, arrive) ve çıkar (220 ms, leave). Nokta bugünkü gibi nabız atar. Reduced Motion: anında, nabızsız.\n5. Yeni mesaj satırı. Tetik: kart açıkken mesaj gelir. Üstteki satır dissolve ile çıkar (220 ms), alttaki yukarı kayar (swap, 300 ms), yeni satır alttan dissolve ile girer (450 ms, 70 ms sonra). Kart yüksekliği değişmez. Reduced Motion: satırlar anında yer değiştirir.\n6. Boş → ilk mesaj. Boş metni çıkar (220 ms), kart yüksekliği swap 300 ms ile uzar, satır dissolve ile girer. Reduced Motion: anında.\n7. Yükleniyor → içerik/hata. Yer tutucu 300 ms sonra görünür, en az 600 ms kalır (yükleyicinin bugünkü süreleri). Sonra yer tutucu çıkar (220 ms), içerik dissolve ile girer (450 ms). Yer tutucu durgundur. Reduced Motion: anında.\n8. Dokunuş. Kart basılıyken opaklık 0.8, bırakınca Mekan sohbeti açılır (bugünkü geçiş). Tekrar dene: press yayı.\n9. Uzun önizleme. Hareket yok. Satırın son 44 dp'si gerçek saydamlıkla kaybolur: renkli örtü değil, Android'in kendi yatay kenar solması; yalnızca taşan satırda, ölçümsüz. iOS'ta şimdilik \"…\". Reduced Motion: aynı.\n\nTitreşim yok (titreşim kararı açık).",
+      "size": "s",
+      "fill": "purple"
+    },
+    "motionLobby": {
+      "x": 960,
+      "y": 9888,
+      "w": 560,
+      "text": "Hareket · Lobi\n\nYeni hareket yok. Süren masalar satırları ilk yüklemede listRowMs 60 ms aralıkla dissolve ile gelir (bugünkü dil). Kaydırma native; alt sekme çubuğu sabit, içerik camın altından geçer. Reduced Motion: satırlar anında görünür.",
+      "size": "s",
+      "fill": "purple"
     }
   },
   "order": [
@@ -254,6 +328,11 @@
     "Aktiviteler.dc.html",
     "AktivitelerBos.dc.html",
     "Mekan.dc.html",
+    "MekanKaydir.dc.html",
+    "MekanKoyu.dc.html",
+    "MekanYukleniyor.dc.html",
+    "MekanHata.dc.html",
+    "MekanDar.dc.html",
     "MasaKur.dc.html",
     "Masa.dc.html",
     "MasaIstek.dc.html",
@@ -269,7 +348,8 @@
     "Krot.dc.html",
     "ProfilDuzenle.dc.html",
     "ProfilFoto.dc.html",
-    "Hareket.dc.html"
+    "Hareket.dc.html",
+    "GaleriMekanSohbeti.dc.html"
   ],
   "pages": [],
   "title": "skall yeni görünüm ön izleme"
