@@ -1,0 +1,45 @@
+# Live check of the venue chat's clientId (Grup 3, P5) against the hosted dev project
+# (scripts/dev-live/venue-chat-client-id.ts): the same clientId gives the same messageId, one row and
+# one broadcast; a send without a clientId (apps before P5) still works. Writes only test messages
+# of one dev test account, deletes them and leaves the venue. Never the production project: the
+# script refuses any URL but the dev project's.
+#
+# Runs only by hand, only on main (Actions → dev-live → Run workflow, branch main): the secrets are
+# read by main's reviewed code alone, never by a PR's. The `if` below is in this file, which a branch
+# can change; the guard that holds is the `dev-live` environment: GitHub → Settings → Environments →
+# dev-live, deployment branches "main" only, and its three secrets there (not repository secrets):
+# DEV_PUBLISHABLE_KEY (the dev project's publishable key), DEV_TEST_PHONE and DEV_TEST_OTP (a dev
+# test number from the dashboard and its code; one no phone is using). Set up once, at the
+# acceptance stage. They are never printed; the result is in the run's summary.
+name: dev-live
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dev-live
+  cancel-in-progress: false
+
+jobs:
+  venue-chat-client-id:
+    if: github.ref == 'refs/heads/main'
+    environment: dev-live
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Same clientId on the dev project
+        env:
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.DEV_PUBLISHABLE_KEY }}
+          TEST_PHONE: ${{ secrets.DEV_TEST_PHONE }}
+          TEST_OTP: ${{ secrets.DEV_TEST_OTP }}
+        run: node --experimental-strip-types scripts/dev-live/venue-chat-client-id.ts

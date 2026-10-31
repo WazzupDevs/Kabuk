@@ -1,5 +1,13 @@
 # İlerleme
 
+## Devir notu (31 Ekim 2026, Grup 3)
+
+- Grup 3 kodu main'de: P1 #309, P2+P3 #311, P4 #312, P5 sunucu #310, P5 istemci #313 (outbox, aynı `clientId` ile Tekrar dene, `mergeOutbox` sıralaması). Kararlar: docs/decisions/grup3-mekan-balonlari.md. Sıradaki: Grup 4 (Masa Kur), sonra 5, 6, 7; cihaz kabulü en sonda.
+- BEKLİYOR, dev canlı testi: `dev-live.yml` yalnızca main'den elle koşar; koşmadı; `dev-live` ortamı (yalnızca main) ve üç sırrı (`DEV_PUBLISHABLE_KEY`, `DEV_TEST_PHONE`, `DEV_TEST_OTP`) kabul aşamasında kurulacak. Yerel karşılığı `supabase/tests/venueChat.test.ts` ci'da yeşil.
+- BEKLİYOR, iki cihaz testi (development build + Metro): bekleyen mesaj varken gelen mesajın sırası, Gönderilemedi, Tekrar dene, Sil, en alta inme oku.
+- BEKLİYOR, P1–P6 gerçek cihaz kabulü (iOS/Android, açık/koyu, 390 ve 320 dp/1,3x): proje sahibinde, yapılmadı.
+- deploy-dev: OTA, `app.config.ts`'teki yorum değişikliği yüzünden bekletiliyordu; P1–P4 için elle preview OTA proje sahibince başlatıldı, yenisi başlatılmadı.
+
 ## Devir notu (31 Ekim 2026)
 
 - Temizlik bitti (#291–#295, #297); saha testi yapıldı (proje sahibi, 31 Ekim), `docs/FIELD_TEST.md`'nin Faz 4 sürümü yazılmayacak.

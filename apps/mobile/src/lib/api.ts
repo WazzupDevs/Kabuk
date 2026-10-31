@@ -425,13 +425,22 @@ export const venueChatApi = {
     invoke<VenueChatPageResponse>('venue-chat', { action: 'page', venueId }),
   // docs/SPEC_V4.md §4.D: a message goes with the check-in's identity; another one here is
   // identity_mismatch and nothing is written.
-  sendAs: (venueId: string, body: string, identity: VenueChatMode, replyTo?: string) =>
+  // clientId (Grup 3, P5): the app's id for this message; "Tekrar dene" sends it again, and the
+  // server takes the second for the first (the same messageId, nothing written twice).
+  sendAs: (
+    venueId: string,
+    body: string,
+    identity: VenueChatMode,
+    replyTo: string | undefined,
+    clientId: string,
+  ) =>
     invoke<VenueChatResponse>('venue-chat', {
       action: 'send',
       venueId,
       body,
       identity,
       ...(replyTo ? { replyTo } : {}),
+      clientId,
     }),
   remove: (messageId: string) =>
     invoke<{ ok: true }>('venue-chat', { action: 'delete', messageId }),
