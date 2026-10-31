@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { type ReactNode, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, useWindowDimensions, View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
 import { Av, Btn, Glass, GlassList, Li, Round, T, useKit } from '@/aura/kit';
@@ -36,6 +36,8 @@ export default function ProfileScreen() {
   const hasName = !!own.data?.display_name;
   const friendList = friends.data ?? [];
   const [preview, setPreview] = useState(false);
+  const { width, fontScale } = useWindowDimensions();
+  const stacked = width < STACK_BELOW || fontScale > STACK_SCALE;
 
   return (
     <Screen gap={GAP}>
@@ -120,20 +122,22 @@ export default function ProfileScreen() {
             {view.data.bio ? <T v="bodyLg">{view.data.bio}</T> : null}
           </View>
 
-          <View style={{ flexDirection: 'row', gap: BTN_GAP }}>
+          {/* aura v50 (ProfilDar): side by side at 390 dp; under 360 dp or with larger text one
+              under the other, 58 high, so the words never shrink. */}
+          <View style={{ flexDirection: stacked ? 'column' : 'row', gap: BTN_GAP }}>
             <Btn
-              bar={KIT.size.btnRow}
+              bar={stacked ? KIT.size.btnTall : KIT.size.btnRow}
               variant="glassy"
               label={hasName ? tr.profile.edit : tr.profile.addName}
               onPress={() => router.push('/profile/edit')}
-              style={{ flex: 1 }}
+              style={stacked ? undefined : { flex: 1 }}
               block
             />
             <Btn
-              bar={KIT.size.btnRow}
+              bar={stacked ? KIT.size.btnTall : KIT.size.btnRow}
               label={tr.capsule.edit}
               onPress={() => router.push('/profile/capsule')}
-              style={{ flex: 1 }}
+              style={stacked ? undefined : { flex: 1 }}
               block
             />
           </View>
@@ -185,6 +189,9 @@ export default function ProfileScreen() {
 
 const GAP = 14;
 const BTN_GAP = 10;
+// The two buttons go one under the other under 360 dp or above 1.15x text (aura v50, ProfilDar).
+const STACK_BELOW = 360;
+const STACK_SCALE = 1.15;
 const STACK = 3;
 const ROW = {
   flexDirection: 'row' as const,
