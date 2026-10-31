@@ -829,6 +829,7 @@ export function Li({
   accessibilityLabel,
   padY = KIT.size.liPadY,
   padX = KIT.size.liPadX,
+  gap = KIT.size.liGap,
 }: {
   children: ReactNode;
   onPress?: () => void;
@@ -838,11 +839,13 @@ export function Li({
   padY?: number;
   // Inside (Profil's rows: 18).
   padX?: number;
+  // Between the picture and the words (Aktiviteler's rows: 14).
+  gap?: number;
 }) {
   const style: ViewStyle = {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: KIT.size.liGap,
+    gap,
     paddingVertical: padY,
     paddingHorizontal: padX,
   };

@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Image, useWindowDimensions, View } from 'react-native';
 
-import { Li, RowList } from '@/aura/kit';
+import { Li, RowList, Seg, T, useKit } from '@/aura/kit';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
 import { GameDisc } from '@/components/Glyph';
@@ -12,8 +12,6 @@ import { Icon } from '@/components/Icon';
 import { useLoaderHold } from '@/components/Loader';
 import { Rise } from '@/components/motion';
 import { Screen } from '@/components/Screen';
-import { ScreenHeader } from '@/components/ScreenHeader';
-import { Segmented } from '@/components/Segmented';
 import { Sheet } from '@/components/Sheet';
 import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
@@ -27,30 +25,32 @@ import { GAME_GLYPH } from '@/features/games/GameCard';
 import { errorMessage } from '@/i18n/errors';
 import { type HistoryConcept, historyConcept, tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
-import { useTheme } from '@/theme/ThemeProvider';
-import { KIT } from '@/theme/auraKit';
+import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { NARROW_SCREEN, SPACING } from '@/theme/tokens';
 
 type Tab = 'events' | 'history';
 
-// v44: .hthumb, a record's picture.
-const THUMB = KIT.size.av.row;
+// docs/design/aura → Aktiviteler: geçmiş, a record's picture (54).
+const THUMB = KIT.size.historyThumb;
 
 // Aktiviteler (docs/SPEC_V4.md §4.C, K-15; v44: .acts): "Aktiviteler" lists today's events at the
 // venues of Keşfet's city (K-38; the district is Keşfet's alone), earliest first, each opening the
 // venue's page (K-43); no campaigns and no "ilgileniyorum". "Geçmiş" is the caller's play history
 // under day headings, each record with its game's result; a record opens what Bildirimler offers
 // for it ("Arkadaş ekle" or "İstek gönder", "Mesaj" once friends, "Diğer"). Nothing is sorted by
-// location (rule 6).
+// location (rule 6). docs/design/aura → Aktiviteler: geçmiş / etkinlik yok: the large title, the
+// sliding tabs, the place or day lines at 15, thin rows (the record's result stays, §4.C).
 export default function ActivitiesScreen() {
   const [tab, setTab] = useState<Tab>('events');
   const now = useNow(60_000);
   return (
     <Screen edges={['top']} refreshable>
-      <ScreenHeader title={tr.tabs.activities} />
+      <T v="display" style={KIT_TYPE.displayXl} accessibilityRole="header">
+        {tr.tabs.activities}
+      </T>
       <View className="mt-3">
-        <Segmented<Tab>
-          fill
+        <Seg<Tab>
+          large
           value={tab}
           onChange={setTab}
           accessibilityLabel={tr.activities.tabs}
@@ -110,12 +110,12 @@ function Events({ now }: { now: number }) {
   return (
     <View className="mt-2">
       {place ? (
-        <Text variant="label" tone="muted" className="mx-0.5 mb-2.5 mt-2">
-          {tr.activities.fromVenues(place.city)}
-        </Text>
+        <View style={{ marginTop: SPACING[1], marginBottom: SPACING[2.5] }}>
+          <T v="body">{tr.activities.fromVenues(place.city)}</T>
+        </View>
       ) : null}
       {events.length === 0 ? (
-        <View testID="activities-no-events" className="mt-6">
+        <View testID="activities-no-events" className="mt-3">
           <EmptyState
             kind="empty"
             title={tr.activities.noEvents}
@@ -195,11 +195,11 @@ function History({ now }: { now: number }) {
       {groups.map((group) => (
         <View key={group.day}>
           <View style={{ paddingTop: SPACING[3], paddingBottom: SPACING[1] }}>
-            <Text variant="label" tone="muted" accessibilityRole="header">
+            <T v="body" accessibilityRole="header">
               {tr.activities.days[group.day]}
-            </Text>
+            </T>
           </View>
-          <RowList>
+          <RowList inset={THUMB + KIT.size.historyGap}>
             {group.sessions.map((x, i) => {
               const h = x.first;
               const result = historyResult(h, results.data ?? []);
@@ -270,7 +270,8 @@ function History({ now }: { now: number }) {
   );
 }
 
-// A game (v44: .hrow, as a thin row): its picture, its name and the time, with whom and the result.
+// A game (docs/design/aura → Aktiviteler: geçmiş): its picture, its name and with whom, the time on
+// the right; the result under the time.
 function HistoryRow({
   concept,
   alias,
@@ -295,26 +296,17 @@ function HistoryRow({
       testID={`history-row-${alias}`}
       accessibilityLabel={tr.activities.rowLabel(game, with_, when, result)}
       onPress={onPress}
+      padY={KIT.size.historyPadY}
+      gap={KIT.size.historyGap}
     >
       <Thumb concept={concept} />
-      <View style={{ flex: 1, gap: SPACING[0.5] }}>
-        <View className="flex-row items-baseline justify-between" style={{ gap: SPACING[2] }}>
-          <Text variant="heading" className="shrink">
-            {game}
-          </Text>
-          <Text variant="fine" tone="muted">
-            {when}
-          </Text>
-        </View>
-        <View
-          className="flex-row flex-wrap items-center justify-between"
-          style={{ gap: SPACING[2] }}
-        >
-          <Text variant="fine" tone="muted" className="shrink">
-            {with_}
-          </Text>
-          {result && variant ? <Tag variant={variant} label={result} /> : null}
-        </View>
+      <View style={{ flex: 1 }}>
+        <T v="sec">{game}</T>
+        <T v="fineLg">{with_}</T>
+      </View>
+      <View style={{ alignItems: 'flex-end', gap: SPACING[1] }}>
+        <T v="body">{when}</T>
+        {result && variant ? <Tag variant={variant} label={result} /> : null}
       </View>
     </Li>
   );
@@ -326,14 +318,14 @@ const VAMPIR_THUMB = require('../../../assets/game-thumb/vampir.webp');
 
 // The game's disc; a chat without a game has the speech bubbles.
 function Thumb({ concept }: { concept: HistoryConcept }) {
-  const { colors, shape } = useTheme();
+  const { c } = useKit();
   // The new games (K-77) have their card's drawing, round.
   if (concept === 'vampir') {
     return (
       <Image
         source={VAMPIR_THUMB}
         accessible={false}
-        style={{ width: THUMB, height: THUMB, borderRadius: shape.radius.pill }}
+        style={{ width: THUMB, height: THUMB, borderRadius: THUMB / 2 }}
       />
     );
   }
@@ -345,8 +337,8 @@ function Thumb({ concept }: { concept: HistoryConcept }) {
       style={{
         width: THUMB,
         height: THUMB,
-        borderRadius: shape.radius.pill,
-        backgroundColor: colors.surface2,
+        borderRadius: THUMB / 2,
+        backgroundColor: c.hair,
       }}
     >
       <Icon name="chatbubbles-outline" tone="muted" />

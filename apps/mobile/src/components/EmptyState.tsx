@@ -18,6 +18,9 @@ import { useLoopActive } from './Loader';
 import { MotionMark } from './Mark';
 import { Text } from './Text';
 import { AppIcon } from './AppIcon';
+import { EmptyMark } from '@/aura/EmptyMark';
+import { T } from '@/aura/kit';
+import { KIT } from '@/theme/auraKit';
 
 export type { StateKind };
 
@@ -32,6 +35,8 @@ type Props = {
   // `loading`: the action is running (a retry reloading); the button waits and takes no second
   // press.
   action?: { label: string; onPress: () => void; loading?: boolean };
+  // The lobby's smaller empty state (docs/design/aura → Mekan: 18 / 14, 18 above).
+  small?: boolean;
 };
 
 const MARK_SIZE = SPACING[16] + SPACING[8];
@@ -71,7 +76,7 @@ export function StateMark({ kind, size = MARK_SIZE }: { kind: StateKind; size?: 
 // the note under it, centred, and the action under them; no card around it.
 const DISC_MARK = SPACING[10];
 
-export function EmptyState({ kind, icon, title, body, action }: Props) {
+export function EmptyState({ kind, icon, title, body, action, small }: Props) {
   const [shown, setShown] = useState(kind !== 'loading');
   useEffect(() => {
     if (kind !== 'loading') return undefined;
@@ -91,6 +96,7 @@ export function EmptyState({ kind, icon, title, body, action }: Props) {
       )}
     </View>
   );
+  if (kind === 'empty') return <Empty title={title} body={body} action={action} small={small} />;
   return (
     <View
       style={{ opacity: shown || kind !== 'loading' ? 1 : 0 }}
@@ -125,6 +131,51 @@ export function EmptyState({ kind, icon, title, body, action }: Props) {
           </View>
         ) : null}
       </View>
+    </View>
+  );
+}
+
+// The empty state (docs/design/aura, aura 31): the still sign, the title and the note centred,
+// on the screen without a card; at most one action under them.
+function Empty({ title, body, action, small }: Pick<Props, 'title' | 'body' | 'action' | 'small'>) {
+  return (
+    <View
+      style={{
+        alignItems: 'center',
+        gap: KIT.size.emptyGap,
+        paddingTop: small ? KIT.size.emptyTopSm : KIT.size.emptyTop,
+        paddingHorizontal: KIT.size.emptyPadX,
+      }}
+    >
+      <EmptyMark />
+      {title ? (
+        <T
+          v={small ? 'sec' : 'secLg'}
+          center
+          accessibilityRole="header"
+          style={{ marginTop: KIT.size.emptyTitleTop }}
+        >
+          {title}
+        </T>
+      ) : null}
+      <T
+        v={small ? 'note' : 'emptyNote'}
+        strong={!title}
+        center
+        style={title ? null : { marginTop: KIT.size.emptyTitleTop }}
+      >
+        {body}
+      </T>
+      {action ? (
+        <View style={{ marginTop: SPACING[3] }}>
+          <Button
+            variant="secondary"
+            label={action.label}
+            onPress={action.onPress}
+            loading={action.loading}
+          />
+        </View>
+      ) : null}
     </View>
   );
 }
