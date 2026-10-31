@@ -1,16 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { View } from 'react-native';
 
-import { Button } from '@/components/Button';
-import { Avatar } from '@/components/Avatar';
-import { ListCard } from '@/components/ListCard';
-import { ListRow } from '@/components/ListRow';
+import { Av, Btn, Li, RowList, T } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
-import { SPACING } from '@/theme/tokens';
 import { safetyApi } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
 
@@ -55,29 +51,26 @@ export function BlockedList() {
     return <EmptyState kind="empty" body={tr.safety.blockedEmpty} />;
   }
   return (
-    <ListCard>
+    <RowList>
       {blocks.data.map((b) => (
-        <ListRow
-          key={b.id}
-          inset
-          leading={<Avatar kind="default" size="xl" />}
-          title={b.blocked_alias}
-          meta={tr.common.ago(b.created_at, now)}
-          trailing={
-            <View style={{ width: SPACING[16] + SPACING[10] + SPACING[1] }}>
-              <Button
-                size="sm"
-                tight
-                variant="neutral"
-                label={tr.safety.unblock}
-                onPress={() => unblock.mutate(b.id)}
-                loading={unblock.isPending && unblock.variables === b.id}
-                disabled={unblock.isPending}
-              />
-            </View>
-          }
-        />
+        <Li key={b.id}>
+          <Av size="row" name={b.blocked_alias} />
+          <View style={{ flex: 1 }}>
+            <T v="h3" ink>
+              {b.blocked_alias}
+            </T>
+            <T v="fine">{tr.common.ago(b.created_at, now)}</T>
+          </View>
+          <Btn
+            sm
+            variant="glassy"
+            label={tr.safety.unblock}
+            onPress={() => unblock.mutate(b.id)}
+            loading={unblock.isPending && unblock.variables === b.id}
+            disabled={unblock.isPending}
+          />
+        </Li>
       ))}
-    </ListCard>
+    </RowList>
   );
 }

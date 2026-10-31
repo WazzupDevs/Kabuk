@@ -1,21 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { View } from 'react-native';
 
-import { Avatar } from '@/components/Avatar';
-import { Button } from '@/components/Button';
+import { Av, Btn, Li, RowList, T } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
-import { ListCard } from '@/components/ListCard';
-import { ListRow } from '@/components/ListRow';
 import { Loader } from '@/components/Loader';
 import { PageTop } from '@/components/PageTop';
 import { Screen } from '@/components/Screen';
-import { Text } from '@/components/Text';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
 import { venueChatApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
-import { SPACING } from '@/theme/tokens';
+import { KIT } from '@/theme/auraKit';
 
 const MUTES_KEY = ['venueChatMutes'] as const;
 
@@ -34,8 +30,8 @@ export default function MutedScreen() {
   return (
     <Screen list>
       <PageTop title={tr.settings.muted} />
-      <View className="gap-3">
-        <Text variant="fine">{tr.settings.mutedNote}</Text>
+      <View style={{ gap: KIT.size.rowGap }}>
+        <T v="note">{tr.settings.mutedNote}</T>
         {mutes.isPending ? (
           <Loader />
         ) : mutes.isError ? (
@@ -47,36 +43,29 @@ export default function MutedScreen() {
         ) : list.length === 0 ? (
           <EmptyState kind="empty" body={tr.settings.mutedEmpty} />
         ) : (
-          <ListCard>
+          <RowList>
             {list.map((m) => (
-              <ListRow
-                key={m.id}
-                inset
-                leading={
-                  m.profiled ? (
-                    <Avatar kind="profile" name={m.label} size="xl" />
-                  ) : (
-                    <Avatar kind="default" size="xl" />
-                  )
-                }
-                title={m.label}
-                meta={`${m.profiled ? tr.settings.mutedProfiled : tr.settings.mutedAnonymous} ${tr.common.separator} ${tr.common.ago(m.createdAt, now)}`}
-                trailing={
-                  <View style={{ width: SPACING[16] + SPACING[10] + SPACING[1] }}>
-                    <Button
-                      size="sm"
-                      tight
-                      variant="neutral"
-                      label={tr.venueChat.unmute}
-                      loading={unmute.isPending && unmute.variables === m.id}
-                      disabled={unmute.isPending}
-                      onPress={() => unmute.mutate(m.id)}
-                    />
-                  </View>
-                }
-              />
+              <Li key={m.id}>
+                <Av size="row" name={m.label} />
+                <View style={{ flex: 1 }}>
+                  <T v="h3" ink>
+                    {m.label}
+                  </T>
+                  <T v="fine">
+                    {`${m.profiled ? tr.settings.mutedProfiled : tr.settings.mutedAnonymous} ${tr.common.separator} ${tr.common.ago(m.createdAt, now)}`}
+                  </T>
+                </View>
+                <Btn
+                  sm
+                  variant="glassy"
+                  label={tr.venueChat.unmute}
+                  loading={unmute.isPending && unmute.variables === m.id}
+                  disabled={unmute.isPending}
+                  onPress={() => unmute.mutate(m.id)}
+                />
+              </Li>
             ))}
-          </ListCard>
+          </RowList>
         )}
       </View>
     </Screen>
