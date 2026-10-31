@@ -33,4 +33,9 @@ Proje sahibinin kararları (31 Ekim):
 - **Profili düzenle:** 48'lik geri, 36'lık başlık, fotoğraf kartı (112'lik yüz, 36'lık beyaz kamera rozeti, "Fotoğrafı değiştir"), 56'lık alanlar (tanıtım 108) ve 14'lük notlar, doğum tarihi notu küçük camda. Kaydet bugünkü yerinde, sayfanın altında (raporun 5. sorusu).
 - **Kapsülün:** 48'lik düğmeler, 19'luk başlık, 152'lik kapsül (zemini kapsülün kendi renginden, bugünkü gibi), 40'lık yuva çipleri; boş parça karosu 104 ve seçiliyken mor halka; paket kartı 16 içten, 19'luk ad, 44'lük "Paketi tak"; paketin parçaları 70 yüksek karolarda adsız (ad ekran okuyucuda), satırda üç; altta 50'lik "Hepsini çıkar" ve "Kaydet". Takılı parçaların çıkarma etiketleri, paket renkleri ve kaydırınca katlanma bugünkü gibi.
 
+(e) Aktiviteler ve ortak boş hâl (31 Ekim; değişmez kurala dokunan yok):
+
+- **Ortak boş hâl tek bileşende** (`EmptyState kind="empty"` → `src/aura/EmptyMark.tsx`): dolu mor kapsül, arkasında kesikli pembe kapsül çizgisi (28 × 42), 19'luk başlık ve 15/21'lik not; lobide 18 ve 14/20. Bütün boş ekranlar (lobi, İstekler, Aktiviteler, Mesajlar, bildirimler, arkadaşlar, engellenenler…) aynı görünür. İşaret durgun: tuval ve hareket.json boş hâle hareket vermiyor (önceki canlı işaret yükleniyor ve hata hâllerinde kalır).
+- **Aktiviteler:** 36'lık başlık, 48'lik kayan diskli Etkinlikler / Geçmiş, 15'lik yer ve gün satırları; geçmiş satırı 54'lük resim, 18'lik oyun adı, 14'lük "… ile", sağda 15'lik zaman. **Sonuç etiketi kalır** (tuval çizmedi; SPEC_V4 "Aktiviteler → Geçmiş" sonuç metinlerini istiyor), zamanın altında. Etkinlik kartları bugünkü gibi; satıra dokunma bugünkü gibi kişileri açar (raporun 6. sorusu), sekme simgesi bugünkü (9. soru).
+
 Raporun açık sorularında (titreşim, lobideki ikinci bölüm başlığı, Profili düzenle'de Kaydet, geçmiş satırına dokunma, koyu tema / yükleniyor / hata hâlleri, galeri, Aktiviteler simgesi) uygulamanın bugünkü davranışı korunur.

@@ -60,6 +60,8 @@ export const KIT_TYPE = {
   // A venue's district under its name on its page (KesfetMekan: .body at 17).
   bodyLg: t(500, 17, 22),
   fine: t(500, 13, 18),
+  // The empty state's note (Aktiviteler, İstekler: .fine 15/21; the lobby's 14/20 is `note`).
+  emptyNote: t(500, 15, 21),
   // What is typed in Profili düzenle's fields (17/24).
   field: t(500, 17, 24),
   // A venue row's second line and its bucket (Keşfet: .fine at 14).
@@ -360,6 +362,18 @@ export const KIT = {
     faceCard: 210,
     // Profil's two buttons and Kapsülün's (50).
     btnRow: 50,
+    // The empty state: its sign 28 × 42, 6 apart, the title 10 under the sign; 26 above (the
+    // lobby's 18), 8 inside.
+    emptyMark: { width: 28, height: 42 },
+    emptyGap: 6,
+    emptyTitleTop: 10,
+    emptyTop: 26,
+    emptyTopSm: 18,
+    emptyPadX: 8,
+    // Aktiviteler's history rows: a 54 picture 14 from the words, 8 above and under.
+    historyThumb: 54,
+    historyGap: 14,
+    historyPadY: 8,
     // Kapsülün: the empty part's tile (104, its capsule 70), a pack's tiles 70 high with the capsule
     // 10 down in them, the chosen one's ring (3) and a pack's block (16 inside, 12 apart).
     partTile: 104,

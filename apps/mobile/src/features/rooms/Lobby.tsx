@@ -176,7 +176,7 @@ export function Lobby({
           action={{ label: tr.common.retry, onPress: () => void tables.refetch() }}
         />
       ) : open.length === 0 ? (
-        <EmptyState kind="empty" title={tr.lobby.emptyTitle} body={tr.lobby.emptyBody} />
+        <EmptyState small kind="empty" title={tr.lobby.emptyTitle} body={tr.lobby.emptyBody} />
       ) : (
         groups(open).map((group) => (
           <View key={group.spotId ?? 'none'} className="gap-2.5">
