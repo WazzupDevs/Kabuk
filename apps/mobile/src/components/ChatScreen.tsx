@@ -14,6 +14,7 @@ import {
 } from 'react';
 import {
   BackHandler,
+  type CellRendererProps,
   Keyboard,
   type LayoutChangeEvent,
   type NativeScrollEvent,
@@ -64,6 +65,8 @@ import { KeyboardChatScrollView, KeyboardStickyView } from 'react-native-keyboar
 
 import { GlassTarget } from '@/components/LiquidGlass';
 import { ChatKindContext } from './chatKind';
+import { ChatMetaContext } from './chatMeta';
+import { metaHiddenAt } from '@/lib/chatMeta';
 
 // How close to the end counts as "at the bottom" (a message's last line may sit under the edge).
 const BOTTOM_SLACK = SPACING[12];
@@ -581,6 +584,60 @@ export type ChatListProps<T extends ChatListItem> = {
   timeOf?: (item: T) => number;
 };
 
+// The newest message's cell and where its time line starts above the cell's foot (chatMeta.ts).
+type MetaCellReport = { cellHeight: number; metaTop: number | null };
+const MetaReportContext = createContext<((report: MetaCellReport) => void) | null>(null);
+
+// A stream cell (FlatList's own, its style and layout kept): the newest one (index 0, the bottom
+// row) hands its bubble a ref for the time line and reports the line's place.
+function MetaCell({ index, style, onLayout, children }: CellRendererProps<unknown>) {
+  const report = useContext(MetaReportContext);
+  const newest = index === 0 && report !== null;
+  const cell = useRef<View>(null);
+  const meta = useRef<View | null>(null);
+  const height = useRef(0);
+  const measure = () => {
+    const c = cell.current;
+    if (!newest || !report || !c || height.current <= 0) return;
+    const m = meta.current;
+    if (!m) {
+      report({ cellHeight: height.current, metaTop: null });
+      return;
+    }
+    m.measureLayout(
+      c,
+      (_x, y) => report({ cellHeight: height.current, metaTop: Math.max(0, height.current - y) }),
+      () => report({ cellHeight: height.current, metaTop: null }),
+    );
+  };
+  const measureRef = useRef(measure);
+  useEffect(() => {
+    measureRef.current = measure;
+  });
+  const [metaRef] = useState(() => (node: View | null) => {
+    meta.current = node;
+    measureRef.current();
+  });
+  useEffect(() => {
+    if (newest) measureRef.current();
+  }, [newest]);
+  return (
+    <ChatMetaContext.Provider value={newest ? metaRef : null}>
+      <View
+        ref={cell}
+        style={style}
+        onLayout={(e) => {
+          height.current = e.nativeEvent.layout.height;
+          onLayout?.(e);
+          measure();
+        }}
+      >
+        {children}
+      </View>
+    </ChatMetaContext.Provider>
+  );
+}
+
 // A chat's message stream as Telegram Android draws it (the owner's call, 29 Ekim): from the
 // newest message up, only the rows on the screen and a little round it drawn, older messages loaded
 // as the reader nears them, each message keeping its row while it changes. At the bottom (the
@@ -615,6 +672,31 @@ function ChatList<T extends ChatListItem>({
   const [atBottom, setAtBottom] = useState(true);
   const [pending, setPending] = useState(0);
   const [live, setLive] = useState(false);
+  // The down arrow (P1c): shown only once the newest message's time line is wholly under the
+  // message bar. Apart from `atBottom`, which follows new messages and counts the unread.
+  const [metaCell, setMetaCell] = useState<MetaCellReport | null>(null);
+  const [latestHeight, setLatestHeight] = useState(0);
+  const [metaHidden, setMetaHidden] = useState(false);
+  const scrollY = useRef(0);
+  const [reportMeta] = useState(() => (next: MetaCellReport) => {
+    setMetaCell((prev) =>
+      prev && prev.cellHeight === next.cellHeight && prev.metaTop === next.metaTop ? prev : next,
+    );
+  });
+  const padUnder =
+    typeof contentContainerStyle?.paddingTop === 'number' ? contentContainerStyle.paddingTop : 0;
+  const rowGap = typeof contentContainerStyle?.gap === 'number' ? contentContainerStyle.gap : 0;
+  const hiddenAt = metaCell
+    ? metaHiddenAt({
+        gapUnder: padUnder - bottomInset,
+        latest: latest && latestHeight > 0 ? latestHeight + rowGap : 0,
+        cellHeight: metaCell.cellHeight,
+        metaTop: metaCell.metaTop,
+      })
+    : BOTTOM_SLACK;
+  useEffect(() => {
+    setMetaHidden(items.length > 0 && scrollY.current >= hiddenAt);
+  }, [hiddenAt, items.length]);
   useEffect(() => {
     const timer = setTimeout(() => setLive(true), SETTLE_MS);
     return () => clearTimeout(timer);
@@ -624,6 +706,8 @@ function ChatList<T extends ChatListItem>({
     list.current?.scrollToOffset({ offset: 0, animated });
     setAtBottom(true);
     setPending(0);
+    scrollY.current = 0;
+    setMetaHidden(false);
   };
   useEffect(() => {
     if (!endRef) return undefined;
@@ -735,14 +819,18 @@ function ChatList<T extends ChatListItem>({
   );
 
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const bottom = e.nativeEvent.contentOffset.y <= BOTTOM_SLACK;
+    const y = e.nativeEvent.contentOffset.y;
+    const bottom = y <= BOTTOM_SLACK;
     if (bottom !== atBottom) setAtBottom(bottom);
     if (bottom && pending > 0) setPending(0);
+    scrollY.current = y;
+    const hidden = y >= hiddenAt;
+    if (hidden !== metaHidden) setMetaHidden(hidden);
   };
   const slot = useContext(JumpSlotContext);
   useEffect(() => {
-    slot?.({ show: !atBottom, count: pending });
-  }, [slot, atBottom, pending]);
+    slot?.({ show: metaHidden, count: pending });
+  }, [slot, metaHidden, pending]);
 
   const renderScroll = useCallback(
     (props: ScrollViewProps) => (
@@ -778,59 +866,68 @@ function ChatList<T extends ChatListItem>({
                       {empty}
                     </View>
                   ) : (
-                    <FlatList
-                      ref={list}
-                      testID={testID}
-                      data={items}
-                      inverted
-                      keyExtractor={(item) => item.key}
-                      renderItem={({ item }) => renderItem(item)}
-                      renderScrollComponent={renderScroll}
-                      showsVerticalScrollIndicator={false}
-                      showsHorizontalScrollIndicator={false}
-                      // The first screenful at once, from the newest up; the rest as it nears.
-                      initialNumToRender={INITIAL_ROWS}
-                      maxToRenderPerBatch={BATCH_ROWS}
-                      windowSize={WINDOW}
-                      // Rows added under the reader leave what is shown where it is; at the bottom the
-                      // list goes on to the new one.
-                      maintainVisibleContentPosition={FOLLOW}
-                      onEndReached={onReachOld}
-                      onEndReachedThreshold={OLD_THRESHOLD}
-                      ListFooterComponent={older ? <>{older}</> : null}
-                      ListHeaderComponent={latest ? <>{latest}</> : null}
-                      // Dragging the messages puts the keyboard away, like any chat app.
-                      keyboardDismissMode="on-drag"
-                      keyboardShouldPersistTaps="handled"
-                      contentContainerStyle={contentContainerStyle}
-                      scrollEventThrottle={64}
-                      onScroll={onScroll}
-                      onScrollBeginDrag={() => {
-                        bar.setOpen(null);
-                        showDay();
-                      }}
-                      onScrollEndDrag={hideDaySoon}
-                      onMomentumScrollBegin={showDay}
-                      onMomentumScrollEnd={hideDaySoon}
-                      onViewableItemsChanged={onViewable}
-                      viewabilityConfig={VIEWABLE}
-                      onScrollToIndexFailed={(info) => {
-                        // A row not drawn yet: near it first, then to it.
-                        list.current?.scrollToOffset({
-                          offset: info.averageItemLength * info.index,
-                          animated: true,
-                        });
-                        setTimeout(
-                          () =>
-                            list.current?.scrollToIndex({
-                              index: info.index,
-                              animated: true,
-                              viewPosition: 0.5,
-                            }),
-                          JUMP_RETRY_MS,
-                        );
-                      }}
-                    />
+                    <MetaReportContext.Provider value={reportMeta}>
+                      <FlatList
+                        ref={list}
+                        testID={testID}
+                        data={items}
+                        inverted
+                        keyExtractor={(item) => item.key}
+                        renderItem={({ item }) => renderItem(item)}
+                        renderScrollComponent={renderScroll}
+                        CellRendererComponent={MetaCell}
+                        showsVerticalScrollIndicator={false}
+                        showsHorizontalScrollIndicator={false}
+                        // The first screenful at once, from the newest up; the rest as it nears.
+                        initialNumToRender={INITIAL_ROWS}
+                        maxToRenderPerBatch={BATCH_ROWS}
+                        windowSize={WINDOW}
+                        // Rows added under the reader leave what is shown where it is; at the bottom the
+                        // list goes on to the new one.
+                        maintainVisibleContentPosition={FOLLOW}
+                        onEndReached={onReachOld}
+                        onEndReachedThreshold={OLD_THRESHOLD}
+                        ListFooterComponent={older ? <>{older}</> : null}
+                        ListHeaderComponent={
+                          latest ? (
+                            <View onLayout={(e) => setLatestHeight(e.nativeEvent.layout.height)}>
+                              {latest}
+                            </View>
+                          ) : null
+                        }
+                        // Dragging the messages puts the keyboard away, like any chat app.
+                        keyboardDismissMode="on-drag"
+                        keyboardShouldPersistTaps="handled"
+                        contentContainerStyle={contentContainerStyle}
+                        scrollEventThrottle={64}
+                        onScroll={onScroll}
+                        onScrollBeginDrag={() => {
+                          bar.setOpen(null);
+                          showDay();
+                        }}
+                        onScrollEndDrag={hideDaySoon}
+                        onMomentumScrollBegin={showDay}
+                        onMomentumScrollEnd={hideDaySoon}
+                        onViewableItemsChanged={onViewable}
+                        viewabilityConfig={VIEWABLE}
+                        onScrollToIndexFailed={(info) => {
+                          // A row not drawn yet: near it first, then to it.
+                          list.current?.scrollToOffset({
+                            offset: info.averageItemLength * info.index,
+                            animated: true,
+                          });
+                          setTimeout(
+                            () =>
+                              list.current?.scrollToIndex({
+                                index: info.index,
+                                animated: true,
+                                viewPosition: 0.5,
+                              }),
+                            JUMP_RETRY_MS,
+                          );
+                        }}
+                      />
+                    </MetaReportContext.Provider>
                   )}
                 </ChatHighlightContext.Provider>
               </ChatInvertedContext.Provider>
@@ -850,7 +947,7 @@ function ChatList<T extends ChatListItem>({
       ) : null}
       {slot ? null : (
         <NewMessages
-          show={!atBottom}
+          show={metaHidden}
           count={pending}
           bottom={SPACING[3] + bottomInset}
           keyboardOffset={keyboardOffset}

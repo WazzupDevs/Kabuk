@@ -32,6 +32,7 @@ import { ReactionFace } from './ReactionFace';
 import { Text } from './Text';
 import { AppIcon } from './AppIcon';
 import { useChatKind } from './chatKind';
+import { useChatMetaRef } from './chatMeta';
 
 // color: the quoted sender's name colour in the venue chat (v45: --qc); otherwise the second accent.
 export type ChatQuote = { name: string; text: string; color?: string };
@@ -160,6 +161,7 @@ export function ChatBubble({
   // bubble has a tail at its foot.
   const { scheme } = useKit();
   const kind = useChatKind();
+  const metaRef = useChatMetaRef();
   const paint = KIT.bubble[scheme];
   const shadowOff = useLabOff('golge');
   const fg = mine ? paint.mineInk : paint.themInk;
@@ -342,6 +344,7 @@ export function ChatBubble({
               />
               {time && !state ? (
                 <View
+                  ref={metaRef}
                   style={{
                     marginLeft: 'auto',
                     flexDirection: 'row',
@@ -353,7 +356,7 @@ export function ChatBubble({
                   <Text variant="caption" color={mine ? paint.mineMuted : paint.themMuted}>
                     {time}
                   </Text>
-                  {mine && delivery ? <DeliveryTicks delivery={delivery} /> : null}
+                  {mine && delivery ? <DeliveryTicks delivery={delivery} inBubble /> : null}
                 </View>
               ) : null}
             </View>
@@ -370,6 +373,7 @@ export function ChatBubble({
             </RNText>
             {time && !state ? (
               <View
+                ref={metaRef}
                 style={{
                   position: 'absolute',
                   flexDirection: 'row',
@@ -383,7 +387,7 @@ export function ChatBubble({
                 <Text variant="caption" color={mine ? paint.mineMuted : paint.themMuted}>
                   {time}
                 </Text>
-                {mine && delivery ? <DeliveryTicks delivery={delivery} /> : null}
+                {mine && delivery ? <DeliveryTicks delivery={delivery} inBubble /> : null}
               </View>
             ) : null}
           </View>
@@ -444,7 +448,16 @@ export function ChatBubble({
         <SwipeToReply onReply={onReply}>{bubble}</SwipeToReply>
         {chips}
         {state ? (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING[3] }}>
+          // Grup 3, P1b: at 320 dp / 1.3x the actions go to a second line, none cut.
+          <View
+            style={{
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              justifyContent: 'flex-end',
+              alignItems: 'center',
+              columnGap: SPACING[3],
+            }}
+          >
             <Text variant="fine" tone={state === 'failed' ? 'danger' : 'muted'}>
               {state === 'failed' ? (failedText ?? tr.chat.notSent) : tr.chat.sending}
             </Text>
@@ -606,6 +619,7 @@ function BigEmoji({
   stamp: string;
   stampInk: string;
 }) {
+  const metaRef = useChatMetaRef();
   return (
     <>
       <RNText maxFontSizeMultiplier={1} style={count === 1 ? KIT_TYPE.emojiOne : KIT_TYPE.emojiFew}>
@@ -613,6 +627,7 @@ function BigEmoji({
       </RNText>
       {time ? (
         <View
+          ref={metaRef}
           importantForAccessibility="no-hide-descendants"
           style={{
             flexDirection: 'row',
@@ -816,16 +831,24 @@ function ReactionChips({
 export function DeliveryTicks({
   delivery,
   onAccent,
+  inBubble,
   size = TICK,
 }: {
   delivery: Delivery;
   onAccent?: boolean;
+  // In the viewer's own bubble (white, #ECE9F8 in the dark): the read tick #4A5CE6 in both themes
+  // (Grup 3, P1a: #7DB2FF on #ECE9F8 was 1.82:1). Mesajlar's row keeps its own dark blue.
+  inBubble?: boolean;
   // Mesajlar's row: 17 (docs/design/aura → Mesajlar).
   size?: number;
 }) {
   const { colors, scheme } = useTheme();
   // docs/design/aura → Mesajlar, Dm: the read double tick in #4A5CE6 (the dark side's own blue).
-  const read = onAccent ? colors.readOnAccent : scheme === 'light' ? KIT.readTick : colors.read;
+  const read = onAccent
+    ? colors.readOnAccent
+    : scheme === 'light' || inBubble
+      ? KIT.readTick
+      : colors.read;
   const plain = onAccent ? colors.onPrimary : colors.muted;
   return (
     <View accessible accessibilityLabel={tr.dm.delivery[delivery]} testID={`tick-${delivery}`}>
