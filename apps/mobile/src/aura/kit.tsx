@@ -34,7 +34,7 @@ import { Frost, FROSTED } from '@/components/LiquidGlass';
 import { useTheme } from '@/theme/ThemeProvider';
 
 import { CapIcon, type CapIconName } from './CapIcon';
-import { springConfig } from './motion';
+import { springConfig, SWAP_RN } from './motion';
 import { photoCacheKey } from '@/lib/usePhoto';
 
 // The canvas's component kit (docs/design/aura/project/aura.css), class for class. Values from
@@ -820,17 +820,20 @@ export function Li({
   onPress,
   testID,
   accessibilityLabel,
+  padY = KIT.size.liPadY,
 }: {
   children: ReactNode;
   onPress?: () => void;
   testID?: string;
   accessibilityLabel?: string;
+  // Above and under (Mesajlar's rows: 12).
+  padY?: number;
 }) {
   const style: ViewStyle = {
     flexDirection: 'row',
     alignItems: 'center',
     gap: KIT.size.liGap,
-    paddingVertical: KIT.size.liPadY,
+    paddingVertical: padY,
     paddingHorizontal: KIT.size.liPadX,
   };
   const row = <InRow.Provider value>{children}</InRow.Provider>;
@@ -1019,36 +1022,86 @@ export function Seg<V extends string>({
   onChange,
   options,
   accessibilityLabel,
+  large,
 }: {
   value: V;
   onChange: (v: V) => void;
   options: readonly { value: V; label: string; badge?: number; testID?: string }[];
   accessibilityLabel?: string;
+  // Mesajlar's (docs/design/aura → Mesajlar): 48 high tabs at 16 in a 30 round.
+  large?: boolean;
 }) {
   const { c } = useKit();
+  const reduce = useReduceMotion();
+  const item = large ? KIT.size.segLg : KIT.size.btnSm;
+  const radius = large ? KIT.size.segLgRadius : KIT.size.seg;
   // The chosen tab's soft shadow natively (NativeShadow.tsx).
-  const onShadow = shadowParts(
-    useLabOff('golge'),
-    c.segShadow || undefined,
-    undefined,
-    KIT.size.btnSm / 2,
+  const onShadow = shadowParts(useLabOff('golge'), c.segShadow || undefined, undefined, item / 2);
+  const index = Math.max(
+    0,
+    options.findIndex((o) => o.value === value),
   );
+  // The white disk slides to the chosen tab on the swap curve (aktarim-31: Sohbetler / İstekler).
+  const [width, setWidth] = useState(0);
+  const [at] = useState(() => new Animated.Value(index));
+  useEffect(() => {
+    if (reduce) {
+      at.setValue(index);
+      return undefined;
+    }
+    const anim = Animated.timing(at, {
+      toValue: index,
+      duration: SEG_SLIDE_MS,
+      easing: SWAP_RN,
+      useNativeDriver: true,
+    });
+    anim.start();
+    return () => anim.stop();
+  }, [index, reduce, at]);
+  const n = options.length;
+  const cell = n > 0 ? (width - KIT.size.segGap * (n - 1)) / n : 0;
   return (
     <Glass
       frost
-      radius={KIT.size.seg}
+      radius={radius}
       style={{
         flexDirection: 'row',
         padding: KIT.size.segPad,
         gap: KIT.size.segGap,
-        borderRadius: KIT.size.seg,
+        borderRadius: radius,
       }}
     >
       <View
         accessibilityRole="tablist"
         accessibilityLabel={accessibilityLabel}
+        onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
         style={{ flex: 1, flexDirection: 'row', gap: KIT.size.segGap }}
       >
+        {width > 0 ? (
+          <Animated.View
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: cell,
+              height: item,
+              borderRadius: item / 2,
+              backgroundColor: c.segOn,
+              boxShadow: onShadow.boxShadow,
+              transform: [
+                {
+                  translateX: at.interpolate({
+                    inputRange: [0, Math.max(1, n - 1)],
+                    outputRange: [0, Math.max(1, n - 1) * (cell + KIT.size.segGap)],
+                  }),
+                },
+              ],
+            }}
+          >
+            {onShadow.node}
+          </Animated.View>
+        ) : null}
         {options.map((o) => {
           const on = o.value === value;
           return (
@@ -1060,23 +1113,23 @@ export function Seg<V extends string>({
               onPress={() => onChange(o.value)}
               style={{
                 flex: 1,
-                height: KIT.size.btnSm,
-                borderRadius: KIT.size.btnSm,
+                height: item,
+                borderRadius: item,
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: KIT.size.tagGap,
-                backgroundColor: on ? c.segOn : undefined,
-                boxShadow: on ? onShadow.boxShadow : undefined,
               }}
             >
-              {on ? onShadow.node : null}
               <Text
                 numberOfLines={1}
                 adjustsFontSizeToFit
                 minimumFontScale={MIN_LABEL_SCALE}
                 maxFontSizeMultiplier={MAX_FONT_SCALE}
-                style={[KIT_TYPE.btnSm, { color: on ? c.ink : c.muted, flexShrink: 1 }]}
+                style={[
+                  large ? KIT_TYPE.btn : KIT_TYPE.btnSm,
+                  { color: on ? c.ink : c.muted, flexShrink: 1 },
+                ]}
               >
                 {o.label}
               </Text>
@@ -1088,6 +1141,8 @@ export function Seg<V extends string>({
     </Glass>
   );
 }
+// hareket.json gives the swap curve no length: the disk's slide takes this long.
+const SEG_SLIDE_MS = 300;
 
 // Masa kur's switch (docs/design/aura → MasaKur): 56 × 34, off a sunk lilac track, on the primary;
 // the white knob 3 in, sliding on the press spring (hareket.json). At once when motion is reduced.

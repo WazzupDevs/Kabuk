@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { wallpaperCanvas, wallpaperSvg } from './chatWallpaper';
+import { DM_AURA, wallpaperCanvas, wallpaperSvg } from './chatWallpaper';
 import { CHAT_WALLS } from './chatWalls.generated';
 
 function count(svg: string, name: string): number {
@@ -11,12 +11,24 @@ describe('chat wallpaper (skall tuvali: .wall)', () => {
   it("each chat draws its board's ground and tile, the tile once in one pattern", () => {
     for (const kind of ['dm', 'masa', 'mekan'] as const) {
       for (const scheme of ['light', 'dark'] as const) {
+        if (kind === 'dm' && scheme === 'light') continue;
         const svg = wallpaperSvg(scheme, 360, 2400, kind);
         expect(svg).toContain(`fill="${CHAT_WALLS[kind].ground[scheme]}"`);
         expect(svg).toContain(CHAT_WALLS[kind].tile[scheme]);
         expect(count(svg, 'pattern ')).toBe(1);
       }
     }
+  });
+});
+
+describe("the DM's light wall (aura 31: Dm)", () => {
+  it('a blue to lilac fall under the strewn capsules, the board repeated in one pattern', () => {
+    const svg = wallpaperSvg('light', 360, 2400, 'dm');
+    for (const [, colour] of DM_AURA.stops) expect(svg).toContain(`stop-color="${colour}"`);
+    expect(count(svg, 'pattern ')).toBe(1);
+    expect(count(svg, 'rect x=')).toBe(DM_AURA.capsules.length);
+    expect(count(svg, 'circle ')).toBe(DM_AURA.dots.length);
+    expect(svg).toContain(`fill="${DM_AURA.ink}"`);
   });
 });
 

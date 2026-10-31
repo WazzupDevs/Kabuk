@@ -16,4 +16,13 @@ Proje sahibinin kararları (31 Ekim):
 - **Lobideki ikinci bölüm "Süren masalar" kalır** (raporun 4. sorusu), oyun kartları altısı da kalır (tuval dördünü çizdi), noktalı mekanda nokta etiketi Mekan'ın başında kalır (nokta seçimi kararı).
 - Ortak boş hâl simgesi (Açık masa yok) (e) grubunda gelir.
 
+(c) Mesajlar, istekler boş, DM (31 Ekim; değişmez kurala dokunan yok):
+
+- **Mesajlar'daki istek sahnesi kalktı;** bekleyen isteklerin sayısı İstekler sekmesinin rozetinde. Zil yerinde (K-6).
+- **Sohbetler / İstekler diski 300 ms'de kayar:** hareket.json swap eğrisine süre vermiyor.
+- **DM'nin üstü tuvaldeki gibi:** 48'lik geri ve seçenekler, 56'lık ad hapı (44'lük yüz). 30 Ekim'in ince hapının yerine.
+- **DM'nin açık duvarı mavi-lila geçiş ve kapsüller;** koyu duvar bugünkü (tuval koyuyu çizmedi).
+- **Yazma alanı 58, gönder 62** bütün sohbetlerde: tek bileşen, sohbetler aynı görünür.
+- **Okundu işareti** tuvalin çift tiki, açıkta #4A5CE6; koyuda bugünkü mavi.
+
 Raporun açık sorularında (titreşim, lobideki ikinci bölüm başlığı, Profili düzenle'de Kaydet, geçmiş satırına dokunma, koyu tema / yükleniyor / hata hâlleri, galeri, Aktiviteler simgesi) uygulamanın bugünkü davranışı korunur.

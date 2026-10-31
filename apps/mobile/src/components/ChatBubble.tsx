@@ -813,26 +813,43 @@ function ReactionChips({
 
 // Also on a Mesajlar row, before the preview of the viewer's own last message. In the viewer's own
 // bubble (`onAccent`) the ticks are in its text colour and a read one in readOnAccent.
-export function DeliveryTicks({ delivery, onAccent }: { delivery: Delivery; onAccent?: boolean }) {
-  const { colors } = useTheme();
-  const read = onAccent ? colors.readOnAccent : colors.read;
+export function DeliveryTicks({
+  delivery,
+  onAccent,
+  size = TICK,
+}: {
+  delivery: Delivery;
+  onAccent?: boolean;
+  // Mesajlar's row: 17 (docs/design/aura → Mesajlar).
+  size?: number;
+}) {
+  const { colors, scheme } = useTheme();
+  // docs/design/aura → Mesajlar, Dm: the read double tick in #4A5CE6 (the dark side's own blue).
+  const read = onAccent ? colors.readOnAccent : scheme === 'light' ? KIT.readTick : colors.read;
   const plain = onAccent ? colors.onPrimary : colors.muted;
   return (
     <View accessible accessibilityLabel={tr.dm.delivery[delivery]} testID={`tick-${delivery}`}>
-      <AppIcon
-        name={
-          delivery === 'sending'
-            ? 'time-outline'
-            : delivery === 'sent'
-              ? 'checkmark'
-              : 'checkmark-done'
-        }
-        size={ICON.sm}
-        color={delivery === 'read' ? read : plain}
-      />
+      {delivery === 'sending' ? (
+        <AppIcon name="time-outline" size={size} color={plain} />
+      ) : (
+        <Svg width={size} height={size} viewBox="0 0 24 24">
+          <Path
+            d={delivery === 'sent' ? SENT_TICK : READ_TICKS}
+            fill="none"
+            stroke={delivery === 'read' ? read : plain}
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </Svg>
+      )}
     </View>
   );
 }
+// The board's ticks (Dm: 15; Mesajlar: 17), one for sent, two for delivered and read.
+const TICK = 15;
+const READ_TICKS = 'M2 12.5l4.2 4.2L14 8.4M10.6 16.7 18.6 8.4';
+const SENT_TICK = 'M5 12.5l4.2 4.2L17 8.4';
 
 const DOT = SPACING[2];
 const TYPING_MS = 400;

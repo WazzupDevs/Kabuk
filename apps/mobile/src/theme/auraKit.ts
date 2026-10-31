@@ -27,6 +27,8 @@ export const KIT_TYPE = {
   displaySm: t(500, 30, 38, -0.025),
   // Keşfet's question (.display at 34).
   displayLg: t(500, 34, 41, -0.025),
+  // Mesajlar's title (.display at 36).
+  displayXl: t(500, 36, 46, -0.025),
   title: t(600, 21, 27, -0.015),
   // The first screen's line (Main: 36, 500, -0.03em) and its wordmark (24, 800).
   welcome: t(500, 36, 46, -0.03),
@@ -290,6 +292,8 @@ export const KIT = {
   },
   // Today's event on Keşfet's card: a soft amber ground.
   eventGround: 'rgba(255, 181, 71, 0.14)',
+  // A read message's double tick (Mesajlar, Dm).
+  readTick: '#4A5CE6',
   // The switch's knob (Masa kur).
   switchKnobShadow: '0px 2px 6px rgba(20, 17, 43, 0.20)',
   // A game card's corner tag: dark glass over its picture (Masa), and its shadow.
@@ -361,6 +365,15 @@ export const KIT = {
     iconSm: 18,
     disk: 4,
     seg: 26,
+    // Mesajlar's tabs: 48 high in a 30 round.
+    segLg: 48,
+    segLgRadius: 30,
+    // Mesajlar's bell (52) and its new message button (70, 26 from the right).
+    bell: 52,
+    newChat: 70,
+    newChatRight: 26,
+    // Mesajlar's rows: a 58 face, 12 above and under.
+    inboxPadY: 12,
     sheetInset: 10,
     sheetRadius: 36,
     sheetPadTop: 12,
@@ -382,6 +395,9 @@ export const KIT = {
     msgPadX: 15,
     msgPadY: 11,
     field: 54,
+    // A chat's message field and its send button (docs/design/aura → Dm).
+    composerField: 58,
+    composerSend: 62,
     // Keşfet's search field (18 inside) and the round buttons of its list/map switch (46).
     searchPadX: 18,
     switchRound: 46,
@@ -396,7 +412,8 @@ export const KIT = {
     barGap: 10,
     // The DM's top as Telegram Android draws it (the owner's call, 29 Ekim): the avatar this far
     // inside its pill, the pills all as tall as it.
-    splitInset: 3,
+    // The DM's name pill (docs/design/aura → Dm: 56).
+    dmPill: 56,
     pill: 44,
     pillPadX: 14,
     eventCard: 210,

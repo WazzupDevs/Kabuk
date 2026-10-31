@@ -4,8 +4,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, View } from 'react-native';
 
-import { Gathering, SceneGround } from '@/aura/Scene';
 import { CapIcon } from '@/aura/CapIcon';
+import { PopIn } from '@/aura/PopIn';
 import { Av, Badge, Li, RowList, Seg, T, useKit, usePress } from '@/aura/kit';
 import { DeliveryTicks } from '@/components/ChatBubble';
 import { EmptyState } from '@/components/EmptyState';
@@ -27,15 +27,15 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { useLabOff } from '@/lib/drawLab';
 import { useNow } from '@/lib/useNow';
-import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
 
 type Tab = 'chats' | 'requests';
 
-// Mesajlar (docs/SPEC_V3.md §18.3; docs/SPEC_V4.md §4.C, v45: .msgs): "Sohbet" lists every friend,
-// newest conversation first, from dm/inbox (the function signs the photos); a friend without
-// messages shows "Henüz mesaj yok" and a row opens the DM. "İstekler" lists the open friend
-// requests waiting for the caller (RequestList). The bell stays where it is until step 4.7.
+// Mesajlar (docs/design/aura → Mesajlar; docs/SPEC_V3.md §18.3; docs/SPEC_V4.md §4.C): "Sohbetler"
+// lists every friend, newest conversation first, from dm/inbox (the function signs the photos); a
+// friend without messages shows "Henüz mesaj yok" and a row opens the DM. "İstekler" lists the open
+// friend requests waiting for the caller (RequestList); their count is on its tab (the requests'
+// scene left in aura 31).
 export default function MessagesScreen() {
   const [tab, setTab] = useState<Tab>('chats');
   const [picking, setPicking] = useState(false);
@@ -44,18 +44,19 @@ export default function MessagesScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <Screen edges={['top']} refreshable gap={KIT.size.rowGap}>
-        {/* docs/design/aura → Mesajlar: the title, the bell, the two tabs, the incoming requests'
-          scene, the conversations in one glass list. */}
+      <Screen edges={['top']} refreshable gap={KIT.size.venueGap}>
+        {/* docs/design/aura → Mesajlar: the title, the bell, the two tabs, the conversations as
+          plain rows. */}
         <View
           style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
         >
-          <T v="display" accessibilityRole="header">
+          <T v="displayXl" accessibilityRole="header">
             {tr.tabs.messages}
           </T>
           <NotificationsBell />
         </View>
         <Seg<Tab>
+          large
           value={tab}
           onChange={setTab}
           accessibilityLabel={tr.messages.tabs}
@@ -69,9 +70,6 @@ export default function MessagesScreen() {
             },
           ]}
         />
-        {tab === 'chats' && requests > 0 ? (
-          <IncomingScene count={requests} onPress={() => setTab('requests')} />
-        ) : null}
         {tab === 'chats' ? <Chats now={new Date(now)} /> : <RequestList now={new Date(now)} />}
       </Screen>
       {/* A new message, as Telegram Android's pencil (the owner's call, 30 Ekim): a friend to
@@ -82,7 +80,8 @@ export default function MessagesScreen() {
   );
 }
 
-// The round "+" at the bottom right, over the list and above the tab bar.
+// The round "+" at the bottom right (70, the primary's), over the list and above the tab bar; it
+// pops in (docs/design/aura → Mesajlar).
 function NewMessageButton({ onPress }: { onPress: () => void }) {
   const barSpace = useTabBarSpace();
   const press = usePress();
@@ -91,36 +90,42 @@ function NewMessageButton({ onPress }: { onPress: () => void }) {
     useLabOff('golge'),
     KIT.primaryShadow,
     c.primaryInset,
-    KIT.size.btn / 2,
+    KIT.size.newChat / 2,
   );
   return (
-    <Pressable
-      testID="messages-new"
-      accessibilityRole="button"
-      accessibilityLabel={tr.messages.newMessage}
-      onPress={onPress}
-      onPressIn={press.onPressIn}
-      onPressOut={press.onPressOut}
-      style={{ position: 'absolute', right: KIT.size.side, bottom: barSpace }}
-    >
-      <Animated.View
-        style={{
-          width: KIT.size.btn,
-          height: KIT.size.btn,
-          borderRadius: KIT.size.btn / 2,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: KIT.primary,
-          boxShadow: shadow.boxShadow,
-          transform: [{ scale: press.scale }],
-        }}
-      >
-        {shadow.node}
-        <CapIcon name="plus" color={KIT.onPrimary} />
-      </Animated.View>
-    </Pressable>
+    <View style={{ position: 'absolute', right: KIT.size.newChatRight, bottom: barSpace }}>
+      <PopIn rise={NEW_CHAT_RISE}>
+        <Pressable
+          testID="messages-new"
+          accessibilityRole="button"
+          accessibilityLabel={tr.messages.newMessage}
+          onPress={onPress}
+          onPressIn={press.onPressIn}
+          onPressOut={press.onPressOut}
+        >
+          <Animated.View
+            style={{
+              width: KIT.size.newChat,
+              height: KIT.size.newChat,
+              borderRadius: KIT.size.newChat / 2,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: KIT.primary,
+              boxShadow: shadow.boxShadow,
+              transform: [{ scale: press.scale }],
+            }}
+          >
+            {shadow.node}
+            <CapIcon name="plus" color={KIT.onPrimary} soft={NEW_CHAT_SOFT} />
+          </Animated.View>
+        </Pressable>
+      </PopIn>
+    </View>
   );
 }
+const NEW_CHAT_RISE = 12;
+// The plus's second stroke on the primary (the board: .62).
+const NEW_CHAT_SOFT = 0.62;
 
 // "Yeni mesaj": the friends to write to, as a list; a row opens the conversation.
 function FriendPicker({ visible, onClose }: { visible: boolean; onClose: () => void }) {
@@ -215,9 +220,9 @@ function Chats({ now }: { now: Date }) {
     );
   }
   return (
-    <View style={{ paddingBottom: KIT.size.btn }}>
+    <View style={{ paddingBottom: KIT.size.newChat }}>
       {/* The room under the last row for the "+" over it. */}
-      <RowList>
+      <RowList inset={KIT.size.av.seat + KIT.size.liGap}>
         {inbox.data.map((t, i) => (
           <Rise key={t.publicId} index={i}>
             <InboxRow thread={t} now={now} listen={i < TYPING_ROWS} />
@@ -235,8 +240,9 @@ const WARM_ROWS = 20;
 // of channels, and the rows further down are off screen.
 const TYPING_ROWS = 30;
 
-// A conversation (docs/design/aura → Mesajlar: `.li`): the face, the name and the time on top, the
-// last message or "yazıyor" below, the unread count as a pink badge.
+// A conversation (docs/design/aura → Mesajlar: `.li`): the 58 face, the name (18) and the read
+// ticks and time (14) on top, the last message (15) or "yazıyor" below, the unread count as a pink
+// badge.
 function InboxRow({
   thread: t,
   now,
@@ -254,21 +260,24 @@ function InboxRow({
     <Li
       testID={`inbox-${name}`}
       accessibilityLabel={tr.messages.row(name, t.lastBody ?? tr.messages.noMessage, t.unreadCount)}
+      padY={KIT.size.inboxPadY}
       onPress={
         threadId ? () => openDm({ threadId, publicId: t.publicId, name: t.displayName }) : undefined
       }
     >
-      <Av size="row" name={name} photoUrl={t.photoUrl} />
+      <Av size="seat" name={name} photoUrl={t.photoUrl} />
       <View style={{ flex: 1, gap: ROW_GAP }}>
         <View style={BETWEEN}>
-          <T v="h3" style={{ flexShrink: 1 }}>
+          <T v="sec" style={{ flexShrink: 1 }}>
             {name}
           </T>
           {t.lastMessageAt ? (
             // The own last message's ticks by the time (Telegram Android).
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.tagGap }}>
-              {t.lastFromMe && t.lastStatus ? <DeliveryTicks delivery={t.lastStatus} /> : null}
-              <T v="stamp">
+              {t.lastFromMe && t.lastStatus ? (
+                <DeliveryTicks delivery={t.lastStatus} size={INBOX_TICK} />
+              ) : null}
+              <T v="fineLg">
                 {tr.messages.stamp(t.lastMessageAt, inboxStamp(t.lastMessageAt, now))}
               </T>
             </View>
@@ -292,7 +301,8 @@ function InboxRow({
     </Li>
   );
 }
-const ROW_GAP = 3;
+const ROW_GAP = 4;
+const INBOX_TICK = 17;
 const BETWEEN = {
   flexDirection: 'row' as const,
   alignItems: 'center' as const,
@@ -304,7 +314,7 @@ const BETWEEN = {
 function Preview({ thread: t, unread }: { thread: DmInboxThread; unread: boolean }) {
   return (
     <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: KIT.size.tagGap }}>
-      <T v="fine" ink={unread} strong={unread} lines={1} style={{ flex: 1 }}>
+      <T v="body" ink={unread} strong={unread} lines={1} style={{ flex: 1 }}>
         {t.lastBody ?? tr.messages.noMessage}
       </T>
     </View>
@@ -340,67 +350,6 @@ function TypingOr({
       <T v="fine" strong color={KIT.primary}>
         {tr.messages.typing}
       </T>
-    </View>
-  );
-}
-
-// Waiting friend requests as a scene above the chats (docs/design/aura → Mesajlar): two buddies at
-// the right, the words and a small round "forward" at the left; a press opens İstekler.
-function IncomingScene({ count, onPress }: { count: number; onPress: () => void }) {
-  const [width, setWidth] = useState(0);
-  const g = AURA.gatherings.messages;
-  return (
-    <Pressable
-      testID="messages-incoming"
-      accessibilityRole="button"
-      accessibilityLabel={`${tr.messages.incomingTitle}, ${tr.messages.incomingBody(count)}`}
-      onPress={onPress}
-      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
-      style={{ height: g.height, borderRadius: AURA.scene.radius, overflow: 'hidden' }}
-    >
-      <SceneGround />
-      {width > 0 ? <Gathering kind="messages" width={width} delay={INCOMING_CAST_DELAY} /> : null}
-      <View
-        style={{
-          position: 'absolute',
-          left: KIT.size.pad,
-          top: INCOMING_TOP,
-          width: INCOMING_WIDTH,
-          gap: KIT.size.tagGap,
-        }}
-      >
-        <T v="h3">{tr.messages.incomingTitle}</T>
-        <T v="fine">{tr.messages.incomingBody(count)}</T>
-        <View style={{ marginTop: KIT.size.tagGap }}>
-          <SmallRound />
-        </View>
-      </View>
-    </Pressable>
-  );
-}
-
-// The buddies come in after the screen's own arrival.
-const INCOMING_CAST_DELAY = 200;
-const INCOMING_TOP = 16;
-const INCOMING_WIDTH = 196;
-const SMALL_ROUND = 30;
-
-function SmallRound() {
-  const { c } = useKit();
-  return (
-    <View
-      style={{
-        width: SMALL_ROUND,
-        height: SMALL_ROUND,
-        borderRadius: SMALL_ROUND / 2,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: c.raisedRound,
-        borderWidth: KIT.size.edge,
-        borderColor: c.raisedEdge,
-      }}
-    >
-      <CapIcon name="forward" color={c.ink} size={KIT.size.iconSm} />
     </View>
   );
 }

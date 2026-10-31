@@ -12,7 +12,7 @@ import { memo, useCallback, useEffect, useMemo, useReducer, useRef, useState } f
 import { Alert, BackHandler, View } from 'react-native';
 
 import { Button } from '@/components/Button';
-import { Avatar } from '@/components/Avatar';
+import { Av } from '@/aura/kit';
 import { ChatBubble, type ChatQuote, type Delivery, TypingBubble } from '@/components/ChatBubble';
 import { type ChatListItem, ChatRow, ChatScreen, DayLine, dayLabel } from '@/components/ChatScreen';
 import { ChatTopBar } from '@/components/ChatTopBar';
@@ -429,7 +429,7 @@ export default function DmScreen() {
           onBack={backToInbox}
           split
           title={name}
-          leading={<Avatar kind="profile" name={name} size="md" photoUrl={photoUrl} />}
+          leading={<Av size="md" name={name} photoUrl={photoUrl} />}
           onPressTitle={openProfile}
           titleAccessibilityLabel={name}
           actions={

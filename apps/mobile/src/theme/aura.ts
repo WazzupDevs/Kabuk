@@ -220,15 +220,6 @@ export const AURA = {
         { look: 'c:turkuaz e:klasik h:kovboy', x: 198, bottom: -18, height: 155 },
       ],
     },
-    messages: {
-      frame: 350,
-      height: 112,
-      disk: null,
-      cast: [
-        { look: 'c:yesil e:klasik h:papatya m:gulumse', x: 218, bottom: -14, height: 92 },
-        { look: 'c:krem e:koyu h:tavsan', x: 282, bottom: -10, height: 84 },
-      ],
-    },
   },
   // Buddies peeking over a card's top edge (aura.css `.behind > .peek`: 58 above it, 120 high, the
   // card hiding their lower half), in a 350 wide frame: x, how far down they start, height.

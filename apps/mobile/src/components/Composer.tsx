@@ -54,7 +54,9 @@ type Props = {
 // raised pill field and a round send button, both on a soft shadow; the button fills with the accent
 // once there is something to send. Over a chat's stream the field and the button are the tab bar's
 // liquid glass (the owner's call, 27 Ekim); a sent message flies off with the arrow.
-const SIZE = KIT.size.field;
+// docs/design/aura → Dm: the field 58, the send button 62.
+const SIZE = KIT.size.composerField;
+const SEND = KIT.size.composerSend;
 const MUTED_SEND = 0.45;
 // The arrow's flight: out to the right, then back in from the left.
 const FLY_OUT_MS = 150;
@@ -90,7 +92,7 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
     true,
     KIT.size.edge,
   );
-  const sendShadow = shadowParts(shadowOff, KIT.sendShadow, undefined, SIZE / 2);
+  const sendShadow = shadowParts(shadowOff, KIT.sendShadow, undefined, SEND / 2);
   const pressScale = usePressScale();
   const inactive = sendDisabled || sending;
   const followEnd = useChatEnd();
@@ -187,9 +189,9 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
             <View
               style={[
                 {
-                  width: SIZE,
-                  height: SIZE,
-                  borderRadius: SIZE / 2,
+                  width: SEND,
+                  height: SEND,
+                  borderRadius: SEND / 2,
                   alignItems: 'center',
                   justifyContent: 'center',
                   // docs/design/aura → Dm (`.send`): the ink's round button.
