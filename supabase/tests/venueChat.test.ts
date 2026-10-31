@@ -1005,6 +1005,55 @@ describe('venue chat: one message per client id', () => {
     expect(other.body.messageId).not.toBe(first.body.messageId);
   });
 
+  it('answers identity_mismatch when the identity is not the one the message went with', async () => {
+    const { a } = await threeAtVenue();
+    await sql`update public.venue_chat_rate set last_sent_at = '-infinity'`;
+    const clientId = randomUUID();
+    const first = await invoke(a, 'venue-chat', {
+      action: 'send',
+      venueId: venue[V],
+      body: 'anonim',
+      identity: 'anonymous',
+      clientId,
+    });
+    expect(first.status).toBe(200);
+    // The app believes it is profiled now: the anonymous message never answers as its send.
+    expect(
+      await invoke(a, 'venue-chat', {
+        action: 'send',
+        venueId: venue[V],
+        body: 'anonim',
+        identity: 'profiled',
+        clientId,
+      }),
+    ).toEqual({ status: 409, body: errorBody('identity_mismatch') });
+    expect(
+      await invoke(a, 'venue-chat', {
+        action: 'send',
+        venueId: venue[V],
+        body: 'anonim',
+        identity: 'anonymous',
+        clientId,
+      }),
+    ).toEqual(first);
+    expect(await rowsOf(clientId)).toHaveLength(1);
+  });
+
+  it('answers no_active_table after the check-in ends, as any send', async () => {
+    const { a } = await threeAtVenue();
+    await sql`update public.venue_chat_rate set last_sent_at = '-infinity'`;
+    const clientId = randomUUID();
+    expect((await sendOnce(a, 'son', clientId)).status).toBe(200);
+    await sql`
+      update public.table_sessions set expires_at = now() - interval '1 minute'
+      where user_id = ${await userIdOf(a)} and status = 'active'
+    `;
+    expect(await sendOnce(a, 'son', clientId)).toEqual({
+      status: 409,
+      body: errorBody('no_active_table'),
+    });
+  });
+
   it('writes a new message for each send without a client id (apps before P5)', async () => {
     const { a } = await threeAtVenue();
     const one = await send(a, 'kimliksiz');

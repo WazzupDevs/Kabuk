@@ -4,7 +4,12 @@
 -- when the answer did not come (Tekrar dene). The same account and the same id are one message:
 -- - the second send writes nothing, counts nothing against the rate limit and answers the first
 --   message's id (`replayed`: the Edge Function then broadcasts nothing);
--- - the same id with another body, venue or reply is client_id_reused and nothing is written;
+-- - the same id with another body, venue or reply, or from another check-in, is client_id_reused;
+--   with another identity than the first message went with, identity_mismatch (a message believed
+--   anonymous never answers as sent when it went profiled); nothing is written;
+-- - only with the live check-in the first message was written in: after it ends, no_active_table
+--   as for any send. The sender's own message deleted or hidden since still answers its id (the
+--   query is the sender's own: nothing about another account's messages or ids);
 -- - two sends at once: the check-in's lock (`table_sessions`, for no key update, as before) puts
 --   them one after the other and the second finds the first; the unique index is the last word.
 -- `client_id` is optional: without it every send is a new message, as before. It never leaves the
@@ -47,25 +52,29 @@ begin
     and status = 'active' and expires_at > now()
   for no key update;
 
+  if ts.id is null then
+    raise exception using errcode = 'P0001', message = 'no_active_table';
+  end if;
+
   -- Sent before (its answer lost): the same message, nothing new. Read after the check-in's lock,
   -- so a send running at the same time has finished.
   if new_client_id is not null then
     select * into prior from public.venue_chat_messages
     where sender_user_id = target_user_id and client_id = new_client_id;
     if prior.id is not null then
-      if prior.venue_id <> target_venue_id or prior.body <> new_body
-        or prior.reply_to_id is distinct from reply_to then
+      if prior.session_id <> ts.id or prior.venue_id <> target_venue_id
+        or prior.body <> new_body or prior.reply_to_id is distinct from reply_to then
         raise exception using errcode = 'P0001', message = 'client_id_reused';
+      end if;
+      if (expected_identity is not null and prior.profiled <> (expected_identity = 'profiled'))
+        or (expected_identity is null and profiled is not null and prior.profiled <> profiled) then
+        raise exception using errcode = 'P0001', message = 'identity_mismatch';
       end if;
       message_id := prior.id;
       replayed := true;
       return next;
       return;
     end if;
-  end if;
-
-  if ts.id is null then
-    raise exception using errcode = 'P0001', message = 'no_active_table';
   end if;
 
   chosen := ts.identity_mode;
