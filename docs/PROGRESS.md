@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (31 Ekim 2026, 4.8a birleşti)
+
+- 4.8a #331 birleşti (`guvenlik`: bulgu yok): eski modelin okuyanları uygulamadan, fonksiyonlardan, betiklerden ve testlerden çıktı; `scripts/v4-cleanup.test.ts` adları denetler. Migration ve native yok; yayın deploy-dev + OTA.
+- Sıradaki: **4.8b** migration (`…_v4_cleanup.sql`, SPEC_V4 §4.H): `game_proposals` ve öneri fonksiyonları, taraf kolonları ve fonksiyonları, dört eski lobi okuması, `table_sessions`/`rooms` eski kolonları, `rooms_end` → `decision_seconds`, `checkin_key`; sonra `pnpm gen:types`, `rooms.test.ts`'teki `rooms_propose_game` satırı. Kural 10 metninden `game_proposals` çıkar → proje sahibinin "onaylandı"sı gerekir.
+- 4.8b'den ayrı tutulacak: mekan sohbetinin `profiled` alanı ve `venue_chat_profiled` (0.9.3 öncesi build'ler gönderiyor); `MIN_APP_BUILD` 0.9.3'e çekildikten sonra.
+- Oyunların taraf kodu (Sahtekar koltukları, Tabu modları, kapışma hakları) 4.8'de değil, her oyunun kişi bazlı adımıyla (4.6.x) gider.
+
 ## Devir notu (31 Ekim 2026, Grup 7 kod tamamlandı)
 
 - Grup 7 (Keşfet ve Ayarlar, aura v51): **kod tamamlandı**: K1 #324, K2 #325, K3 #326, K4 #327, K5 #328, K6 #329 (`guvenlik`: bulgu yok); native yok, yayın OTA. **Cihaz kabulü bekliyor** (kabul raporu §7), son toplu kabulde.
