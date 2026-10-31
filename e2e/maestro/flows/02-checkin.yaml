@@ -1,6 +1,6 @@
 # V4 (and V3's refusal): pick the venue by hand, check in from outside the boundary (refused), then
-# inside at a spot. Keşfet starts with two venues (list and map), then shows the pilot's single
-# venue card once the bot closes the other venues (docs/SPEC_V3.md §4.4).
+# inside at a spot. Keşfet starts with two venues (list and map), and stays a list once the bot
+# closes the other venues (aura 31, docs/SPEC_V4.md §4.C).
 appId: app.kabuk.mobile
 ---
 - scrollUntilVisible:
@@ -100,29 +100,31 @@ appId: app.kabuk.mobile
     timeout: 10000
 - takeScreenshot: 06-venue-detail
 - back
-# One active venue: the single venue card, its events and "Yeni mekanlar yakında"; no list/map.
+# One active venue: Keşfet is still the list (aura 31); the venue page carries the week's events.
 - runScript:
     file: ../scripts/bot.js
     env:
       ACTION: single-venue
 - launchApp
-- extendedWaitUntil:
-    visible: Yeni mekanlar yakında.
-    timeout: 30000
 # The launch curtain (src/features/launch/LaunchCurtain.tsx) mounts before the first screen and
 # opens onto it; the flow looks at the screen once it is gone.
 - extendedWaitUntil:
     notVisible:
       id: launch-curtain
     timeout: 15000
-- assertVisible: E2E Kafe
-- assertNotVisible: Liste
+- extendedWaitUntil:
+    visible: E2E Kafe
+    timeout: 30000
+- assertVisible: Liste
 - takeScreenshot: 06b-explore-single
+- tapOn: E2E Kafe
+- extendedWaitUntil:
+    visible: Buraya giriş yap
+    timeout: 10000
 - tapOn: Buraya giriş yap
 - extendedWaitUntil:
     visible: Konumumu kullan
     timeout: 10000
-- tapOn: Konumumun bu amaçla kullanılmasına açık rıza veriyorum.
 # "Neredesin?" is in the same sheet (skall tuvali, KesfetGirisKampus): the spot comes first, then the
 # position. A check-in opens no table and asks no headcount (docs/SPEC_V4.md §4.E).
 - assertVisible: Neredesin\?

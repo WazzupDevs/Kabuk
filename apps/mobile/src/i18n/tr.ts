@@ -362,7 +362,8 @@ export const tr = {
     eventKind: 'Etkinlik',
     eventLabel: (title: string, venue: string, when: string) => `${title}, ${venue}, ${when}`,
     noEvents: 'Bugün etkinlik yok',
-    noEventsHint: 'Mekanların bugünkü etkinlikleri burada görünür; haftanın geri kalanı Keşfet’te.',
+    noEventsHint:
+      'Mekanların bugünkü etkinlikleri burada görünür; haftanın geri kalanı mekan sayfasında.',
     days: {
       today: 'Bugün',
       yesterday: 'Dün',
