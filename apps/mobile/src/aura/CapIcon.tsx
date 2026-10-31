@@ -34,6 +34,7 @@ export type CapIconName =
   | 'doc'
   | 'refresh'
   | 'photo'
+  | 'gallery'
   | 'eyeOff'
   | 'personRemove';
 
@@ -199,6 +200,12 @@ const ICONS: Record<CapIconName, Part[]> = {
     rect(3.4, 7.2, 17.2, 12.6, 4, 'b'),
     rect(8.4, 4.4, 7.2, 3.6, 1.8, 'b'),
     circ(12, 13.4, 3.3, 'a'),
+  ],
+  // A picture: a frame, the sun and the hills (aura v50, GaleriProfil: Galeriden seç).
+  gallery: [
+    rect(3.4, 4.4, 17.2, 15.2, 4, 'b'),
+    circ(9, 9.6, 2, 'a'),
+    line('M6.4 16.6l4-4 3 3 2-2 2.4 2.4', 'a'),
   ],
   // An eye, crossed out.
   eyeOff: [

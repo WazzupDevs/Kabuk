@@ -4,9 +4,9 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Alert, View } from 'react-native';
 
+import { Btn } from '@/aura/kit';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
-import { IconButton, MoreDots } from '@/components/IconButton';
 import { Loader } from '@/components/Loader';
 import { Menu, MenuItem } from '@/components/Menu';
 import { Screen } from '@/components/Screen';
@@ -15,13 +15,14 @@ import { ReportModal } from '@/features/chat/ReportModal';
 import { FriendActions } from '@/features/friends/FriendActions';
 import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
 import { friendKeys, useFriends } from '@/features/friends/queries';
-import { ProfileHead } from '@/features/profile/ProfileCard';
+import { ProfileHead, ProfileTopBar } from '@/features/profile/ProfileCard';
 import { useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { ApiError, friendsApi, safetyApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { KIT } from '@/theme/auraKit';
 
 // Another account's profile: only while the viewer may see it (a friend, or the other table of
 // the current room). Anything else, including a room that just ended, reads as "not visible"
@@ -74,25 +75,10 @@ export default function PersonScreen() {
 
   return (
     <Screen refreshable>
-      <View className="mb-2 flex-row items-center justify-between">
-        <IconButton
-          round
-          icon="chevron-back"
-          label={tr.common.back}
-          onPress={() => router.back()}
-          testID="profile-back"
-        />
-        {view.data ? (
-          <IconButton
-            round
-            icon="ellipsis-vertical"
-            glyph={<MoreDots />}
-            label={tr.profile.more}
-            onPress={() => setMenu(true)}
-            testID="profile-more"
-          />
-        ) : null}
-      </View>
+      <ProfileTopBar
+        onBack={() => router.back()}
+        onMore={view.data ? () => setMenu(true) : undefined}
+      />
       {view.isPending ? (
         <View className="mt-16 items-center">
           <Loader />
@@ -116,7 +102,7 @@ export default function PersonScreen() {
       )}
       {hidden ? (
         <View className="mt-auto pt-8">
-          <Button label={tr.profile.back} onPress={() => router.back()} />
+          <Btn block bar={KIT.size.btnRow} label={tr.profile.back} onPress={() => router.back()} />
         </View>
       ) : null}
       {/* skall tuvali (ProfilBaskasiSecenekler, ProfilYabanciSecenekler). */}
@@ -128,7 +114,7 @@ export default function PersonScreen() {
         <Menu>
           {friend ? (
             <MenuItem
-              icon="person-remove-outline"
+              cap="personRemove"
               label={tr.friends.removeFriend}
               testID="profile-remove"
               onPress={() => {
@@ -140,7 +126,7 @@ export default function PersonScreen() {
           {friend ? (
             <MenuItem
               negative
-              icon="ban-outline"
+              cap="block"
               label={tr.friends.block}
               testID="profile-block"
               onPress={() => {
@@ -151,7 +137,7 @@ export default function PersonScreen() {
           ) : null}
           <MenuItem
             negative
-            icon="alert"
+            cap="report"
             label={tr.chat.report}
             testID="profile-report"
             onPress={() => {

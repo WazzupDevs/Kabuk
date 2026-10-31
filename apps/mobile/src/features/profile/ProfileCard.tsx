@@ -9,7 +9,7 @@ import { Mark } from '@/components/Mark';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { usePhoto } from '@/lib/usePhoto';
-import { Glass, T } from '@/aura/kit';
+import { Glass, Round, T } from '@/aura/kit';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/tokens';
@@ -40,6 +40,19 @@ function nameLine(profile: Profile): string {
 // A profile's head (v45: .phero), the own one and another person's: the photo in its ring, the name
 // with the age in the quiet colour (never the birth date, rule 11) and the bio, centred; then the
 // actions.
+// The top of another person's profile and of a venue chat profile (aura v50, ProfilBaskasi): a
+// round 48 back on the left, "Seçenekler" on the right once the profile is shown.
+export function ProfileTopBar({ onBack, onMore }: { onBack: () => void; onMore?: () => void }) {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+      <Round big icon="back" label={tr.common.back} onPress={onBack} testID="profile-back" />
+      {onMore ? (
+        <Round big icon="more" label={tr.profile.more} onPress={onMore} testID="profile-more" />
+      ) : null}
+    </View>
+  );
+}
+
 export function ProfileHead({
   profile,
   capsule,

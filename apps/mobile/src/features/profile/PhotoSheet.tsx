@@ -64,13 +64,13 @@ export function PhotoSheet({ visible, onClose, canRemove = false, onSet }: Props
       {/* skall tuvali (ProfilDuzenleFoto): the three ways in one menu, removing in red. */}
       <Menu>
         <MenuItem
-          icon="camera-outline"
+          cap="photo"
           label={tr.profile.photoFromCamera}
           onPress={() => !busy && setPhoto.mutate('camera')}
           loading={setPhoto.isPending && setPhoto.variables === 'camera'}
         />
         <MenuItem
-          icon="images-outline"
+          cap="gallery"
           testID="photo-from-library"
           label={tr.profile.photoFromLibrary}
           onPress={() => !busy && setPhoto.mutate('library')}
@@ -79,7 +79,7 @@ export function PhotoSheet({ visible, onClose, canRemove = false, onSet }: Props
         {canRemove ? (
           <MenuItem
             negative
-            icon="trash-outline"
+            cap="trash"
             label={tr.profile.photoRemove}
             onPress={() => !busy && removePhoto.mutate()}
             loading={removePhoto.isPending}

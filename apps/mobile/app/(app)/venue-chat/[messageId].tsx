@@ -4,9 +4,9 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Alert, View } from 'react-native';
 
+import { Btn, T } from '@/aura/kit';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
-import { IconButton, MoreDots } from '@/components/IconButton';
 import { Menu, MenuItem } from '@/components/Menu';
 import { Screen } from '@/components/Screen';
 import { Sheet } from '@/components/Sheet';
@@ -16,13 +16,14 @@ import { ReportModal } from '@/features/chat/ReportModal';
 import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
 import { FriendActions } from '@/features/friends/FriendActions';
 import { friendKeys, useFriends } from '@/features/friends/queries';
-import { ProfileHead } from '@/features/profile/ProfileCard';
+import { ProfileHead, ProfileTopBar } from '@/features/profile/ProfileCard';
 import { useVenueChatProfile } from '@/features/venueChat/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { friendsApi, safetyApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { KIT } from '@/theme/auraKit';
 
 // The sender of a profiled venue chat message, opened through the message (docs/SPEC_V3.md §7.5):
 // no public_id. "Arkadaşlık isteği gönder" asks first, because the request shows the other side
@@ -76,25 +77,10 @@ export default function VenueChatProfileScreen() {
     <Screen>
       {/* Like a friend's profile (the owner's call, 27 Ekim; skall tuvali, ProfilYabanci): the
           round back and "Seçenekler" on top, the profile's head, the request under it. */}
-      <View className="mb-2 flex-row items-center justify-between">
-        <IconButton
-          round
-          icon="chevron-back"
-          label={tr.common.back}
-          onPress={() => router.back()}
-          testID="profile-back"
-        />
-        {view.data ? (
-          <IconButton
-            round
-            icon="ellipsis-vertical"
-            glyph={<MoreDots />}
-            label={tr.profile.more}
-            onPress={() => setMenu(true)}
-            testID="profile-more"
-          />
-        ) : null}
-      </View>
+      <ProfileTopBar
+        onBack={() => router.back()}
+        onMore={view.data ? () => setMenu(true) : undefined}
+      />
       {view.isPending ? (
         <View className="mt-16 items-center">
           <Loader />
@@ -107,13 +93,15 @@ export default function VenueChatProfileScreen() {
             {friend ? (
               <FriendActions friend={friend} />
             ) : sent ? (
-              <Text variant="fine" align="center" testID="venue-chat-request-sent">
+              <T v="fine" center testID="venue-chat-request-sent">
                 {tr.venueChat.requestSent}
-              </Text>
+              </T>
             ) : (
-              <Button
+              <Btn
+                block
+                bar={KIT.size.btnRow}
                 testID="venue-chat-request"
-                icon="person-add-outline"
+                icon="invite"
                 label={tr.venueChat.sendRequest}
                 onPress={() => setConfirming(true)}
               />
@@ -123,7 +111,7 @@ export default function VenueChatProfileScreen() {
       )}
       {!view.isPending && !view.data ? (
         <View className="mt-auto pt-8">
-          <Button label={tr.profile.back} onPress={() => router.back()} />
+          <Btn block bar={KIT.size.btnRow} label={tr.profile.back} onPress={() => router.back()} />
         </View>
       ) : null}
       <Sheet
@@ -134,7 +122,7 @@ export default function VenueChatProfileScreen() {
         <Menu>
           <MenuItem
             negative
-            icon="alert"
+            cap="report"
             label={tr.chat.report}
             testID="profile-report"
             onPress={() => {
@@ -144,7 +132,7 @@ export default function VenueChatProfileScreen() {
           />
           <MenuItem
             negative
-            icon="ban-outline"
+            cap="block"
             label={tr.safety.block}
             testID="profile-block"
             onPress={() => {

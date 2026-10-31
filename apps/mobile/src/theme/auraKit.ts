@@ -176,6 +176,9 @@ export const KIT = {
     // Masa kur (aura v47): a text link and a note's warning on the sheet, at 4.5:1 or more.
     link: '#6A47F5',
     warn: '#A8301A',
+    // "Arkadaşsınız" on another person's profile (aura v50, ProfilBaskasi): a soft green pill.
+    friendPill: 'rgba(28, 140, 78, 0.12)',
+    friendPillInk: '#0F5C31',
   },
   dark: {
     ink: '#F3F0FF',
@@ -214,6 +217,8 @@ export const KIT = {
     switchInset: '',
     link: '#9C86FF',
     warn: '#FF977E',
+    friendPill: 'rgba(95, 198, 160, 0.16)',
+    friendPillInk: '#9BE3C4',
   },
   // The same in both schemes.
   primary: '#6A47F5',
