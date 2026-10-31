@@ -244,7 +244,7 @@ export function Btn({
 }: {
   label: string;
   onPress?: () => void;
-  variant?: 'primary' | 'glassy' | 'dark';
+  variant?: 'primary' | 'glassy' | 'dark' | 'danger';
   sm?: boolean;
   // Mekan's "Masa kur": 44 high, 15.
   mid?: boolean;
@@ -270,11 +270,16 @@ export function Btn({
   const shadowOff = useLabOff('golge');
   const frosted = useFrost() && variant === 'glassy';
   const fg =
-    tint ?? (variant === 'primary' ? KIT.onPrimary : variant === 'dark' ? c.onChipOn : c.ink);
+    tint ??
+    (variant === 'primary' || variant === 'danger'
+      ? KIT.onPrimary
+      : variant === 'dark'
+        ? c.onChipOn
+        : c.ink);
   const shadow =
     variant === 'primary'
       ? shadowParts(shadowOff, KIT.primaryShadow, c.primaryInset, KIT.size.btn)
-      : variant === 'dark'
+      : variant === 'dark' || variant === 'danger'
         ? null
         : shadowParts(
             shadowOff,
@@ -287,14 +292,16 @@ export function Btn({
   const ground: ViewStyle =
     variant === 'primary'
       ? { backgroundColor: KIT.primary, boxShadow: shadow?.boxShadow }
-      : variant === 'dark'
-        ? { backgroundColor: c.chipOn }
-        : {
-            backgroundColor: frosted ? undefined : c.raised,
-            borderWidth: KIT.size.edge,
-            borderColor: c.raisedEdge,
-            boxShadow: shadow?.boxShadow,
-          };
+      : variant === 'danger'
+        ? { backgroundColor: KIT.danger }
+        : variant === 'dark'
+          ? { backgroundColor: c.chipOn }
+          : {
+              backgroundColor: frosted ? undefined : c.raised,
+              borderWidth: KIT.size.edge,
+              borderColor: c.raisedEdge,
+              boxShadow: shadow?.boxShadow,
+            };
   const off = disabled && !loading;
   const height = bar
     ? bar

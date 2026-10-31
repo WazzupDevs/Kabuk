@@ -3,17 +3,15 @@ import Constants from 'expo-constants';
 import { useState } from 'react';
 import { Linking, View } from 'react-native';
 
-import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
-import { Menu, MenuItem } from '@/components/Menu';
+import { Btn, Glass, RowList, T, useKit } from '@/aura/kit';
 import { PageTop } from '@/components/PageTop';
 import { Screen } from '@/components/Screen';
 import { Sheet } from '@/components/Sheet';
-import { Text } from '@/components/Text';
 import { Wordmark } from '@/components/Wordmark';
 import { useProfile } from '@/features/account/useProfile';
 import { useSessionStore } from '@/features/auth/session';
 import { signOutOfApp } from '@/features/auth/signOut';
+import { SettingsRow } from '@/features/settings/SettingsRow';
 import { useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -21,6 +19,7 @@ import { callAccount } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
+import { KIT } from '@/theme/auraKit';
 import { SPACING } from '@/theme/tokens';
 
 const contactEmail = process.env.EXPO_PUBLIC_CONTACT_EMAIL;
@@ -35,6 +34,7 @@ function maskPhone(phone: string | undefined): string {
 // Hesap (skall tuvali, Hesap, HesapSil): the phone number, masked; what cannot be changed here;
 // İletişim, Çıkış yap and Hesabımı sil (asks first, says what goes and when the backups follow).
 export default function AccountScreen() {
+  const { c } = useKit();
   const phone = useSessionStore((s) => s.session?.user.phone);
   const own = useProfile();
   const view = useProfileView(own.data?.public_id);
@@ -53,86 +53,90 @@ export default function AccountScreen() {
   return (
     <Screen>
       <PageTop title={tr.settings.accountTitle} />
-      <View className="gap-3">
-        <Card>
-          <View className="gap-3">
-            <View className="gap-0.5">
-              <Text variant="fine">{tr.settings.phoneLabel}</Text>
-              <Text variant="heading" tabular>
-                {maskPhone(phone)}
-              </Text>
-            </View>
-            {birthDate ? (
-              <View className="gap-0.5">
-                <Text variant="fine">{tr.settings.birthDate}</Text>
-                <Text variant="heading" tabular>
-                  {tr.settings.birthDateValue(birthDate)}
-                </Text>
-              </View>
-            ) : null}
+      <View style={{ gap: KIT.size.rowGap }}>
+        <Glass pad="pad" style={{ gap: KIT.size.rowGap }}>
+          <View>
+            <T v="fine">{tr.settings.phoneLabel}</T>
+            <T v="h3" ink>
+              {maskPhone(phone)}
+            </T>
           </View>
-        </Card>
-        <Text variant="fine">{tr.settings.fixedNote}</Text>
-        <Menu>
+          {birthDate ? (
+            <View>
+              <T v="fine">{tr.settings.birthDate}</T>
+              <T v="h3" ink>
+                {tr.settings.birthDateValue(birthDate)}
+              </T>
+            </View>
+          ) : null}
+        </Glass>
+        <T v="note">{tr.settings.fixedNote}</T>
+        <RowList inset={KIT.size.icon + KIT.size.liGap}>
           {contactEmail ? (
-            <MenuItem
-              icon="chatbubble-outline"
+            <SettingsRow
+              icon="chat"
               chevron
               label={tr.settings.contact}
               onPress={() => void Linking.openURL(`mailto:${contactEmail}`)}
             />
           ) : null}
-          <MenuItem
-            icon="log-out-outline"
+          <SettingsRow
+            icon="logout"
             label={tr.settings.signOut}
             loading={signOut.isPending}
             onPress={() => signOut.mutate()}
           />
-          <MenuItem
+          <SettingsRow
             negative
-            icon="trash-outline"
+            icon="trash"
             testID="account-delete"
             label={tr.settings.deleteAccount}
             onPress={() => setDeleting(true)}
           />
-        </Menu>
-        <View className="items-center gap-2" style={{ marginTop: SPACING[6] }}>
+        </RowList>
+        <View style={{ alignItems: 'center', gap: SPACING[2], marginTop: SPACING[6] }}>
           <Wordmark height={SPACING[5]} />
-          <Text variant="fine" align="center">
+          <T v="fine" center>
             {tr.settings.version(Constants.expoConfig?.version ?? '')}
-          </Text>
-          <Text variant="fine" align="center">
+          </T>
+          <T v="fine" center>
             {tr.settings.osm}
-          </Text>
+          </T>
         </View>
       </View>
       <Sheet
         visible={deleting}
         onClose={() => setDeleting(false)}
         title={tr.settings.deleteConfirmTitle}
+        footer={
+          <View style={{ gap: KIT.size.rowGap }}>
+            <Btn
+              block
+              tall
+              variant="danger"
+              icon="trash"
+              testID="account-delete-confirm"
+              label={tr.settings.deleteAccount}
+              loading={remove.isPending}
+              onPress={() => remove.mutate()}
+            />
+            <Btn
+              block
+              tall
+              variant="glassy"
+              label={tr.common.cancel}
+              onPress={() => setDeleting(false)}
+            />
+          </View>
+        }
       >
-        <Text variant="fine">{tr.settings.deleteBody}</Text>
-        <Text variant="fine">{tr.settings.deleteBackups}</Text>
+        <T v="note">{tr.settings.deleteBody}</T>
+        <T v="note">{tr.settings.deleteBackups}</T>
         {remove.isError ? (
-          <Text variant="fine" tone="danger">
+          <T v="fine" color={c.warn}>
             {errorMessage(remove.error)}
-          </Text>
+          </T>
         ) : null}
-        <Button
-          size="lg"
-          variant="danger"
-          icon="trash-outline"
-          testID="account-delete-confirm"
-          label={tr.settings.deleteAccount}
-          loading={remove.isPending}
-          onPress={() => remove.mutate()}
-        />
-        <Button
-          size="lg"
-          variant="neutral"
-          label={tr.common.cancel}
-          onPress={() => setDeleting(false)}
-        />
       </Sheet>
     </Screen>
   );
