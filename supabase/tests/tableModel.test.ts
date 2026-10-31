@@ -684,6 +684,22 @@ describe('leaving and owning (K-13)', () => {
     await expectConsistent(roomId);
   });
 
+  // A check-in past its 4 hours whose end the cron has not run yet is gone: the table is not
+  // handed to it, and with only such a person left the table closes.
+  it("hands a leaving owner's table over to no check-in that ran out", async () => {
+    const [owner, early, late] = await all(3);
+    const roomId = await tableWith(owner, [early, late]);
+    await sql`update public.table_sessions set expires_at = now() - interval '1 second' where id = ${early.sessionId}`;
+    await leave(owner, roomId);
+    expect((await roomRow(roomId)).owner_session_id).toBe(late.sessionId);
+    const [owner2, stale] = await Promise.all([at(3), at(4)]);
+    const room2 = await tableWith(owner2, [stale]);
+    await sql`update public.table_sessions set expires_at = now() - interval '1 second' where id = ${stale.sessionId}`;
+    await leave(owner2, room2);
+    expect((await roomRow(room2)).status).toBe('closed');
+    await expectConsistent(room2);
+  });
+
   it('takes the same road when the owner leaves the venue or its account goes', async () => {
     const [owner, early, late] = await all(3);
     const roomId = await tableWith(owner, [early, late]);

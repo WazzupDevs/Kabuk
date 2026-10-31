@@ -3,6 +3,7 @@ import { Image } from 'expo-image';
 import { AppState } from 'react-native';
 import { create } from 'zustand';
 
+import { accountChange, forgetAccountMemory } from '@/features/auth/accountMemory';
 import { clearDmCache } from '@/features/friends/dmCache';
 import { resetOnboarding } from '@/features/onboarding/store';
 import { identify, resetAnalytics } from '@/lib/analytics';
@@ -25,12 +26,13 @@ let lastUser: string | null | undefined;
 // session that dropped by itself kept the friends, the inbox, the table and the blocks in the
 // cache for the next account, and the profile photos on disk).
 function noteUser(user: string | null): void {
-  const previous = lastUser;
+  const change = accountChange(lastUser, user);
   lastUser = user;
   // The conversations kept on the phone (dmCache.ts) go with the account, and with no account.
-  if (user === null || (previous && previous !== user)) void clearDmCache();
-  if (!previous || previous === user) return;
+  if (change.conversations) void clearDmCache();
+  if (!change.memory) return;
   queryClient.clear();
+  forgetAccountMemory();
   void Image.clearMemoryCache();
   void Image.clearDiskCache();
 }
