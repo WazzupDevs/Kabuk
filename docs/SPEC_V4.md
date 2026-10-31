@@ -874,6 +874,7 @@ K-77'nin altı oyunundan ilki; kaynak proje sahibinin dosyası `skall-oyun-vampi
 - Sahtekar koltukları, Tabu modları ve kapışmanın taraf hakları;
 - Poppins ve Manrope paketleri, eski tokenlar;
 - kapsam PR açıklamasında tek tek yazılır.
+- **Yapıldı** (4.8b, `20261119090000_v4_cleanup.sql`): yukarıdakiler ve mekan sohbetinin `profiled` alanı (`venue_chat_send_once` yalnızca `expected_identity` alır, `venue_chat_mode_locked` kalktı); aynı modelden kalan ölü okumalar (`room_phones`, `room_member_profile`, `sohbet_next`, `private.room_membership`, `private.own_waiting_room`) ve `rooms.guest_joined_at` tetikleyicisi de gitti; `join_requests`'i masa sahibi okur. Kalan: oyunların taraf SQL'i (4.6.x); `join_requests.requester_headcount` ve `play_history.other_headcount` okunduğu için kalır.
 
 **Diğer.** `pnpm gen:types` her migration'dan sonra çalışır. Seed yalnızca 4.4 (nick'te üretilmeyecek kısaltmalar) ve 4.6.2'de (Sohbet kartları) değişir. Kapsül kataloğu (K-46) `content/` altında JSON'dur, seed'e girmez: `pure/` altındaki üretilmiş dosyadan okunur. Kataloğun (4.4) ve masa simgelerinin (4.5) kaynağı `docs/design/kaynak/`'tır.
 
@@ -1240,7 +1241,7 @@ Bu PR yalnızca proje paragrafını ve görsel kaynak kod kuralını değiştiri
 - **4.4:** mekan sohbeti zincirinin sonuna `venue_chat_mutes` eklenir (§4.K).
 - **4.5:**
   - "Masa oturumu" ifadesi "check-in (masa oturumu)" olur; `for no key update` kuralı aynen.
-  - Zincir: `profiles` → `table_sessions` → `rooms` → `room_members` → `join_requests` → `table_votes` → `game_proposals` (4.8'e kadar) → odanın satırları (`game_players`, `tabu_turns`, `game_secrets`, `room_used_cards`, `messages` → `message_reactions`, `game_events`, `play_history`).
+  - Zincir: `profiles` → `table_sessions` → `rooms` → `room_members` → `join_requests` → `table_votes` → odanın satırları (`game_players`, `tabu_turns`, `game_secrets`, `room_used_cards`, `messages` → `message_reactions`, `game_events`, `play_history`).
   - Faz 2 eki: "Masaya katılma, masadan ayrılma ve sahiplik devri bu sırayla kilitler; her biri `locks` kalıbında testle gelir."
   - Faz 3 eki genelleşir: "Bir masanın başka bir masaya katılması iki masayı kilitler: istekçinin check-in'i → iki `rooms` satırı `id` sırasıyla → iki masanın `room_members` satırları → `join_requests`; birbirini aynı anda kabul eden iki masada biri geçer, diğeri `room_not_available` alır."
 - **4.7:** `table_invites` `join_requests`'ten sonra gelir; davete katılma alıcının check-in'ini, iki masayı `id` sırasıyla, `room_members`'ı ve daveti kilitler.

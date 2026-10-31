@@ -53,7 +53,6 @@ const STATUS: Record<ErrorCode, number> = {
   photo_required: 409,
   anonymous_not_allowed: 409,
   gender_required: 409,
-  venue_chat_mode_locked: 409,
   identity_mismatch: 409,
   client_id_reused: 409,
   identity_switch_used: 409,
