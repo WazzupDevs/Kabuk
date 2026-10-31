@@ -49,7 +49,8 @@ type Props = {
 // "Masa kur" (docs/design/aura → MasaKur; docs/SPEC_V4.md §4.E): the sheet from 96 under the
 // screen's top, the table's icon (one of the free scenes, changed with the picker), whether it goes
 // into the lobby (with the intent and game tag then: the board draws the switch off, where there
-// are none; docs/decisions/aura-31.md), the name the person sits with and "Masayı kur" at the foot.
+// are none; docs/decisions/aura-31.md), the name the person sits with and "Masayı kur" fixed at the
+// foot (aura v47).
 // The table is called by its icon (K-76); the server checks the icon, and an icon taken meanwhile
 // is swapped for a free one. Then the table opens.
 export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Props) {
@@ -104,7 +105,40 @@ export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Pro
   const picture = icon ? TABLE_ICON_IMAGES[icon] : undefined;
 
   return (
-    <Sheet visible onClose={onClose} title={tr.createTable.title} titleLarge top={SHEET_TOP}>
+    <Sheet
+      visible
+      onClose={onClose}
+      title={tr.createTable.title}
+      titleLarge
+      top={SHEET_TOP}
+      footer={
+        // aura v47 (MasaKur): "Masayı kur" stays at the foot, the notes right above it; only the
+        // content above scrolls, and only when it does not fit.
+        <View style={{ gap: KIT.size.rowGap }}>
+          {/* With the profile and no visible photo the server refuses (photo_required): said
+              before the press, not after. */}
+          {!anonymous && photo.known && !photo.has ? (
+            <T v="fine" color={KIT.danger}>
+              {tr.errors.photo_required}
+            </T>
+          ) : null}
+          {create.isError ? (
+            <T v="fine" color={KIT.danger} accessibilityLiveRegion="polite">
+              {errorMessage(create.error)}
+            </T>
+          ) : null}
+          <Btn
+            block
+            tall
+            icon="plus"
+            testID="table-create"
+            label={tr.createTable.confirm}
+            onPress={() => create.mutate()}
+            loading={create.isPending}
+          />
+        </View>
+      }
+    >
       {/* docs/design/aura → MasaKur: the chosen table as a scene, its name on a glass tag. */}
       <View
         onLayout={(e) => setSceneWidth(e.nativeEvent.layout.width)}
@@ -296,30 +330,6 @@ export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Pro
           {tr.createTable.youAre(name)}
         </T>
       </Glass>
-      {/* With the profile and no visible photo the server refuses (photo_required): said before
-          the press, not after. */}
-      {!anonymous && photo.known && !photo.has ? (
-        <T v="fine" color={KIT.danger}>
-          {tr.errors.photo_required}
-        </T>
-      ) : null}
-
-      {create.isError ? (
-        <T v="fine" color={KIT.danger} accessibilityLiveRegion="polite">
-          {errorMessage(create.error)}
-        </T>
-      ) : null}
-      {/* "Masayı kur" at the sheet's foot. */}
-      <View style={{ flexGrow: 1 }} />
-      <Btn
-        block
-        tall
-        icon="plus"
-        testID="table-create"
-        label={tr.createTable.confirm}
-        onPress={() => create.mutate()}
-        loading={create.isPending}
-      />
     </Sheet>
   );
 }
