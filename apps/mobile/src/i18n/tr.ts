@@ -759,8 +759,9 @@ export const tr = {
   },
   checkin: {
     locationTitle: 'Konumun',
+    // The consent itself (location consent draft-1, _shared/pure/consent.ts): pressing the button.
     locationBody:
-      'Mekanda olduğunu doğrulamak için konumunu bir kez kullanıyoruz. Konumun saklanmaz.',
+      '"Konumumu kullan" düğmesine basarak konumunun yalnızca mekanda olduğunu doğrulamak için bir kez kullanılmasına açık rıza verirsin. Konumun saklanmaz.',
     useLocation: 'Konumumu kullan',
     // skall tuvali (KesfetKonumIzin, KesfetMekan); approved 27 Ekim.
     deniedTitle: 'Konum izni yok',

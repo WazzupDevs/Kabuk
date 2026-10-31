@@ -6,7 +6,15 @@
 export const CURRENT_TERMS_VERSION = 'draft-1';
 export const CURRENT_KVKK_VERSION = 'draft-3';
 // Explicit consent for location use at check-in (stored on the first check-in).
-export const CURRENT_LOCATION_CONSENT_VERSION = 'draft-0';
+// draft-0: the "açık rıza veriyorum" box of the check-in sheet.
+// draft-1: no box; the text over "Konumumu kullan" says that pressing it is the consent (aura 31,
+// docs/decisions/aura-31.md). An app from before still sends draft-0 for the box it showed.
+export const CURRENT_LOCATION_CONSENT_VERSION = 'draft-1';
+const ACCEPTED_LOCATION_CONSENT_VERSIONS: readonly string[] = ['draft-0', 'draft-1'];
+
+export function acceptsLocationConsent(version: string): boolean {
+  return ACCEPTED_LOCATION_CONSENT_VERSIONS.includes(version);
+}
 
 export type ConsentState = { terms_version: string; kvkk_version: string };
 
