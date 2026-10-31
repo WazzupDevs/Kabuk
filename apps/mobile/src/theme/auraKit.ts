@@ -437,6 +437,8 @@ export const KIT = {
     sheetPadX: 20,
     sheetPadBottom: 22,
     sheetGap: 14,
+    // Masa kur (aura v47): what scrolls fades into the footer's top edge, only while it overflows.
+    sheetFooterFade: 24,
     grabW: 40,
     grabH: 5,
     msgRadius: 22,

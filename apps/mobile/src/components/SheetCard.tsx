@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useAnimatedRef } from 'react-native-reanimated';
@@ -19,13 +19,15 @@ import { useSheetDrag } from './sheetDrag';
 // follows the finger and closes (useSheetDrag); `above` (the buddies over its top edge) comes with
 // it. With a `footer` (Check-in, aura v37) the card is two parts: the content scrolls above, only
 // when it does not fit, cut square at its foot; the footer's buttons stay put under it, 18 below
-// the content.
+// the content. `footerFade` (Masa kur, aura v47) fades what scrolls into the footer's top edge, only
+// while the content does not fit.
 export function SheetCard({
   onClose,
   bottomInset,
   above,
   fill,
   footer,
+  footerFade,
   children,
 }: {
   // Unset: it cannot be pulled away (the join request).
@@ -37,6 +39,7 @@ export function SheetCard({
   fill?: boolean;
   // Buttons that stay under the scrolling content.
   footer?: ReactNode;
+  footerFade?: boolean;
   children: ReactNode;
 }) {
   const k = useKit();
@@ -52,6 +55,12 @@ export function SheetCard({
     borderTopRightRadius: KIT.size.sheetRadius,
   };
   const size = fill ? { flex: 1 } : { flexShrink: 1 };
+  // The scroll's height, its content's and the footer's: the fade shows only when content overflows.
+  const [viewH, setViewH] = useState(0);
+  const [contentH, setContentH] = useState(0);
+  const [footerH, setFooterH] = useState(0);
+  const measure = !!footer && !!footerFade;
+  const overflows = measure && viewH > 0 && footerH > 0 && contentH > viewH + 1;
   return (
     <GestureDetector gesture={pan}>
       <Animated.View style={[size, style]} collapsable={false}>
@@ -80,6 +89,8 @@ export function SheetCard({
                 keyboardShouldPersistTaps="handled"
                 onScroll={onScroll}
                 scrollEventThrottle={16}
+                onLayout={measure ? (e) => setViewH(e.nativeEvent.layout.height) : undefined}
+                onContentSizeChange={measure ? (_w, h) => setContentH(h) : undefined}
                 contentContainerStyle={{
                   flexGrow: fill ? 1 : undefined,
                   paddingTop: head,
@@ -94,6 +105,7 @@ export function SheetCard({
             </GestureDetector>
             {footer ? (
               <View
+                onLayout={measure ? (e) => setFooterH(e.nativeEvent.layout.height) : undefined}
                 style={{
                   flexShrink: 0,
                   paddingHorizontal: KIT.size.sheetPadX,
@@ -127,6 +139,19 @@ export function SheetCard({
             </View>
             {/* Under the navigation bar the card is solid; above it what scrolls fades in (with a
                 footer it is cut square, the buttons below it). */}
+            {overflows ? (
+              <View
+                pointerEvents="none"
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  bottom: footerH,
+                  height: KIT.size.sheetFooterFade,
+                  ...gradientStyle(k.c.sheetFadeBottom),
+                }}
+              />
+            ) : null}
             {footer ? null : (
               <View
                 pointerEvents="none"

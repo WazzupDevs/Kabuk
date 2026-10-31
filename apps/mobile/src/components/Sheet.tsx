@@ -40,6 +40,9 @@ type Props = {
   // The sheet reaches this far from the screen's top whatever its content (Masa kur: 96), which
   // then fills it; a `flexGrow` spacer in it keeps the last button at its foot.
   top?: number;
+  // Buttons and notes that stay at the sheet's foot under the scrolling content (Masa kur, aura v47):
+  // what scrolls fades into them only while it does not fit.
+  footer?: ReactNode;
   children: ReactNode;
 };
 
@@ -56,6 +59,7 @@ export function Sheet({
   peek,
   titleLarge,
   top,
+  footer,
   children,
 }: Props) {
   const { colors, shape } = useTheme();
@@ -128,6 +132,14 @@ export function Sheet({
             bottomInset={insets.bottom}
             above={peek ? <Peek kind={peek} /> : null}
             fill={top !== undefined}
+            footer={
+              footer ? (
+                <InSheet>
+                  <Quiet value>{footer}</Quiet>
+                </InSheet>
+              ) : undefined
+            }
+            footerFade={!!footer}
           >
             <InSheet>
               <Quiet value>
