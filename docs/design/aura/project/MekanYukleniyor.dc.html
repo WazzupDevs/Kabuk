@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Mekan ve lobi: yükleniyor</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="aura.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.end{justify-content:flex-end}
+.content>*{flex-shrink:0}
+.ph{background:rgba(20,17,43,.08)}
+.nm-p{color:#B0124F;font-weight:600}
+.nm-n{color:#9A4A00;font-weight:600}
+.msg-t{color:var(--ink)}
+.fade{position:absolute;top:0;right:0;bottom:0;width:44px;background:linear-gradient(90deg,rgba(250,248,255,0),rgba(250,248,255,.96))}
+</style>
+</helmet>
+<div class="phone" style="width: 390px">
+  <div class="aura"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i><i class="a5"></i></div>
+  <div class="content" style="gap: 14px">
+    <div class="topbar between">
+      <div class="row" style="gap: 2px; align-items: flex-end" role="img" aria-label="skall">
+        <span aria-hidden="true" style="font-size: 40px; line-height: 40px; font-weight: 800; letter-spacing: -0.04em">ska</span>
+        <svg viewBox="0 0 132 300" width="17" height="38" aria-hidden="true" style="margin-bottom: 2px"><defs><clipPath id="wm"><rect x="0" y="0" width="80" height="240" rx="40"></rect></clipPath></defs><rect x="0" y="0" width="80" height="240" rx="40" fill="#7B5CFF"></rect><rect x="52" y="60" width="80" height="240" rx="40" fill="#FF4F8B"></rect><rect x="52" y="60" width="80" height="240" rx="40" fill="#FFB547" clip-path="url(#wm)"></rect></svg>
+      </div>
+      <button class="round glassy" type="button" aria-label="Seçenekler" style="width: 48px; height: 48px; border-radius: 24px"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect class="a" x="3.4" y="9" width="3.2" height="6" rx="1.6"></rect><rect class="b" x="10.4" y="9" width="3.2" height="6" rx="1.6"></rect><rect class="a" x="17.4" y="9" width="3.2" height="6" rx="1.6"></rect></svg></button>
+    </div>
+    <div class="row between" style="padding: 0 2px; gap: 12px">
+      <p class="h3" style="font-size: 18px; line-height: 24px">Sakarya Üniversitesi<br>Esentepe Kampüsü</p>
+      <span class="live" style="font-size: 15px"><span class="dot" style="background: #1C8C4E; box-shadow: 0 0 0 4px rgba(28,140,78,.16)"></span>Mekandasın</span>
+    </div>
+    <div class="scene" style="height: 210px">
+      <div class="floor"></div>
+      <div class="col" style="position: absolute; left: 20px; top: 20px; width: 180px; gap: 6px">
+        <p class="title" style="font-size: 22px">Henüz masan yok</p>
+        <p class="fine" style="font-size: 14px; line-height: 20px">Masa kur, arkadaşlarını çağır. Ya da açık bir masaya katıl.</p>
+        <button class="btn primary sm" type="button" style="align-self: flex-start; margin-top: 6px; height: 44px; padding: 0 18px; font-size: 15px"><svg class="ci sm" viewBox="0 0 24 24" aria-hidden="true"><rect class="a" x="2.9" y="10.4" width="18.2" height="3.2" rx="1.6" transform="rotate(90 12 12)"></rect><rect class="b" x="2.9" y="10.4" width="18.2" height="3.2" rx="1.6" transform="rotate(0 12 12)"></rect></svg>Masa kur</button>
+      </div>
+      <div class="stand" style="right: 64px; bottom: 76px; width: 64px; height: 84px"><i></i><img src="/_blob/3c95b17de547b419ade9fdee006c4500" alt=""></div>
+      <div class="stand" style="right: 86px; bottom: -14px; width: 104px; height: 136px"><i></i><img src="/_blob/6f419d231e787719dcb5a35cc8a47579" alt=""></div>
+      <div class="stand" style="right: -12px; bottom: -6px; width: 92px; height: 121px"><i></i><img src="/_blob/468537658e9bb5898371c7c0de7ea0cd" alt=""></div>
+    </div>
+    <div class="glass" aria-busy="true" style="padding: 16px 18px; display: flex; flex-direction: column; gap: 10px"><div class="row between" style="gap: 12px; align-items: flex-start"><div class="row" style="gap: 4px 10px; flex-wrap: wrap; min-height: 24px"><p class="h3" style="font-size: 18px; line-height: 24px">Mekan sohbeti</p></div></div><div class="row" style="gap: 10px"><span class="ph" style="width: 32px; height: 32px; border-radius: 16px; flex: none"></span><span class="ph" style="height: 12px; width: 58%; border-radius: 6px"></span></div><div class="row" style="gap: 10px"><span class="ph" style="width: 32px; height: 32px; border-radius: 16px; flex: none"></span><span class="ph" style="height: 12px; width: 40%; border-radius: 6px"></span></div></div>
+    <div class="sec" style="gap: 12px"><h2 class="h3" style="font-size: 21px; line-height: 26px">Açık masalar</h2></div>
+    <div class="col" role="progressbar" aria-label="Açık masalar yükleniyor" style="align-items: center; padding: 18px 0 6px">
+      <svg viewBox="0 0 40 40" width="40" height="40" aria-hidden="true"><defs><clipPath id="ldm"><rect x="9" y="4" width="11" height="26" rx="5.5" transform="rotate(-14 20 20)"></rect></clipPath></defs><g transform="rotate(-14 20 20)"><rect x="9" y="4" width="11" height="26" rx="5.5" fill="#7B5CFF"></rect><rect x="17" y="10" width="11" height="26" rx="5.5" fill="#FF4F8B"></rect></g><g clip-path="url(#ldm)"><rect x="17" y="10" width="11" height="26" rx="5.5" fill="#FFB547" transform="rotate(-14 20 20)"></rect></g></svg>
+    </div>
+    <div class="sec" style="gap: 12px"><h2 class="h3" style="font-size: 21px; line-height: 26px">Süren masalar</h2></div>
+  </div>
+  <nav class="glass tabbar" aria-label="Sekmeler">
+    <span class="tab" aria-label="Keşfet"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></circle><path d="M16.3 7.7 13.7 13.7 7.7 16.3 10.3 10.3Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+    <span class="tab" aria-label="Aktiviteler"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.2" y="5.4" width="17.6" height="15.6" rx="5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></rect><path d="M8 2.8v4.6M16 2.8v4.6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path><rect x="13.4" y="13.4" width="4.2" height="4.2" rx="1.5" fill="currentColor"></rect></svg></span>
+    <span class="tab on" aria-label="Mekan"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><defs><clipPath id="tc-d-venue"><rect x="5.2" y="2.4" width="8" height="15.6" rx="4"></rect></clipPath></defs><rect x="5.2" y="2.4" width="8" height="15.6" rx="4" fill="#7B5CFF"></rect><rect x="10.8" y="6" width="8" height="15.6" rx="4" fill="#FF4F8B"></rect><g clip-path="url(#tc-d-venue)"><rect x="10.8" y="6" width="8" height="15.6" rx="4" fill="#FFB547"></rect></g></svg></span>
+    <span class="tab" aria-label="Mesajlar"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="tm-d-messages" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><rect width="24" height="24" fill="#fff"></rect><rect x="7.4" y="9.6" width="14.2" height="10.8" rx="5.4" fill="#000" stroke="#000" stroke-width="5.1"></rect></mask></defs><g mask="url(#tm-d-messages)"><rect x="2.4" y="3.2" width="14.2" height="10.8" rx="5.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></rect></g><rect x="7.4" y="9.6" width="14.2" height="10.8" rx="5.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></rect></svg></span>
+    <span class="tab" aria-label="Profil"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.8" r="4.2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></circle><rect x="4.2" y="14" width="15.6" height="7.4" rx="3.7" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></rect></svg></span>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

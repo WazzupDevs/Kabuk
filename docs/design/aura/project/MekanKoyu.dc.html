@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Mekan ve lobi: koyu</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="aura.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.end{justify-content:flex-end}
+.content>*{flex-shrink:0}
+.ph{background:rgba(20,17,43,.08)}
+.nm-p{color:#B0124F;font-weight:600}
+.nm-n{color:#9A4A00;font-weight:600}
+.msg-t{color:var(--ink)}
+.fadeline{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 44px),rgba(0,0,0,0));mask-image:linear-gradient(90deg,#000 calc(100% - 44px),rgba(0,0,0,0))}
+
+.night .scene{background:radial-gradient(90% 80% at 15% 0%,rgba(123,92,255,.45),rgba(123,92,255,0) 70%),radial-gradient(80% 80% at 95% 10%,rgba(255,79,139,.30),rgba(255,79,139,0) 70%),radial-gradient(70% 60% at 50% 110%,rgba(255,181,71,.20),rgba(255,181,71,0) 70%),linear-gradient(180deg,#221A4C,#2A1636)}
+.night .scene::after{box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.night .floor{background:radial-gradient(closest-side,rgba(255,255,255,.16),rgba(255,255,255,0))}
+.night .live{color:#F3F0FF}
+.night .tab{color:#C9C3E6}
+.night .tab.on{background:rgba(255,255,255,.16);box-shadow:none}
+.night .btn.glassy{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.16);color:#F3F0FF;box-shadow:none}
+.night .tag.purple{background:rgba(156,134,255,.20);color:#D9D0FF}
+.night .tag.pink{background:rgba(255,126,168,.20);color:#FFD0E0}
+.night .tag.glassy{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.16);color:#F3F0FF}
+.night .ph{background:rgba(255,255,255,.10)}
+.night .nm-p{color:#FFD0E0}
+.night .nm-n{color:#FFE2B8}
+.night .msg-t{color:#F3F0FF}
+</style>
+</helmet>
+<div class="phone night" style="width: 390px">
+  <div class="aura"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i><i class="a5"></i></div>
+  <div class="content end scroll-pad" style="gap: 14px">
+    <div class="topbar between">
+      <div class="row" style="gap: 2px; align-items: flex-end" role="img" aria-label="skall">
+        <span aria-hidden="true" style="font-size: 40px; line-height: 40px; font-weight: 800; letter-spacing: -0.04em">ska</span>
+        <svg viewBox="0 0 132 300" width="17" height="38" aria-hidden="true" style="margin-bottom: 2px"><defs><clipPath id="wm"><rect x="0" y="0" width="80" height="240" rx="40"></rect></clipPath></defs><rect x="0" y="0" width="80" height="240" rx="40" fill="#7B5CFF"></rect><rect x="52" y="60" width="80" height="240" rx="40" fill="#FF4F8B"></rect><rect x="52" y="60" width="80" height="240" rx="40" fill="#FFB547" clip-path="url(#wm)"></rect></svg>
+      </div>
+      <button class="round glassy" type="button" aria-label="Seçenekler" style="width: 48px; height: 48px; border-radius: 24px"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect class="a" x="3.4" y="9" width="3.2" height="6" rx="1.6"></rect><rect class="b" x="10.4" y="9" width="3.2" height="6" rx="1.6"></rect><rect class="a" x="17.4" y="9" width="3.2" height="6" rx="1.6"></rect></svg></button>
+    </div>
+    <div class="row between" style="padding: 0 2px; gap: 12px">
+      <p class="h3" style="font-size: 18px; line-height: 24px">Sakarya Üniversitesi<br>Esentepe Kampüsü</p>
+      <span class="live" style="font-size: 15px"><span class="dot" style="background: #1C8C4E; box-shadow: 0 0 0 4px rgba(28,140,78,.16)"></span>Mekandasın</span>
+    </div>
+    <div class="scene" style="height: 210px">
+      <div class="floor"></div>
+      <div class="col" style="position: absolute; left: 20px; top: 20px; width: 180px; gap: 6px">
+        <p class="title" style="font-size: 22px">Henüz masan yok</p>
+        <p class="fine" style="font-size: 14px; line-height: 20px">Masa kur, arkadaşlarını çağır. Ya da açık bir masaya katıl.</p>
+        <button class="btn primary sm" type="button" style="align-self: flex-start; margin-top: 6px; height: 44px; padding: 0 18px; font-size: 15px"><svg class="ci sm" viewBox="0 0 24 24" aria-hidden="true"><rect class="a" x="2.9" y="10.4" width="18.2" height="3.2" rx="1.6" transform="rotate(90 12 12)"></rect><rect class="b" x="2.9" y="10.4" width="18.2" height="3.2" rx="1.6" transform="rotate(0 12 12)"></rect></svg>Masa kur</button>
+      </div>
+      <div class="stand" style="right: 64px; bottom: 76px; width: 64px; height: 84px"><i></i><img src="/_blob/3c95b17de547b419ade9fdee006c4500" alt=""></div>
+      <div class="stand" style="right: 86px; bottom: -14px; width: 104px; height: 136px"><i></i><img src="/_blob/6f419d231e787719dcb5a35cc8a47579" alt=""></div>
+      <div class="stand" style="right: -12px; bottom: -6px; width: 92px; height: 121px"><i></i><img src="/_blob/468537658e9bb5898371c7c0de7ea0cd" alt=""></div>
+    </div>
+    <div class="glass" style="padding: 16px 18px; display: flex; flex-direction: column; gap: 10px"><div class="row between" style="gap: 12px; align-items: flex-start"><div class="row" style="gap: 4px 10px; flex-wrap: wrap; min-height: 24px"><p class="h3" style="font-size: 18px; line-height: 24px">Mekan sohbeti</p><span class="live" style="font-weight: 500; font-size: 13px"><span class="dot" style="background: #1C8C4E; box-shadow: 0 0 0 4px rgba(28,140,78,.16)"></span>şu an aktif</span></div></div><div class="row" style="gap: 10px"><span class="av sm c2" aria-hidden="true">A</span><p class="fine msg-t" style="font-size: 14px; line-height: 20px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; position: relative"><span class="nm-p">Ayşe</span> Üst katta boş masa var mı?</p></div><div class="row" style="gap: 10px"><span class="av sm capsule" aria-hidden="true" style="background: #F1EDFF"><img src="/_blob/3c95b17de547b419ade9fdee006c4500" alt="" style="object-fit: cover; object-position: 50% 18%"></span><p class="fine msg-t fadeline" style="font-size: 14px; line-height: 20px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; position: relative"><span class="nm-n">Roket</span> Kapsül Anlat için iki kişi arıyoruz, pencere kenarındaki uzun masadayız.</p></div></div>
+    <div class="sec" style="gap: 12px"><h2 class="h3" style="font-size: 21px; line-height: 26px">Açık masalar</h2><span class="fine" style="font-size: 14px">0 masa</span></div>
+    <div class="col" style="align-items: center; gap: 6px; padding-top: 18px; text-align: center">
+      <svg viewBox="0 0 32 48" width="28" height="42" aria-hidden="true"><rect x="12" y="12" width="12" height="28" rx="6" fill="none" stroke="#FF4F8B" stroke-width="1.3" stroke-dasharray="2.4 2.4"></rect><rect x="5" y="4" width="12" height="28" rx="6" fill="#7B5CFF"></rect></svg>
+      <p class="h3" style="font-size: 18px; line-height: 24px; margin-top: 10px">Açık masa yok</p>
+      <p class="fine" style="font-size: 14px; line-height: 20px">Masa kurup lobiye açarsan mekandakiler katılmak isteyebilir.</p>
+    </div>
+    <div class="sec" style="gap: 12px"><h2 class="h3" style="font-size: 21px; line-height: 26px">Süren masalar</h2><span class="fine" style="font-size: 14px">0 masa</span></div>
+  </div>
+  <nav class="glass tabbar" aria-label="Sekmeler">
+    <span class="tab" aria-label="Keşfet"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></circle><path d="M16.3 7.7 13.7 13.7 7.7 16.3 10.3 10.3Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+    <span class="tab" aria-label="Aktiviteler"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.2" y="5.4" width="17.6" height="15.6" rx="5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></rect><path d="M8 2.8v4.6M16 2.8v4.6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path><rect x="13.4" y="13.4" width="4.2" height="4.2" rx="1.5" fill="currentColor"></rect></svg></span>
+    <span class="tab on" aria-label="Mekan"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><defs><clipPath id="tc-c-venue"><rect x="5.2" y="2.4" width="8" height="15.6" rx="4"></rect></clipPath></defs><rect x="5.2" y="2.4" width="8" height="15.6" rx="4" fill="#7B5CFF"></rect><rect x="10.8" y="6" width="8" height="15.6" rx="4" fill="#FF4F8B"></rect><g clip-path="url(#tc-c-venue)"><rect x="10.8" y="6" width="8" height="15.6" rx="4" fill="#FFB547"></rect></g></svg></span>
+    <span class="tab" aria-label="Mesajlar"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="tm-c-messages" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><rect width="24" height="24" fill="#fff"></rect><rect x="7.4" y="9.6" width="14.2" height="10.8" rx="5.4" fill="#000" stroke="#000" stroke-width="5.1"></rect></mask></defs><g mask="url(#tm-c-messages)"><rect x="2.4" y="3.2" width="14.2" height="10.8" rx="5.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></rect></g><rect x="7.4" y="9.6" width="14.2" height="10.8" rx="5.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></rect></svg></span>
+    <span class="tab" aria-label="Profil"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.8" r="4.2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></circle><rect x="4.2" y="14" width="15.6" height="7.4" rx="3.7" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></rect></svg></span>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

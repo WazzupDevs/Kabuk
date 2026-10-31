@@ -5,11 +5,11 @@ import {
   type CheckinIdentity,
   type VenueChatMode,
   venueChatChannel,
-  venueChatLastAt,
   withVenueChatExtras,
 } from '@shared/venueChat.ts';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useState } from 'react';
+import { useIsFocused } from 'expo-router';
+import { useCallback, useEffect, useRef } from 'react';
 import { create } from 'zustand';
 
 import { useBroadcast } from '@/features/rooms/useBroadcast';
@@ -65,27 +65,19 @@ export function useVenueChat(venueId: string | undefined, sessionId: string | un
   return useQuery(venueChatPage(venueId, sessionId));
 }
 
-// When the venue chat's last message came, for the venue screen's chat card (K-12): the page once
-// (the same cache as the chat screen), then each `venue_chat` broadcast only marks the moment it was
-// heard. No read again for a message and none for a reaction: the venue screen stays open under
-// every other screen, so every phone at the venue would read the page (and sign its photos) at each
-// message. Older than CARD_STALE_MS, the page is read once more when the app comes back to the
-// front, which also catches a broadcast missed while the connection was down.
+// The venue screen's chat card (the owner's call, 27 Ekim: a fuller card; docs/design/aura →
+// Mekan): the last messages of the page, the count of others' messages after the person last read
+// the chat, and the page's state for the card's loading and error. Only real messages count: a
+// data-free `venue_chat` broadcast says nothing of who wrote, so it reads the page again rather than
+// counting as one (the person's own message and a resubscribe counted, and an empty chat looked
+// active). The venue screen stays open under every other screen, so only while Mekan is on top: a
+// message heard meanwhile is read when it comes back. Reads close together are one. Older than
+// CARD_STALE_MS, the page is read once more when the app comes back to the front.
 const CARD_STALE_MS = 5 * 60_000;
-export function useVenueChatLastAt(
-  venueId: string | undefined,
-  sessionId: string | undefined,
-): string | null {
-  const first = useQuery({ ...venueChatPage(venueId, sessionId), staleTime: CARD_STALE_MS });
-  const [heardAt, setHeardAt] = useState<string | null>(null);
-  const heard = useCallback(() => setHeardAt(new Date().toISOString()), []);
-  useBroadcast(venueId ? venueChatChannel(venueId) : null, VENUE_CHAT_BROADCAST, heard);
-  return venueChatLastAt(first.data?.messages.at(-1)?.createdAt ?? null, heardAt);
-}
-
-// The venue screen's chat card (the owner's call, 27 Ekim: a fuller card): the last messages of the
-// page it already reads (useVenueChatLastAt's rule: once, then only the broadcast's moment), and
-// whether a message came after them.
+// Between 1.5 and 4 s after the broadcast, each phone at its own moment: the broadcast reaches every
+// phone at the venue at once, and they would all read the page (and sign its photos) together.
+const CARD_READ_AFTER_MS = 1500;
+const CARD_READ_SPREAD_MS = 2500;
 const CARD_PREVIEW = 2;
 // When the person last read the venue chat, per check-in (this run of the app): Mekan's card counts
 // the messages after it (docs/design/aura → Mekan: the pink count).
@@ -98,26 +90,56 @@ export function markVenueChatSeen(sessionId: string) {
 }
 
 export function useVenueChatCard(venueId: string | undefined, sessionId: string | undefined) {
+  const queryClient = useQueryClient();
   const first = useQuery({ ...venueChatPage(venueId, sessionId), staleTime: CARD_STALE_MS });
-  const [heardAt, setHeardAt] = useState<string | null>(null);
-  const heard = useCallback(() => setHeardAt(new Date().toISOString()), []);
+  const focused = useIsFocused();
+  const missed = useRef(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+    },
+    [],
+  );
+  const read = useCallback(() => {
+    if (timer.current || !venueId || !sessionId) return;
+    timer.current = setTimeout(
+      () => {
+        timer.current = null;
+        void queryClient.invalidateQueries({
+          queryKey: venueChatKeys.page(venueId, sessionId),
+          exact: true,
+        });
+      },
+      CARD_READ_AFTER_MS + Math.random() * CARD_READ_SPREAD_MS,
+    );
+  }, [queryClient, venueId, sessionId]);
+  const heard = useCallback(() => {
+    if (focused) read();
+    else missed.current = true;
+  }, [focused, read]);
   useBroadcast(venueId ? venueChatChannel(venueId) : null, VENUE_CHAT_BROADCAST, heard);
+  useEffect(() => {
+    if (!focused || !missed.current) return;
+    missed.current = false;
+    read();
+  }, [focused, read]);
+
   const seenAt = useVenueChatSeen((s) => (sessionId ? s.seen[sessionId] : undefined));
   // The first sight of the card counts as read: the count is what came after.
   useEffect(() => {
     if (sessionId && seenAt === undefined) markVenueChatSeen(sessionId);
   }, [sessionId, seenAt]);
   const messages = first.data?.messages ?? [];
-  const newest = messages.at(-1)?.createdAt ?? null;
-  const fresh = heardAt !== null && (newest === null || heardAt > newest);
-  const counted = seenAt ? messages.filter((m) => !m.fromMe && m.createdAt > seenAt).length : 0;
   return {
-    lastAt: venueChatLastAt(newest, heardAt),
+    // The page is read once at first; a read again keeps what the card shows.
+    pending: first.isPending,
+    failed: first.isError && !first.data,
+    retrying: first.isFetching,
+    retry: () => void first.refetch(),
+    lastAt: messages.at(-1)?.createdAt ?? null,
     recent: messages.slice(-CARD_PREVIEW),
-    fresh,
-    // A message heard but not yet read in the page counts as one.
-    unread:
-      counted === 0 && fresh && heardAt !== null && (!seenAt || heardAt > seenAt) ? 1 : counted,
+    unread: seenAt ? messages.filter((m) => !m.fromMe && m.createdAt > seenAt).length : 0,
   };
 }
 

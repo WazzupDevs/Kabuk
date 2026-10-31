@@ -71,7 +71,9 @@ export function Screen({
     flexGrow: 1,
     paddingHorizontal: shape.screenPadding,
     paddingTop: top ? TOP_FADE : SPACING[3],
-    paddingBottom: SPACING[8] + barSpace,
+    // Under the tabs the last row ends 26 above the bar (aura.css `.scroll-pad`; barSpace holds 16
+    // of it and the navigation area under the bar).
+    paddingBottom: barSpace ? barSpace + SPACING[2.5] : SPACING[8],
     gap,
   };
   return (

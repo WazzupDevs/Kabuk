@@ -130,6 +130,8 @@ export const KIT = {
     ink: '#14112B',
     muted: '#5E5878',
     hair: 'rgba(20, 17, 43, 0.07)',
+    // A still placeholder for a line still loading (Mekan sohbeti kartı).
+    placeholder: 'rgba(20, 17, 43, 0.08)',
     glass: 'linear-gradient(180deg, rgba(255, 255, 255, 0.80), rgba(255, 255, 255, 0.54))',
     glassEdge: 'rgba(255, 255, 255, 0.86)',
     glassShadow: SHADOW.glass,
@@ -176,6 +178,7 @@ export const KIT = {
     ink: '#F3F0FF',
     muted: '#C9C3E6',
     hair: 'rgba(255, 255, 255, 0.08)',
+    placeholder: 'rgba(255, 255, 255, 0.10)',
     glass: 'linear-gradient(180deg, rgba(40, 33, 82, 0.72), rgba(28, 24, 56, 0.56))',
     glassEdge: 'rgba(255, 255, 255, 0.14)',
     glassShadow: SHADOW.glassDark,

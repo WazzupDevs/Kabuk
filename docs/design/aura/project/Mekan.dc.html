@@ -10,9 +10,17 @@
 <x-dc>
 <helmet>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
-<style>body{margin:0}</style>
+<style>
+body{margin:0}
+.end{justify-content:flex-end}
+.content>*{flex-shrink:0}
+.ph{background:rgba(20,17,43,.08)}
+.nm-p{color:#B0124F;font-weight:600}
+.nm-n{color:#9A4A00;font-weight:600}
+.msg-t{color:var(--ink)}
+</style>
 </helmet>
-<div class="phone">
+<div class="phone" style="width: 390px">
   <div class="aura"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i><i class="a5"></i></div>
   <div class="content" style="gap: 14px">
     <div class="topbar between">
@@ -37,25 +45,20 @@
       <div class="stand" style="right: 86px; bottom: -14px; width: 104px; height: 136px"><i></i><img src="/_blob/6f419d231e787719dcb5a35cc8a47579" alt=""></div>
       <div class="stand" style="right: -12px; bottom: -6px; width: 92px; height: 121px"><i></i><img src="/_blob/468537658e9bb5898371c7c0de7ea0cd" alt=""></div>
     </div>
-    <div class="glass" style="padding: 16px 18px; display: flex; flex-direction: column; gap: 10px">
-      <div class="row between">
-        <div class="row" style="gap: 10px"><p class="h3" style="font-size: 18px">Mekan sohbeti</p><span class="live" style="font-weight: 500"><span class="dot" style="background: #1C8C4E; box-shadow: 0 0 0 4px rgba(28,140,78,.16)"></span>şu an aktif</span></div>
-        <span class="badge" style="min-width: 24px; height: 24px; border-radius: 12px; font-size: 12px">1</span>
-      </div>
-      <p class="fine" style="font-size: 14px">Henüz kimse yazmadı. İlk mesajı sen yaz.</p>
-    </div>
-    <div class="sec"><h2 class="h3" style="font-size: 21px">Açık masalar</h2><span class="fine" style="font-size: 14px">0 masa</span></div>
+    <div class="glass" style="padding: 16px 18px; display: flex; flex-direction: column; gap: 10px"><div class="row between" style="gap: 12px; align-items: flex-start"><div class="row" style="gap: 4px 10px; flex-wrap: wrap; min-height: 24px"><p class="h3" style="font-size: 18px; line-height: 24px">Mekan sohbeti</p></div></div><p class="fine" style="font-size: 14px; line-height: 20px">Henüz kimse yazmadı. İlk mesajı sen yaz.</p></div>
+    <div class="sec" style="gap: 12px"><h2 class="h3" style="font-size: 21px; line-height: 26px">Açık masalar</h2><span class="fine" style="font-size: 14px">0 masa</span></div>
     <div class="col" style="align-items: center; gap: 6px; padding-top: 18px; text-align: center">
       <svg viewBox="0 0 32 48" width="28" height="42" aria-hidden="true"><rect x="12" y="12" width="12" height="28" rx="6" fill="none" stroke="#FF4F8B" stroke-width="1.3" stroke-dasharray="2.4 2.4"></rect><rect x="5" y="4" width="12" height="28" rx="6" fill="#7B5CFF"></rect></svg>
-      <p class="h3" style="font-size: 18px; margin-top: 10px">Açık masa yok</p>
+      <p class="h3" style="font-size: 18px; line-height: 24px; margin-top: 10px">Açık masa yok</p>
       <p class="fine" style="font-size: 14px; line-height: 20px">Masa kurup lobiye açarsan mekandakiler katılmak isteyebilir.</p>
     </div>
+    <div class="sec" style="gap: 12px"><h2 class="h3" style="font-size: 21px; line-height: 26px">Süren masalar</h2><span class="fine" style="font-size: 14px">2 masa</span></div><p class="fine" style="font-size: 14px; line-height: 20px; padding: 0 2px">Lobide değiller. Oturduğun masa buysa “Bu masadayım”a bas, masa sahibi onaylasın.</p><div class="glass list"><div class="li"><img class="thumb" src="/_blob/2680d00addbe0393e46f3b3e61b1f550" alt="" style="width: 48px; height: 48px; border-radius: 14px; background: #FFFFFF"><div class="col grow" style="gap: 3px"><p class="h3" style="font-size: 18px; line-height: 24px">Balkabağı</p><div class="row" style="gap: 6px; flex-wrap: wrap"><span class="pips" aria-hidden="true"><i></i><i></i><i></i></span><span class="fine" style="font-size: 13px">3 kişi</span><span class="tag purple" style="font-size: 12px; height: 24px">Oyun</span><span class="tag glassy" style="font-size: 12px; height: 24px">Kapsül Anlat</span></div></div><button class="btn glassy sm" type="button" style="font-size: 14px; flex: none">Bu masadayım</button></div><div class="li"><img class="thumb" src="/_blob/959a7b1d9b26a3713fa3789d0be900ae" alt="" style="width: 48px; height: 48px; border-radius: 14px; background: #FFFFFF"><div class="col grow" style="gap: 3px"><p class="h3" style="font-size: 18px; line-height: 24px">Roket</p><div class="row" style="gap: 6px; flex-wrap: wrap"><span class="pips" aria-hidden="true"><i></i><i></i></span><span class="fine" style="font-size: 13px">2 kişi</span><span class="tag pink" style="font-size: 12px; height: 24px">Sohbet</span></div></div><button class="btn glassy sm" type="button" style="font-size: 14px; flex: none">Bu masadayım</button></div></div>
   </div>
   <nav class="glass tabbar" aria-label="Sekmeler">
     <span class="tab" aria-label="Keşfet"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></circle><path d="M16.3 7.7 13.7 13.7 7.7 16.3 10.3 10.3Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
     <span class="tab" aria-label="Aktiviteler"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.2" y="5.4" width="17.6" height="15.6" rx="5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></rect><path d="M8 2.8v4.6M16 2.8v4.6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path><rect x="13.4" y="13.4" width="4.2" height="4.2" rx="1.5" fill="currentColor"></rect></svg></span>
-    <span class="tab on" aria-label="Mekan"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><defs><clipPath id="tc-mekan-venue"><rect x="5.2" y="2.4" width="8" height="15.6" rx="4"></rect></clipPath></defs><rect x="5.2" y="2.4" width="8" height="15.6" rx="4" fill="#7B5CFF"></rect><rect x="10.8" y="6" width="8" height="15.6" rx="4" fill="#FF4F8B"></rect><g clip-path="url(#tc-mekan-venue)"><rect x="10.8" y="6" width="8" height="15.6" rx="4" fill="#FFB547"></rect></g></svg></span>
-    <span class="tab" aria-label="Mesajlar"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="tm-mekan-messages" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><rect width="24" height="24" fill="#fff"></rect><rect x="7.4" y="9.6" width="14.2" height="10.8" rx="5.4" fill="#000" stroke="#000" stroke-width="5.1"></rect></mask></defs><g mask="url(#tm-mekan-messages)"><rect x="2.4" y="3.2" width="14.2" height="10.8" rx="5.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></rect></g><rect x="7.4" y="9.6" width="14.2" height="10.8" rx="5.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></rect></svg></span>
+    <span class="tab on" aria-label="Mekan"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><defs><clipPath id="tc-a-venue"><rect x="5.2" y="2.4" width="8" height="15.6" rx="4"></rect></clipPath></defs><rect x="5.2" y="2.4" width="8" height="15.6" rx="4" fill="#7B5CFF"></rect><rect x="10.8" y="6" width="8" height="15.6" rx="4" fill="#FF4F8B"></rect><g clip-path="url(#tc-a-venue)"><rect x="10.8" y="6" width="8" height="15.6" rx="4" fill="#FFB547"></rect></g></svg></span>
+    <span class="tab" aria-label="Mesajlar"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="tm-a-messages" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><rect width="24" height="24" fill="#fff"></rect><rect x="7.4" y="9.6" width="14.2" height="10.8" rx="5.4" fill="#000" stroke="#000" stroke-width="5.1"></rect></mask></defs><g mask="url(#tm-a-messages)"><rect x="2.4" y="3.2" width="14.2" height="10.8" rx="5.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></rect></g><rect x="7.4" y="9.6" width="14.2" height="10.8" rx="5.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></rect></svg></span>
     <span class="tab" aria-label="Profil"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.8" r="4.2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></circle><rect x="4.2" y="14" width="15.6" height="7.4" rx="3.7" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></rect></svg></span>
   </nav>
 </div>

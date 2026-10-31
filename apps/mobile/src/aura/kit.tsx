@@ -1,5 +1,6 @@
 import { upperTr } from '@shared/trText.ts';
 import { Image as PhotoView } from 'expo-image';
+import Reanimated, { Easing as ReEasing, FadeIn, FadeOut } from 'react-native-reanimated';
 import {
   Children,
   createContext,
@@ -463,8 +464,12 @@ export function Round({
 const BADGE_OUT = 4;
 
 // .badge: a pink count.
-export function Badge({ count, large }: { count: number; large?: boolean }) {
+// `swap`: a new count takes the old one's place, the old fading out (hareket.json → leave, 120) and the
+// new in (arrive, 180); the badge stays where it is (Mekan sohbeti kartı).
+export function Badge({ count, large, swap }: { count: number; large?: boolean; swap?: boolean }) {
   const side = large ? KIT.size.badgeLg : KIT.size.badge;
+  const label = count > 99 ? '99+' : String(count);
+  const textStyle = [large ? KIT_TYPE.badgeLg : KIT_TYPE.badge, { color: KIT.white }];
   return (
     <View
       style={{
@@ -477,15 +482,28 @@ export function Badge({ count, large }: { count: number; large?: boolean }) {
         justifyContent: 'center',
       }}
     >
-      <Text
-        maxFontSizeMultiplier={1}
-        style={[large ? KIT_TYPE.badgeLg : KIT_TYPE.badge, { color: KIT.white }]}
-      >
-        {count > 99 ? '99+' : String(count)}
-      </Text>
+      {swap ? (
+        <Reanimated.Text
+          key={label}
+          entering={FadeIn.duration(BADGE_ARRIVE_MS).easing(BADGE_ARRIVE)}
+          exiting={FadeOut.duration(BADGE_LEAVE_MS).easing(BADGE_LEAVE)}
+          maxFontSizeMultiplier={1}
+          style={textStyle}
+        >
+          {label}
+        </Reanimated.Text>
+      ) : (
+        <Text maxFontSizeMultiplier={1} style={textStyle}>
+          {label}
+        </Text>
+      )}
     </View>
   );
 }
+const BADGE_ARRIVE_MS = 180;
+const BADGE_LEAVE_MS = 120;
+const BADGE_ARRIVE = ReEasing.bezier(...MOTION.curves.arrive);
+const BADGE_LEAVE = ReEasing.bezier(...MOTION.curves.leave);
 
 // .chip (.on): a filter. `tall`: Keşfet's kind chips (38 high, 15). It sinks when pressed like every
 // button (hareket.json → press).
@@ -830,6 +848,7 @@ export function Li({
   padY = KIT.size.liPadY,
   padX = KIT.size.liPadX,
   gap = KIT.size.liGap,
+  top,
 }: {
   children: ReactNode;
   onPress?: () => void;
@@ -841,10 +860,12 @@ export function Li({
   padX?: number;
   // Between the picture and the words (Aktiviteler's rows: 14).
   gap?: number;
+  // The picture at the top rather than in the middle (the lobby's narrow row).
+  top?: boolean;
 }) {
   const style: ViewStyle = {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: top ? 'flex-start' : 'center',
     gap,
     paddingVertical: padY,
     paddingHorizontal: padX,

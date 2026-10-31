@@ -7,7 +7,6 @@ import {
   VENUE_CHAT,
   venueChatActive,
   venueChatChannel,
-  venueChatLastAt,
   venueChatRate,
   withVenueChatExtras,
 } from './venueChat.ts';
@@ -118,22 +117,5 @@ describe('venueChatActive (K-12)', () => {
     expect(venueChatActive('2026-10-19T09:00:00Z', now)).toBe(false);
     expect(venueChatActive(null, now)).toBe(false);
     expect(venueChatActive('dün', now)).toBe(false);
-  });
-});
-
-describe('venueChatLastAt (K-12)', () => {
-  it('takes the later of the page and the last broadcast heard', () => {
-    expect(venueChatLastAt('2026-10-19T11:00:00Z', '2026-10-19T11:30:00Z')).toBe(
-      '2026-10-19T11:30:00Z',
-    );
-    expect(venueChatLastAt('2026-10-19T11:30:00Z', '2026-10-19T11:00:00Z')).toBe(
-      '2026-10-19T11:30:00Z',
-    );
-  });
-
-  it('uses whichever there is', () => {
-    expect(venueChatLastAt(null, '2026-10-19T11:30:00Z')).toBe('2026-10-19T11:30:00Z');
-    expect(venueChatLastAt('2026-10-19T11:00:00Z', null)).toBe('2026-10-19T11:00:00Z');
-    expect(venueChatLastAt(null, null)).toBeNull();
   });
 });
