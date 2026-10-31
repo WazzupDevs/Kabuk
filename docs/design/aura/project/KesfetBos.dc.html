@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Keşfet: boş</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="aura.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div class="phone">
+  <div class="aura"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i></div>
+  <div class="content" style="gap: 16px">
+    <h1 class="display" style="font-size: 34px; line-height: 41px">Bu akşam<br>nerede oturuyorsun?</h1>
+    <div class="row" style="gap: 10px">
+      <div class="glass row grow" style="height: 54px; padding: 0 18px; border-radius: 27px; gap: 10px">
+        <svg class="ci sm" viewBox="0 0 24 24" aria-hidden="true" style="color: #5E5878"><circle class="o" cx="10.5" cy="10.5" r="6"></circle><rect class="b" x="12.71" y="15.75" width="9.28" height="3.2" rx="1.6" transform="rotate(45 17.35 17.35)"></rect></svg>
+        <span class="body">Mekan ara</span>
+      </div>
+      <div class="glass row" style="height: 54px; padding: 4px; border-radius: 27px; gap: 2px">
+        <span class="round" style="width: 46px; height: 46px; border-radius: 23px; background: #FFFFFF; box-shadow: 0 4px 10px rgba(54,36,140,.12)" aria-label="Liste"><svg class="ci sm" viewBox="0 0 24 24" aria-hidden="true"><rect class="a" x="8.4" y="4.9" width="13.2" height="3.2" rx="1.6" transform="rotate(0 15 6.5)"></rect><rect class="a" x="8.4" y="10.4" width="13.2" height="3.2" rx="1.6" transform="rotate(0 15 12)"></rect><rect class="a" x="8.4" y="15.9" width="10.2" height="3.2" rx="1.6" transform="rotate(0 13.5 17.5)"></rect><rect class="b" x="3" y="4.9" width="3.6" height="3.2" rx="1.6" transform="rotate(0 4.8 6.5)"></rect><rect class="b" x="3" y="10.4" width="3.6" height="3.2" rx="1.6" transform="rotate(0 4.8 12)"></rect><rect class="b" x="3" y="15.9" width="3.6" height="3.2" rx="1.6" transform="rotate(0 4.8 17.5)"></rect></svg></span>
+        <span class="round" style="width: 46px; height: 46px; color: #5E5878" aria-label="Harita"><svg class="ci sm" viewBox="0 0 24 24" aria-hidden="true"><rect class="b" x="3" y="4" width="18" height="16" rx="5"></rect><rect class="a" x="9.5" y="6.5" width="5" height="8.5" rx="2.5"></rect><rect class="a" x="10.5" y="15.5" width="3" height="2.4" rx="1.2" transform="rotate(90 12 16.7)"></rect></svg></span>
+      </div>
+    </div>
+    <div class="chips"><span class="chip" style="height: 38px; padding: 0 16px; font-size: 15px">Tümü</span><span class="chip" style="height: 38px; padding: 0 16px; font-size: 15px">Kampüs</span><span class="chip on" style="height: 38px; padding: 0 16px; font-size: 15px">Kafe ve mekan</span></div>
+    <div class="sec" style="flex-wrap: wrap; gap: 4px 10px"><h2 class="h3" style="font-size: 19px">Sakarya · Tüm semtler</h2><span class="fine">0 mekan · ada göre</span></div>
+    <div class="glass pad-lg col" style="gap: 4px">
+      <p class="h3" style="font-size: 18px">Bu semtte mekan yok</p>
+      <p class="body">Başka bir semt ya da şehir seç.</p>
+    </div>
+    <p class="fine" style="text-align: center; margin-top: 12px">© OpenStreetMap katkıda bulunanlar</p>
+  </div>
+  <nav class="glass tabbar" aria-label="Sekmeler">
+    <span class="tab on" aria-label="Keşfet"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.6" fill="#7B5CFF"></circle><path d="M16.3 7.7 13.7 13.7 7.7 16.3 10.3 10.3Z" fill="#FFB547" stroke="#FFB547" stroke-width="1.2" stroke-linejoin="round"></path><circle cx="12" cy="12" r="1.3" fill="#FFFFFF"></circle></svg></span>
+    <span class="tab" aria-label="Aktiviteler"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.2" y="5.4" width="17.6" height="15.6" rx="5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></rect><path d="M8 2.8v4.6M16 2.8v4.6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path><rect x="13.4" y="13.4" width="4.2" height="4.2" rx="1.5" fill="currentColor"></rect></svg></span>
+    <span class="tab" aria-label="Mekan"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="tm-kbos-venue" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><rect width="24" height="24" fill="#fff"></rect><rect x="10.8" y="6" width="8" height="15.6" rx="4" fill="#000" stroke="#000" stroke-width="5.1"></rect></mask></defs><g mask="url(#tm-kbos-venue)"><rect x="5.2" y="2.4" width="8" height="15.6" rx="4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></rect></g><rect x="10.8" y="6" width="8" height="15.6" rx="4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></rect></svg></span>
+    <span class="tab" aria-label="Mesajlar"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="tm-kbos-messages" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><rect width="24" height="24" fill="#fff"></rect><rect x="7.4" y="9.6" width="14.2" height="10.8" rx="5.4" fill="#000" stroke="#000" stroke-width="5.1"></rect></mask></defs><g mask="url(#tm-kbos-messages)"><rect x="2.4" y="3.2" width="14.2" height="10.8" rx="5.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></rect></g><rect x="7.4" y="9.6" width="14.2" height="10.8" rx="5.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></rect></svg></span>
+    <span class="tab" aria-label="Profil"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.8" r="4.2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></circle><rect x="4.2" y="14" width="15.6" height="7.4" rx="3.7" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></rect></svg></span>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
