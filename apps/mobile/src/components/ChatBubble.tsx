@@ -14,6 +14,7 @@ import {
 import Svg, { Path } from 'react-native-svg';
 
 import { useKit } from '@/aura/kit';
+import { gradientStyle } from '@/theme/gradient';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 
 import { tr } from '@/i18n/tr';
@@ -159,17 +160,36 @@ export function ChatBubble({
   // Telegram Android's bubble (the owner's call, 30 Ekim): 18 round; on the author's side (left
   // for others, right for the viewer's own) the corners inside a run are tight, and the run's last
   // bubble has a tail at its foot.
-  const { scheme } = useKit();
+  const { scheme, c } = useKit();
   const kind = useChatKind();
   const metaRef = useChatMetaRef();
-  const paint = KIT.bubble[scheme];
+  // Grup 3, P4: the venue chat's own look (KIT.venueBubble): the own bubble in the primary, another's
+  // in glass with the name in a chip over it. The DM and the table chat stay as they are.
+  const venue = kind === 'mekan';
+  const glassy = venue && !mine;
+  const solid = KIT.bubble[scheme];
+  const paint = venue
+    ? {
+        ...solid,
+        mine: KIT.primary,
+        mineInk: KIT.venueBubble.mineInk,
+        mineMuted: KIT.venueBubble.mineMuted,
+        mineEdge: 'transparent',
+        mineShadow: KIT.venueBubble.mineShadow,
+        themInk: c.ink,
+        themMuted: c.muted,
+      }
+    : solid;
+  // The words on a coloured bubble are white: the own in the venue chat, another's elsewhere.
+  const onColour = venue ? mine : !mine;
   const shadowOff = useLabOff('golge');
   const fg = mine ? paint.mineInk : paint.themInk;
   const inside = !mine && nameInk !== undefined;
   const R = KIT.size.bubbleRadius;
   const near = KIT.size.bubbleInner;
   const sideTop = first ? R : near;
-  const sideFoot = last ? 0 : near;
+  // Glass has no tail (Aura v46: the corner towards the author 8 at the foot).
+  const sideFoot = last && !glassy ? 0 : near;
   // [top left, top right, bottom right, bottom left]
   const radii = (mine ? [R, sideTop, sideFoot, R] : [sideTop, R, R, sideFoot]) as readonly [
     number,
@@ -182,7 +202,7 @@ export function ChatBubble({
   // Before `bubble` below: it draws the face (which reads the shadow) as it is built.
   const bubbleShadow = shadowParts(
     shadowOff,
-    big ? undefined : mine ? paint.mineShadow : KIT.chatShadow[kind],
+    big ? undefined : mine ? paint.mineShadow : glassy ? c.glassShadow : KIT.chatShadow[kind],
     undefined,
     radii,
     true,
@@ -215,9 +235,9 @@ export function ChatBubble({
   // their row (the owner's call, 30 Ekim); under a big emoji, outside.
   const hasChips = !!reactions && reactions.length > 0;
   const chipsInside = hasChips && !big;
-  const chipPaint = mine
+  const chipPaint = !onColour
     ? { bg: withAlpha(KIT.primary, CHIP_ALPHA), bgOn: KIT.primary, ink: fg, inkOn: KIT.onPrimary }
-    : { bg: withAlpha(paint.themInk, CHIP_ALPHA_ON), bgOn: paint.themInk, ink: fg, inkOn: fill };
+    : { bg: withAlpha(fg, CHIP_ALPHA_ON), bgOn: fg, ink: fg, inkOn: fill };
   // Telegram Android: a double tap leaves the first reaction (the owner's call, 30 Ekim).
   const lastTap = useRef(0);
   const onTap = onReact
@@ -275,7 +295,14 @@ export function ChatBubble({
                   borderColor: paint.mineEdge,
                   boxShadow: bubbleShadow.boxShadow,
                 }
-              : { backgroundColor: fill, boxShadow: bubbleShadow.boxShadow },
+              : glassy
+                ? {
+                    ...gradientStyle(c.glass),
+                    borderWidth: KIT.size.edge,
+                    borderColor: c.glassEdge,
+                    boxShadow: bubbleShadow.boxShadow,
+                  }
+                : { backgroundColor: fill, boxShadow: bubbleShadow.boxShadow },
           big
             ? {
                 opacity: state === 'sending' ? 0.6 : 1,
@@ -294,10 +321,12 @@ export function ChatBubble({
         ]}
       >
         {lifted || big ? null : bubbleShadow.node}
-        {last && !big ? <BubbleTail side={mine ? 'right' : 'left'} color={fill} /> : null}
-        {/* Mekan and masa sohbeti: the writer's name inside the bubble, on its first line, level
-            with the face beside it (the owner's call, 28 Ekim). */}
-        {inside && first && name ? (
+        {last && !big && !glassy ? (
+          <BubbleTail side={mine ? 'right' : 'left'} color={fill} />
+        ) : null}
+        {/* Masa sohbeti: the writer's name inside the bubble, on its first line, level with the
+            face beside it (the owner's call, 28 Ekim). The venue chat's is over the bubble (P4). */}
+        {inside && !venue && first && name ? (
           <Pressable
             testID={testID ? `${testID}-name` : undefined}
             accessibilityRole="button"
@@ -312,7 +341,7 @@ export function ChatBubble({
             </RNText>
           </Pressable>
         ) : null}
-        {quote ? <QuoteBlock quote={quote} onColor={!mine} onPress={onPressQuote} /> : null}
+        {quote ? <QuoteBlock quote={quote} onColor={onColour} onPress={onPressQuote} /> : null}
         {/* The time sits in the text's last line, bottom right (skall.css → `.bub .tm`, a float).
             React Native has no float, and a wrapping row measured the bubble wrong (bubbles ran
             into each other): the text ends with an invisible copy of the time, which makes the
@@ -516,6 +545,26 @@ export function ChatBubble({
           {/* Kept empty beside the run's later bubbles, so they stay in one column. */}
           <View style={{ width: AVATAR_SIZE.sm }}>{photo}</View>
           <View style={{ flexShrink: 1, alignItems: 'flex-start', gap: NAME_GAP }}>
+            {venue && first && name ? (
+              // Aura v46 → MekanSohbeti (`.nmc`): the name in the sender's colour over the bubble,
+              // in a soft chip so it reads on any part of the wallpaper.
+              <Pressable
+                testID={testID ? `${testID}-name` : undefined}
+                accessibilityRole="button"
+                accessibilityLabel={tr.chat.openProfile(name)}
+                disabled={!onPressSender}
+                onPress={onPressSender}
+                hitSlop={SPACING[1.5]}
+                style={{
+                  alignSelf: 'flex-start',
+                  paddingHorizontal: SPACING[1.5],
+                  borderRadius: KIT.size.chip,
+                  backgroundColor: KIT.venueBubble.nameChip[scheme],
+                }}
+              >
+                <RNText style={[KIT_TYPE.fine, KIT_TYPE.strong, { color: nameInk }]}>{name}</RNText>
+              </Pressable>
+            ) : null}
             <SwipeToReply onReply={onReply}>{bubble}</SwipeToReply>
             {chips}
           </View>

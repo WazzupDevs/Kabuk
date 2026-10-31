@@ -223,9 +223,20 @@ export const KIT = {
   inviteGround: 'linear-gradient(135deg, rgba(123, 92, 255, 0.14), rgba(255, 79, 139, 0.10))',
   // The incoming request's card floats deeper (MasaIstek).
   requestShadow: '0px 30px 60px rgba(54, 36, 140, 0.22)',
+  // The venue chat's bubbles (Grup 3, P4; Aura v46 → MekanSohbeti, MekanSohbetiKoyu): the
+  // person's own in the primary with white words, its time 90 % white; another's in the screen's
+  // glass (its colours from the scheme: glass, glassEdge, ink, muted), the name over it in a soft
+  // chip (white 56 %, the dark ground 64 % in the dark). docs/decisions/grup3-mekan-balonlari.md.
+  venueBubble: {
+    mineInk: '#FFFFFF',
+    mineMuted: 'rgba(255, 255, 255, 0.90)',
+    mineShadow: '0px 10px 22px rgba(106, 71, 245, 0.24)',
+    nameChip: { light: 'rgba(255, 255, 255, 0.56)', dark: 'rgba(13, 11, 30, 0.64)' },
+  },
   // Message bubbles, never see-through (the owner's call, 29 Ekim): the person's own white (a soft
   // off-white in the dark) with ink words; the others' in the chat's colour, white words: the DM
-  // blue, the venue chat green, the table chat purple (deeper in the dark).
+  // blue, the venue chat green, the table chat purple (deeper in the dark). The venue chat draws
+  // its own since Grup 3 (venueBubble).
   bubble: {
     light: {
       mine: '#FFFFFF',
