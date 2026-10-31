@@ -1551,6 +1551,7 @@ export type Database = {
       venue_chat_messages: {
         Row: {
           body: string;
+          client_id: string | null;
           created_at: string;
           deleted_at: string | null;
           hidden_at: string | null;
@@ -1566,6 +1567,7 @@ export type Database = {
         };
         Insert: {
           body: string;
+          client_id?: string | null;
           created_at?: string;
           deleted_at?: string | null;
           hidden_at?: string | null;
@@ -1581,6 +1583,7 @@ export type Database = {
         };
         Update: {
           body?: string;
+          client_id?: string | null;
           created_at?: string;
           deleted_at?: string | null;
           hidden_at?: string | null;
@@ -3944,7 +3947,11 @@ export type Database = {
         };
       };
       vampir_begin: {
-        Args: { at_step: number; target_room_id: string; target_user_id: string };
+        Args: {
+          at_step: number;
+          target_room_id: string;
+          target_user_id: string;
+        };
         Returns: {
           closed_at: string | null;
           concept: string | null;
@@ -3993,7 +4000,11 @@ export type Database = {
         Returns: Json;
       };
       vampir_ready: {
-        Args: { at_step: number; target_room_id: string; target_user_id: string };
+        Args: {
+          at_step: number;
+          target_room_id: string;
+          target_user_id: string;
+        };
         Returns: {
           closed_at: string | null;
           concept: string | null;
@@ -4073,7 +4084,11 @@ export type Database = {
         };
       };
       vampir_to_vote: {
-        Args: { at_step: number; target_room_id: string; target_user_id: string };
+        Args: {
+          at_step: number;
+          target_room_id: string;
+          target_user_id: string;
+        };
         Returns: {
           closed_at: string | null;
           concept: string | null;
@@ -4243,6 +4258,7 @@ export type Database = {
         };
         Returns: {
           body: string;
+          client_id: string | null;
           created_at: string;
           deleted_at: string | null;
           hidden_at: string | null;
@@ -4262,6 +4278,24 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      venue_chat_send_once: {
+        Args: {
+          expected_identity?: string;
+          min_interval_ms: number;
+          new_body: string;
+          new_client_id?: string;
+          profiled?: boolean;
+          reply_to?: string;
+          target_user_id: string;
+          target_venue_id: string;
+          window_max: number;
+          window_seconds: number;
+        };
+        Returns: {
+          message_id: string;
+          replayed: boolean;
+        }[];
       };
       venue_chat_unmute: {
         Args: { target_mute_id: string; target_user_id: string };

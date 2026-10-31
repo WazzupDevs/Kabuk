@@ -221,10 +221,12 @@ Deno.serve(
         ...(body.clientId ? { new_client_id: body.clientId } : {}),
       });
       if (error) throw dbError('venue_chat_send_once', error);
-      if (!data.replayed) {
+      const [sent] = data;
+      if (!sent) throw new AppError('internal', 'venue_chat_send_once returned no row.');
+      if (!sent.replayed) {
         inBackground(broadcast(venueChatChannel(body.venueId), VENUE_CHAT_BROADCAST));
       }
-      return { messageId: data.message_id };
+      return { messageId: sent.message_id };
     },
   ),
 );

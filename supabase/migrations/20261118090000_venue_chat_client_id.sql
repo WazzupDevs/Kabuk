@@ -27,10 +27,9 @@ create function public.venue_chat_send_once(
   reply_to uuid default null,
   profiled boolean default null,
   expected_identity text default null,
-  new_client_id uuid default null,
-  out message_id uuid,
-  out replayed boolean
+  new_client_id uuid default null
 )
+returns table (message_id uuid, replayed boolean)
 language plpgsql
 security definer
 set search_path = ''
@@ -60,6 +59,7 @@ begin
       end if;
       message_id := prior.id;
       replayed := true;
+      return next;
       return;
     end if;
   end if;
@@ -135,6 +135,7 @@ begin
   returning * into msg;
   message_id := msg.id;
   replayed := false;
+  return next;
 end;
 $$;
 
