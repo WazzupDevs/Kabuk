@@ -503,7 +503,7 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
           </View>
         </View>
         {save.isError ? (
-          <T v="fine" color={KIT.danger}>
+          <T v="fine" color={c.warn}>
             {errorMessage(save.error)}
           </T>
         ) : null}

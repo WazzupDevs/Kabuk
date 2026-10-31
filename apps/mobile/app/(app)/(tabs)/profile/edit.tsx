@@ -52,6 +52,7 @@ export default function EditProfileScreen() {
 
 // A photo needs a saved name first (the server refuses it otherwise).
 function PhotoEditor({ publicId, hasName }: { publicId: string; hasName: boolean }) {
+  const { c } = useKit();
   const view = useProfileView(publicId);
   const [menu, setMenu] = useState(false);
   const hasPhoto = !!view.data?.photoUrl || view.data?.photoHidden === true;
@@ -91,7 +92,7 @@ function PhotoEditor({ publicId, hasName }: { publicId: string; hasName: boolean
             <CapIcon name="photo" color={KIT.primary} second={KIT.pink} size={KIT.size.iconSm} />
           </View>
         </View>
-        <T v="btn" color={KIT.primary}>
+        <T v="btn" color={c.link}>
           {label}
         </T>
       </Pressable>
@@ -236,7 +237,7 @@ function EditForm({
       </Glass>
 
       {save.isError ? (
-        <T v="fine" color={KIT.danger}>
+        <T v="fine" color={c.warn}>
           {errorMessage(save.error)}
         </T>
       ) : null}
