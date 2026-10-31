@@ -4,16 +4,16 @@
 # of one dev test account, deletes them and leaves the venue. Never the production project: the
 # script refuses any URL but the dev project's.
 #
-# Runs when the `dev-canli` label is added to a PR (again: remove and add it) or by hand (Actions →
-# dev-live → Run workflow). Reads three repository secrets, set once in GitHub → Settings → Secrets
-# and variables → Actions: DEV_PUBLISHABLE_KEY (the dev project's publishable key), DEV_TEST_PHONE
-# and DEV_TEST_OTP (a dev test number from the dashboard and its code; one no phone is using). They
-# are never printed; the result is in the run's summary.
+# Runs only by hand, only on main (Actions → dev-live → Run workflow, branch main): the secrets are
+# read by main's reviewed code alone, never by a PR's. The `if` below is in this file, which a branch
+# can change; the guard that holds is the `dev-live` environment: GitHub → Settings → Environments →
+# dev-live, deployment branches "main" only, and its three secrets there (not repository secrets):
+# DEV_PUBLISHABLE_KEY (the dev project's publishable key), DEV_TEST_PHONE and DEV_TEST_OTP (a dev
+# test number from the dashboard and its code; one no phone is using). Set up once, at the
+# acceptance stage. They are never printed; the result is in the run's summary.
 name: dev-live
 
 on:
-  pull_request:
-    types: [labeled]
   workflow_dispatch:
 
 permissions:
@@ -25,7 +25,8 @@ concurrency:
 
 jobs:
   venue-chat-client-id:
-    if: github.event_name == 'workflow_dispatch' || (github.event.label.name == 'dev-canli' && github.event.pull_request.head.repo.full_name == github.repository)
+    if: github.ref == 'refs/heads/main'
+    environment: dev-live
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
