@@ -1,7 +1,14 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Children, isValidElement, type ReactNode, type RefObject, useState } from 'react';
+import {
+  Children,
+  isValidElement,
+  type ReactNode,
+  type RefObject,
+  useEffect,
+  useState,
+} from 'react';
 import { ScrollView, View } from 'react-native';
-import { type Edge, SafeAreaView } from 'react-native-safe-area-context';
+import { type Edge, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground, AuraBand } from '@/aura/AuraBackground';
 import { useTabFocus } from '@/aura/motion';
@@ -13,7 +20,7 @@ import { PullScroll } from '@/components/PullScroll';
 
 import { useTabBarSpace } from './TabBar';
 // Frame by frame with the keyboard (react-native-keyboard-controller): the bar rises with it.
-import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
+import { KeyboardAvoidingView, useKeyboardState } from 'react-native-keyboard-controller';
 
 type Props = {
   children: ReactNode;
@@ -37,12 +44,20 @@ type Props = {
   // scrolls only when its content does not fit (the keyboard up, the largest text size), so nothing
   // is cut. A screen that refreshes or moves its own scroll is a list.
   list?: boolean;
+  // Buttons that stay at the screen's foot under a fixed screen (Profili düzenle, aura v50): 12
+  // above the tab bar, and 12 above the keyboard while it is up (the screen's own keyboard padding
+  // lifts it; no second offset). What does not fit scrolls above it and fades into its top edge.
+  footer?: ReactNode;
 };
 
 // A scrolling screen on the colour clouds (docs/design/aura) with the theme's side padding. Under
 // the tabs the floating tab bar covers the bottom: the content scrolls behind it and ends above it.
 // Its parts arrive one after another (the film's cascade), again each time its tab is opened.
 const TOP_FADE = SPACING[5];
+// The footer: 12 above the tab bar or the keyboard, its parts 8 apart, 24 of fade over it.
+const FOOTER_LIFT = 12;
+const FOOTER_GAP = 8;
+const FOOTER_FADE = 24;
 
 export function Screen({
   children,
@@ -54,6 +69,7 @@ export function Screen({
   top,
   gap,
   list,
+  footer,
 }: Props) {
   const queryClient = useQueryClient();
   const refresh =
@@ -61,6 +77,12 @@ export function Screen({
   const { shape, scheme } = useTheme();
   const focus = useTabFocus();
   const barSpace = useTabBarSpace();
+  const insets = useSafeAreaInsets();
+  const keyboardUp = useKeyboardState((s) => s.isVisible);
+  // The footer's top on the screen and whether the content above it overflows (its fade).
+  const [bodyTop, setBodyTop] = useState(0);
+  const [footTop, setFootTop] = useState(0);
+  const [overflows, setOverflows] = useState(false);
   const safe: readonly Edge[] = barSpace
     ? (edges ?? ['top', 'left', 'right', 'bottom']).filter((e) => e !== 'bottom')
     : (edges ?? ['top', 'left', 'right', 'bottom']);
@@ -73,7 +95,7 @@ export function Screen({
     paddingTop: top ? TOP_FADE : SPACING[3],
     // Under the tabs the last row ends 26 above the bar (aura.css `.scroll-pad`; barSpace holds 16
     // of it and the navigation area under the bar).
-    paddingBottom: barSpace ? barSpace + SPACING[2.5] : SPACING[8],
+    paddingBottom: footer ? SPACING[4] : barSpace ? barSpace + SPACING[2.5] : SPACING[8],
     gap,
   };
   return (
@@ -95,12 +117,15 @@ export function Screen({
         </View>
       ) : null}
       <KeyboardAvoidingView
+        onLayout={footer ? (e) => setBodyTop(e.nativeEvent.layout.y) : undefined}
         style={{ flex: 1 }}
         // Android is edge-to-edge: the window no longer resizes for the keyboard, so pad here too.
         behavior="padding"
       >
         {!(list || refresh || scrollRef || stickyHeaderIndices) ? (
-          <FixedBody content={content}>{cascade(children, focus.opened)}</FixedBody>
+          <FixedBody content={content} onOverflow={footer ? setOverflows : undefined}>
+            {cascade(children, focus.opened)}
+          </FixedBody>
         ) : refresh && !scrollRef && !stickyHeaderIndices ? (
           <PullScroll
             onRefresh={refresh}
@@ -121,7 +146,26 @@ export function Screen({
             {cascade(children, focus.opened)}
           </ScrollView>
         )}
+        {footer ? (
+          <View
+            onLayout={(e) => setFootTop(e.nativeEvent.layout.y)}
+            style={{
+              paddingHorizontal: shape.screenPadding,
+              gap: FOOTER_GAP,
+              paddingBottom:
+                FOOTER_LIFT +
+                (keyboardUp || !barSpace
+                  ? 0
+                  : insets.bottom + AURA.tabBar.bottom + AURA.tabBar.height),
+            }}
+          >
+            {footer}
+          </View>
+        ) : null}
       </KeyboardAvoidingView>
+      {footer && overflows && footTop > 0 ? (
+        <AuraBand top={bodyTop + footTop} height={0} fade={FOOTER_FADE} direction="up" />
+      ) : null}
       {top && topFoot > 0 ? (
         <AuraBand top={topFoot} height={0} fade={TOP_FADE} direction="down" />
       ) : null}
@@ -134,14 +178,20 @@ export function Screen({
 // Ekran davranışı).
 function FixedBody({
   content,
+  onOverflow,
   children,
 }: {
   content: { flexGrow: number; gap?: number };
+  // Told whether the content overflows (Screen → `footer`'s fade).
+  onOverflow?: (overflows: boolean) => void;
   children: ReactNode;
 }) {
   const [box, setBox] = useState(0);
   const [inner, setInner] = useState(0);
   const overflows = box > 0 && inner > box + 1;
+  useEffect(() => {
+    onOverflow?.(overflows);
+  }, [overflows, onOverflow]);
   return (
     <ScrollView
       showsHorizontalScrollIndicator={false}

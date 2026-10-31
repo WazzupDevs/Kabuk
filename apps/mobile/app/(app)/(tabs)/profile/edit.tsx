@@ -180,7 +180,26 @@ function EditForm({
   );
 
   return (
-    <Screen gap={GAP}>
+    <Screen
+      gap={GAP}
+      footer={
+        // aura v50 (ProfilDuzenle): Kaydet stays at the foot, the save error right above it.
+        <>
+          {save.isError ? (
+            <T v="fine" color={c.warn}>
+              {errorMessage(save.error)}
+            </T>
+          ) : null}
+          <Btn
+            block
+            label={tr.profile.save}
+            onPress={() => save.mutate()}
+            disabled={!nameValid || !bioValid || (!nameChanged && !bioChanged)}
+            loading={save.isPending}
+          />
+        </>
+      }
+    >
       <Round big icon="back" label={tr.common.back} onPress={leave} />
       <T v="display" style={KIT_TYPE.displayXl} accessibilityRole="header">
         {tr.profile.editTitle}
@@ -236,20 +255,6 @@ function EditForm({
         </T>
       </Glass>
 
-      {save.isError ? (
-        <T v="fine" color={c.warn}>
-          {errorMessage(save.error)}
-        </T>
-      ) : null}
-      <View style={{ marginTop: 'auto', paddingTop: SPACING[4] }}>
-        <Btn
-          block
-          label={tr.profile.save}
-          onPress={() => save.mutate()}
-          disabled={!nameValid || !bioValid || (!nameChanged && !bioChanged)}
-          loading={save.isPending}
-        />
-      </View>
       <Sheet visible={leaving} onClose={() => setLeaving(false)} title={tr.profile.leaveTitle}>
         <Text variant="fine">{tr.profile.leaveBody}</Text>
         <Button
