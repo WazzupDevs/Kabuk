@@ -229,6 +229,7 @@ export function Btn({
   onPress,
   variant = 'primary',
   sm,
+  mid,
   tall,
   bar,
   block,
@@ -244,11 +245,14 @@ export function Btn({
   onPress?: () => void;
   variant?: 'primary' | 'glassy' | 'dark';
   sm?: boolean;
+  // Mekan's "Masa kur": 44 high, 15.
+  mid?: boolean;
   // The venue page's and the check-in sheet's button: 58 high.
   tall?: boolean;
-  // In a bar of round buttons: a small button as tall as they are (the owner's report, 29 Ekim:
-  // Masa's "Bitir" stood shorter than the rounds beside it).
-  bar?: boolean;
+  // In a bar of round buttons: a button as tall as they are, `bar` high (the owner's report, 29
+  // Ekim: Masa's "Bitir" stood shorter than the rounds beside it). Beside 48 rounds 18 inside and
+  // 16 (Masa); beside 44 the small one's.
+  bar?: number;
   block?: boolean;
   icon?: CapIconName;
   loading?: boolean;
@@ -292,12 +296,18 @@ export function Btn({
           };
   const off = disabled && !loading;
   const height = bar
-    ? KIT.size.round
+    ? bar
     : sm
       ? KIT.size.btnSm
-      : tall
-        ? KIT.size.btnTall
-        : KIT.size.btn;
+      : mid
+        ? KIT.size.btnMid
+        : tall
+          ? KIT.size.btnTall
+          : KIT.size.btn;
+  const big = bar ? bar >= KIT.size.roundLg : false;
+  const small = sm || (!!bar && !big);
+  const padX = big || mid ? KIT.size.btnPadXMid : small ? KIT.size.btnPadXSm : KIT.size.btnPadX;
+  const labelType = mid ? KIT_TYPE.btnMid : small ? KIT_TYPE.btnSm : KIT_TYPE.btn;
   return (
     <Pressable
       testID={testID}
@@ -315,7 +325,7 @@ export function Btn({
           ground,
           {
             height,
-            paddingHorizontal: sm ? KIT.size.btnPadXSm : KIT.size.btnPadX,
+            paddingHorizontal: padX,
             borderRadius: KIT.size.btn,
             flexDirection: 'row',
             alignItems: 'center',
@@ -343,7 +353,7 @@ export function Btn({
           adjustsFontSizeToFit
           minimumFontScale={MIN_LABEL_SCALE}
           maxFontSizeMultiplier={MAX_FONT_SCALE}
-          style={[sm ? KIT_TYPE.btnSm : KIT_TYPE.btn, { color: fg, flexShrink: 1 }]}
+          style={[labelType, { color: fg, flexShrink: 1 }]}
         >
           {label}
         </Text>
@@ -368,6 +378,7 @@ export function Round({
   loading,
   primary,
   big,
+  side,
   children,
 }: {
   icon?: CapIconName;
@@ -384,11 +395,13 @@ export function Round({
   primary?: boolean;
   // The venue page's back button: 48.
   big?: boolean;
+  // Its own size (Masa's bar: 48, or 44 on a narrow phone).
+  side?: number;
   children?: ReactNode;
 }) {
   const { c } = useKit();
   const press = usePress();
-  const s = big ? KIT.size.roundLg : KIT.size.round;
+  const s = side ?? (big ? KIT.size.roundLg : KIT.size.round);
   const shadowOff = useLabOff('golge');
   const frosted = useFrost() && glassy && !primary;
   const fg = primary ? KIT.onPrimary : (color ?? c.ink);
@@ -450,20 +463,24 @@ export function Round({
 const BADGE_OUT = 4;
 
 // .badge: a pink count.
-export function Badge({ count }: { count: number }) {
+export function Badge({ count, large }: { count: number; large?: boolean }) {
+  const side = large ? KIT.size.badgeLg : KIT.size.badge;
   return (
     <View
       style={{
-        minWidth: KIT.size.badge,
-        height: KIT.size.badge,
+        minWidth: side,
+        height: side,
         paddingHorizontal: KIT.size.badgePadX,
-        borderRadius: KIT.size.badge / 2,
+        borderRadius: side / 2,
         backgroundColor: KIT.pink,
         alignItems: 'center',
         justifyContent: 'center',
       }}
     >
-      <Text maxFontSizeMultiplier={1} style={[KIT_TYPE.badge, { color: KIT.white }]}>
+      <Text
+        maxFontSizeMultiplier={1}
+        style={[large ? KIT_TYPE.badgeLg : KIT_TYPE.badge, { color: KIT.white }]}
+      >
         {count > 99 ? '99+' : String(count)}
       </Text>
     </View>
@@ -537,7 +554,7 @@ export function Chip({
   );
 }
 
-export type TagTone = 'purple' | 'pink' | 'amber' | 'green' | 'glassy';
+export type TagTone = 'purple' | 'pink' | 'amber' | 'green' | 'glassy' | 'art' | 'artLit';
 
 // .tag: a small capsule of a colour, its dot or icon first.
 export function Tag({
@@ -559,8 +576,15 @@ export function Tag({
 }) {
   const { c, tags } = useKit();
   const frosted = useFrost() && tone === 'glassy';
+  // `art`: dark glass over a picture (Masa's game cards); `artLit` white there (the person's vote).
   const colors =
-    tone === 'glassy' ? { bg: c.raisedRound, fg: c.ink } : { bg: tags[tone].bg, fg: tags[tone].fg };
+    tone === 'glassy'
+      ? { bg: c.raisedRound, fg: c.ink }
+      : tone === 'art'
+        ? { bg: KIT.artTag, fg: KIT.white }
+        : tone === 'artLit'
+          ? { bg: KIT.white, fg: KIT.light.ink }
+          : { bg: tags[tone].bg, fg: tags[tone].fg };
   return (
     <View
       style={{
@@ -610,16 +634,22 @@ export function Live({
   label,
   color = KIT.success,
   ring = KIT.successRing,
+  large,
+  soft,
 }: {
   label: string;
   color?: string;
   ring?: string;
+  // Mekan's "Mekandasın" at 15; the venue chat's "şu an aktif" at 500.
+  large?: boolean;
+  soft?: boolean;
 }) {
   const { c } = useKit();
+  const type = large ? KIT_TYPE.liveLg : soft ? KIT_TYPE.liveSoft : KIT_TYPE.live;
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.chipGap }}>
       <PulseDot color={color} ring={ring} />
-      <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[KIT_TYPE.live, { color: c.ink }]}>
+      <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[type, { color: c.ink }]}>
         {label}
       </Text>
     </View>
@@ -710,7 +740,7 @@ const PULSE_FROM = 0.45;
 const PULSE_TO = 2.8;
 
 // .sec: a section's heading and its note at the right, on a baseline.
-export function Sec({ title, note }: { title: string; note?: string }) {
+export function Sec({ title, note, large }: { title: string; note?: string; large?: boolean }) {
   return (
     <View
       style={{
@@ -721,10 +751,11 @@ export function Sec({ title, note }: { title: string; note?: string }) {
         paddingHorizontal: KIT.size.secPadX,
       }}
     >
-      <T v="sec" accessibilityRole="header">
+      {/* Mekan's lobby: 21, its note 14. */}
+      <T v={large ? 'secXl' : 'sec'} accessibilityRole="header">
         {title}
       </T>
-      {note ? <T v="fine">{note}</T> : null}
+      {note ? <T v={large ? 'fineLg' : 'fine'}>{note}</T> : null}
     </View>
   );
 }
@@ -909,7 +940,7 @@ export function Av({
 }: {
   name: string;
   photoUrl?: string | null;
-  size?: 'sm' | 'md' | 'row' | 'lg' | 'xl' | 'big';
+  size?: 'sm' | 'md' | 'row' | 'seat' | 'lg' | 'xl' | 'big';
   // Something else in the ring (a capsule).
   children?: ReactNode;
 }) {
@@ -1055,5 +1086,56 @@ export function Seg<V extends string>({
         })}
       </View>
     </Glass>
+  );
+}
+
+// Masa kur's switch (docs/design/aura → MasaKur): 56 × 34, off a sunk lilac track, on the primary;
+// the white knob 3 in, sliding on the press spring (hareket.json). At once when motion is reduced.
+// Only the knob; the row around it is the control (its label, its role and its press).
+export function Switch({ on, disabled }: { on: boolean; disabled?: boolean }) {
+  const { c } = useKit();
+  const reduce = useReduceMotion();
+  const [x] = useState(() => new Animated.Value(on ? 1 : 0));
+  useEffect(() => {
+    if (reduce) {
+      x.setValue(on ? 1 : 0);
+      return undefined;
+    }
+    const anim = Animated.spring(x, { ...springConfig(MOTION.springs.press), toValue: on ? 1 : 0 });
+    anim.start();
+    return () => anim.stop();
+  }, [on, reduce, x]);
+  const inset = (KIT.size.switchH - KIT.size.switchKnob) / 2;
+  const travel = KIT.size.switchW - KIT.size.switchKnob - 2 * inset;
+  const knob = boxShadowParts(useLabOff('golge'), KIT.switchKnobShadow, KIT.size.switchKnob / 2);
+  return (
+    <View
+      importantForAccessibility="no-hide-descendants"
+      accessibilityElementsHidden
+      style={{
+        width: KIT.size.switchW,
+        height: KIT.size.switchH,
+        borderRadius: KIT.size.switchH / 2,
+        backgroundColor: on ? KIT.primary : c.switchOff,
+        boxShadow: on ? undefined : c.switchInset || undefined,
+        padding: inset,
+        opacity: disabled ? DISABLED : 1,
+      }}
+    >
+      <Animated.View
+        style={{
+          width: KIT.size.switchKnob,
+          height: KIT.size.switchKnob,
+          borderRadius: KIT.size.switchKnob / 2,
+          backgroundColor: KIT.white,
+          boxShadow: knob.boxShadow,
+          transform: [
+            { translateX: x.interpolate({ inputRange: [0, 1], outputRange: [0, travel] }) },
+          ],
+        }}
+      >
+        {knob.node}
+      </Animated.View>
+    </View>
   );
 }

@@ -31,8 +31,10 @@ export const KIT_TYPE = {
   // The first screen's line (Main: 36, 500, -0.03em) and its wordmark (24, 800).
   welcome: t(500, 36, 46, -0.03),
   wordmarkSm: t(800, 24, 28, -0.04),
-  // A scene's title (Mekan: .title at 20).
-  hero: t(600, 20, 26, -0.015),
+  // A scene's title (Mekan: .title at 22).
+  hero: t(600, 22, 28, -0.015),
+  // Masa kur's title (.title at 24).
+  sheetTitleLg: t(600, 24, 30, -0.015),
   // A digit of the code (Kod: 26, 600).
   code: t(600, 26, 33),
   // The phone number as it is typed (Telefon: 21, 600, 0.04em).
@@ -45,24 +47,28 @@ export const KIT_TYPE = {
   venueTitle: t(500, 31, 38, -0.025),
   // A venue's name on the check-in sheet (CheckIn: .title at 23).
   sheetTitle: t(600, 23, 29, -0.015),
-  // The table's name on Masa (.title at 26, 500).
-  tableTitle: t(500, 26, 33, -0.015),
   h3: t(600, 16, 22, -0.005),
   // A section's heading (.sec .h3 at 18).
   sec: t(600, 18, 24, -0.005),
-  // Keşfet's place line (.sec .h3 at 19).
+  // Keşfet's place line and Masa's lone note (.h3 at 19).
   secLg: t(600, 19, 24, -0.005),
+  // Mekan's lobby headings (.sec .h3 at 21).
+  secXl: t(600, 21, 27, -0.005),
   body: t(500, 15, 22),
   // A venue's district under its name on its page (KesfetMekan: .body at 17).
   bodyLg: t(500, 17, 22),
   fine: t(500, 13, 18),
   // A venue row's second line and its bucket (Keşfet: .fine at 14).
   fineLg: t(500, 14, 18),
+  // A longer note at 14 (Mekan's scene, Masa kur's switch, Masa: .fine 14/20).
+  note: t(500, 14, 20),
   eyebrow: t(600, 12, 16, 0.02),
   stamp: t(600, 11, 14),
   strong: { fontFamily: F[600] } as TextStyle,
   btn: t(600, 16, 20),
   btnSm: t(600, 14, 18),
+  // Mekan's "Masa kur" (44 high, 15).
+  btnMid: t(600, 15, 19),
   chip: t(600, 13, 17),
   // Keşfet's kind chips (15).
   chipLg: t(600, 15, 19),
@@ -70,7 +76,12 @@ export const KIT_TYPE = {
   // A venue page's tags (14).
   tagLg: t(600, 14, 18),
   badge: t(700, 11, 14),
+  // The venue chat card's count (24 round, 12).
+  badgeLg: t(700, 12, 15),
   live: t(600, 13, 17),
+  // "şu an aktif" (500) and "Mekandasın" (15) on Mekan.
+  liveSoft: t(500, 13, 17),
+  liveLg: t(600, 15, 19),
   msg: t(500, 15, 21),
   // A message of emoji only, without a bubble (Telegram Android): one, and two or three.
   emojiOne: t(500, 40, 48),
@@ -80,6 +91,7 @@ export const KIT_TYPE = {
   av: {
     md: t(700, 15, 19),
     sm: t(700, 12, 16),
+    seat: t(700, 20, 24),
     // A conversation's face in Mesajlar (52).
     row: t(700, 18, 22),
     lg: t(700, 22, 26),
@@ -148,6 +160,9 @@ export const KIT = {
     sheetFoot: '#ECE9F7',
     grab: 'rgba(20, 17, 43, 0.16)',
     scrim: 'rgba(20, 17, 43, 0.30)',
+    // Masa kur's switch off: a lilac track sunk a little.
+    switchOff: '#E4DEF7',
+    switchInset: 'inset 0px 1px 3px rgba(20, 17, 43, 0.10)',
   },
   dark: {
     ink: '#F3F0FF',
@@ -180,6 +195,8 @@ export const KIT = {
     sheetFoot: '#15122D',
     grab: 'rgba(255, 255, 255, 0.20)',
     scrim: 'rgba(8, 6, 20, 0.55)',
+    switchOff: 'rgba(255, 255, 255, 0.16)',
+    switchInset: '',
   },
   // The same in both schemes.
   primary: '#6A47F5',
@@ -273,6 +290,11 @@ export const KIT = {
   },
   // Today's event on Keşfet's card: a soft amber ground.
   eventGround: 'rgba(255, 181, 71, 0.14)',
+  // The switch's knob (Masa kur).
+  switchKnobShadow: '0px 2px 6px rgba(20, 17, 43, 0.20)',
+  // A game card's corner tag: dark glass over its picture (Masa), and its shadow.
+  artTag: 'rgba(20, 17, 43, 0.48)',
+  gameCardShadow: '0px 12px 26px rgba(54, 36, 140, 0.18)',
   // Bitir and Ayrıl on Masa's bar.
   endInk: '#A8301A',
   endInkDark: '#FF9B8A',
@@ -290,6 +312,9 @@ export const KIT = {
     // The tall button of a venue's page and of the check-in sheet (58).
     btnTall: 58,
     btnSm: 38,
+    // Mekan's "Masa kur" (44, 18 inside) and Masa's "Bitir" beside the 48 rounds (18 inside).
+    btnMid: 44,
+    btnPadXMid: 18,
     btnPadX: 24,
     btnPadXSm: 16,
     btnGap: 8,
@@ -310,7 +335,8 @@ export const KIT = {
     // The venue page's back button (48).
     roundLg: 48,
     // A list row's picture: 48 (the owner's call, 30 Ekim: the rows were too thick at 52).
-    av: { sm: 32, md: 44, row: 48, lg: 64, xl: 96, big: 104 },
+    // `seat`: Masa's card when its people fit one row (58).
+    av: { sm: 32, md: 44, row: 48, seat: 58, lg: 64, xl: 96, big: 104 },
     stackOverlap: 10,
     faceCard: 196,
     avRing: 2,
@@ -318,6 +344,7 @@ export const KIT = {
     thumb: 60,
     thumbRadius: 18,
     badge: 20,
+    badgeLg: 24,
     badgePadX: 6,
     dot: 8,
     dotRing: 4,
@@ -373,6 +400,23 @@ export const KIT = {
     pill: 44,
     pillPadX: 14,
     eventCard: 210,
+    // Mekan's scene (210) and the words in it (20 in, 180 wide).
+    hero: 210,
+    heroPad: 20,
+    heroWords: 180,
+    // Masa kur's switch: 56 × 34, the knob 28.
+    switchW: 56,
+    switchH: 34,
+    switchKnob: 28,
+    // Masa kur's icon row: 12 apart, 16 round, the ring 3 out.
+    iconTileGap: 12,
+    iconTileRadius: 16,
+    // Masa's game cards: 24 round, the tag 8 in and 7 down.
+    gameCardRadius: 24,
+    gameTagX: 8,
+    gameTagY: 7,
+    // Mekan's and Masa's blocks: 14 apart.
+    venueGap: 14,
     eventPad: 12,
     segPad: 5,
     segGap: 4,

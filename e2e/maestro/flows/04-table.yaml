@@ -60,17 +60,20 @@ appId: app.kabuk.mobile
     id: table-lobby
 - assertVisible: Yakında
 - takeScreenshot: 13-table
-# Masadakiler from the table's head: this phone and the owner's tag (the table is called by its
-# icon, K-76: no other name to draw).
+# Masadakiler from the bar (its round is called "Masadakiler" too, so the sheet is found by its
+# list): this phone and the owner's tag (the table is called by its icon, K-76: no other name to
+# draw).
 - tapOn:
-    id: table-scene
+    id: table-people-open
 - extendedWaitUntil:
-    visible: Masadakiler
+    visible:
+      id: table-people
     timeout: 10000
 - takeScreenshot: 13b-people
 - back
 - extendedWaitUntil:
-    notVisible: Masadakiler
+    notVisible:
+      id: table-people
     timeout: 10000
 # "Davet et": the friends at the venue; this phone has none yet.
 - tapOn:

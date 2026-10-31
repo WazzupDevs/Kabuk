@@ -37,9 +37,9 @@ type Props = {
   onOpenLobby: () => void;
 };
 
-// The person's scene at the top of Mekan (docs/design/aura → Mekan: `.scene` 196 high). Without a
-// table: "Henüz masan yok", its line and "Masa kur" at the left, the capsule buddies standing at
-// the right. With one: "Masan", its name, people and lobby state at the left, its picture on a
+// The person's scene at the top of Mekan (docs/design/aura → Mekan: `.scene` 210 high). Without a
+// table: "Henüz masan yok", its line and "Masa kur" (44 high) at the left, the capsule buddies
+// standing at the right. With one: "Masan", its name, people and lobby state at the left, its picture on a
 // white-ringed disk at the right, the people's faces; the head opens the table. The owner gets
 // "Lobiye aç" or "Lobiden çek" and "Davet et" (docs/SPEC_V4.md §4.E).
 export function TableCard({ checkIn, room, state, onCreate, onOpenLobby }: Props) {
@@ -67,14 +67,14 @@ export function TableCard({ checkIn, room, state, onCreate, onOpenLobby }: Props
           <T v="title" style={HERO_TITLE}>
             {tr.venue.noTable}
           </T>
-          <T v="fine">{tr.venue.noTableHint}</T>
+          <T v="note">{tr.venue.noTableHint}</T>
           <Btn
-            sm
+            mid
             icon="plus"
             testID="table-create-open"
             label={tr.venue.createTable}
             onPress={onCreate}
-            style={{ marginTop: WORDS_GAP / 1.5 }}
+            style={{ marginTop: WORDS_GAP }}
           />
         </View>
       </View>
@@ -199,14 +199,15 @@ export function TableCard({ checkIn, room, state, onCreate, onOpenLobby }: Props
   );
 }
 
-// The canvas's scene: 196 high, rounded 26, the words 18 in from the top left and 170 wide.
+// The canvas's scene: 210 high, rounded 26, the words 20 in from the top left and 180 wide. The
+// buddies keep their size (drawn on 196) at the scene's right foot.
 const SCENE = {
-  minHeight: AURA.heroHeight,
+  minHeight: KIT.size.hero,
   borderRadius: AURA.scene.radius,
   overflow: 'hidden' as const,
-  padding: KIT.size.pad,
+  padding: KIT.size.heroPad,
 };
-const WORDS_WIDTH = 170;
+const WORDS_WIDTH = KIT.size.heroWords;
 const WORDS_GAP = 6;
 const ROW_GAP = 12;
 const HERO_TITLE = KIT_TYPE.hero;

@@ -22,6 +22,7 @@ export function SheetCard({
   onClose,
   bottomInset,
   above,
+  fill,
   children,
 }: {
   // Unset: it cannot be pulled away (the join request).
@@ -29,6 +30,8 @@ export function SheetCard({
   // The navigation bar's height: the content's end stays clear of it.
   bottomInset: number;
   above?: ReactNode;
+  // As tall as the sheet around it (Sheet → `top`), the content stretched to it.
+  fill?: boolean;
   children: ReactNode;
 }) {
   const k = useKit();
@@ -43,17 +46,18 @@ export function SheetCard({
     borderTopLeftRadius: KIT.size.sheetRadius,
     borderTopRightRadius: KIT.size.sheetRadius,
   };
+  const size = fill ? { flex: 1 } : { flexShrink: 1 };
   return (
     <GestureDetector gesture={pan}>
-      <Animated.View style={[{ flexShrink: 1 }, style]} collapsable={false}>
+      <Animated.View style={[size, style]} collapsable={false}>
         {above}
-        <View style={{ flexShrink: 1, ...top, boxShadow: shadow.boxShadow }}>
+        <View style={{ ...size, ...top, boxShadow: shadow.boxShadow }}>
           {shadow.node}
           <View
             style={{
               ...gradientStyle(k.c.sheet),
               backgroundColor: k.c.sheetBase,
-              flexShrink: 1,
+              ...size,
               ...top,
               borderWidth: KIT.size.edge,
               borderBottomWidth: 0,
@@ -72,6 +76,7 @@ export function SheetCard({
                 onScroll={onScroll}
                 scrollEventThrottle={16}
                 contentContainerStyle={{
+                  flexGrow: fill ? 1 : undefined,
                   paddingTop: head,
                   paddingHorizontal: KIT.size.sheetPadX,
                   paddingBottom: KIT.size.sheetPadBottom + bottomInset,

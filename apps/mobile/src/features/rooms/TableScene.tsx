@@ -18,33 +18,36 @@ import { type TablePerson } from './queries';
 const CELL_GAP = SPACING[2];
 const ROW_GAP = SPACING[2];
 const NAME_GAP = SPACING[1];
-// The panel's own padding, a little tighter than a card's (the owner's call, 29 Ekim: a smaller
-// people panel).
-const PANEL_PAD = SPACING[3];
+// The card's padding (docs/design/aura → Masa: .pad-lg, 16 at its top) and the gap between its
+// lines.
+const PANEL_PAD = KIT.size.padLg;
+const PANEL_TOP = 16;
+const PANEL_GAP = 4;
 // Under the panel, the band's soft edge over what scrolls up under the head.
 const HEAD_BOTTOM = SPACING[2];
 const BAND_FADE = 24;
 
-type FaceSize = 'md' | 'sm';
+type FaceSize = 'seat' | 'md' | 'sm';
 
 // Where the table's 1 to 12 people sit (the owner's call, 29 Ekim: everyone on the screen, small
 // faces, nothing folding away): up to four a row, the rows as even as they can be, the fuller
-// first; one or two rows of 44 faces, three rows of 32.
+// first; one row of 58 faces (docs/design/aura → Masa), two rows of 44, three rows of 32.
 export function seatRows(n: number): { rows: number[]; size: FaceSize } {
   const count = Math.max(1, n);
   const lines = Math.ceil(count / ROW_MAX);
   const base = Math.floor(count / lines);
   const extra = count % lines;
   const rows = Array.from({ length: lines }, (_, i) => base + (i < extra ? 1 : 0));
-  return { rows, size: lines === 3 ? 'sm' : 'md' };
+  return { rows, size: lines === 3 ? 'sm' : lines === 2 ? 'md' : 'seat' };
 }
 const ROW_MAX = 4;
 
 // Masa's head (the owner's call, 28 and 29 Ekim): it stays put while the games scroll under it,
-// and nothing in it folds. On it, in order: `children` (the bar: back, chat, invite, the lobby and
-// end buttons), then a glass panel as wide as the cards under it with the people (a profiled
-// person's photo, an anonymous one's capsule, each with their name; "Sen" first) and `footer` (the
-// table's name, its people and lobby state). A press on the faces opens Masadakiler. Only the
+// and nothing in it folds. On it, in order: `children` (the bar: back, chat, invite, Masadakiler
+// and end buttons), then the table's card (docs/design/aura → Masa), as wide as the cards under it,
+// with the people (a profiled person's photo, an anonymous one's capsule, each with their name;
+// "Sen" first) and `footer` (the table's name, its people and lobby state, the owner's lobby
+// button). A press on the faces opens Masadakiler. Only the
 // table's people see it (rule 4). The screen's colour clouds lie behind the head, lined up with the
 // screen's own, so what scrolls under it is hidden (AuraBand).
 export function TableScene({
@@ -71,13 +74,16 @@ export function TableScene({
     ...people.filter((p) => p.sessionId === me),
     ...people.filter((p) => p.sessionId !== me),
   ];
-  const { rows, size } = seatRows(ordered.length);
+  const seats = seatRows(ordered.length);
+  const { rows } = seats;
   // Who was here when the head first drew: they arrive in turn, later ones with a ring.
   const [first, setFirst] = useState<ReadonlySet<string> | null>(null);
   if (first === null && people.length > 0) setFirst(new Set(people.map((p) => p.sessionId)));
 
   const inner = width - 2 * (KIT.size.side + PANEL_PAD + KIT.size.edge);
   const cell = Math.floor((inner - (ROW_MAX - 1) * CELL_GAP) / ROW_MAX);
+  // A narrow phone has no room for four 58 faces a row: 44 then.
+  const size: FaceSize = seats.size === 'seat' && cell < KIT.size.av.seat ? 'md' : seats.size;
   const lines = rows.map((count, r) => {
     const from = rows.slice(0, r).reduce((sum, n) => sum + n, 0);
     return ordered.slice(from, from + count);
@@ -91,7 +97,13 @@ export function TableScene({
       <AuraBand top={0} height={headHeight} fade={BAND_FADE} direction="down" />
       {children}
       <Glass
-        style={{ marginHorizontal: KIT.size.side, padding: PANEL_PAD, gap: KIT.size.rowGap }}
+        style={{
+          marginHorizontal: KIT.size.side,
+          paddingHorizontal: PANEL_PAD,
+          paddingBottom: PANEL_PAD,
+          paddingTop: PANEL_TOP,
+          gap: PANEL_GAP,
+        }}
         testID="table-panel"
       >
         <Pressable
@@ -213,7 +225,7 @@ function Seat({
           )}
         </Animated.View>
       </View>
-      <T v="fine" strong ink center lines={1} fit style={{ alignSelf: 'stretch' }}>
+      <T v="fineLg" strong ink center lines={1} fit style={{ alignSelf: 'stretch' }}>
         {name}
       </T>
     </View>

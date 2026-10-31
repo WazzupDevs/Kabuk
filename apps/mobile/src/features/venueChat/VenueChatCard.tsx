@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 
 import { Av, Badge, Glass, Live, T, useKit } from '@/aura/kit';
+import { PopIn } from '@/aura/PopIn';
 import { LookAvatar } from '@/components/LookAvatar';
 import { tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
@@ -46,23 +47,26 @@ export function VenueChatCard({ venueId, sessionId }: { venueId: string; session
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: GAP, flexShrink: 1 }}>
-              <T v="h3">{tr.venueChat.open}</T>
+              <T v="sec">{tr.venueChat.open}</T>
               {active ? (
                 <View testID="venue-chat-live">
-                  <Live label={tr.venue.chatActive} />
+                  <Live soft label={tr.venue.chatActive} />
                 </View>
               ) : null}
             </View>
             {card.unread > 0 ? (
-              <View accessible accessibilityLabel={tr.messages.unread(card.unread)}>
-                <Badge count={card.unread} />
-              </View>
+              // The count pops in (docs/design/aura → Mekan).
+              <PopIn rise={BADGE_RISE}>
+                <View accessible accessibilityLabel={tr.messages.unread(card.unread)}>
+                  <Badge large count={card.unread} />
+                </View>
+              </PopIn>
             ) : null}
           </View>
           {card.recent.length > 0 ? (
             card.recent.map((m) => <Line key={m.id} message={m} />)
           ) : (
-            <T v="fine">{tr.venue.chatEmpty}</T>
+            <T v="fineLg">{tr.venue.chatEmpty}</T>
           )}
         </Glass>
       )}
@@ -70,8 +74,9 @@ export function VenueChatCard({ venueId, sessionId }: { venueId: string; session
   );
 }
 
-const PAD_Y = 12;
-const PAD_X = 14;
+const PAD_Y = 16;
+const PAD_X = 18;
+const BADGE_RISE = 6;
 const GAP = 10;
 const PRESSED = 0.8;
 
@@ -101,7 +106,7 @@ function Line({ message }: { message: VenueChatMessage }) {
       <Text
         numberOfLines={1}
         maxFontSizeMultiplier={MAX_FONT_SCALE}
-        style={[KIT_TYPE.fine, { color: c.ink, flex: 1 }]}
+        style={[KIT_TYPE.fineLg, { color: c.ink, flex: 1 }]}
       >
         <Text style={[KIT_TYPE.strong, { color: ink }]}>{name}</Text> {message.body}
       </Text>

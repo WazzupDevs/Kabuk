@@ -269,7 +269,7 @@ export function Lobby({
 }
 
 function SectionHead({ title, count }: { title: string; count: number }) {
-  return <Sec title={title} note={tr.lobby.tables(count)} />;
+  return <Sec large title={title} note={tr.lobby.tables(count)} />;
 }
 
 // A table in the lobby (docs/design/aura → Mekan: `.li`): its picture, name, headcount as pips and
