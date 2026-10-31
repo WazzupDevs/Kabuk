@@ -22,14 +22,11 @@ import { Btn, Chip, Glass, Li, Live, RowList, T, useKit } from '@/aura/kit';
 import { useTabFocus } from '@/aura/motion';
 import { Reveal } from '@/aura/Reveal';
 import { VenueThumb } from '@/aura/VenueThumb';
-import { Button } from '@/components/Button';
-import { Chips } from '@/components/Chips';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
 import { PullScroll } from '@/components/PullScroll';
 import { Sheet } from '@/components/Sheet';
 import { useTabBarOverMap, useTabBarSpace } from '@/components/TabBar';
-import { Text } from '@/components/Text';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { ExploreMap } from '@/features/explore/ExploreMap';
 import { useExplorePlace } from '@/features/explore/placeStore';
@@ -443,52 +440,69 @@ function PlaceSheet({
   // Mounted afresh at each opening (its key), so the choice starts from the place shown.
   const [pick, setPick] = useState<ExplorePlace>(place);
   const districts = cities.find((c) => c.city === pick.city)?.districts ?? [];
-  const ALL = '';
   return (
-    <Sheet visible={visible} onClose={onClose} title={tr.explore.placeTitle}>
-      <Text variant="fine">{tr.explore.placeNote}</Text>
-      <View className="gap-2">
-        <Text variant="label">{tr.explore.city}</Text>
-        <Chips
-          wrap
-          accessibilityLabel={tr.explore.city}
-          value={pick.city}
-          onChange={(city) => setPick({ city, district: null })}
-          options={cities.map((c) => ({
-            value: c.city,
-            label: c.city,
-            testID: `place-city-${c.city}`,
-          }))}
-        />
+    // Şehir ve semt (aura v51, kabul raporu §6.3): the aura sheet with the kit's chips, the
+    // buttons fixed under it.
+    <Sheet
+      visible={visible}
+      onClose={onClose}
+      title={tr.explore.placeTitle}
+      footer={
+        <View style={{ gap: KIT.size.chipGap + 2 }}>
+          <Btn
+            block
+            tall
+            label={tr.explore.showPlace}
+            testID="place-show"
+            onPress={() => {
+              choose(pick);
+              onClose();
+            }}
+          />
+          <Btn block tall variant="glassy" label={tr.common.cancel} onPress={onClose} />
+        </View>
+      }
+    >
+      <T v="note">{tr.explore.placeNote}</T>
+      <View style={{ gap: KIT.size.chipsGap }}>
+        <T v="eyebrow">{tr.explore.city}</T>
+        <View accessibilityRole="radiogroup" accessibilityLabel={tr.explore.city} style={CHIPS}>
+          {cities.map((c) => (
+            <Chip
+              key={c.city}
+              testID={`place-city-${c.city}`}
+              label={c.city}
+              on={pick.city === c.city}
+              onPress={() => setPick({ city: c.city, district: null })}
+            />
+          ))}
+        </View>
       </View>
-      <View className="gap-2">
-        <Text variant="label">{tr.explore.district}</Text>
-        <Chips
-          wrap
-          accessibilityLabel={tr.explore.district}
-          value={pick.district ?? ALL}
-          onChange={(d) => setPick({ city: pick.city, district: d === ALL ? null : d })}
-          options={[
-            { value: ALL, label: tr.explore.allDistricts, testID: 'place-district-all' },
-            ...districts.map((d) => ({ value: d, label: d, testID: `place-district-${d}` })),
-          ]}
-        />
-      </View>
-      <View className="gap-2.5">
-        <Button
-          size="lg"
-          label={tr.explore.showPlace}
-          testID="place-show"
-          onPress={() => {
-            choose(pick);
-            onClose();
-          }}
-        />
-        <Button size="lg" variant="neutral" label={tr.common.cancel} onPress={onClose} />
+      <View style={{ gap: KIT.size.chipsGap }}>
+        <T v="eyebrow">{tr.explore.district}</T>
+        <View accessibilityRole="radiogroup" accessibilityLabel={tr.explore.district} style={CHIPS}>
+          <Chip
+            testID="place-district-all"
+            label={tr.explore.allDistricts}
+            on={pick.district === null}
+            onPress={() => setPick({ city: pick.city, district: null })}
+          />
+          {districts.map((d) => (
+            <Chip
+              key={d}
+              testID={`place-district-${d}`}
+              label={d}
+              on={pick.district === d}
+              onPress={() => setPick({ city: pick.city, district: d })}
+            />
+          ))}
+        </View>
       </View>
     </Sheet>
   );
 }
+
+const CHIPS = { flexDirection: 'row', flexWrap: 'wrap', gap: KIT.size.chipsGap } as const;
 
 // Over the map: the question and the search row on the plain ground, the fade only round the
 // chips (the owner's report, 30 Ekim: street names showed through the question).
