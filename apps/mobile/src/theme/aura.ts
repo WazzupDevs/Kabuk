@@ -308,6 +308,8 @@ export const MOTION = {
   },
   dissolve: { blur: 12, rise: 12, fromScale: 0.97, inMs: 450, outMs: 220 },
   stagger: { row: 60, part: 70, max: 8 },
+  // A card opening over the screen: its content this long after the ground.
+  cardOpen: { contentAfterMs: 300 },
   tab: {
     iconPopFrom: 0.5,
     iconInDelay: 60,

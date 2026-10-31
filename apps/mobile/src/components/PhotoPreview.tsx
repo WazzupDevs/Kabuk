@@ -8,8 +8,9 @@ import { useReduceMotion } from '@/lib/useReduceMotion';
 import { MOTION } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
 
-// A profile photo opened large (the owner's call, 28 Ekim): over a dark ground, as wide as the
-// screen within its sides, it grows in from smaller; a tap anywhere or the back button closes it.
+// A profile photo opened large (the owner's call, 28 Ekim; docs/design/aura → Profil fotoğrafı):
+// over a dark ground, on a white card 22 from the sides, it pops in 300 ms after the ground; a tap
+// anywhere or the back button closes it.
 export function PhotoPreview({
   url,
   visible,
@@ -29,11 +30,14 @@ export function PhotoPreview({
       return undefined;
     }
     grow.setValue(0);
-    const anim = Animated.spring(grow, { ...springConfig(MOTION.springs.pop), toValue: 1 });
+    const anim = Animated.sequence([
+      Animated.delay(MOTION.cardOpen.contentAfterMs),
+      Animated.spring(grow, { ...springConfig(MOTION.springs.pop), toValue: 1 }),
+    ]);
     anim.start();
     return () => anim.stop();
   }, [visible, reduce, grow]);
-  const side = width - KIT.size.side * 2;
+  const side = width - KIT.photoCard.side * 2;
   if (!url) return null;
   return (
     <Modal
@@ -54,6 +58,12 @@ export function PhotoPreview({
       >
         <Animated.View
           style={{
+            width: side,
+            height: side,
+            borderRadius: KIT.photoCard.radius,
+            backgroundColor: KIT.white,
+            boxShadow: KIT.photoCard.shadow,
+            overflow: 'hidden',
             opacity: grow.interpolate({ inputRange: [0, 0.4, 1], outputRange: [0, 1, 1] }),
             transform: [
               { scale: grow.interpolate({ inputRange: [0, 1], outputRange: [PREVIEW_FROM, 1] }) },
@@ -64,7 +74,7 @@ export function PhotoPreview({
             source={{ uri: url }}
             cachePolicy="memory-disk"
             contentFit="cover"
-            style={{ width: side, height: side, borderRadius: KIT.size.glassRadius }}
+            style={{ width: side, height: side }}
           />
         </Animated.View>
       </Pressable>

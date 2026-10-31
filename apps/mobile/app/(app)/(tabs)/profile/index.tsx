@@ -24,7 +24,7 @@ import { KIT, KIT_TYPE } from '@/theme/auraKit';
 // top; the two faces side by side, the photo the table sees and the capsule while anonymous; the
 // name and age, the bio; "Profili düzenle" and "Kapsülünü süsle"; the nick and the friends in a
 // glass list. The capsule and the nick show on the own profile only (rule 4). No badges (the owner's
-// call, 27 Ekim); the nick is renewed in Ayarlar.
+// call, 27 Ekim; the canvas's 31 has none either); the nick is renewed here, once in 30 days.
 export default function ProfileScreen() {
   const { c } = useKit();
   const own = useProfile();
@@ -41,11 +41,12 @@ export default function ProfileScreen() {
     <Screen gap={GAP}>
       <View style={ROW}>
         {/* The tab's title as large as the others' ("Mesajlar"; the owner's call, 28 Ekim). */}
-        <T v="display" accessibilityRole="header">
+        <T v="display" style={KIT_TYPE.displayXl} accessibilityRole="header">
           {tr.tabs.profile}
         </T>
         <Round
           icon="settings"
+          side={KIT.size.bell}
           label={tr.settings.title}
           testID="profile-settings"
           onPress={() => router.push('/settings')}
@@ -116,12 +117,12 @@ export default function ProfileScreen() {
                   : view.data.displayName
                 : tr.profile.noName}
             </T>
-            {view.data.bio ? <T v="body">{view.data.bio}</T> : null}
+            {view.data.bio ? <T v="bodyLg">{view.data.bio}</T> : null}
           </View>
 
           <View style={{ flexDirection: 'row', gap: BTN_GAP }}>
             <Btn
-              sm
+              bar={KIT.size.btnRow}
               variant="glassy"
               label={hasName ? tr.profile.edit : tr.profile.addName}
               onPress={() => router.push('/profile/edit')}
@@ -129,7 +130,7 @@ export default function ProfileScreen() {
               block
             />
             <Btn
-              sm
+              bar={KIT.size.btnRow}
               label={tr.capsule.edit}
               onPress={() => router.push('/profile/capsule')}
               style={{ flex: 1 }}
@@ -153,10 +154,12 @@ export default function ProfileScreen() {
               testID="profile-friends"
               accessibilityLabel={tr.profile.friendsCount(friendList.length)}
               onPress={() => router.push('/profile/friends')}
+              padY={KIT.size.profilePadY}
+              padX={KIT.size.profilePadX}
             >
               <View style={{ flex: 1 }}>
-                <T v="h3">{tr.profile.friends}</T>
-                <T v="fine">{tr.profile.friendsPeople(friendList.length)}</T>
+                <T v="sec">{tr.profile.friends}</T>
+                <T v="fineLg">{tr.profile.friendsPeople(friendList.length)}</T>
               </View>
               <View
                 style={{ flexDirection: 'row' }}
@@ -189,7 +192,7 @@ const ROW = {
   justifyContent: 'space-between' as const,
 };
 
-// One of the two faces: a glass card 196 high, the face in the middle, its name and note under it.
+// One of the two faces: a glass card 210 high, the face in the middle, its name and note under it.
 function FaceCard({
   label,
   note,
@@ -216,10 +219,10 @@ function FaceCard({
     >
       {children}
       <View style={{ alignItems: 'center' }}>
-        <T v="fine" strong>
+        <T v="body" strong>
           {label}
         </T>
-        <T v="fine">{note}</T>
+        <T v="body">{note}</T>
       </View>
     </Glass>
   );
@@ -256,13 +259,13 @@ function NickRow({ nick, refreshAt }: { nick: string; refreshAt: string | null }
     onSettled: () => queryClient.invalidateQueries({ queryKey: profileViewKeys.all }),
   });
   return (
-    <Li>
-      <View style={{ flex: 1 }}>
-        <T v="fine">{tr.profile.nickLabel}</T>
-        <T v="h3" testID="nick">
+    <Li padY={KIT.size.profilePadY} padX={KIT.size.profilePadX}>
+      <View style={{ flex: 1, gap: NICK_GAP }}>
+        <T v="fineLg">{tr.profile.nickLabel}</T>
+        <T v="sec" testID="nick">
           {nick}
         </T>
-        {waiting ? <T v="fine">{tr.profile.nickWait(Math.ceil(waitMs / DAY_MS))}</T> : null}
+        {waiting ? <T v="fineLg">{tr.profile.nickWait(Math.ceil(waitMs / DAY_MS))}</T> : null}
         {refresh.isError ? (
           <T v="fine" color={KIT.danger}>
             {errorMessage(refresh.error)}
@@ -282,3 +285,4 @@ function NickRow({ nick, refreshAt }: { nick: string; refreshAt: string | null }
   );
 }
 const DAY_MS = 24 * 60 * 60 * 1000;
+const NICK_GAP = 1;

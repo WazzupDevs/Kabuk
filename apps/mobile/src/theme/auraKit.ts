@@ -23,8 +23,8 @@ const t = (w: keyof typeof F, size: number, line: number, em = 0): TextStyle => 
 // lower, Android cut the tails off (j, g, y, ş, ç; "Mesajlar", the owner's report, 28 Ekim).
 export const KIT_TYPE = {
   display: t(500, 32, 42, -0.025),
-  // Profil's title (.display at 30).
-  displaySm: t(500, 30, 38, -0.025),
+  // A profile's name and age (Profil: .display at 34).
+  displaySm: t(500, 34, 43, -0.025),
   // Keşfet's question (.display at 34).
   displayLg: t(500, 34, 41, -0.025),
   // Mesajlar's title (.display at 36).
@@ -60,6 +60,8 @@ export const KIT_TYPE = {
   // A venue's district under its name on its page (KesfetMekan: .body at 17).
   bodyLg: t(500, 17, 22),
   fine: t(500, 13, 18),
+  // What is typed in Profili düzenle's fields (17/24).
+  field: t(500, 17, 24),
   // A venue row's second line and its bucket (Keşfet: .fine at 14).
   fineLg: t(500, 14, 18),
   // A longer note at 14 (Mekan's scene, Masa kur's switch, Masa: .fine 14/20).
@@ -98,8 +100,8 @@ export const KIT_TYPE = {
     row: t(700, 18, 22),
     lg: t(700, 22, 26),
     xl: t(700, 32, 38),
-    // Profil's two faces (104).
-    big: t(700, 38, 44),
+    // Profil's two faces (112).
+    big: t(700, 40, 48),
   },
 } as const;
 
@@ -144,6 +146,8 @@ export const KIT = {
     onChipOn: '#FFFFFF',
     day: 'rgba(255, 255, 255, 0.60)',
     field: 'rgba(255, 255, 255, 0.74)',
+    // Profili düzenle's fields.
+    fieldLg: 'rgba(255, 255, 255, 0.90)',
     // Masa's tabs: the chosen one raised white.
     segOn: '#FFFFFF',
     segShadow: '0px 4px 12px rgba(54, 36, 140, 0.12)',
@@ -186,6 +190,7 @@ export const KIT = {
     onChipOn: '#14112B',
     day: 'rgba(255, 255, 255, 0.10)',
     field: 'rgba(255, 255, 255, 0.10)',
+    fieldLg: 'rgba(255, 255, 255, 0.10)',
     segOn: 'rgba(255, 255, 255, 0.16)',
     segShadow: '',
     // A shade under the cards, as in the light (the cards' glass is the old sheet's colour).
@@ -254,10 +259,17 @@ export const KIT = {
     masa: '0px 4px 12px rgba(106, 71, 245, 0.22)',
   },
   // A photo opened large over the screen (Profil, a person's profile).
-  photoScrim: 'rgba(8, 6, 20, 0.90)',
+  // Profil fotoğrafı: the dark ground, the white card the photo lies on (22 from the sides, 30
+  // round) and its shadow.
+  photoScrim: 'rgba(20, 17, 43, 0.86)',
+  photoCard: { side: 22, radius: 30, shadow: '0px 24px 60px rgba(0, 0, 0, 0.35)' },
   // A chosen row's ring (CheckIn: the spot).
   primaryRing: 'rgba(106, 71, 245, 0.14)',
   pink: '#FF4F8B',
+  // Kapsülün's chosen empty tile (#F9EEF6) under its ring.
+  partOn: '#F9EEF6',
+  // Profili düzenle: the camera's white round at the face's corner.
+  cameraShadow: '0px 4px 12px rgba(54, 36, 140, 0.18)',
   pinkRing: 'rgba(255, 79, 139, 0.18)',
   success: '#1C8C4E',
   successRing: 'rgba(28, 140, 78, 0.16)',
@@ -326,6 +338,9 @@ export const KIT = {
     // Keşfet's kind chips: 38 high, 16 inside.
     chipTall: 38,
     chipTallPadX: 16,
+    // Kapsülün's slot chips: 40 high, 18 inside.
+    chipLg: 40,
+    chipLgPadX: 18,
     chipPadX: 13,
     chipGap: 6,
     chipsGap: 8,
@@ -340,9 +355,23 @@ export const KIT = {
     roundLg: 48,
     // A list row's picture: 48 (the owner's call, 30 Ekim: the rows were too thick at 52).
     // `seat`: Masa's card when its people fit one row (58).
-    av: { sm: 32, md: 44, row: 48, seat: 58, lg: 64, xl: 96, big: 104 },
+    av: { sm: 32, md: 44, row: 48, seat: 58, lg: 64, xl: 96, big: 112 },
     stackOverlap: 10,
-    faceCard: 196,
+    faceCard: 210,
+    // Profil's two buttons and Kapsülün's (50).
+    btnRow: 50,
+    // Kapsülün: the empty part's tile (104, its capsule 70), a pack's tiles 70 high with the capsule
+    // 10 down in them, the chosen one's ring (3) and a pack's block (16 inside, 12 apart).
+    partTile: 104,
+    partCapsule: 70,
+    partTileHeight: 70,
+    partCapsuleDrop: 10,
+    partRing: 3,
+    packPad: 16,
+    packGap: 12,
+    // Profil's list rows: 14 above and under, 18 inside.
+    profilePadY: 14,
+    profilePadX: 18,
     avRing: 2,
     avRingXl: 3,
     thumb: 60,
@@ -395,6 +424,12 @@ export const KIT = {
     msgPadX: 15,
     msgPadY: 11,
     field: 54,
+    // Profili düzenle's fields: 56 high (the bio 108, 24 round), 22 inside, 16 above the bio.
+    fieldLg: 56,
+    fieldLgTall: 108,
+    fieldLgTallRadius: 24,
+    fieldLgPadX: 22,
+    fieldLgPadY: 16,
     // A chat's message field and its send button (docs/design/aura → Dm).
     composerField: 58,
     composerSend: 62,

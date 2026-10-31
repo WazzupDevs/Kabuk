@@ -13,6 +13,7 @@ const spec = JSON.parse(
   curves: Record<string, number[]>;
   dissolve: { blurPx: number; risePx: number; fromScale: number; inMs: number; outMs: number };
   stagger: { listRowMs: number; screenPartMs: number };
+  cardOpen: { contentAfterMs: number };
 };
 
 describe('motion standard', () => {
@@ -39,5 +40,6 @@ describe('motion standard', () => {
     });
     expect(MOTION.stagger.row).toBe(spec.stagger.listRowMs);
     expect(MOTION.stagger.part).toBe(spec.stagger.screenPartMs);
+    expect(MOTION.cardOpen.contentAfterMs).toBe(spec.cardOpen.contentAfterMs);
   });
 });

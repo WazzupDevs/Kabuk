@@ -25,4 +25,12 @@ Proje sahibinin kararları (31 Ekim):
 - **Yazma alanı 58, gönder 62** bütün sohbetlerde: tek bileşen, sohbetler aynı görünür.
 - **Okundu işareti** tuvalin çift tiki, açıkta #4A5CE6; koyuda bugünkü mavi.
 
+(d) Profil, Profili düzenle, Profil fotoğrafı, Kapsülün (31 Ekim; değişmez kurala dokunan yok):
+
+- **Rozetler Profil'de yok (değişiklik değil).** Uygulama rozetleri 27 Ekim'den beri hiçbir profil ekranında göstermiyor (proje sahibinin kararı); tuval de çizmiyor. Kural 4 profilin (rozetler dahil) kime gidebileceğini sınırlar, gösterilmesini istemez; sunucu `badges`'i aynen taşır, veri değişmedi.
+- **Profil:** 36'lık başlık ve 52'lik ayarlar, 210'luk kartlarda 112'lik yüzler ve 15'lik yazılar, 34'lük ad, 17'lik tanıtım, 50'lik iki düğme; liste satırları 14 / 18 içten, 18'lik başlık, 14'lük not ("27 gün sonra yenileyebilirsin." ve pasif Yenile bugünkü gibi). Başkasının profil kartı da 210 ve 34'lük adla (aynı kart).
+- **Profil fotoğrafı:** koyu perde (#14112B, %86) üstünde kenardan 22, 30 köşeli beyaz kart; fotoğraf zeminden 300 ms sonra pop'la gelir (`MOTION.cardOpen`, hareket.json `cardOpen.contentAfterMs`). Kapatma bugünkü gibi: dokunuş ya da geri tuşu.
+- **Profili düzenle:** 48'lik geri, 36'lık başlık, fotoğraf kartı (112'lik yüz, 36'lık beyaz kamera rozeti, "Fotoğrafı değiştir"), 56'lık alanlar (tanıtım 108) ve 14'lük notlar, doğum tarihi notu küçük camda. Kaydet bugünkü yerinde, sayfanın altında (raporun 5. sorusu).
+- **Kapsülün:** 48'lik düğmeler, 19'luk başlık, 152'lik kapsül (zemini kapsülün kendi renginden, bugünkü gibi), 40'lık yuva çipleri; boş parça karosu 104 ve seçiliyken mor halka; paket kartı 16 içten, 19'luk ad, 44'lük "Paketi tak"; paketin parçaları 70 yüksek karolarda adsız (ad ekran okuyucuda), satırda üç; altta 50'lik "Hepsini çıkar" ve "Kaydet". Takılı parçaların çıkarma etiketleri, paket renkleri ve kaydırınca katlanma bugünkü gibi.
+
 Raporun açık sorularında (titreşim, lobideki ikinci bölüm başlığı, Profili düzenle'de Kaydet, geçmiş satırına dokunma, koyu tema / yükleniyor / hata hâlleri, galeri, Aktiviteler simgesi) uygulamanın bugünkü davranışı korunur.
