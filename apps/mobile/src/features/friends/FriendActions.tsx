@@ -1,46 +1,51 @@
 import type { Friend } from '@shared/api/friends.ts';
 import { View } from 'react-native';
 
-import { AppIcon } from '@/components/AppIcon';
-import { Button } from '@/components/Button';
-import { Text } from '@/components/Text';
+import { CapIcon } from '@/aura/CapIcon';
+import { Btn, T, useKit } from '@/aura/kit';
 import { tr } from '@/i18n/tr';
-import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, SPACING, TOUCH } from '@/theme/tokens';
+import { KIT } from '@/theme/auraKit';
 
 import { openDm } from './openDm';
 
-// A friend's profile (skall tuvali, ProfilBaskasi): "Arkadaşsınız" beside "Mesaj".
+// A friend's profile (aura v50, ProfilBaskasi): "Arkadaşsınız", a 50 green pill, beside "Mesaj" of
+// the same width.
 export function FriendActions({ friend }: { friend: Friend }) {
-  const { colors, shape } = useTheme();
+  const { c } = useKit();
   const threadId = friend.threadId;
   return (
-    <View className="flex-row" style={{ gap: SPACING[2] }}>
+    <View style={{ flexDirection: 'row', gap: GAP }}>
       <View
-        className="flex-1 flex-row items-center justify-center"
         style={{
-          gap: SPACING[1.5],
-          minHeight: TOUCH.min,
-          borderRadius: shape.radius.pill,
-          backgroundColor: colors.surface2,
+          flex: 1,
+          minWidth: 0,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: PILL_GAP,
+          height: KIT.size.btnRow,
+          borderRadius: KIT.size.btnRow / 2,
+          backgroundColor: c.friendPill,
         }}
       >
-        <AppIcon name="checkmark" size={ICON.sm} color={colors.onSuccessSoft} />
-        <Text variant="label" color={colors.onSuccessSoft}>
+        <CapIcon name="check" color={c.friendPillInk} size={KIT.size.iconSm} />
+        <T v="btn" color={c.friendPillInk}>
           {tr.profile.friendsStatus}
-        </Text>
+        </T>
       </View>
       {threadId ? (
-        <View className="flex-1">
-          <Button
-            icon="chevron-forward"
-            label={tr.friends.messageShort}
-            onPress={() =>
-              openDm({ threadId, publicId: friend.publicId, name: friend.displayName })
-            }
-          />
-        </View>
+        <Btn
+          bar={KIT.size.btnRow}
+          block
+          icon="forward"
+          label={tr.friends.messageShort}
+          onPress={() => openDm({ threadId, publicId: friend.publicId, name: friend.displayName })}
+          style={{ flex: 1, minWidth: 0 }}
+        />
       ) : null}
     </View>
   );
 }
+
+const GAP = 10;
+const PILL_GAP = 8;

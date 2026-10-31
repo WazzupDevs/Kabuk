@@ -8,6 +8,8 @@ import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, OPACITY, SPACING } from '@/theme/tokens';
 
+import { CapIcon, type CapIconName } from '@/aura/CapIcon';
+
 import type { IconName } from './Button';
 import { Loader } from './Loader';
 import { boxShadowParts } from './NativeShadow';
@@ -68,6 +70,7 @@ const FLOAT_WIDTH = SPACING[16] * 3 + SPACING[4] + SPACING[0.5];
 export function MenuItem({
   label,
   icon,
+  cap,
   onPress,
   negative,
   loading,
@@ -78,6 +81,8 @@ export function MenuItem({
 }: {
   label: string;
   icon?: IconName;
+  // The aura kit's icon instead (aura v50: the profile's and the photo's menus).
+  cap?: CapIconName;
   onPress: () => void;
   negative?: boolean;
   loading?: boolean;
@@ -110,7 +115,9 @@ export function MenuItem({
             opacity: pressed ? OPACITY.pressed : 1,
           }}
         >
-          {icon ? (
+          {cap ? (
+            <CapIcon name={cap} size={ICON.md} color={negative ? ink : colors.muted} />
+          ) : icon ? (
             <AppIcon name={icon} size={ICON.md} color={negative ? ink : colors.muted} />
           ) : null}
           <View
