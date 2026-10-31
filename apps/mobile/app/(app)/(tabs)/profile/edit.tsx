@@ -5,13 +5,11 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { BackHandler, Pressable, View } from 'react-native';
 
+import { CapIcon } from '@/aura/CapIcon';
+import { Av, Btn, Glass, Round, T, useKit } from '@/aura/kit';
 import { Button } from '@/components/Button';
-import { CanvasBar } from '@/components/CanvasIcon';
-import { Card } from '@/components/Card';
 import { Input } from '@/components/Input';
-import { ProfilePhoto } from '@/components/ProfilePhoto';
 import { Screen } from '@/components/Screen';
-import { ScreenHeader } from '@/components/ScreenHeader';
 import { Text } from '@/components/Text';
 import { Loader } from '@/components/Loader';
 import { useProfile } from '@/features/account/useProfile';
@@ -25,13 +23,13 @@ import { track } from '@/lib/analytics';
 import { profileApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { maxLengthFor } from '@/lib/textLimit';
-import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, SPACING } from '@/theme/tokens';
-import { AppIcon } from '@/components/AppIcon';
+import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { SPACING } from '@/theme/tokens';
 
-// The photo, the display name and the bio (docs/arsiv/SPEC_V2.md §5.1; canvas: Aşama 5 · Geri bildirim →
-// Profili düzenle). Length is checked here; the profile function checks length and profanity
-// again. The birth date cannot change (rule 11).
+// The photo, the display name and the bio (docs/arsiv/SPEC_V2.md §5.1; docs/design/aura → Profili
+// düzenle): back, the title, the photo's card, the fields' card, the birth date's note; "Kaydet"
+// stays at the foot (the canvas leaves it out). Length is checked here; the profile function checks
+// length and profanity again. The birth date cannot change (rule 11).
 export default function EditProfileScreen() {
   const own = useProfile();
   if (own.isPending || !own.data) {
@@ -54,59 +52,64 @@ export default function EditProfileScreen() {
 
 // A photo needs a saved name first (the server refuses it otherwise).
 function PhotoEditor({ publicId, hasName }: { publicId: string; hasName: boolean }) {
-  const { colors, shape } = useTheme();
   const view = useProfileView(publicId);
   const [menu, setMenu] = useState(false);
   const hasPhoto = !!view.data?.photoUrl || view.data?.photoHidden === true;
   const label = hasPhoto ? tr.profile.photoChange : tr.profile.photoAdd;
 
   return (
-    <View className="items-center gap-2">
+    <View style={{ alignItems: 'center', gap: SPACING[2] }}>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={label}
         accessibilityState={{ disabled: !hasName }}
         disabled={!hasName}
         onPress={() => setMenu(true)}
-        className="items-center gap-2"
-        style={{ opacity: hasName ? 1 : 0.6 }}
+        style={{ alignItems: 'center', gap: PHOTO_GAP, opacity: hasName ? 1 : NO_NAME }}
       >
         <View>
-          <ProfilePhoto url={view.data?.photoUrl ?? null} name={view.data?.displayName} />
+          <Av
+            size="big"
+            name={view.data?.displayName ?? ''}
+            photoUrl={view.data?.photoUrl ?? null}
+          />
+          {/* The canvas's camera on a white round at the face's lower right. */}
           <View
-            className="absolute items-center justify-center"
             style={{
-              right: -SPACING[1],
-              bottom: -SPACING[1],
-              width: SPACING[10],
-              height: SPACING[10],
-              borderRadius: shape.radius.pill,
-              backgroundColor: colors.surface,
-              borderWidth: SPACING[1],
-              borderColor: colors.canvas,
-              boxShadow: shape.shadow.card,
+              position: 'absolute',
+              right: -CAMERA_OUT,
+              bottom: CAMERA_UP,
+              width: CAMERA,
+              height: CAMERA,
+              borderRadius: CAMERA / 2,
+              backgroundColor: KIT.white,
+              boxShadow: KIT.cameraShadow,
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
-            {/* skall tuvali (ProfilDuzenle): the canvas's two-tone photo icon. */}
-            <CanvasBar name="photo" size={ICON.md} />
+            <CapIcon name="photo" color={KIT.primary} second={KIT.pink} size={KIT.size.iconSm} />
           </View>
         </View>
-        <View style={{ minHeight: SPACING[11], justifyContent: 'center' }}>
-          <Text variant="label" tone="accent">
-            {label}
-          </Text>
-        </View>
+        <T v="btn" color={KIT.primary}>
+          {label}
+        </T>
       </Pressable>
       {!hasName ? (
-        <Text variant="fine" align="center">
+        <T v="fine" center>
           {tr.profile.photoNeedsName}
-        </Text>
+        </T>
       ) : null}
 
       <PhotoSheet visible={menu} onClose={() => setMenu(false)} canRemove={hasPhoto} />
     </View>
   );
 }
+const PHOTO_GAP = 14;
+const NO_NAME = 0.6;
+const CAMERA = 36;
+const CAMERA_OUT = 8;
+const CAMERA_UP = 4;
 
 function EditForm({
   publicId,
@@ -117,7 +120,7 @@ function EditForm({
   initialName: string;
   initialBio: string;
 }) {
-  const { colors } = useTheme();
+  const { c } = useKit();
   const queryClient = useQueryClient();
   const [name, setName] = useState(initialName);
   const [bio, setBio] = useState(initialBio);
@@ -176,57 +179,70 @@ function EditForm({
   );
 
   return (
-    <Screen>
-      <ScreenHeader title={tr.profile.editTitle} onBack={leave} />
+    <Screen gap={GAP}>
+      <Round big icon="back" label={tr.common.back} onPress={leave} />
+      <T v="display" style={KIT_TYPE.displayXl} accessibilityRole="header">
+        {tr.profile.editTitle}
+      </T>
 
-      <View className="mt-4 gap-3">
-        {/* skall tuvali (ProfilDuzenle): the photo and the fields in cards. */}
-        <Card>
-          <PhotoEditor publicId={publicId} hasName={initialName !== ''} />
-        </Card>
-        <Card>
-          <View className="gap-4">
-            <Input
-              testID="name-input"
-              label={tr.profile.nameLabel}
-              hint={tr.profile.nameHint}
-              value={name}
-              onChangeText={setName}
-              error={nameContact ? tr.errors.contact_not_allowed : null}
-              maxLength={maxLengthFor(name, DISPLAY_NAME_MAX)}
-              autoCapitalize="words"
-              autoCorrect={false}
-            />
-            <Input
-              label={tr.profile.bioLabel}
-              counter={tr.profile.bioHint([...bio].length, BIO_MAX)}
-              value={bio}
-              onChangeText={setBio}
-              error={bioError}
-              maxLength={maxLengthFor(bio, bioLimit)}
-              multiline
-              tall
-            />
-          </View>
-        </Card>
-        <Card tone="note">
-          <View className="flex-row items-start gap-2">
-            <AppIcon name="calendar-outline" size={ICON.md} color={colors.text} />
-            <Text variant="fine" tone="text" className="flex-1">
-              {tr.profile.birthDateNote}
-            </Text>
-          </View>
-        </Card>
-      </View>
+      <Glass
+        style={{
+          alignItems: 'center',
+          paddingVertical: KIT.size.padLg,
+          paddingHorizontal: KIT.size.pad,
+        }}
+      >
+        <PhotoEditor publicId={publicId} hasName={initialName !== ''} />
+      </Glass>
+      <Glass pad="pad" style={{ gap: FIELDS_GAP }}>
+        <Input
+          large
+          testID="name-input"
+          label={tr.profile.nameLabel}
+          hint={tr.profile.nameHint}
+          value={name}
+          onChangeText={setName}
+          error={nameContact ? tr.errors.contact_not_allowed : null}
+          maxLength={maxLengthFor(name, DISPLAY_NAME_MAX)}
+          autoCapitalize="words"
+          autoCorrect={false}
+        />
+        <Input
+          large
+          label={tr.profile.bioLabel}
+          counter={tr.profile.bioHint([...bio].length, BIO_MAX)}
+          value={bio}
+          onChangeText={setBio}
+          error={bioError}
+          maxLength={maxLengthFor(bio, bioLimit)}
+          multiline
+          tall
+        />
+      </Glass>
+      <Glass
+        sm
+        style={{
+          flexDirection: 'row',
+          alignItems: 'flex-start',
+          gap: KIT.size.rowGap,
+          paddingVertical: NOTE_PAD_Y,
+          paddingHorizontal: NOTE_PAD_X,
+        }}
+      >
+        <CapIcon name="calendar" color={c.ink} size={KIT.size.icon} />
+        <T v="fineLg" ink style={{ flex: 1 }}>
+          {tr.profile.birthDateNote}
+        </T>
+      </Glass>
 
       {save.isError ? (
-        <Text variant="fine" tone="danger" className="mt-4">
+        <T v="fine" color={KIT.danger}>
           {errorMessage(save.error)}
-        </Text>
+        </T>
       ) : null}
-      <View className="mt-auto gap-3 pt-8">
-        <Button
-          size="lg"
+      <View style={{ marginTop: 'auto', paddingTop: SPACING[4] }}>
+        <Btn
+          block
           label={tr.profile.save}
           onPress={() => save.mutate()}
           disabled={!nameValid || !bioValid || (!nameChanged && !bioChanged)}
@@ -254,3 +270,8 @@ function EditForm({
     </Screen>
   );
 }
+
+const GAP = 16;
+const FIELDS_GAP = 16;
+const NOTE_PAD_Y = 14;
+const NOTE_PAD_X = 16;

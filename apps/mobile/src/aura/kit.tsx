@@ -495,17 +495,20 @@ export function Chip({
   onPress,
   testID,
   tall,
+  lg,
 }: {
   label: string;
   on?: boolean;
   onPress?: () => void;
   testID?: string;
   tall?: boolean;
+  // Kapsülün's slots: 40 high, 18 inside, 15.
+  lg?: boolean;
 }) {
   const { c } = useKit();
   const press = usePress();
   const frosted = useFrost() && !on;
-  const h = tall ? KIT.size.chipTall : KIT.size.chip;
+  const h = lg ? KIT.size.chipLg : tall ? KIT.size.chipTall : KIT.size.chip;
   // Its soft shadow natively (NativeShadow.tsx).
   const shadowOff = useLabOff('golge');
   const shadow = shadowParts(
@@ -528,7 +531,11 @@ export function Chip({
       <Animated.View
         style={{
           height: h,
-          paddingHorizontal: tall ? KIT.size.chipTallPadX : KIT.size.chipPadX,
+          paddingHorizontal: lg
+            ? KIT.size.chipLgPadX
+            : tall
+              ? KIT.size.chipTallPadX
+              : KIT.size.chipPadX,
           borderRadius: h,
           flexDirection: 'row',
           alignItems: 'center',
@@ -545,7 +552,7 @@ export function Chip({
         <Text
           numberOfLines={1}
           maxFontSizeMultiplier={MAX_FONT_SCALE}
-          style={[tall ? KIT_TYPE.chipLg : KIT_TYPE.chip, { color: on ? c.onChipOn : c.ink }]}
+          style={[tall || lg ? KIT_TYPE.chipLg : KIT_TYPE.chip, { color: on ? c.onChipOn : c.ink }]}
         >
           {label}
         </Text>
@@ -821,6 +828,7 @@ export function Li({
   testID,
   accessibilityLabel,
   padY = KIT.size.liPadY,
+  padX = KIT.size.liPadX,
 }: {
   children: ReactNode;
   onPress?: () => void;
@@ -828,13 +836,15 @@ export function Li({
   accessibilityLabel?: string;
   // Above and under (Mesajlar's rows: 12).
   padY?: number;
+  // Inside (Profil's rows: 18).
+  padX?: number;
 }) {
   const style: ViewStyle = {
     flexDirection: 'row',
     alignItems: 'center',
     gap: KIT.size.liGap,
     paddingVertical: padY,
-    paddingHorizontal: KIT.size.liPadX,
+    paddingHorizontal: padX,
   };
   const row = <InRow.Provider value>{children}</InRow.Provider>;
   if (!onPress)

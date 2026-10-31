@@ -70,21 +70,23 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 import { GlassTarget } from '@/components/LiquidGlass';
 
-const PREVIEW = SPACING[16] * 2 + SPACING[1];
-// docs/design/aura → Kapsül, made low (the owner's call, 28 Ekim): the scene's height under the
+// docs/design/aura → Kapsülün (31): the capsule 152 with its ring, the scene's height under the
 // status bar, how far its parts stand above its bottom, the worn parts' tags beside the capsule.
-const CAPSULE_SCENE = 236;
-const SCENE_FOOT = 14;
+const PREVIEW = 140;
+const CAPSULE_SCENE = 252;
+const SCENE_FOOT = 28;
 const WORN_TAG = 28;
 const WORN_ICON = 12;
 // The soft edge under the fixed head and over the fixed buttons.
 const BAND_FADE = SPACING[6];
 // v46 feel(): the feeling's face stays 1850 ms.
 const FEELING_MS = 1850;
-// The colours four to a row, a pack's parts three (the owner's call, 27 Ekim: larger, in order).
+// The colours four to a row, a pack's parts three (the owner's call, 27 Ekim: larger, in order),
+// 10 apart (docs/design/aura → Kapsülün).
 const COLOR_COLUMNS = 4;
 const PACK_COLUMNS = 3;
-// The capsule's share of a tile, and a pressed tile's size.
+const TILE_GAP = 10;
+// The capsule's share of a colour's tile, and a pressed tile's size.
 const AVATAR_SHARE = 0.7;
 const TILE_PRESSED = 0.96;
 // "Karıştır": the arrows turn once round and swell a little.
@@ -131,6 +133,7 @@ export default function CapsuleScreen() {
 
 function Editor({ saved, nick, publicId }: { saved: string; nick: string; publicId: string }) {
   const { shape, scheme } = useTheme();
+  const { c } = useKit();
   const { width } = useWindowDimensions();
   const queryClient = useQueryClient();
   const [look, setLook] = useState<Look>(() => parse(saved));
@@ -222,8 +225,10 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
   const [turn, setTurn] = useState(0);
   const side = shape.screenPadding;
   const content = width - side * 2;
-  const colorTile = (content - SPACING[2] * (COLOR_COLUMNS - 1)) / COLOR_COLUMNS;
-  const packTile = (content - SPACING[3] * 2 - SPACING[2] * (PACK_COLUMNS - 1)) / PACK_COLUMNS;
+  const colorTile = (content - TILE_GAP * (COLOR_COLUMNS - 1)) / COLOR_COLUMNS;
+  const packTile =
+    (content - (KIT.size.packPad + KIT.size.edge) * 2 - TILE_GAP * (PACK_COLUMNS - 1)) /
+    PACK_COLUMNS;
   // The parts' tiles (dozens of drawings) come right after the screen's slide, so the slide and
   // the capsule draw at once (the owner's report, 27 Ekim: a white screen, then a stutter).
   const ready = useAfterSlide();
@@ -263,7 +268,9 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
           {slot !== 'c' && slot !== 'e' ? (
             <View className="flex-row">
               <Tile
-                size={packTile}
+                width={KIT.size.partTile}
+                height={KIT.size.partTile}
+                capsule={KIT.size.partCapsule}
                 look={code(wear(look, slot, null))}
                 label={tr.capsule.empty(slotName)}
                 on={!look[slot]}
@@ -276,19 +283,23 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
               <View
                 key={`${group.rack}-${group.pack}`}
                 style={{
-                  gap: SPACING[3],
-                  padding: SPACING[3],
-                  borderRadius: shape.radius.lg,
+                  gap: KIT.size.packGap,
+                  padding: KIT.size.packPad,
+                  borderRadius: KIT.size.glassRadius,
+                  borderWidth: KIT.size.edge,
+                  borderColor: c.glassEdge,
                   backgroundColor: packTone(group.pack, index, scheme),
                 }}
               >
                 <View className="flex-row items-center gap-3">
                   <View className="flex-1">
-                    <T v="h3">{tr.capsule.pack(group.pack)}</T>
-                    <T v="fine">{tr.capsule.packSlots(packItems(group.rack, group.pack).length)}</T>
+                    <T v="secLg">{tr.capsule.pack(group.pack)}</T>
+                    <T v="fineLg">
+                      {tr.capsule.packSlots(packItems(group.rack, group.pack).length)}
+                    </T>
                   </View>
                   <Btn
-                    sm
+                    mid
                     variant="glassy"
                     label={tr.capsule.wearPack}
                     onPress={() =>
@@ -296,13 +307,17 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
                     }
                   />
                 </View>
-                <View className="flex-row flex-wrap" style={{ gap: SPACING[2] }}>
+                <View className="flex-row flex-wrap" style={{ gap: TILE_GAP }}>
                   {group.items.map((item) => (
                     <Tile
                       key={item.id}
-                      size={packTile}
+                      width={packTile}
+                      height={KIT.size.partTileHeight}
+                      capsule={KIT.size.partCapsule}
+                      drop={KIT.size.partCapsuleDrop}
                       look={code(wear(look, item.slot, item.id))}
                       label={item.name}
+                      named={false}
                       on={look[item.slot] === item.id}
                       onPress={() => put(wear(look, item.slot, item.id))}
                     />
@@ -310,11 +325,13 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
                 </View>
               </View>
             ) : (
-              <View key="colors" className="flex-row flex-wrap" style={{ gap: SPACING[2] }}>
+              <View key="colors" className="flex-row flex-wrap" style={{ gap: TILE_GAP }}>
                 {group.items.map((item) => (
                   <Tile
                     key={item.id}
-                    size={colorTile}
+                    width={colorTile}
+                    height={colorTile}
+                    capsule={colorTile * AVATAR_SHARE}
                     look={code(wear(look, item.slot, item.id))}
                     label={item.name}
                     on={look[item.slot] === item.id}
@@ -357,11 +374,12 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
             className="flex-row items-center justify-between"
             style={{ paddingHorizontal: side, paddingTop: insets.top + SPACING[3] }}
           >
-            <Round icon="back" label={tr.common.back} onPress={leave} />
-            <T v="h3" accessibilityRole="header">
+            <Round big icon="back" label={tr.common.back} onPress={leave} />
+            <T v="secLg" accessibilityRole="header">
               {tr.capsule.title}
             </T>
             <Round
+              big
               testID="capsule-shuffle"
               label={tr.capsule.shuffle}
               onPress={() => {
@@ -427,6 +445,7 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
           >
             {CAPSULE_CATALOG.slots.map((s) => (
               <Chip
+                lg
                 key={s.id}
                 label={s.name}
                 on={slot === s.id}
@@ -459,11 +478,11 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
           },
         ]}
       >
-        {/* Small buttons (the owner's call, 28 Ekim). */}
-        <View className="flex-row gap-2.5">
+        {/* docs/design/aura → Kapsülün: 50 high, 12 apart. */}
+        <View className="flex-row gap-3">
           <View className="flex-1">
             <Btn
-              sm
+              bar={KIT.size.btnRow}
               block
               variant="glassy"
               label={tr.capsule.clearAll}
@@ -472,7 +491,7 @@ function Editor({ saved, nick, publicId }: { saved: string; nick: string; public
           </View>
           <View className="flex-1">
             <Btn
-              sm
+              bar={KIT.size.btnRow}
               block
               icon="check"
               testID="capsule-save"
@@ -604,26 +623,35 @@ function ShuffleGlyph({ turn }: { turn: number }) {
   );
 }
 
-// A part on the capsule as it would be (skall tuvali: `.kit` tiles), the chosen one outlined; a
-// fixed width, so the rows line up (a style function on the press dropped the width: tiles as wide
-// as their names, the owner's report, 27 Ekim).
+// A part on the capsule as it would be (docs/design/aura → Kapsülün): a small glass tile, the
+// chosen one ringed in the primary on its pink; a pack's parts are 70 high with the capsule 10 down
+// in them and carry their name only for the screen reader; a fixed width, so the rows line up (a
+// style function on the press dropped the width: tiles as wide as their names, the owner's report,
+// 27 Ekim).
 function Tile({
-  size,
+  width,
+  height,
+  capsule,
+  drop,
   look,
   label,
+  named = true,
   on,
   onPress,
 }: {
-  size: number;
+  width: number;
+  height: number;
+  capsule: number;
+  // How far down the capsule stands in a low tile (its feet are cut off); centred without it.
+  drop?: number;
   look: string;
   label: string;
+  named?: boolean;
   on: boolean;
   onPress: () => void;
 }) {
-  const { scheme } = useTheme();
   const { c } = useKit();
   const [pressed, setPressed] = useState(false);
-  const ground = AURA.scene[scheme];
   return (
     <Pressable
       accessibilityRole="radio"
@@ -632,32 +660,38 @@ function Tile({
       onPress={onPress}
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
-      style={{ width: size, alignItems: 'center', gap: SPACING[1] }}
+      style={{ width, alignItems: 'center', gap: TILE_LABEL_GAP }}
     >
-      {/* docs/design/aura → Kapsül: each part on a little scene, the chosen one ringed. */}
       <View
-        style={{
-          ...gradientStyle(`linear-gradient(180deg, ${ground.top}, ${ground.bottom})`),
-          width: size,
-          height: size,
-          borderRadius: KIT.size.glassRadiusSm,
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: on ? `0px 0px 0px ${TILE_RING}px ${KIT.primary}` : undefined,
-          transform: [{ scale: pressed ? TILE_PRESSED : 1 }],
-        }}
+        style={[
+          on ? { backgroundColor: KIT.partOn } : gradientStyle(c.glass),
+          {
+            width,
+            height,
+            borderRadius: KIT.size.glassRadiusSm,
+            borderWidth: on ? KIT.size.partRing : KIT.size.edge,
+            borderColor: on ? KIT.primary : c.glassEdge,
+            overflow: 'hidden',
+            alignItems: 'center',
+            justifyContent: drop === undefined ? 'center' : 'flex-start',
+            paddingTop: drop,
+            transform: [{ scale: pressed ? TILE_PRESSED : 1 }],
+          },
+        ]}
       >
-        <LookAvatar look={look} size={size * AVATAR_SHARE} />
+        <LookAvatar look={look} size={capsule} />
       </View>
-      <RNText
-        numberOfLines={2}
-        maxFontSizeMultiplier={TILE_SCALE}
-        style={[KIT_TYPE.stamp, { color: c.ink, textAlign: 'center' }]}
-      >
-        {label}
-      </RNText>
+      {named ? (
+        <RNText
+          numberOfLines={2}
+          maxFontSizeMultiplier={TILE_SCALE}
+          style={[KIT_TYPE.fine, KIT_TYPE.strong, { color: c.ink, textAlign: 'center' }]}
+        >
+          {label}
+        </RNText>
+      ) : null}
     </Pressable>
   );
 }
-const TILE_RING = 3;
+const TILE_LABEL_GAP = 6;
 const TILE_SCALE = 1.3;
