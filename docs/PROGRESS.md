@@ -1,5 +1,11 @@
 # İlerleme
 
+## Devir notu (31 Ekim 2026, Grup 7 planı onaylandı)
+
+- Grup 7 (Keşfet, aura v51; rapor: kabul raporu §6 ve §9) planı proje sahibince onaylandı. Sıra, her biri ayrı PR, OTA: **K1** boş sonuç nedene göre (saf fonksiyon + vitest; arama → tür → semt, veri yoksa `tr.explore.empty`; §9 metinleri birebir, yalnızca tür metni `tr.ts`'e eklenir; harita aynı fonksiyon) → **K2** harita mekan/yığın kartı aura opak kart (`ExploreMap.tsx:426–489`; `androidView="texture"` korunur) → **K3** 320 dp/1,3x: canlılık ve "Mekana dön" alta (ölçüt 360 dp ya da `fontScale > 1.15`) → **K4** `PlaceSheet` aura → **K5** Ayarlar: `RouteSheet` `footer`'da sabit "Tamam", segment/anahtar mevcut parçalarla (`segOn` ve Masa kur anahtarı token'larına dokunma), menü `cap` → **K6** Ayarlar alt sayfaları aura; Hesap gizliliği korunur, birleşmeden önce `guvenlik`.
+- Sınırlar: ortak aura token'ları değişmez (Grup 1, 4, 5, 6 regresyonu yok); Grup 5 çubuğu ve gezinme aynı; Nokta değiştir, Kapsül karakterler, Engellenenler için yeni pano yok, davranış aynı; yeni native, hareket, titreşim, üretim yayını yok. `ci` yeşilse squash; cihaz kontrolleri son toplu kabulde.
+- Durumlar: Grup 4, 5, 6 kod tamamlandı / cihaz kabulü bekliyor. Sıradaki: K1 (yeni oturum).
+
 ## Devir notu (31 Ekim 2026, Grup 4–6)
 
 - Grup 4 (Masa kur, aura v47): **kod tamamlandı** (M1 #314, M2 #315, M3 #316); **cihaz kabulü bekliyor** (K1–K6, Android 12+ ve altı, açık/koyu, 390 ve 320 dp/1,3x); **ürün olarak tamamlanma** son toplu kabul testinden sonra. Kararlar: docs/decisions/grup4-masa-kur.md.
