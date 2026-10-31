@@ -396,12 +396,32 @@ describe('the check-in identity: one change (§4.D, K-3, K-4, K-48)', () => {
     const a = await atVenue(PHONES[0], 'Ayşe');
     expect(await setIdentity(a, false)).toEqual({ status: 409, body: errorBody('photo_required') });
     expect((await page(a)).identity).toEqual({ mode: 'anonymous', switchUsed: false });
+    // A hidden photo is none.
+    await setTestPhoto(a);
+    await sql`update public.profiles set photo_hidden_at = now() where id = ${await userIdOf(a)}`;
+    expect(await setIdentity(a, false)).toEqual({ status: 409, body: errorBody('photo_required') });
+    expect((await page(a)).identity).toEqual({ mode: 'anonymous', switchUsed: false });
     expect(
       await invoke(await onboarded(PHONES[1]), 'checkin', {
         action: 'set-identity',
         anonymous: true,
       }),
     ).toEqual({ status: 409, body: errorBody('no_active_table') });
+  });
+
+  it('checks the photo only at the choice: a profiled check-in keeps writing after it goes', async () => {
+    const a = await atVenue(PHONES[0], 'Ayşe');
+    const b = await atVenue(PHONES[1], 'Burak');
+    await setTestPhoto(a);
+    expect((await setIdentity(a, false)).status).toBe(200);
+    expect(await invoke(a, 'profile', { action: 'photo-remove' })).toEqual({
+      status: 200,
+      body: { ok: true },
+    });
+    expect(await send(a, 'hâlâ adımla', { identity: 'profiled' })).toEqual(ok);
+    expect((await page(b)).messages).toEqual([
+      expect.objectContaining({ body: 'hâlâ adımla', profiled: true, photoUrl: null }),
+    ]);
   });
 
   it('lets a man and an unspecified account write anonymously in the venue chat, with one change', async () => {

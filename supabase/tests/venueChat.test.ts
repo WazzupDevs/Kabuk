@@ -351,7 +351,11 @@ describe('venue chat: photos (venue-chat/page)', () => {
     ]);
 
     expect(await invoke(b, 'checkin', { action: 'leave' })).toEqual(OK);
-    expect(await fnPage(b)).toEqual([]);
+    // The whole answer without a table: nothing else rides on it.
+    expect(await invoke(b, 'venue-chat', { action: 'page', venueId: venue[V] })).toEqual({
+      status: 200,
+      body: { messages: [], identity: null },
+    });
   });
 });
 
