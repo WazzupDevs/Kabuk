@@ -8,6 +8,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import {
   VENUE_CHAT,
+  VENUE_CHAT_BROADCAST,
   VENUE_CHAT_REACTION_BROADCAST,
   venueChatChannel,
 } from '../functions/_shared/pure/venueChat.ts';
@@ -855,5 +856,164 @@ describe('venue chat: no public_id in signed photo URLs', () => {
         expect(payload).not.toContain(id);
       }
     }
+  });
+});
+
+// Grup 3, P5 (the owner's approval, 31 Ekim): the app sends a message again with the same clientId
+// when its answer did not come. The same account and clientId are one message: nothing written,
+// counted against the rate limit or broadcast a second time; the same id for another message is
+// client_id_reused; without a clientId every send is a new message (apps before P5).
+describe('venue chat: one message per client id', () => {
+  const sendOnce = (client: Client, body: string, clientId?: string, replyTo?: string) =>
+    invoke(client, 'venue-chat', {
+      action: 'send',
+      venueId: venue[V],
+      body,
+      profiled: false,
+      ...(clientId ? { clientId } : {}),
+      ...(replyTo ? { replyTo } : {}),
+    }) as Promise<{ status: number; body: { messageId: string } }>;
+
+  const rowsOf = async (clientId: string) =>
+    sql`select id from public.venue_chat_messages where client_id = ${clientId}`;
+
+  const rateOf = async (userId: string) => {
+    const [row] = await sql`
+      select count, last_sent_at from public.venue_chat_rate where user_id = ${userId}
+    `;
+    return row;
+  };
+
+  it('answers the first message when the answer was lost, writing and counting nothing', async () => {
+    const { a } = await threeAtVenue();
+    const aId = await userIdOf(a);
+    const clientId = randomUUID();
+    // The server wrote the message; its answer never reached the phone.
+    const [first] = await sql`
+      select message_id, replayed from public.venue_chat_send_once(
+        ${aId}, ${venue[V] ?? ''}, 'kayıp yanıt', ${VENUE_CHAT.minIntervalMs},
+        ${VENUE_CHAT.windowSeconds}, ${VENUE_CHAT.windowMax}, null, false, null, ${clientId}
+      )
+    `;
+    expect(first?.replayed).toBe(false);
+    const rate = await rateOf(aId);
+
+    // Tekrar dene, at once: inside the 3-second limit, yet the same message.
+    const again = await sendOnce(a, 'kayıp yanıt', clientId);
+    expect(again).toEqual({ status: 200, body: { messageId: first?.message_id } });
+    expect(await rowsOf(clientId)).toHaveLength(1);
+    expect(await rateOf(aId)).toEqual(rate);
+    expect((await fnPage(a)).filter((m) => m.body === 'kayıp yanıt')).toHaveLength(1);
+  });
+
+  it('broadcasts the first send only', async () => {
+    const { a, b } = await threeAtVenue();
+    const topic = venueChatChannel(venue[V] ?? '');
+    const channel = b.channel(topic, { config: { private: true } });
+    let heard = 0;
+    await new Promise<void>((resolve, reject) => {
+      channel
+        .on('broadcast', { event: VENUE_CHAT_BROADCAST }, () => {
+          heard += 1;
+        })
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') resolve();
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') reject(new Error(status));
+        });
+    });
+    try {
+      await sql`update public.venue_chat_rate set last_sent_at = '-infinity'`;
+      const clientId = randomUUID();
+      const first = await sendOnce(a, 'bir kez', clientId);
+      expect(first.status).toBe(200);
+      for (let i = 0; i < 50 && heard === 0; i++) await new Promise((r) => setTimeout(r, 100));
+      expect(heard).toBe(1);
+      expect(await sendOnce(a, 'bir kez', clientId)).toEqual(first);
+      await new Promise((r) => setTimeout(r, 1500));
+      expect(heard).toBe(1);
+    } finally {
+      await b.removeChannel(channel);
+    }
+  });
+
+  it('writes one message for sends at the same time', async () => {
+    const { a } = await threeAtVenue();
+    const aId = await userIdOf(a);
+    await sql`update public.venue_chat_rate set last_sent_at = '-infinity'`;
+    const before = (await rateOf(aId))?.count ?? 0;
+    const clientId = randomUUID();
+    const results = await Promise.all([1, 2, 3].map(() => sendOnce(a, 'aynı anda', clientId)));
+    const ids = new Set(results.map((r) => r.body.messageId));
+    expect(results.map((r) => r.status)).toEqual([200, 200, 200]);
+    expect(ids.size).toBe(1);
+    expect(await rowsOf(clientId)).toHaveLength(1);
+    expect((await rateOf(aId))?.count).toBe(before + 1);
+  });
+
+  it('waits on the check-in lock and then finds the first message (lock order unchanged)', async () => {
+    const { a } = await threeAtVenue();
+    const aId = await userIdOf(a);
+    const clientId = randomUUID();
+    const call = (db: postgres.Sql | postgres.TransactionSql) => db`
+      select message_id, replayed from public.venue_chat_send_once(
+        ${aId}, ${venue[V] ?? ''}, 'kilit', ${VENUE_CHAT.minIntervalMs},
+        ${VENUE_CHAT.windowSeconds}, ${VENUE_CHAT.windowMax}, null, false, null, ${clientId}
+      )
+    `;
+    await sql`update public.venue_chat_rate set last_sent_at = '-infinity'`;
+    const holder = postgres(dbUrl, { max: 1, onnotice: () => {} });
+    const second = postgres(dbUrl, { max: 1, onnotice: () => {} });
+    try {
+      let later: Promise<unknown> = Promise.resolve();
+      let firstId: unknown;
+      await holder.begin(async (tx) => {
+        const [row] = await call(tx);
+        firstId = row?.message_id;
+        later = call(second)
+          .execute()
+          .catch((err: unknown) => err);
+        // The second send waits on the check-in row the first one holds (for no key update).
+        await waitUntilBlocked('venue_chat_send_once');
+      });
+      expect(await later).toEqual([{ message_id: firstId, replayed: true }]);
+      expect(await rowsOf(clientId)).toHaveLength(1);
+    } finally {
+      await holder.end();
+      await second.end();
+    }
+  });
+
+  it('refuses the same id for another message, and keeps ids per account', async () => {
+    const { a, b } = await threeAtVenue();
+    await sql`update public.venue_chat_rate set last_sent_at = '-infinity'`;
+    const clientId = randomUUID();
+    const first = await sendOnce(a, 'ilk', clientId);
+    expect(first.status).toBe(200);
+    expect(await sendOnce(a, 'başka', clientId)).toEqual({
+      status: 409,
+      body: errorBody('client_id_reused'),
+    });
+    expect(await sendOnce(a, 'ilk', clientId, first.body.messageId)).toEqual({
+      status: 409,
+      body: errorBody('client_id_reused'),
+    });
+    expect(await rowsOf(clientId)).toHaveLength(1);
+
+    // Another account's message with the same id is its own message.
+    const other = await sendOnce(b, 'ilk', clientId);
+    expect(other.status).toBe(200);
+    expect(other.body.messageId).not.toBe(first.body.messageId);
+  });
+
+  it('writes a new message for each send without a client id (apps before P5)', async () => {
+    const { a } = await threeAtVenue();
+    const one = await send(a, 'kimliksiz');
+    const two = await send(a, 'kimliksiz');
+    expect([one.status, two.status]).toEqual([200, 200]);
+    expect(one.body.messageId).not.toBe(two.body.messageId);
+    const [row] = await sql`
+      select count(*)::int as n from public.venue_chat_messages where body = 'kimliksiz'
+    `;
+    expect(row?.n).toBe(2);
   });
 });

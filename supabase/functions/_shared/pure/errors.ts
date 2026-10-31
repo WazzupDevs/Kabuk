@@ -54,6 +54,7 @@ export type ErrorCode =
   | 'identity_mismatch'
   | 'identity_switch_used'
   | 'nick_refresh_too_soon'
+  | 'client_id_reused'
   | 'icon_taken'
   | 'already_in_table'
   | 'table_full'
@@ -153,6 +154,8 @@ export const DOMAIN_ERROR_CODES: readonly ErrorCode[] = [
   'identity_mismatch',
   'identity_switch_used',
   'nick_refresh_too_soon',
+  // A venue chat message's client id used again for another message (venue_chat_send_once).
+  'client_id_reused',
   // An account without a nick cannot write an anonymous venue chat message (venue_chat_send).
   'onboarding_required',
   // A table's icon (docs/SPEC_V4.md §4.E, K-45): another open or running table at the venue has it.
