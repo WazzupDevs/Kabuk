@@ -1,5 +1,7 @@
 # Oda yükü ölçümü (Faz 2, adım 22.6)
 
+> Arşiv: `pnpm latency`'nin oda adımı ve `scripts/latency/room-load.sql` adım 4.8a'da kalktı (taraf modeli 4.5'te bitti). Bu sayfa yalnızca tarih içindir.
+
 `docs/SPEC_V3.md` §22.I'deki ölçümün nasıl yapılacağı. Faz 2 odanın Realtime yolunu değiştirmez: her `rooms` değişikliği Postgres Changes ile her aboneye ayrı yetki kontrolüyle gider ve her telefon oda durumunu 4 sn'de bir yoklar. 8 telefonlu odada abone ve yetki kontrolü 2 telefonun 4 katıdır. Bu sayfa o yükün eşikleri aşıp aşmadığını ölçmek içindir; aşarsa sonraki adım ayrı bir PR'dır (§22.I "Eşik ve sonraki adım").
 
 Ölçüm iki parçadır: botlarla gecikme (istediğin zaman, dev projesinde) ve saha testi günü panel sayıları.

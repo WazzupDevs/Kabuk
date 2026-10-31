@@ -131,8 +131,6 @@ describe('checkin/check-in', () => {
     `;
     expect(session).toMatchObject({
       status: 'active',
-      alias: null,
-      headcount: null,
       gps_accuracy_m: 12.5,
     });
     expect(Number(session?.seconds)).toBe(4 * 3600);
@@ -195,7 +193,9 @@ describe('checkin/check-in', () => {
     for (const bad of [{ lat: 91 }, { accuracyM: -1 }]) {
       expect((await checkIn(client, bad)).status, JSON.stringify(bad)).toBe(400);
     }
-    expect((await checkIn(client, { headcount: 5 })).status).toBe(200);
+    // An old app still sends a headcount (removed in 4.8a): ignored.
+    const oldApp = { headcount: 5 };
+    expect((await checkIn(client, { requestId: randomUUID(), ...oldApp })).status).toBe(200);
   });
 
   it('ends the previous table when checking in again', async () => {
@@ -268,8 +268,11 @@ describe('checkin/check-in', () => {
     const sessionOf = (res: { body: unknown }) => (res.body as { sessionId: string }).sessionId;
     const requestId = randomUUID();
     const first = sessionOf(await checkIn(client, { requestId }));
-    expect(sessionOf(await checkIn(client, { requestId, headcount: 2 }))).toBe(first);
-    expect(sessionOf(await checkIn(client, { requestId, headcount: 2, teams: true }))).toBe(first);
+    // An old app's headcount and team choice (removed in 4.8a) are ignored.
+    const headcount = { headcount: 2 };
+    const teams = { headcount: 2, teams: true };
+    expect(sessionOf(await checkIn(client, { requestId, ...headcount }))).toBe(first);
+    expect(sessionOf(await checkIn(client, { requestId, ...teams }))).toBe(first);
     const rows = await sql`
       select id from public.table_sessions where user_id = ${await userIdOf(client)}
     `;

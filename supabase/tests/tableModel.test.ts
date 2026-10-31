@@ -94,7 +94,6 @@ async function expectConsistent(roomId: string): Promise<void> {
   }
   expect(r.phones).toBe(here.length);
   expect(here.map((x) => x.session_id)).toContain(r.owner_session_id);
-  expect(here.every((x) => x.side === null)).toBe(true);
 }
 
 const block = (p: Person, roomId: string, target?: Person) =>
@@ -105,20 +104,15 @@ const block = (p: Person, roomId: string, target?: Person) =>
   });
 
 describe('check-in without a table (§4.E)', () => {
-  it('opens no table, writes no alias or headcount, and lets two check-ins at a venue be', async () => {
+  it('opens no table and lets two check-ins at a venue be', async () => {
     const [a, b] = await all(2);
-    const rows = await sql`
-      select alias, headcount from public.table_sessions
-      where id in (${a.sessionId}, ${b.sessionId})
-    `;
-    expect(rows).toEqual([
-      { alias: null, headcount: null },
-      { alias: null, headcount: null },
-    ]);
+    expect(
+      await sql`select 1 from public.table_sessions where id in (${a.sessionId}, ${b.sessionId}) and status = 'active'`,
+    ).toHaveLength(2);
     expect(await sql`select 1 from public.room_members where session_id = ${a.sessionId}`).toEqual(
       [],
     );
-    // Today's app still sends a headcount and `teams`: both are ignored.
+    // An old app still sends a headcount and `teams`: both are ignored.
     const again = await invoke(a.client, 'checkin', {
       action: 'check-in',
       venueId: venue['at-anchor'],
@@ -161,15 +155,13 @@ describe('"Masa kur" (§4.E)', () => {
       phones: 1,
     });
     expect((await roomRow(privateTable)).visibility).toBe('private');
-    // An anonymous woman sits with her capsule nick; the table name is the old owner_alias.
+    // An anonymous woman sits with her capsule nick.
     const [seat] = await seated(lobbyTable);
     expect(seat).toMatchObject({
       session_id: a.sessionId,
       alias: await nickOf(a),
       profiled: false,
     });
-    const r = await roomRow(lobbyTable);
-    expect(r.owner_alias).toBe(r.name);
     await expectConsistent(lobbyTable);
 
     expect(await rooms(a, { action: 'create' })).toEqual({
@@ -1366,11 +1358,8 @@ describe('a table’s name and icon (K-45)', () => {
       status: 200,
       body: { icon: free, name: iconName(free) },
     });
-    // The name follows the icon, and the old owner_alias copy the name (§4.H).
-    expect(await roomRow(roomId)).toMatchObject({
-      name: iconName(free),
-      owner_alias: iconName(free),
-    });
+    // The name follows the icon (§4.H).
+    expect(await roomRow(roomId)).toMatchObject({ name: iconName(free) });
     // Its own icon again is no clash.
     expect((await rooms(a, { action: 'set-icon', roomId, icon: free })).status).toBe(200);
     // An icon not in the list, or taken out of it: refused, nothing changes.
@@ -1396,9 +1385,6 @@ describe('a table’s name and icon (K-45)', () => {
       names.push((res.body as { name: string }).name);
     }
     expect(new Set(names).size).toBe(4);
-    // The old owner_alias copy follows the name until 4.8 (§4.H).
-    const renamed = await roomRow(roomId);
-    expect(renamed.owner_alias).toBe(renamed.name);
     expect(await rooms(a, { action: 'reroll-name', roomId })).toEqual({
       status: 429,
       body: errorBody('reroll_limit'),

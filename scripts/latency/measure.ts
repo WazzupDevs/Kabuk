@@ -7,8 +7,8 @@
 // The accounts become friends through the venue chat if they are not already (a profiled message,
 // a request, an accept), check in at VENUE on its own point and leave at the end. The venue chat
 // messages ("ölçüm 1/10" …) stay visible at the venue for 24 hours, anonymous. A profiled message
-// needs a profile photo and fixes the check-in's venue chat mode (docs/SPEC_V3.md §22.G): A gets a
-// photo if it has none, and checks in again after the friendship so the measured messages can be
+// needs a profile photo and the check-in's one identity change (docs/SPEC_V4.md §4.D): A gets a
+// photo if it has none, and checks in again after the friendship so the measured messages are
 // anonymous.
 //
 //   SUPABASE_URL=https://<ref>.supabase.co SUPABASE_PUBLISHABLE_KEY=<publishable key> \
@@ -17,12 +17,7 @@
 //
 // Optional: ROUNDS (default 10). The venue chat allows an account 20 messages per 10 minutes, so
 // leave 10 minutes between two runs.
-//
-// The room step (docs/SPEC_V3.md §22.I, step 22.6; room.ts): a game action's way to every phone of
-// a two-sided room with 2, 4 and 8 phones. A and B are the first two phones; ROOM_PHONES adds the
-// others as `+90555…=<code>` pairs, separated by commas (locally the test numbers +905550000003 …
-// +905550000008). A size with too few accounts is skipped. STEPS chooses the steps: `chat`, `room`
-// or both (default `chat,room`).
+
 import { createClient, FunctionsHttpError, type SupabaseClient } from '@supabase/supabase-js';
 
 import {
@@ -38,7 +33,6 @@ import {
   venueChatChannel,
 } from '../../supabase/functions/_shared/pure/venueChat.ts';
 import { ensureProfilePhoto } from '../shared/profilePhoto.ts';
-import { measureRoom } from './room.ts';
 import { markdownTable } from './stats.ts';
 
 // The local stack's fixed publishable key (the same in every `supabase start`).
@@ -62,19 +56,6 @@ if (!isLocal && !wantedVenue) {
   process.exit(1);
 }
 const ROUNDS = Math.max(1, Math.min(Number(process.env.ROUNDS ?? 10), VENUE_CHAT.windowMax));
-const STEPS = new Set((process.env.STEPS ?? 'chat,room').split(',').map((s) => s.trim()));
-// The room step's phones after A and B: `+90…=code` pairs; locally the remaining test numbers.
-const ROOM_PHONES = (
-  process.env.ROOM_PHONES ??
-  (isLocal ? ['3', '4', '5', '6', '7', '8'].map((n) => `+90555000000${n}=123456`).join(',') : '')
-)
-  .split(',')
-  .map((pair) => pair.trim())
-  .filter(Boolean)
-  .map((pair) => {
-    const [phone = '', otp = ''] = pair.split('=');
-    return { phone: phone.trim(), otp: otp.trim() };
-  });
 
 type Json = Record<string, unknown>;
 type Phone = { name: string; client: SupabaseClient; userId: string };
@@ -117,8 +98,7 @@ async function signIn(name: string, phone: string, otp: string): Promise<Phone> 
   const userId = verified.data.user?.id;
   if (!userId) throw new Error(`${name}: no user after sign-in`);
   const self: Phone = { name, client, userId };
-  // Sign-up = profile (docs/SPEC_V3.md §3); a no-op for an account that already has one. "Kadın":
-  // the room step's requests are anonymous (§23.D).
+  // Sign-up = profile (docs/SPEC_V3.md §3); a no-op for an account that already has one.
   await call(self, 'account', {
     action: 'complete-onboarding',
     termsVersion: CURRENT_TERMS_VERSION,
@@ -131,8 +111,7 @@ async function signIn(name: string, phone: string, otp: string): Promise<Phone> 
 }
 
 // At VENUE (name or id; locally the first active venue), on the venue's own point and first spot.
-// `teams`: a table that takes members (the room step).
-async function checkIn(phone: Phone, teams = false): Promise<string> {
+async function checkIn(phone: Phone): Promise<string> {
   const { data, error } = await phone.client.rpc('explore_venues', {});
   if (error) throw error;
   const venues = (data ?? []) as { venue_id: string; name: string; lat: number; lng: number }[];
@@ -153,10 +132,8 @@ async function checkIn(phone: Phone, teams = false): Promise<string> {
     lat: venue.lat,
     lng: venue.lng,
     accuracyM: 10,
-    headcount: 2,
     locationConsentVersion: CURRENT_LOCATION_CONSENT_VERSION,
     ...(spots?.[0] ? { spotId: spots[0].id } : {}),
-    ...(teams ? { teams: true } : {}),
   });
   return venue.venue_id;
 }
@@ -166,7 +143,8 @@ let lastVenueSend = 0;
 async function venueSend(phone: Phone, venueId: string, body: string, profiled: boolean) {
   const wait = lastVenueSend + VENUE_CHAT.minIntervalMs + 300 - Date.now();
   if (wait > 0) await sleep(wait);
-  const result = await call(phone, 'venue-chat', { action: 'send', venueId, body, profiled });
+  const identity = profiled ? 'profiled' : 'anonymous';
+  const result = await call(phone, 'venue-chat', { action: 'send', venueId, body, identity });
   lastVenueSend = Date.now();
   return result as { messageId: string };
 }
@@ -185,6 +163,7 @@ async function threadWith(a: Phone, b: Phone, venueId: string): Promise<string> 
 
   console.log('Not friends yet: a request through the venue chat.');
   await ensureProfilePhoto(a.client, (fn, body) => call(a, fn, body));
+  await call(a, 'checkin', { action: 'set-identity', anonymous: false });
   const { messageId } = await venueSend(a, venueId, 'ölçüm: arkadaşlık', true);
   await call(b, 'friends', { action: 'request', venueChatMessageId: messageId });
   const incoming = (await call(a, 'friends', { action: 'incoming' })) as {
@@ -195,7 +174,7 @@ async function threadWith(a: Phone, b: Phone, venueId: string): Promise<string> 
     throw new Error('no request arrived (declined or blocked before between these accounts?)');
   }
   await call(a, 'friends', { action: 'respond', requestId: request.requestId, accept: true });
-  // The profiled message fixed this check-in's mode; the measured messages are anonymous.
+  // The profiled identity was this check-in's one change; the measured messages are anonymous.
   await checkIn(a);
   const thread = await find();
   if (!thread) throw new Error('friends, but no conversation');
@@ -261,22 +240,7 @@ async function main() {
     process.env.PHONE_B ?? '+905550000002',
     process.env.OTP_B ?? '123456',
   );
-  if (STEPS.has('chat')) await chatSteps(a, b);
-  if (STEPS.has('room')) {
-    const others: Phone[] = [];
-    for (const [i, { phone, otp }] of ROOM_PHONES.entries()) {
-      others.push(await signIn(`Ölçüm ${String.fromCharCode(67 + i)}`, phone, otp));
-    }
-    console.log(`${url}: oda adımı, ${2 + others.length} hesap, ${ROUNDS} tur.`);
-    await measureRoom([a, b, ...others], {
-      call,
-      checkIn: (phone) => checkIn(phone as Phone, true),
-      add,
-      now,
-      sleep,
-      rounds: ROUNDS,
-    });
-  }
+  await chatSteps(a, b);
 
   console.log(`\nms, ${url}, ${new Date().toISOString()}\n`);
   console.log(markdownTable([...samples].map(([step, values]) => ({ step, samples: values }))));

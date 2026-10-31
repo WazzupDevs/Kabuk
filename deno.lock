@@ -84,9 +84,7 @@
       "apps/mobile": {
         "packageJson": {
           "dependencies": [
-            "npm:@expo-google-fonts/manrope@0.4.2",
             "npm:@expo-google-fonts/plus-jakarta-sans@0.4.2",
-            "npm:@expo-google-fonts/poppins@0.4.1",
             "npm:@expo/vector-icons@^15.1.1",
             "npm:@maplibre/maplibre-react-native@11.4.0",
             "npm:@react-native-async-storage/async-storage@2.2.0",

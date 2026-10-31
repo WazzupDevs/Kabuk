@@ -48,8 +48,8 @@ async function addActiveTables(venueId: string, n: number) {
     const userId = user?.id as string;
     extraUsers.push(userId);
     await sql`
-      insert into public.table_sessions (user_id, venue_id, alias, headcount, expires_at)
-      values (${userId}, ${venueId}, ${`Test Masa ${extraUsers.length}`}, 2, now() + interval '1 hour')
+      insert into public.table_sessions (user_id, venue_id, expires_at)
+      values (${userId}, ${venueId}, now() + interval '1 hour')
     `;
   }
 }

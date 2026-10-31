@@ -56,7 +56,6 @@ import {
   TABLE_INVITE_TTL_SECONDS,
   TABLE_NAME_REROLLS,
 } from '../_shared/pure/tables.ts';
-import { SIDES } from '../_shared/pure/teams.ts';
 
 // Today's app's proposal fields, parsed so that it hears update_required rather than bad_request.
 const Players = z.number().int().min(1).max(SAHTEKAR.maxPerTable);
@@ -89,7 +88,6 @@ const Body: z.ZodType<RoomsRequest> = z.discriminatedUnion('action', [
     roomId: z.uuid(),
     asMember: z.boolean().optional(),
     profiled: z.boolean().optional(),
-    side: z.enum(SIDES).optional(),
   }),
   z.object({ action: z.literal('respond'), requestId: z.uuid(), accept: z.boolean() }),
   z.object({

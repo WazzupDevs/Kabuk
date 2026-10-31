@@ -59,7 +59,6 @@ function checkInFar(client: Client, venueKey: string): ReturnType<typeof invoke>
     lat: FAR.lat,
     lng: FAR.lng,
     accuracyM: null,
-    headcount: 2,
     locationConsentVersion: CURRENT_LOCATION_CONSENT_VERSION,
     requestId: randomUUID(),
   };

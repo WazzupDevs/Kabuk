@@ -1160,7 +1160,7 @@ Kalıp değişmez: fonksiyon başına tek endpoint, `action` alanı, zod v4, `{ 
 
 - Masadaki her değişiklik (oyun eylemi, oy, seçim, mesaj) masanın her telefonuna gider: 12 telefonda her `rooms` ya da `game_events` değişikliği 12 mesaj sayılır. Bir Kapsül Anlat oyunu (6 tur, tur başına yaklaşık 10 eylem, eylem başına iki değişiklik) yaklaşık 1.500 mesajdır; İbre'nin yanında küçüktür.
 - Postgres Changes her değişikliği her abonenin yetkisiyle denetler; veritabanı yükü abone sayısıyla büyür. Presence'ta her giriş ve çıkış masadaki herkese gider.
-- Önlem: `pnpm latency`'nin oda adımı ve `docs/ROOM_LOAD.md` 12 telefona genişletilir (4.5); sorun çıkarsa sık değişen durum (oy sayıları, seçimler) `rooms` satırı yerine sunucu yayınıyla gönderilir. Pro planın eşzamanlı bağlantı ve saniyede mesaj sınırları saha testi günü panelden okunur.
+- Önlem: Realtime yükü saha testi günü panelden okunur; `pnpm latency`'nin Faz 2 oda adımı taraf modeliyle çalışmadığı için 4.8a'da kalktı (`docs/arsiv/ROOM_LOAD.md`); sorun çıkarsa sık değişen durum (oy sayıları, seçimler) `rooms` satırı yerine sunucu yayınıyla gönderilir. Pro planın eşzamanlı bağlantı ve saniyede mesaj sınırları saha testi günü panelden okunur.
 
 **E2E'nin ve botun yeniden yazımı.**
 

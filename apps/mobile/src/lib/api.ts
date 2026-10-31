@@ -3,17 +3,7 @@ import { FunctionsHttpError, isAuthApiError } from '@supabase/supabase-js';
 import type { AccountRequest, AccountResponse } from '@shared/api/account.ts';
 import type { ChatResponse, ReactResponse, SafetyResponse } from '@shared/api/chat.ts';
 import type { Reaction } from '@shared/reactions.ts';
-import type {
-  GameOkResponse,
-  TabuStartResponse,
-  TabuTurnCardsResponse,
-  SahtekarOptionsResponse,
-  SahtekarStartResponse,
-  SahtekarViewResponse,
-  SayStartResponse,
-  IbreStartResponse,
-  IbreTargetResponse,
-} from '@shared/api/games.ts';
+import type { GameOkResponse } from '@shared/api/games.ts';
 import type {
   CreateRoomRequest,
   CreateRoomResponse,
@@ -30,7 +20,6 @@ import type {
   CheckInResponse,
   LeaveResponse,
   LocationModeResponse,
-  RerollAliasResponse,
   SetIdentityResponse,
 } from '@shared/api/checkin.ts';
 import type {
@@ -60,8 +49,6 @@ import type { VampirView } from '@shared/vampir.ts';
 import type { Pick } from '@shared/gameFrame.ts';
 import type { GameFlowReportReason, ReportReason } from '@shared/chat.ts';
 import type { Concept, Intent } from '@shared/rooms.ts';
-import type { SayKind } from '@shared/sayChallenge.ts';
-import type { Mark } from '@shared/tabu.ts';
 import { callName, RETRY_DELAY_MS, retriesAfter } from '@shared/apiRetry.ts';
 import { type ErrorCode, isApiErrorBody } from '@shared/errors.ts';
 
@@ -173,11 +160,6 @@ export function callLocationMode(): Promise<LocationModeResponse> {
 // "Bu noktadayım" and changing the spot (docs/SPEC_V3.md §4.3).
 export function callChangeSpot(spotId: string): Promise<ChangeSpotResponse> {
   return invoke<ChangeSpotResponse>('checkin', { action: 'change-spot', spotId });
-}
-
-// "Masa adını değiştir" (docs/SPEC_V3.md §5.6).
-export function callRerollAlias(): Promise<RerollAliasResponse> {
-  return invoke<RerollAliasResponse>('checkin', { action: 'reroll-alias' });
 }
 
 // Anonymous or profiled, once per check-in (docs/SPEC_V4.md §4.D).
@@ -316,62 +298,6 @@ export const safetyApi = {
   unblock: (blockId: string) => invoke<SafetyResponse>('safety', { action: 'unblock', blockId }),
 };
 
-export const gamesApi = {
-  // One-table rooms only: the deck, and the room's activity becomes Tabu. A two-table game starts
-  // from an accepted proposal (roomsApi.answerGame).
-  tabuStart: (roomId: string) => invoke<TabuStartResponse>('tabu', { action: 'start', roomId }),
-  tabuTurnCards: (roomId: string) =>
-    invoke<TabuTurnCardsResponse>('tabu', { action: 'turn-cards', roomId }),
-  tabuMark: (roomId: string, mark: Mark) =>
-    invoke<GameOkResponse>('tabu', { action: 'mark', roomId, ...mark }),
-  tabuEndTurn: (roomId: string) => invoke<GameOkResponse>('tabu', { action: 'end-turn', roomId }),
-  tabuBeginTurn: (roomId: string) =>
-    invoke<GameOkResponse>('tabu', { action: 'begin-turn', roomId }),
-  sohbetNext: (roomId: string) => invoke<GameOkResponse>('sohbet', { action: 'next-card', roomId }),
-  // Sahtekar (docs/SPEC_V3.md §20.2): the one-table deck, then the two-table game's actions.
-  sahtekarStart: (roomId: string) =>
-    invoke<SahtekarStartResponse>('sahtekar', { action: 'start', roomId }),
-  sahtekarView: (roomId: string, seat: string) =>
-    invoke<SahtekarViewResponse>('sahtekar', { action: 'view', roomId, seat }),
-  sahtekarSaid: (roomId: string, step: number) =>
-    invoke<GameOkResponse>('sahtekar', { action: 'said', roomId, step }),
-  sahtekarVote: (roomId: string, voter: string, target: string) =>
-    invoke<GameOkResponse>('sahtekar', { action: 'vote', roomId, voter, target }),
-  sahtekarOptions: (roomId: string) =>
-    invoke<SahtekarOptionsResponse>('sahtekar', { action: 'options', roomId }),
-  sahtekarGuess: (roomId: string, option: string) =>
-    invoke<GameOkResponse>('sahtekar', { action: 'guess', roomId, option }),
-  sahtekarAdvance: (roomId: string) =>
-    invoke<GameOkResponse>('sahtekar', { action: 'advance', roomId }),
-  // Harf Kapmaca and Şarkıda Geçsin (docs/SPEC_V3.md §20.3–20.4): the same actions; Harf claims
-  // a letter, Şarkı sings a line.
-  sayStart: (kind: SayKind, roomId: string) =>
-    invoke<SayStartResponse>(kind, { action: 'start', roomId }),
-  sayBegin: (kind: SayKind, roomId: string) =>
-    invoke<GameOkResponse>(kind, { action: 'begin', roomId }),
-  sayClaim: (kind: SayKind, roomId: string, round: number, step: number, letter: string | null) =>
-    invoke<GameOkResponse>(
-      kind,
-      kind === 'harf'
-        ? { action: 'claim', roomId, round, step, letter }
-        : { action: 'said', roomId, round, step },
-    ),
-  sayObject: (kind: SayKind, roomId: string, round: number, step: number) =>
-    invoke<GameOkResponse>(kind, { action: 'object', roomId, round, step }),
-  sayAdvance: (kind: SayKind, roomId: string) =>
-    invoke<GameOkResponse>(kind, { action: 'advance', roomId }),
-  // İbre (docs/SPEC_V3.md §20.5).
-  ibreStart: (roomId: string) => invoke<IbreStartResponse>('ibre', { action: 'start', roomId }),
-  ibreBegin: (roomId: string) => invoke<GameOkResponse>('ibre', { action: 'begin', roomId }),
-  ibreTarget: (roomId: string, round: number) =>
-    invoke<IbreTargetResponse>('ibre', { action: 'target', roomId, round }),
-  ibreLock: (roomId: string, round: number, value: number) =>
-    invoke<GameOkResponse>('ibre', { action: 'lock', roomId, round, value }),
-  ibreSide: (roomId: string, round: number, side: 'left' | 'right') =>
-    invoke<GameOkResponse>('ibre', { action: 'side', roomId, round, side }),
-  ibreAdvance: (roomId: string) => invoke<GameOkResponse>('ibre', { action: 'advance', roomId }),
-};
-
 type ProfileUpdate = Omit<Extract<ProfileRequest, { action: 'update' }>, 'action'>;
 
 export const profileApi = {
@@ -414,10 +340,6 @@ export const friendsApi = {
 };
 
 export const venueChatApi = {
-  send: (venueId: string, body: string, profiled: boolean) =>
-    invoke<VenueChatResponse>('venue-chat', { action: 'send', venueId, body, profiled }),
-  reply: (venueId: string, body: string, profiled: boolean, replyTo: string) =>
-    invoke<VenueChatResponse>('venue-chat', { action: 'send', venueId, body, profiled, replyTo }),
   // At most 10 per 10 seconds; over it rate_limited, which the app ignores (§21.2).
   react: (messageId: string, emoji: Reaction | null) =>
     invoke<ReactResponse>('venue-chat', { action: 'react', messageId, emoji }),

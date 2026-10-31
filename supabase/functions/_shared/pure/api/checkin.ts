@@ -11,14 +11,10 @@ export type CheckInRequest = {
   // The phone reports the position as coming from a mock location app (Android); refused outside
   // the local stack unless the location check is skipped (pure/devProject.ts). Older apps leave it out.
   mocked?: boolean;
-  // Today's app; ignored: a check-in opens no table and asks no headcount (docs/SPEC_V4.md §4.E).
-  headcount?: number;
   locationConsentVersion: string;
   // Where the person is at a venue with spots (docs/SPEC_V3.md §4.3); required there, absent
   // elsewhere.
   spotId?: string;
-  // Today's app; ignored.
-  teams?: boolean;
   // A UUID the app makes for each check-in it starts and sends again unchanged when it retries the
   // same one: while the table it opened is active, the same key returns that table (one table for a
   // check-in sent twice). Without it, or with a new key, a check-in opens a new table.
