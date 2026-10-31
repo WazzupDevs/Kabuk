@@ -477,6 +477,9 @@ export const tr = {
     noMatchHint: 'Başka bir ad dene.',
     noPlace: 'Bu semtte mekan yok',
     noPlaceHint: 'Başka bir semt ya da şehir seç.',
+    // A kind chip that finds nothing here (kabul raporu §9.1).
+    noKind: { campus: 'Bu semtte kampüs yok', cafe: 'Bu semtte kafe ve mekan yok' },
+    noKindHint: "Tümü'ne dön ya da başka bir semt seç.",
     eventShort: 'Etkinlik',
     eventTag: (when: string, title: string) => `${when} · ${title}`,
     eventTime: (when: EventTime): string => {

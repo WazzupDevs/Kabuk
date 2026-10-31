@@ -76,10 +76,13 @@ type PressedFeature = {
 // list view stays the screen reader path.
 export function ExploreMap({
   venues,
+  empty,
   headerHeight,
   tabBarHeight,
 }: {
   venues: readonly ExploreVenue[];
+  // The list's words for an empty result, by its cause (kabul raporu §9.1).
+  empty: { title: string; hint: string | null };
   // What covers the map's top and bottom edges; the opening camera keeps the venues clear of them.
   headerHeight: number;
   tabBarHeight: number;
@@ -145,12 +148,12 @@ export function ExploreMap({
   // A venue that left the data (deactivated) closes its card.
   const card = selected ? (venues.find((v) => v.id === selected) ?? null) : null;
 
-  // Nothing matches the search: the list's words, on the map too.
+  // Nothing to show: the list's words, on the map too.
   if (!opening || venues.length === 0) {
     return (
       <View className="flex-1 items-center justify-center" style={{ gap: SPACING[1] }}>
-        <Text variant="bodyStrong">{tr.explore.noMatch}</Text>
-        <Text variant="fine">{tr.explore.noMatchHint}</Text>
+        <Text variant="bodyStrong">{empty.title}</Text>
+        {empty.hint ? <Text variant="fine">{empty.hint}</Text> : null}
       </View>
     );
   }

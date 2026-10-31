@@ -3,7 +3,9 @@ import {
   type ExploreCity,
   type ExploreKind,
   type ExplorePlace,
+  type ExploreEmpty,
   exploreCities,
+  exploreEmpty,
   explorePlace,
   filterVenues,
   sortVenues,
@@ -88,6 +90,8 @@ export default function ExploreScreen() {
     () => sortVenues(filterVenues(listed, { place, kind, query }), now),
     [listed, place, kind, query, now],
   );
+  // Why nothing shows, for the list's card and the map (kabul raporu §9.1).
+  const empty = exploreEmpty(listed.length, { kind, query });
   const here = hasActiveTable(table.data, now) ? table.data : null;
   const hereCard: Here | null = here
     ? { name: here.venue?.name ?? '', spot: here.spot?.name ?? null }
@@ -104,6 +108,7 @@ export default function ExploreScreen() {
           <View style={StyleSheet.absoluteFill}>
             <ExploreMap
               venues={shown.venues}
+              empty={emptyCopy(empty, kind)}
               headerHeight={insets.top + headerHeight}
               tabBarHeight={barSpace}
             />
@@ -201,6 +206,8 @@ export default function ExploreScreen() {
             venues={shown.venues}
             eventsFirst={shown.sort === 'eventsFirst'}
             listed={listed}
+            empty={empty}
+            kind={kind}
             place={place}
             here={hereCard}
             bottomSpace={barSpace}
@@ -211,6 +218,22 @@ export default function ExploreScreen() {
       </View>
     </SafeAreaView>
   );
+}
+
+// The words for an empty result (kabul raporu §9.1): search, kind, district; no data at all has no hint.
+function emptyCopy(empty: ExploreEmpty, kind: ExploreKind): { title: string; hint: string | null } {
+  switch (empty) {
+    case 'none':
+      return { title: tr.explore.empty, hint: null };
+    case 'search':
+      return { title: tr.explore.noMatch, hint: tr.explore.noMatchHint };
+    case 'kind':
+      return kind === 'all'
+        ? { title: tr.explore.noPlace, hint: tr.explore.noPlaceHint }
+        : { title: tr.explore.noKind[kind], hint: tr.explore.noKindHint };
+    case 'place':
+      return { title: tr.explore.noPlace, hint: tr.explore.noPlaceHint };
+  }
 }
 
 // "Şu an buradasın" (v46 `.vhere`): the own check-in and the way back to Mekan. The phone's own
@@ -253,6 +276,8 @@ function VenueList({
   venues,
   eventsFirst,
   listed,
+  empty,
+  kind,
   place,
   here,
   bottomSpace,
@@ -262,6 +287,8 @@ function VenueList({
   venues: readonly CityVenue[];
   eventsFirst: boolean;
   listed: readonly CityVenue[];
+  empty: ExploreEmpty;
+  kind: ExploreKind;
   place: ExplorePlace | null;
   here: Here | null;
   bottomSpace: number;
@@ -328,11 +355,11 @@ function VenueList({
       {listed.length === 0 ? (
         <EmptyState icon="cafe-outline" body={tr.explore.empty} />
       ) : venues.length === 0 ? (
-        // Keşfet: boş: a filter or a search that finds nothing.
+        // Keşfet: boş: a filter or a search that finds nothing, said by its cause.
         <Reveal index={ROWS_AT} step={ROW_STEP} replay={replay}>
           <Glass pad="lg" testID="explore-no-match" style={{ gap: SPACING[1] }}>
-            <T v="sec">{tr.explore.noPlace}</T>
-            <T v="body">{tr.explore.noPlaceHint}</T>
+            <T v="sec">{emptyCopy(empty, kind).title}</T>
+            <T v="body">{emptyCopy(empty, kind).hint}</T>
           </Glass>
         </Reveal>
       ) : (
