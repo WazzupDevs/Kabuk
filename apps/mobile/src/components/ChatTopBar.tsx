@@ -7,8 +7,6 @@ import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
 import { SPACING, TOUCH } from '@/theme/tokens';
 
-import { AVATAR_SIZE } from './Avatar';
-
 type Props = {
   title: string;
   // At most this many lines; a longer title shrinks to fit rather than ending in "…" (a room's
@@ -26,8 +24,8 @@ type Props = {
   // Text or icon buttons on the right.
   actions?: ReactNode;
   // Telegram Android's chat top (the DM; the owner's call, 29 Ekim): the back button, the avatar
-  // with the name and the actions each a frosted pill of their own over the stream, the avatar
-  // (`md`, thinner since 30 Ekim) filling its pill but for a thin edge; bare icon buttons in the
+  // with the name and the actions each a frosted pill of their own over the stream (docs/design/
+  // aura → Dm: the rounds 48, the name's pill 56 with a 44 avatar 6 in); bare icon buttons in the
   // actions.
   split?: boolean;
 };
@@ -131,10 +129,13 @@ export function ChatTopBar({
   );
 }
 
-// The pills' height: the `md` avatar and its edge (the owner's report, 30 Ekim: the `lg` pills
-// were heavy).
-export const SPLIT_PILL = AVATAR_SIZE.md + KIT.size.splitInset * 2;
+// The name's pill (56: the kit's 44 face 6 in) and the round pills beside it (48), docs/design/aura
+// → Dm.
+export const SPLIT_PILL = KIT.size.dmPill;
 const PILL = SPLIT_PILL;
+const ROUND = KIT.size.roundLg;
+const PILL_INSET = (PILL - KIT.size.av.md) / 2;
+const PILL_PAD_RIGHT = 14;
 
 function SplitBar({
   who,
@@ -168,9 +169,9 @@ function SplitBar({
       style={{
         ...pill,
         ...(onPressTitle ? null : { flex: 1 }),
-        padding: KIT.size.splitInset,
-        paddingLeft: bare ? SPACING[4] : KIT.size.splitInset,
-        paddingRight: SPACING[4],
+        padding: PILL_INSET,
+        paddingLeft: bare ? SPACING[4] : PILL_INSET,
+        paddingRight: PILL_PAD_RIGHT,
         gap: SPACING[2.5],
       }}
     >
@@ -183,7 +184,7 @@ function SplitBar({
         flexDirection: 'row',
         alignItems: 'center',
         gap: SPACING[2],
-        paddingHorizontal: SPACING[2],
+        paddingHorizontal: KIT.size.side,
         paddingVertical: SPACING[1.5],
       }}
     >
@@ -200,8 +201,13 @@ function SplitBar({
           <Animated.View style={{ transform: [{ scale: press.scale }] }}>
             <Glass
               frost
-              radius={PILL / 2}
-              style={{ width: PILL, height: PILL, alignItems: 'center', justifyContent: 'center' }}
+              radius={ROUND / 2}
+              style={{
+                width: ROUND,
+                height: ROUND,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
             >
               <CapIcon name="back" color={c.ink} />
             </Glass>
@@ -223,13 +229,14 @@ function SplitBar({
       {actions ? (
         <Glass
           frost
-          radius={PILL / 2}
+          radius={ROUND / 2}
           style={{
-            ...pill,
-            height: PILL,
-            minWidth: PILL,
+            flexDirection: 'row',
+            alignItems: 'center',
+            height: ROUND,
+            minWidth: ROUND,
             justifyContent: 'center',
-            paddingHorizontal: Math.max(0, (PILL - TOUCH.min) / 2),
+            paddingHorizontal: Math.max(0, (ROUND - TOUCH.min) / 2),
           }}
         >
           {actions}

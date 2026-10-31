@@ -335,13 +335,6 @@ export const tr = {
     // The tabs of docs/design/aura → Mesajlar; the count is the badge.
     chatsTab: 'Sohbetler',
     requestsTab: 'İstekler',
-    // The scene above the chats while friend requests wait (docs/design/aura → Mesajlar); a press
-    // opens İstekler.
-    incomingTitle: 'Gelen istekler',
-    incomingBody: (n: number) =>
-      n === 1
-        ? 'Biri sana arkadaşlık isteği gönderdi'
-        : `${n} kişi sana arkadaşlık isteği gönderdi`,
     requestKind: 'Arkadaşlık isteği',
     noRequests: 'Bekleyen istek yok',
     noRequestsHint: 'Biri seni arkadaş olarak eklemek isterse burada görürsün.',

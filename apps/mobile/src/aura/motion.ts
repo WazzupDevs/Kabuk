@@ -10,6 +10,7 @@ import { blursBehind } from '@/theme/glass';
 const bezier = (b: Bezier) => Easing.bezier(b[0], b[1], b[2], b[3]);
 export const ARRIVE_RN = bezier(MOTION.curves.arrive);
 export const LEAVE_RN = bezier(MOTION.curves.leave);
+export const SWAP_RN = bezier(MOTION.curves.swap);
 
 // A spring of the standard as Animated.spring's config (the same model as Reanimated's).
 export function springConfig(s: { stiffness: number; damping: number; mass: number }) {
