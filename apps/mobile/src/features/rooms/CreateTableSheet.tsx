@@ -10,7 +10,6 @@ import { Gathering, SceneGround } from '@/aura/Scene';
 import { Chips } from '@/components/Chips';
 import { LookAvatar } from '@/components/LookAvatar';
 import { Sheet } from '@/components/Sheet';
-import { Text } from '@/components/Text';
 import { useProfile } from '@/features/account/useProfile';
 import { useOwnLook } from '@/features/profile/useOwnLook';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
@@ -23,8 +22,6 @@ import { haptic } from '@/lib/haptics';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
-import { useTheme } from '@/theme/ThemeProvider';
-import { SPACING } from '@/theme/tokens';
 
 import { roomKeys } from './queries';
 import {
@@ -346,6 +343,7 @@ const LOBBY_GAP = 14;
 const LOBBY_TEXT_GAP = 2;
 const IDENTITY_PAD_Y = 10;
 const IDENTITY_PAD_X = 14;
+const PICKER_GAP = 8;
 const CHIPS = { flexDirection: 'row' as const, flexWrap: 'wrap' as const, gap: KIT.size.chipsGap };
 
 export function IconPicker({
@@ -361,10 +359,11 @@ export function IconPicker({
   used: ReadonlySet<string>;
   onSelect: (icon: string) => void;
 }) {
-  const { colors } = useTheme();
   const scenes = TABLE_ICONS.filter((i) => i.theme === theme);
+  // aura v47 (MasaKurSimge): the themes in a sliding row, the scenes as 56 tiles 8 apart, the
+  // chosen one in the quick row's 3 purple outline.
   return (
-    <View className="gap-2" testID="table-icon-picker">
+    <View style={{ gap: KIT.size.chipsGap }} testID="table-icon-picker">
       <Chips
         accessibilityLabel={tr.createTable.iconLabel}
         value={theme}
@@ -373,8 +372,7 @@ export function IconPicker({
       />
       <View
         accessibilityRole="radiogroup"
-        className="flex-row flex-wrap"
-        style={{ gap: SPACING[2] }}
+        style={{ flexDirection: 'row', flexWrap: 'wrap', gap: PICKER_GAP }}
       >
         {scenes.map((scene) => {
           const taken = used.has(scene.id) && scene.id !== selected;
@@ -389,10 +387,9 @@ export function IconPicker({
               onPress={() => onSelect(scene.id)}
               style={{
                 opacity: taken ? TABLE_ICON_TAKEN_OPACITY : 1,
-                borderRadius: TABLE_ICON_SIZE.picker * TABLE_ICON_RADIUS_SHARE + 3,
-                borderWidth: 3,
-                borderColor: on ? colors.text : 'transparent',
-                padding: 1,
+                borderRadius: TABLE_ICON_SIZE.picker * TABLE_ICON_RADIUS_SHARE + OUTLINE,
+                borderWidth: OUTLINE,
+                borderColor: on ? KIT.primary : 'transparent',
               }}
             >
               <TableIcon icon={scene.id} size="picker" />
@@ -400,7 +397,7 @@ export function IconPicker({
           );
         })}
       </View>
-      <Text variant="fine">{tr.createTable.iconNote}</Text>
+      <T v="fine">{tr.createTable.iconNote}</T>
     </View>
   );
 }

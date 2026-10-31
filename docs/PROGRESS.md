@@ -1,5 +1,10 @@
 # İlerleme
 
+## Devir notu (31 Ekim 2026, Grup 4)
+
+- Grup 4 (Masa kur, aura v47): **kod tamamlandı** (M1 #314, M2 #315, M3 bu PR); **cihaz kabulü bekliyor** (K1–K6, Android 12+ ve altı, açık/koyu, 390 ve 320 dp/1,3x); **ürün olarak tamamlanma** son toplu kabul testinden sonra. Kararlar: docs/decisions/grup4-masa-kur.md.
+- Native değişiklik yok, yayın OTA. Sıradaki: Grup 5 (Alt menü, aura v48) planı.
+
 ## Devir notu (31 Ekim 2026, Grup 3)
 
 - Grup 3 kodu main'de: P1 #309, P2+P3 #311, P4 #312, P5 sunucu #310, P5 istemci #313 (outbox, aynı `clientId` ile Tekrar dene, `mergeOutbox` sıralaması). Kararlar: docs/decisions/grup3-mekan-balonlari.md. Sıradaki: Grup 4 (Masa Kur), sonra 5, 6, 7; cihaz kabulü en sonda.
