@@ -22,6 +22,7 @@ import { InSheet, T, useKit } from '@/aura/kit';
 import { Peek, type PeekKind } from '@/aura/Peek';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
+import { peekShown, SHEET_MAX } from '@/lib/sheetFit';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { EASE_OUT } from '@/theme/markMotion';
 
@@ -47,12 +48,16 @@ export function RouteSheet({
   children,
   testID,
   peek,
+  footer,
 }: {
   title?: string;
   children: ReactNode;
   testID?: string;
   // Buddies looking over the sheet's top edge (docs/design/aura → CheckIn, Bildirimler).
   peek?: PeekKind;
+  // Buttons that stay at the sheet's foot while the rest scrolls (Check-in, aura v37: SheetCard →
+  // footer). With them the buddies are scaled to the sheet and go once it stands at its tallest.
+  footer?: ReactNode;
 }) {
   const k = useKit();
   const insets = useSafeAreaInsets();
@@ -60,6 +65,9 @@ export function RouteSheet({
   const reduce = useReduceMotion();
   const [progress] = useState(() => new Animated.Value(0));
   const closing = useRef(false);
+  const [area, setArea] = useState(0);
+  const [sheetH, setSheetH] = useState(0);
+  const showPeek = !!peek && (!footer || peekShown(sheetH, area));
 
   useEffect(() => {
     const anim = Animated.timing(progress, {
@@ -109,14 +117,19 @@ export function RouteSheet({
           onPress={close}
           style={StyleSheet.absoluteFill}
         />
-        <View className="flex-1 justify-end" pointerEvents="box-none">
+        <View
+          className="flex-1 justify-end"
+          pointerEvents="box-none"
+          onLayout={footer ? (e) => setArea(e.nativeEvent.layout.height) : undefined}
+        >
           <Animated.View
             testID={testID}
+            onLayout={footer ? (e) => setSheetH(e.nativeEvent.layout.height) : undefined}
             accessibilityViewIsModal
             // docs/design/aura (`.sheet`), down to the screen's foot as Telegram Android's sheets
             // (the owner's call, 30 Ekim). Pulled down, it closes (SheetCard).
             style={{
-              maxHeight: '90%',
+              maxHeight: `${SHEET_MAX * 100}%`,
               transform: [
                 {
                   translateY: progress.interpolate({
@@ -130,7 +143,14 @@ export function RouteSheet({
             <SheetCard
               onClose={close}
               bottomInset={insets.bottom}
-              above={peek ? <Peek kind={peek} /> : null}
+              above={showPeek && peek ? <Peek kind={peek} fit={!!footer} /> : null}
+              footer={
+                footer ? (
+                  <InSheet>
+                    <Quiet value>{footer}</Quiet>
+                  </InSheet>
+                ) : undefined
+              }
             >
               <InSheet>
                 <Quiet value>
@@ -139,8 +159,14 @@ export function RouteSheet({
                       {title}
                     </T>
                   ) : null}
-                  {/* docs/design/aura (`.sheet`): 14 under the title, 12 between the blocks. */}
-                  <View style={{ gap: KIT.size.rowGap, marginTop: title ? KIT.size.sheetGap : 0 }}>
+                  {/* docs/design/aura (`.sheet`): 14 under the title, 12 between the blocks (14 in
+                      a sheet with a footer: CheckInDar). */}
+                  <View
+                    style={{
+                      gap: footer ? KIT.size.sheetGap : KIT.size.rowGap,
+                      marginTop: title ? KIT.size.sheetGap : 0,
+                    }}
+                  >
                     {children}
                   </View>
                 </Quiet>

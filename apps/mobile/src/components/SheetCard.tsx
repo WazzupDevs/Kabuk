@@ -17,12 +17,15 @@ import { useSheetDrag } from './sheetDrag';
 // card's own corners, so nothing in it is cut square (the owner's report, 29 Ekim). What passes
 // under the handle and the bottom edge fades into the card. No scroll bar (29 Ekim). Pulled down it
 // follows the finger and closes (useSheetDrag); `above` (the buddies over its top edge) comes with
-// it.
+// it. With a `footer` (Check-in, aura v37) the card is two parts: the content scrolls above, only
+// when it does not fit, cut square at its foot; the footer's buttons stay put under it, 18 below
+// the content.
 export function SheetCard({
   onClose,
   bottomInset,
   above,
   fill,
+  footer,
   children,
 }: {
   // Unset: it cannot be pulled away (the join request).
@@ -32,6 +35,8 @@ export function SheetCard({
   above?: ReactNode;
   // As tall as the sheet around it (Sheet → `top`), the content stretched to it.
   fill?: boolean;
+  // Buttons that stay under the scrolling content.
+  footer?: ReactNode;
   children: ReactNode;
 }) {
   const k = useKit();
@@ -79,12 +84,25 @@ export function SheetCard({
                   flexGrow: fill ? 1 : undefined,
                   paddingTop: head,
                   paddingHorizontal: KIT.size.sheetPadX,
-                  paddingBottom: KIT.size.sheetPadBottom + bottomInset,
+                  paddingBottom: footer
+                    ? KIT.size.sheetGap + KIT.size.tagGap
+                    : KIT.size.sheetPadBottom + bottomInset,
                 }}
               >
                 {children}
               </Animated.ScrollView>
             </GestureDetector>
+            {footer ? (
+              <View
+                style={{
+                  flexShrink: 0,
+                  paddingHorizontal: KIT.size.sheetPadX,
+                  paddingBottom: KIT.size.sheetPadBottom + bottomInset,
+                }}
+              >
+                {footer}
+              </View>
+            ) : null}
             <View
               pointerEvents="none"
               style={{
@@ -107,18 +125,21 @@ export function SheetCard({
                 }}
               />
             </View>
-            {/* Under the navigation bar the card is solid; above it what scrolls fades in. */}
-            <View
-              pointerEvents="none"
-              style={{
-                position: 'absolute',
-                left: 0,
-                right: 0,
-                bottom: bottomInset,
-                height: KIT.size.sheetPadBottom,
-                ...gradientStyle(k.c.sheetFadeBottom),
-              }}
-            />
+            {/* Under the navigation bar the card is solid; above it what scrolls fades in (with a
+                footer it is cut square, the buttons below it). */}
+            {footer ? null : (
+              <View
+                pointerEvents="none"
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  bottom: bottomInset,
+                  height: KIT.size.sheetPadBottom,
+                  ...gradientStyle(k.c.sheetFadeBottom),
+                }}
+              />
+            )}
             <View
               pointerEvents="none"
               style={{

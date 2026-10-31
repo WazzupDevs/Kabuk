@@ -23,6 +23,8 @@ export default defineConfig({
       'apps/mobile/src/features/onboarding/**/*.test.ts',
       // The capsule editor's model.
       'apps/mobile/src/features/capsule/**/*.test.ts',
+      // The check-in button's states.
+      'apps/mobile/src/features/checkin/**/*.test.ts',
       // What the table screen shows, and what an account change forgets.
       'apps/mobile/src/features/rooms/**/*.test.ts',
       'apps/mobile/src/features/auth/**/*.test.ts',
