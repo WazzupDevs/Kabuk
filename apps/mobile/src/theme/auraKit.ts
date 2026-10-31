@@ -173,6 +173,9 @@ export const KIT = {
     // Masa kur's switch off: a lilac track sunk a little.
     switchOff: '#E4DEF7',
     switchInset: 'inset 0px 1px 3px rgba(20, 17, 43, 0.10)',
+    // Masa kur (aura v47): a text link and a note's warning on the sheet, at 4.5:1 or more.
+    link: '#6A47F5',
+    warn: '#A8301A',
   },
   dark: {
     ink: '#F3F0FF',
@@ -209,6 +212,8 @@ export const KIT = {
     scrim: 'rgba(8, 6, 20, 0.55)',
     switchOff: 'rgba(255, 255, 255, 0.16)',
     switchInset: '',
+    link: '#9C86FF',
+    warn: '#FF977E',
   },
   // The same in both schemes.
   primary: '#6A47F5',

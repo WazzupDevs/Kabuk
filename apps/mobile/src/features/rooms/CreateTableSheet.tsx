@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Image, Pressable, View } from 'react-native';
 
-import { Av, Btn, Chip, Glass, Switch, T, Tag } from '@/aura/kit';
+import { Av, Btn, Chip, Glass, Switch, T, Tag, useKit } from '@/aura/kit';
 import { Gathering, SceneGround } from '@/aura/Scene';
 import { Chips } from '@/components/Chips';
 import { LookAvatar } from '@/components/LookAvatar';
@@ -55,6 +55,7 @@ type Props = {
 // is swapped for a free one. Then the table opens.
 export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Props) {
   const queryClient = useQueryClient();
+  const k = useKit();
   const profile = useProfile();
   const photo = useOwnPhoto();
   const look = useOwnLook();
@@ -118,12 +119,12 @@ export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Pro
           {/* With the profile and no visible photo the server refuses (photo_required): said
               before the press, not after. */}
           {!anonymous && photo.known && !photo.has ? (
-            <T v="fine" color={KIT.danger}>
+            <T v="fine" color={k.c.warn}>
               {tr.errors.photo_required}
             </T>
           ) : null}
           {create.isError ? (
-            <T v="fine" color={KIT.danger} accessibilityLiveRegion="polite">
+            <T v="fine" color={k.c.warn} accessibilityLiveRegion="polite">
               {errorMessage(create.error)}
             </T>
           ) : null}
@@ -230,7 +231,7 @@ export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Pro
         hitSlop={KIT.size.chipsGap}
         style={{ alignSelf: 'flex-start' }}
       >
-        <T v="body" strong color={KIT.primary}>
+        <T v="body" strong color={k.c.link}>
           {picking ? tr.createTable.iconDone : tr.createTable.iconChange}
         </T>
       </Pressable>
