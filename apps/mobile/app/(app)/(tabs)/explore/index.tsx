@@ -13,7 +13,7 @@ import {
 import { hasActiveTable } from '@shared/navigation.ts';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, TextInput, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground, AuraBand } from '@/aura/AuraBackground';
@@ -236,25 +236,45 @@ function emptyCopy(empty: ExploreEmpty, kind: ExploreKind): { title: string; hin
   }
 }
 
+// A venue row's liveliness: plain words while calm, the live dot otherwise.
+function Bucket({ bucket, calm }: { bucket: CityVenue['bucket']; calm: boolean }) {
+  return calm ? (
+    <T v="fineLg">{tr.explore.buckets[bucket]}</T>
+  ) : (
+    <Live label={tr.explore.buckets[bucket]} color={KIT.pink} ring={KIT.pinkRing} />
+  );
+}
+
+// Keşfet: dar (320 dp + 1,3x): under 360 dp or above 1,15x the row's liveliness and "Mekana dön" go
+// under their words (Profil's measure, Grup 6).
+function useNarrow(): boolean {
+  const { width, fontScale } = useWindowDimensions();
+  return width < NARROW_BELOW || fontScale > NARROW_SCALE;
+}
+const NARROW_BELOW = 360;
+const NARROW_SCALE = 1.15;
+
 // "Şu an buradasın" (v46 `.vhere`): the own check-in and the way back to Mekan. The phone's own
 // data; nobody else sees it.
 function HereNow({ here }: { here: Here }) {
   // A thin row (the owner's report, 30 Ekim: the card stood tall with its right side empty): the
   // live dot, the venue and the spot on the left, "Mekana dön" on the right. A long venue name
-  // wraps under itself rather than squeezing the button.
+  // wraps under itself rather than squeezing the button. Narrow (KesfetDar, 320 dp + 1,3x): the
+  // button goes under the words.
+  const narrow = useNarrow();
   return (
     <Glass
       sm
       testID="explore-here"
       style={{
-        flexDirection: 'row',
-        alignItems: 'center',
+        flexDirection: narrow ? 'column' : 'row',
+        alignItems: narrow ? 'flex-start' : 'center',
         paddingVertical: KIT.size.liPadY,
         paddingHorizontal: KIT.size.liPadX,
         gap: KIT.size.liGap,
       }}
     >
-      <View style={{ flex: 1, minWidth: 0, gap: SPACING[0.5] }}>
+      <View style={{ flex: narrow ? undefined : 1, minWidth: 0, gap: SPACING[0.5] }}>
         <Live label={tr.explore.here} />
         <T v="h3">{here.name}</T>
         <T v="fine">{tr.explore.hereAt(here.spot)}</T>
@@ -299,6 +319,7 @@ function VenueList({
   const [placeSheet, setPlaceSheet] = useState(false);
   const [sheetKey, setSheetKey] = useState(0);
   const cityList = useMemo(() => exploreCities(listed), [listed]);
+  const narrow = useNarrow();
   return (
     // Pulled down at its top it fetches the list again (v46's `.ptr-ind`).
     <PullScroll
@@ -380,16 +401,9 @@ function VenueList({
                   <View style={{ flex: 1, gap: SPACING[0.5] }}>
                     <T v="sec">{v.name}</T>
                     <T v="fineLg">{tr.explore.venueSub(tr.explore.typeLabel[type], v.district)}</T>
+                    {narrow ? <Bucket bucket={v.bucket} calm={calm} /> : null}
                   </View>
-                  {calm ? (
-                    <T v="fineLg">{tr.explore.buckets[v.bucket]}</T>
-                  ) : (
-                    <Live
-                      label={tr.explore.buckets[v.bucket]}
-                      color={KIT.pink}
-                      ring={KIT.pinkRing}
-                    />
-                  )}
+                  {narrow ? null : <Bucket bucket={v.bucket} calm={calm} />}
                 </Li>
               </Reveal>
             );
