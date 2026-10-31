@@ -72,12 +72,11 @@ async function atVenue(phone: string, name: string): Promise<Client> {
 // instead (exactly one of the two).
 async function send(client: Client, body: string, extra: Record<string, unknown> = {}) {
   await sql`update public.venue_chat_rate set last_sent_at = '-infinity'`;
-  const identity = 'profiled' in extra ? {} : { identity: 'anonymous' };
   return invoke(client, 'venue-chat', {
     action: 'send',
     venueId: venue[V],
     body,
-    ...identity,
+    identity: 'anonymous',
     ...extra,
   });
 }
@@ -477,7 +476,7 @@ describe('venue chat identity (§4.D)', () => {
     ]);
   });
 
-  it('needs exactly one of `profiled` and `identity` with a message', async () => {
+  it('needs the identity with a message and takes no `profiled` (step 4.8b)', async () => {
     const a = await atVenue(PHONES[0], 'Ayşe');
     const bad = { status: 400, body: errorBody('bad_request') };
     expect(
@@ -487,9 +486,8 @@ describe('venue chat identity (§4.D)', () => {
       await invoke(a, 'venue-chat', {
         action: 'send',
         venueId: venue[V],
-        body: 'ikisi',
+        body: 'eski',
         profiled: false,
-        identity: 'anonymous',
       }),
     ).toEqual(bad);
     expect((await page(a)).messages).toEqual([]);
@@ -755,29 +753,5 @@ describe('a table seat and a room message keep the identity they were written wi
     for (const value of [await userIdOf(a), own?.public_id ?? 'missing']) {
       expect(seen).not.toContain(value);
     }
-  });
-});
-
-describe('today’s app (`profiled` with every message, §22.G)', () => {
-  it('picks the mode with the first message as the one change, then locks it', async () => {
-    const a = await atVenue(PHONES[0], 'Ayşe');
-    await setTestPhoto(a);
-    expect((await page(a)).mode).toBeNull();
-    expect(await send(a, 'adımla', { profiled: true })).toEqual(ok);
-    expect(await page(a)).toMatchObject({
-      mode: 'profiled',
-      identity: { mode: 'profiled', switchUsed: true },
-    });
-    expect(await send(a, 'anonim olmaz', { profiled: false })).toEqual({
-      status: 409,
-      body: errorBody('venue_chat_mode_locked'),
-    });
-    // The same mode as the check-in's identity uses no change.
-    const b = await atVenue(PHONES[1], 'Burak');
-    expect(await send(b, 'anonim', { profiled: false })).toEqual(ok);
-    expect(await page(b)).toMatchObject({
-      mode: 'anonymous',
-      identity: { mode: 'anonymous', switchUsed: false },
-    });
   });
 });

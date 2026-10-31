@@ -324,7 +324,7 @@ describe('the game flow (§23.D)', () => {
       action: 'send',
       venueId: venue[FIXTURE_VENUE],
       body: 'Selam',
-      profiled: false,
+      identity: 'anonymous',
     });
     expect(sent.status, JSON.stringify(sent.body)).toBe(200);
   });

@@ -4,10 +4,9 @@
 // venue_chat:{venue_id} and read it with `page`, which signs the photos of profiled messages
 // (§7.2; venue_chat_page_for). No push. §21: a reply names a visible message of the same venue; a
 // reaction is the account's one per message (10 per 10 seconds), announced as venue_chat_reaction;
-// the page says how many per emoji, never who. §22.G: the mode (anonymous or profiled) is chosen
-// once per check-in with the first message (venue_chat_send keeps it; a profiled choice needs a
-// visible profile photo) and the page tells the caller which one it is. docs/SPEC_V4.md §4.D (step
-// 4.4): the check-in has one identity and one change (checkin/set-identity); an anonymous message
+// the page says how many per emoji, never who. docs/SPEC_V4.md §4.D (step 4.4): the check-in has
+// one identity and one change (checkin/set-identity); a message names the identity the app shows
+// (another one is identity_mismatch) and the page tells the caller which one it is; an anonymous message
 // goes with the account's nick and capsule look, the page groups a person's messages by senderKey,
 // a sender deletes their own message, and a reader mutes one identity of another.
 import { requireUser, serviceClient } from '../_shared/auth.ts';
@@ -37,7 +36,6 @@ import {
   VENUE_CHAT_BROADCAST,
   VENUE_CHAT_REACTION_BROADCAST,
   venueChatChannel,
-  venueChatMode,
 } from '../_shared/pure/venueChat.ts';
 
 // A reaction: one of the six faces, or an emoji of the app before them (reactions.ts); null takes
@@ -47,19 +45,15 @@ const ReactionInput = z
   .transform((v) => (v === null ? null : toReaction(v)));
 
 const Body: z.ZodType<VenueChatRequest> = z.discriminatedUnion('action', [
-  // A message says which identity it goes with: today's app with `profiled`, the new app with
-  // `identity`; exactly one of them, so nothing goes out with an identity nobody chose.
-  z
-    .object({
-      action: z.literal('send'),
-      venueId: z.uuid(),
-      body: z.string().max(1000),
-      profiled: z.boolean().optional(),
-      identity: z.enum(['anonymous', 'profiled']).optional(),
-      replyTo: z.uuid().optional(),
-      clientId: z.uuid().optional(),
-    })
-    .refine((m) => (m.profiled === undefined) !== (m.identity === undefined)),
+  // A message says which identity it goes with, so nothing goes out with an identity nobody chose.
+  z.object({
+    action: z.literal('send'),
+    venueId: z.uuid(),
+    body: z.string().max(1000),
+    identity: z.enum(['anonymous', 'profiled']),
+    replyTo: z.uuid().optional(),
+    clientId: z.uuid().optional(),
+  }),
   z.object({
     action: z.literal('react'),
     messageId: z.uuid(),
@@ -79,8 +73,8 @@ const Body: z.ZodType<VenueChatRequest> = z.discriminatedUnion('action', [
 const db = serviceClient();
 
 // Empty without a live table at the venue. Only profiled messages have a path (never an anonymous
-// one, never a hidden photo); each distinct path is signed once. The mode is the caller's own
-// choice at this venue's live table (null before the first message or without a table).
+// one, never a hidden photo); each distinct path is signed once. The identity is the caller's
+// check-in identity at this venue (null without a table).
 async function page(
   userId: string,
   venueId: string,
@@ -88,7 +82,7 @@ async function page(
 ): Promise<VenueChatPageResponse> {
   const table = await db
     .from('table_sessions')
-    .select('venue_chat_profiled, identity_mode, identity_switches')
+    .select('identity_mode, identity_switches')
     .eq('user_id', userId)
     .eq('venue_id', venueId)
     .eq('status', 'active')
@@ -120,7 +114,6 @@ async function page(
       senderKey: m.sender_key,
       senderLook: m.sender_look,
     })),
-    mode: venueChatMode(table.data?.venue_chat_profiled),
     identity: table.data ? checkinIdentity(table.data) : null,
   };
 }
@@ -212,8 +205,7 @@ Deno.serve(
         target_user_id: user.id,
         target_venue_id: body.venueId,
         new_body: text,
-        ...(body.profiled !== undefined ? { profiled: body.profiled } : {}),
-        ...(body.identity ? { expected_identity: body.identity } : {}),
+        expected_identity: body.identity,
         min_interval_ms: VENUE_CHAT.minIntervalMs,
         window_seconds: VENUE_CHAT.windowSeconds,
         window_max: VENUE_CHAT.windowMax,

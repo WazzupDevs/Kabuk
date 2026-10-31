@@ -3,7 +3,6 @@ import {
   VENUE_CHAT_REACTION_BROADCAST,
   type VenueChatMessage,
   type CheckinIdentity,
-  type VenueChatMode,
   venueChatChannel,
   withVenueChatExtras,
 } from '@shared/venueChat.ts';
@@ -19,22 +18,20 @@ import { stablePhoto } from '@/lib/photoUrls';
 
 export const venueChatKeys = {
   messages: (venueId: string) => ['venueChat', venueId] as const,
-  // Per check-in as well: a new table session at the same venue never starts from the last one's
-  // mode (§22.G), so its first message always asks.
+  // Per check-in as well: a new check-in at the same venue never starts from the last one's page.
   page: (venueId: string, sessionId: string) => ['venueChat', venueId, sessionId] as const,
   profile: (messageId: string) => ['venueChatProfile', messageId] as const,
 };
 
 export type VenueChatPage = {
   messages: VenueChatMessage[];
-  mode: VenueChatMode | null;
   // The check-in's identity (docs/SPEC_V4.md §4.D); null without a table.
   identity: CheckinIdentity | null;
 };
 
 // The venue chat, oldest first for the screen (venue-chat/page returns newest first, with the
-// photos of profiled messages signed), and this check-in's mode (null until the first message,
-// docs/SPEC_V3.md §22.G). Empty without a live table at the venue.
+// photos of profiled messages signed), and this check-in's identity (docs/SPEC_V4.md §4.D).
+// Empty without a live table at the venue.
 function venueChatPage(venueId: string | undefined, sessionId: string | undefined) {
   return {
     queryKey: venueChatKeys.page(venueId ?? '', sessionId ?? ''),
@@ -45,8 +42,7 @@ function venueChatPage(venueId: string | undefined, sessionId: string | undefine
         messages: page.messages
           .map((m) => withVenueChatExtras({ ...m, photoUrl: stablePhoto(m.photoUrl) }))
           .reverse(),
-        mode: page.mode,
-        identity: page.identity ?? null,
+        identity: page.identity,
       };
     },
   };
