@@ -74,7 +74,10 @@ export function useVenueChat(venueId: string | undefined, sessionId: string | un
 // message heard meanwhile is read when it comes back. Reads close together are one. Older than
 // CARD_STALE_MS, the page is read once more when the app comes back to the front.
 const CARD_STALE_MS = 5 * 60_000;
+// Between 1.5 and 4 s after the broadcast, each phone at its own moment: the broadcast reaches every
+// phone at the venue at once, and they would all read the page (and sign its photos) together.
 const CARD_READ_AFTER_MS = 1500;
+const CARD_READ_SPREAD_MS = 2500;
 const CARD_PREVIEW = 2;
 // When the person last read the venue chat, per check-in (this run of the app): Mekan's card counts
 // the messages after it (docs/design/aura → Mekan: the pink count).
@@ -100,13 +103,16 @@ export function useVenueChatCard(venueId: string | undefined, sessionId: string 
   );
   const read = useCallback(() => {
     if (timer.current || !venueId || !sessionId) return;
-    timer.current = setTimeout(() => {
-      timer.current = null;
-      void queryClient.invalidateQueries({
-        queryKey: venueChatKeys.page(venueId, sessionId),
-        exact: true,
-      });
-    }, CARD_READ_AFTER_MS);
+    timer.current = setTimeout(
+      () => {
+        timer.current = null;
+        void queryClient.invalidateQueries({
+          queryKey: venueChatKeys.page(venueId, sessionId),
+          exact: true,
+        });
+      },
+      CARD_READ_AFTER_MS + Math.random() * CARD_READ_SPREAD_MS,
+    );
   }, [queryClient, venueId, sessionId]);
   const heard = useCallback(() => {
     if (focused) read();
