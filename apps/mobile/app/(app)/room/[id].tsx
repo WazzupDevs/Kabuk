@@ -7,6 +7,7 @@ import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, type IconName } from '@/components/Button';
+import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
 import { Sheet } from '@/components/Sheet';
@@ -35,6 +36,7 @@ import {
 import { PeopleSheet } from '@/features/rooms/RoomPeople';
 import { TableEnd } from '@/features/rooms/TableEnd';
 import { useTableEndStore } from '@/features/rooms/tableEnd';
+import { tableScreenView } from '@/features/rooms/tableScreen';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { roomsApi } from '@/lib/api';
@@ -141,7 +143,29 @@ export default function TableScreen() {
     onSettled: () => void queryClient.invalidateQueries({ queryKey: roomKeys.votes(id) }),
   });
 
-  if (room.isPending || checkIn.isPending || movedTo) {
+  const sessionId = checkIn.data?.id;
+  const r = room.data;
+  const backToVenue = () => {
+    forget(id);
+    router.replace('/venue');
+  };
+  // Closed, or no longer readable (the person left or was taken off): Masa bitti from what this
+  // person last saw, or Mekan when it never sat here. A first read that failed is an error.
+  const view = tableScreenView({
+    roomPending: room.isPending,
+    roomError: room.isError,
+    roomFetching: room.isFetching,
+    hasRoom: !!r,
+    closed: r?.status === 'closed',
+    checkInPending: checkIn.isPending,
+    checkInError: checkIn.isError,
+    hasCheckIn: !!sessionId,
+    movedTo: !!movedTo,
+    peopleRead: people.isSuccess,
+    seated: !!people.data?.some((p) => p.sessionId === sessionId),
+    seen: !!seen,
+  });
+  if (view === 'loading') {
     return (
       <Screen>
         <View className="mt-16 items-center">
@@ -150,43 +174,39 @@ export default function TableScreen() {
       </Screen>
     );
   }
-
-  const sessionId = checkIn.data?.id;
-  const r = room.data;
-  const backToVenue = () => {
-    forget(id);
-    router.replace('/venue');
-  };
-  // Closed, or no longer readable (the person left or was taken off): Masa bitti from what this
-  // person last saw, or Mekan when it never sat here.
-  const seated = !!people.data?.some((p) => p.sessionId === sessionId);
-  if (!sessionId || !r || r.status === 'closed' || (people.isSuccess && !seated)) {
-    if (seen) {
-      return (
-        <TableEnd
-          roomId={id}
-          left={seen.left}
-          tableName={seen.name}
-          phones={seen.phones}
-          profiled={seen.profiled}
-          anonymous={
-            !!checkIn.data && seatsAnonymously(checkIn.data.identity.mode, ownPhoto.gender)
-          }
-          onClose={backToVenue}
-        />
-      );
-    }
-    if (!r && room.isFetching) {
-      return (
-        <Screen>
-          <View className="mt-16 items-center">
-            <Loader />
-          </View>
-        </Screen>
-      );
-    }
-    return <Redirect href="/venue" />;
+  if (view === 'error') {
+    return (
+      <Screen>
+        <View className="mt-16">
+          <EmptyState
+            kind="error"
+            body={errorMessage(room.error ?? checkIn.error)}
+            action={{
+              label: tr.common.retry,
+              onPress: () => {
+                void room.refetch();
+                void checkIn.refetch();
+              },
+            }}
+          />
+        </View>
+      </Screen>
+    );
   }
+  if (view === 'end' && seen) {
+    return (
+      <TableEnd
+        roomId={id}
+        left={seen.left}
+        tableName={seen.name}
+        phones={seen.phones}
+        profiled={seen.profiled}
+        anonymous={!!checkIn.data && seatsAnonymously(checkIn.data.identity.mode, ownPhoto.gender)}
+        onClose={backToVenue}
+      />
+    );
+  }
+  if (view !== 'table' || !r || !sessionId) return <Redirect href="/venue" />;
 
   const owner = r.owner_session_id === sessionId;
   // Vampir Köylü's page, game or end takes the screen (docs/SPEC_V4.md §4.F "Adım 4.6.6"); one sent
