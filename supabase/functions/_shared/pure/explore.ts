@@ -178,6 +178,20 @@ export function filterVenues<
   );
 }
 
+// Why a filtered list came out empty (aura v51 → Keşfet: boş, kabul raporu §9.1): no venue data at
+// all first, then the active filters in the order search → kind → district. The map uses the same.
+export type ExploreEmpty = 'none' | 'search' | 'kind' | 'place';
+
+export function exploreEmpty(
+  listedCount: number,
+  { kind, query }: { kind: ExploreKind; query: string },
+): ExploreEmpty {
+  if (listedCount === 0) return 'none';
+  if (normalize(query).trim() !== '') return 'search';
+  if (kind !== 'all') return 'kind';
+  return 'place';
+}
+
 // Aktiviteler's events (docs/SPEC_V4.md K-15, K-37): today's only, running or still to start, each
 // with its venue, earliest first.
 export function todayEvents<

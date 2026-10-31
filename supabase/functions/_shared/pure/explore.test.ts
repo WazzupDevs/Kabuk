@@ -8,6 +8,7 @@ import {
   distanceMeters,
   exploreCities,
   exploreLayout,
+  exploreEmpty,
   explorePlace,
   filterVenues,
   hasEventToday,
@@ -212,5 +213,17 @@ describe('todayEvents (docs/SPEC_V4.md K-15)', () => {
       'Zeytin/Akşam',
     ]);
     expect(todayEvents([], now)).toEqual([]);
+  });
+});
+
+describe('exploreEmpty', () => {
+  it('says there is no venue data before any filter', () => {
+    expect(exploreEmpty(0, { kind: 'cafe', query: 'kahve' })).toBe('none');
+  });
+
+  it('blames the search first, then the kind, then the district', () => {
+    expect(exploreEmpty(3, { kind: 'cafe', query: 'kahve' })).toBe('search');
+    expect(exploreEmpty(3, { kind: 'cafe', query: '   ' })).toBe('kind');
+    expect(exploreEmpty(3, { kind: 'all', query: '' })).toBe('place');
   });
 });
