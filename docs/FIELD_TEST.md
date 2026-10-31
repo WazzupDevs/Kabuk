@@ -97,7 +97,7 @@ Otomatik bir adım yeşilse sahada yine yapılır, ama önce elle kalan kısmın
 | 34  | P1      | M2. Mekan sohbetinde şikayet ve engel     | Hayır    | A, B        |                                           |
 | 35  | P1      | M3. Mekandan çıkınca erişim biter         | Hayır    | A           |                                           |
 | 36  | P0      | Bulma gözlemi özeti                       | —        | —           | §23.P-2 kararına girer                    |
-| 37  | P1      | Y1. Oda yükü ölçümü                       | Hayır    | —           | `docs/ROOM_LOAD.md`                       |
+| 37  | P1      | Y1. Oda yükü ölçümü                       | Hayır    | —           | `docs/arsiv/ROOM_LOAD.md`                 |
 | 38  | P1      | V11. Kapanış                              | Hayır    | A–D         |                                           |
 
 ## Uygulama önde kalmalı
@@ -680,7 +680,7 @@ Bu özet §23.P-2 kararına girer. "Evet" çıkarsa bulma yardımı ayrı bir i�
 
 ## Y1. Oda yükü ölçümü [P1]
 
-`docs/ROOM_LOAD.md`: 1. bölüm (`pnpm latency`, `STEPS=room`) dev projesinde istediğin zaman; 2. bölüm testten sonra, panelde (Realtime → Reports, `scripts/latency/room-load.sql`). Testten hemen önce panel → Database → Query Performance → **Reset** ve saati not et.
+`docs/arsiv/ROOM_LOAD.md`: 1. bölüm (`pnpm latency`, `STEPS=room`) dev projesinde istediğin zaman; 2. bölüm testten sonra, panelde (Realtime → Reports, `scripts/latency/room-load.sql`). Testten hemen önce panel → Database → Query Performance → **Reset** ve saati not et.
 
 ## V11. Kapanış [P1]
 

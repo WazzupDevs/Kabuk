@@ -37,7 +37,7 @@ export function lobbyActions(
   };
 }
 
-// A lobby row's game tag as read (`venue_lobby_tags`); anything else is "fark etmez".
+// A lobby row's game tag as read (`venue_tables`); anything else is "fark etmez".
 export function gameTag(value: unknown): Concept | null {
   return (CONCEPTS as readonly unknown[]).includes(value) ? (value as Concept) : null;
 }

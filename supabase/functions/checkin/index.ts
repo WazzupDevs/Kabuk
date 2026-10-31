@@ -32,11 +32,8 @@ const Body: z.ZodType<CheckinRequest> = z.discriminatedUnion('action', [
     lng: z.number().min(-180).max(180),
     accuracyM: z.number().nonnegative().max(100_000).nullable(),
     mocked: z.boolean().optional(),
-    // Today's app sends a headcount and `teams`; both are ignored.
-    headcount: z.number().int().optional(),
     locationConsentVersion: z.string(),
     spotId: z.uuid().optional(),
-    teams: z.boolean().optional(),
     requestId: z.uuid().optional(),
   }),
   z.object({ action: z.literal('change-spot'), spotId: z.uuid() }),

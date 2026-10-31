@@ -322,7 +322,7 @@ describe('no headcount or participation at check-in', () => {
   async function sessionOf(client: Client) {
     const { data } = await client
       .from('table_sessions')
-      .select('participation, headcount')
+      .select('participation')
       .eq('status', 'active')
       .single();
     return data;
@@ -333,7 +333,7 @@ describe('no headcount or participation at check-in', () => {
   it('ignores a participation and a headcount sent at check-in', async () => {
     const client = await named(PHONES[0], 'Deniz');
     await checkInAt(client, venue, V);
-    expect(await sessionOf(client)).toEqual({ participation: 'anonymous', headcount: null });
+    expect(await sessionOf(client)).toEqual({ participation: 'anonymous' });
     const res = await invoke(client, 'checkin', {
       action: 'check-in',
       venueId: venue[V],
@@ -346,7 +346,7 @@ describe('no headcount or participation at check-in', () => {
       participation: 'profile',
     });
     expect(res.status).toBe(200);
-    expect(await sessionOf(client)).toEqual({ participation: 'anonymous', headcount: null });
+    expect(await sessionOf(client)).toEqual({ participation: 'anonymous' });
   });
 });
 

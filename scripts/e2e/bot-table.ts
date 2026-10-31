@@ -613,14 +613,18 @@ export const actions: Record<string, (args: Json) => Promise<Json>> = {
     return call('checkin', { action: 'leave' });
   },
 
-  // Venue chat (docs/SPEC_V3.md §7): a message, anonymous unless `profiled`.
+  // Venue chat (docs/SPEC_V3.md §7): a message with the check-in's identity, anonymous unless
+  // `profiled` (then the check-in's one identity change, docs/SPEC_V4.md §4.D; the same identity
+  // again changes nothing).
   async 'venue-chat-send'(args) {
     if (!venueId) throw new Error('check in first');
+    const profiled = args.profiled === true;
+    if (profiled) await call('checkin', { action: 'set-identity', anonymous: false });
     return call('venue-chat', {
       action: 'send',
       venueId,
       body: String(args.body ?? 'Merhaba mekan!'),
-      profiled: args.profiled === true,
+      identity: profiled ? 'profiled' : 'anonymous',
     });
   },
 

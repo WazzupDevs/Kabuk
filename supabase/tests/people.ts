@@ -117,7 +117,7 @@ export async function roomRow(roomId: string) {
 // The people at the table now, in the order they sat down.
 export async function seated(roomId: string) {
   return sql`
-    select rm.session_id, rm.alias, rm.profiled, rm.side, ts.user_id
+    select rm.session_id, rm.alias, rm.profiled, ts.user_id
     from public.room_members rm
     join public.table_sessions ts on ts.id = rm.session_id
     where rm.room_id = ${roomId} and rm.left_at is null

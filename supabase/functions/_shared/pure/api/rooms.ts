@@ -1,6 +1,5 @@
 import type { Pick } from '../gameFrame.ts';
 import type { Concept, Intent, ProposableConcept } from '../rooms.ts';
-import type { Side } from '../teams.ts';
 
 // Request and response shapes of the `rooms` Edge Function, shared with the mobile app
 // (docs/SPEC_V3.md §5, §11; the table of people from docs/SPEC_V4.md §4.E on). Fields and actions
@@ -44,7 +43,6 @@ export type RequestJoinRequest = {
   asMember?: boolean;
   // Today's app; ignored.
   profiled?: boolean;
-  side?: Side;
 };
 export type RespondRequest = { action: 'respond'; requestId: string; accept: boolean };
 // Today's app: update_required (the games come back with step 4.6).
