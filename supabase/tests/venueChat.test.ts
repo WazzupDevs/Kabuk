@@ -894,7 +894,7 @@ describe('venue chat: one message per client id', () => {
     const [first] = await sql`
       select message_id, replayed from public.venue_chat_send_once(
         ${aId}, ${venue[V] ?? ''}, 'kayıp yanıt', ${VENUE_CHAT.minIntervalMs},
-        ${VENUE_CHAT.windowSeconds}, ${VENUE_CHAT.windowMax}, null, false, null, ${clientId}
+        ${VENUE_CHAT.windowSeconds}, ${VENUE_CHAT.windowMax}, 'anonymous', null, ${clientId}
       )
     `;
     expect(first?.replayed).toBe(false);
@@ -959,7 +959,7 @@ describe('venue chat: one message per client id', () => {
     const call = (db: postgres.Sql | postgres.TransactionSql) => db`
       select message_id, replayed from public.venue_chat_send_once(
         ${aId}, ${venue[V] ?? ''}, 'kilit', ${VENUE_CHAT.minIntervalMs},
-        ${VENUE_CHAT.windowSeconds}, ${VENUE_CHAT.windowMax}, null, false, null, ${clientId}
+        ${VENUE_CHAT.windowSeconds}, ${VENUE_CHAT.windowMax}, 'anonymous', null, ${clientId}
       )
     `;
     await sql`update public.venue_chat_rate set last_sent_at = '-infinity'`;

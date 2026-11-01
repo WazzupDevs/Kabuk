@@ -3,16 +3,13 @@ import { join, relative, resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-// Step 4.8 (docs/SPEC_V4.md §4.H "4.8 temizliği"): the old table model goes in two PRs, as 23.4
-// did (reveal-removed.test.ts). 4.8a takes every reader out of the app, the Edge Functions, the
-// scripts and the integration tests; 4.8b's migration (…_v4_cleanup.sql) then drops the tables,
-// the columns and the SQL functions. This shows the first half before the migration and keeps the
-// names from coming back: nothing outside the generated types (database.ts) and the migrations
-// names them.
+// Step 4.8 (docs/SPEC_V4.md §4.H "4.8 temizliği"): the old table model went in two PRs, as 23.4
+// did (reveal-removed.test.ts). 4.8a took every reader out of the app, the Edge Functions, the
+// scripts and the integration tests; 4.8b's migration (…_v4_cleanup.sql) dropped the tables, the
+// columns and the SQL functions. This keeps the names from coming back: nothing outside the
+// migrations names them (database.ts is generated from the database).
 //
-// Not here yet: what 4.8b changes together with SQL (venue_chat_profiled and the venue chat's
-// `profiled` field, kept for apps before 0.9.3; rooms_end's decision_seconds; start_table_session's
-// key) and each game's own side rules, which go with that game's per-person step (4.6.x).
+// Not here: each game's own side rules, which go with that game's per-person step (4.6.x).
 const root = resolve(import.meta.dirname, '..');
 const SOURCES = [
   'apps/mobile/app',
@@ -24,10 +21,9 @@ const SOURCES = [
 ];
 const SKIP_DIRS = new Set(['node_modules', 'android', 'ios', '.expo', 'dist']);
 const SKIP_FILES = new Set([
-  'supabase/functions/_shared/pure/database.ts',
   // This file names what it looks for.
   'scripts/v4-cleanup.test.ts',
-  // Says the old propose-game action answers update_required; becomes "function gone" in 4.8b.
+  // Says the old propose-game call and rooms_end's decision_seconds are gone (PGRST202).
   'supabase/tests/rooms.test.ts',
 ]);
 
@@ -58,6 +54,19 @@ const NAMES = [
   'guest_phones',
   'guest_profiled',
   'guest_alias',
+  'guest_joined_at',
+  'set_guest_joined_at',
+  'venue_chat_profiled',
+  'venueChatMode',
+  'venue_chat_mode_locked',
+  'decision_seconds',
+  'room_phones',
+  'room_member_profile',
+  'room_membership',
+  'own_waiting_room',
+  'sohbet_next',
+  'is_request_approver',
+  'expire_game_proposals',
 ];
 
 function sourceFiles(dir: string): string[] {
@@ -68,7 +77,7 @@ function sourceFiles(dir: string): string[] {
   });
 }
 
-describe('the old table model has no reader left (step 4.8a)', () => {
+describe('the old table model is gone (step 4.8)', () => {
   const files = SOURCES.flatMap(sourceFiles);
 
   it('looks at the app, the Edge Functions, the tests and the scripts', () => {
@@ -78,7 +87,7 @@ describe('the old table model has no reader left (step 4.8a)', () => {
     expect(files).toContain('scripts/e2e/bot-table.ts');
   });
 
-  it('names none of its tables, columns or functions outside the generated types', () => {
+  it('names none of its tables, columns or functions', () => {
     const found = files.flatMap((file) => {
       const text = readFileSync(resolve(root, file), 'utf8');
       return NAMES.filter((name) => new RegExp(`\\b${name}\\b`).test(text)).map(

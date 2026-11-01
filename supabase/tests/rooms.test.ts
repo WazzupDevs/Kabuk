@@ -102,10 +102,10 @@ describe('locks', () => {
       (tx, userId) => tx`select id from public.set_checkin_identity(${userId}, 'anonymous')`,
     ],
     [
-      'writing in the venue chat (venue_chat_send)',
+      'writing in the venue chat (venue_chat_send_once)',
       (tx, userId) =>
-        tx`select id from public.venue_chat_send(${userId}, ${venue[V] ?? ''}, 'kilit',
-             3000, 600, 20, profiled => false)`,
+        tx`select message_id from public.venue_chat_send_once(${userId}, ${venue[V] ?? ''}, 'kilit',
+             3000, 600, 20, (select identity_mode from public.table_sessions where user_id = ${userId} and status = 'active'))`,
     ],
     [
       'the expiry job (end_expired_table_sessions)',
@@ -211,7 +211,7 @@ describe('scheduled jobs', () => {
     expect(room).toEqual({ status: 'active' });
   });
 
-  it('runs the idle job and the proposal job every minute with the numbers of pure/', async () => {
+  it('runs the idle job every minute with the numbers of pure/, and no proposal job', async () => {
     const jobs = await sql`
       select jobname, schedule, command from cron.job
       where jobname in ('close-idle-rooms', 'expire-game-proposals') order by jobname
@@ -221,11 +221,6 @@ describe('scheduled jobs', () => {
         jobname: 'close-idle-rooms',
         schedule: '* * * * *',
         command: `select private.close_idle_rooms(${ROOM_IDLE_MINUTES})`,
-      },
-      {
-        jobname: 'expire-game-proposals',
-        schedule: '* * * * *',
-        command: 'select private.expire_game_proposals()',
       },
     ]);
   });
@@ -277,19 +272,20 @@ describe('push tokens and closed helpers', () => {
       ['rooms_leave', { target_user_id: id, target_room_id: roomId }],
       ['rooms_end_game', { target_user_id: id, target_room_id: roomId }],
       ['rooms_end', { target_user_id: id }],
-      // Today's app's game proposals: their SQL stays until step 4.8 (docs/SPEC_V4.md §4.H).
-      [
-        'rooms_propose_game',
-        { target_user_id: id, target_room_id: roomId, new_concept: 'tabu', ttl_seconds: 30 },
-      ],
     ] as const) {
       const { error } = await client.rpc(fn, args as never);
       expect(error?.code, fn).toBe('42501');
     }
-    // The side model's own calls are gone (step 4.5).
+    // The side model's own calls are gone (step 4.5), the game proposals and rooms_end's
+    // decision_seconds too (step 4.8b, docs/SPEC_V4.md §4.H).
     for (const [fn, args] of [
       ['rooms_create_solo', { target_user_id: id }],
       ['reroll_table_alias', { target_user_id: id, new_alias: 'Mor Simit', max_rerolls: 3 }],
+      [
+        'rooms_propose_game',
+        { target_user_id: id, target_room_id: roomId, new_concept: 'tabu', ttl_seconds: 30 },
+      ],
+      ['rooms_end', { target_user_id: id, decision_seconds: 30 }],
     ] as const) {
       const { error } = await client.rpc(fn as never, args as never);
       expect(error?.code, fn).toBe('PGRST202');
