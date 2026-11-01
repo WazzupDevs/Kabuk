@@ -1,5 +1,11 @@
 # İlerleme
 
+## Devir notu (1 Kasım 2026, 4.8b birleşti)
+
+- 4.8b iki PR'la bitti: #333 (mekan sohbetinin `profiled` alanı kalktı, `identity` zorunlu) ve #334 (`20261119090000_v4_cleanup.sql`; proje sahibi onayladı, `guvenlik`: bulgu yok). Kural 10'dan `game_proposals` çıktı. Native yok; yayın deploy-dev + OTA; üretimde önce #333'ün fonksiyonu, sonra migration.
+- Kalan eski model: oyunların taraf SQL'i (`tabu_*`, `sahtekar_*`, `ibre_*`, `say_*`, `open_turn`, `start_voice_tabu`) bırakılan kolonları okuyor; çağrılırsa 500 döner, her oyunun kişi bazlı adımıyla (4.6.x) gider. `requester_headcount` ve `other_headcount` okunduğu için kalıyor.
+- Sıradaki: SPEC_V4 sırasına göre 4.6.x (kişi bazlı oyun adımları) ya da cihaz kabulü; yeni oturumda seçilir.
+
 ## Devir notu (31 Ekim 2026, 4.8a birleşti)
 
 - 4.8a #331 birleşti (`guvenlik`: bulgu yok): eski modelin okuyanları uygulamadan, fonksiyonlardan, betiklerden ve testlerden çıktı; `scripts/v4-cleanup.test.ts` adları denetler. Migration ve native yok; yayın deploy-dev + OTA.
