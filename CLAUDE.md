@@ -15,6 +15,7 @@ skall: mekan içi sosyal oyun uygulaması. Kişiler mekana check-in yapar, masa 
 | `pnpm admin:*`, sırlar, `CHECKIN_SKIP_LOCATION`, inceleme hesabı, dev ve üretim arası geçiş, Windows'ta satır sonları, SMS kancası ve kapı testleri | `.claude/skills/supabase-ops` |
 | Dal, push öncesi kontrol, PR, koşu beklemek, birleştirme, çakışma | `.claude/skills/pr-akisi` |
 | Telegram Android'e bakma yolu ve alınanlar | `.claude/skills/telegram-referans` |
+| Tasarım (aktarım) raporunu koda aktarma yordamı | `.claude/skills/tuval-aktarim` |
 | Ajanlar | `.claude/agents/` |
 
 Kod ve belgelerdeki "CLAUDE.md → <bölüm>" atıfları bu tabloyla bulunur. Açık kalan işin devir notu `docs/PROGRESS.md`'nin başında.
