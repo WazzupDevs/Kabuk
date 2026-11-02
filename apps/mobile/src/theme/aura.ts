@@ -66,6 +66,8 @@ export const AURA = {
       disc: '#FFFFFF',
       discShadow: '0px 2px 8px rgba(3, 27, 11, 0.08)',
       off: '#4A6550',
+      // The chosen icon's strong part (skall.css `.tab.on .ci`: --accent); its body is --buzz.
+      on: '#0B783D',
     },
   },
   // `.dark.pA`: a flat black ground with no clouds, flat glass #121614 with a 9 % white edge and no
@@ -85,6 +87,8 @@ export const AURA = {
       disc: 'rgba(255, 255, 255, 0.94)',
       discShadow: '',
       off: '#A3AEA8',
+      // `.dark .tab.on .ci`: #0B783D on the near-white disc.
+      on: '#0B783D',
     },
   },
   // Cards: a frosted pane on the clouds.

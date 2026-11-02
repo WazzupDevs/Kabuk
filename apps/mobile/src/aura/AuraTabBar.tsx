@@ -34,8 +34,9 @@ type Props = {
 // The tab bar of the airy look (docs/design/aura → `.tabbar`): a glass capsule 18 in from each
 // side, five round tabs and a white disc under the selected one. Switching, the disc slides to the
 // new tab with its leading edge faster than its trailing edge, so it stretches on the way and
-// gathers again (MOTION.springs.tabLead, tabTrail); the old icon fades to its outline and the new
-// one pops in filled (TabGlyph). A pressed tab sinks and springs back.
+// gathers again (MOTION.springs.tabLead, tabTrail); the old icon fades to its quiet tone and the
+// new one pops in coloured (TabGlyph). A pressed tab sinks and springs back. The unread dot is
+// --buzz with a 2 edge in the ground's colour.
 const s = AURA.tabBar;
 
 export function AuraTabBar({ items, selected, onPress, glassTarget, opaque = false }: Props) {
@@ -234,7 +235,7 @@ function Tab({
               width: s.dot,
               height: s.dot,
               borderRadius: s.dot / 2,
-              backgroundColor: AURA.mark.front,
+              backgroundColor: colors.buzz,
               borderWidth: AURA.card.edgeWidth * 2,
               borderColor: colors.canvas,
             }}
