@@ -1,5 +1,11 @@
 # İlerleme
 
+## Devir notu (2 Kasım 2026, Aura v67 koyu ve U7 birleşti)
+
+- #340: tuval v67 `koyu.css` (koyu `border` #626D68, kontrast istisnası kalktı; `calm` #091F12 ve `featureMuted` #4A6550 onaylı). #341: rapor `docs/design/aura/aktarim-v65.md` (v66–v67'de koyu tema dışında değişen pano yok). #342: U7 alt menü, kapsül ikonlar (compass/calendar/chat/user, Mekân işareti aynı), nokta `buzz`. Yayın OTA.
+- Proje sahibinin gönderdikleri tamam (sohbette zip olarak, repoda değil; yeni oturumda yeniden istenir): 55 masa kartı (`yatay/` 2000x1200, `uzun/` 900x1950, `masa-adlari.md`), riso açılış doku seti (22 WebP + README, rapor §14), 30 ikon (#338'dekiyle aynı), wordmark (`wordmark.ts` doğru).
+- Kalan: U8 sheet arkası bulanıklığı (ayrı iş). Sıradaki: rapor §5 "Ekranlar" U13–U36 sırasıyla, sonra riso görseller (§9, masa kartları dahil) ve açılış (§14). Yordam `.claude/skills/tuval-aktarim`.
+
 ## Devir notu (2 Kasım 2026, Aura v65 aktarımı: Temel birleşti)
 
 - #338 birleşti: aktarım raporunun 1–3. aşamaları (U1–U6, U8–U10): v65 tokenları, `.dark.pA` koyu tema, ölçüler, sheet, sabit alt alan, pasif düğme, tek kapsül ikon ailesi (`docs/design/aura/ikonlar` → `scripts/sistem/capIcons.ts`; Ionicons, çizgi ve çubuk aileleri kalktı). Gerekçe ve türetilen değerler: `docs/decisions/aura-v65-temel.md`. Yayın OTA.
