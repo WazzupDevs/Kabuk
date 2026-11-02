@@ -18,7 +18,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 import { PullScroll } from '@/components/PullScroll';
 
-import { useTabBarSpace } from './TabBar';
+import { TabBarFade, useTabBarSpace } from './TabBar';
 // Frame by frame with the keyboard (react-native-keyboard-controller): the bar rises with it.
 import { KeyboardAvoidingView, useKeyboardState } from 'react-native-keyboard-controller';
 
@@ -171,6 +171,8 @@ export function Screen({
       {top && topFoot > 0 ? (
         <AuraBand top={topFoot} height={0} fade={TOP_FADE} direction="down" />
       ) : null}
+      {/* Kenar solması (U9, §4): over the tab bar what scrolls fades out, never cut. */}
+      {barSpace && !footer ? <TabBarFade /> : null}
     </SafeAreaView>
   );
 }
