@@ -1,13 +1,13 @@
 import { pairFriendState } from '@shared/tableEnd.ts';
-import { TABLE_ICONS } from '@shared/tableIcons.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
-import { Image, ScrollView, View } from 'react-native';
+import { Image } from 'expo-image';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
 import { Av, Btn, GlassList, Li, T } from '@/aura/kit';
-import { Gathering, SceneGround } from '@/aura/Scene';
+import { RisoKanki } from '@/aura/RisoKanki';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
 import { openDm } from '@/features/friends/openDm';
@@ -25,10 +25,9 @@ import { friendsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
+import { type KankiPlace } from '@/theme/kankiMotion';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
-
-import { TABLE_ICON_IMAGES } from './tableIconImages';
 
 type Props = {
   roomId: string;
@@ -47,18 +46,15 @@ type EndRecord = {
 };
 
 // Masa bitti (docs/SPEC_V3.md §23.3; docs/design/aura → MasaBitti): a celebration scene under the
-// status bar (the table's picture, buddies, confetti), "Masa bitti" and the line, then everyone who
+// status bar (the riso scene, buddies, confetti), "Masa bitti" and the line, then everyone who
 // sat 3 minutes with the person in a glass list with "Arkadaş ekle", "Eklendi" or "Mesaj", the
 // notes and "Mekana dön". A one-sided press is silent (rule 5).
 export function TableEnd({ roomId, left, tableName, phones, profiled, anonymous, onClose }: Props) {
-  const { scheme } = useTheme();
+  const { scheme, colors } = useTheme();
   const insets = useSafeAreaInsets();
   const records = useTableHistory(roomId, true);
   const friends = useHistoryFriends();
   const [width, setWidth] = useState(0);
-  // The table is called by its picture (K-76): its name leads back to it.
-  const icon = TABLE_ICONS.find((i) => tableName.startsWith(i.name))?.id;
-  const picture = icon ? TABLE_ICON_IMAGES[icon] : undefined;
   const g = AURA.gatherings.end;
   const faces = (records.data ?? [])
     .map((r) => r.other_alias)
@@ -83,7 +79,14 @@ export function TableEnd({ roomId, left, tableName, phones, profiled, anonymous,
             overflow: 'hidden',
           }}
         >
-          <SceneGround top={0} bottom={KIT.stage.radius} />
+          {/* U41: the riso scene (riso-sahne), cover from the bottom; no floor glow and no round
+              table. */}
+          <Image
+            source={END_SCENE}
+            contentFit="cover"
+            contentPosition="bottom"
+            style={StyleSheet.absoluteFill}
+          />
           {width > 0
             ? AURA.confetti.map(([x, y, turn, color], i) => (
                 <View
@@ -95,13 +98,13 @@ export function TableEnd({ roomId, left, tableName, phones, profiled, anonymous,
                     width: CONFETTI_W,
                     height: CONFETTI_H,
                     borderRadius: CONFETTI_W / 2,
-                    backgroundColor: color,
+                    backgroundColor: color === 'accent' ? colors.accent : color,
                     transform: [{ rotate: `${turn}deg` }],
                   }}
                 />
               ))
             : null}
-          {/* Two of the people who sat with their profile, at the table's sides (MasaBitti). */}
+          {/* Two of the people who sat with their profile, at the scene's sides (MasaBitti). */}
           {width > 0
             ? faces.map((name, i) => (
                 <View
@@ -116,21 +119,21 @@ export function TableEnd({ roomId, left, tableName, phones, profiled, anonymous,
                 </View>
               ))
             : null}
-          {width > 0 ? (
-            <Gathering
-              kind="end"
-              width={width}
-              center={
-                picture ? (
-                  <Image
-                    source={picture}
-                    fadeDuration={0}
-                    style={{ width: '100%', height: '100%' }}
-                  />
-                ) : null
-              }
-            />
-          ) : null}
+          {/* Three riso buddies at the bottom, the middle one in front; still. */}
+          {width > 0 ? END_KANKI.map((p) => <RisoKanki key={p.id} place={p} scale={k} />) : null}
+          <View
+            pointerEvents="none"
+            style={[
+              StyleSheet.absoluteFill,
+              {
+                borderBottomLeftRadius: KIT.stage.radius,
+                borderBottomRightRadius: KIT.stage.radius,
+                borderWidth: AURA.card.edgeWidth,
+                borderTopWidth: 0,
+                borderColor: AURA.scene[scheme].edge,
+              },
+            ]}
+          />
         </View>
 
         <View
@@ -180,7 +183,14 @@ export function TableEnd({ roomId, left, tableName, phones, profiled, anonymous,
             </T>
           ) : null}
           <View style={{ flexGrow: 1 }} />
-          <Btn block testID="table-end-close" label={tr.tableEnd.back} onPress={onClose} />
+          <Btn
+            block
+            variant="glassy"
+            icon="back"
+            testID="table-end-close"
+            label={tr.tableEnd.back}
+            onPress={onClose}
+          />
         </View>
       </ScrollView>
     </View>
@@ -192,6 +202,13 @@ const FACE_BOTTOM = 150;
 const FACE_SIDE = 48;
 const CONFETTI_W = 8;
 const CONFETTI_H = 18;
+// U41: the scene (riso-sahne, 800x1000) and its three buddies in the board's 390 frame.
+const END_SCENE = require('../../../assets/riso/scene-table-end.webp');
+const END_KANKI: readonly KankiPlace[] = [
+  { id: '4957ac', left: 20, bottom: -16, width: 110, height: 144 },
+  { id: 'd2fbb5', left: 260, bottom: -16, width: 110, height: 144 },
+  { id: '6f419d', left: 139, bottom: -26, width: 112, height: 147 },
+];
 
 // One person of the table: the face, the name and how things stand, the action at the right.
 function EndRow({
