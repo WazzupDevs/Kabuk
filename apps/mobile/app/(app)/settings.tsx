@@ -12,8 +12,6 @@ import { signOutOfApp } from '@/features/auth/signOut';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { DesignPicker } from '@/features/design/DesignPicker';
 import { AppearanceSetting } from '@/features/profile/AppearanceSetting';
-import { NickCard } from '@/features/profile/NickCard';
-import { useProfileView } from '@/features/profile/queries';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -48,9 +46,6 @@ function Body() {
   const own = useProfile();
   const photo = useOwnPhoto();
   const identity = useActiveTable().data?.identity.mode;
-  // The anonymous nick, renewed here (the owner's call, 27 Ekim: moved from the profile).
-  const view = useProfileView(own.data?.public_id);
-  const nick = view.data?.capsuleNick ?? null;
   const value: Participation =
     own.data?.default_participation === 'profile' ? 'profile' : 'anonymous';
   const participation = useMutation({
@@ -108,13 +103,6 @@ function Body() {
           </T>
         ) : null}
       </View>
-      {nick ? (
-        <NickCard
-          nick={nick}
-          refreshAt={view.data?.nickRefreshAt ?? null}
-          title={tr.settings.nickTitle}
-        />
-      ) : null}
       <AppearanceSetting />
       {designPickerEnabled ? <DesignPicker /> : null}
       <RowList inset={KIT.size.iconSm + KIT.size.liGap}>

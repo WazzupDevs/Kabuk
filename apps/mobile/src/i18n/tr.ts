@@ -1873,7 +1873,6 @@ export const tr = {
     badge: (n: number) => (n > 99 ? '99+' : String(n)),
   },
   settings: {
-    nickTitle: 'Anonim adın',
     title: 'Ayarlar',
     accountSection: 'Hesap',
     birthDate: 'Doğum tarihin',
