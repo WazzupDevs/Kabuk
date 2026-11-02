@@ -325,7 +325,7 @@ export function ChatBubble({
       >
         {lifted || big ? null : bubbleShadow.node}
         {last && !big && !glassy ? (
-          <BubbleTail side={mine ? 'right' : 'left'} color={fill} />
+          <BubbleTail side={mine ? 'right' : 'left'} color={fill} edge={mine ? KIT.size.edge : 0} />
         ) : null}
         {/* Masa sohbeti: the writer's name inside the bubble, on its first line, level with the
             face beside it (the owner's call, 28 Ekim). The venue chat's is over the bubble (P4). */}
@@ -625,7 +625,18 @@ export function ChatBubble({
 // The tail at the foot of a run's last bubble (Telegram Android's), on the author's side: the
 // bubble's corner there is square and this curve carries on from it. One picture per colour and
 // side, shared by every tail (svgKey).
-function BubbleTail({ side, color }: { side: 'left' | 'right'; color: string }) {
+// `edge`: the bubble's own line (mine has one); the tail is placed inside it, so it reaches down
+// over the line's foot and the square corner does not show as a second tip (the owner's report,
+// 2 Kasım, 13.4).
+function BubbleTail({
+  side,
+  color,
+  edge,
+}: {
+  side: 'left' | 'right';
+  color: string;
+  edge: number;
+}) {
   const w = KIT.size.tailW;
   const h = KIT.size.tailH;
   // Overlapping the bubble by half a point: no hairline between them.
@@ -635,10 +646,10 @@ function BubbleTail({ side, color }: { side: 'left' | 'right'; color: string }) 
       pointerEvents="none"
       style={{
         position: 'absolute',
-        bottom: 0,
+        bottom: -edge,
         width: w,
         height: h,
-        ...(side === 'left' ? { left: -w + overlap } : { right: -w + overlap }),
+        ...(side === 'left' ? { left: -w + overlap - edge } : { right: -w + overlap - edge }),
       }}
     >
       <Svg

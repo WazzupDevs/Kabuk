@@ -114,10 +114,13 @@ export function Screen({
             const { y, height } = e.nativeEvent.layout;
             setTopFoot(y + height);
           }}
+          // Over the band below it (drawn last): its buttons' shadows reach past its foot and the
+          // band's hard top edge cut them (the owner's report, 2 Kasım, 6.8).
           style={{
             paddingHorizontal: shape.screenPadding,
             paddingTop: SPACING[2],
             paddingBottom: SPACING[1],
+            zIndex: 1,
           }}
         >
           {top}
