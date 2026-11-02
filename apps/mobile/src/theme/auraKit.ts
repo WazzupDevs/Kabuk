@@ -370,6 +370,25 @@ export const KIT = {
   sceneTag: { bg: 'rgba(255, 255, 255, 0.82)', fg: '#031B0B' },
   // U19: the words over Mekan's riso "Henüz masan yok" scene, in both schemes (Mekan `.rtext`).
   risoScene: { title: '#031B0B', note: '#2B3A30', words: 176, radius: 28, gap: 6, buttonTop: 8 },
+  // U20 (MekanMasali `.mcard`): the person's table on glass 28 round, 6 in; its wide riso card 168
+  // high, 22 round; the name on dark glass 12 in from the card's bottom left (`.mname`: 14 × 8 in,
+  // 16 round, blur 10), the people 12 in from its bottom right; under it 12 / 16 / 16 in, 12 apart.
+  tableCard: {
+    pad: 6,
+    radius: 28,
+    height: 168,
+    imageRadius: 22,
+    inset: 12,
+    name: {
+      padX: 14,
+      padY: 8,
+      radius: 16,
+      fill: 'rgba(3, 27, 11, 0.42)',
+      blur: 10,
+      eyebrow: 'rgba(255, 255, 255, 0.8)',
+    },
+    body: { top: 12, x: 16, bottom: 16, gap: 12 },
+  },
   sceneTagCalm: { bg: 'rgba(215, 238, 220, 0.92)', fg: '#055328' },
   // U17: the scene 300 high from the very top, its bottom corners 28.
   venueHero: { height: 300, radius: 28 },
