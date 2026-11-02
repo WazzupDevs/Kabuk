@@ -5,7 +5,7 @@
 - #371 U8 sheet arkası bulanıklık: yeni yerel `BackdropBlurView` (`skall-glass`, PixelCopy ile bir kez küçük kopya, 8 dp; `SheetScrim`), `version` 0.9.4: proje sahibi yeni preview build alacak. Tuval v71 panoları `docs/design/aura/project/`'te.
 - Aura v71 "Eklenen 20 ekran" planı onaylı (`docs/decisions/aura-v71-eklenen.md`, 3 karar). #372 P1 ortak bileşenler (Checkbox `boxed`, ConsentBoxes, Choice radyo sağda, Banner warn, Input `box`/`big`, Li/RowList `person`/SettingsRow, Sheet `titleIcon`, kit `stepDot`/`checkInk`, F1–F2). OTA.
 - Sıradaki: P2 kayıt (SignupStep: koyu nokta `accent`, `stepDot`, "n/7" kalkar, düğme ikonları, adım başına `fieldTop`; bütün adımlara riso sahne + kankiler; Ad `Input big`; fotoğraf seçici 120/kesikli 3; KayitMetinler), P3 profil ve ayarlar (settings.tsx kendi satırlarını çiziyor), P4 mekân ve ortak (SpotPicker v71 iki yerde, K6 `Btn danger`, K8 Sessize alınanlar kapsül: sunucu yanıtına `look`, `guvenlik` denetler).
-- Ayrıntılı fark listesi panolardan yeniden çıkarılır (önceki oturumun geçici dosyasıydı); 6 riso kanki blob'unun repo karşılığı tuvalden doğrulanacak.
+- Ayrıntılı fark listesi `docs/design/aura/aktarim-v71-fark.md` (P1 uygulandı, B ve fark-2 kaldı); 6 riso kanki blob'unun repo karşılığı tuvalden doğrulanacak.
 
 ## Devir notu (2 Kasım 2026, Aura v65 aktarımı bitti: U36, §13, §14, kararlar)
 
