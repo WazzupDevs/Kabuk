@@ -1,14 +1,11 @@
 import { describeEventTime } from '@shared/explore.ts';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
 import { FrostResolve } from '@/aura/FrostIn';
 import { Btn, Glass, Round, Sec, T, Tag } from '@/aura/kit';
-import { SceneGround } from '@/aura/Scene';
-import { VenueScene } from '@/aura/VenueScene';
 import { EmptyState } from '@/components/EmptyState';
 import { GlassTarget } from '@/components/LiquidGlass';
 import { Loader } from '@/components/Loader';
@@ -25,10 +22,9 @@ import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
-import { VENUE_FRAME } from '@/theme/venueScene';
 
-// The buddies come in after the screen's own arrival.
-const SCENE_CAST_DELAY = 240;
+// U17: the one riso scene of every venue (Aura v65 §9.1; venue scenes of their own wait, §9.2).
+const SCENE = require('../../../../assets/riso/venue-scene.webp');
 
 // A venue from Keşfet (docs/design/aura → KesfetMekan): its bucket, the week's events, and check-in.
 // Choosing the venue here is the manual selection; the position is taken next only to verify it
@@ -40,7 +36,6 @@ export default function VenueDetailScreen() {
   // Already checked in here: back to Mekan, not a new check-in that would end this one and take
   // the person off its table (audit VEN-2).
   const active = useActiveTable();
-  const [sceneWidth, setSceneWidth] = useState(0);
   const { scheme } = useTheme();
   const insets = useSafeAreaInsets();
   const barSpace = useTabBarSpace();
@@ -84,11 +79,9 @@ export default function VenueDetailScreen() {
   }
 
   const here = active.data?.venue_id === venue.id;
-  const k = sceneWidth > 0 ? sceneWidth / VENUE_FRAME.width : 1;
   const calm = venue.bucket === 'calm';
-  // docs/design/aura → KesfetMekan: the venue as a scene under the status bar (the buddies at a
-  // table doing what the place is for, theme/venueScene.ts; no disk with the mark, the owner's
-  // call, 29 Ekim), back and its tags over it; the name and district, why the position is asked,
+  // docs/design/aura → KesfetMekan: the venue's riso scene under the status bar, back and its tags
+  // over it; the name and district, why the position is asked,
   // check-in, and under it the week's events (the owner's call, 31 Ekim: they stay). Not a list:
   // the screen stays still (CLAUDE.md → Ekran davranışı).
   return (
@@ -107,7 +100,6 @@ export default function VenueDetailScreen() {
         {/* U17: the scene from the very top, 300 high with the status bar on it (no strip of its
             own), its bottom corners 28. */}
         <View
-          onLayout={(e) => setSceneWidth(e.nativeEvent.layout.width)}
           style={{
             height: KIT.venueHero.height,
             borderBottomLeftRadius: KIT.venueHero.radius,
@@ -118,20 +110,13 @@ export default function VenueDetailScreen() {
           {/* The scene is the backdrop of the buttons and tags over it: they frost it, a lamp's
               cord blurred behind a tag instead of crossing its words (the owner's report, 30 Ekim). */}
           <GlassTarget backdrop style={StyleSheet.absoluteFill}>
-            <SceneGround top={0} bottom={KIT.venueHero.radius} />
-            {sceneWidth > 0 ? (
-              <View
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  height: VENUE_FRAME.height * k,
-                }}
-              >
-                <VenueScene kind={venueType(venue)} width={sceneWidth} delay={SCENE_CAST_DELAY} />
-              </View>
-            ) : null}
+            <Image
+              source={SCENE}
+              fadeDuration={0}
+              accessible={false}
+              resizeMode="cover"
+              style={StyleSheet.absoluteFill}
+            />
           </GlassTarget>
           {/* The picture appears frosted and resolves 320 ms later over 500 (hareket.json). */}
           <FrostResolve />

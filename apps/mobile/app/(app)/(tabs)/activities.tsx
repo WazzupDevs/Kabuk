@@ -8,7 +8,6 @@ import { Glass, Li, Seg, T, useKit } from '@/aura/kit';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
 import { GameDisc } from '@/components/Glyph';
-import { Icon } from '@/components/Icon';
 import { useLoaderHold } from '@/components/Loader';
 import { Rise } from '@/components/motion';
 import { Screen } from '@/components/Screen';
@@ -128,7 +127,12 @@ function Events({ now, city }: { now: number; city: ReturnType<typeof useCity> }
         testID="activities-no-events"
         style={{ flex: 1, justifyContent: 'center', paddingBottom: EMPTY_LIFT }}
       >
-        <EmptyState kind="empty" title={tr.activities.noEvents} body={tr.activities.noEventsHint} />
+        <EmptyState
+          kind="empty"
+          title={tr.activities.noEvents}
+          body={tr.activities.noEventsHint}
+          picture={NO_EVENTS_PICTURE}
+        />
       </View>
     );
   }
@@ -359,9 +363,16 @@ function RowHair() {
   );
 }
 
-// The game's picture without its title (the poster's words did not read this small, the owner's
-// report, 30 Ekim).
-const VAMPIR_THUMB = require('../../../assets/game-thumb/vampir.webp');
+// The riso pictures of the history row (Aura v65 §9.1): a chat and Vampir Köylü.
+const VAMPIR_THUMB = require('../../../assets/riso/history-vampir.webp');
+const CHAT_THUMB = require('../../../assets/riso/history-sohbet.webp');
+// U15: the empty Etkinlikler's riso 240 × 165, 28 round.
+const NO_EVENTS_PICTURE = {
+  source: require('../../../assets/riso/empty-events.webp'),
+  width: 240,
+  height: 165,
+  radius: 28,
+};
 
 // The game's disc; a chat without a game has the speech bubbles.
 function Thumb({ concept }: { concept: HistoryConcept }) {
@@ -385,27 +396,16 @@ function Thumb({ concept }: { concept: HistoryConcept }) {
   );
 }
 
-// What the picture shows until the riso pictures come (Aura v65 §9).
+// The riso pictures (Aura v65 §9.1); the other games keep their disc until theirs come (§9.2).
 function Picture({ concept }: { concept: HistoryConcept }) {
-  const { c } = useKit();
-  // The new games (K-77) have their card's drawing, round.
-  if (concept === 'vampir') {
-    return (
-      <Image source={VAMPIR_THUMB} accessible={false} style={{ width: THUMB, height: THUMB }} />
-    );
+  if (concept !== 'vampir' && concept !== 'chat') {
+    return <GameDisc name={GAME_GLYPH[concept]} size={THUMB} />;
   }
-  if (concept !== 'chat') return <GameDisc name={GAME_GLYPH[concept]} size={THUMB} />;
   return (
-    <View
+    <Image
+      source={concept === 'vampir' ? VAMPIR_THUMB : CHAT_THUMB}
       accessible={false}
-      className="items-center justify-center"
-      style={{
-        width: THUMB,
-        height: THUMB,
-        backgroundColor: c.hair,
-      }}
-    >
-      <Icon name="chatbubbles-outline" tone="muted" />
-    </View>
+      style={{ width: THUMB, height: THUMB }}
+    />
   );
 }

@@ -5,15 +5,14 @@ import { useLabOff } from '@/lib/drawLab';
 import type { VenueType } from '@/lib/venueType';
 import { VENUE_THUMB as t } from '@/theme/auraKit';
 
-// A venue's icon: a rounded square with its type's picture in the aura look (scripts/art/art.ts;
-// the owner's call, 29 Ekim): kafe a cup with steam, çay bahçesi a tea glass, yemek a plate with
-// köfte, kampüs books under a cap. The map's pins are the same pictures cut round
+// A venue's icon: a rounded square with its type's riso picture (Aura v65 §9.1: kafe, restoran,
+// kampüs, çay bahçesi). The map's pins are the same pictures cut round in a white ring
 // (components/Glyph → TYPE_PIN_IMAGES).
 const PICTURE: Record<VenueType, ImageSourcePropType> = {
-  kafe: require('../../assets/venue/kafe.webp'),
-  cay: require('../../assets/venue/cay.webp'),
-  yemek: require('../../assets/venue/yemek.webp'),
-  kampus: require('../../assets/venue/kampus.webp'),
+  kafe: require('../../assets/riso/venue-kafe.webp'),
+  cay: require('../../assets/riso/venue-cay.webp'),
+  yemek: require('../../assets/riso/venue-yemek.webp'),
+  kampus: require('../../assets/riso/venue-kampus.webp'),
 };
 
 // `size`: a list row's (Keşfet's thin rows); the radius keeps its share of the side.

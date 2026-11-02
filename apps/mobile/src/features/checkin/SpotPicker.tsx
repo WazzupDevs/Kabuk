@@ -1,4 +1,4 @@
-import { Pressable, View } from 'react-native';
+import { type ImageSourcePropType, Pressable, View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
 import { T, Thumb, useKit } from '@/aura/kit';
@@ -101,9 +101,17 @@ const GAP = 8;
 const THUMB = 48;
 const THUMB_RADIUS = 14;
 
-// A spot's picture (docs/design/aura → CheckIn): one of the table pictures, always the same for a
-// spot. It says nothing about who is there.
+// The spots with a riso picture of their own (Aura v65 §9.1: İç salon, Bahçe).
+const RISO_SPOTS: Record<string, ImageSourcePropType> = {
+  'ic-salon': require('../../../assets/riso/spot-ic-salon.webp'),
+  bahce: require('../../../assets/riso/spot-bahce.webp'),
+};
+
+// A spot's picture (docs/design/aura → CheckIn): its riso picture, or until the others come (§9.2)
+// one of the table pictures, always the same for a spot. It says nothing about who is there.
 function spotPicture(ref: string) {
+  const riso = RISO_SPOTS[ref];
+  if (riso) return riso;
   let h = 0;
   for (let i = 0; i < ref.length; i++) h = (h * 31 + ref.charCodeAt(i)) >>> 0;
   const icon = TABLE_ICONS[h % TABLE_ICONS.length];

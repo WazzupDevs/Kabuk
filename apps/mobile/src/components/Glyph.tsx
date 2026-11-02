@@ -34,7 +34,7 @@ export const PIN_IMAGES = {
 };
 
 // The Keşfet map's pins by the venue's type: the list's pictures (ui/VenueThumb.tsx) cut round in a
-// white ring, 40 pt (scripts/art/build.ts).
+// white ring, 40 pt (Aura v65 §9.1, riso).
 export const TYPE_PIN_IMAGES = {
   kafe: require('../../assets/pin/pin-kafe.png') as ImageSourcePropType,
   cay: require('../../assets/pin/pin-cay.png') as ImageSourcePropType,

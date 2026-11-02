@@ -230,7 +230,8 @@ export async function wallPicture(kind: keyof typeof WALLS, scheme: Scheme): Pro
 if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = resolve(import.meta.dirname, '../../apps/mobile/assets/wall');
   mkdirSync(dir, { recursive: true });
-  for (const kind of Object.keys(WALLS) as (keyof typeof WALLS)[]) {
+  // DM and Mekan have the riso walls (apps/mobile/assets/riso/wall-*.webp, Aura v65 §9.1).
+  for (const kind of ['masa'] as const) {
     for (const scheme of ['light', 'dark'] as const) {
       const out = resolve(dir, `${kind}-${scheme}.webp`);
       writeFileSync(out, await wallPicture(kind, scheme));
