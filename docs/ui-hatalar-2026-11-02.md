@@ -192,3 +192,13 @@ Kod: `apps/mobile/app/(app)/(tabs)/profile/friends.tsx:55-106`, `src/aura/kit.ts
 | 16.2 | Satırlar arasındaki ince çizgi ekranın sağ kenarına kadar uzanıyor; sağda boşluk yok. Çizgi sağda da satırın iç boşluğunda bitmeli (Keşfet'teki gibi `marginRight: liPadX`). | ölçü/boşluk | **[P1]** `kit.tsx:889-895`: ayırıcıda `marginRight` yok, liste `marginHorizontal: -liPadX` ile ekrana taşıyor. | düşük |
 | 16.3 | Sohbet düğmeleri (44 dp, belirgin gölgeli) satırdaki en ağır öğe; avatar ve addan baskın duruyor. Daha küçük (36) ve gölgesiz ya da hafif olmalı. | ölçü/boşluk | `friends.tsx:97-103` `Round` varsayılan boy ve gölge. | düşük |
 | 16.4 | Bu ekran da eski bileşenlerle yazılmış hata ve yükleniyor hâllerini taşıyor (`Card`, `Text`, `Button`; 5.4). | renk/tema | `friends.tsx:56-63` | düşük |
+
+### 17. Başkasının profili (arkadaş, açık)
+
+Kod: `apps/mobile/src/features/profile/ProfileCard.tsx:63-120` (`OtherHead`, `PEEK_BUDDY`), `src/features/friends/FriendActions.tsx:20-60`. Pano: `ProfilBaskasi`, yerel kopyada yok (pano yok); kodun yorumu U31'i anıyor.
+
+| # | Hata | Sınıf | Olası sebep | Önem |
+| --- | --- | --- | --- | --- |
+| 17.1 | "Arkadaşsınız" bir durum bilgisi ama "Mesaj" ile aynı boyda (56 dp, tam yarım genişlik) bir düğme gibi duruyor; basılabilir sanılıyor. Ad satırının yanında ya da altında küçük bir etiket (`Tag`, 28 dp) olmalı; "Mesaj" tek eylem olarak kalmalı. | yerleşim / ölçü | `FriendActions.tsx:24-36`: hap, düğmeyle aynı satırda ve aynı yükseklikte çiziliyor. | orta |
+| 17.2 | Fotoğrafın arkasından bakan riso kapsül (halkalı yeşil kanki) sabit bir süs (`assets/riso/peek-1.webp`), ama kişinin kendi kapsülü gibi okunabiliyor. Kural 4'e göre başkasının profilinde kapsül hiçbir biçimde görünmez; kullanıcı bunu o kişinin anonim kapsülü sanıp yanlış eşleştirme yapabilir. Süs kapsül biçiminde olmamalı ya da kaldırılmalı. **Değişmez kurala değen görsel karar: proje sahibi onaylamalı.** | davranış (gizlilik algısı) | `ProfileCard.tsx:63-73` `PEEK_BUDDY` | orta |
+| 17.3 | "Mesaj" altında yeşil hale (2.1), boyu 56 (10.3). | renk / ölçü | **[P1]** bkz. 2.1, 10.3 | — |
