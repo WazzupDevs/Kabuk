@@ -112,3 +112,12 @@ Kod: `apps/mobile/src/features/friends/RequestList.tsx:108`, `src/components/Emp
 | # | Hata | Sınıf | Olası sebep | Önem |
 | --- | --- | --- | --- | --- |
 | 9.1 | "Bekleyen istek yok" boş durumunda riso resim yerine küçük çizgi bir işaret (mor kapsül ve kesikli pembe kapsül) var; lobideki ve Masa bitti'deki riso sahnelerle aynı dilde değil. **Proje sahibinin kararı (2 Kasım):** boş durum riso resimle olmalı (`EmptyState` → `picture`, `Lobby.tsx:377`'deki gibi). Bu boş durum için riso resim yok (`assets/riso/`); yeni resim gerekir. | ikon / resim | `RequestList.tsx:108` `EmptyState kind="empty"` `picture` vermiyor, `EmptyMark` çiziliyor. **Proje sahibinin kararı (2 Kasım): bütün boş durumlar riso olacak.** `picture` verilmeyen 44 `EmptyState` çağrısının hepsi (Sohbetler, bildirimler, arkadaşlar, engellenenler…) riso resim alacak; her biri için resim üretilmeli ya da mevcut resimler (`assets/riso/`) paylaşılmalı. `EmptyMark` boş durumdan kalkar. | orta |
+
+### 10. Profil (açık)
+
+Kod: `apps/mobile/app/(app)/(tabs)/profile/index.tsx`. Pano: `Profil.dc.html`.
+
+| # | Hata | Sınıf | Olası sebep | Önem |
+| --- | --- | --- | --- | --- |
+| 10.1 | Kapalı "Yenile" düğmesi (24 gün var) yeşilimsi dolgulu ve ikonlu olduğu için basılabilir görünüyor. Panoda kapalı düğme ikonsuz ve soluk yazılı (`#8F89A8`); kapalıyken ikon da soluk olmalı ya da hiç olmamalı. | renk/tema | `profile/index.tsx:304-312` `Btn glassy icon="refresh" disabled`; kapalı `Btn`'in görünüşü `src/aura/kit.tsx` → `Btn` (`disabled` dolgusu `#DCE9DE`). | düşük |
+| 10.2 | "Kapsülünü süsle" altında yine yeşil hale var (2.1). | renk/tema | **[P1]** bkz. 2.1 | — |
