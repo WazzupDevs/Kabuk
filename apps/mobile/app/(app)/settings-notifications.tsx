@@ -56,8 +56,7 @@ export default function NotificationSettingsScreen() {
     update.isPending && update.variables[key] !== undefined ? !!update.variables[key] : !!saved;
 
   return (
-    <Screen>
-      <PageTop title={tr.settings.notificationSettings} />
+    <Screen top={<PageTop title={tr.settings.notificationSettings} />}>
       <View style={{ gap: KIT.size.rowGap }}>
         {off ? (
           // Aura v71 (BildirimAyarlari `.offc`): the lively card, 16 in.

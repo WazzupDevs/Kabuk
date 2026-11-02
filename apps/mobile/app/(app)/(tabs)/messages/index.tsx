@@ -44,17 +44,23 @@ export default function MessagesScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <Screen edges={['top']} refreshable gap={KIT.size.venueGap}>
-        {/* docs/design/aura → Mesajlar: the title, the bell, the two tabs, the conversations as
-          plain rows. */}
-        <View
-          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
-        >
-          <T v="display" accessibilityRole="header">
-            {tr.tabs.messages}
-          </T>
-          <NotificationsBell />
-        </View>
+      <Screen
+        edges={['top']}
+        refreshable
+        gap={KIT.size.venueGap}
+        // docs/design/aura → Mesajlar: the title and the bell stay on top (the owner's report, 2
+        // Kasım, B2); the two tabs and the conversations as plain rows scroll under them.
+        top={
+          <View
+            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+          >
+            <T v="display" accessibilityRole="header">
+              {tr.tabs.messages}
+            </T>
+            <NotificationsBell />
+          </View>
+        }
+      >
         <Seg<Tab>
           large
           value={tab}

@@ -28,8 +28,7 @@ export default function MutedScreen() {
   const now = useNow(60000);
   const list = mutes.data?.mutes ?? [];
   return (
-    <Screen list>
-      <PageTop title={tr.settings.muted} />
+    <Screen list top={<PageTop title={tr.settings.muted} />}>
       <View style={{ gap: KIT.size.rowGap }}>
         <T v="note">{tr.settings.mutedNote}</T>
         {mutes.isPending ? (

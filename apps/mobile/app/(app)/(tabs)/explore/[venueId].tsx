@@ -134,8 +134,9 @@ export default function VenueDetailScreen() {
             className="flex-row items-center justify-between"
             style={{ paddingHorizontal: KIT.size.side, paddingTop: insets.top + SPACING[2] }}
           >
-            {/* U17: back on light glass, 44; the kind and the bucket as light tags, 28. */}
-            <Round light icon="back" label={tr.explore.back} onPress={() => router.back()} />
+            {/* U17: back on light glass, 44 (drawn over the page, below); the kind and the bucket
+                as light tags, 28. */}
+            <View style={{ width: KIT.size.round, height: KIT.size.round }} />
             <View style={{ flexDirection: 'row', gap: KIT.size.chipGap }}>
               <Tag large tone="scene" label={tr.explore.typeLabel[venueType(venue)]} />
               <Tag
@@ -242,6 +243,10 @@ export default function VenueDetailScreen() {
           </View>
         </View>
       </ScrollView>
+      {/* Back stays where it is while the page scrolls (the owner's report, 2 Kasım, X4). */}
+      <View style={{ position: 'absolute', left: KIT.size.side, top: insets.top + SPACING[2] }}>
+        <Round light icon="back" label={tr.explore.back} onPress={() => router.back()} />
+      </View>
     </View>
   );
 }

@@ -74,11 +74,15 @@ export default function PersonScreen() {
   });
 
   return (
-    <Screen refreshable>
-      <ProfileTopBar
-        onBack={() => router.back()}
-        onMore={view.data ? () => setMenu(true) : undefined}
-      />
+    <Screen
+      refreshable
+      top={
+        <ProfileTopBar
+          onBack={() => router.back()}
+          onMore={view.data ? () => setMenu(true) : undefined}
+        />
+      }
+    >
       {view.isPending ? (
         <View className="mt-16 items-center">
           <Loader />

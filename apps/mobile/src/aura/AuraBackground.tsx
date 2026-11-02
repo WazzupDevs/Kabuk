@@ -119,3 +119,56 @@ function Slice({ top, height, opacity }: { top: number; height: number; opacity:
     </View>
   );
 }
+
+// A sideways soft edge (a chip row running off the screen's right, Kapsülün): the ground in
+// columns, each more opaque towards the edge, lined up with the picture behind the screen. A flat
+// colour fade over the clouds showed as a band of its own (the owner's report, 2 Kasım, 11.4).
+// `top` and `left` are on the screen.
+export function AuraFadeX({
+  top,
+  left,
+  width,
+  height,
+}: {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+}) {
+  const off = useLabOff('zemin');
+  const { scheme } = useTheme();
+  const { width: screenWidth, height: screen } = useWindowDimensions();
+  if (off || width <= 0 || height <= 0) return null;
+  const column = width / FADE_STEPS;
+  return (
+    <View
+      pointerEvents="none"
+      style={{ position: 'absolute', right: 0, top: 0, width, height, flexDirection: 'row' }}
+    >
+      {Array.from({ length: FADE_STEPS }, (_, i) => (
+        <View
+          key={i}
+          style={{ width: column, height, overflow: 'hidden', opacity: (i + 1) / FADE_STEPS }}
+        >
+          {scheme === 'dark' ? (
+            <View style={{ flex: 1, backgroundColor: AURA.dark.ground }} />
+          ) : (
+            <Image
+              source={GROUND_PICTURE}
+              fadeDuration={0}
+              resizeMode="cover"
+              style={{
+                position: 'absolute',
+                left: -(left + i * column),
+                top: -top,
+                width: screenWidth,
+                height: screen,
+              }}
+              accessible={false}
+            />
+          )}
+        </View>
+      ))}
+    </View>
+  );
+}

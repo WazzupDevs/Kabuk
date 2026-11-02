@@ -41,22 +41,26 @@ export default function ProfileScreen() {
   const stacked = width < STACK_BELOW || fontScale > STACK_SCALE;
 
   return (
-    <Screen gap={0}>
-      {/* U32: "Profil" display on a row 44 high, the settings 44 round soft. */}
-      <View style={ROW}>
-        <T v="display" accessibilityRole="header">
-          {tr.tabs.profile}
-        </T>
-        <Round
-          glassy
-          icon="settings"
-          side={KIT.size.bell}
-          label={tr.settings.title}
-          testID="profile-settings"
-          onPress={() => router.push('/settings')}
-        />
-      </View>
-
+    <Screen
+      gap={0}
+      // U32: "Profil" display on a row 44 high, the settings 44 round soft; it stays on top (the
+      // owner's report, 2 Kasım, B2).
+      top={
+        <View style={ROW}>
+          <T v="display" accessibilityRole="header">
+            {tr.tabs.profile}
+          </T>
+          <Round
+            glassy
+            icon="settings"
+            side={KIT.size.bell}
+            label={tr.settings.title}
+            testID="profile-settings"
+            onPress={() => router.push('/settings')}
+          />
+        </View>
+      }
+    >
       {view.isPending || loading ? (
         <View className="mt-16">
           <EmptyState kind="loading" body={tr.common.loading} />
