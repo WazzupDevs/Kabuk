@@ -210,6 +210,8 @@ export const KIT = {
     // .btn.danger: the soft red and its ink.
     dangerSoft: '#FBE1DB',
     onDangerSoft: '#A8301A',
+    // Aura v71: the step dots of the sign-up (`--step-dot`).
+    stepDot: 'rgba(17, 23, 20, 0.16)',
   },
   dark: {
     ink: '#EEF3F0',
@@ -263,10 +265,13 @@ export const KIT = {
     disabledOnCard: '#2A332F',
     dangerSoft: '#3A1E22',
     onDangerSoft: '#FF977E',
+    stepDot: 'rgba(255, 255, 255, 0.18)',
   },
   // The same in both schemes.
   primary: '#0E8745',
   onPrimary: '#FFFFFF',
+  // The dark ink on a filled box or radio in the dark scheme (the accent's ground): #0B0E0D.
+  checkInk: '#0B0E0D',
   primaryShadow: SHADOW.primary,
   // The lines beside "Yeni mesaj" in a chat.
   freshLine: 'rgba(255, 79, 139, 0.40)',
@@ -646,6 +651,32 @@ export const KIT = {
     msgPadX: 15,
     msgPadY: 11,
     field: 56,
+    // Aura v71 (GaleriEklenen): a boxed field 60 (the birth date), the name's 72 with 22 inside.
+    fieldBox: 60,
+    fieldBig: 72,
+    fieldBigPad: 22,
+    // The check box and the radio: 24, the box 8 round (`.check`, `.radio`).
+    checkBox: 24,
+    checkRadius: 8,
+    // A choice or consent row: 56 and 64 at least (the consents, `.opt`), 10 or 12 above and under.
+    optMin: 56,
+    consentMin: 64,
+    optPadY: 10,
+    consentPadY: 12,
+    // A settings row (`.lr`): 64 at least, 12 above and under, its icon 24 and chevron 20.
+    lrMin: 64,
+    lrPadY: 12,
+    lrIcon: 24,
+    lrChevron: 20,
+    // A person's row: the face 44 (`.av`).
+    avPerson: 44,
+    // The warning strip: 14 above and under, 16 in, 4 between its title and words.
+    warnPadY: 14,
+    warnPadX: 16,
+    warnGap: 4,
+    // A sheet's title icon, in the line, and the gap to the words.
+    titleIcon: 24,
+    titleIconGap: 10,
     // Profili düzenle's fields: 56 high (the bio 108, 24 round), 22 inside, 16 above the bio.
     fieldLg: 56,
     fieldLgTall: 104,

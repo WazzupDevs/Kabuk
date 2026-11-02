@@ -27,7 +27,7 @@ export function ReportModal<R extends GameFlowReportReason>({
   onClose,
 }: Props<R>) {
   return (
-    <Sheet visible={visible} onClose={onClose} title={tr.safety.reportTitle} icon="flag-outline">
+    <Sheet visible={visible} onClose={onClose} title={tr.safety.reportTitle} icon="report">
       {reasons.map((reason) => (
         <Button
           key={reason}

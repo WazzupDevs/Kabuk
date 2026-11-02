@@ -1,8 +1,9 @@
+import { T } from '@/aura/kit';
 import { Link } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
-import { Checkbox } from '@/components/Checkbox';
-import { Text } from '@/components/Text';
+import { CheckMark } from '@/components/Checkbox';
+import { haptic } from '@/lib/haptics';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
@@ -39,7 +40,9 @@ function ConsentBox({
   onToggle: () => void;
   href: '/terms' | '/kvkk';
 }) {
-  const { scheme } = useTheme();
+  const { scheme, colors } = useTheme();
+  const dark = scheme === 'dark';
+  const ring = dark ? colors.accent : KIT.primary;
   // Its soft shadow natively (NativeShadow.tsx).
   const shadow = shadowParts(
     useLabOff('golge'),
@@ -54,26 +57,43 @@ function ConsentBox({
       className="flex-row items-center"
       style={{
         gap: SPACING[3],
-        minHeight: TOUCH.tab,
-        paddingLeft: checked ? SPACING[4] - 1 : SPACING[4],
-        paddingRight: checked ? SPACING[3] - 1 : SPACING[3],
+        // Aura v71 (KayitOnay): 64 at least, 12 / 16 in; ticked, the 2 px line takes 1 from the room.
+        minHeight: TOUCH.large,
+        paddingVertical: checked ? KIT.size.consentPadY - 1 : KIT.size.consentPadY,
+        paddingHorizontal: checked ? SPACING[4] - 1 : SPACING[4],
         // docs/design/aura (CheckIn's rows): a glass row; ticked, ringed in the primary.
         ...gradientStyle(KIT[scheme].glass),
         borderRadius: KIT.size.glassRadiusSm,
         borderWidth: checked ? 2 : KIT.size.edge,
-        borderColor: checked ? KIT.primary : KIT[scheme].glassEdge,
+        borderColor: checked ? ring : KIT[scheme].glassEdge,
         boxShadow: shadow.boxShadow,
       }}
     >
       {shadow.node}
       <View className="flex-1">
-        <Checkbox label={label} checked={checked} onToggle={onToggle} />
+        <Pressable
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked }}
+          onPress={() => {
+            haptic('selection');
+            onToggle();
+          }}
+          className="flex-row items-center"
+          style={{ gap: SPACING[3], minHeight: TOUCH.button }}
+        >
+          <CheckMark checked={checked} />
+          <View className="flex-1">
+            <T v="fine" ink>
+              {label}
+            </T>
+          </View>
+        </Pressable>
       </View>
       <Link href={href} asChild>
         <Pressable accessibilityRole="link" className="min-h-11 justify-center px-1">
-          <Text tone="accent" variant="label">
+          <T v="btnSm" color={dark ? colors.accent : colors.primaryPressed}>
             {tr.consents.read}
-          </Text>
+          </T>
         </Pressable>
       </Link>
     </View>

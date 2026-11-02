@@ -25,8 +25,12 @@ type Props = Omit<TextInputProps, 'style' | 'placeholderTextColor'> & {
   code?: boolean;
   // A multi-line field that starts several lines high (the bio).
   tall?: boolean;
-  // skall.css → `.field.box`: 16 px corners instead of the capsule.
+  // skall.css → `.field.box`: 16 px corners instead of the capsule. Aura v71: 60 high, the
+  // surface (dark: surface2) on the raised shadow, no line, the type 21 / 600.
   box?: boolean;
+  // Aura v71 (the name field): 72 high, 22 inside, the type 21 / 600, the caret in the primary
+  // (dark: accent); the surface of `box`, 22 round.
+  big?: boolean;
   // Short fields centred in their box (the birth date's day, month and year).
   centered?: boolean;
   // A search field (v44: .dsearch): a capsule with the magnifier before the text.
@@ -51,6 +55,7 @@ export const Input = forwardRef<TextInput, Props>(function Input(
     code,
     tall,
     box,
+    big,
     centered,
     search,
     large,
@@ -67,25 +72,31 @@ export const Input = forwardRef<TextInput, Props>(function Input(
   const { colors, shape } = theme;
   const [focused, setFocused] = useState(false);
   const k = useKit();
+  const flat = !!(box || big) && !large && !prefix && !tall && !search;
   const radius = large
     ? tall
       ? KIT.size.fieldLgTallRadius
       : KIT.size.fieldLg / 2
     : prefix
       ? KIT.size.glassRadius
-      : tall
+      : tall || big
         ? shape.radius.lg
         : box
           ? shape.radius.md
           : KIT.size.field / 2;
-  const edge = focused || error ? 2 : KIT.size.edge;
+  // The raised fields (v71) have no line; only focus and an error draw one.
+  const edge = focused || error ? 2 : flat ? 0 : KIT.size.edge;
+  const dark = theme.scheme === 'dark';
+  const raised = (!dark && k.c.segShadow) || undefined;
+  // The type of the raised fields: 21 / 600.
+  const fieldType = flat ? KIT_TYPE.title : null;
   // Focused, a hard ring (no blur, cheap) as boxShadow; otherwise the soft glass shadow natively
   // (NativeShadow.tsx).
   const shadowOff = useLabOff('golge');
   const ring = focused && !error;
   const shadow = shadowParts(
     shadowOff,
-    ring || boxed ? undefined : k.c.glassShadow,
+    ring || boxed ? undefined : flat ? raised : k.c.glassShadow,
     undefined,
     radius,
     true,
@@ -110,16 +121,22 @@ export const Input = forwardRef<TextInput, Props>(function Input(
         style={{
           ...(boxed
             ? { backgroundColor: k.c.fieldOnCard }
-            : large
-              ? { backgroundColor: k.c.fieldLg }
-              : gradientStyle(k.c.glass)),
+            : flat
+              ? { backgroundColor: dark ? colors.surface2 : colors.surface }
+              : large
+                ? { backgroundColor: k.c.fieldLg }
+                : gradientStyle(k.c.glass)),
           minHeight: large
             ? tall
               ? KIT.size.fieldLgTall
               : KIT.size.fieldLg
             : prefix
               ? KIT.size.phoneField
-              : KIT.size.field,
+              : big
+                ? KIT.size.fieldBig
+                : box
+                  ? KIT.size.fieldBox
+                  : KIT.size.field,
           borderRadius: radius,
           borderWidth: edge,
           borderColor: error
@@ -128,12 +145,16 @@ export const Input = forwardRef<TextInput, Props>(function Input(
               ? KIT.primary
               : boxed
                 ? k.c.fieldOnCardEdge
-                : k.c.glassEdge,
+                : flat
+                  ? 'transparent'
+                  : k.c.glassEdge,
           paddingHorizontal: large
             ? KIT.size.fieldLgPadX
-            : prefix
-              ? KIT.size.padLg
-              : KIT.size.fieldPadX,
+            : big
+              ? KIT.size.fieldBigPad
+              : prefix
+                ? KIT.size.padLg
+                : KIT.size.fieldPadX,
           boxShadow: ring
             ? `0px 0px 0px ${KIT.size.dotRing}px ${KIT.primaryRing}`
             : shadow.boxShadow,
@@ -178,14 +199,15 @@ export const Input = forwardRef<TextInput, Props>(function Input(
             }}
             accessibilityHint={rest.accessibilityHint ?? placeholder}
             selectionColor={colors.accent}
-            cursorColor={colors.accent}
+            cursorColor={big ? (dark ? colors.accent : colors.primary) : colors.accent}
             textAlignVertical={multiline ? 'top' : 'center'}
             style={[
-              large
-                ? KIT_TYPE.field
-                : prefix
-                  ? KIT_TYPE.phone
-                  : typeStyle(theme, code ? 'title' : 'body'),
+              fieldType ??
+                (large
+                  ? KIT_TYPE.field
+                  : prefix
+                    ? KIT_TYPE.phone
+                    : typeStyle(theme, code ? 'title' : 'body')),
               {
                 color: k.c.ink,
                 paddingVertical: large && tall ? KIT.size.fieldLgPadY : SPACING[3],
@@ -213,11 +235,12 @@ export const Input = forwardRef<TextInput, Props>(function Input(
             >
               <RNText
                 style={[
-                  large
-                    ? KIT_TYPE.field
-                    : prefix
-                      ? KIT_TYPE.phone
-                      : typeStyle(theme, code ? 'title' : 'body'),
+                  fieldType ??
+                    (large
+                      ? KIT_TYPE.field
+                      : prefix
+                        ? KIT_TYPE.phone
+                        : typeStyle(theme, code ? 'title' : 'body')),
                   { color: colors.placeholder },
                   code || centered ? { textAlign: 'center' } : null,
                 ]}

@@ -85,7 +85,7 @@ export function useHistoryActions() {
         <Menu>
           <MenuItem
             negative
-            icon="flag-outline"
+            icon="report"
             label={tr.friends.report}
             onPress={() => {
               setReporting(menuFor);

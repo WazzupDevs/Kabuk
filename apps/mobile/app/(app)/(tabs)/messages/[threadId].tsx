@@ -460,7 +460,7 @@ export default function DmScreen() {
       <Sheet visible={menu} onClose={() => setMenu(false)} title={tr.friends.friendMenuTitle}>
         <Menu>
           <MenuItem
-            icon="flag-outline"
+            icon="report"
             label={tr.dm.report}
             onPress={() => {
               setMenu(false);

@@ -22,7 +22,7 @@ export default function PrivacyScreen() {
     <Screen>
       <PageTop title={tr.settings.privacyTitle} />
       <View style={{ gap: KIT.size.rowGap }}>
-        <RowList inset={KIT.size.icon + KIT.size.liGap}>
+        <RowList inset={KIT.size.lrIcon + KIT.size.liGap}>
           <SettingsRow
             icon="block"
             chevron
@@ -46,7 +46,7 @@ export default function PrivacyScreen() {
           />
         </RowList>
         <T v="note">{tr.settings.nickPrivacy}</T>
-        <RowList inset={KIT.size.icon + KIT.size.liGap}>
+        <RowList inset={KIT.size.lrIcon + KIT.size.liGap}>
           <SettingsRow
             icon="doc"
             chevron

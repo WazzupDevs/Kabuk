@@ -71,7 +71,7 @@ export default function AccountScreen() {
           ) : null}
         </Glass>
         <T v="note">{tr.settings.fixedNote}</T>
-        <RowList inset={KIT.size.icon + KIT.size.liGap}>
+        <RowList inset={KIT.size.lrIcon + KIT.size.liGap}>
           {contactEmail ? (
             <SettingsRow
               icon="chat"

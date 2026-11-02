@@ -868,15 +868,19 @@ export function GlassList({ children, testID }: { children: ReactNode; testID?: 
 // A list as Telegram Android draws one (the owner's call, 30 Ekim: each row a card looked heavy):
 // the rows straight on the ground, the full width of the screen's padding, a hairline between them
 // from where the text starts. `inset`: how far in the hairline starts (the row's picture and the
-// gap after it).
+// gap after it): a settings list's icon 24 + 12 = 36 (the line from 52), a person's list `person`
+// (the face 44 + 12 = 56, the line from 72).
 export function RowList({
   children,
   testID,
   inset = KIT.size.av.row + KIT.size.liGap,
+  person,
 }: {
   children: ReactNode;
   testID?: string;
   inset?: number;
+  // A person's list (aura v71, `.av` 44): the hairline from the 44 face; the default stays.
+  person?: boolean;
 }) {
   const { c } = useKit();
   const rows = Children.toArray(children).filter(Boolean);
@@ -889,7 +893,7 @@ export function RowList({
             <View
               style={{
                 height: KIT.size.hair,
-                marginLeft: KIT.size.liPadX + inset,
+                marginLeft: KIT.size.liPadX + (person ? KIT.size.avPerson + KIT.size.liGap : inset),
                 backgroundColor: c.hair,
               }}
             />
@@ -911,6 +915,7 @@ export function Li({
   padX = KIT.size.liPadX,
   gap = KIT.size.liGap,
   top,
+  minHeight,
 }: {
   children: ReactNode;
   onPress?: () => void;
@@ -924,8 +929,11 @@ export function Li({
   gap?: number;
   // The picture at the top rather than in the middle (the lobby's narrow row).
   top?: boolean;
+  // The row's least height (a settings row: 64).
+  minHeight?: number;
 }) {
   const style: ViewStyle = {
+    minHeight,
     flexDirection: 'row',
     alignItems: top ? 'flex-start' : 'center',
     gap,

@@ -16,7 +16,6 @@ import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { haptic } from '@/lib/haptics';
 import { finishLabel } from '@/lib/signupSteps';
-import { BRAND } from '@/theme/brand';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON } from '@/theme/tokens';
 import { AppIcon } from '@/components/AppIcon';
@@ -98,14 +97,14 @@ export default function PhotoStep() {
                   justifyContent: 'center',
                 }}
               >
-                <AppIcon name="camera-outline" size={ICON.xl} color={BRAND.purple} />
+                <AppIcon name="photo" size={ICON.xl} color={colors.accent} />
               </View>
             )}
             <Button
               testID="signup-photo-add"
               size="sm"
               variant="secondary"
-              icon="camera-outline"
+              icon="photo"
               label={hasPhoto ? tr.profile.photoChange : tr.profile.photoAdd}
               onPress={() => setSheet(true)}
             />
