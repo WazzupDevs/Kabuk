@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Bildirim ayarları · açık | koyu | telefon izni kapalı</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+<link rel="stylesheet" href="ekran.css">
+<link rel="stylesheet" href="koyu.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+
+.dark.pA{--overlap:#FFFFFF}
+.top{display:flex;align-items:center;justify-content:space-between;height:56px;flex:none}
+.pg{padding-top:52px;gap:0}
+.sub{margin-top:2px}
+.lst{padding:4px 0;display:flex;flex-direction:column}
+.lr{display:flex;align-items:center;gap:12px;padding:12px 16px;min-height:64px;position:relative;color:var(--text)}
+.lr+.lr:before{content:"";position:absolute;top:0;left:72px;right:16px;border-top:1px solid var(--hair)}
+.lr.ic+.lr.ic:before{left:52px}
+.lr>.ci{color:var(--muted)}
+.lr.danger,.lr.danger .h3,.lr.danger>.ci{color:var(--danger)}
+.cv{color:var(--muted);display:flex}
+.note{font:500 13px/18px var(--font);color:var(--muted)}
+.sh{padding:12px 20px 38px;background:var(--canvas);gap:16px;box-shadow:var(--shadow-sheet);z-index:3}
+.sh .title{margin-top:4px}
+.ban{border-radius:22px;padding:14px 16px;background:var(--warn-soft);color:var(--on-warn-soft);display:flex;flex-direction:column;gap:4px}
+.ban p{color:var(--on-warn-soft)}
+.card{background:var(--surface);border-radius:22px;box-shadow:var(--shadow-raised)}
+.ghost{background:none;border:0;box-shadow:none;color:var(--text)}
+.btn.danger .ci{--ci-a:var(--on-danger-soft);--ci-b:var(--on-danger-soft)}
+.btn.primary .ci{--ci-a:var(--on-primary);--ci-b:var(--on-primary)}
+.box{width:24px;height:24px;border-radius:8px;box-shadow:inset 0 0 0 2px var(--border);flex:none;display:flex;align-items:center;justify-content:center}
+.box.on{background:var(--primary);box-shadow:none;color:var(--on-primary);--ci-a:var(--on-primary);--ci-b:var(--on-primary);--ci-bo:1}
+.radio{width:24px;height:24px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--border);flex:none}
+.radio.on{box-shadow:inset 0 0 0 7px var(--primary)}
+.opt{display:flex;align-items:center;gap:12px;min-height:60px;padding:10px 16px;border-radius:22px;background:var(--soft-bg);border:1px solid var(--soft-line);box-shadow:var(--soft-shadow)}
+.opt.on{box-shadow:0 0 0 2px var(--primary)}
+.capav{border-radius:50%;overflow:hidden;flex:none;display:block}
+.capav svg{display:block;width:100%;height:100%}
+.dark.pA .sh{background:#121614;box-shadow:none}
+.dark.pA .btn.soft,.dark.pA .chip{border-color:rgba(255,255,255,.10)}
+.dark.pA .btn.primary{box-shadow:none}
+.dark.pA .btn.off{background:#1F2623;color:#A3AEA8}
+.dark.pA .av{border-color:#121614}
+.dark.pA .card{background:#1B211F;box-shadow:none}
+.dark.pA .ban{background:#3A2A10;color:#FFE2B3}.dark.pA .ban p{color:#FFE2B3}
+.dark.pA .opt.on{box-shadow:0 0 0 2px #3DDC84}.dark.pA .radio.on{box-shadow:inset 0 0 0 7px #3DDC84}
+.dark.pA .box.on{background:#3DDC84;--ci-a:#0B0E0D;--ci-b:#0B0E0D}
+.dark.pA .lr.danger,.dark.pA .lr.danger .h3,.dark.pA .lr.danger>.ci{color:#FF977E}
+
+
+.sw{display:flex;align-items:center;gap:12px;padding:14px 16px}
+.sec2{font:600 16px/22px var(--font);margin-top:8px}
+.offc{border-radius:22px;padding:16px;background:var(--lively);color:var(--on-lively);display:flex;flex-direction:column;gap:12px}
+.offc p{color:var(--on-lively)}
+.dim{opacity:.45}
+.dark.pA .offc{background:#46290B}.dark.pA .offc p{color:#FFD8A3}
+.dark.pA .toggle.on{background:#3DDC84}
+
+</style>
+</helmet>
+<div style="width: 1250px; height: 844px; display: flex; gap: 40px; background: var(--surface2)">
+<div class="phone"><div class="aura"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i><i class="a5"></i></div>
+ <div class="content pg" style="padding-top: 52px">
+  <div class="top"><button class="round soft" type="button" aria-label="Geri"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="5.562" y="7" width="12.676" height="3.2" rx="1.6" transform="rotate(134.145 11.9 8.6)" class="a"></rect><rect x="5.562" y="13.8" width="12.676" height="3.2" rx="1.6" transform="rotate(45.855 11.9 15.4)" class="b"></rect></svg></button></div>
+  <h1 class="display" style="margin-top: 8px">Bildirim ayarları</h1>
+  <div class="col" style="gap: 12px; margin-top: 20px">
+ <div class="glass sm sw"><div class="col grow" style="gap:2px"><p class="h3">Telefon bildirimleri</p><p class="fine">Açık. Kapatırsan telefonun ayarlarından yeniden açabilirsin.</p></div><span class="tag green">Açık</span></div>
+ <h2 class="sec2">Arkadaşlar</h2>
+ <div class="col" style="gap: 12px"><div class="glass sm sw"><div class="col grow" style="gap:2px"><p class="h3">Arkadaşlık istekleri</p><p class="fine">Biri seni arkadaş olarak eklemek istediğinde</p></div><span class="toggle on"><i></i></span></div><div class="glass sm sw"><div class="col grow" style="gap:2px"><p class="h3">Masa davetleri</p><p class="fine">Davetler 2 dakika geçerli; kapatırsan kaçırabilirsin</p></div><span class="toggle on"><i></i></span></div></div>
+ <h2 class="sec2">Mesajlar</h2>
+ <div class="col"><div class="glass sm sw"><div class="col grow" style="gap:2px"><p class="h3">Birebir mesajlar</p><p class="fine">Arkadaşlarından gelen mesajlar</p></div><span class="toggle on"><i></i></span></div></div>
+ <p class="note">Masa davetinin bildiriminde ad, masa adı ve mekan yazmaz: "Bir arkadaşın seni masasına çağırıyor". Mekan sohbeti bildirim göndermez.</p>
+</div>
+ </div></div>
+<div class="phone dark pA"><div class="aura"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i><i class="a5"></i></div>
+ <div class="content pg" style="padding-top: 52px">
+  <div class="top"><button class="round soft" type="button" aria-label="Geri"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="5.562" y="7" width="12.676" height="3.2" rx="1.6" transform="rotate(134.145 11.9 8.6)" class="a"></rect><rect x="5.562" y="13.8" width="12.676" height="3.2" rx="1.6" transform="rotate(45.855 11.9 15.4)" class="b"></rect></svg></button></div>
+  <h1 class="display" style="margin-top: 8px">Bildirim ayarları</h1>
+  <div class="col" style="gap: 12px; margin-top: 20px">
+ <div class="glass sm sw"><div class="col grow" style="gap:2px"><p class="h3">Telefon bildirimleri</p><p class="fine">Açık. Kapatırsan telefonun ayarlarından yeniden açabilirsin.</p></div><span class="tag green">Açık</span></div>
+ <h2 class="sec2">Arkadaşlar</h2>
+ <div class="col" style="gap: 12px"><div class="glass sm sw"><div class="col grow" style="gap:2px"><p class="h3">Arkadaşlık istekleri</p><p class="fine">Biri seni arkadaş olarak eklemek istediğinde</p></div><span class="toggle on"><i></i></span></div><div class="glass sm sw"><div class="col grow" style="gap:2px"><p class="h3">Masa davetleri</p><p class="fine">Davetler 2 dakika geçerli; kapatırsan kaçırabilirsin</p></div><span class="toggle on"><i></i></span></div></div>
+ <h2 class="sec2">Mesajlar</h2>
+ <div class="col"><div class="glass sm sw"><div class="col grow" style="gap:2px"><p class="h3">Birebir mesajlar</p><p class="fine">Arkadaşlarından gelen mesajlar</p></div><span class="toggle on"><i></i></span></div></div>
+ <p class="note">Masa davetinin bildiriminde ad, masa adı ve mekan yazmaz: "Bir arkadaşın seni masasına çağırıyor". Mekan sohbeti bildirim göndermez.</p>
+</div>
+ </div></div>
+<div class="phone"><div class="aura"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i><i class="a5"></i></div>
+ <div class="content pg" style="padding-top: 52px">
+  <div class="top"><button class="round soft" type="button" aria-label="Geri"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="5.562" y="7" width="12.676" height="3.2" rx="1.6" transform="rotate(134.145 11.9 8.6)" class="a"></rect><rect x="5.562" y="13.8" width="12.676" height="3.2" rx="1.6" transform="rotate(45.855 11.9 15.4)" class="b"></rect></svg></button></div>
+  <h1 class="display" style="margin-top: 8px">Bildirim ayarları</h1>
+  <div class="col" style="gap: 12px; margin-top: 20px">
+ <div class="offc"><div class="col" style="gap:2px"><p class="h3">Telefon bildirimleri</p><p class="fine">Kapalı. Masa davetleri 2 dakika geçerli olduğu için kaçırabilirsin.</p></div><button class="btn primary block" type="button">Telefon ayarlarını aç</button></div>
+ <h2 class="sec2">Arkadaşlar</h2>
+ <div class="col dim" style="gap: 12px"><div class="glass sm sw"><div class="col grow" style="gap:2px"><p class="h3">Arkadaşlık istekleri</p><p class="fine">Biri seni arkadaş olarak eklemek istediğinde</p></div><span class="toggle on"><i></i></span></div><div class="glass sm sw"><div class="col grow" style="gap:2px"><p class="h3">Masa davetleri</p><p class="fine">Davetler 2 dakika geçerli; kapatırsan kaçırabilirsin</p></div><span class="toggle on"><i></i></span></div></div>
+ <h2 class="sec2">Mesajlar</h2>
+ <div class="col dim"><div class="glass sm sw"><div class="col grow" style="gap:2px"><p class="h3">Birebir mesajlar</p><p class="fine">Arkadaşlarından gelen mesajlar</p></div><span class="toggle on"><i></i></span></div></div>
+ <p class="note">Masa davetinin bildiriminde ad, masa adı ve mekan yazmaz: "Bir arkadaşın seni masasına çağırıyor". Mekan sohbeti bildirim göndermez.</p>
+</div>
+ </div></div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1250,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -3,7 +3,7 @@ import { Animated, Modal, Pressable, useWindowDimensions, View } from 'react-nat
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { InSheet, T, useKit } from '@/aura/kit';
+import { InSheet, T } from '@/aura/kit';
 import { Peek, type PeekKind } from '@/aura/Peek';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
@@ -16,6 +16,7 @@ import type { IconName } from './Button';
 import { Quiet } from './Quiet';
 import { useSheetCloser } from './sheetCloser';
 import { SheetCard } from './SheetCard';
+import { SheetScrim } from './SheetScrim';
 import { AppIcon } from './AppIcon';
 
 // hareket.md → "Alt sayfa": in and out in 320 ms on the design system's ease out.
@@ -69,7 +70,6 @@ export function Sheet({
   children,
 }: Props) {
   const { colors, shape } = useTheme();
-  const k = useKit();
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   const reduce = useReduceMotion();
@@ -108,11 +108,7 @@ export function Sheet({
     >
       {/* A Modal is a window of its own: the sheet's pull needs its own gesture root there. */}
       <GestureHandlerRootView style={{ flex: 1, justifyContent: 'flex-end' }}>
-        <Animated.View
-          pointerEvents="box-none"
-          className="absolute inset-0"
-          style={{ backgroundColor: k.c.scrim, opacity: progress }}
-        />
+        <SheetScrim opacity={progress} />
         <Pressable
           accessibilityRole={onClose ? 'button' : undefined}
           accessibilityLabel={onClose ? tr.common.close : undefined}

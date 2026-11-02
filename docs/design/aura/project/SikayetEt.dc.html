@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Şikayet et · açık | koyu</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+<link rel="stylesheet" href="ekran.css">
+<link rel="stylesheet" href="koyu.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+
+.dark.pA{--overlap:#FFFFFF}
+.top{display:flex;align-items:center;justify-content:space-between;height:56px;flex:none}
+.pg{padding-top:52px;gap:0}
+.sub{margin-top:2px}
+.lst{padding:4px 0;display:flex;flex-direction:column}
+.lr{display:flex;align-items:center;gap:12px;padding:12px 16px;min-height:64px;position:relative;color:var(--text)}
+.lr+.lr:before{content:"";position:absolute;top:0;left:72px;right:16px;border-top:1px solid var(--hair)}
+.lr.ic+.lr.ic:before{left:52px}
+.lr>.ci{color:var(--muted)}
+.lr.danger,.lr.danger .h3,.lr.danger>.ci{color:var(--danger)}
+.cv{color:var(--muted);display:flex}
+.note{font:500 13px/18px var(--font);color:var(--muted)}
+.sh{padding:12px 20px 38px;background:var(--canvas);gap:16px;box-shadow:var(--shadow-sheet);z-index:3}
+.sh .title{margin-top:4px}
+.ban{border-radius:22px;padding:14px 16px;background:var(--warn-soft);color:var(--on-warn-soft);display:flex;flex-direction:column;gap:4px}
+.ban p{color:var(--on-warn-soft)}
+.card{background:var(--surface);border-radius:22px;box-shadow:var(--shadow-raised)}
+.ghost{background:none;border:0;box-shadow:none;color:var(--text)}
+.btn.danger .ci{--ci-a:var(--on-danger-soft);--ci-b:var(--on-danger-soft)}
+.btn.primary .ci{--ci-a:var(--on-primary);--ci-b:var(--on-primary)}
+.box{width:24px;height:24px;border-radius:8px;box-shadow:inset 0 0 0 2px var(--border);flex:none;display:flex;align-items:center;justify-content:center}
+.box.on{background:var(--primary);box-shadow:none;color:var(--on-primary);--ci-a:var(--on-primary);--ci-b:var(--on-primary);--ci-bo:1}
+.radio{width:24px;height:24px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--border);flex:none}
+.radio.on{box-shadow:inset 0 0 0 7px var(--primary)}
+.opt{display:flex;align-items:center;gap:12px;min-height:60px;padding:10px 16px;border-radius:22px;background:var(--soft-bg);border:1px solid var(--soft-line);box-shadow:var(--soft-shadow)}
+.opt.on{box-shadow:0 0 0 2px var(--primary)}
+.capav{border-radius:50%;overflow:hidden;flex:none;display:block}
+.capav svg{display:block;width:100%;height:100%}
+.dark.pA .sh{background:#121614;box-shadow:none}
+.dark.pA .btn.soft,.dark.pA .chip{border-color:rgba(255,255,255,.10)}
+.dark.pA .btn.primary{box-shadow:none}
+.dark.pA .btn.off{background:#1F2623;color:#A3AEA8}
+.dark.pA .av{border-color:#121614}
+.dark.pA .card{background:#1B211F;box-shadow:none}
+.dark.pA .ban{background:#3A2A10;color:#FFE2B3}.dark.pA .ban p{color:#FFE2B3}
+.dark.pA .opt.on{box-shadow:0 0 0 2px #3DDC84}.dark.pA .radio.on{box-shadow:inset 0 0 0 7px #3DDC84}
+.dark.pA .box.on{background:#3DDC84;--ci-a:#0B0E0D;--ci-b:#0B0E0D}
+.dark.pA .lr.danger,.dark.pA .lr.danger .h3,.dark.pA .lr.danger>.ci{color:#FF977E}
+
+
+.herow{position:relative;margin-top:24px;width:120px;height:120px}.herow .av.xl{position:relative;z-index:1;width:120px;height:120px;font-size:40px;border-width:4px}
+.kk{position:absolute;left:92px;top:18px;width:64px;transform:rotate(14deg);z-index:0}
+.backbar{position:absolute;left:20px;right:20px;bottom:46px}
+
+</style>
+</helmet>
+<div style="width: 820px; height: 844px; display: flex; gap: 40px; background: var(--surface2)">
+<div class="phone"><div class="aura"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i><i class="a5"></i></div>
+ <div class="content" style="padding-top:52px;gap:0">
+  <div class="top"><button class="round soft" type="button" aria-label="Geri"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="5.562" y="7" width="12.676" height="3.2" rx="1.6" transform="rotate(134.145 11.9 8.6)" class="a"></rect><rect x="5.562" y="13.8" width="12.676" height="3.2" rx="1.6" transform="rotate(45.855 11.9 15.4)" class="b"></rect></svg></button><button class="round soft" type="button" aria-label="Diğer"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5.2" cy="12" r="2.1" class="a"></circle><circle cx="12" cy="12" r="2.1" class="b"></circle><circle cx="18.8" cy="12" r="2.1" class="a"></circle></svg></button></div>
+  <div class="herow"><img class="kk" src="/_blob/5618d9dea1ec8b48b6da1072f56652da" alt=""><span class="av xl" style="background:#2C63D6">E</span></div>
+  <h1 class="display" style="margin-top:20px">Ece, 24</h1>
+  <button class="btn primary block" type="button" style="margin-top:24px"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="7.8" r="3.5" class="a"></circle><rect x="2.8" y="13.6" width="12.4" height="7" rx="3.5" class="b"></rect><rect x="14.3" y="8.7" width="8.6" height="2.6" rx="1.3" transform="rotate(90 18.6 10)" class="a"></rect><rect x="14.3" y="8.7" width="8.6" height="2.6" rx="1.3" class="a"></rect></svg>Arkadaşlık isteği gönder</button>
+ </div>
+ <div class="backbar"><button class="btn soft block" type="button">Geri</button></div><div class="scrim"></div><div class="sheet sh"><div class="grab"></div>
+<div class="row" style="gap: 10px; margin-top: 4px"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="-3.2" y="10.6" width="19.2" height="3.2" rx="1.6" transform="rotate(90 6.4 12.2)" class="a"></rect><path d="M8 4.6h10.2c.7 0 1.1.8.7 1.3l-2.1 3.1 2.1 3.1c.4.5 0 1.3-.7 1.3H8Z" class="b"></path></svg><h2 class="title">Neden şikayet ediyorsun?</h2></div>
+<div class="col" style="gap: 8px"><button class="btn soft block" type="button">Taciz</button><button class="btn soft block" type="button">Uygunsuz içerik</button><button class="btn soft block" type="button">Spam</button><button class="btn soft block" type="button">Diğer</button></div><button class="btn ghost block" type="button">Vazgeç</button></div></div>
+<div class="phone dark pA"><div class="aura"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i><i class="a5"></i></div>
+ <div class="content" style="padding-top:52px;gap:0">
+  <div class="top"><button class="round soft" type="button" aria-label="Geri"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="5.562" y="7" width="12.676" height="3.2" rx="1.6" transform="rotate(134.145 11.9 8.6)" class="a"></rect><rect x="5.562" y="13.8" width="12.676" height="3.2" rx="1.6" transform="rotate(45.855 11.9 15.4)" class="b"></rect></svg></button><button class="round soft" type="button" aria-label="Diğer"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5.2" cy="12" r="2.1" class="a"></circle><circle cx="12" cy="12" r="2.1" class="b"></circle><circle cx="18.8" cy="12" r="2.1" class="a"></circle></svg></button></div>
+  <div class="herow"><img class="kk" src="/_blob/5618d9dea1ec8b48b6da1072f56652da" alt=""><span class="av xl" style="background:#2C63D6">E</span></div>
+  <h1 class="display" style="margin-top:20px">Ece, 24</h1>
+  <button class="btn primary block" type="button" style="margin-top:24px"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="7.8" r="3.5" class="a"></circle><rect x="2.8" y="13.6" width="12.4" height="7" rx="3.5" class="b"></rect><rect x="14.3" y="8.7" width="8.6" height="2.6" rx="1.3" transform="rotate(90 18.6 10)" class="a"></rect><rect x="14.3" y="8.7" width="8.6" height="2.6" rx="1.3" class="a"></rect></svg>Arkadaşlık isteği gönder</button>
+ </div>
+ <div class="backbar"><button class="btn soft block" type="button">Geri</button></div><div class="scrim"></div><div class="sheet sh"><div class="grab"></div>
+<div class="row" style="gap: 10px; margin-top: 4px"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="-3.2" y="10.6" width="19.2" height="3.2" rx="1.6" transform="rotate(90 6.4 12.2)" class="a"></rect><path d="M8 4.6h10.2c.7 0 1.1.8.7 1.3l-2.1 3.1 2.1 3.1c.4.5 0 1.3-.7 1.3H8Z" class="b"></path></svg><h2 class="title">Neden şikayet ediyorsun?</h2></div>
+<div class="col" style="gap: 8px"><button class="btn soft block" type="button">Taciz</button><button class="btn soft block" type="button">Uygunsuz içerik</button><button class="btn soft block" type="button">Spam</button><button class="btn soft block" type="button">Diğer</button></div><button class="btn ghost block" type="button">Vazgeç</button></div></div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":820,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

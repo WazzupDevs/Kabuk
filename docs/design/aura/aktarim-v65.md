@@ -232,7 +232,7 @@ Aura (ekran arkasındaki renk bulutu) yalnız açık temada vardır: `ekran.css 
 - **U5. Bileşen ölçüleri.** Bölüm 2.3'e göre.
 - **U6. İkonlar.** Bütün ikonlar bölüm 3'teki aileden gelir. Ionicons ve çizgi aile kaldırılır.
 - **U7. Alt menü.** Ölçü ve renkler GaleriAltMenu'deki tablodan. Keşfet haritası açıkken çubuk camsız ve opak olur: #EFF7F1 / #000000.
-- **U8. Sheet.** Kenarlardan 8, köşe 28, scrim + 8 bulanıklık, tutamak 40x4, alt iç boşluk 38. En çok ekranın %90'ı (390x844'te üstten 76). Sığmazsa içerik sheet içinde kayar, düğmeler sabit kalır.
+- **U8. Sheet.** Kenarlardan 8, köşe 28, scrim + 8 bulanıklık (`SheetScrim`, `docs/decisions/sheet-arkasi-bulaniklik.md`), tutamak 40x4, alt iç boşluk 38. En çok ekranın %90'ı (390x844'te üstten 76). Sığmazsa içerik sheet içinde kayar, düğmeler sabit kalır.
 - **U9. Sabit alt alan.** Düğme alttan 46. Alt menü varsa düğme alt menünün 12 üstünde (alttan 122). İçerik düğmenin 32 üstünde solar.
 - **U10. Pasif düğme.** disabled / on-disabled. Koyu kart üstünde zemin #2A332F.
 - **U11. Avatar.** Uygulamada kişinin kendi fotoğrafı gösterilir. Tuvaldeki baş harfli avatar yalnız çizim içindir.

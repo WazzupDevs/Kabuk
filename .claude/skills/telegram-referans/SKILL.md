@@ -20,4 +20,5 @@ Proje sahibinin kararı (29 Ekim): bir işin nasıl yapılacağına karar vermed
 
 - Buzlu cam: bulanıklık en çok sekizde bir boyda çizilir, Telegram'ın buzlu çubukları gibi (`skall-glass` → `LiquidGlassView`, 0.9.0).
 - Sohbet akışı: en yeniden yukarı çizilen liste, sona tutunur, yalnızca kullanıcının kendi kaydırması bırakır (`ChatList`, `src/components/ChatScreen.tsx`).
+- Alt sayfa arkası bulanıklık (U8): pencere sayfa açılırken bir kez küçük kopyalanır, bulanık çizilir, sayfa açıkken değişmez; Telegram'ın diyalog arkası gibi (`skall-glass` → `BackdropBlurView`, 0.9.4).
 - DM: `docs/decisions/dm-telegram.md`.
