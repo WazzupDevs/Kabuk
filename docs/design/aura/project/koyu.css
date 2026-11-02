@@ -3,9 +3,9 @@
    skall.css .dark değerlerinin üstüne yazılır; koyu panolar her zaman class="dark pA" taşır. */
 .dark.pA{
  --canvas:#000000;--surface:#151A18;--surface2:#1B211F;--raised:#151A18;
- --text:#EEF3F0;--muted:#A3AEA8;--placeholder:#8F9A94;--divider:#232A27;--border:#5E6964;--card-line:#1B211F;
- --accent:#3DDC84;--focus:#3DDC84;--calm:rgba(61,220,132,.14);--on-calm:#93EBB9;
- --feature:#EEF3F0;--on-feature:#0B0E0D;
+ --text:#EEF3F0;--muted:#A3AEA8;--placeholder:#8F9A94;--divider:#232A27;--border:#626D68;--card-line:#1B211F;
+ --accent:#3DDC84;--focus:#3DDC84;--calm:#091F12;--on-calm:#93EBB9;
+ --feature:#EEF3F0;--on-feature:#0B0E0D;--feature-muted:#4A6550;
  --control:#2A332F;--track:#1B211F;--disabled:#1F2623;--on-disabled:#A3AEA8;
  --glass-bg:#121614;--glass-line:rgba(255,255,255,.09);--glass-shadow:none;
  --soft-bg:#121614;--soft-line:rgba(255,255,255,.10);--soft-shadow:none;--hair:rgba(255,255,255,.07);
