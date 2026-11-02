@@ -104,3 +104,11 @@ Kod: `apps/mobile/src/features/venue/VenueHead.tsx:69-115` (sayfa), `:153-200` (
 | 8.2 | Kimlik satırı ("Profilinle görünüyorsun") ile menü satırları farklı iç boşlukla çizilmiş: ikonlar ve yazılar alt alta hizalı değil (ikon ve yazı kimlik satırında yaklaşık 4–5 dp daha solda). İki blok aynı sol hizayı kullanmalı. | ölçü/boşluk | `VenueHead.tsx:172-173` `paddingHorizontal: SPACING[4]`; `Menu.tsx` `MenuItem` farklı boşluk kullanıyor. | düşük |
 | 8.3 | Kimlik satırındaki ikon düz bir kişi, "Profilini aç"ınki dolu daire içinde bir kişi; aynı kavram iki farklı ikonla çiziliyor. Tek bir ikon kullanılmalı. | ikon | `VenueHead.tsx:179` `CapIcon 'user'`, `:90` `cap="personCircle"` | düşük |
 | 8.4 | Bu sayfada da arka ekran bulanıklaşmıyor (3.1). | renk/tema | **[P1]** bkz. 3.1 | — |
+
+### 9. Mesajlar → İstekler (boş, açık)
+
+Kod: `apps/mobile/src/features/friends/RequestList.tsx:108`, `src/components/EmptyState.tsx:72-74`, `src/aura/EmptyMark.tsx`. Pano: `MesajlarIstek.dc.html` (panoda da çizgi işaret var; proje sahibi riso istiyor).
+
+| # | Hata | Sınıf | Olası sebep | Önem |
+| --- | --- | --- | --- | --- |
+| 9.1 | "Bekleyen istek yok" boş durumunda riso resim yerine küçük çizgi bir işaret (mor kapsül ve kesikli pembe kapsül) var; lobideki ve Masa bitti'deki riso sahnelerle aynı dilde değil. **Proje sahibinin kararı (2 Kasım):** boş durum riso resimle olmalı (`EmptyState` → `picture`, `Lobby.tsx:377`'deki gibi). Bu boş durum için riso resim yok (`assets/riso/`); yeni resim gerekir. | ikon / resim | `RequestList.tsx:108` `EmptyState kind="empty"` `picture` vermiyor, `EmptyMark` çiziliyor. **Aynı durum:** `picture` verilmeyen 44 `EmptyState` çağrısı var (Sohbetler boş, bildirimler, arkadaşlar, engellenenler…); hangilerinin riso olacağı belirlenmeli. | orta |
