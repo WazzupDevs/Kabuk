@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState } from 
 import { AppState, View } from 'react-native';
 
 import { tr } from '@/i18n/tr';
+import { KIT } from '@/theme/auraKit';
 import { useLabOff } from '@/lib/drawLab';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import {
@@ -38,8 +39,8 @@ export function useLoopActive(): boolean {
 }
 
 type Props = {
-  // `seesaw` Tahterevalli (full-screen loading, the lobby), `swap` Kesişme (waiting for an answer,
-  // "yazıyor"), `meet` Buluş (buttons, inline), `spin` Dönüş (refresh).
+  // `meet` Buluş (a screen's or a list's loading, Aura v65 §6, and buttons), `swap` Kesişme
+  // (waiting for an answer, "yazıyor"), `seesaw` Tahterevalli, `spin` Dönüş (refresh).
   kind?: LoaderKind;
   size?: number;
   // One colour, with a gap in the ground's colour around the second capsule: inside a filled button.
@@ -58,8 +59,8 @@ type Props = {
 // after 300 ms; with reduce motion the mark stays put and breathes. Pair it with `useLoaderHold`
 // where it replaces content, so a shown loader stays at least 600 ms.
 export function Loader({
-  kind = 'seesaw',
-  size = 48,
+  kind = 'meet',
+  size = KIT.size.stateLoader,
   mono,
   fills,
   onInk,

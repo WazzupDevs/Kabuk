@@ -540,6 +540,15 @@ export const KIT = {
     emptyTitleTop: 10,
     emptyTop: 26,
     emptyTopSm: 18,
+    // U36 (GaleriKesfet, GaleriProfil `.disc`): the error and icon state's disc 64, its icon 26,
+    // the disc, the note and the button 12 apart. Loading (MekanYukleniyor): the meeting capsules
+    // 40, 18 above, the note 10 under them.
+    stateDisc: 64,
+    stateIcon: 26,
+    stateGap: 12,
+    stateLoader: 40,
+    stateLoadTop: 18,
+    stateLoadGap: 10,
     // Aktiviteler's history rows (U16): a 52 picture.
     historyThumb: 52,
     // Kapsülün: the empty part's tile (104, its capsule 70), a pack's tiles 70 high with the capsule
