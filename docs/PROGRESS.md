@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (2 Kasım 2026, U29–U35 birleşti)
+
+- #358 U29 DM arkadaşlık sayfası (sheet menüsü: kart sheet kartı rengi, ikon 24, ayraç yazı hizasından), #359 U30 Bildirimler (riso kankiler `peek-1/2`), #360 U31 başkasının profili (`Av` `hero` 120), #361 U32 Profil, #362 U33 Ayarlar (NickCard kit'le), #363 U34 Profili düzenle (`Input boxed`, `Av` `edit` 88), #364 U35 Kapsülün. Native yok, OTA.
+- U35: sağ üstteki grid2x2 düğmesi eski işini (karıştır) yapıyor; pano ne yaptığını söylemiyor, proje sahibine soruldu.
+- Sıradaki: U36 hâl matrisi (rapor §6; GaleriProfil, GaleriKesfet panoları; `EmptyState` ikonu hâlâ `BRAND.purple`, kural "cloudOff + metin + Tekrar dene btn sm soft"), sonra §13, §14 (karar 12.11 tek soru). Ayrı iş: U8 sheet arkası bulanıklığı.
+- Not: `mobil` ajanının worktree'si (`.claude/worktrees/`) kökteki ESLint'i bozar; ajan bitince worktree kaldırılır.
+
 ## Devir notu (2 Kasım 2026, U20–U28 birleşti, OTA düzeldi)
 
 - #351–#356: U20 Mekan masalı, U22–U24 Masa/Davet/Masadakiler, U25 Masa sohbeti (duvar uzun riso kart), U26 Mekan sohbeti boş kartı, U27 Mesajlar, U28 DM başlığı ve okundu tiki. Rapor 12.2 kapandı: boş alanda gönder pasif (bütün sohbetler). Native yok, OTA.
