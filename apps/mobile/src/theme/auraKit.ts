@@ -655,6 +655,9 @@ export const KIT = {
     fieldBox: 60,
     fieldBig: 72,
     fieldBigPad: 22,
+    // The empty photo picker (KayitFoto `.pick`): 120 across, its dashed line 3.
+    photoPick: 120,
+    photoPickLine: 3,
     // The check box and the radio: 24, the box 8 round (`.check`, `.radio`).
     checkBox: 24,
     checkRadius: 8,

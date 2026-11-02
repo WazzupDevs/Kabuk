@@ -4,6 +4,8 @@
 // picture's bottom middle (50 % / 96 %). Pure: the frame function is a worklet (src/aura/RisoKanki.tsx
 // drives it on the UI thread) and kankiMotion.test.ts pins it.
 
+import { type SignupStep } from '../lib/signupSteps';
+
 export const KANKI_LOOP_S = 6;
 
 // Where the turn and the scale are centred, in the picture (50 % / 96 %).
@@ -29,7 +31,10 @@ export type KankiId =
   | 'af811f'
   | '9c96bd'
   | 'c189a4'
-  | 'd2fbb5';
+  | 'd2fbb5'
+  // The two half-length ones looking over a field (assets/riso/peek-*.webp, 160x200).
+  | 'peek-1'
+  | 'peek-2';
 
 export type KankiBeat = {
   // The breath's period (s) and phase.
@@ -78,35 +83,81 @@ export const WELCOME_KANKI: readonly KankiPlace[] = [
   { id: 'f280a5', left: 198, bottom: -18, width: 118, height: 155 },
 ];
 
-// Telefon and Kod: who stands in the scene (the first one says the step's line) and who looks over
-// the field (`.behind > .peek`, top-down from the strip's top, 58 over the field). Still: §13.1
-// defines their motion for Main only.
+// The sign-up steps (Telefon, Kod; Aura v71 KayitOnay, KayitAd, KayitDogum, KayitCinsiyet,
+// KayitFoto): who stands in the scene (the speaker says the step's line, the bubble's tail towards
+// it), who looks over the field (`.behind > .peek`, top-down from the strip's top, 58 over the field)
+// and how far under the title the field starts. Still: §13.1 defines their motion for Main only.
+// `deep`: the field leaves room around it (the photo picker), so the one looking over it shows all
+// of its strip (120), not only what stands over the field's edge.
+export type SignupCast = {
+  speaker: KankiPlace;
+  other?: KankiPlace;
+  say: { left: number; right: number; top: number; tail: 'left' | 'right' };
+  peek: readonly KankiPlace[];
+  fieldTop: number;
+  deep?: boolean;
+};
+
 export const SIGNUP_KANKI = {
+  consents: {
+    speaker: { id: '6f419d', right: -6, bottom: -14, width: 150, height: 197 },
+    other: { id: '4957ac', left: 14, bottom: -12, width: 104, height: 136 },
+    say: { left: 16, right: 128, top: 18, tail: 'right' },
+    peek: [{ id: 'b83534', left: 250, top: 0, width: 78, height: 102 }],
+    fieldTop: 60,
+  },
   phone: {
     speaker: { id: '6f419d', right: -6, bottom: -14, width: 160, height: 210 },
     other: { id: '9c96bd', left: 18, bottom: -10, width: 96, height: 126 },
-    // The bubble: 16 from the left, 112 from the right, its tail at the lower right.
-    say: { left: 16, right: 112, tail: 'right' },
+    say: { left: 16, right: 112, top: 18, tail: 'right' },
     peek: [{ id: 'af811f', left: 226, top: 0, width: 84, height: 110 }],
+    fieldTop: 70,
   },
   code: {
     speaker: { id: 'af811f', left: -4, bottom: -14, width: 150, height: 197 },
     other: { id: 'c189a4', right: 22, bottom: -10, width: 92, height: 121 },
-    say: { left: 150, right: 16, tail: 'left' },
+    say: { left: 150, right: 16, top: 18, tail: 'left' },
     peek: [
       { id: 'b83534', left: 12, top: 0, width: 84, height: 110 },
       { id: '1a80a9', left: 252, top: 6, width: 78, height: 102 },
     ],
+    fieldTop: 70,
   },
-} as const satisfies Record<
-  string,
-  {
-    speaker: KankiPlace;
-    other: KankiPlace;
-    say: { left: number; right: number; tail: 'left' | 'right' };
-    peek: readonly KankiPlace[];
-  }
->;
+  name: {
+    speaker: { id: 'f280a5', right: -4, bottom: -14, width: 150, height: 197 },
+    other: { id: '3c95b1', left: 20, bottom: -10, width: 100, height: 131 },
+    say: { left: 116, right: 112, top: 24, tail: 'right' },
+    peek: [{ id: '7d5ef2', left: 232, top: 22, width: 80, height: 105 }],
+    fieldTop: 40,
+  },
+  birth: {
+    speaker: { id: '1a80a9', right: -4, bottom: -14, width: 132, height: 173 },
+    other: { id: '9c96bd', left: 18, bottom: -10, width: 92, height: 121 },
+    say: { left: 16, right: 16, top: 16, tail: 'right' },
+    peek: [{ id: 'c189a4', left: 6, top: 0, width: 78, height: 102 }],
+    fieldTop: 50,
+  },
+  gender: {
+    speaker: { id: '4957ac', right: -4, bottom: -12, width: 100, height: 131 },
+    other: { id: 'af811f', left: 10, bottom: -10, width: 84, height: 110 },
+    say: { left: 16, right: 16, top: 14, tail: 'right' },
+    peek: [{ id: 'peek-2', left: 240, top: 4, width: 64, height: 84 }],
+    fieldTop: 50,
+  },
+  photo: {
+    speaker: { id: '7d5ef2', right: 8, bottom: -10, width: 86, height: 113 },
+    say: { left: 16, right: 108, top: 14, tail: 'right' },
+    peek: [{ id: 'b83534', left: 40, top: 40, width: 74, height: 97 }],
+    fieldTop: 20,
+    deep: true,
+  },
+} as const satisfies Record<SignupStep, SignupCast>;
+
+// KayitMetinler (texts changed, asked again outside sign-up): one buddy standing over the button,
+// in the middle (left 140 of 390), its feet 120 over the screen's bottom: 36 under the button, the
+// button 56, so 28 over the button.
+export const RECONSENT_KANKI: KankiPlace = { id: 'f280a5', width: 110, height: 144 };
+export const RECONSENT_KANKI_FOOT = 28;
 
 // MasaIstek (U42): three riso buddies looking over the incoming request's card, in the card's 362
 // wide frame (390 less 14 a side).

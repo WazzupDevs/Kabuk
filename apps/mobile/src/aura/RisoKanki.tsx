@@ -39,6 +39,8 @@ const OPEN: Record<KankiId, ImageSourcePropType> = {
   '9c96bd': require('../../assets/riso/buddies/riso_9c96bd.webp'),
   c189a4: require('../../assets/riso/buddies/riso_c189a4.webp'),
   d2fbb5: require('../../assets/riso/buddies/riso_d2fbb5.webp'),
+  'peek-1': require('../../assets/riso/peek-1.webp'),
+  'peek-2': require('../../assets/riso/peek-2.webp'),
 };
 const CLOSED: Partial<Record<KankiId, ImageSourcePropType>> = {
   b83534: require('../../assets/riso/buddies/riso_b83534_c.webp'),

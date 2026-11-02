@@ -66,6 +66,7 @@ export default function OtpStep() {
       friend={friend}
       action={{
         label: tr.auth.verify,
+        icon: 'check',
         onPress: () => void verify(code),
         disabled: code.length !== CODE_LENGTH,
         loading: verifying,

@@ -44,6 +44,7 @@ export default function NameStep() {
       action={{
         testID: 'name-continue',
         label: tr.signup.continue,
+        icon: 'forward',
         disabled: !valid,
         loading: going,
         onPress: () =>
@@ -54,6 +55,7 @@ export default function NameStep() {
       }}
     >
       <Input
+        big
         testID="signup-name"
         label={tr.signup.nameLabel}
         hint={tr.signup.nameHint}

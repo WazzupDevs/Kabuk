@@ -28,8 +28,8 @@ type Props = Omit<TextInputProps, 'style' | 'placeholderTextColor'> & {
   // skall.css → `.field.box`: 16 px corners instead of the capsule. Aura v71: 60 high, the
   // surface (dark: surface2) on the raised shadow, no line, the type 21 / 600.
   box?: boolean;
-  // Aura v71 (the name field): 72 high, 22 inside, the type 21 / 600, the caret in the primary
-  // (dark: accent); the surface of `box`, 22 round.
+  // Aura v71 (KayitAd `.glass.fl`): the phone's frosted field without its prefix: 72 high, 22
+  // inside, the type 21 / 600, the caret in the primary (dark: accent).
   big?: boolean;
   // Short fields centred in their box (the birth date's day, month and year).
   centered?: boolean;
@@ -72,14 +72,14 @@ export const Input = forwardRef<TextInput, Props>(function Input(
   const { colors, shape } = theme;
   const [focused, setFocused] = useState(false);
   const k = useKit();
-  const flat = !!(box || big) && !large && !prefix && !tall && !search;
+  const flat = !!box && !large && !prefix && !tall && !search;
   const radius = large
     ? tall
       ? KIT.size.fieldLgTallRadius
       : KIT.size.fieldLg / 2
-    : prefix
+    : prefix || big
       ? KIT.size.glassRadius
-      : tall || big
+      : tall
         ? shape.radius.lg
         : box
           ? shape.radius.md
@@ -88,8 +88,8 @@ export const Input = forwardRef<TextInput, Props>(function Input(
   const edge = focused || error ? 2 : flat ? 0 : KIT.size.edge;
   const dark = theme.scheme === 'dark';
   const raised = (!dark && k.c.segShadow) || undefined;
-  // The type of the raised fields: 21 / 600.
-  const fieldType = flat ? KIT_TYPE.title : null;
+  // The type of the raised fields and the big one: 21 / 600.
+  const fieldType = flat || big ? KIT_TYPE.title : null;
   // Focused, a hard ring (no blur, cheap) as boxShadow; otherwise the soft glass shadow natively
   // (NativeShadow.tsx).
   const shadowOff = useLabOff('golge');

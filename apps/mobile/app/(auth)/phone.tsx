@@ -50,7 +50,12 @@ export default function PhoneStep() {
       body={tr.auth.phoneHint}
       onBack={() => router.back()}
       friend={friend}
-      action={{ label: tr.auth.sendCode, onPress: () => void sendCode(), loading: sending }}
+      action={{
+        label: tr.auth.sendCode,
+        icon: 'forward',
+        onPress: () => void sendCode(),
+        loading: sending,
+      }}
     >
       <Input
         testID="phone-input"

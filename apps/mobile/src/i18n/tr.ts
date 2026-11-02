@@ -232,7 +232,6 @@ export const tr = {
     // K-26: the first screen's button opens "Başlamadan önce".
     start: 'Başla',
     adultsOnly: `${APP_NAME} 18 yaş ve üzeri içindir.`,
-    step: (n: number, total: number) => `${n}/${total}`,
     stepLabel: (n: number, total: number) => `Adım ${n}/${total}`,
     nameTitle: 'Adın',
     nameBody:
