@@ -69,7 +69,8 @@ describe('tokens', () => {
   it('has no hard shadows', () => {
     for (const scheme of ['light', 'dark'] as const) {
       for (const shadow of Object.values(THEME.shadows[scheme])) {
-        for (const layer of (shadow ?? '').split(/,(?![^(]*\))/)) {
+        if (shadow === null) continue;
+        for (const layer of shadow.split(/,(?![^(]*\))/)) {
           const [x, y, blur, spread] = layer
             .trim()
             .split(/\s+/)

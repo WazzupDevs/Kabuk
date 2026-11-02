@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Şablon: detay</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+<link rel="stylesheet" href="koyu.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 640px; height: 844px; display: flex; background: var(--surface2); font-family: var(--font)">
+<div class="phone "><div aria-hidden="true" style="position: absolute; inset: 0; overflow: hidden; pointer-events: none"><i style="position: absolute; width: 360px; height: 300px; left: -110px; top: -70px; border-radius: 50%; filter: blur(64px); background: var(--primary); opacity: .32"></i><i style="position: absolute; width: 300px; height: 280px; right: -120px; top: 30px; border-radius: 50%; filter: blur(64px); background: var(--buzz); opacity: .24"></i><i style="position: absolute; width: 280px; height: 210px; left: 80px; top: 220px; border-radius: 50%; filter: blur(64px); background: var(--signal); opacity: .22"></i></div><div style="position: relative; height: 100%; padding: 56px 20px 0; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px">
+<div style="display: flex; align-items: center; gap: 12px"><button type="button" class="round soft" aria-label="Geri"><svg class="ci md" viewBox="0 0 24 24" aria-hidden="true"><rect x="5.562" y="7" width="12.676" height="3.2" rx="1.6" transform="rotate(134.145 11.9 8.6)" class="a"></rect><rect x="5.562" y="13.8" width="12.676" height="3.2" rx="1.6" transform="rotate(45.855 11.9 15.4)" class="b"></rect></svg></button><span class="t-heading" style="flex: 1; text-align: center"></span><button type="button" class="round soft" aria-label="Daha fazla"><svg class="ci md" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5.2" cy="12" r="2.1" class="a"></circle><circle cx="12" cy="12" r="2.1" class="b"></circle><circle cx="18.8" cy="12" r="2.1" class="a"></circle></svg></button></div>
+<div style="display: flex; flex-direction: column; gap: 8px"><h1 class="t-title" style="margin: 0">Detay başlığı</h1><span class="t-body" style="color: var(--muted)">Kısa açıklama, en çok iki satır.</span><div style="display: flex; gap: 8px"><span class="tag calm">Sakin</span><span class="live"><i></i>12 kişi</span></div></div>
+<div class="glass" style="padding: 4px 0"><div class="li"><span class="av v1">E</span><span class="t-body-strong" style="flex: 1">Satır</span><svg class="ci sm" viewBox="0 0 24 24" aria-hidden="true"><rect x="5.762" y="7" width="12.676" height="3.2" rx="1.6" transform="rotate(45.855 12.1 8.6)" class="a"></rect><rect x="5.762" y="13.8" width="12.676" height="3.2" rx="1.6" transform="rotate(134.145 12.1 15.4)" class="b"></rect></svg></div><div class="li"><span class="av v2">M</span><span class="t-body-strong" style="flex: 1">Satır</span><svg class="ci sm" viewBox="0 0 24 24" aria-hidden="true"><rect x="5.762" y="7" width="12.676" height="3.2" rx="1.6" transform="rotate(45.855 12.1 8.6)" class="a"></rect><rect x="5.762" y="13.8" width="12.676" height="3.2" rx="1.6" transform="rotate(134.145 12.1 15.4)" class="b"></rect></svg></div><div class="li"><span class="av v3">D</span><span class="t-body-strong" style="flex: 1">Satır</span><svg class="ci sm" viewBox="0 0 24 24" aria-hidden="true"><rect x="5.762" y="7" width="12.676" height="3.2" rx="1.6" transform="rotate(45.855 12.1 8.6)" class="a"></rect><rect x="5.762" y="13.8" width="12.676" height="3.2" rx="1.6" transform="rotate(134.145 12.1 15.4)" class="b"></rect></svg></div></div>
+</div>
+<div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 20px 46px; background: linear-gradient(180deg, transparent, var(--canvas) 30%)"><button type="button" class="btn primary block">Ana eylem</button></div></div>
+<div style="flex: 1; box-sizing: border-box; padding: 24px 20px; display: flex; flex-direction: column; gap: 12px; color: var(--text)">
+<h2 class="t-heading" style="margin: 0">Detay</h2>
+<ul style="margin: 0; padding-left: 16px; display: flex; flex-direction: column; gap: 8px"><li class="t-fine" style="color: var(--muted)">Üst çubuk: 44 yuvarlak düğmeler, üstten 56</li><li class="t-fine" style="color: var(--muted)">Başlık title 21, altında 8 açıklama</li><li class="t-fine" style="color: var(--muted)">Sabit alt alan: 56 düğme, alttan 46</li><li class="t-fine" style="color: var(--muted)">Alt alanın üstü zemine solar; içerik altından kayar</li><li class="t-fine" style="color: var(--muted)">Tek ana eylem; ikincil eylem üst çubuktaki "daha fazla"da</li></ul>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":640,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

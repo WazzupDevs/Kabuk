@@ -58,7 +58,7 @@ export function Segmented<T extends string>({
     true,
     KIT.size.edge,
   );
-  const onShadow = shadowParts(shadowOff, k.segShadow || undefined, undefined, KIT.size.btnSm);
+  const onShadow = shadowParts(shadowOff, k.segShadow || undefined, undefined, KIT.size.segItem);
   return (
     <View
       accessibilityRole="tablist"
@@ -98,10 +98,10 @@ export function Segmented<T extends string>({
               alignItems: 'center',
               justifyContent: 'center',
               gap: SPACING[1],
-              minHeight: KIT.size.btnSm,
-              minWidth: iconOnly ? KIT.size.btnSm : undefined,
+              minHeight: KIT.size.segItem,
+              minWidth: iconOnly ? KIT.size.segItem : undefined,
               paddingHorizontal: iconOnly ? 0 : SPACING[3],
-              borderRadius: KIT.size.btnSm,
+              borderRadius: KIT.size.segItem,
               backgroundColor: on ? k.segOn : 'transparent',
               boxShadow: on ? onShadow.boxShadow : undefined,
             }}
@@ -111,11 +111,16 @@ export function Segmented<T extends string>({
               <AppIcon
                 name={o.icon}
                 size={iconOnly ? ICON.md : ICON.sm}
-                color={on ? colors.text : colors.muted}
+                color={on ? k.segOnInk : colors.muted}
               />
             ) : null}
             {iconOnly ? null : (
-              <Text variant="buttonSmall" tone={on ? 'text' : 'muted'} numberOfLines={1}>
+              <Text
+                variant="buttonSmall"
+                tone={on ? undefined : 'muted'}
+                color={on ? k.segOnInk : undefined}
+                numberOfLines={1}
+              >
                 {o.label}
               </Text>
             )}

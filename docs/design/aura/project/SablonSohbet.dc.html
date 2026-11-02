@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Şablon: sohbet</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+<link rel="stylesheet" href="koyu.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 640px; height: 844px; display: flex; background: var(--surface2); font-family: var(--font)">
+<div class="phone "><div style="position: absolute; inset: 0; background: var(--surface2)"></div>
+<div class="glass" style="position: absolute; left: 0; right: 0; top: 0; padding: 52px 16px 12px; border-radius: 0 0 var(--r-xl) var(--r-xl); display: flex; align-items: center; gap: 12px"><button type="button" class="round soft" aria-label="Geri"><svg class="ci md" viewBox="0 0 24 24" aria-hidden="true"><rect x="5.562" y="7" width="12.676" height="3.2" rx="1.6" transform="rotate(134.145 11.9 8.6)" class="a"></rect><rect x="5.562" y="13.8" width="12.676" height="3.2" rx="1.6" transform="rotate(45.855 11.9 15.4)" class="b"></rect></svg></button><span class="av sm v2">M</span><div style="flex: 1; display: flex; flex-direction: column"><span class="t-body-strong">Kişi adı</span><span class="t-caption" style="color: var(--muted); font-weight: 500">Mekanda</span></div><button type="button" class="round soft" aria-label="Daha fazla"><svg class="ci md" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5.2" cy="12" r="2.1" class="a"></circle><circle cx="12" cy="12" r="2.1" class="b"></circle><circle cx="18.8" cy="12" r="2.1" class="a"></circle></svg></button></div>
+<div style="position: absolute; left: 16px; right: 16px; top: 140px; bottom: 110px; display: flex; flex-direction: column; justify-content: flex-end; gap: 8px">
+<span class="tag soft" style="align-self: center">Bugün</span>
+<div class="msg them">Karşı balon</div><div class="msg them">İkinci satırda devam eden daha uzun bir karşı mesaj</div><div class="msg me">Kendi balonum</div>
+</div>
+<div style="position: absolute; left: 16px; right: 16px; bottom: 46px; display: flex; gap: 8px; align-items: center"><div class="field glass sm" style="flex: 1">Mesaj yaz</div><button type="button" class="round lg ink" aria-label="Gönder"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.8 4.3c-.5-.2-1 .3-.8.8L6 12l-3 6.9c-.2.5.3 1 .8.8l16.6-7.1c.5-.2.5-1 0-1.2Z" class="b"></path><rect x="5" y="10.7" width="9.4" height="2.6" rx="1.3" class="a"></rect></svg></button></div></div>
+<div style="flex: 1; box-sizing: border-box; padding: 24px 20px; display: flex; flex-direction: column; gap: 12px; color: var(--text)">
+<h2 class="t-heading" style="margin: 0">Sohbet</h2>
+<ul style="margin: 0; padding-left: 16px; display: flex; flex-direction: column; gap: 8px"><li class="t-fine" style="color: var(--muted)">Zemin: sohbet duvar kâğıdı (DM ve mekân ayrı)</li><li class="t-fine" style="color: var(--muted)">Başlık camı üstte, alt köşeler 28</li><li class="t-fine" style="color: var(--muted)">Balonlar arası 8, kenar 16</li><li class="t-fine" style="color: var(--muted)">Yazma alanı 56, alttan 46</li><li class="t-fine" style="color: var(--muted)">Klavye açıkken alan klavyenin 12 üstüne çıkar</li></ul>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":640,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

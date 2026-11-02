@@ -61,8 +61,9 @@ export const GLASS_FACE = {
     inset: 'inset 0px 1.5px 1px 0px rgba(255, 255, 255, 0.95)',
   },
   dark: {
-    gradient: 'linear-gradient(135deg, rgba(28, 24, 56, 0.62), rgba(28, 24, 56, 0.2))',
-    border: { width: 1, color: 'rgba(28, 24, 56, 0.78)' },
+    // `.dark.pA`: the flat glass #121614 and its 9 % white edge.
+    gradient: 'linear-gradient(135deg, rgba(18, 22, 20, 0.62), rgba(18, 22, 20, 0.2))',
+    border: { width: 1, color: 'rgba(255, 255, 255, 0.09)' },
     inset: 'inset 0px 1.5px 1px 0px rgba(255, 255, 255, 0.067)',
   },
 } as const;

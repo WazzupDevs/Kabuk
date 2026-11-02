@@ -11,4 +11,4 @@ export function switchColors(palette: Palette, on: boolean): SwitchColors {
   return { track: on ? palette.primary : palette.control, thumb: palette.onPrimary };
 }
 
-export const THUMB_SHADOW = '0px 1px 3px 0px rgba(20, 17, 43, 0.2)';
+export const THUMB_SHADOW = '0px 1px 3px 0px rgba(3, 27, 11, 0.2)';

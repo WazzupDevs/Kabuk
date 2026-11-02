@@ -11,24 +11,26 @@ export function mix(fg: string, bg: string, alpha: number): string {
   return `#${out.join('')}`.toUpperCase();
 }
 
-// Inside the featured card (Card `feature`: ink in the light scheme) the palette is a dark one:
-// its ground is `feature`, text `onFeature`, secondary text `featureMuted`, and the semantic
-// colours are the dark scheme's, which read on ink. Controls are white laid over the ground (the
-// design system's `on-feature` button and chip); quiet fills lift off the ink in the light scheme
-// and sink into the canvas in the dark one, whose card is lighter. Every component inside the card
-// draws from it unchanged; contrast.test.ts checks its pairs.
+// Inside the featured card (Card `feature`) the palette is the other scheme's: ink with the dark
+// semantics in the light scheme, the near-white inverted surface (Aura v65 `.dark.pA` → `--feature`)
+// with the light semantics in the dark one. Its ground is `feature`, text `onFeature`, secondary
+// text `featureMuted`. Controls and quiet fills are the card's ink laid over its ground. Every
+// component inside the card draws from it unchanged; contrast.test.ts checks its pairs.
 export function featurePalette(
   palettes: Record<ColorScheme, Palette>,
   scheme: ColorScheme,
 ): Palette {
   const own = palettes[scheme];
+  const other = palettes[scheme === 'light' ? 'dark' : 'light'];
   const ground = own.feature;
   return {
-    ...palettes.dark,
+    ...other,
     canvas: ground,
     surface: ground,
-    surface2: scheme === 'light' ? mix(own.onFeature, ground, 0.12) : mix(own.canvas, ground, 0.5),
-    raised: mix(own.onFeature, ground, 0.14),
+    // Quiet fills: the ink laid over the ink ground in the light scheme; the light scheme's own
+    // fills on the near-white ground in the dark one.
+    surface2: scheme === 'light' ? mix(own.onFeature, ground, 0.08) : other.surface2,
+    raised: scheme === 'light' ? mix(own.onFeature, ground, 0.14) : other.raised,
     text: own.onFeature,
     muted: own.featureMuted,
     border: own.featureMuted,
@@ -36,7 +38,7 @@ export function featurePalette(
     feature: ground,
     onFeature: own.onFeature,
     featureMuted: own.featureMuted,
-    overlap: palettes.dark.overlap,
+    overlap: other.overlap,
     focus: own.onFeature,
   };
 }

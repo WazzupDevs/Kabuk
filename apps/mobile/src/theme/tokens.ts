@@ -275,7 +275,7 @@ export const SPACING = {
 // On an event's cover (v44: .ewhen, .eplate) the time and the plate let the drawing show through.
 export const OPACITY = { scrim: 0.5, pressed: 0.7, onCover: 0.72, coverPlate: 0.95 } as const;
 
-// Icon sizes (Ionicons).
+// Icon sizes (the capsule family: sm 16, md 20, lg 24; xs and xl for the older places).
 export const ICON = { xs: 12, sm: 16, md: 20, lg: 24, xl: 28 } as const;
 
 // Minimum touch target (WCAG 2.5.8 is 24; the mockups and Android guidance use 44–48).

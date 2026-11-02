@@ -54,10 +54,14 @@ type Props = {
 // the tabs the floating tab bar covers the bottom: the content scrolls behind it and ends above it.
 // Its parts arrive one after another (the film's cascade), again each time its tab is opened.
 const TOP_FADE = SPACING[5];
-// The footer: 12 above the tab bar or the keyboard, its parts 8 apart, 24 of fade over it.
+// The footer (U9): 12 above the tab bar, the keyboard or the bottom safe area (46 from the foot on
+// a 34 safe area, 122 over the tab bar), its parts 8 apart; the content fades 32 above it.
 const FOOTER_LIFT = 12;
 const FOOTER_GAP = 8;
-const FOOTER_FADE = 24;
+const FOOTER_FADE = 32;
+// Under the tabs the last row ends 124 from the screen's foot on the canvas's 34 safe area
+// (ekran.css `.scroll-pad`): 90 over the safe area.
+const SCROLL_PAD = 90;
 
 export function Screen({
   children,
@@ -93,9 +97,7 @@ export function Screen({
     flexGrow: 1,
     paddingHorizontal: shape.screenPadding,
     paddingTop: top ? TOP_FADE : SPACING[3],
-    // Under the tabs the last row ends 26 above the bar (aura.css `.scroll-pad`; barSpace holds 16
-    // of it and the navigation area under the bar).
-    paddingBottom: footer ? SPACING[4] : barSpace ? barSpace + SPACING[2.5] : SPACING[8],
+    paddingBottom: footer ? SPACING[4] : barSpace ? insets.bottom + SCROLL_PAD : SPACING[8],
     gap,
   };
   return (

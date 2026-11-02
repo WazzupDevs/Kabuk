@@ -446,16 +446,6 @@ appId: app.kabuk.mobile
 - tapOn:
     id: preview-motion-cover-toggle
 - takeScreenshot: 04m-motion-cover-open
-- scrollUntilVisible:
-    element:
-      id: preview-motion-ring
-    centerElement: true
-    timeout: 30000
-- tapOn:
-    id: preview-motion-lobby
-- tapOn:
-    id: preview-motion-ring
-- takeScreenshot: 04m-motion-bell
 - back
 - extendedWaitUntil:
     visible:

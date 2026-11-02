@@ -7,14 +7,13 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import Svg, { Rect } from 'react-native-svg';
 
 import { tr } from '@/i18n/tr';
 import { haptic, noteTyping } from '@/lib/haptics';
 import { useReduceMotion } from '@/lib/useReduceMotion';
+import { CapIcon } from '@/aura/CapIcon';
 import { useKit } from '@/aura/kit';
 import { KIT } from '@/theme/auraKit';
-import { BRAND } from '@/theme/brand';
 import { gradientStyle } from '@/theme/gradient';
 import { GLASS_FACE, TAB_BAR_GLASS, TAB_GLASS, blursBehind } from '@/theme/glass';
 import { typeStyle, useTheme } from '@/theme/ThemeProvider';
@@ -354,34 +353,13 @@ function FlyingArrow({ flights, muted }: { flights: number; muted: boolean }) {
   );
 }
 
-// skall tuvali (skall.css → `.send .bi`): the arrow as two capsules in the brand's purple and pink;
+// Aura v65 `.send`: the capsule family's send icon in the ink button's own colour (on-feature);
 // muted while there is nothing to send.
 function SendGlyph({ muted }: { muted: boolean }) {
-  const { scheme } = useKit();
-  // On the ink's button: lavender and soft pink by day (Dm: send-capsule.svg), the brand's two by
-  // night.
-  const a = scheme === 'dark' ? BRAND.purple : KIT.sendA;
-  const b = scheme === 'dark' ? BRAND.pink : KIT.sendB;
+  const { c } = useKit();
   return (
-    <Svg width={ICON.lg} height={ICON.lg} viewBox="0 0 24 24" opacity={muted ? MUTED_SEND : 1}>
-      <Rect
-        x={5}
-        y={9.8}
-        width={14}
-        height={4.4}
-        rx={2.2}
-        fill={a}
-        transform="rotate(36 12 12) translate(-0.6 -3.6)"
-      />
-      <Rect
-        x={5}
-        y={9.8}
-        width={14}
-        height={4.4}
-        rx={2.2}
-        fill={b}
-        transform="rotate(-36 12 12) translate(-0.6 3.6)"
-      />
-    </Svg>
+    <View style={{ opacity: muted ? MUTED_SEND : 1 }}>
+      <CapIcon name="send" color={c.onChipOn} size={ICON.lg} />
+    </View>
   );
 }

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <path data-layer="ob" d="M6.6 10h7.4a6 6 0 0 1 6 6v2.4"/>
+  <rect data-layer="a" x="2.45" y="6.15" width="9.6" height="3.2" rx="1.6" transform="rotate(-45 7.25 7.75)"/>
+  <rect data-layer="a" x="2.45" y="10.65" width="9.6" height="3.2" rx="1.6" transform="rotate(45 7.25 12.25)"/>
+</svg>

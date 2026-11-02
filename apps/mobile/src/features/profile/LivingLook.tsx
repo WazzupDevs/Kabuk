@@ -11,7 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { LayeredLook, snapTo } from '@/components/LayeredLook';
-import { CanvasBar } from '@/components/CanvasIcon';
+import { AppIcon } from '@/components/AppIcon';
 import { useLoopActive } from '@/components/Loader';
 import { JUMP, sample } from '@/features/capsule/motion';
 import { haptic } from '@/lib/haptics';
@@ -173,7 +173,7 @@ export function LivePencil() {
   }));
   return (
     <Animated.View style={style}>
-      <CanvasBar name="edit" size={ICON.sm} />
+      <AppIcon name="edit" size={ICON.sm} />
     </Animated.View>
   );
 }

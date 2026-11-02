@@ -6,8 +6,8 @@ import { parseShadows, splitShadows } from './shadowCss';
 describe('parseShadows', () => {
   it('reads the glass shadow (two layers) as numbers', () => {
     expect(parseShadows(KIT.light.glassShadow)).toEqual([
-      { x: 0, y: 18, blur: 44, spread: 0, color: 'rgba(54, 36, 140, 0.10)' },
-      { x: 0, y: 2, blur: 6, spread: 0, color: 'rgba(54, 36, 140, 0.05)' },
+      { x: 0, y: 18, blur: 44, spread: 0, color: 'rgba(4, 73, 35, 0.10)' },
+      { x: 0, y: 2, blur: 6, spread: 0, color: 'rgba(4, 73, 35, 0.05)' },
     ]);
   });
 

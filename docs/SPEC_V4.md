@@ -260,11 +260,11 @@ Değişmez kabul edilir.
 - **Bileşenler** (`src/components/`):
   - düz düğmeler (gradyan ve 3B gölge yok), 56 px oyun düğmesi (ana düğme beyaz zemin üstünde oyun renginde yazı, yan düğme saydam beyaz);
   - kart, alt sayfa, çip, kapsül avatar (§4.D);
-  - çubuk ikon ailesi ve zil: çok renkli olduklarından `src/theme/barIcons.ts`'te tanımlı ve react-native-svg ile çizilir (`components/BarIcon.tsx`); `scripts/icon/glyphs.ts`'in tek renkli PNG'lerine girmez (4.2b);
+  - çubuk ikon ailesi ve zil (4.2b) Aura v65'te kalktı: uygulamanın tek ikon ailesi kapsül ikonlarıdır (`src/aura/CapIcon.tsx`, çizimler `docs/design/aura/ikonlar/`; `docs/decisions/aura-v65-temel.md`);
   - halka sayaç, süre çubuğu (son 5 sn turuncu), üstte beliren kısa bildirim, 3-2-1 geri sayım, konfeti;
   - sohbet duvar kağıdı: önceden çizilmiş tek görsel; mesajlar üstünden kayar (`ChatScroll` aynen), yazma alanı yüzer. `src/theme/chatWallpaper.ts`: alanı kaplayan tek SVG, bir kez çizilir (4.2b; ekranlara 4.3'te girer).
   - 4.2b'de: oyun parçaları `src/components/game/`'te (süreler `src/theme/gameMotion.ts`), kapsül avatar `src/theme/capsules.ts` ve `components/CapsuleAvatar.tsx`. Hareketler ve tasarım sisteminin yenilenmesi 4.2c'de.
-  - 4.2c'de: hareketler `src/theme/playMotion.ts`'te (eğriler, süreler, anahtar kareler; testli), bileşenleri `src/components/game/` (`TiltDeck`, `RoleCard`, `LetterWheel`, `Vinyl` ve `Equaliser`, `DialCover`) ve `components/BarIcon.tsx` (zil, ikon yayları); tasarım sistemi v45'e göre yenilendi.
+  - 4.2c'de: hareketler `src/theme/playMotion.ts`'te (eğriler, süreler, anahtar kareler; testli), bileşenleri `src/components/game/` (`TiltDeck`, `RoleCard`, `LetterWheel`, `Vinyl` ve `Equaliser`, `DialCover`) ; tasarım sistemi v45'e göre yenilendi (zil ve ikon yayları Aura v65'te çubuk ailesiyle kalktı).
 - **Hareket:**
   - korunanlar: Buluş, Kesişme, Tahterevalli, boş durum, Dönüş ve ikon yayları (ikon yayları çubuk ikonlarla birlikte 4.2c'de gelir; kareler JS'de, yalnızca hareket sürerken çizilir, uzun listelerde açılmaz);
   - yeniler: kart eğilmesi, rol kartının dönmesi, harf çarkı, plak ve ekolayzer, İbre örtüsünün açılması, zilin sallanması ve rozetin zıplaması;

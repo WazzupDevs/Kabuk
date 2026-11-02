@@ -10,11 +10,11 @@ import { useLabOff } from '@/lib/drawLab';
 import { shadowParts } from './NativeShadow';
 import { useSheetDrag } from './sheetDrag';
 
-// A bottom sheet's card (Sheet, RouteSheet): docs/design/aura `.sheet`, 36 round at its top. As
-// Telegram Android's sheets (the owner's call, 30 Ekim): the full width of the screen, down to its
-// foot, under the navigation bar; the content scrolls under its bottom edge rather than stopping
-// short of it in a floating card. Its content scrolls edge to edge inside the card, clipped by the
-// card's own corners, so nothing in it is cut square (the owner's report, 29 Ekim). What passes
+// A bottom sheet's card (Sheet, RouteSheet): Aura v65 `.sheet` (U8, SablonSheet), a glass card 8
+// from the screen's sides and foot, 28 round at every corner, its handle 40 × 4 12 from the top;
+// its content ends the bottom safe area and 4 above its foot (38 on a 34 safe area), so its buttons
+// sit 12 above the safe area as everywhere. Its content scrolls edge to edge inside the card,
+// clipped by the card's own corners, so nothing in it is cut square (the owner's report, 29 Ekim). What passes
 // under the handle and the bottom edge fades into the card. No scroll bar (29 Ekim). Pulled down it
 // follows the finger and closes (useSheetDrag); `above` (the buddies over its top edge) comes with
 // it. With a `footer` (Check-in, aura v37) the card is two parts: the content scrolls above, only
@@ -32,7 +32,7 @@ export function SheetCard({
 }: {
   // Unset: it cannot be pulled away (the join request).
   onClose?: () => void;
-  // The navigation bar's height: the content's end stays clear of it.
+  // The bottom safe area: the content's end stays clear of it.
   bottomInset: number;
   above?: ReactNode;
   // As tall as the sheet around it (Sheet → `top`), the content stretched to it.
@@ -50,10 +50,8 @@ export function SheetCard({
   // its shadow again on every frame of the slide.
   const shadowOff = useLabOff('golge');
   const shadow = shadowParts(shadowOff, k.c.glassShadow, undefined, KIT.size.sheetRadius);
-  const top = {
-    borderTopLeftRadius: KIT.size.sheetRadius,
-    borderTopRightRadius: KIT.size.sheetRadius,
-  };
+  const top = { borderRadius: KIT.size.sheetRadius };
+  const foot = Math.max(KIT.size.sheetPadBottom + bottomInset, KIT.size.sheetPadBottomMin);
   const size = fill ? { flex: 1 } : { flexShrink: 1 };
   // The scroll's height, its content's and the footer's: the fade shows only when content overflows.
   const [viewH, setViewH] = useState(0);
@@ -63,7 +61,14 @@ export function SheetCard({
   const overflows = measure && viewH > 0 && footerH > 0 && contentH > viewH + 1;
   return (
     <GestureDetector gesture={pan}>
-      <Animated.View style={[size, style]} collapsable={false}>
+      <Animated.View
+        style={[
+          size,
+          { marginHorizontal: KIT.size.sheetInset, marginBottom: KIT.size.sheetInset },
+          style,
+        ]}
+        collapsable={false}
+      >
         {above}
         <View style={{ ...size, ...top, boxShadow: shadow.boxShadow }}>
           {shadow.node}
@@ -74,7 +79,6 @@ export function SheetCard({
               ...size,
               ...top,
               borderWidth: KIT.size.edge,
-              borderBottomWidth: 0,
               borderColor: k.c.glassEdge,
               overflow: 'hidden',
             }}
@@ -95,9 +99,7 @@ export function SheetCard({
                   flexGrow: fill ? 1 : undefined,
                   paddingTop: head,
                   paddingHorizontal: KIT.size.sheetPadX,
-                  paddingBottom: footer
-                    ? KIT.size.sheetGap + KIT.size.tagGap
-                    : KIT.size.sheetPadBottom + bottomInset,
+                  paddingBottom: footer ? KIT.size.sheetGap + KIT.size.tagGap : foot,
                 }}
               >
                 {children}
@@ -109,7 +111,7 @@ export function SheetCard({
                 style={{
                   flexShrink: 0,
                   paddingHorizontal: KIT.size.sheetPadX,
-                  paddingBottom: KIT.size.sheetPadBottom + bottomInset,
+                  paddingBottom: foot,
                 }}
               >
                 {footer}
@@ -137,8 +139,8 @@ export function SheetCard({
                 }}
               />
             </View>
-            {/* Under the navigation bar the card is solid; above it what scrolls fades in (with a
-                footer it is cut square, the buttons below it). */}
+            {/* What scrolls fades into the card's foot (with a footer it is cut square, the buttons
+                below it). */}
             {overflows ? (
               <View
                 pointerEvents="none"
@@ -159,23 +161,12 @@ export function SheetCard({
                   position: 'absolute',
                   left: 0,
                   right: 0,
-                  bottom: bottomInset,
-                  height: KIT.size.sheetPadBottom,
+                  bottom: 0,
+                  height: foot,
                   ...gradientStyle(k.c.sheetFadeBottom),
                 }}
               />
             )}
-            <View
-              pointerEvents="none"
-              style={{
-                position: 'absolute',
-                left: 0,
-                right: 0,
-                bottom: 0,
-                height: bottomInset,
-                backgroundColor: k.c.sheetFoot,
-              }}
-            />
           </View>
         </View>
       </Animated.View>

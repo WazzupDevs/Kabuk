@@ -44,63 +44,61 @@ export const AURA = {
   frame: 390,
   blur: CLOUD_BLUR,
   light: {
-    ground: '#F7F5FD',
+    ground: '#EFF7F1',
     blobs: [
-      cloud('rgba(123, 92, 255, 0.40)', 360, 300, 'left', -110, 'top', -70, 30, 22, 11600),
-      cloud('rgba(255, 79, 139, 0.30)', 300, 280, 'right', -120, 'top', 30, -26, 30, 14400),
+      cloud('rgba(18, 152, 79, 0.34)', 360, 300, 'left', -110, 'top', -70, 30, 22, 11600),
+      cloud('rgba(255, 79, 139, 0.26)', 300, 280, 'right', -120, 'top', 30, -26, 30, 14400),
       cloud('rgba(255, 181, 71, 0.24)', 280, 210, 'left', 80, 'top', 220, 24, -18, 10400),
-      cloud('rgba(123, 92, 255, 0.20)', 420, 320, 'left', -60, 'bottom', -150, -30, 20, 17000),
-      cloud('rgba(255, 79, 139, 0.16)', 260, 260, 'right', -90, 'bottom', 120, 22, 26, 12900),
+      cloud('rgba(18, 152, 79, 0.18)', 420, 320, 'left', -60, 'bottom', -150, -30, 20, 17000),
+      cloud('rgba(255, 79, 139, 0.14)', 260, 260, 'right', -90, 'bottom', 120, 22, 26, 12900),
     ],
     glass: {
       fill: 'rgba(255, 255, 255, 0.70)',
       edge: 'rgba(255, 255, 255, 0.86)',
-      shadow: '0px 18px 44px rgba(54, 36, 140, 0.10), 0px 2px 6px rgba(54, 36, 140, 0.05)',
+      shadow: '0px 18px 44px rgba(4, 73, 35, 0.10), 0px 2px 6px rgba(4, 73, 35, 0.05)',
     },
+    // GaleriAltMenu: the bar is the glass (--glass-bg), the chosen disc #FFFFFF with
+    // --shadow-raised, the other icons --muted.
     tab: {
       fill: 'rgba(255, 255, 255, 0.66)',
       edge: 'rgba(255, 255, 255, 0.86)',
-      shadow: '0px 18px 44px rgba(54, 36, 140, 0.14), 0px 2px 6px rgba(54, 36, 140, 0.06)',
-      disc: 'rgba(255, 255, 255, 0.96)',
-      discShadow: '0px 6px 16px rgba(54, 36, 140, 0.13)',
-      off: '#5E5878',
+      shadow: '0px 18px 44px rgba(4, 73, 35, 0.10), 0px 2px 6px rgba(4, 73, 35, 0.05)',
+      disc: '#FFFFFF',
+      discShadow: '0px 2px 8px rgba(3, 27, 11, 0.08)',
+      off: '#4A6550',
     },
   },
+  // `.dark.pA`: a flat black ground with no clouds, flat glass #121614 with a 9 % white edge and no
+  // shadow; the chosen tab's disc 94 % white, no shadow.
   dark: {
-    ground: '#0D0B1E',
-    blobs: [
-      cloud('rgba(123, 92, 255, 0.55)', 360, 300, 'left', -110, 'top', -70, 30, 22, 11600),
-      cloud('rgba(255, 79, 139, 0.34)', 300, 280, 'right', -120, 'top', 30, -26, 30, 14400),
-      cloud('rgba(255, 181, 71, 0.16)', 280, 210, 'left', 80, 'top', 220, 24, -18, 10400),
-      cloud('rgba(90, 58, 230, 0.34)', 420, 320, 'left', -60, 'bottom', -150, -30, 20, 17000),
-      cloud('rgba(255, 79, 139, 0.16)', 260, 260, 'right', -90, 'bottom', 120, 22, 26, 12900),
-    ],
+    ground: '#000000',
+    blobs: [] as AuraBlob[],
     glass: {
-      fill: 'rgba(36, 30, 74, 0.66)',
-      edge: 'rgba(255, 255, 255, 0.14)',
-      shadow: '0px 18px 44px rgba(0, 0, 0, 0.35)',
+      fill: '#121614',
+      edge: 'rgba(255, 255, 255, 0.09)',
+      shadow: '',
     },
     tab: {
-      fill: 'rgba(36, 30, 74, 0.72)',
-      edge: 'rgba(255, 255, 255, 0.14)',
-      shadow: '0px 18px 44px rgba(0, 0, 0, 0.40)',
+      fill: '#121614',
+      edge: 'rgba(255, 255, 255, 0.09)',
+      shadow: '',
       disc: 'rgba(255, 255, 255, 0.94)',
-      discShadow: '0px 6px 16px rgba(0, 0, 0, 0.30)',
-      off: '#C9C3E6',
+      discShadow: '',
+      off: '#A3AEA8',
     },
   },
   // Cards: a frosted pane on the clouds.
   card: { radius: 28, radiusSm: 20, edgeWidth: 1 },
-  // The tab bar: a glass capsule 18 in from each side, five round tabs; the selected one sits on a
-  // white disc that slides to it. Icons are 26, the selected one 30 (aura.css `.tab .ti`).
+  // The tab bar (Aura v65 GaleriAltMenu → Ölçüler): a glass capsule 64 high, 20 in from each side,
+  // 8 inside, five 48 round tabs; the selected one sits on a disc that slides to it. Icons 24, the
+  // selected one too. 12 above the bottom safe area.
   tabBar: {
-    // A little lower than the canvas's 70 (the owner's call, 29 Ekim); the discs keep their size.
     height: 64,
-    inset: 18,
-    padding: 6,
-    tab: 52,
-    icon: 26,
-    iconOn: 30,
+    inset: 20,
+    padding: 8,
+    tab: 48,
+    icon: 24,
+    iconOn: 24,
     bottom: 12,
     // The disc squashes a little while it is stretched (at most 10 % at 60 px wider).
     squash: 0.1,
@@ -111,27 +109,26 @@ export const AURA = {
   },
   // The tab icons' colours when selected: the mark's (purple back, pink front, amber overlap).
   mark: { back: BRAND.purple, front: BRAND.pink, overlap: BRAND.orange, light: BRAND.white },
-  // A scene (aura.css `.scene`): a soft violet-to-pink ground with a white floor glow at the bottom,
-  // where the capsule buddies stand, each with a small shadow under its feet.
+  // A scene (Aura v65 ekran.css `.scene`): a soft green-to-pink ground with a white floor glow at
+  // the bottom, where the capsule buddies stand, each with a small shadow under its feet.
   scene: {
     light: {
-      top: '#F3EEFF',
+      top: '#E7F5EA',
       bottom: '#FCF1F7',
-      // aura.css `.scene`: three soft glows over the violet-to-pink ground.
       glows: [
-        { color: 'rgba(185, 166, 255, 0.55)', cx: '15%', cy: '0%', rx: '90%', ry: '80%' },
+        { color: 'rgba(30, 216, 115, 0.40)', cx: '15%', cy: '0%', rx: '90%', ry: '80%' },
         { color: 'rgba(255, 159, 192, 0.45)', cx: '95%', cy: '10%', rx: '80%', ry: '80%' },
         { color: 'rgba(255, 208, 138, 0.45)', cx: '50%', cy: '110%', rx: '70%', ry: '60%' },
       ],
       floor: 'rgba(255, 255, 255, 0.95)',
-      shadow: 'rgba(40, 25, 110, 0.24)',
+      shadow: 'rgba(4, 73, 35, 0.24)',
       edge: 'rgba(255, 255, 255, 0.70)',
     },
     dark: {
-      top: '#221A4C',
+      top: '#003416',
       bottom: '#2A1636',
       glows: [
-        { color: 'rgba(123, 92, 255, 0.45)', cx: '15%', cy: '0%', rx: '90%', ry: '80%' },
+        { color: 'rgba(18, 152, 79, 0.45)', cx: '15%', cy: '0%', rx: '90%', ry: '80%' },
         { color: 'rgba(255, 79, 139, 0.30)', cx: '95%', cy: '10%', rx: '80%', ry: '80%' },
         { color: 'rgba(255, 181, 71, 0.20)', cx: '50%', cy: '110%', rx: '70%', ry: '60%' },
       ],
@@ -261,7 +258,7 @@ export const AURA = {
     [24, 150, 40, '#FFB547'],
   ],
   // Game cards arrive frosted, then resolve (docs/design/aura/project/hareket.json → frostedFirst).
-  frost: { fill: 'rgba(255, 255, 255, 0.86)', fillDark: 'rgba(36, 30, 74, 0.86)' },
+  frost: { fill: 'rgba(255, 255, 255, 0.86)', fillDark: 'rgba(18, 22, 20, 0.86)' },
   // The table's scene (docs/design/aura → Masa): the table in the middle, the people around it.
   // Seats as fractions of the scene (x of its width, y of its height), the first ones nearest the
   // table's sides; anonymous people stand as capsule buddies, profiled ones sit as photos.
@@ -284,8 +281,9 @@ export const AURA = {
     // Drawn at most this many; the rest as "+n".
     max: 8,
   },
-  // The headcount as capsules (aura.css `.pips`), colours in turn; at most `max` drawn.
-  pips: { colors: ['#9C86FF', '#FF7EA8', '#FFB547'], w: 6, h: 12, gap: 3, max: 12 },
+  // The headcount as capsules (ekran.css `.pips`: --accent, --buzz, --signal in turn, 4 apart); at
+  // most `max` drawn.
+  pips: { colors: ['#0B783D', '#FF4F8B', '#FFB547'], w: 6, h: 12, gap: 4, max: 12 },
   // An SVG mask: white shows, black hides (the outlined icons' gap).
   mask: { show: '#FFFFFF', hide: '#000000' },
 } as const;
