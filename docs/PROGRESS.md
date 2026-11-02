@@ -1,5 +1,11 @@
 # İlerleme
 
+## Devir notu (2 Kasım 2026, U20–U28 birleşti, OTA düzeldi)
+
+- #351–#356: U20 Mekan masalı, U22–U24 Masa/Davet/Masadakiler, U25 Masa sohbeti (duvar uzun riso kart), U26 Mekan sohbeti boş kartı, U27 Mesajlar, U28 DM başlığı ve okundu tiki. Rapor 12.2 kapandı: boş alanda gönder pasif (bütün sohbetler). Native yok, OTA.
+- deploy-dev 31 Ekim'den beri OTA'yı bekletiyordu (#338 mobil `package.json`'dan yalnızca JS paket çıkardı); 2 Kasım'da `force_ota` ile elle koşuldu, artık yeşil. Bir daha kırmızı biterse loguna bakılır.
+- Sıradaki: U29 DmArkadaslik, U30 Bildirimler, U31–U35 profil, U36 hâller; sonra §13 (kayıt, Masa bitti) ve §14 (açılış, karar 12.11 tek soru). Ayrı iş: U8 sheet arkası bulanıklığı. Panolar canlı tuvalden (`Artifact read`).
+
 ## Devir notu (2 Kasım 2026, riso görseller repoda, U19/U21 ve masa kimliği birleşti)
 
 - #347: rapor §9.1 riso görselleri, 55 masa kartı ve açılış doku seti repoda (`assets/riso`, `assets/table-cards`, `assets/launch`; `docs/decisions/aura-v65-riso.md`). Zip artık istenmez. #348: U19 Mekan, U21 Seçenekler. #349: K-82, masanın kimliği 55 riso kart (12.6 kapandı; `docs/decisions/masa-kimligi-riso.md`), yayın tohum + OTA.
