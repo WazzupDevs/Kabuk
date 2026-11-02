@@ -3,23 +3,21 @@ import { gameTag, type TableState } from '@shared/tableCard.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Image, type ImageSourcePropType, Pressable, StyleSheet, View } from 'react-native';
 
-import { Btn, Disk, Live, T, Tag, useKit } from '@/aura/kit';
+import { Btn, Glass, Live, T, Tag, useKit } from '@/aura/kit';
 import { Pips } from '@/aura/Pips';
-import { SceneGround } from '@/aura/Scene';
 import { useRoomMemberProfiles } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { roomsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
-import { AURA } from '@/theme/aura';
-import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { KIT } from '@/theme/auraKit';
 
 import { InviteSheet } from './InviteSheet';
 import { roomKeys, type TableRoomRow, useTablePeople } from './queries';
 import { PersonFace } from './RoomPeople';
-import { TABLE_ICON_IMAGES } from './tableIconImages';
+import { TABLE_CARD_WIDE } from './tableIconImages';
 import { useLabOff } from '@/lib/drawLab';
 import { boxShadowParts, shadowParts } from '@/components/NativeShadow';
 
@@ -37,14 +35,17 @@ type Props = {
   onOpenLobby: () => void;
 };
 
-// The person's scene at the top of Mekan (docs/design/aura → Mekan: `.scene` 210 high). Without a
-// table: "Henüz masan yok", its line and "Masa kur" (44 high) at the left, the capsule buddies
-// standing at the right. With one: "Masan", its name, people and lobby state at the left, its picture on a
-// white-ringed disk at the right, the people's faces; the head opens the table. The owner gets
-// "Lobiye aç" or "Lobiden çek" and "Davet et" (docs/SPEC_V4.md §4.E).
+// The person's table at the top of Mekan. Without one: the riso "Henüz masan yok" scene (U19).
+// With one (U20, MekanMasali): its wide riso card on glass, "Masan" and its name on dark glass at the
+// picture's bottom left, the people's faces at its bottom right; the picture opens the table. Under
+// it the headcount and the lobby state; the owner gets "Lobiye aç" or "Lobiden çek" and "Davet et",
+// side by side (docs/SPEC_V4.md §4.E).
 export function TableCard({ checkIn, room, state, onCreate, onOpenLobby }: Props) {
   const queryClient = useQueryClient();
+  const { c } = useKit();
   const [invite, setInvite] = useState(false);
+  // The picture's width: the name glass lays the blurred picture under itself at the same size.
+  const [width, setWidth] = useState(0);
 
   const settle = () => {
     void queryClient.invalidateQueries({ queryKey: roomKeys.current });
@@ -64,10 +65,10 @@ export function TableCard({ checkIn, room, state, onCreate, onOpenLobby }: Props
   const tag = gameTag(room.game_tag);
   const owner = state === 'private' || state === 'open';
   const live = state === 'open';
-  const picture = room.icon ? TABLE_ICON_IMAGES[room.icon] : undefined;
+  const picture = room.icon ? TABLE_CARD_WIDE[room.icon] : undefined;
+  const k = KIT.tableCard;
   return (
-    <View testID="table-card" style={[SCENE, { gap: ROW_GAP }]}>
-      <SceneGround />
+    <Glass testID="table-card" radius={k.radius} style={{ padding: k.pad }}>
       <Pressable
         testID="go-to-table"
         accessibilityRole="button"
@@ -80,91 +81,114 @@ export function TableCard({ checkIn, room, state, onCreate, onOpenLobby }: Props
       >
         {({ pressed }) => (
           <View
+            onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
             style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: ROW_GAP,
+              height: k.height,
+              borderRadius: k.imageRadius,
+              overflow: 'hidden',
+              backgroundColor: c.placeholder,
               opacity: pressed ? PRESSED : 1,
             }}
           >
-            <View style={{ flex: 1, gap: WORDS_GAP }}>
-              <T v="eyebrow">{tr.rooms.roomEyebrow(null)}</T>
-              <T v="title" style={HERO_TITLE} testID="table-name">
-                {room.name ?? ''}
-              </T>
-              <View
-                testID="table-state"
-                style={{
-                  flexDirection: 'row',
-                  flexWrap: 'wrap',
-                  alignItems: 'center',
-                  gap: KIT.size.chipsGap,
-                }}
-              >
-                <Pips count={room.phones} />
-                <T v="fine">{tr.venue.people(room.phones)}</T>
-                {live ? <Live label={tr.venue.lobbyOpen} /> : <T v="fine">{tr.venue.lobbyOff}</T>}
-              </View>
+            {picture ? (
+              <Image
+                source={picture}
+                fadeDuration={0}
+                accessible={false}
+                resizeMode="cover"
+                style={StyleSheet.absoluteFill}
+              />
+            ) : null}
+            <View
+              style={{
+                position: 'absolute',
+                left: k.inset,
+                right: k.inset,
+                bottom: k.inset,
+                flexDirection: 'row',
+                alignItems: 'flex-end',
+                gap: k.inset,
+              }}
+            >
+              <NameGlass picture={picture} width={width} name={room.name ?? ''} />
+              <PeopleFaces roomId={room.id} phones={room.phones} me={checkIn.id} />
             </View>
-            <Disk size={DISK}>
-              {picture ? (
-                <Image source={picture} fadeDuration={0} style={{ width: DISK, height: DISK }} />
-              ) : (
-                <View style={{ width: DISK, height: DISK, backgroundColor: KIT.white }} />
-              )}
-            </Disk>
           </View>
         )}
       </Pressable>
 
-      <PeopleFaces roomId={room.id} phones={room.phones} me={checkIn.id} />
-
-      {live && (intent || tag) ? (
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: KIT.size.chipGap }}>
-          {intent ? (
-            <Tag tone={intent === 'game' ? 'purple' : 'pink'} label={tr.intents[intent]} />
-          ) : null}
-          {tag ? <Tag label={tr.concepts[tag]} /> : null}
+      <View
+        style={{
+          paddingTop: k.body.top,
+          paddingHorizontal: k.body.x,
+          paddingBottom: k.body.bottom,
+          gap: k.body.gap,
+        }}
+      >
+        <View
+          testID="table-state"
+          style={{
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: KIT.size.chipsGap,
+          }}
+        >
+          <Pips count={room.phones} />
+          <T v="fine">{tr.venue.people(room.phones)}</T>
+          {live ? <Live label={tr.venue.lobbyOpen} /> : <Tag label={tr.venue.lobbyOff} />}
         </View>
-      ) : null}
 
-      {owner ? (
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: KIT.size.chipsGap }}>
-          {state === 'private' ? (
-            <Btn
-              sm
-              icon="list"
-              testID="lobby-open"
-              label={tr.venue.openLobby}
-              onPress={onOpenLobby}
-            />
-          ) : (
+        {live && (intent || tag) ? (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: KIT.size.chipGap }}>
+            {intent ? (
+              <Tag tone={intent === 'game' ? 'purple' : 'pink'} label={tr.intents[intent]} />
+            ) : null}
+            {tag ? <Tag label={tr.concepts[tag]} /> : null}
+          </View>
+        ) : null}
+
+        {owner ? (
+          <View style={{ flexDirection: 'row', gap: KIT.size.chipsGap }}>
+            {state === 'private' ? (
+              <Btn
+                sm
+                icon="list"
+                testID="lobby-open"
+                label={tr.venue.openLobby}
+                onPress={onOpenLobby}
+                style={EQUAL}
+              />
+            ) : (
+              <Btn
+                sm
+                variant="glassy"
+                icon="close"
+                testID="withdraw-table"
+                label={tr.venue.withdraw}
+                onPress={() => withdraw.mutate()}
+                loading={withdraw.isPending}
+                style={EQUAL}
+              />
+            )}
             <Btn
               sm
               variant="glassy"
-              icon="close"
-              testID="withdraw-table"
-              label={tr.venue.withdraw}
-              onPress={() => withdraw.mutate()}
-              loading={withdraw.isPending}
+              icon="invite"
+              testID="invite-open"
+              label={tr.venue.invite}
+              onPress={() => setInvite(true)}
+              style={EQUAL}
             />
-          )}
-          <Btn
-            sm
-            variant="glassy"
-            icon="invite"
-            testID="invite-open"
-            label={tr.venue.invite}
-            onPress={() => setInvite(true)}
-          />
-        </View>
-      ) : null}
+          </View>
+        ) : null}
 
-      {withdraw.error ? (
-        <T v="fine" color={KIT.danger}>
-          {errorMessage(withdraw.error)}
-        </T>
-      ) : null}
+        {withdraw.error ? (
+          <T v="fine" color={KIT.danger}>
+            {errorMessage(withdraw.error)}
+          </T>
+        ) : null}
+      </View>
 
       {owner ? (
         <InviteSheet
@@ -174,25 +198,68 @@ export function TableCard({ checkIn, room, state, onCreate, onOpenLobby }: Props
           phones={room.phones}
         />
       ) : null}
-    </View>
+    </Glass>
   );
 }
 
-// The canvas's scene: 210 high, rounded 26, the words 20 in from the top left and 180 wide. The
-// buddies keep their size (drawn on 196) at the scene's right foot.
-const SCENE = {
-  minHeight: KIT.size.hero,
-  borderRadius: AURA.scene.radius,
-  overflow: 'hidden' as const,
-  padding: KIT.size.heroPad,
-};
-const WORDS_GAP = 6;
-const ROW_GAP = 12;
-const HERO_TITLE = KIT_TYPE.hero;
-const DISK = 88;
 const PRESSED = 0.8;
+// Lobiye aç (or Lobiden çek) and Davet et share the row equally (MekanMasali `.grow`).
+const EQUAL = { flex: 1 };
 // The faces overlap a little, each on a white ring.
 const FACE_OVERLAP = 8;
+
+// "Masan" and the table's name on dark glass at the card's bottom left (MekanMasali `.mname`). The
+// glass's blur is the card's own picture blurred once and laid under the tint at the same place
+// (the card's bottom edge 12 below the glass's): no live backdrop inside a card.
+function NameGlass({
+  picture,
+  width,
+  name,
+}: {
+  picture: ImageSourcePropType | undefined;
+  width: number;
+  name: string;
+}) {
+  const n = KIT.tableCard.name;
+  const inset = KIT.tableCard.inset;
+  return (
+    <View
+      testID="table-name-glass"
+      style={{ flexShrink: 1, borderRadius: n.radius, overflow: 'hidden' }}
+    >
+      {picture && width > 0 ? (
+        <Image
+          source={picture}
+          blurRadius={n.blur}
+          fadeDuration={0}
+          accessible={false}
+          resizeMode="cover"
+          style={{
+            position: 'absolute',
+            left: -inset,
+            bottom: -inset,
+            width,
+            height: KIT.tableCard.height,
+          }}
+        />
+      ) : null}
+      <View
+        style={{
+          paddingHorizontal: n.padX,
+          paddingVertical: n.padY,
+          backgroundColor: n.fill,
+        }}
+      >
+        <T v="eyebrow" color={n.eyebrow}>
+          {tr.rooms.roomEyebrow(null)}
+        </T>
+        <T v="title" color={KIT.white} testID="table-name">
+          {name}
+        </T>
+      </View>
+    </View>
+  );
+}
 
 // The people at the table, in the order they sat: a profiled person's photo, an anonymous one's
 // capsule. The people's faces go to everyone at the table while it runs (rule 4); the list is read
@@ -212,7 +279,7 @@ function PeopleFaces({ roomId, phones, me }: { roomId: string; phones: number; m
   const shadowOff = useLabOff('golge');
   const sorted = [...(people.data ?? [])].sort((a, b) => a.joinedAt.localeCompare(b.joinedAt));
   if (sorted.length === 0) return null;
-  // All of them in the card's width, whatever their number (the owner's report, 29 Ekim: twelve
+  // All of them beside the name glass, whatever their number (the owner's report, 29 Ekim: twelve
   // ran off the card): they overlap more when they must.
   const side = KIT.size.av.sm + 2 * KIT.size.avRing;
   // Each face's soft shadow natively (NativeShadow.tsx): the lobby scrolls.
@@ -229,7 +296,7 @@ function PeopleFaces({ roomId, phones, me }: { roomId: string; phones: number; m
     width > 0 && n > 1 ? Math.max(FACE_OVERLAP, (n * side - width) / (n - 1)) : FACE_OVERLAP;
   return (
     <View
-      style={{ flexDirection: 'row' }}
+      style={{ flex: 1, minWidth: side, flexDirection: 'row', justifyContent: 'flex-end' }}
       accessible={false}
       importantForAccessibility="no-hide-descendants"
       onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
