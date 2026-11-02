@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (2 Kasım 2026, Aura v65 aktarımı: Temel birleşti)
+
+- #338 birleşti: aktarım raporunun 1–3. aşamaları (U1–U6, U8–U10): v65 tokenları, `.dark.pA` koyu tema, ölçüler, sheet, sabit alt alan, pasif düğme, tek kapsül ikon ailesi (`docs/design/aura/ikonlar` → `scripts/sistem/capIcons.ts`; Ionicons, çizgi ve çubuk aileleri kalktı). Gerekçe ve türetilen değerler: `docs/decisions/aura-v65-temel.md`. Yayın OTA.
+- Kalan: sheet perdesinin 8 bulanıklığı (Modal ayrı pencere, yerel camla örneklenemiyor). Ekran düzeyinde mor kalanlar: `mapStyle.ts` (U14), `nameInk.ts`, `avatar.ts`, `venueScene.ts`, `introScene.ts`, `eventCovers.ts`; ilgili ekran aşamasında.
+- Sıradaki: aktarım sırasıyla 4. aşama alt menü (U7, GaleriAltMenu; TabGlyph → compass/calendar/chat/user), sonra ekranlar U13–U36. Yordam `.claude/skills/tuval-aktarim`; v65 CSS'i ve Temel panoları `docs/design/aura/project/` altında, diğer panolar tuvalden (`Artifact read`, v65) okunur.
+- Proje sahibinden beklenen: 55 masa kartı ve `masa-adlari.md`, wordmark yolu (zip'te yok), riso açılış doku seti; türetilen koyu `calm` (#091F12) ve `featureMuted` (#4A6550) için onay.
+
 ## Devir notu (1 Kasım 2026, 4.8b birleşti)
 
 - 4.8b iki PR'la bitti: #333 (mekan sohbetinin `profiled` alanı kalktı, `identity` zorunlu) ve #334 (`20261119090000_v4_cleanup.sql`; proje sahibi onayladı, `guvenlik`: bulgu yok). Kural 10'dan `game_proposals` çıktı. Native yok; yayın deploy-dev + OTA; üretimde önce #333'ün fonksiyonu, sonra migration.
