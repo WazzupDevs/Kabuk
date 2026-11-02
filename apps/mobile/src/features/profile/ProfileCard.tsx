@@ -9,7 +9,7 @@ import { Mark } from '@/components/Mark';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { usePhoto } from '@/lib/usePhoto';
-import { Glass, Round, T } from '@/aura/kit';
+import { Av, Round, T } from '@/aura/kit';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/tokens';
@@ -42,13 +42,79 @@ function nameLine(profile: Profile): string {
 // actions.
 // The top of another person's profile and of a venue chat profile (aura v50, ProfilBaskasi): a
 // round 48 back on the left, "Seçenekler" on the right once the profile is shown.
+// U31: the bar 56, its buttons 44 round soft, "Seçenekler" moreV.
 export function ProfileTopBar({ onBack, onMore }: { onBack: () => void; onMore?: () => void }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-      <Round big icon="back" label={tr.common.back} onPress={onBack} testID="profile-back" />
+    <View
+      style={{
+        height: KIT.size.btnRow,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+      }}
+    >
+      <Round glassy icon="back" label={tr.common.back} onPress={onBack} testID="profile-back" />
       {onMore ? (
-        <Round big icon="more" label={tr.profile.more} onPress={onMore} testID="profile-more" />
+        <Round glassy icon="moreV" label={tr.profile.more} onPress={onMore} testID="profile-more" />
       ) : null}
+    </View>
+  );
+}
+
+// U31 (ProfilBaskasi `.kk`): a riso buddy looking out from behind the face's right, 64 wide (a
+// 160x200 picture), 92 from the face's left and 18 down, turned 14 degrees.
+const PEEK_BUDDY = {
+  source: require('../../../assets/riso/peek-1.webp'),
+  left: 92,
+  top: 18,
+  width: 64,
+  height: 80,
+  turn: '14deg',
+} as const;
+
+// Another person's profile (U31, ProfilBaskasi): no card; the face 120 at the left, 24 under the
+// bar, a riso buddy behind it; the name display 20 under the face, the bio 4 under the name, the
+// actions 24 under them.
+function OtherHead({ profile, children }: { profile: Profile; children?: ReactNode }) {
+  const [preview, setPreview] = useState(false);
+  const side = KIT.size.av.hero;
+  return (
+    <View>
+      <View style={{ marginTop: SPACING[6], width: side, height: side }}>
+        <Image
+          source={PEEK_BUDDY.source}
+          style={{
+            position: 'absolute',
+            left: PEEK_BUDDY.left,
+            top: PEEK_BUDDY.top,
+            width: PEEK_BUDDY.width,
+            height: PEEK_BUDDY.height,
+            transform: [{ rotate: PEEK_BUDDY.turn }],
+          }}
+          accessibilityIgnoresInvertColors
+        />
+        {/* The photo opens large (the owner's call, 28 Ekim). */}
+        <Pressable
+          testID="profile-photo-open"
+          accessibilityRole="button"
+          accessibilityLabel={tr.profile.photoOpen}
+          disabled={!profile.photoUrl}
+          onPress={() => setPreview(true)}
+        >
+          <Av size="hero" name={profile.displayName ?? ''} photoUrl={profile.photoUrl} />
+        </Pressable>
+        <PhotoPreview url={profile.photoUrl} visible={preview} onClose={() => setPreview(false)} />
+      </View>
+      <T v="display" accessibilityRole="header" style={{ marginTop: SPACING[5] }}>
+        {profile.displayName ?? tr.profile.noName}
+        {profile.displayName && profile.age !== null ? tr.profile.ageAfterName(profile.age) : ''}
+      </T>
+      {profile.bio ? (
+        <T v="body" style={{ marginTop: SPACING[1] }}>
+          {profile.bio}
+        </T>
+      ) : null}
+      {children ? <View style={{ marginTop: SPACING[6] }}>{children}</View> : null}
     </View>
   );
 }
@@ -68,6 +134,32 @@ export function ProfileHead({
   onEditCapsule?: () => void;
   children?: ReactNode;
 }) {
+  if (!capsule) return <OtherHead profile={profile}>{children}</OtherHead>;
+  return (
+    <OwnHead
+      profile={profile}
+      capsule={capsule}
+      anonymous={anonymous}
+      onEditCapsule={onEditCapsule}
+    >
+      {children}
+    </OwnHead>
+  );
+}
+
+function OwnHead({
+  profile,
+  capsule,
+  anonymous,
+  onEditCapsule,
+  children,
+}: {
+  profile: Profile;
+  capsule: string;
+  anonymous?: boolean;
+  onEditCapsule?: () => void;
+  children?: ReactNode;
+}) {
   const { colors, shape } = useTheme();
   // The capsule's edit badge's soft shadow natively (NativeShadow.tsx).
   const badgeShadow = boxShadowParts(
@@ -77,7 +169,6 @@ export function ProfileHead({
     true,
     SPACING[0.5] + SPACING[0.5] / 2,
   );
-  const [preview, setPreview] = useState(false);
   const ring = (on: boolean) => ({
     padding: SPACING[0.5],
     borderRadius: shape.radius.pill,
@@ -86,86 +177,58 @@ export function ProfileHead({
   });
   return (
     <View className="items-center gap-2">
-      {capsule ? (
-        <View className="flex-row justify-center" style={{ gap: SPACING[4] }}>
-          <View className="items-center gap-2">
-            <View style={ring(!anonymous)}>
-              <ProfilePhoto url={profile.photoUrl} name={profile.displayName} size="hero" />
-            </View>
-            <View className="items-center">
-              <Text variant="label">{tr.profile.ownPhoto}</Text>
-              <Text variant="fine" tone={anonymous ? 'muted' : 'accent'}>
-                {anonymous ? tr.profile.whenProfiled : tr.profile.ownPhotoNote}
-              </Text>
-            </View>
+      <View className="flex-row justify-center" style={{ gap: SPACING[4] }}>
+        <View className="items-center gap-2">
+          <View style={ring(!anonymous)}>
+            <ProfilePhoto url={profile.photoUrl} name={profile.displayName} size="hero" />
           </View>
-          <View className="items-center gap-2">
-            <View style={ring(!!anonymous)}>
-              <LivingLook
-                look={capsule}
-                size={PROFILE_PHOTO_SIZES.hero}
-                accessibilityLabel={tr.profile.ownCapsule}
-              />
-              {onEditCapsule ? (
-                <Pressable
-                  testID="capsule-edit"
-                  accessibilityRole="button"
-                  accessibilityLabel={tr.capsule.edit}
-                  onPress={onEditCapsule}
-                  hitSlop={SPACING[1.5]}
-                  className="absolute items-center justify-center"
-                  style={{
-                    right: 0,
-                    bottom: 0,
-                    width: SPACING[9],
-                    height: SPACING[9],
-                    borderRadius: shape.radius.pill,
-                    backgroundColor: colors.surface,
-                    borderWidth: SPACING[0.5] + SPACING[0.5] / 2,
-                    borderColor: colors.canvas,
-                    boxShadow: badgeShadow.boxShadow,
-                  }}
-                >
-                  {badgeShadow.node}
-                  <LivePencil />
-                </Pressable>
-              ) : null}
-            </View>
-            <View className="items-center">
-              <Text variant="label">{tr.profile.ownCapsule}</Text>
-              <Text variant="fine" tone={anonymous ? 'accent' : 'muted'}>
-                {anonymous ? tr.profile.ownPhotoNote : tr.profile.ownCapsuleNote}
-              </Text>
-            </View>
+          <View className="items-center">
+            <Text variant="label">{tr.profile.ownPhoto}</Text>
+            <Text variant="fine" tone={anonymous ? 'muted' : 'accent'}>
+              {anonymous ? tr.profile.whenProfiled : tr.profile.ownPhotoNote}
+            </Text>
           </View>
         </View>
-      ) : (
-        // docs/design/aura → Profil: the face on its glass card, the name and age under it.
-        <Glass
-          style={{
-            alignSelf: 'stretch',
-            height: KIT.size.faceCard,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          {/* The photo opens large (the owner's call, 28 Ekim). */}
-          <Pressable
-            testID="profile-photo-open"
-            accessibilityRole="button"
-            accessibilityLabel={tr.profile.photoOpen}
-            disabled={!profile.photoUrl}
-            onPress={() => setPreview(true)}
-          >
-            <ProfilePhoto url={profile.photoUrl} name={profile.displayName} size="hero" />
-          </Pressable>
-          <PhotoPreview
-            url={profile.photoUrl}
-            visible={preview}
-            onClose={() => setPreview(false)}
-          />
-        </Glass>
-      )}
+        <View className="items-center gap-2">
+          <View style={ring(!!anonymous)}>
+            <LivingLook
+              look={capsule}
+              size={PROFILE_PHOTO_SIZES.hero}
+              accessibilityLabel={tr.profile.ownCapsule}
+            />
+            {onEditCapsule ? (
+              <Pressable
+                testID="capsule-edit"
+                accessibilityRole="button"
+                accessibilityLabel={tr.capsule.edit}
+                onPress={onEditCapsule}
+                hitSlop={SPACING[1.5]}
+                className="absolute items-center justify-center"
+                style={{
+                  right: 0,
+                  bottom: 0,
+                  width: SPACING[9],
+                  height: SPACING[9],
+                  borderRadius: shape.radius.pill,
+                  backgroundColor: colors.surface,
+                  borderWidth: SPACING[0.5] + SPACING[0.5] / 2,
+                  borderColor: colors.canvas,
+                  boxShadow: badgeShadow.boxShadow,
+                }}
+              >
+                {badgeShadow.node}
+                <LivePencil />
+              </Pressable>
+            ) : null}
+          </View>
+          <View className="items-center">
+            <Text variant="label">{tr.profile.ownCapsule}</Text>
+            <Text variant="fine" tone={anonymous ? 'accent' : 'muted'}>
+              {anonymous ? tr.profile.ownPhotoNote : tr.profile.ownCapsuleNote}
+            </Text>
+          </View>
+        </View>
+      </View>
       <View
         style={{
           alignSelf: 'stretch',
