@@ -250,12 +250,13 @@ export const AURA = {
     minHeight: 168,
     buddy: 126,
   },
-  // Masa bitti's confetti: capsules in the mark's colours, in the board's 390 frame (x, y, turn).
+  // Masa bitti's confetti (U41): 8 x 18 pieces in the accent, pink and amber, in the board's 390
+  // frame (x, y, turn); 'accent' is the scheme's.
   confetti: [
-    [40, 74, -24, '#7B5CFF'],
+    [40, 74, -24, 'accent'],
     [92, 46, 30, '#FF4F8B'],
     [300, 58, -38, '#FFB547'],
-    [338, 112, 18, '#7B5CFF'],
+    [338, 112, 18, 'accent'],
     [196, 34, -8, '#FF4F8B'],
     [24, 150, 40, '#FFB547'],
   ],

@@ -22,6 +22,10 @@ const FRAME_LOOPS: Record<string, string> = {
   'src/features/launch/LaunchCurtain.tsx': 'launch only',
   // Çizim ölçümü's frame counter: only while the lab is open, in test builds.
   'src/features/design/DrawLabPanel.tsx': 'draw lab only',
+  // The first screen's seven riso buddies (Aura v65 §13.1: Reanimated on the UI thread, one 6 s
+  // clock); only while the screen is on top and the app in front (useLoopActive), still with
+  // reduce motion.
+  'src/aura/RisoKanki.tsx': 'first screen only, §13.1',
 };
 
 function files(dir: string): string[] {

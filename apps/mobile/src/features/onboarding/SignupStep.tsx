@@ -2,7 +2,14 @@ import { type ReactNode } from 'react';
 import { Text, View } from 'react-native';
 
 import { Btn, Round, T, useKit } from '@/aura/kit';
-import { Peek, type PeekKind, SayScene } from '@/aura/Peek';
+import {
+  Peek,
+  type PeekKind,
+  RisoFieldPeek,
+  type RisoSayKind,
+  RisoSayScene,
+  SayScene,
+} from '@/aura/Peek';
 import { Screen } from '@/components/Screen';
 import { tr } from '@/i18n/tr';
 import { SIGNUP_STEPS, SIGNUP_TOTAL, type SignupStep as Step, stepNumber } from '@/lib/signupSteps';
@@ -48,6 +55,9 @@ const STEP_SCALE = 1.3;
 // docs/design/aura → Telefon, Kod: the field 70 under the title, the buddies looking over it.
 const FIELD_TOP = 70;
 
+// U40 (Telefon, Kod): the riso scene, its two buddies and those looking over the field.
+const RISO: Partial<Record<Step, RisoSayKind>> = { phone: 'phone', code: 'code' };
+
 // The step's buddy in the scene under the field, the scene's side and who looks over the field.
 const SCENE: Record<Step, { look: string; side: 'left' | 'right'; peek?: PeekKind }> = {
   consents: { look: 'c:gok e:klasik f:yuvarlak', side: 'left' },
@@ -78,6 +88,7 @@ export function SignupStep({
   const k = useKit();
   const n = step ? stepNumber(step) : 0;
   const scene = step ? SCENE[step] : null;
+  const riso = step ? RISO[step] : undefined;
   const say = friend?.bubble ?? body ?? null;
 
   return (
@@ -136,7 +147,7 @@ export function SignupStep({
             </T>
           ) : null}
           <View style={{ marginTop: scene?.peek ? FIELD_TOP : SPACING[5] }}>
-            {scene?.peek ? <Peek kind={scene.peek} /> : null}
+            {riso ? <RisoFieldPeek kind={riso} /> : scene?.peek ? <Peek kind={scene.peek} /> : null}
             {children}
           </View>
           {error ? (
@@ -148,12 +159,16 @@ export function SignupStep({
           ) : null}
           {scene ? (
             <View style={{ flexGrow: 1, marginTop: SPACING[3] }}>
-              <SayScene
-                look={scene.look}
-                side={scene.side}
-                text={say ?? ''}
-                reaction={friend?.reaction ?? null}
-              />
+              {riso ? (
+                <RisoSayScene kind={riso} text={say ?? ''} reaction={friend?.reaction ?? null} />
+              ) : (
+                <SayScene
+                  look={scene.look}
+                  side={scene.side}
+                  text={say ?? ''}
+                  reaction={friend?.reaction ?? null}
+                />
+              )}
             </View>
           ) : (
             <View style={{ flexGrow: 1 }} />

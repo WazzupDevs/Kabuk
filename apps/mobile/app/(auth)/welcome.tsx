@@ -1,7 +1,6 @@
 import { router, useFocusEffect } from 'expo-router';
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import {
-  Image,
   type LayoutChangeEvent,
   Pressable,
   ScrollView,
@@ -22,8 +21,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
 import { Btn, T } from '@/aura/kit';
-import { Gathering, SceneGround } from '@/aura/Scene';
-import { TABLE_ICON_IMAGES } from '@/features/rooms/tableIconImages';
+import { RisoKanki, SignupScene, useKankiClock } from '@/aura/RisoKanki';
 import { WordmarkRow } from '@/features/venue/VenueHead';
 import { useLaunchStore } from '@/features/launch/launchStore';
 import { introCopy } from '@/features/onboarding/introGate';
@@ -33,6 +31,7 @@ import { tr } from '@/i18n/tr';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { copyFrame, type CopyPart, INTRO, introMinHeight } from '@/theme/introScene';
 import { AURA } from '@/theme/aura';
+import { WELCOME_KANKI } from '@/theme/kankiMotion';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { OPACITY, SPACING, TOUCH } from '@/theme/tokens';
@@ -68,6 +67,7 @@ function Welcome() {
   const [seen] = useState(() => played);
   const t = useSharedValue<number>(seen || reduce ? INTRO.endMs : 0);
   const [box, setBox] = useState<{ w: number; h: number } | null>(null);
+  const clock = useKankiClock();
 
   // The words, "Başla" and "Geç" on React's side (introGate.ts): each stands still once its
   // motion ends, all of them at once with reduce motion, and at the cap if the curtain never opens.
@@ -167,26 +167,15 @@ function Welcome() {
             style={{
               flexGrow: 1,
               minHeight: introMinHeight(windowHeight),
-              borderRadius: AURA.scene.radius,
-              overflow: 'hidden',
             }}
           >
-            {/* The table and the buddies around it (Main); each comes in with its bounce. */}
-            <SceneGround />
-            {box ? (
-              <Gathering
-                kind="welcome"
-                width={box.w}
-                delay={SCENE_DELAY}
-                center={
-                  <Image
-                    source={TABLE_ICON_IMAGES[WELCOME_TABLE]}
-                    fadeDuration={0}
-                    style={{ width: '100%', height: '100%' }}
-                  />
-                }
-              />
-            ) : null}
+            {/* U39 (Main): the riso venue, no floor glow and no round table; seven riso buddies
+                breathing, swaying, blinking and two hopping (§13.1). */}
+            <SignupScene width={box?.w ?? 0}>
+              {(k) =>
+                WELCOME_KANKI.map((p) => <RisoKanki key={p.id} place={p} scale={k} clock={clock} />)
+              }
+            </SignupScene>
           </View>
           <View style={{ gap: SPACING[3] }}>
             <View accessible accessibilityRole="header" accessibilityLabel={tr.signup.welcomeTitle}>
@@ -281,8 +270,6 @@ function Words({
 }
 
 const WELCOME_GAP = 22;
-const SCENE_DELAY = 200;
-const WELCOME_TABLE = '26-ates';
 
 const styles = StyleSheet.create({
   fill: { flex: 1 },
