@@ -48,7 +48,7 @@ export function useKit() {
 
 // Text: .display, .title, .h3, .body, .fine, .eyebrow, .stamp; `strong` is .strong (ink, 600).
 // .body, .fine, .eyebrow and .stamp are muted unless `ink` or `strong`; `color` wins over both.
-const MUTED: readonly KitTextVariant[] = ['body', 'fine', 'eyebrow', 'stamp'];
+const MUTED: readonly KitTextVariant[] = ['body', 'fine', 'eyebrow', 'stamp', 'member'];
 export function T({
   v = 'body',
   ink,
@@ -1034,7 +1034,7 @@ export function Av({
 }: {
   name: string;
   photoUrl?: string | null;
-  size?: 'sm' | 'md' | 'row' | 'seat' | 'lg' | 'xl' | 'big';
+  size?: 'sm' | 'member' | 'list' | 'md' | 'row' | 'seat' | 'lg' | 'xl' | 'big';
   // Something else in the ring (a capsule).
   children?: ReactNode;
 }) {
