@@ -167,3 +167,17 @@ Kod: `apps/mobile/app/(app)/(tabs)/explore/[venueId].tsx:83-125`, resim `assets/
 | --- | --- | --- | --- | --- |
 | 14.1 | Üstteki riso sahne hiç çizilmiyor: ekranın ilk 300 dp'si boş zemin, geri düğmesi ve etiketler boşlukta asılı duruyor. Panodaki mekan sahnesi görünmeli. **Proje sahibine göre aynısı "benzeri ekranlarda" da var.** **Kök adayı (6.1, 7.1 ile birlikte):** riso resimler üç yerde de `Image` + `resizeMode="cover"` + `StyleSheet.absoluteFill` ile çiziliyor ve ya hiç görünmüyor (burada) ya da yanlış ölçekte görünüyor (6.1, 7.1). Riso resim çizen her yer (`NoTable`, `TableCard`, `Lobby` boş durumu, `SpotPicker`, `PosterCard`, `TableEnd`, `ProfileCard`) birlikte kontrol edilmeli. | resim / yerleşim | `[venueId].tsx:112-120`: resim yerel `GlassTargetView` (`GlassTarget backdrop`) içinde; üstündeki `FrostResolve` (`:122`, yerel `DissolveView`) bitmeden ya da hedef resmi çizmeden kalıyor olabilir (?). Kontrol için `GlassTarget` dışında aynı `Image` denenmeli. | yüksek |
 | 14.2 | "Mekana dön" ve "Bu hafta planlı etkinlik yok" kartı arasında yine yeşil hale var (2.1); etkinlik yok kartı riso değil (9.1 kararı). | renk / resim | **[P1]** bkz. 2.1; bkz. 9.1 | — |
+
+### 15. Mekan → "Masanı lobiye aç" alt sayfası (açık)
+
+Kod: `apps/mobile/src/features/rooms/OpenLobbySheet.tsx:72-127` (ve aynı seçimlerin olduğu `CreateTableSheet.tsx`). Pano: `MasaLobiyeAc` yerel kopyada yok (pano yok).
+
+**Proje sahibinin gözlemi (2 Kasım): ekran çok karışık.** Karışıklığın kaynakları:
+
+| # | Hata | Sınıf | Olası sebep | Önem |
+| --- | --- | --- | --- | --- |
+| 15.1 | Dokuz oyun çipi ve üç niyet çipi düzensiz satırlara dökülüyor ("İbre" tek başına bir satırda); iki grup alt alta tek kartta, başlıkları aynı tonda. Göz nereye bakacağını bilmiyor. Öneri: oyun çipleri yalnızca niyet "Oyun" seçilince açılsın; açılınca yatay kayan tek satır olsun. | yerleşim | `OpenLobbySheet.tsx:77-106`: iki `Chips wrap` her zaman görünür. | orta |
+| 15.2 | "Etiket yok" ve "Fark etmez" ayrı çip olarak seçili duruyor; siyah dolgulu iki çip sayfanın en baskın öğesi oluyor, oysa "hiçbir şey seçme" anlamına geliyorlar. Öneri: bu iki çip kalksın; hiçbiri seçili değilse etiket yok sayılsın, seçili çipe yeniden basınca seçim kalksın. | yerleşim / davranış | `:84-86`, `:98-100` `value: 'none'` seçenekleri. | orta |
+| 15.3 | "(isteğe bağlı)" iki başlıkta tekrarlanıyor, üstte iki satırlık açıklama, en altta bir not daha var; dört ayrı yardım metni. Öneri: üst açıklama tek satıra insin, "(isteğe bağlı)" bir kez yazsın ya da hiç yazmasın, alt not oyun satırı açılınca görünsün. | metin | `:74`, `:78`, `:91`, `:106`; `src/i18n/tr.ts:860-872` | düşük |
+| 15.4 | Seçimler kartı sayfa zemininden ayrışmıyor (8.1); "Lobiye aç" ve "Vazgeç" iki tam genişlikli 56 dp düğme, sayfanın üçte birini kaplıyor (10.3). Sayfa dışına basınca ve aşağı kaydırınca zaten kapanıyor; "Vazgeç" küçük bir metin düğmesi olabilir. | ölçü / renk | **[P1]** bkz. 8.1, 10.3; `:115-126` | orta |
+| 15.5 | Sayfa eski tasarım bileşenleriyle çizilmiş (`Text`, `Card tone="note"`, `Chips`, `Button size="lg"`); aura kitinin `T`, `Chip`, `Btn` bileşenleri kullanılmıyor (5.4 ile aynı sorun). | renk/tema | `OpenLobbySheet.tsx:8` ve gövde | düşük |
