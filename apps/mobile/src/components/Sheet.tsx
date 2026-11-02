@@ -33,6 +33,8 @@ type Props = {
   // Under the title, 4 apart (U24, Masadakiler: "12 kişi · …").
   subtitle?: string;
   icon?: IconName;
+  // Aura v71 (SikayetEt): a 24 icon in the title's line, 10 before it, no disc.
+  titleIcon?: IconName;
   // Centered text for a single decision (the join request); menus stay left-aligned.
   centered?: boolean;
   // Buddies looking over the sheet's top edge (docs/design/aura → CheckIn, Bildirimler).
@@ -58,6 +60,7 @@ export function Sheet({
   titleNote,
   subtitle,
   icon,
+  titleIcon,
   centered,
   peek,
   titleLarge,
@@ -162,14 +165,28 @@ export function Sheet({
                   ) : null}
                   {title ? (
                     <View style={{ gap: SUBTITLE_GAP }}>
-                      <T
-                        v={titleLarge ? 'sheetTitleLg' : 'title'}
-                        center={centered}
-                        accessibilityRole="header"
+                      <View
+                        className="flex-row items-center"
+                        style={{ gap: KIT.size.titleIconGap }}
                       >
-                        {title}
-                        {titleNote ? <T v="fine">{`  ${titleNote}`}</T> : null}
-                      </T>
+                        {titleIcon ? (
+                          <AppIcon
+                            name={titleIcon}
+                            size={KIT.size.titleIcon}
+                            color={colors.accent}
+                          />
+                        ) : null}
+                        <View className="flex-1">
+                          <T
+                            v={titleLarge ? 'sheetTitleLg' : 'title'}
+                            center={centered}
+                            accessibilityRole="header"
+                          >
+                            {title}
+                            {titleNote ? <T v="fine">{`  ${titleNote}`}</T> : null}
+                          </T>
+                        </View>
+                      </View>
                       {subtitle ? (
                         <T v="fine" center={centered}>
                           {subtitle}

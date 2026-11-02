@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 
+import { T } from '@/aura/kit';
 import { KIT } from '@/theme/auraKit';
-import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
-import { SPACING, TOUCH } from '@/theme/tokens';
+import { SPACING } from '@/theme/tokens';
 import { haptic } from '@/lib/haptics';
 
 import { Text } from './Text';
@@ -23,9 +23,11 @@ type Props = {
   // outline, and this in place of the hint, at full contrast; it may hold its own button.
   unavailable?: ReactNode;
   testID?: string;
+  // The row's least height (56; the spot list 60).
+  minHeight?: number;
 };
 
-const DOT = SPACING[5] + SPACING[0.5];
+const DOT = KIT.size.checkBox;
 
 // One option of a single choice (canvas: Bileşenler): a card with the radio mark first; the
 // selected one fills with the quiet colour, its outline in the accent, and lifts a little.
@@ -38,26 +40,30 @@ export function Choice({
   disabled,
   unavailable,
   testID,
+  minHeight = KIT.size.optMin,
 }: Props) {
   const { colors, shape, scheme } = useTheme();
+  const ring = scheme === 'dark' ? colors.accent : colors.primary;
   const shadowOff = useLabOff('golge');
   const frame = {
     flexDirection: 'row',
     alignItems: hint || unavailable ? 'flex-start' : 'center',
     gap: SPACING[3],
-    // skall tuvali (skall.css → `.choice`): 56 high, 16 px corners, 1 px control; on, 2 px primary.
-    minHeight: TOUCH.tab,
+    // skall tuvali (skall.css → `.choice`, v71): 56 high, 10 / 16 in, the radio after the label.
+    minHeight,
     paddingHorizontal: SPACING[4],
-    paddingVertical: SPACING[3],
+    paddingVertical: KIT.size.optPadY,
     borderRadius: shape.radius.md,
     borderWidth: 1,
   } as const;
   const title = (tone?: 'muted') => (
     <View className="flex-row items-center gap-2">
       {picture}
-      <Text variant="bodyStrong" tone={tone} className="flex-1">
-        {label}
-      </Text>
+      <View className="flex-1">
+        <T v="h3" color={tone ? colors.muted : colors.text}>
+          {label}
+        </T>
+      </View>
     </View>
   );
 
@@ -70,6 +76,10 @@ export function Choice({
         accessibilityState={{ selected: false, disabled: true }}
         style={{ ...frame, borderStyle: 'dashed', borderColor: colors.muted }}
       >
+        <View className="flex-1 gap-2">
+          {title('muted')}
+          {unavailable}
+        </View>
         <View
           style={{
             width: DOT,
@@ -80,18 +90,15 @@ export function Choice({
             borderColor: colors.muted,
           }}
         />
-        <View className="flex-1 gap-2">
-          {title('muted')}
-          {unavailable}
-        </View>
       </View>
     );
   }
 
-  // Unchosen, the soft glass shadow natively (NativeShadow.tsx); chosen, a hard ring (cheap).
+  // The soft row (`--soft-bg`, 1 px `--soft-line`, the soft shadow natively: NativeShadow.tsx);
+  // chosen, a 2 px ring of the primary and no glow.
   const shadow = shadowParts(
     shadowOff,
-    selected ? undefined : KIT[scheme].glassShadow,
+    selected ? undefined : KIT[scheme].raisedShadow || undefined,
     undefined,
     KIT.size.glassRadiusSm,
     true,
@@ -107,38 +114,34 @@ export function Choice({
         if (!selected) haptic('selection');
         onPress();
       }}
-      // docs/design/aura (CheckIn's rows): a glass row; chosen, ringed in the primary.
       style={{
         ...frame,
-        ...gradientStyle(KIT[scheme].glass),
+        backgroundColor: KIT[scheme].raised,
         borderRadius: KIT.size.glassRadiusSm,
         borderWidth: selected ? 2 : KIT.size.edge,
-        borderColor: selected ? KIT.primary : KIT[scheme].glassEdge,
-        boxShadow: selected
-          ? `0px 0px 0px ${KIT.size.dotRing}px ${KIT.primaryRing}`
-          : shadow.boxShadow,
+        borderColor: selected ? ring : KIT[scheme].raisedEdge,
+        boxShadow: shadow.boxShadow,
         paddingHorizontal: selected ? SPACING[4] - 1 : SPACING[4],
-        paddingVertical: selected ? SPACING[3] - 1 : SPACING[3],
+        paddingVertical: selected ? KIT.size.optPadY - 1 : KIT.size.optPadY,
         opacity: disabled ? 0.4 : 1,
       }}
     >
       {shadow.node}
+      <View className="flex-1 gap-1">
+        {title()}
+        {hint ? <Text variant="fine">{hint}</Text> : null}
+      </View>
       <View
         className="items-center justify-center"
         style={{
           width: DOT,
           height: DOT,
           borderRadius: shape.radius.pill,
-          // skall.css → `.radio`: 2 px control; on, a 7 px primary ring.
+          // skall.css → `.radio`: 2 px border on nothing; on, a 7 px primary ring (dark: accent).
           borderWidth: selected ? 7 : 2,
-          borderColor: selected ? colors.primary : colors.control,
-          backgroundColor: colors.surface,
+          borderColor: selected ? ring : colors.border,
         }}
       ></View>
-      <View className="flex-1 gap-1">
-        {title()}
-        {hint ? <Text variant="fine">{hint}</Text> : null}
-      </View>
     </Pressable>
   );
 }

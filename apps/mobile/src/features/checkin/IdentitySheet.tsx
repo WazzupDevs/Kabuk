@@ -86,7 +86,7 @@ export function IdentitySheet({
       <Sheet visible={visible} onClose={close} title={title}>
         <View className="flex-row items-center self-start" style={{ gap: SPACING[2] }}>
           {toAnonymous ? face : capsule}
-          <AppIcon name="arrow-forward" size={ICON.md} color={colors.muted} />
+          <AppIcon name="forward" size={ICON.md} color={colors.muted} />
           {toAnonymous ? capsule : face}
         </View>
         <Text variant="fine">{body}</Text>
@@ -102,7 +102,7 @@ export function IdentitySheet({
           {needsPhoto ? (
             <Button
               size="lg"
-              icon="camera-outline"
+              icon="photo"
               label={tr.identity.addPhoto}
               onPress={() => {
                 // One sheet at a time: this one goes, the photo's comes (audit VEN-20).
