@@ -3,11 +3,11 @@ import { gameTag, type TableState } from '@shared/tableCard.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Image, Pressable, View } from 'react-native';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
 
-import { Btn, Disk, Live, T, Tag } from '@/aura/kit';
+import { Btn, Disk, Live, T, Tag, useKit } from '@/aura/kit';
 import { Pips } from '@/aura/Pips';
-import { Crew, SceneGround } from '@/aura/Scene';
+import { SceneGround } from '@/aura/Scene';
 import { useRoomMemberProfiles } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -21,7 +21,7 @@ import { roomKeys, type TableRoomRow, useTablePeople } from './queries';
 import { PersonFace } from './RoomPeople';
 import { TABLE_ICON_IMAGES } from './tableIconImages';
 import { useLabOff } from '@/lib/drawLab';
-import { shadowParts } from '@/components/NativeShadow';
+import { boxShadowParts, shadowParts } from '@/components/NativeShadow';
 
 type CheckIn = {
   id: string;
@@ -58,28 +58,7 @@ export function TableCard({ checkIn, room, state, onCreate, onOpenLobby }: Props
     onSettled: settle,
   });
 
-  if (state === 'none' || !room) {
-    return (
-      <View testID="table-card" style={SCENE}>
-        <SceneGround />
-        <Crew height={AURA.heroHeight} delay={CREW_DELAY} />
-        <View testID="no-table" style={{ width: WORDS_WIDTH, gap: WORDS_GAP }}>
-          <T v="title" style={HERO_TITLE}>
-            {tr.venue.noTable}
-          </T>
-          <T v="note">{tr.venue.noTableHint}</T>
-          <Btn
-            mid
-            icon="plus"
-            testID="table-create-open"
-            label={tr.venue.createTable}
-            onPress={onCreate}
-            style={{ marginTop: WORDS_GAP }}
-          />
-        </View>
-      </View>
-    );
-  }
+  if (state === 'none' || !room) return <NoTable onCreate={onCreate} />;
 
   const intent = isIntent(room.intent) ? room.intent : null;
   const tag = gameTag(room.game_tag);
@@ -207,11 +186,9 @@ const SCENE = {
   overflow: 'hidden' as const,
   padding: KIT.size.heroPad,
 };
-const WORDS_WIDTH = KIT.size.heroWords;
 const WORDS_GAP = 6;
 const ROW_GAP = 12;
 const HERO_TITLE = KIT_TYPE.hero;
-const CREW_DELAY = 260;
 const DISK = 88;
 const PRESSED = 0.8;
 // The faces overlap a little, each on a white ring.
@@ -277,6 +254,58 @@ function PeopleFaces({ roomId, phones, me }: { roomId: string; phones: number; m
           />
         </View>
       ))}
+    </View>
+  );
+}
+
+// U19: no table yet. Mekan's riso scene 210 high, 28 round on the card's shadow; at its top left
+// "Henüz masan yok" (title), its line (fine) and "Masa kur" (primary sm, 40), in the scene's ink in
+// both schemes (Mekan `.rscene`).
+const NO_TABLE_SCENE = require('../../../assets/riso/venue-no-table.webp');
+function NoTable({ onCreate }: { onCreate: () => void }) {
+  const { c } = useKit();
+  const r = KIT.risoScene;
+  const shadow = boxShadowParts(useLabOff('golge'), c.cardShadow || undefined, r.radius);
+  return (
+    <View
+      testID="table-card"
+      style={{ height: KIT.size.hero, borderRadius: r.radius, boxShadow: shadow.boxShadow }}
+    >
+      {shadow.node}
+      <View style={{ flex: 1, borderRadius: r.radius, overflow: 'hidden' }}>
+        <Image
+          source={NO_TABLE_SCENE}
+          fadeDuration={0}
+          accessible={false}
+          resizeMode="cover"
+          style={StyleSheet.absoluteFill}
+        />
+        <View
+          testID="no-table"
+          style={{
+            position: 'absolute',
+            left: KIT.size.heroPad,
+            top: KIT.size.heroPad,
+            width: r.words,
+            gap: r.gap,
+          }}
+        >
+          <T v="title" color={r.title}>
+            {tr.venue.noTable}
+          </T>
+          <T v="fine" color={r.note}>
+            {tr.venue.noTableHint}
+          </T>
+          <Btn
+            sm
+            icon="plus"
+            testID="table-create-open"
+            label={tr.venue.createTable}
+            onPress={onCreate}
+            style={{ alignSelf: 'flex-start', marginTop: r.buttonTop }}
+          />
+        </View>
+      </View>
     </View>
   );
 }

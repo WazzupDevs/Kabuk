@@ -76,6 +76,8 @@ export const KIT_TYPE = {
   chip: t(600, 13, 17),
   // Keşfet's kind chips (15).
   chipLg: t(600, 15, 19),
+  // U19: Mekan's spot chip, 14.
+  chipMd: t(600, 14, 18),
   tag: t(600, 12, 16),
   // A venue page's tags (14).
   // A venue page's tags over its scene (U17: 13).
@@ -86,7 +88,8 @@ export const KIT_TYPE = {
   live: t(600, 13, 17),
   // "şu an aktif" (500) and "Mekandasın" (15) on Mekan.
   liveSoft: t(500, 13, 17),
-  liveLg: t(600, 15, 19),
+  // U19: Mekan's "Mekandasın", 14.
+  liveLg: t(600, 14, 18),
   msg: t(500, 15, 21),
   // A message of emoji only, without a bubble (Telegram Android): one, and two or three.
   emojiOne: t(500, 40, 48),
@@ -142,6 +145,8 @@ export const KIT = {
     glass: 'linear-gradient(180deg, rgba(255, 255, 255, 0.80), rgba(255, 255, 255, 0.54))',
     // A glass card inside a sheet.
     glassInSheet: 'linear-gradient(180deg, rgba(255, 255, 255, 0.80), rgba(255, 255, 255, 0.54))',
+    // U21: a sheet's still information row (--surface2; MekanSecenekler `.srow.info`).
+    infoRow: '#E6F0E8',
     glassEdge: 'rgba(255, 255, 255, 0.86)',
     glassShadow: SHADOW.glass,
     // The light top edge of glass and of the primary (none in the dark: a white line on every
@@ -203,6 +208,7 @@ export const KIT = {
     glass: '#121614',
     // U2: the card inside a sheet.
     glassInSheet: '#1B211F',
+    infoRow: '#1B211F',
     glassEdge: 'rgba(255, 255, 255, 0.09)',
     glassShadow: '',
     glassInset: '',
@@ -362,6 +368,8 @@ export const KIT = {
   // glass and the tags light, the calm one in the calm green.
   sceneRound: { bg: 'rgba(255, 255, 255, 0.82)', edge: '#FFFFFF', ink: '#031B0B' },
   sceneTag: { bg: 'rgba(255, 255, 255, 0.82)', fg: '#031B0B' },
+  // U19: the words over Mekan's riso "Henüz masan yok" scene, in both schemes (Mekan `.rtext`).
+  risoScene: { title: '#031B0B', note: '#2B3A30', words: 176, radius: 28, gap: 6, buttonTop: 8 },
   sceneTagCalm: { bg: 'rgba(215, 238, 220, 0.92)', fg: '#055328' },
   // U17: the scene 300 high from the very top, its bottom corners 28.
   venueHero: { height: 300, radius: 28 },
@@ -399,6 +407,8 @@ export const KIT = {
     // Kapsülün's slot chips: 40 high, 18 inside.
     chipLg: 40,
     chipLgPadX: 18,
+    // U19: Mekan's spot chip, 40 high and 16 in.
+    chipMdPadX: 16,
     chipPadX: 12,
     chipGap: 6,
     chipsGap: 8,

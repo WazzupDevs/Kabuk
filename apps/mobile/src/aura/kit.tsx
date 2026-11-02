@@ -552,6 +552,8 @@ export function Chip({
   testID,
   tall,
   lg,
+  md,
+  accessibilityLabel,
 }: {
   label: string;
   on?: boolean;
@@ -560,11 +562,14 @@ export function Chip({
   tall?: boolean;
   // Kapsülün's slots: 40 high, 18 inside, 15.
   lg?: boolean;
+  // U19: Mekan's spot, 40 high, 16 inside, 14.
+  md?: boolean;
+  accessibilityLabel?: string;
 }) {
   const { c } = useKit();
   const press = usePress();
   const frosted = useFrost() && !on;
-  const h = lg ? KIT.size.chipLg : tall ? KIT.size.chipTall : KIT.size.chip;
+  const h = lg || md ? KIT.size.chipLg : tall ? KIT.size.chipTall : KIT.size.chip;
   // Its soft shadow natively (NativeShadow.tsx).
   const shadowOff = useLabOff('golge');
   const shadow = shadowParts(
@@ -578,8 +583,10 @@ export function Chip({
   return (
     <Pressable
       testID={testID}
-      accessibilityRole="button"
-      accessibilityState={{ selected: !!on }}
+      accessibilityRole={onPress ? 'button' : 'text'}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityState={onPress ? { selected: !!on } : undefined}
+      disabled={!onPress}
       onPress={onPress}
       onPressIn={press.onPressIn}
       onPressOut={press.onPressOut}
@@ -587,11 +594,13 @@ export function Chip({
       <Animated.View
         style={{
           height: h,
-          paddingHorizontal: lg
-            ? KIT.size.chipLgPadX
-            : tall
-              ? KIT.size.chipTallPadX
-              : KIT.size.chipPadX,
+          paddingHorizontal: md
+            ? KIT.size.chipMdPadX
+            : lg
+              ? KIT.size.chipLgPadX
+              : tall
+                ? KIT.size.chipTallPadX
+                : KIT.size.chipPadX,
           borderRadius: h,
           flexDirection: 'row',
           alignItems: 'center',
@@ -608,7 +617,10 @@ export function Chip({
         <Text
           numberOfLines={1}
           maxFontSizeMultiplier={MAX_FONT_SCALE}
-          style={[tall || lg ? KIT_TYPE.chipLg : KIT_TYPE.chip, { color: on ? c.onChipOn : c.ink }]}
+          style={[
+            md ? KIT_TYPE.chipMd : tall || lg ? KIT_TYPE.chipLg : KIT_TYPE.chip,
+            { color: on ? c.onChipOn : c.ink },
+          ]}
         >
           {label}
         </Text>
@@ -708,7 +720,7 @@ export function Live({
   label: string;
   color?: string;
   ring?: string;
-  // Mekan's "Mekandasın" at 15; the venue chat's "şu an aktif" at 500.
+  // Mekan's "Mekandasın" at 14; the venue chat's "şu an aktif" at 500 in the muted ink (U20).
   large?: boolean;
   soft?: boolean;
 }) {
@@ -717,7 +729,10 @@ export function Live({
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.chipGap }}>
       <PulseDot color={color} ring={ring} />
-      <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[type, { color: c.ink }]}>
+      <Text
+        maxFontSizeMultiplier={MAX_FONT_SCALE}
+        style={[type, { color: soft ? c.muted : c.ink }]}
+      >
         {label}
       </Text>
     </View>

@@ -77,7 +77,7 @@ export function VenueChatCard({ venueId, sessionId }: { venueId: string; session
                   flexShrink: 1,
                 }}
               >
-                <T v="sec">{tr.venueChat.open}</T>
+                <T v="h3">{tr.venueChat.open}</T>
                 {active ? (
                   <Reanimated.View
                     testID="venue-chat-live"
@@ -133,7 +133,7 @@ export function VenueChatCard({ venueId, sessionId }: { venueId: string; session
                 entering={motion ? dissolveIn() : undefined}
                 exiting={motion ? fadeOut(MOTION.dissolve.outMs) : undefined}
               >
-                <T v="fineLg">{tr.venue.chatEmpty}</T>
+                <T v="fine">{tr.venue.chatEmpty}</T>
               </Reanimated.View>
             )}
           </LayoutAnimationConfig>

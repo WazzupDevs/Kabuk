@@ -9,6 +9,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, OPACITY, SPACING } from '@/theme/tokens';
 
 import { CapIcon, type CapIconName } from '@/aura/CapIcon';
+import { T } from '@/aura/kit';
 
 import type { IconName } from './Button';
 import { Loader } from './Loader';
@@ -65,6 +66,8 @@ export function Menu({ children, float }: { children: ReactNode; float?: boolean
   );
 }
 
+const ROW_HEIGHT = 56;
+const ROW_GAP = 14;
 const FLOAT_WIDTH = SPACING[16] * 3 + SPACING[4] + SPACING[0.5];
 
 export function MenuItem({
@@ -109,9 +112,10 @@ export function MenuItem({
         <View
           className="flex-row items-center"
           style={{
-            gap: floating ? SPACING[4] : SPACING[3],
-            minHeight: floating ? SPACING[11] : SPACING[12] + SPACING[1],
-            paddingHorizontal: SPACING[4] + SPACING[0.5],
+            // U21: a sheet's row 56, 16 in, 14 between the icon and the words (`.srow`).
+            gap: floating ? SPACING[4] : ROW_GAP,
+            minHeight: floating ? SPACING[11] : ROW_HEIGHT,
+            paddingHorizontal: floating ? SPACING[4] + SPACING[0.5] : SPACING[4],
             opacity: pressed ? OPACITY.pressed : 1,
           }}
         >
@@ -124,9 +128,15 @@ export function MenuItem({
             className="flex-1"
             style={{ gap: SPACING[0.5], paddingVertical: note ? SPACING[2.5] : 0 }}
           >
-            <Text variant="button" color={ink}>
-              {label}
-            </Text>
+            {floating ? (
+              <Text variant="button" color={ink}>
+                {label}
+              </Text>
+            ) : (
+              <T v="h3" color={ink}>
+                {label}
+              </T>
+            )}
             {note ? <Text variant="fine">{note}</Text> : null}
           </View>
           {loading ? <Loader kind="meet" size={ICON.md} delay={0} label={null} /> : null}
