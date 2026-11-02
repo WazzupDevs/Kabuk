@@ -122,7 +122,9 @@ export const KIT_TYPE = {
 export type KitTextVariant = Exclude<keyof typeof KIT_TYPE, 'av' | 'strong'>;
 
 // Aura v65 skall.css and ekran.css: green-tinted soft shadows (rgba(4, 73, 35) and the ink
-// rgba(3, 27, 11)), the primary's glow in its own green. The dark scheme draws none.
+// rgba(3, 27, 11)), the primary's glow in its own green in the light scheme. The dark scheme draws
+// none, but under the primary a soft black one (the owner's report, 2 Kasım, 2.1: the green glow
+// stood like neon on the black ground).
 const SHADOW = {
   glass: '0px 18px 44px rgba(4, 73, 35, 0.10), 0px 2px 6px rgba(4, 73, 35, 0.05)',
   soft: '0px 6px 16px rgba(4, 73, 35, 0.10)',
@@ -153,8 +155,10 @@ export const KIT = {
     // A still placeholder for a line still loading (Mekan sohbeti kartı).
     placeholder: 'rgba(3, 27, 11, 0.08)',
     glass: 'linear-gradient(180deg, rgba(255, 255, 255, 0.80), rgba(255, 255, 255, 0.54))',
-    // A glass card inside a sheet.
-    glassInSheet: 'linear-gradient(180deg, rgba(255, 255, 255, 0.80), rgba(255, 255, 255, 0.54))',
+    // A card inside a sheet: plain white with a hairline, apart from the sheet's own white glass
+    // (the owner's report, 2 Kasım, 8.1: the card and its buttons melted into the sheet).
+    glassInSheet: 'linear-gradient(180deg, #FFFFFF, #FFFFFF)',
+    glassInSheetEdge: 'rgba(3, 27, 11, 0.09)',
     // U21: a sheet's still information row (--surface2; MekanSecenekler `.srow.info`).
     infoRow: '#E6F0E8',
     glassEdge: 'rgba(255, 255, 255, 0.86)',
@@ -165,10 +169,13 @@ export const KIT = {
     primaryInset: 'inset 0px 1px 0px rgba(255, 255, 255, 0.28)',
     // A raised white (buttons, chips, round buttons, glassy tags).
     raised: 'rgba(255, 255, 255, 0.74)',
+    // A raised button inside a sheet: the sheet's card colour, apart from the sheet (8.1).
+    raisedInSheet: '#FFFFFF',
     raisedRound: 'rgba(255, 255, 255, 0.74)',
     raisedChip: 'rgba(255, 255, 255, 0.74)',
     raisedEdge: '#FFFFFF',
     raisedShadow: SHADOW.soft,
+    primaryShadow: SHADOW.primary,
     cardShadow: SHADOW.card,
     chipShadow: SHADOW.chip,
     chipOn: '#031B0B',
@@ -223,17 +230,20 @@ export const KIT = {
     glass: '#121614',
     // U2: the card inside a sheet.
     glassInSheet: '#1B211F',
+    glassInSheetEdge: 'rgba(255, 255, 255, 0.09)',
     infoRow: '#1B211F',
     glassEdge: 'rgba(255, 255, 255, 0.09)',
     glassShadow: '',
     glassInset: '',
     primaryInset: '',
     raised: '#121614',
+    raisedInSheet: '#1B211F',
     // A shade stronger than the canvas: the round buttons on Masa's dark stage were hard to see.
     raisedRound: '#121614',
     raisedChip: '#121614',
     raisedEdge: 'rgba(255, 255, 255, 0.10)',
     raisedShadow: '',
+    primaryShadow: '0px 10px 22px rgba(0, 0, 0, 0.35)',
     cardShadow: '',
     chipShadow: '',
     chipOn: '#EEF3F0',
@@ -274,7 +284,6 @@ export const KIT = {
   onPrimary: '#FFFFFF',
   // The dark ink on a filled box or radio in the dark scheme (the accent's ground): #0B0E0D.
   checkInk: '#0B0E0D',
-  primaryShadow: SHADOW.primary,
   // The lines beside "Yeni mesaj" in a chat.
   freshLine: 'rgba(255, 79, 139, 0.40)',
   // A new invite in Bildirimler: the brand's soft gradient.
@@ -335,7 +344,8 @@ export const KIT = {
   // A photo opened large over the screen (Profil, a person's profile).
   // Profil fotoğrafı: the dark ground, the white card the photo lies on (22 from the sides, 30
   // round) and its shadow.
-  photoScrim: 'rgba(3, 27, 11, 0.86)',
+  // A neutral dark under a photo (Telegram Android's black), not the ink's green (18.1).
+  photoScrim: 'rgba(0, 0, 0, 0.82)',
   photoCard: { side: 22, radius: 30, shadow: '0px 24px 60px rgba(0, 0, 0, 0.35)' },
   // A chosen row's ring (CheckIn: the spot).
   primaryRing: 'rgba(14, 135, 69, 0.14)',
@@ -494,25 +504,23 @@ export const KIT = {
     glassRadiusSm: 22,
     pad: 18,
     padLg: 22,
-    // Aura v65 Temel satır (normalleştirme, 1 Kas 02:41): two button heights, 56 and 40; the field
-    // 56 (the many-line one 104, 22 round); the round 44; the sheet 8 from the edges, 28 round, its
-    // handle 40 × 4; a chat's field and send button 56.
-    btn: 56,
-    // The tall button of a venue's page and of the check-in sheet (58).
-    btnTall: 56,
-    btnSm: 40,
-    // Mekan's "Masa kur" (44, 18 inside) and Masa's "Bitir" beside the 48 rounds (18 inside).
-    btnMid: 40,
+    // The button scale (the owner's call, 2 Kasım, B1): every main button 48, every small one 36,
+    // a round icon button 44, a form field 48, a chip 36; a screen never picks its own (the many-line
+    // field 104, 22 round; the sheet 8 from the edges, 28 round, its handle 40 × 4).
+    btn: 48,
+    btnTall: 48,
+    btnSm: 36,
+    // Mekan's "Masa kur" and Masa's "Bitir": the small height, 18 inside.
+    btnMid: 36,
     btnPadXMid: 18,
     btnPadX: 24,
     btnPadXSm: 16,
     btnGap: 8,
-    chip: 32,
-    // Keşfet's kind chips: 38 high, 16 inside.
-    chipTall: 38,
+    // Every chip 36 high (B1); Keşfet's kind chips 16 inside, Kapsülün's slot chips 18.
+    chip: 36,
+    chipTall: 36,
     chipTallPadX: 16,
-    // Kapsülün's slot chips: 40 high, 18 inside.
-    chipLg: 40,
+    chipLg: 36,
     chipLgPadX: 18,
     // U19: Mekan's spot chip, 40 high and 16 in.
     chipMdPadX: 16,
@@ -548,8 +556,8 @@ export const KIT = {
     },
     stackOverlap: 10,
     faceCard: 210,
-    // Profil's two buttons and Kapsülün's (50).
-    btnRow: 56,
+    // Profil's two buttons and Kapsülün's: the main height (B1).
+    btnRow: 48,
     // The empty state: its sign 28 × 42, 6 apart, the title 10 under the sign; 26 above (the
     // lobby's 18), 8 inside.
     emptyMark: { width: 28, height: 42 },
@@ -661,7 +669,7 @@ export const KIT = {
     tailH: 12,
     msgPadX: 15,
     msgPadY: 11,
-    field: 56,
+    field: 48,
     // Aura v71 (GaleriEklenen): a boxed field 60 (the birth date), the name's 72 with 22 inside.
     fieldBox: 60,
     fieldBig: 72,
@@ -691,8 +699,8 @@ export const KIT = {
     // A sheet's title icon, in the line, and the gap to the words.
     titleIcon: 24,
     titleIconGap: 10,
-    // Profili düzenle's fields: 56 high (the bio 108, 24 round), 22 inside, 16 above the bio.
-    fieldLg: 56,
+    // Profili düzenle's fields: 48 high (B1; the bio 104, 22 round), 22 inside.
+    fieldLg: 48,
     fieldLgTall: 104,
     fieldLgTallRadius: 22,
     fieldLgPadX: 22,

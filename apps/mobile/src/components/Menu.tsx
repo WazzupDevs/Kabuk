@@ -39,7 +39,7 @@ export function Menu({ children, float }: { children: ReactNode; float?: boolean
         {
           borderRadius: KIT.size.glassRadiusSm,
           borderWidth: float ? 0 : KIT.size.edge,
-          borderColor: KIT[scheme].glassEdge,
+          borderColor: KIT[scheme].glassInSheetEdge,
           overflow: 'hidden',
         },
       ]}

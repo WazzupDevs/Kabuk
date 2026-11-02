@@ -26,7 +26,8 @@ describe('parseShadows', () => {
     for (const css of [
       KIT.light.glassShadow,
       KIT.dark.glassShadow,
-      KIT.primaryShadow,
+      KIT.light.primaryShadow,
+      KIT.dark.primaryShadow,
       KIT.light.raisedShadow,
       KIT.avShadow,
     ])

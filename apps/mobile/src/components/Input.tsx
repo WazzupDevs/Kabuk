@@ -179,7 +179,14 @@ export const Input = forwardRef<TextInput, Props>(function Input(
             />
           </>
         ) : null}
-        <View style={{ flex: 1, justifyContent: 'center' }}>
+        {/* Many lines start at the top left, not in the middle of the box (12.4). */}
+        <View
+          style={
+            multiline
+              ? { flex: 1, alignSelf: 'stretch', justifyContent: 'flex-start' }
+              : { flex: 1, justifyContent: 'center' }
+          }
+        >
           <TextInput
             ref={ref}
             {...rest}
@@ -216,6 +223,7 @@ export const Input = forwardRef<TextInput, Props>(function Input(
               },
               code ? { textAlign: 'center', letterSpacing: SPACING[2] } : null,
               centered ? { textAlign: 'center' } : null,
+              multiline ? { flexGrow: 1 } : null,
             ]}
           />
           {/* The hint is drawn by the app, in the app's type: Android draws a field's own hint

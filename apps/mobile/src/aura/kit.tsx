@@ -48,7 +48,8 @@ export function useKit() {
 
 // Text: .display, .title, .h3, .body, .fine, .eyebrow, .stamp; `strong` is .strong (ink, 600).
 // .body, .fine, .eyebrow and .stamp are muted unless `ink` or `strong`; `color` wins over both.
-const MUTED: readonly KitTextVariant[] = ['body', 'fine', 'eyebrow', 'stamp', 'member'];
+// `note` too: a description under a title is quieter than it (the owner's report, 2 Kasım, 3.4).
+const MUTED: readonly KitTextVariant[] = ['body', 'fine', 'eyebrow', 'stamp', 'member', 'note'];
 export function T({
   v = 'body',
   ink,
@@ -169,7 +170,7 @@ export function Glass({
         {
           borderRadius: radius,
           borderWidth: KIT.size.edge,
-          borderColor: c.glassEdge,
+          borderColor: flat ? c.glassInSheetEdge : c.glassEdge,
           boxShadow: shadow.boxShadow,
           padding: pad === 'pad' ? KIT.size.pad : pad === 'lg' ? KIT.size.padLg : undefined,
         },
@@ -269,6 +270,7 @@ export function Btn({
   const { c } = useKit();
   const press = usePress();
   const inRow = useContext(InRow);
+  const inSheet = useContext(FlatGlass);
   const shadowOff = useLabOff('golge');
   const frost = useFrost();
   const frosted = frost && variant === 'glassy';
@@ -288,7 +290,7 @@ export function Btn({
   const shadow = off
     ? null
     : variant === 'primary'
-      ? shadowParts(shadowOff, KIT.primaryShadow, c.primaryInset, KIT.size.btn)
+      ? shadowParts(shadowOff, c.primaryShadow, c.primaryInset, KIT.size.btn)
       : variant === 'dark' || variant === 'danger'
         ? null
         : shadowParts(
@@ -308,9 +310,9 @@ export function Btn({
         : variant === 'dark'
           ? { backgroundColor: c.chipOn }
           : {
-              backgroundColor: frosted ? undefined : c.raised,
+              backgroundColor: frosted ? undefined : inSheet ? c.raisedInSheet : c.raised,
               borderWidth: KIT.size.edge,
-              borderColor: c.raisedEdge,
+              borderColor: inSheet ? c.glassInSheetEdge : c.raisedEdge,
               boxShadow: shadow?.boxShadow,
             };
   const height = bar
@@ -357,7 +359,8 @@ export function Btn({
         {variant === 'glassy' && !off ? <FrostOf height={height} fill={c.raised} /> : null}
         {loading ? (
           <Loader kind="meet" size={sm ? KIT.size.iconSm : KIT.size.icon} delay={0} label={null} />
-        ) : icon ? (
+        ) : icon && !off ? (
+          // Disabled, no icon (Aura v65 `.btn.off`; the owner's report, 2 Kasım, 10.1).
           <CapIcon
             name={icon}
             color={fg}
@@ -437,7 +440,7 @@ export function Round({
   const shadow = off
     ? null
     : primary
-      ? shadowParts(shadowOff, KIT.primaryShadow, c.primaryInset, s / 2)
+      ? shadowParts(shadowOff, c.primaryShadow, c.primaryInset, s / 2)
       : glassy
         ? shadowParts(shadowOff, c.raisedShadow || undefined, undefined, s / 2, true, KIT.size.edge)
         : null;
@@ -755,11 +758,15 @@ export function PulseDot({
 }) {
   const reduce = useReduceMotion();
   const active = useLoopActive();
+  const { scheme } = useKit();
   // The core's glow natively (NativeShadow.tsx): the waves redraw the screen on every frame, and
-  // React Native would blur this glow again on each one.
+  // React Native would blur this glow again on each one. None in the dark: there it stood as a
+  // grey disc round the dot (the owner's report, 2 Kasım, 2.2); the waves stay.
   const glow = boxShadowParts(
     useLabOff('golge'),
-    `0px 0px ${size}px ${ring}, 0px 0px 0px ${KIT.size.dotRing / 2}px ${ring}`,
+    scheme === 'dark'
+      ? undefined
+      : `0px 0px ${size}px ${ring}, 0px 0px 0px ${KIT.size.dotRing / 2}px ${ring}`,
     size / 2,
   );
   const [waves] = useState(() => [new Animated.Value(0), new Animated.Value(0)]);
@@ -865,28 +872,31 @@ export function GlassList({ children, testID }: { children: ReactNode; testID?: 
   );
 }
 
-// A list as Telegram Android draws one (the owner's call, 30 Ekim: each row a card looked heavy):
-// the rows straight on the ground, the full width of the screen's padding, a hairline between them
-// from where the text starts. `inset`: how far in the hairline starts (the row's picture and the
-// gap after it): a settings list's icon 24 + 12 = 36 (the line from 52), a person's list `person`
-// (the face 44 + 12 = 56, the line from 72).
+// A list: the rows in one glass card (`.glass.sm.lst`; the owner's report, 2 Kasım, 16.1: the rows
+// stood bare on the ground; each row a card of its own looked heavy, 30 Ekim), a hairline between
+// them from where the text starts to the row's inner right edge (16.2). `inset`: how far in the
+// hairline starts (the row's picture and the gap after it): a settings list's icon 24 + 12 = 36,
+// a person's list `person` (the face 44 + 12 = 56).
 export function RowList({
   children,
   testID,
   inset = KIT.size.av.row + KIT.size.liGap,
   person,
+  plain,
 }: {
   children: ReactNode;
   testID?: string;
   inset?: number;
   // A person's list (aura v71, `.av` 44): the hairline from the 44 face; the default stays.
   person?: boolean;
+  // Already on a card (Keşfet's map card): no card of its own, the rows to the card's padding.
+  plain?: boolean;
 }) {
   const { c } = useKit();
   const rows = Children.toArray(children).filter(Boolean);
+  const Card = plain ? PlainRows : Glass;
   return (
-    // The rows reach the screen's padding: their own padding is their touch area, not a margin.
-    <View testID={testID} style={{ marginHorizontal: -KIT.size.liPadX }}>
+    <Card sm testID={testID} style={plain ? undefined : { overflow: 'hidden' }}>
       {rows.map((row, i) => (
         <View key={isValidElement(row) && row.key !== null ? row.key : i}>
           {i > 0 ? (
@@ -894,6 +904,7 @@ export function RowList({
               style={{
                 height: KIT.size.hair,
                 marginLeft: KIT.size.liPadX + (person ? KIT.size.avPerson + KIT.size.liGap : inset),
+                marginRight: KIT.size.liPadX,
                 backgroundColor: c.hair,
               }}
             />
@@ -901,6 +912,13 @@ export function RowList({
           {row}
         </View>
       ))}
+    </Card>
+  );
+}
+function PlainRows({ testID, children }: { sm?: boolean; testID?: string; children: ReactNode }) {
+  return (
+    <View testID={testID} style={{ marginHorizontal: -KIT.size.liPadX }}>
+      {children}
     </View>
   );
 }

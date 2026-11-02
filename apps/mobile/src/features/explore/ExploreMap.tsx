@@ -534,7 +534,7 @@ function StackCard({ venues, bottom }: { venues: readonly ExploreVenue[]; bottom
   return (
     <MapCard bottom={bottom} testID="explore-map-stack">
       <T v="sec">{tr.explore.stackTitle(venues.length)}</T>
-      <RowList inset={KIT.size.liGap + VENUE_THUMB.size}>
+      <RowList plain inset={KIT.size.liGap + VENUE_THUMB.size}>
         {venues.map((venue) => {
           const type = venueType(venue);
           return (

@@ -156,7 +156,7 @@ export function Button({
   const shadow = textOnly
     ? null
     : variant === 'primary' && !disabled
-      ? shadowParts(shadowOff, KIT.primaryShadow, k.primaryInset, shape.radius.pill)
+      ? shadowParts(shadowOff, k.primaryShadow, k.primaryInset, shape.radius.pill)
       : raised
         ? shadowParts(
             shadowOff,
