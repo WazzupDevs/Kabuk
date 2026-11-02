@@ -13,26 +13,41 @@ import { useTheme } from '@/theme/ThemeProvider';
 // (`.dark.pA`), its ground is the flat canvas.
 const GROUND_PICTURE = require('../../assets/aura/ground-light.webp');
 
-// The screen's backdrop: the frosted buttons drawn after it blur it (ui/LiquidGlass → Frost).
+// The screen's backdrop: the frosted buttons drawn after it blur it (ui/LiquidGlass → Frost). The
+// picture is also drawn once more under the glass's target, as a plain view (the owner's report, 2
+// Kasım, K2/X2: on several screens the clouds did not show on first opening, flat mint, until a
+// glass or a sheet made the screen draw again); the target draws the same picture over it.
 export function AuraBackground() {
   const { scheme } = useTheme();
   const off = useLabOff('zemin');
+  const plain = !off && scheme !== 'dark';
   return (
-    <GlassTarget backdrop style={StyleSheet.absoluteFill}>
-      {off || scheme === 'dark' ? (
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: AURA[scheme].ground }]} />
-      ) : (
+    <>
+      {plain ? (
         <Image
           source={GROUND_PICTURE}
           fadeDuration={0}
           resizeMode="cover"
-          // Its own size, or it draws at the picture's pixels (Image takes a required source's
-          // size).
           style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%' }}
           accessible={false}
         />
-      )}
-    </GlassTarget>
+      ) : null}
+      <GlassTarget backdrop style={StyleSheet.absoluteFill}>
+        {off || scheme === 'dark' ? (
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: AURA[scheme].ground }]} />
+        ) : (
+          <Image
+            source={GROUND_PICTURE}
+            fadeDuration={0}
+            resizeMode="cover"
+            // Its own size, or it draws at the picture's pixels (Image takes a required source's
+            // size).
+            style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%' }}
+            accessible={false}
+          />
+        )}
+      </GlassTarget>
+    </>
   );
 }
 
