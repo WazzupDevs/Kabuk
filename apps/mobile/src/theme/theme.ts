@@ -75,7 +75,7 @@ export const THEME: ThemeDefinition = {
       onViolet: '#031B0B',
       read: '#7DB2FF',
       readOnAccent: '#FFD48A',
-      border: '#5E6964',
+      border: '#626D68',
       divider: '#232A27',
       danger: '#FF977E',
       onDanger: '#1F0A04',

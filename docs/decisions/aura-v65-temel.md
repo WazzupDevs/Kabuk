@@ -7,12 +7,12 @@ sonraki paketlerdir.
 - **Renk.** Açık tema `skall.css` `:root`, koyu tema `.dark` üstüne `koyu.css` `.dark.pA` (Grafit,
   düz siyah). Mor aile arayüzden çıktı; DM mavisi (`read`) kaldı. Denetim:
   `src/lib/violetGuard.test.ts` (OKLCH ton 278–325). Logo, kapsül ve oyun sanatı kendi renginde.
-- **Tuvalin vermediği iki değer türetildi:** koyu `calm` = `rgba(61,220,132,.14)` siyah zemine
-  serilmiş hâli (`#091F12`; palet `#rrggbb` ister); koyu `featureMuted` = açık temanın `muted`'ı
-  (koyuda `feature` neredeyse beyaz, ters yüzey). Öne çıkan kart koyuda açık temanın anlamsal
-  renklerini kullanır (`theme/feature.ts`).
-- **Kontrast istisnası:** koyu `border` (#5E6964) `surface2` (#1B211F) üstünde 2,9:1; tuval
-  değeridir, bu çift yalnız açık temada denetlenir (`contrast.test.ts`).
+- **Koyu `calm` ve `featureMuted`:** v65 tuvali vermiyordu, türetildi (`calm` = `rgba(61,220,132,.14)`
+  siyah zemine serilmiş hâli, `#091F12`; `featureMuted` = açık temanın `muted`'ı, `#4A6550`). Proje
+  sahibi ikisini onayladı, tuval v67 `koyu.css` aynı değerleri yazar (2 Kasım). Öne çıkan kart koyuda
+  açık temanın anlamsal renklerini kullanır (`theme/feature.ts`).
+- **Koyu `border`:** v67'de `#626D68` (`surface2` üstünde 3,04:1); v65'teki `#5E6964` (2,9:1) ve
+  kontrast testindeki yalnız-açık istisnası kalktı (2 Kasım).
 - **Aura** yalnız açık temada (`scripts/aura/ground.ts` ile çizilen tek resim); koyuda düz zemin.
 - **Ölçüler:** düğme 56 / 40 (orta ve uzun düğmeler de bu ikisine çekildi), alan 56, çok satırlı
   104 / 22, seg 44 / 36, anahtar 52 × 32, sohbet alanı ve gönder 56, alt menü 64 / sekme 48 /

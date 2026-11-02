@@ -64,6 +64,7 @@ const PAIRS: readonly Pair[] = [
   ['border', 'canvas', AA_LARGE], // control outlines (secondary button, outline chip)
   ['border', 'surface', AA_LARGE],
   ['border', 'raised', AA_LARGE],
+  ['border', 'surface2', AA_LARGE],
   ['accent', 'canvas', AA_LARGE],
   ['accent', 'raised', AA_LARGE],
   ...BUTTON_PAIRS,
@@ -87,16 +88,11 @@ function ratio(p: Palette, fg: PaletteKey, bg: PaletteKey): number {
   return contrastRatio(p[fg], p[bg]);
 }
 
-// Aura v65 `.dark.pA` sets the dark `border` (#5E6964) at 2.9:1 on `surface2` (#1B211F); the
-// canvas is the source (docs/design/aura), so that one pair holds in the light scheme only.
-const LIGHT_ONLY: readonly Pair[] = [['border', 'surface2', AA_LARGE]];
-
 describe('theme contrast (WCAG AA)', () => {
   for (const scheme of ['light', 'dark'] as const) {
     const palette = THEME.palettes[scheme];
-    const pairs = scheme === 'light' ? [...PAIRS, ...LIGHT_ONLY] : PAIRS;
     describe(scheme, () => {
-      it.each(pairs)('%s on %s ≥ %s', (fg, bg, min) => {
+      it.each(PAIRS)('%s on %s ≥ %s', (fg, bg, min) => {
         expect(ratio(palette, fg, bg)).toBeGreaterThanOrEqual(min);
       });
     });
