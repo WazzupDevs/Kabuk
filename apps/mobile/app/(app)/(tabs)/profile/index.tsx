@@ -4,7 +4,7 @@ import { type ReactNode, useState } from 'react';
 import { Pressable, useWindowDimensions, View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
-import { Av, Btn, Glass, GlassList, Li, Round, T, useKit } from '@/aura/kit';
+import { Av, Btn, Glass, Li, Round, T, useKit } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
 import { useLoaderHold } from '@/components/Loader';
 import { PhotoPreview } from '@/components/PhotoPreview';
@@ -18,7 +18,8 @@ import { tr } from '@/i18n/tr';
 import { profileApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useNow } from '@/lib/useNow';
-import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { KIT } from '@/theme/auraKit';
+import { ICON, SPACING } from '@/theme/tokens';
 
 // The own profile (docs/arsiv/SPEC_V2.md §5; docs/design/aura → Profil): "Profil" and the settings at the
 // top; the two faces side by side, the photo the table sees and the capsule while anonymous; the
@@ -40,13 +41,14 @@ export default function ProfileScreen() {
   const stacked = width < STACK_BELOW || fontScale > STACK_SCALE;
 
   return (
-    <Screen gap={GAP}>
+    <Screen gap={0}>
+      {/* U32: "Profil" display on a row 44 high, the settings 44 round soft. */}
       <View style={ROW}>
-        {/* The tab's title as large as the others' ("Mesajlar"; the owner's call, 28 Ekim). */}
-        <T v="display" style={KIT_TYPE.displayXl} accessibilityRole="header">
+        <T v="display" accessibilityRole="header">
           {tr.tabs.profile}
         </T>
         <Round
+          glassy
           icon="settings"
           side={KIT.size.bell}
           label={tr.settings.title}
@@ -70,8 +72,9 @@ export default function ProfileScreen() {
           }}
         />
       ) : (
-        <View style={{ gap: GAP }}>
-          <View style={{ flexDirection: 'row', gap: KIT.size.rowGap }}>
+        <View>
+          {/* U32: the two cards 16 under the title, 12 apart. */}
+          <View style={{ flexDirection: 'row', gap: CARD_GAP, marginTop: SPACING[4] }}>
             {/* The photo opens large; the capsule lives (blinks, looks at the photo, rolls its
                 eyes, answers a tap). Editing is the two buttons under the name (the owner's call,
                 28 Ekim). */}
@@ -84,7 +87,7 @@ export default function ProfileScreen() {
               testID="profile-photo"
             >
               <Av
-                size="big"
+                size="xl"
                 name={view.data.displayName ?? tr.profile.noName}
                 photoUrl={view.data.photoHidden ? null : view.data.photoUrl}
               />
@@ -94,11 +97,11 @@ export default function ProfileScreen() {
               note={tr.profile.ownCapsuleNote}
               testID="profile-capsule"
             >
-              <Av size="big" name="">
+              <Av size="xl" name="">
                 {view.data.capsuleLook ? (
                   <LivingLook
                     look={view.data.capsuleLook}
-                    size={KIT.size.av.big}
+                    size={KIT.size.av.xl}
                     accessibilityLabel={tr.profile.ownCapsule}
                   />
                 ) : null}
@@ -111,20 +114,31 @@ export default function ProfileScreen() {
             onClose={() => setPreview(false)}
           />
 
-          <View style={{ gap: KIT.size.tagGap, paddingHorizontal: KIT.size.secPadX }}>
-            <T v="display" style={KIT_TYPE.displaySm} accessibilityRole="header">
+          {/* U32: the name and age display 20 under the cards, the bio 2 under it in the ink. */}
+          <View style={{ gap: SPACING[0.5], marginTop: SPACING[5] }}>
+            <T v="display" accessibilityRole="header">
               {view.data.displayName
                 ? view.data.age
                   ? tr.profile.nameWithAge(view.data.displayName, view.data.age)
                   : view.data.displayName
                 : tr.profile.noName}
             </T>
-            {view.data.bio ? <T v="bodyLg">{view.data.bio}</T> : null}
+            {view.data.bio ? (
+              <T v="body" ink>
+                {view.data.bio}
+              </T>
+            ) : null}
           </View>
 
           {/* aura v50 (ProfilDar): side by side at 390 dp; under 360 dp or with larger text one
               under the other, 58 high, so the words never shrink. */}
-          <View style={{ flexDirection: stacked ? 'column' : 'row', gap: BTN_GAP }}>
+          <View
+            style={{
+              flexDirection: stacked ? 'column' : 'row',
+              gap: CARD_GAP,
+              marginTop: SPACING[4],
+            }}
+          >
             <Btn
               bar={stacked ? KIT.size.btnTall : KIT.size.btnRow}
               variant="glassy"
@@ -143,57 +157,60 @@ export default function ProfileScreen() {
           </View>
 
           {view.data.photoHidden ? (
-            <Glass pad="pad">
+            <Glass pad="pad" style={{ marginTop: SPACING[4] }}>
               <T v="fine" ink>
                 {tr.profile.photoHidden}
               </T>
             </Glass>
           ) : null}
 
-          <GlassList>
+          {/* U32: the nick and the friends on one glass sm card 16 under the buttons; a row 72,
+              14/16 inside, the hairline 16 in from both sides. */}
+          <Glass sm style={{ marginTop: SPACING[4], overflow: 'hidden' }}>
             {view.data.capsuleNick ? (
               <NickRow nick={view.data.capsuleNick} refreshAt={view.data.nickRefreshAt ?? null} />
             ) : null}
+            {view.data.capsuleNick ? <Hair /> : null}
             <Li
               testID="profile-friends"
               accessibilityLabel={tr.profile.friendsCount(friendList.length)}
               onPress={() => router.push('/profile/friends')}
-              padY={KIT.size.profilePadY}
-              padX={KIT.size.profilePadX}
+              padY={ROW_PAD_Y}
+              padX={SPACING[4]}
             >
-              <View style={{ flex: 1 }}>
-                <T v="sec">{tr.profile.friends}</T>
-                <T v="fineLg">{tr.profile.friendsPeople(friendList.length)}</T>
+              <View style={{ flex: 1, gap: SPACING[0.5], minHeight: ROW_INNER }}>
+                <T v="h3">{tr.profile.friends}</T>
+                <T v="fine">{tr.profile.friendsPeople(friendList.length)}</T>
               </View>
               <View
                 style={{ flexDirection: 'row' }}
                 importantForAccessibility="no-hide-descendants"
               >
                 {friendList.slice(0, STACK).map((f, i) => (
-                  <View
-                    key={f.publicId}
-                    style={{ marginLeft: i === 0 ? 0 : -KIT.size.stackOverlap }}
-                  >
+                  <View key={f.publicId} style={{ marginLeft: i === 0 ? 0 : -SPACING[2] }}>
                     <Av size="sm" name={f.displayName ?? tr.profile.noName} photoUrl={f.photoUrl} />
                   </View>
                 ))}
               </View>
-              <CapIcon name="forward" color={c.muted} size={KIT.size.iconSm} />
+              <CapIcon name="chevron" color={c.muted} size={ICON.md} />
             </Li>
-          </GlassList>
+          </Glass>
         </View>
       )}
     </Screen>
   );
 }
 
-const GAP = 14;
-const BTN_GAP = 10;
+const CARD_GAP = SPACING[3];
+// U32: a row of the list 72 high, 14 above and under.
+const ROW_PAD_Y = 14;
+const ROW_INNER = 72 - 2 * ROW_PAD_Y;
 // The two buttons go one under the other under 360 dp or above 1.15x text (aura v50, ProfilDar).
 const STACK_BELOW = 360;
 const STACK_SCALE = 1.15;
 const STACK = 3;
 const ROW = {
+  height: KIT.size.bell,
   flexDirection: 'row' as const,
   alignItems: 'center' as const,
   justifyContent: 'space-between' as const,
@@ -215,21 +232,24 @@ function FaceCard({
   children: ReactNode;
 }) {
   const card = (pressed: boolean) => (
+    // U32: glass sm, 16/12 inside, the face 96, 10 over its name (h3) and note (fine).
     <Glass
+      sm
       style={{
-        height: KIT.size.faceCard,
         alignItems: 'center',
-        justifyContent: 'center',
-        gap: BTN_GAP,
+        paddingVertical: SPACING[4],
+        paddingHorizontal: SPACING[3],
         opacity: pressed ? PRESSED : 1,
       }}
     >
       {children}
-      <View style={{ alignItems: 'center' }}>
-        <T v="body" strong>
+      <View style={{ alignItems: 'center', gap: SPACING[0.5], marginTop: SPACING[2.5] }}>
+        <T v="h3" center>
           {label}
         </T>
-        <T v="body">{note}</T>
+        <T v="fine" center>
+          {note}
+        </T>
       </View>
     </Glass>
   );
@@ -267,13 +287,14 @@ function NickRow({ nick, refreshAt }: { nick: string; refreshAt: string | null }
     onSettled: () => queryClient.invalidateQueries({ queryKey: profileViewKeys.all }),
   });
   return (
-    <Li padY={KIT.size.profilePadY} padX={KIT.size.profilePadX}>
-      <View style={{ flex: 1, gap: NICK_GAP }}>
-        <T v="fineLg">{tr.profile.nickLabel}</T>
-        <T v="sec" testID="nick">
+    // U32: the nick's block: a fine label, the nick h3, a fine note; "Yenile" btn sm + refresh.
+    <Li padY={ROW_PAD_Y} padX={SPACING[4]}>
+      <View style={{ flex: 1, gap: SPACING[0.5], minHeight: ROW_INNER }}>
+        <T v="fine">{tr.profile.nickLabel}</T>
+        <T v="h3" testID="nick">
           {nick}
         </T>
-        {waiting ? <T v="fineLg">{tr.profile.nickWait(Math.ceil(waitMs / DAY_MS))}</T> : null}
+        {waiting ? <T v="fine">{tr.profile.nickWait(Math.ceil(waitMs / DAY_MS))}</T> : null}
         {refresh.isError ? (
           <T v="fine" color={c.warn}>
             {errorMessage(refresh.error)}
@@ -283,6 +304,7 @@ function NickRow({ nick, refreshAt }: { nick: string; refreshAt: string | null }
       <Btn
         sm
         variant="glassy"
+        icon="refresh"
         testID="nick-refresh"
         label={tr.profile.nickRenew}
         disabled={waiting}
@@ -293,4 +315,16 @@ function NickRow({ nick, refreshAt }: { nick: string; refreshAt: string | null }
   );
 }
 const DAY_MS = 24 * 60 * 60 * 1000;
-const NICK_GAP = 1;
+
+function Hair() {
+  const { c } = useKit();
+  return (
+    <View
+      style={{
+        height: KIT.size.hair,
+        marginHorizontal: SPACING[4],
+        backgroundColor: c.hair,
+      }}
+    />
+  );
+}
