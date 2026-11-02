@@ -120,6 +120,8 @@ const SHADOW = {
   send: '0px 10px 22px rgba(3, 27, 11, 0.24)',
   me: '0px 10px 22px rgba(14, 135, 69, 0.24)',
   disk: '0px 14px 30px rgba(4, 73, 35, 0.22)',
+  // skall.css --shadow-card: a riso picture standing on the screen (an empty state, a scene).
+  card: '0px 10px 22px rgba(3, 27, 11, 0.07)',
 } as const;
 
 // Keşfet's venue icon: 52 with its 16 round (Keşfet: the list row's picture).
@@ -152,6 +154,7 @@ export const KIT = {
     raisedChip: 'rgba(255, 255, 255, 0.74)',
     raisedEdge: '#FFFFFF',
     raisedShadow: SHADOW.soft,
+    cardShadow: SHADOW.card,
     chipShadow: SHADOW.chip,
     chipOn: '#031B0B',
     onChipOn: '#FFFFFF',
@@ -210,6 +213,7 @@ export const KIT = {
     raisedChip: '#121614',
     raisedEdge: 'rgba(255, 255, 255, 0.10)',
     raisedShadow: '',
+    cardShadow: '',
     chipShadow: '',
     chipOn: '#EEF3F0',
     onChipOn: '#0B0E0D',

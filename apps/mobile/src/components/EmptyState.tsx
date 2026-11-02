@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { View } from 'react-native';
+import { type ImageSourcePropType, View } from 'react-native';
 
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import {
@@ -19,6 +19,7 @@ import { MotionMark } from './Mark';
 import { Text } from './Text';
 import { AppIcon } from './AppIcon';
 import { EmptyMark } from '@/aura/EmptyMark';
+import { RisoPicture } from '@/aura/RisoPicture';
 import { T } from '@/aura/kit';
 import { KIT } from '@/theme/auraKit';
 
@@ -37,6 +38,8 @@ type Props = {
   action?: { label: string; onPress: () => void; loading?: boolean };
   // The lobby's smaller empty state (docs/design/aura → Mekan: 18 / 14, 18 above).
   small?: boolean;
+  // The empty state's riso picture in place of the still sign (Aura v65 §9.1).
+  picture?: { source: ImageSourcePropType; width: number; height: number; radius: number };
 };
 
 const MARK_SIZE = SPACING[16] + SPACING[8];
@@ -76,7 +79,7 @@ export function StateMark({ kind, size = MARK_SIZE }: { kind: StateKind; size?: 
 // the note under it, centred, and the action under them; no card around it.
 const DISC_MARK = SPACING[10];
 
-export function EmptyState({ kind, icon, title, body, action, small }: Props) {
+export function EmptyState({ kind, icon, title, body, action, small, picture }: Props) {
   const [shown, setShown] = useState(kind !== 'loading');
   useEffect(() => {
     if (kind !== 'loading') return undefined;
@@ -96,7 +99,8 @@ export function EmptyState({ kind, icon, title, body, action, small }: Props) {
       )}
     </View>
   );
-  if (kind === 'empty') return <Empty title={title} body={body} action={action} small={small} />;
+  if (kind === 'empty')
+    return <Empty title={title} body={body} action={action} small={small} picture={picture} />;
   return (
     <View
       style={{ opacity: shown || kind !== 'loading' ? 1 : 0 }}
@@ -137,7 +141,13 @@ export function EmptyState({ kind, icon, title, body, action, small }: Props) {
 
 // The empty state (docs/design/aura, aura 31): the still sign, the title and the note centred,
 // on the screen without a card; at most one action under them.
-function Empty({ title, body, action, small }: Pick<Props, 'title' | 'body' | 'action' | 'small'>) {
+function Empty({
+  title,
+  body,
+  action,
+  small,
+  picture,
+}: Pick<Props, 'title' | 'body' | 'action' | 'small' | 'picture'>) {
   return (
     <View
       style={{
@@ -148,7 +158,14 @@ function Empty({ title, body, action, small }: Pick<Props, 'title' | 'body' | 'a
         paddingHorizontal: SPACING[3],
       }}
     >
-      <EmptyMark />
+      {picture ? (
+        // AktivitelerBos `.empty img`: the board's shadow, 16 under it (the column's 8 and 8 more).
+        <View style={{ marginBottom: SPACING[2] }}>
+          <RisoPicture {...picture} />
+        </View>
+      ) : (
+        <EmptyMark />
+      )}
       {title ? (
         <T v="h3" center accessibilityRole="header" style={{ marginTop: KIT.size.emptyTitleTop }}>
           {title}

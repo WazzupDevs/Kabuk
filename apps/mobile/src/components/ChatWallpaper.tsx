@@ -7,21 +7,21 @@ import { useTheme } from '@/theme/ThemeProvider';
 
 // The chat walls as Telegram Android draws its chat backgrounds (the owner's call, 30 Ekim): one
 // picture from the top of the screen to its foot, a soft four-colour gradient with skall's quiet
-// pattern over it (scripts/art/walls.ts), each chat its own (DM, Masa, Mekan; light and dark). One
-// image for the whole screen: a tile laid edge to edge left seams where its edges fell between
+// pattern over it (scripts/art/walls.ts; DM and Mekan the riso walls, Aura v65 §9.1), each chat its
+// own (DM, Masa, Mekan; light and dark). One image for the whole screen: a tile laid edge to edge left seams where its edges fell between
 // pixels. It stays where it is while the messages scroll over it and the keyboard comes and goes.
 const WALLS: Record<ChatWallKind, Record<ColorScheme, ImageSourcePropType>> = {
   dm: {
-    light: require('../../assets/wall/dm-light.webp'),
-    dark: require('../../assets/wall/dm-dark.webp'),
+    light: require('../../assets/riso/wall-dm-light.webp'),
+    dark: require('../../assets/riso/wall-dm-dark.webp'),
   },
   masa: {
     light: require('../../assets/wall/masa-light.webp'),
     dark: require('../../assets/wall/masa-dark.webp'),
   },
   mekan: {
-    light: require('../../assets/wall/mekan-light.webp'),
-    dark: require('../../assets/wall/mekan-dark.webp'),
+    light: require('../../assets/riso/wall-mekan-light.webp'),
+    dark: require('../../assets/riso/wall-mekan-dark.webp'),
   },
 };
 
