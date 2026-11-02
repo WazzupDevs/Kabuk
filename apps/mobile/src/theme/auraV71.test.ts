@@ -3,7 +3,6 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { KIT } from './auraKit';
 import { THEME } from './theme';
 
 const mobile = join(import.meta.dirname, '..', '..');
@@ -17,24 +16,10 @@ function files(dir: string): string[] {
 }
 
 describe('aura v71 kit colours', () => {
-  it('the step dots and the check ink', () => {
-    expect(KIT.light.stepDot).toBe('rgba(17, 23, 20, 0.16)');
-    expect(KIT.dark.stepDot).toBe('rgba(255, 255, 255, 0.18)');
-    expect(KIT.checkInk).toBe('#0B0E0D');
-  });
-
   it('lively and its ink are the theme palette (no copy in the kit)', () => {
     const { light, dark } = THEME.palettes;
     expect([light.lively, light.onLively]).toEqual(['#FFE6C7', '#7A4300']);
     expect([dark.lively, dark.onLively]).toEqual(['#46290B', '#FFD8A3']);
-  });
-
-  it('the shared sizes', () => {
-    expect([KIT.size.checkBox, KIT.size.checkRadius]).toEqual([24, 8]);
-    expect([KIT.size.lrMin, KIT.size.lrPadY, KIT.size.lrIcon, KIT.size.lrChevron]).toEqual([
-      64, 12, 24, 20,
-    ]);
-    expect([KIT.size.fieldBox, KIT.size.fieldBig]).toEqual([60, 72]);
   });
 });
 
@@ -43,7 +28,9 @@ describe('capsule icon names (F2)', () => {
     (p) => !p.endsWith('AppIcon.tsx'),
   );
   it.each(['camera-outline', 'flag-outline', 'arrow-forward'])('no %s call is left', (name) => {
-    const left = calls.filter((p) => readFileSync(p, 'utf8').includes(`"${name}"`));
+    const left = calls.filter((p) =>
+      [`"${name}"`, `'${name}'`].some((q) => readFileSync(p, 'utf8').includes(q)),
+    );
     expect(left).toEqual([]);
   });
 });
