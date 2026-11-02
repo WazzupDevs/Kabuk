@@ -15,13 +15,11 @@ import { Pressable, View } from 'react-native';
 import { Avatar, AVATAR_SIZE } from '@/components/Avatar';
 import { Banner } from '@/components/Banner';
 import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
 import { ChatBubble } from '@/components/ChatBubble';
 import { ChatRow, ChatScreen, DayLine, dayLabel } from '@/components/ChatScreen';
 import { ChatTopBar } from '@/components/ChatTopBar';
 import { DraftComposer } from '@/components/Composer';
 import { EmptyState } from '@/components/EmptyState';
-import { GlyphDisc } from '@/components/GlyphDisc';
 import { IconButton, MoreDots } from '@/components/IconButton';
 import { Loader } from '@/components/Loader';
 import { LookAvatar } from '@/components/LookAvatar';
@@ -47,6 +45,7 @@ import {
   markVenueChatSeen,
 } from '@/features/venueChat/queries';
 import { errorMessage } from '@/i18n/errors';
+import { CapIcon } from '@/aura/CapIcon';
 import { Av, Glass, T } from '@/aura/kit';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
@@ -405,17 +404,39 @@ export default function VenueChatScreen() {
           </View>
         ) : (
           <View className="flex-1 justify-end gap-2">
-            <Card>
-              <View className="items-center" style={{ gap: SPACING[2] }}>
-                <GlyphDisc icon="chatbubbles-outline" />
-                <Text variant="heading" className="text-center">
-                  {tr.venueChat.emptyTitle}
-                </Text>
-                <Text variant="fine" className="text-center">
-                  {profiled ? tr.venueChat.emptyProfiled : tr.venueChat.emptyAnonymous(photo.nick)}
-                </Text>
+            {/* U26 (MekanSohbetiBos): a glass card, the chat's disc, h3 and fine. */}
+            <Glass
+              style={{
+                alignItems: 'center',
+                gap: KIT.venueChatEmpty.gap,
+                paddingHorizontal: KIT.venueChatEmpty.padX,
+                paddingVertical: KIT.venueChatEmpty.padY,
+              }}
+            >
+              <View
+                style={{
+                  width: KIT.venueChatEmpty.disc,
+                  height: KIT.venueChatEmpty.disc,
+                  borderRadius: KIT.venueChatEmpty.disc / 2,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: KIT.venueChatEmpty.discGround,
+                }}
+              >
+                <CapIcon
+                  name="chat"
+                  color={KIT.venueChatEmpty.ink[scheme]}
+                  second={KIT.venueChatEmpty.body}
+                  soft={KIT.venueChatEmpty.bodySoft}
+                />
               </View>
-            </Card>
+              <T v="h3" center>
+                {tr.venueChat.emptyTitle}
+              </T>
+              <T v="fine" center>
+                {profiled ? tr.venueChat.emptyProfiled : tr.venueChat.emptyAnonymous(photo.nick)}
+              </T>
+            </Glass>
             <DayLine label={tr.chat.today} />
           </View>
         ),
@@ -597,7 +618,7 @@ function IdentityRow({
           paddingVertical: SPACING[1.5],
           paddingLeft: SPACING[1.5],
           paddingRight: SPACING[3],
-          borderRadius: KIT.size.glassRadiusSm + 2,
+          borderRadius: KIT.venueChatStripRadius,
         }}
       >
         {face}
