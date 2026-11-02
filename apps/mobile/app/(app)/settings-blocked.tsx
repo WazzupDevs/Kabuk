@@ -12,8 +12,11 @@ import { PAGE_KANKI } from '@/theme/kankiMotion';
 // Engellenenler (skall tuvali, Engellenenler, EngellenenlerBos).
 export default function BlockedScreen() {
   return (
-    <Screen list backdrop={<RisoKanki place={PAGE_KANKI.blocked} scale={1} />}>
-      <PageTop title={tr.settings.blocked} />
+    <Screen
+      list
+      backdrop={<RisoKanki place={PAGE_KANKI.blocked} scale={1} />}
+      top={<PageTop title={tr.settings.blocked} />}
+    >
       <View style={{ gap: KIT.size.rowGap }}>
         <T v="fine">{tr.settings.blockedNote}</T>
         <BlockedList />

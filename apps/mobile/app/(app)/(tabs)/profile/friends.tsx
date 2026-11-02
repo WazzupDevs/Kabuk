@@ -37,14 +37,17 @@ export default function FriendsScreen() {
   };
 
   return (
-    <Screen refreshable>
-      {/* skall tuvali (Arkadaslar): the round back, the title and "N arkadaş" under it. */}
-      <PageTop
-        title={tr.profile.friends}
-        sub={friends.data ? tr.profile.friendsSub(friends.data.length) : undefined}
-        onBack={() => router.back()}
-      />
-
+    <Screen
+      refreshable
+      top={
+        // skall tuvali (Arkadaslar): the round back, the title and "N arkadaş" under it.
+        <PageTop
+          title={tr.profile.friends}
+          sub={friends.data ? tr.profile.friendsSub(friends.data.length) : undefined}
+          onBack={() => router.back()}
+        />
+      }
+    >
       {friends.isPending || loading ? (
         <View className="mt-12">
           <EmptyState kind="loading" body={tr.common.loading} />

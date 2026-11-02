@@ -8,6 +8,7 @@ import { Av, Btn, T, useKit } from '@/aura/kit';
 import { LookAvatar } from '@/components/LookAvatar';
 import { PageTop } from '@/components/PageTop';
 import { Screen } from '@/components/Screen';
+import { useHideTabBar } from '@/components/TabBar';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
@@ -27,6 +28,8 @@ const FACE_ICON = 34;
 const TILE_FACE = KIT.size.av.row;
 
 export default function CapsulesScreen() {
+  // Editing, the tab bar is out of sight (the owner's call, 2 Kasım, 11.5, 12.2).
+  useHideTabBar();
   const { colors, shape } = useTheme();
   const { c } = useKit();
   const { width } = useWindowDimensions();
@@ -35,8 +38,11 @@ export default function CapsulesScreen() {
   const tile = (width - side * 2 - SPACING[2] * (COLUMNS - 1)) / COLUMNS;
   const sample = looks[looks.length - 2]?.code ?? '';
   return (
-    <Screen list gap={SPACING[4]}>
-      <PageTop title={tr.capsule.galleryTitle} sub={tr.capsule.gallerySub(looks.length)} />
+    <Screen
+      list
+      gap={SPACING[4]}
+      top={<PageTop title={tr.capsule.galleryTitle} sub={tr.capsule.gallerySub(looks.length)} />}
+    >
       <T v="fine">{tr.capsule.galleryBody}</T>
       <T v="h3" accessibilityRole="header">
         {tr.capsule.threeStates}

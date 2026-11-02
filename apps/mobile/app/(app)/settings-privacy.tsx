@@ -17,8 +17,10 @@ const privacyUrl = process.env.EXPO_PUBLIC_PRIVACY_URL;
 // riso buddy in the corner.
 export default function PrivacyScreen() {
   return (
-    <Screen backdrop={<RisoKanki place={PAGE_KANKI.privacy} scale={1} />}>
-      <PageTop title={tr.settings.privacyTitle} />
+    <Screen
+      backdrop={<RisoKanki place={PAGE_KANKI.privacy} scale={1} />}
+      top={<PageTop title={tr.settings.privacyTitle} />}
+    >
       <View style={{ gap: KIT.size.rowGap }}>
         <RowList inset={KIT.size.lrIcon + KIT.size.liGap}>
           <SettingsRow

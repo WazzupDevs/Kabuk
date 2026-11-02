@@ -10,6 +10,7 @@ import { Av, Btn, Glass, Round, T, useKit } from '@/aura/kit';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { Screen } from '@/components/Screen';
+import { useHideTabBar } from '@/components/TabBar';
 import { Text } from '@/components/Text';
 import { Loader } from '@/components/Loader';
 import { useProfile } from '@/features/account/useProfile';
@@ -32,6 +33,8 @@ import { ICON, SPACING } from '@/theme/tokens';
 // stays at the foot (the canvas leaves it out). Length is checked here; the profile function checks
 // length and profanity again. The birth date cannot change (rule 11).
 export default function EditProfileScreen() {
+  // Editing, the tab bar is out of sight (the owner's call, 2 Kasım, 11.5, 12.2).
+  useHideTabBar();
   const own = useProfile();
   if (own.isPending || !own.data) {
     return (
@@ -52,9 +55,9 @@ export default function EditProfileScreen() {
 }
 
 // A photo needs a saved name first (the server refuses it otherwise).
-// U34 (ProfilDuzenle `.ph`): no card; the face 88 at the left with the camera badge (36, the
-// surface, at its lower right, -4/-2; the camera 20, its lens the accent), "Fotoğrafı değiştir"
-// btn sm soft 16 beside it.
+// U34 (ProfilDuzenle `.ph`): no card; the face 88 in the middle with the camera badge (36, the
+// surface, at its lower right, -4/-2; the camera 20, its lens the accent). The written "Fotoğrafı
+// değiştir" went: the badge does the same (the owner's call, 2 Kasım, 12.5).
 function PhotoEditor({ publicId, hasName }: { publicId: string; hasName: boolean }) {
   const { c, scheme } = useKit();
   const { colors } = useTheme();
@@ -64,8 +67,8 @@ function PhotoEditor({ publicId, hasName }: { publicId: string; hasName: boolean
   const label = hasPhoto ? tr.profile.photoChange : tr.profile.photoAdd;
 
   return (
-    <View style={{ gap: SPACING[2] }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING[4] }}>
+    <View style={{ gap: SPACING[2], alignItems: 'center' }}>
+      <View>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={label}
@@ -95,9 +98,12 @@ function PhotoEditor({ publicId, hasName }: { publicId: string; hasName: boolean
             <CapIcon name="camera" color={colors.accent} second={c.ink} size={ICON.md} />
           </View>
         </Pressable>
-        <Btn sm variant="glassy" label={label} disabled={!hasName} onPress={() => setMenu(true)} />
       </View>
-      {!hasName ? <T v="fine">{tr.profile.photoNeedsName}</T> : null}
+      {!hasName ? (
+        <T v="fine" center>
+          {tr.profile.photoNeedsName}
+        </T>
+      ) : null}
 
       <PhotoSheet visible={menu} onClose={() => setMenu(false)} canRemove={hasPhoto} />
     </View>
@@ -177,6 +183,13 @@ function EditForm({
   return (
     <Screen
       gap={0}
+      // U34: back 44 round soft on the bar; it stays while the page scrolls (the owner's report,
+      // 2 Kasım, 12.1).
+      top={
+        <View style={{ height: KIT.size.btnRow, justifyContent: 'center' }}>
+          <Round glassy icon="back" label={tr.common.back} onPress={leave} />
+        </View>
+      }
       footer={
         // aura v50 (ProfilDuzenle): Kaydet stays at the foot, the save error right above it.
         <>
@@ -195,11 +208,7 @@ function EditForm({
         </>
       }
     >
-      {/* U34: the bar 56, back 44 round soft; the title display 8 under it. */}
-      <View style={{ height: KIT.size.btnRow, justifyContent: 'center' }}>
-        <Round glassy icon="back" label={tr.common.back} onPress={leave} />
-      </View>
-      <T v="display" accessibilityRole="header" style={{ marginTop: SPACING[2] }}>
+      <T v="display" accessibilityRole="header">
         {tr.profile.editTitle}
       </T>
 

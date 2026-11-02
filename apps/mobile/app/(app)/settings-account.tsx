@@ -51,8 +51,7 @@ export default function AccountScreen() {
     },
   });
   return (
-    <Screen>
-      <PageTop title={tr.settings.accountTitle} />
+    <Screen top={<PageTop title={tr.settings.accountTitle} />}>
       <View style={{ gap: KIT.size.rowGap }}>
         <Glass pad="pad" style={{ gap: KIT.size.rowGap }}>
           <View>

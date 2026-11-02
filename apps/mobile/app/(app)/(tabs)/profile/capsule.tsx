@@ -20,6 +20,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AuraFadeX } from '@/aura/AuraBackground';
 import { CapIcon } from '@/aura/CapIcon';
 import { Btn, Chip, Glass, Round, T, useKit } from '@/aura/kit';
 import { Button } from '@/components/Button';
@@ -27,7 +28,8 @@ import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
 import { LookAvatar } from '@/components/LookAvatar';
 import { boxShadowParts } from '@/components/NativeShadow';
-import { Screen } from '@/components/Screen';
+import { HidingHeadScreen } from '@/components/HidingHeadScreen';
+import { useHideTabBar } from '@/components/TabBar';
 import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
 import { useProfile } from '@/features/account/useProfile';
@@ -60,14 +62,13 @@ import { useAfterSlide } from '@/lib/useAfterSlide';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { profileApi } from '@/lib/api';
 import { FEELINGS } from '@/theme/capsuleLook';
-import { AURA } from '@/theme/aura';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
-import { gradientStyle } from '@/theme/gradient';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
-// docs/design/aura → Kapsülün (U35): no purple head; the title and the capsule scroll with the
-// content. The capsule 160 with a 4 ring, the worn parts' chips under it, the categories' chips,
+// docs/design/aura → Kapsülün (U35): no purple head. The bar stays; scrolling the parts up, the
+// capsule rises a little and stays in sight while the chips, the categories and the foot go
+// (HidingHeadScreen; the owner's call, 2 Kasım, 11.5). The capsule 160 with a 4 ring, the worn parts' chips under it, the categories' chips,
 // then the options and the packs.
 // v46 feel(): the feeling's face stays 1850 ms.
 const FEELING_MS = 1850;
@@ -77,6 +78,8 @@ const HERO_TOP = SPACING[2];
 const WORN_TOP = SPACING[4];
 const CATS_TOP = SPACING[5];
 const BODY_TOP = SPACING[4];
+// How far the capsule rises while the head gives way.
+const HERO_LIFT = SPACING[6];
 const PACK_GAP = SPACING[4];
 // The pressed box's size.
 const TILE_PRESSED = 0.96;
@@ -91,6 +94,8 @@ const SHUFFLE_SWELL = 1.18;
 // with changes asks first. The title, the capsule and the parts scroll together; "Hepsini çıkar"
 // and "Kaydet" stay at the foot (Screen footer).
 export default function CapsuleScreen() {
+  // Editing, the tab bar is out of sight (the owner's call, 2 Kasım, 11.5, 12.2).
+  useHideTabBar();
   const own = useProfile();
   const view = useProfileView(own.data?.public_id);
   const saved = view.data?.capsuleLook ?? null;
@@ -194,11 +199,15 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
   const wornList = worn(look);
   const slotName = CAPSULE_CATALOG.slots.find((s) => s.id === slot)?.name ?? '';
   const ringColor = scheme === 'dark' ? c.glass : colors.surface;
-  const ground = AURA[scheme].ground;
+  const catsRef = useRef<View>(null);
+  const [cats, setCats] = useState({ top: 0, height: 0 });
+  const catsFade = (width - side) * KIT.size.catsFade;
 
   return (
     <>
-      <Screen
+      <HidingHeadScreen
+        lift={HERO_LIFT}
+        gap={BODY_TOP}
         footer={
           <>
             {/* docs/design/aura → Kapsülün: two equal buttons, 12 apart, 12 above the tab bar. */}
@@ -242,97 +251,103 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
             ) : null}
           </>
         }
-      >
-        <View className="flex-row items-center justify-between" style={{ height: BAR }}>
-          <Round icon="back" label={tr.common.back} onPress={leave} />
-          <T v="title" ink accessibilityRole="header">
-            {tr.capsule.title}
-          </T>
-          <Round
-            testID="capsule-shuffle"
-            label={tr.capsule.shuffle}
-            onPress={() => {
-              setTurn((n) => n + 1);
-              put(shuffle(Math.random), SHUFFLE);
-            }}
-          >
-            <ShuffleGlyph turn={turn} />
-          </Round>
-        </View>
-        <View style={{ marginTop: HERO_TOP, alignItems: 'center' }}>
-          <CapsuleStage
-            testID="capsule-preview"
-            look={now}
-            feeling={feeling}
-            play={play}
-            beat={beat}
-            size={KIT.size.capsuleHero - KIT.size.capsuleRing * 2}
-            ring={KIT.size.capsuleRing}
-            ringColor={ringColor}
-            label={tr.capsule.tapHead}
-            hint={null}
-            onPress={feel}
-          />
-        </View>
-        {wornList.length > 0 ? (
-          <View
-            style={{
-              marginTop: WORN_TOP,
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-              justifyContent: 'center',
-              gap: KIT.size.chipsGap,
-            }}
-          >
-            {wornList.map((w) => (
-              <Chip
-                key={w.slot}
-                icon="closeSm"
-                label={w.name}
-                accessibilityLabel={tr.capsule.remove(w.name)}
-                onPress={() => put(takeOff(look, w.slot))}
-              />
-            ))}
+        bar={
+          <View className="flex-row items-center justify-between" style={{ height: BAR }}>
+            <Round icon="back" label={tr.common.back} onPress={leave} />
+            <T v="title" ink accessibilityRole="header">
+              {tr.capsule.title}
+            </T>
+            <Round
+              testID="capsule-shuffle"
+              label={tr.capsule.shuffle}
+              onPress={() => {
+                setTurn((n) => n + 1);
+                put(shuffle(Math.random), SHUFFLE);
+              }}
+            >
+              <ShuffleGlyph turn={turn} />
+            </Round>
           </View>
-        ) : null}
-        {/* The categories run to the screen's right edge and fade over its last fifth. */}
-        <View
-          style={{
-            marginTop: CATS_TOP,
-            marginRight: -side,
-            height: KIT.size.chip + KIT.size.edge * 2,
-          }}
-        >
-          <ScrollView
-            horizontal
-            showsVerticalScrollIndicator={false}
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: KIT.size.chipsGap, paddingRight: side }}
-          >
-            {CAPSULE_CATALOG.slots.map((s) => (
-              <Chip
-                key={s.id}
-                label={s.name}
-                on={slot === s.id}
-                onPress={() => setSlot(s.id as LookSlot)}
+        }
+        stay={
+          <View style={{ marginTop: HERO_TOP, alignItems: 'center' }}>
+            <CapsuleStage
+              testID="capsule-preview"
+              look={now}
+              feeling={feeling}
+              play={play}
+              beat={beat}
+              size={KIT.size.capsuleHero - KIT.size.capsuleRing * 2}
+              ring={KIT.size.capsuleRing}
+              ringColor={ringColor}
+              label={tr.capsule.tapHead}
+              hint={null}
+              onPress={feel}
+            />
+          </View>
+        }
+        hide={
+          <>
+            {wornList.length > 0 ? (
+              <View
+                style={{
+                  marginTop: WORN_TOP,
+                  flexDirection: 'row',
+                  flexWrap: 'wrap',
+                  justifyContent: 'center',
+                  gap: KIT.size.chipsGap,
+                }}
+              >
+                {wornList.map((w) => (
+                  <Chip
+                    key={w.slot}
+                    icon="closeSm"
+                    label={w.name}
+                    accessibilityLabel={tr.capsule.remove(w.name)}
+                    onPress={() => put(takeOff(look, w.slot))}
+                  />
+                ))}
+              </View>
+            ) : null}
+            {/* The categories run to the screen's right edge and fade over its last fifth, into the
+            ground's picture (11.4). */}
+            <View
+              ref={catsRef}
+              onLayout={() =>
+                catsRef.current?.measureInWindow((_x, y, _w, h) => setCats({ top: y, height: h }))
+              }
+              style={{
+                marginTop: CATS_TOP,
+                marginRight: -side,
+                height: KIT.size.chip + KIT.size.edge * 2,
+              }}
+            >
+              <ScrollView
+                horizontal
+                showsVerticalScrollIndicator={false}
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ gap: KIT.size.chipsGap, paddingRight: side }}
+              >
+                {CAPSULE_CATALOG.slots.map((s) => (
+                  <Chip
+                    key={s.id}
+                    label={s.name}
+                    on={slot === s.id}
+                    onPress={() => setSlot(s.id as LookSlot)}
+                  />
+                ))}
+              </ScrollView>
+              <AuraFadeX
+                top={cats.top}
+                left={width - catsFade}
+                width={catsFade}
+                height={cats.height}
               />
-            ))}
-          </ScrollView>
-          <View
-            pointerEvents="none"
-            style={[
-              {
-                position: 'absolute',
-                top: 0,
-                bottom: 0,
-                right: 0,
-                width: (width - side) * KIT.size.catsFade,
-              },
-              gradientStyle(`linear-gradient(90deg, ${ground}00, ${ground})`),
-            ]}
-          />
-        </View>
-        <View style={{ marginTop: BODY_TOP, gap: PACK_GAP }}>
+            </View>
+          </>
+        }
+      >
+        <View style={{ gap: PACK_GAP }}>
           {slot !== 'c' && slot !== 'e' ? (
             <View className="flex-row">
               <Box
@@ -356,7 +371,12 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
                     <T v="h3" ink>
                       {tr.capsule.pack(group.pack)}
                     </T>
-                    <T v="fine">{tr.capsule.packSlots(packItems(group.rack, group.pack).length)}</T>
+                    <T v="fine">
+                      {tr.capsule.packCount(
+                        packItems(group.rack, group.pack).length,
+                        group.items.length,
+                      )}
+                    </T>
                   </View>
                   <Btn
                     sm
@@ -396,7 +416,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
             ),
           )}
         </View>
-      </Screen>
+      </HidingHeadScreen>
       {/* Saving, the sheet stays; a failed save says so here, over the bar (audit PRO-3). */}
       <Sheet
         visible={leaving}

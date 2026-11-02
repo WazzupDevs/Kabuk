@@ -9,7 +9,8 @@ import { IconButton } from './IconButton';
 import { Text } from './Text';
 
 // A page's top (skall tuvali: Bildirim ayarları, Gizlilik, Hesap…): the round back button and the
-// title on one line, something on the right.
+// title on one line, something on the right. It goes in Screen → `top`: it stays while the page
+// scrolls under it (the owner's report, 2 Kasım, B2).
 export function PageTop({
   title,
   sub,
@@ -23,10 +24,7 @@ export function PageTop({
   trailing?: ReactNode;
 }) {
   return (
-    <View
-      className="flex-row items-center"
-      style={{ gap: SPACING[3], minHeight: TOUCH.min, marginBottom: SPACING[3] }}
-    >
+    <View className="flex-row items-center" style={{ gap: SPACING[3], minHeight: TOUCH.min }}>
       <IconButton
         round
         icon="chevron-back"

@@ -623,7 +623,9 @@ export const tr = {
     remove: (name: string) => `${name} çıkar`,
     empty: (slot: string) => `${slot} boş`,
     pack: (name: string) => `${name} paketi`,
-    packSlots: (n: number) => `${n} yuvaya parça`,
+    // The pack's parts in every slot and the ones of this slot shown under it (11.3).
+    packCount: (all: number, here: number) =>
+      all === here ? `${here} parça` : `Pakette ${all} parça · burada ${here}`,
     wearPack: 'Paketi tak',
     clearAll: 'Hepsini çıkar',
     save: 'Kaydet',

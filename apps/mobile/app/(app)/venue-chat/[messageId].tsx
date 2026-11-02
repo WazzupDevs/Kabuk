@@ -74,13 +74,16 @@ export default function VenueChatProfileScreen() {
   });
 
   return (
-    <Screen>
-      {/* Like a friend's profile (the owner's call, 27 Ekim; skall tuvali, ProfilYabanci): the
-          round back and "Seçenekler" on top, the profile's head, the request under it. */}
-      <ProfileTopBar
-        onBack={() => router.back()}
-        onMore={view.data ? () => setMenu(true) : undefined}
-      />
+    <Screen
+      top={
+        // Like a friend's profile (the owner's call, 27 Ekim; skall tuvali, ProfilYabanci): the
+        // round back and "Seçenekler" on top, the profile's head, the request under it.
+        <ProfileTopBar
+          onBack={() => router.back()}
+          onMore={view.data ? () => setMenu(true) : undefined}
+        />
+      }
+    >
       {view.isPending ? (
         <View className="mt-16 items-center">
           <Loader />

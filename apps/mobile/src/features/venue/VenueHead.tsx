@@ -126,11 +126,12 @@ const HEAD_HEIGHT = KIT.size.roundLg;
 const USED_NOTE_MS = 2600;
 
 // The app's written logo (src/components/Wordmark.tsx: "ska" and the two capsules), the owner's
-// choice over the board's own drawing of it (28 Ekim); as tall as the board's, 38.
+// choice over the board's own drawing of it (28 Ekim); 28 tall, only its scale smaller than the
+// board's 38 (the owner's call, 2 Kasım, 6.6).
 export function WordmarkRow({ small }: { small?: boolean } = {}) {
   return <Wordmark height={small ? WORDMARK_SMALL : WORDMARK_HEIGHT} />;
 }
-const WORDMARK_HEIGHT = 38;
+const WORDMARK_HEIGHT = 28;
 const WORDMARK_SMALL = 26;
 
 // The venue's name (h3, on two lines when long) and "Mekandasın" (14) with its live dot (U19).
