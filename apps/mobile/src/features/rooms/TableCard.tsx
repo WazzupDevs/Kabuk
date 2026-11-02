@@ -3,10 +3,11 @@ import { gameTag, type TableState } from '@shared/tableCard.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Image, type ImageSourcePropType, Pressable, StyleSheet, View } from 'react-native';
+import { Image, type ImageSourcePropType, Pressable, View } from 'react-native';
 
 import { Btn, Glass, Live, T, Tag, useKit } from '@/aura/kit';
 import { Pips } from '@/aura/Pips';
+import { PICTURE_FILL } from '@/aura/RisoPicture';
 import { useRoomMemberProfiles } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -96,7 +97,7 @@ export function TableCard({ checkIn, room, state, onCreate, onOpenLobby }: Props
                 fadeDuration={0}
                 accessible={false}
                 resizeMode="cover"
-                style={StyleSheet.absoluteFill}
+                style={PICTURE_FILL}
               />
             ) : null}
             <View
@@ -330,7 +331,7 @@ function PeopleFaces({ roomId, phones, me }: { roomId: string; phones: number; m
 // both schemes (Mekan `.rscene`).
 const NO_TABLE_SCENE = require('../../../assets/riso/venue-no-table.webp');
 function NoTable({ onCreate }: { onCreate: () => void }) {
-  const { c } = useKit();
+  const { c, scheme } = useKit();
   const r = KIT.risoScene;
   const shadow = boxShadowParts(useLabOff('golge'), c.cardShadow || undefined, r.radius);
   return (
@@ -345,8 +346,12 @@ function NoTable({ onCreate }: { onCreate: () => void }) {
           fadeDuration={0}
           accessible={false}
           resizeMode="cover"
-          style={StyleSheet.absoluteFill}
+          style={PICTURE_FILL}
         />
+        {/* The dark scheme dims the light scene a little (the owner's report, 2 Kasım, 6.2). */}
+        {scheme === 'dark' ? (
+          <View style={[PICTURE_FILL, { backgroundColor: r.darkVeil }]} />
+        ) : null}
         <View
           testID="no-table"
           style={{

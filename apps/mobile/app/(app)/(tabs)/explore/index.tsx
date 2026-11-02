@@ -119,10 +119,12 @@ export default function ExploreScreen() {
               tabBarHeight={barSpace}
             />
           </View>
-          {/* U14: the aura over the top 26 % of the screen, giving way to the map by 40 %. */}
+          {/* U14: the aura over the top 26 % of the screen, giving way to the map by 40 %; never
+              before the head's foot, or the map's labels show between its parts (the owner's
+              report, 2 Kasım, 4.3). */}
           <AuraBand
             top={0}
-            height={screenHeight * MAP_SOLID}
+            height={Math.max(screenHeight * MAP_SOLID, insets.top + headerHeight)}
             fade={screenHeight * MAP_FADE}
             direction="down"
           />
