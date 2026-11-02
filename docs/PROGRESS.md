@@ -1,5 +1,11 @@
 # İlerleme
 
+## Devir notu (2 Kasım 2026, riso görseller repoda, U19/U21 ve masa kimliği birleşti)
+
+- #347: rapor §9.1 riso görselleri, 55 masa kartı ve açılış doku seti repoda (`assets/riso`, `assets/table-cards`, `assets/launch`; `docs/decisions/aura-v65-riso.md`). Zip artık istenmez. #348: U19 Mekan, U21 Seçenekler. #349: K-82, masanın kimliği 55 riso kart (12.6 kapandı; `docs/decisions/masa-kimligi-riso.md`), yayın tohum + OTA.
+- Sıradaki: U20 (Mekan masalı kart: `TABLE_CARD_WIDE`, MekanMasali panosu), U22–U24 Masa, U25 masa sohbeti (`TABLE_CARD_TALL` duvar), U26–U36; sonra 7 (kayıt, Masa bitti: `riso/scene-*`, `riso/buddies`), 8, 9 (açılış: `assets/launch`).
+- Açık karar: 12.11 (ilk açılışın halka/parıltısı), sırası gelince tek soru.
+
 ## Devir notu (2 Kasım 2026, Aura v65 5. aşama: Keşfet ve giriş birleşti)
 
 - #344 (U13–U14 Keşfet liste ve harita) ve #345 (U15–U18 Aktiviteler, mekân sayfası, check-in noktası) birleşti; native yok, yayın OTA. Ortak: glass sm 22, chip iç 12, tag iç 8, `Sec` h3, `EmptyState` h3 + body, tag ok/lively v65, sekme ekranlarında `TabBarFade`, `Round light`, `Tag` `scene`/`sceneCalm`.
