@@ -888,19 +888,15 @@ export function DeliveryTicks({
 }: {
   delivery: Delivery;
   onAccent?: boolean;
-  // In the viewer's own bubble (white, #ECE9F8 in the dark): the read tick #4A5CE6 in both themes
-  // (Grup 3, P1a: #7DB2FF on #ECE9F8 was 1.82:1). Mesajlar's row keeps its own dark blue.
+  // In the viewer's own bubble (the primary): the read tick `--read-on-accent` (readTick.test.ts).
   inBubble?: boolean;
   // Mesajlar's row: 17 (docs/design/aura → Mesajlar).
   size?: number;
 }) {
-  const { colors, scheme } = useTheme();
-  // docs/design/aura → Mesajlar, Dm: the read double tick in #4A5CE6 (the dark side's own blue).
-  const read = onAccent
-    ? colors.readOnAccent
-    : scheme === 'light' || inBubble
-      ? KIT.readTick
-      : colors.read;
+  const { colors } = useTheme();
+  // U28: the read double tick `--read` (#2C63D6, the dark side's #7DB2FF); in the viewer's own
+  // primary bubble `--read-on-accent`.
+  const read = onAccent ? colors.readOnAccent : inBubble ? KIT.readTick : colors.read;
   const plain = onAccent ? colors.onPrimary : colors.muted;
   return (
     <View accessible accessibilityLabel={tr.dm.delivery[delivery]} testID={`tick-${delivery}`}>

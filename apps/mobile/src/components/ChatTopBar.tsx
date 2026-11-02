@@ -28,7 +28,7 @@ type Props = {
   // aura → Dm: the rounds 48, the name's pill 56 with a 44 avatar 6 in); bare icon buttons in the
   // actions.
   split?: boolean;
-  // U25 (MasaSohbeti `.hpill`): the split bar's title h3, its pill 20 in.
+  // U25 (MasaSohbeti `.hpill`): the split bar's pill without a face 20 in.
   compact?: boolean;
 };
 
@@ -54,7 +54,8 @@ export function ChatTopBar({
         {/* Wraps rather than ending in "…" (CLAUDE.md → Ekran davranışı): "12 Ekim'den beri
             arkadaşsınız". */}
         <T
-          v={split && !compact ? 'sec' : 'h3'}
+          // U25, U26, U28: the name h3 in every bar.
+          v="h3"
           accessibilityRole="header"
           lines={titleLines}
           fit={titleLines !== undefined}
