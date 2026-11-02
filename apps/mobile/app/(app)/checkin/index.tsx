@@ -21,6 +21,7 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { KIT } from '@/theme/auraKit';
+import { SPACING } from '@/theme/tokens';
 
 type Problem = 'denied' | 'failed' | 'tooFar' | 'outsideBoundary' | null;
 
@@ -156,14 +157,14 @@ export default function LocationScreen() {
           also asks "Neredesin?" as glass rows (the owner's call, 31 Ekim): the spot is chosen before
           the position, as the table invite depends on it (CLAUDE.md → Değişmez kurallar 4). */}
       <View style={{ gap: KIT.size.chipsGap }}>
-        <T v="sheetTitle" accessibilityRole="header">
+        <T v="title" accessibilityRole="header">
           {venue.name}
         </T>
         <T v="body">{tr.checkin.locationBody}</T>
       </View>
       {hasSpots ? (
         <View style={{ gap: KIT.size.chipsGap }}>
-          <View style={{ gap: KIT.size.chipGap }}>
+          <View style={{ gap: SPACING[1] }}>
             <T v="h3">{tr.checkin.spotTitle}</T>
             <T v="fine">{tr.checkin.spotHint}</T>
           </View>

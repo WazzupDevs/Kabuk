@@ -1,7 +1,11 @@
 import { Pressable, View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
-import { Glass, T, Thumb, useKit } from '@/aura/kit';
+import { T, Thumb, useKit } from '@/aura/kit';
+import { PopIn } from '@/aura/PopIn';
+import { shadowParts } from '@/components/NativeShadow';
+import { useLabOff } from '@/lib/drawLab';
+import { useTheme } from '@/theme/ThemeProvider';
 import { TABLE_ICON_IMAGES } from '@/features/rooms/tableIconImages';
 import { TABLE_ICONS } from '@shared/tableIcons.ts';
 
@@ -16,10 +20,20 @@ type Props = {
   onSelect: (spot: VenueSpot) => void;
 };
 
-// "Neredesin?" (docs/design/aura → CheckIn): the venue's spots as glass rows, a single choice; the
-// chosen row ringed in the primary with a filled round mark. Shared by check-in and the spot change.
+// "Neredesin?" (U18, CheckInNokta): the venue's spots as soft rows (68 high, 22 round, 10 in
+// before the picture and 16 after the round mark), a single choice; the chosen one's mark ringed
+// in the accent with the tick popping in it. Shared by check-in and the spot change.
 export function SpotPicker({ spots, selectedId, onSelect }: Props) {
   const { c } = useKit();
+  const { colors } = useTheme();
+  const shadow = shadowParts(
+    useLabOff('golge'),
+    c.raisedShadow || undefined,
+    undefined,
+    ROW_RADIUS,
+    true,
+    KIT.size.edge,
+  );
   return (
     <View
       accessibilityRole="radiogroup"
@@ -37,25 +51,22 @@ export function SpotPicker({ spots, selectedId, onSelect }: Props) {
             accessibilityLabel={spot.name}
             onPress={() => onSelect(spot)}
           >
-            <Glass
-              sm
-              style={[
-                {
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: KIT.size.rowGap,
-                  paddingVertical: PAD_Y,
-                  paddingHorizontal: KIT.size.rowGap,
-                  minHeight: ROW,
-                },
-                on
-                  ? {
-                      borderColor: KIT.primary,
-                      boxShadow: `0px 0px 0px ${KIT.size.dotRing}px ${KIT.primaryRing}`,
-                    }
-                  : null,
-              ]}
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: KIT.size.rowGap,
+                height: ROW,
+                paddingLeft: PAD_LEFT,
+                paddingRight: KIT.size.liPadX,
+                borderRadius: ROW_RADIUS,
+                backgroundColor: c.raisedRound,
+                borderWidth: KIT.size.edge,
+                borderColor: on ? colors.accent : c.raisedEdge,
+                boxShadow: shadow.boxShadow,
+              }}
             >
+              {shadow.node}
               <Thumb source={spotPicture(spot.ref)} size={THUMB} radius={THUMB_RADIUS} />
               <T v="h3" style={{ flex: 1 }}>
                 {spot.name}
@@ -67,14 +78,17 @@ export function SpotPicker({ spots, selectedId, onSelect }: Props) {
                   borderRadius: MARK / 2,
                   alignItems: 'center',
                   justifyContent: 'center',
-                  backgroundColor: on ? KIT.primary : undefined,
-                  borderWidth: on ? 0 : RING,
-                  borderColor: c.hair,
+                  borderWidth: RING,
+                  borderColor: on ? colors.accent : colors.border,
                 }}
               >
-                {on ? <CapIcon name="check" color={KIT.white} size={KIT.size.iconSm} /> : null}
+                {on ? (
+                  <PopIn rise={0}>
+                    <CapIcon name="check" color={colors.accent} size={TICK} />
+                  </PopIn>
+                ) : null}
               </View>
-            </Glass>
+            </View>
           </Pressable>
         );
       })}
@@ -83,7 +97,8 @@ export function SpotPicker({ spots, selectedId, onSelect }: Props) {
 }
 
 const GAP = 8;
-const THUMB = 44;
+// U18: the spot's picture 48, 14 round.
+const THUMB = 48;
 const THUMB_RADIUS = 14;
 
 // A spot's picture (docs/design/aura → CheckIn): one of the table pictures, always the same for a
@@ -94,7 +109,10 @@ function spotPicture(ref: string) {
   const icon = TABLE_ICONS[h % TABLE_ICONS.length];
   return icon ? TABLE_ICON_IMAGES[icon.id] : undefined;
 }
-const PAD_Y = 10;
-const ROW = 64;
-const MARK = 28;
+const ROW = 68;
+const ROW_RADIUS = 22;
+const PAD_LEFT = 10;
+// U18: the round mark 24, its ring 2.
+const MARK = 24;
 const RING = 2;
+const TICK = 16;
