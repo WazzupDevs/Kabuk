@@ -23,8 +23,9 @@ import { track } from '@/lib/analytics';
 import { profileApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { maxLengthFor } from '@/lib/textLimit';
-import { KIT, KIT_TYPE } from '@/theme/auraKit';
-import { SPACING } from '@/theme/tokens';
+import { KIT } from '@/theme/auraKit';
+import { useTheme } from '@/theme/ThemeProvider';
+import { ICON, SPACING } from '@/theme/tokens';
 
 // The photo, the display name and the bio (docs/arsiv/SPEC_V2.md §5.1; docs/design/aura → Profili
 // düzenle): back, the title, the photo's card, the fields' card, the birth date's note; "Kaydet"
@@ -51,66 +52,60 @@ export default function EditProfileScreen() {
 }
 
 // A photo needs a saved name first (the server refuses it otherwise).
+// U34 (ProfilDuzenle `.ph`): no card; the face 88 at the left with the camera badge (36, the
+// surface, at its lower right, -4/-2; the camera 20, its lens the accent), "Fotoğrafı değiştir"
+// btn sm soft 16 beside it.
 function PhotoEditor({ publicId, hasName }: { publicId: string; hasName: boolean }) {
-  const { c } = useKit();
+  const { c, scheme } = useKit();
+  const { colors } = useTheme();
   const view = useProfileView(publicId);
   const [menu, setMenu] = useState(false);
   const hasPhoto = !!view.data?.photoUrl || view.data?.photoHidden === true;
   const label = hasPhoto ? tr.profile.photoChange : tr.profile.photoAdd;
 
   return (
-    <View style={{ alignItems: 'center', gap: SPACING[2] }}>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={label}
-        accessibilityState={{ disabled: !hasName }}
-        disabled={!hasName}
-        onPress={() => setMenu(true)}
-        style={{ alignItems: 'center', gap: PHOTO_GAP, opacity: hasName ? 1 : NO_NAME }}
-      >
-        <View>
+    <View style={{ gap: SPACING[2] }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING[4] }}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={label}
+          accessibilityState={{ disabled: !hasName }}
+          disabled={!hasName}
+          onPress={() => setMenu(true)}
+        >
           <Av
-            size="big"
+            size="edit"
             name={view.data?.displayName ?? ''}
             photoUrl={view.data?.photoUrl ?? null}
           />
-          {/* The canvas's camera on a white round at the face's lower right. */}
           <View
             style={{
               position: 'absolute',
               right: -CAMERA_OUT,
-              bottom: CAMERA_UP,
+              bottom: -CAMERA_DOWN,
               width: CAMERA,
               height: CAMERA,
               borderRadius: CAMERA / 2,
-              backgroundColor: KIT.white,
-              boxShadow: KIT.cameraShadow,
+              backgroundColor: scheme === 'dark' ? c.glassInSheet : KIT.white,
+              boxShadow: scheme === 'dark' ? undefined : KIT.cameraShadow,
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            <CapIcon name="photo" color={KIT.primary} second={KIT.pink} size={KIT.size.iconSm} />
+            <CapIcon name="camera" color={colors.accent} second={c.ink} size={ICON.md} />
           </View>
-        </View>
-        <T v="btn" color={c.link}>
-          {label}
-        </T>
-      </Pressable>
-      {!hasName ? (
-        <T v="fine" center>
-          {tr.profile.photoNeedsName}
-        </T>
-      ) : null}
+        </Pressable>
+        <Btn sm variant="glassy" label={label} disabled={!hasName} onPress={() => setMenu(true)} />
+      </View>
+      {!hasName ? <T v="fine">{tr.profile.photoNeedsName}</T> : null}
 
       <PhotoSheet visible={menu} onClose={() => setMenu(false)} canRemove={hasPhoto} />
     </View>
   );
 }
-const PHOTO_GAP = 14;
-const NO_NAME = 0.6;
 const CAMERA = 36;
-const CAMERA_OUT = 8;
-const CAMERA_UP = 4;
+const CAMERA_OUT = 4;
+const CAMERA_DOWN = 2;
 
 function EditForm({
   publicId,
@@ -181,7 +176,7 @@ function EditForm({
 
   return (
     <Screen
-      gap={GAP}
+      gap={0}
       footer={
         // aura v50 (ProfilDuzenle): Kaydet stays at the foot, the save error right above it.
         <>
@@ -200,23 +195,23 @@ function EditForm({
         </>
       }
     >
-      <Round big icon="back" label={tr.common.back} onPress={leave} />
-      <T v="display" style={KIT_TYPE.displayXl} accessibilityRole="header">
+      {/* U34: the bar 56, back 44 round soft; the title display 8 under it. */}
+      <View style={{ height: KIT.size.btnRow, justifyContent: 'center' }}>
+        <Round glassy icon="back" label={tr.common.back} onPress={leave} />
+      </View>
+      <T v="display" accessibilityRole="header" style={{ marginTop: SPACING[2] }}>
         {tr.profile.editTitle}
       </T>
 
-      <Glass
-        style={{
-          alignItems: 'center',
-          paddingVertical: KIT.size.padLg,
-          paddingHorizontal: KIT.size.pad,
-        }}
-      >
+      <View style={{ marginTop: SPACING[5] }}>
         <PhotoEditor publicId={publicId} hasName={initialName !== ''} />
-      </Glass>
-      <Glass pad="pad" style={{ gap: FIELDS_GAP }}>
+      </View>
+      {/* U34: the fields on one glass sm card 20 under the photo, 16 inside; a field's label,
+          the field and its note 8 apart, the groups 12 more. */}
+      <Glass sm style={{ marginTop: SPACING[5], padding: SPACING[4], gap: SPACING[5] }}>
         <Input
           large
+          boxed
           testID="name-input"
           label={tr.profile.nameLabel}
           hint={tr.profile.nameHint}
@@ -229,6 +224,7 @@ function EditForm({
         />
         <Input
           large
+          boxed
           label={tr.profile.bioLabel}
           counter={tr.profile.bioHint([...bio].length, BIO_MAX)}
           value={bio}
@@ -242,6 +238,7 @@ function EditForm({
       <Glass
         sm
         style={{
+          marginTop: SPACING[4],
           flexDirection: 'row',
           alignItems: 'flex-start',
           gap: KIT.size.rowGap,
@@ -277,7 +274,5 @@ function EditForm({
   );
 }
 
-const GAP = 16;
-const FIELDS_GAP = 16;
 const NOTE_PAD_Y = 14;
 const NOTE_PAD_X = 16;

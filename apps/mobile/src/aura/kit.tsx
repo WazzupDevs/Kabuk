@@ -1034,12 +1034,13 @@ export function Av({
 }: {
   name: string;
   photoUrl?: string | null;
-  size?: 'sm' | 'member' | 'list' | 'md' | 'row' | 'seat' | 'lg' | 'xl' | 'big';
+  size?: 'sm' | 'member' | 'list' | 'md' | 'row' | 'seat' | 'lg' | 'xl' | 'big' | 'edit';
   // Something else in the ring (a capsule).
   children?: ReactNode;
 }) {
   const side = KIT.size.av[size];
-  const ring = size === 'xl' || size === 'big' ? KIT.size.avRingXl : KIT.size.avRing;
+  const ring =
+    size === 'xl' || size === 'big' || size === 'edit' ? KIT.size.avRingXl : KIT.size.avRing;
   const pick = KIT.avColors[colorIndex(name)] ?? KIT.avColors[0];
   const shadowOff = useLabOff('golge');
   // The face clips its photo, so its native shadow sits beside it in a box of the same size.
