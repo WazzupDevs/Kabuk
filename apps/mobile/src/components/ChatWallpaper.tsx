@@ -4,6 +4,8 @@ import { Image, type ImageSourcePropType, StyleSheet, View } from 'react-native'
 import type { ChatWallKind, WallpaperCanvas } from '@/theme/chatWallpaper';
 import type { ColorScheme } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
+import { KIT } from '@/theme/auraKit';
+import { gradientStyle } from '@/theme/gradient';
 
 // The chat walls as Telegram Android draws its chat backgrounds (the owner's call, 30 Ekim): one
 // picture from the top of the screen to its foot, a soft four-colour gradient with skall's quiet
@@ -30,9 +32,15 @@ const WALLS: Record<ChatWallKind, Record<ColorScheme, ImageSourcePropType>> = {
 export const ChatWallpaper = memo(function ChatWallpaper({
   kind,
   canvas,
+  source,
+  veil,
 }: {
   kind: ChatWallKind;
   canvas: WallpaperCanvas;
+  // The chat's own picture in place of its kind's (Masa sohbeti: the table's tall riso card).
+  source?: ImageSourcePropType;
+  // U25 (MasaSohbeti `.veil`): a soft dark curtain at the top and the foot over the picture.
+  veil?: boolean;
 }) {
   const { scheme } = useTheme();
   return (
@@ -43,12 +51,20 @@ export const ChatWallpaper = memo(function ChatWallpaper({
       style={[StyleSheet.absoluteFill, { overflow: 'hidden' }]}
     >
       <Image
-        source={WALLS[kind][scheme]}
+        source={source ?? WALLS[kind][scheme]}
         fadeDuration={0}
         resizeMode="cover"
         accessible={false}
         style={{ position: 'absolute', left: 0, top: 0, width: canvas.w, height: canvas.h }}
       />
+      {veil ? (
+        <View
+          style={[
+            { position: 'absolute', left: 0, top: 0, width: canvas.w, height: canvas.h },
+            gradientStyle(KIT.chatVeil[scheme]),
+          ]}
+        />
+      ) : null}
     </View>
   );
 });
@@ -66,9 +82,11 @@ export function WallBand({
   height,
   fade,
   direction,
+  source,
 }: {
   kind: ChatWallKind;
   canvas: WallpaperCanvas;
+  source?: ImageSourcePropType;
   top: number;
   height: number;
   fade: number;
@@ -101,7 +119,7 @@ export function WallBand({
             }}
           >
             <Image
-              source={WALLS[kind][scheme]}
+              source={source ?? WALLS[kind][scheme]}
               fadeDuration={0}
               resizeMode="cover"
               accessible={false}

@@ -521,7 +521,7 @@ Görünüş değişikliği hiçbir işlevi kaldırmaz. Hiçbir ekranda metin de�
 Tahminle doldurulmaz. Karar gelene kadar bugünkü uygulama davranışı korunur.
 
 1. **POI simgeleri:** harita stilinde hazır POI simgeleri (durak, cami, bilgi) kapatılsın mı? (n.17)
-2. **Masa sohbeti gönder düğmesi:** alan boşken pasif mi olacak? Çizimde pasif, karar verilmedi (n.92).
+2. **Masa sohbeti gönder düğmesi:** KAPANDI (Gökay, 2 Kas): alan boşken pasif (`.send.off`), bütün sohbetlerin ortak giriş alanında (n.92).
 3. **Kapsül kategorileri:** 5. ve 6. çipin adı (çizimde "Ağız", "Boyun") ekran görüntüsünden okunamadı. Uygulamadaki adlar kalır (n.163).
 4. **Tanıtım yer tutucusu:** Profili düzenle'de okunamadı. Uygulamadaki metin kalır (n.160).
 5. **Uyarı ikonu:** ünlem ikonunun ayrı kapsül çizimi onaylanmadı. Tuvalde info ikonunun 180° çevrilmişi kullanıldı.
