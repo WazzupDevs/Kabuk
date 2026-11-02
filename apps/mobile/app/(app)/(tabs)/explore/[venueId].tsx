@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
 import { FrostResolve } from '@/aura/FrostIn';
+import { PICTURE_FILL } from '@/aura/RisoPicture';
 import { Btn, Glass, Round, Sec, T, Tag } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
 import { GlassTarget } from '@/components/LiquidGlass';
@@ -109,13 +110,22 @@ export default function VenueDetailScreen() {
         >
           {/* The scene is the backdrop of the buttons and tags over it: they frost it, a lamp's
               cord blurred behind a tag instead of crossing its words (the owner's report, 30 Ekim). */}
+          {/* Also drawn once as a plain picture under the target, as the ground (AuraBackground,
+              K2): the scene showed nothing on first opening (the owner's report, 2 Kasım, 14.1). */}
+          <Image
+            source={SCENE}
+            fadeDuration={0}
+            accessible={false}
+            resizeMode="cover"
+            style={PICTURE_FILL}
+          />
           <GlassTarget backdrop style={StyleSheet.absoluteFill}>
             <Image
               source={SCENE}
               fadeDuration={0}
               accessible={false}
               resizeMode="cover"
-              style={StyleSheet.absoluteFill}
+              style={PICTURE_FILL}
             />
           </GlassTarget>
           {/* The picture appears frosted and resolves 320 ms later over 500 (hareket.json). */}

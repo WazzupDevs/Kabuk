@@ -98,6 +98,22 @@ describe('no textTransform capitals', () => {
   });
 });
 
+// React Native's Image takes a required source's pixel size as its width and height; the four edges
+// of absoluteFill do not override them, so the picture drew at its pixels from the top left (the
+// owner's report, 2 Kasım, K1). A picture fills its box with PICTURE_FILL (src/aura/RisoPicture.tsx).
+describe('no react-native Image on absoluteFill', () => {
+  const paths = SOURCES.flatMap((d) => files(join(mobile, d))).map((p) => relative(mobile, p));
+
+  it.each(paths)('%s', (path) => {
+    const text = readFileSync(join(mobile, path), 'utf8');
+    if (!/import \{[^}]*\bImage\b[^}]*\} from 'react-native'/.test(text)) return;
+    const problems = [...text.matchAll(/<Image\b[^>]*?\/>/gs)]
+      .map((m) => m[0])
+      .filter((tag) => /style=\{StyleSheet\.absoluteFill\}/.test(tag));
+    expect(problems).toEqual([]);
+  });
+});
+
 describe('tailwind.config.js', () => {
   const config = require('../../tailwind.config.js') as {
     theme: Record<string, unknown> & { spacing: Record<string, string> };

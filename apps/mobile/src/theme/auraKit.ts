@@ -390,7 +390,16 @@ export const KIT = {
   sceneRound: { bg: 'rgba(255, 255, 255, 0.82)', edge: '#FFFFFF', ink: '#031B0B' },
   sceneTag: { bg: 'rgba(255, 255, 255, 0.82)', fg: '#031B0B' },
   // U19: the words over Mekan's riso "Henüz masan yok" scene, in both schemes (Mekan `.rtext`).
-  risoScene: { title: '#031B0B', note: '#2B3A30', words: 176, radius: 28, gap: 6, buttonTop: 8 },
+  risoScene: {
+    title: '#031B0B',
+    note: '#2B3A30',
+    words: 176,
+    radius: 28,
+    gap: 6,
+    buttonTop: 8,
+    // The dark scheme's dim over the light scene (the owner's report, 2 Kasım, 6.2).
+    darkVeil: 'rgba(0, 0, 0, 0.22)',
+  },
   // U20 (MekanMasali `.mcard`): the person's table on glass 28 round, 6 in; its wide riso card 168
   // high, 22 round; the name on dark glass 12 in from the card's bottom left (`.mname`: 14 × 8 in,
   // 16 round, blur 10), the people 12 in from its bottom right; under it 12 / 16 / 16 in, 12 apart.
