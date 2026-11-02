@@ -11,10 +11,11 @@ import {
   useId,
   useState,
 } from 'react';
-import { Animated, View } from 'react-native';
+import { Animated, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { create } from 'zustand';
 
+import { AuraBand } from '@/aura/AuraBackground';
 import { AuraTabBar, type AuraTabItem } from '@/aura/AuraTabBar';
 import { ARRIVE_RN, BLURS, TabFocusContext } from '@/aura/motion';
 import { haptic } from '@/lib/haptics';
@@ -81,6 +82,17 @@ export function useTabBarSpace(): number {
   if (focused && kept !== space) setKept(space);
   return focused ? space : kept;
 }
+
+// Kenar solması (Aura v65 §4): what scrolls on a tab screen fades out over the 32 above the bar,
+// never cut hard; under the bar the ground hides it. Nothing while the bar is hidden.
+export function TabBarFade() {
+  const space = useTabBarSpace();
+  const { height } = useWindowDimensions();
+  if (space === 0) return null;
+  const top = height - (space - SPACING[4]);
+  return <AuraBand top={top} height={height - top} fade={TAB_BAR_FADE} direction="up" />;
+}
+const TAB_BAR_FADE = 32;
 
 export function TabBarSpace({ children }: { children: ReactNode }) {
   const insets = useSafeAreaInsets();

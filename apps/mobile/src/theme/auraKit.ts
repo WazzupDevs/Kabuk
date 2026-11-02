@@ -124,7 +124,12 @@ const SHADOW = {
 } as const;
 
 // Keşfet's venue icon: 52 with its 16 round (Keşfet: the list row's picture).
-export const VENUE_THUMB = { size: 52, radius: 16 } as const;
+// U13: the venue's picture 56, 18 round, on its soft green shadow (Kesfet `.vbox`).
+export const VENUE_THUMB = {
+  size: 56,
+  radius: 18,
+  shadow: '0px 6px 14px rgba(4, 73, 35, 0.16)',
+} as const;
 
 export const KIT = {
   light: {
@@ -360,7 +365,7 @@ export const KIT = {
   nameInk: '#B0124F',
   size: {
     glassRadius: 28,
-    glassRadiusSm: 20,
+    glassRadiusSm: 22,
     pad: 18,
     padLg: 22,
     // Aura v65 Temel satır (normalleştirme, 1 Kas 02:41): two button heights, 56 and 40; the field
@@ -383,14 +388,14 @@ export const KIT = {
     // Kapsülün's slot chips: 40 high, 18 inside.
     chipLg: 40,
     chipLgPadX: 18,
-    chipPadX: 13,
+    chipPadX: 12,
     chipGap: 6,
     chipsGap: 8,
     tag: 24,
     // A venue page's tags over its scene: 30 high, 12 inside.
     tagLg: 30,
     tagLgPadX: 12,
-    tagPadX: 9,
+    tagPadX: 8,
     tagGap: 4,
     round: 44,
     // The venue page's back button (48).
@@ -495,11 +500,6 @@ export const KIT = {
     // A chat's message field and its send button (docs/design/aura → Dm).
     composerField: 56,
     composerSend: 56,
-    // Keşfet's search field (18 inside) and the round buttons of its list/map switch (46).
-    searchPadX: 18,
-    switchRound: 46,
-    // Keşfet's blocks: 16 apart.
-    exploreGap: 16,
     phoneField: 72,
     fieldPadX: 20,
     dayPadX: 12,

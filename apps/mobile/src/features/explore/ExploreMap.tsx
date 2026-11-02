@@ -64,6 +64,13 @@ const MAP_IMAGES = {
   'pin-kampus': { source: TYPE_PIN_IMAGES.kampus },
 };
 
+// U14: the pin's ring and shadow (KesfetHarita `.pd`, `.dark .pd`).
+const PIN_RING = MAP_PIN.pinRing;
+const PIN_SHADOW = MAP_PIN.pinShadow;
+const PIN_SHADOW_Y = 10;
+const PIN_SHADOW_SPREAD = 11;
+const PIN_SHADOW_BLUR = 0.6;
+
 type PressedFeature = {
   geometry?: { type: string; coordinates?: unknown };
   properties?: { id?: unknown; cluster_id?: unknown } | null;
@@ -88,7 +95,7 @@ export function ExploreMap({
   headerHeight: number;
   tabBarHeight: number;
 }) {
-  const { colors, shape, scheme } = useTheme();
+  const { colors, scheme } = useTheme();
   const mapStyle = useMapStyle(MAP_STYLE_URL[scheme], scheme);
   const camera = useRef<CameraRef>(null);
   const source = useRef<GeoJSONSourceRef>(null);
@@ -158,10 +165,10 @@ export function ExploreMap({
       </View>
     );
   }
-  // Pale pins on a pale map need a ring to stay findable (3:1 for UI shapes).
-  const ring = shape.stroke.feature > 1 ? colors.border : colors.accent;
+  // U14: the pin's 3 white ring (#EAF6EC in the dark) on its soft shadow.
+  const ring = PIN_RING[scheme];
   const id = selected ?? '';
-  const outer = MAP_PIN.ring + MAP_PIN.outline;
+  const outer = MAP_PIN.ring;
   // The venue's colour: quiet in the brand's purple, lively in the overlap's orange, crowded in pink.
   const live: NonNullable<CircleLayer['paint']>['circle-color'] = [
     'match',
@@ -178,7 +185,8 @@ export function ExploreMap({
         'format',
         ['get', 'name'],
         {},
-        '\n',
+        // U14: one line, the name and how lively.
+        '  ',
         {},
         ['get', 'status'],
         { 'font-scale': MAP_PIN.statusScale },
@@ -233,7 +241,8 @@ export function ExploreMap({
         androidView="texture"
         attribution
         // Over the tab bar, not pressed against its edge (the owner's report, 28 Ekim).
-        attributionPosition={{ bottom: tabBarHeight + SPACING[2], right: SPACING[4] }}
+        // U14: the (i) 12 above the tab bar, 20 from the right (the bar's room counts 16 more).
+        attributionPosition={{ bottom: tabBarHeight - SPACING[1], right: KIT.size.side }}
         tintColor={colors.muted}
         accessibilityLabel={tr.explore.mapLabel}
         onPress={() => {
@@ -290,16 +299,18 @@ export function ExploreMap({
           <Layer
             id="venue-shadow"
             type="circle"
-            filter={[
-              'all',
-              ['!', ['has', 'point_count']],
-              ['!', ['has', 'stack']],
-              ['==', ['get', 'id'], id],
-            ]}
+            filter={IS_VENUE}
             paint={{
-              'circle-color': colors.border,
-              'circle-radius': MAP_PIN.selectedRadius + outer,
-              'circle-translate': [MAP_PIN.shadow, MAP_PIN.shadow],
+              // KesfetHarita `.pd`: 0 10 22, the GL circle's blur standing in for the spread.
+              'circle-color': PIN_SHADOW[scheme],
+              'circle-blur': PIN_SHADOW_BLUR,
+              'circle-radius': [
+                'case',
+                ['==', ['get', 'id'], id],
+                MAP_PIN.selectedRadius + outer + PIN_SHADOW_SPREAD,
+                MAP_PIN.radius + outer + PIN_SHADOW_SPREAD,
+              ],
+              'circle-translate': [0, PIN_SHADOW_Y],
             }}
           />
           <Layer
@@ -341,7 +352,7 @@ export function ExploreMap({
             type="circle"
             filter={IS_VENUE}
             paint={{
-              // A white disc for the coloured glyph, ringed in the venue's colour.
+              // The disc under the venue's picture, inside its white ring.
               'circle-color': colors.surface,
               'circle-radius': [
                 'case',
@@ -349,8 +360,6 @@ export function ExploreMap({
                 MAP_PIN.selectedRadius,
                 MAP_PIN.radius,
               ],
-              'circle-stroke-width': MAP_PIN.ring,
-              'circle-stroke-color': live,
             }}
           />
           <Layer
