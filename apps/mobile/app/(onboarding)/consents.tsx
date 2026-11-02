@@ -100,9 +100,11 @@ export default function ConsentsAfterCode() {
       body={hasProfile ? tr.consents.outdated : tr.consents.body}
       error={reconsent.isError ? errorMessage(reconsent.error) : null}
       friend={friend}
+      standing={hasProfile}
       action={{
         testID: 'consents-accept',
         label: tr.consents.accept,
+        icon: 'check',
         onPress: accept,
         disabled: !(terms && kvkk),
         loading: reconsent.isPending,

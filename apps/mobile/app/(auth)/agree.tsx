@@ -35,6 +35,7 @@ export default function ConsentsStep() {
       action={{
         testID: 'consents-accept',
         label: tr.consents.accept,
+        icon: 'check',
         disabled: !(terms && kvkk),
         loading: going,
         onPress: () =>

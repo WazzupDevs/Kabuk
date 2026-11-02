@@ -1,6 +1,8 @@
 # Aura v71 · eklenen ekranlar · fark listesi
 
-Plan onaylı, kararlar `docs/decisions/aura-v71-eklenen.md`. P1 (#372) bölüm A'yı ve F2'yi uyguladı; kalan P2 (B), P3–P4 (fark-2). Satır numaraları 2 Kasım koduna göredir.
+Plan onaylı, kararlar `docs/decisions/aura-v71-eklenen.md`. P1 (#372) bölüm A'yı ve F2'yi, P2 bölüm B'yi uyguladı; kalan P3–P4 (fark-2).
+
+Riso blob eşlemesi (canlı tuvalin asset'leri repodakilerle karşılaştırıldı, 2 Kasım): 14f4b3→4957ac, 3ccb82→7d5ef2, 9bb05a→f280a5, e8ff31→3c95b1, 140ee5→`peek-2`, 5618d9→`peek-1`; ötekiler aşağıdaki gibi. G6'daki iki belirsiz de böylece çözüldü. Satır numaraları 2 Kasım koduna göredir.
 
 
 Kaynak: canlı tuval 1793652390-0881 (yerel kopya `docs/design/aura/project/`, 25 dosya güncellendi). Kod: `apps/mobile`. Koyu = `.dark.pA` (koyu.css). "?" = emin değilim.

@@ -53,6 +53,7 @@ export default function GenderStep() {
       action={{
         testID: signingUp ? 'gender-continue' : 'gender-save',
         label: signingUp ? tr.signup.continue : tr.signup.genderSave,
+        icon: signingUp ? 'forward' : undefined,
         disabled: gender === null,
         loading: pending,
         onPress: () => {

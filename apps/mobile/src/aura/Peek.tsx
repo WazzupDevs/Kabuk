@@ -13,6 +13,7 @@ import {
   REQUEST_KANKI,
   REQUEST_PEEK_FRAME,
   SIGNUP_KANKI,
+  type SignupCast,
 } from '@/theme/kankiMotion';
 import { SPACING } from '@/theme/tokens';
 
@@ -20,7 +21,6 @@ import { Buddy } from './Buddy';
 import { Glass, T } from './kit';
 import { RisoKanki, SignupScene } from './RisoKanki';
 import { springConfig } from './motion';
-import { SceneGround } from './Scene';
 
 export type PeekKind = Exclude<keyof typeof AURA.peek, 'up' | 'height'>;
 
@@ -108,72 +108,6 @@ export function Behind({ kind, children }: { kind: PeekKind; children: ReactNode
   );
 }
 
-// A buddy and its words in a scene (docs/design/aura → Telefon, Kod: `.scene` with `.glass.say`):
-// the bubble at the top, its tail towards the buddy standing at the side. The buddy jumps when
-// something goes right and shakes when it goes wrong.
-export function SayScene({
-  look,
-  text,
-  side = 'left',
-  reaction,
-  testID,
-}: {
-  look: string;
-  text: string;
-  side?: 'left' | 'right';
-  reaction?: { kind: 'ok' | 'err' | 'nod'; key: number } | null;
-  testID?: string;
-}) {
-  const shove = useSayReaction(reaction);
-  const h = AURA.say.buddy;
-  return (
-    <View
-      testID={testID}
-      style={{
-        flexGrow: 1,
-        minHeight: AURA.say.minHeight,
-        borderRadius: AURA.scene.radius,
-        overflow: 'hidden',
-      }}
-    >
-      <SceneGround />
-      <View
-        style={{
-          position: 'absolute',
-          top: SAY_TOP,
-          left: side === 'left' ? h * FIG_RATIO + SAY_GAP : KIT.size.side - SAY_INSET,
-          right: side === 'left' ? KIT.size.side - SAY_INSET : h * FIG_RATIO + SAY_GAP,
-        }}
-      >
-        <Glass
-          sm
-          style={{
-            paddingVertical: SAY_PAD_Y,
-            paddingHorizontal: SAY_PAD_X,
-            borderRadius: KIT.size.msgRadius,
-            borderBottomLeftRadius: side === 'left' ? KIT.size.msgTail : KIT.size.msgRadius,
-            borderBottomRightRadius: side === 'right' ? KIT.size.msgTail : KIT.size.msgRadius,
-          }}
-        >
-          <T v="fine" ink accessibilityLiveRegion="polite">
-            {text}
-          </T>
-        </Glass>
-      </View>
-      <Animated.View
-        style={{
-          position: 'absolute',
-          bottom: BUDDY_FOOT,
-          [side]: KIT.size.side - SAY_INSET,
-          transform: shove,
-        }}
-      >
-        <Buddy look={look} height={h} />
-      </Animated.View>
-    </View>
-  );
-}
-
 type Reaction = { kind: 'ok' | 'err' | 'nod'; key: number } | null;
 
 // The speaker's answer to the step: a jump when it went right, a shake when it went wrong. Still
@@ -208,8 +142,9 @@ function useSayReaction(reaction: Reaction | undefined) {
 
 export type RisoSayKind = keyof typeof SIGNUP_KANKI;
 
-// U40 (Telefon, Kod): the sign-up scene with two still riso buddies and the step's line in a glass
-// bubble at its top, its tail towards the one who says it; that one still jumps and shakes.
+// U40 (Telefon, Kod; Aura v71 every sign-up step): the sign-up scene with its still riso buddies and
+// the step's line in a glass bubble at its top, its tail towards the one who says it; that one still
+// jumps and shakes.
 export function RisoSayScene({
   kind,
   text,
@@ -219,7 +154,7 @@ export function RisoSayScene({
   text: string;
   reaction?: Reaction;
 }) {
-  const cast = SIGNUP_KANKI[kind];
+  const cast: SignupCast = SIGNUP_KANKI[kind];
   const shove = useSayReaction(reaction);
   const [width, setWidth] = useState(0);
   const k = width / KANKI_FRAME_WIDTH;
@@ -231,7 +166,7 @@ export function RisoSayScene({
       <SignupScene width={width}>
         {(s) => (
           <>
-            <RisoKanki place={cast.other} scale={s} />
+            {cast.other ? <RisoKanki place={cast.other} scale={s} /> : null}
             <Animated.View
               pointerEvents="none"
               style={[StyleSheet.absoluteFill, { transform: shove }]}
@@ -245,7 +180,7 @@ export function RisoSayScene({
         <View
           style={{
             position: 'absolute',
-            top: SAY_TOP,
+            top: cast.say.top,
             left: cast.say.left * k,
             right: cast.say.right * k,
           }}
@@ -273,16 +208,26 @@ export function RisoSayScene({
 }
 
 // U40: the riso buddies looking over the field (`.behind > .peek`: a strip 58 over the field's top
-// edge); only what stands over the edge is drawn, the glass field would show the rest through.
+// edge); only what stands over the edge is drawn, the glass field would show the rest through. A
+// `deep` step (the photo picker, room around it) shows the whole 120 strip behind the field.
 export function RisoFieldPeek({ kind }: { kind: RisoSayKind }) {
-  return <RisoStrip places={SIGNUP_KANKI[kind].peek} frame={KANKI_FRAME_WIDTH} />;
+  const cast: SignupCast = SIGNUP_KANKI[kind];
+  return <RisoStrip places={cast.peek} frame={KANKI_FRAME_WIDTH} deep={cast.deep} />;
 }
 
 // Room over the strip for a head standing higher than it (MasaIstek: -12).
 const STRIP_OVER = 16;
 
 // Riso buddies placed in a `frame` wide board over a card's top edge, scaled to the card.
-function RisoStrip({ places, frame }: { places: readonly KankiPlace[]; frame: number }) {
+function RisoStrip({
+  places,
+  frame,
+  deep,
+}: {
+  places: readonly KankiPlace[];
+  frame: number;
+  deep?: boolean;
+}) {
   const [width, setWidth] = useState(0);
   const k = width / frame;
   return (
@@ -294,7 +239,7 @@ function RisoStrip({ places, frame }: { places: readonly KankiPlace[]; frame: nu
         left: 0,
         right: 0,
         top: -KANKI_PEEK.up - STRIP_OVER,
-        height: KANKI_PEEK.up + STRIP_OVER,
+        height: (deep ? KANKI_PEEK.height : KANKI_PEEK.up) + STRIP_OVER,
         overflow: 'hidden',
       }}
     >
@@ -312,13 +257,6 @@ function RisoStrip({ places, frame }: { places: readonly KankiPlace[]; frame: nu
   );
 }
 
-const FIG_RATIO = 64 / 84;
-const SAY_TOP = 18;
-const SAY_GAP = 4;
-const SAY_INSET = 4;
-const SAY_PAD_Y = 14;
-const SAY_PAD_X = 16;
-const BUDDY_FOOT = -10;
 const SHAKE = 6;
 const SHAKE_STEP = 60;
 const JUMP = 14;

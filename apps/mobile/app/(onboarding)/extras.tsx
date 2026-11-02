@@ -3,9 +3,9 @@ import { Stack, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { BackHandler, View } from 'react-native';
 
+import { Btn } from '@/aura/kit';
 import { Banner } from '@/components/Banner';
-import { Button } from '@/components/Button';
-import { ProfilePhoto, PROFILE_PHOTO_SIZES } from '@/components/ProfilePhoto';
+import { ProfilePhoto } from '@/components/ProfilePhoto';
 import { useProfile } from '@/features/account/useProfile';
 import { SignupStep } from '@/features/onboarding/SignupStep';
 import { resetOnboarding, useOnboardingStore } from '@/features/onboarding/store';
@@ -16,6 +16,7 @@ import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { haptic } from '@/lib/haptics';
 import { finishLabel } from '@/lib/signupSteps';
+import { KIT } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON } from '@/theme/tokens';
 import { AppIcon } from '@/components/AppIcon';
@@ -39,7 +40,8 @@ export default function PhotoStep() {
   // circle, the button and the finish label say the same thing.
   const hasPhoto = photoSet || photoUrl !== null;
   const photoNote = gender !== null && !mayStayAnonymous(gender) && !hasPhoto;
-  const side = PROFILE_PHOTO_SIZES.hero;
+  // Aura v71 (KayitFoto `.pick`): the empty picker 120, its dashed line 3.
+  const side = KIT.size.photoPick;
 
   // The profile is sent: Android's back would step into the birth date and the gender again,
   // which have nothing left to do. This is the last step, so back does nothing here.
@@ -70,6 +72,7 @@ export default function PhotoStep() {
         friend={friend}
         action={{
           testID: 'signup-finish',
+          icon: 'check',
           label: finishLabel(hasPhoto, {
             finish: tr.signup.finish,
             noPhoto: tr.signup.finishNoPhoto,
@@ -77,7 +80,7 @@ export default function PhotoStep() {
           onPress: finish,
         }}
       >
-        <View className="gap-4">
+        <View className="gap-3">
           <View className="items-center gap-3">
             {photoUrl ? (
               <ProfilePhoto url={photoUrl} name={own.data?.display_name} size="hero" />
@@ -89,7 +92,7 @@ export default function PhotoStep() {
                   height: side,
                   borderRadius: shape.radius.pill,
                   // skall tuvali (KayitFoto, `.picker`): a dashed control ring on the surface.
-                  borderWidth: shape.stroke.feature,
+                  borderWidth: KIT.size.photoPickLine,
                   borderStyle: 'dashed',
                   borderColor: colors.control,
                   backgroundColor: colors.surface,
@@ -100,10 +103,10 @@ export default function PhotoStep() {
                 <AppIcon name="photo" size={ICON.xl} color={colors.accent} />
               </View>
             )}
-            <Button
+            <Btn
               testID="signup-photo-add"
-              size="sm"
-              variant="secondary"
+              sm
+              variant="glassy"
               icon="photo"
               label={hasPhoto ? tr.profile.photoChange : tr.profile.photoAdd}
               onPress={() => setSheet(true)}

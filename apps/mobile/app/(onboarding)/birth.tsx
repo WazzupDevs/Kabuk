@@ -81,6 +81,7 @@ export default function BirthStep() {
       action={{
         testID: 'birth-continue',
         label: tr.signup.continue,
+        icon: 'forward',
         disabled: !filled,
         loading: submit.isPending || going,
         onPress: onContinue,
