@@ -28,6 +28,8 @@ type Props = {
   // aura → Dm: the rounds 48, the name's pill 56 with a 44 avatar 6 in); bare icon buttons in the
   // actions.
   split?: boolean;
+  // U25 (MasaSohbeti `.hpill`): the split bar's title h3, its pill 20 in.
+  compact?: boolean;
 };
 
 // The compact top of a chat screen (v45: .dpin): a round back button, the avatar, the name and a
@@ -43,6 +45,7 @@ export function ChatTopBar({
   titleAccessibilityLabel,
   actions,
   split = false,
+  compact = false,
 }: Props) {
   const who = (
     <>
@@ -51,7 +54,7 @@ export function ChatTopBar({
         {/* Wraps rather than ending in "…" (CLAUDE.md → Ekran davranışı): "12 Ekim'den beri
             arkadaşsınız". */}
         <T
-          v={split ? 'sec' : 'h3'}
+          v={split && !compact ? 'sec' : 'h3'}
           accessibilityRole="header"
           lines={titleLines}
           fit={titleLines !== undefined}
@@ -79,6 +82,7 @@ export function ChatTopBar({
       <SplitBar
         who={who}
         bare={!leading}
+        padLeft={compact ? KIT.chatPillPadX : undefined}
         onBack={onBack}
         onPressTitle={onPressTitle}
         titleAccessibilityLabel={titleAccessibilityLabel}
@@ -140,6 +144,7 @@ const PILL_PAD_RIGHT = 14;
 function SplitBar({
   who,
   bare,
+  padLeft,
   onBack,
   onPressTitle,
   titleAccessibilityLabel,
@@ -148,6 +153,7 @@ function SplitBar({
   who: ReactNode;
   // No avatar: the name starts as far in as the pill's round.
   bare: boolean;
+  padLeft?: number;
   onBack?: () => void;
   onPressTitle?: () => void;
   titleAccessibilityLabel?: string;
@@ -170,7 +176,7 @@ function SplitBar({
         ...pill,
         ...(onPressTitle ? null : { flex: 1 }),
         padding: PILL_INSET,
-        paddingLeft: bare ? SPACING[4] : PILL_INSET,
+        paddingLeft: padLeft ?? (bare ? SPACING[4] : PILL_INSET),
         paddingRight: PILL_PAD_RIGHT,
         gap: SPACING[2.5],
       }}

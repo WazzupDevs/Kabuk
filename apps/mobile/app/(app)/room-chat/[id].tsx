@@ -11,6 +11,7 @@ import { useRoomChatSeen } from '@/features/chat/roomChatSeen';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { useRoomMemberProfiles } from '@/features/profile/queries';
 import { useRoom, useTablePeople } from '@/features/rooms/queries';
+import { TABLE_CARD_TALL } from '@/features/rooms/tableIconImages';
 import { tr } from '@/i18n/tr';
 
 export { RouteError as ErrorBoundary } from '@/components/RouteError';
@@ -59,6 +60,8 @@ export default function RoomChatScreen() {
   return (
     <ChatScreen
       wall="masa"
+      // U25: the wall is the table's tall riso card (K-82); an old table keeps the generic one.
+      wallSource={room.data.icon ? TABLE_CARD_TALL[room.data.icon] : undefined}
       startAtEnd
       newestKey={newestOut?.localId ?? newestIn?.id}
       newestMine={newestOut ? true : newestIn?.session_id === sessionId}
@@ -66,6 +69,7 @@ export default function RoomChatScreen() {
         <ChatTopBar
           onBack={() => router.back()}
           split
+          compact
           title={tr.table.chatTitle}
           subtitle={room.data.name ?? undefined}
         />
