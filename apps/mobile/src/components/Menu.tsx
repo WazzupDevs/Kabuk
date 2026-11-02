@@ -23,6 +23,8 @@ import { AppIcon } from './AppIcon';
 // shadow, 210 wide; as Telegram Android's message menu, its rows lower and without hairlines (the
 // owner's call, 30 Ekim).
 const Floating = createContext(false);
+// Whether a row follows another: it draws the hairline over itself, from the words (U29).
+const Follows = createContext(false);
 export function Menu({ children, float }: { children: ReactNode; float?: boolean }) {
   const { colors, shape, scheme } = useTheme();
   const rows = Children.toArray(children).filter(Boolean);
@@ -32,7 +34,8 @@ export function Menu({ children, float }: { children: ReactNode; float?: boolean
     <View
       // docs/design/aura (`.glass.list`): the rows in one glass card, a hairline between them.
       style={[
-        float ? { backgroundColor: colors.surface } : gradientStyle(KIT[scheme].glass),
+        // U2: in a sheet the card is the sheet's card colour (#1B211F in the dark).
+        float ? { backgroundColor: colors.surface } : gradientStyle(KIT[scheme].glassInSheet),
         {
           borderRadius: KIT.size.glassRadiusSm,
           borderWidth: float ? 0 : KIT.size.edge,
@@ -42,16 +45,9 @@ export function Menu({ children, float }: { children: ReactNode; float?: boolean
       ]}
     >
       {rows.map((row, i) => (
-        <View
-          key={i}
-          style={
-            i > 0 && !float
-              ? { borderTopWidth: KIT.size.hair, borderTopColor: KIT[scheme].hair }
-              : undefined
-          }
-        >
+        <Follows.Provider key={i} value={i > 0 && !float}>
           {row}
-        </View>
+        </Follows.Provider>
       ))}
     </View>
   );
@@ -96,8 +92,10 @@ export function MenuItem({
   chevron?: boolean;
   count?: number;
 }) {
-  const { colors } = useTheme();
+  const { colors, scheme } = useTheme();
   const floating = useContext(Floating);
+  const follows = useContext(Follows);
+  const iconSize = floating ? ICON.md : ICON.lg;
   const press = useSinglePress(onPress);
   const ink = negative ? colors.onDangerSoft : colors.text;
   return (
@@ -119,10 +117,24 @@ export function MenuItem({
             opacity: pressed ? OPACITY.pressed : 1,
           }}
         >
+          {follows ? (
+            <View
+              // U29 (`.srow + .srow:before`): the hairline starts where the words do, 16 in from
+              // the right.
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: SPACING[4] + (cap || icon ? iconSize + ROW_GAP : 0),
+                right: SPACING[4],
+                borderTopWidth: KIT.size.hair,
+                borderTopColor: KIT[scheme].hair,
+              }}
+            />
+          ) : null}
           {cap ? (
-            <CapIcon name={cap} size={ICON.md} color={negative ? ink : colors.muted} />
+            <CapIcon name={cap} size={iconSize} color={negative ? ink : colors.muted} />
           ) : icon ? (
-            <AppIcon name={icon} size={ICON.md} color={negative ? ink : colors.muted} />
+            <AppIcon name={icon} size={iconSize} color={negative ? ink : colors.muted} />
           ) : null}
           <View
             className="flex-1"
