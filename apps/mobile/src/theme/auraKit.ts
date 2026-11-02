@@ -425,6 +425,20 @@ export const KIT = {
     padY: 12,
     gap: 10,
   },
+  // U26 (MekanSohbetiBos `.ecard`, `.disc`): the empty venue chat's glass card 18 × 20 in, 8
+  // apart; its 48 disc on a soft green, the chat icon in the accent with the pink body (.55).
+  venueChatEmpty: {
+    padX: 20,
+    padY: 18,
+    gap: 8,
+    disc: 48,
+    discGround: 'rgba(18, 152, 79, 0.12)',
+    ink: { light: '#0B783D', dark: '#1FDC75' },
+    body: '#FF4F8B',
+    bodySoft: 0.55,
+  },
+  // Who the viewer writes as (`.strip`): a glass pill 22 round.
+  venueChatStripRadius: 22,
   // U24 (Masadakiler `.sh`, `.srow`): the sheet 84 from the top; a person's row 56 high, 6 / 14 in,
   // their face 40 (`av.list`).
   peopleSheet: { top: 84, height: 56, padY: 6, padX: 14 },
