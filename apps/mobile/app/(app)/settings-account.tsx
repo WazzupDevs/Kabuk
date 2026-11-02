@@ -57,7 +57,7 @@ export default function AccountScreen() {
         <Glass pad="pad" style={{ gap: KIT.size.rowGap }}>
           <View>
             <T v="fine">{tr.settings.phoneLabel}</T>
-            <T v="h3" ink>
+            <T v="h3Mono" ink>
               {maskPhone(phone)}
             </T>
           </View>
@@ -70,7 +70,7 @@ export default function AccountScreen() {
             </View>
           ) : null}
         </Glass>
-        <T v="note">{tr.settings.fixedNote}</T>
+        <T v="fine">{tr.settings.fixedNote}</T>
         <RowList inset={KIT.size.lrIcon + KIT.size.liGap}>
           {contactEmail ? (
             <SettingsRow
@@ -109,7 +109,7 @@ export default function AccountScreen() {
         onClose={() => setDeleting(false)}
         title={tr.settings.deleteConfirmTitle}
         footer={
-          <View style={{ gap: KIT.size.rowGap }}>
+          <View style={{ gap: SPACING[2.5] }}>
             <Btn
               block
               tall
@@ -130,8 +130,8 @@ export default function AccountScreen() {
           </View>
         }
       >
-        <T v="note">{tr.settings.deleteBody}</T>
-        <T v="note">{tr.settings.deleteBackups}</T>
+        <T v="fine">{tr.settings.deleteBody}</T>
+        <T v="fine">{tr.settings.deleteBackups}</T>
         {remove.isError ? (
           <T v="fine" color={c.warn}>
             {errorMessage(remove.error)}

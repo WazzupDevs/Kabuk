@@ -13,6 +13,8 @@ import { profileApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { haptic } from '@/lib/haptics';
 import { KIT } from '@/theme/auraKit';
+import { useTheme } from '@/theme/ThemeProvider';
+import { SPACING } from '@/theme/tokens';
 import { patchProfile } from '@/features/account/patchProfile';
 
 type Changes = { notifyDm?: boolean; notifyFriendRequests?: boolean; notifyInvites?: boolean };
@@ -21,7 +23,8 @@ type Changes = { notifyDm?: boolean; notifyFriendRequests?: boolean; notifyInvit
 // K-62): whether the phone lets them through (with the way to its settings when not), then the
 // three kinds. Read again when the app comes back from the phone's settings.
 export default function NotificationSettingsScreen() {
-  const { c, tags } = useKit();
+  const { c } = useKit();
+  const { colors } = useTheme();
   const queryClient = useQueryClient();
   const own = useProfile();
   const permission = useQuery({
@@ -57,34 +60,35 @@ export default function NotificationSettingsScreen() {
       <PageTop title={tr.settings.notificationSettings} />
       <View style={{ gap: KIT.size.rowGap }}>
         {off ? (
+          // Aura v71 (BildirimAyarlari `.offc`): the lively card, 16 in.
           <View
             style={{
-              padding: KIT.size.pad,
+              padding: SPACING[4],
               borderRadius: KIT.size.glassRadiusSm,
-              backgroundColor: tags.amber.bg,
+              backgroundColor: colors.lively,
               gap: KIT.size.rowGap,
             }}
           >
-            <View>
-              <T v="sec" color={tags.amber.fg}>
+            <View style={{ gap: SPACING[0.5] }}>
+              <T v="h3" color={colors.onLively}>
                 {tr.settings.phone.title}
               </T>
-              <T v="note" color={tags.amber.fg}>
+              <T v="fine" color={colors.onLively}>
                 {tr.settings.phone.off}
               </T>
             </View>
             <Btn block label={tr.settings.phone.open} onPress={() => void Linking.openSettings()} />
           </View>
         ) : (
-          <Glass sm style={ROW}>
-            <View style={{ flex: 1 }}>
-              <T v="sec">{tr.settings.phone.title}</T>
-              <T v="note">{tr.settings.phone.on}</T>
+          <Glass sm style={[ROW, CARD_PAD]}>
+            <View style={{ flex: 1, gap: SPACING[0.5] }}>
+              <T v="h3">{tr.settings.phone.title}</T>
+              <T v="fine">{tr.settings.phone.on}</T>
             </View>
             {permission.data ? <Tag tone="green" label={tr.settings.phone.onTag} /> : null}
           </Glass>
         )}
-        <T v="sec" accessibilityRole="header">
+        <T v="h3" accessibilityRole="header" style={SECTION}>
           {tr.settings.friendsSection}
         </T>
         <View style={{ gap: KIT.size.rowGap, opacity: off ? OFF : 1 }}>
@@ -105,7 +109,7 @@ export default function NotificationSettingsScreen() {
             testID="notify-invites"
           />
         </View>
-        <T v="sec" accessibilityRole="header">
+        <T v="h3" accessibilityRole="header" style={SECTION}>
           {tr.settings.messagesSection}
         </T>
         <View style={{ opacity: off ? OFF : 1 }}>
@@ -123,14 +127,18 @@ export default function NotificationSettingsScreen() {
             {errorMessage(update.error)}
           </T>
         ) : null}
-        <T v="note">{tr.settings.notifyFootnote}</T>
+        <T v="fine">{tr.settings.notifyFootnote}</T>
       </View>
     </Screen>
   );
 }
 
-const OFF = 0.6;
+// Aura v71: the rows fade to .45 while the phone's notifications are off; the cards 14 / 16 in,
+// the section headings 8 further down.
+const OFF = 0.45;
 const ROW = { flexDirection: 'row', alignItems: 'center', gap: KIT.size.liGap } as const;
+const CARD_PAD = { paddingVertical: SPACING[3] + SPACING[0.5], paddingHorizontal: SPACING[4] };
+const SECTION = { marginTop: SPACING[2] };
 
 // Masa kur's switch row: the whole glass card is the switch.
 function SwitchRow({
@@ -161,10 +169,10 @@ function SwitchRow({
         onChange(!value);
       }}
     >
-      <Glass sm style={[ROW, { paddingVertical: KIT.size.pad, paddingHorizontal: KIT.size.pad }]}>
-        <View style={{ flex: 1 }}>
-          <T v="sec">{label}</T>
-          <T v="note">{hint}</T>
+      <Glass sm style={[ROW, CARD_PAD]}>
+        <View style={{ flex: 1, gap: SPACING[0.5] }}>
+          <T v="h3">{label}</T>
+          <T v="fine">{hint}</T>
         </View>
         <Switch on={value} disabled={disabled} />
       </Glass>

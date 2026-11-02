@@ -6,7 +6,7 @@ import { Loader } from '@/components/Loader';
 import { useSinglePress } from '@/lib/useSinglePress';
 import { KIT } from '@/theme/auraKit';
 
-// A settings page's row (aura v51, Ayarlar): a capsule icon, the label, a count and a chevron when
+// A settings page's row (aura v51, Ayarlar): a capsule icon, the label and a chevron when
 // it opens a page (aura v71: 64 at least, 12 / 16 in, icon 24, chevron 20); `negative` is written in the kit's warning colour. Lives in a `RowList`.
 export function SettingsRow({
   label,
@@ -15,7 +15,6 @@ export function SettingsRow({
   negative,
   loading,
   chevron,
-  count,
   testID,
 }: {
   label: string;
@@ -24,7 +23,6 @@ export function SettingsRow({
   negative?: boolean;
   loading?: boolean;
   chevron?: boolean;
-  count?: number;
   testID?: string;
 }) {
   const { c } = useKit();
@@ -45,7 +43,6 @@ export function SettingsRow({
         </T>
       </View>
       {loading ? <Loader kind="meet" size={KIT.size.lrIcon} delay={0} label={null} /> : null}
-      {!loading && count !== undefined ? <T v="fine">{String(count)}</T> : null}
       {!loading && chevron ? (
         <CapIcon name="forward" color={c.muted} size={KIT.size.lrChevron} />
       ) : null}
