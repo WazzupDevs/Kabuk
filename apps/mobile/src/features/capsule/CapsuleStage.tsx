@@ -47,6 +47,8 @@ export function CapsuleStage({
   hint,
   onPress,
   testID,
+  ring: ringWidth,
+  ringColor,
 }: {
   look: string;
   // The feeling's id ('' for none) and its name in the bubble.
@@ -61,12 +63,15 @@ export function CapsuleStage({
   hint: string | null;
   onPress: () => void;
   testID?: string;
+  // The surface ring around the circle (6 unless given), and its colour.
+  ring?: number;
+  ringColor?: string;
 }) {
   const { colors, shape } = useTheme();
   const shadowOff = useLabOff('golge');
   const reduce = useReduceMotion();
   const unit = size / STAGE.circle;
-  const ring = SPACING[1.5];
+  const ring = ringWidth ?? SPACING[1.5];
   // The disc's soft shadow natively (NativeShadow.tsx): it beats on every change.
   const discShadow = boxShadowParts(shadowOff, shape.shadow.card, size / 2 + ring, true, ring);
 
@@ -169,7 +174,7 @@ export function CapsuleStage({
                 height: size + ring * 2,
                 borderRadius: shape.radius.pill,
                 borderWidth: ring,
-                borderColor: colors.surface,
+                borderColor: ringColor ?? colors.surface,
                 backgroundColor: lookGround(shownLook),
                 boxShadow: discShadow.boxShadow,
               },
