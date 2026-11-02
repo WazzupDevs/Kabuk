@@ -18,7 +18,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { InSheet, T, useKit } from '@/aura/kit';
+import { InSheet, T } from '@/aura/kit';
 import { Peek, type PeekKind } from '@/aura/Peek';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
@@ -28,6 +28,7 @@ import { EASE_OUT } from '@/theme/markMotion';
 
 import { Quiet } from './Quiet';
 import { SheetCard } from './SheetCard';
+import { SheetScrim } from './SheetScrim';
 
 // A route drawn as a bottom sheet over the screen it opened from (skall tuvali: Ayarlar,
 // Bildirimler, mekana giriş and "Neredesin?" are sheets; the owner's decision, 27 Ekim). The route
@@ -59,7 +60,6 @@ export function RouteSheet({
   // footer). With them the buddies are scaled to the sheet and go once it stands at its tallest.
   footer?: ReactNode;
 }) {
-  const k = useKit();
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   const reduce = useReduceMotion();
@@ -107,10 +107,7 @@ export function RouteSheet({
   return (
     <CloseContext.Provider value={close}>
       <View style={StyleSheet.absoluteFill}>
-        <Animated.View
-          pointerEvents="none"
-          style={[StyleSheet.absoluteFill, { backgroundColor: k.c.scrim, opacity: progress }]}
-        />
+        <SheetScrim opacity={progress} />
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={tr.common.close}

@@ -67,3 +67,8 @@ export const GLASS_FACE = {
     inset: 'inset 0px 1.5px 1px 0px rgba(255, 255, 255, 0.067)',
   },
 } as const;
+
+// The scrim behind a sheet (U8, docs/design/aura → `.scrim`: backdrop-filter blur(8px)): the screen
+// behind, copied once when the sheet opens, blurred by `blur` (the deviation in dp) under the
+// scrim's colour (modules/skall-glass → BackdropBlurView; components/SheetScrim.tsx).
+export const SCRIM_GLASS = { blur: 8 } as const;
