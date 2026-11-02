@@ -1,4 +1,4 @@
-// A table (docs/SPEC_V4.md §4.E): its icon (K-45) is one of the 100 of content/table-icons.json,
+// A table (docs/SPEC_V4.md §4.E): its icon (K-45) is one of the 55 riso cards of content/table-icons.json,
 // generated into tableIcons.ts by `pnpm seed`; the server stores the id and checks it against the
 // same list (public.table_icons).
 import { ALIAS_REROLLS_PER_CHECKIN } from './rooms.ts';

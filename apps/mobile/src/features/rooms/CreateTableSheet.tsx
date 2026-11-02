@@ -360,16 +360,19 @@ export function IconPicker({
   onSelect: (icon: string) => void;
 }) {
   const scenes = TABLE_ICONS.filter((i) => i.theme === theme);
-  // aura v47 (MasaKurSimge): the themes in a sliding row, the scenes as 56 tiles 8 apart, the
-  // chosen one in the quick row's 3 purple outline.
+  // aura v47 (MasaKurSimge): the scenes as tiles 8 apart, the chosen one in the quick row's
+  // outline. The riso cards are one list (docs/decisions/masa-kimligi-riso.md): the theme row shows
+  // only when the list has themes.
   return (
     <View style={{ gap: KIT.size.chipsGap }} testID="table-icon-picker">
-      <Chips
-        accessibilityLabel={tr.createTable.iconLabel}
-        value={theme}
-        onChange={onTheme}
-        options={TABLE_ICON_THEMES.map((t) => ({ value: t, label: t }))}
-      />
+      {TABLE_ICON_THEMES.length > 1 ? (
+        <Chips
+          accessibilityLabel={tr.createTable.iconLabel}
+          value={theme}
+          onChange={onTheme}
+          options={TABLE_ICON_THEMES.map((t) => ({ value: t, label: t }))}
+        />
+      ) : null}
       <View
         accessibilityRole="radiogroup"
         style={{ flexDirection: 'row', flexWrap: 'wrap', gap: PICKER_GAP }}
