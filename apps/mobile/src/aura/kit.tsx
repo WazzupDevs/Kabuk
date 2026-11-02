@@ -1034,13 +1034,20 @@ export function Av({
 }: {
   name: string;
   photoUrl?: string | null;
-  size?: 'sm' | 'member' | 'list' | 'md' | 'row' | 'seat' | 'lg' | 'xl' | 'big' | 'edit';
+  size?: 'sm' | 'member' | 'list' | 'md' | 'row' | 'seat' | 'lg' | 'xl' | 'big' | 'hero' | 'edit';
   // Something else in the ring (a capsule).
   children?: ReactNode;
 }) {
+  const { scheme } = useTheme();
   const side = KIT.size.av[size];
   const ring =
-    size === 'xl' || size === 'big' || size === 'edit' ? KIT.size.avRingXl : KIT.size.avRing;
+    size === 'hero'
+      ? KIT.size.avRingHero
+      : size === 'xl' || size === 'big' || size === 'edit'
+        ? KIT.size.avRingXl
+        : KIT.size.avRing;
+  // U31: the profile's face in the dark sits in a ring of the dark card (#121614).
+  const ringColor = size === 'hero' && scheme === 'dark' ? KIT.dark.raised : KIT.white;
   const pick = KIT.avColors[colorIndex(name)] ?? KIT.avColors[0];
   const shadowOff = useLabOff('golge');
   // The face clips its photo, so its native shadow sits beside it in a box of the same size.
@@ -1053,7 +1060,7 @@ export function Av({
           height: side,
           borderRadius: side / 2,
           borderWidth: ring,
-          borderColor: KIT.white,
+          borderColor: ringColor,
           boxShadow: shadow.boxShadow,
           overflow: 'hidden',
           alignItems: 'center',

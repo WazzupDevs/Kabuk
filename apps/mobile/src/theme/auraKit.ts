@@ -112,6 +112,7 @@ export const KIT_TYPE = {
     xl: t(700, 32, 38),
     // Profil's two faces (112).
     big: t(700, 40, 48),
+    hero: t(700, 40, 48),
     edit: t(700, 30, 36),
   },
 } as const;
@@ -253,8 +254,9 @@ export const KIT = {
     switchInset: '',
     link: '#3DDC84',
     warn: '#FF977E',
-    friendPill: '#173022',
-    friendPillInk: '#8AD19F',
+    // U31 (ProfilBaskasi, dark): the green at 14 % and its light ink.
+    friendPill: 'rgba(61, 220, 132, 0.14)',
+    friendPillInk: '#93EBB9',
     disabled: '#1F2623',
     onDisabled: '#A3AEA8',
     // On a dark card the disabled fill is a step lighter (U10).
@@ -523,6 +525,8 @@ export const KIT = {
       lg: 64,
       xl: 96,
       big: 112,
+      // U31: another person's profile (ProfilBaskasi `.herow .av.xl`).
+      hero: 120,
       // U34: Profili düzenle's face (ProfilDuzenle `.avw .av.xl`).
       edit: 88,
     },
@@ -552,6 +556,7 @@ export const KIT = {
     profilePadX: 18,
     avRing: 2,
     avRingXl: 3,
+    avRingHero: 4,
     thumb: 60,
     thumbRadius: 18,
     badge: 20,
