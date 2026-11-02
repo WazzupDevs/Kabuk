@@ -122,3 +122,14 @@ Kod: `apps/mobile/app/(app)/(tabs)/profile/index.tsx`. Pano: `Profil.dc.html`.
 | 10.1 | Kapalı "Yenile" düğmesi (24 gün var) yeşilimsi dolgulu ve ikonlu olduğu için basılabilir görünüyor. Panoda kapalı düğme ikonsuz ve soluk yazılı (`#8F89A8`); kapalıyken ikon da soluk olmalı ya da hiç olmamalı. | renk/tema | `profile/index.tsx:304-312` `Btn glassy icon="refresh" disabled`; kapalı `Btn`'in görünüşü `src/aura/kit.tsx` → `Btn` (`disabled` dolgusu `#DCE9DE`). | düşük |
 | 10.2 | "Kapsülünü süsle" altında yine yeşil hale var (2.1). | renk/tema | **[P1]** bkz. 2.1 | — |
 | 10.3 | "Profili düzenle" ve "Kapsülünü süsle" çok büyük: 56 dp yükseklik, ekranı ikiye bölen iki tam genişlikli düğme; sayfanın asıl içeriğinden (fotoğraflar, ad) daha baskın. Panoda 50 dp. **Proje sahibinin gözlemi (2 Kasım).** Öneri: 40–44 dp (`sm`), yazı 14–15; yan yana kalabilir. | ölçü/boşluk | `profile/index.tsx:142-156` `bar={KIT.size.btnRow}` (56); **[P1]** `src/theme/auraKit.ts:536` `btnRow: 56` (panonun 50'sinden büyük). | orta |
+
+### 11. Profil → Kapsülünü süsle (Baş sekmesi, kaydırılmış, açık)
+
+Kod: `apps/mobile/app/(app)/(tabs)/profile/capsule.tsx:118-420` (`Editor`), sekme çubuğu `app/(app)/(tabs)/_layout.tsx:47`. Pano: `Kapsul.dc.html`.
+
+| # | Hata | Sınıf | Olası sebep | Önem |
+| --- | --- | --- | --- | --- |
+| 11.1 | Kaydırınca kapsül önizlemesi durum çubuğunun altında sert bir çizgiyle kesiliyor (ekranın üstünde yarım daire kalıyor); başlık ya da sönme yok. Yukarıda zemine sönen bir geçiş olmalı ya da önizleme küçülüp üstte sabit kalmalı. Seçim yaparken sonucun görünmesi gerekir. | yerleşim/taşma | `capsule.tsx:201` `Screen`: önizleme içerikle birlikte kayıyor; üst kenarda sönme yok. | orta |
+| 11.2 | Altta iki bar üst üste duruyor: "Hepsini çıkar / Kaydet" (56 dp) ve sekme çubuğu. Ekranın yaklaşık %20'sini kaplıyorlar, paket kartları arkalarında kalıyor. Düzenleme ekranında sekme çubuğu gizlenmeli ya da düğmeler küçülmeli (10.3 ile aynı ölçü sorunu). | yerleşim / ölçü | `capsule.tsx:202-245` `footer`; düzenleme ekranı `(tabs)/profile` yığınında, sekme çubuğu görünür kalıyor (`(tabs)/_layout.tsx:47`); **[P1]** `auraKit.ts:536` `btnRow: 56`. | orta |
+| 11.3 | Paket kartı "5 yuvaya parça" diyor ama altında yalnızca bu yuvanın 2 parçası var; sayı ile gösterilen uyuşmuyor, kartın sağı boş. Ya "Bu pakette 5 parça · burada 2" denmeli ya da sayı kaldırılmalı. | metin | `capsule.tsx:359` `packSlots(packItems(...).length)` bütün paketi sayıyor, `group.items` yalnızca seçili yuvayı gösteriyor. | düşük |
+| 11.4 | Yuva sekmelerinin (Renk, Göz, Baş…) arkasında, sağdaki sönme şeridinin alt kenarı zeminden farklı tonda bir bant olarak görünüyor. | renk/tema | `capsule.tsx:320-332`: sönme gradyanı `ground` rengiyle, ama ekranın gerçek zemini aura bulutu (`AuraBackground`), düz renk değil. | düşük |
