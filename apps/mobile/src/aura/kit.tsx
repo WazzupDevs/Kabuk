@@ -1119,7 +1119,7 @@ export function Seg<V extends string>({
   onChange: (v: V) => void;
   options: readonly { value: V; label: string; badge?: number; testID?: string }[];
   accessibilityLabel?: string;
-  // Mesajlar's (docs/design/aura → Mesajlar): 48 high tabs at 16 in a 30 round.
+  // Mesajlar's (U27): 48 in all, 40 tabs in a pill.
   large?: boolean;
 }) {
   const { c } = useKit();
@@ -1217,10 +1217,8 @@ export function Seg<V extends string>({
                 adjustsFontSizeToFit
                 minimumFontScale={MIN_LABEL_SCALE}
                 maxFontSizeMultiplier={MAX_FONT_SCALE}
-                style={[
-                  large ? KIT_TYPE.btn : KIT_TYPE.btnSm,
-                  { color: on ? c.segOnInk : c.muted, flexShrink: 1 },
-                ]}
+                // U27: the tabs' words 14/600 at either size (`.seg span`).
+                style={[KIT_TYPE.btnSm, { color: on ? c.segOnInk : c.muted, flexShrink: 1 }]}
               >
                 {o.label}
               </Text>

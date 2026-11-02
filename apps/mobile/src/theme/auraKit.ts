@@ -541,14 +541,19 @@ export const KIT = {
     // A segmented control 44 high, its chosen part 36 (skall.css `.seg`).
     segItem: 36,
     // Mesajlar's tabs: 48 high in a 30 round.
-    segLg: 48,
-    segLgRadius: 30,
+    // U27: Mesajlar's tabs 48 in all (40 tabs 4 in), a pill.
+    segLg: 40,
+    segLgRadius: 24,
     // Mesajlar's bell (52) and its new message button (70, 26 from the right).
-    bell: 52,
-    newChat: 70,
-    newChatRight: 26,
+    // U27: the bell 44 (round soft).
+    bell: 44,
+    // U27 (`.fab`): the new chat button 56, 20 from the right.
+    newChat: 56,
+    newChatRight: 20,
     // Mesajlar's rows: a 58 face, 12 above and under.
+    // U27 (`.list .li`): a conversation 72 high, 12 / 16 in; the hairline from 72.
     inboxPadY: 12,
+    inboxRow: 72,
     sheetInset: 8,
     sheetRadius: 28,
     sheetPadTop: 12,

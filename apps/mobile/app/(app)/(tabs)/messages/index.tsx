@@ -6,7 +6,7 @@ import { Animated, Pressable, View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
 import { PopIn } from '@/aura/PopIn';
-import { Av, Badge, Li, RowList, Seg, T, useKit, usePress } from '@/aura/kit';
+import { Av, Badge, Glass, Li, RowList, Seg, T, useKit, usePress } from '@/aura/kit';
 import { DeliveryTicks } from '@/components/ChatBubble';
 import { EmptyState } from '@/components/EmptyState';
 import { shadowParts } from '@/components/NativeShadow';
@@ -50,7 +50,7 @@ export default function MessagesScreen() {
         <View
           style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
         >
-          <T v="displayXl" accessibilityRole="header">
+          <T v="display" accessibilityRole="header">
             {tr.tabs.messages}
           </T>
           <NotificationsBell />
@@ -168,6 +168,7 @@ function FriendPicker({ visible, onClose }: { visible: boolean; onClose: () => v
 }
 
 function Chats({ now }: { now: Date }) {
+  const { c } = useKit();
   const inbox = useDmInbox();
   const loading = useLoaderHold(inbox.isPending);
   // The conversations' copies on the phone into memory (useDmMessages): a DM opened from here
@@ -222,13 +223,24 @@ function Chats({ now }: { now: Date }) {
   return (
     <View style={{ paddingBottom: KIT.size.newChat }}>
       {/* The room under the last row for the "+" over it. */}
-      <RowList inset={KIT.size.av.seat + KIT.size.liGap}>
+      {/* U27: the conversations on glass sm, a hairline from 72 to 16 short of the right. */}
+      <Glass sm style={{ paddingVertical: KIT.size.listPadY }}>
         {inbox.data.map((t, i) => (
           <Rise key={t.publicId} index={i}>
+            {i > 0 ? (
+              <View
+                style={{
+                  height: KIT.size.hair,
+                  marginLeft: KIT.size.liPadX + KIT.size.av.md + KIT.size.liGap,
+                  marginRight: KIT.size.liPadX,
+                  backgroundColor: c.hair,
+                }}
+              />
+            ) : null}
             <InboxRow thread={t} now={now} listen={i < TYPING_ROWS} />
           </Rise>
         ))}
-      </RowList>
+      </Glass>
     </View>
   );
 }
@@ -240,9 +252,9 @@ const WARM_ROWS = 20;
 // of channels, and the rows further down are off screen.
 const TYPING_ROWS = 30;
 
-// A conversation (docs/design/aura → Mesajlar: `.li`): the 58 face, the name (18) and the read
-// ticks and time (14) on top, the last message (15) or "yazıyor" below, the unread count as a pink
-// badge.
+// A conversation (U27, docs/design/aura → Mesajlar: `.li`): 72 high, the 44 face, the name (h3) and
+// the read ticks and time (fine) on top, the last message (body, one line) or "yazıyor" below, the
+// unread count as a pink badge.
 function InboxRow({
   thread: t,
   now,
@@ -265,10 +277,17 @@ function InboxRow({
         threadId ? () => openDm({ threadId, publicId: t.publicId, name: t.displayName }) : undefined
       }
     >
-      <Av size="seat" name={name} photoUrl={t.photoUrl} />
-      <View style={{ flex: 1, gap: ROW_GAP }}>
+      <Av size="md" name={name} photoUrl={t.photoUrl} />
+      <View
+        style={{
+          flex: 1,
+          gap: ROW_GAP,
+          minHeight: KIT.size.inboxRow - 2 * KIT.size.inboxPadY,
+          justifyContent: 'center',
+        }}
+      >
         <View style={BETWEEN}>
-          <T v="sec" style={{ flexShrink: 1 }}>
+          <T v="h3" style={{ flexShrink: 1 }}>
             {name}
           </T>
           {t.lastMessageAt ? (
@@ -277,9 +296,7 @@ function InboxRow({
               {t.lastFromMe && t.lastStatus ? (
                 <DeliveryTicks delivery={t.lastStatus} size={INBOX_TICK} />
               ) : null}
-              <T v="fineLg">
-                {tr.messages.stamp(t.lastMessageAt, inboxStamp(t.lastMessageAt, now))}
-              </T>
+              <T v="fine">{tr.messages.stamp(t.lastMessageAt, inboxStamp(t.lastMessageAt, now))}</T>
             </View>
           ) : null}
         </View>
@@ -301,7 +318,7 @@ function InboxRow({
     </Li>
   );
 }
-const ROW_GAP = 4;
+const ROW_GAP = 2;
 const INBOX_TICK = 17;
 const BETWEEN = {
   flexDirection: 'row' as const,
