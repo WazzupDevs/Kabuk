@@ -46,6 +46,11 @@ class SkallGlassModule : Module() {
       Prop("curve") { view: DissolveView, list: List<Double> -> view.setCurve(list) }
     }
 
+    View(BackdropBlurView::class) {
+      Name("BackdropBlurView")
+      Prop("blur") { view: BackdropBlurView, dp: Float -> view.setBlurDp(dp) }
+    }
+
     View(ShadowView::class) {
       Name("ShadowView")
       Prop("shadows") { view: ShadowView, list: List<Map<String, Any?>> -> view.setShadows(list) }

@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Galeri: Eklenen ekranlar</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+<link rel="stylesheet" href="ekran.css">
+<link rel="stylesheet" href="koyu.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.pi{display:block;flex:none}
+.pi .b{opacity:.5}
+.btn.primary .pi .b{opacity:.62}
+.tb{height:64px;border-radius:32px;display:flex;align-items:center;justify-content:space-between;padding:0 6px;box-sizing:border-box;background:rgba(255,255,255,.66);-webkit-backdrop-filter:blur(24px) saturate(170%);backdrop-filter:blur(24px) saturate(170%);border:1px solid rgba(255,255,255,.86);box-shadow:0 18px 44px rgba(4,73,35,.14),0 2px 6px rgba(4,73,35,.06);z-index:5}
+.tb.dk{background:rgba(33,40,36,.72);border-color:rgba(255,255,255,.14);box-shadow:0 18px 44px rgba(0,0,0,.40)}
+.tbt{width:52px;height:52px;border-radius:26px;border:0;padding:0;background:transparent;color:var(--muted);display:flex;align-items:center;justify-content:center;flex:none}
+.tb.dk .tbt{color:#B4D1BB}
+.tbt.on{background:rgba(255,255,255,.96);box-shadow:0 6px 16px rgba(4,73,35,.13)}
+.tb.dk .tbt.on{background:rgba(255,255,255,.94);box-shadow:0 6px 16px rgba(0,0,0,.30)}
+.btn.off{background:#7CCB92;box-shadow:none;cursor:default}
+.night .btn.off{background:#474F4B;color:rgba(255,255,255,.72)}
+.night .btn.glassy{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.16);color:var(--text);box-shadow:none}
+.night .strong,.night .h3,.night .display{color:var(--text)}
+.night .round.glassy{background:rgba(255,255,255,.14)}
+.age{color:var(--muted)}
+.wrapw{overflow-wrap:anywhere}
+.night .age{color:var(--muted)}
+.p-fld{display:flex;align-items:center;height:56px;border-radius:28px;border:1px solid #FFFFFF;background:rgba(255,255,255,.9);padding:0 22px;font:500 17px/1 'Plus Jakarta Sans',system-ui,sans-serif;color:var(--text);box-shadow:0 4px 12px rgba(4,73,35,.06);width:100%;box-sizing:border-box}
+.p-fld.focus{border:2px solid var(--primary);padding:0 21px;box-shadow:0 0 0 4px rgba(14,135,69,.14)}
+.p-fld.err{border:2px solid var(--danger);padding:0 21px}
+.p-fld.tall{height:108px;align-items:flex-start;padding-top:16px;line-height:24px;border-radius:24px}
+.p-fld .caret{display:inline-block;width:2px;height:22px;background:var(--primary);margin-left:1px;vertical-align:middle}
+.night .p-fld{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.14);color:var(--text);box-shadow:none}
+.night .p-fld.focus{border-color:var(--primary)}
+.night .p-fld.err{border-color:var(--danger)}
+.p-lbl{font-size:15px;line-height:22px;font-weight:500;color:var(--muted)}
+.p-note{font-size:14px;line-height:20px;font-weight:500;color:var(--muted)}
+.night .p-lbl,.night .p-note{color:var(--muted)}
+.p-err{font-size:13px;line-height:18px;font-weight:500;color:var(--danger)}
+.night .p-err{color:var(--danger)}
+.p-link{font-size:16px;font-weight:600;color:var(--primary)}
+.night .p-link{color:var(--accent)}
+.p-foot{position:absolute;left:0;right:0;padding:24px 20px 0;display:flex;flex-direction:column;gap:8px;background:linear-gradient(180deg,rgba(247,245,253,0),var(--canvas) 24px);z-index:4}
+.night .p-foot{background:linear-gradient(180deg,rgba(0,0,0,0),var(--canvas) 24px)}
+.p-friend{flex:1 1 0;display:flex;align-items:center;justify-content:center;gap:8px;height:50px;border-radius:999px;background:rgba(28,140,78,.12);color:#0F5C31;font-size:16px;font-weight:600;flex:1;min-width:0}
+.night .p-friend{background:rgba(95,198,160,.16);color:#9BE3C4}
+.p-sheet{border-radius:36px;padding:12px 20px 22px;display:flex;flex-direction:column;gap:12px;background:linear-gradient(180deg,#F4F2FB,#ECE9F7);border:1px solid rgba(255,255,255,.86);box-shadow:0 -12px 40px rgba(4,73,35,.14)}
+.night .p-sheet{background:linear-gradient(180deg,var(--surface2),#121614);border-color:rgba(255,255,255,.14);box-shadow:0 -12px 40px rgba(0,0,0,.4)}
+.night .grab{background:rgba(255,255,255,.20)}
+.p-st{font-size:21px;line-height:27px;font-weight:600;letter-spacing:-.015em}
+.btn.danger{background:var(--danger);color:#FFFFFF}
+.p-menu{padding:4px 0}
+.p-mi{display:flex;align-items:center;gap:14px;padding:14px 18px;font-size:16px;font-weight:600;color:var(--text);width:100%;background:none;border:0;font-family:inherit;text-align:left}
+.p-mi + .p-mi{border-top:1px solid rgba(17,23,20,.07)}
+.p-mi .pi{color:var(--muted)}
+.p-mi.neg{color:var(--danger)}.p-mi.neg .pi{color:var(--danger)}
+.night .p-mi{color:var(--text)}.night .p-mi .pi{color:var(--muted)}
+.night .p-mi + .p-mi{border-top-color:rgba(255,255,255,.08)}
+.night .p-mi.neg,.night .p-mi.neg .pi{color:var(--danger)}
+.spin{width:20px;height:20px;border-radius:50%;border:2.5px solid rgba(255,255,255,.4);border-top-color:#FFFFFF;flex:none}
+.spin.ink{border-color:rgba(14,135,69,.25);border-top-color:var(--primary)}
+.night .spin.ink{border-color:rgba(35,186,100,.25);border-top-color:var(--accent)}
+.worn{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:999px;background:rgba(255,255,255,.74);border:1px solid #FFFFFF;font-size:13px;font-weight:600;color:var(--text);box-shadow:0 4px 12px rgba(4,73,35,.07)}
+.night .worn{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.16);color:var(--text);box-shadow:none}
+.kb{position:absolute;left:0;right:0;bottom:0;height:300px;background:#E3E1EC;padding:10px 6px 0;display:flex;flex-direction:column;gap:10px;z-index:6}
+.kb .r{display:flex;gap:6px;justify-content:center}
+.kb i{display:block;height:46px;flex:1;max-width:33px;border-radius:6px;background:#FFFFFF;box-shadow:0 1px 0 rgba(17,23,20,.18)}
+.kb .sp{max-width:none;flex:5}
+
+.gp{width:880px;padding:56px 40px 64px;box-sizing:border-box;background:#FFFFFF;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--text);display:flex;flex-direction:column;gap:36px}
+.gsec{display:flex;flex-direction:column;gap:14px}
+.gpair{display:grid;grid-template-columns:390px 390px;gap:20px}
+.gc{position:relative;border-radius:22px;overflow:hidden;padding:20px;display:flex;flex-direction:column;gap:12px;box-sizing:border-box}
+.g-lt{background:radial-gradient(60% 120% at 10% 0%,rgba(18,152,79,.22),rgba(18,152,79,0) 70%),radial-gradient(50% 120% at 95% 20%,rgba(255,79,139,.16),rgba(255,79,139,0) 70%),var(--canvas)}
+.gc.night{background:radial-gradient(60% 120% at 10% 0%,rgba(18,152,79,.45),rgba(18,152,79,0) 70%),radial-gradient(50% 120% at 95% 20%,rgba(255,79,139,.26),rgba(255,79,139,0) 70%),var(--canvas)}
+.gcap{font-size:12px;line-height:16px;font-weight:600;color:var(--muted)}
+.night .gcap{color:var(--muted)}
+.gsheet{background:rgba(17,23,20,.30);padding:40px 10px 10px;justify-content:flex-end}
+.gsheet.night{background:var(--canvas)}
+.disc{width:64px;height:64px;border-radius:32px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.74);border:1px solid #FFFFFF;color:var(--muted);align-self:center}
+.night .disc{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.16);color:var(--muted)}
+.tline{display:flex;gap:10px;align-items:center}
+
+.nb-box{width:24px;height:24px;border-radius:8px;box-shadow:inset 0 0 0 2px var(--border);flex:none;display:flex;align-items:center;justify-content:center}
+.nb-box.on{background:var(--primary);box-shadow:none;--ci-a:var(--on-primary);--ci-b:var(--on-primary)}
+.nb-box.on .pi .b{opacity:1}
+.dark.pA .nb-box.on{background:#3DDC84;--ci-a:#0B0E0D;--ci-b:#0B0E0D}
+.nb-radio{width:24px;height:24px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--border);flex:none}
+.nb-radio.on{box-shadow:inset 0 0 0 7px var(--primary)}.dark.pA .nb-radio.on{box-shadow:inset 0 0 0 7px #3DDC84}
+.nb-row{display:flex;align-items:center;gap:12px;min-height:56px;padding:10px 16px;border-radius:22px;background:var(--soft-bg);border:1px solid var(--soft-line);box-shadow:var(--soft-shadow);box-sizing:border-box}
+.nb-row.on{box-shadow:0 0 0 2px var(--primary)}.dark.pA .nb-row.on{box-shadow:0 0 0 2px #3DDC84}
+.nb-lnk{font:600 14px/18px var(--font);color:var(--primary-pressed);text-decoration:none;flex:none}.dark.pA .nb-lnk{color:#3DDC84}
+.nb-ban{border-radius:22px;padding:14px 16px;background:var(--warn-soft);display:flex;flex-direction:column;gap:4px}
+.nb-ban p{color:var(--on-warn-soft)}.dark.pA .nb-ban{background:#3A2A10}.dark.pA .nb-ban p{color:#FFE2B3}
+.nb-off{border-radius:22px;padding:16px;background:var(--lively);display:flex;flex-direction:column;gap:12px}
+.nb-off p{color:var(--on-lively)}.dark.pA .nb-off{background:#46290B}.dark.pA .nb-off p{color:#FFD8A3}
+.nb-d{height:60px;border-radius:16px;background:var(--surface);display:flex;align-items:center;justify-content:center;font:600 21px/27px var(--font);color:var(--text);box-shadow:var(--shadow-raised)}
+.dark.pA .nb-d{background:#1B211F;box-shadow:none}
+.nb-pick{width:120px;height:120px;border-radius:50%;border:3px dashed var(--control);background:var(--surface);display:flex;align-items:center;justify-content:center;--ci-a:var(--accent);--ci-b:var(--accent);box-sizing:border-box}
+.nb-pick .pi{width:40px;height:40px}
+.dark.pA .nb-pick{background:#151A18;border-color:#2A332F;--ci-a:#3DDC84;--ci-b:#3DDC84}
+.nb-lst{border-radius:22px;padding:4px 0;display:flex;flex-direction:column;background:var(--glass-bg);border:1px solid var(--glass-line);box-shadow:var(--glass-shadow)}
+.nb-lr{display:flex;align-items:center;gap:12px;padding:12px 16px;min-height:64px;position:relative;box-sizing:border-box;color:var(--text)}
+.nb-lr+.nb-lr:before{content:"";position:absolute;top:0;left:52px;right:16px;border-top:1px solid var(--hair)}
+.nb-lr>.pi{color:var(--muted)}.nb-lr .cv{color:var(--muted);display:flex}
+.nb-lr.danger,.nb-lr.danger .h3,.nb-lr.danger>.pi{color:var(--danger)}
+.dark.pA .nb-lr.danger,.dark.pA .nb-lr.danger .h3,.dark.pA .nb-lr.danger>.pi{color:#FF977E}
+</style>
+</helmet>
+<div class="gp"><h1 class="display">Galeri: Eklenen ekranlar</h1><p class="body" style="margin-top: -24px">2 Kas’ta eklenen 20 ekranın yeni ortak bileşenleri. Uygulamadaki mevcut metinler.</p><section class="gsec">
+  <div class="col" style="gap: 4px"><h2 class="title">Onay kutusu ve seçenek satırı</h2><p class="body">Kayıt (Başlamadan önce, Cinsiyetin) ve Engelle onayı. Kutu 24, köşe 8; radyo 24, seçili iç çizgi 7; satır en az 56, köşe 22, seçili halka 2.</p></div>
+  <div class="gpair">
+    <div class="gc g-lt"><p class="gcap">Açık</p>
+<div class="nb-row on"><span class="nb-box on"><svg class="ci pi" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="2.647" y="13.3" width="9.705" height="3.2" rx="1.6" transform="rotate(45 7.5 14.9)" class="b"></rect><rect x="5.973" y="10.6" width="16.654" height="3.2" rx="1.6" transform="rotate(-48.013 14.3 12.2)" class="a"></rect></svg></span><p class="fine grow" style="color: var(--text)">Kullanım Koşulları’nı okudum ve kabul ediyorum.</p><a class="nb-lnk" href="#">Oku</a></div>
+<div class="nb-row"><span class="nb-box"></span><p class="fine grow" style="color: var(--text)">KVKK Aydınlatma Metni’ni okudum.</p><a class="nb-lnk" href="#">Oku</a></div>
+<div class="nb-row on"><span class="h3 grow">Kadın</span><span class="nb-radio on"></span></div>
+<div class="nb-row"><span class="h3 grow">Erkek</span><span class="nb-radio"></span></div>
+<div class="nb-row"><span class="nb-box"></span><span class="h3 grow">Şikayet de et</span></div></div>
+    <div class="gc night dark pA"><p class="gcap">Koyu</p>
+<div class="nb-row on"><span class="nb-box on"><svg class="ci pi" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="2.647" y="13.3" width="9.705" height="3.2" rx="1.6" transform="rotate(45 7.5 14.9)" class="b"></rect><rect x="5.973" y="10.6" width="16.654" height="3.2" rx="1.6" transform="rotate(-48.013 14.3 12.2)" class="a"></rect></svg></span><p class="fine grow" style="color: var(--text)">Kullanım Koşulları’nı okudum ve kabul ediyorum.</p><a class="nb-lnk" href="#">Oku</a></div>
+<div class="nb-row"><span class="nb-box"></span><p class="fine grow" style="color: var(--text)">KVKK Aydınlatma Metni’ni okudum.</p><a class="nb-lnk" href="#">Oku</a></div>
+<div class="nb-row on"><span class="h3 grow">Kadın</span><span class="nb-radio on"></span></div>
+<div class="nb-row"><span class="h3 grow">Erkek</span><span class="nb-radio"></span></div>
+<div class="nb-row"><span class="nb-box"></span><span class="h3 grow">Şikayet de et</span></div></div>
+  </div>
+</section><section class="gsec">
+  <div class="col" style="gap: 4px"><h2 class="title">Uyarı bandı ve izin kapalı kartı</h2><p class="body">Kimlik değiştir, Profil fotoğrafın (uyarı bandı) ve Bildirim ayarları (izin kapalı). Köşe 22.</p></div>
+  <div class="gpair">
+    <div class="gc g-lt"><p class="gcap">Açık</p>
+<div class="nb-ban"><p class="t-body-strong">Bu girişte tek değişiklik hakkın var.</p><p class="fine">Değiştirince bu girişte geri dönemezsin.</p></div>
+<div class="nb-off"><div class="col" style="gap:2px"><p class="h3">Telefon bildirimleri</p><p class="fine">Kapalı. Masa davetleri 2 dakika geçerli olduğu için kaçırabilirsin.</p></div><button class="btn primary block" type="button">Telefon ayarlarını aç</button></div></div>
+    <div class="gc night dark pA"><p class="gcap">Koyu</p>
+<div class="nb-ban"><p class="t-body-strong">Bu girişte tek değişiklik hakkın var.</p><p class="fine">Değiştirince bu girişte geri dönemezsin.</p></div>
+<div class="nb-off"><div class="col" style="gap:2px"><p class="h3">Telefon bildirimleri</p><p class="fine">Kapalı. Masa davetleri 2 dakika geçerli olduğu için kaçırabilirsin.</p></div><button class="btn primary block" type="button">Telefon ayarlarını aç</button></div></div>
+  </div>
+</section><section class="gsec">
+  <div class="col" style="gap: 4px"><h2 class="title">Tarih kutusu ve fotoğraf seçici</h2><p class="body">Doğum tarihin: kutu 60, köşe 16, oran 1:1:1,6. Profil fotoğrafın: 120 daire, kesikli çizgi 3.</p></div>
+  <div class="gpair">
+    <div class="gc g-lt"><p class="gcap">Açık</p>
+<div class="row" style="gap: 10px; align-items: stretch"><div class="col" style="gap: 8px; flex: 1"><label class="t-label">Gün</label><div class="nb-d">14</div></div><div class="col" style="gap: 8px; flex: 1"><label class="t-label">Ay</label><div class="nb-d">06</div></div><div class="col" style="gap: 8px; flex: 1.6"><label class="t-label">Yıl</label><div class="nb-d">1999</div></div></div>
+<div class="col" style="align-items: center; gap: 12px; padding-top: 8px"><span class="nb-pick"><svg class="ci pi" viewBox="0 0 24 24" width="40" height="40" aria-hidden="true"><rect x="3.4" y="7.2" width="17.2" height="12.6" rx="4" class="b"></rect><rect x="8.4" y="4.4" width="7.2" height="3.6" rx="1.8" class="b"></rect><circle cx="12" cy="13.4" r="3.3" class="a"></circle></svg></span><button class="btn sm soft" type="button"><svg class="ci pi" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="3.4" y="7.2" width="17.2" height="12.6" rx="4" class="b"></rect><rect x="8.4" y="4.4" width="7.2" height="3.6" rx="1.8" class="b"></rect><circle cx="12" cy="13.4" r="3.3" class="a"></circle></svg>Fotoğraf ekle</button></div></div>
+    <div class="gc night dark pA"><p class="gcap">Koyu</p>
+<div class="row" style="gap: 10px; align-items: stretch"><div class="col" style="gap: 8px; flex: 1"><label class="t-label">Gün</label><div class="nb-d">14</div></div><div class="col" style="gap: 8px; flex: 1"><label class="t-label">Ay</label><div class="nb-d">06</div></div><div class="col" style="gap: 8px; flex: 1.6"><label class="t-label">Yıl</label><div class="nb-d">1999</div></div></div>
+<div class="col" style="align-items: center; gap: 12px; padding-top: 8px"><span class="nb-pick"><svg class="ci pi" viewBox="0 0 24 24" width="40" height="40" aria-hidden="true"><rect x="3.4" y="7.2" width="17.2" height="12.6" rx="4" class="b"></rect><rect x="8.4" y="4.4" width="7.2" height="3.6" rx="1.8" class="b"></rect><circle cx="12" cy="13.4" r="3.3" class="a"></circle></svg></span><button class="btn sm soft" type="button"><svg class="ci pi" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="3.4" y="7.2" width="17.2" height="12.6" rx="4" class="b"></rect><rect x="8.4" y="4.4" width="7.2" height="3.6" rx="1.8" class="b"></rect><circle cx="12" cy="13.4" r="3.3" class="a"></circle></svg>Fotoğraf ekle</button></div></div>
+  </div>
+</section><section class="gsec">
+  <div class="col" style="gap: 4px"><h2 class="title">Ayar satırı</h2><p class="body">Hesap ve Gizlilik: en az 64, ikon 24, ayırıcı soldan 52; tehlikeli satır danger rengi.</p></div>
+  <div class="gpair">
+    <div class="gc g-lt"><p class="gcap">Açık</p>
+<div class="nb-lst"><div class="nb-lr"><svg class="ci pi" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="12" r="8.8" class="b"></circle><rect x="4.177" y="10.4" width="15.645" height="3.2" rx="1.6" transform="rotate(-45 12 12)" class="a"></rect></svg><p class="h3 grow">Engellenenler</p><span class="cv"><svg class="ci pi" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="5.762" y="7" width="12.676" height="3.2" rx="1.6" transform="rotate(45.855 12.1 8.6)" class="a"></rect><rect x="5.762" y="13.8" width="12.676" height="3.2" rx="1.6" transform="rotate(134.145 12.1 15.4)" class="b"></rect></svg></span></div><div class="nb-lr"><svg class="ci pi" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="3.6" y="4" width="9" height="16" rx="3.5" class="b"></rect><rect x="8.3" y="10.7" width="12.8" height="2.6" rx="1.3" class="a"></rect><rect x="14.637" y="9.1" width="7.125" height="2.6" rx="1.3" transform="rotate(45 18.2 10.4)" class="a"></rect><rect x="14.637" y="12.3" width="7.125" height="2.6" rx="1.3" transform="rotate(135 18.2 13.6)" class="a"></rect></svg><p class="h3 grow">Çıkış yap</p></div><div class="nb-lr danger"><svg class="ci pi" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="6" y="8" width="12" height="12.6" rx="3.4" class="b"></rect><rect x="3" y="4" width="18" height="3.2" rx="1.6" class="a"></rect><rect x="8.9" y="2.1" width="6.2" height="2.6" rx="1.3" class="a"></rect></svg><p class="h3 grow">Hesabımı sil</p></div></div></div>
+    <div class="gc night dark pA"><p class="gcap">Koyu</p>
+<div class="nb-lst"><div class="nb-lr"><svg class="ci pi" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="12" r="8.8" class="b"></circle><rect x="4.177" y="10.4" width="15.645" height="3.2" rx="1.6" transform="rotate(-45 12 12)" class="a"></rect></svg><p class="h3 grow">Engellenenler</p><span class="cv"><svg class="ci pi" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="5.762" y="7" width="12.676" height="3.2" rx="1.6" transform="rotate(45.855 12.1 8.6)" class="a"></rect><rect x="5.762" y="13.8" width="12.676" height="3.2" rx="1.6" transform="rotate(134.145 12.1 15.4)" class="b"></rect></svg></span></div><div class="nb-lr"><svg class="ci pi" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="3.6" y="4" width="9" height="16" rx="3.5" class="b"></rect><rect x="8.3" y="10.7" width="12.8" height="2.6" rx="1.3" class="a"></rect><rect x="14.637" y="9.1" width="7.125" height="2.6" rx="1.3" transform="rotate(45 18.2 10.4)" class="a"></rect><rect x="14.637" y="12.3" width="7.125" height="2.6" rx="1.3" transform="rotate(135 18.2 13.6)" class="a"></rect></svg><p class="h3 grow">Çıkış yap</p></div><div class="nb-lr danger"><svg class="ci pi" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="6" y="8" width="12" height="12.6" rx="3.4" class="b"></rect><rect x="3" y="4" width="18" height="3.2" rx="1.6" class="a"></rect><rect x="8.9" y="2.1" width="6.2" height="2.6" rx="1.3" class="a"></rect></svg><p class="h3 grow">Hesabımı sil</p></div></div></div>
+  </div>
+</section></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":880,"height":1960}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Zorunlu güncelleme · açık | koyu</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+<link rel="stylesheet" href="ekran.css">
+<link rel="stylesheet" href="koyu.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+
+.dark.pA{--overlap:#FFFFFF}
+.top{display:flex;align-items:center;justify-content:space-between;height:56px;flex:none}
+.pg{padding-top:52px;gap:0}
+.sub{margin-top:2px}
+.lst{padding:4px 0;display:flex;flex-direction:column}
+.lr{display:flex;align-items:center;gap:12px;padding:12px 16px;min-height:64px;position:relative;color:var(--text)}
+.lr+.lr:before{content:"";position:absolute;top:0;left:72px;right:16px;border-top:1px solid var(--hair)}
+.lr.ic+.lr.ic:before{left:52px}
+.lr>.ci{color:var(--muted)}
+.lr.danger,.lr.danger .h3,.lr.danger>.ci{color:var(--danger)}
+.cv{color:var(--muted);display:flex}
+.note{font:500 13px/18px var(--font);color:var(--muted)}
+.sh{padding:12px 20px 38px;background:var(--canvas);gap:16px;box-shadow:var(--shadow-sheet);z-index:3}
+.sh .title{margin-top:4px}
+.ban{border-radius:22px;padding:14px 16px;background:var(--warn-soft);color:var(--on-warn-soft);display:flex;flex-direction:column;gap:4px}
+.ban p{color:var(--on-warn-soft)}
+.card{background:var(--surface);border-radius:22px;box-shadow:var(--shadow-raised)}
+.ghost{background:none;border:0;box-shadow:none;color:var(--text)}
+.btn.danger .ci{--ci-a:var(--on-danger-soft);--ci-b:var(--on-danger-soft)}
+.btn.primary .ci{--ci-a:var(--on-primary);--ci-b:var(--on-primary)}
+.box{width:24px;height:24px;border-radius:8px;box-shadow:inset 0 0 0 2px var(--border);flex:none;display:flex;align-items:center;justify-content:center}
+.box.on{background:var(--primary);box-shadow:none;color:var(--on-primary);--ci-a:var(--on-primary);--ci-b:var(--on-primary);--ci-bo:1}
+.radio{width:24px;height:24px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--border);flex:none}
+.radio.on{box-shadow:inset 0 0 0 7px var(--primary)}
+.opt{display:flex;align-items:center;gap:12px;min-height:60px;padding:10px 16px;border-radius:22px;background:var(--soft-bg);border:1px solid var(--soft-line);box-shadow:var(--soft-shadow)}
+.opt.on{box-shadow:0 0 0 2px var(--primary)}
+.capav{border-radius:50%;overflow:hidden;flex:none;display:block}
+.capav svg{display:block;width:100%;height:100%}
+.dark.pA .sh{background:#121614;box-shadow:none}
+.dark.pA .btn.soft,.dark.pA .chip{border-color:rgba(255,255,255,.10)}
+.dark.pA .btn.primary{box-shadow:none}
+.dark.pA .btn.off{background:#1F2623;color:#A3AEA8}
+.dark.pA .av{border-color:#121614}
+.dark.pA .card{background:#1B211F;box-shadow:none}
+.dark.pA .ban{background:#3A2A10;color:#FFE2B3}.dark.pA .ban p{color:#FFE2B3}
+.dark.pA .opt.on{box-shadow:0 0 0 2px #3DDC84}.dark.pA .radio.on{box-shadow:inset 0 0 0 7px #3DDC84}
+.dark.pA .box.on{background:#3DDC84;--ci-a:#0B0E0D;--ci-b:#0B0E0D}
+.dark.pA .lr.danger,.dark.pA .lr.danger .h3,.dark.pA .lr.danger>.ci{color:#FF977E}
+
+.upd{position:relative;height:100%;padding:0 20px 46px;display:flex;flex-direction:column;justify-content:center;gap:12px}
+.uh{display:flex;flex-direction:column;align-items:center;gap:12px;padding:32px 0;text-align:center}
+.uh .stand{position:relative}
+</style>
+</helmet>
+<div style="width: 820px; height: 844px; display: flex; gap: 40px; background: var(--surface2)">
+<div class="phone"><div class="aura"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i><i class="a5"></i></div>
+ <div class="upd"><div class="uh">
+  <div class="stand" style="width: 110px; height: 144px"><i></i><img src="/_blob/6a58f3698690adca0e10ece56fd10919" alt=""></div>
+  <div style="margin: 4px 0 12px"><svg viewBox="27 250 2254 757" width="95.3" height="32" role="img" aria-label="skall"><defs><clipPath id="wmL"><rect x="1951" y="250" width="200" height="757" rx="100"></rect></clipPath></defs><path d="M295 1007Q219 1007 159.5 981.5Q100 956 65.5 911.5Q31 867 27 811L27 811L217 811Q221 838 242 853Q263 868 294 868L294 868Q318 868 332 858Q346 848 346 832L346 832Q346 811 323 801Q300 791 247 779L247 779Q187 767 147 752Q107 737 77.5 703Q48 669 48 611L48 611Q48 561 75 520.5Q102 480 154.5 456Q207 432 281 432L281 432Q391 432 454 486Q517 540 527 628L527 628L350 628Q345 601 326.5 586.5Q308 572 277 572L277 572Q253 572 240.5 581Q228 590 228 606L228 606Q228 626 251 636.5Q274 647 325 658L325 658Q386 671 426.5 687Q467 703 497.5 738.5Q528 774 528 835L528 835Q528 884 499.5 923Q471 962 418.5 984.5Q366 1007 295 1007L295 1007ZM1214 1000L975 1000L820 770L820 1000L624 1000L624 260L820 260L820 659L975 439L1210 439L989 721L1214 1000ZM1239 719Q1239 632 1270.5 567Q1302 502 1356.5 467Q1411 432 1478 432L1478 432Q1536 432 1578 455Q1620 478 1643 517L1643 517L1643 439L1839 439L1839 1000L1643 1000L1643 922Q1620 961 1577.5 984Q1535 1007 1478 1007L1478 1007Q1411 1007 1356.5 972Q1302 937 1270.5 871.5Q1239 806 1239 719L1239 719ZM1643 719Q1643 665 1613.5 634Q1584 603 1541 603L1541 603Q1497 603 1468 633.5Q1439 664 1439 719L1439 719Q1439 773 1468 804.5Q1497 836 1541 836L1541 836Q1584 836 1613.5 805Q1643 774 1643 719L1643 719Z" fill="var(--text)"></path><rect x="1951" y="250" width="200" height="757" rx="100" fill="#7B5CFF"></rect><rect x="2081" y="250" width="200" height="757" rx="100" fill="#FF4F8B"></rect><rect x="2081" y="250" width="200" height="757" rx="100" fill="var(--overlap)" clip-path="url(#wmL)"></rect></svg></div>
+  <h1 class="t-heading">Güncelleme gerekli</h1>
+  <p class="body">Uygulamanın bu sürümü artık çalışmıyor. Devam etmek için yeni sürümü yükle.</p></div>
+  <button class="btn primary block" type="button">Güncelle</button>
+  <p class="fine" style="text-align:center">Yüklü sürüm: 0.9.3</p>
+ </div></div>
+<div class="phone dark pA"><div class="aura"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i><i class="a5"></i></div>
+ <div class="upd"><div class="uh">
+  <div class="stand" style="width: 110px; height: 144px"><i></i><img src="/_blob/6a58f3698690adca0e10ece56fd10919" alt=""></div>
+  <div style="margin: 4px 0 12px"><svg viewBox="27 250 2254 757" width="95.3" height="32" role="img" aria-label="skall"><defs><clipPath id="wmL"><rect x="1951" y="250" width="200" height="757" rx="100"></rect></clipPath></defs><path d="M295 1007Q219 1007 159.5 981.5Q100 956 65.5 911.5Q31 867 27 811L27 811L217 811Q221 838 242 853Q263 868 294 868L294 868Q318 868 332 858Q346 848 346 832L346 832Q346 811 323 801Q300 791 247 779L247 779Q187 767 147 752Q107 737 77.5 703Q48 669 48 611L48 611Q48 561 75 520.5Q102 480 154.5 456Q207 432 281 432L281 432Q391 432 454 486Q517 540 527 628L527 628L350 628Q345 601 326.5 586.5Q308 572 277 572L277 572Q253 572 240.5 581Q228 590 228 606L228 606Q228 626 251 636.5Q274 647 325 658L325 658Q386 671 426.5 687Q467 703 497.5 738.5Q528 774 528 835L528 835Q528 884 499.5 923Q471 962 418.5 984.5Q366 1007 295 1007L295 1007ZM1214 1000L975 1000L820 770L820 1000L624 1000L624 260L820 260L820 659L975 439L1210 439L989 721L1214 1000ZM1239 719Q1239 632 1270.5 567Q1302 502 1356.5 467Q1411 432 1478 432L1478 432Q1536 432 1578 455Q1620 478 1643 517L1643 517L1643 439L1839 439L1839 1000L1643 1000L1643 922Q1620 961 1577.5 984Q1535 1007 1478 1007L1478 1007Q1411 1007 1356.5 972Q1302 937 1270.5 871.5Q1239 806 1239 719L1239 719ZM1643 719Q1643 665 1613.5 634Q1584 603 1541 603L1541 603Q1497 603 1468 633.5Q1439 664 1439 719L1439 719Q1439 773 1468 804.5Q1497 836 1541 836L1541 836Q1584 836 1613.5 805Q1643 774 1643 719L1643 719Z" fill="var(--text)"></path><rect x="1951" y="250" width="200" height="757" rx="100" fill="#7B5CFF"></rect><rect x="2081" y="250" width="200" height="757" rx="100" fill="#FF4F8B"></rect><rect x="2081" y="250" width="200" height="757" rx="100" fill="var(--overlap)" clip-path="url(#wmL)"></rect></svg></div>
+  <h1 class="t-heading">Güncelleme gerekli</h1>
+  <p class="body">Uygulamanın bu sürümü artık çalışmıyor. Devam etmek için yeni sürümü yükle.</p></div>
+  <button class="btn primary block" type="button">Güncelle</button>
+  <p class="fine" style="text-align:center">Yüklü sürüm: 0.9.3</p>
+ </div></div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":820,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
