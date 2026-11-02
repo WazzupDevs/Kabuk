@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (2 Kasım 2026, U8 ve Aura v71 P1 birleşti)
+
+- #371 U8 sheet arkası bulanıklık: yeni yerel `BackdropBlurView` (`skall-glass`, PixelCopy ile bir kez küçük kopya, 8 dp; `SheetScrim`), `version` 0.9.4: proje sahibi yeni preview build alacak. Tuval v71 panoları `docs/design/aura/project/`'te.
+- Aura v71 "Eklenen 20 ekran" planı onaylı (`docs/decisions/aura-v71-eklenen.md`, 3 karar). #372 P1 ortak bileşenler (Checkbox `boxed`, ConsentBoxes, Choice radyo sağda, Banner warn, Input `box`/`big`, Li/RowList `person`/SettingsRow, Sheet `titleIcon`, kit `stepDot`/`checkInk`, F1–F2). OTA.
+- Sıradaki: P2 kayıt (SignupStep: koyu nokta `accent`, `stepDot`, "n/7" kalkar, düğme ikonları, adım başına `fieldTop`; bütün adımlara riso sahne + kankiler; Ad `Input big`; fotoğraf seçici 120/kesikli 3; KayitMetinler), P3 profil ve ayarlar (settings.tsx kendi satırlarını çiziyor), P4 mekân ve ortak (SpotPicker v71 iki yerde, K6 `Btn danger`, K8 Sessize alınanlar kapsül: sunucu yanıtına `look`, `guvenlik` denetler).
+- Ayrıntılı fark listesi panolardan yeniden çıkarılır (önceki oturumun geçici dosyasıydı); 6 riso kanki blob'unun repo karşılığı tuvalden doğrulanacak.
+
 ## Devir notu (2 Kasım 2026, Aura v65 aktarımı bitti: U36, §13, §14, kararlar)
 
 - #366 U36 hâller (yükleniyor Buluş, hata cloudOff disk + "Tekrar dene" sm soft), #367 §13 (riso kayıt sahnesi, 7 kanki hareketi `kankiMotion.ts`, Telefon/Kod, Masa bitti, Masa isteği), #368 §14 riso açılış (baskı ayrılır, kırpılmış dokular `pnpm launch:textures`), #369 kararlar (`docs/decisions/aura-v65-kararlar.md`). Native yok, OTA.
