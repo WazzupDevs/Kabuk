@@ -553,6 +553,7 @@ export function Chip({
   tall,
   lg,
   md,
+  icon,
   accessibilityLabel,
 }: {
   label: string;
@@ -564,6 +565,8 @@ export function Chip({
   lg?: boolean;
   // U19: Mekan's spot, 40 high, 16 inside, 14.
   md?: boolean;
+  // U35: a worn part's chip leads with its close icon, 10 in on that side.
+  icon?: CapIconName;
   accessibilityLabel?: string;
 }) {
   const { c } = useKit();
@@ -594,6 +597,7 @@ export function Chip({
       <Animated.View
         style={{
           height: h,
+          paddingLeft: icon ? KIT.size.chipIconPadLeft : undefined,
           paddingHorizontal: md
             ? KIT.size.chipMdPadX
             : lg
@@ -614,6 +618,7 @@ export function Chip({
       >
         {shadow.node}
         {on ? null : <FrostOf height={h} fill={c.raisedChip} />}
+        {icon ? <CapIcon name={icon} color={c.muted} size={KIT.size.iconSm} /> : null}
         <Text
           numberOfLines={1}
           maxFontSizeMultiplier={MAX_FONT_SCALE}
