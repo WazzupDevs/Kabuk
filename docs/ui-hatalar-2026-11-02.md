@@ -65,3 +65,15 @@ Kod: `apps/mobile/app/(app)/(tabs)/activities.tsx:246-289` (sayfa), `src/feature
 | 5.3 | Satırlar gruplanmıyor: bir kişinin düğmeleriyle sonraki kişinin adı arasındaki boşluk, ad ile kendi açıklaması arasındakinden küçük; "Diğer" bir sonraki kişiye aitmiş gibi duruyor. Her kişi panodaki gibi ayrı bir satır (`li`, ince çizgi ya da kart) olmalı; kapsül avatarı da yok. | ölçü/boşluk | `activities.tsx:253-261`: düz `View` içinde `gap: SPACING[3]` ve `SPACING[1]`; satır ya da ayırıcı yok. | orta |
 | 5.4 | Sayfa eski tasarım bileşenleriyle çizilmiş (`Text`, `Button` neutral/ghost, yeşil "Diğer" bağlantısı). Aura kitinin `T`, `Btn`, `Li` bileşenleri kullanılmıyor; koyu temada "Arkadaş ekle" içi boş çerçeve, "Diğer" neon yeşil. | renk/tema | `historyActions.tsx:166-243`, `activities.tsx:255-288` `@/components` bileşenleri | orta |
 | 5.5 | Tarih satırı yalnızca "23:00" diyor; hangi gün olduğu yazmıyor. "Dün 23:00" ya da "1 Kas 23:00" olmalı. | metin | `activities.tsx:255-258` `tr.activities.when(...)`: gün etiketi boş dönüyor (?). | düşük |
+
+### 6. Mekan (masasız, lobi boş; açık ve koyu)
+
+Kod: `apps/mobile/app/(app)/(tabs)/venue.tsx`, `src/features/venue/VenueHead.tsx`, `src/features/rooms/TableCard.tsx:328-378` (`NoTable`), `src/features/rooms/Lobby.tsx:176-190`. Pano: `Mekan.dc.html` (`.rscene`, "Açık masa yok").
+
+| # | Hata | Sınıf | Olası sebep | Önem |
+| --- | --- | --- | --- | --- |
+| 6.1 | "Henüz masan yok" kartının resmi yanlış kırpılıyor: yalnızca resmin boş, dokulu sol üst köşesi görünüyor; sağ alttaki masa, sandalyeler, lamba ve iki kapsül (`assets/riso/venue-no-table.webp`) hiç görünmüyor. Kartın sağ yarısı ve alt üçte biri boş duruyor. Sahne panodaki gibi bütünüyle, figürler sağ altta görünmeli. | yerleşim / resim | `TableCard.tsx:343-349`: `Image` `resizeMode="cover"` + `absoluteFill`; resim kutudan çok büyük ölçekleniyor ya da sol üste hizalanıyor (?). Kart yüksekliği `KIT.size.hero` (`:339`). | yüksek |
+| 6.2 | Koyu temada "Henüz masan yok" kartı açık bej bir blok olarak kalıyor, siyah ekranda parlıyor. Kod bunu bilerek iki temada aynı çiziyor (`:330` "in both schemes"); koyu temada resmin üstüne hafif bir karartma ya da koyu bir varyant daha iyi olur. | renk/tema | `TableCard.tsx:330-366` | düşük |
+| 6.3 | "Açık masalar · 0 masa" ve hemen altındaki "Açık masa yok" aynı bilgiyi iki kez veriyor. Liste boşken sayı gizlenmeli. | metin | `Lobby.tsx:176` `count={read ? open.length : null}` | düşük |
+| 6.4 | Boş lobi açıklaması ("Masa kurup lobiye açarsan…") ilk ekranda sekme çubuğunun altında yarım kalıyor; ilk bakışta kesik metin gibi görünüyor. Boş durum resmi küçültülürse ya da başlık kartı kısalırsa (6.1) metin sığar. | yerleşim/taşma | `Lobby.tsx:183-190` `EmptyState` ile resim yüksekliği; 6.1'deki boş kart yer kaplıyor. | düşük |
+| 6.5 | "Masa kur" düğmesinin altında yine yeşil hale var; koyu temada belirgin (2.1). "Mekandasın" noktasının çevresinde gri halka var (2.2). | renk/tema | **[P1]** bkz. 2.1, 2.2 | — |
