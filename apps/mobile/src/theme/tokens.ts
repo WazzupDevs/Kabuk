@@ -314,6 +314,9 @@ export const MAP_PIN = {
   // Clear of the pin: the pin's radius, its rings and a gap, in the label's ems.
   labelOffset: 2.4,
   labelHalo: 2.5,
+  // U14 (KesfetHarita `.pd`): the pin's white ring and its shadow's colour, by scheme.
+  pinRing: { light: '#FFFFFF', dark: '#EAF6EC' },
+  pinShadow: { light: 'rgba(4, 73, 35, 0.28)', dark: 'rgba(0, 0, 0, 0.5)' },
 } as const;
 // The person's table card on Mekan (the owner's call, 27 Ekim: fuller): the table's icon blurred
 // large behind it, under the card's ground at `veil`; the people's faces overlapping; the time left

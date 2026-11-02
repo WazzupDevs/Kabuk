@@ -13,12 +13,19 @@ import {
 import { hasActiveTable } from '@shared/navigation.ts';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, TextInput, useWindowDimensions, View } from 'react-native';
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground, AuraBand } from '@/aura/AuraBackground';
 import { CapIcon } from '@/aura/CapIcon';
-import { Btn, Chip, Glass, Li, Live, RowList, T, useKit } from '@/aura/kit';
+import { Btn, Chip, Glass, Li, Live, T, Tag, useKit } from '@/aura/kit';
 import { useTabFocus } from '@/aura/motion';
 import { Reveal } from '@/aura/Reveal';
 import { VenueThumb } from '@/aura/VenueThumb';
@@ -26,7 +33,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
 import { PullScroll } from '@/components/PullScroll';
 import { Sheet } from '@/components/Sheet';
-import { useTabBarOverMap, useTabBarSpace } from '@/components/TabBar';
+import { TabBarFade, useTabBarOverMap, useTabBarSpace } from '@/components/TabBar';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { ExploreMap } from '@/features/explore/ExploreMap';
 import { useExplorePlace } from '@/features/explore/placeStore';
@@ -38,7 +45,8 @@ import { haptic } from '@/lib/haptics';
 import { useNow } from '@/lib/useNow';
 import { venueType } from '@/lib/venueType';
 import { AURA } from '@/theme/aura';
-import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { KIT, KIT_TYPE, VENUE_THUMB } from '@/theme/auraKit';
+import { THEME } from '@/theme/theme';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
@@ -72,6 +80,7 @@ export default function ExploreScreen() {
   // The floating tab bar covers the bottom of the map and the list.
   const barSpace = useTabBarSpace();
   const insets = useSafeAreaInsets();
+  const { height: screenHeight } = useWindowDimensions();
 
   const ready = venues.isSuccess && cities.isSuccess;
   const showMap = ready && view === 'map';
@@ -110,10 +119,11 @@ export default function ExploreScreen() {
               tabBarHeight={barSpace}
             />
           </View>
+          {/* U14: the aura over the top 26 % of the screen, giving way to the map by 40 %. */}
           <AuraBand
             top={0}
-            height={insets.top + headerHeight * MAP_SOLID}
-            fade={headerHeight * (1 - MAP_SOLID) + SPACING[6]}
+            height={screenHeight * MAP_SOLID}
+            fade={screenHeight * MAP_FADE}
             direction="down"
           />
         </>
@@ -127,16 +137,17 @@ export default function ExploreScreen() {
             style={{
               paddingHorizontal: KIT.size.side,
               paddingTop: SPACING[2],
-              gap: KIT.size.exploreGap,
+              gap: SPACING[6],
             }}
           >
+            {/* U13: the question at .display, at most its two lines. */}
             <Reveal index={0} replay={focus.opened}>
-              <T v="display" style={KIT_TYPE.displayLg} accessibilityRole="header">
+              <T v="display" accessibilityRole="header">
                 {tr.explore.question[dayPart(now)]}
               </T>
             </Reveal>
             {ready ? (
-              <>
+              <View style={{ gap: SPACING[3] }}>
                 <Reveal index={1} replay={focus.opened}>
                   <View style={{ flexDirection: 'row', gap: SEARCH_GAP }}>
                     <SearchGlass value={query} onChangeText={setQuery} />
@@ -150,15 +161,22 @@ export default function ExploreScreen() {
                   </View>
                 </Reveal>
                 <Reveal index={2} replay={focus.opened}>
-                  <View
+                  {/* U13: the kind chips on one line, scrolling sideways to the screen's edge. */}
+                  <ScrollView
+                    horizontal
+                    showsVerticalScrollIndicator={false}
+                    showsHorizontalScrollIndicator={false}
                     accessibilityRole="radiogroup"
                     accessibilityLabel={tr.explore.kindsLabel}
-                    style={{ flexDirection: 'row', flexWrap: 'wrap', gap: KIT.size.chipsGap }}
+                    style={{ marginRight: -KIT.size.side, overflow: 'visible' }}
+                    contentContainerStyle={{
+                      gap: KIT.size.chipsGap,
+                      paddingRight: KIT.size.side,
+                    }}
                   >
                     {EXPLORE_KINDS.map((k) => (
                       <Chip
                         key={k}
-                        tall
                         testID={`explore-kind-${k}`}
                         label={tr.explore.kinds[k]}
                         on={kind === k}
@@ -169,9 +187,9 @@ export default function ExploreScreen() {
                         }}
                       />
                     ))}
-                  </View>
+                  </ScrollView>
                 </Reveal>
-              </>
+              </View>
             ) : null}
           </View>
         </View>
@@ -212,6 +230,7 @@ export default function ExploreScreen() {
             onRefresh={() => Promise.all([venues.refetch(), cities.refetch()])}
           />
         ) : null}
+        {ready && view === 'list' ? <TabBarFade /> : null}
       </View>
     </SafeAreaView>
   );
@@ -233,10 +252,10 @@ function emptyCopy(empty: ExploreEmpty, kind: ExploreKind): { title: string; hin
   }
 }
 
-// A venue row's liveliness: plain words while calm, the live dot otherwise.
+// A venue row's liveliness: "Sessiz" as the calm tag (U13), the live dot otherwise.
 function Bucket({ bucket, calm }: { bucket: CityVenue['bucket']; calm: boolean }) {
   return calm ? (
-    <T v="fineLg">{tr.explore.buckets[bucket]}</T>
+    <Tag tone="purple" label={tr.explore.buckets[bucket]} />
   ) : (
     <Live label={tr.explore.buckets[bucket]} color={KIT.pink} ring={KIT.pinkRing} />
   );
@@ -317,6 +336,7 @@ function VenueList({
   const [sheetKey, setSheetKey] = useState(0);
   const cityList = useMemo(() => exploreCities(listed), [listed]);
   const narrow = useNarrow();
+  const { c } = useKit();
   return (
     // Pulled down at its top it fetches the list again (v46's `.ptr-ind`).
     <PullScroll
@@ -325,9 +345,10 @@ function VenueList({
       keyboardDismissMode="on-drag"
       contentContainerStyle={{
         paddingHorizontal: side,
-        paddingTop: KIT.size.exploreGap,
+        paddingTop: SPACING[6],
+        // At least 124 under the list (U13; the bar's room is 92 without a safe area).
         paddingBottom: SPACING[8] + bottomSpace,
-        gap: KIT.size.exploreGap,
+        gap: SPACING[3],
       }}
     >
       {here ? <HereNow here={here} /> : null}
@@ -344,7 +365,6 @@ function VenueList({
             columnGap: KIT.size.rowGap,
             rowGap: SPACING[0.5],
             paddingTop: KIT.size.secPadTop,
-            paddingHorizontal: KIT.size.secPadX,
           }}
         >
           {place ? (
@@ -360,7 +380,7 @@ function VenueList({
               }}
               hitSlop={KIT.size.chipsGap}
             >
-              <T v="secLg">{tr.explore.place(place.city, place.district)}</T>
+              <T v="h3">{tr.explore.place(place.city, place.district)}</T>
             </Pressable>
           ) : (
             <View />
@@ -381,13 +401,26 @@ function VenueList({
           </Glass>
         </Reveal>
       ) : (
-        <RowList inset={KIT.size.liGap + VENUE_ROW_PICTURE}>
+        // U13: the rows on a small glass card, a hairline between them from the words to 16 short of
+        // the right edge.
+        <Glass sm style={{ paddingVertical: KIT.size.listPadY }}>
           {venues.map((v, i) => {
             const type = venueType(v);
             const calm = v.bucket === 'calm';
             return (
               <Reveal key={v.id} index={ROWS_AT + i} step={ROW_STEP} replay={replay}>
+                {i > 0 ? (
+                  <View
+                    style={{
+                      height: KIT.size.hair,
+                      marginLeft: KIT.size.liPadX + VENUE_ROW_PICTURE + KIT.size.liGap,
+                      marginRight: KIT.size.liPadX,
+                      backgroundColor: c.hair,
+                    }}
+                  />
+                ) : null}
                 <Li
+                  padY={SPACING[3]}
                   testID={`explore-venue-${v.name}`}
                   accessibilityLabel={`${v.name}, ${tr.explore.typeLabel[type]}, ${tr.explore.buckets[v.bucket]}`}
                   onPress={() =>
@@ -396,8 +429,8 @@ function VenueList({
                 >
                   <VenueThumb kind={type} size={VENUE_ROW_PICTURE} />
                   <View style={{ flex: 1, gap: SPACING[0.5] }}>
-                    <T v="sec">{v.name}</T>
-                    <T v="fineLg">{tr.explore.venueSub(tr.explore.typeLabel[type], v.district)}</T>
+                    <T v="h3">{v.name}</T>
+                    <T v="fine">{tr.explore.venueSub(tr.explore.typeLabel[type], v.district)}</T>
                     {narrow ? <Bucket bucket={v.bucket} calm={calm} /> : null}
                   </View>
                   {narrow ? null : <Bucket bucket={v.bucket} calm={calm} />}
@@ -405,9 +438,10 @@ function VenueList({
               </Reveal>
             );
           })}
-        </RowList>
+        </Glass>
       )}
-      <T v="fine" center style={{ marginTop: SPACING[3] }}>
+      {/* Right under the list, at the caption's 11. */}
+      <T v="stamp" center>
         {tr.checkin.osmAttribution}
       </T>
       {place ? (
@@ -504,9 +538,10 @@ function PlaceSheet({
 
 const CHIPS = { flexDirection: 'row', flexWrap: 'wrap', gap: KIT.size.chipsGap } as const;
 
-// Over the map: the question and the search row on the plain ground, the fade only round the
-// chips (the owner's report, 30 Ekim: street names showed through the question).
-const MAP_SOLID = 0.74;
+// Over the map (U14, KesfetHarita): the aura solid over the top 26 % of the screen, fading into the
+// map down to 40 %.
+const MAP_SOLID = 0.26;
+const MAP_FADE = 0.14;
 
 // The place line comes after the head's three parts (the question, the search, the chips), 70 ms
 // apart; the rows after it, 60 ms apart (hareket.json → stagger).
@@ -516,12 +551,14 @@ const ROW_STEP = 60;
 // A tab opened again and a kind chosen both play the list's arrival: one number for the two.
 const REPLAY_BASE = 1000;
 
-// A venue row's picture (Keşfet: 52).
-const VENUE_ROW_PICTURE = 52;
+// A venue row's picture (U13: 56, 18 round).
+const VENUE_ROW_PICTURE = VENUE_THUMB.size;
 
-const SEARCH_GAP = 10;
+// U13: the search field and the switch 8 apart, the search icon 8 before the words.
+const SEARCH_GAP = SPACING[2];
 
-// "Mekan ara" on glass (Keşfet: 54 high, 27 round, the search icon first).
+// "Mekan ara" on glass (U13: 56 high, a pill, 20 inside, the search icon md first, the hint in
+// the placeholder colour).
 function SearchGlass({
   value,
   onChangeText,
@@ -530,6 +567,7 @@ function SearchGlass({
   onChangeText: (text: string) => void;
 }) {
   const { c } = useKit();
+  const { colors } = useTheme();
   const h = KIT.size.field;
   return (
     <Glass
@@ -539,13 +577,13 @@ function SearchGlass({
         flex: 1,
         height: h,
         borderRadius: h / 2,
-        paddingHorizontal: KIT.size.searchPadX,
+        paddingHorizontal: SPACING[5],
         flexDirection: 'row',
         alignItems: 'center',
         gap: SEARCH_GAP,
       }}
     >
-      <CapIcon name="search" color={c.muted} size={KIT.size.iconSm} />
+      <CapIcon name="search" color={colors.placeholder} size={ICON_MD} />
       <View style={{ flex: 1, justifyContent: 'center' }}>
         <TextInput
           testID="explore-search"
@@ -564,7 +602,7 @@ function SearchGlass({
             pointerEvents="none"
             style={[StyleSheet.absoluteFill, { justifyContent: 'center' }]}
           >
-            <T v="body" color={c.muted}>
+            <T v="body" color={colors.placeholder}>
               {tr.explore.search}
             </T>
           </View>
@@ -574,11 +612,14 @@ function SearchGlass({
   );
 }
 
-// The list/map switch (Keşfet): two round buttons in a glass capsule, the chosen one raised white.
+// The list/map switch (U13): two 48 round buttons 2 apart in a 56 glass capsule, 4 in from its
+// outer edge; the chosen one raised on the surface, its icon lit (accent in front, buzz behind;
+// in the dark on white 94 % with the light accent).
 function ViewSwitch({ value, onChange }: { value: View_; onChange: (v: View_) => void }) {
-  const { c } = useKit();
+  const { c, scheme } = useKit();
+  const { colors } = useTheme();
   const h = KIT.size.field;
-  const round = KIT.size.switchRound;
+  const round = SWITCH_ROUND;
   return (
     <Glass
       frost
@@ -586,7 +627,7 @@ function ViewSwitch({ value, onChange }: { value: View_; onChange: (v: View_) =>
       style={{
         height: h,
         borderRadius: h / 2,
-        padding: (h - round) / 2 - KIT.size.edge,
+        padding: SPACING[1] - KIT.size.edge,
       }}
     >
       <View
@@ -614,7 +655,13 @@ function ViewSwitch({ value, onChange }: { value: View_; onChange: (v: View_) =>
                 boxShadow: on ? c.segShadow || undefined : undefined,
               }}
             >
-              <CapIcon name={mode} color={on ? c.ink : c.muted} size={KIT.size.iconSm} />
+              <CapIcon
+                name={mode}
+                color={on ? (scheme === 'dark' ? THEME_LIGHT_ACCENT : colors.accent) : c.muted}
+                second={on ? colors.buzz : undefined}
+                soft={on ? 1 : undefined}
+                size={ICON_MD}
+              />
             </Pressable>
           );
         })}
@@ -622,3 +669,9 @@ function ViewSwitch({ value, onChange }: { value: View_; onChange: (v: View_) =>
     </Glass>
   );
 }
+
+// skall.css `.ci.md` (20) and Kesfet `.segx span` (48).
+const ICON_MD = 20;
+const SWITCH_ROUND = 48;
+// Kesfet `.dark .segx span.on .ci`: the light scheme's accent on the white part.
+const THEME_LIGHT_ACCENT = THEME.palettes.light.accent;

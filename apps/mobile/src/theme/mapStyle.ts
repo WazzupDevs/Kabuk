@@ -1,8 +1,7 @@
 import type { ColorScheme } from './tokens';
 
 // The map in skall's colours (the owner's call, 27 Ekim): OpenFreeMap's style, read once, with its
-// ground, water, green, buildings, roads and labels repainted from skall's palette (skall.css: the
-// canvas, the soft lavender, the ink). Layers are told apart by type and id, so a style update on
+// ground, water, green, buildings, roads and labels repainted (Aura v65, U14). Layers are told apart by type and id, so a style update on
 // OpenFreeMap's side keeps working; anything unknown keeps its own colour. Until the style is read
 // (or when it cannot be) the map draws OpenFreeMap's own style from its address.
 type Paint = Record<string, unknown>;
@@ -25,38 +24,47 @@ export type MapColors = {
   halo: string;
 };
 
+// U14 (KesfetHarita, KesfetHaritaKoyu): ground, road, road edge, block, park and street name are the
+// canvas's; the street names one tone, 11, upright. The canvas draws no water, rail, border or
+// minor street: those are derived from its colours (water and minor as the park and the road,
+// rail and border as the road edge), the land as the ground, the halo as the ground.
 export const MAP_COLORS: Record<ColorScheme, MapColors> = {
   light: {
-    ground: '#F5F3FC',
-    land: '#EFECF9',
-    green: '#DCEFE2',
-    water: '#CFC5F7',
-    building: '#E6E1F4',
+    ground: '#EAF3EC',
+    land: '#EAF3EC',
+    green: '#CFE8D6',
+    water: '#CFE8D6',
+    building: '#DDEBE0',
     road: '#FFFFFF',
-    roadCasing: '#DAD3F2',
-    minor: '#FBFAFE',
-    rail: '#D3CDE6',
-    border: '#B9A6FF',
-    label: '#3B3560',
-    labelQuiet: '#6E6890',
-    halo: '#F5F3FC',
+    roadCasing: '#D2E4D6',
+    minor: '#FFFFFF',
+    rail: '#D2E4D6',
+    border: '#D2E4D6',
+    label: '#5C7A64',
+    labelQuiet: '#5C7A64',
+    halo: '#EAF3EC',
   },
   dark: {
-    ground: '#14112B',
-    land: '#191536',
-    green: '#17302A',
-    water: '#2A2266',
-    building: '#221D45',
-    road: '#2E2858',
-    roadCasing: '#1E1A3D',
-    minor: '#252049',
-    rail: '#3A3563',
-    border: '#6A47F5',
-    label: '#D9D4F2',
-    labelQuiet: '#ADA8C8',
-    halo: '#14112B',
+    ground: '#101513',
+    land: '#101513',
+    green: '#14231B',
+    water: '#14231B',
+    building: '#171D1A',
+    road: '#202825',
+    roadCasing: '#2A332F',
+    minor: '#202825',
+    rail: '#2A332F',
+    border: '#2A332F',
+    label: '#8F9A94',
+    labelQuiet: '#8F9A94',
+    halo: '#101513',
   },
 };
+
+// U14: street names at 11, never italic (the style's water names are; the glyph server has no
+// 600, its regular is the nearest).
+const LABEL_SIZE = 11;
+const UPRIGHT = ['Noto Sans Regular'];
 
 const has = (id: string, ...words: string[]) => words.some((w) => id.includes(w));
 
@@ -110,14 +118,22 @@ export function recolorStyle(style: MapStyleJson, c: MapColors): MapStyleJson {
         if (color) paint['line-color'] = color;
         break;
       }
-      case 'symbol':
+      case 'symbol': {
         if ('text-color' in paint || layer.layout?.['text-field'] !== undefined) {
           paint['text-color'] = has(id, 'poi', 'housenumber', 'water', 'road')
             ? c.labelQuiet
             : c.label;
           paint['text-halo-color'] = c.halo;
+          const layout: Paint = { ...layer.layout };
+          if (has(id, 'road', 'street', 'transportation')) layout['text-size'] = LABEL_SIZE;
+          const font = layout['text-font'];
+          if (Array.isArray(font) && font.some((f) => String(f).includes('Italic'))) {
+            layout['text-font'] = UPRIGHT;
+          }
+          return { ...layer, paint, layout };
         }
         break;
+      }
       default:
         break;
     }

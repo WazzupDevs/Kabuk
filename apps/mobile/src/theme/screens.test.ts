@@ -46,8 +46,8 @@ describe("the app's Keşfet", () => {
 
   it("is built from the canvas's kit", () => {
     expect(screen).toMatch(/from '@\/aura\/kit'/);
-    // The venues as Telegram Android's flat rows (the owner's call, 30 Ekim).
-    for (const part of ['<SearchGlass', '<ViewSwitch', '<Chip', '<RowList', '<Li']) {
+    // The venues on a small glass card (Aura v65, U13).
+    for (const part of ['<SearchGlass', '<ViewSwitch', '<Chip', '<Glass sm', '<Li']) {
       expect(screen, part).toContain(part);
     }
   });
@@ -75,7 +75,8 @@ describe("the app's Keşfet", () => {
     // The list row and the venue page; the mapping is tested in venueType.test.ts.
     expect(screen).toMatch(/const type = venueType\(v\);/);
     expect(screen).toMatch(/<VenueThumb kind=\{type\} size=\{VENUE_ROW_PICTURE\} \/>/);
-    expect(screen).toMatch(/const VENUE_ROW_PICTURE = 52;/);
+    expect(screen).toMatch(/const VENUE_ROW_PICTURE = VENUE_THUMB\.size;/);
+    expect(app('src/theme/auraKit.ts')).toMatch(/size: 56,\n  radius: 18,/);
     expect(screen).toMatch(/tr\.explore\.typeLabel\[type\]/);
     expect(app('app/(app)/(tabs)/explore/[venueId].tsx')).toMatch(
       /tr\.explore\.typeLabel\[venueType\(venue\)\]/,
@@ -85,9 +86,9 @@ describe("the app's Keşfet", () => {
     for (const word of ['Kafe', 'Çay bahçesi', 'Kampüs']) expect(tr).toContain(`'${word}'`);
   });
 
-  it('keeps 16 between its blocks, as the canvas does, and is always the list (no single venue)', () => {
-    expect(app('src/theme/auraKit.ts')).toMatch(/exploreGap: 16,/);
-    expect(screen).toMatch(/gap: KIT\.size\.exploreGap,/);
+  it('keeps 24 between its blocks and 12 inside them (U13), and is always the list (no single venue)', () => {
+    expect(screen).toMatch(/gap: SPACING\[6\],/);
+    expect(screen).toMatch(/gap: SPACING\[3\],/);
     expect(screen).not.toMatch(/SingleVenue|exploreLayout/);
   });
 
