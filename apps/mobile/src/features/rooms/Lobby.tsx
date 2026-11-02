@@ -9,6 +9,7 @@ import { useWindowDimensions, View } from 'react-native';
 import { Btn, Li, RowList, Sec, T, Tag, Thumb, useKit } from '@/aura/kit';
 import { Pips } from '@/aura/Pips';
 import { Reveal } from '@/aura/Reveal';
+import { RisoPicture } from '@/aura/RisoPicture';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
 import { errorMessage } from '@/i18n/errors';
@@ -185,7 +186,7 @@ export function Lobby({
           action={{ label: tr.common.retry, onPress: () => void tables.refetch() }}
         />
       ) : open.length === 0 ? (
-        <EmptyState small kind="empty" title={tr.lobby.emptyTitle} body={tr.lobby.emptyBody} />
+        <NoOpenTables />
       ) : (
         groups(open).map((group) => (
           <View key={group.spotId ?? 'none'} className="gap-2.5">
@@ -370,3 +371,22 @@ function WaitingSlot() {
     </View>
   );
 }
+
+// U19: no open table. The riso 160 × 110, 22 round on the raised shadow; the title on one line, the
+// note at most 280 wide (Mekan).
+const NO_OPEN = require('../../../assets/riso/venue-no-open.webp');
+function NoOpenTables() {
+  return (
+    <View testID="lobby-empty" style={{ alignItems: 'center', gap: NO_OPEN_GAP }}>
+      <RisoPicture source={NO_OPEN} width={160} height={110} radius={22} shadow="raised" />
+      <T v="h3" center style={{ marginTop: NO_OPEN_GAP }}>
+        {tr.lobby.emptyTitle}
+      </T>
+      <T v="fine" center style={{ maxWidth: NO_OPEN_NOTE }}>
+        {tr.lobby.emptyBody}
+      </T>
+    </View>
+  );
+}
+const NO_OPEN_GAP = 6;
+const NO_OPEN_NOTE = 280;
