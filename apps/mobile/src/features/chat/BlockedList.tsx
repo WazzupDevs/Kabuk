@@ -9,6 +9,7 @@ import { tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
 import { safetyApi } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
+import { KIT } from '@/theme/auraKit';
 
 const blocksKey = ['blocks'] as const;
 
@@ -51,10 +52,10 @@ export function BlockedList() {
     return <EmptyState kind="empty" body={tr.safety.blockedEmpty} />;
   }
   return (
-    <RowList>
+    <RowList inset={KIT.size.av.md + KIT.size.liGap}>
       {blocks.data.map((b) => (
-        <Li key={b.id}>
-          <Av size="row" name={b.blocked_alias} />
+        <Li key={b.id} padY={KIT.size.lrPadY} minHeight={KIT.size.lrMin}>
+          <Av size="md" name={b.blocked_alias} />
           <View style={{ flex: 1 }}>
             <T v="h3" ink>
               {b.blocked_alias}

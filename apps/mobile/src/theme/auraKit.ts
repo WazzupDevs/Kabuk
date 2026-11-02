@@ -50,6 +50,8 @@ export const KIT_TYPE = {
   // A venue's name on the check-in sheet (CheckIn: .title at 23).
   sheetTitle: t(600, 23, 29, -0.015),
   h3: t(600, 16, 22, -0.005),
+  // The masked phone number on Hesap (`.h3.mono`: 0.04em).
+  h3Mono: t(600, 16, 22, 0.04),
   // A section's heading (.sec .h3 at 18).
   sec: t(600, 18, 24, -0.005),
   // Keşfet's place line and Masa's lone note (.h3 at 19).

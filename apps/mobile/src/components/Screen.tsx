@@ -48,6 +48,9 @@ type Props = {
   // above the tab bar, and 12 above the keyboard while it is up (the screen's own keyboard padding
   // lifts it; no second offset). What does not fit scrolls above it and fades into its top edge.
   footer?: ReactNode;
+  // Drawn on the ground behind the page, placed against the whole screen (Aura v71: a riso buddy
+  // standing in a corner of Gizlilik, Engellenenler).
+  backdrop?: ReactNode;
 };
 
 // A scrolling screen on the colour clouds (docs/design/aura) with the theme's side padding. Under
@@ -74,6 +77,7 @@ export function Screen({
   gap,
   list,
   footer,
+  backdrop,
 }: Props) {
   const queryClient = useQueryClient();
   const refresh =
@@ -103,6 +107,7 @@ export function Screen({
   return (
     <SafeAreaView edges={safe} style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
       <AuraBackground />
+      {backdrop}
       {top ? (
         <View
           onLayout={(e) => {

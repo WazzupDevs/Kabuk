@@ -159,6 +159,19 @@ export const SIGNUP_KANKI = {
 export const RECONSENT_KANKI: KankiPlace = { id: 'f280a5', width: 110, height: 144 };
 export const RECONSENT_KANKI_FOOT = 28;
 
+// Aura v71 settings pages: one still riso buddy standing in a bottom corner of the screen
+// (`.stand` in the phone, its feet 30 over the screen's bottom), behind the page.
+export const PAGE_KANKI = {
+  privacy: { id: '9c96bd', right: 22, bottom: 30, width: 96, height: 126 },
+  blocked: { id: 'c189a4', left: 30, bottom: 30, width: 96, height: 126 },
+} as const satisfies Record<string, KankiPlace>;
+
+// Arkadaslar: one looking over the list (`.behind > .peek`), the list 76 under the title.
+export const FRIENDS_PEEK: readonly KankiPlace[] = [
+  { id: 'peek-1', left: 230, top: -4, width: 72, height: 94 },
+];
+export const FRIENDS_LIST_TOP = 76;
+
 // MasaIstek (U42): three riso buddies looking over the incoming request's card, in the card's 362
 // wide frame (390 less 14 a side).
 export const REQUEST_PEEK_FRAME = 362;

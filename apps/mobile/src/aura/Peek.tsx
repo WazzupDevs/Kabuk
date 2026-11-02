@@ -215,6 +215,11 @@ export function RisoFieldPeek({ kind }: { kind: RisoSayKind }) {
   return <RisoStrip places={cast.peek} frame={KANKI_FRAME_WIDTH} deep={cast.deep} />;
 }
 
+// Riso buddies looking over a card in the 350 wide frame (Arkadaslar's list).
+export function RisoPeekOver({ places }: { places: readonly KankiPlace[] }) {
+  return <RisoStrip places={places} frame={KANKI_FRAME_WIDTH} />;
+}
+
 // Room over the strip for a head standing higher than it (MasaIstek: -12).
 const STRIP_OVER = 16;
 
