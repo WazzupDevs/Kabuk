@@ -1207,8 +1207,10 @@ export function ChatScreen<T extends ChatListItem>({
                           canvas={canvas}
                           source={wallSource}
                           top={0}
-                          height={topHeight}
-                          fade={SPACING[3]}
+                          // U29 (DmArkadaslik `.msgs`): in a DM the messages fade from 4 above the
+                          // header's pill to 24 under it (104–132 on the board).
+                          height={wall === 'dm' ? topHeight - SPACING[2.5] : topHeight}
+                          fade={wall === 'dm' ? SPACING[7] : SPACING[3]}
                           direction="down"
                         />
                       ) : null

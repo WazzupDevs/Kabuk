@@ -18,7 +18,7 @@ import { type ChatListItem, ChatRow, ChatScreen, DayLine, dayLabel } from '@/com
 import { ChatTopBar } from '@/components/ChatTopBar';
 import { DraftComposer } from '@/components/Composer';
 import { EmptyState } from '@/components/EmptyState';
-import { IconButton, MoreDots } from '@/components/IconButton';
+import { IconButton } from '@/components/IconButton';
 import { Menu, MenuItem } from '@/components/Menu';
 import { Loader } from '@/components/Loader';
 import { Sheet } from '@/components/Sheet';
@@ -434,8 +434,8 @@ export default function DmScreen() {
           titleAccessibilityLabel={name}
           actions={
             <IconButton
-              icon="ellipsis-horizontal"
-              glyph={<MoreDots />}
+              // U29: moreV.
+              icon="ellipsis-vertical"
               label={tr.friends.more}
               onPress={() => setMenu(true)}
             />

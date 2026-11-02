@@ -5,7 +5,7 @@ import { ChatBubble, TypingBubble } from '@/components/ChatBubble';
 import { ChatScreen, DayLine } from '@/components/ChatScreen';
 import { ChatTopBar } from '@/components/ChatTopBar';
 import { Composer } from '@/components/Composer';
-import { IconButton, MoreDots } from '@/components/IconButton';
+import { IconButton } from '@/components/IconButton';
 import { tr } from '@/i18n/tr';
 
 // The DM screen with the skall tuvali's sample (docs/design/sistem/ekran/Dm.html), for the visual
@@ -26,8 +26,8 @@ export function DmFixture() {
           leading={<Avatar kind="profile" name={NAME} size="md" photoUrl={null} />}
           actions={
             <IconButton
-              icon="ellipsis-horizontal"
-              glyph={<MoreDots />}
+              // U29: moreV.
+              icon="ellipsis-vertical"
               label={tr.friends.more}
               onPress={noop}
             />
