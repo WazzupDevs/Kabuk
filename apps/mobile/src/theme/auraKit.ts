@@ -74,6 +74,8 @@ export const KIT_TYPE = {
   // Mekan's "Masa kur" (44 high, 15).
   btnMid: t(600, 14, 18),
   chip: t(600, 13, 17),
+  // U34: a field's label on a card (ProfilDuzenle `.lb`).
+  fieldLabel: t(600, 13, 17),
   // Keşfet's kind chips (15).
   chipLg: t(600, 15, 19),
   // U19: Mekan's spot chip, 14.
@@ -111,6 +113,7 @@ export const KIT_TYPE = {
     // Profil's two faces (112).
     big: t(700, 40, 48),
     hero: t(700, 40, 48),
+    edit: t(700, 30, 36),
   },
 } as const;
 
@@ -172,6 +175,9 @@ export const KIT = {
     field: '#FFFFFF',
     // Profili düzenle's fields.
     fieldLg: '#FFFFFF',
+    // U34: a field on a card: the surface, 1 divider inside.
+    fieldOnCard: '#FFFFFF',
+    fieldOnCardEdge: '#D6E6DA',
     // Masa's tabs: the chosen one raised white.
     segOn: '#FFFFFF',
     // The chosen part's words: the ink; in the dark #0B0E0D on the 94 % white.
@@ -231,6 +237,8 @@ export const KIT = {
     day: '#121614',
     field: '#151A18',
     fieldLg: '#151A18',
+    fieldOnCard: '#1B211F',
+    fieldOnCardEdge: 'rgba(255, 255, 255, 0.08)',
     segOn: 'rgba(255, 255, 255, 0.94)',
     segOnInk: '#0B0E0D',
     segShadow: '',
@@ -519,6 +527,8 @@ export const KIT = {
       big: 112,
       // U31: another person's profile (ProfilBaskasi `.herow .av.xl`).
       hero: 120,
+      // U34: Profili düzenle's face (ProfilDuzenle `.avw .av.xl`).
+      edit: 88,
     },
     stackOverlap: 10,
     faceCard: 210,

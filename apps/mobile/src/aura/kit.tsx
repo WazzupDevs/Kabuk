@@ -1034,7 +1034,7 @@ export function Av({
 }: {
   name: string;
   photoUrl?: string | null;
-  size?: 'sm' | 'member' | 'list' | 'md' | 'row' | 'seat' | 'lg' | 'xl' | 'big' | 'hero';
+  size?: 'sm' | 'member' | 'list' | 'md' | 'row' | 'seat' | 'lg' | 'xl' | 'big' | 'hero' | 'edit';
   // Something else in the ring (a capsule).
   children?: ReactNode;
 }) {
@@ -1043,7 +1043,7 @@ export function Av({
   const ring =
     size === 'hero'
       ? KIT.size.avRingHero
-      : size === 'xl' || size === 'big'
+      : size === 'xl' || size === 'big' || size === 'edit'
         ? KIT.size.avRingXl
         : KIT.size.avRing;
   // U31: the profile's face in the dark sits in a ring of the dark card (#121614).
