@@ -202,3 +202,13 @@ Kod: `apps/mobile/src/features/profile/ProfileCard.tsx:63-120` (`OtherHead`, `PE
 | 17.1 | "Arkadaşsınız" bir durum bilgisi ama "Mesaj" ile aynı boyda bir düğme gibi duruyor; basılabilir sanılıyor ve basınca bir şey olmuyor. **Proje sahibinin kararı (2 Kasım):** düğme kalır; arkadaşsanız **"Arkadaşlıktan çıkar"** düğmesi olur (`tr.friends.removeFriend`), basınca bugünkü onaylı çıkarma akışı (kural 5) açılır. "Mesaj" yanında kalır. | davranış | `FriendActions.tsx:24-36`: bugün basılamayan bir hap çiziliyor; çıkarma şu an yalnızca "⋮" menüsünde. | orta |
 | 17.2 | Fotoğrafın arkasından bakan riso kapsül her profilde aynı (`assets/riso/peek-1.webp`). **Proje sahibinin kararı (2 Kasım):** süs kalır, kapsül çeşidi artar: birden çok riso kanki (`peek-2.webp` ve yenileri, ya da `src/aura/RisoKanki.tsx`'teki kankiler) arasından her profilde biri görünür. Seçim kişinin anonim kapsülüne bağlanmaz, ondan türetilmez (kural 4); örneğin `public_id`'den değil, sayfa açılışında rastgele seçilir. | resim | `ProfileCard.tsx:63-73` `PEEK_BUDDY` tek resim. | düşük |
 | 17.3 | "Mesaj" altında yeşil hale (2.1), boyu 56 (10.3). | renk / ölçü | **[P1]** bkz. 2.1, 10.3 | — |
+
+### 18. Profil fotoğrafı büyütülmüş (kendi ve başkasının, açık)
+
+Kod: `apps/mobile/src/components/PhotoPreview.tsx:14-80`; çağıranlar `src/features/profile/ProfileCard.tsx:102-106`, `app/(app)/(tabs)/profile/index.tsx`. Pano: `ProfilFoto.dc.html`.
+
+| # | Hata | Sınıf | Olası sebep | Önem |
+| --- | --- | --- | --- | --- |
+| 18.1 | Fotoğrafın arkasındaki örtü koyu yeşil ve neredeyse opak (%86): arkadaki ekran bataklık yeşili bir lekeye dönüyor, fotoğrafın renkleri yeşile çalıyor. Fotoğraf görüntüleyicide zemin nötr koyu (siyah %70–80; Telegram Android'de siyah) olmalı. | renk/tema | **[P1]** `src/theme/auraKit.ts:331` `photoScrim: 'rgba(3, 27, 11, 0.86)'` | orta |
+| 18.2 | Fotoğrafın köşelerinde (sağ alt, sağ kenar) beyaz ince bir şerit ve köşe görünüyor; resim beyaz kartın içinde, kenarı tam örtmüyor. Kenarlar temiz olmalı. | yerleşim | `PhotoPreview.tsx:59-78`: kart `backgroundColor: KIT.white` + `overflow: 'hidden'` + `borderRadius`; içteki `Image`'ın kendi köşesi yuvarlanmadığı için kenar yumuşatmasında beyaz zemin sızıyor. Kart zemini saydam olmalı ya da `Image`'a da `borderRadius` verilmeli. | düşük |
+| 18.3 | Kapatma yolu görünmüyor: kapatma düğmesi ya da ipucu yok, yalnızca dokunma ve geri tuşu kapatıyor. Telegram'daki gibi aşağı kaydırınca da kapanmalı (Ekran davranışı: "kaydırınca kapanır"). | davranış | `PhotoPreview.tsx:49-57`: yalnızca `onPress` ve `onRequestClose`; kaydırma hareketi yok. | düşük |
