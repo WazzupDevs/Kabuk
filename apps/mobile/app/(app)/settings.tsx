@@ -20,6 +20,7 @@ import { tr } from '@/i18n/tr';
 import { profileApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { KIT } from '@/theme/auraKit';
+import { SPACING } from '@/theme/tokens';
 import { designPickerEnabled } from '@/theme/ThemeProvider';
 
 type Participation = 'profile' | 'anonymous';
@@ -62,32 +63,34 @@ function Body() {
   const signOut = useMutation({ mutationFn: signOutOfApp });
   const open = (path: Parameters<typeof router.push>[0]) => router.push(path);
 
+  // U33: the sections 24 apart; a section's title h3, its notes fine, 4 apart, the seg 8 under them
+  // and 4 over its note.
   return (
-    <>
-      <View style={{ gap: KIT.size.rowGap }}>
-        <View>
-          <T v="sec" accessibilityRole="header">
-            {tr.settings.participation.title}
-          </T>
-          <T v="fine">{tr.settings.participation.sub}</T>
+    <View style={{ gap: SPACING[6] }}>
+      <View style={{ gap: SPACING[1] }}>
+        <T v="h3" accessibilityRole="header">
+          {tr.settings.participation.title}
+        </T>
+        <T v="fine">{tr.settings.participation.sub}</T>
+        <View style={SEG_AROUND}>
+          <Seg<Participation>
+            accessibilityLabel={tr.settings.participation.title}
+            value={shown}
+            onChange={(next) => next !== value && participation.mutate(next)}
+            options={[
+              {
+                value: 'profile',
+                label: tr.settings.participation.profile,
+                testID: 'participation-profile',
+              },
+              {
+                value: 'anonymous',
+                label: tr.settings.participation.anonymous,
+                testID: 'participation-anonymous',
+              },
+            ]}
+          />
         </View>
-        <Seg<Participation>
-          accessibilityLabel={tr.settings.participation.title}
-          value={shown}
-          onChange={(next) => next !== value && participation.mutate(next)}
-          options={[
-            {
-              value: 'profile',
-              label: tr.settings.participation.profile,
-              testID: 'participation-profile',
-            },
-            {
-              value: 'anonymous',
-              label: tr.settings.participation.anonymous,
-              testID: 'participation-anonymous',
-            },
-          ]}
-        />
         {shown === 'profile' && photo.known && !photo.has ? (
           <T v="fine" color={c.warn}>
             {tr.settings.participation.photoNeeded}
@@ -162,6 +165,8 @@ function Body() {
           {signOut.isPending ? <Loader size={KIT.size.iconSm} delay={0} /> : null}
         </Li>
       </RowList>
-    </>
+    </View>
   );
 }
+
+export const SEG_AROUND = { marginTop: SPACING[2], marginBottom: SPACING[1] } as const;

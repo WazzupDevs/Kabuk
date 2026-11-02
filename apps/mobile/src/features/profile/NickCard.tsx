@@ -1,14 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { View } from 'react-native';
 
-import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
-import { Text } from '@/components/Text';
+import { Btn, Glass, T } from '@/aura/kit';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { profileApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useNow } from '@/lib/useNow';
+import { KIT } from '@/theme/auraKit';
 import { SPACING } from '@/theme/tokens';
 
 import { profileViewKeys } from './queries';
@@ -37,22 +36,23 @@ export function NickCard({
     mutationFn: profileApi.refreshNick,
     onSettled: () => queryClient.invalidateQueries({ queryKey: profileViewKeys.all }),
   });
+  // U33 (Ayarlar `.card`): the sheet's card, 16 inside; a fine label, the nick h3, a fine note; the
+  // button 12 under them and 8 over the days left. Waiting, the button is off (U10).
   return (
-    <Card testID="nick-card" tone={title ? 'note' : 'card'}>
-      <View style={{ gap: title ? SPACING[2.5] : SPACING[3] }}>
-        <View className="gap-0.5">
-          {title ? (
-            <Text variant="caption" tone="muted" accessibilityRole="header">
-              {title}
-            </Text>
-          ) : null}
-          <Text variant="heading" testID="nick">
-            {nick}
-          </Text>
-          <Text variant="fine">{waiting ? tr.profile.nickNoteWait : tr.profile.nickNote}</Text>
-        </View>
-        <Button
-          variant="secondary"
+    <Glass sm testID="nick-card" style={{ padding: SPACING[4], gap: SPACING[0.5] }}>
+      {title ? (
+        <T v="fine" accessibilityRole="header">
+          {title}
+        </T>
+      ) : null}
+      <T v="h3" testID="nick" style={{ marginVertical: SPACING[0.5] }}>
+        {nick}
+      </T>
+      <T v="fine">{waiting ? tr.profile.nickNoteWait : tr.profile.nickNote}</T>
+      <View style={{ marginTop: SPACING[3], marginBottom: SPACING[2] }}>
+        <Btn
+          block
+          variant="glassy"
           icon="refresh"
           testID="nick-refresh"
           label={tr.profile.nickRefresh}
@@ -60,15 +60,13 @@ export function NickCard({
           loading={refresh.isPending}
           onPress={() => refresh.mutate()}
         />
-        {waiting ? (
-          <Text variant="fine">{tr.profile.nickWait(Math.ceil(waitMs / DAY_MS))}</Text>
-        ) : null}
-        {refresh.isError ? (
-          <Text variant="fine" tone="danger">
-            {errorMessage(refresh.error)}
-          </Text>
-        ) : null}
       </View>
-    </Card>
+      {waiting ? <T v="fine">{tr.profile.nickWait(Math.ceil(waitMs / DAY_MS))}</T> : null}
+      {refresh.isError ? (
+        <T v="fine" color={KIT.danger}>
+          {errorMessage(refresh.error)}
+        </T>
+      ) : null}
+    </Glass>
   );
 }
