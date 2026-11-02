@@ -1,5 +1,11 @@
 # İlerleme
 
+## Devir notu (2 Kasım 2026, Aura v65 aktarımı bitti: U36, §13, §14, kararlar)
+
+- #366 U36 hâller (yükleniyor Buluş, hata cloudOff disk + "Tekrar dene" sm soft), #367 §13 (riso kayıt sahnesi, 7 kanki hareketi `kankiMotion.ts`, Telefon/Kod, Masa bitti, Masa isteği), #368 §14 riso açılış (baskı ayrılır, kırpılmış dokular `pnpm launch:textures`), #369 kararlar (`docs/decisions/aura-v65-kararlar.md`). Native yok, OTA.
+- Cihazda bakılacak: geniş ekranda açılış parıltısının yan kenarı (kaynak 390 dp'de kesik); açılışta kapsül kırpmasının boyu her karede değişiyor (takılma?).
+- Kalan: U8 sheet arkası bulanıklığı (ayrı iş). Rapor 12.8 eksik hâller proje sahibi tarafından tuvale çizilecek; çizilince aktarılır.
+
 ## Devir notu (2 Kasım 2026, U29–U35 birleşti)
 
 - #358 U29 DM arkadaşlık sayfası (sheet menüsü: kart sheet kartı rengi, ikon 24, ayraç yazı hizasından), #359 U30 Bildirimler (riso kankiler `peek-1/2`), #360 U31 başkasının profili (`Av` `hero` 120), #361 U32 Profil, #362 U33 Ayarlar (NickCard kit'le), #363 U34 Profili düzenle (`Input boxed`, `Av` `edit` 88), #364 U35 Kapsülün. Native yok, OTA.
