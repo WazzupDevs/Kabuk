@@ -181,3 +181,14 @@ Kod: `apps/mobile/src/features/rooms/OpenLobbySheet.tsx:72-127` (ve aynı seçim
 | 15.3 | "(isteğe bağlı)" iki başlıkta tekrarlanıyor, üstte iki satırlık açıklama, en altta bir not daha var; dört ayrı yardım metni. Öneri: üst açıklama tek satıra insin, "(isteğe bağlı)" bir kez yazsın ya da hiç yazmasın, alt not oyun satırı açılınca görünsün. | metin | `:74`, `:78`, `:91`, `:106`; `src/i18n/tr.ts:860-872` | düşük |
 | 15.4 | Seçimler kartı sayfa zemininden ayrışmıyor (8.1); "Lobiye aç" ve "Vazgeç" iki tam genişlikli 56 dp düğme, sayfanın üçte birini kaplıyor (10.3). Sayfa dışına basınca ve aşağı kaydırınca zaten kapanıyor; "Vazgeç" küçük bir metin düğmesi olabilir. | ölçü / renk | **[P1]** bkz. 8.1, 10.3; `:115-126` | orta |
 | 15.5 | Sayfa eski tasarım bileşenleriyle çizilmiş (`Text`, `Card tone="note"`, `Chips`, `Button size="lg"`); aura kitinin `T`, `Chip`, `Btn` bileşenleri kullanılmıyor (5.4 ile aynı sorun). | renk/tema | `OpenLobbySheet.tsx:8` ve gövde | düşük |
+
+### 16. Profil → Arkadaşlar (açık)
+
+Kod: `apps/mobile/app/(app)/(tabs)/profile/friends.tsx:55-106`, `src/aura/kit.tsx:872-902` (`RowList`), `Li`. Pano: `Arkadaslar.dc.html` (satırlar `glass sm lst` kartın içinde).
+
+| # | Hata | Sınıf | Olası sebep | Önem |
+| --- | --- | --- | --- | --- |
+| 16.1 | Arkadaş satırları kartsız, doğrudan zeminde duruyor. Panoda satırlar buzlu cam bir liste kartının (`glass sm lst`) içinde; kodun kendi yorumu da "glass list" diyor. Satırlar kartın içine alınmalı (Keşfet'teki mekan listesi gibi). | yerleşim / renk | **[P1]** `kit.tsx:872-902` `RowList` yalnızca satırları ve çizgileri diziyor, kart çizmiyor; `friends.tsx:67-71`. | orta |
+| 16.2 | Satırlar arasındaki ince çizgi ekranın sağ kenarına kadar uzanıyor; sağda boşluk yok. Çizgi sağda da satırın iç boşluğunda bitmeli (Keşfet'teki gibi `marginRight: liPadX`). | ölçü/boşluk | **[P1]** `kit.tsx:889-895`: ayırıcıda `marginRight` yok, liste `marginHorizontal: -liPadX` ile ekrana taşıyor. | düşük |
+| 16.3 | Sohbet düğmeleri (44 dp, belirgin gölgeli) satırdaki en ağır öğe; avatar ve addan baskın duruyor. Daha küçük (36) ve gölgesiz ya da hafif olmalı. | ölçü/boşluk | `friends.tsx:97-103` `Round` varsayılan boy ve gölge. | düşük |
+| 16.4 | Bu ekran da eski bileşenlerle yazılmış hata ve yükleniyor hâllerini taşıyor (`Card`, `Text`, `Button`; 5.4). | renk/tema | `friends.tsx:56-63` | düşük |
