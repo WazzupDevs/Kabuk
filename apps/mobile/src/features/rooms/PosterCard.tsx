@@ -10,14 +10,15 @@ import { SPACING } from '@/theme/tokens';
 import { useLabOff } from '@/lib/drawLab';
 import { boxShadowParts } from '@/components/NativeShadow';
 
-// The games on the table: since 29 Ekim each its comic poster in a small landscape card
-// (scripts/art/posters.ts, after the owner's earlier posters in assets/game-card/), the game's
-// name lettered on it. Every game waits for its step (4.6): "Yakında" in the corner, not pressed.
+// The games on the table, each its cover in a small landscape card, the game's logo in the
+// drawing: U22's riso covers (aktarim-v65 §9.1) where they are drawn, the comic posters
+// (scripts/art/posters.ts) for the two that wait for theirs (§9.2, n.77). A game that waits for its
+// step (4.6): "Yakında" in the corner, not pressed.
 export const GAME_CARDS = [
-  { id: 'vampir', category: 'multi', art: require('../../../assets/game-poster/vampir.webp') },
-  { id: 'signum', category: 'teams', art: require('../../../assets/game-poster/signum.webp') },
-  { id: 'kinshi', category: 'teams', art: require('../../../assets/game-poster/kinshi.webp') },
-  { id: 'krot', category: 'multi', art: require('../../../assets/game-poster/krot.webp') },
+  { id: 'vampir', category: 'multi', art: require('../../../assets/riso/game-vampir.webp') },
+  { id: 'signum', category: 'teams', art: require('../../../assets/riso/game-signum.webp') },
+  { id: 'kinshi', category: 'teams', art: require('../../../assets/riso/game-kinshi.webp') },
+  { id: 'krot', category: 'multi', art: require('../../../assets/riso/game-krot.webp') },
   { id: 'sprengja', category: 'multi', art: require('../../../assets/game-poster/sprengja.webp') },
   { id: 'kaupholl', category: 'multi', art: require('../../../assets/game-poster/kaupholl.webp') },
 ] as const satisfies readonly {
@@ -38,6 +39,7 @@ export function GameCard({
   onPress,
   tag = tr.table.soon,
   lit,
+  ok,
   dim,
   testID,
 }: {
@@ -48,6 +50,8 @@ export function GameCard({
   tag?: string;
   // The person's own vote is on it.
   lit?: boolean;
+  // The owner can open it: "Aç" in the success tag (U22, `.tag.ok`).
+  ok?: boolean;
   // Fewer phones at the table than the game needs (K-17).
   dim?: boolean;
   testID?: string;
@@ -92,7 +96,7 @@ export function GameCard({
               accessible={false}
             />
             <View style={{ position: 'absolute', left: GAME_CARD.tagX, top: GAME_CARD.tagY }}>
-              <Tag tone={lit ? 'artLit' : 'art'} label={tag} />
+              <Tag tone={lit ? 'artLit' : ok ? 'green' : 'art'} label={tag} />
             </View>
           </View>
         </View>
@@ -103,8 +107,8 @@ export function GameCard({
 
 const DIMMED = 0.55;
 
-// The poster's 3 : 2 (480 × 320; 112 high on a 390 wide phone, as the board), its corner and the
-// tag's place.
+// The cover's 3 : 2 (600 × 400; 112 high on a 390 wide phone, as the board), its corner 22 and the
+// tag 8 in from its top left.
 const POSTER_RATIO = 1.5;
 const GAME_CARD = {
   radius: KIT.size.gameCardRadius,

@@ -1623,7 +1623,8 @@ export const tr = {
     leaveBody: 'Mekana dönersin. Masa diğerleri için sürer.',
     // Masadakiler (v46 data-msheet).
     people: (n: number) => `Masadakiler · ${headcountLabel(n)} kişi`,
-    peopleNote: 'Herkes kendi telefonuyla katılır. Masada en çok 12 kişi olur.',
+    peopleCount: (people: string) =>
+      `${people} · Herkes kendi telefonuyla katılır. Masada en çok 12 kişi olur.`,
     you: (alias: string) => `${alias} (sen)`,
     ownerTag: 'Masa sahibi',
     peopleTitle: 'Masadakiler',

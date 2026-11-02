@@ -45,7 +45,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
 import { SPACING } from '@/theme/tokens';
-import { AuraBackground } from '@/aura/AuraBackground';
+import { AuraBackground, AuraBand } from '@/aura/AuraBackground';
 import { Btn, Glass, Round, T } from '@/aura/kit';
 
 // The table (docs/design/aura → Masa; docs/SPEC_V4.md §4.E, §4.F): the bar (back; the chat, the
@@ -56,7 +56,7 @@ export default function TableScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { scheme } = useTheme();
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
+  const { height } = useWindowDimensions();
   // The head stays put over the games and nothing in it folds (the owner's call, 29 Ekim): the
   // games start under its height and scroll under it.
   const [headHeight, setHeadHeight] = useState(0);
@@ -227,12 +227,11 @@ export default function TableScreen() {
   const inLobby = r.visibility === 'open';
   const unread = unreadCount(messages, seenAt, sessionId);
 
-  const endInk = scheme === 'dark' ? KIT.endInkDark : KIT.endInk;
-  // The bar's rounds: 48, 44 on a narrow phone (five of them and "Bitir" in 280).
-  const barSide = width < NARROW_PHONE ? KIT.size.round : KIT.size.roundLg;
+  // U22: the bar's rounds and "Bitir" 44.
+  const barSide = KIT.table.bar;
   // The bar (docs/design/aura → Masa): back at the left; at the right the chat with its unread
   // count (its own screen, the owner's call, 28 Ekim), the owner's "Davet et", Masadakiler and the
-  // owner's "Bitir", a participant's "Ayrıl".
+  // owner's "Bitir", a participant's "Ayrıl", both danger sm (U22).
   const bar = (
     <View
       testID="table-top"
@@ -277,8 +276,7 @@ export default function TableScreen() {
         />
         <Btn
           bar={barSide}
-          variant="glassy"
-          tint={endInk}
+          variant="danger"
           testID={owner ? 'table-end-open' : 'table-leave-open'}
           label={owner ? tr.table.end : tr.table.leaveShort}
           onPress={() => setSheet(owner ? 'end' : 'leave')}
@@ -287,30 +285,29 @@ export default function TableScreen() {
     </View>
   );
 
-  // The table's name with its people and lobby state, under the faces; the owner's lobby button
-  // under them (it left the bar for Masadakiler, docs/decisions/aura-31.md): "Lobiye aç" opens its
-  // sheet, "Lobiden çek" takes the table out.
-  const title = (
-    <View style={{ alignItems: 'center', gap: PANEL_GAP }}>
-      {/* The owner changes the table's picture and name from its name (the picture left the
-          scene, the owner's call, 29 Ekim). */}
+  // U22: the table's name and its line ("12 kişi · Lobide açık") at the left, the owner's lobby
+  // button at the right ("Lobiye aç" opens its sheet, "Lobiden çek" takes the table out). The owner
+  // changes the table's card and name from its name (the owner's call, 29 Ekim).
+  const info = (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.chipsGap }}>
       <Pressable
         testID="table-icon"
         accessibilityRole={owner ? 'button' : undefined}
         accessibilityLabel={owner ? tr.createTable.iconChange : undefined}
         disabled={!owner}
         onPress={() => setSheet('icon')}
+        style={{ flex: 1, gap: KIT.table.lineGap }}
       >
-        <T v="display" center style={{ marginTop: NAME_TOP }} testID="table-title">
+        <T v="title" testID="table-title">
           {r.name ?? ''}
         </T>
+        <T v="fine">
+          {tr.table.status(
+            tr.venue.people(r.phones),
+            inLobby ? tr.venue.lobbyOpen : tr.venue.lobbyOff,
+          )}
+        </T>
       </Pressable>
-      <T v="fineLg" center>
-        {tr.table.status(
-          tr.venue.people(r.phones),
-          inLobby ? tr.venue.lobbyOpen : tr.venue.lobbyOff,
-        )}
-      </T>
       {owner ? (
         <Btn
           sm
@@ -320,7 +317,6 @@ export default function TableScreen() {
           label={inLobby ? tr.venue.withdraw : tr.venue.openLobby}
           loading={withdraw.isPending}
           onPress={() => (inLobby ? withdraw.mutate() : setSheet('lobby'))}
-          style={{ alignSelf: 'center', marginTop: LOBBY_TOP }}
         />
       ) : null}
     </View>
@@ -360,9 +356,11 @@ export default function TableScreen() {
     // While a game or its page is open the table cannot vote or open another.
     const busy =
       openGame.isPending || vote.isPending || gameMode === 'play' || gameMode === 'pregame';
+    const canOpen = owner && state.state === 'open';
     return {
       dim: state.state === 'needs_players',
       lit: mine,
+      ok: canOpen && count === 0,
       tag:
         state.state === 'needs_players'
           ? tr.table.posterNeeds(state.minPlayers)
@@ -373,7 +371,7 @@ export default function TableScreen() {
               : tr.table.posterVote,
       onPress: busy
         ? undefined
-        : owner && state.state === 'open'
+        : canOpen
           ? () => openGame.mutate(gameId)
           : () => vote.mutate(mine ? null : gameId),
     };
@@ -508,13 +506,21 @@ export default function TableScreen() {
           people={people.data ?? []}
           profiles={profiles}
           me={sessionId}
+          icon={r.icon}
           inset={insets.top}
           onPress={() => setSheet('people')}
-          footer={title}
+          info={info}
         >
           {bar}
         </TableScene>
       </View>
+      {/* U22 (`.fadebot`): the games fade into the canvas over the bottom 90. */}
+      <AuraBand
+        top={height - KIT.table.fade * (1 - KIT.table.fadeSolid)}
+        height={KIT.table.fade * (1 - KIT.table.fadeSolid)}
+        fade={KIT.table.fade * KIT.table.fadeSolid}
+        direction="up"
+      />
       {sheets}
     </View>
   );
@@ -523,12 +529,6 @@ export default function TableScreen() {
 // The bar sits this far under the status bar (the board: 60 from the top).
 const BAR_TOP = 16;
 const SOLO_GAP = 6;
-// Under 360 wide the bar's rounds are 44.
-const NARROW_PHONE = 360;
-// The card's lines: 4 apart, the name 6 further, the lobby button under them.
-const PANEL_GAP = 4;
-const NAME_TOP = 6;
-const LOBBY_TOP = 8;
 
 // "Masayı bitir" and "Masadan ayrıl" (v46 data-csheet): what it does, the button and "Vazgeç".
 function ConfirmSheet({

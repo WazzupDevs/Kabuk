@@ -30,6 +30,8 @@ type Props = {
   title?: string;
   // Beside the title, small (skall tuvali, MasaKisiler: "Masadakiler 6 kişi").
   titleNote?: string;
+  // Under the title, 4 apart (U24, Masadakiler: "12 kişi · …").
+  subtitle?: string;
   icon?: IconName;
   // Centered text for a single decision (the join request); menus stay left-aligned.
   centered?: boolean;
@@ -54,6 +56,7 @@ export function Sheet({
   onClose,
   title,
   titleNote,
+  subtitle,
   icon,
   centered,
   peek,
@@ -158,14 +161,21 @@ export function Sheet({
                     </View>
                   ) : null}
                   {title ? (
-                    <T
-                      v={titleLarge ? 'sheetTitleLg' : 'title'}
-                      center={centered}
-                      accessibilityRole="header"
-                    >
-                      {title}
-                      {titleNote ? <T v="fine">{`  ${titleNote}`}</T> : null}
-                    </T>
+                    <View style={{ gap: SUBTITLE_GAP }}>
+                      <T
+                        v={titleLarge ? 'sheetTitleLg' : 'title'}
+                        center={centered}
+                        accessibilityRole="header"
+                      >
+                        {title}
+                        {titleNote ? <T v="fine">{`  ${titleNote}`}</T> : null}
+                      </T>
+                      {subtitle ? (
+                        <T v="fine" center={centered}>
+                          {subtitle}
+                        </T>
+                      ) : null}
+                    </View>
                   ) : null}
                 </View>
                 <View
@@ -185,3 +195,5 @@ export function Sheet({
     </Modal>
   );
 }
+
+const SUBTITLE_GAP = 4;

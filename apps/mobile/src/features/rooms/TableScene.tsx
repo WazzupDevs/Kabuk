@@ -1,8 +1,8 @@
 import { type ReactNode, useEffect, useState } from 'react';
-import { Animated, Pressable, useWindowDimensions, View } from 'react-native';
+import { Animated, Image, Pressable, useWindowDimensions, View } from 'react-native';
 
 import { AuraBand } from '@/aura/AuraBackground';
-import { Av, Glass, T } from '@/aura/kit';
+import { Av, Glass, T, useKit } from '@/aura/kit';
 import { springConfig } from '@/aura/motion';
 import { LookAvatar } from '@/components/LookAvatar';
 import { useProfile } from '@/features/account/useProfile';
@@ -14,79 +14,66 @@ import { KIT } from '@/theme/auraKit';
 import { SPACING } from '@/theme/tokens';
 
 import { type TablePerson } from './queries';
+import { TABLE_CARD_WIDE } from './tableIconImages';
 
-const CELL_GAP = SPACING[2];
-const ROW_GAP = SPACING[2];
-const NAME_GAP = SPACING[1];
-// The card's padding (docs/design/aura → Masa: .pad-lg, 16 at its top) and the gap between its
-// lines.
-const PANEL_PAD = KIT.size.padLg;
-const PANEL_TOP = 16;
-const PANEL_GAP = 4;
-// Under the panel, the band's soft edge over what scrolls up under the head.
+const k = KIT.table;
+// Under the card, the band's soft edge over what scrolls up under the head.
 const HEAD_BOTTOM = SPACING[2];
 const BAND_FADE = 24;
-
-type FaceSize = 'seat' | 'md' | 'sm';
-
-// Where the table's 1 to 12 people sit (the owner's call, 29 Ekim: everyone on the screen, small
-// faces, nothing folding away): up to four a row, the rows as even as they can be, the fuller
-// first; one row of 58 faces (docs/design/aura → Masa), two rows of 44, three rows of 32.
-export function seatRows(n: number): { rows: number[]; size: FaceSize } {
-  const count = Math.max(1, n);
-  const lines = Math.ceil(count / ROW_MAX);
-  const base = Math.floor(count / lines);
-  const extra = count % lines;
-  const rows = Array.from({ length: lines }, (_, i) => base + (i < extra ? 1 : 0));
-  return { rows, size: lines === 3 ? 'sm' : lines === 2 ? 'md' : 'seat' };
-}
+// U22 (Masa `.grid`): four people a row.
 const ROW_MAX = 4;
 
 // Masa's head (the owner's call, 28 and 29 Ekim): it stays put while the games scroll under it,
 // and nothing in it folds. On it, in order: `children` (the bar: back, chat, invite, Masadakiler
-// and end buttons), then the table's card (docs/design/aura → Masa), as wide as the cards under it,
-// with the people (a profiled person's photo, an anonymous one's capsule, each with their name;
-// "Sen" first) and `footer` (the table's name, its people and lobby state, the owner's lobby
-// button). A press on the faces opens Masadakiler. Only the
-// table's people see it (rule 4). The screen's colour clouds lie behind the head, lined up with the
-// screen's own, so what scrolls under it is hidden (AuraBand).
+// and end buttons), then the table's card (U22, docs/design/aura → Masa): its wide riso card as a
+// strip, `info` (the table's name and line, the owner's lobby button), then everyone at the table
+// four a row ("Sen" first), each face with its name under it. A press on the faces opens
+// Masadakiler. Only the table's people see it (rule 4). The screen's colour clouds lie behind the
+// head, lined up with the screen's own, so what scrolls under it is hidden (AuraBand).
 export function TableScene({
   people,
   profiles,
   me,
+  icon,
   inset,
   onPress,
   children,
-  footer,
+  info,
 }: {
   people: readonly TablePerson[];
   profiles: ReadonlyMap<string, string> | undefined;
   me: string;
+  // The table's riso card (K-82); an old table without one has a plain strip.
+  icon: string | null;
   // The status bar's height: the head reaches under it.
   inset: number;
   onPress: () => void;
   children?: ReactNode;
-  footer?: ReactNode;
+  info?: ReactNode;
 }) {
+  const { c } = useKit();
   const { width } = useWindowDimensions();
   const [headHeight, setHeadHeight] = useState(0);
   const ordered = [
     ...people.filter((p) => p.sessionId === me),
     ...people.filter((p) => p.sessionId !== me),
   ];
-  const seats = seatRows(ordered.length);
-  const { rows } = seats;
   // Who was here when the head first drew: they arrive in turn, later ones with a ring.
   const [first, setFirst] = useState<ReadonlySet<string> | null>(null);
   if (first === null && people.length > 0) setFirst(new Set(people.map((p) => p.sessionId)));
 
-  const inner = width - 2 * (KIT.size.side + PANEL_PAD + KIT.size.edge);
-  const cell = Math.floor((inner - (ROW_MAX - 1) * CELL_GAP) / ROW_MAX);
-  // A narrow phone has no room for four 58 faces a row: 44 then.
-  const size: FaceSize = seats.size === 'seat' && cell < KIT.size.av.seat ? 'md' : seats.size;
-  const lines = rows.map((count, r) => {
-    const from = rows.slice(0, r).reduce((sum, n) => sum + n, 0);
-    return ordered.slice(from, from + count);
+  // The strip as wide as the card's inside; the picture covers it, seen at 40 % down (`.mimg`).
+  const strip = width - 2 * (KIT.size.side + k.pad + KIT.size.edge);
+  const picture = icon ? TABLE_CARD_WIDE[icon] : undefined;
+  const source = picture ? Image.resolveAssetSource(picture) : null;
+  const drawn = source && source.width > 0 ? (strip * source.height) / source.width : k.strip;
+  const pictureHeight = Math.max(k.strip, drawn);
+  const inner = strip - 2 * k.body.x;
+  const cell = Math.floor((inner - (ROW_MAX - 1) * k.colGap) / ROW_MAX);
+  const lines: TablePerson[][] = [];
+  ordered.forEach((p, i) => {
+    if (i % ROW_MAX === 0) lines.push([p]);
+    else lines[lines.length - 1]?.push(p);
   });
 
   return (
@@ -97,44 +84,71 @@ export function TableScene({
       <AuraBand top={0} height={headHeight} fade={BAND_FADE} direction="down" />
       {children}
       <Glass
-        style={{
-          marginHorizontal: KIT.size.side,
-          paddingHorizontal: PANEL_PAD,
-          paddingBottom: PANEL_PAD,
-          paddingTop: PANEL_TOP,
-          gap: PANEL_GAP,
-        }}
+        radius={k.radius}
+        style={{ marginHorizontal: KIT.size.side, padding: k.pad }}
         testID="table-panel"
       >
-        <Pressable
-          testID="table-scene"
-          accessibilityRole="button"
-          accessibilityLabel={tr.table.whoLabel(people.length)}
-          onPress={onPress}
-          style={{ gap: ROW_GAP }}
+        <View
+          style={{
+            height: k.strip,
+            borderRadius: k.stripRadius,
+            overflow: 'hidden',
+            backgroundColor: c.placeholder,
+          }}
         >
-          {lines.map((line, r) => (
-            <View key={r} style={{ flexDirection: 'row', justifyContent: 'center', gap: CELL_GAP }}>
-              {line.map((p) => {
-                const i = ordered.indexOf(p);
-                const late = first !== null && !first.has(p.sessionId);
-                return (
-                  <Seat
-                    key={p.sessionId}
-                    person={p}
-                    you={p.sessionId === me}
-                    publicId={profiles?.get(p.sessionId)}
-                    size={size}
-                    width={cell}
-                    delay={late ? 0 : SEAT_DELAY + i * SEAT_STEP}
-                    late={late}
-                  />
-                );
-              })}
-            </View>
-          ))}
-        </Pressable>
-        {footer}
+          {picture ? (
+            <Image
+              source={picture}
+              fadeDuration={0}
+              accessible={false}
+              resizeMode="cover"
+              style={{
+                position: 'absolute',
+                left: 0,
+                width: strip,
+                height: pictureHeight,
+                top: -(pictureHeight - k.strip) * k.stripFocus,
+              }}
+            />
+          ) : null}
+        </View>
+        <View
+          style={{
+            paddingTop: k.body.top,
+            paddingHorizontal: k.body.x,
+            paddingBottom: k.body.bottom,
+            gap: k.body.gap,
+          }}
+        >
+          {info}
+          <Pressable
+            testID="table-scene"
+            accessibilityRole="button"
+            accessibilityLabel={tr.table.whoLabel(people.length)}
+            onPress={onPress}
+            style={{ gap: k.rowGap }}
+          >
+            {lines.map((line, r) => (
+              <View key={r} style={{ flexDirection: 'row', gap: k.colGap }}>
+                {line.map((p) => {
+                  const i = ordered.indexOf(p);
+                  const late = first !== null && !first.has(p.sessionId);
+                  return (
+                    <Seat
+                      key={p.sessionId}
+                      person={p}
+                      you={p.sessionId === me}
+                      publicId={profiles?.get(p.sessionId)}
+                      width={cell}
+                      delay={late ? 0 : SEAT_DELAY + i * SEAT_STEP}
+                      late={late}
+                    />
+                  );
+                })}
+              </View>
+            ))}
+          </Pressable>
+        </View>
       </Glass>
     </View>
   );
@@ -143,12 +157,11 @@ const SEAT_DELAY = 160;
 const SEAT_STEP = MOTION.stagger.part;
 
 // One person: the face popping in (someone who sits down later with a ring spreading round it),
-// the name under it, as wide as the place it has.
+// the name under it (11/600, muted), as wide as the place it has.
 function Seat({
   person,
   you,
   publicId,
-  size,
   width,
   delay,
   late,
@@ -156,7 +169,6 @@ function Seat({
   person: TablePerson;
   you: boolean;
   publicId: string | undefined;
-  size: FaceSize;
   width: number;
   delay: number;
   late: boolean;
@@ -187,9 +199,9 @@ function Seat({
     return () => anim.stop();
   }, [reduce, delay, late, pop, ring]);
   const name = you ? tr.table.youTag : person.alias;
-  const face = KIT.size.av[size];
+  const face = KIT.size.av.member;
   return (
-    <View style={{ width, alignItems: 'center', gap: NAME_GAP }} pointerEvents="none">
+    <View style={{ width, alignItems: 'center', gap: k.nameGap }} pointerEvents="none">
       <View>
         <Animated.View
           style={{
@@ -217,15 +229,15 @@ function Seat({
           }}
         >
           {!person.profiled && person.look ? (
-            <Av size={size} name={person.alias}>
+            <Av size="member" name={person.alias}>
               <LookAvatar look={person.look} size={face} />
             </Av>
           ) : (
-            <Av size={size} name={person.alias} photoUrl={view.data?.photoUrl ?? null} />
+            <Av size="member" name={person.alias} photoUrl={view.data?.photoUrl ?? null} />
           )}
         </Animated.View>
       </View>
-      <T v="fineLg" strong ink center lines={1} fit style={{ alignSelf: 'stretch' }}>
+      <T v="member" center lines={1} fit style={{ alignSelf: 'stretch' }}>
         {name}
       </T>
     </View>

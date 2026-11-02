@@ -95,10 +95,14 @@ export const KIT_TYPE = {
   emojiOne: t(500, 40, 48),
   emojiFew: t(500, 32, 40),
   day: t(600, 12, 16),
+  // A person's name under their face at Masa (`.mem`: 11/14 600).
+  member: t(600, 11, 14),
   wordmark: t(800, 26, 30, -0.04),
   av: {
     md: t(700, 15, 19),
     sm: t(700, 12, 16),
+    member: t(700, 12, 16),
+    list: t(700, 15, 19),
     seat: t(700, 20, 24),
     // A conversation's face in Mesajlar (52).
     row: t(700, 18, 22),
@@ -363,7 +367,7 @@ export const KIT = {
   // The switch's knob (Masa kur).
   switchKnobShadow: '0px 2px 8px rgba(3, 27, 11, 0.08)',
   // A game card's corner tag: dark glass over its picture (Masa), and its shadow.
-  artTag: 'rgba(3, 27, 11, 0.48)',
+  artTag: 'rgba(3, 27, 11, 0.55)',
   // U17 (KesfetMekan `.htop`): over the venue's scene, in both schemes, the back button on light
   // glass and the tags light, the calm one in the calm green.
   sceneRound: { bg: 'rgba(255, 255, 255, 0.82)', edge: '#FFFFFF', ink: '#031B0B' },
@@ -390,6 +394,40 @@ export const KIT = {
     body: { top: 12, x: 16, bottom: 16, gap: 12 },
   },
   sceneTagCalm: { bg: 'rgba(215, 238, 220, 0.92)', fg: '#055328' },
+  // U22 (Masa `.mcard`, `.mem`, `.game`, `.fadebot`): the table's card on glass 28 round, 6 in,
+  // its wide riso card a 96 strip 22 round (seen at 40 % down); under it 12 / 14 / 14 in, 12 apart,
+  // the name and its line 2 apart. The people four a row, 10 / 4 apart, faces 36 (`av.member`; an
+  // anonymous one's capsule as the app draws it, §9.2), the name 4 under. The bar's rounds and
+  // Bitir 44; the games fade into the canvas over the bottom 90 (solid from 80 %).
+  table: {
+    pad: 6,
+    radius: 28,
+    strip: 96,
+    stripRadius: 22,
+    stripFocus: 0.4,
+    body: { top: 12, x: 14, bottom: 14, gap: 12 },
+    lineGap: 2,
+    rowGap: 10,
+    colGap: 4,
+    nameGap: 4,
+    bar: 44,
+    fade: 90,
+    fadeSolid: 0.8,
+  },
+  // U23 (MasaDavet `.srow`, `.warn`): a friend's row 64 high, 8 / 12 / 8 / 14 in, on glass sm; the
+  // full table's note above the list, warn-soft 16 round, 12 / 14 in, its icon 10 from the words.
+  inviteRow: { height: 64, padY: 8, padLeft: 14, padRight: 12 },
+  warnBox: {
+    light: { bg: '#FFF1D6', fg: '#5C3A00' },
+    dark: { bg: 'rgba(255, 181, 71, 0.14)', fg: '#FFE2B3' },
+    radius: 16,
+    padX: 14,
+    padY: 12,
+    gap: 10,
+  },
+  // U24 (Masadakiler `.sh`, `.srow`): the sheet 84 from the top; a person's row 56 high, 6 / 14 in,
+  // their face 40 (`av.list`).
+  peopleSheet: { top: 84, height: 56, padY: 6, padX: 14 },
   // U17: the scene 300 high from the very top, its bottom corners 28.
   venueHero: { height: 300, radius: 28 },
   gameCardShadow: '0px 12px 26px rgba(4, 73, 35, 0.18)',
@@ -442,7 +480,8 @@ export const KIT = {
     roundLg: 44,
     // A list row's picture: 48 (the owner's call, 30 Ekim: the rows were too thick at 52).
     // `seat`: Masa's card when its people fit one row (58).
-    av: { sm: 32, md: 44, row: 48, seat: 58, lg: 64, xl: 96, big: 112 },
+    // member: Masa's people (U22); list: Masadakiler's rows (U24).
+    av: { sm: 32, member: 36, list: 40, md: 44, row: 48, seat: 58, lg: 64, xl: 96, big: 112 },
     stackOverlap: 10,
     faceCard: 210,
     // Profil's two buttons and Kapsülün's (50).
@@ -562,9 +601,9 @@ export const KIT = {
     iconTileGap: 12,
     iconTileRadius: 16,
     // Masa's game cards: 24 round, the tag 8 in and 7 down.
-    gameCardRadius: 24,
+    gameCardRadius: 22,
     gameTagX: 8,
-    gameTagY: 7,
+    gameTagY: 8,
     // Mekan's and Masa's blocks: 14 apart.
     venueGap: 14,
     eventPad: 12,
