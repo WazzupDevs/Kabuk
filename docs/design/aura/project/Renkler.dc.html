@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Renk tokenları</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+<link rel="stylesheet" href="koyu.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 1280px; height: 900px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); font-family: var(--font)">
+  <div style="box-sizing: border-box; padding: 40px; background: var(--canvas); color: var(--text); display: flex; flex-direction: column; gap: 24px">
+    <h2 class="t-title" style="margin: 0">Açık tema</h2>
+    <sc-for list="{{groups}}" as="grp" hint-placeholder-count="5">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span class="t-label" style="color: var(--muted)">{{grp.g}}</span>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap">
+          <sc-for list="{{grp.items}}" as="it" hint-placeholder-count="6">
+            <div style="width: 72px; display: flex; flex-direction: column; gap: 4px">
+              <div style="height: 48px; border-radius: var(--r-sm); background: var(--{{it.v}}); box-shadow: inset 0 0 0 1px var(--divider)"></div>
+              <span class="t-caption">{{it.n}}</span>
+              <span class="t-caption" style="color: var(--muted); font-weight: 500">{{it.l}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+  <div class="dark pA" style="box-sizing: border-box; padding: 40px; background: var(--canvas); color: var(--text); display: flex; flex-direction: column; gap: 24px">
+    <h2 class="t-title" style="margin: 0">Koyu tema (Grafit, düz siyah)</h2>
+    <sc-for list="{{groups}}" as="grp" hint-placeholder-count="5">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span class="t-label" style="color: var(--muted)">{{grp.g}}</span>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap">
+          <sc-for list="{{grp.items}}" as="it" hint-placeholder-count="6">
+            <div style="width: 72px; display: flex; flex-direction: column; gap: 4px">
+              <div style="height: 48px; border-radius: var(--r-sm); background: var(--{{it.v}}); box-shadow: inset 0 0 0 1px var(--divider)"></div>
+              <span class="t-caption">{{it.n}}</span>
+              <span class="t-caption" style="color: var(--muted); font-weight: 500">{{it.d}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { groups: [{"g":"Zemin ve yüzey","items":[{"n":"canvas","v":"canvas","l":"#EFF7F1","d":"#000000"},{"n":"surface","v":"surface","l":"#FFFFFF","d":"#151A18"},{"n":"surface2","v":"surface2","l":"#E6F0E8","d":"#1B211F"},{"n":"track","v":"track","l":"#E0EDE2","d":"#1B211F"},{"n":"control","v":"control","l":"#C6E0CC","d":"#2A332F"},{"n":"divider","v":"divider","l":"#D6E6DA","d":"#232A27"},{"n":"border","v":"border","l":"#6E8874","d":"#5E6964"}]},{"g":"Metin","items":[{"n":"text","v":"text","l":"#031B0B","d":"#EEF3F0"},{"n":"muted","v":"muted","l":"#4A6550","d":"#A3AEA8"},{"n":"placeholder","v":"placeholder","l":"#56785E","d":"#8F9A94"}]},{"g":"Eylem","items":[{"n":"primary","v":"primary","l":"#0E8745","d":"#0E8745"},{"n":"primaryPressed","v":"primary-pressed","l":"#0A7139","d":"#0B783D"},{"n":"onPrimary","v":"on-primary","l":"#FFFFFF","d":"#FFFFFF"},{"n":"accent","v":"accent","l":"#0B783D","d":"#3DDC84"},{"n":"disabled","v":"disabled","l":"#DCE9DE","d":"#1F2623"},{"n":"onDisabled","v":"on-disabled","l":"#4A6550","d":"#A3AEA8"}]},{"g":"Durum","items":[{"n":"danger","v":"danger","l":"#A8301A","d":"#FF977E"},{"n":"dangerSoft","v":"danger-soft","l":"#FBE1DB","d":"#3A1E22"},{"n":"success","v":"success","l":"#1C7843","d":"#4CC97E"},{"n":"successSoft","v":"success-soft","l":"#CDEFD9","d":"#173022"},{"n":"warnSoft","v":"warn-soft","l":"#FFF1D6","d":"#3A2A10"},{"n":"read","v":"read","l":"#2C63D6","d":"#7DB2FF"}]},{"g":"Vurgu","items":[{"n":"violet","v":"violet","l":"#C51F62","d":"#FF5C93"},{"n":"buzz","v":"buzz","l":"#FF4F8B","d":"#FF4F8B"},{"n":"signal","v":"signal","l":"#FFB547","d":"#FFB547"},{"n":"calm","v":"calm","l":"#D7EEDC","d":"rgba(61,220,132,.14)"},{"n":"onCalm","v":"on-calm","l":"#055328","d":"#93EBB9"},{"n":"feature","v":"feature","l":"#031B0B","d":"#EEF3F0"}]}] };
+  }
+}
+</script>
+</body>
+</html>

@@ -163,8 +163,9 @@ export function ChatBubble({
   const { scheme, c } = useKit();
   const kind = useChatKind();
   const metaRef = useChatMetaRef();
-  // Grup 3, P4: the venue chat's own look (KIT.venueBubble): the own bubble in the primary, another's
-  // in glass with the name in a chip over it. The DM and the table chat stay as they are.
+  // Aura v65 (bileşenler → Sohbet): the viewer's own bubble in the primary everywhere, white words.
+  // Another's: glass in the venue chat (Grup 3, P4: the name in a chip over it), the DM blue in the
+  // DM, raised (#121614 in the dark) in the table chat, with the scheme's ink.
   const venue = kind === 'mekan';
   const glassy = venue && !mine;
   const solid = KIT.bubble[scheme];
@@ -179,9 +180,11 @@ export function ChatBubble({
         themInk: c.ink,
         themMuted: c.muted,
       }
-    : solid;
-  // The words on a coloured bubble are white: the own in the venue chat, another's elsewhere.
-  const onColour = venue ? mine : !mine;
+    : kind === 'masa'
+      ? { ...solid, themInk: c.ink, themMuted: c.muted }
+      : solid;
+  // The words on a coloured bubble are white: the own one, and another's in the DM.
+  const onColour = mine || kind === 'dm';
   const shadowOff = useLabOff('golge');
   const fg = mine ? paint.mineInk : paint.themInk;
   const inside = !mine && nameInk !== undefined;
@@ -952,9 +955,11 @@ export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: 
     return () => loop.stop();
   }, [reduce, dots]);
 
-  const { scheme } = useKit();
+  const { scheme, c } = useKit();
   const kind = useChatKind();
   const paint = KIT.bubble[scheme];
+  // The dots in the bubble's words' colour: white on the DM blue, the ink elsewhere.
+  const dotInk = kind === 'dm' ? paint.themInk : c.ink;
   const shadowOff = useLabOff('golge');
   const typingShadow = shadowParts(shadowOff, KIT.chatShadow[kind], undefined, [
     KIT.size.msgRadius,
@@ -1000,7 +1005,7 @@ export function TypingBubble({ avatar, testID }: { avatar?: ReactNode; testID?: 
               width: DOT,
               height: DOT,
               borderRadius: shape.radius.pill,
-              backgroundColor: paint.themInk,
+              backgroundColor: dotInk,
               opacity: d.interpolate({ inputRange: [0, 1], outputRange: [0.45, 1] }),
               transform: [
                 {

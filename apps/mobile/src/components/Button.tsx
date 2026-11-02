@@ -1,5 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
-import { type ComponentProps, type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import { Animated, Pressable, View, type ViewStyle } from 'react-native';
 
 import { useLabOff } from '@/lib/drawLab';
@@ -14,12 +13,12 @@ import { Loader } from './Loader';
 import { shadowParts } from './NativeShadow';
 import { usePressScale } from './motion';
 import { Text } from './Text';
-import { AppIcon } from './AppIcon';
+import { AppIcon, type IconName } from './AppIcon';
 
 // The skall design system → Button: the roles and their fills are in theme/buttonFill.ts. No
 // outlined, hard-shadowed "3D" face: pressed, a button shrinks to 97 %. Disabled, it takes a
 // neutral fill instead of fading.
-export type IconName = ComponentProps<typeof Ionicons>['name'];
+export type { IconName };
 
 type Props = {
   label: string;
@@ -53,7 +52,7 @@ type Props = {
   iconOnly?: boolean;
 };
 
-// docs/design/aura (`.btn`): 54 high, 38 small; 24 and 16 at the sides.
+// Aura v65 `.btn`: 56 high, 40 small; 24 and 16 at the sides.
 const SMALL_HEIGHT = KIT.size.btnSm;
 const HEIGHT = { md: TOUCH.min, lg: KIT.size.btn } as const;
 // The busy mark per size (px) and its cross-fade with the label (hareket.md → "Düğmede bekleme").

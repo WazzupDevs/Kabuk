@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <path data-layer="b" d="M6.2 16.4V11a5.8 5.8 0 0 1 11.6 0v5.4Z"/>
+  <rect data-layer="a" x="3" y="15" width="18" height="3.2" rx="1.6" transform="rotate(0 12 16.6)"/>
+  <rect data-layer="a" x="9.3" y="18.9" width="5.4" height="2.6" rx="1.3" transform="rotate(0 12 20.2)"/>
+  <rect data-layer="a" x="10.2" y="2.8" width="3.6" height="2.6" rx="1.3" transform="rotate(90 12 4.1)"/>
+</svg>

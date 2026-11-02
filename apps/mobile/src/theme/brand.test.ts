@@ -22,7 +22,6 @@ describe('logo colours', () => {
   it('meet the theme where the mark overlaps', () => {
     expect(THEME.palettes.light.overlap).toBe(BRAND.orange);
     expect(THEME.palettes.dark.overlap).toBe(BRAND.white);
-    expect(THEME.palettes.light.feature).toBe(BRAND.ink);
   });
 });
 

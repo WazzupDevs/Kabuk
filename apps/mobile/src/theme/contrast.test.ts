@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 
-import { BAR_ICON_COLORS } from './barIcons';
 import { BUTTON_VARIANTS, buttonFill } from './buttonFill';
 import { AA_LARGE, AA_TEXT, contrastRatio, readableOn } from './contrast';
 import { featurePalette } from './feature';
@@ -64,7 +63,6 @@ const PAIRS: readonly Pair[] = [
   ['muted', 'surface', AA_LARGE], // input outline
   ['border', 'canvas', AA_LARGE], // control outlines (secondary button, outline chip)
   ['border', 'surface', AA_LARGE],
-  ['border', 'surface2', AA_LARGE],
   ['border', 'raised', AA_LARGE],
   ['accent', 'canvas', AA_LARGE],
   ['accent', 'raised', AA_LARGE],
@@ -89,11 +87,16 @@ function ratio(p: Palette, fg: PaletteKey, bg: PaletteKey): number {
   return contrastRatio(p[fg], p[bg]);
 }
 
+// Aura v65 `.dark.pA` sets the dark `border` (#5E6964) at 2.9:1 on `surface2` (#1B211F); the
+// canvas is the source (docs/design/aura), so that one pair holds in the light scheme only.
+const LIGHT_ONLY: readonly Pair[] = [['border', 'surface2', AA_LARGE]];
+
 describe('theme contrast (WCAG AA)', () => {
   for (const scheme of ['light', 'dark'] as const) {
     const palette = THEME.palettes[scheme];
+    const pairs = scheme === 'light' ? [...PAIRS, ...LIGHT_ONLY] : PAIRS;
     describe(scheme, () => {
-      it.each(PAIRS)('%s on %s ≥ %s', (fg, bg, min) => {
+      it.each(pairs)('%s on %s ≥ %s', (fg, bg, min) => {
         expect(ratio(palette, fg, bg)).toBeGreaterThanOrEqual(min);
       });
     });
@@ -140,20 +143,13 @@ describe('featured card contrast (WCAG AA)', () => {
   }
 });
 
-// Mesajlar → İstekler: the decline and accept circles. Each icon has a light and a dark bar; at
-// least one of them stands out 3:1 from its circle in both schemes (a graphic, with its own label).
+// Mesajlar → İstekler: the decline and accept circles carry the capsule icon in their own ink.
 describe('request buttons (WCAG AA graphics)', () => {
-  const ICONS = [
-    ['cross', 'dangerSoft'],
-    ['check', 'successSoft'],
-  ] as const;
   for (const scheme of ['light', 'dark'] as const) {
-    it.each(ICONS)(`${scheme}: %s on %s`, (icon, fill) => {
-      const { a, b } = BAR_ICON_COLORS[icon];
-      const ground = THEME.palettes[scheme][fill];
-      expect(Math.max(contrastRatio(a, ground), contrastRatio(b, ground))).toBeGreaterThanOrEqual(
-        AA_LARGE,
-      );
+    const p = THEME.palettes[scheme];
+    it(`${scheme}: the icons on their circles`, () => {
+      expect(contrastRatio(p.onDangerSoft, p.dangerSoft)).toBeGreaterThanOrEqual(AA_LARGE);
+      expect(contrastRatio(p.onSuccessSoft, p.successSoft)).toBeGreaterThanOrEqual(AA_LARGE);
     });
   }
 });

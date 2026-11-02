@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Şablon: oyun</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+<link rel="stylesheet" href="koyu.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 640px; height: 844px; display: flex; background: var(--surface2); font-family: var(--font)">
+<div class="phone dark pA"><div aria-hidden="true" style="position: absolute; inset: 0; overflow: hidden"><i style="position: absolute; width: 360px; height: 300px; left: -110px; top: -70px; border-radius: 50%; filter: blur(64px); background: var(--primary); opacity: .45"></i><i style="position: absolute; width: 300px; height: 280px; right: -120px; bottom: 80px; border-radius: 50%; filter: blur(64px); background: var(--buzz); opacity: .3"></i></div>
+<div style="position: relative; height: 100%; padding: 56px 20px 46px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px">
+<div style="display: flex; align-items: center; gap: 12px"><button type="button" class="round soft" aria-label="Kapat"><svg class="ci md" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.198" y="10.4" width="19.605" height="3.2" rx="1.6" transform="rotate(45 12 12)" class="a"></rect><rect x="2.198" y="10.4" width="19.605" height="3.2" rx="1.6" transform="rotate(135 12 12)" class="b"></rect></svg></button><div style="flex: 1; height: 8px; border-radius: var(--r-pill); background: var(--track)"><div style="width: 62%; height: 100%; border-radius: var(--r-pill); background: var(--signal)"></div></div><span class="t-label">0:24</span></div>
+<div style="display: flex; justify-content: space-between"><span class="t-label" style="color: var(--muted)">Tur 3/8</span><span class="t-label" style="color: var(--muted)">Skor <span class="g-mark" style="color: var(--text)">12</span></span></div>
+<div class="glass" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px"><span class="t-eyebrow" style="color: var(--muted)">ANLATIYORSUN</span><span class="g-word">Kelime</span></div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px"><button type="button" class="btn soft">Pas</button><button type="button" class="btn primary">Bildi</button></div>
+</div></div>
+<div style="flex: 1; box-sizing: border-box; padding: 24px 20px; display: flex; flex-direction: column; gap: 12px; color: var(--text)">
+<h2 class="t-heading" style="margin: 0">Oyun</h2>
+<ul style="margin: 0; padding-left: 16px; display: flex; flex-direction: column; gap: 8px"><li class="t-fine" style="color: var(--muted)">Oyunlar koyu temada</li><li class="t-fine" style="color: var(--muted)">Süre çubuğu 8, üst çubukla aynı satırda</li><li class="t-fine" style="color: var(--muted)">Oyun ölçeği yalnızca kart içinde (word 38)</li><li class="t-fine" style="color: var(--muted)">İki eylem eşit genişlikte, 12 aralık</li><li class="t-fine" style="color: var(--muted)">Alttan 46; kart kalan alanı doldurur</li></ul>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":640,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -5,15 +5,13 @@ import { GlassTarget } from '@/components/LiquidGlass';
 import { AURA } from '@/theme/aura';
 import { useTheme } from '@/theme/ThemeProvider';
 
-// The colour clouds behind a screen (docs/design/aura/project/aura.css → `.aura`, the five clouds
-// a1 to a5, light and `.night`), the same still picture on every screen (the owner's call, 28
-// Ekim). Drawn by Chromium from aura.css at the canvas's 390 × 844 and kept as one image per theme:
-// five live clouds per screen, ten during a slide, held the phone at 12 to 15 frames a second and
-// kept it drawing at rest. One opaque picture is one layer, read once and kept in memory.
-export const GROUND_PICTURE = {
-  light: require('../../assets/aura/ground-light.webp'),
-  dark: require('../../assets/aura/ground-dark.webp'),
-} as const;
+// The colour clouds behind a screen (Aura v65 ekran.css → `.aura`, the five clouds a1 to a5), the
+// same still picture on every screen (the owner's call, 28 Ekim). Drawn by Chromium at the canvas's
+// 390 × 844 (scripts/aura/ground.ts) and kept as one image: five live clouds per screen, ten during
+// a slide, held the phone at 12 to 15 frames a second and kept it drawing at rest. One opaque
+// picture is one layer, read once and kept in memory. Light only: the dark scheme has no aura
+// (`.dark.pA`), its ground is the flat canvas.
+const GROUND_PICTURE = require('../../assets/aura/ground-light.webp');
 
 // The screen's backdrop: the frosted buttons drawn after it blur it (ui/LiquidGlass → Frost).
 export function AuraBackground() {
@@ -21,11 +19,11 @@ export function AuraBackground() {
   const off = useLabOff('zemin');
   return (
     <GlassTarget backdrop style={StyleSheet.absoluteFill}>
-      {off ? (
+      {off || scheme === 'dark' ? (
         <View style={[StyleSheet.absoluteFill, { backgroundColor: AURA[scheme].ground }]} />
       ) : (
         <Image
-          source={GROUND_PICTURE[scheme]}
+          source={GROUND_PICTURE}
           fadeDuration={0}
           resizeMode="cover"
           // Its own size, or it draws at the picture's pixels (Image takes a required source's
@@ -77,12 +75,27 @@ export function AuraBand({
 function Slice({ top, height, opacity }: { top: number; height: number; opacity: number }) {
   const { scheme } = useTheme();
   const { width, height: screen } = useWindowDimensions();
+  if (scheme === 'dark') {
+    return (
+      <View
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          top,
+          height,
+          opacity,
+          backgroundColor: AURA.dark.ground,
+        }}
+      />
+    );
+  }
   return (
     <View
       style={{ position: 'absolute', left: 0, right: 0, top, height, overflow: 'hidden', opacity }}
     >
       <Image
-        source={GROUND_PICTURE[scheme]}
+        source={GROUND_PICTURE}
         fadeDuration={0}
         resizeMode="cover"
         style={{ position: 'absolute', left: 0, top: -top, width, height: screen }}

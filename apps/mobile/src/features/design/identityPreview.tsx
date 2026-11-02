@@ -1,24 +1,24 @@
 import { useState } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 
-import { BarIcon, BellIcon } from '@/components/BarIcon';
+import { CapIcon } from '@/aura/CapIcon';
 import { CapsuleAvatar } from '@/components/CapsuleAvatar';
 import { ChatBubble } from '@/components/ChatBubble';
 import { ChatWallpaper } from '@/components/ChatWallpaper';
 import { EventCard } from '@/features/activities/EventCard';
 import { tr } from '@/i18n/tr';
-import type { BarIconKind } from '@/theme/barIcons';
+import { CAP_ICONS } from '@/theme/capIcons.generated';
 import { CAPSULE_KEYS } from '@/theme/capsules';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
 import { PreviewBlock } from './PreviewBlock';
 
-const ICONS: BarIconKind[] = ['plus', 'cross', 'check', 'lobby', 'minus'];
+const ICONS = Object.keys(CAP_ICONS) as (keyof typeof CAP_ICONS)[];
 const WALL = 260;
 
 // Bileşen önizleme → Kapsül ve ikonlar (docs/SPEC_V4.md §4.C, step 4.2b): the 28 capsules and the
-// ghost, the bar icons and the bell, and the chat wallpaper under two messages, in the run's scheme.
+// ghost, the capsule icon family (Aura v65), and the chat wallpaper under two messages, in the run's scheme.
 export function IdentitySet() {
   const { colors, shape } = useTheme();
   const window = useWindowDimensions();
@@ -40,12 +40,9 @@ export function IdentitySet() {
 
       <PreviewBlock title={t.icons}>
         <View className="flex-row flex-wrap items-center gap-4" testID="preview-identity-icons">
-          {ICONS.map((kind) => (
-            <BarIcon key={kind} kind={kind} />
+          {ICONS.map((name) => (
+            <CapIcon key={name} name={name} color={colors.text} />
           ))}
-          <BellIcon />
-          <BellIcon unread={3} />
-          <BellIcon unread={120} />
         </View>
       </PreviewBlock>
 

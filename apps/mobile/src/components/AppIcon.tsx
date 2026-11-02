@@ -1,98 +1,25 @@
-import { Ionicons } from '@expo/vector-icons';
-import type { StyleProp, TextStyle } from 'react-native';
+import { View } from 'react-native';
 
 import { CapIcon, type CapIconName } from '@/aura/CapIcon';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON } from '@/theme/tokens';
 
-import type { IconName } from './Button';
-import {
-  type CanvasBarIcon,
-  type CanvasLineIcon,
-  type CanvasTone,
-  CanvasBar,
-  CanvasLine,
-} from './CanvasIcon';
-
-// Every icon of the app (the owner's call, 27 Ekim: the canvas's icon families everywhere). The
-// app names an icon as before (Ionicons' names); one the skall tuvali draws comes from its families
-// (docs/design/sistem/uretec/lib.cjs): a line icon (I) in the asked colour, or an action's two-tone
-// bar icon (B) in the tone the colour stands for. An icon the canvas has no drawing for stays
-// Ionicons' until the canvas draws it.
-const LINE: Partial<Record<IconName, CanvasLineIcon>> = {
+// Every icon of the app comes from the one capsule family (Aura v65, U6: Ikonlar, IkonlarYeni,
+// IkonlarRevize; aura/CapIcon.tsx). There is no other family and no Ionicons fallback. A screen
+// names an icon by its capsule name, or by the earlier name it used, which maps to its capsule
+// drawing here (IkonlarYeni → "Tek aileye geçiş").
+const LEGACY = {
   'chevron-back': 'back',
-  'chevron-forward': 'chev',
+  'chevron-forward': 'chevron',
   'chevron-down': 'down',
-  close: 'close',
-  search: 'search',
-  'search-outline': 'search',
-  'exit-outline': 'exit',
-  location: 'pin',
-  'location-outline': 'pin',
-  people: 'people',
-  'people-outline': 'people',
-  'time-outline': 'clock',
-  'create-outline': 'edit',
-  pencil: 'edit',
-  refresh: 'refresh',
-  'refresh-outline': 'refresh',
-  'checkmark-done': 'read',
-  checkmark: 'check',
-  'compass-outline': 'compass',
-  'chatbubble-outline': 'chat',
-  'chatbubbles-outline': 'chat',
-  'chatbubble-ellipses-outline': 'chat',
-  person: 'person',
-  'person-outline': 'person',
-  'lock-closed-outline': 'lock',
-  'information-circle-outline': 'info',
-  'volume-mute-outline': 'mute',
-  'ban-outline': 'block',
-  'shield-outline': 'shield',
-  'shield-checkmark-outline': 'shield',
-  'document-text-outline': 'doc',
-  'color-palette-outline': 'palette',
-  'phone-portrait-outline': 'phone',
-  'trash-outline': 'trash',
-  'heart-outline': 'heart',
-  'calendar-outline': 'calendar',
-  'star-outline': 'star',
-  'log-out-outline': 'logout',
-  shuffle: 'shuffle',
-  'arrow-forward': 'arrow',
-  'eye-outline': 'eye',
-};
-
-const BAR: Partial<Record<IconName, CanvasBarIcon>> = {
-  add: 'add',
-  alert: 'report',
-  'flag-outline': 'report',
-  'ellipsis-vertical': 'more',
-  'ellipsis-horizontal': 'more',
-  'arrow-undo': 'reply',
-  notifications: 'bell',
-  'notifications-outline': 'bell',
-  'camera-outline': 'photo',
-  'images-outline': 'photo',
-  'options-outline': 'settings',
-  'megaphone-outline': 'lobby',
-  send: 'send',
-  list: 'list',
-  'map-outline': 'map',
-};
-
-// The airy look's capsule icons (docs/design/aura → `.ci`; the owner's call, 28 Ekim): where the
-// new canvas draws an icon, it wins over the earlier families.
-const CAP: Partial<Record<IconName, CapIconName>> = {
-  'chevron-back': 'back',
-  'chevron-forward': 'forward',
   'arrow-forward': 'forward',
-  close: 'close',
+  'arrow-undo': 'reply',
   add: 'plus',
   checkmark: 'check',
-  'ellipsis-vertical': 'more',
+  'checkmark-done': 'read',
+  'checkmark-circle': 'checkCircle',
+  'ellipsis-vertical': 'moreV',
   'ellipsis-horizontal': 'more',
-  search: 'search',
   'search-outline': 'search',
   location: 'pin',
   'location-outline': 'pin',
@@ -104,16 +31,20 @@ const CAP: Partial<Record<IconName, CapIconName>> = {
   person: 'user',
   'person-outline': 'user',
   'person-add-outline': 'invite',
+  'person-remove-outline': 'userMinus',
+  'person-circle-outline': 'personCircle',
+  'people-outline': 'people',
+  'time-outline': 'clock',
+  'create-outline': 'edit',
+  pencil: 'edit',
+  'refresh-outline': 'refresh',
   'calendar-outline': 'calendar',
   'compass-outline': 'compass',
   'options-outline': 'settings',
   'settings-outline': 'settings',
-  shuffle: 'shuffle',
-  list: 'list',
   'map-outline': 'map',
-  // The menus' icons (the owner's report, 29 Ekim: one family for all of them).
-  alert: 'report',
-  'flag-outline': 'report',
+  alert: 'flag',
+  'flag-outline': 'flag',
   'ban-outline': 'block',
   'volume-mute-outline': 'mute',
   'shield-outline': 'shield',
@@ -122,47 +53,51 @@ const CAP: Partial<Record<IconName, CapIconName>> = {
   'exit-outline': 'logout',
   'trash-outline': 'trash',
   'document-text-outline': 'doc',
-  refresh: 'refresh',
-  'refresh-outline': 'refresh',
-  'camera-outline': 'photo',
-  'images-outline': 'photo',
+  'camera-outline': 'camera',
+  'images-outline': 'gallery',
+  'eye-outline': 'eye',
   'eye-off-outline': 'eyeOff',
-  'person-remove-outline': 'personRemove',
+  'lock-closed-outline': 'lock',
+  'information-circle-outline': 'info',
+  'color-palette-outline': 'palette',
+  'phone-portrait-outline': 'phone',
+  'heart-outline': 'heart',
+  'star-outline': 'star',
+  'cloud-offline-outline': 'cloudOff',
+  'cafe-outline': 'cafe',
+  'sparkles-outline': 'sparkles',
+  'copy-outline': 'copy',
+  'information-circle': 'info',
+  // A table's anonymous identity (MekanSecenekler: personCircle beside user).
+  'happy-outline': 'personCircle',
   // "Lobiye aç": the list, as on Masa's own button.
   'megaphone-outline': 'list',
-};
+} as const satisfies Record<string, CapIconName>;
 
-export function canvasIconFor(name: IconName): 'line' | 'bar' | null {
-  return LINE[name] ? 'line' : BAR[name] ? 'bar' : null;
+// A warning's exclamation: the info icon turned over, as the canvas draws it (its own drawing is an
+// open decision, report §12.5).
+const TURNED = { warning: 'info', 'alert-circle': 'info' } as const satisfies Record<
+  string,
+  CapIconName
+>;
+
+export type IconName = CapIconName | keyof typeof LEGACY | keyof typeof TURNED;
+
+export function capIconName(name: IconName): CapIconName {
+  if (name in TURNED) return TURNED[name as keyof typeof TURNED];
+  return name in LEGACY ? LEGACY[name as keyof typeof LEGACY] : (name as CapIconName);
 }
 
 export function AppIcon({
   name,
   size = ICON.md,
   color,
-  style,
 }: {
   name: IconName;
   size?: number;
   color?: string;
-  style?: StyleProp<TextStyle>;
 }) {
   const { colors } = useTheme();
-  const cap = CAP[name];
-  if (cap) return <CapIcon name={cap} color={color ?? colors.text} size={size} />;
-  const bar = BAR[name];
-  if (bar) {
-    const tone: CanvasTone =
-      color === colors.onPrimary
-        ? 'onPrimary'
-        : color === colors.danger
-          ? 'negative'
-          : color === colors.success
-            ? 'positive'
-            : 'neutral';
-    return <CanvasBar name={bar} size={size} tone={tone} />;
-  }
-  const line = LINE[name];
-  if (line) return <CanvasLine name={line} size={size} color={color} />;
-  return <Ionicons name={name} size={size} color={color} style={style} />;
+  const icon = <CapIcon name={capIconName(name)} color={color ?? colors.text} size={size} />;
+  return name in TURNED ? <View style={{ transform: [{ rotate: '180deg' }] }}>{icon}</View> : icon;
 }

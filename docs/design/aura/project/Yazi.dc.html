@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Yazı ölçeği</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+<link rel="stylesheet" href="koyu.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 880px; height: 900px; box-sizing: border-box; padding: 40px; background: var(--canvas); color: var(--text); font-family: var(--font); display: flex; flex-direction: column; gap: 20px">
+  <div style="display: flex; flex-direction: column; gap: 4px">
+    <h2 class="t-title" style="margin: 0">Yazı ölçeği</h2>
+    <p class="t-fine" style="margin: 0; color: var(--muted)">Arayüzde 8 boyut: 11, 12, 13, 14, 15, 16, 21, 32. Plus Jakarta Sans, 500 ve 600 kalınlık.</p>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 12px; padding: 20px; background: var(--surface); border-radius: var(--r-lg); box-shadow: var(--shadow-card)">
+    <div style="display: flex; align-items: baseline; gap: 16px"><span class="t-caption" style="width: 120px; color: var(--muted)">display · 32/42</span><span class="t-display">Bu akşam neredesin?</span></div>
+    <div style="display: flex; align-items: baseline; gap: 16px"><span class="t-caption" style="width: 120px; color: var(--muted)">title · 21/27</span><span class="t-title">Masa kur</span></div>
+    <div style="display: flex; align-items: baseline; gap: 16px"><span class="t-caption" style="width: 120px; color: var(--muted)">heading · 16/22</span><span class="t-heading">Süren masalar</span></div>
+    <div style="display: flex; align-items: baseline; gap: 16px"><span class="t-caption" style="width: 120px; color: var(--muted)">button · 16/20</span><span class="t-button">Masayı kur</span></div>
+    <div style="display: flex; align-items: baseline; gap: 16px"><span class="t-caption" style="width: 120px; color: var(--muted)">body · 15/22</span><span class="t-body">Masadakiler seni görebilir.</span></div>
+    <div style="display: flex; align-items: baseline; gap: 16px"><span class="t-caption" style="width: 120px; color: var(--muted)">body-strong · 15/22</span><span class="t-body-strong">Sakarya Üniversitesi</span></div>
+    <div style="display: flex; align-items: baseline; gap: 16px"><span class="t-caption" style="width: 120px; color: var(--muted)">button-small · 14/18</span><span class="t-button-small">Mekandan ayrıl</span></div>
+    <div style="display: flex; align-items: baseline; gap: 16px"><span class="t-caption" style="width: 120px; color: var(--muted)">label · 13/17</span><span class="t-label">Masa adı</span></div>
+    <div style="display: flex; align-items: baseline; gap: 16px"><span class="t-caption" style="width: 120px; color: var(--muted)">fine · 13/18</span><span class="t-fine">Kampüs · Serdivan</span></div>
+    <div style="display: flex; align-items: baseline; gap: 16px"><span class="t-caption" style="width: 120px; color: var(--muted)">eyebrow · 12/16</span><span class="t-eyebrow">ŞU AN MEKANDA</span></div>
+    <div style="display: flex; align-items: baseline; gap: 16px"><span class="t-caption" style="width: 120px; color: var(--muted)">tag · 12/16</span><span class="t-tag">Sessiz</span></div>
+    <div style="display: flex; align-items: baseline; gap: 16px"><span class="t-caption" style="width: 120px; color: var(--muted)">caption · 11/14</span><span class="t-caption">Keşfet</span></div>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 8px">
+    <span class="t-label" style="color: var(--muted)">Oyun ölçeği (yalnızca oyun ekranları, 800 kalınlık)</span>
+    <div style="display: flex; align-items: baseline; gap: 24px; padding: 20px; background: var(--feature); color: var(--on-feature); border-radius: var(--r-lg)">
+      <span class="g-hero">Süre bitti!</span>
+      <span class="g-word">Kahve</span>
+      <span class="g-score">12</span>
+      <span class="g-alias">Lara</span>
+      <span class="g-mark">4</span>
+    </div>
+    <span class="t-caption" style="color: var(--muted); font-weight: 500">hero 52 · word 38 · score 30 · alias 26 · mark 20</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":880,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

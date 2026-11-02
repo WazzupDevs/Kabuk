@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Bileşenler: yüzeyler</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+<link rel="stylesheet" href="koyu.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 1440px; height: 660px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr))">
+<div class="" style="box-sizing: border-box; padding: 32px; background: var(--canvas); color: var(--text); font-family: var(--font); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-content: start">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<h2 class="t-title" style="margin: 0">Açık</h2>
+<span class="t-caption" style="color: var(--muted)">Alan · 56</span>
+<div class="field glass sm"><svg class="ci sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.4" cy="10.4" r="5.6" class="b"></circle><circle cx="10.4" cy="10.4" r="5.6" class="o"></circle><rect x="12.73" y="15.7" width="9.14" height="3.2" rx="1.6" transform="rotate(45 17.3 17.3)" class="a"></rect></svg>Mekan ara</div>
+<div class="field glass sm filled">Yeni masa</div>
+<div class="field glass sm filled error">Ad çok uzun</div>
+<span class="t-fine" style="color: var(--danger); margin-top: -8px">En çok 24 karakter.</span>
+<span class="t-caption" style="color: var(--muted)">Liste · cam kart</span>
+<div class="glass" style="padding: 4px 0">
+<div class="li"><span class="av v1">E</span><div style="flex: 1; display: flex; flex-direction: column"><span class="t-body-strong">Elif</span><span class="t-fine" style="color: var(--muted)">Masada · 2 dk</span></div><span class="badge">2</span></div>
+<div class="li"><span class="av v2">M</span><div style="flex: 1; display: flex; flex-direction: column"><span class="t-body-strong">Mert</span><span class="t-fine" style="color: var(--muted)">Görüldü</span></div><svg class="ci sm" viewBox="0 0 24 24" aria-hidden="true"><rect x="1.4" y="13.1" width="7.6" height="2.6" rx="1.3" transform="rotate(45 5.2 14.4)" class="b"></rect><rect x="3.9" y="10.6" width="11.6" height="2.6" rx="1.3" transform="rotate(-48 9.7 11.9)" class="b"></rect><rect x="9.1" y="10.6" width="13.2" height="2.6" rx="1.3" transform="rotate(-48 15.7 11.9)" class="a"></rect></svg></div>
+<div class="li"><span class="av v3">D</span><div style="flex: 1; display: flex; flex-direction: column"><span class="t-body-strong">Deniz</span><span class="t-fine" style="color: var(--muted)">Lobide</span></div><svg class="ci sm" viewBox="0 0 24 24" aria-hidden="true"><rect x="5.762" y="7" width="12.676" height="3.2" rx="1.6" transform="rotate(45.855 12.1 8.6)" class="a"></rect><rect x="5.762" y="13.8" width="12.676" height="3.2" rx="1.6" transform="rotate(134.145 12.1 15.4)" class="b"></rect></svg></div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 16px; padding-top: 43px">
+<span class="t-caption" style="color: var(--muted)">Sohbet balonu</span>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div class="msg them">Bu akşam kim mekanda?</div>
+<div class="msg me">Ben buradayım, masa kuruyorum.</div>
+</div>
+<span class="t-caption" style="color: var(--muted)">Sheet · 28 köşe</span>
+<div class="glass sheet"><div class="grab"></div><span class="t-title">Masaya katıl</span><span class="t-body" style="color: var(--muted)">Masadakiler seni görebilir.</span><button type="button" class="btn primary block">Katıl</button></div>
+<span class="t-caption" style="color: var(--muted)">Alt menü · 64</span>
+<div class="glass tabbar">
+<span class="tab on"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" class="b"></circle><path d="M16.6 7.4 13.9 13.9 7.4 16.6 10.1 10.1Z" class="a"></path><circle cx="12" cy="12" r="1.3" class="w"></circle></svg></span><span class="tab"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.4" y="5.6" width="17.2" height="15" rx="4.6" class="b"></rect><rect x="4.7" y="4.1" width="6.6" height="2.6" rx="1.3" transform="rotate(90 8 5.4)" class="a"></rect><rect x="12.7" y="4.1" width="6.6" height="2.6" rx="1.3" transform="rotate(90 16 5.4)" class="a"></rect><rect x="6.5" y="12.1" width="11" height="2.6" rx="1.3" class="a"></rect></svg></span><span class="tab"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="mk0" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><rect width="24" height="24" fill="#fff"></rect><rect x="10.8" y="6" width="8" height="15.6" rx="4" fill="#000" stroke="#000" stroke-width="5.1"></rect></mask></defs><g mask="url(#mk0)"><rect x="5.2" y="2.4" width="8" height="15.6" rx="4" fill="none" stroke="currentColor" stroke-width="1.9"></rect></g><rect x="10.8" y="6" width="8" height="15.6" rx="4" fill="none" stroke="currentColor" stroke-width="1.9"></rect></svg></span><span class="tab"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.6 4h6.8c3.4 0 6 2.6 6 6v1.2c0 3.4-2.6 6-6 6h-3.8l-4.4 3.3c-.6.5-1.4 0-1.4-.7v-3.1A6 6 0 0 1 2.6 11.2V10c0-3.4 2.6-6 6-6Z" class="b"></path><circle cx="8.2" cy="10.6" r="1.5" class="a"></circle><circle cx="12" cy="10.6" r="1.5" class="a"></circle><circle cx="15.8" cy="10.6" r="1.5" class="a"></circle></svg></span><span class="tab"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.6" r="3.9" class="a"></circle><rect x="4.6" y="13.6" width="14.8" height="7.4" rx="3.7" class="b"></rect></svg></span>
+</div>
+</div>
+</div>
+<div class="dark pA" style="box-sizing: border-box; padding: 32px; background: var(--canvas); color: var(--text); font-family: var(--font); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-content: start">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<h2 class="t-title" style="margin: 0">Koyu</h2>
+<span class="t-caption" style="color: var(--muted)">Alan · 56</span>
+<div class="field glass sm"><svg class="ci sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.4" cy="10.4" r="5.6" class="b"></circle><circle cx="10.4" cy="10.4" r="5.6" class="o"></circle><rect x="12.73" y="15.7" width="9.14" height="3.2" rx="1.6" transform="rotate(45 17.3 17.3)" class="a"></rect></svg>Mekan ara</div>
+<div class="field glass sm filled">Yeni masa</div>
+<div class="field glass sm filled error">Ad çok uzun</div>
+<span class="t-fine" style="color: var(--danger); margin-top: -8px">En çok 24 karakter.</span>
+<span class="t-caption" style="color: var(--muted)">Liste · cam kart</span>
+<div class="glass" style="padding: 4px 0">
+<div class="li"><span class="av v1">E</span><div style="flex: 1; display: flex; flex-direction: column"><span class="t-body-strong">Elif</span><span class="t-fine" style="color: var(--muted)">Masada · 2 dk</span></div><span class="badge">2</span></div>
+<div class="li"><span class="av v2">M</span><div style="flex: 1; display: flex; flex-direction: column"><span class="t-body-strong">Mert</span><span class="t-fine" style="color: var(--muted)">Görüldü</span></div><svg class="ci sm" viewBox="0 0 24 24" aria-hidden="true"><rect x="1.4" y="13.1" width="7.6" height="2.6" rx="1.3" transform="rotate(45 5.2 14.4)" class="b"></rect><rect x="3.9" y="10.6" width="11.6" height="2.6" rx="1.3" transform="rotate(-48 9.7 11.9)" class="b"></rect><rect x="9.1" y="10.6" width="13.2" height="2.6" rx="1.3" transform="rotate(-48 15.7 11.9)" class="a"></rect></svg></div>
+<div class="li"><span class="av v3">D</span><div style="flex: 1; display: flex; flex-direction: column"><span class="t-body-strong">Deniz</span><span class="t-fine" style="color: var(--muted)">Lobide</span></div><svg class="ci sm" viewBox="0 0 24 24" aria-hidden="true"><rect x="5.762" y="7" width="12.676" height="3.2" rx="1.6" transform="rotate(45.855 12.1 8.6)" class="a"></rect><rect x="5.762" y="13.8" width="12.676" height="3.2" rx="1.6" transform="rotate(134.145 12.1 15.4)" class="b"></rect></svg></div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 16px; padding-top: 43px">
+<span class="t-caption" style="color: var(--muted)">Sohbet balonu</span>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div class="msg them">Bu akşam kim mekanda?</div>
+<div class="msg me">Ben buradayım, masa kuruyorum.</div>
+</div>
+<span class="t-caption" style="color: var(--muted)">Sheet · 28 köşe</span>
+<div class="glass sheet"><div class="grab"></div><span class="t-title">Masaya katıl</span><span class="t-body" style="color: var(--muted)">Masadakiler seni görebilir.</span><button type="button" class="btn primary block">Katıl</button></div>
+<span class="t-caption" style="color: var(--muted)">Alt menü · 64</span>
+<div class="glass tabbar">
+<span class="tab on"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" class="b"></circle><path d="M16.6 7.4 13.9 13.9 7.4 16.6 10.1 10.1Z" class="a"></path><circle cx="12" cy="12" r="1.3" class="w"></circle></svg></span><span class="tab"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.4" y="5.6" width="17.2" height="15" rx="4.6" class="b"></rect><rect x="4.7" y="4.1" width="6.6" height="2.6" rx="1.3" transform="rotate(90 8 5.4)" class="a"></rect><rect x="12.7" y="4.1" width="6.6" height="2.6" rx="1.3" transform="rotate(90 16 5.4)" class="a"></rect><rect x="6.5" y="12.1" width="11" height="2.6" rx="1.3" class="a"></rect></svg></span><span class="tab"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="mk1" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><rect width="24" height="24" fill="#fff"></rect><rect x="10.8" y="6" width="8" height="15.6" rx="4" fill="#000" stroke="#000" stroke-width="5.1"></rect></mask></defs><g mask="url(#mk1)"><rect x="5.2" y="2.4" width="8" height="15.6" rx="4" fill="none" stroke="currentColor" stroke-width="1.9"></rect></g><rect x="10.8" y="6" width="8" height="15.6" rx="4" fill="none" stroke="currentColor" stroke-width="1.9"></rect></svg></span><span class="tab"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.6 4h6.8c3.4 0 6 2.6 6 6v1.2c0 3.4-2.6 6-6 6h-3.8l-4.4 3.3c-.6.5-1.4 0-1.4-.7v-3.1A6 6 0 0 1 2.6 11.2V10c0-3.4 2.6-6 6-6Z" class="b"></path><circle cx="8.2" cy="10.6" r="1.5" class="a"></circle><circle cx="12" cy="10.6" r="1.5" class="a"></circle><circle cx="15.8" cy="10.6" r="1.5" class="a"></circle></svg></span><span class="tab"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.6" r="3.9" class="a"></circle><rect x="4.6" y="13.6" width="14.8" height="7.4" rx="3.7" class="b"></rect></svg></span>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":660}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Şablon: form</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+<link rel="stylesheet" href="koyu.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 640px; height: 844px; display: flex; background: var(--surface2); font-family: var(--font)">
+<div class="phone "><div style="position: relative; height: 100%; padding: 56px 20px 0; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px">
+<div style="display: flex; align-items: center; gap: 12px"><button type="button" class="round soft" aria-label="Geri"><svg class="ci md" viewBox="0 0 24 24" aria-hidden="true"><rect x="5.562" y="7" width="12.676" height="3.2" rx="1.6" transform="rotate(134.145 11.9 8.6)" class="a"></rect><rect x="5.562" y="13.8" width="12.676" height="3.2" rx="1.6" transform="rotate(45.855 11.9 15.4)" class="b"></rect></svg></button><span class="t-heading" style="flex: 1; text-align: center">Form başlığı</span><span style="width: 44px"></span></div>
+<div style="display: flex; flex-direction: column; gap: 8px"><label class="t-label">Alan etiketi</label><div class="field glass sm filled">Yazılan değer</div><span class="t-fine" style="color: var(--muted)">Yardım satırı · 12/24</span></div>
+<div style="display: flex; flex-direction: column; gap: 8px"><label class="t-label">Seçim</label><div class="seg"><span class="on">Bir</span><span>İki</span><span>Üç</span></div></div>
+<div style="display: flex; flex-direction: column; gap: 8px"><label class="t-label">Hatalı alan</label><div class="field glass sm filled error">Uygun olmayan</div><span class="t-fine" style="color: var(--danger)">Hatanın nedeni ve çözümü.</span></div>
+</div>
+<div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 20px 46px; background: linear-gradient(180deg, transparent, var(--canvas) 30%)"><button type="button" class="btn primary block">Kaydet</button></div></div>
+<div style="flex: 1; box-sizing: border-box; padding: 24px 20px; display: flex; flex-direction: column; gap: 12px; color: var(--text)">
+<h2 class="t-heading" style="margin: 0">Form</h2>
+<ul style="margin: 0; padding-left: 16px; display: flex; flex-direction: column; gap: 8px"><li class="t-fine" style="color: var(--muted)">Etiket 13 → alan 8 aralık</li><li class="t-fine" style="color: var(--muted)">Alan 56; yardım/hata satırı 8 altta</li><li class="t-fine" style="color: var(--muted)">Alan grupları arası 24</li><li class="t-fine" style="color: var(--muted)">Kaydet sabit alt alanda; klavyeyle birlikte yükselir</li><li class="t-fine" style="color: var(--muted)">320 dp'de içerik kayar, sıkıştırılmaz</li></ul>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":640,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

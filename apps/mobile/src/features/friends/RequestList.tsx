@@ -1,11 +1,10 @@
 import { inboxStamp } from '@shared/dmInbox.ts';
-import type { BarIconKind } from '@/theme/barIcons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
-import { BarIcon } from '@/components/BarIcon';
+import { CapIcon } from '@/aura/CapIcon';
 import { ListCard } from '@/components/ListCard';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader, useLoaderHold } from '@/components/Loader';
@@ -180,8 +179,9 @@ function RequestRow({
         <Text variant="fine">{tr.messages.requestKind}</Text>
       </View>
       <RoundAction
-        icon="cross"
+        icon="close"
         fill={colors.dangerSoft}
+        ink={colors.onDangerSoft}
         label={tr.messages.decline(r.name)}
         testID={`request-decline-${r.name}`}
         disabled={busy !== null}
@@ -191,6 +191,7 @@ function RequestRow({
       <RoundAction
         icon="check"
         fill={colors.successSoft}
+        ink={colors.onSuccessSoft}
         label={tr.messages.accept(r.name)}
         testID={`request-accept-${r.name}`}
         disabled={busy !== null}
@@ -201,19 +202,22 @@ function RequestRow({
   );
 }
 
-// v45: .qbtn, a 40 dp tinted circle with the bar icon; 44 dp to the finger. While its answer goes,
+// v45: .qbtn, a 40 dp tinted circle with the capsule icon in its ink; 44 dp to the finger. While its answer goes,
 // it shows Buluş and neither circle takes a press.
 function RoundAction({
   icon,
   fill,
   label,
+  ink,
   testID,
   disabled,
   busy,
   onPress,
 }: {
-  icon: Extract<BarIconKind, 'cross' | 'check'>;
+  icon: 'close' | 'check';
   fill: string;
+  // The icon's ink on its soft fill (onDangerSoft, onSuccessSoft).
+  ink: string;
   label: string;
   testID: string;
   disabled: boolean;
@@ -245,7 +249,11 @@ function RoundAction({
             pressScale(pressed),
           ]}
         >
-          {busy ? <Loader kind="meet" size={ICON.lg} /> : <BarIcon kind={icon} size={ICON.md} />}
+          {busy ? (
+            <Loader kind="meet" size={ICON.lg} />
+          ) : (
+            <CapIcon name={icon} color={ink} size={ICON.md} />
+          )}
         </View>
       )}
     </Pressable>

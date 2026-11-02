@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <rect data-layer="b" x="3.6" y="4" width="9" height="16" rx="3.5"/>
+  <rect data-layer="a" x="8.3" y="10.7" width="12.8" height="2.6" rx="1.3" transform="rotate(0 14.7 12)"/>
+  <rect data-layer="a" x="14.637" y="9.1" width="7.125" height="2.6" rx="1.3" transform="rotate(45 18.2 10.4)"/>
+  <rect data-layer="a" x="14.637" y="12.3" width="7.125" height="2.6" rx="1.3" transform="rotate(135 18.2 13.6)"/>
+</svg>

@@ -4,7 +4,7 @@ import { ICON, type PaletteKey } from '@/theme/tokens';
 import type { IconName } from './Button';
 import { AppIcon } from './AppIcon';
 
-// An Ionicons glyph in a palette colour, read where it is drawn: inside the featured card it takes
+// A capsule icon (AppIcon) in a palette colour, read where it is drawn: inside the featured card it takes
 // the card's palette (Card `feature`), where a colour read by the screen would not show.
 export function Icon({
   name,

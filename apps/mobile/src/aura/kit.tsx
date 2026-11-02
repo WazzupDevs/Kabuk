@@ -103,8 +103,8 @@ export function T({
 const MAX_FONT_SCALE = 1.3;
 const MIN_FIT = 0.5;
 
-// .glass (.sm, .pad, .pad-lg): frosted white, a white edge, the soft violet shadow and a light top
-// line.
+// .glass (.sm, .pad, .pad-lg): frosted white, a white edge, the soft green shadow and a light top
+// line; in the dark flat #121614 with a 9 % white edge.
 // Inside a sheet a glass card lies flat: the sheet is the surface, and its scroll clips a card's
 // soft shadow into square corners outside the round ones (the owner's report, 28 Ekim).
 const FlatGlass = createContext(false);
@@ -151,6 +151,8 @@ export function Glass({
   const canFrost = useFrost();
   const frosted = !!frost && canFrost;
   const radius = round ?? (sm ? KIT.size.glassRadiusSm : KIT.size.glassRadius);
+  // In a sheet the card takes the sheet's card colour (U2: #1B211F in the dark).
+  const fill = flat ? c.glassInSheet : c.glass;
   const shadow = shadowParts(
     shadowOff,
     flat ? undefined : c.glassShadow,
@@ -163,7 +165,7 @@ export function Glass({
     <View
       testID={testID}
       style={[
-        frosted ? null : flatFill ? { backgroundColor: c.sheetBase } : gradientStyle(c.glass),
+        frosted ? null : flatFill ? { backgroundColor: c.sheetBase } : gradientStyle(fill),
         {
           borderRadius: radius,
           borderWidth: KIT.size.edge,
@@ -183,7 +185,7 @@ export function Glass({
             style={[
               StyleSheet.absoluteFill,
               { borderRadius: radius },
-              flatFill ? { backgroundColor: c.sheetBase } : gradientStyle(c.glass),
+              flatFill ? { backgroundColor: c.sheetBase } : gradientStyle(fill),
             ]}
           />
         </>
@@ -268,16 +270,24 @@ export function Btn({
   const press = usePress();
   const inRow = useContext(InRow);
   const shadowOff = useLabOff('golge');
-  const frosted = useFrost() && variant === 'glassy';
-  const fg =
-    tint ??
-    (variant === 'primary' || variant === 'danger'
-      ? KIT.onPrimary
-      : variant === 'dark'
-        ? c.onChipOn
-        : c.ink);
-  const shadow =
-    variant === 'primary'
+  const frost = useFrost();
+  const frosted = frost && variant === 'glassy';
+  // Disabled (U10, Aura v65 `.btn.off`): the neutral fill and its label, not a faded role; a step
+  // lighter on a dark card (no frost: inside a card or a sheet).
+  const off = disabled && !loading;
+  const fg = off
+    ? c.onDisabled
+    : (tint ??
+      (variant === 'primary'
+        ? KIT.onPrimary
+        : variant === 'danger'
+          ? c.onDangerSoft
+          : variant === 'dark'
+            ? c.onChipOn
+            : c.ink));
+  const shadow = off
+    ? null
+    : variant === 'primary'
       ? shadowParts(shadowOff, KIT.primaryShadow, c.primaryInset, KIT.size.btn)
       : variant === 'dark' || variant === 'danger'
         ? null
@@ -289,11 +299,12 @@ export function Btn({
             true,
             KIT.size.edge,
           );
-  const ground: ViewStyle =
-    variant === 'primary'
+  const ground: ViewStyle = off
+    ? { backgroundColor: frost ? c.disabled : c.disabledOnCard }
+    : variant === 'primary'
       ? { backgroundColor: KIT.primary, boxShadow: shadow?.boxShadow }
       : variant === 'danger'
-        ? { backgroundColor: KIT.danger }
+        ? { backgroundColor: c.dangerSoft }
         : variant === 'dark'
           ? { backgroundColor: c.chipOn }
           : {
@@ -302,7 +313,6 @@ export function Btn({
               borderColor: c.raisedEdge,
               boxShadow: shadow?.boxShadow,
             };
-  const off = disabled && !loading;
   const height = bar
     ? bar
     : sm
@@ -339,20 +349,19 @@ export function Btn({
             alignItems: 'center',
             justifyContent: 'center',
             gap: KIT.size.btnGap,
-            opacity: off ? DISABLED : 1,
             transform: [{ scale: press.scale }],
           },
         ]}
       >
         {shadow?.node}
-        {variant === 'glassy' ? <FrostOf height={height} fill={c.raised} /> : null}
+        {variant === 'glassy' && !off ? <FrostOf height={height} fill={c.raised} /> : null}
         {loading ? (
           <Loader kind="meet" size={sm ? KIT.size.iconSm : KIT.size.icon} delay={0} label={null} />
         ) : icon ? (
           <CapIcon
             name={icon}
             color={fg}
-            soft={variant === 'primary' ? PRIMARY_SOFT : 0.5}
+            soft={variant === 'primary' && !off ? PRIMARY_SOFT : 0.5}
             size={sm ? KIT.size.iconSm : KIT.size.icon}
           />
         ) : null}
@@ -369,8 +378,9 @@ export function Btn({
     </Pressable>
   );
 }
-const DISABLED = 0.45;
 const PRIMARY_SOFT = 0.62;
+// A disabled switch (not a button: U10 is for buttons) still fades.
+const DISABLED = 0.45;
 const MIN_LABEL_SCALE = 0.6;
 
 // .round (.glassy): a round icon button, 44.
@@ -411,13 +421,17 @@ export function Round({
   const press = usePress();
   const s = side ?? (big ? KIT.size.roundLg : KIT.size.round);
   const shadowOff = useLabOff('golge');
-  const frosted = useFrost() && glassy && !primary;
-  const fg = primary ? KIT.onPrimary : (color ?? c.ink);
-  const shadow = primary
-    ? shadowParts(shadowOff, KIT.primaryShadow, c.primaryInset, s / 2)
-    : glassy
-      ? shadowParts(shadowOff, c.raisedShadow || undefined, undefined, s / 2, true, KIT.size.edge)
-      : null;
+  const frost = useFrost();
+  const off = disabled && !loading;
+  const frosted = frost && glassy && !primary && !off;
+  const fg = off ? c.onDisabled : primary ? KIT.onPrimary : (color ?? c.ink);
+  const shadow = off
+    ? null
+    : primary
+      ? shadowParts(shadowOff, KIT.primaryShadow, c.primaryInset, s / 2)
+      : glassy
+        ? shadowParts(shadowOff, c.raisedShadow || undefined, undefined, s / 2, true, KIT.size.edge)
+        : null;
   return (
     <Pressable
       testID={testID}
@@ -438,22 +452,24 @@ export function Round({
             alignItems: 'center',
             justifyContent: 'center',
             transform: [{ scale: press.scale }],
-            opacity: disabled && !loading ? DISABLED : 1,
           },
-          primary
-            ? { backgroundColor: KIT.primary, boxShadow: shadow?.boxShadow }
-            : glassy
-              ? {
-                  backgroundColor: frosted ? undefined : c.raisedRound,
-                  borderWidth: KIT.size.edge,
-                  borderColor: c.raisedEdge,
-                  boxShadow: shadow?.boxShadow,
-                }
-              : null,
+          // Disabled (U10): the neutral fill, not faded.
+          off
+            ? { backgroundColor: frost ? c.disabled : c.disabledOnCard }
+            : primary
+              ? { backgroundColor: KIT.primary, boxShadow: shadow?.boxShadow }
+              : glassy
+                ? {
+                    backgroundColor: frosted ? undefined : c.raisedRound,
+                    borderWidth: KIT.size.edge,
+                    borderColor: c.raisedEdge,
+                    boxShadow: shadow?.boxShadow,
+                  }
+                : null,
         ]}
       >
         {shadow?.node}
-        {glassy && !primary ? <FrostOf height={s} fill={c.raisedRound} /> : null}
+        {glassy && !primary && !off ? <FrostOf height={s} fill={c.raisedRound} /> : null}
         {loading ? (
           <Loader kind="meet" size={KIT.size.iconSm} delay={0} label={null} />
         ) : (
@@ -1074,7 +1090,7 @@ export function Seg<V extends string>({
 }) {
   const { c } = useKit();
   const reduce = useReduceMotion();
-  const item = large ? KIT.size.segLg : KIT.size.btnSm;
+  const item = large ? KIT.size.segLg : KIT.size.segItem;
   const radius = large ? KIT.size.segLgRadius : KIT.size.seg;
   // The chosen tab's soft shadow natively (NativeShadow.tsx).
   const onShadow = shadowParts(useLabOff('golge'), c.segShadow || undefined, undefined, item / 2);
@@ -1169,7 +1185,7 @@ export function Seg<V extends string>({
                 maxFontSizeMultiplier={MAX_FONT_SCALE}
                 style={[
                   large ? KIT_TYPE.btn : KIT_TYPE.btnSm,
-                  { color: on ? c.ink : c.muted, flexShrink: 1 },
+                  { color: on ? c.segOnInk : c.muted, flexShrink: 1 },
                 ]}
               >
                 {o.label}

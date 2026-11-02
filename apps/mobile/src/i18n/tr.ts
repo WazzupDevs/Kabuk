@@ -1841,12 +1841,6 @@ export const tr = {
       cover: 'İbre örtüsü',
       openCover: 'Örtüyü aç',
       closeCover: 'Örtüyü kapat',
-      icons: 'İkon yayları',
-      press: 'Bas',
-      lobbyOpen: 'Lobiye aç',
-      lobbyClose: 'Lobiden çek',
-      bell: 'Zil',
-      ring: 'Zili çal',
     },
     // Ölçüm (docs/SPEC_V4.md §4.M, 4.3): scrolling capsule avatars on the phone.
     measure: {

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Şablon: sheet</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+<link rel="stylesheet" href="koyu.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 640px; height: 844px; display: flex; background: var(--surface2); font-family: var(--font)">
+<div class="phone "><div aria-hidden="true" style="position: absolute; inset: 0; overflow: hidden; pointer-events: none"><i style="position: absolute; width: 360px; height: 300px; left: -110px; top: -70px; border-radius: 50%; filter: blur(64px); background: var(--primary); opacity: .32"></i><i style="position: absolute; width: 300px; height: 280px; right: -120px; top: 30px; border-radius: 50%; filter: blur(64px); background: var(--buzz); opacity: .24"></i><i style="position: absolute; width: 280px; height: 210px; left: 80px; top: 220px; border-radius: 50%; filter: blur(64px); background: var(--signal); opacity: .22"></i></div><div style="position: relative; height: 100%; padding: 60px 20px 0; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px"><h1 class="t-display" style="margin: 0">Arkadaki sayfa</h1><div class="glass sm" style="padding: 16px; display: flex; flex-direction: column; gap: 4px"><span class="t-body-strong">Kart</span><span class="t-fine" style="color: var(--muted)">Açıklama</span></div><div class="glass sm" style="padding: 16px; display: flex; flex-direction: column; gap: 4px"><span class="t-body-strong">Kart</span><span class="t-fine" style="color: var(--muted)">Açıklama</span></div></div>
+<div style="position: absolute; inset: 0; background: var(--scrim-bg); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px)"></div>
+<div class="glass sheet" style="position: absolute; left: 8px; right: 8px; bottom: 8px; padding-bottom: 38px"><div class="grab"></div><div style="display: flex; flex-direction: column; gap: 8px"><span class="t-title">Sheet başlığı</span><span class="t-body" style="color: var(--muted)">Kararı açıklayan bir iki satır.</span></div><div class="glass sm" style="padding: 4px 0"><div class="li"><span class="t-body-strong" style="flex: 1">Seçenek</span><span class="toggle on"><i></i></span></div><div class="li"><span class="t-body-strong" style="flex: 1">Seçenek</span><span class="toggle"><i></i></span></div></div><div style="display: flex; flex-direction: column; gap: 8px"><button type="button" class="btn primary block">Onayla</button><button type="button" class="btn soft block">Vazgeç</button></div></div></div>
+<div style="flex: 1; box-sizing: border-box; padding: 24px 20px; display: flex; flex-direction: column; gap: 12px; color: var(--text)">
+<h2 class="t-heading" style="margin: 0">Sheet</h2>
+<ul style="margin: 0; padding-left: 16px; display: flex; flex-direction: column; gap: 8px"><li class="t-fine" style="color: var(--muted)">Örtü: zemin %20 + 8 bulanıklık</li><li class="t-fine" style="color: var(--muted)">Sheet kenarlardan 8, köşe 28</li><li class="t-fine" style="color: var(--muted)">Tutamak 40×4, üstten 12</li><li class="t-fine" style="color: var(--muted)">En çok ekranın %90'ı; fazlası içeride kayar</li><li class="t-fine" style="color: var(--muted)">Düğmeler sabit, alttan güvenli alan</li></ul>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":640,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
