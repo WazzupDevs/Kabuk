@@ -282,7 +282,7 @@ function Words({
 
 const WELCOME_GAP = 22;
 const SCENE_DELAY = 200;
-const WELCOME_TABLE = 'kamp-ates';
+const WELCOME_TABLE = '26-ates';
 
 const styles = StyleSheet.create({
   fill: { flex: 1 },

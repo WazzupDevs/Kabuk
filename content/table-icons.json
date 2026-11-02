@@ -1,527 +1,281 @@
 {
-  "source": "docs/design/kaynak/masa-simgeleri/masa-simgeleri.json",
-  "themes": [
-    "Kış",
-    "Yılbaşı",
-    "Korku",
-    "Uzay",
-    "Deniz",
-    "Parti",
-    "Sihir",
-    "Masal",
-    "Kamp",
-    "Kafe",
-    "Tatlı",
-    "Retro",
-    "Oyun",
-    "Spor",
-    "Bilim",
-    "Bizden",
-    "Müzik",
-    "Bahar",
-    "Vahşi Batı",
-    "Kampüs"
-  ],
+  "source": "apps/mobile/assets/table-cards/masa-adlari.md (Aura v65 riso masa kartları; docs/decisions/masa-kimligi-riso.md)",
+  "themes": ["Masa"],
   "icons": [
     {
-      "id": "kis-kardanadam",
-      "name": "Kardan adam",
-      "theme": "Kış"
+      "id": "01-fener",
+      "name": "Balinanın Feneri",
+      "theme": "Masa"
     },
     {
-      "id": "kis-karkuresi",
-      "name": "Kar küresi",
-      "theme": "Kış"
+      "id": "02-iksir",
+      "name": "Ay Şişesi",
+      "theme": "Masa"
     },
     {
-      "id": "kis-dagevi",
-      "name": "Dağ evi",
-      "theme": "Kış"
+      "id": "03-cezve",
+      "name": "Duman Yılanı",
+      "theme": "Masa"
     },
     {
-      "id": "kis-kizak",
-      "name": "Kızak",
-      "theme": "Kış"
+      "id": "04-kabak",
+      "name": "Kedinin Kabağı",
+      "theme": "Masa"
     },
     {
-      "id": "kis-kayak",
-      "name": "Kayak",
-      "theme": "Kış"
+      "id": "05-roket",
+      "name": "Denizanası Kalkışı",
+      "theme": "Masa"
     },
     {
-      "id": "yilbasi-cam",
-      "name": "Süslü çam",
-      "theme": "Yılbaşı"
+      "id": "06-kiraz",
+      "name": "Koi Bahçesi",
+      "theme": "Masa"
     },
     {
-      "id": "yilbasi-hediyeler",
-      "name": "Hediyeler",
-      "theme": "Yılbaşı"
+      "id": "07-kusevi",
+      "name": "Kargaların Evi",
+      "theme": "Masa"
     },
     {
-      "id": "yilbasi-top",
-      "name": "Yılbaşı topu",
-      "theme": "Yılbaşı"
+      "id": "08-saksi",
+      "name": "Güve Çiçeği",
+      "theme": "Masa"
     },
     {
-      "id": "yilbasi-kurabiyeev",
-      "name": "Kurabiye ev",
-      "theme": "Yılbaşı"
+      "id": "09-atnali",
+      "name": "Uğur Nalı",
+      "theme": "Masa"
     },
     {
-      "id": "yilbasi-fisek",
-      "name": "Havai fişek",
-      "theme": "Yılbaşı"
+      "id": "10-yeldegirmeni",
+      "name": "Balina Rüzgârı",
+      "theme": "Masa"
     },
     {
-      "id": "korku-perili",
-      "name": "Perili ev",
-      "theme": "Korku"
+      "id": "11-atom",
+      "name": "Yörünge",
+      "theme": "Masa"
     },
     {
-      "id": "korku-hayalet",
-      "name": "Hayalet",
-      "theme": "Korku"
+      "id": "12-dna",
+      "name": "Sarmal",
+      "theme": "Masa"
     },
     {
-      "id": "korku-balkabagi",
-      "name": "Balkabağı",
-      "theme": "Korku"
+      "id": "13-mikroskop",
+      "name": "Mercek Altı",
+      "theme": "Masa"
     },
     {
-      "id": "korku-kazan",
-      "name": "Cadı kazanı",
-      "theme": "Korku"
+      "id": "14-teleskop",
+      "name": "Yıldız Avcısı",
+      "theme": "Masa"
     },
     {
-      "id": "korku-ag",
-      "name": "Ağ ve dolunay",
-      "theme": "Korku"
+      "id": "15-kizkulesi",
+      "name": "Koi Kulesi",
+      "theme": "Masa"
     },
     {
-      "id": "uzay-roket",
-      "name": "Roket kalkışı",
-      "theme": "Uzay"
+      "id": "16-lale",
+      "name": "Lale Devri",
+      "theme": "Masa"
     },
     {
-      "id": "uzay-gezegen",
-      "name": "Halkalı gezegen",
-      "theme": "Uzay"
+      "id": "17-nazar",
+      "name": "Nazar Değmesin",
+      "theme": "Masa"
     },
     {
-      "id": "uzay-ufo",
-      "name": "UFO",
-      "theme": "Uzay"
+      "id": "18-tavla",
+      "name": "Zar Kedisi",
+      "theme": "Masa"
     },
     {
-      "id": "uzay-istasyon",
-      "name": "Uzay istasyonu",
-      "theme": "Uzay"
+      "id": "19-ada",
+      "name": "Issız Ada",
+      "theme": "Masa"
     },
     {
-      "id": "uzay-galaksi",
-      "name": "Galaksi",
-      "theme": "Uzay"
+      "id": "20-denizalti",
+      "name": "Derinlik",
+      "theme": "Masa"
     },
     {
-      "id": "deniz-fener",
-      "name": "Deniz feneri",
-      "theme": "Deniz"
+      "id": "21-inci",
+      "name": "İnci Kabuğu",
+      "theme": "Masa"
     },
     {
-      "id": "deniz-yelkenli",
-      "name": "Yelkenli",
-      "theme": "Deniz"
+      "id": "22-yelkenli",
+      "name": "Gece Seferi",
+      "theme": "Masa"
     },
     {
-      "id": "deniz-denizalti",
-      "name": "Denizaltı",
-      "theme": "Deniz"
+      "id": "23-demlik",
+      "name": "Demli Sohbet",
+      "theme": "Masa"
     },
     {
-      "id": "deniz-inci",
-      "name": "İstiridye ve inci",
-      "theme": "Deniz"
+      "id": "24-fanus",
+      "name": "Fanustaki Kalp",
+      "theme": "Masa"
     },
     {
-      "id": "deniz-ada",
-      "name": "Ada",
-      "theme": "Deniz"
+      "id": "25-agacev",
+      "name": "Baykuş Ağacı",
+      "theme": "Masa"
     },
     {
-      "id": "parti-disko",
-      "name": "Disko",
-      "theme": "Parti"
+      "id": "26-ates",
+      "name": "Geyik Ateşi",
+      "theme": "Masa"
     },
     {
-      "id": "parti-pasta",
-      "name": "Doğum günü pastası",
-      "theme": "Parti"
+      "id": "27-cadir",
+      "name": "Çadır Gecesi",
+      "theme": "Masa"
     },
     {
-      "id": "parti-konfeti",
-      "name": "Konfeti",
-      "theme": "Parti"
+      "id": "28-kano",
+      "name": "Göl Balinası",
+      "theme": "Masa"
     },
     {
-      "id": "parti-dj",
-      "name": "DJ masası",
-      "theme": "Parti"
+      "id": "29-saatkulesi",
+      "name": "Gece Yarısı",
+      "theme": "Masa"
     },
     {
-      "id": "parti-dans",
-      "name": "Dans pisti",
-      "theme": "Parti"
+      "id": "30-kutuphane",
+      "name": "Kayıp Sayfalar",
+      "theme": "Masa"
     },
     {
-      "id": "sihir-kure",
-      "name": "Kristal küre",
-      "theme": "Sihir"
+      "id": "31-kardanadam",
+      "name": "Kar Bekçisi",
+      "theme": "Masa"
     },
     {
-      "id": "sihir-iksir",
-      "name": "İksir",
-      "theme": "Sihir"
+      "id": "32-karkuresi",
+      "name": "Kar Küresi",
+      "theme": "Masa"
     },
     {
-      "id": "sihir-degnek",
-      "name": "Sihirli değnek",
-      "theme": "Sihir"
+      "id": "33-hayalet",
+      "name": "Fısıltı",
+      "theme": "Masa"
     },
     {
-      "id": "sihir-portal",
-      "name": "Büyülü portal",
-      "theme": "Sihir"
+      "id": "34-kazan",
+      "name": "Kaynayan Kazan",
+      "theme": "Masa"
     },
     {
-      "id": "sihir-hali",
-      "name": "Uçan halı",
-      "theme": "Sihir"
+      "id": "35-perili",
+      "name": "Perili Köşk",
+      "theme": "Masa"
     },
     {
-      "id": "masal-sato",
-      "name": "Şato",
-      "theme": "Masal"
+      "id": "36-mantar",
+      "name": "Mantar Köyü",
+      "theme": "Masa"
     },
     {
-      "id": "masal-yumurta",
-      "name": "Ejderha yumurtası",
-      "theme": "Masal"
+      "id": "37-sato",
+      "name": "Bulut Şatosu",
+      "theme": "Masa"
     },
     {
-      "id": "masal-mantar",
-      "name": "Mantar evi",
-      "theme": "Masal"
+      "id": "38-ucanada",
+      "name": "Uçan Ada",
+      "theme": "Masa"
     },
     {
-      "id": "masal-ucanada",
-      "name": "Uçan ada",
-      "theme": "Masal"
+      "id": "39-yumurta",
+      "name": "Ejder Yumurtası",
+      "theme": "Masa"
     },
     {
-      "id": "masal-hazine",
-      "name": "Hazine sandığı",
-      "theme": "Masal"
+      "id": "40-hazine",
+      "name": "Batık Hazine",
+      "theme": "Masa"
     },
     {
-      "id": "kamp-ates",
-      "name": "Kamp ateşi",
-      "theme": "Kamp"
+      "id": "41-mikrofon",
+      "name": "Sahne Işığı",
+      "theme": "Masa"
     },
     {
-      "id": "kamp-cadir",
-      "name": "Çadır",
-      "theme": "Kamp"
+      "id": "42-piyano",
+      "name": "Güve Senfonisi",
+      "theme": "Masa"
     },
     {
-      "id": "kamp-agacev",
-      "name": "Ağaç ev",
-      "theme": "Kamp"
+      "id": "43-satranc",
+      "name": "Fildişi At",
+      "theme": "Masa"
     },
     {
-      "id": "kamp-selale",
-      "name": "Şelale",
-      "theme": "Kamp"
+      "id": "44-zar",
+      "name": "Şans Zarı",
+      "theme": "Masa"
     },
     {
-      "id": "kamp-kano",
-      "name": "Kano",
-      "theme": "Kamp"
+      "id": "45-kupa",
+      "name": "Altın Kupa",
+      "theme": "Masa"
     },
     {
-      "id": "kafe-cezve",
-      "name": "Cezve ve lokum",
-      "theme": "Kafe"
+      "id": "46-disko",
+      "name": "Disko Topu",
+      "theme": "Masa"
     },
     {
-      "id": "kafe-demlik",
-      "name": "Demlik ve çay",
-      "theme": "Kafe"
+      "id": "47-pasta",
+      "name": "Mum Üfle",
+      "theme": "Masa"
     },
     {
-      "id": "kafe-frenchpress",
-      "name": "French press",
-      "theme": "Kafe"
+      "id": "48-kaset",
+      "name": "Eski Kaset",
+      "theme": "Masa"
     },
     {
-      "id": "kafe-espresso",
-      "name": "Espresso makinesi",
-      "theme": "Kafe"
+      "id": "49-telefon",
+      "name": "Kırmızı Hat",
+      "theme": "Masa"
     },
     {
-      "id": "kafe-fanus",
-      "name": "Pasta fanusu",
-      "theme": "Kafe"
+      "id": "50-kure",
+      "name": "Kâhin Küresi",
+      "theme": "Masa"
     },
     {
-      "id": "tatli-cupcake",
-      "name": "Cupcake",
-      "theme": "Tatlı"
+      "id": "51-portal",
+      "name": "Geçit",
+      "theme": "Masa"
     },
     {
-      "id": "tatli-donut",
-      "name": "Donut kulesi",
-      "theme": "Tatlı"
+      "id": "52-hali",
+      "name": "Uçan Halı",
+      "theme": "Masa"
     },
     {
-      "id": "tatli-dondurma",
-      "name": "Dondurma",
-      "theme": "Tatlı"
+      "id": "53-dondurma",
+      "name": "Gün Batımı Külahı",
+      "theme": "Masa"
     },
     {
-      "id": "tatli-sekermakinesi",
-      "name": "Şeker makinesi",
-      "theme": "Tatlı"
+      "id": "54-ufo",
+      "name": "Tarla Işığı",
+      "theme": "Masa"
     },
     {
-      "id": "tatli-kavanoz",
-      "name": "Şeker kavanozu",
-      "theme": "Tatlı"
-    },
-    {
-      "id": "retro-kaset",
-      "name": "Kaset",
-      "theme": "Retro"
-    },
-    {
-      "id": "retro-tv",
-      "name": "Tüplü TV",
-      "theme": "Retro"
-    },
-    {
-      "id": "retro-jukebox",
-      "name": "Jukebox",
-      "theme": "Retro"
-    },
-    {
-      "id": "retro-telefon",
-      "name": "Çevirmeli telefon",
-      "theme": "Retro"
-    },
-    {
-      "id": "retro-teyp",
-      "name": "Teyp",
-      "theme": "Retro"
-    },
-    {
-      "id": "oyun-kolu",
-      "name": "Oyun kolu",
-      "theme": "Oyun"
-    },
-    {
-      "id": "oyun-atari",
-      "name": "Atari makinesi",
-      "theme": "Oyun"
-    },
-    {
-      "id": "oyun-zar",
-      "name": "Zarlar",
-      "theme": "Oyun"
-    },
-    {
-      "id": "oyun-satranc",
-      "name": "Satranç",
-      "theme": "Oyun"
-    },
-    {
-      "id": "oyun-kupa",
-      "name": "Kupa",
-      "theme": "Oyun"
-    },
-    {
-      "id": "spor-gol",
-      "name": "Gol",
-      "theme": "Spor"
-    },
-    {
-      "id": "spor-pota",
-      "name": "Pota",
-      "theme": "Spor"
-    },
-    {
-      "id": "spor-tenis",
-      "name": "Tenis",
-      "theme": "Spor"
-    },
-    {
-      "id": "spor-bowling",
-      "name": "Bowling",
-      "theme": "Spor"
-    },
-    {
-      "id": "spor-kaykay",
-      "name": "Kaykay rampası",
-      "theme": "Spor"
-    },
-    {
-      "id": "bilim-atom",
-      "name": "Atom",
-      "theme": "Bilim"
-    },
-    {
-      "id": "bilim-deney",
-      "name": "Deney şişeleri",
-      "theme": "Bilim"
-    },
-    {
-      "id": "bilim-mikroskop",
-      "name": "Mikroskop",
-      "theme": "Bilim"
-    },
-    {
-      "id": "bilim-dna",
-      "name": "DNA sarmalı",
-      "theme": "Bilim"
-    },
-    {
-      "id": "bilim-teleskop",
-      "name": "Teleskop",
-      "theme": "Bilim"
-    },
-    {
-      "id": "bizden-nazar",
-      "name": "Nazar boncuğu",
-      "theme": "Bizden"
-    },
-    {
-      "id": "bizden-tavla",
-      "name": "Tavla",
-      "theme": "Bizden"
-    },
-    {
-      "id": "bizden-kizkulesi",
-      "name": "Kız Kulesi",
-      "theme": "Bizden"
-    },
-    {
-      "id": "bizden-lale",
-      "name": "Lale",
-      "theme": "Bizden"
-    },
-    {
-      "id": "bizden-cini",
-      "name": "Çini",
-      "theme": "Bizden"
-    },
-    {
-      "id": "muzik-mikrofon",
-      "name": "Mikrofon",
-      "theme": "Müzik"
-    },
-    {
-      "id": "muzik-hoparlor",
-      "name": "Hoparlör",
-      "theme": "Müzik"
-    },
-    {
-      "id": "muzik-piyano",
-      "name": "Piyano",
-      "theme": "Müzik"
-    },
-    {
-      "id": "muzik-sahne",
-      "name": "Sahne",
-      "theme": "Müzik"
-    },
-    {
-      "id": "muzik-nota",
-      "name": "Nota",
-      "theme": "Müzik"
-    },
-    {
-      "id": "bahar-kiraz",
-      "name": "Kiraz çiçeği",
-      "theme": "Bahar"
-    },
-    {
-      "id": "bahar-saksi",
-      "name": "Saksı çiçekleri",
-      "theme": "Bahar"
-    },
-    {
-      "id": "bahar-sulama",
-      "name": "Sulama kabı",
-      "theme": "Bahar"
-    },
-    {
-      "id": "bahar-tarla",
-      "name": "Çiçek tarlası",
-      "theme": "Bahar"
-    },
-    {
-      "id": "bahar-kusevi",
-      "name": "Kuş evi",
-      "theme": "Bahar"
-    },
-    {
-      "id": "bati-colgunbatimi",
-      "name": "Çöl gün batımı",
-      "theme": "Vahşi Batı"
-    },
-    {
-      "id": "bati-serif",
-      "name": "Şerif yıldızı",
-      "theme": "Vahşi Batı"
-    },
-    {
-      "id": "bati-salon",
-      "name": "Salon kapısı",
-      "theme": "Vahşi Batı"
-    },
-    {
-      "id": "bati-atnali",
-      "name": "At nalı",
-      "theme": "Vahşi Batı"
-    },
-    {
-      "id": "bati-yeldegirmeni",
-      "name": "Yel değirmeni",
-      "theme": "Vahşi Batı"
-    },
-    {
-      "id": "kampus-saatkulesi",
-      "name": "Saat kulesi",
-      "theme": "Kampüs"
-    },
-    {
-      "id": "kampus-kutuphane",
-      "name": "Kütüphane",
-      "theme": "Kampüs"
-    },
-    {
-      "id": "kampus-karatahta",
-      "name": "Kara tahta",
-      "theme": "Kampüs"
-    },
-    {
-      "id": "kampus-bahce",
-      "name": "Kampüs bahçesi",
-      "theme": "Kampüs"
-    },
-    {
-      "id": "kampus-kantin",
-      "name": "Kantin tepsisi",
-      "theme": "Kampüs"
+      "id": "55-hediyeler",
+      "name": "Hediye Dağı",
+      "theme": "Masa"
     }
   ]
 }

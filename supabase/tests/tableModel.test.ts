@@ -1328,9 +1328,9 @@ describe('a table’s name and icon (K-45)', () => {
 
   it('takes the owner’s icon at creation, and refuses one another table has', async () => {
     const [a, b] = await all(2);
-    const roomId = await openTable(a, { icon: 'kis-kardanadam' });
-    expect(await roomRow(roomId)).toMatchObject({ icon: 'kis-kardanadam', name: 'Kardan adam' });
-    expect(await rooms(b, { action: 'create', icon: 'kis-kardanadam' })).toEqual({
+    const roomId = await openTable(a, { icon: '16-lale' });
+    expect(await roomRow(roomId)).toMatchObject({ icon: '16-lale', name: 'Lale Devri' });
+    expect(await rooms(b, { action: 'create', icon: '16-lale' })).toEqual({
       status: 409,
       body: errorBody('icon_taken'),
     });
@@ -1411,7 +1411,7 @@ describe('a table’s name and icon (K-45)', () => {
     const [a, b] = await all(2);
     await sql`
       update public.table_icons set is_active = false
-      where id not in ('kis-kardanadam', 'kis-karkuresi')
+      where id not in ('01-fener', '02-iksir')
     `;
     const holder = postgres(dbUrl, { max: 1, onnotice: () => {} });
     const first = postgres(dbUrl, { max: 1, onnotice: () => {} });
@@ -1428,7 +1428,7 @@ describe('a table’s name and icon (K-45)', () => {
         await waitUntilBlocked('rooms_create', 2);
       });
       const icons = ((await created) as { icon: string }[][]).map((rows) => rows[0]?.icon).sort();
-      expect(icons).toEqual(['kis-kardanadam', 'kis-karkuresi']);
+      expect(icons).toEqual(['01-fener', '02-iksir']);
     } finally {
       await Promise.all([holder.end(), first.end(), second.end()]);
     }
