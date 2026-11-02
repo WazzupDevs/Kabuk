@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { type ReactNode, useEffect, useState } from 'react';
 import { Animated, View } from 'react-native';
 
@@ -18,6 +19,41 @@ export type PeekKind = Exclude<keyof typeof AURA.peek, 'up' | 'height'>;
 // strip over the edge and how far down each starts too (Check-in, aura v37: 61 high on a 370 wide
 // sheet), not only their size and place.
 export function Peek({ kind, delay = 0, fit }: { kind: PeekKind; delay?: number; fit?: boolean }) {
+  if (kind === 'notifications') return <RisoPeek />;
+  return <BuddyPeek kind={kind} delay={delay} fit={fit} />;
+}
+
+// U30 (Bildirimler `.pk`): two riso buddies, 64 wide (160x200 pictures), 32 in from the sheet's
+// left and 36 from its right, turned -8 and 7 degrees; 57 of them stand over the sheet's top edge.
+const RISO_PEEK = {
+  width: 64,
+  height: 80,
+  up: 57,
+  left: { source: require('../../assets/riso/peek-1.webp'), side: 32, turn: '-8deg' },
+  right: { source: require('../../assets/riso/peek-2.webp'), side: 36, turn: '7deg' },
+} as const;
+
+function RisoPeek() {
+  const { width, height, up, left, right } = RISO_PEEK;
+  const picture = { position: 'absolute', top: 0, width, height } as const;
+  return (
+    <View
+      pointerEvents="none"
+      style={{ position: 'absolute', left: 0, right: 0, top: -up, height: up, overflow: 'hidden' }}
+    >
+      <Image
+        source={left.source}
+        style={[picture, { left: left.side, transform: [{ rotate: left.turn }] }]}
+      />
+      <Image
+        source={right.source}
+        style={[picture, { right: right.side, transform: [{ rotate: right.turn }] }]}
+      />
+    </View>
+  );
+}
+
+function BuddyPeek({ kind, delay = 0, fit }: { kind: PeekKind; delay?: number; fit?: boolean }) {
   const [width, setWidth] = useState(0);
   const cast = AURA.peek[kind];
   const { k, strip: fitted } = peekScale(width, AURA.peek.up);

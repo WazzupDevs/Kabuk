@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { View } from 'react-native';
 
-import { Av, Glass, RowList, Round, T, Thumb, useKit } from '@/aura/kit';
+import { Av, Glass, Round, T, Thumb, useKit } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
 import { RouteSheet } from '@/components/RouteSheet';
@@ -95,7 +95,7 @@ export default function NotificationsScreen() {
   return (
     <RouteSheet title={tr.notifications.title} testID="notifications" peek="notifications">
       {newer.length > 0 ? (
-        <View style={{ gap: KIT.size.rowGap }}>
+        <View style={{ gap: SECTION_GAP }}>
           <T v="eyebrow">{tr.notifications.fresh}</T>
           {newer.map((n) => (
             <Row key={keyOf(n)} item={n} fresh />
@@ -103,13 +103,18 @@ export default function NotificationsScreen() {
         </View>
       ) : null}
       {older.length > 0 ? (
-        <View style={{ gap: KIT.size.rowGap }}>
+        <View style={{ gap: SECTION_GAP }}>
           <T v="eyebrow">{tr.notifications.earlier}</T>
-          <RowList>
-            {firstRows(older, shown).map((n) => (
-              <Row key={keyOf(n)} item={n} />
+          {/* U30: the earlier rows on one glass card, a hairline from the words, 16 in from the
+              right. */}
+          <Glass sm style={{ overflow: 'hidden' }}>
+            {firstRows(older, shown).map((n, i) => (
+              <View key={keyOf(n)}>
+                {i > 0 ? <Hair /> : null}
+                <Row item={n} />
+              </View>
             ))}
-          </RowList>
+          </Glass>
         </View>
       ) : null}
     </RouteSheet>
@@ -269,7 +274,7 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
   // and one line of state on a row of one height, the answers as round buttons at the right.
   const words = (
     <View style={{ flex: 1, gap: SPACING[0.5] }}>
-      <T v="fine" strong lines={1} fit>
+      <T v="h3" lines={1} fit>
         {name}
       </T>
       <T v="fine" lines={1} fit color={joined ? KIT.success : undefined}>
@@ -319,7 +324,8 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
         style={{
           opacity: faded ? FADED : 1,
           paddingVertical: OLD_PAD_Y,
-          paddingHorizontal: KIT.size.rowGap,
+          paddingLeft: OLD_PAD_LEFT,
+          paddingRight: OLD_PAD_RIGHT,
         }}
       >
         {row}
@@ -353,12 +359,30 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
 
 const FADED = 0.6;
 const INVITE_THUMB = 48;
-// Every row one height: the face's.
-const ROW_HEIGHT = 52;
+// Every row one height: the face's (U30: the row 64 with its padding).
+const ROW_HEIGHT = KIT.size.av.md;
+const OLD_PAD_LEFT = 14;
+const OLD_PAD_RIGHT = SPACING[3];
+// U30: the section's name 12 over its rows.
+const SECTION_GAP = SPACING[3];
 const INVITE_RADIUS = 16;
 const INVITE_BADGE_OUT = 8;
 const FRESH_PAD = 14;
 const OLD_PAD_Y = 10;
+
+function Hair() {
+  const { c } = useKit();
+  return (
+    <View
+      style={{
+        height: KIT.size.hair,
+        marginLeft: OLD_PAD_LEFT + KIT.size.av.md + KIT.size.liGap,
+        marginRight: SPACING[4],
+        backgroundColor: c.hair,
+      }}
+    />
+  );
+}
 
 function MessageRound({ onPress }: { onPress: () => void }) {
   return <Round icon="chat" label={tr.notifications.writeMessage} onPress={onPress} />;

@@ -232,10 +232,8 @@ export const AURA = {
       { look: 'c:pembe e:koyu h:kulaklik', x: 146, top: -14, height: 110 },
       { look: 'c:gok e:klasik f:yuvarlak', x: 260, top: 4, height: 110 },
     ],
-    notifications: [
-      { look: 'c:yesil e:klasik h:papatya m:gulumse', x: 20, top: 0, height: 110 },
-      { look: 'c:krem e:koyu h:tavsan', x: 256, top: 6, height: 105 },
-    ],
+    // U30: Bildirimler's buddies are riso pictures (aura/Peek.tsx → RisoPeek).
+    notifications: [],
     request: [
       { look: 'c:pembe e:koyu h:kulaklik', x: 18, top: 2, height: 121 },
       { look: 'c:mor e:klasik f:maske', x: 128, top: -12, height: 121 },
