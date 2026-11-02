@@ -74,8 +74,8 @@ export function TableEnd({ roomId, left, tableName, phones, profiled, anonymous,
           onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
           style={{
             height: g.height * k + insets.top,
-            borderBottomLeftRadius: KIT.stage.radius,
-            borderBottomRightRadius: KIT.stage.radius,
+            borderBottomLeftRadius: END_RADIUS,
+            borderBottomRightRadius: END_RADIUS,
             overflow: 'hidden',
           }}
         >
@@ -126,8 +126,8 @@ export function TableEnd({ roomId, left, tableName, phones, profiled, anonymous,
             style={[
               StyleSheet.absoluteFill,
               {
-                borderBottomLeftRadius: KIT.stage.radius,
-                borderBottomRightRadius: KIT.stage.radius,
+                borderBottomLeftRadius: END_RADIUS,
+                borderBottomRightRadius: END_RADIUS,
                 borderWidth: AURA.card.edgeWidth,
                 borderTopWidth: 0,
                 borderColor: AURA.scene[scheme].edge,
@@ -202,6 +202,8 @@ const FACE_BOTTOM = 150;
 const FACE_SIDE = 48;
 const CONFETTI_W = 8;
 const CONFETTI_H = 18;
+// Rapor 12.13 (proje sahibi, 2 Kas): the scene's lower corners on the scale's 28, not the board's 36.
+const END_RADIUS = AURA.card.radius;
 // U41: the scene (riso-sahne, 800x1000) and its three buddies in the board's 390 frame.
 const END_SCENE = require('../../../assets/riso/scene-table-end.webp');
 const END_KANKI: readonly KankiPlace[] = [

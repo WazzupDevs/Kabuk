@@ -520,14 +520,14 @@ Görünüş değişikliği hiçbir işlevi kaldırmaz. Hiçbir ekranda metin de�
 
 Tahminle doldurulmaz. Karar gelene kadar bugünkü uygulama davranışı korunur.
 
-1. **POI simgeleri:** harita stilinde hazır POI simgeleri (durak, cami, bilgi) kapatılsın mı? (n.17)
+1. **POI simgeleri:** KAPANDI (Gökay, 2 Kas): hazır POI simgeleri kalır (n.17).
 2. **Masa sohbeti gönder düğmesi:** KAPANDI (Gökay, 2 Kas): alan boşken pasif (`.send.off`), bütün sohbetlerin ortak giriş alanında (n.92).
 3. **Kapsül kategorileri:** 5. ve 6. çipin adı (çizimde "Ağız", "Boyun") ekran görüntüsünden okunamadı. Uygulamadaki adlar kalır (n.163).
 4. **Tanıtım yer tutucusu:** Profili düzenle'de okunamadı. Uygulamadaki metin kalır (n.160).
 5. **Uyarı ikonu:** ünlem ikonunun ayrı kapsül çizimi onaylanmadı. Tuvalde info ikonunun 180° çevrilmişi kullanıldı.
 6. **Masa simgesi 100 → riso kart 55 eşleşmesi:** Tuvalde yalnız 14 eski simgenin karşılığı var (9.3). Uygulamadaki 100 simgenin kalan 86'sının hangi karta gideceği, 45 simgenin fazlası (birleşme mi, yeni kart mı) ve masa kur seçicide kaç seçenek görüneceği karar bekliyor. Karar gelene kadar uygulama bugünkü 100 simgeyi gösterir; yalnız 9.3'teki 14 eşleşme uygulanabilir.
 7. **Riso görseller:** 9.2'deki görseller çizilmedi.
-8. **Eksik hâller:** 6'daki E hâlleri çizilmedi.
+8. **Eksik hâller:** 6'daki E hâlleri çizilmedi. Aura tuvaline çizilecek (Gökay, 2 Kas); çizilince aktarılır.
    - Keşfet harita dar.
    - Etkinlikler dolu, yükleniyor, hata ve dar.
    - Geçmiş boş.
@@ -535,10 +535,10 @@ Tahminle doldurulmaz. Karar gelene kadar bugünkü uygulama davranışı korunur
    - Bildirimler boş.
    - Kayıt ekranları (Main, Telefon, Kod) ve Masa bitti koyu: pano yok, koyu riso sahne yok.
 9. **Hâl panolarının yerleşimi:** v56'da çevrilen hâl panoları (Mekan*, CheckIn*, MasaKur*, ProfilDar, Dm*, MekanSohbeti*) renk ve bileşen olarak günceldir ama yerleşimleri eski ana ekrana dayanır. Kural U36'dır. Yeniden çizim istenirse ayrı iş.
-10. **Anonim adın tekrarı:** bilgi hem Profil'de hem Ayarlar'da duruyor. Tekrarın kalıp kalmayacağı ürün kararı (n.151 notu).
-11. **İlk açılışın halka ve parıltısı (ring, flare):** riso yarım ton beyaz olarak mı çizilsin, bugünkü düz hâliyle mi kalsın? Demo yalnız soğuk açılışı gösteriyor. Karar gelene kadar ring/flare/glint bugünkü görünüşte kalır, zamanları değişmez.
+10. **Anonim adın tekrarı:** KAPANDI (Gökay, 2 Kas): anonim ad ve Yenile yalnız Profil'de; Ayarlar'dan kalktı (n.151 notu).
+11. **İlk açılışın halka ve parıltısı (ring, flare):** KAPANDI (Gökay, 2 Kas): ring/flare/glint bugünkü düz hâliyle kalır, zamanları değişmez.
 12. **Kayıt sahnesi animasyonu:** KAPANDI (Gökay, 1 Kas 21:34): yalnız kankiler hareket eder, zemin durağan (bölüm 13.1).
-13. **MasaBitti sahne köşesi:** tuvalde alt köşeler 36. Köşe ölçeğinde (6/12/16/22/28) yok. Ölçeğe (28) mi çekilsin, 36 mı kalsın? Karar gelene kadar tuval değeri (36) uygulanır.
+13. **MasaBitti sahne köşesi:** KAPANDI (Gökay, 2 Kas): ölçeğe çekildi, alt köşeler 28.
 
 ---
 
