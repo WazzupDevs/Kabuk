@@ -21,6 +21,7 @@ import {
   type NativeSyntheticEvent,
   Animated,
   FlatList,
+  type ImageSourcePropType,
   type ViewToken,
   ScrollView,
   type ScrollViewProps,
@@ -1108,6 +1109,8 @@ type Props<T extends ChatListItem> = {
   testID?: string;
   // The chat's wall (skall tuvali: dm, masa, mekan); null: none (the table's games).
   wall?: ChatWallKind | null;
+  // The wall's own picture (Masa sohbeti: the table's tall riso card, U25) with its curtain.
+  wallSource?: ImageSourcePropType;
   // The screen hides the tab bar while it is open (a DM, useHideTabBar): laid out without the
   // bar's room from its first frame, not again once the bar has gone (mid-slide).
   hidesTabBar?: boolean;
@@ -1127,6 +1130,7 @@ export function ChatScreen<T extends ChatListItem>({
   startAtEnd,
   testID,
   wall = 'dm',
+  wallSource,
   hidesTabBar = false,
 }: Props<T>) {
   const { shape, scheme } = useTheme();
@@ -1177,7 +1181,14 @@ export function ChatScreen<T extends ChatListItem>({
               {/* The stream and what lies under it: what the frosted pills, the message bar and the
                   down arrow show through their glass. */}
               <GlassTarget targetId={glassId} backdrop style={StyleSheet.absoluteFill}>
-                {wall && canvas ? <ChatWallpaper kind={wall} canvas={canvas} /> : null}
+                {wall && canvas ? (
+                  <ChatWallpaper
+                    kind={wall}
+                    canvas={canvas}
+                    source={wallSource}
+                    veil={wall === 'masa'}
+                  />
+                ) : null}
                 {wall ? null : <AuraBackground />}
                 {list ? (
                   <ChatList
@@ -1194,6 +1205,7 @@ export function ChatScreen<T extends ChatListItem>({
                         <WallBand
                           kind={wall}
                           canvas={canvas}
+                          source={wallSource}
                           top={0}
                           height={topHeight}
                           fade={SPACING[3]}
@@ -1240,6 +1252,7 @@ export function ChatScreen<T extends ChatListItem>({
                 <WallBand
                   kind={wall}
                   canvas={canvas}
+                  source={wallSource}
                   top={0}
                   height={insets.top}
                   fade={SPACING[3]}
@@ -1250,6 +1263,7 @@ export function ChatScreen<T extends ChatListItem>({
                 <WallBand
                   kind={wall}
                   canvas={canvas}
+                  source={wallSource}
                   top={areaHeight - bottomPad}
                   height={bottomPad}
                   fade={SPACING[3]}

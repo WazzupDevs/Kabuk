@@ -20,10 +20,11 @@ import {
 import { DraftComposer } from '@/components/Composer';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
-import { Text } from '@/components/Text';
+import { Glass, T } from '@/aura/kit';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { ApiError, chatApi } from '@/lib/api';
+import { KIT } from '@/theme/auraKit';
 import { nameInk } from '@/theme/nameInk';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -241,10 +242,14 @@ export function useRoomChatList(
         />
       </View>
     ) : (
-      <View className="flex-1 justify-end">
-        <Text variant="fine" align="center">
-          {tr.chat.empty}
-        </Text>
+      // U25 (MasaSohbeti `.day`): a glass pill over the message bar.
+      <View className="flex-1 items-center justify-end">
+        <Glass
+          radius={KIT.size.chip}
+          style={{ paddingHorizontal: KIT.chatEmptyPad.x, paddingVertical: KIT.chatEmptyPad.y }}
+        >
+          <T v="chip">{tr.chat.empty}</T>
+        </Glass>
       </View>
     ),
   };

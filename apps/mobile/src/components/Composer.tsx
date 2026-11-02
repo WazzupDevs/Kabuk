@@ -56,7 +56,6 @@ type Props = {
 // docs/design/aura → Dm: the field 58, the send button 62.
 const SIZE = KIT.size.composerField;
 const SEND = KIT.size.composerSend;
-const MUTED_SEND = 0.45;
 // The arrow's flight: out to the right, then back in from the left.
 const FLY_OUT_MS = 150;
 const FLY_IN_MS = 230;
@@ -94,6 +93,8 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
   const sendShadow = shadowParts(shadowOff, KIT.sendShadow, undefined, SEND / 2);
   const pressScale = usePressScale();
   const inactive = sendDisabled || sending;
+  // Nothing to send (U25 `.send.off`); while sending it keeps its colour and shows the loader.
+  const off = !!sendDisabled && !sending;
   const followEnd = useChatEnd();
   const glassId = useComposerGlass();
   const glass = glassId !== null && TAB_BAR_GLASS && blursBehind(Platform.OS, Platform.Version);
@@ -193,18 +194,19 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
                   borderRadius: SEND / 2,
                   alignItems: 'center',
                   justifyContent: 'center',
-                  // docs/design/aura → Dm (`.send`): the ink's round button.
-                  backgroundColor: k.c.chipOn,
-                  boxShadow: sendShadow.boxShadow,
+                  // docs/design/aura → Dm (`.send`): the ink's round button; with nothing to send
+                  // passive (U25, `.send.off`; the owner's call, 2 Kasım, rapor §12.2).
+                  backgroundColor: off ? k.c.disabled : k.c.chipOn,
+                  boxShadow: off ? undefined : sendShadow.boxShadow,
                 },
                 pressScale(pressed),
               ]}
             >
-              {sendShadow.node}
+              {off ? null : sendShadow.node}
               {sending ? (
                 <Loader kind="meet" size={ICON.lg} delay={0} />
               ) : (
-                <FlyingArrow flights={flights} muted={!!inactive} />
+                <FlyingArrow flights={flights} off={off} />
               )}
             </View>
           )}
@@ -325,7 +327,7 @@ function GlassFill({ targetId, radius }: { targetId: string; radius: number }) {
 
 // The send arrow; each send (`flights`) it flies out to the right and comes back in from the left.
 // Still with reduce motion.
-function FlyingArrow({ flights, muted }: { flights: number; muted: boolean }) {
+function FlyingArrow({ flights, off }: { flights: number; off: boolean }) {
   const reduce = useReduceMotion();
   const x = useSharedValue(0);
   const fade = useSharedValue(1);
@@ -348,18 +350,14 @@ function FlyingArrow({ flights, muted }: { flights: number; muted: boolean }) {
   }));
   return (
     <Animated.View style={style}>
-      <SendGlyph muted={muted} />
+      <SendGlyph off={off} />
     </Animated.View>
   );
 }
 
 // Aura v65 `.send`: the capsule family's send icon in the ink button's own colour (on-feature);
-// muted while there is nothing to send.
-function SendGlyph({ muted }: { muted: boolean }) {
+// on the passive button its ink (`.send.off`).
+function SendGlyph({ off }: { off: boolean }) {
   const { c } = useKit();
-  return (
-    <View style={{ opacity: muted ? MUTED_SEND : 1 }}>
-      <CapIcon name="send" color={c.onChipOn} size={ICON.lg} />
-    </View>
-  );
+  return <CapIcon name="send" color={off ? c.onDisabled : c.onChipOn} size={ICON.lg} />;
 }

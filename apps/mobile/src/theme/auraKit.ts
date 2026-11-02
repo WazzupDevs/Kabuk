@@ -439,6 +439,16 @@ export const KIT = {
   },
   // Who the viewer writes as (`.strip`): a glass pill 22 round.
   venueChatStripRadius: 22,
+  // U25 (MasaSohbeti `.veil`): the table chat's curtain over its wall, darker at the top and the
+  // foot, clear between 22 % and 70 %; the board's header pill 20 in at its left.
+  chatVeil: {
+    light:
+      'linear-gradient(rgba(3, 27, 11, 0.38), rgba(3, 27, 11, 0) 22%, rgba(3, 27, 11, 0) 70%, rgba(3, 27, 11, 0.42))',
+    dark: 'linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.18) 22%, rgba(0, 0, 0, 0.18) 70%, rgba(0, 0, 0, 0.55))',
+  },
+  chatPillPadX: 20,
+  // Its empty note (`.day`): a glass pill 14 × 6 in, 13/17 600.
+  chatEmptyPad: { x: 14, y: 6 },
   // U24 (Masadakiler `.sh`, `.srow`): the sheet 84 from the top; a person's row 56 high, 6 / 14 in,
   // their face 40 (`av.list`).
   peopleSheet: { top: 84, height: 56, padY: 6, padX: 14 },
