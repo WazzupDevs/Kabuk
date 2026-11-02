@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (2 Kasım 2026, Aura v71 P2 ve P3 birleşti)
+
+- #374 P2 kayıt: yedi adımın hepsi riso sahne + konuşan/bakan riso kankiler (`SIGNUP_KANKI`, adım başına `fieldTop` ve balon), koyuda nokta accent, "n/7" kalktı, düğme ikonları, Ad `Input big` cam 72, foto seçici 120/kesikli 3, KayitMetinler tek kanki. #375 P3: Arkadaşlar (peek-1), Kapsül karakterler, Hesap, Gizlilik (sayılar kalktı), Bildirim ayarları, Engellenenler (`Screen` `backdrop` köşe kankisi). Native yok, OTA.
+- Blob eşlemesi tamam (`aktarim-v71-fark.md` başı): bütün pano kankileri repoda var; `peek-1`/`peek-2` `KankiId`'de.
+- Sıradaki P4 mekân ve ortak (fark-2): MekanNoktaDegistir (SpotPicker v71 iki yerde, karar 2), MekanKimlikDegistir, MekanSohbetiProfil ("Geri" sabit alt alan), SikayetEt, EngelleOnay (K6 `Btn danger`), YasalMetin, GuncellemeGerekli, SessizeAlinanlar (K8: yanıta anonim satır için `look`, `guvenlik` denetler; kanki e8ff31→3c95b1).
+- Not: Arkadaşlar panosunda geri düğmesi ikonu da accent; `PageTop` ortak olduğu için uygulanmadı.
+
 ## Devir notu (2 Kasım 2026, U8 ve Aura v71 P1 birleşti)
 
 - #371 U8 sheet arkası bulanıklık: yeni yerel `BackdropBlurView` (`skall-glass`, PixelCopy ile bir kez küçük kopya, 8 dp; `SheetScrim`), `version` 0.9.4: proje sahibi yeni preview build alacak. Tuval v71 panoları `docs/design/aura/project/`'te.
