@@ -15,3 +15,7 @@ WebP kayıpsız (uygulamaya giren), aynı dosyaların PNG kopyası png/ altında
 - 1..3 = kaynama varyantları: gren ve benek farklı, kağıt lifi ve mürekkep lekeleri (starve) aynı. 125 ms'de bir döner (8 fps), görünürlük 0/1.
 - Sabit hizasızlık ve ±0,5 dp ek kayma görsele basılı değildir; uygulama translate ile verir (rapor 14.2 madde 2–3).
 - Üretici: uretici-doku.py (onaylı demodaki 28-riso-acilis/kaynak/render.py değerleri, 3x'e ölçeklenmiş). Harf maskeleri 28-riso-acilis/kaynak/L_*.png.
+
+## Uygulamaya giren kırpıntılar
+
+Tam ekran dosyalar kaynaktır; uygulama yalnızca `zemin-lif.webp`'yi ve `kirpik-*.webp`'yi yükler. `kirpik-*` dosyaları `pnpm launch:textures` (`scripts/build-launch-textures.ts`) ile, `src/theme/launchTextures.ts` → `LAUNCH_TEXTURE_BOX`'taki ekran merkezine göre kutulara kırpılarak üretilir (elle düzenlenmez); kaynak ya da kutu değişince betik yeniden çalıştırılır. Kutuların kapsülleri ve harfleri kapsadığını `launchMotion.test.ts` denetler.

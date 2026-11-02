@@ -1,10 +1,11 @@
 // The skall launch (the design system → hareket.md → "Soğuk açılış", "İlk açılış", "Hızlı açılış";
-// choreography from the "skall Hareket" page): from the system splash's frame the mark turns into
-// the wordmark (cold, first) or breathes once (quick), and the app opens through a window that grows
-// from the capsules' overlap. Every function is a worklet: src/features/launch/LaunchCurtain.tsx runs
+// choreography from the "skall Hareket" page; riso, Aura v65 §14): from the system splash's frame
+// the mark turns into the wordmark (cold, first) or breathes once (quick), and the print parts (its
+// inks move apart while the curtain fades) to show the app. Every function is a worklet: src/features/launch/LaunchCurtain.tsx runs
 // them on the UI thread each frame (Reanimated), vitest runs them as plain functions. Units are dp;
 // times are ms from the start of the system splash, which ends at `N`.
 
+import { RISO_VARIANTS, type TextureLayer } from './launchTextures';
 import { MARK_MAIN, type MarkDrawing } from './markMotion';
 import { WORDMARK_BOX, WORDMARK_L } from './wordmark';
 
@@ -15,12 +16,9 @@ export type LaunchKind = 'cold' | 'first' | 'quick';
 // centre. The wordmark the mark turns into is 264 dp wide.
 export const SPLASH_REACH_DP = 70;
 export const LAUNCH_WORD_WIDTH = 264;
-// How high the band around the centre is that the marks, the ring and the flare move in until the
-// window opens (LaunchCurtain draws only that band on those frames; launchMotion.test.ts).
+// How high the band around the centre is that the ring, the flare and the glint move in
+// (LaunchCurtain draws only that band; launchMotion.test.ts).
 export const LAUNCH_BAND = 340;
-// The window's last scale: the mark's or the ll's capsules grown past the screen.
-const WORD_WINDOW = 90;
-const MARK_WINDOW = 60;
 // The waits while the app is not ready yet: the ll's seesaw, the mark's Tahterevalli, the reduced
 // breath.
 const WORD_WAIT = 1200;
@@ -72,11 +70,6 @@ function easeInOut(u: number): number {
 function easeOut(u: number): number {
   'worklet';
   return bezier(0.2, 0.8, 0.2, 1, u);
-}
-// The window's exponential growth.
-function easeIn(u: number): number {
-  'worklet';
-  return bezier(0.55, 0, 0.85, 0.2, u);
 }
 // A damped spring from 0 to 1 (stiffness, damping; mass 1) after `ms`.
 export function spring(stiffness: number, damping: number, ms: number): number {
@@ -270,14 +263,13 @@ export function launchTimeline(kind: LaunchKind, reduce: boolean, wait: number):
 
 // ------------------------------------------------------------------ frames
 
-export type LaunchWindow = {
-  // The window's capsules, grown from the overlap; inside them the app shows.
-  a: Rect;
-  b: Rect;
-  // The white that fills the window as it opens, and its thin rim.
-  white: number;
-  rim: number;
-};
+export type Offset = [x: number, y: number];
+// How far each ink moves as the print parts (R0 → R1, §14.2.1): the purple, the pink, the white
+// overlap and the letters.
+export type LaunchApart = { a: Offset; b: Offset; cross: Offset; letters: Offset };
+const SPLIT: LaunchApart = { a: [-60, -30], b: [60, 30], cross: [0, -20], letters: [0, -40] };
+const SPLIT_POWER = 1.6;
+const TOGETHER: LaunchApart = { a: [0, 0], b: [0, 0], cross: [0, 0], letters: [0, 0] };
 
 export type LaunchScene = {
   a: Rect; // the first capsule
@@ -289,9 +281,9 @@ export type LaunchScene = {
   glint: { x: number; opacity: number } | null;
   ring: { cx: number; cy: number; r: number; width: number; opacity: number } | null;
   flare: { cx: number; cy: number; r: number; opacity: number } | null;
-  window: LaunchWindow | null;
-  curtain: number; // the whole curtain's opacity (the reduced launch fades it out)
-  appScale: number; // the app settles from 1.06 as the window opens
+  apart: LaunchApart; // the inks' offsets as the print parts
+  curtain: number; // the whole curtain's opacity (it fades as the print parts)
+  appScale: number; // the app settles from 1.06 as the print parts
   origin: [number, number]; // around this point the app scales
   done: boolean;
 };
@@ -308,7 +300,7 @@ export const CLEAR_SCENE: LaunchScene = {
   glint: null,
   ring: null,
   flare: null,
-  window: null,
+  apart: TOGETHER,
   curtain: 0,
   appScale: 1,
   origin: [0, 0],
@@ -321,16 +313,23 @@ export function launchWaiting(T: LaunchTimeline, t: number, wait: number): boole
   return t >= T.gate && t < T.gate + wait;
 }
 
-function opening(A: Rect, B: Rect, u: number, top: number): LaunchWindow {
+// The print parts (R0 → R1 at u): the inks move apart, the curtain fades and the app settles from
+// 1.06 (§14.2.1).
+function parting(scene: LaunchScene, u: number): void {
   'worklet';
-  const [ox, oy] = overlapOf(A, B);
-  const s = Math.pow(top, easeIn(u));
-  return {
-    a: scaleR(A, ox, oy, s),
-    b: scaleR(B, ox, oy, s),
-    white: 1 - seg(u, 0.06, 0.42),
-    rim: 1 - seg(u, 0.35, 0.9),
+  const p = Math.pow(u, SPLIT_POWER);
+  const at = (o: Offset): Offset => {
+    'worklet';
+    return [o[0] * p, o[1] * p];
   };
+  scene.apart = {
+    a: at(SPLIT.a),
+    b: at(SPLIT.b),
+    cross: at(SPLIT.cross),
+    letters: at(SPLIT.letters),
+  };
+  scene.curtain = 1 - easeInOut(seg(u, 0.2, 1));
+  scene.appScale = 1 + 0.06 * (1 - easeOut(u));
 }
 
 // The mark becomes the ll: a crouch, a springing rise, the letters out from behind the first l.
@@ -378,7 +377,7 @@ export function launchFrame(
     glint: null,
     ring: null,
     flare: null,
-    window: null,
+    apart: TOGETHER,
     curtain: 1,
     appScale: reduce ? 1 : 1.06,
     origin: overlapOf(g.a0, g.b0),
@@ -411,7 +410,7 @@ export function launchFrame(
   const om = overlapOf(g.a0, g.b0);
 
   if (kind === 'quick') {
-    // One breath; the window opens straight from the mark's overlap.
+    // One breath; then the mark's print parts.
     const s = 1 + 0.075 * bump(seg(t, T.P0, T.P1));
     A = scaleR(g.a0, g.cx, g.cy, s);
     B = scaleR(g.b0, g.cx, g.cy, s);
@@ -428,8 +427,9 @@ export function launchFrame(
       A = shiftR(A, 0, -d / 2);
       B = shiftR(B, 0, d / 2);
     }
-    if (t >= T.R0) scene.window = opening(A, B, seg(t, T.R0, T.R1), MARK_WINDOW);
   } else {
+    // The wordmark stays where it is at R0 as the print parts.
+    const tw = Math.min(t, T.R0);
     if (kind === 'first' && t >= T.S0 && t < T.C0) {
       // Two tables: the capsules part, bob, and meet with a flash where they overlap.
       const aA = shiftR(g.a0, -64, 0);
@@ -462,7 +462,7 @@ export function launchFrame(
         }
       }
     } else if (t >= T.C0) {
-      const [wa, wb, letters] = wordStage(g, T, t);
+      const [wa, wb, letters] = wordStage(g, T, tw);
       A = wa;
       B = wb;
       scene.letters = letters;
@@ -482,16 +482,76 @@ export function launchFrame(
         opacity: 0.9 * bump(u),
       };
     }
-    if (t >= T.R0) scene.window = opening(A, B, seg(t, T.R0, T.R1), WORD_WINDOW);
   }
 
   scene.a = A;
   scene.b = B;
   scene.lettersClip = A[0] + A[2] / 2 + 10;
   scene.origin = overlapOf(A, B);
-  if (t >= T.R0) scene.appScale = 1.06 - 0.06 * easeOut(seg(t, T.R0, T.R1));
+  if (t > T.R0) parting(scene, seg(t, T.R0, T.R1));
   return scene;
 }
+
+// ------------------------------------------------------------------ riso
+
+// The riso texture comes in over the splash's flat drawing while the splash leaves (§14.2.4): 0 → 1
+// in this long from the curtain's first frame (within SPLASH_HANDOFF_MS).
+export const RISO_IN_MS = 300;
+// The boil (§14.2.3): the textures' variants turn every 125 ms (8 fps).
+export const RISO_BOIL_MS = 125;
+
+// How far into the riso drawing the curtain is, `ms` after its first frame.
+export function risoIn(ms: number): number {
+  'worklet';
+  return easeInOut(seg(ms, 0, RISO_IN_MS));
+}
+
+// Which variant of every texture shows, `ms` after the curtain's first frame; with reduce motion
+// always the first (no boil).
+export function risoVariant(ms: number, reduce: boolean): number {
+  'worklet';
+  if (reduce || ms <= 0) return 0;
+  return Math.floor(ms / RISO_BOIL_MS) % RISO_VARIANTS;
+}
+
+// The inks' fixed misregistration (§14.2.2): the purple, the pink and the white (the overlap and
+// the letters); the glow is not misregistered.
+export const RISO_MISREGISTER: Record<TextureLayer, Offset> = {
+  glow: [0, 0],
+  a: [-1, -0.7],
+  b: [1, 0.7],
+  cross: [0, 0.5],
+  letters: [0, 0.5],
+};
+// Each variant's own small offset (±0.5 dp), the jitter of the boil: a variant sits there whenever it
+// shows, so a frame changes only which one shows.
+export const RISO_BOIL_OFFSET: Record<TextureLayer, readonly [Offset, Offset, Offset]> = {
+  glow: [
+    [0, 0],
+    [0.5, -0.5],
+    [-0.5, 0.5],
+  ],
+  a: [
+    [0, 0],
+    [-0.5, 0.5],
+    [0.5, -0.5],
+  ],
+  b: [
+    [0, 0],
+    [0.5, 0.5],
+    [-0.5, -0.5],
+  ],
+  cross: [
+    [0, 0],
+    [-0.5, -0.5],
+    [0.5, 0],
+  ],
+  letters: [
+    [0, 0],
+    [0.5, 0],
+    [-0.5, 0.5],
+  ],
+};
 
 // ------------------------------------------------------------------ which launch
 

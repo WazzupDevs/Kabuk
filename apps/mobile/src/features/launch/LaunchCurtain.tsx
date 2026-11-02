@@ -1,6 +1,7 @@
+import { Image } from 'expo-image';
 import { StatusBar } from 'expo-status-bar';
 import { Component, type ReactNode, useEffect, useMemo, useState } from 'react';
-import { type LayoutChangeEvent, StyleSheet, View } from 'react-native';
+import { type ImageSourcePropType, type LayoutChangeEvent, StyleSheet, View } from 'react-native';
 import Animated, {
   runOnJS,
   type SharedValue,
@@ -15,21 +16,20 @@ import Svg, {
   Circle,
   ClipPath,
   Defs,
-  Ellipse,
   G,
   LinearGradient,
-  Mask,
   Path,
   RadialGradient,
   Rect,
   Stop,
 } from 'react-native-svg';
 
-import { BRAND, LAUNCH_LIGHT, LAUNCH_MASK } from '@/theme/brand';
+import { BRAND, LAUNCH_LIGHT } from '@/theme/brand';
 import {
   CLEAR_SCENE,
   flareCircle,
   glintPath,
+  type LaunchApart,
   launchFrame,
   type LaunchGeometry,
   LAUNCH_BAND,
@@ -37,22 +37,20 @@ import {
   type LaunchKind,
   type LaunchScene,
   launchTimeline,
-  type ParsedPath,
-  parsePath,
   type Rect as R,
-  shiftedPath,
+  RISO_BOIL_OFFSET,
+  RISO_MISREGISTER,
+  risoIn,
+  risoVariant,
 } from '@/theme/launchMotion';
-import { SKA_LETTERS } from '@/theme/wordmark';
+import { LAUNCH_TEXTURE_BOX, type TextureLayer } from '@/theme/launchTextures';
 
 import { decideLaunchKind, launchGuard, useLaunchStore } from './launchStore';
 
 const AnimatedRect = Animated.createAnimatedComponent(Rect);
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-const AnimatedG = Animated.createAnimatedComponent(G);
-const AnimatedEllipse = Animated.createAnimatedComponent(Ellipse);
 
-const [S, K, A] = SKA_LETTERS.map(parsePath) as [ParsedPath, ParsedPath, ParsedPath];
 // The kind is read from storage; if that takes longer, the launch goes on as a cold one.
 const KIND_TIMEOUT_MS = 300;
 // Android's splash leaving (its own fade) before the curtain moves.
@@ -61,6 +59,48 @@ const KIND_INDEX: Record<LaunchKind, number> = { cold: 0, first: 1, quick: 2 };
 const KINDS: readonly LaunchKind[] = ['cold', 'first', 'quick'];
 // E2E flows wait until this view is gone before they look at the first screen.
 const TEST_ID = 'launch-curtain';
+
+// The riso textures (assets/launch, cut by `pnpm launch:textures` to src/theme/launchTextures.ts),
+// three boil variants each; the paper ground is the set's whole screen.
+type Variants = readonly [ImageSourcePropType, ImageSourcePropType, ImageSourcePropType];
+const GROUND: ImageSourcePropType = require('../../../assets/launch/zemin-lif.webp');
+const GLOW: Variants = [
+  require('../../../assets/launch/kirpik-parilti-1.webp'),
+  require('../../../assets/launch/kirpik-parilti-2.webp'),
+  require('../../../assets/launch/kirpik-parilti-3.webp'),
+];
+const PURPLE: Variants = [
+  require('../../../assets/launch/kirpik-mor-1.webp'),
+  require('../../../assets/launch/kirpik-mor-2.webp'),
+  require('../../../assets/launch/kirpik-mor-3.webp'),
+];
+const PINK: Variants = [
+  require('../../../assets/launch/kirpik-pembe-1.webp'),
+  require('../../../assets/launch/kirpik-pembe-2.webp'),
+  require('../../../assets/launch/kirpik-pembe-3.webp'),
+];
+const WHITE: Variants = [
+  require('../../../assets/launch/kirpik-beyaz-1.webp'),
+  require('../../../assets/launch/kirpik-beyaz-2.webp'),
+  require('../../../assets/launch/kirpik-beyaz-3.webp'),
+];
+const LETTERS: readonly [Variants, Variants, Variants] = [
+  [
+    require('../../../assets/launch/kirpik-harf-s-1.webp'),
+    require('../../../assets/launch/kirpik-harf-s-2.webp'),
+    require('../../../assets/launch/kirpik-harf-s-3.webp'),
+  ],
+  [
+    require('../../../assets/launch/kirpik-harf-k-1.webp'),
+    require('../../../assets/launch/kirpik-harf-k-2.webp'),
+    require('../../../assets/launch/kirpik-harf-k-3.webp'),
+  ],
+  [
+    require('../../../assets/launch/kirpik-harf-a-1.webp'),
+    require('../../../assets/launch/kirpik-harf-a-2.webp'),
+    require('../../../assets/launch/kirpik-harf-a-3.webp'),
+  ],
+];
 
 function rectProps(r: R) {
   'worklet';
@@ -71,14 +111,15 @@ const NOTHING: R = [0, 0, 0, 0];
 
 type Props = { children: ReactNode };
 
-// The launch (hareket.md → Soğuk, İlk, Hızlı açılış): the system splash's frame, drawn again by JS
-// and handed over without a jump, turns into the wordmark (or breathes, when quick) and opens the
-// app through a window that grows from the capsules' overlap. The app renders underneath from the
-// first moment and never waits: if its first screen is late, the ll seesaw until it is there. Runs
-// on the UI thread (Reanimated); touches go through to the app. The app's view stays where it is
-// in the tree before, during and after the launch, so nothing in it remounts. Guarded
-// (src/lib/launchGuard.ts): the system splash goes at the latest after 3 s, and a curtain that fails
-// (its drawing throws, a frame throws) is dropped and reported; the app shows either way.
+// The launch (hareket.md → Soğuk, İlk, Hızlı açılış; riso, Aura v65 §14): the system splash's
+// frame, drawn again by JS and handed over without a jump, turns into its riso print while the
+// splash leaves, into the wordmark (or breathes, when quick), and the print parts (its inks move
+// apart as the curtain fades) to show the app. The app renders underneath from the first moment and
+// never waits: if its first screen is late, the ll seesaw until it is there. Runs on the UI thread
+// (Reanimated); touches go through to the app. The app's view stays where it is in the tree before,
+// during and after the launch, so nothing in it remounts. Guarded (src/lib/launchGuard.ts): the
+// system splash goes at the latest after 3 s, and a curtain that fails (its drawing throws, a frame
+// throws) is dropped and reported; the app shows either way.
 export function LaunchCurtain({ children }: Props) {
   const reduce = useReducedMotion();
   const [size, setSize] = useState<{ w: number; h: number } | null>(null);
@@ -92,6 +133,8 @@ export function LaunchCurtain({ children }: Props) {
   const ready = useSharedValue(false);
   const kind = useSharedValue(-1);
   const began = useSharedValue(-1);
+  // Time since the curtain's first frame: the riso coming in and the boil.
+  const since = useSharedValue(-1);
   const active = useSharedValue(true);
   // A frame threw on the UI thread: the curtain draws nothing and is dropped.
   const broken = useSharedValue(false);
@@ -117,16 +160,23 @@ export function LaunchCurtain({ children }: Props) {
     return useLaunchStore.subscribe((s) => apply(s.ready));
   }, [ready]);
 
+  // From the curtain's first frame on. The system splash goes first; the curtain holds its first
+  // frame (the same mark on the same ink, its riso coming in) while Android takes the splash away,
+  // then moves. Started together, the splash's mark stayed over the moving curtain for a moment (the
+  // owner's report, 27 Ekim: a double picture).
   const clock = useFrameCallback((frame) => {
     'worklet';
     if (kind.value < 0 || !active.value) return;
     try {
       if (broken.value) throw new Error('scene');
       if (began.value < 0) began.value = frame.timestamp;
+      const ms = frame.timestamp - began.value;
+      since.value = ms;
+      if (ms < SPLASH_HANDOFF_MS) return;
       const k = KINDS[kind.value] ?? 'cold';
-      const now = 500 + frame.timestamp - began.value;
+      const now = 500 + ms - SPLASH_HANDOFF_MS;
       const T = launchTimeline(k, reduce, wait.value);
-      // Not ready where the window should open: one more cycle of the wait motion.
+      // Not ready where the print should part: one more cycle of the wait motion.
       if (!ready.value && now >= T.gate + wait.value) wait.value += T.cycle;
       t.value = now;
       if (now >= launchTimeline(k, reduce, wait.value).R1) {
@@ -159,18 +209,11 @@ export function LaunchCurtain({ children }: Props) {
   const [drawn, setDrawn] = useState(false);
   useEffect(() => {
     if (!drawn || !kindKnown || !shown) return undefined;
-    // The system splash goes first; the curtain holds its first frame (the same mark on the same
-    // ink) while Android takes the splash away, then moves. Started together, the splash's mark
-    // stayed over the moving curtain for a moment (the owner's report, 27 Ekim: a double picture).
-    let hold: ReturnType<typeof setTimeout> | undefined;
     const id = requestAnimationFrame(() => {
       launchGuard.begin();
-      hold = setTimeout(() => clock.setActive(true), SPLASH_HANDOFF_MS);
+      clock.setActive(true);
     });
-    return () => {
-      cancelAnimationFrame(id);
-      if (hold) clearTimeout(hold);
-    };
+    return () => cancelAnimationFrame(id);
   }, [drawn, kindKnown, shown, clock]);
 
   // Dropped (the guard) or failed: the clock stops and the app keeps its own size.
@@ -188,8 +231,10 @@ export function LaunchCurtain({ children }: Props) {
       return CLEAR_SCENE;
     }
   });
+  const riso = useDerivedValue(() => risoIn(since.value));
+  const variant = useDerivedValue(() => risoVariant(since.value, reduce));
 
-  // The app under the curtain settles from 1.06 around the overlap as the window opens.
+  // The app under the curtain settles from 1.06 around the overlap as the print parts.
   const appStyle = useAnimatedStyle(() => {
     if (!active.value) return { transform: [] };
     const s = scene.value;
@@ -212,7 +257,15 @@ export function LaunchCurtain({ children }: Props) {
       {shown ? (
         <CurtainBoundary>
           {size ? (
-            <CurtainArt scene={scene} g={g} w={w} h={h} onDrawn={() => setDrawn(true)} />
+            <CurtainArt
+              scene={scene}
+              riso={riso}
+              variant={variant}
+              g={g}
+              w={w}
+              h={h}
+              onDrawn={() => setDrawn(true)}
+            />
           ) : (
             // Until the size is known the system splash is still on top.
             <View
@@ -246,264 +299,322 @@ class CurtainBoundary extends Component<{ children: ReactNode }, { failed: boole
   }
 }
 
-// The curtain in three parts, so that a frame redraws as little as it can (the owner's report, 29
-// Ekim: the launch stuttered; react-native-svg draws each changed picture again in software, and
-// the one picture of the whole screen with its mask was drawn again on every frame). Until the
-// window opens: the ink and the glow are a view and a still picture (only their opacity moves),
-// and the marks, the ring and the flare move in a band around the centre. While the window opens:
-// everything once more, cut by the window, in the whole screen's picture, which is still before
-// (its props do not change, so it is never drawn again). The same drawing as before, in the same
-// places.
+type Art = {
+  scene: SharedValue<LaunchScene>;
+  variant: SharedValue<number>;
+  g: LaunchGeometry;
+  w: number;
+  h: number;
+};
+
+// The curtain as still pictures in views (§14.2.2): a frame changes only transforms, opacities and
+// the capsules' clipping boxes, and no picture is drawn again (the owner's report, 29 Ekim:
+// react-native-svg draws each changed picture again in software). From the bottom: the ink and its
+// paper; the glow; the splash's flat mark, which the riso print takes over while the splash leaves
+// (§14.2.4); the print's inks, each a layer of its own (the letters, the purple, the pink, the white
+// overlap); and in a band around the centre the flat ring, flare and glint (decision 12.11).
 function CurtainArt({
   scene,
+  riso,
+  variant,
   g,
   w,
   h,
   onDrawn,
-}: {
-  scene: SharedValue<LaunchScene>;
-  g: LaunchGeometry;
-  w: number;
-  h: number;
-  onDrawn: () => void;
-}) {
+}: Art & { riso: SharedValue<number>; onDrawn: () => void }) {
   const root = useAnimatedStyle(() => ({ opacity: scene.value.curtain }));
-  const before = useAnimatedStyle(() => ({ opacity: scene.value.window ? 0 : 1 }));
-  const glowView = useAnimatedStyle(() => ({
-    opacity: scene.value.window ? 0 : scene.value.glow,
-  }));
-  const opening = useAnimatedStyle(() => ({ opacity: scene.value.window ? 1 : 0 }));
-  const bandTop = g.cy - BAND / 2;
+  const paper = useAnimatedStyle(() => ({ opacity: riso.value }));
+  const flat = useAnimatedStyle(() => ({ opacity: 1 - riso.value }));
+  const glow = useAnimatedStyle(() => ({ opacity: scene.value.glow * riso.value }));
+  const marks = useAnimatedStyle(() => ({ opacity: scene.value.marks * riso.value }));
+  const art = { scene, variant, g, w, h };
   return (
     <Animated.View
       testID={TEST_ID}
       collapsable={false}
       pointerEvents="none"
-      style={[StyleSheet.absoluteFill, root]}
+      needsOffscreenAlphaCompositing
+      style={[StyleSheet.absoluteFill, styles.ink, root]}
       onLayout={onDrawn}
     >
       <StatusBar style="light" />
-      <Animated.View style={[StyleSheet.absoluteFill, styles.ink, before]} />
-      <Animated.View
-        style={[
-          {
-            position: 'absolute',
-            left: g.cx - GLOW_RX,
-            top: g.cy - GLOW_RY,
-            width: GLOW_RX * 2,
-            height: GLOW_RY * 2,
-          },
-          glowView,
-        ]}
-      >
-        <Svg width={GLOW_RX * 2} height={GLOW_RY * 2}>
-          <Defs>
-            <RadialGradient id="launch-glow-still">
-              <Stop offset="0" stopColor={LAUNCH_LIGHT.glow} stopOpacity={0.8} />
-              <Stop offset="1" stopColor={LAUNCH_LIGHT.glow} stopOpacity={0} />
-            </RadialGradient>
-          </Defs>
-          <Ellipse
-            cx={GLOW_RX}
-            cy={GLOW_RY}
-            rx={GLOW_RX}
-            ry={GLOW_RY}
-            fill="url(#launch-glow-still)"
+      <Animated.View style={[StyleSheet.absoluteFill, paper]}>
+        <Image source={GROUND} style={StyleSheet.absoluteFill} contentFit="cover" />
+      </Animated.View>
+      <Animated.View style={[StyleSheet.absoluteFill, glow]}>
+        <Texture layer="glow" sources={GLOW} variant={variant} g={g} />
+      </Animated.View>
+      <Animated.View style={[StyleSheet.absoluteFill, flat]}>
+        <FlatMark g={g} w={w} />
+      </Animated.View>
+      <Animated.View needsOffscreenAlphaCompositing style={[StyleSheet.absoluteFill, marks]}>
+        <Letters {...art} />
+        <Capsule {...art} ink="a" sources={PURPLE} />
+        <Capsule {...art} ink="b" sources={PINK} />
+        <Overlap {...art} />
+      </Animated.View>
+      <Lights scene={scene} g={g} w={w} />
+    </Animated.View>
+  );
+}
+
+// The band around the centre the ring, the flare and the glint move in (theme/launchMotion.ts).
+const BAND = LAUNCH_BAND;
+
+// One texture's three boil variants, one over the other where its box puts them; a frame changes
+// only which one shows. Each variant sits at its own small offset (the boil's jitter).
+function Texture({
+  layer,
+  sources,
+  variant,
+  g,
+}: {
+  layer: TextureLayer;
+  sources: Variants;
+  variant: SharedValue<number>;
+  g: LaunchGeometry;
+}) {
+  const [x, y, bw, bh] = LAUNCH_TEXTURE_BOX[layer];
+  return (
+    <>
+      {sources.map((source, i) => {
+        const [dx, dy] = RISO_BOIL_OFFSET[layer][i] ?? [0, 0];
+        return (
+          <TextureVariant
+            key={i}
+            index={i}
+            variant={variant}
+            source={source}
+            box={{ left: g.cx + x + dx, top: g.cy + y + dy, width: bw, height: bh }}
           />
-        </Svg>
-      </Animated.View>
-      <Animated.View
-        style={[{ position: 'absolute', left: 0, top: bandTop, width: w, height: BAND }, before]}
-      >
-        <Svg width={w} height={BAND} viewBox={`0 ${bandTop} ${w} ${BAND}`}>
-          <Marks scene={scene} g={g} h={h} id="band" phase="before" />
-        </Svg>
-      </Animated.View>
-      <Animated.View style={[StyleSheet.absoluteFill, opening]}>
-        <WindowArt scene={scene} g={g} w={w} h={h} />
+        );
+      })}
+    </>
+  );
+}
+
+function TextureVariant({
+  index,
+  variant,
+  source,
+  box,
+}: {
+  index: number;
+  variant: SharedValue<number>;
+  source: ImageSourcePropType;
+  box: { left: number; top: number; width: number; height: number };
+}) {
+  const shows = useAnimatedStyle(() => ({ opacity: variant.value === index ? 1 : 0 }));
+  return (
+    <Animated.View style={[styles.at, box, shows]}>
+      <Image source={source} style={StyleSheet.absoluteFill} contentFit="fill" />
+    </Animated.View>
+  );
+}
+
+// An ink's layer: its fixed misregistration and, as the print parts, its offset.
+function useInk(scene: SharedValue<LaunchScene>, ink: keyof LaunchApart) {
+  return useAnimatedStyle(() => {
+    const [mx, my] = RISO_MISREGISTER[ink];
+    const [ax, ay] = scene.value.apart[ink];
+    return { transform: [{ translateX: mx + ax }, { translateY: my + ay }] };
+  });
+}
+
+// A capsule's clipping box at `r` (the texture inside stays fixed to the screen: as the capsule
+// grows, its dots keep their size).
+function clipStyle(r: R) {
+  'worklet';
+  const cw = Math.max(0, r[2]);
+  return {
+    width: cw,
+    height: Math.max(0, r[3]),
+    borderRadius: cw / 2,
+    transform: [{ translateX: r[0] }, { translateY: r[1] }],
+  };
+}
+function unclip(r: R) {
+  'worklet';
+  return { transform: [{ translateX: -r[0] }, { translateY: -r[1] }] };
+}
+
+function Capsule({
+  scene,
+  variant,
+  g,
+  w,
+  h,
+  ink,
+  sources,
+}: Art & { ink: 'a' | 'b'; sources: Variants }) {
+  const layer = useInk(scene, ink);
+  const clip = useAnimatedStyle(() => clipStyle(scene.value[ink]));
+  const inside = useAnimatedStyle(() => unclip(scene.value[ink]));
+  return (
+    <Animated.View style={[StyleSheet.absoluteFill, layer]}>
+      <Animated.View style={[styles.clip, clip]}>
+        <Animated.View style={[styles.at, { width: w, height: h }, inside]}>
+          <Texture layer={ink} sources={sources} variant={variant} g={g} />
+        </Animated.View>
       </Animated.View>
     </Animated.View>
   );
 }
 
-// The glow's ellipse around the centre and the band the marks move in (theme/launchMotion.ts).
-const GLOW_RX = 240;
-const GLOW_RY = 270;
-const BAND = LAUNCH_BAND;
-
-// The marks (the letters, the capsules, the glint), the ring and the flare. They move only in their
-// `phase` (before the window, or while it opens); otherwise their props stay as they are and their
-// picture is not drawn again.
-function Marks({
-  scene,
-  g,
-  h,
-  id,
-  phase,
-}: {
-  scene: SharedValue<LaunchScene>;
-  g: LaunchGeometry;
-  h: number;
-  id: string;
-  phase: 'before' | 'window';
-}) {
-  const before = phase === 'before';
-  const on = (s: LaunchScene) => {
-    'worklet';
-    return (s.window === null) === before ? s : CLEAR_SCENE;
-  };
-  const marks = useAnimatedProps(() => ({ opacity: on(scene.value).marks }));
-  const pillA = useAnimatedProps(() => rectProps(on(scene.value).a));
-  const pillB = useAnimatedProps(() => rectProps(on(scene.value).b));
-  const overlap = useAnimatedProps(() => rectProps(on(scene.value).b));
-  const clipA = useAnimatedProps(() => rectProps(on(scene.value).a));
-  const llA = useAnimatedProps(() => rectProps(on(scene.value).a));
-  const llB = useAnimatedProps(() => rectProps(on(scene.value).b));
-  const lettersClip = useAnimatedProps(() => ({
-    width: Math.max(0, on(scene.value).lettersClip + 10),
-  }));
-  const letter0 = useAnimatedProps(() => ({ d: shiftedPath(S, on(scene.value).letters[0]) }));
-  const letter1 = useAnimatedProps(() => ({ d: shiftedPath(K, on(scene.value).letters[1]) }));
-  const letter2 = useAnimatedProps(() => ({ d: shiftedPath(A, on(scene.value).letters[2]) }));
-  const glint = useAnimatedProps(() => {
-    const s = on(scene.value);
-    const gl = s.glint;
-    return gl
-      ? { d: glintPath(gl.x, g.cy, s.a[1] - 2, s.a[1] + s.a[3] + 2), opacity: gl.opacity }
-      : { d: 'M0 0Z', opacity: 0 };
+// The white where the capsules overlap: the second capsule's shape inside the first's.
+function Overlap({ scene, variant, g, w, h }: Art) {
+  const layer = useInk(scene, 'cross');
+  const clipA = useAnimatedStyle(() => clipStyle(scene.value.a));
+  const clipB = useAnimatedStyle(() => {
+    const { a, b } = scene.value;
+    return clipStyle([b[0] - a[0], b[1] - a[1], b[2], b[3]]);
   });
-  const ring = useAnimatedProps(() => {
-    const r = on(scene.value).ring;
-    return r
-      ? { cx: r.cx, cy: r.cy, r: r.r, strokeWidth: r.width, opacity: r.opacity }
-      : { cx: 0, cy: 0, r: 0, strokeWidth: 0, opacity: 0 };
-  });
-  const flare = useAnimatedProps(() => flareCircle(on(scene.value).flare));
+  const inside = useAnimatedStyle(() => unclip(scene.value.b));
   return (
-    <>
-      <Defs>
-        <RadialGradient id={`${id}-flare`}>
-          <Stop offset="0" stopColor={BRAND.white} stopOpacity={0.95} />
-          <Stop offset="0.3" stopColor={LAUNCH_LIGHT.flash} stopOpacity={0.5} />
-          <Stop offset="1" stopColor={BRAND.pink} stopOpacity={0} />
-        </RadialGradient>
-        <LinearGradient id={`${id}-glint`} x1="0" y1="0" x2="1" y2="0">
-          <Stop offset="0" stopColor={BRAND.white} stopOpacity={0} />
-          <Stop offset="0.5" stopColor={BRAND.white} stopOpacity={0.85} />
-          <Stop offset="1" stopColor={BRAND.white} stopOpacity={0} />
-        </LinearGradient>
-        <ClipPath id={`${id}-first`}>
-          <AnimatedRect animatedProps={clipA} />
-        </ClipPath>
-        <ClipPath id={`${id}-ll`}>
-          <AnimatedRect animatedProps={llA} />
-          <AnimatedRect animatedProps={llB} />
-        </ClipPath>
-        <ClipPath id={`${id}-letters`}>
-          <AnimatedRect x={-10} y={0} height={h} animatedProps={lettersClip} />
-        </ClipPath>
-      </Defs>
-      <AnimatedG animatedProps={marks}>
-        <G clipPath={`url(#${id}-letters)`}>
-          <G translateX={g.wordX} translateY={g.wordY} scale={g.wordScale} fill={BRAND.white}>
-            <AnimatedPath animatedProps={letter0} />
-            <AnimatedPath animatedProps={letter1} />
-            <AnimatedPath animatedProps={letter2} />
-          </G>
-        </G>
-        <AnimatedRect animatedProps={pillA} fill={BRAND.purple} />
-        <AnimatedRect animatedProps={pillB} fill={BRAND.pink} />
-        <AnimatedRect animatedProps={overlap} fill={BRAND.white} clipPath={`url(#${id}-first)`} />
-        <G clipPath={`url(#${id}-ll)`}>
-          <AnimatedPath animatedProps={glint} fill={`url(#${id}-glint)`} />
-        </G>
-      </AnimatedG>
-      <AnimatedCircle animatedProps={ring} fill="none" stroke={BRAND.white} />
-      <AnimatedCircle animatedProps={flare} fill={`url(#${id}-flare)`} />
-    </>
+    <Animated.View style={[StyleSheet.absoluteFill, layer]}>
+      <Animated.View style={[styles.clip, clipA]}>
+        <Animated.View style={[styles.clip, clipB]}>
+          <Animated.View style={[styles.at, { width: w, height: h }, inside]}>
+            <Texture layer="cross" sources={WHITE} variant={variant} g={g} />
+          </Animated.View>
+        </Animated.View>
+      </Animated.View>
+    </Animated.View>
   );
 }
 
-// The whole screen cut by the window, with the white that fills it and its rim: drawn only while
-// the window opens.
-function WindowArt({
+// The letters, each coming out from behind the first l: they show only left of `lettersClip`. The
+// clip is a screen-wide box moved left so that its right edge is there, and moved back inside.
+function Letters({ scene, variant, g, w, h }: Art) {
+  const layer = useInk(scene, 'letters');
+  const clip = useAnimatedStyle(() => ({
+    transform: [{ translateX: scene.value.lettersClip - w }],
+  }));
+  const inside = useAnimatedStyle(() => ({
+    transform: [{ translateX: w - scene.value.lettersClip }],
+  }));
+  return (
+    <Animated.View style={[StyleSheet.absoluteFill, layer]}>
+      <Animated.View style={[styles.clip, { width: w, height: h }, clip]}>
+        <Animated.View style={[styles.at, { width: w, height: h }, inside]}>
+          {LETTERS.map((sources, i) => (
+            <Letter key={i} index={i} scene={scene} variant={variant} g={g} sources={sources} />
+          ))}
+        </Animated.View>
+      </Animated.View>
+    </Animated.View>
+  );
+}
+
+function Letter({
+  index,
+  scene,
+  variant,
+  g,
+  sources,
+}: {
+  index: number;
+  scene: SharedValue<LaunchScene>;
+  variant: SharedValue<number>;
+  g: LaunchGeometry;
+  sources: Variants;
+}) {
+  const moved = useAnimatedStyle(() => ({
+    transform: [{ translateX: (scene.value.letters[index] ?? 0) * g.wordScale }],
+  }));
+  return (
+    <Animated.View style={[StyleSheet.absoluteFill, moved]}>
+      <Texture layer="letters" sources={sources} variant={variant} g={g} />
+    </Animated.View>
+  );
+}
+
+// The system splash's mark, flat (its first frame): still, drawn once.
+function FlatMark({ g, w }: { g: LaunchGeometry; w: number }) {
+  const bandTop = g.cy - BAND / 2;
+  return (
+    <View style={[styles.at, { top: bandTop, width: w, height: BAND }]}>
+      <Svg width={w} height={BAND} viewBox={`0 ${bandTop} ${w} ${BAND}`}>
+        <Defs>
+          <ClipPath id="launch-flat-first">
+            <Rect {...rectProps(g.a0)} />
+          </ClipPath>
+        </Defs>
+        <Rect {...rectProps(g.a0)} fill={BRAND.purple} />
+        <Rect {...rectProps(g.b0)} fill={BRAND.pink} />
+        <Rect {...rectProps(g.b0)} fill={BRAND.white} clipPath="url(#launch-flat-first)" />
+      </Svg>
+    </View>
+  );
+}
+
+// The ring, the flare and the glint, flat as before (decision 12.11), in the band around the
+// centre. Their props stay as they are while none shows, so the picture is not drawn again.
+function Lights({
   scene,
   g,
   w,
-  h,
 }: {
   scene: SharedValue<LaunchScene>;
   g: LaunchGeometry;
   w: number;
-  h: number;
 }) {
-  const open = (s: LaunchScene) => {
+  const glinting = (s: LaunchScene) => {
     'worklet';
-    return s.window;
+    return s.glint !== null;
   };
-  const windowA = useAnimatedProps(() => rectProps(open(scene.value)?.a ?? NOTHING));
-  const windowB = useAnimatedProps(() => rectProps(open(scene.value)?.b ?? NOTHING));
-  const windowA2 = useAnimatedProps(() => rectProps(open(scene.value)?.a ?? NOTHING));
-  const windowB2 = useAnimatedProps(() => rectProps(open(scene.value)?.b ?? NOTHING));
-  const rimA = useAnimatedProps(() => rectProps(open(scene.value)?.a ?? NOTHING));
-  const rimB = useAnimatedProps(() => rectProps(open(scene.value)?.b ?? NOTHING));
-  const rimClipA = useAnimatedProps(() => rectProps(open(scene.value)?.a ?? NOTHING));
-  const rimClipB = useAnimatedProps(() => rectProps(open(scene.value)?.b ?? NOTHING));
-  const white = useAnimatedProps(() => ({ opacity: open(scene.value)?.white ?? 0 }));
-  const rim = useAnimatedProps(() => ({ opacity: open(scene.value)?.rim ?? 0 }));
-  const glow = useAnimatedProps(() => ({
-    opacity: open(scene.value) ? scene.value.glow : 0,
-  }));
+  const llA = useAnimatedProps(() => rectProps(glinting(scene.value) ? scene.value.a : NOTHING));
+  const llB = useAnimatedProps(() => rectProps(glinting(scene.value) ? scene.value.b : NOTHING));
+  const glint = useAnimatedProps(() => {
+    const s = scene.value;
+    const gl = s.glint;
+    return gl
+      ? {
+          d: glintPath(gl.x, g.cy, s.a[1] - 2, s.a[1] + s.a[3] + 2),
+          opacity: gl.opacity * s.marks,
+        }
+      : { d: 'M0 0Z', opacity: 0 };
+  });
+  const ring = useAnimatedProps(() => {
+    const r = scene.value.ring;
+    return r
+      ? { cx: r.cx, cy: r.cy, r: r.r, strokeWidth: r.width, opacity: r.opacity }
+      : { cx: 0, cy: 0, r: 0, strokeWidth: 0, opacity: 0 };
+  });
+  const flare = useAnimatedProps(() => flareCircle(scene.value.flare));
+  const bandTop = g.cy - BAND / 2;
   return (
-    <Svg width={w} height={h}>
-      <Defs>
-        <RadialGradient id="launch-glow">
-          <Stop offset="0" stopColor={LAUNCH_LIGHT.glow} stopOpacity={0.8} />
-          <Stop offset="1" stopColor={LAUNCH_LIGHT.glow} stopOpacity={0} />
-        </RadialGradient>
-        <ClipPath id="launch-rim-a">
-          <AnimatedRect animatedProps={rimClipA} />
-        </ClipPath>
-        <ClipPath id="launch-rim-b">
-          <AnimatedRect animatedProps={rimClipB} />
-        </ClipPath>
-        {/* The window: the curtain is cut where its capsules are. */}
-        <Mask id="launch-window" maskUnits="userSpaceOnUse" x={0} y={0} width={w} height={h}>
-          <Rect x={0} y={0} width={w} height={h} fill={LAUNCH_MASK.keep} />
-          <AnimatedRect animatedProps={windowA} fill={LAUNCH_MASK.cut} />
-          <AnimatedRect animatedProps={windowB} fill={LAUNCH_MASK.cut} />
-        </Mask>
-      </Defs>
-      <G mask="url(#launch-window)">
-        <Rect x={0} y={0} width={w} height={h} fill={BRAND.ink} />
-        <AnimatedEllipse
-          cx={g.cx}
-          cy={g.cy}
-          rx={GLOW_RX}
-          ry={GLOW_RY}
-          fill="url(#launch-glow)"
-          animatedProps={glow}
-        />
-        <Marks scene={scene} g={g} h={h} id="window" phase="window" />
-      </G>
-      {/* The window fills white as it opens, with a thin light where its capsules meet. */}
-      <AnimatedG animatedProps={white} fill={BRAND.white}>
-        <AnimatedRect animatedProps={windowA2} />
-        <AnimatedRect animatedProps={windowB2} />
-      </AnimatedG>
-      <AnimatedG animatedProps={rim} fill="none" stroke={BRAND.white} strokeWidth={2.4}>
-        <G clipPath="url(#launch-rim-b)">
-          <AnimatedRect animatedProps={rimA} />
+    <View style={[styles.at, { top: bandTop, width: w, height: BAND }]}>
+      <Svg width={w} height={BAND} viewBox={`0 ${bandTop} ${w} ${BAND}`}>
+        <Defs>
+          <RadialGradient id="launch-flare">
+            <Stop offset="0" stopColor={BRAND.white} stopOpacity={0.95} />
+            <Stop offset="0.3" stopColor={LAUNCH_LIGHT.flash} stopOpacity={0.5} />
+            <Stop offset="1" stopColor={BRAND.pink} stopOpacity={0} />
+          </RadialGradient>
+          <LinearGradient id="launch-glint" x1="0" y1="0" x2="1" y2="0">
+            <Stop offset="0" stopColor={BRAND.white} stopOpacity={0} />
+            <Stop offset="0.5" stopColor={BRAND.white} stopOpacity={0.85} />
+            <Stop offset="1" stopColor={BRAND.white} stopOpacity={0} />
+          </LinearGradient>
+          <ClipPath id="launch-ll">
+            <AnimatedRect animatedProps={llA} />
+            <AnimatedRect animatedProps={llB} />
+          </ClipPath>
+        </Defs>
+        <G clipPath="url(#launch-ll)">
+          <AnimatedPath animatedProps={glint} fill="url(#launch-glint)" />
         </G>
-        <G clipPath="url(#launch-rim-a)">
-          <AnimatedRect animatedProps={rimB} />
-        </G>
-      </AnimatedG>
-    </Svg>
+        <AnimatedCircle animatedProps={ring} fill="none" stroke={BRAND.white} />
+        <AnimatedCircle animatedProps={flare} fill="url(#launch-flare)" />
+      </Svg>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   fill: { flex: 1 },
   ink: { backgroundColor: BRAND.ink },
+  at: { position: 'absolute', left: 0, top: 0 },
+  clip: { position: 'absolute', left: 0, top: 0, overflow: 'hidden' },
 });

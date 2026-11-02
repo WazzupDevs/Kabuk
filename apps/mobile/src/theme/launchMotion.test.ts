@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import { MAIN, reach, SPLASH, SPLASH_REACH } from '../../../../scripts/icon/mark.ts';
 
+import { LAUNCH_ART, LAUNCH_TEXTURE_BOX, type TextureBox } from './launchTextures';
 import {
+  bezier,
   flareCircle,
   glintPath,
   LAUNCH_BAND,
@@ -17,6 +19,12 @@ import {
   markReach,
   parsePath,
   type Rect,
+  RISO_BOIL_MS,
+  RISO_BOIL_OFFSET,
+  RISO_IN_MS,
+  RISO_MISREGISTER,
+  risoIn,
+  risoVariant,
   shiftedPath,
   SPLASH_REACH_DP,
 } from './launchMotion';
@@ -36,11 +44,7 @@ function frames(kind: LaunchKind, reduce: boolean, wait = 0, step = 4): [number,
   return out;
 }
 
-const inCapsule = ([x, y, w, h]: Rect, px: number, py: number): boolean => {
-  const r = w / 2;
-  const cy = Math.min(Math.max(py, y + r), y + h - r);
-  return Math.hypot(px - (x + r), py - cy) <= r;
-};
+const TOGETHER = { a: [0, 0], b: [0, 0], cross: [0, 0], letters: [0, 0] };
 
 describe('the first frame is the system splash', () => {
   it('uses the same drawing and reach as the app icon', () => {
@@ -60,7 +64,7 @@ describe('the first frame is the system splash', () => {
       expect(s.b[1] + s.b[3] - s.a[1]).toBeCloseTo(137.2, 1);
       expect(s.marks).toBe(1);
       expect(s.curtain).toBe(1);
-      expect(s.window).toBeNull();
+      expect(s.apart).toEqual(TOGETHER);
       expect(s.glow).toBeCloseTo(0, 6);
       // The letters wait behind the first l.
       expect(s.letters).toEqual([g.letterStart, g.letterStart, g.letterStart]);
@@ -104,30 +108,47 @@ describe('motion', () => {
     }
   });
 
-  it.each(KINDS)('%s opens the window over the whole screen', (kind) => {
+  it.each(KINDS)('%s: the print parts as the curtain fades (§14.2.1)', (kind) => {
     const T = launchTimeline(kind, false, 0);
-    const last = launchFrame(kind, false, g, T.R1, 0);
+    const at = (u: number) => launchFrame(kind, false, g, T.R0 + u * (T.R1 - T.R0), 0);
+    const start = at(0);
+    expect(start.apart).toEqual(TOGETHER);
+    expect(start.curtain).toBe(1);
+    expect(start.appScale).toBeCloseTo(1.06, 6);
+    expect(launchFrame(kind, false, g, T.R0 - 1, 0).appScale).toBeCloseTo(1.06, 6);
+    const mid = at(0.5);
+    const p = Math.pow(0.5, 1.6);
+    expect(mid.apart.a[0]).toBeCloseTo(-60 * p, 6);
+    expect(mid.apart.a[1]).toBeCloseTo(-30 * p, 6);
+    expect(mid.apart.b[0]).toBeCloseTo(60 * p, 6);
+    expect(mid.apart.b[1]).toBeCloseTo(30 * p, 6);
+    expect(mid.apart.cross).toEqual([0, -20 * p]);
+    expect(mid.apart.letters).toEqual([0, -40 * p]);
+    expect(mid.curtain).toBeCloseTo(1 - bezier(0.65, 0, 0.35, 1, (0.5 - 0.2) / 0.8), 6);
+    expect(mid.appScale).toBeCloseTo(1 + 0.06 * (1 - bezier(0.2, 0.8, 0.2, 1, 0.5)), 6);
+    // The curtain holds until a fifth of the way.
+    expect(at(0.2).curtain).toBe(1);
+    const last = at(1);
     expect(last.done).toBe(true);
-    expect(last.appScale).toBeCloseTo(1, 3);
-    const win = last.window;
-    if (!win) throw new Error('no window');
-    for (const [px, py] of [
-      [0, 0],
-      [W, 0],
-      [0, H],
-      [W, H],
-    ] as const) {
-      expect(inCapsule(win.a, px, py) || inCapsule(win.b, px, py)).toBe(true);
-    }
+    expect(last.curtain).toBe(0);
+    expect(last.appScale).toBeCloseTo(1, 6);
+    expect(last.apart).toEqual({ a: [-60, -30], b: [60, 30], cross: [0, -20], letters: [0, -40] });
   });
 
-  it.each(KINDS)('%s: the window starts as the capsules, white', (kind) => {
-    const T = launchTimeline(kind, false, 0);
-    const before = launchFrame(kind, false, g, T.R0 - 1, 0);
-    const at = launchFrame(kind, false, g, T.R0, 0);
-    expect(at.window?.white).toBe(1);
-    at.window?.a.forEach((v, i) => expect(v).toBeCloseTo(before.a[i] ?? 0, 0));
-  });
+  it.each(['cold', 'first'] as const)(
+    '%s: the wordmark stays where it is at R0 and does not grow',
+    (kind) => {
+      const T = launchTimeline(kind, false, 0);
+      const r0 = launchFrame(kind, false, g, T.R0, 0);
+      for (let t = T.R0; t <= T.R1; t += 20) {
+        const s = launchFrame(kind, false, g, t, 0);
+        expect(s.a).toEqual(r0.a);
+        expect(s.b).toEqual(r0.b);
+        expect(s.letters).toEqual(r0.letters);
+        expect(s.lettersClip).toBe(r0.lettersClip);
+      }
+    },
+  );
 
   it('cold and first end as the wordmark ll', () => {
     for (const kind of ['cold', 'first'] as const) {
@@ -140,16 +161,15 @@ describe('motion', () => {
   });
 });
 
-// LaunchCurtain draws the frames before the window only in a band around the centre: everything
-// that shows on them stays inside it (the capsules, the letters' height, the ring and the flare).
-describe('the band before the window', () => {
+// LaunchCurtain draws the ring, the flare and the glint (clipped by the capsules) only in a band
+// around the centre: everything that shows there stays inside it.
+describe('the band', () => {
   it(`holds every mark, ring and flare within ${LAUNCH_BAND / 2} dp of the centre`, () => {
     const half = LAUNCH_BAND / 2;
     for (const kind of KINDS)
       for (const reduce of [false, true])
         for (const wait of [0, 1200, 1400])
           for (const [t, s] of frames(kind, reduce, wait)) {
-            if (s.window) continue;
             const at = `${kind} ${reduce} ${wait} ${t}`;
             if (s.marks > 0)
               for (const r of [s.a, s.b]) {
@@ -177,10 +197,10 @@ describe('waiting for the app', () => {
     }
     expect([T.R0 - T0.R0, T.R1 - T0.R1]).toEqual([wait, wait]);
     for (let u = 0; u <= 1; u += 0.1) {
-      const late = launchFrame(kind, false, g, T.R0 + u * (T.R1 - T.R0), wait).window;
-      const now = launchFrame(kind, false, g, T0.R0 + u * (T0.R1 - T0.R0), 0).window;
-      expect(late?.white).toBeCloseTo(now?.white ?? -1, 6);
-      expect(late?.rim).toBeCloseTo(now?.rim ?? -1, 6);
+      const late = launchFrame(kind, false, g, T.R0 + u * (T.R1 - T.R0), wait);
+      const now = launchFrame(kind, false, g, T0.R0 + u * (T0.R1 - T0.R0), 0);
+      expect(late.curtain).toBeCloseTo(now.curtain, 6);
+      expect(late.apart).toEqual(now.apart);
     }
   });
 
@@ -211,7 +231,7 @@ describe('waiting for the app', () => {
 describe('reduce motion', () => {
   it.each(KINDS)('%s moves nothing: only opacities change', (kind) => {
     for (const [, s] of frames(kind, true, 1200)) {
-      expect(s.window).toBeNull();
+      expect(s.apart).toEqual(TOGETHER);
       expect(s.glint).toBeNull();
       expect(s.ring).toBeNull();
       expect(s.flare).toBeNull();
@@ -225,6 +245,100 @@ describe('reduce motion', () => {
   it.each(KINDS)('%s ends with the curtain gone', (kind) => {
     const T = launchTimeline(kind, true, 0);
     expect(launchFrame(kind, true, g, T.R1, 0).curtain).toBe(0);
+  });
+});
+
+// The riso textures are cut to boxes around the centre (launchTextures.ts, `pnpm launch:textures`):
+// each capsule's texture covers everywhere that capsule goes, with its boil jitter.
+describe('riso texture boxes', () => {
+  const c = launchGeometry(0, 0);
+  const JITTER = 0.5;
+  const holds = (box: TextureBox, r: Rect, at: string) => {
+    const [x, y, w, h] = box;
+    expect(r[0], at).toBeGreaterThanOrEqual(x + JITTER);
+    expect(r[1], at).toBeGreaterThanOrEqual(y + JITTER);
+    expect(r[0] + r[2], at).toBeLessThanOrEqual(x + w - JITTER);
+    expect(r[1] + r[3], at).toBeLessThanOrEqual(y + h - JITTER);
+  };
+
+  it('are whole pixels inside the set’s screen', () => {
+    for (const [x, y, w, h] of Object.values(LAUNCH_TEXTURE_BOX)) {
+      for (const v of [x, y, w, h]) expect(Number.isInteger(v)).toBe(true);
+      expect(x).toBeGreaterThanOrEqual(-LAUNCH_ART.w / 2);
+      expect(y).toBeGreaterThanOrEqual(-LAUNCH_ART.h / 2);
+      expect(x + w).toBeLessThanOrEqual(LAUNCH_ART.w / 2);
+      expect(y + h).toBeLessThanOrEqual(LAUNCH_ART.h / 2);
+    }
+  });
+
+  it('cover the capsules and their overlap in every frame', () => {
+    for (const kind of KINDS)
+      for (const reduce of [false, true])
+        for (const wait of [0, 1200, 1400]) {
+          const T = launchTimeline(kind, reduce, wait);
+          for (let t = T.N; t <= T.R1; t += 2) {
+            const s = launchFrame(kind, reduce, c, t, wait);
+            const at = `${kind} ${reduce} ${wait} ${t}`;
+            holds(LAUNCH_TEXTURE_BOX.a, s.a, at);
+            holds(LAUNCH_TEXTURE_BOX.b, s.b, at);
+            const x0 = Math.max(s.a[0], s.b[0]);
+            const y0 = Math.max(s.a[1], s.b[1]);
+            const x1 = Math.min(s.a[0] + s.a[2], s.b[0] + s.b[2]);
+            const y1 = Math.min(s.a[1] + s.a[3], s.b[1] + s.b[3]);
+            if (x1 > x0 && y1 > y0) holds(LAUNCH_TEXTURE_BOX.cross, [x0, y0, x1 - x0, y1 - y0], at);
+          }
+        }
+  });
+
+  it('cover the letters where the word ends', () => {
+    for (const letter of SKA_LETTERS) {
+      const { nums } = parsePath(letter);
+      const xs = nums.flatMap((n) => n.filter((_, i) => i % 2 === 0));
+      const ys = nums.flatMap((n) => n.filter((_, i) => i % 2 === 1));
+      const x0 = c.wordX + Math.min(...xs) * c.wordScale;
+      const y0 = c.wordY + Math.min(...ys) * c.wordScale;
+      const x1 = c.wordX + Math.max(...xs) * c.wordScale;
+      const y1 = c.wordY + Math.max(...ys) * c.wordScale;
+      holds(LAUNCH_TEXTURE_BOX.letters, [x0, y0, x1 - x0, y1 - y0], letter.slice(0, 8));
+    }
+  });
+});
+
+describe('riso', () => {
+  it('comes in over the flat mark in 300 ms, within the splash hand-off (420 ms)', () => {
+    expect(RISO_IN_MS).toBe(300);
+    expect(risoIn(-1)).toBe(0);
+    expect(risoIn(0)).toBe(0);
+    expect(risoIn(150)).toBeCloseTo(bezier(0.65, 0, 0.35, 1, 0.5), 6);
+    expect(risoIn(RISO_IN_MS)).toBe(1);
+    expect(risoIn(420)).toBe(1);
+  });
+
+  it('boils at 8 fps through three variants', () => {
+    expect(RISO_BOIL_MS).toBe(125);
+    expect([0, 124, 125, 249, 250, 374, 375, 500].map((ms) => risoVariant(ms, false))).toEqual([
+      0, 0, 1, 1, 2, 2, 0, 1,
+    ]);
+    expect(risoVariant(-1, false)).toBe(0);
+  });
+
+  it('does not boil with reduce motion', () => {
+    for (let ms = 0; ms < 3000; ms += 25) expect(risoVariant(ms, true)).toBe(0);
+  });
+
+  it('misregisters the inks and jitters each variant by half a dp at most', () => {
+    expect(RISO_MISREGISTER.a).toEqual([-1, -0.7]);
+    expect(RISO_MISREGISTER.b).toEqual([1, 0.7]);
+    expect(RISO_MISREGISTER.cross).toEqual([0, 0.5]);
+    expect(RISO_MISREGISTER.letters).toEqual([0, 0.5]);
+    for (const variants of Object.values(RISO_BOIL_OFFSET)) {
+      expect(variants).toHaveLength(3);
+      for (const [dx, dy] of variants) {
+        expect(Math.abs(dx)).toBeLessThanOrEqual(0.5);
+        expect(Math.abs(dy)).toBeLessThanOrEqual(0.5);
+      }
+      expect(new Set(variants.map((v) => v.join())).size).toBe(3);
+    }
   });
 });
 
