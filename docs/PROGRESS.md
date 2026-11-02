@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (2 Kasım 2026, Aura v65 5. aşama: Keşfet ve giriş birleşti)
+
+- #344 (U13–U14 Keşfet liste ve harita) ve #345 (U15–U18 Aktiviteler, mekân sayfası, check-in noktası) birleşti; native yok, yayın OTA. Ortak: glass sm 22, chip iç 12, tag iç 8, `Sec` h3, `EmptyState` h3 + body, tag ok/lively v65, sekme ekranlarında `TabBarFade`, `Round light`, `Tag` `scene`/`sceneCalm`.
+- Engelli: harita pin etiketi cam kapsül (GL katmanı), (i) 40 cam (MapLibre'nin kendi düğmesi), sokak adı 600 (yazı sunucusunda yok). Haritada su/ara yol/ray/sınır tuvalin renklerinden türetildi, proje sahibinin onayı bekliyor.
+- Sıradaki: rapor §5 U19 (Mekan) → U25, sonra U26–U30 sohbetler, U31–U35 profil, U36 hâller; sonra 6 (riso görseller, masa kartları), 7, 8, 9. Panolar canlı tuvalden (`Artifact read`).
+- Proje sahibinin gönderdikleri sohbette (repoda değil; yeni oturumda yeniden istenir): `skall-riso-gorseller-v64.zip`, `masa-karti-webp-1of7…7of7.zip`, `masa-adlari.md`, `acilis-riso-doku.zip`. Açık kararlar: 12.6 ve 12.11 (sırası gelince tek soru).
+
 ## Devir notu (2 Kasım 2026, Aura v67 koyu ve U7 birleşti)
 
 - #340: tuval v67 `koyu.css` (koyu `border` #626D68, kontrast istisnası kalktı; `calm` #091F12 ve `featureMuted` #4A6550 onaylı). #341: rapor `docs/design/aura/aktarim-v65.md` (v66–v67'de koyu tema dışında değişen pano yok). #342: U7 alt menü, kapsül ikonlar (compass/calendar/chat/user, Mekân işareti aynı), nokta `buzz`. Yayın OTA.
