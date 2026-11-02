@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { Seg, T } from '@/aura/kit';
 import { tr } from '@/i18n/tr';
 import { SCHEME_PREFERENCES } from '@/theme/registry';
-import { KIT } from '@/theme/auraKit';
+import { SPACING } from '@/theme/tokens';
 import { THEME } from '@/theme/theme';
 import { setSchemePreference, useSchemePreference } from '@/theme/ThemeProvider';
 
@@ -14,20 +14,23 @@ export function AppearanceSetting() {
   const scheme = useSchemePreference() ?? THEME.defaultScheme;
 
   return (
-    <View style={{ gap: KIT.size.rowGap }}>
-      <T v="sec" accessibilityRole="header">
+    // U33: the title h3, the seg 8 under it and 4 over its note.
+    <View style={{ gap: SPACING[1] }}>
+      <T v="h3" accessibilityRole="header">
         {tr.settings.appearance.title}
       </T>
-      <Seg
-        accessibilityLabel={tr.settings.appearance.title}
-        value={scheme}
-        onChange={(value) => setSchemePreference(value)}
-        options={SCHEME_PREFERENCES.map((value) => ({
-          value,
-          label: tr.settings.appearance.options[value],
-          testID: `appearance-${value}`,
-        }))}
-      />
+      <View style={{ marginTop: SPACING[2], marginBottom: SPACING[1] }}>
+        <Seg
+          accessibilityLabel={tr.settings.appearance.title}
+          value={scheme}
+          onChange={(value) => setSchemePreference(value)}
+          options={SCHEME_PREFERENCES.map((value) => ({
+            value,
+            label: tr.settings.appearance.options[value],
+            testID: `appearance-${value}`,
+          }))}
+        />
+      </View>
       <T v="fine">{tr.settings.appearance.notes[scheme]}</T>
     </View>
   );
