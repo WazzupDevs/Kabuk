@@ -10,7 +10,7 @@ import { Btn, Glass, Round, Sec, T, Tag } from '@/aura/kit';
 import { SceneGround } from '@/aura/Scene';
 import { VenueScene } from '@/aura/VenueScene';
 import { EmptyState } from '@/components/EmptyState';
-import { Frost, GlassTarget } from '@/components/LiquidGlass';
+import { GlassTarget } from '@/components/LiquidGlass';
 import { Loader } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
 import { useTabBarSpace } from '@/components/TabBar';
@@ -22,7 +22,7 @@ import { tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
 import { venueType } from '@/lib/venueType';
 import { AURA } from '@/theme/aura';
-import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { KIT } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 import { VENUE_FRAME } from '@/theme/venueScene';
@@ -104,41 +104,48 @@ export default function VenueDetailScreen() {
           paddingBottom: insets.bottom + SPACING[8] + barSpace,
         }}
       >
+        {/* U17: the scene from the very top, 300 high with the status bar on it (no strip of its
+            own), its bottom corners 28. */}
         <View
           onLayout={(e) => setSceneWidth(e.nativeEvent.layout.width)}
           style={{
-            height: VENUE_FRAME.height * k + insets.top,
-            borderBottomLeftRadius: KIT.stage.radius,
-            borderBottomRightRadius: KIT.stage.radius,
+            height: KIT.venueHero.height,
+            borderBottomLeftRadius: KIT.venueHero.radius,
+            borderBottomRightRadius: KIT.venueHero.radius,
             overflow: 'hidden',
           }}
         >
           {/* The scene is the backdrop of the buttons and tags over it: they frost it, a lamp's
               cord blurred behind a tag instead of crossing its words (the owner's report, 30 Ekim). */}
           <GlassTarget backdrop style={StyleSheet.absoluteFill}>
-            <SceneGround top={0} bottom={KIT.stage.radius} />
+            <SceneGround top={0} bottom={KIT.venueHero.radius} />
             {sceneWidth > 0 ? (
-              <VenueScene kind={venueType(venue)} width={sceneWidth} delay={SCENE_CAST_DELAY} />
+              <View
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  height: VENUE_FRAME.height * k,
+                }}
+              >
+                <VenueScene kind={venueType(venue)} width={sceneWidth} delay={SCENE_CAST_DELAY} />
+              </View>
             ) : null}
           </GlassTarget>
           {/* The picture appears frosted and resolves 320 ms later over 500 (hareket.json). */}
           <FrostResolve />
-          {/* The status bar frosted over the scene: the cords pass under its words, blurred. */}
           <View
-            pointerEvents="none"
-            style={{ position: 'absolute', left: 0, right: 0, top: 0, height: insets.top }}
+            className="flex-row items-center justify-between"
+            style={{ paddingHorizontal: KIT.size.side, paddingTop: insets.top + SPACING[2] }}
           >
-            <Frost radius={0} ground={AURA[scheme].ground} />
-          </View>
-          <View
-            className="flex-row items-start justify-between"
-            style={{ paddingHorizontal: KIT.size.side, paddingTop: insets.top + SPACING[3] }}
-          >
-            <Round big icon="back" label={tr.explore.back} onPress={() => router.back()} />
+            {/* U17: back on light glass, 44; the kind and the bucket as light tags, 28. */}
+            <Round light icon="back" label={tr.explore.back} onPress={() => router.back()} />
             <View style={{ flexDirection: 'row', gap: KIT.size.chipGap }}>
-              <Tag large label={tr.explore.typeLabel[venueType(venue)]} />
+              <Tag large tone="scene" label={tr.explore.typeLabel[venueType(venue)]} />
               <Tag
                 large
+                tone={calm ? 'sceneCalm' : 'scene'}
                 label={tr.explore.buckets[venue.bucket]}
                 lead={
                   calm ? undefined : (
@@ -160,25 +167,30 @@ export default function VenueDetailScreen() {
           style={{
             flexGrow: 1,
             paddingHorizontal: KIT.size.side,
-            paddingTop: SPACING[5],
-            gap: GAP,
+            paddingTop: SPACING[6],
+            gap: SPACING[6],
           }}
         >
-          <View style={{ gap: SPACING[1.5] }}>
-            <T v="display" style={KIT_TYPE.venueTitle} accessibilityRole="header">
-              {venue.name}
-            </T>
-            <T v="bodyLg">{venue.district}</T>
+          {/* U17: the name at .display, the district in the ink 2 under it, why the position is
+              asked muted 8 under them. */}
+          <View style={{ gap: SPACING[2] }}>
+            <View style={{ gap: SPACING[0.5] }}>
+              <T v="display" accessibilityRole="header">
+                {venue.name}
+              </T>
+              <T v="body" ink>
+                {venue.district}
+              </T>
+            </View>
+            {/* Before a check-in only: once here, the location was already checked (the owner's
+                report, 30 Ekim). */}
+            {here ? null : <T v="body">{tr.explore.checkInHint}</T>}
           </View>
-          {/* Before a check-in only: once here, the location was already checked (the owner's
-              report, 30 Ekim). */}
-          {here ? null : <T v="body">{tr.explore.checkInHint}</T>}
           <Btn
             block
             tall
             icon={here ? 'forward' : 'pin'}
             label={here ? tr.explore.backToVenue : tr.explore.checkInHere}
-            style={{ marginTop: SPACING[2.5] }}
             onPress={() => {
               if (here) {
                 router.navigate('/venue');
@@ -195,43 +207,46 @@ export default function VenueDetailScreen() {
               router.push('/checkin');
             }}
           />
-          {/* The week's events, under the button (the owner's call, 31 Ekim). */}
-          <Sec title={tr.explore.eventsTitle} note={tr.explore.weekNote} />
-          {venue.events.length === 0 ? (
-            <T v="fine">{tr.explore.noEvents}</T>
-          ) : (
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={{ marginHorizontal: -KIT.size.side }}
-              contentContainerStyle={{ paddingHorizontal: KIT.size.side, gap: KIT.size.rowGap }}
-            >
-              {venue.events.map((event, i) => (
-                <Glass
-                  sm
-                  key={`${event.startsAt}-${event.title}`}
-                  style={{
-                    width: KIT.size.eventCard,
-                    padding: KIT.size.eventPad,
-                    gap: KIT.size.chipsGap,
-                  }}
-                >
-                  <Tag
-                    tone={i % 2 === 0 ? 'purple' : 'pink'}
-                    label={tr.explore.eventTime(
-                      describeEventTime(event.startsAt, event.endsAt, now),
-                    )}
-                  />
-                  <T v="h3">{event.title}</T>
-                </Glass>
-              ))}
-            </ScrollView>
-          )}
+          {/* The week's events, under the button (the owner's call, 31 Ekim); none: a small glass
+              card says so (U17). */}
+          <View style={{ gap: SPACING[3] }}>
+            <Sec title={tr.explore.eventsTitle} note={tr.explore.weekNote} />
+            {venue.events.length === 0 ? (
+              <Glass sm style={{ padding: SPACING[4] }}>
+                <T v="fine">{tr.explore.noEvents}</T>
+              </Glass>
+            ) : (
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={{ marginHorizontal: -KIT.size.side }}
+                contentContainerStyle={{ paddingHorizontal: KIT.size.side, gap: KIT.size.rowGap }}
+              >
+                {venue.events.map((event, i) => (
+                  <Glass
+                    sm
+                    key={`${event.startsAt}-${event.title}`}
+                    style={{
+                      width: KIT.size.eventCard,
+                      padding: KIT.size.eventPad,
+                      gap: KIT.size.chipsGap,
+                    }}
+                  >
+                    <Tag
+                      tone={i % 2 === 0 ? 'purple' : 'pink'}
+                      label={tr.explore.eventTime(
+                        describeEventTime(event.startsAt, event.endsAt, now),
+                      )}
+                    />
+                    <T v="h3">{event.title}</T>
+                  </Glass>
+                ))}
+              </ScrollView>
+            )}
+          </View>
         </View>
       </ScrollView>
     </View>
   );
 }
-
-const GAP = 14;

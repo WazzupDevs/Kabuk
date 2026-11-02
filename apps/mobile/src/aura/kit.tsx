@@ -396,6 +396,7 @@ export function Round({
   loading,
   primary,
   big,
+  light,
   side,
   children,
 }: {
@@ -411,8 +412,10 @@ export function Round({
   loading?: boolean;
   // The main action of a row (accept, join): the primary's round.
   primary?: boolean;
-  // The venue page's back button: 48.
+  // The venue page's back button: 44.
   big?: boolean;
+  // Over a picture (U17): light glass, a white edge, the ink, in both schemes.
+  light?: boolean;
   // Its own size (Masa's bar: 48, or 44 on a narrow phone).
   side?: number;
   children?: ReactNode;
@@ -423,8 +426,14 @@ export function Round({
   const shadowOff = useLabOff('golge');
   const frost = useFrost();
   const off = disabled && !loading;
-  const frosted = frost && glassy && !primary && !off;
-  const fg = off ? c.onDisabled : primary ? KIT.onPrimary : (color ?? c.ink);
+  const frosted = frost && glassy && !primary && !off && !light;
+  const fg = off
+    ? c.onDisabled
+    : primary
+      ? KIT.onPrimary
+      : light
+        ? KIT.sceneRound.ink
+        : (color ?? c.ink);
   const shadow = off
     ? null
     : primary
@@ -458,18 +467,24 @@ export function Round({
             ? { backgroundColor: frost ? c.disabled : c.disabledOnCard }
             : primary
               ? { backgroundColor: KIT.primary, boxShadow: shadow?.boxShadow }
-              : glassy
+              : light
                 ? {
-                    backgroundColor: frosted ? undefined : c.raisedRound,
+                    backgroundColor: KIT.sceneRound.bg,
                     borderWidth: KIT.size.edge,
-                    borderColor: c.raisedEdge,
-                    boxShadow: shadow?.boxShadow,
+                    borderColor: KIT.sceneRound.edge,
                   }
-                : null,
+                : glassy
+                  ? {
+                      backgroundColor: frosted ? undefined : c.raisedRound,
+                      borderWidth: KIT.size.edge,
+                      borderColor: c.raisedEdge,
+                      boxShadow: shadow?.boxShadow,
+                    }
+                  : null,
         ]}
       >
         {shadow?.node}
-        {glassy && !primary && !off ? <FrostOf height={s} fill={c.raisedRound} /> : null}
+        {glassy && !primary && !off && !light ? <FrostOf height={s} fill={c.raisedRound} /> : null}
         {loading ? (
           <Loader kind="meet" size={KIT.size.iconSm} delay={0} label={null} />
         ) : (
@@ -602,7 +617,8 @@ export function Chip({
   );
 }
 
-export type TagTone = 'purple' | 'pink' | 'amber' | 'green' | 'glassy' | 'art' | 'artLit';
+export type TagTone =
+  'purple' | 'pink' | 'amber' | 'green' | 'glassy' | 'art' | 'artLit' | 'scene' | 'sceneCalm';
 
 // .tag: a small capsule of a colour, its dot or icon first.
 export function Tag({
@@ -632,7 +648,11 @@ export function Tag({
         ? { bg: KIT.artTag, fg: KIT.white }
         : tone === 'artLit'
           ? { bg: KIT.white, fg: KIT.light.ink }
-          : { bg: tags[tone].bg, fg: tags[tone].fg };
+          : tone === 'scene'
+            ? KIT.sceneTag
+            : tone === 'sceneCalm'
+              ? KIT.sceneTagCalm
+              : { bg: tags[tone].bg, fg: tags[tone].fg };
   return (
     <View
       style={{
@@ -796,11 +816,10 @@ export function Sec({ title, note, large }: { title: string; note?: string; larg
         alignItems: 'baseline',
         justifyContent: 'space-between',
         paddingTop: KIT.size.secPadTop,
-        paddingHorizontal: KIT.size.secPadX,
       }}
     >
-      {/* Mekan's lobby: 21, its note 14. */}
-      <T v={large ? 'secXl' : 'sec'} accessibilityRole="header">
+      {/* U4: a section's head at h3 (Mekan's lobby still 21, its note 14). */}
+      <T v={large ? 'secXl' : 'h3'} accessibilityRole="header">
         {title}
       </T>
       {note ? <T v={large ? 'fineLg' : 'fine'}>{note}</T> : null}

@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Image, useWindowDimensions, View } from 'react-native';
 
-import { Li, RowList, Seg, T, useKit } from '@/aura/kit';
+import { Glass, Li, Seg, T, useKit } from '@/aura/kit';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
 import { GameDisc } from '@/components/Glyph';
@@ -14,6 +14,7 @@ import { Rise } from '@/components/motion';
 import { Screen } from '@/components/Screen';
 import { Sheet } from '@/components/Sheet';
 import { Tag } from '@/components/Tag';
+import { boxShadowParts } from '@/components/NativeShadow';
 import { Text } from '@/components/Text';
 import { EventCard } from '@/features/activities/EventCard';
 import { useGameResults } from '@/features/activities/useGameResults';
@@ -24,14 +25,16 @@ import { useHistoryFriends, usePlayHistory } from '@/features/friends/queries';
 import { GAME_GLYPH } from '@/features/games/GameCard';
 import { errorMessage } from '@/i18n/errors';
 import { type HistoryConcept, historyConcept, tr } from '@/i18n/tr';
+import { useLabOff } from '@/lib/drawLab';
 import { useNow } from '@/lib/useNow';
-import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { KIT } from '@/theme/auraKit';
 import { NARROW_SCREEN, SPACING } from '@/theme/tokens';
 
 type Tab = 'events' | 'history';
 
-// docs/design/aura → Aktiviteler: geçmiş, a record's picture (54).
+// U16: a record's picture 52, 16 round, on the raised shadow.
 const THUMB = KIT.size.historyThumb;
+const THUMB_RADIUS = 16;
 
 // Aktiviteler (docs/SPEC_V4.md §4.C, K-15; v44: .acts): "Aktiviteler" lists today's events at the
 // venues of Keşfet's city (K-38; the district is Keşfet's alone), earliest first, each opening the
@@ -43,14 +46,19 @@ const THUMB = KIT.size.historyThumb;
 export default function ActivitiesScreen() {
   const [tab, setTab] = useState<Tab>('events');
   const now = useNow(60_000);
+  const city = useCity();
   return (
     <Screen edges={['top']} refreshable>
-      <T v="display" style={KIT_TYPE.displayXl} accessibilityRole="header">
-        {tr.tabs.activities}
-      </T>
-      <View className="mt-3">
+      {/* U15: the place as an eyebrow over the title (both tabs), 4 apart; 24 to the tabs. */}
+      <View style={{ gap: SPACING[1] }}>
+        {city.place ? <T v="eyebrow">{tr.activities.fromVenues(city.place.city)}</T> : null}
+        <T v="display" accessibilityRole="header">
+          {tr.tabs.activities}
+        </T>
+      </View>
+      <View style={{ marginTop: SPACING[6] }}>
+        {/* U15: the glass seg, 44 high. */}
         <Seg<Tab>
-          large
           value={tab}
           onChange={setTab}
           accessibilityLabel={tr.activities.tabs}
@@ -60,17 +68,23 @@ export default function ActivitiesScreen() {
           ]}
         />
       </View>
-      {tab === 'events' ? <Events now={now} /> : <History now={now} />}
+      {tab === 'events' ? <Events now={now} city={city} /> : <History now={now} />}
     </Screen>
   );
 }
 
-function Events({ now }: { now: number }) {
+// Keşfet's city (K-38): the venues and the place chosen there.
+function useCity() {
   const { venues, cities, listed } = useCityVenues();
   const saved = useExplorePlace((s) => s.saved);
   const loadPlace = useExplorePlace((s) => s.load);
   useEffect(loadPlace, [loadPlace]);
   const place = useMemo(() => explorePlace(saved, listed), [saved, listed]);
+  return { venues, cities, listed, place };
+}
+
+function Events({ now, city }: { now: number; city: ReturnType<typeof useCity> }) {
+  const { venues, cities, listed, place } = city;
   const events = useMemo(
     () =>
       place
@@ -107,22 +121,20 @@ function Events({ now }: { now: number }) {
       </View>
     );
   }
+  if (events.length === 0) {
+    // U15: the empty state upright in the middle of what is left.
+    return (
+      <View
+        testID="activities-no-events"
+        style={{ flex: 1, justifyContent: 'center', paddingBottom: EMPTY_LIFT }}
+      >
+        <EmptyState kind="empty" title={tr.activities.noEvents} body={tr.activities.noEventsHint} />
+      </View>
+    );
+  }
   return (
-    <View className="mt-2">
-      {place ? (
-        <View style={{ marginTop: SPACING[1], marginBottom: SPACING[2.5] }}>
-          <T v="body">{tr.activities.fromVenues(place.city)}</T>
-        </View>
-      ) : null}
-      {events.length === 0 ? (
-        <View testID="activities-no-events" className="mt-3">
-          <EmptyState
-            kind="empty"
-            title={tr.activities.noEvents}
-            body={tr.activities.noEventsHint}
-          />
-        </View>
-      ) : (
+    <View style={{ marginTop: SPACING[6] }}>
+      {
         <View style={{ gap: SPACING[3] }}>
           {events.map(({ venue, event }, i) => (
             <Rise key={`${venue.id}-${event.startsAt}-${event.title}`} index={i}>
@@ -137,10 +149,14 @@ function Events({ now }: { now: number }) {
             </Rise>
           ))}
         </View>
-      )}
+      }
     </View>
   );
 }
+
+// AktivitelerBos `.empty`: the words centred a little above the middle (150 under them over the
+// tab bar's room).
+const EMPTY_LIFT = SPACING[12];
 
 function History({ now }: { now: number }) {
   const history = usePlayHistory();
@@ -191,20 +207,22 @@ function History({ now }: { now: number }) {
   }));
   const session = groups.flatMap((g) => g.sessions).find((x) => x.key === open) ?? null;
   return (
-    <View className="mt-3">
+    <View style={{ marginTop: SPACING[6], gap: SPACING[6] }}>
       {groups.map((group) => (
-        <View key={group.day}>
-          <View style={{ paddingTop: SPACING[3], paddingBottom: SPACING[1] }}>
-            <T v="body" accessibilityRole="header">
+        // U16: the day as an h3 in the ink, 12 over its rows on a small glass card.
+        <View key={group.day} style={{ gap: SPACING[3] }}>
+          <View style={{ paddingTop: KIT.size.secPadTop }}>
+            <T v="h3" accessibilityRole="header">
               {tr.activities.days[group.day]}
             </T>
           </View>
-          <RowList inset={THUMB + KIT.size.historyGap}>
+          <Glass sm style={{ paddingVertical: KIT.size.listPadY }}>
             {group.sessions.map((x, i) => {
               const h = x.first;
               const result = historyResult(h, results.data ?? []);
               return (
                 <Rise key={x.key} index={i}>
+                  {i > 0 ? <RowHair /> : null}
                   <HistoryRow
                     concept={historyConcept(h.concept)}
                     alias={h.other_alias}
@@ -217,7 +235,7 @@ function History({ now }: { now: number }) {
                 </Rise>
               );
             })}
-          </RowList>
+          </Glass>
         </View>
       ))}
 
@@ -296,19 +314,48 @@ function HistoryRow({
       testID={`history-row-${alias}`}
       accessibilityLabel={tr.activities.rowLabel(game, with_, when, result)}
       onPress={onPress}
-      padY={KIT.size.historyPadY}
-      gap={KIT.size.historyGap}
+      padY={SPACING[3]}
     >
       <Thumb concept={concept} />
-      <View style={{ flex: 1 }}>
-        <T v="sec">{game}</T>
-        <T v="fineLg">{with_}</T>
-      </View>
-      <View style={{ alignItems: 'flex-end', gap: SPACING[1] }}>
-        <T v="body">{when}</T>
-        {result && variant ? <Tag variant={variant} label={result} /> : null}
+      {/* U16: the day on the title's line at the right, the result under it at the right; the
+          second line keeps its height with or without a result. */}
+      <View style={{ flex: 1, gap: SPACING[0.5] }}>
+        <View style={ROW_LINE}>
+          <View style={{ flex: 1 }}>
+            <T v="h3">{game}</T>
+          </View>
+          <T v="fine">{when}</T>
+        </View>
+        <View style={[ROW_LINE, { minHeight: KIT.size.tag }]}>
+          <View style={{ flex: 1 }}>
+            <T v="fine">{with_}</T>
+          </View>
+          {result && variant ? <Tag variant={variant} label={result} /> : null}
+        </View>
       </View>
     </Li>
+  );
+}
+
+const ROW_LINE = {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: SPACING[2],
+} as const;
+
+// The hairline between two rows: from the words, 16 short of the card's right edge.
+function RowHair() {
+  const { c } = useKit();
+  return (
+    <View
+      style={{
+        height: KIT.size.hair,
+        marginLeft: KIT.size.liPadX + THUMB + KIT.size.liGap,
+        marginRight: KIT.size.liPadX,
+        backgroundColor: c.hair,
+      }}
+    />
   );
 }
 
@@ -319,14 +366,32 @@ const VAMPIR_THUMB = require('../../../assets/game-thumb/vampir.webp');
 // The game's disc; a chat without a game has the speech bubbles.
 function Thumb({ concept }: { concept: HistoryConcept }) {
   const { c } = useKit();
+  // skall.css --shadow-raised (the seg's chosen part has the same).
+  const shadow = boxShadowParts(useLabOff('golge'), c.segShadow || undefined, THUMB_RADIUS);
+  return (
+    <View
+      style={{
+        width: THUMB,
+        height: THUMB,
+        borderRadius: THUMB_RADIUS,
+        boxShadow: shadow.boxShadow,
+      }}
+    >
+      {shadow.node}
+      <View style={{ width: THUMB, height: THUMB, borderRadius: THUMB_RADIUS, overflow: 'hidden' }}>
+        <Picture concept={concept} />
+      </View>
+    </View>
+  );
+}
+
+// What the picture shows until the riso pictures come (Aura v65 §9).
+function Picture({ concept }: { concept: HistoryConcept }) {
+  const { c } = useKit();
   // The new games (K-77) have their card's drawing, round.
   if (concept === 'vampir') {
     return (
-      <Image
-        source={VAMPIR_THUMB}
-        accessible={false}
-        style={{ width: THUMB, height: THUMB, borderRadius: THUMB / 2 }}
-      />
+      <Image source={VAMPIR_THUMB} accessible={false} style={{ width: THUMB, height: THUMB }} />
     );
   }
   if (concept !== 'chat') return <GameDisc name={GAME_GLYPH[concept]} size={THUMB} />;
@@ -337,7 +402,6 @@ function Thumb({ concept }: { concept: HistoryConcept }) {
       style={{
         width: THUMB,
         height: THUMB,
-        borderRadius: THUMB / 2,
         backgroundColor: c.hair,
       }}
     >

@@ -142,24 +142,20 @@ function Empty({ title, body, action, small }: Pick<Props, 'title' | 'body' | 'a
     <View
       style={{
         alignItems: 'center',
-        gap: KIT.size.emptyGap,
+        // U15 (AktivitelerBos `.empty`): 8 apart, 12 in from the sides.
+        gap: SPACING[2],
         paddingTop: small ? KIT.size.emptyTopSm : KIT.size.emptyTop,
-        paddingHorizontal: KIT.size.emptyPadX,
+        paddingHorizontal: SPACING[3],
       }}
     >
       <EmptyMark />
       {title ? (
-        <T
-          v={small ? 'sec' : 'secLg'}
-          center
-          accessibilityRole="header"
-          style={{ marginTop: KIT.size.emptyTitleTop }}
-        >
+        <T v="h3" center accessibilityRole="header" style={{ marginTop: KIT.size.emptyTitleTop }}>
           {title}
         </T>
       ) : null}
       <T
-        v={small ? 'note' : 'emptyNote'}
+        v="body"
         strong={!title}
         center
         style={title ? null : { marginTop: KIT.size.emptyTitleTop }}

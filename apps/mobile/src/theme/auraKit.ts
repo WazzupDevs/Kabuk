@@ -60,8 +60,6 @@ export const KIT_TYPE = {
   // A venue's district under its name on its page (KesfetMekan: .body at 17).
   bodyLg: t(500, 17, 22),
   fine: t(500, 13, 18),
-  // The empty state's note (Aktiviteler, İstekler: .fine 15/21; the lobby's 14/20 is `note`).
-  emptyNote: t(500, 15, 21),
   // What is typed in Profili düzenle's fields (17/24).
   field: t(500, 17, 24),
   // A venue row's second line and its bucket (Keşfet: .fine at 14).
@@ -80,7 +78,8 @@ export const KIT_TYPE = {
   chipLg: t(600, 15, 19),
   tag: t(600, 12, 16),
   // A venue page's tags (14).
-  tagLg: t(600, 14, 18),
+  // A venue page's tags over its scene (U17: 13).
+  tagLg: t(600, 13, 17),
   badge: t(700, 11, 14),
   // The venue chat card's count (24 round, 12).
   badgeLg: t(700, 12, 15),
@@ -337,14 +336,15 @@ export const KIT = {
   tags: {
     purple: { bg: '#D7EEDC', fg: '#055328' },
     pink: { bg: 'rgba(255, 79, 139, 0.12)', fg: '#B0124F' },
-    amber: { bg: 'rgba(255, 181, 71, 0.18)', fg: '#7A4300' },
-    green: { bg: 'rgba(28, 140, 78, 0.12)', fg: '#0F5C31' },
+    amber: { bg: '#FFE6C7', fg: '#7A4300' },
+    // U16: `.tag.ok` (success-soft) and `.tag.lively` (lively); in the dark Aktiviteler's own.
+    green: { bg: '#CDEFD9', fg: '#0F5C31' },
   },
   tagsDark: {
     purple: { bg: 'rgba(61, 220, 132, 0.14)', fg: '#93EBB9' },
     pink: { bg: 'rgba(255, 126, 168, 0.20)', fg: '#FFD0E0' },
-    amber: { bg: 'rgba(255, 181, 71, 0.22)', fg: '#FFE2B8' },
-    green: { bg: 'rgba(95, 198, 160, 0.20)', fg: '#C9F2DF' },
+    amber: { bg: 'rgba(255, 181, 71, 0.16)', fg: '#FFD8A3' },
+    green: { bg: 'rgba(61, 220, 132, 0.16)', fg: '#93EBB9' },
   },
   // Today's event on Keşfet's card: a soft amber ground.
   eventGround: 'rgba(255, 181, 71, 0.14)',
@@ -354,6 +354,13 @@ export const KIT = {
   switchKnobShadow: '0px 2px 8px rgba(3, 27, 11, 0.08)',
   // A game card's corner tag: dark glass over its picture (Masa), and its shadow.
   artTag: 'rgba(3, 27, 11, 0.48)',
+  // U17 (KesfetMekan `.htop`): over the venue's scene, in both schemes, the back button on light
+  // glass and the tags light, the calm one in the calm green.
+  sceneRound: { bg: 'rgba(255, 255, 255, 0.82)', edge: '#FFFFFF', ink: '#031B0B' },
+  sceneTag: { bg: 'rgba(255, 255, 255, 0.82)', fg: '#031B0B' },
+  sceneTagCalm: { bg: 'rgba(215, 238, 220, 0.92)', fg: '#055328' },
+  // U17: the scene 300 high from the very top, its bottom corners 28.
+  venueHero: { height: 300, radius: 28 },
   gameCardShadow: '0px 12px 26px rgba(4, 73, 35, 0.18)',
   // Bitir and Ayrıl on Masa's bar.
   endInk: '#A8301A',
@@ -393,7 +400,7 @@ export const KIT = {
     chipsGap: 8,
     tag: 24,
     // A venue page's tags over its scene: 30 high, 12 inside.
-    tagLg: 30,
+    tagLg: 28,
     tagLgPadX: 12,
     tagPadX: 8,
     tagGap: 4,
@@ -410,15 +417,11 @@ export const KIT = {
     // The empty state: its sign 28 × 42, 6 apart, the title 10 under the sign; 26 above (the
     // lobby's 18), 8 inside.
     emptyMark: { width: 28, height: 42 },
-    emptyGap: 6,
     emptyTitleTop: 10,
     emptyTop: 26,
     emptyTopSm: 18,
-    emptyPadX: 8,
-    // Aktiviteler's history rows: a 54 picture 14 from the words, 8 above and under.
-    historyThumb: 54,
-    historyGap: 14,
-    historyPadY: 8,
+    // Aktiviteler's history rows (U16): a 52 picture.
+    historyThumb: 52,
     // Kapsülün: the empty part's tile (104, its capsule 70), a pack's tiles 70 high with the capsule
     // 10 down in them, the chosen one's ring (3) and a pack's block (16 inside, 12 apart).
     partTile: 104,
