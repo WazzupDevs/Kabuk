@@ -55,11 +55,19 @@ appId: app.kabuk.mobile
     timeout: 10000
 - takeScreenshot: 27d-dm-answer
 # §21.2: a long press opens the six reactions; the first face (Beğendim) shows under the bubble.
-- longPressOn: Okudum
-- extendedWaitUntil:
-    visible:
-      id: reaction-bar
-    timeout: 10000
+# The bot's answer arrives over Realtime and settles in the list: one more try if the press found
+# no bubble yet.
+- retry:
+    maxRetries: 1
+    commands:
+      - waitForAnimationToEnd
+      - longPressOn:
+          text: Okudum
+          label: first long press on the bot's answer
+      - extendedWaitUntil:
+          visible:
+            id: reaction-bar
+          timeout: 10000
 - takeScreenshot: 27f-dm-reaction-bar
 # CLAUDE.md → Ekran davranışı: the back key closes the bar (the DM stays open); a tap outside
 # is checked at the end of the DM.
@@ -70,11 +78,17 @@ appId: app.kabuk.mobile
     timeout: 5000
 - assertVisible:
     id: dm-input
-- longPressOn: Okudum
-- extendedWaitUntil:
-    visible:
-      id: reaction-bar
-    timeout: 10000
+- retry:
+    maxRetries: 1
+    commands:
+      - waitForAnimationToEnd
+      - longPressOn:
+          text: Okudum
+          label: second long press, after back closed the bar
+      - extendedWaitUntil:
+          visible:
+            id: reaction-bar
+          timeout: 10000
 - tapOn:
     id: react-0
 - runScript:
