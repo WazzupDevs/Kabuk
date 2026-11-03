@@ -27,3 +27,11 @@ Olası yer: `apps/mobile/src/components/ChatScreen.tsx:748` (ok `metaHidden`'a b
 
 **2.1 Bazı ekranlarda en altta zeminden ayrı, düz renkli bir bant çıkıyor.** Profili düzenle'de "Kaydet" barının, Aktiviteler'de sekme çubuğunun arkasında, renk bulutlu zeminle uyuşmayan açık düz bir şerit; üst kenarı sert çizgi gibi görünüyor. Koyu temada yok. Önem: orta.
 Olası yer: `apps/mobile/src/aura/AuraBackground.tsx:62` (`AuraBand`) → `Slice` açık temada zemin resmini `useWindowDimensions().height`'e göre kesiyor; Android'de bu yükseklik gezinme çubuğunu içermediği için kesit arkadaki zeminle hizalanmıyor (?). Çağıranlar `components/Screen.tsx:180` (alt bar), `components/TabBar.tsx:98`/`:107` (`TabBarFade`). 2 Kasım notundaki K2'nin "sönme bantları" izi.
+
+### 3. Keşfet (liste, açık)
+
+**3.1 Arama çubuğunda "Mekan ara" yazısı çok küçük.** İpucu yazısı alanın içinde okunamayacak kadar küçük çiziliyor. Önem: orta.
+Olası yer: `apps/mobile/app/(app)/(tabs)/explore/index.tsx:732` (`<T v="body" lines={1} fit>` mutlak katmanda; `fit` yazıyı gereksiz küçültüyor (?)).
+
+**3.2 Liste/harita düğmeleri kapsülüne sığmıyor.** Seçili yuvarlak kapsülün üst ve alt kenarından taşıyor. Önem: orta.
+Olası yer: aynı dosya `:803` (`SWITCH_ROUND = 48`) kapsül yüksekliği `KIT.size.field` 48'e indikten sonra (`apps/mobile/src/theme/auraKit.ts:671`, 2 Kasım kararı) değişmemiş; kapsül iç boşluğu `:758` ile 48 + 2×3 > 48. Yuvarlak, kapsül yüksekliğinden türemeli.
