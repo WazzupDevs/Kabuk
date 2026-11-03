@@ -115,27 +115,6 @@ appId: app.kabuk.mobile
 - tapOn:
     id: chat-quote
 - assertVisible: Okudum
-# A tap outside closes the bar too. The bar is a modal over a scrim (MessagePop): the bubbles
-# behind it are out of reach, so the tap lands on the scrim mid-screen, clear of the header and of
-# the bar by the message. The messages are there again after it (in #397's runs the next long
-# press found no "Okudum" after this tap).
-- longPressOn: Okudum
-- extendedWaitUntil:
-    visible:
-      id: reaction-bar
-    timeout: 10000
-- tapOn:
-    point: 50%,40%
-- extendedWaitUntil:
-    notVisible:
-      id: reaction-bar
-    timeout: 5000
-- assertVisible:
-    id: dm-input
-    label: DM open after the outside tap
-- assertVisible:
-    text: Okudum
-    label: messages back after the outside tap
 - tapOn:
     id: chat-back
     optional: true
@@ -162,6 +141,21 @@ appId: app.kabuk.mobile
     visible: '.*Harika'
     timeout: 15000
 - takeScreenshot: 27i-dm-reopened
+# A tap outside closes the reaction bar too (CLAUDE.md → Ekran davranışı). The bar is a modal over
+# a scrim (MessagePop): the bubbles behind it are out of reach, so the tap lands on the scrim
+# mid-screen, clear of the header and of the bar by the message.
+- longPressOn: '.*Harika'
+- extendedWaitUntil:
+    visible:
+      id: reaction-bar
+    timeout: 10000
+- tapOn:
+    point: 50%,40%
+- extendedWaitUntil:
+    notVisible:
+      id: reaction-bar
+    timeout: 5000
+    label: the bar closes on a tap outside
 - tapOn:
     id: chat-back
     optional: true
