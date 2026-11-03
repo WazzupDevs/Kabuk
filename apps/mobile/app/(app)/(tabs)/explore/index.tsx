@@ -40,7 +40,7 @@ import { TabBarFade, useTabBarOverMap, useTabBarSpace } from '@/components/TabBa
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { ExploreMap } from '@/features/explore/ExploreMap';
 import { useExplorePlace } from '@/features/explore/placeStore';
-import { EventTag } from '@/features/explore/VenueTags';
+import { EventTag } from '@/features/explore/EventTag';
 import { type CityVenue, useCityVenues } from '@/features/explore/useExploreVenues';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
