@@ -25,8 +25,8 @@ Olası yer: `apps/mobile/src/components/ChatScreen.tsx:748` (ok `metaHidden`'a b
 
 ### 2. Ekranın en altındaki uyumsuz bant (açık tema)
 
-**2.1 Bazı ekranlarda en altta zeminden ayrı, düz renkli bir bant çıkıyor.** Profili düzenle'de "Kaydet" barının, Aktiviteler'de sekme çubuğunun arkasında ve alt barı olmayan başkasının profilinde de en altta, renk bulutlu zeminle uyuşmayan açık düz bir şerit var; üst kenarı sert çizgi gibi duruyor. Şeridin yüksekliği aşağı yukarı Android gezinme çubuğu kadar. Koyu temada görülmedi. Önem: orta.
-Olası yer: alt barı olmayan ekranda da çıktığı için kök büyük olasılıkla zeminin kendisinde, barda değil: renk bulutlu zemin (`apps/mobile/src/aura/AuraBackground.tsx:31`/`:45`, `height: '100%'`) gezinme çubuğunun altına uzanmıyor ve orada pencerenin düz rengi görünüyor (?). Bant olan ekranlarda `AuraBand` → `Slice` (`:62`, `:92`) zemin resmini `useWindowDimensions().height`'e göre kestiği için aynı hizasızlığı tekrar ediyor. Çağıranlar `components/Screen.tsx:180`, `components/TabBar.tsx:98`/`:107`. 2 Kasım notundaki K2'nin "sönme bantları" izi.
+**2.1 Bazı ekranlarda en altta zeminden ayrı, düz renkli bir bant çıkıyor.** Profili düzenle'de "Kaydet" barının, Aktiviteler'de sekme çubuğunun arkasında alt barı olmayan başkasının profilinde ve Ayarlar alt sayfalarında (Kullanım Koşulları, KVKK Aydınlatma Metni, Gizlilik, Engellenenler, Sessize alınanlar, Bildirim ayarları) da en altta, renk bulutlu zeminle uyuşmayan açık düz bir şerit var; üst kenarı sert çizgi gibi duruyor. Şeridin yüksekliği aşağı yukarı Android gezinme çubuğu kadar. Koyu temada görülmedi. Önem: orta.
+Olası yer: alt barı olmayan ekranda da çıktığı için kök büyük olasılıkla zeminin kendisinde, barda değil: renk bulutlu zemin (`apps/mobile/src/aura/AuraBackground.tsx:31`/`:45`, `height: '100%'`) gezinme çubuğunun altına uzanmıyor ve orada pencerenin düz rengi görünüyor (?). Bant olan ekranlarda `AuraBand` → `Slice` (`:62`, `:92`) zemin resmini `useWindowDimensions().height`'e göre kestiği için aynı hizasızlığı tekrar ediyor. Çağıranlar `components/Screen.tsx:180`, `components/TabBar.tsx:98`/`:107`. 2 Kasım notundaki K2'nin "sönme bantları" izi. Gizlilik, Engellenenler ve Sessize alınanlar'daki riso kanki (`theme/kankiMotion.ts:167-169`, `bottom: 30`) bandın sert kenarında duruyor, bant giderilince kendiliğinden düzelir.
 
 ### 3. Keşfet (liste, açık)
 
@@ -46,3 +46,14 @@ Kırpma: `apps/mobile/src/features/rooms/TableCard.tsx:363` (`Image` + `PICTURE_
 
 **5.1 Alt sayfanın üstünden bakan kapsül kankiler riso çizimi değil.** Sayfanın kenarından bakan üç kanki düz vektör (`Buddy`) çiziliyor; diğer yerlerdeki riso kankilerle uyuşmuyor. Önem: orta.
 Olası yer: `apps/mobile/src/aura/Peek.tsx:34` (`notifications` ve `request` dışındaki her tür, `checkin` dahil, `BuddyPeek` → `Buddy`'ye düşüyor; `:37`), çağıran `apps/mobile/app/(app)/checkin/index.tsx:130` (`peek="checkin"`). Riso yolu aynı dosyada (`RisoKanki`, `RisoStrip`); aynı `BuddyPeek`'i kullanan diğer alt sayfalar da etkileniyor olabilir.
+
+### 6. Ayarlar alt sayfaları ve yasal metinler (açık)
+
+**6.1 Yasal metinlerde riso kanki "Devam" düğmesinin arkasından taşıyor.** Kullanım Koşulları ve KVKK'da pembe kanki düğmenin üstünden bakıyor ama gövdesinin alt kısmı düğmenin altından, en alttaki bandın üstüne çıkıyor. Önem: düşük.
+Olası yer: `apps/mobile/src/components/LegalText.tsx:20` (`LEGAL_PEEK`, `theme/kankiMotion.ts:174`: `top: -36`, yükseklik 105; düğme 48: 105 − 36 = 69 > 48). Düğmenin altında kalan kısım kırpılmalı ya da kankinin yüksekliği düğmeyle sınırlanmalı.
+
+**6.2 Engellenenler ve Sessize alınanlar'ın boş durumunda başlık yok.** Riso resmin altında yalnızca tek satır gövde metni ("Engellediğin kimse yok.") var; diğer boş durumlarda başlık ve açıklama ikilisi var ("Bekleyen istek yok" + açıklama). Önem: düşük.
+Olası yer: `apps/mobile/app/(app)/settings-muted.tsx:51` (`EmptyState ... body=` yalnızca), engellenenler için `app/(app)/settings-blocked.tsx` aynı kalıp.
+
+**6.3 Gizlilik'te "Gizlilik politikası" satırı soluk ve KVKK'yı açıyor.** Satırın yazısı ve ikonu diğer satırlardan soluk görünüyor (?). Gizlilik politikası adresi yokken satır KVKK Aydınlatma Metni'ni açıyor; alttaki KVKK satırıyla aynı yere gidiyor. Önem: düşük.
+Olası yer: `apps/mobile/app/(app)/settings-privacy.tsx:48-56` (`privacyUrl` yoksa `doc: 'kvkk'`).
