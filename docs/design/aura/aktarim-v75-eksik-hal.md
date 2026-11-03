@@ -132,3 +132,4 @@ Yeni hareket yok, yeni titreşim yok (motionEksikHal). Etkinlik kartlarının Ri
   - Değerler: kapsül 44, kişi ızgarası 3 sütun, alan 56, çip 46, seçici 52, etiket 30.
   - Normal ekranda 2 Kasım ölçeği aynen kalır: ana 48, küçük 36, yuvarlak 44, çip 36, alan 48.
 - Görseller: `assets/riso/scene-signup-dark.webp` (800x920), `assets/riso/event.webp` (800x400) ve `event@3x.webp` (1200x600). Kayıt koyunun @3x'i sohbete küçültülmüş geldi (978x1125); büyütülmedi, yalnız @2x kullanılıyor.
+- Alt solma ve eyebrow (proje sahibinin kararı, 3 Kasım): 150 dp alt solma yalnız Aktiviteler'de (iki sekme; ekranın altından 150, zemine %70'te varır; `Screen` → `tallFade`). Diğer sekme ekranları 32'de kalır. Eyebrow dar hâlde 13'tür, en büyük yazıda 17/22 olur (`auraKit.ts` → `EYEBROW_NARROW`).
