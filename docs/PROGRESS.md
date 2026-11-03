@@ -1,11 +1,11 @@
 # İlerleme
 
-## Devir notu (3 Kasım 2026, E2E onarımı, K kabul testi)
+## Devir notu (3 Kasım 2026 09:35, E2E onarımı sürüyor)
 
-- Birleşenler: #395, #396 (`theme/kabul.test.ts`), #398 (check-in uyarıları nokta seçicisinin üstünde), #399 (wordmark v78, OTA), #400 (riso C simge, `version` 0.9.5: proje sahibi yeni preview build alacak, `play-512.png` Play Console'a). deploy-dev 10422b9 yeşil.
-- #397 (E2E, `e2e-onarim`) açık: shard 2 ve 3 yeşil, görsel kapı yeşil. Shard 1: `04-table` masa ekranında oyun kartlarına kaydıramıyor (sahne listenin üstünde; şimdi alttan `swipe` deneniyor). Shard 4: haritada sekme çubuğu yok (`tab-activities` basılamıyor); yalnız `01d-returning`'den (cinsiyet sorusu sonrası) sonra; `01d` sonuna `tab-explore` denetimi kondu, düşerse uygulama hatası (cinsiyet adımından uygulamaya geçişte sekme çubuğu).
-- Hazır, push edilmedi: `e2e-k12-k14` (0e2c14e; K12 ve K14 akışları, `chat-title` ve `empty-riso-<ad>` testID'leri); #397 birleşince main'e rebase, `e2e` etiketli PR.
-- Tanı: artifact indirilemez; `get_job_logs` `job_id` ile `tail_lines` ~225, `[Failed]` ve `maestro.log` satırları.
+- #400 deploy-dev a2c10fd yeşil. #397 (`e2e-onarim`) açık; ci, görsel kapı, shard 2 ve 3 yeşil. Düzelenler: 04 alttan kaydırma; 05b tepki çubuğu (geri tuşuyla kapanır, dışarı dokunma en sonda "Selam cihaz"da), alıntılı yanıt `'.*Harika'`.
+- Shard 1 son düşüş: 05b `friend-Bot Masa` beklemesi (iki bekleme etiketlendi: "friends list opens" / "back from the friend's profile to the list"; hangisi düşerse oradan).
+- Shard 4 kararsız: Şehir ve semt sayfasından sonra (`02` "tab bar 3/4") sekme çubuğu bazen 10 sn sonra da yok; bir koşuda iki tema geçti, sonrakinde açık düştü. Olası uygulama hatası: `Sheet` kapanışında `setMounted(false)` yalnız `finished` iken (`src/components/Sheet.tsx`); kök neden doğrulanmadı.
+- Hazır: `e2e-k12-k14` dalı GitHub'da (PR yok): K12 (`chat-title`, 05b başı arkadaş profili) ve K14 (`empty-riso-<ad>`, 05 ve 07). #397 birleşince main'e rebase, `e2e` etiketli PR. Tanı: `get_job_logs` `job_id` ile `tail_lines` ~230; artifact proxy'den indirilemez.
 
 ## Devir notu (3 Kasım 2026, Aura v71 P4, eksik hâller v75, F1 alt alta)
 
