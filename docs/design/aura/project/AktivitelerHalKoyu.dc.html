@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Aktiviteler: Etkinlikler yükleniyor (koyu) | hata (açık)</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="skall.css">
+<link rel="stylesheet" href="ekran.css">
+<link rel="stylesheet" href="koyu.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+
+.dark.pA{--overlap:#FFFFFF}
+
+
+
+
+
+.glassseg{background:var(--glass-bg);border:1px solid var(--glass-line);box-shadow:var(--glass-shadow)}
+.dark .seg span.on{background:rgba(255,255,255,.94);color:#0B0E0D}
+.vi{width:52px;height:52px;border-radius:16px;flex:none;box-shadow:var(--shadow-raised)}
+.dark.pA .tag.ok{background:rgba(61,220,132,.16);color:#93EBB9}.dark.pA .tag.lively{background:rgba(255,181,71,.16);color:#FFD8A3}
+.fadebot{position:absolute;left:0;right:0;bottom:0;height:150px;background:linear-gradient(transparent,var(--canvas) 70%);pointer-events:none}
+
+
+.ev{padding:8px;border-radius:30px;flex:none}
+.evs{position:relative;aspect-ratio:334/168;border-radius:22px;overflow:hidden}
+.evs img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.evt{position:absolute;left:12px;right:12px;top:12px;display:flex;gap:6px;align-items:flex-start}
+.evt .tag:last-child{margin-left:auto}
+.tag.gl{background:rgba(255,255,255,.86);color:#031B0B}
+.tag.lively.gl,.dark.pA .tag.lively.gl{background:#FFE7C2;color:#7A4300}
+.dark.pA .tag.gl{background:rgba(255,255,255,.86);color:#031B0B}
+.evb{display:flex;flex-direction:column;gap:2px;padding:12px 10px 8px}
+.evb .ven{color:var(--primary);font-weight:600}
+.dark.pA .evb .ven{color:#3DDC84}
+.content>*{flex-shrink:0}
+
+.erc{width:64px;height:64px;border-radius:32px;display:flex;align-items:center;justify-content:center;background:var(--soft-bg);border:1px solid var(--soft-line);color:var(--muted)}
+.erc .ci{width:28px;height:28px}
+.dark.pA .erc{background:#121614;border-color:rgba(255,255,255,.10)}
+.dark.pA .btn.soft{border-color:rgba(255,255,255,.10)}
+
+</style>
+</helmet>
+<div style="width: 820px; height: 844px; display: flex; gap: 40px; background: var(--surface2)">
+<div class="phone dark pA"><div class="aura"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i><i class="a5"></i></div>
+ <div class="content" style="gap:24px">
+  <div class="col" style="gap:4px"><span class="eyebrow">İstanbul'daki mekanlardan</span><h1 class="display">Aktiviteler</h1></div>
+  <div class="seg glassseg"><span class="on">Etkinlikler</span><span>Geçmiş</span></div>
+  <div class="col" role="progressbar" aria-label="Yükleniyor" style="align-items:center;gap:12px;margin-top:24px"><svg viewBox="0 0 40 40" width="40" height="40" aria-hidden="true"><defs><clipPath id="ldA"><rect x="9" y="4" width="11" height="26" rx="5.5" transform="rotate(-14 20 20)"></rect></clipPath></defs><g transform="rotate(-14 20 20)"><rect x="9" y="4" width="11" height="26" rx="5.5" fill="#7B5CFF"></rect><rect x="17" y="10" width="11" height="26" rx="5.5" fill="#FF4F8B"></rect></g><g clip-path="url(#ldA)"><rect x="17" y="10" width="11" height="26" rx="5.5" fill="var(--overlap,#FFB547)" transform="rotate(-14 20 20)"></rect></g></svg><p class="fine">Yükleniyor…</p></div>
+ </div>
+ 
+ <nav class="glass tabbar"><span class="tab" aria-label="Keşfet"><svg class="ci" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" class="b"/><path d="M16.6 7.4 13.9 13.9 7.4 16.6 10.1 10.1Z" class="a"/><circle cx="12" cy="12" r="1.3" class="w"/></svg></span><span class="tab on" aria-label="Aktiviteler"><svg class="ci" viewBox="0 0 24 24"><rect x="3.4" y="5.6" width="17.2" height="15" rx="4.6" class="b"/><rect x="4.7" y="4.1" width="6.6" height="2.6" rx="1.3" transform="rotate(90 8 5.4)" class="a"/><rect x="12.7" y="4.1" width="6.6" height="2.6" rx="1.3" transform="rotate(90 16 5.4)" class="a"/><rect x="6.5" y="12.1" width="11" height="2.6" rx="1.3" class="a"/></svg></span><span class="tab" aria-label="Mekan"><svg class="ci" viewBox="0 0 24 24"><defs><mask id="mkT" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><rect width="24" height="24" fill="#fff"/><rect x="10.8" y="6" width="8" height="15.6" rx="4" fill="#000" stroke="#000" stroke-width="5.1"/></mask></defs><g mask="url(#mkT)"><rect x="5.2" y="2.4" width="8" height="15.6" rx="4" fill="none" stroke="currentColor" stroke-width="1.9"/></g><rect x="10.8" y="6" width="8" height="15.6" rx="4" fill="none" stroke="currentColor" stroke-width="1.9"/></svg></span><span class="tab" aria-label="Mesajlar"><svg class="ci" viewBox="0 0 24 24"><path d="M8.6 4h6.8c3.4 0 6 2.6 6 6v1.2c0 3.4-2.6 6-6 6h-3.8l-4.4 3.3c-.6.5-1.4 0-1.4-.7v-3.1A6 6 0 0 1 2.6 11.2V10c0-3.4 2.6-6 6-6Z" class="b"/><circle cx="8.2" cy="10.6" r="1.5" class="a"/><circle cx="12" cy="10.6" r="1.5" class="a"/><circle cx="15.8" cy="10.6" r="1.5" class="a"/></svg></span><span class="tab" aria-label="Profil"><svg class="ci" viewBox="0 0 24 24"><circle cx="12" cy="7.6" r="3.9" class="a"/><rect x="4.6" y="13.6" width="14.8" height="7.4" rx="3.7" class="b"/></svg></span></nav></div>
+<div class="phone"><div class="aura"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i><i class="a5"></i></div>
+ <div class="content" style="gap:24px">
+  <div class="col" style="gap:4px"><span class="eyebrow">İstanbul'daki mekanlardan</span><h1 class="display">Aktiviteler</h1></div>
+  <div class="seg glassseg"><span class="on">Etkinlikler</span><span>Geçmiş</span></div>
+  <div class="col" style="align-items:center;gap:12px;margin-top:24px;text-align:center;padding:0 12px"><span class="erc"><svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18.6h10.2a4.3 4.3 0 0 0 .6-8.6A6 6 0 0 0 6.3 9.5 4.6 4.6 0 0 0 7 18.6Z" class="b"></path><rect x="0.8" y="10.7" width="22.4" height="2.6" rx="1.3" transform="rotate(-45 12 12)" class="a"></rect></svg></span><p class="body" style="color:var(--text)">Bir şeyler ters gitti. Tekrar dener misin?</p><button class="btn soft sm" type="button"><svg class="ci sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12.4a7 7 0 1 1-2.6-5.9" class="ob"></path><path d="M19.4 4.6v4.2c0 .4-.3.7-.7.7h-4.2c-.6 0-.9-.7-.5-1.2l4.2-4.2c.5-.4 1.2-.1 1.2.5Z" class="a"></path></svg>Tekrar dene</button></div>
+ </div>
+ 
+ <nav class="glass tabbar"><span class="tab" aria-label="Keşfet"><svg class="ci" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" class="b"/><path d="M16.6 7.4 13.9 13.9 7.4 16.6 10.1 10.1Z" class="a"/><circle cx="12" cy="12" r="1.3" class="w"/></svg></span><span class="tab on" aria-label="Aktiviteler"><svg class="ci" viewBox="0 0 24 24"><rect x="3.4" y="5.6" width="17.2" height="15" rx="4.6" class="b"/><rect x="4.7" y="4.1" width="6.6" height="2.6" rx="1.3" transform="rotate(90 8 5.4)" class="a"/><rect x="12.7" y="4.1" width="6.6" height="2.6" rx="1.3" transform="rotate(90 16 5.4)" class="a"/><rect x="6.5" y="12.1" width="11" height="2.6" rx="1.3" class="a"/></svg></span><span class="tab" aria-label="Mekan"><svg class="ci" viewBox="0 0 24 24"><defs><mask id="mkT" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><rect width="24" height="24" fill="#fff"/><rect x="10.8" y="6" width="8" height="15.6" rx="4" fill="#000" stroke="#000" stroke-width="5.1"/></mask></defs><g mask="url(#mkT)"><rect x="5.2" y="2.4" width="8" height="15.6" rx="4" fill="none" stroke="currentColor" stroke-width="1.9"/></g><rect x="10.8" y="6" width="8" height="15.6" rx="4" fill="none" stroke="currentColor" stroke-width="1.9"/></svg></span><span class="tab" aria-label="Mesajlar"><svg class="ci" viewBox="0 0 24 24"><path d="M8.6 4h6.8c3.4 0 6 2.6 6 6v1.2c0 3.4-2.6 6-6 6h-3.8l-4.4 3.3c-.6.5-1.4 0-1.4-.7v-3.1A6 6 0 0 1 2.6 11.2V10c0-3.4 2.6-6 6-6Z" class="b"/><circle cx="8.2" cy="10.6" r="1.5" class="a"/><circle cx="12" cy="10.6" r="1.5" class="a"/><circle cx="15.8" cy="10.6" r="1.5" class="a"/></svg></span><span class="tab" aria-label="Profil"><svg class="ci" viewBox="0 0 24 24"><circle cx="12" cy="7.6" r="3.9" class="a"/><rect x="4.6" y="13.6" width="14.8" height="7.4" rx="3.7" class="b"/></svg></span></nav></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":820,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

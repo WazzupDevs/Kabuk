@@ -53,6 +53,8 @@ const CLOSED: Partial<Record<KankiId, ImageSourcePropType>> = {
 };
 // The sign-up scene (riso-kayit, 800x920).
 const SIGNUP_GROUND = require('../../assets/riso/scene-signup.webp');
+// Aura v75 KayitKoyu: the dark scheme's own scene (riso-kayit-koyu).
+const SIGNUP_GROUND_DARK = require('../../assets/riso/scene-signup-dark.webp');
 
 // The loop's clock in seconds (0 → 6, again and again) while the screen is on top and the app in
 // front; still at 0 with reduce motion (§13.1: everyone stands, eyes open).
@@ -107,6 +109,7 @@ export function RisoKanki({
   shadow?: boolean;
   children?: ReactNode;
 }) {
+  const { scheme } = useTheme();
   const reduce = useReduceMotion();
   const beat = KANKI_BEATS[place.id];
   const moving = !!clock && !!beat && !reduce;
@@ -149,7 +152,7 @@ export function RisoKanki({
               bottom: `${KANKI_SHADOW.bottom * 100}%`,
               height: `${KANKI_SHADOW.height * 100}%`,
               borderRadius: box.width,
-              backgroundColor: KANKI_SHADOW.color,
+              backgroundColor: scheme === 'dark' ? KANKI_SHADOW.colorDark : KANKI_SHADOW.color,
               filter: [{ blur: KANKI_SHADOW.blur }],
             },
             foot,
@@ -197,7 +200,7 @@ export function SignupScene({
       style={[StyleSheet.absoluteFill, { borderRadius: SIGNUP_SCENE_RADIUS, overflow: 'hidden' }]}
     >
       <Image
-        source={SIGNUP_GROUND}
+        source={scheme === 'dark' ? SIGNUP_GROUND_DARK : SIGNUP_GROUND}
         style={StyleSheet.absoluteFill}
         contentFit="cover"
         contentPosition="bottom"

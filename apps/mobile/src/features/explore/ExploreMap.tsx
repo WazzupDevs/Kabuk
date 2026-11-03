@@ -25,6 +25,7 @@ import { Btn, Li, Live, RowList, T, Tag, useKit } from '@/aura/kit';
 import { VenueThumb } from '@/aura/VenueThumb';
 import { TYPE_PIN_IMAGES } from '@/components/Glyph';
 import { tr } from '@/i18n/tr';
+import { useNarrow } from '@/lib/useNarrow';
 import { useNow } from '@/lib/useNow';
 import { KIT, VENUE_THUMB } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
@@ -98,6 +99,7 @@ export function ExploreMap({
   tabBarHeight: number;
 }) {
   const { colors, scheme } = useTheme();
+  const narrow = useNarrow();
   const mapStyle = useMapStyle(MAP_STYLE_URL[scheme], scheme);
   const camera = useRef<CameraRef>(null);
   const source = useRef<GeoJSONSourceRef>(null);
@@ -195,7 +197,8 @@ export function ExploreMap({
         { 'font-scale': MAP_PIN.statusScale },
       ],
       'text-font': [...MAP_FONTS.bold],
-      'text-size': MAP_PIN.labelSize,
+      // The map does not follow the text size: 17 when narrow (Aura v75 KesfetHaritaDar).
+      'text-size': narrow ? MAP_PIN.labelSizeNarrow : MAP_PIN.labelSize,
       'text-max-width': LABEL_WIDTH_EM,
       'text-anchor': 'top',
       'text-offset': [0, MAP_PIN.labelOffset],

@@ -28,6 +28,7 @@ import { errorMessage } from '@/i18n/errors';
 import { type HistoryConcept, historyConcept, tr } from '@/i18n/tr';
 import { useLabOff } from '@/lib/drawLab';
 import { useNow } from '@/lib/useNow';
+import { useNarrow } from '@/lib/useNarrow';
 import { KIT } from '@/theme/auraKit';
 import { NARROW_SCREEN, SPACING } from '@/theme/tokens';
 
@@ -48,6 +49,7 @@ export default function ActivitiesScreen() {
   const [tab, setTab] = useState<Tab>('events');
   const now = useNow(60_000);
   const city = useCity();
+  const narrow = useNarrow();
   return (
     <Screen edges={['top']} refreshable>
       {/* U15: the place as an eyebrow over the title (both tabs), 4 apart; 24 to the tabs. */}
@@ -60,6 +62,7 @@ export default function ActivitiesScreen() {
       <View style={{ marginTop: SPACING[6] }}>
         {/* U15: the glass seg, 44 high. */}
         <Seg<Tab>
+          narrow={narrow}
           value={tab}
           onChange={setTab}
           accessibilityLabel={tr.activities.tabs}
@@ -101,24 +104,28 @@ function Events({ now, city }: { now: number; city: ReturnType<typeof useCity> }
 
   if (venues.isError || cities.isError) {
     return (
-      <EmptyState
-        icon="cloud-offline-outline"
-        body={errorMessage(venues.error ?? cities.error)}
-        action={{
-          label: tr.common.retry,
-          onPress: () => {
-            void venues.refetch();
-            void cities.refetch();
-          },
-          loading: venues.isRefetching || cities.isRefetching,
-        }}
-      />
+      <View style={{ marginTop: SPACING[6] }}>
+        <EmptyState
+          kind="error"
+          inPage
+          body={errorMessage(venues.error ?? cities.error)}
+          action={{
+            label: tr.common.retry,
+            onPress: () => {
+              void venues.refetch();
+              void cities.refetch();
+            },
+            loading: venues.isRefetching || cities.isRefetching,
+          }}
+        />
+      </View>
     );
   }
   if (pending || loading) {
     return (
-      <View className="mt-12">
-        <EmptyState kind="loading" body={tr.common.loading} />
+      // Aura v75 AktivitelerHal: 24 under the switch, as the list.
+      <View style={{ marginTop: SPACING[6] }}>
+        <EmptyState kind="loading" inPage body={tr.common.loading} />
       </View>
     );
   }
@@ -180,21 +187,25 @@ function History({ now }: { now: number }) {
   // A failed refresh keeps the history (audit PRO-2).
   if (history.isError && !history.data) {
     return (
-      <EmptyState
-        icon="cloud-offline-outline"
-        body={errorMessage(history.error)}
-        action={{
-          label: tr.common.retry,
-          onPress: () => void history.refetch(),
-          loading: history.isRefetching,
-        }}
-      />
+      <View style={{ marginTop: SPACING[6] }}>
+        <EmptyState
+          kind="error"
+          inPage
+          body={errorMessage(history.error)}
+          action={{
+            label: tr.common.retry,
+            onPress: () => void history.refetch(),
+            loading: history.isRefetching,
+          }}
+        />
+      </View>
     );
   }
   if (history.isPending || loading) {
     return (
-      <View className="mt-12">
-        <EmptyState kind="loading" body={tr.common.loading} />
+      // Aura v75 AktivitelerHal: 24 under the switch, as the list.
+      <View style={{ marginTop: SPACING[6] }}>
+        <EmptyState kind="loading" inPage body={tr.common.loading} />
       </View>
     );
   }

@@ -126,3 +126,9 @@ Yeni hareket yok, yeni titreşim yok (motionEksikHal). Etkinlik kartlarının Ri
 - **K7:** Keşfet harita 320 dp ve 1,3x: "Mekan ara" tek satır, pin etiketleri ve alt menü çakışmaz.
 - **K8:** Masa 320 dp ve 1,3x: ad kesilmez (3 sütun), "Lobiden çek" tek satır, üst çubuk taşmaz.
 - **K9:** Android ve iOS'ta; açık ve koyu; 390 ve 320 dp.
+
+## Ek karar (Gökay, 3 Kas 02:25)
+- E4'teki dar ölçüler yalnız dar hâlde geçerlidir. Dar hâl, Lobi'deki koşulla aynıdır: 320 dp genişlik ya da en büyük yazı (`src/lib/narrow.ts`).
+  - Değerler: kapsül 44, kişi ızgarası 3 sütun, alan 56, çip 46, seçici 52, etiket 30.
+  - Normal ekranda 2 Kasım ölçeği aynen kalır: ana 48, küçük 36, yuvarlak 44, çip 36, alan 48.
+- Görseller: `assets/riso/scene-signup-dark.webp` (800x920), `assets/riso/event.webp` (800x400) ve `event@3x.webp` (1200x600). Kayıt koyunun @3x'i sohbete küçültülmüş geldi (978x1125); büyütülmedi, yalnız @2x kullanılıyor.

@@ -566,6 +566,7 @@ export function Chip({
   tall,
   lg,
   md,
+  narrow,
   icon,
   accessibilityLabel,
 }: {
@@ -578,6 +579,8 @@ export function Chip({
   lg?: boolean;
   // U19: Mekan's spot, 40 high, 16 inside, 14.
   md?: boolean;
+  // Aura v75 KesfetHaritaDar: 320 dp or the largest text (src/lib/narrow.ts), 46 high and 15.
+  narrow?: boolean;
   // U35: a worn part's chip leads with its close icon, 10 in on that side.
   icon?: CapIconName;
   accessibilityLabel?: string;
@@ -585,7 +588,13 @@ export function Chip({
   const { c } = useKit();
   const press = usePress();
   const frosted = useFrost() && !on;
-  const h = lg || md ? KIT.size.chipLg : tall ? KIT.size.chipTall : KIT.size.chip;
+  const h = narrow
+    ? KIT.size.chipNarrow
+    : lg || md
+      ? KIT.size.chipLg
+      : tall
+        ? KIT.size.chipTall
+        : KIT.size.chip;
   // Its soft shadow natively (NativeShadow.tsx).
   const shadowOff = useLabOff('golge');
   const shadow = shadowParts(
@@ -636,7 +645,7 @@ export function Chip({
           numberOfLines={1}
           maxFontSizeMultiplier={MAX_FONT_SCALE}
           style={[
-            md ? KIT_TYPE.chipMd : tall || lg ? KIT_TYPE.chipLg : KIT_TYPE.chip,
+            md ? KIT_TYPE.chipMd : tall || lg || narrow ? KIT_TYPE.chipLg : KIT_TYPE.chip,
             { color: on ? c.onChipOn : c.ink },
           ]}
         >
@@ -648,7 +657,17 @@ export function Chip({
 }
 
 export type TagTone =
-  'purple' | 'pink' | 'amber' | 'green' | 'glassy' | 'art' | 'artLit' | 'scene' | 'sceneCalm';
+  | 'purple'
+  | 'pink'
+  | 'amber'
+  | 'green'
+  | 'glassy'
+  | 'art'
+  | 'artLit'
+  | 'scene'
+  | 'sceneCalm'
+  | 'event'
+  | 'eventTime';
 
 // .tag: a small capsule of a colour, its dot or icon first.
 export function Tag({
@@ -682,7 +701,11 @@ export function Tag({
             ? KIT.sceneTag
             : tone === 'sceneCalm'
               ? KIT.sceneTagCalm
-              : { bg: tags[tone].bg, fg: tags[tone].fg };
+              : tone === 'event'
+                ? KIT.eventTag
+                : tone === 'eventTime'
+                  ? KIT.eventTimeTag
+                  : { bg: tags[tone].bg, fg: tags[tone].fg };
   return (
     <View
       style={{
@@ -1163,6 +1186,7 @@ export function Seg<V extends string>({
   options,
   accessibilityLabel,
   large,
+  narrow,
 }: {
   value: V;
   onChange: (v: V) => void;
@@ -1170,10 +1194,12 @@ export function Seg<V extends string>({
   accessibilityLabel?: string;
   // Mesajlar's (U27): 48 in all, 40 tabs in a pill.
   large?: boolean;
+  // Aura v75 AktivitelerDar: 320 dp or the largest text (src/lib/narrow.ts), tabs 52 high.
+  narrow?: boolean;
 }) {
   const { c } = useKit();
   const reduce = useReduceMotion();
-  const item = large ? KIT.size.segLg : KIT.size.segItem;
+  const item = large ? KIT.size.segLg : narrow ? KIT.size.segItemNarrow : KIT.size.segItem;
   const radius = large ? KIT.size.segLgRadius : KIT.size.seg;
   // The chosen tab's soft shadow natively (NativeShadow.tsx).
   const onShadow = shadowParts(useLabOff('golge'), c.segShadow || undefined, undefined, item / 2);

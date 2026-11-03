@@ -5,6 +5,7 @@ import { FrostIn } from '@/aura/FrostIn';
 import { Tag } from '@/aura/kit';
 import { usePressScale } from '@/components/motion';
 import { tr } from '@/i18n/tr';
+import { useNarrow } from '@/lib/useNarrow';
 import { KIT } from '@/theme/auraKit';
 import { SPACING } from '@/theme/tokens';
 import { useLabOff } from '@/lib/drawLab';
@@ -57,6 +58,7 @@ export function GameCard({
   testID?: string;
 }) {
   const pressScale = usePressScale();
+  const narrow = useNarrow();
   const text = tr.table.gameCards[id];
   // The poster clips its picture, so its native shadow (NativeShadow.tsx) sits on a box around it.
   const shadow = boxShadowParts(useLabOff('golge'), KIT.gameCardShadow, GAME_CARD.radius);
@@ -82,7 +84,8 @@ export function GameCard({
           {shadow.node}
           <View
             style={{
-              aspectRatio: POSTER_RATIO,
+              // Aura v75 MasaDar: narrow, 104 high (the poster's ratio would leave it lower).
+              ...(narrow ? { height: NARROW_CARD_HEIGHT } : { aspectRatio: POSTER_RATIO }),
               borderRadius: GAME_CARD.radius,
               overflow: 'hidden',
               boxShadow: shadow.boxShadow,
@@ -96,7 +99,11 @@ export function GameCard({
               accessible={false}
             />
             <View style={{ position: 'absolute', left: GAME_CARD.tagX, top: GAME_CARD.tagY }}>
-              <Tag tone={lit ? 'artLit' : ok ? 'green' : 'art'} label={tag} />
+              <Tag
+                tone={lit ? 'artLit' : ok ? 'green' : 'art'}
+                label={tag}
+                height={narrow ? KIT.size.tagNarrow : undefined}
+              />
             </View>
           </View>
         </View>
@@ -110,6 +117,7 @@ const DIMMED = 0.55;
 // The cover's 3 : 2 (600 × 400; 112 high on a 390 wide phone, as the board), its corner 22 and the
 // tag 8 in from its top left.
 const POSTER_RATIO = 1.5;
+const NARROW_CARD_HEIGHT = 104;
 const GAME_CARD = {
   radius: KIT.size.gameCardRadius,
   tagX: KIT.size.gameTagX,
