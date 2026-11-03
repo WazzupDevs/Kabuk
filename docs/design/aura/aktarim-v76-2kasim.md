@@ -123,7 +123,7 @@ Yok.
 ## 10. Açık sorular
 
 1. Riso boş durum resimleri onay bekliyor.
-2. F1'in 320 dp alt alta hâli onay bekliyor.
+2. ~~F1'in 320 dp alt alta hâli~~ onaylandı (Gökay, 3 Kas): dar hâlde (`src/lib/narrow.ts`) Mesaj üstte, "Arkadaşlıktan çıkar" altında, ikisi tam genişlik.
 
 Kapananlar: 7.4 masa dolu (Gökay 3 Kas 01:13), 15.3/15.4 ve 12 renk (koddaki hâl tuvale alındı).
 

@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { CapIcon } from '@/aura/CapIcon';
 import { Btn, T, useKit } from '@/aura/kit';
 import { tr } from '@/i18n/tr';
+import { useNarrow } from '@/lib/useNarrow';
 import { KIT } from '@/theme/auraKit';
 import { ICON, SPACING } from '@/theme/tokens';
 
@@ -16,20 +17,24 @@ import { openDm } from './openDm';
 export function FriendActions({ friend, onRemove }: { friend: Friend; onRemove?: () => void }) {
   const { c } = useKit();
   const threadId = friend.threadId;
+  // 320 dp or the largest text (src/lib/narrow.ts): "Mesaj" on top and "Arkadaşlıktan çıkar"
+  // under it, both full width (Aura v76 F1, the owner's call, 3 Kasım).
+  const stacked = useNarrow() && !!onRemove;
   return (
-    <View style={{ flexDirection: 'row', gap: GAP }}>
+    <View style={{ flexDirection: stacked ? 'column-reverse' : 'row', gap: GAP }}>
       {onRemove ? (
         // As wide as its words; "Mesaj" takes the rest (Aura v76 ProfilBaskasi, F1: at an equal half
         // the words did not fit at 390 dp).
         <Btn
           bar={KIT.size.btnRow}
-          snug
+          snug={!stacked}
+          block={stacked}
           variant="glassy"
           icon="personRemove"
           testID="profile-remove-button"
           label={tr.friends.removeFriend}
           onPress={onRemove}
-          style={{ flexShrink: 0 }}
+          style={stacked ? undefined : { flexShrink: 0 }}
         />
       ) : (
         <View
@@ -58,7 +63,7 @@ export function FriendActions({ friend, onRemove }: { friend: Friend; onRemove?:
           icon="chat"
           label={tr.friends.messageShort}
           onPress={() => openDm({ threadId, publicId: friend.publicId, name: friend.displayName })}
-          style={{ flex: 1, minWidth: 0 }}
+          style={stacked ? undefined : { flex: 1, minWidth: 0 }}
         />
       ) : null}
     </View>
