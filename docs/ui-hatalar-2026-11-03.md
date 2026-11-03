@@ -6,13 +6,30 @@ Proje sahibinin telefonda uygulamayı denerken bildirdiği küçük hatalar; not
 - Önem: **yüksek** (kullanılamıyor, çakışan/kesilen içerik), **orta** (göze batan), **düşük** (ince ayar).
 - Aynı kökten gelen maddeler birleştirildi.
 
+## Özet
+
+| #   | Ekran                              | Kısa                                                          | Önem  |
+| --- | ---------------------------------- | ------------------------------------------------------------- | ----- |
+| 1.1 | DM sohbeti                         | Öne alınan balonun yeşil halkası balona uymuyor               | orta  |
+| 1.2 | DM sohbeti                         | Gönderince, en alttayken aşağı ok çıkıyor                     | orta  |
+| 2.1 | Birçok ekran (açık)                | En altta zeminden ayrı düz bant (gezinme çubuğu hizası)       | orta  |
+| 3.1 | Keşfet                             | "Mekan ara" ipucu çok küçük                                   | orta  |
+| 3.2 | Keşfet                             | Liste/harita düğmeleri kapsülden taşıyor                      | orta  |
+| 4.1 | Mekan, İstekler (boş)              | Riso resimlerin üst kenarında turuncu şerit; sahne kırpılıyor | orta  |
+| 5.1 | Check-in ve Masa kur alt sayfaları | Kankiler riso değil, düz vektör                               | orta  |
+| 6.1 | Yasal metinler                     | Kanki "Devam"ın altından taşıyor                              | düşük |
+| 6.2 | Engellenenler, Sessize alınanlar   | Boş durumda başlık yok                                        | düşük |
+| 6.3 | Gizlilik                           | "Gizlilik politikası" soluk ve KVKK'yı açıyor                 | düşük |
+| 7.1 | Masa kur                           | Seçili simge ile halka arasında boşluk                        | düşük |
+| 8.1 | Kapsülün                           | Aksesuar ve parçaların gereksiz dış kutusu                    | orta  |
+
 ## Kararlar
 
 Proje sahibinin bu oturumdaki ürün kararları.
 
-| Karar | Madde |
-| ----- | ----- |
-| Kapsül ekranında aksesuar seçeneklerinin ve paket parçalarının dış kutusu (yüzey renkli, gölgeli kare) kalkar; yalnızca yuvarlak kapsül görünür. Seçili halka yuvarlağın çevresine çizilir. Tuvalin Kapsül bölüm 4 kutusundan sapma; düzeltme PR'ında tuval de güncellenir. | 8.1 |
+| Karar                                                                                                                                                                                                                                                                       | Madde |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| Kapsül ekranında aksesuar seçeneklerinin ve paket parçalarının dış kutusu (yüzey renkli, gölgeli kare) kalkar; yalnızca yuvarlak kapsül görünür. Seçili halka yuvarlağın çevresine çizilir. Tuvalin Kapsül bölüm 4 kutusundan sapma; düzeltme PR'ında tuval de güncellenir. | 8.1   |
 
 ## Maddeler
 
