@@ -139,7 +139,8 @@ export function ChatTopBar({
 export const SPLIT_PILL = KIT.size.dmPill;
 const PILL = SPLIT_PILL;
 const ROUND = KIT.size.roundLg;
-const PILL_INSET = (PILL - KIT.size.av.md) / 2;
+// The avatar in it 36 (`member`), 4 in.
+const PILL_INSET = (PILL - KIT.size.av.member) / 2;
 const PILL_PAD_RIGHT = 14;
 
 function SplitBar({

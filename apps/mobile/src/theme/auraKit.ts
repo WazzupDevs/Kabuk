@@ -706,8 +706,8 @@ export const KIT = {
     fieldLgPadX: 22,
     fieldLgPadY: 16,
     // A chat's message field and its send button (docs/design/aura → Dm).
-    composerField: 56,
-    composerSend: 56,
+    composerField: 44,
+    composerSend: 44,
     phoneField: 72,
     fieldPadX: 20,
     dayPadX: 12,
@@ -717,8 +717,8 @@ export const KIT = {
     barGap: 10,
     // The DM's top as Telegram Android draws it (the owner's call, 29 Ekim): the avatar this far
     // inside its pill, the pills all as tall as it.
-    // The DM's name pill (docs/design/aura → Dm: 56).
-    dmPill: 56,
+    // The DM's name pill: as tall as the rounds beside it, 44 (the owner's call, 2 Kasım, 13.1).
+    dmPill: 44,
     pill: 44,
     pillPadX: 14,
     eventCard: 210,

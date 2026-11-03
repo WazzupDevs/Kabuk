@@ -292,9 +292,13 @@ function Line({ message }: { message: VenueChatMessage }) {
       )}
       {Platform.OS === 'android' ? (
         // Not scrollable and not touchable: the card's press opens the chat.
-        <View pointerEvents="none" style={{ flex: 1 }}>
+        // The line in the middle of the face's height: a horizontal ScrollView laid its content at
+        // its own top (the owner's report, 2 Kasım, 7.8).
+        <View pointerEvents="none" style={{ flex: 1, justifyContent: 'center' }}>
           <ScrollView
             horizontal
+            style={{ flexGrow: 0 }}
+            contentContainerStyle={{ alignItems: 'center' }}
             scrollEnabled={false}
             showsHorizontalScrollIndicator={false}
             showsVerticalScrollIndicator={false}
