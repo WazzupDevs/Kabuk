@@ -34,6 +34,7 @@ export type KankiId =
   | '9c96bd'
   | 'c189a4'
   | 'd2fbb5'
+  | '1e1bef'
   // The two half-length ones looking over a field (assets/riso/peek-*.webp, 160x200).
   | 'peek-1'
   | 'peek-2';
@@ -58,6 +59,9 @@ export const KANKI_BEATS: Partial<Record<KankiId, KankiBeat>> = {
   '6f419d': { period: 3, phase: 5.0, blinks: [2.8], hop: null },
   f280a5: { period: 2, phase: 0.6, blinks: [1.2, 4.6, 4.85], hop: 3.4 },
 };
+
+// A riso buddy's picture, 320x420: its width for a height.
+export const RISO_ASPECT = 320 / 420;
 
 export type KankiPlace = {
   id: KankiId;
@@ -187,6 +191,16 @@ export const REQUEST_KANKI: readonly KankiPlace[] = [
   { id: '6f419d', left: 18, top: 2, width: 92, height: 121 },
   { id: 'af811f', left: 128, top: -12, width: 92, height: 121 },
   { id: 'd2fbb5', right: 22, top: 2, width: 92, height: 121 },
+];
+
+// CheckIn (Aura v65): three riso buddies looking over the sheet's top edge, a strip 61 over it, in
+// the sheet's 370 wide frame (390 less 10 a side).
+export const CHECKIN_PEEK_FRAME = 370;
+export const CHECKIN_PEEK_UP = 61;
+export const CHECKIN_KANKI: readonly KankiPlace[] = [
+  { id: '1e1bef', left: 27, top: 0, width: 89, height: 116 },
+  { id: '6f419d', left: 154, top: -15, width: 89, height: 116 },
+  { id: '1a80a9', left: 275, top: 4, width: 89, height: 116 },
 ];
 
 // The peek strip over the field: 58 over its top edge, 120 high (`.behind > .peek`).

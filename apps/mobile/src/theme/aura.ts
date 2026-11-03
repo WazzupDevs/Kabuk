@@ -146,9 +146,23 @@ export const AURA = {
       height: 214,
       disk: { x: 109, bottom: 26, size: 132, radius: 40 },
       cast: [
-        { look: 'c:nane e:koyu h:anten', x: 132, bottom: 112, height: 79, behind: true },
-        { look: 'c:pembe e:klasik h:korsan f:gozbandi', x: 18, bottom: -14, height: 136 },
-        { look: 'c:gok e:klasik h:parti', x: 236, bottom: -10, height: 121 },
+        // Riso pictures (ui 5.1): the antenna, the pirate, the party hat.
+        {
+          look: 'c:nane e:koyu h:anten',
+          riso: '3c95b1',
+          x: 132,
+          bottom: 112,
+          height: 79,
+          behind: true,
+        },
+        {
+          look: 'c:pembe e:klasik h:korsan f:gozbandi',
+          riso: '1e1bef',
+          x: 18,
+          bottom: -14,
+          height: 136,
+        },
+        { look: 'c:gok e:klasik h:parti', riso: '4957ac', x: 236, bottom: -10, height: 121 },
       ],
     },
     // Masa bitti (docs/design/aura → MasaBitti): the table's picture and three buddies in front;
@@ -185,11 +199,8 @@ export const AURA = {
   peek: {
     up: 58,
     height: 120,
-    checkin: [
-      { look: 'c:turkuaz e:klasik h:kovboy', x: 26, top: 0, height: 110 },
-      { look: 'c:pembe e:koyu h:kulaklik', x: 146, top: -14, height: 110 },
-      { look: 'c:gok e:klasik f:yuvarlak', x: 260, top: 4, height: 110 },
-    ],
+    // Check-in's buddies are riso pictures (theme/kankiMotion.ts → CHECKIN_KANKI).
+    checkin: [],
     // U30: Bildirimler's buddies are riso pictures (aura/Peek.tsx → RisoPeek).
     notifications: [],
     request: [

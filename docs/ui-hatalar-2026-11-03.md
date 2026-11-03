@@ -68,11 +68,13 @@ Kırpma: `apps/mobile/src/features/rooms/TableCard.tsx:363` (`Image` + `PICTURE_
 
 **5.1 Alt sayfanın üstünden bakan kapsül kankiler riso çizimi değil.** Sayfanın kenarından bakan üç kanki düz vektör (`Buddy`) çiziliyor; diğer yerlerdeki riso kankilerle uyuşmuyor. Önem: orta.
 Olası yer: `apps/mobile/src/aura/Peek.tsx:34` (`notifications` ve `request` dışındaki her tür, `checkin` dahil, `BuddyPeek` → `Buddy`'ye düşüyor; `:37`), çağıran `apps/mobile/app/(app)/checkin/index.tsx:130` (`peek="checkin"`). Riso yolu aynı dosyada (`RisoKanki`, `RisoStrip`); aynı `BuddyPeek`'i kullanan diğer alt sayfalar da etkileniyor olabilir. Masa kur alt sayfasının sahnesindeki üç kanki de düz vektör: `apps/mobile/src/aura/Scene.tsx:78` (`Gathering` → `Buddy`).
+**Düzeltildi (paket 3):** Check-in'in kankileri panodaki üç riso resim (`CHECKIN_KANKI`; temizlikte silinen `riso_1e1bef` geri geldi), Masa kur sahnesindekiler aynı süslerin riso resimleri (anten `3c95b1`, korsan `1e1bef`, parti `4957ac`). `BuddyPeek`'i kullanan başka alt sayfa yok.
 
 ### 6. Ayarlar alt sayfaları ve yasal metinler (açık)
 
 **6.1 Yasal metinlerde riso kanki "Devam" düğmesinin arkasından taşıyor.** Kullanım Koşulları ve KVKK'da pembe kanki düğmenin üstünden bakıyor ama gövdesinin alt kısmı düğmenin altından, en alttaki bandın üstüne çıkıyor. Önem: düşük.
 Olası yer: `apps/mobile/src/components/LegalText.tsx:20` (`LEGAL_PEEK`, `theme/kankiMotion.ts:174`: `top: -36`, yükseklik 105; düğme 48: 105 − 36 = 69 > 48). Düğmenin altında kalan kısım kırpılmalı ya da kankinin yüksekliği düğmeyle sınırlanmalı.
+**Düzeltildi (paket 3):** kanki düğmenin alt kenarında kırpılır (`LegalText.tsx`).
 
 **6.2 Engellenenler ve Sessize alınanlar'ın boş durumunda başlık yok.** Riso resmin altında yalnızca tek satır gövde metni ("Engellediğin kimse yok.") var; diğer boş durumlarda başlık ve açıklama ikilisi var ("Bekleyen istek yok" + açıklama). Önem: düşük.
 Olası yer: `apps/mobile/app/(app)/settings-muted.tsx:51` (`EmptyState ... body=` yalnızca), engellenenler için `app/(app)/settings-blocked.tsx` aynı kalıp.
