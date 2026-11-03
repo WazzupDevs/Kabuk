@@ -177,6 +177,14 @@ appId: app.kabuk.mobile
     visible: 'Arkadaşlar, [1-9]\d*'
     timeout: 15000
 - takeScreenshot: 27ia-profile-friends
+# At 320 dp the row sits under the floating tab bar, and a tap at its middle opened Mekan: scrolled
+# to the middle of the screen first (Profil scrolls when it does not fit).
+- scrollUntilVisible:
+    element:
+      id: profile-friends
+    direction: DOWN
+    centerElement: true
+    timeout: 10000
 - tapOn:
     id: profile-friends
 - extendedWaitUntil:
