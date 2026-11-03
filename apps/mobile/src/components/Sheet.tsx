@@ -7,6 +7,8 @@ import { InSheet, T } from '@/aura/kit';
 import { Peek, type PeekKind } from '@/aura/Peek';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
+import { runSheetSlide } from '@/lib/sheetSlide';
+import { useLeaveKeyboard } from '@/lib/modalKeyboard';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { EASE_OUT } from '@/theme/markMotion';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -21,6 +23,8 @@ import { AppIcon } from './AppIcon';
 
 // hareket.md → "Alt sayfa": in and out in 320 ms on the design system's ease out.
 const SLIDE_MS = 320;
+// A closing slide that never reports its end: off the screen this long after it should have ended.
+const SLIDE_FALLBACK_MS = 250;
 const ICON_DISC = 56;
 
 type Props = {
@@ -74,6 +78,7 @@ export function Sheet({
   const { height } = useWindowDimensions();
   const reduce = useReduceMotion();
   const [mounted, setMounted] = useState(visible);
+  useLeaveKeyboard(visible);
   const [progress] = useState(() => new Animated.Value(0));
   if (visible && !mounted) setMounted(true);
   // closeAllSheets: an open sheet closes as if tapped outside.
@@ -93,10 +98,13 @@ export function Sheet({
       easing: (u) => EASE_OUT(u),
       useNativeDriver: true,
     });
-    anim.start(({ finished }) => {
-      if (finished && !visible) setMounted(false);
-    });
-    return () => anim.stop();
+    // Closing, it leaves the screen even when the slide was cut short (sheetSlide.ts).
+    return runSheetSlide(
+      anim,
+      !visible,
+      () => setMounted(false),
+      (reduce ? 0 : SLIDE_MS) + SLIDE_FALLBACK_MS,
+    );
   }, [visible, mounted, reduce, progress]);
 
   return (

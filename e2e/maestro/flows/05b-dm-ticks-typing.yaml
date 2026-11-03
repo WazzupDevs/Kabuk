@@ -55,24 +55,16 @@ appId: app.kabuk.mobile
     timeout: 10000
 - takeScreenshot: 27d-dm-answer
 # §21.2: a long press opens the six reactions; the first face (Beğendim) shows under the bubble.
-- longPressOn: Okudum
+- longPressOn:
+    text: Okudum
+    label: first long press on the bot's answer
 - extendedWaitUntil:
     visible:
       id: reaction-bar
     timeout: 10000
 - takeScreenshot: 27f-dm-reaction-bar
-# CLAUDE.md → Ekran davranışı: a tap outside closes the bar, and so does the back key (the DM
-# stays open).
-- tapOn: Okudun mu\?
-- extendedWaitUntil:
-    notVisible:
-      id: reaction-bar
-    timeout: 5000
-- longPressOn: Okudum
-- extendedWaitUntil:
-    visible:
-      id: reaction-bar
-    timeout: 10000
+# CLAUDE.md → Ekran davranışı: the back key closes the bar (the DM stays open, no keyboard comes
+# back: modalKeyboard.ts); a tap outside is checked at the end of the DM.
 - back
 - extendedWaitUntil:
     notVisible:
@@ -80,7 +72,9 @@ appId: app.kabuk.mobile
     timeout: 5000
 - assertVisible:
     id: dm-input
-- longPressOn: Okudum
+- longPressOn:
+    text: Okudum
+    label: second long press, after back closed the bar
 - extendedWaitUntil:
     visible:
       id: reaction-bar
@@ -110,8 +104,9 @@ appId: app.kabuk.mobile
 - hideKeyboard
 - tapOn:
     id: dm-send
+# A reply reads as its quote, then its words (ChatBubble's label): matched at the end.
 - extendedWaitUntil:
-    visible: Harika
+    visible: '.*Harika'
     timeout: 10000
 - runScript:
     file: ../scripts/bot.js
@@ -147,9 +142,25 @@ appId: app.kabuk.mobile
 - tapOn:
     id: inbox-Bot Masa
 - extendedWaitUntil:
-    visible: Harika
+    visible: '.*Harika'
     timeout: 15000
 - takeScreenshot: 27i-dm-reopened
+# A tap outside closes the reaction bar too (CLAUDE.md → Ekran davranışı). The bar is a modal over
+# a scrim (MessagePop): the bubbles behind it are out of reach, so the tap lands on the scrim
+# mid-screen, clear of the header and of the bar by the message. Held on the bot's first message
+# (a reply's quote takes the press).
+- longPressOn: Selam cihaz
+- extendedWaitUntil:
+    visible:
+      id: reaction-bar
+    timeout: 10000
+- tapOn:
+    point: 50%,40%
+- extendedWaitUntil:
+    notVisible:
+      id: reaction-bar
+    timeout: 5000
+    label: the bar closes on a tap outside
 - tapOn:
     id: chat-back
     optional: true
@@ -166,12 +177,21 @@ appId: app.kabuk.mobile
     visible: 'Arkadaşlar, [1-9]\d*'
     timeout: 15000
 - takeScreenshot: 27ia-profile-friends
+# At 320 dp the row sits under the floating tab bar, and a tap at its middle opened Mekan: scrolled
+# to the middle of the screen first (Profil scrolls when it does not fit).
+- scrollUntilVisible:
+    element:
+      id: profile-friends
+    direction: DOWN
+    centerElement: true
+    timeout: 10000
 - tapOn:
     id: profile-friends
 - extendedWaitUntil:
     visible:
       id: friend-Bot Masa
     timeout: 15000
+    label: friends list opens
 - takeScreenshot: 27j-friends
 - tapOn:
     id: friend-Bot Masa
@@ -198,6 +218,7 @@ appId: app.kabuk.mobile
     visible:
       id: friend-Bot Masa
     timeout: 10000
+    label: back from the friend's profile to the list
 - back
 - extendedWaitUntil:
     visible:

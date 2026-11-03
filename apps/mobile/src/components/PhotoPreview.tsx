@@ -18,6 +18,7 @@ import { useReduceMotion } from '@/lib/useReduceMotion';
 import { MOTION } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
 import { SPACING } from '@/theme/tokens';
+import { useLeaveKeyboard } from '@/lib/modalKeyboard';
 
 // A profile photo opened large (the owner's call, 28 Ekim; docs/design/aura → Profil fotoğrafı):
 // over a dark ground, a card 22 from the sides, it pops in 300 ms after the ground; a tap anywhere,
@@ -35,6 +36,7 @@ export function PhotoPreview({
 }) {
   const { width } = useWindowDimensions();
   const reduce = useReduceMotion();
+  useLeaveKeyboard(visible);
   const [grow] = useState(() => new Animated.Value(0));
   useEffect(() => {
     if (!visible) return undefined;

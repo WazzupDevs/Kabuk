@@ -77,3 +77,6 @@ appId: app.kabuk.mobile
 - extendedWaitUntil:
     visible: Liste
     timeout: 20000
+# The app after the gender step has its tab bar (shard 4 lost it on the map in #397's runs).
+- assertVisible:
+    id: tab-explore

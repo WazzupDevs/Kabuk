@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { tr } from '@/i18n/tr';
 import { haptic } from '@/lib/haptics';
+import { useLeaveKeyboard } from '@/lib/modalKeyboard';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { withAlpha } from '@/theme/contrast';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -77,6 +78,7 @@ export function MessagePop({
 }) {
   const { colors, shape } = useTheme();
   const reduce = useReduceMotion();
+  useLeaveKeyboard(true);
   // The reaction bar's soft shadow natively (NativeShadow.tsx): it pops in.
   const shadowOff = useLabOff('golge');
   const barShadow = boxShadowParts(shadowOff, shape.shadow.sheet, shape.radius.pill);

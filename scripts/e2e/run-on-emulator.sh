@@ -45,4 +45,35 @@ adb logcat -b crash -d > "$OUT/logcat-crash.txt" 2>&1 || true
 # Why the app's processes ended (Android 11+): a crash, a native crash, an ANR, or the system's low
 # memory killer, which no crash report sees.
 adb shell dumpsys activity exit-info app.kabuk.mobile > "$OUT/exit-info.txt" 2>&1 || true
+# A failed run writes its failing step into the job's log too: Maestro's console names the flow but
+# not always the step, and the artifact is not always at hand.
+if [ "$status" -ne 0 ]; then
+  echo "::group::Failed step (Maestro debug output)"
+  # Maestro writes them into a dated folder under its debug output.
+  find "$OUT/maestro" -name 'commands-*.json' | while read -r f; do
+    jq -r --arg f "$(basename "$f")" '
+      [.[] | {c: (.command | to_entries[0] | "\(.key) \(.value | tostring | .[0:160])"),
+              s: .metadata.status, e: (.metadata.error.message // "")}] as $all
+      | ($all | map(.s) | index("FAILED")) as $i
+      | if $i == null then empty
+        else "\($f)", ($all[([$i - 4, 0] | max):($i + 1)][] | "  \(.s) \(.c) \(.e)") end
+    ' "$f" 2>/dev/null || true
+  done
+  echo "--- maestro.log (errors)"
+  find "$OUT/maestro" -name 'maestro.log' -exec grep -hE 'FAILED|Exception|Error' {} + 2>/dev/null \
+    | tail -n 15 || true
+  # The screen as it was left: the focused window (a modal left over shows here) and every
+  # element's id, text and label, so a missing element is seen without the artifact.
+  echo "--- focused window"
+  adb shell dumpsys window 2>/dev/null | grep -E 'mCurrentFocus|mFocusedApp' | head -n 4 || true
+  echo "--- screen (id | text | label | bounds)"
+  if adb shell uiautomator dump /sdcard/e2e-ui.xml >/dev/null 2>&1; then
+    adb exec-out cat /sdcard/e2e-ui.xml 2>/dev/null | tr '>' '\n' | grep -E '<node ' \
+      | sed -nE 's/.*text="([^"]*)".*resource-id="([^"]*)".*content-desc="([^"]*)".*bounds="([^"]*)".*/\2 | \1 | \3 | \4/p' \
+      | grep -vE '^ \|  \|  \|' | head -n 80 || true
+  fi
+  echo "--- crash buffer"
+  tail -n 40 "$OUT/logcat-crash.txt" 2>/dev/null || true
+  echo "::endgroup::"
+fi
 exit "$status"

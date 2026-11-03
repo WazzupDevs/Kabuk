@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (3 Kasım 2026 09:35, E2E onarımı sürüyor)
+
+- #400 deploy-dev a2c10fd yeşil. #397 (`e2e-onarim`) açık; ci, görsel kapı, shard 2 ve 3 yeşil. Düzelenler: 04 alttan kaydırma; 05b tepki çubuğu (geri tuşuyla kapanır, dışarı dokunma en sonda "Selam cihaz"da), alıntılı yanıt `'.*Harika'`.
+- Shard 1 son düşüş: 05b `friend-Bot Masa` beklemesi (iki bekleme etiketlendi: "friends list opens" / "back from the friend's profile to the list"; hangisi düşerse oradan).
+- Shard 4 kararsız: Şehir ve semt sayfasından sonra (`02` "tab bar 3/4") sekme çubuğu bazen 10 sn sonra da yok; bir koşuda iki tema geçti, sonrakinde açık düştü. Olası uygulama hatası: `Sheet` kapanışında `setMounted(false)` yalnız `finished` iken (`src/components/Sheet.tsx`); kök neden doğrulanmadı.
+- Hazır: `e2e-k12-k14` dalı GitHub'da (PR yok): K12 (`chat-title`, 05b başı arkadaş profili) ve K14 (`empty-riso-<ad>`, 05 ve 07). #397 birleşince main'e rebase, `e2e` etiketli PR. Tanı: `get_job_logs` `job_id` ile `tail_lines` ~230; artifact proxy'den indirilemez.
+
 ## Devir notu (3 Kasım 2026, Aura v71 P4, eksik hâller v75, F1 alt alta)
 
 - Birleşenler: #392 Aura v71 P4 (8 pano; K8 `venue_chat_mutes.look` migration'ı, eski kayıtlar doldurulmaz, `guvenlik` denetledi; üretimde önce sunucu), #393 eksik hâller v75 (koyu kayıt sahnesi ve kod kutuları, riso etkinlik kartı, Aktiviteler hâlleri, dar hâl `src/lib/narrow.ts`), F1 dar hâlde alt alta (bu PR). Native yok, OTA.

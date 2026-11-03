@@ -58,7 +58,24 @@ appId: app.kabuk.mobile
     id: table-solo
 - assertVisible:
     id: table-lobby
-- assertVisible: Yakında
+# The games are under the table's card: on a short phone below the fold. A game card reads as
+# one label (its name, line, people and tag), so the tag is matched inside it; found by its testID
+# (Signum has no step yet: "Yakında").
+# The swipe starts low: the head (the scene with the people) lies over the list's top half on the
+# 640 dp emulator, and a swipe from the middle lands on it and scrolls nothing.
+- repeat:
+    times: 8
+    while:
+      notVisible:
+        id: poster-signum
+    commands:
+      - swipe:
+          start: 50%, 85%
+          end: 50%, 55%
+          duration: 600
+- assertVisible:
+    id: poster-signum
+    text: '.*Yakında.*'
 - takeScreenshot: 13-table
 # Masadakiler from the bar (its round is called "Masadakiler" too, so the sheet is found by its
 # list): this phone and the owner's tag (the table is called by its icon, K-76: no other name to
@@ -122,7 +139,12 @@ appId: app.kabuk.mobile
     notVisible:
       id: table-solo
     timeout: 20000
-- assertVisible: 2 kişi
+# The count is under the table's scene (U20); on a short phone it is below the fold.
+- scrollUntilVisible:
+    element: '.*2 kişi.*'
+    direction: DOWN
+    visibilityPercentage: 50
+    timeout: 10000
 - tapOn:
     id: table-scene
 - extendedWaitUntil:

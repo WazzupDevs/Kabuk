@@ -62,8 +62,11 @@ appId: app.kabuk.mobile
     timeout: 20000
 - tapOn:
     id: join-accept
-- extendedWaitUntil:
-    visible: 2 kişi
+# The count is under the table's scene (U20); on a short phone it is below the fold.
+- scrollUntilVisible:
+    element: '.*2 kişi.*'
+    direction: DOWN
+    visibilityPercentage: 50
     timeout: 20000
 - runScript:
     file: ../scripts/bot.js
@@ -76,8 +79,11 @@ appId: app.kabuk.mobile
     timeout: 20000
 - tapOn:
     id: join-accept
-- extendedWaitUntil:
-    visible: 3 kişi
+# The count is under the table's scene (U20); on a short phone it is below the fold.
+- scrollUntilVisible:
+    element: '.*3 kişi.*'
+    direction: DOWN
+    visibilityPercentage: 50
     timeout: 20000
 - tapOn:
     id: table-scene
@@ -130,7 +136,11 @@ appId: app.kabuk.mobile
     visible:
       id: table-top
     timeout: 20000
-- assertVisible: 3 kişi
+- scrollUntilVisible:
+    element: '.*3 kişi.*'
+    direction: DOWN
+    visibilityPercentage: 50
+    timeout: 10000
 - assertVisible:
     id: table-leave-open
 - runScript:
