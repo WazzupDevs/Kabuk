@@ -6,7 +6,7 @@
 // Android draws the glass from 12 (API 31: RenderEffect). Below 12 nothing shows through, so the
 // bar is drawn opaque there: the screen ground under its gradient (the owner's decision,
 // docs/SPEC_V4.md §4.C).
-export const ANDROID_BLUR_SDK = 31;
+const ANDROID_BLUR_SDK = 31;
 
 export function blursBehind(os: string, version: number | string): boolean {
   return os !== 'android' || Number(version) >= ANDROID_BLUR_SDK;
@@ -26,11 +26,6 @@ export const TAB_GLASS = {
   saturation: 1.7,
   overlay: 0.45,
 } as const;
-
-// The glass of a screen's fixed parts (Kapsülün's capsule and its buttons, the owner's call, 27
-// Ekim): what scrolls under them blurred (`blur` the deviation in dp), under the screen's ground at
-// `tint` of its strength.
-export const PANEL_GLASS = { blur: 14, tint: 0.78 } as const;
 
 // Every button's glass look (the owner's call, 27 Ekim: one design language). A clear button (on
 // the screen's ground) takes the tab bar's glass: its own fill at `clearFill`, v46's light gradient

@@ -5,7 +5,7 @@
 // Supabase shows the secret as "v1,whsec_<base64>"; several may be joined with "|".
 const SECRET_PREFIX = 'v1,whsec_';
 // Older or newer deliveries than this are rejected (replay window of the standard).
-export const WEBHOOK_TOLERANCE_SECONDS = 5 * 60;
+const WEBHOOK_TOLERANCE_SECONDS = 5 * 60;
 
 export type HmacSha256 = (key: Uint8Array, message: string) => Promise<Uint8Array>;
 

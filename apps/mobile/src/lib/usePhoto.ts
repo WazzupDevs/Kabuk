@@ -12,7 +12,7 @@ export function photoCacheKey(url: string): string {
   return url.split('?')[0] ?? url;
 }
 
-export function stablePhotoUrl(url: string, now: number = Date.now()): string {
+function stablePhotoUrl(url: string, now: number = Date.now()): string {
   const key = url.split('?')[0] ?? url;
   const hit = kept.get(key);
   if (hit && now - hit.at < KEEP_MS) return hit.url;

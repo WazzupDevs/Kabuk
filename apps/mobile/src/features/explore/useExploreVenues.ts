@@ -63,7 +63,7 @@ function toRing(value: unknown): LngLat[] | null {
 }
 
 // Keşfet data: buckets refresh every 5 minutes on the server, so a minute of staleness is fine.
-export function useExploreVenues() {
+function useExploreVenues() {
   return useQuery({
     queryKey: ['exploreVenues'],
     staleTime: 60_000,
@@ -110,7 +110,7 @@ export function useExploreVenue(id: string) {
 
 // Each active venue's city (venues: every signed-in phone reads them; explore_venues has the
 // district only). Content changes it rarely, so the list keeps its minute and this half an hour.
-export function useVenueCities() {
+function useVenueCities() {
   return useQuery({
     queryKey: ['venueCities'],
     staleTime: 30 * 60_000,

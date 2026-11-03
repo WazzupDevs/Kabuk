@@ -1,6 +1,7 @@
 import type { DmInboxThread } from '@shared/api/friends.ts';
 import { type DmPageRow, totalUnread, withSentDm, withThreadRead } from '@shared/dmInbox.ts';
 import { withNewestPage, withSamePage } from '@shared/dmPages.ts';
+import { DM_PAGE_SIZE } from '@shared/friends.ts';
 import { BROADCAST, inboxChannel } from '@shared/rooms.ts';
 import {
   type InfiniteData,
@@ -70,29 +71,6 @@ export function useVenueChatRequests() {
         ...r,
         photoUrl: stablePhoto(r.photoUrl),
       })),
-  });
-}
-
-// Requests sent from the venue chat: the name the other side showed; declined stays pending.
-export function useSentVenueChatRequests() {
-  return useQuery({
-    queryKey: [...friendKeys.sent, 'venueChat'] as const,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('my_sent_venue_chat_requests');
-      if (error) throw error;
-      return data;
-    },
-  });
-}
-
-export function useSentFriendRequests() {
-  return useQuery({
-    queryKey: friendKeys.sent,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('my_sent_requests');
-      if (error) throw error;
-      return data;
-    },
   });
 }
 
@@ -230,8 +208,6 @@ export function useMarkThreadRead(threadId: string): () => void {
   }, [queryClient, threadId]);
 }
 
-// dm_messages_page's size.
-const DM_PAGE_SIZE = 50;
 // A conversation left stays in memory this long: back in it, it shows at once.
 const DM_KEEP_MS = 30 * 60_000;
 // Older messages being read: a refresh waits for them (their answer is written over the cache as it

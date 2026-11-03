@@ -6,7 +6,7 @@
 export type SceneGlow = { color: string; cx: string; cy: string; rx: string; ry: string };
 
 // A glow fades out by 70 % of its radius (aura.css `.scene`).
-export const GLOW_END = 0.7;
+const GLOW_END = 0.7;
 
 // The colour with no alpha, its hue kept (a fade to it does not darken on the way).
 export function clearOf(color: string): string {
@@ -20,7 +20,7 @@ export function clearOf(color: string): string {
   return 'transparent';
 }
 
-export function glowCss(g: SceneGlow, end = GLOW_END): string {
+function glowCss(g: SceneGlow, end = GLOW_END): string {
   return `radial-gradient(ellipse ${g.rx} ${g.ry} at ${g.cx} ${g.cy}, ${g.color} 0%, ${clearOf(g.color)} ${end * 100}%)`;
 }
 

@@ -92,7 +92,7 @@ export type SayState = {
   timeouts: number;
 };
 
-export const otherSide = (side: TableSide): TableSide => (side === 'owner' ? 'guest' : 'owner');
+const otherSide = (side: TableSide): TableSide => (side === 'owner' ? 'guest' : 'owner');
 
 // The table that opens round n: the owner's first, then in turn.
 export function roundStarter(roundNo: number): TableSide {

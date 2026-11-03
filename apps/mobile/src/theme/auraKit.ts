@@ -356,8 +356,6 @@ export const KIT = {
   // A chosen row's ring (CheckIn: the spot).
   primaryRing: 'rgba(14, 135, 69, 0.14)',
   pink: '#FF4F8B',
-  // Kapsülün's chosen empty tile (#F9EEF6) under its ring.
-  partOn: '#E6F0E8',
   // Profili düzenle: the camera's white round at the face's corner.
   cameraShadow: '0px 2px 8px rgba(3, 27, 11, 0.08)',
   pinkRing: 'rgba(255, 79, 139, 0.18)',
@@ -366,7 +364,6 @@ export const KIT = {
   danger: '#C8331F',
   white: '#FFFFFF',
   sendShadow: SHADOW.send,
-  meShadow: SHADOW.me,
   diskShadow: SHADOW.disk,
   diskRing: 'rgba(255, 255, 255, 0.90)',
   avShadow: SHADOW.av,
@@ -393,8 +390,6 @@ export const KIT = {
     amber: { bg: 'rgba(255, 181, 71, 0.16)', fg: '#FFD8A3' },
     green: { bg: 'rgba(61, 220, 132, 0.16)', fg: '#93EBB9' },
   },
-  // Today's event on Keşfet's card: a soft amber ground.
-  eventGround: 'rgba(255, 181, 71, 0.14)',
   // A read message's double tick (Mesajlar, Dm).
   readTick: '#FFD48A',
   // The switch's knob (Masa kur).
@@ -501,11 +496,6 @@ export const KIT = {
   // U17: the scene 300 high from the very top, its bottom corners 28.
   venueHero: { height: 300, radius: 28 },
   gameCardShadow: '0px 12px 26px rgba(4, 73, 35, 0.18)',
-  // Bitir and Ayrıl on Masa's bar.
-  endInk: '#A8301A',
-  endInkDark: '#FF9B8A',
-  // Masa's header: the stage's height (under the status bar), its bottom corners and the table.
-  stage: { height: 250, radius: 36, disk: 140, diskRadius: 44, diskBottom: 54, frame: 390 },
   // A nick's colour in a line of the venue chat (Mekan: kapsul-sn19 in amber's ink).
   nickInk: '#9A4A00',
   nameInk: '#B0124F',
@@ -570,7 +560,6 @@ export const KIT = {
       edit: 88,
     },
     stackOverlap: 10,
-    faceCard: 210,
     // Profil's two buttons and Kapsülün's: the main height (B1).
     btnRow: 48,
     // The empty state: its sign 28 × 42, 6 apart, the title 10 under the sign; 26 above (the
@@ -613,16 +602,8 @@ export const KIT = {
     boxRingGap: 2,
     chipIconPadLeft: 10,
     catsFade: 0.2,
-    partTile: 104,
-    partCapsule: 70,
-    partTileHeight: 70,
-    partCapsuleDrop: 10,
-    partRing: 3,
     packPad: 16,
     packGap: 12,
-    // Profil's list rows: 14 above and under, 18 inside.
-    profilePadY: 14,
-    profilePadX: 18,
     avRing: 2,
     avRingXl: 3,
     avRingHero: 4,
@@ -687,8 +668,6 @@ export const KIT = {
     bubblePadY: 7,
     tailW: 7,
     tailH: 12,
-    msgPadX: 15,
-    msgPadY: 11,
     field: 48,
     // Aura v71 (GaleriEklenen): a boxed field 60 (the birth date), the name's 72 with 22 inside.
     fieldBox: 60,
@@ -702,7 +681,6 @@ export const KIT = {
     checkRadius: 8,
     // A choice or consent row: 56 and 64 at least (the consents, `.opt`), 10 or 12 above and under.
     optMin: 56,
-    consentMin: 64,
     optPadY: 10,
     consentPadY: 12,
     // A settings row (`.lr`): 64 at least, 12 above and under, its icon 24 and chevron 20.
@@ -740,12 +718,10 @@ export const KIT = {
     // The DM's name pill: as tall as the rounds beside it, 44 (the owner's call, 2 Kasım, 13.1).
     dmPill: 44,
     pill: 44,
-    pillPadX: 14,
     eventCard: 210,
     // Mekan's scene (210) and the words in it (20 in, 180 wide).
     hero: 210,
     heroPad: 20,
-    heroWords: 180,
     // The switch (skall.css `.toggle`): 52 × 32, the knob 26.
     switchW: 52,
     switchH: 32,

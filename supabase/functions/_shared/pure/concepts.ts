@@ -6,7 +6,7 @@ import type { Concept } from './rooms.ts';
 export const GAME_MODES = ['voice', 'text'] as const;
 export type GameMode = (typeof GAME_MODES)[number];
 
-export const CONCEPT_MODES: Record<Concept, GameMode> = {
+const CONCEPT_MODES: Record<Concept, GameMode> = {
   tabu: 'voice',
   sohbet: 'text',
   sahtekar: 'voice',

@@ -12,7 +12,7 @@ import { SPACING } from '@/theme/tokens';
 const START = 196;
 const WAIT = 152;
 // The smallest the circle gets on a short screen; below it the stage's middle scrolls instead.
-export const TURN_CIRCLE_MIN = 112;
+const TURN_CIRCLE_MIN = 112;
 const MIN_CIRCLE = TURN_CIRCLE_MIN;
 const HINT_WIDTH = 300;
 

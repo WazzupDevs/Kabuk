@@ -36,7 +36,7 @@ type Props = { roomId: string; ownerSessionId: string | null; phones: number; fl
 
 // Whether the table screen is open: there the card sits in the screen (skall tuvali,
 // MasaIstekGelsin); anywhere else it floats at the top.
-export const useTableScreenOpen = create<{ open: number }>(() => ({ open: 0 }));
+const useTableScreenOpen = create<{ open: number }>(() => ({ open: 0 }));
 export function useMarkTableScreen() {
   useEffect(() => {
     useTableScreenOpen.setState((s) => ({ open: s.open + 1 }));

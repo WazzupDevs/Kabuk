@@ -76,7 +76,7 @@ const SAND_OF: Record<VampirPhase, SandTone> = {
   verdict: 'night',
 };
 
-export const vampirKeys = {
+const vampirKeys = {
   view: (roomId: string, gameNo: number, step: number) =>
     ['vampirView', roomId, gameNo, step] as const,
 };
@@ -615,7 +615,7 @@ export function TablePage({
 }
 
 // The foot's note (the file's .note), with a small hourglass after it when the next phase comes.
-export function Note({ children, after }: { children: ReactNode; after?: ReactNode }) {
+function Note({ children, after }: { children: ReactNode; after?: ReactNode }) {
   return (
     <View
       style={{

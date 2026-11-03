@@ -1,15 +1,6 @@
 import * as Haptics from 'expo-haptics';
-import { useEffect, useRef } from 'react';
 
-import type { RequesterStatus } from '@shared/rooms.ts';
-
-import {
-  type HapticCall,
-  hapticGate,
-  type HapticMoment,
-  HAPTICS,
-  requesterHaptic,
-} from './hapticMoments';
+import { type HapticCall, hapticGate, type HapticMoment, HAPTICS } from './hapticMoments';
 
 const NOTIFICATION = {
   success: Haptics.NotificationFeedbackType.Success,
@@ -50,17 +41,4 @@ export function noteTyping(): void {
 // A pressed send or save (a FEEL_ERROR mutation, lib/mutationHaptics.ts): the typing pause ends.
 export function stoppedTyping(): void {
   gate.stoppedTyping();
-}
-
-// The requester's join request: a touch when it is accepted, none for a decline or a timeout.
-export function useRequesterHaptic(requestId: string | undefined, status: RequesterStatus | null) {
-  const last = useRef<{ id: string | undefined; status: RequesterStatus | null }>({
-    id: requestId,
-    status,
-  });
-  useEffect(() => {
-    const previous = last.current.id === requestId ? last.current.status : null;
-    last.current = { id: requestId, status };
-    haptic(requesterHaptic(previous, status));
-  }, [requestId, status]);
 }

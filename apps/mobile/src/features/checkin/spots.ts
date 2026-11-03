@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 
 export type VenueSpot = { id: string; ref: string; name: string };
 
-export const venueSpotsQueryKey = (venueId: string | undefined) => ['venueSpots', venueId] as const;
+const venueSpotsQueryKey = (venueId: string | undefined) => ['venueSpots', venueId] as const;
 
 // The venue's active spots in their order; empty for a venue without spots (docs/SPEC_V3.md §4.3).
 // Public like the venue itself; no count of tables per spot exists anywhere.

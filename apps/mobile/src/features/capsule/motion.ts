@@ -117,7 +117,7 @@ export const BEAT: Move = {
 };
 
 // The value of a channel at u (0…1 of the move), each keyframe step eased as CSS does.
-export function valueAt(move: Move, channel: Channel, u: number): number {
+function valueAt(move: Move, channel: Channel, u: number): number {
   const track = move.tracks[channel];
   const rest = channel === 'sx' || channel === 'sy' ? 1 : 0;
   if (!track) return rest;

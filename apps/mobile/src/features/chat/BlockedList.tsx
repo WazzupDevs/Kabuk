@@ -15,7 +15,7 @@ const blocksKey = ['blocks'] as const;
 
 // The blocks the account made (RLS: own rows), newest first, by their own id; the blocked
 // account's id never reaches the app (rule 4).
-export function useBlocks() {
+function useBlocks() {
   return useQuery({
     queryKey: blocksKey,
     queryFn: async () => {

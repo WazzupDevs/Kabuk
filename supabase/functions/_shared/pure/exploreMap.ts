@@ -49,7 +49,7 @@ export const MIN_BOUNDS_SPAN = 0.004;
 // Venues this close (metres) share one point: two venues at one address (the owner's report, 30
 // Ekim: one of them was hidden under the other's pin). The point is a stack: its count, and the
 // venues in it (`stacks`), listed when it is tapped.
-export const STACK_M = 15;
+const STACK_M = 15;
 
 const BUCKETS: readonly MapVenue['bucket'][] = ['calm', 'lively', 'buzzing'];
 
@@ -60,7 +60,7 @@ function metresApart(a: Pick<MapVenue, 'lat' | 'lng'>, b: Pick<MapVenue, 'lat' |
   return Math.hypot(dx, dy);
 }
 
-export const STACK_PREFIX = 'stack:';
+const STACK_PREFIX = 'stack:';
 
 export function venueCollection(venues: readonly MapVenue[]): VenueCollection & {
   // A stack's id to its venues' ids, in the list's order.

@@ -127,25 +127,8 @@ export const VAMPIR_LOOK = {
 // The game's ink (the role cards' comic outline).
 const INK = '#14112B';
 
-// Each role's small mark, in the role cards' comic look (the owner's call, 29 Ekim): a flat shape
-// with an ink outline and a light edge; on its tag and on the end screen.
-export const ROLE_ICON: Record<VampirRole, string> = {
-  vampir: `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path d="M6 16c4 16 32 16 36 0Z" fill="#C51F62" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/><path d="M13 17l4 11 4-10ZM27 18l4 10 4-11Z" fill="#fff" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round"/><path d="M10 19c3 3 6 5 9 6" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity="0.5" fill="none"/></svg>`,
-  doktor: `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path d="M18 7h12v11h11v12H30v11H18V30H7V18h11Z" fill="#1C7843" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/><path d="M21 11v9" stroke="#fff" stroke-width="2.6" stroke-linecap="round" opacity="0.55"/></svg>`,
-  gozcu: `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path d="M4 24C10 12 38 12 44 24C38 36 10 36 4 24Z" fill="#fff" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/><circle cx="24" cy="24" r="8" fill="#0F6E8C" stroke="${INK}" stroke-width="2.6"/><circle cx="24" cy="24" r="3.4" fill="${INK}"/><circle cx="27" cy="21" r="2" fill="#fff"/></svg>`,
-  koylu: `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path d="M9 22h30v18H9Z" fill="#F5B640" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/><path d="M5 23L24 8l19 15Z" fill="#5A3AE6" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/><path d="M20 40V30h8v10" fill="#fff" stroke="${INK}" stroke-width="2.6" stroke-linejoin="round"/></svg>`,
-  soytari: `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path d="M8 34L12 14l8 11 4-17 4 17 8-11 4 20Z" fill="#9A3FD6" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/><path d="M24 8l4 17h-8Z" fill="#FFB547"/><rect x="7" y="32" width="34" height="7" rx="3" fill="#FFB547" stroke="${INK}" stroke-width="3"/><circle cx="12" cy="13" r="3.4" fill="#FFD27A" stroke="${INK}" stroke-width="2.4"/><circle cx="24" cy="7" r="3.4" fill="#FFD27A" stroke="${INK}" stroke-width="2.4"/><circle cx="36" cy="13" r="3.4" fill="#FFD27A" stroke="${INK}" stroke-width="2.4"/></svg>`,
-};
-
 // The phases' marks over their titles, in the same look: the night's crescent with a star, the
 // morning's sun rising, the vote's ballot, the verdict's gavel.
 export const MOON_SVG = `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><path d="M40 7a25 25 0 1 0 17 40A21 21 0 0 1 40 7Z" fill="#FFE9BF" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/><circle cx="22" cy="40" r="4" fill="#F0CF8A"/><circle cx="30" cy="51" r="2.6" fill="#F0CF8A"/><circle cx="19" cy="27" r="2.4" fill="#F0CF8A"/><path d="M54 10q0 5 5 5q-5 0-5 5q0-5-5-5q5 0 5-5Z" fill="#fff" stroke="${INK}" stroke-width="2"/></svg>`;
 
 export const SUN_SVG = `<svg viewBox="0 0 100 50" xmlns="http://www.w3.org/2000/svg"><g stroke="${INK}" stroke-width="3" stroke-linecap="round"><path d="M50 4v7M18 15l5 5M82 15l-5 5M5 40h7M88 40h7" /></g><g stroke="#FFD27A" stroke-width="1.6" stroke-linecap="round"><path d="M50 4v7M18 15l5 5M82 15l-5 5M5 40h7M88 40h7"/></g><path d="M18 48a32 32 0 0 1 64 0Z" fill="#FFB547" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/><path d="M28 40a22 22 0 0 1 14-18" fill="none" stroke="#FFE2A8" stroke-width="4" stroke-linecap="round"/></svg>`;
-
-export const CROSS_SVG =
-  '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="4" stroke-linecap="round"/></svg>';
-
-// "Rolüm" (the owner's call, 29 Ekim: its size and mark were out of place): a round like the
-// game's close, with the role card's back in it, a little turned.
-export const PEEK_SVG = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="5.5" y="3" width="13" height="18" rx="3" transform="rotate(-10 12 12)" fill="#fff"/><path d="M10.3 9.2c0-1.3.9-2 1.9-2 1.1 0 1.9.7 1.9 1.7 0 1.4-1.7 1.6-1.7 3" fill="none" stroke="#5A3AE6" stroke-width="1.9" stroke-linecap="round" transform="rotate(-10 12 12)"/><circle cx="12.2" cy="14.6" r="1.1" fill="#5A3AE6" transform="rotate(-10 12 12)"/></svg>`;

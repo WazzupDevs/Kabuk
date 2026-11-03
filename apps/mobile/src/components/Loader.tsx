@@ -12,7 +12,6 @@ import {
   LOADER_SHOW_AFTER_MS,
   type LoaderKind,
   loaderMotion,
-  missMotion,
   STILL_MOTION,
 } from '@/theme/markMotion';
 
@@ -102,22 +101,6 @@ export function Loader({
           colors={colors}
         />
       ) : null}
-    </View>
-  );
-}
-
-// A request that did not meet (markMotion → missMotion), played once where its waiting mark was:
-// the capsules collide without an overlap and the mark fades out, then the place stays empty. One
-// run on the native driver, no loop: its last frame is already transparent, so nothing has to take
-// it away (a busy JS thread cannot make it play twice).
-export function MissMark({ size }: { size: number }) {
-  const reduce = useReduceMotion();
-  const m = drawingFor(size);
-  const miss = useMemo(() => missMotion(m, reduce), [m, reduce]);
-  const motions = useMemo(() => [miss.motion], [miss]);
-  return (
-    <View accessible={false} style={{ width: size, height: size }}>
-      <MotionMark size={size} scene={miss.scene} motions={motions} once />
     </View>
   );
 }

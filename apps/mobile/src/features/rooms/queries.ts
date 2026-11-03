@@ -38,7 +38,7 @@ function peopleChanged(a: RoomRow | null | undefined, b: RoomRow): boolean {
 }
 
 // What Mekan's table card shows of the person's table (docs/SPEC_V4.md §4.E).
-export const TABLE_ROOM_COLUMNS =
+const TABLE_ROOM_COLUMNS =
   'id, status, visibility, owner_session_id, name, name_rerolls, icon, phones, intent, game_tag';
 export type TableRoomRow = Pick<
   RoomRow,

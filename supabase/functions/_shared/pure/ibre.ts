@@ -94,7 +94,7 @@ export function ibrePhoneRole(
   return { seesTarget: describer, locks: !describer || sidePhones <= 1 };
 }
 
-export const otherSide = (side: TableSide): TableSide => (side === 'owner' ? 'guest' : 'owner');
+const otherSide = (side: TableSide): TableSide => (side === 'owner' ? 'guest' : 'owner');
 
 // The describing table of round n: the owner's first, then in turn.
 export function ibreTurnTable(roundNo: number): TableSide {

@@ -296,7 +296,7 @@ export function reduceLocal(game: LocalSahtekar, action: LocalAction, now: numbe
 }
 
 // Every seat has seen its card: the clues may start without waiting for the clock.
-export function allViewed(game: Pick<LocalSahtekar, 'seats' | 'viewed'>): boolean {
+function allViewed(game: Pick<LocalSahtekar, 'seats' | 'viewed'>): boolean {
   return game.seats.every((s) => game.viewed.includes(s));
 }
 
