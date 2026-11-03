@@ -1,5 +1,5 @@
-// Usage: pnpm icons → apps/mobile/assets/icon/*.png, apps/mobile/assets/glyph/*.png, the game
-// pictures apps/mobile/assets/art/*.png and the preview page dist/icon-preview/. The skall mark
+// Usage: pnpm icons → apps/mobile/assets/icon/*.png, apps/mobile/assets/glyph/*.png and the
+// preview page dist/icon-preview/. The skall mark
 // (scripts/icon/mark.ts: the app icon, splash and notification icon) and the icon family
 // (scripts/icon/glyphs.ts) in every size the app and the stores need. In the app the mark, the
 // loaders and the Mekan tab are drawn with Views and react-native-svg (src/components/Mark.tsx),
@@ -19,25 +19,17 @@ import {
 import {
   BADGE_GLYPHS,
   type BadgeGlyph,
-  BELL,
   GAME_GLYPHS,
   type GameGlyph,
   glyphSvg,
-  KIND_GLYPHS,
   LOCK,
-  lineSvg,
-  MARKERS,
-  type MarkerKind,
-  signedDistanceField,
   TABLE_AVATARS,
 } from './icon/glyphs.ts';
-import { ART_BOX, artSvg } from './icon/art.ts';
 import { previewHtml } from './icon/preview.ts';
 
 const root = resolve(import.meta.dirname, '..');
 const assets = resolve(root, 'apps/mobile/assets/icon');
 const glyph = resolve(root, 'apps/mobile/assets/glyph');
-const art = resolve(root, 'apps/mobile/assets/art');
 const preview = resolve(root, 'dist/icon-preview');
 
 async function png(svg: string, dir: string, file: string): Promise<void> {
@@ -47,7 +39,6 @@ async function png(svg: string, dir: string, file: string): Promise<void> {
 
 mkdirSync(assets, { recursive: true });
 mkdirSync(glyph, { recursive: true });
-mkdirSync(art, { recursive: true });
 // Source drawing, for designers and the store.
 writeFileSync(resolve(assets, 'mark.svg'), `${storeIconSvg(1024)}\n`);
 
@@ -68,8 +59,6 @@ async function glyphPngs(svgAt: (px: number) => string, file: string, dp: number
   for (const d of DENSITIES)
     await png(svgAt(dp * d), glyph, d === 1 ? `${file}.png` : `${file}@${d}x.png`);
 }
-// The notification bell, a line drawing, 24 dp.
-await glyphPngs((px) => lineSvg(BELL, px), 'bell', 24);
 // Badges (src/features/profile/BadgeIcon.tsx): drawn up to 32 dp inside their disc; the lock 14.
 for (const id of Object.keys(BADGE_GLYPHS) as BadgeGlyph[]) {
   await glyphPngs((px) => glyphSvg(BADGE_GLYPHS[id], px), `badge-${id}`, 32);
@@ -81,63 +70,9 @@ for (const id of Object.keys(GAME_GLYPHS) as GameGlyph[]) {
   await glyphPngs((px) => glyphSvg(g.solid, px, { cut: g.cut }), `game-${id}`, 32);
 }
 // Table avatars (src/components/Avatar.tsx): the icon on its disc, up to 40 dp (the 72 dp hero
-// avatar draws it at 56 %). Kinds for the Keşfet list (src/features/explore/VenueTags.tsx): 32 dp.
+// avatar draws it at 56 %).
 for (const a of TABLE_AVATARS) {
   await glyphPngs((px) => glyphSvg(a.solid, px, { cut: a.cut }), `avatar-${a.id}`, 40);
-}
-for (const kind of Object.keys(KIND_GLYPHS) as MarkerKind[]) {
-  await glyphPngs((px) => glyphSvg(KIND_GLYPHS[kind], px), `kind-${kind}`, 32);
-}
-// The live dot's halo (src/components/LiveDot.tsx): a blurred white disc, tinted by the app (no
-// native blur module). 36 dp: three times the 12 dp dot.
-const HALO_DP = 36;
-await glyphPngs(
-  (px) =>
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${px}" height="${px}" viewBox="0 0 ${HALO_DP} ${HALO_DP}">` +
-    `<defs><filter id="b" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="${HALO_DP / 9}"/></filter></defs>` +
-    `<circle cx="${HALO_DP / 2}" cy="${HALO_DP / 2}" r="${HALO_DP / 4}" fill="#fff" filter="url(#b)"/></svg>`,
-  'halo',
-  HALO_DP,
-);
-// The games' pictures on the game cards (src/features/games/GameCard.tsx), in colour, not tinted:
-// 64 dp at 1×, 2× and 3×.
-for (const id of Object.keys(GAME_GLYPHS) as GameGlyph[]) {
-  for (const d of DENSITIES)
-    await png(artSvg(id, ART_BOX * d), art, d === 1 ? `${id}.png` : `${id}@${d}x.png`);
-}
-
-// Map marker glyphs as signed distance fields (MapLibre `sdf: true` images; the map colours them
-// per bucket with `icon-color`). 24 dp glyph with a 3 dp buffer; 8 image pixels of distance range
-// (TinySDF's encoding, which MapLibre's shader expects).
-const MARKER_DP = 24;
-const MARKER_BUFFER = 3;
-const SUPERSAMPLE = 4;
-for (const kind of Object.keys(MARKERS) as MarkerKind[]) {
-  for (const d of DENSITIES) {
-    const out = (MARKER_DP + 2 * MARKER_BUFFER) * d;
-    const inner = MARKER_DP * d * SUPERSAMPLE;
-    const pad = MARKER_BUFFER * d * SUPERSAMPLE;
-    const size = inner + 2 * pad;
-    const { data } = await sharp(Buffer.from(glyphSvg(MARKERS[kind], inner)))
-      .extend({
-        top: pad,
-        bottom: pad,
-        left: pad,
-        right: pad,
-        background: { r: 0, g: 0, b: 0, alpha: 0 },
-      })
-      .extractChannel(3)
-      .raw()
-      .toBuffer({ resolveWithObject: true });
-    const sdf = signedDistanceField(new Uint8Array(data), size, SUPERSAMPLE, 8);
-    const rgba = Buffer.alloc(out * out * 4);
-    sdf.forEach((a, i) => rgba.fill(255, i * 4, i * 4 + 3).writeUInt8(a, i * 4 + 3));
-    const file = d === 1 ? `marker-${kind}.png` : `marker-${kind}@${d}x.png`;
-    await sharp(rgba, { raw: { width: out, height: out, channels: 4 } })
-      .png()
-      .toFile(resolve(glyph, file));
-    console.log(`apps/mobile/assets/glyph/${file}`);
-  }
 }
 
 mkdirSync(preview, { recursive: true });

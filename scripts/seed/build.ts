@@ -11,7 +11,7 @@ import { resolve } from 'node:path';
 
 import {
   parseAliasWords,
-  parseCampusVenues,
+  parseCampusFile,
   parseProfanity,
   parseHarfCategories,
   parseIbreScales,
@@ -25,6 +25,7 @@ import {
 import {
   aliasWordsSql,
   campusSql,
+  universitiesSql,
   cardsSql,
   profanitySql,
   testSpotsSql,
@@ -74,9 +75,10 @@ export function buildSeed(root: string): SeedBuild {
 
   // venues-campus.json: venues with a boundary and spots (docs/SPEC_V3.md §4.1), validated here.
   const campusPath = 'content/venues-campus.json';
-  const campus = existsSync(resolve(root, campusPath))
-    ? parseCampusVenues(readJson(campusPath))
-    : [];
+  const campusFile = existsSync(resolve(root, campusPath))
+    ? parseCampusFile(readJson(campusPath))
+    : { universities: [], venues: [] };
+  const campus = campusFile.venues;
 
   const profanity = parseProfanity(readJson('content/profanity-tr.json'));
 
@@ -85,6 +87,7 @@ export function buildSeed(root: string): SeedBuild {
     venuesSql(venues),
     ...(testVenues.length > 0 ? [venuesSql(testVenues, testVenuesPath, null)] : []),
     ...testSpotsSql(testVenues),
+    universitiesSql(campusFile.universities),
     campusSql(campus),
     profanitySql(profanity),
     tableIconsSql(parseTableIcons(readJson('content/table-icons.json'))),

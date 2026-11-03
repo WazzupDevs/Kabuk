@@ -1,35 +1,10 @@
-// The app's own icon family (canvas: Aşama 5 · Geri bildirim; the skall design system → Icon): the
-// notification bell, map marker glyphs and badge glyphs, drawn on a 24-unit grid with a 1.8
-// stroke, round caps and joins: the bell as lines, the others solid with details cut out.
-// Drawn in white; the app tints them (tintColor) or, on the map, MapLibre colours their signed
-// distance field. scripts/build-icons.ts rasterises these to PNG at 1×, 2× and 3×.
+// The app's own icon family (canvas: Aşama 5 · Geri bildirim; the skall design system → Icon):
+// badge, game and table avatar glyphs, drawn on a 24-unit grid with a 1.8 stroke, round caps and
+// joins, solid with details cut out. Drawn in white; the app tints them (tintColor).
+// scripts/build-icons.ts rasterises these to PNG at 1×, 2× and 3×.
 
 export const GRID = 24;
 export const STROKE = 1.8;
-
-// ------------------------------------------------------------------ the notification bell
-// The bell on Mesajlar's head (was src/components/BellButton.tsx, removed), a line drawing.
-export const BELL =
-  '<path d="M 6 16.6 V 11 C 6 7.5 8.6 4.8 12 4.8 C 15.4 4.8 18 7.5 18 11 V 16.6 L 19.6 18.2 H 4.4 Z"/>' +
-  '<path d="M 10 20.6 C 10.4 21.4 11.1 21.8 12 21.8 C 12.9 21.8 13.6 21.4 14 20.6"/>' +
-  '<path d="M 12 2.8 V 4.8"/>';
-
-// ------------------------------------------------------------------ map marker glyphs (solid)
-export type MarkerKind = 'cafe' | 'campus';
-export const MARKERS: Record<MarkerKind, string> = {
-  // A cup with a handle and two curls of steam.
-  cafe:
-    '<path d="M 4.6 9 H 16.4 V 13 C 16.4 16.6 13.8 19 10.5 19 C 7.2 19 4.6 16.6 4.6 13 Z" stroke="none"/>' +
-    '<path d="M 16.2 10.6 H 17.4 C 19 10.6 20.1 11.7 20.1 13.1 C 20.1 14.5 19 15.6 17.4 15.6 H 15.8" fill="none"/>' +
-    '<path d="M 8.6 3.4 C 7.9 4.4 9.3 5.4 8.6 6.6" fill="none"/><path d="M 12.4 3.4 C 11.7 4.4 13.1 5.4 12.4 6.6" fill="none"/>',
-  // A faculty building: pediment, three columns, steps.
-  campus:
-    '<path d="M 2.6 9.6 L 12 3.6 L 21.4 9.6 Z" stroke="none"/>' +
-    '<rect x="5.2" y="11" width="2.8" height="6.6" rx="0.6" stroke="none"/>' +
-    '<rect x="10.6" y="11" width="2.8" height="6.6" rx="0.6" stroke="none"/>' +
-    '<rect x="16" y="11" width="2.8" height="6.6" rx="0.6" stroke="none"/>' +
-    '<path d="M 3.4 20 H 20.6"/>',
-};
 
 // ------------------------------------------------------------------ badge glyphs (solid)
 export type BadgeGlyph = 'first_game' | 'ten_games' | 'voice_tabu_five_wins' | 'five_tables';
@@ -200,9 +175,6 @@ export const TABLE_AVATARS: readonly { id: string; solid: string; cut?: string }
   },
 ];
 
-// The venue kinds as solid glyphs for the Keşfet list (the map marker drawings, tinted in the app).
-export const KIND_GLYPHS = MARKERS;
-
 // A small padlock for locked badges.
 export const LOCK =
   '<rect x="5.5" y="10.5" width="13" height="10" rx="2.6" stroke="none"/>' +
@@ -234,62 +206,4 @@ export function glyphSvg(
     body +
     '</g></svg>'
   );
-}
-
-// A line glyph: strokes, no fill (dots keep their own white fill).
-export function lineSvg(content: string, size: number, color = '#ffffff'): string {
-  return (
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${GRID} ${GRID}">` +
-    `<g fill="none" stroke="${color}" stroke-width="${STROKE}" stroke-linecap="round" stroke-linejoin="round">` +
-    content.replaceAll('#fff', color) +
-    '</g></svg>'
-  );
-}
-
-// Signed distance field of a white-on-transparent bitmap (MapLibre SDF icons, TinySDF's encoding):
-// alpha 191 on the edge, 255 / `radius` per output pixel of distance, rising inside. `alpha` holds the
-// high-resolution coverage (0..255), `scale` input pixels per output pixel.
-export function signedDistanceField(
-  alpha: Uint8Array,
-  inSize: number,
-  scale: number,
-  radius: number,
-): Uint8Array {
-  const outSize = Math.round(inSize / scale);
-  const inside = (x: number, y: number) =>
-    x >= 0 && y >= 0 && x < inSize && y < inSize && (alpha[y * inSize + x] ?? 0) >= 128;
-  // Edge pixels: inside pixels next to an outside one, and outside pixels next to an inside one.
-  const edges: number[] = [];
-  for (let y = 0; y < inSize; y++)
-    for (let x = 0; x < inSize; x++) {
-      const v = inside(x, y);
-      if (
-        v !== inside(x + 1, y) ||
-        v !== inside(x - 1, y) ||
-        v !== inside(x, y + 1) ||
-        v !== inside(x, y - 1)
-      )
-        edges.push(x, y);
-    }
-  const out = new Uint8Array(outSize * outSize);
-  const reachIn = radius * scale * 1.1;
-  for (let oy = 0; oy < outSize; oy++)
-    for (let ox = 0; ox < outSize; ox++) {
-      const cx = (ox + 0.5) * scale;
-      const cy = (oy + 0.5) * scale;
-      let best = reachIn * reachIn;
-      for (let i = 0; i < edges.length; i += 2) {
-        const dx = (edges[i] ?? 0) + 0.5 - cx;
-        const dy = (edges[i + 1] ?? 0) + 0.5 - cy;
-        const d = dx * dx + dy * dy;
-        if (d < best) best = d;
-      }
-      const dist = Math.sqrt(best) / scale;
-      const signed = inside(Math.floor(cx), Math.floor(cy)) ? dist : -dist;
-      out[oy * outSize + ox] = Math.max(
-        0,
-        Math.min(255, Math.round(191 + (signed * 255) / radius)),
-      );
-    }
-  return out;
 }

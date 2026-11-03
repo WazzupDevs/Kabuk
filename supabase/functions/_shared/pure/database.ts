@@ -1395,6 +1395,30 @@ export type Database = {
           },
         ];
       };
+      universities: {
+        Row: {
+          city: string;
+          id: string;
+          is_active: boolean;
+          name: string;
+          ref: string;
+        };
+        Insert: {
+          city: string;
+          id?: string;
+          is_active?: boolean;
+          name: string;
+          ref: string;
+        };
+        Update: {
+          city?: string;
+          id?: string;
+          is_active?: boolean;
+          name?: string;
+          ref?: string;
+        };
+        Relationships: [];
+      };
       venue_activity: {
         Row: {
           bucket: string;
@@ -1725,6 +1749,7 @@ export type Database = {
           name: string;
           source: string;
           source_ref: string;
+          university_id: string | null;
         };
         Insert: {
           boundary?: unknown;
@@ -1738,6 +1763,7 @@ export type Database = {
           name: string;
           source: string;
           source_ref: string;
+          university_id?: string | null;
         };
         Update: {
           boundary?: unknown;
@@ -1751,8 +1777,17 @@ export type Database = {
           name?: string;
           source?: string;
           source_ref?: string;
+          university_id?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'venues_university_id_fkey';
+            columns: ['university_id'];
+            isOneToOne: false;
+            referencedRelation: 'universities';
+            referencedColumns: ['id'];
+          },
+        ];
       };
     };
     Views: {
@@ -1922,6 +1957,9 @@ export type Database = {
           lat: number;
           lng: number;
           name: string;
+          university_id: string;
+          university_name: string;
+          university_ref: string;
           venue_id: string;
         }[];
       };

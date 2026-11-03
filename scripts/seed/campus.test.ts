@@ -3,8 +3,8 @@ import { resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { parseCampusVenues } from './content.ts';
-import { campusSql } from './sections.ts';
+import { parseCampusFile, parseCampusVenues } from './content.ts';
+import { campusSql, universitiesSql } from './sections.ts';
 
 const RING = [
   [30.0, 40.0],
@@ -112,7 +112,8 @@ describe('campusSql', () => {
     expect(sql).toContain('POLYGON((30 40, 30.01 40, 30.01 40.01, 30 40.01, 30 40))');
     expect(sql).toContain('extensions.st_pointonsurface(');
     // A campus has no category (docs/SPEC_V4.md §4.C).
-    expect(sql).toContain("'campus', 'kampus', 'campus', null, false)");
+    expect(sql).toContain("'campus', 'kampus', 'campus', null, false, null)");
+    expect(sql).toContain('university_id = excluded.university_id');
     expect(sql).toContain('category = excluded.category');
     expect(sql).toContain("('kantin', 'Kantin', 0, true)");
     expect(sql).toContain("('kutuphane', 'Kütüphane''nin önü', 1, true)");
@@ -142,5 +143,70 @@ describe('content/venues-campus.json', () => {
     expect(campusVenue?.location).toEqual({ lat: 40.741282, lng: 30.331469 });
     expect(campusVenue?.boundary).toHaveLength(14);
     expect(campusVenue?.spots.filter((s) => s.isActive)).toEqual([]);
+  });
+});
+
+// Universities and campuses (docs/SPEC_V4.md §4.Q).
+describe('universities', () => {
+  const uni = { ref: 'test-uni', name: 'Test Üniversitesi', city: 'Sakarya' };
+  const file = (venue: Record<string, unknown> = {}, universities: unknown = [uni]) => ({
+    universities,
+    venues: [{ ...campus().venues[0], university: 'test-uni', ...venue }],
+  });
+
+  it('reads universities (active by default) and ties each campus to its university', () => {
+    const parsed = parseCampusFile(file());
+    expect(parsed.universities).toEqual([{ ...uni, isActive: true }]);
+    expect(parsed.venues[0]?.university).toBe('test-uni');
+    // A campus on its own, and a file without universities, as before.
+    expect(parseCampusVenues(campus())[0]?.university).toBeNull();
+  });
+
+  it('refuses an unknown university, a duplicate ref, a bad ref and another city', () => {
+    expect(() => parseCampusFile(file({ university: 'yok' }))).toThrow(/university must be/);
+    expect(() => parseCampusFile(file({}, [uni, uni]))).toThrow(/duplicate university refs/);
+    expect(() => parseCampusFile(file({}, [{ ...uni, ref: 'Test Uni' }]))).toThrow(/ref must/);
+    expect(() => parseCampusFile(file({ city: 'İstanbul' }))).toThrow(/city differs/);
+    expect(() => parseCampusFile(file({}, 'yok'))).toThrow(/must be a list/);
+  });
+
+  it('upserts universities by ref and writes the campus university by ref, never deleting', () => {
+    const parsed = parseCampusFile(file());
+    const u = universitiesSql(parsed.universities);
+    expect(u).toContain("('test-uni', 'Test Üniversitesi', 'Sakarya', true)");
+    expect(u).toContain('on conflict (ref) do update');
+    expect(u).not.toContain('delete');
+    expect(campusSql(parsed.venues)).toContain(
+      "(select id from public.universities where ref = 'test-uni')",
+    );
+    expect(universitiesSql([])).toBe('-- content/venues-campus.json: no universities\n');
+  });
+});
+
+describe('content/venues-campus.json universities', () => {
+  const json: unknown = JSON.parse(
+    readFileSync(resolve(import.meta.dirname, '../../content/venues-campus.json'), 'utf8'),
+  );
+
+  it('keeps Sakarya Esentepe under Sakarya Üniversitesi with its ref and boundary', () => {
+    const parsed = parseCampusFile(json);
+    const sau = parsed.venues.find((v) => v.ref === 'sau-esentepe');
+    expect(sau?.university).toBe('sakarya-universitesi');
+    expect(sau?.isActive).toBe(true);
+  });
+
+  it('lists İstanbul Gelişim Üniversitesi, with no campus until one is verified', () => {
+    // docs/yerleske/igu-dogrulama.md: no boundary or point has been verified yet, so no campus of
+    // it is a check-in place. A campus comes with a verified boundary, never a guessed one.
+    const parsed = parseCampusFile(json);
+    expect(parsed.universities.find((u) => u.ref === 'istanbul-gelisim-universitesi')).toEqual({
+      ref: 'istanbul-gelisim-universitesi',
+      name: 'İstanbul Gelişim Üniversitesi',
+      city: 'İstanbul',
+      isActive: true,
+    });
+    expect(parsed.venues.filter((v) => v.university === 'istanbul-gelisim-universitesi')).toEqual(
+      [],
+    );
   });
 });

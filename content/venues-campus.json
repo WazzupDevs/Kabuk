@@ -1,5 +1,19 @@
 {
-  "note": "Sakarya Üniversitesi Esentepe Kampüsü (S1). boundary: GeoJSON dış halkası, [boylam, enlem], kapalı, saat yönünün tersine; 13 köşe, yaklaşık 106 hektar. location: haritadaki nokta, { lat, lng }, sınırın içinde. Kampüs şimdilik noktasız açılır: örnek noktalar kapalı (isActive false; ref'ler kalıcıdır, nokta silinmez). Gerçek nokta adları gelince yeni ref'lerle eklenir.",
+  "note": "Sakarya Üniversitesi Esentepe Kampüsü (S1). boundary: GeoJSON dış halkası, [boylam, enlem], kapalı, saat yönünün tersine; 13 köşe, yaklaşık 106 hektar. location: haritadaki nokta, { lat, lng }, sınırın içinde. Kampüs şimdilik noktasız açılır: örnek noktalar kapalı (isActive false; ref'ler kalıcıdır, nokta silinmez). Gerçek nokta adları gelince yeni ref'lerle eklenir. Üniversite ve yerleşke (docs/SPEC_V4.md §4.Q): `universities` üst kurumlardır (ref kalıcı, check-in yapılmaz); her yerleşke kendi venue'sudur ve `university` ile üniversitesinin ref'ini gösterir. Sınırı ve noktası doğrulanmamış yerleşke bu dosyaya girmez (docs/yerleske/igu-dogrulama.md).",
+  "universities": [
+    {
+      "ref": "sakarya-universitesi",
+      "name": "Sakarya Üniversitesi",
+      "city": "Sakarya",
+      "isActive": true
+    },
+    {
+      "ref": "istanbul-gelisim-universitesi",
+      "name": "İstanbul Gelişim Üniversitesi",
+      "city": "İstanbul",
+      "isActive": true
+    }
+  ],
   "venues": [
     {
       "ref": "sau-esentepe",
@@ -8,6 +22,7 @@
       "city": "Sakarya",
       "district": "Serdivan",
       "isActive": true,
+      "university": "sakarya-universitesi",
       "location": {
         "lat": 40.741282,
         "lng": 30.331469

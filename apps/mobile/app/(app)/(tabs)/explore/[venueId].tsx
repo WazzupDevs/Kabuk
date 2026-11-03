@@ -175,7 +175,9 @@ export default function VenueDetailScreen() {
                 {venue.name}
               </T>
               <T v="body" ink>
-                {venue.district}
+                {venue.university
+                  ? tr.explore.campusOf(venue.university.name, venue.district)
+                  : venue.district}
               </T>
             </View>
             {/* Before a check-in only: once here, the location was already checked (the owner's
