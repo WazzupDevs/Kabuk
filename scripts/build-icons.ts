@@ -10,10 +10,7 @@ import { resolve } from 'node:path';
 import sharp from 'sharp';
 
 import {
-  adaptiveBackgroundSvg,
-  adaptiveForegroundSvg,
   adaptiveMonochromeSvg,
-  COLORS,
   notificationSvg,
   SPLASH,
   splashSvg,
@@ -43,11 +40,8 @@ const glyph = resolve(root, 'apps/mobile/assets/glyph');
 const art = resolve(root, 'apps/mobile/assets/art');
 const preview = resolve(root, 'dist/icon-preview');
 
-async function png(svg: string, dir: string, file: string, opaque = false): Promise<void> {
-  let image = sharp(Buffer.from(svg));
-  // iOS and Play reject transparency in the app icon.
-  if (opaque) image = image.flatten({ background: COLORS.night });
-  await image.png().toFile(resolve(dir, file));
+async function png(svg: string, dir: string, file: string): Promise<void> {
+  await sharp(Buffer.from(svg)).png().toFile(resolve(dir, file));
   console.log(`${dir.slice(root.length + 1)}/${file}`);
 }
 
@@ -57,13 +51,10 @@ mkdirSync(art, { recursive: true });
 // Source drawing, for designers and the store.
 writeFileSync(resolve(assets, 'mark.svg'), `${storeIconSvg(1024)}\n`);
 
-// Android adaptive icon (108 dp layers at 1024 px) and the Android 13 themed (monochrome) layer.
-await png(adaptiveForegroundSvg(1024), assets, 'adaptive-foreground.png');
-await png(adaptiveBackgroundSvg(1024), assets, 'adaptive-background.png');
+// The Android 13 themed (monochrome) layer. The launcher icon itself (icon.png, play-512.png and
+// the adaptive foreground and background) is the riso C drawing of Aura v78 (UygulamaSimgesi; the
+// owner's call, 3 Kasım): halftone PNGs from the design, committed as they came, not drawn here.
 await png(adaptiveMonochromeSvg(1024), assets, 'adaptive-monochrome.png');
-// iOS: 1024 square, no rounded corners, opaque. Play Console: 512 square.
-await png(storeIconSvg(1024), assets, 'icon.png', true);
-await png(storeIconSvg(512), assets, 'play-512.png', true);
 // Splash image: the 288 dp canvas at xxxhdpi (4×; the plugin draws the night colour, the same in
 // light and dark), and the notification icon (white on transparent; 96 px is the xxxhdpi size of
 // the 24 dp status bar icon).
