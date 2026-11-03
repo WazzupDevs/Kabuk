@@ -123,6 +123,10 @@ export const KIT_TYPE = {
 
 export type KitTextVariant = Exclude<keyof typeof KIT_TYPE, 'av' | 'strong'>;
 
+// Aura v75 E4: in the narrow state (320 dp or the largest text, `lib/narrow.ts`) the eyebrow is 13,
+// so it is the canvas's 17/22 at the largest text (1.3x).
+export const EYEBROW_NARROW = t(600, 13, 17, 0.02);
+
 // Aura v65 skall.css and ekran.css: green-tinted soft shadows (rgba(4, 73, 35) and the ink
 // rgba(3, 27, 11)), the primary's glow in its own green in the light scheme. The dark scheme draws
 // none, but under the primary a soft black one (the owner's report, 2 Kasım, 2.1: the green glow

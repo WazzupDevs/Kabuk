@@ -27,9 +27,10 @@ import {
 import { Loader, useLoopActive } from '@/components/Loader';
 import { boxShadowParts, shadowParts } from '@/components/NativeShadow';
 import { useLabOff } from '@/lib/drawLab';
+import { useNarrow } from '@/lib/useNarrow';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { AURA, MOTION } from '@/theme/aura';
-import { KIT, KIT_TYPE, type KitTextVariant } from '@/theme/auraKit';
+import { EYEBROW_NARROW, KIT, KIT_TYPE, type KitTextVariant } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
 import { Frost, FROSTED } from '@/components/LiquidGlass';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -79,6 +80,7 @@ export function T({
   accessibilityLiveRegion?: 'polite' | 'assertive' | 'none';
 }) {
   const { c } = useKit();
+  const narrow = useNarrow();
   const tone = color ?? (MUTED.includes(v) && !ink && !strong ? c.muted : c.ink);
   return (
     <Text
@@ -90,7 +92,7 @@ export function T({
       minimumFontScale={fit ? MIN_FIT : undefined}
       maxFontSizeMultiplier={MAX_FONT_SCALE}
       style={[
-        KIT_TYPE[v],
+        v === 'eyebrow' && narrow ? EYEBROW_NARROW : KIT_TYPE[v],
         strong ? KIT_TYPE.strong : null,
         { color: tone, textAlign: center ? 'center' : undefined },
         style,

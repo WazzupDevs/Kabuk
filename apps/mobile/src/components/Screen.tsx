@@ -51,6 +51,8 @@ type Props = {
   // Drawn on the ground behind the page, placed against the whole screen (Aura v71: a riso buddy
   // standing in a corner of Gizlilik, Engellenenler).
   backdrop?: ReactNode;
+  // Aktiviteler's tall fade over the tab bar (TabBarFade → `tall`).
+  tallFade?: boolean;
 };
 
 // A scrolling screen on the colour clouds (docs/design/aura) with the theme's side padding. Under
@@ -78,6 +80,7 @@ export function Screen({
   list,
   footer,
   backdrop,
+  tallFade,
 }: Props) {
   const queryClient = useQueryClient();
   const refresh =
@@ -180,7 +183,7 @@ export function Screen({
         <AuraBand top={topFoot} height={0} fade={TOP_FADE} direction="down" />
       ) : null}
       {/* Kenar solması (U9, §4): over the tab bar what scrolls fades out, never cut. */}
-      {barSpace && !footer ? <TabBarFade /> : null}
+      {barSpace && !footer ? <TabBarFade tall={tallFade} /> : null}
     </SafeAreaView>
   );
 }
