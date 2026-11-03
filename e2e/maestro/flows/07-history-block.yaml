@@ -51,4 +51,7 @@ appId: app.kabuk.mobile
 - extendedWaitUntil:
     visible: Henüz mesajın yok.
     timeout: 15000
+# K14: Sohbetler's empty state has its riso picture.
+- assertVisible:
+    id: empty-riso-chats
 - takeScreenshot: 33-messages-after-block

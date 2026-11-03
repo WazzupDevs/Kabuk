@@ -114,6 +114,7 @@ export function EmptyState({
         body={body}
         action={action}
         small={small || compact}
+        risoId={riso}
         picture={
           riso ? { source: EMPTY_RISO[riso], ...(compact ? RISO_SMALL : RISO_FULL) } : picture
         }
@@ -194,7 +195,10 @@ function Empty({
   action,
   small,
   picture,
+  risoId,
 }: Pick<Props, 'title' | 'body' | 'action' | 'small'> & {
+  // The riso picture's name: its wrapper's testID (`empty-riso-<ad>`, E2E K14).
+  risoId?: EmptyRiso;
   picture?: {
     source: ImageSourcePropType;
     width: number;
@@ -215,7 +219,11 @@ function Empty({
     >
       {picture ? (
         // AktivitelerBos `.empty img`: the board's shadow, 16 under it (the column's 8 and 8 more).
-        <View style={{ marginBottom: SPACING[2] }}>
+        <View
+          style={{ marginBottom: SPACING[2] }}
+          testID={risoId ? `empty-riso-${risoId}` : undefined}
+          collapsable={false}
+        >
           <RisoPicture {...picture} />
         </View>
       ) : (

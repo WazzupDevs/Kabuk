@@ -1,11 +1,11 @@
 # İlerleme
 
-## Devir notu (3 Kasım 2026 09:35, E2E onarımı sürüyor)
+## Devir notu (3 Kasım 2026 13:30, E2E yeşil)
 
-- #400 deploy-dev a2c10fd yeşil. #397 (`e2e-onarim`) açık; ci, görsel kapı, shard 2 ve 3 yeşil. Düzelenler: 04 alttan kaydırma; 05b tepki çubuğu (geri tuşuyla kapanır, dışarı dokunma en sonda "Selam cihaz"da), alıntılı yanıt `'.*Harika'`.
-- Shard 1 son düşüş: 05b `friend-Bot Masa` beklemesi (iki bekleme etiketlendi: "friends list opens" / "back from the friend's profile to the list"; hangisi düşerse oradan).
-- Shard 4 kararsız: Şehir ve semt sayfasından sonra (`02` "tab bar 3/4") sekme çubuğu bazen 10 sn sonra da yok; bir koşuda iki tema geçti, sonrakinde açık düştü. Olası uygulama hatası: `Sheet` kapanışında `setMounted(false)` yalnız `finished` iken (`src/components/Sheet.tsx`); kök neden doğrulanmadı.
-- Hazır: `e2e-k12-k14` dalı GitHub'da (PR yok): K12 (`chat-title`, 05b başı arkadaş profili) ve K14 (`empty-riso-<ad>`, 05 ve 07). #397 birleşince main'e rebase, `e2e` etiketli PR. Tanı: `get_job_logs` `job_id` ile `tail_lines` ~230; artifact proxy'den indirilemez.
+- #397 birleşti, E2E sekiz parçada ve görsel kapı yeşil. Kök neden: Modal (alt sayfa, tutulan mesaj) kapanınca odakta kalan alan klavyeyi yeniden açıyordu; DM'nin son mesajını (05b) ve sekme çubuğunu (02) örtüyordu. Düzeltme `src/lib/modalKeyboard.ts` → `useLeaveKeyboard`, her Modal dosyası çağırır (`theme/modalKeyboard.test.ts`). Alt sayfa kesilen kapanışta da çıkar (`sheetSlide.ts`). Native yok, OTA.
+- 320 dp'de süzülen sekme çubuğunun altındaki satıra Maestro'nun basışı çubuğa denk gelir: akışta önce `scrollUntilVisible` + `centerElement`.
+- Tanı: düşen adımda iş logunda "focused window" ve ekran ağacı (`run-on-emulator.sh`); log `gh api repos/WazzupDevs/Kabuk/actions/jobs/<id>/logs` ile tam çekilir (artifact proxy'den inmez).
+- K12/K14 E2E (`e2e-k12-k14`) bu PR'da. Telefonda: K1–K17 kabul turu (proje sahibi).
 
 ## Devir notu (3 Kasım 2026, Aura v71 P4, eksik hâller v75, F1 alt alta)
 
