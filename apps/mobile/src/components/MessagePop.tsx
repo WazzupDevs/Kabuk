@@ -55,7 +55,7 @@ function popIn(from: number, delay = 0) {
 }
 
 // A held message (skall tuvali: SohbetBasiliTut, SohbetKendiMesaj): the screen dims, the message
-// stays where it was with a ring, the six faces over it and its actions under it; the viewer's own
+// stays where it was as it is (no ring, ui 1.1), the six faces over it and its actions under it; the viewer's own
 // on the right. A tap outside or back closes it. Moved up when the menu would leave the screen.
 export function MessagePop({
   at,

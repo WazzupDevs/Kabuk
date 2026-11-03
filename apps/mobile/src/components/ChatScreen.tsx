@@ -775,13 +775,19 @@ function ChatList<T extends ChatListItem>({
     if (seenKey !== undefined && newestKey !== undefined && !atBottom && !newestMine) {
       setPending((n) => n + 1);
     }
+    // Followed to the end (below): the arrow goes with the stale offset.
+    if (newestMine || atBottom) setMetaHidden(false);
   }
   const followed = useRef(newestKey);
   useEffect(() => {
     if (newestKey === followed.current) return;
     followed.current = newestKey;
     if (newestMine) list.current?.scrollToOffset({ offset: 0, animated: true });
-  }, [newestKey, newestMine]);
+    // The list ends at the new message (the reader's own is followed, at the bottom the list keeps
+    // to the end by itself): the last scroll offset is stale, and with the new cell's time line
+    // measured (a sent message gets its line) it put the down arrow up at the bottom (ui 1.2).
+    if (newestMine || atBottom) scrollY.current = 0;
+  }, [newestKey, newestMine, atBottom]);
 
   // The same for the whole list (a new one would draw every row again): it reads the rows as they
   // are when a quote is tapped.

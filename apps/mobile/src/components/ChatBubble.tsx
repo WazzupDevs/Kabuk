@@ -320,10 +320,10 @@ export function ChatBubble({
                 borderBottomLeftRadius: radii[3],
                 opacity: state === 'sending' ? 0.6 : 1,
               },
-          lifted && !big ? { boxShadow: shape.shadow.focus } : null,
         ]}
       >
-        {lifted || big ? null : bubbleShadow.node}
+        {/* Held, the bubble keeps its own shadow and tail: no ring (ui 1.1). */}
+        {big ? null : bubbleShadow.node}
         {last && !big && !glassy ? (
           <BubbleTail side={mine ? 'right' : 'left'} color={fill} edge={mine ? KIT.size.edge : 0} />
         ) : null}
