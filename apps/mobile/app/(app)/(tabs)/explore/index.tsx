@@ -25,7 +25,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { AuraBackground, AuraBand } from '@/aura/AuraBackground';
 import { CapIcon } from '@/aura/CapIcon';
-import { Btn, Chip, Glass, Li, Live, T, Tag, useKit } from '@/aura/kit';
+import { Btn, Chip, Glass, Li, Live, Round, T, Tag, useKit } from '@/aura/kit';
 import { useTabFocus } from '@/aura/motion';
 import { Reveal } from '@/aura/Reveal';
 import { VenueThumb } from '@/aura/VenueThumb';
@@ -263,46 +263,39 @@ function Bucket({ bucket, calm }: { bucket: CityVenue['bucket']; calm: boolean }
   );
 }
 
-// Keşfet: dar (320 dp + 1,3x): under 360 dp or above 1,15x the row's liveliness and "Mekana dön" go
-// under their words (Profil's measure, Grup 6).
-function useNarrow(): boolean {
-  const { width, fontScale } = useWindowDimensions();
-  return width < NARROW_BELOW || fontScale > NARROW_SCALE;
-}
-const NARROW_BELOW = 360;
-const NARROW_SCALE = 1.15;
-
 // "Şu an buradasın" (v46 `.vhere`): the own check-in and the way back to Mekan. The phone's own
 // data; nobody else sees it.
 function HereNow({ here }: { here: Here }) {
-  // A thin row (the owner's report, 30 Ekim: the card stood tall with its right side empty): the
-  // live dot, the venue and the spot on the left, "Mekana dön" on the right. A long venue name
-  // wraps under itself rather than squeezing the button. Narrow (KesfetDar, 320 dp + 1,3x): the
-  // button goes under the words.
-  const narrow = useNarrow();
+  // A thin row: the live dot, the venue and the spot on the whole width, "Mekana dön" as the round
+  // arrow at the right, in the words' middle (the owner's report, 2 Kasım, 1.1, 1.2: the written
+  // button squeezed a long name into four lines). Without a spot no line under the name (1.3).
   return (
     <Glass
       sm
       testID="explore-here"
       style={{
-        flexDirection: narrow ? 'column' : 'row',
-        alignItems: narrow ? 'flex-start' : 'center',
+        flexDirection: 'row',
+        alignItems: 'center',
         paddingVertical: KIT.size.liPadY,
         paddingHorizontal: KIT.size.liPadX,
         gap: KIT.size.liGap,
       }}
     >
-      <View style={{ flex: narrow ? undefined : 1, minWidth: 0, gap: SPACING[0.5] }}>
+      <View style={{ flex: 1, minWidth: 0, gap: SPACING[0.5] }}>
         <Live label={tr.explore.here} />
         <T v="h3">{here.name}</T>
-        <T v="fine">{tr.explore.hereAt(here.spot)}</T>
+        {here.spot ? <T v="fine">{tr.explore.hereAt(here.spot)}</T> : null}
       </View>
-      <Btn
-        sm
-        icon="forward"
-        label={tr.explore.backToVenue}
-        onPress={() => router.navigate('/venue')}
-      />
+      <View style={{ alignSelf: 'center' }}>
+        <Round
+          primary
+          big
+          icon="forward"
+          label={tr.explore.backToVenue}
+          testID="explore-back-to-venue"
+          onPress={() => router.navigate('/venue')}
+        />
+      </View>
     </Glass>
   );
 }
@@ -337,7 +330,6 @@ function VenueList({
   const [placeSheet, setPlaceSheet] = useState(false);
   const [sheetKey, setSheetKey] = useState(0);
   const cityList = useMemo(() => exploreCities(listed), [listed]);
-  const narrow = useNarrow();
   const { c } = useKit();
   return (
     // Pulled down at its top it fetches the list again (v46's `.ptr-ind`).
@@ -433,19 +425,17 @@ function VenueList({
                   <View style={{ flex: 1, gap: SPACING[0.5] }}>
                     <T v="h3">{v.name}</T>
                     <T v="fine">{tr.explore.venueSub(tr.explore.typeLabel[type], v.district)}</T>
-                    {narrow ? <Bucket bucket={v.bucket} calm={calm} /> : null}
+                    {/* Under the type and district, so it never wraps the name (1.4). */}
+                    <View style={{ flexDirection: 'row' }}>
+                      <Bucket bucket={v.bucket} calm={calm} />
+                    </View>
                   </View>
-                  {narrow ? null : <Bucket bucket={v.bucket} calm={calm} />}
                 </Li>
               </Reveal>
             );
           })}
         </Glass>
       )}
-      {/* Right under the list, at the caption's 11. */}
-      <T v="stamp" center>
-        {tr.checkin.osmAttribution}
-      </T>
       {place ? (
         <PlaceSheet
           key={sheetKey}

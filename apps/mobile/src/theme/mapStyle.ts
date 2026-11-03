@@ -93,51 +93,59 @@ function fillColor(id: string, c: MapColors): string | null {
   return null;
 }
 
+// The style's own places (shops, schools, parking, bus stops) are left out: their names and icons
+// collided with the venue pins and their blue P and bus are no colour of skall's (the owner's
+// report, 2 Kasım, 4.2). The venues are the map's only places.
+const isPoi = (layer: StyleLayer): boolean =>
+  layer.type === 'symbol' && has(layer.id.toLowerCase(), 'poi', 'transit', 'parking', 'airport');
+
 export function recolorStyle(style: MapStyleJson, c: MapColors): MapStyleJson {
-  const layers = (style.layers ?? []).map((layer): StyleLayer => {
-    const id = layer.id.toLowerCase();
-    const paint: Paint = { ...layer.paint };
-    switch (layer.type) {
-      case 'background':
-        paint['background-color'] = c.ground;
-        break;
-      case 'fill': {
-        const color = fillColor(id, c);
-        if (color) {
-          paint['fill-color'] = color;
-          delete paint['fill-pattern'];
-          if ('fill-outline-color' in paint) paint['fill-outline-color'] = color;
-        }
-        break;
-      }
-      case 'fill-extrusion':
-        paint['fill-extrusion-color'] = c.building;
-        break;
-      case 'line': {
-        const color = lineColor(id, c);
-        if (color) paint['line-color'] = color;
-        break;
-      }
-      case 'symbol': {
-        if ('text-color' in paint || layer.layout?.['text-field'] !== undefined) {
-          paint['text-color'] = has(id, 'poi', 'housenumber', 'water', 'road')
-            ? c.labelQuiet
-            : c.label;
-          paint['text-halo-color'] = c.halo;
-          const layout: Paint = { ...layer.layout };
-          if (has(id, 'road', 'street', 'transportation')) layout['text-size'] = LABEL_SIZE;
-          const font = layout['text-font'];
-          if (Array.isArray(font) && font.some((f) => String(f).includes('Italic'))) {
-            layout['text-font'] = UPRIGHT;
+  const layers = (style.layers ?? [])
+    .filter((layer) => !isPoi(layer))
+    .map((layer): StyleLayer => {
+      const id = layer.id.toLowerCase();
+      const paint: Paint = { ...layer.paint };
+      switch (layer.type) {
+        case 'background':
+          paint['background-color'] = c.ground;
+          break;
+        case 'fill': {
+          const color = fillColor(id, c);
+          if (color) {
+            paint['fill-color'] = color;
+            delete paint['fill-pattern'];
+            if ('fill-outline-color' in paint) paint['fill-outline-color'] = color;
           }
-          return { ...layer, paint, layout };
+          break;
         }
-        break;
+        case 'fill-extrusion':
+          paint['fill-extrusion-color'] = c.building;
+          break;
+        case 'line': {
+          const color = lineColor(id, c);
+          if (color) paint['line-color'] = color;
+          break;
+        }
+        case 'symbol': {
+          if ('text-color' in paint || layer.layout?.['text-field'] !== undefined) {
+            paint['text-color'] = has(id, 'poi', 'housenumber', 'water', 'road')
+              ? c.labelQuiet
+              : c.label;
+            paint['text-halo-color'] = c.halo;
+            const layout: Paint = { ...layer.layout };
+            if (has(id, 'road', 'street', 'transportation')) layout['text-size'] = LABEL_SIZE;
+            const font = layout['text-font'];
+            if (Array.isArray(font) && font.some((f) => String(f).includes('Italic'))) {
+              layout['text-font'] = UPRIGHT;
+            }
+            return { ...layer, paint, layout };
+          }
+          break;
+        }
+        default:
+          break;
       }
-      default:
-        break;
-    }
-    return { ...layer, paint };
-  });
+      return { ...layer, paint };
+    });
   return { ...style, layers };
 }

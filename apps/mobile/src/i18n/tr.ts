@@ -446,7 +446,7 @@ export const tr = {
   explore: {
     // "Şu an buradasın" (v44: .vhere): the own check-in, kept on this phone only.
     here: 'Şu an buradasın',
-    hereAt: (spot: string | null) => (spot ? `${spot} · giriş yaptın` : 'Giriş yaptın'),
+    hereAt: (spot: string) => `${spot} · check-in yaptın`,
     backToVenue: 'Mekana dön',
     views: { list: 'Liste', map: 'Harita' },
     // The bucket of a venue's active tables (K-16, K-41): never a count.
@@ -463,15 +463,14 @@ export const tr = {
     placeLabel: (city: string, district: string | null) =>
       `Şehir ve semt: ${city}, ${district ?? 'tüm semtler'}`,
     placeTitle: 'Şehir ve semt',
-    placeNote:
-      'Mekanlar konumuna göre değil, seçtiğin şehir ve semte göre listelenir. Bugün etkinliği olanlar önce, sonra ada göre.',
+    placeNote: 'Mekanlar konumuna göre değil, seçtiğin şehir ve semte göre listelenir.',
     city: 'Şehir',
     district: 'Semt',
     allDistricts: 'Tüm semtler',
     showPlace: 'Göster',
     // The count line (K-42).
     countLine: (n: number, eventsFirst: boolean) =>
-      `${n} mekan · ${eventsFirst ? 'bugün etkinliği olanlar önce' : 'ada göre'}`,
+      `${n} mekan · ${eventsFirst ? 'bugün etkinliği olanlar önce' : 'ada göre sıralı'}`,
     noMatch: 'Mekan bulunamadı',
     noMatchHint: 'Başka bir ad dene.',
     noPlace: 'Bu semtte mekan yok',
@@ -772,7 +771,6 @@ export const tr = {
     noVenues: 'Yakınında kayıtlı bir mekan yok.',
     retry: 'Tekrar dene',
     distance: (meters: number) => `${meters} m`,
-    osmAttribution: '© OpenStreetMap katkıda bulunanlar',
     outsideBoundary: (kind: VenueKind) =>
       kind === 'campus'
         ? 'Kampüsün içinde görünmüyorsun. Kampüse girince tekrar dene.'
