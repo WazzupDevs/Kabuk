@@ -35,3 +35,8 @@ Olası yer: `apps/mobile/app/(app)/(tabs)/explore/index.tsx:732` (`<T v="body" l
 
 **3.2 Liste/harita düğmeleri kapsülüne sığmıyor.** Seçili yuvarlak kapsülün üst ve alt kenarından taşıyor. Önem: orta.
 Olası yer: aynı dosya `:803` (`SWITCH_ROUND = 48`) kapsül yüksekliği `KIT.size.field` 48'e indikten sonra (`apps/mobile/src/theme/auraKit.ts:671`, 2 Kasım kararı) değişmemiş; kapsül iç boşluğu `:758` ile 48 + 2×3 > 48. Yuvarlak, kapsül yüksekliğinden türemeli.
+
+### 4. Mekan (masasız, açık)
+
+**4.1 "Henüz masan yok" kartındaki riso sahne çerçeveye sığmıyor.** Sağdaki kapsül kesik, üst kenarda resmin kendi çizgili kenarı görünüyor; sahne kartın içinde kaymış ya da yanlış ölçekte. Önem: orta.
+Olası yer: `apps/mobile/src/features/rooms/TableCard.tsx:363` (`Image` + `PICTURE_FILL`, `resizeMode="cover"`; resim 700×420 (5:3), kart `KIT.size.hero` 210 yüksekliğinde, yaklaşık 1,9:1); `apps/mobile/src/aura/RisoPicture.tsx:13`. 2 Kasım notundaki K1 (6.1) hâlâ sürüyor ya da düzeltmesi bu karta uygulanmamış.
