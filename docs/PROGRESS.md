@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (3 Kasım 2026, E2E onarımı, K kabul testi)
+
+- Birleşenler: #395 (Aktiviteler alt solma, eyebrow), #396 (`theme/kabul.test.ts`: K1–K11, K13, K15–K17), #397 (E2E akışları bugünkü ekrana; görsel bazlar 2 Kasım, 16 görüntü). Native yok, OTA.
+- Sıradaki: K12 (arkadaş profilinde en büyük yazıda "Arkadaşlıktan çıkar") ve K14 (boş durumlarda riso resmi) için Maestro akışı, ayrı PR.
+- Proje sahibine sorulacak: check-in sheet'inde kampüs dışı uyarısı kısa ekranda görünür alanın altında kalıyor (tasarım kararı).
+- `e2e-tani` geçici dal, silinebilir.
+
 ## Devir notu (3 Kasım 2026, Aura v71 P4, eksik hâller v75, F1 alt alta)
 
 - Birleşenler: #392 Aura v71 P4 (8 pano; K8 `venue_chat_mutes.look` migration'ı, eski kayıtlar doldurulmaz, `guvenlik` denetledi; üretimde önce sunucu), #393 eksik hâller v75 (koyu kayıt sahnesi ve kod kutuları, riso etkinlik kartı, Aktiviteler hâlleri, dar hâl `src/lib/narrow.ts`), F1 dar hâlde alt alta (bu PR). Native yok, OTA.
