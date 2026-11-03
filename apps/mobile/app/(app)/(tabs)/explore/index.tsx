@@ -729,7 +729,8 @@ function SearchGlass({
             pointerEvents="none"
             style={[StyleSheet.absoluteFill, { justifyContent: 'center' }]}
           >
-            <T v="body" lines={1} fit color={colors.placeholder}>
+            {/* No `fit`: in the absolute layer it shrank the hint to nothing (ui 3.1). */}
+            <T v="body" lines={1} color={colors.placeholder}>
               {tr.explore.search}
             </T>
           </View>
@@ -739,15 +740,17 @@ function SearchGlass({
   );
 }
 
-// The list/map switch (U13): two 48 round buttons 2 apart in a 56 glass capsule, 4 in from its
-// outer edge; the chosen one raised on the surface, its icon lit (accent in front, buzz behind;
+// The list/map switch (U13): two round buttons 2 apart in a glass capsule as tall as the search, 4 in
+// from its outer edge; the chosen one raised on the surface, its icon lit (accent in front, buzz behind;
 // in the dark on white 94 % with the light accent).
 function ViewSwitch({ value, onChange }: { value: View_; onChange: (v: View_) => void }) {
   const { c, scheme } = useKit();
   const { colors } = useTheme();
   // As tall as the search beside it (Aura v75 KesfetHaritaDar).
   const h = useNarrow() ? KIT.size.fieldNarrow : KIT.size.field;
-  const round = SWITCH_ROUND;
+  // The rounds fill the capsule less its padding (ui 3.2: a fixed 48 stood out of a 48 capsule).
+  const pad = SPACING[1] - KIT.size.edge;
+  const round = h - 2 * pad;
   return (
     <Glass
       frost
@@ -755,7 +758,7 @@ function ViewSwitch({ value, onChange }: { value: View_; onChange: (v: View_) =>
       style={{
         height: h,
         borderRadius: h / 2,
-        padding: SPACING[1] - KIT.size.edge,
+        padding: pad,
       }}
     >
       <View
@@ -798,8 +801,7 @@ function ViewSwitch({ value, onChange }: { value: View_; onChange: (v: View_) =>
   );
 }
 
-// skall.css `.ci.md` (20) and Kesfet `.segx span` (48).
+// skall.css `.ci.md` (20).
 const ICON_MD = 20;
-const SWITCH_ROUND = 48;
 // Kesfet `.dark .segx span.on .ci`: the light scheme's accent on the white part.
 const THEME_LIGHT_ACCENT = THEME.palettes.light.accent;

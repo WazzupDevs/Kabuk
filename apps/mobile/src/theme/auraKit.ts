@@ -585,17 +585,15 @@ export const KIT = {
     historyThumb: 52,
     // Kapsülün: the empty part's tile (104, its capsule 70), a pack's tiles 70 high with the capsule
     // 10 down in them, the chosen one's ring (3) and a pack's block (16 inside, 12 apart).
-    // U35 (Kapsul, bölüm 4): the capsule 160 with a 4 ring; an option's box 96 (22 round, its capsule
-    // 76) and a part's 64 (18 round, its capsule 60 on the foot), 12 and 8 apart; the chosen one's
-    // 2 ring 2 out; a worn part's chip icon 18 and the categories' fade over the last fifth.
+    // U35 (Kapsul, bölüm 4): the capsule 160 with a 4 ring; an option's room 96 (its capsule 76) and a
+    // part's 64 (its capsule 60), no box round them (ui 8.1), 12 and 8 apart; the chosen one's 2
+    // ring 2 out round the capsule; a worn part's chip icon 18 and the categories' fade over the last fifth.
     capsuleHero: 160,
     capsuleRing: 4,
     optionBox: 96,
-    optionRadius: 22,
     optionImage: 76,
     optionGap: 12,
     partBox: 64,
-    partBoxRadius: 18,
     partImage: 60,
     partBoxGap: 8,
     boxRing: 2,
