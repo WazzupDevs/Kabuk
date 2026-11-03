@@ -8,6 +8,22 @@ appId: app.kabuk.mobile
 - extendedWaitUntil:
     visible: Selam cihaz
     timeout: 15000
+# K12 (aktarim-v76 §11): the friend's profile from the DM's title; "Arkadaşlıktan çıkar" whole,
+# "Mesaj" beside or above it.
+- tapOn:
+    id: chat-title
+- extendedWaitUntil:
+    visible:
+      id: profile-remove-button
+    timeout: 15000
+- assertVisible: Arkadaşlıktan çıkar
+- assertVisible: Mesaj
+- takeScreenshot: 27a-friend-profile
+- back
+- extendedWaitUntil:
+    visible:
+      id: dm-input
+    timeout: 15000
 - tapOn:
     id: dm-input
 - inputText: Okudun mu?

@@ -115,6 +115,7 @@ export function ChatTopBar({
         ) : null}
         {onPressTitle ? (
           <Pressable
+            testID="chat-title"
             accessibilityRole="button"
             accessibilityLabel={titleAccessibilityLabel}
             onPress={onPressTitle}
@@ -224,6 +225,7 @@ function SplitBar({
       ) : null}
       {onPressTitle ? (
         <Pressable
+          testID="chat-title"
           accessibilityRole="button"
           accessibilityLabel={titleAccessibilityLabel}
           onPress={onPressTitle}

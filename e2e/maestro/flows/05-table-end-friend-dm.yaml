@@ -56,6 +56,9 @@ appId: app.kabuk.mobile
 - extendedWaitUntil:
     visible: Bekleyen istek yok
     timeout: 15000
+# K14 (aktarim-v76 §11): each empty state has its own riso picture.
+- assertVisible:
+    id: empty-riso-requests
 - takeScreenshot: 25a-requests-empty
 - tapOn:
     id: messages-tab-chats
@@ -68,6 +71,8 @@ appId: app.kabuk.mobile
 - extendedWaitUntil:
     visible: Henüz mesaj yok. İlk mesajı sen yaz.
     timeout: 15000
+- assertVisible:
+    id: empty-riso-chat
 - takeScreenshot: 26-dm-empty
 - tapOn:
     id: dm-input
