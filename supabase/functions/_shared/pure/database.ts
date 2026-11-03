@@ -1523,6 +1523,7 @@ export type Database = {
           created_at: string;
           id: string;
           label: string;
+          look: string | null;
           muted_user_id: string;
           profiled: boolean;
           user_id: string;
@@ -1531,6 +1532,7 @@ export type Database = {
           created_at?: string;
           id?: string;
           label: string;
+          look?: string | null;
           muted_user_id: string;
           profiled: boolean;
           user_id: string;
@@ -1539,6 +1541,7 @@ export type Database = {
           created_at?: string;
           id?: string;
           label?: string;
+          look?: string | null;
           muted_user_id?: string;
           profiled?: boolean;
           user_id?: string;
@@ -3599,6 +3602,7 @@ export type Database = {
           created_at: string;
           id: string;
           label: string;
+          look: string;
           profiled: boolean;
         }[];
       };

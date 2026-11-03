@@ -164,7 +164,13 @@ export const RECONSENT_KANKI_FOOT = 28;
 export const PAGE_KANKI = {
   privacy: { id: '9c96bd', right: 22, bottom: 30, width: 96, height: 126 },
   blocked: { id: 'c189a4', left: 30, bottom: 30, width: 96, height: 126 },
+  muted: { id: '3c95b1', right: 30, bottom: 30, width: 96, height: 126 },
 } as const satisfies Record<string, KankiPlace>;
+
+// YasalMetin: one looking over "Devam" (`.lbar .peek .stand`), 20 from the right, its feet 36 under
+// the button's top edge. GuncellemeGerekli: one standing over the title, in the column.
+export const LEGAL_PEEK: KankiPlace = { id: '1a80a9', right: 20, top: -36, width: 80, height: 105 };
+export const UPDATE_KANKI: KankiPlace = { id: '6f419d', width: 110, height: 144 };
 
 // Arkadaslar: one looking over the list (`.behind > .peek`), the list 76 under the title.
 export const FRIENDS_PEEK: readonly KankiPlace[] = [

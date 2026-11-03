@@ -5,12 +5,11 @@ import { useState } from 'react';
 import { Alert, View } from 'react-native';
 
 import { Btn, T } from '@/aura/kit';
-import { Button } from '@/components/Button';
+import { Banner } from '@/components/Banner';
 import { EmptyState } from '@/components/EmptyState';
 import { Menu, MenuItem } from '@/components/Menu';
 import { Screen } from '@/components/Screen';
 import { Sheet } from '@/components/Sheet';
-import { Text } from '@/components/Text';
 import { Loader } from '@/components/Loader';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
@@ -75,6 +74,9 @@ export default function VenueChatProfileScreen() {
 
   return (
     <Screen
+      // MekanSohbetiProfil (v71; docs/decisions/aura-v71-eklenen.md, karar 3): "Geri" always in
+      // the fixed foot.
+      footer={<Btn block variant="glassy" label={tr.profile.back} onPress={() => router.back()} />}
       top={
         // Like a friend's profile (the owner's call, 27 Ekim; skall tuvali, ProfilYabanci): the
         // round back and "Seçenekler" on top, the profile's head, the request under it.
@@ -112,11 +114,6 @@ export default function VenueChatProfileScreen() {
           </ProfileHead>
         </View>
       )}
-      {!view.isPending && !view.data ? (
-        <View className="mt-auto pt-8">
-          <Btn block bar={KIT.size.btnRow} label={tr.profile.back} onPress={() => router.back()} />
-        </View>
-      ) : null}
       <Sheet
         visible={menu}
         onClose={() => setMenu(false)}
@@ -144,31 +141,30 @@ export default function VenueChatProfileScreen() {
             }}
           />
         </Menu>
-        <Button
-          size="lg"
-          variant="neutral"
-          label={tr.common.cancel}
-          onPress={() => setMenu(false)}
-        />
+        <Btn block variant="glassy" label={tr.common.cancel} onPress={() => setMenu(false)} />
       </Sheet>
       <Sheet
         visible={confirming}
         onClose={() => setConfirming(false)}
         title={tr.venueChat.requestConfirmTitle}
-        icon="person-add-outline"
       >
-        <Text>{tr.venueChat.requestConfirmBody}</Text>
-        {request.isError ? (
-          <Text variant="fine" tone="danger">
-            {errorMessage(request.error)}
-          </Text>
-        ) : null}
-        <Button
-          testID="venue-chat-request-confirm"
-          label={tr.venueChat.requestConfirm}
-          onPress={() => request.mutate()}
-          loading={request.isPending}
-        />
+        <T ink>{tr.venueChat.requestConfirmBody}</T>
+        {request.isError ? <Banner tone="danger" body={errorMessage(request.error)} /> : null}
+        <View className="gap-2.5">
+          <Btn
+            block
+            testID="venue-chat-request-confirm"
+            label={tr.venueChat.requestConfirm}
+            onPress={() => request.mutate()}
+            loading={request.isPending}
+          />
+          <Btn
+            block
+            variant="glassy"
+            label={tr.common.cancel}
+            onPress={() => setConfirming(false)}
+          />
+        </View>
       </Sheet>
       <ReportModal
         reasons={REPORT_REASONS}
@@ -184,6 +180,7 @@ export default function VenueChatProfileScreen() {
         title={tr.venueChat.blockConfirmTitle}
         hint={tr.venueChat.blockConfirmBody}
         confirmLabel={tr.safety.blockConfirm}
+        confirmIcon="block"
         pending={block.isPending}
         error={block.error}
         onConfirm={(reason) => block.mutate(reason)}

@@ -3,10 +3,9 @@ import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 
-import { Button } from '@/components/Button';
+import { Btn, T } from '@/aura/kit';
 import { Banner } from '@/components/Banner';
 import { RouteSheet, useCloseSheet } from '@/components/RouteSheet';
-import { Text } from '@/components/Text';
 import { Loader } from '@/components/Loader';
 import { SpotPicker } from '@/features/checkin/SpotPicker';
 import { useVenueSpots } from '@/features/checkin/spots';
@@ -53,10 +52,10 @@ export default function ChangeSpotScreen() {
   }
   if (!table.data) return <Redirect href="/explore" />;
 
-  // skall tuvali (MekanNoktaDegistir): a sheet over Mekan, the spots as chips.
+  // skall tuvali (MekanNoktaDegistir, v71): a sheet over Mekan, the spots as `.opt` rows.
   return (
     <RouteSheet title={tr.venue.changeSpotTitle} testID="change-spot-sheet">
-      <Text variant="fine">{tr.venue.changeSpotHint}</Text>
+      <T v="fine">{tr.venue.changeSpotHint}</T>
       <SpotPicker
         spots={spots.data ?? []}
         selectedId={selected}
@@ -64,8 +63,9 @@ export default function ChangeSpotScreen() {
       />
       {change.isError ? <Banner tone="danger" body={errorMessage(change.error)} /> : null}
       <View className="gap-2.5 pt-1">
-        <Button
-          size="lg"
+        <Btn
+          block
+          icon="check"
           label={tr.venue.changeSpotSave}
           onPress={() => selected && change.mutate(selected)}
           disabled={!selected || selected === table.data.spot_id}
@@ -79,5 +79,5 @@ export default function ChangeSpotScreen() {
 
 function CancelButton() {
   const close = useCloseSheet();
-  return <Button size="lg" variant="neutral" label={tr.common.cancel} onPress={close} />;
+  return <Btn block variant="glassy" label={tr.common.cancel} onPress={close} />;
 }

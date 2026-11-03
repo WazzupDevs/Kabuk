@@ -57,7 +57,8 @@ export function Choice({
     borderWidth: 1,
   } as const;
   const title = (tone?: 'muted') => (
-    <View className="flex-row items-center gap-2">
+    // `.opt`: the picture 12 before the label.
+    <View className="flex-row items-center" style={{ gap: SPACING[3] }}>
       {picture}
       <View className="flex-1">
         <T v="h3" color={tone ? colors.muted : colors.text}>

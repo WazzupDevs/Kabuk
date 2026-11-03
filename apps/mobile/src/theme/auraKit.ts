@@ -59,6 +59,8 @@ export const KIT_TYPE = {
   // Mekan's lobby headings (.sec .h3 at 21).
   secXl: t(600, 21, 27, -0.005),
   body: t(500, 15, 22),
+  // Aura v71 YasalMetin (`.legal`): the long legal text.
+  legal: t(500, 15, 24),
   // A venue's district under its name on its page (KesfetMekan: .body at 17).
   bodyLg: t(500, 17, 22),
   fine: t(500, 13, 18),

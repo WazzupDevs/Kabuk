@@ -2,12 +2,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { View } from 'react-native';
 
+import { Av, Btn, T } from '@/aura/kit';
 import { Avatar } from '@/components/Avatar';
 import { Banner } from '@/components/Banner';
-import { Button } from '@/components/Button';
 import { LookAvatar } from '@/components/LookAvatar';
 import { Sheet } from '@/components/Sheet';
-import { Text } from '@/components/Text';
 import { PhotoSheet } from '@/features/profile/PhotoSheet';
 import { useOwnLook } from '@/features/profile/useOwnLook';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
@@ -16,6 +15,7 @@ import { tr } from '@/i18n/tr';
 import { callSetIdentity } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
+import { KIT } from '@/theme/auraKit';
 import { ICON, SPACING } from '@/theme/tokens';
 import { AppIcon } from '@/components/AppIcon';
 
@@ -70,11 +70,12 @@ export function IdentitySheet({
       ? tr.identity.anonConfirm
       : tr.identity.chatAnonConfirm
     : tr.identity.profileConfirm;
-  const face = <Avatar kind="profile" name={photo.name} photoUrl={photo.url} size="lg" />;
+  // MekanKimlikDegistir (v71): the two faces 44, 8 apart.
+  const face = <Av size="md" name={photo.name} photoUrl={photo.url} />;
   const capsule = look ? (
-    <LookAvatar look={look} size={SPACING[12]} />
+    <LookAvatar look={look} size={KIT.size.av.md} />
   ) : (
-    <Avatar kind="default" size="lg" />
+    <Avatar kind="default" size="md" />
   );
   // Closed, it opens next time without the last error.
   const close = () => {
@@ -89,7 +90,7 @@ export function IdentitySheet({
           <AppIcon name="forward" size={ICON.md} color={colors.muted} />
           {toAnonymous ? capsule : face}
         </View>
-        <Text variant="fine">{body}</Text>
+        <T v="fine">{body}</T>
         {needsPhoto ? null : (
           <Banner
             tone="warn"
@@ -100,8 +101,8 @@ export function IdentitySheet({
         {change.isError ? <Banner tone="danger" body={errorMessage(change.error)} /> : null}
         <View className="gap-2.5">
           {needsPhoto ? (
-            <Button
-              size="lg"
+            <Btn
+              block
               icon="photo"
               label={tr.identity.addPhoto}
               onPress={() => {
@@ -111,15 +112,15 @@ export function IdentitySheet({
               }}
             />
           ) : (
-            <Button
-              size="lg"
+            <Btn
+              block
               testID="identity-confirm"
               label={confirm}
               loading={change.isPending}
               onPress={() => change.mutate()}
             />
           )}
-          <Button size="lg" variant="neutral" label={tr.common.cancel} onPress={close} />
+          <Btn block variant="glassy" label={tr.common.cancel} onPress={close} />
         </View>
       </Sheet>
       <PhotoSheet visible={photoSheet} onClose={() => setPhotoSheet(false)} />

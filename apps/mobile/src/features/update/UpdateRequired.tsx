@@ -1,34 +1,37 @@
 import { Linking, View } from 'react-native';
 
-import { Button } from '@/components/Button';
+import { Btn, T } from '@/aura/kit';
+import { RisoKanki } from '@/aura/RisoKanki';
 import { Screen } from '@/components/Screen';
-import { Text } from '@/components/Text';
 import { Wordmark } from '@/components/Wordmark';
 import { tr } from '@/i18n/tr';
 import { appBuild, updateUrl } from '@/lib/appBuild';
+import { UPDATE_KANKI } from '@/theme/kankiMotion';
 import { SPACING } from '@/theme/tokens';
 
-// Full screen, in place of everything else, once the server refuses this build.
+// Full screen, in place of everything else, once the server refuses this build. Aura v71
+// GuncellemeGerekli: a riso buddy over the wordmark and the title, centred, then "Güncelle".
 export function UpdateRequired() {
   return (
     <Screen>
       <View className="flex-1 justify-center gap-3">
         <View className="items-center gap-3 py-8">
-          <View className="mb-3">
+          <View style={{ width: UPDATE_KANKI.width, height: UPDATE_KANKI.height }}>
+            <RisoKanki place={{ ...UPDATE_KANKI, left: 0, bottom: 0 }} scale={1} />
+          </View>
+          <View style={{ marginTop: SPACING[1], marginBottom: SPACING[3] }}>
             <Wordmark height={SPACING[8]} />
           </View>
-          <Text variant="heading" align="center">
+          <T v="h3" ink center accessibilityRole="header">
             {tr.update.title}
-          </Text>
-          <Text tone="muted" align="center">
-            {tr.update.body}
-          </Text>
+          </T>
+          <T center>{tr.update.body}</T>
         </View>
-        <Button label={tr.update.action} onPress={() => void Linking.openURL(updateUrl())} />
+        <Btn block label={tr.update.action} onPress={() => void Linking.openURL(updateUrl())} />
         {appBuild ? (
-          <Text variant="fine" align="center">
+          <T v="fine" center>
             {tr.update.build(appBuild)}
-          </Text>
+          </T>
         ) : null}
       </View>
     </Screen>

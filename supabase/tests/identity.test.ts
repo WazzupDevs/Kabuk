@@ -623,7 +623,7 @@ describe('venue chat identity (§4.D)', () => {
     const b = await atVenue(PHONES[1], 'Burak');
     const c = await atVenue(PHONES[2], 'Cem');
     await setTestPhoto(a);
-    const { capsule_nick: nick } = await capsuleOf(a);
+    const { capsule_nick: nick, capsule_look: look } = await capsuleOf(a);
     const anon = (await send(a, 'anonim bir')).body as { messageId: string };
 
     const muted = await invoke(b, 'venue-chat', { action: 'mute', messageId: anon.messageId });
@@ -655,6 +655,7 @@ describe('venue chat identity (§4.D)', () => {
           id: (muted.body as { muteId: string }).muteId,
           label: nick,
           profiled: false,
+          look,
           createdAt: expect.any(String),
         },
       ],

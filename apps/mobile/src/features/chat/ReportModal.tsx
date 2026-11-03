@@ -1,11 +1,13 @@
 import type { GameFlowReportReason } from '@shared/chat.ts';
 
+import { View } from 'react-native';
+
 import { Btn } from '@/aura/kit';
-import { Button } from '@/components/Button';
+import { Banner } from '@/components/Banner';
 import { Sheet } from '@/components/Sheet';
-import { Text } from '@/components/Text';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
+import { KIT } from '@/theme/auraKit';
 
 type Props<R extends GameFlowReportReason> = {
   visible: boolean;
@@ -32,25 +34,25 @@ export function ReportModal<R extends GameFlowReportReason>({
       visible={visible}
       onClose={onClose}
       title={tr.safety.reportTitle}
-      icon="report"
+      titleIcon="report"
       // "Vazgeç" at the foot, under the reasons however many (X3).
       footer={<Btn block variant="glassy" label={tr.common.cancel} onPress={onClose} />}
     >
-      {reasons.map((reason) => (
-        <Button
-          key={reason}
-          variant="neutral"
-          testID={`report-${reason}`}
-          label={tr.safety.reasons[reason]}
-          onPress={() => onReport(reason)}
-          disabled={pending}
-        />
-      ))}
-      {error ? (
-        <Text variant="fine" tone="danger">
-          {errorMessage(error)}
-        </Text>
-      ) : null}
+      {/* SikayetEt (v71): the reasons as soft blocks, 8 apart. */}
+      <View style={{ gap: KIT.size.btnGap }}>
+        {reasons.map((reason) => (
+          <Btn
+            key={reason}
+            block
+            variant="glassy"
+            testID={`report-${reason}`}
+            label={tr.safety.reasons[reason]}
+            onPress={() => onReport(reason)}
+            disabled={pending}
+          />
+        ))}
+      </View>
+      {error ? <Banner tone="danger" body={errorMessage(error)} /> : null}
     </Sheet>
   );
 }

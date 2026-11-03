@@ -2,8 +2,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { View } from 'react-native';
 
 import { Av, Btn, Li, RowList, T } from '@/aura/kit';
+import { RisoKanki } from '@/aura/RisoKanki';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
+import { LookAvatar } from '@/components/LookAvatar';
 import { PageTop } from '@/components/PageTop';
 import { Screen } from '@/components/Screen';
 import { errorMessage } from '@/i18n/errors';
@@ -12,11 +14,13 @@ import { useNow } from '@/lib/useNow';
 import { venueChatApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { KIT } from '@/theme/auraKit';
+import { PAGE_KANKI } from '@/theme/kankiMotion';
 
 const MUTES_KEY = ['venueChatMutes'] as const;
 
 // Sessize alınanlar (skall tuvali, SessizeAlinanlar; docs/SPEC_V4.md §4.D): the venue chat
-// identities the account muted, each with "Sesi aç". The muted person never learns of it.
+// identities the account muted, each with "Sesi aç". The muted person never learns of it. An
+// anonymous one shows its capsule and nick (docs/decisions/aura-v71-eklenen.md, karar 1).
 export default function MutedScreen() {
   const queryClient = useQueryClient();
   const mutes = useQuery({ queryKey: MUTES_KEY, queryFn: () => venueChatApi.mutes() });
@@ -28,9 +32,13 @@ export default function MutedScreen() {
   const now = useNow(60000);
   const list = mutes.data?.mutes ?? [];
   return (
-    <Screen list top={<PageTop title={tr.settings.muted} />}>
+    <Screen
+      list
+      backdrop={<RisoKanki place={PAGE_KANKI.muted} scale={1} />}
+      top={<PageTop title={tr.settings.muted} />}
+    >
       <View style={{ gap: KIT.size.rowGap }}>
-        <T v="note">{tr.settings.mutedNote}</T>
+        <T v="fine">{tr.settings.mutedNote}</T>
         {mutes.isPending ? (
           <Loader />
         ) : mutes.isError ? (
@@ -42,10 +50,14 @@ export default function MutedScreen() {
         ) : list.length === 0 ? (
           <EmptyState kind="empty" riso="muted" body={tr.settings.mutedEmpty} />
         ) : (
-          <RowList>
+          <RowList inset={KIT.size.av.md + KIT.size.liGap}>
             {list.map((m) => (
-              <Li key={m.id}>
-                <Av size="row" name={m.label} />
+              <Li key={m.id} padY={KIT.size.lrPadY} minHeight={KIT.size.lrMin}>
+                {m.look ? (
+                  <LookAvatar look={m.look} size={KIT.size.av.md} />
+                ) : (
+                  <Av size="md" name={m.label} />
+                )}
                 <View style={{ flex: 1 }}>
                   <T v="h3" ink>
                     {m.label}
