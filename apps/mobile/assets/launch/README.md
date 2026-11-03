@@ -1,7 +1,7 @@
 # Riso açılış doku seti (Aura v64 AcilisRiso, rapor bölüm 14)
 
 3x (1170x2532 = 390x844 dp), tam ekran. Her dosya tek mürekkep rengi + alfa (RGBA); zemin-lif opak.
-WebP kayıpsız (uygulamaya giren), aynı dosyaların PNG kopyası png/ altında.
+WebP kayıpsız (uygulamaya giren).
 
 | Dosya                 | İçerik                                                                                         | Renk    |
 | --------------------- | ---------------------------------------------------------------------------------------------- | ------- |
