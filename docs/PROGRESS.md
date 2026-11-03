@@ -3,7 +3,8 @@
 ## Devir notu (3 Kasım 2026, arayüz hataları paketleri)
 
 - Notlar `docs/ui-hatalar-2026-11-03.md` (#416). Paket 1 #417 birleşti: zemin dibe kadar (`AuraBackground`, `useGroundSize`; kök: dolgulu kökte `height: '100%'`), riso resimlerin kenar şeridi kırpıldı (2.1, 4.1). Native yok, OTA; telefonda kabul bekliyor.
-- Sıradaki paketler: 2 sohbet (1.1 balon halkası `ChatBubble.tsx`, 1.2 en alttayken aşağı ok `ChatScreen.tsx` → `metaHidden`); 3 kankiler riso'ya (5.1 `Peek.tsx`, `Scene.tsx`; 6.1); 4 ölçüler (3.1, 3.2, 7.1, 8.1 + tuval; 6.2, 6.3 eklenebilir).
+- Paket 2 sohbet (1.1 basılı balon halkasız, 1.2 sona tutununca ok kapanır) bu PR'da; OTA, telefonda kabul bekliyor.
+- Sıradaki paketler: 3 kankiler riso'ya (5.1 `Peek.tsx`, `Scene.tsx`; 6.1); 4 ölçüler (3.1, 3.2, 7.1, 8.1 + tuval; 6.2, 6.3 eklenebilir).
 - Ders: yerel cam (`LiquidGlassView`) zemin hedefini yalnızca kardeşler arasında arar; `GlassTarget`'ı bir görünümle sarmalama.
 
 ## Devir notu (3 Kasım 2026 19:45, temizlik A1–A4)
