@@ -1,4 +1,4 @@
-import { Button } from '@/components/Button';
+import { Btn } from '@/aura/kit';
 import { tr } from '@/i18n/tr';
 
 // "Rövanş" on the game-over screen (canvas: Aşama 6 · Oyunlar → Oyun sonu): the same game proposed
@@ -13,7 +13,8 @@ export function RematchButton({
   disabled?: boolean;
 }) {
   return (
-    <Button
+    <Btn
+      block
       testID="rematch"
       icon="refresh"
       label={tr.games.rematch}

@@ -1,11 +1,11 @@
 import { Modal, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
+import { Btn, Glass, T } from '@/aura/kit';
 import { GameDisc, GameIcon } from '@/components/Glyph';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
+import { KIT } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING, TOUCH } from '@/theme/tokens';
 
@@ -23,9 +23,9 @@ export function FirstGameIntro({ visible, onClose }: Props) {
   const { colors, shape } = useTheme();
   const art = [
     <GameIcon key="d" name="tabu" color={colors.text} size={SPACING[8]} />,
-    <Text key="j" variant="title" tone="danger">
+    <T key="j" v="title" color={KIT.danger}>
       !
-    </Text>,
+    </T>,
     <View key="b" className="flex-row gap-1">
       <View
         style={{
@@ -68,17 +68,19 @@ export function FirstGameIntro({ visible, onClose }: Props) {
                 alignItems: 'flex-end',
               }}
             >
-              <Text variant="label">{tr.games.introSkip}</Text>
+              <T v="fine" ink>
+                {tr.games.introSkip}
+              </T>
             </Pressable>
           </View>
           <View className="flex-row items-center gap-3">
             <GameDisc name="tabu" size={SPACING[16]} />
-            <Text variant="display" accessibilityRole="header" className="flex-1">
+            <T v="display" accessibilityRole="header" style={{ flex: 1 }}>
               {tr.games.introTitle}
-            </Text>
+            </T>
           </View>
           {tr.games.introSteps.map((step, i) => (
-            <Card key={step.title}>
+            <Glass key={step.title} sm pad="pad">
               <View className="flex-row items-start gap-3">
                 <View
                   className="items-center justify-center"
@@ -95,16 +97,16 @@ export function FirstGameIntro({ visible, onClose }: Props) {
                   <Text variant="overline" tone="muted">
                     {tr.games.introStep(i + 1)}
                   </Text>
-                  <Text variant="heading">{step.title}</Text>
-                  <Text variant="fine">{step.body}</Text>
+                  <T v="h3">{step.title}</T>
+                  <T v="fine">{step.body}</T>
                 </View>
               </View>
-            </Card>
+            </Glass>
           ))}
         </ScrollView>
         {/* Pinned under the steps: reachable on short screens without scrolling. */}
         <View style={{ padding: shape.screenPadding, paddingTop: SPACING[3] }}>
-          <Button testID="intro-done" label={tr.games.introDone} onPress={onClose} />
+          <Btn block testID="intro-done" label={tr.games.introDone} onPress={onClose} />
         </View>
       </SafeAreaView>
     </Modal>

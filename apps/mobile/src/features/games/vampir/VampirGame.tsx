@@ -14,9 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
 import { Btn, Glass, Round, T, Tag } from '@/aura/kit';
-import { Button } from '@/components/Button';
 import { Sheet } from '@/components/Sheet';
-import { Text as AppText } from '@/components/Text';
 import { roomKeys, type TablePerson } from '@/features/rooms/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -144,16 +142,16 @@ export function VampirGame({
         onClose={() => (pending ? undefined : setExit(false))}
         title={sheet.title}
       >
-        <AppText variant="fine">{sheet.body}</AppText>
+        <T v="fine">{sheet.body}</T>
         {(endGame.error ?? leaveGame.error) ? (
-          <AppText variant="fine" tone="danger">
+          <T v="fine" color={KIT.danger}>
             {errorMessage(endGame.error ?? leaveGame.error)}
-          </AppText>
+          </T>
         ) : null}
-        <Button
-          size="lg"
+        <Btn
+          block
           variant={owner || playing ? 'danger' : 'primary'}
-          icon="exit-outline"
+          icon="logout"
           testID="vampir-exit-confirm"
           label={sheet.confirm}
           loading={pending}
@@ -161,9 +159,9 @@ export function VampirGame({
             owner ? endGame.mutate() : playing ? leaveGame.mutate() : (setExit(false), onHide())
           }
         />
-        <Button
-          size="lg"
-          variant="neutral"
+        <Btn
+          block
+          variant="glassy"
           label={tr.common.cancel}
           disabled={pending}
           onPress={() => setExit(false)}

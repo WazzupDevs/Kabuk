@@ -1,7 +1,7 @@
 import { createContext, type ReactNode, useContext, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
-import { Button } from '@/components/Button';
+import { Btn, T } from '@/aura/kit';
 import { GameIcon } from '@/components/Glyph';
 import { Text } from '@/components/Text';
 import { usePressScale } from '@/components/motion';
@@ -191,9 +191,9 @@ export function Dial({
       {/* Each end has half the row and wraps: long ends ran into each other at 320 dp. */}
       {ends ? (
         <View className="flex-row gap-3" style={{ marginHorizontal: -spill }}>
-          <Text variant="bodyStrong" className="flex-1">
+          <T v="body" strong style={{ flex: 1 }}>
             {left}
-          </Text>
+          </T>
           <Text variant="bodyStrong" align="right" className="flex-1">
             {right}
           </Text>
@@ -275,9 +275,9 @@ function BandLabel({
         height: size,
       }}
     >
-      <Text variant="heading" color={color}>
+      <T v="h3" color={color}>
         {text}
-      </Text>
+      </T>
     </View>
   );
 }
@@ -365,7 +365,7 @@ export function TargetHold({
           importantForAccessibility={shown ? 'auto' : 'no-hide-descendants'}
           style={{ opacity: shown ? 1 : 0 }}
         >
-          <Text variant="title">{tr.ibre.target(target ?? 0)}</Text>
+          <T v="title">{tr.ibre.target(target ?? 0)}</T>
         </View>
       </Dial>
     </Pressable>
@@ -514,9 +514,9 @@ export function SideChoice({
     <View className="flex-row gap-2.5" testID="ibre-side">
       {(['left', 'right'] as const).map((side) => (
         <View key={side} className="flex-1">
-          <Button
-            variant={selected === side ? 'primary' : 'neutral'}
-            size="lg"
+          <Btn
+            block
+            variant={selected === side ? 'primary' : 'glassy'}
             testID={`ibre-side-${side}`}
             label={side === 'left' ? tr.ibre.moreLeft : tr.ibre.moreRight}
             onPress={() => onSelect(side)}
@@ -559,9 +559,9 @@ export function NeedleReveal({
   return (
     <View testID="ibre-reveal" accessibilityLiveRegion="polite" className="items-center gap-2">
       {clue ? (
-        <Text variant="display" align="center">
+        <T v="display" center>
           {clue}
-        </Text>
+        </T>
       ) : null}
       <Dial
         width={width}
@@ -581,7 +581,11 @@ export function NeedleReveal({
       <Text variant="bodyStrong" tone="muted" align="center">
         {detail}
       </Text>
-      {brand ? <Text variant="label">{brand}</Text> : null}
+      {brand ? (
+        <T v="fine" ink>
+          {brand}
+        </T>
+      ) : null}
     </View>
   );
 }

@@ -1,8 +1,7 @@
 import { type ReactNode, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
-import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
+import { Btn, Glass, T } from '@/aura/kit';
 import { GameIcon } from '@/components/Glyph';
 import { Text } from '@/components/Text';
 import { usePressScale } from '@/components/motion';
@@ -41,9 +40,7 @@ export function SeatList({
         <Text variant="overline" tone="muted" className="flex-1">
           {title}
         </Text>
-        <Text variant="caption" tone="muted">
-          {tr.sahtekar.viewedCount(seen, seats.length)}
-        </Text>
+        <T v="stamp">{tr.sahtekar.viewedCount(seen, seats.length)}</T>
       </View>
       <View className="flex-row flex-wrap gap-2.5">
         {seats.map((s) => (
@@ -76,17 +73,23 @@ export function PassPhone({
     <StageFit
       testID="sahtekar-pass"
       status={top}
-      actions={<Button testID="sahtekar-ready" label={tr.sahtekar.ready(seat)} onPress={onReady} />}
+      actions={
+        <Btn block testID="sahtekar-ready" label={tr.sahtekar.ready(seat)} onPress={onReady} />
+      }
     >
-      {seats ? <Card>{seats}</Card> : null}
+      {seats ? (
+        <Glass sm pad="pad">
+          {seats}
+        </Glass>
+      ) : null}
       <View className="items-center justify-center gap-3" style={{ flexGrow: 1 }}>
         <SeatBadge seat={seat} state="current" size={BIG_SEAT} />
-        <Text variant="display" align="center" accessibilityRole="header">
+        <T v="display" center accessibilityRole="header">
           {tr.sahtekar.passTo(seat)}
-        </Text>
-        <Text variant="fine" align="center">
+        </T>
+        <T v="fine" center>
           {tr.sahtekar.passHint}
-        </Text>
+        </T>
       </View>
     </StageFit>
   );
@@ -122,8 +125,9 @@ export function HoldCard({
     <StageFit
       status={top}
       actions={
-        <Button
-          variant="neutral"
+        <Btn
+          block
+          variant="glassy"
           testID="sahtekar-seen"
           label={tr.sahtekar.seen}
           onPress={onDone}
@@ -180,23 +184,23 @@ export function SeatCardFace({ card, loading }: { card: SeatCard | null; loading
       {card === null ? (
         <>
           <GameIcon name="impostor" color={colors.muted} size={SPACING[16]} />
-          <Text variant="display" align="center">
+          <T v="display" center>
             {loading ? tr.sahtekar.loading : tr.sahtekar.hold}
-          </Text>
-          <Text variant="fine" align="center">
+          </T>
+          <T v="fine" center>
             {tr.sahtekar.holdHint}
-          </Text>
+          </T>
         </>
       ) : 'imposter' in card ? (
         <View className="items-center gap-3" testID="sahtekar-card-imposter">
           <GameIcon name="impostor" color={fg} size={SPACING[16] + SPACING[8]} />
           <HeroText color={fg}>{tr.sahtekar.youAreImposter}</HeroText>
-          <Text variant="title" color={fg} align="center">
+          <T v="title" color={fg} center>
             {tr.sahtekar.category(card.category)}
-          </Text>
-          <Text variant="body" color={fg} align="center">
+          </T>
+          <T v="body" color={fg} center>
             {tr.sahtekar.imposterHint}
-          </Text>
+          </T>
         </View>
       ) : (
         <View className="items-center gap-2" testID="sahtekar-card-word">
@@ -204,9 +208,9 @@ export function SeatCardFace({ card, loading }: { card: SeatCard | null; loading
             {tr.sahtekar.category(card.category)}
           </Text>
           <HeroText color={fg}>{card.word}</HeroText>
-          <Text variant="bodyStrong" color={fg}>
+          <T v="body" strong color={fg}>
             {tr.sahtekar.notImposter}
-          </Text>
+          </T>
         </View>
       )}
     </View>
@@ -259,23 +263,24 @@ export function ClueOrder({
       }
       actions={
         canSay ? (
-          <Button
+          <Btn
+            block
             testID="sahtekar-said"
             label={tr.sahtekar.saidButton}
             onPress={onSaid}
             loading={saying}
           />
         ) : (
-          <Text variant="fine" align="center">
+          <T v="fine" center>
             {tr.sahtekar.otherSpeaking}
-          </Text>
+          </T>
         )
       }
     >
-      <Text variant="display" accessibilityRole="header">
+      <T v="display" accessibilityRole="header">
         {tr.sahtekar.turnOf(speaking)}
-      </Text>
-      <Text variant="fine">{tr.sahtekar.clueHint}</Text>
+      </T>
+      <T v="fine">{tr.sahtekar.clueHint}</T>
       <View className="gap-1">
         {order.map((seat, i) => {
           const now = i === currentIndex;
@@ -296,17 +301,13 @@ export function ClueOrder({
                 state={now ? 'current' : i < currentIndex ? 'done' : 'idle'}
                 size={SPACING[10]}
               />
-              <Text
-                variant={now ? 'bodyStrong' : 'body'}
-                tone={i > currentIndex ? 'muted' : 'text'}
-                className="flex-1"
-              >
+              <T v="body" strong={now} ink={i <= currentIndex} style={{ flex: 1 }}>
                 {now
                   ? tr.sahtekar.speaking(seat)
                   : i < currentIndex
                     ? tr.sahtekar.said(seat)
                     : seat}
-              </Text>
+              </T>
             </View>
           );
         })}
@@ -353,7 +354,8 @@ export function VoteGrid({
         </View>
       }
       actions={
-        <Button
+        <Btn
+          block
           testID="sahtekar-vote-submit"
           label={selected ? tr.sahtekar.voteFor(selected) : tr.sahtekar.pickSeat}
           onPress={onSubmit}
@@ -364,11 +366,11 @@ export function VoteGrid({
     >
       <View className="flex-row items-center gap-3">
         <SeatBadge seat={voter} state="current" size={SPACING[11]} />
-        <Text variant="display" accessibilityRole="header" className="flex-1">
+        <T v="display" accessibilityRole="header" style={{ flex: 1 }}>
           {tr.sahtekar.whoIsImposter(voter)}
-        </Text>
+        </T>
       </View>
-      <Text variant="fine">{tr.sahtekar.voteHint}</Text>
+      <T v="fine">{tr.sahtekar.voteHint}</T>
       <View
         className="flex-row flex-wrap"
         style={{ marginHorizontal: -SPACING[1], rowGap: SPACING[2.5] }}
@@ -414,11 +416,7 @@ export function VoteGrid({
                     ]}
                   >
                     <SeatBadge seat={seat} size={SPACING[14]} />
-                    {self ? (
-                      <Text variant="caption" tone="muted">
-                        {tr.sahtekar.you}
-                      </Text>
-                    ) : null}
+                    {self ? <T v="stamp">{tr.sahtekar.you}</T> : null}
                   </View>
                 )}
               </Pressable>
@@ -466,7 +464,8 @@ export function GuessOptions({
         </View>
       }
       actions={
-        <Button
+        <Btn
+          block
           testID="sahtekar-guess-submit"
           label={selected ? tr.sahtekar.guessSubmit(selected) : tr.sahtekar.pickWord}
           onPress={onSubmit}
@@ -477,11 +476,11 @@ export function GuessOptions({
     >
       <View className="flex-row items-center gap-3">
         <GameIcon name="impostor" color={colors.text} size={SPACING[12]} />
-        <Text variant="display" accessibilityRole="header" className="flex-1">
+        <T v="display" accessibilityRole="header" style={{ flex: 1 }}>
           {tr.sahtekar.guessTitle}
-        </Text>
+        </T>
       </View>
-      <Text variant="fine">{tr.sahtekar.guessHint(category)}</Text>
+      <T v="fine">{tr.sahtekar.guessHint(category)}</T>
       <View className="flex-row flex-wrap justify-between gap-y-2.5">
         {options.map((o, i) => {
           const on = o === selected;
@@ -528,12 +527,12 @@ export function GuessWaiting({ seat, secondsLeft }: { seat: string; secondsLeft:
       <View className="items-center justify-center gap-3" style={{ flexGrow: 1 }}>
         <ClockPill seconds={secondsLeft} />
         <SeatBadge seat={seat} state="current" size={BIG_SEAT} />
-        <Text variant="display" align="center">
+        <T v="display" center>
           {tr.sahtekar.caught(seat)}
-        </Text>
-        <Text variant="fine" align="center">
+        </T>
+        <T v="fine" center>
           {tr.sahtekar.guessingNow}
-        </Text>
+        </T>
       </View>
     </StageFit>
   );
@@ -594,9 +593,9 @@ export function ImposterReveal({
       <HeroText color={fg}>
         {outcome === 'tables' ? tr.sahtekar.tablesWon : tr.sahtekar.imposterWon}
       </HeroText>
-      <Text variant="title" color={fg} align="center">
+      <T v="title" color={fg} center>
         {guess ? tr.sahtekar.wordAndGuess(word, guess) : tr.sahtekar.word(word)}
-      </Text>
+      </T>
       <View
         className="flex-row flex-wrap justify-center gap-x-5 gap-y-2"
         accessibilityLabel={tr.sahtekar.votesLabel}
@@ -609,17 +608,17 @@ export function ImposterReveal({
             className="flex-row items-center gap-1.5"
           >
             <SeatBadge seat={v.voter} size={SPACING[9]} ring={fg} />
-            <Text variant="bodyStrong" color={fg}>
+            <T v="body" strong color={fg}>
               →
-            </Text>
+            </T>
             <SeatBadge seat={v.target} size={SPACING[9]} ring={fg} />
           </View>
         ))}
       </View>
       {brand ? (
-        <Text variant="label" color={fg} className="mt-2">
+        <T v="fine" ink color={fg} style={{ marginTop: SPACING[2] }}>
           {brand}
-        </Text>
+        </T>
       ) : null}
     </View>
   );

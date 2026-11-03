@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Animated, View } from 'react-native';
 
+import { T } from '@/aura/kit';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { useReduceMotion } from '@/lib/useReduceMotion';
@@ -70,14 +71,14 @@ export function TimeUpOverlay({ visible, detail, brand }: Props) {
           {tr.games.timeUp}
         </Text>
         {detail ? (
-          <Text variant="title" tone="onDanger" align="center">
+          <T v="title" color={colors.onDanger} center>
             {detail}
-          </Text>
+          </T>
         ) : null}
         {brand ? (
-          <Text variant="label" tone="onDanger" align="center" className="mt-2">
+          <T v="fine" ink color={colors.onDanger} center style={{ marginTop: SPACING[2] }}>
             {brand}
-          </Text>
+          </T>
         ) : null}
       </Animated.View>
     </View>
