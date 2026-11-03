@@ -2,8 +2,8 @@ import { GENDERS, type Gender } from '@shared/gender.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { View } from 'react-native';
 
+import { T } from '@/aura/kit';
 import { Choice } from '@/components/Choice';
-import { Text } from '@/components/Text';
 import { profileViewKeys } from '@/features/profile/queries';
 import { tr } from '@/i18n/tr';
 import { callAccount } from '@/lib/api';
@@ -22,7 +22,11 @@ type Props = {
 export function GenderChoice({ value, onChange, disabled, bare = false }: Props) {
   return (
     <View className="gap-2">
-      {bare ? null : <Text variant="label">{tr.signup.genderLabel}</Text>}
+      {bare ? null : (
+        <T v="fine" ink>
+          {tr.signup.genderLabel}
+        </T>
+      )}
       <View
         accessibilityRole="radiogroup"
         accessibilityLabel={tr.signup.genderLabel}
@@ -39,7 +43,7 @@ export function GenderChoice({ value, onChange, disabled, bare = false }: Props)
           />
         ))}
       </View>
-      {bare ? null : <Text variant="fine">{tr.signup.genderHint}</Text>}
+      {bare ? null : <T v="fine">{tr.signup.genderHint}</T>}
     </View>
   );
 }

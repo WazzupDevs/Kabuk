@@ -5,10 +5,8 @@ import { Pressable, View } from 'react-native';
 import { Av, Btn, Glass, T, Tag, useKit } from '@/aura/kit';
 import { Avatar, AVATAR_SIZE } from '@/components/Avatar';
 import { LookAvatar } from '@/components/LookAvatar';
-import { Button } from '@/components/Button';
 import { Menu, MenuItem } from '@/components/Menu';
 import { Sheet } from '@/components/Sheet';
-import { Text } from '@/components/Text';
 import { useRoomSafety } from '@/features/chat/RoomSafety';
 import { useProfile } from '@/features/account/useProfile';
 import { useProfileView } from '@/features/profile/queries';
@@ -100,9 +98,9 @@ export function PeopleSheet({ visible, onClose, roomId, people, me, profiles }: 
               size="xl"
               self={person.sessionId === me}
             />
-            <Text variant="title" className="flex-1">
+            <T v="title" style={{ flex: 1 }}>
               {person.alias}
-            </Text>
+            </T>
           </View>
         ) : null}
         <Menu>
@@ -139,16 +137,11 @@ export function PeopleSheet({ visible, onClose, roomId, people, me, profiles }: 
           />
         </Menu>
         {safety.blockError ? (
-          <Text variant="fine" tone="danger">
+          <T v="fine" color={KIT.danger}>
             {errorMessage(safety.blockError)}
-          </Text>
+          </T>
         ) : null}
-        <Button
-          size="lg"
-          variant="neutral"
-          label={tr.common.cancel}
-          onPress={() => setPerson(null)}
-        />
+        <Btn block variant="glassy" label={tr.common.cancel} onPress={() => setPerson(null)} />
       </Sheet>
       {safety.reportForm}
     </>

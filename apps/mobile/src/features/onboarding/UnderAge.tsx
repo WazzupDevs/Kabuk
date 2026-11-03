@@ -1,9 +1,8 @@
 import { View } from 'react-native';
 
-import { Button } from '@/components/Button';
+import { Btn, T } from '@/aura/kit';
 import { Mark } from '@/components/Mark';
 import { Screen } from '@/components/Screen';
-import { Text } from '@/components/Text';
 import { useOnboardingStore } from '@/features/onboarding/store';
 import { tr } from '@/i18n/tr';
 import { SPACING } from '@/theme/tokens';
@@ -22,17 +21,17 @@ export function UnderAge() {
         <View className="mb-1.5">
           <Mark size={SPACING[16] + SPACING[5]} label={null} />
         </View>
-        <Text variant="title" align="center" accessibilityRole="header">
+        <T v="title" center accessibilityRole="header">
           {tr.underAge.title}
-        </Text>
-        <Text variant="fine" align="center">
+        </T>
+        <T v="fine" center>
           {tr.underAge.body}
-        </Text>
+        </T>
       </View>
       <View className="pt-8">
-        <Button
-          size="lg"
-          variant="neutral"
+        <Btn
+          block
+          variant="glassy"
           label={tr.common.close}
           onPress={() => useOnboardingStore.setState({ underAge: false })}
         />

@@ -6,12 +6,10 @@ import { type ReactNode, useEffect, useState } from 'react';
 import { Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button, type IconName } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
 import { Sheet } from '@/components/Sheet';
-import { Text } from '@/components/Text';
 import { unreadCount, useRoomChatSeen } from '@/features/chat/roomChatSeen';
 import { useMessages } from '@/features/chat/useMessages';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
@@ -46,6 +44,7 @@ import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
 import { SPACING } from '@/theme/tokens';
 import { AuraBackground, AuraBand } from '@/aura/AuraBackground';
+import { type CapIconName } from '@/aura/CapIcon';
 import { Btn, Glass, Round, T } from '@/aura/kit';
 
 // The table (docs/design/aura → Masa; docs/SPEC_V4.md §4.E, §4.F): the bar (back; the chat, the
@@ -402,17 +401,17 @@ export default function TableScreen() {
         extra={
           r.phones > 1 ? (
             <View className="gap-2.5">
-              <Button
-                size="lg"
-                variant="secondary"
-                icon="exit-outline"
+              <Btn
+                block
+                variant="glassy"
+                icon="logout"
                 testID="table-owner-leave"
                 label={tr.table.leave}
                 loading={leave.isPending}
                 disabled={end.isPending}
                 onPress={() => leave.mutate()}
               />
-              <Text variant="fine">{tr.table.leaveNote}</Text>
+              <T v="fine">{tr.table.leaveNote}</T>
             </View>
           ) : null
         }
@@ -423,7 +422,7 @@ export default function TableScreen() {
         title={tr.table.leaveTitle}
         body={tr.table.leaveBody}
         confirm={tr.table.leave}
-        icon="exit-outline"
+        icon="logout"
         testID="table-leave-confirm"
         pending={leave.isPending}
         error={leave.error}
@@ -550,7 +549,7 @@ function ConfirmSheet({
   title: string;
   body: string;
   confirm: string;
-  icon: IconName;
+  icon: CapIconName;
   testID: string;
   pending: boolean;
   // The other action of the sheet (`extra`) is on its way: this one waits (audit VEN-9).
@@ -568,14 +567,14 @@ function ConfirmSheet({
     // skall tuvali (MasaBitir): the title, the note, then the red soft action, the other choice and
     // "Vazgeç", all large.
     <Sheet visible={visible} onClose={close} title={title}>
-      <Text variant="fine">{body}</Text>
+      <T v="fine">{body}</T>
       {error ? (
-        <Text variant="fine" tone="danger">
+        <T v="fine" color={KIT.danger}>
           {errorMessage(error)}
-        </Text>
+        </T>
       ) : null}
-      <Button
-        size="lg"
+      <Btn
+        block
         variant="danger"
         icon={icon}
         testID={testID}
@@ -585,13 +584,7 @@ function ConfirmSheet({
         onPress={onConfirm}
       />
       {extra}
-      <Button
-        size="lg"
-        variant="neutral"
-        label={tr.common.cancel}
-        disabled={locked}
-        onPress={close}
-      />
+      <Btn block variant="glassy" label={tr.common.cancel} disabled={locked} onPress={close} />
       <View style={{ height: SPACING[1] }} />
     </Sheet>
   );

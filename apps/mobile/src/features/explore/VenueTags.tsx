@@ -2,12 +2,13 @@ import { type ActivityBucket, describeEventTime } from '@shared/explore.ts';
 import type { VenueKind } from '@shared/venueKind.ts';
 import { View } from 'react-native';
 
+import { T, useKit } from '@/aura/kit';
+
 import { KindIcon } from '@/components/Glyph';
 import { GlyphDisc } from '@/components/GlyphDisc';
 import { ListRow } from '@/components/ListRow';
 import { LiveDot } from '@/components/LiveDot';
 import { Tag } from '@/components/Tag';
-import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -48,14 +49,15 @@ export function EventTag({ event }: { event: NonNullable<ExploreVenue['event']> 
 const BUCKET_BEAT_MS = { lively: 1400, buzzing: 700 } as const;
 
 export function BucketLine({ bucket }: { bucket: ActivityBucket }) {
+  const { c } = useKit();
   return (
     <View className="flex-row items-center gap-1.5" testID={`bucket-${bucket}`}>
       {bucket === 'calm' ? null : (
         <LiveDot tone="success" periodMs={BUCKET_BEAT_MS[bucket]} size={SPACING[2]} />
       )}
-      <Text variant="label" tone={bucket === 'calm' ? 'muted' : 'success'}>
+      <T v="fine" ink color={bucket === 'calm' ? c.muted : c.link}>
         {tr.explore.buckets[bucket]}
-      </Text>
+      </T>
     </View>
   );
 }

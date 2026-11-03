@@ -9,7 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SvgAst } from 'react-native-svg';
 
-import { Text } from '@/components/Text';
+import { T } from '@/aura/kit';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import {
   FRIEND,
@@ -267,7 +267,9 @@ export function SignupFriend({
           }}
         >
           {bubbleShadow.node}
-          <Text variant="label">{bubble}</Text>
+          <T v="fine" ink>
+            {bubble}
+          </T>
         </View>
       ) : null}
     </View>

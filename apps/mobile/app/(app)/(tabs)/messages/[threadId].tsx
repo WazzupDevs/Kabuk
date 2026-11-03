@@ -11,8 +11,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { memo, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { Alert, BackHandler, View } from 'react-native';
 
-import { Button } from '@/components/Button';
-import { Av } from '@/aura/kit';
+import { Av, Btn } from '@/aura/kit';
 import { ChatBubble, type ChatQuote, type Delivery, TypingBubble } from '@/components/ChatBubble';
 import { type ChatListItem, ChatRow, ChatScreen, DayLine, dayLabel } from '@/components/ChatScreen';
 import { ChatTopBar } from '@/components/ChatTopBar';
@@ -396,9 +395,9 @@ export default function DmScreen() {
           </View>
         ) : messages.isFetchNextPageError ? (
           <View className="items-center" style={{ paddingVertical: SPACING[2] }}>
-            <Button
-              size="sm"
-              variant="neutral"
+            <Btn
+              sm
+              variant="glassy"
               label={tr.common.retry}
               onPress={() => void messages.fetchNextPage()}
             />
@@ -485,12 +484,7 @@ export default function DmScreen() {
             }}
           />
         </Menu>
-        <Button
-          size="lg"
-          variant="neutral"
-          label={tr.common.cancel}
-          onPress={() => setMenu(false)}
-        />
+        <Btn block variant="glassy" label={tr.common.cancel} onPress={() => setMenu(false)} />
       </Sheet>
 
       <ReportModal

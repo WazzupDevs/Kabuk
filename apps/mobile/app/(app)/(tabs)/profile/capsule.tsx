@@ -23,7 +23,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AuraFadeX } from '@/aura/AuraBackground';
 import { CapIcon } from '@/aura/CapIcon';
 import { Btn, Chip, Glass, Round, T, useKit } from '@/aura/kit';
-import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
 import { LookAvatar } from '@/components/LookAvatar';
@@ -31,7 +30,6 @@ import { boxShadowParts } from '@/components/NativeShadow';
 import { HidingHeadScreen } from '@/components/HidingHeadScreen';
 import { useHideTabBar } from '@/components/TabBar';
 import { Sheet } from '@/components/Sheet';
-import { Text } from '@/components/Text';
 import { useProfile } from '@/features/account/useProfile';
 import {
   bare,
@@ -425,14 +423,14 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
         }}
         title={tr.capsule.unsavedTitle}
       >
-        <Text variant="fine">{tr.capsule.unsavedBody}</Text>
+        <T v="fine">{tr.capsule.unsavedBody}</T>
         {save.isError ? (
-          <Text variant="fine" tone="danger">
+          <T v="fine" color={KIT.danger}>
             {errorMessage(save.error)}
-          </Text>
+          </T>
         ) : null}
-        <Button
-          size="lg"
+        <Btn
+          block
           label={tr.capsule.saveAndLeave}
           loading={save.isPending}
           onPress={() =>
@@ -444,9 +442,9 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
             })
           }
         />
-        <Button
-          size="lg"
-          variant="neutral"
+        <Btn
+          block
+          variant="glassy"
           label={tr.capsule.leaveUnsaved}
           onPress={() => {
             setLeaving(false);

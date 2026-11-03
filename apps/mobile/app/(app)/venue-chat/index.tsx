@@ -14,7 +14,6 @@ import { Pressable, View } from 'react-native';
 
 import { Avatar, AVATAR_SIZE } from '@/components/Avatar';
 import { Banner } from '@/components/Banner';
-import { Button } from '@/components/Button';
 import { ChatBubble } from '@/components/ChatBubble';
 import { ChatRow, ChatScreen, DayLine, dayLabel } from '@/components/ChatScreen';
 import { ChatTopBar } from '@/components/ChatTopBar';
@@ -27,7 +26,6 @@ import { Menu, MenuItem } from '@/components/Menu';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Sheet } from '@/components/Sheet';
-import { Text } from '@/components/Text';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { useFreshLine } from '@/features/chat/fresh';
 import { quoteJump, toChatQuote, useReplyTarget } from '@/features/chat/messageExtras';
@@ -46,7 +44,7 @@ import {
 } from '@/features/venueChat/queries';
 import { errorMessage } from '@/i18n/errors';
 import { CapIcon } from '@/aura/CapIcon';
-import { Av, Glass, T } from '@/aura/kit';
+import { Av, Glass, T, Btn } from '@/aura/kit';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
 import { track } from '@/lib/analytics';
@@ -510,15 +508,15 @@ export default function VenueChatScreen() {
             <View className="flex-row items-center" style={{ gap: SPACING[3] }}>
               {faceOf(person, AVATAR_SIZE.xl)}
               <View className="flex-1">
-                <Text variant="title">{senderLabel(person)}</Text>
-                <Text variant="fine">
+                <T v="title">{senderLabel(person)}</T>
+                <T v="fine">
                   {person.profiled ? tr.venueChat.profiledPerson : tr.venueChat.anonymousPerson}
-                </Text>
+                </T>
               </View>
             </View>
             {person.profiled ? (
-              <Button
-                size="lg"
+              <Btn
+                block
                 label={tr.venueChat.seeProfile}
                 testID="venue-chat-see-profile"
                 onPress={() => {
@@ -528,7 +526,7 @@ export default function VenueChatScreen() {
                 }}
               />
             ) : (
-              <Text variant="fine">{tr.venueChat.anonymousNote}</Text>
+              <T v="fine">{tr.venueChat.anonymousNote}</T>
             )}
             <Menu>
               <MenuItem
@@ -558,12 +556,7 @@ export default function VenueChatScreen() {
               />
             </Menu>
             {mute.isError ? <Banner tone="danger" body={errorMessage(mute.error)} /> : null}
-            <Button
-              size="lg"
-              variant="neutral"
-              label={tr.common.close}
-              onPress={() => setPerson(null)}
-            />
+            <Btn block variant="glassy" label={tr.common.close} onPress={() => setPerson(null)} />
           </>
         ) : null}
       </Sheet>
@@ -676,11 +669,13 @@ function OptionsSheet({
   return (
     <Sheet visible={visible} onClose={onClose} title={tr.venueChat.open}>
       <View style={{ gap: SPACING[1.5] }}>
-        <Text variant="label">{tr.venueChat.mutedTitle}</Text>
+        <T v="fine" ink>
+          {tr.venueChat.mutedTitle}
+        </T>
         {mutes.isPending ? (
           <Loader />
         ) : list.length === 0 ? (
-          <Text variant="fine">{tr.venueChat.mutedNone}</Text>
+          <T v="fine">{tr.venueChat.mutedNone}</T>
         ) : (
           <Menu>
             {list.map((m) => (
@@ -696,7 +691,7 @@ function OptionsSheet({
           </Menu>
         )}
       </View>
-      <Button size="lg" variant="neutral" label={tr.venueChat.done} onPress={onClose} />
+      <Btn block variant="glassy" label={tr.venueChat.done} onPress={onClose} />
     </Sheet>
   );
 }
