@@ -36,10 +36,10 @@ Olası yer: `apps/mobile/app/(app)/(tabs)/explore/index.tsx:732` (`<T v="body" l
 **3.2 Liste/harita düğmeleri kapsülüne sığmıyor.** Seçili yuvarlak kapsülün üst ve alt kenarından taşıyor. Önem: orta.
 Olası yer: aynı dosya `:803` (`SWITCH_ROUND = 48`) kapsül yüksekliği `KIT.size.field` 48'e indikten sonra (`apps/mobile/src/theme/auraKit.ts:671`, 2 Kasım kararı) değişmemiş; kapsül iç boşluğu `:758` ile 48 + 2×3 > 48. Yuvarlak, kapsül yüksekliğinden türemeli.
 
-### 4. Mekan (masasız, açık): riso resimlerin üst kenarı
+### 4. Riso resimlerin üst kenarı (Mekan, Mesajlar → İstekler; açık)
 
-**4.1 Riso sahnelerin üstünde turuncu bir çerçeve çizgisi var; "Henüz masan yok" sahnesi de çerçeveye sığmıyor.** "Henüz masan yok" kartında ve "Açık masa yok" resminde üst kenarda turuncu-sarı noktalı bir şerit görünüyor, bütünlüğü bozuyor. "Henüz masan yok"ta ayrıca sağdaki kapsül kesik. Önem: orta.
-Kök (doğrulandı): şerit resim dosyalarının kendisinde, ilk 3–4 piksel satırı turuncu (mavi kanal ~60, altı ~190): `apps/mobile/assets/riso/venue-no-table.webp`, `venue-no-open.webp`, `venue-scene.webp`, `scene-table-end.webp`, `scene-signup.webp`. Dosyalar kenarı kırpılarak yeniden dışa aktarılmalı (kaynak `docs/design/kaynak/`).
+**4.1 Riso sahnelerin üstünde turuncu bir çerçeve çizgisi var; "Henüz masan yok" sahnesi de çerçeveye sığmıyor.** "Henüz masan yok" kartında, "Açık masa yok" resminde ve Mesajlar → İstekler boş durumunda ("Bekleyen istek yok") üst kenarda turuncu-sarı noktalı bir şerit görünüyor, bütünlüğü bozuyor. "Henüz masan yok"ta ayrıca sağdaki kapsül kesik. Önem: orta.
+Kök (doğrulandı): şerit resim dosyalarının kendisinde, ilk 3–4 piksel satırı turuncu (mavi kanal ~60, altı ~190): `apps/mobile/assets/riso/venue-no-table.webp`, `venue-no-open.webp`, `empty-requests.webp`; kenar taraması (üst satır ile 20. satırın farkı) `venue-scene.webp`, `scene-table-end.webp`, `scene-signup.webp`, `venue-yemek.webp`, `game-krot.webp`, `spot-ic-salon.webp` ve başkalarında da işaret veriyor: `assets/riso/` hepsi gözle taranmalı. Dosyalar kenarı kırpılarak yeniden dışa aktarılmalı (kaynak `docs/design/kaynak/`).
 Kırpma: `apps/mobile/src/features/rooms/TableCard.tsx:363` (`Image` + `PICTURE_FILL`, `cover`; resim 700×420 (5:3), kart 210 yüksekliğinde, yaklaşık 1,9:1); "Açık masa yok" `src/features/rooms/Lobby.tsx:381`. 2 Kasım notundaki K1 (6.1) ile ilişkili.
 
 ### 5. Check-in alt sayfası (Keşfet → mekan → "Konumumu kullan", açık)
