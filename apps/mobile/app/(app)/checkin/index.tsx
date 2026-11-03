@@ -162,21 +162,10 @@ export default function LocationScreen() {
         </T>
         <T v="body">{tr.checkin.locationBody}</T>
       </View>
-      {hasSpots ? (
-        <View style={{ gap: KIT.size.chipsGap }}>
-          <View style={{ gap: SPACING[1] }}>
-            <T v="h3">{tr.checkin.spotTitle}</T>
-            <T v="fine">{tr.checkin.spotHint}</T>
-          </View>
-          <SpotPicker
-            spots={spots.data ?? []}
-            selectedId={spot?.id ?? null}
-            onSelect={(s) => setSpot({ id: s.id, name: s.name })}
-          />
-        </View>
-      ) : null}
       {elsewhere ? <Banner tone="warn" body={tr.checkin.replaces(elsewhere)} /> : null}
-      {/* A try's warning arrives 70 ms after the button turns idle (aktarim-37 → hareket 4). */}
+      {/* Above "Neredesin?": on a short screen a warning under the spots fell below the sheet's
+          view (the owner's call, 3 Kasım, docs/decisions/checkin-uyari.md). A try's warning
+          arrives 70 ms after the button turns idle (aktarim-37 → hareket 4). */}
       {problem === 'denied' ? (
         <Reveal index={1}>
           <Banner tone="danger" title={tr.checkin.deniedTitle} body={tr.checkin.permissionDenied} />
@@ -201,6 +190,19 @@ export default function LocationScreen() {
         <Reveal index={1}>
           <Banner tone="danger" body={errorMessage(checkIn.error)} />
         </Reveal>
+      ) : null}
+      {hasSpots ? (
+        <View style={{ gap: KIT.size.chipsGap }}>
+          <View style={{ gap: SPACING[1] }}>
+            <T v="h3">{tr.checkin.spotTitle}</T>
+            <T v="fine">{tr.checkin.spotHint}</T>
+          </View>
+          <SpotPicker
+            spots={spots.data ?? []}
+            selectedId={spot?.id ?? null}
+            onSelect={(s) => setSpot({ id: s.id, name: s.name })}
+          />
+        </View>
       ) : null}
     </RouteSheet>
   );
