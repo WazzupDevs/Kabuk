@@ -53,7 +53,7 @@ const CLOSED: Partial<Record<KankiId, ImageSourcePropType>> = {
 };
 // The sign-up scene (riso-kayit, 800x920).
 const SIGNUP_GROUND = require('../../assets/riso/scene-signup.webp');
-// Aura v75 KayitKoyu: the dark scheme's own scene (riso-kayit-koyu).
+// Aura v75 KayitKoyu: the dark scheme's own scene (riso-kayit-koyu; 800x920, the @3x 978x1125).
 const SIGNUP_GROUND_DARK = require('../../assets/riso/scene-signup-dark.webp');
 
 // The loop's clock in seconds (0 → 6, again and again) while the screen is on top and the app in
