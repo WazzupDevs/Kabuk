@@ -222,6 +222,7 @@ function Empty({
         <View
           style={{ marginBottom: SPACING[2] }}
           testID={risoId ? `empty-riso-${risoId}` : undefined}
+          collapsable={false}
         >
           <RisoPicture {...picture} />
         </View>
