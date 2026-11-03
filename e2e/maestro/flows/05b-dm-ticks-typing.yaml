@@ -62,8 +62,10 @@ appId: app.kabuk.mobile
     timeout: 10000
 - takeScreenshot: 27f-dm-reaction-bar
 # CLAUDE.md → Ekran davranışı: a tap outside closes the bar, and so does the back key (the DM
-# stays open).
-- tapOn: Okudun mu\?
+# stays open). The bar is a modal over a scrim (MessagePop): the bubbles behind it are out of
+# reach, so the tap lands on the scrim near the top (the bar sits by "Okudum" at the bottom).
+- tapOn:
+    point: 50%,15%
 - extendedWaitUntil:
     notVisible:
       id: reaction-bar
