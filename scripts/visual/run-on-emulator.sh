@@ -46,4 +46,14 @@ while IFS= read -r -d '' f; do
   name=$(basename "$f" _diff.png)
   mv "$f" "$OUT/maestro-fark/$name.png"
 done < <(find e2e/visual/baz -maxdepth 1 -type f -name '*_diff.png' -print0 2>/dev/null)
+# On a PR the candidates go into the job's log too (one line each: name, then the PNG in base64):
+# a session that cannot download the artifact reads them from the log to approve them.
+if [ "${GITHUB_EVENT_NAME:-}" = pull_request ]; then
+  echo "::group::Candidates (base64)"
+  for f in "$OUT"/aday/*.png; do
+    [ -f "$f" ] || continue
+    echo "ADAY $(basename "$f") $(base64 -w 0 "$f")"
+  done
+  echo "::endgroup::"
+fi
 exit "$status"
