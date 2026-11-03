@@ -12,6 +12,7 @@ Proje sahibinin bu oturumdaki ürün kararları.
 
 | Karar | Madde |
 | ----- | ----- |
+| Kapsül ekranında aksesuar seçeneklerinin ve paket parçalarının dış kutusu (yüzey renkli, gölgeli kare) kalkar; yalnızca yuvarlak kapsül görünür. Seçili halka yuvarlağın çevresine çizilir. Tuvalin Kapsül bölüm 4 kutusundan sapma; düzeltme PR'ında tuval de güncellenir. | 8.1 |
 
 ## Maddeler
 
@@ -62,3 +63,8 @@ Olası yer: `apps/mobile/app/(app)/settings-privacy.tsx:48-56` (`privacyUrl` yok
 
 **7.1 Seçili masa simgesi yeşil çerçeveyi doldurmuyor.** Hızlı seçim sırasında seçili simgeyle yeşil halka arasında beyaz bir boşluk var; simge çerçevenin içinde küçük kalıyor. Önem: düşük.
 Olası yer: `apps/mobile/src/features/rooms/CreateTableSheet.tsx:204-208` (`borderWidth: OUTLINE` + `padding: OUTLINE`, `OUTLINE = 3` `:307`: halka ile resim arasında 3 dp iç boşluk); halka resmin üstüne çizilmeli ya da iç boşluk kaldırılmalı.
+
+### 8. Profil → Kapsülün (açık)
+
+**8.1 Aksesuar seçeneklerinin ve paket parçalarının gereksiz dış çerçevesi var.** Her yuvarlak kapsül önizlemesi beyaz, gölgeli, köşesi yuvarlatılmış bir kare kutunun içinde ("Baş boş", Zarif, Çiçek, Sokak paketi parçaları). Önem: orta.
+Olası yer: `apps/mobile/app/(app)/(tabs)/profile/capsule.tsx:524-532` (`Box`: `backgroundColor: colors.surface` / `c.glassInSheet`, `boxShadow`); seçili halka `:546-560` kutunun köşesine göre çiziliyor, yuvarlağa göre çizilmeli. Ölçüler `KIT.size.optionBox`, `partBox` (`src/theme/auraKit.ts`).
