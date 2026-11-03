@@ -143,8 +143,9 @@ appId: app.kabuk.mobile
 - takeScreenshot: 27i-dm-reopened
 # A tap outside closes the reaction bar too (CLAUDE.md → Ekran davranışı). The bar is a modal over
 # a scrim (MessagePop): the bubbles behind it are out of reach, so the tap lands on the scrim
-# mid-screen, clear of the header and of the bar by the message.
-- longPressOn: '.*Harika'
+# mid-screen, clear of the header and of the bar by the message. Held on the bot's first message
+# (a reply's quote takes the press).
+- longPressOn: Selam cihaz
 - extendedWaitUntil:
     visible:
       id: reaction-bar
