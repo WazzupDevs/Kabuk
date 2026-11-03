@@ -7,11 +7,9 @@ import { BackHandler, Pressable, View } from 'react-native';
 
 import { CapIcon } from '@/aura/CapIcon';
 import { Av, Btn, Glass, Round, T, useKit } from '@/aura/kit';
-import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { Screen } from '@/components/Screen';
 import { useHideTabBar } from '@/components/TabBar';
-import { Text } from '@/components/Text';
 import { Loader } from '@/components/Loader';
 import { useProfile } from '@/features/account/useProfile';
 import { PhotoSheet } from '@/features/profile/PhotoSheet';
@@ -262,9 +260,9 @@ function EditForm({
       </Glass>
 
       <Sheet visible={leaving} onClose={() => setLeaving(false)} title={tr.profile.leaveTitle}>
-        <Text variant="fine">{tr.profile.leaveBody}</Text>
-        <Button
-          size="lg"
+        <T v="fine">{tr.profile.leaveBody}</T>
+        <Btn
+          block
           variant="danger"
           label={tr.profile.leaveConfirm}
           onPress={() => {
@@ -272,9 +270,9 @@ function EditForm({
             router.back();
           }}
         />
-        <Button
-          size="lg"
-          variant="neutral"
+        <Btn
+          block
+          variant="glassy"
           label={tr.profile.leaveBack}
           onPress={() => setLeaving(false)}
         />

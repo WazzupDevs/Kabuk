@@ -10,7 +10,7 @@ import Reanimated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { Text } from '@/components/Text';
+import { T } from '@/aura/kit';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { lookGround, lookPop } from '@/theme/capsuleLook';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -252,7 +252,9 @@ function Bubble({ text, reduce, top }: { text: string; reduce: boolean; top: num
       }}
     >
       {shadow.node}
-      <Text variant="label">{text}</Text>
+      <T v="fine" ink>
+        {text}
+      </T>
     </Animated.View>
   );
 }

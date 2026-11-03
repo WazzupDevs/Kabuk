@@ -5,9 +5,8 @@ import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Image, Pressable, View } from 'react-native';
 
-import { Av, Btn, Glass, Switch, T, Tag, useKit } from '@/aura/kit';
+import { Av, Btn, Chip, Glass, Switch, T, Tag, useKit } from '@/aura/kit';
 import { Gathering, SceneGround } from '@/aura/Scene';
-import { Chips } from '@/components/Chips';
 import { LookAvatar } from '@/components/LookAvatar';
 import { Sheet } from '@/components/Sheet';
 import { useProfile } from '@/features/account/useProfile';
@@ -337,12 +336,23 @@ export function IconPicker({
   return (
     <View style={{ gap: KIT.size.chipsGap }} testID="table-icon-picker">
       {TABLE_ICON_THEMES.length > 1 ? (
-        <Chips
+        <View
+          accessibilityRole="radiogroup"
           accessibilityLabel={tr.createTable.iconLabel}
-          value={theme}
-          onChange={onTheme}
-          options={TABLE_ICON_THEMES.map((t) => ({ value: t, label: t }))}
-        />
+          style={{ flexDirection: 'row', flexWrap: 'wrap', gap: KIT.size.chipsGap }}
+        >
+          {TABLE_ICON_THEMES.map((t) => (
+            <Chip
+              key={t}
+              label={t}
+              on={t === theme}
+              onPress={() => {
+                if (t !== theme) haptic('selection');
+                onTheme(t);
+              }}
+            />
+          ))}
+        </View>
       ) : null}
       <View
         accessibilityRole="radiogroup"

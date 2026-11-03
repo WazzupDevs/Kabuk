@@ -3,13 +3,14 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { Pressable, View } from 'react-native';
 
+import { T } from '@/aura/kit';
+import { KIT } from '@/theme/auraKit';
 import { Avatar } from '@/components/Avatar';
 import { CapIcon } from '@/aura/CapIcon';
 import { ListCard } from '@/components/ListCard';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader, useLoaderHold } from '@/components/Loader';
 import { usePressScale } from '@/components/motion';
-import { Text } from '@/components/Text';
 import { errorMessage } from '@/i18n/errors';
 import { type HistoryConcept, tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
@@ -124,9 +125,9 @@ export function RequestList({ now }: { now: Date }) {
         ))}
       </ListCard>
       {respond.isError ? (
-        <Text variant="fine" tone="danger">
+        <T v="fine" color={KIT.danger}>
           {errorMessage(respond.error)}
-        </Text>
+        </T>
       ) : null}
     </View>
   );
@@ -171,12 +172,12 @@ function RequestRow({
           className="flex-row flex-wrap items-baseline justify-between"
           style={{ columnGap: SPACING[2] }}
         >
-          <Text variant="heading" className="shrink">
+          <T v="h3" style={{ flexShrink: 1 }}>
             {r.name}
-          </Text>
-          <Text variant="fine">{tr.messages.stamp(r.at, inboxStamp(r.at, now))}</Text>
+          </T>
+          <T v="fine">{tr.messages.stamp(r.at, inboxStamp(r.at, now))}</T>
         </View>
-        <Text variant="fine">{tr.messages.requestKind}</Text>
+        <T v="fine">{tr.messages.requestKind}</T>
       </View>
       <RoundAction
         icon="close"

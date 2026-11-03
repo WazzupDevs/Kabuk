@@ -9,7 +9,6 @@ import { LookAvatar } from '@/components/LookAvatar';
 import { PageTop } from '@/components/PageTop';
 import { Screen } from '@/components/Screen';
 import { useHideTabBar } from '@/components/TabBar';
-import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -119,12 +118,12 @@ export default function CapsulesScreen() {
             }}
           >
             <LookAvatar look={l.code} size={TILE_FACE} />
-            <Text variant="label" align="center">
+            <T v="fine" ink center>
               {names[i] ?? ''}
-            </Text>
-            <Text variant="caption" tone="muted" align="center">
+            </T>
+            <T v="stamp" center>
               {l.name}
-            </Text>
+            </T>
           </View>
         ))}
       </View>
@@ -136,12 +135,12 @@ function State({ face, name, note }: { face: ReactNode; name: string; note: stri
   return (
     <View className="flex-1 items-center gap-1.5" style={{ paddingHorizontal: SPACING[1] }}>
       {face}
-      <Text variant="label" align="center">
+      <T v="fine" ink center>
         {name}
-      </Text>
-      <Text variant="caption" tone="muted" align="center">
+      </T>
+      <T v="stamp" center>
         {note}
-      </Text>
+      </T>
     </View>
   );
 }

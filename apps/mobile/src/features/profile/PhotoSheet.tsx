@@ -1,10 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Linking, View } from 'react-native';
 
-import { Button } from '@/components/Button';
+import { Btn, T } from '@/aura/kit';
+import { KIT } from '@/theme/auraKit';
 import { Menu, MenuItem } from '@/components/Menu';
 import { Sheet } from '@/components/Sheet';
-import { Text } from '@/components/Text';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
@@ -88,12 +88,12 @@ export function PhotoSheet({ visible, onClose, canRemove = false, onSet }: Props
       </Menu>
       {setPhoto.isError ? (
         <View className="gap-2">
-          <Text variant="fine" tone="danger">
+          <T v="fine" color={KIT.danger}>
             {photoErrorMessage(setPhoto.error)}
-          </Text>
+          </T>
           {setPhoto.error instanceof PhotoError && setPhoto.error.reason === 'permission' ? (
-            <Button
-              variant="neutral"
+            <Btn
+              variant="glassy"
               label={tr.checkin.openSettings}
               onPress={() => void Linking.openSettings()}
             />
@@ -101,13 +101,13 @@ export function PhotoSheet({ visible, onClose, canRemove = false, onSet }: Props
         </View>
       ) : null}
       {removePhoto.isError ? (
-        <Text variant="fine" tone="danger">
+        <T v="fine" color={KIT.danger}>
           {errorMessage(removePhoto.error)}
-        </Text>
+        </T>
       ) : null}
-      <Button
-        size="lg"
-        variant="neutral"
+      <Btn
+        block
+        variant="glassy"
         testID="photo-cancel"
         label={tr.common.cancel}
         onPress={onClose}

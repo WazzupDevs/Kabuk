@@ -2,15 +2,13 @@ import type { Friend } from '@shared/api/friends.ts';
 import { router } from 'expo-router';
 import { View } from 'react-native';
 
-import { Av, Btn, RowList, Li, Round, T, useKit } from '@/aura/kit';
+import { Av, Btn, RowList, Li, Round, T, useKit, Glass } from '@/aura/kit';
 import { CapIcon } from '@/aura/CapIcon';
 import { RisoPeekOver } from '@/aura/Peek';
-import { Card } from '@/components/Card';
 import { EmptyState } from '@/components/EmptyState';
 import { useLoaderHold } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
 import { PageTop } from '@/components/PageTop';
-import { Text } from '@/components/Text';
 import { useFriends } from '@/features/friends/queries';
 import { openDm } from '@/features/friends/openDm';
 import { errorMessage } from '@/i18n/errors';
@@ -61,12 +59,12 @@ export default function FriendsScreen() {
       ) : (
         <View className="mt-1 gap-3">
           {friends.isError ? (
-            <Card tone="note" className="gap-3" testID="friends-error">
-              <Text variant="fine" tone="text">
+            <Glass sm pad="pad" style={{ gap: SPACING[3] }} testID="friends-error">
+              <T v="fine" ink>
                 {errorMessage(friends.error)}
-              </Text>
+              </T>
               <Btn sm variant="glassy" icon="refresh" {...retry} />
-            </Card>
+            </Glass>
           ) : null}
           {friends.data.length === 0 ? (
             <EmptyState kind="empty" body={tr.friends.empty} />

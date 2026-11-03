@@ -3,10 +3,10 @@ import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 
-import { Button } from '@/components/Button';
+import { Btn, T } from '@/aura/kit';
+import { KIT } from '@/theme/auraKit';
 import { Input } from '@/components/Input';
 import { Sheet } from '@/components/Sheet';
-import { Text } from '@/components/Text';
 import { useProfile } from '@/features/account/useProfile';
 import { SignupStep } from '@/features/onboarding/SignupStep';
 import { useOnboardingStore } from '@/features/onboarding/store';
@@ -116,9 +116,9 @@ export default function BirthStep() {
           />
         </View>
         {error ? (
-          <Text variant="fine" tone="danger">
+          <T v="fine" color={KIT.danger}>
             {error}
-          </Text>
+          </T>
         ) : null}
       </View>
       <Sheet
@@ -126,17 +126,12 @@ export default function BirthStep() {
         onClose={() => setConfirm(null)}
         title={tr.signup.birthConfirmTitle(confirm?.age ?? 0)}
       >
-        <Text variant="fine">{confirmed ? tr.signup.birthConfirmBody(confirmed) : ''}</Text>
+        <T v="fine">{confirmed ? tr.signup.birthConfirmBody(confirmed) : ''}</T>
         <View className="gap-2.5">
-          <Button
-            size="lg"
-            testID="birth-confirm"
-            label={tr.signup.birthConfirm}
-            onPress={onConfirm}
-          />
-          <Button
-            size="lg"
-            variant="neutral"
+          <Btn block testID="birth-confirm" label={tr.signup.birthConfirm} onPress={onConfirm} />
+          <Btn
+            block
+            variant="glassy"
             testID="birth-confirm-fix"
             label={tr.signup.birthFix}
             onPress={() => setConfirm(null)}
@@ -167,7 +162,9 @@ function Field({
   return (
     // skall tuvali (KayitDogum): the label over a 16-cornered box.
     <View className={wide ? 'flex-[1.6] gap-2' : 'flex-1 gap-2'}>
-      <Text variant="label">{label}</Text>
+      <T v="fine" ink>
+        {label}
+      </T>
       <Input
         box
         testID={testID}

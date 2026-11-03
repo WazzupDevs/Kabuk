@@ -24,7 +24,6 @@ import { CapIcon } from '@/aura/CapIcon';
 import { Btn, Li, Live, RowList, T, Tag, useKit } from '@/aura/kit';
 import { VenueThumb } from '@/aura/VenueThumb';
 import { TYPE_PIN_IMAGES } from '@/components/Glyph';
-import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { useNow } from '@/lib/useNow';
 import { KIT, VENUE_THUMB } from '@/theme/auraKit';
@@ -163,8 +162,8 @@ export function ExploreMap({
   if (!opening || venues.length === 0) {
     return (
       <View className="flex-1 items-center justify-center" style={{ gap: SPACING[1] }}>
-        <Text variant="bodyStrong">{empty.title}</Text>
-        {empty.hint ? <Text variant="fine">{empty.hint}</Text> : null}
+        <T strong>{empty.title}</T>
+        {empty.hint ? <T v="fine">{empty.hint}</T> : null}
       </View>
     );
   }

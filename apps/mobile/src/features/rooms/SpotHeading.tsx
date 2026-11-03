@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 
-import { Text } from '@/components/Text';
+import { T } from '@/aura/kit';
 import { tr } from '@/i18n/tr';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON } from '@/theme/tokens';
@@ -20,9 +20,9 @@ export function SpotHeading({
   return (
     <View className="mt-1 flex-row items-center gap-2">
       <AppIcon name="location-outline" size={ICON.md} color={colors.text} />
-      <Text variant="heading" accessibilityRole="header" className="flex-1">
+      <T v="h3" accessibilityRole="header" style={{ flex: 1 }}>
         {spotId === null ? tr.rooms.noSpot : mine ? tr.rooms.mySpot(spotName ?? '') : spotName}
-      </Text>
+      </T>
     </View>
   );
 }

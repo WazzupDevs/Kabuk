@@ -3,13 +3,12 @@ import { BADGES, type BadgeId } from '@shared/badges.ts';
 import { type ReactNode, useState } from 'react';
 import { Image, type ImageSourcePropType, Pressable, View } from 'react-native';
 
-import { Card } from '@/components/Card';
 import { PROFILE_PHOTO_SIZES, ProfilePhoto } from '@/components/ProfilePhoto';
 import { Mark } from '@/components/Mark';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { usePhoto } from '@/lib/usePhoto';
-import { Av, Round, T } from '@/aura/kit';
+import { Av, Glass, Round, T, useKit } from '@/aura/kit';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/tokens';
@@ -172,6 +171,7 @@ function OwnHead({
   children?: ReactNode;
 }) {
   const { colors, shape } = useTheme();
+  const { c } = useKit();
   // The capsule's edit badge's soft shadow natively (NativeShadow.tsx).
   const badgeShadow = boxShadowParts(
     useLabOff('golge'),
@@ -194,10 +194,12 @@ function OwnHead({
             <ProfilePhoto url={profile.photoUrl} name={profile.displayName} size="hero" />
           </View>
           <View className="items-center">
-            <Text variant="label">{tr.profile.ownPhoto}</Text>
-            <Text variant="fine" tone={anonymous ? 'muted' : 'accent'}>
+            <T v="fine" ink>
+              {tr.profile.ownPhoto}
+            </T>
+            <T v="fine" color={anonymous ? c.muted : c.link}>
               {anonymous ? tr.profile.whenProfiled : tr.profile.ownPhotoNote}
-            </Text>
+            </T>
           </View>
         </View>
         <View className="items-center gap-2">
@@ -233,10 +235,12 @@ function OwnHead({
             ) : null}
           </View>
           <View className="items-center">
-            <Text variant="label">{tr.profile.ownCapsule}</Text>
-            <Text variant="fine" tone={anonymous ? 'accent' : 'muted'}>
+            <T v="fine" ink>
+              {tr.profile.ownCapsule}
+            </T>
+            <T v="fine" color={anonymous ? c.link : c.muted}>
               {anonymous ? tr.profile.ownPhotoNote : tr.profile.ownCapsuleNote}
-            </Text>
+            </T>
           </View>
         </View>
       </View>
@@ -304,7 +308,7 @@ export function ProfileHero({ profile, overlay }: { profile: Profile; overlay?: 
         <Text variant="alias" accessibilityRole="header">
           {nameLine(profile)}
         </Text>
-        {profile.bio ? <Text tone="muted">{profile.bio}</Text> : null}
+        {profile.bio ? <T>{profile.bio}</T> : null}
       </View>
     </View>
   );
@@ -392,12 +396,14 @@ export function BadgeIcon({ badge, earned }: { badge: BadgeId; earned: boolean }
 export function Badges({ badges, all = false }: { badges: readonly BadgeId[]; all?: boolean }) {
   if (badges.length === 0 && !all) {
     return (
-      <Card>
+      <Glass sm pad="pad">
         <View className="flex-row items-center gap-3">
           <Mark size={SPACING[11]} label={null} />
-          <Text className="flex-1">{tr.profile.noBadges}</Text>
+          <T ink style={{ flex: 1 }}>
+            {tr.profile.noBadges}
+          </T>
         </View>
-      </Card>
+      </Glass>
     );
   }
   const shown = all ? BADGES.map((b) => b.id) : badges;
@@ -416,9 +422,9 @@ export function Badges({ badges, all = false }: { badges: readonly BadgeId[]; al
             }
           >
             <BadgeIcon badge={badge} earned={earned} />
-            <Text variant="label" tone={earned ? 'text' : 'muted'} align="center">
+            <T v="fine" ink={earned} center>
               {tr.profile.badges[badge]}
-            </Text>
+            </T>
           </View>
         );
       })}
