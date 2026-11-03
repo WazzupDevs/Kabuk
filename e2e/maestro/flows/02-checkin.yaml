@@ -61,7 +61,9 @@ appId: app.kabuk.mobile
     visible:
       id: explore-map-ready
     timeout: 30000
-- assertVisible: Keşfet
+# The head (its question changes with the time of day) and the switch over the map.
+- assertVisible:
+    id: explore-head
 - assertVisible: Liste
 - takeScreenshot: 05b-explore-map
 # Symbol layers (the kind glyph inside each pin, cluster counts) load their images and glyphs after

@@ -59,12 +59,17 @@ appId: app.kabuk.mobile
 - assertVisible:
     id: table-lobby
 # The games are under the table's card: on a short phone below the fold. A game card reads as
-# one label (its name, line, people and tag), so the tag is matched inside it.
+# one label (its name, line, people and tag), so the tag is matched inside it; found by its testID
+# (Signum has no step yet: "Yakında").
 - scrollUntilVisible:
-    element: '.*Yakında.*'
+    element:
+      id: poster-signum
     direction: DOWN
     visibilityPercentage: 50
-    timeout: 10000
+    timeout: 20000
+- assertVisible:
+    id: poster-signum
+    text: '.*Yakında.*'
 - takeScreenshot: 13-table
 # Masadakiler from the bar (its round is called "Masadakiler" too, so the sheet is found by its
 # list): this phone and the owner's tag (the table is called by its icon, K-76: no other name to
