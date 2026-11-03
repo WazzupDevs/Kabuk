@@ -70,6 +70,8 @@ const PIN_SHADOW = MAP_PIN.pinShadow;
 const PIN_SHADOW_Y = 10;
 const PIN_SHADOW_SPREAD = 11;
 const PIN_SHADOW_BLUR = 0.6;
+// A venue label's width in ems before it wraps: a venue's name on two lines at most.
+const LABEL_WIDTH_EM = 14;
 
 type PressedFeature = {
   geometry?: { type: string; coordinates?: unknown };
@@ -82,6 +84,7 @@ type PressedFeature = {
 // selects it and opens a short card at the bottom (name, bucket, event, "Mekana git"); a tap on the
 // empty map closes it. The user's own position is never shown (docs/arsiv/SPEC_V2.md §4, rule 6). The
 // list view stays the screen reader path.
+
 export function ExploreMap({
   venues,
   empty,
@@ -185,14 +188,16 @@ export function ExploreMap({
         'format',
         ['get', 'name'],
         {},
-        // U14: one line, the name and how lively.
-        '  ',
+        // The name on at most two lines of its own, how lively under it (the owner's report, 2
+        // Kasım, 4.1: "Sessiz" stuck to the third line's end).
+        '\n',
         {},
         ['get', 'status'],
         { 'font-scale': MAP_PIN.statusScale },
       ],
       'text-font': [...MAP_FONTS.bold],
       'text-size': MAP_PIN.labelSize,
+      'text-max-width': LABEL_WIDTH_EM,
       'text-anchor': 'top',
       'text-offset': [0, MAP_PIN.labelOffset],
     },
