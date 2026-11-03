@@ -246,13 +246,10 @@ export function Button({
               <AppIcon name={icon} size={ICON.md} color={fg} />
             ) : (
               <>
+                {/* A disabled button draws no icon (2 Kasım K13); an icon-only one keeps it. */}
                 {leading ??
-                  (icon ? (
-                    <AppIcon
-                      name={icon}
-                      size={ICON.md}
-                      color={iconTone && !disabled ? colors[iconTone] : fg}
-                    />
+                  (icon && !disabled ? (
+                    <AppIcon name={icon} size={ICON.md} color={iconTone ? colors[iconTone] : fg} />
                   ) : null)}
                 {stack ? (
                   <View className="shrink items-center">
