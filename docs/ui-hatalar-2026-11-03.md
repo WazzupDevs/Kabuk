@@ -45,7 +45,7 @@ Kırpma: `apps/mobile/src/features/rooms/TableCard.tsx:363` (`Image` + `PICTURE_
 ### 5. Check-in alt sayfası (Keşfet → mekan → "Konumumu kullan", açık)
 
 **5.1 Alt sayfanın üstünden bakan kapsül kankiler riso çizimi değil.** Sayfanın kenarından bakan üç kanki düz vektör (`Buddy`) çiziliyor; diğer yerlerdeki riso kankilerle uyuşmuyor. Önem: orta.
-Olası yer: `apps/mobile/src/aura/Peek.tsx:34` (`notifications` ve `request` dışındaki her tür, `checkin` dahil, `BuddyPeek` → `Buddy`'ye düşüyor; `:37`), çağıran `apps/mobile/app/(app)/checkin/index.tsx:130` (`peek="checkin"`). Riso yolu aynı dosyada (`RisoKanki`, `RisoStrip`); aynı `BuddyPeek`'i kullanan diğer alt sayfalar da etkileniyor olabilir.
+Olası yer: `apps/mobile/src/aura/Peek.tsx:34` (`notifications` ve `request` dışındaki her tür, `checkin` dahil, `BuddyPeek` → `Buddy`'ye düşüyor; `:37`), çağıran `apps/mobile/app/(app)/checkin/index.tsx:130` (`peek="checkin"`). Riso yolu aynı dosyada (`RisoKanki`, `RisoStrip`); aynı `BuddyPeek`'i kullanan diğer alt sayfalar da etkileniyor olabilir. Masa kur alt sayfasının sahnesindeki üç kanki de düz vektör: `apps/mobile/src/aura/Scene.tsx:78` (`Gathering` → `Buddy`).
 
 ### 6. Ayarlar alt sayfaları ve yasal metinler (açık)
 
@@ -57,3 +57,8 @@ Olası yer: `apps/mobile/app/(app)/settings-muted.tsx:51` (`EmptyState ... body=
 
 **6.3 Gizlilik'te "Gizlilik politikası" satırı soluk ve KVKK'yı açıyor.** Satırın yazısı ve ikonu diğer satırlardan soluk görünüyor (?). Gizlilik politikası adresi yokken satır KVKK Aydınlatma Metni'ni açıyor; alttaki KVKK satırıyla aynı yere gidiyor. Önem: düşük.
 Olası yer: `apps/mobile/app/(app)/settings-privacy.tsx:48-56` (`privacyUrl` yoksa `doc: 'kvkk'`).
+
+### 7. Masa kur alt sayfası (açık)
+
+**7.1 Seçili masa simgesi yeşil çerçeveyi doldurmuyor.** Hızlı seçim sırasında seçili simgeyle yeşil halka arasında beyaz bir boşluk var; simge çerçevenin içinde küçük kalıyor. Önem: düşük.
+Olası yer: `apps/mobile/src/features/rooms/CreateTableSheet.tsx:204-208` (`borderWidth: OUTLINE` + `padding: OUTLINE`, `OUTLINE = 3` `:307`: halka ile resim arasında 3 dp iç boşluk); halka resmin üstüne çizilmeli ya da iç boşluk kaldırılmalı.
