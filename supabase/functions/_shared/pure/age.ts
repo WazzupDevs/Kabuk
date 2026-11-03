@@ -1,8 +1,8 @@
 // Birth date and age (docs/SPEC_V3.md §3.2). Kabuk is for 18 and over; the birth date is never
 // shown to anyone, only the age. The phone and the server use the same functions.
 
-export const ADULT_AGE = 18;
-export const MAX_AGE = 100;
+const ADULT_AGE = 18;
+const MAX_AGE = 100;
 
 // Türkiye has been UTC+3 all year since 2016.
 const ISTANBUL_OFFSET_MS = 3 * 60 * 60 * 1000;
@@ -39,7 +39,7 @@ export function parseIsoDate(raw: string): CalendarDate | null {
   return { year, month, day };
 }
 
-export function formatIsoDate(date: CalendarDate): string {
+function formatIsoDate(date: CalendarDate): string {
   return `${String(date.year).padStart(4, '0')}-${String(date.month).padStart(2, '0')}-${String(
     date.day,
   ).padStart(2, '0')}`;

@@ -5,7 +5,7 @@ import { create } from 'zustand';
 // costs to draw (the owner's call, 29 Ekim: measure, never cut). The lab turns parts off one by one
 // for a few seconds each while the phone's "profile rendering as bars" is recorded; the frame times
 // of each step are read from the recording. Preview builds and development only; production never
-// turns anything off (labOff is false there and the store never changes).
+// turns anything off (useLabOff is false there and the store never changes).
 export const DRAW_LAB = Updates.channel === 'preview' || __DEV__;
 
 // `cam` the liquid glass (tab bar, chat composer), `golge` the kit's outer shadows, `kart` the glass
@@ -25,7 +25,7 @@ export const DRAW_STEPS: readonly DrawStep[] = [
   { key: 'hareket', off: ['hareket'] },
   { key: 'end', off: [] },
 ];
-export const DRAW_STEP_MS = 5000;
+const DRAW_STEP_MS = 5000;
 
 type LabState = { open: boolean; step: number | null };
 export const useDrawLab = create<LabState>(() => ({ open: false, step: null }));
@@ -33,11 +33,6 @@ export const useDrawLab = create<LabState>(() => ({ open: false, step: null }));
 const NONE: readonly DrawPart[] = [];
 function offIn(s: LabState): readonly DrawPart[] {
   return s.step === null ? NONE : (DRAW_STEPS[s.step]?.off ?? NONE);
-}
-
-// Read while drawing (shadowParts); the component drawing it calls useLabOff so it draws again.
-export function labOff(part: DrawPart): boolean {
-  return DRAW_LAB && offIn(useDrawLab.getState()).includes(part);
 }
 
 export function useLabOff(part: DrawPart): boolean {

@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, View } from 'react-native';
 
-import { Glass, T } from '@/aura/kit';
-import { type IconName } from '@/components/AppIcon';
+import { T } from '@/aura/kit';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { useReduceMotion } from '@/lib/useReduceMotion';
@@ -11,7 +10,7 @@ import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 import { AppIcon } from '@/components/AppIcon';
 
 // Seconds at which the clock turns urgent (canvas: Aşama 6 · Oyunlar → Geri bildirim).
-export const URGENT_SECONDS = 10;
+const URGENT_SECONDS = 10;
 const PULSE_MS = 500;
 const BUMP_MS = 160;
 const FLOAT_MS = 900;
@@ -169,20 +168,5 @@ export function TeamScore({
         </Animated.View>
       </View>
     </View>
-  );
-}
-
-// "Hakem sizsiniz …": the role note above the card, in small type so the card keeps the room.
-export function RoleNote({ icon, text }: { icon: IconName; text: string }) {
-  const { colors } = useTheme();
-  return (
-    <Glass sm pad="pad">
-      <View className="flex-row items-start gap-2">
-        <AppIcon name={icon} size={ICON.sm} color={colors.text} />
-        <T v="fine" ink style={{ flex: 1 }}>
-          {text}
-        </T>
-      </View>
-    </Glass>
   );
 }

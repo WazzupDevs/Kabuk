@@ -199,7 +199,7 @@ export function Glass({
 }
 
 // A clear button's frost (ui/LiquidGlass → Frost; the owner's call, 30 Ekim), round at its height.
-export function FrostOf({ height, fill }: { height: number; fill?: string }) {
+function FrostOf({ height, fill }: { height: number; fill?: string }) {
   const { scheme } = useTheme();
   if (!useFrost()) return null;
   return <Frost radius={height / 2} ground={AURA[scheme].ground} fill={fill} />;
@@ -226,9 +226,6 @@ export function usePress() {
 // A button sits in a row's middle (Li, Row): its own `alignSelf` would otherwise put it at the
 // row's top. In a column it keeps to the start, its own width.
 const InRow = createContext(false);
-export function RowAlign({ children }: { children: ReactNode }) {
-  return <InRow.Provider value>{children}</InRow.Provider>;
-}
 
 export function Btn({
   label,
@@ -1051,41 +1048,6 @@ export function Thumb({
           style={{ width: size, height: size, borderRadius: radius }}
         />
       ) : null}
-    </View>
-  );
-}
-
-// .disk: a round picture on a white ring with a deep soft shadow.
-export function Disk({
-  size,
-  radius,
-  children,
-}: {
-  size: number;
-  radius?: number;
-  children: ReactNode;
-}) {
-  // The disk clips its picture, so its native shadow and ring (NativeShadow.tsx) sit beside it in a
-  // box of the same size.
-  const shadow = boxShadowParts(
-    useLabOff('golge'),
-    `${KIT.diskShadow}, 0px 0px 0px ${KIT.size.disk}px ${KIT.diskRing}`,
-    radius ?? size / 2,
-  );
-  return (
-    <View style={{ width: size, height: size }}>
-      {shadow.node}
-      <View
-        style={{
-          width: size,
-          height: size,
-          borderRadius: radius ?? size / 2,
-          overflow: 'hidden',
-          boxShadow: shadow.boxShadow,
-        }}
-      >
-        {children}
-      </View>
     </View>
   );
 }

@@ -75,7 +75,7 @@ export const CONFETTI_COLORS = ['#FFFFFF', '#FFB547', '#FF9DC0', '#C9BAFF'] as c
 // scheme's bright grounds white text over a white chip falls under 4.5:1, so those take a dark one
 // (ink, 24 %): v44's Harf Kapmaca fix, kept wherever it is needed (K-25).
 export type GameGround = { top: string; bottom: string; chip: 'white' | 'ink' };
-export const CHIP_ALPHA = { white: 0.18, ink: 0.24 } as const;
+const CHIP_ALPHA = { white: 0.18, ink: 0.24 } as const;
 const DARK_CANVAS = '#0D0B1E';
 
 export type GroundKey = 'sahtekar' | 'letters' | 'song' | 'chat';

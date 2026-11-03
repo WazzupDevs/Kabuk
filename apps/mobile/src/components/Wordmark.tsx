@@ -8,7 +8,7 @@ import { THEME } from '@/theme/theme';
 import { useTheme } from '@/theme/ThemeProvider';
 
 // Smallest height; below it the l pills lose their overlap.
-export const WORDMARK_MIN_HEIGHT = 20;
+const WORDMARK_MIN_HEIGHT = 20;
 
 type Props = {
   // In px: login screens 24, "Güncelleme gerekli" 32, Profil → Hakkında 20.

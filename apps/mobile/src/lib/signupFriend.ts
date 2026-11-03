@@ -41,10 +41,10 @@ export type Point = readonly [number, number];
 // bottom of its nod (palNod, 6 down). A move whose pose would cover something is not played
 // (friendMoves; the CTO's 4.3d review).
 export type Pose = { angle: number; dx: number; dy: number };
-export const FRIEND_REST: Pose = { angle: FRIEND.angle, dx: 0, dy: 0 };
-export const FRIEND_JUMP: Pose = { angle: -4, dx: -4, dy: -18 };
-export const FRIEND_SHAKE: Pose = { angle: -24, dx: 0, dy: 0 };
-export const FRIEND_NOD: Pose = { angle: FRIEND.angle, dx: 0, dy: 6 };
+const FRIEND_REST: Pose = { angle: FRIEND.angle, dx: 0, dy: 0 };
+const FRIEND_JUMP: Pose = { angle: -4, dx: -4, dy: -18 };
+const FRIEND_SHAKE: Pose = { angle: -24, dx: 0, dy: 0 };
+const FRIEND_NOD: Pose = { angle: FRIEND.angle, dx: 0, dy: 6 };
 
 // The turned figure's corners when its box's right edge is at `right` and its top at `top`, in a
 // pose (its rest by default).

@@ -3,7 +3,7 @@
 
 import { normalize } from './trText.ts';
 
-export const ACTIVITY_BUCKETS = ['calm', 'lively', 'buzzing'] as const;
+const ACTIVITY_BUCKETS = ['calm', 'lively', 'buzzing'] as const;
 export type ActivityBucket = (typeof ACTIVITY_BUCKETS)[number];
 
 // 0–2 active tables look "calm" (so a single table can never be inferred), 3–5 "lively", 6+
@@ -75,7 +75,7 @@ export function distanceMeters(
 // Keşfet with one active venue (the campus pilot) is a single venue card with its events; from two
 // active venues on, the list and the map come back (docs/SPEC_V3.md §4.4, S9). Content decides.
 export type ExploreLayout = 'single' | 'list';
-export const SINGLE_VENUE_MAX = 1;
+const SINGLE_VENUE_MAX = 1;
 
 export function exploreLayout(activeVenueCount: number): ExploreLayout {
   return activeVenueCount === SINGLE_VENUE_MAX ? 'single' : 'list';

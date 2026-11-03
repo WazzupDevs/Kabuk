@@ -15,7 +15,7 @@ export type LaunchKind = 'cold' | 'first' | 'quick';
 // The system splash (scripts/icon/mark.ts → SPLASH_REACH): the mark's farthest point 70 dp from the
 // centre. The wordmark the mark turns into is 264 dp wide.
 export const SPLASH_REACH_DP = 70;
-export const LAUNCH_WORD_WIDTH = 264;
+const LAUNCH_WORD_WIDTH = 264;
 // How high the band around the centre is that the ring, the flare and the glint move in
 // (LaunchCurtain draws only that band; launchMotion.test.ts).
 export const LAUNCH_BAND = 340;
@@ -31,7 +31,7 @@ function clamp(v: number, a = 0, b = 1): number {
   'worklet';
   return v < a ? a : v > b ? b : v;
 }
-export function seg(t: number, a: number, b: number): number {
+function seg(t: number, a: number, b: number): number {
   'worklet';
   return clamp((t - a) / (b - a));
 }
@@ -72,7 +72,7 @@ function easeOut(u: number): number {
   return bezier(0.2, 0.8, 0.2, 1, u);
 }
 // A damped spring from 0 to 1 (stiffness, damping; mass 1) after `ms`.
-export function spring(stiffness: number, damping: number, ms: number): number {
+function spring(stiffness: number, damping: number, ms: number): number {
   'worklet';
   if (ms <= 0) return 0;
   const w0 = Math.sqrt(stiffness);
@@ -105,7 +105,7 @@ function lerpR(a: Rect, b: Rect, u: number): Rect {
   'worklet';
   return [lerp(a[0], b[0], u), lerp(a[1], b[1], u), lerp(a[2], b[2], u), lerp(a[3], b[3], u)];
 }
-export function overlapOf(a: Rect, b: Rect): [number, number] {
+function overlapOf(a: Rect, b: Rect): [number, number] {
   'worklet';
   return [
     (Math.max(a[0], b[0]) + Math.min(a[0] + a[2], b[0] + b[2])) / 2,

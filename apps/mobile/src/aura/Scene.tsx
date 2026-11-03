@@ -6,7 +6,7 @@ import { gradientStyle } from '@/theme/gradient';
 import { floorCss, sceneCss } from '@/theme/sceneGradient';
 import { useTheme } from '@/theme/ThemeProvider';
 
-import { Buddy, Placed } from './Buddy';
+import { Buddy } from './Buddy';
 
 // A scene's ground (docs/design/aura/project/aura.css → `.scene`, `.floor`): violet to pink, two
 // soft glows at the top and a white floor glow at the bottom where buddies stand. Fills its parent;
@@ -52,21 +52,6 @@ function Floor() {
         glow,
       ]}
     />
-  );
-}
-
-// The Mekan card's crew: three buddies at the right of a scene `height` high, arriving one after
-// another (`delay` for the first).
-export function Crew({ height, delay = 0 }: { height: number; delay?: number }) {
-  const k = height / AURA.heroHeight;
-  return (
-    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      {AURA.crew.map((b, i) => (
-        <Placed key={b.look} right={b.right * k} bottom={b.bottom * k}>
-          <Buddy look={b.look} height={b.height * k} delay={delay + i * 80} phase={b.phase} />
-        </Placed>
-      ))}
-    </View>
   );
 }
 

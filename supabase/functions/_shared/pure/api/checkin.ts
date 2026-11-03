@@ -58,8 +58,6 @@ export type SetIdentityResponse = { identity: CheckinIdentity };
 
 export type ChangeSpotResponse = { spotId: string };
 
-export type RerollAliasResponse = { alias: string; rerollsLeft: number };
-
 export type LeaveResponse = { ok: true };
 
 export type LocationModeResponse = { skipLocation: boolean };

@@ -280,9 +280,6 @@ export type CapsuleEyes = { dx?: number; dy?: number; open?: number };
 // lighter ink, the eyes stay dark (v45: .ob-pal-b [fill="#14112B"]:not(.eye)).
 export const FRIEND_DARK_INK = '#4A4272';
 
-// The little burst when the birth date is set (v45: puff()).
-export const FRIEND_PUFF_COLORS = ['#FFB547', '#00B8A9', '#3BA9FF', '#FF6FA3', '#9C86FF'] as const;
-
 // The avatar as SVG text in a 48-unit box: a disc in the variant's ground with the capsule clipped
 // to it (`disc`); without the disc, the capsule standing alone in a 48 x 58 box (v45: AV.fig, the
 // sign-up friends and the first screen's scene, step 4.3).

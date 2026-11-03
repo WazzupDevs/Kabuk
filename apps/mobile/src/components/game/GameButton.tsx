@@ -40,7 +40,7 @@ type Props = {
   testID?: string;
 };
 
-export const GAME_BUTTON_HEIGHT = SPACING[14];
+const GAME_BUTTON_HEIGHT = SPACING[14];
 const LARGE_HEIGHT = SPACING[16];
 const BUSY_MARK = 24;
 // v43: .tbtn.tabu, at least 188 wide with 34 on each side.

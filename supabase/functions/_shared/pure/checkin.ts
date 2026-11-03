@@ -1,7 +1,6 @@
-// Check-in rules. The 300 m radius is also used by nearby_venues and the 4 hour duration by
-// start_table_session (SQL); change them together.
+// Check-in rules. The 300 m radius is also used by nearby_venues (SQL); change them together. A
+// check-in lasts 4 hours (start_table_session).
 export const CHECKIN_RADIUS_M = 300;
-export const TABLE_SESSION_HOURS = 4;
 export const MIN_HEADCOUNT = 1;
 // "Kaç kişisiniz?" 1 / 2 / 3 / 4+: 4 is stored for four or more (docs/arsiv/SPEC_V2.md §6.6).
 export const MAX_HEADCOUNT = 4;

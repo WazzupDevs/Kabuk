@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { type ReactNode, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 
 import { peekScale } from '@/lib/sheetFit';
@@ -94,16 +94,6 @@ function BuddyPeek({ kind, delay = 0, fit }: { kind: PeekKind; delay?: number; f
             </View>
           ))
         : null}
-    </View>
-  );
-}
-
-// A card with buddies peeking over it (aura.css `.behind`).
-export function Behind({ kind, children }: { kind: PeekKind; children: ReactNode }) {
-  return (
-    <View>
-      <Peek kind={kind} />
-      {children}
     </View>
   );
 }

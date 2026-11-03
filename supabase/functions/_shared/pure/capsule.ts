@@ -80,7 +80,7 @@ export function pickReadyLook(
 
 // The nick: "kapsul-" and two letters and two digits ("kapsul-xx55"); from half full on, three
 // digits ("kapsul-xx555").
-export const NICK_PREFIX = 'kapsul-';
+const NICK_PREFIX = 'kapsul-';
 export const NICK_LETTERS = 'abcdefghkmnprstuvyz';
 export type NickDigits = 2 | 3;
 
@@ -96,7 +96,7 @@ export function nickRefreshAt(changedAt: string | null, now: Date): string | nul
 
 // Past this share of the two-digit capacity taken (assigned and retired nicks), new nicks get three
 // digits. Nicks already given keep theirs.
-export const NICK_FULL_SHARE = 0.5;
+const NICK_FULL_SHARE = 0.5;
 
 // A nick ready for the database's check (the format only; the exclusions are a rule of generation).
 export const NICK_PATTERN = new RegExp(`^${NICK_PREFIX}[${NICK_LETTERS}]{2}[0-9]{2,3}$`);

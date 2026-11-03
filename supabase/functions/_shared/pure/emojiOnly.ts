@@ -1,7 +1,7 @@
 // A message of emoji only (one to three, spaces between allowed) is drawn large and without a
 // bubble, as Telegram Android draws it (the owner's call, 30 Ekim). By code point ranges, not a
 // Unicode property escape: the app's JavaScript engine (Hermes) is not relied on for those.
-export const EMOJI_ONLY_MAX = 3;
+const EMOJI_ONLY_MAX = 3;
 
 const ZWJ = 0x200d;
 const KEYCAP = 0x20e3;

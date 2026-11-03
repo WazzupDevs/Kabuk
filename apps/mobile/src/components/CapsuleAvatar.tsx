@@ -20,7 +20,7 @@ type Props = {
 // Each look's SVG parsed once for the app's life; every avatar of a look shares the tree (plain
 // elements). A look that does not parse is drawn as its bare disc.
 const parsed = new Map<CapsuleLook, JsxAST | null>();
-export function capsuleAst(look: CapsuleLook): JsxAST | null {
+function capsuleAst(look: CapsuleLook): JsxAST | null {
   return parseOnce(parsed, look, () => parse(capsuleSvg(look)), reportError);
 }
 

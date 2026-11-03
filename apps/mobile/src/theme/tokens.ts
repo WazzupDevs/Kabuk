@@ -278,8 +278,7 @@ export const SPACING = {
 
 // Opacities: the scrim behind a sheet, a pressed text button. A disabled button is not faded: it
 // takes a neutral fill (theme/buttonFill.ts).
-// On an event's cover (v44: .ewhen, .eplate) the time and the plate let the drawing show through.
-export const OPACITY = { scrim: 0.5, pressed: 0.7, onCover: 0.72, coverPlate: 0.95 } as const;
+export const OPACITY = { scrim: 0.5, pressed: 0.7 } as const;
 
 // Icon sizes (the capsule family: sm 16, md 20, lg 24; xs and xl for the older places).
 export const ICON = { xs: 12, sm: 16, md: 20, lg: 24, xl: 28 } as const;
@@ -297,9 +296,8 @@ export const NARROW_SCREEN = 360;
 export const MAP_PIN = {
   // Bigger and in full colour (the owner's report, 27 Ekim: the pins were faint).
   radius: 21,
-  // The selected venue grows and gets a hard shadow (canvas: Aşama 5 · Harita işaretçileri).
+  // The selected venue grows (canvas: Aşama 5 · Harita işaretçileri).
   selectedRadius: 27,
-  shadow: 3,
   // The type's picture filling the circle (40 pt in its image, the disc 42): grown with it when
   // selected (27 / 21).
   glyphScale: 1,
@@ -325,19 +323,7 @@ export const MAP_PIN = {
   pinRing: { light: '#FFFFFF', dark: '#EAF6EC' },
   pinShadow: { light: 'rgba(4, 73, 35, 0.28)', dark: 'rgba(0, 0, 0, 0.5)' },
 } as const;
-// The person's table card on Mekan (the owner's call, 27 Ekim: fuller): the table's icon blurred
-// large behind it, under the card's ground at `veil`; the people's faces overlapping; the time left
-// as a bar.
-export const TABLE_CARD = {
-  backdropBlur: 28,
-  backdropOpacity: 0.55,
-  veil: 0.6,
-  faceOverlap: 8,
-  bar: 6,
-} as const;
-// The venue chat card on Mekan: the chat's wall under a veil of the card's ground.
-export const VENUE_CHAT_CARD = { veil: 0.55 } as const;
-export const MAP_FONTS = { regular: ['Noto Sans Regular'], bold: ['Noto Sans Bold'] } as const;
+export const MAP_FONTS = { bold: ['Noto Sans Bold'] } as const;
 
 // The skall type scale (skall tuvali, skall.css → "Yazı ölçeği"): headings 800, body and notes 600,
 // buttons and labels 700, small 800.

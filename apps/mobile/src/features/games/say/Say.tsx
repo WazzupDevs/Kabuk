@@ -41,8 +41,8 @@ export const BOARD_LETTERS = [
   'Z',
 ] as const;
 
-export const OBJECTIONS_PER_TABLE = 3;
-export const OBJECTION_WINDOW_MS = 3000;
+const OBJECTIONS_PER_TABLE = 3;
+const OBJECTION_WINDOW_MS = 3000;
 
 const COLUMNS = 6;
 const GAP = SPACING[1];
@@ -185,13 +185,7 @@ export function LetterBoard({
 }
 
 // The objections a table has left: three dots, the used ones quiet.
-export function ObjectionsLeft({
-  left,
-  total = OBJECTIONS_PER_TABLE,
-}: {
-  left: number;
-  total?: number;
-}) {
+function ObjectionsLeft({ left, total = OBJECTIONS_PER_TABLE }: { left: number; total?: number }) {
   const { colors, shape } = useTheme();
   return (
     <View

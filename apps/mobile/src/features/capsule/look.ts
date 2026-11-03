@@ -30,7 +30,7 @@ export function wear(look: Look, slot: LookSlot, id: string | null): Look {
   return next;
 }
 
-export function nameOf(slot: LookSlot, id: string): string {
+function nameOf(slot: LookSlot, id: string): string {
   if (slot === 'c') return CAPSULE_CATALOG.colors.find((c) => c.id === id)?.name ?? id;
   if (slot === 'e') return CAPSULE_CATALOG.eyes.find((e) => e.id === id)?.name ?? id;
   return CAPSULE_CATALOG.parts.find((p) => p.id === id && p.slot === slot)?.name ?? id;
@@ -107,11 +107,4 @@ export function shuffle(random: () => number): Look {
     look[slot] = pick(CAPSULE_CATALOG.parts.filter((p) => p.slot === slot))?.id;
   }
   return parse(code(look));
-}
-
-// The next part for the slot after the worn one, around the whole catalog (a tap on the head).
-export function nextPart(look: Look, slot: LookSlot): Look {
-  const list = CAPSULE_CATALOG.parts.filter((p) => p.slot === slot);
-  const at = list.findIndex((p) => p.id === look[slot]);
-  return wear(look, slot, list[(at + 1) % list.length]?.id ?? null);
 }

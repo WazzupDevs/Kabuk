@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
-import type { FriendReaction } from './SignupFriend';
+// A reaction of the step's friend, played once per key.
+export type FriendReaction = { kind: 'ok' | 'err' | 'nod'; key: number };
 
 // A step's friend: its reaction (jump, nod, shake), whether a field is being typed in, and a burst.
 // `react` plays a reaction; `onFocus`/`onBlur` go on the step's fields.

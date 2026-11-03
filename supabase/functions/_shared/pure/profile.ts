@@ -50,7 +50,7 @@ export const PHOTO_SIZE_PX = 512;
 export const PHOTO_JPEG_QUALITY = 0.7;
 export const PHOTO_URL_SECONDS = 3600;
 
-export const PHOTO_FOLDER = 'p';
+const PHOTO_FOLDER = 'p';
 
 const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
 const PHOTO_PATH = new RegExp(`^${PHOTO_FOLDER}/${UUID}\\.jpg$`);

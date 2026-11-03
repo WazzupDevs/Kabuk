@@ -21,6 +21,7 @@ export function matchPushRecipient(
 // DMs: 1–500 characters, one message per second per account (dm_send's min interval).
 export const DM_MAX_LENGTH = 500;
 export const DM_MIN_INTERVAL_MS = 1000;
+// dm_messages_page's size.
 export const DM_PAGE_SIZE = 50;
 
 export function prepareDm(raw: string): string | null {

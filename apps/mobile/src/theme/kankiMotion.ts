@@ -250,13 +250,3 @@ export function kankiFrame(beat: KankiBeat, t: number): KankiFrame {
   }
   return { translateY, rotate, scaleX, scaleY, closed, shadow: 1 + translateY / SHADOW_PER };
 }
-
-// With reduce motion: standing still, eyes open.
-export const KANKI_STILL: KankiFrame = {
-  translateY: 0,
-  rotate: 0,
-  scaleX: 1,
-  scaleY: 1,
-  closed: false,
-  shadow: 1,
-};
