@@ -94,7 +94,7 @@ function NewMessageButton({ onPress }: { onPress: () => void }) {
   const { c } = useKit();
   const shadow = shadowParts(
     useLabOff('golge'),
-    KIT.primaryShadow,
+    c.primaryShadow,
     c.primaryInset,
     KIT.size.newChat / 2,
   );

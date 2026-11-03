@@ -112,7 +112,9 @@ function FriendRow({ friend: f }: { friend: Friend }) {
         <T v="fine">{tr.friends.since(f.since)}</T>
       </View>
       {threadId ? (
+        // The small height in a row: lighter than the face and the name (16.3).
         <Round
+          side={KIT.size.btnSm}
           label={tr.friends.message(name)}
           onPress={() => openDm({ threadId, publicId: f.publicId, name: f.displayName })}
         >
