@@ -8,6 +8,7 @@ import { Peek, type PeekKind } from '@/aura/Peek';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
 import { runSheetSlide } from '@/lib/sheetSlide';
+import { useLeaveKeyboard } from '@/lib/modalKeyboard';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { EASE_OUT } from '@/theme/markMotion';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -77,6 +78,7 @@ export function Sheet({
   const { height } = useWindowDimensions();
   const reduce = useReduceMotion();
   const [mounted, setMounted] = useState(visible);
+  useLeaveKeyboard(visible);
   const [progress] = useState(() => new Animated.Value(0));
   if (visible && !mounted) setMounted(true);
   // closeAllSheets: an open sheet closes as if tapped outside.

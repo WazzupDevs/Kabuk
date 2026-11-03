@@ -5,6 +5,7 @@ import { Btn, Glass, T } from '@/aura/kit';
 import { GameDisc, GameIcon } from '@/components/Glyph';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
+import { useLeaveKeyboard } from '@/lib/modalKeyboard';
 import { KIT } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING, TOUCH } from '@/theme/tokens';
@@ -21,6 +22,7 @@ type Props = {
 // steps (the describing table, the judging table, the buttons), skippable.
 export function FirstGameIntro({ visible, onClose }: Props) {
   const { colors, shape } = useTheme();
+  useLeaveKeyboard(visible);
   const art = [
     <GameIcon key="d" name="tabu" color={colors.text} size={SPACING[8]} />,
     <T key="j" v="title" color={KIT.danger}>
