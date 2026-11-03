@@ -1,6 +1,6 @@
 import { Pressable, View } from 'react-native';
 
-import { Card } from '@/components/Card';
+import { Glass, T } from '@/aura/kit';
 import { Avatar } from '@/components/Avatar';
 import { Text } from '@/components/Text';
 import { usePressScale } from '@/components/motion';
@@ -57,16 +57,16 @@ export function TurnReady({
   return (
     <View className="justify-center gap-3" style={{ flexGrow: 1 }} testID={testID}>
       {summary ? (
-        <Card>
+        <Glass sm pad="pad">
           <View className="gap-3">
             <Text variant="overline" tone="muted">
               {summary.eyebrow}
             </Text>
             <View className="flex-row items-center gap-3">
               <Avatar kind="table" alias={summary.alias} size="md" />
-              <Text variant="heading" className="flex-1">
+              <T v="h3" style={{ flex: 1 }}>
                 {summary.title}
-              </Text>
+              </T>
               <Text variant="score">{summary.points}</Text>
             </View>
             <View
@@ -83,14 +83,12 @@ export function TurnReady({
                   <Text variant="score" color={colors[s.tone]}>
                     {String(s.value)}
                   </Text>
-                  <Text variant="caption" tone="muted">
-                    {s.label}
-                  </Text>
+                  <T v="stamp">{s.label}</T>
                 </View>
               ))}
             </View>
           </View>
-        </Card>
+        </Glass>
       ) : null}
       {describing ? (
         <>
@@ -127,13 +125,13 @@ export function TurnReady({
               </View>
             )}
           </Pressable>
-          <Text variant="bodyStrong" align="center">
+          <T v="body" strong center>
             {tr.games.turnReadyYou}
-          </Text>
+          </T>
           <View className="self-center" style={{ maxWidth: HINT_WIDTH }}>
-            <Text variant="fine" align="center">
+            <T v="fine" center>
               {hint}
-            </Text>
+            </T>
           </View>
         </>
       ) : (
@@ -160,13 +158,13 @@ export function TurnReady({
               {String(secondsLeft)}
             </Text>
           </View>
-          <Text variant="heading" align="center">
+          <T v="h3" center>
             {tr.games.turnReadyWaiting(describingAlias)}
-          </Text>
+          </T>
           <View className="self-center" style={{ maxWidth: HINT_WIDTH }}>
-            <Text variant="fine" align="center">
+            <T v="fine" center>
               {waitingHint}
-            </Text>
+            </T>
           </View>
         </>
       )}

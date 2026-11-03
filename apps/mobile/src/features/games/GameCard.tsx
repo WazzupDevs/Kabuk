@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { Image, type ImageSourcePropType, Pressable, View } from 'react-native';
 
 import { GAME_TONES, type GameGlyph } from '@/components/Glyph';
-import { Text } from '@/components/Text';
+import { T } from '@/aura/kit';
 import { usePressScale } from '@/components/motion';
 import { tr } from '@/i18n/tr';
 import { withAlpha } from '@/theme/contrast';
@@ -109,16 +109,15 @@ export function GameCard({
           />
           {/* The whole width: a narrower box breaks "Sahtekar" inside the word at 320 dp. */}
           <View style={{ padding: SPACING[2.5], opacity: disabled ? FADED : 1 }}>
-            <Text
-              variant="gameName"
+            <T
+              v="gameName"
               color={colors[fg]}
               // Two lines at most; in large type the name shrinks rather than breaking a word.
-              numberOfLines={2}
-              adjustsFontSizeToFit
-              minimumFontScale={0.5}
+              lines={2}
+              fit
             >
               {name}
-            </Text>
+            </T>
           </View>
           {reason ? (
             <View
@@ -132,7 +131,9 @@ export function GameCard({
                 backgroundColor: colors.surface,
               }}
             >
-              <Text variant="caption">{reason}</Text>
+              <T v="stamp" ink>
+                {reason}
+              </T>
             </View>
           ) : null}
         </View>

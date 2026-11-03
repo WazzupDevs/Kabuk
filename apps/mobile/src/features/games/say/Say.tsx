@@ -1,6 +1,7 @@
 import { capitalizeTr } from '@shared/trText.ts';
 import { Pressable, View } from 'react-native';
 
+import { Btn, T } from '@/aura/kit';
 import { Button } from '@/components/Button';
 import { Text } from '@/components/Text';
 import { usePressScale } from '@/components/motion';
@@ -95,9 +96,9 @@ export function PromptCard({
         {capitalizeTr(prompt)}
       </Text>
       {line ? (
-        <Text variant="bodyStrong" color={fg} align="center">
+        <T v="body" strong color={fg} center>
           {line}
-        </Text>
+        </T>
       ) : null}
     </View>
   );
@@ -236,13 +237,11 @@ export function ObjectionWindow({
       accessibilityLabel={tr.say.windowLabel(seconds)}
     >
       <View className="flex-row items-center justify-between">
-        <Text variant="label" tone="text">
+        <T v="fine" ink>
           {tr.say.window(seconds)}
-        </Text>
+        </T>
         <View className="flex-row items-center gap-2">
-          <Text variant="caption" tone="muted">
-            {tr.say.objectionsShort(left)}
-          </Text>
+          <T v="stamp">{tr.say.objectionsShort(left)}</T>
           <ObjectionsLeft left={left} />
         </View>
       </View>
@@ -278,9 +277,8 @@ export function SaidButton({
   loading?: boolean;
 }) {
   return (
-    <Button
-      variant="positive"
-      size="lg"
+    <Btn
+      block
       testID="say-said"
       label={tr.say.said}
       onPress={onPress}

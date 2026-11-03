@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, View } from 'react-native';
 
-import { type IconName } from '@/components/Button';
-import { Card } from '@/components/Card';
+import { Glass, T } from '@/aura/kit';
+import { type IconName } from '@/components/AppIcon';
 import { Text } from '@/components/Text';
 import { tr } from '@/i18n/tr';
 import { useReduceMotion } from '@/lib/useReduceMotion';
@@ -121,13 +121,13 @@ export function TeamScore({
       }}
     >
       <View className="flex-1">
-        <Text variant="label" color={fg}>
+        <T v="fine" ink color={fg}>
           {name}
-        </Text>
+        </T>
         {note.trim() ? (
-          <Text variant="fine" color={fill ? colors.onBuzz : colors.muted}>
+          <T v="fine" color={fill ? colors.onBuzz : colors.muted}>
             {note}
-          </Text>
+          </T>
         ) : null}
       </View>
       <View className="items-end">
@@ -151,9 +151,9 @@ export function TeamScore({
               ],
             }}
           >
-            <Text variant="label" color={fg}>
+            <T v="fine" ink color={fg}>
               {delta > 0 ? tr.games.scoreUp(delta) : tr.games.scoreDown(-delta)}
-            </Text>
+            </T>
           </Animated.View>
         ) : null}
         <Animated.View
@@ -176,13 +176,13 @@ export function TeamScore({
 export function RoleNote({ icon, text }: { icon: IconName; text: string }) {
   const { colors } = useTheme();
   return (
-    <Card tone="note">
+    <Glass sm pad="pad">
       <View className="flex-row items-start gap-2">
         <AppIcon name={icon} size={ICON.sm} color={colors.text} />
-        <Text variant="fine" tone="text" className="flex-1">
+        <T v="fine" ink style={{ flex: 1 }}>
           {text}
-        </Text>
+        </T>
       </View>
-    </Card>
+    </Glass>
   );
 }

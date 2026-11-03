@@ -10,14 +10,14 @@ import {
 import { Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Round, T } from '@/aura/kit';
 import { ConfirmSheet } from '@/components/ConfirmSheet';
-import { Text } from '@/components/Text';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
+import { KIT } from '@/theme/auraKit';
 import { withAlpha } from '@/theme/contrast';
 import { useTheme } from '@/theme/ThemeProvider';
-import { ICON, SPACING, TOUCH } from '@/theme/tokens';
-import { AppIcon } from '@/components/AppIcon';
+import { SPACING } from '@/theme/tokens';
 // Frame by frame with the keyboard (react-native-keyboard-controller): the bar rises with it.
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 
@@ -98,20 +98,20 @@ export function GameStage({
           paddingVertical: SPACING[1.5],
         }}
       >
-        <RoundButton
+        <Round
           testID="end-game"
           label={tr.games.endGame}
           icon="close"
           onPress={() => setConfirm(true)}
         />
-        <Text variant="heading" accessibilityRole="header" className="flex-1">
+        <T v="h3" accessibilityRole="header" style={{ flex: 1 }}>
           {title}
-        </Text>
+        </T>
         <View>
-          <RoundButton
+          <Round
             testID="game-chat"
             label={tr.games.chatButton(unread)}
-            icon="chatbubble-ellipses-outline"
+            icon="chat"
             onPress={() => onChat(true)}
           />
           {unread > 0 ? (
@@ -128,9 +128,9 @@ export function GameStage({
                 backgroundColor: colors.danger,
               }}
             >
-              <Text variant="caption" tone="onDanger">
+              <T v="stamp" color={colors.onDanger}>
                 {unread > 99 ? '99+' : String(unread)}
-              </Text>
+              </T>
             </View>
           ) : null}
         </View>
@@ -159,9 +159,9 @@ export function GameStage({
         keyboardShouldPersistTaps="handled"
       >
         {endError ? (
-          <Text variant="fine" tone="danger">
+          <T v="fine" color={KIT.danger}>
             {errorMessage(endError)}
-          </Text>
+          </T>
         ) : null}
         <StageFitContext.Provider value={changeFit}>{children}</StageFitContext.Provider>
       </ScrollView>
@@ -263,42 +263,5 @@ export function StageFit({
       </ScrollView>
       {actions ? <View style={{ gap: SPACING[2] }}>{actions}</View> : null}
     </View>
-  );
-}
-
-function RoundButton({
-  testID,
-  label,
-  icon,
-  onPress,
-}: {
-  testID: string;
-  label: string;
-  icon: 'close' | 'chatbubble-ellipses-outline';
-  onPress: () => void;
-}) {
-  const { colors, shape } = useTheme();
-  return (
-    <Pressable
-      testID={testID}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      onPress={onPress}
-    >
-      {({ pressed }) => (
-        <View
-          style={{
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: TOUCH.min,
-            height: TOUCH.min,
-            borderRadius: shape.radius.pill,
-            backgroundColor: pressed ? colors.raised : colors.surface2,
-          }}
-        >
-          <AppIcon name={icon} size={ICON.md} color={colors.text} />
-        </View>
-      )}
-    </Pressable>
   );
 }
