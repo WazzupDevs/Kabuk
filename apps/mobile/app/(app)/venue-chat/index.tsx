@@ -574,6 +574,7 @@ export default function VenueChatScreen() {
         title={tr.venueChat.blockConfirmTitle}
         hint={tr.venueChat.blockConfirmBody}
         confirmLabel={tr.safety.blockConfirm}
+        confirmIcon="block"
         pending={block.isPending}
         error={block.error}
         onConfirm={(reason) => blocking && block.mutate({ id: blocking.id, reason })}

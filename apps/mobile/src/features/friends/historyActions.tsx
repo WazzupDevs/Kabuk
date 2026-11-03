@@ -119,6 +119,7 @@ export function useHistoryActions() {
         title={tr.safety.blockConfirmTitle}
         hint={tr.friends.blockHint}
         confirmLabel={tr.friends.blockConfirm}
+        confirmIcon="block"
         pending={block.isPending}
         error={block.error}
         onConfirm={(reason) => blocking && block.mutate({ historyId: blocking, reason })}

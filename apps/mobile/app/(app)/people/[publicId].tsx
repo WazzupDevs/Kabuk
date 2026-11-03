@@ -157,6 +157,7 @@ export default function PersonScreen() {
         title={ending === 'block' ? tr.friends.block : tr.friends.removeFriend}
         hint={ending === 'block' ? tr.friends.blockHint : tr.friends.removeHint}
         confirmLabel={ending === 'block' ? tr.friends.blockConfirm : tr.friends.removeConfirm}
+        confirmIcon={ending === 'block' ? 'block' : undefined}
         pending={end.isPending}
         error={end.error}
         onConfirm={(reason) => ending && end.mutate({ kind: ending, reason })}

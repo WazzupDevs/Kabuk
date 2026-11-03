@@ -169,6 +169,7 @@ Deno.serve(
             id: m.id,
             label: m.label,
             profiled: m.profiled,
+            look: m.look,
             createdAt: m.created_at,
           })),
         };

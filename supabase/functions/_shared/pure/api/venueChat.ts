@@ -36,6 +36,13 @@ export type VenueChatPageResponse = {
   identity: CheckinIdentity | null;
 };
 export type VenueChatMuteResponse = { muteId: string };
-// The label is the nick or the name when muted; no account id.
-export type VenueChatMute = { id: string; label: string; profiled: boolean; createdAt: string };
+// The label is the nick or the name when muted, the look the anonymous identity's capsule (null
+// for a profiled one); no account id, no profile id (rule 4).
+export type VenueChatMute = {
+  id: string;
+  label: string;
+  profiled: boolean;
+  look: string | null;
+  createdAt: string;
+};
 export type VenueChatMutesResponse = { mutes: VenueChatMute[] };

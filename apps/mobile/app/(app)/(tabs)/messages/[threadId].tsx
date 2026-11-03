@@ -501,6 +501,7 @@ export default function DmScreen() {
         title={confirm === 'block' ? tr.safety.blockConfirmTitle : tr.friends.removeFriend}
         hint={confirm === 'block' ? tr.friends.blockHint : tr.friends.removeHint}
         confirmLabel={confirm === 'block' ? tr.friends.blockConfirm : tr.friends.removeConfirm}
+        confirmIcon={confirm === 'block' ? 'block' : undefined}
         pending={end.isPending}
         error={end.error}
         onConfirm={(reason) => confirm && end.mutate({ kind: confirm, reason })}

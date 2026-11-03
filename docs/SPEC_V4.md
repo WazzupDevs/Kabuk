@@ -411,7 +411,7 @@ Değişmez kabul edilir.
 
 - Kişiyi sessize alan, o kişinin **o kimlikteki** mesajlarını görmez. Sessize alınan bunu hiçbir biçimde görmez.
 - **Kimliğe bağlıdır:** anonim nick'i sessize almak aynı kişinin profilli mesajlarını gizlemez, tersi de. Gizleseydi iki kimlik eşleşirdi (kural 4).
-- Sunucuda tutulur: `venue_chat_mutes (id, user_id, muted_user_id, profiled, label, created_at)`. `label` sessize alma anındaki nick ya da görünen addır.
+- Sunucuda tutulur: `venue_chat_mutes (id, user_id, muted_user_id, profiled, label, look, created_at)`. `label` sessize alma anındaki nick ya da görünen addır; `look` anonim kimliğin o mesajdaki kapsül görünüşüdür, profilli kayıtta boştur. "Sessize alınanlar" listesi (`venue-chat` → `mutes`) yalnızca sessize alanın kendi kayıtlarını, anonim satırda kapsül ve nick'le döner; hesap ve profil kimliği taşımaz (Aura v71, `docs/decisions/aura-v71-eklenen.md` karar 1).
 - `venue-chat/mute { messageId }`: sunucu göndericiyi ve kimliği mesajdan bulur; istemci hesap id'si görmez. `venue-chat/unmute { muteId }`.
 - Liste `venue_chat_mutes_of(user)` (service role) üzerinden `venue-chat/mutes` ile gelir: etiket ve tarih. Hesap id'si gitmez.
 - Okuma (`venue_chat_page_for`) sessize alınan kimliğin mesajlarını döndürmez.
