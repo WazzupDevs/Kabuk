@@ -129,7 +129,7 @@ appId: app.kabuk.mobile
     timeout: 20000
 # The count is under the table's scene (U20); on a short phone it is below the fold.
 - scrollUntilVisible:
-    element: 2 kişi
+    element: '.*2 kişi.*'
     direction: DOWN
     timeout: 10000
 - tapOn:

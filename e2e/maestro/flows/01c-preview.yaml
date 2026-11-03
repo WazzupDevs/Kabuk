@@ -226,8 +226,8 @@ appId: app.kabuk.mobile
       id: preview-chat
     timeout: 10000
 - takeScreenshot: 04i-chat-bubbles
-- longPressOn:
-    id: preview-bubble
+# On the bubble's words: the bubble's row is the screen's width, its middle is empty.
+- longPressOn: Yarın aynı yerde mi\?
 - extendedWaitUntil:
     visible:
       id: reaction-bar
