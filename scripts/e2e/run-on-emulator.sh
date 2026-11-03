@@ -45,4 +45,22 @@ adb logcat -b crash -d > "$OUT/logcat-crash.txt" 2>&1 || true
 # Why the app's processes ended (Android 11+): a crash, a native crash, an ANR, or the system's low
 # memory killer, which no crash report sees.
 adb shell dumpsys activity exit-info app.kabuk.mobile > "$OUT/exit-info.txt" 2>&1 || true
+# A failed run writes its failing step into the job's log too: Maestro's console names the flow but
+# not always the step, and the artifact is not always at hand.
+if [ "$status" -ne 0 ]; then
+  echo "::group::Failed step (Maestro debug output)"
+  for f in "$OUT"/maestro/commands-*.json; do
+    [ -f "$f" ] || continue
+    jq -r --arg f "$(basename "$f")" '
+      [.[] | {c: (.command | to_entries[0] | "\(.key) \(.value | tostring | .[0:160])"),
+              s: .metadata.status, e: (.metadata.error.message // "")}] as $all
+      | ($all | map(.s) | index("FAILED")) as $i
+      | if $i == null then empty
+        else "\($f)", ($all[([$i - 4, 0] | max):($i + 1)][] | "  \(.s) \(.c) \(.e)") end
+    ' "$f" 2>/dev/null || true
+  done
+  echo "--- crash buffer"
+  tail -n 40 "$OUT/logcat-crash.txt" 2>/dev/null || true
+  echo "::endgroup::"
+fi
 exit "$status"
