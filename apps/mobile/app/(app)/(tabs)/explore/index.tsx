@@ -45,6 +45,7 @@ import { haptic } from '@/lib/haptics';
 import { useNow } from '@/lib/useNow';
 import { venueType } from '@/lib/venueType';
 import { AURA } from '@/theme/aura';
+import { useNarrow } from '@/lib/useNarrow';
 import { KIT, KIT_TYPE, VENUE_THUMB } from '@/theme/auraKit';
 import { THEME } from '@/theme/theme';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -62,6 +63,7 @@ type Here = { name: string; spot: string | null };
 // as plain rows with a hairline between them; venues with an event today first (K-21, K-42), the
 // bucket in words (K-41); a row opens the venue page (K-43). No venue to show: a glass card says so.
 export default function ExploreScreen() {
+  const narrow = useNarrow();
   const { scheme, shape } = useTheme();
   const table = useActiveTable();
   const now = useNow(30_000);
@@ -181,6 +183,7 @@ export default function ExploreScreen() {
                         key={k}
                         testID={`explore-kind-${k}`}
                         label={tr.explore.kinds[k]}
+                        narrow={narrow}
                         on={kind === k}
                         onPress={() => {
                           if (k === kind) return;
@@ -560,7 +563,9 @@ function SearchGlass({
 }) {
   const { c } = useKit();
   const { colors } = useTheme();
-  const h = KIT.size.field;
+  // Aura v75 KesfetHaritaDar: 56 when narrow, the hint on one line.
+  const narrow = useNarrow();
+  const h = narrow ? KIT.size.fieldNarrow : KIT.size.field;
   return (
     <Glass
       frost
@@ -594,7 +599,7 @@ function SearchGlass({
             pointerEvents="none"
             style={[StyleSheet.absoluteFill, { justifyContent: 'center' }]}
           >
-            <T v="body" color={colors.placeholder}>
+            <T v="body" lines={1} fit color={colors.placeholder}>
               {tr.explore.search}
             </T>
           </View>
@@ -610,7 +615,8 @@ function SearchGlass({
 function ViewSwitch({ value, onChange }: { value: View_; onChange: (v: View_) => void }) {
   const { c, scheme } = useKit();
   const { colors } = useTheme();
-  const h = KIT.size.field;
+  // As tall as the search beside it (Aura v75 KesfetHaritaDar).
+  const h = useNarrow() ? KIT.size.fieldNarrow : KIT.size.field;
   const round = SWITCH_ROUND;
   return (
     <Glass

@@ -10,6 +10,7 @@ import { useProfileView } from '@/features/profile/queries';
 import { tr } from '@/i18n/tr';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { MOTION } from '@/theme/aura';
+import { useNarrow } from '@/lib/useNarrow';
 import { KIT } from '@/theme/auraKit';
 import { SPACING } from '@/theme/tokens';
 
@@ -22,6 +23,8 @@ const HEAD_BOTTOM = SPACING[2];
 const BAND_FADE = 24;
 // U22 (Masa `.grid`): four people a row.
 const ROW_MAX = 4;
+const NARROW_ROW_MAX = 3;
+const NARROW_ROW_GAP = 12;
 
 // Masa's head (the owner's call, 28 and 29 Ekim): it stays put while the games scroll under it,
 // and nothing in it folds. On it, in order: `children` (the bar: back, chat, invite, Masadakiler
@@ -53,6 +56,7 @@ export function TableScene({
 }) {
   const { c } = useKit();
   const { width } = useWindowDimensions();
+  const narrow = useNarrow();
   const [headHeight, setHeadHeight] = useState(0);
   const ordered = [
     ...people.filter((p) => p.sessionId === me),
@@ -69,10 +73,12 @@ export function TableScene({
   const drawn = source && source.width > 0 ? (strip * source.height) / source.width : k.strip;
   const pictureHeight = Math.max(k.strip, drawn);
   const inner = strip - 2 * k.body.x;
-  const cell = Math.floor((inner - (ROW_MAX - 1) * k.colGap) / ROW_MAX);
+  // Aura v75 MasaDar: narrow (src/lib/narrow.ts), three to a row, the faces 44, 12 between rows.
+  const perRow = narrow ? NARROW_ROW_MAX : ROW_MAX;
+  const cell = Math.floor((inner - (perRow - 1) * k.colGap) / perRow);
   const lines: TablePerson[][] = [];
   ordered.forEach((p, i) => {
-    if (i % ROW_MAX === 0) lines.push([p]);
+    if (i % perRow === 0) lines.push([p]);
     else lines[lines.length - 1]?.push(p);
   });
 
@@ -126,7 +132,7 @@ export function TableScene({
             accessibilityRole="button"
             accessibilityLabel={tr.table.whoLabel(people.length)}
             onPress={onPress}
-            style={{ gap: k.rowGap }}
+            style={{ gap: narrow ? NARROW_ROW_GAP : k.rowGap }}
           >
             {lines.map((line, r) => (
               <View key={r} style={{ flexDirection: 'row', gap: k.colGap }}>
@@ -142,6 +148,7 @@ export function TableScene({
                       width={cell}
                       delay={late ? 0 : SEAT_DELAY + i * SEAT_STEP}
                       late={late}
+                      narrow={narrow}
                     />
                   );
                 })}
@@ -165,6 +172,7 @@ function Seat({
   width,
   delay,
   late,
+  narrow,
 }: {
   person: TablePerson;
   you: boolean;
@@ -172,6 +180,7 @@ function Seat({
   width: number;
   delay: number;
   late: boolean;
+  narrow: boolean;
 }) {
   const own = useProfile();
   const view = useProfileView(
@@ -199,7 +208,8 @@ function Seat({
     return () => anim.stop();
   }, [reduce, delay, late, pop, ring]);
   const name = you ? tr.table.youTag : person.alias;
-  const face = KIT.size.av.member;
+  const size = narrow ? 'md' : 'member';
+  const face = KIT.size.av[size];
   return (
     <View style={{ width, alignItems: 'center', gap: k.nameGap }} pointerEvents="none">
       <View>
@@ -229,11 +239,11 @@ function Seat({
           }}
         >
           {!person.profiled && person.look ? (
-            <Av size="member" name={person.alias}>
+            <Av size={size} name={person.alias}>
               <LookAvatar look={person.look} size={face} />
             </Av>
           ) : (
-            <Av size="member" name={person.alias} photoUrl={view.data?.photoUrl ?? null} />
+            <Av size={size} name={person.alias} photoUrl={view.data?.photoUrl ?? null} />
           )}
         </Animated.View>
       </View>

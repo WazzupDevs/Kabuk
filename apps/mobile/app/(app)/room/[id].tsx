@@ -41,6 +41,7 @@ import { roomsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
 import { AURA } from '@/theme/aura';
+import { useNarrow } from '@/lib/useNarrow';
 import { KIT } from '@/theme/auraKit';
 import { SPACING } from '@/theme/tokens';
 import { AuraBackground, AuraBand } from '@/aura/AuraBackground';
@@ -56,6 +57,7 @@ export default function TableScreen() {
   const { scheme } = useTheme();
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
+  const narrow = useNarrow();
   // The head stays put over the games and nothing in it folds (the owner's call, 29 Ekim): the
   // games start under its height and scroll under it.
   const [headHeight, setHeadHeight] = useState(0);
@@ -248,7 +250,14 @@ export default function TableScreen() {
         label={tr.table.back}
         onPress={() => (router.canGoBack() ? router.back() : router.replace('/venue'))}
       />
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.chipsGap }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          // Aura v75 MasaDar: 6 apart when narrow, so the bar stays one line.
+          gap: narrow ? NARROW_BAR_GAP : KIT.size.chipsGap,
+        }}
+      >
         <Round
           side={barSide}
           icon="chat"
@@ -288,14 +297,26 @@ export default function TableScreen() {
   // button at the right ("Lobiye aç" opens its sheet, "Lobiden çek" takes the table out). The owner
   // changes the table's card and name from its name (the owner's call, 29 Ekim).
   const info = (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.chipsGap }}>
+    // Narrow (Aura v75 MasaDar), the lobby button goes under the name when they do not fit, 10 apart.
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: narrow ? NARROW_INFO_GAP : KIT.size.chipsGap,
+        flexWrap: narrow ? 'wrap' : 'nowrap',
+      }}
+    >
       <Pressable
         testID="table-icon"
         accessibilityRole={owner ? 'button' : undefined}
         accessibilityLabel={owner ? tr.createTable.iconChange : undefined}
         disabled={!owner}
         onPress={() => setSheet('icon')}
-        style={{ flex: 1, gap: KIT.table.lineGap }}
+        style={
+          narrow
+            ? { flexGrow: 1, flexShrink: 1, gap: KIT.table.lineGap }
+            : { flex: 1, gap: KIT.table.lineGap }
+        }
       >
         <T v="title" testID="table-title">
           {r.name ?? ''}
@@ -589,3 +610,7 @@ function ConfirmSheet({
     </Sheet>
   );
 }
+
+// Aura v75 MasaDar (320 dp, the largest text).
+const NARROW_BAR_GAP = 6;
+const NARROW_INFO_GAP = 10;

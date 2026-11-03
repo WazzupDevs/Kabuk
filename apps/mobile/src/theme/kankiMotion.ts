@@ -17,6 +17,8 @@ export const KANKI_SHADOW = {
   height: 0.07,
   bottom: 0.025,
   color: 'rgba(4, 73, 35, 0.24)',
+  // Aura v75 KayitKoyu (`.dark.pA .stand i`): black on the dark riso scene.
+  colorDark: 'rgba(0, 0, 0, 0.5)',
   blur: 3,
 } as const;
 

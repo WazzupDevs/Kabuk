@@ -310,6 +310,7 @@ export const MAP_PIN = {
   clusterRadius: [18, 22, 26],
   clusterSteps: [10, 30],
   labelSize: 13,
+  labelSizeNarrow: 17,
   countSize: 14,
   // Clear of the pin: the pin's radius, its rings and a gap, in the label's ems.
   labelOffset: 2.4,

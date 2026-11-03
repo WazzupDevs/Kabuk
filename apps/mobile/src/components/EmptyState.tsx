@@ -36,6 +36,9 @@ type Props = {
   // In a card or a sheet: the small picture (160x110, 22 round, the raised shadow) rather than the
   // screen's (240x165, 28 round, the card shadow).
   compact?: boolean;
+  // Under a page's own heading and switch (Aura v75 AktivitelerHal): the loader 12 over `fine`
+  // words; the error's icon 28 and its words in the text colour, "Tekrar dene" with its refresh.
+  inPage?: boolean;
 };
 
 // Aura v76 BosDurumlar (640x440 exports; the DM's first message and the venue's week reuse the
@@ -58,7 +61,7 @@ const RISO_SMALL = { width: 160, height: 110, radius: 22, shadow: 'raised' } as 
 
 // GaleriKesfet, GaleriProfil `.disc`: 64 round, the soft fill and edge (`.btn.soft`), the icon 26
 // muted.
-function StateDisc({ icon }: { icon: IconName }) {
+function StateDisc({ icon, iconSize }: { icon: IconName; iconSize: number }) {
   const { c } = useKit();
   const side = KIT.size.stateDisc;
   const shadow = shadowParts(
@@ -84,7 +87,7 @@ function StateDisc({ icon }: { icon: IconName }) {
       }}
     >
       {shadow.node}
-      <AppIcon name={icon} size={KIT.size.stateIcon} color={c.muted} />
+      <AppIcon name={icon} size={iconSize} color={c.muted} />
     </View>
   );
 }
@@ -102,6 +105,7 @@ export function EmptyState({
   picture,
   riso,
   compact,
+  inPage,
 }: Props) {
   if (kind === 'empty')
     return (
@@ -115,7 +119,7 @@ export function EmptyState({
         }
       />
     );
-  if (kind === 'loading') return <Loading body={body} />;
+  if (kind === 'loading') return <Loading body={body} inPage={inPage} />;
 
   const glyph: IconName =
     kind === 'error' || kind === 'offline' ? 'cloudOff' : (icon ?? 'cloudOff');
@@ -124,19 +128,19 @@ export function EmptyState({
       className="items-center"
       style={{
         gap: KIT.size.stateGap,
-        paddingTop: SPACING[2],
+        paddingTop: inPage ? 0 : SPACING[2],
         paddingBottom: SPACING[1],
-        paddingHorizontal: SPACING[4],
+        paddingHorizontal: inPage ? SPACING[3] : SPACING[4],
       }}
     >
-      <StateDisc icon={glyph} />
+      <StateDisc icon={glyph} iconSize={inPage ? KIT.size.stateIconPage : KIT.size.stateIcon} />
       <View className="items-center self-stretch" style={{ gap: SPACING[1] }}>
         {title ? (
           <T v="h3" center accessibilityRole="header">
             {title}
           </T>
         ) : null}
-        <T v="body" center>
+        <T v="body" center ink={inPage}>
           {body}
         </T>
       </View>
@@ -144,6 +148,7 @@ export function EmptyState({
         <Btn
           variant="glassy"
           sm
+          icon={inPage ? 'refresh' : undefined}
           label={action.label}
           onPress={action.onPress}
           loading={action.loading}
@@ -155,7 +160,7 @@ export function EmptyState({
 
 // MekanYukleniyor: the meeting capsules 40, 18 above; GaleriProfil: "Yükleniyor…" under them. The
 // whole state waits 300 ms, so a quick answer shows nothing.
-function Loading({ body }: { body: string }) {
+function Loading({ body, inPage }: { body: string; inPage?: boolean }) {
   const [shown, setShown] = useState(false);
   useEffect(() => {
     const id = setTimeout(() => setShown(true), LOADER_SHOW_AFTER_MS);
@@ -168,13 +173,13 @@ function Loading({ body }: { body: string }) {
       accessibilityRole="progressbar"
       accessibilityLabel={body}
       style={{
-        gap: KIT.size.stateLoadGap,
-        paddingTop: KIT.size.stateLoadTop,
+        gap: inPage ? KIT.size.stateGap : KIT.size.stateLoadGap,
+        paddingTop: inPage ? 0 : KIT.size.stateLoadTop,
         opacity: shown ? 1 : 0,
       }}
     >
       <Loader kind="meet" size={KIT.size.stateLoader} label={null} delay={0} />
-      <T v="body" center>
+      <T v={inPage ? 'fine' : 'body'} center>
         {body}
       </T>
     </View>

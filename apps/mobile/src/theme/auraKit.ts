@@ -401,6 +401,10 @@ export const KIT = {
   // glass and the tags light, the calm one in the calm green.
   sceneRound: { bg: 'rgba(255, 255, 255, 0.82)', edge: '#FFFFFF', ink: '#031B0B' },
   sceneTag: { bg: 'rgba(255, 255, 255, 0.82)', fg: '#031B0B' },
+  // Aura v75 AktivitelerEtkinlik (`.tag.lively.gl`, `.tag.gl`): an event card's two tags over its
+  // riso scene, the same in both schemes.
+  eventTag: { bg: '#FFE7C2', fg: '#7A4300' },
+  eventTimeTag: { bg: 'rgba(255, 255, 255, 0.86)', fg: '#031B0B' },
   // U19: the words over Mekan's riso "Henüz masan yok" scene, in both schemes (Mekan `.rtext`).
   risoScene: {
     title: '#031B0B',
@@ -524,6 +528,10 @@ export const KIT = {
     chipTall: 36,
     chipTallPadX: 16,
     chipLg: 36,
+    // Aura v75 E4 (narrow): a chip 46, a field 56, a segment 52.
+    chipNarrow: 46,
+    fieldNarrow: 56,
+    segItemNarrow: 52,
     chipLgPadX: 18,
     // U19: Mekan's spot chip, 40 high and 16 in.
     chipMdPadX: 16,
@@ -572,6 +580,10 @@ export const KIT = {
     // 40, 18 above, the note 10 under them.
     stateDisc: 64,
     stateIcon: 26,
+    // Aura v75 E4: a tag when narrow (320 dp or the largest text, src/lib/narrow.ts).
+    tagNarrow: 30,
+    // Aura v75 AktivitelerHal `.erc .ci`.
+    stateIconPage: 28,
     stateGap: 12,
     stateLoader: 40,
     stateLoadTop: 18,

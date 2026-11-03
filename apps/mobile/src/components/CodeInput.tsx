@@ -3,6 +3,7 @@ import { Text as RNText, TextInput, type TextInputProps, View } from 'react-nati
 
 import { Glass, useKit } from '@/aura/kit';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
+import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
 import { Text } from './Text';
@@ -15,6 +16,9 @@ type Props = Omit<TextInputProps, 'style' | 'value' | 'maxLength' | 'placeholder
 
 const BOX = 60;
 const BOX_RADIUS = 16;
+// The dark scheme's caret in the next box (KayitKoyu: 2 × 26).
+const CARET_W = 2;
+const CARET_H = 26;
 
 // The one-time code as one box per digit (canvas: Doğrulama kodu). A single invisible field lies
 // over the boxes, so typing, pasting and SMS autofill work as in a plain field; the box that takes
@@ -24,6 +28,8 @@ export const CodeInput = forwardRef<TextInput, Props>(function CodeInput(
   ref,
 ) {
   const { c, scheme } = useKit();
+  const { colors } = useTheme();
+  const dark = scheme === 'dark';
   const [focused, setFocused] = useState(false);
   const next = Math.min(value.length, length - 1);
 
@@ -42,16 +48,37 @@ export const CodeInput = forwardRef<TextInput, Props>(function CodeInput(
                 style={{
                   height: BOX,
                   borderRadius: BOX_RADIUS,
+                  // Aura v75 KayitKoyu: in the dark the filled and the next box #1B211F, the rest
+                  // #151A18, the next one ringed in the accent with no halo and its caret.
                   backgroundColor:
-                    i < value.length || active ? (scheme === 'dark' ? c.segOn : KIT.white) : c.day,
+                    i < value.length || active
+                      ? dark
+                        ? colors.surface2
+                        : KIT.white
+                      : dark
+                        ? colors.surface
+                        : c.day,
                   borderWidth: error ? 2 : 0,
                   borderColor: KIT.danger,
                   boxShadow: active
-                    ? `0px 0px 0px 2px ${KIT.primary}, 0px 0px 0px 6px ${KIT.primaryRing}`
+                    ? dark
+                      ? `0px 0px 0px 2px ${colors.accent}`
+                      : `0px 0px 0px 2px ${KIT.primary}, 0px 0px 0px 6px ${KIT.primaryRing}`
                     : undefined,
                 }}
               >
-                <RNText style={[KIT_TYPE.code, { color: c.ink }]}>{value[i] ?? ''}</RNText>
+                {dark && active && !value[i] ? (
+                  <View
+                    style={{
+                      width: CARET_W,
+                      height: CARET_H,
+                      borderRadius: CARET_W / 2,
+                      backgroundColor: colors.accent,
+                    }}
+                  />
+                ) : (
+                  <RNText style={[KIT_TYPE.code, { color: c.ink }]}>{value[i] ?? ''}</RNText>
+                )}
               </View>
             );
           })}
