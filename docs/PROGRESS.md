@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (3 Kasım 2026, UI hataları P-E…P-I, F1 birleşti)
+
+- Birleşenler: #384 P-E (masa kartı, lobi, Lobiye aç/Masa kur çipleri; SPEC_V4'e yazıldı), #385 P-F Keşfet, #386 P-G (geçmiş sayfası, "Arkadaşlıktan çıkar", büyük foto, şikayet footer), #387 P-I1 ve #388 P-I2 (eski bileşen göçü: ekranlar, oyunlar), #389 F1, #390 P-H riso boş durumlar. Native yok, OTA. Aura v71 P4'ün yeniden kuracağı ekranlar (ReportModal, ConfirmWithReport, UpdateRequired, IdentitySheet, spot, venue-chat/[messageId]) göçe girmedi.
+- Telefonda bakılacak: F1 320 dp ve en büyük yazıda sığıyor mu (sığmazsa alt alta hâl tasarım onayı bekliyor), 4.4 koyu haritada etiket yok (stil bu ortamdan okunamadı, 4.2 POI'ler kalktı).
+- Sıradaki: Aura v71 P4 (`aktarim-v71-fark.md` fark-2; K8 `guvenlik`); sonra eksik hâller `docs/design/aura/aktarim-v75-eksik-hal.md`: yalnızca karşılaştırma + uygulama + test planı, onaysız uygulama yok; `riso-kayit-koyu.png` ve `riso-etkinlik.png` proje sahibinden istenecek. En son K1–K17 kabul turu (`aktarim-v76-2kasim.md` §11, Android cihazda, proje sahibi).
+- Not: ESLint ve Prettier `.claude/worktrees/` altındaki ajan kopyalarını da tarıyor; `mobil` ajanı bitince kopyası `git worktree remove` ile kaldırılmadan `pnpm check` kırmızı.
+
 ## Devir notu (3 Kasım 2026, UI hataları P-A…P-D birleşti)
 
 - Proje sahibinin sırası: önce `docs/ui-hatalar-2026-11-02.md` §5 paketleri, sonra Aura v71 P4. #378 belge, #379 P-A (K1: RN `Image` + `absoluteFill` resmi piksel boyunda çiziyordu → `PICTURE_FILL`, `styleGuard.test.ts` yasaklar), #380 P-B (üst düğmeler `Screen` → `top`, Kapsül `HidingHeadScreen`, düzenlemede `useHideTabBar`), #381 P-C (ölçek 48/36/44, koyuda siyah primary gölgesi, sheet içi kart/düğme ayrışır, `RowList` cam kartta), #382 P-D (Composer düz yüzey, alan/gönder/ad kapsülü 44). Native yok, OTA.
