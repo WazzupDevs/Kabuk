@@ -30,10 +30,11 @@ create policy "universities: authenticated users read"
   to authenticated
   using (true);
 
--- A campus's university. Only a campus may have one; a cafe never does. Restrict: a university
--- with campuses is never deleted (they are set inactive instead).
+-- A campus's university. Only a campus may have one; a cafe never does. A university is never
+-- deleted (it is set inactive); if one were, its campuses stay as campuses on their own (set null,
+-- like every public foreign key: account.test.ts).
 alter table public.venues
-  add column university_id uuid references public.universities (id) on delete restrict,
+  add column university_id uuid references public.universities (id) on delete set null,
   add constraint venues_university_campus check (university_id is null or kind = 'campus');
 
 create index venues_university_id_idx on public.venues (university_id) where university_id is not null;
