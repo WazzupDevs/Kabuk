@@ -83,7 +83,7 @@ const TURNED = { warning: 'info', 'alert-circle': 'info' } as const satisfies Re
 
 export type IconName = CapIconName | keyof typeof LEGACY | keyof typeof TURNED;
 
-export function capIconName(name: IconName): CapIconName {
+function capIconName(name: IconName): CapIconName {
   if (name in TURNED) return TURNED[name as keyof typeof TURNED];
   return name in LEGACY ? LEGACY[name as keyof typeof LEGACY] : (name as CapIconName);
 }

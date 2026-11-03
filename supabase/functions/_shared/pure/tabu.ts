@@ -275,7 +275,7 @@ export function mayBeginTurn(role: TableRole, readyEndsAt: string, now: number):
 
 // The end of a running turn on the phone (docs/SPEC_V3.md §19.2): a short vibration in each of the
 // last 5 seconds, a longer one at zero with "Süre bitti!".
-export const TURN_CUE = { warnFromSeconds: 5, tickMs: 40, timeUpMs: 400 } as const;
+const TURN_CUE = { warnFromSeconds: 5, tickMs: 40, timeUpMs: 400 } as const;
 
 export type TurnCue = { kind: 'tick' | 'timeUp'; vibrateMs: number };
 

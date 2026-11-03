@@ -1,15 +1,5 @@
-import { type ReactNode, useEffect } from 'react';
+import { type ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withSequence,
-  withTiming,
-} from 'react-native-reanimated';
-import Svg, { Rect } from 'react-native-svg';
-
-import { useReduceMotion } from '@/lib/useReduceMotion';
 import { BRAND } from '@/theme/brand';
 import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
@@ -135,60 +125,6 @@ export function MoreDots() {
           }}
         />
       ))}
-    </View>
-  );
-}
-
-// The profile's settings (skall tuvali: `settings`; v46: .pset .sl-ic): two slider tracks, their
-// knobs in the mark's purple and pink. Each new `go` slides the knobs apart and back (v46: `.pset.go`
-// moves .k1 6 left and .k2 6 right for 450 ms, transform .45s cubic-bezier(.34,1.56,.64,1)); none
-// with reduce motion.
-const KNOB_SLIDE = 6;
-const KNOB_MS = 450;
-const KNOB_EASE = Easing.bezier(0.34, 1.56, 0.64, 1);
-// The knobs slide as views over the drawn tracks (the owner's report, 29 Ekim: react-native-svg
-// draws again on the main thread on every frame an animated prop moves); the same rounded rects.
-const KNOB = { width: 5, height: 9, radius: 2.5 } as const;
-
-export function SlidersGlyph({ go = 0 }: { go?: number }) {
-  const { colors } = useTheme();
-  const reduce = useReduceMotion();
-  const shift = useSharedValue(0);
-  useEffect(() => {
-    if (go === 0 || reduce) return;
-    shift.set(
-      withSequence(
-        withTiming(1, { duration: KNOB_MS, easing: KNOB_EASE }),
-        withTiming(0, { duration: KNOB_MS, easing: KNOB_EASE }),
-      ),
-    );
-  }, [go, reduce, shift]);
-  const side = ICON.lg - 2;
-  // The drawing's 24 units in pixels.
-  const u = side / 24;
-  const k1 = useAnimatedStyle(() => ({
-    transform: [{ translateX: -KNOB_SLIDE * u * shift.value }],
-  }));
-  const k2 = useAnimatedStyle(() => ({
-    transform: [{ translateX: KNOB_SLIDE * u * shift.value }],
-  }));
-  const knob = (x: number, y: number, color: string) => ({
-    position: 'absolute' as const,
-    left: x * u,
-    top: y * u,
-    width: KNOB.width * u,
-    height: KNOB.height * u,
-    borderRadius: KNOB.radius * u,
-    backgroundColor: color,
-  });
-  return (
-    <View style={{ width: side, height: side }}>
-      <Svg width={side} height={side} viewBox="0 0 24 24">
-        <Rect x={3} y={6.8} width={18} height={2.6} rx={1.3} fill={colors.control} />
-        <Rect x={3} y={14.6} width={18} height={2.6} rx={1.3} fill={colors.control} />
-      </Svg>
-      <Animated.View style={[knob(13, 3.6, BRAND.purple), k1]} />
-      <Animated.View style={[knob(6, 11.4, BRAND.pink), k2]} />
     </View>
   );
 }

@@ -69,12 +69,12 @@ export function cubicBezier(x1: number, y1: number, x2: number, y2: number): (u:
   };
 }
 
-export const EASE_IN_OUT = cubicBezier(0.65, 0, 0.35, 1);
+const EASE_IN_OUT = cubicBezier(0.65, 0, 0.35, 1);
 export const EASE_OUT = cubicBezier(0.2, 0.8, 0.2, 1);
 const EASE_IN = cubicBezier(0.55, 0, 0.85, 0.2);
 
 // A damped spring from 0 to 1 (stiffness, damping; mass 1), as a function of milliseconds.
-export function spring(stiffness: number, damping: number): (ms: number) => number {
+function spring(stiffness: number, damping: number): (ms: number) => number {
   const w0 = Math.sqrt(stiffness);
   const z = damping / (2 * w0);
   const wd = w0 * Math.sqrt(1 - z * z);

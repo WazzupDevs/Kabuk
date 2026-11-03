@@ -21,7 +21,7 @@ import { AppError } from './pure/errors.ts';
 import { JOIN_REQUEST_TTL_SECONDS } from './pure/rooms.ts';
 import { MAX_TABLE_PHONES } from './pure/tables.ts';
 
-export function testBotsHere(): boolean {
+function testBotsHere(): boolean {
   return testBotsAllowed(Deno.env.get('SUPABASE_URL'));
 }
 

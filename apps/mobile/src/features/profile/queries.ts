@@ -12,7 +12,7 @@ export const profileViewKeys = {
 // A profile as profile/get returns it: the caller's own, a friend's, or the other table's in the
 // current room. Not kept after the screen closes (access can end with the room), and refetched
 // well before the one-hour photo URL expires.
-export function profileViewQuery(publicId: string | null | undefined) {
+function profileViewQuery(publicId: string | null | undefined) {
   return {
     queryKey: profileViewKeys.view(publicId ?? ''),
     enabled: !!publicId,

@@ -1,4 +1,4 @@
-import { type CapsuleKey, FRIEND_DARK_INK } from './capsules';
+import { type CapsuleKey } from './capsules';
 import { bezier } from './launchMotion';
 
 // The first screen's scene (v45 report §2; the v45 file's OBS module: "Aynı mekanda, aynı
@@ -88,7 +88,6 @@ const LINE_IN: Curve = [0.2, 0.9, 0.3, 1.25];
 const BURST: Curve = [0.2, 0.7, 0.4, 1];
 // A tap on a capsule (v45: obfJump .5s cubic-bezier(.3,.7,.4,1)).
 const JUMP: Curve = [0.3, 0.7, 0.4, 1];
-export const INTRO_JUMP_MS = 500;
 
 export type IntroPos = { x: number; y: number; s: number };
 export type IntroTable = {
@@ -176,7 +175,7 @@ export type IntroScene = {
   from: number;
 };
 
-export const INTRO_CONFETTI_COUNT = 18;
+const INTRO_CONFETTI_COUNT = 18;
 // A pose's lift while hopping: above every table, phone and seated capsule.
 const AIR_Z = 20;
 const BLINK_MS = 100;
@@ -186,7 +185,6 @@ const BOB_MS = 2600;
 const BOB_SHARE = 0.03;
 // The pop's peak, as a share of the capsule's size.
 const POP_PEAK = 1.14;
-export const INTRO_BLINK_OPEN = 0.12;
 
 // v45's fixed-seed generator: the same places on every launch.
 function rng(seed: number): () => number {
@@ -517,7 +515,7 @@ export function jumpRoom(f: CharFrame, ch: number): number {
 }
 
 // The body's bob inside its place, as a share of its height (negative: up), and, after a tap, the
-// jump (`jump` 0…1 over INTRO_JUMP_MS; 0 when there is none). The jump is cut to `room`
+// jump (`jump` 0…1 over 500 ms; 0 when there is none). The jump is cut to `room`
 // (jumpRoom): a capsule high in its arc on a short screen jumps less and stays inside the box.
 export function bodyFrame(
   c: IntroChar,
@@ -694,7 +692,7 @@ export function copySettledAt(part: CopyPart): number {
 // Sizes in px (v45: .obf-top svg, .obf-ring, .obf-fx i, .obf-ph, .obf-sw), and the scene's least
 // height: it takes the room left over, shrinks on short screens and with large text, never under
 // 160 (v45: .obf-scene min-height: max(160px, min(290px, 100svh - 392px))).
-export const INTRO_SHAPE = {
+const INTRO_SHAPE = {
   logo: 30,
   ring: 7,
   confetti: { w: 7, h: 14, r: 4 },
@@ -714,37 +712,6 @@ export function introMinHeight(windowHeight: number): number {
   );
 }
 
-// The scene's colours (v45: .obf and its parts; the v45-dark block for the dark scheme).
-type IntroPalette = {
-  sky: {
-    glow: string;
-    stops: readonly [string, string, string];
-    at: readonly [number, number, number];
-  };
-  table: { top: string; body: string; band: number };
-  far: { top: string; body: string; band: number };
-  shadow: { color: string; opacity: number };
-  phone: {
-    body: string;
-    rim: string;
-    screen: string;
-    lit: readonly [string, string];
-    glow: string;
-  };
-  ring: { fill: string; edge: string; glow: string };
-  lamp: {
-    shade: string;
-    bulb: string;
-    lit: string;
-    glow: string;
-    cone: string;
-    coneOpacity: number;
-  };
-  skip: { fill: string; text: string };
-  // The capsules' ink (accessories, shade, dark visor; the eyes stay dark).
-  ink: string | undefined;
-};
-
 export const INTRO_CONFETTI = [
   '#FFB547',
   '#FF7A59',
@@ -753,46 +720,3 @@ export const INTRO_CONFETTI = [
   '#9C86FF',
   '#FF6FA3',
 ] as const;
-
-const LIGHT: IntroPalette = {
-  sky: { glow: '#FFDCEA', stops: ['#FBE9F4', '#EEE7FF', '#F5F3FC'], at: [0, 0.52, 0.82] },
-  table: { top: '#8C72FF', body: '#6A47F5', band: 0.26 },
-  far: { top: '#DCD3FF', body: '#B9A6FF', band: 0.28 },
-  shadow: { color: '#4A22A8', opacity: 0.16 },
-  phone: {
-    body: '#14112B',
-    rim: '#14112B',
-    screen: '#3B3458',
-    lit: ['#C9BAFF', '#7F62FF'],
-    glow: '0 0 14px 3px rgba(156, 134, 255, 0.75)',
-  },
-  ring: {
-    fill: '#FFFFFF',
-    edge: '0 0 0 2px rgba(106, 71, 245, 0.45)',
-    glow: '0 0 14px 5px rgba(255, 255, 255, 0.85)',
-  },
-  lamp: {
-    shade: '#3B3458',
-    bulb: '#8F89AB',
-    lit: '#FFE2A8',
-    glow: '0 0 10px 4px rgba(255, 214, 150, 0.9)',
-    cone: '#FFD696',
-    coneOpacity: 0.55,
-  },
-  skip: { fill: 'rgba(20, 17, 43, 0.78)', text: '#FFFFFF' },
-  ink: undefined,
-};
-
-export const INTRO_COLORS: Record<'light' | 'dark', IntroPalette> = {
-  light: LIGHT,
-  dark: {
-    ...LIGHT,
-    sky: { glow: '#3B2B92', stops: ['#1E1840', '#151131', '#110E1F'], at: [0, 0.55, 0.82] },
-    far: { top: '#5B49A8', body: '#46378A', band: 0.28 },
-    shadow: { color: '#000000', opacity: 0.45 },
-    phone: { ...LIGHT.phone, body: '#0B0918', rim: '#2E2850' },
-    ring: { ...LIGHT.ring, edge: '0 0 0 2px rgba(156, 134, 255, 0.5)' },
-    lamp: { ...LIGHT.lamp, shade: '#5B5384', bulb: '#6E6890', coneOpacity: 0.42 },
-    ink: FRIEND_DARK_INK,
-  },
-};

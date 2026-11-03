@@ -117,7 +117,7 @@ function gradient(kind: string, id: string, attrs: string, stops: Stop[]): strin
 
 // The lamp over the table, its shadow, the wood, the felt and the light on it (the file's
 // tableSvg and its .m lamp), in the table's frame.
-export function tableSvg(time: TableTime): string {
+function tableSvg(time: TableTime): string {
   const { width: W, height: H, cx, cy } = TABLE.frame;
   const { rx, ry } = TABLE.rim;
   const f = TABLE.felt;
@@ -173,7 +173,7 @@ ${gradient('radialGradient', 'f', 'cx="0.5" cy="0.42" r="0.6"', [
 // middle, its inner shadow, the gold ring and the darker ring round it; and the edge's track.
 // Opaque (the file's 95 per cent over the felt, the felt mixed in), so the glass can hide its
 // sand outside the bulbs with the very same colour (MEDAL_FILL).
-export const MEDAL_FILL = {
+const MEDAL_FILL = {
   // radial-gradient(circle at 50% 38%) of the 148 round, out to its farthest corner.
   cx: 74,
   cy: 56.24,
@@ -182,7 +182,7 @@ export const MEDAL_FILL = {
   to: '#240915',
 };
 
-export function medalSvg(): string {
+function medalSvg(): string {
   const m = TABLE.medal;
   const c = m / 2;
   const pad = 8;
@@ -313,8 +313,8 @@ export const PEEK_CARD_SVG =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g transform="rotate(-10 12 12)"><rect x="5.5" y="3" width="13" height="18" rx="3" fill="#FFFFFF"/><path d="M10.2 9.4c0-1.3.9-2.1 2-2.1s1.9.7 1.9 1.7c0 1.4-1.8 1.6-1.8 3.1" fill="none" stroke="#3A2560" stroke-width="1.9" stroke-linecap="round"/><circle cx="12.3" cy="15.4" r="1.1" fill="#3A2560"/></g></svg>';
 
 // The pictures drawn once (scripts/art/vampirTable.ts), each by its file's name.
-export const TABLE_TIMES: readonly TableTime[] = ['night', 'dawn', 'day', 'dusk'];
-export const SAND_TONES: readonly SandTone[] = ['night', 'day', 'vote'];
+const TABLE_TIMES: readonly TableTime[] = ['night', 'dawn', 'day', 'dusk'];
+const SAND_TONES: readonly SandTone[] = ['night', 'day', 'vote'];
 
 export function TABLE_ART(): Record<string, string> {
   return {

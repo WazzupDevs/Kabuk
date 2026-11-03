@@ -81,7 +81,7 @@ export type ChatJump = {
 };
 const ChatJumpContext = createContext<ChatJump | null>(null);
 
-export function useChatJump(): ChatJump | null {
+function useChatJump(): ChatJump | null {
   return useContext(ChatJumpContext);
 }
 
@@ -221,7 +221,7 @@ export type ChatBar = {
 };
 const ChatBarContext = createContext<ChatBar | null>(null);
 
-export function useChatBar(): ChatBar | null {
+function useChatBar(): ChatBar | null {
   return useContext(ChatBarContext);
 }
 
@@ -1088,10 +1088,6 @@ const FOLLOW = { minIndexForVisible: 0, autoscrollToTopThreshold: BOTTOM_SLACK }
 // The stream a chat's message bar shows through its glass (the owner's call, 27 Ekim): the id of
 // the GlassTarget around the wallpaper and the stream; null where there is none.
 const ComposerGlassContext = createContext<string | null>(null);
-
-export function useComposerGlass(): string | null {
-  return useContext(ComposerGlassContext);
-}
 
 type Props<T extends ChatListItem> = {
   top: ReactNode;

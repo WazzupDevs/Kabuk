@@ -8,7 +8,7 @@ import type { ColorScheme } from './tokens';
 // chatWallpaper.test.ts checks the SVG text.
 export type { ChatWallKind };
 
-export const WALL_TILE = 300;
+const WALL_TILE = 300;
 
 // The DM's light wall in aura 31 (docs/design/aura → Dm): a blue to lilac fall from top to foot,
 // soft capsules strewn on it, the board's 390 × 844 repeated. A still pattern, no effect. The dark

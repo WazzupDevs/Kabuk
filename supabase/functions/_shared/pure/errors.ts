@@ -100,7 +100,7 @@ export function isApiErrorBody(value: unknown): value is ApiErrorBody {
 }
 
 // Codes the database functions raise (errcode P0001, message = code). Anything else is internal.
-export const DOMAIN_ERROR_CODES: readonly ErrorCode[] = [
+const DOMAIN_ERROR_CODES: readonly ErrorCode[] = [
   // A value zod cannot check alone (a Sahtekar vote for the voter's own seat, a guess outside the
   // options).
   'bad_request',

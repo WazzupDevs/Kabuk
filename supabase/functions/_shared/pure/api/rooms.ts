@@ -150,5 +150,4 @@ export type RequestProfileResponse = {
   age: number | null;
   photoUrl: string | null;
 };
-export type ProposeGameResponse = { expiresAt: string };
 export type RoomsOkResponse = { ok: true };

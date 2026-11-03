@@ -13,7 +13,7 @@ import { RECONSENT_KANKI, RECONSENT_KANKI_FOOT, SIGNUP_KANKI } from '@/theme/kan
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
-import { type FriendReaction } from './SignupFriend';
+import { type FriendReaction } from './useFriend';
 
 type Action = {
   label: string;
@@ -25,7 +25,7 @@ type Action = {
   testID?: string;
 };
 
-// What the step's friend does (src/features/onboarding/SignupFriend.tsx).
+// What the step's friend does.
 export type FriendState = {
   reaction?: FriendReaction | null;
   looking?: boolean;

@@ -25,9 +25,6 @@ export type RoomIntentLabel = Intent | 'none';
 export function isIntent(value: unknown): value is Intent {
   return (INTENTS as readonly unknown[]).includes(value);
 }
-
-// A game proposal waits this long for the other table (§5.3); the SQL functions get it from here.
-export const GAME_PROPOSAL_TTL_SECONDS = 30;
 // "Masa adını değiştir" per check-in (§5.6).
 export const ALIAS_REROLLS_PER_CHECKIN = 3;
 

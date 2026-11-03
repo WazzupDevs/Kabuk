@@ -1,5 +1,5 @@
-import { type ReactNode, useEffect, useMemo, useState } from 'react';
-import { Animated, Easing, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { Animated, Easing } from 'react-native';
 
 import { LayeredLook, snapTo } from '@/components/LayeredLook';
 import { useLoopActive } from '@/components/Loader';
@@ -128,22 +128,4 @@ export function Buddy({
       </Animated.View>
     </Animated.View>
   );
-}
-
-// Width of a buddy of a height (for layouts that place a crew).
-export function buddyWidth(height: number): number {
-  return height * FIG_RATIO;
-}
-
-// A buddy's place in a scene, from its corner (unused parts stay where they are).
-export function Placed({
-  right,
-  bottom,
-  children,
-}: {
-  right: number;
-  bottom: number;
-  children: ReactNode;
-}) {
-  return <View style={{ position: 'absolute', right, bottom }}>{children}</View>;
 }

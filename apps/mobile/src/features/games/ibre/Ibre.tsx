@@ -16,8 +16,8 @@ import { SPACING, TOUCH } from '@/theme/tokens';
 // the 4 / 3 / 2 bands. Drawn with views only: the bands are triangles clipped by the round dial.
 // Values run 0 (left) to 100 (right). Props only; the game screen wires them.
 
-export const NEEDLE_MIN = 0;
-export const NEEDLE_MAX = 100;
+const NEEDLE_MIN = 0;
+const NEEDLE_MAX = 100;
 // Band edges around the target, half a step past the scoring distances 4, 11 and 19 (§20.5).
 const BANDS: readonly { reach: number; points: number; tone: [PaletteKey, PaletteKey] }[] = [
   { reach: 19.5, points: 2, tone: ['calm', 'onCalm'] },
@@ -33,7 +33,7 @@ const LABEL_RING = SPACING[6] + SPACING[6] / 2;
 
 // The width of the column the dials sit in (DialWidth): a dial narrower than its column lets its two
 // ends use the column's width, so a long end ("Kullanışsız") is never broken mid-word.
-export const DialColumnContext = createContext<number | null>(null);
+const DialColumnContext = createContext<number | null>(null);
 
 const clamp = (v: number) => Math.max(NEEDLE_MIN, Math.min(NEEDLE_MAX, Math.round(v)));
 // 0 → pointing left, 50 → up, 100 → right; degrees clockwise from up for RN's rotate.
@@ -62,7 +62,7 @@ type DialProps = {
 };
 
 // The half dial with its two ends.
-export function Dial({
+function Dial({
   width,
   left,
   right,
