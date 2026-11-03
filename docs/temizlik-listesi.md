@@ -6,6 +6,8 @@ Kod temizliği denetimi: eski sürümlerden kalan ve artık kullanılmayan her �
 
 **Güven.** **kesin**: hiçbir yerde referansı yok (yorum ve belge dışında), dinamik yol da yok. **büyük olasılık**: tam yolu hiçbir yerde geçmiyor ama adı başka bir yerde geçiyor ya da başka bir yolla okunabilir. **belirsiz**: bugün kullanılmıyor ama ürün belgesi geri geleceğini söylüyor ya da eski istemci uyumluluğu var.
 
+**Durum (3 Kasım):** A1 #405, A2 #407, A3 #409 ve A4 (bu belgenin düzeltmeleri) uygulandı; #406 ile A1 arasındaki `VenueTags` kırığı #408'de düzeldi. B, C ve D açık.
+
 **Proje sahibinin kararı** ile işaretlenenler değişmez kurala dokunuyor, ürün belgesiyle çelişiyor ya da üretimi etkiliyor.
 
 ---

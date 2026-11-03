@@ -284,7 +284,7 @@ Amaç: kamerada konum etiketi açıkken çekilen fotoğrafın konum bilgisi olma
 
 ## L1. "Masanı lobiye aç" ve "Bu masadayım" (A, C) [P0]
 
-> Otomatik: lobiye açma, niyet ve oyun etiketi, masa kartı "Lobide açık" (`04-room-tabu.yaml`, `open-lobby-accept.yaml`); "Bu masadayım" (`13-teams.yaml`). Elle: kadının anonim seçimi, belirtmeyenin önizlemesi.
+> Otomatik: lobiye açma, niyet ve oyun etiketi, masa kartı "Lobide açık" (`04-room-tabu.yaml` (kalktı), `open-lobby-accept.yaml` (kalktı)); "Bu masadayım" (`13-teams.yaml` (kalktı)). Elle: kadının anonim seçimi, belirtmeyenin önizlemesi.
 
 1. A: masa kartında **Lobiye aç**. Alt sayfada niyet (**Etiket yok** / Oyun / Sohbet), oyun etiketi (**Fark etmez** / altı oyun) ve **"Bu masada nasıl görüneceksin?"**: **Anonim** seçili, **Profilimle** fotoğrafsız olduğu için kesik çizgili ve seçilemez, altında "Profilinle görünmek için profil fotoğrafı gerekiyor." Niyet **Oyun**, oyun etiketi **Kapsül Anlat** → **Lobiye aç**.
 2. C: lobide (**Açık masalar**) A'nın kartı. **Bu masadayım** → alt sayfa: C için seçim **yok**, **"Masada böyle görüneceksin"** önizlemesi (C'nin adı, yaşı, fotoğrafı) ve "Masadakiler, masa sürerken profilini görür." → **İsteği gönder**.
@@ -302,7 +302,7 @@ Amaç: kamerada konum etiketi açıkken çekilen fotoğrafın konum bilgisi olma
 
 ## L2. İkinci masa lobide, "Bu masadayım" (B, D) [P0]
 
-> Otomatik: kısmen (`13-teams.yaml`). Elle: erkeğin önizlemesi ve fotoğraf şartı, kadının anonim seçimi.
+> Otomatik: kısmen (`13-teams.yaml` (kalktı)). Elle: erkeğin önizlemesi ve fotoğraf şartı, kadının anonim seçimi.
 
 1. B: **Masanı lobiye aç**. B için seçim **yok**: **"Masada böyle görüneceksin"** önizlemesi, "Profilinle" etiketi, B'nin adı, yaşı, fotoğrafı ve "Lobide yalnızca masa adın görünür. Masadakiler, masa sürerken profilini görür." Niyet **Etiket yok** → **Lobiye aç**.
 2. (P1, ayrı denemede) B'nin fotoğrafı yokken aynı alt sayfa: önizlemede fotoğraf yerinde kamera, "Masanı lobiye açmak için profil fotoğrafı gerekiyor." ve **Fotoğraf ekle**; **Lobiye aç** basılamaz.
@@ -315,7 +315,7 @@ Amaç: kamerada konum etiketi açıkken çekilen fotoğrafın konum bilgisi olma
 
 ## L3. "Katıl": istek kartında profil, kabul (B → A) [P0]
 
-> Otomatik: botun isteği ve kabul (`open-lobby-accept.yaml`). Elle: profilli istek kartı, bekleyen masanın kapanması ve üyenin taşınması.
+> Otomatik: botun isteği ve kabul (`open-lobby-accept.yaml` (kalktı)). Elle: profilli istek kartı, bekleyen masanın kapanması ve üyenin taşınması.
 
 B'nin masası lobide bekliyor (L2); masası lobide bekleyen lider de başka bir masaya **Katıl** isteği gönderebilir (§23.C).
 
@@ -331,7 +331,7 @@ B'nin masası lobide bekliyor (L2); masası lobide bekleyen lider de başka bir 
 
 ## L4. Kabul buluşmadır: durum satırları ve bulma gözlemi (A–D) [P0]
 
-> Otomatik: "… geliyor" satırı ve kartın başından masaya geçiş (`open-lobby-accept.yaml`). Elle: masaların birbirini bulması.
+> Otomatik: "… geliyor" satırı ve kartın başından masaya geçiş (`open-lobby-accept.yaml` (kalktı)). Elle: masaların birbirini bulması.
 
 1. Kabulden hemen sonra dört telefonun **mekan ekranındaki masa kartına** bak.
 2. B ve D masalarından kalkıp A'nın masasını bulur. **Bulma gözlemi tablosuna** 1. satırı yaz.
@@ -348,7 +348,7 @@ B'nin masası lobide bekliyor (L2); masası lobide bekleyen lider de başka bir 
 
 ## L5. Birleşik masa (A–D) [P0]
 
-> Otomatik: şerit ve sekmeler, okunmamış noktası (`04-room-tabu.yaml`, `13-teams.yaml`).
+> Otomatik: şerit ve sekmeler, okunmamış noktası (`04-room-tabu.yaml` (kalktı), `13-teams.yaml` (kalktı)).
 
 1. Dört telefon birleşik masada.
 2. Üstte **"Masadakiler · 4"** şeridi; **Tümü** → Masadakiler sayfası.
@@ -365,7 +365,7 @@ B'nin masası lobide bekliyor (L2); masası lobide bekleyen lider de başka bir 
 
 ## T1. Oyun önerisi ve başlatma (takımlarla) [P0]
 
-> Otomatik: botun önerisini kabul, kapalı kart, Pas, tur geçişi ve hakemlik (`04-room-tabu.yaml`, `13-teams.yaml`). Elle: sesli oyun, aynı anda basma, T4 gecikmesi, 6 tur.
+> Otomatik: botun önerisini kabul, kapalı kart, Pas, tur geçişi ve hakemlik (`04-room-tabu.yaml` (kalktı), `13-teams.yaml` (kalktı)). Elle: sesli oyun, aynı anda basma, T4 gecikmesi, 6 tur.
 
 L5'teki masada devam.
 
@@ -429,7 +429,7 @@ Basan telefon: anında / gecikmeli
 
 ## E1. Masa sonu: çift başına "Arkadaş ekle" (A–D) [P0]
 
-> Otomatik: masa sonunda "Arkadaş ekle", "Sen bastın", iki taraf basınca "Arkadaş oldunuz · Mesajlaş" (`05-table-end-friend-dm.yaml`); karşı tarafın iki telefonu listede (`13-teams.yaml`). Elle: bir taraf basınca diğerinde hiçbir şeyin değişmemesi.
+> Otomatik: masa sonunda "Arkadaş ekle", "Sen bastın", iki taraf basınca "Arkadaş oldunuz · Mesajlaş" (`05-table-end-friend-dm.yaml`); karşı tarafın iki telefonu listede (`13-teams.yaml` (kalktı)). Elle: bir taraf basınca diğerinde hiçbir şeyin değişmemesi.
 
 Masa T1–T5 boyunca 3 dakikayı geçti.
 
@@ -504,7 +504,7 @@ Masa telefon cepteyken kapanırsa masa sonu ekranı hiç görülmeyebilir; aynı
 
 ## S2. Liderlik devri (A–D) [P1]
 
-> Otomatik: lider çıkar, cihaz lider olur ve masayı bitirir (`13-teams.yaml`).
+> Otomatik: lider çıkar, cihaz lider olur ve masayı bitirir (`13-teams.yaml` (kalktı)).
 
 1. A, C, B, D birleşik masada (L1–L5'in kısa hâli; bulma gözlemine satır).
 2. A: **Diğer** → "Çıkarsan liderlik ⟨C⟩'ye geçer, masa sürer." (ek takma ada uyar) → **Masadan çık** → onay.
@@ -584,7 +584,7 @@ Görünür istek yalnızca 23.3'ten önceki eski kayıtlarda ("İstek gönder") 
 
 ## T7. İş birliği modu: tek kişilik taraf (A, B) [P0]
 
-> Otomatik: bot tek kişilik masayla katılır; cihaz 1. turda anlatır, 2. turda kartı görmez (`06b-tabu-coop.yaml`).
+> Otomatik: bot tek kişilik masayla katılır; cihaz 1. turda anlatır, 2. turda kartı görmez (`06b-tabu-coop.yaml` (kalktı)).
 
 1. B: **Mekandan ayrıl**, yeniden check-in, kişi sayısı **1** → **Masayı aç**.
 2. A lobiye açar, B katılır (bulma gözlemine satır); **Kapsül Anlat öner** → **Oynayalım**.
@@ -680,7 +680,7 @@ Bu özet §23.P-2 kararına girer. "Evet" çıkarsa bulma yardımı ayrı bir i�
 
 ## Y1. Oda yükü ölçümü [P1]
 
-`docs/arsiv/ROOM_LOAD.md`: 1. bölüm (`pnpm latency`, `STEPS=room`) dev projesinde istediğin zaman; 2. bölüm testten sonra, panelde (Realtime → Reports, `scripts/latency/room-load.sql`). Testten hemen önce panel → Database → Query Performance → **Reset** ve saati not et.
+`docs/arsiv/ROOM_LOAD.md`: 1. bölüm (`pnpm latency`, `STEPS=room`) dev projesinde istediğin zaman; 2. bölüm testten sonra, panelde (Realtime → Reports, `scripts/latency/room-load.sql` (4.8a'da kalktı)). Testten hemen önce panel → Database → Query Performance → **Reset** ve saati not et.
 
 ## V11. Kapanış [P1]
 
