@@ -7,6 +7,9 @@
 -- Public like the venue row: a university's name and city are not personal data, and nothing here
 -- says who is at which campus.
 
+-- Lock order (CLAUDE.md rule 10): only the seed writes universities; no user action locks a row
+-- of it, and every read of it (explore_venues, venue_contains) is unlocked.
+
 -- universities -----------------------------------------------------------------------------------
 -- Seeded from content/venues-campus.json (`universities`). `ref` is the permanent key; a university
 -- leaving the app is set inactive, never deleted, so its campuses' rows stay valid.

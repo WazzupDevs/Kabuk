@@ -23,7 +23,7 @@ import {
   squareRing,
 } from './fixtures/venues.ts';
 import { errorBody, onboarded, PHONES } from './helpers.ts';
-import { type Client, deleteUserByPhone, invoke, sql } from './local.ts';
+import { type Client, deleteUserByPhone, invoke, sql, userIdOf } from './local.ts';
 
 const UNI = { ref: 'fixture-uni', name: 'Test Üniversitesi', city: 'Sakarya', isActive: true };
 const OFF_UNI = {
@@ -148,6 +148,17 @@ describe('universities and campuses', () => {
       .from('universities')
       .insert({ ref: 'fixture-x', name: 'X', city: 'X' });
     expect(insert.error).not.toBeNull();
+    // Update and delete are refused too (no write grant, no write policy): the row stays.
+    await client.from('universities').update({ name: 'Değişti' }).eq('ref', UNI.ref);
+    await client.from('universities').delete().eq('ref', UNI.ref);
+    const [row] = await sql<{ name: string }[]>`
+      select name from public.universities where ref = ${UNI.ref}
+    `;
+    expect(row?.name).toBe(UNI.name);
+    const [x] = await sql<{ n: number }[]>`
+      select count(*)::int as n from public.universities where ref = 'fixture-x'
+    `;
+    expect(x?.n).toBe(0);
   });
 
   it('keeps a university off every cafe (only a campus has one)', async () => {
@@ -203,14 +214,29 @@ describe('universities and campuses', () => {
     const b = await onboarded(PHONES[1]);
     expect((await checkIn(a, west.venueId, between)).status).toBe(200);
     expect((await checkIn(b, east.venueId, between)).status).toBe(200);
+    const c = await onboarded(PHONES[2]);
+    expect((await checkIn(c, west.venueId, between)).status).toBe(200);
+    // Each check-in is to the campus chosen, never to its neighbour.
+    const sessions = await sql<{ user_id: string; venue_id: string }[]>`
+      select user_id, venue_id from public.table_sessions
+      where user_id = any(${[await userIdOf(a), await userIdOf(b)]}) and status = 'active'
+    `;
+    expect(Object.fromEntries(sessions.map((r) => [r.user_id, r.venue_id]))).toEqual({
+      [await userIdOf(a)]: west.venueId,
+      [await userIdOf(b)]: east.venueId,
+    });
     const created = await invoke(a, 'rooms', { action: 'create' });
     expect(created.status, JSON.stringify(created.body)).toBe(200);
-    // B, checked in at the east campus, sees no table of the west one.
-    const lobby = await b.rpc('venue_tables', { target_venue_id: west.venueId });
-    expect(lobby.data ?? []).toEqual([]);
+    const roomId = (created.body as { roomId: string }).roomId;
+    // C, at the west campus, sees A's table; B, at the east one, sees it in neither lobby.
+    const west_ = await c.rpc('venue_tables', { target_venue_id: west.venueId });
+    expect(west_.error).toBeNull();
+    expect((west_.data ?? []).map((r) => r.room_id)).toEqual([roomId]);
+    const fromEast = await b.rpc('venue_tables', { target_venue_id: west.venueId });
+    expect((fromEast.data ?? []).map((r) => r.room_id)).not.toContain(roomId);
     const own = await b.rpc('venue_tables', { target_venue_id: east.venueId });
     expect(own.error).toBeNull();
-    expect(own.data ?? []).toEqual([]);
+    expect((own.data ?? []).map((r) => r.room_id)).not.toContain(roomId);
   });
 
   it('never stores the position: a check-in row has no coordinate column', async () => {
