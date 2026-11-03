@@ -19,6 +19,12 @@ appId: app.kabuk.mobile
 - tapOn:
     id: spot-kutuphane
 - tapOn: Bu noktadayım
+# The sheet closes and the chip at the top right carries the new spot's name.
 - extendedWaitUntil:
-    visible: 'Noktan: Kütüphane'
+    notVisible: Bu noktadayım
+    timeout: 15000
+- extendedWaitUntil:
+    visible:
+      id: change-spot
+      text: 'Kütüphane.*'
     timeout: 15000

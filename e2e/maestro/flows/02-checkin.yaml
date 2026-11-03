@@ -135,8 +135,11 @@ appId: app.kabuk.mobile
     latitude: ${OUTSIDE_LAT}
     longitude: ${OUTSIDE_LNG}
 - tapOn: Konumumu kullan
-- extendedWaitUntil:
-    visible: Kampüsün içinde görünmüyorsun. Kampüse girince tekrar dene.
+# The warning comes under the spots; on a short phone or at the largest text it is below the sheet's
+# fold, so the flow brings it into view.
+- scrollUntilVisible:
+    element: Kampüsün içinde görünmüyorsun. Kampüse girince tekrar dene.
+    direction: DOWN
     timeout: 30000
 - takeScreenshot: 08-too-far
 - setLocation:
@@ -148,7 +151,10 @@ appId: app.kabuk.mobile
     visible:
       id: table-create-open
     timeout: 15000
-- assertVisible: 'Noktan: Kantin'
+# The spot is the chip at the top right (U19: its name alone, "Noktan:" is gone).
+- assertVisible:
+    id: change-spot
+- assertVisible: Kantin
 - takeScreenshot: 11-venue
 # The top row (v45: .top): the own photo opens Profil, Mekan's tab brings it back; "Mekandan ayrıl"
 # asks first and "Vazgeç" keeps the check-in (Android may write the dialog's buttons in capitals).
