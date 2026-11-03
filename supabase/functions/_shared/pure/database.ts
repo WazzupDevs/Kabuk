@@ -2240,15 +2240,6 @@ export type Database = {
           venue_name: string;
         }[];
       };
-      nearby_venues: {
-        Args: { lat: number; lng: number };
-        Returns: {
-          distance_m: number;
-          district: string;
-          id: string;
-          name: string;
-        }[];
-      };
       profile_view: {
         Args: { target_public_id: string; viewer: string };
         Returns: {
@@ -3725,10 +3716,6 @@ export type Database = {
           tolerance_m: number;
         };
         Returns: boolean;
-      };
-      venue_distance_m: {
-        Args: { lat: number; lng: number; target_venue_id: string };
-        Returns: number;
       };
       venue_tables: {
         Args: { target_venue_id: string };
