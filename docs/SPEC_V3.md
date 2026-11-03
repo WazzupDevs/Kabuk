@@ -209,7 +209,7 @@ Adım 1'in parçası, OTA'dan önce:
 ### 4.2 Check-in: sınır ya da yarıçap
 
 - `venues.boundary geography(Polygon, 4326) null` eklenir.
-- **`venue_contains(venue_id, lat, lng, tolerance_m, radius_m)`** yalnızca service role'e açıktır ve aynı çağrıda koordinatı saklamadan karar verir (_adım 2 notu:_ `public` şemasında, `venue_distance_m` gibi: Edge Function'lar RPC'yi yalnızca açık şemadan çağırabilir; `authenticated`'a kapalıdır, testle korunur):
+- **`venue_contains(venue_id, lat, lng, tolerance_m, radius_m)`** yalnızca service role'e açıktır ve aynı çağrıda koordinatı saklamadan karar verir (_adım 2 notu:_ `public` şemasında: Edge Function'lar RPC'yi yalnızca açık şemadan çağırabilir; `authenticated`'a kapalıdır, testle korunur):
   - Sınırı olan mekanda sınıra **50 m tolerans**: `ST_DWithin(boundary, point, tolerance_m)`. Bina içinde GPS 30–50 m sapabildiği için (proje sahibi düzeltmesi).
   - Sınırı olmayan mekanda bugünkü 300 m (`radius_m`).
   - Tolerans tek sabittir: `pure/checkin.ts` → `BOUNDARY_TOLERANCE_M = 50`. Fonksiyon onu (ve `CHECKIN_RADIUS_M`'yi) parametre olarak alır; SQL'de sayı yazılmaz.
