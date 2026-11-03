@@ -674,8 +674,6 @@ export const tr = {
       'Fotoğrafın şikayetler nedeniyle gizlendi; kimse göremiyor. Yeni bir fotoğraf yükleyebilirsin.',
     photoPermission: 'Fotoğraf seçmek için izin gerekiyor. İzni ayarlardan verebilirsin.',
     photoInvalid: 'Bu fotoğraf kullanılamadı. Başka bir fotoğraf dene.',
-    noBadges: 'Oynadıkça rozet kazanırsın.',
-    badgeLocked: (name: string) => `${name}, henüz kazanılmadı`,
     badges: {
       first_game: 'İlk oyun',
       ten_games: '10 oyun',
