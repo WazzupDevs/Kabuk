@@ -23,6 +23,14 @@ describe('logo colours', () => {
     expect(THEME.palettes.light.overlap).toBe(BRAND.orange);
     expect(THEME.palettes.dark.overlap).toBe(BRAND.white);
   });
+
+  // Aura v78 (the owner's call, 3 Kasım): the wordmark's l capsules, green back and pink front.
+  it('give the wordmark its v78 capsules', () => {
+    expect(THEME.palettes.light.logoA).toBe('#0E8745');
+    expect(THEME.palettes.dark.logoA).toBe('#3DDC84');
+    expect(THEME.palettes.light.logoB).toBe('#FF3478');
+    expect(THEME.palettes.dark.logoB).toBe('#FF3478');
+  });
 });
 
 describe('table avatar', () => {

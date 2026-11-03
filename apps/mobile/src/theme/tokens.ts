@@ -54,6 +54,10 @@ export type Palette = {
   featureMuted: string;
   // Where the two capsules of the mark meet: orange in the light scheme, white in the dark one.
   overlap: string;
+  // The wordmark's two l capsules (Aura v78 `--logo-a` back, `--logo-b` front; the owner's call,
+  // 3 Kasım): green and pink like the app icon. The mark, the loaders and the launch keep BRAND.
+  logoA: string;
+  logoB: string;
   // The focus ring (the code box that takes the next digit).
   focus: string;
   // skall tuvali (docs/design/sistem/skall.css): the filled action colour (`--primary`) apart from
@@ -110,6 +114,8 @@ export const PALETTE_KEYS = [
   'onFeature',
   'featureMuted',
   'overlap',
+  'logoA',
+  'logoB',
   'focus',
   'primary',
   'onPrimary',

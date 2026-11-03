@@ -41,6 +41,8 @@ const COLORS = [
   'on-feature',
   'feature-muted',
   'overlap',
+  'logo-a',
+  'logo-b',
   'focus',
   'primary',
   'on-primary',

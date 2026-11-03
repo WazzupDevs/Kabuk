@@ -4,6 +4,7 @@ import { APP_NAME } from '@shared/brand.ts';
 
 import { BRAND } from '@/theme/brand';
 import { SKA, WORDMARK_BOX as BOX, WORDMARK_L as L } from '@/theme/wordmark';
+import { THEME } from '@/theme/theme';
 import { useTheme } from '@/theme/ThemeProvider';
 
 // Smallest height; below it the l pills lose their overlap.
@@ -23,6 +24,8 @@ export function Wordmark({ height, onInk }: Props) {
   const h = Math.max(height, WORDMARK_MIN_HEIGHT);
   const ink = onInk ? BRAND.white : colors.text;
   const overlap = onInk ? BRAND.white : colors.overlap;
+  // Aura v78: the l capsules in the scheme's logo colours; on ink the dark scheme's.
+  const logo = onInk ? THEME.palettes.dark : colors;
   const second = { ...L, x: L.x + L.offset };
   return (
     <Svg
@@ -39,8 +42,8 @@ export function Wordmark({ height, onInk }: Props) {
         </ClipPath>
       </Defs>
       <Path d={SKA} fill={ink} />
-      <Rect x={L.x} y={L.y} width={L.w} height={L.h} rx={L.w / 2} fill={BRAND.purple} />
-      <Rect x={second.x} y={second.y} width={L.w} height={L.h} rx={L.w / 2} fill={BRAND.pink} />
+      <Rect x={L.x} y={L.y} width={L.w} height={L.h} rx={L.w / 2} fill={logo.logoA} />
+      <Rect x={second.x} y={second.y} width={L.w} height={L.h} rx={L.w / 2} fill={logo.logoB} />
       <Rect
         x={second.x}
         y={second.y}
