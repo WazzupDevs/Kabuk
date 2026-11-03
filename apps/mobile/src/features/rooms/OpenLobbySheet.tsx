@@ -1,13 +1,10 @@
-import { CONCEPTS, type Concept, type Intent, INTENTS } from '@shared/rooms.ts';
+import { type Concept, type Intent } from '@shared/rooms.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { View } from 'react-native';
 
-import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
-import { Chips } from '@/components/Chips';
+import { Btn, T } from '@/aura/kit';
 import { Sheet } from '@/components/Sheet';
-import { Text } from '@/components/Text';
 import { registerForPush } from '@/features/push/push';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -15,11 +12,10 @@ import { track } from '@/lib/analytics';
 import { roomsApi } from '@/lib/api';
 import { haptic } from '@/lib/haptics';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { KIT } from '@/theme/auraKit';
 
+import { LobbyChoices } from './LobbyChoices';
 import { roomKeys } from './queries';
-
-type IntentChoice = Intent | 'none';
-type TagChoice = Concept | 'none';
 
 type Props = {
   onClose: () => void;
@@ -34,7 +30,7 @@ type Props = {
 
 // "Masanı lobiye aç" (v46 data-lsheet; docs/SPEC_V4.md §4.E): the owner's table goes into the
 // venue's lobby with an optional intent and an optional game tag that only the lobby shows
-// ("Fark etmez": none). The person sits with the check-in's identity (§4.D), so there is no
+// (none chosen: no tag). The person sits with the check-in's identity (§4.D), so there is no
 // anonymous or profiled choice here. The sheet closes on Mekan, whose card then says "Lobide açık".
 export function OpenLobbySheet({
   onClose,
@@ -45,7 +41,7 @@ export function OpenLobbySheet({
   gameTag,
 }: Props) {
   const queryClient = useQueryClient();
-  const [intent, setIntent] = useState<Intent | null>(initialIntent ?? null);
+  const [intent, setIntent] = useState<Intent | null>(initialIntent ?? (gameTag ? 'game' : null));
   const [tag, setTag] = useState<Concept | null>(gameTag ?? null);
 
   const open = useMutation({
@@ -70,58 +66,40 @@ export function OpenLobbySheet({
   });
 
   return (
-    <Sheet visible onClose={onClose} title={tr.rooms.newTitle}>
-      <Text variant="fine">{tr.rooms.newHint}</Text>
-      {/* skall tuvali (MasaLobiyeAc): both choices in one soft card, as chips. */}
-      <Card tone="note">
-        <View className="gap-2">
-          <Text variant="label">{tr.rooms.intentLabel}</Text>
-          <Chips<IntentChoice>
-            wrap
-            accessibilityLabel={tr.rooms.intentLabel}
-            value={intent ?? 'none'}
-            onChange={(v) => setIntent(v === 'none' ? null : v)}
-            options={[
-              { value: 'none', label: tr.rooms.intentNone, testID: 'intent-none' },
-              ...INTENTS.map((i) => ({ value: i, label: tr.intents[i], testID: `intent-${i}` })),
-            ]}
+    <Sheet
+      visible
+      onClose={onClose}
+      title={tr.rooms.newTitle}
+      footer={
+        // "Lobiye aç" at the sheet's foot, whatever the chips' height (K4); "Vazgeç" small under it:
+        // a press outside and a swipe down close the sheet as well (15.4).
+        <View style={{ gap: KIT.size.rowGap }}>
+          {open.isError ? (
+            <T v="fine" color={KIT.danger} accessibilityLiveRegion="polite">
+              {errorMessage(open.error)}
+            </T>
+          ) : null}
+          <Btn
+            block
+            icon="list"
+            testID="lobby-confirm"
+            label={tr.venue.openLobby}
+            onPress={() => open.mutate()}
+            loading={open.isPending}
           />
-          {intent ? <Text variant="fine">{tr.rooms.intentHint[intent]}</Text> : null}
-          <Text variant="label" className="mt-2">
-            {tr.rooms.gameTagLabel}
-          </Text>
-          <Chips<TagChoice>
-            wrap
-            accessibilityLabel={tr.rooms.gameTagLabel}
-            value={tag ?? 'none'}
-            onChange={(v) => setTag(v === 'none' ? null : v)}
-            options={[
-              { value: 'none', label: tr.rooms.gameTagNone, testID: 'game-tag-none' },
-              ...CONCEPTS.map((c) => ({
-                value: c,
-                label: tr.concepts[c],
-                testID: `game-tag-${c}`,
-              })),
-            ]}
+          <Btn
+            sm
+            variant="glassy"
+            label={tr.common.cancel}
+            onPress={onClose}
+            style={{ alignSelf: 'center' }}
           />
-          <Text variant="fine">{tr.rooms.gameTagHint}</Text>
         </View>
-      </Card>
-      {open.isError ? (
-        <Text variant="fine" tone="danger">
-          {errorMessage(open.error)}
-        </Text>
-      ) : null}
-      <View className="gap-2.5">
-        <Button
-          size="lg"
-          icon="megaphone-outline"
-          testID="lobby-confirm"
-          label={tr.venue.openLobby}
-          onPress={() => open.mutate()}
-          loading={open.isPending}
-        />
-        <Button size="lg" variant="neutral" label={tr.common.cancel} onPress={onClose} />
+      }
+    >
+      <View style={{ gap: KIT.size.sheetGap }}>
+        <T v="fine">{tr.rooms.newHint}</T>
+        <LobbyChoices intent={intent} tag={tag} onIntent={setIntent} onTag={setTag} />
       </View>
     </Sheet>
   );

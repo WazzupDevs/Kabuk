@@ -1,4 +1,5 @@
 import { isIntent } from '@shared/rooms.ts';
+import { MAX_TABLE_PHONES } from '@shared/tables.ts';
 import { gameTag, type TableState } from '@shared/tableCard.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
@@ -38,7 +39,7 @@ type Props = {
 
 // The person's table at the top of Mekan. Without one: the riso "Henüz masan yok" scene (U19).
 // With one (U20, MekanMasali): its wide riso card on glass, "Masan" and its name on dark glass at the
-// picture's bottom left, the people's faces at its bottom right; the picture opens the table. Under
+// picture's top left, the people's faces along its bottom; the picture opens the table. Under
 // it the headcount and the lobby state; the owner gets "Lobiye aç" or "Lobiden çek" and "Davet et",
 // side by side (docs/SPEC_V4.md §4.E).
 export function TableCard({ checkIn, room, state, onCreate, onOpenLobby }: Props) {
@@ -66,6 +67,8 @@ export function TableCard({ checkIn, room, state, onCreate, onOpenLobby }: Props
   const tag = gameTag(room.game_tag);
   const owner = state === 'private' || state === 'open';
   const live = state === 'open';
+  // A full table invites no one: "Davet et" is passive and the card says why (7.4).
+  const full = room.phones >= MAX_TABLE_PHONES;
   const picture = room.icon ? TABLE_CARD_WIDE[room.icon] : undefined;
   const k = KIT.tableCard;
   return (
@@ -100,6 +103,19 @@ export function TableCard({ checkIn, room, state, onCreate, onOpenLobby }: Props
                 style={PICTURE_FILL}
               />
             ) : null}
+            {/* The name glass at the top left, the faces along the bottom on the whole width (the
+                owner's call, 2 Kasım, 7.7). */}
+            <View
+              style={{
+                position: 'absolute',
+                left: k.inset,
+                top: k.inset,
+                right: k.inset,
+                flexDirection: 'row',
+              }}
+            >
+              <NameGlass picture={picture} width={width} name={room.name ?? ''} />
+            </View>
             <View
               style={{
                 position: 'absolute',
@@ -107,11 +123,8 @@ export function TableCard({ checkIn, room, state, onCreate, onOpenLobby }: Props
                 right: k.inset,
                 bottom: k.inset,
                 flexDirection: 'row',
-                alignItems: 'flex-end',
-                gap: k.inset,
               }}
             >
-              <NameGlass picture={picture} width={width} name={room.name ?? ''} />
               <PeopleFaces roomId={room.id} phones={room.phones} me={checkIn.id} />
             </View>
           </View>
@@ -178,10 +191,16 @@ export function TableCard({ checkIn, room, state, onCreate, onOpenLobby }: Props
               icon="invite"
               testID="invite-open"
               label={tr.venue.invite}
+              disabled={full}
               onPress={() => setInvite(true)}
               style={EQUAL}
             />
           </View>
+        ) : null}
+        {owner && full ? (
+          <T v="fine" testID="table-full">
+            {tr.invite.full}
+          </T>
         ) : null}
 
         {withdraw.error ? (
@@ -209,9 +228,10 @@ const EQUAL = { flex: 1 };
 // The faces overlap a little, each on a white ring.
 const FACE_OVERLAP = 8;
 
-// "Masan" and the table's name on dark glass at the card's bottom left (MekanMasali `.mname`). The
-// glass's blur is the card's own picture blurred once and laid under the tint at the same place
-// (the card's bottom edge 12 below the glass's): no live backdrop inside a card.
+// "Masan" and the table's name on dark glass at the card's top left (MekanMasali `.mname`; moved up
+// by the owner's call, 2 Kasım). The glass's blur is the card's own picture blurred once and laid
+// under the tint at the same place (the card's top edge `inset` above the glass's): no live
+// backdrop inside a card.
 function NameGlass({
   picture,
   width,
@@ -238,7 +258,7 @@ function NameGlass({
           style={{
             position: 'absolute',
             left: -inset,
-            bottom: -inset,
+            top: -inset,
             width,
             height: KIT.tableCard.height,
           }}
@@ -280,7 +300,7 @@ function PeopleFaces({ roomId, phones, me }: { roomId: string; phones: number; m
   const shadowOff = useLabOff('golge');
   const sorted = [...(people.data ?? [])].sort((a, b) => a.joinedAt.localeCompare(b.joinedAt));
   if (sorted.length === 0) return null;
-  // All of them beside the name glass, whatever their number (the owner's report, 29 Ekim: twelve
+  // All of them along the picture's bottom, whatever their number (the owner's report, 29 Ekim: twelve
   // ran off the card): they overlap more when they must.
   const side = KIT.size.av.sm + 2 * KIT.size.avRing;
   // Each face's soft shadow natively (NativeShadow.tsx): the lobby scrolls.

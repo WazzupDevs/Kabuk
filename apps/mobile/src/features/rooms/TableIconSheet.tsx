@@ -2,13 +2,13 @@ import { TABLE_ICON_THEMES, TABLE_ICONS } from '@shared/tableIcons.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 
-import { Button } from '@/components/Button';
+import { Btn, T } from '@/aura/kit';
 import { Sheet } from '@/components/Sheet';
-import { Text } from '@/components/Text';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { roomsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { KIT } from '@/theme/auraKit';
 
 import { IconPicker } from './CreateTableSheet';
 import { roomKeys, useVenueTables } from './queries';
@@ -54,7 +54,15 @@ export function TableIconSheet({
   });
   const shown = change.isPending ? (change.variables ?? icon) : icon;
   return (
-    <Sheet visible={visible} onClose={onClose} title={tr.createTable.iconLabel}>
+    <Sheet
+      visible={visible}
+      onClose={onClose}
+      title={tr.createTable.iconLabel}
+      // "Tamam" at the foot, under the icons however many (K4, X3).
+      footer={
+        <Btn block label={tr.createTable.iconDone} loading={change.isPending} onPress={onClose} />
+      }
+    >
       <IconPicker
         theme={theme}
         onTheme={setTheme}
@@ -63,16 +71,10 @@ export function TableIconSheet({
         onSelect={(next) => next !== icon && change.mutate(next)}
       />
       {change.isError ? (
-        <Text variant="fine" tone="danger">
+        <T v="fine" color={KIT.danger}>
           {errorMessage(change.error)}
-        </Text>
+        </T>
       ) : null}
-      <Button
-        size="lg"
-        label={tr.createTable.iconDone}
-        loading={change.isPending}
-        onPress={onClose}
-      />
     </Sheet>
   );
 }
