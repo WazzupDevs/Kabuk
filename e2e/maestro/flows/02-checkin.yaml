@@ -61,8 +61,10 @@ appId: app.kabuk.mobile
     id: place-city-İstanbul
 - tapOn:
     id: place-show
-- assertVisible:
-    id: tab-explore
+- extendedWaitUntil:
+    visible:
+      id: tab-explore
+    timeout: 10000
     label: tab bar 3/4
 # The map: GL layers under the header (the header and the switch stay on top), opening on the
 # venues. Pins are GL, not views, so the screenshot is the check; it waits until the map has drawn
@@ -77,8 +79,10 @@ appId: app.kabuk.mobile
     id: explore-head
 - assertVisible: Liste
 - takeScreenshot: 05b-explore-map
-- assertVisible:
-    id: tab-explore
+- extendedWaitUntil:
+    visible:
+      id: tab-explore
+    timeout: 10000
     label: tab bar 4/4
 # Symbol layers (the kind glyph inside each pin, cluster counts) load their images and glyphs after
 # the first full render: a second screenshot a few seconds later shows them.
@@ -88,6 +92,11 @@ appId: app.kabuk.mobile
 # screen ends without a black strip (0.6.0: the map left the app's window translucent and a black
 # strip stayed over the navigation bar on every later screen; the bot reads the screen's pixels).
 # Back on Keşfet the map is still open.
+- extendedWaitUntil:
+    visible:
+      id: tab-activities
+    timeout: 10000
+    label: tab bar over the map
 - tapOn:
     id: tab-activities
 - extendedWaitUntil:

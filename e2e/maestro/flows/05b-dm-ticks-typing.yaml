@@ -100,8 +100,9 @@ appId: app.kabuk.mobile
 - hideKeyboard
 - tapOn:
     id: dm-send
+# A reply reads as its quote, then its words (ChatBubble's label): matched at the end.
 - extendedWaitUntil:
-    visible: Harika
+    visible: '.*Harika'
     timeout: 10000
 - runScript:
     file: ../scripts/bot.js
@@ -158,7 +159,7 @@ appId: app.kabuk.mobile
 - tapOn:
     id: inbox-Bot Masa
 - extendedWaitUntil:
-    visible: Harika
+    visible: '.*Harika'
     timeout: 15000
 - takeScreenshot: 27i-dm-reopened
 - tapOn:
