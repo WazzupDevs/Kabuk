@@ -17,7 +17,20 @@ export function LegalText({ title, body }: { title: string; body: string }) {
       top={<PageTop title={title} sub={tr.legal.draftNotice} />}
       footer={
         <View>
-          <RisoKanki place={LEGAL_PEEK} scale={1} shadow={false} />
+          {/* Cut at the button's foot: only the part over it and behind it shows (ui 6.1). */}
+          <View
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: LEGAL_PEEK.top,
+              bottom: 0,
+              overflow: 'hidden',
+            }}
+          >
+            <RisoKanki place={{ ...LEGAL_PEEK, top: 0 }} scale={1} shadow={false} />
+          </View>
           <Btn block variant="glassy" label={tr.common.continue} onPress={() => router.back()} />
         </View>
       }

@@ -7,6 +7,9 @@ import { useReduceMotion } from '@/lib/useReduceMotion';
 import { AURA, MOTION } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
 import {
+  CHECKIN_KANKI,
+  CHECKIN_PEEK_FRAME,
+  CHECKIN_PEEK_UP,
   KANKI_FRAME_WIDTH,
   KANKI_PEEK,
   type KankiPlace,
@@ -31,6 +34,12 @@ export type PeekKind = Exclude<keyof typeof AURA.peek, 'up' | 'height'>;
 export function Peek({ kind, delay = 0, fit }: { kind: PeekKind; delay?: number; fit?: boolean }) {
   if (kind === 'notifications') return <RisoPeek />;
   if (kind === 'request') return <RisoStrip places={REQUEST_KANKI} frame={REQUEST_PEEK_FRAME} />;
+  // ui 5.1: the check-in sheet's buddies are riso pictures, the strip scaled to the sheet.
+  if (kind === 'checkin') {
+    return (
+      <RisoStrip places={CHECKIN_KANKI} frame={CHECKIN_PEEK_FRAME} up={CHECKIN_PEEK_UP} scaled />
+    );
+  }
   return <BuddyPeek kind={kind} delay={delay} fit={fit} />;
 }
 
@@ -218,13 +227,19 @@ function RisoStrip({
   places,
   frame,
   deep,
+  up = KANKI_PEEK.up,
+  scaled,
 }: {
   places: readonly KankiPlace[];
   frame: number;
   deep?: boolean;
+  // How far the strip stands over the edge; `scaled` scales it with the card.
+  up?: number;
+  scaled?: boolean;
 }) {
   const [width, setWidth] = useState(0);
   const k = width / frame;
+  const rise = scaled && width > 0 ? up * k : up;
   return (
     <View
       pointerEvents="none"
@@ -233,8 +248,8 @@ function RisoStrip({
         position: 'absolute',
         left: 0,
         right: 0,
-        top: -KANKI_PEEK.up - STRIP_OVER,
-        height: (deep ? KANKI_PEEK.height : KANKI_PEEK.up) + STRIP_OVER,
+        top: -rise - STRIP_OVER,
+        height: (deep ? KANKI_PEEK.height : rise) + STRIP_OVER,
         overflow: 'hidden',
       }}
     >

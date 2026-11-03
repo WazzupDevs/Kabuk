@@ -6,7 +6,10 @@ import { gradientStyle } from '@/theme/gradient';
 import { floorCss, sceneCss } from '@/theme/sceneGradient';
 import { useTheme } from '@/theme/ThemeProvider';
 
+import { RISO_ASPECT, type KankiId } from '@/theme/kankiMotion';
+
 import { Buddy } from './Buddy';
+import { RisoKanki } from './RisoKanki';
 
 // A scene's ground (docs/design/aura/project/aura.css → `.scene`, `.floor`): violet to pink, two
 // soft glows at the top and a white floor glow at the bottom where buddies stand. Fills its parent;
@@ -73,11 +76,26 @@ export function Gathering({
 }) {
   const g = AURA.gatherings[kind];
   const k = width / g.frame;
-  const place = (c: (typeof g.cast)[number], i: number) => (
-    <View key={c.look + i} style={{ position: 'absolute', left: c.x * k, bottom: c.bottom * k }}>
-      <Buddy look={c.look} height={c.height * k} delay={delay + i * 80} phase={i * 530} />
-    </View>
-  );
+  const place = (c: (typeof g.cast)[number], i: number) => {
+    const riso: KankiId | undefined = 'riso' in c ? c.riso : undefined;
+    return riso ? (
+      <RisoKanki
+        key={c.look + i}
+        place={{
+          id: riso,
+          left: c.x,
+          bottom: c.bottom,
+          width: c.height * RISO_ASPECT,
+          height: c.height,
+        }}
+        scale={k}
+      />
+    ) : (
+      <View key={c.look + i} style={{ position: 'absolute', left: c.x * k, bottom: c.bottom * k }}>
+        <Buddy look={c.look} height={c.height * k} delay={delay + i * 80} phase={i * 530} />
+      </View>
+    );
+  };
   const behind = g.cast.filter((c) => 'behind' in c && c.behind);
   const front = g.cast.filter((c) => !('behind' in c && c.behind));
   return (
