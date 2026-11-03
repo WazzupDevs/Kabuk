@@ -73,23 +73,7 @@ function errorBody(code: string) {
   return { error: { code, message: expect.any(String) } };
 }
 
-describe('nearby_venues', () => {
-  it('lists active venues within 300 m, nearest first', async () => {
-    const client = await signIn(PHONE_A);
-    const { data, error } = await client.rpc('nearby_venues', ANCHOR);
-    expect(error).toBeNull();
-
-    const fixtureIds = new Set(Object.values(venue));
-    const rows = (data ?? []).filter((r) => fixtureIds.has(r.id));
-    expect(rows.map((r) => r.id)).toEqual([
-      venue['at-anchor'],
-      venue.near,
-      venue.mid,
-      venue['edge-in'],
-    ]);
-    expect(rows.map((r) => Math.round(r.distance_m / 10) * 10)).toEqual([0, 120, 250, 290]);
-  });
-
+describe('venue fixtures', () => {
   it('measures the fixture distances as intended', async () => {
     const rows = await sql<{ source_ref: string; d: number }[]>`
       select source_ref,
@@ -369,11 +353,6 @@ describe('privacy', () => {
   it('keeps the server-side helpers closed to clients', async () => {
     const client = await onboarded(PHONE_A);
     const id = await userIdOf(client);
-    const distance = await client.rpc('venue_distance_m', {
-      target_venue_id: venueId('at-anchor'),
-      ...ANCHOR,
-    });
-    expect(distance.error?.code).toBe('42501');
     const contains = await client.rpc('venue_contains', {
       target_venue_id: venueId('at-anchor'),
       ...ANCHOR,
