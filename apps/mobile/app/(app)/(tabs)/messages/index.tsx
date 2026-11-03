@@ -222,7 +222,12 @@ function Chats({ now }: { now: Date }) {
   if (inbox.data.length === 0) {
     return (
       <View className="flex-1 justify-center">
-        <EmptyState kind="empty" title={tr.messages.empty} body={tr.messages.emptyHint} />
+        <EmptyState
+          kind="empty"
+          riso="chats"
+          title={tr.messages.empty}
+          body={tr.messages.emptyHint}
+        />
       </View>
     );
   }

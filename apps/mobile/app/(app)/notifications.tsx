@@ -84,7 +84,12 @@ export default function NotificationsScreen() {
   if (!items || items.length === 0) {
     return (
       <RouteSheet title={tr.notifications.title} testID="notifications" peek="notifications">
-        <EmptyState kind="empty" title={tr.notifications.empty} body={tr.notifications.emptyHint} />
+        <EmptyState
+          kind="empty"
+          riso="notifications"
+          title={tr.notifications.empty}
+          body={tr.notifications.emptyHint}
+        />
       </RouteSheet>
     );
   }

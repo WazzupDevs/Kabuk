@@ -201,7 +201,7 @@ function History({ now }: { now: number }) {
   if (history.data.length === 0) {
     return (
       <View testID="activities-no-history" className="flex-1 justify-center">
-        <EmptyState kind="empty" body={tr.friends.noHistory} />
+        <EmptyState kind="empty" riso="history" body={tr.friends.noHistory} />
       </View>
     );
   }

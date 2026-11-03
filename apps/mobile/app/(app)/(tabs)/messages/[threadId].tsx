@@ -420,7 +420,7 @@ export default function DmScreen() {
           </View>
         ) : (
           <View className="flex-1 justify-center">
-            <EmptyState kind="empty" body={tr.friends.noMessagesYet} />
+            <EmptyState kind="empty" riso="chat" compact body={tr.friends.noMessagesYet} />
           </View>
         ),
       }}

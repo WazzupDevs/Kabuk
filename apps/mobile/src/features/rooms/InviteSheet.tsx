@@ -99,7 +99,13 @@ export function InviteSheet({ visible, onClose, roomId, phones }: Props) {
             action={{ label: tr.common.retry, onPress: () => void friends.refetch() }}
           />
         ) : friends.data.length === 0 ? (
-          <EmptyState kind="empty" title={tr.invite.empty} body={tr.invite.emptyHint} />
+          <EmptyState
+            kind="empty"
+            riso="friends"
+            compact
+            title={tr.invite.empty}
+            body={tr.invite.emptyHint}
+          />
         ) : (
           <Glass sm style={{ overflow: 'hidden' }}>
             {friends.data.map((f, i) => {

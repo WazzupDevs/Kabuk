@@ -49,7 +49,7 @@ export function BlockedList() {
     );
   }
   if (blocks.data.length === 0) {
-    return <EmptyState kind="empty" body={tr.safety.blockedEmpty} />;
+    return <EmptyState kind="empty" riso="blocked" body={tr.safety.blockedEmpty} />;
   }
   return (
     <RowList inset={KIT.size.av.md + KIT.size.liGap}>
