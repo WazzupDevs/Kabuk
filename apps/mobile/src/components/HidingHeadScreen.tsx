@@ -1,5 +1,5 @@
 import { type ReactNode, useState } from 'react';
-import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
   interpolate,
@@ -12,7 +12,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AuraBackground, AuraBand } from '@/aura/AuraBackground';
+import { AuraBackground, AuraBand, useGroundSize } from '@/aura/AuraBackground';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { AURA, MOTION } from '@/theme/aura';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -49,7 +49,8 @@ const EDGE_FADE = SPACING[5];
 export function HidingHeadScreen({ bar, stay, hide, footer, lift, gap, children }: Props) {
   const { shape, scheme } = useTheme();
   const insets = useSafeAreaInsets();
-  const { height: screen } = useWindowDimensions();
+  // The ground's height, not the window's (the bands line up with it; 3 Kasım, 2.1).
+  const { height: screen } = useGroundSize();
   const reduce = useReduceMotion();
   const side = shape.screenPadding;
   // The head's full height (under the status bar), where `stay` ends in it, the foot's height.
