@@ -9,15 +9,9 @@ alter table public.venue_chat_mutes
   add column look text check (char_length(look) between 1 and 200),
   add constraint venue_chat_mutes_profiled_no_look check (not profiled or look is null);
 
--- Mutes from before this: the anonymous identity's latest look in the venue chat.
-update public.venue_chat_mutes vm
-set look = (
-  select m.sender_look from public.venue_chat_messages m
-  where m.sender_user_id = vm.muted_user_id and not m.profiled and m.sender_look is not null
-  order by m.created_at desc, m.id desc
-  limit 1
-)
-where not vm.profiled;
+-- Mutes from before this keep no look: the muter may not have seen any other look of that
+-- identity, and filling one in could tie a refreshed nick to the old one (rule 4). The app draws
+-- the label's initial for them.
 
 create or replace function public.venue_chat_mute(target_user_id uuid, target_message_id uuid)
 returns uuid
