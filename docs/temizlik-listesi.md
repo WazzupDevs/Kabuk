@@ -6,7 +6,7 @@ Kod temizliği denetimi: eski sürümlerden kalan ve artık kullanılmayan her �
 
 **Güven.** **kesin**: hiçbir yerde referansı yok (yorum ve belge dışında), dinamik yol da yok. **büyük olasılık**: tam yolu hiçbir yerde geçmiyor ama adı başka bir yerde geçiyor ya da başka bir yolla okunabilir. **belirsiz**: bugün kullanılmıyor ama ürün belgesi geri geleceğini söylüyor ya da eski istemci uyumluluğu var.
 
-**Durum (3 Kasım):** A1 #405, A2 #407, A3 #409 ve A4 (bu belgenin düzeltmeleri) uygulandı; #406 ile A1 arasındaki `VenueTags` kırığı #408'de düzeldi. B, C ve D açık.
+**Durum (3 Kasım):** A1 #405, A2 #407, A3 #409 ve A4 (bu belgenin düzeltmeleri) uygulandı; #406 ile A1 arasındaki `VenueTags` kırığı #408'de düzeldi. B doğrulandı (sonucu B bölümünün sonunda); C ve D açık.
 
 **Proje sahibinin kararı** ile işaretlenenler değişmez kurala dokunuyor, ürün belgesiyle çelişiyor ya da üretimi etkiliyor.
 
@@ -429,6 +429,20 @@ Koşmayan workflow ya da çağrılmayan betik bulunmadı.
 3. `assets/game-card/*` ve `assets/game-poster/*` (`kinshi`, `krot`, `signum`): `scripts/art/posters.ts`'in çıktı yolu okunmalı; betik yazıyorsa önce betik.
 4. `public.nearby_venues`, `public.venue_distance_m`: `check_in` ve Keşfet SQL'i bunları dolaylı çağırıyor mu.
 5. `private` şemasının fonksiyonları: bu taramada yok; ayrı bir SQL taraması (yerel Supabase'de `pg_proc` ve `pg_depend`).
+
+**B'nin sonucu (3 Kasım, Paket B).**
+
+1. §2.2'nin 84 anahtarı: hiçbirinin tam yolu (`tr.<yol>`), ön eki bütün nesne ya da dinamik erişim (`tr.<ön ek>[…]`) olarak, ne de `tr` bütün olarak uygulamada, betiklerde ve E2E'de geçmiyor. 84'ü ve boş kalan nesneleri (`app`, `home`, `activities.<oyun>`, `say.roundEnd`) silindi.
+2. Tema:
+   - `AURA[s].blobs` silindi: bulutlar `AuraBackground.tsx`'te tek resim (`assets/aura/ground-light.webp`, `scripts/aura/ground.ts` `ground.html`'den çizer, `AURA`'yı okumaz). Onunla `AuraBlob`, `cloud`, `CLOUD_BLUR`, `AURA.frame`, `AURA.blur` (okuyan yok) gitti.
+   - `card.radiusSm`, `say.buddy` silindi (okuyan yok). `AURA.table`'ın hiçbir alanı okunmuyordu (`tableTop`, `buddy` dahil), bütünü silindi.
+   - **Kalır:** `KIT.bubble[s].mekan` ve `KIT.chatShadow.mekan`: `ChatBubble.tsx` → `paint[kind]` ve `KIT.chatShadow[kind]`, `kind` `'dm' | 'mekan' | 'masa'` (`useChatKind`); tip için de gerekli.
+3. Görseller: `scripts/art/posters.ts` yalnızca `assets/game-poster/`'e yazar; `game-card/`'a yazmaz, onu okuyan da yok (yalnızca betiğin yorumu). `game-card/` (6 dosya, 260 KB) silindi. `game-poster/` için uygulama yalnızca `sprengja` ve `kaupholl`'u okur (`PosterCard.tsx`; diğerleri `assets/riso/game-*.webp`): `vampir`, `signum`, `kinshi`, `krot` silindi, betiğin `POSTERS`'ı iki postere indi, çizimleri ve ölü `bat` yardımcısı çıktı.
+4. `public.nearby_venues`, `public.venue_distance_m`: yerel DB'de hiçbir fonksiyonun gövdesi, politika, view ya da `pg_depend` kaydı bunlara bağlı değil; `check_in` `venue_contains`'i çağırır (`checkin/index.ts:103`). Yalnızca `supabase/tests/checkin.test.ts` çağırıyor; `nearby_venues` `authenticated`'a açık. Silmek migration ister: **proje sahibinin kararı** bekleniyor.
+5. `private` şemasının 141 fonksiyonundan 12'sini hiçbir şey çağırmıyor (yerel DB: başka fonksiyonun gövdesi, tetikleyici, politika, view, varsayılan, kısıt, `cron.job` ve `pg_depend`; ayrıca Edge Function, betik, test ve `config.toml` metni):
+   - **Kalır:** `before_user_created` (`config.toml` → `[auth.hook.before_user_created]`, Auth kancası).
+   - Taraf modeli (C.3 kararına bağlı): `start_voice_tabu`, `start_sahtekar`, `start_say`, `start_ibre`, `deal_sohbet`, `tabu_close_card`, `phone_side`.
+   - Eski sürümlerden kalan, silinebilir (migration; yalnızca listelendi): `end_friendship` (son çağıran `20261005090000_friends_dm.sql`'deki eski gövdeler), `end_two_sided_room(uuid)` (`20261101090000_reveal_cleanup.sql`), `owns_session` (`20260930090000_reveal.sql`'deki politika gitti; `authenticated`'a hâlâ `execute` verili), `pair_key` (`20261026090000_team_reveal.sql`).
 
 ### C. Proje sahibinin kararı
 
