@@ -63,6 +63,7 @@ appId: app.kabuk.mobile
 - scrollUntilVisible:
     element: '.*Yakında.*'
     direction: DOWN
+    visibilityPercentage: 50
     timeout: 10000
 - takeScreenshot: 13-table
 # Masadakiler from the bar (its round is called "Masadakiler" too, so the sheet is found by its
@@ -131,6 +132,7 @@ appId: app.kabuk.mobile
 - scrollUntilVisible:
     element: '.*2 kişi.*'
     direction: DOWN
+    visibilityPercentage: 50
     timeout: 10000
 - tapOn:
     id: table-scene
