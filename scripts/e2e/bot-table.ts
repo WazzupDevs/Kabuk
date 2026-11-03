@@ -480,8 +480,10 @@ export const actions: Record<string, (args: Json) => Promise<Json>> = {
 
   // The phone's screen ends without a black strip (02-checkin, on a tab after the Keşfet map: in
   // 0.6.0 the map left the app's window translucent and a black strip over the navigation bar on
-  // every later screen). adb on the machine that runs the bot, as `screen`.
-  async 'bottom-strip'() {
+  // every later screen). adb on the machine that runs the bot, as `screen`. Light scheme only: the
+  // dark ground is black itself (Aura v71 `.dark.pA`, #000000), so a strip cannot be told from it.
+  async 'bottom-strip'(args) {
+    if (args.scheme === 'dark') return { rows: 0, skipped: 'dark' };
     const sdk = process.env.ANDROID_HOME;
     const adb = sdk ? join(sdk, 'platform-tools', 'adb') : 'adb';
     const png = execFileSync(adb, ['exec-out', 'screencap', '-p'], { maxBuffer: 64 << 20 });
