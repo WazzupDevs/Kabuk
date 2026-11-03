@@ -8,50 +8,9 @@ import { BRAND } from './brand';
 
 export type AuraScheme = 'light' | 'dark';
 
-// One colour cloud: an ellipse (`w` × `h`) blurred by 64 px, placed from a corner of a 390 wide
-// screen (x scales with the width, y is from the top or the bottom). It drifts `dx`, `dy` around
-// its place, once every `ms` each way.
-export type AuraBlob = {
-  color: string;
-  w: number;
-  h: number;
-  side: 'left' | 'right';
-  x: number;
-  edge: 'top' | 'bottom';
-  y: number;
-  dx: number;
-  dy: number;
-  ms: number;
-};
-
-const CLOUD_BLUR = 64;
-
-const cloud = (
-  color: string,
-  w: number,
-  h: number,
-  side: AuraBlob['side'],
-  x: number,
-  edge: AuraBlob['edge'],
-  y: number,
-  dx: number,
-  dy: number,
-  ms: number,
-): AuraBlob => ({ color, w, h, side, x, edge, y, dx, dy, ms });
-
 export const AURA = {
-  // The width the clouds' places are measured on (the canvas's phone).
-  frame: 390,
-  blur: CLOUD_BLUR,
   light: {
     ground: '#EFF7F1',
-    blobs: [
-      cloud('rgba(18, 152, 79, 0.34)', 360, 300, 'left', -110, 'top', -70, 30, 22, 11600),
-      cloud('rgba(255, 79, 139, 0.26)', 300, 280, 'right', -120, 'top', 30, -26, 30, 14400),
-      cloud('rgba(255, 181, 71, 0.24)', 280, 210, 'left', 80, 'top', 220, 24, -18, 10400),
-      cloud('rgba(18, 152, 79, 0.18)', 420, 320, 'left', -60, 'bottom', -150, -30, 20, 17000),
-      cloud('rgba(255, 79, 139, 0.14)', 260, 260, 'right', -90, 'bottom', 120, 22, 26, 12900),
-    ],
     glass: {
       fill: 'rgba(255, 255, 255, 0.70)',
       edge: 'rgba(255, 255, 255, 0.86)',
@@ -74,7 +33,6 @@ export const AURA = {
   // shadow; the chosen tab's disc 94 % white, no shadow.
   dark: {
     ground: '#000000',
-    blobs: [] as AuraBlob[],
     glass: {
       fill: '#121614',
       edge: 'rgba(255, 255, 255, 0.09)',
@@ -92,7 +50,7 @@ export const AURA = {
     },
   },
   // Cards: a frosted pane on the clouds.
-  card: { radius: 28, radiusSm: 20, edgeWidth: 1 },
+  card: { radius: 28, edgeWidth: 1 },
   // The tab bar (Aura v65 GaleriAltMenu → Ölçüler): a glass capsule 64 high, 20 in from each side,
   // 8 inside, five 48 round tabs; the selected one sits on a disc that slides to it. Icons 24, the
   // selected one too. 12 above the bottom safe area.
@@ -248,7 +206,6 @@ export const AURA = {
   // A buddy talking in a scene under a step's field (docs/design/aura → Telefon, Kod).
   say: {
     minHeight: 168,
-    buddy: 126,
   },
   // Masa bitti's confetti (U41): 8 x 18 pieces in the accent, pink and amber, in the board's 390
   // frame (x, y, turn); 'accent' is the scheme's.
@@ -262,28 +219,6 @@ export const AURA = {
   ],
   // Game cards arrive frosted, then resolve (docs/design/aura/project/hareket.json → frostedFirst).
   frost: { fill: 'rgba(255, 255, 255, 0.86)', fillDark: 'rgba(18, 22, 20, 0.86)' },
-  // The table's scene (docs/design/aura → Masa): the table in the middle, the people around it.
-  // Seats as fractions of the scene (x of its width, y of its height), the first ones nearest the
-  // table's sides; anonymous people stand as capsule buddies, profiled ones sit as photos.
-  table: {
-    height: 212,
-    tableTop: 28,
-    ring: 4,
-    face: 48,
-    buddy: 78,
-    seats: [
-      [0.14, 0.34],
-      [0.86, 0.34],
-      [0.14, 0.78],
-      [0.86, 0.78],
-      [0.36, 0.86],
-      [0.64, 0.86],
-      [0.3, 0.12],
-      [0.7, 0.12],
-    ],
-    // Drawn at most this many; the rest as "+n".
-    max: 8,
-  },
   // The headcount as capsules (ekran.css `.pips`: --accent, --buzz, --signal first, 4 apart); at
   // most `max` drawn. Twelve colours, one a phone, so a full table never repeats one (the owner's
   // call, 2 Kasım, 7.5).

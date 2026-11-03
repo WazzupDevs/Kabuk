@@ -1,5 +1,5 @@
-// The games' posters on Masa (the owner's call, 29 Ekim): like the owner's earlier posters
-// (assets/game-card/), in the small landscape card (3 : 2, apps/mobile/assets/game-poster/<id>.webp
+// The posters of the two games on Masa that wait for their riso cover (the owner's call, 29 Ekim;
+// the others are assets/riso/game-*.webp), in the small landscape card (3 : 2, apps/mobile/assets/game-poster/<id>.webp
 // at 480 × 320), comic book style and full: an action burst and halftone in the game's colours,
 // skall's capsule buddies acting the game out, and the game's name lettered over the foot in thick
 // ink with an offset shadow (Bangers, OFL, drawn as outlines so nothing depends on a font here).
@@ -27,7 +27,7 @@ const W = 480;
 const H = 320;
 const INK = '#14112B';
 
-export const POSTERS = ['vampir', 'signum', 'kinshi', 'krot', 'sprengja', 'kaupholl'] as const;
+export const POSTERS = ['sprengja', 'kaupholl'] as const;
 type Poster = (typeof POSTERS)[number];
 
 const ink = (width = 6) =>
@@ -132,10 +132,6 @@ function sparkle(x: number, y: number, s: number, color: string): string {
   return `<path d="M${x} ${y - s}Q${x} ${y} ${x + s} ${y}Q${x} ${y} ${x} ${y + s}Q${x} ${y} ${x - s} ${y}Q${x} ${y} ${x} ${y - s}Z" fill="${color}" ${ink(2.5)}/>`;
 }
 
-function bat(x: number, y: number, s: number): string {
-  return `<path transform="translate(${x} ${y}) scale(${s})" d="M0 0c-6-8-16-10-26-6 6 2 9 6 9 11-5-3-11-3-16 1 8 1 13 6 14 12 4-6 10-9 19-7 0-4 1-7 0-11zm0 0c6-8 16-10 26-6-6 2-9 6-9 11 5-3 11-3 16 1-8 1-13 6-14 12-4-6-10-9-19-7 0-4-1-7 0-11z" fill="${INK}"/>`;
-}
-
 function bubble(
   x: number,
   y: number,
@@ -157,105 +153,6 @@ const floor = (cx: number, y: number, rx: number) =>
   `<ellipse cx="${cx}" cy="${y}" rx="${rx}" ry="12" fill="${INK}" opacity="0.32"/>`;
 
 const DRAW: Record<Poster, () => string> = {
-  vampir: () =>
-    burst('#2A1458', '#3A1C70', 330, 110) +
-    `<circle cx="380" cy="88" r="70" fill="#FFE2A8" opacity="0.18"/><circle cx="380" cy="88" r="50" fill="#FFE9BF" ${ink()}/><circle cx="366" cy="80" r="9" fill="#F0CF8A"/><circle cx="394" cy="104" r="6" fill="#F0CF8A"/>` +
-    bat(160, 70, 1) +
-    bat(450, 170, 0.7) +
-    bat(250, 40, 0.6) +
-    `<path d="M0 250L40 214L80 240L120 206L170 246V320H0Z" fill="#1E0F44"/><path d="M360 250L400 220L440 244L480 226V320H360Z" fill="#1E0F44"/>` +
-    floor(300, 236, 150) +
-    buddy(240, 236, 150, '#D9CCFF', '#A995EC', {
-      eyes: '#FF3B5C',
-      back: `<path d="M-14 70C-26 130 -30 170 -36 190H136C130 170 126 130 114 70Z" fill="#B0174F" ${ink(5)}/><path d="M6 60L-20 0L40 42Z" fill="#B0174F" ${ink(5)}/><path d="M94 60L120 0L60 42Z" fill="#B0174F" ${ink(5)}/>`,
-      over: `<path d="M8 40C10 16 28 4 50 4S90 16 92 40C80 30 64 28 50 42C36 28 20 30 8 40Z" fill="#241634" ${ink(4)}/><path d="M38 84l6 12 6-12M52 84l6 12 6-12" fill="#fff" ${ink(3)}/>`,
-      tilt: -4,
-    }) +
-    buddy(360, 240, 128, '#F5B640', '#CC8B1C', {
-      over:
-        `<ellipse cx="50" cy="14" rx="70" ry="14" fill="#E9C46A" ${ink(5)}/><path d="M18 12C20 -18 34 -30 50 -30S80 -18 82 12Z" fill="#E2B84F" ${ink(5)}/><path d="M36 88q14 10 28 0" fill="none" ${ink(4)}/>` +
-        `<path d="M118 -40V160" ${ink(10)}/><path d="M118 -40V160" stroke="#9A6532" stroke-width="5" stroke-linecap="round"/><path d="M98 -70v26q0 8 20 8t20 -8v-26M118 -70v34" fill="none" ${ink(9)}/><path d="M98 -70v26q0 8 20 8t20 -8v-26M118 -70v34" fill="none" stroke="#C9CFDA" stroke-width="4" stroke-linecap="round"/>`,
-      tilt: 5,
-    }) +
-    title(
-      [
-        { text: 'VAMPİR', size: 70 },
-        { text: 'KÖYLÜ', size: 48 },
-      ],
-      150,
-      300,
-      ['#FFFFFF', '#FFD0E0'],
-    ),
-  signum: () =>
-    burst('#101C4E', '#17286A', 240, 120) +
-    // The cards' grid on the table.
-    Array.from({ length: 15 }, (_, i) => {
-      const cx = 200 + (i % 5) * 52;
-      const cy = 150 + Math.floor(i / 5) * 30;
-      const colors = ['#FF5C8A', '#4F8DFF', '#F2F4FA', '#FF5C8A', '#4F8DFF', '#F2F4FA', '#14112B'];
-      return `<rect x="${cx}" y="${cy}" width="44" height="24" rx="5" fill="${colors[(i * 3) % colors.length]}" ${ink(3.5)} transform="skewX(-12)"/>`;
-    }).join('') +
-    floor(250, 248, 190) +
-    buddy(110, 246, 150, '#7C6BFF', '#5A49D9', {
-      over: `<rect x="10" y="40" width="80" height="26" rx="10" fill="${INK}"/><path d="M14 46h28M58 46h28" stroke="#5AD1FF" stroke-width="4" stroke-linecap="round"/><path d="M-6 16h112" ${ink(6)}/><path d="M14 14C16 -14 30 -24 50 -24S84 -14 86 14Z" fill="#3A3256" ${ink(5)}/>`,
-      face: '',
-      tilt: -3,
-    }) +
-    bubble(
-      120,
-      30,
-      120,
-      50,
-      `<rect x="140" y="47" width="54" height="16" rx="8" fill="${INK}"/><circle cx="214" cy="55" r="12" fill="#4F8DFF" ${ink(3)}/><path d="M214 49v12" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/>`,
-    ) +
-    buddy(400, 250, 140, '#FF7EA8', '#D9508A', {
-      over: `<circle cx="66" cy="54" r="15" fill="none" ${ink(4)}/><path d="M80 60l18 30" ${ink(4)}/><path d="M14 10C22 -12 78 -12 86 10Z" fill="#9A3FD6" ${ink(5)}/><circle cx="50" cy="-10" r="7" fill="#9A3FD6" ${ink(4)}/>`,
-      tilt: 4,
-    }) +
-    title([{ text: 'SIGNUM', size: 76 }], 240, 302, ['#FFFFFF', '#C9D8FF']),
-  kinshi: () =>
-    burst('#FDE7D6', '#F9D5BD', 240, 150) +
-    `<circle cx="240" cy="150" r="118" fill="#E33B3B" ${ink()}/>` +
-    `<path d="M0 260C80 240 160 268 240 252S400 236 480 256V320H0Z" fill="#2A1A4A"/><path d="M0 270q30 -12 60 0t60 0 60 0 60 0 60 0 60 0 60 0 60 0" fill="none" stroke="#4A3A7A" stroke-width="5"/>` +
-    floor(240, 250, 170) +
-    buddy(150, 248, 150, '#43C59E', '#2E9A7A', {
-      over: `<rect x="14" y="-2" width="72" height="18" rx="6" fill="#fff" ${ink(4)}/><path d="M26 7h48" stroke="#E33B3B" stroke-width="5"/><path d="M32 86q18 -10 36 0" fill="none" ${ink(4)}/>`,
-      tilt: -5,
-    }) +
-    buddy(340, 248, 132, '#F5B640', '#CC8B1C', {
-      over: `<path d="M30 84q20 14 40 0" fill="none" ${ink(4)}/><path d="M104 20l20 -12M106 40l24 0M104 60l20 12" ${ink(4)}/>`,
-      tilt: 6,
-    }) +
-    bubble(
-      186,
-      26,
-      150,
-      56,
-      `<rect x="206" y="45" width="70" height="18" rx="9" fill="${INK}"/><circle cx="306" cy="54" r="17" fill="#fff" stroke="#E33B3B" stroke-width="6"/><path d="M294 66l24 -24" stroke="#E33B3B" stroke-width="6" stroke-linecap="round"/>`,
-      'l',
-    ) +
-    // The buzzer.
-    `<ellipse cx="420" cy="232" rx="40" ry="14" fill="#5A3AE6" ${ink(5)}/><path d="M392 228a28 22 0 0 1 56 0Z" fill="#E33B3B" ${ink(5)}/>` +
-    title([{ text: 'KINSHI', size: 78 }], 210, 304, ['#FFFFFF', '#FFD0D0']),
-  krot: () =>
-    `<rect width="${W}" height="${H}" fill="#F3EAD8"/>` +
-    // The lineup wall: its height lines.
-    Array.from(
-      { length: 6 },
-      (_, i) =>
-        `<path d="M0 ${60 + i * 34}H${W}" stroke="#C9B99A" stroke-width="3"/><path d="M8 ${60 + i * 34}h22" stroke="${INK}" stroke-width="3"/>`,
-    ).join('') +
-    `<path d="M-20 0L200 0L120 110Z" fill="#E33B3B" opacity="0.9"/><path d="M500 0L320 0L400 90Z" fill="#E33B3B" opacity="0.9"/>` +
-    floor(240, 248, 220) +
-    buddy(90, 246, 124, '#9C86FF', '#7A62E0', { tilt: -2 }) +
-    buddy(190, 246, 140, '#43C59E', '#2E9A7A', { tilt: 1 }) +
-    buddy(290, 246, 132, '#4F8DFF', '#3166D0', {
-      over: `<circle cx="34" cy="54" r="16" fill="none" ${ink(4)}/><circle cx="66" cy="54" r="16" fill="none" ${ink(4)}/><path d="M50 54h0" ${ink(4)}/><path d="M6 10C14 -16 86 -16 94 10Z" fill="#8A5A2B" ${ink(5)}/><path d="M-10 12h120" ${ink(6)}/>`,
-      tilt: -2,
-    }) +
-    buddy(392, 246, 120, '#FF7EA8', '#D9508A', { tilt: 3 }) +
-    `<path d="M150 64c0-12 10-18 18-18 10 0 16 6 16 14 0 12-14 14-14 26M170 100v2" fill="none" ${ink(7)}/><path d="M340 70c0-10 8-15 15-15 8 0 13 5 13 12 0 10-12 12-12 21M356 100v2" fill="none" ${ink(6)}/>` +
-    title([{ text: 'KROT', size: 86 }], 240, 306, ['#FFFFFF', '#FFE0A0']),
   sprengja: () =>
     burst('#0E6B5C', '#138873', 240, 140) +
     `<path d="M240 40l20 50 50-30-20 50 54 8-48 26 34 40-54-16-6 54-30-44-30 44-6-54-54 16 34-40-48-26 54-8-20-50 50 30Z" fill="#FFB547" ${ink(5)}/>` +
