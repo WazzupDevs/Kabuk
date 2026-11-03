@@ -1,8 +1,12 @@
 // Calls the bot table (scripts/e2e/bot-table.ts serve) from a flow. Env: ACTION, optional BODY
-// (JSON), optional EXPECT_DM (the newest DM the bot must see), optional EXPECT_REPLY (the text that
+// (JSON), optional SCHEME (sent as {scheme} when there is no BODY), optional EXPECT_DM (the newest DM the bot must see), optional EXPECT_REPLY (the text that
 // message quotes), optional EXPECT_REACTION (an emoji among its reactions), optional BOT_PORT.
 var port = typeof BOT_PORT !== 'undefined' ? BOT_PORT : '8787';
 var body = typeof BODY !== 'undefined' ? BODY : '{}';
+// The run's scheme, for an action that reads the screen (bottom-strip).
+if (typeof BODY === 'undefined' && typeof SCHEME !== 'undefined') {
+  body = JSON.stringify({ scheme: SCHEME });
+}
 var res = http.post('http://127.0.0.1:' + port + '/' + ACTION, {
   headers: { 'Content-Type': 'application/json' },
   body: body,

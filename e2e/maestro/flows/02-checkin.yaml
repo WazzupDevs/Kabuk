@@ -83,7 +83,7 @@ appId: app.kabuk.mobile
     file: ../scripts/bot.js
     env:
       ACTION: bottom-strip
-      BODY: '{"scheme":"${SCHEME}"}'
+      SCHEME: ${SCHEME}
 - tapOn:
     id: tab-explore
 - extendedWaitUntil:
