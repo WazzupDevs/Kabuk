@@ -62,6 +62,16 @@ if [ "$status" -ne 0 ]; then
   echo "--- maestro.log (errors)"
   find "$OUT/maestro" -name 'maestro.log' -exec grep -hE 'FAILED|Exception|Error' {} + 2>/dev/null \
     | tail -n 15 || true
+  # The screen as it was left: the focused window (a modal left over shows here) and every
+  # element's id, text and label, so a missing element is seen without the artifact.
+  echo "--- focused window"
+  adb shell dumpsys window 2>/dev/null | grep -E 'mCurrentFocus|mFocusedApp' | head -n 4 || true
+  echo "--- screen (id | text | label | bounds)"
+  if adb shell uiautomator dump /sdcard/e2e-ui.xml >/dev/null 2>&1; then
+    adb exec-out cat /sdcard/e2e-ui.xml 2>/dev/null | tr '>' '\n' | grep -E '<node ' \
+      | sed -nE 's/.*text="([^"]*)".*resource-id="([^"]*)".*content-desc="([^"]*)".*bounds="([^"]*)".*/\2 | \1 | \3 | \4/p' \
+      | grep -vE '^ \|  \|  \|' | head -n 80 || true
+  fi
   echo "--- crash buffer"
   tail -n 40 "$OUT/logcat-crash.txt" 2>/dev/null || true
   echo "::endgroup::"
