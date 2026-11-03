@@ -61,38 +61,49 @@ export function ProfileTopBar({ onBack, onMore }: { onBack: () => void; onMore?:
   );
 }
 
-// U31 (ProfilBaskasi `.kk`): a riso buddy looking out from behind the face's right, 64 wide (a
-// 160x200 picture), 92 from the face's left and 18 down, turned 14 degrees.
-const PEEK_BUDDY = {
-  source: require('../../../assets/riso/peek-1.webp'),
-  left: 92,
-  top: 18,
-  width: 64,
-  height: 80,
-  turn: '14deg',
-} as const;
+// U31 (ProfilBaskasi `.kk`): a riso buddy looking out from behind the face's right, 64 wide, 92 from
+// the face's left and 18 down, turned 14 degrees. Which buddy is drawn at random as the page opens
+// (the owner's call, 2 Kasım, 17.2): never from the person, so it tells nothing about anyone (rule
+// 4). The peeking pictures are 160x200, the standing buddies 320x420.
+const PEEK = { left: 92, top: 18, width: 64, turn: '14deg' } as const;
+const PEEK_BUDDIES: readonly { source: ImageSourcePropType; height: number }[] = [
+  { source: require('../../../assets/riso/peek-1.webp'), height: 80 },
+  { source: require('../../../assets/riso/peek-2.webp'), height: 80 },
+  { source: require('../../../assets/riso/buddies/riso_b83534.webp'), height: 84 },
+  { source: require('../../../assets/riso/buddies/riso_7d5ef2.webp'), height: 84 },
+  { source: require('../../../assets/riso/buddies/riso_3c95b1.webp'), height: 84 },
+  { source: require('../../../assets/riso/buddies/riso_4957ac.webp'), height: 84 },
+  { source: require('../../../assets/riso/buddies/riso_1a80a9.webp'), height: 84 },
+  { source: require('../../../assets/riso/buddies/riso_6f419d.webp'), height: 84 },
+  { source: require('../../../assets/riso/buddies/riso_f280a5.webp'), height: 84 },
+];
+const pickPeek = () =>
+  PEEK_BUDDIES[Math.floor(Math.random() * PEEK_BUDDIES.length)] ?? PEEK_BUDDIES[0];
 
 // Another person's profile (U31, ProfilBaskasi): no card; the face 120 at the left, 24 under the
 // bar, a riso buddy behind it; the name display 20 under the face, the bio 4 under the name, the
 // actions 24 under them.
 function OtherHead({ profile, children }: { profile: Profile; children?: ReactNode }) {
   const [preview, setPreview] = useState(false);
+  const [peek] = useState(pickPeek);
   const side = KIT.size.av.hero;
   return (
     <View>
       <View style={{ marginTop: SPACING[6], width: side, height: side }}>
-        <Image
-          source={PEEK_BUDDY.source}
-          style={{
-            position: 'absolute',
-            left: PEEK_BUDDY.left,
-            top: PEEK_BUDDY.top,
-            width: PEEK_BUDDY.width,
-            height: PEEK_BUDDY.height,
-            transform: [{ rotate: PEEK_BUDDY.turn }],
-          }}
-          accessibilityIgnoresInvertColors
-        />
+        {peek ? (
+          <Image
+            source={peek.source}
+            style={{
+              position: 'absolute',
+              left: PEEK.left,
+              top: PEEK.top,
+              width: PEEK.width,
+              height: peek.height,
+              transform: [{ rotate: PEEK.turn }],
+            }}
+            accessibilityIgnoresInvertColors
+          />
+        ) : null}
         {/* The photo opens large (the owner's call, 28 Ekim). */}
         <Pressable
           testID="profile-photo-open"

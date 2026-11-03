@@ -5,7 +5,6 @@ import { useState } from 'react';
 import { Alert, View } from 'react-native';
 
 import { Btn } from '@/aura/kit';
-import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
 import { Menu, MenuItem } from '@/components/Menu';
@@ -101,7 +100,7 @@ export default function PersonScreen() {
         <EmptyState icon="eye-off-outline" body={tr.profile.notVisible} />
       ) : (
         <ProfileHead profile={view.data}>
-          {friend ? <FriendActions friend={friend} /> : null}
+          {friend ? <FriendActions friend={friend} onRemove={() => setEnding('remove')} /> : null}
         </ProfileHead>
       )}
       {hidden ? (
@@ -150,12 +149,7 @@ export default function PersonScreen() {
             }}
           />
         </Menu>
-        <Button
-          size="lg"
-          variant="neutral"
-          label={tr.common.cancel}
-          onPress={() => setMenu(false)}
-        />
+        <Btn block variant="glassy" label={tr.common.cancel} onPress={() => setMenu(false)} />
       </Sheet>
       <ConfirmWithReport
         reasons={REPORT_REASONS}

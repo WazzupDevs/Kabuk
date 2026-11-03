@@ -369,6 +369,11 @@ export const tr = {
         : day === 'week'
           ? (WEEKDAYS_SHORT[new Date(iso).getDay()] ?? '')
           : dayMonth(iso),
+    // A game's sheet, under no day heading: the day as well ("Dün 23:00", "1 Kas 23:00"; 5.5).
+    whenFull: (iso: string, day: HistoryDay) =>
+      day === 'today' || day === 'yesterday'
+        ? `${day === 'today' ? 'Bugün' : 'Dün'} ${clock(iso)}`
+        : `${day === 'week' ? (WEEKDAYS_SHORT[new Date(iso).getDay()] ?? '') : dayMonth(iso)} ${clock(iso)}`,
     game: (concept: HistoryConcept) => HISTORY_CONCEPTS[concept],
     // A person, not a table (the people's table, docs/SPEC_V4.md §4.E; the owner's report, 30 Ekim).
     withTable: (alias: string) => `${alias} ile`,
