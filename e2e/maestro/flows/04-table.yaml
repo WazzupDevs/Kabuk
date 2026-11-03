@@ -58,9 +58,10 @@ appId: app.kabuk.mobile
     id: table-solo
 - assertVisible:
     id: table-lobby
-# The games are under the table's card: on a short phone below the fold.
+# The games are under the table's card: on a short phone below the fold. A game card reads as
+# one label (its name, line, people and tag), so the tag is matched inside it.
 - scrollUntilVisible:
-    element: Yakında
+    element: '.*Yakında.*'
     direction: DOWN
     timeout: 10000
 - takeScreenshot: 13-table
