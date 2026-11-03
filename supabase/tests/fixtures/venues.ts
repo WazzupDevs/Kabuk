@@ -98,6 +98,7 @@ export const FIXTURE_CAMPUS: CampusVenue = {
   district: 'Test',
   kind: 'campus',
   isActive: true,
+  university: null,
   location: null,
   boundary: squareRing(CAMPUS_CENTER, CAMPUS_HALF_M),
   spots: [
@@ -126,4 +127,5 @@ export async function insertFixtureCampus(
 
 export async function deleteFixtureCampus(sql: Sql): Promise<void> {
   await sql`delete from public.venues where source = ${CAMPUS_SOURCE} and source_ref like 'fixture-%'`;
+  await sql`delete from public.universities where ref like 'fixture-%'`;
 }

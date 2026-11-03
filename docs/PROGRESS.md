@@ -1,5 +1,11 @@
 # İlerleme
 
+## Devir notu (3 Kasım 2026, üniversite ve yerleşke altyapısı)
+
+- `universities` tablosu, `venues.university_id`, `explore_venues`/`venue_contains` güncellemesi (`20261121090000_universities.sql`); Keşfet'te çok yerleşkeli üniversite tek satır + "Yerleşke seç" alt sayfası (`SPEC_V4` §4.Q, `docs/decisions/universite-yerleske.md`). Native yok, OTA; üretimde önce sunucu (migration + seed), sonra uygulama.
+- Sakarya Esentepe `sakarya-universitesi`'ne bağlandı, Keşfet'te satırı değişmedi. İGÜ yalnızca üniversite kaydı: yerleşke verisi doğrulanamadı (`docs/yerleske/igu-dogrulama.md`), check-in noktası yok.
+- `database.ts` bu ortamda Docker olmadığı için elle hizalandı; yerel stack'le `pnpm gen:types` çalıştırılıp fark kontrol edilmeli. `universities.test.ts` yalnızca CI'da koştu.
+
 ## Devir notu (3 Kasım 2026 13:30, E2E yeşil)
 
 - #397 birleşti, E2E sekiz parçada ve görsel kapı yeşil. Kök neden: Modal (alt sayfa, tutulan mesaj) kapanınca odakta kalan alan klavyeyi yeniden açıyordu; DM'nin son mesajını (05b) ve sekme çubuğunu (02) örtüyordu. Düzeltme `src/lib/modalKeyboard.ts` → `useLeaveKeyboard`, her Modal dosyası çağırır (`theme/modalKeyboard.test.ts`). Alt sayfa kesilen kapanışta da çıkar (`sheetSlide.ts`). Native yok, OTA.

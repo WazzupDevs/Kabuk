@@ -11,7 +11,9 @@ import {
   exploreEmpty,
   explorePlace,
   filterVenues,
+  groupByUniversity,
   hasEventToday,
+  liveliestBucket,
   isActivityBucket,
   sortVenues,
   todayEvents,
@@ -225,5 +227,74 @@ describe('exploreEmpty', () => {
     expect(exploreEmpty(3, { kind: 'cafe', query: 'kahve' })).toBe('search');
     expect(exploreEmpty(3, { kind: 'cafe', query: '   ' })).toBe('kind');
     expect(exploreEmpty(3, { kind: 'all', query: '' })).toBe('place');
+  });
+});
+
+// Universities and campuses (docs/SPEC_V4.md §4.Q): fixture data, not real campuses.
+describe('universities in Keşfet', () => {
+  const igu = { id: 'u-igu', ref: 'igu-test', name: 'İstanbul Gelişim Üniversitesi' };
+  const sau = { id: 'u-sau', ref: 'sau-test', name: 'Sakarya Üniversitesi' };
+  const v = (
+    id: string,
+    name: string,
+    district: string,
+    university: typeof igu | null,
+    kind: 'campus' | 'cafe' = university ? 'campus' : 'cafe',
+  ) => ({ id, name, city: 'İstanbul', district, kind, university });
+  const listed = [
+    v('c1', 'İGÜ Test Yerleşkesi Bir', 'Avcılar', igu),
+    v('c2', 'İGÜ Test Yerleşkesi İki', 'Beylikdüzü', igu),
+    v('k1', 'Köşe Kahve', 'Avcılar', null),
+    v('s1', 'Sakarya Test Kampüsü', 'Avcılar', sau),
+  ];
+  const all = { place: { city: 'İstanbul', district: null }, kind: 'all' as const, query: '' };
+
+  it('shows a university with several campuses as one row holding only its own campuses', () => {
+    const rows = groupByUniversity(filterVenues(listed, all), listed);
+    expect(rows.map((r) => (r.type === 'venue' ? r.venue.id : r.university.ref))).toEqual([
+      'igu-test',
+      'k1',
+      's1',
+    ]);
+    const group = rows[0];
+    expect(group?.type === 'university' && group.campuses.map((c) => c.id)).toEqual(['c1', 'c2']);
+  });
+
+  it('keeps a university with a single campus as an ordinary campus row (Sakarya)', () => {
+    const rows = groupByUniversity(listed, listed);
+    expect(rows.find((r) => r.type === 'venue' && r.venue.id === 's1')).toBeTruthy();
+    expect(rows.some((r) => r.type === 'university' && r.university.ref === 'sau-test')).toBe(
+      false,
+    );
+  });
+
+  it('finds the campuses by the university name, and one campus by its own', () => {
+    const byUni = filterVenues(listed, { ...all, query: 'gelisim' });
+    expect(byUni.map((x) => x.id)).toEqual(['c1', 'c2']);
+    const one = filterVenues(listed, { ...all, query: 'iki' });
+    const rows = groupByUniversity(one, listed);
+    // Still under its university: the university has two campuses whatever the search.
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.type === 'university' && rows[0].campuses.map((c) => c.id)).toEqual(['c2']);
+  });
+
+  it('filters campuses by district and kind like any venue', () => {
+    const avcilar = filterVenues(listed, {
+      ...all,
+      place: { city: 'İstanbul', district: 'Avcılar' },
+    });
+    expect(avcilar.map((x) => x.id)).toEqual(['c1', 'k1', 's1']);
+    expect(filterVenues(listed, { ...all, kind: 'cafe' }).map((x) => x.id)).toEqual(['k1']);
+    expect(filterVenues(listed, { ...all, kind: 'campus' }).map((x) => x.id)).toEqual([
+      'c1',
+      'c2',
+      's1',
+    ]);
+  });
+
+  it('gives a university row its liveliest campus bucket', () => {
+    expect(liveliestBucket(['calm', 'lively', 'calm'])).toBe('lively');
+    expect(liveliestBucket(['calm', 'buzzing', 'lively'])).toBe('buzzing');
+    expect(liveliestBucket([])).toBe('calm');
   });
 });

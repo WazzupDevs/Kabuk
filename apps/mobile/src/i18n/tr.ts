@@ -463,6 +463,11 @@ export const tr = {
     // A venue's type in words (v46's `data-vtype`; lib/venueType.ts).
     typeLabel: { kampus: 'Kampüs', kafe: 'Kafe', cay: 'Çay bahçesi', yemek: 'Restoran' },
     venueSub: (kind: string, district: string) => `${kind} · ${district}`,
+    // A university with several campuses (docs/SPEC_V4.md §4.Q): a grouping, never a place.
+    universitySub: (n: number, districts: string) => `${n} yerleşke · ${districts}`,
+    universityLabel: (name: string, n: number) => `${name}, ${n} yerleşke. Yerleşke seç.`,
+    campusNote: 'Yerleşkeni seç. Konumun yalnızca girişte, seçtiğin yerleşke için doğrulanır.',
+    campusOf: (university: string, district: string) => `${university} · ${district}`,
     // City and district (v44: .vloc; K-38): chosen, never the phone's position (rule 6).
     place: (city: string, district: string | null) => `${city} · ${district ?? 'Tüm semtler'}`,
     placeLabel: (city: string, district: string | null) =>
