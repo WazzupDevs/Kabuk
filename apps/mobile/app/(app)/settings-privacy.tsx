@@ -52,7 +52,7 @@ export default function PrivacyScreen() {
             onPress={() =>
               privacyUrl
                 ? void Linking.openURL(privacyUrl)
-                : router.push({ pathname: '/legal/[doc]', params: { doc: 'kvkk' } })
+                : router.push({ pathname: '/legal/[doc]', params: { doc: 'privacy' } })
             }
           />
           <SettingsRow
