@@ -385,7 +385,7 @@ function VenueList({
         </View>
       </Reveal>
       {listed.length === 0 ? (
-        <EmptyState icon="cafe-outline" body={tr.explore.empty} />
+        <EmptyState kind="empty" riso="venues" body={tr.explore.empty} />
       ) : venues.length === 0 ? (
         // Keşfet: boş: a filter or a search that finds nothing, said by its cause.
         <Reveal index={ROWS_AT} step={ROW_STEP} replay={replay}>

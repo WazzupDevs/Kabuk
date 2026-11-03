@@ -209,7 +209,7 @@ export default function VenueDetailScreen() {
             <Sec title={tr.explore.eventsTitle} note={tr.explore.weekNote} />
             {venue.events.length === 0 ? (
               <Glass sm style={{ padding: SPACING[4] }}>
-                <T v="fine">{tr.explore.noEvents}</T>
+                <EmptyState kind="empty" riso="events" compact body={tr.explore.noEvents} />
               </Glass>
             ) : (
               <ScrollView

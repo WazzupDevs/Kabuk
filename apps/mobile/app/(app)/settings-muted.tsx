@@ -40,7 +40,7 @@ export default function MutedScreen() {
             action={{ label: tr.common.retry, onPress: () => void mutes.refetch() }}
           />
         ) : list.length === 0 ? (
-          <EmptyState kind="empty" body={tr.settings.mutedEmpty} />
+          <EmptyState kind="empty" riso="muted" body={tr.settings.mutedEmpty} />
         ) : (
           <RowList>
             {list.map((m) => (

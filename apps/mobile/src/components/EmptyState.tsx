@@ -4,7 +4,7 @@ import { type ImageSourcePropType, View } from 'react-native';
 import { LOADER_SHOW_AFTER_MS, type StateKind } from '@/theme/markMotion';
 import { SPACING } from '@/theme/tokens';
 
-import { Button, type IconName } from './Button';
+import { type IconName } from './Button';
 import { Loader } from './Loader';
 import { AppIcon } from './AppIcon';
 import { EmptyMark } from '@/aura/EmptyMark';
@@ -31,7 +31,30 @@ type Props = {
   small?: boolean;
   // The empty state's riso picture in place of the still sign (Aura v65 §9.1).
   picture?: { source: ImageSourcePropType; width: number; height: number; radius: number };
+  // Every empty state's riso picture (the owner's call, 2 Kasım, 9.1; Aura v76 BosDurumlar).
+  riso?: EmptyRiso;
+  // In a card or a sheet: the small picture (160x110, 22 round, the raised shadow) rather than the
+  // screen's (240x165, 28 round, the card shadow).
+  compact?: boolean;
 };
+
+// Aura v76 BosDurumlar (640x440 exports; the DM's first message and the venue's week reuse the
+// history and events pictures).
+const EMPTY_RISO = {
+  chats: require('../../assets/riso/empty-chats.webp'),
+  requests: require('../../assets/riso/empty-requests.webp'),
+  notifications: require('../../assets/riso/empty-notifications.webp'),
+  friends: require('../../assets/riso/empty-friends.webp'),
+  history: require('../../assets/riso/empty-history.webp'),
+  blocked: require('../../assets/riso/empty-blocked.webp'),
+  muted: require('../../assets/riso/empty-muted.webp'),
+  venues: require('../../assets/riso/empty-venues.webp'),
+  chat: require('../../assets/riso/history-sohbet.webp'),
+  events: require('../../assets/riso/empty-events.webp'),
+} as const satisfies Record<string, ImageSourcePropType>;
+export type EmptyRiso = keyof typeof EMPTY_RISO;
+const RISO_FULL = { width: 240, height: 165, radius: 28, shadow: 'card' } as const;
+const RISO_SMALL = { width: 160, height: 110, radius: 22, shadow: 'raised' } as const;
 
 // GaleriKesfet, GaleriProfil `.disc`: 64 round, the soft fill and edge (`.btn.soft`), the icon 26
 // muted.
@@ -69,9 +92,29 @@ function StateDisc({ icon }: { icon: IconName }) {
 // A screen's empty, error, offline or loading state (Aura v65 §6 "Türetme kuralları"), centred on
 // the screen without a card: the disc (or the loader), the note under it and at most one action,
 // "Tekrar dene" btn sm soft.
-export function EmptyState({ kind, icon, title, body, action, small, picture }: Props) {
+export function EmptyState({
+  kind,
+  icon,
+  title,
+  body,
+  action,
+  small,
+  picture,
+  riso,
+  compact,
+}: Props) {
   if (kind === 'empty')
-    return <Empty title={title} body={body} action={action} small={small} picture={picture} />;
+    return (
+      <Empty
+        title={title}
+        body={body}
+        action={action}
+        small={small || compact}
+        picture={
+          riso ? { source: EMPTY_RISO[riso], ...(compact ? RISO_SMALL : RISO_FULL) } : picture
+        }
+      />
+    );
   if (kind === 'loading') return <Loading body={body} />;
 
   const glyph: IconName =
@@ -146,7 +189,15 @@ function Empty({
   action,
   small,
   picture,
-}: Pick<Props, 'title' | 'body' | 'action' | 'small' | 'picture'>) {
+}: Pick<Props, 'title' | 'body' | 'action' | 'small'> & {
+  picture?: {
+    source: ImageSourcePropType;
+    width: number;
+    height: number;
+    radius: number;
+    shadow?: 'card' | 'raised' | 'none';
+  };
+}) {
   return (
     <View
       style={{
@@ -180,8 +231,8 @@ function Empty({
       </T>
       {action ? (
         <View style={{ marginTop: SPACING[3] }}>
-          <Button
-            variant="secondary"
+          <Btn
+            variant="glassy"
             label={action.label}
             onPress={action.onPress}
             loading={action.loading}

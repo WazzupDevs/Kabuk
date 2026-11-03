@@ -106,7 +106,12 @@ export function RequestList({ now }: { now: Date }) {
   if (rows.length === 0) {
     return (
       <View className="flex-1 justify-center">
-        <EmptyState kind="empty" title={tr.messages.noRequests} body={tr.messages.noRequestsHint} />
+        <EmptyState
+          kind="empty"
+          riso="requests"
+          title={tr.messages.noRequests}
+          body={tr.messages.noRequestsHint}
+        />
       </View>
     );
   }

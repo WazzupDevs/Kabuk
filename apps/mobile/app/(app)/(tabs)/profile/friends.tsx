@@ -67,7 +67,7 @@ export default function FriendsScreen() {
             </Glass>
           ) : null}
           {friends.data.length === 0 ? (
-            <EmptyState kind="empty" body={tr.friends.empty} />
+            <EmptyState kind="empty" riso="friends" body={tr.friends.empty} />
           ) : (
             // Aura v71 (Arkadaslar): a riso buddy looking over the list, the list 76 under the
             // title; rows 64, the photo 44.
