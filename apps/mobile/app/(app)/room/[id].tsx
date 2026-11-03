@@ -3,7 +3,7 @@ import { tableGameAvailability } from '@shared/gameFrame.ts';
 import { seatsAnonymously } from '@shared/gender.ts';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { type ReactNode, useEffect, useState } from 'react';
-import { Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EmptyState } from '@/components/EmptyState';
@@ -44,7 +44,7 @@ import { AURA } from '@/theme/aura';
 import { useNarrow } from '@/lib/useNarrow';
 import { KIT } from '@/theme/auraKit';
 import { SPACING } from '@/theme/tokens';
-import { AuraBackground, AuraBand } from '@/aura/AuraBackground';
+import { AuraBackground, AuraBand, useGroundSize } from '@/aura/AuraBackground';
 import { type CapIconName } from '@/aura/CapIcon';
 import { Btn, Glass, Round, T } from '@/aura/kit';
 
@@ -56,7 +56,8 @@ export default function TableScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { scheme } = useTheme();
   const insets = useSafeAreaInsets();
-  const { height } = useWindowDimensions();
+  // The ground's height, not the window's (the band at the foot lines up with it; 3 Kasım, 2.1).
+  const { height } = useGroundSize();
   const narrow = useNarrow();
   // The head stays put over the games and nothing in it folds (the owner's call, 29 Ekim): the
   // games start under its height and scroll under it.

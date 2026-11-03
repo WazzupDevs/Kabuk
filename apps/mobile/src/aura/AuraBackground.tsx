@@ -1,3 +1,4 @@
+import { useSyncExternalStore } from 'react';
 import { Image, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { useLabOff } from '@/lib/drawLab';
@@ -13,25 +14,64 @@ import { useTheme } from '@/theme/ThemeProvider';
 // (`.dark.pA`), its ground is the flat canvas.
 const GROUND_PICTURE = require('../../assets/aura/ground-light.webp');
 
+// The ground's size on the screen, as the last ground laid out (every ground fills its screen's
+// root). A band cuts its strip of the picture at this size, so it lines up with the ground behind
+// it; the window's size is not it on Android (the navigation bar), and a band cut at the window's
+// size showed as a strip of its own (the owner's report, 3 Kasım, 2.1).
+type Size = { width: number; height: number };
+let groundSize: Size | null = null;
+const groundListeners = new Set<() => void>();
+function reportGround(width: number, height: number) {
+  if (width <= 0 || height <= 0) return;
+  if (groundSize && groundSize.width === width && groundSize.height === height) return;
+  groundSize = { width, height };
+  groundListeners.forEach((l) => l());
+}
+function subscribeGround(l: () => void) {
+  groundListeners.add(l);
+  return () => {
+    groundListeners.delete(l);
+  };
+}
+const readGround = () => groundSize;
+
+export function useGroundSize(): Size {
+  const window = useWindowDimensions();
+  const ground = useSyncExternalStore(subscribeGround, readGround);
+  return ground ?? window;
+}
+
 // The screen's backdrop: the frosted buttons drawn after it blur it (ui/LiquidGlass → Frost). The
 // picture is also drawn once more under the glass's target, as a plain view (the owner's report, 2
 // Kasım, K2/X2: on several screens the clouds did not show on first opening, flat mint, until a
 // glass or a sheet made the screen draw again); the target draws the same picture over it.
+// Placed by its four edges, never by a size in per cent: a screen's root is padded by the safe area
+// and a per cent is of the room inside the padding, so the picture stopped short of the foot by the
+// safe area and the window's plain colour showed there (the owner's report, 3 Kasım, 2.1).
 export function AuraBackground() {
   const { scheme } = useTheme();
   const off = useLabOff('zemin');
   const plain = !off && scheme !== 'dark';
+  // The target stays a sibling of the glass over it (LiquidGlassView finds its backdrop among the
+  // views before its own branch, never inside one), so only the plain picture is wrapped.
   return (
     <>
-      {plain ? (
-        <Image
-          source={GROUND_PICTURE}
-          fadeDuration={0}
-          resizeMode="cover"
-          style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%' }}
-          accessible={false}
-        />
-      ) : null}
+      <View
+        pointerEvents="none"
+        collapsable={false}
+        style={StyleSheet.absoluteFill}
+        onLayout={(e) => reportGround(e.nativeEvent.layout.width, e.nativeEvent.layout.height)}
+      >
+        {plain ? (
+          <Image
+            source={GROUND_PICTURE}
+            fadeDuration={0}
+            resizeMode="cover"
+            style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%' }}
+            accessible={false}
+          />
+        ) : null}
+      </View>
       <GlassTarget backdrop style={StyleSheet.absoluteFill}>
         {off || scheme === 'dark' ? (
           <View style={[StyleSheet.absoluteFill, { backgroundColor: AURA[scheme].ground }]} />
@@ -89,7 +129,7 @@ export function AuraBand({
 
 function Slice({ top, height, opacity }: { top: number; height: number; opacity: number }) {
   const { scheme } = useTheme();
-  const { width, height: screen } = useWindowDimensions();
+  const { width, height: screen } = useGroundSize();
   if (scheme === 'dark') {
     return (
       <View
@@ -137,7 +177,7 @@ export function AuraFadeX({
 }) {
   const off = useLabOff('zemin');
   const { scheme } = useTheme();
-  const { width: screenWidth, height: screen } = useWindowDimensions();
+  const { width: screenWidth, height: screen } = useGroundSize();
   if (off || width <= 0 || height <= 0) return null;
   const column = width / FADE_STEPS;
   return (

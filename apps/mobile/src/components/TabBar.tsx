@@ -11,11 +11,11 @@ import {
   useId,
   useState,
 } from 'react';
-import { Animated, useWindowDimensions, View } from 'react-native';
+import { Animated, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { create } from 'zustand';
 
-import { AuraBand } from '@/aura/AuraBackground';
+import { AuraBand, useGroundSize } from '@/aura/AuraBackground';
 import { AuraTabBar, type AuraTabItem } from '@/aura/AuraTabBar';
 import { ARRIVE_RN, BLURS, TabFocusContext } from '@/aura/motion';
 import { haptic } from '@/lib/haptics';
@@ -90,7 +90,8 @@ export function useTabBarSpace(): number {
 export function TabBarFade({ tall }: { tall?: boolean }) {
   const space = useTabBarSpace();
   const insets = useSafeAreaInsets();
-  const { height } = useWindowDimensions();
+  // The ground's height, not the window's (the band lines up with it; 3 Kasım, 2.1).
+  const { height } = useGroundSize();
   if (space === 0) return null;
   if (tall) {
     const solid = TALL_FADE * (1 - TALL_FADE_REACH) + insets.bottom - CANVAS_SAFE;
