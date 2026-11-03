@@ -53,9 +53,11 @@ Olası yer: alt barı olmayan ekranda da çıktığı için kök büyük olasıl
 
 **3.1 Arama çubuğunda "Mekan ara" yazısı çok küçük.** İpucu yazısı alanın içinde okunamayacak kadar küçük çiziliyor. Önem: orta.
 Olası yer: `apps/mobile/app/(app)/(tabs)/explore/index.tsx:732` (`<T v="body" lines={1} fit>` mutlak katmanda; `fit` yazıyı gereksiz küçültüyor (?)).
+**Düzeltildi (paket 4):** ipucundan `fit` kalktı.
 
 **3.2 Liste/harita düğmeleri kapsülüne sığmıyor.** Seçili yuvarlak kapsülün üst ve alt kenarından taşıyor. Önem: orta.
 Olası yer: aynı dosya `:803` (`SWITCH_ROUND = 48`) kapsül yüksekliği `KIT.size.field` 48'e indikten sonra (`apps/mobile/src/theme/auraKit.ts:671`, 2 Kasım kararı) değişmemiş; kapsül iç boşluğu `:758` ile 48 + 2×3 > 48. Yuvarlak, kapsül yüksekliğinden türemeli.
+**Düzeltildi (paket 4):** yuvarlak, kapsülün yüksekliğinden iç boşluğu çıkarılarak türer (`SWITCH_ROUND` kalktı).
 
 ### 4. Riso resimlerin üst kenarı (Mekan, Mesajlar → İstekler; açık)
 
@@ -86,8 +88,10 @@ Olası yer: `apps/mobile/app/(app)/settings-privacy.tsx:48-56` (`privacyUrl` yok
 
 **7.1 Seçili masa simgesi yeşil çerçeveyi doldurmuyor.** Hızlı seçim sırasında seçili simgeyle yeşil halka arasında beyaz bir boşluk var; simge çerçevenin içinde küçük kalıyor. Önem: düşük.
 Olası yer: `apps/mobile/src/features/rooms/CreateTableSheet.tsx:204-208` (`borderWidth: OUTLINE` + `padding: OUTLINE`, `OUTLINE = 3` `:307`: halka ile resim arasında 3 dp iç boşluk); halka resmin üstüne çizilmeli ya da iç boşluk kaldırılmalı.
+**Düzeltildi (paket 4):** iç boşluk kalktı, halka resmi sarar (tam simge seçicideki gibi).
 
 ### 8. Profil → Kapsülün (açık)
 
 **8.1 Aksesuar seçeneklerinin ve paket parçalarının gereksiz dış çerçevesi var.** Her yuvarlak kapsül önizlemesi beyaz, gölgeli, köşesi yuvarlatılmış bir kare kutunun içinde ("Baş boş", Zarif, Çiçek, Sokak paketi parçaları). Önem: orta.
 Olası yer: `apps/mobile/app/(app)/(tabs)/profile/capsule.tsx:524-532` (`Box`: `backgroundColor: colors.surface` / `c.glassInSheet`, `boxShadow`); seçili halka `:546-560` kutunun köşesine göre çiziliyor, yuvarlağa göre çizilmeli. Ölçüler `KIT.size.optionBox`, `partBox` (`src/theme/auraKit.ts`).
+**Düzeltildi (paket 4):** dış kutu kalktı, yalnızca yuvarlak kapsül; seçili halka yuvarlağın 2 dışında. Tuvalin yerel kopyası (`docs/design/aura/project/Kapsul.dc.html`) da güncellendi; canlı tuvale aynı değişiklik proje sahibince işlenir.

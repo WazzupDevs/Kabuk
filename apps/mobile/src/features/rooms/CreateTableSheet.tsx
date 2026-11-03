@@ -202,10 +202,10 @@ export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Pro
               style={{
                 flex: 1,
                 aspectRatio: 1,
-                borderRadius: KIT.size.iconTileRadius + 2 * OUTLINE,
+                // The ring round the picture, no room inside it, as in the full picker (ui 7.1).
+                borderRadius: KIT.size.iconTileRadius + OUTLINE,
                 borderWidth: OUTLINE,
                 borderColor: on ? KIT.primary : 'transparent',
-                padding: OUTLINE,
               }}
             >
               {src ? (

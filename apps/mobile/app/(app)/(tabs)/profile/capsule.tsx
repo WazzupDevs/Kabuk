@@ -26,7 +26,6 @@ import { Btn, Chip, Glass, Round, T, useKit } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
 import { LookAvatar } from '@/components/LookAvatar';
-import { boxShadowParts } from '@/components/NativeShadow';
 import { HidingHeadScreen } from '@/components/HidingHeadScreen';
 import { useHideTabBar } from '@/components/TabBar';
 import { Sheet } from '@/components/Sheet';
@@ -54,7 +53,6 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { useAskBeforeLeaving } from '@/lib/leaveGuard';
 import { haptic } from '@/lib/haptics';
-import { useLabOff } from '@/lib/drawLab';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { useAfterSlide } from '@/lib/useAfterSlide';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
@@ -501,16 +499,15 @@ function Box({
   on: boolean;
   onPress: () => void;
 }) {
-  const { c, scheme } = useKit();
+  const { c } = useKit();
   const { colors } = useTheme();
-  const shadowOff = useLabOff('golge');
   const [pressed, setPressed] = useState(false);
   const option = kind === 'option';
   const box = option ? KIT.size.optionBox : KIT.size.partBox;
-  const radius = option ? KIT.size.optionRadius : KIT.size.partBoxRadius;
   const image = option ? KIT.size.optionImage : KIT.size.partImage;
   const out = KIT.size.boxRing + KIT.size.boxRingGap;
-  const shadow = boxShadowParts(shadowOff, c.raisedShadow || undefined, radius);
+  // Only the round capsule, no box round it; the chosen ring round the capsule (ui 8.1, the
+  // owner's call, 3 Kasım).
   return (
     <Pressable
       accessibilityRole="radio"
@@ -521,45 +518,31 @@ function Box({
       onPressOut={() => setPressed(false)}
       style={{ width: box, alignItems: 'center', gap: TILE_LABEL_GAP }}
     >
-      <View style={{ width: box, height: box, transform: [{ scale: pressed ? TILE_PRESSED : 1 }] }}>
+      <View style={{ width: box, height: box, alignItems: 'center', justifyContent: 'center' }}>
         <View
           style={{
-            width: box,
-            height: box,
-            borderRadius: radius,
-            backgroundColor: scheme === 'dark' ? c.glassInSheet : colors.surface,
-            boxShadow: shadow.boxShadow,
+            width: image,
+            height: image,
+            transform: [{ scale: pressed ? TILE_PRESSED : 1 }],
           }}
         >
-          {shadow.node}
-          <View
-            style={{
-              width: box,
-              height: box,
-              borderRadius: radius,
-              overflow: 'hidden',
-              alignItems: 'center',
-              justifyContent: option ? 'center' : 'flex-end',
-            }}
-          >
-            <LookAvatar look={look} size={image} />
-          </View>
+          <LookAvatar look={look} size={image} />
+          {on ? (
+            <View
+              pointerEvents="none"
+              style={{
+                position: 'absolute',
+                top: -out,
+                left: -out,
+                right: -out,
+                bottom: -out,
+                borderRadius: image / 2 + out,
+                borderWidth: KIT.size.boxRing,
+                borderColor: colors.accent,
+              }}
+            />
+          ) : null}
         </View>
-        {on ? (
-          <View
-            pointerEvents="none"
-            style={{
-              position: 'absolute',
-              top: -out,
-              left: -out,
-              right: -out,
-              bottom: -out,
-              borderRadius: radius + out,
-              borderWidth: KIT.size.boxRing,
-              borderColor: colors.accent,
-            }}
-          />
-        ) : null}
       </View>
       {option ? (
         <RNText
