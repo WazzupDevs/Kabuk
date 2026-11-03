@@ -40,3 +40,8 @@ Olası yer: aynı dosya `:803` (`SWITCH_ROUND = 48`) kapsül yüksekliği `KIT.s
 
 **4.1 "Henüz masan yok" kartındaki riso sahne çerçeveye sığmıyor.** Sağdaki kapsül kesik, üst kenarda resmin kendi çizgili kenarı görünüyor; sahne kartın içinde kaymış ya da yanlış ölçekte. Önem: orta.
 Olası yer: `apps/mobile/src/features/rooms/TableCard.tsx:363` (`Image` + `PICTURE_FILL`, `resizeMode="cover"`; resim 700×420 (5:3), kart `KIT.size.hero` 210 yüksekliğinde, yaklaşık 1,9:1); `apps/mobile/src/aura/RisoPicture.tsx:13`. 2 Kasım notundaki K1 (6.1) hâlâ sürüyor ya da düzeltmesi bu karta uygulanmamış.
+
+### 5. Check-in alt sayfası (Keşfet → mekan → "Konumumu kullan", açık)
+
+**5.1 Alt sayfanın üstünden bakan kapsül kankiler riso çizimi değil.** Sayfanın kenarından bakan üç kanki düz vektör (`Buddy`) çiziliyor; diğer yerlerdeki riso kankilerle uyuşmuyor. Önem: orta.
+Olası yer: `apps/mobile/src/aura/Peek.tsx:34` (`notifications` ve `request` dışındaki her tür, `checkin` dahil, `BuddyPeek` → `Buddy`'ye düşüyor; `:37`), çağıran `apps/mobile/app/(app)/checkin/index.tsx:130` (`peek="checkin"`). Riso yolu aynı dosyada (`RisoKanki`, `RisoStrip`); aynı `BuddyPeek`'i kullanan diğer alt sayfalar da etkileniyor olabilir.
