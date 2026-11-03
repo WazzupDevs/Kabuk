@@ -4,8 +4,7 @@ import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Image, useWindowDimensions, View } from 'react-native';
 
-import { Glass, Li, Seg, T, useKit } from '@/aura/kit';
-import { Button } from '@/components/Button';
+import { Btn, Glass, Li, Seg, T, useKit } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
 import { GameDisc } from '@/components/Glyph';
 import { useLoaderHold } from '@/components/Loader';
@@ -14,12 +13,15 @@ import { Screen } from '@/components/Screen';
 import { Sheet } from '@/components/Sheet';
 import { Tag } from '@/components/Tag';
 import { boxShadowParts } from '@/components/NativeShadow';
-import { Text } from '@/components/Text';
 import { EventCard } from '@/features/activities/EventCard';
 import { useGameResults } from '@/features/activities/useGameResults';
 import { useExplorePlace } from '@/features/explore/placeStore';
 import { useCityVenues } from '@/features/explore/useExploreVenues';
-import { HistoryActions, useHistoryActions } from '@/features/friends/historyActions';
+import {
+  HistoryActions,
+  HistoryAddHint,
+  useHistoryActions,
+} from '@/features/friends/historyActions';
 import { useHistoryFriends, usePlayHistory } from '@/features/friends/queries';
 import { GAME_GLYPH } from '@/features/games/GameCard';
 import { errorMessage } from '@/i18n/errors';
@@ -167,6 +169,7 @@ function History({ now }: { now: number }) {
   const friends = useHistoryFriends();
   const results = useGameResults();
   const { act, openMenu, sheets } = useHistoryActions();
+  const { c } = useKit();
   const [open, setOpen] = useState<string | null>(null);
   // Side by side the action and "Diğer" do not fit at 320 dp with the largest text.
   const { width, fontScale } = useWindowDimensions();
@@ -246,46 +249,61 @@ function History({ now }: { now: number }) {
       <Sheet
         visible={session !== null}
         onClose={() => setOpen(null)}
-        // The game and the time, then each person at that table with what can be done.
+        // The game and the day and time, then each person at that table, one row each on the
+        // sheet's card, with what can be done. "Kapat" at the foot: only the people scroll (5.1).
         title={session ? tr.activities.game(historyConcept(session.first.concept)) : ''}
+        footer={
+          <Btn
+            block
+            variant="glassy"
+            label={tr.common.close}
+            onPress={() => setOpen(null)}
+            testID="history-sheet-close"
+          />
+        }
       >
         {session ? (
-          <View style={{ gap: SPACING[3] }}>
-            <Text variant="fine">
-              {tr.activities.when(
+          <View style={{ gap: KIT.size.sheetGap }}>
+            <T v="fine">
+              {tr.activities.whenFull(
                 session.first.played_at,
                 historyDay(session.first.played_at, today),
               )}
-            </Text>
-            {session.people.map((record) => (
-              <View key={record.id} style={{ gap: SPACING[1] }}>
-                <Text variant="heading">{record.other_alias}</Text>
-                <HistoryActions
-                  record={record}
-                  friend={friends.data?.get(record.id)}
-                  act={act}
-                  narrow={narrow}
-                  onMore={() => {
-                    setOpen(null);
-                    openMenu(record.id);
+            </T>
+            <HistoryAddHint records={session.people} />
+            <Glass sm style={{ overflow: 'hidden' }}>
+              {session.people.map((record, i) => (
+                <View
+                  key={record.id}
+                  style={{
+                    gap: SPACING[1],
+                    paddingVertical: KIT.size.liPadY,
+                    paddingHorizontal: KIT.size.liPadX,
+                    borderTopWidth: i > 0 ? KIT.size.hair : 0,
+                    borderTopColor: c.hair,
                   }}
-                />
-              </View>
-            ))}
+                >
+                  <T v="h3">{record.other_alias}</T>
+                  <HistoryActions
+                    record={record}
+                    friend={friends.data?.get(record.id)}
+                    act={act}
+                    narrow={narrow}
+                    onMore={() => {
+                      setOpen(null);
+                      openMenu(record.id);
+                    }}
+                  />
+                </View>
+              ))}
+            </Glass>
             {act.isError ? (
-              <Text variant="fine" tone="danger" className="mt-2">
+              <T v="fine" color={KIT.danger}>
                 {errorMessage(act.error)}
-              </Text>
+              </T>
             ) : null}
           </View>
         ) : null}
-        <Button
-          size="lg"
-          variant="neutral"
-          label={tr.common.close}
-          onPress={() => setOpen(null)}
-          testID="history-sheet-close"
-        />
       </Sheet>
       {sheets}
     </View>

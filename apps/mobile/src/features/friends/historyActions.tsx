@@ -4,10 +4,10 @@ import { useMutation, useQueryClient, type UseMutationResult } from '@tanstack/r
 import { type ReactNode, useCallback, useState } from 'react';
 import { Alert, View } from 'react-native';
 
-import { Button } from '@/components/Button';
+import { CapIcon } from '@/aura/CapIcon';
+import { Btn, T, useKit } from '@/aura/kit';
 import { Menu, MenuItem } from '@/components/Menu';
 import { Sheet } from '@/components/Sheet';
-import { Text } from '@/components/Text';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
 import { openDm } from '@/features/friends/openDm';
@@ -17,9 +17,8 @@ import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
 import { friendsApi, safetyApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
-import { useTheme } from '@/theme/ThemeProvider';
-import { ICON } from '@/theme/tokens';
-import { AppIcon } from '@/components/AppIcon';
+import { KIT } from '@/theme/auraKit';
+import { ICON, SPACING } from '@/theme/tokens';
 
 type Action = { kind: 'request' | 'add' | 'withdraw'; historyId: string };
 export type HistoryAct = UseMutationResult<unknown, Error, Action>;
@@ -103,12 +102,7 @@ export function useHistoryActions() {
             }}
           />
         </Menu>
-        <Button
-          size="lg"
-          variant="neutral"
-          label={tr.common.cancel}
-          onPress={() => setMenuFor(null)}
-        />
+        <Btn block variant="glassy" label={tr.common.cancel} onPress={() => setMenuFor(null)} />
       </Sheet>
 
       <ReportModal
@@ -145,7 +139,9 @@ type HistoryRecord = Parameters<typeof historyAction>[0] & {
 type Friend = { threadId: string | null; publicId: string; name: string | null };
 
 // A record's hint and its actions: "Mesaj" once the two are friends, "Bastın" after a silent press
-// (canvas: Faz 3 · 23.3 → oyun geçmişi), else "Arkadaş ekle" or "İstek gönder"; then "Diğer".
+// (canvas: Faz 3 · 23.3 → oyun geçmişi), else "Arkadaş ekle" or "İstek gönder"; then "Diğer". The
+// aura kit's buttons (5.4); the press's explanation is said once for the sheet (`HistoryAddHint`,
+// 5.2), not under each person.
 export function HistoryActions({
   record: h,
   friend,
@@ -159,14 +155,14 @@ export function HistoryActions({
   narrow: boolean;
   onMore: () => void;
 }): ReactNode {
-  const { colors } = useTheme();
+  const { c } = useKit();
   const action = historyAction(h);
   const silent = h.reveal_mutual || h.friend_open;
   const pending = act.isPending && act.variables?.historyId === h.id;
   const primary = friend?.threadId ? (
-    <Button
-      variant="neutral"
-      size="sm"
+    <Btn
+      sm
+      icon="chat"
       testID="history-message"
       label={tr.tableEnd.message}
       onPress={() =>
@@ -179,10 +175,10 @@ export function HistoryActions({
     />
   ) : action === 'done' && silent ? (
     // A silent press is taken back by pressing again (rule 5; skall tuvali, AktivitelerGecmisEklendi).
-    <Button
-      variant="neutral"
-      size="sm"
-      icon="checkmark"
+    <Btn
+      sm
+      variant="glassy"
+      icon="check"
       testID="history-added"
       label={tr.tableEnd.added}
       disabled={act.isPending}
@@ -190,16 +186,14 @@ export function HistoryActions({
       onPress={() => act.mutate({ kind: 'withdraw', historyId: h.id })}
     />
   ) : action === 'done' ? (
-    <View className="flex-row items-center gap-1.5 self-center">
-      <AppIcon name="checkmark" size={ICON.sm} color={colors.muted} />
-      <Text variant="label" tone="muted">
-        {tr.friends.actionDone}
-      </Text>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.chipGap }}>
+      <CapIcon name="check" size={ICON.sm} color={c.muted} />
+      <T v="fine">{tr.friends.actionDone}</T>
     </View>
   ) : (
-    <Button
-      variant="neutral"
-      size="sm"
+    <Btn
+      sm
+      icon="plus"
       testID={action === 'add_friend' ? 'history-add' : 'history-request'}
       label={action === 'add_friend' ? tr.friends.addFriend : tr.friends.sendRequest}
       disabled={act.isPending}
@@ -213,34 +207,37 @@ export function HistoryActions({
     />
   );
   const hint = friend ? (
-    <View className="mt-1 flex-row items-center gap-1.5">
-      <AppIcon name="checkmark-circle" size={ICON.sm} color={colors.success} />
-      <Text variant="label" tone="success">
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.chipGap }}>
+      <CapIcon name="check" size={ICON.sm} color={c.link} />
+      <T v="fine" color={c.link}>
         {tr.tableEnd.friends}
-      </Text>
+      </T>
     </View>
-  ) : action === 'add_friend' ? (
-    <Text variant="fine" className="mt-1">
-      {tr.friends.addFriendHint}
-    </Text>
   ) : action === 'done' && silent ? (
-    <Text variant="fine" className="mt-1">
-      {tr.friends.addedNote(h.other_alias)}
-    </Text>
+    <T v="fine">{tr.friends.addedNote(h.other_alias)}</T>
   ) : null;
   return (
     <>
       {hint}
-      <View className={narrow ? 'mt-3 items-start gap-2' : 'mt-3 flex-row items-center gap-2'}>
+      <View
+        style={{
+          flexDirection: narrow ? 'column' : 'row',
+          alignItems: narrow ? 'flex-start' : 'center',
+          gap: KIT.size.chipsGap,
+          marginTop: SPACING[1],
+        }}
+      >
         {primary}
-        <Button
-          testID="history-more"
-          variant="ghost"
-          size="sm"
-          label={tr.friends.more}
-          onPress={onMore}
-        />
+        <Btn sm variant="glassy" testID="history-more" label={tr.friends.more} onPress={onMore} />
       </View>
     </>
   );
+}
+
+// "İkiniz de basarsanız arkadaş olursunuz…": once over the sheet's people when any of them can be
+// added (5.2).
+export function HistoryAddHint({ records }: { records: HistoryRecord[] }): ReactNode {
+  return records.some((r) => historyAction(r) === 'add_friend') ? (
+    <T v="fine">{tr.friends.addFriendHint}</T>
+  ) : null;
 }

@@ -1,5 +1,6 @@
 import type { GameFlowReportReason } from '@shared/chat.ts';
 
+import { Btn } from '@/aura/kit';
 import { Button } from '@/components/Button';
 import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
@@ -27,7 +28,14 @@ export function ReportModal<R extends GameFlowReportReason>({
   onClose,
 }: Props<R>) {
   return (
-    <Sheet visible={visible} onClose={onClose} title={tr.safety.reportTitle} icon="report">
+    <Sheet
+      visible={visible}
+      onClose={onClose}
+      title={tr.safety.reportTitle}
+      icon="report"
+      // "Vazgeç" at the foot, under the reasons however many (X3).
+      footer={<Btn block variant="glassy" label={tr.common.cancel} onPress={onClose} />}
+    >
       {reasons.map((reason) => (
         <Button
           key={reason}
@@ -43,7 +51,6 @@ export function ReportModal<R extends GameFlowReportReason>({
           {errorMessage(error)}
         </Text>
       ) : null}
-      <Button variant="ghost" label={tr.common.cancel} onPress={onClose} />
     </Sheet>
   );
 }

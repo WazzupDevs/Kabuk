@@ -9,31 +9,46 @@ import { ICON, SPACING } from '@/theme/tokens';
 
 import { openDm } from './openDm';
 
-// A friend's profile (U31, ProfilBaskasi): "Arkadaşsınız", a 56 success-soft pill with checkCircle
-// 20, beside "Mesaj" (primary, the chat icon, no arrow) of the same width, 12 apart.
-export function FriendActions({ friend }: { friend: Friend }) {
+// A friend's profile (U31, ProfilBaskasi): "Arkadaşsınız", a success-soft pill with checkCircle 20,
+// beside "Mesaj" (primary, the chat icon, no arrow) of the same width, 12 apart. With `onRemove`
+// (the friend's profile) the pill is the button "Arkadaşlıktan çıkar" instead, opening the confirmed
+// removal (rule 5; the owner's call, 2 Kasım, 17.1: the pill looked pressable and did nothing).
+export function FriendActions({ friend, onRemove }: { friend: Friend; onRemove?: () => void }) {
   const { c } = useKit();
   const threadId = friend.threadId;
   return (
     <View style={{ flexDirection: 'row', gap: GAP }}>
-      <View
-        style={{
-          flex: 1,
-          minWidth: 0,
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: PILL_GAP,
-          height: KIT.size.btnRow,
-          borderRadius: KIT.size.btnRow / 2,
-          backgroundColor: c.friendPill,
-        }}
-      >
-        <CapIcon name="checkCircle" color={c.friendPillInk} size={ICON.md} />
-        <T v="btn" color={c.friendPillInk}>
-          {tr.profile.friendsStatus}
-        </T>
-      </View>
+      {onRemove ? (
+        <Btn
+          bar={KIT.size.btnRow}
+          block
+          variant="glassy"
+          icon="personRemove"
+          testID="profile-remove-button"
+          label={tr.friends.removeFriend}
+          onPress={onRemove}
+          style={{ flex: 1, minWidth: 0 }}
+        />
+      ) : (
+        <View
+          style={{
+            flex: 1,
+            minWidth: 0,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: PILL_GAP,
+            height: KIT.size.btnRow,
+            borderRadius: KIT.size.btnRow / 2,
+            backgroundColor: c.friendPill,
+          }}
+        >
+          <CapIcon name="checkCircle" color={c.friendPillInk} size={ICON.md} />
+          <T v="btn" color={c.friendPillInk}>
+            {tr.profile.friendsStatus}
+          </T>
+        </View>
+      )}
       {threadId ? (
         <Btn
           bar={KIT.size.btnRow}
