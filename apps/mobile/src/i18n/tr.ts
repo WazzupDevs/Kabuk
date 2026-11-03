@@ -263,8 +263,6 @@ export const tr = {
     genderGateTitle: 'Cinsiyetini seç',
     genderGateBody: 'Masalara nasıl katılacağın buna bağlı. Bir kez sorulur.',
     genderSave: 'Kaydet',
-    // Beside gender_required in the game flow: opens the one-time question in place.
-    chooseGender: 'Cinsiyetini seç',
     continue: 'Devam',
     photoTitle: 'Profil fotoğrafın',
     photoBody:
@@ -315,7 +313,6 @@ export const tr = {
     noMessage: 'Henüz mesaj yok',
     // With the dots beside it (v45).
     typing: 'yazıyor',
-    yesterday: 'Dün',
     stamp: (iso: string, stamp: InboxStamp) =>
       stamp.kind === 'time'
         ? clock(iso)
@@ -344,8 +341,6 @@ export const tr = {
   // Aktiviteler (docs/SPEC_V4.md K-15; v44: .acts): today's events and Geçmiş. Each game's rules
   // below are its intro's and, from the table's games (4.3), its page's.
   activities: {
-    // skall tuvali (AktivitelerGecmisKayit): "Sahtekar · bugün 19:30"; approved 27 Ekim.
-    sheetLine: (game: string, when: string) => `${game} · ${when}`,
     tabs: 'Etkinlikler ve geçmiş',
     // Not the page's own name again (the owner's call, 30 Ekim).
     events: 'Etkinlikler',
@@ -488,7 +483,6 @@ export const tr = {
     // A kind chip that finds nothing here (kabul raporu §9.1).
     noKind: { campus: 'Bu semtte kampüs yok', cafe: 'Bu semtte kafe ve mekan yok' },
     noKindHint: "Tümü'ne dön ya da başka bir semt seç.",
-    eventShort: 'Etkinlik',
     eventTag: (when: string, title: string) => `${when} · ${title}`,
     eventTime: (when: EventTime): string => {
       switch (when.kind) {
@@ -526,35 +520,25 @@ export const tr = {
   },
   friends: {
     empty: "Henüz arkadaşın yok. Birlikte oynadığın masaları Bildirimler'de bulabilirsin.",
-    requestsAndHistory: 'Geçmiş ve istekler',
     message: (name: string) => `${name} ile mesajlaş`,
     // The friend row's button (v45: .fmsg).
     messageShort: 'Mesaj',
     // skall tuvali (AktivitelerGecmisEklendi); approved 27 Ekim.
     addedNote: (name: string) =>
       `${name} bunu görmez. O da seni eklerse arkadaş olursunuz. Yeniden basarsan geri alırsın.`,
-    newRequests: (n: number) => `${n} yeni arkadaşlık isteği`,
     unread: 'Yeni mesaj',
     noMessagesYet: 'Henüz mesaj yok. İlk mesajı sen yaz.',
     // Ablative: the locative suffix plus "n" (Eylül'den, Ocak'tan). One line in the row (the
     // owner's report, 30 Ekim: "arkadaşsınız" wrapped it to two); the whole sentence is read out.
     since: (iso: string) => `${dayMonthAt(iso)}n beri`,
     sinceLabel: (iso: string) => `${dayMonthAt(iso)}n beri arkadaşsınız`,
-    incomingTitle: 'Gelen istekler',
-    noIncoming: 'Yeni istek yok.',
     incoming: (playedAt: string, concept: HistoryConcept, alias: string) =>
       `${dayMonthAt(playedAt)} ${PLAYED_WITH[concept]} ${alias} masası arkadaşın olmak istiyor`,
     accept: 'Kabul et',
     decline: 'Reddet',
     declineNote: 'Reddedersen karşı tarafa bildirilmez.',
-    sentTitle: 'Gönderilen istekler',
     sent: (alias: string) => `İstek gönderildi: ${alias} masası`,
-    sentAccepted: (alias: string) => `${alias} masası isteğini kabul etti`,
-    historyTitle: 'Oyun geçmişi',
     noHistory: `Başka bir masayla en az ${ENCOUNTER_MIN_MINUTES} dakika oynadığınızda burada görünür.`,
-    // The last game played in the room, or the chat (docs/SPEC_V3.md §5.5).
-    historyRow: (alias: string, concept: HistoryConcept, playedAt: string) =>
-      `${alias} masasıyla ${HISTORY_CONCEPTS[concept]} · ${dayMonth(playedAt)}`,
     people: (n: number) => `${n} kişi`,
     sendRequest: 'İstek gönder',
     addFriend: 'Arkadaş ekle',
@@ -583,19 +567,6 @@ export const tr = {
     // skall tuvali (Bildirimler, BildirimlerKabul): the name in bold, then the rest.
     fresh: 'Yeni',
     earlier: 'Önceki',
-    requestRest: 'sana arkadaşlık isteği gönderdi',
-    friendsNow: 'ile artık arkadaşsınız',
-    acceptedRest: 'arkadaşlık isteğini kabul etti',
-    acceptedMeta: 'Artık mesajlaşabilirsiniz',
-    matchRest: 'ile arkadaş oldunuz',
-    matchMeta: 'Masa sonunda ikiniz de eklediniz',
-    inviteRest: 'seni masasına çağırıyor',
-    invitePastRest: 'seni masasına çağırmıştı',
-    inviteMeta: (table: string, people: number, clock: string) =>
-      `${table} · ${people} kişi · ${clock} kaldı`,
-    inviteJoined: (table: string) => `Kabul edildi, ${table} masasının yanına git.`,
-    inviteGone: 'Davet artık geçerli değil',
-    inviteDeclined: 'Reddettin',
     join: 'Katıl',
     writeMessage: 'Mesaj yaz',
     // One short line under the name, the same height for every kind (the owner's call, 28 Ekim).
@@ -628,7 +599,6 @@ export const tr = {
     title: 'Kapsülün',
     shuffle: 'Karıştır',
     tapHead: 'Kafama dokun',
-    worn: 'Takılı',
     remove: (name: string) => `${name} çıkar`,
     empty: (slot: string) => `${slot} boş`,
     pack: (name: string) => `${name} paketi`,
@@ -670,12 +640,6 @@ export const tr = {
     leaveBody: 'Yaptığın değişiklikler silinir.',
     leaveConfirm: 'Kaydetmeden çık',
     leaveBack: 'Düzenlemeye dön',
-    seenAs: 'olarak görünürsün',
-    seenAsLead: 'Masada',
-    // Under the "Anonim adın" label: the label is not said again (the owner's report, 30 Ekim).
-    nickNote: 'Yenilersen yeni bir ad alırsın; kapsülün aynı kalır.',
-    nickNoteWait: '30 günde bir yenileyebilirsin; kapsülün aynı kalır.',
-    nickRefresh: "Nick'i yenile",
     nickRenew: 'Yenile',
     nickWait: (days: number) => `${days} gün sonra yenileyebilirsin.`,
     // A friend's profile (skall tuvali, ProfilBaskasi): the status beside "Mesaj".
@@ -686,7 +650,6 @@ export const tr = {
     ageAfterName: (age: number) => `, ${age}`,
     addName: 'Ad ekle',
     edit: 'Profili düzenle',
-    editShort: 'Düzenle',
     birthDateNote: 'Doğum tarihin değiştirilemez; profilinde yalnızca yaşın görünür.',
     friends: 'Arkadaşlar',
     friendsCount: (n: number) => `Arkadaşlar, ${n}`,
@@ -711,11 +674,7 @@ export const tr = {
       'Fotoğrafın şikayetler nedeniyle gizlendi; kimse göremiyor. Yeni bir fotoğraf yükleyebilirsin.',
     photoPermission: 'Fotoğraf seçmek için izin gerekiyor. İzni ayarlardan verebilirsin.',
     photoInvalid: 'Bu fotoğraf kullanılamadı. Başka bir fotoğraf dene.',
-    photoPrivacy:
-      'Fotoğrafın konum ve cihaz bilgisi gibi bütün ek bilgilerden arındırılarak yüklenir.',
-    badgesTitle: 'Rozetler',
     noBadges: 'Oynadıkça rozet kazanırsın.',
-    badgeCount: (earned: number, all: number) => `${earned} / ${all}`,
     badgeLocked: (name: string) => `${name}, henüz kazanılmadı`,
     badges: {
       first_game: 'İlk oyun',
@@ -734,37 +693,20 @@ export const tr = {
   participation: {
     title: 'Bu masada nasıl görüneceksin?',
     anonymous: 'Anonim',
-    anonymousHint: 'Diğer masalar yalnızca masa adını ve kişi sayını görür.',
     profile: 'Profilimle',
-    profileHint: 'Lobide yalnızca masa adın görünür. Masadakiler, masa sürerken profilini görür.',
-    profileNeedsName: 'Profilinle katılmak için önce Profil sekmesinden bir ad seç.',
-    // "Bu masadayım" (canvas: Faz 2 · 22.5 → Bu masadayım: seçim): the table's phones see this one.
-    memberAnonymousHint: (alias: string) => `Masadakiler yalnızca takma adını görür: ${alias}.`,
-    memberProfileHint: 'Masadakiler, masa sürerken profilini görür.',
     // "Profilimle" needs a profile photo others can see (docs/SPEC_V3.md §22.G, decision 8).
     photoNeeded: 'Profilinle görünmek için profil fotoğrafı gerekiyor.',
     // A man and "Belirtmek istemiyorum" always join with the profile (docs/SPEC_V3.md §23.D): no
     // choice, the profile that goes (canvas: Faz 3 · 23.2 → profil önizlemesi).
     previewTitle: 'Masada böyle görüneceksin',
-    previewJoinTitle: 'İsteğinle birlikte gider',
-    previewTag: 'Profilinle',
-    previewLobby: 'Lobide yalnızca masa adın görünür. Masadakiler, masa sürerken profilini görür.',
-    previewJoin:
-      'Masanın lideri isteğinde adını, yaşını ve fotoğrafını görür. Kabul ederse masadakiler, masa sürerken profilini görür.',
-    previewMember: 'Masadakiler, masa sürerken profilini görür.',
     previewName: (name: string, age: number | null) => (age === null ? name : `${name}, ${age}`),
-    photoNeededLobby: 'Masanı lobiye açmak için profil fotoğrafı gerekiyor.',
-    photoNeededJoin: 'Katılma isteği göndermek için profil fotoğrafı gerekiyor.',
-    photoNeededMember: 'Bu tarafa katılmak için profil fotoğrafı gerekiyor.',
   },
   home: {
     title: 'Hoş geldin',
     hint: 'Bir mekandaysan masanı açıp diğer masalarla oynayabilirsin.',
-    checkIn: 'Mekana giriş yap',
     settings: 'Ayarlar',
   },
   checkin: {
-    locationTitle: 'Konumun',
     // The consent itself (location consent draft-1, _shared/pure/consent.ts): pressing the button.
     locationBody:
       '"Konumumu kullan" düğmesine basarak konumunun yalnızca mekanda olduğunu doğrulamak için bir kez kullanılmasına açık rıza verirsin. Konumun saklanmaz.',
@@ -777,94 +719,36 @@ export const tr = {
       'Konum izni olmadan mekanda olduğunu doğrulayamıyoruz. İzni ayarlardan verebilirsin.',
     openSettings: 'Ayarları aç',
     locationFailed: 'Konum alınamadı. Açık bir alanda tekrar dene.',
-    venuesTitle: 'Yakındaki mekanlar',
-    noVenues: 'Yakınında kayıtlı bir mekan yok.',
     retry: 'Tekrar dene',
-    distance: (meters: number) => `${meters} m`,
     outsideBoundary: (kind: VenueKind) =>
       kind === 'campus'
         ? 'Kampüsün içinde görünmüyorsun. Kampüse girince tekrar dene.'
         : 'Mekanın içinde görünmüyorsun. Mekana girince tekrar dene.',
     spotTitle: 'Neredesin?',
     spotHint: 'Aynı noktadaki masalarla oynarsın. Noktanı sonra da değiştirebilirsin.',
-    venueAtSpot: (venue: string, spot: string) => `${venue} · ${spot}`,
-    headcountTitle: 'Masada kaç kişisiniz?',
-    headcountOption: (n: number) => headcountLabel(n),
-    headcountHint: 'Kendinizi de sayın. Dört ya da daha fazlaysanız 4+ seçin.',
     open: 'Masayı aç',
-    doneTitle: 'Masan hazır',
-    doneBody: 'Bu mekanda diğer masalar sizi bu adla görecek:',
     continue: 'Devam',
   },
   // The games (docs/SPEC_V3.md §5.1). "Sohbet" alone is the intent label, never a game.
   concepts: GAME_NAMES,
-  // How a game is shown with its type (docs/arsiv/SPEC_V2.md §8.1): only voice games are marked, since
-  // they need the tables to come together.
-  conceptWithMode: (concept: 'tabu' | 'sohbet' | 'sahtekar' | 'harf' | 'sarki' | 'ibre') =>
-    concept === 'sohbet' ? 'Sohbet kartları' : `${VOICE_NAMES[concept]} · yüz yüze`,
   // The room's optional intent label (§5.2).
   intents: { game: 'Oyun', chat: 'Sohbet' },
-  voiceNote:
-    'Bu oyun yüz yüze oynanır: başka bir masa katılırsa masalar bir araya gelip sesli oynar.',
   rooms: {
     // Faz 3 (docs/SPEC_V3.md §23.C; canvas: Aşama 2 · Ekranlar → Faz 3 · 23.1 Masa ve lobi): the
     // word "oda" is never shown; the server's rooms stay.
     create: 'Masanı lobiye aç',
-    playWithTable: 'Masanla oyna',
-    // The empty lobby (v45: .empty-card): the title, then what this table can do.
-    lobbyEmptyTitle: 'Açık masa yok',
-    playWithTableHint: 'Masanı lobiye açabilir ya da kendi masanla oynayabilirsin.',
-    // The empty lobby while this table is in it.
-    lobbyEmptyOpen: 'Biri katılmak isterse burada görürsün.',
-    lobbyLoading: 'Lobi yükleniyor…',
-    lobbyError: 'Lobi yüklenemedi.',
-    lobbyTitle: 'Açık masalar',
-    roomCount: (n: number) => `${n} masa`,
     profiled: 'profilli',
     people: (n: number) => `${n} kişi`,
     requestJoin: 'Katıl',
-    // Faz 2 (docs/SPEC_V3.md §22.C; canvas: Faz 2 · 22.5 Takımlar): a member of a side.
-    requestMember: 'Bu masadayım',
     phones: (n: number) => `${n} telefon`,
-    peopleAndPhones: (people: number, phones: number) =>
-      `${headcountLabel(people)} kişi · ${phones} telefon`,
-    phonesAndPeople: (phones: number, people: number) =>
-      `${phones} telefon · ${headcountLabel(people)} kişi`,
     runningTitle: 'Süren masalar',
-    runningHint: 'Masandakiler bunlardan birinde oynuyorsa onların tarafına katılabilirsin.',
-    // Between the two sides of a running room.
-    versus: 'ile',
-    memberBody: (leader: string) =>
-      `${inflectTr(leader, 'genitive')} tarafına katılırsın. Kabul ederse oyun ve sohbet senin telefonunda da açılır.`,
-    tellLeader: 'Liderine bu adı söyle',
-    tellLeaderBody: (leader: string) =>
-      `${leader} bu adı istek kartında görür. Kabul ederse masaya katılırsın.`,
-    incomingMemberTitle: 'Masana katılmak istiyor',
-    incomingMemberBody:
-      'Bu adı söyleyen arkadaşınsa kabul et. Kabul edersen senin tarafına katılır.',
     declineMemberNote: 'Reddedersen o yalnızca "Masa şu an müsait değil" görür.',
     peopleTitle: 'Masadakiler',
-    mySide: (phones: number) => `Senin tarafın · ${phones} telefon`,
-    otherSide: (phones: number) => `Karşı taraf · ${phones} telefon`,
-    leaderTag: 'Lider',
     youTag: 'Sen',
-    peopleNote: 'Profilli olanların profili masa sürerken açılır.',
     leave: 'Masadan çık',
-    leaveHandover: (next: string) =>
-      `Çıkarsan liderlik ${inflectTr(next, 'dative')} geçer, masa sürer.`,
     leaveConfirmTitle: 'Masadan çıkıyor musun?',
-    leaveConfirmLeader: (next: string) =>
-      `Liderlik ${inflectTr(next, 'dative')} geçer, masa sürer. Yeniden yalnızca bu tarafa katılabilirsin.`,
-    leaveConfirmMember: 'Yeniden yalnızca bu tarafa katılabilirsin.',
-    // The new leader's note at the top of the chat (canvas: Liderlik devri notu).
-    newLeader: (previous: string) =>
-      `Artık lider sensin. ${previous} masadan çıktı; katılma istekleri sana gelir, masayı sen bitirebilirsin.`,
     mySpot: (name: string) => `Senin noktan · ${name}`,
     noSpot: 'Noktasız',
-    spotHere: 'Bu noktadayım',
-    otherSpot: 'Bu masa başka bir noktada.',
-    requestPending: (seconds: number) => `İsteğin gönderildi. Yanıt bekleniyor (${seconds} sn).`,
-    requestUnavailable: 'Masa şu an müsait değil.',
     // In place of the pending note for a few seconds once the request is accepted.
     newTitle: 'Masanı lobiye aç',
     newHint: 'Mekandaki masalar seni lobide görür ve katılmak isteyebilir.',
@@ -876,7 +760,6 @@ export const tr = {
     // The optional game tag (docs/SPEC_V3.md §23.C): only seen in the lobby.
     gameTagLabel: 'Oyun',
     gameTagHint: 'Yalnızca lobide görünür; oyunu başlatmaz.',
-    createConfirm: 'Lobiye aç',
     // The room's eyebrow: the running game, else the chat; voice games say they are played face to
     // face (docs/arsiv/SPEC_V2.md §8.1).
     roomEyebrow: (concept: 'tabu' | 'sohbet' | 'sahtekar' | 'harf' | 'sarki' | 'ibre' | null) =>
@@ -885,25 +768,9 @@ export const tr = {
         : concept === 'sohbet'
           ? 'Sohbet kartları'
           : `${VOICE_NAMES[concept]} · yüz yüze`,
-    withGuest: (owner: string, guest: string) => `${owner} ve ${guest}`,
-    // A two-table room's top bar: only the other table's name.
-    withOther: (alias: string) => `${alias} ile`,
-    waitingForGuest: 'Başka bir masa katılmak isteyebilir. Bu arada kendi masanla oynayabilirsin.',
     end: 'Masayı bitir',
-    endHint:
-      'Masayı bitirirsen masa herkes için kapanır. Karşı taraftakileri sonra da arkadaş ekleyebilirsin.',
-    // The merged table (docs/SPEC_V3.md §23.F; canvas: Faz 3 · 23.3).
-    tabsLabel: 'Oyun ve sohbet',
-    tabGames: 'Oyun Seç',
-    tabChat: 'Masa Sohbeti',
-    unreadChat: 'okunmamış mesaj',
-    peopleStrip: (n: number) => `Masadakiler · ${n}`,
-    peopleAll: 'Tümü',
     requestTitle: 'Katılma isteği',
     sendRequest: 'İsteği gönder',
-    incomingTitle: 'Katılma isteği',
-    incomingBody: (alias: string, headcount: number) =>
-      `${alias} (${headcountLabel(headcount)} kişi) masana katılmak istiyor.`,
     accept: 'Kabul et',
     decline: 'Reddet',
     declineNote: 'Reddedersen karşı masa yalnızca "Masa şu an müsait değil" görür.',
@@ -922,7 +789,6 @@ export const tr = {
     tooMany: 'Birlikte 12 kişiyi geçersiniz. Masada en çok 12 kişi olur.',
     comingTitle: (alias: string, people: number) => `${alias} geliyor, ${people} kişi`,
     comingBody: 'Masanın yanına geliyorlar.',
-    viewPeople: 'Masadakileri gör',
     secondsLeft: (s: number) => `${s} sn`,
   },
   chat: {
@@ -932,7 +798,6 @@ export const tr = {
     placeholder: 'Mesaj yaz…',
     send: 'Gönder',
     empty: 'Henüz mesaj yok.',
-    counter: (n: number, max: number) => `${n}/${max}`,
     sending: 'Gönderiliyor…',
     notSent: 'Gönderilemedi.',
     retry: 'Tekrar dene',
@@ -978,7 +843,6 @@ export const tr = {
     // Over the first message that came while the chat was closed (skall tuvali: `.day.new`).
     // Over the first unread message; the chat opens there (the owner's call, 30 Ekim).
     newLine: 'Okunmamış mesajlar',
-    jumpDown: 'En alta in',
     openProfile: (name: string) => `${name}, profili aç`,
   },
   // Mekan sohbeti (docs/SPEC_V3.md §7).
@@ -989,18 +853,7 @@ export const tr = {
     empty: 'Henüz mesaj yok. İlk mesajı sen yaz.',
     placeholder: 'Mekana yaz…',
     send: 'Gönder',
-    asProfile: 'Profilimle yaz',
-    asProfileOn: 'Adınla görünür; masa adın görünmez.',
-    asProfileOff: 'Masa adınla görünür.',
-    // One choice per check-in, asked at the first "Gönder" (§22.G, decision 7); the line over the
-    // message bar says which one it is.
-    modeTitle: 'Bu mekanda kaldığın sürece mekan sohbetinde nasıl görüneceksin?',
-    modeAnonymousHint: (alias: string) => `Mesajların masa adınla görünür: ${alias}.`,
-    modeProfileHint: 'Mesajların adın ve fotoğrafınla görünür; masa adın görünmez.',
-    writingAnonymous: 'Anonim yazıyorsun',
-    writingProfile: 'Profilinle yazıyorsun',
     you: 'Sen',
-    messageMenu: 'Mesaj',
     // skall tuvali (Mekan sohbeti panoları, docs/SPEC_V4.md §4.D).
     options: 'Mekan sohbeti seçenekleri',
     writingAs: 'olarak yazıyorsun',
@@ -1035,7 +888,6 @@ export const tr = {
     incoming: (venue: string, name: string, age: number | null) =>
       `${venue} sohbetinden ${age !== null ? `${name} (${age})` : name} arkadaşın olmak istiyor`,
     sent: (name: string) => `İstek gönderildi: ${name}`,
-    sentAccepted: (name: string) => `${name} isteğini kabul etti`,
   },
   safety: {
     report: 'Şikayet et',
@@ -1052,102 +904,35 @@ export const tr = {
     block: 'Engelle',
     blockConfirmTitle: 'Bu kişiyi engellemek istiyor musun?',
     blockConfirm: 'Engelle',
-    // Faz 2 (canvas: Engelle / Şikayet et: kişi seçimi): the person first.
-    blockWho: 'Kimi engelliyorsun?',
-    reportWho: 'Kimi şikayet ediyorsun?',
-    blockOwnMember: (alias: string) =>
-      `${alias} masadan çıkar, sen masada kalırsın. Birbirinizin masalarını artık görmezsiniz.`,
-    blockLeaves: 'Sen masadan çıkarsın. Birbirinizin masalarını artık görmezsiniz.',
-    reportNote: 'Şikayetin, şikayet ettiğin kişiye bildirilmez.',
-    blockedTitle: 'Engellenenler',
     blockedEmpty: 'Engellediğin kimse yok.',
-    blockedSince: (date: string) => `${date} tarihinde engellendi`,
     unblock: 'Engeli kaldır',
-    otherOffline: 'Diğer masanın bağlantısı koptu.',
   },
   games: {
-    sohbetFirst: 'İlk kartı aç',
-    sohbetNext: 'Sonraki',
-    sohbetWait: (s: number) => `Sonraki (${s} sn)`,
     themes: SOHBET_THEMES,
-    localIntro: 'Masanızı iki takıma ayırın. Anlatan telefonu tutar, takımı tahmin eder.',
     team: (t: string) => `Takım ${t}`,
     round: (n: number, total: number) => `Tur ${n}/${total}`,
-    startTurn: (t: string) => `Takım ${t} başlasın`,
-    forbiddenLabel: 'Yasaklı kelimeler',
     correct: 'Doğru',
     pass: 'Pas',
-    taboo: 'Yasak!',
-    scores: (a: number, b: number) => `A ${a} – ${b} B`,
     winner: (t: string) => `Takım ${t} kazandı!`,
     draw: 'Berabere!',
-    playAgain: 'Yeniden oyna',
-    // Proposals (docs/SPEC_V3.md §5.3): a game starts only when the other table accepts.
-    proposeTitle: 'Oyun öner',
-    proposeHint: 'Diğer masa kabul edince oyun başlar.',
-    propose: (game: string) => `${game} öner`,
-    proposalMine: (game: string, s: number) => `${game} önerdin. Yanıt bekleniyor (${s} sn).`,
-    proposalTheirs: (game: string) => `Diğer masa ${game} öneriyor.`,
-    acceptProposal: 'Oynayalım',
-    declineProposal: 'Şimdi değil',
-    notAccepted: 'Öneri kabul edilmedi.',
     // One table: the games start at once.
     soloTitle: 'Masanla oyna',
-    soloHint: (n: number) => `Tek telefonla, masada elden ele. ${n} kişisiniz.`,
     minPlayers: (n: number) => `En az ${n} kişi`,
     start: (game: string) => `${game} başlat`,
     endGame: 'Oyunu bitir',
-    lastGameTabu: (owner: string, ownerScore: number, guest: string, guestScore: number) =>
-      `Son oyun: ${owner} ${ownerScore} – ${guestScore} ${guest}`,
-    lastGameOther: (game: string) => `${game} bitti.`,
     turn: (n: number, total: number) => `Tur ${n}/${total}`,
-    turnEyebrow: (n: number, total: number) => `${GAME_NAMES.tabu} · Tur ${n}/${total}`,
-    passesLeft: (n: number) => `${n} pas hakkı`,
-    passDetail: (n: number) => `${n} hak`,
     secondsLeft: (s: number) => `${s} sn`,
     // The turn clock, "0:37".
     clock: (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`,
     clockLabel: (s: number) => `${s} saniye kaldı`,
-    correctPoints: '+1',
-    tabooPoints: '−1',
-    turnOverWait: 'Tur bitiyor…',
-    voiceIntro: `Yüz yüze oynanır: masalar sırayla anlatır, diğer masa kartı görür ve hakemlik yapar. ${TABU.totalTurns} tur, her tur ${TABU.turnSeconds} saniye.`,
-    sohbetIntro: 'Sohbet kartları: her kart bir soru; iki masa da sonraki kartı açabilir.',
-    voiceDescribe:
-      'Sıra sizde: kartı masanıza anlatın. Diğer masa kartı görüyor, yasaklı kelime geçerse "Yasak!" der.',
-    tapToReveal: 'Kartı görmek için dokun',
-    hideFromTeam: 'Önce telefonu takım arkadaşlarından sakla.',
-    cardsLoading: 'Kartlar geliyor…',
-    voiceJudge: (alias: string) => `${alias} anlatıyor. Hakem sizsiniz.`,
-    judgeCorrect: 'Doğru +1',
-    judgeTaboo: 'Yasak! −1',
     // The score label of this phone's side (canvas: Faz 2 · 22.5).
     you: 'tarafın',
-    // The describer's teammate (docs/SPEC_V3.md §22.E; canvas: Sesli Tabu: takım arkadaşı).
-    teammateNote: (alias: string) => `${alias} anlatıyor.`,
-    cardWithDescriber: 'Kart anlatanda',
-    cardWithDescriberHint:
-      "Kartı yalnızca anlatan ve hakem taraf görür. Sen tahmin et, bilince Doğru'ya bas.",
-    describing: 'anlatıyor',
-    voiceWinner: (alias: string) => `${alias} kazandı!`,
-    voiceDraw: 'Berabere!',
-    cardOnlyHere: 'Kartı yalnızca bu masadakiler görür.',
-    // Cooperative mode (docs/SPEC_V3.md §6.3): one team, the guessing table never sees the card.
-    coopIntro: 'Masalardan biri tek kişi: iki masa tek takım, ortak skor süreye karşı.',
-    coopDescribe:
-      'Sıra sizde: kartı diğer masaya anlatın. Doğru, Pas ve Yasak! düğmelerine siz basarsınız.',
-    coopGuess: (alias: string) => `${alias} size anlatıyor. Anlatanı dinleyin ve tahmin edin.`,
-    coopCardHidden: 'Kartı yalnızca anlatan görür.',
-    teamScore: 'Ortak skor',
-    lastGameTeam: (score: number) => `${GAME_NAMES.tabu} bitti. Ortak skor: ${score}`,
     // Stage 6 (canvas: Aşama 6 · Oyunlar): full-screen game, turn ready, feedback, end, intro.
     scoreUp: (n: number) => `+${n}`,
     scoreDown: (n: number) => `−${n}`,
-    chatButton: (unread: number) => (unread > 0 ? `Sohbet, ${unread} okunmamış` : 'Sohbet'),
     endGameConfirmTitle: 'Oyunu bitirelim mi?',
     endGameConfirmBody:
       'Skor şimdiki hâliyle kaydedilir ve iki masa sohbete döner. Diğer masa da bunu görür.',
-    endGameConfirmSolo: 'Skor şimdiki hâliyle kalır ve masanız sohbete döner.',
     endGameConfirm: 'Bitir',
     keepPlaying: 'Devam et',
     turnDone: (n: number) => `${n}. tur bitti`,
@@ -1182,11 +967,6 @@ export const tr = {
       },
     ],
     introDone: 'Anladım, başlayalım',
-    // Step 7 A2 (docs/SPEC_V3.md §19.2): the ready screen's summary and the time-up line.
-    turnSummaryTitle: (alias: string) => `${alias} anlattı`,
-    signedPoints: (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0'),
-    turnPointsLine: (alias: string, n: number) =>
-      `${alias} bu turda ${n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0'}`,
     gameBrand: (game: string) => `${APP_NAME} · ${game}`,
   },
   // Harf Kapmaca and Şarkıda Geçsin (docs/SPEC_V3.md §20.3–20.4): say, then the other table may
@@ -1205,24 +985,8 @@ export const tr = {
     sayLine: 'Geçtiği bir şarkıdan bir dize söyleyin',
     // The game screens (docs/SPEC_V3.md §20.3–20.4).
     round: (n: number, total: number) => `Tur ${n} / ${total}`,
-    yourTurn: 'Sıra sizde',
-    theirTurn: (alias: string) => `Sıra ${alias} masasında`,
-    teamTurn: (team: string) => `Sıra: Takım ${team}`,
     team: (team: string) => `Takım ${team}`,
-    // The last round's winner over the next round; the points stand beside it ("+1").
-    roundWon: (alias: string, reason: 'objection' | 'timeout' | 'board' | 'lines') =>
-      reason === 'objection'
-        ? `İtiraz! ${alias}`
-        : reason === 'board'
-          ? `Tahta doldu. ${alias}`
-          : `Süre doldu. ${alias}`,
-    // Under "İtiraz!": who took the point.
-    objectionPoint: (alias: string) => `${alias} +1`,
-    roundEnd: { objection: 'İtiraz!', timeout: 'Süre doldu, tur bitti.', board: 'Tahta doldu.' },
-    roundNoPoint: `${capitalizeTr(numberWord(SAY_CONFIG.sarki.maxSteps))} dize söylendi; puan yok.`,
-    readyHint: (s: number) => `Başlayınca her sıra ${s} saniye.`,
-    readyWaitingHint: 'Onlar başlayınca ya da süre dolunca tur başlar.',
-    pickLetter: 'Kelimeyi söyleyin, baş harfine dokunun.',
+    roundEnd: { objection: 'İtiraz!' },
   },
   // İbre (docs/SPEC_V3.md §20.5): a two-ended scale, values 0–100.
   ibre: {
@@ -1244,32 +1008,8 @@ export const tr = {
     pointsWord: 'puan',
     // The game screens (docs/SPEC_V3.md §20.5).
     round: (n: number, total: number) => `Tur ${n} / ${total}`,
-    readyHint: `Başla'ya basınca ${IBRE_CONFIG.clueSeconds} saniye: hedefe bakın, tek ipucu verin, ibreyi onaylayın.`,
-    readyWaitingHint: 'Karşı masa hedefe bakıp tek ipucu verecek. Dinleyin.',
     clueHint: `Anlatıcı hedefe baksın, sesli tek ipucu versin. Masası ibreyi ayarlayıp onaylasın; son ${IBRE_AUTO_LOCK_SECONDS} saniyede ibre olduğu yerde onaylanır.`,
     lock: 'İbreyi onayla',
-    // Faz 2 (docs/SPEC_V3.md §22.E; canvas: İbre: anlatıcı / takım arkadaşı).
-    teamLocks: 'Takım arkadaşın "İbreyi onayla"ya basınca ibre kilitlenir.',
-    teamClue: (alias: string) => `${alias} ipucu veriyor. İbreyi ipucuna göre getir.`,
-    otherClue: (alias: string) => `${alias} ipucu veriyor. İbre onaylanınca taraf seçeceksiniz.`,
-    sideTitle: 'Hedef ibrenin solunda mı, sağında mı?',
-    sideHint: (s: number) => `${s} sn içinde seçin; doğruysa 1 puan.`,
-    sideWaiting: (alias: string) => `${alias} taraf seçiyor.`,
-    describerTurn: (team: string) => `${team} anlatıyor. Telefonu anlatıcıya verin.`,
-    sideTurn: (team: string) => `${team}: hedef ibrenin solunda mı, sağında mı?`,
-    roundTitle: (alias: string, band: number) => `${alias} bu turda +${band}`,
-    revealDetail: (
-      target: number,
-      needle: number | null,
-      guesser: string,
-      side: 'left' | 'right' | null,
-      point: boolean,
-    ) =>
-      needle === null
-        ? `Hedef ${target} · ibre onaylanmadı`
-        : side === null
-          ? `Hedef ${target} · ibre ${needle} · ${guesser} taraf seçmedi`
-          : `Hedef ${target} · ibre ${needle} · ${guesser}: ${side === 'left' ? 'solunda' : 'sağında'}, ${point ? '+1' : 'puan yok'}`,
   },
   // Sahtekar (docs/SPEC_V3.md §20.2): seats are game labels, never identities.
   sahtekar: {
@@ -1315,25 +1055,12 @@ export const tr = {
     wordAndGuess: (w: string, g: string) => `Kelime: ${w} · tahmin: ${g}`,
     votesLabel: 'Oylar',
     voteLine: (voter: string, target: string) => `${voter}, ${seatTo(target, 'dative')} oy verdi`,
-    // The game screens (docs/SPEC_V3.md §20.2).
-    ownTable: 'Sizin masanız',
-    // A member's phone (docs/SPEC_V3.md §22.E; canvas: Sahtekar: üye izler).
-    memberTitle: 'Koltuklar liderinin telefonunda',
-    memberBody: (leader: string) =>
-      `${inflectTr(leader, 'genitive')} telefonunu izle; kartlar, ipucu sırası ve oylar orada.`,
-    otherTable: 'Diğer masa',
-    ownDone: 'Masanızda herkes baktı. Diğer masa bekleniyor.',
-    redealt:
-      'Sahtekar kartına bakmadı ve oyundan çıktı. Yeni kelime dağıtıldı; herkes yeniden baksın.',
     dealing: 'Yeni kelime geliyor…',
-    votesDone: 'Masanızın oyları verildi. Diğer masa bekleniyor.',
-    notEnough: `Kartına bakmayanlar oyundan çıktı; ${SAHTEKAR.minPlayers} kişi kalmadı. Oyun bitti.`,
   },
   // Vampir Köylü (docs/SPEC_V4.md §4.F "Adım 4.6.6", the owner's file skall-oyun-vampir-koylu).
   vampir: {
     timeLeft: 'kalan süre',
     timeLeftLabel: (clock: string) => `Kalan süre ${clock}`,
-    moreVoters: (n: number) => `+${n}`,
     name: 'Vampir Köylü',
     whoPlays: 'Kimler oynuyor',
     rules: ['5 ile 12 kişi', 'Gizli roller', 'Gece ve gündüz'],
@@ -1361,11 +1088,6 @@ export const tr = {
     dead: 'Öldün',
     watching: 'İzliyorsun',
     exit: 'Oyundan çık',
-    // The role card.
-    holdTitle: 'Basılı tut',
-    holdNote: 'Rolünü yalnızca sen gör',
-    yourRole: 'ROLÜN',
-    cardHint: 'Kartı basılı tut, rolünü gör. Kimse görmesin.',
     // The round table's line over the card, and a vampire's mates while it is held.
     cardTitle: 'Kartı basılı tut',
     cardNote: 'Rolünü yalnızca sen gör. Kimse görmesin.',
@@ -1518,7 +1240,6 @@ export const tr = {
     here: 'Mekandasın',
     // The round button at the top right of Mekan (docs/design/aura → Mekan) and its sheet.
     more: 'Seçenekler',
-    yourTable: 'Masanın adı',
     people: (n: number) => `${n} kişi`,
     remaining: (h: number, m: number) => (h > 0 ? `${h} sa ${m} dk kaldı` : `${m} dk kaldı`),
     leave: 'Mekandan ayrıl',
@@ -1533,10 +1254,6 @@ export const tr = {
     changeSpotHint:
       'Aynı noktadaki masalarla oynarsın. Masan lobideyken, oyundayken ya da bir isteğin beklerken değiştiremezsin.',
     changeSpotSave: 'Bu noktadayım',
-    // The table's name (docs/SPEC_V4.md §4.E): the owner renews it 3 times a table (v46: "Başka ad").
-    rerollName: 'Başka ad',
-    rerollsLeft: (n: number) =>
-      n > 0 ? `${n} yenileme hakkın var` : 'Bu masada adı yenileme hakkın bitti',
     // The card's lobby state (v46: .mine-head small).
     lobbyOff: 'Lobide değil',
     lobbyOpen: 'Lobide açık',
@@ -1547,17 +1264,10 @@ export const tr = {
     withdraw: 'Lobiden çek',
     // The top row (v45: .top): the own photo opens Profil.
     openProfile: 'Profilini aç',
-    // The venue chat card (v45: .linkcard.chat); its dot only with a message in the last 10
-    // minutes (K-12).
-    chatCard: 'Mekana giriş yapan herkes okur ve yazar.',
     // docs/design/aura → Mekan sohbeti: under its name in the bar.
     chatReaders: 'Mekandaki herkes okur',
     chatEmpty: 'Henüz kimse yazmadı. İlk mesajı sen yaz.',
-    chatNew: 'Yeni mesaj',
     chatActive: 'şu an aktif',
-    // The card's head opens the table. A screen reader hears the name, the people and the state,
-    // then what the head does.
-    openTable: 'Masanı aç',
     tableHead: (alias: string, people: number, state: string) =>
       `${alias}, ${headcountLabel(people)} kişi, ${state}, Masanı aç`,
     openLobby: 'Lobiye aç',
@@ -1572,18 +1282,14 @@ export const tr = {
     end: 'Bitir',
     leave: 'Masadan ayrıl',
     leaveShort: 'Ayrıl',
-    tabGames: (n: number) => `Oyun Seç (${n})`,
     // Masa's two tabs (docs/design/aura → Masa).
     games: 'Oyunlar',
     chat: 'Sohbet',
-    peopleTag: 'Masadakiler',
     // Masa sohbeti on its own screen, from the bar's button (the owner's call, 28 Ekim).
     chatTitle: 'Masa sohbeti',
     chatOpen: (unread: number) =>
       unread > 0 ? `Masa sohbeti, ${unread} yeni mesaj` : 'Masa sohbeti',
     status: (people: string, lobby: string) => `${people} · ${lobby}`,
-    tabChat: (n: number) => `Masa Sohbeti (${n})`,
-    categoryAll: (n: number) => `Tümü ${n}`,
     category: (name: string, n: number) => `${name} ${n}`,
     // A game before its step (4.6): its poster is faded and not pressed.
     soon: 'Yakında',
@@ -1591,9 +1297,6 @@ export const tr = {
     leaveNote: 'Ayrılırsan masa sürer; sahiplik masaya en erken katılana geçer.',
     blockOwnerNote: 'Masadan çıkarılır. Karşı tarafa bildirilmez.',
     blockMemberNote: 'Masadan çıkarsın. Karşı tarafa bildirilmez.',
-    // The posters (skall tuvali, Masa): the least headcount and a game's line.
-    minPeople: (n: number) => `${n}+ kişi`,
-    allGames: 'Tümü',
     // The games' cards (the owner's file skall-oyun-kartlari, 27 Ekim): name, line, headcount.
     gameCards: {
       vampir: { name: 'Vampir Köylü', sub: 'Vampirleri bul', people: '5-12' },
@@ -1880,11 +1583,9 @@ export const tr = {
   },
   settings: {
     title: 'Ayarlar',
-    accountSection: 'Hesap',
     birthDate: 'Doğum tarihin',
     // "2000-01-15" → "15.01.2000"
     birthDateValue: (iso: string) => iso.split('-').reverse().join('.'),
-    birthDateHint: 'Yalnızca sen görürsün. Yanlışsa düzeltmek için bize yaz.',
     // Görünüm (K-54; v46 §5): kept only on the phone.
     appearance: {
       title: 'Görünüm',
@@ -1895,14 +1596,11 @@ export const tr = {
         dark: 'Her zaman koyu tema.',
       },
     },
-    notificationsSection: 'Bildirimler',
     notifyDm: 'Mesajlar',
     notifyFriendRequests: 'Arkadaşlık istekleri',
-    legalSection: 'Yasal',
     signOut: 'Çıkış yap',
     deleteAccount: 'Hesabımı sil',
     deleteConfirmTitle: 'Hesabın silinsin mi?',
-    deleteConfirmBody: 'Tüm verilerin kalıcı olarak silinir. Bu işlem geri alınamaz.',
     deleteConfirm: 'Sil',
     privacy: 'Gizlilik politikası',
     kvkk: 'KVKK Aydınlatma Metni',
