@@ -240,11 +240,15 @@ export const tr = {
   legal: {
     termsTitle: 'Kullanım Koşulları',
     kvkkTitle: 'KVKK Aydınlatma Metni',
+    privacyTitle: 'Gizlilik Politikası',
     // Placeholder texts (version draft-0). The real texts arrive with legal review before the pilot.
     draftNotice: 'Bu metin taslaktır ve pilot öncesinde güncellenecektir.',
     termsBody: `${APP_NAME}, aynı mekandaki masaların birlikte oyun oynayıp sohbet etmesi için bir uygulamadır. Diğer kullanıcılara saygılı davranmayı, taciz, hakaret ve uygunsuz içerik paylaşmamayı kabul edersin.`,
     kvkkBody:
       'Hesabını oluşturmak için telefon numaran, görünen adın, doğum tarihin ve cinsiyetin işlenir. Numaran ve doğum tarihin diğer kullanıcılarla paylaşılmaz; profilinde yalnızca yaşın görünür. Cinsiyetin hiçbir kullanıcıya gösterilmez ve kullanım istatistiğine gitmez; yalnızca masalara anonim mi profilinle mi katılabileceğini belirler. Masalara anonim katılım yalnızca kadın beyanıyla mümkün olduğundan, anonim görünmek cinsiyetin hakkında dolaylı bilgi verir. 18 yaşından küçüksen hesap açılmaz ve bilgilerin saklanmaz. Hesabını istediğin zaman uygulama içinden silebilirsin.',
+    // Draft-0 (ui 6.3, the owner's call, 3 Kasım): shown while no hosted privacy URL is set.
+    privacyBody:
+      'Konumun yalnızca check-in anında, mekanda olduğunu doğrulamak için bir kez kullanılır ve saklanmaz; yalnızca seçtiğin mekan ve oturduğun nokta saklanır. Konumun, bulunduğun mekan ve masan hiçbir kullanıcıya, arkadaşlarına da gösterilmez. Yüklediğin fotoğraflardan konum dahil bütün ek bilgiler telefonunda silinir. Anonim oturduğunda takma adınla görünürsün; profilin yalnızca profilinle oturduğunda masadakilere açılır. Mesajlarının telefondaki kopyası çıkış yaptığında ve arkadaşlık bittiğinde silinir. Hata raporlarına ve kullanım istatistiğine yalnızca hesap kimliğin gider; telefon numaran, konumun ve yazdıkların gitmez.',
   },
   tabs: {
     explore: 'Keşfet',

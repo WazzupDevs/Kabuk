@@ -7,6 +7,9 @@ import { tr } from '@/i18n/tr';
 export default function LegalScreen() {
   const { doc } = useLocalSearchParams<{ doc: string }>();
   if (doc === 'terms') return <LegalText title={tr.legal.termsTitle} body={tr.legal.termsBody} />;
+  if (doc === 'privacy') {
+    return <LegalText title={tr.legal.privacyTitle} body={tr.legal.privacyBody} />;
+  }
   if (doc === 'kvkk') return <LegalText title={tr.legal.kvkkTitle} body={tr.legal.kvkkBody} />;
   return <Redirect href="/settings" />;
 }

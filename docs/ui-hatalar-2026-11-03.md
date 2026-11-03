@@ -83,6 +83,7 @@ Olası yer: `apps/mobile/app/(app)/settings-muted.tsx:51` (`EmptyState ... body=
 
 **6.3 Gizlilik'te "Gizlilik politikası" satırı soluk ve KVKK'yı açıyor.** Satırın yazısı ve ikonu diğer satırlardan soluk görünüyor (?). Gizlilik politikası adresi yokken satır KVKK Aydınlatma Metni'ni açıyor; alttaki KVKK satırıyla aynı yere gidiyor. Önem: düşük.
 Olası yer: `apps/mobile/app/(app)/settings-privacy.tsx:48-56` (`privacyUrl` yoksa `doc: 'kvkk'`).
+**Düzeltildi (paket 5):** adres yokken satır ayrı taslak metni açar (`legal/privacy`, `tr.legal.privacyBody`; proje sahibinin kararı, 3 Kasım). Soluk görünüş koddan doğrulanamadı: satır diğerleriyle aynı `SettingsRow`.
 
 ### 7. Masa kur alt sayfası (açık)
 
