@@ -2,10 +2,10 @@
 
 ## Devir notu (3 Kasım 2026, E2E onarımı, K kabul testi)
 
-- Birleşenler: #395 (Aktiviteler alt solma, eyebrow), #396 (`theme/kabul.test.ts`: K1–K11, K13, K15–K17), #397 (E2E akışları bugünkü ekrana; görsel bazlar 2 Kasım, 16 görüntü). Native yok, OTA.
-- Sıradaki: K12 (arkadaş profilinde en büyük yazıda "Arkadaşlıktan çıkar") ve K14 (boş durumlarda riso resmi) için Maestro akışı, ayrı PR.
-- Proje sahibine sorulacak: check-in sheet'inde kampüs dışı uyarısı kısa ekranda görünür alanın altında kalıyor (tasarım kararı).
-- `e2e-tani` geçici dal, silinebilir.
+- Birleşenler: #395, #396 (`theme/kabul.test.ts`), #398 (check-in uyarıları nokta seçicisinin üstünde), #399 (wordmark v78, OTA), #400 (riso C simge, `version` 0.9.5: proje sahibi yeni preview build alacak, `play-512.png` Play Console'a). deploy-dev 10422b9 yeşil.
+- #397 (E2E, `e2e-onarim`) açık: shard 2 ve 3 yeşil, görsel kapı yeşil. Shard 1: `04-table` masa ekranında oyun kartlarına kaydıramıyor (sahne listenin üstünde; şimdi alttan `swipe` deneniyor). Shard 4: haritada sekme çubuğu yok (`tab-activities` basılamıyor); yalnız `01d-returning`'den (cinsiyet sorusu sonrası) sonra; `01d` sonuna `tab-explore` denetimi kondu, düşerse uygulama hatası (cinsiyet adımından uygulamaya geçişte sekme çubuğu).
+- Hazır, push edilmedi: `e2e-k12-k14` (0e2c14e; K12 ve K14 akışları, `chat-title` ve `empty-riso-<ad>` testID'leri); #397 birleşince main'e rebase, `e2e` etiketli PR.
+- Tanı: artifact indirilemez; `get_job_logs` `job_id` ile `tail_lines` ~225, `[Failed]` ve `maestro.log` satırları.
 
 ## Devir notu (3 Kasım 2026, Aura v71 P4, eksik hâller v75, F1 alt alta)
 
