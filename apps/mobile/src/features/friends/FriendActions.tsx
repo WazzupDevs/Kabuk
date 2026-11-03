@@ -19,15 +19,17 @@ export function FriendActions({ friend, onRemove }: { friend: Friend; onRemove?:
   return (
     <View style={{ flexDirection: 'row', gap: GAP }}>
       {onRemove ? (
+        // As wide as its words; "Mesaj" takes the rest (Aura v76 ProfilBaskasi, F1: at an equal half
+        // the words did not fit at 390 dp).
         <Btn
           bar={KIT.size.btnRow}
-          block
+          snug
           variant="glassy"
           icon="personRemove"
           testID="profile-remove-button"
           label={tr.friends.removeFriend}
           onPress={onRemove}
-          style={{ flex: 1, minWidth: 0 }}
+          style={{ flexShrink: 0 }}
         />
       ) : (
         <View

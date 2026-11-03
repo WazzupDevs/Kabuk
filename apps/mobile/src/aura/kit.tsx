@@ -237,6 +237,7 @@ export function Btn({
   tall,
   bar,
   block,
+  snug,
   icon,
   loading,
   disabled,
@@ -258,6 +259,9 @@ export function Btn({
   // 16 (Masa); beside 44 the small one's.
   bar?: number;
   block?: boolean;
+  // As wide as its words beside a wider button: 16 inside, its icon 20 (Aura v76 ProfilBaskasi,
+  // "Arkadaşlıktan çıkar"; F1).
+  snug?: boolean;
   icon?: CapIconName;
   loading?: boolean;
   disabled?: boolean;
@@ -326,7 +330,13 @@ export function Btn({
           : KIT.size.btn;
   const big = bar ? bar >= KIT.size.roundLg : false;
   const small = sm || (!!bar && !big);
-  const padX = big || mid ? KIT.size.btnPadXMid : small ? KIT.size.btnPadXSm : KIT.size.btnPadX;
+  const padX = snug
+    ? KIT.size.btnPadXSnug
+    : big || mid
+      ? KIT.size.btnPadXMid
+      : small
+        ? KIT.size.btnPadXSm
+        : KIT.size.btnPadX;
   const labelType = mid ? KIT_TYPE.btnMid : small ? KIT_TYPE.btnSm : KIT_TYPE.btn;
   return (
     <Pressable
@@ -365,7 +375,7 @@ export function Btn({
             name={icon}
             color={fg}
             soft={variant === 'primary' && !off ? PRIMARY_SOFT : 0.5}
-            size={sm ? KIT.size.iconSm : KIT.size.icon}
+            size={sm ? KIT.size.iconSm : snug ? KIT.size.iconSnug : KIT.size.icon}
           />
         ) : null}
         <Text

@@ -513,6 +513,7 @@ export const KIT = {
     // Mekan's "Masa kur" and Masa's "Bitir": the small height, 18 inside.
     btnMid: 36,
     btnPadXMid: 18,
+    btnPadXSnug: 16,
     btnPadX: 24,
     btnPadXSm: 16,
     btnGap: 8,
@@ -625,6 +626,7 @@ export const KIT = {
     side: 20,
     icon: 22,
     iconSm: 18,
+    iconSnug: 20,
     disk: 4,
     seg: 26,
     // A segmented control 44 high, its chosen part 36 (skall.css `.seg`).
