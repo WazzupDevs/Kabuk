@@ -11,7 +11,7 @@
 
 - Birleşenler: #392 Aura v71 P4 (8 pano; K8 `venue_chat_mutes.look` migration'ı, eski kayıtlar doldurulmaz, `guvenlik` denetledi; üretimde önce sunucu), #393 eksik hâller v75 (koyu kayıt sahnesi ve kod kutuları, riso etkinlik kartı, Aktiviteler hâlleri, dar hâl `src/lib/narrow.ts`), F1 dar hâlde alt alta (bu PR). Native yok, OTA.
 - Telefonda bakılacak: v76 §11 K1–K17 kabul turu (proje sahibi) ve #392/#393 ekranları; dar hâl 320 dp ya da en büyük yazıda Masa, Keşfet, Aktiviteler, arkadaş profili.
-- Açık: kayıt koyunun tam boy @3x'i (sohbete 978x1125 geldi, yalnız @2x kullanılıyor); Aktiviteler alt solması (ortak `TabBarFade` 32, pano 150) ve eyebrow 17 ayrı iş.
+- Açık: Aktiviteler alt solması (ortak `TabBarFade` 32, pano 150) ve eyebrow 17 ayrı iş.
 - Not: `invites.test.ts` "the bell" bir kez imzalı foto adresi farkıyla düştü (iki okumada farklı token), yeniden koşuda geçti; tekrarlarsa test adresin sorgu dizesini karşılaştırmamalı.
 
 ## Devir notu (3 Kasım 2026, UI hataları P-E…P-I, F1 birleşti)
