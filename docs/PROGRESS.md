@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (3 Kasım 2026, UI hataları P-A…P-D birleşti)
+
+- Proje sahibinin sırası: önce `docs/ui-hatalar-2026-11-02.md` §5 paketleri, sonra Aura v71 P4. #378 belge, #379 P-A (K1: RN `Image` + `absoluteFill` resmi piksel boyunda çiziyordu → `PICTURE_FILL`, `styleGuard.test.ts` yasaklar), #380 P-B (üst düğmeler `Screen` → `top`, Kapsül `HidingHeadScreen`, düzenlemede `useHideTabBar`), #381 P-C (ölçek 48/36/44, koyuda siyah primary gölgesi, sheet içi kart/düğme ayrışır, `RowList` cam kartta), #382 P-D (Composer düz yüzey, alan/gönder/ad kapsülü 44). Native yok, OTA.
+- Telefonda bakılacak: 6.4 (lobi boş durumu sekme çubuğu altında kesik mi), Kapsül'ün kaydırınca gizlenen başlığı, K8 (sheet bulanıklığı 0.9.4 build'iyle).
+- Sıradaki: P-E (mekan, masa kartı, lobi sayfaları; 15.1–15.2 `SPEC_V4`'e), P-F Keşfet, P-G (17.1 `guvenlik`), P-H boş durumlar riso (önce tuvale çizilir), P-I eski bileşen göçü. Sonra Aura v71 P4 (`aktarim-v71-fark.md` fark-2; K8 `guvenlik`).
+- Not: dal silme bu ortamda proxy'den 403 veriyor; birleşen dallar (`ui-p*`, `claude/modest-bell-rss6sb`) GitHub'da elle silinebilir.
+
 ## Devir notu (2 Kasım 2026, Aura v71 P2 ve P3 birleşti)
 
 - #374 P2 kayıt: yedi adımın hepsi riso sahne + konuşan/bakan riso kankiler (`SIGNUP_KANKI`, adım başına `fieldTop` ve balon), koyuda nokta accent, "n/7" kalktı, düğme ikonları, Ad `Input big` cam 72, foto seçici 120/kesikli 3, KayitMetinler tek kanki. #375 P3: Arkadaşlar (peek-1), Kapsül karakterler, Hesap, Gizlilik (sayılar kalktı), Bildirim ayarları, Engellenenler (`Screen` `backdrop` köşe kankisi). Native yok, OTA.
