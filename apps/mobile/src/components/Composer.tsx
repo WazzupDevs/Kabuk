@@ -1,5 +1,5 @@
 import { forwardRef, type ReactNode, useEffect, useState } from 'react';
-import { Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, TextInput, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -15,16 +15,13 @@ import { CapIcon } from '@/aura/CapIcon';
 import { useKit } from '@/aura/kit';
 import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
-import { GLASS_FACE, TAB_BAR_GLASS, TAB_GLASS, blursBehind } from '@/theme/glass';
 import { typeStyle, useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 import { useLabOff } from '@/lib/drawLab';
 
 import type { ChatQuote } from './ChatBubble';
-import { useChatEnd, useComposerGlass } from './ChatScreen';
-import { GradientFill } from './GradientFill';
+import { useChatEnd } from './ChatScreen';
 import { IconButton } from './IconButton';
-import { LiquidGlass } from './LiquidGlass';
 import { usePressScale } from './motion';
 import { Text } from './Text';
 import { Loader } from './Loader';
@@ -53,7 +50,7 @@ type Props = {
 // raised pill field and a round send button, both on a soft shadow; the button fills with the accent
 // once there is something to send. Over a chat's stream the field and the button are the tab bar's
 // liquid glass (the owner's call, 27 Ekim); a sent message flies off with the arrow.
-// docs/design/aura → Dm: the field 58, the send button 62.
+// The field and the send button 44, as the bar's rounds (the owner's call, 2 Kasım, 13.2).
 const SIZE = KIT.size.composerField;
 const SEND = KIT.size.composerSend;
 // The arrow's flight: out to the right, then back in from the left.
@@ -96,8 +93,6 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
   // Nothing to send (U25 `.send.off`); while sending it keeps its colour and shows the loader.
   const off = !!sendDisabled && !sending;
   const followEnd = useChatEnd();
-  const glassId = useComposerGlass();
-  const glass = glassId !== null && TAB_BAR_GLASS && blursBehind(Platform.OS, Platform.Version);
   const [flights, setFlights] = useState(0);
   return (
     <View
@@ -120,7 +115,9 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
             // docs/design/aura → Dm (`.glass.field`): 54 high, round, frosted.
             minHeight: SIZE,
             borderRadius: SIZE / 2,
-            ...(glass ? null : gradientStyle(k.c.glass)),
+            // A still surface, not live glass: the message passing under it bent its colour into
+            // the field (the owner's call, 2 Kasım, 13.3; every chat, 13.5).
+            ...gradientStyle(k.c.glass),
             borderWidth: KIT.size.edge,
             borderColor: k.c.glassEdge,
             boxShadow: fieldShadow.boxShadow,
@@ -128,7 +125,6 @@ export const Composer = forwardRef<TextInput, Props>(function Composer(
           }}
         >
           {fieldShadow.node}
-          {glass && glassId ? <GlassFill targetId={glassId} radius={SIZE / 2} /> : null}
           <TextInput
             ref={ref}
             testID={inputTestID}
@@ -285,42 +281,6 @@ function ReplyStrip({ quote, onCancel }: { quote: ChatQuote; onCancel?: () => vo
           testID="reply-cancel"
         />
       ) : null}
-    </View>
-  );
-}
-
-// The tab bar's glass (ui/TabBar.tsx) under the field or the button: the stream behind frosted,
-// v46's light gradient at the glass's share, the white edge and its inner light.
-function GlassFill({ targetId, radius }: { targetId: string; radius: number }) {
-  const { scheme, colors } = useTheme();
-  const t = GLASS_FACE[scheme];
-  const glassOff = useLabOff('cam');
-  return (
-    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      {glassOff ? null : (
-        <LiquidGlass
-          targetId={targetId}
-          cornerRadius={radius}
-          ground={colors.canvas}
-          blur={TAB_GLASS.blur}
-          saturation={TAB_GLASS.saturation}
-          style={StyleSheet.absoluteFill}
-        />
-      )}
-      <View style={[StyleSheet.absoluteFill, { opacity: TAB_GLASS.overlay }]}>
-        <GradientFill css={t.gradient} radius={radius} />
-      </View>
-      <View
-        style={[
-          StyleSheet.absoluteFill,
-          {
-            borderRadius: radius,
-            borderWidth: t.border.width,
-            borderColor: t.border.color,
-            boxShadow: t.inset,
-          },
-        ]}
-      />
     </View>
   );
 }
