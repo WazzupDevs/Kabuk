@@ -177,7 +177,9 @@ function IdentityRow({
             opacity: pressed ? OPACITY.pressed : 1,
           }}
         >
-          <CapIcon name={anonymous ? 'eyeOff' : 'user'} size={ICON.md} color={c.muted} />
+          {/* The menu rows' icon size and "Profilini aç"'s person: the icons and the words line up
+              with the rows under it, one icon a concept (8.2, 8.3). */}
+          <CapIcon name={anonymous ? 'eyeOff' : 'personCircle'} size={ICON.lg} color={c.muted} />
           <View style={{ flex: 1, gap: SPACING[0.5] }}>
             <T v="h3">{anonymous ? tr.identity.switchOn : tr.identity.switchOff}</T>
             {used ? <T v="fine">{tr.identity.used}</T> : null}

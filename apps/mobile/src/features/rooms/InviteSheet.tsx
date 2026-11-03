@@ -59,7 +59,13 @@ export function InviteSheet({ visible, onClose, roomId, phones }: Props) {
     // U23 (MasaDavet; skall tuvali Davet, MasaDavetYukleniyor, MasaDavetHata, MasaDavetBos): the
     // note in body, a full table's warning above the list, the friends on glass sm (64 a row, h3),
     // each "Davet et" passive while the table is full (U10).
-    <Sheet visible={visible} onClose={onClose} title={tr.invite.title}>
+    <Sheet
+      visible={visible}
+      onClose={onClose}
+      title={tr.invite.title}
+      // "Tamam" at the foot, however many friends (K4, X3).
+      footer={<Btn block variant="glassy" label={tr.invite.done} onPress={onClose} />}
+    >
       <View style={{ gap: KIT.size.sheetGap }} testID="invite-sheet">
         <T v="body">{tr.invite.how}</T>
         {full ? (
@@ -174,7 +180,6 @@ export function InviteSheet({ visible, onClose, roomId, phones }: Props) {
             {errorMessage(invite.error)}
           </T>
         ) : null}
-        <Btn block variant="glassy" label={tr.invite.done} onPress={onClose} />
       </View>
     </Sheet>
   );

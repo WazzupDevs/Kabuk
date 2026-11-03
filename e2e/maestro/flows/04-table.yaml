@@ -93,7 +93,7 @@ appId: app.kabuk.mobile
     id: table-lobby
 - extendedWaitUntil:
     visible:
-      id: intent-none
+      id: intent-game
     timeout: 10000
 - scrollUntilVisible:
     element:

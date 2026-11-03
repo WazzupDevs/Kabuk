@@ -859,17 +859,14 @@ export const tr = {
     requestUnavailable: 'Masa şu an müsait değil.',
     // In place of the pending note for a few seconds once the request is accepted.
     newTitle: 'Masanı lobiye aç',
-    newHint:
-      'Mekandaki masalar seni lobide görür ve katılmak isteyebilir. Oyunu birleşince birlikte seçersiniz.',
+    newHint: 'Mekandaki masalar seni lobide görür ve katılmak isteyebilir.',
     intentLabel: 'Niyetin (isteğe bağlı)',
-    intentNone: 'Etiket yok',
     intentHint: {
       game: 'Oyun oynamak istiyorsun.',
       chat: 'Sohbet etmek istiyorsun. Oyun yine önerilebilir.',
     },
     // The optional game tag (docs/SPEC_V3.md §23.C): only seen in the lobby.
-    gameTagLabel: 'Oyun (isteğe bağlı)',
-    gameTagNone: 'Fark etmez',
+    gameTagLabel: 'Oyun',
     gameTagHint: 'Yalnızca lobide görünür; oyunu başlatmaz.',
     createConfirm: 'Lobiye aç',
     // The room's eyebrow: the running game, else the chat; voice games say they are played face to

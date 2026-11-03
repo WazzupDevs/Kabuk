@@ -284,9 +284,29 @@ export const AURA = {
     // Drawn at most this many; the rest as "+n".
     max: 8,
   },
-  // The headcount as capsules (ekran.css `.pips`: --accent, --buzz, --signal in turn, 4 apart); at
-  // most `max` drawn.
-  pips: { colors: ['#0B783D', '#FF4F8B', '#FFB547'], w: 6, h: 12, gap: 4, max: 12 },
+  // The headcount as capsules (ekran.css `.pips`: --accent, --buzz, --signal first, 4 apart); at
+  // most `max` drawn. Twelve colours, one a phone, so a full table never repeats one (the owner's
+  // call, 2 Kasım, 7.5).
+  pips: {
+    colors: [
+      '#0B783D',
+      '#FF4F8B',
+      '#FFB547',
+      '#8FB82E',
+      '#2FA8E0',
+      '#FF7A3D',
+      '#3CC47C',
+      '#9A6B4E',
+      '#F2C230',
+      '#E8455A',
+      '#1FB5A8',
+      '#5468FF',
+    ],
+    w: 6,
+    h: 12,
+    gap: 4,
+    max: 12,
+  },
   // An SVG mask: white shows, black hides (the outlined icons' gap).
   mask: { show: '#FFFFFF', hide: '#000000' },
 } as const;

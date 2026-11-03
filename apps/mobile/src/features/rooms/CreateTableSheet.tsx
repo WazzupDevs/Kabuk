@@ -1,11 +1,11 @@
-import { CONCEPTS, type Concept, type Intent, INTENTS } from '@shared/rooms.ts';
+import { type Concept, type Intent } from '@shared/rooms.ts';
 import { TABLE_ICON_THEMES, TABLE_ICONS } from '@shared/tableIcons.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Image, Pressable, View } from 'react-native';
 
-import { Av, Btn, Chip, Glass, Switch, T, Tag, useKit } from '@/aura/kit';
+import { Av, Btn, Glass, Switch, T, Tag, useKit } from '@/aura/kit';
 import { Gathering, SceneGround } from '@/aura/Scene';
 import { Chips } from '@/components/Chips';
 import { LookAvatar } from '@/components/LookAvatar';
@@ -23,6 +23,7 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
 
+import { LobbyChoices } from './LobbyChoices';
 import { roomKeys } from './queries';
 import {
   TABLE_ICON_RADIUS_SHARE,
@@ -274,36 +275,7 @@ export function CreateTableSheet({ onClose, venueId, usedIcons, anonymous }: Pro
       </Pressable>
 
       {lobby ? (
-        <>
-          <View style={{ gap: KIT.size.chipsGap }}>
-            <T v="eyebrow">{tr.rooms.intentLabel}</T>
-            <View style={CHIPS}>
-              {(['none', ...INTENTS] as const).map((v) => (
-                <Chip
-                  key={v}
-                  testID={`intent-${v}`}
-                  label={v === 'none' ? tr.rooms.intentNone : tr.intents[v]}
-                  on={(intent ?? 'none') === v}
-                  onPress={() => setIntent(v === 'none' ? null : v)}
-                />
-              ))}
-            </View>
-          </View>
-          <View style={{ gap: KIT.size.chipsGap }}>
-            <T v="eyebrow">{tr.rooms.gameTagLabel}</T>
-            <View style={CHIPS}>
-              {(['none', ...CONCEPTS] as const).map((v) => (
-                <Chip
-                  key={v}
-                  testID={`game-tag-${v}`}
-                  label={v === 'none' ? tr.rooms.gameTagNone : tr.concepts[v]}
-                  on={(tag ?? 'none') === v}
-                  onPress={() => setTag(v === 'none' ? null : v)}
-                />
-              ))}
-            </View>
-          </View>
-        </>
+        <LobbyChoices intent={intent} tag={tag} onIntent={setIntent} onTag={setTag} />
       ) : null}
 
       {/* How the person sits at the table: the capsule and nick, or the photo and name. */}
@@ -344,7 +316,6 @@ const LOBBY_TEXT_GAP = 2;
 const IDENTITY_PAD_Y = 10;
 const IDENTITY_PAD_X = 14;
 const PICKER_GAP = 8;
-const CHIPS = { flexDirection: 'row' as const, flexWrap: 'wrap' as const, gap: KIT.size.chipsGap };
 
 export function IconPicker({
   theme,

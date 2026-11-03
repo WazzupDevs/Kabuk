@@ -141,15 +141,18 @@ export function Lobby({
   const open = others(tables.data?.open ?? []);
   const running = others(tables.data?.running ?? []);
 
+  // With no open table to join, neither "masandaki n kişi de seninle gelir" nor "önce masandan
+  // çık" says anything (the owner's report, 2 Kasım, 7.6).
+  const joinable = open.length > 0;
   const ownerNote =
-    state === 'private' || state === 'open'
+    joinable && (state === 'private' || state === 'open')
       ? myPhones > 1
         ? tr.lobby.bringsTable(myPhones - 1)
         : null
       : null;
   const note = needsPhoto
     ? tr.lobby.needsPhoto
-    : state === 'participant'
+    : state === 'participant' && joinable
       ? tr.lobby.leaveFirst
       : ownerNote;
 
@@ -285,8 +288,9 @@ export function Lobby({
   );
 }
 
+// No count while the section is empty: its empty state already says so (6.3, X11).
 function SectionHead({ title, count }: { title: string; count: number | null }) {
-  return <Sec large title={title} note={count === null ? undefined : tr.lobby.tables(count)} />;
+  return <Sec large title={title} note={count ? tr.lobby.tables(count) : undefined} />;
 }
 
 // Under this width (in dp at the text's size) a row's action goes under its words.
