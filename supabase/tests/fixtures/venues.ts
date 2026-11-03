@@ -98,6 +98,7 @@ export const FIXTURE_CAMPUS: CampusVenue = {
   district: 'Test',
   kind: 'campus',
   isActive: true,
+  university: null,
   location: null,
   boundary: squareRing(CAMPUS_CENTER, CAMPUS_HALF_M),
   spots: [
@@ -114,16 +115,23 @@ export async function insertFixtureCampus(
   campus: CampusVenue = FIXTURE_CAMPUS,
 ): Promise<FixtureCampus> {
   await sql.unsafe(campusSql([campus]));
-  const rows = await sql<{ venue_id: string; ref: string; id: string }[]>`
+  // A left join: a campus without spots is valid (check-in then asks for none).
+  const rows = await sql<{ venue_id: string; ref: string | null; id: string | null }[]>`
     select v.id as venue_id, s.ref, s.id from public.venues v
-    join public.venue_spots s on s.venue_id = v.id
+    left join public.venue_spots s on s.venue_id = v.id
     where v.source = ${CAMPUS_SOURCE} and v.source_ref = ${campus.ref}
   `;
   const venueId = rows[0]?.venue_id;
   if (!venueId) throw new Error('fixture campus not inserted');
-  return { venueId, spots: Object.fromEntries(rows.map((r) => [r.ref, r.id])) };
+  return {
+    venueId,
+    spots: Object.fromEntries(
+      rows.flatMap((r) => (r.ref !== null && r.id !== null ? [[r.ref, r.id]] : [])),
+    ),
+  };
 }
 
 export async function deleteFixtureCampus(sql: Sql): Promise<void> {
   await sql`delete from public.venues where source = ${CAMPUS_SOURCE} and source_ref like 'fixture-%'`;
+  await sql`delete from public.universities where ref like 'fixture-%'`;
 }

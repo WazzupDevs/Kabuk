@@ -11,6 +11,7 @@ import type {
   SohbetCard,
   TabuCard,
   TestVenue,
+  University,
   VenueRecord,
 } from './content.ts';
 import { sqlLiteral } from './sql.ts';
@@ -185,6 +186,32 @@ function polygonSql(ring: readonly LngLat[]): string {
   return `extensions.st_geomfromtext(${sqlLiteral(wkt)}, 4326)`;
 }
 
+// Universities (docs/SPEC_V4.md §4.Q), upserted by ref before their campuses; never deleted (set
+// isActive: false to retire one: its campuses then leave Keşfet and refuse check-in).
+export function universitiesSql(
+  universities: readonly University[],
+  file = 'content/venues-campus.json',
+): string {
+  if (universities.length === 0) return `-- ${file}: no universities\n`;
+  const rows = universities.map((u) =>
+    [sqlLiteral(u.ref), sqlLiteral(u.name), sqlLiteral(u.city), sqlLiteral(u.isActive)].join(', '),
+  );
+  return [
+    `-- ${file}: universities`,
+    'insert into public.universities (ref, name, city, is_active) values',
+    `  (${rows.join('),\n  (')})`,
+    'on conflict (ref) do update set',
+    '  name = excluded.name, city = excluded.city, is_active = excluded.is_active;',
+    '',
+  ].join('\n');
+}
+
+function universityIdSql(ref: string | null): string {
+  return ref === null
+    ? 'null'
+    : `(select id from public.universities where ref = ${sqlLiteral(ref)})`;
+}
+
 export function campusSql(
   venues: readonly CampusVenue[],
   file = 'content/venues-campus.json',
@@ -195,7 +222,7 @@ export function campusSql(
     ...venues.flatMap((v) => {
       const polygon = polygonSql(v.boundary);
       return [
-        'insert into public.venues (name, city, district, location, boundary, source, source_ref, kind, category, is_active) values',
+        'insert into public.venues (name, city, district, location, boundary, source, source_ref, kind, category, is_active, university_id) values',
         `  (${[
           sqlLiteral(v.name),
           sqlLiteral(v.city),
@@ -210,11 +237,13 @@ export function campusSql(
           // A campus has no category (pure/venueKind.ts).
           'null',
           sqlLiteral(v.isActive),
+          universityIdSql(v.university),
         ].join(', ')})`,
         'on conflict (source, source_ref) do update set',
         '  name = excluded.name, city = excluded.city, district = excluded.district,',
         '  location = excluded.location, boundary = excluded.boundary, kind = excluded.kind,',
-        '  category = excluded.category, is_active = excluded.is_active;',
+        '  category = excluded.category, is_active = excluded.is_active,',
+        '  university_id = excluded.university_id;',
         spotsSql(CAMPUS_SOURCE, v.ref, v.spots),
         '',
       ];

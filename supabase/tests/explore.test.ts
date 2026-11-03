@@ -94,6 +94,9 @@ describe('explore_venues', () => {
         'lat',
         'lng',
         'name',
+        'university_id',
+        'university_name',
+        'university_ref',
         'venue_id',
       ].sort(),
     );

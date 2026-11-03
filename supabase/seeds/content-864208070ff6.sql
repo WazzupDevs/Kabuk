@@ -196,13 +196,21 @@ where v.source = 'test' and v.source_ref = 'test/hush-coffee'
 on conflict (venue_id, ref) do update set
   name = excluded.name, sort = excluded.sort, is_active = excluded.is_active;
 
+-- content/venues-campus.json: universities
+insert into public.universities (ref, name, city, is_active) values
+  ('sakarya-universitesi', 'Sakarya Üniversitesi', 'Sakarya', true),
+  ('istanbul-gelisim-universitesi', 'İstanbul Gelişim Üniversitesi', 'İstanbul', true)
+on conflict (ref) do update set
+  name = excluded.name, city = excluded.city, is_active = excluded.is_active;
+
 -- content/venues-campus.json
-insert into public.venues (name, city, district, location, boundary, source, source_ref, kind, category, is_active) values
-  ('Sakarya Üniversitesi Esentepe Kampüsü', 'Sakarya', 'Serdivan', extensions.st_setsrid(extensions.st_makepoint(30.331469, 40.741282), 4326)::extensions.geography, extensions.st_geomfromtext('POLYGON((30.3238451 40.7431412, 30.3241722 40.7421589, 30.3262592 40.7399867, 30.3330836 40.736109, 30.3367493 40.7357258, 30.3374654 40.735712, 30.3388961 40.7357749, 30.3396406 40.7438018, 30.336763 40.7445781, 30.3340905 40.7449684, 30.3306718 40.7453079, 30.3238941 40.7452594, 30.323567 40.744136, 30.3238451 40.7431412))', 4326)::extensions.geography, 'campus', 'sau-esentepe', 'campus', null, true)
+insert into public.venues (name, city, district, location, boundary, source, source_ref, kind, category, is_active, university_id) values
+  ('Sakarya Üniversitesi Esentepe Kampüsü', 'Sakarya', 'Serdivan', extensions.st_setsrid(extensions.st_makepoint(30.331469, 40.741282), 4326)::extensions.geography, extensions.st_geomfromtext('POLYGON((30.3238451 40.7431412, 30.3241722 40.7421589, 30.3262592 40.7399867, 30.3330836 40.736109, 30.3367493 40.7357258, 30.3374654 40.735712, 30.3388961 40.7357749, 30.3396406 40.7438018, 30.336763 40.7445781, 30.3340905 40.7449684, 30.3306718 40.7453079, 30.3238941 40.7452594, 30.323567 40.744136, 30.3238451 40.7431412))', 4326)::extensions.geography, 'campus', 'sau-esentepe', 'campus', null, true, (select id from public.universities where ref = 'sakarya-universitesi'))
 on conflict (source, source_ref) do update set
   name = excluded.name, city = excluded.city, district = excluded.district,
   location = excluded.location, boundary = excluded.boundary, kind = excluded.kind,
-  category = excluded.category, is_active = excluded.is_active;
+  category = excluded.category, is_active = excluded.is_active,
+  university_id = excluded.university_id;
 insert into public.venue_spots (venue_id, ref, name, sort, is_active)
 select v.id, s.ref, s.name, s.sort, s.is_active
 from public.venues v cross join (values

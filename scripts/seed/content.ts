@@ -215,6 +215,9 @@ export type CampusVenue = {
   district: string;
   kind: 'campus';
   isActive: boolean;
+  // The `ref` of the university the campus belongs to (`universities` in the same file); null for a
+  // campus on its own (docs/SPEC_V4.md §4.Q).
+  university: string | null;
   boundary: LngLat[];
   location: Point | null;
   spots: CampusSpot[];
@@ -246,10 +249,48 @@ function parseSpots(value: unknown, where: string): CampusSpot[] {
   return spots;
 }
 
+// A university with one or more campuses (docs/SPEC_V4.md §4.Q): a grouping in Keşfet, never a
+// place. Nobody checks in to it; each campus stays its own venue. `ref` is permanent.
+export type University = { ref: string; name: string; city: string; isActive: boolean };
+
+export const UNIVERSITY_NAME_MAX = 120;
+
+function parseUniversities(value: unknown): University[] {
+  if (value === undefined) return [];
+  if (!Array.isArray(value)) throw new Error('venues-campus.json universities must be a list');
+  const universities = value.map((u: unknown, i: number): University => {
+    const where = `venues-campus.json universities[${i}]`;
+    if (!isRecord(u)) throw new Error(`${where} must be an object`);
+    const { ref, name, city, isActive = true } = u;
+    if (typeof ref !== 'string' || !REF_PATTERN.test(ref)) {
+      throw new Error(`${where}.ref must be 1–40 of a-z, 0-9 and -`);
+    }
+    if (typeof name !== 'string' || name.trim() === '' || name.length > UNIVERSITY_NAME_MAX) {
+      throw new Error(`${where}.name must be 1–${UNIVERSITY_NAME_MAX} characters`);
+    }
+    if (typeof city !== 'string' || city.trim() === '')
+      throw new Error(`${where}.city is required`);
+    if (typeof isActive !== 'boolean') throw new Error(`${where}.isActive must be a boolean`);
+    return { ref, name, city, isActive };
+  });
+  if (new Set(universities.map((u) => u.ref)).size !== universities.length) {
+    throw new Error('venues-campus.json has duplicate university refs');
+  }
+  return universities;
+}
+
+export type CampusFile = { universities: University[]; venues: CampusVenue[] };
+
 export function parseCampusVenues(json: unknown): CampusVenue[] {
+  return parseCampusFile(json).venues;
+}
+
+export function parseCampusFile(json: unknown): CampusFile {
   if (!isRecord(json) || !Array.isArray(json.venues)) {
     throw new Error('venues-campus.json must have a venues list');
   }
+  const universities = parseUniversities(json.universities);
+  const universityRefs = new Set(universities.map((u) => u.ref));
   const venues = json.venues.map((value: unknown, i: number): CampusVenue => {
     const where = `venues-campus.json venues[${i}]`;
     if (!isRecord(value)) throw new Error(`${where} must be an object`);
@@ -263,6 +304,13 @@ export function parseCampusVenues(json: unknown): CampusVenue[] {
     }
     if (typeof isActive !== 'boolean') throw new Error(`${where}.isActive must be a boolean`);
     parseKind(value.kind, 'campus', where);
+    const { university = null } = value;
+    if (
+      university !== null &&
+      (typeof university !== 'string' || !universityRefs.has(university))
+    ) {
+      throw new Error(`${where}.university must be the ref of one of the file's universities`);
+    }
     if (!Array.isArray(boundary)) throw new Error(`${where}.boundary must be a list`);
     const problem = validateRing(boundary);
     if (problem) throw new Error(`${where}.boundary: ${problem}`);
@@ -290,6 +338,7 @@ export function parseCampusVenues(json: unknown): CampusVenue[] {
       district: district as string,
       kind: 'campus',
       isActive,
+      university,
       boundary: boundary as LngLat[],
       location: point,
       spots: parsed,
@@ -298,7 +347,16 @@ export function parseCampusVenues(json: unknown): CampusVenue[] {
   if (new Set(venues.map((v) => v.ref)).size !== venues.length) {
     throw new Error('venues-campus.json has duplicate refs');
   }
-  return venues;
+  // A university is shown in Keşfet under its own city; its campuses are in the same city.
+  for (const v of venues) {
+    const u = universities.find((x) => x.ref === v.university);
+    if (u && u.city !== v.city) {
+      throw new Error(
+        `venues-campus.json ${v.ref}: city differs from its university's (${u.city})`,
+      );
+    }
+  }
+  return { universities, venues };
 }
 
 // content/sahtekar-words.json (docs/SPEC_V3.md §20.2): words in categories. At least 500 words,

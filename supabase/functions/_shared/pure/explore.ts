@@ -161,20 +161,82 @@ export function explorePlace(
 export const EXPLORE_KINDS = ['all', 'campus', 'cafe'] as const;
 export type ExploreKind = (typeof EXPLORE_KINDS)[number];
 
-// The venues of the place, of the kind, whose name holds the search (Turkish, ç and c alike; rule 7).
+// The venues of the place, of the kind, whose name (or whose university's name, for a campus)
+// holds the search (Turkish, ç and c alike; rule 7).
 export function filterVenues<
-  T extends { name: string; city: string; district: string; kind: string },
+  T extends {
+    name: string;
+    city: string;
+    district: string;
+    kind: string;
+    university?: { name: string } | null;
+  },
 >(
   venues: readonly T[],
   { place, kind, query }: { place: ExplorePlace | null; kind: ExploreKind; query: string },
 ): T[] {
   const q = normalize(query).replace(/\s+/g, ' ').trim();
+  const holds = (text: string) => normalize(text).replace(/\s+/g, ' ').includes(q);
   return venues.filter(
     (v) =>
       (place === null ||
         (v.city === place.city && (place.district === null || v.district === place.district))) &&
       (kind === 'all' || v.kind === kind) &&
-      (q === '' || normalize(v.name).replace(/\s+/g, ' ').includes(q)),
+      (q === '' || holds(v.name) || (v.university != null && holds(v.university.name))),
+  );
+}
+
+// Universities with several campuses (docs/SPEC_V4.md §4.Q). A university is a grouping in
+// Keşfet's list, never a place: its row opens its campuses, each campus its own venue page, and
+// check-in is always to one campus. A university with a single listed campus shows that campus as
+// an ordinary row (as before universities existed). The map shows the campuses only.
+export type ExploreUniversity = { id: string; ref: string; name: string };
+
+export type ExploreRow<T> =
+  | { type: 'venue'; venue: T }
+  | { type: 'university'; university: ExploreUniversity; campuses: T[] };
+
+// `shown`: the filtered, sorted venues; `listed`: every venue Keşfet has (whether a university has
+// several campuses does not change with a search or a district). The university's row takes the
+// place of its first shown campus; its campuses keep their order.
+export function groupByUniversity<T extends { id: string; university?: ExploreUniversity | null }>(
+  shown: readonly T[],
+  listed: readonly T[],
+): ExploreRow<T>[] {
+  const campusCount = new Map<string, number>();
+  for (const v of listed) {
+    if (v.university) {
+      campusCount.set(v.university.id, (campusCount.get(v.university.id) ?? 0) + 1);
+    }
+  }
+  const rows: ExploreRow<T>[] = [];
+  const groups = new Map<
+    string,
+    { type: 'university'; university: ExploreUniversity; campuses: T[] }
+  >();
+  for (const v of shown) {
+    const u = v.university;
+    if (!u || (campusCount.get(u.id) ?? 0) < 2) {
+      rows.push({ type: 'venue', venue: v });
+      continue;
+    }
+    const group = groups.get(u.id);
+    if (group) {
+      group.campuses.push(v);
+    } else {
+      const created = { type: 'university' as const, university: u, campuses: [v] };
+      groups.set(u.id, created);
+      rows.push(created);
+    }
+  }
+  return rows;
+}
+
+// A university row's liveliness: its liveliest campus (each campus's bucket is shown anyway).
+export function liveliestBucket(buckets: readonly ActivityBucket[]): ActivityBucket {
+  return buckets.reduce<ActivityBucket>(
+    (best, b) => (ACTIVITY_BUCKETS.indexOf(b) > ACTIVITY_BUCKETS.indexOf(best) ? b : best),
+    'calm',
   );
 }
 

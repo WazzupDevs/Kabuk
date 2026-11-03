@@ -7,7 +7,10 @@ import {
   exploreCities,
   exploreEmpty,
   explorePlace,
+  type ExploreUniversity,
   filterVenues,
+  groupByUniversity,
+  liveliestBucket,
   sortVenues,
 } from '@shared/explore.ts';
 import { hasActiveTable } from '@shared/navigation.ts';
@@ -37,6 +40,7 @@ import { TabBarFade, useTabBarOverMap, useTabBarSpace } from '@/components/TabBa
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { ExploreMap } from '@/features/explore/ExploreMap';
 import { useExplorePlace } from '@/features/explore/placeStore';
+import { EventTag } from '@/features/explore/VenueTags';
 import { type CityVenue, useCityVenues } from '@/features/explore/useExploreVenues';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
@@ -333,7 +337,9 @@ function VenueList({
   const [placeSheet, setPlaceSheet] = useState(false);
   const [sheetKey, setSheetKey] = useState(0);
   const cityList = useMemo(() => exploreCities(listed), [listed]);
-  const { c } = useKit();
+  // The university whose campuses are open in the sheet (docs/SPEC_V4.md §4.Q).
+  const [uni, setUni] = useState<ExploreUniversity | null>(null);
+  const [uniKey, setUniKey] = useState(0);
   return (
     // Pulled down at its top it fetches the list again (v46's `.ptr-ind`).
     <PullScroll
@@ -401,44 +407,47 @@ function VenueList({
         // U13: the rows on a small glass card, a hairline between them from the words to 16 short of
         // the right edge.
         <Glass sm style={{ paddingVertical: KIT.size.listPadY }}>
-          {venues.map((v, i) => {
-            const type = venueType(v);
-            const calm = v.bucket === 'calm';
-            return (
-              <Reveal key={v.id} index={ROWS_AT + i} step={ROW_STEP} replay={replay}>
-                {i > 0 ? (
-                  <View
-                    style={{
-                      height: KIT.size.hair,
-                      marginLeft: KIT.size.liPadX + VENUE_ROW_PICTURE + KIT.size.liGap,
-                      marginRight: KIT.size.liPadX,
-                      backgroundColor: c.hair,
-                    }}
-                  />
-                ) : null}
-                <Li
-                  padY={SPACING[3]}
-                  testID={`explore-venue-${v.name}`}
-                  accessibilityLabel={`${v.name}, ${tr.explore.typeLabel[type]}, ${tr.explore.buckets[v.bucket]}`}
+          {/* A university with several campuses is one row opening its campuses (docs/SPEC_V4.md
+              §4.Q); every other venue, a single campus included, is its own row. */}
+          {groupByUniversity(venues, listed).map((row, i) => (
+            <Reveal
+              key={row.type === 'venue' ? row.venue.id : `u-${row.university.id}`}
+              index={ROWS_AT + i}
+              step={ROW_STEP}
+              replay={replay}
+            >
+              {i > 0 ? <RowHair /> : null}
+              {row.type === 'venue' ? (
+                <VenueRow
+                  venue={row.venue}
                   onPress={() =>
-                    router.push({ pathname: '/explore/[venueId]', params: { venueId: v.id } })
+                    router.push({
+                      pathname: '/explore/[venueId]',
+                      params: { venueId: row.venue.id },
+                    })
                   }
-                >
-                  <VenueThumb kind={type} size={VENUE_ROW_PICTURE} />
-                  <View style={{ flex: 1, gap: SPACING[0.5] }}>
-                    <T v="h3">{v.name}</T>
-                    <T v="fine">{tr.explore.venueSub(tr.explore.typeLabel[type], v.district)}</T>
-                    {/* Under the type and district, so it never wraps the name (1.4). */}
-                    <View style={{ flexDirection: 'row' }}>
-                      <Bucket bucket={v.bucket} calm={calm} />
-                    </View>
-                  </View>
-                </Li>
-              </Reveal>
-            );
-          })}
+                />
+              ) : (
+                <UniversityRow
+                  university={row.university}
+                  campuses={row.campuses}
+                  onPress={() => {
+                    haptic('selection');
+                    setUniKey((k) => k + 1);
+                    setUni(row.university);
+                  }}
+                />
+              )}
+            </Reveal>
+          ))}
         </Glass>
       )}
+      <CampusSheet
+        key={uniKey}
+        university={uni}
+        campuses={uni ? venues.filter((v) => v.university?.id === uni.id) : []}
+        onClose={() => setUni(null)}
+      />
       {place ? (
         <PlaceSheet
           key={sheetKey}
@@ -449,6 +458,127 @@ function VenueList({
         />
       ) : null}
     </PullScroll>
+  );
+}
+
+// The hairline between two rows of the list, from the words to 16 short of the right edge (U13).
+function RowHair() {
+  const { c } = useKit();
+  return (
+    <View
+      style={{
+        height: KIT.size.hair,
+        marginLeft: KIT.size.liPadX + VENUE_ROW_PICTURE + KIT.size.liGap,
+        marginRight: KIT.size.liPadX,
+        backgroundColor: c.hair,
+      }}
+    />
+  );
+}
+
+// A venue's row (U13): its picture, the name, the type and district, the bucket.
+function VenueRow({ venue: v, onPress }: { venue: CityVenue; onPress: () => void }) {
+  const type = venueType(v);
+  return (
+    <Li
+      padY={SPACING[3]}
+      testID={`explore-venue-${v.name}`}
+      accessibilityLabel={`${v.name}, ${tr.explore.typeLabel[type]}, ${tr.explore.buckets[v.bucket]}`}
+      onPress={onPress}
+    >
+      <VenueThumb kind={type} size={VENUE_ROW_PICTURE} />
+      <View style={{ flex: 1, gap: SPACING[0.5] }}>
+        <T v="h3">{v.name}</T>
+        <T v="fine">{tr.explore.venueSub(tr.explore.typeLabel[type], v.district)}</T>
+        {/* Under the type and district, so it never wraps the name (1.4). */}
+        <View style={{ flexDirection: 'row' }}>
+          <Bucket bucket={v.bucket} calm={v.bucket === 'calm'} />
+        </View>
+      </View>
+    </Li>
+  );
+}
+
+// A university with several campuses (docs/SPEC_V4.md §4.Q): the kampüs picture, its name, how
+// many campuses are shown and their districts, the liveliest campus's bucket. Not a place: it opens
+// the campus sheet; nothing here asks for the position.
+function UniversityRow({
+  university,
+  campuses,
+  onPress,
+}: {
+  university: ExploreUniversity;
+  campuses: readonly CityVenue[];
+  onPress: () => void;
+}) {
+  const bucket = liveliestBucket(campuses.map((v) => v.bucket));
+  const districts = [...new Set(campuses.map((v) => v.district))].join(', ');
+  return (
+    <Li
+      padY={SPACING[3]}
+      testID={`explore-university-${university.ref}`}
+      accessibilityLabel={tr.explore.universityLabel(university.name, campuses.length)}
+      onPress={onPress}
+    >
+      <VenueThumb kind="kampus" size={VENUE_ROW_PICTURE} />
+      <View style={{ flex: 1, gap: SPACING[0.5] }}>
+        <T v="h3">{university.name}</T>
+        <T v="fine">{tr.explore.universitySub(campuses.length, districts)}</T>
+        <View style={{ flexDirection: 'row' }}>
+          <Bucket bucket={bucket} calm={bucket === 'calm'} />
+        </View>
+      </View>
+    </Li>
+  );
+}
+
+// "Yerleşke seç" (docs/SPEC_V4.md §4.Q): the university's shown campuses, each with its district,
+// its bucket and its first event; a campus opens its own venue page, where check-in verifies the
+// position against that campus's boundary only.
+function CampusSheet({
+  university,
+  campuses,
+  onClose,
+}: {
+  university: ExploreUniversity | null;
+  campuses: readonly CityVenue[];
+  onClose: () => void;
+}) {
+  return (
+    <Sheet
+      visible={university !== null}
+      onClose={onClose}
+      title={university?.name ?? ''}
+      footer={<Btn block tall variant="glassy" label={tr.common.cancel} onPress={onClose} />}
+    >
+      <T v="note">{tr.explore.campusNote}</T>
+      <View accessibilityRole="list" testID="explore-campus-sheet">
+        {campuses.map((v, i) => (
+          <View key={v.id}>
+            {i > 0 ? <RowHair /> : null}
+            <Li
+              padY={SPACING[3]}
+              testID={`explore-campus-${v.name}`}
+              accessibilityLabel={`${v.name}, ${v.district}, ${tr.explore.buckets[v.bucket]}`}
+              onPress={() => {
+                onClose();
+                router.push({ pathname: '/explore/[venueId]', params: { venueId: v.id } });
+              }}
+            >
+              <VenueThumb kind="kampus" size={VENUE_ROW_PICTURE} />
+              <View style={{ flex: 1, gap: SPACING[0.5] }}>
+                <T v="h3">{v.name}</T>
+                <T v="fine">{v.district}</T>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: SPACING[1] }}>
+                  <Bucket bucket={v.bucket} calm={v.bucket === 'calm'} />
+                  {v.event ? <EventTag event={v.event} /> : null}
+                </View>
+              </View>
+            </Li>
+          </View>
+        ))}
+      </View>
+    </Sheet>
   );
 }
 
