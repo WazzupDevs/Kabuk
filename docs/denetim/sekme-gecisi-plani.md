@@ -21,6 +21,8 @@ Kaynaklar: `docs/denetim/performans-2026-11.md` (bulgular) ve `docs/denetim/olcu
 
 ## B6 — Gizli sekmeler saat ve yoklamayla çizilmez (S, OTA)
 
+- **Durum (4 Kasım):** 1. ve 2. adım yapıldı, farklı bir yoldan: `lib/tabActivity.ts` sekmenin görünüp görünmediğini render etmeden taşıyor. `useNow` gizli sekmede okumayı atlıyor; sekme geri gelince, bir okuma atlandıysa gelişten sonra (`AFTER_ARRIVAL_MS`, 1010 ms) bir kez okuyor. Böylece `EventTag` ve `ExploreMap` prop almadan kendiliğinden duruyor. `explore_venues` sekmede yalnızca görünürken dakikada bir okunuyor, dönüşte bayatsa gelişten sonra bir kez. Odağa bağlı render (`useIsFocused`) kullanılmadı: geçiş anında ekranı yeniden çizerdi. 3. adım (`RoomWatch`) ölçüme bırakıldı.
+
 - **Ne:** sekmeler bilinçli olarak canlı tutuluyor (#279), ama gizliyken de `useNow` 30 ve 60 sn'de, `explore_venues` dakikada bir, `RoomWatch` 4 sn'de bir çalışıyor.
 - **Adımlar:**
   1. Ekran düzeyinde `useNow(ms, isFocused)`. `useNow` zaten `active` alır ve geri gelince hemen okur. `EventTag` kendi zamanlayıcısı yerine `now`'ı prop olarak alır.

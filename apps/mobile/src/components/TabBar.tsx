@@ -20,6 +20,7 @@ import { AuraTabBar, type AuraTabItem } from '@/aura/AuraTabBar';
 import { ARRIVE_RN, BLURS, TabOpeningsContext } from '@/aura/motion';
 import { labOff, markTabSwitch, useLabOff } from '@/lib/drawLab';
 import { haptic } from '@/lib/haptics';
+import { createTabActivity, TabActivityContext } from '@/lib/tabActivity';
 import { createTabOpenings } from '@/lib/tabOpenings';
 import { useLeaveGuard } from '@/lib/leaveGuard';
 import { useReduceMotion } from '@/lib/useReduceMotion';
@@ -153,6 +154,8 @@ export function TabScene({
   // (lib/tabOpenings.ts, B2); only the dissolve's `run` renders this scene (not the tab's screen:
   // its element is the same).
   const [openings] = useState(createTabOpenings);
+  // Whether the tab is on screen, for its clocks and polls (lib/tabActivity.ts, B6): no render.
+  const [activity] = useState(() => createTabActivity(navigation.isFocused()));
   const [run, setRun] = useState(0);
   // Çizim ölçümü (lib/drawLab.ts): the blur dissolve off on its own (`bulanma`, the fade and rise
   // stay). Production never turns it off.
@@ -171,6 +174,7 @@ export function TabScene({
     let leftTab = false;
     const offFocus = navigation.addListener('focus', () => {
       own();
+      activity.set(true);
       if (!leftTab) return;
       leftTab = false;
       markTabSwitch();
@@ -191,13 +195,14 @@ export function TabScene({
     const offBlur = navigation.addListener('blur', () => {
       const state = navigation.getState();
       leftTab = state.routes[state.index]?.key !== routeKey;
+      activity.set(false);
     });
     return () => {
       offFocus();
       offBlur();
       useBarMode.setState((s) => (s.target === id ? { target: null } : s));
     };
-  }, [navigation, routeKey, id, reduce, p, openings]);
+  }, [navigation, routeKey, id, reduce, p, openings, activity]);
   const arrive = {
     flex: 1,
     opacity: p,
@@ -207,17 +212,19 @@ export function TabScene({
   };
   const ground = AURA[scheme].ground;
   const scene = (
-    <TabOpeningsContext.Provider value={openings}>
-      <Dissolve
-        run={BLURS && !reduce ? run : 0}
-        blur={blurOff ? 0 : MOTION.dissolve.blur}
-        durationMs={MOTION.dissolve.inMs}
-        curve={MOTION.curves.arrive}
-        style={{ flex: 1 }}
-      >
-        <Animated.View style={arrive}>{children}</Animated.View>
-      </Dissolve>
-    </TabOpeningsContext.Provider>
+    <TabActivityContext.Provider value={activity}>
+      <TabOpeningsContext.Provider value={openings}>
+        <Dissolve
+          run={BLURS && !reduce ? run : 0}
+          blur={blurOff ? 0 : MOTION.dissolve.blur}
+          durationMs={MOTION.dissolve.inMs}
+          curve={MOTION.curves.arrive}
+          style={{ flex: 1 }}
+        >
+          <Animated.View style={arrive}>{children}</Animated.View>
+        </Dissolve>
+      </TabOpeningsContext.Provider>
+    </TabActivityContext.Provider>
   );
   return (
     // A plain ground when the bar has no glass (TAB_BAR_GLASS).

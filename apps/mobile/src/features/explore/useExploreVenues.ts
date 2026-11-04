@@ -7,10 +7,11 @@ import {
   type VenueCategory,
   type VenueKind,
 } from '@shared/venueKind.ts';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo } from 'react';
 
 import { supabase } from '@/lib/supabase';
+import { AFTER_ARRIVAL_MS, useTabActivity } from '@/lib/tabActivity';
 
 export type ExploreEvent = { title: string; startsAt: string; endsAt: string };
 
@@ -63,11 +64,45 @@ function toRing(value: unknown): LngLat[] | null {
 }
 
 // Keşfet data: buckets refresh every 5 minutes on the server, so a minute of staleness is fine.
+// In a tab (Keşfet, Aktiviteler) it is read again every minute only while that tab is on screen
+// (lib/tabActivity.ts, B6): a hidden tab skips the read, and coming back it reads once, after the
+// tab's arrival, if the minute has passed. Outside the tabs the query's own interval.
+const EXPLORE_KEY = ['exploreVenues'] as const;
+const EXPLORE_EVERY_MS = 60_000;
+const STALE_SLACK_MS = 5_000;
+
 function useExploreVenues() {
+  const tab = useTabActivity();
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    if (!tab) return undefined;
+    // A few seconds' slack: two screens of the same tab (Keşfet and a venue over it) each tick,
+    // and the second finds the list just read.
+    const stale = () => {
+      const at = queryClient.getQueryState(EXPLORE_KEY)?.dataUpdatedAt ?? 0;
+      return Date.now() - at >= EXPLORE_EVERY_MS - STALE_SLACK_MS;
+    };
+    const read = () => void queryClient.refetchQueries({ queryKey: EXPLORE_KEY, type: 'active' });
+    const timer = setInterval(() => {
+      if (tab.active() && stale()) read();
+    }, EXPLORE_EVERY_MS);
+    let catchUp: ReturnType<typeof setTimeout> | undefined;
+    const offResume = tab.onResume(() => {
+      clearTimeout(catchUp);
+      catchUp = setTimeout(() => {
+        if (tab.active() && stale()) read();
+      }, AFTER_ARRIVAL_MS);
+    });
+    return () => {
+      clearInterval(timer);
+      clearTimeout(catchUp);
+      offResume();
+    };
+  }, [tab, queryClient]);
   return useQuery({
-    queryKey: ['exploreVenues'],
-    staleTime: 60_000,
-    refetchInterval: 60_000,
+    queryKey: EXPLORE_KEY,
+    staleTime: EXPLORE_EVERY_MS,
+    refetchInterval: tab ? false : EXPLORE_EVERY_MS,
     queryFn: async (): Promise<ExploreVenue[]> => {
       const { data, error } = await supabase.rpc('explore_venues', {
         event_days: EVENT_WINDOW_DAYS,
