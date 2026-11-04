@@ -1,9 +1,13 @@
 import type { ImageSourcePropType } from 'react-native';
 
+import { kinshiArt } from '@/features/games/kinshi/kinshiArt';
+
 // Signum's riso pictures (aura v87, "Signum (kelime ızgarası ve kaptan)"). Text, the 5×5 key
-// map and the tile words are drawn by code on top; the time capsule and the peeking buddies
-// are Kinshi's and are not repeated here.
+// map and the tile words are drawn by code on top. The time capsule and the peeking buddies
+// are Kinshi's files (assets/games/kinshi/), read through kinshiArt, never copied.
 export const signumArt = {
+  timer: kinshiArt.timer,
+  buddies: kinshiArt.buddies,
   // Role card back: the signal board poster, nothing written on it.
   back: require('../../../../assets/games/signum/s-arka.webp'),
   // Role card fronts: the captain (empty key map panel) and the guesser.
