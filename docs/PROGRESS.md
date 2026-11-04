@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (4 Kasım 2026, bildirim simgeleri, eski mesajlar, masa sohbetinde Bildir/Sil)
+
+- Birleşenler: #428 bildirim çubuğu simgeleri (tür başına `kind`, yamalı `expo-notifications`, renk `--primary`/`--accent`; **native, version 0.9.6, yeni build gerekir**; önce sunucu, §4.S), #429 masa ve mekan sohbetinde eski mesajlar sayfa sayfa (OTA), #430 masa sohbetinde Bildir ve kendi mesajını Sil (migration `20261124090000`, `chat`/`safety`; önce sunucu sonra OTA; `guvenlik` denetledi, §4.T).
+- `database.ts` #430'da elle hizalandı (Docker yok); yerel stack'le `pnpm gen:types` çalıştırılıp fark kontrol edilmeli. Cihazda doğrulanmadı.
+- Bilinen sınır: eski sayfalardaki tepkiler ve başkasının sildiği mesaj, eski sayfalar açıkken yenilenmez (ekran yeniden açılınca düzelir).
+- Proje sahibinden beklenen: DM mavisi kararı (açık temada 3,9:1); 6.2 boş durumu ve K-83 balon paleti tuvale.
+
 ## Devir notu (4 Kasım 2026, sohbetler ve bildirim simgeleri)
 
 - Birleşenler: #419–#422 (3 Kasım UI paketleri 2–4, 6.3), #424 K-83 balon renkleri spec'i (§4.R), #426 (kendi balon beyaz, başkalarınınki düz renkli ve kuyruklu; `MessagePop` çubuk/menü ölçümden sonra açılır; masa sohbeti okunmamıştan açılır; grup sohbetlerinde gönderilirken saat ikonu). Native yok, OTA; cihazda doğrulanmadı.
