@@ -300,8 +300,14 @@ export default function VenueChatScreen() {
               first={first}
               last={last}
               quote={outQuote(out.replyTo)}
-              // Mekân: no ticks and no read; the time comes with the server's copy.
-              state={out.status === 'sending' ? 'sending' : 'failed'}
+              // As in the DM (Telegram Android): on its way, its time and a clock where the ticks
+              // would go; the clock goes with the server's copy (Mekân has no ticks).
+              {...(out.status === 'sending'
+                ? {
+                    time: tr.chat.time(out.at ?? new Date().toISOString()),
+                    delivery: 'sending' as const,
+                  }
+                : { state: 'failed' as const })}
               failedText={
                 out.status === 'failed' && out.errorCode ? tr.errors[out.errorCode] : undefined
               }
