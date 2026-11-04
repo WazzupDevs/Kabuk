@@ -1,6 +1,6 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
-import { type Dated, mergeOlder, olderBefore } from '@/lib/olderPages';
+import { type Dated, mergeOlder, olderBefore, rereadOlder } from '@/lib/olderPages';
 
 type OlderState<T> = {
   key: string;
@@ -81,9 +81,57 @@ export function useOlderPages<T>({
     [dated],
   );
 
+  // A reaction moved or a sender deleted a message (the chat's broadcast): the older pages on the
+  // screen are read again (src/lib/olderPages.ts → rereadOlder). One read at a time; broadcasts
+  // heard meanwhile make one more read after it.
+  const rereading = useRef<'idle' | 'busy' | 'again'>('idle');
+  const until = kept ? current.until : null;
+  const oldest = current.older[0];
+  const oldestAt = oldest === undefined ? null : dated(oldest).at;
+  const reread = useCallback(() => {
+    if (until === null || oldestAt === null) return;
+    if (rereading.current !== 'idle') {
+      rereading.current = 'again';
+      return;
+    }
+    rereading.current = 'busy';
+    const run = (): void => {
+      rereadOlder(read, until, oldestAt, dated, pageSize).then(
+        (again) => {
+          const from = again.older[0];
+          setState((s) =>
+            s.key === key && s.until === until
+              ? {
+                  ...s,
+                  // Pages read further back meanwhile stay, before what was read again.
+                  older: [
+                    ...(from === undefined
+                      ? []
+                      : s.older.filter((m) => dated(m).at < dated(from).at)),
+                    ...again.older,
+                  ],
+                  done: s.done || again.done,
+                }
+              : s,
+          );
+          if (rereading.current === 'again') {
+            rereading.current = 'busy';
+            run();
+          } else rereading.current = 'idle';
+        },
+        // Not read: the pages stay as they were; the next broadcast tries again.
+        () => {
+          rereading.current = 'idle';
+        },
+      );
+    };
+    run();
+  }, [until, oldestAt, read, dated, pageSize, key]);
+
   return {
     rows,
     forget,
+    reread,
     loadOlder,
     retryOlder: fetchOlder,
     loadingOlder: current.loading,

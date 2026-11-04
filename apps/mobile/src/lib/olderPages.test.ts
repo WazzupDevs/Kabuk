@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { type Dated, mergeOlder, olderBefore } from './olderPages';
+import { type Dated, mergeOlder, olderBefore, rereadOlder } from './olderPages';
 
 const m = (n: number): Dated => ({
   id: `m${n}`,
@@ -45,5 +45,52 @@ describe('olderBefore', () => {
     // An older page came back short.
     expect(olderBefore(run(6, 10), run(4, 5), id, 5, true)).toBeNull();
     expect(olderBefore([], [], id, 5, false)).toBeNull();
+  });
+});
+
+describe('rereadOlder', () => {
+  // The chat 1–20, pages of 5, read before a moment: the 5 messages before it, oldest first.
+  const reader = (chat: Dated[]) => {
+    const reads: string[] = [];
+    const read = (before: string) => {
+      reads.push(before);
+      return Promise.resolve(chat.filter((d) => d.at < before).slice(-5));
+    };
+    return { read, reads };
+  };
+
+  it('reads back from until to the oldest message the screen had', async () => {
+    const { read, reads } = reader(run(1, 20));
+    // The screen had 6–15 (two pages read before 16).
+    const again = await rereadOlder(read, m(16).at, m(6).at, id, 5);
+    expect(again).toEqual({ older: run(6, 15), done: false });
+    expect(reads).toEqual([m(16).at, m(11).at]);
+  });
+
+  it('drops a message gone since, and reaches one page further for it', async () => {
+    const chat = run(1, 20).filter((d) => d.id !== 'm12');
+    const { read } = reader(chat);
+    const again = await rereadOlder(read, m(16).at, m(6).at, id, 5);
+    expect(again.older.map((d) => d.id)).toEqual([
+      'm5',
+      'm6',
+      'm7',
+      'm8',
+      'm9',
+      'm10',
+      'm11',
+      'm13',
+      'm14',
+      'm15',
+    ]);
+    expect(again.done).toBe(false);
+  });
+
+  it('stops at the chat first message', async () => {
+    const { read } = reader(run(1, 12));
+    expect(await rereadOlder(read, m(8).at, m(1).at, id, 5)).toEqual({
+      older: run(1, 7),
+      done: true,
+    });
   });
 });

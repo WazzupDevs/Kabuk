@@ -3,7 +3,7 @@ import { canRetry, type OutboxMessage, outboxReducer } from '@shared/chatOutbox.
 import { parseQuote, parseReactionCounts } from '@shared/messageExtras.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { useReducer, useState } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import { View } from 'react-native';
 
 import { toRuns } from '@shared/chatRuns.ts';
@@ -51,7 +51,9 @@ let nextLocalId = 0;
 // docs/SPEC_V3.md §21: replies and reactions; tables by their aliases.
 export function useRoomChat(roomId: string) {
   const queryClient = useQueryClient();
-  const messages = useMessages(roomId);
+  // Another's message deleted (message_gone): the older pages on the screen read again too.
+  const rereadOlder = useRef<() => void>(() => {});
+  const messages = useMessages(roomId, () => rereadOlder.current());
   // The live page, and over it the older pages read as the list reaches its top.
   const older = useOlderPages({
     key: roomId,
@@ -59,6 +61,9 @@ export function useRoomChat(roomId: string) {
     pageSize: ROOM_CHAT_PAGE,
     dated: (m: RoomChatMessage) => ({ id: m.id, at: m.created_at }),
     read: (before: string) => readRoomOlder(roomId, before),
+  });
+  useEffect(() => {
+    rereadOlder.current = older.reread;
   });
   const extras = useRoomChatExtras(roomId);
   const [outbox, dispatch] = useReducer(outboxReducer, []);

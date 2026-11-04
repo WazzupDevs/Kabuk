@@ -5,7 +5,9 @@ import {
   prepareVenueMessage,
   senderLabel,
   VENUE_CHAT,
+  VENUE_CHAT_REACTION_BROADCAST,
   type VenueChatMessage,
+  venueChatChannel,
 } from '@shared/venueChat.ts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
@@ -38,6 +40,7 @@ import { friendKeys } from '@/features/friends/queries';
 import { useOwnLook } from '@/features/profile/useOwnLook';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { useCurrentRoom } from '@/features/rooms/queries';
+import { useBroadcast } from '@/features/rooms/useBroadcast';
 import {
   readVenueChatOlder,
   useVenueChat,
@@ -98,6 +101,12 @@ export default function VenueChatScreen() {
     dated: (m: VenueChatMessage) => ({ id: m.id, at: m.createdAt }),
     read: (before: string) => readVenueChatOlder(venueId ?? '', before),
   });
+  // A reaction moved: on the older pages too (the newest page reads again in useVenueChat).
+  useBroadcast(
+    venueId ? venueChatChannel(venueId) : null,
+    VENUE_CHAT_REACTION_BROADCAST,
+    older.reread,
+  );
   const messages = page.data ? older.rows : undefined;
   const fresh = useFreshLine(venueId && `venue:${venueId}`, messages);
 
