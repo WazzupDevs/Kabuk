@@ -49,6 +49,12 @@ Kaynaklar: `docs/denetim/performans-2026-11.md` (bulgular) ve `docs/denetim/olcu
 
 ## B3 — Arkadaşlık olaylarında yalnızca değişen sorgular okunur (M, OTA)
 
+- **Durum (4 Kasım):** yapıldı. `lib/friendRefresh.ts` (testli) üç olay tanımlar:
+  - `request` (gelen istek): incoming, incomingChat, notifications.
+  - `pressed` (Arkadaş ekle, Geri al, İstek gönder): history, list, inbox.
+  - `friendship` (arkadaşlık başladı ya da bitti; istek yanıtı, çıkarma, engelleme, DM'den çıkış): DM dışında hepsi.
+    Hiçbir olay DM sayfalarını yeniden okumaz; DM, arkadaşlık bitince açık konuşmayı arkadaş listesinden kapatır. Dokuz çağrı yeri `refreshFriends`'e geçti. Sunucu, yanıtlar ve Realtime değişmedi.
+
 - **Ne:** `friendKeys.all` (`['friends']`) liste, istekler, geçmiş, gelen kutusu, bildirimler ve açık DM'in bütün sayfalarının önekidir. Her arkadaşlık olayı (bu olayın yayını ve 8 çağrı yeri) hepsini yeniden okutuyor.
 - **Adımlar:**
   1. `friends/queries.ts`'e tek bir saf eşleme eklenir: `invalidateFor(event)` → anahtar listesi. Örnekler:

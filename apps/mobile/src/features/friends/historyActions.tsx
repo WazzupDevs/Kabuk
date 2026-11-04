@@ -11,7 +11,7 @@ import { Sheet } from '@/components/Sheet';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
 import { openDm } from '@/features/friends/openDm';
-import { friendKeys } from '@/features/friends/queries';
+import { refreshFriends } from '@/features/friends/queries';
 import { useRetryAfterName } from '@/features/friends/useRetryAfterName';
 import { tr } from '@/i18n/tr';
 import { track } from '@/lib/analytics';
@@ -31,7 +31,7 @@ export function useHistoryActions() {
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [reporting, setReporting] = useState<string | null>(null);
   const [blocking, setBlocking] = useState<string | null>(null);
-  const refresh = () => queryClient.invalidateQueries({ queryKey: friendKeys.all });
+  const refresh = () => refreshFriends(queryClient, 'pressed');
 
   const act = useMutation({
     meta: FEEL_ERROR,
