@@ -1,6 +1,6 @@
 # İstanbul Gelişim Üniversitesi: yerleşke doğrulama raporu (3 Kasım 2026)
 
-Durum: **hiçbir yerleşke doğrulanmadı, hiçbiri check-in noktası değil.** `content/venues-campus.json`'da yalnızca üniversite kaydı var (`istanbul-gelisim-universitesi`, İstanbul).
+Durum (4 Kasım): **Gelişim Tower eklendi** (`igu-tower`, Avcılar, etkin). Sınırı proje sahibinin elle çizdiği alan (9 köşe, yaklaşık 2,8 hektar, merkezi 40.99377, 28.69992); resmî yerleşke adı olmadığı için Keşfet'te "İstanbul Gelişim Üniversitesi" adıyla görünür. Saha denemesi (içeriden ve 60 m dışından check-in) dev projesinde yapılacak. Aşağıdaki diğer adaylar doğrulanmadı.
 
 ## Bu oturumda ne denendi
 

@@ -175,7 +175,8 @@ export default function VenueDetailScreen() {
                 {venue.name}
               </T>
               <T v="body" ink>
-                {venue.university
+                {/* Not twice when the campus carries its university's name (igu-tower). */}
+                {venue.university && venue.university.name !== venue.name
                   ? tr.explore.campusOf(venue.university.name, venue.district)
                   : venue.district}
               </T>
