@@ -359,8 +359,13 @@ export const venueChatApi = {
   // At most 10 per 10 seconds; over it rate_limited, which the app ignores (§21.2).
   react: (messageId: string, emoji: Reaction | null) =>
     invoke<ReactResponse>('venue-chat', { action: 'react', messageId, emoji }),
-  page: (venueId: string) =>
-    invoke<VenueChatPageResponse>('venue-chat', { action: 'page', venueId }),
+  // `before`: an older page, the messages before that moment (the screen's older pages).
+  page: (venueId: string, before?: string) =>
+    invoke<VenueChatPageResponse>('venue-chat', {
+      action: 'page',
+      venueId,
+      ...(before ? { before } : {}),
+    }),
   // docs/SPEC_V4.md §4.D: a message goes with the check-in's identity; another one here is
   // identity_mismatch and nothing is written.
   // clientId (Grup 3, P5): the app's id for this message; "Tekrar dene" sends it again, and the

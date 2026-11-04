@@ -4,6 +4,9 @@ import { privateChannel, useChannel } from '@/lib/realtime';
 import { supabase } from '@/lib/supabase';
 
 export const messagesKey = (roomId: string) => ['messages', roomId] as const;
+// The newest page, read again on every message; older ones page by page (readRoomOlder).
+export const ROOM_CHAT_PAGE = 100;
+const COLUMNS = 'id, session_id, sender_alias, body, created_at, reply_to_id, replied';
 // Under messagesKey: a new message refreshes the quotes and reactions too.
 const extrasKey = (roomId: string) => ['messages', roomId, 'extras'] as const;
 
@@ -33,14 +36,30 @@ export function useMessages(roomId: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('messages')
-        .select('id, session_id, sender_alias, body, created_at, reply_to_id, replied')
+        .select(COLUMNS)
         .eq('room_id', roomId)
         .order('created_at', { ascending: false })
-        .limit(100);
+        .limit(ROOM_CHAT_PAGE);
       if (error) throw error;
       return data.reverse();
     },
   });
+}
+
+export type RoomChatMessage = NonNullable<ReturnType<typeof useMessages>['data']>[number];
+
+// An older page of the room's messages, oldest first (RLS as above; the chat's older pages,
+// useOlderPages).
+export async function readRoomOlder(roomId: string, before: string): Promise<RoomChatMessage[]> {
+  const { data, error } = await supabase
+    .from('messages')
+    .select(COLUMNS)
+    .eq('room_id', roomId)
+    .lt('created_at', before)
+    .order('created_at', { ascending: false })
+    .limit(ROOM_CHAT_PAGE);
+  if (error) throw error;
+  return data.reverse();
 }
 
 // Quotes and reactions of the room's messages, keyed by message id (room_chat_extras: table

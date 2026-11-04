@@ -48,6 +48,17 @@ function venueChatPage(venueId: string | undefined, sessionId: string | undefine
   };
 }
 
+// An older page of the venue chat, oldest first (the screen's older pages, useOlderPages).
+export async function readVenueChatOlder(
+  venueId: string,
+  before: string,
+): Promise<VenueChatMessage[]> {
+  const page = await venueChatApi.page(venueId, before);
+  return page.messages
+    .map((m) => withVenueChatExtras({ ...m, photoUrl: stablePhoto(m.photoUrl) }))
+    .reverse();
+}
+
 // The venue chat screen's page: read again on the data-free `venue_chat` broadcast and when a
 // reaction moved (docs/SPEC_V3.md §21.3). Only the chat screen does this.
 export function useVenueChat(venueId: string | undefined, sessionId: string | undefined) {

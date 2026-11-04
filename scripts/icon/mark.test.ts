@@ -116,7 +116,7 @@ describe('skall mark', () => {
     expect(storeIconSvg(512)).toContain(`<rect width="${ICON}" height="${ICON}" fill="url(#bg)"/>`);
   });
 
-  it('matches app.json: night splash in both modes on the 288 dp canvas, purple notification', () => {
+  it('matches app.json: night splash in both modes on the 288 dp canvas, --primary notification', () => {
     const appJson = JSON.parse(
       readFileSync(resolve(import.meta.dirname, '../../apps/mobile/app.json'), 'utf8'),
     ) as { expo: { plugins: (string | [string, Record<string, unknown>])[] } };
@@ -128,6 +128,8 @@ describe('skall mark', () => {
     expect((splash?.dark as Record<string, unknown> | undefined)?.backgroundColor).toBe(
       COLORS.night,
     );
-    expect(plugin('expo-notifications')?.color).toBe(COLORS.purple);
+    // Aura BildirimSimgeleri: the status bar icon in --primary (the light scheme's; the dark one's
+    // --accent comes from app.config.ts → withNotificationIcons).
+    expect(plugin('expo-notifications')?.color).toBe('#0E8745');
   });
 });
