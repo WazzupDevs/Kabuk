@@ -37,6 +37,8 @@ Kaynaklar: `docs/denetim/performans-2026-11.md` (bulgular) ve `docs/denetim/olcu
 
 ## B5 — Gelişin başlangıç değerleri blur'da hazırlanır (S, OTA)
 
+- **Durum (4 Kasım):** JS adımı yapıldı. Başka sekmeye geçildikten 150 ms sonra (`LEAVE_PREPARE_MS`; giden ekran o sırada ayrılmış olur, çıkarken boş kare göstermez) TabScene'in `p`'si ve Reveal'ler gelişin ilk değerine (0) alınır. Dönüşte ilk çizilen kare gelişin ilk karesidir. Daha erken dönülürse hazırlık iptal olur, geliş bugünkü gibi başlar. Çizim ölçümünde `Geliş` ya da `Kademe` kapalıysa dönüşte parçalar yerine (1) konur. Native adım (Dissolve'un `post{}` gecikmesi) yapılmadı: ilk kare artık saydam olduğu için gecikme görünmez; ölçüm aksini gösterirse yeni build'le ele alınır.
+
 - **Ne:** `p` bir önceki gelişten 1 kalıyor ve focus dinleyicisinde 0'a çekiliyor. Arada bir iki kare ekran net görünüp sonra saydamlaşabilir.
 - **Adımlar:** blur'da, başka bir sekmeye geçiliyorsa (`leftTab`) `p.setValue(0)` yapılır; Reveal'lerin başlangıç değeri de B2'nin dinleyicisiyle aynı anda sıfırlanır. Focus'ta yalnızca `start()` çalışır. Native tetikleme (`onAttachedToWindow`) ancak ölçüm ilk karede sıçrama gösterirse yapılır, ayrı ve yeni build ister.
 - **Bağımlılık:** B2'den sonra yapılır; aynı dinleyiciyi kullanır.

@@ -15,7 +15,7 @@ type Props = {
   // A change plays the arrival again (a kind chosen).
   replay?: number;
   // Its tab's openings (aura/motion → useTabOpenings): each plays the arrival again, on the native
-  // driver, with no render.
+  // driver, with no render; leaving the tab sets the arrival's first values while it is hidden.
   openings?: TabOpenings | null;
   style?: StyleProp<ViewStyle>;
 };
@@ -52,7 +52,14 @@ export function Reveal({
       anim.start();
     };
     play();
-    const off = openings?.subscribe(play);
+    const off = openings?.subscribe((event) => {
+      if (event === 'open') {
+        play();
+        return;
+      }
+      anim?.stop();
+      p.setValue(event === 'leave' ? 0 : 1);
+    });
     return () => {
       off?.();
       anim?.stop();
