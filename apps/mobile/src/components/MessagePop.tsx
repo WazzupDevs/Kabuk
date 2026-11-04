@@ -1,6 +1,6 @@
 import { REACTIONS, type Reaction } from '@shared/reactions.ts';
 import { type ReactNode, useState } from 'react';
-import { Modal, Pressable, useWindowDimensions, View } from 'react-native';
+import { Modal, Pressable, StatusBar, useWindowDimensions, View } from 'react-native';
 import Reanimated, { withDelay, withSpring, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -87,10 +87,17 @@ export function MessagePop({
   const [height, setHeight] = useState<number | null>(null);
   const gap = SPACING[2];
   const want = at.y - (onReact ? PICK_HEIGHT + gap : 0);
+  // Inside a status-bar-translucent Modal the safe area can come back 0: the status bar's own height
+  // keeps the faces out from under it (ui, 4 Kasım: the bar stood over the clock).
+  const topInset = Math.max(insets.top, StatusBar.currentHeight ?? 0);
   const top =
     height === null
       ? want
-      : Math.max(insets.top + gap, Math.min(want, screen.height - insets.bottom - gap - height));
+      : Math.max(topInset + gap, Math.min(want, screen.height - insets.bottom - gap - height));
+  // The bar and the menu pop in only once the stack stands where it goes: started in the measuring
+  // pass, their entering animations stayed where the stack first stood (the owner's report, 4 Kasım:
+  // the faces and the menu at the screen's top, the message at its foot). `placed` mounts them anew.
+  const placed = height !== null;
   const side = shape.screenPadding;
   return (
     <Modal transparent visible animationType="fade" statusBarTranslucent onRequestClose={onClose}>
@@ -115,10 +122,11 @@ export function MessagePop({
       >
         {onReact ? (
           <Reanimated.View
+            key={placed ? 'bar' : 'bar-measure'}
             testID="reaction-bar"
             accessibilityRole="menu"
             accessibilityLabel={tr.chat.react}
-            entering={reduce ? undefined : popIn(BAR_FROM)}
+            entering={reduce || !placed ? undefined : popIn(BAR_FROM)}
             style={{
               flexDirection: 'row',
               gap: SPACING[0.5],
@@ -145,7 +153,9 @@ export function MessagePop({
               >
                 {({ pressed }) => (
                   <Reanimated.View
-                    entering={reduce ? undefined : popIn(FACE_FROM, (i + 1) * FACE_STEP_MS)}
+                    entering={
+                      reduce || !placed ? undefined : popIn(FACE_FROM, (i + 1) * FACE_STEP_MS)
+                    }
                     className="items-center justify-center"
                     style={{
                       width: SPACING[10] + SPACING[0.5],
@@ -175,7 +185,8 @@ export function MessagePop({
         </View>
         {actions.length > 0 ? (
           <Reanimated.View
-            entering={reduce ? undefined : popIn(MENU_FROM)}
+            key={placed ? 'menu' : 'menu-measure'}
+            entering={reduce || !placed ? undefined : popIn(MENU_FROM)}
             style={{ transformOrigin: mine ? 'right top' : 'left top' }}
           >
             <Menu float>
