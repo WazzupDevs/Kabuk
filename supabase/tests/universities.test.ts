@@ -342,6 +342,40 @@ describe('the university venue chat', () => {
     expect(res.status).not.toBe(200);
   });
 
+  it('carries the university, never a campus, in a request from the chat', async () => {
+    const a = await onboarded(PHONES[0], { displayName: 'Ayşe' });
+    const b = await onboarded(PHONES[1], { displayName: 'Burak' });
+    expect((await checkIn(a, west.venueId, WEST_CENTER)).status).toBe(200);
+    expect((await checkIn(b, east.venueId, EAST_CENTER)).status).toBe(200);
+    await sql`update public.venue_chat_rate set last_sent_at = '-infinity'`;
+    const sent = await invoke(a, 'venue-chat', {
+      action: 'send',
+      venueId: west.venueId,
+      body: 'profilimle merhaba',
+      identity: await venueChatIdentity(a, true),
+    });
+    expect(sent.status, JSON.stringify(sent.body)).toBe(200);
+    const messageId = (sent.body as { messageId: string }).messageId;
+    const req = await invoke(b, 'friends', { action: 'request', venueChatMessageId: messageId });
+    expect(req.status, JSON.stringify(req.body)).toBe(200);
+    const mine = JSON.stringify((await b.rpc('my_sent_venue_chat_requests')).data);
+    const incoming = JSON.stringify((await invoke(a, 'friends', { action: 'incoming' })).body);
+    for (const seen of [mine, incoming]) {
+      expect(seen).not.toContain(WEST.name);
+      expect(seen).not.toContain(EAST.name);
+    }
+    expect(incoming).toContain(UNI.name);
+  });
+
+  it("lets a phone listen on its own campus's topic only", async () => {
+    const b = await onboarded(PHONES[1]);
+    expect((await checkIn(b, east.venueId, EAST_CENTER)).status).toBe(200);
+    const other = waitForBroadcast(b, venueChatChannel(west.venueId), VENUE_CHAT_BROADCAST, 3000);
+    await expect(other.subscribed).rejects.toThrow(/CHANNEL_ERROR|TIMED_OUT/);
+    other.received.catch(() => undefined);
+    await other.close();
+  });
+
   it('tells every campus of the university of a new message', async () => {
     const a = await onboarded(PHONES[0]);
     const b = await onboarded(PHONES[1]);

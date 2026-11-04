@@ -6,8 +6,10 @@
 -- What stays: a message is still written under the sender's own venue (venue_chat_messages.venue_id
 -- is the campus), and nothing a reader receives names that campus: the page has no venue column and
 -- the sender key is made with the chat's scope, so one sender looks the same from every campus.
--- Realtime topics stay venue_chat:{venue_id} (each person subscribes to their own campus's, as
--- before); the server sends the data-free broadcast to every campus of the scope.
+-- Realtime topics stay venue_chat:{venue_id}, and a person may subscribe to their own campus's
+-- only (realtime_topic_allowed below); the server sends every data-free venue chat broadcast to
+-- every campus of the scope (venue_chat_topics), so which topic a broadcast came on says nothing.
+-- A venue chat friend request carries the chat's name (the university's), never a campus's.
 --
 -- Lock order (rule 10): unchanged. These functions take the same locks as before, in the same
 -- order; the scope is read without a lock.
@@ -364,3 +366,137 @@ begin
 end;
 $function$
 ;
+
+-- As before (20261101090000_reveal_cleanup.sql, 20261012090000_venue_chat.sql), the topic held to
+-- the own venue and the request's venue name to the chat's.
+create or replace function private.realtime_topic_allowed(channel_topic text, sending boolean)
+returns boolean
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+declare
+  kind text := split_part(channel_topic, ':', 1);
+  target text := substr(channel_topic, length(kind) + 2);
+  target_id uuid;
+begin
+  if target !~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' then
+    return false;
+  end if;
+  target_id := target::uuid;
+
+  if kind = 'venue' then
+    return not sending and exists (
+      select 1 from public.table_sessions
+      where user_id = (select auth.uid()) and venue_id = target_id and status = 'active'
+    );
+  elsif kind = 'venue_chat' then
+    -- Only the own venue's topic (a campus of a university included): the server sends every venue
+    -- chat broadcast to each campus's topic, and nobody listens on another campus's.
+    return not sending and exists (
+      select 1 from public.table_sessions
+      where user_id = (select auth.uid()) and venue_id = target_id
+        and status = 'active' and expires_at > now()
+    );
+  elsif kind = 'session' then
+    return not sending and exists (
+      select 1 from public.table_sessions
+      where id = target_id and user_id = (select auth.uid())
+    );
+  elsif kind in ('room', 'messages', 'game', 'presence') then
+    return private.is_room_member(target_id);
+  elsif kind = 'inbox' then
+    return not sending and target_id = (select auth.uid());
+  elsif kind = 'dm' then
+    return not sending and exists (
+      select 1 from public.dm_threads
+      where id = target_id and (select auth.uid()) in (user_a, user_b)
+    );
+  elsif kind = 'dm_typing' then
+    return exists (
+      select 1 from public.dm_threads t
+      where t.id = target_id and (select auth.uid()) in (t.user_a, t.user_b)
+        and not private.is_blocked_between(t.user_a, t.user_b)
+    );
+  end if;
+  return false;
+end;
+$$;
+
+create or replace function public.friends_request_venue_chat(
+  target_user_id uuid,
+  target_message_id uuid,
+  daily_max integer
+)
+returns table (outcome text, other_user_id uuid)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  m public.venue_chat_messages;
+  reverse_status text;
+  sent_today integer;
+  venue_name text;
+  my_name text;
+  their_name text;
+  new_id uuid;
+begin
+  select * into m from private.visible_venue_chat_message(target_user_id, target_message_id);
+  if m.id is null or not m.profiled or m.hidden_at is not null
+     or m.sender_user_id = target_user_id then
+    return query select 'ok'::text, null::uuid;
+    return;
+  end if;
+  perform private.lock_pair(target_user_id, m.sender_user_id);
+
+  -- The press is kept whatever happens next: the sender's list shows it as waiting.
+  -- The chat's name (the university's for a campus of one), never the sender's campus.
+  select coalesce(u.name, v.name) into venue_name
+  from public.venues v left join public.universities u on u.id = v.university_id
+  where v.id = m.venue_id;
+  select display_name into my_name from public.profiles where id = target_user_id;
+  select display_name into their_name from public.profiles where id = m.sender_user_id;
+  insert into public.venue_chat_friend_presses (from_user_id, to_user_id, to_name, venue_name)
+  values (target_user_id, m.sender_user_id, their_name, venue_name)
+  on conflict (from_user_id, to_user_id) do nothing;
+
+  if private.is_blocked_between(target_user_id, m.sender_user_id) then
+    return query select 'ok'::text, null::uuid;
+    return;
+  end if;
+  if private.are_friends(target_user_id, m.sender_user_id) then
+    return query select 'already_friends'::text, null::uuid;
+    return;
+  end if;
+
+  select status into reverse_status from public.friend_requests
+  where from_user_id = m.sender_user_id and to_user_id = target_user_id
+  for update;
+  if reverse_status = 'pending' then
+    perform private.make_friends(target_user_id, m.sender_user_id, 'request');
+    return query select 'friendship_created'::text, m.sender_user_id;
+    return;
+  end if;
+
+  select count(*) into sent_today from public.friend_requests
+  where from_user_id = target_user_id and source = 'venue_chat'
+    and created_at > now() - interval '1 day';
+  if sent_today >= daily_max then
+    return query select 'ok'::text, null::uuid;
+    return;
+  end if;
+
+  insert into public.friend_requests (from_user_id, to_user_id, source, venue_chat_context)
+  values (target_user_id, m.sender_user_id, 'venue_chat',
+          jsonb_build_object('venueName', venue_name, 'fromName', my_name, 'toName', their_name))
+  on conflict (from_user_id, to_user_id) do nothing
+  returning id into new_id;
+  if new_id is null then
+    return query select 'ok'::text, null::uuid;
+    return;
+  end if;
+  return query select 'request_created'::text, m.sender_user_id;
+end;
+$$;

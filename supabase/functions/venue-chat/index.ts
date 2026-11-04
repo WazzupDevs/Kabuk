@@ -11,11 +11,11 @@
 // a sender deletes their own message, and a reader mutes one identity of another.
 import { requireUser, serviceClient } from '../_shared/auth.ts';
 import { inBackground } from '../_shared/background.ts';
-import { broadcast } from '../_shared/broadcast.ts';
 import { dbError } from '../_shared/db.ts';
 import { z } from '../_shared/deps.ts';
 import { handle } from '../_shared/http.ts';
 import { signPhotos } from '../_shared/photos.ts';
+import { broadcastVenueChat } from '../_shared/venueChatBroadcast.ts';
 import { loadProfanity } from '../_shared/profanity.ts';
 import type { ReactResponse } from '../_shared/pure/api/chat.ts';
 import type {
@@ -35,7 +35,6 @@ import {
   VENUE_CHAT,
   VENUE_CHAT_BROADCAST,
   VENUE_CHAT_REACTION_BROADCAST,
-  venueChatChannel,
 } from '../_shared/pure/venueChat.ts';
 
 // A reaction: one of the six faces, or an emoji of the app before them (reactions.ts); null takes
@@ -72,12 +71,8 @@ const Body: z.ZodType<VenueChatRequest> = z.discriminatedUnion('action', [
 
 const db = serviceClient();
 
-// A venue chat change is heard on every campus of the chat's university (docs/SPEC_V4.md §4.Q):
-// each phone listens on its own venue's topic, so the data-free broadcast goes to each of them.
-async function broadcastChat(venueId: string, event: string): Promise<void> {
-  const { data, error } = await db.rpc('venue_chat_topics', { target_venue_id: venueId });
-  if (error) throw dbError('venue_chat_topics', error);
-  await Promise.all(data.map((id) => broadcast(venueChatChannel(id), event)));
+function broadcastChat(venueId: string, event: string): Promise<void> {
+  return broadcastVenueChat(db, venueId, event);
 }
 
 // Empty without a live table at the venue. Only profiled messages have a path (never an anonymous
