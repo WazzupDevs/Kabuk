@@ -73,7 +73,8 @@ export function useRoomChat(roomId: string) {
   const remove = useMutation({
     meta: FEEL_ERROR,
     mutationFn: (id: string) => chatApi.remove(id),
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
+      older.forget(id);
       flash(tr.chat.deleted);
       void queryClient.invalidateQueries({ queryKey: messagesKey(roomId) });
     },
