@@ -72,6 +72,14 @@ const Body: z.ZodType<VenueChatRequest> = z.discriminatedUnion('action', [
 
 const db = serviceClient();
 
+// A venue chat change is heard on every campus of the chat's university (docs/SPEC_V4.md §4.Q):
+// each phone listens on its own venue's topic, so the data-free broadcast goes to each of them.
+async function broadcastChat(venueId: string, event: string): Promise<void> {
+  const { data, error } = await db.rpc('venue_chat_topics', { target_venue_id: venueId });
+  if (error) throw dbError('venue_chat_topics', error);
+  await Promise.all(data.map((id) => broadcast(venueChatChannel(id), event)));
+}
+
 // Empty without a live table at the venue. Only profiled messages have a path (never an anonymous
 // one, never a hidden photo); each distinct path is signed once. The identity is the caller's
 // check-in identity at this venue (null without a table).
@@ -141,7 +149,7 @@ Deno.serve(
         });
         if (error) throw dbError('venue_chat_delete', error);
         // Data-free, like a new message: the others read the page again.
-        inBackground(broadcast(venueChatChannel(data), VENUE_CHAT_BROADCAST));
+        inBackground(broadcastChat(data, VENUE_CHAT_BROADCAST));
         return { ok: true };
       }
       // Nothing goes to the muted person, no broadcast either (rule 5).
@@ -186,7 +194,7 @@ Deno.serve(
         if (error) throw dbError('venue_chat_react', error);
         const row = data[0];
         if (row?.changed) {
-          inBackground(broadcast(venueChatChannel(row.venue_id), VENUE_CHAT_REACTION_BROADCAST));
+          inBackground(broadcastChat(row.venue_id, VENUE_CHAT_REACTION_BROADCAST));
         }
         return { ok: true };
       }
@@ -217,7 +225,7 @@ Deno.serve(
       const [sent] = data;
       if (!sent) throw new AppError('internal', 'venue_chat_send_once returned no row.');
       if (!sent.replayed) {
-        inBackground(broadcast(venueChatChannel(body.venueId), VENUE_CHAT_BROADCAST));
+        inBackground(broadcastChat(body.venueId, VENUE_CHAT_BROADCAST));
       }
       return { messageId: sent.message_id };
     },
