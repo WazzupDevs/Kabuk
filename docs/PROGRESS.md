@@ -11,7 +11,7 @@
 ## Devir notu (3 Kasım 2026 19:45, temizlik A1–A4)
 
 - `docs/temizlik-listesi.md` (#404) ve paketleri: A1 #405, A2 #407 birleşti; #406 ile A1'in `VenueTags` kırığı #408'de düzeldi. Açık: #409 (A3, tr.ts'ten 232 anahtar) ve #411 (A4, belgeler + bu not); ikisi yeşilse squash birleştir. Native yok, OTA.
-- Paket B #413 birleşti (tr §2.2, tema, `game-card`/`game-poster`); `nearby_venues`/`venue_distance_m` proje sahibinin onayıyla migration'la silindi (Paket B2). Sonuç ve `private`'ın çağrılmayan 12 fonksiyonu: `docs/temizlik-listesi.md` → "B'nin sonucu"; eski sürümden kalan dördü (`end_friendship`, `end_two_sided_room`, `owns_session`, `pair_key`) karar bekliyor.
+- Paket B #413 birleşti (tr §2.2, tema, `game-card`/`game-poster`); `nearby_venues`/`venue_distance_m` proje sahibinin onayıyla migration'la silindi (Paket B2). Sonuç ve `private`'ın çağrılmayan 12 fonksiyonu: `docs/temizlik-listesi.md` → "B'nin sonucu"; eski sürümden kalan dördü (`end_friendship`, `end_two_sided_room`, `owns_session`, `pair_key`) B3'te silindi.
 - Ders: paralel PR'lar birbirinin sildiğini kullanabilir (#406 ↔ A1). Silme PR'ını birleştirmeden önce güncel main'i dala al ve `pnpm check`'i yeniden koş.
 - Proje sahibinin kararı bekleyen (C): `expo-keep-awake` (SPEC_V3 kullanılır diyor, kod kullanmıyor), `update_required` saplamaları (`MIN_APP_BUILD` sonrası), taraf modelinin oyun kodu ve SQL'i (4.6.x).
 

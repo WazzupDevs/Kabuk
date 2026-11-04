@@ -442,7 +442,7 @@ Koşmayan workflow ya da çağrılmayan betik bulunmadı.
 5. `private` şemasının 141 fonksiyonundan 12'sini hiçbir şey çağırmıyor (yerel DB: başka fonksiyonun gövdesi, tetikleyici, politika, view, varsayılan, kısıt, `cron.job` ve `pg_depend`; ayrıca Edge Function, betik, test ve `config.toml` metni):
    - **Kalır:** `before_user_created` (`config.toml` → `[auth.hook.before_user_created]`, Auth kancası).
    - Taraf modeli (C.3 kararına bağlı): `start_voice_tabu`, `start_sahtekar`, `start_say`, `start_ibre`, `deal_sohbet`, `tabu_close_card`, `phone_side`.
-   - Eski sürümlerden kalan, silinebilir (migration; yalnızca listelendi): `end_friendship` (son çağıran `20261005090000_friends_dm.sql`'deki eski gövdeler), `end_two_sided_room(uuid)` (`20261101090000_reveal_cleanup.sql`), `owns_session` (`20260930090000_reveal.sql`'deki politika gitti; `authenticated`'a hâlâ `execute` verili), `pair_key` (`20261026090000_team_reveal.sql`).
+   - Eski sürümlerden kalan, proje sahibinin onayıyla (4 Kasım) `20261123090000_drop_unused_private_fns.sql` ile silindi: `end_friendship` (son çağıran `20261005090000_friends_dm.sql`'deki eski gövdeler), `end_two_sided_room(uuid)` (`20261101090000_reveal_cleanup.sql`), `owns_session` (`20260930090000_reveal.sql`'deki politika gitti; `authenticated`'a hâlâ `execute` verili), `pair_key` (`20261026090000_team_reveal.sql`).
 
 ### C. Proje sahibinin kararı
 
