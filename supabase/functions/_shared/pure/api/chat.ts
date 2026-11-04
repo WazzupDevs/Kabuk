@@ -7,8 +7,8 @@ export type ChatRequest =
   | { action: 'send'; roomId: string; body: string; replyTo?: string }
   // The caller's table's one reaction on a message; null takes it back (§21.2).
   | { action: 'react'; messageId: string; emoji: Reaction | null }
-  // The sender's own message, while it is at the table (docs/SPEC_V4.md §4.T): `not_found` for
-  // any other.
+  // The sender's own message, while it is at the open table (docs/SPEC_V4.md §4.T): `not_found`
+  // for any other, a closed table and one the caller left included.
   | { action: 'delete'; messageId: string };
 export type ChatResponse = { messageId: string };
 export type ReactResponse = { ok: true };

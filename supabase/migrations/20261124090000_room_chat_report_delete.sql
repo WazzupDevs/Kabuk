@@ -6,7 +6,8 @@
 -- copy outlives the message (the id is set null when it goes). Only a phone at the table now that
 -- could read the message (since it sat down; RLS of public.messages), never one's own; anything
 -- else writes nothing and answers the same.
--- Delete: the sender's own message, while it is at the table. The row goes (its reactions with it,
+-- Delete: the sender's own message, while it is at the open table; anything else (another's
+-- message, another table's, a closed table, an unknown id) is the same `not_found`. The row goes (its reactions with it,
 -- a reply to it then says "Mesaj artık yok"); the function sends a data-free broadcast on
 -- messages:{room_id} and the table reads its page again (rule 9: no new channel).
 --
@@ -78,13 +79,24 @@ declare
   m public.messages;
   p record;
 begin
-  -- Unlocked first (the room comes before the message in the lock order), then the check-in and
-  -- the room, then the message again under them.
-  select * into m from public.messages where id = target_message_id;
+  -- Unlocked first (the room comes before the message in the lock order): the caller's own message
+  -- at a table it sits at now, open; then the check-in and the room, then the message again under
+  -- them. Every refusal is the same not_found: no answer tells whether an id exists.
+  select msg.* into m
+  from public.messages msg
+  join public.table_sessions ts on ts.id = msg.session_id
+  join public.rooms r on r.id = msg.room_id
+  join public.room_members rm on rm.room_id = msg.room_id and rm.session_id = msg.session_id
+  where msg.id = target_message_id and ts.user_id = target_user_id and ts.status = 'active'
+    and r.status <> 'closed' and rm.left_at is null;
   if m.id is null then
     raise exception using errcode = 'P0001', message = 'not_found';
   end if;
-  select * into p from private.room_phone(target_user_id, m.room_id);
+  begin
+    select * into p from private.room_phone(target_user_id, m.room_id);
+  exception when sqlstate 'P0001' then
+    raise exception using errcode = 'P0001', message = 'not_found';
+  end;
   delete from public.messages
   where id = target_message_id and session_id = p.session_id
   returning * into m;

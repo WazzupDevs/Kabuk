@@ -453,10 +453,8 @@ describe("table chat: report a message, delete one's own", () => {
     expect(await invoke(guest, 'chat', { action: 'react', messageId, emoji: 'begen' })).toEqual(OK);
 
     expect(await remove(guest, messageId)).toEqual({ status: 404, body: errorBody('not_found') });
-    expect(await remove(third, messageId)).toEqual({
-      status: 403,
-      body: errorBody('not_in_room'),
-    });
+    // Not at the table: the same answer as an unknown id (rule 5).
+    expect(await remove(third, messageId)).toEqual({ status: 404, body: errorBody('not_found') });
     expect(await remove(owner, randomUUID())).toEqual({
       status: 404,
       body: errorBody('not_found'),
@@ -487,10 +485,7 @@ describe("table chat: report a message, delete one's own", () => {
     const { owner, guest, roomId } = await roomWithGuest();
     const messageId = idOf(await send(guest, roomId, 'sonra silerim'));
     await invoke(owner, 'rooms', { action: 'end' });
-    expect(await remove(guest, messageId)).toEqual({
-      status: 403,
-      body: errorBody('not_in_room'),
-    });
+    expect(await remove(guest, messageId)).toEqual({ status: 404, body: errorBody('not_found') });
   });
 
   // Rule 10: the check-in, then the room, then the message (and its reactions).
