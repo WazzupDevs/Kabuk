@@ -1,49 +1,60 @@
 import * as Updates from 'expo-updates';
 import { create } from 'zustand';
 
+import { type DrawPart, DRAW_STEPS, type LabParts, partsOff, togglePart } from './drawLabParts';
+
+export { DRAW_PARTS, DRAW_STEPS, SWITCH_PARTS } from './drawLabParts';
+export type { DrawPart, DrawStep, DrawStepKey } from './drawLabParts';
+
 // Ayarlar → Tasarım (test) → Çizim ölçümü: on the owner's own phone, what each part of a screen
 // costs to draw (the owner's call, 29 Ekim: measure, never cut). The lab turns parts off one by one
 // for a few seconds each while the phone's "profile rendering as bars" is recorded; the frame times
-// of each step are read from the recording. Preview builds and development only; production never
-// turns anything off (useLabOff is false there and the store never changes).
+// of each step are read from the recording. The tab switch's parts (drawLabParts.ts) are turned off
+// by hand, each on its own, while tabs are switched; each switch's frames are measured (Geçiş
+// ölçümü, DrawLabPanel). Preview builds and development only; production never turns anything off
+// (useLabOff and labOff are false there and the store never changes).
 export const DRAW_LAB = Updates.channel === 'preview' || __DEV__;
 
-// `cam` the liquid glass (tab bar, chat composer), `golge` the kit's outer shadows, `kart` the glass
-// cards' gradient (a flat colour instead), `zemin` the colour clouds behind the screen, `hareket`
-// every loop (live dots, buddies, the capsule's look).
-export type DrawPart = 'cam' | 'golge' | 'kart' | 'zemin' | 'hareket';
-
-export type DrawStepKey = 'all' | 'cam' | 'golge' | 'kart' | 'zemin' | 'four' | 'hareket' | 'end';
-export type DrawStep = { key: DrawStepKey; off: readonly DrawPart[] };
-export const DRAW_STEPS: readonly DrawStep[] = [
-  { key: 'all', off: [] },
-  { key: 'cam', off: ['cam'] },
-  { key: 'golge', off: ['golge'] },
-  { key: 'kart', off: ['kart'] },
-  { key: 'zemin', off: ['zemin'] },
-  { key: 'four', off: ['cam', 'golge', 'kart', 'zemin'] },
-  { key: 'hareket', off: ['hareket'] },
-  { key: 'end', off: [] },
-];
-const DRAW_STEP_MS = 5000;
-
-type LabState = { open: boolean; step: number | null };
-export const useDrawLab = create<LabState>(() => ({ open: false, step: null }));
-
-const NONE: readonly DrawPart[] = [];
-function offIn(s: LabState): readonly DrawPart[] {
-  return s.step === null ? NONE : (DRAW_STEPS[s.step]?.off ?? NONE);
-}
+type LabState = LabParts & {
+  open: boolean;
+  // Each tab opening while the panel is open (TabScene → markTabSwitch): the panel measures the
+  // frames that follow.
+  switches: number;
+};
+export const useDrawLab = create<LabState>(() => ({
+  open: false,
+  step: null,
+  manual: [],
+  switches: 0,
+}));
 
 export function useLabOff(part: DrawPart): boolean {
-  return useDrawLab((s) => DRAW_LAB && offIn(s).includes(part));
+  return useDrawLab((s) => DRAW_LAB && partsOff(s).includes(part));
 }
 
+// The same outside a render (a listener reads it when it runs).
+export function labOff(part: DrawPart): boolean {
+  return DRAW_LAB && partsOff(useDrawLab.getState()).includes(part);
+}
+
+export function toggleLabPart(part: DrawPart) {
+  if (!DRAW_LAB) return;
+  useDrawLab.setState((s) => ({ manual: togglePart(s.manual, part) }));
+}
+
+// A tab opened (after another tab): measured only while the panel is open.
+export function markTabSwitch() {
+  if (!DRAW_LAB || !useDrawLab.getState().open) return;
+  useDrawLab.setState((s) => ({ switches: s.switches + 1 }));
+}
+
+const DRAW_STEP_MS = 5000;
 let timers: ReturnType<typeof setTimeout>[] = [];
 
 export function openDrawLab(open: boolean) {
   stopDrawLab();
-  useDrawLab.setState({ open });
+  // Closing the panel turns every part back on.
+  useDrawLab.setState(open ? { open } : { open, manual: [] });
 }
 
 export function startDrawLab() {

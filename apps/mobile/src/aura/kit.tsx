@@ -120,11 +120,13 @@ export function InSheet({ children }: { children: ReactNode }) {
 const OnCard = createContext(false);
 
 // Whether a clear button here is frosted (ui/LiquidGlass → Frost): where the glass blurs, straight
-// on the screen (not on a card, not in a sheet).
+// on the screen (not on a card, not in a sheet). Çizim ölçümü's `buzlu` (lib/drawLab.ts) unfrosts it:
+// the control keeps its own fill, as where the glass does not blur.
 export function useFrost(): boolean {
   const onCard = useContext(OnCard);
   const flat = useContext(FlatGlass);
-  return FROSTED && !onCard && !flat;
+  const labOff = useLabOff('buzlu');
+  return FROSTED && !onCard && !flat && !labOff;
 }
 
 export function Glass({

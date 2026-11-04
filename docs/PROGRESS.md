@@ -1,5 +1,10 @@
 # İlerleme
 
+## Devir notu (4 Kasım 2026, sekme geçişi paketi)
+
+- Denetim `docs/denetim/performans-2026-11.md`; sekme geçişi paketi sıranın önünde. Önce B4 birleşti (Çizim ölçümü: `Buzlu`, `Bulanma`, `Geliş`, `Kademe`, `Cam` ayrı ayrı kapanır, Geçiş ölçümü p95/takılma; OTA, üretimde etkisiz).
+- Sıradaki: proje sahibi `docs/denetim/olcum-protokolu.md`'yi düşük ve orta sınıf Android'de koşar; rakamlarla B2 → B6 → B5 → B3 → B7 → B1/B12 (`docs/denetim/sekme-gecisi-plani.md`), her biri ayrı PR, önce/sonra ölçümlü. B1/B12 yalnızca cihaz bulgusuyla; K1–K11 proje sahibinin kararı.
+
 ## Devir notu (4 Kasım 2026, temizlik B ve C bitti)
 
 - Birleşenler: #413 (B: tr §2.2'nin 84 anahtarı, AURA'nın bulut verisi ve `table`'ı, `game-card/` ve okunmayan dört poster), #415 (`nearby_venues`, `venue_distance_m`), #423 (dört eski `private` fonksiyonu), #425 (oyun sürerken ekran açık, `useGameAwake`; OTA, cihazda denenmedi). Sonuçlar `docs/temizlik-listesi.md` → "B'nin sonucu" ve C.
