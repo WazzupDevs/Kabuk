@@ -1,5 +1,11 @@
 # İlerleme
 
+## Devir notu (4 Kasım 2026 akşam, açık işler bitti)
+
+- Birleşenler: #434 (devir notu), #436 (ci `integration`'da `pnpm gen:types` + `git diff --exit-code database.ts`; #430'un elle hizalaması biçim farkıydı, düzeldi), #440 (masa ve mekan sohbetinde açık eski sayfalar silinen mesajda ve değişen tepkide yeniden okunur, `useOlderPages` → `reread`; OTA, cihazda denenmedi), #442 (canlı tuvalin Kapsul/KapsulKoyu panolarına 8.1 işlendi).
+- Bu container'da Docker açılıyor (`dockerd`) ama imajlar inmiyor (Docker Hub 429, ECR CloudFront 403): yerel stack yok, şemaya CI bakar.
+- Oturumun yapabileceği açık iş kalmadı. Proje sahibinde: üretim yayınları (iki drop migration), 6.2 boş durumu ve K-83 paleti tuvale, C2/C3 (oyunların yeni hâli).
+
 ## Devir notu (4 Kasım 2026, sekme geçişi paketi)
 
 - Denetim `docs/denetim/performans-2026-11.md`; sekme geçişi paketi sıranın önünde. Önce B4 birleşti (Çizim ölçümü: `Buzlu`, `Bulanma`, `Geliş`, `Kademe`, `Cam` ayrı ayrı kapanır, Geçiş ölçümü p95/takılma; OTA, üretimde etkisiz).
