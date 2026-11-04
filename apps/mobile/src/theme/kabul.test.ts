@@ -7,6 +7,7 @@ import { MAX_TABLE_PHONES } from '../../../../supabase/functions/_shared/pure/ta
 
 import { AURA } from './aura';
 import { KIT } from './auraKit';
+import { AA_TEXT, contrastRatio } from './contrast';
 
 // The acceptance items K1 to K17 of docs/design/aura/aktarim-v76-2kasim.md §11, measured on the
 // values in the code. Where a value sits inside a component (which imports React Native and cannot
@@ -220,5 +221,17 @@ describe('K17: a full table', () => {
     );
     const sheet = code('src/features/rooms/InviteSheet.tsx');
     expect(sheet).toMatch(/const full = phones >= MAX_TABLE_PHONES;/);
+  });
+});
+
+// Another's bubble in the DM, the venue chat and the table chat: its white words at 4.5:1 in both
+// schemes (the DM blue deepened from #2F7CF6, 3.9:1; the owner's call, 4 Kasım).
+describe('chat bubbles read at 4.5:1', () => {
+  it.each(['light', 'dark'] as const)('white words on every chat colour (%s)', (scheme) => {
+    const b = KIT.bubble[scheme];
+    for (const ground of [b.dm, b.mekan, b.masa]) {
+      expect(contrastRatio(b.themInk, ground)).toBeGreaterThanOrEqual(AA_TEXT);
+    }
+    expect(contrastRatio(b.mineInk, b.mine)).toBeGreaterThanOrEqual(AA_TEXT);
   });
 });

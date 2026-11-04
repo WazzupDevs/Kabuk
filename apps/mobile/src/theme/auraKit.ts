@@ -314,7 +314,9 @@ export const KIT = {
       mineMuted: '#4A6550',
       mineEdge: 'rgba(3, 27, 11, 0.06)',
       mineShadow: '0px 4px 12px rgba(3, 27, 11, 0.10)',
-      dm: '#2F7CF6',
+      // Deeper than the first #2F7CF6 (3.9:1) so its white words read at 4.5:1 (the owner's
+      // call, 4 Kasım); the same hue.
+      dm: '#2670E0',
       // Darker than the venue chat's old glass-era green so its white words read at 4.5:1.
       mekan: '#17834D',
       // Pink, not the old purple (Aura v65 has no violet in the interface), until K-83's palette.
@@ -342,7 +344,7 @@ export const KIT = {
   },
   // Another's bubble's soft shadow, in its colour.
   chatShadow: {
-    dm: '0px 4px 12px rgba(47, 124, 246, 0.22)',
+    dm: '0px 4px 12px rgba(38, 112, 224, 0.22)',
     mekan: '0px 4px 12px rgba(30, 154, 92, 0.22)',
     masa: '0px 4px 12px rgba(194, 24, 91, 0.22)',
   },
