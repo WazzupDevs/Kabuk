@@ -5,12 +5,12 @@
 // History actions answer { ok: true } whatever they find, so they reveal nothing.
 import { requireUser, serviceClient } from '../_shared/auth.ts';
 import { inBackground } from '../_shared/background.ts';
-import { broadcast } from '../_shared/broadcast.ts';
 import { dbError } from '../_shared/db.ts';
 import { z } from '../_shared/deps.ts';
 import { handle } from '../_shared/http.ts';
 import { lobbyChanged } from '../_shared/lobby.ts';
 import { photoCopyHex } from '../_shared/photos.ts';
+import { broadcastVenueChat } from '../_shared/venueChatBroadcast.ts';
 import type { SafetyRequest, SafetyResponse } from '../_shared/pure/api/chat.ts';
 import {
   GAME_FLOW_REPORT_REASONS,
@@ -18,7 +18,7 @@ import {
   type ReportReason,
 } from '../_shared/pure/chat.ts';
 import { AppError } from '../_shared/pure/errors.ts';
-import { VENUE_CHAT, VENUE_CHAT_BROADCAST, venueChatChannel } from '../_shared/pure/venueChat.ts';
+import { VENUE_CHAT, VENUE_CHAT_BROADCAST } from '../_shared/pure/venueChat.ts';
 
 const reason = z.enum(REPORT_REASONS);
 // A person met in the game flow (a phone in the room, a history row) can also be reported for a
@@ -104,7 +104,8 @@ async function reportVenueChat(userId: string, messageId: string, why: ReportRea
     const msg = await db.from('venue_chat_messages').select('venue_id').eq('id', messageId);
     if (msg.error) throw dbError('venue_chat_messages', msg.error);
     const venueId = msg.data[0]?.venue_id;
-    if (venueId) inBackground(broadcast(venueChatChannel(venueId), VENUE_CHAT_BROADCAST));
+    // Every campus of the chat hears it (docs/SPEC_V4.md §4.Q).
+    if (venueId) inBackground(broadcastVenueChat(db, venueId, VENUE_CHAT_BROADCAST));
   }
 }
 

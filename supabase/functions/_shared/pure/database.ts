@@ -3721,6 +3721,10 @@ export type Database = {
           replayed: boolean;
         }[];
       };
+      venue_chat_topics: {
+        Args: { target_venue_id: string };
+        Returns: string[];
+      };
       venue_chat_unmute: {
         Args: { target_mute_id: string; target_user_id: string };
         Returns: undefined;

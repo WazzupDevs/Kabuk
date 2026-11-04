@@ -11,11 +11,11 @@
 // a sender deletes their own message, and a reader mutes one identity of another.
 import { requireUser, serviceClient } from '../_shared/auth.ts';
 import { inBackground } from '../_shared/background.ts';
-import { broadcast } from '../_shared/broadcast.ts';
 import { dbError } from '../_shared/db.ts';
 import { z } from '../_shared/deps.ts';
 import { handle } from '../_shared/http.ts';
 import { signPhotos } from '../_shared/photos.ts';
+import { broadcastVenueChat } from '../_shared/venueChatBroadcast.ts';
 import { loadProfanity } from '../_shared/profanity.ts';
 import type { ReactResponse } from '../_shared/pure/api/chat.ts';
 import type {
@@ -35,7 +35,6 @@ import {
   VENUE_CHAT,
   VENUE_CHAT_BROADCAST,
   VENUE_CHAT_REACTION_BROADCAST,
-  venueChatChannel,
 } from '../_shared/pure/venueChat.ts';
 
 // A reaction: one of the six faces, or an emoji of the app before them (reactions.ts); null takes
@@ -71,6 +70,10 @@ const Body: z.ZodType<VenueChatRequest> = z.discriminatedUnion('action', [
 ]);
 
 const db = serviceClient();
+
+function broadcastChat(venueId: string, event: string): Promise<void> {
+  return broadcastVenueChat(db, venueId, event);
+}
 
 // Empty without a live table at the venue. Only profiled messages have a path (never an anonymous
 // one, never a hidden photo); each distinct path is signed once. The identity is the caller's
@@ -141,7 +144,7 @@ Deno.serve(
         });
         if (error) throw dbError('venue_chat_delete', error);
         // Data-free, like a new message: the others read the page again.
-        inBackground(broadcast(venueChatChannel(data), VENUE_CHAT_BROADCAST));
+        inBackground(broadcastChat(data, VENUE_CHAT_BROADCAST));
         return { ok: true };
       }
       // Nothing goes to the muted person, no broadcast either (rule 5).
@@ -186,7 +189,7 @@ Deno.serve(
         if (error) throw dbError('venue_chat_react', error);
         const row = data[0];
         if (row?.changed) {
-          inBackground(broadcast(venueChatChannel(row.venue_id), VENUE_CHAT_REACTION_BROADCAST));
+          inBackground(broadcastChat(row.venue_id, VENUE_CHAT_REACTION_BROADCAST));
         }
         return { ok: true };
       }
@@ -217,7 +220,7 @@ Deno.serve(
       const [sent] = data;
       if (!sent) throw new AppError('internal', 'venue_chat_send_once returned no row.');
       if (!sent.replayed) {
-        inBackground(broadcast(venueChatChannel(body.venueId), VENUE_CHAT_BROADCAST));
+        inBackground(broadcastChat(body.venueId, VENUE_CHAT_BROADCAST));
       }
       return { messageId: sent.message_id };
     },

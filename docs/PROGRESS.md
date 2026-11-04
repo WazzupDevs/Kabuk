@@ -1,5 +1,9 @@
 # İlerleme
 
+## Devir notu (4 Kasım 2026, üniversite sohbeti)
+
+- Mekan sohbeti üniversiteye bağlandı (`20261125090000_university_venue_chat.sql`, `SPEC_V4` §4.Q, kural 4 ve 9). Değişmez kurala dokunduğu için birleşme proje sahibinin "onaylandı"sını bekler. Native yok; yalnızca sunucu (migration + `venue-chat` fonksiyonu).
+
 ## Devir notu (4 Kasım 2026, İGÜ Gelişim Tower)
 
 - `content/venues-campus.json` → `igu-tower` ("İstanbul Gelişim Üniversitesi", Avcılar): proje sahibinin çizdiği sınır, etkin. Dev'e birleşmeyle gider; içeriden ve 60 m dışından check-in denenmeli. Üretime seed proje sahibinin elinde.

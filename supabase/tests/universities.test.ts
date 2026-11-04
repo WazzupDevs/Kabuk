@@ -9,7 +9,9 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { campusSql, universitiesSql } from '../../scripts/seed/sections.ts';
 import { BOUNDARY_TOLERANCE_M } from '../functions/_shared/pure/checkin.ts';
 import { CURRENT_LOCATION_CONSENT_VERSION } from '../functions/_shared/pure/consent.ts';
+import type { VenueChatPageResponse } from '../functions/_shared/pure/api/venueChat.ts';
 import { EVENT_WINDOW_DAYS } from '../functions/_shared/pure/explore.ts';
+import { VENUE_CHAT_BROADCAST, venueChatChannel } from '../functions/_shared/pure/venueChat.ts';
 import {
   CAMPUS_CENTER,
   CAMPUS_HALF_M,
@@ -22,7 +24,7 @@ import {
   offset,
   squareRing,
 } from './fixtures/venues.ts';
-import { errorBody, onboarded, PHONES } from './helpers.ts';
+import { errorBody, onboarded, PHONES, venueChatIdentity, waitForBroadcast } from './helpers.ts';
 import { type Client, deleteUserByPhone, invoke, sql, userIdOf } from './local.ts';
 
 const UNI = { ref: 'fixture-uni', name: 'Test Üniversitesi', city: 'Sakarya', isActive: true };
@@ -99,7 +101,12 @@ afterAll(async () => {
   await sql.end();
 });
 
-function checkIn(client: Client, venueId: string, at: { lat: number; lng: number }) {
+function checkIn(
+  client: Client,
+  venueId: string,
+  at: { lat: number; lng: number },
+  spotId?: string,
+) {
   return invoke(client, 'checkin', {
     action: 'check-in',
     venueId,
@@ -108,8 +115,13 @@ function checkIn(client: Client, venueId: string, at: { lat: number; lng: number
     accuracyM: 20,
     locationConsentVersion: CURRENT_LOCATION_CONSENT_VERSION,
     requestId: randomUUID(),
+    ...(spotId ? { spotId } : {}),
   });
 }
+
+// The campus on its own (FIXTURE_CAMPUS) has active spots: a check-in there names one.
+const atPlain = (client: Client) =>
+  checkIn(client, plain.venueId, CAMPUS_CENTER, plain.spots.kantin);
 
 async function explore(client: Client) {
   const { data, error } = await client.rpc('explore_venues', { event_days: EVENT_WINDOW_DAYS });
@@ -260,5 +272,131 @@ describe('universities and campuses', () => {
       select id from public.venues where source = 'campus' and source_ref = ${WEST.ref}
     `;
     expect(row?.id).toBe(west.venueId);
+  });
+});
+
+// One venue chat per university (docs/SPEC_V4.md §4.Q, 4 Kasım): every campus of a university reads
+// and writes the same chat; nothing a reader gets says which campus a sender is at.
+describe('the university venue chat', () => {
+  async function sendAt(client: Client, venueId: string, body: string, replyTo?: string) {
+    await sql`update public.venue_chat_rate set last_sent_at = '-infinity'`;
+    const res = await invoke(client, 'venue-chat', {
+      action: 'send',
+      venueId,
+      body,
+      identity: await venueChatIdentity(client, false),
+      ...(replyTo ? { replyTo } : {}),
+    });
+    expect(res.status, JSON.stringify(res.body)).toBe(200);
+    return (res.body as { messageId: string }).messageId;
+  }
+
+  async function pageAt(client: Client, venueId: string) {
+    const res = await invoke(client, 'venue-chat', { action: 'page', venueId });
+    expect(res.status, JSON.stringify(res.body)).toBe(200);
+    return (res.body as VenueChatPageResponse).messages;
+  }
+
+  afterEach(async () => {
+    await sql`delete from public.venue_chat_messages where venue_id = any(${[
+      west.venueId,
+      east.venueId,
+      plain.venueId,
+    ]})`;
+  });
+
+  it('shares one chat between the campuses of a university, and only them', async () => {
+    const a = await onboarded(PHONES[0]);
+    const b = await onboarded(PHONES[1]);
+    const c = await onboarded(PHONES[2]);
+    expect((await checkIn(a, west.venueId, WEST_CENTER)).status).toBe(200);
+    expect((await checkIn(b, east.venueId, EAST_CENTER)).status).toBe(200);
+    // A campus on its own keeps its own chat.
+    expect((await atPlain(c)).status).toBe(200);
+
+    const fromWest = await sendAt(a, west.venueId, 'batıdan merhaba');
+    const fromEast = await sendAt(b, east.venueId, 'doğudan selam', fromWest);
+
+    const seenByA = await pageAt(a, west.venueId);
+    const seenByB = await pageAt(b, east.venueId);
+    expect(seenByA.map((m) => m.id).sort()).toEqual([fromWest, fromEast].sort());
+    expect(seenByB.map((m) => m.id).sort()).toEqual([fromWest, fromEast].sort());
+    // The reply across campuses keeps its quote.
+    expect(seenByA.find((m) => m.id === fromEast)?.replyTo).toMatchObject({ id: fromWest });
+    // One sender, one key, whichever campus reads.
+    const keyFromA = seenByA.find((m) => m.id === fromWest)?.senderKey;
+    expect(seenByB.find((m) => m.id === fromWest)?.senderKey).toBe(keyFromA);
+    // No campus in what a reader gets.
+    for (const m of seenByB) {
+      expect(JSON.stringify(m)).not.toContain(west.venueId);
+      expect(JSON.stringify(m)).not.toContain(WEST.name);
+    }
+    expect(await pageAt(c, plain.venueId)).toEqual([]);
+    // The other way round: the campus on its own is not read from the university's campuses.
+    await sendAt(c, plain.venueId, 'tek kampüs');
+    expect((await pageAt(a, west.venueId)).map((m) => m.body)).not.toContain('tek kampüs');
+  });
+
+  it('refuses the chat of a university without a check-in at one of its campuses', async () => {
+    const outsider = await onboarded(PHONES[2]);
+    expect((await atPlain(outsider)).status).toBe(200);
+    // Asking for a campus of another university shows nothing and cannot write.
+    expect(await pageAt(outsider, west.venueId)).toEqual([]);
+    await sql`update public.venue_chat_rate set last_sent_at = '-infinity'`;
+    const res = await invoke(outsider, 'venue-chat', {
+      action: 'send',
+      venueId: west.venueId,
+      body: 'içeri girmeden',
+      identity: 'anonymous',
+    });
+    expect(res.status).not.toBe(200);
+  });
+
+  it('carries the university, never a campus, in a request from the chat', async () => {
+    const a = await onboarded(PHONES[0], { displayName: 'Ayşe' });
+    const b = await onboarded(PHONES[1], { displayName: 'Burak' });
+    expect((await checkIn(a, west.venueId, WEST_CENTER)).status).toBe(200);
+    expect((await checkIn(b, east.venueId, EAST_CENTER)).status).toBe(200);
+    await sql`update public.venue_chat_rate set last_sent_at = '-infinity'`;
+    const sent = await invoke(a, 'venue-chat', {
+      action: 'send',
+      venueId: west.venueId,
+      body: 'profilimle merhaba',
+      identity: await venueChatIdentity(a, true),
+    });
+    expect(sent.status, JSON.stringify(sent.body)).toBe(200);
+    const messageId = (sent.body as { messageId: string }).messageId;
+    const req = await invoke(b, 'friends', { action: 'request', venueChatMessageId: messageId });
+    expect(req.status, JSON.stringify(req.body)).toBe(200);
+    const mine = JSON.stringify((await b.rpc('my_sent_venue_chat_requests')).data);
+    const incoming = JSON.stringify((await invoke(a, 'friends', { action: 'incoming' })).body);
+    for (const seen of [mine, incoming]) {
+      expect(seen).not.toContain(WEST.name);
+      expect(seen).not.toContain(EAST.name);
+    }
+    expect(incoming).toContain(UNI.name);
+  });
+
+  it("lets a phone listen on its own campus's topic only", async () => {
+    const b = await onboarded(PHONES[1]);
+    expect((await checkIn(b, east.venueId, EAST_CENTER)).status).toBe(200);
+    const other = waitForBroadcast(b, venueChatChannel(west.venueId), VENUE_CHAT_BROADCAST, 3000);
+    // Nothing arrives on a topic it may not join; the wait's own timeout is not the test.
+    other.received.catch(() => undefined);
+    await expect(other.subscribed).rejects.toThrow(/CHANNEL_ERROR|TIMED_OUT/);
+    await other.close();
+  });
+
+  it('tells every campus of the university of a new message', async () => {
+    const a = await onboarded(PHONES[0]);
+    const b = await onboarded(PHONES[1]);
+    expect((await checkIn(a, west.venueId, WEST_CENTER)).status).toBe(200);
+    expect((await checkIn(b, east.venueId, EAST_CENTER)).status).toBe(200);
+    // B listens on its own campus's topic, as the app does.
+    const heard = waitForBroadcast(b, venueChatChannel(east.venueId), VENUE_CHAT_BROADCAST);
+    await heard.subscribed;
+    await sendAt(a, west.venueId, 'duyan var mı');
+    await heard.received;
+    await heard.close();
   });
 });
