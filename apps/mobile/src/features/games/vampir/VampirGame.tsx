@@ -9,11 +9,11 @@ import {
 } from '@shared/vampir.ts';
 import { useMemo, useState } from 'react';
 import { ScrollView, View } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
 import { Btn, Glass, Round, T, Tag } from '@/aura/kit';
+import { Button } from '@/components/Button';
 import { Sheet } from '@/components/Sheet';
 import { roomKeys, type TablePerson } from '@/features/rooms/queries';
 import { errorMessage } from '@/i18n/errors';
@@ -24,11 +24,11 @@ import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
-import { TABLE } from '@/theme/vampirTable';
+import { TABLE, TABLE_INK as INK, TABLE_SHADOW } from '@/theme/vampirTable';
 
-import { RoundTable, type SeatMark, StillCard, TableBtn, TableGround } from './RoundTable';
+import { GlassBtn, RingedFace, type SeatMark } from './RoundTable';
 import { Confetti, type Faces, Face, nameOf } from './VampirParts';
-import { TablePage, VampirPlay } from './VampirPlay';
+import { GamePage, Pill, Stage, StageWords, VampirPlay } from './VampirPlay';
 
 type Room = {
   id: string;
@@ -345,9 +345,10 @@ function Pregame({
   );
 }
 
-// The end at the round table (the file's Sonuç): who won and the person's own line, everyone with
-// their role (those who left without), the winners' card at the middle; confetti for the winners;
-// "Yeniden oyna" for the owner and "Masaya dön".
+// The end at the capsule table (Aura v83, VampirSonuc): every card open on its role (the
+// vampires' glowing; those who left are not at the table), the winners' faces and who won at the
+// middle, the person's own line; confetti for the winners; "Yeniden oyna" for the owner and "Masaya
+// dön".
 function End({
   roomId,
   result,
@@ -361,7 +362,6 @@ function End({
   owner: boolean;
   onBack: () => void;
 }) {
-  const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const myRole = result.roles[faces.me];
   const won = myRole ? wonGame(myRole, result.winner) : false;
@@ -382,55 +382,92 @@ function End({
         : won
           ? tr.vampir.lineWon
           : tr.vampir.lineLost;
-  const winCard = result.winner === 'j' ? 'soytari' : result.winner === 'k' ? 'koylu' : 'vampir';
-  const time = result.winner === 'v' ? 'night' : result.winner === 'j' ? 'dusk' : 'day';
   const seats: SeatMark[] = result.seats.flatMap((s) => {
     const role = result.roles[s];
-    return role ? [{ sid: s, role, dead: dead.has(s) }] : [];
+    return role ? [{ sid: s, role, dead: dead.has(s), win: wonGame(role, result.winner) }] : [];
   });
+  const winners = seats.filter((s) => s.win).map((s) => s.sid);
+  const big = winners.length <= 2;
+  const face = big ? TABLE.winners : TABLE.candidates.small;
   return (
     <View testID="vampir-end" style={{ flex: 1 }}>
-      <StatusBar style="light" />
-      <TableGround time={time} />
-      {won ? <Confetti /> : null}
-      <TablePage
-        insetTop={insets.top}
-        insetBottom={insets.bottom}
-        title={tr.vampir.over}
+      <GamePage
+        testID="vampir-end-table"
+        faces={faces}
+        seats={seats}
+        phase="end"
+        dial={null}
         onExit={onBack}
-        prompt={{
-          title: tr.vampir.won[result.winner],
-          note: myRole && line ? tr.vampir.mine(tr.vampir.roles[myRole].name, line) : undefined,
-        }}
-        table={
-          <RoundTable
-            faces={faces}
-            seats={seats}
-            time={time}
-            center={<StillCard role={winCard} />}
-          />
-        }
         error={again.error ? errorMessage(again.error) : null}
+        stage={
+          <Stage top={TABLE.stageTop.end}>
+            <Pill label={tr.vampir.over} tone="end" />
+            <View
+              style={{
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                justifyContent: 'center',
+                gap: WINNER_GAP,
+                marginTop: 12,
+              }}
+            >
+              {winners.map((s) => (
+                <RingedFace
+                  key={s}
+                  faces={faces}
+                  sid={s}
+                  size={face}
+                  ring={{ color: INK.pink, inner: 2.5, outer: 2.5 }}
+                  shadow={TABLE_SHADOW.winner}
+                />
+              ))}
+            </View>
+            <StageWords
+              words={{
+                title: tr.vampir.won[result.winner],
+                note:
+                  myRole && line ? tr.vampir.mine(tr.vampir.roles[myRole].name, line) : undefined,
+                big: true,
+              }}
+            />
+          </Stage>
+        }
         foot={
           <View style={{ flexDirection: 'row', gap: TABLE.footGap }}>
             {owner ? (
-              <TableBtn
-                testID="vampir-again"
-                label={tr.vampir.again}
-                loading={again.isPending}
-                onPress={() => again.mutate()}
-              />
-            ) : null}
-            <TableBtn
-              ghost={owner}
-              testID="vampir-back"
-              label={tr.vampir.backToTable}
-              onPress={onBack}
-            />
+              <>
+                <GlassBtn
+                  testID="vampir-back"
+                  label={tr.vampir.backToTable}
+                  width={TABLE.secondary}
+                  onPress={onBack}
+                />
+                <View style={{ flex: 1 }}>
+                  <Button
+                    testID="vampir-again"
+                    size="lg"
+                    label={tr.vampir.again}
+                    loading={again.isPending}
+                    onPress={() => again.mutate()}
+                  />
+                </View>
+              </>
+            ) : (
+              <View style={{ flex: 1 }}>
+                <Button
+                  testID="vampir-back"
+                  size="lg"
+                  label={tr.vampir.backToTable}
+                  onPress={onBack}
+                />
+              </View>
+            )}
           </View>
         }
       />
+      {won ? <Confetti /> : null}
     </View>
   );
 }
+const WINNER_GAP = 6;
 const LIST_GAP = 6;

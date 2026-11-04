@@ -1,102 +1,62 @@
-import { TABLE } from './vampirTableSize';
+import { seatSize, TABLE } from './vampirTableSize.ts';
 
-// Where the round table's people sit and how its lines run (docs/design/vampir/yuvarlak-masa.html:
-// ring() and lines()), in the table's frame.
+// Where the capsule table's people sit, their cards and candles (the reference code's build.py →
+// ring, seats), in the scene's frame.
 export type Point = readonly [number, number];
 
 const { cx: CX, cy: CY } = TABLE.frame;
 
-// `n` seats on the seats' ellipse at even steps along it, the first (the person) at the bottom,
-// then round to the left.
-export function ring(n: number, rx: number = TABLE.seat.rx, ry: number = TABLE.seat.ry): Point[] {
-  const steps = 1440;
-  const pts: Point[] = [];
-  const len: number[] = [0];
-  for (let i = 0; i <= steps; i++) {
-    const a = Math.PI / 2 + (i / steps) * Math.PI * 2;
-    pts.push([CX + rx * Math.cos(a), CY + ry * Math.sin(a)]);
-    if (i > 0) {
-      const p = pts[i - 1] as Point;
-      const q = pts[i] as Point;
-      len.push((len[i - 1] ?? 0) + Math.hypot(q[0] - p[0], q[1] - p[1]));
-    }
+// A point `s` along a stadium of half width `a` round the table's middle, from the bottom, round
+// to the left (anticlockwise on the screen), and the outward normal's angle there.
+export function alongStadium(s: number, a: number): { at: Point; angle: number } {
+  const h = TABLE.straight;
+  const q = Math.PI * a;
+  const per = 2 * q + 4 * h;
+  let r = ((s % per) + per) % per;
+  if (r < q / 2) {
+    const th = Math.PI / 2 + r / a;
+    return { at: [CX + a * Math.cos(th), CY + h + a * Math.sin(th)], angle: th };
   }
-  const total = len[steps] ?? 0;
-  return Array.from({ length: n }, (_, k) => {
-    const at = len.findIndex((v) => v >= (k / n) * total);
-    return pts[Math.max(0, at)] as Point;
+  r -= q / 2;
+  if (r < 2 * h) return { at: [CX - a, CY + h - r], angle: Math.PI };
+  r -= 2 * h;
+  if (r < q) {
+    const th = Math.PI + r / a;
+    return { at: [CX + a * Math.cos(th), CY - h + a * Math.sin(th)], angle: th };
+  }
+  r -= q;
+  if (r < 2 * h) return { at: [CX + a, CY - h + r], angle: 0 };
+  r -= 2 * h;
+  const th = r / a;
+  return { at: [CX + a * Math.cos(th), CY + h + a * Math.sin(th)], angle: th };
+}
+
+export type SeatPlace = {
+  // The seat's (and the face's) middle.
+  seat: Point;
+  // The card's middle and its turn (its foot towards the person), in degrees.
+  card: Point;
+  turn: number;
+  // The candle's middle.
+  candle: Point;
+};
+
+// `n` seats at even steps round the table, the first (the person) at the bottom.
+export function seatsAround(n: number): SeatPlace[] {
+  const g = seatSize(n);
+  const a = TABLE.half + g.off;
+  const per = 2 * Math.PI * a + 4 * TABLE.straight;
+  return Array.from({ length: n }, (_, i) => {
+    const { at, angle } = alongStadium((i * per) / n, a);
+    const nx = Math.cos(angle);
+    const ny = Math.sin(angle);
+    const d = g.off + g.cardIn;
+    const card: Point = [at[0] - nx * d, at[1] - ny * d];
+    return {
+      seat: at,
+      card,
+      turn: (angle * 180) / Math.PI - 90,
+      candle: [card[0] - ny * g.candleBy, card[1] + nx * g.candleBy],
+    };
   });
-}
-
-// A line from one seat to another: a curve bowing away from the table's middle (so it never runs
-// under the medallion), cut short of both faces. The curve's start, its two controls and its end.
-export type Curve = { a: Point; c1: Point; c2: Point; b: Point };
-
-export function curveBetween(from: Point, to: Point, face: number): Curve {
-  const [x1, y1] = from;
-  const [x2, y2] = to;
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-  const len = Math.hypot(dx, dy) || 1;
-  let nx = -dy / len;
-  let ny = dx / len;
-  let side = ((x1 + x2) / 2 - CX) * nx + ((y1 + y2) / 2 - CY) * ny;
-  if (side < 0) {
-    nx = -nx;
-    ny = -ny;
-    side = -side;
-  }
-  const d = Math.max(MIN_BOW, (TABLE.clear - side) / 0.75);
-  const c1: Point = [x1 + dx * PULL + nx * d, y1 + dy * PULL + ny * d];
-  const c2: Point = [x2 - dx * PULL + nx * d, y2 - dy * PULL + ny * d];
-  const r = face / 2 + CUT;
-  const cut = (p: Point, c: Point): Point => {
-    const k = Math.hypot(c[0] - p[0], c[1] - p[1]) || 1;
-    return [p[0] + ((c[0] - p[0]) / k) * r, p[1] + ((c[1] - p[1]) / k) * r];
-  };
-  return { a: cut(from, c1), c1, c2, b: cut(to, c2) };
-}
-const MIN_BOW = 16;
-const PULL = 0.22;
-const CUT = 6;
-
-export function curvePath(c: Curve): string {
-  const f = (p: Point) => `${p[0].toFixed(2)} ${p[1].toFixed(2)}`;
-  return `M${f(c.a)}C${f(c.c1)} ${f(c.c2)} ${f(c.b)}`;
-}
-
-function at(c: Curve, t: number): Point {
-  const u = 1 - t;
-  const x =
-    u * u * u * c.a[0] + 3 * u * u * t * c.c1[0] + 3 * u * t * t * c.c2[0] + t * t * t * c.b[0];
-  const y =
-    u * u * u * c.a[1] + 3 * u * u * t * c.c1[1] + 3 * u * t * t * c.c2[1] + t * t * t * c.b[1];
-  return [x, y];
-}
-
-// The curve measured: points at even lengths along it, so dashes can ride it.
-export function measure(c: Curve, steps = 200): { length: number; pointAt: (s: number) => Point } {
-  const pts: Point[] = [];
-  const len: number[] = [0];
-  for (let i = 0; i <= steps; i++) {
-    pts.push(at(c, i / steps));
-    if (i > 0) {
-      const p = pts[i - 1] as Point;
-      const q = pts[i] as Point;
-      len.push((len[i - 1] ?? 0) + Math.hypot(q[0] - p[0], q[1] - p[1]));
-    }
-  }
-  const length = len[steps] ?? 0;
-  const pointAt = (s: number): Point => {
-    const v = Math.max(0, Math.min(length, s));
-    const i = len.findIndex((l) => l >= v);
-    if (i <= 0) return pts[0] as Point;
-    const l0 = len[i - 1] ?? 0;
-    const l1 = len[i] ?? l0;
-    const p = pts[i - 1] as Point;
-    const q = pts[i] as Point;
-    const k = l1 > l0 ? (v - l0) / (l1 - l0) : 0;
-    return [p[0] + (q[0] - p[0]) * k, p[1] + (q[1] - p[1]) * k];
-  };
-  return { length, pointAt };
 }

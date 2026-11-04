@@ -1,0 +1,8 @@
+# Vampir Köylü: kapsül masa (4 Kasım 2026)
+
+Proje sahibinin onayı: Aura v83, panolar VampirRolun, VampirGece, VampirSabah, VampirOylama, VampirSonuc, VampirOylama12 (K-84). Kaynak `docs/design/vampir/kapsul-masa/` (kabul raporu, referans çizim kodu).
+
+- **Çizim:** oda (zemin, halı, oda objeleri, pencere ışığı, faz rengi, vinyet) faz başına hazır görsel (`assets/vampir/scene/room-*.webp`). Masa faz başına bir kez çizilen görsel (`scripts/art/vampirScene.ts`; lamba ışığı ve vinyet içinde). Tabureler, mumlar, alev ve duman, süre kadranı react-native-svg ile, kişi sayısına ve ölenlere göre. Faz rengi (multiply) ve gündüz aydınlatması (screen) düz renkte toplama ve çarpma olduğu için her renk `paint` ile dönüştürülür; sonuç referansla aynı. Mumların ışığı `mixBlendMode: 'screen'` ile (referansta `lighter`; React Native'de yok, en yakını). Skia kullanılmadı: native bağımlılık ve build gerektirirdi.
+- **Proje sahibinin kararları (4 Kasım):** ana düğme 48 (K12'nin 56'sı yerine, 2 Kasım kuralı); Gündüz ve Eleme yeni masada, ortaları (madalyon, kum saati) eskisi gibi; hareketler var olan sürelerle (sahne geçişi 450 ms, kart dönüşü 550 ms; hareketi azaltta anında); minder rengi koltuk sırasıyla (8 kişide build.py P8, fazlasında P12 sırası).
+- **Çizgiler kalktı:** kapsül masada koltuklar arası çizgi sahnenin üstünden geçmeden çizilemiyor. Oy verenler adayın yüzünün çevresinde (K7); vampirin gördüğü diğer vampirlerin gece seçimi (kural 3) seçilen koltuğun çevresinde pembe kenarlı küçük yüzle.
+- **Tasarımın tanımlamadığı yerler:** 8 kişide de 2'den fazla ek adayda yalnız sayı hapı; en çok 1 + 3 aday ortada (diğerleri koltuktaki sayı hapında). Kazanan ikiden fazlaysa yüzler 30 ve satır satır. "Hazırım" kart bir kez basılı tutulmadan pasif (K6).

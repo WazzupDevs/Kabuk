@@ -1,13 +1,12 @@
 import { TABLE } from './vampirTableSize.ts';
 
-// Vampir Köylü's round table, its pictures (theme/vampirTable.ts holds the rest): the ground as
-// React Native's own gradients (groundCss), and the drawn parts as SVG text. The table, the
-// medallion and the glass over the sand are drawn once into pictures (scripts/art/vampirTable.ts →
+// Vampir Köylü's hourglass and medallion (the day's and the verdict's middle; theme/vampirTable.ts
+// holds the rest, theme/vampirScene.ts the capsule table), as SVG text. The medallion and the glass
+// over the sand are drawn once into pictures (scripts/art/vampirTable.ts →
 // apps/mobile/assets/vampir/table/; vampirArt.test.ts keeps them in step with the text here), so
 // the phone does not blur them on its main thread at every phase. No React Native import: the
 // script reads this file.
 
-export type TableTime = 'night' | 'dawn' | 'day' | 'dusk';
 export type SandTone = 'night' | 'day' | 'vote';
 
 // The hourglass (viewBox 64 × 100): the glass, the two bulbs the sand stays in, the sand's shapes
@@ -53,120 +52,10 @@ export const GLASS_IN_MEDAL = {
 
 const n = (v: number) => Number(v.toFixed(2));
 
-// The ground behind everything (the file's .m.night, .dawn, .day, .dusk without the lamp, which
-// the table draws round itself), as React Native's own gradients (theme/gradient.ts), top layer
-// first: CSS's own ellipse (130 % × 80 % at the top middle), the dawn's fall from the top, and the
-// window's light falling across the room at 115° in two bands. At night the floor's boards, a faint
-// line every 46 (GROUND_BOARDS), are views over it.
-export function groundCss(time: TableTime): string {
-  const base = {
-    night: radialCss([
-      ['#2A3466', 0],
-      ['#121836', 0.55],
-      ['#080B1A', 1],
-    ]),
-    dawn: 'linear-gradient(180deg, #5B3B7E 0%, #8A4E78 40%, #4A2440 100%)',
-    day: radialCss([
-      ['#C98A54', 0],
-      ['#84492A', 0.55],
-      ['#3F2112', 1],
-    ]),
-    dusk: radialCss([
-      ['#A2506A', 0],
-      ['#57264A', 0.55],
-      ['#24112A', 1],
-    ]),
-  }[time];
-  if (time !== 'dawn' && time !== 'day') return base;
-  const [c, a1, a2, s] =
-    time === 'dawn'
-      ? (['#FFD6B4', 0.13, 0.1, [0.28, 0.4, 0.5, 0.57]] as const)
-      : (['#FFECBE', 0.17, 0.13, [0.26, 0.39, 0.49, 0.57]] as const);
-  const at = (a: number, o: number) => `${rgbaOf(c, a)} ${n(o * 100)}%`;
-  const light = [
-    at(0, 0),
-    at(0, s[0]),
-    at(a1, s[0]),
-    at(a1, s[1]),
-    at(0, s[1]),
-    at(0, s[2]),
-    at(a2, s[2]),
-    at(a2, s[3]),
-    at(0, s[3]),
-    at(0, 1),
-  ].join(', ');
-  return `linear-gradient(115deg, ${light}), ${base}`;
-}
-
-export const GROUND_BOARDS = { every: 46, width: 1, color: 'rgba(255, 255, 255, 0.022)' } as const;
-
-function radialCss(stops: [string, number][]): string {
-  return `radial-gradient(ellipse 130% 80% at 50% 0%, ${stops.map(([c, o]) => `${c} ${n(o * 100)}%`).join(', ')})`;
-}
-
-function rgbaOf(hex: string, alpha: number): string {
-  const v = parseInt(hex.slice(1), 16);
-  return `rgba(${(v >> 16) & 255}, ${(v >> 8) & 255}, ${v & 255}, ${alpha})`;
-}
-
 type Stop = [color: string, opacity: number, offset: number];
 
 function gradient(kind: string, id: string, attrs: string, stops: Stop[]): string {
   return `<${kind} id="${id}" ${attrs}>${stops.map(([c, o, at]) => `<stop offset="${at}" stop-color="${c}" stop-opacity="${o}"/>`).join('')}</${kind}>`;
-}
-
-// The lamp over the table, its shadow, the wood, the felt and the light on it (the file's
-// tableSvg and its .m lamp), in the table's frame.
-function tableSvg(time: TableTime): string {
-  const { width: W, height: H, cx, cy } = TABLE.frame;
-  const { rx, ry } = TABLE.rim;
-  const f = TABLE.felt;
-  const lamp = {
-    night: ['#FFBA68', 0.26],
-    dawn: ['#FFC896', 0.28],
-    day: ['#FFEEC8', 0.3],
-    dusk: ['#FFAA78', 0.26],
-  }[time] as [string, number];
-  const lit = time === 'dawn' || time === 'day' ? ['#FFF0CD', 0.22] : ['#FFBE6E', 0.2];
-  // The lamp: radial-gradient(62% 40%) of the file's phone (360 × 760), its edge at 72%.
-  const lrx = 0.62 * 360;
-  const lry = 0.4 * 760;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
-<defs>
-${gradient(
-  'radialGradient',
-  'lamp',
-  `gradientUnits="userSpaceOnUse" cx="${cx}" cy="${cy + 5}" r="${lrx}" gradientTransform="translate(${cx} ${cy + 5}) scale(1 ${n(lry / lrx)}) translate(${-cx} ${-(cy + 5)})"`,
-  [
-    [lamp[0], lamp[1], 0],
-    [lamp[0], 0, 0.72],
-  ],
-)}
-${gradient('radialGradient', 'w', 'cx="0.5" cy="0.38" r="0.62"', [
-  ['#A56A43', 1, 0],
-  ['#6A3B20', 1, 0.7],
-  ['#43220F', 1, 1],
-])}
-${gradient('radialGradient', 'f', 'cx="0.5" cy="0.42" r="0.6"', [
-  ['#8A2C4C', 1, 0],
-  ['#561730', 1, 0.72],
-  ['#3A0D1F', 1, 1],
-])}
-<pattern id="g" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(20)"><path d="M0 3.5h7" stroke="#FFDCB4" stroke-opacity="0.07" stroke-width="1"/></pattern>
-<pattern id="v" width="5" height="5" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="0.6" fill="#FFFFFF" fill-opacity="0.06"/></pattern>
-<filter id="s" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="14"/></filter>
-</defs>
-<rect width="${W}" height="${H}" fill="url(#lamp)"/>
-<ellipse cx="${cx}" cy="${cy + 18}" rx="${rx + 4}" ry="${ry + 2}" fill="#000000" fill-opacity="0.55" filter="url(#s)"/>
-<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="url(#w)"/>
-<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="url(#g)"/>
-<ellipse cx="${cx}" cy="${cy}" rx="${rx - 1.5}" ry="${ry - 1.5}" fill="none" stroke="#FFE6C8" stroke-opacity="0.18" stroke-width="1.5"/>
-<ellipse cx="${cx}" cy="${cy}" rx="${f.rx}" ry="${f.ry}" fill="url(#f)"/>
-<ellipse cx="${cx}" cy="${cy}" rx="${f.rx}" ry="${f.ry}" fill="url(#v)"/>
-<ellipse cx="${cx}" cy="${cy}" rx="${f.rx - 3}" ry="${f.ry - 3}" fill="none" stroke="#000000" stroke-opacity="0.35" stroke-width="6"/>
-<ellipse cx="${cx}" cy="${cy}" rx="${f.rx}" ry="${f.ry}" fill="none" stroke="#FFD58A" stroke-opacity="0.35" stroke-width="1.2"/>
-<ellipse cx="${cx}" cy="${cy - 40}" rx="80" ry="110" fill="${lit[0]}" fill-opacity="${lit[1]}" filter="url(#s)"/>
-</svg>`;
 }
 
 // The medallion's face under the glass: its dark round with the lamp's light a little above the
@@ -313,12 +202,10 @@ export const PEEK_CARD_SVG =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g transform="rotate(-10 12 12)"><rect x="5.5" y="3" width="13" height="18" rx="3" fill="#FFFFFF"/><path d="M10.2 9.4c0-1.3.9-2.1 2-2.1s1.9.7 1.9 1.7c0 1.4-1.8 1.6-1.8 3.1" fill="none" stroke="#3A2560" stroke-width="1.9" stroke-linecap="round"/><circle cx="12.3" cy="15.4" r="1.1" fill="#3A2560"/></g></svg>';
 
 // The pictures drawn once (scripts/art/vampirTable.ts), each by its file's name.
-const TABLE_TIMES: readonly TableTime[] = ['night', 'dawn', 'day', 'dusk'];
 const SAND_TONES: readonly SandTone[] = ['night', 'day', 'vote'];
 
 export function TABLE_ART(): Record<string, string> {
   return {
-    ...Object.fromEntries(TABLE_TIMES.map((time) => [`table-${time}`, tableSvg(time)])),
     medal: medalSvg(),
     ...Object.fromEntries(SAND_TONES.map((tone) => [`glass-${tone}`, glassFrontSvg(tone, false)])),
   };

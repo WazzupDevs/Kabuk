@@ -1,70 +1,160 @@
 import type { VampirRole } from '@shared/vampir.ts';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
-import {
-  Animated,
-  Easing,
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { Animated, Easing, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Image as ExpoImage } from 'expo-image';
-import Svg, { Circle, Path } from 'react-native-svg';
 
 import { usePress } from '@/aura/kit';
 import { CachedSvg } from '@/components/CachedSvg';
 import { useLoopActive } from '@/components/Loader';
 import { NativeShadow } from '@/components/NativeShadow';
-import { tr } from '@/i18n/tr';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
+import { seatsAround, type SeatPlace } from '@/theme/tableGeometry';
 import {
-  FANG_SVG,
-  groundCss,
-  GROUND_BOARDS,
-  PEEK_CARD_SVG,
-  SEAT_X_SVG,
   TABLE,
   TABLE_INK as INK,
   TABLE_MOTION as M,
   TABLE_SHADOW,
   TABLE_TYPE,
-  type TableTime,
-  TICK_SVG,
   X_SVG,
 } from '@/theme/vampirTable';
-
-import { MEDAL_PICTURE, ROLE_ART, TABLE_PICTURE } from './roleArt';
 import {
-  type Curve,
-  curveBetween,
-  curvePath,
-  measure,
-  type Point,
-  ring,
-} from '@/theme/tableGeometry';
+  candleLightSvg,
+  candlesSvg,
+  flamesSvg,
+  type ScenePhase,
+  stoolsSvg,
+} from '@/theme/vampirScene';
+import { seatSize } from '@/theme/vampirTableSize';
+
+import { MEDAL_PICTURE, ROLE_ART, ROOM_PICTURE, TABLE_PICTURE } from './roleArt';
 import { type Faces, Face, nameOf } from './VampirParts';
 
 const FW = TABLE.frame.width;
 const FH = TABLE.frame.height;
-const CX = TABLE.frame.cx;
-const CY = TABLE.frame.cy;
 
-// ---- The ground ----
+// ---- The table ----
 
-// The room behind the table (the file's .m.night, .dawn, .day, .dusk): a new time of day fades in
-// over the one before, on the native driver.
-export function TableGround({ time }: { time: TableTime }) {
-  const { width } = useWindowDimensions();
+export type SeatMark = {
+  sid: string;
+  // The chosen one (pink), a vampire's mate (a red ring), not to be chosen (faded), dead.
+  pick?: boolean;
+  ally?: boolean;
+  dim?: boolean;
+  dead?: boolean;
+  // The day's vote count in the name pill.
+  count?: number;
+  // The end: the card open on the person's role, and the winners' ring.
+  role?: VampirRole;
+  win?: boolean;
+  // The person's card is at the table's middle: their place is an empty frame.
+  slot?: boolean;
+  // Who chose this one at night: a vampire sees the other vampires' picks (rule 3).
+  pickedBy?: readonly string[];
+  // May be pressed now.
+  choosable?: boolean;
+};
+
+// The scene (Aura v83, the reference's drawCap): the room, the stools, the table, the candles and
+// the time's dial, every card in front of its person, everyone round the table and `stage` at its
+// middle, the design's 360 × 760 phone scaled to the screen. `dial` the phase's dial (or none).
+export function TableScene({
+  faces,
+  seats,
+  phase,
+  dial,
+  stage,
+  onChoose,
+}: {
+  faces: Faces;
+  seats: readonly SeatMark[];
+  phase: ScenePhase;
+  dial: { y: number; r: number } | null;
+  stage?: ReactNode;
+  onChoose?: (sid: string) => void;
+}) {
+  const [box, setBox] = useState<{ w: number; h: number } | null>(null);
+  const k = box ? Math.min(box.w / FW, box.h / FH) : 0;
+  // "Sen" at the bottom, everyone else on round in their seats' order.
+  const mine = seats.findIndex((s) => s.sid === faces.me);
+  const order = mine > 0 ? [...seats.slice(mine), ...seats.slice(0, mine)] : seats;
+  const places = useMemo(() => seatsAround(order.length), [order.length]);
+  const dead = order.map((s) => !!s.dead);
+  return (
+    <View
+      pointerEvents="box-none"
+      style={[StyleSheet.absoluteFill, { backgroundColor: INK.ground }]}
+      onLayout={(e) => setBox({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}
+    >
+      {box && k > 0 ? (
+        <>
+          <ExpoImage
+            pointerEvents="none"
+            source={ROOM_PICTURE[phase]}
+            style={StyleSheet.absoluteFill}
+            contentFit="cover"
+            transition={0}
+            accessible={false}
+          />
+          <SceneBack
+            look={{ phase, count: order.length, dead, dial }}
+            left={(box.w - FW * k) / 2}
+            top={(box.h - FH * k) / 2}
+            k={k}
+          />
+          <View
+            pointerEvents="box-none"
+            style={{
+              position: 'absolute',
+              left: (box.w - FW) / 2,
+              top: (box.h - FH) / 2,
+              width: FW,
+              height: FH,
+              transform: [{ scale: k }],
+            }}
+          >
+            {order.map((s, i) => (
+              <Card key={s.sid} mark={s} place={places[i]} count={order.length} />
+            ))}
+            {stage}
+            {order.map((s, i) => (
+              <Seat
+                key={s.sid}
+                faces={faces}
+                mark={s}
+                place={places[i]}
+                count={order.length}
+                onChoose={onChoose && s.choosable ? () => onChoose(s.sid) : undefined}
+              />
+            ))}
+          </View>
+        </>
+      ) : null}
+    </View>
+  );
+}
+
+type Look = {
+  phase: ScenePhase;
+  count: number;
+  dead: readonly boolean[];
+  dial: { y: number; r: number } | null;
+};
+const lookKey = (l: Look) =>
+  `${l.phase}|${l.count}|${l.dead.map((d) => (d ? 1 : 0)).join('')}|${l.dial ? `${l.dial.y},${l.dial.r}` : ''}`;
+
+// What is drawn under the people: a new look (a new phase, a candle gone out) fades in over the one
+// before, on the native driver (as the round table's room did).
+function SceneBack({ look, left, top, k }: { look: Look; left: number; top: number; k: number }) {
   const reduce = useReduceMotion();
-  const [shown, setShown] = useState<{ now: TableTime; before: TableTime | null }>({
-    now: time,
+  const key = lookKey(look);
+  const [shown, setShown] = useState<{ now: Look; nowKey: string; before: Look | null }>({
+    now: look,
+    nowKey: key,
     before: null,
   });
-  if (shown.now !== time) setShown({ now: time, before: shown.now });
+  if (shown.nowKey !== key) setShown({ now: look, nowKey: key, before: shown.now });
   const [mix] = useState(() => new Animated.Value(1));
   useEffect(() => {
     if (shown.before === null) return undefined;
@@ -76,293 +166,386 @@ export function TableGround({ time }: { time: TableTime }) {
       useNativeDriver: true,
     });
     anim.start(({ finished }) => {
-      if (finished) setShown((s) => ({ now: s.now, before: null }));
+      if (finished) setShown((s) => ({ ...s, before: null }));
     });
     return () => anim.stop();
-  }, [shown.now, shown.before, mix, reduce]);
+  }, [shown.nowKey, shown.before, mix, reduce]);
+  const frame = { position: 'absolute' as const, left, top, width: FW * k, height: FH * k };
   return (
-    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      {shown.before ? <Ground time={shown.before} width={width} /> : null}
+    <View pointerEvents="none" style={frame}>
+      {shown.before ? <Back look={shown.before} k={k} /> : null}
       <Animated.View style={[StyleSheet.absoluteFill, { opacity: shown.before ? mix : 1 }]}>
-        <Ground time={shown.now} width={width} />
+        <Back look={shown.now} k={k} />
       </Animated.View>
     </View>
   );
 }
 
-// One time's ground: React Native's own gradients on the GPU (theme/vampirArt.ts → groundCss), at
-// night the floor's boards over them.
-function Ground({ time, width }: { time: TableTime; width: number }) {
-  const style = useMemo(() => gradientStyle(groundCss(time)), [time]);
-  const boards =
-    time === 'night'
-      ? Array.from({ length: Math.ceil(width / GROUND_BOARDS.every) }, (_, i) => i)
-      : [];
+// One look, in the reference's order: the room, the stools, the table, the candles and the dial,
+// the candles' light (laid on with screen), the flames. The SVG layers are drawn at the size they
+// show (a picture scaled up would blur).
+function Back({ look, k }: { look: Look; k: number }) {
+  const w = FW * k;
+  const h = FH * k;
+  const { phase, count, dead, dial } = look;
   return (
-    <View style={[StyleSheet.absoluteFill, style]}>
-      {boards.map((i) => (
-        <View
-          key={i}
-          style={{
-            position: 'absolute',
-            top: 0,
-            bottom: 0,
-            left: i * GROUND_BOARDS.every,
-            width: GROUND_BOARDS.width,
-            backgroundColor: GROUND_BOARDS.color,
-          }}
-        />
-      ))}
+    <View style={StyleSheet.absoluteFill}>
+      <ExpoImage
+        source={ROOM_PICTURE[phase]}
+        style={StyleSheet.absoluteFill}
+        contentFit="fill"
+        transition={0}
+        accessible={false}
+      />
+      <View style={StyleSheet.absoluteFill}>
+        <CachedSvg xml={stoolsSvg(phase, count)} width={w} height={h} />
+      </View>
+      <ExpoImage
+        source={TABLE_PICTURE[phase]}
+        style={StyleSheet.absoluteFill}
+        contentFit="fill"
+        transition={0}
+        accessible={false}
+      />
+      <View style={StyleSheet.absoluteFill}>
+        <CachedSvg xml={candlesSvg(phase, count, dial)} width={w} height={h} />
+      </View>
+      <View style={[StyleSheet.absoluteFill, { mixBlendMode: 'screen' }]}>
+        <CachedSvg xml={candleLightSvg(phase, count, dead)} width={w} height={h} />
+      </View>
+      <View style={StyleSheet.absoluteFill}>
+        <CachedSvg xml={flamesSvg(phase, count, dead)} width={w} height={h} />
+      </View>
     </View>
   );
 }
 
-// ---- The table ----
+// A person's card on the table in front of them (the panels' .card): its back, or at the end its
+// role (the vampire's with a pink glow); a dead person's darkened. While the person's own card is
+// at the middle, an empty frame.
+function Card({
+  mark,
+  place,
+  count,
+}: {
+  mark: SeatMark;
+  place: SeatPlace | undefined;
+  count: number;
+}) {
+  if (!place) return null;
+  const [w, h] = seatSize(count).card;
+  const vampire = mark.role === 'vampir';
+  const style = {
+    position: 'absolute' as const,
+    left: place.card[0] - w / 2,
+    top: place.card[1] - h / 2,
+    width: w,
+    height: h,
+    transform: [{ rotate: `${place.turn}deg` }],
+  };
+  if (mark.slot) {
+    return (
+      <View
+        pointerEvents="none"
+        style={[
+          style,
+          {
+            borderRadius: TABLE.cardCorner,
+            borderWidth: 1.5,
+            borderColor: INK.slotEdge,
+            backgroundColor: INK.slot,
+          },
+        ]}
+      />
+    );
+  }
+  return (
+    <View pointerEvents="none" style={style}>
+      <NativeShadow
+        css={vampire ? TABLE_SHADOW.vampirCard : TABLE_SHADOW.card}
+        radius={TABLE.cardCorner}
+      />
+      <View
+        style={{
+          flex: 1,
+          borderRadius: TABLE.cardCorner,
+          borderWidth: vampire ? 1.5 : 1,
+          borderColor: vampire ? INK.pink : INK.cardEdge,
+          overflow: 'hidden',
+          filter: mark.dead && !mark.role ? DEAD_CARD : undefined,
+        }}
+      >
+        <Image source={ROLE_ART[mark.role ?? 'arka']} style={styles.art} resizeMode="cover" />
+      </View>
+    </View>
+  );
+}
+const DEAD_CARD = [{ brightness: 0.42 }, { saturate: 0.5 }];
 
-export type SeatMark = {
-  sid: string;
-  // The chosen one (glowing), a vampire's mate (a red ring), not to be chosen (faded), dead.
-  pick?: boolean;
-  ally?: boolean;
-  dim?: boolean;
-  dead?: boolean;
-  // A vote count, the mate's fang, ready, the role at the end.
-  count?: number;
-  fang?: boolean;
-  tick?: boolean;
-  role?: VampirRole;
-  // May be pressed now.
-  choosable?: boolean;
-};
+// The rings round a face (the panels' .seat .f): cream in ink; the person white; the chosen one
+// and the winners pink; a vampire's mate red.
+function ringOf(mark: SeatMark, me: boolean): { color: string; inner: number; outer: number } {
+  if (mark.pick) return { color: INK.pink, inner: 3, outer: 5 };
+  if (mark.win) return { color: INK.pink, inner: 2.5, outer: 4.5 };
+  if (mark.ally) return { color: INK.ally, inner: 3, outer: 5 };
+  if (me) return { color: INK.white, inner: 2.5, outer: 4.5 };
+  return { color: INK.cream, inner: 2, outer: 4 };
+}
 
-// A line across the table: a mate's pick, a vote; `flow` the person's own before it counts.
-export type TableLine = { from: string; to: string; color: string; flow?: boolean };
-
-// The table from above (the file's .m): the lamp, the table, the lines, `center` at its middle (the
-// medallion, the role card) and everyone round it, scaled to the room it has.
-export function RoundTable({
+// A face in its rings, the capsule or photo inside (Av's own white ring under the colour).
+export function RingedFace({
   faces,
-  seats,
-  lines = [],
-  time,
-  center,
-  onChoose,
+  sid,
+  size,
+  ring,
+  dead,
+  shadow,
 }: {
   faces: Faces;
-  seats: readonly SeatMark[];
-  lines?: readonly TableLine[];
-  time: TableTime;
-  center?: ReactNode;
-  onChoose?: (sid: string) => void;
+  sid: string;
+  size: number;
+  ring: { color: string; inner: number; outer: number };
+  dead?: boolean;
+  // Its shadow (none when not given).
+  shadow?: string;
 }) {
-  const [box, setBox] = useState<{ w: number; h: number } | null>(null);
-  const k = box ? Math.min(box.w / FW, box.h / FH) : 0;
-  const face = seats.length > TABLE.face.many ? TABLE.face.small : TABLE.face.big;
-  const spots = useMemo(() => ring(seats.length), [seats.length]);
-  // "Sen" at the bottom, everyone else on round in their seats' order.
-  const mine = seats.findIndex((s) => s.sid === faces.me);
-  const order = mine > 0 ? [...seats.slice(mine), ...seats.slice(0, mine)] : seats;
-  const where = new Map(order.map((s, i) => [s.sid, spots[i] ?? ([CX, CY] as Point)]));
+  const out = size + 2 * ring.outer;
+  const av = size + 2 * ring.inner;
   return (
-    <View
-      style={{ flex: 1 }}
-      onLayout={(e) => setBox({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}
-    >
-      {box && k > 0 ? (
-        <View
-          style={{
-            position: 'absolute',
-            left: (box.w - FW) / 2,
-            top: (box.h - FH) / 2,
-            width: FW,
-            height: FH,
-            transform: [{ scale: k }],
-          }}
-        >
-          <ExpoImage
-            pointerEvents="none"
-            source={TABLE_PICTURE[time]}
-            style={StyleSheet.absoluteFill}
-            contentFit="fill"
-            transition={0}
-            accessible={false}
-          />
-          <Lines lines={lines} where={where} face={face} />
-          <View
-            pointerEvents="box-none"
-            style={{
-              position: 'absolute',
-              left: 0,
-              width: FW,
-              top: CY - CENTER_BOX / 2,
-              height: CENTER_BOX,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            {center}
-          </View>
-          {seats.map((s) => {
-            const p = where.get(s.sid) ?? ([CX, CY] as Point);
-            return (
-              <Seat
-                key={s.sid}
-                faces={faces}
-                mark={s}
-                at={p}
-                face={face}
-                onChoose={onChoose && s.choosable ? () => onChoose(s.sid) : undefined}
-              />
-            );
-          })}
-        </View>
-      ) : null}
+    <View style={{ width: out, height: out }}>
+      {shadow ? <NativeShadow css={shadow} radius={out / 2} /> : null}
+      <View style={[styles.round, { width: out, height: out, backgroundColor: INK.ink }]} />
+      <View
+        style={{
+          position: 'absolute',
+          left: ring.outer - ring.inner - (KIT.size.av.md - av) / 2,
+          top: ring.outer - ring.inner - (KIT.size.av.md - av) / 2,
+          transform: [{ scale: av / KIT.size.av.md }],
+          filter: dead ? DEAD_FACE : undefined,
+        }}
+      >
+        <Face faces={faces} sid={sid} size="md" />
+      </View>
+      <View
+        style={[
+          styles.round,
+          {
+            left: ring.outer - ring.inner,
+            top: ring.outer - ring.inner,
+            width: av,
+            height: av,
+            borderWidth: ring.inner,
+            borderColor: ring.color,
+          },
+        ]}
+      />
     </View>
   );
 }
-const CENTER_BOX = 260;
+const DEAD_FACE = [{ grayscale: 1 }, { brightness: 0.5 }];
 
-// One person round the table (the file's .seat): the face in its white ring, its marks, the name
-// under it and at the end the role.
+// One person round the table (the panels' .seat): the face in its rings, the name pill under it
+// with the vote count, and who chose them at night round the face's top.
 function Seat({
   faces,
   mark,
-  at,
-  face,
+  place,
+  count,
   onChoose,
 }: {
   faces: Faces;
   mark: SeatMark;
-  at: Point;
-  face: number;
+  place: SeatPlace | undefined;
+  count: number;
   onChoose?: () => void;
 }) {
   const press = usePress();
+  if (!place) return null;
+  const g = seatSize(count);
+  const small = count > TABLE.many;
+  const [x, y] = place.seat;
   const name = nameOf(faces, mark.sid);
-  const ringed = face + 2 * TABLE.face.ring;
-  const scale = ringed / KIT.size.av.md;
-  const body = (
-    <View style={{ width: face, height: face }}>
-      {mark.pick ? <PickGlow face={face} /> : null}
-      {mark.pick || mark.ally ? (
-        <View
-          style={{
-            position: 'absolute',
-            left: -TABLE.face.pickRing,
-            top: -TABLE.face.pickRing,
-            width: face + 2 * TABLE.face.pickRing,
-            height: face + 2 * TABLE.face.pickRing,
-            borderRadius: face,
-            borderWidth: TABLE.face.pickRing,
-            borderColor: mark.pick ? INK.pick : INK.ally,
-          }}
-        />
-      ) : null}
-      <View
-        style={{
-          position: 'absolute',
-          left: (face - KIT.size.av.md) / 2,
-          top: (face - KIT.size.av.md) / 2,
-          transform: [{ scale }],
-          filter: mark.dead ? DEAD_FILTER : undefined,
-        }}
-      >
-        <Face faces={faces} sid={mark.sid} size="md" />
-      </View>
-      {mark.count ? (
-        <View style={[styles.badge, styles.count]}>
-          <Text maxFontSizeMultiplier={1} style={[TABLE_TYPE.badge, { color: INK.ink }]}>
-            {mark.count}
-          </Text>
-        </View>
-      ) : null}
-      {mark.fang ? (
-        <View style={[styles.badge, styles.fang]}>
-          <CachedSvg xml={FANG_SVG} width={12} height={12} />
-        </View>
-      ) : null}
-      {mark.tick ? (
-        <View style={[styles.badge, styles.corner, { backgroundColor: INK.tick }]}>
-          <CachedSvg xml={TICK_SVG} width={10} height={10} />
-        </View>
-      ) : null}
-      {mark.dead ? (
-        <View style={[styles.badge, styles.corner, { backgroundColor: INK.cross }]}>
-          <CachedSvg xml={SEAT_X_SVG} width={9} height={9} />
-        </View>
-      ) : null}
+  const ring = ringOf(mark, mark.sid === faces.me);
+  const out = g.face + 2 * ring.outer;
+  const face = (
+    <View style={{ width: out, height: out }}>
+      {mark.pick ? <PickGlow size={out} /> : null}
+      {mark.win ? <NativeShadow css={TABLE_SHADOW.win} radius={out / 2} /> : null}
+      <RingedFace
+        faces={faces}
+        sid={mark.sid}
+        size={g.face}
+        ring={ring}
+        dead={mark.dead}
+        shadow={TABLE_SHADOW.face}
+      />
     </View>
   );
   return (
+    <>
+      <View
+        pointerEvents="box-none"
+        style={{
+          position: 'absolute',
+          left: x - out / 2,
+          top: y - out / 2,
+          width: out,
+          height: out,
+          opacity: mark.dim ? DIM : 1,
+        }}
+      >
+        {onChoose ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={name}
+            accessibilityState={{ selected: !!mark.pick }}
+            onPress={onChoose}
+            onPressIn={press.onPressIn}
+            onPressOut={press.onPressOut}
+            hitSlop={HIT}
+          >
+            <Animated.View style={{ transform: [{ scale: press.scale }] }}>{face}</Animated.View>
+          </Pressable>
+        ) : (
+          face
+        )}
+        {(mark.pickedBy ?? []).map((v, j, all) => (
+          <Voter
+            key={v}
+            faces={faces}
+            sid={v}
+            at={voterAt(j, all.length, out / 2, VOTER)}
+            size={VOTER}
+            color={INK.pink}
+            center={out / 2}
+          />
+        ))}
+      </View>
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          left: x - NAME_BOX / 2,
+          top: y + (small ? TABLE.nameTop.small : TABLE.nameTop.big),
+          width: NAME_BOX,
+          alignItems: 'center',
+          opacity: mark.dim ? DIM : 1,
+        }}
+      >
+        <NamePill name={name} count={mark.count} pick={mark.pick} dead={mark.dead} small={small} />
+      </View>
+    </>
+  );
+}
+const DIM = 0.55;
+const HIT = 8;
+const NAME_BOX = 120;
+const VOTER = 15;
+
+// The name pill (the panels' .nm, .nm b): the name, and the vote count in amber.
+export function NamePill({
+  name,
+  count,
+  pick,
+  dead,
+  small,
+  tag,
+}: {
+  name?: string;
+  count?: number;
+  pick?: boolean;
+  dead?: boolean;
+  small?: boolean;
+  tag?: boolean;
+}) {
+  return (
     <View
-      pointerEvents="box-none"
       style={{
-        position: 'absolute',
-        left: at[0] - SEAT_BOX / 2,
-        top: at[1] - face / 2,
-        width: SEAT_BOX,
+        flexDirection: 'row',
         alignItems: 'center',
-        gap: SEAT_GAP,
-        opacity: mark.dim ? DIM : 1,
+        height: tag ? TAG_HIGH : small ? 15 : 17,
+        paddingHorizontal: name ? (small ? 4 : 6) : 0,
+        borderRadius: tag ? 5 : 4,
+        backgroundColor: !name ? undefined : pick ? INK.pink : INK.namePill,
+        borderWidth: name && !pick ? 1 : 0,
+        borderColor: INK.nameEdge,
+        maxWidth: NAME_BOX,
       }}
     >
-      {onChoose ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={name}
-          accessibilityState={{ selected: !!mark.pick }}
-          onPress={onChoose}
-          onPressIn={press.onPressIn}
-          onPressOut={press.onPressOut}
-          hitSlop={HIT}
-        >
-          <Animated.View style={{ transform: [{ scale: press.scale }] }}>{body}</Animated.View>
-        </Pressable>
-      ) : (
-        body
-      )}
-      <View style={[styles.pill, { opacity: mark.dead ? DEAD_NAME : 1 }]} pointerEvents="none">
+      {name ? (
         <Text
           maxFontSizeMultiplier={1}
           numberOfLines={1}
           adjustsFontSizeToFit
           minimumFontScale={0.7}
           style={[
-            TABLE_TYPE.name,
-            { color: INK.white, textDecorationLine: mark.dead ? 'line-through' : 'none' },
+            tag ? TABLE_TYPE.tag : small ? TABLE_TYPE.nameSmall : TABLE_TYPE.name,
+            {
+              color: pick || tag ? INK.white : dead ? INK.deadName : INK.name,
+              textDecorationLine: dead ? 'line-through' : 'none',
+              flexShrink: 1,
+            },
           ]}
         >
           {name}
         </Text>
-      </View>
-      {mark.role ? (
-        <View style={[styles.pill, { backgroundColor: INK.roles[mark.role] }]} pointerEvents="none">
-          <Text maxFontSizeMultiplier={1} style={[TABLE_TYPE.role, { color: INK.white }]}>
-            {ROLE_NAME[mark.role]}
+      ) : null}
+      {count ? (
+        <View style={[styles.count, { marginLeft: name ? 5 : 0 }]}>
+          <Text maxFontSizeMultiplier={1} style={[TABLE_TYPE.count, { color: INK.amberInk }]}>
+            {count}
           </Text>
         </View>
       ) : null}
     </View>
   );
 }
-const SEAT_BOX = 96;
-const SEAT_GAP = 4;
-const DIM = 0.55;
-const DEAD_NAME = 0.6;
-const HIT = 8;
-const DEAD_FILTER = [{ grayscale: 1 }, { brightness: 0.62 }];
+const TAG_HIGH = 18;
 
-// The role names on the chips.
-const ROLE_NAME: Record<VampirRole, string> = {
-  vampir: tr.vampir.roles.vampir.name,
-  doktor: tr.vampir.roles.doktor.name,
-  gozcu: tr.vampir.roles.gozcu.name,
-  koylu: tr.vampir.roles.koylu.name,
-  soytari: tr.vampir.roles.soytari.name,
-};
+// Where the j-th of `all` small faces sits round a face of radius `r` (build.py → cand: from the
+// top, 0.78 apart), its top left from the face's middle.
+export function voterAt(j: number, all: number, r: number, size: number): [number, number] {
+  const a = -Math.PI / 2 + (j - (all - 1) / 2) * VOTER_STEP;
+  const R = r + size / 2 + 1;
+  return [Math.cos(a) * R - size / 2, Math.sin(a) * R - size / 2];
+}
+const VOTER_STEP = 0.78;
 
-// The chosen seat's glow breathing (the file's glow: 2s ease-in-out, 22px 6px to 30px 10px).
-function PickGlow({ face }: { face: number }) {
+// A small face of someone who chose this one (the panels' .vr): its edge in amber (votes) or pink
+// (the night's picks).
+export function Voter({
+  faces,
+  sid,
+  at,
+  size,
+  color,
+  center,
+}: {
+  faces: Faces;
+  sid: string;
+  at: [number, number];
+  size: number;
+  color: string;
+  center: number;
+}) {
+  return (
+    <View
+      pointerEvents="none"
+      style={{ position: 'absolute', left: center + at[0], top: center + at[1], zIndex: 2 }}
+    >
+      <RingedFace
+        faces={faces}
+        sid={sid}
+        size={size - 3}
+        ring={{ color, inner: 1.5, outer: 1.5 }}
+        shadow={TABLE_SHADOW.voter}
+      />
+    </View>
+  );
+}
+
+// The chosen seat's glow breathing (as on the round table: 2s ease-in-out).
+function PickGlow({ size }: { size: number }) {
   const active = useLoopActive();
   const reduce = useReduceMotion();
   const [on] = useState(() => new Animated.Value(0));
@@ -388,168 +571,27 @@ function PickGlow({ face }: { face: number }) {
     loop.start();
     return () => loop.stop();
   }, [active, reduce, on]);
-  const box = { position: 'absolute' as const, left: 0, top: 0, width: face, height: face };
+  const box = { position: 'absolute' as const, left: 0, top: 0, width: size, height: size };
   return (
     <>
       <Animated.View
         pointerEvents="none"
         style={[box, { opacity: on.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }) }]}
       >
-        <NativeShadow css={TABLE_SHADOW.pick} radius={face / 2} />
+        <NativeShadow css={TABLE_SHADOW.pick} radius={size / 2} />
       </Animated.View>
       <Animated.View pointerEvents="none" style={[box, { opacity: on }]}>
-        <NativeShadow css={TABLE_SHADOW.pickOn} radius={face / 2} />
+        <NativeShadow css={TABLE_SHADOW.pickOn} radius={size / 2} />
       </Animated.View>
     </>
   );
 }
 const EASE_IN_OUT = Easing.bezier(0.42, 0, 0.58, 1);
 
-// The lines across the table: drawn once; the person's own before it counts as dashes flowing to
-// its end (the file's flow: 1.2s, 28 along).
-function Lines({
-  lines,
-  where,
-  face,
-}: {
-  lines: readonly TableLine[];
-  where: ReadonlyMap<string, Point>;
-  face: number;
-}) {
-  const key = lines
-    .map(
-      (l) =>
-        `${l.from}>${l.to}:${l.color}:${l.flow ? 1 : 0}@${where.get(l.from)}|${where.get(l.to)}`,
-    )
-    .join(',');
-  const curves = useMemo(
-    () =>
-      lines.flatMap((l) => {
-        const a = where.get(l.from);
-        const b = where.get(l.to);
-        return a && b && l.from !== l.to ? [{ line: l, curve: curveBetween(a, b, face) }] : [];
-      }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- `key` holds the lines and their seats
-    [key, face],
-  );
-  if (curves.length === 0) return null;
-  return (
-    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      <Svg width={FW} height={FH}>
-        {curves.map(({ line, curve }, i) => (
-          <Path
-            key={`l${i}`}
-            d={curvePath(curve)}
-            fill="none"
-            stroke={line.flow ? 'none' : line.color}
-            strokeWidth={LINE_WIDTH}
-            strokeLinecap="round"
-            opacity={SOLID}
-          />
-        ))}
-        {curves.map(({ line, curve }, i) => (
-          <Circle key={`d${i}`} cx={curve.b[0]} cy={curve.b[1]} r={END_DOT} fill={line.color} />
-        ))}
-      </Svg>
-      {curves
-        .filter(({ line }) => line.flow)
-        .map(({ line, curve }, i) => (
-          <FlowLine key={`f${i}`} curve={curve} color={line.color} />
-        ))}
-    </View>
-  );
-}
-const LINE_WIDTH = 3;
-const SOLID = 0.92;
-const END_DOT = 4.5;
-
-function FlowLine({ curve, color }: { curve: Curve; color: string }) {
-  const active = useLoopActive();
-  const reduce = useReduceMotion();
-  const [q] = useState(() => new Animated.Value(0));
-  const period = M.flowDash + M.flowGap;
-  useEffect(() => {
-    if (!active || reduce) return undefined;
-    const loop = Animated.loop(
-      Animated.timing(q, {
-        toValue: 1,
-        duration: (M.flowMs * period) / M.flowRun,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      }),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [active, reduce, q, period]);
-  const dashes = useMemo(() => {
-    const { length, pointAt } = measure(curve);
-    const out: { x: number[]; y: number[]; angle: number; seen: { at: number[]; v: number[] } }[] =
-      [];
-    for (let i = -1; i * period <= length; i++) {
-      const mid = i * period + M.flowDash / 2;
-      const qs = [0, 0.5, 1];
-      const pts = qs.map((t) => pointAt(mid + period * t));
-      const a = pointAt(mid + period / 2 - 0.5);
-      const b = pointAt(mid + period / 2 + 0.5);
-      // Seen while its middle is on the line.
-      const enter = Math.max(0, Math.min(1, -mid / period));
-      const leave = Math.max(0, Math.min(1, (length - mid) / period));
-      if (leave <= enter) continue;
-      const at = [0, enter, Math.min(1, enter + EPS), Math.max(0, leave - EPS), leave, 1];
-      const v = [0, 0, 1, 1, 0, 0];
-      if (enter === 0) v[0] = v[1] = 1;
-      if (leave === 1) v[4] = v[5] = 1;
-      out.push({
-        x: pts.map((p) => p[0]),
-        y: pts.map((p) => p[1]),
-        angle: (Math.atan2(b[1] - a[1], b[0] - a[0]) * 180) / Math.PI,
-        seen: { at: monotone(at), v },
-      });
-    }
-    return out;
-  }, [curve, period]);
-  const long = M.flowDash + LINE_WIDTH;
-  return (
-    <>
-      {dashes.map((d, i) => (
-        <Animated.View
-          key={i}
-          style={{
-            position: 'absolute',
-            left: -long / 2,
-            top: -LINE_WIDTH / 2,
-            width: long,
-            height: LINE_WIDTH,
-            borderRadius: LINE_WIDTH / 2,
-            backgroundColor: color,
-            opacity: q.interpolate({ inputRange: d.seen.at, outputRange: d.seen.v }),
-            transform: [
-              { translateX: q.interpolate({ inputRange: [0, 0.5, 1], outputRange: d.x }) },
-              { translateY: q.interpolate({ inputRange: [0, 0.5, 1], outputRange: d.y }) },
-              { rotate: `${d.angle}deg` },
-            ],
-          }}
-        />
-      ))}
-    </>
-  );
-}
-const EPS = 0.001;
-
-// An interpolation's input must rise: equal neighbours are nudged apart.
-function monotone(at: number[]): number[] {
-  const out: number[] = [];
-  for (const v of at) {
-    const last = out[out.length - 1];
-    out.push(last !== undefined && v <= last ? last + EPS / 10 : v);
-  }
-  return out;
-}
-
 // ---- What sits at the table's middle ----
 
-// The role card on the table (the file's .card): its back turned a little; held, it turns over to
-// the role's picture, turned the other way. Only the person holding it sees it.
+// The role card at the middle (the panels' .rolec, 104 × 139, turned −2°): its back; held, it
+// turns over to the role's picture. Only the person holding it sees it.
 export function TableCard({
   role,
   open,
@@ -574,17 +616,13 @@ export function TableCard({
     return () => anim.stop();
   }, [open, turnOver, reduce]);
   const c = TABLE.card;
-  const tilt = turnOver.interpolate({
-    inputRange: [0, 1],
-    outputRange: [`${c.back}deg`, `${c.front}deg`],
-  });
   const side = (which: 'back' | 'front') => ({
     position: 'absolute' as const,
     width: c.width,
     height: c.height,
     borderRadius: c.radius,
-    borderWidth: c.edge,
-    borderColor: INK.cardEdge,
+    borderWidth: 1,
+    borderColor: INK.bigCardEdge,
     overflow: 'hidden' as const,
     backfaceVisibility: 'hidden' as const,
     transform: [
@@ -606,9 +644,10 @@ export function TableCard({
       style={{ width: c.width, height: c.height }}
       testID="vampir-card"
     >
-      <Animated.View style={{ width: c.width, height: c.height, transform: [{ rotate: tilt }] }}>
-        <View style={styles.cardShadow}>
-          <NativeShadow css={TABLE_SHADOW.card} radius={c.radius} />
+      <View style={{ width: c.width, height: c.height, transform: [{ rotate: `${c.turn}deg` }] }}>
+        <View style={styles.fill}>
+          <NativeShadow css={TABLE_SHADOW.bigCardGlow} radius={c.radius} />
+          <NativeShadow css={TABLE_SHADOW.bigCard} radius={c.radius} />
         </View>
         <Animated.View style={side('back')}>
           <Image source={ROLE_ART.arka} style={styles.art} resizeMode="cover" />
@@ -616,38 +655,14 @@ export function TableCard({
         <Animated.View style={side('front')}>
           <Image source={ROLE_ART[role]} style={styles.art} resizeMode="cover" />
         </Animated.View>
-      </Animated.View>
+      </View>
     </Pressable>
   );
 }
 const PERSPECTIVE = 1000;
 
-// A still picture card at the middle (the end: the winners' role).
-export function StillCard({ role }: { role: VampirRole | 'arka' }) {
-  const c = TABLE.endCard;
-  return (
-    <View style={{ width: c.width, height: c.height, transform: [{ rotate: `${c.turn}deg` }] }}>
-      <View style={styles.cardShadow}>
-        <NativeShadow css={TABLE_SHADOW.card} radius={TABLE.card.radius} />
-      </View>
-      <View
-        style={{
-          width: c.width,
-          height: c.height,
-          borderRadius: TABLE.card.radius,
-          borderWidth: TABLE.card.edge,
-          borderColor: INK.cardEdge,
-          overflow: 'hidden',
-        }}
-      >
-        <Image source={ROLE_ART[role]} style={styles.art} resizeMode="cover" />
-      </View>
-    </View>
-  );
-}
-
-// The medallion with something still in it: the night's dead or the voted out, greyed, and a
-// line under them; or a mark (nobody died, the vote was tied).
+// The medallion with something still in it (the verdict's, kept from the round table): the voted
+// out, greyed, and a line under them; or a mark (the vote was tied).
 export function MedalWith({
   faces,
   sid,
@@ -707,7 +722,7 @@ const MARK = 56;
 
 // ---- The page round it ----
 
-// A round at the top (the file's .rb): the game's close, and "Rolüm".
+// A round at the top (the panels' .x): the game's close, and "Rolüm".
 export function TableRound({
   label,
   onPress,
@@ -726,6 +741,7 @@ export function TableRound({
   testID?: string;
 }) {
   const press = usePress();
+  const r = TABLE.round;
   return (
     <Pressable
       accessibilityRole="button"
@@ -744,73 +760,70 @@ export function TableRound({
     >
       <Animated.View
         style={{
-          width: TABLE.bar,
-          height: TABLE.bar,
-          borderRadius: TABLE.bar / 2,
+          width: r,
+          height: r,
+          borderRadius: r / 2,
           backgroundColor: on ? INK.roundOn : INK.round,
+          borderWidth: 1.5,
+          borderColor: INK.roundEdge,
           alignItems: 'center',
           justifyContent: 'center',
           transform: [{ scale: press.scale }],
         }}
       >
+        <NativeShadow css={TABLE_SHADOW.round} radius={r / 2} border={1.5} />
         <CachedSvg xml={xml} width={xml === X_SVG ? 16 : 20} height={xml === X_SVG ? 16 : 20} />
       </Animated.View>
     </Pressable>
   );
 }
-export { PEEK_CARD_SVG, X_SVG };
 
-// The file's buttons (.btn.main, .btn.ghost).
-export function TableBtn({
+// The glass button at the foot (the panels' .btn.sec, "Masaya dön"; the owner's "Geceyi başlat").
+export function GlassBtn({
   label,
   onPress,
-  ghost,
-  disabled,
   loading,
+  width,
   testID,
 }: {
   label: string;
-  onPress?: () => void;
-  ghost?: boolean;
-  disabled?: boolean;
+  onPress: () => void;
   loading?: boolean;
+  width?: number;
   testID?: string;
 }) {
   const press = usePress();
-  const off = disabled || loading;
   return (
     <Pressable
       testID={testID}
       accessibilityRole="button"
       accessibilityLabel={label}
-      accessibilityState={{ disabled: !!off, busy: !!loading }}
-      disabled={off}
+      accessibilityState={{ busy: !!loading }}
+      disabled={loading}
       onPress={onPress}
       onPressIn={press.onPressIn}
       onPressOut={press.onPressOut}
-      style={{ flex: 1 }}
+      style={width ? { width } : { flex: 1 }}
     >
       <Animated.View
         style={{
-          height: TABLE.button,
-          borderRadius: TABLE.button / 2,
+          height: KIT.size.btn,
+          borderRadius: KIT.size.btn / 2,
           alignItems: 'center',
           justifyContent: 'center',
-          paddingHorizontal: KIT.size.btnPadX,
-          opacity: disabled && !loading ? DIM_BUTTON : 1,
+          paddingHorizontal: KIT.size.btnPadXSm,
+          backgroundColor: INK.glass,
+          borderWidth: 1,
+          borderColor: INK.glassEdge,
           transform: [{ scale: press.scale }],
-          ...(ghost
-            ? { borderWidth: 2, borderColor: INK.ghostEdge }
-            : { backgroundColor: INK.mainFill }),
         }}
       >
-        {ghost ? null : <NativeShadow css={TABLE_SHADOW.button} radius={TABLE.button / 2} />}
         <Text
           numberOfLines={1}
           adjustsFontSizeToFit
           minimumFontScale={0.6}
           maxFontSizeMultiplier={MAX_FONT}
-          style={[TABLE_TYPE.btn, { color: ghost ? INK.white : INK.mainInk }]}
+          style={[TABLE_TYPE.glassBtn, { color: INK.white }]}
         >
           {loading ? '…' : label}
         </Text>
@@ -818,35 +831,59 @@ export function TableBtn({
     </Pressable>
   );
 }
-const DIM_BUTTON = 0.45;
+
+// The glass sign at the foot (the panels' .sign: "Gündüz başlıyor").
+export function GlassSign({ children, after }: { children: ReactNode; after?: ReactNode }) {
+  return (
+    <View
+      style={{
+        alignSelf: 'center',
+        minHeight: TABLE.sign,
+        paddingHorizontal: 18,
+        borderRadius: TABLE.sign / 2,
+        backgroundColor: INK.glass,
+        borderWidth: 1,
+        borderColor: INK.glassEdge,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+      }}
+    >
+      <Text maxFontSizeMultiplier={MAX_FONT} style={[TABLE_TYPE.sign, { color: INK.white }]}>
+        {children}
+      </Text>
+      {after}
+    </View>
+  );
+}
+
+// The foot's dark fall under the buttons (the panels' .foot).
+export function FootShade() {
+  return (
+    <View
+      pointerEvents="none"
+      style={[
+        { position: 'absolute', left: 0, right: 0, bottom: 0, height: TABLE.foot },
+        gradientStyle(INK.foot),
+      ]}
+    />
+  );
+}
+
+export { X_SVG };
 const MAX_FONT = 1.3;
 
 const styles = StyleSheet.create({
-  badge: {
-    position: 'absolute',
+  art: { position: 'absolute', left: 0, top: 0, width: '100%', height: '100%' },
+  fill: { position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 },
+  round: { position: 'absolute', left: 0, top: 0, borderRadius: 999 },
+  count: {
+    minWidth: 15,
+    height: 13,
+    paddingHorizontal: 4,
+    borderRadius: 7,
+    backgroundColor: INK.amber,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: INK.white,
-    borderRadius: 999,
   },
-  count: {
-    top: -6,
-    right: -8,
-    minWidth: 22,
-    height: 22,
-    paddingHorizontal: 5,
-    backgroundColor: INK.count,
-  },
-  fang: { top: -5, left: -6, width: 22, height: 22, backgroundColor: INK.fang },
-  corner: { bottom: -3, right: -5, width: 20, height: 20 },
-  pill: {
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 999,
-    backgroundColor: INK.namePill,
-    maxWidth: SEAT_BOX,
-  },
-  art: { position: 'absolute', left: 0, top: 0, width: '100%', height: '100%' },
-  cardShadow: { position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 },
 });
