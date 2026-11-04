@@ -30,7 +30,16 @@ import { useTheme } from '@/theme/ThemeProvider';
 
 import { useFreshLine } from './fresh';
 import { quoteJump, toChatQuote, useReactions, useReplyTarget } from './messageExtras';
-import { messagesKey, useMessages, useRoomChatExtras } from './useMessages';
+import { OlderFoot } from './OlderFoot';
+import {
+  messagesKey,
+  readRoomOlder,
+  ROOM_CHAT_PAGE,
+  type RoomChatMessage,
+  useMessages,
+  useRoomChatExtras,
+} from './useMessages';
+import { useOlderPages } from './useOlderPages';
 
 let nextLocalId = 0;
 
@@ -40,6 +49,14 @@ let nextLocalId = 0;
 export function useRoomChat(roomId: string) {
   const queryClient = useQueryClient();
   const messages = useMessages(roomId);
+  // The live page, and over it the older pages read as the list reaches its top.
+  const older = useOlderPages({
+    key: roomId,
+    newest: messages.data,
+    pageSize: ROOM_CHAT_PAGE,
+    dated: (m: RoomChatMessage) => ({ id: m.id, at: m.created_at }),
+    read: (before: string) => readRoomOlder(roomId, before),
+  });
   const extras = useRoomChatExtras(roomId);
   const [outbox, dispatch] = useReducer(outboxReducer, []);
   const reply = useReplyTarget();
@@ -85,6 +102,7 @@ export function useRoomChat(roomId: string) {
   const discard = (m: OutboxMessage) => dispatch({ type: 'remove', localId: m.localId });
   return {
     messages,
+    older,
     extras,
     outbox,
     submit,
@@ -100,7 +118,7 @@ export type RoomChat = ReturnType<typeof useRoomChat>;
 // The room's messages as the DM's list draws them (Telegram Android's chat, newest first from the
 // bottom up; the owner's call, 30 Ekim): runs, day lines, and the ones still on their way at the
 // end. A profiled phone's message opens its profile while the room runs (docs/SPEC_V3.md §22.G).
-type RoomMessage = NonNullable<RoomChat['messages']['data']>[number];
+type RoomMessage = RoomChatMessage;
 
 type RoomRow = ChatListItem & {
   m?: RoomMessage;
@@ -125,7 +143,7 @@ export function useRoomChatList(
       ? () => router.push({ pathname: '/people/[publicId]', params: { publicId } })
       : undefined;
   };
-  const list = chat.messages.data ?? [];
+  const list = chat.messages.data ? chat.older.rows : [];
   const extras = chat.extras.data;
   // The quote of a message on its way, from the loaded list.
   const outboxQuote = (id: string | undefined) => {
@@ -245,6 +263,14 @@ export function useRoomChatList(
     renderItem,
     openAt: fresh,
     timeOf: (row) => row.at,
+    onReachOld: chat.older.loadOlder,
+    older: (
+      <OlderFoot
+        loading={chat.older.loadingOlder}
+        failed={chat.older.olderFailed}
+        onRetry={chat.older.retryOlder}
+      />
+    ),
     // Loading and its error (audit CHAT-8), and the empty room.
     empty: chat.messages.isPending ? (
       <View className="flex-1 items-center justify-center">
