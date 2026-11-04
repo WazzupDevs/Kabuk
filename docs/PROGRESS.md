@@ -24,7 +24,7 @@
 
 - Birleşenler: #428 bildirim çubuğu simgeleri (tür başına `kind`, yamalı `expo-notifications`, renk `--primary`/`--accent`; **native, version 0.9.6, yeni build gerekir**; önce sunucu, §4.S), #429 masa ve mekan sohbetinde eski mesajlar sayfa sayfa (OTA), #430 masa sohbetinde Bildir ve kendi mesajını Sil (migration `20261124090000`, `chat`/`safety`; önce sunucu sonra OTA; `guvenlik` denetledi, §4.T).
 - `database.ts` #430'da elle hizalandı (Docker yok); yerel stack'le `pnpm gen:types` çalıştırılıp fark kontrol edilmeli. Cihazda doğrulanmadı.
-- Bilinen sınır: eski sayfalardaki tepkiler ve başkasının sildiği mesaj, eski sayfalar açıkken yenilenmez (ekran yeniden açılınca düzelir).
+- Bilinen sınır: eski sayfalardaki tepkiler ve başkasının sildiği mesaj, eski sayfalar açıkken yenilenmez (ekran yeniden açılınca düzelir). **Düzeldi (4 Kasım, `useOlderPages` → `reread`).**
 - DM mavisi koyulaştı (`#2670E0`, 4,7:1; `docs/decisions/dm-mavisi.md`). Proje sahibinden beklenen: 6.2 boş durumu ve K-83 balon paleti tuvale.
 
 ## Devir notu (4 Kasım 2026, sohbetler ve bildirim simgeleri)

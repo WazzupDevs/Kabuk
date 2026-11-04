@@ -12,8 +12,9 @@ const extrasKey = (roomId: string) => ['messages', roomId, 'extras'] as const;
 
 // Room messages the table may read (RLS), kept live with Postgres Changes. The server's data-free
 // `reaction` broadcast on the same channel (docs/SPEC_V3.md §21.3) and its `message_gone` (a sender
-// deleted a message, docs/SPEC_V4.md §4.T) read them again too.
-export function useMessages(roomId: string) {
+// deleted a message, docs/SPEC_V4.md §4.T) read them again too; `onGone` hears the latter (the
+// screen's older pages read again, useOlderPages → reread).
+export function useMessages(roomId: string, onGone?: () => void) {
   const queryClient = useQueryClient();
 
   useChannel(
@@ -23,12 +24,15 @@ export function useMessages(roomId: string) {
         .on(
           'postgres_changes',
           { event: 'INSERT', schema: 'public', table: 'messages', filter: `room_id=eq.${roomId}` },
-          () => emit(null),
+          () => emit(false),
         )
-        .on('broadcast', { event: BROADCAST.reaction }, () => emit(null))
-        .on('broadcast', { event: BROADCAST.messageGone }, () => emit(null)),
+        .on('broadcast', { event: BROADCAST.reaction }, () => emit(false))
+        .on('broadcast', { event: BROADCAST.messageGone }, () => emit(true)),
     }),
-    () => void queryClient.invalidateQueries({ queryKey: messagesKey(roomId) }),
+    (gone: boolean) => {
+      void queryClient.invalidateQueries({ queryKey: messagesKey(roomId) });
+      if (gone) onGone?.();
+    },
   );
 
   return useQuery({

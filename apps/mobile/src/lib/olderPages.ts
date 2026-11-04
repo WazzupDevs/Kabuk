@@ -42,3 +42,26 @@ export function olderBefore<T>(
   const oldest = older[0] ?? newest[0];
   return oldest === undefined ? null : dated(oldest).at;
 }
+
+// The older pages read again (a reaction moved on them, or a sender deleted one of them): page by
+// page from `until` back to the oldest message the screen had (`oldestAt`), or to the chat's first
+// message. What is no longer there (deleted, or gone after a day) falls out; nothing older than
+// `oldestAt` is added beyond the last page read.
+export async function rereadOlder<T>(
+  read: (before: string) => Promise<T[]>,
+  until: string,
+  oldestAt: string,
+  dated: (item: T) => Dated,
+  pageSize: number,
+): Promise<{ older: T[]; done: boolean }> {
+  let older: T[] = [];
+  let before = until;
+  for (;;) {
+    const page = await read(before);
+    older = [...page, ...older];
+    const first = page[0];
+    if (page.length < pageSize || first === undefined) return { older, done: true };
+    if (dated(first).at <= oldestAt) return { older, done: false };
+    before = dated(first).at;
+  }
+}
