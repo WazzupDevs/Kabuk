@@ -10,7 +10,12 @@ import { dbError } from '../_shared/db.ts';
 import { z } from '../_shared/deps.ts';
 import { handle } from '../_shared/http.ts';
 import { loadProfanity } from '../_shared/profanity.ts';
-import type { ChatRequest, ChatResponse, ReactResponse } from '../_shared/pure/api/chat.ts';
+import type {
+  ChatDeleteResponse,
+  ChatRequest,
+  ChatResponse,
+  ReactResponse,
+} from '../_shared/pure/api/chat.ts';
 import { MIN_MESSAGE_INTERVAL_MS, prepareMessage } from '../_shared/pure/chat.ts';
 import { AppError } from '../_shared/pure/errors.ts';
 import { containsProfanity } from '../_shared/pure/profanity.ts';
@@ -31,14 +36,26 @@ const Body: z.ZodType<ChatRequest> = z.discriminatedUnion('action', [
     replyTo: z.uuid().optional(),
   }),
   z.object({ action: z.literal('react'), messageId: z.uuid(), emoji: ReactionInput }),
+  z.object({ action: z.literal('delete'), messageId: z.uuid() }),
 ]);
 
 const db = serviceClient();
 
 Deno.serve(
-  handle(async (req, raw): Promise<ChatResponse | ReactResponse> => {
+  handle(async (req, raw): Promise<ChatResponse | ReactResponse | ChatDeleteResponse> => {
     const body = Body.parse(raw);
     const user = await requireUser(req, db);
+
+    // docs/SPEC_V4.md §4.T: the sender's own message; data-free, the table reads its page again.
+    if (body.action === 'delete') {
+      const { data, error } = await db.rpc('chat_delete', {
+        target_user_id: user.id,
+        target_message_id: body.messageId,
+      });
+      if (error) throw dbError('chat_delete', error);
+      inBackground(broadcast(messagesChannel(data), BROADCAST.messageGone));
+      return { ok: true };
+    }
 
     if (body.action === 'react') {
       const { data, error } = await db.rpc('chat_react', {

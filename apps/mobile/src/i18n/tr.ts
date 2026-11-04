@@ -703,6 +703,7 @@ export const tr = {
     } satisfies Record<Reaction, string>,
     report: 'Bildir',
     delete: 'Sil',
+    deleted: 'Mesaj silindi.',
     // Over the first message that came while the chat was closed (skall tuvali: `.day.new`).
     // Over the first unread message; the chat opens there (the owner's call, 30 Ekim).
     newLine: 'Okunmamış mesajlar',

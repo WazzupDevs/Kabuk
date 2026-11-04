@@ -383,6 +383,147 @@ describe('safety/report', () => {
   });
 });
 
+// docs/SPEC_V4.md §4.T: the held message's "Bildir" and "Sil" in the table chat.
+describe("table chat: report a message, delete one's own", () => {
+  const OK = { status: 200, body: { ok: true } };
+  const reportMessage = (client: Client, messageId: string, reason: string) =>
+    invoke(client, 'safety', { action: 'report', target: 'room_message', messageId, reason });
+  const remove = (client: Client, messageId: string) =>
+    invoke(client, 'chat', { action: 'delete', messageId });
+  const idOf = (sent: { body: unknown }) => (sent.body as { messageId: string }).messageId;
+
+  it('stores the message id and its copy, against the sender; the same answer for anything else', async () => {
+    const { owner, guest, third, roomId, ownerSession, guestSession } = await roomWithGuest();
+    const names = await seatNames(roomId, ownerSession, guestSession);
+    const messageId = idOf(await send(owner, roomId, 'kaba bir söz'));
+    const own = idOf(await send(guest, roomId, 'kendi mesajım'));
+
+    expect(await reportMessage(guest, messageId, 'harassment')).toEqual(OK);
+    const rows = await sql`
+      select * from public.reports where target_type = 'room_message' and room_id = ${roomId}
+    `;
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      reporter_id: await userIdOf(guest),
+      reported_user_id: await userIdOf(owner),
+      room_message_id: messageId,
+      reason: 'harassment',
+      status: 'open',
+    });
+    expect(rows[0]?.messages_snapshot).toEqual([
+      expect.objectContaining({ alias: names.owner, body: 'kaba bir söz', reported: true }),
+    ]);
+
+    // One's own message, a person not at the table, an unknown id: nothing written, same answer.
+    expect(await reportMessage(guest, own, 'spam')).toEqual(OK);
+    expect(await reportMessage(third, messageId, 'spam')).toEqual(OK);
+    expect(await reportMessage(guest, randomUUID(), 'spam')).toEqual(OK);
+    const [count] = await sql`
+      select count(*)::int as n from public.reports where target_type = 'room_message'
+        and room_id = ${roomId}
+    `;
+    expect(count?.n).toBe(1);
+    expect((await reportMessage(guest, messageId, 'wrong_gender')).status).toBe(400);
+    const { error } = await guest.from('reports').select('id');
+    expect(error?.code).toBe('42501');
+  });
+
+  it('keeps the copy when the sender deletes the message', async () => {
+    const { owner, guest, roomId } = await roomWithGuest();
+    const messageId = idOf(await send(owner, roomId, 'silinecek'));
+    expect(await reportMessage(guest, messageId, 'spam')).toEqual(OK);
+    expect(await remove(owner, messageId)).toEqual(OK);
+    const [report] = await sql`
+      select room_message_id, messages_snapshot from public.reports
+      where target_type = 'room_message' and room_id = ${roomId}
+    `;
+    expect(report?.room_message_id).toBeNull();
+    expect(report?.messages_snapshot).toEqual([
+      expect.objectContaining({ body: 'silinecek', reported: true }),
+    ]);
+  });
+
+  it("deletes only the sender's own message, with its reactions, and tells the table", async () => {
+    const { owner, guest, third, roomId } = await roomWithGuest();
+    const messageId = idOf(await send(owner, roomId, 'yanlış yazdım'));
+    await sleep(1100);
+    const reply = idOf(
+      await invoke(guest, 'chat', { action: 'send', roomId, body: 'ne?', replyTo: messageId }),
+    );
+    expect(await invoke(guest, 'chat', { action: 'react', messageId, emoji: 'begen' })).toEqual(OK);
+
+    expect(await remove(guest, messageId)).toEqual({ status: 404, body: errorBody('not_found') });
+    // Not at the table: the same answer as an unknown id (rule 5).
+    expect(await remove(third, messageId)).toEqual({ status: 404, body: errorBody('not_found') });
+    expect(await remove(owner, randomUUID())).toEqual({
+      status: 404,
+      body: errorBody('not_found'),
+    });
+
+    const heard = waitForBroadcast(guest, messagesChannel(roomId), BROADCAST.messageGone);
+    await heard.subscribed;
+    try {
+      expect(await remove(owner, messageId)).toEqual(OK);
+      await heard.received;
+    } finally {
+      await heard.close();
+    }
+    expect((await messages(guest, roomId)).map((m) => m.body)).toEqual(['ne?']);
+    const [reactions] = await sql`
+      select count(*)::int as n from public.message_reactions where message_id = ${messageId}
+    `;
+    expect(reactions?.n).toBe(0);
+    // The reply stays and says its message is gone.
+    const { data } = await guest.rpc('room_chat_extras', { target_room_id: roomId });
+    const row = (data ?? []).find((r) => r.message_id === reply);
+    expect(row?.reply_to).toEqual({ gone: true });
+    // A second delete finds nothing.
+    expect(await remove(owner, messageId)).toEqual({ status: 404, body: errorBody('not_found') });
+  });
+
+  it('deletes only while the sender is at the open table', async () => {
+    const { owner, guest, roomId } = await roomWithGuest();
+    const messageId = idOf(await send(guest, roomId, 'sonra silerim'));
+    await invoke(owner, 'rooms', { action: 'end' });
+    expect(await remove(guest, messageId)).toEqual({ status: 404, body: errorBody('not_found') });
+  });
+
+  // Rule 10: the check-in, then the room, then the message (and its reactions).
+  it('locks the check-in and the room before the message', async () => {
+    const { owner, roomId, ownerSession } = await roomWithGuest();
+    const ownerId = await userIdOf(owner);
+    const holds = [
+      (tx: postgres.TransactionSql) =>
+        tx`select id from public.table_sessions where id = ${ownerSession} for no key update`,
+      (tx: postgres.TransactionSql) =>
+        tx`select id from public.rooms where id = ${roomId} for update`,
+    ];
+    for (const hold of holds) {
+      await sleep(1100);
+      const messageId = idOf(await send(owner, roomId, 'kilit'));
+      const holder = postgres(dbUrl, { max: 1, onnotice: () => {} });
+      const deleting = postgres(dbUrl, { max: 1, onnotice: () => {} });
+      try {
+        let deleted: Promise<unknown> = Promise.resolve();
+        await holder.begin(async (tx) => {
+          await hold(tx);
+          deleted = deleting`select public.chat_delete(${ownerId}, ${messageId}) as room`
+            .execute()
+            .catch((err: unknown) => err);
+          await waitUntilBlocked('chat_delete');
+          // The delete waits before the message: it is free to lock here.
+          await tx`set local lock_timeout = '2s'`;
+          const held = await tx`select id from public.messages where id = ${messageId} for update`;
+          expect(held).toHaveLength(1);
+        });
+        expect(await deleted).toEqual([{ room: roomId }]);
+      } finally {
+        await Promise.all([holder.end(), deleting.end()]);
+      }
+    }
+  });
+});
+
 describe('safety/block and unblock', () => {
   it('blocks the person it names, takes them out of the table, and can be undone', async () => {
     const { owner, guest, third, roomId, ownerSession, guestSession } = await roomWithGuest();

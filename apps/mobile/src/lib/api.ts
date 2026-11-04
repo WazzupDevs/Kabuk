@@ -1,7 +1,12 @@
 import { FunctionsHttpError, isAuthApiError } from '@supabase/supabase-js';
 
 import type { AccountRequest, AccountResponse } from '@shared/api/account.ts';
-import type { ChatResponse, ReactResponse, SafetyResponse } from '@shared/api/chat.ts';
+import type {
+  ChatDeleteResponse,
+  ChatResponse,
+  ReactResponse,
+  SafetyResponse,
+} from '@shared/api/chat.ts';
 import type { Reaction } from '@shared/reactions.ts';
 import type { GameOkResponse } from '@shared/api/games.ts';
 import type {
@@ -240,6 +245,9 @@ export const chatApi = {
   // docs/SPEC_V3.md §21.2: the table's one reaction; null takes it back.
   react: (messageId: string, emoji: Reaction | null) =>
     invoke<ReactResponse>('chat', { action: 'react', messageId, emoji }),
+  // docs/SPEC_V4.md §4.T: the sender's own message.
+  remove: (messageId: string) =>
+    invoke<ChatDeleteResponse>('chat', { action: 'delete', messageId }),
 };
 
 export const safetyApi = {
@@ -267,6 +275,14 @@ export const safetyApi = {
       action: 'block',
       roomId,
       ...(sessionId ? { sessionId } : {}),
+    }),
+  // A message of the table chat (docs/SPEC_V4.md §4.T): its id; the server keeps its copy.
+  reportRoomMessage: (messageId: string, reason: ReportReason) =>
+    invoke<SafetyResponse>('safety', {
+      action: 'report',
+      target: 'room_message',
+      messageId,
+      reason,
     }),
   // Venue chat (docs/SPEC_V3.md §7.4, §7.5).
   reportVenueChat: (messageId: string, reason: ReportReason) =>

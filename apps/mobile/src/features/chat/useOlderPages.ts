@@ -75,8 +75,15 @@ export function useOlderPages<T>({
     if (!failed) fetchOlder();
   }, [failed, fetchOlder]);
 
+  // A message gone from the chat (its sender deleted it): out of the older pages too.
+  const forget = useCallback(
+    (id: string) => setState((s) => ({ ...s, older: s.older.filter((m) => dated(m).id !== id) })),
+    [dated],
+  );
+
   return {
     rows,
+    forget,
     loadOlder,
     retryOlder: fetchOlder,
     loadingOlder: current.loading,

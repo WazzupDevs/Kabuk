@@ -117,6 +117,8 @@ export const BROADCAST = {
   // docs/SPEC_V3.md §21.3: a reaction moved; no data. dm:{thread_id} and messages:{room_id}.
   dmReaction: 'dm_reaction',
   reaction: 'reaction',
+  // messages:{room_id}: a message was deleted by its sender (docs/SPEC_V4.md §4.T); no data.
+  messageGone: 'message_gone',
 } as const;
 
 // The room screen's status check (apps/mobile/src/features/rooms/queries.ts): Realtime delivers a

@@ -1452,3 +1452,12 @@ Android'in durum çubuğunda ve bildirim perdesinde her push kendi türünün si
 - **Push verisi:** `_shared/pure/push.ts` → `PushMessage.kind`, push verisine `kind` olarak girer (SPEC_V3 §18.3a'daki `target`'ın yanına). Tür başlığın zaten söylediğidir: kimlik, gönderen, masa, mekan ve içerik yok.
 - **Uygulama:** simgeler `scripts/icon/bildirim/*.svg` → `pnpm icons` → 5 yoğunlukta beyaz alfa PNG (`ic_bildirim_<tür>`); config plugin (`app.config.ts` → `withNotificationIcons`) `res/drawable-*`'e koyar; yamalı `expo-notifications` (`patches/expo-notifications@57.0.21.patch`) simgeyi `kind`'dan `getIdentifier` ile seçer. Simge rengi açık temada `--primary` (`#0E8745`), koyuda `--accent` (`#3DDC84`).
 - **Yayın:** native değişiklik, yeni build (0.9.6). Sunucu önce gidebilir: eski uygulama `kind`'ı okumaz, genel simgeyi çizer.
+
+## 4.T Masa sohbetinde Bildir ve Sil (proje sahibinin kararı, 4 Kasım)
+
+Masa sohbetinde mesaja basılı tutunca açılan menü, mekan sohbetindeki gibi başkasının mesajında "Bildir", kendi mesajında "Sil" sunar.
+
+- **Bildir:** `safety` → `report`, `target: 'room_message'`, `messageId`, sebep (`REPORT_REASONS`; yanlış cinsiyet beyanı kişiyi bildirmekte kalır). Şikayet `reports`'a mesaj kimliği (`room_message_id`) ve mesajın kopyasıyla (`messages_snapshot`: oturduğu ad, metin, saat) yazılır; şikayet edilen hesap mesajın check-in'inden bulunur ve hiçbir yanıta gitmez. Yalnızca masada şu an oturan ve mesajı okuyabilen (oturduğundan sonra yazılmış) kişi bildirebilir, kendi mesajını bildiremez; aksi her durumda hiçbir şey yazılmaz ve yanıt aynıdır (`{ ok: true }`). Mesaj sonradan silinse de kopya şikayette kalır (kimlik boşalır). Bildirim mesajı gizlemez.
+- **Sil:** `chat` → `delete`, `messageId`. Yalnızca gönderen, masa açıkken ve masadayken siler; başkasının mesajı, başka masanın mesajı, kapanmış masa ve bilinmeyen kimlik aynı `not_found`'ı alır (yanıt bir kimliğin var olup olmadığını söylemez). Satır silinir, tepkileri de gider; ona verilen yanıt "Mesaj artık yok" der. Sunucu `messages:{room_id}` kanalına veri içermeyen `message_gone` yayını yapar (yeni kanal yok, kural 9), masa sohbeti yeniden okunur.
+- **Kilit sırası (kural 10):** silme check-in (`for no key update`) → `rooms` → mesaj → tepkileri; şikayet kilit almaz (`chat.test.ts` → kilit testi).
+- **Yayın:** önce sunucu (migration, `chat`, `safety`), sonra uygulama (OTA). Eski uygulama menüde bu seçenekleri göstermez.
