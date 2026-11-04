@@ -1,6 +1,7 @@
 import { type ReactNode, useEffect, useState } from 'react';
 import { Animated, type StyleProp, type ViewStyle } from 'react-native';
 
+import type { TabOpenings } from '@/lib/tabOpenings';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { MOTION } from '@/theme/aura';
 
@@ -11,8 +12,11 @@ type Props = {
   // Its place in a cascade: each part arrives `step` after the one before (at most MOTION.stagger.max).
   index?: number;
   step?: number;
-  // A change plays the arrival again (a tab opened again).
+  // A change plays the arrival again (a kind chosen).
   replay?: number;
+  // Its tab's openings (aura/motion → useTabOpenings): each plays the arrival again, on the native
+  // driver, with no render.
+  openings?: TabOpenings | null;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -24,6 +28,7 @@ export function Reveal({
   index = 0,
   step = MOTION.stagger.part,
   replay = 0,
+  openings,
   style,
 }: Props) {
   const reduce = useReduceMotion();
@@ -33,17 +38,26 @@ export function Reveal({
       p.setValue(1);
       return undefined;
     }
-    p.setValue(0);
-    const anim = Animated.timing(p, {
-      toValue: 1,
-      duration: MOTION.dissolve.inMs,
-      delay: Math.min(index, MOTION.stagger.max) * step,
-      easing: ARRIVE_RN,
-      useNativeDriver: true,
-    });
-    anim.start();
-    return () => anim.stop();
-  }, [replay, reduce, index, step, p]);
+    let anim: Animated.CompositeAnimation | null = null;
+    const play = () => {
+      anim?.stop();
+      p.setValue(0);
+      anim = Animated.timing(p, {
+        toValue: 1,
+        duration: MOTION.dissolve.inMs,
+        delay: Math.min(index, MOTION.stagger.max) * step,
+        easing: ARRIVE_RN,
+        useNativeDriver: true,
+      });
+      anim.start();
+    };
+    play();
+    const off = openings?.subscribe(play);
+    return () => {
+      off?.();
+      anim?.stop();
+    };
+  }, [replay, openings, reduce, index, step, p]);
   const d = MOTION.dissolve;
   return (
     <Animated.View

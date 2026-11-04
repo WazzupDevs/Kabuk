@@ -17,9 +17,10 @@ import { create } from 'zustand';
 
 import { AuraBand, useGroundSize } from '@/aura/AuraBackground';
 import { AuraTabBar, type AuraTabItem } from '@/aura/AuraTabBar';
-import { ARRIVE_RN, BLURS, TabFocusContext } from '@/aura/motion';
+import { ARRIVE_RN, BLURS, TabOpeningsContext } from '@/aura/motion';
 import { labOff, markTabSwitch, useLabOff } from '@/lib/drawLab';
 import { haptic } from '@/lib/haptics';
+import { createTabOpenings } from '@/lib/tabOpenings';
 import { useLeaveGuard } from '@/lib/leaveGuard';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { AURA, MOTION } from '@/theme/aura';
@@ -148,10 +149,11 @@ export function TabScene({
   const { scheme } = useTheme();
   const reduce = useReduceMotion();
   const id = useId();
-  // `opened` counts the openings the screen's cascade plays again for, `run` the ones the dissolve
-  // plays for: the same, except under Çizim ölçümü's `kademe` (the cascade measured off).
-  const [focus, setFocus] = useState({ focused: navigation.isFocused(), opened: 0, run: 0 });
-  const tabFocus = { focused: focus.focused, opened: focus.opened };
+  // Each opening after another tab: the screen's parts hear it and arrive again without a render
+  // (lib/tabOpenings.ts, B2); only the dissolve's `run` renders this scene (not the tab's screen:
+  // its element is the same).
+  const [openings] = useState(createTabOpenings);
+  const [run, setRun] = useState(0);
   // Çizim ölçümü (lib/drawLab.ts): the blur dissolve off on its own (`bulanma`, the fade and rise
   // stay). Production never turns it off.
   const blurOff = useLabOff('bulanma');
@@ -169,18 +171,12 @@ export function TabScene({
     let leftTab = false;
     const offFocus = navigation.addListener('focus', () => {
       own();
-      if (!leftTab) {
-        setFocus((f) => ({ ...f, focused: true }));
-        return;
-      }
+      if (!leftTab) return;
       leftTab = false;
       markTabSwitch();
-      const cascade = !labOff('kademe');
-      setFocus((f) => ({
-        focused: true,
-        opened: cascade ? f.opened + 1 : f.opened,
-        run: f.run + 1,
-      }));
+      // Çizim ölçümü's `kademe`: the cascade measured off.
+      if (!labOff('kademe')) openings.open();
+      setRun((r) => r + 1);
       // Çizim ölçümü's `gelis`: the fade and rise off on its own (the screen in place at once).
       if (!reduce && !labOff('gelis')) {
         p.setValue(0);
@@ -195,14 +191,13 @@ export function TabScene({
     const offBlur = navigation.addListener('blur', () => {
       const state = navigation.getState();
       leftTab = state.routes[state.index]?.key !== routeKey;
-      setFocus((f) => ({ ...f, focused: false }));
     });
     return () => {
       offFocus();
       offBlur();
       useBarMode.setState((s) => (s.target === id ? { target: null } : s));
     };
-  }, [navigation, routeKey, id, reduce, p]);
+  }, [navigation, routeKey, id, reduce, p, openings]);
   const arrive = {
     flex: 1,
     opacity: p,
@@ -212,9 +207,9 @@ export function TabScene({
   };
   const ground = AURA[scheme].ground;
   const scene = (
-    <TabFocusContext.Provider value={tabFocus}>
+    <TabOpeningsContext.Provider value={openings}>
       <Dissolve
-        run={BLURS && !reduce ? focus.run : 0}
+        run={BLURS && !reduce ? run : 0}
         blur={blurOff ? 0 : MOTION.dissolve.blur}
         durationMs={MOTION.dissolve.inMs}
         curve={MOTION.curves.arrive}
@@ -222,7 +217,7 @@ export function TabScene({
       >
         <Animated.View style={arrive}>{children}</Animated.View>
       </Dissolve>
-    </TabFocusContext.Provider>
+    </TabOpeningsContext.Provider>
   );
   return (
     // A plain ground when the bar has no glass (TAB_BAR_GLASS).
