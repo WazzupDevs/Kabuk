@@ -1,7 +1,8 @@
 import type { VampirRole } from '@shared/vampir.ts';
 import type { ImageSourcePropType } from 'react-native';
 
-import type { SandTone, TableTime } from '@/theme/vampirArt';
+import type { SandTone } from '@/theme/vampirArt';
+import type { ScenePhase } from '@/theme/vampirScene';
 
 // The role pictures (the owner's file: one scene a role, and the back every card shares).
 export const ROLE_ART: Record<VampirRole | 'arka', ImageSourcePropType> = {
@@ -13,14 +14,23 @@ export const ROLE_ART: Record<VampirRole | 'arka', ImageSourcePropType> = {
   soytari: require('../../../../assets/vampir/soytari.webp'),
 };
 
-// The table, the medallion and the glass over the sand, drawn once from their SVG text
-// (scripts/art/vampirTable.ts; theme/vampirArt.ts): pictures the phone only shows.
-export const TABLE_PICTURE: Record<TableTime, ImageSourcePropType> = {
-  night: require('../../../../assets/vampir/table/table-night.webp'),
-  dawn: require('../../../../assets/vampir/table/table-dawn.webp'),
-  day: require('../../../../assets/vampir/table/table-day.webp'),
-  dusk: require('../../../../assets/vampir/table/table-dusk.webp'),
+// The capsule table's room and table for each phase (theme/vampirScene.ts; scripts/art/
+// vampirScene.ts): pictures the phone only shows.
+export const ROOM_PICTURE: Record<ScenePhase, ImageSourcePropType> = {
+  night: require('../../../../assets/vampir/scene/room-night.webp'),
+  dawn: require('../../../../assets/vampir/scene/room-dawn.webp'),
+  day: require('../../../../assets/vampir/scene/room-day.webp'),
+  end: require('../../../../assets/vampir/scene/room-end.webp'),
 };
+export const TABLE_PICTURE: Record<ScenePhase, ImageSourcePropType> = {
+  night: require('../../../../assets/vampir/scene/table-night.webp'),
+  dawn: require('../../../../assets/vampir/scene/table-dawn.webp'),
+  day: require('../../../../assets/vampir/scene/table-day.webp'),
+  end: require('../../../../assets/vampir/scene/table-end.webp'),
+};
+
+// The medallion and the glass over the sand (the day's and the verdict's middle), drawn once from
+// their SVG text (scripts/art/vampirTable.ts; theme/vampirArt.ts).
 export const MEDAL_PICTURE: ImageSourcePropType = require('../../../../assets/vampir/table/medal.webp');
 export const GLASS_PICTURE: Record<SandTone, ImageSourcePropType> = {
   night: require('../../../../assets/vampir/table/glass-night.webp'),

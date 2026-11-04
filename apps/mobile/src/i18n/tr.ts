@@ -932,6 +932,7 @@ export const tr = {
     mates: (names: readonly string[]) =>
       names.length === 1 ? `Diğer vampir: ${names[0]}` : `Diğer vampirler: ${names.join(', ')}`,
     cardLabel: 'Rolünü görmek için basılı tut',
+    roleIs: (name: string) => `Rolün: ${name}`,
     ready: 'Hazırım',
     waitingOthers: 'Diğerleri bekleniyor',
     readyCount: (n: number, of: number) => `Hazır: ${n}/${of}`,

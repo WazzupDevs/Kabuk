@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
   pop: {
     position: 'absolute',
     right: 0,
-    top: TABLE.bar + 8,
+    top: TABLE.round + 8,
     zIndex: 5,
     flexDirection: 'row',
     alignItems: 'center',
