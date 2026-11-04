@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 import { CHECKIN_RADIUS_M } from './checkin.ts';
 import {
   activityBucket,
-  defaultCity,
   describeEventTime,
   distanceMeters,
   exploreCities,
@@ -136,13 +135,7 @@ describe('Keşfet list (docs/SPEC_V4.md K-21, K-38, K-42)', () => {
     ]);
   });
 
-  it('picks the city with the most active venues, the first by name on a tie', () => {
-    expect(defaultCity(venues)).toBe('İstanbul');
-    expect(defaultCity(venues.slice(0, 2))).toBe('İstanbul');
-    expect(defaultCity([])).toBeNull();
-  });
-
-  it('keeps a remembered place while it still has a venue, else falls back to the default city', () => {
+  it('keeps a chosen place while it still has a venue, else every city', () => {
     expect(explorePlace({ city: 'Sakarya', district: 'Serdivan' }, venues)).toEqual({
       city: 'Sakarya',
       district: 'Serdivan',
@@ -151,12 +144,16 @@ describe('Keşfet list (docs/SPEC_V4.md K-21, K-38, K-42)', () => {
       city: 'Sakarya',
       district: null,
     });
-    expect(explorePlace({ city: 'Ankara', district: null }, venues)).toEqual({
-      city: 'İstanbul',
-      district: null,
-    });
-    expect(explorePlace(null, venues)).toEqual({ city: 'İstanbul', district: null });
+    // Nothing chosen, or a city with no venue left: every city (5 Kasım).
+    expect(explorePlace({ city: 'Ankara', district: null }, venues)).toBeNull();
+    expect(explorePlace(null, venues)).toBeNull();
     expect(explorePlace(null, [])).toBeNull();
+  });
+
+  it('lists every venue of every city when no place is chosen', () => {
+    expect(
+      filterVenues(venues, { place: null, kind: 'all', query: '' }).map((v) => v.name),
+    ).toEqual(['Kampüs', 'Köşe Kahve', 'Liman Çay']);
   });
 
   it('filters by place, kind and the name, Turkish letters alike', () => {

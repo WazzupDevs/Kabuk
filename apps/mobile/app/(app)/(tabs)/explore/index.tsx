@@ -374,24 +374,25 @@ function VenueList({
             paddingTop: KIT.size.secPadTop,
           }}
         >
-          {place ? (
-            // The place sheet opens from here when there is a city to choose (K-38).
-            <Pressable
-              testID="explore-place"
-              accessibilityRole={cityList.length > 1 ? 'button' : 'header'}
-              accessibilityLabel={tr.explore.placeLabel(place.city, place.district)}
-              disabled={cityList.length <= 1}
-              onPress={() => {
-                setSheetKey((k) => k + 1);
-                setPlaceSheet(true);
-              }}
-              hitSlop={KIT.size.chipsGap}
-            >
-              <T v="h3">{tr.explore.place(place.city, place.district)}</T>
-            </Pressable>
-          ) : (
-            <View />
-          )}
+          {/* The place sheet opens from here when there is a city to choose (K-38); every city is
+              the default (5 Kasım). */}
+          <Pressable
+            testID="explore-place"
+            accessibilityRole={cityList.length > 1 ? 'button' : 'header'}
+            accessibilityLabel={
+              place ? tr.explore.placeLabel(place.city, place.district) : tr.explore.allCitiesLabel
+            }
+            disabled={cityList.length <= 1}
+            onPress={() => {
+              setSheetKey((k) => k + 1);
+              setPlaceSheet(true);
+            }}
+            hitSlop={KIT.size.chipsGap}
+          >
+            <T v="h3">
+              {place ? tr.explore.place(place.city, place.district) : tr.explore.allCities}
+            </T>
+          </Pressable>
           <T v="fine" testID="explore-count">
             {tr.explore.countLine(venues.length, eventsFirst)}
           </T>
@@ -453,15 +454,13 @@ function VenueList({
         campuses={uni ? venues.filter((v) => v.university?.id === uni.id) : []}
         onClose={() => setUni(null)}
       />
-      {place ? (
-        <PlaceSheet
-          key={sheetKey}
-          visible={placeSheet}
-          onClose={() => setPlaceSheet(false)}
-          cities={cityList}
-          place={place}
-        />
-      ) : null}
+      <PlaceSheet
+        key={sheetKey}
+        visible={placeSheet}
+        onClose={() => setPlaceSheet(false)}
+        cities={cityList}
+        place={place}
+      />
     </PullScroll>
   );
 }
@@ -598,12 +597,13 @@ function PlaceSheet({
   visible: boolean;
   onClose: () => void;
   cities: readonly ExploreCity[];
-  place: ExplorePlace;
+  // null: every city.
+  place: ExplorePlace | null;
 }) {
   const choose = useExplorePlace((s) => s.choose);
   // Mounted afresh at each opening (its key), so the choice starts from the place shown.
-  const [pick, setPick] = useState<ExplorePlace>(place);
-  const districts = cities.find((c) => c.city === pick.city)?.districts ?? [];
+  const [pick, setPick] = useState<ExplorePlace | null>(place);
+  const districts = pick ? (cities.find((c) => c.city === pick.city)?.districts ?? []) : [];
   return (
     // Şehir ve semt (aura v51, kabul raporu §6.3): the aura sheet with the kit's chips, the
     // buttons fixed under it.
@@ -631,37 +631,50 @@ function PlaceSheet({
       <View style={{ gap: KIT.size.chipsGap }}>
         <T v="eyebrow">{tr.explore.city}</T>
         <View accessibilityRole="radiogroup" accessibilityLabel={tr.explore.city} style={CHIPS}>
+          <Chip
+            testID="place-city-all"
+            label={tr.explore.allCities}
+            on={pick === null}
+            onPress={() => setPick(null)}
+          />
           {cities.map((c) => (
             <Chip
               key={c.city}
               testID={`place-city-${c.city}`}
               label={c.city}
-              on={pick.city === c.city}
+              on={pick?.city === c.city}
               onPress={() => setPick({ city: c.city, district: null })}
             />
           ))}
         </View>
       </View>
-      <View style={{ gap: KIT.size.chipsGap }}>
-        <T v="eyebrow">{tr.explore.district}</T>
-        <View accessibilityRole="radiogroup" accessibilityLabel={tr.explore.district} style={CHIPS}>
-          <Chip
-            testID="place-district-all"
-            label={tr.explore.allDistricts}
-            on={pick.district === null}
-            onPress={() => setPick({ city: pick.city, district: null })}
-          />
-          {districts.map((d) => (
+      {/* Districts once a city is chosen. */}
+      {pick ? (
+        <View style={{ gap: KIT.size.chipsGap }}>
+          <T v="eyebrow">{tr.explore.district}</T>
+          <View
+            accessibilityRole="radiogroup"
+            accessibilityLabel={tr.explore.district}
+            style={CHIPS}
+          >
             <Chip
-              key={d}
-              testID={`place-district-${d}`}
-              label={d}
-              on={pick.district === d}
-              onPress={() => setPick({ city: pick.city, district: d })}
+              testID="place-district-all"
+              label={tr.explore.allDistricts}
+              on={pick.district === null}
+              onPress={() => setPick({ city: pick.city, district: null })}
             />
-          ))}
+            {districts.map((d) => (
+              <Chip
+                key={d}
+                testID={`place-district-${d}`}
+                label={d}
+                on={pick.district === d}
+                onPress={() => setPick({ city: pick.city, district: d })}
+              />
+            ))}
+          </View>
         </View>
-      </View>
+      ) : null}
     </Sheet>
   );
 }

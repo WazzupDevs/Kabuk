@@ -9,9 +9,16 @@
       "lat": 40.98819357066424,
       "lng": 28.668212457253617,
       "spots": [
-        { "ref": "ic-salon", "name": "İç salon" },
-        { "ref": "bahce", "name": "Bahçe" }
-      ]
+        {
+          "ref": "ic-salon",
+          "name": "İç salon"
+        },
+        {
+          "ref": "bahce",
+          "name": "Bahçe"
+        }
+      ],
+      "isActive": false
     },
     {
       "ref": "yedegor-durum",
@@ -20,7 +27,8 @@
       "category": "yemek",
       "district": "Beylikdüzü",
       "lat": 40.990265,
-      "lng": 28.6686509
+      "lng": 28.6686509,
+      "isActive": false
     }
   ]
 }

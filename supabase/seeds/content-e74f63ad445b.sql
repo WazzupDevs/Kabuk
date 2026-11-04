@@ -178,8 +178,8 @@ on conflict (source, source_ref) do update set
 
 -- content/venues-test.json
 insert into public.venues (name, city, district, location, source, source_ref, kind, category, is_active) values
-  ('Hush Coffee', 'İstanbul', 'Beylikdüzü', extensions.st_setsrid(extensions.st_makepoint(28.668212457253617, 40.98819357066424), 4326)::extensions.geography, 'test', 'test/hush-coffee', 'cafe', 'kafe', true),
-  ('Yedegör Dürüm', 'İstanbul', 'Beylikdüzü', extensions.st_setsrid(extensions.st_makepoint(28.6686509, 40.990265), 4326)::extensions.geography, 'test', 'test/yedegor-durum', 'cafe', 'yemek', true)
+  ('Hush Coffee', 'İstanbul', 'Beylikdüzü', extensions.st_setsrid(extensions.st_makepoint(28.668212457253617, 40.98819357066424), 4326)::extensions.geography, 'test', 'test/hush-coffee', 'cafe', 'kafe', false),
+  ('Yedegör Dürüm', 'İstanbul', 'Beylikdüzü', extensions.st_setsrid(extensions.st_makepoint(28.6686509, 40.990265), 4326)::extensions.geography, 'test', 'test/yedegor-durum', 'cafe', 'yemek', false)
 on conflict (source, source_ref) do update set
   name = excluded.name, city = excluded.city, district = excluded.district,
   location = excluded.location, kind = excluded.kind, category = excluded.category,
