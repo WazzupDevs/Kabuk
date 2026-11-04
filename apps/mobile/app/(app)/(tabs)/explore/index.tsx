@@ -29,7 +29,8 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { AuraBackground, AuraBand } from '@/aura/AuraBackground';
 import { CapIcon } from '@/aura/CapIcon';
 import { Btn, Chip, Glass, Li, Live, Round, T, Tag, useKit } from '@/aura/kit';
-import { useTabFocus } from '@/aura/motion';
+import { useTabOpenings } from '@/aura/motion';
+import type { TabOpenings } from '@/lib/tabOpenings';
 import { Reveal } from '@/aura/Reveal';
 import { VenueThumb } from '@/aura/VenueThumb';
 import { EmptyState } from '@/components/EmptyState';
@@ -72,7 +73,7 @@ export default function ExploreScreen() {
   const table = useActiveTable();
   const now = useNow(30_000);
   const { venues, cities, listed } = useCityVenues();
-  const focus = useTabFocus();
+  const openings = useTabOpenings();
   const [view, setView] = useState<View_>('list');
   const [query, setQuery] = useState('');
   const [kind, setKind] = useState<ExploreKind>('all');
@@ -149,14 +150,14 @@ export default function ExploreScreen() {
             }}
           >
             {/* U13: the question at .display, at most its two lines. */}
-            <Reveal index={0} replay={focus.opened}>
+            <Reveal index={0} openings={openings}>
               <T v="display" accessibilityRole="header">
                 {tr.explore.question[dayPart(now)]}
               </T>
             </Reveal>
             {ready ? (
               <View style={{ gap: SPACING[3] }}>
-                <Reveal index={1} replay={focus.opened}>
+                <Reveal index={1} openings={openings}>
                   <View style={{ flexDirection: 'row', gap: SEARCH_GAP }}>
                     <SearchGlass value={query} onChangeText={setQuery} />
                     <ViewSwitch
@@ -168,7 +169,7 @@ export default function ExploreScreen() {
                     />
                   </View>
                 </Reveal>
-                <Reveal index={2} replay={focus.opened}>
+                <Reveal index={2} openings={openings}>
                   {/* U13: the kind chips on one line, scrolling sideways to the screen's edge. */}
                   <ScrollView
                     horizontal
@@ -235,7 +236,8 @@ export default function ExploreScreen() {
             place={place}
             here={hereCard}
             bottomSpace={barSpace}
-            replay={focus.opened * REPLAY_BASE + kindRuns}
+            replay={kindRuns}
+            openings={openings}
             onRefresh={() => Promise.all([venues.refetch(), cities.refetch()])}
           />
         ) : null}
@@ -320,6 +322,7 @@ function VenueList({
   here,
   bottomSpace,
   replay,
+  openings,
   onRefresh,
 }: {
   venues: readonly CityVenue[];
@@ -331,6 +334,7 @@ function VenueList({
   here: Here | null;
   bottomSpace: number;
   replay: number;
+  openings: TabOpenings | null;
   onRefresh: () => Promise<unknown>;
 }) {
   const side = KIT.size.side;
@@ -356,7 +360,7 @@ function VenueList({
     >
       {here ? <HereNow here={here} /> : null}
       {/* The city and district, and how many venues (K-38): a section's head. */}
-      <Reveal index={SECTION_AT} replay={replay}>
+      <Reveal index={SECTION_AT} replay={replay} openings={openings}>
         <View
           style={{
             flexDirection: 'row',
@@ -397,7 +401,7 @@ function VenueList({
         <EmptyState kind="empty" riso="venues" body={tr.explore.empty} />
       ) : venues.length === 0 ? (
         // Keşfet: boş: a filter or a search that finds nothing, said by its cause.
-        <Reveal index={ROWS_AT} step={ROW_STEP} replay={replay}>
+        <Reveal index={ROWS_AT} step={ROW_STEP} replay={replay} openings={openings}>
           <Glass pad="lg" testID="explore-no-match" style={{ gap: SPACING[1] }}>
             <T v="sec">{emptyCopy(empty, kind).title}</T>
             <T v="body">{emptyCopy(empty, kind).hint}</T>
@@ -415,6 +419,7 @@ function VenueList({
               index={ROWS_AT + i}
               step={ROW_STEP}
               replay={replay}
+              openings={openings}
             >
               {i > 0 ? <RowHair /> : null}
               {row.type === 'venue' ? (
@@ -673,8 +678,6 @@ const MAP_FADE = 0.14;
 const SECTION_AT = 3;
 const ROWS_AT = 5;
 const ROW_STEP = 60;
-// A tab opened again and a kind chosen both play the list's arrival: one number for the two.
-const REPLAY_BASE = 1000;
 
 // A venue row's picture (U13: 56, 18 round).
 const VENUE_ROW_PICTURE = VENUE_THUMB.size;

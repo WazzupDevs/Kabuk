@@ -11,7 +11,8 @@ import { ScrollView, View } from 'react-native';
 import { type Edge, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground, AuraBand } from '@/aura/AuraBackground';
-import { useTabFocus } from '@/aura/motion';
+import { useTabOpenings } from '@/aura/motion';
+import type { TabOpenings } from '@/lib/tabOpenings';
 import { Reveal } from '@/aura/Reveal';
 import { AURA } from '@/theme/aura';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -86,7 +87,7 @@ export function Screen({
   const refresh =
     onRefresh ?? (refreshable ? () => queryClient.refetchQueries({ type: 'active' }) : undefined);
   const { shape, scheme } = useTheme();
-  const focus = useTabFocus();
+  const openings = useTabOpenings();
   const barSpace = useTabBarSpace();
   const insets = useSafeAreaInsets();
   const keyboardUp = useKeyboardState((s) => s.isVisible);
@@ -137,7 +138,7 @@ export function Screen({
       >
         {!(list || refresh || scrollRef || stickyHeaderIndices) ? (
           <FixedBody content={content} onOverflow={footer ? setOverflows : undefined}>
-            {cascade(children, focus.opened)}
+            {cascade(children, openings)}
           </FixedBody>
         ) : refresh && !scrollRef && !stickyHeaderIndices ? (
           <PullScroll
@@ -145,7 +146,7 @@ export function Screen({
             contentContainerStyle={content}
             keyboardShouldPersistTaps="handled"
           >
-            {cascade(children, focus.opened)}
+            {cascade(children, openings)}
           </PullScroll>
         ) : (
           <ScrollView
@@ -156,7 +157,7 @@ export function Screen({
             keyboardShouldPersistTaps="handled"
             stickyHeaderIndices={stickyHeaderIndices}
           >
-            {cascade(children, focus.opened)}
+            {cascade(children, openings)}
           </ScrollView>
         )}
         {footer ? (
@@ -226,12 +227,12 @@ function FixedBody({
 
 // Each part of the screen in its own arrival, the n-th a step after the one before. A part that
 // fills the screen (`flex-1`, as the empty and error states do) keeps filling it.
-function cascade(children: ReactNode, replay: number) {
+function cascade(children: ReactNode, openings: TabOpenings | null) {
   return Children.toArray(children).map((child, i) => (
     <Reveal
       key={isValidElement(child) && child.key !== null ? child.key : i}
       index={i}
-      replay={replay}
+      openings={openings}
       style={fills(child) ? { flexGrow: 1 } : undefined}
     >
       {child}

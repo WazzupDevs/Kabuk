@@ -6,6 +6,8 @@ Kaynaklar: `docs/denetim/performans-2026-11.md` (bulgular) ve `docs/denetim/olcu
 
 ## B2 — Sekme açılışında odak React state'i olmaktan çıkar (M, OTA)
 
+- **Durum (4 Kasım):** 1. ve 2. adım yapıldı. `lib/tabOpenings.ts` sekmenin ömrü boyunca tek nesnedir; `Reveal` → `openings` açılışı dinleyip native sürücüde oynar. Sekmenin ekranı açılışta yeniden çizilmez, yalnızca Dissolve'un `run`'ı TabScene'i çizer. 3. adım yapılmadı: ekran kaydırılmışsa 8'den sonraki satırlar görünür olabilir, onları tekrar oynatmamak görünüşü değiştirir. 4. adım ölçüme bırakıldı: sekme geçişinde artık satırlar çizilmiyor, memo yalnızca tür seçiminde kazandırır.
+
 - **Ne:** `TabScene`'deki (`src/components/TabBar.tsx`) `{focused, opened}` state'i her focus ve blur'da bütün sekmeyi yeniden çiziyor; Keşfet'te `replay` bütün satırları JS'te yeniden çizip ~43 animasyonu birden başlatıyor.
 - **Adımlar:**
   1. Blur'daki ve sayfa ya da üst ekran kapanınca çalışan `setFocus` kaldırılır. `focused` alanını okuyan yer yok (önce grep ile doğrulanır).
