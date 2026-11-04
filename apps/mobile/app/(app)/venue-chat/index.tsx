@@ -28,6 +28,8 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { Sheet } from '@/components/Sheet';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { useFreshLine } from '@/features/chat/fresh';
+import { OlderFoot } from '@/features/chat/OlderFoot';
+import { useOlderPages } from '@/features/chat/useOlderPages';
 import { quoteJump, toChatQuote, useReplyTarget } from '@/features/chat/messageExtras';
 import { IdentitySheet } from '@/features/checkin/IdentitySheet';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
@@ -37,6 +39,7 @@ import { useOwnLook } from '@/features/profile/useOwnLook';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { useCurrentRoom } from '@/features/rooms/queries';
 import {
+  readVenueChatOlder,
   useVenueChat,
   useVenueChatReactions,
   venueChatKeys,
@@ -87,7 +90,15 @@ export default function VenueChatScreen() {
   const reply = useReplyTarget();
   // Opened light: the newest messages while the screen slides in, the rest after.
   const reactions = useVenueChatReactions(venueId);
-  const messages = page.data?.messages;
+  // The live page, and over it the older pages read as the list reaches its top.
+  const older = useOlderPages({
+    key: `${venueId ?? ''}:${sessionId ?? ''}`,
+    newest: page.data?.messages,
+    pageSize: VENUE_CHAT.pageSize,
+    dated: (m: VenueChatMessage) => ({ id: m.id, at: m.createdAt }),
+    read: (before: string) => readVenueChatOlder(venueId ?? '', before),
+  });
+  const messages = page.data ? older.rows : undefined;
   const fresh = useFreshLine(venueId && `venue:${venueId}`, messages);
 
   const refresh = () => {
@@ -394,6 +405,14 @@ export default function VenueChatScreen() {
         renderItem: renderRow,
         openAt: fresh,
         timeOf: (row) => Date.parse(row.m?.createdAt ?? row.out?.at ?? ''),
+        onReachOld: older.loadOlder,
+        older: (
+          <OlderFoot
+            loading={older.loadingOlder}
+            failed={older.olderFailed}
+            onRetry={older.retryOlder}
+          />
+        ),
         empty: page.isPending ? (
           <View className="flex-1 items-center justify-center">
             <Loader />
