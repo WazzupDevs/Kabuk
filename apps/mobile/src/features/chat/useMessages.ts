@@ -8,7 +8,8 @@ export const messagesKey = (roomId: string) => ['messages', roomId] as const;
 const extrasKey = (roomId: string) => ['messages', roomId, 'extras'] as const;
 
 // Room messages the table may read (RLS), kept live with Postgres Changes. The server's data-free
-// `reaction` broadcast on the same channel (docs/SPEC_V3.md §21.3) reads them again too.
+// `reaction` broadcast on the same channel (docs/SPEC_V3.md §21.3) and its `message_gone` (a sender
+// deleted a message, docs/SPEC_V4.md §4.T) read them again too.
 export function useMessages(roomId: string) {
   const queryClient = useQueryClient();
 
@@ -21,7 +22,8 @@ export function useMessages(roomId: string) {
           { event: 'INSERT', schema: 'public', table: 'messages', filter: `room_id=eq.${roomId}` },
           () => emit(null),
         )
-        .on('broadcast', { event: BROADCAST.reaction }, () => emit(null)),
+        .on('broadcast', { event: BROADCAST.reaction }, () => emit(null))
+        .on('broadcast', { event: BROADCAST.messageGone }, () => emit(null)),
     }),
     () => void queryClient.invalidateQueries({ queryKey: messagesKey(roomId) }),
   );

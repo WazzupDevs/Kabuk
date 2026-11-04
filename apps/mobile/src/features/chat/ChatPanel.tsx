@@ -1,14 +1,15 @@
-import { MAX_MESSAGE_LENGTH, prepareMessage } from '@shared/chat.ts';
+import { MAX_MESSAGE_LENGTH, prepareMessage, type ReportReason } from '@shared/chat.ts';
 import { canRetry, type OutboxMessage, outboxReducer } from '@shared/chatOutbox.ts';
 import { parseQuote, parseReactionCounts } from '@shared/messageExtras.ts';
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { useReducer } from 'react';
+import { useReducer, useState } from 'react';
 import { View } from 'react-native';
 
 import { toRuns } from '@shared/chatRuns.ts';
 
 import { Avatar } from '@/components/Avatar';
+import { Banner } from '@/components/Banner';
 import { ChatBubble } from '@/components/ChatBubble';
 import {
   type ChatListItem,
@@ -23,7 +24,9 @@ import { Loader } from '@/components/Loader';
 import { Glass, T } from '@/aura/kit';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
-import { ApiError, chatApi } from '@/lib/api';
+import { ApiError, chatApi, safetyApi } from '@/lib/api';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
+import { useFlash } from '@/lib/useFlash';
 import { KIT } from '@/theme/auraKit';
 import { nameInk } from '@/theme/nameInk';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -46,6 +49,27 @@ export function useRoomChat(roomId: string) {
   const reactions = useReactions(chatApi.react, () =>
     queryClient.invalidateQueries({ queryKey: messagesKey(roomId) }),
   );
+
+  // The held message's "Sil" (one's own) and "Bildir" (another's; docs/SPEC_V4.md §4.T).
+  const [note, flash] = useFlash();
+  const [reporting, setReporting] = useState<string | null>(null);
+  const remove = useMutation({
+    meta: FEEL_ERROR,
+    mutationFn: (id: string) => chatApi.remove(id),
+    onSuccess: () => {
+      flash(tr.chat.deleted);
+      void queryClient.invalidateQueries({ queryKey: messagesKey(roomId) });
+    },
+  });
+  const report = useMutation({
+    meta: FEEL_ERROR,
+    mutationFn: ({ id, reason }: { id: string; reason: ReportReason }) =>
+      safetyApi.reportRoomMessage(id, reason),
+    onSuccess: () => {
+      setReporting(null);
+      flash(tr.safety.reportSent);
+    },
+  });
 
   const deliver = (localId: string, text: string, replyTo?: string) => {
     chatApi
@@ -92,6 +116,11 @@ export function useRoomChat(roomId: string) {
     discard,
     reply,
     reactions,
+    note,
+    remove,
+    report,
+    reporting,
+    setReporting,
   };
 }
 
@@ -233,6 +262,27 @@ export function useRoomChatList(
               // The name inside the bubble, as in Mekan sohbeti (the owner's call, 28 Ekim).
               nameInk={mine ? undefined : nameInk(scheme, m.sender_alias)}
               avatar={mine ? undefined : <Avatar kind="table" alias={m.sender_alias} size="sm" />}
+              actions={
+                mine
+                  ? [
+                      {
+                        label: tr.chat.delete,
+                        icon: 'close',
+                        negative: true,
+                        testID: 'room-chat-delete',
+                        onPress: () => chat.remove.mutate(m.id),
+                      },
+                    ]
+                  : [
+                      {
+                        label: tr.chat.report,
+                        icon: 'alert',
+                        negative: true,
+                        testID: 'room-chat-report',
+                        onPress: () => chat.setReporting(m.id),
+                      },
+                    ]
+              }
               onPressSender={mine ? undefined : openProfile(m.session_id)}
             />
           </>
@@ -282,6 +332,7 @@ export function RoomComposer({ chat }: { chat: RoomChat }) {
       onSend={chat.submit}
       replyTo={chat.reply.target?.quote}
       onCancelReply={chat.reply.clear}
+      above={chat.note ? <Banner tone="info" body={chat.note} testID="room-chat-note" /> : null}
     />
   );
 }

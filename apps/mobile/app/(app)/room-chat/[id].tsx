@@ -1,3 +1,4 @@
+import { REPORT_REASONS } from '@shared/chat.ts';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect } from 'react';
 import { View } from 'react-native';
@@ -7,6 +8,7 @@ import { ChatTopBar } from '@/components/ChatTopBar';
 import { Loader } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
 import { RoomComposer, useRoomChat, useRoomChatList } from '@/features/chat/ChatPanel';
+import { ReportModal } from '@/features/chat/ReportModal';
 import { useRoomChatSeen } from '@/features/chat/roomChatSeen';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { useRoomMemberProfiles } from '@/features/profile/queries';
@@ -76,6 +78,15 @@ export default function RoomChatScreen() {
       }
       composer={<RoomComposer chat={chat} />}
       list={stream}
-    />
+    >
+      <ReportModal
+        reasons={REPORT_REASONS}
+        visible={chat.reporting !== null}
+        pending={chat.report.isPending}
+        error={chat.report.error}
+        onReport={(reason) => chat.reporting && chat.report.mutate({ id: chat.reporting, reason })}
+        onClose={() => chat.setReporting(null)}
+      />
+    </ChatScreen>
   );
 }
