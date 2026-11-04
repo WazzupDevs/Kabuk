@@ -12,7 +12,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
 import { openDm } from '@/features/friends/openDm';
 import {
-  friendKeys,
+  refreshFriends,
   type HistoryFriend,
   useHistoryFriends,
   useTableHistory,
@@ -223,7 +223,7 @@ function EndRow({
   friend: HistoryFriend | undefined;
 }) {
   const queryClient = useQueryClient();
-  const settle = () => queryClient.invalidateQueries({ queryKey: friendKeys.all });
+  const settle = () => refreshFriends(queryClient, 'pressed');
   const add = useMutation({
     meta: FEEL_ERROR,
     mutationFn: (historyId: string) => friendsApi.addFromRoom(historyId),

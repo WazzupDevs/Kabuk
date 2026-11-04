@@ -19,6 +19,7 @@ import { useBroadcast } from '@/features/rooms/useBroadcast';
 import { useReactions } from '@/features/chat/messageExtras';
 import { dmApi, friendsApi } from '@/lib/api';
 import { stablePhoto } from '@/lib/photoUrls';
+import { type FriendEvent, friendReads } from '@/lib/friendRefresh';
 import { supabase } from '@/lib/supabase';
 
 export const friendKeys = {
@@ -33,6 +34,14 @@ export const friendKeys = {
   dm: (threadId: string) => ['friends', 'dm', threadId] as const,
   notifications: ['friends', 'notifications'] as const,
 };
+
+// What a friends event reads again (lib/friendRefresh.ts, B3): the queries it can change, never a
+// conversation's pages.
+export function refreshFriends(queryClient: QueryClient, event: FriendEvent): Promise<void> {
+  return Promise.all(
+    friendReads(event).map((name) => queryClient.invalidateQueries({ queryKey: friendKeys[name] })),
+  ).then(() => undefined);
+}
 
 // The bell's list and its count of new rows (docs/SPEC_V4.md §4.G).
 export function useNotifications() {
@@ -62,7 +71,7 @@ export function useIncomingFriendRequests() {
 }
 
 // Requests from the venue chat (docs/SPEC_V3.md §7.5): the sender's name, age and photo, signed
-// by the function. Under friendKeys.all, so the inbox broadcast refreshes them too.
+// by the function. A request coming in reads them again (refreshFriends → 'request').
 export function useVenueChatRequests() {
   return useQuery({
     queryKey: friendKeys.incomingChat,
@@ -114,7 +123,7 @@ export function useTableHistory(roomId: string, enabled: boolean) {
 // The records whose pair became friends at that encounter (public.my_history_friends: both pressed
 // "Arkadaş ekle" on it, friends now, no block): "Arkadaş oldunuz · Mesajlaş" on the table's end and
 // in the play history. The RPC gives only the profile id; the name and the DM come from the friend
-// list. Both are under friendKeys.all, so a new friendship (the inbox broadcast) reads them again. A
+// list. A new friendship (refreshFriends → 'friendship') and a press ('pressed') read both again. A
 // single press shows nothing (rule 5).
 export type HistoryFriend = { publicId: string; name: string | null; threadId: string | null };
 
@@ -146,8 +155,8 @@ export function useHistoryFriends(): { data: ReadonlyMap<string, HistoryFriend> 
   return { data };
 }
 
-// Mesajlar (docs/SPEC_V3.md §18.3): every friend, newest conversation first. Under friendKeys.all,
-// so the inbox broadcast refreshes it.
+// Mesajlar (docs/SPEC_V3.md §18.3): every friend, newest conversation first. A friendship begun or
+// ended reads it again (refreshFriends → 'friendship').
 export function useDmInbox() {
   return useQuery({
     queryKey: friendKeys.inbox,
@@ -467,7 +476,8 @@ function useMarkDelivered(): () => void {
   return mark;
 }
 
-// The account's inbox channel: requests and friendships refetch every friends/* query when told to.
+// The account's inbox channel: a request reads the requests and the bell again, a friendship every
+// list it shows in (refreshFriends; a conversation's pages are not among them).
 // Mounted once, in the tab layout, so the Mesajlar and bell badges stay current. A DM refreshes only
 // the inbox and the list, soon (refreshInboxSoon); the open conversation reads its own newest page
 // on dm:{thread_id}, and another one reads it when it is opened (useDmMessages).
@@ -475,8 +485,9 @@ export function useInbox(): void {
   const queryClient = useQueryClient();
   const userId = useSessionStore((s) => s.session?.user.id);
   const markDelivered = useMarkDelivered();
-  const refetch = useCallback(
-    () => void queryClient.invalidateQueries({ queryKey: friendKeys.all }),
+  const onRequest = useCallback(() => void refreshFriends(queryClient, 'request'), [queryClient]);
+  const onFriendship = useCallback(
+    () => void refreshFriends(queryClient, 'friendship'),
     [queryClient],
   );
   const onDm = useCallback(() => {
@@ -490,8 +501,8 @@ export function useInbox(): void {
     [queryClient],
   );
   const topic = userId ? inboxChannel(userId) : null;
-  useBroadcast(topic, BROADCAST.friendRequest, refetch);
+  useBroadcast(topic, BROADCAST.friendRequest, onRequest);
   useBroadcast(topic, BROADCAST.tableInvite, refetchNotifications);
-  useBroadcast(topic, BROADCAST.friendshipChanged, refetch);
+  useBroadcast(topic, BROADCAST.friendshipChanged, onFriendship);
   useBroadcast(topic, BROADCAST.dm, onDm);
 }

@@ -12,6 +12,7 @@
 - B2: sekme açılışı ekranı yeniden çizmiyor (`lib/tabOpenings.ts`; OTA). Önce/sonra ölçümü: bu PR'dan önceki OTA'da ve sonrakinde protokolün tekrar akışı (JS p95); `Kademe` kapalı sayısı B2'nin üst sınırıydı.
 - B6: gizli sekmede saatler ve Keşfet yoklaması durur, dönüşte gelişten sonra bir kez yetişir (`lib/tabActivity.ts`; OTA). `RoomWatch` ölçüme bırakıldı.
 - B5: geliş, giden sekme gizlenince hazırlanıyor; dönüşün ilk karesi gelişin ilk karesi (`LEAVE_PREPARE_MS`; OTA). Native adım yapılmadı.
+- B3: arkadaşlık olayları yalnızca değiştirebildiği sorguları okur, DM sayfalarını hiç (`lib/friendRefresh.ts`; OTA). İki telefonla istek, kabul, çıkarma ve Masa bitti eşleşmesi denenmeli.
 - Sıradaki: proje sahibi `docs/denetim/olcum-protokolu.md`'yi düşük ve orta sınıf Android'de koşar; rakamlarla B6 → B5 → B3 → B7 → B1/B12 (`docs/denetim/sekme-gecisi-plani.md`), her biri ayrı PR, önce/sonra ölçümlü. B1/B12 yalnızca cihaz bulgusuyla; K1–K11 proje sahibinin kararı.
 
 ## Devir notu (4 Kasım 2026, temizlik B ve C bitti)

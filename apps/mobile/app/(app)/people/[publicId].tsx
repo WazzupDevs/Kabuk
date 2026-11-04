@@ -13,7 +13,7 @@ import { Sheet } from '@/components/Sheet';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { FriendActions } from '@/features/friends/FriendActions';
 import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
-import { friendKeys, useFriends } from '@/features/friends/queries';
+import { refreshFriends, useFriends } from '@/features/friends/queries';
 import { ProfileHead, ProfileTopBar } from '@/features/profile/ProfileCard';
 import { useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
@@ -49,7 +49,7 @@ export default function PersonScreen() {
       if (kind === 'block') track('block_created', {});
       if (reason) track('report_submitted', {});
       setEnding(null);
-      void queryClient.invalidateQueries({ queryKey: friendKeys.all });
+      void refreshFriends(queryClient, 'friendship');
       // The DM behind this profile is gone with the friendship: back to Mesajlar, not to it.
       if (from === 'dm') router.dismissTo('/messages');
       else router.back();

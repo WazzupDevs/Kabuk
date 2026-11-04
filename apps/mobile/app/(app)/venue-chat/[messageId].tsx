@@ -14,7 +14,7 @@ import { Loader } from '@/components/Loader';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
 import { FriendActions } from '@/features/friends/FriendActions';
-import { friendKeys, useFriends } from '@/features/friends/queries';
+import { refreshFriends, useFriends } from '@/features/friends/queries';
 import { ProfileHead, ProfileTopBar } from '@/features/profile/ProfileCard';
 import { useVenueChatProfile } from '@/features/venueChat/queries';
 import { errorMessage } from '@/i18n/errors';
@@ -66,7 +66,7 @@ export default function VenueChatProfileScreen() {
       track('block_created', {});
       // The blocked person's messages go from the chat, and a friend from the lists (audit CHAT-5).
       void queryClient.invalidateQueries({ queryKey: ['venueChat'] });
-      void queryClient.invalidateQueries({ queryKey: friendKeys.all });
+      void refreshFriends(queryClient, 'friendship');
       setBlocking(false);
       router.back();
     },

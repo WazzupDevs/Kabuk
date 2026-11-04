@@ -19,7 +19,7 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
-import { friendKeys, useIncomingFriendRequests, useVenueChatRequests } from './queries';
+import { refreshFriends, useIncomingFriendRequests, useVenueChatRequests } from './queries';
 import { useRetryAfterName } from './useRetryAfterName';
 
 // The last game of the encounter, or the chat (docs/SPEC_V3.md §5.5), as on Bildirimler.
@@ -57,7 +57,7 @@ export function RequestList({ now }: { now: Date }) {
       track('friendship_created', { source: 'request' });
     },
     onError: (err, answer) => void askName(err, answer),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: friendKeys.all }),
+    onSettled: () => refreshFriends(queryClient, 'friendship'),
   });
   const run = useCallback((a: Answer) => respond.mutate(a), [respond]);
   const askName = useRetryAfterName(run);

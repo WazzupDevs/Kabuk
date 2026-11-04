@@ -36,7 +36,7 @@ import { quoteJump, toChatQuote, useReplyTarget } from '@/features/chat/messageE
 import { IdentitySheet } from '@/features/checkin/IdentitySheet';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
-import { friendKeys } from '@/features/friends/queries';
+import { refreshFriends } from '@/features/friends/queries';
 import { useOwnLook } from '@/features/profile/useOwnLook';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { useCurrentRoom } from '@/features/rooms/queries';
@@ -188,7 +188,7 @@ export default function VenueChatScreen() {
       setBlocking(null);
       refresh();
       // Blocking a friend also ends the friendship (audit CHAT-5).
-      void queryClient.invalidateQueries({ queryKey: friendKeys.all });
+      void refreshFriends(queryClient, 'friendship');
     },
   });
   const mute = useMutation({

@@ -11,7 +11,12 @@ import { Loader } from '@/components/Loader';
 import { RouteSheet } from '@/components/RouteSheet';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { openDm } from '@/features/friends/openDm';
-import { friendKeys, useFriends, useNotifications } from '@/features/friends/queries';
+import {
+  friendKeys,
+  refreshFriends,
+  useFriends,
+  useNotifications,
+} from '@/features/friends/queries';
 import { useRetryAfterName } from '@/features/friends/useRetryAfterName';
 import { roomKeys } from '@/features/rooms/queries';
 import { TABLE_ICON_IMAGES } from '@/features/rooms/tableIconImages';
@@ -145,7 +150,7 @@ function Row({ item, fresh }: { item: NotificationItem; fresh?: boolean }) {
   const queryClient = useQueryClient();
   const friends = useFriends();
   const checkIn = useActiveTable();
-  const settle = () => void queryClient.invalidateQueries({ queryKey: friendKeys.all });
+  const settle = () => void refreshFriends(queryClient, 'friendship');
 
   const respond = useMutation({
     meta: FEEL_ERROR,

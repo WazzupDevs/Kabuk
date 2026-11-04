@@ -28,6 +28,7 @@ import { ConfirmWithReport } from '@/features/friends/ConfirmWithReport';
 import {
   friendKeys,
   refreshDm,
+  refreshFriends,
   useDmMessages,
   useDmReactions,
   useFriends,
@@ -227,7 +228,7 @@ export default function DmScreen() {
   };
 
   const leave = () => {
-    void queryClient.invalidateQueries({ queryKey: friendKeys.all });
+    void refreshFriends(queryClient, 'friendship');
     backToInbox();
   };
   // Android's back key too (a sheet or the reaction bar, when open, takes it first).
