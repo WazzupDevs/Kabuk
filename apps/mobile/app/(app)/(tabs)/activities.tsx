@@ -91,12 +91,8 @@ function Events({ now, city }: { now: number; city: ReturnType<typeof useCity> }
   const { venues, cities, listed, place } = city;
   const events = useMemo(
     () =>
-      place
-        ? todayEvents(
-            listed.filter((v) => v.city === place.city),
-            now,
-          )
-        : [],
+      // Every city unless one is chosen in Keşfet (5 Kasım).
+      todayEvents(place ? listed.filter((v) => v.city === place.city) : listed, now),
     [listed, place, now],
   );
   const pending = venues.isPending || cities.isPending;

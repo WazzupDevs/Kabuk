@@ -365,6 +365,9 @@ export const tr = {
     campusOf: (university: string, district: string) => `${university} · ${district}`,
     // City and district (v44: .vloc; K-38): chosen, never the phone's position (rule 6).
     place: (city: string, district: string | null) => `${city} · ${district ?? 'Tüm semtler'}`,
+    // Every city (5 Kasım): the default, "Tümü" lists every venue and university.
+    allCities: 'Tüm şehirler',
+    allCitiesLabel: 'Şehir ve semt: tüm şehirler',
     placeLabel: (city: string, district: string | null) =>
       `Şehir ve semt: ${city}, ${district ?? 'tüm semtler'}`,
     placeTitle: 'Şehir ve semt',

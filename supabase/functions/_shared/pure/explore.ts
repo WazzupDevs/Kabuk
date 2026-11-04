@@ -128,20 +128,9 @@ export function exploreCities(
     .sort((a, b) => a.city.localeCompare(b.city, 'tr'));
 }
 
-// The city with the most active venues; a tie goes to the first by name.
-export function defaultCity(venues: readonly { city: string }[]): string | null {
-  const counts = new Map<string, number>();
-  for (const v of venues) counts.set(v.city, (counts.get(v.city) ?? 0) + 1);
-  let best: string | null = null;
-  for (const [city, n] of counts) {
-    const top = best === null ? 0 : (counts.get(best) ?? 0);
-    if (n > top || (n === top && best !== null && city.localeCompare(best, 'tr') < 0)) best = city;
-  }
-  return best;
-}
-
-// The remembered place while its city still has an active venue (its district only while that has
-// one too); otherwise the default city, every district.
+// The place Keşfet shows (the project owner's call, 5 Kasım: the default is every city, so "Tümü"
+// lists every venue and every university). A city chosen on this phone is kept while it still has
+// an active venue (its district only while that has one too); otherwise every city (null).
 export function explorePlace(
   saved: ExplorePlace | null,
   venues: readonly { city: string; district: string }[],
@@ -154,8 +143,7 @@ export function explorePlace(
         : null;
     return { city: saved.city, district };
   }
-  const city = defaultCity(venues);
-  return city === null ? null : { city, district: null };
+  return null;
 }
 
 export const EXPLORE_KINDS = ['all', 'campus', 'cafe'] as const;

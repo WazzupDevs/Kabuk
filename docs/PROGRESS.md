@@ -1,5 +1,9 @@
 # İlerleme
 
+## Devir notu (5 Kasım 2026, Keşfet tüm şehirler)
+
+- Keşfet varsayılanı "Tüm şehirler" (K-38 değişti, `SPEC_V4` §4.C); eski saklı şehir seçimi okunmaz (`placeStore` `v: 2`, anahtar aynı). Hush Coffee ve Yedegör Dürüm kapatıldı (`venues-test.json` `isActive: false`). OTA + seed; native yok.
+
 ## Devir notu (4 Kasım 2026 akşam, açık işler bitti)
 
 - Birleşenler: #434 (devir notu), #436 (ci `integration`'da `pnpm gen:types` + `git diff --exit-code database.ts`; #430'un elle hizalaması biçim farkıydı, düzeldi), #440 (masa ve mekan sohbetinde açık eski sayfalar silinen mesajda ve değişen tepkide yeniden okunur, `useOlderPages` → `reread`; OTA, cihazda denenmedi), #442 (canlı tuvalin Kapsul/KapsulKoyu panolarına 8.1 işlendi).

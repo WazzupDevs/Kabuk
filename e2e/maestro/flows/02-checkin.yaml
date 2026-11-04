@@ -54,11 +54,11 @@ appId: app.kabuk.mobile
 - assertVisible: 'Sakarya · Tüm semtler'
 - assertNotVisible: E2E Kafe
 - takeScreenshot: 05g-explore-sakarya
-# Back to İstanbul for the rest of the flow (the choice stays on the phone).
+# Back to every city, the default, for the rest of the flow (the choice stays on the phone).
 - tapOn:
     id: explore-place
 - tapOn:
-    id: place-city-İstanbul
+    id: place-city-all
 - tapOn:
     id: place-show
 - extendedWaitUntil:
