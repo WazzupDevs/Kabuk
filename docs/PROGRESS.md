@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (5 Kasım 2026, Vampir Köylü kapsül masa)
+
+- #448: Vampir Köylü kapsül masaya geçti (Aura v83, K-84; gerekçe `docs/decisions/vampir-kapsul-masa.md`, kaynak `docs/design/vampir/kapsul-masa/`). OTA, native yok; cihazda denenmedi, görsel kontrol proje sahibinde.
+- Masa görseli `scripts/art/vampirScene.ts` ile üretilir (`vampirScene.test.ts` hash'i denetler); oda görselleri tasarımın `arka-plan-masasiz/` PNG'lerinden aynı betikle (repoda PNG yok).
+- Açık: VampirRolKarti, VampirGunduz, VampirEleme panoları yeni dile çevrilmedi (kabul raporu açık soru 6); 320 dp, en büyük yazı, açık tema ve yükleniyor/hata hâlleri tuvalde çizilmedi.
+- Tasarımın tanımlamadığı ve oturumun seçtiği yerler (proje sahibi telefonda bakınca onaylar ya da düzeltir): gece seçimleri küçük yüzle, ortada en çok 1 + 3 aday, ikiden fazla kazanan 30'luk yüzle, Gündüz/Eleme madalyonunun yeri.
+
 ## Devir notu (5 Kasım 2026, Keşfet tüm şehirler)
 
 - Keşfet varsayılanı "Tüm şehirler" (K-38 değişti, `SPEC_V4` §4.C); eski saklı şehir seçimi okunmaz (`placeStore` `v: 2`, anahtar aynı). Hush Coffee ve Yedegör Dürüm kapatıldı (`venues-test.json` `isActive: false`). OTA + seed; native yok.
