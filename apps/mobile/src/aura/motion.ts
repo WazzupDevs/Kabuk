@@ -1,6 +1,7 @@
 import { createContext, useContext } from 'react';
 import { Easing, Platform } from 'react-native';
 
+import type { TabOpenings } from '@/lib/tabOpenings';
 import { MOTION, type Bezier } from '@/theme/aura';
 import { blursBehind } from '@/theme/glass';
 
@@ -20,11 +21,10 @@ export function springConfig(s: { stiffness: number; damping: number; mass: numb
 // Blur is drawn by the system from Android 12; below it the dissolve is a plain fade.
 export const BLURS = blursBehind(Platform.OS, Platform.Version);
 
-// A tab screen's focus, from TabScene (the tabs' layout) to the screens inside it: the clouds drift
-// only while their screen is on top, and a tab's parts arrive again each time it is opened. Outside
-// the tabs a screen counts as focused and arrives once.
-export type TabFocus = { focused: boolean; opened: number };
-export const TabFocusContext = createContext<TabFocus>({ focused: true, opened: 0 });
-export function useTabFocus(): TabFocus {
-  return useContext(TabFocusContext);
+// A tab's openings, from TabScene (the tabs' layout) to the screens inside it: a tab's parts arrive
+// again each time it is opened (lib/tabOpenings.ts). One object for the tab's life, so an opening
+// renders nothing under it. Outside the tabs there is none and a screen arrives once.
+export const TabOpeningsContext = createContext<TabOpenings | null>(null);
+export function useTabOpenings(): TabOpenings | null {
+  return useContext(TabOpeningsContext);
 }
