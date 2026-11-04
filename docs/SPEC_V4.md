@@ -1431,7 +1431,7 @@ Akış: Üniversite → Yerleşke → Konum doğrulama → Sosyal alan.
 - **Konum:** yalnızca check-in'de, seçilen yerleşkenin sınırına karşı, 50 m toleransla (kural 6, değişmedi). Üniversite seçimi konum istemez.
 - **Sosyal alan:** check-in, lobi, masa, mekan sohbeti, davet ve oyun yetkileri `venue_id`'ye bağlı kalır. Bitişik iki yerleşkenin toleransı çakışırsa kişi ikisinden birine girebilir ama yalnızca seçtiği yerleşkenin lobisini, sohbetini ve masalarını görür; bir yerleşkede durmak başka yerleşkeyi açmaz (`supabase/tests/universities.test.ts`). Aynı sosyal çevreyi paylaşan yakın binalar ayrı yerleşke yapılmaz, tek yerleşkenin noktaları olur. Üniversite geneli sohbet ya da lobi yoktur; istenirse check-in yetkisinden ayrı tasarlanır ve kimin hangi yerleşkede olduğunu açmaz.
 - **Kilit:** `universities` hiçbir kullanıcı yolunda kilitlenmez (yalnızca seed yazar); kural 10'daki sıraya girmez.
-- **İstanbul Gelişim Üniversitesi:** üniversite kaydı eklendi; yerleşkelerinin sınırı ve noktası henüz doğrulanmadığı için hiçbir yerleşkesi yoktur ve Keşfet'te görünmez. Aday liste ve eksikler `docs/yerleske/igu-dogrulama.md`'de.
+- **İstanbul Gelişim Üniversitesi:** tek yerleşkesi Gelişim Tower (`igu-tower`, Avcılar; sınırı proje sahibinin elle çizdiği alan, 4 Kasım). Resmî yerleşke adı olmadığı için adı üniversitenin adıdır; tek yerleşkeli olduğu için Keşfet'te doğrudan yerleşke satırıdır. Diğer adaylar `docs/yerleske/igu-dogrulama.md`'de.
 
 ## 4.R Sohbet balonu renkleri (proje sahibinin kararı, 4 Kasım; K-83)
 
