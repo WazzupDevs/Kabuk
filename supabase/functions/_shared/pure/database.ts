@@ -891,6 +891,7 @@ export type Database = {
           reported_user_id: string | null;
           reporter_id: string | null;
           room_id: string | null;
+          room_message_id: string | null;
           status: string;
           target_type: string;
           venue_chat_message_id: string | null;
@@ -908,6 +909,7 @@ export type Database = {
           reported_user_id?: string | null;
           reporter_id?: string | null;
           room_id?: string | null;
+          room_message_id?: string | null;
           status?: string;
           target_type?: string;
           venue_chat_message_id?: string | null;
@@ -925,6 +927,7 @@ export type Database = {
           reported_user_id?: string | null;
           reporter_id?: string | null;
           room_id?: string | null;
+          room_message_id?: string | null;
           status?: string;
           target_type?: string;
           venue_chat_message_id?: string | null;
@@ -935,6 +938,13 @@ export type Database = {
             columns: ['room_id'];
             isOneToOne: false;
             referencedRelation: 'rooms';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'reports_room_message_id_fkey';
+            columns: ['room_message_id'];
+            isOneToOne: false;
+            referencedRelation: 'messages';
             referencedColumns: ['id'];
           },
           {
@@ -1839,6 +1849,10 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      chat_delete: {
+        Args: { target_message_id: string; target_user_id: string };
+        Returns: string;
       };
       chat_react: {
         Args: {
@@ -2906,6 +2920,10 @@ export type Database = {
           target_public_id: string;
           target_user_id: string;
         };
+        Returns: boolean;
+      };
+      safety_report_room_message: {
+        Args: { new_reason: string; target_message_id: string; target_user_id: string };
         Returns: boolean;
       };
       safety_report_venue_chat: {

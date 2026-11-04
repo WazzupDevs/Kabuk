@@ -58,6 +58,12 @@ const Report = z.discriminatedUnion('target', [
     requestId: z.uuid(),
     reason,
   }),
+  z.object({
+    action: z.literal('report'),
+    target: z.literal('room_message'),
+    messageId: z.uuid(),
+    reason,
+  }),
 ]);
 
 const Body: z.ZodType<SafetyRequest> = z.union([
@@ -151,6 +157,14 @@ Deno.serve(
         await reportVenueChat(user.id, body.messageId, body.reason);
       } else if (body.target === 'friend_request') {
         await reportFriendRequest(user.id, body.requestId, body.reason);
+      } else if (body.target === 'room_message') {
+        // docs/SPEC_V4.md §4.T: the same answer whether anything was written.
+        const { error } = await db.rpc('safety_report_room_message', {
+          target_user_id: user.id,
+          target_message_id: body.messageId,
+          new_reason: body.reason,
+        });
+        if (error) throw dbError('safety_report_room_message', error);
       } else if (body.target === 'dm') {
         const { error } = await db.rpc('safety_report_dm', {
           target_user_id: user.id,

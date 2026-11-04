@@ -6,9 +6,13 @@ export type ChatRequest =
   // replyTo: a message of the same room the sender can read (docs/SPEC_V3.md §21.1).
   | { action: 'send'; roomId: string; body: string; replyTo?: string }
   // The caller's table's one reaction on a message; null takes it back (§21.2).
-  | { action: 'react'; messageId: string; emoji: Reaction | null };
+  | { action: 'react'; messageId: string; emoji: Reaction | null }
+  // The sender's own message, while it is at the table (docs/SPEC_V4.md §4.T): `not_found` for
+  // any other.
+  | { action: 'delete'; messageId: string };
 export type ChatResponse = { messageId: string };
 export type ReactResponse = { ok: true };
+export type ChatDeleteResponse = { ok: true };
 
 export type SafetyRequest =
   // A table (docs/SPEC_V4.md §4.E): the person named by its table session id, at the table now or
@@ -34,6 +38,9 @@ export type SafetyRequest =
   // request that came from the chat. Nothing is written for a message the caller cannot see.
   | { action: 'report'; target: 'venue_chat'; messageId: string; reason: ReportReason }
   | { action: 'report'; target: 'friend_request'; requestId: string; reason: ReportReason }
+  // A message of the table chat (docs/SPEC_V4.md §4.T): its id and its copy. Nothing is written for
+  // a message the caller cannot read at the table now or for its own, and the answer is the same.
+  | { action: 'report'; target: 'room_message'; messageId: string; reason: ReportReason }
   // At a table (docs/SPEC_V4.md §4.E, K-13): a person there by its table session id
   // (`nothing_to_block` without one). The owner's block takes that person out; anyone else's block
   // takes the blocker out.
