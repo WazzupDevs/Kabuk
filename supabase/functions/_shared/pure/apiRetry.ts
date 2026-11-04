@@ -7,7 +7,7 @@ import type { AccountRequest } from './api/account.ts';
 import type { ChatRequest } from './api/chat.ts';
 import type { CheckinRequest } from './api/checkin.ts';
 import type { DmRequest, FriendsRequest } from './api/friends.ts';
-import type { VampirRequest } from './api/games.ts';
+import type { TabuRequest, VampirRequest } from './api/games.ts';
 import type { ProfileRequest } from './api/profile.ts';
 import type { VenueChatRequest } from './api/venueChat.ts';
 
@@ -21,7 +21,8 @@ type CallName =
   | `dm/${DmRequest['action']}`
   | `venue-chat/${VenueChatRequest['action']}`
   | `account/${AccountRequest['action']}`
-  | `vampir/${VampirRequest['action']}`;
+  | `vampir/${VampirRequest['action']}`
+  | `tabu/${TabuRequest['action']}`;
 
 export const IDEMPOTENT_CALLS = [
   // updateGate.test "update gate, open": "answers the launch and foreground ping without a user"
@@ -65,6 +66,12 @@ export const IDEMPOTENT_CALLS = [
   // vampir.test "the clock (§4.F, IDEMPOTENT_CALLS)": "changes nothing with an early advance, and
   // the same with one sent twice"
   'vampir/view',
+  // tabu.test "the turns (§4.F)": "moves through Tur sonu by the owner or the clock, and changes
+  // nothing with an early advance"
+  'tabu/advance',
+  // tabu.test "the card (rule 3)": "goes to the describer, the other team and the watchers, never
+  // to the describer’s team"
+  'tabu/turn-cards',
 ] as const satisfies readonly CallName[];
 
 export const RETRY_DELAY_MS = 500;

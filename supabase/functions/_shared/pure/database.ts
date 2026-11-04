@@ -3292,7 +3292,7 @@ export type Database = {
           votes: number;
         }[];
       };
-      tabu_begin_turn: {
+      tabu_advance: {
         Args: { target_room_id: string; target_user_id: string };
         Returns: {
           closed_at: string | null;
@@ -3322,8 +3322,12 @@ export type Database = {
           isSetofReturn: false;
         };
       };
-      tabu_end_turn: {
-        Args: { target_room_id: string; target_user_id: string };
+      tabu_begin_turn: {
+        Args: {
+          at_step: number;
+          target_room_id: string;
+          target_user_id: string;
+        };
         Returns: {
           closed_at: string | null;
           concept: string | null;
@@ -3365,12 +3369,76 @@ export type Database = {
       };
       tabu_mark: {
         Args: {
+          at_step: number;
           index: number;
           result: string;
           target_room_id: string;
           target_user_id: string;
-          turn_number: number;
         };
+        Returns: {
+          closed_at: string | null;
+          concept: string | null;
+          created_at: string;
+          game_started_at: string | null;
+          game_state: Json;
+          game_tag: string | null;
+          icon: string | null;
+          id: string;
+          intent: string | null;
+          last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
+          owner_session_id: string;
+          phones: number;
+          spot_id: string | null;
+          status: string;
+          venue_id: string;
+          visibility: string;
+          waiting_since: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'rooms';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      tabu_next: {
+        Args: {
+          at_step: number;
+          target_room_id: string;
+          target_user_id: string;
+        };
+        Returns: {
+          closed_at: string | null;
+          concept: string | null;
+          created_at: string;
+          game_started_at: string | null;
+          game_state: Json;
+          game_tag: string | null;
+          icon: string | null;
+          id: string;
+          intent: string | null;
+          last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
+          owner_session_id: string;
+          phones: number;
+          spot_id: string | null;
+          status: string;
+          venue_id: string;
+          visibility: string;
+          waiting_since: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'rooms';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      tabu_start: {
+        Args: { target_room_id: string; target_user_id: string };
         Returns: {
           closed_at: string | null;
           concept: string | null;
