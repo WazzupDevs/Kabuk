@@ -11,19 +11,22 @@
 // - Android's GWP-ASan is off for this app (withGwpAsanOff below).
 // - Android draws the app at the screen's highest refresh rate (withHighRefreshRate below).
 // - Android draws no shade of its own behind the navigation buttons (withClearNavigationBar).
+// - Android's status bar icon follows the push's kind (withNotificationIcons).
 // This file imports no other .ts file: Node before 22.18 cannot load one (the Expo CLI and the EAS
 // build server read this config with plain Node). The app name therefore lives in app.json;
 // scripts/app-name.test.ts keeps it equal to APP_NAME (supabase/functions/_shared/pure/brand.ts).
 // For the same reason the one config plugin of our own is written here, not in a file of its own.
-import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { copyFileSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 import {
   AndroidConfig,
   type ConfigPlugin,
+  withAndroidColorsNight,
   withAndroidManifest,
   withAndroidStyles,
+  withDangerousMod,
   withMainActivity,
 } from 'expo/config-plugins';
 
@@ -97,28 +100,69 @@ export const withClearNavigationBar: ConfigPlugin = (config) =>
     return mod;
   });
 
+// The status bar icon per push kind (Aura BildirimSimgeleri, 3 Kasım). `pnpm icons` draws
+// assets/notification/drawable-<density>/ic_bildirim_<kind>.png; they go into res/drawable-<density>
+// as they are, and the patched expo-notifications (patches/expo-notifications@57.0.21.patch) picks
+// one by the push's `kind` through getIdentifier. Nothing names them in code, so the release's
+// resource shrinking is told to keep them (res/raw/skall_keep.xml). The icon's colour is --primary
+// in the light scheme (app.json → expo-notifications `color`) and --accent in the dark one.
+const NOTIFICATION_ICON_DARK = '#3DDC84';
+export const withNotificationIcons: ConfigPlugin = (config) =>
+  withAndroidColorsNight(
+    withDangerousMod(config, [
+      'android',
+      (mod) => {
+        const from = resolve(mod.modRequest.projectRoot, 'assets/notification');
+        const res = join(mod.modRequest.platformProjectRoot, 'app/src/main/res');
+        for (const dir of readdirSync(from)) {
+          mkdirSync(join(res, dir), { recursive: true });
+          for (const file of readdirSync(join(from, dir))) {
+            copyFileSync(join(from, dir, file), join(res, dir, file));
+          }
+        }
+        mkdirSync(join(res, 'raw'), { recursive: true });
+        writeFileSync(
+          join(res, 'raw', 'skall_keep.xml'),
+          '<?xml version="1.0" encoding="utf-8"?>\n' +
+            '<resources xmlns:tools="http://schemas.android.com/tools" ' +
+            'tools:keep="@drawable/ic_bildirim_*" />\n',
+        );
+        return mod;
+      },
+    ]),
+    (mod) => {
+      mod.modResults = AndroidConfig.Colors.assignColorValue(mod.modResults, {
+        name: 'notification_icon_color',
+        value: NOTIFICATION_ICON_DARK,
+      });
+      return mod;
+    },
+  );
+
 export default ({ config }: ConfigContext): ExpoConfig => {
   const googleServicesFile = process.env.GOOGLE_SERVICES_JSON ?? './google-services.json';
   const hasGoogleServices = existsSync(resolve(__dirname, googleServicesFile));
   if (!config.name) throw new Error('app.json: expo.name is missing');
 
-  return withClearNavigationBar(
-    withHighRefreshRate(
-      withGwpAsanOff({
-        ...config,
-        name: config.name,
-        slug: config.slug ?? 'masa',
-        android: {
-          ...config.android,
-          ...(hasGoogleServices ? { googleServicesFile } : {}),
-        },
-        extra: {
-          ...config.extra,
-          eas: { projectId: EAS_PROJECT_ID },
-        },
-        runtimeVersion: { policy: 'appVersion' },
-        updates: { url: `https://u.expo.dev/${EAS_PROJECT_ID}`, enabled: true },
-      }),
+  return withNotificationIcons(
+    withClearNavigationBar(
+      withHighRefreshRate(
+        withGwpAsanOff({
+          ...config,
+          name: config.name,
+          slug: config.slug ?? 'masa',
+          android: {
+            ...config.android,
+            ...(hasGoogleServices ? { googleServicesFile } : {}),
+          },
+          extra: {
+            ...config.extra,
+            eas: { projectId: EAS_PROJECT_ID },
+          },
+          runtimeVersion: { policy: 'appVersion' },
+          updates: { url: `https://u.expo.dev/${EAS_PROJECT_ID}`, enabled: true },
+        }),
+      ),
     ),
   );
 };

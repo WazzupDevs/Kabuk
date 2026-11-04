@@ -14,7 +14,9 @@ export async function sendPush(token: string | null, message: PushMessage): Prom
       title: message.title,
       body: message.body,
       sound: 'default',
-      ...(message.target ? { data: { target: message.target } } : {}),
+      // Android: Expo sends a data message, the app's expo-notifications draws it and reads `kind`
+      // for its icon (pure/push.ts → PushMessage).
+      data: { kind: message.kind, ...(message.target ? { target: message.target } : {}) },
     }),
     signal: AbortSignal.timeout(5000),
   });
