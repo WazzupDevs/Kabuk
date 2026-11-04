@@ -14,7 +14,6 @@ import {
 import Svg, { Path } from 'react-native-svg';
 
 import { useKit } from '@/aura/kit';
-import { gradientStyle } from '@/theme/gradient';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 
 import { tr } from '@/i18n/tr';
@@ -160,39 +159,25 @@ export function ChatBubble({
   // Telegram Android's bubble (the owner's call, 30 Ekim): 18 round; on the author's side (left
   // for others, right for the viewer's own) the corners inside a run are tight, and the run's last
   // bubble has a tail at its foot.
-  const { scheme, c } = useKit();
+  const { scheme } = useKit();
   const kind = useChatKind();
   const metaRef = useChatMetaRef();
-  // Aura v65 (bileşenler → Sohbet): the viewer's own bubble in the primary everywhere, white words.
-  // Another's: glass in the venue chat (Grup 3, P4: the name in a chip over it), the DM blue in the
-  // DM, raised (#121614 in the dark) in the table chat, with the scheme's ink.
+  // The owner's call (29 Ekim, again on 4 Kasım): the viewer's own bubble white (a soft off-white
+  // in the dark) with ink words, in every chat; another's solid in the chat's colour with white
+  // words, the same shape and tail as the own (never glass): the DM blue, the venue chat green, the
+  // table chat pink. Aura v65's primary own bubble and glass others are left.
   const venue = kind === 'mekan';
-  const glassy = venue && !mine;
-  const solid = KIT.bubble[scheme];
-  const paint = venue
-    ? {
-        ...solid,
-        mine: KIT.primary,
-        mineInk: KIT.venueBubble.mineInk,
-        mineMuted: KIT.venueBubble.mineMuted,
-        mineEdge: 'transparent',
-        mineShadow: KIT.venueBubble.mineShadow,
-        themInk: c.ink,
-        themMuted: c.muted,
-      }
-    : kind === 'masa'
-      ? { ...solid, themInk: c.ink, themMuted: c.muted }
-      : solid;
-  // The words on a coloured bubble are white: the own one, and another's in the DM.
-  const onColour = mine || kind === 'dm';
+  const paint = KIT.bubble[scheme];
+  // The words on a coloured bubble are white: another's.
+  const onColour = !mine;
   const shadowOff = useLabOff('golge');
   const fg = mine ? paint.mineInk : paint.themInk;
   const inside = !mine && nameInk !== undefined;
   const R = KIT.size.bubbleRadius;
   const near = KIT.size.bubbleInner;
   const sideTop = first ? R : near;
-  // Glass has no tail (Aura v46: the corner towards the author 8 at the foot).
-  const sideFoot = last && !glassy ? 0 : near;
+  // The run's last bubble has its tail at the foot (Telegram Android), the others' too.
+  const sideFoot = last ? 0 : near;
   // [top left, top right, bottom right, bottom left]
   const radii = (mine ? [R, sideTop, sideFoot, R] : [sideTop, R, R, sideFoot]) as readonly [
     number,
@@ -205,7 +190,7 @@ export function ChatBubble({
   // Before `bubble` below: it draws the face (which reads the shadow) as it is built.
   const bubbleShadow = shadowParts(
     shadowOff,
-    big ? undefined : mine ? paint.mineShadow : glassy ? c.glassShadow : KIT.chatShadow[kind],
+    big ? undefined : mine ? paint.mineShadow : KIT.chatShadow[kind],
     undefined,
     radii,
     true,
@@ -298,14 +283,7 @@ export function ChatBubble({
                   borderColor: paint.mineEdge,
                   boxShadow: bubbleShadow.boxShadow,
                 }
-              : glassy
-                ? {
-                    ...gradientStyle(c.glass),
-                    borderWidth: KIT.size.edge,
-                    borderColor: c.glassEdge,
-                    boxShadow: bubbleShadow.boxShadow,
-                  }
-                : { backgroundColor: fill, boxShadow: bubbleShadow.boxShadow },
+              : { backgroundColor: fill, boxShadow: bubbleShadow.boxShadow },
           big
             ? {
                 opacity: state === 'sending' ? 0.6 : 1,
@@ -324,7 +302,7 @@ export function ChatBubble({
       >
         {/* Held, the bubble keeps its own shadow and tail: no ring (ui 1.1). */}
         {big ? null : bubbleShadow.node}
-        {last && !big && !glassy ? (
+        {last && !big ? (
           <BubbleTail side={mine ? 'right' : 'left'} color={fill} edge={mine ? KIT.size.edge : 0} />
         ) : null}
         {/* Masa sohbeti: the writer's name inside the bubble, on its first line, level with the

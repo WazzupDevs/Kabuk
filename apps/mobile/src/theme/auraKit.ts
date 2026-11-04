@@ -301,25 +301,24 @@ export const KIT = {
   // glass (its colours from the scheme: glass, glassEdge, ink, muted), the name over it in a soft
   // chip (white 56 %, the dark ground 64 % in the dark). docs/decisions/grup3-mekan-balonlari.md.
   venueBubble: {
-    mineInk: '#FFFFFF',
-    mineMuted: 'rgba(255, 255, 255, 0.90)',
-    mineShadow: '0px 10px 22px rgba(14, 135, 69, 0.24)',
     nameChip: { light: 'rgba(255, 255, 255, 0.56)', dark: 'rgba(0, 0, 0, 0.64)' },
   },
   // Message bubbles, never see-through (the owner's call, 29 Ekim): the person's own white (a soft
   // off-white in the dark) with ink words; the others' in the chat's colour, white words: the DM
-  // blue, the venue chat green, the table chat purple (deeper in the dark). The venue chat draws
-  // its own since Grup 3 (venueBubble).
+  // blue, the venue chat green, the table chat pink (deeper in the dark). The venue chat draws
+  // the same since 4 Kasım (the owner's call: the own white, the others' solid like it, not glass).
   bubble: {
     light: {
-      mine: '#0E8745',
-      mineInk: '#FFFFFF',
-      mineMuted: 'rgba(255, 255, 255, 0.90)',
-      mineEdge: 'rgba(255, 255, 255, 0)',
-      mineShadow: '0px 4px 12px rgba(14, 135, 69, 0.22)',
+      mine: '#FFFFFF',
+      mineInk: '#031B0B',
+      mineMuted: '#4A6550',
+      mineEdge: 'rgba(3, 27, 11, 0.06)',
+      mineShadow: '0px 4px 12px rgba(3, 27, 11, 0.10)',
       dm: '#2F7CF6',
-      mekan: '#1E9A5C',
-      masa: '#FFFFFF',
+      // Darker than the venue chat's old glass-era green so its white words read at 4.5:1.
+      mekan: '#17834D',
+      // Pink, not the old purple (Aura v65 has no violet in the interface), until K-83's palette.
+      masa: '#C2185B',
       themInk: '#FFFFFF',
       themMuted: 'rgba(255, 255, 255, 0.80)',
       // A big emoji's time, on the wallpaper (Telegram Android's dark pill).
@@ -327,14 +326,14 @@ export const KIT = {
       stampInk: '#FFFFFF',
     },
     dark: {
-      mine: '#0E8745',
-      mineInk: '#FFFFFF',
-      mineMuted: 'rgba(255, 255, 255, 0.90)',
+      mine: '#E6EEE9',
+      mineInk: '#031B0B',
+      mineMuted: '#4A6550',
       mineEdge: 'rgba(255, 255, 255, 0)',
-      mineShadow: '',
+      mineShadow: '0px 4px 12px rgba(0, 0, 0, 0.30)',
       dm: '#1E56B8',
       mekan: '#146B42',
-      masa: '#121614',
+      masa: '#8E1446',
       themInk: '#FFFFFF',
       themMuted: 'rgba(255, 255, 255, 0.74)',
       stamp: 'rgba(0, 0, 0, 0.40)',
@@ -345,7 +344,7 @@ export const KIT = {
   chatShadow: {
     dm: '0px 4px 12px rgba(47, 124, 246, 0.22)',
     mekan: '0px 4px 12px rgba(30, 154, 92, 0.22)',
-    masa: '0px 2px 8px rgba(3, 27, 11, 0.08)',
+    masa: '0px 4px 12px rgba(194, 24, 91, 0.22)',
   },
   // A photo opened large over the screen (Profil, a person's profile).
   // Profil fotoğrafı: the dark ground, the white card the photo lies on (22 from the sides, 30
@@ -391,7 +390,8 @@ export const KIT = {
     green: { bg: 'rgba(61, 220, 132, 0.16)', fg: '#93EBB9' },
   },
   // A read message's double tick (Mesajlar, Dm).
-  readTick: '#FFD48A',
+  // On the viewer's own white bubble (a soft off-white in the dark): the light read blue in both.
+  readTick: '#2C63D6',
   // The switch's knob (Masa kur).
   switchKnobShadow: '0px 2px 8px rgba(3, 27, 11, 0.08)',
   // A game card's corner tag: dark glass over its picture (Masa), and its shadow.
