@@ -41,7 +41,7 @@
 
 - Notlar `docs/ui-hatalar-2026-11-03.md` (#416). Paket 1 #417 birleşti: zemin dibe kadar (`AuraBackground`, `useGroundSize`; kök: dolgulu kökte `height: '100%'`), riso resimlerin kenar şeridi kırpıldı (2.1, 4.1). Native yok, OTA; telefonda kabul bekliyor.
 - Paket 2 #419 (1.1, 1.2) ve paket 3 (5.1 Check-in ve Masa kur riso kankiler, 6.1 yasal metin kankisi kırpılır) birleşti; OTA, telefonda kabul bekliyor.
-- Paket 4 (3.1 arama ipucu, 3.2 liste/harita yuvarlakları, 7.1 simge halkası, 8.1 kapsül kutusu kalktı + yerel tuval) birleşti; OTA. Canlı tuvalin Kapsul panosuna 8.1 işlenmedi.
+- Paket 4 (3.1 arama ipucu, 3.2 liste/harita yuvarlakları, 7.1 simge halkası, 8.1 kapsül kutusu kalktı + yerel tuval) birleşti; OTA. Canlı tuvalin Kapsul ve KapsulKoyu panolarına 8.1 işlendi (4 Kasım).
 - 6.3: adres yokken "Gizlilik politikası" ayrı taslak metni açar (`legal/privacy`; pilottan önce hukuki kontrol). Açık: 6.2 boş durum başlığı, proje sahibi tuvale çizecek; çizilince aktarılır.
 - Ders: yerel cam (`LiquidGlassView`) zemin hedefini yalnızca kardeşler arasında arar; `GlassTarget`'ı bir görünümle sarmalama.
 
