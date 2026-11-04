@@ -1,5 +1,13 @@
 # İlerleme
 
+## Devir notu (4 Kasım 2026, sohbetler ve bildirim simgeleri)
+
+- Birleşenler: #419–#422 (3 Kasım UI paketleri 2–4, 6.3), #424 K-83 balon renkleri spec'i (§4.R), #426 (kendi balon beyaz, başkalarınınki düz renkli ve kuyruklu; `MessagePop` çubuk/menü ölçümden sonra açılır; masa sohbeti okunmamıştan açılır; grup sohbetlerinde gönderilirken saat ikonu). Native yok, OTA; cihazda doğrulanmadı.
+- Sıradaki 1, bildirim simgeleri (pano `BildirimSimgeleri`, 3 Kas; native, yeni build): panodaki SVG'ler → `sharp` ile 5 yoğunluk beyaz alfa PNG; config plugin ile `res/drawable-*`; `expo-notifications` yaması (`ExpoNotificationBuilder.icon` push verisindeki tür anahtarından `getIdentifier`); `_shared/pure/push.ts` tür başına anahtar (`guvenlik`); renk `#7B5CFF` → `--primary` (panonun önerisi).
+- Sıradaki 2 (onaylı): eski mesajları yükleme (istemci: mekan `page` `before` alıyor, masa RLS okuması `limit(100)`); 3: masa sohbetinde Bildir ve kendi mesajını Sil (sunucu, `guvenlik`, spec).
+- DM'de eski mesaja uzun basınca sona atlama (katman açılırken; proje sahibi): `MessagePop` artık listenin satırında değil, `ChatScreen` kökünde (`popHost.tsx`); cihazda doğrulanmadı.
+- Proje sahibine sorulan: açık temada DM mavisi 3,9:1 koyulaşsın mı; 6.2 tuvale çizilecek; K-83 paleti tuvale.
+
 ## Devir notu (3 Kasım 2026, arayüz hataları paketleri)
 
 - Notlar `docs/ui-hatalar-2026-11-03.md` (#416). Paket 1 #417 birleşti: zemin dibe kadar (`AuraBackground`, `useGroundSize`; kök: dolgulu kökte `height: '100%'`), riso resimlerin kenar şeridi kırpıldı (2.1, 4.1). Native yok, OTA; telefonda kabul bekliyor.

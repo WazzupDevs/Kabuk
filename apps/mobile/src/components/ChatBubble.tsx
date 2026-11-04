@@ -33,6 +33,7 @@ import { Text } from './Text';
 import { AppIcon } from './AppIcon';
 import { useChatKind } from './chatKind';
 import { useChatMetaRef } from './chatMeta';
+import { usePopHost } from './popHost';
 
 // color: the quoted sender's name colour in the venue chat (v45: --qc); otherwise the second accent.
 export type ChatQuote = { name: string; text: string; color?: string };
@@ -150,10 +151,14 @@ export function ChatBubble({
   const faceRef = useRef<View>(null);
   const [pop, setPop] = useState<PopAnchor | null>(null);
   const holdable = !!onReact || actions.length > 0 || text.length > 0;
+  const host = usePopHost();
   const lift = () => {
     faceRef.current?.measureInWindow((x, y, width, height) => {
       haptic('grabbed');
-      setPop({ x, y, width, height });
+      const at = { x, y, width, height };
+      // On the chat screen's root (popHost.tsx): the stream's cells stay as they are.
+      if (host) host.show((close) => popLayer(at, close));
+      else setPop(at);
     });
   };
   // Telegram Android's bubble (the owner's call, 30 Ekim): 18 round; on the author's side (left
@@ -419,34 +424,37 @@ export function ChatBubble({
         />
       </View>
     ) : null;
-  const bar = pop ? (
-    <MessagePop
-      at={pop}
-      mine={mine}
-      current={reactions?.find((r) => r.mine)?.emoji ?? null}
-      onClose={() => setPop(null)}
-      onReact={onReact}
-      actions={[
-        ...(onReply
-          ? [{ label: tr.chat.reply, icon: 'arrow-undo' as const, onPress: onReply }]
-          : []),
-        // The message's text to the clipboard (0.7.0; Android 13 and later says so itself).
-        ...(text
-          ? [
-              {
-                label: tr.chat.copy,
-                icon: 'copy-outline' as const,
-                testID: 'message-copy',
-                onPress: () => void Clipboard.setStringAsync(text),
-              },
-            ]
-          : []),
-        ...actions,
-      ]}
-    >
-      {face(true)}
-    </MessagePop>
-  ) : null;
+  function popLayer(at: PopAnchor, close: () => void) {
+    return (
+      <MessagePop
+        at={at}
+        mine={mine}
+        current={reactions?.find((r) => r.mine)?.emoji ?? null}
+        onClose={close}
+        onReact={onReact}
+        actions={[
+          ...(onReply
+            ? [{ label: tr.chat.reply, icon: 'arrow-undo' as const, onPress: onReply }]
+            : []),
+          // The message's text to the clipboard (0.7.0; Android 13 and later says so itself).
+          ...(text
+            ? [
+                {
+                  label: tr.chat.copy,
+                  icon: 'copy-outline' as const,
+                  testID: 'message-copy',
+                  onPress: () => void Clipboard.setStringAsync(text),
+                },
+              ]
+            : []),
+          ...actions,
+        ]}
+      >
+        {face(true)}
+      </MessagePop>
+    );
+  }
+  const bar = pop ? popLayer(pop, () => setPop(null)) : null;
 
   if (mine) {
     return (
