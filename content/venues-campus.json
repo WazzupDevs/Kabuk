@@ -1,5 +1,5 @@
 {
-  "note": "Sakarya Üniversitesi Esentepe Kampüsü (S1). boundary: GeoJSON dış halkası, [boylam, enlem], kapalı, saat yönünün tersine; 13 köşe, yaklaşık 106 hektar. location: haritadaki nokta, { lat, lng }, sınırın içinde. Kampüs şimdilik noktasız açılır: örnek noktalar kapalı (isActive false; ref'ler kalıcıdır, nokta silinmez). Gerçek nokta adları gelince yeni ref'lerle eklenir. Üniversite ve yerleşke (docs/SPEC_V4.md §4.Q): `universities` üst kurumlardır (ref kalıcı, check-in yapılmaz); her yerleşke kendi venue'sudur ve `university` ile üniversitesinin ref'ini gösterir. Sınırı ve noktası doğrulanmamış yerleşke bu dosyaya girmez (docs/yerleske/igu-dogrulama.md).",
+  "note": "Sakarya Üniversitesi Esentepe Kampüsü (S1). boundary: GeoJSON dış halkası, [boylam, enlem], kapalı, saat yönünün tersine; 13 köşe, yaklaşık 106 hektar. location: haritadaki nokta, { lat, lng }, sınırın içinde. Kampüs şimdilik noktasız açılır: örnek noktalar kapalı (isActive false; ref'ler kalıcıdır, nokta silinmez). Gerçek nokta adları gelince yeni ref'lerle eklenir. Üniversite ve yerleşke (docs/SPEC_V4.md §4.Q): `universities` üst kurumlardır (ref kalıcı, check-in yapılmaz); her yerleşke kendi venue'sudur ve `university` ile üniversitesinin ref'ini gösterir. Sınırı ve noktası doğrulanmamış yerleşke bu dosyaya girmez (docs/yerleske/igu-dogrulama.md). igu-tower: proje sahibinin elle çizdiği Gelişim Tower alanı (4 Kasım; 9 köşe, yaklaşık 2,8 hektar); resmî yerleşke adı olmadığı için adı üniversitenin adıdır.",
   "universities": [
     {
       "ref": "sakarya-universitesi",
@@ -60,6 +60,32 @@
           "isActive": false
         }
       ]
+    },
+    {
+      "ref": "igu-tower",
+      "name": "İstanbul Gelişim Üniversitesi",
+      "kind": "campus",
+      "city": "İstanbul",
+      "district": "Avcılar",
+      "isActive": true,
+      "university": "istanbul-gelisim-universitesi",
+      "location": {
+        "lat": 40.993769,
+        "lng": 28.699918
+      },
+      "boundary": [
+        [28.698849, 40.9925367],
+        [28.6992263, 40.9923469],
+        [28.7002265, 40.9932615],
+        [28.7004266, 40.9934297],
+        [28.7005981, 40.9935635],
+        [28.7008381, 40.9937619],
+        [28.7013297, 40.9941545],
+        [28.6998436, 40.9950001],
+        [28.6996264, 40.9949397],
+        [28.698849, 40.9925367]
+      ],
+      "spots": []
     }
   ]
 }

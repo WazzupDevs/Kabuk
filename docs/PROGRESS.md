@@ -1,5 +1,9 @@
 # İlerleme
 
+## Devir notu (4 Kasım 2026, İGÜ Gelişim Tower)
+
+- `content/venues-campus.json` → `igu-tower` ("İstanbul Gelişim Üniversitesi", Avcılar): proje sahibinin çizdiği sınır, etkin. Dev'e birleşmeyle gider; içeriden ve 60 m dışından check-in denenmeli. Üretime seed proje sahibinin elinde.
+
 ## Devir notu (4 Kasım 2026, bildirim simgeleri, eski mesajlar, masa sohbetinde Bildir/Sil)
 
 - Birleşenler: #428 bildirim çubuğu simgeleri (tür başına `kind`, yamalı `expo-notifications`, renk `--primary`/`--accent`; **native, version 0.9.6, yeni build gerekir**; önce sunucu, §4.S), #429 masa ve mekan sohbetinde eski mesajlar sayfa sayfa (OTA), #430 masa sohbetinde Bildir ve kendi mesajını Sil (migration `20261124090000`, `chat`/`safety`; önce sunucu sonra OTA; `guvenlik` denetledi, §4.T).

@@ -195,9 +195,10 @@ describe('content/venues-campus.json universities', () => {
     expect(sau?.isActive).toBe(true);
   });
 
-  it('lists İstanbul Gelişim Üniversitesi, with no campus until one is verified', () => {
-    // docs/yerleske/igu-dogrulama.md: no boundary or point has been verified yet, so no campus of
-    // it is a check-in place. A campus comes with a verified boundary, never a guessed one.
+  it('lists İstanbul Gelişim Üniversitesi with its one campus, Gelişim Tower', () => {
+    // docs/yerleske/igu-dogrulama.md: the boundary the project owner drew by hand (4 Kasım). With
+    // a single campus Keşfet shows it as an ordinary row; no official campus name, so it carries
+    // the university's.
     const parsed = parseCampusFile(json);
     expect(parsed.universities.find((u) => u.ref === 'istanbul-gelisim-universitesi')).toEqual({
       ref: 'istanbul-gelisim-universitesi',
@@ -205,8 +206,11 @@ describe('content/venues-campus.json universities', () => {
       city: 'İstanbul',
       isActive: true,
     });
-    expect(parsed.venues.filter((v) => v.university === 'istanbul-gelisim-universitesi')).toEqual(
-      [],
-    );
+    const campuses = parsed.venues.filter((v) => v.university === 'istanbul-gelisim-universitesi');
+    expect(campuses.map((v) => [v.ref, v.name, v.district, v.isActive])).toEqual([
+      ['igu-tower', 'İstanbul Gelişim Üniversitesi', 'Avcılar', true],
+    ]);
+    expect(campuses[0]?.boundary).toHaveLength(10);
+    expect(campuses[0]?.location).toEqual({ lat: 40.993769, lng: 28.699918 });
   });
 });

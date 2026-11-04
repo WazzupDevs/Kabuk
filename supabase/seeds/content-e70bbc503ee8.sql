@@ -222,6 +222,15 @@ where v.source = 'campus' and v.source_ref = 'sau-esentepe'
 on conflict (venue_id, ref) do update set
   name = excluded.name, sort = excluded.sort, is_active = excluded.is_active;
 
+insert into public.venues (name, city, district, location, boundary, source, source_ref, kind, category, is_active, university_id) values
+  ('İstanbul Gelişim Üniversitesi', 'İstanbul', 'Avcılar', extensions.st_setsrid(extensions.st_makepoint(28.699918, 40.993769), 4326)::extensions.geography, extensions.st_geomfromtext('POLYGON((28.698849 40.9925367, 28.6992263 40.9923469, 28.7002265 40.9932615, 28.7004266 40.9934297, 28.7005981 40.9935635, 28.7008381 40.9937619, 28.7013297 40.9941545, 28.6998436 40.9950001, 28.6996264 40.9949397, 28.698849 40.9925367))', 4326)::extensions.geography, 'campus', 'igu-tower', 'campus', null, true, (select id from public.universities where ref = 'istanbul-gelisim-universitesi'))
+on conflict (source, source_ref) do update set
+  name = excluded.name, city = excluded.city, district = excluded.district,
+  location = excluded.location, boundary = excluded.boundary, kind = excluded.kind,
+  category = excluded.category, is_active = excluded.is_active,
+  university_id = excluded.university_id;
+-- igu-tower: no spots
+
 -- content/profanity-tr.json
 delete from public.profanity_terms;
 insert into public.profanity_terms (term, whole_word) values
