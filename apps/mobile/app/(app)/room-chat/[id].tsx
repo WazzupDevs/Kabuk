@@ -32,7 +32,7 @@ export default function RoomChatScreen() {
   const chat = useRoomChat(id);
   const mark = useRoomChatSeen((s) => s.mark);
   const sessionId = checkIn.data?.id;
-  const stream = useRoomChatList(chat, sessionId ?? '', profiles);
+  const stream = useRoomChatList(chat, sessionId ?? '', profiles, id);
   const messages = chat.messages.data ?? [];
   const newestAt = messages.at(-1)?.created_at;
   useEffect(() => {

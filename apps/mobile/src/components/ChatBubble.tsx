@@ -388,7 +388,9 @@ export function ChatBubble({
                   <Text variant="caption" color={mine ? paint.mineMuted : paint.themMuted}>
                     {time}
                   </Text>
-                  {mine && delivery ? <DeliveryTicks delivery={delivery} inBubble /> : null}
+                  {mine && delivery ? (
+                    <DeliveryTicks delivery={delivery} inBubble plainInk={paint.mineMuted} />
+                  ) : null}
                 </View>
               ) : null}
             </View>
@@ -419,7 +421,9 @@ export function ChatBubble({
                 <Text variant="caption" color={mine ? paint.mineMuted : paint.themMuted}>
                   {time}
                 </Text>
-                {mine && delivery ? <DeliveryTicks delivery={delivery} inBubble /> : null}
+                {mine && delivery ? (
+                  <DeliveryTicks delivery={delivery} inBubble plainInk={paint.mineMuted} />
+                ) : null}
               </View>
             ) : null}
           </View>
@@ -895,12 +899,16 @@ export function DeliveryTicks({
   delivery,
   onAccent,
   inBubble,
+  plainInk,
   size = TICK,
 }: {
   delivery: Delivery;
   onAccent?: boolean;
   // In the viewer's own bubble (the primary): the read tick `--read-on-accent` (readTick.test.ts).
   inBubble?: boolean;
+  // The clock and the single tick in the bubble's time colour (Telegram Android: the mark beside the
+  // time in its ink).
+  plainInk?: string;
   // Mesajlar's row: 17 (docs/design/aura → Mesajlar).
   size?: number;
 }) {
@@ -908,7 +916,7 @@ export function DeliveryTicks({
   // U28: the read double tick `--read` (#2C63D6, the dark side's #7DB2FF); in the viewer's own
   // primary bubble `--read-on-accent`.
   const read = onAccent ? colors.readOnAccent : inBubble ? KIT.readTick : colors.read;
-  const plain = onAccent ? colors.onPrimary : colors.muted;
+  const plain = onAccent ? colors.onPrimary : (plainInk ?? colors.muted);
   return (
     <View accessible accessibilityLabel={tr.dm.delivery[delivery]} testID={`tick-${delivery}`}>
       {delivery === 'sending' ? (

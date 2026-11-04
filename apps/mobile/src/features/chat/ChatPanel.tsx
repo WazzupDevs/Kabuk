@@ -28,6 +28,7 @@ import { KIT } from '@/theme/auraKit';
 import { nameInk } from '@/theme/nameInk';
 import { useTheme } from '@/theme/ThemeProvider';
 
+import { useFreshLine } from './fresh';
 import { quoteJump, toChatQuote, useReactions, useReplyTarget } from './messageExtras';
 import { messagesKey, useMessages, useRoomChatExtras } from './useMessages';
 
@@ -115,6 +116,7 @@ export function useRoomChatList(
   sessionId: string,
   // Profile ids of the room's profiled phones, by table session id (room_member_profiles).
   profiles: ReadonlyMap<string, string> | undefined,
+  roomId: string,
 ): ChatListProps<RoomRow> {
   const { scheme } = useTheme();
   const openProfile = (sender: string) => {
@@ -139,6 +141,12 @@ export function useRoomChatList(
       : undefined;
   };
   const lastAt = list.at(-1)?.created_at;
+  // As in the DM and the venue chat: the chat opens at the first message from the others since the
+  // last visit, under the "Okunmamış mesajlar" line (CLAUDE.md → Ekran davranışı).
+  const fresh = useFreshLine(
+    roomId && `room:${roomId}`,
+    list.map((m) => ({ id: m.id, createdAt: m.created_at, fromMe: m.session_id === sessionId })),
+  );
   const rows: RoomRow[] = [
     ...toRuns(
       list,
@@ -175,7 +183,14 @@ export function useRoomChatList(
               first={first}
               last={last}
               quote={outboxQuote(out.replyTo)}
-              state={out.status === 'sending' ? 'sending' : 'failed'}
+              // As in the DM (Telegram Android): on its way, its time and a clock where the ticks
+              // would go; the clock goes with the server's copy (the table chat has no ticks).
+              {...(out.status === 'sending'
+                ? {
+                    time: tr.chat.time(out.at ?? new Date().toISOString()),
+                    delivery: 'sending' as const,
+                  }
+                : { state: 'failed' as const })}
               failedText={
                 out.status === 'failed' && out.errorCode ? tr.errors[out.errorCode] : undefined
               }
@@ -196,6 +211,7 @@ export function useRoomChatList(
         {(jumpTo) => (
           <>
             {day ? <DayLine label={dayLabel(day)} /> : null}
+            {m.id === fresh ? <DayLine fresh label={tr.chat.newLine} /> : null}
             <ChatBubble
               text={m.body}
               mine={mine}
@@ -227,6 +243,7 @@ export function useRoomChatList(
   return {
     items: rows,
     renderItem,
+    openAt: fresh,
     timeOf: (row) => row.at,
     // Loading and its error (audit CHAT-8), and the empty room.
     empty: chat.messages.isPending ? (
