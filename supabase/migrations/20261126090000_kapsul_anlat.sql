@@ -27,7 +27,10 @@
 --
 -- Locks (rule 10): check-in → rooms (private.room_phone) → game_players → tabu_turns →
 -- room_used_cards. A player leaving stamps game_players.left_at while the table is held; the
--- trigger here updates the turn and game_state without a new lock.
+-- trigger here updates the turn and game_state without a new lock. One exception, while the table
+-- is held: opening a turn deals its cards first (private.deal_turn may clear the table's
+-- room_used_cards when the deck runs short) and then inserts the new tabu_turns row; a new row is
+-- not a lock anyone else waits on, and no other road reaches the table's cards without the table.
 --
 -- The side model's Tabu goes: its begin-turn, mark, end-turn and turn-cards, and the helpers only
 -- they called. private.deal_turn and private.use_card stay and deal this game's cards.
@@ -330,7 +333,7 @@ end;
 $$;
 
 -- The caller at a running game: the table (locked), whether the caller is its owner, the caller's
--- team (null: watching or gone) and whether the caller was dealt into this game at all.
+-- team (null: watching or gone) and whether the caller's account was dealt into this game at all.
 create function private.tabu_seat(target_user_id uuid, target_room_id uuid)
 returns table (room public.rooms, session_id uuid, is_owner boolean, team text, dealt boolean)
 language plpgsql
@@ -347,11 +350,16 @@ begin
   if r.concept is distinct from 'tabu' or not (r.game_state ? 'phase') then
     raise exception using errcode = 'P0001', message = 'no_game';
   end if;
-  select * into gp from public.game_players g
+  -- By account, not by check-in: a player who left and comes back with a new check-in is still
+  -- gone, never a watcher (rule 3).
+  select g.* into gp from public.game_players g
+  join public.table_sessions ts on ts.id = g.session_id
   where g.room_id = r.id and g.game_no = private.current_game_no(r.game_state)
-    and g.session_id = p.session_id;
+    and ts.user_id = target_user_id
+  order by g.session_id = p.session_id desc
+  limit 1;
   return query select r, p.session_id, p.is_leader,
-    case when gp.left_at is null
+    case when gp.session_id = p.session_id and gp.left_at is null
               and not coalesce(r.game_state -> 'gone', '[]'::jsonb) ? p.session_id::text
          then gp.team end,
     gp.session_id is not null;

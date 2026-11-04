@@ -3,13 +3,23 @@
 // Yasak!; the card goes only to the describer, the other team and the watchers (rule 3). The clock
 // is the server's: a test runs a phase out by moving its endsAt (and the 3-2-1's startsAt) into the
 // past.
+import postgres from 'postgres';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import { TABU_GAME } from '../functions/_shared/pure/tabuGame.ts';
 import { deleteFixtureVenues, insertFixtureVenues } from './fixtures/venues.ts';
-import { errorBody } from './helpers.ts';
-import { deleteUserByPhone, invoke, sql } from './local.ts';
-import { type Person, person, roomRow, rooms, TABLE_PHONES, tableWith } from './people.ts';
+import { errorBody, waitUntilBlocked } from './helpers.ts';
+import { dbUrl, deleteUserByPhone, invoke, sql } from './local.ts';
+import {
+  checkIn,
+  type Person,
+  person,
+  roomRow,
+  rooms,
+  sit,
+  TABLE_PHONES,
+  tableWith,
+} from './people.ts';
 
 let venue: Record<string, string> = {};
 
@@ -219,6 +229,28 @@ describe('the card (rule 3)', () => {
       expect(await cards(teammate, g)).toEqual({ status: 403, body: errorBody('not_describer') });
       // The same twice: the same answer (IDEMPOTENT_CALLS).
       expect(await cards(teller, g)).toEqual(mine);
+    },
+    SLOW,
+  );
+});
+
+describe('the card after a new check-in (rule 3)', () => {
+  it(
+    'never goes to a player of the describer’s team who comes back with a new check-in',
+    async () => {
+      // The owner plays for Pembe; Mor (describing turn 1) is two others.
+      const g = await game(['b', 'a', 'a', 'b', 'b']);
+      await beginTurn(g);
+      const teller = await describer(g);
+      const teammate = g.a.find((p) => p !== teller) as Person;
+      expect(await invoke(teammate.client, 'checkin', { action: 'leave' })).toMatchObject({
+        status: 200,
+      });
+      const back: Person = { ...teammate, sessionId: await checkIn(teammate.client, venue) };
+      expect(back.sessionId).not.toBe(teammate.sessionId);
+      await sit(back, g.owner, g.roomId);
+      expect(await cards(back, g)).toEqual({ status: 403, body: errorBody('not_describer') });
+      expect(await mark(back, g, 'taboo')).toEqual({ status: 403, body: errorBody('not_judge') });
     },
     SLOW,
   );
@@ -460,6 +492,60 @@ describe('leaving (§4.6.1)', () => {
         where room_id = ${g.roomId} and concept = 'tabu'
       `;
       expect(results[0]?.n).toBe(3);
+    },
+    SLOW,
+  );
+});
+
+describe('locks (§4.K)', () => {
+  // Two presses on the same card while the other holds the table: the second waits and finds the
+  // card closed (first press wins); a leaving player's trigger waits the same way. Nothing
+  // deadlocks (check-in → rooms → game_players → tabu_turns).
+  it(
+    'lets a Yasak! wait for a Doğru, and a leave wait for a press',
+    async () => {
+      const g = await game(FIVE);
+      await beginTurn(g);
+      const teller = await describer(g);
+      const rival = g.b[0] as Person;
+      const at = Number((await state(g.roomId)).step);
+      const first = postgres(dbUrl, { max: 1, onnotice: () => {} });
+      const second = postgres(dbUrl, { max: 1, onnotice: () => {} });
+      try {
+        let later: Promise<unknown> = Promise.resolve();
+        await first.begin(async (tx) => {
+          await tx`
+            select (public.tabu_mark(${teller.userId}, ${g.roomId}, ${at}, 0, 'correct')).id
+          `;
+          later = second`
+            select (public.tabu_mark(${rival.userId}, ${g.roomId}, ${at}, 0, 'taboo')).id
+          `
+            .execute()
+            .catch((err: unknown) => err);
+          await waitUntilBlocked('tabu_mark');
+        });
+        expect(await later).toHaveLength(1);
+        expect(await state(g.roomId)).toMatchObject({
+          cardIndex: 1,
+          counts: { correct: 1, pass: 0, taboo: 0 },
+          scores: { a: 1, b: 0 },
+        });
+
+        const leaver = g.b[1] as Person;
+        await first.begin(async (tx) => {
+          await tx`
+            select (public.tabu_mark(${teller.userId}, ${g.roomId}, ${at}, 1, 'pass')).id
+          `;
+          later = second`select (public.rooms_leave_game(${leaver.userId}, ${g.roomId})).id`
+            .execute()
+            .catch((err: unknown) => err);
+          await waitUntilBlocked('rooms_leave_game');
+        });
+        expect(await later).toHaveLength(1);
+      } finally {
+        await Promise.all([first.end(), second.end()]);
+      }
+      expect(await state(g.roomId)).toMatchObject({ cardIndex: 2, gone: [g.b[1]?.sessionId] });
     },
     SLOW,
   );
