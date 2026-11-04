@@ -15,6 +15,7 @@ import { useMessages } from '@/features/chat/useMessages';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { gameNoOf, VampirGame, vampirMode } from '@/features/games/vampir/VampirGame';
 import { useVampirHidden } from '@/features/games/vampir/vampirHidden';
+import { useGameAwake } from '@/lib/gameAwake';
 import { GAME_CARDS, GameCard, PosterGrid } from '@/features/rooms/PosterCard';
 import { useRoomMemberProfiles } from '@/features/profile/queries';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
@@ -147,6 +148,7 @@ export default function TableScreen() {
 
   const sessionId = checkIn.data?.id;
   const r = room.data;
+  useGameAwake(!!r && r.status !== 'closed' && vampirMode(r) === 'play');
   const backToVenue = () => {
     forget(id);
     router.replace('/venue');

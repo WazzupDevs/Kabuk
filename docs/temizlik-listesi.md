@@ -446,9 +446,9 @@ Koşmayan workflow ya da çağrılmayan betik bulunmadı.
 
 ### C. Proje sahibinin kararı
 
-1. `expo-keep-awake`: SPEC_V3 oyun sırasında ekranı açık tutar diyor, kod tutmuyor. Geri mi gelsin, paket ve satır mı kalksın?
+1. `expo-keep-awake`: SPEC_V3 oyun sırasında ekranı açık tutar diyor, kod tutmuyor. Geri mi gelsin, paket ve satır mı kalksın? **Karar (4 Kasım): geri gelir.** `src/lib/gameAwake.ts` → `useGameAwake`, masa ekranı oyun sürerken çağırır.
 2. `update_required` saplamaları (`checkin/reroll-alias`, `rooms/create-solo`, `propose-game`, `answer-game`): `MIN_APP_BUILD` üretimde ayarlanıp bu çağrıları gönderen build'lerin üstüne çekilmeden silinmez; kural 3'e dokunur.
-3. Taraf modelinin oyunları (Edge Function action'ları, `*_local_deck` dahil SQL, `tabu_turns`, `room_used_cards`, mobil önizleme ekranları §1.4): her biri kendi 4.6.x adımıyla mı gitsin, yoksa toplu bir temizlik paketi mi olsun.
+3. Taraf modelinin oyunları (Edge Function action'ları, `*_local_deck` dahil SQL, `tabu_turns`, `room_used_cards`, mobil önizleme ekranları §1.4): her biri kendi 4.6.x adımıyla mı gitsin, yoksa toplu bir temizlik paketi mi olsun. **Karar (4 Kasım): her biri kendi 4.6.x adımıyla gider;** kişi bazlı yenisini yazan adım eskisini siler, şimdi hiçbir şey silinmez.
 
 ### D. Dokunulmaması gerekenler
 
