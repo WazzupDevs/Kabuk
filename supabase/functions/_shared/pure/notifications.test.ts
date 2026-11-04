@@ -25,6 +25,7 @@ describe('the table invite (docs/SPEC_V4.md §4.G)', () => {
     expect(invitePush()).toEqual({
       title: expect.any(String),
       body: 'Bir arkadaşın seni masasına çağırıyor',
+      kind: 'masa_daveti',
       target: 'notifications',
     });
     expect(PUSH_PREFERENCE.table_invite).toBe('notify_invites');

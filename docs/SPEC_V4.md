@@ -1443,3 +1443,12 @@ Mekan sohbetinde ve masa sohbetinde başkalarının balonu kişiye göre farklı
 - **Ne gider:** mesaj yanıtında ve masa üyesinde yalnızca paletteki renk numarası. Renk numarası hesap kimliği, `public_id` ya da kişinin öbür kimliği hakkında bilgi taşımaz; analitiğe gitmez. Realtime yükü değişmez (mekan sohbeti yayını veri içermez).
 - **Veri:** `table_sessions` üzerinde iki renk kolonu (anonim, profilli), istemciye kapalı; masa üyesinde girdiği andaki renk. Migration ve fonksiyon değişikliği `guvenlik` denetiminden geçer.
 - **Sıra:** önce palet tuvale çizilir ve onaylanır, sonra sunucu (migration, `checkin`, `venue-chat`, oda sohbeti okuması), sonra uygulama. Eski uygulama renk numarasını okumaz, bugünkü renkle çizer.
+
+## 4.S Bildirim çubuğu simgeleri (proje sahibinin kararı, 3–4 Kasım; pano BildirimSimgeleri)
+
+Android'in durum çubuğunda ve bildirim perdesinde her push kendi türünün simgesini taşır; logo yoktur, sistem tek renkle boyar.
+
+- **Türler:** birebir mesaj (`dm`), arkadaşlık isteği (`arkadas_istegi`), arkadaş oldunuz (`arkadas_oldunuz`), masa daveti (`masa_daveti`), katılma isteği (`katilma_istegi`), isteğin kabul edildi (`istek_kabul`). Türü eşleşmeyen her push (eski sunucudan gelen dahil) bugünkü genel simgeyi (`assets/icon/notification.png`) taşır.
+- **Push verisi:** `_shared/pure/push.ts` → `PushMessage.kind`, push verisine `kind` olarak girer (SPEC_V3 §18.3a'daki `target`'ın yanına). Tür başlığın zaten söylediğidir: kimlik, gönderen, masa, mekan ve içerik yok.
+- **Uygulama:** simgeler `scripts/icon/bildirim/*.svg` → `pnpm icons` → 5 yoğunlukta beyaz alfa PNG (`ic_bildirim_<tür>`); config plugin (`app.config.ts` → `withNotificationIcons`) `res/drawable-*`'e koyar; yamalı `expo-notifications` (`patches/expo-notifications@57.0.21.patch`) simgeyi `kind`'dan `getIdentifier` ile seçer. Simge rengi açık temada `--primary` (`#0E8745`), koyuda `--accent` (`#3DDC84`).
+- **Yayın:** native değişiklik, yeni build (0.9.6). Sunucu önce gidebilir: eski uygulama `kind`'ı okumaz, genel simgeyi çizer.

@@ -3,7 +3,7 @@
     "name": "skall",
     "slug": "masa",
     "scheme": "masa",
-    "version": "0.9.5",
+    "version": "0.9.6",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "platforms": ["android", "ios"],
@@ -42,7 +42,7 @@
         "expo-notifications",
         {
           "icon": "./assets/icon/notification.png",
-          "color": "#7B5CFF"
+          "color": "#0E8745"
         }
       ],
       "expo-dev-client",

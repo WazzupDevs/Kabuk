@@ -6,12 +6,25 @@ import type { PushTarget } from './navigation.ts';
 // table's name and its phone count, or the person's name on its own (rule 4; docs/SPEC_V4.md
 // §4.E).
 
-// `target`: the screen a tap opens (docs/SPEC_V3.md §18.3); no id, no sender, no content.
-export type PushMessage = { title: string; body: string; target?: PushTarget };
+// `kind`: the status bar icon the phone draws (Aura BildirimSimgeleri, 3 Kasım; the patched
+// expo-notifications draws res/drawable/ic_bildirim_<kind>, a kind it has no icon for the default
+// one). It names only what the title already says. `target`: the screen a tap opens
+// (docs/SPEC_V3.md §18.3); no id, no sender, no content.
+export const PUSH_ICONS = [
+  'dm',
+  'arkadas_istegi',
+  'arkadas_oldunuz',
+  'masa_daveti',
+  'katilma_istegi',
+  'istek_kabul',
+] as const;
+export type PushIcon = (typeof PUSH_ICONS)[number];
+export type PushMessage = { title: string; body: string; kind: PushIcon; target?: PushTarget };
 
 export function joinRequestPush(name: string, phones: number): PushMessage {
   return {
     title: 'Katılma isteği',
+    kind: 'katilma_istegi',
     body:
       phones > 1
         ? `${name} (${phones} kişi) masana katılmak istiyor.`
@@ -20,22 +33,32 @@ export function joinRequestPush(name: string, phones: number): PushMessage {
 }
 
 export function joinAcceptedPush(): PushMessage {
-  return { title: 'İsteğin kabul edildi', body: 'Masaya katılabilirsin.' };
+  return { title: 'İsteğin kabul edildi', body: 'Masaya katılabilirsin.', kind: 'istek_kabul' };
 }
 
 // v2 (docs/arsiv/SPEC_V2.md §6.4): no sender, no preview. The friend request text follows the DM one.
 export function dmPush(): PushMessage {
-  return { title: APP_NAME, body: 'Yeni bir mesajın var', target: 'messages' };
+  return { title: APP_NAME, body: 'Yeni bir mesajın var', kind: 'dm', target: 'messages' };
 }
 
 export function friendRequestPush(): PushMessage {
-  return { title: APP_NAME, body: 'Yeni bir arkadaşlık isteğin var', target: 'notifications' };
+  return {
+    title: APP_NAME,
+    body: 'Yeni bir arkadaşlık isteğin var',
+    kind: 'arkadas_istegi',
+    target: 'notifications',
+  };
 }
 
 // K-70 (docs/SPEC_V4.md §4.E): the silent "Arkadaş ekle" became mutual; to the first presser only.
 // No venue, no table, no name (§18.3a).
 export function friendMatchPush(): PushMessage {
-  return { title: APP_NAME, body: 'Masada eklediğin biriyle arkadaş oldunuz', target: 'messages' };
+  return {
+    title: APP_NAME,
+    body: 'Masada eklediğin biriyle arkadaş oldunuz',
+    kind: 'arkadas_oldunuz',
+    target: 'messages',
+  };
 }
 
 // A friend's table invite (docs/SPEC_V4.md §4.G): no name, no table, no venue (§18.3a).
@@ -43,6 +66,7 @@ export function invitePush(): PushMessage {
   return {
     title: APP_NAME,
     body: 'Bir arkadaşın seni masasına çağırıyor',
+    kind: 'masa_daveti',
     target: 'notifications',
   };
 }

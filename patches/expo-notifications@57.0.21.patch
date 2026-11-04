@@ -1,0 +1,27 @@
+diff --git a/android/src/main/java/expo/modules/notifications/notifications/presentation/builders/ExpoNotificationBuilder.kt b/android/src/main/java/expo/modules/notifications/notifications/presentation/builders/ExpoNotificationBuilder.kt
+index 610d3039cefd589647538ad8ba14587d29fab338..561dc7154d0da8c3513e3e36e5ef5e798101024e 100644
+--- a/android/src/main/java/expo/modules/notifications/notifications/presentation/builders/ExpoNotificationBuilder.kt
++++ b/android/src/main/java/expo/modules/notifications/notifications/presentation/builders/ExpoNotificationBuilder.kt
+@@ -347,6 +347,14 @@ open class ExpoNotificationBuilder(
+      * @return Resource ID for icon that should be used as a notification icon.
+      */
+     get() {
++      // skall: the push's `kind` (its data, supabase/functions/_shared/pure/push.ts) picks the
++      // status bar icon res/drawable/ic_bildirim_<kind>; no kind, or one with no drawable, keeps
++      // the default below.
++      val kind = notificationContent.body?.optString("kind").orEmpty()
++      if (SKALL_KIND.matches(kind)) {
++        val id = context.resources.getIdentifier("ic_bildirim_$kind", "drawable", context.packageName)
++        if (id != 0) return id
++      }
+       try {
+         val ai = context.packageManager.getApplicationInfo(
+           context.packageName,
+@@ -397,6 +405,7 @@ open class ExpoNotificationBuilder(
+     }
+ 
+   companion object {
++    private val SKALL_KIND = Regex("[a-z_]{1,32}")
+     const val META_DATA_DEFAULT_ICON_KEY: String =
+       "expo.modules.notifications.default_notification_icon"
+     const val META_DATA_LARGE_ICON_KEY: String =
