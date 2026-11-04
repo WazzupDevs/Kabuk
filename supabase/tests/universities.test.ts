@@ -101,7 +101,12 @@ afterAll(async () => {
   await sql.end();
 });
 
-function checkIn(client: Client, venueId: string, at: { lat: number; lng: number }) {
+function checkIn(
+  client: Client,
+  venueId: string,
+  at: { lat: number; lng: number },
+  spotId?: string,
+) {
   return invoke(client, 'checkin', {
     action: 'check-in',
     venueId,
@@ -110,8 +115,13 @@ function checkIn(client: Client, venueId: string, at: { lat: number; lng: number
     accuracyM: 20,
     locationConsentVersion: CURRENT_LOCATION_CONSENT_VERSION,
     requestId: randomUUID(),
+    ...(spotId ? { spotId } : {}),
   });
 }
+
+// The campus on its own (FIXTURE_CAMPUS) has active spots: a check-in there names one.
+const atPlain = (client: Client) =>
+  checkIn(client, plain.venueId, CAMPUS_CENTER, plain.spots.kantin);
 
 async function explore(client: Client) {
   const { data, error } = await client.rpc('explore_venues', { event_days: EVENT_WINDOW_DAYS });
@@ -302,7 +312,7 @@ describe('the university venue chat', () => {
     expect((await checkIn(a, west.venueId, WEST_CENTER)).status).toBe(200);
     expect((await checkIn(b, east.venueId, EAST_CENTER)).status).toBe(200);
     // A campus on its own keeps its own chat.
-    expect((await checkIn(c, plain.venueId, CAMPUS_CENTER)).status).toBe(200);
+    expect((await atPlain(c)).status).toBe(200);
 
     const fromWest = await sendAt(a, west.venueId, 'batıdan merhaba');
     const fromEast = await sendAt(b, east.venueId, 'doğudan selam', fromWest);
@@ -329,7 +339,7 @@ describe('the university venue chat', () => {
 
   it('refuses the chat of a university without a check-in at one of its campuses', async () => {
     const outsider = await onboarded(PHONES[2]);
-    expect((await checkIn(outsider, plain.venueId, CAMPUS_CENTER)).status).toBe(200);
+    expect((await atPlain(outsider)).status).toBe(200);
     // Asking for a campus of another university shows nothing and cannot write.
     expect(await pageAt(outsider, west.venueId)).toEqual([]);
     await sql`update public.venue_chat_rate set last_sent_at = '-infinity'`;
@@ -371,8 +381,9 @@ describe('the university venue chat', () => {
     const b = await onboarded(PHONES[1]);
     expect((await checkIn(b, east.venueId, EAST_CENTER)).status).toBe(200);
     const other = waitForBroadcast(b, venueChatChannel(west.venueId), VENUE_CHAT_BROADCAST, 3000);
-    await expect(other.subscribed).rejects.toThrow(/CHANNEL_ERROR|TIMED_OUT/);
+    // Nothing arrives on a topic it may not join; the wait's own timeout is not the test.
     other.received.catch(() => undefined);
+    await expect(other.subscribed).rejects.toThrow(/CHANNEL_ERROR|TIMED_OUT/);
     await other.close();
   });
 
