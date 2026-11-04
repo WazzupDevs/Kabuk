@@ -21,7 +21,7 @@ import { ARRIVE_RN, BLURS, TabOpeningsContext } from '@/aura/motion';
 import { labOff, markTabSwitch, useLabOff } from '@/lib/drawLab';
 import { haptic } from '@/lib/haptics';
 import { createTabActivity, TabActivityContext } from '@/lib/tabActivity';
-import { createTabOpenings } from '@/lib/tabOpenings';
+import { createTabOpenings, LEAVE_PREPARE_MS } from '@/lib/tabOpenings';
 import { useLeaveGuard } from '@/lib/leaveGuard';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { AURA, MOTION } from '@/theme/aura';
@@ -172,17 +172,23 @@ export function TabScene({
     // or a screen over the tabs (Bildirimler, Ayarlar: closing it showed the tab arrive again, the
     // owner's report, 28 Ekim).
     let leftTab = false;
+    // Leaving to another tab, the arrival's first values are set while the tab is hidden (B5): the
+    // first frame it is shown again is the arrival's first, never the last arrival's end.
+    let prepare: ReturnType<typeof setTimeout> | undefined;
     const offFocus = navigation.addListener('focus', () => {
+      clearTimeout(prepare);
       own();
       activity.set(true);
       if (!leftTab) return;
       leftTab = false;
       markTabSwitch();
-      // Çizim ölçümü's `kademe`: the cascade measured off.
-      if (!labOff('kademe')) openings.open();
+      // Çizim ölçümü's `kademe`: the cascade measured off (its parts in place).
+      openings.emit(labOff('kademe') ? 'settle' : 'open');
       setRun((r) => r + 1);
+      if (reduce) return;
       // Çizim ölçümü's `gelis`: the fade and rise off on its own (the screen in place at once).
-      if (!reduce && !labOff('gelis')) {
+      if (labOff('gelis')) p.setValue(1);
+      else {
         p.setValue(0);
         Animated.timing(p, {
           toValue: 1,
@@ -196,8 +202,15 @@ export function TabScene({
       const state = navigation.getState();
       leftTab = state.routes[state.index]?.key !== routeKey;
       activity.set(false);
+      if (!leftTab || reduce) return;
+      clearTimeout(prepare);
+      prepare = setTimeout(() => {
+        p.setValue(0);
+        openings.emit('leave');
+      }, LEAVE_PREPARE_MS);
     });
     return () => {
+      clearTimeout(prepare);
       offFocus();
       offBlur();
       useBarMode.setState((s) => (s.target === id ? { target: null } : s));
