@@ -18,6 +18,7 @@ import { create } from 'zustand';
 import { AuraBand, useGroundSize } from '@/aura/AuraBackground';
 import { AuraTabBar, type AuraTabItem } from '@/aura/AuraTabBar';
 import { ARRIVE_RN, BLURS, TabFocusContext } from '@/aura/motion';
+import { labOff, markTabSwitch, useLabOff } from '@/lib/drawLab';
 import { haptic } from '@/lib/haptics';
 import { useLeaveGuard } from '@/lib/leaveGuard';
 import { useReduceMotion } from '@/lib/useReduceMotion';
@@ -147,7 +148,13 @@ export function TabScene({
   const { scheme } = useTheme();
   const reduce = useReduceMotion();
   const id = useId();
-  const [focus, setFocus] = useState({ focused: navigation.isFocused(), opened: 0 });
+  // `opened` counts the openings the screen's cascade plays again for, `run` the ones the dissolve
+  // plays for: the same, except under Çizim ölçümü's `kademe` (the cascade measured off).
+  const [focus, setFocus] = useState({ focused: navigation.isFocused(), opened: 0, run: 0 });
+  const tabFocus = { focused: focus.focused, opened: focus.opened };
+  // Çizim ölçümü (lib/drawLab.ts): the blur dissolve off on its own (`bulanma`, the fade and rise
+  // stay). Production never turns it off.
+  const blurOff = useLabOff('bulanma');
   // The tab's screen arrives each time it is opened (the film's tab switch): from a little below,
   // faded in on the native driver, its blur clearing on the same curve (Dissolve: drawn natively,
   // small, every frame, as the film has it). The first opening is the screen's own arrival
@@ -167,8 +174,15 @@ export function TabScene({
         return;
       }
       leftTab = false;
-      setFocus((f) => ({ focused: true, opened: f.opened + 1 }));
-      if (!reduce) {
+      markTabSwitch();
+      const cascade = !labOff('kademe');
+      setFocus((f) => ({
+        focused: true,
+        opened: cascade ? f.opened + 1 : f.opened,
+        run: f.run + 1,
+      }));
+      // Çizim ölçümü's `gelis`: the fade and rise off on its own (the screen in place at once).
+      if (!reduce && !labOff('gelis')) {
         p.setValue(0);
         Animated.timing(p, {
           toValue: 1,
@@ -198,10 +212,10 @@ export function TabScene({
   };
   const ground = AURA[scheme].ground;
   const scene = (
-    <TabFocusContext.Provider value={focus}>
+    <TabFocusContext.Provider value={tabFocus}>
       <Dissolve
-        run={BLURS && !reduce ? focus.opened : 0}
-        blur={MOTION.dissolve.blur}
+        run={BLURS && !reduce ? focus.run : 0}
+        blur={blurOff ? 0 : MOTION.dissolve.blur}
         durationMs={MOTION.dissolve.inMs}
         curve={MOTION.curves.arrive}
         style={{ flex: 1 }}

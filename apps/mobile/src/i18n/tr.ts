@@ -1262,6 +1262,7 @@ export const tr = {
       steps: {
         all: 'Hepsi açık',
         cam: 'Cam kapalı',
+        buzlu: 'Buzlu düğmeler kapalı',
         golge: 'Gölgeler kapalı',
         kart: 'Kart zemini düz',
         zemin: 'Arka plan düz',
@@ -1269,6 +1270,28 @@ export const tr = {
         hareket: 'Hareket durdu',
         end: 'Hepsi açık',
       },
+      // The tab switch's parts, each turned off by hand while tabs are switched (B4).
+      switchTitle: 'Geçişte kapat',
+      parts: {
+        cam: 'Cam',
+        buzlu: 'Buzlu',
+        golge: 'Gölge',
+        kart: 'Kart',
+        zemin: 'Zemin',
+        hareket: 'Hareket',
+        bulanma: 'Bulanma',
+        gelis: 'Geliş',
+        kademe: 'Kademe',
+      },
+      // Geçiş ölçümü: the last tab switch's frames on the screen (UI) and on JS, and the last ten.
+      switchNone: 'Geçiş ölçümü: bir sekmeye geç',
+      switchLast: (thread: string, p95: number, jankPct: number, missed: number) =>
+        `${thread} son geçiş: p95 ${p95} ms, takılma %${jankPct}, kaçan ${missed} kare`,
+      switchAll: (n: number, p95: number, jankPct: number) =>
+        `Son ${n} geçiş (ekran): p95 ${p95} ms, takılma %${jankPct}`,
+      threadUi: 'Ekran',
+      threadJs: 'JS',
+      reset: 'Sıfırla',
     },
     previewIncoming: 'Mesaj gelsin',
     // The visual gate's route (CLAUDE.md → Görsel kapı), test builds only.
