@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (4 Kasım 2026, temizlik B ve C bitti)
+
+- Birleşenler: #413 (B: tr §2.2'nin 84 anahtarı, AURA'nın bulut verisi ve `table`'ı, `game-card/` ve okunmayan dört poster), #415 (`nearby_venues`, `venue_distance_m`), #423 (dört eski `private` fonksiyonu), #425 (oyun sürerken ekran açık, `useGameAwake`; OTA, cihazda denenmedi). Sonuçlar `docs/temizlik-listesi.md` → "B'nin sonucu" ve C.
+- Üretimde proje sahibinin elinde: `20261122090000_drop_unused_venue_rpcs.sql` ve `20261123090000_drop_unused_private_fns.sql` (uygulama çağırmıyor, sıra önemsiz).
+- C2 (`update_required` saplamaları) ve C3 (taraf modelinin oyun kodu, SQL'i, `tabu_turns`, `room_used_cards`, önizleme ekranları, `HarfRequest`/`SarkiRequest`): proje sahibinin kararıyla oyunların yeni hâli belli olana dek dokunulmaz.
+- Uzaktaki `temizlik-b` dalı proxy yüzünden silinemedi; proje sahibi GitHub'dan siler. Bu container'da yerel Edge Runtime işçi açamıyor (`InvalidWorkerCreation`): entegrasyon testlerine CI bakar.
+
 ## Devir notu (4 Kasım 2026, üniversite sohbeti)
 
 - Mekan sohbeti üniversiteye bağlandı (`20261125090000_university_venue_chat.sql`, `SPEC_V4` §4.Q, kural 4 ve 9). Değişmez kurala dokunduğu için birleşme proje sahibinin "onaylandı"sını bekler. Native yok; yalnızca sunucu (migration + `venue-chat` fonksiyonu).
