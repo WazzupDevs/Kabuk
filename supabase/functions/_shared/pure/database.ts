@@ -2923,7 +2923,11 @@ export type Database = {
         Returns: boolean;
       };
       safety_report_room_message: {
-        Args: { new_reason: string; target_message_id: string; target_user_id: string };
+        Args: {
+          new_reason: string;
+          target_message_id: string;
+          target_user_id: string;
+        };
         Returns: boolean;
       };
       safety_report_venue_chat: {

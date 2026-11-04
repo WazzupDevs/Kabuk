@@ -95,6 +95,12 @@ jobs:
           cp supabase/.env.example supabase/.env
           pnpm supabase start -x studio,mailpit,logflare,vector,supavisor,postgres-meta,edge-runtime
           pnpm db:reset
+      # database.ts must be what `pnpm gen:types` writes from the migrations (it is never edited by
+      # hand; a hand-aligned file hides schema drift).
+      - name: Generated database types
+        run: |
+          pnpm gen:types
+          git diff --exit-code supabase/functions/_shared/pure/database.ts
       # The serve is started again when it exits on its own, at most twice in the job; a third exit
       # fails the job (scripts/ci/functions-serve.sh, "Functions serve exits" below).
       - name: Edge Functions
