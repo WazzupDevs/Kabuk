@@ -8,7 +8,8 @@ import type {
   SafetyResponse,
 } from '@shared/api/chat.ts';
 import type { Reaction } from '@shared/reactions.ts';
-import type { GameOkResponse } from '@shared/api/games.ts';
+import type { GameOkResponse, TabuTurnCardsResponse } from '@shared/api/games.ts';
+import type { TabuMark } from '@shared/tabuGame.ts';
 import type {
   CreateRoomRequest,
   CreateRoomResponse,
@@ -412,6 +413,22 @@ export const dmApi = {
 
 // Vampir Köylü (docs/SPEC_V4.md §4.F "Adım 4.6.6"): targets are table session ids; `step` is the
 // phase's number, so a press from a phase already over changes nothing.
+// Kinshi (Kapsül Anlat, docs/SPEC_V4.md §4.F "Adım 4.6.1"): the card list goes only to the phones
+// that may see it (the describer, the other team, the watchers).
+export const tabuApi = {
+  start: (roomId: string) => invoke<GameOkResponse>('tabu', { action: 'start', roomId }),
+  beginTurn: (roomId: string, step: number) =>
+    invoke<GameOkResponse>('tabu', { action: 'begin-turn', roomId, step }),
+  turnCards: (roomId: string) =>
+    invoke<TabuTurnCardsResponse>('tabu', { action: 'turn-cards', roomId }),
+  mark: (roomId: string, step: number, cardIndex: number, result: TabuMark) =>
+    invoke<GameOkResponse>('tabu', { action: 'mark', roomId, step, cardIndex, result }),
+  next: (roomId: string, step: number) =>
+    invoke<GameOkResponse>('tabu', { action: 'next', roomId, step }),
+  advance: (roomId: string) => invoke<GameOkResponse>('tabu', { action: 'advance', roomId }),
+  shuffle: (roomId: string) => invoke<RoomsOkResponse>('rooms', { action: 'shuffle', roomId }),
+};
+
 export const vampirApi = {
   start: (roomId: string) => invoke<GameOkResponse>('vampir', { action: 'start', roomId }),
   view: (roomId: string) => invoke<VampirView>('vampir', { action: 'view', roomId }),

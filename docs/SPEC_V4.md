@@ -240,19 +240,20 @@ Değişmez kabul edilir.
 
 - **Tokenlar** (`apps/mobile/src/theme/`): v43'ün paleti (logo renklerine çekildi) ve v44'ün koyu teması (v44 raporu §1: zemin `#0D0B1E`, yazı `#F3F0FF`, kart `#1C1838`, soluk yazı `#B8B3D2`). Koyu tema tonları, oyun zeminlerinin koyu hâli, koyu zemin logosu ve açık temadaki koyu yarı saydam oyun çipleri 4.2'nin PR'ında ekran görüntüleriyle proje sahibinin onayına gelir (K-25). Isınma `#C4521F`'ten `#B4481A`'ya koyulaştı (4.5:1; K-24). Oyun renkleri (v43 raporu §5):
 
-  | Rol                                                  | Renk                                       |
-  | ---------------------------------------------------- | ------------------------------------------ |
-  | Takımlar (Mor, Pembe)                                | `#6A47F5`, `#D6336C`                       |
-  | Pas, Doğru, Yasak!                                   | `#FFD23F`, `#34D27F`, `#C8331F`            |
-  | Sahtekar zemini                                      | `#2A1C66` → `#1B1446`                      |
-  | Harf Kapmaca zemini                                  | `#CF4A2A` → `#B8325A`                      |
-  | Şarkıda Geçsin zemini                                | `#2B1878` → `#4A22A8`                      |
-  | Sohbet kartları zemini (v44)                         | `#C2316F` → `#A92A66`                      |
-  | İbre zemini                                          | Sıradaki takımın rengi                     |
-  | İbre puan bölgeleri (2, 3, 4)                        | `#FFD86B`, `#FFA94D`, `#FF4F8B`            |
-  | Sohbet kartı temaları (Isınma, Kampüs, Derin, Ya da) | `#B4481A`, `#6A47F5`, `#2F2A78`, `#187A48` |
-  | Bildirim rozeti                                      | `#C51F62`                                  |
+  | Rol                                                  | Renk                                             |
+  | ---------------------------------------------------- | ------------------------------------------------ |
+  | Takımlar (Mor, Pembe)                                | `#7B5CFF`, `#E8336F` (koyu `#9C86FF`, `#FF7EA8`) |
+  | Pas, Doğru, Yasak!                                   | `#FFD23F`, `#34D27F`, `#C8331F`                  |
+  | Sahtekar zemini                                      | `#2A1C66` → `#1B1446`                            |
+  | Harf Kapmaca zemini                                  | `#CF4A2A` → `#B8325A`                            |
+  | Şarkıda Geçsin zemini                                | `#2B1878` → `#4A22A8`                            |
+  | Sohbet kartları zemini (v44)                         | `#C2316F` → `#A92A66`                            |
+  | İbre zemini                                          | Sıradaki takımın rengi                           |
+  | İbre puan bölgeleri (2, 3, 4)                        | `#FFD86B`, `#FFA94D`, `#FF4F8B`                  |
+  | Sohbet kartı temaları (Isınma, Kampüs, Derin, Ya da) | `#B4481A`, `#6A47F5`, `#2F2A78`, `#187A48`       |
+  | Bildirim rozeti                                      | `#C51F62`                                        |
 
+- **Takım renkleri** Aura v85'in "Kinshi (tabu düzeni)" satırındaki değerlerdir; v43'ün `#6A47F5` ve `#D6336C`'sinin yerine her yerde (proje sahibinin kararı, 5 Kasım). Etiket zemini açıkta mor %14 / pembe %12, koyuda %20 / %18 (`gameColors.ts` → `TEAM_TONES`). Açık temada beyaz yazı tuvalin değerlerinde 4,5:1'in altındadır (mor 4,36, pembe 4,09); açık soru tasarımda.
 - **Oyun renkleri** `src/theme/gameColors.ts`'te (4.2a). Koyu temada takım rengi koyu zemine OKLab'da %62 karışır (v44: `color-mix(in oklab, renk 62%, #0D0B1E)`); Sahtekar (`#1C1450` → `#120D33`), Harf Kapmaca (`#8E3420` → `#7C2440`), Şarkıda Geçsin (`#1A1150` → `#2E1872`) ve Sohbet kartları (`#7E2150` → `#6C1C46`) v44'ün koyu geçişleridir. Yarı saydam çipler koyu zeminlerde beyaz %18, açık temanın parlak zeminlerinde (iki takım, Harf Kapmaca, Sohbet kartları) mürekkep %24'tür (K-25).
 - **Kontrast:** oyun zeminlerinde ve temalarda beyaz yazı en az 4.5:1. Harf Kapmaca'nın turuncu zemininde yarı saydam beyaz çipler (yaklaşık 3.3:1) koyulaştırılır. `theme/contrast.test.ts` yeni tokenlarla güncellenir; renkler `scripts/icon/mark.ts` ile eşitlik testini korur.
 - **Yazı tipi:** Plus Jakarta Sans (500, 600, 700, 800). `@expo-google-fonts/plus-jakarta-sans` eklenir. v46'nın `system-ui` dediği metinler (bildirim balonu, v46'da `.toast`) Roboto 700'dür (Android'in sistem yazı tipi; paket değil, lisansıyla `apps/mobile/assets/fonts/` altında bir dosya, aynı yükleme listesinden; proje sahibinin kararı, 20 Ekim, `docs/decisions/ci-gorsel-kapi.md`). Gerekçe: bugünkü Poppins ve Manrope paketleriyle aynı yoldur; JS paketidir, kurulu `expo-font` ile çalışma anında yüklenir ve native değişiklik değildir. Poppins ve Manrope paketleri 4.8'de kalkar.

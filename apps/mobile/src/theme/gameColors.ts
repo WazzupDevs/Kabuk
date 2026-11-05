@@ -10,8 +10,44 @@ import type { ColorScheme } from './tokens';
 export const ON_GAME = '#FFFFFF';
 export const ON_JUDGE = '#14112B';
 
-export const TEAM_COLORS = { purple: '#6A47F5', pink: '#D6336C' } as const;
+// Mor and Pembe: the canvas's (Aura v85, "Kinshi (tabu düzeni)"; the owner's call, 5 Kasım: the
+// canvas's values everywhere, in place of v44's #6A47F5 and #D6336C).
+export const TEAM_COLORS = { purple: '#7B5CFF', pink: '#E8336F' } as const;
 export type Team = keyof typeof TEAM_COLORS;
+
+// A team's colour in each scheme (the canvas's --tm and --tp), its label's ground and ink
+// (--tm-bg/--tm-on, --tp-bg/--tp-on) and the words on its filled button (`.btn.tm`, `.btn.tp`).
+export type TeamTone = { color: string; tagBg: string; tagInk: string; onColor: string };
+export const TEAM_TONES: Record<ColorScheme, Record<Team, TeamTone>> = {
+  light: {
+    purple: {
+      color: TEAM_COLORS.purple,
+      tagBg: 'rgba(123, 92, 255, 0.14)',
+      tagInk: '#4B2FD0',
+      onColor: '#FFFFFF',
+    },
+    pink: {
+      color: TEAM_COLORS.pink,
+      tagBg: 'rgba(232, 51, 111, 0.12)',
+      tagInk: '#B0174C',
+      onColor: '#FFFFFF',
+    },
+  },
+  dark: {
+    purple: {
+      color: '#9C86FF',
+      tagBg: 'rgba(156, 134, 255, 0.20)',
+      tagInk: '#D6CCFF',
+      onColor: '#14112B',
+    },
+    pink: {
+      color: '#FF7EA8',
+      tagBg: 'rgba(255, 126, 168, 0.18)',
+      tagInk: '#FFC2D6',
+      onColor: '#14112B',
+    },
+  },
+};
 
 // Kapsül Anlat's three buttons: Pas, Doğru (ink text) and the rival's "Yasak!" (white text, K-5).
 export const JUDGE_COLORS = { pass: '#FFD23F', correct: '#34D27F', forbidden: '#C8331F' } as const;
@@ -22,7 +58,7 @@ export const NEEDLE_ZONES = ['#FFD86B', '#FFA94D', '#FF4F8B'] as const;
 // Sohbet kartları' themes. Isınma darkened to #B4481A for 4.5:1 (K-24).
 export const CHAT_THEMES = {
   warmUp: '#B4481A', // Isınma
-  campus: '#6A47F5', // Kampüs
+  campus: '#6A47F5', // Kampüs (a theme, not the team)
   deep: '#2F2A78', // Derin
   either: '#187A48', // Ya da
 } as const;

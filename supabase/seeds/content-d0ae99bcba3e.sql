@@ -370,7 +370,7 @@ update public.table_icons set is_active = false where is_active and id <> all (a
 -- content/games.json
 insert into public.games (id, name, min_players, max_players, teams, pregame, is_available, sort_order) values
   ('vampir', 'Vampir Köylü', 5, 12, false, true, true, 0),
-  ('tabu', 'Kapsül Anlat', 4, 12, true, true, false, 1),
+  ('tabu', 'Kapsül Anlat', 4, 12, true, true, true, 1),
   ('ibre', 'İbre', 4, 12, true, true, false, 2),
   ('sahtekar', 'Sahtekar', 3, 12, false, true, false, 3),
   ('harf', 'Harf Kapmaca', 2, 12, false, true, false, 4),

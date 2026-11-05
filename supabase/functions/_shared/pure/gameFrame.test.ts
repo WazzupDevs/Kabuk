@@ -27,7 +27,7 @@ describe('the table’s games (docs/SPEC_V4.md §4.F)', () => {
 
   // §4.E: after step 4.5 today's games are "Yakında".
   it('shows a game not yet playable as soon, whatever the table', () => {
-    expect(tableGameAvailability('tabu', 12)).toEqual({ state: 'soon' });
+    expect(tableGameAvailability('ibre', 12)).toEqual({ state: 'soon' });
     expect(tableGameAvailability('satranc', 12)).toEqual({ state: 'soon' });
   });
 });

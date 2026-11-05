@@ -38,7 +38,8 @@ afterEach(async () => {
 });
 
 afterAll(async () => {
-  await sql`update public.games set is_available = false where id = 'tabu'`;
+  // As content/games.json has it (Kinshi's screens came, 5 Kasım).
+  await sql`update public.games set is_available = true where id = 'tabu'`;
   await deleteFixtureVenues(sql);
   await sql.end();
 });
