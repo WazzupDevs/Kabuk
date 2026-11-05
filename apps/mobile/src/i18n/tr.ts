@@ -1210,9 +1210,17 @@ export const tr = {
       krot: { name: 'Krot', sub: 'Aramızdaki kim?', people: '3+' },
       sprengja: { name: 'Sprengja', sub: 'Bombayı çabuk at', people: '3+' },
       kaupholl: { name: 'Kaupholl', sub: 'En yakına yatır', people: '3+' },
+      kibrit: { name: 'Kibrit' },
     },
-    gameCardLabel: (name: string, sub: string, people: string, tag: string) =>
-      `${name}, ${sub}, ${people} kişi, ${tag}`,
+    gameCardLabel: (
+      name: string,
+      sub: string | undefined,
+      people: string | undefined,
+      tag: string,
+    ) =>
+      [name, sub, people === undefined ? undefined : `${people} kişi`, tag]
+        .filter((part) => part !== undefined)
+        .join(', '),
     // A playable game's poster (docs/SPEC_V4.md §4.F): the owner opens it, the others vote for it.
     posterOpen: 'Aç',
     posterVote: 'Oyla',
