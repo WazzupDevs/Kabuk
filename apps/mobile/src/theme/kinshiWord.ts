@@ -145,7 +145,9 @@ export function kinshiWordLayout(text: string, band: KinshiBand): KinshiWordLayo
   const [a, b] = pair;
   const u = KINSHI_WORD_FONT.unitsPerEm;
   const place = (f: number) => {
-    const lineHeight = Math.ceil((f * (inkBottom(a) + inkTop(b))) / u + KINSHI_WORD.lineGap);
+    // Android rounds the line height up to whole pixels itself (CustomLineHeightSpan: ceil), so
+    // the drawn gap is this or a pixel more.
+    const lineHeight = (f * (inkBottom(a) + inkTop(b))) / u + KINSHI_WORD.lineGap;
     // Android (CustomLineHeightSpan): half the leading above the ascent, so the baseline sits
     // (A − D) / 2 under the line box's middle.
     const baseline =

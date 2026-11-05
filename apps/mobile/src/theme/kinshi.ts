@@ -51,9 +51,12 @@ export const KINSHI = {
   // The score pill (`.score`): 44 high, 16 in on the left, 6 on the right, 10 apart; the team
   // bar 8 × 16, the divider 1 × 18, the turn chip 32 high.
   score: { height: 44, padLeft: 16, padRight: 6, gap: 10, bar: { w: 8, h: 16, r: 4 }, rule: 18 },
-  // 320 dp or the largest text (`lib/narrow.ts`): 12 in on the left and 5 between, the rest as drawn.
-  scoreNarrow: { padLeft: 12, padRight: 6, gap: 5 },
+  // Where the pill's spaces may close to when the bar is short of room (320 dp): 8 on the left, 3
+  // between; it keeps 4 clear of each round. Its chip ("Tur n/6", 13, not growing) is at most 70.
+  scoreTight: { padLeft: 8, gap: 3, clear: 4, chipMax: 70 },
   scoreChip: 32,
+  // Between the rounds' line and the pill when the pill goes under them.
+  scoreLineGap: 8,
   // The faces of the guessers (`.stk`): 26, overlapping 6, ringed 2 in the canvas's colour.
   face: 26,
   faceOverlap: 6,
@@ -92,9 +95,10 @@ export const KINSHI = {
   // The card's words: the band 36 in, 24 down, 62 high; the list 44 in, 112 down, 206 high, a
   // 14 % line between rows.
   wordBand: { side: 36, top: 24, height: 62 },
-  // The pink inside the ribbon's outline in `kart-on.webp` (296 wide): 27.5 to 85.5 down the card,
-  // so 3.5 under the band's top and 58 high.
-  wordPink: { top: 3.5, height: 58 },
+  // Inside the ribbon's black outline in `kart-on.webp` (measured on the 888 px picture, row medians
+  // across the words' width): the top line ends at 27.0 down the 296 card, the bottom one starts at
+  // 86.33; so 3 under the band's top and 59.33 high (the pink proper starts at 28 under a light rim).
+  wordPink: { top: 3, height: 59.33 },
   wordShadow: { color: 'rgba(20, 16, 22, 0.45)', y: 2 },
   list: { side: 44, top: 112, height: 206 },
   listInk: '#141016',
@@ -216,6 +220,43 @@ export function kinshiDeck(screenWidth: number) {
   };
 }
 export type KinshiDeck = ReturnType<typeof kinshiDeck>;
+
+// The score pill's numbers (800/18, tabular): Plus Jakarta Sans's tabular figures (`zero.tf` …)
+// and its hyphen, in font units of 1000 (`kinshiDeck.test.ts` reads them from the font file).
+export const KINSHI_SCORE_FONT = { unitsPerEm: 1000, figure: 600, minus: 634 } as const;
+
+function scoreWidth(n: number): number {
+  const text = String(n);
+  let units = 0;
+  for (const ch of text) units += ch === '-' ? KINSHI_SCORE_FONT.minus : KINSHI_SCORE_FONT.figure;
+  return (units / KINSHI_SCORE_FONT.unitsPerEm) * (KINSHI_TYPE.score.fontSize ?? 18);
+}
+
+// The pill at its tightest (every space at its least) and the room between the two 44 rounds.
+// When even that does not fit (a team at −100 or under on 320 dp: 40 cards a turn, 3 turns a team,
+// so the scores run from −120 to 120) the pill goes under the rounds on its own line rather than
+// over them; otherwise it stays between them and its spaces close only as far as needed.
+export function kinshiScorePill(
+  a: number,
+  b: number,
+  screenWidth: number,
+  kit: { side: number; round: number; edge: number },
+): { fits: boolean; tightest: number; room: number } {
+  const T = KINSHI.scoreTight;
+  const S = KINSHI.score;
+  const tightest =
+    2 * kit.edge +
+    T.padLeft +
+    2 * S.bar.w +
+    scoreWidth(a) +
+    scoreWidth(b) +
+    1 +
+    5 * T.gap +
+    T.chipMax +
+    S.padRight;
+  const room = screenWidth - 2 * kit.side - 2 * kit.round - 2 * T.clear;
+  return { fits: tightest <= room, tightest, room };
+}
 
 // The word's band on this deck, for `kinshiWordLayout`.
 export function kinshiBand(d: KinshiDeck): KinshiBand {

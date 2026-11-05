@@ -34,11 +34,11 @@ import {
   KINSHI_TYPE as KT,
   kinshiBand,
   kinshiDeck,
+  kinshiScorePill,
   kinshiDeckHeight,
   type KinshiDeck,
 } from '@/theme/kinshi';
 import { kinshiWordLayout } from '@/theme/kinshiWord';
-import { isNarrow } from '@/lib/narrow';
 import { useTheme } from '@/theme/ThemeProvider';
 
 import { type KinshiBuddy, kinshiArt, type KinshiTimer } from './kinshiArt';
@@ -175,57 +175,81 @@ export function TopBar({
   onChat: () => void;
 }) {
   const { c } = useKit();
-  const { width, fontScale } = useWindowDimensions();
-  // 320 dp or the largest text: the pill's inner spaces close up so that it keeps clear of the two
-  // 44 rounds (two-digit scores: 194 against 192 of room at 320 dp before; at most 180 now).
-  const pill = isNarrow(width, fontScale) ? K.scoreNarrow : K.score;
-  return (
+  const { width } = useWindowDimensions();
+  // Between the rounds when it fits at its tightest (its spaces then close only as far as the bar
+  // needs: Yoga shrinks them, never the numbers or the chip); under them on its own line when not.
+  const inline = score
+    ? kinshiScorePill(score.a, score.b, width, {
+        side: KIT.size.side,
+        round: KIT.size.round,
+        edge: KIT.size.edge,
+      }).fits
+    : true;
+  const pill = score ? (
     <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginTop: K.barTop,
-      }}
+      accessible
+      accessibilityLabel={tr.kinshi.scoreLabel(score.a, score.b)}
+      style={{ flexShrink: 1, marginHorizontal: K.scoreTight.clear }}
     >
-      <Round
-        icon="close"
-        label={close.label}
-        onPress={close.onPress}
-        loading={close.loading}
-        testID={close.testID}
-      />
-      {score ? (
-        <View accessible accessibilityLabel={tr.kinshi.scoreLabel(score.a, score.b)}>
-          <Glass
-            radius={K.score.height / 2}
-            style={{
-              height: K.score.height,
-              paddingLeft: pill.padLeft,
-              paddingRight: pill.padRight,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: pill.gap,
-            }}
-          >
-            <TeamBar team="a" />
-            <Text maxFontSizeMultiplier={1} style={[KT.score, { color: c.ink }]}>
-              {score.a}
-            </Text>
-            <View style={{ width: 1, height: K.score.rule, backgroundColor: c.hair }} />
-            <TeamBar team="b" />
-            <Text maxFontSizeMultiplier={1} style={[KT.score, { color: c.ink }]}>
-              {score.b}
-            </Text>
-            <View style={{ height: K.scoreChip, justifyContent: 'center' }}>
-              <Chip label={score.turn} fixed />
-            </View>
-          </Glass>
+      <Glass
+        radius={K.score.height / 2}
+        style={{
+          height: K.score.height,
+          paddingRight: K.score.padRight,
+          flexDirection: 'row',
+          alignItems: 'center',
+          flexShrink: 1,
+        }}
+      >
+        <PillSpace size={K.score.padLeft} least={K.scoreTight.padLeft} />
+        <TeamBar team="a" />
+        <PillSpace size={K.score.gap} least={K.scoreTight.gap} />
+        <Text maxFontSizeMultiplier={1} style={[KT.score, { color: c.ink }]}>
+          {score.a}
+        </Text>
+        <PillSpace size={K.score.gap} least={K.scoreTight.gap} />
+        <View style={{ width: 1, height: K.score.rule, backgroundColor: c.hair }} />
+        <PillSpace size={K.score.gap} least={K.scoreTight.gap} />
+        <TeamBar team="b" />
+        <PillSpace size={K.score.gap} least={K.scoreTight.gap} />
+        <Text maxFontSizeMultiplier={1} style={[KT.score, { color: c.ink }]}>
+          {score.b}
+        </Text>
+        <PillSpace size={K.score.gap} least={K.scoreTight.gap} />
+        <View style={{ height: K.scoreChip, justifyContent: 'center' }}>
+          <Chip label={score.turn} fixed />
         </View>
-      ) : null}
-      <Round icon="chat" label={tr.kinshi.chat} onPress={onChat} />
+      </Glass>
+    </View>
+  ) : null;
+  return (
+    <View style={{ marginTop: K.barTop, alignItems: 'center', gap: K.scoreLineGap }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          alignSelf: 'stretch',
+        }}
+      >
+        <Round
+          icon="close"
+          label={close.label}
+          onPress={close.onPress}
+          loading={close.loading}
+          testID={close.testID}
+        />
+        {inline ? pill : null}
+        <Round icon="chat" label={tr.kinshi.chat} onPress={onChat} />
+      </View>
+      {inline ? null : pill}
     </View>
   );
+}
+
+// A space in the score pill: the canvas's, closing to `least` when the bar is short of room.
+function PillSpace({ size, least }: { size: number; least: number }) {
+  return <View style={{ width: size, minWidth: least, flexShrink: 1 }} />;
 }
 
 // The time capsule (Aura v85): full in Tur öncesi and the 3-2-1, half while the turn runs, low in

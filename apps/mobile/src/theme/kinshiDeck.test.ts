@@ -6,13 +6,16 @@ import { upperTr } from '../../../../supabase/functions/_shared/pure/trText.ts';
 import { describe, expect, it } from 'vitest';
 
 import { KIT, KIT_TYPE } from './auraKit';
+import { TABU_GAME, TABU_POINTS } from '../../../../supabase/functions/_shared/pure/tabuGame.ts';
 import {
   KINSHI,
   KINSHI_MIN_TYPE,
+  KINSHI_SCORE_FONT,
   KINSHI_TYPE,
   kinshiBand,
   kinshiDeck,
   kinshiDeckHeight,
+  kinshiScorePill,
 } from './kinshi';
 import { KINSHI_WORD, KINSHI_WORD_FONT, kinshiWordLayout } from './kinshiWord';
 
@@ -197,34 +200,90 @@ describe('the canvas’s card on 390 dp', () => {
   });
 });
 
-// The score pill between the close and the chat rounds (44 each, 20 in from the screen's sides):
-// its two bars, two numbers (18, tabular; the widest figure counted), the line and the turn chip
-// ("Tur 6/6", 13, not growing with the system text). It keeps at least 4 clear of each round.
-describe('the score pill', () => {
-  const figure = Math.max(...'0123456789'.split('').map((d) => heavy.width(d, 18, 0)));
-  const pill = (p: { padLeft: number; padRight: number; gap: number }, digits: number) => {
-    const chip =
-      2 * KIT.size.chipPadX +
-      2 * KIT.size.edge +
-      semi.width('Tur 6/6', KIT_TYPE.chip.fontSize ?? 13, KIT_TYPE.chip.letterSpacing ?? 0);
-    return (
-      p.padLeft +
-      2 * (KINSHI.score.bar.w + p.gap + digits * figure + p.gap) +
-      1 +
-      p.gap +
-      chip +
-      p.padRight
-    );
+// The two phrases that only the band holds on 320 dp: two lines at 22 with 2 dp between them
+// need more than the space between the ribbon's black lines (59.33 of the 296 card, 45.30 here).
+// Ink height at its least = 22 × (first line's top + its bottom + second's top + its bottom) + 2.
+it('cannot keep Hayvanat bahçesi and Emniyet kemeri off the outline at 22 on 320 dp', () => {
+  const b = band(320);
+  const least = (a: string, c: string) => {
+    const [x, y] = [heavy.ink(a), heavy.ink(c)];
+    return (KINSHI_MIN_TYPE.word * (x.top + x.bottom + y.top + y.bottom)) / heavy.unitsPerEm + 2;
   };
-  const room = (screen: number) => screen - 2 * KIT.size.side - 2 * KIT.size.round - 2 * 4;
+  expect(b.pink.height).toBeCloseTo(45.3, 1);
+  expect(least('HAYVANAT', 'BAHÇESİ') - b.pink.height).toBeCloseTo(0.13, 2);
+  expect(least('EMNİYET', 'KEMERİ') - b.pink.height).toBeCloseTo(0.22, 2);
+});
 
-  it('keeps clear of the rounds at 320 dp with two-digit scores', () => {
-    expect(pill(KINSHI.score, 2)).toBeGreaterThan(room(320));
-    expect(pill(KINSHI.scoreNarrow, 2)).toBeLessThanOrEqual(room(320));
+// The score pill between the close and the chat rounds (44 each, 20 in from the screen's sides).
+// The scores run from −120 to 120: Yasak! takes 1 (TABU_POINTS), a turn closes at most the 40 cards
+// dealt, a team plays 3 of the 6 turns.
+describe('the score pill', () => {
+  const kit = { side: KIT.size.side, round: KIT.size.round, edge: KIT.size.edge };
+  const figure = heavy.named('zero.tf');
+
+  it('reads its numbers’ widths from the font', () => {
+    for (const name of ['zero.tf', 'one.tf', 'four.tf', 'seven.tf', 'nine.tf'])
+      expect(heavy.named(name)).toBe(KINSHI_SCORE_FONT.figure);
+    expect(figure).toBe(KINSHI_SCORE_FONT.figure);
+    expect(heavy.glyph('-')[0]).toBe(KINSHI_SCORE_FONT.minus);
   });
 
-  it('is the canvas’s from 360 dp', () => {
-    expect(pill(KINSHI.score, 2)).toBeLessThanOrEqual(room(360));
+  it('allows its chip no less than "Tur n/6" needs', () => {
+    for (let n = 1; n <= TABU_GAME.totalTurns; n++) {
+      const text = semi.width(`Tur ${n}/${TABU_GAME.totalTurns}`, KIT_TYPE.chip.fontSize ?? 13, 0);
+      expect(2 * KIT.size.chipPadX + 2 * KIT.size.edge + text).toBeLessThanOrEqual(
+        KINSHI.scoreTight.chipMax,
+      );
+    }
+  });
+
+  it('runs from −120 to 120', () => {
+    const most = TABU_GAME.cardsPerTurn * (TABU_GAME.totalTurns / 2);
+    expect(most * TABU_POINTS.taboo).toBe(-120);
+    expect(most * TABU_POINTS.correct).toBe(120);
+  });
+
+  const SCORES = [-120, -100, -99, -9, 0, 9, 99, 100, 120];
+  const pairs = SCORES.flatMap((a) => SCORES.map((b) => [a, b] as const));
+
+  it.each([360, 390, 430])('stays between the rounds for every score on %i dp', (screen) => {
+    expect(pairs.filter(([a, b]) => !kinshiScorePill(a, b, screen, kit).fits)).toEqual([]);
+  });
+
+  // On 320 dp (184 of room) it stays between the rounds, its spaces closing, while the two numbers
+  // together are no wider than "-99" and "99" or "100" and "100"; wider pairs (both teams far below
+  // zero, or one at −100 or under beside a two- or three-digit score) send it under them.
+  it('goes under the rounds on 320 dp only for the widest pairs', () => {
+    const at = (a: number, b: number) => kinshiScorePill(a, b, 320, kit).fits;
+    for (const [a, b] of [
+      [99, 99],
+      [-9, -9],
+      [-9, 99],
+      [100, 100],
+      [120, 120],
+      [-99, 99],
+      [-99, 120],
+      [-120, 9],
+    ] as const)
+      expect(at(a, b), `${a} ${b}`).toBe(true);
+    for (const [a, b] of [
+      [-99, -99],
+      [-100, -100],
+      [-120, -120],
+      [-100, 100],
+      [-120, -9],
+    ] as const)
+      expect(at(a, b), `${a} ${b}`).toBe(false);
+    const inline = pairs.filter(([a, b]) => a >= -9 && b >= -9 && a <= 99 && b <= 99);
+    expect(inline.every(([a, b]) => at(a, b))).toBe(true);
+  });
+
+  it('never crowds the rounds when it stays between them', () => {
+    for (const screen of SCREENS)
+      for (const [a, b] of pairs) {
+        const p = kinshiScorePill(a, b, screen, kit);
+        if (p.fits) expect(p.tightest).toBeLessThanOrEqual(p.room);
+      }
   });
 });
 
@@ -296,8 +355,27 @@ function readFont(path: string) {
     if (at(g + 1) === at(g)) return [advance, 0, 0];
     return [advance, i16(glyf + at(g) + 8), i16(glyf + at(g) + 4)];
   };
+  // A glyph's advance by its name in the `post` table (format 2), e.g. the tabular `zero.tf`.
+  const named = (name: string): number => {
+    const post = table('post');
+    const n = u16(post + 32);
+    let o = post + 34 + n * 2;
+    const names: string[] = [];
+    for (let g = 0; g < n; g++) {
+      const index = u16(post + 34 + g * 2);
+      while (index >= 258 && names.length <= index - 258) {
+        const len = buf[o] ?? 0;
+        names.push(buf.toString('latin1', o + 1, o + 1 + len));
+        o += len + 1;
+      }
+      if (index >= 258 && names[index - 258] === name)
+        return u16(hmtx + Math.min(g, metrics - 1) * 4);
+    }
+    throw new Error(`no glyph named ${name}`);
+  };
   return {
     unitsPerEm,
+    named,
     ascent: i16(hhea + 4),
     descent: -i16(hhea + 6),
     glyph,
