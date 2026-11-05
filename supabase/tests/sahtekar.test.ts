@@ -676,4 +676,51 @@ describe('locks (§4.K)', () => {
     },
     SLOW,
   );
+
+  // A ballot that starts in time but gets the table only after the vote's time: the clock is read
+  // when the table is held, not when the call began, so it is late (turn_over) and changes nothing.
+  it(
+    'refuses a ballot whose time ran out while it waited for the table',
+    async () => {
+      const g = await game(4);
+      await toVote(g);
+      const at = await step(g.roomId);
+      const [impostor] = g.impostors as [Person];
+      const [a] = g.players as [Person];
+      const first = postgres(dbUrl, { max: 1, onnotice: () => {} });
+      const second = postgres(dbUrl, { max: 1, onnotice: () => {} });
+      try {
+        let later: Promise<unknown> = Promise.resolve();
+        await first.begin(async (tx) => {
+          // Holding the table, the vote's clock is set to run out in a second.
+          await tx`
+            update public.rooms
+            set game_state = jsonb_set(
+              game_state, '{endsAt}', to_jsonb(clock_timestamp() + interval '1 second')
+            )
+            where id = ${g.roomId}
+          `;
+          later = second`
+            select (public.sahtekar_vote(
+              ${a.userId}, ${g.roomId}, ${at}, ${[impostor.sessionId]}::uuid[]
+            )).id
+          `
+            .execute()
+            .catch((err: unknown) => err);
+          await waitUntilBlocked('sahtekar_vote');
+          await tx`select pg_sleep(2)`;
+        });
+        expect(await later).toMatchObject({ message: 'turn_over' });
+      } finally {
+        await Promise.all([first.end(), second.end()]);
+      }
+      const st = await state(g.roomId);
+      expect(st).toMatchObject({ phase: 'vote', step: at, voted: [] });
+      const ballots = await sql`
+        select secret -> 'votes' as votes from public.game_secrets where room_id = ${g.roomId}
+      `;
+      expect(ballots[0]?.votes).toEqual({});
+    },
+    SLOW,
+  );
 });

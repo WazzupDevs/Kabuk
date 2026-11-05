@@ -185,7 +185,7 @@ begin
         || jsonb_build_object(
           'phase', new_phase,
           'step', coalesce((st ->> 'step')::integer, 0) + 1,
-          'endsAt', now() + private.sahtekar_seconds(clock)
+          'endsAt', clock_timestamp() + private.sahtekar_seconds(clock)
         )
         || extra
   where id = target_room_id
@@ -218,15 +218,17 @@ $$;
 -- comes only while its clock runs: from endsAt on, turn_over. The caller holds the table
 -- (private.room_phone), so an action and the advance that ends its phase never interleave: the
 -- first to hold it wins; the other finds the phase still open (the action counts) or a new step
--- (the action changes nothing).
+-- (the action changes nothing). The clock is read when the table is held (clock_timestamp(), not
+-- the transaction's start): an action that waited for the table past endsAt is late. Volatile, as
+-- clock_timestamp() is.
 create function private.sahtekar_on_time(st jsonb)
 returns void
 language plpgsql
-stable
+volatile
 set search_path = ''
 as $$
 begin
-  if now() >= (st ->> 'endsAt')::timestamptz then
+  if clock_timestamp() >= (st ->> 'endsAt')::timestamptz then
     raise exception using errcode = 'P0001', message = 'turn_over';
   end if;
 end;
@@ -499,7 +501,7 @@ begin
         'gameNo', no,
         'phase', 'role',
         'step', 1,
-        'endsAt', now() + private.sahtekar_seconds('roleSeconds'),
+        'endsAt', clock_timestamp() + private.sahtekar_seconds('roleSeconds'),
         'seats', seats,
         'gone', '[]'::jsonb,
         'impostors', impostors,
@@ -669,7 +671,7 @@ $$;
 create function private.sahtekar_may_guess(st jsonb, my_role text, me uuid, at_step integer)
 returns boolean
 language plpgsql
-stable
+volatile
 set search_path = ''
 as $$
 begin
@@ -679,9 +681,7 @@ begin
   if my_role is distinct from 'impostor' or not coalesce(st -> 'caught', '[]'::jsonb) ? me::text then
     raise exception using errcode = 'P0001', message = 'not_player';
   end if;
-  if now() >= (st ->> 'endsAt')::timestamptz then
-    raise exception using errcode = 'P0001', message = 'turn_over';
-  end if;
+  perform private.sahtekar_on_time(st);
   return true;
 end;
 $$;
@@ -738,7 +738,8 @@ end;
 $$;
 
 -- sahtekar/advance: anyone at the table once the phase's time is up (a second of slack for the
--- phones' clocks); idempotent: early, it changes nothing.
+-- phones' clocks), read when the table is held (clock_timestamp()); idempotent: early, it changes
+-- nothing.
 create function public.sahtekar_advance(target_user_id uuid, target_room_id uuid)
 returns public.rooms
 language plpgsql
@@ -752,7 +753,7 @@ begin
   select * into p from private.room_phone(target_user_id, target_room_id);
   select * into r from public.rooms where id = target_room_id;
   if r.concept is distinct from 'sahtekar' or not (r.game_state ? 'phase')
-     or now() + interval '1 second' < (r.game_state ->> 'endsAt')::timestamptz then
+     or clock_timestamp() + interval '1 second' < (r.game_state ->> 'endsAt')::timestamptz then
     return r;
   end if;
   return private.sahtekar_step(r);
@@ -783,7 +784,7 @@ begin
   st := jsonb_set(r.game_state, '{gone}', coalesce(r.game_state -> 'gone', '[]'::jsonb) || to_jsonb(sid));
   -- An impostor ends the game; the open state does not say so before the end (rule 3).
   if new.role = 'impostor' then
-    st := jsonb_set(st, '{endsAt}', to_jsonb(now()));
+    st := jsonb_set(st, '{endsAt}', to_jsonb(clock_timestamp()));
   end if;
   if st ->> 'phase' = 'vote' then
     update public.game_secrets set secret = secret #- array['votes', sid]
@@ -796,11 +797,11 @@ begin
     st := jsonb_set(st, '{next}',
       private.sahtekar_seat_at(st, private.sahtekar_position(st, (st ->> 'pos')::integer + 1)));
     if st ->> 'speaker' = sid then
-      st := jsonb_set(st, '{endsAt}', to_jsonb(now()));
+      st := jsonb_set(st, '{endsAt}', to_jsonb(clock_timestamp()));
     end if;
   end if;
   if private.sahtekar_complete(st) then
-    st := jsonb_set(st, '{endsAt}', to_jsonb(now()));
+    st := jsonb_set(st, '{endsAt}', to_jsonb(clock_timestamp()));
   end if;
   update public.rooms set game_state = st, last_activity_at = now() where id = r.id;
   return new;
