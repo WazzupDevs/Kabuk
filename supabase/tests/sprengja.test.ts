@@ -353,6 +353,211 @@ describe('the round (§4.6.7)', () => {
   );
 });
 
+// As if the starter had been idle past startBy.
+async function idle(roomId: string): Promise<void> {
+  await sql`
+    update public.rooms
+    set game_state = jsonb_set(game_state, '{startBy}', to_jsonb(clock_timestamp() - interval '1 second'))
+    where id = ${roomId}
+  `;
+}
+
+const takeOver = (p: Person, g: Game, st: Pick<State, 'round' | 'step'>) =>
+  sprengja(p, { action: 'take-over', roomId: g.roomId, round: st.round, step: st.step });
+
+describe('the idle starter (K-85, 5 Kasım)', () => {
+  it(
+    'lets another player take an idle start over after 30 s, keeping the order and the fuse unlit',
+    async () => {
+      const g = await game(4, { watch: [3] });
+      const [a, b, c] = (await g.order()) as [Person, Person, Person];
+      const watcher = g.people[3] as Person;
+      let st = await state(g.roomId);
+      const order = st.order;
+      const due = Date.parse(st.startBy as string) - Date.now();
+      expect(due).toBeGreaterThan(25_000);
+      expect(due).toBeLessThanOrEqual(30_000);
+      expect(await takeOver(b, g, st)).toEqual({ status: 429, body: errorBody('too_soon') });
+
+      await idle(g.roomId);
+      st = await state(g.roomId);
+      expect(await takeOver(watcher, g, st)).toEqual({
+        status: 403,
+        body: errorBody('not_player'),
+      });
+      // The starter itself: nothing changes.
+      expect(await takeOver(a, g, st)).toEqual(OK);
+      expect(await state(g.roomId)).toEqual(st);
+
+      expect(await takeOver(b, g, st)).toEqual(OK);
+      let after = await state(g.roomId);
+      expect(after).toMatchObject({
+        phase: 'card',
+        starter: b.sessionId,
+        step: st.step + 1,
+        order,
+      });
+      expect(Date.parse(after.startBy as string)).toBeGreaterThan(Date.now() + 25_000);
+      expect(await fuseOf(g.roomId)).toBeNull();
+      // The same take-over again, and the old starter's card: nothing, not_starter.
+      expect(await takeOver(b, g, st)).toEqual(OK);
+      expect(await state(g.roomId)).toEqual(after);
+      expect(await sprengja(a, { action: 'reveal', roomId: g.roomId, round: 1 })).toEqual({
+        status: 403,
+        body: errorBody('not_starter'),
+      });
+
+      // The card open and the fuse not lit: the same 30 s, then another player.
+      expect(await sprengja(b, { action: 'reveal', roomId: g.roomId, round: 1 })).toEqual(OK);
+      st = await state(g.roomId);
+      expect(st.phase).toBe('letters');
+      expect(Date.parse(st.startBy as string)).toBeGreaterThan(Date.now() + 25_000);
+      expect(await takeOver(c, g, st)).toEqual({ status: 429, body: errorBody('too_soon') });
+      await idle(g.roomId);
+      st = await state(g.roomId);
+      expect(await takeOver(c, g, st)).toEqual(OK);
+      after = await state(g.roomId);
+      expect(after).toMatchObject({ phase: 'letters', starter: c.sessionId, letters: st.letters });
+      expect(await fuseOf(g.roomId)).toBeNull();
+
+      // The fuse starts only with the new starter's light.
+      expect(await sprengja(c, { action: 'light', roomId: g.roomId, round: 1 })).toEqual(OK);
+      const lit = await state(g.roomId);
+      expect(lit).toMatchObject({ phase: 'lit', holder: c.sessionId, startBy: null, order });
+      expect(await fuseOf(g.roomId)).not.toBeNull();
+      expect(await takeOver(a, g, lit)).toEqual(OK);
+      expect(await state(g.roomId)).toEqual(lit);
+    },
+    SLOW,
+  );
+
+  it(
+    'takes one of two take-overs sent at once',
+    async () => {
+      const g = await game(4);
+      const [, b, c] = (await g.order()) as [Person, Person, Person];
+      await idle(g.roomId);
+      const st = await state(g.roomId);
+      const answers = await Promise.all([takeOver(b, g, st), takeOver(c, g, st)]);
+      for (const answer of answers) expect(answer).toEqual(OK);
+      const after = await state(g.roomId);
+      expect(after.step).toBe(st.step + 1);
+      expect([b.sessionId, c.sessionId]).toContain(after.starter);
+      expect(after.order).toEqual(st.order);
+    },
+    SLOW,
+  );
+
+  it(
+    'keeps one starter when a take-over races the card and the light',
+    async () => {
+      const g = await game(3);
+      const [a, b] = (await g.order()) as [Person, Person];
+      const first = await state(g.roomId);
+      const pool = postgres(dbUrl, { max: 4, onnotice: () => {} });
+      try {
+        for (let i = 0; i < 20; i++) {
+          const card = i % 2 === 0;
+          const round = 200 + i;
+          const step = (await state(g.roomId)).step + 1;
+          await sql`
+            update public.rooms
+            set game_state = game_state || jsonb_build_object(
+              'phase', ${card ? 'card' : 'letters'}::text, 'round', ${round}::integer,
+              'step', ${step}::integer, 'starter', ${a.sessionId}::text, 'holder', null,
+              'letters', ${card ? null : 'tka'}::text, 'used', '[]'::jsonb,
+              'startBy', to_jsonb(clock_timestamp() - interval '1 second')
+            )
+            where id = ${g.roomId}
+          `;
+          await sql`
+            update public.game_secrets set secret = '{}'::jsonb
+            where room_id = ${g.roomId} and game_no = ${first.gameNo as number}
+          `;
+          const press = card
+            ? pool`select (public.sprengja_reveal(${a.userId}, ${g.roomId}, ${round})).id`
+            : pool`select (public.sprengja_light(${a.userId}, ${g.roomId}, ${round})).id`;
+          const take = pool`
+            select (public.sprengja_take_over(${b.userId}, ${g.roomId}, ${round}, ${step})).id
+          `;
+          await Promise.all([press, take].map((q) => q.execute().catch((err: unknown) => err)));
+
+          const after = await state(g.roomId);
+          const fuse = await fuseOf(g.roomId);
+          if (after.starter === b.sessionId) {
+            // The take-over came first: the old starter's press found it was no longer theirs.
+            expect(after.phase, `round ${round}`).toBe(card ? 'card' : 'letters');
+            expect(after.step).toBe(step + 1);
+            expect(fuse).toBeNull();
+          } else {
+            // The press came first: the take-over found a state already gone.
+            expect(after.starter, `round ${round}`).toBe(a.sessionId);
+            expect(after.phase).toBe(card ? 'letters' : 'lit');
+            expect(after.step).toBe(step + 1);
+            if (card) expect(fuse).toBeNull();
+            else expect(after).toMatchObject({ holder: a.sessionId, startBy: null });
+            if (!card) expect(fuse).not.toBeNull();
+          }
+        }
+      } finally {
+        await pool.end();
+      }
+    },
+    SLOW,
+  );
+
+  it(
+    'lets a take-over wait for a light and find the fuse burning',
+    async () => {
+      const g = await game(3);
+      const [a, b] = (await g.order()) as [Person, Person];
+      expect(await sprengja(a, { action: 'reveal', roomId: g.roomId, round: 1 })).toEqual(OK);
+      await idle(g.roomId);
+      const st = await state(g.roomId);
+      const first = postgres(dbUrl, { max: 1, onnotice: () => {} });
+      const second = postgres(dbUrl, { max: 1, onnotice: () => {} });
+      try {
+        let later: Promise<unknown> = Promise.resolve();
+        await first.begin(async (tx) => {
+          await tx`select (public.sprengja_light(${a.userId}, ${g.roomId}, 1)).id`;
+          later = second`
+            select (public.sprengja_take_over(${b.userId}, ${g.roomId}, 1, ${st.step})).id
+          `
+            .execute()
+            .catch((err: unknown) => err);
+          await waitUntilBlocked('sprengja_take_over');
+        });
+        expect(await later).toHaveLength(1);
+      } finally {
+        await Promise.all([first.end(), second.end()]);
+      }
+      expect(await state(g.roomId)).toMatchObject({
+        phase: 'lit',
+        starter: a.sessionId,
+        holder: a.sessionId,
+      });
+    },
+    SLOW,
+  );
+
+  it(
+    'gives a new starter their own 30 s when the old one leaves',
+    async () => {
+      const g = await game(4);
+      const [, b] = (await g.order()) as [Person, Person];
+      await idle(g.roomId);
+      // The owner is the first starter and cannot leave the game: b takes over, then leaves.
+      expect(await takeOver(b, g, await state(g.roomId))).toEqual(OK);
+      await idle(g.roomId);
+      expect(await rooms(b, { action: 'leave-game', roomId: g.roomId })).toEqual(OK);
+      const st = await state(g.roomId);
+      expect(st.starter).toBe(st.order[2]);
+      expect(Date.parse(st.startBy as string)).toBeGreaterThan(Date.now() + 25_000);
+    },
+    SLOW,
+  );
+});
+
 describe('the fuse (rule 3, K-85 O-4)', () => {
   it(
     'keeps the moment out of every answer, the table’s state and the events',
@@ -711,6 +916,37 @@ describe('Tur sonu and the end (§4.6.7)', () => {
           won: winners.includes(p),
         });
       }
+    },
+    SLOW,
+  );
+});
+
+describe('the last Tur sonu (K-85, 5 Kasım)', () => {
+  it(
+    'ends the game from the last round’s Tur sonu by its clock too',
+    async () => {
+      const g = await game(3);
+      await sql`
+        update public.rooms set game_state = jsonb_set(game_state, '{rounds}', '1')
+        where id = ${g.roomId}
+      `;
+      await light(g);
+      await burnOut(g.roomId);
+      expect(await sprengja(g.owner, { action: 'advance', roomId: g.roomId })).toEqual(OK);
+      expect(await state(g.roomId)).toMatchObject({ phase: 'summary', round: 1 });
+      // Early: Tur sonu stays.
+      expect(await sprengja(g.owner, { action: 'advance', roomId: g.roomId })).toEqual(OK);
+      expect((await roomRow(g.roomId)).concept).toBe('sprengja');
+      await sql`
+        update public.rooms
+        set game_state = jsonb_set(game_state, '{endsAt}', to_jsonb(now() - interval '1 minute'))
+        where id = ${g.roomId}
+      `;
+      expect(await sprengja(g.owner, { action: 'advance', roomId: g.roomId })).toEqual(OK);
+      const row = await roomRow(g.roomId);
+      expect(row.concept).toBeNull();
+      expect(row.game_state.lastGame).toMatchObject({ concept: 'sprengja', abandoned: false });
+      expect(row.game_state.lastGame.sprengja.winners).toHaveLength(2);
     },
     SLOW,
   );

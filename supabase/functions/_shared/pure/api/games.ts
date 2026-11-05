@@ -106,6 +106,8 @@ export type SprengjaRequest =
   // The round's starter: open the card, light the fuse; idempotent.
   | { action: 'reveal'; roomId: string; round: number }
   | { action: 'light'; roomId: string; round: number }
+  // Another player still in the game, once the starter has been idle past game_state.startBy.
+  | { action: 'take-over'; roomId: string; round: number; step: number }
   // The holder's throw to the next player.
   | { action: 'pass'; roomId: string; round: number; step: number }
   // Anyone at the table while the fuse burns, as often as game_state.poll says; idempotent.

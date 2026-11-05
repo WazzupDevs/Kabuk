@@ -19,8 +19,11 @@ export const SPRENGJA = {
   highPerPlayerMs: 3500,
   // The hard letter groups come into the pool from this many players.
   hardFrom: 6,
-  // Tur sonu: everyone ready, or this long (the frame's rule for screens between rounds).
+  // Tur sonu: everyone ready, or this long (the frame's rule for screens between rounds); after the
+  // last round, the end comes the same way.
   summarySeconds: 15,
+  // The card closed or the fuse not lit this long: another player may take the start over.
+  starterIdleSeconds: 30,
   // How often phones ask the server whether the fuse ran out (sprengja/poll), when the server's
   // own job (pg_cron, every second) is off: the holder, the next player, everyone else.
   holderPollMs: 1000,
@@ -129,6 +132,9 @@ export type SprengjaState = {
   ready: string[];
   // Tur sonu's and a halted game's clock; null while it is not timed (no fuse is ever here).
   endsAt: string | null;
+  // The card closed or the fuse not lit: from this moment another player may take the start over
+  // (sprengja/take-over); null once the fuse burns.
+  startBy: string | null;
   poll: SprengjaPoll;
 };
 
@@ -205,6 +211,7 @@ export function readSprengjaState(state: unknown): SprengjaState | null {
     lastBlast: blast(state.lastBlast),
     ready: strings(state.ready),
     endsAt: text(state.endsAt),
+    startBy: text(state.startBy),
     poll: poll(state.poll),
   };
 }
@@ -223,6 +230,20 @@ export function readSprengjaResult(state: unknown): SprengjaResult | null {
     winners: strings(s.winners),
     abandoned: last.abandoned === true,
   };
+}
+
+// May `me` take the round's start over at `nowMs` (the server's clock as the phone knows it; the
+// server checks again): the card closed or the fuse not lit, the starter idle past startBy, `me`
+// another player still in the game.
+export function canTakeOver(
+  state: Pick<SprengjaState, 'phase' | 'starter' | 'startBy' | 'order' | 'gone'>,
+  me: string,
+  nowMs: number,
+): boolean {
+  if (state.phase !== 'card' && state.phase !== 'letters') return false;
+  if (!state.startBy || me === state.starter) return false;
+  if (!state.order.includes(me) || state.gone.includes(me)) return false;
+  return nowMs >= Date.parse(state.startBy);
 }
 
 // Who wins: the players still in the game with the fewest blasts, all of them (K-85 O-5).

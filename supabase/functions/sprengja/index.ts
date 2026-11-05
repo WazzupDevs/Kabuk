@@ -16,6 +16,7 @@ const Body: z.ZodType<SprengjaRequest> = z.discriminatedUnion('action', [
   z.object({ action: z.literal('start'), roomId: z.uuid() }),
   z.object({ action: z.literal('reveal'), roomId: z.uuid(), round: Counter }),
   z.object({ action: z.literal('light'), roomId: z.uuid(), round: Counter }),
+  z.object({ action: z.literal('take-over'), roomId: z.uuid(), round: Counter, step: Counter }),
   z.object({ action: z.literal('pass'), roomId: z.uuid(), round: Counter, step: Counter }),
   z.object({ action: z.literal('poll'), roomId: z.uuid(), round: Counter }),
   z.object({ action: z.literal('ready'), roomId: z.uuid(), step: Counter }),
@@ -52,6 +53,16 @@ async function act(userId: string, body: SprengjaRequest): Promise<GameOkRespons
       const fn = `sprengja_${body.action}` as const;
       const { error } = await db.rpc(fn, { ...target, at_round: body.round });
       if (error) throw dbError(fn, error);
+      return OK;
+    }
+
+    case 'take-over': {
+      const { error } = await db.rpc('sprengja_take_over', {
+        ...target,
+        at_round: body.round,
+        at_step: body.step,
+      });
+      if (error) throw dbError('sprengja_take_over', error);
       return OK;
     }
 

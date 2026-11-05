@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   activePlayers,
+  canTakeOver,
   fuseMs,
   fuseRange,
   nextActive,
@@ -110,6 +111,7 @@ const lit: SprengjaState = {
   lastBlast: { round: 1, holder: 'a', gone: false },
   ready: [],
   endsAt: null,
+  startBy: null,
   poll: pollCadence(false),
 };
 
@@ -167,6 +169,30 @@ describe('winnersOf (K-85 O-5)', () => {
   it('scores minus one a blast', () => {
     expect(scoreOf({ hits: { a: 3 } }, 'a')).toBe(-3);
     expect(scoreOf({ hits: {} }, 'b')).toBe(-0);
+  });
+});
+
+describe('canTakeOver', () => {
+  const idle = {
+    phase: 'card' as const,
+    starter: 'a',
+    startBy: '2026-11-05T10:00:30.000Z',
+    order: ['a', 'b', 'c', 'd'],
+    gone: ['d'],
+  };
+  const at = (iso: string) => Date.parse(iso);
+  it('lets another player take an idle start over from startBy on', () => {
+    expect(canTakeOver(idle, 'b', at('2026-11-05T10:00:29.999Z'))).toBe(false);
+    expect(canTakeOver(idle, 'b', at('2026-11-05T10:00:30.000Z'))).toBe(true);
+    expect(canTakeOver({ ...idle, phase: 'letters' }, 'c', at('2026-11-05T10:01:00Z'))).toBe(true);
+  });
+  it('never the starter, one who left, a watcher, or once the fuse burns', () => {
+    const late = at('2026-11-05T10:05:00Z');
+    expect(canTakeOver(idle, 'a', late)).toBe(false);
+    expect(canTakeOver(idle, 'd', late)).toBe(false);
+    expect(canTakeOver(idle, 'w', late)).toBe(false);
+    expect(canTakeOver({ ...idle, phase: 'lit', startBy: null }, 'b', late)).toBe(false);
+    expect(canTakeOver({ ...idle, phase: 'summary' }, 'b', late)).toBe(false);
   });
 });
 

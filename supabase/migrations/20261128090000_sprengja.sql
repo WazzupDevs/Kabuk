@@ -10,7 +10,8 @@
 --   K-85 O-4); the Edge Function never sees it: it is drawn here.
 -- - rooms.game_state, open to the table: the phase and step, the round, the order, who left (gone),
 --   the starter, the holder, the throws, the letter group, the blasts (hits), the last blast, who
---   is ready, Tur sonu's clock (endsAt; never the fuse's) and how often phones poll (poll). The end
+--   is ready, Tur sonu's clock (endsAt; never the fuse's), when another player may take an idle
+--   start over (startBy; the server's clock, apart from the fuse) and how often phones poll (poll). The end
 --   moves to game_state.lastGame.sprengja.
 -- - game_events, open to the table: sp_lit, sp_pass, sp_explode with the round and the session ids
 --   (rule 4). Replaying a round's events gives game_state's holder and throws (pure/sprengja.ts →
@@ -108,7 +109,7 @@ as $$
   select jsonb_build_object(
     'minPlayers', 3, 'maxPlayers', 8, 'minRounds', 5, 'maxRounds', 8,
     'lowBaseMs', 8000, 'lowPerPlayerMs', 1500, 'highBaseMs', 18000, 'highPerPlayerMs', 3500,
-    'hardFrom', 6, 'summarySeconds', 15,
+    'hardFrom', 6, 'summarySeconds', 15, 'starterIdleSeconds', 30,
     'holderPollMs', 1000, 'nextPollMs', 3000, 'othersPollMs', 10000, 'cronHolderPollMs', 2000
   );
 $$;
@@ -120,6 +121,17 @@ immutable
 set search_path = ''
 as $$
   select (private.sprengja_config() ->> name)::integer;
+$$;
+
+-- When another player may take the start over (K-85, 5 Kasım): the server's clock, apart from the
+-- fuse.
+create function private.sprengja_start_by()
+returns timestamptz
+language sql
+volatile
+set search_path = ''
+as $$
+  select clock_timestamp() + make_interval(secs => private.sprengja_num('starterIdleSeconds'));
 $$;
 
 -- pure/sprengja.ts → roundsFor.
@@ -396,7 +408,8 @@ begin
     'passes', 0,
     'letters', null,
     'ready', '[]'::jsonb,
-    'endsAt', null
+    'endsAt', null,
+    'startBy', private.sprengja_start_by()
   ));
 end;
 $$;
@@ -513,6 +526,7 @@ begin
     'lastBlast', null,
     'ready', '[]'::jsonb,
     'endsAt', null,
+    'startBy', private.sprengja_start_by(),
     'poll', private.sprengja_poll()
   ));
 end;
@@ -557,7 +571,8 @@ begin
     'phase', 'letters',
     'step', (st ->> 'step')::integer + 1,
     'letters', picked,
-    'used', coalesce(st -> 'used', '[]'::jsonb) || to_jsonb(picked)
+    'used', coalesce(st -> 'used', '[]'::jsonb) || to_jsonb(picked),
+    'startBy', private.sprengja_start_by()
   ));
 end;
 $$;
@@ -605,7 +620,50 @@ begin
     'step', (st ->> 'step')::integer + 1,
     'holder', seat.session_id::text,
     'passes', 0,
+    'startBy', null,
     'poll', private.sprengja_poll()
+  ));
+end;
+$$;
+
+-- sprengja/take-over: the card is closed or the fuse not lit and the starter has done nothing for
+-- 30 seconds (game_state.startBy, the server's clock): any other player still in the game becomes
+-- the round's starter, with 30 seconds of their own. One change under the table's lock, tied to
+-- the round and the step: of two take-overs sent at once, the first moves the step and the second
+-- changes nothing; a reveal or a light that got the lock first leaves a take-over for a state
+-- already gone. The order and the roles stay; the fuse starts only with a light (no lighting by
+-- itself). Early: too_soon.
+create function public.sprengja_take_over(
+  target_user_id uuid,
+  target_room_id uuid,
+  at_round integer,
+  at_step integer
+)
+returns public.rooms
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  seat record;
+  st jsonb;
+begin
+  select * into seat from private.sprengja_seat(target_user_id, target_room_id);
+  if not seat.playing then
+    raise exception using errcode = 'P0001', message = 'not_player';
+  end if;
+  st := (seat.room).game_state;
+  if st ->> 'phase' not in ('card', 'letters') or (st ->> 'round')::integer <> at_round
+     or (st ->> 'step')::integer <> at_step or st ->> 'starter' = seat.session_id::text then
+    return seat.room;
+  end if;
+  if clock_timestamp() < (st ->> 'startBy')::timestamptz then
+    raise exception using errcode = 'P0001', message = 'too_soon';
+  end if;
+  return private.sprengja_write((seat.room).id, st || jsonb_build_object(
+    'step', (st ->> 'step')::integer + 1,
+    'starter', seat.session_id::text,
+    'startBy', private.sprengja_start_by()
   ));
 end;
 $$;
@@ -948,6 +1006,9 @@ begin
 
   if phase in ('card', 'letters', 'summary') and st ->> 'starter' = left_sid then
     st := jsonb_set(st, '{starter}', to_jsonb(private.sprengja_next(st, left_sid)));
+    if phase in ('card', 'letters') then
+      st := jsonb_set(st, '{startBy}', to_jsonb(private.sprengja_start_by()));
+    end if;
   end if;
 
   if phase = 'summary' then
@@ -1004,6 +1065,7 @@ begin
     'public.sprengja_start(uuid, uuid)',
     'public.sprengja_reveal(uuid, uuid, integer)',
     'public.sprengja_light(uuid, uuid, integer)',
+    'public.sprengja_take_over(uuid, uuid, integer, integer)',
     'public.sprengja_pass(uuid, uuid, integer, integer)',
     'public.sprengja_poll(uuid, uuid, integer)',
     'public.sprengja_ready(uuid, uuid, integer)',
@@ -1016,6 +1078,7 @@ begin
     'private.sprengja_config()',
     'private.sprengja_num(text)',
     'private.sprengja_rounds(integer)',
+    'private.sprengja_start_by()',
     'private.sprengja_fuse(integer)',
     'private.sprengja_active(jsonb)',
     'private.sprengja_next(jsonb, text)',
