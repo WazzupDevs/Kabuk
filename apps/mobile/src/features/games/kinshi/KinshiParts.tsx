@@ -33,6 +33,7 @@ import {
   KINSHI_MIN_TYPE,
   KINSHI_TYPE as KT,
   kinshiDeck,
+  kinshiDeckHeight,
   type KinshiDeck,
 } from '@/theme/kinshi';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -469,11 +470,14 @@ export function Deck({
   face,
   peek,
   children,
+  reach,
 }: {
   face: CardFace;
   peek: readonly [KinshiBuddy, KinshiBuddy];
   // Laid over the deck (the guesser's panel).
   children?: ReactNode;
+  // How far down from the deck's top that reaches (its measured bottom), when it does.
+  reach?: number;
 }) {
   const { scheme } = useTheme();
   const { c } = useKit();
@@ -494,7 +498,7 @@ export function Deck({
     <View
       style={{
         width: d.card.width,
-        height: d.peek.above + d.card.height + d.shadow.below,
+        height: kinshiDeckHeight(d, reach),
         alignSelf: 'center',
       }}
     >
