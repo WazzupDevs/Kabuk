@@ -1,4 +1,4 @@
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { TEAM_MIN_PLAYERS } from '@shared/gameFrame.ts';
 import {
   otherTeam,
@@ -273,10 +273,13 @@ function useSignumView(roomId: string, state: SignumState, seated: boolean) {
     queryKey: viewKey(roomId, state.gameNo, state.step),
     queryFn: () => signumApi.view(roomId),
     enabled: seated,
-    placeholderData: keepPreviousData,
+    // The last view stands in only while the same game's next step loads: never across games
+    // (a captain of the last game may be a guesser now) and never for someone no longer seated.
+    placeholderData: (previous, previousQuery) =>
+      seated && previousQuery?.queryKey[2] === state.gameNo ? previous : undefined,
     select: (answer) => answer.view,
   });
-  const channel = view.data && view.data.role !== 'observer' ? view.data.channel : null;
+  const channel = seated && view.data && view.data.role !== 'observer' ? view.data.channel : null;
   useBroadcast(channel ? `game_team:${channel}` : null, 'points', () => {
     void queryClient.invalidateQueries({ queryKey: ['signum-view', roomId] });
   });
@@ -371,7 +374,17 @@ function Play({
     onPress: onExit,
     testID: 'signum-exit',
   };
-  const my = view.data;
+  // Only a view that matches the seat the open state gives this phone (rule 3): a view left from
+  // another game or another seat is never drawn.
+  const fresh = view.data;
+  const my =
+    seat &&
+    fresh &&
+    fresh.role !== 'observer' &&
+    fresh.role === seat.role &&
+    fresh.team === seat.team
+      ? fresh
+      : undefined;
   // A player's screen waits for their own view (a captain's key, the team's marks); a watcher's
   // needs none.
   if (seat && !my) {
@@ -398,7 +411,7 @@ function Play({
       </Page>
     );
   }
-  const mine: SignumView = my ?? { role: 'observer' };
+  const mine: SignumView = seat && my ? my : { role: 'observer' };
   if (state.phase === 'role') {
     return <RoleScreen roomId={roomId} state={state} faces={faces} view={mine} close={close} />;
   }
