@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Image } from 'expo-image';
 import { readPregame } from '@shared/gameFrame.ts';
 import {
   readVampirResult,
@@ -22,11 +23,13 @@ import { roomsApi, vampirApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
+import { RISO as R } from '@/theme/riso';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 import { TABLE, TABLE_INK as INK, TABLE_SHADOW } from '@/theme/vampirTable';
 
 import { GlassBtn, RingedFace, type SeatMark } from './RoundTable';
+import { VAMPIR_POSTER } from './roleArt';
 import { Confetti, type Faces, Face, nameOf } from './VampirParts';
 import { GamePage, Pill, Stage, StageWords, VampirPlay } from './VampirPlay';
 
@@ -267,6 +270,16 @@ function Pregame({
             loading={closing}
             onPress={onClose}
             testID="vampir-pregame-close"
+          />
+          <Image
+            source={VAMPIR_POSTER}
+            style={{
+              width: R.poster.width,
+              height: R.poster.height,
+              borderRadius: R.poster.radius,
+            }}
+            contentFit="cover"
+            accessibilityIgnoresInvertColors
           />
           <View style={{ flex: 1 }}>
             <T v="h3">{tr.vampir.name}</T>

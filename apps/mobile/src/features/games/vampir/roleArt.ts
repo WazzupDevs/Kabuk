@@ -13,6 +13,10 @@ export const ROLE_ART: Record<VampirRole | 'arka', ImageSourcePropType> = {
   soytari: require('../../../../assets/vampir/soytari.webp'),
 };
 
+// The small poster on the pre-game page (84 × 56, as the other games' pages; the board poster's
+// picture until the canvas draws a logo-only one).
+export const VAMPIR_POSTER: ImageSourcePropType = require('../../../../assets/vampir/poster.webp');
+
 // The capsule table's room and table for each phase (theme/vampirScene.ts; scripts/art/
 // vampirScene.ts): pictures the phone only shows.
 export const ROOM_PICTURE: Record<ScenePhase, ImageSourcePropType> = {
