@@ -153,3 +153,26 @@ Pilot listesinde olmayan bir yerde test için elle girilen mekan. Dosya boşsa (
 ## Branch protection
 
 - **Branch protection (tek seferlik, repo sahibi):** GitHub → repo Settings → Rules → Rulesets → New branch ruleset: ad "main", Enforcement: Active, Target branches: Include default branch. Kurallar: Restrict deletions, Block force pushes, Require a pull request before merging, **Require status checks to pass** → Add checks → `ci` (kaynak GitHub Actions; liste, workflow en az bir kez çalıştıktan sonra dolar). "Require branches to be up to date before merging" **kapalı** kalır: açıkken her PR'a main birleştirilmeden birleşme olmaz ve yukarıdaki "main'i PR'a birleştirmek" kuralı işlemez. Bypass listesine kimse eklenmez.
+
+## Gizli içerik kapısı
+
+`pnpm guard:secrets` (`scripts/secret-guard.mjs`) Kaupholl'un gerçek sorularının, cevaplarının ve doğrulama dosyalarının, ayrıca erişim anahtarlarının bu herkese açık repoya girmesini durdurur. Gerçek sorular özel depolardadır (`WazzupDevs/kaupholl-sorular`, `WazzupDevs/kaupholl-kontrol`); burada yalnızca açıkça sahte örnek deste `content/kaupholl-questions.sample.json` durabilir (`"sample": true`, en çok 20 soru, her biri "Örnek soru" ile başlar).
+
+- **Durdurulanlar:** `content/private/`, adında `kaupholl-questions` geçen ve örnek deste olmayan dosya, `kaupholl-sorular/`, `kaupholl-kontrol/`, `dogrulama/`, anahtar dosyaları (`.pem`, `.key`, `.p8`, `.p12`, `.pfx`, `.jks`, `.keystore`), `.env` ve `.env.*` (`.env.example` dışında); örnek deste dışında hem cevap (`answer` / `answer_scaled`) hem kaynak (`source`) taşıyan JSON, YAML ya da CSV satırları; Supabase secret key, `service_role` JWT'si (yerel demo anahtarı dışında), `SUPABASE_SERVICE_ROLE_KEY` / `SUPABASE_SECRET_KEY` / `EXPO_TOKEN` ardından gerçek değer, özel anahtar blokları, GitHub, Sentry ve PostHog kişisel token'ları. Publishable / anon anahtar ve PostHog proje anahtarı istemci içindir, serbesttir.
+- **Çıktı** yalnızca dosya yolunu ve kural adını yazar, eşleşen değeri asla yazmaz.
+- **İstisna:** `scripts/secret-guard.allow`, satır başına `yol # gerekçe`; yalnızca sahte değer taşıyan dosyalar için. İstisna içerik kurallarından muaf tutar, yol kurallarından tutmaz. Gerekçesiz ya da var olmayan satır kapıyı düşürür.
+- **Üç yerde çalışır:**
+  - **CI**, `ci` → `checks`, her izlenen dosyada (`git ls-files`). Atlanamaz: `main`'in ruleset'i PR'ı ve `ci` kontrolünü zorunlu tutar, bypass listesi boştur (yukarıda "Branch protection").
+  - **Git kancası**, hazırlanan dosyalarda. Klon başına bir kez açılır: `git config core.hooksPath .githooks`. `--no-verify` ile atlanır.
+  - **Claude kancası** (`.claude/hooks/guard.mjs`), oturumların `git add` ve `git commit` komutlarını çalışmadan durdurur.
+- **Ruleset denetimi:** kapının atlanamaz olması ruleset'e bağlıdır. Ruleset değişince ya da şüphede şu iki komutla bakılır. İlki `required_status_checks` içinde `ci`'ı ve `pull_request` kuralını göstermeli; ikincisi `"enforcement": "active"`, `"bypass_actors": []` göstermeli.
+
+```bash
+gh api repos/WazzupDevs/Kabuk/rules/branches/main
+```
+
+```bash
+gh api repos/WazzupDevs/Kabuk/rulesets --jq '.[].id' | xargs -I{} gh api repos/WazzupDevs/Kabuk/rulesets/{} --jq '{name, enforcement, bypass_actors}'
+```
+
+- **Kalan risk:** kapıyı `ci.yml`'den ya da betikten kaldıran bir PR yine `ci`'dan geçebilir. Bu dosyalara dokunan PR'da kapının hâlâ koştuğuna birleştirmeden önce bakılır. Ruleset'i değiştirebilen repo yöneticisi kapıyı da kapatabilir.
