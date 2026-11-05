@@ -136,7 +136,9 @@ export type SprengjaRequest =
   // Anyone at the table while the fuse burns, as often as game_state.poll says; idempotent.
   | { action: 'poll'; roomId: string; round: number }
   // Tur sonu: ready; anyone once its time is up; idempotent.
-  | { action: 'ready'; roomId: string; step: number };
+  | { action: 'ready'; roomId: string; step: number }
+  | { action: 'advance'; roomId: string };
+
 // `kibrit` (docs/SPEC_V4.md §4.F "Adım 4.6.9", K-86). Targets are table session ids (rule 4);
 // `step` is the phase's number in rooms.game_state, so a press from a phase already over changes
 // nothing. `rev` is the phone's own counter for its paper or vote in the step (rule 3's exception):

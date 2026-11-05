@@ -832,7 +832,7 @@ describe('locks (§4.K)', () => {
       try {
         let later: Promise<unknown> = Promise.resolve();
         await first.begin(async (tx) => {
-          await tx`select (public.kibrit_skip(${g.owner.userId}, ${g.roomId}, ${open.step})).id`;
+          await tx`select (public.kibrit_skip(${g.owner.userId}, ${g.roomId}, ${open.step as number})).id`;
           later = second`
             select public.safety_report_kibrit_paper(
               ${reporter.userId}, ${g.roomId}, ${paperId}, 'inappropriate'
@@ -875,7 +875,7 @@ describe('locks (§4.K)', () => {
         await first.begin(async (tx) => {
           await tx`select (public.rooms_end_game(${g.owner.userId}, ${g.roomId})).id`;
           waiting.push(
-            s1`select public.kibrit_vote(${a.userId}, ${g.roomId}, ${v.step}, 1, ${b.sessionId})`
+            s1`select public.kibrit_vote(${a.userId}, ${g.roomId}, ${v.step as number}, 1, ${b.sessionId})`
               .execute()
               .catch((err: unknown) => err),
             s2`
