@@ -1,19 +1,24 @@
-import type { MarkResult, TabuCard } from '../tabu.ts';
+import type { TabuCard } from '../tabu.ts';
+import type { TabuMark } from '../tabuGame.ts';
 
-// `tabu` and `sohbet` Edge Functions, shared with the mobile app.
+// `tabu` (Kapsül Anlat, docs/SPEC_V4.md §4.F "Adım 4.6.1") and `sohbet` Edge Functions, shared with
+// the mobile app. `step` is game_state.step of the phase the press belongs to; a press on another
+// step changes nothing.
 export type TabuRequest =
-  // One-table room: the deck for the phone. A two-table game starts from rooms/answer-game.
+  // The owner, from the pre-game page.
   | { action: 'start'; roomId: string }
-  // The ordered card list of the current turn, for the two tables of the room.
+  // Tur öncesi: the describer's "Turu başlat".
+  | { action: 'begin-turn'; roomId: string; step: number }
+  // The running turn's ordered card list: the describer, the other team and the watchers.
   | { action: 'turn-cards'; roomId: string }
-  // A press on card `cardIndex` of turn `turnNo`; a second press on the same card is ignored.
-  | { action: 'mark'; roomId: string; turnNo: number; cardIndex: number; result: MarkResult }
-  | { action: 'end-turn'; roomId: string }
-  // Starts the ready turn's clock: a phone on the describing side, which describes it, or any phone
-  // after readyEndsAt (docs/SPEC_V3.md §19.1, §22.E). Idempotent.
-  | { action: 'begin-turn'; roomId: string };
+  // A press on card `cardIndex`: Doğru and Pas the describer, Yasak! the other team; a second press
+  // on the same card is ignored.
+  | { action: 'mark'; roomId: string; step: number; cardIndex: number; result: TabuMark }
+  // Tur sonu: the owner's "Sonraki tura geç".
+  | { action: 'next'; roomId: string; step: number }
+  // Any phone once the phase's time is up; idempotent.
+  | { action: 'advance'; roomId: string };
 
-export type TabuStartResponse = { mode: 'local'; deck: TabuCard[] };
 export type TabuTurnCardsResponse = { turnNo: number; cards: TabuCard[] };
 export type GameOkResponse = { ok: true };
 

@@ -21,6 +21,8 @@ describe('IDEMPOTENT_CALLS', () => {
         'friends/notifications',
         'ping',
         'profile/get',
+        'tabu/advance',
+        'tabu/turn-cards',
         'vampir/advance',
         'vampir/view',
         'venue-chat/page',
