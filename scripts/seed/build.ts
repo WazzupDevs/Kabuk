@@ -33,6 +33,7 @@ import {
   venuesSql,
 } from './sections.ts';
 import { gamesSql, parseGames } from './games.ts';
+import { readSignumWords } from './signum.ts';
 import { parseTableIcons, tableIconsSql } from './tableIcons.ts';
 
 export const SEEDS_DIR = 'supabase/seeds';
@@ -101,6 +102,7 @@ export function buildSeed(root: string): SeedBuild {
       parseSarkiWords(readJson('content/sarki-words.json'), profanity),
       parseIbreScales(readJson('content/ibre-scales.json'), profanity),
       parseSprengjaLetterGroups(readJson('content/sprengja-letter-groups.json'), profanity),
+      readSignumWords(root, profanity),
     ),
   ];
 
