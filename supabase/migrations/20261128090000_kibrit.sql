@@ -23,8 +23,7 @@
 -- Locks (rule 10): check-in → rooms (private.room_phone) → game_players → kibrit_papers →
 -- kibrit_votes. A player leaving the game or the table stamps game_players.left_at while the table
 -- is held; the trigger here updates the papers, the votes and game_state without a new lock on
--- anything before them. The report takes no lock before the paper: it reads the seat unlocked and
--- locks only the paper.
+-- anything before them. The report locks the table, then the paper.
 
 -- 1. The game ----------------------------------------------------------------------------------
 -- In the list before the seed (content/games.json) makes it playable, so rooms.concept can name it.
@@ -210,6 +209,11 @@ begin
   if st ->> 'phase' = 'write' then
     return private.kibrit_written(target_room_id, st) >= active;
   elsif st ->> 'phase' = 'vote' then
+    -- After someone left during this vote it closes only by its clock: an early end would tell
+    -- that votes had gone to the leaver, and whose change completed it.
+    if st ? 'leftInVote' then
+      return false;
+    end if;
     return private.kibrit_valid_votes(target_room_id, st) >= active;
   elsif st ->> 'phase' = 'result' then
     return not exists (
@@ -239,7 +243,7 @@ declare
 begin
   update public.rooms
   set last_activity_at = now(),
-      game_state = (st - 'written' - 'voted' - 'result' - 'ready')
+      game_state = (st - 'written' - 'voted' - 'result' - 'ready' - 'leftInVote')
         || jsonb_build_object(
           'phase', new_phase,
           'step', coalesce((st ->> 'step')::integer, 0) + 1,
@@ -397,9 +401,8 @@ declare
   result jsonb;
 begin
   select coalesce(jsonb_object_agg(a.sid::text, coalesce(c.n, 0)), '{}'::jsonb),
-         coalesce(sum(coalesce(c.n, 0)), 0)::integer,
          coalesce(max(coalesce(c.n, 0)), 0)::integer
-  into counts, voters, most
+  into counts, most
   from unnest(active) with ordinality as a (sid, ord)
   left join (
     select kv.target_session_id as sid, count(*)::integer as n
@@ -408,6 +411,9 @@ begin
       and kv.voter_session_id = any (active) and kv.target_session_id = any (active)
     group by kv.target_session_id
   ) c on c.sid = a.sid;
+
+  -- The same measure as the table's count during the vote (every vote of a player still in it).
+  voters := private.kibrit_voted(r.id, st);
 
   select coalesce(jsonb_agg(a.sid::text order by a.ord), '[]'::jsonb) into top
   from unnest(active) with ordinality as a (sid, ord)
@@ -928,7 +934,9 @@ declare
   kp public.kibrit_papers;
   author uuid;
 begin
-  select * into r from public.rooms where id = target_room_id;
+  -- The table first, then the paper (rule 10: rooms → kibrit_papers; the report's foreign key on
+  -- rooms would otherwise come after the paper's lock).
+  select * into r from public.rooms where id = target_room_id for update;
   if r.id is null or r.concept is distinct from 'kibrit' then
     return false;
   end if;
@@ -1002,7 +1010,8 @@ begin
     -- least 8 seconds, so nothing tells how many votes the leaver had.
     delete from public.kibrit_votes
     where room_id = r.id and game_no = new.game_no and voter_session_id = new.session_id;
-    st := jsonb_set(st, '{voted}', to_jsonb(private.kibrit_voted(r.id, st)));
+    st := jsonb_set(st, '{voted}', to_jsonb(private.kibrit_voted(r.id, st)))
+      || '{"leftInVote": true}'::jsonb;
     if (st ->> 'endsAt')::timestamptz < now() + private.kibrit_seconds('regraceSeconds') then
       st := jsonb_set(st, '{endsAt}', to_jsonb(now() + private.kibrit_seconds('regraceSeconds')));
     end if;

@@ -775,7 +775,7 @@ K-85. Kaynak Aura v90 "Kibrit (gizli soru, gizli oy)" satırı (11 pano) ve proj
 - **Gözlemci:** yazmaz, çekmez, oy vermez; soruyu ve sonucu görür, bildirebilir.
 - **Çıkış** (oyundan ya da masadan):
   - Soru yaz sırasında çıkanın kâğıdı geçersiz olur. Kavanozdan sonra çıkanın kâğıdı kavanozda kalır, çünkü kâğıdın kaybolması yazarını ele verirdi.
-  - Oylama sürerken çıkanın verdiği oy silinir; ona verilen oylar sonuçta sayılmaz ve o oyları verenler süre içinde yeniden seçer. Katılım sayacı yalnız çıkanın kendi oyu kadar düşer ve her çıkışta kalan süre en az 8 sn olur, böylece çıkanın kaç oy aldığı belli olmaz.
+  - Oylama sürerken çıkanın verdiği oy silinir; ona verilen oylar sonuçta sayılmaz ve o oyları verenler süre içinde yeniden seçer. Katılım sayacı yalnız çıkanın kendi oyu kadar düşer, her çıkışta kalan süre en az 8 sn olur ve o oylama artık erken bitmez, yalnız süreyle kapanır.
   - Çıkan sıradaki çekense sıra bir sonrakine geçer ve çekme süresi yeniden başlar.
   - Açıklanmış tur sonuçları (özet dahil) sonradan değişmez.
   - Aşama çıkanla tamamlanıyorsa (herkes yazdı ya da oy verdi) süre o an dolar ve sıradaki `advance` çözer.
@@ -791,6 +791,7 @@ K-85. Kaynak Aura v90 "Kibrit (gizli soru, gizli oy)" satırı (11 pano) ve proj
     - Toplam sayaçların arttığı an, masada kimin telefonuna baktığıyla eşleşebilir.
     - Sorunun dili ve konusu yazarını ele verebilir.
     - Soru yaz sırasında biri çıkarsa "n kişi yazdı" sayacının düşüp düşmemesi, onun kâğıt yazıp yazmadığını gösterir (hangi soruyu yazdığını göstermez).
+    - Oylama sırasında biri çıkarsa sayacın düşüp düşmemesi onun oy verip vermediğini gösterir. 5 ve üstü oyuncuda sonuçtaki sayıların toplamı katılımdan azsa, çıkana o kadar oy verilmiş demektir. Çıkıştan sonra oylama erken bitmez, yalnız süreyle kapanır.
 - **İçerik denetimi:** soru metni kural 7'nin alanlarındandır. Uzunluk 1–80 (boşluklar toplanır). İletişim bilgisi, kullanıcı adı ve bağlantı `containsContact` ile reddedilir (`contact_not_allowed`), küfür `containsProfanity` ile (`profanity_rejected`). Kontrol telefonda ve sunucuda aynı dosyayla yapılır (`pure/kibrit.ts` → `checkKibritQuestion`).
 - **Bildirim kaydı:** `reports` satırına (`target_type 'kibrit_paper'`) soru metni, oyun ve adım, masa ve şikayet edilen hesap (yazar) yazılır. Yazar yalnızca bu korumalı kayıtta ve service role'de durur, hiçbir yanıta gitmez. Saklama ve silme bugünkü şikayet politikasıyla aynıdır (30 gün, `reports`).
 - **Temizlik:**

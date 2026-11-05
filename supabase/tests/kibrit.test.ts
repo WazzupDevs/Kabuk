@@ -576,7 +576,9 @@ describe('leaving (K-85)', () => {
       });
       await vote(b, g, v2.step as number, 2, c);
       await vote(a, g, v2.step as number, 1, c);
-      const r2 = await state(g.roomId);
+      // After a leaving the vote closes only by its clock, even with everyone voted.
+      expect((await state(g.roomId)).phase).toBe('vote');
+      const r2 = await runOut(g);
       expect(r2.result).toMatchObject({ players: 3, voters: 3, top: [c.sessionId] });
       // The first round's result did not change.
       expect(r2.past?.[0]?.top).toEqual([d.sessionId]);
@@ -786,6 +788,48 @@ describe('locks (§4.K)', () => {
       expect(await votes(g.roomId)).toEqual([
         { voter_session_id: b.sessionId, target_session_id: a.sessionId },
       ]);
+    },
+    SLOW,
+  );
+
+  // A report while the owner's skip holds the table waits for it; nothing deadlocks (the report
+  // takes rooms, then the paper).
+  it(
+    'lets a report wait for a skip',
+    async () => {
+      const g = await game(3);
+      await toDraw(g);
+      const s = await state(g.roomId);
+      await kibrit(byId(g, s.drawer), { action: 'draw', roomId: g.roomId, step: s.step });
+      const open = await state(g.roomId);
+      const paperId = open.paper?.id as string;
+      const [row] = await sql`
+        select author_session_id from public.kibrit_papers where id = ${paperId}
+      `;
+      const reporter = g.people.find((p) => p.sessionId !== row?.author_session_id) as Person;
+      const first = postgres(dbUrl, { max: 1, onnotice: () => {} });
+      const second = postgres(dbUrl, { max: 1, onnotice: () => {} });
+      try {
+        let later: Promise<unknown> = Promise.resolve();
+        await first.begin(async (tx) => {
+          await tx`select (public.kibrit_skip(${g.owner.userId}, ${g.roomId}, ${open.step})).id`;
+          later = second`
+            select public.safety_report_kibrit_paper(
+              ${reporter.userId}, ${g.roomId}, ${paperId}, 'inappropriate'
+            )
+          `
+            .execute()
+            .catch((err: unknown) => err);
+          await waitUntilBlocked('safety_report_kibrit_paper');
+        });
+        expect(await later).toHaveLength(1);
+      } finally {
+        await Promise.all([first.end(), second.end()]);
+      }
+      // The skipped paper was opened: its report is written.
+      expect(
+        await sql`select 1 from public.reports where target_type = 'kibrit_paper' and room_id = ${g.roomId}`,
+      ).toHaveLength(1);
     },
     SLOW,
   );
