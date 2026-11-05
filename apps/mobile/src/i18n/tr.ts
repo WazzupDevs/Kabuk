@@ -60,7 +60,14 @@ function dayMonthAt(iso: string): string {
 
 // play_history.concept: the last game played in the room, or 'chat' (docs/SPEC_V3.md §5.5).
 export type HistoryConcept =
-  'tabu' | 'sohbet' | 'sahtekar' | 'harf' | 'sarki' | 'ibre' | 'vampir' | 'chat';
+  | 'tabu'
+  | 'sohbet'
+  | 'sahtekar'
+  | 'harf'
+  | 'sarki'
+  | 'ibre'
+  | 'vampir'
+  | 'chat';
 const HISTORY_CONCEPTS: Record<HistoryConcept, string> = {
   ...GAME_NAMES,
   vampir: 'Vampir Köylü',
@@ -1198,6 +1205,7 @@ export const tr = {
       names.length === 1
         ? `${inflectTr(names[0] ?? '', 'dative')} oy ver`
         : `${names.slice(0, -1).join(', ')} ve ${inflectTr(names.at(-1) ?? '', 'dative')} oy ver`,
+    pickSuspects: (n: number) => `${n} şüpheli seç`,
     votedMark: 'Oy verdi',
     selfSeat: 'Sen, kendine oy verilmez',
     // Sonuç and Son şans.
@@ -1213,7 +1221,8 @@ export const tr = {
     tableWon: 'Masa kazandı',
     impostorWon: 'Sahtekar kazandı',
     impostorLeft: 'Sahtekar oyundan çıktı',
-    caughtMissed: 'Sahtekar yakalandı ve kelimeyi bilemedi.',
+    guessedRight: 'Sahtekar kelimeyi doğru tahmin etti!',
+    guessedWrong: 'Sahtekar kelimeyi bilemedi!',
     rightVoters: 'Doğru oy verenler',
     // Leaving (as Kinshi's).
     endTitle: 'Oyunu bitir?',

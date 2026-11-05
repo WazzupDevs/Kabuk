@@ -8,6 +8,8 @@ describe('seat suffixes (Sahtekar)', () => {
     expect(tr.krot.voteFor(['Burak'])).toBe("Burak'a oy ver");
     expect(tr.krot.voteFor(['kapsul-fv10'])).toBe("kapsul-fv10'a oy ver");
     expect(tr.krot.voteFor(['Ece', 'Can'])).toBe("Ece ve Can'a oy ver");
+    expect(tr.krot.pickSuspects(1)).toBe('1 şüpheli seç');
+    expect(tr.krot.pickSuspects(2)).toBe('2 şüpheli seç');
     expect(tr.sahtekar.passTo('A2')).toBe("Telefonu A2'ye ver");
     expect(tr.sahtekar.passTo('B3')).toBe("Telefonu B3'e ver");
     expect(tr.sahtekar.turnOf('A3')).toBe("Sıra A3'te");

@@ -1,7 +1,13 @@
 import type { SahtekarView } from '@shared/sahtekarGame.ts';
 import { describe, expect, it } from 'vitest';
 
-import { krotRoleShown, krotViewKey, krotViewsOf, krotVisibleView } from './krotView';
+import {
+  krotGuessLine,
+  krotRoleShown,
+  krotViewKey,
+  krotViewsOf,
+  krotVisibleView,
+} from './krotView';
 
 const state = { seats: ['a', 'b', 'c'], gone: [] as string[] };
 const player = { role: 'player', category: 'İçecek', word: 'Kahve' } as const;
@@ -56,5 +62,16 @@ describe('krotViewKey', () => {
   it('belongs to one table session, under the table key that a leave drops', () => {
     expect(krotViewKey('r', 2, 'a')).not.toEqual(krotViewKey('r', 2, 'z'));
     expect(krotViewKey('r', 2, 'a').slice(0, 2)).toEqual([...krotViewsOf('r')]);
+  });
+});
+
+describe('krotGuessLine (Oyun sonu)', () => {
+  it('says whether the guess was right, never the guess', () => {
+    expect(krotGuessLine(true)).toBe('guessedRight');
+    expect(krotGuessLine(false)).toBe('guessedWrong');
+  });
+
+  it('draws no line when nobody was caught or no guess came', () => {
+    expect(krotGuessLine(null)).toBeNull();
   });
 });
