@@ -64,8 +64,7 @@ describe('content/signum-words.json', () => {
         for (let j = i + 1; j < b.length; j++) expect(tooAlike(b[i] ?? '', b[j] ?? '')).toBe(false);
       }
     }
-    // 500 boards take about 5 s on a CI runner, the default limit: the limit is raised, not the
-    // boards cut.
+    // 500 boards: about 4 s here, past vitest's 5 s on a slow CI runner (#471).
   }, 30_000);
 
   it('refuses too few words, a phrase, a short word, a repeat, an unplain word and a listed word', () => {

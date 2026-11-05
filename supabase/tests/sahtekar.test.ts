@@ -536,9 +536,12 @@ describe('leaving (§4.6.3)', () => {
       const g = await game(5);
       const first = await runOut(g);
       const seats = first.seats as string[];
-      // The next speaker leaves: the one after comes next.
-      const next = bySession(g, seats[1]);
-      const leaver = g.impostors.includes(next) ? bySession(g, seats[2]) : next;
+      // The next speaker leaves: the one after comes next. Not an impostor (that ends the game) and
+      // not the owner (who ends the game rather than leaving it, rooms/leave-game → bad_request).
+      const leaver = seats
+        .slice(1)
+        .map((sid) => bySession(g, sid))
+        .find((p) => !g.impostors.includes(p) && p !== g.owner) as Person;
       const pos = seats.indexOf(leaver.sessionId);
       expect(await rooms(leaver, { action: 'leave-game', roomId: g.roomId })).toEqual(OK);
       const st = await state(g.roomId);
@@ -564,8 +567,14 @@ describe('leaving (§4.6.3)', () => {
     async () => {
       const g = await game(4);
       const [impostor] = g.impostors as [Person];
-      expect(await rooms(impostor, { action: 'leave-game', roomId: g.roomId })).toEqual(OK);
-      expect(await krot(g.owner, { action: 'advance', roomId: g.roomId })).toEqual(OK);
+      // The owner cannot leave its game (rooms/leave-game → bad_request), only the table, which
+      // takes it out of the game the same way.
+      const road = impostor === g.owner ? 'leave' : 'leave-game';
+      expect(await rooms(impostor, { action: road, roomId: g.roomId })).toMatchObject({
+        status: 200,
+      });
+      const stays = g.players[0] as Person;
+      expect(await krot(stays, { action: 'advance', roomId: g.roomId })).toEqual(OK);
       const end = await lastGame(g.roomId);
       expect(end.concept).toBeNull();
       expect(end.last).toMatchObject({
