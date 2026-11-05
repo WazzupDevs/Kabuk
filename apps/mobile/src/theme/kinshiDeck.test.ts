@@ -15,6 +15,7 @@ import {
   kinshiBand,
   kinshiDeck,
   kinshiDeckHeight,
+  kinshiScene,
   kinshiScorePill,
 } from './kinshi';
 import { KINSHI_WORD, KINSHI_WORD_FONT, kinshiWordLayout } from './kinshiWord';
@@ -397,3 +398,49 @@ function readFont(path: string) {
     },
   };
 }
+
+// The 3-2-1's buddies and Oyun sonu's buddies and confetti on narrow screens: on the screen, laid
+// out as drawn (every place and overlap the 390 panel's times the scale).
+describe('kinshiScene', () => {
+  const across = (
+    p: { left?: number; right?: number; height: number },
+    width: number,
+  ): [number, number] => {
+    const w = p.height * KINSHI.buddyRatio;
+    const left = p.left ?? width - (p.right ?? 0) - w;
+    return [left, left + w];
+  };
+  const overlaps = (spans: [number, number][]) => {
+    const sorted = [...spans].sort((x, y) => x[0] - y[0]);
+    return sorted.slice(1).map((s, i) => Math.max(0, (sorted[i]?.[1] ?? 0) - s[0]));
+  };
+
+  it('is the panel on 390 dp and wider', () => {
+    for (const screen of [390, 430]) {
+      const s = kinshiScene(screen);
+      expect(s.scale).toBe(1);
+      expect(s.countdownBuddies.places).toEqual([...KINSHI.countdownBuddies.places]);
+      expect(s.confetti).toEqual([...KINSHI.endScene.confetti]);
+    }
+  });
+
+  it.each([320, 360])('keeps the scene on %i dp, as drawn', (screen) => {
+    const s = kinshiScene(screen);
+    const k = screen / 390;
+    for (const places of [s.countdownBuddies.places, s.endBuddies]) {
+      const spans = places.map((p) => across(p, screen));
+      for (const [l, r] of spans) {
+        expect(l).toBeGreaterThanOrEqual(0);
+        expect(r).toBeLessThanOrEqual(screen);
+      }
+      const drawn = (
+        places === s.endBuddies ? KINSHI.endScene.buddies : KINSHI.countdownBuddies.places
+      ).map((p) => across(p, 390));
+      overlaps(spans).forEach((o, i) => expect(o).toBeCloseTo((overlaps(drawn)[i] ?? 0) * k));
+    }
+    for (const b of s.confetti) {
+      expect(b.left).toBeGreaterThanOrEqual(0);
+      expect(b.left + KINSHI.endScene.bar.width).toBeLessThanOrEqual(screen);
+    }
+  });
+});
