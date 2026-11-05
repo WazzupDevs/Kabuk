@@ -1010,12 +1010,12 @@ describe('pair records (K-66)', () => {
 });
 
 describe("today's app's games (§4.E)", () => {
-  // Kapsül Anlat (tabu) is back at the table of people (step 4.6.1, tabu.test.ts); its proposal is
-  // still the side model's.
+  // Kapsül Anlat (tabu, step 4.6.1, tabu.test.ts) and Krot (sahtekar, step 4.6.3,
+  // sahtekar.test.ts) are back at the table of people; tabu's proposal is still the side model's.
   it('answers every game start and proposal update_required', async () => {
     const [owner] = await all(1);
     const roomId = await openTable(owner);
-    for (const fn of ['sahtekar', 'ibre', 'harf', 'sarki']) {
+    for (const fn of ['ibre', 'harf', 'sarki']) {
       expect(await invoke(owner.client, fn, { action: 'start', roomId }), fn).toEqual(
         UPDATE_REQUIRED,
       );

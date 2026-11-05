@@ -1,10 +1,17 @@
 # İlerleme
 
-## Devir notu (5 Kasım 2026, Kinshi 320 dp denetimi)
+## Devir notu (5 Kasım 2026, Krot sunucusu)
 
-- #463 deste 320 dp'de ölçeklenir; denetimde tahmincinin paneli sayaçlara biniyordu, düzeldi (`kinshiDeckHeight`; OTA). Ayrıntı ve ölçümler `docs/decisions/kinshi-320dp.md` → "Denetim".
-- Tasarımın kararını bekleyen: 22'de sığmayan iki kelimelik kelimeler (320'de 11, 390'da 1) "…" ile biter; seçenekler iki satır, en küçük boyu düşürmek ya da kartları kısaltmak. Skor hapı 320'de 2 dp taşar; 3-2-1 kankileri ve konfeti 320'de 390 konumunda.
-- Telefonda bakılacak (cihaz ve emülatör yok, hiçbiri denenmedi): 320 dp ve en büyük yazıda Anlatıcı, Tahminci, Rakip, Gözlemci, Tur öncesi; "…" gerçekten çıkıyor mu; panel uzayınca sayaçlar ve kaydırma.
+- #464 Krot kişi bazlı sunucu (4.6.3): `20261130090000_sahtekar_v4.sql`, `functions/sahtekar`, `pure/sahtekarGame.ts`, `tests/sahtekar.test.ts`; kararlar `docs/decisions/4.6.3-krot.md` (dört teknik karar proje sahibince onaylı). Hazırım, Söyledim ve oy yalnızca saat işlerken sayılır (`turn_over`). Kural 3 ve 10'a dokunduğu için birleşme proje sahibinin "onaylandı"sını bekler; Krot ekranları bu PR birleşince başlar.
+- API: `sahtekar/start`, `view` (rol: player/impostor/watcher/null), `ready`, `said`, `vote { targets }`, `guess { text }`, `advance`; açık durum `readSahtekarState`, sonuç `readSahtekarResult` (`lastGame.sahtekar`). `games.json`'da `sahtekar.available: false`.
+- Sıradaki: Krot ekranları (CTO promptları → Prompt 2; Aura v86 "Krot (gizli kart ve şüpheli sırası)" satırı ve `Krot` panosu canlı tuvalden; görseller `sahtekar/krotArt.ts`; kapsül, deste, kanki ve üst çubuk `kinshi/KinshiParts.tsx`). Sonra `sahtekar.available: true` ve `pnpm seed`. "Bir koltuk seç" etiketi proje sahibi karar verene kadar korunur (rapor açık soru 1).
+
+## Devir notu (5 Kasım 2026, Kinshi 320 dp: iki satır ve skor hapı)
+
+- Birleşenler: #463 (deste ölçeklenir), #468 (tahminci paneli sayaçlara binmez), bu PR (proje sahibinin kararları: uzun kelime iki satır, skor hapı dar hâlde; `docs/decisions/kinshi-320dp.md`). OTA, native yok.
+- 3-2-1 kankileri ve Oyun sonu konfetisi 320 dp'de: sahne yatayda bütün olarak ölçeklenir (`kinshiScene`); yalnızca konum oranlamak binişi dört katına çıkarırdı.
+- #469: 320 dp'de Hayvanat bahçesi ve Emniyet kemeri 22'de çerçeveden 0,13/0,22 dp eksik; proje sahibinin kararı A (olduğu gibi, cihazda doğrulanacak kabul istisnası; `docs/decisions/kinshi-320dp.md`). Hap −120…120 için boşluk daraltma ve gerekirse alt satır.
+- Telefonda bakılacak (cihaz yok, hiçbiri denenmedi; testlerin modeli RN yerleşimini kanıtlamaz): 320 dp ve en büyük yazıda beş rol; iki satırlı kartlar (Hayvanat bahçesi 320/390, Pazar kahvaltısı 320) ortada mı, iki kartta çerçeve; hap 99/99, −99/−99 (alt satır), 100/100; tahminci paneli uzayınca sayaçlar.
 
 ## Devir notu (5 Kasım 2026, Kinshi ekranları bitti)
 

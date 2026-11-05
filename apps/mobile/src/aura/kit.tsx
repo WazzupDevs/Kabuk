@@ -581,6 +581,7 @@ export function Chip({
   narrow,
   icon,
   accessibilityLabel,
+  fixed,
 }: {
   label: string;
   on?: boolean;
@@ -596,6 +597,9 @@ export function Chip({
   // U35: a worn part's chip leads with its close icon, 10 in on that side.
   icon?: CapIconName;
   accessibilityLabel?: string;
+  // Its words keep their size in any system text size (a chip inside a fixed-height pill, as
+  // Kinshi's turn chip beside the score's numbers).
+  fixed?: boolean;
 }) {
   const { c } = useKit();
   const press = usePress();
@@ -655,7 +659,7 @@ export function Chip({
         {icon ? <CapIcon name={icon} color={c.muted} size={KIT.size.iconSm} /> : null}
         <Text
           numberOfLines={1}
-          maxFontSizeMultiplier={MAX_FONT_SCALE}
+          maxFontSizeMultiplier={fixed ? 1 : MAX_FONT_SCALE}
           style={[
             md ? KIT_TYPE.chipMd : tall || lg || narrow ? KIT_TYPE.chipLg : KIT_TYPE.chip,
             { color: on ? c.onChipOn : c.ink },

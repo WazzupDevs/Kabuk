@@ -15,7 +15,7 @@ import {
 import { router } from 'expo-router';
 import { Image } from 'expo-image';
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
@@ -33,7 +33,13 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { haptic } from '@/lib/haptics';
 import { MOTION } from '@/theme/aura';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
-import { KINSHI as K, KINSHI_TYPE as KT, PEEK_PAIRS, SUMMARY_BUDDIES } from '@/theme/kinshi';
+import {
+  KINSHI as K,
+  KINSHI_TYPE as KT,
+  kinshiScene,
+  PEEK_PAIRS,
+  SUMMARY_BUDDIES,
+} from '@/theme/kinshi';
 import { DarkGameScope, useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
@@ -652,7 +658,7 @@ function Countdown({
   const { c } = useKit();
   const team = teamOfTurn(state.turnNo);
   const d = state.describer;
-  const B = K.countdownBuddies;
+  const B = kinshiScene(useWindowDimensions().width).countdownBuddies;
   return (
     <View testID="kinshi-countdown" style={{ flex: 1 }}>
       <Page testID="kinshi-countdown-page">
@@ -1204,6 +1210,7 @@ function End({
     onSettled: () => void queryClient.invalidateQueries({ queryKey: roomKeys.room(roomId) }),
   });
   const S = K.endScene;
+  const scene = kinshiScene(useWindowDimensions().width);
   const turns = result.lastTurn?.turnNo ?? TABU_GAME.totalTurns;
   const w = result.winner;
   const awards = [
@@ -1231,7 +1238,7 @@ function End({
           backgroundColor: colors.surface,
         }}
       >
-        {S.confetti.map((b, i) => (
+        {scene.confetti.map((b, i) => (
           <View
             key={i}
             style={{
@@ -1246,7 +1253,7 @@ function End({
             }}
           />
         ))}
-        {S.buddies.map((p) => (
+        {scene.endBuddies.map((p) => (
           <Buddy
             key={p.buddy}
             buddy={p.buddy}
