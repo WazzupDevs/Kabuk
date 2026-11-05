@@ -45,6 +45,8 @@ export type ErrorCode =
   | 'no_passes_left'
   | 'too_soon'
   | 'no_cards'
+  | 'not_holder'
+  | 'not_starter'
   | 'not_found'
   | 'reply_unavailable'
   | 'photo_required'
@@ -139,6 +141,10 @@ const DOMAIN_ERROR_CODES: readonly ErrorCode[] = [
   'no_passes_left',
   'too_soon',
   'no_cards',
+  // Sprengja (§4.F "Adım 4.6.7"): a throw from one without the bomb; a card or fuse pressed by
+  // one who does not start the round.
+  'not_holder',
+  'not_starter',
   'not_friends',
   'not_judge',
   // Replies and reactions (docs/SPEC_V3.md §21): a quoted message out of reach, a reacted one gone.

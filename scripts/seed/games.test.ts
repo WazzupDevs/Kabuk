@@ -24,7 +24,7 @@ describe(TABLE_GAMES_MODULE, () => {
 });
 
 describe('content/games.json', () => {
-  it('holds the games of §4.F and Vampir Köylü (§4.6.6) with their lower limits (K-17)', () => {
+  it('holds the games of §4.F, Vampir Köylü (§4.6.6) and Sprengja (§4.6.7) with their lower limits (K-17)', () => {
     const limits = Object.fromEntries(
       parseGames(content).games.map((g) => [g.id, [g.minPlayers, g.teams]]),
     );
@@ -35,6 +35,7 @@ describe('content/games.json', () => {
       sahtekar: [3, false],
       harf: [2, false],
       sarki: [2, false],
+      sprengja: [3, false],
       sohbet: [1, false],
     });
   });

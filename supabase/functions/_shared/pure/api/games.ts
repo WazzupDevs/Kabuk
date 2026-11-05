@@ -94,3 +94,22 @@ export type VampirRequest =
   | { action: 'vote'; roomId: string; step: number; target: string }
   // Anyone at the table once the phase's time is up; idempotent.
   | { action: 'advance'; roomId: string };
+
+// `sprengja` (docs/SPEC_V4.md §4.F "Adım 4.6.7", K-85). `round` and `step` are game_state's, so a
+// press from a state already gone changes nothing. No answer carries the hidden fuse: a throw
+// answers { ok: true } whether it moved the bomb or was a second press, and turn_over once the
+// round's bomb has gone off (which the table already sees).
+export type SprengjaRequest =
+  // The owner, on the pre-game page: the throwing order at random; then the start.
+  | { action: 'shuffle'; roomId: string }
+  | { action: 'start'; roomId: string }
+  // The round's starter: open the card, light the fuse; idempotent.
+  | { action: 'reveal'; roomId: string; round: number }
+  | { action: 'light'; roomId: string; round: number }
+  // The holder's throw to the next player.
+  | { action: 'pass'; roomId: string; round: number; step: number }
+  // Anyone at the table while the fuse burns, as often as game_state.poll says; idempotent.
+  | { action: 'poll'; roomId: string; round: number }
+  // Tur sonu: ready; anyone once its time is up; idempotent.
+  | { action: 'ready'; roomId: string; step: number }
+  | { action: 'advance'; roomId: string };

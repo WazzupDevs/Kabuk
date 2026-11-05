@@ -123,7 +123,7 @@ Her ekran buna uyar (tuvalde "Ekran davranışı" sayfası):
 - Basılan düğme, işlem bitene kadar ikinci kez basılamaz ve beklediğini gösterir.
 - Her ekranın yükleniyor, boş ve hata hâli vardır.
 - 320 dp genişlikte ve en büyük yazı boyutunda hiçbir metin "..." ile kesilmez, hiçbir düğme yazısı iki satıra bölünmez; gerekirse metin kısalır ya da düzen değişir.
-- Süreli oyun ekranlarında süre, istem ve eylem düğmeleri kaydırmadan aynı anda görünür.
+- Süreli oyun ekranlarında süre, istem ve eylem düğmeleri kaydırmadan aynı anda görünür. İstisna Sprengja: süre bilerek gizlidir, ekranda süre yoktur; istem ve eylem düğmeleri yine kaydırmadan görünür (K-85).
 - Uyarı kartları hiçbir düğmenin üstüne binmez.
 - Yalnızca liste olan ekranlar kayar (alt alta satırlar: Mekan'ın lobisi, Keşfet, Mesajlar, DM ve sohbetler, bildirimler, arkadaşlar). Liste olmayan her ekran sabittir; içeriği sığmazsa (klavye açıkken, en büyük yazı boyutunda) yalnızca o zaman kayar, hiçbir şey kesilmez (proje sahibinin kararı, 28 Ekim).
 

@@ -75,6 +75,17 @@ export const TABLE_GAMES = [
     available: false,
   },
   {
+    id: 'sprengja',
+    name: 'Sprengja',
+    minPlayers: 3,
+    maxPlayers: 8,
+    teams: false,
+    pregame: true,
+    categories: ['multi'],
+    poster: 'sprengja',
+    available: false,
+  },
+  {
     id: 'sohbet',
     name: 'Sohbet kartları',
     minPlayers: 1,

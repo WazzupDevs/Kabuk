@@ -7,7 +7,7 @@ import type { AccountRequest } from './api/account.ts';
 import type { ChatRequest } from './api/chat.ts';
 import type { CheckinRequest } from './api/checkin.ts';
 import type { DmRequest, FriendsRequest } from './api/friends.ts';
-import type { TabuRequest, VampirRequest } from './api/games.ts';
+import type { SprengjaRequest, TabuRequest, VampirRequest } from './api/games.ts';
 import type { ProfileRequest } from './api/profile.ts';
 import type { VenueChatRequest } from './api/venueChat.ts';
 
@@ -22,7 +22,8 @@ type CallName =
   | `venue-chat/${VenueChatRequest['action']}`
   | `account/${AccountRequest['action']}`
   | `vampir/${VampirRequest['action']}`
-  | `tabu/${TabuRequest['action']}`;
+  | `tabu/${TabuRequest['action']}`
+  | `sprengja/${SprengjaRequest['action']}`;
 
 export const IDEMPOTENT_CALLS = [
   // updateGate.test "update gate, open": "answers the launch and foreground ping without a user"
@@ -72,6 +73,21 @@ export const IDEMPOTENT_CALLS = [
   // tabu.test "the card (rule 3)": "goes to the describer, the other team and the watchers, never
   // to the describer’s team"
   'tabu/turn-cards',
+  // sprengja.test "the fuse (rule 3, K-85 O-4)": "changes nothing with an early poll, and the same
+  // with one sent twice"
+  'sprengja/poll',
+  // sprengja.test "Tur sonu and the end (§4.6.7)": "moves on when everyone is ready or its time is
+  // up, and changes nothing with an early advance"
+  'sprengja/advance',
+  // sprengja.test "Tur sonu and the end (§4.6.7)": "moves on when everyone is ready or its time is
+  // up, and changes nothing with an early advance"
+  'sprengja/ready',
+  // sprengja.test "the round (§4.6.7)": "opens the card and lights the fuse by the starter only;
+  // the same twice changes nothing"
+  'sprengja/reveal',
+  // sprengja.test "the round (§4.6.7)": "opens the card and lights the fuse by the starter only;
+  // the same twice changes nothing"
+  'sprengja/light',
 ] as const satisfies readonly CallName[];
 
 export const RETRY_DELAY_MS = 500;
