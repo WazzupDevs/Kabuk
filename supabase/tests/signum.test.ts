@@ -2,9 +2,11 @@
 // in the Edge Function; these tests hold the server to them over real HTTP and a real database:
 // what each phone gets (rule 3), the seat read again at every write, the version and the clock under
 // the lock, races and repeats, the team channel (rule 9), leaving (A-5) and the end. The game stays
-// "Yakında" (games.json → available: false) and no word is seeded: the pool here is the test's own
-// (source_key 'test-…'), added and removed by this file.
+// "Yakında" (games.json → available: false). The pool here is the test's own (source_key 'test-…'),
+// added and removed by this file; the seeded words (content/signum-words.json) are set aside while
+// it runs and put back after.
 import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import postgres from 'postgres';
@@ -41,6 +43,13 @@ import {
 } from './people.ts';
 
 let venue: Record<string, string> = {};
+// The seeded words this file set aside (is_active false) and puts back in afterAll.
+let seededOff: string[] = [];
+const SEEDED_WORDS = (
+  JSON.parse(readFileSync(new URL('../../content/signum-words.json', import.meta.url), 'utf8')) as {
+    words: string[];
+  }
+).words;
 
 // Words never too alike for one board (each its own first four letters), as the pure tests use.
 const LETTERS = 'abcdefghijklmnopqrstuvwxyz';
@@ -58,6 +67,12 @@ beforeAll(async () => {
     insert into public.cards (deck, source_key, word)
     select 'signum', 'test-' || w, w from unnest(${WORDS}::text[]) w
   `;
+  const off = await sql`
+    update public.cards set is_active = false
+    where deck = 'signum' and is_active and source_key not like 'test-%'
+    returning source_key
+  `;
+  seededOff = off.map((r) => r.source_key as string);
 });
 
 // The game is "Yakında" everywhere; only this file opens it, for its own tests.
@@ -72,6 +87,10 @@ afterEach(async () => {
 afterAll(async () => {
   await sql`update public.games set is_available = false where id = 'signum'`;
   await sql`delete from public.cards where deck = 'signum' and source_key like 'test-%'`;
+  await sql`
+    update public.cards set is_active = true
+    where deck = 'signum' and source_key = any(${seededOff}::text[])
+  `;
   await deleteFixtureVenues(sql);
   await sql.end();
 });
@@ -351,11 +370,16 @@ describe('signum: the start (§4.F)', { timeout: SLOW }, () => {
     } finally {
       await sql`update public.cards set is_active = true where deck = 'signum' and source_key like 'test-%'`;
     }
-    // No test word is in the seeds: the seeded pool is empty.
-    const [seeded] = await sql`
-      select count(*)::int as n from public.cards where deck = 'signum' and source_key not like 'test-%'
+    // The seeds hold exactly content/signum-words.json, none of it a test word, at least the pool a
+    // game needs; set aside while this file runs, so the boards here come from the test pool.
+    const seeded = await sql`
+      select source_key, word, is_active from public.cards
+      where deck = 'signum' and source_key not like 'test-%'
     `;
-    expect(seeded?.n).toBe(0);
+    expect(seeded.map((r) => r.source_key as string).sort()).toEqual([...SEEDED_WORDS].sort());
+    expect(seeded.every((r) => r.word === r.source_key && r.is_active === false)).toBe(true);
+    expect(SEEDED_WORDS.length).toBeGreaterThanOrEqual(SIGNUM.minPool);
+    expect([...seededOff].sort()).toEqual([...SEEDED_WORDS].sort());
   });
 });
 
