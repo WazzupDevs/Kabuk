@@ -141,5 +141,26 @@ export type SprengjaRequest =
   // Anyone at the table while the fuse burns, as often as game_state.poll says; idempotent.
   | { action: 'poll'; roomId: string; round: number }
   // Tur sonu: ready; anyone once its time is up; idempotent.
+  | { action: 'ready'; roomId: string; step: number };
+// `kibrit` (docs/SPEC_V4.md §4.F "Adım 4.6.9", K-86). Targets are table session ids (rule 4);
+// `step` is the phase's number in rooms.game_state, so a press from a phase already over changes
+// nothing. `rev` is the phone's own counter for its paper or vote in the step (rule 3's exception):
+// the server keeps the greatest, a call with a rev not greater changes nothing.
+export type KibritRequest =
+  // The owner, from the pre-game page; the round limit (1 to the players, min(5, players) without).
+  | { action: 'start'; roomId: string; rounds?: number }
+  // What only the caller's phone may know; idempotent.
+  | { action: 'view'; roomId: string }
+  // A player's paper, while the table writes; the answer is the caller's view.
+  | { action: 'write'; roomId: string; step: number; rev: number; text: string }
+  // The drawer's draw; the drawer or the owner opens the vote.
+  | { action: 'draw'; roomId: string; step: number }
+  | { action: 'to-vote'; roomId: string; step: number }
+  // A player's secret vote (themselves too); the answer is the caller's view.
+  | { action: 'vote'; roomId: string; step: number; rev: number; target: string }
+  // The owner skips the open paper; the result's Hazır and the owner's Sonraki kâğıt.
+  | { action: 'skip'; roomId: string; step: number }
   | { action: 'ready'; roomId: string; step: number }
+  | { action: 'next'; roomId: string; step: number }
+  // Anyone at the table once the phase's time is up; idempotent.
   | { action: 'advance'; roomId: string };
