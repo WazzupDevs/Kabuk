@@ -7,6 +7,7 @@ import { prepareTerms } from './profanity.ts';
 import {
   actionKey,
   answerOffer,
+  cleanPregame,
   approveCaptain,
   dealKey,
   decideAction,
@@ -20,6 +21,8 @@ import {
   pregameAgain,
   publicState,
   randomOffer,
+  repeatOf,
+  respond,
   seatsAtStart,
   SIGNUM,
   SIGNUM_IDEMPOTENT_ACTIONS,
@@ -38,6 +41,7 @@ import {
   validateClue,
   viewFor,
   volunteer,
+  withTries,
 } from './signum.ts';
 
 const profanity = JSON.parse(
@@ -64,6 +68,8 @@ const POOL = Array.from({ length: 260 }, (_, i) => {
   return `${a}${b}${a}${b}x`;
 });
 
+const CHANNELS = { a: 'chan-a', b: 'chan-b' };
+
 const SEATS: SignumSeat[] = [
   { sid: 'ada', team: 'a', role: 'captain' },
   { sid: 'bora', team: 'a', role: 'guesser' },
@@ -82,7 +88,10 @@ const actor = (sid: string): SignumActor => ({
 });
 
 function newGame(seed = 1) {
-  const started = startGame({ gameNo: 1, seats: SEATS, pool: POOL, now: T0 }, rng(seed));
+  const started = startGame(
+    { gameNo: 1, seats: SEATS, pool: POOL, now: T0, channels: CHANNELS },
+    rng(seed),
+  );
   if ('error' in started) throw new Error(started.error);
   return started;
 }
@@ -165,7 +174,10 @@ describe('the board', () => {
     const pool = Array.from({ length: 300 }, (_, i) => `kele${'abcdefghijklmnopqrst'[i % 20]}${i}`);
     expect(pool.length).toBeGreaterThanOrEqual(SIGNUM.minPool);
     expect(pickWords(pool, rng(1))).toBeNull();
-    const started = startGame({ gameNo: 1, seats: SEATS, pool, now: T0 }, rng(1));
+    const started = startGame(
+      { gameNo: 1, seats: SEATS, pool, now: T0, channels: CHANNELS },
+      rng(1),
+    );
     expect(started).toEqual({ error: 'content_unavailable' });
   });
 
@@ -180,7 +192,7 @@ describe('the board', () => {
 describe('startGame', () => {
   it('needs the pool, two of each team and one captain each', () => {
     const start = (seats: SignumSeat[], pool = POOL) =>
-      startGame({ gameNo: 1, seats, pool, now: T0 }, rng(1));
+      startGame({ gameNo: 1, seats, pool, now: T0, channels: CHANNELS }, rng(1));
     expect(start(SEATS, POOL.slice(0, SIGNUM.minPool - 1))).toEqual({
       error: 'content_unavailable',
     });
@@ -750,7 +762,7 @@ describe('who may act, further', () => {
 
   it('nothing moves a game that is over', () => {
     const g = inGuess();
-    const over = leaveGame(g.state, g.secret, g.captain, true, T0);
+    const over = leaveGame(g.state, g.secret, g.captain, 'game', T0, 'new-channel');
     const done: Game = { state: over.state, secret: over.secret };
     expect(act(done, 'bora', { action: 'advance', step: done.state.step }, later(999))).toEqual({
       kind: 'noop',
@@ -777,11 +789,15 @@ describe('words compared the way trText does (rule 7)', () => {
 describe('startGame input', () => {
   it('refuses a seat list with the same person twice or a bad team', () => {
     const twice = [...SEATS, { sid: 'bora', team: 'a' as const, role: 'guesser' as const }];
-    expect(startGame({ gameNo: 1, seats: twice, pool: POOL, now: T0 }, rng(1))).toEqual({
+    expect(
+      startGame({ gameNo: 1, seats: twice, pool: POOL, now: T0, channels: CHANNELS }, rng(1)),
+    ).toEqual({
       error: 'bad_request',
     });
     const bad = SEATS.map((s) => (s.sid === 'cem' ? { ...s, team: 'c' as unknown as 'a' } : s));
-    expect(startGame({ gameNo: 1, seats: bad, pool: POOL, now: T0 }, rng(1))).toEqual({
+    expect(
+      startGame({ gameNo: 1, seats: bad, pool: POOL, now: T0, channels: CHANNELS }, rng(1)),
+    ).toEqual({
       error: 'bad_request',
     });
   });
@@ -790,17 +806,17 @@ describe('startGame input', () => {
 describe('leaving', () => {
   it('a captain leaving ends the game with no winner, and says so', () => {
     const g = inGuess();
-    const out = leaveGame(g.state, g.secret, g.captain, true, T0);
+    const out = leaveGame(g.state, g.secret, g.captain, 'game', T0, 'new-channel');
     expect(out.state.phase).toBe('over');
     expect(out.state.winner).toBeNull();
     expect(out.state.reason).toBe('captain_left');
-    expect(out.event).toEqual({ type: 'captain_left', team: g.team, voluntary: true });
+    expect(out.event).toEqual({ type: 'captain_left', team: g.team, via: 'game' });
   });
 
   it('a team left without a guesser ends the game; one guesser fewer does not', () => {
     const g = inGuess();
     const [first = '', second = ''] = g.guessers;
-    const one = leaveGame(g.state, g.secret, first, false, T0);
+    const one = leaveGame(g.state, g.secret, first, 'table', T0, 'new-channel');
     expect(one.state.phase).toBe('guess');
     expect(one.event).toBeNull();
     expect(
@@ -808,16 +824,16 @@ describe('leaving', () => {
         (sid) => one.secret.marks[g.team][sid]?.tile === null || sid !== first,
       ),
     ).toBe(true);
-    const two = leaveGame(one.state, one.secret, second, false, T0);
+    const two = leaveGame(one.state, one.secret, second, 'table', T0, 'new-channel');
     expect(two.state.reason).toBe('team_empty');
-    expect(two.event).toEqual({ type: 'team_empty', team: g.team, voluntary: false });
+    expect(two.event).toEqual({ type: 'team_empty', team: g.team, via: 'table' });
   });
 
   it('the last one not ready leaving starts the clues', () => {
     let g: Game = newGame();
     for (const s of SEATS.filter((s) => s.sid !== 'fuat'))
       g = apply(g, s.sid, { action: 'ready', step: 1 });
-    const out = leaveGame(g.state, g.secret, 'fuat', true, T0);
+    const out = leaveGame(g.state, g.secret, 'fuat', 'game', T0, 'new-channel');
     expect(out.state.phase).toBe('clue');
   });
 });
@@ -828,8 +844,9 @@ describe('what leaves the server', () => {
   it('gives the key to captains only; a guesser’s and an observer’s view has no key field', () => {
     const g = inGuess();
     const captain = viewFor(actor(g.captain), g.secret);
-    expect(keyFields(captain)).toEqual(['key', 'marks', 'role', 'team']);
+    expect(keyFields(captain)).toEqual(['channel', 'key', 'marks', 'role', 'team']);
     expect(keyFields(viewFor(actor(g.guessers[0] ?? ''), g.secret))).toEqual([
+      'channel',
       'marks',
       'mySeq',
       'role',
@@ -1032,5 +1049,162 @@ describe('choosing captains', () => {
     const p = pregameAgain({ a: 'ada', b: 'deniz' });
     expect(p.captains).toEqual({ a: null, b: null });
     expect(p.candidates).toEqual({ a: ['ada'], b: ['deniz'] });
+  });
+});
+
+describe('the team channel', () => {
+  it('only the team’s own view carries its channel; an observer’s has none', () => {
+    const g = inGuess();
+    expect(viewFor(actor(g.captain), g.secret)).toMatchObject({ channel: CHANNELS[g.team] });
+    const rival = SEATS.find((s) => s.team !== g.team) as SignumSeat;
+    expect(viewFor(actor(rival.sid), g.secret)).toMatchObject({
+      channel: CHANNELS[rival.team],
+    });
+    expect(JSON.stringify(viewFor({ sid: 'gul', seat: null }, g.secret))).not.toContain('chan-');
+    // Never in the open state.
+    expect(JSON.stringify(publicState(g.state))).not.toContain('chan-');
+  });
+
+  it('changes for the team someone leaves, and only for that team', () => {
+    const g = inGuess();
+    const [first = ''] = g.guessers;
+    const out = leaveGame(g.state, g.secret, first, 'game', T0, 'chan-new');
+    const other = g.team === 'a' ? 'b' : 'a';
+    expect(out.secret.channels[g.team]).toBe('chan-new');
+    expect(out.secret.channels[other]).toBe(CHANNELS[other]);
+    // The one who left has no seat, so no view with any channel.
+    expect(viewFor({ sid: first, seat: null }, out.secret)).toEqual({ role: 'observer' });
+  });
+});
+
+describe('respond', () => {
+  it('builds every answer from the result, the open state and the caller’s view only', () => {
+    const g = inGuess();
+    const who = g.guessers[0] ?? '';
+    const view = viewFor(actor(who), g.secret);
+    const d = act(g, who, { action: 'point', step: g.state.step, tile: 2, seq: 1 });
+    if (d.kind !== 'applied') throw new Error();
+    const answers = [
+      respond(d, d.state, view),
+      respond({ kind: 'replayed', result: d.result }, d.state, view),
+      respond({ kind: 'noop' }, g.state, view),
+      respond({ kind: 'busy' }, g.state, view),
+      respond(
+        {
+          kind: 'not_applied',
+          reason: 'stale_step',
+          state: g.state,
+          secret: g.secret,
+          changed: false,
+        },
+        g.state,
+        view,
+      ),
+    ];
+    for (const answer of answers) {
+      const text = JSON.stringify(answer);
+      expect(
+        Object.keys(answer).every((k) =>
+          ['applied', 'replayed', 'reason', 'result', 'room', 'view'].includes(k),
+        ),
+      ).toBe(true);
+      expect(text).not.toContain('"actions"');
+      expect(text).not.toContain('"secret"');
+      // A seq only as the caller's own (the point's result, the view's mySeq); marks are tiles.
+      // The caller's own seq is 0 before the point and 1 after it; nobody else's is ever here.
+      for (const [, seq] of text.matchAll(/"(?:seq|mySeq)":(\d+)/g))
+        expect(['0', '1']).toContain(seq);
+      if ('marks' in answer.view) {
+        expect(Object.values(answer.view.marks).every((t) => typeof t === 'number')).toBe(true);
+      }
+      expect(answer.room.key).toBeNull();
+      expect('key' in answer.view).toBe(false);
+    }
+    expect(answers.map((a) => (a.applied ? 'applied' : a.reason))).toEqual([
+      'applied',
+      'applied',
+      'unchanged',
+      'busy',
+      'stale_step',
+    ]);
+  });
+});
+
+describe('cleanPregame', () => {
+  it('drops a candidacy, an offer or a captaincy of someone no longer on that team', () => {
+    const p = {
+      candidates: { a: ['ada', 'bora'], b: ['deniz'] },
+      offers: { a: 'cem', b: 'ece' },
+      captains: { a: 'ada', b: 'deniz' },
+    };
+    const picks: SignumPicks = { ada: 'b', bora: 'a', cem: 'obs', deniz: 'b', ece: 'b' };
+    expect(cleanPregame(p, picks)).toEqual({
+      candidates: { a: ['bora'], b: ['deniz'] },
+      offers: { a: null, b: 'ece' },
+      captains: { a: null, b: 'deniz' },
+    });
+  });
+});
+
+describe('withTries (B-2)', () => {
+  it('stops at the first write that holds, and answers busy after three that did not', async () => {
+    const calls: number[] = [];
+    const held = await withTries(
+      3,
+      (n) => {
+        calls.push(n);
+        return Promise.resolve(n === 2 ? 'written' : null);
+      },
+      () => Promise.resolve('busy'),
+    );
+    expect([held, calls]).toEqual(['written', [1, 2]]);
+    const tried: number[] = [];
+    const busy = await withTries(
+      3,
+      (n) => {
+        tried.push(n);
+        return Promise.resolve(null);
+      },
+      () => Promise.resolve('busy'),
+    );
+    expect([busy, tried]).toEqual(['busy', [1, 2, 3]]);
+  });
+});
+
+describe('repeatOf', () => {
+  it('answers a repeat after the game ended, as during it, and only the same person’s', () => {
+    const g = inGuess();
+    const who = g.guessers[0] ?? '';
+    const t = tileOf(g.secret, 'x');
+    const m = apply(g, who, { action: 'point', step: g.state.step, tile: t, seq: 1 });
+    const request: SignumRequest = {
+      action: 'reveal',
+      step: m.state.step,
+      tile: t,
+      actionId: 'end',
+    };
+    const ended = act(m, who, request);
+    if (ended.kind !== 'applied') throw new Error();
+    expect(ended.state.phase).toBe('over');
+    expect(repeatOf(ended.secret, who, request)).toEqual({
+      kind: 'replayed',
+      result: ended.result,
+    });
+    expect(repeatOf(ended.secret, who, { ...request, tile: 0 })).toEqual({
+      kind: 'error',
+      code: 'action_id_conflict',
+    });
+    expect(repeatOf(ended.secret, g.guessers[1] ?? '', request)).toBeNull();
+    expect(repeatOf(ended.secret, who, { action: 'point', step: 1, tile: 0, seq: 1 })).toBeNull();
+  });
+});
+
+describe('pickWords and the written card', () => {
+  it('uses a card as it is written, or not at all', () => {
+    const odd = [' Kale', 'Kale\u200b', 'ＫＡＬＥ'];
+    for (let seed = 1; seed <= 20; seed++) {
+      const words = pickWords([...POOL, ...odd], rng(seed)) ?? [];
+      expect(words.every((w) => POOL.includes(w))).toBe(true);
+    }
   });
 });

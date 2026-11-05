@@ -55,6 +55,7 @@ import {
   TeamTag,
   TimeStrip,
   TopBar,
+  useKinshiDeck,
   useTeamTone,
 } from './KinshiParts';
 
@@ -459,8 +460,14 @@ function CardScreen({
       ? PEEK_PAIRS.far
       : PEEK_PAIRS.near;
   const rival = !ready && role === 'rival';
+  const deck = useKinshiDeck();
+  // The panel's measured bottom: on a narrow screen or in the largest text it can reach below the
+  // card, and the counters then go under it rather than behind it.
+  const [panelBottom, setPanelBottom] = useState(0);
   const panel =
-    !ready && (role === 'guesser' || role === 'out') ? <GuesserPanel state={state} /> : null;
+    !ready && (role === 'guesser' || role === 'out') ? (
+      <GuesserPanel state={state} onBottom={setPanelBottom} />
+    ) : null;
   const passesLeft = Math.max(0, state.maxPasses - state.passesUsed);
 
   const foot =
@@ -543,12 +550,12 @@ function CardScreen({
           ) : undefined
         }
       >
-        <Deck face={face} peek={near}>
+        <Deck face={face} peek={near} reach={panel ? panelBottom : 0}>
           {panel}
         </Deck>
         {!ready ? (
           <View
-            style={{ marginTop: (rival ? K.statsBelowRival : K.statsBelow) - K.deckShadow.below }}
+            style={{ marginTop: (rival ? K.statsBelowRival : K.statsBelow) - deck.shadow.below }}
           >
             <Stats counts={state.counts} />
           </View>
@@ -571,15 +578,23 @@ const PASS_DIM = 0.7;
 
 // The guesser's glass panel over the card's back (KinshiTahminci): the turn's Doğru, "Cevabı
 // yüksek sesle söyle." and the last three closed cards with their marks.
-function GuesserPanel({ state }: { state: TabuState }) {
+function GuesserPanel({
+  state,
+  onBottom,
+}: {
+  state: TabuState;
+  onBottom: (bottom: number) => void;
+}) {
   const last = state.words.slice(-LAST_WORDS).reverse();
+  const d = useKinshiDeck();
   return (
     <View
+      onLayout={(e) => onBottom(e.nativeEvent.layout.y + e.nativeEvent.layout.height)}
       style={{
         position: 'absolute',
-        top: K.peek.above + K.panel.top,
-        left: (K.card.width - K.panel.width) / 2,
-        width: K.panel.width,
+        top: d.peek.above + d.panel.top,
+        left: (d.card.width - d.panel.width) / 2,
+        width: d.panel.width,
       }}
     >
       <Glass

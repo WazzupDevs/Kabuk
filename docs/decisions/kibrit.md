@@ -1,6 +1,6 @@
 # Kibrit (5 Kasım 2026)
 
-Proje sahibinin onayı: Aura v90 "Kibrit (gizli soru, gizli oy)" satırı (11 pano) ve 5 Kasım'daki kararlar (K-85, `docs/SPEC_V4.md` §4.6.7).
+Proje sahibinin onayı: Aura v90 "Kibrit (gizli soru, gizli oy)" satırı (11 pano) ve 5 Kasım'daki kararlar (K-85, `docs/SPEC_V4.md` Adım 4.6.8).
 
 - **Neden puan yok:** Kibrit sosyal etkileşim oyunu; rekabet yok. `game_results` yazılmaz, kazanan ve sıralama yok.
 - **Neden 3–4 kişide sayı yok:** küçük masada oy sayıları kimin kime oy verdiğini çıkarılabilir kılar (3 kişide 3 oy alan, herkesin oyudur). 5 ve üstünde sayılar kibrit çöpleriyle görünür. Hiçbir düzende mutlak gizlilik yoktur; belge bunu açıkça söyler.

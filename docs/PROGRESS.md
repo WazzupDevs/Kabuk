@@ -1,10 +1,16 @@
 # İlerleme
 
+## Devir notu (5 Kasım 2026, Kinshi 320 dp denetimi)
+
+- #463 deste 320 dp'de ölçeklenir; denetimde tahmincinin paneli sayaçlara biniyordu, düzeldi (`kinshiDeckHeight`; OTA). Ayrıntı ve ölçümler `docs/decisions/kinshi-320dp.md` → "Denetim".
+- Tasarımın kararını bekleyen: 22'de sığmayan iki kelimelik kelimeler (320'de 11, 390'da 1) "…" ile biter; seçenekler iki satır, en küçük boyu düşürmek ya da kartları kısaltmak. Skor hapı 320'de 2 dp taşar; 3-2-1 kankileri ve konfeti 320'de 390 konumunda.
+- Telefonda bakılacak (cihaz ve emülatör yok, hiçbiri denenmedi): 320 dp ve en büyük yazıda Anlatıcı, Tahminci, Rakip, Gözlemci, Tur öncesi; "…" gerçekten çıkıyor mu; panel uzayınca sayaçlar ve kaydırma.
+
 ## Devir notu (5 Kasım 2026, Kinshi ekranları bitti)
 
 - Birleşenler: #456 (Kinshi tabu düzeni, Aura v85: Takımlar, Tur öncesi, 3-2-1, Anlatıcı, Tahminci, Rakip, Gözlemci, Tur sonu, Oyun sonu; `features/games/kinshi/`, ölçüler `theme/kinshi.ts`, koyu açılış `DarkGameScope`; poster `kinshi` → oyun `tabu`, `PosterCard.tsx` → `conceptOf`; `tabu.available: true` + seed), #458 (Aura v94: açıkta dolu takım yüzeyi `TEAM_FILLS` #6A47F5/#D02860, sahip olmayanların Tur sonunda salt okunur sayı hapı). Takım renkleri her yerde tuvalinki (SPEC_V4 §4.2).
 - Yayın: önce dev projesine #451/#453 migration'ları, `tabu` fonksiyonu ve seed, sonra OTA. Native yok; cihazda denenmedi, görsel kontrol proje sahibinde.
-- Bilerek yok: kartın Doğru/Pas/Yasak! çıkış hareketleri (`hareket.json`'a girince ayrı PR). Çizilmemiş: kart yükleniyor/bağlantı hatası (bugün `Loader` ve ortak hata), 320 dp ve en büyük yazı.
+- Bilerek yok: kartın Doğru/Pas/Yasak! çıkış hareketleri (`hareket.json`'a girince ayrı PR). Çizilmemiş: kart yükleniyor/bağlantı hatası (bugün `Loader` ve ortak hata). 320 dp ve en büyük yazı: deste ekranla ölçeklenir (`kinshiDeck`, `docs/decisions/kinshi-320dp.md`); Anlatıcı ve Gözlemci görüntüsü proje sahibinin telefonunda.
 - Oturumun seçtikleri (proje sahibi telefonda bakar): zaman kapsülü üç kademe (Tur öncesi ve 3-2-1 dolu, tur yarım, son 10 sn az); tahmincinin panelinde son üç kelime en yenisi üstte.
 
 ## Devir notu (5 Kasım 2026, Kinshi tabu düzeni)
