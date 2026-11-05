@@ -31,6 +31,17 @@ export const TABLE_GAMES = [
     available: true,
   },
   {
+    id: 'signum',
+    name: 'Signum',
+    minPlayers: 4,
+    maxPlayers: 12,
+    teams: true,
+    pregame: true,
+    categories: ['teams'],
+    poster: 'signum',
+    available: false,
+  },
+  {
     id: 'ibre',
     name: 'İbre',
     minPlayers: 4,
