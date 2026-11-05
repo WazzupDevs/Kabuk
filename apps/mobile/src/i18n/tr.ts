@@ -7,6 +7,7 @@ import type { HistoryDay, HistoryResult } from '@shared/activities.ts';
 import type { EventTime } from '@shared/explore.ts';
 import { ENCOUNTER_MIN_MINUTES } from '@shared/friends.ts';
 import { TABU } from '@shared/tabu.ts';
+import { TABU_GAME } from '@shared/tabuGame.ts';
 import { SAHTEKAR } from '@shared/sahtekar.ts';
 import { formatTrMobile } from '@shared/phone.ts';
 import { BIO_MAX } from '@shared/profile.ts';
@@ -1052,6 +1053,76 @@ export const tr = {
     rejoin: 'İzle',
     rejoinPage: 'Aç',
     you: 'Sen',
+  },
+  // Kinshi, the tabu layout (Aura v85, "Kinshi (tabu düzeni)"; docs/SPEC_V4.md §4.F "Adım 4.6.1").
+  kinshi: {
+    name: 'Kinshi',
+    pickTeam: 'Takımını seç',
+    rules: [
+      `${TABU_GAME.totalTurns} tur`,
+      `Turda ${TABU_GAME.turnSeconds} sn`,
+      `Turda ${TABU_GAME.maxPasses} pas`,
+    ],
+    team: { a: 'Mor takım', b: 'Pembe takım' },
+    teamShort: { a: 'Mor', b: 'Pembe' },
+    count: (n: number) => `${n} kişi`,
+    join: 'Katıl',
+    watchers: 'Gözlemciler',
+    watchersNote: 'Kartı görür, oynamaz.',
+    watch: 'Gözlemci ol',
+    unpicked: 'Henüz seçmeyenler',
+    unpickedNote: 'Oyun başlarken seçmeyenler gözlemci olur.',
+    needs: (n: number) => `Her takımda en az ${n} kişi olmalı.`,
+    shuffle: 'Karıştır',
+    start: 'Oyunu başlat',
+    hintGuest: 'Oyunu masa sahibi başlatır.',
+    endGame: 'Oyunu bitir',
+    exit: 'Oyundan çık',
+    chat: 'Sohbet',
+    scoreLabel: (a: number, b: number) => `Mor takım ${a}, Pembe takım ${b}`,
+    // The strip beside the time capsule.
+    describing: 'Anlatıyorsun',
+    guessing: 'Tahmincisin',
+    rival: 'Rakipsin',
+    watching: 'Gözlemcisin',
+    guessesNow: 'tahmin ediyor',
+    describes: (alias: string) => `${alias} anlatıyor`,
+    describesFor: (alias: string, team: string) => `${alias} anlatıyor, ${team}`,
+    // The guesser's panel.
+    correctWord: 'doğru',
+    sayIt: 'Cevabı yüksek sesle söyle.',
+    marks: { correct: 'Doğru', pass: 'Pas', taboo: 'Yasak!' },
+    statLabel: (mark: string, n: number) => `${mark} ${n}`,
+    passLeft: (n: number) => `· ${n}`,
+    passLabel: (n: number) => `Pas, ${n} hak`,
+    correct: 'Doğru',
+    pass: 'Pas',
+    buzz: 'Yasak!',
+    // Tur sonu.
+    timeUp: 'Süre bitti',
+    next: 'Sıradaki: ',
+    nextDescribes: (alias: string) => `, ${alias} anlatacak`,
+    nextTurn: 'Sonraki tura geç',
+    // Oyun sonu.
+    overTurns: (n: number) => `Oyun bitti · ${n} tur bitti`,
+    won: (team: string) => `${team} kazandı`,
+    draw: 'Berabere',
+    topDescriber: 'En çok bildiren anlatıcı',
+    tabooHunter: 'Yasak avcısı',
+    backToTable: 'Masaya dön',
+    again: 'Yeniden oyna',
+    left: 'Oyundan çıktı',
+    you: 'Sen',
+    // Leaving (as Vampir Köylü's).
+    endTitle: 'Oyunu bitir?',
+    endBody: 'Oyun herkes için biter, masaya dönülür.',
+    leaveTitle: 'Oyundan çık?',
+    leaveBody: 'Masaya dönersin. Oyun diğerleri için sürer.',
+    watchTitle: 'Masaya dön?',
+    watchBody: 'Oyun sürer; masadan yeniden izleyebilirsin.',
+    // On the table while a game runs that the person does not see.
+    running: 'Kinshi sürüyor',
+    runningPage: 'Kinshi açık',
   },
   identity: {
     // Mekan's anonymous switch and its sheets (skall tuvali: MekanAnonimGecis, …Erkek,

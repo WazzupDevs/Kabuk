@@ -280,4 +280,9 @@ export const CAP_ICONS = {
     {"t":"rect","l":"b","x":2.4,"y":13.6,"width":14,"height":7.4,"rx":3.7},
     {"t":"rect","l":"a","x":15.4,"y":9.6,"width":7,"height":3.2,"rx":1.6},
   ],
+  warn: [
+    {"t":"circle","l":"o","cx":12,"cy":12,"r":8.2},
+    {"t":"rect","l":"a","x":10.4,"y":7,"width":3.2,"height":6.4,"rx":1.6},
+    {"t":"rect","l":"a","x":10.4,"y":14.6,"width":3.2,"height":3.2,"rx":1.6},
+  ],
 } as const;

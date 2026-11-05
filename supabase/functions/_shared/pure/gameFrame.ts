@@ -34,6 +34,9 @@ export function tableGameAvailability(id: string, phones: number): GamePosterSta
 // A pick on the pre-game page: Mor ('a') or Pembe ('b') in a team game, or watching ('obs');
 // no pick is "Henüz seçmeyenler" in a team game and a player in any other.
 export const PICKS = ['a', 'b', 'obs'] as const;
+// A team game starts with at least this many in each team (private.start_game:
+// not_enough_players).
+export const TEAM_MIN_PLAYERS = 2;
 export type Pick = (typeof PICKS)[number];
 
 export function pickAllowed(id: string, pick: Pick | null): boolean {

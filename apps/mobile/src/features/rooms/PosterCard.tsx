@@ -29,6 +29,13 @@ export const GAME_CARDS = [
 }[];
 
 export type GameCardId = (typeof GAME_CARDS)[number]['id'];
+
+// A poster's game on the server (content/games.json): Kinshi is Kapsül Anlat's `tabu`; the others
+// carry their own id.
+const CONCEPTS: Partial<Record<GameCardId, string>> = { kinshi: 'tabu' };
+export function conceptOf(card: GameCardId): string {
+  return CONCEPTS[card] ?? card;
+}
 export type GameCategory = keyof typeof tr.table.gameCategories;
 
 // The frost over a card while it arrives: the card's 24 corner at its width on a 390 wide phone.

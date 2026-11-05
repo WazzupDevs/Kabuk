@@ -243,6 +243,8 @@ export function Btn({
   loading,
   disabled,
   tint,
+  fill,
+  trail,
   testID,
   accessibilityLabel,
   style,
@@ -268,6 +270,11 @@ export function Btn({
   disabled?: boolean;
   // The label's colour where the canvas gives one (Bitir, Ayrıl in red).
   tint?: string;
+  // A flat fill where the canvas gives one (Kinshi's Doğru on --signal, a team's Katıl), with
+  // `tint` for its words; no shadow.
+  fill?: string;
+  // Something after the words (Kinshi's count in Sonraki tura geç, its pass count).
+  trail?: ReactNode;
   testID?: string;
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
@@ -292,34 +299,37 @@ export function Btn({
           : variant === 'dark'
             ? c.onChipOn
             : c.ink));
-  const shadow = off
-    ? null
-    : variant === 'primary'
-      ? shadowParts(shadowOff, c.primaryShadow, c.primaryInset, KIT.size.btn)
-      : variant === 'dark' || variant === 'danger'
-        ? null
-        : shadowParts(
-            shadowOff,
-            c.raisedShadow || undefined,
-            undefined,
-            KIT.size.btn,
-            true,
-            KIT.size.edge,
-          );
+  const shadow =
+    off || fill
+      ? null
+      : variant === 'primary'
+        ? shadowParts(shadowOff, c.primaryShadow, c.primaryInset, KIT.size.btn)
+        : variant === 'dark' || variant === 'danger'
+          ? null
+          : shadowParts(
+              shadowOff,
+              c.raisedShadow || undefined,
+              undefined,
+              KIT.size.btn,
+              true,
+              KIT.size.edge,
+            );
   const ground: ViewStyle = off
     ? { backgroundColor: frost ? c.disabled : c.disabledOnCard }
-    : variant === 'primary'
-      ? { backgroundColor: KIT.primary, boxShadow: shadow?.boxShadow }
-      : variant === 'danger'
-        ? { backgroundColor: c.dangerSoft }
-        : variant === 'dark'
-          ? { backgroundColor: c.chipOn }
-          : {
-              backgroundColor: frosted ? undefined : inSheet ? c.raisedInSheet : c.raised,
-              borderWidth: KIT.size.edge,
-              borderColor: inSheet ? c.glassInSheetEdge : c.raisedEdge,
-              boxShadow: shadow?.boxShadow,
-            };
+    : fill
+      ? { backgroundColor: fill }
+      : variant === 'primary'
+        ? { backgroundColor: KIT.primary, boxShadow: shadow?.boxShadow }
+        : variant === 'danger'
+          ? { backgroundColor: c.dangerSoft }
+          : variant === 'dark'
+            ? { backgroundColor: c.chipOn }
+            : {
+                backgroundColor: frosted ? undefined : inSheet ? c.raisedInSheet : c.raised,
+                borderWidth: KIT.size.edge,
+                borderColor: inSheet ? c.glassInSheetEdge : c.raisedEdge,
+                boxShadow: shadow?.boxShadow,
+              };
   const height = bar
     ? bar
     : sm
@@ -367,7 +377,7 @@ export function Btn({
         ]}
       >
         {shadow?.node}
-        {variant === 'glassy' && !off ? <FrostOf height={height} fill={c.raised} /> : null}
+        {variant === 'glassy' && !off && !fill ? <FrostOf height={height} fill={c.raised} /> : null}
         {loading ? (
           <Loader kind="meet" size={sm ? KIT.size.iconSm : KIT.size.icon} delay={0} label={null} />
         ) : icon && !off ? (
@@ -388,6 +398,7 @@ export function Btn({
         >
           {label}
         </Text>
+        {trail && !loading ? trail : null}
       </Animated.View>
     </Pressable>
   );
@@ -678,6 +689,7 @@ export function Tag({
   height,
   large,
   fit,
+  colors: own,
 }: {
   label: string;
   tone?: TagTone;
@@ -687,12 +699,15 @@ export function Tag({
   large?: boolean;
   // Within a narrow place: the words shrink to fit rather than end in "…".
   fit?: boolean;
+  // A ground and ink of the canvas's own (Kinshi's team labels, Doğru, Pas, Yasak!).
+  colors?: { bg: string; fg: string; edge?: string };
 }) {
   const { c, tags } = useKit();
-  const frosted = useFrost() && tone === 'glassy';
+  const frosted = useFrost() && tone === 'glassy' && !own;
   // `art`: dark glass over a picture (Masa's game cards); `artLit` white there (the person's vote).
-  const colors =
-    tone === 'glassy'
+  const colors = own
+    ? own
+    : tone === 'glassy'
       ? { bg: c.raisedRound, fg: c.ink }
       : tone === 'art'
         ? { bg: KIT.artTag, fg: KIT.white }
@@ -721,12 +736,12 @@ export function Tag({
         alignItems: 'center',
         gap: KIT.size.tagGap,
         backgroundColor: frosted ? undefined : colors.bg,
-        borderWidth: tone === 'glassy' ? KIT.size.edge : 0,
-        borderColor: c.raisedEdge,
+        borderWidth: own ? (own.edge ? KIT.size.edge : 0) : tone === 'glassy' ? KIT.size.edge : 0,
+        borderColor: own?.edge ?? c.raisedEdge,
         alignSelf: 'flex-start',
       }}
     >
-      {tone === 'glassy' ? (
+      {tone === 'glassy' && !own ? (
         <FrostOf height={height ?? (large ? KIT.size.tagLg : KIT.size.tag)} fill={colors.bg} />
       ) : null}
       {lead}

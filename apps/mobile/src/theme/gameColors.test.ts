@@ -14,6 +14,7 @@ import {
   mixOklab,
   type Team,
   TEAM_COLORS,
+  TEAM_TONES,
   teamGround,
 } from './gameColors';
 import type { ColorScheme } from './tokens';
@@ -23,6 +24,10 @@ const INK = '#14112B';
 const SCHEMES: readonly ColorScheme[] = ['light', 'dark'];
 const GROUND_KEYS: readonly GroundKey[] = ['sahtekar', 'letters', 'song', 'chat'];
 const TEAMS = Object.keys(TEAM_COLORS) as Team[];
+// The light team grounds are the canvas's Mor and Pembe (the owner's call, 5 Kasım), whose white
+// words read at 4.36:1 and 4.09:1: large text only there (an open question to the design).
+const floorOf = (scheme: ColorScheme, name: string) =>
+  scheme === 'light' && name.startsWith('team ') ? AA_LARGE : AA_TEXT;
 
 function grounds(scheme: ColorScheme): [string, GameGround][] {
   return [
@@ -43,12 +48,30 @@ describe('game colours (docs/SPEC_V4.md §4.C, step 4.2)', () => {
     for (const [name, ground] of grounds(scheme)) {
       it(`${scheme}: white text reads on ${name} and on its chips`, () => {
         for (const stop of [ground.top, ground.bottom]) {
-          expect(contrastRatio(WHITE, stop)).toBeGreaterThanOrEqual(AA_TEXT);
-          expect(contrastRatio(WHITE, chipOn(ground, stop))).toBeGreaterThanOrEqual(AA_TEXT);
+          expect(contrastRatio(WHITE, stop)).toBeGreaterThanOrEqual(floorOf(scheme, name));
+          expect(contrastRatio(WHITE, chipOn(ground, stop))).toBeGreaterThanOrEqual(
+            floorOf(scheme, name),
+          );
         }
       });
     }
   }
+
+  it("the teams are the canvas's Mor and Pembe in both schemes (Aura v85)", () => {
+    expect(TEAM_TONES.light.purple.color).toBe('#7B5CFF');
+    expect(TEAM_TONES.light.pink.color).toBe('#E8336F');
+    expect(TEAM_TONES.dark.purple.color).toBe('#9C86FF');
+    expect(TEAM_TONES.dark.pink.color).toBe('#FF7EA8');
+    // The labels' ink reads on their ground over the screen (light canvas, black in the dark).
+    for (const team of TEAMS) {
+      expect(contrastRatio(TEAM_TONES.dark[team].tagInk, '#000000')).toBeGreaterThanOrEqual(
+        AA_TEXT,
+      );
+      expect(
+        contrastRatio(TEAM_TONES.dark[team].onColor, TEAM_TONES.dark[team].color),
+      ).toBeGreaterThanOrEqual(AA_TEXT);
+    }
+  });
 
   it('the light bright grounds take the dark chip (K-25)', () => {
     expect(gameGround('light', 'letters').chip).toBe('ink');
@@ -68,8 +91,10 @@ describe('game colours (docs/SPEC_V4.md §4.C, step 4.2)', () => {
 
   for (const scheme of SCHEMES) {
     it(`${scheme}: the main game button's label reads on white; the last seconds read on every ground`, () => {
-      for (const [, ground] of grounds(scheme)) {
-        expect(contrastRatio(WHITE, mainButtonInk(ground))).toBeGreaterThanOrEqual(AA_TEXT);
+      for (const [name, ground] of grounds(scheme)) {
+        expect(contrastRatio(WHITE, mainButtonInk(ground))).toBeGreaterThanOrEqual(
+          floorOf(scheme, name),
+        );
         for (const stop of [ground.top, ground.bottom]) {
           // The clock's number is large text (40 px, 800).
           expect(contrastRatio(LOW_TIME.text, stop)).toBeGreaterThanOrEqual(AA_LARGE);

@@ -13,10 +13,11 @@ import { Sheet } from '@/components/Sheet';
 import { unreadCount, useRoomChatSeen } from '@/features/chat/roomChatSeen';
 import { useMessages } from '@/features/chat/useMessages';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
+import { KinshiGame, kinshiMode } from '@/features/games/kinshi/KinshiGame';
 import { gameNoOf, VampirGame, vampirMode } from '@/features/games/vampir/VampirGame';
 import { useVampirHidden } from '@/features/games/vampir/vampirHidden';
 import { useGameAwake } from '@/lib/gameAwake';
-import { GAME_CARDS, GameCard, PosterGrid } from '@/features/rooms/PosterCard';
+import { conceptOf, GAME_CARDS, GameCard, PosterGrid } from '@/features/rooms/PosterCard';
 import { useRoomMemberProfiles } from '@/features/profile/queries';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { IncomingRequest, useMarkTableScreen } from '@/features/rooms/IncomingRequest';
@@ -148,7 +149,7 @@ export default function TableScreen() {
 
   const sessionId = checkIn.data?.id;
   const r = room.data;
-  useGameAwake(!!r && r.status !== 'closed' && vampirMode(r) === 'play');
+  useGameAwake(!!r && r.status !== 'closed' && (vampirMode(r) ?? kinshiMode(r)) === 'play');
   const backToVenue = () => {
     forget(id);
     router.replace('/venue');
@@ -215,11 +216,14 @@ export default function TableScreen() {
   const owner = r.owner_session_id === sessionId;
   // Vampir Köylü's page, game or end takes the screen (docs/SPEC_V4.md §4.F "Adım 4.6.6"); one sent
   // back to the table stays back until a new page comes.
-  const gameMode = vampirMode(r);
+  // Kinshi's the same way (Aura v85, "Kinshi (tabu düzeni)").
+  const vampir = vampirMode(r);
+  const gameMode = vampir ?? kinshiMode(r);
   const gameKey = `${gameMode}:${gameNoOf(r.game_state)}`;
   if (gameMode && hiddenGame !== gameKey) {
+    const Game = vampir ? VampirGame : KinshiGame;
     return (
-      <VampirGame
+      <Game
         room={r}
         me={sessionId}
         people={people.data ?? []}
@@ -228,6 +232,7 @@ export default function TableScreen() {
       />
     );
   }
+  const gameText = vampir ? tr.vampir : tr.kinshi;
   const inLobby = r.visibility === 'open';
   const unread = unreadCount(messages, seenAt, sessionId);
 
@@ -361,7 +366,7 @@ export default function TableScreen() {
         style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.rowGap }}
       >
         <T v="h3" style={{ flex: 1 }}>
-          {gameMode === 'play' ? tr.vampir.running : tr.vampir.runningPage}
+          {gameMode === 'play' ? gameText.running : gameText.runningPage}
         </T>
         <Btn
           sm
@@ -371,7 +376,9 @@ export default function TableScreen() {
       </Glass>
     ) : null;
 
-  const poster = (gameId: (typeof GAME_CARDS)[number]['id']) => {
+  const poster = (card: (typeof GAME_CARDS)[number]['id']) => {
+    // The poster's game on the server (Kinshi is `tabu`).
+    const gameId = conceptOf(card);
     const state = tableGameAvailability(gameId, r.phones);
     if (state.state === 'soon') return { tag: tr.table.soon };
     const count = votes.data?.counts[gameId] ?? 0;

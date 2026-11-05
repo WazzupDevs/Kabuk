@@ -205,3 +205,27 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     </ThemeContext.Provider>
   );
 }
+
+// A game that opens in the dark (Kinshi, Aura v85: pure black ground, flat #121614 glass): dark
+// unless the person chose Açık in Ayarlar → Görünüm, which it follows. The status bar and the
+// navigation buttons follow it while it is open and go back to the app's after.
+export function DarkGameScope({ children }: { children: ReactNode }) {
+  const preference = useSchemePreference();
+  const outer = useTheme().scheme;
+  const scheme: ColorScheme = preference === 'light' ? 'light' : 'dark';
+  const theme = useMemo(() => buildTheme(scheme), [scheme]);
+  useEffect(() => {
+    setLightNavigationBar(scheme === 'light');
+    return () => setLightNavigationBar(outer === 'light');
+  }, [scheme, outer]);
+  const style = useMemo(
+    () => [{ flex: 1, backgroundColor: theme.colors.canvas }, colorVars(theme.colors)],
+    [theme],
+  );
+  return (
+    <ThemeContext.Provider value={theme}>
+      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+      <View style={style}>{children}</View>
+    </ThemeContext.Provider>
+  );
+}
