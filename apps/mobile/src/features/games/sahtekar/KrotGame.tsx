@@ -343,7 +343,14 @@ function Play({
     if (wasVote.current && state.phase === 'result') haptic('timeUp');
     wasVote.current = state.phase === 'vote';
   }, [state.phase]);
+  // A new phase draws a new bar: "Rolüm" held over the change may never hear its finger lift, so
+  // the card closes with every step (it shows only while held).
   const [peeking, setPeeking] = useState(false);
+  const [peekStep, setPeekStep] = useState(state.step);
+  if (peekStep !== state.step) {
+    setPeekStep(state.step);
+    setPeeking(false);
+  }
   const peek = (on: boolean) => {
     setPeeking(on);
     if (on) {
