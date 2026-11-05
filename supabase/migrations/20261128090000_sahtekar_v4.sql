@@ -214,6 +214,24 @@ as $$
   end;
 $$;
 
+-- The phase's clock (rule 3: the server keeps the time). An action on the running phase's step
+-- comes only while its clock runs: from endsAt on, turn_over. The caller holds the table
+-- (private.room_phone), so an action and the advance that ends its phase never interleave: the
+-- first to hold it wins; the other finds the phase still open (the action counts) or a new step
+-- (the action changes nothing).
+create function private.sahtekar_on_time(st jsonb)
+returns void
+language plpgsql
+stable
+set search_path = ''
+as $$
+begin
+  if now() >= (st ->> 'endsAt')::timestamptz then
+    raise exception using errcode = 'P0001', message = 'turn_over';
+  end if;
+end;
+$$;
+
 -- 4. The phases --------------------------------------------------------------------------------
 -- The clue turn at position `pos` (the first one still in the game from there); after the last,
 -- Oylama.
@@ -529,8 +547,8 @@ begin
 end;
 $$;
 
--- sahtekar/ready: a player on the role card (Hazırım). When everyone still in the game is ready,
--- the clues start.
+-- sahtekar/ready: a player on the role card (Hazırım) while its clock runs. When everyone still in
+-- the game is ready, the clues start.
 create function public.sahtekar_ready(target_user_id uuid, target_room_id uuid, at_step integer)
 returns public.rooms
 language plpgsql
@@ -548,10 +566,12 @@ begin
     raise exception using errcode = 'P0001', message = 'not_player';
   end if;
   st := r.game_state;
+  -- Another step, or Hazırım already counted (the same press again): nothing changes.
   if st ->> 'phase' <> 'role' or (st ->> 'step')::integer <> at_step
      or coalesce(st -> 'ready', '[]'::jsonb) ? seat.session_id::text then
     return r;
   end if;
+  perform private.sahtekar_on_time(st);
   st := jsonb_set(st, '{ready}', coalesce(st -> 'ready', '[]'::jsonb) || to_jsonb(seat.session_id::text));
   update public.rooms set game_state = st, last_activity_at = now()
   where id = r.id returning * into r;
@@ -562,7 +582,8 @@ begin
 end;
 $$;
 
--- sahtekar/said: the speaker's Söyledim; the turn passes on. Another step changes nothing.
+-- sahtekar/said: the speaker's Söyledim while the turn's clock runs; the turn passes on. Another
+-- step changes nothing.
 create function public.sahtekar_said(target_user_id uuid, target_room_id uuid, at_step integer)
 returns public.rooms
 language plpgsql
@@ -581,13 +602,15 @@ begin
   if seat.role is null or st ->> 'speaker' is distinct from seat.session_id::text then
     raise exception using errcode = 'P0001', message = 'not_your_seat';
   end if;
+  perform private.sahtekar_on_time(st);
   return private.sahtekar_step(seat.room);
 end;
 $$;
 
 -- sahtekar/vote: a player votes once for as many others still in the game as there are impostors
 -- (pure/sahtekarGame.ts → mayVote). Only that they voted opens to the table; the ballot stays in
--- game_secrets until Sonuç. When everyone still in the game voted, the votes are counted.
+-- game_secrets until Sonuç. Only while the vote's clock runs; a ballot already cast answers the same
+-- again. When everyone still in the game voted, the votes are counted.
 create function public.sahtekar_vote(
   target_user_id uuid,
   target_room_id uuid,
@@ -616,6 +639,7 @@ begin
      or coalesce(st -> 'voted', '[]'::jsonb) ? seat.session_id::text then
     return r;
   end if;
+  perform private.sahtekar_on_time(st);
   open := private.sahtekar_open(st);
   if coalesce(cardinality(targets), 0) <> (st ->> 'impostors')::integer
      or (select count(distinct t) from unnest(targets) t) <> cardinality(targets)
@@ -820,6 +844,7 @@ begin
     'private.sahtekar_impostors(uuid, jsonb)',
     'private.sahtekar_enter(uuid, jsonb, text, text, jsonb)',
     'private.sahtekar_complete(jsonb)',
+    'private.sahtekar_on_time(jsonb)',
     'private.sahtekar_clue_at(public.rooms, integer)',
     'private.sahtekar_count(public.rooms)',
     'private.sahtekar_finish(public.rooms, text, boolean)',

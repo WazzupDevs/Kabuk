@@ -104,6 +104,15 @@ async function view(p: Person, roomId: string) {
 }
 
 // As if the phase's time had run out, then any phone's advance.
+// As if the phase's time had run out, before any phone's advance.
+async function expire(g: Game): Promise<void> {
+  await sql`
+    update public.rooms
+    set game_state = jsonb_set(game_state, '{endsAt}', to_jsonb(now() - interval '1 second'))
+    where id = ${g.roomId}
+  `;
+}
+
 async function runOut(g: Game, by: Person = g.owner): Promise<State> {
   await sql`
     update public.rooms
@@ -432,6 +441,94 @@ describe('the clock (§4.F, IDEMPOTENT_CALLS)', () => {
   );
 });
 
+describe('the clock after time is up (§4.F, rule 3)', () => {
+  // The phase's time is up but no phone has sent advance yet: an action on that step is refused
+  // (turn_over) and changes nothing; once the phase moves on, the late action changes nothing; an
+  // action already counted answers the same again.
+  const TURN_OVER = { status: 409, body: errorBody('turn_over') };
+
+  it(
+    'refuses a Hazırım after the role card’s time, and changes nothing once the clues start',
+    async () => {
+      const g = await game(4);
+      const [a, b] = g.players as [Person, Person];
+      const at = await step(g.roomId);
+      expect(await krot(a, { action: 'ready', roomId: g.roomId, step: at })).toEqual(OK);
+      await expire(g);
+      const before = await state(g.roomId);
+      expect(await krot(b, { action: 'ready', roomId: g.roomId, step: at })).toEqual(TURN_OVER);
+      // The press counted in time answers the same again.
+      expect(await krot(a, { action: 'ready', roomId: g.roomId, step: at })).toEqual(OK);
+      expect(await state(g.roomId)).toEqual(before);
+      expect(before.ready).toEqual([a.sessionId]);
+
+      expect(await krot(g.owner, { action: 'advance', roomId: g.roomId })).toEqual(OK);
+      const clue = await state(g.roomId);
+      expect(clue.phase).toBe('clue');
+      expect(await krot(b, { action: 'ready', roomId: g.roomId, step: at })).toEqual(OK);
+      expect(await state(g.roomId)).toEqual(clue);
+    },
+    SLOW,
+  );
+
+  it(
+    'refuses a Söyledim after the speaker’s time, and lets the clock pass the turn on',
+    async () => {
+      const g = await game(4);
+      const first = await runOut(g);
+      const seats = first.seats as string[];
+      const speaker = bySession(g, first.speaker);
+      await expire(g);
+      const before = await state(g.roomId);
+      expect(await krot(speaker, { action: 'said', roomId: g.roomId, step: first.step })).toEqual(
+        TURN_OVER,
+      );
+      expect(await state(g.roomId)).toEqual(before);
+
+      expect(await krot(g.owner, { action: 'advance', roomId: g.roomId })).toEqual(OK);
+      const next = await state(g.roomId);
+      expect(next).toMatchObject({ phase: 'clue', speaker: seats[1] });
+      // The late press on the turn that ended changes nothing: the turn stays with the next one.
+      expect(await krot(speaker, { action: 'said', roomId: g.roomId, step: first.step })).toEqual(
+        OK,
+      );
+      expect(await state(g.roomId)).toEqual(next);
+    },
+    SLOW,
+  );
+
+  it(
+    'refuses a ballot after the vote’s time, keeps the ones cast in time, and changes nothing after',
+    async () => {
+      const g = await game(4);
+      await toVote(g);
+      const at = await step(g.roomId);
+      const [impostor] = g.impostors as [Person];
+      const [a, b] = g.players as [Person, Person];
+      expect(await vote(a, g, at, [impostor])).toEqual(OK);
+      await expire(g);
+      const before = await state(g.roomId);
+      expect(await vote(b, g, at, [impostor])).toEqual(TURN_OVER);
+      // The ballot cast in time answers the same again; nothing changes.
+      expect(await vote(a, g, at, [impostor])).toEqual(OK);
+      expect(await state(g.roomId)).toEqual(before);
+      expect(before.voted).toEqual([a.sessionId]);
+      const ballots = await sql`
+        select secret -> 'votes' as votes from public.game_secrets where room_id = ${g.roomId}
+      `;
+      expect(Object.keys(ballots[0]?.votes ?? {})).toEqual([a.sessionId]);
+
+      // Sonuç counts only the ballot cast in time.
+      expect(await krot(g.owner, { action: 'advance', roomId: g.roomId })).toEqual(OK);
+      const result = await state(g.roomId);
+      expect(result).toMatchObject({ phase: 'result', tally: { [impostor.sessionId]: 1 } });
+      expect(await vote(b, g, at, [impostor])).toEqual(OK);
+      expect(await state(g.roomId)).toEqual(result);
+    },
+    SLOW,
+  );
+});
+
 describe('leaving (§4.6.3)', () => {
   it(
     'passes the turn on when the speaker leaves, and drops who left from the order',
@@ -532,6 +629,50 @@ describe('locks (§4.K)', () => {
       const st = await state(g.roomId);
       expect(st.gone).toEqual([b.sessionId]);
       expect(st.voted?.sort()).toEqual([a.sessionId, c.sessionId].sort());
+    },
+    SLOW,
+  );
+
+  // The vote's time is up: an advance and a late ballot at the same moment. Whichever holds the
+  // table first decides, the same every time: the advance counts the votes, and the ballot that
+  // waited finds Sonuç and changes nothing.
+  it(
+    'lets a late ballot that waits for the advance change nothing',
+    async () => {
+      const g = await game(4);
+      await toVote(g);
+      const at = await step(g.roomId);
+      const [impostor] = g.impostors as [Person];
+      const [a, b] = g.players as [Person, Person];
+      expect(await vote(a, g, at, [impostor])).toEqual(OK);
+      await expire(g);
+      const first = postgres(dbUrl, { max: 1, onnotice: () => {} });
+      const second = postgres(dbUrl, { max: 1, onnotice: () => {} });
+      try {
+        let later: Promise<unknown> = Promise.resolve();
+        await first.begin(async (tx) => {
+          await tx`select (public.sahtekar_advance(${g.owner.userId}, ${g.roomId})).id`;
+          later = second`
+            select (public.sahtekar_vote(
+              ${b.userId}, ${g.roomId}, ${at}, ${[impostor.sessionId]}::uuid[]
+            )).id
+          `
+            .execute()
+            .catch((err: unknown) => err);
+          await waitUntilBlocked('sahtekar_vote');
+        });
+        expect(await later).toHaveLength(1);
+      } finally {
+        await Promise.all([first.end(), second.end()]);
+      }
+      expect(await state(g.roomId)).toMatchObject({
+        phase: 'result',
+        tally: { [impostor.sessionId]: 1 },
+      });
+      const ballots = await sql`
+        select secret -> 'votes' as votes from public.game_secrets where room_id = ${g.roomId}
+      `;
+      expect(Object.keys(ballots[0]?.votes ?? {})).toEqual([a.sessionId]);
     },
     SLOW,
   );
