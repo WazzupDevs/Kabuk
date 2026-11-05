@@ -1,10 +1,10 @@
 # İlerleme
 
-## Devir notu (5 Kasım 2026, Signum kelime havuzu)
+## Devir notu (5 Kasım 2026, Signum ekranları)
 
-- #472 birleşti: `content/signum-words.json` (279 kelime) ve fonttan üretilen karo genişlik tablosu (`scripts/seed/signum.ts`, `docs/decisions/signum-kelimeler.md`). `games.json`'da `signum.available: false`.
-- Sıradaki: Signum ekranları. Onaylı rapor `docs/design/aura/aktarim-signum.md` (Aura v87, 13 pano `Signum*`; panolar canlı tuvalden, repodaki `project/` kopyasında yok). Görseller repoda, `features/games/signum/signumArt.ts`. Raporun 4 açık sorusunu SPEC_V4 Adım 4.6.7 yanıtlıyor. Yordam `.claude/skills/tuval-aktarim`; API `functions/signum`, saf mantık `pure/signum.ts`.
-- Açmadan önce: proje sahibinin cihazında 320 dp karo yazısı (37 px sınırı, yazıldığı gibi mi büyük harf mi). Sonra ayrı PR'la `signum.available: true` ve `pnpm seed`.
+- #472 kelime havuzu (`content/signum-words.json`, 279 kelime, `docs/decisions/signum-kelimeler.md`); bu PR Signum ekranları (Aura v87, 13 pano `Signum*`, rapor `docs/design/aura/aktarim-signum.md`): `features/games/signum/` (SignumGame, SignumParts), `lib/signumGame.ts`, `theme/signum.ts`, `api.ts` → `signumApi`. `games.json`'da `signum.available: false`.
+- Bilerek yok: karo 180° dönüşü (raporda onay bekliyor). Rakibin işareti gösterilmez (kural 3). Raporda çizilmeyen dört yerde öneri uygulandı, proje sahibinin kararını bekliyor: kara karttan sonuca "Sonucu gör" düğmesi; açanın adı yerine takım adı ("Pembe takım … kartını açtı"; açık durum açanı tutmuyor); süs kankileri ve kapsül aşamaları Kinshi'ninkiler; kaptansız biten oyunun metni.
+- Açmadan önce: proje sahibinin cihazında 320 dp karo yazısı (37 px, karo ~47 px) ve en büyük yazı. Sonra ayrı PR'la `signum.available: true` ve `pnpm seed`.
 
 ## Devir notu (5 Kasım 2026, Krot sunucusu)
 
