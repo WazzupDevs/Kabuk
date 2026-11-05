@@ -188,6 +188,39 @@ begin
 end;
 $$;
 
+-- The game just ended (the room is between games): its over state and secret, for answering a
+-- repeat of a press sent before the end (IDEMPOTENT_CALLS: a reveal that ended the game, sent again
+-- after a 5xx). Only to someone who played that game. Service role only.
+create function public.signum_read_ended(target_user_id uuid, target_room_id uuid)
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+declare
+  seat record;
+  last jsonb;
+  sec jsonb;
+begin
+  select * into seat from private.signum_seat_read(target_user_id, target_room_id);
+  last := (seat.room).game_state -> 'lastGame' -> 'signum';
+  if (seat.room).concept is not null or last is null or not exists (
+    select 1 from public.game_players g
+    where g.room_id = target_room_id and g.game_no = (last ->> 'gameNo')::integer
+      and g.session_id = seat.session_id
+  ) then
+    raise exception using errcode = 'P0001', message = 'no_game';
+  end if;
+  select gs.secret into sec from public.game_secrets gs
+  where gs.room_id = target_room_id and gs.game_no = (last ->> 'gameNo')::integer;
+  if sec is null then
+    raise exception using errcode = 'P0001', message = 'no_game';
+  end if;
+  return jsonb_build_object('state', last, 'secret', sec, 'sessionId', seat.session_id);
+end;
+$$;
+
 -- Clears every mark's tile and keeps its seq (pure/signum.ts → clearMarks).
 create function private.signum_clear_marks(sec jsonb)
 returns jsonb
@@ -285,7 +318,8 @@ create function public.signum_commit(
   seat_role text,
   player_action boolean,
   new_state jsonb,
-  new_secret jsonb
+  new_secret jsonb,
+  notify_team text
 )
 returns jsonb
 language plpgsql
@@ -330,6 +364,14 @@ begin
   update public.game_secrets
   set secret = (new_secret - 'rev') || jsonb_build_object('rev', read_rev + 1)
   where room_id = r.id and game_no = private.current_game_no(r.game_state);
+  -- The team hears that its marks changed, on its channel as written here: under the table's lock,
+  -- so a leaving (which renews the channel) comes before or after, never in between (B-3). Sent
+  -- with the transaction; data-free.
+  if notify_team in ('a', 'b') then
+    perform realtime.send(
+      '{}'::jsonb, 'points', 'game_team:' || (new_secret -> 'channels' ->> notify_team), true
+    );
+  end if;
   -- A mark changes only the secret: the table's row stays as it is, so no change of it reaches the
   -- other team or the watchers over Realtime (the timing of a team's marks is the team's).
   if new_state is distinct from r.game_state then
@@ -369,7 +411,7 @@ begin
       from public.room_members rm
       join public.table_sessions ts on ts.id = rm.session_id
       where rm.room_id = target_room_id and rm.left_at is null
-        and ts.status = 'active' and ts.expires_at > now()
+        and ts.status = 'active'
     ),
     'sessionId', seat.session_id,
     'isOwner', seat.is_owner,
@@ -437,9 +479,23 @@ begin
   end if;
   no := private.start_game(target_user_id, target_room_id, 'signum');
 
-  if no is distinct from (new_state ->> 'gameNo')::integer
+  -- `is not false`: a missing or malformed field makes a check null, and null refuses too.
+  if (no is distinct from (new_state ->> 'gameNo')::integer
      or new_state ->> 'phase' is distinct from 'role'
+     or (new_state ->> 'step')::integer is distinct from 1
+     or (new_state -> 'ready') is distinct from '[]'::jsonb
+     or new_state ->> 'turn' is distinct from starter
+     or (new_state ->> 'endsAt')::timestamptz is null
      or starter not in ('a', 'b')
+     -- Every tile closed, 25 different words.
+     or exists (
+       select 1 from jsonb_array_elements(new_state -> 'board') t
+       where (t -> 'open') is distinct from 'null'::jsonb
+     )
+     or (select count(distinct t ->> 'word') from jsonb_array_elements(new_state -> 'board') t) <> 25
+     -- Each seat once.
+     or (select count(distinct s ->> 'sid') from jsonb_array_elements(new_state -> 'seats') s)
+        <> jsonb_array_length(new_state -> 'seats')
      -- The dealt seats are the frozen players, with their teams.
      or exists (
        (select session_id::text, team from public.game_players
@@ -458,7 +514,7 @@ begin
          where s ->> 'role' = 'captain') <> 2
      or exists (
        select 1 from jsonb_array_elements(new_state -> 'seats') s
-       where s ->> 'role' not in ('captain', 'guesser')
+       where coalesce(s ->> 'role', '') not in ('captain', 'guesser')
           or (s ->> 'role' = 'captain'
               and s ->> 'sid' is distinct from read_pregame -> 'signum' -> 'captains' ->> (s ->> 'team'))
      )
@@ -478,7 +534,9 @@ begin
      or (new_secret -> 'channels' ->> 'a') !~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
      or (new_secret -> 'channels' ->> 'b') !~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
      or (new_secret -> 'channels' ->> 'a') = (new_secret -> 'channels' ->> 'b')
-  then
+     or jsonb_typeof(new_secret -> 'marks') is distinct from 'object'
+     or jsonb_typeof(new_secret -> 'actions') is distinct from 'object'
+  ) is not false then
     raise exception using errcode = 'P0001', message = 'bad_request';
   end if;
   perform private.signum_check_write(new_state, new_secret);
@@ -721,7 +779,8 @@ declare
 begin
   foreach fn in array array[
     'public.signum_read(uuid, uuid)',
-    'public.signum_commit(uuid, uuid, jsonb, integer, text, text, boolean, jsonb, jsonb)',
+    'public.signum_read_ended(uuid, uuid)',
+    'public.signum_commit(uuid, uuid, jsonb, integer, text, text, boolean, jsonb, jsonb, text)',
     'public.signum_pregame_read(uuid, uuid)',
     'public.signum_pregame_commit(uuid, uuid, jsonb, boolean, jsonb)',
     'public.signum_start(uuid, uuid, jsonb, jsonb, jsonb)'

@@ -10,10 +10,17 @@ import type { RealtimeChannel } from '@supabase/supabase-js';
 import postgres from 'postgres';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
+import { prepareTerms } from '../functions/_shared/pure/profanity.ts';
 import {
+  cleanPregame,
+  decideAction,
   leaveGame,
   publicState,
+  seatsAtStart,
   SIGNUM,
+  type SignumPicks,
+  type SignumPregame,
+  startGame,
   type SignumKind,
   type SignumSecret,
   type SignumState,
@@ -494,7 +501,7 @@ describe('signum: the seat at every call (§4.F)', { timeout: SLOW }, () => {
     const [{ ok }] = (await sql`
       select (public.signum_commit(
         ${second.userId}::uuid, ${g.roomId}::uuid, ${asJson(now)}::jsonb, ${nowSec.rev ?? 0},
-        ${g.turn}, 'guesser', true, ${asJson(now)}::jsonb, ${asJson(nowSec)}::jsonb
+        ${g.turn}, 'guesser', true, ${asJson(now)}::jsonb, ${asJson(nowSec)}::jsonb, ''
       ) ->> 'ok')::boolean as ok
     `) as unknown as [{ ok: boolean }];
     expect(ok).toBe(false);
@@ -528,7 +535,7 @@ describe('signum: versions and the clock (signum_commit)', { timeout: SLOW }, ()
       const [row] = (await sql`
         select (public.signum_commit(
           ${first.userId}::uuid, ${g.roomId}::uuid, ${asJson(readState as unknown)}::jsonb, ${readRev},
-          ${team}, ${role}, true, ${asJson(newState as unknown)}::jsonb, ${asJson(sec)}::jsonb
+          ${team}, ${role}, true, ${asJson(newState as unknown)}::jsonb, ${asJson(sec)}::jsonb, ''
         ) ->> 'ok')::boolean as ok
       `) as unknown as [{ ok: boolean }];
       return row.ok;
@@ -577,7 +584,7 @@ describe('signum: versions and the clock (signum_commit)', { timeout: SLOW }, ()
       await expect(
         sql`select public.signum_commit(
           ${first.userId}::uuid, ${g.roomId}::uuid, ${asJson(st)}::jsonb, ${sec.rev ?? 0},
-          ${g.turn}, 'guesser', true, ${asJson(bad)}::jsonb, ${asJson(sec)}::jsonb
+          ${g.turn}, 'guesser', true, ${asJson(bad)}::jsonb, ${asJson(sec)}::jsonb, ''
         )`,
       ).rejects.toThrow(/bad_request/);
     }
@@ -1006,13 +1013,14 @@ describe('signum: the end (game_results, play_history)', { timeout: SLOW }, () =
     const black = tileOf(sec, 'x');
     await point(first, g.roomId, black, 1);
     const st = await state(g.roomId);
-    const res = await signum(first, {
+    const endBody = {
       action: 'reveal',
       roomId: g.roomId,
       step: st.step,
       tile: black,
       actionId: randomUUID(),
-    });
+    };
+    const res = await signum(first, endBody);
     expect(res.body).toMatchObject({
       applied: true,
       result: { outcome: 'black' },
@@ -1041,6 +1049,25 @@ describe('signum: the end (game_results, play_history)', { timeout: SLOW }, () =
       });
     }
     expect(results.some((r) => r.user_id === g.watchers[0]?.userId)).toBe(false);
+
+    // The same reveal sent again after the game ended (a 5xx retry): its first answer, nothing
+    // written; anything else for the ended game is no_game.
+    const again = await signum(first, endBody);
+    expect(again.status).toBe(200);
+    expect(again.body).toMatchObject({ applied: true, replayed: true });
+    expect((again.body as { result: unknown }).result).toEqual(
+      (res.body as { result: unknown }).result,
+    );
+    expect((again.body as { view: unknown }).view).toEqual({ role: 'observer' });
+    expect(await roomRow(g.roomId)).toEqual(room);
+    expect(await signum(first, { ...endBody, actionId: randomUUID() })).toEqual({
+      status: 409,
+      body: errorBody('no_game'),
+    });
+    expect(await signum(first, { ...endBody, tile: (black + 1) % 25 })).toEqual({
+      status: 409,
+      body: errorBody('action_id_conflict'),
+    });
 
     // The pair history after the table: the game is named Signum.
     await backdate(g.roomId, 5);
@@ -1075,7 +1102,7 @@ describe('signum: locks (rule 10)', { timeout: SLOW }, () => {
       const writing = (q: postgres.Sql | postgres.TransactionSql) =>
         q`select (public.signum_commit(
           ${stays.userId}::uuid, ${g.roomId}::uuid, ${asJson(st)}::jsonb, ${sec.rev ?? 0},
-          ${g.turn}, 'guesser', true, ${asJson(st)}::jsonb, ${asJson(marked)}::jsonb
+          ${g.turn}, 'guesser', true, ${asJson(st)}::jsonb, ${asJson(marked)}::jsonb, ''
         ) ->> 'ok')::boolean as ok`;
       const leaving = (q: postgres.Sql | postgres.TransactionSql) =>
         q`select (public.rooms_leave_game(${leaves.userId}::uuid, ${g.roomId}::uuid)).id`;
@@ -1102,6 +1129,303 @@ describe('signum: locks (rule 10)', { timeout: SLOW }, () => {
       const now = await state(g.roomId);
       expect(now.seats.some((x) => x.sid === leaves.sessionId)).toBe(false);
       expect(after.marks[g.turn][stays.sessionId]?.tile ?? null).toBe(leaveFirst ? null : 0);
+      for (const phone of TABLE_PHONES) await deleteUserByPhone(phone);
+    }
+  });
+});
+
+// --- The SQL guards, called directly (as the Edge Function would, with what it dealt) -----------
+
+type PageRead = {
+  pregame: { concept: string; picks: SignumPicks; signum?: SignumPregame };
+  gameNo: number;
+  members: string[];
+  sessionId: string;
+  isOwner: boolean;
+  now: string;
+};
+
+async function pageRead(p: Person, roomId: string): Promise<PageRead> {
+  const [row] = (await sql`
+    select public.signum_pregame_read(${p.userId}::uuid, ${roomId}::uuid) as read
+  `) as unknown as [{ read: PageRead }];
+  return row.read;
+}
+
+// What the Edge Function would deal from this read (pure/signum.ts → startGame).
+function dealt(read: PageRead) {
+  const picks = Object.fromEntries(
+    Object.entries(read.pregame.picks).filter(([sid]) => read.members.includes(sid)),
+  ) as SignumPicks;
+  const page = cleanPregame(read.pregame.signum as SignumPregame, picks);
+  const seats = seatsAtStart(page, picks);
+  if (!seats) throw new Error('no seats');
+  const started = startGame(
+    {
+      gameNo: read.gameNo + 1,
+      seats,
+      pool: WORDS,
+      now: new Date(read.now),
+      channels: { a: randomUUID(), b: randomUUID() },
+    },
+    Math.random,
+  );
+  if ('error' in started) throw new Error(started.error);
+  return started;
+}
+
+const startCall = (
+  q: postgres.Sql | postgres.TransactionSql,
+  owner: Person,
+  roomId: string,
+  read: PageRead,
+  st: unknown,
+  sec: unknown,
+) =>
+  q`select (public.signum_start(
+    ${owner.userId}::uuid, ${roomId}::uuid, ${asJson(read.pregame)}::jsonb,
+    ${asJson(st)}::jsonb, ${asJson(sec)}::jsonb
+  ) ->> 'ok')::boolean as ok`;
+
+describe(
+  'signum: what the SQL refuses (signum_start, signum_pregame_commit)',
+  { timeout: SLOW },
+  () => {
+    it('refuses wrong seats, an unapproved captain, a word off the pool, a wrong key or missing channels', async () => {
+      const g = await game(['a', 'a', 'b', 'b'], { start: false });
+      const read = await pageRead(g.owner, g.roomId);
+      const { state: st, secret: sec } = dealt(read);
+      const other = (team: SignumKind): SignumKind => (team === 'n' ? 'x' : 'n');
+      const starterTile = sec.key.indexOf(st.starter);
+      const guesserB = st.seats.find((x) => x.team === 'b' && x.role === 'guesser');
+      const bad: [string, unknown, unknown][] = [
+        [
+          'a seat on the wrong team',
+          {
+            ...st,
+            seats: st.seats.map((x, i) =>
+              i === 0 ? { ...x, team: x.team === 'a' ? 'b' : 'a' } : x,
+            ),
+          },
+          sec,
+        ],
+        ['a seat twice', { ...st, seats: [...st.seats, st.seats[0]] }, sec],
+        [
+          'an unapproved captain',
+          {
+            ...st,
+            seats: st.seats.map((x) =>
+              x.team === 'b' ? { ...x, role: x.sid === guesserB?.sid ? 'captain' : 'guesser' } : x,
+            ),
+          },
+          sec,
+        ],
+        [
+          'a role that is none',
+          { ...st, seats: st.seats.map((x, i) => (i === 0 ? { ...x, role: null } : x)) },
+          sec,
+        ],
+        [
+          'a word off the pool',
+          { ...st, board: st.board.map((t, i) => (i === 0 ? { ...t, word: 'zzzzz' } : t)) },
+          sec,
+        ],
+        [
+          'a word twice',
+          {
+            ...st,
+            board: st.board.map((t, i) => (i === 1 ? { ...t, word: st.board[0]?.word } : t)),
+          },
+          sec,
+        ],
+        [
+          'an open tile',
+          { ...st, board: st.board.map((t, i) => (i === 0 ? { ...t, open: sec.key[0] } : t)) },
+          sec,
+        ],
+        [
+          'a wrong key',
+          st,
+          { ...sec, key: sec.key.map((k, i) => (i === starterTile ? other(k) : k)) },
+        ],
+        ['no channels', st, { ...sec, channels: undefined }],
+        ['one channel twice', st, { ...sec, channels: { a: sec.channels.a, b: sec.channels.a } }],
+        ['a channel that is no id', st, { ...sec, channels: { a: 'x', b: sec.channels.b } }],
+        ['another step', { ...st, step: 2 }, sec],
+        ['the key in the open state', { ...st, key: sec.key }, sec],
+      ];
+      for (const [what, badState, badSecret] of bad) {
+        await expect(
+          startCall(sql, g.owner, g.roomId, read, badState, badSecret),
+          what,
+        ).rejects.toThrow(/bad_request/);
+      }
+      // Nothing of a refused start stays: the page is open and no game runs.
+      const room = await roomRow(g.roomId);
+      expect([
+        room.concept,
+        (room.game_state as { pregame?: object }).pregame !== undefined,
+      ]).toEqual([null, true]);
+      // A read that is no longer the page: not written. The dealt one as read: written.
+      expect(
+        await startCall(
+          sql,
+          g.owner,
+          g.roomId,
+          { ...read, pregame: { ...read.pregame, concept: 'x' } },
+          st,
+          sec,
+        ),
+      ).toEqual([{ ok: false }]);
+      expect(await startCall(sql, g.owner, g.roomId, read, st, sec)).toEqual([{ ok: true }]);
+    });
+
+    it('writes nothing on the page when it changed or the caller’s ownership did', async () => {
+      const g = await game(['a', 'a', 'b', 'b'], { start: false });
+      const read = await pageRead(g.owner, g.roomId);
+      const commit = (pregame: unknown, isOwner: boolean) =>
+        sql`select (public.signum_pregame_commit(
+        ${g.owner.userId}::uuid, ${g.roomId}::uuid, ${asJson(pregame)}::jsonb, ${isOwner},
+        ${asJson({ candidates: { a: [], b: [] }, offers: { a: null, b: null }, captains: { a: null, b: null } })}::jsonb
+      ) ->> 'ok')::boolean as ok`;
+      const before = await roomRow(g.roomId);
+      expect(await commit(read.pregame, false)).toEqual([{ ok: false }]);
+      expect(await commit({ ...read.pregame, picks: {} }, true)).toEqual([{ ok: false }]);
+      expect((await roomRow(g.roomId)).game_state).toEqual(before.game_state);
+      expect(await commit(read.pregame, true)).toEqual([{ ok: true }]);
+    });
+  },
+);
+
+// Rule 10 for the other roads that take the check-in and the table: a page write and a pick, a start
+// and a pick, a game-ending write and a leaving. Each waits for the other; none deadlocks.
+describe('signum: locks of the page, the start and the end (rule 10)', { timeout: SLOW }, () => {
+  async function race(
+    first: (q: postgres.TransactionSql) => postgres.PendingQuery<postgres.Row[]>,
+    second: (q: postgres.Sql) => postgres.PendingQuery<postgres.Row[]>,
+    blockedOn: string,
+  ): Promise<unknown> {
+    const a = postgres(dbUrl, { max: 1, onnotice: () => {} });
+    const b = postgres(dbUrl, { max: 1, onnotice: () => {} });
+    try {
+      let later: Promise<unknown> = Promise.resolve();
+      await a.begin(async (tx) => {
+        await first(tx);
+        later = second(b)
+          .execute()
+          .catch((err: unknown) => err);
+        await waitUntilBlocked(blockedOn);
+      });
+      return await later;
+    } finally {
+      await Promise.all([a.end(), b.end()]);
+    }
+  }
+
+  const pick = (q: postgres.Sql | postgres.TransactionSql, p: Person, roomId: string, to: string) =>
+    q`select (public.rooms_pick(${p.userId}::uuid, ${roomId}::uuid, ${to})).id`;
+
+  it('a page write and a pick wait for each other; the later write finds the page changed', async () => {
+    const g = await game(['a', 'a', 'b', 'b'], { start: false });
+    const read = await pageRead(g.owner, g.roomId);
+    const next = {
+      ...(read.pregame.signum as SignumPregame),
+      offers: { a: null, b: g.team.b[1]?.sessionId ?? null },
+    };
+    const write = (q: postgres.Sql | postgres.TransactionSql) =>
+      q`select (public.signum_pregame_commit(
+        ${g.owner.userId}::uuid, ${g.roomId}::uuid, ${asJson(read.pregame)}::jsonb, true, ${asJson(next)}::jsonb
+      ) ->> 'ok')::boolean as ok`;
+    const mover = g.team.a[1] as Person;
+    expect(
+      await race(
+        (tx) => pick(tx, mover, g.roomId, 'obs'),
+        (q) => write(q),
+        'signum_pregame_commit',
+      ),
+    ).toEqual([{ ok: false }]);
+  });
+
+  it('a start and a pick wait for each other; nothing deadlocks', async () => {
+    for (const startFirst of [true, false]) {
+      const g = await game(['a', 'a', 'a', 'b', 'b'], { start: false });
+      const read = await pageRead(g.owner, g.roomId);
+      const { state: st, secret: sec } = dealt(read);
+      const mover = g.team.a[2] as Person;
+      const result = startFirst
+        ? await race(
+            (tx) => startCall(tx, g.owner, g.roomId, read, st, sec),
+            (q) => pick(q, mover, g.roomId, 'obs'),
+            'rooms_pick',
+          )
+        : await race(
+            (tx) => pick(tx, mover, g.roomId, 'obs'),
+            (q) => startCall(q, g.owner, g.roomId, read, st, sec),
+            'signum_start',
+          );
+      if (startFirst) {
+        // The page closed with the start.
+        expect(result).toMatchObject({ message: 'no_game' });
+        expect((await roomRow(g.roomId)).concept).toBe('signum');
+      } else {
+        expect(result).toEqual([{ ok: false }]);
+        expect((await roomRow(g.roomId)).concept).toBeNull();
+      }
+      for (const phone of TABLE_PHONES) await deleteUserByPhone(phone);
+    }
+  });
+
+  it('a game-ending write and a leaving wait for each other; nothing deadlocks', async () => {
+    for (const endFirst of [true, false]) {
+      const g = await inGuess();
+      const [opener, leaver] = g.guessers as [Person, Person];
+      const sec = await secret(g.roomId);
+      const black = tileOf(sec, 'x');
+      await point(opener, g.roomId, black, 1);
+      const st = await state(g.roomId);
+      const marked = await secret(g.roomId);
+      const seat = st.seats.find((x) => x.sid === opener.sessionId) ?? null;
+      const d = decideAction(
+        st,
+        marked,
+        { sid: opener.sessionId, seat },
+        { action: 'reveal', step: st.step, tile: black, actionId: randomUUID() },
+        new Date(),
+        prepareTerms([]),
+      );
+      if (d.kind !== 'applied') throw new Error(d.kind);
+      expect(d.state.phase).toBe('over');
+      const end = (q: postgres.Sql | postgres.TransactionSql) =>
+        q`select (public.signum_commit(
+          ${opener.userId}::uuid, ${g.roomId}::uuid, ${asJson(st)}::jsonb, ${marked.rev ?? 0},
+          ${g.turn}, 'guesser', true, ${asJson(d.state)}::jsonb, ${asJson(d.secret)}::jsonb, ${g.turn}
+        ) ->> 'ok')::boolean as ok`;
+      const leave = (q: postgres.Sql | postgres.TransactionSql) =>
+        q`select (public.rooms_leave_game(${leaver.userId}::uuid, ${g.roomId}::uuid)).id`;
+      const result = endFirst
+        ? await race(
+            (tx) => end(tx),
+            (q) => leave(q),
+            'rooms_leave_game',
+          )
+        : await race(
+            (tx) => leave(tx),
+            (q) => end(q),
+            'signum_commit',
+          );
+      const room = await roomRow(g.roomId);
+      // Ended by the write, or still running after the leaving.
+      expect(room.concept).toBe(endFirst ? null : 'signum');
+      if (endFirst) {
+        // The game had ended: there was no game to leave.
+        expect(result).toMatchObject({ message: 'no_game' });
+        expect(
+          (room.game_state as { lastGame: { signum: SignumState } }).lastGame.signum.reason,
+        ).toBe('black');
+      } else {
+        // The leaving changed the table first: the end is not written (the function decides again).
+        expect(result).toEqual([{ ok: false }]);
+      }
       for (const phone of TABLE_PHONES) await deleteUserByPhone(phone);
     }
   });

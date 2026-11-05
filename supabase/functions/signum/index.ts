@@ -3,11 +3,10 @@
 // through signum_commit, which under the table's lock checks that nothing changed since the read,
 // that the caller still holds the same seat and that a player's action is still inside its phase's
 // time. A changed table means a new read and a new decision; after three tries the answer is "busy"
-// (B-2), a 200 the phone treats like a stale step. What leaves here is only ever built by respond:
+// (B-2), a 200 the phone treats like a stale step. The team channel's broadcast is the write's own
+// (realtime.send in signum_commit), so it always names the channel as written under the lock. What leaves here is only ever built by respond:
 // the result, the open state and the caller's own view (rule 3); the secret never does.
 import { requireUser, serviceClient } from '../_shared/auth.ts';
-import { inBackground } from '../_shared/background.ts';
-import { broadcast } from '../_shared/broadcast.ts';
 import { dbError } from '../_shared/db.ts';
 import { z } from '../_shared/deps.ts';
 import { handle } from '../_shared/http.ts';
@@ -24,6 +23,7 @@ import {
   offerCaptain,
   publicState,
   randomOffer,
+  repeatOf,
   respond,
   seatsAtStart,
   type SignumActor,
@@ -37,6 +37,7 @@ import {
   startGame,
   viewFor,
   volunteer,
+  withTries,
 } from '../_shared/pure/signum.ts';
 
 const TRIES = 3;
@@ -189,52 +190,82 @@ function decisionRequest(body: PlayBody): SignumDecisionRequest {
 async function play(userId: string, body: PlayBody): Promise<SignumAnswer> {
   const terms = body.action === 'clue' ? await loadProfanity(db) : NO_TERMS;
   const request = decisionRequest(body);
-  let read = await readGame(userId, body.roomId);
-  for (let attempt = 1; ; attempt++) {
-    const actor = actorOf(read);
-    const decision = decideAction(
-      read.state,
-      read.secret,
-      actor,
-      request,
-      new Date(read.now),
-      terms,
-    );
-    if (decision.kind === 'error') throw new AppError(decision.code, decision.code);
-    if (
-      decision.kind === 'replayed' ||
-      decision.kind === 'noop' ||
-      (decision.kind === 'not_applied' && !decision.changed)
-    ) {
-      return respond(decision, read.state, viewFor(actor, read.secret));
-    }
-    // Applied, or a phase whose time ran out moving on (phase_expired): written under the lock.
-    const playerAction = decision.kind === 'applied' && request.action !== 'advance';
-    const { data, error } = await db.rpc('signum_commit', {
-      target_user_id: userId,
-      target_room_id: body.roomId,
-      read_state: read.state,
-      read_rev: read.rev,
-      seat_team: read.seat?.team ?? '',
-      seat_role: read.seat?.role ?? '',
-      player_action: playerAction,
-      new_state: decision.state,
-      new_secret: decision.secret,
-    });
-    if (error) throw dbError('signum_commit', error);
-    if ((data as { ok: boolean }).ok) {
-      if (decision.kind === 'applied' && decision.notifyTeam) {
-        const channel = decision.secret.channels[decision.notifyTeam];
-        inBackground(broadcast(`game_team:${channel}`, 'points'));
-      }
-      return respond(decision, decision.state, viewFor(actor, decision.secret));
-    }
-    // Something changed at the same moment: read again and decide again.
-    if (attempt >= TRIES) {
-      return respond({ kind: 'busy' }, read.state, viewFor(actor, read.secret));
-    }
+  let read: GameRead;
+  try {
     read = await readGame(userId, body.roomId);
+  } catch (err) {
+    // The game just ended: a press sent again after it (the reveal that ended it) still gets its
+    // first answer (IDEMPOTENT_CALLS); anything else is no_game.
+    if (err instanceof AppError && err.code === 'no_game')
+      return replayAfterEnd(userId, body, request);
+    throw err;
   }
+  return withTries(
+    TRIES,
+    async (n) => {
+      if (n > 1) read = await readGame(userId, body.roomId);
+      const actor = actorOf(read);
+      const decision = decideAction(
+        read.state,
+        read.secret,
+        actor,
+        request,
+        new Date(read.now),
+        terms,
+      );
+      if (decision.kind === 'error') throw new AppError(decision.code, decision.code);
+      if (
+        decision.kind === 'replayed' ||
+        decision.kind === 'noop' ||
+        (decision.kind === 'not_applied' && !decision.changed)
+      ) {
+        return respond(decision, read.state, viewFor(actor, read.secret));
+      }
+      // Applied, or a phase whose time ran out moving on (phase_expired): written under the lock,
+      // and the team's data-free broadcast goes out with that write (signum_commit).
+      const { data, error } = await db.rpc('signum_commit', {
+        target_user_id: userId,
+        target_room_id: body.roomId,
+        read_state: read.state,
+        read_rev: read.rev,
+        seat_team: read.seat?.team ?? '',
+        seat_role: read.seat?.role ?? '',
+        player_action: decision.kind === 'applied' && request.action !== 'advance',
+        new_state: decision.state,
+        new_secret: decision.secret,
+        notify_team: decision.kind === 'applied' ? (decision.notifyTeam ?? '') : '',
+      });
+      if (error) throw dbError('signum_commit', error);
+      if (!(data as { ok: boolean }).ok) return null;
+      return respond(decision, decision.state, viewFor(actor, decision.secret));
+    },
+    // Changed at the same moment three times: the table as it is now, the caller's view as it is now.
+    async () => {
+      const fresh = await readGame(userId, body.roomId);
+      return respond({ kind: 'busy' }, fresh.state, viewFor(actorOf(fresh), fresh.secret));
+    },
+  );
+}
+
+async function replayAfterEnd(
+  userId: string,
+  body: PlayBody,
+  request: SignumDecisionRequest,
+): Promise<SignumAnswer> {
+  if (request.action !== 'clue' && request.action !== 'reveal' && request.action !== 'end-turn') {
+    throw new AppError('no_game', 'no_game');
+  }
+  const { data, error } = await db.rpc('signum_read_ended', {
+    target_user_id: userId,
+    target_room_id: body.roomId,
+  });
+  if (error) throw dbError('signum_read_ended', error);
+  const ended = data as unknown as { state: SignumState; secret: SignumSecret; sessionId: string };
+  const repeat = repeatOf(ended.secret, ended.sessionId, request);
+  if (!repeat) throw new AppError('no_game', 'no_game');
+  if (repeat.kind === 'error') throw new AppError(repeat.code, repeat.code);
+  // Nobody plays any more: the view is a watcher's; the over state already shows the key.
+  return respond(repeat, ended.state, { role: 'observer' });
 }
 
 async function readPage(userId: string, roomId: string): Promise<PageRead> {
@@ -261,33 +292,39 @@ type PageBody = Extract<
   { action: 'volunteer' | 'offer-captain' | 'random-offer' | 'answer-offer' | 'approve-captain' }
 >;
 
-async function page(userId: string, body: PageBody): Promise<SignumPageAnswer> {
-  for (let attempt = 1; attempt <= TRIES; attempt++) {
-    const read = await readPage(userId, body.roomId);
-    const { picks, signum } = pageOf(read);
-    const next =
-      body.action === 'volunteer'
-        ? volunteer(signum, picks, read.sessionId, body.on)
-        : body.action === 'offer-captain'
-          ? offerCaptain(signum, picks, read.isOwner, body.sessionId)
-          : body.action === 'random-offer'
-            ? randomOffer(signum, picks, read.isOwner, body.team, cryptoRandom)
-            : body.action === 'answer-offer'
-              ? answerOffer(signum, picks, read.sessionId, body.accept)
-              : approveCaptain(signum, picks, read.isOwner, body.team, body.sessionId);
-    if ('error' in next) throw new AppError(next.error, next.error);
-    const { data, error } = await db.rpc('signum_pregame_commit', {
-      target_user_id: userId,
-      target_room_id: body.roomId,
-      read_pregame: read.pregame,
-      read_is_owner: read.isOwner,
-      new_signum: next,
-    });
-    if (error) throw dbError('signum_pregame_commit', error);
-    if ((data as { ok: boolean }).ok) return { applied: true };
-  }
-  return { applied: false, reason: 'busy' };
+function page(userId: string, body: PageBody): Promise<SignumPageAnswer> {
+  return withTries<SignumPageAnswer>(
+    TRIES,
+    async () => {
+      const read = await readPage(userId, body.roomId);
+      const { picks, signum } = pageOf(read);
+      const next =
+        body.action === 'volunteer'
+          ? volunteer(signum, picks, read.sessionId, body.on)
+          : body.action === 'offer-captain'
+            ? offerCaptain(signum, picks, read.isOwner, body.sessionId)
+            : body.action === 'random-offer'
+              ? randomOffer(signum, picks, read.isOwner, body.team, cryptoRandom)
+              : body.action === 'answer-offer'
+                ? answerOffer(signum, picks, read.sessionId, body.accept)
+                : approveCaptain(signum, picks, read.isOwner, body.team, body.sessionId);
+      if ('error' in next) throw new AppError(next.error, next.error);
+      const { data, error } = await db.rpc('signum_pregame_commit', {
+        target_user_id: userId,
+        target_room_id: body.roomId,
+        read_pregame: read.pregame,
+        read_is_owner: read.isOwner,
+        new_signum: next,
+      });
+      if (error) throw dbError('signum_pregame_commit', error);
+      return (data as { ok: boolean }).ok ? { applied: true } : null;
+    },
+    busyPage,
+  );
 }
+
+const busyPage = (): Promise<SignumPageAnswer> =>
+  Promise.resolve({ applied: false, reason: 'busy' });
 
 async function loadPool(): Promise<string[]> {
   const { data, error } = await db
@@ -299,33 +336,36 @@ async function loadPool(): Promise<string[]> {
   return data.map((row) => row.word).filter((word): word is string => word !== null);
 }
 
-async function start(userId: string, roomId: string): Promise<SignumPageAnswer> {
-  for (let attempt = 1; attempt <= TRIES; attempt++) {
-    const read = await readPage(userId, roomId);
-    if (!read.isOwner) throw new AppError('not_owner', 'not_owner');
-    const { picks, signum } = pageOf(read);
-    const seats = seatsAtStart(signum, picks);
-    if (!seats) throw new AppError('captain_missing', 'captain_missing');
-    const started = startGame(
-      {
-        gameNo: read.gameNo + 1,
-        seats,
-        pool: await loadPool(),
-        now: new Date(read.now),
-        channels: { a: crypto.randomUUID(), b: crypto.randomUUID() },
-      },
-      cryptoRandom,
-    );
-    if ('error' in started) throw new AppError(started.error, started.error);
-    const { data, error } = await db.rpc('signum_start', {
-      target_user_id: userId,
-      target_room_id: roomId,
-      read_pregame: read.pregame,
-      new_state: started.state,
-      new_secret: started.secret,
-    });
-    if (error) throw dbError('signum_start', error);
-    if ((data as { ok: boolean }).ok) return { applied: true };
-  }
-  return { applied: false, reason: 'busy' };
+function start(userId: string, roomId: string): Promise<SignumPageAnswer> {
+  return withTries<SignumPageAnswer>(
+    TRIES,
+    async () => {
+      const read = await readPage(userId, roomId);
+      if (!read.isOwner) throw new AppError('not_owner', 'not_owner');
+      const { picks, signum } = pageOf(read);
+      const seats = seatsAtStart(signum, picks);
+      if (!seats) throw new AppError('captain_missing', 'captain_missing');
+      const started = startGame(
+        {
+          gameNo: read.gameNo + 1,
+          seats,
+          pool: await loadPool(),
+          now: new Date(read.now),
+          channels: { a: crypto.randomUUID(), b: crypto.randomUUID() },
+        },
+        cryptoRandom,
+      );
+      if ('error' in started) throw new AppError(started.error, started.error);
+      const { data, error } = await db.rpc('signum_start', {
+        target_user_id: userId,
+        target_room_id: roomId,
+        read_pregame: read.pregame,
+        new_state: started.state,
+        new_secret: started.secret,
+      });
+      if (error) throw dbError('signum_start', error);
+      return (data as { ok: boolean }).ok ? { applied: true } : null;
+    },
+    busyPage,
+  );
 }

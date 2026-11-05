@@ -203,9 +203,11 @@ function shuffled<T>(items: readonly T[], rng: () => number): T[] {
 export function pickWords(pool: readonly string[], rng: () => number): string[] | null {
   const picked: string[] = [];
   for (const word of shuffled(pool, rng)) {
-    if (!isBoardWord(word)) continue;
+    // A card is used as it is written or not at all: the server checks each board word against the
+    // pool letter by letter (signum_start).
+    if (!isBoardWord(word) || plainText(word).trim() !== word) continue;
     if (picked.some((p) => tooAlike(p, word))) continue;
-    picked.push(plainText(word).trim());
+    picked.push(word);
     if (picked.length === SIGNUM.tiles) return picked;
   }
   return null;
@@ -420,6 +422,41 @@ function paramsOf(request: SignumRequest): string {
   }
 }
 
+// The first answer to a clue, reveal or end-turn this person already sent with this actionId (the
+// same parameters), a conflict (other parameters), or null (a new request). Also used once the game
+// has ended, for a press sent again after it (the reveal that ended it).
+export function repeatOf(
+  secret: SignumSecret,
+  sid: string,
+  request: SignumRequest,
+):
+  | { kind: 'replayed'; result: SignumResult }
+  | { kind: 'error'; code: 'action_id_conflict' }
+  | null {
+  if (request.action !== 'clue' && request.action !== 'reveal' && request.action !== 'end-turn') {
+    return null;
+  }
+  const done = secret.actions[actionKey(sid, request.actionId)];
+  if (!done) return null;
+  return done.action === request.action && done.params === paramsOf(request)
+    ? { kind: 'replayed', result: done.result }
+    : { kind: 'error', code: 'action_id_conflict' };
+}
+
+// The server's loop around a write (B-2): `attempt` reads, decides and tries to write, giving null
+// when the table changed meanwhile; after `tries` of them `busy` answers.
+export async function withTries<T>(
+  tries: number,
+  attempt: (n: number) => Promise<T | null>,
+  busy: () => Promise<T>,
+): Promise<T> {
+  for (let n = 1; n <= tries; n++) {
+    const done = await attempt(n);
+    if (done !== null) return done;
+  }
+  return busy();
+}
+
 const isTile = (tile: number) => Number.isInteger(tile) && tile >= 0 && tile < SIGNUM.tiles;
 
 export function decideAction(
@@ -452,15 +489,8 @@ export function decideAction(
   }
 
   // A repeat of an earlier request is answered first, whatever happened since.
-  if (request.action === 'clue' || request.action === 'reveal' || request.action === 'end-turn') {
-    const done = secret.actions[actionKey(actor.sid, request.actionId)];
-    if (done) {
-      const same = done.action === request.action && done.params === paramsOf(request);
-      return same
-        ? { kind: 'replayed', result: done.result }
-        : { kind: 'error', code: 'action_id_conflict' };
-    }
-  }
+  const repeat = repeatOf(secret, actor.sid, request);
+  if (repeat) return repeat;
   if (request.action === 'point') {
     if (request.tile !== null && !isTile(request.tile))
       return { kind: 'error', code: 'bad_request' };

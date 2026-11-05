@@ -21,6 +21,7 @@ import {
   pregameAgain,
   publicState,
   randomOffer,
+  repeatOf,
   respond,
   seatsAtStart,
   SIGNUM,
@@ -40,6 +41,7 @@ import {
   validateClue,
   viewFor,
   volunteer,
+  withTries,
 } from './signum.ts';
 
 const profanity = JSON.parse(
@@ -1141,5 +1143,68 @@ describe('cleanPregame', () => {
       offers: { a: null, b: 'ece' },
       captains: { a: null, b: 'deniz' },
     });
+  });
+});
+
+describe('withTries (B-2)', () => {
+  it('stops at the first write that holds, and answers busy after three that did not', async () => {
+    const calls: number[] = [];
+    const held = await withTries(
+      3,
+      (n) => {
+        calls.push(n);
+        return Promise.resolve(n === 2 ? 'written' : null);
+      },
+      () => Promise.resolve('busy'),
+    );
+    expect([held, calls]).toEqual(['written', [1, 2]]);
+    const tried: number[] = [];
+    const busy = await withTries(
+      3,
+      (n) => {
+        tried.push(n);
+        return Promise.resolve(null);
+      },
+      () => Promise.resolve('busy'),
+    );
+    expect([busy, tried]).toEqual(['busy', [1, 2, 3]]);
+  });
+});
+
+describe('repeatOf', () => {
+  it('answers a repeat after the game ended, as during it, and only the same person’s', () => {
+    const g = inGuess();
+    const who = g.guessers[0] ?? '';
+    const t = tileOf(g.secret, 'x');
+    const m = apply(g, who, { action: 'point', step: g.state.step, tile: t, seq: 1 });
+    const request: SignumRequest = {
+      action: 'reveal',
+      step: m.state.step,
+      tile: t,
+      actionId: 'end',
+    };
+    const ended = act(m, who, request);
+    if (ended.kind !== 'applied') throw new Error();
+    expect(ended.state.phase).toBe('over');
+    expect(repeatOf(ended.secret, who, request)).toEqual({
+      kind: 'replayed',
+      result: ended.result,
+    });
+    expect(repeatOf(ended.secret, who, { ...request, tile: 0 })).toEqual({
+      kind: 'error',
+      code: 'action_id_conflict',
+    });
+    expect(repeatOf(ended.secret, g.guessers[1] ?? '', request)).toBeNull();
+    expect(repeatOf(ended.secret, who, { action: 'point', step: 1, tile: 0, seq: 1 })).toBeNull();
+  });
+});
+
+describe('pickWords and the written card', () => {
+  it('uses a card as it is written, or not at all', () => {
+    const odd = [' Kale', 'Kale\u200b', 'ＫＡＬＥ'];
+    for (let seed = 1; seed <= 20; seed++) {
+      const words = pickWords([...POOL, ...odd], rng(seed)) ?? [];
+      expect(words.every((w) => POOL.includes(w))).toBe(true);
+    }
   });
 });

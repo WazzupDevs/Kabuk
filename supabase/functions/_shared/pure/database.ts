@@ -3246,6 +3246,7 @@ export type Database = {
         Args: {
           new_secret: Json;
           new_state: Json;
+          notify_team: string;
           player_action: boolean;
           read_rev: number;
           read_state: Json;
@@ -3271,6 +3272,10 @@ export type Database = {
         Returns: Json;
       };
       signum_read: {
+        Args: { target_room_id: string; target_user_id: string };
+        Returns: Json;
+      };
+      signum_read_ended: {
         Args: { target_room_id: string; target_user_id: string };
         Returns: Json;
       };
