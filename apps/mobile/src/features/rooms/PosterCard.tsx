@@ -30,9 +30,11 @@ export const GAME_CARDS = [
     category: 'multi',
     art: require('../../../assets/game-poster/g-kaupholl.webp'),
   },
+  // Kibrit has its poster only (the owner's call, 5 Kasım): no category, line or headcount yet.
+  { id: 'kibrit', art: require('../../../assets/game-poster/g-kibrit.webp') },
 ] as const satisfies readonly {
   id: keyof typeof tr.table.gameCards;
-  category: keyof typeof tr.table.gameCategories;
+  category?: keyof typeof tr.table.gameCategories;
   art: ImageSourcePropType;
 }[];
 
@@ -81,7 +83,12 @@ export function GameCard({
     <Pressable
       testID={testID}
       accessibilityRole="button"
-      accessibilityLabel={tr.table.gameCardLabel(text.name, text.sub, text.people, tag)}
+      accessibilityLabel={tr.table.gameCardLabel(
+        text.name,
+        'sub' in text ? text.sub : undefined,
+        'people' in text ? text.people : undefined,
+        tag,
+      )}
       accessibilityState={{ disabled: !onPress }}
       disabled={!onPress}
       onPress={onPress}
