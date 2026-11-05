@@ -5,6 +5,13 @@
 - Krot kişi bazlı sunucu (4.6.3): `20261128090000_sahtekar_v4.sql`, `functions/sahtekar`, `pure/sahtekarGame.ts`, `tests/sahtekar.test.ts`; kararlar `docs/decisions/4.6.3-krot.md`. Kural 3'e 4.6.3 cümlesi eklendi: birleşme proje sahibinin "onaylandı"sını bekler. `database.ts` elle hizalandı (yerel stack yok), CI `gen:types` ile denetler.
 - Sıradaki: Krot ekranları (CTO promptları → Prompt 2, Aura v86 "Krot (gizli kart ve şüpheli sırası)" satırı; Kinshi parçaları `features/games/kinshi/KinshiParts.tsx`), sonra `sahtekar.available: true` ve `pnpm seed`.
 
+## Devir notu (5 Kasım 2026, Kinshi ekranları bitti)
+
+- Birleşenler: #456 (Kinshi tabu düzeni, Aura v85: Takımlar, Tur öncesi, 3-2-1, Anlatıcı, Tahminci, Rakip, Gözlemci, Tur sonu, Oyun sonu; `features/games/kinshi/`, ölçüler `theme/kinshi.ts`, koyu açılış `DarkGameScope`; poster `kinshi` → oyun `tabu`, `PosterCard.tsx` → `conceptOf`; `tabu.available: true` + seed), #458 (Aura v94: açıkta dolu takım yüzeyi `TEAM_FILLS` #6A47F5/#D02860, sahip olmayanların Tur sonunda salt okunur sayı hapı). Takım renkleri her yerde tuvalinki (SPEC_V4 §4.2).
+- Yayın: önce dev projesine #451/#453 migration'ları, `tabu` fonksiyonu ve seed, sonra OTA. Native yok; cihazda denenmedi, görsel kontrol proje sahibinde.
+- Bilerek yok: kartın Doğru/Pas/Yasak! çıkış hareketleri (`hareket.json`'a girince ayrı PR). Çizilmemiş: kart yükleniyor/bağlantı hatası (bugün `Loader` ve ortak hata). 320 dp ve en büyük yazı: deste ekranla ölçeklenir (`kinshiDeck`, `docs/decisions/kinshi-320dp.md`); Anlatıcı ve Gözlemci görüntüsü proje sahibinin telefonunda.
+- Oturumun seçtikleri (proje sahibi telefonda bakar): zaman kapsülü üç kademe (Tur öncesi ve 3-2-1 dolu, tur yarım, son 10 sn az); tahmincinin panelinde son üç kelime en yenisi üstte.
+
 ## Devir notu (5 Kasım 2026, Kinshi tabu düzeni)
 
 - Birleşenler: #446 (Kinshi riso görselleri `assets/games/kinshi/`, `features/games/kinshi/kinshiArt.ts`), #451 (Kapsül Anlat kişi bazlı sunucu, 4.6.1: `20261126090000_kapsul_anlat.sql`, `functions/tabu`, `pure/tabuGame.ts`, `tests/tabu.test.ts`; kararlar `docs/decisions/4.6.1-kapsul-anlat.md`). Yayın önce sunucu; istemci değişmedi.

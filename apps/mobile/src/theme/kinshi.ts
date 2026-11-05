@@ -168,6 +168,48 @@ export const KINSHI = {
   lowSeconds: 10,
 } as const;
 
+// The deck at 320 dp and the largest text (Aura v95, kinshiSource; the project owner's decision of
+// 5 Kasım): the card is the screen's width less 94 (296 on the 390 panels; never wider than that),
+// 3:4, and its edges, fanned backs, shadow, word band, list, buddies and the guesser's panel scale
+// with it. The words don't: 800/30 and 800/20, shrinking on one line to no less than 22 and 16.
+export const KINSHI_CARD_SIDE = 94;
+export const KINSHI_MIN_TYPE = { word: 22, forbidden: 16 } as const;
+
+export function kinshiDeck(screenWidth: number) {
+  const width = Math.max(
+    0,
+    Math.min(KINSHI.card.width, Math.round(screenWidth - KINSHI_CARD_SIDE)),
+  );
+  const s = width / KINSHI.card.width;
+  const z = (n: number) => n * s;
+  return {
+    scale: s,
+    card: { width, height: Math.round((width * 4) / 3), radius: z(KINSHI.card.radius) },
+    edges: KINSHI.edges.map(z),
+    fans: KINSHI.fans.map((f) => ({ x: z(f.x), y: z(f.y), rotate: f.rotate })),
+    shadow: {
+      below: z(KINSHI.deckShadow.below),
+      height: z(KINSHI.deckShadow.height),
+      blur: z(KINSHI.deckShadow.blur),
+    },
+    wordBand: {
+      side: z(KINSHI.wordBand.side),
+      top: z(KINSHI.wordBand.top),
+      height: z(KINSHI.wordBand.height),
+    },
+    list: { side: z(KINSHI.list.side), top: z(KINSHI.list.top), height: z(KINSHI.list.height) },
+    peek: {
+      height: z(KINSHI.peek.height),
+      above: z(KINSHI.peek.above),
+      inset: z(KINSHI.peek.inset),
+      rightDrop: z(KINSHI.peek.rightDrop),
+    },
+    // The guesser's panel keeps its 16 on each side of the card.
+    panel: { width: width - (KINSHI.card.width - KINSHI.panel.width), top: z(KINSHI.panel.top) },
+  };
+}
+export type KinshiDeck = ReturnType<typeof kinshiDeck>;
+
 // Which buddies peek on which screen (the panels as drawn): the describer's, Tur öncesi's, the
 // guesser's and the watcher's one pair; the waiting and the rival's the other.
 export const PEEK_PAIRS = {
