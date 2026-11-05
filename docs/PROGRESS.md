@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (5 Kasım 2026, Kaupholl)
+
+- Onaylı kurallar ve plan: `docs/decisions/kaupholl.md` (v3.1 son hâl; açık karar yok, kurallar artık değişmez). #460 riso görselleri (`kauphollArt`), #474 gizli içerik kapısı (PR 0: `pnpm guard:secrets`, `docs/OPS.md` → Gizli içerik kapısı) birleşti.
+- Sıradaki: **PR A**, yalnızca saf mantık `supabase/functions/_shared/pure/kaupholl.ts` + vitest (§7 "PR A"): tahta, C3 oranları, kazanan, puan, aşama makinesi (otomatik kesinleşme), `seq` kuralları, `publicState`/`viewFor`, soru seçimi ve gevşetme (masada tekrar yok, `questions_exhausted`), zor sorunun yeri, Türkçe sayı. Migration, fonksiyon, SPEC ve ekran yok.
+- Sonra PR B (sunucu, SPEC 4.6.10 adayı: numara o gün main'de yeniden denetlenir), PR C (özel depolarda içerik), Aura farkları (§6), en son Prompt 3. Her PR birleşmeden önce proje sahibine kontrol sonuçları bildirilir.
+- Açık iş: `supabase/tests/sahtekar.test.ts` → "ends the game without results when an impostor leaves" ara sıra düşüyor (sahtekâr sahip seçilince `leave-game` → `bad_request`); düzeltme yalnızca testte.
+
 ## Devir notu (5 Kasım 2026, Sprengja içerik ve dev doğrulaması)
 
 - Birleşenler: #473 (harf grubu v3, 96 grup 40/36/20, `content/sprengja-letter-groups.json`; seed dev'e uygulandı), #478 (`pnpm latency:sprengja` bot masası; D-1–D-6 `docs/decisions/4.6.8-sprengja.md`, sonuçlar `4.6.8-sprengja-dev.md`: altısı geçti, Realtime p90 841 ms ölçütü az aşıyor). Dev'de `sprengja-explode` kapalı, `is_available: false`; ikisini açmak proje sahibinde.
