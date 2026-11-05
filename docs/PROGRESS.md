@@ -6,6 +6,12 @@
 - Bilerek yok: karo 180° dönüşü (raporda onay bekliyor). Rakibin işareti gösterilmez (kural 3). Raporda çizilmeyen dört yerde öneri uygulandı, proje sahibinin kararını bekliyor: kara karttan sonuca "Sonucu gör" düğmesi; açanın adı yerine takım adı ("Pembe takım … kartını açtı"; açık durum açanı tutmuyor); süs kankileri ve kapsül aşamaları Kinshi'ninkiler; kaptansız biten oyunun metni.
 - Açmadan önce: proje sahibinin cihazında 320 dp karo yazısı (37 px, karo ~47 px) ve en büyük yazı. Sonra ayrı PR'la `signum.available: true` ve `pnpm seed`.
 
+## Devir notu (5 Kasım 2026, Sprengja içerik ve dev doğrulaması)
+
+- Birleşenler: #473 (harf grubu v3, 96 grup 40/36/20, `content/sprengja-letter-groups.json`; seed dev'e uygulandı), #478 (`pnpm latency:sprengja` bot masası; D-1–D-6 `docs/decisions/4.6.8-sprengja.md`, sonuçlar `4.6.8-sprengja-dev.md`: altısı geçti, Realtime p90 841 ms ölçütü az aşıyor). Dev'de `sprengja-explode` kapalı, `is_available: false`; ikisini açmak proje sahibinde.
+- Sıradaki paket (3): Aura'da Sprengja panoları önce tuvalde güncellenir (canlı tuval `project/Sprengja*.dc.html`, 10 pano): halka 3–8 kişi, "Atışlar · n", "HARF GRUBU" (`SprengjaHece`), devralma, ortak kazanan, yarıda kalma, son turda "Sonuçları gör". Sonra `tuval-aktarim` ile ekranlar.
+- Paket 4 (saha testi raporu) saha testinden sonra; `yol` ve `tut`'un atış süresi ayrıca izlenir (O-15).
+
 ## Devir notu (5 Kasım 2026, Kibrit sunucusu)
 
 - #461 görseller (`features/games/kibrit/kibritArt.ts`), #465 SPEC Adım 4.6.9 ve K-86 (kural 3, 7, 10 ekleri; kart "Yakında"), #476 sunucu: `20261201090000_kibrit.sql`, `functions/kibrit`, `pure/kibrit.ts`, `tests/kibrit.test.ts`. `games.json`'da `kibrit.available: false`.

@@ -33,6 +33,7 @@
     "db:reset": "supabase db reset && pnpm --filter scripts apply-local-secrets",
     "fetch:venues": "pnpm --filter scripts fetch:venues",
     "latency": "pnpm --filter scripts latency",
+    "latency:sprengja": "pnpm --filter scripts latency:sprengja",
     "functions:deploy": "pnpm --filter scripts functions:deploy",
     "visual:accept": "pnpm --filter scripts visual:accept"
   },
