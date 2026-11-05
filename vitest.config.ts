@@ -27,6 +27,8 @@ export default defineConfig({
       'apps/mobile/src/features/checkin/**/*.test.ts',
       // What the table screen shows, and what an account change forgets.
       'apps/mobile/src/features/rooms/**/*.test.ts',
+      // What a game's phone may draw of its secret role.
+      'apps/mobile/src/features/games/**/*.test.ts',
       'apps/mobile/src/features/auth/**/*.test.ts',
     ],
   },

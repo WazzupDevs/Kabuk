@@ -423,11 +423,14 @@ export function Round({
   big,
   light,
   side,
+  onHold,
   children,
 }: {
   icon?: CapIconName;
   label: string;
   onPress?: () => void;
+  // Pressed and held: true while a finger is on it, false when it lifts (Krot's "Rolüm").
+  onHold?: (on: boolean) => void;
   glassy?: boolean;
   color?: string;
   badge?: number;
@@ -474,8 +477,14 @@ export function Round({
       accessibilityState={{ disabled: !!disabled || !!loading, busy: !!loading }}
       onPress={onPress}
       disabled={disabled || loading}
-      onPressIn={press.onPressIn}
-      onPressOut={press.onPressOut}
+      onPressIn={() => {
+        press.onPressIn();
+        onHold?.(true);
+      }}
+      onPressOut={() => {
+        press.onPressOut();
+        onHold?.(false);
+      }}
     >
       <Animated.View
         style={[

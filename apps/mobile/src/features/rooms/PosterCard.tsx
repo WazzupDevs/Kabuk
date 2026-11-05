@@ -40,9 +40,9 @@ export const GAME_CARDS = [
 
 export type GameCardId = (typeof GAME_CARDS)[number]['id'];
 
-// A poster's game on the server (content/games.json): Kinshi is Kapsül Anlat's `tabu`; the others
-// carry their own id.
-const CONCEPTS: Partial<Record<GameCardId, string>> = { kinshi: 'tabu' };
+// A poster's game on the server (content/games.json): Kinshi is Kapsül Anlat's `tabu`, Krot is
+// `sahtekar`; the others carry their own id.
+const CONCEPTS: Partial<Record<GameCardId, string>> = { kinshi: 'tabu', krot: 'sahtekar' };
 export function conceptOf(card: GameCardId): string {
   return CONCEPTS[card] ?? card;
 }

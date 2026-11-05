@@ -72,7 +72,7 @@ export const TABLE_GAMES = [
     pregame: true,
     categories: ['multi'],
     poster: 'sahtekar',
-    available: false,
+    available: true,
   },
   {
     id: 'harf',

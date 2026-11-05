@@ -49,7 +49,7 @@ describe('content/games.json', () => {
       parseGames(content)
         .games.filter((g) => g.available)
         .map((g) => g.id),
-    ).toEqual(['vampir', 'tabu']);
+    ).toEqual(['vampir', 'tabu', 'sahtekar']);
   });
 
   it('refuses a game twice, an unknown category, and a team game under four', () => {

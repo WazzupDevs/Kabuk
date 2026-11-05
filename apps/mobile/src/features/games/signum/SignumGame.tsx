@@ -24,7 +24,6 @@ import { Sheet } from '@/components/Sheet';
 import { StageFit } from '@/features/games/GameStage';
 import {
   Buddy,
-  Deck,
   Face,
   type Faces,
   nameOf,
@@ -34,6 +33,7 @@ import {
   useKinshiDeck,
   useTeamTone,
 } from '@/features/games/kinshi/KinshiParts';
+import { Deck as RisoDeck, Pop, useRisoDeck } from '@/features/games/riso/RisoParts';
 import { useSecondsLeft } from '@/features/games/useSecondsLeft';
 import { useBroadcast } from '@/features/rooms/useBroadcast';
 import { roomKeys, type TablePerson } from '@/features/rooms/queries';
@@ -459,6 +459,7 @@ function RoleScreen({
   close: Close;
 }) {
   const clock = useClock(state);
+  const card = useRisoDeck().card;
   const [holding, setHolding] = useState(false);
   const [seen, setSeen] = useState(false);
   const answer = useAnswer(roomId, faces.me);
@@ -486,10 +487,23 @@ function RoleScreen({
     </View>
   );
   const deck = (
-    <Deck
-      face={{ kind: 'node', node: face, key: holding ? 'front' : 'back' }}
-      peek={holding && view.role === 'guesser' ? PEEK_PAIRS.near : PEEK_PAIRS.far}
+    <RisoDeck
       back={signumArt.back}
+      peek={holding && view.role === 'guesser' ? PEEK_PAIRS.near : PEEK_PAIRS.far}
+      top={
+        <Pop key={holding ? 'front' : 'back'}>
+          <View
+            style={{
+              width: card.width,
+              height: card.height,
+              borderRadius: card.radius,
+              overflow: 'hidden',
+            }}
+          >
+            {face}
+          </View>
+        </Pop>
+      }
     />
   );
   return (

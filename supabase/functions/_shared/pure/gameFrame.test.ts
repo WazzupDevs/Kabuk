@@ -37,10 +37,11 @@ describe('posterState (K-17)', () => {
   it('dims a playable game below its lower limit and opens it from there', () => {
     const game = tableGame('sahtekar');
     expect(game?.minPlayers).toBe(3);
-    const open = game ? { ...game, available: true } : undefined;
-    expect(posterState(open, 2)).toEqual({ state: 'needs_players', minPlayers: 3 });
-    expect(posterState(open, 3)).toEqual({ state: 'open' });
-    expect(posterState(game, 3)).toEqual({ state: 'soon' });
+    expect(game?.available).toBe(true);
+    expect(posterState(game, 2)).toEqual({ state: 'needs_players', minPlayers: 3 });
+    expect(posterState(game, 3)).toEqual({ state: 'open' });
+    const closed = game ? { ...game, available: false } : undefined;
+    expect(posterState(closed, 3)).toEqual({ state: 'soon' });
   });
 });
 

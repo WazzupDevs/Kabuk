@@ -3,8 +3,21 @@
 ## Devir notu (5 Kasım 2026, Signum ekranları)
 
 - #472 kelime havuzu (`content/signum-words.json`, 279 kelime, `docs/decisions/signum-kelimeler.md`); bu PR Signum ekranları (Aura v87, 13 pano `Signum*`, rapor `docs/design/aura/aktarim-signum.md`): `features/games/signum/` (SignumGame, SignumParts), `lib/signumGame.ts`, `theme/signum.ts`, `api.ts` → `signumApi`. `games.json`'da `signum.available: false`.
-- Bilerek yok: karo 180° dönüşü (raporda onay bekliyor). Rakibin işareti gösterilmez (kural 3). Raporda çizilmeyen dört yerde öneri uygulandı, proje sahibinin kararını bekliyor: kara karttan sonuca "Sonucu gör" düğmesi; açanın adı yerine takım adı ("Pembe takım … kartını açtı"; açık durum açanı tutmuyor); süs kankileri ve kapsül aşamaları Kinshi'ninkiler; kaptansız biten oyunun metni.
-- Açmadan önce: proje sahibinin cihazında 320 dp karo yazısı (37 px, karo ~47 px) ve en büyük yazı. Sonra ayrı PR'la `signum.available: true` ve `pnpm seed`.
+- Bilerek yok: karo 180° dönüşü (raporda onay bekliyor). Rakibin işareti gösterilmez (kural 3). Raporda çizilmeyen dört yerde uygulanan öneriler (proje sahibince onaylı): kara karttan sonuca "Sonucu gör" düğmesi; açanın adı yerine takım adı ("Pembe takım … kartını açtı"; açık durum açanı tutmuyor); süs kankileri ve kapsül aşamaları Kinshi'ninkiler; kaptansız biten oyunun metni.
+- Karo kelimeleri yazıldığı gibi (büyük harf yok; en geniş 36,97 px / 37). Görünüm önbelleği oturuma bağlı (`signumViewKey`). Dört öneri proje sahibince onaylı (5 Kasım). Açmadan önce: cihazda 320 dp ve en büyük yazı. Sonra ayrı PR'la `signum.available: true` ve `pnpm seed`.
+
+## Devir notu (5 Kasım 2026, Krot ekranları)
+
+- Krot ekranları (Aura v86, 13 pano): `features/games/sahtekar/KrotGame.tsx`, `KrotParts.tsx`, ölçüler `theme/krot.ts`; `sahtekar.available: true` + seed. Kinshi'nin çubuk, kapsül, deste ve kankileri ortak: `features/games/riso/`, `theme/riso.ts`. Kararlar `docs/decisions/krot-ekranlar.md`.
+- Yayın: önce dev projesine #464 migration'ı, `sahtekar` fonksiyonu ve seed, sonra OTA. Native yok; cihazda denenmedi, görsel kontrol proje sahibinde.
+- Proje sahibinin kararları ayrı PR'da: 1 oy düğmesi "1/2 şüpheli seç"; 2 Hazırım rol gösterilince açılır (#475'te karşılandı); 3 oyun sonunda tahminin tutup tutmadığı (tahmin metni saklanmaz); 4 6–12 oyuncuda iki sıra.
+
+## Devir notu (5 Kasım 2026, Kaupholl)
+
+- Onaylı kurallar ve plan: `docs/decisions/kaupholl.md` (v3.1 son hâl; açık karar yok, kurallar artık değişmez). #460 riso görselleri (`kauphollArt`), #474 gizli içerik kapısı (PR 0: `pnpm guard:secrets`, `docs/OPS.md` → Gizli içerik kapısı) birleşti.
+- Sıradaki: **PR A**, yalnızca saf mantık `supabase/functions/_shared/pure/kaupholl.ts` + vitest (§7 "PR A"): tahta, C3 oranları, kazanan, puan, aşama makinesi (otomatik kesinleşme), `seq` kuralları, `publicState`/`viewFor`, soru seçimi ve gevşetme (masada tekrar yok, `questions_exhausted`), zor sorunun yeri, Türkçe sayı. Migration, fonksiyon, SPEC ve ekran yok.
+- Sonra PR B (sunucu, SPEC 4.6.10 adayı: numara o gün main'de yeniden denetlenir), PR C (özel depolarda içerik), Aura farkları (§6), en son Prompt 3. Her PR birleşmeden önce proje sahibine kontrol sonuçları bildirilir.
+- Açık iş: `supabase/tests/sahtekar.test.ts` → "ends the game without results when an impostor leaves" ara sıra düşüyor (sahtekâr sahip seçilince `leave-game` → `bad_request`); düzeltme yalnızca testte.
 
 ## Devir notu (5 Kasım 2026, Sprengja içerik ve dev doğrulaması)
 
