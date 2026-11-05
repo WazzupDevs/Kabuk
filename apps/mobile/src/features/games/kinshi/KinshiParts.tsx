@@ -5,6 +5,7 @@ import { Image } from 'expo-image';
 import { type ReactNode, useEffect, useState } from 'react';
 import {
   Animated,
+  type ImageSourcePropType,
   Pressable,
   StyleSheet,
   Text,
@@ -292,7 +293,8 @@ export function TimeStrip({
   title,
   line,
 }: {
-  stage: KinshiTimer;
+  // Null: no capsule and no time (Signum's Kara kart açıldı: `.strip.nokap`).
+  stage: KinshiTimer | null;
   clock: string;
   clockLabel: string;
   late: boolean;
@@ -303,7 +305,7 @@ export function TimeStrip({
   const { c } = useKit();
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: K.stripGap, zIndex: 2 }}>
-      <TimeCapsule stage={stage} />
+      {stage ? <TimeCapsule stage={stage} /> : null}
       <View style={{ flex: 1, gap: K.stripLineGap }}>
         <View
           style={{
@@ -313,14 +315,16 @@ export function TimeStrip({
             flexWrap: 'wrap',
           }}
         >
-          <Text
-            accessibilityRole="timer"
-            accessibilityLabel={clockLabel}
-            maxFontSizeMultiplier={1}
-            style={[KT.clock, { color: late ? colors.buzz : c.ink }]}
-          >
-            {clock}
-          </Text>
+          {stage ? (
+            <Text
+              accessibilityRole="timer"
+              accessibilityLabel={clockLabel}
+              maxFontSizeMultiplier={1}
+              style={[KT.clock, { color: late ? colors.buzz : c.ink }]}
+            >
+              {clock}
+            </Text>
+          ) : null}
           <View style={{ flexShrink: 1 }}>
             <T v="h3">{title}</T>
           </View>
@@ -392,6 +396,8 @@ export function Buddy({
 // coming (Loader) or failed (its words).
 export type CardFace =
   | { kind: 'front'; card: TabuCard; key: string }
+  // Another game's front on the same deck (Signum's role card), its words drawn over it.
+  | { kind: 'node'; node: ReactNode; key: string }
   | { kind: 'back' }
   | { kind: 'loading' }
   | { kind: 'error'; message: string };
@@ -503,10 +509,10 @@ const MIN_WORD = KINSHI_MIN_TYPE.word / (KT.word.fontSize ?? KINSHI_MIN_TYPE.wor
 const MIN_FORBIDDEN =
   KINSHI_MIN_TYPE.forbidden / (KT.forbidden.fontSize ?? KINSHI_MIN_TYPE.forbidden);
 
-function Back({ radius }: { radius: number }) {
+function Back({ radius, art }: { radius: number; art?: ImageSourcePropType }) {
   return (
     <Image
-      source={kinshiArt.cardBack}
+      source={art ?? kinshiArt.cardBack}
       style={[StyleSheet.absoluteFill, { borderRadius: radius }]}
       contentFit="cover"
       accessibilityIgnoresInvertColors
@@ -527,6 +533,7 @@ export function Deck({
   peek,
   children,
   reach,
+  back,
 }: {
   face: CardFace;
   peek: readonly [KinshiBuddy, KinshiBuddy];
@@ -534,6 +541,8 @@ export function Deck({
   children?: ReactNode;
   // How far down from the deck's top that reaches (its measured bottom), when it does.
   reach?: number;
+  // Another game's card back (Signum's), for the fanned backs and the top card.
+  back?: ImageSourcePropType;
 }) {
   const { scheme } = useTheme();
   const { c } = useKit();
@@ -614,7 +623,7 @@ export function Deck({
             ]}
           >
             {fan.node}
-            <Back radius={r} />
+            <Back radius={r} art={back} />
           </View>
         ))}
         {[...d.edges].reverse().map((y, i) => (
@@ -641,8 +650,21 @@ export function Deck({
                 <Front card={face.card} d={d} />
               </View>
             </Pop>
+          ) : face.kind === 'node' ? (
+            <Pop key={face.key}>
+              <View
+                style={{
+                  width: d.card.width,
+                  height: d.card.height,
+                  borderRadius: r,
+                  overflow: 'hidden',
+                }}
+              >
+                {face.node}
+              </View>
+            </Pop>
           ) : face.kind === 'back' ? (
-            <Back radius={r} />
+            <Back radius={r} art={back} />
           ) : (
             <View
               style={[
@@ -656,7 +678,7 @@ export function Deck({
                 },
               ]}
             >
-              <Back radius={r} />
+              <Back radius={r} art={back} />
               {face.kind === 'loading' ? (
                 <Loader />
               ) : (

@@ -14,6 +14,7 @@ import { unreadCount, useRoomChatSeen } from '@/features/chat/roomChatSeen';
 import { useMessages } from '@/features/chat/useMessages';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { KinshiGame, kinshiMode } from '@/features/games/kinshi/KinshiGame';
+import { SignumGame, signumMode } from '@/features/games/signum/SignumGame';
 import { gameNoOf, VampirGame, vampirMode } from '@/features/games/vampir/VampirGame';
 import { useVampirHidden } from '@/features/games/vampir/vampirHidden';
 import { useGameAwake } from '@/lib/gameAwake';
@@ -149,7 +150,9 @@ export default function TableScreen() {
 
   const sessionId = checkIn.data?.id;
   const r = room.data;
-  useGameAwake(!!r && r.status !== 'closed' && (vampirMode(r) ?? kinshiMode(r)) === 'play');
+  useGameAwake(
+    !!r && r.status !== 'closed' && (vampirMode(r) ?? kinshiMode(r) ?? signumMode(r)) === 'play',
+  );
   const backToVenue = () => {
     forget(id);
     router.replace('/venue');
@@ -216,12 +219,13 @@ export default function TableScreen() {
   const owner = r.owner_session_id === sessionId;
   // Vampir Köylü's page, game or end takes the screen (docs/SPEC_V4.md §4.F "Adım 4.6.6"); one sent
   // back to the table stays back until a new page comes.
-  // Kinshi's the same way (Aura v85, "Kinshi (tabu düzeni)").
+  // Kinshi's the same way (Aura v85, "Kinshi (tabu düzeni)"), and Signum's (Aura v87).
   const vampir = vampirMode(r);
-  const gameMode = vampir ?? kinshiMode(r);
+  const kinshi = kinshiMode(r);
+  const gameMode = vampir ?? kinshi ?? signumMode(r);
   const gameKey = `${gameMode}:${gameNoOf(r.game_state)}`;
   if (gameMode && hiddenGame !== gameKey) {
-    const Game = vampir ? VampirGame : KinshiGame;
+    const Game = vampir ? VampirGame : kinshi ? KinshiGame : SignumGame;
     return (
       <Game
         room={r}
@@ -232,7 +236,7 @@ export default function TableScreen() {
       />
     );
   }
-  const gameText = vampir ? tr.vampir : tr.kinshi;
+  const gameText = vampir ? tr.vampir : kinshi ? tr.kinshi : tr.signum;
   const inLobby = r.visibility === 'open';
   const unread = unreadCount(messages, seenAt, sessionId);
 
