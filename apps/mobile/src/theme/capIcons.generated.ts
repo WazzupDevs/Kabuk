@@ -172,6 +172,11 @@ export const CAP_ICONS = {
     {"t":"rect","l":"a","x":13.044,"y":10.7,"width":9.112,"height":2.6,"rx":1.3,"transform":"rotate(47.49 17.6 12)"},
     {"t":"rect","l":"a","x":13.044,"y":10.7,"width":9.112,"height":2.6,"rx":1.3,"transform":"rotate(132.51 17.6 12)"},
   ],
+  note: [
+    {"t":"rect","l":"b","x":4,"y":3,"width":16,"height":18,"rx":5},
+    {"t":"rect","l":"a","x":7.6,"y":8,"width":8.8,"height":3.2,"rx":1.6},
+    {"t":"rect","l":"a","x":7.6,"y":13.2,"width":5.6,"height":3.2,"rx":1.6},
+  ],
   palette: [
     {"t":"circle","l":"b","cx":12,"cy":12,"r":9},
     {"t":"circle","l":"a","cx":7.8,"cy":10,"r":1.8},

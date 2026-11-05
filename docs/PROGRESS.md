@@ -1,5 +1,10 @@
 # İlerleme
 
+## Devir notu (5 Kasım 2026, Kibrit ekranları)
+
+- Kibrit ekranları (Aura v90, 11 pano): `features/games/kibrit/KibritGame.tsx`, ölçüler `theme/kibrit.ts`, `kibritApi`, yeni `note` ikonu; kararlar ve tasarıma sorulacaklar `docs/decisions/kibrit-ekranlar.md`. `kibrit.available` hâlâ `false`.
+- Sıradaki: proje sahibinin telefonda bakması ve çizilmemiş hâllerin (Yeterli kâğıt yok, 320 dp, 7+ oyuncu, uzun soru…) tasarımda yanıtı; sonra ayrı PR'la `kibrit.available: true` + `pnpm seed`, sorarak.
+
 ## Devir notu (5 Kasım 2026, Signum ekranları)
 
 - #472 kelime havuzu (`content/signum-words.json`, 279 kelime, `docs/decisions/signum-kelimeler.md`); bu PR Signum ekranları (Aura v87, 13 pano `Signum*`, rapor `docs/design/aura/aktarim-signum.md`): `features/games/signum/` (SignumGame, SignumParts), `lib/signumGame.ts`, `theme/signum.ts`, `api.ts` → `signumApi`. `games.json`'da `signum.available: false`.

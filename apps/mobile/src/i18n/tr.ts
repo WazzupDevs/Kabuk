@@ -10,6 +10,7 @@ import { TABU } from '@shared/tabu.ts';
 import { TABU_GAME } from '@shared/tabuGame.ts';
 import { SAHTEKAR_GAME } from '@shared/sahtekarGame.ts';
 import { SAHTEKAR } from '@shared/sahtekar.ts';
+import { KIBRIT } from '@shared/kibrit.ts';
 import { SIGNUM } from '@shared/signum.ts';
 import { formatTrMobile } from '@shared/phone.ts';
 import { BIO_MAX } from '@shared/profile.ts';
@@ -118,6 +119,16 @@ const SEAT_SUFFIX: Record<string, { dative: string; locative: string; copula: st
 };
 const seatTo = (seat: string, kind: 'dative' | 'locative' | 'copula') =>
   `${seat}'${SEAT_SUFFIX[seat.slice(-1)]?.[kind] ?? ''}`;
+
+// A count with the third person's possessive ("4'ü", "5'i", "12'si"): Kibrit's turnout.
+function numberPossessive(n: number): string {
+  const ones = ['ı', 'i', 'si', 'ü', 'ü', 'i', 'sı', 'si', 'i', 'u'];
+  const tens = ['', 'u', 'si', 'u', 'ı', 'si', 'ı', 'i', 'i', 'ı'];
+  const v = Math.abs(Math.trunc(n));
+  const suffix =
+    v % 10 !== 0 ? ones[v % 10] : v === 0 ? ones[0] : (tens[Math.floor(v / 10) % 10] ?? 'ü');
+  return `${v}'${v % 100 === 0 && v > 0 ? 'ü' : suffix}`;
+}
 
 export const tr = {
   update: {
@@ -1348,6 +1359,105 @@ export const tr = {
     // On the table while a game runs that the person does not see.
     running: 'Krot sürüyor',
     runningPage: 'Krot açık',
+  },
+  // Kibrit (Aura v90, "Kibrit (gizli soru, gizli oy)"; docs/SPEC_V4.md §4.F "Adım 4.6.9", K-86).
+  kibrit: {
+    name: 'Kibrit',
+    players: 'Oyuncular',
+    count: (n: number) => `${n} kişi`,
+    rounds: (n: number) => `${n} tur`,
+    roundsLabel: (n: number, most: number) =>
+      `${n} tur. Değiştirmek için dokun; en çok ${most} tur.`,
+    writeChip: `Soru yaz ${KIBRIT.writeSeconds} sn`,
+    voteChip: `Oy ${KIBRIT.voteSeconds} sn`,
+    watchers: 'Gözlemciler',
+    watchersNote: 'Soruları ve sonuçları görür, yazmaz ve oy vermez.',
+    watch: 'Gözlemci ol',
+    play: 'Oyuna katıl',
+    how: 'Herkes kâğıdına masadakiler için bir soru yazar; adın kâğıtta yazmaz. Kâğıtlar kavanozda karıştırılır, her turda biri çekilir. Herkes soruya en çok uyan kişiye gizli oy verir. Oylar açılınca kimin kaç oy aldığı görünür, kimin kime verdiği görünmez.',
+    hintOwner: 'Herkes hazırsa oyunu başlat.',
+    hintGuest: 'Oyunu masa sahibi başlatır.',
+    needs: (n: number) => `En az ${n} oyuncu gerekir.`,
+    start: 'Oyunu başlat',
+    // The bar.
+    phasePapers: 'Kâğıtlar',
+    // Soru yaz.
+    writeTitle: 'Soruyu yaz',
+    writeLine: 'Adın yazmaz · kimse bilmez',
+    yourPaper: 'Senin kâğıdın',
+    fieldLabel: 'Sorunu yaz',
+    letters: (n: number) => `${n}/${KIBRIT.maxLength}`,
+    lettersLabel: (n: number) => `${KIBRIT.maxLength} karakterden ${n}`,
+    throw: 'Kâğıdı kavanoza at',
+    writeHint: 'Cevabı masadaki biri olabilecek bir soru yaz.',
+    length: `Soru 1-${KIBRIT.maxLength} karakter olmalı.`,
+    // Kâğıtlar kavanozda.
+    inJar: 'Kâğıdın kavanozda',
+    inJarLine: 'Herkes atınca kâğıtlar karıştırılır',
+    papersInJar: 'Kâğıtlar kavanozda',
+    jarLabel: 'Kâğıtların atıldığı kavanoz',
+    jarCount: (n: number, of: number) => `${n}/${of} kâğıt`,
+    wrote: (n: number, of: number) => `${n}/${of} kişi yazdı`,
+    nobodyKnows: 'Kimin hangi kâğıdı yazdığı hiçbir yerde görünmez.',
+    change: 'Kâğıdı değiştir',
+    // Kâğıt çek and the drawn paper.
+    shuffled: 'Kâğıtlar karıştırıldı',
+    drawYou: (n: number) => `${n} kâğıt · bu turu sen çekiyorsun`,
+    drawOther: (n: number, name: string) => `${n} kâğıt · bu turu ${name} çekiyor`,
+    deckLabel: 'Katlanmış kâğıtlar, kapalı',
+    draw: 'Kâğıt çek',
+    drawn: 'Çekilen kâğıt',
+    drawnNote: 'Herkes aynı soruyu görür. Kimin yazdığını kimse bilmez.',
+    author: 'Yazan: gizli',
+    toVote: 'Oylamaya geç',
+    report: 'Bildir',
+    skip: 'Atla',
+    // Gizli oy and Oy verildi.
+    voteTitle: 'Gizli oy',
+    voteLine: 'Kime verdiğini kimse görmez',
+    give: 'Oyumu ver',
+    voteFor: (name: string) => `${name}, oy ver`,
+    targetGone: 'Oy verdiğin kişi oyundan çıktı. Yeniden seç.',
+    sentTitle: 'Oyun gitti',
+    voted: (n: number, of: number) => `${n}/${of} kişi oy verdi`,
+    yourVote: 'Senin oyun',
+    onlyYou: 'Bunu yalnızca sen görürsün.',
+    opensAtEnd: 'Süre bitince oylar açılır.',
+    changeVote: 'Oyu değiştir',
+    // Oylar açıldı.
+    mostVotes: 'En çok oy',
+    roundQuestion: (n: number, total: number, q: string) => `Tur ${n}/${total} · ${q}`,
+    top: (names: readonly string[], votes: number | null) =>
+      votes === null ? names.join(', ') : `${names.join(', ')} · ${votes} oy`,
+    noVotes: 'Bu kâğıda oy çıkmadı',
+    turnout: (voters: number, players: number) =>
+      `${players} kişiden ${numberPossessive(voters)} oy verdi`,
+    votesLabel: (n: number) => `${n} oy`,
+    hidden: 'Kimin kime oy verdiği gösterilmez.',
+    readyCount: (n: number, of: number) => `Hazır: ${n}/${of}`,
+    ready: 'Hazırım',
+    next: 'Sonraki kâğıt',
+    // Oyun sonu.
+    over: (n: number) => `Oyun bitti · ${n} kâğıt`,
+    night: 'Gecenin kâğıtları',
+    pastWho: (names: readonly string[], votes: number | null) =>
+      votes === null ? names.join(', ') : `${names.join(', ')} · ${votes}`,
+    notEnough: 'Yeterli kâğıt yok',
+    notEnoughNote: `Oylama için en az ${KIBRIT.minAuthors} kişinin kâğıt yazması gerekir.`,
+    backToTable: 'Masaya dön',
+    again: 'Yeniden oyna',
+    // Leaving (as Krot's).
+    exit: 'Oyundan çık',
+    endGame: 'Oyunu bitir',
+    endTitle: 'Oyunu bitir?',
+    endBody: 'Oyun herkes için biter, masaya dönülür.',
+    leaveTitle: 'Oyundan çık?',
+    leaveBody: 'Masaya dönersin. Oyun diğerleri için sürer.',
+    watchTitle: 'Masaya dön?',
+    watchBody: 'Oyun sürer; masadan yeniden izleyebilirsin.',
+    // On the table while a game runs that the person does not see.
+    running: 'Kibrit sürüyor',
+    runningPage: 'Kibrit açık',
   },
   identity: {
     // Mekan's anonymous switch and its sheets (skall tuvali: MekanAnonimGecis, …Erkek,

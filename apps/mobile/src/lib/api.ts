@@ -54,6 +54,7 @@ import type {
 import type { VenueChatMode } from '@shared/venueChat.ts';
 import type { VampirView } from '@shared/vampir.ts';
 import { readSahtekarView, type SahtekarView } from '@shared/sahtekarGame.ts';
+import { readKibritView, type KibritView } from '@shared/kibrit.ts';
 import type { Pick } from '@shared/gameFrame.ts';
 import type { GameFlowReportReason, ReportReason } from '@shared/chat.ts';
 import type { Concept, Intent } from '@shared/rooms.ts';
@@ -280,6 +281,15 @@ export const safetyApi = {
       ...(sessionId ? { sessionId } : {}),
     }),
   // A message of the table chat (docs/SPEC_V4.md §4.T): its id; the server keeps its copy.
+  // A Kibrit paper opened in the running game (docs/SPEC_V4.md §4.6.9): the answer is always ok.
+  reportKibritPaper: (roomId: string, paperId: string, reason: ReportReason) =>
+    invoke<SafetyResponse>('safety', {
+      action: 'report',
+      target: 'kibrit_paper',
+      roomId,
+      paperId,
+      reason,
+    }),
   reportRoomMessage: (messageId: string, reason: ReportReason) =>
     invoke<SafetyResponse>('safety', {
       action: 'report',
@@ -493,4 +503,29 @@ export const sahtekarApi = {
   guess: (roomId: string, step: number, text: string) =>
     invoke<GameOkResponse>('sahtekar', { action: 'guess', roomId, step, text }),
   advance: (roomId: string) => invoke<GameOkResponse>('sahtekar', { action: 'advance', roomId }),
+};
+
+// Kibrit (docs/SPEC_V4.md §4.F "Adım 4.6.9", K-86): targets are table session ids; `step` is the
+// phase's number. `write` and `vote` carry the phone's own rising `rev` (rule 3's exception) and
+// answer with this phone's view; the paper's author and the votes never come back (rule 3).
+export const kibritApi = {
+  start: (roomId: string, rounds?: number) =>
+    invoke<GameOkResponse>('kibrit', { action: 'start', roomId, ...(rounds ? { rounds } : {}) }),
+  view: async (roomId: string): Promise<KibritView> =>
+    readKibritView(await invoke<unknown>('kibrit', { action: 'view', roomId })),
+  write: async (roomId: string, step: number, rev: number, text: string): Promise<KibritView> =>
+    readKibritView(await invoke<unknown>('kibrit', { action: 'write', roomId, step, rev, text })),
+  vote: async (roomId: string, step: number, rev: number, target: string): Promise<KibritView> =>
+    readKibritView(await invoke<unknown>('kibrit', { action: 'vote', roomId, step, rev, target })),
+  draw: (roomId: string, step: number) =>
+    invoke<GameOkResponse>('kibrit', { action: 'draw', roomId, step }),
+  toVote: (roomId: string, step: number) =>
+    invoke<GameOkResponse>('kibrit', { action: 'to-vote', roomId, step }),
+  skip: (roomId: string, step: number) =>
+    invoke<GameOkResponse>('kibrit', { action: 'skip', roomId, step }),
+  ready: (roomId: string, step: number) =>
+    invoke<GameOkResponse>('kibrit', { action: 'ready', roomId, step }),
+  next: (roomId: string, step: number) =>
+    invoke<GameOkResponse>('kibrit', { action: 'next', roomId, step }),
+  advance: (roomId: string) => invoke<GameOkResponse>('kibrit', { action: 'advance', roomId }),
 };
