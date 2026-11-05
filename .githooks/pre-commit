@@ -1,0 +1,5 @@
+#!/bin/sh
+# The secret gate on the staged files (scripts/secret-guard.mjs). Turn on once per clone:
+#   git config core.hooksPath .githooks
+# Skippable with --no-verify; CI runs the same gate on every tracked file and cannot be skipped.
+exec node "$(git rev-parse --show-toplevel)/scripts/secret-guard.mjs" --staged

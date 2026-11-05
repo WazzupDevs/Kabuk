@@ -583,6 +583,115 @@ export type Database = {
           },
         ];
       };
+      kibrit_papers: {
+        Row: {
+          author_session_id: string;
+          body: string;
+          drawn_step: number | null;
+          game_no: number;
+          id: string;
+          position: number | null;
+          reported: boolean;
+          rev: number;
+          revisions: number;
+          room_id: string;
+          status: string;
+        };
+        Insert: {
+          author_session_id: string;
+          body: string;
+          drawn_step?: number | null;
+          game_no: number;
+          id?: string;
+          position?: number | null;
+          reported?: boolean;
+          rev?: number;
+          revisions?: number;
+          room_id: string;
+          status?: string;
+        };
+        Update: {
+          author_session_id?: string;
+          body?: string;
+          drawn_step?: number | null;
+          game_no?: number;
+          id?: string;
+          position?: number | null;
+          reported?: boolean;
+          rev?: number;
+          revisions?: number;
+          room_id?: string;
+          status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'kibrit_papers_author_session_id_fkey';
+            columns: ['author_session_id'];
+            isOneToOne: false;
+            referencedRelation: 'table_sessions';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'kibrit_papers_room_id_fkey';
+            columns: ['room_id'];
+            isOneToOne: false;
+            referencedRelation: 'rooms';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      kibrit_votes: {
+        Row: {
+          game_no: number;
+          rev: number;
+          revisions: number;
+          room_id: string;
+          step: number;
+          target_session_id: string;
+          voter_session_id: string;
+        };
+        Insert: {
+          game_no: number;
+          rev?: number;
+          revisions?: number;
+          room_id: string;
+          step: number;
+          target_session_id: string;
+          voter_session_id: string;
+        };
+        Update: {
+          game_no?: number;
+          rev?: number;
+          revisions?: number;
+          room_id?: string;
+          step?: number;
+          target_session_id?: string;
+          voter_session_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'kibrit_votes_room_id_fkey';
+            columns: ['room_id'];
+            isOneToOne: false;
+            referencedRelation: 'rooms';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'kibrit_votes_target_session_id_fkey';
+            columns: ['target_session_id'];
+            isOneToOne: false;
+            referencedRelation: 'table_sessions';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'kibrit_votes_voter_session_id_fkey';
+            columns: ['voter_session_id'];
+            isOneToOne: false;
+            referencedRelation: 'table_sessions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       message_reactions: {
         Row: {
           created_at: string;
@@ -2191,6 +2300,264 @@ export type Database = {
         Args: { round: number; target_room_id: string; target_user_id: string };
         Returns: Json;
       };
+      kibrit_advance: {
+        Args: { target_room_id: string; target_user_id: string };
+        Returns: {
+          closed_at: string | null;
+          concept: string | null;
+          created_at: string;
+          game_started_at: string | null;
+          game_state: Json;
+          game_tag: string | null;
+          icon: string | null;
+          id: string;
+          intent: string | null;
+          last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
+          owner_session_id: string;
+          phones: number;
+          spot_id: string | null;
+          status: string;
+          venue_id: string;
+          visibility: string;
+          waiting_since: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'rooms';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      kibrit_draw: {
+        Args: {
+          at_step: number;
+          target_room_id: string;
+          target_user_id: string;
+        };
+        Returns: {
+          closed_at: string | null;
+          concept: string | null;
+          created_at: string;
+          game_started_at: string | null;
+          game_state: Json;
+          game_tag: string | null;
+          icon: string | null;
+          id: string;
+          intent: string | null;
+          last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
+          owner_session_id: string;
+          phones: number;
+          spot_id: string | null;
+          status: string;
+          venue_id: string;
+          visibility: string;
+          waiting_since: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'rooms';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      kibrit_next: {
+        Args: {
+          at_step: number;
+          target_room_id: string;
+          target_user_id: string;
+        };
+        Returns: {
+          closed_at: string | null;
+          concept: string | null;
+          created_at: string;
+          game_started_at: string | null;
+          game_state: Json;
+          game_tag: string | null;
+          icon: string | null;
+          id: string;
+          intent: string | null;
+          last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
+          owner_session_id: string;
+          phones: number;
+          spot_id: string | null;
+          status: string;
+          venue_id: string;
+          visibility: string;
+          waiting_since: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'rooms';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      kibrit_ready: {
+        Args: {
+          at_step: number;
+          target_room_id: string;
+          target_user_id: string;
+        };
+        Returns: {
+          closed_at: string | null;
+          concept: string | null;
+          created_at: string;
+          game_started_at: string | null;
+          game_state: Json;
+          game_tag: string | null;
+          icon: string | null;
+          id: string;
+          intent: string | null;
+          last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
+          owner_session_id: string;
+          phones: number;
+          spot_id: string | null;
+          status: string;
+          venue_id: string;
+          visibility: string;
+          waiting_since: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'rooms';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      kibrit_skip: {
+        Args: {
+          at_step: number;
+          target_room_id: string;
+          target_user_id: string;
+        };
+        Returns: {
+          closed_at: string | null;
+          concept: string | null;
+          created_at: string;
+          game_started_at: string | null;
+          game_state: Json;
+          game_tag: string | null;
+          icon: string | null;
+          id: string;
+          intent: string | null;
+          last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
+          owner_session_id: string;
+          phones: number;
+          spot_id: string | null;
+          status: string;
+          venue_id: string;
+          visibility: string;
+          waiting_since: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'rooms';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      kibrit_start: {
+        Args: {
+          round_limit?: number;
+          target_room_id: string;
+          target_user_id: string;
+        };
+        Returns: {
+          closed_at: string | null;
+          concept: string | null;
+          created_at: string;
+          game_started_at: string | null;
+          game_state: Json;
+          game_tag: string | null;
+          icon: string | null;
+          id: string;
+          intent: string | null;
+          last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
+          owner_session_id: string;
+          phones: number;
+          spot_id: string | null;
+          status: string;
+          venue_id: string;
+          visibility: string;
+          waiting_since: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'rooms';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      kibrit_to_vote: {
+        Args: {
+          at_step: number;
+          target_room_id: string;
+          target_user_id: string;
+        };
+        Returns: {
+          closed_at: string | null;
+          concept: string | null;
+          created_at: string;
+          game_started_at: string | null;
+          game_state: Json;
+          game_tag: string | null;
+          icon: string | null;
+          id: string;
+          intent: string | null;
+          last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
+          owner_session_id: string;
+          phones: number;
+          spot_id: string | null;
+          status: string;
+          venue_id: string;
+          visibility: string;
+          waiting_since: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'rooms';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      kibrit_view: {
+        Args: { target_room_id: string; target_user_id: string };
+        Returns: Json;
+      };
+      kibrit_vote: {
+        Args: {
+          at_rev: number;
+          at_step: number;
+          target_room_id: string;
+          target_session_id: string;
+          target_user_id: string;
+        };
+        Returns: Json;
+      };
+      kibrit_write: {
+        Args: {
+          at_rev: number;
+          at_step: number;
+          new_body: string;
+          target_room_id: string;
+          target_user_id: string;
+        };
+        Returns: Json;
+      };
       move_profile_photo: {
         Args: { new_path: string; old_path: string };
         Returns: number;
@@ -2908,6 +3275,15 @@ export type Database = {
           photo?: string;
           reported_photo_path?: string;
           target_history_id: string;
+          target_user_id: string;
+        };
+        Returns: boolean;
+      };
+      safety_report_kibrit_paper: {
+        Args: {
+          new_reason: string;
+          target_paper_id: string;
+          target_room_id: string;
           target_user_id: string;
         };
         Returns: boolean;
