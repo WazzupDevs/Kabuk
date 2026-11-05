@@ -2,30 +2,15 @@ import type { TabuCard } from '@shared/tabu.ts';
 import type { TabuMark, TabuTeam } from '@shared/tabuGame.ts';
 import { upperTr } from '@shared/trText.ts';
 import { Image } from 'expo-image';
-import { type ReactNode, useEffect, useState } from 'react';
-import {
-  Animated,
-  Pressable,
-  StyleSheet,
-  Text,
-  useWindowDimensions,
-  View,
-  type ViewStyle,
-} from 'react-native';
+import type { ReactNode } from 'react';
+import { Animated, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import { CapIcon, type CapIconName } from '@/aura/CapIcon';
-import { springConfig } from '@/aura/motion';
-import { Av, Chip, Glass, Round, T, Tag, usePress, useKit } from '@/aura/kit';
+import { Chip, Glass, T, Tag, usePress, useKit } from '@/aura/kit';
 import { Loader } from '@/components/Loader';
-import { LookAvatar } from '@/components/LookAvatar';
 import { shadowParts } from '@/components/NativeShadow';
-import { useProfile } from '@/features/account/useProfile';
-import { useProfileView } from '@/features/profile/queries';
-import type { TablePerson } from '@/features/rooms/queries';
 import { tr } from '@/i18n/tr';
 import { useLabOff } from '@/lib/drawLab';
-import { useReduceMotion } from '@/lib/useReduceMotion';
-import { MOTION } from '@/theme/aura';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { TEAM_TONES, type Team } from '@/theme/gameColors';
 import {
@@ -35,28 +20,18 @@ import {
   kinshiBand,
   kinshiDeck,
   kinshiScorePill,
-  kinshiDeckHeight,
   type KinshiDeck,
 } from '@/theme/kinshi';
 import { kinshiWordLayout } from '@/theme/kinshiWord';
 import { useTheme } from '@/theme/ThemeProvider';
 
-import { type KinshiBuddy, kinshiArt, type KinshiTimer } from './kinshiArt';
+import { CardBack, ChatRound, GameTopBar, Pop, Deck as RisoDeck } from '../riso/RisoParts';
+import { type KinshiBuddy, kinshiArt } from './kinshiArt';
+
+// The card games' shared parts (riso/RisoParts.tsx), as Kinshi's screens use them.
+export { Buddy, Face, type Faces, FaceStack, nameOf, Pop, TimeStrip } from '../riso/RisoParts';
 
 const MAX_FONT = 1.3;
-
-// Who sits where: the table's people by their table session id (rule 4), the profiles of the
-// profiled ones, and the caller.
-export type Faces = {
-  me: string;
-  people: ReadonlyMap<string, TablePerson>;
-  profiles: ReadonlyMap<string, string> | undefined;
-};
-
-export function nameOf(faces: Faces, sid: string): string {
-  if (sid === faces.me) return tr.kinshi.you;
-  return faces.people.get(sid)?.alias ?? tr.kinshi.left;
-}
 
 // Mor ('a') and Pembe ('b') in the theme's colours.
 export function teamKey(team: TabuTeam): Team {
@@ -66,61 +41,6 @@ export function teamKey(team: TabuTeam): Team {
 export function useTeamTone(team: TabuTeam) {
   const { scheme } = useTheme();
   return TEAM_TONES[scheme][teamKey(team)];
-}
-
-// A person's face at the canvas's 26 (the strip, the person chip, the rows): a profiled person's
-// photo, an anonymous one's capsule (rule 4: as at the table).
-export function Face({ faces, sid, size = K.face }: { faces: Faces; sid: string; size?: number }) {
-  const person = faces.people.get(sid);
-  const own = useProfile();
-  const publicId = person?.profiled
-    ? (faces.profiles?.get(sid) ?? (sid === faces.me ? own.data?.public_id : undefined))
-    : undefined;
-  const view = useProfileView(publicId);
-  const name = person?.alias ?? '?';
-  if (person && !person.profiled && person.look) {
-    return (
-      <View style={{ width: size, height: size, borderRadius: size / 2, overflow: 'hidden' }}>
-        <LookAvatar look={person.look} size={size} />
-      </View>
-    );
-  }
-  const photo = view.data?.photoUrl ?? null;
-  return photo ? (
-    <Image
-      source={{ uri: photo }}
-      style={{ width: size, height: size, borderRadius: size / 2 }}
-      contentFit="cover"
-      accessibilityIgnoresInvertColors
-    />
-  ) : (
-    <View style={{ width: size, height: size, transform: [{ scale: size / KIT.size.av.sm }] }}>
-      <Av size="sm" name={name} />
-    </View>
-  );
-}
-
-// The guessers' faces, overlapping, each in the screen's colour (`.stk`).
-export function FaceStack({ faces, sids }: { faces: Faces; sids: readonly string[] }) {
-  const { colors } = useTheme();
-  return (
-    <View style={{ flexDirection: 'row' }}>
-      {sids.map((s, i) => (
-        <View
-          key={s}
-          style={{
-            marginLeft: i === 0 ? 0 : -K.faceOverlap,
-            borderRadius: K.face,
-            borderWidth: K.faceRing,
-            borderColor: colors.canvas,
-            margin: -K.faceRing,
-          }}
-        >
-          <Face faces={faces} sid={s} />
-        </View>
-      ))}
-    </View>
-  );
 }
 
 // A team's label (`.tag.m`, `.tag.p`).
@@ -223,169 +143,18 @@ export function TopBar({
     </View>
   ) : null;
   return (
-    <View style={{ marginTop: K.barTop, alignItems: 'center', gap: K.scoreLineGap }}>
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          alignSelf: 'stretch',
-        }}
-      >
-        <Round
-          icon="close"
-          label={close.label}
-          onPress={close.onPress}
-          loading={close.loading}
-          testID={close.testID}
-        />
-        {inline ? pill : null}
-        <Round icon="chat" label={tr.kinshi.chat} onPress={onChat} />
-      </View>
-      {inline ? null : pill}
-    </View>
+    <GameTopBar
+      close={close}
+      middle={pill}
+      under={!inline}
+      right={<ChatRound onPress={onChat} />}
+    />
   );
 }
 
 // A space in the score pill: the canvas's, closing to `least` when the bar is short of room.
 function PillSpace({ size, least }: { size: number; least: number }) {
   return <View style={{ width: size, minWidth: least, flexShrink: 1 }} />;
-}
-
-// The time capsule (Aura v85): full in Tur öncesi and the 3-2-1, half while the turn runs, low in
-// its last 10 seconds (the report: three stages).
-export function TimeCapsule({ stage }: { stage: KinshiTimer }) {
-  return (
-    <View
-      style={{
-        width: K.capsule.width,
-        height: K.capsule.height,
-        filter: [
-          {
-            dropShadow: {
-              offsetX: 0,
-              offsetY: K.capsuleShadow.y,
-              standardDeviation: K.capsuleShadow.blur / 2,
-              color: K.capsuleShadow.color,
-            },
-          },
-        ],
-      }}
-    >
-      <Image
-        source={kinshiArt.timer[stage]}
-        style={{ width: K.capsule.width, height: K.capsule.height }}
-        contentFit="contain"
-        accessibilityIgnoresInvertColors
-      />
-    </View>
-  );
-}
-
-// The time strip (`.strip`): the capsule, the time (in --buzz in the last 10 seconds), the role,
-// and under them a line of who (a team label, faces, a note).
-export function TimeStrip({
-  stage,
-  clock,
-  clockLabel,
-  late,
-  title,
-  line,
-}: {
-  stage: KinshiTimer;
-  clock: string;
-  clockLabel: string;
-  late: boolean;
-  title: string;
-  line: ReactNode;
-}) {
-  const { colors } = useTheme();
-  const { c } = useKit();
-  return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: K.stripGap, zIndex: 2 }}>
-      <TimeCapsule stage={stage} />
-      <View style={{ flex: 1, gap: K.stripLineGap }}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'baseline',
-            gap: K.stripWordGap,
-            flexWrap: 'wrap',
-          }}
-        >
-          <Text
-            accessibilityRole="timer"
-            accessibilityLabel={clockLabel}
-            maxFontSizeMultiplier={1}
-            style={[KT.clock, { color: late ? colors.buzz : c.ink }]}
-          >
-            {clock}
-          </Text>
-          <View style={{ flexShrink: 1 }}>
-            <T v="h3">{title}</T>
-          </View>
-        </View>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: K.stripLineGap,
-            flexWrap: 'wrap',
-          }}
-        >
-          {line}
-        </View>
-      </View>
-    </View>
-  );
-}
-
-// Something arriving on the pop spring, from 0.3 of its size (hareket.json → springs.pop: "cards
-// arriving"). Its parent's key plays it again. At once when motion is reduced.
-export function Pop({ children }: { children: ReactNode }) {
-  const reduce = useReduceMotion();
-  const [p] = useState(() => new Animated.Value(reduce ? 1 : 0));
-  useEffect(() => {
-    if (reduce) return undefined;
-    const anim = Animated.spring(p, {
-      ...springConfig(MOTION.springs.pop),
-      toValue: 1,
-      useNativeDriver: true,
-    });
-    anim.start();
-    return () => anim.stop();
-  }, [reduce, p]);
-  return (
-    <Animated.View
-      style={{
-        opacity: p.interpolate({ inputRange: [0, 0.2, 1], outputRange: [0, 1, 1] }),
-        transform: [{ scale: p.interpolate({ inputRange: [0, 1], outputRange: [POP_FROM, 1] }) }],
-      }}
-    >
-      {children}
-    </Animated.View>
-  );
-}
-const POP_FROM = 0.3;
-
-// A buddy peeking (riso, 320 × 420): `height` high.
-export function Buddy({
-  buddy,
-  height,
-  style,
-}: {
-  buddy: KinshiBuddy;
-  height: number;
-  style?: object;
-}) {
-  return (
-    <Image
-      source={kinshiArt.buddies[buddy]}
-      style={[{ position: 'absolute', height, width: height * K.buddyRatio }, style]}
-      contentFit="contain"
-      accessibilityIgnoresInvertColors
-    />
-  );
 }
 
 // What lies on the deck's top: the card's front with its words, its back, or the card list still
@@ -503,25 +272,13 @@ const MIN_WORD = KINSHI_MIN_TYPE.word / (KT.word.fontSize ?? KINSHI_MIN_TYPE.wor
 const MIN_FORBIDDEN =
   KINSHI_MIN_TYPE.forbidden / (KT.forbidden.fontSize ?? KINSHI_MIN_TYPE.forbidden);
 
-function Back({ radius }: { radius: number }) {
-  return (
-    <Image
-      source={kinshiArt.cardBack}
-      style={[StyleSheet.absoluteFill, { borderRadius: radius }]}
-      contentFit="cover"
-      accessibilityIgnoresInvertColors
-    />
-  );
-}
-
 // The deck's geometry for this screen's width (`theme/kinshi.ts` → `kinshiDeck`).
 export function useKinshiDeck(): KinshiDeck {
   return kinshiDeck(useWindowDimensions().width);
 }
 
-// The 3D deck (`.d3`): the card tipped back (perspective 1100, rotateX 13°, rotateZ −1.2° from
-// 50 % 60 %), six paper edges under it, two backs fanned behind, a blurred shadow beneath; the two
-// buddies peek over its top edge from behind (`.peek`).
+// Kinshi's deck (the card games' shared `Deck`, riso/RisoParts.tsx) with its face on top: the
+// card's front with its words, its back, or the card list still coming or failed.
 export function Deck({
   face,
   peek,
@@ -535,143 +292,45 @@ export function Deck({
   // How far down from the deck's top that reaches (its measured bottom), when it does.
   reach?: number;
 }) {
-  const { scheme } = useTheme();
   const { c } = useKit();
-  const shadowOff = useLabOff('golge');
   const d = useKinshiDeck();
   const r = d.card.radius;
-  const fan = shadowParts(shadowOff, K.fanShadow, K.fanEdge, r);
-  const edge = shadowParts(shadowOff, K.edgeOuter, K.edgeShadow, r);
-  const top = shadowParts(shadowOff, K.cardOuter, K.cardEdge, r);
-  const box: ViewStyle = {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    width: d.card.width,
-    height: d.card.height,
-  };
-  return (
-    <View
-      style={{
-        width: d.card.width,
-        height: kinshiDeckHeight(d, reach),
-        alignSelf: 'center',
-      }}
-    >
-      <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0 }}>
-        <Buddy
-          buddy={peek[0]}
-          height={d.peek.height}
-          style={{ left: d.peek.inset, transform: [{ rotate: K.peek.leftTurn }] }}
-        />
-        <Buddy
-          buddy={peek[1]}
-          height={d.peek.height}
-          style={{
-            right: d.peek.inset,
-            top: d.peek.rightDrop,
-            transform: [{ rotate: K.peek.rightTurn }],
-          }}
-        />
-      </View>
-      <View
-        style={{
-          position: 'absolute',
-          top: d.peek.above,
-          left: 0,
-          width: d.card.width,
-          height: d.card.height,
-          transformOrigin: `50% ${K.deck.originY * 100}%`,
-          transform: [
-            { perspective: K.deck.perspective },
-            { rotateX: K.deck.rotateX },
-            { rotateZ: K.deck.rotateZ },
-          ],
-        }}
-      >
-        <View
-          style={{
-            position: 'absolute',
-            left: `${K.deckShadow.inset * 100}%`,
-            right: `${K.deckShadow.inset * 100}%`,
-            bottom: -d.shadow.below,
-            height: d.shadow.height,
-            borderRadius: d.shadow.height,
-            backgroundColor: K.deckShadow.color[scheme],
-            filter: [{ blur: d.shadow.blur }],
-          }}
-        />
-        {d.fans.map((f, i) => (
-          <View
-            key={i}
-            style={[
-              box,
-              {
-                borderRadius: r,
-                boxShadow: fan.boxShadow,
-                transform: [{ translateX: f.x }, { translateY: f.y }, { rotate: f.rotate }],
-              },
-            ]}
-          >
-            {fan.node}
-            <Back radius={r} />
-          </View>
-        ))}
-        {[...d.edges].reverse().map((y, i) => (
-          <View
-            key={i}
-            style={[
-              box,
-              {
-                borderRadius: r,
-                backgroundColor: K.edgeColors[(K.edges.length - 1 - i) % 2],
-                boxShadow: edge.boxShadow,
-                transform: [{ translateY: y }],
-              },
-            ]}
-          >
-            {edge.node}
-          </View>
-        ))}
-        <View style={[box, { borderRadius: r, boxShadow: top.boxShadow }]}>
-          {top.node}
-          {face.kind === 'front' ? (
-            <Pop key={face.key}>
-              <View style={{ width: d.card.width, height: d.card.height }}>
-                <Front card={face.card} d={d} />
-              </View>
-            </Pop>
-          ) : face.kind === 'back' ? (
-            <Back radius={r} />
-          ) : (
-            <View
-              style={[
-                StyleSheet.absoluteFill,
-                {
-                  borderRadius: r,
-                  overflow: 'hidden',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: d.list.side,
-                },
-              ]}
-            >
-              <Back radius={r} />
-              {face.kind === 'loading' ? (
-                <Loader />
-              ) : (
-                <Glass pad="pad">
-                  <T v="fine" color={c.ink} center>
-                    {face.message}
-                  </T>
-                </Glass>
-              )}
-            </View>
-          )}
+  const top =
+    face.kind === 'front' ? (
+      <Pop key={face.key}>
+        <View style={{ width: d.card.width, height: d.card.height }}>
+          <Front card={face.card} d={d} />
         </View>
+      </Pop>
+    ) : face.kind === 'back' ? null : (
+      <View
+        style={[
+          StyleSheet.absoluteFill,
+          {
+            borderRadius: r,
+            overflow: 'hidden',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: d.list.side,
+          },
+        ]}
+      >
+        <CardBack source={kinshiArt.cardBack} radius={r} />
+        {face.kind === 'loading' ? (
+          <Loader />
+        ) : (
+          <Glass pad="pad">
+            <T v="fine" color={c.ink} center>
+              {face.message}
+            </T>
+          </Glass>
+        )}
       </View>
+    );
+  return (
+    <RisoDeck back={kinshiArt.cardBack} top={top} peek={peek} reach={reach}>
       {children}
-    </View>
+    </RisoDeck>
   );
 }
 

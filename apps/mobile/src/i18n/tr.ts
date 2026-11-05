@@ -8,6 +8,7 @@ import type { EventTime } from '@shared/explore.ts';
 import { ENCOUNTER_MIN_MINUTES } from '@shared/friends.ts';
 import { TABU } from '@shared/tabu.ts';
 import { TABU_GAME } from '@shared/tabuGame.ts';
+import { SAHTEKAR_GAME } from '@shared/sahtekarGame.ts';
 import { SAHTEKAR } from '@shared/sahtekar.ts';
 import { formatTrMobile } from '@shared/phone.ts';
 import { BIO_MAX } from '@shared/profile.ts';
@@ -819,6 +820,10 @@ export const tr = {
     ],
     introDone: 'Anladım, başlayalım',
     gameBrand: (game: string) => `${APP_NAME} · ${game}`,
+    // The riso card games' shared parts (Kinshi, Krot).
+    you: 'Sen',
+    left: 'Oyundan çıktı',
+    chat: 'Sohbet',
   },
   // Harf Kapmaca and Şarkıda Geçsin (docs/SPEC_V3.md §20.3–20.4): say, then the other table may
   // object within the window; a few objections per table (SAY_CONFIG).
@@ -1123,6 +1128,103 @@ export const tr = {
     // On the table while a game runs that the person does not see.
     running: 'Kinshi sürüyor',
     runningPage: 'Kinshi açık',
+  },
+  // Krot (Sahtekar at a table of people; docs/SPEC_V4.md §4.F "Adım 4.6.3", Aura v86 "Krot (gizli
+  // kart ve şüpheli sırası)"; the words are the old Krot canvas's).
+  krot: {
+    name: 'Krot',
+    whoPlays: 'Kimler oynuyor',
+    rules: (impostors: number) => [
+      `${SAHTEKAR_GAME.clueRounds} ipucu turu`,
+      `Kişi başı ${SAHTEKAR_GAME.clueSeconds} sn`,
+      `Oylama ${SAHTEKAR_GAME.voteSeconds} sn`,
+      `${impostors} sahtekar`,
+    ],
+    players: 'Oyuncular',
+    count: (n: number) => `${n} kişi`,
+    watchers: 'Gözlemciler',
+    watchersNote: 'Kelimeyi ve sahtekarı görür, oy vermez.',
+    watch: 'Gözlemci ol',
+    play: 'Oyuna katıl',
+    how: 'Bir kişi gizlice sahtekar seçilir. Herkes kelimeyi görür, sahtekar yalnızca kategoriyi. Sırayla kelimeyle ilgili tek kelime söylersiniz, sonra sahtekarı oylarsınız.',
+    twoImpostors: `${SAHTEKAR_GAME.twoImpostorsFrom} ve üstü oyuncuda 2 sahtekar olur; birbirlerini bilmezler.`,
+    hintOwner: 'Herkes hazırsa oyunu başlat.',
+    hintGuest: 'Oyunu masa sahibi başlatır.',
+    needs: (n: number) => `En az ${n} oyuncu gerekir.`,
+    start: 'Oyunu başlat',
+    // The bar.
+    phase: {
+      role: 'Rolünü gör',
+      clue: (n: number, total: number) => `İpucu turu ${n}/${total}`,
+      vote: 'Oylama',
+      result: 'Sonuç',
+      guess: 'Son şans',
+    },
+    myRole: 'Rolüm, basılı tut',
+    exit: 'Oyundan çık',
+    endGame: 'Oyunu bitir',
+    backToTable: 'Masaya dön',
+    again: 'Yeniden oyna',
+    // The role card.
+    holdNote: 'Kartı basılı tut, rolünü gör. Kimse görmesin.',
+    hold: 'Basılı tut',
+    holdLabel: 'Basılı tut, rolünü gör. Rolünü yalnızca sen gör.',
+    loading: 'Kart geliyor…',
+    kickWord: 'Kelimen',
+    kickImpostor: 'Rolün',
+    kickWatcher: 'Gözlemcisin',
+    youAreImpostor: 'Sahtekarsın',
+    category: (c: string) => `Kategori: ${c}`,
+    wordNote: 'Aranızda kelimeyi bilmeyen biri var.',
+    impostorNote: 'Kelimeyi bilmiyorsun. Belli etme.',
+    watcherNote: (names: readonly string[]) => `Sahtekar: ${names.join(', ')}. Kimseye söyleme.`,
+    readyCount: (n: number, of: number) => `Hazır: ${n}/${of}`,
+    ready: 'Hazırım',
+    // The clues.
+    speaking: (name: string) => `${name} ipucu veriyor`,
+    yourTurn: 'Sıra sende',
+    listen: 'Dinle. Kelimeyi bilmeyeni yakalamaya çalış.',
+    sayOne: 'Kelimeyle ilgili tek kelime söyle. Kelimeyi söyleme.',
+    next: 'Sıradaki: ',
+    said: 'Söyledim',
+    // The vote.
+    whoIs: 'Aramızdaki kim?',
+    secretVote: 'Gizli oy: kimse göremez.',
+    categoryLabel: 'Kategori',
+    yourWord: 'Kelimen',
+    word: 'Kelime',
+    votedCount: (n: number, of: number) => `Oy verenler ${n}/${of}`,
+    voteFor: (names: readonly string[]) =>
+      names.length === 1
+        ? `${inflectTr(names[0] ?? '', 'dative')} oy ver`
+        : `${names.slice(0, -1).join(', ')} ve ${inflectTr(names.at(-1) ?? '', 'dative')} oy ver`,
+    votedMark: 'Oy verdi',
+    selfSeat: 'Sen, kendine oy verilmez',
+    // Sonuç and Son şans.
+    lastChance: 'Son şans',
+    guessingNow: 'Şimdi kelimeyi tahmin ediyor. Bilirse sahtekar kazanır.',
+    caught: 'Yakalandı',
+    escaped: 'Kaçtı',
+    impostor: 'Sahtekar',
+    guessTitle: 'Kelimeyi tahmin et',
+    guessSend: 'Tahmini gönder',
+    // Oyun sonu.
+    over: 'Oyun bitti',
+    tableWon: 'Masa kazandı',
+    impostorWon: 'Sahtekar kazandı',
+    impostorLeft: 'Sahtekar oyundan çıktı',
+    caughtMissed: 'Sahtekar yakalandı ve kelimeyi bilemedi.',
+    rightVoters: 'Doğru oy verenler',
+    // Leaving (as Kinshi's).
+    endTitle: 'Oyunu bitir?',
+    endBody: 'Oyun herkes için biter, masaya dönülür.',
+    leaveTitle: 'Oyundan çık?',
+    leaveBody: 'Masaya dönersin. Oyun diğerleri için sürer.',
+    watchTitle: 'Masaya dön?',
+    watchBody: 'Oyun sürer; masadan yeniden izleyebilirsin.',
+    // On the table while a game runs that the person does not see.
+    running: 'Krot sürüyor',
+    runningPage: 'Krot açık',
   },
   identity: {
     // Mekan's anonymous switch and its sheets (skall tuvali: MekanAnonimGecis, …Erkek,

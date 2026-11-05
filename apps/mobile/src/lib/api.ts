@@ -52,6 +52,7 @@ import type {
 } from '@shared/api/venueChat.ts';
 import type { VenueChatMode } from '@shared/venueChat.ts';
 import type { VampirView } from '@shared/vampir.ts';
+import { readSahtekarView, type SahtekarView } from '@shared/sahtekarGame.ts';
 import type { Pick } from '@shared/gameFrame.ts';
 import type { GameFlowReportReason, ReportReason } from '@shared/chat.ts';
 import type { Concept, Intent } from '@shared/rooms.ts';
@@ -443,4 +444,22 @@ export const vampirApi = {
   vote: (roomId: string, step: number, target: string) =>
     invoke<GameOkResponse>('vampir', { action: 'vote', roomId, step, target }),
   advance: (roomId: string) => invoke<GameOkResponse>('vampir', { action: 'advance', roomId }),
+};
+
+// Krot (Sahtekar, docs/SPEC_V4.md §4.F "Adım 4.6.3"): targets are table session ids; `step` is the
+// phase's number, so a press from a phase already over changes nothing. The role comes only as the
+// answer to this phone's own `view` (rule 3).
+export const sahtekarApi = {
+  start: (roomId: string) => invoke<GameOkResponse>('sahtekar', { action: 'start', roomId }),
+  view: async (roomId: string): Promise<SahtekarView> =>
+    readSahtekarView(await invoke<unknown>('sahtekar', { action: 'view', roomId })),
+  ready: (roomId: string, step: number) =>
+    invoke<GameOkResponse>('sahtekar', { action: 'ready', roomId, step }),
+  said: (roomId: string, step: number) =>
+    invoke<GameOkResponse>('sahtekar', { action: 'said', roomId, step }),
+  vote: (roomId: string, step: number, targets: string[]) =>
+    invoke<GameOkResponse>('sahtekar', { action: 'vote', roomId, step, targets }),
+  guess: (roomId: string, step: number, text: string) =>
+    invoke<GameOkResponse>('sahtekar', { action: 'guess', roomId, step, text }),
+  advance: (roomId: string) => invoke<GameOkResponse>('sahtekar', { action: 'advance', roomId }),
 };

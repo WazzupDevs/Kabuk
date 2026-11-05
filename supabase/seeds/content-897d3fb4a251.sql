@@ -373,7 +373,7 @@ insert into public.games (id, name, min_players, max_players, teams, pregame, is
   ('tabu', 'Kapsül Anlat', 4, 12, true, true, true, 1),
   ('signum', 'Signum', 4, 12, true, true, false, 2),
   ('ibre', 'İbre', 4, 12, true, true, false, 3),
-  ('sahtekar', 'Sahtekar', 3, 12, false, true, false, 4),
+  ('sahtekar', 'Sahtekar', 3, 12, false, true, true, 4),
   ('harf', 'Harf Kapmaca', 2, 12, false, true, false, 5),
   ('sarki', 'Şarkıda Geçsin', 2, 12, false, true, false, 6),
   ('sprengja', 'Sprengja', 3, 8, false, true, false, 7),

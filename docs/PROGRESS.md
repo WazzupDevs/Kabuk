@@ -1,5 +1,11 @@
 # İlerleme
 
+## Devir notu (5 Kasım 2026, Krot ekranları)
+
+- Krot ekranları (Aura v86, 13 pano): `features/games/sahtekar/KrotGame.tsx`, `KrotParts.tsx`, ölçüler `theme/krot.ts`; `sahtekar.available: true` + seed. Kinshi'nin çubuk, kapsül, deste ve kankileri ortak: `features/games/riso/`, `theme/riso.ts`. Kararlar `docs/decisions/krot-ekranlar.md`.
+- Yayın: önce dev projesine #464 migration'ı, `sahtekar` fonksiyonu ve seed, sonra OTA. Native yok; cihazda denenmedi, görsel kontrol proje sahibinde.
+- Açık (kabul raporu): 1 "Bir koltuk seç" duruyor; 2 Hazırım kart görülmeden basılamıyor; 3 tahmin saklanmadığından gösterilmiyor; 4 6+ oyuncuda sütunlar daralıyor (geçici).
+
 ## Devir notu (5 Kasım 2026, Krot sunucusu)
 
 - #464 Krot kişi bazlı sunucu (4.6.3): `20261130090000_sahtekar_v4.sql`, `functions/sahtekar`, `pure/sahtekarGame.ts`, `tests/sahtekar.test.ts`; kararlar `docs/decisions/4.6.3-krot.md` (dört teknik karar proje sahibince onaylı). Hazırım, Söyledim ve oy yalnızca saat işlerken sayılır (`turn_over`). Kural 3 ve 10'a dokunduğu için birleşme proje sahibinin "onaylandı"sını bekler; Krot ekranları bu PR birleşince başlar.
