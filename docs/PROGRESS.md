@@ -7,10 +7,16 @@
 - Kurallar ve sınırlar SPEC_V4 → "Adım 4.6.8: Sprengja" ve K-85'te; harf grubu kademelerinin listesi proje sahibinin onayladığı v3 belgesindedir (sohbette, repoda değil: yeni oturuma eklenmeli).
 - Bu ortamda yerel Supabase: imajlar `SUPABASE_INTERNAL_IMAGE_REGISTRY=docker.io` ile; Edge runtime npm indirmesi için proxy sertifikası eklenmiş yerel imaj ister.
 
+## Devir notu (5 Kasım 2026, Krot sunucusu)
+
+- #464 Krot kişi bazlı sunucu (4.6.3): `20261130090000_sahtekar_v4.sql`, `functions/sahtekar`, `pure/sahtekarGame.ts`, `tests/sahtekar.test.ts`; kararlar `docs/decisions/4.6.3-krot.md` (dört teknik karar proje sahibince onaylı). Hazırım, Söyledim ve oy yalnızca saat işlerken sayılır (`turn_over`). Kural 3 ve 10'a dokunduğu için birleşme proje sahibinin "onaylandı"sını bekler; Krot ekranları bu PR birleşince başlar.
+- API: `sahtekar/start`, `view` (rol: player/impostor/watcher/null), `ready`, `said`, `vote { targets }`, `guess { text }`, `advance`; açık durum `readSahtekarState`, sonuç `readSahtekarResult` (`lastGame.sahtekar`). `games.json`'da `sahtekar.available: false`.
+- Sıradaki: Krot ekranları (CTO promptları → Prompt 2; Aura v86 "Krot (gizli kart ve şüpheli sırası)" satırı ve `Krot` panosu canlı tuvalden; görseller `sahtekar/krotArt.ts`; kapsül, deste, kanki ve üst çubuk `kinshi/KinshiParts.tsx`). Sonra `sahtekar.available: true` ve `pnpm seed`. "Bir koltuk seç" etiketi proje sahibi karar verene kadar korunur (rapor açık soru 1).
+
 ## Devir notu (5 Kasım 2026, Kinshi 320 dp: iki satır ve skor hapı)
 
 - Birleşenler: #463 (deste ölçeklenir), #468 (tahminci paneli sayaçlara binmez), bu PR (proje sahibinin kararları: uzun kelime iki satır, skor hapı dar hâlde; `docs/decisions/kinshi-320dp.md`). OTA, native yok.
-- Sıradaki ayrı görsel PR: 3-2-1 kankileri ve Oyun sonu konfetisi 320 dp'de. Plan: konumlar 390'a göre sabit (`KINSHI.countdownBuddies`, `endScene.confetti`); yatay konumları sahnenin genişliğine oranla (`left / 390 × genişlik`, ortadaki ortalanır), boylar ve dizilim aynı; testte 320'de kankiler ve konfeti ekranda ve ortadaki kanki öbürlerinin üstüne 390'dakinden fazla binmez.
+- 3-2-1 kankileri ve Oyun sonu konfetisi 320 dp'de: sahne yatayda bütün olarak ölçeklenir (`kinshiScene`); yalnızca konum oranlamak binişi dört katına çıkarırdı.
 - #469: 320 dp'de Hayvanat bahçesi ve Emniyet kemeri 22'de çerçeveden 0,13/0,22 dp eksik; proje sahibinin kararı A (olduğu gibi, cihazda doğrulanacak kabul istisnası; `docs/decisions/kinshi-320dp.md`). Hap −120…120 için boşluk daraltma ve gerekirse alt satır.
 - Telefonda bakılacak (cihaz yok, hiçbiri denenmedi; testlerin modeli RN yerleşimini kanıtlamaz): 320 dp ve en büyük yazıda beş rol; iki satırlı kartlar (Hayvanat bahçesi 320/390, Pazar kahvaltısı 320) ortada mı, iki kartta çerçeve; hap 99/99, −99/−99 (alt satır), 100/100; tahminci paneli uzayınca sayaçlar.
 

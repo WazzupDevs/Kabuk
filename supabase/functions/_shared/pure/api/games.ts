@@ -24,29 +24,24 @@ export type GameOkResponse = { ok: true };
 
 export type SohbetRequest = { action: 'next-card'; roomId: string };
 
-// `sahtekar` (docs/SPEC_V3.md §20.2). A two-table game starts from rooms/answer-game.
+// `sahtekar` (Krot, docs/SPEC_V4.md §4.F "Adım 4.6.3"). Targets are table session ids (rule 4);
+// `step` is the phase's number in rooms.game_state, so a press from a phase already over changes
+// nothing.
 export type SahtekarRequest =
-  // One-table room: a word, its category and 6 options; the phone runs the game.
+  // The owner, from the pre-game page.
   | { action: 'start'; roomId: string }
-  // One of the caller's seats holds its card.
-  | { action: 'view'; roomId: string; seat: string }
-  // The speaking seat's table: "Söyledi" on clue step `step`.
+  // The caller's own role (Rolünü gör, Rolüm); idempotent.
+  | { action: 'view'; roomId: string }
+  // The role card: Hazırım.
+  | { action: 'ready'; roomId: string; step: number }
+  // The speaker's Söyledim.
   | { action: 'said'; roomId: string; step: number }
-  | { action: 'vote'; roomId: string; voter: string; target: string }
-  // The caught impostor's table: the 6 options, then its guess.
-  | { action: 'options'; roomId: string }
-  | { action: 'guess'; roomId: string; option: string }
-  // Either table once the phase's time is up; idempotent.
+  // One ballot: as many others as there are impostors.
+  | { action: 'vote'; roomId: string; step: number; targets: string[] }
+  // Son şans: a caught impostor's written guess (never kept).
+  | { action: 'guess'; roomId: string; step: number; text: string }
+  // Anyone at the table once the phase's time is up; idempotent.
   | { action: 'advance'; roomId: string };
-
-export type SahtekarStartResponse = { category: string; word: string; options: string[] };
-export type SahtekarViewResponse = {
-  seat: string;
-  category: string;
-  word: string | null;
-  imposter: boolean;
-};
-export type SahtekarOptionsResponse = { options: string[] };
 
 // `harf` and `sarki` (docs/SPEC_V3.md §20.3–20.4): the same engine. A two-table game starts from
 // rooms/answer-game; begin and advance are idempotent.
