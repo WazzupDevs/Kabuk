@@ -7,11 +7,25 @@
 - Sonra PR B (sunucu, SPEC 4.6.10 adayı: numara o gün main'de yeniden denetlenir), PR C (özel depolarda içerik), Aura farkları (§6), en son Prompt 3. Her PR birleşmeden önce proje sahibine kontrol sonuçları bildirilir.
 - Açık iş: `supabase/tests/sahtekar.test.ts` → "ends the game without results when an impostor leaves" ara sıra düşüyor (sahtekâr sahip seçilince `leave-game` → `bad_request`); düzeltme yalnızca testte.
 
+## Devir notu (5 Kasım 2026, Kibrit sunucusu)
+
+- #461 görseller (`features/games/kibrit/kibritArt.ts`), #465 SPEC Adım 4.6.9 ve K-86 (kural 3, 7, 10 ekleri; kart "Yakında"), #476 sunucu: `20261201090000_kibrit.sql`, `functions/kibrit`, `pure/kibrit.ts`, `tests/kibrit.test.ts`. `games.json`'da `kibrit.available: false`.
+- API: `kibrit/start { rounds? }`, `view` (kendi kâğıdı ve oyu, `paperRev`/`voteRev`), `write { step, rev, text }`, `draw`, `to-vote`, `vote { step, rev, target }`, `skip`, `ready`, `next`, `advance`; bildirim `safety/report { target: 'kibrit_paper' }`. Açık durum `readKibritState`, sonuç `readKibritResult` (`lastGame.kibrit`).
+- Sıradaki: Kibrit ekranları (Prompt 3: Aura v90, kararla değişen panolar SPEC 4.6.9 "Görünüş" tablosunda), proje sahibinin onayı gelince. Sonra ayrı PR'la `kibrit.available: true` ve `pnpm seed`.
+- Açık: yanlışlıkla açılan `claude/kibrit-sunucu-v2` dalı silinmeli (proje sahibinin izni); `scripts/seed/signum.test.ts`'in 500 tahtalık testi 5 sn sınırına yakın, CI'da arada düşüyor.
+
 ## Devir notu (5 Kasım 2026, Signum kelime havuzu)
 
 - #472 birleşti: `content/signum-words.json` (279 kelime) ve fonttan üretilen karo genişlik tablosu (`scripts/seed/signum.ts`, `docs/decisions/signum-kelimeler.md`). `games.json`'da `signum.available: false`.
 - Sıradaki: Signum ekranları. Onaylı rapor `docs/design/aura/aktarim-signum.md` (Aura v87, 13 pano `Signum*`; panolar canlı tuvalden, repodaki `project/` kopyasında yok). Görseller repoda, `features/games/signum/signumArt.ts`. Raporun 4 açık sorusunu SPEC_V4 Adım 4.6.7 yanıtlıyor. Yordam `.claude/skills/tuval-aktarim`; API `functions/signum`, saf mantık `pure/signum.ts`.
 - Açmadan önce: proje sahibinin cihazında 320 dp karo yazısı (37 px sınırı, yazıldığı gibi mi büyük harf mi). Sonra ayrı PR'la `signum.available: true` ve `pnpm seed`.
+
+## Devir notu (5 Kasım 2026, Sprengja sunucu motoru)
+
+- Birleşenler: #454 (riso görselleri, `sprengjaArt`), #466 (motor, adım 4.6.8, K-85: `20261129090000_sprengja.sql`, `functions/sprengja`, `pure/sprengja.ts`, `tests/sprengja.test.ts`; kararlar `docs/decisions/4.6.8-sprengja.md`). Dev'e gitti; `sprengja-explode` cron işi kapalı, `available: false`.
+- Sıradaki paketler, her biri ayrı PR, bu sırayla: (1) harf grubu içeriği (#473 ile birleşti): onaylı 96 grup, 40 kolay / 36 orta / 20 zor (bitişik dizi sıklığıyla, mastar eki hariç), `public.cards` deck `sprengja` (`word` grup, `theme` kademe), `content/` + seed; (2) dev doğrulaması D-1–D-6 (pg_cron sürümü, boşta ve yükte performans, maliyet, arka plan ve bağlantı dönüşü), `pnpm latency` Sprengja ölçümü ve bot masası, rapor proje sahibine, cron'u açmak onun onayıyla; (3) Aura ekranları (Prompt 3): 3–8 kişilik halka, bomba hareketi, devralma, ortak kazanan, yarıda kalma, son turda "Sonuçları gör", panolar önce Aura'da; (4) saha testi (ilk iki oyun ön kontrol; denge: oyuncu sayısı başına iki grup × üç oyun) ve rapor.
+- Kurallar ve sınırlar SPEC_V4 → "Adım 4.6.8: Sprengja" ve K-85'te; harf grubu kademelerinin listesi proje sahibinin onayladığı v3 belgesindedir (sohbette, repoda değil: yeni oturuma eklenmeli).
+- Bu ortamda yerel Supabase: imajlar `SUPABASE_INTERNAL_IMAGE_REGISTRY=docker.io` ile; Edge runtime npm indirmesi için proxy sertifikası eklenmiş yerel imaj ister.
 
 ## Devir notu (5 Kasım 2026, Krot sunucusu)
 
