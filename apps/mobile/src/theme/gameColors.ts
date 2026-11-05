@@ -15,22 +15,34 @@ export const ON_JUDGE = '#14112B';
 export const TEAM_COLORS = { purple: '#7B5CFF', pink: '#E8336F' } as const;
 export type Team = keyof typeof TEAM_COLORS;
 
-// A team's colour in each scheme (the canvas's --tm and --tp), its label's ground and ink
-// (--tm-bg/--tm-on, --tp-bg/--tp-on) and the words on its filled button (`.btn.tm`, `.btn.tp`).
-export type TeamTone = { color: string; tagBg: string; tagInk: string; onColor: string };
+// A team's colour in each scheme (the canvas's --tm and --tp: its bar, label and score), its
+// label's ground and ink (--tm-bg/--tm-on, --tp-bg/--tp-on), and a filled surface with words on it
+// (`.btn.tm`, `.btn.tp`: --tm-fill/--tp-fill): in the light the deeper #6A47F5 / #D02860, so its
+// white words read at 4.5:1 (Aura v94, the owner's call, 5 Kasım); in the dark the colour itself,
+// its words #14112B.
+export type TeamTone = {
+  color: string;
+  tagBg: string;
+  tagInk: string;
+  fill: string;
+  onFill: string;
+};
+export const TEAM_FILLS = { purple: '#6A47F5', pink: '#D02860' } as const;
 export const TEAM_TONES: Record<ColorScheme, Record<Team, TeamTone>> = {
   light: {
     purple: {
       color: TEAM_COLORS.purple,
       tagBg: 'rgba(123, 92, 255, 0.14)',
       tagInk: '#4B2FD0',
-      onColor: '#FFFFFF',
+      fill: TEAM_FILLS.purple,
+      onFill: '#FFFFFF',
     },
     pink: {
       color: TEAM_COLORS.pink,
       tagBg: 'rgba(232, 51, 111, 0.12)',
       tagInk: '#B0174C',
-      onColor: '#FFFFFF',
+      fill: TEAM_FILLS.pink,
+      onFill: '#FFFFFF',
     },
   },
   dark: {
@@ -38,13 +50,15 @@ export const TEAM_TONES: Record<ColorScheme, Record<Team, TeamTone>> = {
       color: '#9C86FF',
       tagBg: 'rgba(156, 134, 255, 0.20)',
       tagInk: '#D6CCFF',
-      onColor: '#14112B',
+      fill: '#9C86FF',
+      onFill: '#14112B',
     },
     pink: {
       color: '#FF7EA8',
       tagBg: 'rgba(255, 126, 168, 0.18)',
       tagInk: '#FFC2D6',
-      onColor: '#14112B',
+      fill: '#FF7EA8',
+      onFill: '#14112B',
     },
   },
 };
@@ -138,9 +152,10 @@ export function gameGround(scheme: ColorScheme, key: GroundKey): GameGround {
 
 // Kapsül Anlat and İbre play on the team's colour. Dark: the colour mixed into the dark canvas, 62 %
 // in OKLab (v44: `color-mix(in oklab, team 62%, #0D0B1E)`), so white text stands out more.
+// The light one is a filled surface under white words: the team's deeper fill (Aura v94).
 export function teamGround(scheme: ColorScheme, team: Team): GameGround {
-  const color = TEAM_COLORS[team];
-  const flat = scheme === 'dark' ? mixOklab(color, DARK_CANVAS, 0.62) : color;
+  const flat =
+    scheme === 'dark' ? mixOklab(TEAM_COLORS[team], DARK_CANVAS, 0.62) : TEAM_FILLS[team];
   return { top: flat, bottom: flat, chip: scheme === 'dark' ? 'white' : 'ink' };
 }
 

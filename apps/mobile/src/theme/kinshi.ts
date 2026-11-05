@@ -32,6 +32,8 @@ export const KINSHI_TYPE = {
   row: t(F600, 15, 22, 0.02),
   // The count in Sonraki tura geç (`.cnt`) and the scores at the end (800 30/34).
   count: { ...t(F800, 13, 13), fontVariant: ['tabular-nums'] } as TextStyle,
+  // The others' Tur sonu count (`.rocnt`): 800/20, tabular.
+  readOnlyCount: { ...t(F800, 20, 20), fontVariant: ['tabular-nums'] } as TextStyle,
   endScore: { ...t(F800, 30, 34), fontVariant: ['tabular-nums'] } as TextStyle,
 } as const;
 
@@ -126,6 +128,9 @@ export const KINSHI = {
   // Tur sonu (`KinshiTurSonu`): 12 between parts; the buddies 130 high, 30 in, 8 under.
   summary: { gap: 12, buddies: 130, buddySide: 30, buddyBelow: 8, minBuddies: 120 },
   // The count in Sonraki tura geç (`.cnt`): 30 round, 8 in, black 22 %.
+  // The others' read-only count (`.rocnt`, Aura v94 KinshiTurSonuDiger): glass, 48 high, at least
+  // 48 wide, 24 round, 16 in.
+  readOnlyCount: { size: 48, padX: 16 },
   countPill: { size: 30, padX: 8, fill: 'rgba(0, 0, 0, 0.22)' },
   // Oyun sonu: the scene 300 high, 36 round at the foot; the confetti bars 8 × 18.
   endScene: {
@@ -162,6 +167,48 @@ export const KINSHI = {
   // The time capsule's last stage: the last 10 seconds (and the number in --buzz).
   lowSeconds: 10,
 } as const;
+
+// The deck at 320 dp and the largest text (Aura v95, kinshiSource; the project owner's decision of
+// 5 Kasım): the card is the screen's width less 94 (296 on the 390 panels; never wider than that),
+// 3:4, and its edges, fanned backs, shadow, word band, list, buddies and the guesser's panel scale
+// with it. The words don't: 800/30 and 800/20, shrinking on one line to no less than 22 and 16.
+export const KINSHI_CARD_SIDE = 94;
+export const KINSHI_MIN_TYPE = { word: 22, forbidden: 16 } as const;
+
+export function kinshiDeck(screenWidth: number) {
+  const width = Math.max(
+    0,
+    Math.min(KINSHI.card.width, Math.round(screenWidth - KINSHI_CARD_SIDE)),
+  );
+  const s = width / KINSHI.card.width;
+  const z = (n: number) => n * s;
+  return {
+    scale: s,
+    card: { width, height: Math.round((width * 4) / 3), radius: z(KINSHI.card.radius) },
+    edges: KINSHI.edges.map(z),
+    fans: KINSHI.fans.map((f) => ({ x: z(f.x), y: z(f.y), rotate: f.rotate })),
+    shadow: {
+      below: z(KINSHI.deckShadow.below),
+      height: z(KINSHI.deckShadow.height),
+      blur: z(KINSHI.deckShadow.blur),
+    },
+    wordBand: {
+      side: z(KINSHI.wordBand.side),
+      top: z(KINSHI.wordBand.top),
+      height: z(KINSHI.wordBand.height),
+    },
+    list: { side: z(KINSHI.list.side), top: z(KINSHI.list.top), height: z(KINSHI.list.height) },
+    peek: {
+      height: z(KINSHI.peek.height),
+      above: z(KINSHI.peek.above),
+      inset: z(KINSHI.peek.inset),
+      rightDrop: z(KINSHI.peek.rightDrop),
+    },
+    // The guesser's panel keeps its 16 on each side of the card.
+    panel: { width: width - (KINSHI.card.width - KINSHI.panel.width), top: z(KINSHI.panel.top) },
+  };
+}
+export type KinshiDeck = ReturnType<typeof kinshiDeck>;
 
 // Which buddies peek on which screen (the panels as drawn): the describer's, Tur öncesi's, the
 // guesser's and the watcher's one pair; the waiting and the rival's the other.

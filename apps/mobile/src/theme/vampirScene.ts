@@ -30,6 +30,9 @@ export const PAL = {
 
 export const SCENE_PHASES: readonly ScenePhase[] = ['night', 'dawn', 'day', 'end'];
 
+// A cushion no one sits on yet (VampirYukleniyor, the panel's neutral).
+const EMPTY_CUSHION = '#6A5A48';
+
 // The cushions, in the seats' order from the person (build.py → CUSH through P8 and P12; the
 // owner's choice, 4 Kasım: by seat, so a colour says nothing about anyone).
 export const CUSHIONS = {
@@ -177,8 +180,9 @@ function vignetteOver(phase: ScenePhase, shape: string): string {
 const svgOpen = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`;
 
 // The stools round the table for `n` people (toon2.js → stool): the wood, its ring, the cushion
-// in the seat's colour and its buttons.
-export function stoolsSvg(phase: ScenePhase, count: number): string {
+// in the seat's colour and its buttons; `empty` while no one sits yet, every cushion the same
+// neutral (VampirYukleniyor).
+export function stoolsSvg(phase: ScenePhase, count: number, empty = false): string {
   const R = seatSize(count).stool;
   const seats = seatsAround(count);
   const parts: string[] = [];
@@ -191,7 +195,8 @@ export function stoolsSvg(phase: ScenePhase, count: number): string {
       circle(x, y, R - 4, `fill="none" stroke="${paint(phase, 'rgba(90, 44, 16, 0.4)')}"`),
     );
     const cushions = count > TABLE.many ? CUSHIONS.small : CUSHIONS.big;
-    parts.push(disc(phase, x, y, R * 0.76, cushions[i % cushions.length] ?? INK, 1.4));
+    const cushion = empty ? EMPTY_CUSHION : (cushions[i % cushions.length] ?? INK);
+    parts.push(disc(phase, x, y, R * 0.76, cushion, 1.4));
     for (let k = 0; k < 5; k++) {
       const a = (k / 5) * TAU - 0.4;
       parts.push(
@@ -209,16 +214,18 @@ export function stoolsSvg(phase: ScenePhase, count: number): string {
 }
 
 // The candles (toon2.js → candle): the gold dish, its light, the candle, a drip and the wick; and
-// the time's dial (timerDial) when the phase has one. Under the phase's colour.
+// the time's dial (timerDial) when the phase has one, at the table's middle unless `x` is given.
+// Under the phase's colour. `noCandles` while no one sits yet (VampirYukleniyor).
 export function candlesSvg(
   phase: ScenePhase,
   count: number,
-  dial: { y: number; r: number } | null,
+  dial: { x?: number; y: number; r: number } | null,
+  noCandles = false,
 ): string {
   const s = seatSize(count).candle;
   const parts: string[] = [];
   const shapes: string[] = [];
-  for (const p of seatsAround(count)) {
+  for (const p of noCandles ? [] : seatsAround(count)) {
     const [x, y] = p.candle;
     parts.push(circle(x + 2, y + 3, 10 * s, `fill="${paint(phase, 'rgba(10, 4, 0, 0.4)')}"`));
     parts.push(disc(phase, x, y, 10 * s, '#F2C25A', 1.4));
@@ -238,14 +245,15 @@ export function candlesSvg(
   }
   if (dial) {
     const { y, r } = dial;
-    parts.push(circle(CX + 2, y + 4, r + 4, `fill="${paint(phase, 'rgba(10, 4, 0, 0.45)')}"`));
-    parts.push(disc(phase, CX, y, r + 4, '#F2C25A', 1.8));
-    parts.push(circle(CX, y, r, `fill="${paint(phase, '#2A1A12')}"`));
-    parts.push(circle(CX, y, r, ink(1.3)));
+    const cx = dial.x ?? CX;
+    parts.push(circle(cx + 2, y + 4, r + 4, `fill="${paint(phase, 'rgba(10, 4, 0, 0.45)')}"`));
+    parts.push(disc(phase, cx, y, r + 4, '#F2C25A', 1.8));
+    parts.push(circle(cx, y, r, `fill="${paint(phase, '#2A1A12')}"`));
+    parts.push(circle(cx, y, r, ink(1.3)));
     parts.push(
-      `<path d="${arc(CX, y, r + 2, Math.PI * 1.1, Math.PI * 1.45)}" fill="none" stroke="${paint(phase, 'rgba(255, 255, 255, 0.5)')}" stroke-width="1.6" stroke-linecap="round"/>`,
+      `<path d="${arc(cx, y, r + 2, Math.PI * 1.1, Math.PI * 1.45)}" fill="none" stroke="${paint(phase, 'rgba(255, 255, 255, 0.5)')}" stroke-width="1.6" stroke-linecap="round"/>`,
     );
-    shapes.push(circle(CX + 1, y + 2, r + 7, ''));
+    shapes.push(circle(cx + 1, y + 2, r + 7, ''));
   }
   return `${svgOpen}<defs>${discGradient(phase)}</defs>${parts.join('')}${vignetteOver(phase, shapes.join(''))}</svg>`;
 }
