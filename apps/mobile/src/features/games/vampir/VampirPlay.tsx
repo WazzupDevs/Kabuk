@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   aliveSeats,
   nightTargets,
-  VAMPIR,
   type VampirPhase,
   type VampirState,
   type VampirView,
@@ -10,7 +9,7 @@ import {
   votersFor,
 } from '@shared/vampir.ts';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 
@@ -23,25 +22,23 @@ import { tr } from '@/i18n/tr';
 import { vampirApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { haptic } from '@/lib/haptics';
+import { NativeShadow } from '@/components/NativeShadow';
+import { BRAND } from '@/theme/brand';
+import { gradientStyle } from '@/theme/gradient';
 import { MOON_SVG, SUN_SVG } from '@/theme/vampir';
 import { type ScenePhase } from '@/theme/vampirScene';
-import {
-  type SandTone,
-  TABLE,
-  TABLE_INK as INK,
-  TABLE_SHADOW,
-  TABLE_TYPE,
-} from '@/theme/vampirTable';
+import { scaleType, TABLE, TABLE_INK as INK, TABLE_SHADOW, TABLE_TYPE } from '@/theme/vampirTable';
 
 import { DialNumber } from './Dial';
-import { Medal, MiniGlass } from './Hourglass';
 import { PeekRole } from './RoleCard';
 import {
+  type DialAt,
   FootShade,
   GlassBtn,
   GlassSign,
-  MedalWith,
   NamePill,
+  NARROW_FONT,
+  narrowScale,
   RingedFace,
   type SeatMark,
   TableCard,
@@ -55,33 +52,15 @@ import { type Faces, nameOf } from './VampirParts';
 
 const MAX_FONT = 1.3;
 
-// Each phase's clock in seconds (the server's, pure/vampir.ts → VAMPIR).
-const TOTAL: Record<VampirPhase, number> = {
-  role: VAMPIR.roleSeconds,
-  night: VAMPIR.nightSeconds,
-  morning: VAMPIR.morningSeconds,
-  day: VAMPIR.daySeconds,
-  vote: VAMPIR.voteSeconds,
-  verdict: VAMPIR.verdictSeconds,
-};
-
-// Each phase's scene (Aura v83: Gece for the role and the night, Şafak for the morning, Gündüz
-// for the day and the vote, Son for the verdict and the end), and the day's and verdict's sand.
+// Each phase's scene (Aura v93: Gece for the role and the night, Şafak for the morning and the
+// verdict, Gündüz for the day and the vote; Son for the end, VampirGame → End).
 const SCENE_OF: Record<VampirPhase, ScenePhase> = {
   role: 'night',
   night: 'night',
   morning: 'dawn',
   day: 'day',
   vote: 'day',
-  verdict: 'end',
-};
-const SAND_OF: Record<VampirPhase, SandTone> = {
-  role: 'night',
-  night: 'night',
-  morning: 'day',
-  day: 'day',
-  vote: 'vote',
-  verdict: 'night',
+  verdict: 'dawn',
 };
 
 const vampirKeys = {
@@ -136,9 +115,11 @@ function useAdvance(roomId: string, state: VampirState) {
 }
 const ADVANCE_AGAIN_MS = 2500;
 
-// The game at the capsule table (Aura v83: VampirRolun, VampirGece, VampirSabah, VampirOylama,
-// VampirOylama12): the room and the table, everyone round it with their card and candle, the
-// phase's content at the table's middle, the close and "Rolüm" at the top, the buttons at the foot.
+// The game at the capsule table (Aura v83 and v93: VampirRolKarti, VampirRolun, VampirGece,
+// VampirSabah, VampirGunduz, VampirOylama, VampirEleme, VampirOylama12, VampirOylamaDar,
+// VampirYukleniyor, VampirHata): the room and the table, everyone round it with their card and
+// candle, the phase's content at the table's middle, the close and "Rolüm" at the top, the buttons
+// at the foot.
 export function VampirPlay({
   roomId,
   state,
@@ -161,7 +142,10 @@ export function VampirPlay({
   const alive = aliveSeats(state);
   const amAlive = role !== null && alive.includes(me);
   const endsAt = Date.parse(state.endsAt);
-  const totalMs = TOTAL[state.phase] * 1000;
+  // The large type (VampirOylamaDar): the scene fills the screen, so its scale is the window's.
+  const win = useWindowDimensions();
+  const k = Math.min(win.width / TABLE.frame.width, win.height / TABLE.frame.height);
+  const narrow = win.fontScale >= NARROW_FONT ? narrowScale(win.fontScale, k) : undefined;
 
   // The person's own death or elimination is felt once.
   const gone = state.dead.some((d) => d.sid === me);
@@ -258,7 +242,7 @@ export function VampirPlay({
 
   let words: Words = {};
   let seats: SeatMark[] = seated.map((s) => mark(s));
-  let dial: { y: number; r: number } | null = null;
+  let dial: DialAt | null = null;
   let middle: ReactNode = null;
   let below: ReactNode = null;
   let foot: ReactNode = null;
@@ -266,14 +250,34 @@ export function VampirPlay({
   let top: number = TABLE.stageTop.night;
 
   if (!my) {
-    // The phone's own view is on its way: nothing that would show a watcher's screen to a player.
-    middle = (
-      <View style={{ marginTop: STAGE_GAP }}>
-        <Loader />
-      </View>
+    // The phone's own view is on its way (VampirYukleniyor): the night's table with no one at it,
+    // the loader at its middle, no words; nothing that would show a watcher's screen to a player.
+    // If it cannot be read, the error over the darkened scene (VampirHata).
+    return (
+      <GamePage
+        testID="vampir-game"
+        faces={faces}
+        seats={seated.map((s) => mark(s))}
+        phase="night"
+        dial={null}
+        onExit={onExit}
+        empty
+        stage={
+          view.isError ? null : (
+            <View style={[styles.under, { top: TABLE.loader.top }]}>
+              <Loader kind="seesaw" size={TABLE.loader.size} label={tr.common.loading} />
+            </View>
+          )
+        }
+        cover={
+          view.isError ? (
+            <ViewError retrying={view.isFetching} onRetry={() => void view.refetch()} />
+          ) : null
+        }
+      />
     );
   } else if (state.phase === 'role') {
-    top = TABLE.stageTop.role;
+    top = holding ? TABLE.stageTop.role : TABLE.stageTop.card;
     if (role === null) {
       words = { title: tr.vampir.dealing, note: tr.vampir.dealingNote };
     } else {
@@ -301,26 +305,36 @@ export function VampirPlay({
           </Text>
         </>
       );
+      // "Geceyi başlat" once everyone is ready (VampirRolKarti; the owner's choice, 5 Kasım: only
+      // the phone holds it back, the server and the role's 30 seconds stay as they are).
+      const allReady = seated.every((s) => state.ready.includes(s));
+      const readyOff = amReady || !seenRole;
+      const readyLabel = amReady ? tr.vampir.waitingOthers : tr.vampir.ready;
       foot = (
         <View style={{ flexDirection: 'row', gap: TABLE.footGap }}>
-          <View style={{ flex: 1 }}>
-            <Button
-              testID="vampir-ready"
-              size="lg"
-              label={amReady ? tr.vampir.waitingOthers : tr.vampir.ready}
-              disabled={amReady || !seenRole}
-              loading={ready.isPending}
-              onPress={() => ready.mutate()}
-            />
-          </View>
           {owner ? (
             <GlassBtn
               testID="vampir-begin"
               label={tr.vampir.beginNight}
+              width={TABLE.begin}
+              off={!allReady}
               loading={begin.isPending}
               onPress={() => begin.mutate()}
             />
           ) : null}
+          {readyOff ? (
+            <GlassBtn testID="vampir-ready" label={readyLabel} off onPress={() => undefined} />
+          ) : (
+            <View style={{ flex: 1 }}>
+              <Button
+                testID="vampir-ready"
+                size="lg"
+                label={readyLabel}
+                loading={ready.isPending}
+                onPress={() => ready.mutate()}
+              />
+            </View>
+          )}
         </View>
       );
     }
@@ -425,12 +439,8 @@ export function VampirPlay({
     foot = <GlassSign>{state.winner ? tr.vampir.result : tr.vampir.dayStarts}</GlassSign>;
   } else if (state.phase === 'day') {
     top = TABLE.stageTop.day;
+    dial = TABLE.dial.day;
     words = { title: tr.vampir.whoIs, note: tr.vampir.talk };
-    below = (
-      <View style={[styles.under, { top: MEDAL_TOP - top }]}>
-        <Medal endsAt={endsAt} totalMs={totalMs} tone={SAND_OF[state.phase]} />
-      </View>
-    );
     foot =
       role === null || !amAlive ? (
         <GlassSign>{role === null ? tr.vampir.watchTalk : tr.vampir.deadWatch}</GlassSign>
@@ -447,7 +457,7 @@ export function VampirPlay({
       );
   } else if (state.phase === 'vote') {
     top = TABLE.stageTop.vote;
-    dial = TABLE.dial.vote;
+    dial = narrow ? TABLE.dial.narrow : TABLE.dial.vote;
     const tally = voteTally(state);
     const mine = state.votes[me];
     const canVote = amAlive && !mine;
@@ -471,7 +481,8 @@ export function VampirPlay({
     );
     onChoose = canVote ? choose : undefined;
     // Who got the most votes at the middle with those who voted for them round them, the next
-    // ones under it (the panels' .cand).
+    // ones under it (the panels' .cand); with the large type only the first, the others' votes in
+    // their seats' amber counts (VampirOylamaDar).
     const ranked = seated
       .filter((s) => (tally[s] ?? 0) > 0)
       .sort((a, b) => (tally[b] ?? 0) - (tally[a] ?? 0));
@@ -479,8 +490,9 @@ export function VampirPlay({
       <Candidates
         faces={faces}
         top={top}
-        ranked={ranked.slice(0, 1 + MAX_NEXT)}
+        ranked={ranked.slice(0, narrow ? 1 : 1 + MAX_NEXT)}
         votersOf={(s) => votersFor(state, s)}
+        narrow={narrow}
       />
     );
     foot = canVote ? (
@@ -494,8 +506,10 @@ export function VampirPlay({
       />
     ) : null;
   } else if (state.phase === 'verdict') {
-    top = TABLE.stageTop.day;
-    // The one voted out keeps their role hidden until the end (K-80).
+    top = TABLE.stageTop.verdict;
+    dial = TABLE.dial.verdict;
+    // The one voted out keeps their role hidden until the end (K-80): their face greyed with the
+    // votes under it (VampirEleme); a tie, the moon where the morning has its sun.
     const o = state.out;
     words = o
       ? {
@@ -503,26 +517,23 @@ export function VampirPlay({
           note: tr.vampir.roleHidden,
         }
       : { title: tr.vampir.tie, note: tr.vampir.tieNote };
-    below = (
-      <View style={[styles.under, { top: MEDAL_TOP - top }]}>
+    middle = (
+      <View style={{ marginTop: VICTIM_GAP }}>
         {o ? (
-          <MedalWith faces={faces} sid={o} label={tr.vampir.votes(votersFor(state, o).length)} />
+          <OutFace faces={faces} sid={o} votes={votersFor(state, o).length} />
         ) : (
-          <MedalWith faces={faces} mark={MOON_SVG} />
+          <CachedSvg xml={MOON_SVG} width={TABLE.victim} height={TABLE.victim} />
         )}
       </View>
     );
-    foot = (
-      <GlassSign
-        after={<MiniGlass endsAt={endsAt} totalMs={totalMs} tone={SAND_OF[state.phase]} />}
-      >
-        {state.winner ? tr.vampir.result : tr.vampir.nightComes}
-      </GlassSign>
-    );
+    foot = <GlassSign>{state.winner ? tr.vampir.result : tr.vampir.nightComes}</GlassSign>;
   }
 
-  // The vote's words sit under its dial; every other phase's under its pill.
+  // The vote's words sit under its dial; every other phase's under its pill. With the large type
+  // the vote's pill and dial share a row, the words under them (VampirOylamaDar).
   const voteWords = state.phase === 'vote';
+  const wide = voteWords && narrow !== undefined;
+  const n = TABLE.narrow;
   return (
     <GamePage
       testID="vampir-game"
@@ -535,33 +546,142 @@ export function VampirPlay({
       right={right}
       error={failed ? errorMessage(failed) : null}
       foot={foot}
+      narrow={voteWords ? narrow : undefined}
       stage={
-        <>
-          <Stage top={top}>
-            <Pill label={pillLabel} tone={pillTone} />
-            {middle}
-            {voteWords ? null : <StageWords words={words} />}
-            {voteWords ? null : below}
-          </Stage>
-          {dial ? <DialNumber endsAt={endsAt} y={dial.y} r={dial.r} /> : null}
-          {voteWords ? (
-            <>
-              <Stage top={TABLE.stageTop.voteText}>
-                <StageWords words={words} first />
-              </Stage>
-              {below}
-            </>
-          ) : null}
-        </>
+        wide ? (
+          <>
+            <Stage top={n.pill.top} left={n.pill.left} width={n.pill.width}>
+              <Pill label={pillLabel} tone={pillTone} big={narrow} />
+            </Stage>
+            {dial ? <DialNumber endsAt={endsAt} at={dial} big={narrow} /> : null}
+            <Stage top={n.words.top} left={n.words.left} width={n.words.width}>
+              <StageWords words={words} first big={narrow} />
+            </Stage>
+            {below}
+          </>
+        ) : (
+          <>
+            <Stage top={top}>
+              <Pill label={pillLabel} tone={pillTone} />
+              {middle}
+              {voteWords ? null : <StageWords words={words} />}
+              {voteWords ? null : below}
+            </Stage>
+            {dial ? <DialNumber endsAt={endsAt} at={dial} /> : null}
+            {voteWords ? (
+              <>
+                <Stage top={TABLE.stageTop.voteText}>
+                  <StageWords words={words} first />
+                </Stage>
+                {below}
+              </>
+            ) : null}
+          </>
+        )
       }
     />
   );
 }
-const STAGE_GAP = 8;
+
+// The verdict's voted out (VampirEleme .vict): the face greyed, the votes in amber over its foot.
+function OutFace({ faces, sid, votes }: { faces: Faces; sid: string; votes: number }) {
+  const v = TABLE.votes;
+  return (
+    <View style={{ alignItems: 'center', paddingBottom: v.height - v.over }}>
+      <RingedFace
+        faces={faces}
+        sid={sid}
+        size={TABLE.victim}
+        ring={{ color: INK.victimEdge, inner: 2, outer: 2 }}
+        dead
+      />
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          height: v.height,
+          paddingHorizontal: 7,
+          borderRadius: v.height / 2,
+          backgroundColor: INK.amber,
+          justifyContent: 'center',
+        }}
+      >
+        <NativeShadow css={INK.votesShadow} radius={v.height / 2} />
+        <Text maxFontSizeMultiplier={1} style={[TABLE_TYPE.votes, { color: INK.amberInk }]}>
+          {tr.vampir.votes(votes)}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+// The phone's own view could not be read (VampirHata): the scene darkened, the glass block at its
+// middle with the app's error mark, its words and "Tekrar dene" (MekanHata's; no new words).
+function ViewError({ retrying, onRetry }: { retrying: boolean; onRetry: () => void }) {
+  const e = TABLE.error;
+  return (
+    <View style={StyleSheet.absoluteFill}>
+      <View pointerEvents="none" style={[StyleSheet.absoluteFill, gradientStyle(INK.dim)]} />
+      <View
+        accessibilityRole="alert"
+        style={{
+          position: 'absolute',
+          left: e.side,
+          right: e.side,
+          top: e.top,
+          paddingTop: e.padTop,
+          paddingHorizontal: e.padSide,
+          paddingBottom: e.padBottom,
+          borderRadius: e.radius,
+          backgroundColor: INK.errGlass,
+          borderWidth: 1,
+          borderColor: INK.errEdge,
+          alignItems: 'center',
+        }}
+      >
+        <NativeShadow css={INK.errShadow} radius={e.radius} border={1} />
+        <CachedSvg xml={ERROR_MARK} width={e.mark} height={e.mark} />
+        <Text
+          maxFontSizeMultiplier={MAX_FONT}
+          style={[TABLE_TYPE.error, { color: INK.stage, textAlign: 'center', marginTop: 12 }]}
+        >
+          {tr.common.genericError}
+        </Text>
+        <Pressable
+          testID="vampir-retry"
+          accessibilityRole="button"
+          accessibilityLabel={tr.common.retry}
+          accessibilityState={{ busy: retrying }}
+          disabled={retrying}
+          onPress={onRetry}
+          style={{
+            marginTop: 16,
+            height: TABLE.sign,
+            paddingHorizontal: 20,
+            borderRadius: TABLE.sign / 2,
+            backgroundColor: INK.errBtn,
+            borderWidth: 1,
+            borderColor: INK.errBtnEdge,
+            justifyContent: 'center',
+          }}
+        >
+          <Text
+            maxFontSizeMultiplier={MAX_FONT}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            style={[TABLE_TYPE.errorBtn, { color: INK.white }]}
+          >
+            {retrying ? '…' : tr.common.retry}
+          </Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+// The app's error mark (MekanHata: the two capsules, 40).
+const ERROR_MARK = `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect x="7" y="7" width="11" height="26" rx="5.5" fill="${BRAND.purple}"/><rect x="20" y="9" width="11" height="26" rx="5.5" fill="${BRAND.pink}"/></svg>`;
 const CARD_GAP = 10;
 const VICTIM_GAP = 12;
-// The day's and the verdict's medallion, under their words.
-const MEDAL_TOP = 356;
 // The vote's candidates under the first: up to three.
 const MAX_NEXT = 3;
 
@@ -579,18 +699,26 @@ export function GamePage({
   right,
   error,
   foot,
+  empty,
+  narrow,
+  cover,
 }: {
   testID: string;
   faces: Faces;
   seats: readonly SeatMark[];
   phase: ScenePhase;
-  dial: { y: number; r: number } | null;
+  dial: DialAt | null;
   stage: ReactNode;
   onChoose?: (sid: string) => void;
   onExit?: () => void;
   right?: ReactNode;
   error?: string | null;
   foot?: ReactNode;
+  // No one at the table yet (VampirYukleniyor); the large type's scale; over everything but the
+  // close (VampirHata).
+  empty?: boolean;
+  narrow?: number;
+  cover?: ReactNode;
 }) {
   const insets = useSafeAreaInsets();
   return (
@@ -604,8 +732,11 @@ export function GamePage({
         dial={dial}
         stage={stage}
         onChoose={onChoose}
+        empty={empty}
+        narrow={narrow}
       />
       <FootShade />
+      {cover}
       <View
         pointerEvents="box-none"
         style={{
@@ -656,54 +787,75 @@ const FOOT_OVER_BAR = 10;
 
 export type Words = { title?: string; note?: string; big?: boolean };
 
-export function Stage({ top, children }: { top: number; children: ReactNode }) {
+export function Stage({
+  top,
+  left = TABLE.stage.left,
+  width = TABLE.stage.width,
+  children,
+}: {
+  top: number;
+  left?: number;
+  width?: number;
+  children: ReactNode;
+}) {
   return (
     <View
       pointerEvents="box-none"
-      style={{
-        position: 'absolute',
-        left: TABLE.stage.left,
-        width: TABLE.stage.width,
-        top,
-        alignItems: 'center',
-      }}
+      style={{ position: 'absolute', left, width, top, alignItems: 'center' }}
     >
       {children}
     </View>
   );
 }
 
-export function Pill({ label, tone }: { label: string; tone: 'night' | 'day' | 'end' }) {
+// `big` the large type's scale (.ph.big .stage .pill).
+export function Pill({
+  label,
+  tone,
+  big,
+}: {
+  label: string;
+  tone: 'night' | 'day' | 'end';
+  big?: number;
+}) {
   const p = INK.pill[tone];
+  const h = big ? BIG.pill.height * big : PILL;
   return (
     <View
       style={{
-        height: PILL,
-        paddingHorizontal: 8,
-        borderRadius: PILL / 2,
+        height: h,
+        paddingHorizontal: big ? BIG.pill.pad * big : 8,
+        borderRadius: h / 2,
         backgroundColor: p.fill,
         borderWidth: 1,
         borderColor: p.edge,
         justifyContent: 'center',
       }}
     >
-      <Text maxFontSizeMultiplier={1} style={[TABLE_TYPE.pill, { color: p.ink }]}>
+      <Text
+        maxFontSizeMultiplier={1}
+        style={[TABLE_TYPE.pill, { color: p.ink }, big ? scaleType(TABLE_TYPE.bigPill, big) : null]}
+      >
         {label}
       </Text>
     </View>
   );
 }
 const PILL = 18;
+// The large type's stage (.ph.big .stage .pill, .h, .s; .cand .cl), at the panel's scale.
+const BIG = { pill: { height: 26, pad: 12 }, noteGap: 6 };
 
-export function StageWords({ words, first }: { words: Words; first?: boolean }) {
+// `big` the large type's scale (.ph.big .stage .h, .s): its own sizes, not the system's again.
+export function StageWords({ words, first, big }: { words: Words; first?: boolean; big?: number }) {
   return (
     <>
       {words.title ? (
         <Text
-          maxFontSizeMultiplier={MAX_FONT}
+          maxFontSizeMultiplier={big ? 1 : MAX_FONT}
           style={[
             words.big ? TABLE_TYPE.big : TABLE_TYPE.title,
             { color: INK.stage, textAlign: 'center', marginTop: first ? 0 : 8 },
+            big ? scaleType(words.big ? TABLE_TYPE.big : TABLE_TYPE.bigTitle, big) : null,
           ]}
         >
           {words.title}
@@ -711,8 +863,12 @@ export function StageWords({ words, first }: { words: Words; first?: boolean }) 
       ) : null}
       {words.note ? (
         <Text
-          maxFontSizeMultiplier={MAX_FONT}
-          style={[TABLE_TYPE.note, { color: INK.stageNote, textAlign: 'center', marginTop: 5 }]}
+          maxFontSizeMultiplier={big ? 1 : MAX_FONT}
+          style={[
+            TABLE_TYPE.note,
+            { color: INK.stageNote, textAlign: 'center', marginTop: big ? BIG.noteGap : 5 },
+            big ? scaleType(TABLE_TYPE.bigNote, big) : null,
+          ]}
         >
           {words.note}
         </Text>
@@ -775,15 +931,18 @@ function Candidates({
   top,
   ranked,
   votersOf,
+  narrow,
 }: {
   faces: Faces;
   top: number;
   ranked: readonly string[];
   votersOf: (sid: string) => readonly string[];
+  narrow?: number;
 }) {
   const c = TABLE.candidates;
   const [first, ...rest] = ranked;
   if (!first) return null;
+  const firstY = narrow ? TABLE.narrow.candidate : c.top;
   const xs = rest.length === 1 ? [0] : rest.length === 2 ? [-46, 46] : [-56, 0, 56];
   const short = rest.length > 2;
   return (
@@ -792,11 +951,12 @@ function Candidates({
         faces={faces}
         sid={first}
         x={0}
-        y={c.top - top}
+        y={firstY - top}
         top={top}
         size={c.face}
         voter={c.voter}
         voters={votersOf(first)}
+        big={narrow}
       />
       {rest.map((s, i) => (
         <Candidate
@@ -826,6 +986,7 @@ function Candidate({
   voter,
   voters,
   short,
+  big,
 }: {
   faces: Faces;
   sid: string;
@@ -836,6 +997,7 @@ function Candidate({
   voter: number;
   voters: readonly string[];
   short?: boolean;
+  big?: number;
 }) {
   const out = size + 4;
   return (
@@ -876,7 +1038,7 @@ function Candidate({
           alignItems: 'center',
         }}
       >
-        <NamePill name={short ? undefined : nameOf(faces, sid)} count={voters.length} />
+        <NamePill name={short ? undefined : nameOf(faces, sid)} count={voters.length} big={big} />
       </View>
     </View>
   );
