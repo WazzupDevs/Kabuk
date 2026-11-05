@@ -16,6 +16,7 @@
   "exclude": [
     "apps/mobile/src/theme/kabul.test.ts",
     "apps/mobile/src/theme/kinshiDeck.test.ts",
-    "apps/mobile/src/theme/krot.test.ts"
+    "apps/mobile/src/theme/krot.test.ts",
+    "apps/mobile/src/theme/signum.test.ts"
   ]
 }
