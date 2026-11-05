@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (5 Kasım 2026, Sprengja sunucu motoru)
+
+- Birleşenler: #454 (riso görselleri, `sprengjaArt`), #466 (motor, adım 4.6.8, K-85: `20261129090000_sprengja.sql`, `functions/sprengja`, `pure/sprengja.ts`, `tests/sprengja.test.ts`; kararlar `docs/decisions/4.6.8-sprengja.md`). Dev'e gitti; `sprengja-explode` cron işi kapalı, `available: false`.
+- Sıradaki paketler, her biri ayrı PR, bu sırayla: (1) harf grubu içeriği: onaylı 96 grup, 40 kolay / 36 orta / 20 zor (bitişik dizi sıklığıyla, mastar eki hariç), `public.cards` deck `sprengja` (`word` grup, `theme` kademe), `content/` + seed; (2) dev doğrulaması D-1–D-6 (pg_cron sürümü, boşta ve yükte performans, maliyet, arka plan ve bağlantı dönüşü), `pnpm latency` Sprengja ölçümü ve bot masası, rapor proje sahibine, cron'u açmak onun onayıyla; (3) Aura ekranları (Prompt 3): 3–8 kişilik halka, bomba hareketi, devralma, ortak kazanan, yarıda kalma, son turda "Sonuçları gör", panolar önce Aura'da; (4) saha testi (ilk iki oyun ön kontrol; denge: oyuncu sayısı başına iki grup × üç oyun) ve rapor.
+- Kurallar ve sınırlar SPEC_V4 → "Adım 4.6.8: Sprengja" ve K-85'te; harf grubu kademelerinin listesi proje sahibinin onayladığı v3 belgesindedir (sohbette, repoda değil: yeni oturuma eklenmeli).
+- Bu ortamda yerel Supabase: imajlar `SUPABASE_INTERNAL_IMAGE_REGISTRY=docker.io` ile; Edge runtime npm indirmesi için proxy sertifikası eklenmiş yerel imaj ister.
+
 ## Devir notu (5 Kasım 2026, Kinshi 320 dp: iki satır ve skor hapı)
 
 - Birleşenler: #463 (deste ölçeklenir), #468 (tahminci paneli sayaçlara binmez), bu PR (proje sahibinin kararları: uzun kelime iki satır, skor hapı dar hâlde; `docs/decisions/kinshi-320dp.md`). OTA, native yok.
