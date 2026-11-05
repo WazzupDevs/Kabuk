@@ -20,6 +20,7 @@
     "apply-local-secrets": "node --experimental-strip-types apply-local-secrets.ts",
     "fetch:venues": "node --experimental-strip-types fetch-venues.ts",
     "latency": "node --experimental-strip-types latency/measure.ts",
+    "latency:sprengja": "node --experimental-strip-types latency/sprengja.ts",
     "functions:deploy": "node --experimental-strip-types functions/deploy.ts",
     "visual:accept": "node --experimental-strip-types visual/accept.ts"
   },
