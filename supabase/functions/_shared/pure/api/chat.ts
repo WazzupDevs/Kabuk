@@ -41,6 +41,16 @@ export type SafetyRequest =
   // A message of the table chat (docs/SPEC_V4.md §4.T): its id and its copy. Nothing is written for
   // a message the caller cannot read at the table now or for its own, and the answer is the same.
   | { action: 'report'; target: 'room_message'; messageId: string; reason: ReportReason }
+  // A Kibrit paper opened in the running game (docs/SPEC_V4.md §4.6.7, K-85): its copy and author go
+  // only into the report. Nothing is written for one's own paper, an unopened or unknown one, or a
+  // second report of the same paper, and the answer is the same.
+  | {
+      action: 'report';
+      target: 'kibrit_paper';
+      roomId: string;
+      paperId: string;
+      reason: ReportReason;
+    }
   // At a table (docs/SPEC_V4.md §4.E, K-13): a person there by its table session id
   // (`nothing_to_block` without one). The owner's block takes that person out; anyone else's block
   // takes the blocker out.

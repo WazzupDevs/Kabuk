@@ -764,7 +764,7 @@ K-85. Kaynak Aura v90 "Kibrit (gizli soru, gizli oy)" satırı (11 pano) ve proj
        Oyuncular "Hazır" der (`kibrit/ready { step }`). Sahip "Sonraki kâğıt"a basınca (`kibrit/next { step }`) ya da herkes hazır olunca sonraki tura geçilir. Kendiliğinden geçiş yok; sahip kaybolursa oyun kilitlenmesin diye 120 sn sonra herhangi bir telefonun `advance`'i geçirir.
   7. **Oyun sonu:** "Oyun bitti · n kâğıt", "Gecenin kâğıtları": tamamlanan her turun sorusu ve en çok oy alanlar (5 ve üstü oyuncuda oy sayısıyla, 3–4 oyuncuda sayısız). Atlanan ve bildirilen sorular özete girmez; çekilmeyen kâğıtlar gösterilmez. Puan, genel sıralama, kazanan ve `game_results` kaydı yok. "Masaya dön" herkeste, "Yeniden oyna" sahipte (çerçeve).
 - **Atla ve Bildir:** filtre tek başına yeterli sayılmaz.
-  - **Bildir:** oyun sürerken açılan her soruda (kâğıt açıldı, oy, oylar açıldı) masadaki herkes "Bildir"e basabilir: `safety/report { target: 'kibrit_paper', roomId, paperId, reason }`. Yanıt her durumda `{ ok: true }`; yazara bildirilmez. Oyun bitince kâğıtlar silindiği için oyun sonu özetinde "Bildir" yoktur. Bildirilen soru oyun sonu özetinden çıkar; süren tur sürer.
+  - **Bildir:** oyun sürerken açılan her soruda (kâğıt açıldı, oy, oylar açıldı) masadaki herkes "Bildir"e basabilir: `safety/report { target: 'kibrit_paper', roomId, paperId, reason }`. Kişi bir kâğıdı bir kez bildirir; atlanan kâğıt da bildirilebilir. Yanıt her durumda `{ ok: true }`; yazara bildirilmez. Oyun bitince kâğıtlar silindiği için oyun sonu özetinde "Bildir" yoktur. Bildirilen soru oyun sonu özetinden çıkar; süren tur sürer.
   - **Atla:** sahip, açılan kâğıdı oylar açılmadan atlayabilir (`kibrit/skip { step }`). Atlanan kâğıt bir daha açılmaz, tamamlanan tura sayılmaz; o turun oyları silinir. Aynı çeken yeni bir kâğıt çeker.
 - **Revizyon istisnası (kural 3):** çerçevenin "aynı adıma ikinci eylem yok sayılır" kuralının tek istisnası Kibrit'in `write` ve `vote` eylemleridir.
   - Kişinin aynı adımdaki sonraki çağrısı öncekinin yerini alır; aşama açık olduğu sürece geçer.
@@ -775,7 +775,7 @@ K-85. Kaynak Aura v90 "Kibrit (gizli soru, gizli oy)" satırı (11 pano) ve proj
 - **Gözlemci:** yazmaz, çekmez, oy vermez; soruyu ve sonucu görür, bildirebilir.
 - **Çıkış** (oyundan ya da masadan):
   - Soru yaz sırasında çıkanın kâğıdı geçersiz olur. Kavanozdan sonra çıkanın kâğıdı kavanozda kalır, çünkü kâğıdın kaybolması yazarını ele verirdi.
-  - Oylama sürerken çıkanın verdiği oy ve ona verilen oylar silinir. Oyu silinen oyuncu, süre içinde yeniden seçer; kalan süre 8 sn'den azsa süre 8 sn'ye uzar.
+  - Oylama sürerken çıkanın verdiği oy silinir; ona verilen oylar sonuçta sayılmaz ve o oyları verenler süre içinde yeniden seçer. Katılım sayacı yalnız çıkanın kendi oyu kadar düşer ve her çıkışta kalan süre en az 8 sn olur, böylece çıkanın kaç oy aldığı belli olmaz.
   - Çıkan sıradaki çekense sıra bir sonrakine geçer ve çekme süresi yeniden başlar.
   - Açıklanmış tur sonuçları (özet dahil) sonradan değişmez.
   - Aşama çıkanla tamamlanıyorsa (herkes yazdı ya da oy verdi) süre o an dolar ve sıradaki `advance` çözer.
@@ -790,6 +790,7 @@ K-85. Kaynak Aura v90 "Kibrit (gizli soru, gizli oy)" satırı (11 pano) ve proj
     - Küçük masada sonuç ve katılım sayısı oyları daraltabilir (3 kişide en çok oyu biri 3 oyla aldıysa herkes ona vermiştir; bu yüzden 3–4 kişide sayılar gösterilmez).
     - Toplam sayaçların arttığı an, masada kimin telefonuna baktığıyla eşleşebilir.
     - Sorunun dili ve konusu yazarını ele verebilir.
+    - Soru yaz sırasında biri çıkarsa "n kişi yazdı" sayacının düşüp düşmemesi, onun kâğıt yazıp yazmadığını gösterir (hangi soruyu yazdığını göstermez).
 - **İçerik denetimi:** soru metni kural 7'nin alanlarındandır. Uzunluk 1–80 (boşluklar toplanır). İletişim bilgisi, kullanıcı adı ve bağlantı `containsContact` ile reddedilir (`contact_not_allowed`), küfür `containsProfanity` ile (`profanity_rejected`). Kontrol telefonda ve sunucuda aynı dosyayla yapılır (`pure/kibrit.ts` → `checkKibritQuestion`).
 - **Bildirim kaydı:** `reports` satırına (`target_type 'kibrit_paper'`) soru metni, oyun ve adım, masa ve şikayet edilen hesap (yazar) yazılır. Yazar yalnızca bu korumalı kayıtta ve service role'de durur, hiçbir yanıta gitmez. Saklama ve silme bugünkü şikayet politikasıyla aynıdır (30 gün, `reports`).
 - **Temizlik:**

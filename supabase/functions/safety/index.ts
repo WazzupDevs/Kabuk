@@ -64,6 +64,13 @@ const Report = z.discriminatedUnion('target', [
     messageId: z.uuid(),
     reason,
   }),
+  z.object({
+    action: z.literal('report'),
+    target: z.literal('kibrit_paper'),
+    roomId: z.uuid(),
+    paperId: z.uuid(),
+    reason,
+  }),
 ]);
 
 const Body: z.ZodType<SafetyRequest> = z.union([
@@ -166,6 +173,16 @@ Deno.serve(
           new_reason: body.reason,
         });
         if (error) throw dbError('safety_report_room_message', error);
+      } else if (body.target === 'kibrit_paper') {
+        // docs/SPEC_V4.md §4.6.7 (K-85): the same answer whether anything was written; the paper's
+        // author goes only into the report.
+        const { error } = await db.rpc('safety_report_kibrit_paper', {
+          target_user_id: user.id,
+          target_room_id: body.roomId,
+          target_paper_id: body.paperId,
+          new_reason: body.reason,
+        });
+        if (error) throw dbError('safety_report_kibrit_paper', error);
       } else if (body.target === 'dm') {
         const { error } = await db.rpc('safety_report_dm', {
           target_user_id: user.id,

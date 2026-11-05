@@ -7,7 +7,7 @@ import type { AccountRequest } from './api/account.ts';
 import type { ChatRequest } from './api/chat.ts';
 import type { CheckinRequest } from './api/checkin.ts';
 import type { DmRequest, FriendsRequest } from './api/friends.ts';
-import type { TabuRequest, VampirRequest } from './api/games.ts';
+import type { KibritRequest, TabuRequest, VampirRequest } from './api/games.ts';
 import type { ProfileRequest } from './api/profile.ts';
 import type { VenueChatRequest } from './api/venueChat.ts';
 
@@ -22,6 +22,7 @@ type CallName =
   | `venue-chat/${VenueChatRequest['action']}`
   | `account/${AccountRequest['action']}`
   | `vampir/${VampirRequest['action']}`
+  | `kibrit/${KibritRequest['action']}`
   | `tabu/${TabuRequest['action']}`;
 
 export const IDEMPOTENT_CALLS = [
@@ -66,6 +67,18 @@ export const IDEMPOTENT_CALLS = [
   // vampir.test "the clock (§4.F, IDEMPOTENT_CALLS)": "changes nothing with an early advance, and
   // the same with one sent twice"
   'vampir/view',
+  // kibrit.test "the clock (§4.6.7, IDEMPOTENT_CALLS)": "changes nothing with an early advance, and
+  // the same with one sent twice"
+  'kibrit/advance',
+  // kibrit.test "the clock (§4.6.7, IDEMPOTENT_CALLS)": "changes nothing with an early advance, and
+  // the same with one sent twice"
+  'kibrit/view',
+  // kibrit.test "revisions (rule 3's exception)": "keeps the greatest rev: the same write or vote
+  // sent twice, or an older one after it, changes nothing"
+  'kibrit/write',
+  // kibrit.test "revisions (rule 3's exception)": "keeps the greatest rev: the same write or vote
+  // sent twice, or an older one after it, changes nothing"
+  'kibrit/vote',
   // tabu.test "the turns (§4.F)": "moves through Tur sonu by the owner or the clock, and changes
   // nothing with an early advance"
   'tabu/advance',
