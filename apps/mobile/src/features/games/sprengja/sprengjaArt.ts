@@ -2,15 +2,15 @@ import type { ImageSourcePropType } from 'react-native';
 
 import { kinshiArt } from '@/features/games/kinshi/kinshiArt';
 
-// Sprengja's riso pictures (aura v88, "Sprengja (elden ele bomba)"). The "HECE" label, the
-// syllable and every name are drawn by code on top. The peeking buddies are Kinshi's files
-// (assets/games/kinshi/), read through kinshiArt, never copied. The hidden fuse has no time
-// capsule: Sprengja shows no time at all.
+// Sprengja's riso pictures (aura v88, "Sprengja (elden ele bomba)"; v99 unchanged). The "HARF
+// GRUBU" label, the letter group and every name are drawn by code on top. The peeking buddies are
+// Kinshi's files (assets/games/kinshi/), read through kinshiArt, never copied. The hidden fuse has
+// no time capsule: Sprengja shows no time at all.
 export const sprengjaArt = {
   buddies: kinshiArt.buddies,
-  // Syllable card back: the night poster, nothing written on it.
+  // Letter-group card back: the night poster, nothing written on it.
   back: require('../../../../assets/games/sprengja/b-arka.webp'),
-  // Syllable card front: yellow top label and pink fuse medallion, both filled by code.
+  // Letter-group card front: yellow top label and pink fuse medallion, both filled by code.
   syllable: require('../../../../assets/games/sprengja/b-hece.webp'),
   // The table ring's ground, fits a 350×350 box uncropped.
   table: require('../../../../assets/games/sprengja/b-masa.webp'),

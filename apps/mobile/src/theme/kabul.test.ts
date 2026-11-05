@@ -195,6 +195,9 @@ describe('K16: no new haptic moment', () => {
         'tabuPass',
         'timeUp',
         'grabbed',
+        // Sprengja's blast (Aura v99; the owner's decision of 5 Kasım: one strong touch, only to
+        // the one the bomb went off with).
+        'blast',
         'lastSeconds',
         'replyThreshold',
         'failed',

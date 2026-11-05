@@ -78,6 +78,7 @@ describe('haptic table', () => {
       tabuPass: { kind: 'impact', style: 'rigid' },
       timeUp: { kind: 'impact', style: 'rigid' },
       grabbed: { kind: 'impact', style: 'medium' },
+      blast: { kind: 'impact', style: 'rigid' },
       lastSeconds: { kind: 'impact', style: 'light' },
       replyThreshold: { kind: 'selection' },
       failed: { kind: 'notification', type: 'error' },

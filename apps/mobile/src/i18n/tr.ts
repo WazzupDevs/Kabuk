@@ -11,6 +11,7 @@ import { TABU_GAME } from '@shared/tabuGame.ts';
 import { SAHTEKAR_GAME } from '@shared/sahtekarGame.ts';
 import { SAHTEKAR } from '@shared/sahtekar.ts';
 import { KIBRIT } from '@shared/kibrit.ts';
+import { SPRENGJA } from '@shared/sprengja.ts';
 import { SIGNUM } from '@shared/signum.ts';
 import { formatTrMobile } from '@shared/phone.ts';
 import { BIO_MAX } from '@shared/profile.ts';
@@ -119,6 +120,20 @@ const SEAT_SUFFIX: Record<string, { dative: string; locative: string; copula: st
 };
 const seatTo = (seat: string, kind: 'dative' | 'locative' | 'copula') =>
   `${seat}'${SEAT_SUFFIX[seat.slice(-1)]?.[kind] ?? ''}`;
+
+// Sprengja's counts in words: "Sıra sana üç kişi sonra gelir", "herkesin elinde birer kez".
+const COUNT_WORDS = ['', 'bir', 'iki', 'üç', 'dört', 'beş', 'altı', 'yedi', 'sekiz'];
+const EACH_WORDS = [
+  '',
+  'birer',
+  'ikişer',
+  'üçer',
+  'dörder',
+  'beşer',
+  'altışar',
+  'yedişer',
+  'sekizer',
+];
 
 // A count with the third person's possessive ("4'ü", "5'i", "12'si"): Kibrit's turnout.
 function numberPossessive(n: number): string {
@@ -1458,6 +1473,177 @@ export const tr = {
     // On the table while a game runs that the person does not see.
     running: 'Kibrit sürüyor',
     runningPage: 'Kibrit açık',
+  },
+  // Sprengja (Aura v99, "Sprengja (elden ele bomba)"; docs/SPEC_V4.md §4.F "Adım 4.6.8", K-85). The
+  // screen shows no time at all.
+  sprengja: {
+    name: 'Sprengja',
+    players: `Oyuncular · ${SPRENGJA.minPlayers}–${SPRENGJA.maxPlayers} kişi`,
+    rounds: (n: number) => `${n} tur`,
+    hiddenTime: 'Süre gizli',
+    clockwise: 'Saat yönünde',
+    order: 'Atış sırası',
+    orderCount: (players: number, watchers: number) =>
+      watchers > 0 ? `${players} kişi · ${watchers} izleyen` : `${players} kişi`,
+    shuffle: 'Sırayı karıştır',
+    how: 'Ortada bir harf grubu var. Bomba sendeyken bu harfleri bitişik ve aynı sırayla içeren bir kelimeyi sesli söyle, bombayı sıradakine at. Süreyi kimse görmez; bomba kimin elinde patlarsa bir puan kaybeder. En az patlayan kazanır.',
+    watchers: 'Gözlemciler',
+    watchersNote: 'Oyunu izler, atış yapmaz.',
+    watch: 'Gözlemci ol',
+    play: 'Oyuna katıl',
+    hintOwner: 'Herkes hazırsa oyunu başlat.',
+    hintGuest: 'Oyunu masa sahibi başlatır.',
+    needs: (n: number) => `En az ${n} oyuncu gerekir.`,
+    tooMany: (n: number) => `En çok ${n} kişi oynar; fazlası gözlemci olsun.`,
+    start: 'Oyunu başlat',
+    // Kelime kuralları (SPEC 4.6.8 word for word): the odd parts of a rule are its bold examples.
+    rules: 'Kelime kuralları',
+    rulesNote: 'Uygulama kelimeyi duymaz ve denetlemez; kuralları masa uygular.',
+    ruleList: [
+      [
+        'Kelimede harf grubu bitişik ve aynı sırayla geçer: KAR → ',
+        'kar',
+        'puz, ha',
+        'kar',
+        'et geçer.',
+      ],
+      [
+        'Tek kelime, sözlükteki yalın biçimiyle; ek getirilmez: kitap',
+        'ta',
+        ', kalem',
+        'le',
+        ', kitap',
+        'lar',
+        ' olmaz. Bitişik yazılan birleşik kelime geçer (kahverengi).',
+      ],
+      [
+        'Fiilde -mak/-mek mastar eki sayılmaz; grup fiil kökünde olmalı: AL → ',
+        'al',
+        'mak geçer, MA → yaz',
+        'ma',
+        'k geçmez, ',
+        'ma',
+        'yalamak geçer.',
+      ],
+      ['Özel ad geçmez: kişi, yer, marka, takım ve benzeri (Kars, Karaköy olmaz).'],
+      ['Aynı kelime oyun boyunca bir kez söylenir. Küfür ve hakaret geçmez.'],
+      ['Masa kabul etmezse başka bir kelime söylenir; atılan bomba geri alınmaz.'],
+    ] as readonly (readonly string[])[],
+    ok: 'Tamam',
+    // The bar.
+    watching: 'İzliyorsun',
+    // The card: closed, waiting, taken over.
+    openTitle: 'Harf grubu kartını aç',
+    openNote: 'Bu tur sen başlatıyorsun. Kartı aç, herkes harf grubunu görsün.',
+    open: 'Kartı aç',
+    willOpen: (name: string) => `${name} kartı açacak`,
+    willOpenNote: (name: string) =>
+      `Bu turu ${name} başlatıyor. Kart açılınca harf grubunu görürsün.`,
+    firstWith: (name: string) => `Bomba önce ${inflectTr(name, 'locative')} olacak.`,
+    cardClosed: 'Harf grubu kartı, kapalı',
+    cardOpen: (group: string) => `Harf grubu kartı: ${group}`,
+    kick: 'Harf grubu',
+    idleCard: 'Kartın açılması bekleniyor',
+    idleFuse: 'Fitilin yakılması bekleniyor',
+    idleNote: 'İstersen başlatmayı sen devral. Atış sırası değişmez.',
+    takeOver: 'Başlatmayı devral',
+    // The letter group open.
+    groupTitle: (group: string) => `Harf grubu: ${group}`,
+    groupNote: 'Fitili yakınca süre başlar. Süreyi kimse görmez.',
+    groupMine: 'Bomba sende. Önce bir kelime düşün.',
+    light: 'Fitili yak',
+    willLight: (name: string) => `${name} fitili yakacak`,
+    willLightNote: (name: string) =>
+      `Harf grubu açıldı. Fitil yanınca bomba ${inflectTr(name, 'locative')} olacak.`,
+    // The fuse burning.
+    withYou: 'Bomba sende',
+    withYouNote: (group: string) => `${group} geçen bir kelime söyle, sonra at.`,
+    withOther: (name: string) => `Bomba ${inflectTr(name, 'locative')}`,
+    comesIn: (k: number) => `Sıra sana ${COUNT_WORDS[k] ?? String(k)} kişi sonra gelir.`,
+    skips: (name: string) => `${name} oyundan çıktı; bomba onu atlar.`,
+    watcherNote: 'Gözlemcisin; oyunu izliyorsun, atış yapmazsın.',
+    whenYours: 'Bomba sana gelince atma düğmesi çıkar.',
+    throwTo: (name: string) => `${inflectTr(name, 'dative')} at`,
+    group: 'Harf grubu',
+    throws: (n: number) => `Atışlar · ${n}`,
+    seatOut: (name: string) => `${name}, oyundan çıktı`,
+    // The blast and Tur sonu.
+    blastLabel: 'Patlama',
+    minusOne: '−1 puan',
+    blastYou: 'Bomba sende patladı',
+    blastLine: (group: string, n: number) => `Harf grubu ${group} · Atışlar · ${n}`,
+    roundOver: (round: number, rounds: number, n: number) =>
+      `Tur ${round}/${rounds} bitti · Atışlar · ${n}`,
+    blastAt: (name: string) => `Bomba ${inflectTr(name, 'locative')} patladı`,
+    blastLeft: 'Bomba oyundan çıkanda patladı',
+    thisRound: 'Bu tur',
+    none: 'Hiç',
+    blasts: (n: number) => `${n} patlama`,
+    points: (hits: number) => (hits === 0 ? '0' : `−${hits}`),
+    out: 'çıktı',
+    readyCount: (n: number, of: number) => `Hazır: ${n}/${of}`,
+    ready: 'Hazırım',
+    results: 'Sonuçları gör',
+    // Oyun durdu.
+    haltedTitle: 'Oyun durdu',
+    haltedNote: (n: number) =>
+      `Oyunda ${n} kişi kaldı. Sprengja en az ${SPRENGJA.minPlayers} kişiyle oynanır.`,
+    haltedKeep: 'Skorlar korunur, kazanan seçilmez.',
+    // Oyun sonu (the report's "Ortak kazanan metinleri").
+    over: (rounds: number) => `Oyun bitti · ${rounds} tur`,
+    winner: 'Kazanan',
+    winnersTag: 'Kazananlar',
+    allEqual: 'Herkes eşit',
+    you: 'sen',
+    wonYou: 'Kazandın',
+    wonOne: (name: string) => `${name} kazandı`,
+    wonTwoYou: (name: string) => `${name} ve sen kazandınız`,
+    wonTwo: (a: string, b: string) => `${a} ve ${b} kazandı`,
+    wonMany: (n: number) => `${n} kişi kazandı`,
+    wonAll: 'Herkes kazandı!',
+    noteYou: (k: number) =>
+      k === 0 ? 'Bomba senin elinde hiç patlamadı.' : `Bomba senin elinde ${k} kez patladı.`,
+    noteOne: (name: string, k: number) =>
+      k === 0
+        ? `Bomba ${inflectTr(name, 'genitive')} elinde hiç patlamadı.`
+        : `Bomba ${inflectTr(name, 'genitive')} elinde ${k} kez patladı.`,
+    noteTwoYou: (k: number) =>
+      k === 0
+        ? 'Bomba ikinizin elinde de hiç patlamadı.'
+        : `İkiniz de ${k} kez patladınız; ortak kazanan.`,
+    noteTwo: (k: number) =>
+      k === 0
+        ? 'Bomba ikisinin elinde de hiç patlamadı.'
+        : `İkisi de ${k} kez patladı; ortak kazanan.`,
+    // Three winners by name; from four the first two and how many more.
+    noteMany: (names: readonly string[], you: boolean) => {
+      const list =
+        names.length > 3
+          ? `${names[0]}, ${names[1]} ve ${names.length - 2} kişi`
+          : `${names.slice(0, -1).join(', ')} ve ${names[names.length - 1]}`;
+      return `${list} ${you ? 'eşitsiniz' : 'eşit'}; ortak kazanan.`;
+    },
+    noteAll: (k: number) =>
+      k === 0
+        ? 'Bomba kimsenin elinde patlamadı.'
+        : `Bomba herkesin elinde ${EACH_WORDS[k] ?? `${k}'er`} kez patladı.`,
+    abandonedLine: (round: number, rounds: number) => `Oyun ${round}/${rounds}. turda durdu`,
+    abandoned: 'Oyun yarıda kaldı',
+    abandonedNote: `Oyunda ${SPRENGJA.minPlayers} kişiden az kaldı; kazanan yok. Skorlar görünür.`,
+    backToTable: 'Masaya dön',
+    again: 'Yeniden oyna',
+    // Leaving (as Kibrit's).
+    exit: 'Oyundan çık',
+    endGame: 'Oyunu bitir',
+    endTitle: 'Oyunu bitir?',
+    endBody: 'Oyun herkes için biter, masaya dönülür.',
+    leaveTitle: 'Oyundan çık?',
+    leaveBody: 'Masaya dönersin. Oyun diğerleri için sürer.',
+    watchTitle: 'Masaya dön?',
+    watchBody: 'Oyun sürer; masadan yeniden izleyebilirsin.',
+    // On the table while a game runs that the person does not see.
+    running: 'Sprengja sürüyor',
+    runningPage: 'Sprengja açık',
   },
   identity: {
     // Mekan's anonymous switch and its sheets (skall tuvali: MekanAnonimGecis, …Erkek,

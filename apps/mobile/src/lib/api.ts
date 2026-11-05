@@ -529,3 +529,23 @@ export const kibritApi = {
     invoke<GameOkResponse>('kibrit', { action: 'next', roomId, step }),
   advance: (roomId: string) => invoke<GameOkResponse>('kibrit', { action: 'advance', roomId }),
 };
+
+// Sprengja (docs/SPEC_V4.md §4.F "Adım 4.6.8", K-85): every answer is `{ ok: true }`; the table's
+// state comes through rooms.game_state. A late throw answers `turn_over` (the bomb went off).
+export const sprengjaApi = {
+  shuffle: (roomId: string) => invoke<GameOkResponse>('sprengja', { action: 'shuffle', roomId }),
+  start: (roomId: string) => invoke<GameOkResponse>('sprengja', { action: 'start', roomId }),
+  reveal: (roomId: string, round: number) =>
+    invoke<GameOkResponse>('sprengja', { action: 'reveal', roomId, round }),
+  light: (roomId: string, round: number) =>
+    invoke<GameOkResponse>('sprengja', { action: 'light', roomId, round }),
+  takeOver: (roomId: string, round: number, step: number) =>
+    invoke<GameOkResponse>('sprengja', { action: 'take-over', roomId, round, step }),
+  pass: (roomId: string, round: number, step: number) =>
+    invoke<GameOkResponse>('sprengja', { action: 'pass', roomId, round, step }),
+  poll: (roomId: string, round: number) =>
+    invoke<GameOkResponse>('sprengja', { action: 'poll', roomId, round }),
+  ready: (roomId: string, step: number) =>
+    invoke<GameOkResponse>('sprengja', { action: 'ready', roomId, step }),
+  advance: (roomId: string) => invoke<GameOkResponse>('sprengja', { action: 'advance', roomId }),
+};

@@ -17,6 +17,7 @@ import { KinshiGame, kinshiMode } from '@/features/games/kinshi/KinshiGame';
 import { KibritGame, kibritMode } from '@/features/games/kibrit/KibritGame';
 import { KrotGame, krotMode } from '@/features/games/sahtekar/KrotGame';
 import { SignumGame, signumMode } from '@/features/games/signum/SignumGame';
+import { SprengjaGame, sprengjaMode } from '@/features/games/sprengja/SprengjaGame';
 import { gameNoOf, VampirGame, vampirMode } from '@/features/games/vampir/VampirGame';
 import { useVampirHidden } from '@/features/games/vampir/vampirHidden';
 import { useGameAwake } from '@/lib/gameAwake';
@@ -155,7 +156,12 @@ export default function TableScreen() {
   useGameAwake(
     !!r &&
       r.status !== 'closed' &&
-      (vampirMode(r) ?? kinshiMode(r) ?? krotMode(r) ?? signumMode(r) ?? kibritMode(r)) === 'play',
+      (vampirMode(r) ??
+        kinshiMode(r) ??
+        krotMode(r) ??
+        signumMode(r) ??
+        kibritMode(r) ??
+        sprengjaMode(r)) === 'play',
   );
   const backToVenue = () => {
     forget(id);
@@ -224,12 +230,13 @@ export default function TableScreen() {
   // Vampir Köylü's page, game or end takes the screen (docs/SPEC_V4.md §4.F "Adım 4.6.6"); one sent
   // back to the table stays back until a new page comes.
   // Kinshi's (Aura v85, "Kinshi (tabu düzeni)"), Krot's (Aura v86), Signum's (Aura v87) and
-  // Kibrit's (Aura v90) the same way.
+  // Kibrit's (Aura v90) and Sprengja's (Aura v99) the same way.
   const vampir = vampirMode(r);
   const kinshi = kinshiMode(r);
   const krot = krotMode(r);
   const signum = signumMode(r);
-  const gameMode = vampir ?? kinshi ?? krot ?? signum ?? kibritMode(r);
+  const kibrit = kibritMode(r);
+  const gameMode = vampir ?? kinshi ?? krot ?? signum ?? kibrit ?? sprengjaMode(r);
   const gameKey = `${gameMode}:${gameNoOf(r.game_state)}`;
   if (gameMode && hiddenGame !== gameKey) {
     const Game = vampir
@@ -240,7 +247,9 @@ export default function TableScreen() {
           ? KrotGame
           : signum
             ? SignumGame
-            : KibritGame;
+            : kibrit
+              ? KibritGame
+              : SprengjaGame;
     return (
       <Game
         room={r}
@@ -259,7 +268,9 @@ export default function TableScreen() {
         ? tr.krot
         : signum
           ? tr.signum
-          : tr.kibrit;
+          : kibrit
+            ? tr.kibrit
+            : tr.sprengja;
   const inLobby = r.visibility === 'open';
   const unread = unreadCount(messages, seenAt, sessionId);
 
