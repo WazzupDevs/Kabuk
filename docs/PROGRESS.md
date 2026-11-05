@@ -1,5 +1,11 @@
 # İlerleme
 
+## Devir notu (5 Kasım 2026, Sprengja içerik ve dev doğrulaması)
+
+- Birleşenler: #473 (harf grubu v3, 96 grup 40/36/20, `content/sprengja-letter-groups.json`; seed dev'e uygulandı), #478 (`pnpm latency:sprengja` bot masası; D-1–D-6 `docs/decisions/4.6.8-sprengja.md`, sonuçlar `4.6.8-sprengja-dev.md`: altısı geçti, Realtime p90 841 ms ölçütü az aşıyor). Dev'de `sprengja-explode` kapalı, `is_available: false`; ikisini açmak proje sahibinde.
+- Sıradaki paket (3): Aura'da Sprengja panoları önce tuvalde güncellenir (canlı tuval `project/Sprengja*.dc.html`, 10 pano): halka 3–8 kişi, "Atışlar · n", "HARF GRUBU" (`SprengjaHece`), devralma, ortak kazanan, yarıda kalma, son turda "Sonuçları gör". Sonra `tuval-aktarim` ile ekranlar.
+- Paket 4 (saha testi raporu) saha testinden sonra; `yol` ve `tut`'un atış süresi ayrıca izlenir (O-15).
+
 ## Devir notu (5 Kasım 2026, Krot sunucusu)
 
 - #464 Krot kişi bazlı sunucu (4.6.3): `20261130090000_sahtekar_v4.sql`, `functions/sahtekar`, `pure/sahtekarGame.ts`, `tests/sahtekar.test.ts`; kararlar `docs/decisions/4.6.3-krot.md` (dört teknik karar proje sahibince onaylı). Hazırım, Söyledim ve oy yalnızca saat işlerken sayılır (`turn_over`). Kural 3 ve 10'a dokunduğu için birleşme proje sahibinin "onaylandı"sını bekler; Krot ekranları bu PR birleşince başlar.
