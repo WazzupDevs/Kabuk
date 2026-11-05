@@ -1,5 +1,5 @@
 // Krot (Sahtekar) at a table of people (docs/SPEC_V4.md §4.F "Adım 4.6.3", K-71): the rules the app
-// and the server share. The server (supabase/migrations/20261129090000_sahtekar_v4.sql) deals the
+// and the server share. The server (supabase/migrations/20261130090000_sahtekar_v4.sql) deals the
 // roles and the word, keeps the clock, the clue order and the secret votes; it takes its numbers
 // from private.sahtekar_config(), which sahtekarGame.test.ts keeps equal to SAHTEKAR_GAME. The app
 // reads the table's open state (rooms.game_state) through readSahtekarState and asks for its own role

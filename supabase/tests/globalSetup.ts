@@ -1,16 +1,15 @@
 // Pauses every pg_cron job while the integration tests run, so no job fires between two steps of
 // a test (a closed reveal window, a refreshed Keşfet bucket, an expired request). Tests that cover
-// a job call its function directly. Every job is scheduled active by the migrations, so teardown
-// turns all of them back on; a run killed before teardown is healed by the next run's teardown or
-// by `pnpm db:reset`.
+// a job call its function directly. Teardown turns every job back on but the one the migrations
+// create switched off (sprengja-explode, K-85 O-14: turned on by hand); a run killed before
+// teardown is healed by the next run's teardown or by `pnpm db:reset`.
 import { sql } from './local.ts';
 
-async function setActive(active: boolean): Promise<void> {
-  await sql`select cron.alter_job(jobid, active => ${active}) from cron.job`;
-}
+// Created off, and left off by the tests.
+const OFF_BY_DEFAULT = ['sprengja-explode'];
 
 export async function setup(): Promise<void> {
-  await setActive(false);
+  await sql`select cron.alter_job(jobid, active => false) from cron.job`;
   // A job that started just before the pause may still be running; wait for it to finish.
   for (let i = 0; i < 50; i++) {
     const [running] = await sql`
@@ -24,6 +23,9 @@ export async function setup(): Promise<void> {
 }
 
 export async function teardown(): Promise<void> {
-  await setActive(true);
+  await sql`
+    select cron.alter_job(jobid, active => true) from cron.job
+    where not (jobname = any (${OFF_BY_DEFAULT}))
+  `;
   await sql.end();
 }

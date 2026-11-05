@@ -1,5 +1,5 @@
 {
-  "source": "docs/SPEC_V4.md §4.F (v43 posterleri ve kategorileri; K-17), §4.6.6 (Vampir Köylü, K-77, K-78), §4.6.7 (Signum)",
+  "source": "docs/SPEC_V4.md §4.F (v43 posterleri ve kategorileri; K-17), §4.6.6 (Vampir Köylü, K-77, K-78), §4.6.7 (Signum), §4.6.8 (Sprengja, K-85)",
   "categories": [
     {
       "id": "teams",
@@ -90,6 +90,17 @@
       "pregame": true,
       "categories": ["duel", "multi"],
       "poster": "sarkida-gecsin",
+      "available": false
+    },
+    {
+      "id": "sprengja",
+      "name": "Sprengja",
+      "minPlayers": 3,
+      "maxPlayers": 8,
+      "teams": false,
+      "pregame": true,
+      "categories": ["multi"],
+      "poster": "sprengja",
       "available": false
     },
     {
