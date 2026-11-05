@@ -9,7 +9,7 @@ Kodda `theme/kinshi.ts` → `kinshiDeck` (testi `kinshiDeck.test.ts`). Oturumun 
 Ölçüm: kartın fontu (Plus Jakarta Sans 800) ve harf aralığıyla, `upperTr` ile büyük harf; Chromium'da kerning'li ve testte (`kinshiDeck.test.ts`, kerning'siz üst sınır) aynı sonuç. Kelime bandı 320/360/390 dp'de 171/201/224 dp, yasak listesi 159/187/208 dp.
 
 - Düzeldi: tahmincinin paneli 320 dp'de uzun kelimelerle (her satır iki satıra iner) 334 dp'ye çıkıp kartın altından taşıyor, Doğru/Pas/Yasak sayaçlarının üstüne biniyordu; en büyük yazıda 360 ve 390 dp'de de. Destenin kutusu artık panelin ölçülen altına kadar uzar (`kinshiDeckHeight`), sayaçlar onun 37 altında; ölçüler değişmedi, sığmazsa `StageFit`'in ortası kayar.
-- Açık (P2): 3-2-1'in kankileri ve Oyun sonunun konfetisi 390'a göre sabit konumda; 320'de ortadaki kanki sağdakinin üstüne biner, sağdaki konfeti ekran dışında kalır. Ayrı PR (planı `docs/PROGRESS.md`'de).
+- Düzeldi (ayrı PR): 3-2-1'in kankileri ve Oyun sonunun konfetisi 390'a göre sabit konumdaydı; 320'de ortadaki kanki sağdakinin üstüne biniyor, sağdaki konfeti ekran dışında kalıyordu. Sahne yatayda bütün olarak ölçeklenir (`kinshiScene`: kankilerin boyu ve yeri, konfetinin yeri × ekran / 390, en çok 1; konfeti çubukları ve dikey ölçüler aynı). Yalnızca yerleri oranlamak üç kankinin toplam genişliği (358 dp) 320'ye sığmadığı için binişi 390'dakinin dört katına çıkarırdı; ölçeklenince dizilim ve binişler 390'dakinin aynısı (× 0,82).
 
 ## Proje sahibinin kararları (5 Kasım 2026, denetimden sonra)
 
