@@ -4,7 +4,7 @@
 
 - Birleşenler: #456 (Kinshi tabu düzeni, Aura v85: Takımlar, Tur öncesi, 3-2-1, Anlatıcı, Tahminci, Rakip, Gözlemci, Tur sonu, Oyun sonu; `features/games/kinshi/`, ölçüler `theme/kinshi.ts`, koyu açılış `DarkGameScope`; poster `kinshi` → oyun `tabu`, `PosterCard.tsx` → `conceptOf`; `tabu.available: true` + seed), #458 (Aura v94: açıkta dolu takım yüzeyi `TEAM_FILLS` #6A47F5/#D02860, sahip olmayanların Tur sonunda salt okunur sayı hapı). Takım renkleri her yerde tuvalinki (SPEC_V4 §4.2).
 - Yayın: önce dev projesine #451/#453 migration'ları, `tabu` fonksiyonu ve seed, sonra OTA. Native yok; cihazda denenmedi, görsel kontrol proje sahibinde.
-- Bilerek yok: kartın Doğru/Pas/Yasak! çıkış hareketleri (`hareket.json`'a girince ayrı PR). Çizilmemiş: kart yükleniyor/bağlantı hatası (bugün `Loader` ve ortak hata), 320 dp ve en büyük yazı.
+- Bilerek yok: kartın Doğru/Pas/Yasak! çıkış hareketleri (`hareket.json`'a girince ayrı PR). Çizilmemiş: kart yükleniyor/bağlantı hatası (bugün `Loader` ve ortak hata). 320 dp ve en büyük yazı: deste ekranla ölçeklenir (`kinshiDeck`, `docs/decisions/kinshi-320dp.md`); Anlatıcı ve Gözlemci görüntüsü proje sahibinin telefonunda.
 - Oturumun seçtikleri (proje sahibi telefonda bakar): zaman kapsülü üç kademe (Tur öncesi ve 3-2-1 dolu, tur yarım, son 10 sn az); tahmincinin panelinde son üç kelime en yenisi üstte.
 
 ## Devir notu (5 Kasım 2026, Kinshi tabu düzeni)
