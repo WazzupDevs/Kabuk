@@ -15,17 +15,19 @@ import {
 } from './tabuGame.ts';
 
 const migrations = resolve(import.meta.dirname, '../../../migrations');
-const migration = readFileSync(
-  resolve(migrations, readdirSync(migrations).find((f) => f.endsWith('_kapsul_anlat.sql')) ?? ''),
-  'utf8',
-);
+// The latest definition of private.tabu_config().
+const CONFIG = 'function private.tabu_config()';
+const migration =
+  readdirSync(migrations)
+    .sort()
+    .map((f) => readFileSync(resolve(migrations, f), 'utf8'))
+    .filter((text) => text.includes(CONFIG))
+    .at(-1) ?? '';
 
 describe('TABU_GAME', () => {
   it('is the server’s private.tabu_config()', () => {
-    const body = migration.slice(
-      migration.indexOf('create function private.tabu_config()'),
-      migration.indexOf('create function private.tabu_seconds'),
-    );
+    const from = migration.indexOf(CONFIG);
+    const body = migration.slice(from, migration.indexOf('$$;', from));
     const numbers = Object.fromEntries(
       [...body.matchAll(/'(\w+)', (\d+)/g)].map((m) => [m[1], Number(m[2])]),
     );

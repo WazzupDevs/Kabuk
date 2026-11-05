@@ -401,7 +401,7 @@ describe('the turns (§4.F)', () => {
   );
 
   it(
-    'ends after six turns with the results, the winner and the two awards',
+    'ends after the sixth Tur sonu with the results, the winner and the two awards',
     async () => {
       const g = await game(FIVE);
       const rival = g.b[0] as Person;
@@ -417,13 +417,15 @@ describe('the turns (§4.F)', () => {
           expect(await mark(teller, g, 'correct')).toEqual(OK);
         }
         await runOut(g);
-        if (turn < TABU_GAME.totalTurns) {
-          const st = await state(g.roomId);
-          expect(st.phase).toBe('summary');
-          expect(await tabu(g.owner, { action: 'next', roomId: g.roomId, step: st.step })).toEqual(
-            OK,
-          );
+        // Tur sonu after every turn, the last one too.
+        const st = await state(g.roomId);
+        expect(st).toMatchObject({ phase: 'summary', turnNo: turn });
+        if (turn === TABU_GAME.totalTurns) {
+          expect(await roomRow(g.roomId)).toMatchObject({ concept: 'tabu' });
         }
+        expect(await tabu(g.owner, { action: 'next', roomId: g.roomId, step: st.step })).toEqual(
+          OK,
+        );
       }
       const row = await roomRow(g.roomId);
       expect(row.concept).toBeNull();
