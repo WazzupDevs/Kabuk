@@ -1633,6 +1633,8 @@ export const tr = {
     no_passes_left: 'Pas hakkınız kalmadı.',
     too_soon: 'Biraz bekle.',
     no_cards: 'Kart kalmadı.',
+    not_holder: 'Bomba sende değil.',
+    not_starter: 'Bu turu başka biri başlatıyor.',
     not_found: 'Bulunamadı.',
     reply_unavailable: 'Yanıtladığın mesaj artık yok.',
     photo_required: 'Profilinle görünmek için önce profil fotoğrafı ekle.',
