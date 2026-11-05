@@ -596,7 +596,8 @@ describe('locks (§4.K)', () => {
       await toVote(g);
       const at = await step(g.roomId);
       const [impostor] = g.impostors as [Person];
-      const [a, b, c] = g.players as [Person, Person, Person];
+      // b leaves the game, so b is not the owner (the owner cannot leave its game, only end it).
+      const [a, b, c] = g.players.filter((p) => p !== g.owner) as [Person, Person, Person];
       const first = postgres(dbUrl, { max: 1, onnotice: () => {} });
       const second = postgres(dbUrl, { max: 1, onnotice: () => {} });
       try {
