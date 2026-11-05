@@ -15,6 +15,7 @@ export type HapticMoment =
   | 'tabuPass' // Tabu: Pas
   | 'timeUp' // a turn's time ran out
   | 'grabbed' // a grab game: the person's "Kaptım" came first (v43)
+  | 'blast' // Sprengja: the bomb went off in this person's hands, as the server settled it (K-85)
   | 'lastSeconds' // a timed turn: one of its last seconds (v43)
   | 'replyThreshold' // a chat: a swiped message passed the point where letting go answers it (v43)
   | 'failed' // an action the person pressed failed, and its error shows (FEEL_ERROR)
@@ -39,6 +40,7 @@ export const HAPTICS: Record<HapticMoment, HapticCall> = {
   tabuPass: { kind: 'impact', style: 'rigid' },
   timeUp: { kind: 'impact', style: 'rigid' },
   grabbed: { kind: 'impact', style: 'medium' },
+  blast: { kind: 'impact', style: 'rigid' },
   lastSeconds: { kind: 'impact', style: 'light' },
   replyThreshold: { kind: 'selection' },
   failed: { kind: 'notification', type: 'error' },

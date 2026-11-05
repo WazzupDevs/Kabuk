@@ -15,6 +15,11 @@ export const CAP_ICONS = {
     {"t":"circle","l":"b","cx":12,"cy":12,"r":8.8},
     {"t":"rect","l":"a","x":4.177,"y":10.4,"width":15.645,"height":3.2,"rx":1.6,"transform":"rotate(-45 12 12)"},
   ],
+  bomb: [
+    {"t":"circle","l":"b","cx":10.6,"cy":14,"r":7.2},
+    {"t":"rect","l":"a","x":12.3,"y":4.6,"width":3.2,"height":6.4,"rx":1.6,"transform":"rotate(40 13.9 7.8)"},
+    {"t":"circle","l":"a","cx":18.6,"cy":4.6,"r":2},
+  ],
   cafe: [
     {"t":"path","l":"ob","d":"M16.4 9.9h.9a2.6 2.6 0 0 1 0 5.2h-.9"},
     {"t":"rect","l":"b","x":3.6,"y":8,"width":12.6,"height":10.4,"rx":4},
