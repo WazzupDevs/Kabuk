@@ -60,14 +60,7 @@ function dayMonthAt(iso: string): string {
 
 // play_history.concept: the last game played in the room, or 'chat' (docs/SPEC_V3.md §5.5).
 export type HistoryConcept =
-  | 'tabu'
-  | 'sohbet'
-  | 'sahtekar'
-  | 'harf'
-  | 'sarki'
-  | 'ibre'
-  | 'vampir'
-  | 'chat';
+  'tabu' | 'sohbet' | 'sahtekar' | 'harf' | 'sarki' | 'ibre' | 'vampir' | 'chat';
 const HISTORY_CONCEPTS: Record<HistoryConcept, string> = {
   ...GAME_NAMES,
   vampir: 'Vampir Köylü',
