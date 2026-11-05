@@ -1,5 +1,5 @@
-// Sprengja (docs/SPEC_V4.md §4.F "Adım 4.6.7", K-85): the bomb goes from hand to hand. The rules
-// the app and the server share. The server (supabase/migrations/20261128090000_sprengja.sql) keeps
+// Sprengja (docs/SPEC_V4.md §4.F "Adım 4.6.8", K-85): the bomb goes from hand to hand. The rules
+// the app and the server share. The server (supabase/migrations/20261129090000_sprengja.sql) keeps
 // the hidden fuse, the bomb's holder and the score; it takes its numbers from
 // private.sprengja_config(), which sprengja.test.ts keeps equal to SPRENGJA. The app reads the
 // table's open game state (rooms.game_state) through readSprengjaState. The moment the bomb goes off

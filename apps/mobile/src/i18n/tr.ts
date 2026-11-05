@@ -1210,9 +1210,17 @@ export const tr = {
       krot: { name: 'Krot', sub: 'Aramızdaki kim?', people: '3+' },
       sprengja: { name: 'Sprengja', sub: 'Bombayı çabuk at', people: '3+' },
       kaupholl: { name: 'Kaupholl', sub: 'En yakına yatır', people: '3+' },
+      kibrit: { name: 'Kibrit' },
     },
-    gameCardLabel: (name: string, sub: string, people: string, tag: string) =>
-      `${name}, ${sub}, ${people} kişi, ${tag}`,
+    gameCardLabel: (
+      name: string,
+      sub: string | undefined,
+      people: string | undefined,
+      tag: string,
+    ) =>
+      [name, sub, people === undefined ? undefined : `${people} kişi`, tag]
+        .filter((part) => part !== undefined)
+        .join(', '),
     // A playable game's poster (docs/SPEC_V4.md §4.F): the owner opens it, the others vote for it.
     posterOpen: 'Aç',
     posterVote: 'Oyla',
@@ -1646,6 +1654,23 @@ export const tr = {
     already_friends: 'Zaten arkadaşsınız.',
     not_friends: 'Artık arkadaş değilsiniz.',
     not_judge: 'Bu turda hakem diğer masa.',
+    // Signum (docs/SPEC_V4.md Adım 4.6.7). The screens and their words come with Aura v87; until
+    // then these plain lines only name each refusal.
+    not_captain: 'Bunu yalnızca kaptan yapabilir.',
+    not_guesser: 'Bunu yalnızca tahminciler yapabilir.',
+    not_your_turn: 'Sıra sizde değil.',
+    bad_clue: 'İpucu tek kelime olmalı.',
+    clue_on_board: 'İpucu panodaki bir kelime olamaz.',
+    tile_open: 'Bu karo açık.',
+    not_pointed: 'Önce karoyu işaretle.',
+    action_id_conflict: 'Bu istek zaten gönderildi.',
+    seq_conflict: 'İşaret zaten gönderildi.',
+    content_unavailable: 'Bu oyun için kelime yok.',
+    captain_missing: 'İki takımın da kaptanı onaylanmalı.',
+    not_in_team: 'Önce bir takım seç.',
+    no_offer: 'Kaptanlık önerisi yok.',
+    not_candidate: 'Bu kişi kaptan adayı değil.',
+    no_candidate: 'Takımda kimse yok.',
     display_name_required: 'Önce profilinde bir ad seç.',
     display_name_invalid: 'Ad 2–24 karakter olmalı ve uygun olmayan ifade içermemeli.',
     bio_invalid: `Tanıtım en fazla ${BIO_MAX} karakter olmalı ve uygun olmayan ifade içermemeli.`,

@@ -1,4 +1,4 @@
--- Faz 4 step 4.6.7 (docs/SPEC_V4.md §4.F "Adım 4.6.7: Sprengja", K-77, K-85): the bomb goes from
+-- Faz 4 step 4.6.8 (docs/SPEC_V4.md §4.F "Adım 4.6.8: Sprengja", K-77, K-85): the bomb goes from
 -- hand to hand. 3–8 players in a throwing order (clockwise); every round the starter opens a card
 -- with a letter group and lights the fuse; whoever holds the bomb says a word with the group aloud
 -- and throws it to the next player; when the hidden fuse runs out, the one holding it loses a point.
@@ -20,7 +20,7 @@
 --   zor). The content and its seed come in their own pull request (K-85 O-12); until then no game
 --   starts (no_cards).
 --
--- The clock (docs/decisions/4.6.7-sprengja.md): every decision is taken after the table's row is locked,
+-- The clock (docs/decisions/4.6.8-sprengja.md): every decision is taken after the table's row is locked,
 -- at clock_timestamp() (now() is the transaction's start and stands still while a lock is awaited).
 -- A throw that gets the lock at or after the fuse's moment blows up in its thrower's hands. Who
 -- decides first: whoever gets the lock; the throws, the poll, the job and a leaving player all
@@ -45,23 +45,30 @@ on conflict (id) do nothing;
 alter table public.game_secrets drop constraint game_secrets_concept_check;
 alter table public.game_secrets
   add constraint game_secrets_concept_check
-  check (concept in ('sahtekar', 'ibre', 'vampir', 'sprengja'));
+  check (concept in ('sahtekar', 'ibre', 'vampir', 'signum', 'sprengja'));
 
 alter table public.game_results drop constraint game_results_concept_check;
 alter table public.game_results
   add constraint game_results_concept_check
-  check (concept in ('tabu', 'sohbet', 'sahtekar', 'harf', 'sarki', 'ibre', 'vampir', 'sprengja'));
+  check (
+    concept in ('tabu', 'sohbet', 'sahtekar', 'harf', 'sarki', 'ibre', 'vampir', 'signum', 'sprengja')
+  );
 alter table public.game_results drop constraint game_results_mode_check;
 alter table public.game_results
   add constraint game_results_mode_check
   check (
-    mode in ('voice', 'text', 'cooperative', 'sahtekar', 'harf', 'sarki', 'ibre', 'vampir', 'sprengja')
+    mode in (
+      'voice', 'text', 'cooperative', 'sahtekar', 'harf', 'sarki', 'ibre', 'vampir', 'signum',
+      'sprengja'
+    )
   );
 alter table public.play_history drop constraint play_history_concept_check;
 alter table public.play_history
   add constraint play_history_concept_check
   check (
-    concept in ('tabu', 'sohbet', 'sahtekar', 'harf', 'sarki', 'ibre', 'vampir', 'sprengja', 'chat')
+    concept in (
+      'tabu', 'sohbet', 'sahtekar', 'harf', 'sarki', 'ibre', 'vampir', 'signum', 'sprengja', 'chat'
+    )
   );
 
 alter table public.game_events drop constraint game_events_type_check;
@@ -69,7 +76,7 @@ alter table public.game_events
   add constraint game_events_type_check check (
     type in (
       'correct', 'taboo', 'pass', 'card_closed', 'turn_started', 'game_completed', 'game_abandoned',
-      'sp_lit', 'sp_pass', 'sp_explode'
+      'captain_left', 'team_empty', 'sp_lit', 'sp_pass', 'sp_explode'
     )
   );
 
@@ -77,7 +84,7 @@ alter table public.game_events
 alter table public.cards drop constraint cards_deck_check;
 alter table public.cards
   add constraint cards_deck_check
-  check (deck in ('tabu', 'sohbet', 'sahtekar', 'harf', 'sarki', 'ibre', 'sprengja'));
+  check (deck in ('tabu', 'sohbet', 'sahtekar', 'harf', 'sarki', 'ibre', 'signum', 'sprengja'));
 alter table public.cards drop constraint cards_check;
 alter table public.cards
   add constraint cards_check check (
@@ -89,6 +96,8 @@ alter table public.cards
         and forbidden is null)
     or (deck = 'sarki' and word is not null and prompt is null and forbidden is null)
     or (deck = 'ibre' and word is not null and prompt is not null and theme is null
+        and forbidden is null)
+    or (deck = 'signum' and word is not null and prompt is null and theme is null
         and forbidden is null)
     or (deck = 'sprengja' and word is not null and theme in ('kolay', 'orta', 'zor')
         and prompt is null and forbidden is null)
@@ -884,7 +893,7 @@ end;
 $$;
 
 -- pg_cron runs a job every second from 1.5 on. Created switched off (K-85 O-14): the phones poll
--- more often until it is turned on (docs/decisions/4.6.7-sprengja.md → "Patlamayı kim görür"). The
+-- more often until it is turned on (docs/decisions/4.6.8-sprengja.md → "Patlamayı kim görür"). The
 -- seconds job's run log is trimmed every hour. Without pg_cron 1.5 there is no job, and the phones'
 -- polls carry the game.
 do $do$

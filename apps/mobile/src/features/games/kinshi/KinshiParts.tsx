@@ -3,7 +3,15 @@ import type { TabuMark, TabuTeam } from '@shared/tabuGame.ts';
 import { upperTr } from '@shared/trText.ts';
 import { Image } from 'expo-image';
 import { type ReactNode, useEffect, useState } from 'react';
-import { Animated, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import {
+  Animated,
+  Pressable,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+  type ViewStyle,
+} from 'react-native';
 
 import { CapIcon, type CapIconName } from '@/aura/CapIcon';
 import { springConfig } from '@/aura/motion';
@@ -20,7 +28,14 @@ import { useReduceMotion } from '@/lib/useReduceMotion';
 import { MOTION } from '@/theme/aura';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { TEAM_TONES, type Team } from '@/theme/gameColors';
-import { KINSHI as K, KINSHI_TYPE as KT } from '@/theme/kinshi';
+import {
+  KINSHI as K,
+  KINSHI_MIN_TYPE,
+  KINSHI_TYPE as KT,
+  kinshiDeck,
+  kinshiDeckHeight,
+  type KinshiDeck,
+} from '@/theme/kinshi';
 import { useTheme } from '@/theme/ThemeProvider';
 
 import { type KinshiBuddy, kinshiArt, type KinshiTimer } from './kinshiArt';
@@ -352,22 +367,22 @@ export type CardFace =
 
 // The card's front (`.card`): the riso ground, the word white in the pink band, the five forbidden
 // words under it with a 14 % line between them.
-function Front({ card }: { card: TabuCard }) {
+function Front({ card, d }: { card: TabuCard; d: KinshiDeck }) {
   return (
     <View style={StyleSheet.absoluteFill}>
       <Image
         source={kinshiArt.cardFront}
-        style={[StyleSheet.absoluteFill, { borderRadius: K.card.radius }]}
+        style={[StyleSheet.absoluteFill, { borderRadius: d.card.radius }]}
         contentFit="cover"
         accessibilityIgnoresInvertColors
       />
       <View
         style={{
           position: 'absolute',
-          left: K.wordBand.side,
-          right: K.wordBand.side,
-          top: K.wordBand.top,
-          height: K.wordBand.height,
+          left: d.wordBand.side,
+          right: d.wordBand.side,
+          top: d.wordBand.top,
+          height: d.wordBand.height,
           alignItems: 'center',
           justifyContent: 'center',
         }}
@@ -395,10 +410,10 @@ function Front({ card }: { card: TabuCard }) {
       <View
         style={{
           position: 'absolute',
-          left: K.list.side,
-          right: K.list.side,
-          top: K.list.top,
-          height: K.list.height,
+          left: d.list.side,
+          right: d.list.side,
+          top: d.list.top,
+          height: d.list.height,
         }}
       >
         {card.forbidden.map((w, i) => (
@@ -415,7 +430,7 @@ function Front({ card }: { card: TabuCard }) {
             <Text
               numberOfLines={1}
               adjustsFontSizeToFit
-              minimumFontScale={MIN_WORD}
+              minimumFontScale={MIN_FORBIDDEN}
               maxFontSizeMultiplier={1}
               style={[KT.forbidden, { color: K.listInk, textAlign: 'center' }]}
             >
@@ -427,17 +442,25 @@ function Front({ card }: { card: TabuCard }) {
     </View>
   );
 }
-const MIN_WORD = 0.5;
+// One line, shrinking no further than 22 (the word) and 16 (the forbidden words).
+const MIN_WORD = KINSHI_MIN_TYPE.word / (KT.word.fontSize ?? KINSHI_MIN_TYPE.word);
+const MIN_FORBIDDEN =
+  KINSHI_MIN_TYPE.forbidden / (KT.forbidden.fontSize ?? KINSHI_MIN_TYPE.forbidden);
 
-function Back() {
+function Back({ radius }: { radius: number }) {
   return (
     <Image
       source={kinshiArt.cardBack}
-      style={[StyleSheet.absoluteFill, { borderRadius: K.card.radius }]}
+      style={[StyleSheet.absoluteFill, { borderRadius: radius }]}
       contentFit="cover"
       accessibilityIgnoresInvertColors
     />
   );
+}
+
+// The deck's geometry for this screen's width (`theme/kinshi.ts` → `kinshiDeck`).
+export function useKinshiDeck(): KinshiDeck {
+  return kinshiDeck(useWindowDimensions().width);
 }
 
 // The 3D deck (`.d3`): the card tipped back (perspective 1100, rotateX 13°, rotateZ −1.2° from
@@ -447,45 +470,50 @@ export function Deck({
   face,
   peek,
   children,
+  reach,
 }: {
   face: CardFace;
   peek: readonly [KinshiBuddy, KinshiBuddy];
   // Laid over the deck (the guesser's panel).
   children?: ReactNode;
+  // How far down from the deck's top that reaches (its measured bottom), when it does.
+  reach?: number;
 }) {
   const { scheme } = useTheme();
   const { c } = useKit();
   const shadowOff = useLabOff('golge');
-  const fan = shadowParts(shadowOff, K.fanShadow, K.fanEdge, K.card.radius);
-  const edge = shadowParts(shadowOff, K.edgeOuter, K.edgeShadow, K.card.radius);
-  const top = shadowParts(shadowOff, K.cardOuter, K.cardEdge, K.card.radius);
+  const d = useKinshiDeck();
+  const r = d.card.radius;
+  const fan = shadowParts(shadowOff, K.fanShadow, K.fanEdge, r);
+  const edge = shadowParts(shadowOff, K.edgeOuter, K.edgeShadow, r);
+  const top = shadowParts(shadowOff, K.cardOuter, K.cardEdge, r);
   const box: ViewStyle = {
     position: 'absolute',
     left: 0,
     top: 0,
-    width: K.card.width,
-    height: K.card.height,
+    width: d.card.width,
+    height: d.card.height,
   };
   return (
     <View
       style={{
-        width: K.card.width,
-        height: K.peek.above + K.card.height + K.deckShadow.below,
+        width: d.card.width,
+        height: kinshiDeckHeight(d, reach),
         alignSelf: 'center',
       }}
     >
       <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0 }}>
         <Buddy
           buddy={peek[0]}
-          height={K.peek.height}
-          style={{ left: K.peek.inset, transform: [{ rotate: K.peek.leftTurn }] }}
+          height={d.peek.height}
+          style={{ left: d.peek.inset, transform: [{ rotate: K.peek.leftTurn }] }}
         />
         <Buddy
           buddy={peek[1]}
-          height={K.peek.height}
+          height={d.peek.height}
           style={{
-            right: K.peek.inset,
-            top: K.peek.rightDrop,
+            right: d.peek.inset,
+            top: d.peek.rightDrop,
             transform: [{ rotate: K.peek.rightTurn }],
           }}
         />
@@ -493,10 +521,10 @@ export function Deck({
       <View
         style={{
           position: 'absolute',
-          top: K.peek.above,
+          top: d.peek.above,
           left: 0,
-          width: K.card.width,
-          height: K.card.height,
+          width: d.card.width,
+          height: d.card.height,
           transformOrigin: `50% ${K.deck.originY * 100}%`,
           transform: [
             { perspective: K.deck.perspective },
@@ -510,36 +538,36 @@ export function Deck({
             position: 'absolute',
             left: `${K.deckShadow.inset * 100}%`,
             right: `${K.deckShadow.inset * 100}%`,
-            bottom: -K.deckShadow.below,
-            height: K.deckShadow.height,
-            borderRadius: K.deckShadow.height,
+            bottom: -d.shadow.below,
+            height: d.shadow.height,
+            borderRadius: d.shadow.height,
             backgroundColor: K.deckShadow.color[scheme],
-            filter: [{ blur: K.deckShadow.blur }],
+            filter: [{ blur: d.shadow.blur }],
           }}
         />
-        {K.fans.map((f, i) => (
+        {d.fans.map((f, i) => (
           <View
             key={i}
             style={[
               box,
               {
-                borderRadius: K.card.radius,
+                borderRadius: r,
                 boxShadow: fan.boxShadow,
                 transform: [{ translateX: f.x }, { translateY: f.y }, { rotate: f.rotate }],
               },
             ]}
           >
             {fan.node}
-            <Back />
+            <Back radius={r} />
           </View>
         ))}
-        {[...K.edges].reverse().map((y, i) => (
+        {[...d.edges].reverse().map((y, i) => (
           <View
-            key={y}
+            key={i}
             style={[
               box,
               {
-                borderRadius: K.card.radius,
+                borderRadius: r,
                 backgroundColor: K.edgeColors[(K.edges.length - 1 - i) % 2],
                 boxShadow: edge.boxShadow,
                 transform: [{ translateY: y }],
@@ -549,30 +577,30 @@ export function Deck({
             {edge.node}
           </View>
         ))}
-        <View style={[box, { borderRadius: K.card.radius, boxShadow: top.boxShadow }]}>
+        <View style={[box, { borderRadius: r, boxShadow: top.boxShadow }]}>
           {top.node}
           {face.kind === 'front' ? (
             <Pop key={face.key}>
-              <View style={{ width: K.card.width, height: K.card.height }}>
-                <Front card={face.card} />
+              <View style={{ width: d.card.width, height: d.card.height }}>
+                <Front card={face.card} d={d} />
               </View>
             </Pop>
           ) : face.kind === 'back' ? (
-            <Back />
+            <Back radius={r} />
           ) : (
             <View
               style={[
                 StyleSheet.absoluteFill,
                 {
-                  borderRadius: K.card.radius,
+                  borderRadius: r,
                   overflow: 'hidden',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  padding: K.list.side,
+                  padding: d.list.side,
                 },
               ]}
             >
-              <Back />
+              <Back radius={r} />
               {face.kind === 'loading' ? (
                 <Loader />
               ) : (

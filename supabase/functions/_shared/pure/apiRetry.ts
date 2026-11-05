@@ -7,7 +7,7 @@ import type { AccountRequest } from './api/account.ts';
 import type { ChatRequest } from './api/chat.ts';
 import type { CheckinRequest } from './api/checkin.ts';
 import type { DmRequest, FriendsRequest } from './api/friends.ts';
-import type { SprengjaRequest, TabuRequest, VampirRequest } from './api/games.ts';
+import type { SignumRequest, SprengjaRequest, TabuRequest, VampirRequest } from './api/games.ts';
 import type { ProfileRequest } from './api/profile.ts';
 import type { VenueChatRequest } from './api/venueChat.ts';
 
@@ -23,6 +23,7 @@ type CallName =
   | `account/${AccountRequest['action']}`
   | `vampir/${VampirRequest['action']}`
   | `tabu/${TabuRequest['action']}`
+  | `signum/${SignumRequest['action']}`
   | `sprengja/${SprengjaRequest['action']}`;
 
 export const IDEMPOTENT_CALLS = [
@@ -73,19 +74,40 @@ export const IDEMPOTENT_CALLS = [
   // tabu.test "the card (rule 3)": "goes to the describer, the other team and the watchers, never
   // to the describer’s team"
   'tabu/turn-cards',
+  // signum.test "signum: races and repeats (IDEMPOTENT_CALLS)":
+  // "answers the same clue, reveal or end-turn again with the first result and writes nothing"
+  'signum/clue',
+  // signum.test "signum: races and repeats (IDEMPOTENT_CALLS)":
+  // "answers the same clue, reveal or end-turn again with the first result and writes nothing"
+  'signum/reveal',
+  // signum.test "signum: races and repeats (IDEMPOTENT_CALLS)":
+  // "answers the same clue, reveal or end-turn again with the first result and writes nothing"
+  'signum/end-turn',
+  // signum.test "signum: races and repeats (IDEMPOTENT_CALLS)":
+  // "keeps a mark from going back: the same seq again changes nothing, an older one is outdated"
+  'signum/point',
+  // signum.test "signum: races and repeats (IDEMPOTENT_CALLS)":
+  // "changes nothing with an early advance, a ready, an advance or a view sent twice"
+  'signum/ready',
+  // signum.test "signum: races and repeats (IDEMPOTENT_CALLS)":
+  // "changes nothing with an early advance, a ready, an advance or a view sent twice"
+  'signum/advance',
+  // signum.test "signum: races and repeats (IDEMPOTENT_CALLS)":
+  // "changes nothing with an early advance, a ready, an advance or a view sent twice"
+  'signum/view',
   // sprengja.test "the fuse (rule 3, K-85 O-4)": "changes nothing with an early poll, and the same
   // with one sent twice"
   'sprengja/poll',
-  // sprengja.test "Tur sonu and the end (§4.6.7)": "moves on when everyone is ready or its time is
+  // sprengja.test "Tur sonu and the end (§4.6.8)": "moves on when everyone is ready or its time is
   // up, and changes nothing with an early advance"
   'sprengja/advance',
-  // sprengja.test "Tur sonu and the end (§4.6.7)": "moves on when everyone is ready or its time is
+  // sprengja.test "Tur sonu and the end (§4.6.8)": "moves on when everyone is ready or its time is
   // up, and changes nothing with an early advance"
   'sprengja/ready',
-  // sprengja.test "the round (§4.6.7)": "opens the card and lights the fuse by the starter only;
+  // sprengja.test "the round (§4.6.8)": "opens the card and lights the fuse by the starter only;
   // the same twice changes nothing"
   'sprengja/reveal',
-  // sprengja.test "the round (§4.6.7)": "opens the card and lights the fuse by the starter only;
+  // sprengja.test "the round (§4.6.8)": "opens the card and lights the fuse by the starter only;
   // the same twice changes nothing"
   'sprengja/light',
 ] as const satisfies readonly CallName[];

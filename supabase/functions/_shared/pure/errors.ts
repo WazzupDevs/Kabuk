@@ -70,6 +70,21 @@ export type ErrorCode =
   | 'already_friends'
   | 'not_friends'
   | 'not_judge'
+  | 'not_captain'
+  | 'not_guesser'
+  | 'not_your_turn'
+  | 'bad_clue'
+  | 'clue_on_board'
+  | 'tile_open'
+  | 'not_pointed'
+  | 'action_id_conflict'
+  | 'seq_conflict'
+  | 'content_unavailable'
+  | 'captain_missing'
+  | 'not_in_team'
+  | 'no_offer'
+  | 'not_candidate'
+  | 'no_candidate'
   | 'method_not_allowed'
   | 'update_required'
   | 'internal';
@@ -141,7 +156,7 @@ const DOMAIN_ERROR_CODES: readonly ErrorCode[] = [
   'no_passes_left',
   'too_soon',
   'no_cards',
-  // Sprengja (§4.F "Adım 4.6.7"): a throw from one without the bomb; a card or fuse pressed by
+  // Sprengja (§4.F "Adım 4.6.8"): a throw from one without the bomb; a card or fuse pressed by
   // one who does not start the round.
   'not_holder',
   'not_starter',

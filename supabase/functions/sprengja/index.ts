@@ -1,4 +1,4 @@
-// Sprengja (docs/SPEC_V4.md §4.F "Adım 4.6.7", K-85): the bomb goes from hand to hand. The server
+// Sprengja (docs/SPEC_V4.md §4.F "Adım 4.6.8", K-85): the bomb goes from hand to hand. The server
 // keeps the hidden fuse (game_secrets), the holder and the score (rooms.game_state); this function
 // only checks the call and passes it on. It never sees the fuse: the database draws it and keeps
 // it, and no answer here carries it (rule 3, K-85 O-4).

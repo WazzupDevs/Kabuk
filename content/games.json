@@ -1,5 +1,5 @@
 {
-  "source": "docs/SPEC_V4.md §4.F (v43 posterleri ve kategorileri; K-17), §4.6.6 (Vampir Köylü, K-77, K-78), §4.6.7 (Sprengja, K-85)",
+  "source": "docs/SPEC_V4.md §4.F (v43 posterleri ve kategorileri; K-17), §4.6.6 (Vampir Köylü, K-77, K-78), §4.6.7 (Signum), §4.6.8 (Sprengja, K-85)",
   "categories": [
     {
       "id": "teams",
@@ -36,6 +36,17 @@
       "categories": ["teams"],
       "poster": "kapsul-anlat",
       "available": true
+    },
+    {
+      "id": "signum",
+      "name": "Signum",
+      "minPlayers": 4,
+      "maxPlayers": 12,
+      "teams": true,
+      "pregame": true,
+      "categories": ["teams"],
+      "poster": "signum",
+      "available": false
     },
     {
       "id": "ibre",

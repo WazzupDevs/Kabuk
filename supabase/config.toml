@@ -486,6 +486,9 @@ verify_jwt = false
 [functions.tabu]
 verify_jwt = false
 
+[functions.signum]
+verify_jwt = false
+
 [functions.vampir]
 verify_jwt = false
 

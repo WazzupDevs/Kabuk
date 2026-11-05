@@ -1,4 +1,4 @@
-// Faz 4 step 4.6.7 (docs/SPEC_V4.md §4.F "Adım 4.6.7: Sprengja", K-85): the bomb goes from hand to
+// Faz 4 step 4.6.8 (docs/SPEC_V4.md §4.F "Adım 4.6.8: Sprengja", K-85): the bomb goes from hand to
 // hand. The server keeps the hidden fuse, the holder and the score; no answer, no state and no
 // event carries the fuse (rule 3). A test runs a fuse out by moving its moment into the past in
 // game_secrets, and checks after every race that the round's events give the state's holder and
@@ -197,7 +197,7 @@ async function everything(roomId: string): Promise<string> {
   return JSON.stringify({ state: await state(roomId), events: ev });
 }
 
-describe('the start (§4.6.7)', () => {
+describe('the start (§4.6.8)', () => {
   it(
     'plays 3 to 8 by the formula and refuses more',
     async () => {
@@ -279,7 +279,7 @@ describe('the start (§4.6.7)', () => {
   );
 });
 
-describe('the round (§4.6.7)', () => {
+describe('the round (§4.6.8)', () => {
   it(
     'opens the card and lights the fuse by the starter only; the same twice changes nothing',
     async () => {
@@ -705,7 +705,7 @@ describe('the fuse (rule 3, K-85 O-4)', () => {
   );
 });
 
-describe('the clock (§4.6.7)', () => {
+describe('the clock (§4.6.8)', () => {
   it(
     'tells the phones to poll more while the job is off',
     async () => {
@@ -736,7 +736,7 @@ describe('the clock (§4.6.7)', () => {
   });
 });
 
-describe('the races (§4.6.7)', () => {
+describe('the races (§4.6.8)', () => {
   it(
     'takes one of ten throws sent at once',
     async () => {
@@ -825,7 +825,7 @@ describe('the races (§4.6.7)', () => {
   );
 });
 
-describe('Tur sonu and the end (§4.6.7)', () => {
+describe('Tur sonu and the end (§4.6.8)', () => {
   it(
     'moves on when everyone is ready or its time is up, and changes nothing with an early advance',
     async () => {
@@ -952,7 +952,7 @@ describe('the last Tur sonu (K-85, 5 Kasım)', () => {
   );
 });
 
-describe('leaving (§4.6.7)', () => {
+describe('leaving (§4.6.8)', () => {
   it(
     'reads the owner’s end of a burning game as no one leaving: no throw, no blast',
     async () => {

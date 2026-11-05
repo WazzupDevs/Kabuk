@@ -95,7 +95,35 @@ export type VampirRequest =
   // Anyone at the table once the phase's time is up; idempotent.
   | { action: 'advance'; roomId: string };
 
-// `sprengja` (docs/SPEC_V4.md §4.F "Adım 4.6.7", K-85). `round` and `step` are game_state's, so a
+// `signum` (docs/SPEC_V4.md §4.F "Adım 4.6.7"). Session ids for people (rule 4); `step` is the
+// game's step in rooms.game_state; `actionId` a UUID the phone makes for one press (sent again only
+// as the same press); `seq` grows with each of the caller's marks. Every game answer is a
+// SignumAnswer (pure/signum.ts): `applied: false` with a reason is not an error (the phone
+// refreshes, no failure haptic).
+export type SignumRequest =
+  // The pre-game page: Kaptan olurum; the owner's offer, random offer and approval; the answer.
+  | { action: 'volunteer'; roomId: string; on: boolean }
+  | { action: 'offer-captain'; roomId: string; sessionId: string }
+  | { action: 'random-offer'; roomId: string; team: 'a' | 'b' }
+  | { action: 'answer-offer'; roomId: string; accept: boolean }
+  | { action: 'approve-captain'; roomId: string; team: 'a' | 'b'; sessionId: string }
+  // The owner starts.
+  | { action: 'start'; roomId: string }
+  // The caller's own view; idempotent.
+  | { action: 'view'; roomId: string }
+  | { action: 'ready'; roomId: string; step: number }
+  | { action: 'clue'; roomId: string; step: number; word: string; n: number; actionId: string }
+  | { action: 'point'; roomId: string; step: number; tile: number | null; seq: number }
+  | { action: 'reveal'; roomId: string; step: number; tile: number; actionId: string }
+  | { action: 'end-turn'; roomId: string; step: number; actionId: string }
+  // Anyone at the table once the phase's time is up; idempotent.
+  | { action: 'advance'; roomId: string; step: number };
+
+// A pre-game action's and the start's answer: applied, or `busy` (changed at the same moment three
+// times; the phone reads the table again).
+export type SignumPageAnswer = { applied: true } | { applied: false; reason: 'busy' };
+
+// `sprengja` (docs/SPEC_V4.md §4.F "Adım 4.6.8", K-85). `round` and `step` are game_state's, so a
 // press from a state already gone changes nothing. No answer carries the hidden fuse: a throw
 // answers { ok: true } whether it moved the bomb or was a second press, and turn_over once the
 // round's bomb has gone off (which the table already sees).
