@@ -13,7 +13,7 @@ import { boxShadowParts } from '@/components/NativeShadow';
 
 // The games on the table, each its poster in a small landscape card, the game's own palette and logo
 // in the drawing (Aura v92 Masa / MasaKoyu / MasaDar; the posters are the riso rule's deliberate
-// exception), the same picture in light and dark. 600 × 400, and its @2x for 2x screens. A game that
+// exception), the same picture in light and dark. 616 × 448, and its @2x for 2x screens. A game that
 // waits for its step (4.6): "Yakında" in the corner, not pressed.
 export const GAME_CARDS = [
   { id: 'vampir', category: 'multi', art: require('../../../assets/game-poster/g-vampir.webp') },
