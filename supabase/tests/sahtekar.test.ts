@@ -28,8 +28,8 @@ afterEach(async () => {
 });
 
 afterAll(async () => {
-  // As content/games.json has it: closed until Krot's screens come.
-  await sql`update public.games set is_available = false where id = 'sahtekar'`;
+  // As content/games.json has it (Krot's screens came, 5 Kasım).
+  await sql`update public.games set is_available = true where id = 'sahtekar'`;
   await deleteFixtureVenues(sql);
   await sql.end();
 });

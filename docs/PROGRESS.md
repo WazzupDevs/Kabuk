@@ -1,5 +1,11 @@
 # İlerleme
 
+## Devir notu (5 Kasım 2026, Krot ekranları)
+
+- Krot ekranları (Aura v86, 13 pano): `features/games/sahtekar/KrotGame.tsx`, `KrotParts.tsx`, ölçüler `theme/krot.ts`; `sahtekar.available: true` + seed. Kinshi'nin çubuk, kapsül, deste ve kankileri ortak: `features/games/riso/`, `theme/riso.ts`. Kararlar `docs/decisions/krot-ekranlar.md`.
+- Yayın: önce dev projesine #464 migration'ı, `sahtekar` fonksiyonu ve seed, sonra OTA. Native yok; cihazda denenmedi, görsel kontrol proje sahibinde.
+- Proje sahibinin kararları ayrı PR'da: 1 oy düğmesi "1/2 şüpheli seç"; 2 Hazırım rol gösterilince açılır (#475'te karşılandı); 3 oyun sonunda tahminin tutup tutmadığı (tahmin metni saklanmaz); 4 6–12 oyuncuda iki sıra.
+
 ## Devir notu (5 Kasım 2026, Kaupholl)
 
 - Onaylı kurallar ve plan: `docs/decisions/kaupholl.md` (v3.1 son hâl; açık karar yok, kurallar artık değişmez). #460 riso görselleri (`kauphollArt`), #474 gizli içerik kapısı (PR 0: `pnpm guard:secrets`, `docs/OPS.md` → Gizli içerik kapısı) birleşti.
