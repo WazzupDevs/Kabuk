@@ -390,7 +390,8 @@ function beginClues(state: SignumState, secret: SignumSecret, now: Date) {
 
 // --- Actions --------------------------------------------------------------------------------------
 
-export const actionKey = (sid: string, actionId: string): string => `${sid}:${actionId}`;
+// JSON, so no sid and actionId can make another pair's key.
+export const actionKey = (sid: string, actionId: string): string => JSON.stringify([sid, actionId]);
 
 function paramsOf(request: SignumRequest): string {
   switch (request.action) {

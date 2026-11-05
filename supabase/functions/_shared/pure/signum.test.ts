@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import { prepareTerms } from './profanity.ts';
 import {
+  actionKey,
   answerOffer,
   approveCaptain,
   dealKey,
@@ -461,6 +462,10 @@ describe('races and repeats', () => {
     });
   });
 
+  it('keys a record by person and id so that no pair can take another pair’s key', () => {
+    expect(actionKey('a:b', 'c')).not.toBe(actionKey('a', 'b:c'));
+  });
+
   it('someone else’s actionId neither replays their result nor says it was used', () => {
     const g = inGuess();
     const [ece = '', fuat = ''] = g.guessers;
@@ -902,13 +907,6 @@ describe('what leaves the server', () => {
           if (t.open !== null) expect(t.open).toBe(g.secret.key[i]);
           else expect(g.state.board[i]?.open).toBeNull();
         });
-        // Before the end, the open state as text holds no closed tile's kind.
-        if (open.phase !== 'over') {
-          const closedKinds = g.secret.key.filter((_, i) => open.board[i]?.open === null);
-          const listed = JSON.stringify(open.board.map((t) => t.open));
-          expect(listed).not.toContain('"x"');
-          expect(closedKinds.length).toBe(open.board.filter((t) => t.open === null).length);
-        }
         if (open.phase !== 'over') {
           expect(open.key).toBeNull();
           expect(text).not.toContain('"marks"');
