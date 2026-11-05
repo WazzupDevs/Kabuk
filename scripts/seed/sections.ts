@@ -6,6 +6,7 @@ import type {
   ProfanityList,
   HarfCategory,
   IbreScaleEntry,
+  SprengjaLetterGroup,
   SahtekarCategory,
   SarkiWord,
   SohbetCard,
@@ -86,6 +87,7 @@ export function cardsSql(
   harf: readonly HarfCategory[] = [],
   sarki: readonly SarkiWord[] = [],
   ibre: readonly IbreScaleEntry[] = [],
+  sprengja: readonly SprengjaLetterGroup[] = [],
 ): string {
   const tabuRows = tabu.map(
     (c) =>
@@ -115,6 +117,11 @@ export function cardsSql(
     (c) =>
       `('ibre', ${sqlLiteral(c.key)}, ${sqlLiteral(c.right)}, null, null, ${sqlLiteral(c.left)})`,
   );
+  // Sprengja: one row per letter group (word = the group, theme = its tier).
+  const sprengjaRows = sprengja.map(
+    (g) =>
+      `('sprengja', ${sqlLiteral(g.group)}, ${sqlLiteral(g.group)}, null, ${sqlLiteral(g.tier)}, null)`,
+  );
   const sources = [
     'content/tabu-cards.json',
     'content/sohbet-cards.json',
@@ -122,6 +129,7 @@ export function cardsSql(
     ...(harf.length > 0 ? ['content/harf-categories.json'] : []),
     ...(sarki.length > 0 ? ['content/sarki-words.json'] : []),
     ...(ibre.length > 0 ? ['content/ibre-scales.json'] : []),
+    ...(sprengja.length > 0 ? ['content/sprengja-letter-groups.json'] : []),
   ];
   // Each deck's keys as the JSON lists them; a card of that deck not listed is retired below.
   const decks: [string, string[]][] = [
@@ -131,11 +139,12 @@ export function cardsSql(
     ['harf', harf.map((c) => c.key)],
     ['sarki', sarki.map((w) => w.key)],
     ['ibre', ibre.map((c) => c.key)],
+    ['sprengja', sprengja.map((g) => g.group)],
   ];
   return [
     `-- ${sources.join(', ')}`,
     'insert into public.cards (deck, source_key, word, forbidden, theme, prompt) values',
-    `  ${[...tabuRows, ...sohbetRows, ...sahtekarRows, ...harfRows, ...sarkiRows, ...ibreRows].join(',\n  ')}`,
+    `  ${[...tabuRows, ...sohbetRows, ...sahtekarRows, ...harfRows, ...sarkiRows, ...ibreRows, ...sprengjaRows].join(',\n  ')}`,
     'on conflict (deck, source_key) do update set',
     '  word = excluded.word, forbidden = excluded.forbidden, theme = excluded.theme,',
     '  prompt = excluded.prompt, is_active = true;',
