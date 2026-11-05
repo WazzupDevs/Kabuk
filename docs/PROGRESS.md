@@ -4,7 +4,7 @@
 
 - Birleşenler: #463 (deste ölçeklenir), #468 (tahminci paneli sayaçlara binmez), bu PR (proje sahibinin kararları: uzun kelime iki satır, skor hapı dar hâlde; `docs/decisions/kinshi-320dp.md`). OTA, native yok.
 - Sıradaki ayrı görsel PR: 3-2-1 kankileri ve Oyun sonu konfetisi 320 dp'de. Plan: konumlar 390'a göre sabit (`KINSHI.countdownBuddies`, `endScene.confetti`); yatay konumları sahnenin genişliğine oranla (`left / 390 × genişlik`, ortadaki ortalanır), boylar ve dizilim aynı; testte 320'de kankiler ve konfeti ekranda ve ortadaki kanki öbürlerinin üstüne 390'dakinden fazla binmez.
-- #469 birleşmeyi bekliyor (proje sahibinin son iki kontrolü yapıldı): 320 dp'de Hayvanat bahçesi ve Emniyet kemeri 22'de çerçeveden 0,13/0,22 dp eksik, seçenekler A–D proje sahibinde (`docs/decisions/kinshi-320dp.md`). Hap −120…120 için boşluk daraltma ve gerekirse alt satır.
+- #469: 320 dp'de Hayvanat bahçesi ve Emniyet kemeri 22'de çerçeveden 0,13/0,22 dp eksik; proje sahibinin kararı A (olduğu gibi, cihazda doğrulanacak kabul istisnası; `docs/decisions/kinshi-320dp.md`). Hap −120…120 için boşluk daraltma ve gerekirse alt satır.
 - Telefonda bakılacak (cihaz yok, hiçbiri denenmedi; testlerin modeli RN yerleşimini kanıtlamaz): 320 dp ve en büyük yazıda beş rol; iki satırlı kartlar (Hayvanat bahçesi 320/390, Pazar kahvaltısı 320) ortada mı, iki kartta çerçeve; hap 99/99, −99/−99 (alt satır), 100/100; tahminci paneli uzayınca sayaçlar.
 
 ## Devir notu (5 Kasım 2026, Kinshi ekranları bitti)
