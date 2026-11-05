@@ -1,5 +1,11 @@
 # İlerleme
 
+## Devir notu (5 Kasım 2026, Kaupholl sunucusu)
+
+- PR B: SPEC_V4 Adım 4.6.10 ve K-87, CLAUDE.md kural 3 (`guess`/`bet` sıra numarası istisnası) ve kural 10 ekleri; `20261202090000_kaupholl.sql`, `functions/kaupholl`, `tests/kaupholl.test.ts`, yönetici betikleri (`admin:kaupholl-import`, `admin:kaupholl-stats`, `kaupholl:export-check`, `kaupholl:compare`), sahte örnek deste. Kararlar `docs/decisions/4.6.10-kaupholl.md`. `kaupholl.available: false`.
+- Değişmez kurala dokunduğu için birleşme proje sahibinin "onaylandı"sını bekler.
+- Sıradaki: PR C (özel depolarda içerik), Aura farkları (§6), sonra ekranlar (`tuval-aktarim`); toplu açma en sonda.
+
 ## Devir notu (5 Kasım 2026, Kibrit ekranları)
 
 - Kibrit ekranları (Aura v90, 11 pano): `features/games/kibrit/KibritGame.tsx`, ölçüler `theme/kibrit.ts`, `kibritApi`, yeni `note` ikonu; kararlar ve tasarıma sorulacaklar `docs/decisions/kibrit-ekranlar.md`. `kibrit.available` hâlâ `false`.

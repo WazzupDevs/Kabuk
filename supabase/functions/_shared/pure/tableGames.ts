@@ -108,6 +108,17 @@ export const TABLE_GAMES = [
     available: false,
   },
   {
+    id: 'kaupholl',
+    name: 'Kaupholl',
+    minPlayers: 3,
+    maxPlayers: 6,
+    teams: false,
+    pregame: true,
+    categories: ['multi'],
+    poster: 'kaupholl',
+    available: false,
+  },
+  {
     id: 'sohbet',
     name: 'Sohbet kartları',
     minPlayers: 1,

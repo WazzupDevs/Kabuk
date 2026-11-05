@@ -583,6 +583,131 @@ export type Database = {
           },
         ];
       };
+      kaupholl_counters: {
+        Row: {
+          n: number;
+          name: string;
+        };
+        Insert: {
+          n?: number;
+          name: string;
+        };
+        Update: {
+          n?: number;
+          name?: string;
+        };
+        Relationships: [];
+      };
+      kaupholl_question_stats: {
+        Row: {
+          games: number;
+          guesses: number;
+          no_guess: number;
+          question_id: string;
+          smaller_wins: number;
+          sum_abs_log_err: number;
+          win_bucket: number[];
+        };
+        Insert: {
+          games?: number;
+          guesses?: number;
+          no_guess?: number;
+          question_id: string;
+          smaller_wins?: number;
+          sum_abs_log_err?: number;
+          win_bucket?: number[];
+        };
+        Update: {
+          games?: number;
+          guesses?: number;
+          no_guess?: number;
+          question_id?: string;
+          smaller_wins?: number;
+          sum_abs_log_err?: number;
+          win_bucket?: number[];
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'kaupholl_question_stats_question_id_fkey';
+            columns: ['question_id'];
+            isOneToOne: true;
+            referencedRelation: 'kaupholl_questions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      kaupholl_questions: {
+        Row: {
+          active: boolean;
+          answer: number;
+          bias: string;
+          body: string;
+          category: string;
+          decimals: number;
+          difficulty: string;
+          id: string;
+          note: string;
+          unit: string;
+          verification: string;
+        };
+        Insert: {
+          active?: boolean;
+          answer: number;
+          bias: string;
+          body: string;
+          category: string;
+          decimals: number;
+          difficulty: string;
+          id: string;
+          note: string;
+          unit: string;
+          verification: string;
+        };
+        Update: {
+          active?: boolean;
+          answer?: number;
+          bias?: string;
+          body?: string;
+          category?: string;
+          decimals?: number;
+          difficulty?: string;
+          id?: string;
+          note?: string;
+          unit?: string;
+          verification?: string;
+        };
+        Relationships: [];
+      };
+      kaupholl_used_questions: {
+        Row: {
+          question_id: string;
+          room_id: string;
+        };
+        Insert: {
+          question_id: string;
+          room_id: string;
+        };
+        Update: {
+          question_id?: string;
+          room_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'kaupholl_used_questions_question_id_fkey';
+            columns: ['question_id'];
+            isOneToOne: false;
+            referencedRelation: 'kaupholl_questions';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'kaupholl_used_questions_room_id_fkey';
+            columns: ['room_id'];
+            isOneToOne: false;
+            referencedRelation: 'rooms';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       kibrit_papers: {
         Row: {
           author_session_id: string;
@@ -2298,6 +2423,43 @@ export type Database = {
       };
       ibre_target: {
         Args: { round: number; target_room_id: string; target_user_id: string };
+        Returns: Json;
+      };
+      kaupholl_commit: {
+        Args: {
+          clock: string;
+          new_secret: Json;
+          new_state: Json;
+          read_rev: number;
+          read_session_id: string;
+          read_state: Json;
+          round_stats: Json;
+          target_room_id: string;
+          target_user_id: string;
+        };
+        Returns: Json;
+      };
+      kaupholl_note_exhausted: { Args: never; Returns: undefined };
+      kaupholl_pool: {
+        Args: { target_room_id: string; target_user_id: string };
+        Returns: Json;
+      };
+      kaupholl_pregame_read: {
+        Args: { target_room_id: string; target_user_id: string };
+        Returns: Json;
+      };
+      kaupholl_read: {
+        Args: { target_room_id: string; target_user_id: string };
+        Returns: Json;
+      };
+      kaupholl_start: {
+        Args: {
+          new_secret: Json;
+          new_state: Json;
+          read_pregame: Json;
+          target_room_id: string;
+          target_user_id: string;
+        };
         Returns: Json;
       };
       kibrit_advance: {

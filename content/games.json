@@ -1,5 +1,5 @@
 {
-  "source": "docs/SPEC_V4.md §4.F (v43 posterleri ve kategorileri; K-17), §4.6.6 (Vampir Köylü, K-77, K-78), §4.6.7 (Signum), §4.6.8 (Sprengja, K-85), §4.6.9 (Kibrit, K-86)",
+  "source": "docs/SPEC_V4.md §4.F (v43 posterleri ve kategorileri; K-17), §4.6.6 (Vampir Köylü, K-77, K-78), §4.6.7 (Signum), §4.6.8 (Sprengja, K-85), §4.6.9 (Kibrit, K-86), §4.6.10 (Kaupholl, K-87)",
   "categories": [
     {
       "id": "teams",
@@ -112,6 +112,17 @@
       "pregame": true,
       "categories": ["multi"],
       "poster": "sprengja",
+      "available": false
+    },
+    {
+      "id": "kaupholl",
+      "name": "Kaupholl",
+      "minPlayers": 3,
+      "maxPlayers": 6,
+      "teams": false,
+      "pregame": true,
+      "categories": ["multi"],
+      "poster": "kaupholl",
       "available": false
     },
     {

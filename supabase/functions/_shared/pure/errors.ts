@@ -80,6 +80,7 @@ export type ErrorCode =
   | 'action_id_conflict'
   | 'seq_conflict'
   | 'content_unavailable'
+  | 'questions_exhausted'
   | 'captain_missing'
   | 'not_in_team'
   | 'no_offer'

@@ -8,6 +8,7 @@ import type { ChatRequest } from './api/chat.ts';
 import type { CheckinRequest } from './api/checkin.ts';
 import type { DmRequest, FriendsRequest } from './api/friends.ts';
 import type {
+  KauphollRequest,
   KibritRequest,
   SahtekarRequest,
   SignumRequest,
@@ -30,6 +31,7 @@ type CallName =
   | `account/${AccountRequest['action']}`
   | `vampir/${VampirRequest['action']}`
   | `kibrit/${KibritRequest['action']}`
+  | `kaupholl/${KauphollRequest['action']}`
   | `tabu/${TabuRequest['action']}`
   | `sahtekar/${SahtekarRequest['action']}`
   | `signum/${SignumRequest['action']}`
@@ -89,6 +91,27 @@ export const IDEMPOTENT_CALLS = [
   // kibrit.test "revisions (rule 3's exception)": "keeps the greatest rev: the same write or vote
   // sent twice, or an older one after it, changes nothing"
   'kibrit/vote',
+  // kaupholl.test "kaupholl: the clock (§2, IDEMPOTENT_CALLS)": "changes nothing with an early
+  // advance, and the same call twice gives the same state"
+  'kaupholl/advance',
+  // kaupholl.test "kaupholl: the clock (§2, IDEMPOTENT_CALLS)": "changes nothing with an early
+  // advance, and the same call twice gives the same state"
+  'kaupholl/view',
+  // kaupholl.test "kaupholl: the clock (§2, IDEMPOTENT_CALLS)": "changes nothing with an early
+  // advance, and the same call twice gives the same state"
+  'kaupholl/reveal',
+  // kaupholl.test "kaupholl: the clock (§2, IDEMPOTENT_CALLS)": "changes nothing with an early
+  // advance, and the same call twice gives the same state"
+  'kaupholl/guess',
+  // kaupholl.test "kaupholl: the clock (§2, IDEMPOTENT_CALLS)": "changes nothing with an early
+  // advance, and the same call twice gives the same state"
+  'kaupholl/bet',
+  // kaupholl.test "kaupholl: the clock (§2, IDEMPOTENT_CALLS)": "changes nothing with an early
+  // advance, and the same call twice gives the same state"
+  'kaupholl/ready',
+  // kaupholl.test "kaupholl: few questions": "never gives a table a question twice; the pool says
+  // how many are left, to the owner only"
+  'kaupholl/pool',
   // tabu.test "the turns (§4.F)": "moves through Tur sonu by the owner or the clock, and changes
   // nothing with an early advance"
   'tabu/advance',

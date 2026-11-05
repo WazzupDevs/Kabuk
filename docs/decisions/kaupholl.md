@@ -1,5 +1,6 @@
 <!-- Proje sahibinin onayladığı Kaupholl kuralları ve uygulama planı (5 Kasım 2026, v3.1 son hâl).
-     PR 0 (gizli içerik kapısı) #474 ile birleşti. Sıradaki PR A: §7. SPEC'e PR B'de girer. -->
+     PR 0 (gizli içerik kapısı) #474, PR A (saf mantık) #483 ile birleşti. PR B (sunucu) SPEC_V4 Adım 4.6.10 ve K-87'yi getirdi;
+     sunucunun kararları docs/decisions/4.6.10-kaupholl.md. -->
 
 # Kaupholl öneri belgesi v3.1
 
