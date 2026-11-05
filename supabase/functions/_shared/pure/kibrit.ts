@@ -203,8 +203,9 @@ export function readKibritView(v: unknown): KibritView {
   };
 }
 
-// The server's tally (private.kibrit_tally does the same): who got the most among the players
-// still in the game, and every count from five players. Votes for or by someone gone do not count.
+// The server's count (private.kibrit_reveal): who got the most among the players still in the game,
+// and every count from five players. A vote for someone who left does not count for anyone, but
+// its voter, still in the game, is one of those who voted (the same measure as the table's count).
 export function tally(
   votes: Record<string, string>,
   active: string[],
@@ -212,9 +213,9 @@ export function tally(
   const counts: Record<string, number> = Object.fromEntries(active.map((s) => [s, 0]));
   let voters = 0;
   for (const [voter, target] of Object.entries(votes)) {
-    if (!active.includes(voter) || !active.includes(target)) continue;
+    if (!active.includes(voter)) continue;
     voters += 1;
-    counts[target] = (counts[target] ?? 0) + 1;
+    if (active.includes(target)) counts[target] = (counts[target] ?? 0) + 1;
   }
   const most = Math.max(0, ...Object.values(counts));
   const top = most === 0 ? [] : active.filter((s) => counts[s] === most);

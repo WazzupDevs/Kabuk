@@ -1070,7 +1070,9 @@ begin
 end;
 $$;
 
-create trigger rooms_kibrit_over
+-- Named to run before rooms_close_members (AFTER triggers run in name order): on a closing table
+-- the papers and votes go before the seats close.
+create trigger rooms_clean_kibrit
   after update on public.rooms
   for each row
   when (old.concept = 'kibrit' and new.concept is distinct from 'kibrit')

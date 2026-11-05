@@ -116,8 +116,8 @@ describe('tally', () => {
     expect(tally({}, four).top).toEqual([]);
   });
 
-  it('counts a vote for oneself, never one by or for someone gone', () => {
-    expect(tally({ a: 'a', b: 'x', x: 'a' }, four)).toEqual({ players: 4, voters: 1, top: ['a'] });
+  it('counts a vote for oneself; a vote for someone gone counts its voter, never its target', () => {
+    expect(tally({ a: 'a', b: 'x', x: 'a' }, four)).toEqual({ players: 4, voters: 2, top: ['a'] });
   });
 });
 
