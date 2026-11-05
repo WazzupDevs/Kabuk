@@ -3010,11 +3010,19 @@ export type Database = {
         };
       };
       sahtekar_guess_word: {
-        Args: { at_step: number; target_room_id: string; target_user_id: string };
+        Args: {
+          at_step: number;
+          target_room_id: string;
+          target_user_id: string;
+        };
         Returns: string;
       };
       sahtekar_ready: {
-        Args: { at_step: number; target_room_id: string; target_user_id: string };
+        Args: {
+          at_step: number;
+          target_room_id: string;
+          target_user_id: string;
+        };
         Returns: {
           closed_at: string | null;
           concept: string | null;
@@ -3044,7 +3052,11 @@ export type Database = {
         };
       };
       sahtekar_said: {
-        Args: { at_step: number; target_room_id: string; target_user_id: string };
+        Args: {
+          at_step: number;
+          target_room_id: string;
+          target_user_id: string;
+        };
         Returns: {
           closed_at: string | null;
           concept: string | null;
