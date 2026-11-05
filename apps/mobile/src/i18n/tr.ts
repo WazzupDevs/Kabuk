@@ -1202,7 +1202,8 @@ export const tr = {
     leaveNote: 'Ayrılırsan masa sürer; sahiplik masaya en erken katılana geçer.',
     blockOwnerNote: 'Masadan çıkarılır. Karşı tarafa bildirilmez.',
     blockMemberNote: 'Masadan çıkarsın. Karşı tarafa bildirilmez.',
-    // The games' cards (the owner's file skall-oyun-kartlari, 27 Ekim): name, line, headcount.
+    // The games' cards (the owner's file skall-oyun-kartlari, 27 Ekim; Kibrit K-86): name, line,
+    // headcount.
     gameCards: {
       vampir: { name: 'Vampir Köylü', sub: 'Vampirleri bul', people: '5-12' },
       signum: { name: 'Signum', sub: 'Kodu çöz', people: '4+' },
@@ -1210,7 +1211,7 @@ export const tr = {
       krot: { name: 'Krot', sub: 'Aramızdaki kim?', people: '3+' },
       sprengja: { name: 'Sprengja', sub: 'Bombayı çabuk at', people: '3+' },
       kaupholl: { name: 'Kaupholl', sub: 'En yakına yatır', people: '3+' },
-      kibrit: { name: 'Kibrit' },
+      kibrit: { name: 'Kibrit', sub: 'Bu kime uyuyor?', people: '3+' },
     },
     gameCardLabel: (
       name: string,
