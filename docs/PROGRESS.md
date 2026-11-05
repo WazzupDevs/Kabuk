@@ -1,10 +1,10 @@
 # İlerleme
 
-## Devir notu (5 Kasım 2026, Kinshi 320 dp denetimi)
+## Devir notu (5 Kasım 2026, Kinshi 320 dp: iki satır ve skor hapı)
 
-- #463 deste 320 dp'de ölçeklenir; denetimde tahmincinin paneli sayaçlara biniyordu, düzeldi (`kinshiDeckHeight`; OTA). Ayrıntı ve ölçümler `docs/decisions/kinshi-320dp.md` → "Denetim".
-- Tasarımın kararını bekleyen: 22'de sığmayan iki kelimelik kelimeler (320'de 11, 390'da 1) "…" ile biter; seçenekler iki satır, en küçük boyu düşürmek ya da kartları kısaltmak. Skor hapı 320'de 2 dp taşar; 3-2-1 kankileri ve konfeti 320'de 390 konumunda.
-- Telefonda bakılacak (cihaz ve emülatör yok, hiçbiri denenmedi): 320 dp ve en büyük yazıda Anlatıcı, Tahminci, Rakip, Gözlemci, Tur öncesi; "…" gerçekten çıkıyor mu; panel uzayınca sayaçlar ve kaydırma.
+- Birleşenler: #463 (deste ölçeklenir), #468 (tahminci paneli sayaçlara binmez), bu PR (proje sahibinin kararları: uzun kelime iki satır, skor hapı dar hâlde; `docs/decisions/kinshi-320dp.md`). OTA, native yok.
+- Sıradaki ayrı görsel PR: 3-2-1 kankileri ve Oyun sonu konfetisi 320 dp'de. Plan: konumlar 390'a göre sabit (`KINSHI.countdownBuddies`, `endScene.confetti`); yatay konumları sahnenin genişliğine oranla (`left / 390 × genişlik`, ortadaki ortalanır), boylar ve dizilim aynı; testte 320'de kankiler ve konfeti ekranda ve ortadaki kanki öbürlerinin üstüne 390'dakinden fazla binmez.
+- Telefonda bakılacak (cihaz yok, hiçbiri denenmedi): 320 dp ve en büyük yazıda beş rol; iki satırlı kartlar (Hayvanat bahçesi 320/390, Pazar kahvaltısı 320) pembede ortada mı, İ noktası çerçeveye değiyor mu; skor hapı 10+ skorla; tahminci paneli uzayınca sayaçlar.
 
 ## Devir notu (5 Kasım 2026, Kinshi ekranları bitti)
 

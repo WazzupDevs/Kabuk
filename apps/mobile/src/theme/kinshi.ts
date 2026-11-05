@@ -1,5 +1,6 @@
 import type { TextStyle } from 'react-native';
 
+import type { KinshiBand } from './kinshiWord';
 import type { ColorScheme } from './tokens';
 
 // Kinshi's tabu layout (Aura v85, the "Kinshi (tabu düzeni)" row and the `Kinshi` panel; the
@@ -50,6 +51,8 @@ export const KINSHI = {
   // The score pill (`.score`): 44 high, 16 in on the left, 6 on the right, 10 apart; the team
   // bar 8 × 16, the divider 1 × 18, the turn chip 32 high.
   score: { height: 44, padLeft: 16, padRight: 6, gap: 10, bar: { w: 8, h: 16, r: 4 }, rule: 18 },
+  // 320 dp or the largest text (`lib/narrow.ts`): 12 in on the left and 5 between, the rest as drawn.
+  scoreNarrow: { padLeft: 12, padRight: 6, gap: 5 },
   scoreChip: 32,
   // The faces of the guessers (`.stk`): 26, overlapping 6, ringed 2 in the canvas's colour.
   face: 26,
@@ -89,6 +92,9 @@ export const KINSHI = {
   // The card's words: the band 36 in, 24 down, 62 high; the list 44 in, 112 down, 206 high, a
   // 14 % line between rows.
   wordBand: { side: 36, top: 24, height: 62 },
+  // The pink inside the ribbon's outline in `kart-on.webp` (296 wide): 27.5 to 85.5 down the card,
+  // so 3.5 under the band's top and 58 high.
+  wordPink: { top: 3.5, height: 58 },
   wordShadow: { color: 'rgba(20, 16, 22, 0.45)', y: 2 },
   list: { side: 44, top: 112, height: 206 },
   listInk: '#141016',
@@ -198,6 +204,7 @@ export function kinshiDeck(screenWidth: number) {
       height: z(KINSHI.wordBand.height),
     },
     list: { side: z(KINSHI.list.side), top: z(KINSHI.list.top), height: z(KINSHI.list.height) },
+    wordPink: { top: z(KINSHI.wordPink.top), height: z(KINSHI.wordPink.height) },
     peek: {
       height: z(KINSHI.peek.height),
       above: z(KINSHI.peek.above),
@@ -209,6 +216,16 @@ export function kinshiDeck(screenWidth: number) {
   };
 }
 export type KinshiDeck = ReturnType<typeof kinshiDeck>;
+
+// The word's band on this deck, for `kinshiWordLayout`.
+export function kinshiBand(d: KinshiDeck): KinshiBand {
+  return {
+    width: d.card.width - 2 * d.wordBand.side,
+    height: d.wordBand.height,
+    pink: d.wordPink,
+    scale: d.scale,
+  };
+}
 
 // The deck's box: its buddies, the card and the shadow under it, or, when what lies over it (the
 // guesser's panel, its height measured) reaches lower than the card, down to that, so the counters

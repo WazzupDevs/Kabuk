@@ -32,10 +32,13 @@ import {
   KINSHI as K,
   KINSHI_MIN_TYPE,
   KINSHI_TYPE as KT,
+  kinshiBand,
   kinshiDeck,
   kinshiDeckHeight,
   type KinshiDeck,
 } from '@/theme/kinshi';
+import { kinshiWordLayout } from '@/theme/kinshiWord';
+import { isNarrow } from '@/lib/narrow';
 import { useTheme } from '@/theme/ThemeProvider';
 
 import { type KinshiBuddy, kinshiArt, type KinshiTimer } from './kinshiArt';
@@ -172,6 +175,10 @@ export function TopBar({
   onChat: () => void;
 }) {
   const { c } = useKit();
+  const { width, fontScale } = useWindowDimensions();
+  // 320 dp or the largest text: the pill's inner spaces close up so that it keeps clear of the two
+  // 44 rounds (two-digit scores: 194 against 192 of room at 320 dp before; at most 180 now).
+  const pill = isNarrow(width, fontScale) ? K.scoreNarrow : K.score;
   return (
     <View
       style={{
@@ -194,11 +201,11 @@ export function TopBar({
             radius={K.score.height / 2}
             style={{
               height: K.score.height,
-              paddingLeft: K.score.padLeft,
-              paddingRight: K.score.padRight,
+              paddingLeft: pill.padLeft,
+              paddingRight: pill.padRight,
               flexDirection: 'row',
               alignItems: 'center',
-              gap: K.score.gap,
+              gap: pill.gap,
             }}
           >
             <TeamBar team="a" />
@@ -211,7 +218,7 @@ export function TopBar({
               {score.b}
             </Text>
             <View style={{ height: K.scoreChip, justifyContent: 'center' }}>
-              <Chip label={score.turn} />
+              <Chip label={score.turn} fixed />
             </View>
           </Glass>
         </View>
@@ -368,6 +375,15 @@ export type CardFace =
 // The card's front (`.card`): the riso ground, the word white in the pink band, the five forbidden
 // words under it with a 14 % line between them.
 function Front({ card, d }: { card: TabuCard; d: KinshiDeck }) {
+  const word = upperTr(card.word);
+  const layout = kinshiWordLayout(word, kinshiBand(d));
+  const wordStyle = {
+    color: K.wordInk,
+    textAlign: 'center',
+    textShadowColor: K.wordShadow.color,
+    textShadowOffset: { width: 0, height: K.wordShadow.y },
+    textShadowRadius: 0,
+  } as const;
   return (
     <View style={StyleSheet.absoluteFill}>
       <Image
@@ -387,25 +403,41 @@ function Front({ card, d }: { card: TabuCard; d: KinshiDeck }) {
           justifyContent: 'center',
         }}
       >
-        <Text
-          accessibilityRole="header"
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          minimumFontScale={MIN_WORD}
-          maxFontSizeMultiplier={1}
-          style={[
-            KT.word,
-            {
-              color: K.wordInk,
-              textAlign: 'center',
-              textShadowColor: K.wordShadow.color,
-              textShadowOffset: { width: 0, height: K.wordShadow.y },
-              textShadowRadius: 0,
-            },
-          ]}
-        >
-          {upperTr(card.word)}
-        </Text>
+        {layout.lines === 1 ? (
+          <Text
+            accessibilityRole="header"
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={MIN_WORD}
+            maxFontSizeMultiplier={1}
+            style={[KT.word, wordStyle]}
+          >
+            {word}
+          </Text>
+        ) : (
+          // Two lines (a phrase that does not fit one at 22): its own size and pitch, the ink in
+          // the band's middle (`theme/kinshiWord.ts`).
+          <Text
+            accessibilityRole="header"
+            accessibilityLabel={word}
+            numberOfLines={2}
+            maxFontSizeMultiplier={1}
+            style={[
+              KT.word,
+              wordStyle,
+              {
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                top: layout.top,
+                includeFontPadding: false,
+              },
+              layout.type,
+            ]}
+          >
+            {`${layout.text[0]}\n${layout.text[1]}`}
+          </Text>
+        )}
       </View>
       <View
         style={{
