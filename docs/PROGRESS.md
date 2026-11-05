@@ -6,6 +6,13 @@
 - Sıradaki paket (3): Aura'da Sprengja panoları önce tuvalde güncellenir (canlı tuval `project/Sprengja*.dc.html`, 10 pano): halka 3–8 kişi, "Atışlar · n", "HARF GRUBU" (`SprengjaHece`), devralma, ortak kazanan, yarıda kalma, son turda "Sonuçları gör". Sonra `tuval-aktarim` ile ekranlar.
 - Paket 4 (saha testi raporu) saha testinden sonra; `yol` ve `tut`'un atış süresi ayrıca izlenir (O-15).
 
+## Devir notu (5 Kasım 2026, Kibrit sunucusu)
+
+- #461 görseller (`features/games/kibrit/kibritArt.ts`), #465 SPEC Adım 4.6.9 ve K-86 (kural 3, 7, 10 ekleri; kart "Yakında"), #476 sunucu: `20261201090000_kibrit.sql`, `functions/kibrit`, `pure/kibrit.ts`, `tests/kibrit.test.ts`. `games.json`'da `kibrit.available: false`.
+- API: `kibrit/start { rounds? }`, `view` (kendi kâğıdı ve oyu, `paperRev`/`voteRev`), `write { step, rev, text }`, `draw`, `to-vote`, `vote { step, rev, target }`, `skip`, `ready`, `next`, `advance`; bildirim `safety/report { target: 'kibrit_paper' }`. Açık durum `readKibritState`, sonuç `readKibritResult` (`lastGame.kibrit`).
+- Sıradaki: Kibrit ekranları (Prompt 3: Aura v90, kararla değişen panolar SPEC 4.6.9 "Görünüş" tablosunda), proje sahibinin onayı gelince. Sonra ayrı PR'la `kibrit.available: true` ve `pnpm seed`.
+- Açık: yanlışlıkla açılan `claude/kibrit-sunucu-v2` dalı silinmeli (proje sahibinin izni); `scripts/seed/signum.test.ts`'in 500 tahtalık testi 5 sn sınırına yakın, CI'da arada düşüyor.
+
 ## Devir notu (5 Kasım 2026, Signum kelime havuzu)
 
 - #472 birleşti: `content/signum-words.json` (279 kelime) ve fonttan üretilen karo genişlik tablosu (`scripts/seed/signum.ts`, `docs/decisions/signum-kelimeler.md`). `games.json`'da `signum.available: false`.
