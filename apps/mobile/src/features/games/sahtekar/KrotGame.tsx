@@ -58,7 +58,13 @@ import {
 } from '../riso/RisoParts';
 import type { RisoBuddy } from '../riso/risoArt';
 import { krotArt } from './krotArt';
-import { krotRoleShown, krotViewKey, krotViewsOf, krotVisibleView } from './krotView';
+import {
+  krotGuessLine,
+  krotRoleShown,
+  krotViewKey,
+  krotViewsOf,
+  krotVisibleView,
+} from './krotView';
 import {
   announceRole,
   Eyebrow,
@@ -733,7 +739,9 @@ function VoteScreen(shared: Shared) {
                 icon={full ? 'check' : undefined}
                 testID="krot-vote-submit"
                 label={
-                  full ? tr.krot.voteFor(sel.map((s) => nameOf(faces, s))) : tr.sahtekar.pickSeat
+                  full
+                    ? tr.krot.voteFor(sel.map((s) => nameOf(faces, s)))
+                    : tr.krot.pickSuspects(state.impostors)
                 }
                 disabled={!full || voted}
                 loading={vote.isPending}
@@ -1157,6 +1165,8 @@ function End({
       : result.winner === 'impostors'
         ? tr.krot.impostorWon
         : tr.krot.impostorLeft;
+  const guess = krotGuessLine(result.guessedRight);
+  const guessLine = guess ? tr.krot[guess] : null;
   const sceneTop = insets.top - R.statusBar;
   return (
     <View testID="krot-end" style={{ flex: 1 }}>
@@ -1265,9 +1275,9 @@ function End({
           <T v="display" center accessibilityRole="header">
             {won}
           </T>
-          {result.winner === 'table' ? (
+          {guessLine ? (
             <T v="fine" ink center>
-              {tr.krot.caughtMissed}
+              {guessLine}
             </T>
           ) : null}
         </View>

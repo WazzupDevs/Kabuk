@@ -1,7 +1,7 @@
 {
   // app.config.ts runs in Node at build time; kept apart so Node types do not leak into the app.
-  // The 2 Kasım acceptance test (K1–K17) reads the kit kinshiDeck.test.ts the Kinshi theme and
-  // signum.test.ts the Signum theme;
+  // The 2 Kasım acceptance test (K1–K17) reads the kit, kinshiDeck.test.ts, krot.test.ts and
+  // signum.test.ts the Kinshi, Krot and Signum themes;
   // both import React Native's types: they clash with the root tests' fetch, so they are checked
   // here.
   "extends": "../../tsconfig.base.json",
@@ -14,6 +14,7 @@
     "app.config.ts",
     "src/theme/kabul.test.ts",
     "src/theme/kinshiDeck.test.ts",
+    "src/theme/krot.test.ts",
     "src/theme/signum.test.ts"
   ]
 }

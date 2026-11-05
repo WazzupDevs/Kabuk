@@ -15,7 +15,7 @@
 
 - Krot ekranları (Aura v86, 13 pano): `features/games/sahtekar/KrotGame.tsx`, `KrotParts.tsx`, ölçüler `theme/krot.ts`; `sahtekar.available: true` + seed. Kinshi'nin çubuk, kapsül, deste ve kankileri ortak: `features/games/riso/`, `theme/riso.ts`. Kararlar `docs/decisions/krot-ekranlar.md`.
 - Yayın: önce dev projesine #464 migration'ı, `sahtekar` fonksiyonu ve seed, sonra OTA. Native yok; cihazda denenmedi, görsel kontrol proje sahibinde.
-- Proje sahibinin kararları ayrı PR'da: 1 oy düğmesi "1/2 şüpheli seç"; 2 Hazırım rol gösterilince açılır (#475'te karşılandı); 3 oyun sonunda tahminin tutup tutmadığı (tahmin metni saklanmaz); 4 6–12 oyuncuda iki sıra.
+- Proje sahibinin dört kararı (oy düğmesi "1/2 şüpheli seç", Hazırım, oyun sonunda yalnız tahminin tutup tutmadığı, 6–12 oyuncuda iki sıra, kutu 300) `krot-kararlar` PR'ıyla uygulandı; ayrıntı `docs/decisions/krot-ekranlar.md`. Yalnızca OTA; cihazda denenmedi.
 
 ## Devir notu (5 Kasım 2026, Kaupholl)
 

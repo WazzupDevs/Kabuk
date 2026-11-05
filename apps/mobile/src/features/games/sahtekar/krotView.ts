@@ -34,3 +34,13 @@ export function krotViewKey(roomId: string, gameNo: number, me: string) {
 export function krotViewsOf(roomId: string) {
   return ['sahtekarView', roomId] as const;
 }
+
+// Oyun sonu's line under the winner (proje sahibinin kararı, 5 Kasım): only whether the caught
+// impostors guessed the word; the guess itself is never kept or shown. Nobody caught, or no guess
+// came (null): no line.
+export function krotGuessLine(
+  guessedRight: boolean | null,
+): 'guessedRight' | 'guessedWrong' | null {
+  if (guessedRight === null) return null;
+  return guessedRight ? 'guessedRight' : 'guessedWrong';
+}

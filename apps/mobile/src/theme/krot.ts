@@ -94,6 +94,25 @@ export const KROT = {
     // The others while someone speaks, and the not caught at Sonuç: saturation 35 %, brightness
     // 62 %; their plate's brightness 70 %.
     dim: { saturate: 0.35, brightness: 0.62, plate: 0.7 },
+    // Six to twelve players stand in two rows (proje sahibinin kararı, 5 Kasım; the canvas draws one):
+    // the box 300 high on the same 350 and wall; the top row takes the first half in clue order, each
+    // row centred. A row is drawn tight from its top: "Yakalandı" 0, the 62 face 24 (the 52 on its
+    // centre), the plate 94, the two-line name 120 to 148; the rows 4 apart. A row's column is 66
+    // wide while five fit (a ring then clears a neighbour's face), else the row shares the 350
+    // (57 for six: the faces 45 and 54); the faces shrink only as far as the column asks.
+    rows: {
+      upTo: 5,
+      height: 300,
+      rowHeight: 148,
+      rowGap: 4,
+      stampTop: 0,
+      bigTop: 24,
+      plateTop: 94,
+      nameTop: 120,
+      colWidth: 66,
+      // Six in a row share the 350 less 4 on each side, so their rings stay inside the box.
+      pad: 4,
+    },
   },
   // The glass row under the line-up (`.nx`, `.kw`): 24 under it, 22 round; Sıradaki's face 32.
   row: { below: 24, radius: 22, padY: 12, padX: 16, gap: 10, face: 32, kwPadY: 14 },
@@ -150,26 +169,68 @@ export const KROT = {
   swapMs: 220,
 } as const;
 
-// The line-up's scale on this screen: the box is the screen's width less the 20 sides (350 on the
-// 390 panels), never wider; its columns, faces and plates scale with it as a whole, as Kinshi's
-// scenes do on 320 dp (docs/decisions/kinshi-320dp.md). With more than five players the columns
-// share the same span (docs/decisions/krot-ekranlar.md).
+// Where each player stands in the line-up's box (350 wide, before the screen's scale), and where
+// a row's parts sit in their column.
+export type KrotRow = {
+  // The column's height (it takes the presses).
+  height: number;
+  stampTop: number;
+  // The centre of the faces (52 and 62 alike) from the row's top.
+  faceMid: number;
+  plateTop: number;
+  nameTop: number;
+};
+export type KrotSpot = { left: number; top: number; width: number; fit: number };
+
+// The line-up on this screen: the box is the screen's width less the 20 sides (350 on the 390
+// panels), never wider; its columns, faces and plates scale with it as a whole, as Kinshi's scenes
+// do on 320 dp (docs/decisions/kinshi-320dp.md). Up to five players stand in one row as drawn; six
+// to twelve in two (docs/decisions/krot-ekranlar.md), in clue order left to right, the top row
+// first.
 export function krotLineup(screenWidth: number, players: number) {
   const L = KROT.lineup;
   const scale = Math.min(1, (screenWidth - 2 * KROT_SIDE) / L.width);
-  const cols = Math.max(L.cols, players);
-  const span = L.cols * L.colWidth;
-  const colWidth = span / cols;
-  // Faces narrow with the columns past five, keeping the space round them as drawn.
-  const fit = Math.min(1, colWidth / L.colWidth);
-  return {
-    scale,
-    width: L.width * scale,
-    height: L.height * scale,
-    colLeft: L.colLeft,
-    colWidth,
-    fit,
-  };
+  const two = players > L.rows.upTo;
+  const height = two ? L.rows.height : L.height;
+  let row: KrotRow;
+  let spots: KrotSpot[];
+  if (!two) {
+    row = {
+      height: L.height,
+      stampTop: L.stamp.top,
+      faceMid: L.bigTop + L.big / 2,
+      plateTop: L.plate.top,
+      nameTop: L.name.top,
+    };
+    spots = Array.from({ length: players }, (_, i) => ({
+      left: L.colLeft + i * L.colWidth,
+      top: 0,
+      width: L.colWidth,
+      fit: 1,
+    }));
+  } else {
+    const R = L.rows;
+    row = {
+      height: R.rowHeight,
+      stampTop: R.stampTop,
+      faceMid: R.bigTop + L.big / 2,
+      plateTop: R.plateTop,
+      nameTop: R.nameTop,
+    };
+    const top = Math.ceil(players / 2);
+    const counts = [top, players - top];
+    spots = [];
+    counts.forEach((n, r) => {
+      const width = Math.min(R.colWidth, Math.floor((L.width - 2 * R.pad) / n));
+      // A chosen face's ring clears its chosen neighbour's face.
+      const fit = Math.min(1, (width - L.ring) / L.big);
+      const left = (L.width - n * width) / 2;
+      for (let i = 0; i < n; i++) {
+        spots.push({ left: left + i * width, top: r * (R.rowHeight + R.rowGap), width, fit });
+      }
+    });
+  }
+  return { scale, width: L.width * scale, height: height * scale, boxHeight: height, row, spots };
 }
 const KROT_SIDE = (RISO_PANEL_WIDTH - KROT.lineup.width) / 2;
 

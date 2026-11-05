@@ -29,7 +29,7 @@ import { useLabOff } from '@/lib/drawLab';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { MOTION } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
-import { KROT as KR, KROT_TYPE as KT, krotLineup } from '@/theme/krot';
+import { KROT as KR, KROT_TYPE as KT, krotLineup, type KrotRow, type KrotSpot } from '@/theme/krot';
 import { CURVES, ROLE_TURN, TILT } from '@/theme/playMotion';
 import { risoDeck } from '@/theme/riso';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -388,8 +388,8 @@ export type LineupSeat = {
 };
 
 // The suspect line-up (`.sira`): the wall, the players in their clue order, each in a 64 column;
-// the two buddies peek over its top from behind. On a narrower screen it scales as a whole; with
-// more than five players the columns share the same span.
+// the two buddies peek over its top from behind. On a narrower screen it scales as a whole; six to
+// twelve players stand in two rows (theme/krot.ts → krotLineup).
 export function Lineup({
   faces,
   seats,
@@ -428,7 +428,7 @@ export function Lineup({
         <View
           style={{
             width: L.width,
-            height: L.height,
+            height: g.boxHeight,
             borderRadius: L.radius,
             overflow: 'hidden',
             transformOrigin: 'left top',
@@ -441,16 +441,12 @@ export function Lineup({
             contentFit="fill"
             accessibilityIgnoresInvertColors
           />
-          {seats.map((s, i) => (
-            <Column
-              key={s.sid}
-              seat={s}
-              faces={faces}
-              left={g.colLeft + i * g.colWidth}
-              width={g.colWidth}
-              fit={g.fit}
-            />
-          ))}
+          {seats.map((s, i) => {
+            const spot = g.spots[i];
+            return spot ? (
+              <Column key={s.sid} seat={s} faces={faces} spot={spot} row={g.row} />
+            ) : null;
+          })}
         </View>
       </View>
     </View>
@@ -460,21 +456,20 @@ export function Lineup({
 function Column({
   seat,
   faces,
-  left,
-  width,
-  fit,
+  spot,
+  row,
 }: {
   seat: LineupSeat;
   faces: Faces;
-  left: number;
-  width: number;
-  fit: number;
+  spot: KrotSpot;
+  row: KrotRow;
 }) {
   const { colors } = useTheme();
   const L = KR.lineup;
+  const { width, left } = spot;
   const big = seat.mark !== 'normal';
-  const size = (big ? L.big : L.avatar) * fit;
-  const top = big ? L.bigTop : L.avatarTop;
+  const size = (big ? L.big : L.avatar) * spot.fit;
+  const top = row.faceMid - size / 2;
   const grow = useGrow(size, top);
   const ring = seat.mark === 'speak' ? colors.signal : big ? colors.buzz : L.ringInk;
   const halo = seat.mark === 'speak' ? L.haloSignal : L.haloBuzz;
@@ -486,14 +481,14 @@ function Column({
         : [L.plate.fill, L.ringInk];
   const dim = seat.dim ? [{ saturate: L.dim.saturate }, { brightness: L.dim.brightness }] : [];
   const body = (
-    <View style={{ width, height: L.height }}>
+    <View style={{ width, height: row.height }}>
       {seat.stamp ? (
         <View
           style={{
             position: 'absolute',
             left: 0,
             right: 0,
-            top: L.stamp.top,
+            top: row.stampTop,
             alignItems: 'center',
             transform: [{ rotate: L.stamp.turn }],
           }}
@@ -585,7 +580,7 @@ function Column({
           position: 'absolute',
           left: 0,
           right: 0,
-          top: L.plate.top - L.plate.edge,
+          top: row.plateTop - L.plate.edge,
           alignItems: 'center',
           filter: seat.dim ? [{ brightness: L.dim.plate }] : [],
         }}
@@ -623,7 +618,7 @@ function Column({
             position: 'absolute',
             left: L.name.side,
             right: L.name.side,
-            top: L.name.top,
+            top: row.nameTop,
             minHeight: L.name.minHeight,
             color: L.ringInk,
             textAlign: 'center',
@@ -638,7 +633,7 @@ function Column({
     </View>
   );
   return (
-    <View style={{ position: 'absolute', left, top: 0 }}>
+    <View style={{ position: 'absolute', left, top: spot.top }}>
       {seat.onPress ? (
         <Pressable
           testID={`krot-seat-${seat.sid}`}
