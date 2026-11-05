@@ -4,7 +4,13 @@
 
 - Krot ekranları (Aura v86, 13 pano): `features/games/sahtekar/KrotGame.tsx`, `KrotParts.tsx`, ölçüler `theme/krot.ts`; `sahtekar.available: true` + seed. Kinshi'nin çubuk, kapsül, deste ve kankileri ortak: `features/games/riso/`, `theme/riso.ts`. Kararlar `docs/decisions/krot-ekranlar.md`.
 - Yayın: önce dev projesine #464 migration'ı, `sahtekar` fonksiyonu ve seed, sonra OTA. Native yok; cihazda denenmedi, görsel kontrol proje sahibinde.
-- Açık (kabul raporu): 1 "Bir koltuk seç" duruyor; 2 Hazırım kart görülmeden basılamıyor; 3 tahmin saklanmadığından gösterilmiyor; 4 6+ oyuncuda sütunlar daralıyor (geçici).
+- Proje sahibinin kararları ayrı PR'da: 1 oy düğmesi "1/2 şüpheli seç"; 2 Hazırım rol gösterilince açılır (#475'te karşılandı); 3 oyun sonunda tahminin tutup tutmadığı (tahmin metni saklanmaz); 4 6–12 oyuncuda iki sıra.
+
+## Devir notu (5 Kasım 2026, Signum kelime havuzu)
+
+- #472 birleşti: `content/signum-words.json` (279 kelime) ve fonttan üretilen karo genişlik tablosu (`scripts/seed/signum.ts`, `docs/decisions/signum-kelimeler.md`). `games.json`'da `signum.available: false`.
+- Sıradaki: Signum ekranları. Onaylı rapor `docs/design/aura/aktarim-signum.md` (Aura v87, 13 pano `Signum*`; panolar canlı tuvalden, repodaki `project/` kopyasında yok). Görseller repoda, `features/games/signum/signumArt.ts`. Raporun 4 açık sorusunu SPEC_V4 Adım 4.6.7 yanıtlıyor. Yordam `.claude/skills/tuval-aktarim`; API `functions/signum`, saf mantık `pure/signum.ts`.
+- Açmadan önce: proje sahibinin cihazında 320 dp karo yazısı (37 px sınırı, yazıldığı gibi mi büyük harf mi). Sonra ayrı PR'la `signum.available: true` ve `pnpm seed`.
 
 ## Devir notu (5 Kasım 2026, Krot sunucusu)
 

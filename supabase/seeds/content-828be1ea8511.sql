@@ -370,19 +370,20 @@ update public.table_icons set is_active = false where is_active and id <> all (a
 -- content/games.json
 insert into public.games (id, name, min_players, max_players, teams, pregame, is_available, sort_order) values
   ('vampir', 'Vampir Köylü', 5, 12, false, true, true, 0),
-  ('tabu', 'Kapsül Anlat', 4, 12, true, true, true, 1),
-  ('signum', 'Signum', 4, 12, true, true, false, 2),
-  ('ibre', 'İbre', 4, 12, true, true, false, 3),
-  ('sahtekar', 'Sahtekar', 3, 12, false, true, true, 4),
-  ('harf', 'Harf Kapmaca', 2, 12, false, true, false, 5),
-  ('sarki', 'Şarkıda Geçsin', 2, 12, false, true, false, 6),
-  ('sprengja', 'Sprengja', 3, 8, false, true, false, 7),
-  ('sohbet', 'Sohbet kartları', 1, 12, false, false, false, 8)
+  ('kibrit', 'Kibrit', 3, 12, false, true, false, 1),
+  ('tabu', 'Kapsül Anlat', 4, 12, true, true, true, 2),
+  ('signum', 'Signum', 4, 12, true, true, false, 3),
+  ('ibre', 'İbre', 4, 12, true, true, false, 4),
+  ('sahtekar', 'Sahtekar', 3, 12, false, true, true, 5),
+  ('harf', 'Harf Kapmaca', 2, 12, false, true, false, 6),
+  ('sarki', 'Şarkıda Geçsin', 2, 12, false, true, false, 7),
+  ('sprengja', 'Sprengja', 3, 8, false, true, false, 8),
+  ('sohbet', 'Sohbet kartları', 1, 12, false, false, false, 9)
 on conflict (id) do update set
   name = excluded.name, min_players = excluded.min_players, max_players = excluded.max_players,
   teams = excluded.teams, pregame = excluded.pregame, is_available = excluded.is_available,
   sort_order = excluded.sort_order;
-update public.games set is_available = false where is_available and id <> all (array['vampir', 'tabu', 'signum', 'ibre', 'sahtekar', 'harf', 'sarki', 'sprengja', 'sohbet']::text[]);
+update public.games set is_available = false where is_available and id <> all (array['vampir', 'kibrit', 'tabu', 'signum', 'ibre', 'sahtekar', 'harf', 'sarki', 'sprengja', 'sohbet']::text[]);
 
 -- content/tabu-cards.json, content/sohbet-cards.json, content/sahtekar-words.json, content/harf-categories.json, content/sarki-words.json, content/ibre-scales.json, content/sprengja-letter-groups.json, content/signum-words.json
 insert into public.cards (deck, source_key, word, forbidden, theme, prompt) values

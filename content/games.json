@@ -1,5 +1,5 @@
 {
-  "source": "docs/SPEC_V4.md §4.F (v43 posterleri ve kategorileri; K-17), §4.6.6 (Vampir Köylü, K-77, K-78), §4.6.7 (Signum), §4.6.8 (Sprengja, K-85)",
+  "source": "docs/SPEC_V4.md §4.F (v43 posterleri ve kategorileri; K-17), §4.6.6 (Vampir Köylü, K-77, K-78), §4.6.7 (Signum), §4.6.8 (Sprengja, K-85), §4.6.9 (Kibrit, K-86)",
   "categories": [
     {
       "id": "teams",
@@ -25,6 +25,17 @@
       "categories": ["multi"],
       "poster": "vampir",
       "available": true
+    },
+    {
+      "id": "kibrit",
+      "name": "Kibrit",
+      "minPlayers": 3,
+      "maxPlayers": 12,
+      "teams": false,
+      "pregame": true,
+      "categories": ["multi"],
+      "poster": "kibrit",
+      "available": false
     },
     {
       "id": "tabu",

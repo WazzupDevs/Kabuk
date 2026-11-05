@@ -495,6 +495,9 @@ verify_jwt = false
 [functions.sprengja]
 verify_jwt = false
 
+[functions.kibrit]
+verify_jwt = false
+
 [functions.venue-chat]
 verify_jwt = false
 

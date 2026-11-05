@@ -39,6 +39,74 @@ export function blockReason(command, { dirty = false } = {}) {
   return null;
 }
 
+// The git subcommand of a word list: the first word after `git` that is not a global option
+// (`-C <dir>` and `-c <key=value>` take a value).
+function subcommandAt(words) {
+  if (words[0] !== 'git') return -1;
+  for (let i = 1; i < words.length; i++) {
+    if (words[i] === '-C' || words[i] === '-c') i++;
+    else if (!words[i].startsWith('-')) return i;
+  }
+  return -1;
+}
+
+// `git add` / `git commit` segments of a command, as the words after the subcommand.
+function gitSegments(command, verb) {
+  return command
+    .split(/&&|\|\||;|\||\n/)
+    .map((s) => s.trim().replace(/['"]/g, '').split(/\s+/))
+    .map((w) => ({ w, at: subcommandAt(w) }))
+    .filter(({ w, at }) => at > 0 && w[at] === verb)
+    .map(({ w, at }) => w.slice(at + 1));
+}
+
+const ALL = new Set(['.', '-A', '--all', '-u', '--update', ':/', '*']);
+
+/**
+ * The files a command would put into a commit, for the secret gate (scripts/secret-guard.mjs):
+ * what `git add` picks up (every changed or new file for `.` / `-A`, else its pathspecs), and
+ * what `git commit` takes (the index, and every changed tracked file with `-a`).
+ */
+export function commitCandidates(command, git) {
+  const files = new Set();
+  const add = (out) => out.split('\0').forEach((f) => f && files.add(f));
+  for (const args of gitSegments(command, 'add')) {
+    const specs = args.filter((a) => !a.startsWith('-') || ALL.has(a));
+    if (specs.length === 0 || specs.some((a) => ALL.has(a))) {
+      add(git(['ls-files', '-z', '-m', '-o', '--exclude-standard']));
+    } else {
+      add(git(['ls-files', '-z', '-m', '-o', '--exclude-standard', '--', ...specs]));
+    }
+  }
+  for (const args of gitSegments(command, 'commit')) {
+    add(git(['diff', '--cached', '--name-only', '-z', '--diff-filter=ACMR']));
+    // `-a`, `--all`, or a short-flag cluster with `a` (`-am`); a value after `-m` is a message.
+    const flags = args.filter((w, i) => args[i - 1] !== '-m' && args[i - 1] !== '-F');
+    if (flags.some((w) => w === '-a' || w === '--all' || /^-[a-zA-Z]*a[a-zA-Z]*$/.test(w))) {
+      add(git(['ls-files', '-z', '-m']));
+    }
+  }
+  return [...files];
+}
+
+/** Why the secret gate stops this command, or null (CLAUDE.md → Kaupholl gizli içerik kapısı). */
+export async function secretReason(command, cwd) {
+  if (!/\bgit\b/.test(command) || !/\b(add|commit)\b/.test(command)) return null;
+  const { run, report } = await import('../../scripts/secret-guard.mjs');
+  const git = (args) => execFileSync('git', args, { cwd, encoding: 'utf8' });
+  let files;
+  try {
+    files = commitCandidates(command, git);
+  } catch {
+    return null;
+  }
+  if (files.length === 0) return null;
+  const lines = report(run(cwd, { mode: 'files', files }));
+  return lines.length === 0
+    ? null
+    : `gizli içerik kapısı (scripts/secret-guard.mjs): ${lines.join('; ')}`;
+}
+
 function isDirty(cwd) {
   try {
     return execFileSync('git', ['status', '--porcelain'], { cwd, encoding: 'utf8' }).trim() !== '';
@@ -56,7 +124,9 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   }
   const command = input?.tool_input?.command;
   if (typeof command !== 'string') process.exit(0);
-  const reason = blockReason(command, { dirty: isDirty(input.cwd || process.cwd()) });
+  const cwd = input.cwd || process.cwd();
+  const reason =
+    blockReason(command, { dirty: isDirty(cwd) }) ?? (await secretReason(command, cwd));
   if (reason) {
     process.stderr.write(`Durduruldu: ${reason}\n`);
     process.exit(2);
