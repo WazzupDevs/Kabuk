@@ -42,7 +42,7 @@ Kod ve belgelerdeki "CLAUDE.md → <bölüm>" atıfları bu tabloyla bulunur. A�
 - `pnpm supabase functions serve` — Edge Function'ları yerelde çalıştırır
 - `pnpm gen:types` — çalışan yerel DB'den `supabase/functions/_shared/pure/database.ts` üretir; her migration'dan sonra çalıştır
 - `pnpm seed` — `content/*.json` değişince çalıştırılır; ayrıntı `docs/OPS.md`.
-- Üretilen dosyalar elle düzenlenmez ve adı değiştirilmez; kaynağı değişince betiği çalıştırılır: `supabase/seeds/content-<id>.sql`, `_shared/pure/capsuleCatalog.ts` ve `tableIcons.ts` (`pnpm seed`), `_shared/pure/database.ts` (`pnpm gen:types`).
+- Üretilen dosyalar elle düzenlenmez ve adı değiştirilmez; kaynağı değişince betiği çalıştırılır: `supabase/seeds/content-<id>.sql`, `_shared/pure/capsuleCatalog.ts`, `tableIcons.ts` ve `scripts/seed/signumWidths.generated.ts` (`pnpm seed`), `_shared/pure/database.ts` (`pnpm gen:types`).
 - Yerel test numaraları (`config.toml` → `[auth.sms.test_otp]`): `+905550000001` … `+905550000012` (on ikisi dolu bir masa, `MAX_TABLE_PHONES`; `supabase/tests/tableModel.test.ts`), kod `123456`
 - Diğer komutlar (`pnpm functions:deploy`, `site:build`, `icons`, `store:screenshots`, `fetch:venues`, `latency`, `admin:*`): "Nerede ne var".
 

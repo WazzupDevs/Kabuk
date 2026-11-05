@@ -86,6 +86,7 @@ export function cardsSql(
   harf: readonly HarfCategory[] = [],
   sarki: readonly SarkiWord[] = [],
   ibre: readonly IbreScaleEntry[] = [],
+  signum: readonly string[] = [],
 ): string {
   const tabuRows = tabu.map(
     (c) =>
@@ -115,6 +116,10 @@ export function cardsSql(
     (c) =>
       `('ibre', ${sqlLiteral(c.key)}, ${sqlLiteral(c.right)}, null, null, ${sqlLiteral(c.left)})`,
   );
+  // Signum: one row per word; the word is its own key (theme, prompt and forbidden empty).
+  const signumRows = signum.map(
+    (w) => `('signum', ${sqlLiteral(w)}, ${sqlLiteral(w)}, null, null, null)`,
+  );
   const sources = [
     'content/tabu-cards.json',
     'content/sohbet-cards.json',
@@ -122,6 +127,7 @@ export function cardsSql(
     ...(harf.length > 0 ? ['content/harf-categories.json'] : []),
     ...(sarki.length > 0 ? ['content/sarki-words.json'] : []),
     ...(ibre.length > 0 ? ['content/ibre-scales.json'] : []),
+    ...(signum.length > 0 ? ['content/signum-words.json'] : []),
   ];
   // Each deck's keys as the JSON lists them; a card of that deck not listed is retired below.
   const decks: [string, string[]][] = [
@@ -131,11 +137,12 @@ export function cardsSql(
     ['harf', harf.map((c) => c.key)],
     ['sarki', sarki.map((w) => w.key)],
     ['ibre', ibre.map((c) => c.key)],
+    ['signum', [...signum]],
   ];
   return [
     `-- ${sources.join(', ')}`,
     'insert into public.cards (deck, source_key, word, forbidden, theme, prompt) values',
-    `  ${[...tabuRows, ...sohbetRows, ...sahtekarRows, ...harfRows, ...sarkiRows, ...ibreRows].join(',\n  ')}`,
+    `  ${[...tabuRows, ...sohbetRows, ...sahtekarRows, ...harfRows, ...sarkiRows, ...ibreRows, ...signumRows].join(',\n  ')}`,
     'on conflict (deck, source_key) do update set',
     '  word = excluded.word, forbidden = excluded.forbidden, theme = excluded.theme,',
     '  prompt = excluded.prompt, is_active = true;',
