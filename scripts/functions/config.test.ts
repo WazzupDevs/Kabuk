@@ -38,10 +38,10 @@ describe('functionNames', () => {
 
   // Step 23.4 (docs/SPEC_V3.md §23.J): the `reveal` function left the repo, 18 → 17; step 4.6.6
   // (docs/SPEC_V4.md) brought `vampir`, 17 → 18; step 4.6.7 `signum`, 18 → 19; step 4.6.8 `sprengja`,
-  // 19 → 20. docs/PILOT_RELEASE.md gives the same count; a new function changes both.
-  it('lists 20 functions, without reveal', () => {
+  // 19 → 20; step 4.6.9 `kibrit`, 20 → 21. docs/PILOT_RELEASE.md gives the same count; a new function changes both.
+  it('lists 21 functions, without reveal', () => {
     const names = functionNames(readFileSync(resolve(root, 'supabase/config.toml'), 'utf8'));
-    expect(names).toHaveLength(20);
+    expect(names).toHaveLength(21);
     expect(names).not.toContain('reveal');
   });
 });

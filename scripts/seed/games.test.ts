@@ -24,12 +24,13 @@ describe(TABLE_GAMES_MODULE, () => {
 });
 
 describe('content/games.json', () => {
-  it('holds the games of §4.F, Vampir Köylü (§4.6.6), Signum (§4.6.7) and Sprengja (§4.6.8) with their lower limits (K-17)', () => {
+  it('holds the games of §4.F, Vampir Köylü (§4.6.6), Signum (§4.6.7), Sprengja (§4.6.8) and Kibrit (§4.6.9) with their lower limits (K-17)', () => {
     const limits = Object.fromEntries(
       parseGames(content).games.map((g) => [g.id, [g.minPlayers, g.teams]]),
     );
     expect(limits).toEqual({
       vampir: [5, false],
+      kibrit: [3, false],
       tabu: [4, true],
       signum: [4, true],
       ibre: [4, true],
