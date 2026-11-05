@@ -258,6 +258,36 @@ export function kinshiScorePill(
   return { fits: tightest <= room, tightest, room };
 }
 
+// The 3-2-1's buddies and Oyun sonu's scene on a screen narrower than the 390 panels: the scene
+// scales as a whole across (the buddies' sizes and places, the confetti's places; the confetti's
+// bars and every height down the screen stay), so it is laid out as drawn rather than crowding.
+// Never larger than drawn.
+export function kinshiScene(screenWidth: number) {
+  const k = Math.min(1, screenWidth / KINSHI_PANEL_WIDTH);
+  const B = KINSHI.countdownBuddies;
+  const E = KINSHI.endScene;
+  return {
+    scale: k,
+    countdownBuddies: {
+      height: B.height * k,
+      places: B.places.map((p) => ({
+        ...p,
+        height: p.height * k,
+        top: p.top * k,
+        ...('left' in p ? { left: p.left * k } : { right: p.right * k }),
+      })),
+    },
+    endBuddies: E.buddies.map((p) => ({
+      ...p,
+      height: p.height * k,
+      below: p.below * k,
+      ...('left' in p ? { left: p.left * k } : { right: p.right * k }),
+    })),
+    confetti: E.confetti.map((b) => ({ ...b, left: b.left * k })),
+  };
+}
+export const KINSHI_PANEL_WIDTH = 390;
+
 // The word's band on this deck, for `kinshiWordLayout`.
 export function kinshiBand(d: KinshiDeck): KinshiBand {
   return {

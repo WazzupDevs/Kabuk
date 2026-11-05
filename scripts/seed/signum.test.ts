@@ -87,7 +87,7 @@ describe('content/signum-words.json', () => {
   });
 
   it('seeds one card per word and retires the words left out', () => {
-    const sql = cardsSql([], [], [], [], [], [], ['Kedi', 'Fil']);
+    const sql = cardsSql([], [], [], [], [], [], [], ['Kedi', 'Fil']);
     expect(sql).toContain("('signum', 'Kedi', 'Kedi', null, null, null)");
     expect(sql).toContain("('signum', 'Fil', 'Fil', null, null, null)");
     expect(sql).toContain(
