@@ -5,6 +5,12 @@
 - Kibrit ekranları (Aura v90, 11 pano): `features/games/kibrit/KibritGame.tsx`, ölçüler `theme/kibrit.ts`, `kibritApi`, yeni `note` ikonu; kararlar ve tasarıma sorulacaklar `docs/decisions/kibrit-ekranlar.md`. `kibrit.available` hâlâ `false`.
 - Sıradaki: proje sahibinin telefonda bakması ve çizilmemiş hâllerin (Yeterli kâğıt yok, 320 dp, 7+ oyuncu, uzun soru…) tasarımda yanıtı; sonra ayrı PR'la `kibrit.available: true` + `pnpm seed`, sorarak.
 
+## Devir notu (5 Kasım 2026, Signum ekranları)
+
+- #472 kelime havuzu (`content/signum-words.json`, 279 kelime, `docs/decisions/signum-kelimeler.md`); bu PR Signum ekranları (Aura v87, 13 pano `Signum*`, rapor `docs/design/aura/aktarim-signum.md`): `features/games/signum/` (SignumGame, SignumParts), `lib/signumGame.ts`, `theme/signum.ts`, `api.ts` → `signumApi`. `games.json`'da `signum.available: false`.
+- Bilerek yok: karo 180° dönüşü (raporda onay bekliyor). Rakibin işareti gösterilmez (kural 3). Raporda çizilmeyen dört yerde uygulanan öneriler (proje sahibince onaylı): kara karttan sonuca "Sonucu gör" düğmesi; açanın adı yerine takım adı ("Pembe takım … kartını açtı"; açık durum açanı tutmuyor); süs kankileri ve kapsül aşamaları Kinshi'ninkiler; kaptansız biten oyunun metni.
+- Karo kelimeleri yazıldığı gibi (büyük harf yok; en geniş 36,97 px / 37). Görünüm önbelleği oturuma bağlı (`signumViewKey`). Dört öneri proje sahibince onaylı (5 Kasım). Açmadan önce: cihazda 320 dp ve en büyük yazı. Sonra ayrı PR'la `signum.available: true` ve `pnpm seed`.
+
 ## Devir notu (5 Kasım 2026, Krot ekranları)
 
 - Krot ekranları (Aura v86, 13 pano): `features/games/sahtekar/KrotGame.tsx`, `KrotParts.tsx`, ölçüler `theme/krot.ts`; `sahtekar.available: true` + seed. Kinshi'nin çubuk, kapsül, deste ve kankileri ortak: `features/games/riso/`, `theme/riso.ts`. Kararlar `docs/decisions/krot-ekranlar.md`.
@@ -30,12 +36,6 @@
 - API: `kibrit/start { rounds? }`, `view` (kendi kâğıdı ve oyu, `paperRev`/`voteRev`), `write { step, rev, text }`, `draw`, `to-vote`, `vote { step, rev, target }`, `skip`, `ready`, `next`, `advance`; bildirim `safety/report { target: 'kibrit_paper' }`. Açık durum `readKibritState`, sonuç `readKibritResult` (`lastGame.kibrit`).
 - Sıradaki: Kibrit ekranları (Prompt 3: Aura v90, kararla değişen panolar SPEC 4.6.9 "Görünüş" tablosunda), proje sahibinin onayı gelince. Sonra ayrı PR'la `kibrit.available: true` ve `pnpm seed`.
 - Açık: yanlışlıkla açılan `claude/kibrit-sunucu-v2` dalı silinmeli (proje sahibinin izni); `scripts/seed/signum.test.ts`'in 500 tahtalık testi 5 sn sınırına yakın, CI'da arada düşüyor.
-
-## Devir notu (5 Kasım 2026, Signum kelime havuzu)
-
-- #472 birleşti: `content/signum-words.json` (279 kelime) ve fonttan üretilen karo genişlik tablosu (`scripts/seed/signum.ts`, `docs/decisions/signum-kelimeler.md`). `games.json`'da `signum.available: false`.
-- Sıradaki: Signum ekranları. Onaylı rapor `docs/design/aura/aktarim-signum.md` (Aura v87, 13 pano `Signum*`; panolar canlı tuvalden, repodaki `project/` kopyasında yok). Görseller repoda, `features/games/signum/signumArt.ts`. Raporun 4 açık sorusunu SPEC_V4 Adım 4.6.7 yanıtlıyor. Yordam `.claude/skills/tuval-aktarim`; API `functions/signum`, saf mantık `pure/signum.ts`.
-- Açmadan önce: proje sahibinin cihazında 320 dp karo yazısı (37 px sınırı, yazıldığı gibi mi büyük harf mi). Sonra ayrı PR'la `signum.available: true` ve `pnpm seed`.
 
 ## Devir notu (5 Kasım 2026, Sprengja sunucu motoru)
 

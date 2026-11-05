@@ -11,6 +11,7 @@ import { TABU_GAME } from '@shared/tabuGame.ts';
 import { SAHTEKAR_GAME } from '@shared/sahtekarGame.ts';
 import { SAHTEKAR } from '@shared/sahtekar.ts';
 import { KIBRIT } from '@shared/kibrit.ts';
+import { SIGNUM } from '@shared/signum.ts';
 import { formatTrMobile } from '@shared/phone.ts';
 import { BIO_MAX } from '@shared/profile.ts';
 import { inflectTr } from '@shared/trText.ts';
@@ -1139,6 +1140,128 @@ export const tr = {
     // On the table while a game runs that the person does not see.
     running: 'Kinshi sürüyor',
     runningPage: 'Kinshi açık',
+  },
+  // Signum (Aura v87, "Signum (kelime ızgarası ve kaptan)"; docs/SPEC_V4.md §4.F "Adım 4.6.7").
+  // The canvas's words are the report's proposals (4 Kasım).
+  signum: {
+    name: 'Signum',
+    teams: 'Takımlar',
+    rules: [
+      `${SIGNUM.tiles} kelime`,
+      `İpucu ${SIGNUM.clueSeconds} sn`,
+      `Tahmin ${SIGNUM.guessSeconds} sn`,
+    ],
+    how: 'Her takımın bir kaptanı var. Kaptanlar hangi kelimenin hangi takımın olduğunu görür. Sırayla tek kelime ve bir sayı söylerler; takım o kadar kartı açmaya çalışır. Kara kartı açan takım kaybeder.',
+    team: { a: 'Mor takım', b: 'Pembe takım' },
+    teamShort: { a: 'Mor', b: 'Pembe' },
+    count: (n: number) => `${n} kişi`,
+    join: 'Katıl',
+    watchers: 'Gözlemciler',
+    watchersNote: 'Açılan kartları görür, oynamaz.',
+    watch: 'Gözlemci ol',
+    unpicked: 'Henüz seçmeyenler',
+    unpickedNote: 'Oyun başlarken seçmeyenler gözlemci olur.',
+    // Captains on the page (docs/SPEC_V4.md: a volunteer, the owner's offer or approval).
+    captain: 'Kaptan',
+    candidate: 'Aday',
+    offered: 'Önerildi',
+    chooseCaptains: 'Kaptanları seç',
+    captainsNote:
+      'Kaptan olmak isteyenleri onayla. Kimse istemiyorsa birine öner ya da rastgele seç; öneriyi kabul eden aday olur.',
+    volunteer: 'Kaptan olurum',
+    unvolunteer: 'Adaylıktan çekil',
+    approve: 'Onayla',
+    offer: 'Öner',
+    random: 'Rastgele seç',
+    becomeCaptain: 'Kaptan ol',
+    offerTitle: 'Kaptan olur musun?',
+    offerBody: {
+      a: 'Mor takımın kaptanı olman önerildi.',
+      b: 'Pembe takımın kaptanı olman önerildi.',
+    },
+    accept: 'Kabul et',
+    decline: 'Hayır',
+    needs: (n: number) => `Her takımda en az ${n} kişi olmalı.`,
+    needsCaptains: 'İki takımın da onaylı kaptanı olmalı.',
+    hintOwner: 'Herkes hazırsa oyunu başlat.',
+    hintGuest: 'Oyunu masa sahibi başlatır.',
+    shuffle: 'Karıştır',
+    start: 'Oyunu başlat',
+    // The role cards.
+    seeRole: 'Rolünü gör',
+    holdHint: 'Kartı basılı tut, rolünü gör.',
+    hold: 'Basılı tut',
+    holdLabel: 'Basılı tut, rolünü gör. Rolünü yalnızca sen gör.',
+    captainWord: 'Kaptansın',
+    guesserKick: 'Rolün',
+    guesserWord: 'Tahmincisin',
+    guesserTag: (team: string, captain: string) => `${team} · Kaptan: ${captain}`,
+    guesserNote: 'Kaptanının ipucuyla takımının kartlarını bul.',
+    keyNote: 'Anahtar kartını yalnız kaptanlar görür.',
+    keyCard: 'Anahtar kartı',
+    keyHold: 'Anahtar kartı, basılı tut',
+    ready: 'Hazırım',
+    waitingOthers: 'Diğerleri bekleniyor',
+    readyCount: (n: number, of: number) => `Hazır: ${n}/${of}`,
+    watching: 'Gözlemcisin',
+    watchingNote: 'Açılan kartları ve ipuçlarını görürsün.',
+    // The score pill.
+    scoreLabel: (a: number, b: number) => `Kalan kart: Mor ${a}, Pembe ${b}`,
+    // İpucu ver.
+    giveClue: 'İpucu ver',
+    clueHint: 'Tek kelime ve bir sayı. Kartlardaki kelimeleri söyleme.',
+    clueField: 'İpucu',
+    countLabel: 'Kaç kart',
+    sendClue: 'İpucunu ver',
+    kinds: { a: 'Mor', b: 'Pembe', n: 'Nötr', x: 'Kara' },
+    legend: (kind: string, n: number) => `${kind} ${n}`,
+    // Bekle.
+    thinking: (alias: string) => `${alias} ipucu düşünüyor`,
+    turnOf: { a: 'Mor takımın sırası', b: 'Pembe takımın sırası' },
+    waitHint: 'İpucu gelince kartlara dokunarak takımına göster.',
+    // Tahmin.
+    guess: 'Tahmin et',
+    guessHint: 'Bir karta dokun, takımın görsün.',
+    clueBy: (alias: string) => `${alias} · ipucu`,
+    guessesLeft: 'Kalan tahmin',
+    endTurn: 'Turu bitir',
+    open: (word: string) => `${word} kartını aç`,
+    pick: 'Bir kart seç',
+    correct: 'Doğru, devam',
+    openedTag: (word: string, kind: string) => `${word} · ${kind}`,
+    guessing: { a: 'Mor takım tahmin ediyor', b: 'Pembe takım tahmin ediyor' },
+    rivalHint: 'Sıra onlarda. İzle.',
+    tileLabel: (word: string, kind: string) => `${word}, ${kind}`,
+    tileKinds: { a: 'Mor', b: 'Pembe', n: 'Nötr', x: 'Kara kart' },
+    tilePointed: (word: string) => `${word}, işaretli`,
+    // Kara kart açıldı.
+    blackOpened: 'Kara kart açıldı',
+    blackBy: (team: string, word: string) => `${team} ${word} kartını açtı.`,
+    winner: 'Kazanan',
+    blackTag: (team: string) => `${team} kara kartı açtı`,
+    seeResult: 'Sonucu gör',
+    // Oyun sonu.
+    over: 'Oyun bitti',
+    won: (team: string) => `${team} kazandı`,
+    wonCards: (team: string) => `${team} bütün kartlarını açtı.`,
+    wonBlack: (team: string) => `${team} kara kartı açtı.`,
+    noResult: 'Sonuçsuz bitti',
+    captainLeft: {
+      a: 'Mor takımın kaptanı oyundan çıktı.',
+      b: 'Pembe takımın kaptanı oyundan çıktı.',
+    },
+    teamEmpty: { a: 'Mor takımda tahminci kalmadı.', b: 'Pembe takımda tahminci kalmadı.' },
+    opened: (n: number, of: number) => `${n} / ${of}`,
+    openedNote: 'kart açtı',
+    openKey: 'Aç',
+    backToTable: 'Masaya dön',
+    again: 'Yeniden oyna',
+    // The frame (as Kinshi's).
+    endGame: 'Oyunu bitir',
+    exit: 'Oyundan çık',
+    chat: 'Sohbet',
+    running: 'Signum sürüyor',
+    runningPage: 'Signum açık',
   },
   // Krot (Sahtekar at a table of people; docs/SPEC_V4.md §4.F "Adım 4.6.3", Aura v86 "Krot (gizli
   // kart ve şüpheli sırası)"; the words are the old Krot canvas's).
