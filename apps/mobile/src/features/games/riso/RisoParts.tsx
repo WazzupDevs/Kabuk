@@ -184,7 +184,8 @@ export function TimeStrip({
   title,
   line,
 }: {
-  stage: RisoTimer;
+  // Null: no capsule and no time (Signum's Kara kart açıldı: `.strip.nokap`).
+  stage: RisoTimer | null;
   clock: string;
   clockLabel: string;
   late: boolean;
@@ -195,7 +196,7 @@ export function TimeStrip({
   const { c } = useKit();
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: R.stripGap, zIndex: 2 }}>
-      <TimeCapsule stage={stage} />
+      {stage ? <TimeCapsule stage={stage} /> : null}
       <View style={{ flex: 1, gap: R.stripLineGap }}>
         <View
           style={{
@@ -205,14 +206,16 @@ export function TimeStrip({
             flexWrap: 'wrap',
           }}
         >
-          <Text
-            accessibilityRole="timer"
-            accessibilityLabel={clockLabel}
-            maxFontSizeMultiplier={1}
-            style={[RISO_TYPE.clock, { color: late ? colors.buzz : c.ink }]}
-          >
-            {clock}
-          </Text>
+          {stage ? (
+            <Text
+              accessibilityRole="timer"
+              accessibilityLabel={clockLabel}
+              maxFontSizeMultiplier={1}
+              style={[RISO_TYPE.clock, { color: late ? colors.buzz : c.ink }]}
+            >
+              {clock}
+            </Text>
+          ) : null}
           {title ? (
             <View style={{ flexShrink: 1 }}>
               <T v="h3">{title}</T>

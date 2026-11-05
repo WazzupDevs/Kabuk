@@ -8,7 +8,8 @@ import type {
   SafetyResponse,
 } from '@shared/api/chat.ts';
 import type { Reaction } from '@shared/reactions.ts';
-import type { GameOkResponse, TabuTurnCardsResponse } from '@shared/api/games.ts';
+import type { GameOkResponse, SignumPageAnswer, TabuTurnCardsResponse } from '@shared/api/games.ts';
+import type { SignumAnswer, SignumState, SignumTeam, SignumView } from '@shared/signum.ts';
 import type { TabuMark } from '@shared/tabuGame.ts';
 import type {
   CreateRoomRequest,
@@ -428,6 +429,36 @@ export const tabuApi = {
     invoke<GameOkResponse>('tabu', { action: 'next', roomId, step }),
   advance: (roomId: string) => invoke<GameOkResponse>('tabu', { action: 'advance', roomId }),
   shuffle: (roomId: string) => invoke<RoomsOkResponse>('rooms', { action: 'shuffle', roomId }),
+};
+
+// Signum (docs/SPEC_V4.md §4.F "Adım 4.6.7"). A game answer's `applied: false` is not an error:
+// the phone reads the table again, without the failure haptic.
+export const signumApi = {
+  volunteer: (roomId: string, on: boolean) =>
+    invoke<SignumPageAnswer>('signum', { action: 'volunteer', roomId, on }),
+  offerCaptain: (roomId: string, sessionId: string) =>
+    invoke<SignumPageAnswer>('signum', { action: 'offer-captain', roomId, sessionId }),
+  randomOffer: (roomId: string, team: SignumTeam) =>
+    invoke<SignumPageAnswer>('signum', { action: 'random-offer', roomId, team }),
+  answerOffer: (roomId: string, accept: boolean) =>
+    invoke<SignumPageAnswer>('signum', { action: 'answer-offer', roomId, accept }),
+  approveCaptain: (roomId: string, team: SignumTeam, sessionId: string) =>
+    invoke<SignumPageAnswer>('signum', { action: 'approve-captain', roomId, team, sessionId }),
+  start: (roomId: string) => invoke<SignumPageAnswer>('signum', { action: 'start', roomId }),
+  view: (roomId: string) =>
+    invoke<{ room: SignumState; view: SignumView }>('signum', { action: 'view', roomId }),
+  ready: (roomId: string, step: number) =>
+    invoke<SignumAnswer>('signum', { action: 'ready', roomId, step }),
+  clue: (roomId: string, step: number, word: string, n: number, actionId: string) =>
+    invoke<SignumAnswer>('signum', { action: 'clue', roomId, step, word, n, actionId }),
+  point: (roomId: string, step: number, tile: number | null, seq: number) =>
+    invoke<SignumAnswer>('signum', { action: 'point', roomId, step, tile, seq }),
+  reveal: (roomId: string, step: number, tile: number, actionId: string) =>
+    invoke<SignumAnswer>('signum', { action: 'reveal', roomId, step, tile, actionId }),
+  endTurn: (roomId: string, step: number, actionId: string) =>
+    invoke<SignumAnswer>('signum', { action: 'end-turn', roomId, step, actionId }),
+  advance: (roomId: string, step: number) =>
+    invoke<SignumAnswer>('signum', { action: 'advance', roomId, step }),
 };
 
 export const vampirApi = {
