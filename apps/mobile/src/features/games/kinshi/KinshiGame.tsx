@@ -812,7 +812,9 @@ function Summary({
                   </View>
                 }
               />
-            ) : null}
+            ) : (
+              <ReadOnlyCount left={left} />
+            )}
           </>
         }
       >
@@ -839,6 +841,36 @@ function Summary({
         </View>
       </StageFit>
     </Page>
+  );
+}
+
+// The others' Tur sonu (KinshiTurSonuDiger): in place of the owner's button, the seconds left in
+// a glass pill at the middle; it cannot be pressed.
+function ReadOnlyCount({ left }: { left: number }) {
+  const { c } = useKit();
+  return (
+    <View style={{ alignSelf: 'center' }}>
+      <Glass
+        radius={K.readOnlyCount.size / 2}
+        style={{
+          minWidth: K.readOnlyCount.size,
+          height: K.readOnlyCount.size,
+          paddingHorizontal: K.readOnlyCount.padX,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Text
+          testID="kinshi-next-count"
+          accessibilityRole="timer"
+          accessibilityLabel={tr.games.turnReadySeconds(left)}
+          maxFontSizeMultiplier={1}
+          style={[KT.readOnlyCount, { color: c.ink }]}
+        >
+          {left}
+        </Text>
+      </Glass>
+    </View>
   );
 }
 
@@ -1117,8 +1149,8 @@ function TeamBox({
           sm
           testID={`kinshi-join-${team}`}
           label={tr.kinshi.join}
-          fill={tone.color}
-          tint={tone.onColor}
+          fill={tone.fill}
+          tint={tone.onFill}
           disabled={disabled || joined}
           loading={loading}
           onPress={onJoin}
