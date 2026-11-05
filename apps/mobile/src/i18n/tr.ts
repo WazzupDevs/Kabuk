@@ -1202,7 +1202,7 @@ export const tr = {
     leaveNote: 'Ayrılırsan masa sürer; sahiplik masaya en erken katılana geçer.',
     blockOwnerNote: 'Masadan çıkarılır. Karşı tarafa bildirilmez.',
     blockMemberNote: 'Masadan çıkarsın. Karşı tarafa bildirilmez.',
-    // The games' cards (the owner's file skall-oyun-kartlari, 27 Ekim; Kibrit K-85): name, line,
+    // The games' cards (the owner's file skall-oyun-kartlari, 27 Ekim; Kibrit K-86): name, line,
     // headcount.
     gameCards: {
       vampir: { name: 'Vampir Köylü', sub: 'Vampirleri bul', people: '5-12' },
@@ -1634,6 +1634,8 @@ export const tr = {
     no_passes_left: 'Pas hakkınız kalmadı.',
     too_soon: 'Biraz bekle.',
     no_cards: 'Kart kalmadı.',
+    not_holder: 'Bomba sende değil.',
+    not_starter: 'Bu turu başka biri başlatıyor.',
     not_found: 'Bulunamadı.',
     reply_unavailable: 'Yanıtladığın mesaj artık yok.',
     photo_required: 'Profilinle görünmek için önce profil fotoğrafı ekle.',

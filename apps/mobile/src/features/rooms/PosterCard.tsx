@@ -30,7 +30,7 @@ export const GAME_CARDS = [
     category: 'multi',
     art: require('../../../assets/game-poster/g-kaupholl.webp'),
   },
-  // Kibrit: its v92 poster with the line and headcount of K-85 (the owner's call, 5 Kasım).
+  // Kibrit: its v92 poster with the line and headcount of K-86 (the owner's call, 5 Kasım).
   { id: 'kibrit', category: 'multi', art: require('../../../assets/game-poster/g-kibrit.webp') },
 ] as const satisfies readonly {
   id: keyof typeof tr.table.gameCards;
