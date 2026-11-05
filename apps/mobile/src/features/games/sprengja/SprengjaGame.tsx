@@ -494,6 +494,7 @@ function StartScreen({ roomId, state, faces, top, playing, offline, cover }: Sha
           block
           testID={open ? 'sprengja-light' : 'sprengja-open'}
           label={open ? tr.sprengja.light : tr.sprengja.open}
+          icon={open ? 'bomb' : undefined}
           disabled={offline}
           loading={act.isPending}
           onPress={() => act.mutate()}
@@ -596,6 +597,7 @@ function LitScreen({ roomId, state, faces, top, offline, cover, onRules }: Share
           block
           testID="sprengja-pass"
           label={tr.sprengja.throwTo(nameOf(faces, next))}
+          icon="bomb"
           disabled={offline}
           loading={pass.isPending}
           onPress={() => pass.mutate()}
