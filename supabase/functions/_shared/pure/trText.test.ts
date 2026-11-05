@@ -2,13 +2,16 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  alikeWords,
   canonicalize,
   capitalizeTr,
   inflectTr,
   normalize,
   plainText,
+  startsEither,
   tokenize,
   upperTr,
+  wordForm,
 } from './trText.ts';
 
 describe('normalize', () => {
@@ -242,5 +245,38 @@ describe('inflectTr', () => {
     expect(dative('Brr')).toBe("Brr'e");
     expect(genitive('Анна')).toBe("Анна'in");
     expect(dative('🙂')).toBe("🙂'e");
+  });
+});
+
+// Signum compares single words (a clue with the board, two board words): docs SPEC_V4 §4.F.
+describe('wordForm, startsEither and alikeWords', () => {
+  it('folds case, Turkish letters and circumflexed vowels, and drops what is not a letter', () => {
+    expect(wordForm('SINAV')).toBe('sinav');
+    expect(wordForm('Sınav')).toBe('sinav');
+    expect(wordForm('kâr')).toBe('kar');
+    expect(wordForm('Hâlâ')).toBe('hala');
+    expect(wordForm('millî')).toBe('milli');
+    expect(wordForm('Rûh')).toBe('ruh');
+    expect(wordForm('ＫＡＲ')).toBe('kar');
+    expect(wordForm(' kar\u200b ')).toBe('kar');
+    expect(wordForm('spor salonu')).toBe('sporsalonu');
+  });
+
+  it('startsEither: equal, or one the start of the other', () => {
+    expect(startsEither('Sınavlar', 'sınav')).toBe(true);
+    expect(startsEither('Kal', 'Kalem')).toBe(true);
+    expect(startsEither('kar', 'Kâr')).toBe(true);
+    expect(startsEither('Kalp', 'Kalem')).toBe(false);
+    expect(startsEither('', 'Kalem')).toBe(false);
+  });
+
+  it('alikeWords: the same first four letters, or one inside the other', () => {
+    expect(alikeWords('Balık', 'Balıkçı')).toBe(true);
+    expect(alikeWords('Kalem', 'Kalemlik')).toBe(true);
+    expect(alikeWords('Tabak', 'Tabanca')).toBe(true);
+    expect(alikeWords('Avuç', 'Havuç')).toBe(true);
+    expect(alikeWords('kâr', 'Kar')).toBe(true);
+    expect(alikeWords('Kale', 'Kalp')).toBe(false);
+    expect(alikeWords('Ayı', 'Arı')).toBe(false);
   });
 });

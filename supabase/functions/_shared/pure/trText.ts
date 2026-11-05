@@ -133,3 +133,28 @@ export function inflectTr(name: string, grammaticalCase: GrammaticalCase): strin
         : `${VOICELESS.has(letters.at(-1) ?? '') ? 't' : 'd'}${back ? 'a' : 'e'}`;
   return `${name}'${suffix}`;
 }
+
+// One word in the form single words are compared in (Signum: a clue with the board words, two
+// board words with each other): plainText, Turkish lowercase, ç ğ ı ö ş ü folded and the
+// circumflexed â î û read as a i u ("kâr" is "kar"), everything but letters dropped.
+const CIRCUMFLEX: Record<string, string> = { â: 'a', î: 'i', û: 'u' };
+export function wordForm(s: string): string {
+  return normalize(plainText(s))
+    .replace(/[âîû]/g, (c) => CIRCUMFLEX[c] ?? c)
+    .replace(/[^\p{L}]/gu, '');
+}
+
+// Equal words, or one the start of the other ("Sınav" and "Sınavlar"), in wordForm.
+export function startsEither(a: string, b: string): boolean {
+  const x = wordForm(a);
+  const y = wordForm(b);
+  return x !== '' && y !== '' && (x.startsWith(y) || y.startsWith(x));
+}
+
+// Two words too alike to sit side by side: the same first four letters, or one inside the other.
+export function alikeWords(a: string, b: string): boolean {
+  const x = wordForm(a);
+  const y = wordForm(b);
+  if (x === '' || y === '') return false;
+  return x.slice(0, 4) === y.slice(0, 4) || x.includes(y) || y.includes(x);
+}
