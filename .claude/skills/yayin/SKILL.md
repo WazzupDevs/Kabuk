@@ -48,7 +48,7 @@ Tek seferlik kurulum (yukarıda) yapılmış bir projeye main'in güncel hâlini
 6. Kontrol: `pnpm supabase functions list` (18'i de `ACTIVE`, sürümleri artmış; listede başka fonksiyon yok) ve `pnpm supabase migration list` (her satırda Local ve Remote aynı). `functions deploy` repodan kalkan bir fonksiyonu barındırılan projeden **silmez**: listede `config.toml`'da olmayan bir fonksiyon varsa elle silinir. Adım 23.4a'dan sonra bir kez `reveal` için (dev ve üretim projesinde ayrı ayrı):
    1. `pnpm supabase migration list`: bağlı proje doğru mu (yanlışsa `pnpm supabase link --project-ref <ref>`).
    2. `pnpm supabase functions delete reveal`
-   3. `pnpm supabase functions list`: 18 fonksiyon, `reveal` yok.
+   3. `pnpm supabase functions list`: 20 fonksiyon, `reveal` yok.
 7. Sırlar, yalnızca gerektiğinde (`pnpm supabase secrets list` ile bak):
    - `MIN_APP_BUILD`: yalnızca eski build'leri kapatırken (bkz. "Build numarası").
    - `POSTHOG_PERSONAL_API_KEY`, `POSTHOG_PROJECT_ID`, isteğe bağlı `POSTHOG_HOST`: hesap silmede PostHog kişi silme; yoksa atlanır.
