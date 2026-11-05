@@ -241,7 +241,16 @@ async function play(userId: string, body: PlayBody): Promise<SignumAnswer> {
     },
     // Changed at the same moment three times: the table as it is now, the caller's view as it is now.
     async () => {
-      const fresh = await readGame(userId, body.roomId);
+      let fresh: GameRead;
+      try {
+        fresh = await readGame(userId, body.roomId);
+      } catch (err) {
+        // The game ended meanwhile: as at the start of the call.
+        if (err instanceof AppError && err.code === 'no_game') {
+          return replayAfterEnd(userId, body, request);
+        }
+        throw err;
+      }
       return respond({ kind: 'busy' }, fresh.state, viewFor(actorOf(fresh), fresh.secret));
     },
   );

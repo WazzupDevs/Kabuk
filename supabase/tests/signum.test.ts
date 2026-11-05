@@ -1252,6 +1252,10 @@ describe(
         ['one channel twice', st, { ...sec, channels: { a: sec.channels.a, b: sec.channels.a } }],
         ['a channel that is no id', st, { ...sec, channels: { a: 'x', b: sec.channels.b } }],
         ['another step', { ...st, step: 2 }, sec],
+      ['a step that is no number', { ...st, step: 'x' }, sec],
+      ['a clock that is no time', { ...st, endsAt: 'yarın' }, sec],
+      ['no clock', { ...st, endsAt: null }, sec],
+      ['a game number that is no number', { ...st, gameNo: 'x' }, sec],
         ['the key in the open state', { ...st, key: sec.key }, sec],
       ];
       for (const [what, badState, badSecret] of bad) {

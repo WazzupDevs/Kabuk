@@ -356,7 +356,7 @@ begin
   if not player_action and (ends is null or clock_timestamp() < ends) then
     raise exception using errcode = 'P0001', message = 'bad_request';
   end if;
-  if (new_state ->> 'gameNo')::integer is distinct from private.current_game_no(r.game_state) then
+  if (new_state -> 'gameNo') is distinct from to_jsonb(private.current_game_no(r.game_state)) then
     raise exception using errcode = 'P0001', message = 'bad_request';
   end if;
   perform private.signum_check_write(new_state, new_secret);
@@ -480,12 +480,14 @@ begin
   no := private.start_game(target_user_id, target_room_id, 'signum');
 
   -- `is not false`: a missing or malformed field makes a check null, and null refuses too.
-  if (no is distinct from (new_state ->> 'gameNo')::integer
+  -- Compared as jsonb, never cast: a malformed value is refused (bad_request), not an error.
+  if ((new_state -> 'gameNo') is distinct from to_jsonb(no)
      or new_state ->> 'phase' is distinct from 'role'
-     or (new_state ->> 'step')::integer is distinct from 1
+     or (new_state -> 'step') is distinct from '1'::jsonb
      or (new_state -> 'ready') is distinct from '[]'::jsonb
      or new_state ->> 'turn' is distinct from starter
-     or (new_state ->> 'endsAt')::timestamptz is null
+     or jsonb_typeof(new_state -> 'endsAt') is distinct from 'string'
+     or (new_state ->> 'endsAt') !~ '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$'
      or starter not in ('a', 'b')
      -- Every tile closed, 25 different words.
      or exists (
