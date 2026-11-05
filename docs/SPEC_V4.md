@@ -598,7 +598,7 @@ Değişmez kabul edilir.
   - Anlatıcı takım içinde sırayla değişir: takımın n. turunda, oyun başındaki sırayla takımın n. kişisi.
 - **Aşamalar:** takımlar → tur öncesi → 3-2-1 geri sayım → oyun (60 sn) → tur sonu → … → oyun sonu.
   - Tur öncesi: anlatıcı "Turu başlat"a basar (`tabu/begin-turn`). Hazır süresi bugünkü gibi 10 sn; dolunca tur kendiliğinden başlar (SPEC_V3 §20.1).
-  - Tur sonu: kelimeler Doğru, Pas ya da Yasak! etiketiyle listelenir; sıradaki takım ve anlatıcı yazar.
+  - Tur sonu: kelimeler Doğru, Pas ya da Yasak! etiketiyle listelenir; sıradaki takım ve anlatıcı yazar. Her turdan sonra, sonuncusundan da sonra gelir ve 30 sn sürer; çerçevenin 15 sn kuralı Kapsül Anlat'ta 30 sn'dir (proje sahibinin kararı, 5 Kasım; `docs/decisions/4.6.1-kapsul-anlat.md`).
   - Oyun sonu: kazanan takım, "En çok bildiren anlatıcı" ve "Yasak avcısı": Yasak!'la en çok yakalayan (K-5).
 - **Puan:** Doğru +1, Yasak! −1 (anlatan takımdan), Pas 0. Rakip düğmesinin adı "Yasak!"tir (K-5).
 - **Roller:**

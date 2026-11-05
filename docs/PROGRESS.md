@@ -1,5 +1,11 @@
 # İlerleme
 
+## Devir notu (5 Kasım 2026, Kinshi tabu düzeni)
+
+- Birleşenler: #446 (Kinshi riso görselleri `assets/games/kinshi/`, `features/games/kinshi/kinshiArt.ts`), #451 (Kapsül Anlat kişi bazlı sunucu, 4.6.1: `20261126090000_kapsul_anlat.sql`, `functions/tabu`, `pure/tabuGame.ts`, `tests/tabu.test.ts`; kararlar `docs/decisions/4.6.1-kapsul-anlat.md`). Yayın önce sunucu; istemci değişmedi.
+- Sıradaki paket: CTO promptları → Prompt 2, Kinshi ekranları (Aura v85, "Kinshi (tabu düzeni)" satırı ve `Kinshi` panosu, 11 ekran; kabul raporu proje sahibinde). Repoda yalnızca eski `Kinshi.dc.html` var; v85 panoları canlı tuvalden okunur. Ekranlar gelince `content/games.json` → `tabu.available: true` ve `pnpm seed`.
+- Proje sahibinin kararları (5 Kasım), aynı PR'da: Tur sonu 30 sn ve son turdan sonra da Tur sonu (`20261127090000_kapsul_anlat_tur_sonu.sql`, SPEC_V4 §4.6.1), `tabu_local_deck` silindi, kart görselleri 888×1184 WebP q90 (4,3 → 1,2 MB).
+
 ## Devir notu (5 Kasım 2026, Vampir Köylü kapsül masa)
 
 - #448: Vampir Köylü kapsül masaya geçti (Aura v83, K-84; gerekçe `docs/decisions/vampir-kapsul-masa.md`, kaynak `docs/design/vampir/kapsul-masa/`). OTA, native yok; cihazda denenmedi, görsel kontrol proje sahibinde.

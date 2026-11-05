@@ -13,8 +13,9 @@ export const TABU_GAME = {
   readySeconds: 10,
   // The 3-2-1 between "Turu başlat" and the turn's clock: presses count from startsAt.
   countdownSeconds: 3,
-  // Tur sonu: the owner presses "Sonraki tura geç"; when this runs out any phone moves on (§4.F).
-  summarySeconds: 15,
+  // Tur sonu, after every turn: the owner presses "Sonraki tura geç"; when this runs out any phone
+  // moves on (the owner's decision, 5 November: 30 s as the canvas shows).
+  summarySeconds: 30,
   // Cards dealt to a turn at once; a fast table closes one every ~2 seconds.
   cardsPerTurn: 40,
   minPlayers: 4,
@@ -72,7 +73,7 @@ export type TabuState = {
   // The running turn's presses and its closed cards (a card's word opens only once it is closed).
   counts: TabuCounts;
   words: TabuWord[];
-  // The turn just played (phase 'summary').
+  // The turn just played (phase 'summary'; after the last turn too, then the game ends).
   lastTurn: TabuTurnSummary | null;
 };
 

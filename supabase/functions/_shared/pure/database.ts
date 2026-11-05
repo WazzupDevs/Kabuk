@@ -3356,17 +3356,6 @@ export type Database = {
           isSetofReturn: false;
         };
       };
-      tabu_local_deck: {
-        Args: {
-          deck_size: number;
-          target_room_id: string;
-          target_user_id: string;
-        };
-        Returns: {
-          forbidden: string[];
-          word: string;
-        }[];
-      };
       tabu_mark: {
         Args: {
           at_step: number;
