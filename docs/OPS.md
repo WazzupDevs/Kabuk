@@ -159,8 +159,18 @@ Pilot listesinde olmayan bir yerde test için elle girilen mekan. Dosya boşsa (
 `pnpm guard:secrets` (`scripts/secret-guard.mjs`) Kaupholl'un gerçek sorularının, cevaplarının ve doğrulama dosyalarının, ayrıca erişim anahtarlarının bu herkese açık repoya girmesini durdurur. Gerçek sorular özel depolardadır (`WazzupDevs/kaupholl-sorular`, `WazzupDevs/kaupholl-kontrol`); burada yalnızca açıkça sahte örnek deste `content/kaupholl-questions.sample.json` durabilir (`"sample": true`, en çok 20 soru, her biri "Örnek soru" ile başlar).
 
 - **Durdurulanlar:** `content/private/`, adında `kaupholl-questions` geçen ve örnek deste olmayan dosya, `kaupholl-sorular/`, `kaupholl-kontrol/`, `dogrulama/`, anahtar dosyaları (`.pem`, `.key`, `.p8`, `.p12`, `.pfx`, `.jks`, `.keystore`), `.env` ve `.env.*` (`.env.example` dışında); örnek deste dışında hem cevap (`answer` / `answer_scaled`) hem kaynak (`source`) taşıyan JSON, YAML ya da CSV satırları; Supabase secret key, `service_role` JWT'si (yerel demo anahtarı dışında), `SUPABASE_SERVICE_ROLE_KEY` / `SUPABASE_SECRET_KEY` / `EXPO_TOKEN` ardından gerçek değer, özel anahtar blokları, GitHub, Sentry ve PostHog kişisel token'ları. Publishable / anon anahtar ve PostHog proje anahtarı istemci içindir, serbesttir.
-- **Çıktı** yalnızca dosya yolunu ve kural adını yazar, eşleşen değeri asla yazmaz.
-- **İstisna:** `scripts/secret-guard.allow`, satır başına `yol # gerekçe`; yalnızca sahte değer taşıyan dosyalar için. İstisna içerik kurallarından muaf tutar, yol kurallarından tutmaz. Gerekçesiz ya da var olmayan satır kapıyı düşürür.
+- **Okunmadan geçen dosya yok:**
+  - Yalnızca bilinen ikili biçimler ikili okunur: `png`, `jpg`/`jpeg`, `webp`, `gif`, `ttf`, `otf`, `woff`, `woff2`, `mp4`. Dosyanın baytları uzantısının biçimiyle başlamalıdır; başlamıyorsa `binary-mismatch`. İkili dosyanın baytlarında da anahtar aranır, çünkü metadata metin taşıyabilir.
+  - Geri kalan her dosya metindir, NUL baytı olsa da. NUL'lü (ör. UTF-16) metin NUL'ler çıkarılarak bir kez daha aranır.
+  - Metin 20 MB'a, ikili 50 MB'a kadar bütünüyle okunur. Daha büyük dosya (`unscannable-too-large`), okunamayan dosya (`unscannable-read-error`) ve submodule (`unscannable-submodule`) kapıyı düşürür. Yalnızca çalışma ağacında silinmiş dosya atlanır.
+- **Çıktı** yalnızca dosya yolunu, kural adını ve kaç kez geçtiğini yazar; eşleşen değeri asla yazmaz.
+- **İstisna:** `scripts/secret-guard.allow`, satır başına `yol kural parmakizi # gerekçe`. Yalnızca doğrulanmış sahte test verileri için.
+  - Bir satır tek bir dosyada, tek bir kuralın tek bir eşleşen değerini muaf tutar. Parmakizi değerin SHA-256'sının ilk 16 onaltılık karakteridir; değerin kendisi saklanmaz.
+  - Deste kurallarında parmakizi dosyanın tam içeriğinindir: sahte deste değişirse yeniden yakalanır.
+  - Aynı dosyaya sonradan eklenen başka bir anahtar ya da başka bir kural yakalanır.
+  - Yol kuralları ve okunamayan dosyalar hiçbir zaman muaf tutulamaz.
+  - Biçimi bozuk, gerekçesiz, var olmayan dosyayı gösteren ya da artık hiçbir şeyle eşleşmeyen (kullanılmayan) satır kapıyı düşürür.
+  - Parmakizini görmek için geliştirici makinesinde `node scripts/secret-guard.mjs --fingerprints` çalıştırılır. CI bu bayrağı kullanmaz; parmakizi yalnızca sahte değer için listeye yazılır.
 - **Üç yerde çalışır:**
   - **CI**, `ci` → `checks`, her izlenen dosyada (`git ls-files`). Atlanamaz: `main`'in ruleset'i PR'ı ve `ci` kontrolünü zorunlu tutar, bypass listesi boştur (yukarıda "Branch protection").
   - **Git kancası**, hazırlanan dosyalarda. Klon başına bir kez açılır: `git config core.hooksPath .githooks`. `--no-verify` ile atlanır.
