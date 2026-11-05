@@ -646,7 +646,9 @@ begin
      or at_rev < 1 then
     raise exception using errcode = 'P0001', message = 'bad_request';
   end if;
-  if st ->> 'phase' <> 'write' or (st ->> 'step')::integer <> at_step then
+  -- A revision counts only while the phase is open and its time is not up (rule 3's exception).
+  if st ->> 'phase' <> 'write' or (st ->> 'step')::integer <> at_step
+     or now() >= (st ->> 'endsAt')::timestamptz then
     return private.kibrit_view_of(r, seat.session_id);
   end if;
   no := private.current_game_no(st);
@@ -753,7 +755,9 @@ begin
   if at_rev < 1 then
     raise exception using errcode = 'P0001', message = 'bad_request';
   end if;
-  if st ->> 'phase' <> 'vote' or (st ->> 'step')::integer <> at_step then
+  -- A revision counts only while the phase is open and its time is not up (rule 3's exception).
+  if st ->> 'phase' <> 'vote' or (st ->> 'step')::integer <> at_step
+     or now() >= (st ->> 'endsAt')::timestamptz then
     return private.kibrit_view_of(r, seat.session_id);
   end if;
   if not target_session_id = any (private.kibrit_active(st)) then

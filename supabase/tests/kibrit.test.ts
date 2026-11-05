@@ -269,6 +269,26 @@ describe("revisions (rule 3's exception)", () => {
   );
 
   it(
+    "takes no revision once the phase's time is up, before any advance",
+    async () => {
+      const g = await game(3);
+      const [a] = g.people as [Person];
+      const at = await step(g.roomId);
+      await write(a, g, at, 1, 'Kim en çok güler?');
+      await sql`
+        update public.rooms
+        set game_state = jsonb_set(game_state, '{endsAt}', to_jsonb(now() - interval '1 second'))
+        where id = ${g.roomId}
+      `;
+      expect((await write(a, g, at, 2, 'Kim en çok konuşur?')).body).toMatchObject({
+        paper: 'Kim en çok güler?',
+        paperRev: 1,
+      });
+    },
+    SLOW,
+  );
+
+  it(
     'takes no more than 20 revisions in a step',
     async () => {
       const g = await game(3);
