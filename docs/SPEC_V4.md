@@ -797,10 +797,10 @@ K-85. Kaynak Aura v90 "Kibrit (gizli soru, gizli oy)" satırı (11 pano) ve proj
   - **Bildir:** oyun sürerken açılan her soruda (kâğıt açıldı, oy, oylar açıldı) masadaki herkes "Bildir"e basabilir: `safety/report { target: 'kibrit_paper', roomId, paperId, reason }`. Kişi bir kâğıdı bir kez bildirir; atlanan kâğıt da bildirilebilir. Yanıt her durumda `{ ok: true }`; yazara bildirilmez. Oyun bitince kâğıtlar silindiği için oyun sonu özetinde "Bildir" yoktur. Bildirilen soru oyun sonu özetinden çıkar; süren tur sürer.
   - **Atla:** sahip, açılan kâğıdı oylar açılmadan atlayabilir (`kibrit/skip { step }`). Atlanan kâğıt bir daha açılmaz, tamamlanan tura sayılmaz; o turun oyları silinir. Aynı çeken yeni bir kâğıt çeker.
 - **Revizyon istisnası (kural 3):** çerçevenin "aynı adıma ikinci eylem yok sayılır" kuralının tek istisnası Kibrit'in `write` ve `vote` eylemleridir.
-  - Kişinin aynı adımdaki sonraki çağrısı öncekinin yerini alır; aşama açık olduğu sürece geçer.
-  - Her çağrı istemcinin artan revizyon numarasını taşır (`rev`, 1'den başlar). Sunucu en yüksek `rev`'i tutar. `rev`'i tutulandan büyük olmayan çağrı yok sayılır ve kişinin bugünkü kâğıdını ya da oyunu döner. Böylece tekrar gönderilen ya da sırası karışan istek eski hâli geri getiremez.
+  - Kişinin aynı adımdaki sonraki çağrısı öncekinin yerini alır; yalnız aşama kapanmamışken ve süresi (`endsAt`) dolmamışken geçer. Süre dolduktan sonra, kimse `advance` çağırmamış olsa da gelen revizyon yok sayılır.
+  - Her çağrı istemcinin artan revizyon numarasını taşır (`rev`, 1'den başlar). Sunucu en yüksek `rev`'i tutar. `rev`'i tutulandan büyük olmayan çağrı yok sayılır ve kişinin bugünkü kâğıdını ya da oyunu döner. Böylece tekrar gönderilen ya da sırası karışan istek eski hâli geri getiremez. `view`, `write` ve `vote` yanıtları kişinin güncel `rev`'ini taşır (`paperRev`, `voteRev`); uygulama yeniden açılınca ya da başka telefondan girilince saymaya oradan devam eder.
   - Kişi başına adım başına en çok 20 revizyon kabul edilir; fazlası yok sayılır.
-  - Aşama kapandıktan sonra (süre dolup sıradaki `advance` geçtiğinde, herkes yazdığında ya da oy verdiğinde) gelen revizyon yok sayılır.
+  - Aşama kapandıktan sonra (süresi dolduğunda, herkes yazdığında ya da oy verdiğinde) gelen revizyon yok sayılır.
   - Başka hiçbir Kibrit eylemi revizyon almaz: `draw`, `to-vote`, `skip`, `next` ve `ready` aynı adımda bir kez geçer; iki telefon aynı eyleme basarsa ilk gelen geçer.
 - **Gözlemci:** yazmaz, çekmez, oy vermez; soruyu ve sonucu görür, bildirebilir.
 - **Çıkış** (oyundan ya da masadan):
@@ -808,7 +808,7 @@ K-85. Kaynak Aura v90 "Kibrit (gizli soru, gizli oy)" satırı (11 pano) ve proj
   - Oylama sürerken çıkanın verdiği oy silinir; ona verilen oylar sonuçta sayılmaz; o oyları verenlerin telefonu oyunun artık geçmediğini gösterir ve süre içinde yeniden seçerler. Sonuçtaki katılım, oylamadaki sayaçla aynı ölçüdür (oyunda kalan her oyuncunun oyu). Katılım sayacı yalnız çıkanın kendi oyu kadar düşer, her çıkışta kalan süre en az 8 sn olur ve o oylama artık erken bitmez, yalnız süreyle kapanır.
   - Çıkan sıradaki çekense sıra bir sonrakine geçer ve çekme süresi yeniden başlar.
   - Açıklanmış tur sonuçları (özet dahil) sonradan değişmez.
-  - Aşama çıkanla tamamlanıyorsa (herkes yazdı ya da oy verdi) süre o an dolar ve sıradaki `advance` çözer.
+  - Soru yaz aşaması çıkanla tamamlanıyorsa (kalan herkes yazdı) süre o an dolar ve sıradaki `advance` çözer. Oylamada bu kısa yol yoktur: oylama çıkıştan sonra yalnız süreyle kapanır (yukarıda).
   - Oyunda kalan oyuncu 3'ün altına düşerse oyun o ana kadarki özetle biter.
   - Sahip masadan ayrılırsa sahiplik çerçevedeki gibi geçer; oyun sürer. 120 sn sınırı yeni sahibi beklemeden de ilerletir.
 - **Gizli bilgi (kural 3):**
@@ -828,7 +828,7 @@ K-85. Kaynak Aura v90 "Kibrit (gizli soru, gizli oy)" satırı (11 pano) ve proj
   - Oyun bitince (sonuna varan, "Oyunu bitir", masa kapanması) oyunun bütün kâğıtları ve oy satırları silinir; bildirilenlerin metni yalnız `reports`'taki kopyada kalır.
   - "Gecenin kâğıtları" `game_state.lastGame.kibrit`'tedir ve oyun sonu ekranı içindir. Masanın sonraki oyununda ya da masa kapanınca silinir.
   - Oyun geçmişine (`play_history`) metin yazılmaz.
-- **Sunucu:** `kibrit` fonksiyonu: `start { rounds? }`, `view`, `write { step, rev, text }`, `draw { step }`, `to-vote { step }`, `vote { step, rev, target }`, `skip { step }`, `ready { step }`, `next { step }`, `advance`. Hedefler masa oturum kimliğidir (kural 4). Süre dolunca herhangi bir telefon `advance` çağırır; sunucu süreyi denetler ve idempotenttir (`view` ve `advance` `IDEMPOTENT_CALLS`'ta). Kilitler: check-in → `rooms` → `game_players` → `kibrit_papers` → `kibrit_votes`; bildirim (`safety_report_kibrit_paper`) önce masayı, sonra kâğıdı kilitler.
+- **Sunucu:** `kibrit` fonksiyonu: `start { rounds? }`, `view`, `write { step, rev, text }`, `draw { step }`, `to-vote { step }`, `vote { step, rev, target }`, `skip { step }`, `ready { step }`, `next { step }`, `advance`. Hedefler masa oturum kimliğidir (kural 4). Süre dolunca herhangi bir telefon `advance` çağırır; sunucu süreyi denetler ve idempotenttir (`view` ve `advance` `IDEMPOTENT_CALLS`'ta). Kilitler: check-in → `rooms` → `game_players` → `kibrit_papers` → `kibrit_votes`; bildirim (`safety_report_kibrit_paper`) önce masayı, sonra kâğıdı kilitler. Oyun sonu (son tur, 3'ün altına düşme, "Oyunu bitir", masa kapanışı) kâğıtları ve oy satırlarını masa tutulurken siler: oyunun sonunda ve "Oyunu bitir"de çerçevenin bitişinden (`end_game`, `game_players`) sonra, masa kapanışında oyuncuların çıkışından önce. Her yol masa kilidi altında olduğundan başka bir yolla çakışmaz (`kibrit.test.ts` → `locks`).
 - **Görünüş:** Aura v90 panoları (KibritOyuncular … KibritOyAcik), aşağıdaki karar farklarıyla:
 
   | Pano            | Kararla değişen                                                                                                                                 |
