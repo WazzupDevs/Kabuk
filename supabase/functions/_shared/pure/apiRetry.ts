@@ -7,7 +7,7 @@ import type { AccountRequest } from './api/account.ts';
 import type { ChatRequest } from './api/chat.ts';
 import type { CheckinRequest } from './api/checkin.ts';
 import type { DmRequest, FriendsRequest } from './api/friends.ts';
-import type { SahtekarRequest, TabuRequest, VampirRequest } from './api/games.ts';
+import type { SahtekarRequest, SignumRequest, TabuRequest, VampirRequest } from './api/games.ts';
 import type { ProfileRequest } from './api/profile.ts';
 import type { VenueChatRequest } from './api/venueChat.ts';
 
@@ -23,7 +23,8 @@ type CallName =
   | `account/${AccountRequest['action']}`
   | `vampir/${VampirRequest['action']}`
   | `tabu/${TabuRequest['action']}`
-  | `sahtekar/${SahtekarRequest['action']}`;
+  | `sahtekar/${SahtekarRequest['action']}`
+  | `signum/${SignumRequest['action']}`;
 
 export const IDEMPOTENT_CALLS = [
   // updateGate.test "update gate, open": "answers the launch and foreground ping without a user"
@@ -79,6 +80,27 @@ export const IDEMPOTENT_CALLS = [
   // sahtekar.test "the clock (§4.F, IDEMPOTENT_CALLS)": "changes nothing with an early advance, and
   // the same view twice"
   'sahtekar/view',
+  // signum.test "signum: races and repeats (IDEMPOTENT_CALLS)":
+  // "answers the same clue, reveal or end-turn again with the first result and writes nothing"
+  'signum/clue',
+  // signum.test "signum: races and repeats (IDEMPOTENT_CALLS)":
+  // "answers the same clue, reveal or end-turn again with the first result and writes nothing"
+  'signum/reveal',
+  // signum.test "signum: races and repeats (IDEMPOTENT_CALLS)":
+  // "answers the same clue, reveal or end-turn again with the first result and writes nothing"
+  'signum/end-turn',
+  // signum.test "signum: races and repeats (IDEMPOTENT_CALLS)":
+  // "keeps a mark from going back: the same seq again changes nothing, an older one is outdated"
+  'signum/point',
+  // signum.test "signum: races and repeats (IDEMPOTENT_CALLS)":
+  // "changes nothing with an early advance, a ready, an advance or a view sent twice"
+  'signum/ready',
+  // signum.test "signum: races and repeats (IDEMPOTENT_CALLS)":
+  // "changes nothing with an early advance, a ready, an advance or a view sent twice"
+  'signum/advance',
+  // signum.test "signum: races and repeats (IDEMPOTENT_CALLS)":
+  // "changes nothing with an early advance, a ready, an advance or a view sent twice"
+  'signum/view',
 ] as const satisfies readonly CallName[];
 
 export const RETRY_DELAY_MS = 500;

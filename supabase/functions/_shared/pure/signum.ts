@@ -90,6 +90,12 @@ export type SignumSecret = {
   // Every applied clue, reveal and end-turn of the game, by actionKey(sid, actionId): kept to the
   // end. Keyed by the person too, so one person's ids say nothing of anyone else's.
   actions: Record<string, SignumActionRecord>;
+  // Each team's Realtime channel id (game_team:{id}): only that team's view carries it; it changes
+  // whenever someone of the team leaves the game, so an open subscription of theirs hears nothing
+  // more (B-3).
+  channels: Record<SignumTeam, string>;
+  // The write version the server compares under the lock (signum_commit); the server sets it.
+  rev?: number;
 };
 
 export type SignumOutcome = 'own' | 'neutral' | 'opponent' | 'black';
@@ -115,7 +121,9 @@ export type SignumErrorCode =
   | 'action_id_conflict'
   | 'seq_conflict';
 
-export type SignumNotApplied = 'stale_step' | 'phase_expired' | 'outdated';
+// `busy`: the server's three tries all met a change made at the same moment (B-2); the phone
+// refreshes like after a stale step.
+export type SignumNotApplied = 'stale_step' | 'phase_expired' | 'outdated' | 'busy';
 
 export type SignumRequest =
   | { action: 'ready'; step: number }
@@ -195,9 +203,11 @@ function shuffled<T>(items: readonly T[], rng: () => number): T[] {
 export function pickWords(pool: readonly string[], rng: () => number): string[] | null {
   const picked: string[] = [];
   for (const word of shuffled(pool, rng)) {
-    if (!isBoardWord(word)) continue;
+    // A card is used as it is written or not at all: the server checks each board word against the
+    // pool letter by letter (signum_start).
+    if (!isBoardWord(word) || plainText(word).trim() !== word) continue;
     if (picked.some((p) => tooAlike(p, word))) continue;
-    picked.push(plainText(word).trim());
+    picked.push(word);
     if (picked.length === SIGNUM.tiles) return picked;
   }
   return null;
@@ -226,7 +236,13 @@ export type SignumStartError =
 // on `rng`: the server passes a cryptographic one (crypto.getRandomValues), never Math.random;
 // tests pass a seeded one.
 export function startGame(
-  input: { gameNo: number; seats: SignumSeat[]; pool: readonly string[]; now: Date },
+  input: {
+    gameNo: number;
+    seats: SignumSeat[];
+    pool: readonly string[];
+    now: Date;
+    channels: Record<SignumTeam, string>;
+  },
   rng: () => number,
 ): { state: SignumState; secret: SignumSecret } | { error: SignumStartError } {
   const { seats } = input;
@@ -268,7 +284,7 @@ export function startGame(
       reason: null,
       key: null,
     },
-    secret: { key, marks, actions: {} },
+    secret: { key, marks, actions: {}, channels: { ...input.channels } },
   };
 }
 
@@ -406,6 +422,41 @@ function paramsOf(request: SignumRequest): string {
   }
 }
 
+// The first answer to a clue, reveal or end-turn this person already sent with this actionId (the
+// same parameters), a conflict (other parameters), or null (a new request). Also used once the game
+// has ended, for a press sent again after it (the reveal that ended it).
+export function repeatOf(
+  secret: SignumSecret,
+  sid: string,
+  request: SignumRequest,
+):
+  | { kind: 'replayed'; result: SignumResult }
+  | { kind: 'error'; code: 'action_id_conflict' }
+  | null {
+  if (request.action !== 'clue' && request.action !== 'reveal' && request.action !== 'end-turn') {
+    return null;
+  }
+  const done = secret.actions[actionKey(sid, request.actionId)];
+  if (!done) return null;
+  return done.action === request.action && done.params === paramsOf(request)
+    ? { kind: 'replayed', result: done.result }
+    : { kind: 'error', code: 'action_id_conflict' };
+}
+
+// The server's loop around a write (B-2): `attempt` reads, decides and tries to write, giving null
+// when the table changed meanwhile; after `tries` of them `busy` answers.
+export async function withTries<T>(
+  tries: number,
+  attempt: (n: number) => Promise<T | null>,
+  busy: () => Promise<T>,
+): Promise<T> {
+  for (let n = 1; n <= tries; n++) {
+    const done = await attempt(n);
+    if (done !== null) return done;
+  }
+  return busy();
+}
+
 const isTile = (tile: number) => Number.isInteger(tile) && tile >= 0 && tile < SIGNUM.tiles;
 
 export function decideAction(
@@ -438,15 +489,8 @@ export function decideAction(
   }
 
   // A repeat of an earlier request is answered first, whatever happened since.
-  if (request.action === 'clue' || request.action === 'reveal' || request.action === 'end-turn') {
-    const done = secret.actions[actionKey(actor.sid, request.actionId)];
-    if (done) {
-      const same = done.action === request.action && done.params === paramsOf(request);
-      return same
-        ? { kind: 'replayed', result: done.result }
-        : { kind: 'error', code: 'action_id_conflict' };
-    }
-  }
+  const repeat = repeatOf(secret, actor.sid, request);
+  if (repeat) return repeat;
   if (request.action === 'point') {
     if (request.tile !== null && !isTile(request.tile))
       return { kind: 'error', code: 'bad_request' };
@@ -653,20 +697,27 @@ function endTurn(
 
 // --- Leaving --------------------------------------------------------------------------------------
 
+// How the person left: "Oyundan çık" (the game only) or the table (any of the frame's roads). Why
+// is not known here, and nothing depends on it (A-5: no penalty).
+export type SignumLeaveVia = 'game' | 'table';
+
 export type SignumLeaveEvent = {
   type: 'captain_left' | 'team_empty';
   team: SignumTeam;
-  voluntary: boolean;
+  via: SignumLeaveVia;
 };
 
 // Someone leaves the game for good (any of the frame's ways). A captain's leaving, or a team left
-// without a guesser, ends the game with no result (A-5); the event is the record of it.
+// without a guesser, ends the game with no result (A-5); the event is the record of it. Their
+// team's channel gets `newChannel`: an open subscription of theirs hears nothing more (B-3). The
+// server's trigger (private.signum_on_players_left) does the same; signum.test checks the two agree.
 export function leaveGame(
   state: SignumState,
   secret: SignumSecret,
   sid: string,
-  voluntary: boolean,
+  via: SignumLeaveVia,
   now: Date,
+  newChannel: string,
 ): { state: SignumState; secret: SignumSecret; event: SignumLeaveEvent | null } {
   const seat = state.seats.find((s) => s.sid === sid);
   if (!seat || state.phase === 'over') return { state, secret, event: null };
@@ -681,17 +732,21 @@ export function leaveGame(
     ),
   };
   const left: SignumState = { ...state, seats, ready: state.ready.filter((r) => r !== sid) };
-  const kept: SignumSecret = { ...secret, marks };
+  const kept: SignumSecret = {
+    ...secret,
+    marks,
+    channels: { ...secret.channels, [seat.team]: newChannel },
+  };
   if (seat.role === 'captain') {
     return {
       ...finish(left, kept, null, 'captain_left'),
-      event: { type: 'captain_left', team: seat.team, voluntary },
+      event: { type: 'captain_left', team: seat.team, via },
     };
   }
   if (!seats.some((s) => s.team === seat.team && s.role === 'guesser')) {
     return {
       ...finish(left, kept, null, 'team_empty'),
-      event: { type: 'team_empty', team: seat.team, voluntary },
+      event: { type: 'team_empty', team: seat.team, via },
     };
   }
   if (left.phase === 'role' && left.seats.every((s) => left.ready.includes(s.sid))) {
@@ -725,8 +780,20 @@ export function publicState(state: SignumState): SignumState {
 }
 
 export type SignumView =
-  | { role: 'captain'; team: SignumTeam; key: SignumKind[]; marks: Record<string, number> }
-  | { role: 'guesser'; team: SignumTeam; marks: Record<string, number>; mySeq: number }
+  | {
+      role: 'captain';
+      team: SignumTeam;
+      channel: string;
+      key: SignumKind[];
+      marks: Record<string, number>;
+    }
+  | {
+      role: 'guesser';
+      team: SignumTeam;
+      channel: string;
+      marks: Record<string, number>;
+      mySeq: number;
+    }
   | { role: 'observer' };
 
 // A team's marks as the team sees them: whose mark is on which tile, never the seq.
@@ -747,6 +814,7 @@ export function viewFor(actor: SignumActor, secret: SignumSecret): SignumView {
     return {
       role: 'captain',
       team: seat.team,
+      channel: secret.channels[seat.team],
       key: [...secret.key],
       marks: teamMarks(secret, seat.team),
     };
@@ -754,6 +822,7 @@ export function viewFor(actor: SignumActor, secret: SignumSecret): SignumView {
   return {
     role: 'guesser',
     team: seat.team,
+    channel: secret.channels[seat.team],
     marks: teamMarks(secret, seat.team),
     mySeq: secret.marks[seat.team][actor.sid]?.seq ?? 0,
   };
@@ -895,4 +964,50 @@ export function pregameAgain(lastCaptains: Record<SignumTeam, string | null>): S
     if (sid) p.candidates[team].push(sid);
   }
   return p;
+}
+
+// The people of the pre-game page as they stand now: a candidacy, an offer or a captaincy goes
+// with a person no longer on that team (who moved, chose to watch or left the table). The server
+// reads the page through this before every decision, so a stale entry never makes a captain.
+export function cleanPregame(p: SignumPregame, picks: SignumPicks): SignumPregame {
+  const on = (team: SignumTeam) => (sid: string | null) => sid !== null && picks[sid] === team;
+  const keep = (team: SignumTeam, sid: string | null) => (on(team)(sid) ? sid : null);
+  return {
+    candidates: { a: p.candidates.a.filter(on('a')), b: p.candidates.b.filter(on('b')) },
+    offers: { a: keep('a', p.offers.a), b: keep('b', p.offers.b) },
+    captains: { a: keep('a', p.captains.a), b: keep('b', p.captains.b) },
+  };
+}
+
+// --- The answer a phone gets ----------------------------------------------------------------------
+
+export type SignumAnswer =
+  | { applied: true; replayed?: true; result: SignumResult; room: SignumState; view: SignumView }
+  | {
+      applied: false;
+      reason: SignumNotApplied | 'unchanged';
+      room: SignumState;
+      view: SignumView;
+    };
+
+// The only way a decision becomes an answer: the result, the open state and the caller's own view.
+// Never the decision's halves (the secret holds the key, every mark and every action).
+export function respond(
+  decision: Exclude<SignumDecision, { kind: 'error' }> | { kind: 'busy' },
+  state: SignumState,
+  view: SignumView,
+): SignumAnswer {
+  const room = publicState(state);
+  switch (decision.kind) {
+    case 'applied':
+      return { applied: true, result: decision.result, room, view };
+    case 'replayed':
+      return { applied: true, replayed: true, result: decision.result, room, view };
+    case 'not_applied':
+      return { applied: false, reason: decision.reason, room, view };
+    case 'noop':
+      return { applied: false, reason: 'unchanged', room, view };
+    case 'busy':
+      return { applied: false, reason: 'busy', room, view };
+  }
 }

@@ -2,9 +2,15 @@
 
 ## Devir notu (5 Kasım 2026, Krot sunucusu)
 
-- #464 Krot kişi bazlı sunucu (4.6.3): `20261128090000_sahtekar_v4.sql`, `functions/sahtekar`, `pure/sahtekarGame.ts`, `tests/sahtekar.test.ts`; kararlar `docs/decisions/4.6.3-krot.md` (dört teknik karar proje sahibince onaylı). Hazırım, Söyledim ve oy yalnızca saat işlerken sayılır (`turn_over`). Kural 3 ve 10'a dokunduğu için birleşme proje sahibinin "onaylandı"sını bekler; Krot ekranları bu PR birleşince başlar.
+- #464 Krot kişi bazlı sunucu (4.6.3): `20261129090000_sahtekar_v4.sql`, `functions/sahtekar`, `pure/sahtekarGame.ts`, `tests/sahtekar.test.ts`; kararlar `docs/decisions/4.6.3-krot.md` (dört teknik karar proje sahibince onaylı). Hazırım, Söyledim ve oy yalnızca saat işlerken sayılır (`turn_over`). Kural 3 ve 10'a dokunduğu için birleşme proje sahibinin "onaylandı"sını bekler; Krot ekranları bu PR birleşince başlar.
 - API: `sahtekar/start`, `view` (rol: player/impostor/watcher/null), `ready`, `said`, `vote { targets }`, `guess { text }`, `advance`; açık durum `readSahtekarState`, sonuç `readSahtekarResult` (`lastGame.sahtekar`). `games.json`'da `sahtekar.available: false`.
 - Sıradaki: Krot ekranları (CTO promptları → Prompt 2; Aura v86 "Krot (gizli kart ve şüpheli sırası)" satırı ve `Krot` panosu canlı tuvalden; görseller `sahtekar/krotArt.ts`; kapsül, deste, kanki ve üst çubuk `kinshi/KinshiParts.tsx`). Sonra `sahtekar.available: true` ve `pnpm seed`. "Bir koltuk seç" etiketi proje sahibi karar verene kadar korunur (rapor açık soru 1).
+
+## Devir notu (5 Kasım 2026, Kinshi 320 dp denetimi)
+
+- #463 deste 320 dp'de ölçeklenir; denetimde tahmincinin paneli sayaçlara biniyordu, düzeldi (`kinshiDeckHeight`; OTA). Ayrıntı ve ölçümler `docs/decisions/kinshi-320dp.md` → "Denetim".
+- Tasarımın kararını bekleyen: 22'de sığmayan iki kelimelik kelimeler (320'de 11, 390'da 1) "…" ile biter; seçenekler iki satır, en küçük boyu düşürmek ya da kartları kısaltmak. Skor hapı 320'de 2 dp taşar; 3-2-1 kankileri ve konfeti 320'de 390 konumunda.
+- Telefonda bakılacak (cihaz ve emülatör yok, hiçbiri denenmedi): 320 dp ve en büyük yazıda Anlatıcı, Tahminci, Rakip, Gözlemci, Tur öncesi; "…" gerçekten çıkıyor mu; panel uzayınca sayaçlar ve kaydırma.
 
 ## Devir notu (5 Kasım 2026, Kinshi ekranları bitti)
 
