@@ -445,29 +445,36 @@ describe('races and repeats', () => {
     expect(again).toEqual({ kind: 'replayed', result: first.result });
   });
 
-  it('the same actionId with other parameters, or from someone else, is a conflict', () => {
+  it('the same actionId with other parameters is a conflict', () => {
     const g = inGuess();
-    const [ece = '', fuat = ''] = g.guessers;
+    const [ece = ''] = g.guessers;
     const t = tileOf(g.secret, g.team);
     const m = apply(g, ece, { action: 'point', step: g.state.step, tile: t, seq: 1 });
     const done = apply(m, ece, { action: 'reveal', step: m.state.step, tile: t, actionId: 'r1' });
     const other = tileOf(done.secret, g.team, [t]);
     expect(
       act(done, ece, { action: 'reveal', step: m.state.step, tile: other, actionId: 'r1' }),
-    ).toEqual({
-      kind: 'error',
-      code: 'action_id_conflict',
-    });
-    expect(
-      act(done, fuat, { action: 'reveal', step: m.state.step, tile: t, actionId: 'r1' }),
-    ).toEqual({
-      kind: 'error',
-      code: 'action_id_conflict',
-    });
+    ).toEqual({ kind: 'error', code: 'action_id_conflict' });
     expect(act(done, ece, { action: 'end-turn', step: m.state.step, actionId: 'r1' })).toEqual({
       kind: 'error',
       code: 'action_id_conflict',
     });
+  });
+
+  it('someone else’s actionId neither replays their result nor says it was used', () => {
+    const g = inGuess();
+    const [ece = '', fuat = ''] = g.guessers;
+    const t = tileOf(g.secret, g.team);
+    const m = apply(g, ece, { action: 'point', step: g.state.step, tile: t, seq: 1 });
+    const done = apply(m, ece, { action: 'reveal', step: m.state.step, tile: t, actionId: 'r1' });
+    // Fuat sends Ece's id for her request: a request of his own, judged as any other.
+    expect(
+      act(done, fuat, { action: 'reveal', step: m.state.step, tile: t, actionId: 'r1' }),
+    ).toMatchObject({ kind: 'not_applied', reason: 'stale_step' });
+    // A captain with a guesser's id is turned away on the role, never answered from the record.
+    expect(
+      act(done, g.captain, { action: 'reveal', step: m.state.step, tile: t, actionId: 'r1' }),
+    ).toEqual({ kind: 'error', code: 'not_guesser' });
   });
 
   it('a clue sent again answers the first result; with another number it is a conflict', () => {
@@ -688,6 +695,93 @@ describe('who may act', () => {
   });
 });
 
+describe('who may act, further', () => {
+  const gul: SignumActor = { sid: 'gul', seat: null };
+
+  it('an observer may do nothing but an advance', () => {
+    const g = inGuess();
+    const step = g.state.step;
+    const requests: SignumRequest[] = [
+      { action: 'ready', step },
+      { action: 'clue', step, word: 'Yaz', n: 1, actionId: 'o1' },
+      { action: 'point', step, tile: 0, seq: 1 },
+      { action: 'reveal', step, tile: 0, actionId: 'o2' },
+      { action: 'end-turn', step, actionId: 'o3' },
+    ];
+    for (const request of requests) {
+      expect(decideAction(g.state, g.secret, gul, request, T0, terms)).toEqual({
+        kind: 'error',
+        code: 'not_player',
+      });
+    }
+  });
+
+  it('the team whose turn it is not may not give a clue, reveal or end the turn', () => {
+    let g: Game = newGame();
+    for (const s of SEATS) g = apply(g, s.sid, { action: 'ready', step: g.state.step });
+    const other = g.state.turn === 'a' ? 'b' : 'a';
+    const otherCaptain = SEATS.find((s) => s.team === other && s.role === 'captain')?.sid ?? '';
+    expect(
+      act(g, otherCaptain, {
+        action: 'clue',
+        step: g.state.step,
+        word: 'Yaz',
+        n: 1,
+        actionId: 'x',
+      }),
+    ).toEqual({ kind: 'error', code: 'not_your_turn' });
+    const guess = inGuess();
+    const rival = SEATS.find((s) => s.team !== guess.team && s.role === 'guesser')?.sid ?? '';
+    expect(
+      act(guess, rival, { action: 'reveal', step: guess.state.step, tile: 0, actionId: 'y' }),
+    ).toEqual({ kind: 'error', code: 'not_your_turn' });
+    expect(
+      act(guess, rival, { action: 'end-turn', step: guess.state.step, actionId: 'z' }),
+    ).toEqual({
+      kind: 'error',
+      code: 'not_your_turn',
+    });
+  });
+
+  it('nothing moves a game that is over', () => {
+    const g = inGuess();
+    const over = leaveGame(g.state, g.secret, g.captain, true, T0);
+    const done: Game = { state: over.state, secret: over.secret };
+    expect(act(done, 'bora', { action: 'advance', step: done.state.step }, later(999))).toEqual({
+      kind: 'noop',
+    });
+    expect(
+      act(done, g.guessers[0] ?? '', { action: 'end-turn', step: done.state.step, actionId: 'q' }),
+    ).toMatchObject({ kind: 'not_applied', reason: 'stale_step', changed: false });
+  });
+});
+
+describe('words compared the way trText does (rule 7)', () => {
+  it('a circumflexed board word is the same word as its plain spelling', () => {
+    expect(validateClue('kar', 1, ['Kâr', 'Sınav'], terms)).toBe('clue_on_board');
+    expect(tooAlike('kâr', 'Kar')).toBe(true);
+    for (let seed = 1; seed <= 50; seed++) {
+      const words = pickWords([...POOL, 'Kâr', 'Kar'], rng(seed)) ?? [];
+      expect(
+        words.filter((w) => ['kar', 'kâr'].includes(w.toLocaleLowerCase('tr-TR'))).length,
+      ).toBeLessThanOrEqual(1);
+    }
+  });
+});
+
+describe('startGame input', () => {
+  it('refuses a seat list with the same person twice or a bad team', () => {
+    const twice = [...SEATS, { sid: 'bora', team: 'a' as const, role: 'guesser' as const }];
+    expect(startGame({ gameNo: 1, seats: twice, pool: POOL, now: T0 }, rng(1))).toEqual({
+      error: 'bad_request',
+    });
+    const bad = SEATS.map((s) => (s.sid === 'cem' ? { ...s, team: 'c' as unknown as 'a' } : s));
+    expect(startGame({ gameNo: 1, seats: bad, pool: POOL, now: T0 }, rng(1))).toEqual({
+      error: 'bad_request',
+    });
+  });
+});
+
 describe('leaving', () => {
   it('a captain leaving ends the game with no winner, and says so', () => {
     const g = inGuess();
@@ -803,8 +897,18 @@ describe('what leaves the server', () => {
         const open = publicState(g.state);
         const text = JSON.stringify(open);
         open.board.forEach((t, i) => {
+          // A tile carries its word and, only once opened, its kind.
+          expect(Object.keys(t).sort()).toEqual(['open', 'word']);
           if (t.open !== null) expect(t.open).toBe(g.secret.key[i]);
+          else expect(g.state.board[i]?.open).toBeNull();
         });
+        // Before the end, the open state as text holds no closed tile's kind.
+        if (open.phase !== 'over') {
+          const closedKinds = g.secret.key.filter((_, i) => open.board[i]?.open === null);
+          const listed = JSON.stringify(open.board.map((t) => t.open));
+          expect(listed).not.toContain('"x"');
+          expect(closedKinds.length).toBe(open.board.filter((t) => t.open === null).length);
+        }
         if (open.phase !== 'over') {
           expect(open.key).toBeNull();
           expect(text).not.toContain('"marks"');

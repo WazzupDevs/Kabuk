@@ -13,7 +13,7 @@
 // the phone refreshes and says so, without the failure haptic.
 
 import { containsProfanity, type PreparedTerms } from './profanity.ts';
-import { normalize, plainText } from './trText.ts';
+import { alikeWords, plainText, startsEither } from './trText.ts';
 
 export const SIGNUM = {
   tiles: 25,
@@ -87,7 +87,8 @@ export type SignumActionRecord = {
 export type SignumSecret = {
   key: SignumKind[];
   marks: Record<SignumTeam, Record<string, SignumMark>>;
-  // Every applied clue, reveal and end-turn of the game by its actionId: kept to the end.
+  // Every applied clue, reveal and end-turn of the game, by actionKey(sid, actionId): kept to the
+  // end. Keyed by the person too, so one person's ids say nothing of anyone else's.
   actions: Record<string, SignumActionRecord>;
 };
 
@@ -139,6 +140,9 @@ export const SIGNUM_IDEMPOTENT_ACTIONS = [
 // not play (an observer).
 export type SignumActor = { sid: string; seat: SignumSeat | null };
 
+// The halves in a decision are what the server writes back under the lock. Never an answer as they
+// are: `secret` holds the key, every mark and every action. A phone's answer is built only from
+// `result`, publicState(state) and that phone's viewFor.
 export type SignumDecision =
   // Applied: the new halves to write, the answer, and the team whose channel hears that its marks
   // changed (data-free).
@@ -167,23 +171,15 @@ export type SignumDecision =
 
 const LETTERS = /^\p{L}+$/u;
 
-// A word in the form words are compared in: Turkish lowercase, ç ğ ı ö ş ü folded.
-export function wordKey(word: string): string {
-  return normalize(plainText(word)).replace(/ /g, '');
-}
-
 // A word that can sit on a tile: letters only, one word, long enough.
 export function isBoardWord(word: string): boolean {
   const w = plainText(word).trim();
   return LETTERS.test(w) && [...w].length >= SIGNUM.minWordLength;
 }
 
-// Two words too alike for one board: the same first four letters, or one inside the other.
-export function tooAlike(a: string, b: string): boolean {
-  const x = wordKey(a);
-  const y = wordKey(b);
-  return x.slice(0, 4) === y.slice(0, 4) || x.includes(y) || y.includes(x);
-}
+// Two words too alike for one board: the same first four letters, or one inside the other
+// (trText.ts → alikeWords; rule 7).
+export const tooAlike = alikeWords;
 
 function shuffled<T>(items: readonly T[], rng: () => number): T[] {
   const out = [...items];
@@ -220,14 +216,28 @@ export function dealKey(starter: SignumTeam, rng: () => number): SignumKind[] {
 // --- Starting -------------------------------------------------------------------------------------
 
 export type SignumStartError =
-  'content_unavailable' | 'not_enough_players' | 'too_many_players' | 'captain_missing';
+  | 'bad_request'
+  | 'content_unavailable'
+  | 'not_enough_players'
+  | 'too_many_players'
+  | 'captain_missing';
 
-// The game's first halves from the frozen seats and the active word pool.
+// The game's first halves from the frozen seats and the active word pool. The key's secrecy rests
+// on `rng`: the server passes a cryptographic one (crypto.getRandomValues), never Math.random;
+// tests pass a seeded one.
 export function startGame(
   input: { gameNo: number; seats: SignumSeat[]; pool: readonly string[]; now: Date },
   rng: () => number,
 ): { state: SignumState; secret: SignumSecret } | { error: SignumStartError } {
   const { seats } = input;
+  const sids = new Set(seats.map((s) => s.sid));
+  const valid = seats.every(
+    (s) =>
+      s.sid !== '' &&
+      (s.team === 'a' || s.team === 'b') &&
+      (s.role === 'captain' || s.role === 'guesser'),
+  );
+  if (sids.size !== seats.length || !valid) return { error: 'bad_request' };
   if (seats.length < SIGNUM.minPlayers) return { error: 'not_enough_players' };
   if (seats.length > SIGNUM.maxPlayers) return { error: 'too_many_players' };
   for (const team of ['a', 'b'] as const) {
@@ -285,12 +295,8 @@ export function validateClue(
     return 'bad_clue';
   }
   if (containsProfanity(w, terms)) return 'bad_clue';
-  const clue = wordKey(w);
-  for (const boardWord of boardWords) {
-    const b = wordKey(boardWord);
-    if (clue.startsWith(b) || b.startsWith(clue)) return 'clue_on_board';
-  }
-  return 'ok';
+  // trText.ts → startsEither (rule 7): "Sınavlar" for "Sınav", "kar" for "Kâr".
+  return boardWords.some((b) => startsEither(w, b)) ? 'clue_on_board' : 'ok';
 }
 
 // --- Phases ---------------------------------------------------------------------------------------
@@ -384,6 +390,8 @@ function beginClues(state: SignumState, secret: SignumSecret, now: Date) {
 
 // --- Actions --------------------------------------------------------------------------------------
 
+export const actionKey = (sid: string, actionId: string): string => `${sid}:${actionId}`;
+
 function paramsOf(request: SignumRequest): string {
   switch (request.action) {
     case 'clue':
@@ -430,12 +438,9 @@ export function decideAction(
 
   // A repeat of an earlier request is answered first, whatever happened since.
   if (request.action === 'clue' || request.action === 'reveal' || request.action === 'end-turn') {
-    const done = secret.actions[request.actionId];
+    const done = secret.actions[actionKey(actor.sid, request.actionId)];
     if (done) {
-      const same =
-        done.by === actor.sid &&
-        done.action === request.action &&
-        done.params === paramsOf(request);
+      const same = done.action === request.action && done.params === paramsOf(request);
       return same
         ? { kind: 'replayed', result: done.result }
         : { kind: 'error', code: 'action_id_conflict' };
@@ -448,6 +453,8 @@ export function decideAction(
       return { kind: 'error', code: 'bad_request' };
     }
     const mark = secret.marks[seat.team][actor.sid];
+    // The same seq again is the same press: its first answer (`sent`), even if that tile has
+    // opened since; the phone takes the marks from its view.
     if (mark && request.seq === mark.seq) {
       return mark.sent === request.tile
         ? { kind: 'replayed', result: { action: 'point', tile: request.tile, seq: request.seq } }
@@ -506,7 +513,12 @@ function record(
     ...secret,
     actions: {
       ...secret.actions,
-      [actionId]: { by: sid, action: request.action, params: paramsOf(request), result },
+      [actionKey(sid, actionId)]: {
+        by: sid,
+        action: request.action,
+        params: paramsOf(request),
+        result,
+      },
     },
   };
 }
