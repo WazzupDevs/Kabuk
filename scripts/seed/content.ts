@@ -11,8 +11,15 @@ import {
   prepareTerms,
 } from '../../supabase/functions/_shared/pure/profanity.ts';
 import { SAHTEKAR } from '../../supabase/functions/_shared/pure/sahtekar.ts';
+import {
+  roundsFor,
+  SPRENGJA,
+  SPRENGJA_TIERS,
+  type SprengjaTier,
+  tiersFor,
+} from '../../supabase/functions/_shared/pure/sprengja.ts';
 import { SOHBET_THEMES, type SohbetTheme } from '../../supabase/functions/_shared/pure/sohbet.ts';
-import { normalize } from '../../supabase/functions/_shared/pure/trText.ts';
+import { normalize, tokenize } from '../../supabase/functions/_shared/pure/trText.ts';
 import {
   DEFAULT_VENUE_CATEGORY,
   isVenueCategory,
@@ -530,4 +537,57 @@ export function parseIbreScales(json: unknown, profanity: ProfanityList): IbreSc
     throw new Error(`ibre-scales.json: ${scales.length} scales, at least ${IBRE_MIN_SCALES}`);
   }
   return scales;
+}
+
+// content/sprengja-letter-groups.json (docs/decisions/sprengja-harf-grubu-v3.md, K-85 O-11, O-12):
+// Sprengja's letter groups by tier. A group is two or three Turkish lowercase letters; no group
+// twice across the tiers; kolay and orta alone fill the longest game below SPRENGJA.hardFrom
+// players, all three the longest game. No group is a listed word, and no group of three letters
+// starts a listed word (v1's "kal").
+export const SPRENGJA_GROUP = /^[a-zçğıöşü]{2,3}$/u;
+
+export type SprengjaLetterGroup = { group: string; tier: SprengjaTier };
+
+export function parseSprengjaLetterGroups(
+  json: unknown,
+  profanity: ProfanityList,
+): SprengjaLetterGroup[] {
+  if (!isRecord(json) || !isRecord(json.groups)) {
+    throw new Error('sprengja-letter-groups.json needs groups');
+  }
+  const tiers = json.groups;
+  for (const key of Object.keys(tiers)) {
+    if (!(SPRENGJA_TIERS as readonly string[]).includes(key)) {
+      throw new Error(`sprengja groups: unknown tier "${key}"`);
+    }
+  }
+  const terms = prepareTerms(profanity.terms, profanity.wholeWords);
+  const listed = [...profanity.terms, ...profanity.wholeWords].flatMap((t) =>
+    tokenize(t, { fold: false }),
+  );
+  const seen = new Set<string>();
+  const groups = SPRENGJA_TIERS.flatMap((tier) => {
+    const list = stringList(tiers[tier], `sprengja groups.${tier}`);
+    return list.map((group) => {
+      const at = `sprengja groups.${tier}: "${group}"`;
+      if (!SPRENGJA_GROUP.test(group)) throw new Error(`${at} must be 2 or 3 lowercase letters`);
+      if (seen.has(group)) throw new Error(`${at} twice`);
+      if (containsProfanity(group, terms)) throw new Error(`${at} is on the profanity list`);
+      if ([...group].length === 3 && listed.some((w) => w.startsWith(group))) {
+        throw new Error(`${at} starts a word on the profanity list`);
+      }
+      seen.add(group);
+      return { group, tier };
+    });
+  });
+  const count = (players: number) =>
+    groups.filter((g) => tiersFor(players).includes(g.tier)).length;
+  const fewest = SPRENGJA.hardFrom - 1;
+  if (count(fewest) < roundsFor(fewest)) {
+    throw new Error(`sprengja groups: kolay + orta fewer than ${roundsFor(fewest)}`);
+  }
+  if (count(SPRENGJA.maxPlayers) < roundsFor(SPRENGJA.maxPlayers)) {
+    throw new Error(`sprengja groups: fewer than ${roundsFor(SPRENGJA.maxPlayers)}`);
+  }
+  return groups;
 }
