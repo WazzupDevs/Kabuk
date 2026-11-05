@@ -55,6 +55,7 @@ import {
   TeamTag,
   TimeStrip,
   TopBar,
+  useKinshiDeck,
   useTeamTone,
 } from './KinshiParts';
 
@@ -459,6 +460,7 @@ function CardScreen({
       ? PEEK_PAIRS.far
       : PEEK_PAIRS.near;
   const rival = !ready && role === 'rival';
+  const deck = useKinshiDeck();
   const panel =
     !ready && (role === 'guesser' || role === 'out') ? <GuesserPanel state={state} /> : null;
   const passesLeft = Math.max(0, state.maxPasses - state.passesUsed);
@@ -548,7 +550,7 @@ function CardScreen({
         </Deck>
         {!ready ? (
           <View
-            style={{ marginTop: (rival ? K.statsBelowRival : K.statsBelow) - K.deckShadow.below }}
+            style={{ marginTop: (rival ? K.statsBelowRival : K.statsBelow) - deck.shadow.below }}
           >
             <Stats counts={state.counts} />
           </View>
@@ -573,13 +575,14 @@ const PASS_DIM = 0.7;
 // yüksek sesle söyle." and the last three closed cards with their marks.
 function GuesserPanel({ state }: { state: TabuState }) {
   const last = state.words.slice(-LAST_WORDS).reverse();
+  const d = useKinshiDeck();
   return (
     <View
       style={{
         position: 'absolute',
-        top: K.peek.above + K.panel.top,
-        left: (K.card.width - K.panel.width) / 2,
-        width: K.panel.width,
+        top: d.peek.above + d.panel.top,
+        left: (d.card.width - d.panel.width) / 2,
+        width: d.panel.width,
       }}
     >
       <Glass

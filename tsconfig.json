@@ -13,5 +13,5 @@
     "supabase/tests/**/*.ts"
   ],
   // Checked by apps/mobile/tsconfig.config.json (its kit import brings React Native's types).
-  "exclude": ["apps/mobile/src/theme/kabul.test.ts"]
+  "exclude": ["apps/mobile/src/theme/kabul.test.ts", "apps/mobile/src/theme/kinshiDeck.test.ts"]
 }
