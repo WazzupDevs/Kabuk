@@ -7,7 +7,13 @@ import type { AccountRequest } from './api/account.ts';
 import type { ChatRequest } from './api/chat.ts';
 import type { CheckinRequest } from './api/checkin.ts';
 import type { DmRequest, FriendsRequest } from './api/friends.ts';
-import type { SignumRequest, SprengjaRequest, TabuRequest, VampirRequest } from './api/games.ts';
+import type {
+  SahtekarRequest,
+  SignumRequest,
+  SprengjaRequest,
+  TabuRequest,
+  VampirRequest,
+} from './api/games.ts';
 import type { ProfileRequest } from './api/profile.ts';
 import type { VenueChatRequest } from './api/venueChat.ts';
 
@@ -23,6 +29,7 @@ type CallName =
   | `account/${AccountRequest['action']}`
   | `vampir/${VampirRequest['action']}`
   | `tabu/${TabuRequest['action']}`
+  | `sahtekar/${SahtekarRequest['action']}`
   | `signum/${SignumRequest['action']}`
   | `sprengja/${SprengjaRequest['action']}`;
 
@@ -74,6 +81,12 @@ export const IDEMPOTENT_CALLS = [
   // tabu.test "the card (rule 3)": "goes to the describer, the other team and the watchers, never
   // to the describer’s team"
   'tabu/turn-cards',
+  // sahtekar.test "the clock (§4.F, IDEMPOTENT_CALLS)": "changes nothing with an early advance, and
+  // the same view twice"
+  'sahtekar/advance',
+  // sahtekar.test "the clock (§4.F, IDEMPOTENT_CALLS)": "changes nothing with an early advance, and
+  // the same view twice"
+  'sahtekar/view',
   // signum.test "signum: races and repeats (IDEMPOTENT_CALLS)":
   // "answers the same clue, reveal or end-turn again with the first result and writes nothing"
   'signum/clue',

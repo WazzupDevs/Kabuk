@@ -30,8 +30,8 @@ export const GAME_CARDS = [
     category: 'multi',
     art: require('../../../assets/game-poster/g-kaupholl.webp'),
   },
-  // Kibrit has its poster only (the owner's call, 5 Kasım): no category, line or headcount yet.
-  { id: 'kibrit', art: require('../../../assets/game-poster/g-kibrit.webp') },
+  // Kibrit: its v92 poster with the line and headcount of K-86 (the owner's call, 5 Kasım).
+  { id: 'kibrit', category: 'multi', art: require('../../../assets/game-poster/g-kibrit.webp') },
 ] as const satisfies readonly {
   id: keyof typeof tr.table.gameCards;
   category?: keyof typeof tr.table.gameCategories;

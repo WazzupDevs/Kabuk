@@ -75,7 +75,8 @@ jobs:
   # (CLAUDE.md → pnpm test:integration). globalSetup pauses pg_cron for the run.
   integration:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    # 25: the suite alone took 755 s with Signum and Sprengja (5 Kasım), and Kibrit adds its own.
+    timeout-minutes: 25
     env:
       # supabase/tests/local.ts writes here every call the local serve refused or cut off (refusal.ts),
       # and whether it sent the call again.
