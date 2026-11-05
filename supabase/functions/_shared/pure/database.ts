@@ -3242,6 +3242,48 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      signum_commit: {
+        Args: {
+          new_secret: Json;
+          new_state: Json;
+          player_action: boolean;
+          read_rev: number;
+          read_state: Json;
+          seat_role: string;
+          seat_team: string;
+          target_room_id: string;
+          target_user_id: string;
+        };
+        Returns: Json;
+      };
+      signum_pregame_commit: {
+        Args: {
+          new_signum: Json;
+          read_is_owner: boolean;
+          read_pregame: Json;
+          target_room_id: string;
+          target_user_id: string;
+        };
+        Returns: Json;
+      };
+      signum_pregame_read: {
+        Args: { target_room_id: string; target_user_id: string };
+        Returns: Json;
+      };
+      signum_read: {
+        Args: { target_room_id: string; target_user_id: string };
+        Returns: Json;
+      };
+      signum_start: {
+        Args: {
+          new_secret: Json;
+          new_state: Json;
+          read_pregame: Json;
+          target_room_id: string;
+          target_user_id: string;
+        };
+        Returns: Json;
+      };
       start_table_session: {
         Args: {
           accuracy_m?: number;

@@ -567,7 +567,7 @@ Değişmez kabul edilir.
 - Gizli bilgi yalnızca hak eden telefona bir eylemin yanıtıyla gider (`turn-cards`, `view`, `target` kalıbı). `game_state`'e, `game_events`'e ve hiçbir Realtime yüküne girmez (SPEC_V3 §20.1 aynen).
 - **Gözlemci** oynamaz, puan almaz, oy vermez ve itiraz etmez. Gizli bilgiden yalnızca oyunun tablosunda yazanı görür (aşağıda).
 - **Eylem yetkisi kişiye ve role bağlıdır.**
-  - Her eylem bir tur ve adım indeksine bağlıdır; aynı adıma ikinci eylem yok sayılır (`{ ok: true }`, oda değişmez).
+  - Her eylem bir tur ve adım indeksine bağlıdır; aynı adıma ikinci eylem yok sayılır (`{ ok: true }`, oda değişmez). Signum'da oda yine değişmez, yanıt `{ applied: false, reason }`dur (Adım 4.6.7).
   - İki kişi aynı eyleme basarsa ilk gelen geçer (oda satırı kilitlenir).
   - Yetkisiz eylem bugünkü kodlarla döner (`not_describer`, `not_judge` …); yeni kodlar `not_player`, `not_owner`.
 - **Süre sunucu saatindendir** (`endsAt`); telefon yalnızca geri sayar. Süre dolunca herhangi bir telefon `<oyun>/advance` çağırır; sunucu süreyi denetler ve idempotenttir. `advance` ve `begin` `IDEMPOTENT_CALLS`'a iki kez gönderen testle girer.
@@ -742,6 +742,36 @@ K-77'nin altı oyunundan ilki; kaynak proje sahibinin dosyası `skall-oyun-vampi
 - **Sonuç:** `game_results` (`concept` ve `mode` `vampir`) oyunun sonunda oyunda olan her oyuncuya: kazandı ya da kaybetti. Oyun sonu bilgisi `game_state.lastGame.vampir`'dedir (kazanan, roller, ölenler, çıkanlar).
 - **Sunucu:** `vampir` fonksiyonu: `start`, `view`, `ready`, `begin`, `pick { step, target }`, `to-vote`, `vote { step, target }`, `advance`. Hedefler masa oturum kimliğidir (kural 4). Süre dolunca herhangi bir telefon `advance` çağırır; sunucu süreyi denetler ve idempotenttir (`view` ve `advance` `IDEMPOTENT_CALLS`'ta). Kilitler: check-in → `rooms` → `game_players` → `game_secrets`; oyundan çıkanın tetikleyicisi (`game_players.left_at`) masa tutulurken `game_state`'i günceller ve yeni kilit almaz.
 - **Görünüş:** dosyanın ekranları ve renk hikayesi (gece lacivert, gündüz bordo), skall'ın diliyle: renk bulutları, cam kartlar, kitin düğmeleri ve ikonları, kişilerin avatarları; gecede mekan sahnesinin ayı, yıldızları ve yarasaları. Rol kartı resimleri dosyadandır.
+
+### Adım 4.6.7: Signum
+
+Proje sahibinin kararları (5 Kasım 2026; taslak v3 ve iki PR planı). Ekranlar Aura v87 kaynakları gelince ayrı adımdır; o zamana kadar oyun "Yakında"dır (`content/games.json` → `available: false`) ve kelime havuzu seed edilmez.
+
+- **Takımlar:** Mor ve Pembe, her takımda en az 2 kişi, 4–12 kişi; gözlemciler. Takım seçimi çerçevedeki gibidir (`rooms/pick`, sahibin "Karıştır"ı).
+- **Kaptan:** takım içinden gönüllüdür (`signum/volunteer`), sahip onaylar (`signum/approve-captain`); roller oyun boyunca değişmez. Gönüllü çıkmazsa sahip birine önerir (`signum/offer-captain`) ya da rastgele önerir (`signum/random-offer`); öneriyi kabul eden yalnızca aday olur, kaptanı her durumda sahip onaylar. Adaylar, öneriler ve kaptanlar masaya açıktır (`game_state.pregame.signum`; A-14): reddin nedeni gösterilmez, ama önerinin kalkmasından reddedildiği dolaylı olarak anlaşılabilir. Her takımın onaylı kaptanı olmadan oyun başlamaz (`captain_missing`).
+- **Pano:** 25 karo; başlayan takım rastgele seçilir ve 9 karo alır, öteki 8, nötr 7, kara kart 1. Kelimeler `cards` (`deck = 'signum'`) havuzundan sunucuda seçilir: aynı panoda ilk dört harfi aynı ya da biri ötekini içeren iki kelime olmaz. Havuzda 200'den az etkin kelime varsa ya da 25 geçerli ve farklı kelime çıkmıyorsa oyun başlamaz (`content_unavailable`; A-15).
+- **Aşamalar:**
+  1. **Rol kartı:** herkes hazır olunca ya da 30 sn sonra başlayan takımın ipucu aşaması.
+  2. **İpucu (90 sn):** sıradaki takımın kaptanı tek kelime ve 1–4 arası bir sayı yazar (`signum/clue`). Kelime yalnızca harftir, küfür filtresinden geçer ve panodaki hiçbir kelimeyle (açık ya da kapalı) eşit ya da başlangıcı olamaz (`trText.ts` → `startsEither`; `bad_clue`, `clue_on_board`). Süre dolarsa sıra rakibin ipucuna geçer.
+  3. **Tahmin (tur başına toplam 60 sn):** hak ipucunun sayısı + 1'dir. Tahminci karoyu işaretler (`signum/point`; işaret yalnızca kendi takımında görünür), ikinci bir onayla açar (`signum/reveal`; sunucu çağıranın işaretinin o karoda olduğunu denetler). Tahminciler hiç karo açmadan turu bitirebilir (`signum/end-turn`). Süre dolunca tur biter.
+  4. **Açılış:** kendi karosu bir hak düşürür; nötr karo turu bitirir; rakip karosu rakibe sayılır ve turu bitirir; kara kartı açan takım kaybeder; bir takımın son karosu kimden gelirse gelsin o takım kazanır.
+  5. **Oyun sonu:** harita açık duruma yazılır (A-7); oyun sonu bilgisi `game_state.lastGame.signum`'dadır. Faz geçişlerinin ve sonuç ekranlarının görünüşü Aura v87'den gelir.
+- **Roller ve gizli bilgi** (kural 3):
+
+  | Rol      | Görür (`signum/view`)                                         | Eylem                             |
+  | -------- | ------------------------------------------------------------- | --------------------------------- |
+  | Kaptan   | Bütün renk haritası, kendi takımının işaretleri, takım kanalı | Hazırım, ipucu                    |
+  | Tahminci | Açılmış karolar, kendi takımının işaretleri, takım kanalı     | Hazırım, işaretle, aç, turu bitir |
+  | Gözlemci | Yalnızca açılmış karolar                                      | Yok                               |
+
+  Kapalı karonun rengi, işaretler, kayıtlı eylemler ve takım kanalı kimliği yalnızca `game_secrets`'tadır; `game_state`'e, `game_events`'e, hata yanıtlarına ve Realtime yüküne girmez. İşaret değişikliği `rooms` satırını değiştirmez; takım yalnızca kendi kanalından (`game_team:{kanal kimliği}`, yükü boş) haberdar olur.
+
+- **Sunucu** (B-1): kararları `_shared/pure/signum.ts` verir. `signum` fonksiyonu oyunu kilitsiz okur (`signum_read`), karar verir ve `signum_commit` ile yazar. `signum_commit` kilit altında okunan açık durumun ve sırrın sürümünün değişmediğini, çağıranın aynı takım ve rolle hâlâ oyunda olduğunu (etkin check-in, masada, `game_players.left_at is null`) ve oyuncu eyleminin fazın süresi içinde kaldığını (`clock_timestamp()`) denetler. Bir şey değiştiyse yazmaz; fonksiyon yeniden okuyup yeniden karar verir, üç denemeden sonra `{ applied: false, reason: 'busy' }` döner (B-2). Yanıt yalnızca sonuçtan, açık durumdan ve çağıranın kendi görünümünden kurulur (`respond`).
+- **Uygulanmadı yanıtları** (4.F'deki "aynı adıma ikinci eylem `{ ok: true }`" kuralının Signum istisnası): eski adımdaki ya da yarışı kaybeden istek `200 { applied: false, reason: 'stale_step' }`, süresi dolmuş fazdaki istek `phase_expired` (sunucu fazı aynı işlemde ilerletir), daha eski bir işaret `outdated` alır. Oda yine değişmez; telefon durumu yeniler, hata titreşimi olmaz.
+- **Tekrar:** `clue`, `reveal` ve `end-turn` telefonun ürettiği `actionId`'yi taşır; kayıt kişiye bağlıdır ve oyun boyunca durur. Aynı istek ilk sonucu döner (`replayed`), aynı `actionId` farklı parametreyle `action_id_conflict` alır. `point` her basışta artan `seq` taşır: aynı `seq` ve karo tekrardır, aynı `seq` farklı karo `seq_conflict`, eski `seq` `outdated`'dır; tur sonunda işaret silinse de `seq` kalır. `view`, `advance`, `ready`, `clue`, `point`, `reveal` ve `end-turn` `IDEMPOTENT_CALLS`'tadır.
+- **Çıkış** (A-5): kaptan oyundan ya da masadan kalıcı olarak çıkarsa oyun biter ve sonuç yazılmaz; takımda tahminci kalmazsa da öyle. İkisi `game_events`'e `captain_left` ya da `team_empty` olarak, takımla ve oyundan mı masadan mı çıkıldığıyla (`via`) yazılır. Ceza yoktur. Takımdan biri çıkınca o takımın kanal kimliği yenilenir; sunucu artık yalnızca yeni kanala yayın yapar, çıkanın açık aboneliğine bir şey gitmez (B-3). Sahibin "Oyunu bitir"i çerçevenindir.
+- **Sonuç:** `game_results` (`concept` ve `mode` `signum`) bir takım kazanınca oyunun sonunda oyunda olan her oyuncuya; puan takımın açılmış karo sayısıdır.
+- **Kilitler:** check-in → `rooms` → `game_players` → `game_secrets`. Çıkışın tetikleyicisi deyim düzeyindedir: çerçeve oyunu bitirirken bütün oyuncuları birlikte çıkardığında hiçbir şey yapmaz.
 
 ## 4.G Bildirim, davet ve arkadaşlık (adım 4.7)
 
