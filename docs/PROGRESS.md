@@ -1,5 +1,11 @@
 # İlerleme
 
+## Devir notu (5 Kasım 2026, Krot sunucusu)
+
+- #464 Krot kişi bazlı sunucu (4.6.3): `20261130090000_sahtekar_v4.sql`, `functions/sahtekar`, `pure/sahtekarGame.ts`, `tests/sahtekar.test.ts`; kararlar `docs/decisions/4.6.3-krot.md` (dört teknik karar proje sahibince onaylı). Hazırım, Söyledim ve oy yalnızca saat işlerken sayılır (`turn_over`). Kural 3 ve 10'a dokunduğu için birleşme proje sahibinin "onaylandı"sını bekler; Krot ekranları bu PR birleşince başlar.
+- API: `sahtekar/start`, `view` (rol: player/impostor/watcher/null), `ready`, `said`, `vote { targets }`, `guess { text }`, `advance`; açık durum `readSahtekarState`, sonuç `readSahtekarResult` (`lastGame.sahtekar`). `games.json`'da `sahtekar.available: false`.
+- Sıradaki: Krot ekranları (CTO promptları → Prompt 2; Aura v86 "Krot (gizli kart ve şüpheli sırası)" satırı ve `Krot` panosu canlı tuvalden; görseller `sahtekar/krotArt.ts`; kapsül, deste, kanki ve üst çubuk `kinshi/KinshiParts.tsx`). Sonra `sahtekar.available: true` ve `pnpm seed`. "Bir koltuk seç" etiketi proje sahibi karar verene kadar korunur (rapor açık soru 1).
+
 ## Devir notu (5 Kasım 2026, Kinshi 320 dp: iki satır ve skor hapı)
 
 - Birleşenler: #463 (deste ölçeklenir), #468 (tahminci paneli sayaçlara binmez), bu PR (proje sahibinin kararları: uzun kelime iki satır, skor hapı dar hâlde; `docs/decisions/kinshi-320dp.md`). OTA, native yok.

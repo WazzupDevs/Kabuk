@@ -1,81 +1,95 @@
-// Sahtekar (docs/SPEC_V3.md §20.2). One table: the deck, then the phone runs the game. Two tables:
-// started by rooms/answer-game, server-authoritative. The secrets (the impostor's seat, the word,
-// the votes, the options) stay in game_secrets; they leave only as the answer to the asking side's
-// leader: the seats' actions come from the leader's phone only (docs/SPEC_V3.md §22.E; members:
-// not_your_seat).
+// Krot (Sahtekar) at a table of people (docs/SPEC_V4.md §4.F "Adım 4.6.3", K-71). The server deals
+// the roles (game_players) and the word (game_secrets), keeps the clue order, the secret ballots and
+// the open state with its clock (rooms.game_state). The word leaves only as the answer to a player's
+// or a watcher's view, never to an impostor (rule 3). The caught impostors' written guess is compared
+// here with pure/trText.ts (rule 7) and is never kept or sent on (§4.F).
 import { requireUser, serviceClient } from '../_shared/auth.ts';
 import { dbError } from '../_shared/db.ts';
 import { z } from '../_shared/deps.ts';
 import { handle } from '../_shared/http.ts';
-import { AppError } from '../_shared/pure/errors.ts';
-import type {
-  GameOkResponse,
-  SahtekarOptionsResponse,
-  SahtekarRequest,
-  SahtekarStartResponse,
-  SahtekarViewResponse,
-} from '../_shared/pure/api/games.ts';
+import type { GameOkResponse, SahtekarRequest } from '../_shared/pure/api/games.ts';
+import {
+  guessMatches,
+  readSahtekarView,
+  SAHTEKAR_GAME,
+  type SahtekarView,
+} from '../_shared/pure/sahtekarGame.ts';
 
-const Seat = z.string().regex(/^[AB][1-4]$/);
+const Step = z.number().int().min(1).max(10_000);
 
 const Body: z.ZodType<SahtekarRequest> = z.discriminatedUnion('action', [
   z.object({ action: z.literal('start'), roomId: z.uuid() }),
-  z.object({ action: z.literal('view'), roomId: z.uuid(), seat: Seat }),
-  z.object({ action: z.literal('said'), roomId: z.uuid(), step: z.number().int().min(0).max(100) }),
-  z.object({ action: z.literal('vote'), roomId: z.uuid(), voter: Seat, target: Seat }),
-  z.object({ action: z.literal('options'), roomId: z.uuid() }),
-  z.object({ action: z.literal('guess'), roomId: z.uuid(), option: z.string().min(1).max(80) }),
+  z.object({ action: z.literal('view'), roomId: z.uuid() }),
+  z.object({ action: z.literal('ready'), roomId: z.uuid(), step: Step }),
+  z.object({ action: z.literal('said'), roomId: z.uuid(), step: Step }),
+  z.object({
+    action: z.literal('vote'),
+    roomId: z.uuid(),
+    step: Step,
+    targets: z.array(z.uuid()).min(1).max(SAHTEKAR_GAME.maxPlayers),
+  }),
+  z.object({
+    action: z.literal('guess'),
+    roomId: z.uuid(),
+    step: Step,
+    text: z.string().trim().min(1).max(60),
+  }),
   z.object({ action: z.literal('advance'), roomId: z.uuid() }),
 ]);
 
 const db = serviceClient();
 
-type Response =
-  SahtekarStartResponse | SahtekarViewResponse | SahtekarOptionsResponse | GameOkResponse;
-
 Deno.serve(
-  handle(async (req, raw): Promise<Response> => {
+  handle(async (req, raw): Promise<GameOkResponse | SahtekarView> => {
     const body = Body.parse(raw);
     const user = await requireUser(req, db);
     const target = { target_user_id: user.id, target_room_id: body.roomId };
 
     switch (body.action) {
-      // The side model's games do not run at a table of people (docs/SPEC_V4.md §4.E); today's app
-      // hears update_required until the game comes back in step 4.6.
-      case 'start':
-        throw new AppError('update_required', 'This version of the app is too old. Update it.');
-
-      case 'view': {
-        const { data, error } = await db.rpc('sahtekar_view', { ...target, seat: body.seat });
-        if (error) throw dbError('sahtekar_view', error);
-        return data as SahtekarViewResponse;
+      case 'start': {
+        const { error } = await db.rpc('sahtekar_start', target);
+        if (error) throw dbError('sahtekar_start', error);
+        return { ok: true };
       }
 
+      case 'view': {
+        const { data, error } = await db.rpc('sahtekar_view', target);
+        if (error) throw dbError('sahtekar_view', error);
+        return readSahtekarView(data);
+      }
+
+      case 'ready':
       case 'said': {
-        const { error } = await db.rpc('sahtekar_said', { ...target, step: body.step });
-        if (error) throw dbError('sahtekar_said', error);
+        const fn = `sahtekar_${body.action}` as const;
+        const { error } = await db.rpc(fn, { ...target, at_step: body.step });
+        if (error) throw dbError(fn, error);
         return { ok: true };
       }
 
       case 'vote': {
         const { error } = await db.rpc('sahtekar_vote', {
           ...target,
-          voter: body.voter,
-          target: body.target,
+          at_step: body.step,
+          target_session_ids: body.targets,
         });
         if (error) throw dbError('sahtekar_vote', error);
         return { ok: true };
       }
 
-      case 'options': {
-        const { data, error } = await db.rpc('sahtekar_options', target);
-        if (error) throw dbError('sahtekar_options', error);
-        return { options: data as string[] };
-      }
-
       case 'guess': {
-        const { error } = await db.rpc('sahtekar_guess', { ...target, option: body.option });
-        if (error) throw dbError('sahtekar_guess', error);
+        // The word comes only to this function, for the comparison; null: another step.
+        const { data: word, error } = await db.rpc('sahtekar_guess_word', {
+          ...target,
+          at_step: body.step,
+        });
+        if (error) throw dbError('sahtekar_guess_word', error);
+        if (!word) return { ok: true };
+        const { error: guessError } = await db.rpc('sahtekar_guess', {
+          ...target,
+          at_step: body.step,
+          guessed_right: guessMatches(body.text, word),
+        });
+        if (guessError) throw dbError('sahtekar_guess', guessError);
         return { ok: true };
       }
 
