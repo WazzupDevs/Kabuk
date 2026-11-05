@@ -70,23 +70,10 @@ async function step(roomId: string): Promise<number> {
 
 // `count` people at the owner's table, the page opened and the game started (`watch`: these pick
 // "Gözlemci ol" first).
-// Deals again while the owner is the impostor; (1/4)^12 left to chance.
-const REDEALS = 12;
-
 async function game(count: number, watch: number[] = []): Promise<Game> {
   const people = await Promise.all(Array.from({ length: count }, (_, n) => person(venue, n)));
   const [owner, ...others] = people as [Person, ...Person[]];
   const roomId = await tableWith(owner, others);
-  return deal(roomId, owner, people, watch);
-}
-
-// Opens Krot's page at the table, starts it and reads who was dealt what.
-async function deal(
-  roomId: string,
-  owner: Person,
-  people: Person[],
-  watch: number[] = [],
-): Promise<Game> {
   expect(await rooms(owner, { action: 'open-game', roomId, concept: 'sahtekar' })).toEqual(OK);
   for (const n of watch) {
     expect(await rooms(people[n] as Person, { action: 'pick', roomId, pick: 'obs' })).toEqual(OK);
@@ -549,9 +536,12 @@ describe('leaving (§4.6.3)', () => {
       const g = await game(5);
       const first = await runOut(g);
       const seats = first.seats as string[];
-      // The next speaker leaves: the one after comes next.
-      const next = bySession(g, seats[1]);
-      const leaver = g.impostors.includes(next) ? bySession(g, seats[2]) : next;
+      // The next speaker leaves: the one after comes next. Not an impostor (that ends the game) and
+      // not the owner (who ends the game rather than leaving it, rooms/leave-game → bad_request).
+      const leaver = seats
+        .slice(1)
+        .map((sid) => bySession(g, sid))
+        .find((p) => !g.impostors.includes(p) && p !== g.owner) as Person;
       const pos = seats.indexOf(leaver.sessionId);
       expect(await rooms(leaver, { action: 'leave-game', roomId: g.roomId })).toEqual(OK);
       const st = await state(g.roomId);
@@ -575,17 +565,16 @@ describe('leaving (§4.6.3)', () => {
   it(
     'ends the game without results when an impostor leaves (§4.F)',
     async () => {
-      // The owner cannot leave the game (they end it: rooms_leave_game → bad_request), so the
-      // impostor is dealt again until it is someone else; the deal is random.
-      let g = await game(4);
-      for (let i = 0; i < REDEALS && g.impostors[0]?.sessionId === g.owner.sessionId; i++) {
-        expect(await rooms(g.owner, { action: 'end-game', roomId: g.roomId })).toEqual(OK);
-        g = await deal(g.roomId, g.owner, g.people);
-      }
+      const g = await game(4);
       const [impostor] = g.impostors as [Person];
-      expect(impostor.sessionId).not.toBe(g.owner.sessionId);
-      expect(await rooms(impostor, { action: 'leave-game', roomId: g.roomId })).toEqual(OK);
-      expect(await krot(g.owner, { action: 'advance', roomId: g.roomId })).toEqual(OK);
+      // The owner cannot leave its game (rooms/leave-game → bad_request), only the table, which
+      // takes it out of the game the same way.
+      const road = impostor === g.owner ? 'leave' : 'leave-game';
+      expect(await rooms(impostor, { action: road, roomId: g.roomId })).toMatchObject({
+        status: 200,
+      });
+      const stays = g.players[0] as Person;
+      expect(await krot(stays, { action: 'advance', roomId: g.roomId })).toEqual(OK);
       const end = await lastGame(g.roomId);
       expect(end.concept).toBeNull();
       expect(end.last).toMatchObject({
