@@ -58,6 +58,7 @@ import {
 } from '../riso/RisoParts';
 import type { RisoBuddy } from '../riso/risoArt';
 import { krotArt } from './krotArt';
+import { krotRoleShown, krotViewKey, krotViewsOf, krotVisibleView } from './krotView';
 import {
   announceRole,
   Eyebrow,
@@ -163,12 +164,18 @@ function KrotScreens({
     meta: FEEL_ERROR,
     mutationFn: () => roomsApi.leaveGame(room.id),
     onSuccess: () => {
+      // Out of the game: its role is no longer this phone's (rule 3).
+      queryClient.removeQueries({ queryKey: krotViewsOf(room.id) });
       setExit(false);
       onHide();
     },
     onSettled: reread,
   });
   const chat = () => router.push({ pathname: '/room-chat/[id]', params: { id: room.id } });
+  // No game running: no role kept on the phone.
+  useEffect(() => {
+    if (mode !== 'play') queryClient.removeQueries({ queryKey: krotViewsOf(room.id) });
+  }, [mode, room.id, queryClient]);
 
   if (mode === 'pregame') {
     return (
@@ -298,14 +305,26 @@ function useAdvance(roomId: string, state: SahtekarGameState) {
 }
 const ADVANCE_AGAIN_MS = 2500;
 
-// What only this phone may know of its role (sahtekar/view, rule 3), kept for the game: a player's
-// word, an impostor's category, a watcher's word and impostors; nothing for one who left.
-function useView(roomId: string, gameNo: number) {
-  return useQuery({
-    queryKey: ['sahtekarView', roomId, gameNo],
+// What only this phone may know of its role (sahtekar/view, rule 3), kept for the game and this
+// table session: a player's word, an impostor's category, a watcher's word and impostors. Whoever
+// left the game asks no more, its kept answer is dropped and nothing of it is drawn
+// (`krotVisibleView`).
+function useView(roomId: string, state: SahtekarGameState, me: string) {
+  const queryClient = useQueryClient();
+  const gone = state.gone.includes(me);
+  useEffect(() => {
+    if (gone) queryClient.removeQueries({ queryKey: krotViewsOf(roomId) });
+  }, [gone, roomId, queryClient]);
+  const query = useQuery({
+    queryKey: krotViewKey(roomId, state.gameNo, me),
     queryFn: () => sahtekarApi.view(roomId),
     staleTime: Infinity,
+    enabled: !gone,
   });
+  return {
+    data: krotVisibleView(query.data, state, me),
+    error: gone ? null : query.isError ? query.error : null,
+  };
 }
 
 type Shared = {
@@ -336,7 +355,7 @@ function Play({
 }) {
   useAdvance(roomId, state);
   const me = faces.me;
-  const view = useView(roomId, state.gameNo);
+  const view = useView(roomId, state, me);
   // The vote's time running out is felt once, on every phone (hapticMoments → timeUp).
   const wasVote = useRef(state.phase === 'vote');
   useEffect(() => {
@@ -396,7 +415,7 @@ function Play({
     faces,
     top,
     view: view.data,
-    viewError: view.isError ? errorMessage(view.error) : null,
+    viewError: view.error ? errorMessage(view.error) : null,
     clock,
     peeking,
   };
@@ -474,7 +493,7 @@ function RoleDeck({
 }
 
 // Rolünü gör (KrotRolKapali, KrotKelime, KrotSahtekar, KrotGozlemci): the card held to see one's
-// role, then Hazırım beside who is ready. The card is seen before Hazırım (the old Krot's "Gördüm").
+// role, then Hazırım beside who is ready. The role is shown before Hazırım (the old Krot's "Gördüm").
 // A watcher has no Hazırım.
 function RoleScreen(shared: Shared) {
   const { roomId, state, faces, top, clock, view } = shared;
@@ -490,10 +509,12 @@ function RoleScreen(shared: Shared) {
     onSettled: () => void queryClient.invalidateQueries({ queryKey: roomKeys.room(roomId) }),
   });
   const mine = state.ready.includes(me);
+  // Seen only once the face held a role: a press while it is still on its way, or failed, does not
+  // count; the answer arriving under the finger does.
+  if (holding && !seen && krotRoleShown(view)) setSeen(true);
   const hold = (on: boolean) => {
     setHolding(on);
     if (on) {
-      setSeen(true);
       haptic('selection');
       announceRole(view);
     }
