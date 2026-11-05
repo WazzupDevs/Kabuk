@@ -1,7 +1,6 @@
 import type { VampirRole } from '@shared/vampir.ts';
 import type { ImageSourcePropType } from 'react-native';
 
-import type { SandTone } from '@/theme/vampirArt';
 import type { ScenePhase } from '@/theme/vampirScene';
 
 // The role pictures (the owner's file: one scene a role, and the back every card shares).
@@ -27,13 +26,4 @@ export const TABLE_PICTURE: Record<ScenePhase, ImageSourcePropType> = {
   dawn: require('../../../../assets/vampir/scene/table-dawn.webp'),
   day: require('../../../../assets/vampir/scene/table-day.webp'),
   end: require('../../../../assets/vampir/scene/table-end.webp'),
-};
-
-// The medallion and the glass over the sand (the day's and the verdict's middle), drawn once from
-// their SVG text (scripts/art/vampirTable.ts; theme/vampirArt.ts).
-export const MEDAL_PICTURE: ImageSourcePropType = require('../../../../assets/vampir/table/medal.webp');
-export const GLASS_PICTURE: Record<SandTone, ImageSourcePropType> = {
-  night: require('../../../../assets/vampir/table/glass-night.webp'),
-  day: require('../../../../assets/vampir/table/glass-day.webp'),
-  vote: require('../../../../assets/vampir/table/glass-vote.webp'),
 };

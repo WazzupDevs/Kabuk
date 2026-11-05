@@ -17,6 +17,7 @@ import {
   TABLE_MOTION as M,
   TABLE_SHADOW,
   TABLE_TYPE,
+  scaleType,
   X_SVG,
 } from '@/theme/vampirTable';
 import {
@@ -28,11 +29,23 @@ import {
 } from '@/theme/vampirScene';
 import { seatSize } from '@/theme/vampirTableSize';
 
-import { MEDAL_PICTURE, ROLE_ART, ROOM_PICTURE, TABLE_PICTURE } from './roleArt';
+import { ROLE_ART, ROOM_PICTURE, TABLE_PICTURE } from './roleArt';
 import { type Faces, Face, nameOf } from './VampirParts';
 
 const FW = TABLE.frame.width;
 const FH = TABLE.frame.height;
+
+// A dial's place: its middle's height and radius, at the table's middle unless `x` is given.
+export type DialAt = { x?: number; y: number; r: number };
+
+// The large type's scale (VampirOylamaDar) against the panel's own values: the system's type
+// (at most 1.3) over the scene's scale, over the panel's 1.3 on a 320 phone. The vote takes the
+// narrow layout from `NARROW_FONT` on.
+export const NARROW_FONT = 1.15;
+const NARROW_REF = 1.3 / (320 / 360);
+export function narrowScale(fontScale: number, k: number): number {
+  return Math.min(fontScale, MAX_FONT) / k / NARROW_REF;
+}
 
 // ---- The table ----
 
@@ -59,6 +72,8 @@ export type SeatMark = {
 // The scene (Aura v83, the reference's drawCap): the room, the stools, the table, the candles and
 // the time's dial, every card in front of its person, everyone round the table and `stage` at its
 // middle, the design's 360 × 760 phone scaled to the screen. `dial` the phase's dial (or none).
+// `empty` while the phone's own view is on its way (VampirYukleniyor): the stools with no one on
+// them, no card, no candle. `narrow` the large type's scale (the vote's narrow layout).
 export function TableScene({
   faces,
   seats,
@@ -66,13 +81,17 @@ export function TableScene({
   dial,
   stage,
   onChoose,
+  empty,
+  narrow,
 }: {
   faces: Faces;
   seats: readonly SeatMark[];
   phase: ScenePhase;
-  dial: { y: number; r: number } | null;
+  dial: DialAt | null;
   stage?: ReactNode;
   onChoose?: (sid: string) => void;
+  empty?: boolean;
+  narrow?: number;
 }) {
   const [box, setBox] = useState<{ w: number; h: number } | null>(null);
   const k = box ? Math.min(box.w / FW, box.h / FH) : 0;
@@ -98,7 +117,7 @@ export function TableScene({
             accessible={false}
           />
           <SceneBack
-            look={{ phase, count: order.length, dead, dial }}
+            look={{ phase, count: order.length, dead, dial, empty: !!empty }}
             left={(box.w - FW * k) / 2}
             top={(box.h - FH * k) / 2}
             k={k}
@@ -114,20 +133,25 @@ export function TableScene({
               transform: [{ scale: k }],
             }}
           >
-            {order.map((s, i) => (
-              <Card key={s.sid} mark={s} place={places[i]} count={order.length} />
-            ))}
+            {empty
+              ? null
+              : order.map((s, i) => (
+                  <Card key={s.sid} mark={s} place={places[i]} count={order.length} />
+                ))}
             {stage}
-            {order.map((s, i) => (
-              <Seat
-                key={s.sid}
-                faces={faces}
-                mark={s}
-                place={places[i]}
-                count={order.length}
-                onChoose={onChoose && s.choosable ? () => onChoose(s.sid) : undefined}
-              />
-            ))}
+            {empty
+              ? null
+              : order.map((s, i) => (
+                  <Seat
+                    key={s.sid}
+                    faces={faces}
+                    mark={s}
+                    place={places[i]}
+                    count={order.length}
+                    narrow={narrow}
+                    onChoose={onChoose && s.choosable ? () => onChoose(s.sid) : undefined}
+                  />
+                ))}
           </View>
         </>
       ) : null}
@@ -139,10 +163,11 @@ type Look = {
   phase: ScenePhase;
   count: number;
   dead: readonly boolean[];
-  dial: { y: number; r: number } | null;
+  dial: DialAt | null;
+  empty: boolean;
 };
 const lookKey = (l: Look) =>
-  `${l.phase}|${l.count}|${l.dead.map((d) => (d ? 1 : 0)).join('')}|${l.dial ? `${l.dial.y},${l.dial.r}` : ''}`;
+  `${l.phase}|${l.count}|${l.dead.map((d) => (d ? 1 : 0)).join('')}|${l.dial ? `${l.dial.x ?? ''},${l.dial.y},${l.dial.r}` : ''}|${l.empty ? 1 : 0}`;
 
 // What is drawn under the people: a new look (a new phase, a candle gone out) fades in over the one
 // before, on the native driver (as the round table's room did).
@@ -187,7 +212,7 @@ function SceneBack({ look, left, top, k }: { look: Look; left: number; top: numb
 function Back({ look, k }: { look: Look; k: number }) {
   const w = FW * k;
   const h = FH * k;
-  const { phase, count, dead, dial } = look;
+  const { phase, count, dead, dial, empty } = look;
   return (
     <View style={StyleSheet.absoluteFill}>
       <ExpoImage
@@ -198,7 +223,7 @@ function Back({ look, k }: { look: Look; k: number }) {
         accessible={false}
       />
       <View style={StyleSheet.absoluteFill}>
-        <CachedSvg xml={stoolsSvg(phase, count)} width={w} height={h} />
+        <CachedSvg xml={stoolsSvg(phase, count, empty)} width={w} height={h} />
       </View>
       <ExpoImage
         source={TABLE_PICTURE[phase]}
@@ -208,14 +233,18 @@ function Back({ look, k }: { look: Look; k: number }) {
         accessible={false}
       />
       <View style={StyleSheet.absoluteFill}>
-        <CachedSvg xml={candlesSvg(phase, count, dial)} width={w} height={h} />
+        <CachedSvg xml={candlesSvg(phase, count, dial, empty)} width={w} height={h} />
       </View>
-      <View style={[StyleSheet.absoluteFill, { mixBlendMode: 'screen' }]}>
-        <CachedSvg xml={candleLightSvg(phase, count, dead)} width={w} height={h} />
-      </View>
-      <View style={StyleSheet.absoluteFill}>
-        <CachedSvg xml={flamesSvg(phase, count, dead)} width={w} height={h} />
-      </View>
+      {empty ? null : (
+        <>
+          <View style={[StyleSheet.absoluteFill, { mixBlendMode: 'screen' }]}>
+            <CachedSvg xml={candleLightSvg(phase, count, dead)} width={w} height={h} />
+          </View>
+          <View style={StyleSheet.absoluteFill}>
+            <CachedSvg xml={flamesSvg(phase, count, dead)} width={w} height={h} />
+          </View>
+        </>
+      )}
     </View>
   );
 }
@@ -351,15 +380,19 @@ function Seat({
   mark,
   place,
   count,
+  narrow,
   onChoose,
 }: {
   faces: Faces;
   mark: SeatMark;
   place: SeatPlace | undefined;
   count: number;
+  narrow?: number;
   onChoose?: () => void;
 }) {
   const press = usePress();
+  // With the large type the name's measured width keeps it inside the screen's edge.
+  const [nameW, setNameW] = useState(0);
   if (!place) return null;
   const g = seatSize(count);
   const small = count > TABLE.many;
@@ -421,24 +454,53 @@ function Seat({
           />
         ))}
       </View>
-      <View
-        pointerEvents="none"
-        style={{
-          position: 'absolute',
-          left: x - NAME_BOX / 2,
-          top: y + (small ? TABLE.nameTop.small : TABLE.nameTop.big),
-          width: NAME_BOX,
-          alignItems: 'center',
-          opacity: mark.dim ? DIM : 1,
-        }}
-      >
-        <NamePill name={name} count={mark.count} pick={mark.pick} dead={mark.dead} small={small} />
-      </View>
+      {narrow ? (
+        <View
+          pointerEvents="none"
+          onLayout={(e) => setNameW(e.nativeEvent.layout.width)}
+          style={{
+            position: 'absolute',
+            ...narrowNameAt(x, y, nameW, mark.sid === faces.me),
+            opacity: nameW === 0 ? 0 : mark.dim ? DIM : 1,
+          }}
+        >
+          <NamePill name={name} count={mark.count} pick={mark.pick} dead={mark.dead} big={narrow} />
+        </View>
+      ) : (
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            left: x - NAME_BOX / 2,
+            top: y + (small ? TABLE.nameTop.small : TABLE.nameTop.big),
+            width: NAME_BOX,
+            alignItems: 'center',
+            opacity: mark.dim ? DIM : 1,
+          }}
+        >
+          <NamePill
+            name={name}
+            count={mark.count}
+            pick={mark.pick}
+            dead={mark.dead}
+            small={small}
+          />
+        </View>
+      )}
     </>
   );
 }
 const DIM = 0.55;
 const HIT = 8;
+
+// The large type's name (VampirOylamaDar): under the face, moved in to stay `edge` inside the
+// screen; "Sen" at the face's right, so it stays off the button.
+function narrowNameAt(x: number, y: number, w: number, me: boolean): { left: number; top: number } {
+  const n = TABLE.narrow;
+  if (me) return { left: x + n.you.left, top: y + n.you.top };
+  const left = Math.min(Math.max(x - w / 2, n.edge), FW - n.edge - w);
+  return { left, top: y + n.nameTop };
+}
 const NAME_BOX = 120;
 const VOTER = 15;
 
@@ -450,6 +512,7 @@ export function NamePill({
   dead,
   small,
   tag,
+  big,
 }: {
   name?: string;
   count?: number;
@@ -457,29 +520,36 @@ export function NamePill({
   dead?: boolean;
   small?: boolean;
   tag?: boolean;
+  // The large type's scale (VampirOylamaDar): the panel's .ph.big .nm, the long name shortened
+  // from its start so its telling end shows ("…sul-sd62"; the owner's choice, 5 Kasım).
+  big?: number;
 }) {
+  const g = big ?? 0;
   return (
     <View
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        height: tag ? TAG_HIGH : small ? 15 : 17,
-        paddingHorizontal: name ? (small ? 4 : 6) : 0,
+        height: big ? BIG_NAME.height * g : tag ? TAG_HIGH : small ? 15 : 17,
+        paddingHorizontal: name ? (big ? BIG_NAME.pad * g : small ? 4 : 6) : 0,
         borderRadius: tag ? 5 : 4,
         backgroundColor: !name ? undefined : pick ? INK.pink : INK.namePill,
         borderWidth: name && !pick ? 1 : 0,
         borderColor: INK.nameEdge,
-        maxWidth: NAME_BOX,
+        maxWidth: big ? undefined : NAME_BOX,
       }}
     >
       {name ? (
         <Text
           maxFontSizeMultiplier={1}
           numberOfLines={1}
-          adjustsFontSizeToFit
+          ellipsizeMode={big ? 'head' : undefined}
+          adjustsFontSizeToFit={!big}
           minimumFontScale={0.7}
           style={[
             tag ? TABLE_TYPE.tag : small ? TABLE_TYPE.nameSmall : TABLE_TYPE.name,
+            big ? scaleType(TABLE_TYPE.bigName, g) : null,
+            big ? { maxWidth: TABLE.narrow.name * g } : null,
             {
               color: pick || tag ? INK.white : dead ? INK.deadName : INK.name,
               textDecorationLine: dead ? 'line-through' : 'none',
@@ -491,8 +561,28 @@ export function NamePill({
         </Text>
       ) : null}
       {count ? (
-        <View style={[styles.count, { marginLeft: name ? 5 : 0 }]}>
-          <Text maxFontSizeMultiplier={1} style={[TABLE_TYPE.count, { color: INK.amberInk }]}>
+        <View
+          style={[
+            styles.count,
+            { marginLeft: name ? 5 : 0 },
+            big
+              ? {
+                  minWidth: BIG_NAME.count.min * g,
+                  height: BIG_NAME.count.height * g,
+                  borderRadius: (BIG_NAME.count.height * g) / 2,
+                  paddingHorizontal: BIG_NAME.count.pad * g,
+                }
+              : null,
+          ]}
+        >
+          <Text
+            maxFontSizeMultiplier={1}
+            style={[
+              TABLE_TYPE.count,
+              { color: INK.amberInk },
+              big ? scaleType(TABLE_TYPE.bigCount, g) : null,
+            ]}
+          >
             {count}
           </Text>
         </View>
@@ -501,6 +591,12 @@ export function NamePill({
   );
 }
 const TAG_HIGH = 18;
+// The large type's name pill and its count (.ph.big .seat .nm, .nm b), at the panel's scale.
+const BIG_NAME = {
+  height: 23,
+  pad: 7,
+  count: { height: 18, min: 20, pad: 5 },
+};
 
 // Where the j-th of `all` small faces sits round a face of radius `r` (build.py → cand: from the
 // top, 0.78 apart), its top left from the face's middle.
@@ -651,6 +747,7 @@ export function TableCard({
         </View>
         <Animated.View style={side('back')}>
           <Image source={ROLE_ART.arka} style={styles.art} resizeMode="cover" />
+          <HoldRing />
         </Animated.View>
         <Animated.View style={side('front')}>
           <Image source={ROLE_ART[role]} style={styles.art} resizeMode="cover" />
@@ -661,64 +758,46 @@ export function TableCard({
 }
 const PERSPECTIVE = 1000;
 
-// The medallion with something still in it (the verdict's, kept from the round table): the voted
-// out, greyed, and a line under them; or a mark (the vote was tied).
-export function MedalWith({
-  faces,
-  sid,
-  label,
-  mark,
-}: {
-  faces: Faces;
-  sid?: string;
-  label?: string;
-  mark?: string;
-}) {
-  const m = TABLE.medal;
-  const pad = 8;
-  const f = TABLE.medalFace;
+// The ring to hold at the closed card's middle (VampirRolKarti .rolec.hold i): a cream edge, its
+// faint halo and a warm glow.
+function HoldRing() {
+  const { size, edge, halo } = TABLE.hold;
+  const c = TABLE.card;
+  const out = size + 2 * halo;
   return (
-    <View style={{ width: m, height: m, alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-      <ExpoImage
-        pointerEvents="none"
-        source={MEDAL_PICTURE}
-        style={{
-          position: 'absolute',
-          left: -pad,
-          top: -pad,
-          width: m + pad * 2,
-          height: m + pad * 2,
-        }}
-        contentFit="fill"
-        transition={0}
-        accessible={false}
+    <View
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        left: (c.width - out) / 2,
+        top: (c.height - out) / 2,
+        width: out,
+        height: out,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <View style={{ position: 'absolute', left: halo, top: halo, width: size, height: size }}>
+        <NativeShadow css={TABLE_SHADOW.hold} radius={size / 2} />
+      </View>
+      <View
+        style={[
+          styles.round,
+          { width: out, height: out, borderWidth: halo - edge, borderColor: INK.holdHalo },
+        ]}
       />
-      {sid ? (
-        <View style={{ width: f, height: f }}>
-          <View
-            style={{
-              position: 'absolute',
-              left: (f - KIT.size.av.lg) / 2,
-              top: (f - KIT.size.av.lg) / 2,
-              transform: [{ scale: f / KIT.size.av.lg }],
-              filter: MEDAL_FILTER,
-            }}
-          >
-            <Face faces={faces} sid={sid} size="lg" />
-          </View>
-        </View>
-      ) : null}
-      {mark ? <CachedSvg xml={mark} width={MARK} height={MARK} /> : null}
-      {label ? (
-        <Text maxFontSizeMultiplier={1} style={[TABLE_TYPE.medal, { color: INK.medalLabel }]}>
-          {label}
-        </Text>
-      ) : null}
+      <View
+        style={{
+          width: size + 2 * edge,
+          height: size + 2 * edge,
+          borderRadius: size / 2 + edge,
+          borderWidth: edge,
+          borderColor: INK.holdEdge,
+        }}
+      />
     </View>
   );
 }
-const MEDAL_FILTER = [{ grayscale: 1 }, { brightness: 0.75 }];
-const MARK = 56;
 
 // ---- The page round it ----
 
@@ -779,16 +858,20 @@ export function TableRound({
 }
 
 // The glass button at the foot (the panels' .btn.sec, "Masaya dön"; the owner's "Geceyi başlat").
+// `off` cannot be pressed yet (.btn.off: a flat dark fill, half cream words, a thin edge, never
+// faded), as is "Hazırım" before the card is seen.
 export function GlassBtn({
   label,
   onPress,
   loading,
+  off,
   width,
   testID,
 }: {
   label: string;
   onPress: () => void;
   loading?: boolean;
+  off?: boolean;
   width?: number;
   testID?: string;
 }) {
@@ -798,8 +881,8 @@ export function GlassBtn({
       testID={testID}
       accessibilityRole="button"
       accessibilityLabel={label}
-      accessibilityState={{ busy: !!loading }}
-      disabled={loading}
+      accessibilityState={{ busy: !!loading, disabled: !!off }}
+      disabled={loading || off}
       onPress={onPress}
       onPressIn={press.onPressIn}
       onPressOut={press.onPressOut}
@@ -812,9 +895,9 @@ export function GlassBtn({
           alignItems: 'center',
           justifyContent: 'center',
           paddingHorizontal: KIT.size.btnPadXSm,
-          backgroundColor: INK.glass,
+          backgroundColor: off ? INK.off : INK.glass,
           borderWidth: 1,
-          borderColor: INK.glassEdge,
+          borderColor: off ? INK.offEdge : INK.glassEdge,
           transform: [{ scale: press.scale }],
         }}
       >
@@ -823,7 +906,7 @@ export function GlassBtn({
           adjustsFontSizeToFit
           minimumFontScale={0.6}
           maxFontSizeMultiplier={MAX_FONT}
-          style={[TABLE_TYPE.glassBtn, { color: INK.white }]}
+          style={[TABLE_TYPE.glassBtn, { color: off ? INK.offInk : INK.white }]}
         >
           {loading ? '…' : label}
         </Text>
