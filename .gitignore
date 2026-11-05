@@ -14,6 +14,14 @@ apps/mobile/ios/
 *.key
 *.mobileprovision
 
+# Kaupholl's real questions and their verification live in private repositories, never here
+# (scripts/secret-guard.mjs stops them in CI too).
+content/private/
+kaupholl-sorular/
+kaupholl-kontrol/
+dogrulama/
+*.pem
+
 # Env
 .env
 .env.*
