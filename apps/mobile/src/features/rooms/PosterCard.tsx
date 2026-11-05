@@ -11,17 +11,25 @@ import { SPACING } from '@/theme/tokens';
 import { useLabOff } from '@/lib/drawLab';
 import { boxShadowParts } from '@/components/NativeShadow';
 
-// The games on the table, each its cover in a small landscape card, the game's logo in the
-// drawing: U22's riso covers (aktarim-v65 §9.1) where they are drawn, the comic posters
-// (scripts/art/posters.ts) for the two that wait for theirs (§9.2, n.77). A game that waits for its
-// step (4.6): "Yakında" in the corner, not pressed.
+// The games on the table, each its poster in a small landscape card, the game's own palette and logo
+// in the drawing (Aura v92 Masa / MasaKoyu / MasaDar; the posters are the riso rule's deliberate
+// exception), the same picture in light and dark. 600 × 400, and its @2x for 2x screens. A game that
+// waits for its step (4.6): "Yakında" in the corner, not pressed.
 export const GAME_CARDS = [
-  { id: 'vampir', category: 'multi', art: require('../../../assets/riso/game-vampir.webp') },
-  { id: 'signum', category: 'teams', art: require('../../../assets/riso/game-signum.webp') },
-  { id: 'kinshi', category: 'teams', art: require('../../../assets/riso/game-kinshi.webp') },
-  { id: 'krot', category: 'multi', art: require('../../../assets/riso/game-krot.webp') },
-  { id: 'sprengja', category: 'multi', art: require('../../../assets/game-poster/sprengja.webp') },
-  { id: 'kaupholl', category: 'multi', art: require('../../../assets/game-poster/kaupholl.webp') },
+  { id: 'vampir', category: 'multi', art: require('../../../assets/game-poster/g-vampir.webp') },
+  { id: 'signum', category: 'teams', art: require('../../../assets/game-poster/g-signum.webp') },
+  { id: 'kinshi', category: 'teams', art: require('../../../assets/game-poster/g-kinshi.webp') },
+  { id: 'krot', category: 'multi', art: require('../../../assets/game-poster/g-krot.webp') },
+  {
+    id: 'sprengja',
+    category: 'multi',
+    art: require('../../../assets/game-poster/g-sprengja.webp'),
+  },
+  {
+    id: 'kaupholl',
+    category: 'multi',
+    art: require('../../../assets/game-poster/g-kaupholl.webp'),
+  },
 ] as const satisfies readonly {
   id: keyof typeof tr.table.gameCards;
   category: keyof typeof tr.table.gameCategories;
@@ -91,8 +99,8 @@ export function GameCard({
           {shadow.node}
           <View
             style={{
-              // Aura v75 MasaDar: narrow, 104 high (the poster's ratio would leave it lower).
-              ...(narrow ? { height: NARROW_CARD_HEIGHT } : { aspectRatio: POSTER_RATIO }),
+              // Aura v92 Masa: 112 high, MasaDar (narrow): 104; the poster covers it, centred.
+              height: narrow ? NARROW_CARD_HEIGHT : CARD_HEIGHT,
               borderRadius: GAME_CARD.radius,
               overflow: 'hidden',
               boxShadow: shadow.boxShadow,
@@ -121,9 +129,8 @@ export function GameCard({
 
 const DIMMED = 0.55;
 
-// The cover's 3 : 2 (600 × 400; 112 high on a 390 wide phone, as the board), its corner 22 and the
-// tag 8 in from its top left.
-const POSTER_RATIO = 1.5;
+// The card 112 high (104 on a narrow screen), its corner 22 and the tag 8 in from its top left.
+const CARD_HEIGHT = 112;
 const NARROW_CARD_HEIGHT = 104;
 const GAME_CARD = {
   radius: KIT.size.gameCardRadius,
