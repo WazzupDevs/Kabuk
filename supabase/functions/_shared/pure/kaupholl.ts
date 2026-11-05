@@ -920,3 +920,92 @@ export function viewFor(
     bet: b ? { coins: [b.coins[0], b.coins[1]], seq: b.seq, locked: b.locked } : null,
   };
 }
+
+// --- What a phone gets back (the server step) -------------------------------------------------------
+
+// Every play answer (reveal, guess, bet, ready, advance): `applied: false` with a reason is not an
+// error; the phone shows the server's state and view, without the failure haptic. `unchanged`: a
+// press from a step already gone, or an early advance; `busy`: the table changed at the same moment
+// three times (the phone reads it again).
+export type KauphollAnswer =
+  | {
+      applied: true;
+      replayed?: true;
+      result: KauphollResult;
+      room: KauphollState;
+      view: KauphollView;
+    }
+  | {
+      applied: false;
+      reason: KauphollNotApplied | 'unchanged' | 'busy';
+      room: KauphollState;
+      view: KauphollView;
+    };
+
+// The only way a decision becomes an answer: the result, the open state and the caller's own view.
+// Never the decision's halves (the secret holds the answers and every guess).
+export function respond(
+  decision: Exclude<KauphollDecision, { kind: 'error' }> | { kind: 'busy' },
+  state: KauphollState,
+  view: KauphollView,
+): KauphollAnswer {
+  const room = publicState(state);
+  switch (decision.kind) {
+    case 'applied':
+      return { applied: true, result: decision.result, room, view };
+    case 'replayed':
+      return { applied: true, replayed: true, result: decision.result, room, view };
+    case 'not_applied':
+      return { applied: false, reason: decision.reason, room, view };
+    case 'noop':
+      return { applied: false, reason: 'unchanged', room, view };
+    case 'busy':
+      return { applied: false, reason: 'busy', room, view };
+  }
+}
+
+// --- The question statistics (§4 "Kişisel olmayan soru istatistiği") ---------------------------------
+
+// Where the winning slice stood, for the pilot's look at the odds (§3): 0 "Hepsinden küçük", 1 the
+// lowest guess, 2 below the middle, 3 the middle, 4 above it, 5 the largest guess. One guess on
+// the board is the middle; two are the two ends.
+export function winBucket(board: KauphollSlice[], winner: number): number {
+  const k = board.length - 1;
+  if (winner === 0) return 0;
+  if (k === 1) return 3;
+  if (winner === 1) return 1;
+  if (winner === k) return 5;
+  const middle = (k + 1) / 2;
+  return winner < middle ? 2 : winner > middle ? 4 : 3;
+}
+
+export type KauphollRoundStats = {
+  guesses: number;
+  noGuess: boolean;
+  smallerWin: boolean;
+  bucket: number | null;
+  sumAbsLogErr: number;
+};
+
+// A question's counts, added up in kaupholl_question_stats when its answer opens: no person, no
+// table, no time. The error of a guess is |ln((guess + 1) / (answer + 1))| (a 0 has a log).
+export function roundStats(state: KauphollState, answer: number): KauphollRoundStats {
+  if (!state.board) {
+    return { guesses: 0, noGuess: true, smallerWin: false, bucket: null, sumAbsLogErr: 0 };
+  }
+  let guesses = 0;
+  let sumAbsLogErr = 0;
+  for (const slice of state.board) {
+    if (slice.value === null) continue;
+    guesses += slice.authors.length;
+    sumAbsLogErr += slice.authors.length * Math.abs(Math.log((slice.value + 1) / (answer + 1)));
+  }
+  const winner = winningPos(state.board, answer);
+  return {
+    guesses,
+    noGuess: false,
+    smallerWin: winner === 0,
+    bucket: winBucket(state.board, winner),
+    sumAbsLogErr,
+  };
+}

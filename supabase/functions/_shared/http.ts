@@ -37,6 +37,7 @@ const STATUS: Record<ErrorCode, number> = {
   needs_two_tables: 409,
   game_in_progress: 409,
   no_game: 409,
+  questions_exhausted: 409,
   not_describer: 403,
   turn_over: 409,
   turn_not_started: 409,

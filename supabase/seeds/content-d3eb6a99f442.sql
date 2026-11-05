@@ -378,12 +378,13 @@ insert into public.games (id, name, min_players, max_players, teams, pregame, is
   ('harf', 'Harf Kapmaca', 2, 12, false, true, false, 6),
   ('sarki', 'Şarkıda Geçsin', 2, 12, false, true, false, 7),
   ('sprengja', 'Sprengja', 3, 8, false, true, false, 8),
-  ('sohbet', 'Sohbet kartları', 1, 12, false, false, false, 9)
+  ('kaupholl', 'Kaupholl', 3, 6, false, true, false, 9),
+  ('sohbet', 'Sohbet kartları', 1, 12, false, false, false, 10)
 on conflict (id) do update set
   name = excluded.name, min_players = excluded.min_players, max_players = excluded.max_players,
   teams = excluded.teams, pregame = excluded.pregame, is_available = excluded.is_available,
   sort_order = excluded.sort_order;
-update public.games set is_available = false where is_available and id <> all (array['vampir', 'kibrit', 'tabu', 'signum', 'ibre', 'sahtekar', 'harf', 'sarki', 'sprengja', 'sohbet']::text[]);
+update public.games set is_available = false where is_available and id <> all (array['vampir', 'kibrit', 'tabu', 'signum', 'ibre', 'sahtekar', 'harf', 'sarki', 'sprengja', 'kaupholl', 'sohbet']::text[]);
 
 -- content/tabu-cards.json, content/sohbet-cards.json, content/sahtekar-words.json, content/harf-categories.json, content/sarki-words.json, content/ibre-scales.json, content/sprengja-letter-groups.json, content/signum-words.json
 insert into public.cards (deck, source_key, word, forbidden, theme, prompt) values

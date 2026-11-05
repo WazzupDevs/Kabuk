@@ -1733,7 +1733,7 @@ export const tr = {
       kinshi: { name: 'Kinshi', sub: 'Yasaklıyı söyleme', people: '4+' },
       krot: { name: 'Krot', sub: 'Aramızdaki kim?', people: '3+' },
       sprengja: { name: 'Sprengja', sub: 'Bombayı çabuk at', people: '3+' },
-      kaupholl: { name: 'Kaupholl', sub: 'En yakına yatır', people: '3+' },
+      kaupholl: { name: 'Kaupholl', sub: 'Geçmeden en yakına yatır', people: '3+' },
       kibrit: { name: 'Kibrit', sub: 'Bu kime uyuyor?', people: '3+' },
     },
     gameCardLabel: (
@@ -2190,6 +2190,7 @@ export const tr = {
     action_id_conflict: 'Bu istek zaten gönderildi.',
     seq_conflict: 'İşaret zaten gönderildi.',
     content_unavailable: 'Bu oyun için kelime yok.',
+    questions_exhausted: 'Bu masada yeni bir Kaupholl oyunu için yeterli uygun soru kalmadı.',
     captain_missing: 'İki takımın da kaptanı onaylanmalı.',
     not_in_team: 'Önce bir takım seç.',
     no_offer: 'Kaptanlık önerisi yok.',

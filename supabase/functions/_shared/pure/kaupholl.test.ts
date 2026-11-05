@@ -21,11 +21,14 @@ import {
   orderQuestions,
   parseTrNumber,
   publicState,
+  respond,
+  roundStats,
   scoreRound,
   selectQuestions,
   startGame,
   unusedCount,
   viewFor,
+  winBucket,
   winnersOf,
   winningPos,
 } from './kaupholl.ts';
@@ -946,6 +949,56 @@ describe('KAUPHOLL', () => {
       pauseSeconds: 10,
       seqMax: 10_000,
       lowPool: 10,
+    });
+  });
+});
+
+describe('the server step: answers and question statistics', () => {
+  it('builds an answer only from the result, the open state and the view', () => {
+    const g = guessAll(guessing(), { a: 12345 }, false);
+    const view = viewFor({ sid: 'b' }, g.state, g.secret);
+    const json = JSON.stringify([
+      respond({ kind: 'noop' }, g.state, view),
+      respond({ kind: 'busy' }, g.state, view),
+      respond({ kind: 'not_applied', reason: 'phase_over' }, g.state, view),
+      respond({ kind: 'applied', ...g, result: { action: 'reveal' } }, g.state, view),
+    ]);
+    expect(json).not.toContain('12345');
+    expect(json).not.toContain('SECRET_NOTE');
+    expect(json).not.toContain('"questions"');
+    expect(respond({ kind: 'noop' }, g.state, view)).toMatchObject({
+      applied: false,
+      reason: 'unchanged',
+    });
+  });
+
+  it('places the winning slice: smaller, the two ends, below, middle and above', () => {
+    const board = (k: number) =>
+      buildBoard(Object.fromEntries(SEATS.slice(0, k).map((s, i) => [s, (i + 1) * 10])), SEATS);
+    const four = board(4);
+    if (!four) throw new Error('no board');
+    expect([0, 1, 2, 3, 4].map((w) => winBucket(four, w))).toEqual([0, 1, 2, 4, 5]);
+    const three = board(3);
+    if (!three) throw new Error('no board');
+    expect([1, 2, 3].map((w) => winBucket(three, w))).toEqual([1, 3, 5]);
+    const one = board(1);
+    if (!one) throw new Error('no board');
+    expect(winBucket(one, 1)).toBe(3);
+  });
+
+  it('counts the guesses, the smaller wins and the log error, nobody in it', () => {
+    const g = advance(guessAll(guessing(), { a: 99, b: 99, c: 300 }), later(T0, 45));
+    const stats = roundStats(g.state, 99);
+    expect(stats).toMatchObject({ guesses: 3, noGuess: false, smallerWin: false, bucket: 1 });
+    expect(stats.sumAbsLogErr).toBeCloseTo(Math.abs(Math.log(301 / 100)), 9);
+    expect(roundStats(g.state, 5)).toMatchObject({ smallerWin: true, bucket: 0 });
+    const none = advance(guessing(), later(T0, 45));
+    expect(roundStats(none.state, 99)).toEqual({
+      guesses: 0,
+      noGuess: true,
+      smallerWin: false,
+      bucket: null,
+      sumAbsLogErr: 0,
     });
   });
 });

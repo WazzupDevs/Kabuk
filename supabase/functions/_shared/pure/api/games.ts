@@ -139,6 +139,40 @@ export type SprengjaRequest =
   | { action: 'ready'; roomId: string; step: number }
   | { action: 'advance'; roomId: string };
 
+// `kaupholl` (docs/SPEC_V4.md §4.F "Adım 4.6.10", K-87). `step` is the phase's number in
+// rooms.game_state; `seq` grows with each of the caller's guesses or placements in a step (1 to
+// 10.000, gaps allowed). Every play answer is a KauphollAnswer (pure/kaupholl.ts): `applied: false`
+// with a reason is not an error (the phone shows the server's state, no failure haptic).
+export type KauphollRequest =
+  // The owner, from the pre-game page; `questions_exhausted` when no valid five is left.
+  | { action: 'start'; roomId: string }
+  // The owner, on the pre-game page: how many questions this table has not had; idempotent.
+  | { action: 'pool'; roomId: string }
+  // The caller's own guess and placement, and the open state; idempotent.
+  | { action: 'view'; roomId: string }
+  // Any player: open the card.
+  | { action: 'reveal'; roomId: string; step: number }
+  // A player's guess (at most 6 whole digits and 1 decimal); `lock` is Kesinleştir.
+  | { action: 'guess'; roomId: string; step: number; seq: number; value: number; lock: boolean }
+  // A player's whole placement (two coins, each a slice or none); `lock` is Yatırdım.
+  | {
+      action: 'bet';
+      roomId: string;
+      step: number;
+      seq: number;
+      coins: [number | null, number | null];
+      lock: boolean;
+    }
+  // Hazırım on the answer and the end of a question.
+  | { action: 'ready'; roomId: string; step: number }
+  // Anyone at the table once the phase's time is up; idempotent.
+  | { action: 'advance'; roomId: string; step: number };
+
+export type KauphollPool = { unused: number };
+
+// The start's answer: applied, or `busy` (the table changed at the same moment three times).
+export type KauphollStartAnswer = { applied: true } | { applied: false; reason: 'busy' };
+
 // `kibrit` (docs/SPEC_V4.md §4.F "Adım 4.6.9", K-86). Targets are table session ids (rule 4);
 // `step` is the phase's number in rooms.game_state, so a press from a phase already over changes
 // nothing. `rev` is the phone's own counter for its paper or vote in the step (rule 3's exception):
