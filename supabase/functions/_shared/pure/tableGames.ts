@@ -20,6 +20,17 @@ export const TABLE_GAMES = [
     available: true,
   },
   {
+    id: 'kibrit',
+    name: 'Kibrit',
+    minPlayers: 3,
+    maxPlayers: 12,
+    teams: false,
+    pregame: true,
+    categories: ['multi'],
+    poster: 'kibrit',
+    available: false,
+  },
+  {
     id: 'tabu',
     name: 'Kapsül Anlat',
     minPlayers: 4,

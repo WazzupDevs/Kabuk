@@ -536,12 +536,12 @@ describe('leaving (§4.6.3)', () => {
       const g = await game(5);
       const first = await runOut(g);
       const seats = first.seats as string[];
-      // A coming speaker leaves (not an impostor, whose leaving ends the game, and not the owner,
-      // who ends it with "Oyunu bitir"): the turn skips them.
+      // The next speaker leaves: the one after comes next. Not an impostor (that ends the game) and
+      // not the owner (who ends the game rather than leaving it, rooms/leave-game → bad_request).
       const leaver = seats
         .slice(1)
         .map((sid) => bySession(g, sid))
-        .find((p) => p !== g.owner && !g.impostors.includes(p)) as Person;
+        .find((p) => !g.impostors.includes(p) && p !== g.owner) as Person;
       const pos = seats.indexOf(leaver.sessionId);
       expect(await rooms(leaver, { action: 'leave-game', roomId: g.roomId })).toEqual(OK);
       const st = await state(g.roomId);
@@ -565,13 +565,16 @@ describe('leaving (§4.6.3)', () => {
   it(
     'ends the game without results when an impostor leaves (§4.F)',
     async () => {
-      // Seven players deal two impostors, so one of them is not the owner (the owner ends the game
-      // with "Oyunu bitir", not "Oyundan çık").
-      const g = await game(7);
-      expect(g.impostors).toHaveLength(2);
-      const impostor = g.impostors.find((p) => p !== g.owner) as Person;
-      expect(await rooms(impostor, { action: 'leave-game', roomId: g.roomId })).toEqual(OK);
-      expect(await krot(g.owner, { action: 'advance', roomId: g.roomId })).toEqual(OK);
+      const g = await game(4);
+      const [impostor] = g.impostors as [Person];
+      // The owner cannot leave its game (rooms/leave-game → bad_request), only the table, which
+      // takes it out of the game the same way.
+      const road = impostor === g.owner ? 'leave' : 'leave-game';
+      expect(await rooms(impostor, { action: road, roomId: g.roomId })).toMatchObject({
+        status: 200,
+      });
+      const stays = g.players[0] as Person;
+      expect(await krot(stays, { action: 'advance', roomId: g.roomId })).toEqual(OK);
       const end = await lastGame(g.roomId);
       expect(end.concept).toBeNull();
       expect(end.last).toMatchObject({
@@ -593,7 +596,7 @@ describe('locks (§4.K)', () => {
       await toVote(g);
       const at = await step(g.roomId);
       const [impostor] = g.impostors as [Person];
-      // b leaves the game, so b is not the owner (the owner cannot leave, only end it).
+      // b leaves the game, so b is not the owner (the owner cannot leave its game, only end it).
       const [a, b, c] = g.players.filter((p) => p !== g.owner) as [Person, Person, Person];
       const first = postgres(dbUrl, { max: 1, onnotice: () => {} });
       const second = postgres(dbUrl, { max: 1, onnotice: () => {} });

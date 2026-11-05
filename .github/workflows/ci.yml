@@ -56,6 +56,9 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # The secret gate (scripts/secret-guard.mjs): every tracked file, before anything else. The
+      # local hooks can be skipped; this step cannot, because `main`'s ruleset requires `ci`.
+      - run: pnpm guard:secrets
       # deno check downloads the Edge Functions' npm: imports; keyed on the lock file.
       - uses: actions/cache@v4
         with:

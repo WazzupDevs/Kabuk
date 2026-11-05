@@ -31,7 +31,7 @@ Kod ve belgelerdeki "CLAUDE.md → <bölüm>" atıfları bu tabloyla bulunur. A�
 
 ## Komutlar
 - `pnpm install`
-- `pnpm check` — push'tan önce tek komut: typecheck, lint, format:check, test
+- `pnpm check` — push'tan önce tek komut: gizli içerik kapısı (`pnpm guard:secrets`, `docs/OPS.md` → Gizli içerik kapısı), typecheck, lint, format:check, test
 - `pnpm typecheck` — mobil + scripts + `_shared/pure` (Deno/Node tipleri olmadan) + Edge Function'lar (`deno check`) + root testleri
 - `pnpm lint` — ESLint (uyarı toleransı sıfır) + `deno lint supabase/functions`
 - `pnpm test` — birim testleri, vitest (`scripts/**`, `_shared/pure/**` altındaki `*.test.ts`)
