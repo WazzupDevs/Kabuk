@@ -9,7 +9,6 @@ import {
   type SignumTeam,
   type SignumView,
 } from '@shared/signum.ts';
-import { upperTr } from '@shared/trText.ts';
 import { router } from 'expo-router';
 import { Image } from 'expo-image';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
@@ -58,8 +57,11 @@ import {
   signumMode,
   teamTotal,
   tilesLeftOf,
+  keepsSignumView,
+  signumViewKey,
   timerStage,
   uuidV4,
+  viewForSeat,
 } from '@/lib/signumGame';
 import { KIT } from '@/theme/auraKit';
 import { KINSHI as K, kinshiScene } from '@/theme/kinshi';
@@ -261,22 +263,21 @@ function Page({ children, testID }: { children: ReactNode; testID: string }) {
   );
 }
 
-const viewKey = (roomId: string, gameNo: number, step: number) =>
-  ['signum-view', roomId, gameNo, step] as const;
-
 // The caller's own view (signum/view, rule 3): a captain's key and their team's marks, a guesser's
 // team marks and own seq, nothing for a watcher (who then never asks). Read again when the step
 // moves and whenever the team's channel says its marks changed (game_team:{id}, data-free).
-function useSignumView(roomId: string, state: SignumState, seated: boolean) {
+function useSignumView(roomId: string, me: string, state: SignumState, seated: boolean) {
   const queryClient = useQueryClient();
   const view = useQuery({
-    queryKey: viewKey(roomId, state.gameNo, state.step),
+    queryKey: signumViewKey(roomId, me, state.gameNo, state.step),
     queryFn: () => signumApi.view(roomId),
     enabled: seated,
-    // The last view stands in only while the same game's next step loads: never across games
-    // (a captain of the last game may be a guesser now) and never for someone no longer seated.
+    // The last view stands in only while the same session's next step of the same game loads:
+    // never across games or sessions, never for someone no longer seated (keepsSignumView).
     placeholderData: (previous, previousQuery) =>
-      seated && previousQuery?.queryKey[2] === state.gameNo ? previous : undefined,
+      seated && keepsSignumView(previousQuery?.queryKey, roomId, me, state.gameNo)
+        ? previous
+        : undefined,
     select: (answer) => answer.view,
   });
   const channel = seated && view.data && view.data.role !== 'observer' ? view.data.channel : null;
@@ -315,11 +316,11 @@ const ADVANCE_AGAIN_MS = 2500;
 
 // A game action's answer: the caller's new view goes into its place; the table is read again
 // either way. `applied: false` (stale step, phase ran out, an older mark, busy) is not an error.
-function useAnswer(roomId: string) {
+function useAnswer(roomId: string, me: string) {
   const queryClient = useQueryClient();
   return {
     onSuccess: (answer: SignumAnswer) => {
-      queryClient.setQueryData(viewKey(roomId, answer.room.gameNo, answer.room.step), {
+      queryClient.setQueryData(signumViewKey(roomId, me, answer.room.gameNo, answer.room.step), {
         room: answer.room,
         view: answer.view,
       });
@@ -346,7 +347,7 @@ function Play({
   const me = faces.me;
   const seat = seatOf(state, me);
   useAdvance(roomId, state);
-  const view = useSignumView(roomId, state, !!seat);
+  const view = useSignumView(roomId, me, state, !!seat);
 
   // A clue or guess whose time ran out is felt once on every phone (hapticMoments → timeUp).
   const was = useRef({ step: state.step, phase: state.phase, endsAt: state.endsAt });
@@ -376,15 +377,7 @@ function Play({
   };
   // Only a view that matches the seat the open state gives this phone (rule 3): a view left from
   // another game or another seat is never drawn.
-  const fresh = view.data;
-  const my =
-    seat &&
-    fresh &&
-    fresh.role !== 'observer' &&
-    fresh.role === seat.role &&
-    fresh.team === seat.team
-      ? fresh
-      : undefined;
+  const my = viewForSeat(view.data, seat);
   // A player's screen waits for their own view (a captain's key, the team's marks); a watcher's
   // needs none.
   if (seat && !my) {
@@ -468,7 +461,7 @@ function RoleScreen({
   const clock = useClock(state);
   const [holding, setHolding] = useState(false);
   const [seen, setSeen] = useState(false);
-  const answer = useAnswer(roomId);
+  const answer = useAnswer(roomId, faces.me);
   const ready = useMutation({
     meta: FEEL_ERROR,
     mutationFn: () => signumApi.ready(roomId, state.step),
@@ -585,7 +578,7 @@ function ClueScreen({
   const [word, setWord] = useState('');
   const [n, setN] = useState<number | null>(null);
   const [keyHeld, setKeyHeld] = useState(false);
-  const answer = useAnswer(roomId);
+  const answer = useAnswer(roomId, faces.me);
   const clue = useMutation({
     meta: FEEL_ERROR,
     mutationFn: (v: { word: string; n: number; actionId: string }) =>
@@ -687,7 +680,7 @@ function BoardScreen({
   const clock = useClock(state);
   const me = faces.me;
   const turn = state.turn;
-  const answer = useAnswer(roomId);
+  const answer = useAnswer(roomId, faces.me);
   const queryClient = useQueryClient();
   const seq = useRef(0);
   const point = useMutation({
@@ -721,7 +714,7 @@ function BoardScreen({
   const keyMap = view.role === 'captain' ? view.key : null;
   const opened = lastOpen !== null ? state.board[lastOpen] : null;
   const correct =
-    guessing && opened && opened.open === turn ? { word: upperTr(opened.word), team: turn } : null;
+    guessing && opened && opened.open === turn ? { word: opened.word, team: turn } : null;
   const onTeam = view.role !== 'observer' && view.team === turn;
 
   const title =
@@ -747,7 +740,7 @@ function BoardScreen({
       <T v="fine">{tr.signum.rivalHint}</T>
     );
   const failed = reveal.error ?? endTurn.error;
-  const pickedWord = mine !== null ? upperTr(state.board[mine]?.word ?? '') : null;
+  const pickedWord = mine !== null ? (state.board[mine]?.word ?? '') : null;
 
   return (
     <Page testID={`signum-board-${guessing ? 'guess' : state.phase === 'clue' ? 'wait' : 'watch'}`}>
@@ -1447,7 +1440,7 @@ function BlackEnd({
   const winner = state.winner;
   const loser = winner ? otherTeam(winner) : null;
   const black = state.board.findIndex((t) => t.open === 'x');
-  const word = upperTr(state.board[black]?.word ?? '');
+  const word = state.board[black]?.word ?? '';
   return (
     <View style={{ flex: 1 }} testID="signum-black">
       <Page testID="signum-black-page">

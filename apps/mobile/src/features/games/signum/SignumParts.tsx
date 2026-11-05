@@ -259,7 +259,8 @@ function Tile({
 }) {
   const { colors } = useTheme();
   const look = tileLook(open, keyMap, index);
-  const upper = upperTr(word);
+  // As written, never in capitals: the word list is measured as written (SIGNUM.tileTextPx).
+  const shown = word;
   const black = look.kind === 'captain' && look.key === 'x';
   const kindName = look.kind === 'closed' ? null : tr.signum.tileKinds[look.key];
   const box: ViewStyle = {
@@ -305,7 +306,7 @@ function Tile({
           }}
         >
           <Text maxFontSizeMultiplier={1} style={[ST.label, { color: S.label.ink }]}>
-            {upper}
+            {shown}
           </Text>
         </View>
       ) : (
@@ -313,17 +314,17 @@ function Tile({
           maxFontSizeMultiplier={1}
           style={[ST.tile, { color: black ? S.captain.x.ink : S.tileInk }]}
         >
-          {upper}
+          {shown}
         </Text>
       )}
       {pointers.length > 0 ? <Pointers faces={faces} sids={pointers} /> : null}
     </>
   );
   const label = kindName
-    ? tr.signum.tileLabel(upper, kindName)
+    ? tr.signum.tileLabel(shown, kindName)
     : mine
-      ? tr.signum.tilePointed(upper)
-      : upper;
+      ? tr.signum.tilePointed(shown)
+      : shown;
   return onPress ? (
     <Pressable
       testID={`signum-tile-${index}`}

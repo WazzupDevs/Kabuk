@@ -9,6 +9,7 @@ import {
   type SignumSeat,
   type SignumState,
   type SignumTeam,
+  type SignumView,
 } from '@shared/signum.ts';
 
 // What the phone reads of Signum (docs/SPEC_V4.md §4.F "Adım 4.6.7"): the open state in
@@ -216,4 +217,38 @@ export function uuidV4(rng: () => number = Math.random): string {
 // press: the step moved on at or after the time it was given.
 export function endedByClock(endsAt: string | null, now: number): boolean {
   return endsAt !== null && now >= Date.parse(endsAt);
+}
+
+// The caller's own view (rule 3) is cached per phone: the room, the caller's session (check-in) id,
+// the game and the step. Another account or another check-in on the same phone never reads
+// this one's key, marks, role or team.
+export function signumViewKey(roomId: string, sessionId: string, gameNo: number, step: number) {
+  return ['signum-view', roomId, sessionId, gameNo, step] as const;
+}
+
+// Whether the last view may stand in while the next one loads: only the same room, the same
+// session and the same game (a step later), never across games or sessions.
+export function keepsSignumView(
+  previousKey: readonly unknown[] | undefined,
+  roomId: string,
+  sessionId: string,
+  gameNo: number,
+): boolean {
+  return (
+    previousKey !== undefined &&
+    previousKey[0] === 'signum-view' &&
+    previousKey[1] === roomId &&
+    previousKey[2] === sessionId &&
+    previousKey[3] === gameNo
+  );
+}
+
+// A view is drawn only when it matches the seat the open state gives this session: a view left
+// from another seat (role or team) is never shown.
+export function viewForSeat(
+  view: SignumView | undefined,
+  seat: SignumSeat | null,
+): Exclude<SignumView, { role: 'observer' }> | undefined {
+  if (!seat || !view || view.role === 'observer') return undefined;
+  return view.role === seat.role && view.team === seat.team ? view : undefined;
 }

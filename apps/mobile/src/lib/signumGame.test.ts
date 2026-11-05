@@ -1,8 +1,16 @@
-import { publicState, startGame, type SignumSeat, type SignumState } from '@shared/signum.ts';
+import {
+  publicState,
+  startGame,
+  type SignumSeat,
+  type SignumState,
+  type SignumView,
+} from '@shared/signum.ts';
+import { QueryClient, QueryObserver } from '@tanstack/react-query';
 import { describe, expect, it } from 'vitest';
 
 import {
   closedByKind,
+  keepsSignumView,
   endedByClock,
   lastSignum,
   newlyOpened,
@@ -12,9 +20,11 @@ import {
   readSignumState,
   seatOf,
   signumMode,
+  signumViewKey,
   tilesLeftOf,
   timerStage,
   uuidV4,
+  viewForSeat,
 } from './signumGame';
 
 function seeded(seed: number) {
@@ -177,5 +187,89 @@ describe('signumGame', () => {
     const { state } = game();
     expect(seatOf(state, 's3')?.role).toBe('captain');
     expect(seatOf(state, 'nobody')).toBeNull();
+  });
+});
+
+// Rule 3: a phone never draws a secret view that is not this session's own, in this seat.
+describe('signum view cache', () => {
+  const captainA: SignumView = {
+    role: 'captain',
+    team: 'a',
+    channel: 'c-a',
+    key: ['a'],
+    marks: {},
+  };
+  const guesserB: SignumView = { role: 'guesser', team: 'b', channel: 'c-b', marks: {}, mySeq: 0 };
+
+  it('keys the view by room, session, game and step', () => {
+    expect(signumViewKey('r1', 's1', 2, 5)).toEqual(['signum-view', 'r1', 's1', 2, 5]);
+    expect(signumViewKey('r1', 's1', 2, 5)).not.toEqual(signumViewKey('r1', 's2', 2, 5));
+  });
+
+  it('keeps the last view only for the same room, session and game', () => {
+    const last = signumViewKey('r1', 's1', 2, 4);
+    expect(keepsSignumView(last, 'r1', 's1', 2)).toBe(true);
+    expect(keepsSignumView(last, 'r1', 's2', 2)).toBe(false);
+    expect(keepsSignumView(last, 'r1', 's1', 3)).toBe(false);
+    expect(keepsSignumView(last, 'r2', 's1', 2)).toBe(false);
+    expect(keepsSignumView(undefined, 'r1', 's1', 2)).toBe(false);
+  });
+
+  it('draws a view only in the seat it was dealt for', () => {
+    expect(viewForSeat(captainA, { sid: 's1', team: 'a', role: 'captain' })).toBe(captainA);
+    expect(viewForSeat(captainA, { sid: 's1', team: 'a', role: 'guesser' })).toBeUndefined();
+    expect(viewForSeat(captainA, { sid: 's1', team: 'b', role: 'captain' })).toBeUndefined();
+    expect(viewForSeat(captainA, null)).toBeUndefined();
+    expect(
+      viewForSeat({ role: 'observer' }, { sid: 's1', team: 'a', role: 'captain' }),
+    ).toBeUndefined();
+  });
+
+  it('shows nothing of the last account’s view after the session changes on the same phone', () => {
+    const client = new QueryClient();
+    // Account 1 (session s1) was the captain of team a; its view is in the cache.
+    client.setQueryData(signumViewKey('r1', 's1', 2, 5), { view: captainA });
+    // Account 2 (session s2) opens the same room, same game and step, before its own view comes.
+    const observer = new QueryObserver<{ view: SignumView }>(client, {
+      queryKey: signumViewKey('r1', 's2', 2, 5),
+      queryFn: () => new Promise(() => undefined),
+      enabled: false,
+      placeholderData: (previous, previousQuery) =>
+        keepsSignumView(previousQuery?.queryKey, 'r1', 's2', 2) ? previous : undefined,
+    });
+    const unsubscribe = observer.subscribe(() => undefined);
+    const result = observer.getCurrentResult();
+    expect(result.data).toBeUndefined();
+    expect(
+      viewForSeat(result.data?.view, { sid: 's2', team: 'b', role: 'guesser' }),
+    ).toBeUndefined();
+    // Its own view, once it comes, is the only one drawn.
+    client.setQueryData(signumViewKey('r1', 's2', 2, 5), { view: guesserB });
+    const own = observer.getCurrentResult().data?.view;
+    expect(viewForSeat(own, { sid: 's2', team: 'b', role: 'guesser' })).toBe(guesserB);
+    unsubscribe();
+    client.clear();
+  });
+
+  it('drops the last game’s view when a new game starts', () => {
+    const client = new QueryClient();
+    const observer = new QueryObserver<{ view: SignumView }>(client, {
+      queryKey: signumViewKey('r1', 's1', 2, 5),
+      queryFn: () => new Promise(() => undefined),
+      enabled: false,
+    });
+    client.setQueryData(signumViewKey('r1', 's1', 2, 5), { view: captainA });
+    const unsubscribe = observer.subscribe(() => undefined);
+    // Game 3 starts; s1 is now a guesser of team b.
+    observer.setOptions({
+      queryKey: signumViewKey('r1', 's1', 3, 0),
+      queryFn: () => new Promise(() => undefined),
+      enabled: false,
+      placeholderData: (previous, previousQuery) =>
+        keepsSignumView(previousQuery?.queryKey, 'r1', 's1', 3) ? previous : undefined,
+    });
+    expect(observer.getCurrentResult().data).toBeUndefined();
+    unsubscribe();
+    client.clear();
   });
 });
