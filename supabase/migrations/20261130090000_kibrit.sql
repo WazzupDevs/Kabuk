@@ -1001,6 +1001,12 @@ declare
   st jsonb;
   sid text := new.session_id::text;
 begin
+  -- The frame ending the game (private.end_game) stamps every player at once: no one is leaving a
+  -- running game, and no row in between may reach the table (its gone order and counts would tell
+  -- who voted or wrote).
+  if current_setting('masa.ending_game', true) = new.room_id::text then
+    return new;
+  end if;
   select * into r from public.rooms where id = new.room_id;
   if r.concept is distinct from 'kibrit' or not (r.game_state ? 'phase')
      or r.game_state ->> 'phase' = 'over'

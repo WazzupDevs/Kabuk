@@ -723,7 +723,28 @@ describe('the end of a game (K-86)', () => {
       const [a, b] = g.people as [Person, Person];
       await vote(a, g, await step(g.roomId), 1, b);
       expect((await papers(g.roomId)).length).toBe(3);
-      expect(await rooms(g.owner, { action: 'end-game', roomId: g.roomId })).toEqual(OK);
+      // Every game_state the table is sent while the game ends: none in between with who left.
+      await sql`create table public.kibrit_spy (state jsonb)`;
+      await sql`
+        create function public.kibrit_spy_row() returns trigger language plpgsql as $$
+        begin insert into public.kibrit_spy values (new.game_state); return new; end; $$
+      `;
+      await sql`
+        create trigger kibrit_spy after update on public.rooms
+        for each row execute function public.kibrit_spy_row()
+      `;
+      try {
+        expect(await rooms(g.owner, { action: 'end-game', roomId: g.roomId })).toEqual(OK);
+        const seen = await sql`select state from public.kibrit_spy`;
+        for (const row of seen) {
+          expect(JSON.stringify(row.state)).not.toContain('"gone":["');
+          expect(row.state).not.toHaveProperty('leftInVote');
+        }
+      } finally {
+        await sql`drop trigger kibrit_spy on public.rooms`;
+        await sql`drop function public.kibrit_spy_row()`;
+        await sql`drop table public.kibrit_spy`;
+      }
       expect(await papers(g.roomId)).toEqual([]);
       expect(await votes(g.roomId)).toEqual([]);
 
