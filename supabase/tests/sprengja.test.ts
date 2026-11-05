@@ -62,6 +62,9 @@ beforeEach(async () => {
 
 afterEach(async () => {
   for (const phone of TABLE_PHONES) await deleteUserByPhone(phone);
+  // Sprengja is "Yakında" until its content and screens come (content/games.json); the other
+  // files see it so.
+  await sql`update public.games set is_available = false where id = 'sprengja'`;
 });
 
 afterAll(async () => {
@@ -714,6 +717,29 @@ describe('Tur sonu and the end (§4.6.7)', () => {
 });
 
 describe('leaving (§4.6.7)', () => {
+  it(
+    'reads the owner’s end of a burning game as no one leaving: no throw, no blast',
+    async () => {
+      const g = await game(4);
+      let st = await light(g);
+      const [a] = (await g.order()) as [Person];
+      expect(await pass(a, g, st)).toEqual(OK);
+      st = await state(g.roomId);
+      await burnOut(g.roomId);
+      const before = await events(g.roomId);
+      expect(await rooms(g.owner, { action: 'end-game', roomId: g.roomId })).toEqual(OK);
+      expect(await events(g.roomId)).toEqual(before);
+      const row = await roomRow(g.roomId);
+      expect(row.concept).toBeNull();
+      expect(row.game_state.lastGame).toMatchObject({ concept: 'sprengja', abandoned: true });
+      const [results] = await sql`
+        select count(*)::int as n from public.game_results where room_id = ${g.roomId}
+      `;
+      expect(results?.n).toBe(0);
+    },
+    SLOW,
+  );
+
   it(
     'hands the card on from a starter who leaves, and the bomb on from a holder who leaves',
     async () => {

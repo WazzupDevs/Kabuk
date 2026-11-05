@@ -855,6 +855,48 @@ begin
 end;
 $do$;
 
+-- The frame's end (game_frame.sql) marks, for its transaction, the table whose game it is ending:
+-- it takes every player out of the game one by one, and the leaving trigger below must not read
+-- those as people leaving a running game (a bomb handed on, a blast). Otherwise the same.
+create or replace function private.end_game(target_room_id uuid, abandoned boolean)
+returns public.rooms
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  r public.rooms;
+begin
+  select * into r from public.rooms where id = target_room_id;
+  if r.concept is null then
+    update public.rooms
+    set game_state = game_state - 'pregame', last_activity_at = now()
+    where id = r.id and game_state ? 'pregame';
+    select * into r from public.rooms where id = target_room_id;
+    return r;
+  end if;
+  perform set_config('masa.ending_game', r.id::text, true);
+  update public.game_players set left_at = now()
+  where room_id = r.id and game_no = private.current_game_no(r.game_state) and left_at is null;
+  perform set_config('masa.ending_game', '', true);
+  if abandoned then
+    insert into public.game_events (room_id, type, payload)
+    values (r.id, 'game_abandoned', jsonb_build_object('concept', r.concept));
+  end if;
+  update public.rooms
+  set concept = null, last_activity_at = now(),
+      game_state = private.between_games(
+        game_state,
+        jsonb_build_object('concept', r.concept, 'abandoned', abandoned)
+      )
+  where id = r.id
+  returning * into r;
+  return r;
+end;
+$$;
+
+revoke all on function private.end_game(uuid, boolean) from public, anon, authenticated;
+
 -- 7. Leaving -----------------------------------------------------------------------------------
 -- A player who leaves the game or the table (any road stamps game_players.left_at while holding
 -- the table) is gone. Fewer than three left: the game halts and the next advance ends it,
@@ -876,6 +918,10 @@ declare
   v_at timestamptz;
   receiver text;
 begin
+  -- The frame is ending this game (private.end_game): nobody is leaving a running one.
+  if current_setting('masa.ending_game', true) = new.room_id::text then
+    return new;
+  end if;
   select * into r from public.rooms where id = new.room_id;
   if r.concept is distinct from 'sprengja' or not (r.game_state ? 'phase')
      or private.current_game_no(r.game_state) <> new.game_no
