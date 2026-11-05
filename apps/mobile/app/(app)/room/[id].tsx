@@ -14,6 +14,7 @@ import { unreadCount, useRoomChatSeen } from '@/features/chat/roomChatSeen';
 import { useMessages } from '@/features/chat/useMessages';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { KinshiGame, kinshiMode } from '@/features/games/kinshi/KinshiGame';
+import { KibritGame, kibritMode } from '@/features/games/kibrit/KibritGame';
 import { KrotGame, krotMode } from '@/features/games/sahtekar/KrotGame';
 import { gameNoOf, VampirGame, vampirMode } from '@/features/games/vampir/VampirGame';
 import { useVampirHidden } from '@/features/games/vampir/vampirHidden';
@@ -151,7 +152,9 @@ export default function TableScreen() {
   const sessionId = checkIn.data?.id;
   const r = room.data;
   useGameAwake(
-    !!r && r.status !== 'closed' && (vampirMode(r) ?? kinshiMode(r) ?? krotMode(r)) === 'play',
+    !!r &&
+      r.status !== 'closed' &&
+      (vampirMode(r) ?? kinshiMode(r) ?? krotMode(r) ?? kibritMode(r)) === 'play',
   );
   const backToVenue = () => {
     forget(id);
@@ -219,13 +222,15 @@ export default function TableScreen() {
   const owner = r.owner_session_id === sessionId;
   // Vampir Köylü's page, game or end takes the screen (docs/SPEC_V4.md §4.F "Adım 4.6.6"); one sent
   // back to the table stays back until a new page comes.
-  // Kinshi's (Aura v85, "Kinshi (tabu düzeni)") and Krot's (Aura v86) the same way.
+  // Kinshi's (Aura v85, "Kinshi (tabu düzeni)"), Krot's (Aura v86) and Kibrit's (Aura v90) the
+  // same way.
   const vampir = vampirMode(r);
   const kinshi = kinshiMode(r);
-  const gameMode = vampir ?? kinshi ?? krotMode(r);
+  const krot = krotMode(r);
+  const gameMode = vampir ?? kinshi ?? krot ?? kibritMode(r);
   const gameKey = `${gameMode}:${gameNoOf(r.game_state)}`;
   if (gameMode && hiddenGame !== gameKey) {
-    const Game = vampir ? VampirGame : kinshi ? KinshiGame : KrotGame;
+    const Game = vampir ? VampirGame : kinshi ? KinshiGame : krot ? KrotGame : KibritGame;
     return (
       <Game
         room={r}
@@ -236,7 +241,7 @@ export default function TableScreen() {
       />
     );
   }
-  const gameText = vampir ? tr.vampir : kinshi ? tr.kinshi : tr.krot;
+  const gameText = vampir ? tr.vampir : kinshi ? tr.kinshi : krot ? tr.krot : tr.kibrit;
   const inLobby = r.visibility === 'open';
   const unread = unreadCount(messages, seenAt, sessionId);
 

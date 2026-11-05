@@ -1,5 +1,10 @@
 # İlerleme
 
+## Devir notu (5 Kasım 2026, Kibrit ekranları)
+
+- Kibrit ekranları (Aura v90, 11 pano): `features/games/kibrit/KibritGame.tsx`, ölçüler `theme/kibrit.ts`, `kibritApi`, yeni `note` ikonu; kararlar ve tasarıma sorulacaklar `docs/decisions/kibrit-ekranlar.md`. `kibrit.available` hâlâ `false`.
+- Sıradaki: proje sahibinin telefonda bakması ve çizilmemiş hâllerin (Yeterli kâğıt yok, 320 dp, 7+ oyuncu, uzun soru…) tasarımda yanıtı; sonra ayrı PR'la `kibrit.available: true` + `pnpm seed`, sorarak.
+
 ## Devir notu (5 Kasım 2026, Krot ekranları)
 
 - Krot ekranları (Aura v86, 13 pano): `features/games/sahtekar/KrotGame.tsx`, `KrotParts.tsx`, ölçüler `theme/krot.ts`; `sahtekar.available: true` + seed. Kinshi'nin çubuk, kapsül, deste ve kankileri ortak: `features/games/riso/`, `theme/riso.ts`. Kararlar `docs/decisions/krot-ekranlar.md`.
