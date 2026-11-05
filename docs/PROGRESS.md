@@ -1,5 +1,11 @@
 # İlerleme
 
+## Devir notu (5 Kasım 2026, Signum kelime havuzu)
+
+- #472 birleşti: `content/signum-words.json` (279 kelime) ve fonttan üretilen karo genişlik tablosu (`scripts/seed/signum.ts`, `docs/decisions/signum-kelimeler.md`). `games.json`'da `signum.available: false`.
+- Sıradaki: Signum ekranları. Onaylı rapor `docs/design/aura/aktarim-signum.md` (Aura v87, 13 pano `Signum*`; panolar canlı tuvalden, repodaki `project/` kopyasında yok). Görseller repoda, `features/games/signum/signumArt.ts`. Raporun 4 açık sorusunu SPEC_V4 Adım 4.6.7 yanıtlıyor. Yordam `.claude/skills/tuval-aktarim`; API `functions/signum`, saf mantık `pure/signum.ts`.
+- Açmadan önce: proje sahibinin cihazında 320 dp karo yazısı (37 px sınırı, yazıldığı gibi mi büyük harf mi). Sonra ayrı PR'la `signum.available: true` ve `pnpm seed`.
+
 ## Devir notu (5 Kasım 2026, Sprengja sunucu motoru)
 
 - Birleşenler: #454 (riso görselleri, `sprengjaArt`), #466 (motor, adım 4.6.8, K-85: `20261129090000_sprengja.sql`, `functions/sprengja`, `pure/sprengja.ts`, `tests/sprengja.test.ts`; kararlar `docs/decisions/4.6.8-sprengja.md`). Dev'e gitti; `sprengja-explode` cron işi kapalı, `available: false`.
