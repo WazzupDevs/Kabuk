@@ -13,7 +13,8 @@ import { boxShadowParts } from '@/components/NativeShadow';
 
 // The games on the table, each its cover in a small landscape card, the game's logo in the
 // drawing: U22's riso covers (aktarim-v65 §9.1) where they are drawn, the comic posters
-// (scripts/art/posters.ts) for the two that wait for theirs (§9.2, n.77). A game that waits for its
+// (scripts/art/posters.ts) for the two that wait for theirs (§9.2, n.77), Kibrit's own riso poster
+// (aura v90, K-85). A game that waits for its
 // step (4.6): "Yakında" in the corner, not pressed.
 export const GAME_CARDS = [
   { id: 'vampir', category: 'multi', art: require('../../../assets/riso/game-vampir.webp') },
@@ -22,6 +23,7 @@ export const GAME_CARDS = [
   { id: 'krot', category: 'multi', art: require('../../../assets/riso/game-krot.webp') },
   { id: 'sprengja', category: 'multi', art: require('../../../assets/game-poster/sprengja.webp') },
   { id: 'kaupholl', category: 'multi', art: require('../../../assets/game-poster/kaupholl.webp') },
+  { id: 'kibrit', category: 'multi', art: require('../../../assets/games/kibrit/b-poster.webp') },
 ] as const satisfies readonly {
   id: keyof typeof tr.table.gameCards;
   category: keyof typeof tr.table.gameCategories;
