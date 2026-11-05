@@ -210,6 +210,13 @@ export function kinshiDeck(screenWidth: number) {
 }
 export type KinshiDeck = ReturnType<typeof kinshiDeck>;
 
+// The deck's box: its buddies, the card and the shadow under it, or, when what lies over it (the
+// guesser's panel, its height measured) reaches lower than the card, down to that, so the counters
+// under the deck keep their 37 below whichever is lower instead of sliding under the panel.
+export function kinshiDeckHeight(d: KinshiDeck, overlayBottom = 0): number {
+  return Math.max(d.peek.above + d.card.height, overlayBottom) + d.shadow.below;
+}
+
 // Which buddies peek on which screen (the panels as drawn): the describer's, Tur öncesi's, the
 // guesser's and the watcher's one pair; the waiting and the rival's the other.
 export const PEEK_PAIRS = {
