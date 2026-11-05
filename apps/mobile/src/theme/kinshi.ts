@@ -32,6 +32,8 @@ export const KINSHI_TYPE = {
   row: t(F600, 15, 22, 0.02),
   // The count in Sonraki tura geç (`.cnt`) and the scores at the end (800 30/34).
   count: { ...t(F800, 13, 13), fontVariant: ['tabular-nums'] } as TextStyle,
+  // The others' Tur sonu count (`.rocnt`): 800/20, tabular.
+  readOnlyCount: { ...t(F800, 20, 20), fontVariant: ['tabular-nums'] } as TextStyle,
   endScore: { ...t(F800, 30, 34), fontVariant: ['tabular-nums'] } as TextStyle,
 } as const;
 
@@ -126,6 +128,9 @@ export const KINSHI = {
   // Tur sonu (`KinshiTurSonu`): 12 between parts; the buddies 130 high, 30 in, 8 under.
   summary: { gap: 12, buddies: 130, buddySide: 30, buddyBelow: 8, minBuddies: 120 },
   // The count in Sonraki tura geç (`.cnt`): 30 round, 8 in, black 22 %.
+  // The others' read-only count (`.rocnt`, Aura v94 KinshiTurSonuDiger): glass, 48 high, at least
+  // 48 wide, 24 round, 16 in.
+  readOnlyCount: { size: 48, padX: 16 },
   countPill: { size: 30, padX: 8, fill: 'rgba(0, 0, 0, 0.22)' },
   // Oyun sonu: the scene 300 high, 36 round at the foot; the confetti bars 8 × 18.
   endScene: {

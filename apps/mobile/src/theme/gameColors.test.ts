@@ -24,10 +24,6 @@ const INK = '#14112B';
 const SCHEMES: readonly ColorScheme[] = ['light', 'dark'];
 const GROUND_KEYS: readonly GroundKey[] = ['sahtekar', 'letters', 'song', 'chat'];
 const TEAMS = Object.keys(TEAM_COLORS) as Team[];
-// The light team grounds are the canvas's Mor and Pembe (the owner's call, 5 Kasım), whose white
-// words read at 4.36:1 and 4.09:1: large text only there (an open question to the design).
-const floorOf = (scheme: ColorScheme, name: string) =>
-  scheme === 'light' && name.startsWith('team ') ? AA_LARGE : AA_TEXT;
 
 function grounds(scheme: ColorScheme): [string, GameGround][] {
   return [
@@ -48,10 +44,8 @@ describe('game colours (docs/SPEC_V4.md §4.C, step 4.2)', () => {
     for (const [name, ground] of grounds(scheme)) {
       it(`${scheme}: white text reads on ${name} and on its chips`, () => {
         for (const stop of [ground.top, ground.bottom]) {
-          expect(contrastRatio(WHITE, stop)).toBeGreaterThanOrEqual(floorOf(scheme, name));
-          expect(contrastRatio(WHITE, chipOn(ground, stop))).toBeGreaterThanOrEqual(
-            floorOf(scheme, name),
-          );
+          expect(contrastRatio(WHITE, stop)).toBeGreaterThanOrEqual(AA_TEXT);
+          expect(contrastRatio(WHITE, chipOn(ground, stop))).toBeGreaterThanOrEqual(AA_TEXT);
         }
       });
     }
@@ -62,13 +56,21 @@ describe('game colours (docs/SPEC_V4.md §4.C, step 4.2)', () => {
     expect(TEAM_TONES.light.pink.color).toBe('#E8336F');
     expect(TEAM_TONES.dark.purple.color).toBe('#9C86FF');
     expect(TEAM_TONES.dark.pink.color).toBe('#FF7EA8');
+    // A filled team surface takes the deeper tone in the light (Aura v94), white at 4.5:1.
+    expect(TEAM_TONES.light.purple.fill).toBe('#6A47F5');
+    expect(TEAM_TONES.light.pink.fill).toBe('#D02860');
+    for (const team of TEAMS) {
+      expect(
+        contrastRatio(TEAM_TONES.light[team].onFill, TEAM_TONES.light[team].fill),
+      ).toBeGreaterThanOrEqual(AA_TEXT);
+    }
     // The labels' ink reads on their ground over the screen (light canvas, black in the dark).
     for (const team of TEAMS) {
       expect(contrastRatio(TEAM_TONES.dark[team].tagInk, '#000000')).toBeGreaterThanOrEqual(
         AA_TEXT,
       );
       expect(
-        contrastRatio(TEAM_TONES.dark[team].onColor, TEAM_TONES.dark[team].color),
+        contrastRatio(TEAM_TONES.dark[team].onFill, TEAM_TONES.dark[team].fill),
       ).toBeGreaterThanOrEqual(AA_TEXT);
     }
   });
@@ -91,10 +93,8 @@ describe('game colours (docs/SPEC_V4.md §4.C, step 4.2)', () => {
 
   for (const scheme of SCHEMES) {
     it(`${scheme}: the main game button's label reads on white; the last seconds read on every ground`, () => {
-      for (const [name, ground] of grounds(scheme)) {
-        expect(contrastRatio(WHITE, mainButtonInk(ground))).toBeGreaterThanOrEqual(
-          floorOf(scheme, name),
-        );
+      for (const [, ground] of grounds(scheme)) {
+        expect(contrastRatio(WHITE, mainButtonInk(ground))).toBeGreaterThanOrEqual(AA_TEXT);
         for (const stop of [ground.top, ground.bottom]) {
           // The clock's number is large text (40 px, 800).
           expect(contrastRatio(LOW_TIME.text, stop)).toBeGreaterThanOrEqual(AA_LARGE);
