@@ -23,6 +23,8 @@ describe('IDEMPOTENT_CALLS', () => {
         'profile/get',
         'tabu/advance',
         'tabu/turn-cards',
+        'sahtekar/advance',
+        'sahtekar/view',
         'vampir/advance',
         'vampir/view',
         'venue-chat/page',

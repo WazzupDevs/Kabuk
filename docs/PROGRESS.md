@@ -1,5 +1,10 @@
 # İlerleme
 
+## Devir notu (5 Kasım 2026, Krot sunucusu)
+
+- Krot kişi bazlı sunucu (4.6.3): `20261128090000_sahtekar_v4.sql`, `functions/sahtekar`, `pure/sahtekarGame.ts`, `tests/sahtekar.test.ts`; kararlar `docs/decisions/4.6.3-krot.md`. Kural 3'e 4.6.3 cümlesi eklendi: birleşme proje sahibinin "onaylandı"sını bekler. `database.ts` elle hizalandı (yerel stack yok), CI `gen:types` ile denetler.
+- Sıradaki: Krot ekranları (CTO promptları → Prompt 2, Aura v86 "Krot (gizli kart ve şüpheli sırası)" satırı; Kinshi parçaları `features/games/kinshi/KinshiParts.tsx`), sonra `sahtekar.available: true` ve `pnpm seed`.
+
 ## Devir notu (5 Kasım 2026, Kinshi tabu düzeni)
 
 - Birleşenler: #446 (Kinshi riso görselleri `assets/games/kinshi/`, `features/games/kinshi/kinshiArt.ts`), #451 (Kapsül Anlat kişi bazlı sunucu, 4.6.1: `20261126090000_kapsul_anlat.sql`, `functions/tabu`, `pure/tabuGame.ts`, `tests/tabu.test.ts`; kararlar `docs/decisions/4.6.1-kapsul-anlat.md`). Yayın önce sunucu; istemci değişmedi.

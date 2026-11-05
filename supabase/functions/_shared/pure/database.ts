@@ -2975,7 +2975,12 @@ export type Database = {
         };
       };
       sahtekar_guess: {
-        Args: { option: string; target_room_id: string; target_user_id: string };
+        Args: {
+          at_step: number;
+          guessed_right: boolean;
+          target_room_id: string;
+          target_user_id: string;
+        };
         Returns: {
           closed_at: string | null;
           concept: string | null;
@@ -3004,16 +3009,72 @@ export type Database = {
           isSetofReturn: false;
         };
       };
-      sahtekar_local_deck: {
-        Args: { target_room_id: string; target_user_id: string };
-        Returns: Json;
+      sahtekar_guess_word: {
+        Args: { at_step: number; target_room_id: string; target_user_id: string };
+        Returns: string;
       };
-      sahtekar_options: {
-        Args: { target_room_id: string; target_user_id: string };
-        Returns: Json;
+      sahtekar_ready: {
+        Args: { at_step: number; target_room_id: string; target_user_id: string };
+        Returns: {
+          closed_at: string | null;
+          concept: string | null;
+          created_at: string;
+          game_started_at: string | null;
+          game_state: Json;
+          game_tag: string | null;
+          icon: string | null;
+          id: string;
+          intent: string | null;
+          last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
+          owner_session_id: string;
+          phones: number;
+          spot_id: string | null;
+          status: string;
+          venue_id: string;
+          visibility: string;
+          waiting_since: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'rooms';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
       };
       sahtekar_said: {
-        Args: { step: number; target_room_id: string; target_user_id: string };
+        Args: { at_step: number; target_room_id: string; target_user_id: string };
+        Returns: {
+          closed_at: string | null;
+          concept: string | null;
+          created_at: string;
+          game_started_at: string | null;
+          game_state: Json;
+          game_tag: string | null;
+          icon: string | null;
+          id: string;
+          intent: string | null;
+          last_activity_at: string;
+          name: string | null;
+          name_rerolls: number;
+          owner_session_id: string;
+          phones: number;
+          spot_id: string | null;
+          status: string;
+          venue_id: string;
+          visibility: string;
+          waiting_since: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'rooms';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      sahtekar_start: {
+        Args: { target_room_id: string; target_user_id: string };
         Returns: {
           closed_at: string | null;
           concept: string | null;
@@ -3043,15 +3104,15 @@ export type Database = {
         };
       };
       sahtekar_view: {
-        Args: { seat: string; target_room_id: string; target_user_id: string };
+        Args: { target_room_id: string; target_user_id: string };
         Returns: Json;
       };
       sahtekar_vote: {
         Args: {
-          target: string;
+          at_step: number;
           target_room_id: string;
+          target_session_ids: string[];
           target_user_id: string;
-          voter: string;
         };
         Returns: {
           closed_at: string | null;
