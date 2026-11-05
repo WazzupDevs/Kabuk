@@ -70,10 +70,23 @@ async function step(roomId: string): Promise<number> {
 
 // `count` people at the owner's table, the page opened and the game started (`watch`: these pick
 // "Gözlemci ol" first).
+// Deals again while the owner is the impostor; (1/4)^12 left to chance.
+const REDEALS = 12;
+
 async function game(count: number, watch: number[] = []): Promise<Game> {
   const people = await Promise.all(Array.from({ length: count }, (_, n) => person(venue, n)));
   const [owner, ...others] = people as [Person, ...Person[]];
   const roomId = await tableWith(owner, others);
+  return deal(roomId, owner, people, watch);
+}
+
+// Opens Krot's page at the table, starts it and reads who was dealt what.
+async function deal(
+  roomId: string,
+  owner: Person,
+  people: Person[],
+  watch: number[] = [],
+): Promise<Game> {
   expect(await rooms(owner, { action: 'open-game', roomId, concept: 'sahtekar' })).toEqual(OK);
   for (const n of watch) {
     expect(await rooms(people[n] as Person, { action: 'pick', roomId, pick: 'obs' })).toEqual(OK);
@@ -562,8 +575,15 @@ describe('leaving (§4.6.3)', () => {
   it(
     'ends the game without results when an impostor leaves (§4.F)',
     async () => {
-      const g = await game(4);
+      // The owner cannot leave the game (they end it: rooms_leave_game → bad_request), so the
+      // impostor is dealt again until it is someone else; the deal is random.
+      let g = await game(4);
+      for (let i = 0; i < REDEALS && g.impostors[0]?.sessionId === g.owner.sessionId; i++) {
+        expect(await rooms(g.owner, { action: 'end-game', roomId: g.roomId })).toEqual(OK);
+        g = await deal(g.roomId, g.owner, g.people);
+      }
       const [impostor] = g.impostors as [Person];
+      expect(impostor.sessionId).not.toBe(g.owner.sessionId);
       expect(await rooms(impostor, { action: 'leave-game', roomId: g.roomId })).toEqual(OK);
       expect(await krot(g.owner, { action: 'advance', roomId: g.roomId })).toEqual(OK);
       const end = await lastGame(g.roomId);
