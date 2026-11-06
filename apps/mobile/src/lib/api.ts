@@ -243,6 +243,9 @@ export const roomsApi = {
   end: () => invoke<RoomsOkResponse>('rooms', { action: 'end' }),
   // "Masadan ayrıl": the table goes on for the others; an owner hands it to the earliest (K-13).
   leave: (roomId: string) => invoke<RoomsOkResponse>('rooms', { action: 'leave', roomId }),
+  // "Masadan çıkar" (§4.E, K-88): the owner takes a person off without a block.
+  remove: (roomId: string, sessionId: string) =>
+    invoke<RoomsOkResponse>('rooms', { action: 'remove', roomId, sessionId }),
   // Table invites (docs/SPEC_V4.md §4.G).
   invite: (roomId: string, friendPublicId: string) =>
     invoke<RoomsOkResponse>('rooms', { action: 'invite', roomId, friendPublicId }),

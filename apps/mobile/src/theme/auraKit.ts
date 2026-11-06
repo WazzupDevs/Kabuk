@@ -97,9 +97,11 @@ export const KIT_TYPE = {
   // U19: Mekan's "Mekandasın", 14.
   liveLg: t(600, 14, 18),
   msg: t(500, 15, 21),
-  // A message of emoji only, without a bubble (Telegram Android): one, and two or three.
-  emojiOne: t(500, 40, 48),
-  emojiFew: t(500, 32, 40),
+  // A message of emoji only, without a bubble (Telegram Android): one, and two or three. The
+  // system's face (the emoji come from its colour font, not from ours) and a line 1.35 of the size:
+  // with ours and 1.2, Android cut the emoji's top and right off (the owner's report, 6 Kasım).
+  emojiOne: { fontSize: 40, lineHeight: 54 },
+  emojiFew: { fontSize: 32, lineHeight: 44 },
   day: t(600, 12, 16),
   // A person's name under their face at Masa (`.mem`: 11/14 600).
   member: t(600, 11, 14),
@@ -453,6 +455,20 @@ export const KIT = {
     rowGap: 10,
     colGap: 4,
     nameGap: 4,
+    // MasaCekmece: the people's drawer. Closed, the faces 32 on a 2 white ring overlap by 45 % in a
+    // row 44 high, the round button (44) 8 to their right; open, the grid reaches 8 past the body on
+    // each side, no column gap, 8 between rows, the faces 32 (36 narrow), the names 2 under them,
+    // the button 8 under the grid at the right.
+    drawer: {
+      face: 32,
+      faceNarrow: 36,
+      overlap: 0.45,
+      row: 44,
+      gap: 8,
+      out: 8,
+      rowGap: 8,
+      nameGap: 2,
+    },
     bar: 44,
     fade: 90,
     fadeSolid: 0.8,

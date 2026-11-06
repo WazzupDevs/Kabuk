@@ -4,6 +4,7 @@ import * as Clipboard from 'expo-clipboard';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import {
   Animated,
+  Keyboard,
   Pressable,
   Text as RNText,
   type TextLayoutEventData,
@@ -24,6 +25,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 import { shadowParts } from '@/components/NativeShadow';
 import { useLabOff } from '@/lib/drawLab';
+import { bubblePath } from '@/lib/bubblePath';
 import { svgKey } from '@/lib/svgKey';
 
 import { AVATAR_SIZE } from './Avatar';
@@ -119,6 +121,8 @@ const WIDEN_SLACK = 4;
 const CHIP_ALPHA = 0.12;
 const CHIP_ALPHA_ON = 0.22;
 const DOUBLE_TAP_MS = 280;
+// The longest wait for the keyboard to go before a held message is measured anyway.
+const KEYBOARD_AWAY_MS = 450;
 
 export function ChatBubble({
   text,
@@ -150,16 +154,44 @@ export function ChatBubble({
   // where it sits on the screen.
   const faceRef = useRef<View>(null);
   const [pop, setPop] = useState<PopAnchor | null>(null);
+  // The bubble's measured size: a run's last bubble draws itself and its tail as one outline
+  // (BubbleShape); until it is measured, its box and the tail laid beside it.
+  const [box, setBox] = useState<{ w: number; h: number } | null>(null);
   const holdable = !!onReact || actions.length > 0 || text.length > 0;
   const host = usePopHost();
   const lift = () => {
-    faceRef.current?.measureInWindow((x, y, width, height) => {
-      haptic('grabbed');
-      const at = { x, y, width, height };
-      // On the chat screen's root (popHost.tsx): the stream's cells stay as they are.
-      if (host) host.show((close) => popLayer(at, close));
-      else setPop(at);
-    });
+    // Measured where the bubble stands once the keyboard is away (the layer puts it away, and the
+    // stream moves as it goes: measured before, the faces opened far from the message, at the
+    // screen's top; the owner's report, 6 Kasım). An unmeasured cell is tried again a frame later.
+    const measure = (retry: boolean) =>
+      faceRef.current?.measureInWindow((x, y, width, height) => {
+        if (height <= 0 || width <= 0) {
+          if (retry) requestAnimationFrame(() => measure(false));
+          return;
+        }
+        open({ x, y, width, height });
+      });
+    haptic('grabbed');
+    if (!Keyboard.isVisible()) {
+      measure(true);
+      return;
+    }
+    let done = false;
+    const go = () => {
+      if (done) return;
+      done = true;
+      sub.remove();
+      clearTimeout(timer);
+      requestAnimationFrame(() => requestAnimationFrame(() => measure(true)));
+    };
+    const sub = Keyboard.addListener('keyboardDidHide', go);
+    const timer = setTimeout(go, KEYBOARD_AWAY_MS);
+    Keyboard.dismiss();
+  };
+  const open = (at: PopAnchor) => {
+    // On the chat screen's root (popHost.tsx): the stream's cells stay as they are.
+    if (host) host.show((close) => popLayer(at, close));
+    else setPop(at);
   };
   // Telegram Android's bubble (the owner's call, 30 Ekim): 18 round; on the author's side (left
   // for others, right for the viewer's own) the corners inside a run are tight, and the run's last
@@ -271,10 +303,20 @@ export function ChatBubble({
     </Pressable>
   );
   function face(lifted: boolean) {
+    const shaped = last && !big && box !== null;
     return (
       <View
         ref={lifted ? undefined : faceRef}
         collapsable={false}
+        onLayout={
+          lifted || !last || big
+            ? undefined
+            : (e) => {
+                const w = Math.round(e.nativeEvent.layout.width);
+                const h = Math.round(e.nativeEvent.layout.height);
+                if (box?.w !== w || box?.h !== h) setBox({ w, h });
+              }
+        }
         // docs/design/aura → Dm (`.msg`): 22 round, the corner towards the author 8 at the
         // bottom. Never see-through (the owner's call, 29 Ekim): the own white, another's in the
         // chat's colour (DM blue, Mekan sohbeti green, Masa sohbeti purple).
@@ -283,12 +325,12 @@ export function ChatBubble({
             ? null
             : mine
               ? {
-                  backgroundColor: fill,
+                  backgroundColor: shaped ? undefined : fill,
                   borderWidth: KIT.size.edge,
-                  borderColor: paint.mineEdge,
+                  borderColor: shaped ? 'transparent' : paint.mineEdge,
                   boxShadow: bubbleShadow.boxShadow,
                 }
-              : { backgroundColor: fill, boxShadow: bubbleShadow.boxShadow },
+              : { backgroundColor: shaped ? undefined : fill, boxShadow: bubbleShadow.boxShadow },
           big
             ? {
                 opacity: state === 'sending' ? 0.6 : 1,
@@ -307,7 +349,16 @@ export function ChatBubble({
       >
         {/* Held, the bubble keeps its own shadow and tail: no ring (ui 1.1). */}
         {big ? null : bubbleShadow.node}
-        {last && !big ? (
+        {shaped ? (
+          <BubbleShape
+            mine={mine}
+            w={box.w}
+            h={box.h}
+            radii={radii}
+            fill={fill}
+            line={mine ? paint.mineEdge : undefined}
+          />
+        ) : last && !big ? (
           <BubbleTail side={mine ? 'right' : 'left'} color={fill} edge={mine ? KIT.size.edge : 0} />
         ) : null}
         {/* Masa sohbeti: the writer's name inside the bubble, on its first line, level with the
@@ -612,6 +663,57 @@ export function ChatBubble({
   );
 }
 
+// A run's last bubble and its tail as one outline, filled and lined once (Telegram Android's
+// bubble; the owner's report, 6 Kasım: the tail laid beside the box did not look part of it). The
+// viewer's own is the mirror of another's. One picture per outline and colours (svgKey).
+function BubbleShape({
+  mine,
+  w,
+  h,
+  radii,
+  fill,
+  line,
+}: {
+  mine: boolean;
+  w: number;
+  h: number;
+  radii: readonly [number, number, number, number];
+  fill: string;
+  line?: string;
+}) {
+  const tailW = KIT.size.tailW;
+  // The tailed (left) form's corners: the own bubble's mirrored.
+  const left = (mine ? [radii[1], radii[0], radii[3], radii[2]] : radii) as readonly [
+    number,
+    number,
+    number,
+    number,
+  ];
+  const edge = line ? KIT.size.edge : 0;
+  const d = bubblePath(w, h, left, tailW, KIT.size.tailH, edge / 2);
+  return (
+    <View
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        top: -edge,
+        width: w + tailW,
+        height: h,
+        ...(mine ? { left: -edge } : { left: -tailW - edge }),
+      }}
+    >
+      <Svg
+        width={w + tailW}
+        height={h}
+        nativeID={svgKey('bubble', d, fill, line ?? '')}
+        style={mine ? { transform: [{ scaleX: -1 }] } : undefined}
+      >
+        <Path d={d} fill={fill} {...(line ? { stroke: line, strokeWidth: edge } : null)} />
+      </Svg>
+    </View>
+  );
+}
+
 // The tail at the foot of a run's last bubble (Telegram Android's), on the author's side: the
 // bubble's corner there is square and this curve carries on from it. One picture per colour and
 // side, shared by every tail (svgKey).
@@ -675,7 +777,14 @@ function BigEmoji({
   const metaRef = useChatMetaRef();
   return (
     <>
-      <RNText maxFontSizeMultiplier={1} style={count === 1 ? KIT_TYPE.emojiOne : KIT_TYPE.emojiFew}>
+      <RNText
+        maxFontSizeMultiplier={1}
+        style={[
+          count === 1 ? KIT_TYPE.emojiOne : KIT_TYPE.emojiFew,
+          // Room on both sides: the last emoji's right edge reaches past the measured width.
+          { paddingHorizontal: SPACING[0.5], includeFontPadding: true },
+        ]}
+      >
         {text.trim()}
       </RNText>
       {time ? (

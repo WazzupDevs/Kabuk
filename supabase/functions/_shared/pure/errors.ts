@@ -26,6 +26,7 @@ export type ErrorCode =
   | 'request_not_found'
   | 'not_in_room'
   | 'nothing_to_block'
+  | 'nothing_to_remove'
   | 'message_invalid'
   | 'profanity_rejected'
   | 'wrong_concept'
@@ -140,6 +141,7 @@ const DOMAIN_ERROR_CODES: readonly ErrorCode[] = [
   'request_not_found',
   'not_in_room',
   'nothing_to_block',
+  'nothing_to_remove',
   'wrong_concept',
   'two_tables',
   'not_owner',

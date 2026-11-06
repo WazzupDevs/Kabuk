@@ -813,6 +813,91 @@ describe('blocking and reporting at the table (K-13)', () => {
   });
 });
 
+const remove = (p: Person, roomId: string, target: Person) =>
+  rooms(p, { action: 'remove', roomId, sessionId: target.sessionId });
+const removedFrom = async (p: Person, roomId: string) => {
+  const { data, error } = await p.client.rpc('room_exit_removed', { target_room_id: roomId });
+  expect(error).toBeNull();
+  return data;
+};
+
+describe('"Masadan çıkar" (§4.E, K-88)', () => {
+  it('takes a person off without a block; only the owner, never itself', async () => {
+    const [owner, member, other] = await all(3);
+    const roomId = await tableWith(owner, [member, other]);
+    expect(await remove(member, roomId, other)).toEqual({
+      status: 403,
+      body: errorBody('not_owner'),
+    });
+    expect(await remove(owner, roomId, owner)).toEqual({
+      status: 409,
+      body: errorBody('nothing_to_remove'),
+    });
+    expect(await remove(owner, roomId, member)).toEqual({ status: 200, body: { ok: true } });
+    expect((await seated(roomId)).map((s) => s.session_id)).toEqual([
+      owner.sessionId,
+      other.sessionId,
+    ]);
+    expect(await sql`select 1 from public.blocks where blocker_id = ${owner.userId}`).toEqual([]);
+    expect(await remove(owner, roomId, member)).toEqual({
+      status: 409,
+      body: errorBody('nothing_to_remove'),
+    });
+    // The removed person reads why; nobody else does, and a block is not a removal (rule 5).
+    expect(await removedFrom(member, roomId)).toBe(true);
+    expect(await removedFrom(other, roomId)).toBe(false);
+    expect((await block(owner, roomId, other)).status).toBe(200);
+    expect(await removedFrom(other, roomId)).toBe(false);
+    await expectConsistent(roomId);
+  });
+
+  it('refuses the removed person while the table runs, as a block does (rule 5)', async () => {
+    const [owner, member] = await all(2);
+    const roomId = await tableWith(owner, [member]);
+    expect((await remove(owner, roomId, member)).status).toBe(200);
+    expect((await tables(member)).map((t) => t.room_id)).not.toContain(roomId);
+    expect(await rooms(member, { action: 'request-join', roomId })).toEqual({
+      status: 409,
+      body: errorBody('room_not_available'),
+    });
+    // "Bu masadayım" once the table is out of the lobby.
+    expect((await rooms(owner, { action: 'set-visibility', roomId, open: false })).status).toBe(
+      200,
+    );
+    expect(await rooms(member, { action: 'request-join', roomId, asMember: true })).toEqual({
+      status: 409,
+      body: errorBody('room_not_available'),
+    });
+  });
+
+  it('keeps the removed person out when another table brings them in (K-88)', async () => {
+    const [owner, member, third] = await all(3);
+    const roomId = await tableWith(owner, [member]);
+    expect((await remove(owner, roomId, member)).status).toBe(200);
+    await tableWith(third, [member], { open: false });
+    const requestId = await ask(third, roomId);
+    expect(await rooms(owner, { action: 'respond', requestId, accept: true })).toEqual({
+      status: 409,
+      body: errorBody('room_not_available'),
+    });
+    expect((await seated(roomId)).map((s) => s.session_id)).toEqual([owner.sessionId]);
+  });
+
+  it('declines a request of the removed person still waiting', async () => {
+    const [owner, member] = await all(2);
+    const roomId = await tableWith(owner, [member]);
+    // A request row of the person's left from before (as if it was still waiting).
+    const [row] = await sql`
+      insert into public.join_requests
+        (room_id, requester_session_id, requester_alias, as_member, expires_at)
+      values (${roomId}, ${member.sessionId}, 'x', true, now() + interval '1 minute')
+      returning id`;
+    expect((await remove(owner, roomId, member)).status).toBe(200);
+    const [after] = await sql`select status from public.join_requests where id = ${row?.id}`;
+    expect(after?.status).toBe('declined');
+  });
+});
+
 describe('the table and its chat (§4.E, §4.I)', () => {
   it('reads the chat from the moment a person sat down, with its seat name', async () => {
     const [owner, late] = await all(2);
@@ -1309,6 +1394,39 @@ describe('locks (§4.K)', () => {
       await expectConsistent(roomId);
       await rooms(owner, { action: 'end' });
       await sql`delete from public.blocks where blocker_id = ${owner.userId}`;
+    }
+  });
+
+  // "Masadan çıkar" (K-88) locks as the owner's block does: both check-ins in id order, the table,
+  // its seats, then the person's requests. With the person leaving, or the owner leaving, at the
+  // same moment, both finish and nothing deadlocks.
+  it('lets an owner take a person off while that person or the owner leaves', async () => {
+    const [owner, member, third] = await all(3);
+    for (let i = 0; i < 3; i++) {
+      const roomId = await tableWith(owner, [member, third]);
+      const [removed, left] = await Promise.all([
+        remove(owner, roomId, member),
+        leave(member, roomId),
+      ]);
+      expect([200, 409]).toContain(removed.status);
+      expect([200, 403]).toContain(left.status);
+      expect([removed.status, left.status]).toContain(200);
+      expect(await roomRow(roomId)).toMatchObject({ phones: 2, owner_session_id: owner.sessionId });
+      await expectConsistent(roomId);
+      await rooms(owner, { action: 'end' });
+    }
+    for (let i = 0; i < 3; i++) {
+      const roomId = await tableWith(owner, [member, third]);
+      const [removed, left] = await Promise.all([
+        remove(owner, roomId, member),
+        leave(owner, roomId),
+      ]);
+      expect(left.status).toBe(200);
+      expect([200, 403, 409]).toContain(removed.status);
+      await expectConsistent(roomId);
+      const [row] = await sql`select owner_session_id from public.rooms where id = ${roomId}`;
+      const heir = [member, third].find((p) => p.sessionId === row?.owner_session_id);
+      if (heir) await rooms(heir, { action: 'end' });
     }
   });
 });

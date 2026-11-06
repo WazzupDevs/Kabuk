@@ -22,3 +22,5 @@ Proje sahibinin kararı (29 Ekim): bir işin nasıl yapılacağına karar vermed
 - Sohbet akışı: en yeniden yukarı çizilen liste, sona tutunur, yalnızca kullanıcının kendi kaydırması bırakır (`ChatList`, `src/components/ChatScreen.tsx`).
 - Alt sayfa arkası bulanıklık (U8): pencere sayfa açılırken bir kez küçük kopyalanır, bulanık çizilir, sayfa açıkken değişmez; Telegram'ın diyalog arkası gibi (`skall-glass` → `BackdropBlurView`, 0.9.4).
 - DM: `docs/decisions/dm-telegram.md`.
+- Sohbet akışının sona tutunması (`wasManualScroll`): yalnızca kullanıcının kendi sürüklemesi ya da savurması sondan ayırır; klavye, büyüyen yazma alanı ve yeni satır ayırmaz, liste o sırada sona geri konur (`ChatList` → `pinned`, `stayAtEnd`).
+- Balon ve kuyruğu tek yol olarak çizilir, çizgisi kuyruğu da dolaşır (`ChatBubble` → `BubbleShape`, `src/lib/bubblePath.ts`).
