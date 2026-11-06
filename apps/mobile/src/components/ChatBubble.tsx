@@ -24,6 +24,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING, TOUCH } from '@/theme/tokens';
 import { shadowParts } from '@/components/NativeShadow';
 import { useLabOff } from '@/lib/drawLab';
+import { bubblePath } from '@/lib/bubblePath';
 import { svgKey } from '@/lib/svgKey';
 
 import { AVATAR_SIZE } from './Avatar';
@@ -150,6 +151,9 @@ export function ChatBubble({
   // where it sits on the screen.
   const faceRef = useRef<View>(null);
   const [pop, setPop] = useState<PopAnchor | null>(null);
+  // The bubble's measured size: a run's last bubble draws itself and its tail as one outline
+  // (BubbleShape); until it is measured, its box and the tail laid beside it.
+  const [box, setBox] = useState<{ w: number; h: number } | null>(null);
   const holdable = !!onReact || actions.length > 0 || text.length > 0;
   const host = usePopHost();
   const lift = () => {
@@ -271,10 +275,20 @@ export function ChatBubble({
     </Pressable>
   );
   function face(lifted: boolean) {
+    const shaped = last && !big && box !== null;
     return (
       <View
         ref={lifted ? undefined : faceRef}
         collapsable={false}
+        onLayout={
+          lifted || !last || big
+            ? undefined
+            : (e) => {
+                const w = Math.round(e.nativeEvent.layout.width);
+                const h = Math.round(e.nativeEvent.layout.height);
+                if (box?.w !== w || box?.h !== h) setBox({ w, h });
+              }
+        }
         // docs/design/aura → Dm (`.msg`): 22 round, the corner towards the author 8 at the
         // bottom. Never see-through (the owner's call, 29 Ekim): the own white, another's in the
         // chat's colour (DM blue, Mekan sohbeti green, Masa sohbeti purple).
@@ -283,12 +297,12 @@ export function ChatBubble({
             ? null
             : mine
               ? {
-                  backgroundColor: fill,
+                  backgroundColor: shaped ? undefined : fill,
                   borderWidth: KIT.size.edge,
-                  borderColor: paint.mineEdge,
+                  borderColor: shaped ? 'transparent' : paint.mineEdge,
                   boxShadow: bubbleShadow.boxShadow,
                 }
-              : { backgroundColor: fill, boxShadow: bubbleShadow.boxShadow },
+              : { backgroundColor: shaped ? undefined : fill, boxShadow: bubbleShadow.boxShadow },
           big
             ? {
                 opacity: state === 'sending' ? 0.6 : 1,
@@ -307,7 +321,16 @@ export function ChatBubble({
       >
         {/* Held, the bubble keeps its own shadow and tail: no ring (ui 1.1). */}
         {big ? null : bubbleShadow.node}
-        {last && !big ? (
+        {shaped ? (
+          <BubbleShape
+            mine={mine}
+            w={box.w}
+            h={box.h}
+            radii={radii}
+            fill={fill}
+            line={mine ? paint.mineEdge : undefined}
+          />
+        ) : last && !big ? (
           <BubbleTail side={mine ? 'right' : 'left'} color={fill} edge={mine ? KIT.size.edge : 0} />
         ) : null}
         {/* Masa sohbeti: the writer's name inside the bubble, on its first line, level with the
@@ -608,6 +631,57 @@ export function ChatBubble({
         <SwipeToReply onReply={onReply}>{bubble}</SwipeToReply>
         {chips}
       </View>
+    </View>
+  );
+}
+
+// A run's last bubble and its tail as one outline, filled and lined once (Telegram Android's
+// bubble; the owner's report, 6 Kasım: the tail laid beside the box did not look part of it). The
+// viewer's own is the mirror of another's. One picture per outline and colours (svgKey).
+function BubbleShape({
+  mine,
+  w,
+  h,
+  radii,
+  fill,
+  line,
+}: {
+  mine: boolean;
+  w: number;
+  h: number;
+  radii: readonly [number, number, number, number];
+  fill: string;
+  line?: string;
+}) {
+  const tailW = KIT.size.tailW;
+  // The tailed (left) form's corners: the own bubble's mirrored.
+  const left = (mine ? [radii[1], radii[0], radii[3], radii[2]] : radii) as readonly [
+    number,
+    number,
+    number,
+    number,
+  ];
+  const edge = line ? KIT.size.edge : 0;
+  const d = bubblePath(w, h, left, tailW, KIT.size.tailH, edge / 2);
+  return (
+    <View
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        top: -edge,
+        width: w + tailW,
+        height: h,
+        ...(mine ? { left: -edge } : { left: -tailW - edge }),
+      }}
+    >
+      <Svg
+        width={w + tailW}
+        height={h}
+        nativeID={svgKey('bubble', d, fill, line ?? '')}
+        style={mine ? { transform: [{ scaleX: -1 }] } : undefined}
+      >
+        <Path d={d} fill={fill} {...(line ? { stroke: line, strokeWidth: edge } : null)} />
+      </Svg>
     </View>
   );
 }
