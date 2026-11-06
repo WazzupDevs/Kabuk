@@ -13,7 +13,10 @@ export function blursBehind(os: string, version: number | string): boolean {
 }
 
 // One switch for the glass: false draws the bar on its solid ground everywhere, as below Android 12.
-export const TAB_BAR_GLASS = true;
+// Off (the owner's call, 6 Kasım: smoothness over the live glass, docs/decisions/cam-kapali.md): the
+// tab bar's glass only ever showed the still ground under the fade, and every frosted control
+// re-blurred the screen on each frame; everything takes its drawn, not live, look.
+export const TAB_BAR_GLASS = false;
 
 // skall's glass under the tab bar and the message bar: frosted (the owner's call, 29 Ekim: frosted
 // instead of the liquid lens, everywhere the glass was; the native view is modules/skall-glass).
