@@ -223,6 +223,11 @@ describe('the board', () => {
     expect(winnersOf({ a: 9, b: 12, c: 12, d: 3 }, SEATS)).toEqual(['b', 'c']);
     expect(winnersOf({ a: 20, b: 12, c: 12 }, ['b', 'c'])).toEqual(['b', 'c']);
   });
+
+  it('names no winner when nobody scored (T-2)', () => {
+    expect(winnersOf({ a: 0, b: 0, c: 0 }, ['a', 'b', 'c'])).toEqual([]);
+    expect(winnersOf({}, SEATS)).toEqual([]);
+  });
 });
 
 describe('the phases', () => {
@@ -388,6 +393,27 @@ describe('decideAction', () => {
     });
     expect(act(g, 'x', { action: 'advance', step: g.state.step }, later(T0, 45)).kind).toBe(
       'applied',
+    );
+  });
+
+  it('rejects a decimal guess on a whole-number question (T-1)', () => {
+    const g = guessing();
+    const step = g.state.step;
+    expect(act(g, 'a', { action: 'guess', step, seq: 1, value: 12.5, lock: false })).toEqual({
+      kind: 'error',
+      code: 'bad_request',
+    });
+    expect(act(g, 'a', { action: 'guess', step, seq: 1, value: 12, lock: false }).kind).toBe(
+      'applied',
+    );
+  });
+
+  it('answers a decimal guess before the card opens like any other (rule 3, T-1)', () => {
+    const g = started();
+    expect(g.state.phase).toBe('card');
+    const step = g.state.step;
+    expect(act(g, 'a', { action: 'guess', step, seq: 1, value: 12.5, lock: false })).toEqual(
+      act(g, 'a', { action: 'guess', step, seq: 1, value: 12, lock: false }),
     );
   });
 

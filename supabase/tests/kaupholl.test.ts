@@ -330,7 +330,7 @@ describe('kaupholl: a game (§4.6.10)', { timeout: SLOW }, () => {
     expect(stats[0]?.games).toBe(5);
   });
 
-  it('plays six players; equal points share the win; nobody guessing skips the board', async () => {
+  it('plays six players; nobody guessing skips the board and nobody wins on zero points', async () => {
     const g = await game(6);
     let s = await state(g.roomId);
     expect(s.seats).toHaveLength(6);
@@ -343,12 +343,12 @@ describe('kaupholl: a game (§4.6.10)', { timeout: SLOW }, () => {
       s = await finishQuestion(g);
     }
     const last = (await state(g.roomId)).lastGame?.kaupholl as KauphollState;
-    expect(last.winners?.sort()).toEqual(g.players.map((p) => p.sessionId).sort());
+    expect(last.winners).toEqual([]);
     const results = await sql`
       select won from public.game_results where room_id = ${g.roomId} and concept = 'kaupholl'
     `;
     expect(results).toHaveLength(6);
-    expect(results.every((x) => x.won === true)).toBe(true);
+    expect(results.every((x) => x.won === false)).toBe(true);
     const [stats] = await sql`select sum(no_guess)::int as n from public.kaupholl_question_stats`;
     expect(stats?.n).toBe(5);
   });

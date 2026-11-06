@@ -95,7 +95,7 @@ Her soruda herkes sayısal bir tahmin yazar. Tahminler tahtaya dizilir; herkes j
   - Tahminler tahta kurulana kadar yalnızca `game_secrets`'tadır; `game_state` yalnızca çiplerin hâlini (yazmadı / yazdı / kesin) taşır.
   - Jetonlar gizli değildir.
 - **Sonuç:** `game_results` (`kaupholl`) yalnızca tamamlanan oyunda; ortak kazananlar "Kazandın".
-- **Sunucu:** `kaupholl` fonksiyonu, eylemleri §2'de. Kilitler: check-in → `rooms` → `game_players` → `game_secrets` → `kaupholl_question_stats`.
+- **Sunucu:** `kaupholl` fonksiyonu, eylemleri §2'de. Kilitler: check-in → `rooms` → `game_players` → `game_secrets` → `kaupholl_used_questions` → `kaupholl_question_stats`.
 
 ---
 
@@ -105,7 +105,7 @@ Her soruda herkes sayısal bir tahmin yazar. Tahminler tahtaya dizilir; herkes j
 | --------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `start`   | `roomId`                                             | Sahip; 5 soruyu seçer ve sıralar (§4). Geçerli bir beşli kurulamazsa `questions_exhausted` döner ve oyun başlamaz                                             |
 | `pool`    | `roomId`                                             | Yalnızca sahip, oyun öncesi sayfada; `{ unused }`: bu masada kullanılmamış etkin soru sayısı. Yalnızca uyarı içindir, başlatılabilirliği söylemez; idempotent |
-| `view`    | `step`                                               | Kendi tahmini, kendi yerleşimi, son `seq`'ler, kilitler; idempotent                                                                                           |
+| `view`    | `roomId`                                             | Kendi tahmini, kendi yerleşimi, son `seq`'ler, kilitler; idempotent                                                                                           |
 | `reveal`  | `step`                                               | Herhangi bir oyuncu; ilk gelen geçer, ikincisi değişiklik yapmaz                                                                                              |
 | `guess`   | `step, seq, value, lock`                             | `value` en çok 6 tam hane ve 1 ondalık; `lock: true` kesinleştirir                                                                                            |
 | `bet`     | `step, seq, coins: [pos \| null, pos \| null], lock` | Yerleşimin tamamı; `lock: true` = "Yatırdım"                                                                                                                  |
@@ -362,7 +362,7 @@ Hedef sağlanamazsa sırayla gevşenir; ilk başaran düzey kullanılır:
 
 ### Tekrar ve havuz büyüklüğü
 
-- Masa içinde tekrar yok (`room_used_cards`). Aynı kişiler başka masada aynı soruyu görebilir; bu pilotta bilinen sınırdır.
+- Masa içinde tekrar yok (`kaupholl_used_questions`). Aynı kişiler başka masada aynı soruyu görebilir; bu pilotta bilinen sınırdır.
 - 200 soru, 5'erli seçimle bir masada 40 tekrarsız oyun eder; 41. oyunda içerik yetersizliği olur. Öneri: istatistikte kullanım sayısı en düşük olan sorulara öncelik verilsin (kişisel değil, yalnızca `games` sayacı). Düzenli gruplar böylece havuzun tamamını görmeden tekrar yaşamaz.
 - Cevaplar her oyunda açıldığı için kararlı biri çok oynayarak liste çıkarabilir. Havuzun büyümesi bunu azaltır, engellemez.
 
@@ -556,7 +556,7 @@ Her biri main'den ayrı dal ve tek PR.
   - **İçerik yetersizliği:**
     - 4 kullanılmamış soruyla `start` → `questions_exhausted`;
     - 6 kullanılmamış ama hepsi zor soruyla da `questions_exhausted`;
-    - her iki durumda `room_used_cards`, `game_state` ve `game_players` değişmez, oyun öncesi sayfa sürer;
+    - her iki durumda `kaupholl_used_questions`, `game_state` ve `game_players` değişmez, oyun öncesi sayfa sürer;
     - bütün desteyi oynamış masada hiçbir soru ikinci kez seçilmez;
     - hata yanıtı soru, cevap ya da sayı taşımaz.
   - **`pool`:** yalnızca sahip çağırabilir (katılımcı ve gözlemci `not_owner`); sayı kullanılmamış etkin soru sayısına eşittir; soru metni, kimlik ya da cevap taşımaz; iki kez gönderilince aynı sonucu verir (`IDEMPOTENT_CALLS`).

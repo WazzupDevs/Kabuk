@@ -156,10 +156,12 @@ export function scoreRound(
   return { winner, points };
 }
 
-// Who won: the most points among those still in the game; equal points share the win.
+// Who won: the most points among those still in the game; equal points share the win. Nobody wins
+// a game where nobody scored (senaryo-kaupholl T-2).
 export function winnersOf(scores: Record<string, number>, active: string[]): string[] {
   if (active.length === 0) return [];
   const most = Math.max(...active.map((s) => scores[s] ?? 0));
+  if (most <= 0) return [];
   return active.filter((s) => (scores[s] ?? 0) === most);
 }
 
@@ -751,6 +753,11 @@ function guess(
   }
   if (state.phase !== 'guess' || request.step !== state.step || expired(state, now)) {
     return { kind: 'not_applied', reason: 'phase_over' };
+  }
+  // A whole-number question takes no decimal guess (senaryo-kaupholl T-1). Only once the card is
+  // open: before that the answer would tell what kind of question is coming (rule 3).
+  if (state.card?.decimals === 0 && tenths(request.value) % 10 !== 0) {
+    return { kind: 'error', code: 'bad_request' };
   }
   if (scoped?.locked) return { kind: 'not_applied', reason: 'locked' };
   if (scoped && scoped.seq === request.seq) return { kind: 'error', code: 'seq_conflict' };
