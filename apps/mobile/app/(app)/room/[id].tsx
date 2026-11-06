@@ -14,6 +14,9 @@ import { unreadCount, useRoomChatSeen } from '@/features/chat/roomChatSeen';
 import { useMessages } from '@/features/chat/useMessages';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { KinshiGame, kinshiMode } from '@/features/games/kinshi/KinshiGame';
+import { KauphollGame, kauphollMode } from '@/features/games/kaupholl/KauphollGame';
+import { AbandonedNotice } from '@/features/games/kaupholl/KauphollParts';
+import { kauphollAbandoned } from '@/features/games/kaupholl/kauphollView';
 import { KibritGame, kibritMode } from '@/features/games/kibrit/KibritGame';
 import { KrotGame, krotMode } from '@/features/games/sahtekar/KrotGame';
 import { SignumGame, signumMode } from '@/features/games/signum/SignumGame';
@@ -161,8 +164,20 @@ export default function TableScreen() {
         krotMode(r) ??
         signumMode(r) ??
         kibritMode(r) ??
-        sprengjaMode(r)) === 'play',
+        sprengjaMode(r) ??
+        kauphollMode(r)) === 'play',
   );
+  // A Kaupholl game this screen saw running and that was left half way: "Oyun yarıda kaldı" over
+  // the table, once (KaupholYarida; no end screen).
+  const kauphollRunning = r && kauphollMode(r) === 'play' ? gameNoOf(r.game_state) : null;
+  const [kauphollSeen, setKauphollSeen] = useState<number | null>(null);
+  if (kauphollRunning !== null && kauphollRunning !== kauphollSeen) {
+    setKauphollSeen(kauphollRunning);
+  }
+  const kauphollHalted = r ? kauphollAbandoned(r.game_state) : null;
+  const [haltedShown, setHaltedShown] = useState<number | null>(null);
+  const showHalted =
+    kauphollHalted !== null && kauphollHalted === kauphollSeen && haltedShown !== kauphollHalted;
   const backToVenue = () => {
     forget(id);
     router.replace('/venue');
@@ -230,13 +245,14 @@ export default function TableScreen() {
   // Vampir Köylü's page, game or end takes the screen (docs/SPEC_V4.md §4.F "Adım 4.6.6"); one sent
   // back to the table stays back until a new page comes.
   // Kinshi's (Aura v85, "Kinshi (tabu düzeni)"), Krot's (Aura v86), Signum's (Aura v87) and
-  // Kibrit's (Aura v90) and Sprengja's (Aura v99) the same way.
+  // Kibrit's (Aura v90), Sprengja's (Aura v99) and Kaupholl's (Aura v89) the same way.
   const vampir = vampirMode(r);
   const kinshi = kinshiMode(r);
   const krot = krotMode(r);
   const signum = signumMode(r);
   const kibrit = kibritMode(r);
-  const gameMode = vampir ?? kinshi ?? krot ?? signum ?? kibrit ?? sprengjaMode(r);
+  const sprengja = sprengjaMode(r);
+  const gameMode = vampir ?? kinshi ?? krot ?? signum ?? kibrit ?? sprengja ?? kauphollMode(r);
   const gameKey = `${gameMode}:${gameNoOf(r.game_state)}`;
   if (gameMode && hiddenGame !== gameKey) {
     const Game = vampir
@@ -249,7 +265,9 @@ export default function TableScreen() {
             ? SignumGame
             : kibrit
               ? KibritGame
-              : SprengjaGame;
+              : sprengja
+                ? SprengjaGame
+                : KauphollGame;
     return (
       <Game
         room={r}
@@ -270,7 +288,9 @@ export default function TableScreen() {
           ? tr.signum
           : kibrit
             ? tr.kibrit
-            : tr.sprengja;
+            : sprengja
+              ? tr.sprengja
+              : tr.kaupholl;
   const inLobby = r.visibility === 'open';
   const unread = unreadCount(messages, seenAt, sessionId);
 
@@ -590,6 +610,7 @@ export default function TableScreen() {
         direction="up"
       />
       {sheets}
+      {showHalted ? <AbandonedNotice onDone={() => setHaltedShown(kauphollHalted)} /> : null}
     </View>
   );
 }

@@ -8,7 +8,20 @@ import type {
   SafetyResponse,
 } from '@shared/api/chat.ts';
 import type { Reaction } from '@shared/reactions.ts';
-import type { GameOkResponse, SignumPageAnswer, TabuTurnCardsResponse } from '@shared/api/games.ts';
+import type {
+  GameOkResponse,
+  KauphollPool,
+  KauphollRequest,
+  KauphollStartAnswer,
+  SignumPageAnswer,
+  TabuTurnCardsResponse,
+} from '@shared/api/games.ts';
+import type {
+  KauphollAnswer,
+  KauphollCoins,
+  KauphollState,
+  KauphollView,
+} from '@shared/kaupholl.ts';
 import type { SignumAnswer, SignumState, SignumTeam, SignumView } from '@shared/signum.ts';
 import type { TabuMark } from '@shared/tabuGame.ts';
 import type {
@@ -548,4 +561,26 @@ export const sprengjaApi = {
   ready: (roomId: string, step: number) =>
     invoke<GameOkResponse>('sprengja', { action: 'ready', roomId, step }),
   advance: (roomId: string) => invoke<GameOkResponse>('sprengja', { action: 'advance', roomId }),
+};
+
+// Kaupholl (docs/SPEC_V4.md §4.F "Adım 4.6.10", K-87). Every play answer is a KauphollAnswer:
+// `applied: false` (phase_over, locked, outdated, unchanged, busy) is not an error, the phone shows
+// the server's state and view without the failure haptic; `seq` grows with each of the caller's
+// guesses or placements in a step.
+const kaupholl = <T>(body: KauphollRequest) => invoke<T>('kaupholl', body);
+export const kauphollApi = {
+  start: (roomId: string) => kaupholl<KauphollStartAnswer>({ action: 'start', roomId }),
+  pool: (roomId: string) => kaupholl<KauphollPool>({ action: 'pool', roomId }),
+  view: (roomId: string) =>
+    kaupholl<{ room: KauphollState; view: KauphollView }>({ action: 'view', roomId }),
+  reveal: (roomId: string, step: number) =>
+    kaupholl<KauphollAnswer>({ action: 'reveal', roomId, step }),
+  guess: (roomId: string, step: number, seq: number, value: number, lock: boolean) =>
+    kaupholl<KauphollAnswer>({ action: 'guess', roomId, step, seq, value, lock }),
+  bet: (roomId: string, step: number, seq: number, coins: KauphollCoins, lock: boolean) =>
+    kaupholl<KauphollAnswer>({ action: 'bet', roomId, step, seq, coins, lock }),
+  ready: (roomId: string, step: number) =>
+    kaupholl<KauphollAnswer>({ action: 'ready', roomId, step }),
+  advance: (roomId: string, step: number) =>
+    kaupholl<KauphollAnswer>({ action: 'advance', roomId, step }),
 };
