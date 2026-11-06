@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (6 Kasım 2026, ekran görüntüsü revize turu 1)
+
+- #499 main'de (onaylı): R-1 Masa kişiler çekmecesi (tuval v119 MasaCekmece*), R-2 "Masadan çıkar" (K-88, `rooms/remove`, kural 5 ve 10 ekleri), R-3 mekan sohbeti üst çubuğu, R-4 mekan adı satırı, H-1 sohbet akışının sona tutunması, H-2 balon ve kuyruğu tek şekil, H-3/H-4 ifade çekmecesi, H-5 büyük emoji.
+- Telefonda doğrulanacak: H-3, H-4 (klavye kapalıyken de oluyorsa ve hangi sohbette, sor); G-1–G-4 koyu tema ve 320 dp.
+- Açık öneriler: balon gölgesi kuyruğun altında yok; çok uzun mesajda ifade çekmecesi ekranın üstüne yaslanıyor (Telegram mesajı çekmece içinde kaydırır).
+- Sıradaki: aynı promptla yeni oturum, yeni ekran görüntüleri.
+
 ## Devir notu (6 Kasım 2026, Kaupholl'u açmaya kalanlar)
 
 - #494: senaryo düzeltmeleri T-1, T-2, B-1, B-3 main'de; B-2 kural 10'a eklendi (onaylı).
