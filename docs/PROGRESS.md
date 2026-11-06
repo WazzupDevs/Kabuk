@@ -2,7 +2,7 @@
 
 ## Devir notu (6 Kasım 2026, oyunların senaryo analizi)
 
-- Analiz edilenler: Kaupholl (`docs/decisions/senaryo-kaupholl.md`: T 3, D 3, B 3) ve Kibrit (`senaryo-kibrit.md`: H 1, T 1, D 2). Düzeltme yok; T maddeleri proje sahibine soruldu.
+- Analiz edilenler: Kaupholl (`docs/decisions/senaryo-kaupholl.md`: T 3, D 3, B 3) ve Kibrit (`senaryo-kibrit.md`: H 1, T 1, D 2). Düzeltme yok; T kararları belgelerin §5'inde.
 - Sıradaki oyun: **Sprengja**, sonra Signum, Krot, Vampir Köylü, Kapsül Anlat. Aynı promptla yeni oturum.
 - Onay beklemeden yapılabilecek ilk düzeltme paketi: Kibrit H-1 (`kibrit_advance`'in 1 sn erken payı) ve D-1.
 

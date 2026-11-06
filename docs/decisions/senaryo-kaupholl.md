@@ -76,3 +76,10 @@ Sayılar: K 0, H 0, T 3, D 3, B 3.
 - E-5 `endsAt` geriye çekilince (son bekleneni çıktı) telefon `advance` göndersin; `unchanged` alan erken `advance` kısa süre sonra yeniden denensin.
 - E-6 `over`'dan sonra `view` `no_game` döner; sonuç `rooms.game_state.lastGame.kaupholl`'dan okunur. Terk edilen oyunda "Oyun yarıda kaldı".
 - E-7 `guess` ve `bet` kendiliğinden gönderilen çağrılardır (yolda tek istek, birleşen değişiklik); `FEEL_ERROR` yalnız kullanıcının bastığı "Kesinleştir" ve "Yatırdım"da, `phase_over`/`locked`/`outdated` hata değildir.
+
+## 5. Proje sahibinin kararları (6 Kasım)
+
+- T-1: tam sayılı soruda kesirli tahmin reddedilir (`bad_request`); tuş takımında virgül yok.
+- T-2: en yüksek puan 0 ise kazanan yok (`won = false`), sonuç ekranı "Kazanan yok".
+- T-3: olduğu gibi kalır.
+- Düzeltme paketi (Kaupholl, ayrı PR): T-1, T-2, B-1, B-3; B-2 kural 10'a dokunduğu için "onaylandı" bekler.

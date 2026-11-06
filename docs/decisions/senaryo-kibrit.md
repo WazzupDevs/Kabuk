@@ -59,3 +59,8 @@ Sayılar: K 0, H 1, T 1, D 2, B 0 (H-1 aynı zamanda SPEC'in "süresi dolmamış
 ## 4. Ekran işine notlar
 
 - E-1 `kibrit-ekranlar.md`'deki çizilmemiş hâller (Yeterli kâğıt yok, yükleniyor, bağlantı hatası, 320 dp oy ızgarası, en büyük yazı, 7+ oyuncu, beraberlik, uzun soru) hâlâ açık; `available: true`'dan önce tuvalde çizilmeli. D-2'nin "Oyuncu kalmadı" hâli de bu listeye girer.
+
+## 5. Proje sahibinin kararları (6 Kasım)
+
+- T-1: davranış aynı kalır; SPEC Adım 4.6.9 → "Mutlak gizlilik yoktur" listesine "Bildirilen soru özetten çıktığı için küçük masada bildireni daraltabilir" eklenir.
+- Düzeltme paketi (Kibrit, ayrı PR): H-1, D-1, T-1'in SPEC satırı; D-2 tuval hâli bekler.
