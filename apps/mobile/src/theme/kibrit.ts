@@ -32,8 +32,6 @@ export const KIBRIT_TYPE = {
   // The night's papers (`.ql .qq`, 600/14/19; `.ww`, 700/13).
   pastQuestion: risoType(F600, 14, 19),
   pastWho: risoType(F700, 13, 16),
-  // The players' numbers on the pre-game page (800/12).
-  seatNo: { ...risoType(F800, 12, 15), fontVariant: ['tabular-nums'] } as TextStyle,
   // The page's fine line under its title in the result scene (500/13).
   fine: risoType(F500, 13, 18),
 } as const;
@@ -167,8 +165,6 @@ export const KIBRIT = {
     pastFace: 24,
     pastGap: 6,
   },
-  // The pre-game page: the corner buddy 16 from the right, 14 under its box, turned 6°.
-  pregameBuddy: { right: 16, below: 14, turn: '6deg' },
   // The vote's corner buddy: 34 from the right, turned 8°; Oy verildi's: 24 from the left, 96
   // over the bottom, turned −6°.
   voteBuddy: { right: 34, turn: '8deg' },

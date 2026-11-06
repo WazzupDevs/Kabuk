@@ -13,15 +13,13 @@ import {
 } from '@shared/kaupholl.ts';
 import { upperTr } from '@shared/trText.ts';
 import { router } from 'expo-router';
-import { Image } from 'expo-image';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { ScrollView, TextInput, useWindowDimensions, View } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
-import { CapIcon } from '@/aura/CapIcon';
-import { Btn, Chip, Glass, T, useKit } from '@/aura/kit';
+import { Btn, T, useKit } from '@/aura/kit';
 import { Loader } from '@/components/Loader';
 import { Sheet } from '@/components/Sheet';
 import { StageFit } from '@/features/games/GameStage';
@@ -34,7 +32,7 @@ import { noteSuccess, useConnection } from '@/lib/connection';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { haptic } from '@/lib/haptics';
 import { KIT } from '@/theme/auraKit';
-import { FIELD_SIZE, fieldType, KAUPHOLL as K, KAUPHOLL_TYPE as KT } from '@/theme/kaupholl';
+import { FIELD_SIZE, fieldType, KAUPHOLL as K } from '@/theme/kaupholl';
 import { KROT, krotTimer } from '@/theme/krot';
 import { RISO as R, RISO_PANEL_WIDTH } from '@/theme/riso';
 import { DarkGameScope, useTheme } from '@/theme/ThemeProvider';
@@ -53,6 +51,14 @@ import {
 import type { RisoBuddy } from '../riso/risoArt';
 import { PhasePill, ReadyChip } from '../sahtekar/KrotParts';
 import { PlayPage, Scene, ScenePage } from '../sprengja/SprengjaParts';
+import {
+  GameLobby,
+  LobbyCard,
+  type LobbyPerson,
+  LobbyPeople,
+  LobbyRules,
+  LobbyWatchers,
+} from '../GameLobby';
 import { kauphollArt } from './kauphollArt';
 import {
   AnswerBox,
@@ -67,7 +73,6 @@ import {
   GuessPanel,
   GuessRow,
   HeroWinners,
-  NoteRow,
   OneLineStrip,
   QuestionStrip,
   ScoreTable,
@@ -1468,10 +1473,10 @@ function SummaryScreen(shared: Shared) {
 
 // ------------------------------------------------------------------ Oyuncular
 
-// Oyuncular (KaupholOyuncular, KaupholAzSoru, KaupholSoruKalmadi): the poster, the game's chips,
-// the players, the watchers with "Gözlemci ol", how it plays; the owner's few-questions warning
-// (the number never shown) and "Oyunu başlat" for 3 to 6 players. A start refused for want of
-// questions keeps the page open and says so (felt).
+// Oyuncular (KaupholOyuncular, KaupholAzSoru, KaupholSoruKalmadi): GameLobby's frame with the
+// game's chips, the players, the watchers with "Gözlemci ol", how it plays; the owner's
+// few-questions warning (the number never shown) and "Oyunu başlat" for 3 to 6 players. A start
+// refused for want of questions keeps the page open and says so (felt).
 function Pregame({
   roomId,
   state,
@@ -1492,11 +1497,6 @@ function Pregame({
   onChat: () => void;
 }) {
   const queryClient = useQueryClient();
-  const { colors } = useTheme();
-  const { c } = useKit();
-  const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
-  const k = Math.min(1, width / RISO_PANEL_WIDTH);
   const picks = readPregame(state)?.picks ?? {};
   const everyone = [...faces.people.keys()];
   const watchers = everyone.filter((s) => picks[s] === 'obs');
@@ -1527,175 +1527,68 @@ function Pregame({
   const startCode = start.error instanceof ApiError ? start.error.code : null;
   const failed =
     pick.error ?? (startCode === 'questions_exhausted' ? null : start.error) ?? closeError;
-  const chips = (sids: string[], numbered: boolean) =>
-    sids.length > 0 ? (
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: K.chips.gap }}>
-        {sids.map((s, i) => (
-          <View
-            key={s}
-            style={{
-              height: R.person.height,
-              paddingLeft: R.person.padLeft,
-              paddingRight: R.person.padRight,
-              borderRadius: R.person.height / 2,
-              backgroundColor: c.raised,
-              borderWidth: KIT.size.edge,
-              borderColor: s === faces.me ? colors.accent : c.raisedEdge,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: R.person.gap,
-            }}
-          >
-            {numbered ? (
-              <Text
-                maxFontSizeMultiplier={1.3}
-                style={[KT.seatNo, { color: c.ink, minWidth: K.seatNo, textAlign: 'center' }]}
-              >
-                {i + 1}
-              </Text>
-            ) : null}
-            <Face faces={faces} sid={s} size={R.person.face} />
-            <T v="fine" strong ink>
-              {nameOf(faces, s)}
-            </T>
-          </View>
-        ))}
-      </View>
-    ) : null;
-  const B = K.buddy.pregame;
   const tooMany = !fits || startCode === 'too_many_players';
+  const person = (s: string): LobbyPerson => ({
+    key: s,
+    face: <Face faces={faces} sid={s} size={R.person.face} />,
+    name: nameOf(faces, s),
+    me: s === faces.me,
+  });
   return (
-    <View testID="kaupholl-pregame" style={{ flex: 1 }}>
-      <AuraBackground />
-      <ScrollView
-        bounces={false}
-        overScrollMode="never"
-        showsVerticalScrollIndicator={false}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{
-          flexGrow: 1,
-          paddingTop: insets.top,
-          paddingHorizontal: KIT.size.side,
-          paddingBottom: SPACING[2],
-          gap: R.gap,
-        }}
-      >
-        <GameTopBar
-          close={{
-            label: owner ? tr.kaupholl.endGame : tr.kaupholl.backToTable,
-            onPress: onClose,
-            loading: closing,
-            testID: 'kaupholl-pregame-close',
-          }}
-          right={<ChatRound onPress={onChat} />}
-        />
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: R.poster.gap }}>
-          <Image
-            source={kauphollArt.poster}
-            style={{
-              width: R.poster.width,
-              height: R.poster.height,
-              borderRadius: R.poster.radius,
-            }}
-            contentFit="cover"
-            accessibilityIgnoresInvertColors
-          />
-          <View style={{ flex: 1 }}>
-            <T v="title">{tr.kaupholl.name}</T>
-            <T v="fine">{tr.kaupholl.sub}</T>
-          </View>
-        </View>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: K.chips.gap }}>
-          <Chip label={tr.kaupholl.questions(KAUPHOLL.questions)} />
-          <Chip label={tr.kaupholl.guessTime(KAUPHOLL.guessSeconds)} />
-          <Chip label={tr.kaupholl.betTime(KAUPHOLL.betSeconds)} />
-        </View>
-        <Glass radius={R.box.radius} style={boxStyle}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: R.box.gap }}>
-            <View style={{ flex: 1 }}>
-              <T v="h3">{tr.kaupholl.players}</T>
-            </View>
-            <T v="fine">{tr.kaupholl.people(players.length)}</T>
-          </View>
-          {chips(players, true)}
-        </Glass>
-        <Glass radius={R.box.radius} style={boxStyle}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: R.box.gap }}>
-            <CapIcon name="eye" color={c.ink} />
-            <View style={{ flex: 1 }}>
-              <T v="h3">{tr.kaupholl.watchers}</T>
-              <T v="fine">{tr.kaupholl.watchersNote}</T>
-            </View>
-            <Btn
-              sm
-              variant="glassy"
-              testID="kaupholl-watch"
-              label={watching ? tr.kaupholl.play : tr.kaupholl.watch}
-              loading={pick.isPending}
-              onPress={() => pick.mutate()}
-            />
-          </View>
-          {chips(watchers, false)}
-        </Glass>
-        <Glass radius={R.box.radius} style={boxStyle}>
-          <T v="fine" ink>
-            {tr.kaupholl.how}
-          </T>
-        </Glass>
-        <View style={{ flexGrow: 1, minHeight: B.height * k - B.below }}>
-          <Buddy
-            buddy="1a80a9"
-            height={B.height * k}
-            style={{ right: B.side, bottom: -B.below, transform: [{ rotate: B.turn }] }}
-          />
-        </View>
-      </ScrollView>
-      <View
-        style={{
-          paddingHorizontal: KIT.size.side,
-          paddingTop: SPACING[2],
-          paddingBottom: insets.bottom + R.footBottom,
-          gap: R.gap,
-        }}
-      >
-        {failed && !tooMany ? (
-          <T v="fine" color={KIT.danger} center>
-            {errorMessage(failed)}
-          </T>
-        ) : null}
-        {owner && startCode === 'questions_exhausted' ? (
-          <NoteRow tone="error">{tr.errors.questions_exhausted}</NoteRow>
-        ) : owner && pool.data && fewQuestions(pool.data.unused) ? (
-          <NoteRow tone="warn">{tr.kaupholl.fewQuestions}</NoteRow>
-        ) : null}
-        <T v="fine" center>
-          {!owner
-            ? tr.kaupholl.hintGuest
-            : !enough
-              ? tr.kaupholl.needs(KAUPHOLL.minPlayers)
-              : tooMany
-                ? tr.kaupholl.tooMany(KAUPHOLL.maxPlayers)
-                : tr.kaupholl.hintOwner}
-        </T>
-        {owner ? (
-          <Btn
-            block
-            testID="kaupholl-start"
-            label={tr.kaupholl.start}
-            disabled={!enough || !fits}
-            loading={start.isPending}
-            onPress={() => start.mutate()}
-          />
-        ) : null}
-      </View>
-    </View>
+    <GameLobby
+      testID="kaupholl-pregame"
+      game="kaupholl"
+      poster={kauphollArt.poster}
+      name={tr.kaupholl.name}
+      close={{
+        label: owner ? tr.kaupholl.endGame : tr.kaupholl.backToTable,
+        onPress: onClose,
+        loading: closing,
+        testID: 'kaupholl-pregame-close',
+      }}
+      onChat={onChat}
+      chips={[
+        tr.kaupholl.questions(KAUPHOLL.questions),
+        tr.kaupholl.guessTime(KAUPHOLL.guessSeconds),
+        tr.kaupholl.betTime(KAUPHOLL.betSeconds),
+      ]}
+      foot={{
+        owner,
+        warning: !enough
+          ? tr.kaupholl.needs(KAUPHOLL.minPlayers)
+          : tooMany
+            ? tr.kaupholl.tooMany(KAUPHOLL.maxPlayers)
+            : owner && startCode === 'questions_exhausted'
+              ? tr.errors.questions_exhausted
+              : owner && pool.data && fewQuestions(pool.data.unused)
+                ? tr.kaupholl.fewQuestions
+                : null,
+        // A few questions left only warns; the others hold the start back.
+        canStart: enough && fits,
+        error: failed && !tooMany ? failed : null,
+        start: {
+          label: tr.kaupholl.start,
+          testID: 'kaupholl-start',
+          loading: start.isPending,
+          onPress: () => start.mutate(),
+        },
+      }}
+    >
+      <LobbyCard title={tr.games.players} count={tr.games.count(players.length)}>
+        <LobbyPeople people={players.map(person)} />
+      </LobbyCard>
+      <LobbyWatchers
+        note={tr.kaupholl.watchersNote}
+        watching={watching}
+        loading={pick.isPending}
+        onPress={() => pick.mutate()}
+        testID="kaupholl-watch"
+        people={watchers.map(person)}
+      />
+      <LobbyRules text={tr.kaupholl.how} />
+    </GameLobby>
   );
 }
-const boxStyle = {
-  paddingVertical: R.box.padY,
-  paddingHorizontal: R.box.padX,
-  gap: R.box.gap,
-} as const;
 
 // ------------------------------------------------------------------ Oyun sonu
 

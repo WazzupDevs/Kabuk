@@ -802,6 +802,16 @@ export const tr = {
   },
   games: {
     minPlayers: (n: number) => `En az ${n} kişi`,
+    // Every game's pre-game page (GameLobby): how many play under the name, the hint and the
+    // watchers' card.
+    range: (min: number, max: number) => `${min}–${max} kişi`,
+    hintOwner: 'Herkes hazırsa oyunu başlat.',
+    hintGuest: 'Oyunu masa sahibi başlatır.',
+    players: 'Oyuncular',
+    count: (n: number) => `${n} kişi`,
+    watchers: 'Gözlemciler',
+    watch: 'Gözlemci ol',
+    play: 'Oyuna katıl',
     endGame: 'Oyunu bitir',
     turn: (n: number, total: number) => `Tur ${n}/${total}`,
     // The turn clock, "0:37".
@@ -938,7 +948,7 @@ export const tr = {
     timeLeftLabel: (clock: string) => `Kalan süre ${clock}`,
     name: 'Vampir Köylü',
     whoPlays: 'Kimler oynuyor',
-    rules: ['5 ile 12 kişi', 'Gizli roller', 'Gece ve gündüz'],
+    rules: ['Gizli roller', 'Gece ve gündüz'],
     players: 'Oyuncular',
     watchers: 'Gözlemciler',
     watchersNote: 'İzler, puan almaz.',
@@ -1090,7 +1100,6 @@ export const tr = {
   // Kinshi, the tabu layout (Aura v85, "Kinshi (tabu düzeni)"; docs/SPEC_V4.md §4.F "Adım 4.6.1").
   kinshi: {
     name: 'Kinshi',
-    pickTeam: 'Takımını seç',
     rules: [
       `${TABU_GAME.totalTurns} tur`,
       `Turda ${TABU_GAME.turnSeconds} sn`,
@@ -1100,15 +1109,12 @@ export const tr = {
     teamShort: { a: 'Mor', b: 'Pembe' },
     count: (n: number) => `${n} kişi`,
     join: 'Katıl',
-    watchers: 'Gözlemciler',
     watchersNote: 'Kartı görür, oynamaz.',
-    watch: 'Gözlemci ol',
     unpicked: 'Henüz seçmeyenler',
     unpickedNote: 'Oyun başlarken seçmeyenler gözlemci olur.',
     needs: (n: number) => `Her takımda en az ${n} kişi olmalı.`,
     shuffle: 'Karıştır',
     start: 'Oyunu başlat',
-    hintGuest: 'Oyunu masa sahibi başlatır.',
     endGame: 'Oyunu bitir',
     exit: 'Oyundan çık',
     chat: 'Sohbet',
@@ -1161,7 +1167,6 @@ export const tr = {
   // The canvas's words are the report's proposals (4 Kasım).
   signum: {
     name: 'Signum',
-    teams: 'Takımlar',
     rules: [
       `${SIGNUM.tiles} kelime`,
       `İpucu ${SIGNUM.clueSeconds} sn`,
@@ -1172,9 +1177,7 @@ export const tr = {
     teamShort: { a: 'Mor', b: 'Pembe' },
     count: (n: number) => `${n} kişi`,
     join: 'Katıl',
-    watchers: 'Gözlemciler',
     watchersNote: 'Açılan kartları görür, oynamaz.',
-    watch: 'Gözlemci ol',
     unpicked: 'Henüz seçmeyenler',
     unpickedNote: 'Oyun başlarken seçmeyenler gözlemci olur.',
     // Captains on the page (docs/SPEC_V4.md: a volunteer, the owner's offer or approval).
@@ -1199,8 +1202,6 @@ export const tr = {
     decline: 'Hayır',
     needs: (n: number) => `Her takımda en az ${n} kişi olmalı.`,
     needsCaptains: 'İki takımın da onaylı kaptanı olmalı.',
-    hintOwner: 'Herkes hazırsa oyunu başlat.',
-    hintGuest: 'Oyunu masa sahibi başlatır.',
     shuffle: 'Karıştır',
     start: 'Oyunu başlat',
     // The role cards.
@@ -1283,23 +1284,15 @@ export const tr = {
   // kart ve şüpheli sırası)"; the words are the old Krot canvas's).
   krot: {
     name: 'Krot',
-    whoPlays: 'Kimler oynuyor',
     rules: (impostors: number) => [
       `${SAHTEKAR_GAME.clueRounds} ipucu turu`,
       `Kişi başı ${SAHTEKAR_GAME.clueSeconds} sn`,
       `Oylama ${SAHTEKAR_GAME.voteSeconds} sn`,
       `${impostors} sahtekar`,
     ],
-    players: 'Oyuncular',
-    count: (n: number) => `${n} kişi`,
-    watchers: 'Gözlemciler',
     watchersNote: 'Kelimeyi ve sahtekarı görür, oy vermez.',
-    watch: 'Gözlemci ol',
-    play: 'Oyuna katıl',
     how: 'Bir kişi gizlice sahtekar seçilir. Herkes kelimeyi görür, sahtekar yalnızca kategoriyi. Sırayla kelimeyle ilgili tek kelime söylersiniz, sonra sahtekarı oylarsınız.',
     twoImpostors: `${SAHTEKAR_GAME.twoImpostorsFrom} ve üstü oyuncuda 2 sahtekar olur; birbirlerini bilmezler.`,
-    hintOwner: 'Herkes hazırsa oyunu başlat.',
-    hintGuest: 'Oyunu masa sahibi başlatır.',
     needs: (n: number) => `En az ${n} oyuncu gerekir.`,
     start: 'Oyunu başlat',
     // The bar.
@@ -1381,20 +1374,13 @@ export const tr = {
   // Kibrit (Aura v90, "Kibrit (gizli soru, gizli oy)"; docs/SPEC_V4.md §4.F "Adım 4.6.9", K-86).
   kibrit: {
     name: 'Kibrit',
-    players: 'Oyuncular',
-    count: (n: number) => `${n} kişi`,
     rounds: (n: number) => `${n} tur`,
     roundsLabel: (n: number, most: number) =>
       `${n} tur. Değiştirmek için dokun; en çok ${most} tur.`,
     writeChip: `Soru yaz ${KIBRIT.writeSeconds} sn`,
     voteChip: `Oy ${KIBRIT.voteSeconds} sn`,
-    watchers: 'Gözlemciler',
     watchersNote: 'Soruları ve sonuçları görür, yazmaz ve oy vermez.',
-    watch: 'Gözlemci ol',
-    play: 'Oyuna katıl',
     how: 'Herkes kâğıdına masadakiler için bir soru yazar; adın kâğıtta yazmaz. Kâğıtlar kavanozda karıştırılır, her turda biri çekilir. Herkes soruya en çok uyan kişiye gizli oy verir. Oylar açılınca kimin kaç oy aldığı görünür, kimin kime verdiği görünmez.',
-    hintOwner: 'Herkes hazırsa oyunu başlat.',
-    hintGuest: 'Oyunu masa sahibi başlatır.',
     needs: (n: number) => `En az ${n} oyuncu gerekir.`,
     start: 'Oyunu başlat',
     // The bar.
@@ -1481,7 +1467,6 @@ export const tr = {
   // screen shows no time at all.
   sprengja: {
     name: 'Sprengja',
-    players: `Oyuncular · ${SPRENGJA.minPlayers}–${SPRENGJA.maxPlayers} kişi`,
     rounds: (n: number) => `${n} tur`,
     hiddenTime: 'Süre gizli',
     clockwise: 'Saat yönünde',
@@ -1490,12 +1475,7 @@ export const tr = {
       watchers > 0 ? `${players} kişi · ${watchers} izleyen` : `${players} kişi`,
     shuffle: 'Sırayı karıştır',
     how: 'Ortada bir harf grubu var. Bomba sendeyken bu harfleri bitişik ve aynı sırayla içeren bir kelimeyi sesli söyle, bombayı sıradakine at. Süreyi kimse görmez; bomba kimin elinde patlarsa bir puan kaybeder. En az patlayan kazanır.',
-    watchers: 'Gözlemciler',
     watchersNote: 'Oyunu izler, atış yapmaz.',
-    watch: 'Gözlemci ol',
-    play: 'Oyuna katıl',
-    hintOwner: 'Herkes hazırsa oyunu başlat.',
-    hintGuest: 'Oyunu masa sahibi başlatır.',
     needs: (n: number) => `En az ${n} oyuncu gerekir.`,
     tooMany: (n: number) => `En çok ${n} kişi oynar; fazlası gözlemci olsun.`,
     start: 'Oyunu başlat',
@@ -1652,19 +1632,12 @@ export const tr = {
     // Kaupholl (Aura v89 "Kaupholl (en yakına yatır)" and the §6 panels of
     // docs/decisions/kaupholl.md; docs/SPEC_V4.md Adım 4.6.10, K-87).
     name: 'Kaupholl',
-    sub: 'Geçmeden en yakına yatır',
     questions: (n: number) => `${n} soru`,
     guessTime: (s: number) => `Tahmin ${s} sn`,
     betTime: (s: number) => `Yatırma ${s} sn`,
-    players: 'Oyuncular',
     people: (n: number) => `${n} kişi`,
     how: `Her soru bir sayı ister. Herkes tahminini gizli yazar, tahminler küçükten büyüğe tahtaya dizilir. Sonra ${KAUPHOLL.coins} jetonunu cevaba en yakın olduğunu düşündüğün tahminlere yatırırsın; dilimdeki her jeton oranı kadar puan getirir. Cevabı geçmeyen en büyük tahmin kazanır. Bütün tahminler cevaptan büyükse 'Hepsinden küçük' kazanır.`,
-    watchers: 'Gözlemciler',
     watchersNote: 'Oyunu izler, tahmin yazmaz, jeton yatırmaz.',
-    watch: 'Gözlemci ol',
-    play: 'Oyuna katıl',
-    hintOwner: 'Herkes hazırsa oyunu başlat.',
-    hintGuest: 'Oyunu masa sahibi başlatır.',
     needs: (n: number) => `En az ${n} oyuncu gerekir.`,
     tooMany: (n: number) => `En çok ${n} kişi oynar; fazlası gözlemci olsun.`,
     start: 'Oyunu başlat',

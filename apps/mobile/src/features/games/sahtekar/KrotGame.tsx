@@ -27,8 +27,7 @@ import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
-import { CapIcon } from '@/aura/CapIcon';
-import { Btn, Chip, Glass, Round, T, Tag, useKit } from '@/aura/kit';
+import { Btn, Glass, Round, T, Tag, useKit } from '@/aura/kit';
 import { Sheet } from '@/components/Sheet';
 import { StageFit } from '@/features/games/GameStage';
 import { useSecondsLeft } from '@/features/games/useSecondsLeft';
@@ -57,6 +56,14 @@ import {
   TimeStrip,
 } from '../riso/RisoParts';
 import type { RisoBuddy } from '../riso/risoArt';
+import {
+  GameLobby,
+  LobbyCard,
+  type LobbyPerson,
+  LobbyPeople,
+  LobbyRules,
+  LobbyWatchers,
+} from '../GameLobby';
 import { krotArt } from './krotArt';
 import {
   krotGuessLine,
@@ -914,8 +921,7 @@ function SmallChip({ label }: { label: string }) {
 }
 const SMALL_CHIP = 28;
 
-// Kimler oynuyor (KrotKimler): the poster, the rules, the players, the watchers with "Gözlemci
-// ol", how it plays; a buddy at the foot; the owner's Oyunu başlat once three play.
+// Kimler oynuyor (KrotKimler): GameLobby's frame; the owner's Oyunu başlat once three play.
 function Pregame({
   roomId,
   state,
@@ -936,9 +942,6 @@ function Pregame({
   onChat: () => void;
 }) {
   const queryClient = useQueryClient();
-  const { colors } = useTheme();
-  const { c } = useKit();
-  const insets = useSafeAreaInsets();
   const picks = readPregame(state)?.picks ?? {};
   const everyone = [...faces.people.keys()];
   const watchers = everyone.filter((s) => picks[s] === 'obs');
@@ -956,167 +959,51 @@ function Pregame({
     mutationFn: () => sahtekarApi.start(roomId),
     onSettled: reread,
   });
-  const failed = pick.error ?? start.error ?? closeError;
-  const people = (sids: string[]) =>
-    sids.length > 0 ? (
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-        {sids.map((s) => (
-          <View
-            key={s}
-            style={{
-              height: R.person.height,
-              paddingLeft: R.person.padLeft,
-              paddingRight: R.person.padRight,
-              borderRadius: R.person.height / 2,
-              backgroundColor: c.raised,
-              borderWidth: KIT.size.edge,
-              borderColor: s === faces.me ? colors.accent : c.raisedEdge,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: R.person.gap,
-            }}
-          >
-            <Face faces={faces} sid={s} size={R.person.face} />
-            <T v="fine" strong ink>
-              {nameOf(faces, s)}
-            </T>
-          </View>
-        ))}
-      </View>
-    ) : null;
-  const P = KR.pregame;
+  const person = (s: string): LobbyPerson => ({
+    key: s,
+    face: <Face faces={faces} sid={s} size={R.person.face} />,
+    name: nameOf(faces, s),
+    me: s === faces.me,
+  });
   return (
-    <View testID="krot-pregame" style={{ flex: 1 }}>
-      <AuraBackground />
-      <ScrollView
-        bounces={false}
-        overScrollMode="never"
-        showsVerticalScrollIndicator={false}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{
-          flexGrow: 1,
-          paddingTop: insets.top,
-          paddingHorizontal: KIT.size.side,
-          paddingBottom: SPACING[2],
-          gap: R.gap,
-        }}
-      >
-        <GameTopBar
-          close={{
-            label: owner ? tr.krot.endGame : tr.krot.backToTable,
-            onPress: onClose,
-            loading: closing,
-            testID: 'krot-pregame-close',
-          }}
-          right={<ChatRound onPress={onChat} />}
-        />
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: R.poster.gap,
-            marginTop: P.posterTop - R.barBottom - R.gap,
-          }}
-        >
-          <Image
-            source={krotArt.poster}
-            style={{
-              width: R.poster.width,
-              height: R.poster.height,
-              borderRadius: R.poster.radius,
-            }}
-            contentFit="cover"
-            accessibilityIgnoresInvertColors
-          />
-          <View style={{ flex: 1 }}>
-            <T v="title">{tr.krot.name}</T>
-            <T v="fine">{tr.krot.whoPlays}</T>
-          </View>
-        </View>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-          {tr.krot
-            .rules(impostorCount(Math.max(players.length, SAHTEKAR_GAME.minPlayers)))
-            .map((r) => (
-              <Chip key={r} label={r} />
-            ))}
-        </View>
-        <Glass radius={R.box.radius} style={boxStyle}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: R.box.gap }}>
-            <View style={{ flex: 1 }}>
-              <T v="h3">{tr.krot.players}</T>
-            </View>
-            <T v="fine">{tr.krot.count(players.length)}</T>
-          </View>
-          {people(players)}
-        </Glass>
-        <Glass radius={R.box.radius} style={boxStyle}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: R.box.gap }}>
-            <CapIcon name="eye" color={c.ink} />
-            <View style={{ flex: 1 }}>
-              <T v="h3">{tr.krot.watchers}</T>
-              <T v="fine">{tr.krot.watchersNote}</T>
-            </View>
-            <Btn
-              sm
-              variant="glassy"
-              testID="krot-watch"
-              label={watching ? tr.krot.play : tr.krot.watch}
-              loading={pick.isPending}
-              onPress={() => pick.mutate()}
-            />
-          </View>
-          {people(watchers)}
-        </Glass>
-        <Glass radius={R.box.radius} style={boxStyle}>
-          <T v="fine" ink>
-            {tr.krot.how}
-          </T>
-          <T v="fine">{tr.krot.twoImpostors}</T>
-        </Glass>
-        <View style={{ flexGrow: 1, minHeight: P.buddy.height - P.buddy.below }}>
-          <Buddy
-            buddy={P.buddy.buddy}
-            height={P.buddy.height}
-            style={{
-              right: P.buddy.right,
-              bottom: -P.buddy.below,
-              transform: [{ rotate: P.buddy.turn }],
-            }}
-          />
-        </View>
-      </ScrollView>
-      <View
-        style={{
-          paddingHorizontal: KIT.size.side,
-          paddingTop: SPACING[2],
-          paddingBottom: insets.bottom + R.footBottom,
-          gap: R.gap,
-        }}
-      >
-        {failed ? (
-          <T v="fine" color={KIT.danger} center>
-            {errorMessage(failed)}
-          </T>
-        ) : null}
-        <T v="fine" center>
-          {!owner
-            ? tr.krot.hintGuest
-            : enough
-              ? tr.krot.hintOwner
-              : tr.krot.needs(SAHTEKAR_GAME.minPlayers)}
-        </T>
-        {owner ? (
-          <Btn
-            block
-            testID="krot-start"
-            label={tr.krot.start}
-            disabled={!enough}
-            loading={start.isPending}
-            onPress={() => start.mutate()}
-          />
-        ) : null}
-      </View>
-    </View>
+    <GameLobby
+      testID="krot-pregame"
+      game="sahtekar"
+      poster={krotArt.poster}
+      name={tr.krot.name}
+      close={{
+        label: owner ? tr.krot.endGame : tr.krot.backToTable,
+        onPress: onClose,
+        loading: closing,
+        testID: 'krot-pregame-close',
+      }}
+      onChat={onChat}
+      chips={tr.krot.rules(impostorCount(Math.max(players.length, SAHTEKAR_GAME.minPlayers)))}
+      foot={{
+        owner,
+        warning: enough ? null : tr.krot.needs(SAHTEKAR_GAME.minPlayers),
+        error: pick.error ?? start.error ?? closeError,
+        start: {
+          label: tr.krot.start,
+          testID: 'krot-start',
+          loading: start.isPending,
+          onPress: () => start.mutate(),
+        },
+      }}
+    >
+      <LobbyCard title={tr.games.players} count={tr.games.count(players.length)}>
+        <LobbyPeople people={players.map(person)} />
+      </LobbyCard>
+      <LobbyWatchers
+        note={tr.krot.watchersNote}
+        watching={watching}
+        loading={pick.isPending}
+        onPress={() => pick.mutate()}
+        testID="krot-watch"
+        people={watchers.map(person)}
+      />
+      <LobbyRules text={tr.krot.how} note={tr.krot.twoImpostors} />
+    </GameLobby>
   );
 }
 const boxStyle = {

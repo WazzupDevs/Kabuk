@@ -159,12 +159,6 @@ export const KROT = {
     cardGap: 10,
     cardFace: 40,
   },
-  // Kimler oynuyor (KrotKimler): the poster 118 from the panel's top (54 + the 48 spacer + 12 + 4);
-  // the buddy at the foot 96 high, 16 in, 14 under, turned 6°.
-  pregame: {
-    posterTop: 118,
-    buddy: { buddy: 'd2fbb5', right: 16, below: 14, height: 96, turn: '6deg' },
-  },
   // Speaking passes from one to the next on the swap curve (hareket.json → curves.swap) in this.
   swapMs: 220,
 } as const;
