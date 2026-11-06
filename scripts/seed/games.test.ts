@@ -44,13 +44,14 @@ describe('content/games.json', () => {
   });
 
   // §4.E: after step 4.5 today's games are "Yakında"; each comes with its step of 4.6 (Vampir Köylü:
-  // 4.6.6; Kapsül Anlat, Kinshi on the table: 4.6.1).
+  // 4.6.6; Kapsül Anlat, Kinshi on the table: 4.6.1; Krot: 4.6.3; Signum: 4.6.7; Sprengja: 4.6.8;
+  // Kibrit: 4.6.9). Kaupholl waits for its screens.
   it('opens only the games whose step of 4.6 has come', () => {
     expect(
       parseGames(content)
         .games.filter((g) => g.available)
         .map((g) => g.id),
-    ).toEqual(['vampir', 'tabu', 'sahtekar']);
+    ).toEqual(['vampir', 'kibrit', 'tabu', 'signum', 'sahtekar', 'sprengja']);
   });
 
   it('refuses a game twice, an unknown category, and a team game under four', () => {
