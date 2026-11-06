@@ -589,11 +589,21 @@ describe('leaving (K-86)', () => {
       expect(new Date(after.endsAt as string).getTime() - Date.now()).toBeGreaterThan(6_000);
       // b's vote for d no longer counts; b sees it and chooses again.
       expect((await view(b, g.roomId)).vote).toBe(d.sessionId);
-      // A vote for who left is refused; b chooses again.
-      expect(await vote(b, g, v2.step as number, 3, d)).toEqual({
-        status: 400,
-        body: errorBody('bad_request'),
-      });
+      // A vote for who left changes nothing and is no error (b could not have known it); b's
+      // own view comes back and b chooses again (senaryo-kibrit.md D-1).
+      const late = await vote(b, g, v2.step as number, 3, d);
+      expect(late.status).toBe(200);
+      expect(late.body).toMatchObject({ vote: d.sessionId, voteRev: 1 });
+      // Someone who never sat in the game is still a bad request.
+      expect(
+        await kibrit(b, {
+          action: 'vote',
+          roomId: g.roomId,
+          step: v2.step,
+          rev: 4,
+          target: '00000000-0000-4000-8000-000000000000',
+        }),
+      ).toEqual({ status: 400, body: errorBody('bad_request') });
       await vote(b, g, v2.step as number, 2, c);
       await vote(a, g, v2.step as number, 1, c);
       // After a leaving the vote closes only by its clock, even with everyone voted.
@@ -708,6 +718,34 @@ describe('the clock (§4.6.9, IDEMPOTENT_CALLS)', () => {
       expect(open.phase).toBe('open');
       const vote = await runOut(g);
       expect(vote.phase).toBe('vote');
+    },
+    SLOW,
+  );
+  it(
+    'moves no phase on before its time is up, not even a second early; a revision then still counts',
+    async () => {
+      const g = await game(3);
+      const [a, b, c] = g.people as [Person, Person, Person];
+      const at = await step(g.roomId);
+      await write(a, g, at, 1, question(0));
+      await write(b, g, at, 1, question(1));
+      // Under a second left (senaryo-kibrit.md H-1: a phone whose clock runs ahead asks now).
+      const endsIn = async (ms: number) => sql`
+        update public.rooms
+        set game_state = jsonb_set(
+          game_state, '{endsAt}', to_jsonb(now() + ${`${ms} milliseconds`}::interval)
+        )
+        where id = ${g.roomId}
+      `;
+      await endsIn(990);
+      expect(await kibrit(a, { action: 'advance', roomId: g.roomId })).toEqual(OK);
+      expect((await state(g.roomId)).phase).toBe('write');
+      // c's paper inside the time completes the phase (the time is given back so the call cannot
+      // run out on a slow machine).
+      await endsIn(60_000);
+      expect((await write(c, g, at, 1, question(2))).status).toBe(200);
+      const jar = await state(g.roomId);
+      expect(jar).toMatchObject({ phase: 'jar', papers: 3 });
     },
     SLOW,
   );
