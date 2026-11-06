@@ -689,6 +689,7 @@ export type TagTone =
   | 'glassy'
   | 'art'
   | 'artLit'
+  | 'artOk'
   | 'scene'
   | 'sceneCalm'
   | 'event'
@@ -717,7 +718,9 @@ export function Tag({
 }) {
   const { c, tags } = useKit();
   const frosted = useFrost() && tone === 'glassy' && !own;
-  // `art`: dark glass over a picture (Masa's game cards); `artLit` white there (the person's vote).
+  // `art`: dark glass over a picture (Masa's game cards); `artLit` white there (the person's vote);
+  // `artOk` white with the success green (the owner's "Aç": the green tag did not read over the
+  // posters, the owner's report, 6 Kasım, round 3).
   const colors = own
     ? own
     : tone === 'glassy'
@@ -726,15 +729,17 @@ export function Tag({
         ? { bg: KIT.artTag, fg: KIT.white }
         : tone === 'artLit'
           ? { bg: KIT.white, fg: KIT.light.ink }
-          : tone === 'scene'
-            ? KIT.sceneTag
-            : tone === 'sceneCalm'
-              ? KIT.sceneTagCalm
-              : tone === 'event'
-                ? KIT.eventTag
-                : tone === 'eventTime'
-                  ? KIT.eventTimeTag
-                  : { bg: tags[tone].bg, fg: tags[tone].fg };
+          : tone === 'artOk'
+            ? { bg: KIT.white, fg: KIT.tags.green.fg }
+            : tone === 'scene'
+              ? KIT.sceneTag
+              : tone === 'sceneCalm'
+                ? KIT.sceneTagCalm
+                : tone === 'event'
+                  ? KIT.eventTag
+                  : tone === 'eventTime'
+                    ? KIT.eventTimeTag
+                    : { bg: tags[tone].bg, fg: tags[tone].fg };
   return (
     <View
       style={{

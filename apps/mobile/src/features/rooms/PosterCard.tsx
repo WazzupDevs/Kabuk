@@ -68,7 +68,8 @@ export function GameCard({
   tag?: string;
   // The person's own vote is on it.
   lit?: boolean;
-  // The owner can open it: "Aç" in the success tag (U22, `.tag.ok`).
+  // The owner can open it: "Aç", white with the success green (over the posters the green tag did
+  // not read, the owner's report, 6 Kasım, round 3).
   ok?: boolean;
   // Fewer phones at the table than the game needs (K-17).
   dim?: boolean;
@@ -122,7 +123,7 @@ export function GameCard({
             />
             <View style={{ position: 'absolute', left: GAME_CARD.tagX, top: GAME_CARD.tagY }}>
               <Tag
-                tone={lit ? 'artLit' : ok ? 'green' : 'art'}
+                tone={lit ? 'artLit' : ok ? 'artOk' : 'art'}
                 label={tag}
                 height={narrow ? KIT.size.tagNarrow : undefined}
               />

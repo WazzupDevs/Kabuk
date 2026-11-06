@@ -165,6 +165,59 @@ function Slice({ top, height, opacity }: { top: number; height: number; opacity:
   );
 }
 
+// The ground behind a rounded card of a fixed head, laid in the card's box (its `fill` insets) so it
+// follows the card's height as it changes with no measuring: with the head's band down to the
+// card's top, one piece beside the card down to its lower corners and one in the card's own shape,
+// what scrolls up under the head ends along the card's rounded foot, not on a straight line under
+// it (the owner's report, 6 Kasım, round 3). Behind the card, so the light scheme's see-through
+// glass shows the clouds, not what scrolls under it. `top` and `left` are the piece's place on the
+// screen (the picture lines up with the screen's).
+export function AuraPatch({
+  top,
+  left,
+  radius = 0,
+  fill,
+}: {
+  top: number;
+  left: number;
+  radius?: number;
+  fill: { left: number; right: number; bottom: number };
+}) {
+  const off = useLabOff('zemin');
+  const { scheme } = useTheme();
+  const { width: screenWidth, height: screen } = useGroundSize();
+  if (off) return null;
+  return (
+    <View
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        top: 0,
+        ...fill,
+        borderRadius: radius,
+        overflow: 'hidden',
+        backgroundColor: scheme === 'dark' ? AURA.dark.ground : undefined,
+      }}
+    >
+      {scheme === 'dark' ? null : (
+        <Image
+          source={GROUND_PICTURE}
+          fadeDuration={0}
+          resizeMode="cover"
+          style={{
+            position: 'absolute',
+            left: -left,
+            top: -top,
+            width: screenWidth,
+            height: screen,
+          }}
+          accessible={false}
+        />
+      )}
+    </View>
+  );
+}
+
 // A sideways soft edge (a chip row running off the screen's right, Kapsülün): the ground in
 // columns, each more opaque towards the edge, lined up with the picture behind the screen. A flat
 // colour fade over the clouds showed as a band of its own (the owner's report, 2 Kasım, 11.4).
