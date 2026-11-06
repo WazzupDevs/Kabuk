@@ -12,6 +12,7 @@ import { SAHTEKAR_GAME } from '@shared/sahtekarGame.ts';
 import { SAHTEKAR } from '@shared/sahtekar.ts';
 import { KIBRIT } from '@shared/kibrit.ts';
 import { SPRENGJA } from '@shared/sprengja.ts';
+import { KAUPHOLL } from '@shared/kaupholl.ts';
 import { SIGNUM } from '@shared/signum.ts';
 import { formatTrMobile } from '@shared/phone.ts';
 import { BIO_MAX } from '@shared/profile.ts';
@@ -1646,6 +1647,128 @@ export const tr = {
     // On the table while a game runs that the person does not see.
     running: 'Sprengja sürüyor',
     runningPage: 'Sprengja açık',
+  },
+  kaupholl: {
+    // Kaupholl (Aura v89 "Kaupholl (en yakına yatır)" and the §6 panels of
+    // docs/decisions/kaupholl.md; docs/SPEC_V4.md Adım 4.6.10, K-87).
+    name: 'Kaupholl',
+    sub: 'Geçmeden en yakına yatır',
+    questions: (n: number) => `${n} soru`,
+    guessTime: (s: number) => `Tahmin ${s} sn`,
+    betTime: (s: number) => `Yatırma ${s} sn`,
+    players: 'Oyuncular',
+    people: (n: number) => `${n} kişi`,
+    how: `Her soru bir sayı ister. Herkes tahminini gizli yazar, tahminler küçükten büyüğe tahtaya dizilir. Sonra ${KAUPHOLL.coins} jetonunu cevaba en yakın olduğunu düşündüğün tahminlere yatırırsın; dilimdeki her jeton oranı kadar puan getirir. Cevabı geçmeyen en büyük tahmin kazanır. Bütün tahminler cevaptan büyükse 'Hepsinden küçük' kazanır.`,
+    watchers: 'Gözlemciler',
+    watchersNote: 'Oyunu izler, tahmin yazmaz, jeton yatırmaz.',
+    watch: 'Gözlemci ol',
+    play: 'Oyuna katıl',
+    hintOwner: 'Herkes hazırsa oyunu başlat.',
+    hintGuest: 'Oyunu masa sahibi başlatır.',
+    needs: (n: number) => `En az ${n} oyuncu gerekir.`,
+    tooMany: (n: number) => `En çok ${n} kişi oynar; fazlası gözlemci olsun.`,
+    start: 'Oyunu başlat',
+    fewQuestions: 'Bu masada az sayıda uygun soru kaldı.',
+    // The bar's phase pill and the question strip's eyebrow.
+    question: (n: number, total: number) => `Soru ${n}/${total}`,
+    // Soru kartı kapalı (KaupholHata, KaupholYukleniyor).
+    openTitle: 'Soru kartını aç',
+    openNote: 'Herkes aynı soruyu görür, tahminini gizli yazar.',
+    open: 'Kartı aç',
+    cardClosed: 'Soru kartı, kapalı',
+    cardOpen: (question: string, unit: string) => `Soru kartı: ${question} Birim: ${unit}`,
+    watcherNote: 'Gözlemcisin; tahmin yazmaz, jeton yatırmazsın.',
+    // Tahmin yaz (KaupholTahminYaz).
+    writeTitle: 'Tahminini yaz',
+    writeLine: 'Kimse görmez · sayı yaz',
+    write: 'Tahmin yaz',
+    fieldLabel: 'Tahminin',
+    maxDigits: `En çok ${KAUPHOLL.maxDigits} hane`,
+    send: 'Tahmini gönder',
+    // Gönderildi, kesinleşti (KaupholGonderildi, KaupholKesin, KaupholOtoKesin).
+    sentTitle: 'Tahminin gönderildi',
+    lockedTitle: 'Tahminin kesinleşti',
+    wrote: (written: number, players: number, locked: number) =>
+      `${written}/${players} kişi yazdı · ${locked} kesinleştirdi`,
+    yourGuess: 'Senin tahminin',
+    lockedTag: 'Kesinleşti',
+    change: 'Tahmini değiştir',
+    lock: 'Kesinleştir',
+    chipNone: 'yazmadı',
+    chipWritten: 'yazdı',
+    chipLocked: 'kesinleştirdi',
+    chipLabel: (name: string, state: string) => `${name}, ${state}`,
+    toBoard: 'Herkes kesinleştirince tahminler tahtaya dizilir.',
+    waiting: 'Herkes bekleniyor',
+    // Süre doldu (KaupholSureDoldu).
+    timeUp: 'Süre doldu',
+    timeUpGuess: 'Süre doldu, kayıtlı tahminin geçerli',
+    timeUpNoGuess: 'Süre doldu, tahmin yazmadın',
+    timeUpBet: 'Süre doldu, kayıtlı yatırımın geçerli',
+    // Tahta (KaupholTahta, KaupholTahtaSiki, KaupholTahta320, KaupholYatirdim).
+    betTitle: 'Jetonlarını yatır',
+    rule: 'Cevabı geçmeyen en büyük tahmin kazanır',
+    smaller: 'Hepsinden küçük',
+    smallerNote: 'Tüm tahminler cevaptan büyükse',
+    times: (n: number) => `×${n}`,
+    twoNames: (a: string, b: string) => `${a}, ${b}`,
+    sliceLabel: (guess: string, who: string, odds: number) =>
+      who ? `${guess}, ${who}, oran ${odds}` : `${guess}, oran ${odds}`,
+    stake: (name: string, n: number) => `${name}, ${n} jeton`,
+    stack: (n: number, people: number) => `${n} jeton, ${people} kişi`,
+    coinsLeft: (n: number, locked: boolean) =>
+      locked ? `${n} jeton kaldı, kilitli` : `${n} jeton kaldı`,
+    betDone: 'Yatırdım',
+    // Cevap (KaupholCevap, KaupholHepsindenKucuk, KaupholKimseYazmadi).
+    answer: 'Cevap',
+    won: 'Kazandı',
+    noGuesses: 'Kimse tahmin yazmadı',
+    readyCount: (ready: number, players: number) => `Hazır: ${ready}/${players}`,
+    ready: 'Hazırım',
+    // Soru sonu (KaupholSoruSonu).
+    roundOver: (n: number, total: number) => `Soru ${n}/${total} bitti`,
+    winGuess: (who: string) => `Kazanan tahmin: ${who}`,
+    smallerWon: 'Hepsinden küçük kazandı',
+    winLine: (guess: string, unit: string, answer: string) => `${guess} ${unit} · cevap ${answer}`,
+    smallerLine: (answer: string) => `Bütün tahminler cevaptan büyük · cevap ${answer}`,
+    noneLine: (answer: string) => `Cevap ${answer}`,
+    bonus: `+${KAUPHOLL.winnerBonus} tahmin`,
+    gain: (n: number) => `+${n}`,
+    // Oyun sonu (KaupholOyunSonu, KaupholOyunSonuOrtak).
+    over: (n: number) => `Oyun bitti · ${n} soru`,
+    winner: 'Kazanan',
+    winners: 'Kazananlar',
+    wonYou: 'Kazandın',
+    wonOne: (name: string) => `${name} kazandı`,
+    wonTwoYou: (name: string) => `${name} ve sen kazandınız`,
+    wonTwo: (a: string, b: string) => `${a} ve ${b} kazandı`,
+    wonMany: (n: number) => `${n} kişi kazandı`,
+    nobody: 'Kazanan yok',
+    pointsLine: (p: number) => `${p} puan`,
+    twoLine: (p: number) => `İkisi de ${p} puan; ortak kazanan`,
+    twoYouLine: (p: number) => `İkiniz de ${p} puan; ortak kazanan`,
+    manyLine: (names: readonly string[], you: boolean) =>
+      `${names.slice(0, -1).join(', ')} ve ${names[names.length - 1]} ${you ? 'eşitsiniz' : 'eşit'}; ortak kazanan`,
+    nobodyLine: 'Kimse puan almadı.',
+    you: 'sen',
+    backToTable: 'Masaya dön',
+    again: 'Yeniden oyna',
+    // The connection error (KaupholHata).
+    connection: 'Bağlantı kurulamadı',
+    // The table's notice of a game left half way (KaupholYarida).
+    abandoned: 'Oyun yarıda kaldı',
+    // Leaving (as Kibrit's).
+    exit: 'Oyundan çık',
+    endGame: 'Oyunu bitir',
+    endTitle: 'Oyunu bitir?',
+    endBody: 'Oyun herkes için biter, masaya dönülür.',
+    leaveTitle: 'Oyundan çık?',
+    leaveBody: 'Masaya dönersin. Oyun diğerleri için sürer.',
+    watchTitle: 'Masaya dön?',
+    watchBody: 'Oyun sürer; masadan yeniden izleyebilirsin.',
+    // On the table while a game runs that the person does not see.
+    running: 'Kaupholl sürüyor',
+    runningPage: 'Kaupholl açık',
   },
   identity: {
     // Mekan's anonymous switch and its sheets (skall tuvali: MekanAnonimGecis, …Erkek,
