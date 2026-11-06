@@ -777,7 +777,14 @@ function BigEmoji({
   const metaRef = useChatMetaRef();
   return (
     <>
-      <RNText maxFontSizeMultiplier={1} style={count === 1 ? KIT_TYPE.emojiOne : KIT_TYPE.emojiFew}>
+      <RNText
+        maxFontSizeMultiplier={1}
+        style={[
+          count === 1 ? KIT_TYPE.emojiOne : KIT_TYPE.emojiFew,
+          // Room on both sides: the last emoji's right edge reaches past the measured width.
+          { paddingHorizontal: SPACING[0.5], includeFontPadding: true },
+        ]}
+      >
         {text.trim()}
       </RNText>
       {time ? (

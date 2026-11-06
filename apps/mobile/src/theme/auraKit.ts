@@ -97,9 +97,11 @@ export const KIT_TYPE = {
   // U19: Mekan's "Mekandasın", 14.
   liveLg: t(600, 14, 18),
   msg: t(500, 15, 21),
-  // A message of emoji only, without a bubble (Telegram Android): one, and two or three.
-  emojiOne: t(500, 40, 48),
-  emojiFew: t(500, 32, 40),
+  // A message of emoji only, without a bubble (Telegram Android): one, and two or three. The
+  // system's face (the emoji come from its colour font, not from ours) and a line 1.35 of the size:
+  // with ours and 1.2, Android cut the emoji's top and right off (the owner's report, 6 Kasım).
+  emojiOne: { fontSize: 40, lineHeight: 54 },
+  emojiFew: { fontSize: 32, lineHeight: 44 },
   day: t(600, 12, 16),
   // A person's name under their face at Masa (`.mem`: 11/14 600).
   member: t(600, 11, 14),
