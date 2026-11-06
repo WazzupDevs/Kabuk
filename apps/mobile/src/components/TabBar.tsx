@@ -17,8 +17,8 @@ import { create } from 'zustand';
 
 import { AuraBand, useGroundSize } from '@/aura/AuraBackground';
 import { AuraTabBar, type AuraTabItem } from '@/aura/AuraTabBar';
-import { ARRIVE_RN, BLURS, TabOpeningsContext } from '@/aura/motion';
-import { labOff, markTabSwitch, useLabOff } from '@/lib/drawLab';
+import { ARRIVE_RN, TabOpeningsContext } from '@/aura/motion';
+import { labOff, markTabSwitch } from '@/lib/drawLab';
 import { haptic } from '@/lib/haptics';
 import { createTabActivity, TabActivityContext } from '@/lib/tabActivity';
 import { createTabOpenings, LEAVE_PREPARE_MS } from '@/lib/tabOpenings';
@@ -29,7 +29,6 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 import { TAB_BAR_GLASS } from '@/theme/glass';
 import { GlassTarget } from '@/components/LiquidGlass';
-import { Dissolve } from './Dissolve';
 
 // The tabs' navigator and the airy look's bar (src/aura/AuraTabBar.tsx, docs/design/aura): the bar
 // floats above the bottom (above the safe area), centred, and shows the focused tab's screen
@@ -151,19 +150,13 @@ export function TabScene({
   const reduce = useReduceMotion();
   const id = useId();
   // Each opening after another tab: the screen's parts hear it and arrive again without a render
-  // (lib/tabOpenings.ts, B2); only the dissolve's `run` renders this scene (not the tab's screen:
-  // its element is the same).
+  // (lib/tabOpenings.ts, B2); a tab switch renders nothing here.
   const [openings] = useState(createTabOpenings);
   // Whether the tab is on screen, for its clocks and polls (lib/tabActivity.ts, B6): no render.
   const [activity] = useState(() => createTabActivity(navigation.isFocused()));
-  const [run, setRun] = useState(0);
-  // Çizim ölçümü (lib/drawLab.ts): the blur dissolve off on its own (`bulanma`, the fade and rise
-  // stay). Production never turns it off.
-  const blurOff = useLabOff('bulanma');
   // The tab's screen arrives each time it is opened (the film's tab switch): from a little below,
-  // faded in on the native driver, its blur clearing on the same curve (Dissolve: drawn natively,
-  // small, every frame, as the film has it). The first opening is the screen's own arrival
-  // (Screen's cascade).
+  // faded in on the native driver, without the film's blur (the owner's call, 6 Kasım). The first
+  // opening is the screen's own arrival (Screen's cascade).
   const [p] = useState(() => new Animated.Value(1));
   useEffect(() => {
     const own = () => useBarMode.setState({ target: id });
@@ -184,7 +177,6 @@ export function TabScene({
       markTabSwitch();
       // Çizim ölçümü's `kademe`: the cascade measured off (its parts in place).
       openings.emit(labOff('kademe') ? 'settle' : 'open');
-      setRun((r) => r + 1);
       if (reduce) return;
       // Çizim ölçümü's `gelis`: the fade and rise off on its own (the screen in place at once).
       if (labOff('gelis')) p.setValue(1);
@@ -227,15 +219,9 @@ export function TabScene({
   const scene = (
     <TabActivityContext.Provider value={activity}>
       <TabOpeningsContext.Provider value={openings}>
-        <Dissolve
-          run={BLURS && !reduce ? run : 0}
-          blur={blurOff ? 0 : MOTION.dissolve.blur}
-          durationMs={MOTION.dissolve.inMs}
-          curve={MOTION.curves.arrive}
-          style={{ flex: 1 }}
-        >
-          <Animated.View style={arrive}>{children}</Animated.View>
-        </Dissolve>
+        {/* No blur on the arrival (the owner's call, 6 Kasım, docs/decisions/cam-kapali.md): the
+            fade and the rise alone, on the native driver. */}
+        <Animated.View style={arrive}>{children}</Animated.View>
       </TabOpeningsContext.Provider>
     </TabActivityContext.Provider>
   );
