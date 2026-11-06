@@ -1,5 +1,11 @@
 # İlerleme
 
+## Devir notu (6 Kasım 2026, revize turu 2, #502)
+
+- #502 birleşti: canlı cam ve sekme bulanıklığı kapalı, geçişler 2× hızlı, kenar solmaları yok (Keşfet haritası hariç); `docs/decisions/cam-kapali.md`. Referanslar Bluesky ve Mattermost, lisans kesin kuralı (CLAUDE.md).
+- Bekleyen öneriler (`docs/decisions/bluesky-karsilastirma.md`): G-5/Ö-1 basma hareketi tuvaldeki gibi (tuvalde 0.96 ile 0.94 çelişkili), Ö-6 klavyeyi parmakla kapatma, Ö-4 sorgu önbelleğini telefonda saklama, Ö-9 Expo 58 (native).
+- Telefonda doğrulanacak: kalan gradyan var mı (görüntüyle), H-3, H-4, G-1–G-4; 1. turdan açık öneriler: balon gölgesi kuyrukta, uzun mesajda ifade çekmecesi.
+
 ## Devir notu (6 Kasım 2026, ekran görüntüsü revize turu 1)
 
 - #499 main'de (onaylı): R-1 Masa kişiler çekmecesi (tuval v119 MasaCekmece*), R-2 "Masadan çıkar" (K-88, `rooms/remove`, kural 5 ve 10 ekleri), R-3 mekan sohbeti üst çubuğu, R-4 mekan adı satırı, H-1 sohbet akışının sona tutunması, H-2 balon ve kuyruğu tek şekil, H-3/H-4 ifade çekmecesi, H-5 büyük emoji.
