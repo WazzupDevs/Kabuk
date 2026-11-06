@@ -51,7 +51,7 @@ export default function ActivitiesScreen() {
   const city = useCity();
   const narrow = useNarrow();
   return (
-    <Screen edges={['top']} refreshable tallFade>
+    <Screen edges={['top']} refreshable>
       {/* U15: the place as an eyebrow over the title (both tabs), 4 apart; 24 to the tabs. */}
       <View style={{ gap: SPACING[1] }}>
         {city.place ? <T v="eyebrow">{tr.activities.fromVenues(city.place.city)}</T> : null}

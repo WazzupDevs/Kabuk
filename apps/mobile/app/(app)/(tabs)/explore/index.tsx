@@ -37,7 +37,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
 import { PullScroll } from '@/components/PullScroll';
 import { Sheet } from '@/components/Sheet';
-import { TabBarFade, useTabBarOverMap, useTabBarSpace } from '@/components/TabBar';
+import { useTabBarOverMap, useTabBarSpace } from '@/components/TabBar';
 import { useActiveTable } from '@/features/checkin/useActiveTable';
 import { ExploreMap } from '@/features/explore/ExploreMap';
 import { useExplorePlace } from '@/features/explore/placeStore';
@@ -134,6 +134,7 @@ export default function ExploreScreen() {
             height={Math.max(screenHeight * MAP_SOLID, insets.top + headerHeight)}
             fade={screenHeight * MAP_FADE}
             direction="down"
+            soft
           />
         </>
       ) : null}
@@ -241,7 +242,6 @@ export default function ExploreScreen() {
             onRefresh={() => Promise.all([venues.refetch(), cities.refetch()])}
           />
         ) : null}
-        {ready && view === 'list' ? <TabBarFade /> : null}
       </View>
     </SafeAreaView>
   );

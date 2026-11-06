@@ -99,20 +99,25 @@ const FADE_STEPS = 10;
 // and the bar does not show; `fade` more of it fades out below (`down`) or above (`up`) the bar.
 // React Native has no mask: the soft edge is the picture in strips, each fainter. `top` and
 // `height` are on the screen (the screen's ground fills the window).
+// The soft edge only where `soft` asks for it (the owner's call, 6 Kasım: the screens' fades at the
+// top and the bottom looked bad in both schemes, docs/decisions/cam-kapali.md): elsewhere a bar's
+// ground ends where the bar does. Keşfet's aura over the map keeps it (a hard edge would cut the map).
 export function AuraBand({
   top,
   height,
   fade,
   direction,
+  soft = false,
 }: {
   top: number;
   height: number;
   fade: number;
   direction: 'down' | 'up';
+  soft?: boolean;
 }) {
   const off = useLabOff('zemin');
   const strip = fade / FADE_STEPS;
-  const strips = Array.from({ length: FADE_STEPS }, (_, i) => ({
+  const strips = Array.from({ length: soft ? FADE_STEPS : 0 }, (_, i) => ({
     top: direction === 'down' ? top + height + i * strip : top - (i + 1) * strip,
     opacity: 1 - (i + 1) / (FADE_STEPS + 1),
   }));

@@ -15,7 +15,6 @@ import { Animated, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { create } from 'zustand';
 
-import { AuraBand, useGroundSize } from '@/aura/AuraBackground';
 import { AuraTabBar, type AuraTabItem } from '@/aura/AuraTabBar';
 import { ARRIVE_RN, TabOpeningsContext } from '@/aura/motion';
 import { labOff, markTabSwitch } from '@/lib/drawLab';
@@ -84,35 +83,6 @@ export function useTabBarSpace(): number {
   if (focused && kept !== space) setKept(space);
   return focused ? space : kept;
 }
-
-// Kenar solması (Aura v65 §4): what scrolls on a tab screen fades out over the 32 above the bar,
-// never cut hard; under the bar the ground hides it. Nothing while the bar is hidden.
-// `tall` is Aktiviteler's (AktivitelerEtkinlik `.fadebot`; the owner's call, 3 Kasım): 150 up from
-// the screen's foot on the canvas's 34 safe area, the ground reached at 70 % of it.
-export function TabBarFade({ tall }: { tall?: boolean }) {
-  const space = useTabBarSpace();
-  const insets = useSafeAreaInsets();
-  // The ground's height, not the window's (the band lines up with it; 3 Kasım, 2.1).
-  const { height } = useGroundSize();
-  if (space === 0) return null;
-  if (tall) {
-    const solid = TALL_FADE * (1 - TALL_FADE_REACH) + insets.bottom - CANVAS_SAFE;
-    return (
-      <AuraBand
-        top={height - solid}
-        height={solid}
-        fade={TALL_FADE * TALL_FADE_REACH}
-        direction="up"
-      />
-    );
-  }
-  const top = height - (space - SPACING[4]);
-  return <AuraBand top={top} height={height - top} fade={TAB_BAR_FADE} direction="up" />;
-}
-const TAB_BAR_FADE = 32;
-const TALL_FADE = 150;
-const TALL_FADE_REACH = 0.7;
-const CANVAS_SAFE = 34;
 
 export function TabBarSpace({ children }: { children: ReactNode }) {
   const insets = useSafeAreaInsets();

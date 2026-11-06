@@ -10,7 +10,7 @@ import {
 import { ScrollView, View } from 'react-native';
 import { type Edge, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AuraBackground, AuraBand } from '@/aura/AuraBackground';
+import { AuraBackground } from '@/aura/AuraBackground';
 import { useTabOpenings } from '@/aura/motion';
 import type { TabOpenings } from '@/lib/tabOpenings';
 import { Reveal } from '@/aura/Reveal';
@@ -19,7 +19,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 import { PullScroll } from '@/components/PullScroll';
 
-import { TabBarFade, useTabBarSpace } from './TabBar';
+import { useTabBarSpace } from './TabBar';
 // Frame by frame with the keyboard (react-native-keyboard-controller): the bar rises with it.
 import { KeyboardAvoidingView, useKeyboardState } from 'react-native-keyboard-controller';
 
@@ -52,8 +52,6 @@ type Props = {
   // Drawn on the ground behind the page, placed against the whole screen (Aura v71: a riso buddy
   // standing in a corner of Gizlilik, Engellenenler).
   backdrop?: ReactNode;
-  // Aktiviteler's tall fade over the tab bar (TabBarFade → `tall`).
-  tallFade?: boolean;
 };
 
 // A scrolling screen on the colour clouds (docs/design/aura) with the theme's side padding. Under
@@ -61,10 +59,10 @@ type Props = {
 // Its parts arrive one after another (the film's cascade), again each time its tab is opened.
 const TOP_FADE = SPACING[5];
 // The footer (U9): 12 above the tab bar, the keyboard or the bottom safe area (46 from the foot on
-// a 34 safe area, 122 over the tab bar), its parts 8 apart; the content fades 32 above it.
+// a 34 safe area, 122 over the tab bar), its parts 8 apart. No fades at the top and the bottom (the
+// owner's call, 6 Kasım): the content ends where the bars begin.
 const FOOTER_LIFT = 12;
 const FOOTER_GAP = 8;
-const FOOTER_FADE = 32;
 // Under the tabs the last row ends 124 from the screen's foot on the canvas's 34 safe area
 // (ekran.css `.scroll-pad`): 90 over the safe area.
 const SCROLL_PAD = 90;
@@ -81,7 +79,6 @@ export function Screen({
   list,
   footer,
   backdrop,
-  tallFade,
 }: Props) {
   const queryClient = useQueryClient();
   const refresh =
@@ -91,16 +88,10 @@ export function Screen({
   const barSpace = useTabBarSpace();
   const insets = useSafeAreaInsets();
   const keyboardUp = useKeyboardState((s) => s.isVisible);
-  // The footer's top on the screen and whether the content above it overflows (its fade).
-  const [bodyTop, setBodyTop] = useState(0);
-  const [footTop, setFootTop] = useState(0);
-  const [overflows, setOverflows] = useState(false);
   const safe: readonly Edge[] = barSpace
     ? (edges ?? ['top', 'left', 'right', 'bottom']).filter((e) => e !== 'bottom')
     : (edges ?? ['top', 'left', 'right', 'bottom']);
-  // Under a fixed top the page fades out softly instead of being cut at the bar's foot (the
-  // owner's report, 28 Ekim); it starts below the fade, so nothing is faded at rest.
-  const [topFoot, setTopFoot] = useState(0);
+  // Under a fixed top the page starts 20 below the bar's foot.
   const content = {
     flexGrow: 1,
     paddingHorizontal: shape.screenPadding,
@@ -114,10 +105,6 @@ export function Screen({
       {backdrop}
       {top ? (
         <View
-          onLayout={(e) => {
-            const { y, height } = e.nativeEvent.layout;
-            setTopFoot(y + height);
-          }}
           // Over the band below it (drawn last): its buttons' shadows reach past its foot and the
           // band's hard top edge cut them (the owner's report, 2 Kasım, 6.8).
           style={{
@@ -131,15 +118,12 @@ export function Screen({
         </View>
       ) : null}
       <KeyboardAvoidingView
-        onLayout={footer ? (e) => setBodyTop(e.nativeEvent.layout.y) : undefined}
         style={{ flex: 1 }}
         // Android is edge-to-edge: the window no longer resizes for the keyboard, so pad here too.
         behavior="padding"
       >
         {!(list || refresh || scrollRef || stickyHeaderIndices) ? (
-          <FixedBody content={content} onOverflow={footer ? setOverflows : undefined}>
-            {cascade(children, openings)}
-          </FixedBody>
+          <FixedBody content={content}>{cascade(children, openings)}</FixedBody>
         ) : refresh && !scrollRef && !stickyHeaderIndices ? (
           <PullScroll
             onRefresh={refresh}
@@ -162,7 +146,6 @@ export function Screen({
         )}
         {footer ? (
           <View
-            onLayout={(e) => setFootTop(e.nativeEvent.layout.y)}
             style={{
               paddingHorizontal: shape.screenPadding,
               gap: FOOTER_GAP,
@@ -177,14 +160,6 @@ export function Screen({
           </View>
         ) : null}
       </KeyboardAvoidingView>
-      {footer && overflows && footTop > 0 ? (
-        <AuraBand top={bodyTop + footTop} height={0} fade={FOOTER_FADE} direction="up" />
-      ) : null}
-      {top && topFoot > 0 ? (
-        <AuraBand top={topFoot} height={0} fade={TOP_FADE} direction="down" />
-      ) : null}
-      {/* Kenar solması (U9, §4): over the tab bar what scrolls fades out, never cut. */}
-      {barSpace && !footer ? <TabBarFade tall={tallFade} /> : null}
     </SafeAreaView>
   );
 }
