@@ -13,10 +13,10 @@
     "leave": [0.4, 0, 1, 1],
     "swap": [0.4, 0, 0.2, 1]
   },
-  "dissolve": { "use": "every screen part comes in and goes out through blur", "blurPx": 12, "risePx": 12, "fromScale": 0.97, "inMs": 450, "outMs": 220 },
-  "stagger": { "listRowMs": 60, "screenPartMs": 70 },
+  "dissolve": { "use": "every screen part comes in and goes out through blur", "blurPx": 12, "risePx": 12, "fromScale": 0.97, "inMs": 240, "outMs": 150 },
+  "stagger": { "listRowMs": 30, "screenPartMs": 35 },
   "tabSwitch": { "oldScreenOutMs": 200, "newScreenInAfterMs": 70, "iconPopFrom": 0.5 },
-  "cardOpen": { "behindScale": 0.94, "behindBlurPx": 14, "contentAfterMs": 300 },
+  "cardOpen": { "behindScale": 0.94, "behindBlurPx": 14, "contentAfterMs": 150 },
   "frostedFirst": { "use": "game cards and pictures appear as frosted glass, then resolve out of a 16 px blur", "resolveAfterMs": 320, "resolveMs": 500 },
   "idle": { "buddyFloatPx": 4, "buddyFloatS": 2.6, "blinkMs": 160, "blinkEveryS": "4 to 6", "auraDriftPx": 30, "auraDriftS": "20 to 28" },
   "reduceMotion": "nothing moves; parts appear at once"

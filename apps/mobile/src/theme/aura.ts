@@ -273,10 +273,12 @@ export const MOTION = {
     leave: [0.4, 0, 1, 1],
     swap: [0.4, 0, 0.2, 1],
   },
-  dissolve: { blur: 12, rise: 12, fromScale: 0.97, inMs: 450, outMs: 220 },
-  stagger: { row: 60, part: 70, max: 8 },
+  // Twice as fast as the film (the owner's call, 6 Kasım: the transitions felt slow; hareket.json
+  // follows, docs/decisions/cam-kapali.md).
+  dissolve: { blur: 12, rise: 12, fromScale: 0.97, inMs: 240, outMs: 150 },
+  stagger: { row: 30, part: 35, max: 5 },
   // A card opening over the screen: its content this long after the ground.
-  cardOpen: { contentAfterMs: 300 },
+  cardOpen: { contentAfterMs: 150 },
   tab: {
     iconPopFrom: 0.5,
     iconInDelay: 60,
