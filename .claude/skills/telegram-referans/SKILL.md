@@ -26,9 +26,13 @@ Telegram native Android'dir; aynı işin React Native ve Expo'da nasıl kuruldu�
 | `github.com/mattermost/mattermost-mobile` | Apache-2.0 | React Native sohbet: kanal ve DM listesi, okunmamış çizgisi, uzun listede performans, tepki ve mesaj menüsü                                                                        |
 
 1. Telegram'daki gibi tamamı klonlanmaz: `git clone --depth 1 --filter=blob:none --sparse <repo> /tmp/<ad>` ve yalnızca gereken klasör (`sparse-checkout set src/...`).
-2. Önce teknik öğrenilir. Kısa bir parça uyarlanırsa lisans gereği dosyanın başına kaynak ve telif satırı yazılır; parça aşağıdaki listeye ve PR açıklamasına bir satırla girer.
+2. Lisanslar izin verse de hiçbir şey kopyalanmaz ve uyarlanmaz (kesin kural, aşağıda). Yalnızca teknik öğrenilir; alınan teknik aşağıdaki listeye ve PR açıklamasına bir satırla yazılır.
 3. Onların bağımlılığı kullanılmak isteniyorsa yeni bağımlılık kuralı geçerlidir: gerekçe önce yazılır.
 4. Görünüşün kaynağı yine aura tuvalidir; bu repolardan görünüş, metin ve ikon alınmaz.
+
+## Lisans (proje sahibinin kesin kuralı, 6 Kasım)
+
+Lisansa takılacak hiçbir şey yapılmaz. Hiçbir referanstan (Telegram, Bluesky, Mattermost ya da başka bir uygulama), lisansı ne olursa olsun, kod, kod parçası, sınıf ya da bileşen yapısı, metin, ikon, görsel ve ses kopyalanmaz, çevrilmez ve uyarlanmaz; telif ya da kaynak satırı gerektiren hiçbir şey repoya girmez. Yalnızca yöntem öğrenilir ve kendi kodumuzla sıfırdan yazılır. Copyleft lisanslı (GPL, AGPL, LGPL, MPL ve benzeri) bağımlılık eklenmez.
 
 ## Alınanlar
 
