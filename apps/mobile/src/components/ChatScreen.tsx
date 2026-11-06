@@ -68,7 +68,7 @@ import { GlassTarget } from '@/components/LiquidGlass';
 import { ChatKindContext } from './chatKind';
 import { ChatMetaContext } from './chatMeta';
 import { metaHiddenAt } from '@/lib/chatMeta';
-import { PopHostContext, usePopHostState } from './popHost';
+import { PopHostContext, PopOpenContext, usePopHostState, usePopOpen } from './popHost';
 import { floatingDay, type StreamDay } from '@/lib/chatDay';
 
 // How close to the end counts as "at the bottom" (a message's last line may sit under the edge).
@@ -981,6 +981,12 @@ function ChatList<T extends ChatListItem>({
     slot?.({ show: metaHidden, count: pending });
   }, [slot, metaHidden, pending]);
 
+  // A held message's layer is open: the keyboard it puts away moves nothing under it.
+  const popOpen = usePopOpen();
+  const popOpenRef = useRef(popOpen);
+  useEffect(() => {
+    popOpenRef.current = popOpen;
+  });
   const renderScroll = useCallback(
     (props: ScrollViewProps) => (
       <KeyboardChatScrollView
@@ -989,9 +995,10 @@ function ChatList<T extends ChatListItem>({
         // At the end it rises with the keyboard; scrolled up it stays (the reader's place).
         keyboardLiftBehavior="whenAtEnd"
         offset={keyboardOffset}
+        freeze={popOpen}
       />
     ),
-    [keyboardOffset],
+    [keyboardOffset, popOpen],
   );
 
   return (
@@ -1077,7 +1084,9 @@ function ChatList<T extends ChatListItem>({
                           }}
                           // A row came or grew (a photo, a quote): at the end it stays at the end.
                           onContentSizeChange={() => {
-                            if (pinned.current && !dragging.current) stayAtEnd();
+                            if (pinned.current && !dragging.current && !popOpenRef.current) {
+                              stayAtEnd();
+                            }
                           }}
                           onViewableItemsChanged={onViewable}
                           viewabilityConfig={VIEWABLE}
@@ -1233,151 +1242,153 @@ export function ChatScreen<T extends ChatListItem>({
       <ChatKindContext.Provider value={wall ?? 'dm'}>
         <ChatBarContext.Provider value={reactions.bar}>
           <PopHostContext.Provider value={pop.host}>
-            <JumpSlotContext.Provider value={setJump}>
-              <SafeAreaView
-                edges={['left', 'right']}
-                style={{ flex: 1, backgroundColor: AURA[scheme].ground }}
-                onTouchStart={reactions.onTouchStart}
-                onLayout={(e) => {
-                  const { width, height } = e.nativeEvent.layout;
-                  setAreaHeight(height);
-                  setCanvas((prev) => wallpaperCanvas(prev, width, height));
-                }}
-              >
-                {/* The stream and what lies under it: what the frosted pills, the message bar and the
+            <PopOpenContext.Provider value={pop.open}>
+              <JumpSlotContext.Provider value={setJump}>
+                <SafeAreaView
+                  edges={['left', 'right']}
+                  style={{ flex: 1, backgroundColor: AURA[scheme].ground }}
+                  onTouchStart={reactions.onTouchStart}
+                  onLayout={(e) => {
+                    const { width, height } = e.nativeEvent.layout;
+                    setAreaHeight(height);
+                    setCanvas((prev) => wallpaperCanvas(prev, width, height));
+                  }}
+                >
+                  {/* The stream and what lies under it: what the frosted pills, the message bar and the
                   down arrow show through their glass. */}
-                <GlassTarget targetId={glassId} backdrop style={StyleSheet.absoluteFill}>
-                  {wall && canvas ? (
-                    <ChatWallpaper
+                  <GlassTarget targetId={glassId} backdrop style={StyleSheet.absoluteFill}>
+                    {wall && canvas ? (
+                      <ChatWallpaper
+                        kind={wall}
+                        canvas={canvas}
+                        source={wallSource}
+                        veil={wall === 'masa'}
+                      />
+                    ) : null}
+                    {wall ? null : <AuraBackground />}
+                    {list ? (
+                      <ChatList
+                        {...list}
+                        testID={testID}
+                        newestKey={newestKey}
+                        newestMine={newestMine}
+                        bottomInset={under}
+                        topInset={topHeight}
+                        endRef={end}
+                        keyboardOffset={bottomPad}
+                        band={
+                          bandUnderBar && wall && canvas ? (
+                            <WallBand
+                              kind={wall}
+                              canvas={canvas}
+                              source={wallSource}
+                              top={0}
+                              // U29 (DmArkadaslik `.msgs`): in a DM the messages fade from 4 above the
+                              // header's pill to 24 under it (104–132 on the board).
+                              height={wall === 'dm' ? topHeight - SPACING[2.5] : topHeight}
+                              fade={wall === 'dm' ? SPACING[7] : SPACING[3]}
+                              direction="down"
+                            />
+                          ) : null
+                        }
+                        // Drawn from the bottom up: its start is the screen's foot.
+                        contentContainerStyle={{
+                          flexGrow: 1,
+                          paddingHorizontal: shape.screenPadding,
+                          paddingTop: SPACING[3] + under,
+                          paddingBottom: SPACING[2] + topHeight,
+                          // Telegram Android: a run's bubbles close together, runs apart (ChatRow).
+                          gap: SPACING[0.5],
+                        }}
+                      />
+                    ) : (
+                      <ChatScroll
+                        testID={testID}
+                        newestKey={newestKey}
+                        newestMine={newestMine}
+                        startAtEnd={startAtEnd}
+                        bottomInset={under}
+                        topInset={topHeight}
+                        endRef={end}
+                        keyboardOffset={bottomPad}
+                        contentContainerStyle={{
+                          flexGrow: 1,
+                          // skall tuvali (skall.css → `.stream`): 16 at the sides, 6 between messages.
+                          paddingHorizontal: shape.screenPadding,
+                          paddingTop: SPACING[2] + topHeight,
+                          paddingBottom: SPACING[3] + under,
+                          gap: SPACING[0.5],
+                        }}
+                      >
+                        {children}
+                      </ChatScroll>
+                    )}
+                  </GlassTarget>
+                  {/* The wallpaper again under the status bar's words and the navigation bar's buttons,
+                  fading into the stream: messages pass under the system bars unseen. */}
+                  {wall && canvas && !(bandUnderBar && list) ? (
+                    <WallBand
                       kind={wall}
                       canvas={canvas}
                       source={wallSource}
-                      veil={wall === 'masa'}
+                      top={0}
+                      height={insets.top}
+                      fade={SPACING[3]}
+                      direction="down"
                     />
                   ) : null}
-                  {wall ? null : <AuraBackground />}
-                  {list ? (
-                    <ChatList
-                      {...list}
-                      testID={testID}
-                      newestKey={newestKey}
-                      newestMine={newestMine}
-                      bottomInset={under}
-                      topInset={topHeight}
-                      endRef={end}
-                      keyboardOffset={bottomPad}
-                      band={
-                        bandUnderBar && wall && canvas ? (
-                          <WallBand
-                            kind={wall}
-                            canvas={canvas}
-                            source={wallSource}
-                            top={0}
-                            // U29 (DmArkadaslik `.msgs`): in a DM the messages fade from 4 above the
-                            // header's pill to 24 under it (104–132 on the board).
-                            height={wall === 'dm' ? topHeight - SPACING[2.5] : topHeight}
-                            fade={wall === 'dm' ? SPACING[7] : SPACING[3]}
-                            direction="down"
-                          />
-                        ) : null
-                      }
-                      // Drawn from the bottom up: its start is the screen's foot.
-                      contentContainerStyle={{
-                        flexGrow: 1,
-                        paddingHorizontal: shape.screenPadding,
-                        paddingTop: SPACING[3] + under,
-                        paddingBottom: SPACING[2] + topHeight,
-                        // Telegram Android: a run's bubbles close together, runs apart (ChatRow).
-                        gap: SPACING[0.5],
-                      }}
+                  {wall && canvas && bottomPad > 0 && areaHeight > 0 ? (
+                    <WallBand
+                      kind={wall}
+                      canvas={canvas}
+                      source={wallSource}
+                      top={areaHeight - bottomPad}
+                      height={bottomPad}
+                      fade={SPACING[3]}
+                      direction="up"
                     />
-                  ) : (
-                    <ChatScroll
-                      testID={testID}
-                      newestKey={newestKey}
-                      newestMine={newestMine}
-                      startAtEnd={startAtEnd}
-                      bottomInset={under}
-                      topInset={topHeight}
-                      endRef={end}
-                      keyboardOffset={bottomPad}
-                      contentContainerStyle={{
-                        flexGrow: 1,
-                        // skall tuvali (skall.css → `.stream`): 16 at the sides, 6 between messages.
-                        paddingHorizontal: shape.screenPadding,
-                        paddingTop: SPACING[2] + topHeight,
-                        paddingBottom: SPACING[3] + under,
-                        gap: SPACING[0.5],
-                      }}
-                    >
-                      {children}
-                    </ChatScroll>
-                  )}
-                </GlassTarget>
-                {/* The wallpaper again under the status bar's words and the navigation bar's buttons,
-                  fading into the stream: messages pass under the system bars unseen. */}
-                {wall && canvas && !(bandUnderBar && list) ? (
-                  <WallBand
-                    kind={wall}
-                    canvas={canvas}
-                    source={wallSource}
-                    top={0}
-                    height={insets.top}
-                    fade={SPACING[3]}
-                    direction="down"
-                  />
-                ) : null}
-                {wall && canvas && bottomPad > 0 && areaHeight > 0 ? (
-                  <WallBand
-                    kind={wall}
-                    canvas={canvas}
-                    source={wallSource}
-                    top={areaHeight - bottomPad}
-                    height={bottomPad}
-                    fade={SPACING[3]}
-                    direction="up"
-                  />
-                ) : null}
-                <View
-                  style={{
-                    position: 'absolute',
-                    left: 0,
-                    right: 0,
-                    top: 0,
-                    paddingTop: insets.top,
-                  }}
-                  onLayout={(e) => setTopHeight(e.nativeEvent.layout.height)}
-                >
-                  {top}
-                </View>
-                {composer ? (
-                  <KeyboardStickyView
-                    offset={{ closed: 0, opened: bottomPad }}
+                  ) : null}
+                  <View
                     style={{
                       position: 'absolute',
                       left: 0,
                       right: 0,
-                      bottom: 0,
-                      paddingBottom: barSpace + bottomPad,
+                      top: 0,
+                      paddingTop: insets.top,
                     }}
-                    onLayout={(e) => setBarHeight(e.nativeEvent.layout.height)}
+                    onLayout={(e) => setTopHeight(e.nativeEvent.layout.height)}
                   >
-                    <ComposerGlassContext.Provider value={glassId}>
-                      {composer}
-                    </ComposerGlassContext.Provider>
-                  </KeyboardStickyView>
-                ) : null}
-                <NewMessages
-                  show={jump.show}
-                  count={jump.count}
-                  bottom={SPACING[3] + under}
-                  keyboardOffset={bottomPad}
-                  onPress={followEnd}
-                />
-                {list ? children : null}
-                {pop.layer}
-              </SafeAreaView>
-            </JumpSlotContext.Provider>
+                    {top}
+                  </View>
+                  {composer ? (
+                    <KeyboardStickyView
+                      offset={{ closed: 0, opened: bottomPad }}
+                      style={{
+                        position: 'absolute',
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        paddingBottom: barSpace + bottomPad,
+                      }}
+                      onLayout={(e) => setBarHeight(e.nativeEvent.layout.height)}
+                    >
+                      <ComposerGlassContext.Provider value={glassId}>
+                        {composer}
+                      </ComposerGlassContext.Provider>
+                    </KeyboardStickyView>
+                  ) : null}
+                  <NewMessages
+                    show={jump.show}
+                    count={jump.count}
+                    bottom={SPACING[3] + under}
+                    keyboardOffset={bottomPad}
+                    onPress={followEnd}
+                  />
+                  {list ? children : null}
+                  {pop.layer}
+                </SafeAreaView>
+              </JumpSlotContext.Provider>
+            </PopOpenContext.Provider>
           </PopHostContext.Provider>
         </ChatBarContext.Provider>
       </ChatKindContext.Provider>

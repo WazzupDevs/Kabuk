@@ -4,6 +4,7 @@ import * as Clipboard from 'expo-clipboard';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import {
   Animated,
+  Keyboard,
   Pressable,
   Text as RNText,
   type TextLayoutEventData,
@@ -120,6 +121,8 @@ const WIDEN_SLACK = 4;
 const CHIP_ALPHA = 0.12;
 const CHIP_ALPHA_ON = 0.22;
 const DOUBLE_TAP_MS = 280;
+// The longest wait for the keyboard to go before a held message is measured anyway.
+const KEYBOARD_AWAY_MS = 450;
 
 export function ChatBubble({
   text,
@@ -157,13 +160,38 @@ export function ChatBubble({
   const holdable = !!onReact || actions.length > 0 || text.length > 0;
   const host = usePopHost();
   const lift = () => {
-    faceRef.current?.measureInWindow((x, y, width, height) => {
-      haptic('grabbed');
-      const at = { x, y, width, height };
-      // On the chat screen's root (popHost.tsx): the stream's cells stay as they are.
-      if (host) host.show((close) => popLayer(at, close));
-      else setPop(at);
-    });
+    // Measured where the bubble stands once the keyboard is away (the layer puts it away, and the
+    // stream moves as it goes: measured before, the faces opened far from the message, at the
+    // screen's top; the owner's report, 6 Kasım). An unmeasured cell is tried again a frame later.
+    const measure = (retry: boolean) =>
+      faceRef.current?.measureInWindow((x, y, width, height) => {
+        if (height <= 0 || width <= 0) {
+          if (retry) requestAnimationFrame(() => measure(false));
+          return;
+        }
+        open({ x, y, width, height });
+      });
+    haptic('grabbed');
+    if (!Keyboard.isVisible()) {
+      measure(true);
+      return;
+    }
+    let done = false;
+    const go = () => {
+      if (done) return;
+      done = true;
+      sub.remove();
+      clearTimeout(timer);
+      requestAnimationFrame(() => requestAnimationFrame(() => measure(true)));
+    };
+    const sub = Keyboard.addListener('keyboardDidHide', go);
+    const timer = setTimeout(go, KEYBOARD_AWAY_MS);
+    Keyboard.dismiss();
+  };
+  const open = (at: PopAnchor) => {
+    // On the chat screen's root (popHost.tsx): the stream's cells stay as they are.
+    if (host) host.show((close) => popLayer(at, close));
+    else setPop(at);
   };
   // Telegram Android's bubble (the owner's call, 30 Ekim): 18 round; on the author's side (left
   // for others, right for the viewer's own) the corners inside a run are tight, and the run's last
