@@ -77,8 +77,7 @@ afterEach(async () => {
 });
 
 afterAll(async () => {
-  // Kaupholl is "Yakında" in content/games.json until its screens come (K-87).
-  await sql`update public.games set is_available = false where id = 'kaupholl'`;
+  await sql`update public.games set is_available = true where id = 'kaupholl'`;
   await sql`delete from public.kaupholl_questions where true`;
   await deleteFixtureVenues(sql);
   await sql.end();
