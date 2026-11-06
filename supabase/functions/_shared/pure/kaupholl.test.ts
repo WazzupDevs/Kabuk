@@ -408,6 +408,15 @@ describe('decideAction', () => {
     );
   });
 
+  it('answers a decimal guess before the card opens like any other (rule 3, T-1)', () => {
+    const g = started();
+    expect(g.state.phase).toBe('card');
+    const step = g.state.step;
+    expect(act(g, 'a', { action: 'guess', step, seq: 1, value: 12.5, lock: false })).toEqual(
+      act(g, 'a', { action: 'guess', step, seq: 1, value: 12, lock: false }),
+    );
+  });
+
   it('rejects a seq outside 1–10.000 and a value with more than 6+1 digits', () => {
     const g = guessing();
     const step = g.state.step;

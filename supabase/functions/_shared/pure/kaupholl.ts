@@ -738,10 +738,6 @@ function guess(
   if (!isSeq(request.seq) || !isGuessValue(request.value) || typeof request.lock !== 'boolean') {
     return { kind: 'error', code: 'bad_request' };
   }
-  // A whole-number question takes no decimal guess (senaryo-kaupholl T-1).
-  if (question(state, secret).decimals === 0 && tenths(request.value) % 10 !== 0) {
-    return { kind: 'error', code: 'bad_request' };
-  }
   const last = secret.guesses[sid];
   const scoped = last && last.step === request.step ? last : undefined;
   const same =
@@ -757,6 +753,11 @@ function guess(
   }
   if (state.phase !== 'guess' || request.step !== state.step || expired(state, now)) {
     return { kind: 'not_applied', reason: 'phase_over' };
+  }
+  // A whole-number question takes no decimal guess (senaryo-kaupholl T-1). Only once the card is
+  // open: before that the answer would tell what kind of question is coming (rule 3).
+  if (state.card?.decimals === 0 && tenths(request.value) % 10 !== 0) {
+    return { kind: 'error', code: 'bad_request' };
   }
   if (scoped?.locked) return { kind: 'not_applied', reason: 'locked' };
   if (scoped && scoped.seq === request.seq) return { kind: 'error', code: 'seq_conflict' };
