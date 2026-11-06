@@ -1,5 +1,11 @@
 # İlerleme
 
+## Devir notu (6 Kasım 2026, Kaupholl'u açmaya kalanlar)
+
+- #494: senaryo düzeltmeleri T-1, T-2, B-1, B-3 main'de; B-2 (kural 10 cümlesi) "onaylandı" bekliyor.
+- Sıradaki: Kaupholl ekranları (`tuval-aktarim`): §6 farkları canlı tuvalde çizildi (sürüm `1793928173-5bae`, 32 `Kauphol*` pano); ekran notları `senaryo-kaupholl.md` §4 (E-1–E-7), sıfır puanda "Kazanan yok".
+- Engel: dev'de `kaupholl_questions` boş; özel depolar (`kaupholl-sorular`, `kaupholl-kontrol`) bu oturumdan görünmüyor. En az 5 doğrulanmış soru `admin:kaupholl-import` ile proje sahibinden; yoksa açma (`available: true`) yapılmaz.
+
 ## Devir notu (6 Kasım 2026, Signum, Kibrit ve Sprengja açıldı)
 
 - Proje sahibinin kararıyla üçü `available: true` (seed); Kaupholl ekranları gelene kadar "Yakında" (§6 panoları tuvalde bekleniyor).
