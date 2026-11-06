@@ -134,14 +134,16 @@ export function WordmarkRow({ small }: { small?: boolean } = {}) {
 const WORDMARK_HEIGHT = 28;
 const WORDMARK_SMALL = 26;
 
-// The venue's name (h3, on two lines when long) and "Mekandasın" (14) with its live dot (U19).
+// The venue's name (h3) and "Mekandasın" (14) with its live dot (U19), on one line at every venue:
+// a long name shrinks to fit rather than wrapping or ending in "…", so the row keeps one place and
+// height whatever the name (the owner's call, 6 Kasım).
 export function VenueNameRow({ name }: { name: string }) {
   return (
     <View
       className="flex-row items-center justify-between"
       style={{ gap: SPACING[3], paddingHorizontal: SPACING[0.5] }}
     >
-      <T v="h3" accessibilityRole="header" testID="venue-name" style={{ flexShrink: 1 }}>
+      <T v="h3" accessibilityRole="header" testID="venue-name" lines={1} fit style={{ flex: 1 }}>
         {name}
       </T>
       <Live large label={tr.venue.here} />
