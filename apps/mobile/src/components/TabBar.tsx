@@ -15,10 +15,9 @@ import { Animated, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { create } from 'zustand';
 
-import { AuraBand, useGroundSize } from '@/aura/AuraBackground';
 import { AuraTabBar, type AuraTabItem } from '@/aura/AuraTabBar';
-import { ARRIVE_RN, BLURS, TabOpeningsContext } from '@/aura/motion';
-import { labOff, markTabSwitch, useLabOff } from '@/lib/drawLab';
+import { ARRIVE_RN, TabOpeningsContext } from '@/aura/motion';
+import { labOff, markTabSwitch } from '@/lib/drawLab';
 import { haptic } from '@/lib/haptics';
 import { createTabActivity, TabActivityContext } from '@/lib/tabActivity';
 import { createTabOpenings, LEAVE_PREPARE_MS } from '@/lib/tabOpenings';
@@ -29,7 +28,6 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 import { TAB_BAR_GLASS } from '@/theme/glass';
 import { GlassTarget } from '@/components/LiquidGlass';
-import { Dissolve } from './Dissolve';
 
 // The tabs' navigator and the airy look's bar (src/aura/AuraTabBar.tsx, docs/design/aura): the bar
 // floats above the bottom (above the safe area), centred, and shows the focused tab's screen
@@ -86,35 +84,6 @@ export function useTabBarSpace(): number {
   return focused ? space : kept;
 }
 
-// Kenar solması (Aura v65 §4): what scrolls on a tab screen fades out over the 32 above the bar,
-// never cut hard; under the bar the ground hides it. Nothing while the bar is hidden.
-// `tall` is Aktiviteler's (AktivitelerEtkinlik `.fadebot`; the owner's call, 3 Kasım): 150 up from
-// the screen's foot on the canvas's 34 safe area, the ground reached at 70 % of it.
-export function TabBarFade({ tall }: { tall?: boolean }) {
-  const space = useTabBarSpace();
-  const insets = useSafeAreaInsets();
-  // The ground's height, not the window's (the band lines up with it; 3 Kasım, 2.1).
-  const { height } = useGroundSize();
-  if (space === 0) return null;
-  if (tall) {
-    const solid = TALL_FADE * (1 - TALL_FADE_REACH) + insets.bottom - CANVAS_SAFE;
-    return (
-      <AuraBand
-        top={height - solid}
-        height={solid}
-        fade={TALL_FADE * TALL_FADE_REACH}
-        direction="up"
-      />
-    );
-  }
-  const top = height - (space - SPACING[4]);
-  return <AuraBand top={top} height={height - top} fade={TAB_BAR_FADE} direction="up" />;
-}
-const TAB_BAR_FADE = 32;
-const TALL_FADE = 150;
-const TALL_FADE_REACH = 0.7;
-const CANVAS_SAFE = 34;
-
 export function TabBarSpace({ children }: { children: ReactNode }) {
   const insets = useSafeAreaInsets();
   const t = AURA.tabBar;
@@ -151,19 +120,13 @@ export function TabScene({
   const reduce = useReduceMotion();
   const id = useId();
   // Each opening after another tab: the screen's parts hear it and arrive again without a render
-  // (lib/tabOpenings.ts, B2); only the dissolve's `run` renders this scene (not the tab's screen:
-  // its element is the same).
+  // (lib/tabOpenings.ts, B2); a tab switch renders nothing here.
   const [openings] = useState(createTabOpenings);
   // Whether the tab is on screen, for its clocks and polls (lib/tabActivity.ts, B6): no render.
   const [activity] = useState(() => createTabActivity(navigation.isFocused()));
-  const [run, setRun] = useState(0);
-  // Çizim ölçümü (lib/drawLab.ts): the blur dissolve off on its own (`bulanma`, the fade and rise
-  // stay). Production never turns it off.
-  const blurOff = useLabOff('bulanma');
   // The tab's screen arrives each time it is opened (the film's tab switch): from a little below,
-  // faded in on the native driver, its blur clearing on the same curve (Dissolve: drawn natively,
-  // small, every frame, as the film has it). The first opening is the screen's own arrival
-  // (Screen's cascade).
+  // faded in on the native driver, without the film's blur (the owner's call, 6 Kasım). The first
+  // opening is the screen's own arrival (Screen's cascade).
   const [p] = useState(() => new Animated.Value(1));
   useEffect(() => {
     const own = () => useBarMode.setState({ target: id });
@@ -184,7 +147,6 @@ export function TabScene({
       markTabSwitch();
       // Çizim ölçümü's `kademe`: the cascade measured off (its parts in place).
       openings.emit(labOff('kademe') ? 'settle' : 'open');
-      setRun((r) => r + 1);
       if (reduce) return;
       // Çizim ölçümü's `gelis`: the fade and rise off on its own (the screen in place at once).
       if (labOff('gelis')) p.setValue(1);
@@ -227,15 +189,9 @@ export function TabScene({
   const scene = (
     <TabActivityContext.Provider value={activity}>
       <TabOpeningsContext.Provider value={openings}>
-        <Dissolve
-          run={BLURS && !reduce ? run : 0}
-          blur={blurOff ? 0 : MOTION.dissolve.blur}
-          durationMs={MOTION.dissolve.inMs}
-          curve={MOTION.curves.arrive}
-          style={{ flex: 1 }}
-        >
-          <Animated.View style={arrive}>{children}</Animated.View>
-        </Dissolve>
+        {/* No blur on the arrival (the owner's call, 6 Kasım, docs/decisions/cam-kapali.md): the
+            fade and the rise alone, on the native driver. */}
+        <Animated.View style={arrive}>{children}</Animated.View>
       </TabOpeningsContext.Provider>
     </TabActivityContext.Provider>
   );

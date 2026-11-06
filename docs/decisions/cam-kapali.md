@@ -1,0 +1,11 @@
+# Canlı cam kapalı (6 Kasım 2026)
+
+Proje sahibinin kararı: akıcılık camdan önce gelir ("uygulama akıcı olsun").
+
+- Sekme çubuğunun camı, kaydırılan içerik çubuğun üstünde solduğu ve altını zemin şeridi kapattığı için yalnızca sabit zemini bulanıklaştırıyordu; görüntü değişmediği hâlde her karede yeniden hesaplanıyordu (`docs/denetim/performans-2026-11.md` → B1, B12).
+- `theme/glass.ts` → `TAB_BAR_GLASS = false`: sekme çubuğu, mesaj çubuğu ve saydam düğmeler (`Frost`) canlı bulanıklık yerine Android 12 öncesi için zaten çizilmiş camsız görünüşü alır. Sekme çubuğu zeminin üstünde kendi dolgusuyla (`AURA.tabBar.fill`) çizilir; camla gördüğü renk korunur. `GlassTarget` düz görünüm olur.
+- Değişen görünüş: mesaj çubuğunun ve saydam düğmelerin arkasından geçen içerik artık bulanık görünmez, düğmenin kendi dolgusu görünür.
+- Yerel modül (`modules/skall-glass`) yerinde kalır; anahtar `true` yapılınca cam geri gelir.
+- Sekme açılışındaki bulanıklık da kapalı (proje sahibi, 6 Kasım): `TabScene` artık `Dissolve` ile sarmaz; ekran yalnızca solarak ve 12 dp yükselerek gelir (`MOTION.dissolve.inMs`, `rise`), native sürücüde. Sekme geçişi bu sahnede render da üretmez. `DissolveView` yerel modülde kullanılmadan durur.
+- Geçişler hızlandı (proje sahibi, 6 Kasım: "çok yavaş"): ekran ve parçaların gelişi 450 → 240 ms, gidişi 220 → 150 ms, sıralı geliş adımı satırda 60 → 30, parçada 70 → 35 ms ve en çok 8 → 5 adım; kartın içeriği 300 → 150 ms sonra. En uzun sekme açılışı yaklaşık 1 sn'den 0,4 sn'ye iner. `MOTION` (`theme/aura.ts`) ve tuvalin kopyası `docs/design/aura/project/hareket.json` birlikte değişti (`aura.test.ts`); canlı tuvaldeki hareket filmi eski hızda kalır.
+- Kenar solmaları kalktı (proje sahibi, 6 Kasım: ekranın üstünden ve altından gelen gradyanlar iki temada da kötü görünüyordu): sabit başlığın altındaki ve sekme çubuğunun üstündeki solma (`TabBarFade`, Aktiviteler'in uzun solması dahil), düğme alanının üstündeki solma ve başlık ya da oyun zemini şeritlerinin kademeli kenarı. Sabit başlıkların düz zemini kalır; içerik başlığın altında keskin biter, sekme çubuğunun çevresinden geçer. Yalnız Keşfet haritasının üstündeki aura haritaya solarak geçer (`AuraBand` → `soft`). Her solma ekranın resminden on şerit çiziyordu; onlar da kalktı.

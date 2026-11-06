@@ -124,7 +124,18 @@ export function AuraTabBar({ items, selected, onPress, glassTarget, opaque = fal
       }}
     >
       {barShadow.node}
-      <View style={[StyleSheet.absoluteFill, { borderRadius: s.height / 2, overflow: 'hidden' }]}>
+      <View
+        style={[
+          StyleSheet.absoluteFill,
+          {
+            borderRadius: s.height / 2,
+            overflow: 'hidden',
+            // Without the glass the bar's own fill lies on the ground, as the glass showed it (the
+            // still ground under the fade); over the map the ground alone.
+            backgroundColor: glass ? undefined : AURA[scheme].ground,
+          },
+        ]}
+      >
         {glass && glassTarget ? (
           <LiquidGlass
             targetId={glassTarget}
@@ -139,7 +150,7 @@ export function AuraTabBar({ items, selected, onPress, glassTarget, opaque = fal
           style={[
             StyleSheet.absoluteFill,
             {
-              backgroundColor: glass ? a.fill : AURA[scheme].ground,
+              backgroundColor: opaque && !glass ? undefined : a.fill,
               borderRadius: s.height / 2,
               borderWidth: AURA.card.edgeWidth,
               borderColor: a.edge,

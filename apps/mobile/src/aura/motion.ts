@@ -1,9 +1,8 @@
 import { createContext, useContext } from 'react';
-import { Easing, Platform } from 'react-native';
+import { Easing } from 'react-native';
 
 import type { TabOpenings } from '@/lib/tabOpenings';
 import { MOTION, type Bezier } from '@/theme/aura';
-import { blursBehind } from '@/theme/glass';
 
 // The motion standard's curves (theme/aura.ts → MOTION) for React Native's Animated, whose native
 // driver plays them off the JavaScript thread and without committing the UI tree each frame
@@ -17,9 +16,6 @@ export const SWAP_RN = bezier(MOTION.curves.swap);
 export function springConfig(s: { stiffness: number; damping: number; mass: number }) {
   return { stiffness: s.stiffness, damping: s.damping, mass: s.mass, useNativeDriver: true };
 }
-
-// Blur is drawn by the system from Android 12; below it the dissolve is a plain fade.
-export const BLURS = blursBehind(Platform.OS, Platform.Version);
 
 // A tab's openings, from TabScene (the tabs' layout) to the screens inside it: a tab's parts arrive
 // again each time it is opened (lib/tabOpenings.ts). One object for the tab's life, so an opening

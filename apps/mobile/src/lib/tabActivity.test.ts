@@ -30,6 +30,6 @@ describe('tab activity (B6)', () => {
   });
 
   it('the catch-up waits out the arrival and its cascade', () => {
-    expect(AFTER_ARRIVAL_MS).toBe(450 + 8 * 70);
+    expect(AFTER_ARRIVAL_MS).toBe(240 + 5 * 35);
   });
 });

@@ -45,7 +45,9 @@ const NativeGlass: ComponentType<GlassProps> | null = android
 
 // A screen the glass may show; elsewhere (iOS) a plain view.
 export function GlassTarget({ targetId, backdrop, style, children }: TargetProps) {
-  return NativeTarget ? (
+  // With the glass off (theme/glass.ts → TAB_BAR_GLASS) no glass looks through it: a plain view, so
+  // no native target tracks what changes under it.
+  return NativeTarget && TAB_BAR_GLASS ? (
     <NativeTarget targetId={targetId} backdrop={backdrop} style={style}>
       {children}
     </NativeTarget>
