@@ -477,8 +477,10 @@ export default function VenueChatScreen() {
         <ChatTopBar
           onBack={() => router.back()}
           split
+          // One line and the live dot, never taller or narrower as writers come (the owner's call,
+          // 6 Kasım).
           title={tr.venueChat.open}
-          subtitle={tr.venue.chatReaders}
+          titleLines={1}
           live
           actions={
             <View className="flex-row items-center" style={{ gap: SPACING[1] }}>
@@ -744,12 +746,17 @@ function Writers({ messages }: { messages: readonly VenueChatMessage[] }) {
     seen.add(key);
     last.push(m);
   }
-  if (last.length === 0) return null;
   return (
-    // In the actions' pill: clear of its round edge.
+    // In the actions' pill: clear of its round edge. Always as wide as three faces, so the title's
+    // pill keeps its size whoever writes.
     <View
       className="flex-row"
-      style={{ paddingLeft: SPACING[2] }}
+      style={{
+        paddingLeft: SPACING[2],
+        width:
+          SPACING[2] + KIT.size.av.sm + (WRITERS - 1) * (KIT.size.av.sm - KIT.size.stackOverlap),
+        justifyContent: 'flex-end',
+      }}
       accessible={false}
       importantForAccessibility="no-hide-descendants"
     >

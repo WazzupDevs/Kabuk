@@ -1820,8 +1820,6 @@ export const tr = {
     withdraw: 'Lobiden çek',
     // The top row (v45: .top): the own photo opens Profil.
     openProfile: 'Profilini aç',
-    // docs/design/aura → Mekan sohbeti: under its name in the bar.
-    chatReaders: 'Mekandaki herkes okur',
     chatEmpty: 'Henüz kimse yazmadı. İlk mesajı sen yaz.',
     chatActive: 'şu an aktif',
     tableHead: (alias: string, people: number, state: string) =>

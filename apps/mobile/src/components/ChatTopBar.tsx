@@ -13,7 +13,8 @@ type Props = {
   // name at 320 dp). Unset: it wraps freely.
   titleLines?: number;
   subtitle?: string;
-  // A live dot before the subtitle (skall tuvali: Mekan sohbeti, `.sub i.live`).
+  // A live dot before the subtitle (skall tuvali: Mekan sohbeti, `.sub i.live`); without a
+  // subtitle, after the title on its line.
   live?: boolean;
   // An avatar (or two) before the name.
   leading?: ReactNode;
@@ -53,15 +54,19 @@ export function ChatTopBar({
       <View className="flex-1">
         {/* Wraps rather than ending in "…" (CLAUDE.md → Ekran davranışı): "12 Ekim'den beri
             arkadaşsınız". */}
-        <T
-          // U25, U26, U28: the name h3 in every bar.
-          v="h3"
-          accessibilityRole="header"
-          lines={titleLines}
-          fit={titleLines !== undefined}
-        >
-          {title}
-        </T>
+        <View className="flex-row items-center" style={{ gap: SPACING[1.5] }}>
+          <T
+            // U25, U26, U28: the name h3 in every bar.
+            v="h3"
+            accessibilityRole="header"
+            lines={titleLines}
+            fit={titleLines !== undefined}
+            style={{ flexShrink: 1 }}
+          >
+            {title}
+          </T>
+          {live && !subtitle ? <PulseDot /> : null}
+        </View>
         {subtitle ? (
           <View className="flex-row items-center" style={{ gap: SPACING[1.5] }}>
             {live ? <PulseDot /> : null}
