@@ -1,9 +1,9 @@
 ---
 name: telegram-referans
-description: Çizim, hız, cam ve bulanıklık, liste, sohbet, klavye ya da hareketle ilgili bir işin nasıl yapılacağına karar vermeden önce Telegram Android'in aynı işi nasıl yaptığına bakmak için kullan.
+description: Çizim, hız, cam ve bulanıklık, liste, sohbet, klavye ya da hareketle ilgili bir işin nasıl yapılacağına karar vermeden önce Telegram Android'in, React Native tarafında da Bluesky social-app'in ve Mattermost Mobile'ın aynı işi nasıl yaptığına bakmak için kullan.
 ---
 
-# Telegram Android referansı
+# Teknik referanslar: Telegram Android, Bluesky social-app, Mattermost Mobile
 
 Proje sahibinin kararı (29 Ekim): bir işin nasıl yapılacağına karar vermeden önce Telegram Android'in aynı işi nasıl yaptığına bakılır ve uygun olan yol alınır. Görünüşün kaynağı aura tuvali olarak kalır; Telegram tekniği ve tuvalin çizmediği davranışı ve hareketi verir.
 
@@ -15,6 +15,20 @@ Proje sahibinin kararı (29 Ekim): bir işin nasıl yapılacağına karar vermed
 3. Öğrenilen: hangi çizim yolu, ne zaman yeniden çizilir, hangi boyutta ve hangi önbellekle, ana iş parçacığında ne kalır.
 4. Telegram GPL-2.0 lisanslıdır: yalnızca teknik öğrenilir. Kod, sınıf yapısı ve metin kopyalanmaz.
 5. Alınan teknik aşağıdaki listeye ve PR açıklamasına bir satırla yazılır.
+
+## React Native referansları (proje sahibinin kararı, 6 Kasım)
+
+Telegram native Android'dir; aynı işin React Native ve Expo'da nasıl kurulduğuna ayrıca bu ikisine bakılır. Sıra: önce Telegram (davranış ve teknik), sonra yığına uyarlamak için bunlar.
+
+| Repo                                      | Lisans     | Ne için                                                                                                                                                                            |
+| ----------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `github.com/bluesky-social/social-app`    | MIT        | Yığını bizimkine en yakın: Expo, Reanimated, expo-image, react-native-keyboard-controller. Ekran iskeleti, profil, bildirim listesi, alt sayfalar, klavye, OTA ve Sentry kullanımı |
+| `github.com/mattermost/mattermost-mobile` | Apache-2.0 | React Native sohbet: kanal ve DM listesi, okunmamış çizgisi, uzun listede performans, tepki ve mesaj menüsü                                                                        |
+
+1. Telegram'daki gibi tamamı klonlanmaz: `git clone --depth 1 --filter=blob:none --sparse <repo> /tmp/<ad>` ve yalnızca gereken klasör (`sparse-checkout set src/...`).
+2. Önce teknik öğrenilir. Kısa bir parça uyarlanırsa lisans gereği dosyanın başına kaynak ve telif satırı yazılır; parça aşağıdaki listeye ve PR açıklamasına bir satırla girer.
+3. Onların bağımlılığı kullanılmak isteniyorsa yeni bağımlılık kuralı geçerlidir: gerekçe önce yazılır.
+4. Görünüşün kaynağı yine aura tuvalidir; bu repolardan görünüş, metin ve ikon alınmaz.
 
 ## Alınanlar
 
