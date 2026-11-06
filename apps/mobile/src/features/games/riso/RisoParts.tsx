@@ -345,7 +345,8 @@ export function Deck({
 }: {
   back: ImageSourcePropType;
   top?: ReactNode;
-  peek: readonly [RisoBuddy, RisoBuddy];
+  // The two buddies peeking over it; none where the panel draws none (Kaupholl's open card).
+  peek?: readonly [RisoBuddy, RisoBuddy];
   // Laid over the deck (Kinshi's guesser's panel).
   children?: ReactNode;
   // How far down from the deck's top that reaches (its measured bottom), when it does.
@@ -373,12 +374,14 @@ export function Deck({
         alignSelf: 'center',
       }}
     >
-      <PeekPair
-        peek={peek}
-        height={d.peek.height}
-        inset={d.peek.inset}
-        rightDrop={d.peek.rightDrop}
-      />
+      {peek ? (
+        <PeekPair
+          peek={peek}
+          height={d.peek.height}
+          inset={d.peek.inset}
+          rightDrop={d.peek.rightDrop}
+        />
+      ) : null}
       <View
         style={{
           position: 'absolute',

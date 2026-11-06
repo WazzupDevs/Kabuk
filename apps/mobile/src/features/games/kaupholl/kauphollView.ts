@@ -302,6 +302,34 @@ export function tapSlot(coins: KauphollCoins, pos: number): KauphollCoins {
 
 export const coinsLeft = (coins: KauphollCoins): number => coins.filter((p) => p === null).length;
 
+// What a press on a slice would do while the finger is still down (KaupholJetonKoy): a coin comes
+// to the slice (drawn at half, `ghost`), and when it is a free one it leaves the wallet (`leaving`).
+export function pressPreview(
+  coins: KauphollCoins,
+  pos: number,
+): { ghost: boolean; leaving: boolean } {
+  const at = (c: KauphollCoins) => c.filter((p) => p === pos).length;
+  const ghost = at(tapSlot(coins, pos)) > at(coins);
+  return { ghost, leaving: ghost && coinsLeft(coins) > 0 };
+}
+
+// The font size that lets `text` fit a field `width` wide (KaupholTahminYaz320: "99.999,9" at 1.3×
+// shrinks, it is never cut). Tabular digits are about .66 em wide, the dot and comma .34; `scale` is
+// the text size the system draws at, `min` the smallest share of `size`. Whole points.
+export function fieldFontSize(
+  text: string,
+  width: number,
+  size: number,
+  scale: number,
+  min = 0.5,
+): number {
+  if (width <= 0) return size;
+  const marks = (text.match(/[.,]/g) ?? []).length;
+  // One more digit for the caret.
+  const em = (text.length - marks + 1) * 0.66 + marks * 0.34;
+  return Math.floor(Math.max(size * min, Math.min(size, width / scale / em)));
+}
+
 // ------------------------------------------------------------------ the scores
 
 // The score table: those still in the game, most points first (seat order between equals); what

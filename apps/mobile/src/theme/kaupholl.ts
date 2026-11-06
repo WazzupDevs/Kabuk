@@ -13,16 +13,25 @@ const F600 = 'PlusJakartaSans_600SemiBold';
 const F500 = 'PlusJakartaSans_500Medium';
 const tabular = (t: TextStyle): TextStyle => ({ ...t, fontVariant: ['tabular-nums'] });
 
+// The guess field's base size and a smaller one that keeps its line in proportion (a number too
+// wide for the field shrinks, KaupholTahminYaz320).
+export const FIELD_SIZE = 32;
+export const fieldType = (size: number): TextStyle => ({
+  fontFamily: F800,
+  fontSize: size,
+  lineHeight: Math.round((size * 38) / FIELD_SIZE),
+  fontVariant: ['tabular-nums'],
+});
+
 export const KAUPHOLL_TYPE = {
   // The question strip (`.qc`): the eyebrow (700/11, 10 % apart) and the question (800/19/24).
   eyebrow: risoType(F700, 11, 14, 0.1),
   question: risoType(F800, 19, 24),
-  // The open card's question (`.card.soru .q`, 800/24/30), its unit chip (700/13) and kick (800/11).
+  // The open card's question (`.card.soru .q`, 800/24/30) and its unit chip (700/13).
   cardQuestion: risoType(F800, 24, 30),
   cardUnit: risoType(F700, 13, 17),
-  kick: risoType(F800, 11, 14, 0.12),
   // The guess field (`.ans .field`, 800/32, tabular) and its unit (`.ans .unit`, 700/15).
-  field: tabular(risoType(F800, 32, 38)),
+  field: fieldType(FIELD_SIZE),
   unit: risoType(F700, 15, 19),
   // Senin tahminin (`.hero`, 800/52/56, −1 apart) and the answer's (`.big-a .hero`, 44/48).
   hero: tabular(risoType(F800, 52, 56, -1 / 52)),
@@ -68,6 +77,8 @@ export const KAUPHOLL = {
     textureY: 0.24,
     eyebrowFade: 0.7,
     gap: 4,
+    // Without the eyebrow, under the keyboard at 320 or above 1× text (`.qc.q13`): 10/14 in.
+    tight: { padY: 10, padX: 14 },
   },
   // The k-soru picture is 1776 × 2368.
   paperRatio: 2368 / 1776,
@@ -77,10 +88,11 @@ export const KAUPHOLL = {
   // The guess row (`.ans`): the field and the unit 64 high, 16 round, 10 apart; the field's edge 2
   // in --accent (--hair once time is up); "En çok 6 hane" 6 under it, the send 10 under that.
   ans: { height: 64, radius: 16, edge: 2, padX: 16, gap: 10, hintGap: 6, sendGap: 10 },
-  // The open card's face (`.card.soru`, on the 296 card, scaled with the deck): the kick 25 down
-  // and 20 high, the question 44 in, 66 down and 150 high, the unit chip 228 down, 28 high, 12 in.
+  // At 320 (`.p320 .ans`): 56 high, 12 in; the hint 2 under, the send 7 under that.
+  ansNarrow: { height: 56, padX: 12, hintGap: 2, sendGap: 7 },
+  // The open card's face (`.card.soru`, on the 296 card, scaled with the deck; nothing in the
+  // yellow band): the question 44 in, 66 down and 150 high, the unit chip 228 down, 28 high, 12 in.
   cardFace: {
-    kick: { top: 25, height: 20 },
     question: { side: 44, top: 66, height: 150 },
     unit: { top: 228, height: 28, padX: 12, fill: 'rgba(20, 16, 22, 0.86)' },
   },
@@ -133,6 +145,16 @@ export const KAUPHOLL = {
     winHalo: '0px 0px 0px 6px rgba(255, 181, 71, 0.25)',
     mine: '#FFFFFF',
     mineGuess: 'rgba(255, 255, 255, 0.7)',
+    // A slice under the finger (`.slot.press`, `.touch`): 98 %, its edge solid in --accent; a 44
+    // disc at 28 % white with a 6 ring at 12 %, 60 % across.
+    pressScale: 0.98,
+    touch: {
+      side: 44,
+      at: 0.6,
+      fill: 'rgba(255, 255, 255, 0.28)',
+      ring: 6,
+      ringFill: 'rgba(255, 255, 255, 0.12)',
+    },
     over: 0.45,
     tagRight: 10,
     tagLift: 13,
@@ -165,6 +187,8 @@ export const KAUPHOLL = {
     coinTop: 4,
     compact: { width: 32, height: 28, coin: 28, coinTop: 2 },
     faceOut: 2,
+    // The coin about to land (`.bet.ghost`) at half.
+    ghost: 0.5,
     badge: { padY: 2, padX: 4, radius: 6, out: 2, below: 4 },
   },
   // The stack when a person's coins do not fit (`.bstack`): 34 high, one coin 30, "×n" 3/5 in, the
@@ -180,6 +204,8 @@ export const KAUPHOLL = {
     gap: 8,
     shadow: { y: 4, blur: 6, color: 'rgba(0, 0, 0, 0.4)' },
     used: 0.3,
+    // The coin leaving for the slice under the finger (`.wallet img.leaving`).
+    leaving: 0.5,
     lockedCoin: 0.55,
     lockedUsed: 0.25,
     lock: { side: 26, ring: 2, ringInk: 'rgba(255, 255, 255, 0.85)', icon: 14 },

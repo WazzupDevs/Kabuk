@@ -34,7 +34,7 @@ import { noteSuccess, useConnection } from '@/lib/connection';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { haptic } from '@/lib/haptics';
 import { KIT } from '@/theme/auraKit';
-import { KAUPHOLL as K, KAUPHOLL_TYPE as KT } from '@/theme/kaupholl';
+import { FIELD_SIZE, fieldType, KAUPHOLL as K, KAUPHOLL_TYPE as KT } from '@/theme/kaupholl';
 import { KROT, krotTimer } from '@/theme/krot';
 import { RISO as R, RISO_PANEL_WIDTH } from '@/theme/riso';
 import { DarkGameScope, useTheme } from '@/theme/ThemeProvider';
@@ -82,6 +82,7 @@ import {
   compactBoard,
   editGuess,
   endWords,
+  fieldFontSize,
   formatGuess,
   guessValue,
   type KauphollTable,
@@ -90,6 +91,7 @@ import {
   laneStart,
   laneSubmit,
   type LaneSend,
+  pressPreview,
   rawOf,
   readKauphollResult,
   readKauphollState,
@@ -118,9 +120,9 @@ export function kauphollMode(room: Room): KauphollMode {
   return null;
 }
 
-// Which buddies peek over the deck (the panels as drawn): the closed card, the open one.
+// Which buddies peek over the deck (the panels as drawn): the closed card; the open one has none
+// (KaupholSoruAcildi).
 const CLOSED: readonly [RisoBuddy, RisoBuddy] = ['d2fbb5', 'f280a5'];
-const OPEN: readonly [RisoBuddy, RisoBuddy] = ['1a80a9', '9c96bd'];
 
 // Each phase's whole time (the capsule's stage).
 const PHASE_SECONDS: Record<KauphollPhase, number> = {
@@ -881,27 +883,21 @@ function QuestionPage({
   );
 }
 
-// The open card on the deck (the question and its unit): the player's "Tahmin yaz" under it.
+// Soru açıldı (KaupholSoruAcildi): the open card on the deck (the question and "Cevap: <birim>"),
+// the time begun; the player's "Tahmin yaz" under it.
 function PlayCard({ foot, ...shared }: Shared & { foot: ReactNode }) {
   const { state } = shared;
   return (
     <Page
       testID="kaupholl-open-card"
-      status={guessStrip(shared, tr.kaupholl.writeTitle, tr.kaupholl.writeLine)}
+      status={guessStrip(shared, tr.kaupholl.openedTitle, tr.kaupholl.openedLine)}
       actions={foot}
       cover={shared.cover}
     >
       <View style={{ opacity: shared.offline ? K.board.dim : 1 }}>
         <Deck
           back={kauphollArt.back}
-          peek={OPEN}
-          top={
-            <CardFace
-              kick={tr.kaupholl.question(state.round + 1, state.rounds)}
-              question={state.card?.text ?? ''}
-              unit={state.card?.unit ?? ''}
-            />
-          }
+          top={<CardFace question={state.card?.text ?? ''} unit={state.card?.unit ?? ''} />}
         />
       </View>
     </Page>
@@ -936,10 +932,12 @@ function GuessWatch(shared: Shared) {
   );
 }
 
-// Tahmin yaz (KaupholTahminYaz, KaupholSureDoldu): the question, the field with its unit, "En çok 6
-// hane" and "Tahmini gönder" right under it, with the keyboard open. Dots are drawn between
-// thousands; a whole-number question's keyboard has no comma (T-1). Once the time is up the field
-// is off and the recorded guess stands.
+// Tahmin yaz (KaupholTahminYaz, KaupholTahminYaz320, KaupholSureDoldu): the question, the field with
+// its unit, "En çok 6 hane" and "Tahmini gönder" right under it, with the system's number keyboard
+// open. Dots are drawn between thousands; a whole-number question's keyboard has no comma (T-1). A
+// number too wide for the field shrinks, never "…". At 320 or above 1× text (`tight`) the time
+// is on one line and the question has no eyebrow; at 320 the sides are 16 and the field 56 high.
+// Once the time is up the field is off and the recorded guess stands.
 function WriteScreen({
   raw,
   decimals,
@@ -964,6 +962,14 @@ function WriteScreen({
   const { colors } = useTheme();
   const { c } = useKit();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const fs = useFontScale();
+  const narrow = width < K.narrowBelow;
+  const tight = narrow || fs > 1;
+  const A = narrow ? K.ansNarrow : K.ans;
+  const [fieldWidth, setFieldWidth] = useState(0);
+  const fieldText = formatGuess(raw);
+  const fieldSize = fieldFontSize(fieldText, fieldWidth, FIELD_SIZE, fs);
   return (
     <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
       <View testID="kaupholl-write-screen" style={{ flex: 1 }}>
@@ -973,16 +979,26 @@ function WriteScreen({
             flex: 1,
             paddingTop: insets.top,
             paddingBottom: insets.bottom + SPACING[2],
-            paddingHorizontal: KIT.size.side,
+            paddingHorizontal: narrow ? K.narrowSide : KIT.size.side,
           }}
         >
           <View style={{ gap: SPACING[2.5] }}>
             {shared.top}
-            <Strip
-              clock={shared.clock}
-              title={off ? tr.kaupholl.timeUp : tr.kaupholl.writeTitle}
-              line={note ?? tr.kaupholl.writeLine}
-            />
+            {tight && !note ? (
+              <OneLineStrip
+                stage={shared.clock.stage}
+                clock={shared.clock.text}
+                clockLabel={shared.clock.label}
+                late={shared.clock.late}
+                title={off ? tr.kaupholl.timeUp : tr.kaupholl.writeTitle}
+              />
+            ) : (
+              <Strip
+                clock={shared.clock}
+                title={off ? tr.kaupholl.timeUp : tr.kaupholl.writeTitle}
+                line={note ?? tr.kaupholl.writeLine}
+              />
+            )}
           </View>
           <ScrollView
             bounces={false}
@@ -1001,16 +1017,18 @@ function WriteScreen({
             <QuestionStrip
               eyebrow={tr.kaupholl.question(state.round + 1, state.rounds)}
               question={state.card?.text ?? ''}
+              tight={tight}
             />
             <View style={{ marginTop: K.belowQuestion.field }}>
               <GuessRow
                 unit={state.card?.unit ?? ''}
+                narrow={narrow}
                 field={
-                  <FieldBox off={off}>
+                  <FieldBox off={off} narrow={narrow} onWidth={setFieldWidth}>
                     <TextInput
                       testID="kaupholl-field"
                       accessibilityLabel={tr.kaupholl.fieldLabel}
-                      value={formatGuess(raw)}
+                      value={fieldText}
                       onChangeText={onChange}
                       editable={!off && !shared.offline}
                       autoFocus={!off}
@@ -1020,20 +1038,20 @@ function WriteScreen({
                       maxFontSizeMultiplier={1.3}
                       cursorColor={colors.accent}
                       selectionColor={colors.accent}
-                      style={[KT.field, { color: off ? c.muted : c.ink, padding: 0 }]}
+                      style={[fieldType(fieldSize), { color: off ? c.muted : c.ink, padding: 0 }]}
                     />
                   </FieldBox>
                 }
               />
             </View>
             {off ? null : (
-              <View style={{ marginTop: K.ans.hintGap, paddingHorizontal: SPACING[1] }}>
+              <View style={{ marginTop: A.hintGap, paddingHorizontal: SPACING[1] }}>
                 <T v="fine" color={tooLong ? KIT.danger : undefined}>
                   {tr.kaupholl.maxDigits}
                 </T>
               </View>
             )}
-            <View style={{ marginTop: K.ans.sendGap, gap: SPACING[2] }}>{send}</View>
+            <View style={{ marginTop: A.sendGap, gap: SPACING[2] }}>{send}</View>
           </ScrollView>
         </View>
       </View>
@@ -1120,6 +1138,8 @@ function BoardScreen(shared: Shared) {
         ? { coins: server.coins, seq: server.seq, locked: server.locked }
         : null;
   const [local, setLocal] = useState<KauphollCoins | null>(null);
+  // The slice under the finger (KaupholJetonKoy): its coin about to land, the wallet's first leaving.
+  const [pressing, setPressing] = useState<number | null>(null);
   const lane = useLane<KauphollCoins>({
     send: (s) =>
       kauphollApi.bet(roomId, state.step, s.seq, s.payload, s.lock).then((answer) => {
@@ -1169,6 +1189,7 @@ function BoardScreen(shared: Shared) {
     haptic('selection');
     void lane.submit(next, false).then(done, done);
   };
+  const preview = pressing !== null && playing && !locked ? pressPreview(coins, pressing) : null;
   const title = timeUp ? tr.kaupholl.timeUp : tr.kaupholl.betTitle;
   const line = timeUp ? tr.kaupholl.timeUpBet : locked ? tr.kaupholl.waiting : tr.kaupholl.rule;
   const status = (
@@ -1191,7 +1212,7 @@ function BoardScreen(shared: Shared) {
     <>
       <FootError error={place.error} />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: R.footGap }}>
-        <Wallet left={coinsLeft(coins)} locked={locked} />
+        <Wallet left={coinsLeft(coins)} locked={locked} leaving={preview?.leaving} />
         <Btn
           testID="kaupholl-bet-done"
           label={tr.kaupholl.betDone}
@@ -1237,6 +1258,15 @@ function BoardScreen(shared: Shared) {
                     : undefined
                 }
                 onTap={playing ? tap : undefined}
+                press={
+                  playing
+                    ? {
+                        pos: locked || offline ? null : pressing,
+                        ghost: preview?.ghost ? me : undefined,
+                        onChange: setPressing,
+                      }
+                    : undefined
+                }
                 disabled={locked || offline}
                 answerText=""
               />
@@ -1702,7 +1732,8 @@ function capitalFirst(s: string): string {
 
 // Oyun sonu (KaupholOyunSonu, KaupholOyunSonuOrtak): the chest with the winners (two or three
 // sharing), "Oyun bitti · 5 soru", who won and their points, the scores; Masaya dön, and the
-// owner's Yeniden oyna. When nobody scored there is no winner (T-2): "Kazanan yok", no faces.
+// owner's Yeniden oyna. When nobody scored there is no winner (T-2): "Kazanan yok" under the
+// chest alone (KaupholKazananYok): no faces, no line, everyone's 0 below.
 function End({
   roomId,
   result,
@@ -1728,12 +1759,12 @@ function End({
   const words = endWords(result, me);
   const named = (sid: string) => (sid === me ? tr.kaupholl.you : nameOf(faces, sid));
   let title: string;
-  let note: string;
+  let note: string | null;
   let heroes: string[] = [];
   switch (words.kind) {
     case 'nobody':
       title = tr.kaupholl.nobody;
-      note = tr.kaupholl.nobodyLine;
+      note = null;
       break;
     case 'one':
       title = words.you ? tr.kaupholl.wonYou : tr.kaupholl.wonOne(nameOf(faces, words.sid));
@@ -1809,9 +1840,11 @@ function End({
         <T v="display" center accessibilityRole="header">
           {title}
         </T>
-        <T v="fine" ink center>
-          {note}
-        </T>
+        {note ? (
+          <T v="fine" ink center>
+            {note}
+          </T>
+        ) : null}
       </View>
       <ScoreTable faces={faces} rows={rows} />
     </ScenePage>

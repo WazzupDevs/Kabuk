@@ -1677,6 +1677,10 @@ export const tr = {
     open: 'Kartı aç',
     cardClosed: 'Soru kartı, kapalı',
     cardOpen: (question: string, unit: string) => `Soru kartı: ${question} Birim: ${unit}`,
+    // KaupholSoruAcildi: the open card, the time begun; the unit chip on the card.
+    openedTitle: 'Soru açıldı',
+    openedLine: 'Tahmin süresi başladı',
+    cardUnit: (unit: string) => `Cevap: ${unit}`,
     watcherNote: 'Gözlemcisin; tahmin yazmaz, jeton yatırmazsın.',
     // Tahmin yaz (KaupholTahminYaz).
     writeTitle: 'Tahminini yaz',
@@ -1749,7 +1753,6 @@ export const tr = {
     twoYouLine: (p: number) => `İkiniz de ${p} puan; ortak kazanan`,
     manyLine: (names: readonly string[], you: boolean) =>
       `${names.slice(0, -1).join(', ')} ve ${names[names.length - 1]} ${you ? 'eşitsiniz' : 'eşit'}; ortak kazanan`,
-    nobodyLine: 'Kimse puan almadı.',
     you: 'sen',
     backToTable: 'Masaya dön',
     again: 'Yeniden oyna',
