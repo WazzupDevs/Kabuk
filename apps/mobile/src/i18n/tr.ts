@@ -802,6 +802,16 @@ export const tr = {
   },
   games: {
     minPlayers: (n: number) => `En az ${n} kişi`,
+    // Every game's pre-game page (GameLobby): how many play under the name, the hint and the
+    // watchers' card.
+    range: (min: number, max: number) => `${min}–${max} kişi`,
+    hintOwner: 'Herkes hazırsa oyunu başlat.',
+    hintGuest: 'Oyunu masa sahibi başlatır.',
+    players: 'Oyuncular',
+    count: (n: number) => `${n} kişi`,
+    watchers: 'Gözlemciler',
+    watch: 'Gözlemci ol',
+    play: 'Oyuna katıl',
     endGame: 'Oyunu bitir',
     turn: (n: number, total: number) => `Tur ${n}/${total}`,
     // The turn clock, "0:37".
@@ -938,7 +948,7 @@ export const tr = {
     timeLeftLabel: (clock: string) => `Kalan süre ${clock}`,
     name: 'Vampir Köylü',
     whoPlays: 'Kimler oynuyor',
-    rules: ['5 ile 12 kişi', 'Gizli roller', 'Gece ve gündüz'],
+    rules: ['Gizli roller', 'Gece ve gündüz'],
     players: 'Oyuncular',
     watchers: 'Gözlemciler',
     watchersNote: 'İzler, puan almaz.',

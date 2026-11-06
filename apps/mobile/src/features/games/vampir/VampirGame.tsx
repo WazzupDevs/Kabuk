@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Image } from 'expo-image';
 import { readPregame } from '@shared/gameFrame.ts';
 import {
   readVampirResult,
@@ -8,12 +7,11 @@ import {
   type VampirResult,
   wonGame,
 } from '@shared/vampir.ts';
+import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { ScrollView, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { View } from 'react-native';
 
-import { AuraBackground } from '@/aura/AuraBackground';
-import { Btn, Glass, Round, T, Tag } from '@/aura/kit';
+import { Btn, T } from '@/aura/kit';
 import { Button } from '@/components/Button';
 import { Sheet } from '@/components/Sheet';
 import { roomKeys, type TablePerson } from '@/features/rooms/queries';
@@ -21,13 +19,18 @@ import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { roomsApi, vampirApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
-import { AURA } from '@/theme/aura';
 import { KIT } from '@/theme/auraKit';
-import { RISO as R } from '@/theme/riso';
-import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 import { TABLE, TABLE_INK as INK, TABLE_SHADOW } from '@/theme/vampirTable';
 
+import {
+  GameLobby,
+  LobbyCard,
+  type LobbyPerson,
+  LobbyPeople,
+  LobbyRules,
+  LobbyWatchers,
+} from '../GameLobby';
 import { GlassBtn, RingedFace, type SeatMark } from './RoundTable';
 import { VAMPIR_POSTER } from './roleArt';
 import { Confetti, type Faces, Face, nameOf } from './VampirParts';
@@ -112,6 +115,8 @@ export function VampirGame({
         owner={owner}
         onClose={() => (owner ? endGame.mutate() : onHide())}
         closing={endGame.isPending}
+        closeError={endGame.error}
+        onChat={() => router.push({ pathname: '/room-chat/[id]', params: { id: room.id } })}
       />
     );
   }
@@ -184,6 +189,8 @@ function Pregame({
   owner,
   onClose,
   closing,
+  closeError,
+  onChat,
 }: {
   roomId: string;
   state: unknown;
@@ -191,9 +198,9 @@ function Pregame({
   owner: boolean;
   onClose: () => void;
   closing: boolean;
+  closeError: unknown;
+  onChat: () => void;
 }) {
-  const { scheme } = useTheme();
-  const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const picks = readPregame(state)?.picks ?? {};
   const everyone = [...faces.people.keys()];
@@ -212,149 +219,51 @@ function Pregame({
     mutationFn: () => vampirApi.start(roomId),
     onSettled: reread,
   });
-  const failed = pick.error ?? start.error;
-  // Two even columns, the same in every count (the owner's report, 29 Ekim).
-  const list = (sids: string[]) => {
-    const rows: string[][] = [];
-    for (let i = 0; i < sids.length; i += 2) rows.push(sids.slice(i, i + 2));
-    return (
-      <View style={{ gap: LIST_GAP }}>
-        {rows.map((row, i) => (
-          <View key={i} style={{ flexDirection: 'row', gap: KIT.size.rowGap }}>
-            {[0, 1].map((j) => {
-              const s = row[j];
-              return (
-                <View
-                  key={j}
-                  style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}
-                >
-                  {s ? (
-                    <>
-                      <Face faces={faces} sid={s} size="sm" />
-                      <View style={{ flex: 1 }}>
-                        <T v="fine" strong ink lines={1} fit>
-                          {nameOf(faces, s)}
-                        </T>
-                      </View>
-                    </>
-                  ) : null}
-                </View>
-              );
-            })}
-          </View>
-        ))}
-      </View>
-    );
-  };
+  const person = (s: string): LobbyPerson => ({
+    key: s,
+    face: <Face faces={faces} sid={s} size="sm" />,
+    name: nameOf(faces, s),
+    me: s === faces.me,
+  });
   return (
-    <View testID="vampir-pregame" style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
-      <AuraBackground />
-      {/* Still: it scrolls only when it does not fit (the largest text), without a bounce. */}
-      <ScrollView
-        bounces={false}
-        overScrollMode="never"
-        showsVerticalScrollIndicator={false}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{
-          flexGrow: 1,
-          paddingTop: insets.top + SPACING[3],
-          paddingHorizontal: KIT.size.side,
-          paddingBottom: SPACING[6],
-          gap: KIT.size.rowGap,
-        }}
-      >
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.rowGap }}>
-          <Round
-            icon="back"
-            label={owner ? tr.vampir.closePage : tr.vampir.backToTable}
-            loading={closing}
-            onPress={onClose}
-            testID="vampir-pregame-close"
-          />
-          <Image
-            source={VAMPIR_POSTER}
-            style={{
-              width: R.poster.width,
-              height: R.poster.height,
-              borderRadius: R.poster.radius,
-            }}
-            contentFit="cover"
-            accessibilityIgnoresInvertColors
-          />
-          <View style={{ flex: 1 }}>
-            <T v="h3">{tr.vampir.name}</T>
-            <T v="fine">{tr.vampir.whoPlays}</T>
-          </View>
-        </View>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: KIT.size.chipGap }}>
-          {tr.vampir.rules.map((r) => (
-            <Tag key={r} tone="purple" label={r} />
-          ))}
-        </View>
-        <Glass pad="pad" style={{ gap: KIT.size.rowGap }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'baseline',
-              justifyContent: 'space-between',
-            }}
-          >
-            <T v="h3">{tr.vampir.players}</T>
-            <T v="fine">{tr.vampir.count(players.length)}</T>
-          </View>
-          {list(players)}
-        </Glass>
-        <Glass pad="pad" style={{ gap: KIT.size.rowGap }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: KIT.size.rowGap }}>
-            <View style={{ flex: 1 }}>
-              <T v="h3">{tr.vampir.watchers}</T>
-              <T v="fine">{tr.vampir.watchersNote}</T>
-            </View>
-            <Btn
-              sm
-              variant="glassy"
-              testID="vampir-watch"
-              label={watching ? tr.vampir.play : tr.vampir.watch}
-              loading={pick.isPending}
-              onPress={() => pick.mutate()}
-            />
-          </View>
-          {watchers.length > 0 ? list(watchers) : null}
-        </Glass>
-        <T v="fine">{tr.vampir.how}</T>
-      </ScrollView>
-      <View
-        style={{
-          paddingHorizontal: KIT.size.side,
-          paddingTop: SPACING[2],
-          paddingBottom: insets.bottom + SPACING[4],
-          gap: SPACING[2],
-        }}
-      >
-        {failed ? (
-          <T v="fine" color={KIT.danger} center>
-            {errorMessage(failed)}
-          </T>
-        ) : null}
-        <T v="fine" center>
-          {!owner
-            ? tr.vampir.hintGuest
-            : enough
-              ? tr.vampir.hintOwner
-              : tr.vampir.needs(VAMPIR.minPlayers)}
-        </T>
-        {owner ? (
-          <Btn
-            block
-            testID="vampir-start"
-            label={tr.vampir.start}
-            disabled={!enough}
-            loading={start.isPending}
-            onPress={() => start.mutate()}
-          />
-        ) : null}
-      </View>
-    </View>
+    <GameLobby
+      testID="vampir-pregame"
+      game="vampir"
+      poster={VAMPIR_POSTER}
+      name={tr.vampir.name}
+      close={{
+        label: owner ? tr.vampir.closePage : tr.vampir.backToTable,
+        onPress: onClose,
+        loading: closing,
+        testID: 'vampir-pregame-close',
+      }}
+      onChat={onChat}
+      chips={tr.vampir.rules}
+      foot={{
+        owner,
+        warning: enough ? null : tr.vampir.needs(VAMPIR.minPlayers),
+        error: pick.error ?? start.error ?? closeError,
+        start: {
+          label: tr.vampir.start,
+          testID: 'vampir-start',
+          loading: start.isPending,
+          onPress: () => start.mutate(),
+        },
+      }}
+    >
+      <LobbyCard title={tr.games.players} count={tr.games.count(players.length)}>
+        <LobbyPeople people={players.map(person)} />
+      </LobbyCard>
+      <LobbyWatchers
+        note={tr.vampir.watchersNote}
+        watching={watching}
+        loading={pick.isPending}
+        onPress={() => pick.mutate()}
+        testID="vampir-watch"
+        people={watchers.map(person)}
+      />
+      <LobbyRules text={tr.vampir.how} />
+    </GameLobby>
   );
 }
 
@@ -483,4 +392,3 @@ function End({
   );
 }
 const WINNER_GAP = 6;
-const LIST_GAP = 6;
