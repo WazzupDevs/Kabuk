@@ -16,12 +16,9 @@ import { upperTr } from '@shared/trText.ts';
 import { router } from 'expo-router';
 import { Image } from 'expo-image';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
-import { AuraBackground } from '@/aura/AuraBackground';
-import { CapIcon } from '@/aura/CapIcon';
-import { Btn, Chip, Glass, T, Tag, useKit } from '@/aura/kit';
+import { Btn, Glass, T, Tag, useKit } from '@/aura/kit';
 import { Loader } from '@/components/Loader';
 import { Sheet } from '@/components/Sheet';
 import { roomKeys, type TablePerson } from '@/features/rooms/queries';
@@ -33,12 +30,12 @@ import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { haptic } from '@/lib/haptics';
 import { KIT } from '@/theme/auraKit';
 import { gradientStyle } from '@/theme/gradient';
-import { RISO as R, RISO_PANEL_WIDTH } from '@/theme/riso';
+import { RISO as R } from '@/theme/riso';
 import { SPRENGJA as S, SPRENGJA_TYPE as ST, sprengjaRing } from '@/theme/sprengja';
 import { DarkGameScope, useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
-import { Buddy, ChatRound, Deck, Face, type Faces, GameTopBar, nameOf } from '../riso/RisoParts';
+import { ChatRound, Deck, Face, type Faces, GameTopBar, nameOf } from '../riso/RisoParts';
 import type { RisoBuddy } from '../riso/risoArt';
 import { PhasePill, ReadyChip } from '../sahtekar/KrotParts';
 import {
@@ -55,6 +52,15 @@ import {
   ScenePage,
   ScoreTable,
 } from './SprengjaParts';
+import {
+  GameLobby,
+  LobbyActions,
+  LobbyCard,
+  type LobbyPerson,
+  LobbyPeople,
+  LobbyRules,
+  LobbyWatchers,
+} from '../GameLobby';
 import { sprengjaArt } from './sprengjaArt';
 import {
   blastBuzz,
@@ -792,9 +798,9 @@ function HaltedScreen({ roomId, state, faces, top, offline, cover }: Shared) {
 
 // ------------------------------------------------------------------ Oyuncular
 
-// Oyuncular (SprengjaOyuncular): the poster, the rounds, the throwing order (the owner shuffles
-// it), Kelime kuralları, the watchers with "Gözlemci ol", how it plays; the owner's Oyunu başlat
-// for 3 to 8 players.
+// Oyuncular (SprengjaOyuncular): GameLobby's frame; the throwing order (the owner shuffles it),
+// Kelime kuralları, the watchers with "Gözlemci ol", how it plays; the owner's Oyunu başlat for 3
+// to 8 players.
 function Pregame({
   roomId,
   state,
@@ -817,11 +823,6 @@ function Pregame({
   onRules: () => void;
 }) {
   const queryClient = useQueryClient();
-  const { colors } = useTheme();
-  const { c } = useKit();
-  const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
-  const k = Math.min(1, width / RISO_PANEL_WIDTH);
   const picks = readPregame(state)?.picks ?? {};
   const everyone = [...faces.people.keys()];
   const watchers = everyone.filter((s) => picks[s] === 'obs');
@@ -849,195 +850,88 @@ function Pregame({
     mutationFn: () => sprengjaApi.start(roomId),
     onSettled: reread,
   });
-  const failed = pick.error ?? shuffle.error ?? start.error ?? closeError;
-  const chips = (sids: string[], numbered: boolean) =>
-    sids.length > 0 ? (
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-        {sids.map((s, i) => (
-          <View
-            key={s}
-            style={{
-              height: R.person.height,
-              paddingLeft: R.person.padLeft,
-              paddingRight: R.person.padRight,
-              borderRadius: R.person.height / 2,
-              backgroundColor: c.raised,
-              borderWidth: KIT.size.edge,
-              borderColor: s === faces.me ? colors.accent : c.raisedEdge,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: R.person.gap,
-            }}
-          >
-            {numbered ? (
-              <Text
-                maxFontSizeMultiplier={1.3}
-                style={[ST.seatNo, { color: c.ink, minWidth: S.seatNo, textAlign: 'center' }]}
-              >
-                {i + 1}
-              </Text>
-            ) : null}
-            <Face faces={faces} sid={s} size={R.person.face} />
-            <T v="fine" strong ink>
-              {nameOf(faces, s)}
-            </T>
-          </View>
-        ))}
-      </View>
-    ) : null;
-  const B = S.pregameBuddy;
+  const person = (s: string, i?: number): LobbyPerson => ({
+    key: s,
+    face: <Face faces={faces} sid={s} size={R.person.face} />,
+    name: nameOf(faces, s),
+    me: s === faces.me,
+    mark: i === undefined ? undefined : String(i + 1),
+  });
   return (
-    <View testID="sprengja-pregame" style={{ flex: 1 }}>
-      <AuraBackground />
-      <ScrollView
-        bounces={false}
-        overScrollMode="never"
-        showsVerticalScrollIndicator={false}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{
-          flexGrow: 1,
-          paddingTop: insets.top,
-          paddingHorizontal: KIT.size.side,
-          paddingBottom: SPACING[2],
-          gap: R.gap,
-        }}
+    <GameLobby
+      testID="sprengja-pregame"
+      game="sprengja"
+      poster={sprengjaArt.poster}
+      name={tr.sprengja.name}
+      close={{
+        label: owner ? tr.sprengja.endGame : tr.sprengja.backToTable,
+        onPress: onClose,
+        loading: closing,
+        testID: 'sprengja-pregame-close',
+      }}
+      onChat={onChat}
+      chips={[
+        tr.sprengja.rounds(roundsFor(Math.max(SPRENGJA.minPlayers, players.length))),
+        tr.sprengja.hiddenTime,
+        tr.sprengja.clockwise,
+      ]}
+      foot={{
+        owner,
+        warning: !enough
+          ? tr.sprengja.needs(SPRENGJA.minPlayers)
+          : !fits
+            ? tr.sprengja.tooMany(SPRENGJA.maxPlayers)
+            : null,
+        error: pick.error ?? shuffle.error ?? start.error ?? closeError,
+        start: {
+          label: tr.sprengja.start,
+          testID: 'sprengja-start',
+          loading: start.isPending,
+          onPress: () => start.mutate(),
+        },
+      }}
+    >
+      <LobbyCard
+        title={tr.sprengja.order}
+        count={tr.sprengja.orderCount(players.length, watchers.length)}
       >
-        <GameTopBar
-          close={{
-            label: owner ? tr.sprengja.endGame : tr.sprengja.backToTable,
-            onPress: onClose,
-            loading: closing,
-            testID: 'sprengja-pregame-close',
-          }}
-          right={<ChatRound onPress={onChat} />}
-        />
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: R.poster.gap }}>
-          <Image
-            source={sprengjaArt.poster}
-            style={{
-              width: R.poster.width,
-              height: R.poster.height,
-              borderRadius: R.poster.radius,
-            }}
-            contentFit="cover"
-            accessibilityIgnoresInvertColors
-          />
-          <View style={{ flex: 1 }}>
-            <T v="title">{tr.sprengja.name}</T>
-            <T v="fine">{tr.sprengja.players}</T>
-          </View>
-        </View>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-          <Chip
-            label={tr.sprengja.rounds(roundsFor(Math.max(SPRENGJA.minPlayers, players.length)))}
-          />
-          <Chip label={tr.sprengja.hiddenTime} />
-          <Chip label={tr.sprengja.clockwise} />
-        </View>
-        <Glass radius={R.box.radius} style={boxStyle}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: R.box.gap }}>
-            <View style={{ flex: 1 }}>
-              <T v="h3">{tr.sprengja.order}</T>
-            </View>
-            <T v="fine">{tr.sprengja.orderCount(players.length, watchers.length)}</T>
-          </View>
-          {chips(players, true)}
-        </Glass>
-        <View style={{ flexDirection: 'row', gap: SPACING[2.5] }}>
-          {owner ? (
-            <Btn
-              sm
-              variant="glassy"
-              icon="shuffle"
-              testID="sprengja-shuffle"
-              label={tr.sprengja.shuffle}
-              loading={shuffle.isPending}
-              onPress={() => shuffle.mutate()}
-              style={{ flex: 1 }}
-            />
-          ) : null}
+        <LobbyPeople people={players.map((s, i) => person(s, i))} />
+      </LobbyCard>
+      <LobbyActions>
+        {owner ? (
           <Btn
             sm
             variant="glassy"
-            icon="info"
-            testID="sprengja-pregame-rules"
-            label={tr.sprengja.rules}
-            onPress={onRules}
+            icon="shuffle"
+            testID="sprengja-shuffle"
+            label={tr.sprengja.shuffle}
+            loading={shuffle.isPending}
+            onPress={() => shuffle.mutate()}
             style={{ flex: 1 }}
           />
-        </View>
-        <Glass radius={R.box.radius} style={boxStyle}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: R.box.gap }}>
-            <CapIcon name="eye" color={c.ink} />
-            <View style={{ flex: 1 }}>
-              <T v="h3">{tr.sprengja.watchers}</T>
-              <T v="fine">{tr.sprengja.watchersNote}</T>
-            </View>
-            <Btn
-              sm
-              variant="glassy"
-              testID="sprengja-watch"
-              label={watching ? tr.sprengja.play : tr.sprengja.watch}
-              loading={pick.isPending}
-              onPress={() => pick.mutate()}
-            />
-          </View>
-          {chips(watchers, false)}
-        </Glass>
-        <Glass radius={R.box.radius} style={boxStyle}>
-          <T v="fine" ink>
-            {tr.sprengja.how}
-          </T>
-        </Glass>
-        <View style={{ flexGrow: 1, minHeight: B.height * k - B.below }}>
-          <Buddy
-            buddy={B.buddy}
-            height={B.height * k}
-            style={{ right: B.right, bottom: -B.below, transform: [{ rotate: B.turn }] }}
-          />
-        </View>
-      </ScrollView>
-      <View
-        style={{
-          paddingHorizontal: KIT.size.side,
-          paddingTop: SPACING[2],
-          paddingBottom: insets.bottom + R.footBottom,
-          gap: R.gap,
-        }}
-      >
-        {failed ? (
-          <T v="fine" color={KIT.danger} center>
-            {errorMessage(failed)}
-          </T>
         ) : null}
-        <T v="fine" center>
-          {!owner
-            ? tr.sprengja.hintGuest
-            : !enough
-              ? tr.sprengja.needs(SPRENGJA.minPlayers)
-              : !fits
-                ? tr.sprengja.tooMany(SPRENGJA.maxPlayers)
-                : tr.sprengja.hintOwner}
-        </T>
-        {owner ? (
-          <Btn
-            block
-            testID="sprengja-start"
-            label={tr.sprengja.start}
-            disabled={!enough || !fits}
-            loading={start.isPending}
-            onPress={() => start.mutate()}
-          />
-        ) : null}
-      </View>
-    </View>
+        <Btn
+          sm
+          variant="glassy"
+          icon="info"
+          testID="sprengja-pregame-rules"
+          label={tr.sprengja.rules}
+          onPress={onRules}
+          style={{ flex: 1 }}
+        />
+      </LobbyActions>
+      <LobbyWatchers
+        note={tr.sprengja.watchersNote}
+        watching={watching}
+        loading={pick.isPending}
+        onPress={() => pick.mutate()}
+        testID="sprengja-watch"
+        people={watchers.map((s) => person(s))}
+      />
+      <LobbyRules text={tr.sprengja.how} />
+    </GameLobby>
   );
 }
-const boxStyle = {
-  paddingVertical: R.box.padY,
-  paddingHorizontal: R.box.padX,
-  gap: R.box.gap,
-} as const;
 
 // The owner's shuffled order on the pre-game page (game_state.pregame.order), if any.
 function pregameOrder(state: unknown): string[] {

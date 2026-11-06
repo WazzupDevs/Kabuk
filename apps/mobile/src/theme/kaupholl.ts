@@ -52,9 +52,6 @@ export const KAUPHOLL_TYPE = {
   // The chips' legend (`.leg`, 500/12/16) and the waiting pill (`.wait`, 600/15/20).
   legend: risoType(F500, 12, 16),
   wait: risoType(F600, 15, 20),
-  // The pre-game page's numbers (800/12) and its warning rows (`.warn`, `.err`: 600/13/17).
-  seatNo: tabular(risoType(F800, 12, 15)),
-  warn: risoType(F600, 13, 17),
   // The score table (`.tr`, 600/15/20): this question's gain (700/13) and the points (800/16).
   row: risoType(F600, 15, 20),
   gain: tabular(risoType(F700, 13, 17)),
@@ -106,12 +103,11 @@ export const KAUPHOLL = {
   // The waiting pill (`.wait`): 48 high, 24 round, the spinner 18, 10 apart.
   wait: { height: 48, gap: 10, spinner: 18 },
   // The buddy peeking beside the guess (Gönderildi: 104 high, 24 in, −6°; Süre doldu: 110, 30 in,
-  // 7°) and over "Kimse tahmin yazmadı" (130, −5°); on the pre-game page (96, 16 in, 14 under, 6°).
+  // 7°) and over "Kimse tahmin yazmadı" (130, −5°).
   buddy: {
     sent: { height: 104, side: 24, turn: '-6deg' },
     late: { height: 110, side: 30, turn: '7deg' },
     none: { height: 130, turn: '-5deg' },
-    pregame: { height: 96, side: 16, below: 14, turn: '6deg' },
   },
   // The board (`.tahta`): 22 round, the k-tahta baize stretched to it, 18/16 in, 6 between the
   // slices; compact 14/12; at 320 14/10. Locked a little darker, and the other slices' odds paler.
@@ -216,10 +212,6 @@ export const KAUPHOLL = {
   oneLine: { capsule: { width: 40, height: 60 }, gap: 10 },
   // The connection error (`.errbox`): 40 in, 22 round, 18/16 in, 8 apart.
   error: { side: 40, radius: 22, padY: 18, padX: 16, gap: 8 },
-  // The pre-game page's rows: the warning and the error (`.warn`, `.err`): 10/14 in, 16 round, 8
-  // apart; the order's numbers 14 wide.
-  warn: { padY: 10, padX: 14, radius: 16, gap: 8 },
-  seatNo: 14,
   // The scenes (`.scene.ks`, the k-kasa chest): over the end of a question 250, the end 300; the
   // words at 322 and 372 down the panel.
   scene: { summary: 250, end: 300, summaryContent: 322, endContent: 372 },

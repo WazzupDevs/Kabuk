@@ -17,8 +17,7 @@ import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
-import { CapIcon } from '@/aura/CapIcon';
-import { Btn, Chip, Glass, T, Tag, useKit } from '@/aura/kit';
+import { Btn, Glass, T, Tag, useKit } from '@/aura/kit';
 import { Loader } from '@/components/Loader';
 import { Sheet } from '@/components/Sheet';
 import { StageFit } from '@/features/games/GameStage';
@@ -67,9 +66,18 @@ import { KIT } from '@/theme/auraKit';
 import { KINSHI as K, kinshiScene } from '@/theme/kinshi';
 import { SIGNUM as S, SIGNUM_PEEK_PAIRS as PEEK_PAIRS } from '@/theme/signum';
 import { gradientStyle } from '@/theme/gradient';
-import { DarkGameScope, useTheme } from '@/theme/ThemeProvider';
+import { DarkGameScope } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
+import {
+  GameLobby,
+  LobbyActions,
+  LobbyCard,
+  type LobbyPerson,
+  LobbyPeople,
+  LobbyRules,
+  LobbyWatchers,
+} from '../GameLobby';
 import { signumArt } from './signumArt';
 import {
   BlackTag,
@@ -877,9 +885,6 @@ function Teams({
   onChat: () => void;
 }) {
   const queryClient = useQueryClient();
-  const { colors } = useTheme();
-  const { c } = useKit();
-  const insets = useSafeAreaInsets();
   const [captainsOpen, setCaptainsOpen] = useState(false);
   const { picks, page } = readSignumPage(state);
   const everyone = [...faces.people.keys()];
@@ -929,42 +934,23 @@ function Teams({
     answerOffer.error ??
     closeError;
   const busy = pick.isPending;
-  const markOf = (s: string): ReactNode => {
+  const markOf = (s: string): string => {
     const team = picks[s];
-    if (team !== 'a' && team !== 'b') return null;
-    if (page.captains[team] === s) return <SeatMark label={tr.signum.captain} strong />;
-    if (page.candidates[team].includes(s)) return <SeatMark label={tr.signum.candidate} />;
-    if (page.offers[team] === s) return <SeatMark label={tr.signum.offered} />;
-    return null;
+    if (team !== 'a' && team !== 'b') return '';
+    if (page.captains[team] === s) return tr.signum.captain;
+    if (page.candidates[team].includes(s)) return tr.signum.candidate;
+    if (page.offers[team] === s) return tr.signum.offered;
+    return '';
   };
-  const people = (sids: string[]) =>
-    sids.length > 0 ? (
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-        {sids.map((s) => (
-          <View
-            key={s}
-            style={{
-              height: K.person.height,
-              paddingLeft: K.person.padLeft,
-              paddingRight: K.person.padRight,
-              borderRadius: K.person.height / 2,
-              backgroundColor: c.raised,
-              borderWidth: KIT.size.edge,
-              borderColor: s === faces.me ? colors.accent : c.raisedEdge,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: K.person.gap,
-            }}
-          >
-            <Face faces={faces} sid={s} size={K.person.face} />
-            <T v="fine" strong ink>
-              {nameOf(faces, s)}
-            </T>
-            {markOf(s)}
-          </View>
-        ))}
-      </View>
-    ) : null;
+  const person = (s: string): LobbyPerson => {
+    const seat = markOf(s);
+    return {
+      key: s,
+      face: <Face faces={faces} sid={s} size={K.person.face} />,
+      name: seat ? `${nameOf(faces, s)} · ${seat}` : nameOf(faces, s),
+      me: s === faces.me,
+    };
+  };
   const teamBox = (team: SignumTeam, sids: string[]) => (
     <TeamBox
       key={team}
@@ -975,91 +961,81 @@ function Teams({
       disabled={busy}
       onJoin={() => pick.mutate(team)}
     >
-      {people(sids)}
+      <LobbyPeople people={sids.map(person)} />
     </TeamBox>
   );
   const offered = myTeam && page.offers[myTeam] === faces.me ? myTeam : null;
   const candidate = myTeam ? page.candidates[myTeam].includes(faces.me) : false;
   const isCaptain = myTeam ? page.captains[myTeam] === faces.me : false;
   return (
-    <View testID="signum-teams" style={{ flex: 1 }}>
-      <AuraBackground />
-      <ScrollView
-        bounces={false}
-        overScrollMode="never"
-        showsVerticalScrollIndicator={false}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{
-          flexGrow: 1,
-          paddingTop: insets.top,
-          paddingHorizontal: KIT.size.side,
-          paddingBottom: SPACING[2],
-          gap: K.summary.gap,
-        }}
-      >
-        <TopBar
-          close={{
-            label: owner ? tr.signum.endGame : tr.signum.backToTable,
-            onPress: onClose,
-            loading: closing,
-            testID: 'signum-teams-close',
-          }}
-          middle={null}
-          right={{ chat: onChat }}
-        />
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: K.poster.gap }}>
-          <Image
-            source={signumArt.poster}
-            style={{
-              width: K.poster.width,
-              height: K.poster.height,
-              borderRadius: K.poster.radius,
-            }}
-            contentFit="cover"
-            accessibilityIgnoresInvertColors
-          />
-          <View style={{ flex: 1 }}>
-            <T v="title">{tr.signum.name}</T>
-            <T v="fine">{tr.signum.teams}</T>
+    <GameLobby
+      testID="signum-teams"
+      game="signum"
+      poster={signumArt.poster}
+      name={tr.signum.name}
+      close={{
+        label: owner ? tr.signum.endGame : tr.signum.backToTable,
+        onPress: onClose,
+        loading: closing,
+        testID: 'signum-teams-close',
+      }}
+      onChat={onChat}
+      chips={tr.signum.rules}
+      foot={{
+        owner,
+        warning: !enough
+          ? tr.signum.needs(TEAM_MIN_PLAYERS)
+          : !captains
+            ? tr.signum.needsCaptains
+            : null,
+        error: failed,
+        start: {
+          label: tr.signum.start,
+          testID: 'signum-start',
+          loading: start.isPending,
+          busy: shuffle.isPending,
+          onPress: () => start.mutate(),
+        },
+      }}
+    >
+      {teamBox('a', a)}
+      {teamBox('b', b)}
+      {unpicked.length > 0 ? (
+        <LobbyCard title={tr.signum.unpicked} note={tr.signum.unpickedNote}>
+          <LobbyPeople people={unpicked.map(person)} />
+        </LobbyCard>
+      ) : null}
+      {offered ? (
+        <Glass radius={K.box.radius} style={boxStyle} testID="signum-offer">
+          <View>
+            <T v="h3">{tr.signum.offerTitle}</T>
+            <T v="fine">{tr.signum.offerBody[offered]}</T>
           </View>
-        </View>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-          {tr.signum.rules.map((r) => (
-            <Chip key={r} label={r} />
-          ))}
-        </View>
-        {teamBox('a', a)}
-        {teamBox('b', b)}
-        {offered ? (
-          <Glass radius={K.box.radius} style={boxStyle} testID="signum-offer">
-            <View>
-              <T v="h3">{tr.signum.offerTitle}</T>
-              <T v="fine">{tr.signum.offerBody[offered]}</T>
-            </View>
-            <View style={{ flexDirection: 'row', gap: K.footGap }}>
-              <Btn
-                sm
-                variant="glassy"
-                testID="signum-offer-decline"
-                label={tr.signum.decline}
-                disabled={answerOffer.isPending}
-                loading={answerOffer.isPending && answerOffer.variables === false}
-                onPress={() => answerOffer.mutate(false)}
-                style={{ flex: 1 }}
-              />
-              <Btn
-                sm
-                testID="signum-offer-accept"
-                label={tr.signum.accept}
-                disabled={answerOffer.isPending}
-                loading={answerOffer.isPending && answerOffer.variables === true}
-                onPress={() => answerOffer.mutate(true)}
-                style={{ flex: 1 }}
-              />
-            </View>
-          </Glass>
-        ) : null}
-        <View style={{ flexDirection: 'row', gap: K.footGap }}>
+          <View style={{ flexDirection: 'row', gap: K.footGap }}>
+            <Btn
+              sm
+              variant="glassy"
+              testID="signum-offer-decline"
+              label={tr.signum.decline}
+              disabled={answerOffer.isPending}
+              loading={answerOffer.isPending && answerOffer.variables === false}
+              onPress={() => answerOffer.mutate(false)}
+              style={{ flex: 1 }}
+            />
+            <Btn
+              sm
+              testID="signum-offer-accept"
+              label={tr.signum.accept}
+              disabled={answerOffer.isPending}
+              loading={answerOffer.isPending && answerOffer.variables === true}
+              onPress={() => answerOffer.mutate(true)}
+              style={{ flex: 1 }}
+            />
+          </View>
+        </Glass>
+      ) : null}
+      {owner || (myTeam && !isCaptain) ? (
+        <LobbyActions>
           {owner ? (
             <>
               <Btn
@@ -1083,7 +1059,7 @@ function Teams({
                 style={{ flex: 1 }}
               />
             </>
-          ) : myTeam && !isCaptain ? (
+          ) : (
             <Btn
               sm
               variant="glassy"
@@ -1094,106 +1070,19 @@ function Teams({
               onPress={() => volunteer.mutate(!candidate)}
               style={{ flex: 1 }}
             />
-          ) : null}
-        </View>
-        <Glass radius={K.box.radius} style={boxStyle}>
-          <T v="fine" ink>
-            {tr.signum.how}
-          </T>
-        </Glass>
-        <Glass radius={K.box.radius} style={boxStyle}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: K.box.gap }}>
-            <CapIcon name="eye" color={c.ink} />
-            <View style={{ flex: 1 }}>
-              <T v="h3">{tr.signum.watchers}</T>
-              <T v="fine">{tr.signum.watchersNote}</T>
-            </View>
-            <Btn
-              sm
-              variant="glassy"
-              testID="signum-watch"
-              label={tr.signum.watch}
-              disabled={busy || mine === 'obs'}
-              loading={pick.isPending && pick.variables === 'obs'}
-              onPress={() => pick.mutate('obs')}
-            />
-          </View>
-          {people(watchers)}
-        </Glass>
-        {unpicked.length > 0 ? (
-          <Glass radius={K.box.radius} style={boxStyle}>
-            <View>
-              <T v="h3">{tr.signum.unpicked}</T>
-              <T v="fine">{tr.signum.unpickedNote}</T>
-            </View>
-            {people(unpicked)}
-          </Glass>
-        ) : null}
-        <View style={{ flexGrow: 1, minHeight: TEAMS_BUDDY.height }}>
-          <Buddy
-            buddy={PEEK_PAIRS.near[0]}
-            height={TEAMS_BUDDY.height}
-            style={{
-              right: TEAMS_BUDDY.right,
-              bottom: -TEAMS_BUDDY.below,
-              transform: [{ rotate: TEAMS_BUDDY.turn }],
-            }}
-          />
-        </View>
-      </ScrollView>
-      <View
-        style={{
-          paddingHorizontal: KIT.size.side,
-          paddingTop: SPACING[2],
-          paddingBottom: insets.bottom + K.footBottom,
-          gap: K.summary.gap,
-        }}
-      >
-        {failed ? (
-          <T v="fine" color={KIT.danger} center>
-            {errorMessage(failed)}
-          </T>
-        ) : null}
-        {!enough || !captains ? (
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: K.warn.gap,
-              paddingVertical: K.warn.padY,
-              paddingHorizontal: K.warn.padX,
-              borderRadius: K.warn.radius,
-              backgroundColor: colors.warnSoft,
-            }}
-          >
-            <CapIcon name="warn" color={colors.onWarnSoft} />
-            <View style={{ flex: 1 }}>
-              <T v="fine" strong color={colors.onWarnSoft}>
-                {!enough ? tr.signum.needs(TEAM_MIN_PLAYERS) : tr.signum.needsCaptains}
-              </T>
-            </View>
-          </View>
-        ) : null}
-        {owner ? (
-          <>
-            <T v="fine" center>
-              {tr.signum.hintOwner}
-            </T>
-            <Btn
-              block
-              testID="signum-start"
-              label={tr.signum.start}
-              disabled={!enough || !captains || shuffle.isPending}
-              loading={start.isPending}
-              onPress={() => start.mutate()}
-            />
-          </>
-        ) : (
-          <T v="fine" center>
-            {tr.signum.hintGuest}
-          </T>
-        )}
-      </View>
+          )}
+        </LobbyActions>
+      ) : null}
+      <LobbyWatchers
+        note={tr.signum.watchersNote}
+        watching={false}
+        disabled={busy || mine === 'obs'}
+        loading={pick.isPending && pick.variables === 'obs'}
+        onPress={() => pick.mutate('obs')}
+        testID="signum-watch"
+        people={watchers.map(person)}
+      />
+      <LobbyRules text={tr.signum.how} />
       {owner ? (
         <CaptainsSheet
           visible={captainsOpen}
@@ -1204,7 +1093,7 @@ function Teams({
           page={page}
         />
       ) : null}
-    </View>
+    </GameLobby>
   );
 }
 const boxStyle = {
@@ -1212,8 +1101,6 @@ const boxStyle = {
   paddingHorizontal: K.box.padX,
   gap: K.box.gap,
 } as const;
-// Takımlar's buddy (`right:16px;bottom:-14px;height:96px;rotate(6deg)`).
-const TEAMS_BUDDY = { height: 96, right: 16, below: 14, turn: '6deg' } as const;
 
 // A team's box: its bar, name and headcount, "Katıl" in the team's colour, its people.
 function TeamBox({
@@ -1235,13 +1122,11 @@ function TeamBox({
 }) {
   const tone = useTeamTone(team);
   return (
-    <Glass radius={K.box.radius} style={boxStyle}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: K.box.gap }}>
-        <TeamBar team={team} />
-        <View style={{ flex: 1 }}>
-          <T v="h3">{tr.signum.team[team]}</T>
-        </View>
-        <T v="fine">{tr.signum.count(count)}</T>
+    <LobbyCard
+      title={tr.signum.team[team]}
+      count={tr.signum.count(count)}
+      icon={<TeamBar team={team} />}
+      right={
         <Btn
           sm
           testID={`signum-join-${team}`}
@@ -1252,9 +1137,10 @@ function TeamBox({
           loading={loading}
           onPress={onJoin}
         />
-      </View>
+      }
+    >
       {children}
-    </Glass>
+    </LobbyCard>
   );
 }
 

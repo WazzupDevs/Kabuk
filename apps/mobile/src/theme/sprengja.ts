@@ -26,8 +26,6 @@ export const SPRENGJA_TYPE = {
   rule: risoType(F500, 14, 20),
   ruleBold: risoType(F800, 14, 20),
   ruleNo: risoType(F800, 12, 15),
-  // The order's numbers on the pre-game page (800/12).
-  seatNo: { ...risoType(F800, 12, 15), fontVariant: ['tabular-nums'] } as TextStyle,
   // A score row (`.tr`, 600/15/20) and its points (`.pt`, 800/16, tabular).
   row: risoType(F600, 15, 20),
   points: { ...risoType(F800, 16, 20), fontVariant: ['tabular-nums'] } as TextStyle,
@@ -163,10 +161,6 @@ export const SPRENGJA = {
   halted: { radius: 22, padY: 12, padX: 16 },
   // The rules sheet: the number 26 round with a soft edge, 12 before the words, 12 between rules.
   rules: { no: 26, gap: 12 },
-  // Oyuncular: the buddy at the foot 90 high, 16 in, 14 under, turned 6°; the order's numbers 14
-  // wide.
-  pregameBuddy: { buddy: '1a80a9', right: 16, below: 14, height: 90, turn: '6deg' },
-  seatNo: 14,
   // The connection error (`.err`, Aura VampirHata in the game's colours): 40 in, 24 round, 22/20/20
   // in, the mark 40, its words 12 under it, the button 16 under them; the screen dimmed under it.
   error: { side: 40, radius: 24, padTop: 22, padX: 20, padBottom: 20, mark: 40, gap: 12 },

@@ -13,14 +13,12 @@ import {
   teamOfTurn,
 } from '@shared/tabuGame.ts';
 import { router } from 'expo-router';
-import { Image } from 'expo-image';
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
-import { CapIcon } from '@/aura/CapIcon';
-import { Btn, Chip, Glass, T, useKit } from '@/aura/kit';
+import { Btn, Glass, T, useKit } from '@/aura/kit';
 import { Reveal } from '@/aura/Reveal';
 import { Sheet } from '@/components/Sheet';
 import { StageFit } from '@/features/games/GameStage';
@@ -43,6 +41,14 @@ import {
 import { DarkGameScope, useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
+import {
+  GameLobby,
+  LobbyActions,
+  LobbyCard,
+  type LobbyPerson,
+  LobbyPeople,
+  LobbyWatchers,
+} from '../GameLobby';
 import { kinshiArt, type KinshiTimer } from './kinshiArt';
 import {
   Buddy,
@@ -919,9 +925,6 @@ function Teams({
   onChat: () => void;
 }) {
   const queryClient = useQueryClient();
-  const { colors } = useTheme();
-  const { c } = useKit();
-  const insets = useSafeAreaInsets();
   const picks = readPregame(state)?.picks ?? {};
   const everyone = [...faces.people.keys()];
   const of = (p: 'a' | 'b' | 'obs') => everyone.filter((s) => picks[s] === p);
@@ -952,33 +955,12 @@ function Teams({
   });
   const failed = pick.error ?? shuffle.error ?? start.error ?? closeError;
   const busy = pick.isPending;
-  const people = (sids: string[]) =>
-    sids.length > 0 ? (
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-        {sids.map((s) => (
-          <View
-            key={s}
-            style={{
-              height: K.person.height,
-              paddingLeft: K.person.padLeft,
-              paddingRight: K.person.padRight,
-              borderRadius: K.person.height / 2,
-              backgroundColor: c.raised,
-              borderWidth: KIT.size.edge,
-              borderColor: s === faces.me ? colors.accent : c.raisedEdge,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: K.person.gap,
-            }}
-          >
-            <Face faces={faces} sid={s} size={K.person.face} />
-            <T v="fine" strong ink>
-              {nameOf(faces, s)}
-            </T>
-          </View>
-        ))}
-      </View>
-    ) : null;
+  const person = (s: string): LobbyPerson => ({
+    key: s,
+    face: <Face faces={faces} sid={s} size={K.person.face} />,
+    name: nameOf(faces, s),
+    me: s === faces.me,
+  });
   const teamBox = (team: 'a' | 'b', sids: string[]) => (
     <TeamBox
       key={team}
@@ -989,155 +971,70 @@ function Teams({
       disabled={busy}
       onJoin={() => pick.mutate(team)}
     >
-      {people(sids)}
+      <LobbyPeople people={sids.map(person)} />
     </TeamBox>
   );
   return (
-    <View testID="kinshi-teams" style={{ flex: 1 }}>
-      <AuraBackground />
-      <ScrollView
-        bounces={false}
-        overScrollMode="never"
-        showsVerticalScrollIndicator={false}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{
-          flexGrow: 1,
-          paddingTop: insets.top,
-          paddingHorizontal: KIT.size.side,
-          paddingBottom: SPACING[2],
-          gap: K.summary.gap,
-        }}
-      >
-        <TopBar
-          close={{
-            label: owner ? tr.kinshi.endGame : tr.kinshi.backToTable,
-            onPress: onClose,
-            loading: closing,
-            testID: 'kinshi-teams-close',
-          }}
-          score={null}
-          onChat={onChat}
-        />
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: K.poster.gap }}>
-          <Image
-            source={kinshiArt.poster}
-            style={{
-              width: K.poster.width,
-              height: K.poster.height,
-              borderRadius: K.poster.radius,
-            }}
-            contentFit="cover"
-            accessibilityIgnoresInvertColors
+    <GameLobby
+      testID="kinshi-teams"
+      game="tabu"
+      poster={kinshiArt.poster}
+      name={tr.kinshi.name}
+      close={{
+        label: owner ? tr.kinshi.endGame : tr.kinshi.backToTable,
+        onPress: onClose,
+        loading: closing,
+        testID: 'kinshi-teams-close',
+      }}
+      onChat={onChat}
+      chips={tr.kinshi.rules}
+      foot={{
+        owner,
+        warning: enough ? null : tr.kinshi.needs(TEAM_MIN_PLAYERS),
+        error: failed,
+        start: {
+          label: tr.kinshi.start,
+          testID: 'kinshi-start',
+          loading: start.isPending,
+          busy: shuffle.isPending,
+          onPress: () => start.mutate(),
+        },
+      }}
+    >
+      {teamBox('a', a)}
+      {teamBox('b', b)}
+      {unpicked.length > 0 ? (
+        <LobbyCard title={tr.kinshi.unpicked} note={tr.kinshi.unpickedNote}>
+          <LobbyPeople people={unpicked.map(person)} />
+        </LobbyCard>
+      ) : null}
+      {owner ? (
+        <LobbyActions>
+          <Btn
+            sm
+            variant="glassy"
+            icon="shuffle"
+            testID="kinshi-shuffle"
+            label={tr.kinshi.shuffle}
+            loading={shuffle.isPending}
+            disabled={start.isPending}
+            onPress={() => shuffle.mutate()}
+            style={{ flex: 1 }}
           />
-          <View style={{ flex: 1 }}>
-            <T v="title">{tr.kinshi.name}</T>
-            <T v="fine">{tr.kinshi.pickTeam}</T>
-          </View>
-        </View>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-          {tr.kinshi.rules.map((r) => (
-            <Chip key={r} label={r} />
-          ))}
-        </View>
-        {teamBox('a', a)}
-        {teamBox('b', b)}
-        <Glass radius={K.box.radius} style={boxStyle}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: K.box.gap }}>
-            <CapIcon name="eye" color={c.ink} />
-            <View style={{ flex: 1 }}>
-              <T v="h3">{tr.kinshi.watchers}</T>
-              <T v="fine">{tr.kinshi.watchersNote}</T>
-            </View>
-            <Btn
-              sm
-              variant="glassy"
-              testID="kinshi-watch"
-              label={tr.kinshi.watch}
-              disabled={busy || mine === 'obs'}
-              loading={pick.isPending && pick.variables === 'obs'}
-              onPress={() => pick.mutate('obs')}
-            />
-          </View>
-          {people(watchers)}
-        </Glass>
-        {unpicked.length > 0 ? (
-          <Glass radius={K.box.radius} style={boxStyle}>
-            <View>
-              <T v="h3">{tr.kinshi.unpicked}</T>
-              <T v="fine">{tr.kinshi.unpickedNote}</T>
-            </View>
-            {people(unpicked)}
-          </Glass>
-        ) : null}
-      </ScrollView>
-      <View
-        style={{
-          paddingHorizontal: KIT.size.side,
-          paddingTop: SPACING[2],
-          paddingBottom: insets.bottom + K.footBottom,
-          gap: K.summary.gap,
-        }}
-      >
-        {failed ? (
-          <T v="fine" color={KIT.danger} center>
-            {errorMessage(failed)}
-          </T>
-        ) : null}
-        {!enough ? (
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: K.warn.gap,
-              paddingVertical: K.warn.padY,
-              paddingHorizontal: K.warn.padX,
-              borderRadius: K.warn.radius,
-              backgroundColor: colors.warnSoft,
-            }}
-          >
-            <CapIcon name="warn" color={colors.onWarnSoft} />
-            <View style={{ flex: 1 }}>
-              <T v="fine" strong color={colors.onWarnSoft}>
-                {tr.kinshi.needs(TEAM_MIN_PLAYERS)}
-              </T>
-            </View>
-          </View>
-        ) : null}
-        {owner ? (
-          <View style={{ flexDirection: 'row', gap: K.footGap }}>
-            <Btn
-              variant="glassy"
-              icon="shuffle"
-              testID="kinshi-shuffle"
-              label={tr.kinshi.shuffle}
-              loading={shuffle.isPending}
-              disabled={start.isPending}
-              onPress={() => shuffle.mutate()}
-              style={{ flex: 1 }}
-            />
-            <Btn
-              testID="kinshi-start"
-              label={tr.kinshi.start}
-              disabled={!enough || shuffle.isPending}
-              loading={start.isPending}
-              onPress={() => start.mutate()}
-              style={{ flex: 1 }}
-            />
-          </View>
-        ) : (
-          <T v="fine" center>
-            {tr.kinshi.hintGuest}
-          </T>
-        )}
-      </View>
-    </View>
+        </LobbyActions>
+      ) : null}
+      <LobbyWatchers
+        note={tr.kinshi.watchersNote}
+        watching={false}
+        disabled={busy || mine === 'obs'}
+        loading={pick.isPending && pick.variables === 'obs'}
+        onPress={() => pick.mutate('obs')}
+        testID="kinshi-watch"
+        people={watchers.map(person)}
+      />
+    </GameLobby>
   );
 }
-const boxStyle = {
-  paddingVertical: K.box.padY,
-  paddingHorizontal: K.box.padX,
-  gap: K.box.gap,
-} as const;
 
 // A team's box: its bar, name and headcount, "Katıl" in the team's colour, its people.
 function TeamBox({
@@ -1159,13 +1056,11 @@ function TeamBox({
 }) {
   const tone = useTeamTone(team);
   return (
-    <Glass radius={K.box.radius} style={boxStyle}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: K.box.gap }}>
-        <TeamBar team={team} />
-        <View style={{ flex: 1 }}>
-          <T v="h3">{tr.kinshi.team[team]}</T>
-        </View>
-        <T v="fine">{tr.kinshi.count(count)}</T>
+    <LobbyCard
+      title={tr.kinshi.team[team]}
+      count={tr.kinshi.count(count)}
+      icon={<TeamBar team={team} />}
+      right={
         <Btn
           sm
           testID={`kinshi-join-${team}`}
@@ -1176,9 +1071,10 @@ function TeamBox({
           loading={loading}
           onPress={onJoin}
         />
-      </View>
+      }
+    >
       {children}
-    </Glass>
+    </LobbyCard>
   );
 }
 

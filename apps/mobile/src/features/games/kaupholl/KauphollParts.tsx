@@ -1316,33 +1316,6 @@ export function ErrorBox({ retrying, onRetry }: { retrying: boolean; onRetry: ()
   );
 }
 
-// A row on the pre-game page (`.warn`, `.err`): the few-questions warning, a refused start.
-export function NoteRow({ tone, children }: { tone: 'warn' | 'error'; children: string }) {
-  const { colors } = useTheme();
-  const W = K.warn;
-  const bg = tone === 'warn' ? colors.warnSoft : colors.dangerSoft;
-  const fg = tone === 'warn' ? colors.onWarnSoft : colors.onDangerSoft;
-  return (
-    <View
-      accessibilityRole={tone === 'error' ? 'alert' : undefined}
-      style={{
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        gap: W.gap,
-        paddingVertical: W.padY,
-        paddingHorizontal: W.padX,
-        borderRadius: W.radius,
-        backgroundColor: bg,
-      }}
-    >
-      <CapIcon name="warn" color={fg} />
-      <Text maxFontSizeMultiplier={MAX_FONT} style={[KT.warn, { color: fg, flex: 1 }]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
-
 // "Oyun yarıda kaldı" over the table (KaupholYarida): the game left half way returns everyone to
 // the table without an end. It goes after a while or at a touch.
 export function AbandonedNotice({ onDone }: { onDone: () => void }) {

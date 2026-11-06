@@ -31,7 +31,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
 import { CapIcon } from '@/aura/CapIcon';
-import { Btn, Chip, Glass, T, Tag, useKit } from '@/aura/kit';
+import { Btn, Glass, T, Tag, useKit } from '@/aura/kit';
 import { Sheet } from '@/components/Sheet';
 import { ReportModal } from '@/features/chat/ReportModal';
 import { StageFit } from '@/features/games/GameStage';
@@ -63,6 +63,14 @@ import {
 } from '../riso/RisoParts';
 import type { RisoBuddy } from '../riso/risoArt';
 import { Eyebrow, PhasePill, ReadyChip } from '../sahtekar/KrotParts';
+import {
+  GameLobby,
+  LobbyCard,
+  type LobbyPerson,
+  LobbyPeople,
+  LobbyRules,
+  LobbyWatchers,
+} from '../GameLobby';
 import { kibritArt } from './kibritArt';
 
 type Room = {
@@ -1667,11 +1675,6 @@ function Pregame({
   onChat: () => void;
 }) {
   const queryClient = useQueryClient();
-  const { colors } = useTheme();
-  const { c } = useKit();
-  const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
-  const k = Math.min(1, width / RISO_PANEL_WIDTH);
   const picks = readPregame(state)?.picks ?? {};
   const everyone = [...faces.people.keys()];
   const watchers = everyone.filter((s) => picks[s] === 'obs');
@@ -1692,183 +1695,67 @@ function Pregame({
     mutationFn: () => kibritApi.start(roomId, rounds),
     onSettled: reread,
   });
-  const failed = pick.error ?? start.error ?? closeError;
-  const people = (sids: string[], numbered: boolean) =>
-    sids.length > 0 ? (
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-        {sids.map((s, i) => (
-          <View
-            key={s}
-            style={{
-              height: R.person.height,
-              paddingLeft: R.person.padLeft,
-              paddingRight: R.person.padRight,
-              borderRadius: R.person.height / 2,
-              backgroundColor: c.raised,
-              borderWidth: KIT.size.edge,
-              borderColor: s === faces.me ? colors.accent : c.raisedEdge,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: R.person.gap,
-            }}
-          >
-            {numbered ? (
-              <Text
-                maxFontSizeMultiplier={1.3}
-                style={[KT.seatNo, { color: c.ink, minWidth: SEAT_NO, textAlign: 'center' }]}
-              >
-                {i + 1}
-              </Text>
-            ) : null}
-            <Face faces={faces} sid={s} size={R.person.face} />
-            <T v="fine" strong ink>
-              {nameOf(faces, s)}
-            </T>
-          </View>
-        ))}
-      </View>
-    ) : null;
-  const B = KB.pregameBuddy;
+  const person = (s: string): LobbyPerson => ({
+    key: s,
+    face: <Face faces={faces} sid={s} size={R.person.face} />,
+    name: nameOf(faces, s),
+    me: s === faces.me,
+  });
   return (
-    <View testID="kibrit-pregame" style={{ flex: 1 }}>
-      <AuraBackground />
-      <ScrollView
-        bounces={false}
-        overScrollMode="never"
-        showsVerticalScrollIndicator={false}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{
-          flexGrow: 1,
-          paddingTop: insets.top,
-          paddingHorizontal: KIT.size.side,
-          paddingBottom: SPACING[2],
-          gap: R.gap,
-        }}
-      >
-        <GameTopBar
-          close={{
-            label: owner ? tr.kibrit.endGame : tr.kibrit.backToTable,
-            onPress: onClose,
-            loading: closing,
-            testID: 'kibrit-pregame-close',
-          }}
-          right={<ChatRound onPress={onChat} />}
-        />
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: R.poster.gap }}>
-          <Image
-            source={kibritArt.poster}
-            style={{
-              width: R.poster.width,
-              height: R.poster.height,
-              borderRadius: R.poster.radius,
-            }}
-            contentFit="cover"
-            accessibilityIgnoresInvertColors
-          />
-          <View style={{ flex: 1 }}>
-            <T v="title">{tr.kibrit.name}</T>
-            <T v="fine">{tr.kibrit.players}</T>
-          </View>
-        </View>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-          <Chip
-            testID="kibrit-rounds"
-            label={tr.kibrit.rounds(rounds)}
-            accessibilityLabel={
-              owner ? tr.kibrit.roundsLabel(rounds, Math.max(1, players.length)) : undefined
+    <GameLobby
+      testID="kibrit-pregame"
+      game="kibrit"
+      poster={kibritArt.poster}
+      name={tr.kibrit.name}
+      close={{
+        label: owner ? tr.kibrit.endGame : tr.kibrit.backToTable,
+        onPress: onClose,
+        loading: closing,
+        testID: 'kibrit-pregame-close',
+      }}
+      onChat={onChat}
+      chips={[
+        owner && players.length > 1
+          ? {
+              label: tr.kibrit.rounds(rounds),
+              testID: 'kibrit-rounds',
+              accessibilityLabel: tr.kibrit.roundsLabel(rounds, Math.max(1, players.length)),
+              onPress: () => {
+                setChosen(rounds >= players.length ? 1 : rounds + 1);
+                haptic('selection');
+              },
             }
-            onPress={
-              owner && players.length > 1
-                ? () => {
-                    setChosen(rounds >= players.length ? 1 : rounds + 1);
-                    haptic('selection');
-                  }
-                : undefined
-            }
-          />
-          <Chip label={tr.kibrit.writeChip} />
-          <Chip label={tr.kibrit.voteChip} />
-        </View>
-        <Glass radius={R.box.radius} style={boxStyle}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: R.box.gap }}>
-            <View style={{ flex: 1 }}>
-              <T v="h3">{tr.kibrit.players}</T>
-            </View>
-            <T v="fine">{tr.kibrit.count(players.length)}</T>
-          </View>
-          {people(players, true)}
-        </Glass>
-        <Glass radius={R.box.radius} style={boxStyle}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: R.box.gap }}>
-            <CapIcon name="eye" color={c.ink} />
-            <View style={{ flex: 1 }}>
-              <T v="h3">{tr.kibrit.watchers}</T>
-              <T v="fine">{tr.kibrit.watchersNote}</T>
-            </View>
-            <Btn
-              sm
-              variant="glassy"
-              testID="kibrit-watch"
-              label={watching ? tr.kibrit.play : tr.kibrit.watch}
-              loading={pick.isPending}
-              onPress={() => pick.mutate()}
-            />
-          </View>
-          {people(watchers, false)}
-        </Glass>
-        <Glass radius={R.box.radius} style={boxStyle}>
-          <T v="fine" ink>
-            {tr.kibrit.how}
-          </T>
-        </Glass>
-        <View style={{ flexGrow: 1, minHeight: KB.corner * k - B.below }}>
-          <Buddy
-            buddy={FAR[0]}
-            height={KB.corner * k}
-            style={{ right: B.right, bottom: -B.below, transform: [{ rotate: B.turn }] }}
-          />
-        </View>
-      </ScrollView>
-      <View
-        style={{
-          paddingHorizontal: KIT.size.side,
-          paddingTop: SPACING[2],
-          paddingBottom: insets.bottom + R.footBottom,
-          gap: R.gap,
-        }}
-      >
-        {failed ? (
-          <T v="fine" color={KIT.danger} center>
-            {errorMessage(failed)}
-          </T>
-        ) : null}
-        <T v="fine" center>
-          {!owner
-            ? tr.kibrit.hintGuest
-            : enough
-              ? tr.kibrit.hintOwner
-              : tr.kibrit.needs(KIBRIT.minPlayers)}
-        </T>
-        {owner ? (
-          <Btn
-            block
-            testID="kibrit-start"
-            label={tr.kibrit.start}
-            disabled={!enough}
-            loading={start.isPending}
-            onPress={() => start.mutate()}
-          />
-        ) : null}
-      </View>
-    </View>
+          : tr.kibrit.rounds(rounds),
+        tr.kibrit.writeChip,
+        tr.kibrit.voteChip,
+      ]}
+      foot={{
+        owner,
+        warning: enough ? null : tr.kibrit.needs(KIBRIT.minPlayers),
+        error: pick.error ?? start.error ?? closeError,
+        start: {
+          label: tr.kibrit.start,
+          testID: 'kibrit-start',
+          loading: start.isPending,
+          onPress: () => start.mutate(),
+        },
+      }}
+    >
+      <LobbyCard title={tr.games.players} count={tr.games.count(players.length)}>
+        <LobbyPeople people={players.map(person)} />
+      </LobbyCard>
+      <LobbyWatchers
+        note={tr.kibrit.watchersNote}
+        watching={watching}
+        loading={pick.isPending}
+        onPress={() => pick.mutate()}
+        testID="kibrit-watch"
+        people={watchers.map(person)}
+      />
+      <LobbyRules text={tr.kibrit.how} />
+    </GameLobby>
   );
 }
-const boxStyle = {
-  paddingVertical: R.box.padY,
-  paddingHorizontal: R.box.padX,
-  gap: R.box.gap,
-} as const;
-const SEAT_NO = 14;
 
 // ------------------------------------------------------------------ Oyun sonu
 

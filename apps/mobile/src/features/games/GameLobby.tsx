@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuraBackground } from '@/aura/AuraBackground';
 import { CapIcon } from '@/aura/CapIcon';
-import { Btn, Glass, Round, T, Tag, useKit } from '@/aura/kit';
+import { Btn, Chip, Glass, Round, T, Tag, useKit } from '@/aura/kit';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { AURA } from '@/theme/aura';
@@ -40,7 +40,7 @@ export function GameLobby({
   name: string;
   close: { label: string; onPress: () => void; loading?: boolean; testID: string };
   onChat?: () => void;
-  chips: readonly string[];
+  chips: readonly (string | LobbyChip)[];
   children: ReactNode;
   foot: LobbyFootProps;
 }) {
@@ -90,9 +90,19 @@ export function GameLobby({
           {onChat ? <Round icon="chat" label={tr.games.chat} onPress={onChat} /> : null}
         </View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: KIT.size.chipGap }}>
-          {chips.map((c) => (
-            <Tag key={c} label={c} />
-          ))}
+          {chips.map((c) =>
+            typeof c === 'string' ? (
+              <Tag key={c} label={c} />
+            ) : (
+              <Chip
+                key={c.label}
+                label={c.label}
+                testID={c.testID}
+                accessibilityLabel={c.accessibilityLabel}
+                onPress={c.onPress}
+              />
+            ),
+          )}
         </View>
         {children}
       </ScrollView>
@@ -100,6 +110,14 @@ export function GameLobby({
     </View>
   );
 }
+
+// A rule the owner can change by tapping it (Kibrit's round count).
+export type LobbyChip = {
+  label: string;
+  onPress: () => void;
+  testID?: string;
+  accessibilityLabel?: string;
+};
 
 type LobbyFootProps = {
   owner: boolean;
@@ -275,10 +293,12 @@ export function LobbyWatchers({
   onPress,
   testID,
   people,
+  disabled,
 }: {
   note: string;
   watching: boolean;
   loading: boolean;
+  disabled?: boolean;
   onPress: () => void;
   testID: string;
   people: readonly LobbyPerson[];
@@ -295,6 +315,7 @@ export function LobbyWatchers({
           variant="glassy"
           testID={testID}
           label={watching ? tr.games.play : tr.games.watch}
+          disabled={disabled}
           loading={loading}
           onPress={onPress}
         />
