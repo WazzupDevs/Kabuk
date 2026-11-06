@@ -1,4 +1,13 @@
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
+import Reanimated, {
+  Extrapolation,
+  interpolate,
+  runOnJS,
+  type SharedValue,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
 import { Animated, Image, Pressable, useWindowDimensions, View } from 'react-native';
 
 import { AuraBand, AuraPatch } from '@/aura/AuraBackground';
@@ -45,6 +54,7 @@ export function TableScene({
   onPress,
   open,
   onToggle,
+  onRestHeight,
   children,
   info,
 }: {
@@ -60,13 +70,21 @@ export function TableScene({
   // The people's drawer, open or closed (the screen closes it on back and on a scroll).
   open: boolean;
   onToggle: () => void;
+  // The head's height with the drawer closed and at rest: where what scrolls starts. Not reported
+  // while the drawer moves or is open (it opens over the games), so the screen does not render
+  // again each frame (the owner's report, 6 Kasım, round 3: the drawer opened at a low frame rate).
+  onRestHeight: (height: number) => void;
   children?: ReactNode;
   info?: ReactNode;
 }) {
   const { c } = useKit();
   const { width } = useWindowDimensions();
   const narrow = useNarrow();
-  const [card, setCard] = useState<{ y: number; height: number } | null>(null);
+  // Where the card starts on the screen (it does not move; only its height changes with the
+  // drawer): the ground over the head ends there and goes on in the card's shape (AuraPatch).
+  const [cardTop, setCardTop] = useState<number | null>(null);
+  const latest = useRef(0);
+  const moving = useRef(false);
   const ordered = [
     ...people.filter((p) => p.sessionId === me),
     ...people.filter((p) => p.sessionId !== me),
@@ -83,28 +101,33 @@ export function TableScene({
   const pictureHeight = Math.max(k.strip, drawn);
 
   return (
-    <View style={{ paddingTop: inset, paddingBottom: HEAD_BOTTOM, gap: KIT.size.rowGap }}>
-      {card ? (
-        <>
-          <AuraBand top={0} height={card.y + card.height - k.radius} fade={0} direction="down" />
-          <AuraPatch
-            top={card.y}
-            left={KIT.size.side}
-            width={width - 2 * KIT.size.side}
-            height={card.height}
-            radius={k.radius}
-          />
-        </>
-      ) : null}
+    <View
+      onLayout={(e) => {
+        latest.current = e.nativeEvent.layout.height;
+        if (!open && !moving.current) onRestHeight(latest.current);
+      }}
+      style={{ paddingTop: inset, paddingBottom: HEAD_BOTTOM, gap: KIT.size.rowGap }}
+    >
+      {cardTop !== null ? <AuraBand top={0} height={cardTop} fade={0} direction="down" /> : null}
       {children}
       <View
         onLayout={(e) => {
-          const { y, height } = e.nativeEvent.layout;
-          setCard((prev) =>
-            prev && prev.y === y && prev.height === height ? prev : { y, height },
-          );
+          const y = e.nativeEvent.layout.y;
+          setCardTop((prev) => (prev === y ? prev : y));
         }}
       >
+        {cardTop !== null ? (
+          <>
+            {/* Beside the card down to its lower corners, then the card's own shape. */}
+            <AuraPatch top={cardTop} left={0} fill={{ left: 0, right: 0, bottom: k.radius }} />
+            <AuraPatch
+              top={cardTop}
+              left={KIT.size.side}
+              radius={k.radius}
+              fill={{ left: KIT.size.side, right: KIT.size.side, bottom: 0 }}
+            />
+          </>
+        ) : null}
         <Glass
           radius={k.radius}
           style={{ marginHorizontal: KIT.size.side, padding: k.pad }}
@@ -152,6 +175,10 @@ export function TableScene({
               open={open}
               onToggle={onToggle}
               onPeople={onPress}
+              onMove={(m) => {
+                moving.current = m;
+                if (!m && !open) onRestHeight(latest.current);
+              }}
             />
           </View>
         </Glass>
@@ -161,12 +188,15 @@ export function TableScene({
 }
 const SEAT_DELAY = 160;
 const SEAT_STEP = MOTION.stagger.part;
+const MORPH = MOTION.springs.morph;
 
 // The drawer (MasaCekmece, MasaCekmeceAcik, MasaCekmeceGecis, MasaCekmeceDar). One set of faces
 // moves between the two layouts on the morph spring (about 500 ms): from the overlapping row to
 // their places in the grid, growing to their size there (36 narrow), their white ring fading; the
 // names fade in over the second half; the button slides under the grid and its arrow turns over.
 // The grid is laid out once, unseen, for its rows' places and its height. Reduce motion: at once.
+// Played on the UI thread (Reanimated): on the JavaScript side with its height a layout value the
+// drawer opened at a low frame rate (the owner's report, 6 Kasım, round 3).
 function PeopleDrawer({
   people,
   first,
@@ -176,6 +206,7 @@ function PeopleDrawer({
   open,
   onToggle,
   onPeople,
+  onMove,
 }: {
   people: readonly TablePerson[];
   first: ReadonlySet<string> | null;
@@ -185,6 +216,8 @@ function PeopleDrawer({
   open: boolean;
   onToggle: () => void;
   onPeople: () => void;
+  // The drawer starts (true) and stops (false) moving.
+  onMove: (moving: boolean) => void;
 }) {
   const { c } = useKit();
   const d = k.drawer;
@@ -192,21 +225,23 @@ function PeopleDrawer({
   const [width, setWidth] = useState(0);
   const [grid, setGrid] = useState(0);
   const [rows, setRows] = useState<readonly number[]>([]);
-  const [progress] = useState(() => new Animated.Value(open ? 1 : 0));
+  const progress = useSharedValue(open ? 1 : 0);
+  const shown = useRef(open);
   useEffect(() => {
+    if (shown.current === open) return;
+    shown.current = open;
+    const to = open ? 1 : 0;
     if (reduce) {
-      progress.setValue(open ? 1 : 0);
-      return undefined;
+      progress.set(to);
+      return;
     }
-    // Layout values (height, place): on the JS side.
-    const anim = Animated.spring(progress, {
-      ...springConfig(MOTION.springs.morph),
-      useNativeDriver: false,
-      toValue: open ? 1 : 0,
-    });
-    anim.start();
-    return () => anim.stop();
-  }, [open, reduce, progress]);
+    onMove(true);
+    progress.set(
+      withSpring(to, MORPH, (finished) => {
+        if (finished) runOnJS(onMove)(false);
+      }),
+    );
+  }, [open, reduce, progress, onMove]);
 
   const n = people.length;
   const closedFace = d.face;
@@ -220,9 +255,7 @@ function PeopleDrawer({
   // Open: the grid 8 past the body on each side, no column gap.
   const cell = (width + 2 * d.out) / perRow;
   const openHeight = Math.max(d.row, grid + d.gap + button);
-  const lift = (from: number, to: number) =>
-    progress.interpolate({ inputRange: [0, 1], outputRange: [from, to] });
-  const names = progress.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, 0, 1] });
+  const row = d.row;
   const lines: TablePerson[][] = [];
   people.forEach((p, i) => {
     if (i % perRow === 0) lines.push([p]);
@@ -236,11 +269,21 @@ function PeopleDrawer({
       return next;
     });
 
+  const boxStyle = useAnimatedStyle(() => ({
+    height: interpolate(progress.get(), [0, 1], [row, openHeight]),
+  }));
+  const namesStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(progress.get(), [0, 0.5, 1], [0, 0, 1], Extrapolation.CLAMP),
+  }));
+  const buttonStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: interpolate(progress.get(), [0, 1], [0, grid + d.gap]) }],
+  }));
+  const arrowStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${interpolate(progress.get(), [0, 1], [0, 180])}deg` }],
+  }));
+
   return (
-    <Animated.View
-      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
-      style={{ height: lift(d.row, openHeight) }}
-    >
+    <Reanimated.View onLayout={(e) => setWidth(e.nativeEvent.layout.width)} style={boxStyle}>
       <Pressable
         testID="table-scene"
         accessibilityRole="button"
@@ -251,19 +294,21 @@ function PeopleDrawer({
       />
       {width > 0 ? (
         <>
-          <Animated.View
+          <Reanimated.View
             pointerEvents="none"
             accessible={false}
             importantForAccessibility="no-hide-descendants"
             onLayout={(e) => setGrid(e.nativeEvent.layout.height)}
-            style={{
-              position: 'absolute',
-              left: -d.out,
-              right: -d.out,
-              top: 0,
-              gap: d.rowGap,
-              opacity: names,
-            }}
+            style={[
+              {
+                position: 'absolute',
+                left: -d.out,
+                right: -d.out,
+                top: 0,
+                gap: d.rowGap,
+              },
+              namesStyle,
+            ]}
           >
             {lines.map((line, r) => (
               <View
@@ -284,29 +329,19 @@ function PeopleDrawer({
                 ))}
               </View>
             ))}
-          </Animated.View>
+          </Reanimated.View>
           {people.map((p, i) => {
-            const fromX = i * step + closedFace / 2 - openFace / 2;
-            const fromY = d.row / 2 - openFace / 2;
-            const toX = -d.out + (i % perRow) * cell + cell / 2 - openFace / 2;
-            const toY = rows[Math.floor(i / perRow)] ?? 0;
             const late = first !== null && !first.has(p.sessionId);
             return (
-              <Animated.View
+              <DrawerSeat
                 key={p.sessionId}
-                pointerEvents="none"
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  top: 0,
-                  width: openFace,
-                  height: openFace,
-                  transform: [
-                    { translateX: lift(fromX, toX) },
-                    { translateY: lift(fromY, toY) },
-                    { scale: lift(closedFace / openFace, 1) },
-                  ],
-                }}
+                progress={progress}
+                fromX={i * step + closedFace / 2 - openFace / 2}
+                fromY={row / 2 - openFace / 2}
+                toX={-d.out + (i % perRow) * cell + cell / 2 - openFace / 2}
+                toY={rows[Math.floor(i / perRow)] ?? 0}
+                closedFace={closedFace}
+                openFace={openFace}
               >
                 <Face
                   person={p}
@@ -316,47 +351,80 @@ function PeopleDrawer({
                   late={late}
                   narrow={narrow}
                 />
-                <Animated.View
-                  style={{
-                    position: 'absolute',
-                    left: 0,
-                    top: 0,
-                    width: openFace,
-                    height: openFace,
-                    borderRadius: openFace / 2,
-                    borderWidth: KIT.size.avRing * (openFace / closedFace),
-                    borderColor: KIT.white,
-                    opacity: lift(1, 0),
-                  }}
-                />
-              </Animated.View>
+              </DrawerSeat>
             );
           })}
         </>
       ) : null}
-      <Animated.View style={{ position: 'absolute', right: 0, top: lift(0, grid + d.gap) }}>
+      <Reanimated.View style={[{ position: 'absolute', right: 0, top: 0 }, buttonStyle]}>
         <Round
           label={open ? tr.table.drawerHide : tr.table.drawerShow}
           testID="table-drawer"
           onPress={onToggle}
         >
-          <Animated.View
-            style={{
-              transform: [
-                {
-                  rotate: lift(0, 180).interpolate({
-                    inputRange: [0, 180],
-                    outputRange: ['0deg', '180deg'],
-                  }),
-                },
-              ],
-            }}
-          >
+          <Reanimated.View style={arrowStyle}>
             <CapIcon name="down" color={c.ink} size={KIT.size.iconSnug} />
-          </Animated.View>
+          </Reanimated.View>
         </Round>
-      </Animated.View>
-    </Animated.View>
+      </Reanimated.View>
+    </Reanimated.View>
+  );
+}
+
+// One face's place in the drawer: from the closed row to its cell in the grid, its white ring
+// fading as it opens (transforms and opacity only, on the UI thread).
+function DrawerSeat({
+  progress,
+  fromX,
+  fromY,
+  toX,
+  toY,
+  closedFace,
+  openFace,
+  children,
+}: {
+  progress: SharedValue<number>;
+  fromX: number;
+  fromY: number;
+  toX: number;
+  toY: number;
+  closedFace: number;
+  openFace: number;
+  children: ReactNode;
+}) {
+  const seat = useAnimatedStyle(() => {
+    const t = progress.get();
+    return {
+      transform: [
+        { translateX: fromX + (toX - fromX) * t },
+        { translateY: fromY + (toY - fromY) * t },
+        { scale: closedFace / openFace + (1 - closedFace / openFace) * t },
+      ],
+    };
+  });
+  const ring = useAnimatedStyle(() => ({ opacity: 1 - progress.get() }));
+  return (
+    <Reanimated.View
+      pointerEvents="none"
+      style={[{ position: 'absolute', left: 0, top: 0, width: openFace, height: openFace }, seat]}
+    >
+      {children}
+      <Reanimated.View
+        style={[
+          {
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: openFace,
+            height: openFace,
+            borderRadius: openFace / 2,
+            borderWidth: KIT.size.avRing * (openFace / closedFace),
+            borderColor: KIT.white,
+          },
+          ring,
+        ]}
+      />
+    </Reanimated.View>
   );
 }
 

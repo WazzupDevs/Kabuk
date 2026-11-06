@@ -165,36 +165,35 @@ function Slice({ top, height, opacity }: { top: number; height: number; opacity:
   );
 }
 
-// The ground behind a rounded card of a fixed head, in the card's own shape: with a band down to
-// the card's lower corners, what scrolls up under the head ends along the card's rounded foot, not
-// on a straight line under it (the owner's report, 6 Kasım, round 3). Behind the card, so the light
-// scheme's see-through glass shows the clouds, not what scrolls under it. On the screen.
+// The ground behind a rounded card of a fixed head, laid in the card's box (its `fill` insets) so it
+// follows the card's height as it changes with no measuring: with the head's band down to the
+// card's top, one piece beside the card down to its lower corners and one in the card's own shape,
+// what scrolls up under the head ends along the card's rounded foot, not on a straight line under
+// it (the owner's report, 6 Kasım, round 3). Behind the card, so the light scheme's see-through
+// glass shows the clouds, not what scrolls under it. `top` and `left` are the piece's place on the
+// screen (the picture lines up with the screen's).
 export function AuraPatch({
   top,
   left,
-  width,
-  height,
-  radius,
+  radius = 0,
+  fill,
 }: {
   top: number;
   left: number;
-  width: number;
-  height: number;
-  radius: number;
+  radius?: number;
+  fill: { left: number; right: number; bottom: number };
 }) {
   const off = useLabOff('zemin');
   const { scheme } = useTheme();
   const { width: screenWidth, height: screen } = useGroundSize();
-  if (off || width <= 0 || height <= 0) return null;
+  if (off) return null;
   return (
     <View
       pointerEvents="none"
       style={{
         position: 'absolute',
-        top,
-        left,
-        width,
-        height,
+        top: 0,
+        ...fill,
         borderRadius: radius,
         overflow: 'hidden',
         backgroundColor: scheme === 'dark' ? AURA.dark.ground : undefined,

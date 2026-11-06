@@ -611,12 +611,7 @@ export default function TableScreen() {
           ))}
         </PosterGrid>
       </ScrollView>
-      <View
-        style={{ position: 'absolute', top: 0, left: 0, right: 0 }}
-        onLayout={(e) => {
-          setHeadHeight(e.nativeEvent.layout.height);
-        }}
-      >
+      <View style={{ position: 'absolute', top: 0, left: 0, right: 0 }}>
         <TableScene
           people={people.data ?? []}
           profiles={profiles}
@@ -626,6 +621,9 @@ export default function TableScreen() {
           onPress={() => setSheet('people')}
           open={drawer}
           onToggle={() => setDrawer((v) => !v)}
+          // The open drawer lies over the games (they do not move with it, the owner's report, 6
+          // Kasım, round 3: following its height each frame rendered the screen each frame).
+          onRestHeight={(h) => setHeadHeight((prev) => (prev === h ? prev : h))}
           info={info}
         >
           {bar}
