@@ -870,6 +870,19 @@ describe('"Masadan çıkar" (§4.E, K-88)', () => {
     });
   });
 
+  it('keeps the removed person out when another table brings them in (K-88)', async () => {
+    const [owner, member, third] = await all(3);
+    const roomId = await tableWith(owner, [member]);
+    expect((await remove(owner, roomId, member)).status).toBe(200);
+    await tableWith(third, [member], { open: false });
+    const requestId = await ask(third, roomId);
+    expect(await rooms(owner, { action: 'respond', requestId, accept: true })).toEqual({
+      status: 409,
+      body: errorBody('room_not_available'),
+    });
+    expect((await seated(roomId)).map((s) => s.session_id)).toEqual([owner.sessionId]);
+  });
+
   it('declines a request of the removed person still waiting', async () => {
     const [owner, member] = await all(2);
     const roomId = await tableWith(owner, [member]);
