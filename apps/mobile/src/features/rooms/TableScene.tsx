@@ -4,6 +4,7 @@ import Reanimated, {
   interpolate,
   runOnJS,
   type SharedValue,
+  useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -55,6 +56,8 @@ export function TableScene({
   open,
   onToggle,
   onRestHeight,
+  progress,
+  travel,
   children,
   info,
 }: {
@@ -74,6 +77,9 @@ export function TableScene({
   // while the drawer moves or is open (it opens over the games), so the screen does not render
   // again each frame (the owner's report, 6 Kasım, round 3: the drawer opened at a low frame rate).
   onRestHeight: (height: number) => void;
+  // The drawer's opening, 0 to 1, and its travel in points (useDrawerScroll).
+  progress: SharedValue<number>;
+  travel: SharedValue<number>;
   children?: ReactNode;
   info?: ReactNode;
 }) {
@@ -175,6 +181,8 @@ export function TableScene({
               open={open}
               onToggle={onToggle}
               onPeople={onPress}
+              progress={progress}
+              travel={travel}
               onMove={(m) => {
                 moving.current = m;
                 if (!m && !open) onRestHeight(latest.current);
@@ -186,6 +194,38 @@ export function TableScene({
     </View>
   );
 }
+// The drawer closes under the finger (the owner's call, 6 Kasım, round 3: it closed at its own pace
+// whatever the drag): while it is open, a drag up the games closes it as far as the finger goes
+// over its travel; let go past halfway it closes, short of it it opens again. The screen's scroll
+// view takes `onScroll`; the drawer plays `progress` and gives its travel.
+export function useDrawerScroll(open: boolean, setOpen: (open: boolean) => void) {
+  const progress = useSharedValue(open ? 1 : 0);
+  const travel = useSharedValue(0);
+  const isOpen = useSharedValue(open);
+  const from = useSharedValue(-1);
+  useEffect(() => {
+    isOpen.set(open);
+  }, [open, isOpen]);
+  const onScroll = useAnimatedScrollHandler({
+    onBeginDrag: (e) => {
+      from.set(isOpen.get() && travel.get() > 0 ? e.contentOffset.y : -1);
+    },
+    onScroll: (e) => {
+      const y0 = from.get();
+      if (y0 < 0) return;
+      progress.set(Math.min(1, Math.max(0, 1 - (e.contentOffset.y - y0) / travel.get())));
+    },
+    onEndDrag: () => {
+      if (from.get() < 0) return;
+      from.set(-1);
+      if (progress.get() < DRAG_CLOSE) runOnJS(setOpen)(false);
+      else progress.set(withSpring(1, MORPH));
+    },
+  });
+  return { progress, travel, onScroll };
+}
+const DRAG_CLOSE = 0.5;
+
 const SEAT_DELAY = 160;
 const SEAT_STEP = MOTION.stagger.part;
 const MORPH = MOTION.springs.morph;
@@ -206,6 +246,8 @@ function PeopleDrawer({
   open,
   onToggle,
   onPeople,
+  progress,
+  travel,
   onMove,
 }: {
   people: readonly TablePerson[];
@@ -216,6 +258,8 @@ function PeopleDrawer({
   open: boolean;
   onToggle: () => void;
   onPeople: () => void;
+  progress: SharedValue<number>;
+  travel: SharedValue<number>;
   // The drawer starts (true) and stops (false) moving.
   onMove: (moving: boolean) => void;
 }) {
@@ -225,7 +269,6 @@ function PeopleDrawer({
   const [width, setWidth] = useState(0);
   const [grid, setGrid] = useState(0);
   const [rows, setRows] = useState<readonly number[]>([]);
-  const progress = useSharedValue(open ? 1 : 0);
   const shown = useRef(open);
   useEffect(() => {
     if (shown.current === open) return;
@@ -256,6 +299,9 @@ function PeopleDrawer({
   const cell = (width + 2 * d.out) / perRow;
   const openHeight = Math.max(d.row, grid + d.gap + button);
   const row = d.row;
+  useEffect(() => {
+    travel.set(openHeight - row);
+  }, [travel, openHeight, row]);
   const lines: TablePerson[][] = [];
   people.forEach((p, i) => {
     if (i % perRow === 0) lines.push([p]);

@@ -3,7 +3,8 @@ import { tableGameAvailability } from '@shared/gameFrame.ts';
 import { seatsAnonymously } from '@shared/gender.ts';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { type ReactNode, useEffect, useState } from 'react';
-import { BackHandler, Pressable, ScrollView, View } from 'react-native';
+import { BackHandler, Pressable, View } from 'react-native';
+import Reanimated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EmptyState } from '@/components/EmptyState';
@@ -29,7 +30,7 @@ import { useRoomMemberProfiles } from '@/features/profile/queries';
 import { useOwnPhoto } from '@/features/profile/useOwnPhoto';
 import { IncomingRequest, useMarkTableScreen } from '@/features/rooms/IncomingRequest';
 import { InviteSheet } from '@/features/rooms/InviteSheet';
-import { TableScene } from '@/features/rooms/TableScene';
+import { TableScene, useDrawerScroll } from '@/features/rooms/TableScene';
 import { TestBots } from '@/features/rooms/TestBots';
 import { TableIconSheet } from '@/features/rooms/TableIconSheet';
 import { OpenLobbySheet } from '@/features/rooms/OpenLobbySheet';
@@ -90,8 +91,9 @@ export default function TableScreen() {
   >(null);
   useMarkTableScreen();
   // The people's drawer on the table's card (MasaCekmece): closed when the screen opens; back and
-  // a scroll close it (CLAUDE.md → Ekran davranışı).
+  // a scroll close it (CLAUDE.md → Ekran davranışı), a scroll under the finger (useDrawerScroll).
   const [drawer, setDrawer] = useState(false);
+  const drawerScroll = useDrawerScroll(drawer, setDrawer);
   useEffect(() => {
     if (!drawer) return undefined;
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -572,7 +574,7 @@ export default function TableScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
       <AuraBackground />
-      <ScrollView
+      <Reanimated.ScrollView
         bounces={false}
         overScrollMode="never"
         showsHorizontalScrollIndicator={false}
@@ -585,7 +587,8 @@ export default function TableScreen() {
           gap: KIT.size.venueGap,
         }}
         showsVerticalScrollIndicator={false}
-        onScrollBeginDrag={() => setDrawer(false)}
+        onScroll={drawerScroll.onScroll}
+        scrollEventThrottle={16}
       >
         {owner ? (
           <IncomingRequest roomId={id} ownerSessionId={sessionId} phones={r.phones} />
@@ -610,7 +613,7 @@ export default function TableScreen() {
             />
           ))}
         </PosterGrid>
-      </ScrollView>
+      </Reanimated.ScrollView>
       <View style={{ position: 'absolute', top: 0, left: 0, right: 0 }}>
         <TableScene
           people={people.data ?? []}
@@ -623,6 +626,8 @@ export default function TableScreen() {
           onToggle={() => setDrawer((v) => !v)}
           // The open drawer lies over the games (they do not move with it, the owner's report, 6
           // Kasım, round 3: following its height each frame rendered the screen each frame).
+          progress={drawerScroll.progress}
+          travel={drawerScroll.travel}
           onRestHeight={(h) => setHeadHeight((prev) => (prev === h ? prev : h))}
           info={info}
         >
