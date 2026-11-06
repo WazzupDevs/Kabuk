@@ -3,8 +3,7 @@
 ## Devir notu (6 Kasım 2026, Kaupholl'u açmaya kalanlar)
 
 - #494: senaryo düzeltmeleri T-1, T-2, B-1, B-3 main'de; B-2 kural 10'a eklendi (onaylı).
-- Kaupholl ekranları bu PR'da (`features/games/kaupholl/`, kararlar `docs/decisions/kaupholl-ekranlar.md`); sıradaki: ayrı PR'la `kaupholl.available: true` (proje sahibinin kararı, 6 Kasım), sonra gerçek sorular (özel depolar).
-- Dev'de örnek deste (6 soru) aktarıldı; gerçek sorular için `kaupholl-sorular` ve `kaupholl-kontrol` özel depoları proje sahibince açılacak.
+- #497 Kaupholl ekranları, ardından `kaupholl.available: true` (proje sahibinin kararı, 6 Kasım). Dev'de 6 örnek soru; gerçek 200 sorunun taslağı `kaupholl-sorular`'da, doğrulama ve aktarma proje sahibinde. Üretim yayını gerçek sorular aktarılınca.
 
 ## Devir notu (6 Kasım 2026, Signum, Kibrit ve Sprengja açıldı)
 

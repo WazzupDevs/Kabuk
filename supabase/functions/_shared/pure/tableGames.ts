@@ -116,7 +116,7 @@ export const TABLE_GAMES = [
     pregame: true,
     categories: ['multi'],
     poster: 'kaupholl',
-    available: false,
+    available: true,
   },
   {
     id: 'sohbet',

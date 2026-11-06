@@ -378,7 +378,7 @@ insert into public.games (id, name, min_players, max_players, teams, pregame, is
   ('harf', 'Harf Kapmaca', 2, 12, false, true, false, 6),
   ('sarki', 'Şarkıda Geçsin', 2, 12, false, true, false, 7),
   ('sprengja', 'Sprengja', 3, 8, false, true, true, 8),
-  ('kaupholl', 'Kaupholl', 3, 6, false, true, false, 9),
+  ('kaupholl', 'Kaupholl', 3, 6, false, true, true, 9),
   ('sohbet', 'Sohbet kartları', 1, 12, false, false, false, 10)
 on conflict (id) do update set
   name = excluded.name, min_players = excluded.min_players, max_players = excluded.max_players,
