@@ -1,5 +1,11 @@
 # İlerleme
 
+## Devir notu (6 Kasım 2026, revize turu 3, #504 ve #505)
+
+- Birleşti: R-5 masa başlık kartının altı oval, R-6 posterde "Aç" beyaz, H-6 kişiler çekmecesi Reanimated (açık çekmece oyunların üstüne açılır), H-7 çekmece kaydırınca parmağı izleyerek kapanır, R-8 yedi oyun lobisi tek düzende (`features/games/GameLobby.tsx`, Vampir örnek).
+- Bekleyen: R-7 posterde oy sayısı sağ altta, basınca animasyonlu (tuvalde pano yok, Masa panosu çizilince); Kinshi lobisinin kural metni yok (proje sahibine soruldu); Signum kaptan/aday işareti adın yanında ("Ad · Kaptan"), ayrı rozet isterse pano.
+- Telefonda doğrulanacak: R-5…R-8, H-6, H-7; önceki turlardan H-3, H-4, G-1–G-4, kalan gradyan. Bekleyen öneriler: G-5/Ö-1 (0.94 mü 0.96 mı), Ö-6, Ö-4, Ö-9; balon gölgesi kuyrukta, uzun mesajda ifade çekmecesi.
+
 ## Devir notu (6 Kasım 2026, revize turu 2, #502)
 
 - #502 birleşti: canlı cam ve sekme bulanıklığı kapalı, geçişler 2× hızlı, kenar solmaları yok (Keşfet haritası hariç); `docs/decisions/cam-kapali.md`. Referanslar Bluesky ve Mattermost, lisans kesin kuralı (CLAUDE.md).
