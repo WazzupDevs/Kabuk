@@ -370,14 +370,14 @@ update public.table_icons set is_active = false where is_active and id <> all (a
 -- content/games.json
 insert into public.games (id, name, min_players, max_players, teams, pregame, is_available, sort_order) values
   ('vampir', 'Vampir Köylü', 5, 12, false, true, true, 0),
-  ('kibrit', 'Kibrit', 3, 12, false, true, false, 1),
+  ('kibrit', 'Kibrit', 3, 12, false, true, true, 1),
   ('tabu', 'Kapsül Anlat', 4, 12, true, true, true, 2),
-  ('signum', 'Signum', 4, 12, true, true, false, 3),
+  ('signum', 'Signum', 4, 12, true, true, true, 3),
   ('ibre', 'İbre', 4, 12, true, true, false, 4),
   ('sahtekar', 'Sahtekar', 3, 12, false, true, true, 5),
   ('harf', 'Harf Kapmaca', 2, 12, false, true, false, 6),
   ('sarki', 'Şarkıda Geçsin', 2, 12, false, true, false, 7),
-  ('sprengja', 'Sprengja', 3, 8, false, true, false, 8),
+  ('sprengja', 'Sprengja', 3, 8, false, true, true, 8),
   ('kaupholl', 'Kaupholl', 3, 6, false, true, false, 9),
   ('sohbet', 'Sohbet kartları', 1, 12, false, false, false, 10)
 on conflict (id) do update set

@@ -1,5 +1,10 @@
 # İlerleme
 
+## Devir notu (6 Kasım 2026, Signum, Kibrit ve Sprengja açıldı)
+
+- Proje sahibinin kararıyla üçü `available: true` (seed); Kaupholl ekranları gelene kadar "Yakında" (§6 panoları tuvalde bekleniyor).
+- Yayın: dev'e seed, sonra OTA. Sprengja'da `sprengja-explode` işi kapalıyken patlamayı `poll` yapar; işi açmak proje sahibinde.
+
 ## Devir notu (6 Kasım 2026, oyunların senaryo analizi)
 
 - Analiz edilenler: Kaupholl (`docs/decisions/senaryo-kaupholl.md`: T 3, D 3, B 3) ve Kibrit (`senaryo-kibrit.md`: H 1, T 1, D 2). Düzeltme yok; T kararları belgelerin §5'inde.

@@ -28,7 +28,7 @@ export const TABLE_GAMES = [
     pregame: true,
     categories: ['multi'],
     poster: 'kibrit',
-    available: false,
+    available: true,
   },
   {
     id: 'tabu',
@@ -50,7 +50,7 @@ export const TABLE_GAMES = [
     pregame: true,
     categories: ['teams'],
     poster: 'signum',
-    available: false,
+    available: true,
   },
   {
     id: 'ibre',
@@ -105,7 +105,7 @@ export const TABLE_GAMES = [
     pregame: true,
     categories: ['multi'],
     poster: 'sprengja',
-    available: false,
+    available: true,
   },
   {
     id: 'kaupholl',

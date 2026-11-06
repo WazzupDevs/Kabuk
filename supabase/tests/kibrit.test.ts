@@ -27,8 +27,7 @@ afterEach(async () => {
 });
 
 afterAll(async () => {
-  // Kibrit is "Yakında" in content/games.json until its screens come (K-86).
-  await sql`update public.games set is_available = false where id = 'kibrit'`;
+  await sql`update public.games set is_available = true where id = 'kibrit'`;
   await deleteFixtureVenues(sql);
   await sql.end();
 });

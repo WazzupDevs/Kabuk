@@ -62,9 +62,7 @@ beforeEach(async () => {
 
 afterEach(async () => {
   for (const phone of TABLE_PHONES) await deleteUserByPhone(phone);
-  // Sprengja is "Yakında" until its content and screens come (content/games.json); the other
-  // files see it so.
-  await sql`update public.games set is_available = false where id = 'sprengja'`;
+  await sql`update public.games set is_available = true where id = 'sprengja'`;
 });
 
 afterAll(async () => {

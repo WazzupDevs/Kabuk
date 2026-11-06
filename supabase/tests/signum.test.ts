@@ -85,7 +85,7 @@ afterEach(async () => {
 });
 
 afterAll(async () => {
-  await sql`update public.games set is_available = false where id = 'signum'`;
+  await sql`update public.games set is_available = true where id = 'signum'`;
   await sql`delete from public.cards where deck = 'signum' and source_key like 'test-%'`;
   await sql`
     update public.cards set is_active = true
