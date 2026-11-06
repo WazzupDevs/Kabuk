@@ -3,7 +3,7 @@ import { tableGameAvailability } from '@shared/gameFrame.ts';
 import { seatsAnonymously } from '@shared/gender.ts';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { type ReactNode, useEffect, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { BackHandler, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EmptyState } from '@/components/EmptyState';
@@ -88,6 +88,17 @@ export default function TableScreen() {
     'people' | 'end' | 'leave' | 'lobby' | 'invite' | 'icon' | null
   >(null);
   useMarkTableScreen();
+  // The people's drawer on the table's card (MasaCekmece): closed when the screen opens; back and
+  // a scroll close it (CLAUDE.md → Ekran davranışı).
+  const [drawer, setDrawer] = useState(false);
+  useEffect(() => {
+    if (!drawer) return undefined;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      setDrawer(false);
+      return true;
+    });
+    return () => sub.remove();
+  }, [drawer]);
   const votes = useTableVotes(id, open);
   const hiddenGame = useVampirHidden((s) => s.hidden[id]);
   const hideGame = useVampirHidden((s) => s.hide);
@@ -541,7 +552,7 @@ export default function TableScreen() {
     </>
   );
 
-  // The head stays (the people, the name and the owner's lobby button on a low scene); only the
+  // The head stays (the name, the owner's lobby button and the people's drawer); only the
   // requests, the note and the game cards scroll, under it (the owner's call, 29 Ekim).
   return (
     <View style={{ flex: 1, backgroundColor: AURA[scheme].ground }}>
@@ -559,6 +570,7 @@ export default function TableScreen() {
           gap: KIT.size.venueGap,
         }}
         showsVerticalScrollIndicator={false}
+        onScrollBeginDrag={() => setDrawer(false)}
       >
         {owner ? (
           <IncomingRequest roomId={id} ownerSessionId={sessionId} phones={r.phones} />
@@ -597,6 +609,8 @@ export default function TableScreen() {
           icon={r.icon}
           inset={insets.top}
           onPress={() => setSheet('people')}
+          open={drawer}
+          onToggle={() => setDrawer((v) => !v)}
           info={info}
         >
           {bar}

@@ -146,7 +146,7 @@ appId: app.kabuk.mobile
     visibilityPercentage: 50
     timeout: 10000
 - tapOn:
-    id: table-scene
+    id: table-people-open
 - extendedWaitUntil:
     visible:
       id: table-people

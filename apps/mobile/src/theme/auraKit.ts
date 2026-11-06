@@ -453,6 +453,20 @@ export const KIT = {
     rowGap: 10,
     colGap: 4,
     nameGap: 4,
+    // MasaCekmece: the people's drawer. Closed, the faces 32 on a 2 white ring overlap by 45 % in a
+    // row 44 high, the round button (44) 8 to their right; open, the grid reaches 8 past the body on
+    // each side, no column gap, 8 between rows, the faces 32 (36 narrow), the names 2 under them,
+    // the button 8 under the grid at the right.
+    drawer: {
+      face: 32,
+      faceNarrow: 36,
+      overlap: 0.45,
+      row: 44,
+      gap: 8,
+      out: 8,
+      rowGap: 8,
+      nameGap: 2,
+    },
     bar: 44,
     fade: 90,
     fadeSolid: 0.8,

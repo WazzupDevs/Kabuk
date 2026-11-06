@@ -1833,6 +1833,10 @@ export const tr = {
   table: {
     back: 'Mekana dön',
     whoLabel: (n: number) => `Masadakileri gör, ${headcountLabel(n)} kişi`,
+    // The people's drawer on the table's card (MasaCekmece): closed, the faces and the button open it.
+    drawerLabel: (n: number) => `Masadakiler, ${headcountLabel(n)} kişi. Kişileri göster`,
+    drawerShow: 'Kişileri göster',
+    drawerHide: 'Kişileri gizle',
     end: 'Bitir',
     leave: 'Masadan ayrıl',
     leaveShort: 'Ayrıl',

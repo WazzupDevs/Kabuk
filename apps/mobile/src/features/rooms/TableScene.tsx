@@ -2,7 +2,8 @@ import { type ReactNode, useEffect, useState } from 'react';
 import { Animated, Image, Pressable, useWindowDimensions, View } from 'react-native';
 
 import { AuraBand } from '@/aura/AuraBackground';
-import { Av, Glass, T, useKit } from '@/aura/kit';
+import { CapIcon } from '@/aura/CapIcon';
+import { Av, Glass, Round, T, useKit } from '@/aura/kit';
 import { springConfig } from '@/aura/motion';
 import { LookAvatar } from '@/components/LookAvatar';
 import { useProfile } from '@/features/account/useProfile';
@@ -21,18 +22,19 @@ const k = KIT.table;
 // Under the card, the band's soft edge over what scrolls up under the head.
 const HEAD_BOTTOM = SPACING[2];
 const BAND_FADE = 24;
-// U22 (Masa `.grid`): four people a row.
+// MasaCekmeceAcik (`.grid`): four people a row; narrow (MasaCekmeceDar), three.
 const ROW_MAX = 4;
 const NARROW_ROW_MAX = 3;
-const NARROW_ROW_GAP = 12;
 
-// Masa's head (the owner's call, 28 and 29 Ekim): it stays put while the games scroll under it,
-// and nothing in it folds. On it, in order: `children` (the bar: back, chat, invite, Masadakiler
-// and end buttons), then the table's card (U22, docs/design/aura → Masa): its wide riso card as a
-// strip, `info` (the table's name and line, the owner's lobby button), then everyone at the table
-// four a row ("Sen" first), each face with its name under it. A press on the faces opens
-// Masadakiler. Only the table's people see it (rule 4). The screen's colour clouds lie behind the
-// head, lined up with the screen's own, so what scrolls under it is hidden (AuraBand).
+// Masa's head (the owner's call, 28 and 29 Ekim): it stays put while the games scroll under it.
+// On it, in order: `children` (the bar: back, chat, invite, Masadakiler and end buttons), then the
+// table's card (U22, docs/design/aura → Masa): its wide riso card as a strip, `info` (the table's
+// name and line, the owner's lobby button), then the people's drawer (MasaCekmece, the owner's
+// call, 6 Kasım): closed, their faces overlap in one row without names and take little room; the
+// round button at the right (or a press on the faces) opens it into everyone four a row ("Sen"
+// first) with their names, the button under them. Open, a press on the faces opens Masadakiler.
+// Only the table's people see it (rule 4). The screen's colour clouds lie behind the head, lined up
+// with the screen's own, so what scrolls under it is hidden (AuraBand).
 export function TableScene({
   people,
   profiles,
@@ -40,6 +42,8 @@ export function TableScene({
   icon,
   inset,
   onPress,
+  open,
+  onToggle,
   children,
   info,
 }: {
@@ -50,7 +54,11 @@ export function TableScene({
   icon: string | null;
   // The status bar's height: the head reaches under it.
   inset: number;
+  // Masadakiler (a press on the open drawer's faces).
   onPress: () => void;
+  // The people's drawer, open or closed (the screen closes it on back and on a scroll).
+  open: boolean;
+  onToggle: () => void;
   children?: ReactNode;
   info?: ReactNode;
 }) {
@@ -72,15 +80,6 @@ export function TableScene({
   const source = picture ? Image.resolveAssetSource(picture) : null;
   const drawn = source && source.width > 0 ? (strip * source.height) / source.width : k.strip;
   const pictureHeight = Math.max(k.strip, drawn);
-  const inner = strip - 2 * k.body.x;
-  // Aura v75 MasaDar: narrow (src/lib/narrow.ts), three to a row, the faces 44, 12 between rows.
-  const perRow = narrow ? NARROW_ROW_MAX : ROW_MAX;
-  const cell = Math.floor((inner - (perRow - 1) * k.colGap) / perRow);
-  const lines: TablePerson[][] = [];
-  ordered.forEach((p, i) => {
-    if (i % perRow === 0) lines.push([p]);
-    else lines[lines.length - 1]?.push(p);
-  });
 
   return (
     <View
@@ -127,34 +126,16 @@ export function TableScene({
           }}
         >
           {info}
-          <Pressable
-            testID="table-scene"
-            accessibilityRole="button"
-            accessibilityLabel={tr.table.whoLabel(people.length)}
-            onPress={onPress}
-            style={{ gap: narrow ? NARROW_ROW_GAP : k.rowGap }}
-          >
-            {lines.map((line, r) => (
-              <View key={r} style={{ flexDirection: 'row', gap: k.colGap }}>
-                {line.map((p) => {
-                  const i = ordered.indexOf(p);
-                  const late = first !== null && !first.has(p.sessionId);
-                  return (
-                    <Seat
-                      key={p.sessionId}
-                      person={p}
-                      you={p.sessionId === me}
-                      publicId={profiles?.get(p.sessionId)}
-                      width={cell}
-                      delay={late ? 0 : SEAT_DELAY + i * SEAT_STEP}
-                      late={late}
-                      narrow={narrow}
-                    />
-                  );
-                })}
-              </View>
-            ))}
-          </Pressable>
+          <PeopleDrawer
+            people={ordered}
+            first={first}
+            me={me}
+            profiles={profiles}
+            narrow={narrow}
+            open={open}
+            onToggle={onToggle}
+            onPeople={onPress}
+          />
         </View>
       </Glass>
     </View>
@@ -163,13 +144,209 @@ export function TableScene({
 const SEAT_DELAY = 160;
 const SEAT_STEP = MOTION.stagger.part;
 
-// One person: the face popping in (someone who sits down later with a ring spreading round it),
-// the name under it (11/600, muted), as wide as the place it has.
-function Seat({
+// The drawer (MasaCekmece, MasaCekmeceAcik, MasaCekmeceGecis, MasaCekmeceDar). One set of faces
+// moves between the two layouts on the morph spring (about 500 ms): from the overlapping row to
+// their places in the grid, growing to their size there (36 narrow), their white ring fading; the
+// names fade in over the second half; the button slides under the grid and its arrow turns over.
+// The grid is laid out once, unseen, for its rows' places and its height. Reduce motion: at once.
+function PeopleDrawer({
+  people,
+  first,
+  me,
+  profiles,
+  narrow,
+  open,
+  onToggle,
+  onPeople,
+}: {
+  people: readonly TablePerson[];
+  first: ReadonlySet<string> | null;
+  me: string;
+  profiles: ReadonlyMap<string, string> | undefined;
+  narrow: boolean;
+  open: boolean;
+  onToggle: () => void;
+  onPeople: () => void;
+}) {
+  const { c } = useKit();
+  const d = k.drawer;
+  const reduce = useReduceMotion();
+  const [width, setWidth] = useState(0);
+  const [grid, setGrid] = useState(0);
+  const [rows, setRows] = useState<readonly number[]>([]);
+  const [progress] = useState(() => new Animated.Value(open ? 1 : 0));
+  useEffect(() => {
+    if (reduce) {
+      progress.setValue(open ? 1 : 0);
+      return undefined;
+    }
+    // Layout values (height, place): on the JS side.
+    const anim = Animated.spring(progress, {
+      ...springConfig(MOTION.springs.morph),
+      useNativeDriver: false,
+      toValue: open ? 1 : 0,
+    });
+    anim.start();
+    return () => anim.stop();
+  }, [open, reduce, progress]);
+
+  const n = people.length;
+  const closedFace = d.face;
+  const openFace = narrow ? d.faceNarrow : d.face;
+  const perRow = narrow ? NARROW_ROW_MAX : ROW_MAX;
+  const button = KIT.size.roundLg;
+  // Closed: the row left of the button; a full table overlaps more when it must (320 dp).
+  const rowWidth = Math.max(closedFace, width - button - d.gap);
+  const step =
+    n > 1 ? Math.min(closedFace * (1 - d.overlap), (rowWidth - closedFace) / (n - 1)) : 0;
+  // Open: the grid 8 past the body on each side, no column gap.
+  const cell = (width + 2 * d.out) / perRow;
+  const openHeight = Math.max(d.row, grid + d.gap + button);
+  const lift = (from: number, to: number) =>
+    progress.interpolate({ inputRange: [0, 1], outputRange: [from, to] });
+  const names = progress.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, 0, 1] });
+  const lines: TablePerson[][] = [];
+  people.forEach((p, i) => {
+    if (i % perRow === 0) lines.push([p]);
+    else lines[lines.length - 1]?.push(p);
+  });
+  const placeRow = (r: number, y: number) =>
+    setRows((prev) => {
+      if (prev[r] === y) return prev;
+      const next = [...prev];
+      next[r] = y;
+      return next;
+    });
+
+  return (
+    <Animated.View
+      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+      style={{ height: lift(d.row, openHeight) }}
+    >
+      <Pressable
+        testID="table-scene"
+        accessibilityRole="button"
+        accessibilityLabel={open ? tr.table.whoLabel(n) : tr.table.drawerLabel(n)}
+        accessibilityState={{ expanded: open }}
+        onPress={open ? onPeople : onToggle}
+        style={{ position: 'absolute', left: 0, top: 0, bottom: 0, right: open ? 0 : button }}
+      />
+      {width > 0 ? (
+        <>
+          <Animated.View
+            pointerEvents="none"
+            accessible={false}
+            importantForAccessibility="no-hide-descendants"
+            onLayout={(e) => setGrid(e.nativeEvent.layout.height)}
+            style={{
+              position: 'absolute',
+              left: -d.out,
+              right: -d.out,
+              top: 0,
+              gap: d.rowGap,
+              opacity: names,
+            }}
+          >
+            {lines.map((line, r) => (
+              <View
+                key={r}
+                style={{ flexDirection: 'row' }}
+                onLayout={(e) => placeRow(r, e.nativeEvent.layout.y)}
+              >
+                {line.map((p) => (
+                  <View
+                    key={p.sessionId}
+                    style={{ width: cell, alignItems: 'center', gap: d.nameGap }}
+                  >
+                    <View style={{ width: openFace, height: openFace }} />
+                    <T v="member" center lines={1} fit style={{ alignSelf: 'stretch' }}>
+                      {p.sessionId === me ? tr.table.youTag : p.alias}
+                    </T>
+                  </View>
+                ))}
+              </View>
+            ))}
+          </Animated.View>
+          {people.map((p, i) => {
+            const fromX = i * step + closedFace / 2 - openFace / 2;
+            const fromY = d.row / 2 - openFace / 2;
+            const toX = -d.out + (i % perRow) * cell + cell / 2 - openFace / 2;
+            const toY = rows[Math.floor(i / perRow)] ?? 0;
+            const late = first !== null && !first.has(p.sessionId);
+            return (
+              <Animated.View
+                key={p.sessionId}
+                pointerEvents="none"
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: openFace,
+                  height: openFace,
+                  transform: [
+                    { translateX: lift(fromX, toX) },
+                    { translateY: lift(fromY, toY) },
+                    { scale: lift(closedFace / openFace, 1) },
+                  ],
+                }}
+              >
+                <Face
+                  person={p}
+                  you={p.sessionId === me}
+                  publicId={profiles?.get(p.sessionId)}
+                  delay={late ? 0 : SEAT_DELAY + i * SEAT_STEP}
+                  late={late}
+                  narrow={narrow}
+                />
+                <Animated.View
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    width: openFace,
+                    height: openFace,
+                    borderRadius: openFace / 2,
+                    borderWidth: KIT.size.avRing * (openFace / closedFace),
+                    borderColor: KIT.white,
+                    opacity: lift(1, 0),
+                  }}
+                />
+              </Animated.View>
+            );
+          })}
+        </>
+      ) : null}
+      <Animated.View style={{ position: 'absolute', right: 0, top: lift(0, grid + d.gap) }}>
+        <Round
+          label={open ? tr.table.drawerHide : tr.table.drawerShow}
+          testID="table-drawer"
+          onPress={onToggle}
+        >
+          <Animated.View
+            style={{
+              transform: [
+                {
+                  rotate: lift(0, 180).interpolate({
+                    inputRange: [0, 180],
+                    outputRange: ['0deg', '180deg'],
+                  }),
+                },
+              ],
+            }}
+          >
+            <CapIcon name="down" color={c.ink} size={KIT.size.iconSnug} />
+          </Animated.View>
+        </Round>
+      </Animated.View>
+    </Animated.View>
+  );
+}
+
+// One person's face: popping in (someone who sits down later with a ring spreading round it).
+function Face({
   person,
   you,
   publicId,
-  width,
   delay,
   late,
   narrow,
@@ -177,7 +354,6 @@ function Seat({
   person: TablePerson;
   you: boolean;
   publicId: string | undefined;
-  width: number;
   delay: number;
   late: boolean;
   narrow: boolean;
@@ -207,49 +383,41 @@ function Seat({
     anim.start();
     return () => anim.stop();
   }, [reduce, delay, late, pop, ring]);
-  const name = you ? tr.table.youTag : person.alias;
-  const size = narrow ? 'md' : 'member';
+  const size = narrow ? 'member' : 'sm';
   const face = KIT.size.av[size];
   return (
-    <View style={{ width, alignItems: 'center', gap: k.nameGap }} pointerEvents="none">
-      <View>
-        <Animated.View
-          style={{
-            position: 'absolute',
-            left: -face * RING_OUT,
-            top: -face * RING_OUT,
-            width: face * (1 + 2 * RING_OUT),
-            height: face * (1 + 2 * RING_OUT),
-            borderRadius: face,
-            borderWidth: KIT.size.disk,
-            borderColor: KIT.diskRing,
-            opacity: ring.interpolate({ inputRange: [0, 0.05, 1], outputRange: [0, 0.8, 0] }),
-            transform: [
-              { scale: ring.interpolate({ inputRange: [0, 1], outputRange: [0.9, 1.7] }) },
-            ],
-          }}
-        />
-        <Animated.View
-          style={{
-            opacity: pop.interpolate({ inputRange: [0, 0.3, 1], outputRange: [0, 1, 1] }),
-            transform: [
-              { translateY: pop.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }) },
-              { scale: pop.interpolate({ inputRange: [0, 1], outputRange: [0.4, 1] }) },
-            ],
-          }}
-        >
-          {!person.profiled && person.look ? (
-            <Av size={size} name={person.alias}>
-              <LookAvatar look={person.look} size={face} />
-            </Av>
-          ) : (
-            <Av size={size} name={person.alias} photoUrl={view.data?.photoUrl ?? null} />
-          )}
-        </Animated.View>
-      </View>
-      <T v="member" center lines={1} fit style={{ alignSelf: 'stretch' }}>
-        {name}
-      </T>
+    <View>
+      <Animated.View
+        style={{
+          position: 'absolute',
+          left: -face * RING_OUT,
+          top: -face * RING_OUT,
+          width: face * (1 + 2 * RING_OUT),
+          height: face * (1 + 2 * RING_OUT),
+          borderRadius: face,
+          borderWidth: KIT.size.disk,
+          borderColor: KIT.diskRing,
+          opacity: ring.interpolate({ inputRange: [0, 0.05, 1], outputRange: [0, 0.8, 0] }),
+          transform: [{ scale: ring.interpolate({ inputRange: [0, 1], outputRange: [0.9, 1.7] }) }],
+        }}
+      />
+      <Animated.View
+        style={{
+          opacity: pop.interpolate({ inputRange: [0, 0.3, 1], outputRange: [0, 1, 1] }),
+          transform: [
+            { translateY: pop.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }) },
+            { scale: pop.interpolate({ inputRange: [0, 1], outputRange: [0.4, 1] }) },
+          ],
+        }}
+      >
+        {!person.profiled && person.look ? (
+          <Av size={size} name={person.alias}>
+            <LookAvatar look={person.look} size={face} />
+          </Av>
+        ) : (
+          <Av size={size} name={person.alias} photoUrl={view.data?.photoUrl ?? null} />
+        )}
+      </Animated.View>
     </View>
   );
 }
