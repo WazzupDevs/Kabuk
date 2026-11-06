@@ -72,25 +72,37 @@ function PaperTexture() {
   );
 }
 
-// The question over the guess (`.qc`): "SORU 3/5" and the question on the paper.
-export function QuestionStrip({ eyebrow, question }: { eyebrow: string; question: string }) {
+// The question over the guess (`.qc`): "SORU 3/5" and the question on the paper. `tight` (the
+// guess under the keyboard at 320 or above 1× text, `.qc.q13`): no eyebrow, 10/14 in.
+export function QuestionStrip({
+  eyebrow,
+  question,
+  tight,
+}: {
+  eyebrow: string;
+  question: string;
+  tight?: boolean;
+}) {
+  const pad = tight ? K.qc.tight : K.qc;
   return (
     <View style={{ borderRadius: K.qc.radius, boxShadow: K.qc.shadow }}>
       <View
         style={{
-          paddingVertical: K.qc.padY,
-          paddingHorizontal: K.qc.padX,
+          paddingVertical: pad.padY,
+          paddingHorizontal: pad.padX,
           gap: K.qc.gap,
           borderRadius: K.qc.radius,
         }}
       >
         <PaperTexture />
-        <Text
-          maxFontSizeMultiplier={MAX_FONT}
-          style={[KT.eyebrow, { color: K.ink, opacity: K.qc.eyebrowFade }]}
-        >
-          {upperTr(eyebrow)}
-        </Text>
+        {tight ? null : (
+          <Text
+            maxFontSizeMultiplier={MAX_FONT}
+            style={[KT.eyebrow, { color: K.ink, opacity: K.qc.eyebrowFade }]}
+          >
+            {upperTr(eyebrow)}
+          </Text>
+        )}
         <Text
           accessibilityRole="header"
           maxFontSizeMultiplier={MAX_FONT}
@@ -103,17 +115,9 @@ export function QuestionStrip({ eyebrow, question }: { eyebrow: string; question
   );
 }
 
-// The open card's face (`.card.soru`): the k-soru picture, "SORU 3/5" in its yellow band, the
-// question on its paper and its unit's chip, scaled with the deck. A long question shrinks.
-export function CardFace({
-  kick,
-  question,
-  unit,
-}: {
-  kick: string;
-  question: string;
-  unit: string;
-}) {
+// The open card's face (`.card.soru`): the k-soru picture (its yellow band empty), the question on
+// its paper and "Cevap: <birim>" in its chip, scaled with the deck. A long question shrinks.
+export function CardFace({ question, unit }: { question: string; unit: string }) {
   const d = useRisoDeck();
   const z = (n: number) => n * d.scale;
   const F = K.cardFace;
@@ -130,26 +134,6 @@ export function CardFace({
         contentFit="cover"
         accessibilityIgnoresInvertColors
       />
-      <View
-        style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          top: z(F.kick.top),
-          height: z(F.kick.height),
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <Text
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          maxFontSizeMultiplier={1}
-          style={[KT.kick, { color: K.ink }]}
-        >
-          {upperTr(kick)}
-        </Text>
-      </View>
       <View
         style={{
           position: 'absolute',
@@ -189,7 +173,7 @@ export function CardFace({
           }}
         >
           <Text maxFontSizeMultiplier={1} style={[KT.cardUnit, { color: K.white }]}>
-            {unit}
+            {tr.kaupholl.cardUnit(unit)}
           </Text>
         </View>
       </View>
@@ -239,15 +223,24 @@ export function OneLineStrip({
 // ------------------------------------------------------------------ the guess
 
 // The guess row (`.ans`): the field (what the screen passes) and the question's unit.
-export function GuessRow({ field, unit }: { field: ReactNode; unit: string }) {
+export function GuessRow({
+  field,
+  unit,
+  narrow,
+}: {
+  field: ReactNode;
+  unit: string;
+  narrow?: boolean;
+}) {
   const { c } = useKit();
+  const A = narrow ? K.ansNarrow : K.ans;
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: K.ans.gap }}>
       <View style={{ flex: 1 }}>{field}</View>
       <View
         style={{
-          height: K.ans.height,
-          paddingHorizontal: K.ans.padX,
+          height: A.height,
+          paddingHorizontal: A.padX,
           borderRadius: K.ans.radius,
           backgroundColor: c.raised,
           borderWidth: KIT.size.edge,
@@ -263,19 +256,32 @@ export function GuessRow({ field, unit }: { field: ReactNode; unit: string }) {
   );
 }
 
-// The field's box: 64 high, 16 round, its edge in --accent while it takes a number.
-export function FieldBox({ off, children }: { off: boolean; children: ReactNode }) {
+// The field's box: 64 high (56 at 320), 16 round, its edge in --accent while it takes a number.
+// `onWidth` tells the text's room, for fitting it.
+export function FieldBox({
+  off,
+  narrow,
+  onWidth,
+  children,
+}: {
+  off: boolean;
+  narrow?: boolean;
+  onWidth?: (width: number) => void;
+  children: ReactNode;
+}) {
   const { colors } = useTheme();
   const { c } = useKit();
+  const A = narrow ? K.ansNarrow : K.ans;
   return (
     <View
+      onLayout={(e) => onWidth?.(e.nativeEvent.layout.width - 2 * (K.ans.edge + A.padX))}
       style={{
-        height: K.ans.height,
+        height: A.height,
         borderRadius: K.ans.radius,
         borderWidth: K.ans.edge,
         borderColor: off ? c.hair : colors.accent,
         backgroundColor: c.field,
-        paddingHorizontal: K.ans.padX,
+        paddingHorizontal: A.padX,
         justifyContent: 'center',
       }}
     >
@@ -611,7 +617,18 @@ function CountBadge({ n, stack }: { n: number; stack?: boolean }) {
 }
 
 // The coins on a slice: each person's coin with their face (and "×2"), or the stack.
-function Coins({ faces, drawn, compact }: { faces: Faces; drawn: CoinsDrawn; compact: boolean }) {
+function Coins({
+  faces,
+  drawn,
+  compact,
+  ghost,
+}: {
+  faces: Faces;
+  drawn: CoinsDrawn;
+  compact: boolean;
+  // The first coin is the one about to land (KaupholJetonKoy): half drawn.
+  ghost: boolean;
+}) {
   const bet = compact ? K.bet.compact : K.bet;
   if (drawn.kind === 'stack') {
     return (
@@ -638,12 +655,17 @@ function Coins({ faces, drawn, compact }: { faces: Faces; drawn: CoinsDrawn; com
   }
   return (
     <>
-      {drawn.stakes.map((s: Stake) => (
+      {drawn.stakes.map((s: Stake, i) => (
         <View
-          key={s.sid}
-          accessible
+          key={ghost && i === 0 ? `${s.sid}-ghost` : s.sid}
+          accessible={!(ghost && i === 0)}
+          importantForAccessibility={ghost && i === 0 ? 'no-hide-descendants' : 'auto'}
           accessibilityLabel={tr.kaupholl.stake(nameOf(faces, s.sid), s.n)}
-          style={{ width: bet.width, height: bet.height }}
+          style={{
+            width: bet.width,
+            height: bet.height,
+            opacity: ghost && i === 0 ? K.bet.ghost : 1,
+          }}
         >
           <Image
             source={kauphollArt.coin}
@@ -714,7 +736,9 @@ function Who({ faces, slice }: { faces: Faces; slice: KauphollSlice }) {
 
 // A slice (`.slot`): its odds' disc, the guess and who wrote it, the coins. The person's coins
 // make its edge white and dashed (`mine`), their own guess 70 % white (`mineGuess`); the winner
-// --signal with "Kazandı", those over the answer at 45 %.
+// --signal with "Kazandı", those over the answer at 45 %. Under the finger (`.slot.press`, from
+// `onPressState`) it is 98 % with a solid --accent edge and a touch disc; `ghost` is the person
+// whose coin is about to land, drawn at half before the others.
 export function Slice({
   faces,
   slice,
@@ -725,6 +749,9 @@ export function Slice({
   mineGuess,
   tag,
   onPress,
+  onPressState,
+  pressed,
+  ghost,
   disabled,
 }: {
   faces: Faces;
@@ -737,6 +764,9 @@ export function Slice({
   // A tag over its top right ("Kesinleşti", "Kazandı").
   tag?: string;
   onPress?: () => void;
+  onPressState?: (down: boolean) => void;
+  pressed?: boolean;
+  ghost?: string;
   disabled?: boolean;
 }) {
   const { colors } = useTheme();
@@ -750,7 +780,12 @@ export function Slice({
     : look.compact
       ? K.bets.maxWidthCompact
       : K.bets.maxWidth;
-  const drawn = coinsDrawn(stakes, room, bet.width, K.bets.gap);
+  // The coin about to land only when it still sits beside the others; otherwise the stack shows.
+  const withGhost = ghost
+    ? coinsDrawn([{ sid: ghost, n: 1 }, ...stakes], room, bet.width, K.bets.gap)
+    : null;
+  const ghosted = withGhost?.kind === 'each';
+  const drawn = ghosted ? withGhost : coinsDrawn(stakes, room, bet.width, K.bets.gap);
   const win = mark === 'win';
   const smaller = slice.value === null;
   const authors = authorsOf(slice);
@@ -764,6 +799,8 @@ export function Slice({
   return (
     <Pressable
       onPress={onPress}
+      onPressIn={() => onPressState?.(true)}
+      onPressOut={() => onPressState?.(false)}
       disabled={disabled || !onPress}
       accessibilityRole={onPress ? 'button' : undefined}
       accessibilityState={onPress ? { disabled: !!disabled } : undefined}
@@ -780,12 +817,39 @@ export function Slice({
         gap: box.gap,
         backgroundColor: win ? S.winFill : look.locked ? S.lockedFill : S.fill,
         borderWidth: S.edge,
-        borderStyle: win || (!mine && !mineGuess) ? 'solid' : 'dashed',
-        borderColor: win ? colors.signal : mine ? S.mine : mineGuess ? S.mineGuess : 'transparent',
+        borderStyle: win || pressed || (!mine && !mineGuess) ? 'solid' : 'dashed',
+        borderColor: win
+          ? colors.signal
+          : pressed
+            ? colors.accent
+            : mine
+              ? S.mine
+              : mineGuess
+                ? S.mineGuess
+                : 'transparent',
         boxShadow: win ? S.winHalo : undefined,
         opacity: mark === 'over' ? S.over : 1,
+        transform: pressed ? [{ scale: S.pressScale }] : undefined,
       }}
     >
+      {pressed ? (
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            left: `${S.touch.at * 100}%`,
+            top: '50%',
+            width: S.touch.side,
+            height: S.touch.side,
+            marginLeft: -S.touch.side / 2,
+            marginTop: -S.touch.side / 2,
+            borderRadius: S.touch.side / 2,
+            backgroundColor: S.touch.fill,
+            boxShadow: `0px 0px 0px ${S.touch.ring}px ${S.touch.ringFill}`,
+            zIndex: 3,
+          }}
+        />
+      ) : null}
       <View
         style={{
           width: odds,
@@ -830,7 +894,7 @@ export function Slice({
           maxWidth: room,
         }}
       >
-        <Coins faces={faces} drawn={drawn} compact={look.compact} />
+        <Coins faces={faces} drawn={drawn} compact={look.compact} ghost={ghosted} />
       </View>
       {tag ? (
         <View style={{ position: 'absolute', right: S.tagRight, top: -S.tagLift }}>
@@ -889,6 +953,7 @@ export function BoardRows({
   myGuessPos,
   tagOf,
   onTap,
+  press,
   disabled,
   answerText,
 }: {
@@ -900,6 +965,8 @@ export function BoardRows({
   myGuessPos: number | null;
   tagOf: (pos: number, mark: SliceMark) => string | undefined;
   onTap?: (pos: number) => void;
+  // The slice under the finger and the coin about to land on it (KaupholJetonKoy).
+  press?: { pos: number | null; ghost: string | undefined; onChange: (pos: number | null) => void };
   disabled?: boolean;
   answerText: string;
 }) {
@@ -920,6 +987,9 @@ export function BoardRows({
             mineGuess={row.slice.pos === myGuessPos && !mineOf(row.slice.pos)}
             tag={tagOf(row.slice.pos, row.mark)}
             onPress={onTap ? () => onTap(row.slice.pos) : undefined}
+            onPressState={press ? (down) => press.onChange(down ? row.slice.pos : null) : undefined}
+            pressed={press?.pos === row.slice.pos}
+            ghost={press?.pos === row.slice.pos ? press.ghost : undefined}
             disabled={disabled}
           />
         ),
@@ -978,7 +1048,16 @@ export function BoardSkeleton({ look }: { look: BoardLook }) {
 }
 
 // The wallet (`.wallet`): the two coins, a placed one faded and grey; locked, the lock over them.
-export function Wallet({ left, locked }: { left: number; locked: boolean }) {
+// `leaving`: the first free coin is going to the slice under the finger, at half.
+export function Wallet({
+  left,
+  locked,
+  leaving,
+}: {
+  left: number;
+  locked: boolean;
+  leaving?: boolean;
+}) {
   const W = K.wallet;
   return (
     <View
@@ -988,13 +1067,22 @@ export function Wallet({ left, locked }: { left: number; locked: boolean }) {
     >
       {[0, 1].map((i) => {
         const used = i >= left;
+        const going = !!leaving && !used && i === 0;
         return (
           <View
             key={i}
             style={{
               width: W.coin,
               height: W.coin,
-              opacity: locked ? (used ? W.lockedUsed : W.lockedCoin) : used ? W.used : 1,
+              opacity: locked
+                ? used
+                  ? W.lockedUsed
+                  : W.lockedCoin
+                : used
+                  ? W.used
+                  : going
+                    ? W.leaving
+                    : 1,
               filter: used
                 ? [{ grayscale: 1 }]
                 : [

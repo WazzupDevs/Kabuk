@@ -9,12 +9,14 @@ import {
   compactBoard,
   editGuess,
   endWords,
+  fieldFontSize,
   formatGuess,
   guessValue,
   kauphollAbandoned,
   laneSettle,
   laneStart,
   laneSubmit,
+  pressPreview,
   rawOf,
   readKauphollResult,
   readKauphollState,
@@ -201,6 +203,23 @@ describe('the board', () => {
     expect(tapSlot([3, 1], 1)).toEqual([3, null]);
     expect(tapSlot([3, 1], 4)).toEqual([1, 4]);
     expect(coinsLeft([3, null])).toBe(1);
+  });
+
+  it('previews a press: the coin that comes and whether it leaves the wallet', () => {
+    expect(pressPreview([null, null], 3)).toEqual({ ghost: true, leaving: true });
+    expect(pressPreview([3, null], 3)).toEqual({ ghost: true, leaving: true });
+    expect(pressPreview([3, 3], 3)).toEqual({ ghost: false, leaving: false });
+    expect(pressPreview([3, 1], 1)).toEqual({ ghost: false, leaving: false });
+    expect(pressPreview([3, 1], 4)).toEqual({ ghost: true, leaving: false });
+  });
+
+  it('shrinks the field text to fit and never below half', () => {
+    expect(fieldFontSize('9', 200, 32, 1)).toBe(32);
+    const small = fieldFontSize('99.999,9', 181, 32, 1.3);
+    expect(small).toBeLessThan(32);
+    expect(small).toBeGreaterThanOrEqual(16);
+    expect(fieldFontSize('99.999,9', 10, 32, 1.3)).toBe(16);
+    expect(fieldFontSize('99.999,9', 0, 32, 1)).toBe(32);
   });
 });
 
