@@ -816,7 +816,7 @@ K-77'nin altı oyunundan biri ("Bombayı çabuk at", 3+); kurallar K-85 (proje s
   - oyun sırasında gelen gözlemcidir.
 - **Roller:** oyuncu (sırası gelince Kartı aç ve Fitili yak, At, Hazırım); gözlemci izler, patlama anını kimse görmez.
 - **Sunucu:** `sprengja` fonksiyonu: `shuffle`, `start`, `reveal { round }`, `light { round }`, `take-over { round, step }`, `pass { round, step }`, `poll { round }`, `ready { step }`, `advance`. Kilitler: check-in → `rooms` → `game_players` → `game_secrets`; iş `rooms`'u tek başına `skip locked` ile kilitler. `poll`, `advance`, `ready`, `reveal`, `light` `IDEMPOTENT_CALLS`'tadır; `pass` değildir.
-- **Doğrulama:** Sprengja dev projesinde pg_cron sürümü, boşta ve yükte performans, maliyet, arka plan ve bağlantı dönüşü doğrulandı (`docs/decisions/4.6.8-sprengja-dev.md`); oyun 6 Kasım 2026'da proje sahibinin kararıyla açıldı (`available: true`; K-85). `sprengja-explode` işi kapalıyken patlamayı telefonların `poll`'u yapar; işi açmak proje sahibindedir.
+- **Doğrulama:** Sprengja dev projesinde pg_cron sürümü, boşta ve yükte performans, maliyet, arka plan ve bağlantı dönüşü doğrulandı (`docs/decisions/4.6.8-sprengja-dev.md`); oyun 6 Kasım 2026'da proje sahibinin kararıyla açıldı (`available: true`; K-85). `sprengja-explode` dev projesinde açık (6 Kasım); üretimde açmak proje sahibinin yayınındadır. İş kapalıyken patlamayı telefonların `poll`'u yapar.
 
 ### Adım 4.6.9: Kibrit
 
