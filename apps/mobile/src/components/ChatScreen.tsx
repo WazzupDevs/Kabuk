@@ -729,6 +729,41 @@ function ChatList<T extends ChatListItem>({
   const [latestHeight, setLatestHeight] = useState(0);
   const [metaHidden, setMetaHidden] = useState(false);
   const scrollY = useRef(0);
+  // Following the end (Telegram Android's chat, `wasManualScroll`): only the reader's own drag or
+  // fling away from the end lets go; the keyboard, a taller message bar and new rows never do, and
+  // while it holds the list is put back at its end whenever any of them moves it (the owner's
+  // report, 6 Kasım: a message sent with the keyboard up stayed under the keyboard and the bar).
+  const pinned = useRef(true);
+  const dragging = useRef(false);
+  const settleFrame = useRef<number | null>(null);
+  const stayAtEnd = () => {
+    list.current?.scrollToOffset({ offset: 0, animated: false });
+    if (settleFrame.current !== null) cancelAnimationFrame(settleFrame.current);
+    // Again two frames later: on Android a scroll asked for with new content (a row, a taller
+    // bar) can run before the content's new size reaches the screen.
+    settleFrame.current = requestAnimationFrame(() => {
+      settleFrame.current = requestAnimationFrame(() => {
+        settleFrame.current = null;
+        if (pinned.current && !dragging.current) {
+          list.current?.scrollToOffset({ offset: 0, animated: false });
+        }
+      });
+    });
+  };
+  useEffect(
+    () => () => {
+      if (settleFrame.current !== null) cancelAnimationFrame(settleFrame.current);
+    },
+    [],
+  );
+  // The message bar grew or shrank (a reply, the identity strip, a note, more lines): at the end,
+  // the stream stays at its end above it.
+  const seenUnder = useRef(bottomInset);
+  useEffect(() => {
+    if (seenUnder.current === bottomInset) return;
+    seenUnder.current = bottomInset;
+    if (pinned.current && !dragging.current) stayAtEnd();
+  });
   const [reportMeta] = useState(() => (next: MetaCellReport) => {
     setMetaCell((prev) =>
       prev && prev.cellHeight === next.cellHeight && prev.metaTop === next.metaTop ? prev : next,
@@ -746,7 +781,7 @@ function ChatList<T extends ChatListItem>({
       })
     : BOTTOM_SLACK;
   useEffect(() => {
-    setMetaHidden(items.length > 0 && scrollY.current >= hiddenAt);
+    setMetaHidden(items.length > 0 && !pinned.current && scrollY.current >= hiddenAt);
   }, [hiddenAt, items.length]);
   useEffect(() => {
     const timer = setTimeout(() => setLive(true), SETTLE_MS);
@@ -754,6 +789,7 @@ function ChatList<T extends ChatListItem>({
   }, []);
 
   const toEnd = (animated: boolean) => {
+    pinned.current = true;
     list.current?.scrollToOffset({ offset: 0, animated });
     setAtBottom(true);
     setPending(0);
@@ -773,6 +809,7 @@ function ChatList<T extends ChatListItem>({
   const [seenKey, setSeenKey] = useState(newestKey);
   if (newestKey !== seenKey) {
     setSeenKey(newestKey);
+    // `atBottom` holds while the list follows the end (pinned, see onScroll).
     if (seenKey !== undefined && newestKey !== undefined && !atBottom && !newestMine) {
       setPending((n) => n + 1);
     }
@@ -783,12 +820,13 @@ function ChatList<T extends ChatListItem>({
   useEffect(() => {
     if (newestKey === followed.current) return;
     followed.current = newestKey;
-    if (newestMine) list.current?.scrollToOffset({ offset: 0, animated: true });
+    if (newestMine) pinned.current = true;
+    if (newestMine || pinned.current) stayAtEnd();
     // The list ends at the new message (the reader's own is followed, at the bottom the list keeps
     // to the end by itself): the last scroll offset is stale, and with the new cell's time line
     // measured (a sent message gets its line) it put the down arrow up at the bottom (ui 1.2).
-    if (newestMine || atBottom) scrollY.current = 0;
-  }, [newestKey, newestMine, atBottom]);
+    if (newestMine || atBottom || pinned.current) scrollY.current = 0;
+  });
 
   // The same for the whole list (a new one would draw every row again): it reads the rows as they
   // are when a quote is tapped.
@@ -806,6 +844,7 @@ function ChatList<T extends ChatListItem>({
       jumpTo: (id) => {
         const index = shownItems.current.findIndex((i) => i.id === id);
         if (index < 0) return false;
+        pinned.current = false;
         list.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 });
         setHighlight((h) => ({ id, n: h.n + 1 }));
         return true;
@@ -822,6 +861,7 @@ function ChatList<T extends ChatListItem>({
     opened.current = true;
     const index = items.findIndex((i) => i.id === openAt);
     if (index <= 0) return undefined;
+    pinned.current = false;
     const frame = requestAnimationFrame(() =>
       list.current?.scrollToIndex({
         index,
@@ -925,10 +965,14 @@ function ChatList<T extends ChatListItem>({
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const y = e.nativeEvent.contentOffset.y;
     const bottom = y <= BOTTOM_SLACK;
-    if (bottom !== atBottom) setAtBottom(bottom);
-    if (bottom && pending > 0) setPending(0);
+    // Only the reader's own scroll moves the end's state: the keyboard's and the bar's (pinned)
+    // are put back.
+    if (bottom && !pinned.current && !dragging.current) pinned.current = true;
+    const held = bottom || pinned.current;
+    if (held !== atBottom) setAtBottom(held);
+    if (held && pending > 0) setPending(0);
     scrollY.current = y;
-    const hidden = y >= hiddenAt;
+    const hidden = !pinned.current && y >= hiddenAt;
     if (hidden !== metaHidden) setMetaHidden(hidden);
     if (timeOf) placeDay();
   };
@@ -1012,12 +1056,29 @@ function ChatList<T extends ChatListItem>({
                           scrollEventThrottle={64}
                           onScroll={onScroll}
                           onScrollBeginDrag={() => {
+                            dragging.current = true;
+                            pinned.current = false;
                             bar.setOpen(null);
                             showDay();
                           }}
-                          onScrollEndDrag={hideDaySoon}
+                          onScrollEndDrag={(e) => {
+                            dragging.current = false;
+                            if (e.nativeEvent.contentOffset.y <= BOTTOM_SLACK) {
+                              pinned.current = true;
+                            }
+                            hideDaySoon();
+                          }}
                           onMomentumScrollBegin={showDay}
-                          onMomentumScrollEnd={hideDaySoon}
+                          onMomentumScrollEnd={(e) => {
+                            if (e.nativeEvent.contentOffset.y <= BOTTOM_SLACK) {
+                              pinned.current = true;
+                            }
+                            hideDaySoon();
+                          }}
+                          // A row came or grew (a photo, a quote): at the end it stays at the end.
+                          onContentSizeChange={() => {
+                            if (pinned.current && !dragging.current) stayAtEnd();
+                          }}
                           onViewableItemsChanged={onViewable}
                           viewabilityConfig={VIEWABLE}
                           onScrollToIndexFailed={(info) => {
