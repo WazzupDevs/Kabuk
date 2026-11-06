@@ -1,7 +1,7 @@
 import { type ReactNode, useEffect, useState } from 'react';
 import { Animated, Image, Pressable, useWindowDimensions, View } from 'react-native';
 
-import { AuraBand } from '@/aura/AuraBackground';
+import { AuraBand, AuraPatch } from '@/aura/AuraBackground';
 import { CapIcon } from '@/aura/CapIcon';
 import { Av, Glass, Round, T, useKit } from '@/aura/kit';
 import { springConfig } from '@/aura/motion';
@@ -19,9 +19,8 @@ import { type TablePerson } from './queries';
 import { TABLE_CARD_WIDE } from './tableIconImages';
 
 const k = KIT.table;
-// Under the card, the band's soft edge over what scrolls up under the head.
+// Under the card: room before what scrolls up under the head.
 const HEAD_BOTTOM = SPACING[2];
-const BAND_FADE = 24;
 // MasaCekmeceAcik (`.grid`): four people a row; narrow (MasaCekmeceDar), three.
 const ROW_MAX = 4;
 const NARROW_ROW_MAX = 3;
@@ -34,7 +33,9 @@ const NARROW_ROW_MAX = 3;
 // round button at the right (or a press on the faces) opens it into everyone four a row ("Sen"
 // first) with their names, the button under them. Open, a press on the faces opens Masadakiler.
 // Only the table's people see it (rule 4). The screen's colour clouds lie behind the head, lined up
-// with the screen's own, so what scrolls under it is hidden (AuraBand).
+// with the screen's own, so what scrolls under it is hidden: a band down to the card's lower corners
+// and the ground in the card's shape behind it (AuraPatch), so what scrolls up ends along the
+// card's rounded foot (the owner's report, 6 Kasım, round 3).
 export function TableScene({
   people,
   profiles,
@@ -65,7 +66,7 @@ export function TableScene({
   const { c } = useKit();
   const { width } = useWindowDimensions();
   const narrow = useNarrow();
-  const [headHeight, setHeadHeight] = useState(0);
+  const [card, setCard] = useState<{ y: number; height: number } | null>(null);
   const ordered = [
     ...people.filter((p) => p.sessionId === me),
     ...people.filter((p) => p.sessionId !== me),
@@ -82,62 +83,79 @@ export function TableScene({
   const pictureHeight = Math.max(k.strip, drawn);
 
   return (
-    <View
-      onLayout={(e) => setHeadHeight(e.nativeEvent.layout.height)}
-      style={{ paddingTop: inset, paddingBottom: HEAD_BOTTOM, gap: KIT.size.rowGap }}
-    >
-      <AuraBand top={0} height={headHeight} fade={BAND_FADE} direction="down" />
-      {children}
-      <Glass
-        radius={k.radius}
-        style={{ marginHorizontal: KIT.size.side, padding: k.pad }}
-        testID="table-panel"
-      >
-        <View
-          style={{
-            height: k.strip,
-            borderRadius: k.stripRadius,
-            overflow: 'hidden',
-            backgroundColor: c.placeholder,
-          }}
-        >
-          {picture ? (
-            <Image
-              source={picture}
-              fadeDuration={0}
-              accessible={false}
-              resizeMode="cover"
-              style={{
-                position: 'absolute',
-                left: 0,
-                width: strip,
-                height: pictureHeight,
-                top: -(pictureHeight - k.strip) * k.stripFocus,
-              }}
-            />
-          ) : null}
-        </View>
-        <View
-          style={{
-            paddingTop: k.body.top,
-            paddingHorizontal: k.body.x,
-            paddingBottom: k.body.bottom,
-            gap: k.body.gap,
-          }}
-        >
-          {info}
-          <PeopleDrawer
-            people={ordered}
-            first={first}
-            me={me}
-            profiles={profiles}
-            narrow={narrow}
-            open={open}
-            onToggle={onToggle}
-            onPeople={onPress}
+    <View style={{ paddingTop: inset, paddingBottom: HEAD_BOTTOM, gap: KIT.size.rowGap }}>
+      {card ? (
+        <>
+          <AuraBand top={0} height={card.y + card.height - k.radius} fade={0} direction="down" />
+          <AuraPatch
+            top={card.y}
+            left={KIT.size.side}
+            width={width - 2 * KIT.size.side}
+            height={card.height}
+            radius={k.radius}
           />
-        </View>
-      </Glass>
+        </>
+      ) : null}
+      {children}
+      <View
+        onLayout={(e) => {
+          const { y, height } = e.nativeEvent.layout;
+          setCard((prev) =>
+            prev && prev.y === y && prev.height === height ? prev : { y, height },
+          );
+        }}
+      >
+        <Glass
+          radius={k.radius}
+          style={{ marginHorizontal: KIT.size.side, padding: k.pad }}
+          testID="table-panel"
+        >
+          <View
+            style={{
+              height: k.strip,
+              borderRadius: k.stripRadius,
+              overflow: 'hidden',
+              backgroundColor: c.placeholder,
+            }}
+          >
+            {picture ? (
+              <Image
+                source={picture}
+                fadeDuration={0}
+                accessible={false}
+                resizeMode="cover"
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  width: strip,
+                  height: pictureHeight,
+                  top: -(pictureHeight - k.strip) * k.stripFocus,
+                }}
+              />
+            ) : null}
+          </View>
+          <View
+            style={{
+              paddingTop: k.body.top,
+              paddingHorizontal: k.body.x,
+              paddingBottom: k.body.bottom,
+              gap: k.body.gap,
+            }}
+          >
+            {info}
+            <PeopleDrawer
+              people={ordered}
+              first={first}
+              me={me}
+              profiles={profiles}
+              narrow={narrow}
+              open={open}
+              onToggle={onToggle}
+              onPeople={onPress}
+            />
+          </View>
+        </Glass>
+      </View>
     </View>
   );
 }

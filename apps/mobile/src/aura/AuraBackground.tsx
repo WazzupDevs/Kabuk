@@ -165,6 +165,60 @@ function Slice({ top, height, opacity }: { top: number; height: number; opacity:
   );
 }
 
+// The ground behind a rounded card of a fixed head, in the card's own shape: with a band down to
+// the card's lower corners, what scrolls up under the head ends along the card's rounded foot, not
+// on a straight line under it (the owner's report, 6 Kasım, round 3). Behind the card, so the light
+// scheme's see-through glass shows the clouds, not what scrolls under it. On the screen.
+export function AuraPatch({
+  top,
+  left,
+  width,
+  height,
+  radius,
+}: {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+  radius: number;
+}) {
+  const off = useLabOff('zemin');
+  const { scheme } = useTheme();
+  const { width: screenWidth, height: screen } = useGroundSize();
+  if (off || width <= 0 || height <= 0) return null;
+  return (
+    <View
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        top,
+        left,
+        width,
+        height,
+        borderRadius: radius,
+        overflow: 'hidden',
+        backgroundColor: scheme === 'dark' ? AURA.dark.ground : undefined,
+      }}
+    >
+      {scheme === 'dark' ? null : (
+        <Image
+          source={GROUND_PICTURE}
+          fadeDuration={0}
+          resizeMode="cover"
+          style={{
+            position: 'absolute',
+            left: -left,
+            top: -top,
+            width: screenWidth,
+            height: screen,
+          }}
+          accessible={false}
+        />
+      )}
+    </View>
+  );
+}
+
 // A sideways soft edge (a chip row running off the screen's right, Kapsülün): the ground in
 // columns, each more opaque towards the edge, lined up with the picture behind the screen. A flat
 // colour fade over the clouds showed as a band of its own (the owner's report, 2 Kasım, 11.4).
