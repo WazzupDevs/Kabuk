@@ -83,4 +83,4 @@ Sayılar: K 0, H 0, T 3, D 3, B 3.
 - T-2: en yüksek puan 0 ise kazanan yok (`won = false`), sonuç ekranı "Kazanan yok".
 - T-3: olduğu gibi kalır.
 - Düzeltme paketi (Kaupholl, ayrı PR): T-1, T-2, B-1, B-3; B-2 kural 10'a dokunduğu için "onaylandı" bekler.
-- Uygulandı (6 Kasım): T-1 (`guess` → `bad_request`), T-2 (`winnersOf` boş, `won = false`), B-1, B-3. B-2 bekliyor.
+- Uygulandı (6 Kasım): T-1 (`guess` → `bad_request`), T-2 (`winnersOf` boş, `won = false`), B-1, B-3. B-2 proje sahibince onaylandı (6 Kasım), kural 10'a eklendi.
