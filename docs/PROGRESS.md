@@ -1,5 +1,11 @@
 # İlerleme
 
+## Devir notu (6 Kasım 2026, oyunların senaryo analizi)
+
+- Analiz edilenler: Kaupholl (`docs/decisions/senaryo-kaupholl.md`: T 3, D 3, B 3) ve Kibrit (`senaryo-kibrit.md`: H 1, T 1, D 2). Düzeltme yok; T maddeleri proje sahibine soruldu.
+- Sıradaki oyun: **Sprengja**, sonra Signum, Krot, Vampir Köylü, Kapsül Anlat. Aynı promptla yeni oturum.
+- Onay beklemeden yapılabilecek ilk düzeltme paketi: Kibrit H-1 (`kibrit_advance`'in 1 sn erken payı) ve D-1.
+
 ## Devir notu (5 Kasım 2026, Kaupholl sunucusu)
 
 - PR B: SPEC_V4 Adım 4.6.10 ve K-87, CLAUDE.md kural 3 (`guess`/`bet` sıra numarası istisnası) ve kural 10 ekleri; `20261202090000_kaupholl.sql`, `functions/kaupholl`, `tests/kaupholl.test.ts`, yönetici betikleri (`admin:kaupholl-import`, `admin:kaupholl-stats`, `kaupholl:export-check`, `kaupholl:compare`), sahte örnek deste. Kararlar `docs/decisions/4.6.10-kaupholl.md`. `kaupholl.available: false`.
