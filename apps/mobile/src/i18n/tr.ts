@@ -1851,6 +1851,9 @@ export const tr = {
     // skall tuvali (MasaBitir, MasaKisiSecenekler); approved 27 Ekim.
     leaveNote: 'Ayrılırsan masa sürer; sahiplik masaya en erken katılana geçer.',
     blockOwnerNote: 'Masadan çıkarılır. Karşı tarafa bildirilmez.',
+    // "Masadan çıkar" (§4.E, K-88): the owner's, without a block.
+    remove: 'Masadan çıkar',
+    removeNote: 'Masadan çıkarıldığını görür. Bu masa sürdükçe geri gelemez.',
     blockMemberNote: 'Masadan çıkarsın. Karşı tarafa bildirilmez.',
     // The games' cards (the owner's file skall-oyun-kartlari, 27 Ekim; Kibrit K-86): name, line,
     // headcount.
@@ -1964,6 +1967,8 @@ export const tr = {
   tableEnd: {
     title: 'Masa bitti',
     leftTitle: 'Masadan ayrıldın',
+    // The owner took the person off (K-88); a block still reads as the table ending (rule 5).
+    removedTitle: 'Masadan çıkarıldın',
     subtitle: (table: string, people: number) =>
       `${table} · ${headcountLabel(people)} kişi. Beğendiğin kişileri ekle.`,
     addFriend: 'Arkadaş ekle',
@@ -2265,6 +2270,7 @@ export const tr = {
     request_not_found: 'İstek bulunamadı.',
     not_in_room: 'Bu masada değilsin.',
     nothing_to_block: 'Engellemek istediğin kişi masada değil.',
+    nothing_to_remove: 'Çıkarmak istediğin kişi masada değil.',
     message_invalid: 'Mesaj 1-200 karakter olmalı.',
     profanity_rejected: 'Mesajın uygun olmayan bir ifade içeriyor.',
     wrong_concept: 'Bu masa başka bir oyun için.',

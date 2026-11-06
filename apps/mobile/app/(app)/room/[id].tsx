@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { tableGameAvailability } from '@shared/gameFrame.ts';
 import { seatsAnonymously } from '@shared/gender.ts';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
@@ -47,6 +47,7 @@ import { tableScreenView } from '@/features/rooms/tableScreen';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { roomsApi } from '@/lib/api';
+import { supabase } from '@/lib/supabase';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { useTheme } from '@/theme/ThemeProvider';
 import { AURA } from '@/theme/aura';
@@ -209,7 +210,20 @@ export default function TableScreen() {
     seated: !!people.data?.some((p) => p.sessionId === sessionId),
     seen: !!seen,
   });
-  if (view === 'loading') {
+  // Masa bitti after the owner took this person off (K-88): "Masadan çıkarıldın". A block reads as
+  // the table ending, as before (rule 5). Read once the table is out of reach.
+  const removed = useQuery({
+    queryKey: ['roomExitRemoved', id],
+    enabled: view === 'end' && !!seen && !seen.left,
+    staleTime: Infinity,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('room_exit_removed', { target_room_id: id });
+      if (error) throw error;
+      return data;
+    },
+  });
+  // Its title waits for the answer (a failed read leaves Masa bitti).
+  if (view === 'loading' || (view === 'end' && !!seen && !seen.left && removed.isPending)) {
     return (
       <Screen>
         <View className="mt-16 items-center">
@@ -242,6 +256,7 @@ export default function TableScreen() {
       <TableEnd
         roomId={id}
         left={seen.left}
+        removed={removed.data === true}
         tableName={seen.name}
         phones={seen.phones}
         profiled={seen.profiled}

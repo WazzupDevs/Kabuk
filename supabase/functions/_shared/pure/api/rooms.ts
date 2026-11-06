@@ -89,6 +89,10 @@ export type EndRoomRequest = { action: 'end' };
 // "Masadan ayrıl" (§4.E, K-13): the person leaves and the table goes on; an owner hands it to the
 // earliest person there; the last person's leaving closes it.
 export type LeaveRoomRequest = { action: 'leave'; roomId: string };
+// "Masadan çıkar" (§4.E, K-88): the owner takes a person off the table by its table session id
+// without a block (not_owner, nothing_to_remove). The person's requests, "Bu masadayım" and
+// invites to this table are refused alike while it runs (rule 5).
+export type RemoveFromRoomRequest = { action: 'remove'; roomId: string; sessionId: string };
 // The request card's profile (docs/SPEC_V3.md §23.E): the person who asked, when it sat down
 // profiled, read by the owner while the request waits. Anything else is not_found, alike.
 export type RequestProfileRequest = { action: 'request-profile'; requestId: string };
@@ -132,6 +136,7 @@ export type RoomsRequest =
   | LeaveGameRequest
   | EndRoomRequest
   | LeaveRoomRequest
+  | RemoveFromRoomRequest
   | RequestProfileRequest
   | SetIconRequest
   | RerollNameRequest

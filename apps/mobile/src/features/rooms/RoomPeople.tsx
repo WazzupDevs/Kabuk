@@ -1,3 +1,4 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -12,9 +13,11 @@ import { useProfile } from '@/features/account/useProfile';
 import { useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
+import { roomsApi } from '@/lib/api';
+import { FEEL_ERROR } from '@/lib/hapticMoments';
 import { KIT } from '@/theme/auraKit';
 
-import { type TablePerson } from './queries';
+import { roomKeys, type TablePerson } from './queries';
 
 type Props = {
   visible: boolean;
@@ -28,8 +31,9 @@ type Props = {
 
 // Masadakiler (U24, docs/design/aura → Masadakiler; docs/SPEC_V4.md §4.E, K-40): everyone at the
 // table one a row, the owner and the viewer marked; a person opens their
-// card (MasaKisiSecenekler): the profile (profiled), Şikayet et and Engelle (K-13: the owner's
-// block takes the person off the table, a participant's takes the participant off). The table is
+// card (MasaKisiSecenekler): the profile (profiled), Şikayet et, the owner's "Masadan çıkar" (K-88:
+// off without a block) and Engelle (K-13: the owner's block takes the person off the table, a
+// participant's takes the participant off). The table is
 // called by its icon (K-76): no other name to draw.
 export function PeopleSheet({ visible, onClose, roomId, people, me, profiles }: Props) {
   const { c } = useKit();
@@ -42,6 +46,16 @@ export function PeopleSheet({ visible, onClose, roomId, people, me, profiles }: 
     setPerson(null);
     onClose();
   };
+  const queryClient = useQueryClient();
+  const remove = useMutation({
+    meta: FEEL_ERROR,
+    mutationFn: (sessionId: string) => roomsApi.remove(roomId, sessionId),
+    onSuccess: close,
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: roomKeys.room(roomId) });
+      void queryClient.invalidateQueries({ queryKey: roomKeys.people(roomId) });
+    },
+  });
 
   return (
     <>
@@ -89,7 +103,13 @@ export function PeopleSheet({ visible, onClose, roomId, people, me, profiles }: 
         </Glass>
       </Sheet>
 
-      <Sheet visible={visible && person !== null} onClose={() => setPerson(null)}>
+      <Sheet
+        visible={visible && person !== null}
+        onClose={() => {
+          remove.reset();
+          setPerson(null);
+        }}
+      >
         {person ? (
           <View className="flex-row items-center gap-3">
             <PersonFace
@@ -126,6 +146,19 @@ export function PeopleSheet({ visible, onClose, roomId, people, me, profiles }: 
               if (target) safety.startReport(target.sessionId);
             }}
           />
+          {iOwn ? (
+            <MenuItem
+              negative
+              icon="logout"
+              testID="person-remove"
+              label={tr.table.remove}
+              note={tr.table.removeNote}
+              loading={remove.isPending}
+              onPress={() => {
+                if (person && !safety.blocking) remove.mutate(person.sessionId);
+              }}
+            />
+          ) : null}
           <MenuItem
             negative
             icon="ban-outline"
@@ -133,12 +166,12 @@ export function PeopleSheet({ visible, onClose, roomId, people, me, profiles }: 
             label={tr.safety.block}
             note={iOwn ? tr.table.blockOwnerNote : tr.table.blockMemberNote}
             loading={safety.blocking}
-            onPress={() => person && safety.block(person.sessionId, close)}
+            onPress={() => person && !remove.isPending && safety.block(person.sessionId, close)}
           />
         </Menu>
-        {safety.blockError ? (
+        {(remove.error ?? safety.blockError) ? (
           <T v="fine" color={KIT.danger}>
-            {errorMessage(safety.blockError)}
+            {errorMessage(remove.error ?? safety.blockError)}
           </T>
         ) : null}
         <Btn block variant="glassy" label={tr.common.cancel} onPress={() => setPerson(null)} />

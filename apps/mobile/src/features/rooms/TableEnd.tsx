@@ -32,6 +32,8 @@ import { SPACING } from '@/theme/tokens';
 type Props = {
   roomId: string;
   left: boolean;
+  // The owner took the person off ("Masadan çıkar", K-88): "Masadan çıkarıldın".
+  removed?: boolean;
   tableName: string;
   phones: number;
   profiled: readonly string[];
@@ -49,7 +51,16 @@ type EndRecord = {
 // status bar (the riso scene, buddies, confetti), "Masa bitti" and the line, then everyone who
 // sat 3 minutes with the person in a glass list with "Arkadaş ekle", "Eklendi" or "Mesaj", the
 // notes and "Mekana dön". A one-sided press is silent (rule 5).
-export function TableEnd({ roomId, left, tableName, phones, profiled, anonymous, onClose }: Props) {
+export function TableEnd({
+  roomId,
+  left,
+  removed,
+  tableName,
+  phones,
+  profiled,
+  anonymous,
+  onClose,
+}: Props) {
   const { scheme, colors } = useTheme();
   const insets = useSafeAreaInsets();
   const records = useTableHistory(roomId, true);
@@ -146,7 +157,11 @@ export function TableEnd({ roomId, left, tableName, phones, profiled, anonymous,
         >
           <View style={{ alignItems: 'center', gap: KIT.size.tagGap }}>
             <T v="display" center accessibilityRole="header">
-              {left ? tr.tableEnd.leftTitle : tr.tableEnd.title}
+              {removed
+                ? tr.tableEnd.removedTitle
+                : left
+                  ? tr.tableEnd.leftTitle
+                  : tr.tableEnd.title}
             </T>
             <T v="body" center>
               {tr.tableEnd.subtitle(tableName, phones)}

@@ -119,6 +119,7 @@ const Body: z.ZodType<RoomsRequest> = z.discriminatedUnion('action', [
   z.object({ action: z.literal('leave-game'), roomId: z.uuid() }),
   z.object({ action: z.literal('end') }),
   z.object({ action: z.literal('leave'), roomId: z.uuid() }),
+  z.object({ action: z.literal('remove'), roomId: z.uuid(), sessionId: z.uuid() }),
   z.object({ action: z.literal('request-profile'), requestId: z.uuid() }),
   z.object({ action: z.literal('invite'), roomId: z.uuid(), friendPublicId: z.uuid() }),
   z.object({ action: z.literal('answer-invite'), inviteId: z.uuid(), accept: z.boolean() }),
@@ -415,6 +416,20 @@ Deno.serve(
             target_room_id: body.roomId,
           });
           if (error) throw dbError('rooms_leave', error);
+          lobbyChanged(data);
+          return { ok: true };
+        }
+
+        // "Masadan çıkar" (§4.E, K-88): the owner takes a person off without a block. The same
+        // announcement as rooms/leave and a block (rule 5); the person reads why with
+        // room_exit_removed.
+        case 'remove': {
+          const { data, error } = await db.rpc('rooms_remove', {
+            target_user_id: user.id,
+            target_room_id: body.roomId,
+            target_session_id: body.sessionId,
+          });
+          if (error) throw dbError('rooms_remove', error);
           lobbyChanged(data);
           return { ok: true };
         }

@@ -29,6 +29,7 @@ const STATUS: Record<ErrorCode, number> = {
   request_not_found: 404,
   not_in_room: 403,
   nothing_to_block: 409,
+  nothing_to_remove: 409,
   message_invalid: 400,
   profanity_rejected: 422,
   wrong_concept: 409,
