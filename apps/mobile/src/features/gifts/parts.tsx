@@ -1,4 +1,5 @@
-import type { GiftTier } from '@shared/gifts.ts';
+import { type GiftTier, withAccessories } from '@shared/gifts.ts';
+import { useMemo } from 'react';
 import { Animated, Image, View } from 'react-native';
 
 import { Round, T, Tag, useKit } from '@/aura/kit';
@@ -6,21 +7,13 @@ import { CapIcon } from '@/aura/CapIcon';
 import { FxSvg } from '@/components/FxSvg';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
-import { accessoryFigure } from '@/theme/capsuleAccessories';
-import {
-  EFSANEVI_FOIL,
-  GIFT_BADGE,
-  TIER_COLOR,
-  TIER_TAG_ALPHA,
-  TILE_FRAME,
-  TILE_GROUND_DARK,
-} from '@/theme/gifts';
-import { gradientStyle } from '@/theme/gradient';
+import { CARD_BOX, lookCard } from '@/theme/capsuleLook';
+import { GIFT_BADGE, TIER_COLOR, TIER_TAG_ALPHA } from '@/theme/gifts';
 import { GIFT_MOTION } from '@/theme/giftMotion';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
-import { cardArt, hasCardArt, tileArt } from './art';
+import { blankCard } from './art';
 import { useBeat } from './loops';
 import { tierName } from './model';
 
@@ -202,15 +195,16 @@ export function GiftTopBar({ title, onBack }: { title: string; onBack: () => voi
 }
 const TOP_BAR = 56;
 
-// An accessory's card: its own picture (the canvas drew one for the first eight). One the canvas
-// drew no card for is laid out as its collection tile is (GaleriHediye "Koleksiyon karosu"), at the
-// card's size: the tier's frame (Efsanevi's foil), the tier's ground with its art, and the
-// accessory on its standing capsule in the middle. The tile's art is a ground texture, never the
-// card itself (stretched to the card it showed only dots: the owner's report, 7 Kasım).
-const CARD_FIGURE = 0.56;
-const FIGURE_RATIO = 140 / 100;
-// The tile's frame is drawn for an 80 wide tile; the card's grows with its width.
-const TILE_BASE = 80;
+// An accessory's card (the owner's call, 7 Kasım): its tier's empty card (`card-blank-<tier>`, the
+// canvas's card frames), and in its round the capsule wearing the accessory as the profile's ring
+// holds it (theme/capsuleLook.ts → lookCard): the capsule cut by the round at its foot, its head
+// and the accessory free above it with a thin contour, an Efsanevi's halo inside the round. Made
+// for every accessory from its drawing, so a new pack's accessories have their cards. Its motions
+// play (FxSvg); still with reduce motion.
+// The round on the 600 × 840 card: its middle and its radius (measured on the canvas's frames).
+const ROUND = { x: 299.5 / 600, y: 418 / 840, r: 225 / 600 } as const;
+// The capsule on the card (the preview the owner approved, 7 Kasım).
+const CARD_LOOK = 'c:krem e:klasik';
 
 export function CardFace({
   id,
@@ -223,52 +217,25 @@ export function CardFace({
   width: number;
   height: number;
 }) {
-  const { scheme } = useKit();
-  const { colors } = useTheme();
-  if (hasCardArt(id)) {
-    return (
-      <Image
-        source={cardArt(id, tier)}
-        accessibilityIgnoresInvertColors
-        style={{ width, height }}
-      />
-    );
-  }
-  const frame = (TILE_FRAME[tier] * width) / TILE_BASE;
-  const color = TIER_COLOR[scheme][tier];
-  const ground = scheme === 'dark' ? TILE_GROUND_DARK : colors.surface;
-  const line = frame / TILE_FRAME[tier];
-  const fw = width * CARD_FIGURE;
+  const xml = useMemo(() => lookCard(withAccessories(CARD_LOOK, [id])), [id]);
+  // lookCard's circle is 48 wide at (0, 0); its box starts 6 to the left and CARD_TOP above.
+  const unit = (ROUND.r * width) / 24;
+  const left = ROUND.x * width - (24 - CARD_BOX.x) * unit;
+  const top = ROUND.y * height - (24 - CARD_BOX.y) * unit;
   return (
-    <View
-      style={[
-        { width, height, padding: frame },
-        tier === 'efsanevi' ? gradientStyle(EFSANEVI_FOIL) : { backgroundColor: color },
-      ]}
-    >
+    <View style={{ width, height }}>
+      <Image source={blankCard(tier)} accessibilityIgnoresInvertColors style={{ width, height }} />
       <View
+        pointerEvents="none"
         style={{
-          flex: 1,
-          overflow: 'hidden',
-          backgroundColor: ground,
-          boxShadow:
-            tier === 'destansi'
-              ? `inset 0 0 0 ${3 * line}px ${ground}, inset 0 0 0 ${4 * line}px ${color}`
-              : undefined,
+          position: 'absolute',
+          left,
+          top,
+          width: CARD_BOX.width * unit,
+          height: CARD_BOX.height * unit,
         }}
       >
-        <Image
-          source={tileArt(tier)}
-          resizeMode="cover"
-          accessibilityIgnoresInvertColors
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
-        />
-        <View
-          pointerEvents="none"
-          style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
-        >
-          <FxSvg xml={accessoryFigure(id)} width={fw} height={fw * FIGURE_RATIO} />
-        </View>
+        <FxSvg xml={xml} width={CARD_BOX.width * unit} height={CARD_BOX.height * unit} />
       </View>
     </View>
   );

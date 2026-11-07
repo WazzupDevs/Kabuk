@@ -31,10 +31,13 @@ const EYE_SHAPE = /<(?:circle|ellipse|path)\b[^>]*\bclass="eye"[^>]*\/>/g;
 // The body's shade (capsuleDrawing.js): a skin goes over it, under the visor.
 const SHADE = /<path d="M30 10a14 14 0 0 1 8 12v42h-8z"[^>]*\/>/;
 
-function dressed(code: string): { parts: LookParts; layers: AccessoryLayers; eyes: boolean } {
+function dressed(
+  code: string,
+  edge = 0,
+): { parts: LookParts; layers: AccessoryLayers; eyes: boolean } {
   const parts = lookParts(code);
   const ids = accessoriesOf(code);
-  const layers = accessoryLayers(ids);
+  const layers = accessoryLayers(ids, edge);
   const covered = coveredSlots(ids);
   for (const slot of ['h', 'f', 'm', 'n'] as const) if (covered[slot]) delete parts[slot];
   const eyes = covered.e !== undefined;
@@ -58,7 +61,8 @@ export function lookSvg(code: string, mode: 'av' | 'fig' = 'av'): string {
         ? svg.replace(/^(<svg\b[^>]*>(?:<circle\b[^>]*\/>)?)/, `$1${layers.back}`)
         : svg.replace(/^(<svg\b[^>]*>)/, `$1${layers.back}`);
   }
-  return layers.front ? svg.replace(/<\/svg>$/, `${layers.front}</svg>`) : svg;
+  const over = layers.low + layers.front;
+  return over ? svg.replace(/<\/svg>$/, `${over}</svg>`) : svg;
 }
 
 // The capsule editor's stage (v46 `.ced-fig`: LOOK.pop): the capsule standing in its circle, the
@@ -68,14 +72,45 @@ export function lookSvg(code: string, mode: 'av' | 'fig' = 'av'): string {
 const POP_CLIP = '<circle cx="24" cy="24" r="24"/><rect x="-6" y="-8" width="60" height="32"/>';
 const POP_CLIP_PATH = '<path d="M-6 -8H54V24H48A24 24 0 0 1 0 24H-6Z"/>';
 
-export function lookPop(code: string, emo = ''): string {
-  const { parts, layers, eyes } = dressed(code);
+// `edge`: a thin white contour round the accessories (canvas units; the gift card: CARD_EDGE).
+// Only the head goes over the circle (the owner's call, 7 Kasım): the capsule's head and the head's
+// accessories may reach above its middle; every other accessory and an Efsanevi's halo stay inside
+// the circle, and nothing below the middle ever leaves it.
+const IN_RING = 'in-ring';
+
+export function lookPop(code: string, emo = '', edge = 0): string {
+  const { parts, layers, eyes } = dressed(code, edge);
   let svg = LOOK.pop(parts, emo).replace(POP_CLIP, POP_CLIP_PATH);
   if (eyes) svg = svg.replace(EYE_SHAPE, '');
   svg = withSkin(svg, layers.skin);
-  if (layers.back) svg = svg.replace(/(<g clip-path="url\(#cpc\d+\)">)/, `$1${layers.back}`);
-  // Inside the clipped group, over the capsule and under a feeling's things around it.
-  return layers.front ? svg.replace('</g></g>', `${layers.front}</g></g>`) : svg;
+  const ring = `<clipPath id="${IN_RING}"><circle cx="24" cy="24" r="24"/></clipPath>`;
+  const inRing = (part: string) => (part ? `<g clip-path="url(#${IN_RING})">${part}</g>` : '');
+  // Inside the clipped group, over the capsule and under a feeling's things around it; before the
+  // halo goes in (its own groups would take the first `</g></g>`).
+  const over = inRing(layers.lowEdge + layers.low) + layers.edge + layers.front;
+  if (over) svg = svg.replace('</g></g>', `${over}</g></g>`);
+  if (layers.back)
+    svg = svg.replace(/(<g clip-path="url\(#cpc\d+\)">)/, `$1${inRing(layers.back)}`);
+  if (layers.back || layers.low) svg = svg.replace(/(<g clip-path="url\(#cpc\d+\)">)/, `${ring}$1`);
+  return svg;
+}
+
+// The gift card's contour round the accessories: thin (the owner's call, 7 Kasım), in the canvas's
+// units (about a pixel and a half on the card).
+export const CARD_EDGE = 0.9;
+
+// The gift card's stage (the owner's call, 7 Kasım): the editor's stage (lookPop) with room above
+// the circle for what reaches highest (Alev saç, Ejder boynuzu and their rising sparks), the
+// accessories' contour on. The circle stays 48 wide at (0, 0); the box starts CARD_TOP above it.
+export const CARD_TOP = 26;
+export const CARD_BOX = { x: -6, y: -CARD_TOP, width: 60, height: 49 + CARD_TOP } as const;
+
+// The capsule standing in a ring with its head and accessories free above it (the gift card, the
+// profile's ring, Aksesuarlarım's preview; the owner's call, 7 Kasım): the stage lookCard draws.
+export function lookCard(code: string): string {
+  return lookPop(code, '', CARD_EDGE)
+    .replace('viewBox="-6 -8 60 57"', `viewBox="-6 ${-CARD_TOP} 60 ${49 + CARD_TOP}"`)
+    .replace(POP_CLIP_PATH, `<path d="M-6 ${-CARD_TOP}H54V24H48A24 24 0 0 1 0 24H-6Z"/>`);
 }
 
 export function lookGround(code: string): string {

@@ -12,7 +12,12 @@ import { GIFT_CATALOG } from '../../../../supabase/functions/_shared/pure/giftCa
 // `<g data-fx="…" data-o="x y" data-k="…">`: its motion, its origin and its unit in the canvas's
 // units.
 export type AccessoryAnchor = 'head' | 'face' | 'mid' | 'body';
-export type AccessoryArt = { anchor: AccessoryAnchor; art: string; back?: string; skin?: string };
+export type AccessoryArt = {
+  anchor: AccessoryAnchor;
+  art: string;
+  back?: string;
+  skin?: string;
+};
 
 export const ACCESSORY_ART: Readonly<Record<string, AccessoryArt>> = {
   filiz: {
@@ -366,21 +371,42 @@ function placed(part: string, dx: number, dy: number, s: number): string {
   return `<g transform="translate(${dx.toFixed(3)} ${dy.toFixed(3)}) scale(${s.toFixed(5)})">${moved}</g>`;
 }
 
-export type AccessoryLayers = { back: string; skin: string; front: string };
+// `front` and `edge`: the head's accessories (slot h) and their contour, which may reach over a
+// ring above the capsule's middle; `low` and `lowEdge`: every other, which stays in the ring (the
+// owner's call, 7 Kasım: only the head goes over the ring, nothing below the waist ever does).
+export type AccessoryLayers = {
+  back: string;
+  skin: string;
+  front: string;
+  edge: string;
+  low: string;
+  lowEdge: string;
+};
 
 // The worn accessories' layers for the app's capsule drawing (its 48-unit box); an unknown id (an
 // accessory a newer catalog has) is left out: the old app draws the capsule without it.
-export function accessoryLayers(ids: readonly string[]): AccessoryLayers {
+// `edge` (canvas units, 0 for none): a thin white contour under the art (the card, where the
+// accessory reaches over its ring onto the card's ground).
+export function accessoryLayers(ids: readonly string[], edge = 0): AccessoryLayers {
   const known = ids.filter((id) => ACCESSORY_ART[id] !== undefined);
   const drawn = [...new Set(known)].sort((a, b) => rank(a) - rank(b));
-  const out: AccessoryLayers = { back: '', skin: '', front: '' };
+  const out: AccessoryLayers = { back: '', skin: '', front: '', edge: '', low: '', lowEdge: '' };
   for (const id of drawn) {
     const a = ACCESSORY_ART[id];
     if (!a) continue;
     const dy = TOP[a.anchor];
     if (a.back) out.back += placed(a.back, LEFT, dy, SCALE);
     if (a.skin) out.skin += placed(a.skin, LEFT, dy, SCALE);
-    out.front += placed(a.art, LEFT, dy, SCALE);
+    const head = slotsOf(id).includes('h');
+    const art = placed(a.art, LEFT, dy, SCALE);
+    const contour = edge > 0 ? placed(contourOf(id, a.art, edge), LEFT, dy, SCALE) : '';
+    if (head) {
+      out.front += art;
+      out.edge += contour;
+    } else {
+      out.low += art;
+      out.lowEdge += contour;
+    }
   }
   return out;
 }
@@ -430,4 +456,57 @@ export function accessoryFigure(id: string, silhouette: string | null = null): s
         .replace(/ (?:fill-)?opacity="[^"]*"/g, '')
     : inner;
   return `<svg viewBox="0 -12 100 140" width="100%" height="100%" aria-hidden="true">${drawn}</svg>`;
+}
+
+function withoutGroup(svg: string, mark: RegExp): string {
+  let out = svg;
+  for (;;) {
+    const at = out.search(mark);
+    if (at < 0) return out;
+    let depth = 0;
+    const tag = /<\/?g\b[^>]*>/g;
+    tag.lastIndex = at;
+    let end = out.length;
+    for (let m = tag.exec(out); m; m = tag.exec(out)) {
+      depth += m[0].startsWith('</') ? -1 : m[0].endsWith('/>') ? 0 : 1;
+      if (depth === 0) {
+        end = m.index + m[0].length;
+        break;
+      }
+    }
+    out = out.slice(0, at) + out.slice(end);
+  }
+}
+
+// A white copy of a drawing, every shape `edge` thicker on each side, still and without its shine:
+// laid under the drawing it is its outline (a sticker's white edge, a card's thin contour).
+export function edgeOf(art: string, edge: number, ink = '#FFFFFF', tag = 'edge'): string {
+  const white = withoutGroup(art, /<g data-fx="glint"/)
+    .replace(/ data-fx="[^"]*" data-o="[^"]*" data-k="[^"]*"/g, '')
+    .replace(/ id="([^"]*)"/g, ` id="$1-${tag}"`)
+    .replace(/url\(#([^)]*)\)/g, `url(#$1-${tag})`)
+    .replace(/ (?:fill-)?opacity="[^"]*"/g, '')
+    .replace(/fill="(?:#[0-9A-Fa-f]{3,8}|url\([^)]*\))"/g, `fill="${ink}"`)
+    .replace(/stroke="(?:#[0-9A-Fa-f]{3,8}|url\([^)]*\))"/g, `stroke="${ink}"`)
+    .replace(
+      /stroke-width="([\d.]+)"/g,
+      (_m, sw: string) => `stroke-width="${num(Number(sw) + edge * 2)}"`,
+    )
+    .replace(
+      /<(path|circle|rect|ellipse)\b(?![^>]*\bstroke=)/g,
+      `<$1 stroke="${ink}" stroke-width="${num(edge * 2)}"`,
+    );
+  return `<g stroke-linejoin="round" stroke-linecap="round">${white}</g>`;
+}
+
+// A contour only outside the drawing: its white copy masked by the drawing itself (black, the same
+// size), so a see-through part (Kuzey ışığı's ribbons) does not show white through it.
+function contourOf(id: string, art: string, edge: number): string {
+  const mask = `${id}-contour`;
+  return (
+    `<mask id="${mask}" maskUnits="userSpaceOnUse" x="-80" y="-80" width="260" height="300">` +
+    `<rect x="-80" y="-80" width="260" height="300" fill="#FFFFFF"/>` +
+    `${edgeOf(art, 0, '#000000', 'cut')}</mask>` +
+    `<g mask="url(#${mask})">${edgeOf(art, edge)}</g>`
+  );
 }

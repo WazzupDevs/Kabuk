@@ -10,7 +10,7 @@ import { Btn, Glass, T, useKit } from '@/aura/kit';
 import { FxSvg } from '@/components/FxSvg';
 import { EmptyState } from '@/components/EmptyState';
 import { useLoaderHold } from '@/components/Loader';
-import { LookAvatar } from '@/components/LookAvatar';
+import { RingLook } from '@/components/RingLook';
 import { Screen } from '@/components/Screen';
 import { tileArt } from '@/features/gifts/art';
 import {
@@ -169,7 +169,7 @@ function Collection({ state, top }: { state: GiftState; top: React.ReactNode }) 
       >
         <Reanimated.View style={popStyle}>
           {look ? (
-            <LookAvatar
+            <RingLook
               look={withAccessories(look, chosen ? wearOne(state.worn, chosen.id) : state.worn)}
               size={PREVIEW}
               accessibilityLabel={tr.profile.ownCapsule}

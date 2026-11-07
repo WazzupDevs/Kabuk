@@ -4,7 +4,8 @@ import LOOK from './capsuleDrawing';
 import { GIFT_CATALOG } from '../../../../supabase/functions/_shared/pure/giftCatalog.ts';
 
 import { ACCESSORY_ART, accessoryFigure } from './capsuleAccessories';
-import { eyeLayers, lookParts, lookPop, lookSvg, posedEyes } from './capsuleLook';
+import { fxTree } from './capsuleFx';
+import { eyeLayers, lookCard, lookParts, lookPop, lookSvg, posedEyes } from './capsuleLook';
 
 describe('capsule look', () => {
   it('reads a stored code into slots, the first id a slot', () => {
@@ -73,6 +74,45 @@ describe('pack accessory', () => {
     // A halo lies behind the body.
     const halo = lookSvg('c:mor e:klasik x:kuzeyisigi');
     expect(halo.indexOf('data-fx="halo"')).toBeLessThan(halo.indexOf('<rect x="10" y="8"'));
+  });
+
+  it('puts the stage accessory with the capsule, not inside its halo', () => {
+    const svg = lookPop('c:mor e:klasik x:kuzeyisigi');
+    const halo = svg.indexOf('data-fx="halo"');
+    const body = svg.indexOf('<g class="cp-b">');
+    expect(halo).toBeGreaterThan(-1);
+    expect(halo).toBeLessThan(body);
+    // The front comes after the capsule's own group closes, outside the halo's.
+    const front = svg.indexOf('kuzeyisigi-');
+    expect(front).toBeGreaterThan(body);
+  });
+
+  it('gives the card room for the highest accessories, the circle where it was', () => {
+    const svg = lookCard('c:mor e:klasik x:ejderboynuzu');
+    expect(svg).toContain('viewBox="-6 -26 60 75"');
+    expect(svg).toContain('M-6 -26H54V24H48A24 24 0 0 1 0 24H-6Z');
+    expect(svg).toContain('-contour');
+  });
+
+  it('makes every accessory its card from its drawing, a new pack too', () => {
+    const bare = lookCard('c:krem e:klasik');
+    for (const a of GIFT_CATALOG.accessories) {
+      const card = lookCard(`c:krem e:klasik x:${a.id}`);
+
+      expect(card.length, a.id).toBeGreaterThan(bare.length);
+      if (card.includes('data-fx=')) expect(fxTree(card), a.id).not.toBeNull();
+    }
+  });
+
+  it('lets only the head go over the ring: other accessories and the halo stay in it', () => {
+    const svg = lookPop('c:mor e:klasik x:ejderboynuzu x:gokkusagiatki');
+    const ring = svg.indexOf('<g clip-path="url(#in-ring)">');
+    expect(ring).toBeGreaterThan(-1);
+    // The scarf (a neck accessory) inside the ring's clip, the horns (head) outside it.
+    const inside = svg.slice(ring);
+    expect(inside.indexOf('gokkusagiatki')).toBeGreaterThan(-1);
+    const horns = svg.lastIndexOf('ejderboynuzu-gLava');
+    expect(svg.slice(horns - 400, horns)).not.toContain('url(#in-ring)');
   });
 
   it('draws nothing for an unknown accessory', () => {
