@@ -1,5 +1,11 @@
 # İlerleme
 
+## Devir notu (7 Kasım 2026, otomatik aksesuar paketi sistemi)
+
+- İstek (proje sahibi): yeni aksesuar paketi gelince paketten çıkma, Süsle, Aksesuarlarım, Paketler kendiliğinden kurulsun. Bugün elle olanlar: paket kimlikleri (`pure/gifts.ts` → `GIFT_PACKS`, migration'lardaki `pack in (...)` check'leri, `gifts_in_pool`), çizimler (`capsuleAccessories.ts`, `setBalloons.ts` panodan elle), görseller (`features/gifts/art.ts` statik require), `PACK_GLOW`.
+- Plan: (1) paket bilgisi yalnız `content/gift-packs.json`'da (sıra, kilit, ağırlık, temalı, tam set, parıltı); migration ile `gift_packs` tablosu, check'ler yerine yabancı anahtar, `gifts_in_pool`/`open_packs` tablodan; `GIFT_PACKS` katalogdan. (2) `pnpm seed` panolardan (`aria-label`'lı 80'lik kapsül SVG'si, `Balon<Paket>`) `accessoryArt.generated.ts` ve `setBalloons.generated.ts` üretir; çizimi olmayan aksesuar seed'i durdurur (çıkarma betiği: oturumun scratchpad'indeki `extract.py` mantığı, TS'e taşınır). (3) `assets/gifts/pack-<id>.webp`, `card-<id>.webp`'den `giftArt.generated.ts`; görseli olmayan paket gizli, kartı olmayan aksesuar karo düzeni (bugünkü gibi).
+- Sonuç: yeni paket = panolar repoya + JSON girdisi + `pnpm seed` + tek PR (önce sunucu seed'i, sonra OTA). `supabase/`'e dokunduğu için `guvenlik` denetimi gerekir.
+
 ## Devir notu (7 Kasım 2026, genişleyen katalog: ekranlar)
 
 - PR 2: 60 çizim (`capsuleAccessories.ts`), çoklu `x:` (yuvasındaki parçayı örter), hareket katmanı (`capsuleFx.ts`, `FxSvg`), Süsle'de yuvalar (Kaydet `gifts/wear`), Aksesuarlarım yuvalar, tam set balonu (`setBalloons.ts`). OTA.
