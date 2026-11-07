@@ -37,7 +37,7 @@ describe('parseGiftCatalog', () => {
   };
 
   it('reads the content', () => {
-    expect(parseGiftCatalog(content, parts).accessories).toHaveLength(8);
+    expect(parseGiftCatalog(content, parts).accessories).toHaveLength(67);
   });
 
   it('refuses weights that do not add up to 100000', () => {
@@ -60,5 +60,18 @@ describe('parseGiftCatalog', () => {
     expect(broken((c) => (at(accessories(c), 0).replacesPart = 'h:yok'))).toThrow(
       /no capsule part/,
     );
+  });
+
+  it('refuses an unknown slot, a Destansı of one slot and a pack that is not themed', () => {
+    expect(broken((c) => (at(accessories(c), 0).slots = ['z']))).toThrow(/no slot/);
+    expect(broken((c) => (at(accessories(c), 0).slots = []))).toThrow(/one or two/);
+    expect(broken((c) => (at(accessories(c), 20).slots = ['h']))).toThrow(/two slots/);
+    expect(broken((c) => (at(accessories(c), 0).pack = 'bronz'))).toThrow(/themed/);
+  });
+
+  it('refuses a full set with a part its pack does not give, or two parts in one slot', () => {
+    const elf = (c: Record<string, unknown>) => at(packs(c), 4);
+    expect(broken((c) => (elf(c).fullSet = ['filiz']))).toThrow(/full set has no/);
+    expect(broken((c) => (elf(c).fullSet = ['yapraktaci', 'aydiademi']))).toThrow(/shares a slot/);
   });
 });

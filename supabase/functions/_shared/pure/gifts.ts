@@ -2,14 +2,23 @@
 // The draw happens on the server (rule 3); this module is the arithmetic, with the random source
 // passed in so that it is tested here. The catalog comes from giftCatalog.ts, which `pnpm seed`
 // generates from content/gift-packs.json.
+import { LOOK_SLOTS } from './capsule.ts';
 import { GIFT_CATALOG } from './giftCatalog.ts';
 
-// The four tiers and the four packs, in order of worth (§4.U). The content names them in this order.
+// The four tiers and the packs, in order of worth (§4.U): the four tier packs, then Elf and Ninja
+// (themed: each gives only its own accessories, all Efsanevi). The content names them in this order.
 export const GIFT_TIERS = ['siradan', 'nadir', 'destansi', 'efsanevi'] as const;
 export type GiftTier = (typeof GIFT_TIERS)[number];
 
-export const GIFT_PACKS = ['bronz', 'gumus', 'altin', 'elmas'] as const;
+export const TIER_PACKS = ['bronz', 'gumus', 'altin', 'elmas'] as const;
+export type TierPack = (typeof TIER_PACKS)[number];
+
+export const GIFT_PACKS = [...TIER_PACKS, 'elf', 'ninja'] as const;
 export type GiftPack = (typeof GIFT_PACKS)[number];
+
+export function isTierPack(value: string): value is TierPack {
+  return (TIER_PACKS as readonly string[]).includes(value);
+}
 
 // Every pack's tier weights add up to this: odds are parts of it (100000 → %0,001 precision, so an
 // accessory can come one in a thousand or rarer).
@@ -22,16 +31,28 @@ export type GiftCatalog = {
     id: string;
     name: string;
     locked: boolean;
+    // Gives only the accessories that name it (`pack`), and those come from no other pack.
+    themed: boolean;
     weights: Readonly<Record<string, number>>;
+    // A themed pack's full set: worn together, the set's balloon in the venue chat (§4.U).
+    fullSet?: readonly string[];
   }[];
   accessories: readonly {
     id: string;
     name: string;
     tier: string;
+    // The capsule slots it is worn in (pure/capsule.ts → LOOK_SLOTS); a Destansı set takes two.
+    slots: readonly string[];
     weight: number;
+    // The themed pack that alone gives it; none: the four tier packs.
+    pack?: string;
+    // Out of the catalog (7 Kasım): no pack gives it, whoever owns it keeps wearing it.
+    retired?: boolean;
     replacesPart?: string;
   }[];
 };
+
+export type GiftAccessory = GiftCatalog['accessories'][number];
 
 export type TierOdds = Record<GiftTier, number>;
 
@@ -49,13 +70,32 @@ function packOf(pack: GiftPack, catalog: GiftCatalog) {
   return found;
 }
 
-function unownedIn(tier: GiftTier, owned: ReadonlySet<string>, catalog: GiftCatalog) {
-  return catalog.accessories.filter((a) => a.tier === tier && !owned.has(a.id));
+// What a pack can give: a themed pack its own accessories, a tier pack every other one; never a
+// retired one.
+export function poolOf(pack: GiftPack, catalog: GiftCatalog = GIFT_CATALOG): GiftAccessory[] {
+  const themed = packOf(pack, catalog).themed;
+  return catalog.accessories.filter(
+    (a) => !a.retired && (themed ? a.pack === pack : a.pack === undefined),
+  );
 }
 
-// Every accessory owned: no pack is earned (the login count stands still) and none can be opened.
-export function ownsAll(owned: ReadonlySet<string>, catalog: GiftCatalog = GIFT_CATALOG): boolean {
-  return catalog.accessories.every((a) => owned.has(a.id));
+function unownedIn(
+  pack: GiftPack,
+  tier: GiftTier,
+  owned: ReadonlySet<string>,
+  catalog: GiftCatalog,
+) {
+  return poolOf(pack, catalog).filter((a) => a.tier === tier && !owned.has(a.id));
+}
+
+// Every accessory the open packs give is owned: no pack is earned (the login count stands still)
+// and none can be opened. `open` is the packs that open here (all by default).
+export function ownsAll(
+  owned: ReadonlySet<string>,
+  catalog: GiftCatalog = GIFT_CATALOG,
+  open: readonly GiftPack[] = GIFT_PACKS,
+): boolean {
+  return open.every((pack) => poolOf(pack, catalog).every((a) => owned.has(a.id)));
 }
 
 // The weights the draw uses for this person: a tier with nothing left to give drops out, and the
@@ -64,7 +104,7 @@ function liveWeights(pack: GiftPack, owned: ReadonlySet<string>, catalog: GiftCa
   const weights = packOf(pack, catalog).weights;
   const live = {} as TierOdds;
   for (const tier of GIFT_TIERS) {
-    live[tier] = unownedIn(tier, owned, catalog).length > 0 ? (weights[tier] ?? 0) : 0;
+    live[tier] = unownedIn(pack, tier, owned, catalog).length > 0 ? (weights[tier] ?? 0) : 0;
   }
   return live;
 }
@@ -123,7 +163,7 @@ export function drawAccessory(
     roll -= live[t];
   }
   if (tier === null) return null;
-  const choices = unownedIn(tier, owned, catalog);
+  const choices = unownedIn(pack, tier, owned, catalog);
   const weight = choices.reduce((sum, a) => sum + a.weight, 0);
   let pick = randomInt(weight);
   for (const a of choices) {
@@ -133,27 +173,104 @@ export function drawAccessory(
   return null;
 }
 
-// The worn accessory is one more token in the capsule's look code, "x:<id>", after the six slots
-// (pure/capsule.ts → LOOK_SLOTS). It goes wherever the look goes (the table seat, the venue chat
-// message), so it is shown with the capsule and never with the profile (rule 4).
+// A worn accessory is one more token in the capsule's look code, "x:<id>", after the six slots
+// (pure/capsule.ts → LOOK_SLOTS); several can be worn, one in each slot (§4.U, 7 Kasım). They go
+// wherever the look goes (the table seat, the venue chat message), so they are shown with the
+// capsule and never with the profile (rule 4). An accessory covers the capsule's own part in its
+// slots; the part stays in the code and shows again when the accessory comes off.
 export const ACCESSORY_SLOT = 'x';
 
-export function accessoryOf(look: string | null): string | null {
-  if (look === null) return null;
-  for (const token of look.trim().split(/\s+/)) {
-    if (token.startsWith(`${ACCESSORY_SLOT}:`))
-      return token.slice(ACCESSORY_SLOT.length + 1) || null;
-  }
-  return null;
+export function accessoriesOf(look: string | null): string[] {
+  if (look === null) return [];
+  return look
+    .trim()
+    .split(/\s+/)
+    .flatMap((t) =>
+      t.startsWith(`${ACCESSORY_SLOT}:`) && t.length > ACCESSORY_SLOT.length + 1
+        ? [t.slice(ACCESSORY_SLOT.length + 1)]
+        : [],
+    );
 }
 
-export function withAccessory(look: string, accessoryId: string | null): string {
+// The first worn accessory, or null (what an app before the slots shows).
+export function accessoryOf(look: string | null): string | null {
+  return accessoriesOf(look)[0] ?? null;
+}
+
+export function withAccessories(look: string, accessoryIds: readonly string[]): string {
   const rest = look
     .trim()
     .split(/\s+/)
     .filter((t) => t !== '' && !t.startsWith(`${ACCESSORY_SLOT}:`));
-  if (accessoryId !== null) rest.push(`${ACCESSORY_SLOT}:${accessoryId}`);
-  return rest.join(' ');
+  return [...rest, ...accessoryIds.map((id) => `${ACCESSORY_SLOT}:${id}`)].join(' ');
+}
+
+export function withAccessory(look: string, accessoryId: string | null): string {
+  return withAccessories(look, accessoryId === null ? [] : [accessoryId]);
+}
+
+export function accessoryById(
+  id: string,
+  catalog: GiftCatalog = GIFT_CATALOG,
+): GiftAccessory | undefined {
+  return catalog.accessories.find((a) => a.id === id);
+}
+
+export function slotsOf(id: string, catalog: GiftCatalog = GIFT_CATALOG): readonly string[] {
+  return accessoryById(id, catalog)?.slots ?? [];
+}
+
+// Two accessories in one slot (or one listed twice): not a set that can be worn.
+export function slotConflict(ids: readonly string[], catalog: GiftCatalog = GIFT_CATALOG): boolean {
+  const taken = new Set<string>();
+  for (const id of new Set(ids)) {
+    for (const slot of slotsOf(id, catalog)) {
+      if (taken.has(slot)) return true;
+      taken.add(slot);
+    }
+  }
+  return ids.length !== new Set(ids).size;
+}
+
+// Putting one on: whatever is worn in any of its slots comes off.
+export function wearOne(
+  worn: readonly string[],
+  id: string,
+  catalog: GiftCatalog = GIFT_CATALOG,
+): string[] {
+  const slots = new Set(slotsOf(id, catalog));
+  return [...worn.filter((w) => w !== id && !slotsOf(w, catalog).some((s) => slots.has(s))), id];
+}
+
+// Which accessory covers each slot of the look (Kapsülünü süsle shows it in that slot).
+export function coveredSlots(
+  worn: readonly string[],
+  catalog: GiftCatalog = GIFT_CATALOG,
+): Partial<Record<(typeof LOOK_SLOTS)[number], string>> {
+  const out: Partial<Record<(typeof LOOK_SLOTS)[number], string>> = {};
+  for (const id of worn) {
+    for (const slot of slotsOf(id, catalog)) {
+      if ((LOOK_SLOTS as readonly string[]).includes(slot)) {
+        out[slot as (typeof LOOK_SLOTS)[number]] = id;
+      }
+    }
+  }
+  return out;
+}
+
+// The themed pack whose full set the look wears whole, or null: its messages in the venue chat,
+// while anonymous, take the set's balloon (§4.U).
+export function fullSetOf(
+  look: string | null,
+  catalog: GiftCatalog = GIFT_CATALOG,
+): GiftPack | null {
+  const worn = new Set(accessoriesOf(look));
+  for (const pack of catalog.packs) {
+    if (pack.fullSet && pack.fullSet.length > 0 && pack.fullSet.every((id) => worn.has(id))) {
+      return isGiftPack(pack.id) ? pack.id : null;
+    }
+  }
+  return null;
 }
 
 // The capsule parts that became pack accessories (§4.U, 7 Kasım): left out of Kapsülünü süsle. A

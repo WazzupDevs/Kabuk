@@ -84,6 +84,7 @@ export type ErrorCode =
   | 'pack_locked'
   | 'no_pack'
   | 'not_owned'
+  | 'slot_conflict'
   | 'questions_exhausted'
   | 'captain_missing'
   | 'not_in_team'

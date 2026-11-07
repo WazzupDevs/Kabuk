@@ -23,8 +23,11 @@ describe('capsule look', () => {
 });
 
 describe('pack accessory', () => {
-  it('has a drawing for every accessory of the catalog', () => {
-    for (const a of GIFT_CATALOG.accessories) expect(ACCESSORY_ART[a.id]).toBeDefined();
+  // The first catalog's eight; the 40 + 20 of §4.U ("Genişleyen katalog") come with their screens.
+  it('has a drawing for every accessory of the first catalog', () => {
+    const first = GIFT_CATALOG.accessories.filter((a) => a.retired || a.id === 'ejderboynuzu');
+    expect(first).toHaveLength(8);
+    for (const a of first) expect(ACCESSORY_ART[a.id]).toBeDefined();
   });
 
   it('draws the worn accessory over the capsule, in every drawing', () => {

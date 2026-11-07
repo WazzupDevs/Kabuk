@@ -1,52 +1,607 @@
 {
-  "source": "docs/SPEC_V4.md §4.U (K-89); Aura v134 panoları PaketOranlar, KapsulAksesuar. Ağırlıklar tamsayı: paket başına kademe ağırlıklarının toplamı 100000 (%0,001 hassasiyet). Bronz oranları tuvaldeki değerler, pilot için geçici; kilitli paketlerin oranları açılmadan önce proje sahibine sorulur. Aksesuarın ağırlığı kendi kademesi içindeki payıdır. replacesPart: bu aksesuar olan kapsül parçası Kapsülünü süsle'den kalktı (7 Kasım); takmış olan kalır, yeniden seçilemez.",
+  "source": "docs/SPEC_V4.md §4.U (K-89, \"Genişleyen katalog ve yuvalar\"); Aura panoları PaketOranlar, AksesuarSiradan, AksesuarNadir, AksesuarDestansi, AksesuarEfsanevi, PaketElf, PaketNinja. Ağırlıklar tamsayı: paket başına kademe ağırlıklarının toplamı 100000 (%0,001 hassasiyet). Bronz oranları tuvaldeki değerler, pilot için geçici; kilitli paketlerin oranları açılmadan önce proje sahibine sorulur. Aksesuarın ağırlığı kendi kademesi (ve paketi) içindeki payıdır. slots: aksesuarın takıldığı yuvalar (kapsülün yuva kodları: c Renk, e Göz, h Baş, f Yüz, m Ağız, n Boyun); Destansı takımlar iki yuvalı. themed: paket yalnız kendi aksesuarlarını verir (aksesuarın pack'i), onlar başka paketten çıkmaz; Elf ve Ninja'da tam set parçaları ötekilerin yarı ağırlığında (proje sahibinin kararı, 7 Kasım). retired: yeni katalogda yok, paketten çıkmaz, sahibi olan takmaya devam eder (7 Kasım). replacesPart: bu aksesuar olan kapsül parçası Kapsülünü süsle'den kalktı (7 Kasım); takmış olan kalır, yeniden seçilemez.",
   "loginsPerPack": 3,
   "tiers": [
-    { "id": "siradan", "name": "Sıradan" },
-    { "id": "nadir", "name": "Nadir" },
-    { "id": "destansi", "name": "Destansı" },
-    { "id": "efsanevi", "name": "Efsanevi" }
+    {
+      "id": "siradan",
+      "name": "Sıradan"
+    },
+    {
+      "id": "nadir",
+      "name": "Nadir"
+    },
+    {
+      "id": "destansi",
+      "name": "Destansı"
+    },
+    {
+      "id": "efsanevi",
+      "name": "Efsanevi"
+    }
   ],
   "packs": [
     {
       "id": "bronz",
       "name": "Bronz",
       "locked": false,
-      "weights": { "siradan": 70000, "nadir": 22000, "destansi": 7000, "efsanevi": 1000 }
+      "weights": {
+        "siradan": 70000,
+        "nadir": 22000,
+        "destansi": 7000,
+        "efsanevi": 1000
+      },
+      "themed": false
     },
     {
       "id": "gumus",
       "name": "Gümüş",
       "locked": true,
-      "weights": { "siradan": 50000, "nadir": 32000, "destansi": 14000, "efsanevi": 4000 }
+      "weights": {
+        "siradan": 50000,
+        "nadir": 32000,
+        "destansi": 14000,
+        "efsanevi": 4000
+      },
+      "themed": false
     },
     {
       "id": "altin",
       "name": "Altın",
       "locked": true,
-      "weights": { "siradan": 30000, "nadir": 38000, "destansi": 24000, "efsanevi": 8000 }
+      "weights": {
+        "siradan": 30000,
+        "nadir": 38000,
+        "destansi": 24000,
+        "efsanevi": 8000
+      },
+      "themed": false
     },
     {
       "id": "elmas",
       "name": "Elmas",
       "locked": true,
-      "weights": { "siradan": 15000, "nadir": 35000, "destansi": 35000, "efsanevi": 15000 }
+      "weights": {
+        "siradan": 15000,
+        "nadir": 35000,
+        "destansi": 35000,
+        "efsanevi": 15000
+      },
+      "themed": false
+    },
+    {
+      "id": "elf",
+      "name": "Elf",
+      "locked": true,
+      "themed": true,
+      "weights": {
+        "siradan": 0,
+        "nadir": 0,
+        "destansi": 0,
+        "efsanevi": 100000
+      },
+      "fullSet": [
+        "yapraktaci",
+        "ayisigigozleri",
+        "yaprakmaske",
+        "sihirliflut",
+        "hayatagaci",
+        "ormanteni"
+      ]
+    },
+    {
+      "id": "ninja",
+      "name": "Ninja",
+      "locked": true,
+      "themed": true,
+      "weights": {
+        "siradan": 0,
+        "nadir": 0,
+        "destansi": 0,
+        "efsanevi": 100000
+      },
+      "fullSet": ["golgebasligi", "simsekgozler", "dumanpecesi", "gecepelerini", "geceteni"]
     }
   ],
   "accessories": [
-    { "id": "bere", "name": "Bere", "tier": "siradan", "weight": 1, "replacesPart": "h:bere" },
-    { "id": "yuvarlakgozluk", "name": "Yuvarlak gözlük", "tier": "siradan", "weight": 1 },
-    { "id": "kasket", "name": "Kasket", "tier": "nadir", "weight": 1, "replacesPart": "h:kasket" },
+    {
+      "id": "filiz",
+      "name": "Filiz",
+      "tier": "siradan",
+      "slots": ["h"],
+      "weight": 1
+    },
+    {
+      "id": "percem",
+      "name": "Perçem",
+      "tier": "siradan",
+      "slots": ["h"],
+      "weight": 1
+    },
+    {
+      "id": "altigengozluk",
+      "name": "Altıgen gözlük",
+      "tier": "siradan",
+      "slots": ["f"],
+      "weight": 1
+    },
+    {
+      "id": "baklagoz",
+      "name": "Bakla göz",
+      "tier": "siradan",
+      "slots": ["e"],
+      "weight": 1
+    },
+    {
+      "id": "artigoz",
+      "name": "Artı göz",
+      "tier": "siradan",
+      "slots": ["e"],
+      "weight": 1
+    },
+    {
+      "id": "yarabandi",
+      "name": "Yara bandı",
+      "tier": "siradan",
+      "slots": ["m"],
+      "weight": 1
+    },
+    {
+      "id": "kurdan",
+      "name": "Kürdan",
+      "tier": "siradan",
+      "slots": ["m"],
+      "weight": 1
+    },
+    {
+      "id": "guzellikbeni",
+      "name": "Güzellik beni",
+      "tier": "siradan",
+      "slots": ["m"],
+      "weight": 1
+    },
+    {
+      "id": "anahtarkolye",
+      "name": "Anahtar kolye",
+      "tier": "siradan",
+      "slots": ["n"],
+      "weight": 1
+    },
+    {
+      "id": "ipkravat",
+      "name": "İp kravat",
+      "tier": "siradan",
+      "slots": ["n"],
+      "weight": 1
+    },
+    {
+      "id": "pervanelisapka",
+      "name": "Pervaneli şapka",
+      "tier": "nadir",
+      "slots": ["h"],
+      "weight": 1
+    },
+    {
+      "id": "balikcisapkasi",
+      "name": "Balıkçı şapkası",
+      "tier": "nadir",
+      "slots": ["h"],
+      "weight": 1
+    },
+    {
+      "id": "cilekgozluk",
+      "name": "Çilek gözlük",
+      "tier": "nadir",
+      "slots": ["f"],
+      "weight": 1
+    },
+    {
+      "id": "panjurgozluk",
+      "name": "Panjur gözlük",
+      "tier": "nadir",
+      "slots": ["f"],
+      "weight": 1
+    },
+    {
+      "id": "sarmalgoz",
+      "name": "Sarmal göz",
+      "tier": "nadir",
+      "slots": ["e"],
+      "weight": 1
+    },
+    {
+      "id": "kedibiyiklari",
+      "name": "Kedi bıyıkları",
+      "tier": "nadir",
+      "slots": ["m"],
+      "weight": 1
+    },
+    {
+      "id": "distegul",
+      "name": "Dişte gül",
+      "tier": "nadir",
+      "slots": ["m"],
+      "weight": 1
+    },
+    {
+      "id": "yildizcikartma",
+      "name": "Yıldız çıkartma",
+      "tier": "nadir",
+      "slots": ["m"],
+      "weight": 1
+    },
+    {
+      "id": "pusulakolye",
+      "name": "Pusula kolye",
+      "tier": "nadir",
+      "slots": ["n"],
+      "weight": 1
+    },
+    {
+      "id": "kopekbaligidisi",
+      "name": "Köpekbalığı dişi",
+      "tier": "nadir",
+      "slots": ["n"],
+      "weight": 1
+    },
+    {
+      "id": "kistakimi",
+      "name": "Kış takımı",
+      "tier": "destansi",
+      "slots": ["h", "n"],
+      "weight": 1
+    },
+    {
+      "id": "buyucutakimi",
+      "name": "Büyücü takımı",
+      "tier": "destansi",
+      "slots": ["h", "n"],
+      "weight": 1
+    },
+    {
+      "id": "yildiztakimi",
+      "name": "Yıldız takımı",
+      "tier": "destansi",
+      "slots": ["f", "m"],
+      "weight": 1
+    },
+    {
+      "id": "korsantakimi",
+      "name": "Korsan takımı",
+      "tier": "destansi",
+      "slots": ["h", "f"],
+      "weight": 1
+    },
+    {
+      "id": "dalgictakimi",
+      "name": "Dalgıç takımı",
+      "tier": "destansi",
+      "slots": ["f", "m"],
+      "weight": 1
+    },
+    {
+      "id": "seftakimi",
+      "name": "Şef takımı",
+      "tier": "destansi",
+      "slots": ["h", "m"],
+      "weight": 1
+    },
+    {
+      "id": "doktortakimi",
+      "name": "Doktor takımı",
+      "tier": "destansi",
+      "slots": ["h", "n"],
+      "weight": 1
+    },
+    {
+      "id": "rocktakimi",
+      "name": "Rock takımı",
+      "tier": "destansi",
+      "slots": ["f", "n"],
+      "weight": 1
+    },
+    {
+      "id": "astronottakimi",
+      "name": "Astronot takımı",
+      "tier": "destansi",
+      "slots": ["h", "f"],
+      "weight": 1
+    },
+    {
+      "id": "hawaiitakimi",
+      "name": "Hawaii takımı",
+      "tier": "destansi",
+      "slots": ["h", "n"],
+      "weight": 1
+    },
+    {
+      "id": "kuzeyisigi",
+      "name": "Kuzey ışığı",
+      "tier": "efsanevi",
+      "slots": ["h"],
+      "weight": 1
+    },
+    {
+      "id": "ejderboynuzu",
+      "name": "Ejder boynuzu",
+      "tier": "efsanevi",
+      "slots": ["h"],
+      "weight": 1
+    },
+    {
+      "id": "ejdernefesi",
+      "name": "Ejder nefesi",
+      "tier": "efsanevi",
+      "slots": ["m"],
+      "weight": 1
+    },
+    {
+      "id": "alevsac",
+      "name": "Alev saç",
+      "tier": "efsanevi",
+      "slots": ["h"],
+      "weight": 1
+    },
+    {
+      "id": "simsekbulutu",
+      "name": "Şimşek bulutu",
+      "tier": "efsanevi",
+      "slots": ["h"],
+      "weight": 1
+    },
+    {
+      "id": "kelebekgozluk",
+      "name": "Kelebek gözlük",
+      "tier": "efsanevi",
+      "slots": ["f"],
+      "weight": 1
+    },
+    {
+      "id": "gokkusagiatki",
+      "name": "Gökkuşağı atkı",
+      "tier": "efsanevi",
+      "slots": ["n"],
+      "weight": 1
+    },
+    {
+      "id": "yildiztozu",
+      "name": "Yıldız tozu",
+      "tier": "efsanevi",
+      "slots": ["m"],
+      "weight": 1
+    },
+    {
+      "id": "neongozluk",
+      "name": "Neon gözlük",
+      "tier": "efsanevi",
+      "slots": ["f"],
+      "weight": 1
+    },
+    {
+      "id": "kalpbaloncuk",
+      "name": "Kalp baloncukları",
+      "tier": "efsanevi",
+      "slots": ["m"],
+      "weight": 1
+    },
+    {
+      "id": "yapraktaci",
+      "name": "Yaprak tacı",
+      "tier": "efsanevi",
+      "slots": ["h"],
+      "weight": 1,
+      "pack": "elf"
+    },
+    {
+      "id": "aydiademi",
+      "name": "Ay diademi",
+      "tier": "efsanevi",
+      "slots": ["h"],
+      "weight": 2,
+      "pack": "elf"
+    },
+    {
+      "id": "elfkulaklari",
+      "name": "Elf kulakları",
+      "tier": "efsanevi",
+      "slots": ["h"],
+      "weight": 2,
+      "pack": "elf"
+    },
+    {
+      "id": "ormanrunleri",
+      "name": "Orman rünleri",
+      "tier": "efsanevi",
+      "slots": ["m"],
+      "weight": 2,
+      "pack": "elf"
+    },
+    {
+      "id": "yaprakmaske",
+      "name": "Yaprak maske",
+      "tier": "efsanevi",
+      "slots": ["f"],
+      "weight": 1,
+      "pack": "elf"
+    },
+    {
+      "id": "ayisigigozleri",
+      "name": "Ay ışığı gözleri",
+      "tier": "efsanevi",
+      "slots": ["e"],
+      "weight": 1,
+      "pack": "elf"
+    },
+    {
+      "id": "sihirliflut",
+      "name": "Sihirli flüt",
+      "tier": "efsanevi",
+      "slots": ["m"],
+      "weight": 1,
+      "pack": "elf"
+    },
+    {
+      "id": "yaprakyakasi",
+      "name": "Yaprak yakası",
+      "tier": "efsanevi",
+      "slots": ["n"],
+      "weight": 2,
+      "pack": "elf"
+    },
+    {
+      "id": "hayatagaci",
+      "name": "Hayat ağacı kolyesi",
+      "tier": "efsanevi",
+      "slots": ["n"],
+      "weight": 1,
+      "pack": "elf"
+    },
+    {
+      "id": "ormanteni",
+      "name": "Orman teni",
+      "tier": "efsanevi",
+      "slots": ["c"],
+      "weight": 1,
+      "pack": "elf"
+    },
+    {
+      "id": "golgebasligi",
+      "name": "Gölge başlığı",
+      "tier": "efsanevi",
+      "slots": ["h"],
+      "weight": 1,
+      "pack": "ninja"
+    },
+    {
+      "id": "shurikentokasi",
+      "name": "Shuriken tokası",
+      "tier": "efsanevi",
+      "slots": ["h"],
+      "weight": 2,
+      "pack": "ninja"
+    },
+    {
+      "id": "tilkimaskesi",
+      "name": "Tilki maskesi",
+      "tier": "efsanevi",
+      "slots": ["f"],
+      "weight": 2,
+      "pack": "ninja"
+    },
+    {
+      "id": "simsekgozler",
+      "name": "Şimşek gözler",
+      "tier": "efsanevi",
+      "slots": ["e"],
+      "weight": 1,
+      "pack": "ninja"
+    },
+    {
+      "id": "dumanpecesi",
+      "name": "Duman peçesi",
+      "tier": "efsanevi",
+      "slots": ["m"],
+      "weight": 1,
+      "pack": "ninja"
+    },
+    {
+      "id": "klanisareti",
+      "name": "Klan işareti",
+      "tier": "efsanevi",
+      "slots": ["m"],
+      "weight": 2,
+      "pack": "ninja"
+    },
+    {
+      "id": "gecepelerini",
+      "name": "Gece pelerini",
+      "tier": "efsanevi",
+      "slots": ["n"],
+      "weight": 1,
+      "pack": "ninja"
+    },
+    {
+      "id": "sirtkatanasi",
+      "name": "Sırt katanası",
+      "tier": "efsanevi",
+      "slots": ["n"],
+      "weight": 2,
+      "pack": "ninja"
+    },
+    {
+      "id": "kunaikolyesi",
+      "name": "Kunai kolyesi",
+      "tier": "efsanevi",
+      "slots": ["n"],
+      "weight": 2,
+      "pack": "ninja"
+    },
+    {
+      "id": "geceteni",
+      "name": "Gece teni",
+      "tier": "efsanevi",
+      "slots": ["c"],
+      "weight": 1,
+      "pack": "ninja"
+    },
+    {
+      "id": "bere",
+      "name": "Bere",
+      "tier": "siradan",
+      "slots": ["h"],
+      "weight": 1,
+      "retired": true,
+      "replacesPart": "h:bere"
+    },
+    {
+      "id": "yuvarlakgozluk",
+      "name": "Yuvarlak gözlük",
+      "tier": "siradan",
+      "slots": ["f"],
+      "weight": 1,
+      "retired": true
+    },
+    {
+      "id": "kasket",
+      "name": "Kasket",
+      "tier": "nadir",
+      "slots": ["h"],
+      "weight": 1,
+      "retired": true,
+      "replacesPart": "h:kasket"
+    },
     {
       "id": "kulaklik",
       "name": "Kulaklık",
       "tier": "nadir",
+      "slots": ["h"],
       "weight": 1,
+      "retired": true,
       "replacesPart": "h:kulaklik"
     },
-    { "id": "buyucusapkasi", "name": "Büyücü şapkası", "tier": "destansi", "weight": 1 },
-    { "id": "yildizgozluk", "name": "Yıldız gözlük", "tier": "destansi", "weight": 1 },
-    { "id": "tac", "name": "Taç", "tier": "efsanevi", "weight": 1, "replacesPart": "h:tac" },
-    { "id": "ejderboynuzu", "name": "Ejder boynuzu", "tier": "efsanevi", "weight": 1 }
+    {
+      "id": "buyucusapkasi",
+      "name": "Büyücü şapkası",
+      "tier": "destansi",
+      "slots": ["h"],
+      "weight": 1,
+      "retired": true
+    },
+    {
+      "id": "yildizgozluk",
+      "name": "Yıldız gözlük",
+      "tier": "destansi",
+      "slots": ["f"],
+      "weight": 1,
+      "retired": true
+    },
+    {
+      "id": "tac",
+      "name": "Taç",
+      "tier": "efsanevi",
+      "slots": ["h"],
+      "weight": 1,
+      "retired": true,
+      "replacesPart": "h:tac"
+    }
   ]
 }

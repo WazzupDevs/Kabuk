@@ -1,4 +1,4 @@
-import type { GiftPack, GiftTier } from '../../../../supabase/functions/_shared/pure/gifts.ts';
+import type { GiftTier, TierPack } from '../../../../supabase/functions/_shared/pure/gifts.ts';
 
 import type { ColorScheme as Scheme } from './tokens';
 
@@ -29,7 +29,7 @@ export const TIER_SPARKLES: Record<GiftTier, number> = {
 
 // A pack's glow behind the ring and on the way to the rip (Paketler, PaketSecimGecis): its own
 // colour and its second.
-export const PACK_GLOW: Record<GiftPack, readonly [string, string]> = {
+export const PACK_GLOW: Record<TierPack, readonly [string, string]> = {
   bronz: ['#FF7A3D', '#9A6B4E'],
   gumus: ['#A3C4AE', '#6E8874'],
   altin: ['#F2C230', '#FFB547'],

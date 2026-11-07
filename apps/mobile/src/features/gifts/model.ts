@@ -1,6 +1,12 @@
 import type { GiftPackView, GiftState } from '@shared/api/gifts.ts';
 import { GIFT_CATALOG } from '@shared/giftCatalog.ts';
-import { GIFT_PACKS, GIFT_TIERS, type GiftPack, type GiftTier } from '@shared/gifts.ts';
+import {
+  GIFT_TIERS,
+  type GiftPack,
+  type GiftTier,
+  TIER_PACKS,
+  type TierPack,
+} from '@shared/gifts.ts';
 
 // What the gift screens read of the state the server answers (docs/SPEC_V4.md §4.U): names from the
 // catalog, the Aktiviteler card's state. Nothing here draws or decides a pack; the server does.
@@ -35,19 +41,22 @@ export function packView(state: GiftState, pack: GiftPack): GiftPackView | null 
   return state.packs.find((p) => p.id === pack) ?? null;
 }
 
-// The four packs in order of worth, as the server answers them.
-export function packsInOrder(state: GiftState): GiftPackView[] {
-  return GIFT_PACKS.flatMap((id) => {
+export type TierPackView = GiftPackView & { id: TierPack };
+
+// The four tier packs in order of worth, as the server answers them (Elf and Ninja come with their
+// screens).
+export function packsInOrder(state: GiftState): TierPackView[] {
+  return TIER_PACKS.flatMap((id) => {
     const p = packView(state, id);
-    return p ? [p] : [];
+    return p ? [{ ...p, id }] : [];
   });
 }
 
 // The Aktiviteler card (AktivitelerHediye): a Bronz pack to open, the logins to the next, or every
 // accessory owned.
 export type GiftCardState =
-  | { kind: 'ready'; pack: GiftPack; count: number }
-  | { kind: 'progress'; pack: GiftPack; logins: number; per: number; left: number }
+  | { kind: 'ready'; pack: TierPack; count: number }
+  | { kind: 'progress'; pack: TierPack; logins: number; per: number; left: number }
   | { kind: 'allOwned' };
 
 export function cardState(state: GiftState): GiftCardState {

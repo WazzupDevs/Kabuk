@@ -88,6 +88,7 @@ const STATUS: Record<ErrorCode, number> = {
   pack_locked: 409,
   no_pack: 409,
   not_owned: 409,
+  slot_conflict: 409,
   captain_missing: 409,
   not_in_team: 409,
   no_offer: 409,

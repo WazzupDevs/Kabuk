@@ -1,4 +1,3 @@
-import type { GiftPackView } from '@shared/api/gifts.ts';
 import { useState } from 'react';
 import { Animated, Image, Pressable, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -22,7 +21,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 
 import { PACK_ART, PACK_RATIO } from './art';
 import { useFloat } from './loops';
-import { packName } from './model';
+import { packName, type TierPackView } from './model';
 import { BADGE, CanOpenBadge, SoonTag } from './parts';
 import type { Rect, Stage } from './stage';
 
@@ -95,7 +94,7 @@ export function PackRing({
   onFront,
   onOpen,
 }: {
-  packs: GiftPackView[];
+  packs: TierPackView[];
   ring: Ring;
   stage: Stage;
   enabled: boolean;
@@ -247,7 +246,7 @@ function RingGlow({
   s,
 }: {
   index: number;
-  pack: GiftPackView;
+  pack: TierPackView;
   turn: SharedValue<number>;
   s: number;
 }) {
@@ -289,7 +288,7 @@ function RingPack({
   onOpen,
 }: {
   index: number;
-  view: GiftPackView;
+  view: TierPackView;
   turn: SharedValue<number>;
   s: number;
   width: number;

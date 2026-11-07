@@ -13,6 +13,7 @@ import type { GiftsRequest, GiftState } from '../_shared/pure/api/gifts.ts';
 import { AppError } from '../_shared/pure/errors.ts';
 import { GIFT_CATALOG } from '../_shared/pure/giftCatalog.ts';
 import {
+  accessoriesOf,
   accessoryOf,
   drawAccessory,
   GIFT_PACKS,
@@ -21,6 +22,7 @@ import {
   isGiftPack,
   isGiftTier,
   ownsAll,
+  slotConflict,
   tierOdds,
   uniformInt,
 } from '../_shared/pure/gifts.ts';
@@ -36,6 +38,17 @@ const Body: z.ZodType<GiftsRequest> = z.discriminatedUnion('action', [
       .regex(/^[a-z0-9]+$/)
       .max(64)
       .nullable(),
+  }),
+  z.strictObject({
+    action: z.literal('wear'),
+    accessoryIds: z
+      .array(
+        z
+          .string()
+          .regex(/^[a-z0-9]+$/)
+          .max(64),
+      )
+      .max(6),
   }),
 ]);
 
@@ -65,13 +78,19 @@ function lockedHere(locked: boolean): boolean {
   return locked && !TEST_PACKS;
 }
 
+// The packs that open here: on the pilot the unlocked ones, on the dev project every one. The
+// login count waits while everything they give is owned.
+const OPEN_PACKS: GiftPack[] = GIFT_CATALOG.packs.flatMap((p) =>
+  isGiftPack(p.id) && !lockedHere(p.locked) ? [p.id] : [],
+);
+
 async function topUpTestPack(userId: string): Promise<void> {
   if (!TEST_PACKS) return;
   // Only an account that finished onboarding, as a login.
   const profile = await db.from('profiles').select('id').eq('id', userId).maybeSingle();
   if (profile.error) throw dbError('profiles', profile.error);
   if (!profile.data) return;
-  if (ownsAll(new Set((await ownedOf(userId)).map((a) => a.id)))) return;
+  if (ownsAll(new Set((await ownedOf(userId)).map((a) => a.id)), GIFT_CATALOG, OPEN_PACKS)) return;
   const added = await db
     .from('gift_progress')
     .upsert({ user_id: userId, unopened: 1 }, { onConflict: 'user_id', ignoreDuplicates: true });
@@ -127,8 +146,9 @@ async function state(userId: string, progress?: { logins: number; unopened: numb
     ),
     logins: counted.logins,
     loginsPerPack: GIFT_CATALOG.loginsPerPack,
-    allOwned: ownsAll(ownedIds),
+    allOwned: ownsAll(ownedIds, GIFT_CATALOG, OPEN_PACKS),
     owned,
+    worn: accessoriesOf(profile.data.capsule_look),
     equipped: accessoryOf(profile.data.capsule_look),
   };
   return result;
@@ -159,6 +179,10 @@ async function open(userId: string, pack: GiftPack) {
   throw new Error('gifts_open kept meeting owned accessories');
 }
 
+function worn(look: string) {
+  return { capsuleLook: look, worn: accessoriesOf(look), equipped: accessoryOf(look) };
+}
+
 Deno.serve(
   handle(async (req, raw) => {
     const user = await requireUser(req, db);
@@ -174,6 +198,7 @@ Deno.serve(
           target_user_id: user.id,
           today: isoDay(new Date()),
           logins_per_pack: GIFT_CATALOG.loginsPerPack,
+          open_packs: OPEN_PACKS,
         });
         if (error) throw dbError('gifts_login', error);
         if (data === null) throw new AppError('onboarding_required', 'Complete onboarding first.');
@@ -201,7 +226,26 @@ Deno.serve(
         }
         if (error) throw dbError('gifts_equip', error);
         if (data === null) throw new AppError('onboarding_required', 'Complete onboarding first.');
-        return { capsuleLook: data, equipped: accessoryOf(data) };
+        return worn(data);
+      }
+
+      case 'wear': {
+        if (slotConflict(body.accessoryIds)) {
+          throw new AppError('slot_conflict', 'Two accessories in one slot.');
+        }
+        const { data, error } = await db.rpc('gifts_wear', {
+          target_user_id: user.id,
+          target_accessory_ids: body.accessoryIds,
+        });
+        if (error?.code === 'P0001' && error.message === 'not_owned') {
+          throw new AppError('not_owned', 'Not an accessory of yours.');
+        }
+        if (error?.code === 'P0001' && error.message === 'slot_conflict') {
+          throw new AppError('slot_conflict', 'Two accessories in one slot.');
+        }
+        if (error) throw dbError('gifts_wear', error);
+        if (data === null) throw new AppError('onboarding_required', 'Complete onboarding first.');
+        return worn(data);
       }
     }
   }),

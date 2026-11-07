@@ -13,10 +13,15 @@ export type GiftLoginRequest = { action: 'login' };
 // One unopened pack of `pack` (only bronz opens; the others are locked, "Yakında").
 export type GiftOpenRequest = { action: 'open'; pack: GiftPack };
 
-// Wear an owned accessory on the capsule; null takes it off.
+// Put one owned accessory on in its slots (whatever is worn there comes off); null takes every worn
+// one off.
 export type GiftEquipRequest = { action: 'equip'; accessoryId: string | null };
 
-export type GiftsRequest = GiftStateRequest | GiftLoginRequest | GiftOpenRequest | GiftEquipRequest;
+// The whole worn set at once (Kapsülünü süsle, a full set): owned, no two in one slot.
+export type GiftWearRequest = { action: 'wear'; accessoryIds: string[] };
+
+export type GiftsRequest =
+  GiftStateRequest | GiftLoginRequest | GiftOpenRequest | GiftEquipRequest | GiftWearRequest;
 
 export type GiftPackView = {
   id: GiftPack;
@@ -37,11 +42,14 @@ export type GiftState = {
   allOwned: boolean;
   // Oldest first.
   owned: { id: string; tier: GiftTier; pack: GiftPack }[];
-  // The one worn on the capsule, or null.
+  // Worn on the capsule, one in each slot, in the look's order (§4.U).
+  worn: string[];
+  // The first of `worn`, or null (what an app before the slots reads).
   equipped: string | null;
 };
 
 export type GiftStateResponse = GiftState;
 export type GiftLoginResponse = GiftState;
 export type GiftOpenResponse = { accessory: { id: string; tier: GiftTier }; state: GiftState };
-export type GiftEquipResponse = { capsuleLook: string; equipped: string | null };
+export type GiftEquipResponse = { capsuleLook: string; worn: string[]; equipped: string | null };
+export type GiftWearResponse = GiftEquipResponse;
