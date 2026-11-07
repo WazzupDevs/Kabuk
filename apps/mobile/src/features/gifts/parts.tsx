@@ -7,12 +7,20 @@ import { FxSvg } from '@/components/FxSvg';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
 import { accessoryFigure } from '@/theme/capsuleAccessories';
-import { GIFT_BADGE, TIER_COLOR, TIER_TAG_ALPHA } from '@/theme/gifts';
+import {
+  EFSANEVI_FOIL,
+  GIFT_BADGE,
+  TIER_COLOR,
+  TIER_TAG_ALPHA,
+  TILE_FRAME,
+  TILE_GROUND_DARK,
+} from '@/theme/gifts';
+import { gradientStyle } from '@/theme/gradient';
 import { GIFT_MOTION } from '@/theme/giftMotion';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
-import { cardArt, hasCardArt } from './art';
+import { cardArt, hasCardArt, tileArt } from './art';
 import { useBeat } from './loops';
 import { tierName } from './model';
 
@@ -194,10 +202,15 @@ export function GiftTopBar({ title, onBack }: { title: string; onBack: () => voi
 }
 const TOP_BAR = 56;
 
-// An accessory's card: its own picture, or (an accessory the canvas drew no card for) its tier's
-// frame with the accessory's standing capsule in the middle.
-const CARD_FIGURE = 0.5;
+// An accessory's card: its own picture (the canvas drew one for the first eight). One the canvas
+// drew no card for is laid out as its collection tile is (GaleriHediye "Koleksiyon karosu"), at the
+// card's size: the tier's frame (Efsanevi's foil), the tier's ground with its art, and the
+// accessory on its standing capsule in the middle. The tile's art is a ground texture, never the
+// card itself (stretched to the card it showed only dots: the owner's report, 7 Kasım).
+const CARD_FIGURE = 0.56;
 const FIGURE_RATIO = 140 / 100;
+// The tile's frame is drawn for an 80 wide tile; the card's grows with its width.
+const TILE_BASE = 80;
 
 export function CardFace({
   id,
@@ -210,22 +223,53 @@ export function CardFace({
   width: number;
   height: number;
 }) {
-  const fw = width * CARD_FIGURE;
-  return (
-    <View style={{ width, height }}>
+  const { scheme } = useKit();
+  const { colors } = useTheme();
+  if (hasCardArt(id)) {
+    return (
       <Image
         source={cardArt(id, tier)}
         accessibilityIgnoresInvertColors
         style={{ width, height }}
       />
-      {hasCardArt(id) ? null : (
+    );
+  }
+  const frame = (TILE_FRAME[tier] * width) / TILE_BASE;
+  const color = TIER_COLOR[scheme][tier];
+  const ground = scheme === 'dark' ? TILE_GROUND_DARK : colors.surface;
+  const line = frame / TILE_FRAME[tier];
+  const fw = width * CARD_FIGURE;
+  return (
+    <View
+      style={[
+        { width, height, padding: frame },
+        tier === 'efsanevi' ? gradientStyle(EFSANEVI_FOIL) : { backgroundColor: color },
+      ]}
+    >
+      <View
+        style={{
+          flex: 1,
+          overflow: 'hidden',
+          backgroundColor: ground,
+          boxShadow:
+            tier === 'destansi'
+              ? `inset 0 0 0 ${3 * line}px ${ground}, inset 0 0 0 ${4 * line}px ${color}`
+              : undefined,
+        }}
+      >
+        <Image
+          source={tileArt(tier)}
+          resizeMode="cover"
+          accessibilityIgnoresInvertColors
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+        />
         <View
           pointerEvents="none"
-          style={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' }}
+          style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
         >
           <FxSvg xml={accessoryFigure(id)} width={fw} height={fw * FIGURE_RATIO} />
         </View>
-      )}
+      </View>
     </View>
   );
 }
