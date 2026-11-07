@@ -6,11 +6,13 @@ import {
   Animated,
   Keyboard,
   Pressable,
+  StyleSheet,
   Text as RNText,
   type TextLayoutEventData,
   type NativeSyntheticEvent,
   useWindowDimensions,
   View,
+  type ViewStyle,
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
@@ -36,6 +38,10 @@ import { AppIcon } from './AppIcon';
 import { useChatKind } from './chatKind';
 import { useChatMetaRef } from './chatMeta';
 import { usePopHost } from './popHost';
+import { CachedSvg } from './CachedSvg';
+import { FxSvg } from './FxSvg';
+import { gradientStyle } from '@/theme/gradient';
+import type { BalloonCorner, SetBalloon } from '@/theme/setBalloons';
 
 // color: the quoted sender's name colour in the venue chat (v45: --qc); otherwise the second accent.
 export type ChatQuote = { name: string; text: string; color?: string };
@@ -84,6 +90,8 @@ type Props = {
   // The held message's actions under it (skall tuvali: Yanıtla, Bildir; the viewer's own Sil).
   actions?: readonly BubbleAction[];
   testID?: string;
+  // A full set's balloon (the venue chat, anonymous, the set worn whole: theme/setBalloons.ts).
+  skin?: SetBalloon | null;
 };
 
 // 'sending': on its way, a clock in the ticks' place (Telegram Android: only the mark changes when
@@ -148,6 +156,7 @@ export function ChatBubble({
   onReact,
   actions = [],
   testID,
+  skin = null,
 }: Props) {
   const { shape } = useTheme();
   // A long press lifts the message over a scrim with the faces and its actions (MessagePop), from
@@ -205,10 +214,11 @@ export function ChatBubble({
   // table chat pink. Aura v65's primary own bubble and glass others are left.
   const venue = kind === 'mekan';
   const paint = KIT.bubble[scheme];
-  // The words on a coloured bubble are white: another's.
-  const onColour = !mine;
+  // The words on a coloured bubble are white: another's, and a set's balloon.
+  const onColour = !mine || skin !== null;
   const shadowOff = useLabOff('golge');
-  const fg = mine ? paint.mineInk : paint.themInk;
+  const fg = skin ? skin.ink : mine ? paint.mineInk : paint.themInk;
+  const muted = skin ? skin.muted : mine ? paint.mineMuted : paint.themMuted;
   const inside = !mine && nameInk !== undefined;
   const R = KIT.size.bubbleRadius;
   const near = KIT.size.bubbleInner;
@@ -223,7 +233,7 @@ export function ChatBubble({
     number,
   ];
   const big = quote ? 0 : emojiOnly(text);
-  const fill = mine ? paint.mine : paint[kind];
+  const fill = skin ? skin.chipOn : mine ? paint.mine : paint[kind];
   // Before `bubble` below: it draws the face (which reads the shadow) as it is built.
   const bubbleShadow = shadowParts(
     shadowOff,
@@ -303,7 +313,8 @@ export function ChatBubble({
     </Pressable>
   );
   function face(lifted: boolean) {
-    const shaped = last && !big && box !== null;
+    const skinned = skin !== null && !big;
+    const shaped = last && !big && box !== null && !skinned;
     return (
       <View
         ref={lifted ? undefined : faceRef}
@@ -321,7 +332,7 @@ export function ChatBubble({
         // bottom. Never see-through (the owner's call, 29 Ekim): the own white, another's in the
         // chat's colour (DM blue, Mekan sohbeti green, Masa sohbeti purple).
         style={[
-          big
+          big || skinned
             ? null
             : mine
               ? {
@@ -345,11 +356,13 @@ export function ChatBubble({
                 borderBottomLeftRadius: radii[3],
                 opacity: state === 'sending' ? 0.6 : 1,
               },
+          skin && skinned ? skinFace(skin, mine, scheme) : null,
         ]}
       >
+        {skin && skinned ? <SkinFrame skin={skin} mine={mine} /> : null}
         {/* Held, the bubble keeps its own shadow and tail: no ring (ui 1.1). */}
-        {big ? null : bubbleShadow.node}
-        {shaped ? (
+        {big || skinned ? null : bubbleShadow.node}
+        {skinned ? null : shaped ? (
           <BubbleShape
             mine={mine}
             w={box.w}
@@ -419,11 +432,11 @@ export function ChatBubble({
                   }}
                   importantForAccessibility="no-hide-descendants"
                 >
-                  <Text variant="caption" color={mine ? paint.mineMuted : paint.themMuted}>
+                  <Text variant="caption" color={muted}>
                     {time}
                   </Text>
                   {mine && delivery ? (
-                    <DeliveryTicks delivery={delivery} inBubble plainInk={paint.mineMuted} />
+                    <DeliveryTicks delivery={delivery} inBubble plainInk={muted} />
                   ) : null}
                 </View>
               ) : null}
@@ -452,11 +465,11 @@ export function ChatBubble({
                 }}
                 importantForAccessibility="no-hide-descendants"
               >
-                <Text variant="caption" color={mine ? paint.mineMuted : paint.themMuted}>
+                <Text variant="caption" color={muted}>
                   {time}
                 </Text>
                 {mine && delivery ? (
-                  <DeliveryTicks delivery={delivery} inBubble plainInk={paint.mineMuted} />
+                  <DeliveryTicks delivery={delivery} inBubble plainInk={muted} />
                 ) : null}
               </View>
             ) : null}
@@ -599,14 +612,31 @@ export function ChatBubble({
                 disabled={!onPressSender}
                 onPress={onPressSender}
                 hitSlop={SPACING[1.5]}
-                style={{
-                  alignSelf: 'flex-start',
-                  paddingHorizontal: SPACING[1.5],
-                  borderRadius: KIT.size.chip,
-                  backgroundColor: KIT.venueBubble.nameChip[scheme],
-                }}
+                style={
+                  skin
+                    ? skinName(skin)
+                    : {
+                        alignSelf: 'flex-start',
+                        paddingHorizontal: SPACING[1.5],
+                        borderRadius: KIT.size.chip,
+                        backgroundColor: KIT.venueBubble.nameChip[scheme],
+                      }
+                }
               >
-                <RNText style={[KIT_TYPE.fine, KIT_TYPE.strong, { color: nameInk }]}>{name}</RNText>
+                {skin ? (
+                  <View style={{ width: SKIN_MARK, height: SKIN_MARK }}>
+                    <CachedSvg xml={skin.name.mark} width={SKIN_MARK} height={SKIN_MARK} />
+                  </View>
+                ) : null}
+                <RNText
+                  style={[
+                    KIT_TYPE.fine,
+                    KIT_TYPE.strong,
+                    { color: skin ? skin.name.ink : nameInk },
+                  ]}
+                >
+                  {name}
+                </RNText>
               </Pressable>
             ) : null}
             <SwipeToReply onReply={onReply}>{bubble}</SwipeToReply>
@@ -659,6 +689,128 @@ export function ChatBubble({
         <SwipeToReply onReply={onReply}>{bubble}</SwipeToReply>
         {chips}
       </View>
+    </View>
+  );
+}
+
+// A full set's balloon (BalonElf `.e2`, BalonNinja `.n2`): no tail; 22 round with the corner
+// towards the author 6; its padding and the room round it for the ornaments.
+const SKIN_MARK = 10;
+
+function skinRadii(skin: SetBalloon, mine: boolean): readonly [number, number, number, number] {
+  const { round, tight } = skin.radius;
+  return mine ? [round, round, tight, round] : [round, round, round, tight];
+}
+
+function skinFace(skin: SetBalloon, mine: boolean, scheme: 'light' | 'dark'): ViewStyle {
+  const [tl, tr, br, bl] = skinRadii(skin, mine);
+  return {
+    paddingTop: skin.pad.top,
+    paddingRight: skin.pad.right,
+    paddingBottom: skin.pad.bottom,
+    paddingLeft: skin.pad.left,
+    marginTop: skin.margin.top,
+    marginRight: skin.margin.right,
+    marginBottom: skin.margin.bottom,
+    marginLeft: skin.margin.left,
+    borderTopLeftRadius: tl,
+    borderTopRightRadius: tr,
+    borderBottomRightRadius: br,
+    borderBottomLeftRadius: bl,
+    boxShadow: skin.shadow[scheme],
+  };
+}
+
+// The name's chip over a set's balloon (`.e2nm`, `.n2nm`): the set's mark, its colours.
+function skinName(skin: SetBalloon): ViewStyle {
+  return {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING[1],
+    paddingVertical: 1,
+    paddingLeft: SKIN_MARK / 2,
+    paddingRight: SPACING[2],
+    borderRadius: KIT.size.chip,
+    ...gradientStyle(skin.name.fill),
+    boxShadow: `inset 0 0 0 1px ${skin.name.ring}, 0 0 10px ${skin.name.glow}`,
+  };
+}
+
+// The balloon's ground under its words: the border's colours, the fill 2 in with its glows, the
+// vine or rope along the top and the foot, the ornaments at the corners (mirrored for the own).
+function SkinFrame({ skin, mine }: { skin: SetBalloon; mine: boolean }) {
+  const radii = skinRadii(skin, mine);
+  const [w, setW] = useState(0);
+  const round = (r: readonly [number, number, number, number], less: number): ViewStyle => ({
+    borderTopLeftRadius: Math.max(r[0] - less, 0),
+    borderTopRightRadius: Math.max(r[1] - less, 0),
+    borderBottomRightRadius: Math.max(r[2] - less, 0),
+    borderBottomLeftRadius: Math.max(r[3] - less, 0),
+  });
+  const s = skin.strip;
+  const tiles = w > 0 ? Math.ceil(Math.max(w - s.left - s.right, 0) / s.w) : 0;
+  const strip = (top: boolean) => (
+    <View
+      style={{
+        position: 'absolute',
+        left: mine ? s.right : s.left,
+        right: mine ? s.left : s.right,
+        height: s.h,
+        overflow: 'hidden',
+        flexDirection: 'row',
+        ...(top ? { top: s.out } : { bottom: s.out, transform: [{ scaleY: -1 }] }),
+      }}
+    >
+      {Array.from({ length: tiles }, (_, i) => (
+        <View key={i} style={{ width: s.w, height: s.h }}>
+          <CachedSvg xml={s.svg} width={s.w} height={s.h} />
+        </View>
+      ))}
+    </View>
+  );
+  const corner = (k: BalloonCorner) => {
+    const c = skin.corners[k];
+    const left = k === 'tl' || k === 'bl';
+    const side = left !== mine ? { left: c.x } : { right: c.x };
+    const edge = k === 'tl' || k === 'tr' ? { top: c.y } : { bottom: c.y };
+    const flip = mine ? [{ scaleX: -1 }] : [];
+    const turn = c.turn ? [{ rotate: `${mine ? -c.turn : c.turn}deg` }] : [];
+    return (
+      <View
+        key={k}
+        style={{
+          position: 'absolute',
+          width: c.w,
+          height: c.h,
+          ...side,
+          ...edge,
+          transform: [...turn, ...flip],
+        }}
+      >
+        <FxSvg xml={c.svg} width={c.w} height={c.h} />
+      </View>
+    );
+  };
+  return (
+    <View
+      pointerEvents="none"
+      style={StyleSheet.absoluteFill}
+      onLayout={(e) => setW(Math.round(e.nativeEvent.layout.width))}
+    >
+      <View style={[StyleSheet.absoluteFill, round(radii, 0), gradientStyle(skin.border)]} />
+      <View
+        style={[
+          { position: 'absolute', inset: skin.edge, overflow: 'hidden' },
+          round(radii, skin.edge),
+          gradientStyle(skin.fill),
+        ]}
+      >
+        <View style={[StyleSheet.absoluteFill, gradientStyle(skin.aurora)]} />
+      </View>
+      {strip(true)}
+      {strip(false)}
+      {(['tl', 'tr', 'bl', 'br'] as const).map(corner)}
     </View>
   );
 }

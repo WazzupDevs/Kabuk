@@ -4,6 +4,7 @@ import { Animated, StyleSheet, View } from 'react-native';
 import { eyeLayers } from '@/theme/capsuleLook';
 
 import { CachedSvg } from './CachedSvg';
+import { FxSvg } from './FxSvg';
 
 // A capsule that blinks and looks around without being drawn again (the owner's report, 29 Ekim:
 // react-native-svg draws on the main thread on Android, so a blink redrawn every few seconds in
@@ -31,7 +32,7 @@ export function LayeredLook({
     () => blink.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }),
     [blink],
   );
-  if (!layers) return <CachedSvg xml={xml} width={width} height={height} />;
+  if (!layers) return <FxSvg xml={xml} width={width} height={height} />;
   const box = { position: 'absolute' as const, left: 0, top: 0, width, height };
   const move =
     lookX || lookY
@@ -40,7 +41,7 @@ export function LayeredLook({
   return (
     <View style={{ width, height }}>
       <View style={box}>
-        <CachedSvg xml={layers.below} width={width} height={height} />
+        <FxSvg xml={layers.below} width={width} height={height} />
       </View>
       <Animated.View style={[box, move ? { transform: move } : null]}>
         <Animated.View style={[StyleSheet.absoluteFill, { opacity: open }]}>
@@ -52,7 +53,7 @@ export function LayeredLook({
       </Animated.View>
       {layers.above ? (
         <View style={box}>
-          <CachedSvg xml={layers.above} width={width} height={height} />
+          <FxSvg xml={layers.above} width={width} height={height} />
         </View>
       ) : null}
     </View>

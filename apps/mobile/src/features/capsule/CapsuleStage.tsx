@@ -17,7 +17,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
 import { BEAT, type Channel, type Move, sample } from './motion';
-import { CachedSvg } from '@/components/CachedSvg';
+import { FxSvg } from '@/components/FxSvg';
 import { useLabOff } from '@/lib/drawLab';
 import { boxShadowParts } from '@/components/NativeShadow';
 
@@ -183,11 +183,11 @@ export function CapsuleStage({
           >
             {discShadow.node}
             <Reanimated.View style={[figure, moveStyle]}>
-              <CachedSvg xml={xml} width="100%" height="100%" />
+              <FxSvg xml={xml} width={figure.width} height={figure.height} />
             </Reanimated.View>
             {oldXml ? (
               <Reanimated.View pointerEvents="none" style={[figure, fadeStyle]}>
-                <CachedSvg xml={oldXml} width="100%" height="100%" />
+                <FxSvg xml={oldXml} width={figure.width} height={figure.height} />
               </Reanimated.View>
             ) : null}
           </Reanimated.View>

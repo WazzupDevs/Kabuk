@@ -23,11 +23,24 @@ describe('capsule look', () => {
 });
 
 describe('pack accessory', () => {
-  // The first catalog's eight; the 40 + 20 of §4.U ("Genişleyen katalog") come with their screens.
-  it('has a drawing for every accessory of the first catalog', () => {
-    const first = GIFT_CATALOG.accessories.filter((a) => a.retired || a.id === 'ejderboynuzu');
-    expect(first).toHaveLength(8);
-    for (const a of first) expect(ACCESSORY_ART[a.id]).toBeDefined();
+  it('has a drawing for every accessory of the catalog', () => {
+    expect(GIFT_CATALOG.accessories.length).toBeGreaterThanOrEqual(67);
+    for (const a of GIFT_CATALOG.accessories) expect(ACCESSORY_ART[a.id], a.id).toBeDefined();
+  });
+
+  it('names every id of a drawing its own, so that two worn together never meet', () => {
+    const seen = new Map<string, string>();
+    for (const [id, a] of Object.entries(ACCESSORY_ART)) {
+      const text = `${a.back ?? ''}${a.skin ?? ''}${a.art}`;
+      for (const m of text.matchAll(/ id="([^"]*)"/g)) {
+        const name = m[1] ?? '';
+        expect(seen.get(name) ?? id, name).toBe(id);
+        seen.set(name, id);
+      }
+      for (const m of text.matchAll(/url\(#([^)]*)\)/g)) {
+        expect(text, `${id} → ${m[1]}`).toContain(`id="${m[1]}"`);
+      }
+    }
   });
 
   it('draws the worn accessory over the capsule, in every drawing', () => {
@@ -42,13 +55,39 @@ describe('pack accessory', () => {
     expect(eyeLayers(worn)?.above).toContain('scale(0.53846)');
   });
 
+  it('draws several, one in each slot, each covering the part in its slot', () => {
+    const parts = lookSvg('c:mor e:klasik h:fiyonk n:inci');
+    const hat = lookSvg('c:mor e:klasik');
+    const covered = lookSvg('c:mor e:klasik h:fiyonk n:inci x:filiz x:ipkravat');
+    expect(covered).toContain('M50 23V12');
+    // The capsule's own hat is not drawn under the accessory.
+    expect(covered.startsWith(hat.replace('</svg>', ''))).toBe(true);
+    expect(parts).not.toBe(hat);
+    expect((covered.match(/scale\(0\.53846\)/g) ?? []).length).toBe(2);
+  });
+
+  it('takes the eyes for an eyes accessory and lays a skin under the visor', () => {
+    expect(lookSvg('c:mor e:klasik x:baklagoz')).not.toContain('class="eye"');
+    const skin = lookSvg('c:mor e:klasik x:ormanteni');
+    expect(skin.indexOf('ormantenis-gTn')).toBeLessThan(skin.indexOf('<rect x="14" y="15"'));
+    // A halo lies behind the body.
+    const halo = lookSvg('c:mor e:klasik x:kuzeyisigi');
+    expect(halo.indexOf('data-fx="halo"')).toBeLessThan(halo.indexOf('<rect x="10" y="8"'));
+  });
+
   it('draws nothing for an unknown accessory', () => {
     expect(lookSvg('c:mor e:klasik x:yok')).toBe(lookSvg('c:mor e:klasik'));
   });
 
-  it('draws a silhouette in one colour', () => {
-    const fills = accessoryFigure('tac', '#123456').match(/fill="#[0-9A-Fa-f]+"/g) ?? [];
-    expect(new Set(fills)).toEqual(new Set(['fill="#123456"']));
+  it('draws a silhouette in one colour, without its halo', () => {
+    for (const id of ['tac', 'kuzeyisigi', 'ormanteni', 'korsantakimi']) {
+      const svg = accessoryFigure(id, '#123456');
+      const fills = svg.match(/fill="[^"]+"/g) ?? [];
+      expect(new Set(fills.filter((f) => f !== 'fill="none"')), id).toEqual(
+        new Set(['fill="#123456"']),
+      );
+      expect(svg, id).not.toContain('data-fx');
+    }
   });
 });
 

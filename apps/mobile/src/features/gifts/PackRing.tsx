@@ -19,9 +19,9 @@ import { GIFT_FLOOR, PACK_DROP, PACK_GLOW } from '@/theme/gifts';
 import { GIFT_MOTION } from '@/theme/giftMotion';
 import { useTheme } from '@/theme/ThemeProvider';
 
-import { PACK_ART, PACK_RATIO } from './art';
+import { PACK_ART, PACK_RATIO, type ShownPack } from './art';
 import { useFloat } from './loops';
-import { packName, type TierPackView } from './model';
+import { packName, type PackViewOf } from './model';
 import { BADGE, CanOpenBadge, SoonTag } from './parts';
 import type { Rect, Stage } from './stage';
 
@@ -94,7 +94,7 @@ export function PackRing({
   onFront,
   onOpen,
 }: {
-  packs: TierPackView[];
+  packs: PackViewOf<ShownPack>[];
   ring: Ring;
   stage: Stage;
   enabled: boolean;
@@ -246,7 +246,7 @@ function RingGlow({
   s,
 }: {
   index: number;
-  pack: TierPackView;
+  pack: PackViewOf<ShownPack>;
   turn: SharedValue<number>;
   s: number;
 }) {
@@ -288,7 +288,7 @@ function RingPack({
   onOpen,
 }: {
   index: number;
-  view: TierPackView;
+  view: PackViewOf<ShownPack>;
   turn: SharedValue<number>;
   s: number;
   width: number;

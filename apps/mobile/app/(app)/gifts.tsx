@@ -1,5 +1,5 @@
 import type { GiftPackView, GiftState } from '@shared/api/gifts.ts';
-import type { GiftTier, TierPack } from '@shared/gifts.ts';
+import type { GiftTier } from '@shared/gifts.ts';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { BackHandler, View } from 'react-native';
@@ -15,7 +15,7 @@ import { CapIcon } from '@/aura/CapIcon';
 import { Btn, Round, T } from '@/aura/kit';
 import { useLoaderHold } from '@/components/Loader';
 import { Screen } from '@/components/Screen';
-import { PACK_RATIO } from '@/features/gifts/art';
+import { isShownPack, PACK_RATIO, type ShownPack } from '@/features/gifts/art';
 import { packName, packsInOrder } from '@/features/gifts/model';
 import { OddsSheet } from '@/features/gifts/OddsSheet';
 import { OpenedCard } from '@/features/gifts/OpenedCard';
@@ -44,7 +44,7 @@ import { ICON, SPACING } from '@/theme/tokens';
 // zooms to the middle, is torn open and its card is shown. Android's back closes the rip or the
 // card first.
 type Opening = {
-  pack: TierPack;
+  pack: ShownPack;
   accessory: { id: string; tier: GiftTier };
   from: Rect | null;
   card: Rect | null;
@@ -96,7 +96,7 @@ function Packs({
   const insets = useSafeAreaInsets();
   const ring = useRing();
   const openPack = useOpenPack();
-  const packs = packsInOrder(state);
+  const packs = packsInOrder(state, isShownPack);
   const [front, setFront] = useState(0);
   const [odds, setOdds] = useState(false);
   const [opening, setOpening] = useState<Opening | null>(null);

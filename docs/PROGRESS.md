@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (7 Kasım 2026, genişleyen katalog: ekranlar)
+
+- PR 2: 60 çizim (`capsuleAccessories.ts`), çoklu `x:` (yuvasındaki parçayı örter), hareket katmanı (`capsuleFx.ts`, `FxSvg`), Süsle'de yuvalar (Kaydet `gifts/wear`), Aksesuarlarım yuvalar, tam set balonu (`setBalloons.ts`). OTA.
+- Açık: Elf ve Ninja paket görseli tuvalde yok; gelince `features/gifts/art.ts` → `PACK_ART`'a eklenir (ve `PACK_GLOW`), Paketler'de kendiliğinden görünür.
+- Çizilmeyenler: renk akışı (hue-rotate), balonun kenar kayması, sarmaşık kayması, düşen yaprak, ateş böcekleri, kesik parlama.
+- Telefonda doğrulanacak: hareketlerin hızı ve merkezi, parlama bandının kare geçişi, liste ekranlarında akıcılık.
+
 ## Devir notu (7 Kasım 2026, genişleyen katalog: sunucu #512)
 
 - #512 main'de: 40 + 20 aksesuar (`content/gift-packs.json`: `slots`, temalı `pack`, `retired`, `fullSet`), yuvaya çoklu takma (`gifts/wear`, `equip` aynı yuvadakini çıkarır, `slot_conflict`), Elf/Ninja kilitli (tam set parçaları yarı ağırlık), ilk 7 parça `retired`. Kararlar §4.U'da.

@@ -1,23 +1,45 @@
 import type { GiftTier } from '@shared/gifts.ts';
-import { Animated, View } from 'react-native';
+import { Animated, Image, View } from 'react-native';
 
 import { Round, T, Tag, useKit } from '@/aura/kit';
 import { CapIcon } from '@/aura/CapIcon';
+import { FxSvg } from '@/components/FxSvg';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
+import { accessoryFigure } from '@/theme/capsuleAccessories';
 import { GIFT_BADGE, TIER_COLOR, TIER_TAG_ALPHA } from '@/theme/gifts';
 import { GIFT_MOTION } from '@/theme/giftMotion';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
+import { cardArt, hasCardArt } from './art';
 import { useBeat } from './loops';
 import { tierName } from './model';
 
 const TIER_MARKS: Record<GiftTier, number> = { siradan: 1, nadir: 2, destansi: 3, efsanevi: 4 };
 const MARK = 6;
 
-// The tier tag (hediye.css `.nd`): its colour's marks, one to four (the colour never stands alone),
-// and its name, on the colour at 16 %.
+// A tier's marks (hediye.css `.nd .gm`): one to four of its colour (the colour never stands alone).
+function Marks({ tier, color }: { tier: GiftTier; color: string }) {
+  return (
+    <View style={{ flexDirection: 'row', gap: 2 }}>
+      {Array.from({ length: TIER_MARKS[tier] }, (_, i) => (
+        <View
+          key={i}
+          style={{
+            width: MARK,
+            height: MARK,
+            borderRadius: 1,
+            backgroundColor: color,
+            transform: [{ rotate: '45deg' }],
+          }}
+        />
+      ))}
+    </View>
+  );
+}
+
+// The tier tag (hediye.css `.nd`): its marks and its name, on the colour at 16 %.
 export function TierTag({ tier, large }: { tier: GiftTier; large?: boolean }) {
   const { c, scheme } = useKit();
   const color = TIER_COLOR[scheme][tier];
@@ -26,23 +48,23 @@ export function TierTag({ tier, large }: { tier: GiftTier; large?: boolean }) {
       label={tierName(tier)}
       large={large}
       colors={{ bg: `${color}${TIER_TAG_ALPHA}`, fg: c.ink }}
-      lead={
-        <View style={{ flexDirection: 'row', gap: 2 }}>
-          {Array.from({ length: TIER_MARKS[tier] }, (_, i) => (
-            <View
-              key={i}
-              style={{
-                width: MARK,
-                height: MARK,
-                borderRadius: 1,
-                backgroundColor: color,
-                transform: [{ rotate: '45deg' }],
-              }}
-            />
-          ))}
-        </View>
-      }
+      lead={<Marks tier={tier} color={color} />}
     />
+  );
+}
+
+// The marks alone, under an accessory's name in Kapsülünü süsle (KapsulHediye: `.nd` with no
+// ground, 12 high); the tier's name for the screen reader.
+export function TierGems({ tier }: { tier: GiftTier }) {
+  const { scheme } = useKit();
+  return (
+    <View
+      accessible
+      accessibilityLabel={tierName(tier)}
+      style={{ height: MARK * 2, justifyContent: 'center' }}
+    >
+      <Marks tier={tier} color={TIER_COLOR[scheme][tier]} />
+    </View>
   );
 }
 
@@ -171,3 +193,39 @@ export function GiftTopBar({ title, onBack }: { title: string; onBack: () => voi
   );
 }
 const TOP_BAR = 56;
+
+// An accessory's card: its own picture, or (an accessory the canvas drew no card for) its tier's
+// frame with the accessory's standing capsule in the middle.
+const CARD_FIGURE = 0.5;
+const FIGURE_RATIO = 140 / 100;
+
+export function CardFace({
+  id,
+  tier,
+  width,
+  height,
+}: {
+  id: string;
+  tier: GiftTier;
+  width: number;
+  height: number;
+}) {
+  const fw = width * CARD_FIGURE;
+  return (
+    <View style={{ width, height }}>
+      <Image
+        source={cardArt(id, tier)}
+        accessibilityIgnoresInvertColors
+        style={{ width, height }}
+      />
+      {hasCardArt(id) ? null : (
+        <View
+          pointerEvents="none"
+          style={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' }}
+        >
+          <FxSvg xml={accessoryFigure(id)} width={fw} height={fw * FIGURE_RATIO} />
+        </View>
+      )}
+    </View>
+  );
+}

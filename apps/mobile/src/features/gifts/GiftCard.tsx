@@ -13,7 +13,7 @@ import { GIFT_MOTION } from '@/theme/giftMotion';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
-import { PACK_ART, PACK_RATIO } from './art';
+import { isShownPack, PACK_ART, PACK_RATIO } from './art';
 import { useFloat } from './loops';
 import { cardState, packName } from './model';
 import { BADGE, CanOpenBadge, LoginBar } from './parts';
@@ -97,7 +97,7 @@ export function GiftCard() {
     );
   }
 
-  const state = cardState(gifts.data);
+  const state = cardState(gifts.data, isShownPack);
   const ready = state.kind === 'ready';
   const label =
     state.kind === 'ready'

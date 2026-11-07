@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { View } from 'react-native';
 
 import { lookSvg } from '@/theme/capsuleLook';
-import { CachedSvg } from './CachedSvg';
+import { FxSvg } from './FxSvg';
 
 // The person's own capsule from its stored look (skall tuvali, Profil: "Kapsülün"), drawn by the
 // v46 drawing library: the disc in the colour's ground with the capsule cut by it.
@@ -22,7 +22,7 @@ export function LookAvatar({
       accessibilityLabel={accessibilityLabel}
       style={{ width: size, height: size, borderRadius: size / 2, overflow: 'hidden' }}
     >
-      <CachedSvg xml={xml} width={size} height={size} />
+      <FxSvg xml={xml} width={size} height={size} />
     </View>
   );
 }
