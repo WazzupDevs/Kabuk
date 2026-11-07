@@ -1,0 +1,325 @@
+import type { GiftTier } from '@shared/gifts.ts';
+import { useEffect, useState } from 'react';
+import { Image, View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Reanimated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
+
+import { Btn, T } from '@/aura/kit';
+import { errorMessage } from '@/i18n/errors';
+import { tr } from '@/i18n/tr';
+import { useReduceMotion } from '@/lib/useReduceMotion';
+import { gradientStyle } from '@/theme/gradient';
+import { CARD_LIGHT, TIER_COLOR, TIER_GLOW, TIER_SPARKLES } from '@/theme/gifts';
+import { GIFT_MOTION } from '@/theme/giftMotion';
+import { useTheme } from '@/theme/ThemeProvider';
+import { SPACING } from '@/theme/tokens';
+
+import { BUDDIES, CARD_RATIO, cardArt } from './art';
+import { accessoryById, tierName } from './model';
+import { TierTag } from './parts';
+import { useEquip } from './queries';
+import { Glow, type Rect, type Stage, Sparkle, centerOf } from './stage';
+
+// The opened card (Aura v134 PaketAcilisNadirlik, PaketKartEgme): the accessory's card in its
+// tier's light, sparkles by tier (Efsanevi with the buddies too), its name and tier under it. A
+// sideways drag turns it (0.3° a pixel, ±22° about Y and a twelfth of that about Z) and the holo
+// and the band of light move with it; let go, it turns back. "Aksesuarı tak" wears it.
+const CARD = { left: 79, top: 180, w: 232 };
+const CARD_CORNER = 0.06;
+const GLOWS = {
+  normal: [
+    { left: 35, top: 220, size: 320, opacity: 0.45 },
+    { left: 135, top: 230, size: 220, opacity: 0.36 },
+  ],
+  efsanevi: [
+    { left: -21, top: 164, size: 432, opacity: 0.45 },
+    { left: 114, top: 209, size: 297, opacity: 0.36 },
+  ],
+} as const;
+// left, top, size on the board; the first N for the tier.
+const SPARKLES = [
+  [16, 325, 12],
+  [354, 415, 16],
+  [76, 204, 12],
+  [354, 451, 20],
+  [60, 283, 20],
+  [31, 569, 16],
+  [84, 304, 16],
+  [43, 594, 20],
+  [29, 269, 16],
+  [48, 318, 20],
+  [74, 602, 20],
+  [354, 429, 16],
+  [16, 296, 26],
+  [173, 215, 20],
+] as const;
+const BUDDY = [
+  { side: 'left', w: 70, deg: -6 },
+  { side: 'right', w: 74, deg: 6 },
+] as const;
+const BUDDY_EDGE = 10;
+const BUDDY_FOOT = 120;
+const HINT_AT = 612;
+const BUTTONS_FOOT = 46;
+const BUTTON_MIN = 120;
+const HOLO_BASE = 0.3;
+const HOLO_PER = 40;
+const BAND_PER = 2.2;
+const HOLO_TURN = 6;
+
+export function OpenedCard({
+  accessory,
+  from,
+  stage,
+  onClose,
+}: {
+  accessory: { id: string; tier: GiftTier };
+  from: Rect | null;
+  stage: Stage;
+  onClose: () => void;
+}) {
+  const reduce = useReduceMotion();
+  const { scheme, colors } = useTheme();
+  const equip = useEquip();
+  const [worn, setWorn] = useState(false);
+  const { s } = stage;
+  const tier = accessory.tier;
+  const name = accessoryById(accessory.id)?.name ?? accessory.id;
+  const w = CARD.w * s;
+  const h = w / CARD_RATIO;
+  const C: Rect = { x: CARD.left * s, y: stage.top(CARD.top), w, h };
+  const radius = w * CARD_CORNER;
+  const { degPerPx, max, zPer, perspective, back } = GIFT_MOTION.tilt;
+
+  const morph = useSharedValue(reduce || !from ? 1 : 0);
+  const shown = useSharedValue(0);
+  const angle = useSharedValue(0);
+  useEffect(() => {
+    const arrive = Easing.bezier(...GIFT_MOTION.curves.arrive);
+    const { chromeMs } = GIFT_MOTION.zoom;
+    if (reduce || !from) {
+      shown.set(withTiming(1, { duration: chromeMs, easing: arrive }));
+      return;
+    }
+    morph.set(withSpring(1, GIFT_MOTION.open));
+    shown.set(withDelay(chromeMs, withTiming(1, { duration: chromeMs, easing: arrive })));
+  }, [morph, shown, reduce, from]);
+
+  const pan = Gesture.Pan()
+    .activeOffsetX([-6, 6])
+    .onUpdate((e) => {
+      angle.set(Math.min(Math.max(e.translationX * degPerPx, -max), max));
+    })
+    .onFinalize(() => {
+      angle.set(reduce ? 0 : withSpring(0, back));
+    });
+
+  const fromC = from ? centerOf(from) : null;
+  const toC = centerOf(C);
+  const moveStyle = useAnimatedStyle(() => {
+    const m = morph.get();
+    const k = from ? from.w / C.w : 1;
+    return {
+      opacity: reduce || !from ? shown.get() : 1,
+      transform: fromC
+        ? [
+            { translateX: (fromC.cx - toC.cx) * (1 - m) },
+            { translateY: (fromC.cy - toC.cy) * (1 - m) },
+            { scale: k + (1 - k) * m },
+          ]
+        : [],
+    };
+  });
+  const tiltStyle = useAnimatedStyle(() => ({
+    transform: [
+      { perspective },
+      { rotateY: `${angle.get()}deg` },
+      { rotateZ: `${angle.get() / zPer}deg` },
+    ],
+  }));
+  const diag = Math.hypot(w, h);
+  const holoStyle = useAnimatedStyle(() => ({
+    opacity: HOLO_BASE + Math.abs(angle.get()) / HOLO_PER,
+    transform: [{ rotate: `${HOLO_TURN * angle.get()}deg` }],
+  }));
+  const bandStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: (-BAND_PER * angle.get() * w) / 100 }],
+  }));
+  const shownStyle = useAnimatedStyle(() => ({ opacity: shown.get() }));
+
+  const glows = tier === 'efsanevi' ? GLOWS.efsanevi : GLOWS.normal;
+  const sparkColor = TIER_COLOR[scheme][tier];
+  const wear = () =>
+    equip.mutate(accessory.id, {
+      onSuccess: () => setWorn(true),
+    });
+
+  return (
+    <View pointerEvents="box-none" style={{ position: 'absolute', inset: 0 }}>
+      <Reanimated.View
+        pointerEvents="none"
+        style={[{ position: 'absolute', inset: 0 }, shownStyle]}
+      >
+        {glows.map((g, i) => (
+          <Glow
+            key={i}
+            x={g.left * s}
+            y={stage.top(g.top)}
+            size={g.size * s}
+            color={TIER_GLOW[tier][i] ?? TIER_GLOW[tier][0]}
+            opacity={g.opacity}
+          />
+        ))}
+        {SPARKLES.slice(0, TIER_SPARKLES[tier]).map(([x, y, size], i) => (
+          <Sparkle key={i} x={x * s} y={stage.top(y)} size={size * s} color={sparkColor} />
+        ))}
+        {tier === 'efsanevi'
+          ? BUDDY.map((b, i) => {
+              const src = BUDDIES[i];
+              if (!src) return null;
+              const dim = Image.resolveAssetSource(src);
+              const bw = b.w * s;
+              const bh = dim.width > 0 ? (bw * dim.height) / dim.width : bw;
+              return (
+                <Image
+                  key={b.side}
+                  source={src}
+                  accessibilityIgnoresInvertColors
+                  style={{
+                    position: 'absolute',
+                    [b.side]: BUDDY_EDGE * s,
+                    bottom: stage.foot(BUDDY_FOOT),
+                    width: bw,
+                    height: bh,
+                    transform: [{ rotate: `${b.deg}deg` }],
+                  }}
+                />
+              );
+            })
+          : null}
+      </Reanimated.View>
+      <View
+        pointerEvents="box-none"
+        style={{ position: 'absolute', left: C.x, top: C.y, width: w, alignItems: 'center' }}
+      >
+        <GestureDetector gesture={pan}>
+          <Reanimated.View
+            accessible
+            accessibilityRole="image"
+            accessibilityLabel={tr.gifts.cardAlt(name, tierName(tier))}
+            style={[{ width: w, height: h }, moveStyle]}
+          >
+            <Reanimated.View
+              style={[{ width: w, height: h, borderRadius: radius, overflow: 'hidden' }, tiltStyle]}
+            >
+              <Image
+                source={cardArt(accessory.id, tier)}
+                accessibilityIgnoresInvertColors
+                style={{ width: w, height: h }}
+              />
+              <Reanimated.View
+                pointerEvents="none"
+                style={[
+                  {
+                    position: 'absolute',
+                    left: (w - diag * 1.2) / 2,
+                    top: (h - diag * 1.2) / 2,
+                    width: diag * 1.2,
+                    height: diag * 1.2,
+                    mixBlendMode: 'overlay',
+                    ...gradientStyle(CARD_LIGHT.holo),
+                  },
+                  holoStyle,
+                ]}
+              />
+              <Reanimated.View
+                pointerEvents="none"
+                style={[
+                  {
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    width: w,
+                    height: h,
+                    mixBlendMode: 'screen',
+                    ...gradientStyle(CARD_LIGHT.band),
+                  },
+                  bandStyle,
+                ]}
+              />
+            </Reanimated.View>
+          </Reanimated.View>
+        </GestureDetector>
+        <Reanimated.View
+          style={[{ marginTop: SPACING[2], alignItems: 'center', gap: SPACING[2] }, shownStyle]}
+        >
+          <T v="title" center>
+            {name}
+          </T>
+          <TierTag tier={tier} />
+        </Reanimated.View>
+      </View>
+      <Reanimated.View
+        pointerEvents="none"
+        style={[
+          { position: 'absolute', left: 20 * s, right: 20 * s, top: stage.top(HINT_AT) },
+          shownStyle,
+        ]}
+      >
+        <T v="fine" center>
+          {tr.gifts.tiltHint}
+        </T>
+      </Reanimated.View>
+      <Reanimated.View
+        pointerEvents="box-none"
+        style={[
+          {
+            position: 'absolute',
+            left: SPACING[5],
+            right: SPACING[5],
+            bottom: stage.foot(BUTTONS_FOOT),
+            gap: SPACING[2],
+          },
+          shownStyle,
+        ]}
+      >
+        {equip.isError ? (
+          <T v="fine" center color={colors.danger}>
+            {errorMessage(equip.error)}
+          </T>
+        ) : null}
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: SPACING[3] }}>
+          <Btn
+            variant="glassy"
+            label={worn ? tr.gifts.next : tr.gifts.later}
+            onPress={onClose}
+            style={{ flexGrow: 1, flexBasis: 0, minWidth: BUTTON_MIN }}
+          />
+          {worn ? (
+            <Btn
+              icon="check"
+              label={tr.gifts.worn}
+              disabled
+              style={{ flexGrow: 1, flexBasis: 0, minWidth: BUTTON_MIN }}
+            />
+          ) : (
+            <Btn
+              icon="sparkles"
+              label={tr.gifts.wear}
+              onPress={wear}
+              loading={equip.isPending}
+              style={{ flexGrow: 1, flexBasis: 0, minWidth: BUTTON_MIN }}
+            />
+          )}
+        </View>
+      </Reanimated.View>
+    </View>
+  );
+}
