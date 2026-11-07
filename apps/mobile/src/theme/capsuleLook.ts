@@ -1,3 +1,6 @@
+import { accessoryOf } from '@shared/gifts.ts';
+
+import { accessoryLayer } from './capsuleAccessories';
 import LOOK, { type LookParts } from './capsuleDrawing';
 
 // A stored look code ("c:pembe e:koyu h:kulaklik", _shared/pure/capsule.ts → normalizeLook) as the
@@ -20,8 +23,14 @@ export function lookParts(code: string): LookParts {
   return parts;
 }
 
+// The worn pack accessory (`x:<id>`, docs/SPEC_V4.md §4.U) is drawn over everything else.
+function withAccessory(svg: string, code: string): string {
+  const layer = accessoryLayer(accessoryOf(code));
+  return layer ? svg.replace(/<\/svg>$/, `${layer}</svg>`) : svg;
+}
+
 export function lookSvg(code: string, mode: 'av' | 'fig' = 'av'): string {
-  return LOOK.svg(lookParts(code), mode);
+  return withAccessory(LOOK.svg(lookParts(code), mode), code);
 }
 
 // The capsule editor's stage (v46 `.ced-fig`: LOOK.pop): the capsule standing in its circle, the
@@ -32,7 +41,10 @@ const POP_CLIP = '<circle cx="24" cy="24" r="24"/><rect x="-6" y="-8" width="60"
 const POP_CLIP_PATH = '<path d="M-6 -8H54V24H48A24 24 0 0 1 0 24H-6Z"/>';
 
 export function lookPop(code: string, emo = ''): string {
-  return LOOK.pop(lookParts(code), emo).replace(POP_CLIP, POP_CLIP_PATH);
+  const svg = LOOK.pop(lookParts(code), emo).replace(POP_CLIP, POP_CLIP_PATH);
+  const layer = accessoryLayer(accessoryOf(code));
+  // Inside the clipped group, over the capsule and under a feeling's things around it.
+  return layer ? svg.replace('</g></g>', `${layer}</g></g>`) : svg;
 }
 
 export function lookGround(code: string): string {

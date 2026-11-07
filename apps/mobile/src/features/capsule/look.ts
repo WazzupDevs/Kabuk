@@ -1,10 +1,13 @@
 import { DEFAULT_EYES, LOOK_SLOTS, type LookSlot, normalizeLook } from '@shared/capsule.ts';
 import { CAPSULE_CATALOG } from '@shared/capsuleCatalog.ts';
+import { ACCESSORY_SLOT, accessoryOf, retiredParts } from '@shared/gifts.ts';
 
 // The capsule editor's model (skall tuvali, KapsulSusle; docs/SPEC_V4.md §4.D, K-46): a look as
 // one id per slot, parts put on and taken off, a pack put on whole, a shuffle. Codes are always
-// canonical (normalizeLook), so the server stores what the editor shows.
-export type Look = Partial<Record<LookSlot, string>>;
+// canonical (normalizeLook), so the server stores what the editor shows. The worn pack accessory
+// (`x`, docs/SPEC_V4.md §4.U) rides along untouched: Aksesuarlarım puts it on and takes it off, the
+// server keeps it through set-look.
+export type Look = Partial<Record<LookSlot | typeof ACCESSORY_SLOT, string>>;
 export type RackId = (typeof CAPSULE_CATALOG.racks)[number]['id'];
 export type Item = { slot: LookSlot; id: string; name: string };
 
@@ -16,11 +19,26 @@ export function parse(code: string): Look {
     const [slot, id] = token.split(':');
     if (slot && id && (LOOK_SLOTS as readonly string[]).includes(slot)) look[slot as LookSlot] = id;
   }
+  const accessory = accessoryOf(code);
+  if (accessory) look[ACCESSORY_SLOT] = accessory;
   return look;
 }
 
 export function code(look: Look): string {
-  return normalizeLook(LOOK_SLOTS.flatMap((s) => (look[s] ? [`${s}:${look[s]}`] : [])).join(' '));
+  const base = normalizeLook(
+    LOOK_SLOTS.flatMap((s) => (look[s] ? [`${s}:${look[s]}`] : [])).join(' '),
+  );
+  const accessory = look[ACCESSORY_SLOT];
+  return accessory ? `${base} ${ACCESSORY_SLOT}:${accessory}` : base;
+}
+
+// The capsule parts that became pack accessories (§4.U, 7 Kasım): Kapsülünü süsle offers them no
+// more, except to a look that already wears one (`kept`, the saved look); the server drops them
+// from any other.
+const RETIRED = new Set(retiredParts());
+
+export function offered(slot: LookSlot, id: string, kept: Look): boolean {
+  return !RETIRED.has(`${slot}:${id}`) || kept[slot] === id;
 }
 
 export function wear(look: Look, slot: LookSlot, id: string | null): Look {
@@ -50,13 +68,19 @@ export function takeOff(look: Look, slot: LookSlot): Look {
   return slot === 'e' ? wear(look, 'e', DEFAULT_EYES) : wear(look, slot, null);
 }
 
-// The colour and the plain eyes only ("Hepsini çıkar").
+// The colour and the plain eyes only ("Hepsini çıkar"); the pack accessory stays (Aksesuarlarım's).
 export function bare(look: Look): Look {
-  return { c: look.c, e: DEFAULT_EYES };
+  const out: Look = { c: look.c, e: DEFAULT_EYES };
+  if (look[ACCESSORY_SLOT]) out[ACCESSORY_SLOT] = look[ACCESSORY_SLOT];
+  return out;
 }
 
 // A rack's packs with something for the slot, each with its items for that slot, in catalog order.
-export function packsFor(rack: RackId, slot: LookSlot): { pack: string; items: Item[] }[] {
+export function packsFor(
+  rack: RackId,
+  slot: LookSlot,
+  kept: Look = {},
+): { pack: string; items: Item[] }[] {
   const r = CAPSULE_CATALOG.racks.find((x) => x.id === rack);
   if (!r || slot === 'c') return [];
   return r.packs.flatMap((pack) => {
@@ -66,7 +90,10 @@ export function packsFor(rack: RackId, slot: LookSlot): { pack: string; items: I
             .filter((e) => e.rack === rack && e.pack === pack)
             .map((e) => ({ slot, id: e.id, name: e.name }))
         : CAPSULE_CATALOG.parts
-            .filter((p) => p.rack === rack && p.pack === pack && p.slot === slot)
+            .filter(
+              (p) =>
+                p.rack === rack && p.pack === pack && p.slot === slot && offered(slot, p.id, kept),
+            )
             .map((p) => ({ slot, id: p.id, name: p.name }));
     return items.length > 0 ? [{ pack, items }] : [];
   });
@@ -77,25 +104,26 @@ export function colors(): Item[] {
 }
 
 // A pack whole: the first item it has for each slot (eyes and parts).
-export function packItems(rack: RackId, pack: string): Item[] {
+export function packItems(rack: RackId, pack: string, kept: Look = {}): Item[] {
   const out: Item[] = [];
   const eyes = CAPSULE_CATALOG.eyes.find((e) => e.rack === rack && e.pack === pack);
   if (eyes) out.push({ slot: 'e', id: eyes.id, name: eyes.name });
   for (const slot of PART_SLOTS) {
     const part = CAPSULE_CATALOG.parts.find(
-      (p) => p.rack === rack && p.pack === pack && p.slot === slot,
+      (p) => p.rack === rack && p.pack === pack && p.slot === slot && offered(slot, p.id, kept),
     );
     if (part) out.push({ slot, id: part.id, name: part.name });
   }
   return out;
 }
 
-export function wearPack(look: Look, rack: RackId, pack: string): Look {
-  return packItems(rack, pack).reduce((l, item) => wear(l, item.slot, item.id), look);
+export function wearPack(look: Look, rack: RackId, pack: string, kept: Look = {}): Look {
+  return packItems(rack, pack, kept).reduce((l, item) => wear(l, item.slot, item.id), look);
 }
 
-// A new look at random: a colour, eyes, and each part slot filled about half the time.
-export function shuffle(random: () => number): Look {
+// A new look at random: a colour, eyes, and each part slot filled about half the time; never a
+// retired part, and the pack accessory of `keep` stays.
+export function shuffle(random: () => number, keep: Look = {}): Look {
   const pick = <T>(list: readonly T[]): T | undefined =>
     list[Math.min(Math.floor(random() * list.length), list.length - 1)];
   const look: Look = {
@@ -104,7 +132,10 @@ export function shuffle(random: () => number): Look {
   };
   for (const slot of PART_SLOTS) {
     if (random() < 0.5) continue;
-    look[slot] = pick(CAPSULE_CATALOG.parts.filter((p) => p.slot === slot))?.id;
+    look[slot] = pick(
+      CAPSULE_CATALOG.parts.filter((p) => p.slot === slot && !RETIRED.has(`${slot}:${p.id}`)),
+    )?.id;
   }
+  if (keep[ACCESSORY_SLOT]) look[ACCESSORY_SLOT] = keep[ACCESSORY_SLOT];
   return parse(code(look));
 }

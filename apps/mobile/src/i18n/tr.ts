@@ -332,6 +332,60 @@ export const tr = {
   // Aktiviteler: the game hub (docs/SPEC_V3.md §18.3). Same games and rules as the room.
   // Aktiviteler (docs/SPEC_V4.md K-15; v44: .acts): today's events and Geçmiş. Each game's rules
   // below are its intro's and, from the table's games (4.3), its page's.
+  // Hediye paketleri (docs/SPEC_V4.md §4.U; Aura v134). Pack, tier and accessory names come from
+  // the catalog (content/gift-packs.json).
+  gifts: {
+    title: 'Hediye paketleri',
+    eyebrow: 'Hediye paketi',
+    ready: (pack: string) => `${pack} paket\nhazır`,
+    loginsLeft: (pack: string, left: number) => `${pack} pakete\n${left} giriş kaldı`,
+    allOwned: 'Bütün aksesuarlar\nsende',
+    cardLabelReady: (pack: string) => `Hediye paketi: ${pack} paket hazır`,
+    cardLabelProgress: (pack: string, left: number, logins: number, per: number) =>
+      `Hediye paketi: ${pack} pakete ${left} giriş kaldı, ${logins}/${per}`,
+    cardLabelAllOwned: 'Hediye paketi: bütün aksesuarlar sende',
+    cardError: 'Hediye paketi yüklenemedi.',
+    count: (n: number) => `${n}`,
+    canOpen: (n: number) => `${n} paket açılabilir`,
+    nothingToOpen: 'Açılacak paket yok',
+    progress: (logins: number, per: number) => `${logins}/${per}`,
+    loginsOf: (logins: number, per: number) => `${logins}/${per} giriş`,
+    howToEarn: (per: number) => `Günde 1 giriş sayılır. ${per} girişte 1 paket.`,
+    pack: (name: string) => `${name} paket`,
+    open: 'Aç',
+    odds: 'Oranlar',
+    soon: 'Yakında',
+    loadError: 'Paketler yüklenemedi.',
+    loadErrorHint: 'Bağlantını kontrol edip tekrar dene.',
+    oddsTitle: (name: string) => `${name} paket oranları`,
+    oddsLead: 'Her paketten 1 aksesuar çıkar.',
+    oddsNoRepeat: 'Sahip olduğun aksesuar bir daha çıkmaz.',
+    oddsError: 'Oranlar yüklenemedi.',
+    ok: 'Tamam',
+    // A share of ODDS_TOTAL as a percentage ("%70", "%0,001").
+    percent: (parts: number, total: number) =>
+      `%${(Math.round((parts / total) * 100 * 1000) / 1000).toString().replace('.', ',')}`,
+    close: 'Kapat',
+    ripHint: 'Yırtmak için şeridi sağa kaydır',
+    skip: 'Atla',
+    tiltHint: 'Kartı sağa sola sürükleyerek çevir',
+    later: 'Sonra',
+    wear: 'Aksesuarı tak',
+    worn: 'Takıldı',
+    next: 'Devam',
+    cardAlt: (name: string, tier: string) => `${name}, ${tier} aksesuar kartı`,
+    accessories: 'Aksesuarlarım',
+    wornNow: (name: string) => `Takılı: ${name}`,
+    collection: 'Koleksiyon',
+    takeOff: 'Çıkar',
+    put: 'Tak',
+    none: 'Aksesuar yok',
+    noneHint: 'Bronz paketten ilk aksesuarını çıkar.',
+    toPacks: 'Paketlere git',
+    accessoriesError: 'Aksesuarlar yüklenemedi.',
+    locked: 'Kilitli aksesuar',
+    wornTile: (name: string) => `${name}, takılı`,
+  },
   activities: {
     tabs: 'Etkinlikler ve geçmiş',
     // Not the page's own name again (the owner's call, 30 Ekim).
