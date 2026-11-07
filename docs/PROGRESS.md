@@ -1,5 +1,11 @@
 # İlerleme
 
+## Devir notu (7 Kasım 2026, hediye kataloğu genişliyor)
+
+- #509 ekranlar ve #510 (dev projesinde dört paket açık, sınırsız) main'de.
+- Sıradaki paket: tuvalin yeni panoları (AksesuarSiradan/Nadir/Destansi/Efsanevi, PaketElf, PaketNinja, BalonElf, BalonNinja, KapsulHediye; canlı tuvalde, repoda yok); karar §4.U "Genişleyen katalog ve yuvalar": 40 + 20 aksesuar, yuvaya takma (çoklu), Elf ve Ninja kilitli "Yakında", tam set balonu. Sunucu (katalog, yuva modeli, migration) ve ekranlar; iki PR'a bölünmeli.
+- Açık: aksesuar hareketleri (Efsanevi kıpırdar, parçacık, hale) için rapor ya da `hareket.json` yok; Elf/Ninja oranları.
+
 ## Devir notu (7 Kasım 2026, hediye paketleri ekranları)
 
 - Ekran PR'ı: Aktiviteler kartı, Paketler çemberi, Oranlar, yırtma, kart eğme (Reanimated, Skia yok), Aksesuarlarım (Profil satırı), kapsülde `x:` katmanı, açılışta `gifts/login`, Süsle'de pakete dönen parçalar gizli. OTA; native değişiklik yok.
