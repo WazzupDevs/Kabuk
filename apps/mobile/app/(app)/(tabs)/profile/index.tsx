@@ -14,6 +14,7 @@ import { useFriends } from '@/features/friends/queries';
 import { shownAccessories } from '@/features/gifts/model';
 import { useGiftState } from '@/features/gifts/queries';
 import { LivingLook } from '@/features/profile/LivingLook';
+import { lookGround } from '@/theme/capsuleLook';
 import { profileViewKeys, useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -103,15 +104,32 @@ export default function ProfileScreen() {
               note={tr.profile.ownCapsuleNote}
               testID="profile-capsule"
             >
-              <Av size="xl" name="">
+              {/* The ring holds the capsule's ground; the capsule stands over it, its head and
+                  accessories free above the ring (RingLook; the owner's call, 7 Kasım). */}
+              <View>
+                <Av size="xl" name="">
+                  {view.data.capsuleLook ? (
+                    <View
+                      style={{
+                        alignSelf: 'stretch',
+                        flex: 1,
+                        backgroundColor: lookGround(view.data.capsuleLook),
+                      }}
+                    />
+                  ) : null}
+                </Av>
                 {view.data.capsuleLook ? (
-                  <LivingLook
-                    look={view.data.capsuleLook}
-                    size={KIT.size.av.xl}
-                    accessibilityLabel={tr.profile.ownCapsule}
-                  />
+                  <View style={{ position: 'absolute', inset: 0 }}>
+                    <LivingLook
+                      look={view.data.capsuleLook}
+                      size={KIT.size.av.xl}
+                      inset={KIT.size.avRingXl}
+                      ground={false}
+                      accessibilityLabel={tr.profile.ownCapsule}
+                    />
+                  </View>
                 ) : null}
-              </Av>
+              </View>
             </FaceCard>
           </View>
           <PhotoPreview

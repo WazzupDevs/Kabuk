@@ -99,6 +99,8 @@ export const CARD_EDGE = 0.9;
 export const CARD_TOP = 26;
 export const CARD_BOX = { x: -6, y: -CARD_TOP, width: 60, height: 49 + CARD_TOP } as const;
 
+// The capsule standing in a ring with its head and accessories free above it (the gift card, the
+// profile's ring, Aksesuarlarım's preview; the owner's call, 7 Kasım): the stage lookCard draws.
 export function lookCard(code: string): string {
   return lookPop(code, '', CARD_EDGE, true)
     .replace('viewBox="-6 -8 60 57"', `viewBox="-6 ${-CARD_TOP} 60 ${49 + CARD_TOP}"`)

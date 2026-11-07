@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Animated as RNAnimated, Pressable } from 'react-native';
+import { Animated as RNAnimated, Pressable, View } from 'react-native';
 import Animated, {
   Easing,
   Extrapolation,
@@ -11,12 +11,13 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { LayeredLook, snapTo } from '@/components/LayeredLook';
+import { RingStage } from '@/components/RingLook';
 import { AppIcon } from '@/components/AppIcon';
 import { useLoopActive } from '@/components/Loader';
 import { JUMP, sample } from '@/features/capsule/motion';
 import { haptic } from '@/lib/haptics';
 import { useReduceMotion } from '@/lib/useReduceMotion';
-import { lookSvg } from '@/theme/capsuleLook';
+import { lookCard, lookGround } from '@/theme/capsuleLook';
 import { ICON } from '@/theme/tokens';
 
 // The profile's capsule alive (the owner's call, 27 and 28 Ekim): now and then it blinks
@@ -51,10 +52,17 @@ export function LivingLook({
   look,
   size,
   accessibilityLabel,
+  inset = 0,
+  ground = true,
 }: {
   look: string;
   size: number;
   accessibilityLabel?: string;
+  // The capsule stands in its ring with its head and accessories free above it (components/
+  // RingLook.tsx; the owner's call, 7 Kasım): `inset` a ring drawn round the box (Av's edge),
+  // `ground` the ring's colour drawn here (off where the ring has it).
+  inset?: number;
+  ground?: boolean;
 }) {
   const reduce = useReduceMotion();
   // Only while its screen is on top and the app in front, as every loop (Loader.tsx).
@@ -64,8 +72,8 @@ export function LivingLook({
   const [blink] = useState(() => new RNAnimated.Value(0));
   const [eyeX] = useState(() => new RNAnimated.Value(0));
   const [eyeY] = useState(() => new RNAnimated.Value(0));
-  // The drawing's units in pixels (its disc is 48 across).
-  const unit = size / 48;
+  // The drawing's units in pixels (its disc is 48 across, inside the ring).
+  const unit = (size - inset * 2) / 48;
 
   useEffect(() => {
     const setPose = (pose: { look: number; up: number }) => {
@@ -109,11 +117,11 @@ export function LivingLook({
     };
   }, [reduce, active, blink, eyeX, eyeY, unit]);
 
-  const base = useMemo(() => lookSvg(look, 'av'), [look]);
+  const base = useMemo(() => lookCard(look), [look]);
 
   // A tap: the jump of the editor (features/capsule/motion.ts → JUMP) and a wink.
   const t = useSharedValue(1);
-  const ty = useMemo(() => sample(JUMP, 'ty', size / 48), [size]);
+  const ty = useMemo(() => sample(JUMP, 'ty', unit), [unit]);
   const sy = useMemo(() => sample(JUMP, 'sy'), []);
   const style = useAnimatedStyle(() => ({
     transform: [
@@ -135,18 +143,32 @@ export function LivingLook({
       accessibilityRole="image"
       accessibilityLabel={accessibilityLabel}
       onPress={tap}
-      style={{ width: size, height: size, borderRadius: size / 2, overflow: 'hidden' }}
+      style={{ width: size, height: size }}
     >
-      <Animated.View style={style}>
-        <LayeredLook
-          xml={base}
-          width={size}
-          height={size}
-          blink={blink}
-          lookX={eyeX}
-          lookY={eyeY}
+      {ground ? (
+        <View
+          style={{
+            position: 'absolute',
+            inset,
+            borderRadius: size / 2,
+            backgroundColor: lookGround(look),
+          }}
         />
-      </Animated.View>
+      ) : null}
+      <RingStage xml={base} unit={unit} inset={inset}>
+        {(width, height) => (
+          <Animated.View style={style}>
+            <LayeredLook
+              xml={base}
+              width={width}
+              height={height}
+              blink={blink}
+              lookX={eyeX}
+              lookY={eyeY}
+            />
+          </Animated.View>
+        )}
+      </RingStage>
     </Pressable>
   );
 }
