@@ -16,7 +16,7 @@ import { tr } from '@/i18n/tr';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { MOTION } from '@/theme/aura';
 import { gradientStyle } from '@/theme/gradient';
-import { GIFT_FLOOR, GIFT_STAGE, PACK_GLOW } from '@/theme/gifts';
+import { GIFT_FLOOR, PACK_DROP, PACK_GLOW } from '@/theme/gifts';
 import { GIFT_MOTION } from '@/theme/giftMotion';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -53,9 +53,6 @@ const DOT = 6;
 const DOT_ON = 18;
 const BADGE_OUT = -9;
 const SOON_AT = '9%';
-const PACK_SHADOW = {
-  dropShadow: { offsetX: 0, offsetY: 10, standardDeviation: 6, color: GIFT_STAGE.packShadow },
-};
 
 // θ in (−180, 180] for pack `i` with the ring turned `turn` degrees.
 function angleOf(i: number, turn: number): number {
@@ -300,6 +297,7 @@ function RingPack({
   hidden: boolean;
   onOpen?: () => void;
 }) {
+  const { scheme } = useTheme();
   const { px, ms, stepMs } = GIFT_MOTION.ringFloat;
   const float = useFloat(px, ms, index * stepMs);
   const w = FRONT_W * s;
@@ -338,7 +336,7 @@ function RingPack({
           importantForAccessibility="no-hide-descendants"
           style={{ flex: 1 }}
         >
-          <View style={{ flex: 1, filter: [PACK_SHADOW] }}>
+          <View style={{ flex: 1, filter: [PACK_DROP[scheme]] }}>
             <Image
               source={PACK_ART[view.id]}
               accessibilityIgnoresInvertColors

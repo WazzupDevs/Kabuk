@@ -1,5 +1,11 @@
 # İlerleme
 
+## Devir notu (7 Kasım 2026, hediye paketleri ekranları)
+
+- Ekran PR'ı: Aktiviteler kartı, Paketler çemberi, Oranlar, yırtma, kart eğme (Reanimated, Skia yok), Aksesuarlarım (Profil satırı), kapsülde `x:` katmanı, açılışta `gifts/login`, Süsle'de pakete dönen parçalar gizli. OTA; native değişiklik yok.
+- Telefonda doğrulanacak: gözlük ve kulaklığın kapsüldeki hizası (tuvalin kapsülü daha uzun başlı; baş tepesine ve vizöre göre hizalandı), çember konumları, yırtma ve eğme ışığı (mixBlendMode), koyu tema.
+- Tahmin edilen değerler: Gümüş, Altın, Elmas çember parıltı renkleri (panoda yok); kartın ışın deseni (conic) çizilmedi.
+
 ## Devir notu (7 Kasım 2026, hediye paketleri, #507)
 
 - #507 main'de (onaylı): hediye paketleri sunucusu (§4.U, K-89): `gifts` (state, login, open, equip), tablolar, `content/gift-packs.json`, kural 10 eki; v134 panoları `docs/design/aura/project/` (AktivitelerHediye, Paketler*, PaketAcilis*, PaketKartEgme, Aksesuar*, KapsulAksesuar, HediyeDar, GaleriHediye, hediye.css).

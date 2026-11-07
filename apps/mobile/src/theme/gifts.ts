@@ -91,3 +91,16 @@ export const TILE_FRAME: Record<GiftTier, number> = {
 export const EFSANEVI_FOIL = 'linear-gradient(135deg, #FFB547, #FF4F8B 50%, #FFB547)';
 // The dark side's card ground (`.dark.pA .nf`).
 export const TILE_GROUND_DARK = '#151A18';
+
+// A pack's shadow on Paketler (hediye.css `.pk`, `.dark.pA .pk`).
+export const PACK_DROP: Record<
+  Scheme,
+  { dropShadow: { offsetX: number; offsetY: number; standardDeviation: number; color: string } }
+> = {
+  light: {
+    dropShadow: { offsetX: 0, offsetY: 10, standardDeviation: 6, color: 'rgba(4,73,35,0.22)' },
+  },
+  dark: {
+    dropShadow: { offsetX: 0, offsetY: 10, standardDeviation: 7, color: 'rgba(0,0,0,0.55)' },
+  },
+};
