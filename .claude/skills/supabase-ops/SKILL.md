@@ -23,6 +23,7 @@ Dev ve üretim arasında geçerken her komuttan önce `pnpm supabase migration l
 
 Hangi sır hangi projede: `.claude/skills/yayin` → "main'den dev projesine yayın" adım 7 ve `docs/OPS.md` → "Üretim Supabase projesi" tablosu. Bakmak: `pnpm supabase secrets list`.
 
+- **Sınırsız paket (dev projesi, sırsız):** `gifts` fonksiyonu dev projesinde dört paketin kilidini açar ve sahip olunmayan aksesuar kaldıkça her `state`, `login` ve `open`'da 1 açılmamış paket bırakır (`pure/devProject.ts` → `testPacksAllowed`). Yerel yığında ve pilotta yok; kapatmak kod değişikliğidir.
 - `CHECKIN_SKIP_LOCATION=1` (fonksiyon sırrı, yalnızca dev projesi): check-in sınır ve 300 m kontrolünü atlar, uygulama sınır dışında ya da konumsuz (bina içi) da devam eder; koordinat yine saklanmaz, her check-in'de uyarı loglanır. Sır yalnızca yerel stack'te ve dev projesinde (`_shared/pure/devProject.ts`) etkilidir, başka projede yok sayılır ve hata loglanır; pilot projesinde tanımlanmaz (`pnpm supabase secrets list`). Kapatmak: `pnpm supabase secrets unset CHECKIN_SKIP_LOCATION`. Testi CI'da ayrı bir `functions serve` ile koşar (`supabase/tests/checkinSkipLocation.test.ts`).
 
 ## İnceleme hesabı (Play)

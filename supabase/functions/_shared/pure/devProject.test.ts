@@ -8,6 +8,7 @@ import {
   locationCheck,
   refusesMockedPosition,
   testBotsAllowed,
+  testPacksAllowed,
 } from './devProject.ts';
 
 const DEV = `https://${DEV_PROJECT_HOST}`;
@@ -105,5 +106,15 @@ describe('testBotsAllowed', () => {
     expect(testBotsAllowed('https://abcdefghijklmnop.supabase.co')).toBe(false);
     expect(testBotsAllowed(`http://${DEV_PROJECT_HOST}`)).toBe(false);
     expect(testBotsAllowed(undefined)).toBe(false);
+  });
+});
+
+describe('testPacksAllowed', () => {
+  it('only on the dev project', () => {
+    expect(testPacksAllowed(DEV)).toBe(true);
+    expect(testPacksAllowed('http://kong:8000')).toBe(false);
+    expect(testPacksAllowed('https://abcdefghijklmnopqrst.supabase.co')).toBe(false);
+    expect(testPacksAllowed(`https://${DEV_PROJECT_HOST}.evil.example`)).toBe(false);
+    expect(testPacksAllowed(undefined)).toBe(false);
   });
 });

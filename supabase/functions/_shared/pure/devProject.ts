@@ -43,6 +43,14 @@ export function testBotsAllowed(supabaseUrl: string | undefined): boolean {
   return isLocalUrl(url) || isDevProjectUrl(url);
 }
 
+// Endless packs (the owner's call, 7 Kasım: the test accounts try the pack opening): on the dev
+// project every pack is open (Gümüş, Altın and Elmas too) and a person with an accessory still to
+// get always has a pack to open. Not on the
+// local stack, whose tests count packs exactly; never on the pilot.
+export function testPacksAllowed(supabaseUrl: string | undefined): boolean {
+  return isDevProjectUrl(supabaseUrl ?? '');
+}
+
 // A position the phone reports as coming from a mock location app (Android) is refused at check-in
 // (audit SRV-1): with a fake GPS app anyone could sit at any venue. Not when the location check is
 // skipped, and not on the local stack, whose emulator (E2E: Maestro's setLocation) reports every
