@@ -72,7 +72,8 @@ const POP_CLIP = '<circle cx="24" cy="24" r="24"/><rect x="-6" y="-8" width="60"
 const POP_CLIP_PATH = '<path d="M-6 -8H54V24H48A24 24 0 0 1 0 24H-6Z"/>';
 
 // `edge`: a thin white contour round the accessories (canvas units; the gift card: CARD_EDGE).
-export function lookPop(code: string, emo = '', edge = 0): string {
+// `ringHalo`: an Efsanevi's halo kept inside the circle (the card, whose ring is the circle's).
+export function lookPop(code: string, emo = '', edge = 0, ringHalo = false): string {
   const { parts, layers, eyes } = dressed(code, edge);
   let svg = LOOK.pop(parts, emo).replace(POP_CLIP, POP_CLIP_PATH);
   if (eyes) svg = svg.replace(EYE_SHAPE, '');
@@ -80,7 +81,11 @@ export function lookPop(code: string, emo = '', edge = 0): string {
   // Inside the clipped group, over the capsule and under a feeling's things around it; before the
   // halo goes in (its own groups would take the first `</g></g>`).
   if (layers.front) svg = svg.replace('</g></g>', `${layers.edge}${layers.front}</g></g>`);
-  if (layers.back) svg = svg.replace(/(<g clip-path="url\(#cpc\d+\)">)/, `$1${layers.back}`);
+  const back =
+    layers.back && ringHalo
+      ? `<clipPath id="ring-halo"><circle cx="24" cy="24" r="24"/></clipPath><g clip-path="url(#ring-halo)">${layers.back}</g>`
+      : layers.back;
+  if (back) svg = svg.replace(/(<g clip-path="url\(#cpc\d+\)">)/, `$1${back}`);
   return svg;
 }
 
@@ -95,7 +100,7 @@ export const CARD_TOP = 26;
 export const CARD_BOX = { x: -6, y: -CARD_TOP, width: 60, height: 49 + CARD_TOP } as const;
 
 export function lookCard(code: string): string {
-  return lookPop(code, '', CARD_EDGE)
+  return lookPop(code, '', CARD_EDGE, true)
     .replace('viewBox="-6 -8 60 57"', `viewBox="-6 ${-CARD_TOP} 60 ${49 + CARD_TOP}"`)
     .replace(POP_CLIP_PATH, `<path d="M-6 ${-CARD_TOP}H54V24H48A24 24 0 0 1 0 24H-6Z"/>`);
 }
