@@ -5,16 +5,24 @@
 import { LOOK_SLOTS } from './capsule.ts';
 import { GIFT_CATALOG } from './giftCatalog.ts';
 
-// The four tiers and the packs, in order of worth (§4.U): the four tier packs, then Elf and Ninja
-// (themed: each gives only its own accessories, all Efsanevi). The content names them in this order.
+// The four tiers and the packs, in order of worth (§4.U). The content names them in this order.
 export const GIFT_TIERS = ['siradan', 'nadir', 'destansi', 'efsanevi'] as const;
 export type GiftTier = (typeof GIFT_TIERS)[number];
 
 export const TIER_PACKS = ['bronz', 'gumus', 'altin', 'elmas'] as const;
 export type TierPack = (typeof TIER_PACKS)[number];
 
-export const GIFT_PACKS = [...TIER_PACKS, 'elf', 'ninja'] as const;
-export type GiftPack = (typeof GIFT_PACKS)[number];
+export const GIFT_PACKS = TIER_PACKS;
+export type GiftPack = TierPack;
+
+// The skin sets (§4.U, 7 Kasım): not packs but Efsanevi accessories the four packs give, each as
+// likely as every other Efsanevi one. Wearing a set whole gives its balloon in the venue chat.
+export const GIFT_SETS = ['elf', 'ninja'] as const;
+export type GiftSet = (typeof GIFT_SETS)[number];
+
+export function isGiftSet(value: string): value is GiftSet {
+  return (GIFT_SETS as readonly string[]).includes(value);
+}
 
 export function isTierPack(value: string): value is TierPack {
   return (TIER_PACKS as readonly string[]).includes(value);
@@ -31,12 +39,10 @@ export type GiftCatalog = {
     id: string;
     name: string;
     locked: boolean;
-    // Gives only the accessories that name it (`pack`), and those come from no other pack.
-    themed: boolean;
     weights: Readonly<Record<string, number>>;
-    // A themed pack's full set: worn together, the set's balloon in the venue chat (§4.U).
-    fullSet?: readonly string[];
   }[];
+  // The skin sets and their full sets: worn together, the set's balloon in the venue chat (§4.U).
+  sets: readonly { id: string; name: string; fullSet: readonly string[] }[];
   accessories: readonly {
     id: string;
     name: string;
@@ -44,8 +50,8 @@ export type GiftCatalog = {
     // The capsule slots it is worn in (pure/capsule.ts → LOOK_SLOTS); a Destansı set takes two.
     slots: readonly string[];
     weight: number;
-    // The themed pack that alone gives it; none: the four tier packs.
-    pack?: string;
+    // The skin set it belongs to (an Efsanevi piece the four packs give like any other).
+    set?: string;
     // Out of the catalog (7 Kasım): no pack gives it, whoever owns it keeps wearing it.
     retired?: boolean;
     replacesPart?: string;
@@ -70,13 +76,10 @@ function packOf(pack: GiftPack, catalog: GiftCatalog) {
   return found;
 }
 
-// What a pack can give: a themed pack its own accessories, a tier pack every other one; never a
-// retired one.
+// What a pack can give: every accessory in the catalog, a set piece too; never a retired one.
 export function poolOf(pack: GiftPack, catalog: GiftCatalog = GIFT_CATALOG): GiftAccessory[] {
-  const themed = packOf(pack, catalog).themed;
-  return catalog.accessories.filter(
-    (a) => !a.retired && (themed ? a.pack === pack : a.pack === undefined),
-  );
+  packOf(pack, catalog);
+  return catalog.accessories.filter((a) => !a.retired);
 }
 
 function unownedIn(
@@ -258,16 +261,16 @@ export function coveredSlots(
   return out;
 }
 
-// The themed pack whose full set the look wears whole, or null: its messages in the venue chat,
+// The skin set whose full set the look wears whole, or null: its messages in the venue chat,
 // while anonymous, take the set's balloon (§4.U).
 export function fullSetOf(
   look: string | null,
   catalog: GiftCatalog = GIFT_CATALOG,
-): GiftPack | null {
+): GiftSet | null {
   const worn = new Set(accessoriesOf(look));
-  for (const pack of catalog.packs) {
-    if (pack.fullSet && pack.fullSet.length > 0 && pack.fullSet.every((id) => worn.has(id))) {
-      return isGiftPack(pack.id) ? pack.id : null;
+  for (const set of catalog.sets) {
+    if (set.fullSet.length > 0 && set.fullSet.every((id) => worn.has(id))) {
+      return isGiftSet(set.id) ? set.id : null;
     }
   }
   return null;

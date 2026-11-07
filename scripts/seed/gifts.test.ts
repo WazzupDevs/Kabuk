@@ -62,15 +62,18 @@ describe('parseGiftCatalog', () => {
     );
   });
 
-  it('refuses an unknown slot, a Destansı of one slot and a pack that is not themed', () => {
+  it('refuses an unknown slot, a Destansı of one slot, an unknown set and a set piece below Efsanevi', () => {
     expect(broken((c) => (at(accessories(c), 0).slots = ['z']))).toThrow(/no slot/);
     expect(broken((c) => (at(accessories(c), 0).slots = []))).toThrow(/one or two/);
     expect(broken((c) => (at(accessories(c), 20).slots = ['h']))).toThrow(/two slots/);
-    expect(broken((c) => (at(accessories(c), 0).pack = 'bronz'))).toThrow(/themed/);
+    expect(broken((c) => (at(accessories(c), 0).set = 'bronz'))).toThrow(/no skin set/);
+    expect(broken((c) => (at(accessories(c), 0).set = 'elf'))).toThrow(/Efsanevi/);
+    expect(broken((c) => (at(accessories(c), 0).pack = 'elf'))).toThrow(/now set/);
   });
 
-  it('refuses a full set with a part its pack does not give, or two parts in one slot', () => {
-    const elf = (c: Record<string, unknown>) => at(packs(c), 4);
+  it('refuses a full set with a part not of its set, or two parts in one slot', () => {
+    const sets = (c: Record<string, unknown>) => c.sets as Record<string, unknown>[];
+    const elf = (c: Record<string, unknown>) => at(sets(c), 0);
     expect(broken((c) => (elf(c).fullSet = ['filiz']))).toThrow(/full set has no/);
     expect(broken((c) => (elf(c).fullSet = ['yapraktaci', 'aydiademi']))).toThrow(/shares a slot/);
   });
