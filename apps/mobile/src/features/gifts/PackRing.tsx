@@ -115,16 +115,16 @@ export function PackRing({
   const { degPerPx, flingPxPerMs, settle } = GIFT_MOTION.ring;
   const { turningOpacity, inMs } = GIFT_MOTION.info;
 
+  const setFrontBoth = (i: number) => {
+    setFront(i);
+    onFront(i);
+  };
   useAnimatedReaction(
     () => frontOf(turn.get()),
     (now, before) => {
       if (now !== before) runOnJS(setFrontBoth)(now);
     },
   );
-  function setFrontBoth(i: number) {
-    setFront(i);
-    onFront(i);
-  }
 
   const settled = () => {
     'worklet';

@@ -168,6 +168,11 @@ export function Rip({
 
   const skip = () => {
     setSkipping(true);
+    if (reduce) {
+      done.set(1);
+      onDone(card);
+      return;
+    }
     finish();
   };
 
