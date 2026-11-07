@@ -371,7 +371,17 @@ function placed(part: string, dx: number, dy: number, s: number): string {
   return `<g transform="translate(${dx.toFixed(3)} ${dy.toFixed(3)}) scale(${s.toFixed(5)})">${moved}</g>`;
 }
 
-export type AccessoryLayers = { back: string; skin: string; front: string; edge: string };
+// `front` and `edge`: the head's accessories (slot h) and their contour, which may reach over a
+// ring above the capsule's middle; `low` and `lowEdge`: every other, which stays in the ring (the
+// owner's call, 7 Kasım: only the head goes over the ring, nothing below the waist ever does).
+export type AccessoryLayers = {
+  back: string;
+  skin: string;
+  front: string;
+  edge: string;
+  low: string;
+  lowEdge: string;
+};
 
 // The worn accessories' layers for the app's capsule drawing (its 48-unit box); an unknown id (an
 // accessory a newer catalog has) is left out: the old app draws the capsule without it.
@@ -380,15 +390,23 @@ export type AccessoryLayers = { back: string; skin: string; front: string; edge:
 export function accessoryLayers(ids: readonly string[], edge = 0): AccessoryLayers {
   const known = ids.filter((id) => ACCESSORY_ART[id] !== undefined);
   const drawn = [...new Set(known)].sort((a, b) => rank(a) - rank(b));
-  const out: AccessoryLayers = { back: '', skin: '', front: '', edge: '' };
+  const out: AccessoryLayers = { back: '', skin: '', front: '', edge: '', low: '', lowEdge: '' };
   for (const id of drawn) {
     const a = ACCESSORY_ART[id];
     if (!a) continue;
     const dy = TOP[a.anchor];
     if (a.back) out.back += placed(a.back, LEFT, dy, SCALE);
     if (a.skin) out.skin += placed(a.skin, LEFT, dy, SCALE);
-    out.front += placed(a.art, LEFT, dy, SCALE);
-    if (edge > 0) out.edge += placed(contourOf(id, a.art, edge), LEFT, dy, SCALE);
+    const head = slotsOf(id).includes('h');
+    const art = placed(a.art, LEFT, dy, SCALE);
+    const contour = edge > 0 ? placed(contourOf(id, a.art, edge), LEFT, dy, SCALE) : '';
+    if (head) {
+      out.front += art;
+      out.edge += contour;
+    } else {
+      out.low += art;
+      out.lowEdge += contour;
+    }
   }
   return out;
 }

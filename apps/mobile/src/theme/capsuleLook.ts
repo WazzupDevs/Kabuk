@@ -61,7 +61,8 @@ export function lookSvg(code: string, mode: 'av' | 'fig' = 'av'): string {
         ? svg.replace(/^(<svg\b[^>]*>(?:<circle\b[^>]*\/>)?)/, `$1${layers.back}`)
         : svg.replace(/^(<svg\b[^>]*>)/, `$1${layers.back}`);
   }
-  return layers.front ? svg.replace(/<\/svg>$/, `${layers.front}</svg>`) : svg;
+  const over = layers.low + layers.front;
+  return over ? svg.replace(/<\/svg>$/, `${over}</svg>`) : svg;
 }
 
 // The capsule editor's stage (v46 `.ced-fig`: LOOK.pop): the capsule standing in its circle, the
@@ -72,20 +73,25 @@ const POP_CLIP = '<circle cx="24" cy="24" r="24"/><rect x="-6" y="-8" width="60"
 const POP_CLIP_PATH = '<path d="M-6 -8H54V24H48A24 24 0 0 1 0 24H-6Z"/>';
 
 // `edge`: a thin white contour round the accessories (canvas units; the gift card: CARD_EDGE).
-// `ringHalo`: an Efsanevi's halo kept inside the circle (the card, whose ring is the circle's).
-export function lookPop(code: string, emo = '', edge = 0, ringHalo = false): string {
+// Only the head goes over the circle (the owner's call, 7 Kasım): the capsule's head and the head's
+// accessories may reach above its middle; every other accessory and an Efsanevi's halo stay inside
+// the circle, and nothing below the middle ever leaves it.
+const IN_RING = 'in-ring';
+
+export function lookPop(code: string, emo = '', edge = 0): string {
   const { parts, layers, eyes } = dressed(code, edge);
   let svg = LOOK.pop(parts, emo).replace(POP_CLIP, POP_CLIP_PATH);
   if (eyes) svg = svg.replace(EYE_SHAPE, '');
   svg = withSkin(svg, layers.skin);
+  const ring = `<clipPath id="${IN_RING}"><circle cx="24" cy="24" r="24"/></clipPath>`;
+  const inRing = (part: string) => (part ? `<g clip-path="url(#${IN_RING})">${part}</g>` : '');
   // Inside the clipped group, over the capsule and under a feeling's things around it; before the
   // halo goes in (its own groups would take the first `</g></g>`).
-  if (layers.front) svg = svg.replace('</g></g>', `${layers.edge}${layers.front}</g></g>`);
-  const back =
-    layers.back && ringHalo
-      ? `<clipPath id="ring-halo"><circle cx="24" cy="24" r="24"/></clipPath><g clip-path="url(#ring-halo)">${layers.back}</g>`
-      : layers.back;
-  if (back) svg = svg.replace(/(<g clip-path="url\(#cpc\d+\)">)/, `$1${back}`);
+  const over = inRing(layers.lowEdge + layers.low) + layers.edge + layers.front;
+  if (over) svg = svg.replace('</g></g>', `${over}</g></g>`);
+  if (layers.back)
+    svg = svg.replace(/(<g clip-path="url\(#cpc\d+\)">)/, `$1${inRing(layers.back)}`);
+  if (layers.back || layers.low) svg = svg.replace(/(<g clip-path="url\(#cpc\d+\)">)/, `${ring}$1`);
   return svg;
 }
 
@@ -102,7 +108,7 @@ export const CARD_BOX = { x: -6, y: -CARD_TOP, width: 60, height: 49 + CARD_TOP 
 // The capsule standing in a ring with its head and accessories free above it (the gift card, the
 // profile's ring, Aksesuarlarım's preview; the owner's call, 7 Kasım): the stage lookCard draws.
 export function lookCard(code: string): string {
-  return lookPop(code, '', CARD_EDGE, true)
+  return lookPop(code, '', CARD_EDGE)
     .replace('viewBox="-6 -8 60 57"', `viewBox="-6 ${-CARD_TOP} 60 ${49 + CARD_TOP}"`)
     .replace(POP_CLIP_PATH, `<path d="M-6 ${-CARD_TOP}H54V24H48A24 24 0 0 1 0 24H-6Z"/>`);
 }

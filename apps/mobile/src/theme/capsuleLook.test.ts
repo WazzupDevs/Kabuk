@@ -104,6 +104,17 @@ describe('pack accessory', () => {
     }
   });
 
+  it('lets only the head go over the ring: other accessories and the halo stay in it', () => {
+    const svg = lookPop('c:mor e:klasik x:ejderboynuzu x:gokkusagiatki');
+    const ring = svg.indexOf('<g clip-path="url(#in-ring)">');
+    expect(ring).toBeGreaterThan(-1);
+    // The scarf (a neck accessory) inside the ring's clip, the horns (head) outside it.
+    const inside = svg.slice(ring);
+    expect(inside.indexOf('gokkusagiatki')).toBeGreaterThan(-1);
+    const horns = svg.lastIndexOf('ejderboynuzu-gLava');
+    expect(svg.slice(horns - 400, horns)).not.toContain('url(#in-ring)');
+  });
+
   it('draws nothing for an unknown accessory', () => {
     expect(lookSvg('c:mor e:klasik x:yok')).toBe(lookSvg('c:mor e:klasik'));
   });
