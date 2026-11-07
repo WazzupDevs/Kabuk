@@ -1,24 +1,16 @@
 import type { GiftTier } from '@shared/gifts.ts';
-import { useEffect } from 'react';
-import { View } from 'react-native';
-import Reanimated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from 'react-native-reanimated';
+import { Animated, View } from 'react-native';
 
-import { T, Tag, useKit } from '@/aura/kit';
+import { Round, T, Tag, useKit } from '@/aura/kit';
 import { CapIcon } from '@/aura/CapIcon';
 import { tr } from '@/i18n/tr';
-import { useReduceMotion } from '@/lib/useReduceMotion';
+import { KIT } from '@/theme/auraKit';
 import { GIFT_BADGE, TIER_COLOR, TIER_TAG_ALPHA } from '@/theme/gifts';
 import { GIFT_MOTION } from '@/theme/giftMotion';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
+import { useBeat } from './loops';
 import { tierName } from './model';
 
 const TIER_MARKS: Record<GiftTier, number> = { siradan: 1, nadir: 2, destansi: 3, efsanevi: 4 };
@@ -71,62 +63,54 @@ export function SoonTag({ large }: { large?: boolean }) {
 // (1 → 1.12 → 1) and its ring spreads (1 → 2.1, fading); still with reduce motion.
 export const BADGE = 24;
 export function CanOpenBadge({ count }: { count: number }) {
-  const reduce = useReduceMotion();
-  const t = useSharedValue(0);
-  useEffect(() => {
-    if (reduce) return;
-    t.set(0);
-    t.set(withRepeat(withTiming(1, { duration: GIFT_MOTION.badge.ms, easing: Easing.linear }), -1));
-  }, [reduce, t]);
-  const beat = useAnimatedStyle(() => {
-    const p = t.value;
-    // Up in the first quarter, down in the second, still after.
-    const s = p < 0.25 ? p / 0.25 : p < 0.5 ? (0.5 - p) / 0.25 : 0;
-    return { transform: [{ scale: 1 + (GIFT_MOTION.badge.scale - 1) * s }] };
-  });
-  const ring = useAnimatedStyle(() => ({
-    opacity: GIFT_MOTION.badge.ringFrom * (1 - t.value),
-    transform: [{ scale: 1 + (GIFT_MOTION.badge.ringTo - 1) * t.value }],
-  }));
+  const t = useBeat(GIFT_MOTION.badge.ms);
+  const { scale, ringTo, ringFrom } = GIFT_MOTION.badge;
   return (
     <View
       accessible
       accessibilityLabel={tr.gifts.canOpen(count)}
       style={{ width: BADGE, height: BADGE }}
     >
-      {reduce ? null : (
-        <Reanimated.View
+      {t ? (
+        <Animated.View
           pointerEvents="none"
-          style={[
-            {
-              position: 'absolute',
-              inset: 0,
-              borderRadius: BADGE / 2,
-              borderWidth: 2,
-              borderColor: GIFT_BADGE.fill,
-            },
-            ring,
-          ]}
-        />
-      )}
-      <Reanimated.View
-        style={[
-          {
-            width: BADGE,
-            height: BADGE,
+          style={{
+            position: 'absolute',
+            inset: 0,
             borderRadius: BADGE / 2,
-            backgroundColor: GIFT_BADGE.fill,
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: `0 0 0 2.5px ${GIFT_BADGE.ring}, 0 0 0 8px ${GIFT_BADGE.halo}, 0 0 18px 4px ${GIFT_BADGE.glow}`,
-          },
-          beat,
-        ]}
+            borderWidth: 2,
+            borderColor: GIFT_BADGE.fill,
+            opacity: t.interpolate({ inputRange: [0, 1], outputRange: [ringFrom, 0] }),
+            transform: [{ scale: t.interpolate({ inputRange: [0, 1], outputRange: [1, ringTo] }) }],
+          }}
+        />
+      ) : null}
+      <Animated.View
+        style={{
+          width: BADGE,
+          height: BADGE,
+          borderRadius: BADGE / 2,
+          backgroundColor: GIFT_BADGE.fill,
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: `0 0 0 2.5px ${GIFT_BADGE.ring}, 0 0 0 8px ${GIFT_BADGE.halo}, 0 0 18px 4px ${GIFT_BADGE.glow}`,
+          // Up in the first quarter, down in the second, still after.
+          transform: t
+            ? [
+                {
+                  scale: t.interpolate({
+                    inputRange: [0, 0.25, 0.5, 1],
+                    outputRange: [1, scale, 1, 1],
+                  }),
+                },
+              ]
+            : undefined,
+        }}
       >
         <T v="stamp" color={GIFT_BADGE.ink} strong>
           {tr.gifts.count(count)}
         </T>
-      </Reanimated.View>
+      </Animated.View>
     </View>
   );
 }
@@ -162,3 +146,28 @@ export function LoginBar({
     </View>
   );
 }
+
+// The gift screens' top bar (Paketler, Aksesuarlarım: `.topbar.between`, 56 high): back at the
+// left, the title in the middle, as much room at the right.
+export function GiftTopBar({ title, onBack }: { title: string; onBack: () => void }) {
+  return (
+    <View
+      style={{
+        height: TOP_BAR,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: SPACING[2],
+      }}
+    >
+      <Round glassy icon="back" label={tr.common.back} onPress={onBack} />
+      <View style={{ flex: 1 }}>
+        <T v="title" center accessibilityRole="header">
+          {title}
+        </T>
+      </View>
+      <View style={{ width: KIT.size.round }} />
+    </View>
+  );
+}
+const TOP_BAR = 56;

@@ -15,6 +15,7 @@ import { Tag } from '@/components/Tag';
 import { boxShadowParts } from '@/components/NativeShadow';
 import { EventCard } from '@/features/activities/EventCard';
 import { useGameResults } from '@/features/activities/useGameResults';
+import { GiftCard } from '@/features/gifts/GiftCard';
 import { useExplorePlace } from '@/features/explore/placeStore';
 import { useCityVenues } from '@/features/explore/useExploreVenues';
 import {
@@ -59,7 +60,11 @@ export default function ActivitiesScreen() {
           {tr.tabs.activities}
         </T>
       </View>
-      <View style={{ marginTop: SPACING[6] }}>
+      {/* Hediye paketleri (§4.U, AktivitelerHediye): the gift card over the tabs, 20 apart. */}
+      <View style={{ marginTop: SPACING[5] }}>
+        <GiftCard />
+      </View>
+      <View style={{ marginTop: SPACING[5] }}>
         {/* U15: the glass seg, 44 high. */}
         <Seg<Tab>
           narrow={narrow}

@@ -79,3 +79,15 @@ export const FINGER = {
   ring: 'rgba(255,255,255,0.9)',
   arrow: '#FFFFFF',
 } as const;
+
+// A collection tile (hediye.css `.nf`, `.tile`): the frame's width by tier, the Efsanevi foil's
+// colours, the corner stars.
+export const TILE_FRAME: Record<GiftTier, number> = {
+  siradan: 2,
+  nadir: 3,
+  destansi: 3,
+  efsanevi: 4,
+};
+export const EFSANEVI_FOIL = 'linear-gradient(135deg, #FFB547, #FF4F8B 50%, #FFB547)';
+// The dark side's card ground (`.dark.pA .nf`).
+export const TILE_GROUND_DARK = '#151A18';
