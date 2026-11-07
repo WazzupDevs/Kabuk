@@ -2368,7 +2368,11 @@ export type Database = {
         Returns: Json;
       };
       gifts_open: {
-        Args: { target_accessory_id: string; target_pack: string; target_user_id: string };
+        Args: {
+          target_accessory_id: string;
+          target_pack: string;
+          target_user_id: string;
+        };
         Returns: string;
       };
       gifts_unequip: { Args: { target_user_id: string }; Returns: string };
