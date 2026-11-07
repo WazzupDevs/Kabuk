@@ -38,8 +38,7 @@ const TIER_FRAME: Record<GiftTier, ImageSourcePropType> = {
 };
 export const CARD_RATIO = 600 / 840;
 
-// A tier's card with no accessory in it, made from the tier's two cards above (where one card's
-// accessory stood, the other card's ground; their middle filled from the glow round it).
+// A tier's card with no accessory in it (the canvas's card frames, kart-<tier>.png, 600 × 840).
 const BLANK_CARD: Record<GiftTier, ImageSourcePropType> = {
   siradan: require('../../../assets/gifts/card-blank-siradan.webp'),
   nadir: require('../../../assets/gifts/card-blank-nadir.webp'),

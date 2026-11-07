@@ -195,8 +195,8 @@ export function GiftTopBar({ title, onBack }: { title: string; onBack: () => voi
 const TOP_BAR = 56;
 
 // An accessory's card (the canvas's cards: the tier's card with the accessory alone in its middle,
-// a white edge round it). The first eight have their own picture; the others are the tier's card
-// without its accessory (`card-blank-<tier>`, made from the tier's two cards) with the accessory's
+// a white edge round it). The first eight have their own picture; the others are the tier's empty
+// card (`card-blank-<tier>`, the canvas's card frames) with the accessory's
 // sticker in the bubble (capsuleAccessories.ts → accessorySticker). Never a capsule: the owner's
 // report, 7 Kasım.
 // The sticker's room: the bubble's middle, at most this share of the card's width and height (the
