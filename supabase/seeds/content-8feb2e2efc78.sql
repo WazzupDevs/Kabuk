@@ -386,6 +386,20 @@ on conflict (id) do update set
   sort_order = excluded.sort_order;
 update public.games set is_available = false where is_available and id <> all (array['vampir', 'kibrit', 'tabu', 'signum', 'ibre', 'sahtekar', 'harf', 'sarki', 'sprengja', 'kaupholl', 'sohbet']::text[]);
 
+-- content/gift-packs.json
+insert into public.gift_accessories (id, tier, weight, in_packs) values
+  ('bere', 'siradan', 1, true),
+  ('yuvarlakgozluk', 'siradan', 1, true),
+  ('kasket', 'nadir', 1, true),
+  ('kulaklik', 'nadir', 1, true),
+  ('buyucusapkasi', 'destansi', 1, true),
+  ('yildizgozluk', 'destansi', 1, true),
+  ('tac', 'efsanevi', 1, true),
+  ('ejderboynuzu', 'efsanevi', 1, true)
+on conflict (id) do update set
+  tier = excluded.tier, weight = excluded.weight, in_packs = true;
+update public.gift_accessories set in_packs = false where in_packs and id <> all (array['bere', 'yuvarlakgozluk', 'kasket', 'kulaklik', 'buyucusapkasi', 'yildizgozluk', 'tac', 'ejderboynuzu']::text[]);
+
 -- content/tabu-cards.json, content/sohbet-cards.json, content/sahtekar-words.json, content/harf-categories.json, content/sarki-words.json, content/ibre-scales.json, content/sprengja-letter-groups.json, content/signum-words.json
 insert into public.cards (deck, source_key, word, forbidden, theme, prompt) values
   ('tabu', 'Buzdolabı', 'Buzdolabı', array['soğuk', 'mutfak', 'yiyecek', 'kapak', 'elektrik']::text[], null, null),

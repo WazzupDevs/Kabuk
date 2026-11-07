@@ -21,6 +21,7 @@ import { ageOn, istanbulToday, parseIsoDate } from '../_shared/pure/age.ts';
 import { earnedBadges } from '../_shared/pure/badges.ts';
 import { LOOK_MAX_LENGTH, nickRefreshAt, normalizeLook } from '../_shared/pure/capsule.ts';
 import type { Gender } from '../_shared/pure/gender.ts';
+import { withoutNewRetiredParts } from '../_shared/pure/gifts.ts';
 import { AppError } from '../_shared/pure/errors.ts';
 import { inspectJpeg } from '../_shared/pure/jpegMetadata.ts';
 import {
@@ -211,17 +212,28 @@ Deno.serve(
 
       // K-47: the caller's own look, as the catalog knows it (unknown parts dropped). Written now;
       // what was written before keeps its look (K-10).
+      // The worn pack accessory stays (§4.U: the database keeps its "x:" token), and a capsule part
+      // that became a pack accessory is kept only by a look that already wears it.
       case 'set-look': {
-        const look = normalizeLook(body.look);
-        const { data, error } = await db
-          .from('profiles')
-          .update({ capsule_look: look })
-          .eq('id', user.id)
-          .select('id')
-          .maybeSingle();
-        if (error) throw dbError('profiles', error);
-        if (!data) throw new AppError('onboarding_required', 'Complete onboarding first.');
-        return { capsuleLook: look };
+        const requested = normalizeLook(body.look);
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const current = await db
+            .from('profiles')
+            .select('capsule_look')
+            .eq('id', user.id)
+            .maybeSingle();
+          if (current.error) throw dbError('profiles', current.error);
+          if (!current.data)
+            throw new AppError('onboarding_required', 'Complete onboarding first.');
+          const { data, error } = await db.rpc('profile_set_look', {
+            target_user_id: user.id,
+            new_look: withoutNewRetiredParts(requested, current.data.capsule_look),
+            read_look: current.data.capsule_look ?? '',
+          });
+          if (error) throw dbError('profile_set_look', error);
+          if (data !== null) return { capsuleLook: data };
+        }
+        throw new Error('profile_set_look: the look kept changing');
       }
 
       case 'update': {

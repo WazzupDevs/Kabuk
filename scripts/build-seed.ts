@@ -1,6 +1,7 @@
 // Builds supabase/seeds/content-<id>.sql from content/*.json and removes the file it replaces, and
 // the pure modules of the capsule catalog (scripts/seed/capsule.ts), the table icons
-// (scripts/seed/tableIcons.ts), the table's games (scripts/seed/games.ts) and the Signum tile's
+// (scripts/seed/tableIcons.ts), the table's games (scripts/seed/games.ts), the gift packs
+// (scripts/seed/gifts.ts) and the Signum tile's
 // width table (scripts/seed/signum.ts). The output is
 // committed. Why the seed's name changes with the content: scripts/seed/build.ts.
 import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -10,6 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { buildSeed, isSeedFileName, SEEDS_DIR, seedFileName } from './seed/build.ts';
 import { buildCapsuleModule, CAPSULE_MODULE } from './seed/capsule.ts';
 import { buildTableGamesModule, TABLE_GAMES_MODULE } from './seed/games.ts';
+import { buildGiftModule, GIFT_MODULE } from './seed/gifts.ts';
 import { buildSignumWidthsModule, SIGNUM_WIDTHS_MODULE } from './seed/signum.ts';
 import {
   buildTableIconImagesModule,
@@ -49,3 +51,5 @@ writeFileSync(resolve(root, TABLE_GAMES_MODULE), await buildTableGamesModule(roo
 console.log(`Wrote ${TABLE_GAMES_MODULE}`);
 writeFileSync(resolve(root, SIGNUM_WIDTHS_MODULE), await buildSignumWidthsModule(root));
 console.log(`Wrote ${SIGNUM_WIDTHS_MODULE}`);
+writeFileSync(resolve(root, GIFT_MODULE), await buildGiftModule(root));
+console.log(`Wrote ${GIFT_MODULE}`);

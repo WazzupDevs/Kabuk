@@ -3,7 +3,15 @@
 // retired one) is tried again with another, like a taken table alias at check-in.
 import type { Db } from './auth.ts';
 import { dbError } from './db.ts';
+import { CAPSULE_CATALOG } from './pure/capsuleCatalog.ts';
 import { NICK_REFRESH_DAYS, nickDigits, pickReadyLook, randomNick } from './pure/capsule.ts';
+import { isFreeLook } from './pure/gifts.ts';
+
+// The start looks: the ready looks that wear no capsule part a pack now gives (§4.U).
+const START_CATALOG = {
+  ...CAPSULE_CATALOG,
+  readyLooks: CAPSULE_CATALOG.readyLooks.filter((l) => isFreeLook(l.code)),
+};
 
 const MAX_NICK_ATTEMPTS = 8;
 const UNIQUE_VIOLATION = '23505';
@@ -30,7 +38,7 @@ export async function assignCapsuleIdentity(db: Db, userId: string): Promise<voi
   if (own.error) throw dbError('profiles', own.error);
   if (!own.data || own.data.capsule_nick !== null) return;
   const nickDigitsNow = await digits(db);
-  const look = pickReadyLook(Math.random);
+  const look = pickReadyLook(Math.random, START_CATALOG);
   for (let attempt = 0; attempt < MAX_NICK_ATTEMPTS; attempt++) {
     const { error } = await db.rpc('assign_capsule_identity', {
       target_user_id: userId,

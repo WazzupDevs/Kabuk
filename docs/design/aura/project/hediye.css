@@ -1,0 +1,76 @@
+/* skall: Hediye paketleri ortak bileşenleri (6 Kas 2026). Yalnız mevcut tokenlar ve mevcut palet değerleri.
+   Paket renkleri: Bronz = --pip6/--pip8, Gümüş = --divider/--border, Altın = --pip9/--signal, Elmas = --pip11/--pip5.
+   Nadirlik renkleri: Sıradan = --border, Nadir = --read, Destansı = --logo-a, Efsanevi = --signal + --buzz. */
+:root{
+ --pk-bronz-a:#FF7A3D;--pk-bronz-b:#9A6B4E;
+ --pk-gumus-a:#D6E6DA;--pk-gumus-b:#6E8874;
+ --pk-altin-a:#F2C230;--pk-altin-b:#FFB547;
+ --pk-elmas-a:#1FB5A8;--pk-elmas-b:#2FA8E0;
+ --nd-siradan:#6E8874;--nd-nadir:#2C63D6;--nd-destansi:#7B5CFF;--nd-efsanevi:#FFB547;--nd-efsanevi-2:#FF4F8B;
+}
+.dark.pA{--nd-siradan:#A3AEA8;--nd-nadir:#7DB2FF;--nd-destansi:#7B5CFF;--nd-efsanevi:#FFB547}
+/* Paket v5: tek resim 720x1134 (oran 160:252), Gökay'ın ürettirdiği görsel, beyaz zemini temizlendi. Yırtık çizgisi paket yüksekliğinin %8,5'i. */
+.pk{position:relative;flex:none;width:140px;aspect-ratio:160/252;filter:drop-shadow(0 10px 12px rgba(4,73,35,.22)) drop-shadow(0 2px 3px rgba(4,73,35,.18))}
+.dark.pA .pk{filter:drop-shadow(0 10px 14px rgba(0,0,0,.55))}
+.pk img{display:block;width:100%;height:100%;object-fit:contain}
+.pk.bronz{--a:var(--pk-bronz-a);--b:var(--pk-bronz-b)}.pk.gumus{--a:var(--pk-gumus-a);--b:var(--pk-gumus-b)}
+.pk.altin{--a:var(--pk-altin-a);--b:var(--pk-altin-b)}.pk.elmas{--a:var(--pk-elmas-a);--b:var(--pk-elmas-b)}
+.pk .cnt{position:absolute;right:-8px;top:-8px}
+.pk.lock .veil{position:absolute;inset:7% 1.5%;border-radius:4%;background:var(--scrim-bg);display:flex;align-items:center;justify-content:center}
+.lk{display:inline-flex;align-items:center;gap:4px;height:24px;padding:0 8px;border-radius:var(--r-pill);background:var(--surface);color:var(--text);font:600 12px/16px var(--font);white-space:nowrap;box-shadow:var(--shadow-raised)}
+.dark.pA .lk{background:#1B211F}
+/* Nadirlik etiketi: renkli işaret + metin (renk tek başına anlam taşımaz: işaret sayısı 1–4) */
+.nd{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:var(--r-pill);font:600 12px/16px var(--font);color:var(--text);white-space:nowrap;background:color-mix(in srgb,var(--c) 16%,transparent)}
+.nd .gm{display:inline-flex;gap:2px}.nd .gm i{width:6px;height:6px;transform:rotate(45deg);border-radius:1px;background:var(--c)}
+.siradan{--c:var(--nd-siradan)}.nadir{--c:var(--nd-nadir)}.destansi{--c:var(--nd-destansi)}.efsanevi{--c:var(--nd-efsanevi)}
+/* Nadirlik çerçevesi: Sıradan 2, Nadir 3, Destansı 3 + iç çizgi, Efsanevi 4 folyo + köşe yıldızları */
+.nf{position:relative;border-radius:var(--r-lg);background:var(--surface);box-sizing:border-box;border:2px solid var(--c)}
+.nf.nadir{border-width:3px}
+.nf.destansi{border-width:3px;box-shadow:inset 0 0 0 3px var(--surface),inset 0 0 0 4px var(--c)}
+.nf.efsanevi{border:4px solid transparent;background:linear-gradient(var(--surface),var(--surface)) padding-box,linear-gradient(135deg,var(--nd-efsanevi),var(--nd-efsanevi-2) 50%,var(--nd-efsanevi)) border-box}
+.nf .st{position:absolute;width:14px;height:14px;color:var(--nd-efsanevi)}
+.dark.pA .nf{background:#151A18}
+.dark.pA .nf.destansi{box-shadow:inset 0 0 0 3px #151A18,inset 0 0 0 4px var(--c)}
+.dark.pA .nf.efsanevi{background:linear-gradient(#151A18,#151A18) padding-box,linear-gradient(135deg,var(--nd-efsanevi),var(--nd-efsanevi-2) 50%,var(--nd-efsanevi)) border-box}
+/* Aksesuar kartı (açılış son karesi) */
+.ac{width:232px;padding:12px;display:flex;flex-direction:column;align-items:center;gap:8px;box-shadow:var(--shadow-card)}
+.ac .art{width:100%;height:188px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--c) 14%,var(--surface))}
+.dark.pA .ac .art{background:color-mix(in srgb,var(--c) 18%,#151A18)}
+/* İlerleme: 3 parça */
+.prog{display:flex;gap:4px;width:72px;flex:none}.prog i{flex:1;height:6px;border-radius:3px;background:var(--track)}.prog i.on{background:var(--primary)}
+.dark.pA .prog i{background:#2A332F}.dark.pA .prog i.on{background:#3DDC84}
+/* Kapsül avatar (çizim) */
+.cap{display:block;flex:none;border-radius:50%}
+.cap.ring{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--accent)}
+.sil *{fill:var(--control)!important;stroke:var(--control)!important}
+.dark.pA .sil *{fill:#2A332F!important;stroke:#2A332F!important}
+/* Koleksiyon karosu */
+.tile{position:relative;aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:var(--r-md)}
+.tile.lockd{background:var(--surface2);border:2px dashed var(--control)}
+.dark.pA .tile.lockd{background:#121614;border-color:#2A332F}
+.tile .lkm{position:absolute;right:4px;bottom:4px;width:20px;height:20px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.dark.pA .tile .lkm{background:#1B211F}
+.tile.sel{box-shadow:0 0 0 2px var(--canvas),0 0 0 4px var(--accent)}
+.tile .on-mark{position:absolute;left:4px;top:4px}
+/* İskelet */
+.sk{background:var(--track);border-radius:var(--r-sm)}
+.dark.pA .sk{background:#1B211F}
+/* Tutamak ve hedef */
+.hint{font:500 13px/18px var(--font);color:var(--muted);text-align:center}
+.glow{position:absolute;border-radius:50%;filter:blur(64px);pointer-events:none}
+/* En büyük yazı (1,3x), 320 dp */
+.dar .display{font-size:41px;line-height:54px}
+.dar .title{font-size:27px;line-height:35px}
+.dar .h3{font-size:21px;line-height:28px}
+.dar .body{font-size:20px;line-height:28px}
+.dar .fine,.dar .hint{font-size:17px;line-height:23px}
+.dar .eyebrow{font-size:16px;line-height:21px}
+.dar .btn{font-size:21px;line-height:26px}
+.dar .btn.sm{font-size:18px;line-height:23px}
+.dar .tag,.dar .nd,.dar .lk{height:30px;font-size:16px;line-height:21px;padding:0 10px}
+.dar .chip{font-size:17px}
+.dar .seg span{font-size:18px}
+/* Aksesuar kartı v5: tek resim 600x840 = üretilmiş boş holografik çerçeve (nadirliğe göre) + ortadaki yuvarlağın tam merkezine aksesuar (en çok 330x260, merkez x 300 y 412, 7 px beyaz dış katman), altında ad ve nadirlik etiketi */
+.ac3{display:flex;flex-direction:column;align-items:center;gap:8px}
+.ac3 .kart{display:block;aspect-ratio:600/840;height:auto;filter:drop-shadow(0 14px 18px rgba(4,73,35,.24)) drop-shadow(0 2px 3px rgba(4,73,35,.18))}
+.dark.pA .ac3 .kart{filter:drop-shadow(0 14px 20px rgba(0,0,0,.6))}

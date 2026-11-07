@@ -513,6 +513,51 @@ export type Database = {
         };
         Relationships: [];
       };
+      gift_accessories: {
+        Row: {
+          id: string;
+          in_packs: boolean;
+          tier: string;
+          weight: number;
+        };
+        Insert: {
+          id: string;
+          in_packs?: boolean;
+          tier: string;
+          weight: number;
+        };
+        Update: {
+          id?: string;
+          in_packs?: boolean;
+          tier?: string;
+          weight?: number;
+        };
+        Relationships: [];
+      };
+      gift_progress: {
+        Row: {
+          last_day: string | null;
+          logins: number;
+          unopened: number;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          last_day?: string | null;
+          logins?: number;
+          unopened?: number;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          last_day?: string | null;
+          logins?: number;
+          unopened?: number;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       join_requests: {
         Row: {
           as_member: boolean;
@@ -1666,6 +1711,35 @@ export type Database = {
         };
         Relationships: [];
       };
+      user_accessories: {
+        Row: {
+          accessory_id: string;
+          created_at: string;
+          pack: string;
+          user_id: string;
+        };
+        Insert: {
+          accessory_id: string;
+          created_at?: string;
+          pack: string;
+          user_id: string;
+        };
+        Update: {
+          accessory_id?: string;
+          created_at?: string;
+          pack?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'user_accessories_accessory_id_fkey';
+            columns: ['accessory_id'];
+            isOneToOne: false;
+            referencedRelation: 'gift_accessories';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       venue_activity: {
         Row: {
           bucket: string;
@@ -2285,6 +2359,23 @@ export type Database = {
         Args: { target_history_id: string; target_user_id: string };
         Returns: string;
       };
+      gifts_equip: {
+        Args: { target_accessory_id: string; target_user_id: string };
+        Returns: string;
+      };
+      gifts_login: {
+        Args: { logins_per_pack: number; target_user_id: string; today: string };
+        Returns: Json;
+      };
+      gifts_open: {
+        Args: {
+          target_accessory_id: string;
+          target_pack: string;
+          target_user_id: string;
+        };
+        Returns: string;
+      };
+      gifts_unequip: { Args: { target_user_id: string }; Returns: string };
       has_profile_photo: { Args: { target_user_id: string }; Returns: boolean };
       history_report_photo: {
         Args: { target_history_id: string; target_user_id: string };
@@ -2785,6 +2876,10 @@ export type Database = {
           to_name: string;
           venue_name: string;
         }[];
+      };
+      profile_set_look: {
+        Args: { new_look: string; read_look: string; target_user_id: string };
+        Returns: string;
       };
       profile_view: {
         Args: { target_public_id: string; viewer: string };
