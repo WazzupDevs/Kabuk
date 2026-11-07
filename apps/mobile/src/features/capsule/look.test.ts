@@ -1,7 +1,22 @@
 import { CAPSULE_CATALOG } from '@shared/capsuleCatalog.ts';
 import { describe, expect, it } from 'vitest';
 
-import { bare, code, packsFor, parse, shuffle, takeOff, wear, wearPack, worn } from './look';
+import {
+  accessoryIn,
+  accessoryItems,
+  bare,
+  code,
+  packsFor,
+  parse,
+  showsPart,
+  shuffle,
+  takeAccessoryOff,
+  takeOff,
+  wear,
+  wearAccessory,
+  wearPack,
+  worn,
+} from './look';
 
 describe('capsule editor', () => {
   it('round-trips a ready look', () => {
@@ -38,12 +53,34 @@ describe('capsule editor', () => {
 });
 
 describe('pack accessory in the editor', () => {
-  it('keeps the worn accessory through every change', () => {
-    const look = parse('c:pembe e:klasik x:tac');
-    expect(code(look)).toBe('c:pembe e:klasik x:tac');
-    expect(code(wear(look, 'h', 'kedi'))).toBe('c:pembe e:klasik h:kedi x:tac');
-    expect(code(bare(wear(look, 'h', 'kedi')))).toBe('c:pembe e:klasik x:tac');
-    expect(parse(code(shuffle(() => 0.3, look))).x).toBe('tac');
+  it('wears several accessories, one in each slot, over the parts there', () => {
+    const look = parse('c:pembe e:klasik h:kedi x:filiz x:ipkravat');
+    expect(code(look)).toBe('c:pembe e:klasik h:kedi x:filiz x:ipkravat');
+    expect(accessoryIn(look, 'h')).toBe('filiz');
+    expect(showsPart(look, 'h', 'kedi')).toBe(false);
+    // The covered part is not among the chips; the accessories are.
+    expect(worn(look).map((w) => w.id)).toEqual(['filiz', 'ipkravat']);
+    // Another in the same slot takes the first's place; a two-slot set both of its slots'.
+    expect(code(wearAccessory(look, 'percem'))).toBe('c:pembe e:klasik h:kedi x:ipkravat x:percem');
+    expect(code(wearAccessory(look, 'kistakimi'))).toBe('c:pembe e:klasik h:kedi x:kistakimi');
+    // Taking it off shows the part again.
+    expect(showsPart(takeAccessoryOff(look, 'filiz'), 'h', 'kedi')).toBe(true);
+  });
+
+  it('takes the accessory off when a part or an empty slot is chosen there', () => {
+    const look = parse('c:pembe e:klasik x:filiz x:ipkravat');
+    expect(code(wear(look, 'h', 'kedi'))).toBe('c:pembe e:klasik h:kedi x:ipkravat');
+    expect(code(wear(look, 'h', null))).toBe('c:pembe e:klasik x:ipkravat');
+    expect(code(wear(parse('c:mor x:ormanteni'), 'c', 'pembe'))).toBe('c:pembe e:klasik');
+    expect(code(bare(look))).toBe('c:pembe e:klasik');
+    expect(parse(code(shuffle(() => 0.3, look))).x).toEqual(['filiz', 'ipkravat']);
+  });
+
+  it('offers the owned accessories of a slot, a set in each of its slots', () => {
+    const owned = new Set(['filiz', 'kistakimi', 'baklagoz']);
+    expect(accessoryItems('h', owned).map((i) => i.id)).toEqual(['filiz', 'kistakimi']);
+    expect(accessoryItems('n', owned).map((i) => i.id)).toEqual(['kistakimi']);
+    expect(accessoryItems('e', owned).map((i) => i.id)).toEqual(['baklagoz']);
   });
 
   it('offers the parts that became accessories only to a look that wears one', () => {

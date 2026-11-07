@@ -1,5 +1,5 @@
 import type { GiftState } from '@shared/api/gifts.ts';
-import { withAccessory } from '@shared/gifts.ts';
+import { wearOne, withAccessories } from '@shared/gifts.ts';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Image, Pressable, useWindowDimensions, View } from 'react-native';
@@ -7,15 +7,21 @@ import Reanimated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-
 
 import { CapIcon } from '@/aura/CapIcon';
 import { Btn, Glass, T, useKit } from '@/aura/kit';
-import { CachedSvg } from '@/components/CachedSvg';
+import { FxSvg } from '@/components/FxSvg';
 import { EmptyState } from '@/components/EmptyState';
 import { useLoaderHold } from '@/components/Loader';
 import { LookAvatar } from '@/components/LookAvatar';
 import { Screen } from '@/components/Screen';
 import { tileArt } from '@/features/gifts/art';
-import { type Accessory, ACCESSORIES, accessoryById, byTier } from '@/features/gifts/model';
+import {
+  type Accessory,
+  accessoryById,
+  byTier,
+  shownAccessories,
+  slotNames,
+} from '@/features/gifts/model';
 import { GiftTopBar, TierTag } from '@/features/gifts/parts';
-import { useEquip, useGiftState } from '@/features/gifts/queries';
+import { useEquip, useGiftState, useWear } from '@/features/gifts/queries';
 import { useOwnLook } from '@/features/profile/useOwnLook';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
@@ -28,8 +34,10 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
 // Aksesuarlarım (docs/SPEC_V4.md §4.U; Aura v134 Aksesuarlarim, AksesuarlarimHal): the chosen
-// accessory on the person's own capsule, the collection by tier, "Tak" and "Çıkar". One accessory
-// at a time is worn; only the capsule shows it (rule 4).
+// accessory on the person's own capsule with its slots, the collection by tier, "Tak" and "Çıkar".
+// One accessory in each slot is worn (Tak puts it in its slots, whatever is worn there comes off;
+// Çıkar takes the chosen one off); only the capsule shows them (rule 4). A retired accessory is
+// shown only to its owner.
 const PREVIEW = 72;
 const GRID_GAP = 10;
 const COLUMNS = 4;
@@ -39,6 +47,7 @@ const LOCK_MARK = 20;
 // The standing capsule in a tile: 44 × 62 in an 80 tile.
 const FIGURE_SHARE = 0.55;
 const FIGURE_RATIO = 140 / 100;
+const SKELETON_TILES = 8;
 
 export default function AccessoriesScreen() {
   const gifts = useGiftState();
@@ -76,26 +85,43 @@ export default function AccessoriesScreen() {
 function Collection({ state, top }: { state: GiftState; top: React.ReactNode }) {
   const look = useOwnLook();
   const equip = useEquip();
+  const wear = useWear();
+  const busy = equip.isPending || wear.isPending;
   const owned = new Set(state.owned.map((o) => o.id));
+  const shown = shownAccessories(owned);
+  const wornSet = new Set(state.worn);
   const last = state.owned[state.owned.length - 1]?.id ?? null;
-  const [picked, setPicked] = useState<string | null>(state.equipped ?? last);
+  const [picked, setPicked] = useState<string | null>(state.worn[0] ?? last);
   const chosen = accessoryById(picked && owned.has(picked) ? picked : null);
-  const worn = accessoryById(state.equipped);
+  const chosenWorn = chosen !== null && wornSet.has(chosen.id);
+  // What Tak would take off: the worn ones in the chosen one's slots.
+  const inItsSlots = chosen
+    ? state.worn
+        .filter((w) => w !== chosen.id && !wearOne(state.worn, chosen.id).includes(w))
+        .flatMap((w) => accessoryById(w) ?? [])
+    : [];
   const tile = useTileSize();
   const none = owned.size === 0;
 
   // Tak: the avatar pops (260/17).
   const reduce = useReduceMotion();
-  const pop = useSharedValue(1);
-  const popStyle = useAnimatedStyle(() => ({ transform: [{ scale: pop.value }] }));
+  const popScale = useSharedValue(1);
+  const popStyle = useAnimatedStyle(() => ({ transform: [{ scale: popScale.value }] }));
   const [popped, setPopped] = useState(0);
   useEffect(() => {
     if (popped === 0 || reduce) return;
-    pop.set(0.85);
-    pop.set(withSpring(1, GIFT_MOTION.wear));
-  }, [popped, reduce, pop]);
+    popScale.set(0.85);
+    popScale.set(withSpring(1, GIFT_MOTION.wear));
+  }, [popped, reduce, popScale]);
 
-  const put = (id: string | null) => equip.mutate(id, { onSuccess: () => setPopped((n) => n + 1) });
+  const pop = () => setPopped((n) => n + 1);
+  const put = (id: string) => equip.mutate(id, { onSuccess: pop });
+  const off = (id: string) =>
+    wear.mutate(
+      state.worn.filter((w) => w !== id),
+      { onSuccess: pop },
+    );
+  const failed = equip.error ?? wear.error;
 
   return (
     <Screen
@@ -103,25 +129,25 @@ function Collection({ state, top }: { state: GiftState; top: React.ReactNode }) 
       footer={
         none ? undefined : (
           <>
-            {equip.isError ? (
+            {failed ? (
               <T v="fine" ink>
-                {errorMessage(equip.error)}
+                {errorMessage(failed)}
               </T>
             ) : null}
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: SPACING[3] }}>
               <Btn
                 variant="glassy"
                 label={tr.gifts.takeOff}
-                disabled={!state.equipped || equip.isPending}
-                loading={equip.isPending && equip.variables === null}
-                onPress={() => put(null)}
+                disabled={!chosenWorn || busy}
+                loading={wear.isPending}
+                onPress={() => chosen && off(chosen.id)}
                 style={{ flexGrow: 1 }}
               />
               <Btn
                 icon="sparkles"
                 label={tr.gifts.put}
-                disabled={!chosen || chosen.id === state.equipped || equip.isPending}
-                loading={equip.isPending && equip.variables !== null}
+                disabled={!chosen || chosenWorn || busy}
+                loading={equip.isPending}
                 onPress={() => chosen && put(chosen.id)}
                 style={{ flexGrow: 1 }}
               />
@@ -144,7 +170,7 @@ function Collection({ state, top }: { state: GiftState; top: React.ReactNode }) 
         <Reanimated.View style={popStyle}>
           {look ? (
             <LookAvatar
-              look={withAccessory(look, chosen?.id ?? null)}
+              look={withAccessories(look, chosen ? wearOne(state.worn, chosen.id) : state.worn)}
               size={PREVIEW}
               accessibilityLabel={tr.profile.ownCapsule}
             />
@@ -156,10 +182,22 @@ function Collection({ state, top }: { state: GiftState; top: React.ReactNode }) 
           {chosen ? (
             <>
               <T v="h3">{chosen.name}</T>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: SPACING[2] }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  gap: SPACING[2],
+                }}
+              >
                 <TierTag tier={chosen.tier} />
+                <T v="fine" strong>
+                  {slotNames(chosen)}
+                </T>
               </View>
-              {worn ? <T v="fine">{tr.gifts.wornNow(worn.name)}</T> : null}
+              {inItsSlots.length > 0 ? (
+                <T v="fine">{tr.gifts.wornNow(inItsSlots.map((a) => a.name).join(', '))}</T>
+              ) : null}
             </>
           ) : (
             <>
@@ -182,14 +220,14 @@ function Collection({ state, top }: { state: GiftState; top: React.ReactNode }) 
           {tr.gifts.collection}
         </T>
         <T v="fine" strong>
-          {tr.gifts.progress(owned.size, ACCESSORIES.length)}
+          {tr.gifts.progress(owned.size, shown.length)}
         </T>
       </View>
 
       {none ? (
         <View style={{ marginTop: SPACING[2.5] }}>
           <Grid>
-            {ACCESSORIES.map((a) => (
+            {shown.map((a) => (
               <Tile key={a.id} accessory={a} size={tile} owned={false} />
             ))}
           </Grid>
@@ -202,7 +240,7 @@ function Collection({ state, top }: { state: GiftState; top: React.ReactNode }) 
           />
         </View>
       ) : (
-        byTier().map((group) => (
+        byTier(owned).map((group) => (
           <View key={group.tier} style={{ marginTop: SPACING[4], gap: SPACING[2.5] }}>
             <View
               style={{
@@ -226,7 +264,7 @@ function Collection({ state, top }: { state: GiftState; top: React.ReactNode }) 
                   accessory={a}
                   size={tile}
                   owned={owned.has(a.id)}
-                  worn={a.id === state.equipped}
+                  worn={wornSet.has(a.id)}
                   picked={a.id === chosen?.id}
                   onPress={() => setPicked(a.id)}
                 />
@@ -282,10 +320,10 @@ function Tile({
       }}
     >
       <View style={{ width: figureW, height: figureW * FIGURE_RATIO }}>
-        <CachedSvg
+        <FxSvg
           xml={accessoryFigure(accessory.id, owned ? null : colors.control)}
-          width="100%"
-          height="100%"
+          width={figureW}
+          height={figureW * FIGURE_RATIO}
         />
       </View>
     </View>
@@ -427,9 +465,9 @@ function Skeleton() {
         </View>
       </Glass>
       <Grid>
-        {ACCESSORIES.map((a) => (
+        {Array.from({ length: SKELETON_TILES }, (_, i) => (
           <View
-            key={a.id}
+            key={i}
             style={{
               width: tile,
               height: tile,

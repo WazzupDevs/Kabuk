@@ -1,6 +1,6 @@
-import { accessoryOf } from '../../../../supabase/functions/_shared/pure/gifts.ts';
+import { accessoriesOf, coveredSlots } from '../../../../supabase/functions/_shared/pure/gifts.ts';
 
-import { accessoryLayer } from './capsuleAccessories';
+import { accessoryLayers, type AccessoryLayers } from './capsuleAccessories';
 import LOOK, { type LookParts } from './capsuleDrawing';
 
 // A stored look code ("c:pembe e:koyu h:kulaklik", _shared/pure/capsule.ts → normalizeLook) as the
@@ -23,14 +23,42 @@ export function lookParts(code: string): LookParts {
   return parts;
 }
 
-// The worn pack accessory (`x:<id>`, docs/SPEC_V4.md §4.U) is drawn over everything else.
-function withAccessory(svg: string, code: string): string {
-  const layer = accessoryLayer(accessoryOf(code));
-  return layer ? svg.replace(/<\/svg>$/, `${layer}</svg>`) : svg;
+// The worn pack accessories (`x:<id>`, docs/SPEC_V4.md §4.U): each covers the capsule's own part
+// in its slots (the part stays in the code and shows again when the accessory comes off). Covered
+// eyes leave the plain visor for the accessory's eyes; a covered colour keeps the body under the
+// accessory's skin.
+const EYE_SHAPE = /<(?:circle|ellipse|path)\b[^>]*\bclass="eye"[^>]*\/>/g;
+// The body's shade (capsuleDrawing.js): a skin goes over it, under the visor.
+const SHADE = /<path d="M30 10a14 14 0 0 1 8 12v42h-8z"[^>]*\/>/;
+
+function dressed(code: string): { parts: LookParts; layers: AccessoryLayers; eyes: boolean } {
+  const parts = lookParts(code);
+  const ids = accessoriesOf(code);
+  const layers = accessoryLayers(ids);
+  const covered = coveredSlots(ids);
+  for (const slot of ['h', 'f', 'm', 'n'] as const) if (covered[slot]) delete parts[slot];
+  const eyes = covered.e !== undefined;
+  if (eyes) parts.e = 'klasik';
+  return { parts, layers, eyes };
+}
+
+function withSkin(svg: string, skin: string): string {
+  return skin ? svg.replace(SHADE, (shade) => shade + skin) : svg;
 }
 
 export function lookSvg(code: string, mode: 'av' | 'fig' = 'av'): string {
-  return withAccessory(LOOK.svg(lookParts(code), mode), code);
+  const { parts, layers, eyes } = dressed(code);
+  let svg = LOOK.svg(parts, mode);
+  if (eyes) svg = svg.replace(EYE_SHAPE, '');
+  svg = withSkin(svg, layers.skin);
+  if (layers.back) {
+    // Behind the body: over the avatar's disc, or first in the figure.
+    svg =
+      mode === 'av'
+        ? svg.replace(/^(<svg\b[^>]*>(?:<circle\b[^>]*\/>)?)/, `$1${layers.back}`)
+        : svg.replace(/^(<svg\b[^>]*>)/, `$1${layers.back}`);
+  }
+  return layers.front ? svg.replace(/<\/svg>$/, `${layers.front}</svg>`) : svg;
 }
 
 // The capsule editor's stage (v46 `.ced-fig`: LOOK.pop): the capsule standing in its circle, the
@@ -41,10 +69,13 @@ const POP_CLIP = '<circle cx="24" cy="24" r="24"/><rect x="-6" y="-8" width="60"
 const POP_CLIP_PATH = '<path d="M-6 -8H54V24H48A24 24 0 0 1 0 24H-6Z"/>';
 
 export function lookPop(code: string, emo = ''): string {
-  const svg = LOOK.pop(lookParts(code), emo).replace(POP_CLIP, POP_CLIP_PATH);
-  const layer = accessoryLayer(accessoryOf(code));
+  const { parts, layers, eyes } = dressed(code);
+  let svg = LOOK.pop(parts, emo).replace(POP_CLIP, POP_CLIP_PATH);
+  if (eyes) svg = svg.replace(EYE_SHAPE, '');
+  svg = withSkin(svg, layers.skin);
+  if (layers.back) svg = svg.replace(/(<g clip-path="url\(#cpc\d+\)">)/, `$1${layers.back}`);
   // Inside the clipped group, over the capsule and under a feeling's things around it.
-  return layer ? svg.replace('</g></g>', `${layer}</g></g>`) : svg;
+  return layers.front ? svg.replace('</g></g>', `${layers.front}</g></g>`) : svg;
 }
 
 export function lookGround(code: string): string {

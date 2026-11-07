@@ -2,7 +2,7 @@ import type { LookSlot } from '@shared/capsule.ts';
 import { CAPSULE_CATALOG } from '@shared/capsuleCatalog.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   BackHandler,
   Pressable,
@@ -31,6 +31,9 @@ import { useHideTabBar } from '@/components/TabBar';
 import { Sheet } from '@/components/Sheet';
 import { useProfile } from '@/features/account/useProfile';
 import {
+  accessories,
+  accessoryIn,
+  accessoryItems,
   bare,
   code,
   colors as colorItems,
@@ -40,12 +43,18 @@ import {
   packsFor,
   parse,
   type RackId,
+  showsPart,
   shuffle,
+  takeAccessoryOff,
   takeOff,
   wear,
+  wearAccessory,
   wearPack,
   worn,
 } from '@/features/capsule/look';
+import { TierGems } from '@/features/gifts/parts';
+import { giftKeys, useGiftState } from '@/features/gifts/queries';
+import { accessoryById } from '@/features/gifts/model';
 import { CapsuleStage, type Play } from '@/features/capsule/CapsuleStage';
 import { FEELING_MOVES, JUMP, type Move, SHUFFLE } from '@/features/capsule/motion';
 import { profileViewKeys, useProfileView } from '@/features/profile/queries';
@@ -56,7 +65,7 @@ import { haptic } from '@/lib/haptics';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { useAfterSlide } from '@/lib/useAfterSlide';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
-import { profileApi } from '@/lib/api';
+import { giftsApi, profileApi } from '@/lib/api';
 import { FEELINGS } from '@/theme/capsuleLook';
 import { KIT, KIT_TYPE } from '@/theme/auraKit';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -130,13 +139,25 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
   const feelingAt = useRef(-1);
   const now = code(look);
   const changed = now !== code(parse(saved));
+  // The owned pack accessories, each offered in its slots (KapsulHediye; §4.U).
+  const gifts = useGiftState();
+  const owned = useMemo(() => new Set((gifts.data?.owned ?? []).map((o) => o.id)), [gifts.data]);
 
+  // The parts with set-look (the server keeps the accessories through it), then the worn set with
+  // gifts/wear when it changed.
   const save = useMutation({
     meta: FEEL_ERROR,
-    mutationFn: () => profileApi.setLook(now),
+    mutationFn: async () => {
+      await profileApi.setLook(now);
+      const ids = accessories(look);
+      if (ids.join(' ') !== accessories(kept).join(' ')) await giftsApi.wear(ids);
+    },
     onSuccess: async () => {
       haptic('accountReady');
-      await queryClient.invalidateQueries({ queryKey: profileViewKeys.view(publicId) });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: profileViewKeys.view(publicId) }),
+        queryClient.invalidateQueries({ queryKey: giftKeys.state }),
+      ]);
     },
   });
   const leave = useCallback(() => {
@@ -195,6 +216,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
           packsFor(r.id, slot, kept).map((g) => ({ rack: r.id, pack: g.pack, items: g.items })),
         );
   const wornList = worn(look);
+  const slotAccessories = accessoryItems(slot, owned);
   const slotName = CAPSULE_CATALOG.slots.find((s) => s.id === slot)?.name ?? '';
   const ringColor = scheme === 'dark' ? c.glass : colors.surface;
   const catsRef = useRef<View>(null);
@@ -298,11 +320,13 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
               >
                 {wornList.map((w) => (
                   <Chip
-                    key={w.slot}
+                    key={`${w.slot}-${w.id}`}
                     icon="closeSm"
                     label={w.name}
                     accessibilityLabel={tr.capsule.remove(w.name)}
-                    onPress={() => put(takeOff(look, w.slot))}
+                    onPress={() =>
+                      put(w.accessory ? takeAccessoryOff(look, w.id) : takeOff(look, w.slot))
+                    }
                   />
                 ))}
               </View>
@@ -346,15 +370,32 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
         }
       >
         <View style={{ gap: PACK_GAP }}>
-          {slot !== 'c' && slot !== 'e' ? (
-            <View className="flex-row">
-              <Box
-                kind="option"
-                look={code(wear(look, slot, null))}
-                label={tr.capsule.empty(slotName)}
-                on={!look[slot]}
-                onPress={() => put(wear(look, slot, null))}
-              />
+          {/* "boş", then the owned pack accessories of the slot, each with its tier (KapsulHediye). */}
+          {(slot !== 'c' && slot !== 'e') || slotAccessories.length > 0 ? (
+            <View className="flex-row flex-wrap" style={{ gap: KIT.size.optionGap }}>
+              {slot !== 'c' && slot !== 'e' ? (
+                <Box
+                  kind="option"
+                  look={code(wear(look, slot, null))}
+                  label={tr.capsule.empty(slotName)}
+                  on={!look[slot] && accessoryIn(look, slot) === null}
+                  onPress={() => put(wear(look, slot, null))}
+                />
+              ) : null}
+              {slotAccessories.map((item) => {
+                const tier = accessoryById(item.id)?.tier;
+                return (
+                  <Box
+                    key={item.id}
+                    kind="option"
+                    look={code(wearAccessory(look, item.id))}
+                    label={item.name}
+                    on={accessoryIn(look, slot) === item.id}
+                    onPress={() => put(wearAccessory(look, item.id))}
+                    under={tier ? <TierGems tier={tier} /> : null}
+                  />
+                );
+              })}
             </View>
           ) : null}
           {(ready ? items : []).map((group) =>
@@ -392,7 +433,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
                       kind="part"
                       look={code(wear(look, item.slot, item.id))}
                       label={item.name}
-                      on={look[item.slot] === item.id}
+                      on={showsPart(look, item.slot, item.id)}
                       onPress={() => put(wear(look, item.slot, item.id))}
                     />
                   ))}
@@ -406,7 +447,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
                     kind="option"
                     look={code(wear(look, item.slot, item.id))}
                     label={item.name}
-                    on={look[item.slot] === item.id}
+                    on={showsPart(look, item.slot, item.id)}
                     onPress={() => put(wear(look, item.slot, item.id))}
                   />
                 ))}
@@ -494,12 +535,15 @@ function Box({
   label,
   on,
   onPress,
+  under = null,
 }: {
   kind: 'option' | 'part';
   look: string;
   label: string;
   on: boolean;
   onPress: () => void;
+  // Under the name: an accessory's tier.
+  under?: ReactNode;
 }) {
   const { c } = useKit();
   const { colors } = useTheme();
@@ -555,6 +599,7 @@ function Box({
           {label}
         </RNText>
       ) : null}
+      {under}
     </Pressable>
   );
 }

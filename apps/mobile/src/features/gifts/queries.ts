@@ -54,7 +54,24 @@ export function useEquip() {
     mutationFn: (accessoryId: string | null) => giftsApi.equip(accessoryId),
     onSuccess: async (res) => {
       queryClient.setQueryData<GiftState>(giftKeys.state, (s) =>
-        s ? { ...s, equipped: res.equipped } : s,
+        s ? { ...s, worn: res.worn, equipped: res.equipped } : s,
+      );
+      if (publicId)
+        await queryClient.invalidateQueries({ queryKey: profileViewKeys.view(publicId) });
+    },
+  });
+}
+
+// Puts the whole worn set on (Aksesuarlarım's Çıkar takes one off the set).
+export function useWear() {
+  const queryClient = useQueryClient();
+  const publicId = useProfile().data?.public_id;
+  return useMutation({
+    meta: FEEL_ERROR,
+    mutationFn: (accessoryIds: readonly string[]) => giftsApi.wear(accessoryIds),
+    onSuccess: async (res) => {
+      queryClient.setQueryData<GiftState>(giftKeys.state, (s) =>
+        s ? { ...s, worn: res.worn, equipped: res.equipped } : s,
       );
       if (publicId)
         await queryClient.invalidateQueries({ queryKey: profileViewKeys.view(publicId) });

@@ -21,9 +21,9 @@ import { GIFT_MOTION } from '@/theme/giftMotion';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
-import { BUDDIES, CARD_RATIO, cardArt } from './art';
+import { BUDDIES, CARD_RATIO } from './art';
 import { accessoryById, tierName } from './model';
-import { TierTag } from './parts';
+import { CardFace, TierTag } from './parts';
 import { useEquip } from './queries';
 import { Glow, type Rect, type Stage, Sparkle, centerOf } from './stage';
 
@@ -219,11 +219,7 @@ export function OpenedCard({
             <Reanimated.View
               style={[{ width: w, height: h, borderRadius: radius, overflow: 'hidden' }, tiltStyle]}
             >
-              <Image
-                source={cardArt(accessory.id, tier)}
-                accessibilityIgnoresInvertColors
-                style={{ width: w, height: h }}
-              />
+              <CardFace id={accessory.id} tier={tier} width={w} height={h} />
               <Reanimated.View
                 pointerEvents="none"
                 style={[

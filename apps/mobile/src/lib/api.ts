@@ -6,6 +6,7 @@ import type {
   GiftLoginResponse,
   GiftOpenResponse,
   GiftStateResponse,
+  GiftWearResponse,
 } from '@shared/api/gifts.ts';
 import type { GiftPack } from '@shared/gifts.ts';
 import type {
@@ -603,4 +604,7 @@ export const giftsApi = {
   open: (pack: GiftPack) => invoke<GiftOpenResponse>('gifts', { action: 'open', pack }),
   equip: (accessoryId: string | null) =>
     invoke<GiftEquipResponse>('gifts', { action: 'equip', accessoryId }),
+  // The whole worn set (Kapsülünü süsle's Kaydet): owned, one in each slot.
+  wear: (accessoryIds: readonly string[]) =>
+    invoke<GiftWearResponse>('gifts', { action: 'wear', accessoryIds: [...accessoryIds] }),
 };

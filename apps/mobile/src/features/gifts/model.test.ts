@@ -1,11 +1,20 @@
 import type { GiftState } from '@shared/api/gifts.ts';
 import { GIFT_CATALOG } from '@shared/giftCatalog.ts';
-import { GIFT_TIERS } from '@shared/gifts.ts';
+import { GIFT_TIERS, type GiftPack } from '@shared/gifts.ts';
 import { describe, expect, it } from 'vitest';
 
 import { tr } from '../../i18n/tr';
 
-import { ACCESSORIES, byTier, cardState, packName, tierName } from './model';
+import {
+  ACCESSORIES,
+  byTier,
+  cardState,
+  packName,
+  packsInOrder,
+  shownAccessories,
+  slotNames,
+  tierName,
+} from './model';
 
 const ODDS = { siradan: 70000, nadir: 22000, destansi: 7000, efsanevi: 1000 };
 const state = (over: Partial<GiftState> = {}): GiftState => ({
@@ -24,16 +33,18 @@ const state = (over: Partial<GiftState> = {}): GiftState => ({
   ...over,
 });
 
+const any = (_p: GiftPack): _p is GiftPack => true;
+
 describe('gift card', () => {
   it('shows a pack to open first', () => {
     const s = state();
     const bronz = s.packs[0];
     if (bronz) bronz.unopened = 1;
-    expect(cardState(s)).toEqual({ kind: 'ready', pack: 'bronz', count: 1 });
+    expect(cardState(s, any)).toEqual({ kind: 'ready', pack: 'bronz', count: 1 });
   });
 
   it('shows the logins left to the next pack', () => {
-    expect(cardState(state())).toEqual({
+    expect(cardState(state(), any)).toEqual({
       kind: 'progress',
       pack: 'bronz',
       logins: 2,
@@ -42,8 +53,25 @@ describe('gift card', () => {
     });
   });
 
+  it('puts the packs in order of worth, only the ones that can be shown', () => {
+    const s = state();
+    s.packs.push({ id: 'elf', locked: false, unopened: 1, odds: ODDS });
+    expect(packsInOrder(s, any).map((p) => p.id)).toEqual([
+      'bronz',
+      'gumus',
+      'altin',
+      'elmas',
+      'elf',
+    ]);
+    const four = (p: GiftPack): p is 'bronz' | 'gumus' | 'altin' | 'elmas' =>
+      p !== 'elf' && p !== 'ninja';
+    expect(packsInOrder(s, four).map((p) => p.id)).toEqual(['bronz', 'gumus', 'altin', 'elmas']);
+    // A pack that is not shown is not the card's either.
+    expect(cardState(s, four).kind).toBe('progress');
+  });
+
   it('says every accessory is owned', () => {
-    expect(cardState(state({ allOwned: true }))).toEqual({ kind: 'allOwned' });
+    expect(cardState(state({ allOwned: true }), any)).toEqual({ kind: 'allOwned' });
   });
 });
 
@@ -52,9 +80,19 @@ describe('gift names', () => {
     expect(packName('bronz')).toBe('Bronz');
     expect(tierName('efsanevi')).toBe('Efsanevi');
     expect(ACCESSORIES).toHaveLength(GIFT_CATALOG.accessories.length);
-    expect(byTier().map((g) => g.items.length)).toEqual(
+    const all = new Set(GIFT_CATALOG.accessories.map((a) => a.id));
+    expect(byTier(all).map((g) => g.items.length)).toEqual(
       GIFT_TIERS.map((t) => GIFT_CATALOG.accessories.filter((a) => a.tier === t).length),
     );
+  });
+
+  it('shows a retired accessory only to its owner', () => {
+    const none = shownAccessories(new Set());
+    expect(none.some((a) => a.id === 'tac')).toBe(false);
+    expect(none.some((a) => a.id === 'ejderboynuzu')).toBe(true);
+    expect(shownAccessories(new Set(['tac'])).some((a) => a.id === 'tac')).toBe(true);
+    const set = ACCESSORIES.find((a) => a.id === 'kistakimi');
+    expect(set && slotNames(set)).toBe('Baş · Boyun');
   });
 
   it('writes odds as the server gives them, in Turkish', () => {

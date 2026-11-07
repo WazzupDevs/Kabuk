@@ -1,6 +1,7 @@
 import { REPORT_REASONS, type ReportReason } from '@shared/chat.ts';
 import { canRetry, mergeOutbox, type OutboxMessage, outboxReducer } from '@shared/chatOutbox.ts';
 import { toRuns } from '@shared/chatRuns.ts';
+import { fullSetOf } from '@shared/gifts.ts';
 import {
   prepareVenueMessage,
   senderLabel,
@@ -17,6 +18,7 @@ import { Pressable, View } from 'react-native';
 import { Avatar, AVATAR_SIZE } from '@/components/Avatar';
 import { Banner } from '@/components/Banner';
 import { ChatBubble } from '@/components/ChatBubble';
+import { SET_BALLOONS, type SetBalloon } from '@/theme/setBalloons';
 import { ChatRow, ChatScreen, DayLine, dayLabel } from '@/components/ChatScreen';
 import { ChatTopBar } from '@/components/ChatTopBar';
 import { DraftComposer } from '@/components/Composer';
@@ -349,6 +351,7 @@ export default function VenueChatScreen() {
             {m.id === fresh ? <DayLine fresh label={tr.chat.newLine} /> : null}
             <ChatBubble
               testID={m.fromMe ? 'venue-chat-mine' : 'venue-chat-theirs'}
+              skin={balloonOf(m)}
               text={m.body}
               mine={m.fromMe}
               quote={quoteOf(m.replyTo)}
@@ -731,6 +734,14 @@ function OptionsSheet({
       <Btn block variant="glassy" label={tr.venueChat.done} onPress={onClose} />
     </Sheet>
   );
+}
+
+// A full set worn whole, written anonymously: the set's balloon (§4.U; BalonElf, BalonNinja).
+// Written with the name, the plain one.
+function balloonOf(m: VenueChatMessage): SetBalloon | null {
+  if (m.profiled || !m.senderLook) return null;
+  const set = fullSetOf(m.senderLook);
+  return set === 'elf' || set === 'ninja' ? SET_BALLOONS[set] : null;
 }
 
 // The last writers' faces in the bar (docs/design/aura → Mekan sohbeti: `.stack`): a capsule for an

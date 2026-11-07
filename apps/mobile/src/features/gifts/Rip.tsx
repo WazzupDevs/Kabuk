@@ -1,6 +1,6 @@
-import type { GiftTier, TierPack } from '@shared/gifts.ts';
+import type { GiftTier } from '@shared/gifts.ts';
 import { useEffect, useId, useState } from 'react';
-import { Image, View } from 'react-native';
+import { View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Reanimated, {
   Easing,
@@ -30,7 +30,8 @@ import { FINGER, PACK_GLOW, RIP_EDGE } from '@/theme/gifts';
 import { GIFT_MOTION } from '@/theme/giftMotion';
 import { ICON } from '@/theme/tokens';
 
-import { CARD_RATIO, PACK_ART, PACK_RATIO, TEAR_AT, cardArt } from './art';
+import { CARD_RATIO, PACK_ART, PACK_RATIO, type ShownPack, TEAR_AT } from './art';
+import { CardFace } from './parts';
 import { Glow, type Rect, type Stage, centerOf } from './stage';
 
 // The rip (Aura v134 PaketSecimGecis, PaketAcilis): the front pack zooms from the ring to the
@@ -89,7 +90,7 @@ export function Rip({
   stage,
   onDone,
 }: {
-  pack: TierPack;
+  pack: ShownPack;
   accessory: { id: string; tier: GiftTier };
   from: Rect | null;
   stage: Stage;
@@ -284,10 +285,11 @@ export function Rip({
               cardStyle,
             ]}
           >
-            <Image
-              source={cardArt(accessory.id, accessory.tier)}
-              accessibilityIgnoresInvertColors
-              style={{ width: CARD_IN_PACK.w * s, height: (CARD_IN_PACK.w * s) / CARD_RATIO }}
+            <CardFace
+              id={accessory.id}
+              tier={accessory.tier}
+              width={CARD_IN_PACK.w * s}
+              height={(CARD_IN_PACK.w * s) / CARD_RATIO}
             />
           </Reanimated.View>
           <Reanimated.View style={[{ position: 'absolute', inset: 0 }, bodyStyle]}>

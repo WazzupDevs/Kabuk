@@ -11,7 +11,7 @@ import { PhotoPreview } from '@/components/PhotoPreview';
 import { Screen } from '@/components/Screen';
 import { useProfile } from '@/features/account/useProfile';
 import { useFriends } from '@/features/friends/queries';
-import { ACCESSORIES } from '@/features/gifts/model';
+import { shownAccessories } from '@/features/gifts/model';
 import { useGiftState } from '@/features/gifts/queries';
 import { LivingLook } from '@/features/profile/LivingLook';
 import { profileViewKeys, useProfileView } from '@/features/profile/queries';
@@ -329,7 +329,8 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 function AccessoriesRow() {
   const { c } = useKit();
   const gifts = useGiftState();
-  const owned = gifts.data?.owned.length;
+  const ownedIds = gifts.data ? new Set(gifts.data.owned.map((o) => o.id)) : null;
+  const owned = ownedIds?.size;
   return (
     <Li
       testID="profile-accessories"
@@ -341,7 +342,9 @@ function AccessoriesRow() {
       <View style={{ flex: 1, gap: SPACING[0.5], minHeight: ROW_INNER }}>
         <T v="h3">{tr.gifts.accessories}</T>
         {owned !== undefined ? (
-          <T v="fine">{tr.gifts.progress(owned, ACCESSORIES.length)}</T>
+          <T v="fine">
+            {tr.gifts.progress(owned, ownedIds ? shownAccessories(ownedIds).length : 0)}
+          </T>
         ) : null}
       </View>
       <CapIcon name="chevron" color={c.muted} size={ICON.md} />
