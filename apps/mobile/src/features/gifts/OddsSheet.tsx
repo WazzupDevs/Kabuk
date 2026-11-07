@@ -1,5 +1,5 @@
 import type { GiftState } from '@shared/api/gifts.ts';
-import { GIFT_TIERS, type GiftPack, ODDS_TOTAL } from '@shared/gifts.ts';
+import { GIFT_TIERS, type TierPack, ODDS_TOTAL } from '@shared/gifts.ts';
 import { Fragment } from 'react';
 import { Image, View } from 'react-native';
 
@@ -30,7 +30,7 @@ export function OddsSheet({
   onRetry,
   retrying,
 }: {
-  pack: GiftPack;
+  pack: TierPack;
   visible: boolean;
   onClose: () => void;
   state: GiftState | undefined;

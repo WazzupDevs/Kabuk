@@ -1,5 +1,5 @@
 import type { GiftPackView, GiftState } from '@shared/api/gifts.ts';
-import type { GiftPack, GiftTier } from '@shared/gifts.ts';
+import type { GiftTier, TierPack } from '@shared/gifts.ts';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { BackHandler, View } from 'react-native';
@@ -44,7 +44,7 @@ import { ICON, SPACING } from '@/theme/tokens';
 // zooms to the middle, is torn open and its card is shown. Android's back closes the rip or the
 // card first.
 type Opening = {
-  pack: GiftPack;
+  pack: TierPack;
   accessory: { id: string; tier: GiftTier };
   from: Rect | null;
   card: Rect | null;

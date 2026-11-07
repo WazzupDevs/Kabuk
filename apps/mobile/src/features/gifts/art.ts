@@ -1,11 +1,11 @@
-import type { GiftPack, GiftTier } from '@shared/gifts.ts';
+import type { GiftTier, TierPack } from '@shared/gifts.ts';
 import type { ImageSourcePropType } from 'react-native';
 
 // The gift pictures (Aura v134; the canvas's asset store, docs/SPEC_V4.md §4.U): each pack (720 ×
 // 1134, the tear line at 8.5 % of its height) and each accessory's card (600 × 840: the tier's
 // holographic frame with the accessory in its middle, a white edge round it). An accessory with no
 // card here (a newer catalog) shows its tier's frame.
-export const PACK_ART: Record<GiftPack, ImageSourcePropType> = {
+export const PACK_ART: Record<TierPack, ImageSourcePropType> = {
   bronz: require('../../../assets/gifts/pack-bronz.webp'),
   gumus: require('../../../assets/gifts/pack-gumus.webp'),
   altin: require('../../../assets/gifts/pack-altin.webp'),

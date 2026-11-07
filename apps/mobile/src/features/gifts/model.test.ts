@@ -1,5 +1,6 @@
 import type { GiftState } from '@shared/api/gifts.ts';
 import { GIFT_CATALOG } from '@shared/giftCatalog.ts';
+import { GIFT_TIERS } from '@shared/gifts.ts';
 import { describe, expect, it } from 'vitest';
 
 import { tr } from '../../i18n/tr';
@@ -18,6 +19,7 @@ const state = (over: Partial<GiftState> = {}): GiftState => ({
   loginsPerPack: 3,
   allOwned: false,
   owned: [],
+  worn: [],
   equipped: null,
   ...over,
 });
@@ -50,7 +52,9 @@ describe('gift names', () => {
     expect(packName('bronz')).toBe('Bronz');
     expect(tierName('efsanevi')).toBe('Efsanevi');
     expect(ACCESSORIES).toHaveLength(GIFT_CATALOG.accessories.length);
-    expect(byTier().map((g) => g.items.length)).toEqual([2, 2, 2, 2]);
+    expect(byTier().map((g) => g.items.length)).toEqual(
+      GIFT_TIERS.map((t) => GIFT_CATALOG.accessories.filter((a) => a.tier === t).length),
+    );
   });
 
   it('writes odds as the server gives them, in Turkish', () => {

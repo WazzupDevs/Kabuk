@@ -9,11 +9,14 @@ import { format, resolveConfig } from 'prettier';
 
 import { parseCapsuleCatalog } from './capsule.ts';
 import { sqlLiteral } from './sql.ts';
+import { LOOK_SLOTS } from '../../supabase/functions/_shared/pure/capsule.ts';
 import {
   GIFT_PACKS,
   GIFT_TIERS,
   type GiftCatalog,
   ODDS_TOTAL,
+  poolOf,
+  slotConflict,
 } from '../../supabase/functions/_shared/pure/gifts.ts';
 
 export const GIFT_MODULE = 'supabase/functions/_shared/pure/giftCatalog.ts';
@@ -77,12 +80,20 @@ export function parseGiftCatalog(json: unknown, capsuleParts: ReadonlySet<string
     if (sum !== ODDS_TOTAL)
       throw new Error(`packs[${i}].weights add up to ${sum}, not ${ODDS_TOTAL}`);
     if (typeof p.locked !== 'boolean') throw new Error(`packs[${i}].locked must be true or false`);
-    return {
+    if (typeof p.themed !== 'boolean') throw new Error(`packs[${i}].themed must be true or false`);
+    const pack: GiftCatalog['packs'][number] = {
       id: id(p.id, `packs[${i}].id`),
       name: text(p.name, `packs[${i}].name`),
       locked: p.locked,
+      themed: p.themed,
       weights,
     };
+    if (p.fullSet === undefined) return pack;
+    if (!p.themed) throw new Error(`packs[${i}]: only a themed pack has a full set`);
+    if (!Array.isArray(p.fullSet) || p.fullSet.length === 0) {
+      throw new Error(`packs[${i}].fullSet must be a non-empty list`);
+    }
+    return { ...pack, fullSet: p.fullSet.map((f, j) => id(f, `packs[${i}].fullSet[${j}]`)) };
   });
   if (packs.map((p) => p.id).join(' ') !== GIFT_PACKS.join(' ')) {
     throw new Error(`packs must be ${GIFT_PACKS.join(', ')} in this order`);
@@ -100,12 +111,39 @@ export function parseGiftCatalog(json: unknown, capsuleParts: ReadonlySet<string
     if (!(GIFT_TIERS as readonly string[]).includes(tier)) {
       throw new Error(`accessories[${i}]: no tier ${tier}`);
     }
-    const entry: GiftCatalog['accessories'][number] = {
+    if (!Array.isArray(a.slots) || a.slots.length === 0 || a.slots.length > 2) {
+      throw new Error(`accessories[${i}].slots must list one or two slots`);
+    }
+    const slots = a.slots.map((slot, j) => {
+      const v = text(slot, `accessories[${i}].slots[${j}]`);
+      if (!(LOOK_SLOTS as readonly string[]).includes(v)) {
+        throw new Error(`accessories[${i}]: no slot ${v}`);
+      }
+      return v;
+    });
+    if (new Set(slots).size !== slots.length) throw new Error(`accessories[${i}]: a slot twice`);
+    // §4.U: a Destansı accessory is a set of two slots, every other one takes one (the retired ones
+    // were drawn before the slots).
+    if (a.retired !== true && (tier === 'destansi') !== (slots.length === 2)) {
+      throw new Error(`accessories[${i}]: a Destansı accessory takes two slots, the others one`);
+    }
+    let entry: GiftCatalog['accessories'][number] = {
       id: accessoryId,
       name: text(a.name, `accessories[${i}].name`),
       tier,
+      slots,
       weight: whole(a.weight, `accessories[${i}].weight`, 1),
     };
+    if (a.pack !== undefined) {
+      const pack = packs.find((p) => p.id === a.pack);
+      if (!pack?.themed) throw new Error(`accessories[${i}]: ${String(a.pack)} is no themed pack`);
+      entry = { ...entry, pack: pack.id };
+    }
+    if (a.retired !== undefined) {
+      if (a.retired !== true) throw new Error(`accessories[${i}].retired is true or left out`);
+      if (entry.pack !== undefined) throw new Error(`accessories[${i}]: a retired one has no pack`);
+      entry = { ...entry, retired: true };
+    }
     if (a.replacesPart !== undefined) {
       const part = text(a.replacesPart, `accessories[${i}].replacesPart`);
       if (!capsuleParts.has(part)) throw new Error(`accessories[${i}]: no capsule part ${part}`);
@@ -115,7 +153,24 @@ export function parseGiftCatalog(json: unknown, capsuleParts: ReadonlySet<string
     }
     return entry;
   });
-  return { loginsPerPack, tiers, packs, accessories };
+  const catalog: GiftCatalog = { loginsPerPack, tiers, packs, accessories };
+  for (const pack of GIFT_PACKS) {
+    const pool = poolOf(pack, catalog);
+    if (pool.length === 0) throw new Error(`packs: ${pack} gives no accessory`);
+    const p = packs.find((x) => x.id === pack);
+    // A pack draws a tier by its weights: every tier it weighs must have something to give.
+    for (const tier of GIFT_TIERS) {
+      if ((p?.weights[tier] ?? 0) > 0 && !pool.some((a) => a.tier === tier)) {
+        throw new Error(`packs: ${pack} weighs ${tier} but gives none`);
+      }
+    }
+    const set = p?.fullSet ?? [];
+    for (const f of set) {
+      if (!pool.some((a) => a.id === f)) throw new Error(`packs: ${pack}'s full set has no ${f}`);
+    }
+    if (slotConflict(set, catalog)) throw new Error(`packs: ${pack}'s full set shares a slot`);
+  }
+  return catalog;
 }
 
 function capsulePartsOf(root: string): Set<string> {
@@ -132,18 +187,21 @@ export function readGiftCatalog(root: string): GiftCatalog {
   );
 }
 
-// Upserted by id. An accessory left out of the JSON stays (people own it) but no pack gives it
-// again (in_packs = false); the draw itself reads giftCatalog.ts, so the two agree after a seed.
+// Upserted by id. A retired accessory, or one left out of the JSON, stays (people own it) but no pack
+// gives it again (in_packs = false); the draw itself reads giftCatalog.ts, so the two agree after a
+// seed. `pack` is the themed pack that alone gives it (null: the tier packs).
 export function giftsSql({ accessories }: GiftCatalog): string {
   const rows = accessories.map(
-    (a) => `(${[a.id, a.tier, a.weight].map(sqlLiteral).join(', ')}, true)`,
+    (a) =>
+      `(${[a.id, a.tier, a.weight, !a.retired, [...a.slots], a.pack ?? null].map(sqlLiteral).join(', ')})`,
   );
   return [
     '-- content/gift-packs.json',
-    'insert into public.gift_accessories (id, tier, weight, in_packs) values',
+    'insert into public.gift_accessories (id, tier, weight, in_packs, slots, pack) values',
     `  ${rows.join(',\n  ')}`,
     'on conflict (id) do update set',
-    '  tier = excluded.tier, weight = excluded.weight, in_packs = true;',
+    '  tier = excluded.tier, weight = excluded.weight, in_packs = excluded.in_packs,',
+    '  slots = excluded.slots, pack = excluded.pack;',
     `update public.gift_accessories set in_packs = false where in_packs and id <> all (${sqlLiteral(accessories.map((a) => a.id))});`,
     '',
   ].join('\n');

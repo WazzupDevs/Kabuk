@@ -170,6 +170,9 @@ export const IDEMPOTENT_CALLS = [
   // gifts.test "gifts/equip": "wears only an owned accessory, keeps it through set-look, and takes
   // it off"
   'gifts/equip',
+  // gifts.test "gifts/wear": "wears a whole set, one in each slot; the same set twice changes
+  // nothing"
+  'gifts/wear',
 ] as const satisfies readonly CallName[];
 
 export const RETRY_DELAY_MS = 500;

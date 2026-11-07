@@ -22,6 +22,7 @@ describe('IDEMPOTENT_CALLS', () => {
         'gifts/equip',
         'gifts/login',
         'gifts/state',
+        'gifts/wear',
         'kaupholl/advance',
         'kaupholl/bet',
         'kaupholl/guess',

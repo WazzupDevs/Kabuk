@@ -1,4 +1,4 @@
-import type { GiftPack, GiftTier } from '@shared/gifts.ts';
+import type { GiftTier, TierPack } from '@shared/gifts.ts';
 import { useEffect, useId, useState } from 'react';
 import { Image, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -89,7 +89,7 @@ export function Rip({
   stage,
   onDone,
 }: {
-  pack: GiftPack;
+  pack: TierPack;
   accessory: { id: string; tier: GiftTier };
   from: Rect | null;
   stage: Stage;

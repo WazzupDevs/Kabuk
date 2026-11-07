@@ -517,18 +517,24 @@ export type Database = {
         Row: {
           id: string;
           in_packs: boolean;
+          pack: string | null;
+          slots: string[];
           tier: string;
           weight: number;
         };
         Insert: {
           id: string;
           in_packs?: boolean;
+          pack?: string | null;
+          slots?: string[];
           tier: string;
           weight: number;
         };
         Update: {
           id?: string;
           in_packs?: boolean;
+          pack?: string | null;
+          slots?: string[];
           tier?: string;
           weight?: number;
         };
@@ -2364,7 +2370,12 @@ export type Database = {
         Returns: string;
       };
       gifts_login: {
-        Args: { logins_per_pack: number; target_user_id: string; today: string };
+        Args: {
+          logins_per_pack: number;
+          open_packs?: string[];
+          target_user_id: string;
+          today: string;
+        };
         Returns: Json;
       };
       gifts_open: {
@@ -2376,6 +2387,10 @@ export type Database = {
         Returns: string;
       };
       gifts_unequip: { Args: { target_user_id: string }; Returns: string };
+      gifts_wear: {
+        Args: { target_accessory_ids: string[]; target_user_id: string };
+        Returns: string;
+      };
       has_profile_photo: { Args: { target_user_id: string }; Returns: boolean };
       history_report_photo: {
         Args: { target_history_id: string; target_user_id: string };

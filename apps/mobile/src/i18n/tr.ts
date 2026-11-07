@@ -2354,6 +2354,7 @@ export const tr = {
     pack_locked: 'Bu paket yakında açılacak.',
     no_pack: 'Açılacak paketin yok.',
     not_owned: 'Bu aksesuar sende yok.',
+    slot_conflict: 'Aynı yuvaya iki aksesuar takılamaz.',
     questions_exhausted: 'Bu masada yeni bir Kaupholl oyunu için yeterli uygun soru kalmadı.',
     captain_missing: 'İki takımın da kaptanı onaylanmalı.',
     not_in_team: 'Önce bir takım seç.',

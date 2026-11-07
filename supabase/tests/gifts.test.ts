@@ -5,7 +5,7 @@ import postgres from 'postgres';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import type { GiftOpenResponse, GiftState } from '../functions/_shared/pure/api/gifts.ts';
-import { GIFT_CATALOG } from '../functions/_shared/pure/giftCatalog.ts';
+import { poolOf } from '../functions/_shared/pure/gifts.ts';
 import { deleteFixtureVenues, insertFixtureVenues } from './fixtures/venues.ts';
 import {
   checkInAt,
@@ -74,7 +74,8 @@ async function lookOf(client: Client): Promise<string | null> {
   return (row?.capsule_look as string | null) ?? null;
 }
 
-const ALL = GIFT_CATALOG.accessories.map((a) => a.id);
+// What Bronz gives; on the local stack only Bronz opens, so this is everything to own.
+const ALL = poolOf('bronz').map((a) => a.id);
 
 describe('gifts/state', () => {
   it('answers a new account: no pack yet, Bronz open, the others locked, the odds of §4.U', async () => {
@@ -85,6 +86,8 @@ describe('gifts/state', () => {
       ['gumus', true, 0],
       ['altin', true, 0],
       ['elmas', true, 0],
+      ['elf', true, 0],
+      ['ninja', true, 0],
     ]);
     expect(state.packs[0]?.odds).toEqual({
       siradan: 70000,
@@ -94,6 +97,7 @@ describe('gifts/state', () => {
     });
     expect(state).toMatchObject({ logins: 0, loginsPerPack: 3, allOwned: false, owned: [] });
     expect(state.equipped).toBeNull();
+    expect(state.worn).toEqual([]);
     // Sent twice, the same answer (apiRetry.ts).
     expect(await stateOf(a)).toEqual(state);
   });
@@ -132,7 +136,7 @@ describe('gifts/login', () => {
 describe('gifts/open', () => {
   it('opens only Bronz, and only an unopened pack', async () => {
     const a = await onboarded(PHONES[0]);
-    for (const pack of ['gumus', 'altin', 'elmas']) {
+    for (const pack of ['gumus', 'altin', 'elmas', 'elf', 'ninja']) {
       expect(await gifts(a, { action: 'open', pack })).toEqual({
         status: 409,
         body: errorBody('pack_locked'),
@@ -209,9 +213,98 @@ describe('gifts/equip', () => {
     const off = await gifts(a, { action: 'equip', accessoryId: null });
     expect(off).toEqual({
       status: 200,
-      body: { capsuleLook: 'c:limon e:koyu h:anten', equipped: null },
+      body: { capsuleLook: 'c:limon e:koyu h:anten', worn: [], equipped: null },
     });
     expect(await gifts(a, { action: 'equip', accessoryId: null })).toEqual(off);
+  });
+});
+
+describe('gifts/wear', () => {
+  it('wears a whole set, one in each slot; the same set twice changes nothing', async () => {
+    const a = await onboarded(PHONES[0]);
+    await own(a, ['pervanelisapka', 'kedibiyiklari', 'yildiztakimi', 'kistakimi']);
+    expect(
+      await gifts(a, { action: 'wear', accessoryIds: ['pervanelisapka', 'yarabandi'] }),
+    ).toEqual({
+      status: 409,
+      body: errorBody('not_owned'),
+    });
+    // Yıldız takımı is Yüz + Ağız: Kedi bıyıkları (Ağız) cannot be worn with it.
+    expect(
+      await gifts(a, { action: 'wear', accessoryIds: ['kedibiyiklari', 'yildiztakimi'] }),
+    ).toEqual({ status: 409, body: errorBody('slot_conflict') });
+    const before = await lookOf(a);
+    const res = await gifts(a, {
+      action: 'wear',
+      accessoryIds: ['pervanelisapka', 'yildiztakimi'],
+    });
+    expect(res.status, JSON.stringify(res.body)).toBe(200);
+    expect(res.body).toMatchObject({
+      worn: ['pervanelisapka', 'yildiztakimi'],
+      equipped: 'pervanelisapka',
+    });
+    expect(await lookOf(a)).toBe(`${before} x:pervanelisapka x:yildiztakimi`);
+    // Sent twice, the same look (apiRetry.ts).
+    expect(
+      await gifts(a, { action: 'wear', accessoryIds: ['pervanelisapka', 'yildiztakimi'] }),
+    ).toEqual(res);
+    expect((await stateOf(a)).worn).toEqual(['pervanelisapka', 'yildiztakimi']);
+
+    // Putting one on takes off whatever shares a slot: Kış takımı (Baş + Boyun) takes the hat.
+    const equip = await gifts(a, { action: 'equip', accessoryId: 'kistakimi' });
+    expect(equip.body).toMatchObject({ worn: ['yildiztakimi', 'kistakimi'] });
+    const kept = await invoke(a, 'profile', { action: 'set-look', look: 'c:limon e:koyu' });
+    expect(kept.status, JSON.stringify(kept.body)).toBe(200);
+    expect(await lookOf(a)).toBe('c:limon e:koyu x:yildiztakimi x:kistakimi');
+
+    const none = await gifts(a, { action: 'wear', accessoryIds: [] });
+    expect(none).toEqual({
+      status: 200,
+      body: { capsuleLook: 'c:limon e:koyu', worn: [], equipped: null },
+    });
+  });
+
+  it('checks the slots in the database too', async () => {
+    const a = await onboarded(PHONES[0]);
+    const userId = await userIdOf(a);
+    await own(a, ['kedibiyiklari', 'yildiztakimi']);
+    await expect(
+      sql`select public.gifts_wear(${userId}, ${sql.array(['kedibiyiklari', 'yildiztakimi'])})`,
+    ).rejects.toThrow(/slot_conflict/);
+    await expect(
+      sql`select public.gifts_wear(${userId}, ${sql.array(['kedibiyiklari', 'kedibiyiklari'])})`,
+    ).rejects.toThrow(/slot_conflict/);
+  });
+});
+
+describe('Elf and Ninja (§4.U)', () => {
+  it('give only their own accessories, which no other pack gives', async () => {
+    const a = await onboarded(PHONES[0]);
+    const userId = await userIdOf(a);
+    await givePacks(a, 3);
+    const open = async (pack: string, id: string) => {
+      const [row] = await sql`select public.gifts_open(${userId}, ${pack}, ${id}) as r`;
+      return row?.r as string;
+    };
+    expect(await open('bronz', 'yapraktaci')).toBe('stale');
+    expect(await open('ninja', 'yapraktaci')).toBe('stale');
+    expect(await open('elf', 'filiz')).toBe('stale');
+    // A retired accessory comes from no pack.
+    expect(await open('bronz', 'tac')).toBe('stale');
+    expect(await open('elf', 'yapraktaci')).toBe('ok');
+    expect((await stateOf(a)).owned).toEqual([{ id: 'yapraktaci', tier: 'efsanevi', pack: 'elf' }]);
+  });
+
+  it('do not count while locked: owning what Bronz gives stops the count', async () => {
+    const a = await onboarded(PHONES[0]);
+    await own(a, ALL);
+    expect(await login(a)).toMatchObject({ logins: 0, allOwned: true });
+    const userId = await userIdOf(a);
+    // With every pack open (the dev project), Elf and Ninja are still to get.
+    const [row] = await sql`
+      select private.gifts_owns_all(${userId}, array['bronz', 'elf', 'ninja']) as all_owned
+    `;
+    expect(row?.all_owned).toBe(false);
   });
 });
 
@@ -283,7 +376,7 @@ describe('locks', () => {
       let opened: Promise<unknown> = Promise.resolve();
       await holder.begin(async (tx) => {
         await tx`select user_id from public.gift_progress where user_id = ${userId} for update`;
-        opened = opening`select public.gifts_open(${userId}, 'bronz', 'tac') as result`
+        opened = opening`select public.gifts_open(${userId}, 'bronz', 'kuzeyisigi') as result`
           .execute()
           .catch((err: unknown) => err);
         await waitUntilBlocked('gifts_open');
@@ -336,6 +429,9 @@ describe('locks', () => {
         await wearing`set lock_timeout = '2s'`;
         const [row] = await wearing`select public.gifts_equip(${userId}, 'tac') as look`;
         expect(row?.look).toMatch(/ x:tac$/);
+        const [set] =
+          await wearing`select public.gifts_wear(${userId}, ${wearing.array(['tac'])}) as look`;
+        expect(set?.look).toMatch(/ x:tac$/);
       });
       let worn: Promise<unknown> = Promise.resolve();
       await holder.begin(async (tx) => {
@@ -346,6 +442,15 @@ describe('locks', () => {
         await waitUntilBlocked('gifts_unequip');
       });
       expect(await worn).toHaveLength(1);
+      let set: Promise<unknown> = Promise.resolve();
+      await holder.begin(async (tx) => {
+        await tx`select id from public.profiles where id = ${userId} for no key update`;
+        set = wearing`select public.gifts_wear(${userId}, ${wearing.array(['tac'])}) as look`
+          .execute()
+          .catch((err: unknown) => err);
+        await waitUntilBlocked('gifts_wear');
+      });
+      expect(await set).toHaveLength(1);
     } finally {
       await Promise.all([holder.end(), wearing.end()]);
     }
