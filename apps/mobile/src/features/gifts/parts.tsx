@@ -6,21 +6,13 @@ import { CapIcon } from '@/aura/CapIcon';
 import { FxSvg } from '@/components/FxSvg';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
-import { accessoryFigure } from '@/theme/capsuleAccessories';
-import {
-  EFSANEVI_FOIL,
-  GIFT_BADGE,
-  TIER_COLOR,
-  TIER_TAG_ALPHA,
-  TILE_FRAME,
-  TILE_GROUND_DARK,
-} from '@/theme/gifts';
-import { gradientStyle } from '@/theme/gradient';
+import { accessorySticker, stickerRatio } from '@/theme/capsuleAccessories';
+import { GIFT_BADGE, TIER_COLOR, TIER_TAG_ALPHA } from '@/theme/gifts';
 import { GIFT_MOTION } from '@/theme/giftMotion';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
-import { cardArt, hasCardArt, tileArt } from './art';
+import { blankCard, cardArt, hasCardArt } from './art';
 import { useBeat } from './loops';
 import { tierName } from './model';
 
@@ -202,15 +194,16 @@ export function GiftTopBar({ title, onBack }: { title: string; onBack: () => voi
 }
 const TOP_BAR = 56;
 
-// An accessory's card: its own picture (the canvas drew one for the first eight). One the canvas
-// drew no card for is laid out as its collection tile is (GaleriHediye "Koleksiyon karosu"), at the
-// card's size: the tier's frame (Efsanevi's foil), the tier's ground with its art, and the
-// accessory on its standing capsule in the middle. The tile's art is a ground texture, never the
-// card itself (stretched to the card it showed only dots: the owner's report, 7 Kasım).
-const CARD_FIGURE = 0.56;
-const FIGURE_RATIO = 140 / 100;
-// The tile's frame is drawn for an 80 wide tile; the card's grows with its width.
-const TILE_BASE = 80;
+// An accessory's card (the canvas's cards: the tier's card with the accessory alone in its middle,
+// a white edge round it). The first eight have their own picture; the others are the tier's card
+// without its accessory (`card-blank-<tier>`, made from the tier's two cards) with the accessory's
+// sticker in the bubble (capsuleAccessories.ts → accessorySticker). Never a capsule: the owner's
+// report, 7 Kasım.
+// The sticker's room: the bubble's middle, at most this share of the card's width and height (the
+// canvas's cards: the beret 300 of 600 wide, its middle at 49 % of the height).
+const STICKER_W = 0.56;
+const STICKER_H = 0.34;
+const STICKER_AT = 0.49;
 
 export function CardFace({
   id,
@@ -223,53 +216,31 @@ export function CardFace({
   width: number;
   height: number;
 }) {
-  const { scheme } = useKit();
-  const { colors } = useTheme();
-  if (hasCardArt(id)) {
-    return (
+  const sticker = hasCardArt(id) ? null : accessorySticker(id);
+  const ratio = stickerRatio(id);
+  const sw = Math.min(width * STICKER_W, height * STICKER_H * ratio);
+  const sh = sw / ratio;
+  return (
+    <View style={{ width, height }}>
       <Image
-        source={cardArt(id, tier)}
+        source={hasCardArt(id) ? cardArt(id, tier) : blankCard(tier)}
         accessibilityIgnoresInvertColors
         style={{ width, height }}
       />
-    );
-  }
-  const frame = (TILE_FRAME[tier] * width) / TILE_BASE;
-  const color = TIER_COLOR[scheme][tier];
-  const ground = scheme === 'dark' ? TILE_GROUND_DARK : colors.surface;
-  const line = frame / TILE_FRAME[tier];
-  const fw = width * CARD_FIGURE;
-  return (
-    <View
-      style={[
-        { width, height, padding: frame },
-        tier === 'efsanevi' ? gradientStyle(EFSANEVI_FOIL) : { backgroundColor: color },
-      ]}
-    >
-      <View
-        style={{
-          flex: 1,
-          overflow: 'hidden',
-          backgroundColor: ground,
-          boxShadow:
-            tier === 'destansi'
-              ? `inset 0 0 0 ${3 * line}px ${ground}, inset 0 0 0 ${4 * line}px ${color}`
-              : undefined,
-        }}
-      >
-        <Image
-          source={tileArt(tier)}
-          resizeMode="cover"
-          accessibilityIgnoresInvertColors
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
-        />
+      {sticker ? (
         <View
           pointerEvents="none"
-          style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+          style={{
+            position: 'absolute',
+            left: (width - sw) / 2,
+            top: height * STICKER_AT - sh / 2,
+            width: sw,
+            height: sh,
+          }}
         >
-          <FxSvg xml={accessoryFigure(id)} width={fw} height={fw * FIGURE_RATIO} />
+          <FxSvg xml={sticker} width={sw} height={sh} />
         </View>
-      </View>
+      ) : null}
     </View>
   );
 }

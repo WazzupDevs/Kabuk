@@ -4,7 +4,7 @@ import type { ImageSourcePropType } from 'react-native';
 // The gift pictures (Aura v134; the canvas's asset store, docs/SPEC_V4.md §4.U): each pack (720 ×
 // 1134, the tear line at 8.5 % of its height) and each accessory's card (600 × 840: the tier's
 // holographic frame with the accessory in its middle, a white edge round it). An accessory with no
-// card here is laid out as its collection tile (parts.tsx → CardFace). A pack with no picture here is not shown on
+// card here takes its tier's card without an accessory, its sticker over it (parts.tsx → CardFace). A pack with no picture here is not shown on
 // Paketler: Elf and Ninja wait for theirs (the canvas has none yet).
 export const PACK_ART = {
   bronz: require('../../../assets/gifts/pack-bronz.webp') as ImageSourcePropType,
@@ -37,6 +37,19 @@ const TIER_FRAME: Record<GiftTier, ImageSourcePropType> = {
   efsanevi: require('../../../assets/gifts/art-efsanevi.webp'),
 };
 export const CARD_RATIO = 600 / 840;
+
+// A tier's card with no accessory in it, made from the tier's two cards above (where one card's
+// accessory stood, the other card's ground; their middle filled from the glow round it).
+const BLANK_CARD: Record<GiftTier, ImageSourcePropType> = {
+  siradan: require('../../../assets/gifts/card-blank-siradan.webp'),
+  nadir: require('../../../assets/gifts/card-blank-nadir.webp'),
+  destansi: require('../../../assets/gifts/card-blank-destansi.webp'),
+  efsanevi: require('../../../assets/gifts/card-blank-efsanevi.webp'),
+};
+
+export function blankCard(tier: GiftTier): ImageSourcePropType {
+  return BLANK_CARD[tier];
+}
 
 export function hasCardArt(id: string): boolean {
   return Object.hasOwn(CARD_ART, id);
