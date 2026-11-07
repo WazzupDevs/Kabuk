@@ -38,7 +38,8 @@ revoke all on table public.gift_progress from anon, authenticated;
 -- 3. What a person owns ----------------------------------------------------------------------------
 create table public.user_accessories (
   user_id uuid not null references auth.users (id) on delete cascade,
-  accessory_id text not null references public.gift_accessories (id),
+  -- The seed never deletes an accessory (in_packs = false instead); cascade keeps deletes free.
+  accessory_id text not null references public.gift_accessories (id) on delete cascade,
   pack text not null check (pack in ('bronz', 'gumus', 'altin', 'elmas')),
   created_at timestamptz not null default now(),
   primary key (user_id, accessory_id)
@@ -155,7 +156,7 @@ set search_path = ''
 as $$
   select nullif(
     btrim(
-      regexp_replace(regexp_replace(look, '(^|\s)x:\S*', ' ', 'g'), '\s+', ' ', 'g')
+      btrim(regexp_replace(regexp_replace(look, '(^|\s)x:\S*', ' ', 'g'), '\s+', ' ', 'g'))
       || case when accessory is null then '' else ' x:' || accessory end
     ),
     ''
