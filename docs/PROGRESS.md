@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (7 Kasım 2026, hediye paketleri, #507)
+
+- #507 main'de (onaylı): hediye paketleri sunucusu (§4.U, K-89): `gifts` (state, login, open, equip), tablolar, `content/gift-packs.json`, kural 10 eki; v134 panoları `docs/design/aura/project/` (AktivitelerHediye, Paketler*, PaketAcilis*, PaketKartEgme, Aksesuar*, KapsulAksesuar, HediyeDar, GaleriHediye, hediye.css).
+- Sıradaki: ekran PR'ı (`tuval-aktarim`): Aktiviteler kartı, Paketler çemberi, Oranlar sheet, yırtma, kart eğme (Skia/Reanimated), Aksesuarlarım (Profil bilgi kartı satırı), kapsül çizimine `x:` katmanı (`features/capsule/look.ts`, `CapsuleStage.tsx`), açılışta `gifts/login`; Süsle'de Bere, Kasket, Kulaklık, Taç gizlenir. Hareket `motionHediye` rapordaki tabloda; tuvalin `hareket.json`'u #502 öncesi, alınmadı.
+- Görseller tuvalin asset deposunda (panolardaki `/_blob/<id>`: paket, kart çerçevesi); aksesuar çizimleri `KapsulAksesuar.dc.html` içinde SVG.
+- Geçici: Bronz %70/22/7/1; Gümüş, Altın, Elmas oranları öneri, açılmadan önce proje sahibine sorulur. Hepsine sahipken sayaç durur. Nadir aksesuar ve nick yenileme bilinçli kabul.
+
 ## Devir notu (6 Kasım 2026, revize turu 3, #504 ve #505)
 
 - Birleşti: R-5 masa başlık kartının altı oval, R-6 posterde "Aç" beyaz, H-6 kişiler çekmecesi Reanimated (açık çekmece oyunların üstüne açılır), H-7 çekmece kaydırınca parmağı izleyerek kapanır, R-8 yedi oyun lobisi tek düzende (`features/games/GameLobby.tsx`, Vampir örnek).
