@@ -215,21 +215,25 @@ Deno.serve(
       // The worn pack accessory stays (§4.U: the database keeps its "x:" token), and a capsule part
       // that became a pack accessory is kept only by a look that already wears it.
       case 'set-look': {
-        const current = await db
-          .from('profiles')
-          .select('capsule_look')
-          .eq('id', user.id)
-          .maybeSingle();
-        if (current.error) throw dbError('profiles', current.error);
-        if (!current.data) throw new AppError('onboarding_required', 'Complete onboarding first.');
-        const look = withoutNewRetiredParts(normalizeLook(body.look), current.data.capsule_look);
-        const { data, error } = await db.rpc('profile_set_look', {
-          target_user_id: user.id,
-          new_look: look,
-        });
-        if (error) throw dbError('profile_set_look', error);
-        if (data === null) throw new AppError('onboarding_required', 'Complete onboarding first.');
-        return { capsuleLook: data };
+        const requested = normalizeLook(body.look);
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const current = await db
+            .from('profiles')
+            .select('capsule_look')
+            .eq('id', user.id)
+            .maybeSingle();
+          if (current.error) throw dbError('profiles', current.error);
+          if (!current.data)
+            throw new AppError('onboarding_required', 'Complete onboarding first.');
+          const { data, error } = await db.rpc('profile_set_look', {
+            target_user_id: user.id,
+            new_look: withoutNewRetiredParts(requested, current.data.capsule_look),
+            read_look: current.data.capsule_look ?? '',
+          });
+          if (error) throw dbError('profile_set_look', error);
+          if (data !== null) return { capsuleLook: data };
+        }
+        throw new Error('profile_set_look: the look kept changing');
       }
 
       case 'update': {

@@ -207,8 +207,14 @@ end;
 $$;
 
 -- profile/set-look (K-47) keeps the worn accessory: the decoration screen sends the six slots only
--- (pure/capsule.ts → normalizeLook drops any "x:" token), the accessory stays as it is.
-create or replace function public.profile_set_look(target_user_id uuid, new_look text)
+-- (pure/capsule.ts → normalizeLook drops any "x:" token), the accessory stays as it is. The function
+-- filtered the retired parts against `read_look`; the write happens only while the look is still
+-- that one ('' for none; null: changed meanwhile, the function reads again).
+create or replace function public.profile_set_look(
+  target_user_id uuid,
+  new_look text,
+  read_look text
+)
 returns text
 language plpgsql
 security definer
@@ -222,7 +228,7 @@ begin
     new_look,
     substring(capsule_look from '(?:^|\s)x:(\S+)')
   )
-  where id = target_user_id
+  where id = target_user_id and capsule_look is not distinct from nullif(read_look, '')
   returning capsule_look into look;
   return look;
 end;
@@ -238,7 +244,7 @@ begin
     'public.gifts_open(uuid, text, text)',
     'public.gifts_equip(uuid, text)',
     'public.gifts_unequip(uuid)',
-    'public.profile_set_look(uuid, text)'
+    'public.profile_set_look(uuid, text, text)'
   ] loop
     execute format('revoke all on function %s from public, anon, authenticated', fn);
     execute format('grant execute on function %s to service_role', fn);

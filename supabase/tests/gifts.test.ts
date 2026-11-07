@@ -294,6 +294,34 @@ describe('locks', () => {
     }
   });
 
+  // A login locks only its gift_progress row: a held profile does not stop it, a held row does.
+  it('counts a login under the gift_progress lock only', async () => {
+    const a = await onboarded(PHONES[0]);
+    const userId = await userIdOf(a);
+    await givePacks(a, 0);
+    const holder = postgres(dbUrl, { max: 1, onnotice: () => {} });
+    const counting = postgres(dbUrl, { max: 1, onnotice: () => {} });
+    try {
+      await holder.begin(async (tx) => {
+        await tx`select id from public.profiles where id = ${userId} for no key update`;
+        await counting`set lock_timeout = '2s'`;
+        const [row] = await counting`select public.gifts_login(${userId}, current_date, 3) as p`;
+        expect(row?.p).toEqual({ logins: 1, unopened: 0 });
+      });
+      let counted: Promise<unknown> = Promise.resolve();
+      await holder.begin(async (tx) => {
+        await tx`select user_id from public.gift_progress where user_id = ${userId} for update`;
+        counted = counting`select public.gifts_login(${userId}, current_date + 1, 3) as p`
+          .execute()
+          .catch((err: unknown) => err);
+        await waitUntilBlocked('gifts_login');
+      });
+      expect(await counted).toEqual([{ p: { logins: 2, unopened: 0 } }]);
+    } finally {
+      await Promise.all([holder.end(), counting.end()]);
+    }
+  });
+
   // Wearing locks only profiles: a held gift_progress row does not stop it, a held profile does.
   it('wears an accessory under the profiles lock only', async () => {
     const a = await onboarded(PHONES[0]);

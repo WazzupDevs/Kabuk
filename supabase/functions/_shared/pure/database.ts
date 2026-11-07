@@ -2874,7 +2874,7 @@ export type Database = {
         }[];
       };
       profile_set_look: {
-        Args: { new_look: string; target_user_id: string };
+        Args: { new_look: string; read_look: string; target_user_id: string };
         Returns: string;
       };
       profile_view: {
