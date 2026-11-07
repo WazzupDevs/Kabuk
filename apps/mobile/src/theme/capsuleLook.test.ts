@@ -4,6 +4,7 @@ import LOOK from './capsuleDrawing';
 import { GIFT_CATALOG } from '../../../../supabase/functions/_shared/pure/giftCatalog.ts';
 
 import { ACCESSORY_ART, accessoryFigure } from './capsuleAccessories';
+import { fxTree } from './capsuleFx';
 import { eyeLayers, lookCard, lookParts, lookPop, lookSvg, posedEyes } from './capsuleLook';
 
 describe('capsule look', () => {
@@ -91,6 +92,16 @@ describe('pack accessory', () => {
     expect(svg).toContain('viewBox="-6 -26 60 75"');
     expect(svg).toContain('M-6 -26H54V24H48A24 24 0 0 1 0 24H-6Z');
     expect(svg).toContain('-contour');
+  });
+
+  it('makes every accessory its card from its drawing, a new pack too', () => {
+    const bare = lookCard('c:krem e:klasik');
+    for (const a of GIFT_CATALOG.accessories) {
+      const card = lookCard(`c:krem e:klasik x:${a.id}`);
+
+      expect(card.length, a.id).toBeGreaterThan(bare.length);
+      if (card.includes('data-fx=')) expect(fxTree(card), a.id).not.toBeNull();
+    }
   });
 
   it('draws nothing for an unknown accessory', () => {

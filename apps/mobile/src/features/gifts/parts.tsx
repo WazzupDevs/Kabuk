@@ -1,4 +1,5 @@
-import type { GiftTier } from '@shared/gifts.ts';
+import { type GiftTier, withAccessories } from '@shared/gifts.ts';
+import { useMemo } from 'react';
 import { Animated, Image, View } from 'react-native';
 
 import { Round, T, Tag, useKit } from '@/aura/kit';
@@ -6,13 +7,13 @@ import { CapIcon } from '@/aura/CapIcon';
 import { FxSvg } from '@/components/FxSvg';
 import { tr } from '@/i18n/tr';
 import { KIT } from '@/theme/auraKit';
-import { accessorySticker, stickerRatio } from '@/theme/capsuleAccessories';
+import { CARD_BOX, lookCard } from '@/theme/capsuleLook';
 import { GIFT_BADGE, TIER_COLOR, TIER_TAG_ALPHA } from '@/theme/gifts';
 import { GIFT_MOTION } from '@/theme/giftMotion';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
 
-import { blankCard, cardArt, hasCardArt } from './art';
+import { blankCard } from './art';
 import { useBeat } from './loops';
 import { tierName } from './model';
 
@@ -194,16 +195,16 @@ export function GiftTopBar({ title, onBack }: { title: string; onBack: () => voi
 }
 const TOP_BAR = 56;
 
-// An accessory's card (the canvas's cards: the tier's card with the accessory alone in its middle,
-// a white edge round it). The first eight have their own picture; the others are the tier's empty
-// card (`card-blank-<tier>`, the canvas's card frames) with the accessory's
-// sticker in the bubble (capsuleAccessories.ts → accessorySticker). Never a capsule: the owner's
-// report, 7 Kasım.
-// The sticker's room: the bubble's middle, at most this share of the card's width and height (the
-// canvas's cards: the beret 300 of 600 wide, its middle at 49 % of the height).
-const STICKER_W = 0.56;
-const STICKER_H = 0.34;
-const STICKER_AT = 0.49;
+// An accessory's card (the owner's call, 7 Kasım): its tier's empty card (`card-blank-<tier>`, the
+// canvas's card frames), and in its round the capsule wearing the accessory as the profile's ring
+// holds it (theme/capsuleLook.ts → lookCard): the capsule cut by the round at its foot, its head
+// and the accessory free above it with a thin contour, an Efsanevi's halo inside the round. Made
+// for every accessory from its drawing, so a new pack's accessories have their cards. Its motions
+// play (FxSvg); still with reduce motion.
+// The round on the 600 × 840 card: its middle and its radius (measured on the canvas's frames).
+const ROUND = { x: 299.5 / 600, y: 418 / 840, r: 225 / 600 } as const;
+// The capsule on the card (the preview the owner approved, 7 Kasım).
+const CARD_LOOK = 'c:krem e:klasik';
 
 export function CardFace({
   id,
@@ -216,31 +217,26 @@ export function CardFace({
   width: number;
   height: number;
 }) {
-  const sticker = hasCardArt(id) ? null : accessorySticker(id);
-  const ratio = stickerRatio(id);
-  const sw = Math.min(width * STICKER_W, height * STICKER_H * ratio);
-  const sh = sw / ratio;
+  const xml = useMemo(() => lookCard(withAccessories(CARD_LOOK, [id])), [id]);
+  // lookCard's circle is 48 wide at (0, 0); its box starts 6 to the left and CARD_TOP above.
+  const unit = (ROUND.r * width) / 24;
+  const left = ROUND.x * width - (24 - CARD_BOX.x) * unit;
+  const top = ROUND.y * height - (24 - CARD_BOX.y) * unit;
   return (
     <View style={{ width, height }}>
-      <Image
-        source={hasCardArt(id) ? cardArt(id, tier) : blankCard(tier)}
-        accessibilityIgnoresInvertColors
-        style={{ width, height }}
-      />
-      {sticker ? (
-        <View
-          pointerEvents="none"
-          style={{
-            position: 'absolute',
-            left: (width - sw) / 2,
-            top: height * STICKER_AT - sh / 2,
-            width: sw,
-            height: sh,
-          }}
-        >
-          <FxSvg xml={sticker} width={sw} height={sh} />
-        </View>
-      ) : null}
+      <Image source={blankCard(tier)} accessibilityIgnoresInvertColors style={{ width, height }} />
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          left,
+          top,
+          width: CARD_BOX.width * unit,
+          height: CARD_BOX.height * unit,
+        }}
+      >
+        <FxSvg xml={xml} width={CARD_BOX.width * unit} height={CARD_BOX.height * unit} />
+      </View>
     </View>
   );
 }
