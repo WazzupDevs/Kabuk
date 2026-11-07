@@ -1,5 +1,12 @@
 # İlerleme
 
+## Devir notu (7 Kasım 2026, genişleyen katalog: sunucu #512)
+
+- #512 main'de: 40 + 20 aksesuar (`content/gift-packs.json`: `slots`, temalı `pack`, `retired`, `fullSet`), yuvaya çoklu takma (`gifts/wear`, `equip` aynı yuvadakini çıkarır, `slot_conflict`), Elf/Ninja kilitli (tam set parçaları yarı ağırlık), ilk 7 parça `retired`. Kararlar §4.U'da.
+- Sıradaki PR 2 (`tuval-aktarim`, panolar repoda): 60 çizim `capsuleAccessories.ts`'e (panolardaki SVG; Efsanevi/Destansı hareketi panonun CSS keyframe'lerinden, hareketi azaltta durur), çoklu `x:` katmanı (`capsuleLook.ts`, `look.ts`), Süsle'de yuvalar (KapsulHediye), Aksesuarlarım, tam set balonu (`fullSetOf`; yalnız mekan sohbeti + anonim), Elf/Ninja paketleri Paketler'de.
+- PR 1'de geçici: uygulama 4 paketi gösterir (`TierPack`, `packsInOrder`); `capsuleLook.test.ts` çizim testi ilk 8 parçaya daraltıldı, PR 2'de bütün kataloğa döner.
+- Açık soru (proje sahibine soruldu): Elf ve Ninja'nın paket görseli tuvalde yok; Paketler'deki hâli için pano gerekir.
+
 ## Devir notu (7 Kasım 2026, hediye kataloğu genişliyor)
 
 - #509 ekranlar ve #510 (dev projesinde dört paket açık, sınırsız) main'de.
