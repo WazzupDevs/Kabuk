@@ -307,7 +307,6 @@ function RingPack({
     const cos = Math.cos(th);
     const sin = Math.sin(th);
     const scale = (SIDE_W + (FRONT_W - SIDE_W) * cos) / FRONT_W;
-    const light = LIGHT_LOW + (1 - LIGHT_LOW) * cos;
     return {
       zIndex: Math.round(cos * 100) + 100,
       transform: [
@@ -316,6 +315,14 @@ function RingPack({
         { rotate: `${-TURN * sin}deg` },
         { scale },
       ],
+    };
+  });
+  // The light on the picture only: a filter cuts what lies past its view (Android), and the badge
+  // stands out over the pack's corner (the owner's report, 7 Kasım: the badge was cut).
+  const lightStyle = useAnimatedStyle(() => {
+    const cos = Math.cos((angleOf(index, turn.get()) * Math.PI) / 180);
+    const light = LIGHT_LOW + (1 - LIGHT_LOW) * cos;
+    return {
       filter: locked
         ? [{ brightness: light }, { saturate: LOCKED_SATURATE }]
         : [{ brightness: light }],
@@ -335,14 +342,16 @@ function RingPack({
           importantForAccessibility="no-hide-descendants"
           style={{ flex: 1 }}
         >
-          <View style={{ flex: 1, filter: [PACK_DROP[scheme]] }}>
-            <Image
-              source={PACK_ART[view.id]}
-              accessibilityIgnoresInvertColors
-              style={{ width: w, height: h }}
-              resizeMode="contain"
-            />
-          </View>
+          <Reanimated.View style={[{ flex: 1 }, lightStyle]}>
+            <View style={{ flex: 1, filter: [PACK_DROP[scheme]] }}>
+              <Image
+                source={PACK_ART[view.id]}
+                accessibilityIgnoresInvertColors
+                style={{ width: w, height: h }}
+                resizeMode="contain"
+              />
+            </View>
+          </Reanimated.View>
           {view.locked ? (
             <View
               pointerEvents="none"

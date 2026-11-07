@@ -35,6 +35,14 @@ export const PACK_GLOW: Record<TierPack, readonly [string, string]> = {
   altin: ['#F2C230', '#FFB547'],
   elmas: ['#1FB5A8', '#2FA8E0'],
 };
+// Paketler's "Aç" in the front pack's colour (the owner's call, 7 Kasım; the preview he approved):
+// its fill, its words (dark on gold) and its shadow.
+export const PACK_BUTTON: Record<TierPack, { fill: string; ink: string; shadow: string }> = {
+  bronz: { fill: '#B5531F', ink: '#FFFFFF', shadow: 'rgba(181,83,31,0.34)' },
+  gumus: { fill: '#5E7A68', ink: '#FFFFFF', shadow: 'rgba(94,122,104,0.34)' },
+  altin: { fill: '#F2C230', ink: '#3A2400', shadow: 'rgba(242,194,48,0.4)' },
+  elmas: { fill: '#0F8C82', ink: '#FFFFFF', shadow: 'rgba(15,140,130,0.34)' },
+};
 // The rip's torn edge (PaketAcilis): a white line over a thin line in the pack's light colour.
 export const RIP_EDGE = { line: '#FFFFFF', under: '#FFB27F', shade: '#000000' } as const;
 
@@ -104,3 +112,14 @@ export const PACK_DROP: Record<
     dropShadow: { offsetX: 0, offsetY: 10, standardDeviation: 7, color: 'rgba(0,0,0,0.55)' },
   },
 };
+
+// The Efsanevi card's star bursts at the foot (the owner's call, 7 Kasım, in place of the two
+// capsules): gold, pink and pale stars, white sparks, a gold glow.
+export const STAR_BURST = {
+  gold: '#FFB547',
+  pink: '#FF4F8B',
+  pale: '#FFF4D6',
+  spark: '#FFFFFF',
+  glow: 'rgba(255,181,71,0.85)',
+  halo: 'radial-gradient(closest-side, rgba(255,181,71,0.55) 0%, rgba(255,181,71,0) 100%)',
+} as const;

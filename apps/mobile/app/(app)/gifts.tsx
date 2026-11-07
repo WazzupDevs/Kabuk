@@ -36,6 +36,7 @@ import { Rip, ripRects, RipWarm } from '@/features/gifts/Rip';
 import { type Rect, type Stage, useStage } from '@/features/gifts/stage';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
+import { PACK_BUTTON } from '@/theme/gifts';
 import { GIFT_MOTION } from '@/theme/giftMotion';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
@@ -325,14 +326,14 @@ function Info({
           </T>
         </>
       )}
+      {/* Two buttons of one size side by side; Aç in the pack's colour (the owner's call, 7 Kasım). */}
       <View
         style={{
           marginTop: SPACING[2],
           flexDirection: 'row',
-          flexWrap: 'wrap',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: SPACING[2],
+          alignSelf: 'stretch',
+          marginHorizontal: SPACING[6],
+          gap: SPACING[3],
         }}
       >
         <Btn
@@ -340,8 +341,21 @@ function Info({
           onPress={onOpen}
           loading={pending}
           disabled={view.locked || view.unopened === 0}
+          fill={PACK_BUTTON[view.id].fill}
+          tint={PACK_BUTTON[view.id].ink}
+          style={{
+            flexGrow: 1,
+            flexBasis: 0,
+            boxShadow: `0 10px 22px ${PACK_BUTTON[view.id].shadow}`,
+          }}
         />
-        <Btn variant="glassy" sm icon="info" label={tr.gifts.odds} onPress={onOdds} />
+        <Btn
+          variant="glassy"
+          icon="info"
+          label={tr.gifts.odds}
+          onPress={onOdds}
+          style={{ flexGrow: 1, flexBasis: 0 }}
+        />
       </View>
     </>
   );

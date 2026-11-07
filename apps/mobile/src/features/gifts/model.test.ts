@@ -5,13 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import { tr } from '../../i18n/tr';
 
-import {
-  ACCESSORIES,
-  cardState,
-  packName,
-  packsInOrder,
-  tierName,
-} from './model';
+import { ACCESSORIES, cardState, packName, packsInOrder, tierName } from './model';
 
 const ODDS = { siradan: 70000, nadir: 22000, destansi: 7000, efsanevi: 1000 };
 const state = (over: Partial<GiftState> = {}): GiftState => ({

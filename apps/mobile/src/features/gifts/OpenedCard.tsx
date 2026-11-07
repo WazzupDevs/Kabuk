@@ -1,6 +1,6 @@
 import type { GiftTier } from '@shared/gifts.ts';
 import { useEffect, useState } from 'react';
-import { Image, View } from 'react-native';
+import { View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Reanimated, {
   Easing,
@@ -22,9 +22,10 @@ import { GIFT_MOTION } from '@/theme/giftMotion';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
 
-import { BUDDIES, CARD_RATIO } from './art';
+import { CARD_FRAME_CORNER, CARD_RATIO, CARD_SIDE } from './art';
 import { accessoryById, tierName } from './model';
 import { CardFace, TierTag } from './parts';
+import { StarBursts } from './StarBurst';
 import { useEquip } from './queries';
 import { Glow, type Rect, type Stage, Sparkle, centerOf } from './stage';
 
@@ -37,7 +38,6 @@ const CARD = { left: 79, top: 180, w: 232 };
 export function openedCardWidth(s: number): number {
   return CARD.w * s;
 }
-const CARD_CORNER = 0.06;
 const GLOWS = {
   normal: [
     { left: 35, top: 220, size: 320, opacity: 0.45 },
@@ -65,12 +65,6 @@ const SPARKLES = [
   [16, 296, 26],
   [173, 215, 20],
 ] as const;
-const BUDDY = [
-  { side: 'left', w: 70, deg: -6 },
-  { side: 'right', w: 74, deg: 6 },
-] as const;
-const BUDDY_EDGE = 10;
-const BUDDY_FOOT = 120;
 const HINT_AT = 612;
 const BUTTONS_FOOT = 46;
 const BUTTON_MIN = 120;
@@ -105,7 +99,7 @@ export function OpenedCard({
   const w = CARD.w * s;
   const h = w / CARD_RATIO;
   const C: Rect = { x: CARD.left * s, y: stage.top(CARD.top), w, h };
-  const radius = w * CARD_CORNER;
+  const side = w * CARD_SIDE[tier];
   const { degPerPx, max, zPer, perspective, back } = GIFT_MOTION.tilt;
 
   const morph = useSharedValue(reduce || !from ? 1 : 0);
@@ -196,30 +190,7 @@ export function OpenedCard({
         {SPARKLES.slice(0, TIER_SPARKLES[tier]).map(([x, y, size], i) => (
           <Sparkle key={i} x={x * s} y={stage.top(y)} size={size * s} color={sparkColor} />
         ))}
-        {tier === 'efsanevi'
-          ? BUDDY.map((b, i) => {
-              const src = BUDDIES[i];
-              if (!src) return null;
-              const dim = Image.resolveAssetSource(src);
-              const bw = b.w * s;
-              const bh = dim.width > 0 ? (bw * dim.height) / dim.width : bw;
-              return (
-                <Image
-                  key={b.side}
-                  source={src}
-                  accessibilityIgnoresInvertColors
-                  style={{
-                    position: 'absolute',
-                    [b.side]: BUDDY_EDGE * s,
-                    bottom: stage.foot(BUDDY_FOOT),
-                    width: bw,
-                    height: bh,
-                    transform: [{ rotate: `${b.deg}deg` }],
-                  }}
-                />
-              );
-            })
-          : null}
+        {tier === 'efsanevi' ? <StarBursts stage={stage} /> : null}
       </Reanimated.View>
       <View
         pointerEvents="box-none"
@@ -232,42 +203,55 @@ export function OpenedCard({
             accessibilityLabel={tr.gifts.cardAlt(name, tierName(tier))}
             style={[{ width: w, height: h }, moveStyle]}
           >
-            <Reanimated.View
-              style={[{ width: w, height: h, borderRadius: radius, overflow: 'hidden' }, tiltStyle]}
-            >
-              <FxMoves>
-                <CardFace id={accessory.id} tier={tier} width={w} height={h} />
-              </FxMoves>
-              <Reanimated.View
-                pointerEvents="none"
-                style={[
-                  {
-                    position: 'absolute',
-                    left: (w - diag * 1.2) / 2,
-                    top: (h - diag * 1.2) / 2,
-                    width: diag * 1.2,
-                    height: diag * 1.2,
-                    mixBlendMode: 'overlay',
-                    ...gradientStyle(CARD_LIGHT.holo),
-                  },
-                  holoStyle,
-                ]}
-              />
-              <Reanimated.View
-                pointerEvents="none"
-                style={[
-                  {
-                    position: 'absolute',
-                    left: 0,
-                    top: 0,
-                    width: w,
-                    height: h,
-                    mixBlendMode: 'screen',
-                    ...gradientStyle(CARD_LIGHT.band),
-                  },
-                  bandStyle,
-                ]}
-              />
+            <Reanimated.View style={[{ width: w, height: h }, tiltStyle]}>
+              {/* The card's own picture: its clear sides cut off, so its light stays on it. */}
+              <View
+                style={{
+                  position: 'absolute',
+                  left: side,
+                  top: 0,
+                  width: w - side * 2,
+                  height: h,
+                  borderRadius: w * CARD_FRAME_CORNER,
+                  overflow: 'hidden',
+                }}
+              >
+                <View style={{ position: 'absolute', left: -side, top: 0 }}>
+                  <FxMoves>
+                    <CardFace id={accessory.id} tier={tier} width={w} height={h} />
+                  </FxMoves>
+                </View>
+                <Reanimated.View
+                  pointerEvents="none"
+                  style={[
+                    {
+                      position: 'absolute',
+                      left: (w - diag * 1.2) / 2 - side,
+                      top: (h - diag * 1.2) / 2,
+                      width: diag * 1.2,
+                      height: diag * 1.2,
+                      mixBlendMode: 'overlay',
+                      ...gradientStyle(CARD_LIGHT.holo),
+                    },
+                    holoStyle,
+                  ]}
+                />
+                <Reanimated.View
+                  pointerEvents="none"
+                  style={[
+                    {
+                      position: 'absolute',
+                      left: -side,
+                      top: 0,
+                      width: w,
+                      height: h,
+                      mixBlendMode: 'screen',
+                      ...gradientStyle(CARD_LIGHT.band),
+                    },
+                    bandStyle,
+                  ]}
+                />
+              </View>
             </Reanimated.View>
           </Reanimated.View>
         </GestureDetector>
