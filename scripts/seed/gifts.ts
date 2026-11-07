@@ -12,6 +12,7 @@ import { sqlLiteral } from './sql.ts';
 import { LOOK_SLOTS } from '../../supabase/functions/_shared/pure/capsule.ts';
 import {
   GIFT_PACKS,
+  GIFT_SETS,
   GIFT_TIERS,
   type GiftCatalog,
   ODDS_TOTAL,
@@ -80,26 +81,33 @@ export function parseGiftCatalog(json: unknown, capsuleParts: ReadonlySet<string
     if (sum !== ODDS_TOTAL)
       throw new Error(`packs[${i}].weights add up to ${sum}, not ${ODDS_TOTAL}`);
     if (typeof p.locked !== 'boolean') throw new Error(`packs[${i}].locked must be true or false`);
-    if (typeof p.themed !== 'boolean') throw new Error(`packs[${i}].themed must be true or false`);
-    const pack: GiftCatalog['packs'][number] = {
+    return {
       id: id(p.id, `packs[${i}].id`),
       name: text(p.name, `packs[${i}].name`),
       locked: p.locked,
-      themed: p.themed,
       weights,
     };
-    if (p.fullSet === undefined) return pack;
-    if (!p.themed) throw new Error(`packs[${i}]: only a themed pack has a full set`);
-    if (!Array.isArray(p.fullSet) || p.fullSet.length === 0) {
-      throw new Error(`packs[${i}].fullSet must be a non-empty list`);
-    }
-    return { ...pack, fullSet: p.fullSet.map((f, j) => id(f, `packs[${i}].fullSet[${j}]`)) };
   });
   if (packs.map((p) => p.id).join(' ') !== GIFT_PACKS.join(' ')) {
     throw new Error(`packs must be ${GIFT_PACKS.join(', ')} in this order`);
   }
   if (packs[0]?.locked)
     throw new Error('packs: bronz is the pack logins earn; it cannot be locked');
+
+  // Skin sets (§4.U, 7 Kasım): Efsanevi pieces the four packs give, and the full set of each.
+  const sets = list(json.sets, 'sets').map((t, i) => {
+    if (!Array.isArray(t.fullSet) || t.fullSet.length === 0) {
+      throw new Error(`sets[${i}].fullSet must be a non-empty list`);
+    }
+    return {
+      id: id(t.id, `sets[${i}].id`),
+      name: text(t.name, `sets[${i}].name`),
+      fullSet: t.fullSet.map((f, j) => id(f, `sets[${i}].fullSet[${j}]`)),
+    };
+  });
+  if (sets.map((t) => t.id).join(' ') !== GIFT_SETS.join(' ')) {
+    throw new Error(`sets must be ${GIFT_SETS.join(', ')} in this order`);
+  }
 
   const seen = new Set<string>();
   const replaced = new Set<string>();
@@ -134,14 +142,16 @@ export function parseGiftCatalog(json: unknown, capsuleParts: ReadonlySet<string
       slots,
       weight: whole(a.weight, `accessories[${i}].weight`, 1),
     };
-    if (a.pack !== undefined) {
-      const pack = packs.find((p) => p.id === a.pack);
-      if (!pack?.themed) throw new Error(`accessories[${i}]: ${String(a.pack)} is no themed pack`);
-      entry = { ...entry, pack: pack.id };
+    if (a.pack !== undefined) throw new Error(`accessories[${i}]: pack is now set (7 Kasım)`);
+    if (a.set !== undefined) {
+      const set = sets.find((t) => t.id === a.set);
+      if (!set) throw new Error(`accessories[${i}]: ${String(a.set)} is no skin set`);
+      if (tier !== 'efsanevi') throw new Error(`accessories[${i}]: a set piece is Efsanevi`);
+      entry = { ...entry, set: set.id };
     }
     if (a.retired !== undefined) {
       if (a.retired !== true) throw new Error(`accessories[${i}].retired is true or left out`);
-      if (entry.pack !== undefined) throw new Error(`accessories[${i}]: a retired one has no pack`);
+      if (entry.set !== undefined) throw new Error(`accessories[${i}]: a retired one has no set`);
       entry = { ...entry, retired: true };
     }
     if (a.replacesPart !== undefined) {
@@ -153,7 +163,7 @@ export function parseGiftCatalog(json: unknown, capsuleParts: ReadonlySet<string
     }
     return entry;
   });
-  const catalog: GiftCatalog = { loginsPerPack, tiers, packs, accessories };
+  const catalog: GiftCatalog = { loginsPerPack, tiers, packs, sets, accessories };
   for (const pack of GIFT_PACKS) {
     const pool = poolOf(pack, catalog);
     if (pool.length === 0) throw new Error(`packs: ${pack} gives no accessory`);
@@ -164,11 +174,16 @@ export function parseGiftCatalog(json: unknown, capsuleParts: ReadonlySet<string
         throw new Error(`packs: ${pack} weighs ${tier} but gives none`);
       }
     }
-    const set = p?.fullSet ?? [];
-    for (const f of set) {
-      if (!pool.some((a) => a.id === f)) throw new Error(`packs: ${pack}'s full set has no ${f}`);
+  }
+  for (const set of sets) {
+    for (const f of set.fullSet) {
+      if (!accessories.some((a) => a.id === f && a.set === set.id && !a.retired)) {
+        throw new Error(`sets: ${set.id}'s full set has no ${f}`);
+      }
     }
-    if (slotConflict(set, catalog)) throw new Error(`packs: ${pack}'s full set shares a slot`);
+    if (slotConflict(set.fullSet, catalog)) {
+      throw new Error(`sets: ${set.id}'s full set shares a slot`);
+    }
   }
   return catalog;
 }
@@ -189,11 +204,11 @@ export function readGiftCatalog(root: string): GiftCatalog {
 
 // Upserted by id. A retired accessory, or one left out of the JSON, stays (people own it) but no pack
 // gives it again (in_packs = false); the draw itself reads giftCatalog.ts, so the two agree after a
-// seed. `pack` is the themed pack that alone gives it (null: the tier packs).
+// seed. The `pack` column names the skin set it belongs to (null: none); every tier pack gives it.
 export function giftsSql({ accessories }: GiftCatalog): string {
   const rows = accessories.map(
     (a) =>
-      `(${[a.id, a.tier, a.weight, !a.retired, [...a.slots], a.pack ?? null].map(sqlLiteral).join(', ')})`,
+      `(${[a.id, a.tier, a.weight, !a.retired, [...a.slots], a.set ?? null].map(sqlLiteral).join(', ')})`,
   );
   return [
     '-- content/gift-packs.json',

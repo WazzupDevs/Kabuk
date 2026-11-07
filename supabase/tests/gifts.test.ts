@@ -5,7 +5,7 @@ import postgres from 'postgres';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import type { GiftOpenResponse, GiftState } from '../functions/_shared/pure/api/gifts.ts';
-import { poolOf } from '../functions/_shared/pure/gifts.ts';
+import { accessoryById, poolOf } from '../functions/_shared/pure/gifts.ts';
 import { deleteFixtureVenues, insertFixtureVenues } from './fixtures/venues.ts';
 import {
   checkInAt,
@@ -86,8 +86,6 @@ describe('gifts/state', () => {
       ['gumus', true, 0],
       ['altin', true, 0],
       ['elmas', true, 0],
-      ['elf', true, 0],
-      ['ninja', true, 0],
     ]);
     expect(state.packs[0]?.odds).toEqual({
       siradan: 70000,
@@ -136,11 +134,15 @@ describe('gifts/login', () => {
 describe('gifts/open', () => {
   it('opens only Bronz, and only an unopened pack', async () => {
     const a = await onboarded(PHONES[0]);
-    for (const pack of ['gumus', 'altin', 'elmas', 'elf', 'ninja']) {
+    for (const pack of ['gumus', 'altin', 'elmas']) {
       expect(await gifts(a, { action: 'open', pack })).toEqual({
         status: 409,
         body: errorBody('pack_locked'),
       });
+    }
+    // Elf and Ninja are skin sets, not packs (7 Kasım).
+    for (const pack of ['elf', 'ninja']) {
+      expect((await gifts(a, { action: 'open', pack })).status).toBe(400);
     }
     expect(await gifts(a, { action: 'open', pack: 'bronz' })).toEqual({
       status: 409,
@@ -277,8 +279,8 @@ describe('gifts/wear', () => {
   });
 });
 
-describe('Elf and Ninja (§4.U)', () => {
-  it('give only their own accessories, which no other pack gives', async () => {
+describe('Elf and Ninja skin sets (§4.U, 7 Kasım)', () => {
+  it('are Efsanevi pieces every tier pack gives; no Elf or Ninja pack opens', async () => {
     const a = await onboarded(PHONES[0]);
     const userId = await userIdOf(a);
     await givePacks(a, 3);
@@ -286,25 +288,27 @@ describe('Elf and Ninja (§4.U)', () => {
       const [row] = await sql`select public.gifts_open(${userId}, ${pack}, ${id}) as r`;
       return row?.r as string;
     };
-    expect(await open('bronz', 'yapraktaci')).toBe('stale');
-    expect(await open('ninja', 'yapraktaci')).toBe('stale');
-    expect(await open('elf', 'filiz')).toBe('stale');
+    expect(await open('elf', 'yapraktaci')).toBe('stale');
+    expect(await open('ninja', 'golgebasligi')).toBe('stale');
     // A retired accessory comes from no pack.
     expect(await open('bronz', 'tac')).toBe('stale');
-    expect(await open('elf', 'yapraktaci')).toBe('ok');
-    expect((await stateOf(a)).owned).toEqual([{ id: 'yapraktaci', tier: 'efsanevi', pack: 'elf' }]);
+    expect(await open('bronz', 'yapraktaci')).toBe('ok');
+    expect(await open('elmas', 'golgebasligi')).toBe('ok');
+    expect((await stateOf(a)).owned).toEqual([
+      { id: 'yapraktaci', tier: 'efsanevi', pack: 'bronz' },
+      { id: 'golgebasligi', tier: 'efsanevi', pack: 'elmas' },
+    ]);
   });
 
-  it('do not count while locked: owning what Bronz gives stops the count', async () => {
+  it('count among what Bronz gives: the count stops only when they are owned too', async () => {
     const a = await onboarded(PHONES[0]);
-    await own(a, ALL);
-    expect(await login(a)).toMatchObject({ logins: 0, allOwned: true });
-    const userId = await userIdOf(a);
-    // With every pack open (the dev project), Elf and Ninja are still to get.
-    const [row] = await sql`
-      select private.gifts_owns_all(${userId}, array['bronz', 'elf', 'ninja']) as all_owned
-    `;
-    expect(row?.all_owned).toBe(false);
+    const pieces = ALL.filter((id) => accessoryById(id)?.set !== undefined);
+    expect(pieces).toHaveLength(20);
+    await own(
+      a,
+      ALL.filter((id) => !pieces.includes(id)),
+    );
+    expect(await login(a)).toMatchObject({ logins: 1, allOwned: false });
   });
 });
 

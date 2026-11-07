@@ -5,7 +5,7 @@ import type { ImageSourcePropType } from 'react-native';
 // 1134, the tear line at 8.5 % of its height) and each tier's empty card (600 × 840). Every
 // accessory's card is made from its tier's card and the accessory's own drawing (parts.tsx →
 // CardFace), so an accessory a new pack brings has its card with its drawing. A pack with no
-// picture here is not shown on Paketler: Elf and Ninja wait for theirs (the canvas has none yet).
+// picture here is not shown on Paketler.
 export const PACK_ART = {
   bronz: require('../../../assets/gifts/pack-bronz.webp') as ImageSourcePropType,
   gumus: require('../../../assets/gifts/pack-gumus.webp') as ImageSourcePropType,

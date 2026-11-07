@@ -1,5 +1,5 @@
 {
-  "source": "docs/SPEC_V4.md §4.U (K-89, \"Genişleyen katalog ve yuvalar\"); Aura panoları PaketOranlar, AksesuarSiradan, AksesuarNadir, AksesuarDestansi, AksesuarEfsanevi, PaketElf, PaketNinja. Ağırlıklar tamsayı: paket başına kademe ağırlıklarının toplamı 100000 (%0,001 hassasiyet). Bronz oranları tuvaldeki değerler, pilot için geçici; kilitli paketlerin oranları açılmadan önce proje sahibine sorulur. Aksesuarın ağırlığı kendi kademesi (ve paketi) içindeki payıdır. slots: aksesuarın takıldığı yuvalar (kapsülün yuva kodları: c Renk, e Göz, h Baş, f Yüz, m Ağız, n Boyun); Destansı takımlar iki yuvalı. themed: paket yalnız kendi aksesuarlarını verir (aksesuarın pack'i), onlar başka paketten çıkmaz; Elf ve Ninja'da tam set parçaları ötekilerin yarı ağırlığında (proje sahibinin kararı, 7 Kasım). retired: yeni katalogda yok, paketten çıkmaz, sahibi olan takmaya devam eder (7 Kasım). replacesPart: bu aksesuar olan kapsül parçası Kapsülünü süsle'den kalktı (7 Kasım); takmış olan kalır, yeniden seçilemez.",
+  "source": "docs/SPEC_V4.md §4.U (K-89, \"Genişleyen katalog ve yuvalar\"); Aura panoları PaketOranlar, AksesuarSiradan, AksesuarNadir, AksesuarDestansi, AksesuarEfsanevi, BalonElf, BalonNinja. Ağırlıklar tamsayı: paket başına kademe ağırlıklarının toplamı 100000 (%0,001 hassasiyet). Bronz oranları tuvaldeki değerler, pilot için geçici; kilitli paketlerin oranları açılmadan önce proje sahibine sorulur. Aksesuarın ağırlığı kendi kademesi (ve paketi) içindeki payıdır. slots: aksesuarın takıldığı yuvalar (kapsülün yuva kodları: c Renk, e Göz, h Baş, f Yüz, m Ağız, n Boyun); Destansı takımlar iki yuvalı. set: aksesuarın ait olduğu skin seti (Elf, Ninja); set parçaları Efsanevi'dir, dört paketten öteki Efsanevi parçalarla aynı ağırlıkta çıkar; sets: setler ve tam setleri (hepsi takılınca mekan sohbetinde setin balonu). Sonra gelecek skin setleri de böyle gelir (proje sahibinin kararı, 7 Kasım). retired: yeni katalogda yok, paketten çıkmaz, sahibi olan takmaya devam eder (7 Kasım). replacesPart: bu aksesuar olan kapsül parçası Kapsülünü süsle'den kalktı (7 Kasım); takmış olan kalır, yeniden seçilemez.",
   "loginsPerPack": 3,
   "tiers": [
     {
@@ -29,8 +29,7 @@
         "nadir": 22000,
         "destansi": 7000,
         "efsanevi": 1000
-      },
-      "themed": false
+      }
     },
     {
       "id": "gumus",
@@ -41,8 +40,7 @@
         "nadir": 32000,
         "destansi": 14000,
         "efsanevi": 4000
-      },
-      "themed": false
+      }
     },
     {
       "id": "altin",
@@ -53,8 +51,7 @@
         "nadir": 38000,
         "destansi": 24000,
         "efsanevi": 8000
-      },
-      "themed": false
+      }
     },
     {
       "id": "elmas",
@@ -65,20 +62,13 @@
         "nadir": 35000,
         "destansi": 35000,
         "efsanevi": 15000
-      },
-      "themed": false
-    },
+      }
+    }
+  ],
+  "sets": [
     {
       "id": "elf",
       "name": "Elf",
-      "locked": true,
-      "themed": true,
-      "weights": {
-        "siradan": 0,
-        "nadir": 0,
-        "destansi": 0,
-        "efsanevi": 100000
-      },
       "fullSet": [
         "yapraktaci",
         "ayisigigozleri",
@@ -91,14 +81,6 @@
     {
       "id": "ninja",
       "name": "Ninja",
-      "locked": true,
-      "themed": true,
-      "weights": {
-        "siradan": 0,
-        "nadir": 0,
-        "destansi": 0,
-        "efsanevi": 100000
-      },
       "fullSet": ["golgebasligi", "simsekgozler", "dumanpecesi", "gecepelerini", "geceteni"]
     }
   ],
@@ -389,31 +371,31 @@
       "tier": "efsanevi",
       "slots": ["h"],
       "weight": 1,
-      "pack": "elf"
+      "set": "elf"
     },
     {
       "id": "aydiademi",
       "name": "Ay diademi",
       "tier": "efsanevi",
       "slots": ["h"],
-      "weight": 2,
-      "pack": "elf"
+      "weight": 1,
+      "set": "elf"
     },
     {
       "id": "elfkulaklari",
       "name": "Elf kulakları",
       "tier": "efsanevi",
       "slots": ["h"],
-      "weight": 2,
-      "pack": "elf"
+      "weight": 1,
+      "set": "elf"
     },
     {
       "id": "ormanrunleri",
       "name": "Orman rünleri",
       "tier": "efsanevi",
       "slots": ["m"],
-      "weight": 2,
-      "pack": "elf"
+      "weight": 1,
+      "set": "elf"
     },
     {
       "id": "yaprakmaske",
@@ -421,7 +403,7 @@
       "tier": "efsanevi",
       "slots": ["f"],
       "weight": 1,
-      "pack": "elf"
+      "set": "elf"
     },
     {
       "id": "ayisigigozleri",
@@ -429,7 +411,7 @@
       "tier": "efsanevi",
       "slots": ["e"],
       "weight": 1,
-      "pack": "elf"
+      "set": "elf"
     },
     {
       "id": "sihirliflut",
@@ -437,15 +419,15 @@
       "tier": "efsanevi",
       "slots": ["m"],
       "weight": 1,
-      "pack": "elf"
+      "set": "elf"
     },
     {
       "id": "yaprakyakasi",
       "name": "Yaprak yakası",
       "tier": "efsanevi",
       "slots": ["n"],
-      "weight": 2,
-      "pack": "elf"
+      "weight": 1,
+      "set": "elf"
     },
     {
       "id": "hayatagaci",
@@ -453,7 +435,7 @@
       "tier": "efsanevi",
       "slots": ["n"],
       "weight": 1,
-      "pack": "elf"
+      "set": "elf"
     },
     {
       "id": "ormanteni",
@@ -461,7 +443,7 @@
       "tier": "efsanevi",
       "slots": ["c"],
       "weight": 1,
-      "pack": "elf"
+      "set": "elf"
     },
     {
       "id": "golgebasligi",
@@ -469,23 +451,23 @@
       "tier": "efsanevi",
       "slots": ["h"],
       "weight": 1,
-      "pack": "ninja"
+      "set": "ninja"
     },
     {
       "id": "shurikentokasi",
       "name": "Shuriken tokası",
       "tier": "efsanevi",
       "slots": ["h"],
-      "weight": 2,
-      "pack": "ninja"
+      "weight": 1,
+      "set": "ninja"
     },
     {
       "id": "tilkimaskesi",
       "name": "Tilki maskesi",
       "tier": "efsanevi",
       "slots": ["f"],
-      "weight": 2,
-      "pack": "ninja"
+      "weight": 1,
+      "set": "ninja"
     },
     {
       "id": "simsekgozler",
@@ -493,7 +475,7 @@
       "tier": "efsanevi",
       "slots": ["e"],
       "weight": 1,
-      "pack": "ninja"
+      "set": "ninja"
     },
     {
       "id": "dumanpecesi",
@@ -501,15 +483,15 @@
       "tier": "efsanevi",
       "slots": ["m"],
       "weight": 1,
-      "pack": "ninja"
+      "set": "ninja"
     },
     {
       "id": "klanisareti",
       "name": "Klan işareti",
       "tier": "efsanevi",
       "slots": ["m"],
-      "weight": 2,
-      "pack": "ninja"
+      "weight": 1,
+      "set": "ninja"
     },
     {
       "id": "gecepelerini",
@@ -517,23 +499,23 @@
       "tier": "efsanevi",
       "slots": ["n"],
       "weight": 1,
-      "pack": "ninja"
+      "set": "ninja"
     },
     {
       "id": "sirtkatanasi",
       "name": "Sırt katanası",
       "tier": "efsanevi",
       "slots": ["n"],
-      "weight": 2,
-      "pack": "ninja"
+      "weight": 1,
+      "set": "ninja"
     },
     {
       "id": "kunaikolyesi",
       "name": "Kunai kolyesi",
       "tier": "efsanevi",
       "slots": ["n"],
-      "weight": 2,
-      "pack": "ninja"
+      "weight": 1,
+      "set": "ninja"
     },
     {
       "id": "geceteni",
@@ -541,7 +523,7 @@
       "tier": "efsanevi",
       "slots": ["c"],
       "weight": 1,
-      "pack": "ninja"
+      "set": "ninja"
     },
     {
       "id": "bere",

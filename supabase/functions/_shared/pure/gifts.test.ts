@@ -29,19 +29,16 @@ import {
 const CATALOG: GiftCatalog = {
   loginsPerPack: 3,
   tiers: GIFT_TIERS.map((id) => ({ id, name: id })),
-  packs: GIFT_PACKS.map((id) => {
-    const themed = id === 'elf' || id === 'ninja';
-    return {
-      id,
-      name: id,
-      locked: id !== 'bronz',
-      themed,
-      weights: themed
-        ? { siradan: 0, nadir: 0, destansi: 0, efsanevi: 100000 }
-        : { siradan: 70000, nadir: 22000, destansi: 7000, efsanevi: 1000 },
-      ...(id === 'elf' ? { fullSet: ['l1', 'l2'] } : {}),
-    };
-  }),
+  packs: GIFT_PACKS.map((id) => ({
+    id,
+    name: id,
+    locked: id !== 'bronz',
+    weights: { siradan: 70000, nadir: 22000, destansi: 7000, efsanevi: 1000 },
+  })),
+  sets: [
+    { id: 'elf', name: 'Elf', fullSet: ['l1', 'l2'] },
+    { id: 'ninja', name: 'Ninja', fullSet: ['j1'] },
+  ],
   accessories: [
     { id: 's1', name: 'S1', tier: 'siradan', slots: ['h'], weight: 1 },
     { id: 's2', name: 'S2', tier: 'siradan', slots: ['f'], weight: 3, replacesPart: 'h:bere' },
@@ -49,15 +46,15 @@ const CATALOG: GiftCatalog = {
     { id: 'd1', name: 'D1', tier: 'destansi', slots: ['h', 'n'], weight: 1 },
     { id: 'e1', name: 'E1', tier: 'efsanevi', slots: ['e'], weight: 999 },
     { id: 'e2', name: 'E2', tier: 'efsanevi', slots: ['c'], weight: 1 },
-    { id: 'l1', name: 'L1', tier: 'efsanevi', slots: ['h'], weight: 1, pack: 'elf' },
-    { id: 'l2', name: 'L2', tier: 'efsanevi', slots: ['c'], weight: 1, pack: 'elf' },
-    { id: 'l3', name: 'L3', tier: 'efsanevi', slots: ['n'], weight: 2, pack: 'elf' },
-    { id: 'j1', name: 'J1', tier: 'efsanevi', slots: ['h'], weight: 1, pack: 'ninja' },
+    { id: 'l1', name: 'L1', tier: 'efsanevi', slots: ['h'], weight: 1, set: 'elf' },
+    { id: 'l2', name: 'L2', tier: 'efsanevi', slots: ['c'], weight: 1, set: 'elf' },
+    { id: 'l3', name: 'L3', tier: 'efsanevi', slots: ['n'], weight: 1, set: 'elf' },
+    { id: 'j1', name: 'J1', tier: 'efsanevi', slots: ['h'], weight: 1, set: 'ninja' },
     { id: 'old', name: 'Old', tier: 'efsanevi', slots: ['h'], weight: 1, retired: true },
   ],
 };
 
-const TIER_POOL = ['s1', 's2', 'n1', 'd1', 'e1', 'e2'];
+const TIER_POOL = ['s1', 's2', 'n1', 'd1', 'e1', 'e2', 'l1', 'l2', 'l3', 'j1'];
 
 const none = new Set<string>();
 
@@ -98,37 +95,28 @@ describe('tierOdds (§4.U, Oranlar)', () => {
     });
     expect(ownsAll(all, CATALOG, ['bronz'])).toBe(true);
     expect(ownsAll(new Set(['s1']), CATALOG, ['bronz'])).toBe(false);
-    // With Elf and Ninja open (the dev project), their accessories count too.
-    expect(ownsAll(all, CATALOG)).toBe(false);
-    expect(ownsAll(new Set([...TIER_POOL, 'l1', 'l2', 'l3', 'j1']), CATALOG)).toBe(true);
+    expect(ownsAll(all, CATALOG)).toBe(true);
+    // A set piece is one of the pack's: until it is owned, not everything is.
+    expect(ownsAll(new Set(TIER_POOL.filter((id) => id !== 'j1')), CATALOG)).toBe(false);
   });
 });
 
-describe('poolOf (§4.U, Elf and Ninja)', () => {
-  it('gives a themed pack only its own accessories, a tier pack none of them, and none retired', () => {
-    expect(poolOf('bronz', CATALOG).map((a) => a.id)).toEqual(TIER_POOL);
-    expect(poolOf('elmas', CATALOG).map((a) => a.id)).toEqual(TIER_POOL);
-    expect(poolOf('elf', CATALOG).map((a) => a.id)).toEqual(['l1', 'l2', 'l3']);
-    expect(poolOf('ninja', CATALOG).map((a) => a.id)).toEqual(['j1']);
-    expect(tierOdds('elf', none, CATALOG)).toEqual({
-      siradan: 0,
-      nadir: 0,
-      destansi: 0,
-      efsanevi: 100000,
-    });
+describe('poolOf (§4.U, skin sets)', () => {
+  it('gives every pack every accessory, the set pieces too, and none retired', () => {
+    for (const pack of GIFT_PACKS) {
+      expect(poolOf(pack, CATALOG).map((a) => a.id)).toEqual(TIER_POOL);
+    }
   });
 
-  it('draws a full-set part at half the weight of the others', () => {
-    // l1 1, l2 1, l3 2 of 4.
+  it('draws a set piece as likely as every other Efsanevi one of the same weight', () => {
+    // Efsanevi: e1 999, e2 1, l1 1, l2 1, l3 1, j1 1. The tier roll lands on Efsanevi (last 1000).
     const roll = (v: number) => {
       let i = 0;
-      return (n: number) => (i++ === 0 ? 0 : Math.min(v, n - 1));
+      return (n: number) => (i++ === 0 ? n - 1 : Math.min(v, n - 1));
     };
-    expect(drawAccessory('elf', none, roll(0), CATALOG)?.id).toBe('l1');
-    expect(drawAccessory('elf', none, roll(1), CATALOG)?.id).toBe('l2');
-    expect(drawAccessory('elf', none, roll(2), CATALOG)?.id).toBe('l3');
-    expect(drawAccessory('elf', none, roll(3), CATALOG)?.id).toBe('l3');
-    expect(drawAccessory('elf', new Set(['l1', 'l2', 'l3']), roll(0), CATALOG)).toBeNull();
+    expect(drawAccessory('bronz', none, roll(999), CATALOG)?.id).toBe('e2');
+    expect(drawAccessory('bronz', none, roll(1000), CATALOG)?.id).toBe('l1');
+    expect(drawAccessory('bronz', none, roll(1003), CATALOG)?.id).toBe('j1');
   });
 });
 
@@ -157,7 +145,7 @@ describe('drawAccessory (rule 3: on the server)', () => {
       id: 'e1',
       tier: 'efsanevi',
     });
-    // One in a thousand inside the tier: e2's weight is 1 of 1000.
+    // One in a thousand inside the tier: e2's weight is 1 of 1004 (the set pieces after it).
     expect(drawAccessory('bronz', none, rolls(99999, 999), CATALOG)).toEqual({
       id: 'e2',
       tier: 'efsanevi',
@@ -165,7 +153,7 @@ describe('drawAccessory (rule 3: on the server)', () => {
   });
 
   it('never gives an owned accessory, and nothing when everything is owned', () => {
-    const owned = new Set(['s1', 's2', 'n1', 'd1', 'e1']);
+    const owned = new Set(['s1', 's2', 'n1', 'd1', 'e1', 'l1', 'l2', 'l3', 'j1']);
     // Only e2 is left: every roll lands on it.
     expect(drawAccessory('bronz', owned, rolls(0, 0), CATALOG)).toEqual({
       id: 'e2',
@@ -263,14 +251,12 @@ describe('capsule parts that became pack accessories (7 Kasım)', () => {
 });
 
 describe('content/gift-packs.json', () => {
-  it('holds the six packs, only Bronz open, and the 40 + 20 accessories of §4.U', () => {
-    expect(GIFT_CATALOG.packs.map((p) => [p.id, p.locked, p.themed])).toEqual([
-      ['bronz', false, false],
-      ['gumus', true, false],
-      ['altin', true, false],
-      ['elmas', true, false],
-      ['elf', true, true],
-      ['ninja', true, true],
+  it('holds the four packs, only Bronz open, the 40 + 20 accessories and the two skin sets of §4.U', () => {
+    expect(GIFT_CATALOG.packs.map((p) => [p.id, p.locked])).toEqual([
+      ['bronz', false],
+      ['gumus', true],
+      ['altin', true],
+      ['elmas', true],
     ]);
     expect(tierOdds('bronz', none)).toEqual({
       siradan: 70000,
@@ -280,19 +266,22 @@ describe('content/gift-packs.json', () => {
     });
     expect(GIFT_CATALOG.loginsPerPack).toBe(3);
     const pool = poolOf('bronz');
-    for (const tier of GIFT_TIERS) expect(pool.filter((a) => a.tier === tier)).toHaveLength(10);
-    for (const a of pool) expect(a.slots).toHaveLength(a.tier === 'destansi' ? 2 : 1);
-    for (const pack of ['elf', 'ninja'] as const) {
-      const own = poolOf(pack);
-      expect(own).toHaveLength(10);
-      expect(own.every((a) => a.tier === 'efsanevi')).toBe(true);
-      const set = GIFT_CATALOG.packs.find((p) => p.id === pack)?.fullSet ?? [];
-      // The full-set parts come at half the weight of the others (the owner's call, 7 Kasım).
-      for (const a of own) expect(a.weight).toBe(set.includes(a.id) ? 1 : 2);
-      expect(slotConflict(set)).toBe(false);
+    for (const tier of GIFT_TIERS) {
+      expect(pool.filter((a) => a.tier === tier)).toHaveLength(tier === 'efsanevi' ? 30 : 10);
     }
-    expect(GIFT_CATALOG.packs.find((p) => p.id === 'elf')?.fullSet).toHaveLength(6);
-    expect(GIFT_CATALOG.packs.find((p) => p.id === 'ninja')?.fullSet).toHaveLength(5);
+    for (const a of pool) expect(a.slots).toHaveLength(a.tier === 'destansi' ? 2 : 1);
+    // Elf and Ninja are skin sets (the owner's call, 7 Kasım): Efsanevi pieces every pack gives,
+    // each as likely as every other Efsanevi one.
+    const efsanevi = pool.filter((a) => a.tier === 'efsanevi');
+    for (const a of efsanevi) expect(a.weight).toBe(1);
+    expect(GIFT_CATALOG.sets.map((t) => [t.id, t.fullSet.length])).toEqual([
+      ['elf', 6],
+      ['ninja', 5],
+    ]);
+    for (const set of GIFT_CATALOG.sets) {
+      expect(efsanevi.filter((a) => a.set === set.id)).toHaveLength(10);
+      expect(slotConflict(set.fullSet)).toBe(false);
+    }
     // The first eight but Ejder boynuzu left the catalog; whoever owns one keeps it.
     expect(GIFT_CATALOG.accessories.filter((a) => a.retired).map((a) => a.name)).toEqual([
       'Bere',

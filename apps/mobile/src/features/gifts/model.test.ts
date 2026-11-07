@@ -55,19 +55,11 @@ describe('gift card', () => {
 
   it('puts the packs in order of worth, only the ones that can be shown', () => {
     const s = state();
-    s.packs.push({ id: 'elf', locked: false, unopened: 1, odds: ODDS });
-    expect(packsInOrder(s, any).map((p) => p.id)).toEqual([
-      'bronz',
-      'gumus',
-      'altin',
-      'elmas',
-      'elf',
-    ]);
-    const four = (p: GiftPack): p is 'bronz' | 'gumus' | 'altin' | 'elmas' =>
-      p !== 'elf' && p !== 'ninja';
-    expect(packsInOrder(s, four).map((p) => p.id)).toEqual(['bronz', 'gumus', 'altin', 'elmas']);
+    expect(packsInOrder(s, any).map((p) => p.id)).toEqual(['bronz', 'gumus', 'altin', 'elmas']);
+    const notBronz = (p: GiftPack): p is 'gumus' | 'altin' | 'elmas' => p !== 'bronz';
+    expect(packsInOrder(s, notBronz).map((p) => p.id)).toEqual(['gumus', 'altin', 'elmas']);
     // A pack that is not shown is not the card's either.
-    expect(cardState(s, four).kind).toBe('progress');
+    expect(cardState(s, notBronz).kind).toBe('progress');
   });
 
   it('says every accessory is owned', () => {
