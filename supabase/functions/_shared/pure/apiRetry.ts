@@ -7,6 +7,7 @@ import type { AccountRequest } from './api/account.ts';
 import type { ChatRequest } from './api/chat.ts';
 import type { CheckinRequest } from './api/checkin.ts';
 import type { DmRequest, FriendsRequest } from './api/friends.ts';
+import type { GiftsRequest } from './api/gifts.ts';
 import type {
   KauphollRequest,
   KibritRequest,
@@ -35,7 +36,8 @@ type CallName =
   | `tabu/${TabuRequest['action']}`
   | `sahtekar/${SahtekarRequest['action']}`
   | `signum/${SignumRequest['action']}`
-  | `sprengja/${SprengjaRequest['action']}`;
+  | `sprengja/${SprengjaRequest['action']}`
+  | `gifts/${GiftsRequest['action']}`;
 
 export const IDEMPOTENT_CALLS = [
   // updateGate.test "update gate, open": "answers the launch and foreground ping without a user"
@@ -160,6 +162,14 @@ export const IDEMPOTENT_CALLS = [
   // sprengja.test "the round (§4.6.8)": "opens the card and lights the fuse by the starter only;
   // the same twice changes nothing"
   'sprengja/light',
+  // gifts.test "gifts/state": "answers a new account: no pack yet, Bronz open, the others locked,
+  // the odds of §4.U"
+  'gifts/state',
+  // gifts.test "gifts/login": "counts one login a day; the same day twice changes nothing"
+  'gifts/login',
+  // gifts.test "gifts/equip": "wears only an owned accessory, keeps it through set-look, and takes
+  // it off"
+  'gifts/equip',
 ] as const satisfies readonly CallName[];
 
 export const RETRY_DELAY_MS = 500;

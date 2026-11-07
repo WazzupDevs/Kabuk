@@ -21,6 +21,7 @@ import { ageOn, istanbulToday, parseIsoDate } from '../_shared/pure/age.ts';
 import { earnedBadges } from '../_shared/pure/badges.ts';
 import { LOOK_MAX_LENGTH, nickRefreshAt, normalizeLook } from '../_shared/pure/capsule.ts';
 import type { Gender } from '../_shared/pure/gender.ts';
+import { withoutNewRetiredParts } from '../_shared/pure/gifts.ts';
 import { AppError } from '../_shared/pure/errors.ts';
 import { inspectJpeg } from '../_shared/pure/jpegMetadata.ts';
 import {
@@ -211,17 +212,24 @@ Deno.serve(
 
       // K-47: the caller's own look, as the catalog knows it (unknown parts dropped). Written now;
       // what was written before keeps its look (K-10).
+      // The worn pack accessory stays (§4.U: the database keeps its "x:" token), and a capsule part
+      // that became a pack accessory is kept only by a look that already wears it.
       case 'set-look': {
-        const look = normalizeLook(body.look);
-        const { data, error } = await db
+        const current = await db
           .from('profiles')
-          .update({ capsule_look: look })
+          .select('capsule_look')
           .eq('id', user.id)
-          .select('id')
           .maybeSingle();
-        if (error) throw dbError('profiles', error);
-        if (!data) throw new AppError('onboarding_required', 'Complete onboarding first.');
-        return { capsuleLook: look };
+        if (current.error) throw dbError('profiles', current.error);
+        if (!current.data) throw new AppError('onboarding_required', 'Complete onboarding first.');
+        const look = withoutNewRetiredParts(normalizeLook(body.look), current.data.capsule_look);
+        const { data, error } = await db.rpc('profile_set_look', {
+          target_user_id: user.id,
+          new_look: look,
+        });
+        if (error) throw dbError('profile_set_look', error);
+        if (data === null) throw new AppError('onboarding_required', 'Complete onboarding first.');
+        return { capsuleLook: data };
       }
 
       case 'update': {

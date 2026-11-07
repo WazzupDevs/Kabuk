@@ -33,6 +33,7 @@ import {
   venuesSql,
 } from './sections.ts';
 import { gamesSql, parseGames } from './games.ts';
+import { giftsSql, readGiftCatalog } from './gifts.ts';
 import { readSignumWords } from './signum.ts';
 import { parseTableIcons, tableIconsSql } from './tableIcons.ts';
 
@@ -94,6 +95,7 @@ export function buildSeed(root: string): SeedBuild {
     profanitySql(profanity),
     tableIconsSql(parseTableIcons(readJson('content/table-icons.json'))),
     gamesSql(parseGames(readJson('content/games.json'))),
+    giftsSql(readGiftCatalog(root)),
     cardsSql(
       parseTabuCards(readJson('content/tabu-cards.json')),
       parseSohbetCards(readJson('content/sohbet-cards.json')),
