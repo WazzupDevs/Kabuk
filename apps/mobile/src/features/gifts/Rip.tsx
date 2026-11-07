@@ -1,5 +1,5 @@
 import type { GiftTier } from '@shared/gifts.ts';
-import { useEffect, useId, useState } from 'react';
+import { type ReactNode, useEffect, useId, useState } from 'react';
 import { View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Reanimated, {
@@ -25,6 +25,7 @@ import Svg, {
 import { CapIcon } from '@/aura/CapIcon';
 import { Btn, T } from '@/aura/kit';
 import { tr } from '@/i18n/tr';
+import { svgKey } from '@/lib/svgKey';
 import { useReduceMotion } from '@/lib/useReduceMotion';
 import { FINGER, PACK_GLOW, RIP_EDGE } from '@/theme/gifts';
 import { GIFT_MOTION } from '@/theme/giftMotion';
@@ -102,7 +103,6 @@ export function Rip({
   const R = rects.pack;
   const tearY = TEAR_AT * R.h;
   const stripH = tearY + (ZIG + 2) * s;
-  const zig = zigzag(R.w, tearY, s);
   const ids = useId().replace(/[^A-Za-z0-9]/g, '');
   const [skipping, setSkipping] = useState(false);
 
@@ -233,22 +233,7 @@ export function Rip({
     opacity: touched.get() || p.get() > 0 ? 0 : 1,
   }));
 
-  const strip = (
-    <Svg width={R.w} height={stripH}>
-      <Defs>
-        <ClipPath id={`${ids}s`}>
-          <Polygon points={`0,0 ${R.w},0 ${zig.split(' ').reverse().join(' ')}`} />
-        </ClipPath>
-      </Defs>
-      <SvgImage
-        href={PACK_ART[pack]}
-        width={R.w}
-        height={R.h}
-        preserveAspectRatio="xMidYMid meet"
-        clipPath={`url(#${ids}s)`}
-      />
-    </Svg>
-  );
+  const strip = <RipStrip pack={pack} stage={stage} id={`${ids}s`} />;
 
   return (
     <View pointerEvents="box-none" style={{ position: 'absolute', inset: 0 }}>
@@ -293,20 +278,7 @@ export function Rip({
             />
           </Reanimated.View>
           <Reanimated.View style={[{ position: 'absolute', inset: 0 }, bodyStyle]}>
-            <Svg width={R.w} height={R.h}>
-              <Defs>
-                <ClipPath id={`${ids}b`}>
-                  <Polygon points={`${zig} ${R.w},${R.h} 0,${R.h}`} />
-                </ClipPath>
-              </Defs>
-              <SvgImage
-                href={PACK_ART[pack]}
-                width={R.w}
-                height={R.h}
-                preserveAspectRatio="xMidYMid meet"
-                clipPath={`url(#${ids}b)`}
-              />
-            </Svg>
+            <RipBody pack={pack} stage={stage} id={`${ids}b`} />
             {/* The gap's shade and edge, shown as far as the tear has gone. */}
             <Reanimated.View
               pointerEvents="none"
@@ -323,34 +295,7 @@ export function Rip({
               ]}
             >
               <Reanimated.View style={tornInner}>
-                <Svg width={R.w} height={tearY + (ZIG + SHADE.h + 2) * s}>
-                  <Defs>
-                    <LinearGradient id={`${ids}g`} x1="0" y1="0" x2="0" y2="1">
-                      <Stop offset="0" stopColor={RIP_EDGE.shade} stopOpacity={SHADE.from} />
-                      <Stop offset="1" stopColor={RIP_EDGE.shade} stopOpacity={0} />
-                    </LinearGradient>
-                  </Defs>
-                  <SvgRect
-                    x={0}
-                    y={tearY - ZIG * s}
-                    width={R.w}
-                    height={(SHADE.h + ZIG * 2) * s}
-                    fill={`url(#${ids}g)`}
-                  />
-                  <Polyline
-                    points={zigzag(R.w, tearY + EDGE.line * s * 0.8, s)}
-                    fill="none"
-                    stroke={RIP_EDGE.under}
-                    strokeWidth={EDGE.under * s}
-                  />
-                  <Polyline
-                    points={zig}
-                    fill="none"
-                    stroke={RIP_EDGE.line}
-                    strokeWidth={EDGE.line * s}
-                    strokeLinejoin="round"
-                  />
-                </Svg>
+                <RipGap stage={stage} id={`${ids}g`} />
               </Reanimated.View>
             </Reanimated.View>
             {/* The strip's whole part, right of the tear. */}
@@ -456,3 +401,121 @@ export function Rip({
     </View>
   );
 }
+
+// The rip's pictures, each drawn once and kept by its name (lib/svgKey.ts): the strip (twice on the
+// screen, one picture), the pack under it and the gap's edge. Paketler draws them hidden before Aç
+// (RipWarm), so the rip begins with nothing left to draw (the owner's report, 7 Kasım: the opening
+// stuttered).
+function ripSize(stage: Stage) {
+  const R = ripRects(stage).pack;
+  const tearY = TEAR_AT * R.h;
+  return { R, tearY, s: stage.s, zig: zigzag(R.w, tearY, stage.s) };
+}
+
+function RipStrip({ pack, stage, id }: { pack: ShownPack; stage: Stage; id: string }) {
+  const { R, tearY, s, zig } = ripSize(stage);
+  const stripH = tearY + (ZIG + 2) * s;
+  return (
+    <Svg width={R.w} height={stripH} nativeID={svgKey('rip-strip', pack, R.w, stripH)}>
+      <Defs>
+        <ClipPath id={id}>
+          <Polygon points={`0,0 ${R.w},0 ${zig.split(' ').reverse().join(' ')}`} />
+        </ClipPath>
+      </Defs>
+      <SvgImage
+        href={PACK_ART[pack]}
+        width={R.w}
+        height={R.h}
+        preserveAspectRatio="xMidYMid meet"
+        clipPath={`url(#${id})`}
+      />
+    </Svg>
+  );
+}
+
+function RipBody({ pack, stage, id }: { pack: ShownPack; stage: Stage; id: string }) {
+  const { R, zig } = ripSize(stage);
+  return (
+    <Svg width={R.w} height={R.h} nativeID={svgKey('rip-body', pack, R.w, R.h)}>
+      <Defs>
+        <ClipPath id={id}>
+          <Polygon points={`${zig} ${R.w},${R.h} 0,${R.h}`} />
+        </ClipPath>
+      </Defs>
+      <SvgImage
+        href={PACK_ART[pack]}
+        width={R.w}
+        height={R.h}
+        preserveAspectRatio="xMidYMid meet"
+        clipPath={`url(#${id})`}
+      />
+    </Svg>
+  );
+}
+
+function RipGap({ stage, id }: { stage: Stage; id: string }) {
+  const { R, tearY, s, zig } = ripSize(stage);
+  const h = tearY + (ZIG + SHADE.h + 2) * s;
+  return (
+    <Svg width={R.w} height={h} nativeID={svgKey('rip-gap', R.w, h)}>
+      <Defs>
+        <LinearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+          <Stop offset="0" stopColor={RIP_EDGE.shade} stopOpacity={SHADE.from} />
+          <Stop offset="1" stopColor={RIP_EDGE.shade} stopOpacity={0} />
+        </LinearGradient>
+      </Defs>
+      <SvgRect
+        x={0}
+        y={tearY - ZIG * s}
+        width={R.w}
+        height={(SHADE.h + ZIG * 2) * s}
+        fill={`url(#${id})`}
+      />
+      <Polyline
+        points={zigzag(R.w, tearY + EDGE.line * s * 0.8, s)}
+        fill="none"
+        stroke={RIP_EDGE.under}
+        strokeWidth={EDGE.under * s}
+      />
+      <Polyline
+        points={zig}
+        fill="none"
+        stroke={RIP_EDGE.line}
+        strokeWidth={EDGE.line * s}
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+// Every pack's rip pictures, drawn hidden on Paketler (and, once the server has drawn the
+// accessory, its card at the rip's and the result's size), so that nothing is drawn while the
+// pack opens. Under the screen's ground, nearly clear: Android still draws it.
+export function RipWarm({
+  packs,
+  stage,
+  card,
+}: {
+  packs: readonly ShownPack[];
+  stage: Stage;
+  card: ReactNode;
+}) {
+  return (
+    <View
+      pointerEvents="none"
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      style={{ position: 'absolute', left: 0, top: 0, opacity: WARM_OPACITY }}
+    >
+      {packs.map((p) => (
+        <View key={p} style={{ position: 'absolute', left: 0, top: 0 }}>
+          <RipStrip pack={p} stage={stage} id={`warm${p}s`} />
+          <RipBody pack={p} stage={stage} id={`warm${p}b`} />
+        </View>
+      ))}
+      <RipGap stage={stage} id="warmg" />
+      {card}
+    </View>
+  );
+}
+const WARM_OPACITY = 0.01;

@@ -33,6 +33,10 @@ import { Glow, type Rect, type Stage, Sparkle, centerOf } from './stage';
 // sideways drag turns it (0.3° a pixel, ±22° about Y and a twelfth of that about Z) and the holo
 // and the band of light move with it; let go, it turns back. "Aksesuarı tak" wears it.
 const CARD = { left: 79, top: 180, w: 232 };
+// The card's width on this phone (Paketler draws its picture ahead, RipWarm).
+export function openedCardWidth(s: number): number {
+  return CARD.w * s;
+}
 const CARD_CORNER = 0.06;
 const GLOWS = {
   normal: [
@@ -74,17 +78,22 @@ const HOLO_BASE = 0.3;
 const HOLO_PER = 40;
 const BAND_PER = 2.2;
 const HOLO_TURN = 6;
+// Hidden under the rip but still drawn (Android skips a view that is fully clear).
+const HIDDEN = 0.01;
 
 export function OpenedCard({
   accessory,
   from,
   stage,
   onClose,
+  ready = true,
 }: {
   accessory: { id: string; tier: GiftTier };
   from: Rect | null;
   stage: Stage;
   onClose: () => void;
+  // Mounted (and so drawn) under the rip, hidden; it arrives when the rip is done.
+  ready?: boolean;
 }) {
   const reduce = useReduceMotion();
   const { scheme, colors } = useTheme();
@@ -103,6 +112,7 @@ export function OpenedCard({
   const shown = useSharedValue(0);
   const angle = useSharedValue(0);
   useEffect(() => {
+    if (!ready) return;
     const arrive = Easing.bezier(...GIFT_MOTION.curves.arrive);
     const { chromeMs } = GIFT_MOTION.zoom;
     if (reduce || !from) {
@@ -111,7 +121,7 @@ export function OpenedCard({
     }
     morph.set(withSpring(1, GIFT_MOTION.open));
     shown.set(withDelay(chromeMs, withTiming(1, { duration: chromeMs, easing: arrive })));
-  }, [morph, shown, reduce, from]);
+  }, [morph, shown, reduce, from, ready]);
 
   const pan = Gesture.Pan()
     .activeOffsetX([-6, 6])
@@ -163,7 +173,12 @@ export function OpenedCard({
     });
 
   return (
-    <View pointerEvents="box-none" style={{ position: 'absolute', inset: 0 }}>
+    <View
+      pointerEvents={ready ? 'box-none' : 'none'}
+      accessibilityElementsHidden={!ready}
+      importantForAccessibility={ready ? 'auto' : 'no-hide-descendants'}
+      style={{ position: 'absolute', inset: 0, opacity: ready ? 1 : HIDDEN }}
+    >
       <Reanimated.View
         pointerEvents="none"
         style={[{ position: 'absolute', inset: 0 }, shownStyle]}
