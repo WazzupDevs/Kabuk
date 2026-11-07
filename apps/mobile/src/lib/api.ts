@@ -2,6 +2,13 @@ import { FunctionsHttpError, isAuthApiError } from '@supabase/supabase-js';
 
 import type { AccountRequest, AccountResponse } from '@shared/api/account.ts';
 import type {
+  GiftEquipResponse,
+  GiftLoginResponse,
+  GiftOpenResponse,
+  GiftStateResponse,
+} from '@shared/api/gifts.ts';
+import type { GiftPack } from '@shared/gifts.ts';
+import type {
   ChatDeleteResponse,
   ChatResponse,
   ReactResponse,
@@ -586,4 +593,14 @@ export const kauphollApi = {
     kaupholl<KauphollAnswer>({ action: 'ready', roomId, step }),
   advance: (roomId: string, step: number) =>
     kaupholl<KauphollAnswer>({ action: 'advance', roomId, step }),
+};
+
+// Hediye paketleri (docs/SPEC_V4.md §4.U, K-89): the caller's own packs and accessories only.
+export const giftsApi = {
+  state: () => invoke<GiftStateResponse>('gifts', { action: 'state' }),
+  // The app opened with a session: one a day counts (the server works out the day).
+  login: () => invoke<GiftLoginResponse>('gifts', { action: 'login' }),
+  open: (pack: GiftPack) => invoke<GiftOpenResponse>('gifts', { action: 'open', pack }),
+  equip: (accessoryId: string | null) =>
+    invoke<GiftEquipResponse>('gifts', { action: 'equip', accessoryId }),
 };

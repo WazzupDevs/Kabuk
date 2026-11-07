@@ -36,3 +36,35 @@ describe('capsule editor', () => {
     }
   });
 });
+
+describe('pack accessory in the editor', () => {
+  it('keeps the worn accessory through every change', () => {
+    const look = parse('c:pembe e:klasik x:tac');
+    expect(code(look)).toBe('c:pembe e:klasik x:tac');
+    expect(code(wear(look, 'h', 'kedi'))).toBe('c:pembe e:klasik h:kedi x:tac');
+    expect(code(bare(wear(look, 'h', 'kedi')))).toBe('c:pembe e:klasik x:tac');
+    expect(parse(code(shuffle(() => 0.3, look))).x).toBe('tac');
+  });
+
+  it('offers the parts that became accessories only to a look that wears one', () => {
+    const ids = (kept: string) =>
+      packsFor('tema', 'h', parse(kept)).flatMap((p) => p.items.map((i) => i.id));
+    const all = CAPSULE_CATALOG.racks.flatMap((r) =>
+      packsFor(r.id, 'h').flatMap((p) => p.items.map((i) => i.id)),
+    );
+    for (const retired of ['bere', 'kasket', 'kulaklik', 'tac']) expect(all).not.toContain(retired);
+    const keptAll = CAPSULE_CATALOG.racks.flatMap((r) =>
+      packsFor(r.id, 'h', parse('c:mor h:tac')).flatMap((p) => p.items.map((i) => i.id)),
+    );
+    expect(keptAll).toContain('tac');
+    expect(ids('c:mor')).not.toContain('tac');
+  });
+
+  it('never shuffles a retired part', () => {
+    let seed = 7;
+    const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    for (let i = 0; i < 200; i++) {
+      expect(['bere', 'kasket', 'kulaklik', 'tac']).not.toContain(shuffle(random).h);
+    }
+  });
+});

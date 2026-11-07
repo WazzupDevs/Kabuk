@@ -11,6 +11,8 @@ import { PhotoPreview } from '@/components/PhotoPreview';
 import { Screen } from '@/components/Screen';
 import { useProfile } from '@/features/account/useProfile';
 import { useFriends } from '@/features/friends/queries';
+import { ACCESSORIES } from '@/features/gifts/model';
+import { useGiftState } from '@/features/gifts/queries';
 import { LivingLook } from '@/features/profile/LivingLook';
 import { profileViewKeys, useProfileView } from '@/features/profile/queries';
 import { errorMessage } from '@/i18n/errors';
@@ -198,6 +200,8 @@ export default function ProfileScreen() {
               </View>
               <CapIcon name="chevron" color={c.muted} size={ICON.md} />
             </Li>
+            <Hair />
+            <AccessoriesRow />
           </Glass>
         </View>
       )}
@@ -319,6 +323,31 @@ function NickRow({ nick, refreshAt }: { nick: string; refreshAt: string | null }
   );
 }
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+// Aksesuarlarım's way in (docs/SPEC_V4.md §4.U; GaleriHediye "Profil girişi"): the gift, the name
+// and how many of the catalog's accessories are owned.
+function AccessoriesRow() {
+  const { c } = useKit();
+  const gifts = useGiftState();
+  const owned = gifts.data?.owned.length;
+  return (
+    <Li
+      testID="profile-accessories"
+      onPress={() => router.push('/profile/accessories')}
+      padY={ROW_PAD_Y}
+      padX={SPACING[4]}
+    >
+      <CapIcon name="gift" color={c.ink} size={ICON.lg} />
+      <View style={{ flex: 1, gap: SPACING[0.5], minHeight: ROW_INNER }}>
+        <T v="h3">{tr.gifts.accessories}</T>
+        {owned !== undefined ? (
+          <T v="fine">{tr.gifts.progress(owned, ACCESSORIES.length)}</T>
+        ) : null}
+      </View>
+      <CapIcon name="chevron" color={c.muted} size={ICON.md} />
+    </Li>
+  );
+}
 
 function Hair() {
   const { c } = useKit();

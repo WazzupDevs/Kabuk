@@ -2,7 +2,7 @@ import type { LookSlot } from '@shared/capsule.ts';
 import { CAPSULE_CATALOG } from '@shared/capsuleCatalog.ts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   BackHandler,
   Pressable,
@@ -122,6 +122,8 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
   const side = shape.screenPadding;
   const queryClient = useQueryClient();
   const [look, setLook] = useState<Look>(() => parse(saved));
+  // What the saved look wears keeps a part that became a pack accessory on offer (§4.U).
+  const kept = useMemo(() => parse(saved), [saved]);
   const [turn, setTurn] = useState(0);
   const [slot, setSlot] = useState<LookSlot>('h');
   const [leaving, setLeaving] = useState(false);
@@ -190,7 +192,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
     slot === 'c'
       ? [{ rack: null, pack: null, items: colorItems() }]
       : CAPSULE_CATALOG.racks.flatMap((r) =>
-          packsFor(r.id, slot).map((g) => ({ rack: r.id, pack: g.pack, items: g.items })),
+          packsFor(r.id, slot, kept).map((g) => ({ rack: r.id, pack: g.pack, items: g.items })),
         );
   const wornList = worn(look);
   const slotName = CAPSULE_CATALOG.slots.find((s) => s.id === slot)?.name ?? '';
@@ -258,7 +260,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
               label={tr.capsule.shuffle}
               onPress={() => {
                 setTurn((n) => n + 1);
-                put(shuffle(Math.random), SHUFFLE);
+                put(shuffle(Math.random, look), SHUFFLE);
               }}
             >
               <ShuffleGlyph turn={turn} />
@@ -369,7 +371,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
                     </T>
                     <T v="fine">
                       {tr.capsule.packCount(
-                        packItems(group.rack, group.pack).length,
+                        packItems(group.rack, group.pack, kept).length,
                         group.items.length,
                       )}
                     </T>
@@ -379,7 +381,7 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
                     variant="glassy"
                     label={tr.capsule.wearPack}
                     onPress={() =>
-                      group.pack && group.rack && put(wearPack(look, group.rack, group.pack))
+                      group.pack && group.rack && put(wearPack(look, group.rack, group.pack, kept))
                     }
                   />
                 </View>

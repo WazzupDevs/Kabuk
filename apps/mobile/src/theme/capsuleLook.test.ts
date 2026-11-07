@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
 import LOOK from './capsuleDrawing';
-import { eyeLayers, lookParts, lookSvg, posedEyes } from './capsuleLook';
+import { GIFT_CATALOG } from '../../../../supabase/functions/_shared/pure/giftCatalog.ts';
+
+import { ACCESSORY_ART, accessoryFigure } from './capsuleAccessories';
+import { eyeLayers, lookParts, lookPop, lookSvg, posedEyes } from './capsuleLook';
 
 describe('capsule look', () => {
   it('reads a stored code into slots, the first id a slot', () => {
@@ -16,6 +19,33 @@ describe('capsule look', () => {
     const svg = lookSvg('c:pembe e:klasik');
     expect(svg.startsWith('<svg viewBox="0 0 48 48"')).toBe(true);
     expect(svg).toContain('#FF5C93');
+  });
+});
+
+describe('pack accessory', () => {
+  it('has a drawing for every accessory of the catalog', () => {
+    for (const a of GIFT_CATALOG.accessories) expect(ACCESSORY_ART[a.id]).toBeDefined();
+  });
+
+  it('draws the worn accessory over the capsule, in every drawing', () => {
+    const plain = lookSvg('c:mor e:klasik');
+    const worn = lookSvg('c:mor e:klasik x:tac');
+    expect(worn).not.toBe(plain);
+    expect(worn).toContain('scale(0.53846)');
+    expect(worn.endsWith('</g></svg>')).toBe(true);
+    expect(lookSvg('c:mor e:klasik x:tac', 'fig')).toContain('scale(0.53846)');
+    expect(lookPop('c:mor e:klasik x:tac')).toContain('scale(0.53846)');
+    // The eyes stay where the blink finds them.
+    expect(eyeLayers(worn)?.above).toContain('scale(0.53846)');
+  });
+
+  it('draws nothing for an unknown accessory', () => {
+    expect(lookSvg('c:mor e:klasik x:yok')).toBe(lookSvg('c:mor e:klasik'));
+  });
+
+  it('draws a silhouette in one colour', () => {
+    const fills = accessoryFigure('tac', '#123456').match(/fill="#[0-9A-Fa-f]+"/g) ?? [];
+    expect(new Set(fills)).toEqual(new Set(['fill="#123456"']));
   });
 });
 
