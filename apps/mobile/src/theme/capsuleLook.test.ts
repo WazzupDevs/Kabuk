@@ -161,6 +161,18 @@ describe('posed eyes', () => {
     const blink = posedEyes(svg, { blink: true });
     expect(blink).toContain(inner(layers.closed));
   });
+  it('splits the ring stage, whose eyes lie inside the clipped body, into whole drawings', () => {
+    const card = lookCard('c:mor e:klasik x:kuzeyisigi');
+    const layers = eyeLayers(card);
+    expect(layers).not.toBeNull();
+    if (!layers) return;
+    const balanced = (x: string) =>
+      (x.match(/<g\b/g) ?? []).length === (x.match(/<\/g>/g) ?? []).length;
+    for (const x of [layers.below, layers.open, layers.closed, layers.above ?? ''])
+      expect(balanced(x), x).toBe(true);
+    expect(layers.open).toContain('clip-path="url(#cpc');
+    expect(layers.open).toContain('<clipPath id="cpc');
+  });
   it('splits every part of the catalogue, the eyes never inside a group', () => {
     const EYE = /class="eye"/;
     for (const mode of ['av', 'fig'] as const)

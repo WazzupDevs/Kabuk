@@ -156,12 +156,34 @@ export function eyeLayers(svg: string): EyeLayers | null {
   const end = '</svg>';
   if (!root || !eyes || first < 0 || !svg.endsWith(end)) return null;
   const rest = svg.replace(EYE, '');
+  const before = rest.slice(0, first);
   const after = rest.slice(first, rest.length - end.length);
+  // The stage drawings (lookPop, lookCard) hold the eyes inside the clipped body's groups: every
+  // layer carries the clips and the groups open at the eyes, and closes them (Sentry MASA-8).
+  const opens = openGroups(before.slice(root.length));
+  if (!opens) return null;
+  const closes = '</g>'.repeat(opens.length);
+  const clips = before.match(/<defs\b[\s\S]*?<\/defs>|<clipPath\b[\s\S]*?<\/clipPath>/g) ?? [];
+  const head = root + clips.join('') + opens.join('');
   const shut = `<g transform="translate(0 ${EYE_LINE}) scale(1 ${BLINK_SQUASH}) translate(0 ${-EYE_LINE})">${eyes.join('')}</g>`;
   return {
-    below: rest.slice(0, first) + end,
-    open: root + eyes.join('') + end,
-    closed: root + shut + end,
-    above: after.trim() ? root + after + end : null,
+    below: before + closes + end,
+    open: head + eyes.join('') + closes + end,
+    closed: head + shut + closes + end,
+    above: after.replace(/<\/g>/g, '').trim() ? head + after + end : null,
   };
+}
+
+// The `<g>` tags still open at the end of `text`, outermost first; null when anything else is left
+// open or a tag closes one not open.
+function openGroups(text: string): string[] | null {
+  const stack: { name: string; tag: string }[] = [];
+  for (const m of text.matchAll(/<(\/?)([A-Za-z][\w:-]*)\b[^>]*?(\/?)>/g)) {
+    const [tag, closing, name = '', selfClosing] = m;
+    if (selfClosing) continue;
+    if (closing) {
+      if (stack.pop()?.name !== name) return null;
+    } else stack.push({ name, tag });
+  }
+  return stack.every((s) => s.name === 'g') ? stack.map((s) => s.tag) : null;
 }
