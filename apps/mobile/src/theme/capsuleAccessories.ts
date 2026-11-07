@@ -434,14 +434,16 @@ function placed(part: string, dx: number, dy: number, s: number): string {
   return `<g transform="translate(${dx.toFixed(3)} ${dy.toFixed(3)}) scale(${s.toFixed(5)})">${moved}</g>`;
 }
 
-export type AccessoryLayers = { back: string; skin: string; front: string };
+export type AccessoryLayers = { back: string; skin: string; front: string; edge: string };
 
 // The worn accessories' layers for the app's capsule drawing (its 48-unit box); an unknown id (an
 // accessory a newer catalog has) is left out: the old app draws the capsule without it.
-export function accessoryLayers(ids: readonly string[]): AccessoryLayers {
+// `edge` (canvas units, 0 for none): a thin white contour under the art (the card, where the
+// accessory reaches over its ring onto the card's ground).
+export function accessoryLayers(ids: readonly string[], edge = 0): AccessoryLayers {
   const known = ids.filter((id) => ACCESSORY_ART[id] !== undefined);
   const drawn = [...new Set(known)].sort((a, b) => rank(a) - rank(b));
-  const out: AccessoryLayers = { back: '', skin: '', front: '' };
+  const out: AccessoryLayers = { back: '', skin: '', front: '', edge: '' };
   for (const id of drawn) {
     const a = ACCESSORY_ART[id];
     if (!a) continue;
@@ -449,6 +451,7 @@ export function accessoryLayers(ids: readonly string[]): AccessoryLayers {
     if (a.back) out.back += placed(a.back, LEFT, dy, SCALE);
     if (a.skin) out.skin += placed(a.skin, LEFT, dy, SCALE);
     out.front += placed(a.art, LEFT, dy, SCALE);
+    if (edge > 0) out.edge += placed(contourOf(id, a.art, edge), LEFT, dy, SCALE);
   }
   return out;
 }
@@ -526,30 +529,49 @@ function withoutGroup(svg: string, mark: RegExp): string {
   }
 }
 
-export function accessorySticker(id: string): string | null {
-  const a = ACCESSORY_ART[id];
-  if (!a?.box) return null;
-  const [x, y, w, h] = a.box;
-  const edge = Math.max(w, h) * STICKER_EDGE;
-  const art = (a.skin ?? '') + a.art;
+// A white copy of a drawing, every shape `edge` thicker on each side, still and without its shine:
+// laid under the drawing it is its outline (a sticker's white edge, a card's thin contour).
+export function edgeOf(art: string, edge: number, ink = '#FFFFFF', tag = 'edge'): string {
   const white = withoutGroup(art, /<g data-fx="glint"/)
     .replace(/ data-fx="[^"]*" data-o="[^"]*" data-k="[^"]*"/g, '')
-    .replace(/ id="([^"]*)"/g, ' id="$1-edge"')
-    .replace(/url\(#([^)]*)\)/g, 'url(#$1-edge)')
+    .replace(/ id="([^"]*)"/g, ` id="$1-${tag}"`)
+    .replace(/url\(#([^)]*)\)/g, `url(#$1-${tag})`)
     .replace(/ (?:fill-)?opacity="[^"]*"/g, '')
-    .replace(/fill="(?:#[0-9A-Fa-f]{3,8}|url\([^)]*\))"/g, 'fill="#FFFFFF"')
-    .replace(/stroke="(?:#[0-9A-Fa-f]{3,8}|url\([^)]*\))"/g, 'stroke="#FFFFFF"')
+    .replace(/fill="(?:#[0-9A-Fa-f]{3,8}|url\([^)]*\))"/g, `fill="${ink}"`)
+    .replace(/stroke="(?:#[0-9A-Fa-f]{3,8}|url\([^)]*\))"/g, `stroke="${ink}"`)
     .replace(
       /stroke-width="([\d.]+)"/g,
       (_m, sw: string) => `stroke-width="${num(Number(sw) + edge * 2)}"`,
     )
     .replace(
       /<(path|circle|rect|ellipse)\b(?![^>]*\bstroke=)/g,
-      `<$1 stroke="#FFFFFF" stroke-width="${num(edge * 2)}"`,
+      `<$1 stroke="${ink}" stroke-width="${num(edge * 2)}"`,
     );
+  return `<g stroke-linejoin="round" stroke-linecap="round">${white}</g>`;
+}
+
+// A contour only outside the drawing: its white copy masked by the drawing itself (black, the same
+// size), so a see-through part (Kuzey ışığı's ribbons) does not show white through it.
+function contourOf(id: string, art: string, edge: number): string {
+  const mask = `${id}-contour`;
+  return (
+    `<mask id="${mask}" maskUnits="userSpaceOnUse" x="-80" y="-80" width="260" height="300">` +
+    `<rect x="-80" y="-80" width="260" height="300" fill="#FFFFFF"/>` +
+    `${edgeOf(art, 0, '#000000', 'cut')}</mask>` +
+    `<g mask="url(#${mask})">${edgeOf(art, edge)}</g>`
+  );
+}
+
+export function accessorySticker(id: string): string | null {
+  const a = ACCESSORY_ART[id];
+  if (!a?.box) return null;
+  const [x, y, w, h] = a.box;
+  const edge = Math.max(w, h) * STICKER_EDGE;
+  const art = (a.skin ?? '') + a.art;
+  const white = edgeOf(art, edge);
   const pad = edge * 1.5;
   const box = `${num(x - pad)} ${num(y - pad)} ${num(w + pad * 2)} ${num(h + pad * 2)}`;
-  return `<svg viewBox="${box}" width="100%" height="100%" aria-hidden="true"><g stroke-linejoin="round" stroke-linecap="round">${white}</g>${art}</svg>`;
+  return `<svg viewBox="${box}" width="100%" height="100%" aria-hidden="true">${white}${art}</svg>`;
 }
 
 export function stickerRatio(id: string): number {
