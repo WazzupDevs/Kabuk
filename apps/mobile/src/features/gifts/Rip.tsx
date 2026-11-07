@@ -1,6 +1,6 @@
 import type { GiftTier } from '@shared/gifts.ts';
 import { type ReactNode, useEffect, useId, useState } from 'react';
-import { View } from 'react-native';
+import { Image, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Reanimated, {
   Easing,
@@ -412,44 +412,108 @@ function ripSize(stage: Stage) {
   return { R, tearY, s: stage.s, zig: zigzag(R.w, tearY, stage.s) };
 }
 
-function RipStrip({ pack, stage, id }: { pack: ShownPack; stage: Stage; id: string }) {
+// The tear's band: only the zigzag's height of the pack is an SVG (a thin picture); above and
+// under it the pack is the plain image, cut straight, which the ring has already decoded (the
+// owner's report, 7 Kasım: two pack-sized SVG pictures per pack were drawn on the main thread
+// and pushed everything else out of the picture cache).
+function bandOf(stage: Stage) {
   const { R, tearY, s, zig } = ripSize(stage);
-  const stripH = tearY + (ZIG + 2) * s;
+  const top = tearY - ZIG * s - 1;
+  const h = ZIG * 2 * s + 2;
+  // The zigzag in the band's own frame.
+  const line = zig
+    .split(' ')
+    .map((p) => {
+      const [x, y] = p.split(',');
+      return `${x},${(Number(y) - top).toFixed(2)}`;
+    })
+    .join(' ');
+  return { R, top, h, line };
+}
+
+function PackCut({ pack, R, from, to }: { pack: ShownPack; R: Rect; from: number; to: number }) {
   return (
-    <Svg width={R.w} height={stripH} nativeID={svgKey('rip-strip', pack, R.w, stripH)}>
-      <Defs>
-        <ClipPath id={id}>
-          <Polygon points={`0,0 ${R.w},0 ${zig.split(' ').reverse().join(' ')}`} />
-        </ClipPath>
-      </Defs>
-      <SvgImage
-        href={PACK_ART[pack]}
-        width={R.w}
-        height={R.h}
-        preserveAspectRatio="xMidYMid meet"
-        clipPath={`url(#${id})`}
+    <View
+      style={{
+        position: 'absolute',
+        left: 0,
+        top: from,
+        width: R.w,
+        height: Math.max(0, to - from),
+        overflow: 'hidden',
+      }}
+    >
+      <Image
+        source={PACK_ART[pack]}
+        accessibilityIgnoresInvertColors
+        resizeMode="contain"
+        style={{ position: 'absolute', left: 0, top: -from, width: R.w, height: R.h }}
       />
-    </Svg>
+    </View>
+  );
+}
+
+function Band({
+  pack,
+  stage,
+  id,
+  above,
+}: {
+  pack: ShownPack;
+  stage: Stage;
+  id: string;
+  above: boolean;
+}) {
+  const { R, top, h, line } = bandOf(stage);
+  const points = above
+    ? `0,0 ${R.w},0 ${line.split(' ').reverse().join(' ')}`
+    : `${line} ${R.w},${h} 0,${h}`;
+  return (
+    <View style={{ position: 'absolute', left: 0, top, width: R.w, height: h }}>
+      <Svg
+        width={R.w}
+        height={h}
+        nativeID={svgKey(above ? 'rip-band-up' : 'rip-band-down', pack, R.w, h)}
+      >
+        <Defs>
+          <ClipPath id={id}>
+            <Polygon points={points} />
+          </ClipPath>
+        </Defs>
+        <SvgImage
+          href={PACK_ART[pack]}
+          x={0}
+          y={-top}
+          width={R.w}
+          height={R.h}
+          preserveAspectRatio="xMidYMid meet"
+          clipPath={`url(#${id})`}
+        />
+      </Svg>
+    </View>
+  );
+}
+
+function RipStrip({ pack, stage, id }: { pack: ShownPack; stage: Stage; id: string }) {
+  const { R, tearY, s } = ripSize(stage);
+  const stripH = tearY + (ZIG + 2) * s;
+  const { top } = bandOf(stage);
+  return (
+    <View style={{ width: R.w, height: stripH }}>
+      <PackCut pack={pack} R={R} from={0} to={top} />
+      <Band pack={pack} stage={stage} id={id} above />
+    </View>
   );
 }
 
 function RipBody({ pack, stage, id }: { pack: ShownPack; stage: Stage; id: string }) {
-  const { R, zig } = ripSize(stage);
+  const { R } = ripSize(stage);
+  const { top, h } = bandOf(stage);
   return (
-    <Svg width={R.w} height={R.h} nativeID={svgKey('rip-body', pack, R.w, R.h)}>
-      <Defs>
-        <ClipPath id={id}>
-          <Polygon points={`${zig} ${R.w},${R.h} 0,${R.h}`} />
-        </ClipPath>
-      </Defs>
-      <SvgImage
-        href={PACK_ART[pack]}
-        width={R.w}
-        height={R.h}
-        preserveAspectRatio="xMidYMid meet"
-        clipPath={`url(#${id})`}
-      />
-    </Svg>
+    <View style={{ width: R.w, height: R.h }}>
+      <Band pack={pack} stage={stage} id={id} above={false} />
+      <PackCut pack={pack} R={R} from={top + h} to={R.h} />
+    </View>
   );
 }
 
