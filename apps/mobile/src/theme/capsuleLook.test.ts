@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import LOOK from './capsuleDrawing';
-import { GIFT_CATALOG } from '@shared/giftCatalog.ts';
+import { GIFT_CATALOG } from '../../../../supabase/functions/_shared/pure/giftCatalog.ts';
 
 import { ACCESSORY_ART, accessoryFigure } from './capsuleAccessories';
 import { eyeLayers, lookParts, lookPop, lookSvg, posedEyes } from './capsuleLook';

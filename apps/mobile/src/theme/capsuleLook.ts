@@ -1,4 +1,4 @@
-import { accessoryOf } from '@shared/gifts.ts';
+import { accessoryOf } from '../../../../supabase/functions/_shared/pure/gifts.ts';
 
 import { accessoryLayer } from './capsuleAccessories';
 import LOOK, { type LookParts } from './capsuleDrawing';

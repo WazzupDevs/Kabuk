@@ -1,4 +1,4 @@
-import type { GiftPack, GiftTier } from '@shared/gifts.ts';
+import type { GiftPack, GiftTier } from '../../../../supabase/functions/_shared/pure/gifts.ts';
 
 import type { ColorScheme as Scheme } from './tokens';
 
