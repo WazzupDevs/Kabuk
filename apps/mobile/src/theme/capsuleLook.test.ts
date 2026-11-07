@@ -178,4 +178,31 @@ describe('posed eyes', () => {
             expect(eyeLayers(drawn), code).not.toBeNull();
           }
   });
+  // MASA-8: the ring's capsule (lookPop) has its eyes inside its clip and body groups; every layer
+  // must be a whole SVG, for every accessory worn.
+  it('splits the ring capsule into whole SVGs, with every accessory', () => {
+    const whole = (x: string) => {
+      const stack: string[] = [];
+      for (const m of x.matchAll(/<(\/?)([A-Za-z][\w:-]*)\b[^>]*?(\/?)>/g)) {
+        if (m[3]) continue;
+        if (m[1]) {
+          if (stack.pop() !== m[2]) return false;
+        } else stack.push(m[2] ?? '');
+      }
+      return stack.length === 0;
+    };
+    const looks = [
+      'c:krem e:klasik',
+      ...GIFT_CATALOG.accessories.map((a) => `c:krem e:klasik x:${a.id}`),
+    ];
+    for (const code of looks)
+      for (const drawn of [lookPop(code), lookPop(code, '', 2), lookSvg(code), lookCard(code)]) {
+        const layers = eyeLayers(drawn);
+        if (!layers) continue;
+        for (const layer of [layers.below, layers.open, layers.closed, layers.above]) {
+          if (layer) expect(whole(layer), `${code}: ${layer}`).toBe(true);
+        }
+        expect(layers.open, code).toContain('class="eye"');
+      }
+  });
 });
