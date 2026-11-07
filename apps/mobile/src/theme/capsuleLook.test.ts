@@ -4,7 +4,7 @@ import LOOK from './capsuleDrawing';
 import { GIFT_CATALOG } from '../../../../supabase/functions/_shared/pure/giftCatalog.ts';
 
 import { ACCESSORY_ART, accessoryFigure } from './capsuleAccessories';
-import { eyeLayers, lookParts, lookPop, lookSvg, posedEyes } from './capsuleLook';
+import { eyeLayers, lookCard, lookParts, lookPop, lookSvg, posedEyes } from './capsuleLook';
 
 describe('capsule look', () => {
   it('reads a stored code into slots, the first id a slot', () => {
@@ -84,6 +84,13 @@ describe('pack accessory', () => {
     // The front comes after the capsule's own group closes, outside the halo's.
     const front = svg.indexOf('kuzeyisigi-');
     expect(front).toBeGreaterThan(body);
+  });
+
+  it('gives the card room for the highest accessories, the circle where it was', () => {
+    const svg = lookCard('c:mor e:klasik x:ejderboynuzu');
+    expect(svg).toContain('viewBox="-6 -26 60 75"');
+    expect(svg).toContain('M-6 -26H54V24H48A24 24 0 0 1 0 24H-6Z');
+    expect(svg).toContain('-contour');
   });
 
   it('draws nothing for an unknown accessory', () => {

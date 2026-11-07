@@ -88,6 +88,18 @@ export function lookPop(code: string, emo = '', edge = 0): string {
 // units (about a pixel and a half on the card).
 export const CARD_EDGE = 0.9;
 
+// The gift card's stage (the owner's call, 7 Kasım): the editor's stage (lookPop) with room above
+// the circle for what reaches highest (Alev saç, Ejder boynuzu and their rising sparks), the
+// accessories' contour on. The circle stays 48 wide at (0, 0); the box starts CARD_TOP above it.
+export const CARD_TOP = 26;
+export const CARD_BOX = { x: -6, y: -CARD_TOP, width: 60, height: 49 + CARD_TOP } as const;
+
+export function lookCard(code: string): string {
+  return lookPop(code, '', CARD_EDGE)
+    .replace('viewBox="-6 -8 60 57"', `viewBox="-6 ${-CARD_TOP} 60 ${49 + CARD_TOP}"`)
+    .replace(POP_CLIP_PATH, `<path d="M-6 ${-CARD_TOP}H54V24H48A24 24 0 0 1 0 24H-6Z"/>`);
+}
+
 export function lookGround(code: string): string {
   return LOOK.bg(lookParts(code));
 }
