@@ -55,6 +55,7 @@ import {
 import { TierGems } from '@/features/gifts/parts';
 import { giftKeys, useGiftState } from '@/features/gifts/queries';
 import { accessoryById } from '@/features/gifts/model';
+import { FxMoves } from '@/components/FxSvg';
 import { CapsuleStage, type Play } from '@/features/capsule/CapsuleStage';
 import { FEELING_MOVES, JUMP, type Move, SHUFFLE } from '@/features/capsule/motion';
 import { profileViewKeys, useProfileView } from '@/features/profile/queries';
@@ -291,19 +292,21 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
         }
         stay={
           <View style={{ marginTop: HERO_TOP, alignItems: 'center' }}>
-            <CapsuleStage
-              testID="capsule-preview"
-              look={now}
-              feeling={feeling}
-              play={play}
-              beat={beat}
-              size={KIT.size.capsuleHero - KIT.size.capsuleRing * 2}
-              ring={KIT.size.capsuleRing}
-              ringColor={ringColor}
-              label={tr.capsule.tapHead}
-              hint={null}
-              onPress={feel}
-            />
+            <FxMoves>
+              <CapsuleStage
+                testID="capsule-preview"
+                look={now}
+                feeling={feeling}
+                play={play}
+                beat={beat}
+                size={KIT.size.capsuleHero - KIT.size.capsuleRing * 2}
+                ring={KIT.size.capsuleRing}
+                ringColor={ringColor}
+                label={tr.capsule.tapHead}
+                hint={null}
+                onPress={feel}
+              />
+            </FxMoves>
           </View>
         }
         hide={

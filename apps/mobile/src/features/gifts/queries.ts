@@ -10,7 +10,7 @@ import { giftsApi } from '@/lib/api';
 import { FEEL_ERROR } from '@/lib/hapticMoments';
 
 // Hediye paketleri (docs/SPEC_V4.md §4.U): the caller's packs, login count and accessories, one
-// query for the Aktiviteler card, Paketler and Aksesuarlarım.
+// query for the Aktiviteler card, Paketler and Kapsülünü süsle.
 export const giftKeys = { state: ['gifts', 'state'] as const };
 
 export function useGiftState() {
@@ -52,23 +52,6 @@ export function useEquip() {
   return useMutation({
     meta: FEEL_ERROR,
     mutationFn: (accessoryId: string | null) => giftsApi.equip(accessoryId),
-    onSuccess: async (res) => {
-      queryClient.setQueryData<GiftState>(giftKeys.state, (s) =>
-        s ? { ...s, worn: res.worn, equipped: res.equipped } : s,
-      );
-      if (publicId)
-        await queryClient.invalidateQueries({ queryKey: profileViewKeys.view(publicId) });
-    },
-  });
-}
-
-// Puts the whole worn set on (Aksesuarlarım's Çıkar takes one off the set).
-export function useWear() {
-  const queryClient = useQueryClient();
-  const publicId = useProfile().data?.public_id;
-  return useMutation({
-    meta: FEEL_ERROR,
-    mutationFn: (accessoryIds: readonly string[]) => giftsApi.wear(accessoryIds),
     onSuccess: async (res) => {
       queryClient.setQueryData<GiftState>(giftKeys.state, (s) =>
         s ? { ...s, worn: res.worn, equipped: res.equipped } : s,

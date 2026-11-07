@@ -1,5 +1,4 @@
 import type { GiftPackView, GiftState } from '@shared/api/gifts.ts';
-import { CAPSULE_CATALOG } from '@shared/capsuleCatalog.ts';
 import { GIFT_CATALOG } from '@shared/giftCatalog.ts';
 import { GIFT_PACKS, GIFT_TIERS, type GiftPack, type GiftTier } from '@shared/gifts.ts';
 
@@ -41,23 +40,6 @@ export const ACCESSORIES: readonly Accessory[] = GIFT_CATALOG.accessories.flatMa
 
 export function accessoryById(id: string | null | undefined): Accessory | null {
   return ACCESSORIES.find((a) => a.id === id) ?? null;
-}
-
-// What Aksesuarlarım shows this person: every accessory a pack gives, and a retired one only to
-// its owner (§4.U).
-export function shownAccessories(owned: ReadonlySet<string>): Accessory[] {
-  return ACCESSORIES.filter((a) => !a.retired || owned.has(a.id));
-}
-
-// Aksesuarlarım's groups: every tier with its shown accessories in catalog order.
-export function byTier(owned: ReadonlySet<string>): { tier: GiftTier; items: Accessory[] }[] {
-  const shown = shownAccessories(owned);
-  return GIFT_TIERS.map((tier) => ({ tier, items: shown.filter((a) => a.tier === tier) }));
-}
-
-// An accessory's slots by name ("Baş · Boyun").
-export function slotNames(a: Accessory): string {
-  return a.slots.map((s) => CAPSULE_CATALOG.slots.find((x) => x.id === s)?.name ?? s).join(' · ');
 }
 
 export function packView(state: GiftState, pack: GiftPack): GiftPackView | null {

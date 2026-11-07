@@ -58,12 +58,22 @@ import { SPACING } from '@/theme/tokens';
 import { AuraBackground, AuraBand, useGroundSize } from '@/aura/AuraBackground';
 import { type CapIconName } from '@/aura/CapIcon';
 import { Btn, Glass, Round, T } from '@/aura/kit';
+import { FxMoves } from '@/components/FxSvg';
 
 // The table (docs/design/aura → Masa; docs/SPEC_V4.md §4.E, §4.F): the bar (back; the chat, the
 // owner's "Davet et", Masadakiler, the owner's "Bitir" or a participant's "Ayrıl"), the table's card
 // (its people, name, headcount and lobby state, the owner's "Lobiye aç" or "Lobiden çek"), then the
 // games. The table's end is Masa bitti; a participant who leaves sees "Masadan ayrıldın".
+// The accessories move here (the owner's call, 7 Kasım; components/FxSvg.tsx → FxMoves).
 export default function TableScreen() {
+  return (
+    <FxMoves>
+      <TableScreenBody />
+    </FxMoves>
+  );
+}
+
+function TableScreenBody() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { scheme } = useTheme();
   const insets = useSafeAreaInsets();

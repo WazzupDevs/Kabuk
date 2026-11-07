@@ -12,6 +12,7 @@ import Reanimated, {
 } from 'react-native-reanimated';
 
 import { Btn, T } from '@/aura/kit';
+import { FxMoves } from '@/components/FxSvg';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
 import { useReduceMotion } from '@/lib/useReduceMotion';
@@ -219,7 +220,9 @@ export function OpenedCard({
             <Reanimated.View
               style={[{ width: w, height: h, borderRadius: radius, overflow: 'hidden' }, tiltStyle]}
             >
-              <CardFace id={accessory.id} tier={tier} width={w} height={h} />
+              <FxMoves>
+                <CardFace id={accessory.id} tier={tier} width={w} height={h} />
+              </FxMoves>
               <Reanimated.View
                 pointerEvents="none"
                 style={[
