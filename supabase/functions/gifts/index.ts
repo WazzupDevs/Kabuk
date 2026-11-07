@@ -8,6 +8,7 @@ import { dbError } from '../_shared/db.ts';
 import { z } from '../_shared/deps.ts';
 import { handle } from '../_shared/http.ts';
 import { istanbulToday } from '../_shared/pure/age.ts';
+import { testPacksAllowed } from '../_shared/pure/devProject.ts';
 import type { GiftsRequest, GiftState } from '../_shared/pure/api/gifts.ts';
 import { AppError } from '../_shared/pure/errors.ts';
 import { GIFT_CATALOG } from '../_shared/pure/giftCatalog.ts';
@@ -55,6 +56,34 @@ function isoDay(now: Date): string {
 
 type Owned = GiftState['owned'];
 
+// The dev project only (pure/devProject.ts → testPacksAllowed): an unopened pack is always there
+// while an accessory is left to get. Locks only gift_progress (rule 10, like a login).
+const TEST_PACKS = testPacksAllowed(Deno.env.get('SUPABASE_URL'));
+
+// On the dev project every pack opens (the owner's call, 7 Kasım), from the same unopened count.
+function lockedHere(locked: boolean): boolean {
+  return locked && !TEST_PACKS;
+}
+
+async function topUpTestPack(userId: string): Promise<void> {
+  if (!TEST_PACKS) return;
+  // Only an account that finished onboarding, as a login.
+  const profile = await db.from('profiles').select('id').eq('id', userId).maybeSingle();
+  if (profile.error) throw dbError('profiles', profile.error);
+  if (!profile.data) return;
+  if (ownsAll(new Set((await ownedOf(userId)).map((a) => a.id)))) return;
+  const added = await db
+    .from('gift_progress')
+    .upsert({ user_id: userId, unopened: 1 }, { onConflict: 'user_id', ignoreDuplicates: true });
+  if (added.error) throw dbError('gift_progress', added.error);
+  const topped = await db
+    .from('gift_progress')
+    .update({ unopened: 1, updated_at: new Date().toISOString() })
+    .eq('user_id', userId)
+    .eq('unopened', 0);
+  if (topped.error) throw dbError('gift_progress', topped.error);
+}
+
 async function ownedOf(userId: string): Promise<Owned> {
   const { data, error } = await db
     .from('user_accessories')
@@ -89,8 +118,8 @@ async function state(userId: string, progress?: { logins: number; unopened: numb
         ? [
             {
               id: p.id,
-              locked: p.locked,
-              unopened: p.locked ? 0 : counted.unopened,
+              locked: lockedHere(p.locked),
+              unopened: lockedHere(p.locked) ? 0 : counted.unopened,
               odds: tierOdds(p.id, ownedIds),
             },
           ]
@@ -106,9 +135,11 @@ async function state(userId: string, progress?: { logins: number; unopened: numb
 }
 
 async function open(userId: string, pack: GiftPack) {
-  if (GIFT_CATALOG.packs.find((p) => p.id === pack)?.locked !== false) {
+  const listed = GIFT_CATALOG.packs.find((p) => p.id === pack);
+  if (!listed || lockedHere(listed.locked)) {
     throw new AppError('pack_locked', 'This pack cannot be opened yet.');
   }
+  await topUpTestPack(userId);
   for (let attempt = 0; attempt < MAX_DRAWS; attempt++) {
     const owned = new Set((await ownedOf(userId)).map((a) => a.id));
     const drawn = drawAccessory(pack, owned, (n) => uniformInt(n, cryptoWord));
@@ -120,7 +151,10 @@ async function open(userId: string, pack: GiftPack) {
     });
     if (error) throw dbError('gifts_open', error);
     if (data === 'no_pack') throw new AppError('no_pack', 'No unopened pack.');
-    if (data === 'ok') return { accessory: drawn, state: await state(userId) };
+    if (data === 'ok') {
+      await topUpTestPack(userId);
+      return { accessory: drawn, state: await state(userId) };
+    }
   }
   throw new Error('gifts_open kept meeting owned accessories');
 }
@@ -132,6 +166,7 @@ Deno.serve(
 
     switch (body.action) {
       case 'state':
+        await topUpTestPack(user.id);
         return state(user.id);
 
       case 'login': {
@@ -143,6 +178,10 @@ Deno.serve(
         if (error) throw dbError('gifts_login', error);
         if (data === null) throw new AppError('onboarding_required', 'Complete onboarding first.');
         const counted = data as { logins: number; unopened: number };
+        if (TEST_PACKS) {
+          await topUpTestPack(user.id);
+          return state(user.id);
+        }
         return state(user.id, { logins: counted.logins, unopened: counted.unopened });
       }
 
