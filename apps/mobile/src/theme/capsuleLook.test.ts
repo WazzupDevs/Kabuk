@@ -75,6 +75,17 @@ describe('pack accessory', () => {
     expect(halo.indexOf('data-fx="halo"')).toBeLessThan(halo.indexOf('<rect x="10" y="8"'));
   });
 
+  it('puts the stage accessory with the capsule, not inside its halo', () => {
+    const svg = lookPop('c:mor e:klasik x:kuzeyisigi');
+    const halo = svg.indexOf('data-fx="halo"');
+    const body = svg.indexOf('<g class="cp-b">');
+    expect(halo).toBeGreaterThan(-1);
+    expect(halo).toBeLessThan(body);
+    // The front comes after the capsule's own group closes, outside the halo's.
+    const front = svg.indexOf('kuzeyisigi-');
+    expect(front).toBeGreaterThan(body);
+  });
+
   it('draws nothing for an unknown accessory', () => {
     expect(lookSvg('c:mor e:klasik x:yok')).toBe(lookSvg('c:mor e:klasik'));
   });

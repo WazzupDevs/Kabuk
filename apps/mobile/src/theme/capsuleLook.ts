@@ -73,9 +73,11 @@ export function lookPop(code: string, emo = ''): string {
   let svg = LOOK.pop(parts, emo).replace(POP_CLIP, POP_CLIP_PATH);
   if (eyes) svg = svg.replace(EYE_SHAPE, '');
   svg = withSkin(svg, layers.skin);
+  // Inside the clipped group, over the capsule and under a feeling's things around it; before the
+  // halo goes in (its own groups would take the first `</g></g>`).
+  if (layers.front) svg = svg.replace('</g></g>', `${layers.front}</g></g>`);
   if (layers.back) svg = svg.replace(/(<g clip-path="url\(#cpc\d+\)">)/, `$1${layers.back}`);
-  // Inside the clipped group, over the capsule and under a feeling's things around it.
-  return layers.front ? svg.replace('</g></g>', `${layers.front}</g></g>`) : svg;
+  return svg;
 }
 
 export function lookGround(code: string): string {
