@@ -213,7 +213,7 @@ describe('gifts/equip', () => {
     const off = await gifts(a, { action: 'equip', accessoryId: null });
     expect(off).toEqual({
       status: 200,
-      body: { capsuleLook: 'c:limon e:koyu h:anten', equipped: null },
+      body: { capsuleLook: 'c:limon e:koyu h:anten', worn: [], equipped: null },
     });
     expect(await gifts(a, { action: 'equip', accessoryId: null })).toEqual(off);
   });
