@@ -63,13 +63,23 @@ import { useFlash } from '@/lib/useFlash';
 import { nameInk } from '@/theme/nameInk';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SPACING } from '@/theme/tokens';
+import { FxMoves } from '@/components/FxSvg';
 
 // The venue's chat room (docs/SPEC_V3.md §7; skall tuvali, Mekan sohbeti panoları): everyone with a
 // live table at the venue reads and writes, with the check-in's identity (docs/SPEC_V4.md §4.D):
 // the capsule and its nick, or the name and the photo. The line over the message bar says which,
 // and changes it once per check-in. A sender's face opens their card (profile, mute, report,
 // block); a held message its faces and actions (reply; report, or delete one's own).
+// The accessories move here (the owner's call, 7 Kasım; components/FxSvg.tsx → FxMoves).
 export default function VenueChatScreen() {
+  return (
+    <FxMoves>
+      <VenueChatScreenBody />
+    </FxMoves>
+  );
+}
+
+function VenueChatScreenBody() {
   const { colors, scheme } = useTheme();
   const queryClient = useQueryClient();
   const table = useActiveTable();

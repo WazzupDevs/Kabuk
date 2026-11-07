@@ -18,7 +18,7 @@ import { Screen } from '@/components/Screen';
 import { isShownPack, PACK_RATIO, type ShownPack } from '@/features/gifts/art';
 import { packName, packsInOrder } from '@/features/gifts/model';
 import { OddsSheet } from '@/features/gifts/OddsSheet';
-import { OpenedCard } from '@/features/gifts/OpenedCard';
+import { openedCardWidth, OpenedCard } from '@/features/gifts/OpenedCard';
 import {
   DOTS_END,
   frontRect,
@@ -28,12 +28,15 @@ import {
   RingDots,
   useRing,
 } from '@/features/gifts/PackRing';
-import { GiftTopBar, LoginBar, SoonTag } from '@/features/gifts/parts';
+import { CardFace, GiftTopBar, LoginBar, SoonTag } from '@/features/gifts/parts';
+import { CARD_RATIO } from '@/features/gifts/art';
+import { FxMoves } from '@/components/FxSvg';
 import { useGiftState, useOpenPack } from '@/features/gifts/queries';
-import { Rip } from '@/features/gifts/Rip';
+import { Rip, ripRects, RipWarm } from '@/features/gifts/Rip';
 import { type Rect, type Stage, useStage } from '@/features/gifts/stage';
 import { errorMessage } from '@/i18n/errors';
 import { tr } from '@/i18n/tr';
+import { PACK_BUTTON } from '@/theme/gifts';
 import { GIFT_MOTION } from '@/theme/giftMotion';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ICON, SPACING } from '@/theme/tokens';
@@ -100,6 +103,8 @@ function Packs({
   const [front, setFront] = useState(0);
   const [odds, setOdds] = useState(false);
   const [opening, setOpening] = useState<Opening | null>(null);
+  // The drawn accessory's card, drawn hidden before the pack moves (RipWarm).
+  const [warmCard, setWarmCard] = useState<{ id: string; tier: GiftTier } | null>(null);
   const stageRef = useRef<View>(null);
   const rootRef = useRef<View>(null);
   const away = useSharedValue(0);
@@ -134,15 +139,21 @@ function Packs({
       onSuccess: (res) => {
         const begin = (from: Rect | null) =>
           setOpening({ pack, accessory: res.accessory, from, card: null, phase: 'rip' });
-        const node = stageRef.current;
-        const root = rootRef.current;
-        if (!node || !root) {
-          begin(null);
-          return;
-        }
-        root.measureInWindow((_rx, ry) => {
-          node.measureInWindow((_x, y) => begin(frontRect(stage, y - ry)));
-        });
+        // The card is drawn first, hidden; the pack moves two frames later, with it ready.
+        setWarmCard(res.accessory);
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => {
+            const node = stageRef.current;
+            const root = rootRef.current;
+            if (!node || !root) {
+              begin(null);
+              return;
+            }
+            root.measureInWindow((_rx, ry) => {
+              node.measureInWindow((_x, y) => begin(frontRect(stage, y - ry)));
+            });
+          }),
+        );
       },
     });
   };
@@ -157,8 +168,29 @@ function Packs({
     </Reanimated.View>
   );
 
+  const rip = ripRects(stage).card;
+  const openedW = openedCardWidth(stage.s);
   return (
     <View ref={rootRef} style={{ flex: 1 }}>
+      <RipWarm
+        packs={packs.map((p) => p.id)}
+        stage={stage}
+        card={
+          warmCard ? (
+            <>
+              <CardFace id={warmCard.id} tier={warmCard.tier} width={rip.w} height={rip.h} />
+              <FxMoves>
+                <CardFace
+                  id={warmCard.id}
+                  tier={warmCard.tier}
+                  width={openedW}
+                  height={openedW / CARD_RATIO}
+                />
+              </FxMoves>
+            </>
+          ) : null
+        }
+      />
       <Screen top={top}>
         <Reanimated.View
           style={awayStyle}
@@ -206,6 +238,14 @@ function Packs({
       </Screen>
       {opening ? (
         <View style={{ position: 'absolute', inset: 0 }} pointerEvents="box-none">
+          {/* The result is mounted (and drawn) under the rip, hidden until the rip is done. */}
+          <OpenedCard
+            accessory={opening.accessory}
+            from={opening.card ?? rip}
+            stage={stage}
+            ready={opening.phase === 'card'}
+            onClose={() => setOpening(null)}
+          />
           {opening.phase === 'rip' ? (
             <Rip
               pack={opening.pack}
@@ -214,14 +254,7 @@ function Packs({
               stage={stage}
               onDone={(card) => setOpening((o) => (o ? { ...o, card, phase: 'card' } : o))}
             />
-          ) : (
-            <OpenedCard
-              accessory={opening.accessory}
-              from={opening.card}
-              stage={stage}
-              onClose={() => setOpening(null)}
-            />
-          )}
+          ) : null}
           <Reanimated.View
             pointerEvents="box-none"
             style={[{ position: 'absolute', inset: 0 }, chromeStyle]}
@@ -293,14 +326,14 @@ function Info({
           </T>
         </>
       )}
+      {/* Two buttons of one size side by side; Aç in the pack's colour (the owner's call, 7 Kasım). */}
       <View
         style={{
           marginTop: SPACING[2],
           flexDirection: 'row',
-          flexWrap: 'wrap',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: SPACING[2],
+          alignSelf: 'stretch',
+          marginHorizontal: SPACING[6],
+          gap: SPACING[3],
         }}
       >
         <Btn
@@ -308,8 +341,21 @@ function Info({
           onPress={onOpen}
           loading={pending}
           disabled={view.locked || view.unopened === 0}
+          fill={PACK_BUTTON[view.id].fill}
+          tint={PACK_BUTTON[view.id].ink}
+          style={{
+            flexGrow: 1,
+            flexBasis: 0,
+            boxShadow: `0 10px 22px ${PACK_BUTTON[view.id].shadow}`,
+          }}
         />
-        <Btn variant="glassy" sm icon="info" label={tr.gifts.odds} onPress={onOdds} />
+        <Btn
+          variant="glassy"
+          icon="info"
+          label={tr.gifts.odds}
+          onPress={onOdds}
+          style={{ flexGrow: 1, flexBasis: 0 }}
+        />
       </View>
     </>
   );

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 
 import { useLoopActive } from '@/components/Loader';
@@ -61,8 +61,19 @@ function useClock(ms: number, on: boolean): Animated.Value {
 
 type Place = { unit: number; dx: number; dy: number; bx: number; by: number };
 
+// Where the accessories move (the owner's call, 7 Kasım): the opened card, the profile's capsule,
+// Kapsülünü süsle's big capsule, the venue chat, the table and its games. Everywhere else (lists,
+// Süsle's small capsules, the pack's card under the rip) a drawing is still, as the boards draw it.
+const FxMotion = createContext(false);
+
+export function FxMoves({ children, on = true }: { children: ReactNode; on?: boolean }) {
+  return <FxMotion.Provider value={on}>{children}</FxMotion.Provider>;
+}
+
 export function FxSvg({ xml, width, height }: { xml: string; width: number; height: number }) {
-  const reduce = useReduceMotion();
+  const moves = useContext(FxMotion);
+  const reduceMotion = useReduceMotion();
+  const reduce = !moves || reduceMotion;
   const active = useLoopActive();
   const tree = useMemo(() => (reduce ? null : fxTree(xml)), [xml, reduce]);
   if (!tree) return <CachedSvg xml={reduce ? stillSvg(xml) : xml} width={width} height={height} />;

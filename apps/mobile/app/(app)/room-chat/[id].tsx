@@ -15,13 +15,23 @@ import { useRoomMemberProfiles } from '@/features/profile/queries';
 import { useRoom, useTablePeople } from '@/features/rooms/queries';
 import { TABLE_CARD_TALL } from '@/features/rooms/tableIconImages';
 import { tr } from '@/i18n/tr';
+import { FxMoves } from '@/components/FxSvg';
 
 export { RouteError as ErrorBoundary } from '@/components/RouteError';
 
 // Masa sohbeti on its own screen (the owner's call, 28 Ekim): opened from the chat button on
 // Masa's bar, back returns to Masa. Only the table's people read it (rule 4, RLS); a table that
 // closed, or a person no longer at it, goes back to Masa, which shows Masa bitti.
+// The accessories move here (the owner's call, 7 Kasım; components/FxSvg.tsx → FxMoves).
 export default function RoomChatScreen() {
+  return (
+    <FxMoves>
+      <RoomChatScreenBody />
+    </FxMoves>
+  );
+}
+
+function RoomChatScreenBody() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const checkIn = useActiveTable();
   const room = useRoom(id);

@@ -293,21 +293,20 @@ function FloatingPack({
         transform: [{ translateY: y }],
       }}
     >
-      <View
-        style={{
-          transform: [{ rotate: turn }],
-          filter: greyed ? [...GREYED, PACK_SHADOW] : [PACK_SHADOW],
-        }}
-      >
-        <Image
-          source={PACK_ART[pack]}
-          accessibilityIgnoresInvertColors
-          style={{
-            width,
-            height: width / PACK_RATIO,
-          }}
-          resizeMode="contain"
-        />
+      <View style={{ transform: [{ rotate: turn }] }}>
+        {/* The filter on the picture only: it cuts what lies past its view (Android), and the
+            badge stands out over the corner (the owner's report, 7 Kasım). */}
+        <View style={{ filter: greyed ? [...GREYED, PACK_SHADOW] : [PACK_SHADOW] }}>
+          <Image
+            source={PACK_ART[pack]}
+            accessibilityIgnoresInvertColors
+            style={{
+              width,
+              height: width / PACK_RATIO,
+            }}
+            resizeMode="contain"
+          />
+        </View>
         {badge > 0 ? (
           <View style={{ position: 'absolute', right: -BADGE / 2 + 3, top: -BADGE / 2 + 3 }}>
             <CanOpenBadge count={badge} />

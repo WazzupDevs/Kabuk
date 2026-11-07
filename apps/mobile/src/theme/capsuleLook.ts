@@ -145,9 +145,26 @@ export function posedEyes(
 // The same drawing in layers, so a blink or a look moves a picture instead of drawing the capsule
 // again (react-native-svg draws on the main thread on Android, on every change): what lies under
 // the eyes, the open eyes, the closed ones (squashed as posedEyes squashes them), and what lies over
-// them, each its own SVG with the drawing's own box. Null when the drawing has no eyes. The eyes are
-// never inside a group (capsuleDrawing.js; capsuleLook.test.ts checks every part).
+// them, each its own SVG with the drawing's own box. Null when the drawing has no eyes. Where the
+// eyes stand inside groups (the ring's capsule, lookPop: its clip and its body group), each layer
+// closes the groups open there and opens them again, with the drawing's defs, so every layer is a
+// whole SVG under the same clip (MASA-8: a layer cut inside a group did not parse).
 export type EyeLayers = { below: string; open: string; closed: string; above: string | null };
+
+const TAG = /<(\/?)([A-Za-z][\w:-]*)\b[^>]*?(\/?)>/g;
+
+// The elements still open at the end of `head` (after the root), outermost first.
+function openTags(head: string): { name: string; tag: string }[] | null {
+  const stack: { name: string; tag: string }[] = [];
+  for (const m of head.matchAll(TAG)) {
+    const [tag, closing, name = '', selfClosing] = m;
+    if (selfClosing) continue;
+    if (closing) {
+      if (stack.pop()?.name !== name) return null;
+    } else stack.push({ name, tag });
+  }
+  return stack;
+}
 
 export function eyeLayers(svg: string): EyeLayers | null {
   const root = svg.match(/^<svg\b[^>]*>/)?.[0];
@@ -156,12 +173,19 @@ export function eyeLayers(svg: string): EyeLayers | null {
   const end = '</svg>';
   if (!root || !eyes || first < 0 || !svg.endsWith(end)) return null;
   const rest = svg.replace(EYE, '');
+  const stack = openTags(rest.slice(root.length, first));
+  if (!stack || stack.some((t) => t.name !== 'g')) return null;
+  const defs = stack.length > 0 ? (svg.match(/<defs>[\s\S]*?<\/defs>/)?.[0] ?? '') : '';
+  const opens = stack.map((t) => t.tag).join('');
+  const closes = '</g>'.repeat(stack.length);
+  const head = root + defs + opens;
   const after = rest.slice(first, rest.length - end.length);
   const shut = `<g transform="translate(0 ${EYE_LINE}) scale(1 ${BLINK_SQUASH}) translate(0 ${-EYE_LINE})">${eyes.join('')}</g>`;
   return {
-    below: rest.slice(0, first) + end,
-    open: root + eyes.join('') + end,
-    closed: root + shut + end,
-    above: after.trim() ? root + after + end : null,
+    below: rest.slice(0, first) + closes + end,
+    open: head + eyes.join('') + closes + end,
+    closed: head + shut + closes + end,
+    // Nothing over the eyes but the groups' ends: no layer.
+    above: after.replace(/<\/g>/g, '').trim() ? head + after + end : null,
   };
 }

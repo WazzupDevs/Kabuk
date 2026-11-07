@@ -27,6 +27,16 @@ const TIER_FRAME: Record<GiftTier, ImageSourcePropType> = {
   efsanevi: require('../../../assets/gifts/art-efsanevi.webp'),
 };
 export const CARD_RATIO = 600 / 840;
+// The empty card's clear sides on its 600 wide picture, by tier (measured on the frames), and its
+// corner: the card's light (holo, band) stays inside the picture (the owner's report, 7 Kasım: it
+// showed past the card's sides).
+export const CARD_SIDE: Record<GiftTier, number> = {
+  siradan: 12 / 600,
+  nadir: 14 / 600,
+  destansi: 19 / 600,
+  efsanevi: 19 / 600,
+};
+export const CARD_FRAME_CORNER = 30 / 600;
 
 // A tier's card with no accessory in it (the canvas's card frames, kart-<tier>.png, 600 × 840).
 const BLANK_CARD: Record<GiftTier, ImageSourcePropType> = {
@@ -44,9 +54,3 @@ export function blankCard(tier: GiftTier): ImageSourcePropType {
 export function tileArt(tier: GiftTier): ImageSourcePropType {
   return TIER_FRAME[tier];
 }
-
-// The celebration buddies, Efsanevi only.
-export const BUDDIES = [
-  require('../../../assets/gifts/buddy-a.webp') as ImageSourcePropType,
-  require('../../../assets/gifts/buddy-b.webp') as ImageSourcePropType,
-] as const;

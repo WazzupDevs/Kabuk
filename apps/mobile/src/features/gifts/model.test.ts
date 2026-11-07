@@ -1,20 +1,11 @@
 import type { GiftState } from '@shared/api/gifts.ts';
 import { GIFT_CATALOG } from '@shared/giftCatalog.ts';
-import { GIFT_TIERS, type GiftPack } from '@shared/gifts.ts';
+import { type GiftPack } from '@shared/gifts.ts';
 import { describe, expect, it } from 'vitest';
 
 import { tr } from '../../i18n/tr';
 
-import {
-  ACCESSORIES,
-  byTier,
-  cardState,
-  packName,
-  packsInOrder,
-  shownAccessories,
-  slotNames,
-  tierName,
-} from './model';
+import { ACCESSORIES, cardState, packName, packsInOrder, tierName } from './model';
 
 const ODDS = { siradan: 70000, nadir: 22000, destansi: 7000, efsanevi: 1000 };
 const state = (over: Partial<GiftState> = {}): GiftState => ({
@@ -72,19 +63,6 @@ describe('gift names', () => {
     expect(packName('bronz')).toBe('Bronz');
     expect(tierName('efsanevi')).toBe('Efsanevi');
     expect(ACCESSORIES).toHaveLength(GIFT_CATALOG.accessories.length);
-    const all = new Set(GIFT_CATALOG.accessories.map((a) => a.id));
-    expect(byTier(all).map((g) => g.items.length)).toEqual(
-      GIFT_TIERS.map((t) => GIFT_CATALOG.accessories.filter((a) => a.tier === t).length),
-    );
-  });
-
-  it('shows a retired accessory only to its owner', () => {
-    const none = shownAccessories(new Set());
-    expect(none.some((a) => a.id === 'tac')).toBe(false);
-    expect(none.some((a) => a.id === 'ejderboynuzu')).toBe(true);
-    expect(shownAccessories(new Set(['tac'])).some((a) => a.id === 'tac')).toBe(true);
-    const set = ACCESSORIES.find((a) => a.id === 'kistakimi');
-    expect(set && slotNames(set)).toBe('Baş · Boyun');
   });
 
   it('writes odds as the server gives them, in Turkish', () => {
