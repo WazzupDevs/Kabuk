@@ -1,5 +1,11 @@
 # İlerleme
 
+## Sıradaki build'de toplananlar
+
+Native değişiklik isteyen, onaylanmış ama yeni build beklediği için yapılmamış işler. Build alınacağı zaman hepsi tek PR'da yapılır (`app.json` → `version` artar, `.claude/skills/yayin`), yapılan madde buradan silinir.
+
+- SVG önbelleği (8 Kasım, proje sahibinin onayı): `patches/react-native-svg@15.15.4.patch` → `SHARED` sabit 24 MB yerine uygulama belleğinin payı (1/8 ile 1/4 arası, Fresco gibi); bellek sıkışınca boşalır (`onTrimMemory`; bugün yok). Gerekçe: Kapsülünü süsle kasması; sabit 128 MB ucuz telefonlarda arka planda kapanmaya yol açar. Kasmanın kaynağı ilk çizimse sade seçenek görünüşü ayrıca gerekir.
+
 ## Devir notu (8 Kasım 2026, Semte Git)
 
 - #522 main'de: §4.V, K-90; `district`, `district-chat`, migration `…_semte_git.sql`, ekranlar (Aura v146). Kart yalnız yerel ve dev projesinde görünür (`DISTRICT_VISIBLE`); dev'de örnek soru ve elle semt seçimi var.
@@ -42,7 +48,7 @@
 
 ## Devir notu (7 Kasım 2026, hediye paketleri, #507)
 
-- #507 main'de (onaylı): hediye paketleri sunucusu (§4.U, K-89): `gifts` (state, login, open, equip), tablolar, `content/gift-packs.json`, kural 10 eki; v134 panoları `docs/design/aura/project/` (AktivitelerHediye, Paketler*, PaketAcilis*, PaketKartEgme, Aksesuar*, KapsulAksesuar, HediyeDar, GaleriHediye, hediye.css).
+- #507 main'de (onaylı): hediye paketleri sunucusu (§4.U, K-89): `gifts` (state, login, open, equip), tablolar, `content/gift-packs.json`, kural 10 eki; v134 panoları `docs/design/aura/project/` (AktivitelerHediye, Paketler*, PaketAcilis*, PaketKartEgme, Aksesuar\*, KapsulAksesuar, HediyeDar, GaleriHediye, hediye.css).
 - Sıradaki: ekran PR'ı (`tuval-aktarim`): Aktiviteler kartı, Paketler çemberi, Oranlar sheet, yırtma, kart eğme (Skia/Reanimated), Aksesuarlarım (Profil bilgi kartı satırı), kapsül çizimine `x:` katmanı (`features/capsule/look.ts`, `CapsuleStage.tsx`), açılışta `gifts/login`; Süsle'de Bere, Kasket, Kulaklık, Taç gizlenir. Hareket `motionHediye` rapordaki tabloda; tuvalin `hareket.json`'u #502 öncesi, alınmadı.
 - Görseller tuvalin asset deposunda (panolardaki `/_blob/<id>`: paket, kart çerçevesi); aksesuar çizimleri `KapsulAksesuar.dc.html` içinde SVG.
 - Geçici: Bronz %70/22/7/1; Gümüş, Altın, Elmas oranları öneri, açılmadan önce proje sahibine sorulur. Hepsine sahipken sayaç durur. Nadir aksesuar ve nick yenileme bilinçli kabul.
@@ -61,7 +67,7 @@
 
 ## Devir notu (6 Kasım 2026, ekran görüntüsü revize turu 1)
 
-- #499 main'de (onaylı): R-1 Masa kişiler çekmecesi (tuval v119 MasaCekmece*), R-2 "Masadan çıkar" (K-88, `rooms/remove`, kural 5 ve 10 ekleri), R-3 mekan sohbeti üst çubuğu, R-4 mekan adı satırı, H-1 sohbet akışının sona tutunması, H-2 balon ve kuyruğu tek şekil, H-3/H-4 ifade çekmecesi, H-5 büyük emoji.
+- #499 main'de (onaylı): R-1 Masa kişiler çekmecesi (tuval v119 MasaCekmece\*), R-2 "Masadan çıkar" (K-88, `rooms/remove`, kural 5 ve 10 ekleri), R-3 mekan sohbeti üst çubuğu, R-4 mekan adı satırı, H-1 sohbet akışının sona tutunması, H-2 balon ve kuyruğu tek şekil, H-3/H-4 ifade çekmecesi, H-5 büyük emoji.
 - Telefonda doğrulanacak: H-3, H-4 (klavye kapalıyken de oluyorsa ve hangi sohbette, sor); G-1–G-4 koyu tema ve 320 dp.
 - Açık öneriler: balon gölgesi kuyruğun altında yok; çok uzun mesajda ifade çekmecesi ekranın üstüne yaslanıyor (Telegram mesajı çekmece içinde kaydırır).
 - Sıradaki: aynı promptla yeni oturum, yeni ekran görüntüleri.
