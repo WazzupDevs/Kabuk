@@ -84,17 +84,27 @@ export async function moveLegacyPhotos(admin: Admin): Promise<{ moved: number; r
 }
 
 // `pnpm admin:remove-photo <publicId>` after a report review (docs/arsiv/SPEC_V2.md §5.3): deletes the
-// current photo and empties photo_path. Report copies stay until their 30 days end. Returns false
-// if the profile had no photo.
+// current photo and the cover (docs/SPEC_V4.md §4.W) and empties their paths. Report copies stay
+// until their 30 days end. Returns false if the profile had neither.
 export async function removeProfilePhoto(admin: Admin, publicId: string): Promise<boolean> {
   const { data, error } = await admin
     .from('profiles')
-    .select('photo_path')
+    .select('photo_path, cover_path')
     .eq('public_id', publicId)
     .maybeSingle();
   if (error) throw error;
   if (!data) throw new Error(`No profile with public id ${publicId}`);
-  if (!data.photo_path) return false;
+  if (data.cover_path) {
+    const gone = await admin.storage.from(PHOTO_BUCKET).remove([data.cover_path]);
+    if (gone.error) throw gone.error;
+    const cleared = await admin
+      .from('profiles')
+      .update({ cover_path: null, cover_hidden_at: null })
+      .eq('public_id', publicId)
+      .eq('cover_path', data.cover_path);
+    if (cleared.error) throw cleared.error;
+  }
+  if (!data.photo_path) return !!data.cover_path;
 
   const removed = await admin.storage.from(PHOTO_BUCKET).remove([data.photo_path]);
   if (removed.error) throw removed.error;

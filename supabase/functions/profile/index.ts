@@ -72,15 +72,17 @@ function contactError(): AppError {
 async function ownProfile(userId: string) {
   const { data, error } = await db
     .from('profiles')
-    .select('public_id, display_name, bio, photo_path, photo_pending_path, cover_path, cover_pending_path')
+    .select(
+      'public_id, display_name, bio, photo_path, photo_pending_path, cover_path, cover_pending_path',
+    )
     .eq('id', userId)
     .single();
   if (error) throw dbError('profiles', error);
   return data;
 }
 
-// The cover's signed URL, hidden with the photo after reports (one moderation for the profile's
-// pictures).
+// The cover's signed URL; none while it is hidden after reports (its own count, as the photo's:
+// two accounts reporting the same cover, cover_hidden_at).
 async function coverUrlOf(path: string | null, hidden: boolean): Promise<string | null> {
   if (!path || hidden) return null;
   const signed = await photos().createSignedUrl(path, PHOTO_URL_SECONDS);
@@ -130,7 +132,9 @@ async function getChatProfile(
   const [{ data, error }, friendship] = await Promise.all([
     db
       .from('profiles')
-      .select('public_id, display_name, bio, photo_path, photo_hidden_at, cover_path')
+      .select(
+        'public_id, display_name, bio, photo_path, photo_hidden_at, cover_path, cover_hidden_at',
+      )
       .eq('id', owner.data)
       .single(),
     db.from('friendships').select('user_a').eq('user_a', a).eq('user_b', b).maybeSingle(),
@@ -147,7 +151,7 @@ async function getChatProfile(
     displayName: data.display_name,
     bio: data.bio,
     photoUrl,
-    coverUrl: await coverUrlOf(data.cover_path, !!data.photo_hidden_at),
+    coverUrl: await coverUrlOf(data.cover_path, !!data.cover_hidden_at),
     ...(await ageAndBadges(owner.data)),
     // A friend's profile kimliği goes to the friend (rule 4): the screen offers the DM, not a
     // request (the owner's report, 29 Ekim).
@@ -171,7 +175,9 @@ async function getProfile(viewer: string, publicId: string): Promise<ProfileView
     db.rpc('user_stats', { target_user_id: row.user_id }),
     db
       .from('profiles')
-      .select('birth_date, gender, capsule_nick, capsule_look, capsule_nick_changed_at, cover_path')
+      .select(
+        'birth_date, gender, capsule_nick, capsule_look, capsule_nick_changed_at, cover_path, cover_hidden_at',
+      )
       .eq('id', row.user_id)
       .single(),
   ]);
@@ -192,7 +198,7 @@ async function getProfile(viewer: string, publicId: string): Promise<ProfileView
     displayName: row.display_name,
     bio: row.bio,
     photoUrl,
-    coverUrl: await coverUrlOf(birth.data.cover_path, !!row.photo_hidden),
+    coverUrl: await coverUrlOf(birth.data.cover_path, !!birth.data.cover_hidden_at),
     badges: earnedBadges({
       games: counts?.games ?? 0,
       voiceTabuWins: counts?.voice_tabu_wins ?? 0,
@@ -401,7 +407,7 @@ Deno.serve(
         }
         const { error } = await db
           .from('profiles')
-          .update({ cover_path: body.path, cover_pending_path: null })
+          .update({ cover_path: body.path, cover_hidden_at: null, cover_pending_path: null })
           .eq('id', user.id);
         if (error) throw dbError('profiles', error);
         if (me.cover_path && me.cover_path !== body.path) await photos().remove([me.cover_path]);
@@ -414,7 +420,7 @@ Deno.serve(
         if (files.length > 0) await photos().remove(files);
         const { error } = await db
           .from('profiles')
-          .update({ cover_path: null, cover_pending_path: null })
+          .update({ cover_path: null, cover_hidden_at: null, cover_pending_path: null })
           .eq('id', user.id);
         if (error) throw dbError('profiles', error);
         return { ok: true };
