@@ -17,8 +17,8 @@ Kapsam: kodu, belgeleri ve CI kayıtlarını kapsar. Play Console, App Store Con
 | Sentry kaynak haritası                        | Adımlar `docs/OPS.md` → Hata raporlama; token proje sahibinde                         |
 | Native değişiklikte `version`                 | Zaten korumalı: `deploy-dev` OTA'yı tutar ve kırmızı biter (`scripts/deploy/plan.ts`) |
 | iOS E2E                                       | Ertelendi (proje sahibinin kararı): iOS elle, TestFlight'ta                           |
-| Kaupholl (soru yok, açık)                     | Karar proje sahibinde                                                                 |
-| Yasal metinler                                | Veri sorumlusu ve iletişim bilgisi proje sahibinde                                    |
+| Kaupholl (soru yok, açık)                     | Karar: gerçek sorular yüklenecek (`pnpm admin:kaupholl-import`, proje sahibi)         |
+| Yasal metinler                                | İletişim support@skall.world yazıldı; veri sorumlusu bilgisi proje sahibinde          |
 
 ## 1. Rapordaki iddiaların doğrulaması
 

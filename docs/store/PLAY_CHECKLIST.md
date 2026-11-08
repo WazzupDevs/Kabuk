@@ -38,7 +38,7 @@ Herkese açık sayfalar GitHub Pages'te (CLAUDE.md → "Yasal sayfalar"): `https
 Kullanıcı hesabı olan her uygulama için iki şey gerekir: uygulama içinden silme ve **uygulamayı kurmadan kullanılabilen bir web bağlantısı**. Web sayfası uygulamanın adını anmalı, silme adımlarını anlatmalı, hangi verinin silinip hangisinin ne kadar saklandığını söylemelidir.
 
 - [ ] Uygulama içi yol: Profil → Ayarlar (dişli) → Hesabımı sil → Sil. Hemen siler (`account/delete`: fotoğraflar, hesap ve bağlı bütün satırlar, PostHog kişi kaydı).
-- [ ] Web bağlantısı: `https://wazzupdevs.github.io/Kabuk/hesap-silme.html`. Uygulama içi adımlar, e-postayla talep ([e-posta], en geç 30 gün), silinen veriler, saklananlar (şikayet kaydı 30 gün, banlanan numaranın özeti, hata kayıtları, yedekler).
+- [ ] Web bağlantısı: `https://wazzupdevs.github.io/Kabuk/hesap-silme.html`. Uygulama içi adımlar, e-postayla talep (support@skall.world, en geç 30 gün), silinen veriler, saklananlar (şikayet kaydı 30 gün, banlanan numaranın özeti, hata kayıtları, yedekler).
 - [ ] Console → Veri güvenliği → "Hesap silme" alanına bu URL girilir.
 - E-postayla gelen talep: `pnpm admin:delete <userId>`. Uygulama içi silmeyle aynı sonuç: fotoğraflar, hesap ve bağlı bütün satırlar, PostHog kişi kaydı; ban yapmaz. Kullanıcı kimliği panelde Authentication → Users'ta numarayla bulunur.
 
@@ -104,7 +104,7 @@ dahil) ve Arkadaşlar kullanılabilir. Mekan içi akış videoda: [video bağlan
 
 ### 3.5 İçerik derecelendirmesi (IARC anketi)
 
-- [ ] E-posta: [iletişim e-postası]. Kategori: **Sosyal ağ, forum ya da kullanıcı içeriği paylaşımı** (Social).
+- [ ] E-posta: support@skall.world. Kategori: **Sosyal ağ, forum ya da kullanıcı içeriği paylaşımı** (Social).
 - [ ] Yanıtlar:
 
 Yanıtlar `content/` taramasına göre (kartlar, mekan adları, takma adlar, sohbet kartları; küfür listesi hariç). Arama: alkol, bira, şarap, rakı, içki, bar, kokteyl…; tütün, sigara, nargile, puro, duman…; kumar, bahis, piyango, rulet, poker, okey, zar, jeton…
@@ -204,12 +204,12 @@ Tanım: cihazdan çıkan her veri "toplanan" sayılır; hizmet sağlayıcıya (S
 
 ## 7. Durum
 
-| Adım                                     | Durum                                                                      |
-| ---------------------------------------- | -------------------------------------------------------------------------- |
-| AAB profili                              | Hazır (`eas.json`)                                                         |
-| Gizlilik politikası ve web silme sayfası | Taslak sayfalar hazır (GitHub Pages); hukuki kontrol ve [e-posta] bekliyor |
-| E-postayla silme talebini işleme         | `admin:delete`                                                             |
-| İnceleme erişimi                         | Kalıcı inceleme hesabı ve video (§3.3); video çekilecek                    |
-| Veri güvenliği, IARC, hedef kitle        | Yanıtlar hazır (§3.5–3.7); Console'da doldurulacak                         |
-| Telefon ekran görüntüleri                | Script hazır; tasarım ve ad sonrası yüksek çözünürlükle yeniden            |
-| Test kullanıcıları (12+)                 | Proje sahibi                                                               |
+| Adım                                     | Durum                                                                                                                 |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| AAB profili                              | Hazır (`eas.json`)                                                                                                    |
+| Gizlilik politikası ve web silme sayfası | Taslak sayfalar hazır (GitHub Pages); iletişim support@skall.world; veri sorumlusu bilgisi ve hukuki kontrol bekliyor |
+| E-postayla silme talebini işleme         | `admin:delete`                                                                                                        |
+| İnceleme erişimi                         | Kalıcı inceleme hesabı ve video (§3.3); video çekilecek                                                               |
+| Veri güvenliği, IARC, hedef kitle        | Yanıtlar hazır (§3.5–3.7); Console'da doldurulacak                                                                    |
+| Telefon ekran görüntüleri                | Script hazır; tasarım ve ad sonrası yüksek çözünürlükle yeniden                                                       |
+| Test kullanıcıları (12+)                 | Proje sahibi                                                                                                          |

@@ -6,7 +6,7 @@ Son güncelleme: [tarih]
 
 ## Biz kimiz
 
-{{APP_NAME}} ("Uygulama"), [veri sorumlusunun unvanı, adresi, MERSİS/vergi no] tarafından sunulur. İletişim: [e-posta].
+{{APP_NAME}} ("Uygulama"), [veri sorumlusunun unvanı, adresi, MERSİS/vergi no] tarafından sunulur. İletişim: support@skall.world.
 
 {{APP_NAME}} aynı mekandaki insanların masa kurup ya da bir masaya katılıp, aynı masada herkesin kendi telefonuyla oyun oynaması ve sohbet etmesi içindir. İki kişi de isterse masa sonunda arkadaş olunur.
 
@@ -79,7 +79,7 @@ Kendi sunucu kodumuzun kayıtlarına telefon numarası, konum ya da mesaj içeri
 
 ## Haklarınız
 
-KVKK m. 11 kapsamındaki haklarınızı kullanmak için [e-posta] adresine yazabilirsiniz. Hesabınızı istediğiniz an **Profil → Ayarlar → Hesabımı sil** ile silebilirsiniz; hesabınız ve yukarıdaki veriler o anda silinir. Yalnızca şunlar bir süre kalır: şikayet kayıtları 30 gün sonunda silinir, karşılaştığınız kişilerin oyun geçmişinde o masadaki adınız onlar kendi hesaplarını silene kadar kalır, banlanan hesabın telefon özeti güvenlik amacıyla saklanır, hata raporları 30 gün sonunda silinir. Hesap silindikten sonra güvenlik ya da yasal yükümlülük için ek saklama gerekip gerekmediği: [hukuki görüşle belirlenecek]. Ayrıntılar: [Hesap Silme](hesap-silme.html).
+KVKK m. 11 kapsamındaki haklarınızı kullanmak için support@skall.world adresine yazabilirsiniz. Hesabınızı istediğiniz an **Profil → Ayarlar → Hesabımı sil** ile silebilirsiniz; hesabınız ve yukarıdaki veriler o anda silinir. Yalnızca şunlar bir süre kalır: şikayet kayıtları 30 gün sonunda silinir, karşılaştığınız kişilerin oyun geçmişinde o masadaki adınız onlar kendi hesaplarını silene kadar kalır, banlanan hesabın telefon özeti güvenlik amacıyla saklanır, hata raporları 30 gün sonunda silinir. Hesap silindikten sonra güvenlik ya da yasal yükümlülük için ek saklama gerekip gerekmediği: [hukuki görüşle belirlenecek]. Ayrıntılar: [Hesap Silme](hesap-silme.html).
 
 ## 18 yaş sınırı
 

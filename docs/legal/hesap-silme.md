@@ -14,7 +14,7 @@ Hesabınız ve aşağıdaki veriler aynı anda, geri alınamaz biçimde silinir.
 
 ## 2. E-postayla (uygulamaya erişemiyorsanız)
 
-[e-posta] adresine yazın:
+support@skall.world adresine yazın:
 
 - Konu: "Hesap silme talebi"
 - Hesabınıza kayıtlı telefon numarası
