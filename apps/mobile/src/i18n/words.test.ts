@@ -28,11 +28,21 @@ function trTexts(): string[] {
 // Faz 3 (docs/SPEC_V3.md §23.C): "oda" is never shown; everything is "masa". Every string literal
 // and template text in tr.ts is read from its source (comments and import paths are not text
 // the user sees); the server's names (`rooms`, `room_members`, `rooms/*`) stay in code.
+// Semte Git's room is "oda" (docs/SPEC_V4.md §4.V, Aura v146, the owner's approval of §8.2 on 8
+// Kasım): a district's chat room, not a table. Only these texts.
+const DISTRICT_ROOM = [
+  'Odaya dön',
+  'Odaya henüz kimse yazmadı. İlk mesajı sen yaz; gelenler görür.',
+  'İki saatin doldu. Evet dersen iki saat daha bu odadasın.',
+];
+
 describe('no "oda" in what the user sees', () => {
   it('has no word starting with "oda" in any text', () => {
     const texts = trTexts();
     expect(texts.length).toBeGreaterThan(500);
-    expect(texts.filter((text) => /(?<!\p{L})oda/iu.test(text))).toEqual([]);
+    expect(
+      texts.filter((text) => /(?<!\p{L})oda/iu.test(text) && !DISTRICT_ROOM.includes(text)),
+    ).toEqual([]);
   });
 
   it('would catch one', () => {

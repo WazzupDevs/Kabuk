@@ -73,6 +73,13 @@ import type {
   VenueChatResponse,
 } from '@shared/api/venueChat.ts';
 import type { VenueChatMode } from '@shared/venueChat.ts';
+import type {
+  DistrictAnswerResponse,
+  DistrictChatPageResponse,
+  DistrictChatSendResponse,
+  DistrictLocateResponse,
+  DistrictState,
+} from '@shared/api/district.ts';
 import type { VampirView } from '@shared/vampir.ts';
 import { readSahtekarView, type SahtekarView } from '@shared/sahtekarGame.ts';
 import { readKibritView, type KibritView } from '@shared/kibrit.ts';
@@ -357,6 +364,9 @@ export const profileApi = {
   get: (publicId: string) => invoke<ProfileView>('profile', { action: 'get', publicId }),
   getFromVenueChat: (venueChatMessageId: string) =>
     invoke<ChatProfileView>('profile', { action: 'get', venueChatMessageId }),
+  // A profiled district chat message's sender (docs/SPEC_V4.md §4.V): the room's people only.
+  getFromDistrictChat: (districtChatMessageId: string) =>
+    invoke<ChatProfileView>('profile', { action: 'get', districtChatMessageId }),
   update: (changes: ProfileUpdate) =>
     invoke<{ ok: true }>('profile', { action: 'update', ...changes }),
   photoUploadUrl: () => invoke<ProfileUploadUrl>('profile', { action: 'photo-upload-url' }),
@@ -376,6 +386,8 @@ export const friendsApi = {
     invoke<FriendsOkResponse>('friends', { action: 'request', historyId }),
   requestFromVenueChat: (venueChatMessageId: string) =>
     invoke<FriendsOkResponse>('friends', { action: 'request', venueChatMessageId }),
+  requestFromDistrictChat: (districtChatMessageId: string) =>
+    invoke<FriendsOkResponse>('friends', { action: 'request', districtChatMessageId }),
   incoming: () => invoke<FriendsIncomingResponse>('friends', { action: 'incoming' }),
   respond: (requestId: string, accept: boolean) =>
     invoke<FriendsOkResponse>('friends', { action: 'respond', requestId, accept }),
@@ -428,6 +440,56 @@ export const venueChatApi = {
     invoke<VenueChatMuteResponse>('venue-chat', { action: 'mute', messageId }),
   unmute: (muteId: string) => invoke<{ ok: true }>('venue-chat', { action: 'unmute', muteId }),
   mutes: () => invoke<VenueChatMutesResponse>('venue-chat', { action: 'mutes' }),
+};
+
+// Semte Git and Geçit (docs/SPEC_V4.md §4.V, K-90). The coordinate goes in this one call and the
+// app keeps it nowhere (rule 6); the answers carry the person's own state only.
+export const districtApi = {
+  state: () => invoke<DistrictState>('district', { action: 'state' }),
+  // `choice`: one of the districts a previous call offered for the same place (a shared border).
+  locate: (lat: number, lng: number, choice?: string) =>
+    invoke<DistrictLocateResponse>('district', {
+      action: 'locate',
+      lat,
+      lng,
+      ...(choice ? { choice } : {}),
+    }),
+  // The dev project's hand pick (state.pickByHand only).
+  pick: (ref: string) => invoke<DistrictState>('district', { action: 'pick', ref }),
+  answer: (day: string, choice: number) =>
+    invoke<DistrictAnswerResponse>('district', { action: 'answer', day, choice }),
+  enter: () => invoke<DistrictState>('district', { action: 'enter' }),
+  extend: () => invoke<DistrictState>('district', { action: 'extend' }),
+  leave: () => invoke<DistrictState>('district', { action: 'leave' }),
+  // Once per session (identity_switch_used after); profiled needs the photo.
+  setIdentity: (anonymous: boolean) =>
+    invoke<DistrictState>('district', { action: 'set-identity', anonymous }),
+};
+
+// The district room's chat, as the venue chat's (the muted list is the venue chat's:
+// venueChatApi.mutes, unmute).
+export const districtChatApi = {
+  page: (before?: string) =>
+    invoke<DistrictChatPageResponse>('district-chat', {
+      action: 'page',
+      ...(before ? { before } : {}),
+    }),
+  send: (body: string, identity: VenueChatMode, replyTo: string | undefined, clientId: string) =>
+    invoke<DistrictChatSendResponse>('district-chat', {
+      action: 'send',
+      body,
+      identity,
+      ...(replyTo ? { replyTo } : {}),
+      clientId,
+    }),
+  react: (messageId: string, emoji: Reaction | null) =>
+    invoke<ReactResponse>('district-chat', { action: 'react', messageId, emoji }),
+  remove: (messageId: string) =>
+    invoke<{ ok: true }>('district-chat', { action: 'delete', messageId }),
+  mute: (messageId: string) =>
+    invoke<VenueChatMuteResponse>('district-chat', { action: 'mute', messageId }),
+  report: (messageId: string, reason: ReportReason) =>
+    invoke<{ ok: true }>('district-chat', { action: 'report', messageId, reason }),
 };
 
 export const dmApi = {

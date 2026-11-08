@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
 
+import { DISTRICT_NOTICE_TARGET } from '@/features/district/continueNotice';
 import { callAccount } from '@/lib/api';
 
 // In the app, requests and answers show in the UI; system banners are for the background.
@@ -74,7 +75,18 @@ function open(response: Notifications.NotificationResponse): void {
   const id = response.notification.request.identifier;
   if (id === handled) return;
   handled = id;
-  const route = pushRoute(response.notification.request.content.data);
+  // The phone's own "Devam?" notification (features/district/continueNotice.ts): the room with
+  // its sheet.
+  const data: unknown = response.notification.request.content.data;
+  if (
+    typeof data === 'object' &&
+    data !== null &&
+    (data as { target?: unknown }).target === DISTRICT_NOTICE_TARGET
+  ) {
+    router.navigate({ pathname: '/district/room', params: { ask: '1' } });
+    return;
+  }
+  const route = pushRoute(data);
   if (route) router.navigate(route);
 }
 
