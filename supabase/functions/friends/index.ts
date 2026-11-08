@@ -224,9 +224,9 @@ Deno.serve(
                     daily_max: VENUE_CHAT.dailyFriendRequests,
                   })
                 : await db.rpc('friends_request', {
-                  target_user_id: user.id,
-                  target_history_id: body.historyId,
-                });
+                    target_user_id: user.id,
+                    target_history_id: body.historyId,
+                  });
           if (error) throw dbError('friends_request', error);
           const result = data[0];
           if (result?.outcome === 'already_friends') {

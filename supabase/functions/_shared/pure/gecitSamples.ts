@@ -1,7 +1,11 @@
 // Sample Geçit questions for the dev project only (pure/devProject.ts → testQuestionsAllowed). They
 // are not the real pool: real questions never enter the repo (docs/SPEC_V4.md §4.V); the owner loads
 // those with `pnpm admin:gecit-import`.
-export type GecitSample = { prompt: string; options: [string, string, string, string]; answer: number };
+export type GecitSample = {
+  prompt: string;
+  options: [string, string, string, string];
+  answer: number;
+};
 
 export const GECIT_SAMPLES: readonly GecitSample[] = [
   {
@@ -44,5 +48,7 @@ export const GECIT_SAMPLES: readonly GecitSample[] = [
 // The day's sample: the same for everyone on a day, the next one the day after.
 export function sampleFor(day: string): GecitSample {
   const n = Math.floor(Date.parse(`${day}T00:00:00Z`) / 86400000);
-  return GECIT_SAMPLES[((n % GECIT_SAMPLES.length) + GECIT_SAMPLES.length) % GECIT_SAMPLES.length] as GecitSample;
+  return GECIT_SAMPLES[
+    ((n % GECIT_SAMPLES.length) + GECIT_SAMPLES.length) % GECIT_SAMPLES.length
+  ] as GecitSample;
 }

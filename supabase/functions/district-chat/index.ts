@@ -134,7 +134,6 @@ Deno.serve(
         return { ok: true };
       }
 
-
       if (body.action === 'react') {
         const { data, error } = await db.rpc('district_chat_react', {
           target_user_id: user.id,
