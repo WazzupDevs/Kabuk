@@ -11,6 +11,7 @@ Native değişiklik isteyen, onaylanmış ama yeni build beklediği için yapıl
 Onaylanmış, native değişiklik istemeyen işler. Proje sahibi toplu, büyük bir OTA'yla göndermek istiyor; hepsi o OTA'da gider, yapılan madde buradan silinir.
 
 - Kapsülünü süsle'de sade seçenek görünüşü (8 Kasım, proje sahibinin onayı, önizlemesi sohbette): her seçenek kişinin renginde düz kapsül, klasik göz ve yalnız o parça (`app/(app)/(tabs)/profile/capsule.tsx` → `Box`'un `look`'u `code(wear(look, …))` yerine yalnız renk + parça). Bugün her parça seçimi bütün seçeneklerin çizimini değiştirip yeniden çizdiriyor (kasmanın asıl kaynağı); sade hâlde seçenek yalnız renk değişince yeniden çizilir. Göz ve Renk sekmeleri de aynı sade kapsülle; `readLookAhead` döngüsü buna göre sadeleşir. Göz: klasik (öneri; proje sahibi kendi gözünü isterse değişir).
+- Revize 1 (8 Kasım, ekran görüntüsüyle): Keşfet'te liste/harita anahtarında seçili yuvarlak kapsülün içinde aşağı yaslanmış; dikeyde ortalanacak (`app/(app)/(tabs)/explore/index.tsx` → `ViewSwitch`: `round = h - 2 * pad`, `pad = SPACING[1] - KIT.size.edge`; `Glass`'ın kenarı ya da iç sarmalayıcısı yüksekliği kaydırıyor olabilir).
 
 ## Devir notu (8 Kasım 2026, Semte Git)
 
