@@ -84,7 +84,11 @@ Play inceleme hesabının kodu ve değiştirilmesi: `.claude/skills/supabase-ops
 ## Hata raporlama (Sentry)
 
 - `EXPO_PUBLIC_SENTRY_DSN` (EAS ortam değişkeni ya da mobil `.env`); yoksa hiçbir şey gönderilmez. Kullanıcı kimliği olarak yalnızca kullanıcı id'si gider. Telefon, konum, yazılan metin, istek gövdesi ve URL sorgu dizesi `_shared/pure/errorReporting.ts` ile telefondan çıkmadan silinir.
-- Kaynak haritası yüklemesi kapalı (`SENTRY_DISABLE_AUTO_UPLOAD=true`, `eas.json`). Açmak için Sentry hesabı ve `SENTRY_AUTH_TOKEN` gerekir.
+- Kaynak haritası yüklemesi kapalı (`SENTRY_DISABLE_AUTO_UPLOAD=true`, `eas.json`): üretimdeki JS hataları küçültülmüş satırlarla gelir. Açmak (proje sahibi, bir kez):
+  1. Sentry → Settings → Auth Tokens → **Organization token** (kapsam: kaynak haritası yükleme). Token hiçbir dosyaya yazılmaz.
+  2. `apps\mobile`'da: `npx eas-cli env:create --environment production --name SENTRY_AUTH_TOKEN --value <token> --visibility secret`; aynısı `SENTRY_ORG` ve `SENTRY_PROJECT` için `--visibility plaintext` (Sentry'deki kuruluş ve proje adları).
+  3. Ayrı bir PR: `eas.json` → `production.env`'den `SENTRY_DISABLE_AUTO_UPLOAD` kalkar. Token yokken kaldırılırsa production build'i düşer; bu yüzden 1–2 önce.
+  4. OTA'lar da haritalı gitsin diye `eas update`'ten sonra `npx sentry-expo-upload-sourcemaps dist` (aynı ortam değişkenleriyle).
 - Edge Function'dan gelen her 5xx Sentry'ye `function` (ör. `rooms/create`) ve `status` etiketleriyle gider; istek ve yanıt gövdesi gitmez. Yalnızca `_shared/pure/apiRetry.ts` → `IDEMPOTENT_CALLS` listesindeki çağrılar 5xx sonrası 500 ms bekleyip bir kez daha gönderilir; diğerleri (DM gönderme, istek, oda kurma…) asla tekrar gönderilmez. Ölçüt okuma değil idempotentliktir: iki kez gönderilince bir kez gönderilmiş gibi aynı durum ve yanıt. Her girdinin yanında onu iki kez gönderen entegrasyon testinin adı yazılıdır; `apiRetry.test.ts` bu testlerin var olduğunu denetler. Yeni girdi, böyle bir testle birlikte gelir.
 - Her rota grubunun `_layout.tsx`'i `RouteError`'ı `ErrorBoundary` olarak dışa verir: beyaz ekran yerine kısa bir mesaj, "Tekrar dene" ve "Ana ekrana dön".
 

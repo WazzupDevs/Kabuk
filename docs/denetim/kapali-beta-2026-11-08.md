@@ -3,6 +3,23 @@
 8 Kasım 2026 · `main` `a32bfc6` · Dış denetim raporunun (8 Kasım) repoya karşı doğrulaması.
 Kapsam: kodu, belgeleri ve CI kayıtlarını kapsar. Play Console, App Store Connect, canlı Supabase ve EAS hesapları bu oturumdan görülemez.
 
+## Durum (güncel)
+
+| Madde                                         | Durum                                                                                 |
+| --------------------------------------------- | ------------------------------------------------------------------------------------- |
+| iOS zorunlu güncelleme ve Güncelle bağlantısı | Yapıldı (#528): `MIN_APP_BUILD_IOS`, `x-app-platform`, TestFlight bağlantısı          |
+| İlk iOS build'i                               | Yapıldı: 0.9.6 (1), TestFlight dahili test (`docs/store/IOS_TESTFLIGHT.md`)           |
+| `PILOT_RELEASE.md` sürüm adımı                | Yapıldı: genel `version` kuralı                                                       |
+| Play inceleme talimatı ve video senaryosu     | Yapıldı: kampüsler, sınır içi, üç telefon ve Sahtekar                                 |
+| Veri güvenliği: görünen ad                    | Yapıldı: kayıtta zorunlu                                                              |
+| Şikayetleri okuma                             | Yapıldı: `pnpm admin:reports` (30 günlük silinmeden önce haftalık)                    |
+| Gece E2E (check-in araması)                   | Düzeltme dalda, koşu bekleniyor                                                       |
+| Sentry kaynak haritası                        | Adımlar `docs/OPS.md` → Hata raporlama; token proje sahibinde                         |
+| Native değişiklikte `version`                 | Zaten korumalı: `deploy-dev` OTA'yı tutar ve kırmızı biter (`scripts/deploy/plan.ts`) |
+| iOS E2E                                       | Ertelendi (proje sahibinin kararı): iOS elle, TestFlight'ta                           |
+| Kaupholl (soru yok, açık)                     | Karar proje sahibinde                                                                 |
+| Yasal metinler                                | Veri sorumlusu ve iletişim bilgisi proje sahibinde                                    |
+
 ## 1. Rapordaki iddiaların doğrulaması
 
 | #   | İddia                                                                           | Sonuç                                     | Kanıt                                                                                                                                                                                                                                                           |
