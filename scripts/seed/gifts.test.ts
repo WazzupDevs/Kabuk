@@ -71,10 +71,18 @@ describe('parseGiftCatalog', () => {
     expect(broken((c) => (at(accessories(c), 0).pack = 'elf'))).toThrow(/now set/);
   });
 
-  it('refuses a full set with a part not of its set, or two parts in one slot', () => {
+  it('refuses a set with no piece for a region, and the old full set', () => {
     const sets = (c: Record<string, unknown>) => c.sets as Record<string, unknown>[];
-    const elf = (c: Record<string, unknown>) => at(sets(c), 0);
-    expect(broken((c) => (elf(c).fullSet = ['filiz']))).toThrow(/full set has no/);
-    expect(broken((c) => (elf(c).fullSet = ['yapraktaci', 'aydiademi']))).toThrow(/shares a slot/);
+    expect(broken((c) => (at(sets(c), 0).fullSet = ['yapraktaci']))).toThrow(/fullSet is gone/);
+    expect(
+      broken((c) => {
+        for (const a of accessories(c)) {
+          if (a.set === 'elf' && Array.isArray(a.slots) && a.slots.includes('h')) {
+            a.retired = true;
+            delete a.set;
+          }
+        }
+      }),
+    ).toThrow(/no piece for the region bas/);
   });
 });

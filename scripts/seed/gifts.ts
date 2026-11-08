@@ -14,10 +14,11 @@ import {
   GIFT_PACKS,
   GIFT_SETS,
   GIFT_TIERS,
+  SET_REGION_ORDER,
+  SET_REGIONS,
   type GiftCatalog,
   ODDS_TOTAL,
   poolOf,
-  slotConflict,
 } from '../../supabase/functions/_shared/pure/gifts.ts';
 
 export const GIFT_MODULE = 'supabase/functions/_shared/pure/giftCatalog.ts';
@@ -96,14 +97,8 @@ export function parseGiftCatalog(json: unknown, capsuleParts: ReadonlySet<string
 
   // Skin sets (§4.U, 7 Kasım): Efsanevi pieces the four packs give, and the full set of each.
   const sets = list(json.sets, 'sets').map((t, i) => {
-    if (!Array.isArray(t.fullSet) || t.fullSet.length === 0) {
-      throw new Error(`sets[${i}].fullSet must be a non-empty list`);
-    }
-    return {
-      id: id(t.id, `sets[${i}].id`),
-      name: text(t.name, `sets[${i}].name`),
-      fullSet: t.fullSet.map((f, j) => id(f, `sets[${i}].fullSet[${j}]`)),
-    };
+    if (t.fullSet !== undefined) throw new Error(`sets[${i}]: fullSet is gone (8 Kasım)`);
+    return { id: id(t.id, `sets[${i}].id`), name: text(t.name, `sets[${i}].name`) };
   });
   if (sets.map((t) => t.id).join(' ') !== GIFT_SETS.join(' ')) {
     throw new Error(`sets must be ${GIFT_SETS.join(', ')} in this order`);
@@ -175,14 +170,17 @@ export function parseGiftCatalog(json: unknown, capsuleParts: ReadonlySet<string
       }
     }
   }
+  // A set's balloon needs a piece in each of the three regions (§4.U, 8 Kasım).
   for (const set of sets) {
-    for (const f of set.fullSet) {
-      if (!accessories.some((a) => a.id === f && a.set === set.id && !a.retired)) {
-        throw new Error(`sets: ${set.id}'s full set has no ${f}`);
+    for (const region of SET_REGION_ORDER) {
+      const slots = SET_REGIONS[region] as readonly string[];
+      if (
+        !accessories.some(
+          (a) => a.set === set.id && !a.retired && a.slots.some((s) => slots.includes(s)),
+        )
+      ) {
+        throw new Error(`sets: ${set.id} has no piece for the region ${region}`);
       }
-    }
-    if (slotConflict(set.fullSet, catalog)) {
-      throw new Error(`sets: ${set.id}'s full set shares a slot`);
     }
   }
   return catalog;

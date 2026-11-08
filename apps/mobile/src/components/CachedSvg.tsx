@@ -18,6 +18,12 @@ function ast(xml: string): { tree: JsxAST | null; key: string } {
   return entry;
 }
 
+// Reads a text ahead, in idle time, so that showing it later has nothing left to read (Kapsülünü
+// süsle reads its other tabs' options while the person looks at one).
+export function readAhead(xml: string): void {
+  ast(xml);
+}
+
 export function CachedSvg({
   xml,
   width,

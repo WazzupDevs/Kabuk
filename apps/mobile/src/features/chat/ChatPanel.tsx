@@ -11,6 +11,8 @@ import { toRuns } from '@shared/chatRuns.ts';
 import { Avatar } from '@/components/Avatar';
 import { Banner } from '@/components/Banner';
 import { ChatBubble } from '@/components/ChatBubble';
+import { SET_BALLOONS } from '@/theme/setBalloons';
+import { setBalloonOf } from '@shared/gifts.ts';
 import {
   type ChatListItem,
   type ChatListProps,
@@ -170,7 +172,16 @@ export function useRoomChatList(
   // Profile ids of the room's profiled phones, by table session id (room_member_profiles).
   profiles: ReadonlyMap<string, string> | undefined,
   roomId: string,
+  // Each seat's look and identity (table_people): an anonymous seat wearing a set in all three
+  // regions writes in the set's balloon (§4.U, 8 Kasım).
+  seats?: ReadonlyMap<string, { look: string | null; profiled: boolean }>,
 ): ChatListProps<RoomRow> {
+  const balloonOf = (sender: string) => {
+    const seat = seats?.get(sender);
+    if (!seat || seat.profiled || !seat.look) return null;
+    const set = setBalloonOf(seat.look);
+    return set ? SET_BALLOONS[set] : null;
+  };
   const { scheme } = useTheme();
   const openProfile = (sender: string) => {
     const publicId = profiles?.get(sender);
@@ -268,6 +279,7 @@ export function useRoomChatList(
             <ChatBubble
               text={m.body}
               mine={mine}
+              skin={balloonOf(m.session_id)}
               quote={toChatQuote(quote)}
               onPressQuote={quoteJump(quote, jumpTo)}
               reactions={chat.reactions.view(m.id, counts)}

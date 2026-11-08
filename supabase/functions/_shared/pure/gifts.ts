@@ -41,8 +41,9 @@ export type GiftCatalog = {
     locked: boolean;
     weights: Readonly<Record<string, number>>;
   }[];
-  // The skin sets and their full sets: worn together, the set's balloon in the venue chat (§4.U).
-  sets: readonly { id: string; name: string; fullSet: readonly string[] }[];
+  // The skin sets: one piece of a set in each of the capsule's three regions gives the set's
+  // balloon wherever the person writes anonymously (§4.U, SET_REGIONS).
+  sets: readonly { id: string; name: string }[];
   accessories: readonly {
     id: string;
     name: string;
@@ -261,17 +262,56 @@ export function coveredSlots(
   return out;
 }
 
-// The skin set whose full set the look wears whole, or null: its messages in the venue chat,
-// while anonymous, take the set's balloon (§4.U).
-export function fullSetOf(
+// The capsule's three regions for a set (the owner's call, 8 Kasım): Baş the head; Yüz the eyes,
+// the face and the mouth; Gövde the neck and the colour (a skin). The profile's set card has a
+// slot for each.
+export const SET_REGIONS = {
+  bas: ['h'],
+  yuz: ['e', 'f', 'm'],
+  govde: ['n', 'c'],
+} as const satisfies Record<string, readonly (typeof LOOK_SLOTS)[number][]>;
+export type SetRegion = keyof typeof SET_REGIONS;
+export const SET_REGION_ORDER: readonly SetRegion[] = ['bas', 'yuz', 'govde'];
+
+export function regionOf(slot: string): SetRegion | null {
+  for (const region of SET_REGION_ORDER) {
+    if ((SET_REGIONS[region] as readonly string[]).includes(slot)) return region;
+  }
+  return null;
+}
+
+// The worn set pieces by region: for each region, the first worn accessory of a set worn there.
+export function wornSetPieces(
+  look: string | null,
+  catalog: GiftCatalog = GIFT_CATALOG,
+): Partial<Record<SetRegion, GiftAccessory>> {
+  const out: Partial<Record<SetRegion, GiftAccessory>> = {};
+  for (const id of accessoriesOf(look)) {
+    const a = accessoryById(id, catalog);
+    if (!a?.set) continue;
+    for (const slot of a.slots) {
+      const region = regionOf(slot);
+      if (region && !out[region]) out[region] = a;
+    }
+  }
+  return out;
+}
+
+// The skin set worn in all three regions, or null: its messages, written anonymously, take the
+// set's balloon (§4.U; the venue chat and the table chat). Of the worn accessories, any of a set's
+// in each region counts.
+export function setBalloonOf(
   look: string | null,
   catalog: GiftCatalog = GIFT_CATALOG,
 ): GiftSet | null {
-  const worn = new Set(accessoriesOf(look));
+  const worn = accessoriesOf(look)
+    .map((id) => accessoryById(id, catalog))
+    .filter((a): a is GiftAccessory => a !== undefined && a.set !== undefined);
   for (const set of catalog.sets) {
-    if (set.fullSet.length > 0 && set.fullSet.every((id) => worn.has(id))) {
-      return isGiftSet(set.id) ? set.id : null;
-    }
+    const covered = SET_REGION_ORDER.every((region) =>
+      worn.some((a) => a.set === set.id && a.slots.some((slot) => regionOf(slot) === region)),
+    );
+    if (covered) return isGiftSet(set.id) ? set.id : null;
   }
   return null;
 }

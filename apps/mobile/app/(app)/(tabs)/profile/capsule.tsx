@@ -25,7 +25,7 @@ import { CapIcon } from '@/aura/CapIcon';
 import { Btn, Chip, Glass, Round, T, useKit } from '@/aura/kit';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/Loader';
-import { LookAvatar } from '@/components/LookAvatar';
+import { LookAvatar, readLookAhead } from '@/components/LookAvatar';
 import { HidingHeadScreen } from '@/components/HidingHeadScreen';
 import { useHideTabBar } from '@/components/TabBar';
 import { Sheet } from '@/components/Sheet';
@@ -216,6 +216,36 @@ function Editor({ saved, publicId }: { saved: string; publicId: string }) {
       : CAPSULE_CATALOG.racks.flatMap((r) =>
           packsFor(r.id, slot, kept).map((g) => ({ rack: r.id, pack: g.pack, items: g.items })),
         );
+  // The other tabs' options read ahead in idle time, a few at a time, so that a tab opens with
+  // nothing left to read (the owner's report, 7 Kasım: Kapsülünü süsle stuttered).
+  useEffect(() => {
+    if (!ready) return undefined;
+    const looks: string[] = [];
+    for (const [other] of CAPSULE_CATALOG.slots.map((x) => [x.id as LookSlot] as const)) {
+      if (other === slot) continue;
+      const parts =
+        other === 'c'
+          ? colorItems()
+          : CAPSULE_CATALOG.racks.flatMap((r) =>
+              packsFor(r.id, other, kept).flatMap((g) => g.items),
+            );
+      for (const item of parts) looks.push(code(wear(look, item.slot, item.id)));
+      for (const item of accessoryItems(other, owned))
+        looks.push(code(wearAccessory(look, item.id)));
+      if (other !== 'c' && other !== 'e') looks.push(code(wear(look, other, null)));
+    }
+    let at = 0;
+    let handle = 0;
+    const step = () => {
+      for (const end = Math.min(at + READ_AHEAD, looks.length); at < end; at++) {
+        const next = looks[at];
+        if (next) readLookAhead(next);
+      }
+      if (at < looks.length) handle = requestIdleCallback(step);
+    };
+    handle = requestIdleCallback(step);
+    return () => cancelIdleCallback(handle);
+  }, [ready, look, slot, kept, owned]);
   const wornList = worn(look);
   const slotAccessories = accessoryItems(slot, owned);
   const slotName = CAPSULE_CATALOG.slots.find((s) => s.id === slot)?.name ?? '';
@@ -532,6 +562,9 @@ function ShuffleGlyph({ turn }: { turn: number }) {
 // with the capsule on its foot and no name (the screen reader's only). The surface's colour
 // (#1B211F in the dark); the chosen one ringed 2 in the accent, 2 out. A fixed width, so the rows
 // line up.
+// Options read ahead in one idle turn.
+const READ_AHEAD = 8;
+
 function Box({
   kind,
   look,

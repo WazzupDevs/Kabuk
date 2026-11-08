@@ -44,7 +44,11 @@ function RoomChatScreenBody() {
   const chat = useRoomChat(id);
   const mark = useRoomChatSeen((s) => s.mark);
   const sessionId = checkIn.data?.id;
-  const stream = useRoomChatList(chat, sessionId ?? '', profiles, id);
+  // The seats' looks for the set's balloon on an anonymous seat's messages (§4.U, 8 Kasım).
+  const seats = new Map(
+    (people.data ?? []).map((p) => [p.sessionId, { look: p.look, profiled: p.profiled }]),
+  );
+  const stream = useRoomChatList(chat, sessionId ?? '', profiles, id, seats);
   const messages = chat.messages.data ?? [];
   const newestAt = messages.at(-1)?.created_at;
   useEffect(() => {
